@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 오늘할일 문서 작업일지 갱신 필수
 description: 작업한 내용은 반드시 mydocs/orders/yyyymmdd.md에 기록해야 함
 type: feedback
-originSessionId: 1f035a49-cf55-4427-a5b6-ba6a493aa832
 ---
 작업한 모든 타스크는 당일 오늘할일 문서(`mydocs/orders/yyyymmdd.md`)에 기록한다. 이 문서가 작업일지 역할을 한다.
 

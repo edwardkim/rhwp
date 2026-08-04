@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: project_external_contributors
 description: "외부 컨트리뷰터 누적 명단 (32명, 2026-07-04 기준) — 첫 PR/재기여 식별용"
 metadata: 
   node_type: memory
   type: project
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
 **외부 컨트리뷰터 누적 (약 32명, 2026-07-04 기준).** 작업지시자(edwardkim)는 이 프로젝트의

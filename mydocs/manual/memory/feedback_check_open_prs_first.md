@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 이슈 작업 시작 전 열린 PR 확인 필수
 description: 동일 이슈를 해결하는 외부 기여자의 PR이 이미 열려 있는지 확인하지 않고 내부 작업을 시작하면 기여자의 노력이 무의미해지고 프로젝트 신뢰가 손상됨
 type: feedback
-originSessionId: 67d1cb8f-86d4-4672-b831-a8d028a1cfcf
 ---
 이슈 작업에 착수하기 전 반드시 열린 PR 목록을 점검한다. 누락 시 외부 기여자가 같은 이슈를 독립적으로 해결한 PR 과 충돌/중복되어 그들의 시간이 헛되게 된다.
 

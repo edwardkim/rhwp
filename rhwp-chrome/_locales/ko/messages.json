@@ -43,6 +43,12 @@
   "optionsSaved": {
     "message": "저장됨"
   },
+  "optionsSaveError": {
+    "message": "저장하지 못했습니다. 잠시 후 다시 시도해주세요."
+  },
+  "optionsLoadError": {
+    "message": "설정을 불러오지 못했습니다. 페이지를 다시 열어주세요."
+  },
   "optionsPrivacy": {
     "message": "파일은 서버로 전송되지 않으며, 모든 처리는 브라우저 내에서 이루어집니다."
   }

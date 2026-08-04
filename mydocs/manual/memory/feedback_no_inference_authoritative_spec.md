@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: ""
 description: 워터마크 등 시각 의미를 brightness/contrast 패턴 매칭으로 추정하지 말 것. 한컴 스펙 + 대비 샘플 + 편집기 UI 교차검증으로 비트/속성 확정 후 구현
 metadata: 
   node_type: memory
   type: feedback
-  originSessionId: da1865ca-614e-44a5-8c3e-ce3fe8956096
 ---
 
 워터마크 같은 시각 속성의 적용 여부를 "effect=RealPic이면 항상" 또는 "특정값(70/-50) 매칭" 같은 **추정**으로 구현하지 말 것. 작업지시자: "자의적 해석하면 안됩니다. 한컴의 hwp, hwpx에는 명확하게 적용 비트/속성이 존재합니다."

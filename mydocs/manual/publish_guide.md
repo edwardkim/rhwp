@@ -127,32 +127,27 @@ v{MAJOR}.{MINOR}.{PATCH}
 - @rhwp/editor 는 독자적으로 PATCH를 올릴 수 있다 (README 보강 등).
 - npm은 한 번 배포한 버전을 덮어쓸 수 없으므로, README만 수정해도 PATCH를 올려야 한다.
 
-### 브라우저 확장 버전 정책 (라이브러리와 이원화)
+### 브라우저 확장 버전 정책 (라이브러리와 통일)
 
-**rhwp-chrome / rhwp-edge / rhwp-firefox / rhwp-safari** 의 버전은 라이브러리(Cargo.toml) 와 **독립적으로 관리**한다.
+> **[2026-07-26 정책 전환, v0.8.0]** 종전 이원화(확장 0.2.x 독립 넘버링)를 종료하고,
+> **rhwp-chrome / rhwp-edge / rhwp-firefox / rhwp-safari 의 버전을 라이브러리
+> (Cargo.toml)와 동일하게 통일**한다. 확장만 재출시해야 하는 경우에는 PATCH 를 올리되
+> 다음 라이브러리 릴리즈에서 다시 동일 버전으로 수렴시킨다.
 
-| 영역 | 2026-05-26 현재 |
-|------|----------------|
-| 라이브러리 (Cargo.toml) | `0.7.13` |
-| rhwp-chrome / Edge | `0.2.3` |
-| rhwp-safari | `0.2.1` |
-| rhwp-firefox | `0.2.3` |
-
-#### 이원화 이유
-
-- **배포 주기 독립**: 라이브러리는 기능 추가·버그픽스 주기로, 확장은 스토어 심사 주기(Chrome/Edge/AMO) 로 별도 움직임
-- **스토어 요구사항**: 각 스토어가 manifest 의 `version` 을 자체 규칙으로 관리 요구 (예: 4자리, 재사용 불가)
-- **사용자 인지 버전**: 확장 사용자에게 보이는 버전은 "확장 버전"이고, 라이브러리 버전은 기술 내부 번호
+- 통일 이유: 사용자·스토어 심사자·이슈 리포트에서 확장 버전과 엔진 버전의 대응을
+  즉시 식별. 확장은 매 릴리즈 WASM 을 새로 번들링하므로 실질 내용도 라이브러리 버전을
+  따른다.
+- 스토어 제약(버전 재사용 불가)은 통일 정책과 충돌하지 않는다 — 단조 증가만 지키면 된다.
 
 #### 확장 버전 동기화 파일
 
 **rhwp-chrome/rhwp-edge** (한 코드베이스, 동일 버전):
 - `rhwp-chrome/manifest.json` — 스토어 심사 기준
 - `rhwp-chrome/package.json`
-- `rhwp-chrome/dev-tools-inject.js` 상수
-- `rhwp-chrome/content-script.js` 상수
 
-> manifest 하나만 바꾸고 다른 세 곳이 누락되면 UI 일관성 깨짐. v0.2.0 사이클에서 같은 실수가 발생해 hotfix v0.2.1 을 낸 이력 있음.
+> `dev-tools-inject.js`·`content-script.js` 는 `chrome.runtime.getManifest().version`
+> 런타임 참조로 리팩터링되어 별도 상수 갱신이 필요 없다 (v0.2.0 사이클의 4곳 수동
+> 동기화 사고 이력은 이 리팩터링으로 해소).
 
 **rhwp-firefox**:
 - `rhwp-firefox/manifest.json`
@@ -163,10 +158,10 @@ v{MAJOR}.{MINOR}.{PATCH}
 
 #### 확장 버전 올리기 기준
 
-- 스토어 심사 필요한 변경 → PATCH 이상
-- UI/동작 변경 없음 (dist 만 재빌드) → 버전 그대로 유지
-
-> 라이브러리 MINOR 업이 확장 버전 업을 강제하지는 않는다. 확장은 WASM을 새로 번들링해도 스토어 메타데이터 변경 필요 시에만 버전 업.
+- 라이브러리 릴리즈에 확장을 포함하면 라이브러리와 동일 버전으로 맞춘다.
+- 확장 단독 재출시(스토어 심사 필요한 확장 전용 변경)는 PATCH 를 올리고, 다음
+  라이브러리 릴리즈에서 동일 버전으로 재수렴한다.
+- UI/동작 변경 없음 (dist 만 재빌드) → 스토어 재제출이 없으면 버전 유지 가능.
 
 #### 확장 배포 빌드
 

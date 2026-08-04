@@ -13,7 +13,15 @@ import {
   MergeParagraphInHeaderFooterCommand,
   InsertTextInFootnoteCommand,
   insertTextWithMutationEffects,
+  deleteTextWithMutationEffects,
+  replaceBodyTextWithMutationEffects,
+  canUseDeferredCellTextReplace,
+  replaceCellTextWithMutationEffects,
+  canUseLocalBodyTextReplace,
+  cellParaIndexOf,
+  IMMEDIATE_TEXT_MUTATION_EFFECTS,
   NO_TEXT_MUTATION_EFFECTS,
+  TextMutationEffectAccumulator,
 } from './command';
 import type { TextMutationEffects } from './command';
 import type { DocumentPosition } from '@/core/types';
@@ -25,6 +33,19 @@ import {
   type NavigationAction,
   type NavigationKeyInput,
 } from './navigation-keymap';
+
+/**
+ * [#2548] WASM 삭제/조회 count 는 Rust `Paragraph::delete_text_at` 의 char(Unicode
+ * scalar) 단위다. JS `String.length`(UTF-16 code unit)를 넘기면 astral 문자(😀 등)에서
+ * 실제보다 많이 지워 인접 문자를 잃는다 — [#2337-review] 가 undo/HF/FN 경로에 적용한
+ * 계약을 IME 조합 경로에도 맞춘다.
+ *
+ * 주의: *커서 오프셋* 은 studio 의 UTF-16 관례를 유지한다(command.ts `charCount` 주석,
+ * tests/undo-delete-char-count.test.ts 참조). 여기서는 삭제/조회 count 에만 쓴다.
+ */
+function charCount(s: string): number {
+  return [...s].length;
+}
 
 const FOOTNOTE_DELETE_TITLE = '각주 삭제';
 const FOOTNOTE_DELETE_MESSAGE = '각주를 삭제하시겠습니까?';
@@ -86,6 +107,7 @@ function executeNavigationAction(this: any, action: NavigationAction, shiftKey: 
 }
 
 function processPendingNav(this: any, nav: NavigationKeyInput): void {
+  this.flushDeferredPaginationIfNeeded('before-navigation', false);
   const { code, shiftKey } = nav;
   const platform = detectPlatformKind();
   const action = getNavigationAction(nav, platform);
@@ -217,7 +239,7 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
       // 문단 시작에서 Backspace → 이전 문단과 병합
       const result = JSON.parse(this.wasm.mergeParagraphInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx));
       // Backspace 병합: 병합 전 커서는 (paraIdx, 0).
-      this.executeOperation({ kind: 'record', command: new MergeParagraphInHeaderFooterCommand(target, paraIdx, result.hfParaIndex, result.charOffset, paraIdx, 0) });
+      this.executeOperation({ kind: 'record', command: new MergeParagraphInHeaderFooterCommand(target, paraIdx, result.hfParaIndex, result.charOffset, paraIdx, 0, result.removedParaMeta) });
       this.cursor.setHfCursorPosition(result.hfParaIndex, result.charOffset);
       this.afterEdit();
     }
@@ -244,8 +266,12 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
     if (charOffset > 0) {
       const deletePos = { ...pos, charOffset: charOffset - 1 };
       this.executeOperation({ kind: 'command', command: new DeleteTextCommand(deletePos, 1, 'backward') });
-    } else if (pos.cellParaIndex! > 0) {
-      // 셀 문단 시작에서 Backspace → 이전 셀 문단과 병합
+    } else if (cellParaIndexOf(pos) > 0) {
+      // 셀 문단 시작에서 Backspace → 이전 셀 문단과 병합.
+      // [#2717] 중첩 셀에서 flat `pos.cellParaIndex` 는 hit-test 가 cellPath[0](최외곽)로 채운
+      // 바깥 셀의 문단 인덱스라, 그대로 쓰면 안쪽 셀 2번째 문단에서 병합이 통째로 누락되고
+      // (바깥이 0), 안쪽 첫 문단에서는 cellParaIndex:-1 경로로 병합이 실행된다(바깥이 ≥1).
+      // 아래 handleDelete(:307 useCellPath) 와 동일하게 안쪽 축으로 판정한다.
       this.executeOperation({ kind: 'command', command: new MergeParagraphInCellCommand(pos) });
     }
   } else {
@@ -279,7 +305,7 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
       } else if (paraIdx + 1 < info.paraCount) {
         // 문단 끝에서 Delete → 다음 문단(paraIdx+1)을 현재 문단으로 병합. 병합 전 커서는 (paraIdx, 끝).
         const result = JSON.parse(this.wasm.mergeParagraphInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx + 1));
-        this.executeOperation({ kind: 'record', command: new MergeParagraphInHeaderFooterCommand(target, paraIdx + 1, result.hfParaIndex, result.charOffset, result.hfParaIndex, result.charOffset) });
+        this.executeOperation({ kind: 'record', command: new MergeParagraphInHeaderFooterCommand(target, paraIdx + 1, result.hfParaIndex, result.charOffset, result.hfParaIndex, result.charOffset, result.removedParaMeta) });
         this.cursor.setHfCursorPosition(result.hfParaIndex, result.charOffset);
         this.afterEdit();
       }
@@ -358,10 +384,12 @@ export function onCompositionStart(this: any): void {
     this.textarea.value = '';
     this.isComposing = false;
     this.compositionAnchor = null;
+    this.clearCompositionAnchorRect();
     this.compositionLength = 0;
     return;
   }
 
+  this.captureCompositionAnchorRect(basePos);
   this.isComposing = true;
   if (this.cursor.isInHeaderFooter()) {
     // 머리말/꼬리말 모드에서는 hfCharOffset을 anchor의 charOffset으로 사용
@@ -381,6 +409,7 @@ export function onCompositionEnd(this: any): void {
 
   this.isComposing = false;
   this.compositionAnchor = null;
+  this.clearCompositionAnchorRect();
   this.compositionLength = 0;
   this.textarea.value = '';
   this.caret.hideComposition();
@@ -463,19 +492,10 @@ export function onInput(this: any, e?: InputEvent): void {
     }
     this.resetRawTextMutationEffects();
 
-    // 이전 조합 텍스트 삭제
-    if (this.compositionLength > 0) {
-      this.deleteTextAt(anchor, this.compositionLength);
-    }
-
-    // 현재 조합 텍스트 삽입
-    if (text) {
-      this.insertTextAtRaw(anchor, text);
-      this.compositionLength = text.length;
-      this._lastCompositionText = text; // 더블 자음 분리 방지용
-    } else {
-      this.compositionLength = 0;
-    }
+    this.replaceTextAtRaw(anchor, this.compositionLength, text);
+    // 다음 조합 업데이트의 삭제 count는 scalar 단위다.
+    this.compositionLength = charCount(text);
+    if (text) this._lastCompositionText = text;
 
     // cursor.moveTo() 내부의 exact lookup 전에 deferred mutation을 등록하고,
     // 실제 cell-flow 경계에서만 동기 flush한다.
@@ -528,18 +548,8 @@ export function onInput(this: any, e?: InputEvent): void {
     }
     this.resetRawTextMutationEffects();
 
-    // 이전 삽입 전부 삭제
-    if (this._iosLength > 0 && this._iosAnchor) {
-      this.deleteTextAt(this._iosAnchor, this._iosLength);
-    }
-
-    // 현재 div 전체 텍스트를 문서에 삽입 (빈 값이면 삭제만)
-    if (text) {
-      this.insertTextAtRaw(this._iosAnchor, text);
-      this._iosLength = text.length;
-    } else {
-      this._iosLength = 0;
-    }
+    this.replaceTextAtRaw(this._iosAnchor, this._iosLength, text);
+    this._iosLength = charCount(text);
 
     const boundaryHandled = this.consumeRawTextMutationBeforeCursor();
     this._iosRequiresFullRefresh = this._iosRequiresFullRefresh || boundaryHandled;
@@ -554,24 +564,19 @@ export function onInput(this: any, e?: InputEvent): void {
       this.cursor.moveTo({ ...this._iosAnchor, charOffset: newOffset });
     }
 
-    // 렌더링 디바운스: 빠른 연속 입력 중에는 렌더링 생략,
-    // 마지막 입력 후 100ms 뒤에 한 번만 렌더링
     clearTimeout(this._iosInputTimer);
     const iosAnchor = this._iosAnchor;
     const iosAfterPos = this.cursor.getPosition();
     const beforePageIndex = this._iosBeforePageIndex;
     const afterPageIndex = this.cursor.getRect()?.pageIndex;
-    this._iosInputTimer = setTimeout(() => {
-      const requiresFullRefresh = this._iosRequiresFullRefresh;
-      this._iosRequiresFullRefresh = false;
-      this.afterTextInputEdit(iosAnchor, iosAfterPos, {
-        insertedText: text,
-        beforePageIndex,
-        afterPageIndex,
-      }, requiresFullRefresh);
-      // 렌더링 후 div 포커스 복원 (afterEdit가 포커스를 뺏을 수 있음)
-      this.textarea.focus();
-    }, 100);
+    const requiresFullRefresh = this._iosRequiresFullRefresh;
+    this._iosRequiresFullRefresh = false;
+    this.afterTextInputEdit(iosAnchor, iosAfterPos, {
+      insertedText: text,
+      beforePageIndex,
+      afterPageIndex,
+    }, requiresFullRefresh);
+    this.textarea.focus();
     return;
   }
 
@@ -656,7 +661,7 @@ export function insertTextAtRaw(this: any, pos: DocumentPosition, text: string):
       this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
       this.cursor.hfParaIdx, pos.charOffset, text,
     );
-    return NO_TEXT_MUTATION_EFFECTS;
+    return IMMEDIATE_TEXT_MUTATION_EFFECTS;
   }
   // 각주 편집 모드
   if (this.cursor.isInFootnote()) {
@@ -664,13 +669,48 @@ export function insertTextAtRaw(this: any, pos: DocumentPosition, text: string):
       this.cursor.fnSectionIdx, this.cursor.fnParaIdx, this.cursor.fnControlIdx,
       this.cursor.fnInnerParaIdx, pos.charOffset, text,
     );
-    return NO_TEXT_MUTATION_EFFECTS;
+    return IMMEDIATE_TEXT_MUTATION_EFFECTS;
   }
   return insertTextWithMutationEffects(this.wasm, pos, text);
 }
 
-export function deleteTextAt(this: any, pos: DocumentPosition, count: number): void {
-  if (!this.canDeleteTextInFormMode?.(pos, count)) return;
+export function replaceTextAtRaw(
+  this: any,
+  pos: DocumentPosition,
+  deleteCount: number,
+  text: string,
+): TextMutationEffects {
+  if (!this.canInsertTextInFormMode?.(pos)) return NO_TEXT_MUTATION_EFFECTS;
+  if (deleteCount > 0 && !this.canDeleteTextInFormMode?.(pos, deleteCount)) {
+    return NO_TEXT_MUTATION_EFFECTS;
+  }
+  if (
+    !this.cursor.isInHeaderFooter() &&
+    !this.cursor.isInFootnote() &&
+    canUseDeferredCellTextReplace(pos, deleteCount, text)
+  ) {
+    return replaceCellTextWithMutationEffects(this.wasm, pos, deleteCount, text);
+  }
+  if (
+    !this.cursor.isInHeaderFooter() &&
+    !this.cursor.isInFootnote() &&
+    canUseLocalBodyTextReplace(pos, deleteCount, text)
+  ) {
+    return replaceBodyTextWithMutationEffects(this.wasm, pos, deleteCount, text);
+  }
+
+  const effects = new TextMutationEffectAccumulator();
+  if (deleteCount > 0) {
+    effects.add(deleteTextAt.call(this, pos, deleteCount));
+  }
+  if (text.length > 0) {
+    effects.add(insertTextAtRaw.call(this, pos, text));
+  }
+  return effects.consume();
+}
+
+export function deleteTextAt(this: any, pos: DocumentPosition, count: number): TextMutationEffects {
+  if (!this.canDeleteTextInFormMode?.(pos, count)) return NO_TEXT_MUTATION_EFFECTS;
   // 머리말/꼬리말 편집 모드
   if (this.cursor.isInHeaderFooter()) {
     const isHeader = this.cursor.headerFooterMode === 'header';
@@ -678,7 +718,7 @@ export function deleteTextAt(this: any, pos: DocumentPosition, count: number): v
       this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
       this.cursor.hfParaIdx, pos.charOffset, count,
     );
-    return;
+    return NO_TEXT_MUTATION_EFFECTS;
   }
   // 각주 편집 모드
   if (this.cursor.isInFootnote()) {
@@ -686,15 +726,7 @@ export function deleteTextAt(this: any, pos: DocumentPosition, count: number): v
       this.cursor.fnSectionIdx, this.cursor.fnParaIdx, this.cursor.fnControlIdx,
       this.cursor.fnInnerParaIdx, pos.charOffset, count,
     );
-    return;
+    return NO_TEXT_MUTATION_EFFECTS;
   }
-  if ((pos.cellPath?.length ?? 0) > 0 && pos.parentParaIndex !== undefined) {
-    this.wasm.deleteTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, JSON.stringify(pos.cellPath), pos.charOffset, count);
-  } else if (pos.parentParaIndex !== undefined) {
-    const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellIndex: cei, cellParaIndex: cpi, charOffset } = pos;
-    this.wasm.deleteTextInCell(sec, ppi!, ci!, cei!, cpi!, charOffset, count);
-  } else {
-    const { sectionIndex: sec, paragraphIndex: para, charOffset } = pos;
-    this.wasm.deleteText(sec, para, charOffset, count);
-  }
+  return deleteTextWithMutationEffects(this.wasm, pos, count);
 }

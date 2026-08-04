@@ -514,24 +514,10 @@ fn default_mono_family() -> &'static str {
 fn create_fontdb(options: &PdfExportOptions) -> usvg::fontdb::Database {
     let mut fontdb = usvg::fontdb::Database::new();
     fontdb.load_system_fonts();
-    for dir in &options.font_paths {
-        if dir.exists() {
-            fontdb.load_fonts_dir(dir);
-        } else {
-            eprintln!(
-                "WARN: PDF font path '{}' not found. 해당 경로의 폰트는 로드하지 않습니다.",
-                dir.display()
-            );
-        }
-    }
-    for dir in &["ttfs", "ttfs/windows", "ttfs/hwp"] {
-        if std::path::Path::new(dir).exists() {
-            fontdb.load_fonts_dir(dir);
-        }
-    }
-    if std::path::Path::new("/mnt/c/Windows/Fonts").exists() {
-        fontdb.load_fonts_dir("/mnt/c/Windows/Fonts");
-    }
+    // [#2864] 조달 순서는 renderer::font_paths 가 단일 정의한다.
+    // 종전의 ttfs/hwp·ttfs/windows(로컬 전용)와 /mnt/c/Windows/Fonts(WSL2 전용)는
+    // 제거했다 — 서버·컨테이너에서 무의미하고 /mnt/c 는 #2268 간헐 행의 원인이었다.
+    crate::renderer::font_paths::load_into_fontdb(&mut fontdb, &options.font_paths);
     fontdb.set_serif_family(options.fallback_serif.as_str());
     fontdb.set_sans_serif_family(options.fallback_sans.as_str());
     fontdb.set_monospace_family(options.fallback_mono.as_str());

@@ -845,6 +845,72 @@ fn nested_table_layout_does_not_overwrite_enclosing_rectangle() {
     assert!(!table.common.allow_overlap);
 }
 
+/// [#2723] 셀 안 글상자 중첩(위 테스트의 반대 방향). 종전엔 cells 가 열려 있다는
+/// 이유만으로 DRAWTEXT 문단이 셀로 흘러들어 글상자가 통째로 비었다.
+const CELL_TEXTBOX_HML: &[u8] = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><TABLE RowCount="1" ColCount="1">
+    <SHAPEOBJECT><SIZE Width="4000" Height="1200"/></SHAPEOBJECT>
+    <ROW><CELL ColAddr="0" RowAddr="0" Width="4000" Height="1200"><PARALIST><P><TEXT><RECTANGLE X0="0" X1="1000" X2="1000" X3="0" Y0="0" Y1="0" Y2="500" Y3="500">
+      <SHAPEOBJECT><SIZE Width="1000" Height="500"/></SHAPEOBJECT>
+      <DRAWINGOBJECT><SHAPECOMPONENT XPos="0" YPos="0" OriWidth="1000" OriHeight="500" CurWidth="1000" CurHeight="500"/>
+        <LINESHAPE Width="0" Style="Solid" EndCap="Flat" Alpha="0"/>
+        <DRAWTEXT><TEXTMARGIN Left="0" Right="0" Top="0" Bottom="0"/><PARALIST>
+          <P><TEXT><CHAR>BOXTEXT</CHAR></TEXT></P>
+        </PARALIST></DRAWTEXT>
+      </DRAWINGOBJECT>
+    </RECTANGLE></TEXT></P></PARALIST></CELL></ROW>
+  </TABLE></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
+
+fn first_cell_rectangle(document: &rhwp::model::document::Document) -> &RectangleShape {
+    let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
+        panic!("section paragraph should host the table");
+    };
+    assert_eq!(
+        table.cells[0].paragraphs.len(),
+        1,
+        "셀 문단은 사각형을 담은 1개뿐이어야 한다"
+    );
+    let Control::Shape(shape) = &table.cells[0].paragraphs[0].controls[0] else {
+        panic!("cell paragraph should host the rectangle");
+    };
+    let ShapeObject::Rectangle(rectangle) = shape.as_ref() else {
+        panic!("cell shape should be a rectangle");
+    };
+    rectangle
+}
+
+#[test]
+fn textbox_inside_table_cell_keeps_its_own_paragraphs() {
+    let parsed = parse_hml(CELL_TEXTBOX_HML).expect("textbox inside a cell should parse");
+    let text_box = first_cell_rectangle(&parsed.document)
+        .drawing
+        .text_box
+        .as_ref()
+        .expect("rectangle inside a cell should keep its text box");
+
+    assert_eq!(text_box.paragraphs.len(), 1);
+    assert_eq!(text_box.paragraphs[0].text, "BOXTEXT");
+}
+
+#[test]
+fn textbox_inside_table_cell_survives_hml_export_and_reopen() {
+    let core = DocumentCore::from_bytes(CELL_TEXTBOX_HML).expect("cell textbox should import");
+    let exported = core
+        .export_hml_native()
+        .expect("cell textbox should export");
+    let xml = std::str::from_utf8(&exported).expect("HML is UTF-8");
+    assert_eq!(xml.matches("<DRAWTEXT>").count(), 1);
+
+    let reopened = DocumentCore::from_bytes(&exported).expect("exported HML should reparse");
+    let text_box = first_cell_rectangle(reopened.document())
+        .drawing
+        .text_box
+        .as_ref()
+        .expect("reopened rectangle should keep its text box");
+
+    assert_eq!(text_box.paragraphs.len(), 1);
+    assert_eq!(text_box.paragraphs[0].text, "BOXTEXT");
+}
+
 #[test]
 fn missing_shape_current_size_materializes_from_original_size() {
     let xml = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><RECTANGLE>

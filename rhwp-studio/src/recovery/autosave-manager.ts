@@ -69,6 +69,8 @@ export class AutosaveManager {
   private lastSavedAt = 0;
   private saving = false;
   private pendingReason: string | null = null;
+  /** discard 세대 — 진행 중이던 saveDraft가 discard 이후 완료되며 draft를 부활시키는 경합 감지용 */
+  private discardGeneration = 0;
   private scheduleSettings: AutosaveScheduleSettings;
 
   constructor(options: AutosaveManagerOptions) {
@@ -186,6 +188,7 @@ export class AutosaveManager {
     try {
       const bytes = this.exportBytes();
       const savedAt = this.now();
+      const generationAtStart = this.discardGeneration;
       await this.store.saveDraft({
         id: current.draftId,
         fileName: current.fileName,
@@ -195,6 +198,11 @@ export class AutosaveManager {
         data: new Uint8Array(bytes),
         dirtyReason: reason,
       });
+      if (this.discardGeneration !== generationAtStart) {
+        // 저장 진행 중 discard가 끼어듦 — 방금 저장으로 부활한 draft를 재삭제한다
+        await this.deleteDraft(current.draftId, 'discarded-during-save');
+        return;
+      }
       this.lastSavedAt = savedAt;
       this.logger.debug?.(`[autosave] draft saved: ${current.fileName} (${bytes.byteLength} bytes)`);
       this.onStatus?.({ state: 'saved', reason, byteLength: bytes.byteLength });
@@ -212,6 +220,7 @@ export class AutosaveManager {
   }
 
   async discardCurrentDraft(reason = 'discard'): Promise<void> {
+    this.discardGeneration += 1;
     this.cancelTimers();
     this.pendingReason = null;
     this.lastSavedAt = 0;

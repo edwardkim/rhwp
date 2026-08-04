@@ -85,7 +85,7 @@ fn enter_in_table_cell_keeps_following_paragraphs_below_previous_paragraph() {
     let text = "1212121212121212121";
     core.insert_text_in_cell_native(0, parent, control, cell, 0, 0, text)
         .expect("셀 텍스트 입력");
-    core.split_paragraph_in_cell_native(0, parent, control, cell, 0, text.chars().count())
+    core.split_paragraph_in_cell_native(0, parent, control, cell, 0, text.chars().count(), None)
         .expect("셀 문단 분할");
 
     let paragraphs = cell_paragraphs(&core, parent, control, cell);
@@ -150,13 +150,13 @@ fn backspace_merge_then_enter_reuses_the_same_cell_paragraph_flow() {
 
     core.insert_text_in_cell_native(0, parent, control, cell, 0, 0, text)
         .expect("셀 텍스트 입력");
-    core.split_paragraph_in_cell_native(0, parent, control, cell, 0, text.chars().count())
+    core.split_paragraph_in_cell_native(0, parent, control, cell, 0, text.chars().count(), None)
         .expect("첫 Enter");
     core.merge_paragraph_in_cell_native(0, parent, control, cell, 1)
         .expect("Backspace 문단 병합");
     assert_eq!(cell_paragraphs(&core, parent, control, cell).len(), 2);
 
-    core.split_paragraph_in_cell_native(0, parent, control, cell, 0, text.chars().count())
+    core.split_paragraph_in_cell_native(0, parent, control, cell, 0, text.chars().count(), None)
         .expect("두 번째 Enter");
     let y = [
         cursor_y(&core, parent, control, cell, 0, text.chars().count()),
@@ -178,12 +178,28 @@ fn repeated_enter_in_table_cell_advances_to_the_new_third_paragraph() {
 
     core.insert_text_in_cell_native(0, parent, control, cell, 0, 0, first_text)
         .expect("첫 셀 텍스트 입력");
-    core.split_paragraph_in_cell_native(0, parent, control, cell, 0, first_text.chars().count())
-        .expect("첫 Enter");
+    core.split_paragraph_in_cell_native(
+        0,
+        parent,
+        control,
+        cell,
+        0,
+        first_text.chars().count(),
+        None,
+    )
+    .expect("첫 Enter");
     core.insert_text_in_cell_native(0, parent, control, cell, 1, 0, second_text)
         .expect("두 번째 셀 텍스트 입력");
-    core.split_paragraph_in_cell_native(0, parent, control, cell, 1, second_text.chars().count())
-        .expect("두 번째 Enter");
+    core.split_paragraph_in_cell_native(
+        0,
+        parent,
+        control,
+        cell,
+        1,
+        second_text.chars().count(),
+        None,
+    )
+    .expect("두 번째 Enter");
 
     let paragraphs = cell_paragraphs(&core, parent, control, cell);
     assert_eq!(

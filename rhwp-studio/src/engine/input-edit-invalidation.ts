@@ -27,9 +27,8 @@ function sameCellPath(a: CellPathEntry[] | undefined, b: CellPathEntry[] | undef
 /**
  * 페이지 단위 canvas 재렌더만으로 처리할 수 있는 보수적인 텍스트 편집인지 판정한다.
  *
- * 현재는 표 셀 내부의 단일 insert/delete 텍스트 편집만 허용한다. 본문 문단 편집,
- * 문단 병합/분할, 붙여넣기, 객체/표 구조 변경은 page flow 변동 가능성이 크므로
- * 기존 full document refresh 경로를 유지한다.
+ * 같은 본문 문단 또는 같은 표 셀 내부의 짧은 insert/delete만 허용한다.
+ * 실제 flow 변경은 mutation effect가 별도로 차단한다.
  */
 export function isPageLocalTextEditCommand(
   commandType: string,
@@ -61,8 +60,13 @@ export function isPageLocalTextEditCommand(
       return false;
     }
   }
-  if (beforePos.parentParaIndex === undefined || afterPos.parentParaIndex === undefined) return false;
+  const beforeInCell = beforePos.parentParaIndex !== undefined;
+  const afterInCell = afterPos.parentParaIndex !== undefined;
+  if (beforeInCell !== afterInCell) return false;
   if (beforePos.sectionIndex !== afterPos.sectionIndex) return false;
+  if (!beforeInCell) {
+    return beforePos.paragraphIndex === afterPos.paragraphIndex;
+  }
   if (beforePos.parentParaIndex !== afterPos.parentParaIndex) return false;
   if (beforePos.controlIndex !== afterPos.controlIndex) return false;
   if (beforePos.cellIndex !== afterPos.cellIndex) return false;

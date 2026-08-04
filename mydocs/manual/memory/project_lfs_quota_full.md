@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: project_lfs_quota_full
 description: pdf-large/ LFS 파일이 git status에 M으로 뜨는 건 LFS 10GB 쿼터 초과로 객체 미수신 — 건드리지 말 것
 metadata: 
   node_type: memory
   type: project
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
 rhwp의 Git LFS 사용량이 10GB 쿼터에 도달했다. 그 결과 `pdf-large/**/*.pdf`

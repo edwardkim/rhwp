@@ -2,7 +2,7 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: Discord 커뮤니티 채널
 description: rhwp 프로젝트가 소개된 Discord Rust 커뮤니티 채널
 type: reference

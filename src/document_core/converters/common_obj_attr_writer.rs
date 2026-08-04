@@ -66,6 +66,7 @@ pub fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
 ///
 /// 비트 레이아웃 (parser/control/shape.rs 의 역방향):
 /// - bit 0: treat_as_char
+/// - bit 2: affect_line_spacing (줄 간격에 영향 — [#2784], 스펙 표 70)
 /// - bit 3-4: vert_rel_to (Paper=0, Page=1, Para=2)
 /// - bit 5-7: vert_align
 /// - bit 8-9: horz_rel_to
@@ -83,6 +84,10 @@ pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
     let mut a: u32 = 0;
     if common.treat_as_char {
         a |= 0x01;
+    }
+    // [#2784] affectLSpacing — 개체 공통 속성 attr bit 2 (스펙 표 70).
+    if common.affect_line_spacing {
+        a |= 1 << 2;
     }
     a |= (vert_rel_to_to_bits(common.vert_rel_to) & 0x03) << 3;
     a |= (vert_align_to_bits(common.vert_align) & 0x07) << 5;
@@ -214,6 +219,7 @@ mod tests {
             treat_as_char: false,
             flow_with_text: false,
             allow_overlap: false,
+            affect_line_spacing: false,
             hwp5_gen_shape_attr_bit26: false,
             size_protect: false,
             hwp5_gen_shape_attr_bit28: false,
@@ -227,7 +233,9 @@ mod tests {
             height_criterion: SizeCriterion::Absolute,
             description: String::new(),
             raw_extra: Vec::new(),
+            locked: false,
             numbering_type: crate::model::shape::ObjectNumberingType::None,
+            drop_cap_style: crate::model::shape::DropCapStyle::None,
         }
     }
 
@@ -300,6 +308,25 @@ mod tests {
         assert!(parsed.size_protect);
         assert!(parsed.hwp5_gen_shape_attr_bit26);
         assert!(parsed.hwp5_gen_shape_attr_bit28);
+    }
+
+    #[test]
+    fn roundtrip_affect_line_spacing_bit2() {
+        // [#2784] affectLSpacing 은 개체 공통 속성 attr bit 2 (스펙 표 70) 에 위치.
+        // 한컴 원본 issue1949.hwp 의 bit 2 set 개체(표 1 + 수식 5)가 짝 HWPX 의
+        // affectLSpacing="1" 개체와 1:1 일치함으로 실파일 검증됨.
+        let mut original = make_sample();
+        original.affect_line_spacing = true;
+        let bytes = serialize_common_obj_attr(&original);
+        let attr = u32::from_le_bytes(bytes[0..4].try_into().unwrap());
+        assert_ne!(
+            attr & (1 << 2),
+            0,
+            "affect_line_spacing 은 bit 2 에 팩돼야 함"
+        );
+        assert_eq!(attr & (1 << 1), 0, "bit 1 은 예약이라 세팅되면 안 됨");
+        let parsed = parse_common_obj_attr(&bytes);
+        assert!(parsed.affect_line_spacing);
     }
 
     #[test]

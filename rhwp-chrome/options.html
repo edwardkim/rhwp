@@ -12,7 +12,9 @@
     .option-text { display: flex; flex-direction: column; gap: 3px; }
     .option-desc { color: #6b7280; font-size: 12px; line-height: 1.45; }
     .saved { color: #16a34a; font-size: 13px; opacity: 0; transition: opacity 0.3s; }
+    .saved.error { color: #dc2626; }
     .saved.show { opacity: 1; }
+    input:disabled + label, input:disabled + .option-text { cursor: wait; opacity: 0.6; }
     hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
     .info { font-size: 13px; color: #6b7280; }
   </style>
@@ -21,29 +23,29 @@
   <h1 id="title"></h1>
 
   <div class="option">
-    <input type="checkbox" id="autoOpen" checked>
+    <input type="checkbox" id="autoOpen" disabled>
     <label for="autoOpen" id="labelAutoOpen"></label>
   </div>
 
   <div class="option">
-    <input type="checkbox" id="showBadges" checked>
+    <input type="checkbox" id="showBadges" disabled>
     <label for="showBadges" id="labelShowBadges"></label>
   </div>
 
   <div class="option">
-    <input type="checkbox" id="hoverPreview" checked>
+    <input type="checkbox" id="hoverPreview" disabled>
     <label for="hoverPreview" id="labelHoverPreview"></label>
   </div>
 
   <div class="option with-desc">
-    <input type="checkbox" id="disableExternalWebFonts">
+    <input type="checkbox" id="disableExternalWebFonts" disabled>
     <div class="option-text">
       <label for="disableExternalWebFonts" id="labelDisableExternalWebFonts"></label>
       <span class="option-desc" id="descDisableExternalWebFonts"></span>
     </div>
   </div>
 
-  <span class="saved" id="saved"></span>
+  <span class="saved" id="saved" role="status" aria-live="polite"></span>
 
   <hr>
   <p class="info">
@@ -51,6 +53,6 @@
     <span id="privacy"></span>
   </p>
 
-  <script src="options.js"></script>
+  <script type="module" src="options.js"></script>
 </body>
 </html>

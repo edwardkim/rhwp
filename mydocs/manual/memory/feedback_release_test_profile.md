@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: feedback-release-test-profile
 description: push 전 통합 테스트는 release-test 프로필 사용 권고 — Linux(WSL2)에서도 dev 프로필 대비 ~2.4배 빠름
 metadata: 
   node_type: memory
   type: feedback
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
 작업지시자 권고 (2026-06-12, #1388 마무리 중): push/머지 전 통합 테스트 검증을

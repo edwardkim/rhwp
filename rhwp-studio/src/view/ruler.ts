@@ -124,20 +124,12 @@ export class Ruler {
     this.drawVertical();
   }
 
-  /**
-   * 페이지 좌측 화면 좌표를 계산한다 (scroll-container 뷰포트 기준).
-   * scroll-content는 margin: 0 auto로 가운데 정렬되므로,
-   * 컨테이너가 scroll-content보다 넓으면 auto-margin 오프셋을 반영한다.
-   */
-  private getPageScreenLeft(pageInfo: { width: number }, zoom: number, scrollX: number): number {
-    const scrollContentWidth = this.virtualScroll.getMaxPageWidth() + 40;
-    const containerWidth = this.container.clientWidth;
-    // margin: 0 auto에 의한 오프셋
-    const contentOffsetX = Math.max(0, (containerWidth - scrollContentWidth) / 2);
-    const pageDisplayWidth = pageInfo.width * zoom;
-    // scroll-content 내에서 페이지 가운데 정렬 (left: 50%; transform: translateX(-50%))
-    const pageLeftInContent = (scrollContentWidth - pageDisplayWidth) / 2;
-    return contentOffsetX + pageLeftInContent - scrollX;
+  /** 페이지 좌측 화면 좌표를 계산한다 (scroll-container 뷰포트 기준). */
+  private getPageScreenLeft(scrollX: number): number {
+    return this.virtualScroll.getPageLeftResolved(
+      0,
+      this.virtualScroll.getTotalWidth(),
+    ) - scrollX;
   }
 
   /** 커서가 위치한 문단 속성이 변경되었을 때 호출 */
@@ -217,7 +209,7 @@ export class Ruler {
     const pageInfo = this.wasm.getPageInfo(0);
 
     // 페이지 화면 좌표 (편집 용지와 정확히 일치)
-    const pageScreenLeft = this.getPageScreenLeft(pageInfo, zoom, scrollX);
+    const pageScreenLeft = this.getPageScreenLeft(scrollX);
     const pageDisplayWidth = pageInfo.width * zoom;
 
     // 본문 영역 배경

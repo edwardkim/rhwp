@@ -2,7 +2,7 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 ---
 
 # Claude memory dump 색인
@@ -18,6 +18,7 @@ last_verified: 2026-07-17
 - [작업 스타일](user_work_style.md) — 하이퍼-워터폴, 시각 판정 게이트, 광범위 sweep 정량화, 외부 PR 옵션 분류
 
 ## feedback — 워크플로우/프로세스
+- [비기능 DX 투자 지침](feedback_nonfunctional_dx_investment.md) — 기능=사용자, 비기능 견고함=위대한 기여자. 반복 마찰은 구조화로
 - [작업 시간 제한 금지](feedback_no_time_limits.md) — 클로드가 임의로 작업 종료 제안 금지
 - [타스크 프로세스 반드시 준수](feedback_process_must_follow.md) — 이슈→브랜치→할일→계획서→구현 순서 절대 생략 금지
 - [Hyper-Waterfall 워크플로우 필수 준수](hyper_waterfall_workflow.md) — 수행계획서→구현계획서→단계별 보고, 승인 없이 코딩 금지
@@ -30,6 +31,7 @@ last_verified: 2026-07-17
 - [마일스톤 표기 규칙](feedback_milestone_notation.md) — v1.0.0→M100, v0.5.x→M05x
 - [보고서는 타스크 브랜치에서 커밋](feedback_commit_reports_in_branch.md) — merge 전 git status 필수
 - [오늘할일 문서 갱신 필수](feedback_update_daily_orders.md) — 세션 종료 전 커밋
+- [stash pop을 `|| true`로 감싸지 말 것](feedback_stash_pop_no_fallback.md) — 낡은 stash가 트리 오염, 상주 stash 3개 존재
 
 ## feedback — 문서/명명 규칙
 - [작업 문서 네이밍 규칙](feedback_working_doc_naming.md) — task_m100_{번호}_stage{단계}.md 패턴 필수
@@ -61,10 +63,12 @@ last_verified: 2026-07-17
 - [PDF 정답지 등급](feedback_pdf_not_authoritative.md) — 한컴 2020/2022 편집기 PDF만 정답지, 뷰어/외부/2010은 미달
 - [한컴 호환은 케이스별 명시 가드](feedback_hancom_compat_specific_over_general.md) — 일반화보다 구조 가드가 안전
 - [자기 검증 ≠ 한컴 호환](feedback_self_verification_not_hancom.md) — 한컴2020 수동 검증 게이트 필수
+- [환각이 테스트로 제도화되는 사슬](feedback_hallucination_locked_by_tests.md) — 글맵시 오분류(#3363): 참조명→외부파일 오인→워크어라운드→스냅샷 테스트가 고정. 테스트는 과거 믿음일 수 있음, 권위 3중 교차검증이 해독제
 - [렌더링 의미는 추정 금지 — 권위 자료로 확정](feedback_no_inference_authoritative_spec.md) — 한컴 스펙+대비 샘플+편집기 UI 교차검증 (#1156)
+- [한컴 placeholder 인쇄 억제](hancom_placeholder_print_suppress.md) — 편집기 표시/인쇄 미출력 분기, 시각 판정 오인 방지 (2026-07-12)
 - [v0.7.6 회귀의 origin](feedback_v076_regression_origin.md) — 컨트리뷰터 PDF 정답지 사용 → 회귀. 시각 검증 게이트
 - [시각 회귀 비중 증가](feedback_visual_regression_grows.md) — 페이지 수 비교만으로 검출 불가, 시각 판정이 핵심
-- [시각 검증 선택 적용 (OVL-step)](feedback_visual_verification_selective.md) — 기계적 전수 금지, PR 목적 기준 선택, manual/verification/visual_verification_governance.md 준수
+- [시각 검증 선택 적용 (OVL-step)](feedback_visual_verification_selective.md) — 기계적 전수 금지, PR 목적 기준 선택, manual/visual_verification_governance.md 준수
 
 ## feedback — 코드/렌더링 관련
 - [렌더링 보정 하드코딩 금지](feedback_no_hardcoded_render_tuning.md) — 샘플명·페이지·임의계수 분기 금지, 근거는 문서 속성/스펙 필드만 (백업에서 복원)
@@ -78,12 +82,15 @@ last_verified: 2026-07-17
 - [릴리즈 전 main 동기화 점검 필수](feedback_release_sync_check.md) — git pull --ff-only origin main
 - [릴리즈 작업 시 매뉴얼 정독 필수](feedback_release_manual_required.md) — 부분 검색 금지, 체크리스트 1:1 대조
 - [AMO 제출 4대 함정](feedback_amo_submission_gotchas.md) — Firefox 확장 제출 전 체크리스트
+- [테스트 용어 — 스모크/회귀 구분](feedback_test_terminology.md) — 경량 크래시 선행 vs 전체 diff 정밀 비교, 설명·문서에 구분 사용
 - [CI 진행중 수치 보고 금지](feedback_no_metrics_from_inprogress_ci.md) — in_progress run의 step 시간으로 성능 보고 금지 (#1192)
+- [문서 전용 변경은 CI 상태 체크 예외](feedback_docs_only_ci_exempt.md) — devel push의 "Build & Test is expected"는 문서만 바뀌었으면 무시
 
 ## project
-- [거버넌스 부트로더화](project_governance_bootloader.md) — 2026-07-17 이후 CLAUDE.md=38줄 부트로더, 절차는 canonical 문서 단일 기록
+- [거버넌스 부트로더화](project_governance_bootloader.md) — 2026-07-17 이후 CLAUDE.md=38줄 부트로더, 절차는 canonical 문서 단일 기록 (docs_and_git_workflow/pr_review_workflow)
 - [0.8.0 분기점 — HWPX 저장 마일스톤](project_v080_hwpx_save_milestone.md) — 다음 릴리즈 0.7→0.8 MINOR, studio pkg 재빌드 필수
-- [#1582 리팩토링 umbrella](project_1582_refactor_umbrella.md) — 0.8/v1.0 구조 정리 기준 이슈, 1단계 SourceProvenance+LayoutCompatibilityProfile, freeze 선행
+- [v0.8.0 release main-devel 분기 해소](project_v080_release_main_divergence.md) — PR #3328 head=release/v0.8.0-main-sync, 반드시 merge commit(squash 금지), 트리=devel 동일 증명
+- [#1582 리팩토링 umbrella](project_1582_refactor_umbrella.md) — CLOSED(2026-07-19). Stage 1 #2403도 완결(PR #2408): provenance/profile 도입, 소스분기 176→87, 신규 분기는 profile 질의 규약
 - [리팩토링 거버넌스 2원칙](project_refactor_governance.md) — SOLID + 복잡도, 계획·평가·PR 검토의 기준 축
 - [브랜치 정책 + iOS 분기](project_branch_policy.md) — main/devel/local-devel + ios/devel(맥북 전용)
 - [외부 컨트리뷰터 명단](project_external_contributors.md) — 누적 32명(2026-07-04), 첫 PR/재기여 식별, merged 집계만으론 판단 금지
@@ -91,12 +98,18 @@ last_verified: 2026-07-17
 - [LFS 쿼터 초과 — pdf-large M 오진 금지](project_lfs_quota_full.md) — 10GB 초과로 LFS 객체 미수신, 건드리지 말 것
 - [확장 vite publicDir:false + CSP 인라인 금지](project_extension_publicdir_false.md) — public/ 자산 build.mjs 개별 copy 필수, 인라인 script 차단
 - [알한글 iOS 프로젝트](project_alhangeul_ios.md) — iPad HWP 학습 도구, 맥북 전용
+- [10k 서베이 기준선 = r23 폰트-클린](project_survey_baseline_r23.md) — RHWP_FONT_PATH 필수, r22는 폰트 오염이라 회귀 판정 금지
+- [클론 트래픽 해석 규칙](project_clone_traffic_interpretation.md) — uc는 기관 NAT 뒤 1로 집계, 2026-07 폭증 사례 + crates.io 완화책
+- [GitHub 기여 지표 해석](project_github_metrics_interpretation.md) — 도넛은 비율, 커밋 다산 워크플로에서 리뷰 비중 정체 정상, GraphQL 확인법
 - [안드로이드 IME 미구현](project_android_ime_pending.md) — 기기 미보유
 - [rhwp 정체성 — DTP 엔진 + 워드프로세서](project_dtp_identity.md) — 아래아한글 = QuarkXPress 대체 의도
+- [#2279 캠페인 상태](project_2279_campaign_status.md) — 92셋 100% 완결(2026-07-18), umbrella 존치, #2373 revert 결정 대기
 - [수식 컨트롤은 항상 TAC](project_equation_always_tac.md) — paragraph_layout 인라인 배치 핵심 경로
 - [한컴 LINE_SEG 자동 재계산](project_hancom_lineseg_behavior.md) — LINE_SEG 비어있어도 한컴이 재계산
 - [HWPX→HWP 어댑터의 한계](project_hwpx_to_hwp_adapter_limit.md) — 다음 시도는 "완전 변환기" 필요
 - [HWPX serializer fidelity 한계](project_hwpx_serializer_limits.md) — run 평탄화·셀/글상자 컨트롤 소실·합성 lineseg, 후속 이슈 대상 (#1315)
+- [self-hosted 러너 실험 종료](project_multirunner_fleet.md) — 2026-07-25 종료, 전 워크플로 호스티드 복원. rhwp_bin 규약 유지, 재실험 시 report 함정 카탈로그 필독
+- [wasm 빌드는 Docker 표준](project_wasm_docker_build.md) — docker compose --env-file .env.docker run --rm wasm, .env는 로컬 메모 파일(파싱 함정), wasm export PR은 재빌드 선행
 - [output 폴더 서브폴더 구조](project_output_folder_structure.md) — re/svg/debug 용도별 분리
 - [HWPX switch/case와 줄간격 유형](hwpx_switch_case.md) — HwpUnitChar case=글자에따라, default=고정값
 
@@ -105,3 +118,4 @@ last_verified: 2026-07-17
 - [로컬 폰트 경로](reference_font_path.md) — TTF 폰트 프로젝트 외부 분리 (Linux/macOS 경로별)
 - [hwp2hwpx Java 라이브러리](reference_hwp2hwpx_library.md) — HWP↔HWPX 변환 매핑 권위 자료
 - [Discord 커뮤니티](reference_discord.md) — Rust Discord 소개 (2026-04-04)
+- [Docker WSL 복구 절차](reference_docker_wsl_recovery.md) — stale mount 2형 판별 + taskkill 복구, wsl --shutdown 금지, GitHub 이슈 등록 안 함

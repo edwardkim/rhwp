@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   HWP_DOCUMENT_ACCEPT,
   canUseOpenFilePicker,
+  captureDroppedFileHandle,
   isSupportedDocumentFileName,
   pickOpenFileHandle,
   readFileFromHandle,
@@ -105,6 +106,69 @@ test('readFileFromHandle은 handle 파일 내용을 Uint8Array로 읽는다', as
 
   assert.equal(result.name, 'opened.hwp');
   assert.deepEqual(Array.from(result.bytes), [97, 98, 99]);
+});
+
+test('드롭 파일 handle은 확인 대화상자 await 전에 같은 tick에서 capture한다', async () => {
+  const file = new File(['dropped'], 'dropped.hwp', {
+    type: 'application/x-hwp',
+    lastModified: 123,
+  });
+  const handle = createHandle('dropped.hwp');
+  let captureCalls = 0;
+  const pending = captureDroppedFileHandle([{
+    kind: 'file',
+    getAsFile: () => file,
+    getAsFileSystemHandle: () => {
+      captureCalls += 1;
+      return Promise.resolve(handle);
+    },
+  }], file);
+
+  assert.equal(captureCalls, 1, 'drop handler의 같은 tick에서 handle Promise를 시작해야 한다');
+  assert.equal(await pending, handle);
+});
+
+test('드롭 handle API 미지원·오류·directory는 기존 null fallback을 쓴다', async () => {
+  const file = new File(['dropped'], 'dropped.hwp', { type: 'application/x-hwp' });
+  const unsupported = await captureDroppedFileHandle([{
+    kind: 'file',
+    getAsFile: () => file,
+  }], file);
+  assert.equal(unsupported, null);
+
+  const rejected = await captureDroppedFileHandle([{
+    kind: 'file',
+    getAsFile: () => file,
+    getAsFileSystemHandle: async () => {
+      throw new DOMException('unavailable', 'SecurityError');
+    },
+  }], file);
+  assert.equal(rejected, null);
+
+  const directory = await captureDroppedFileHandle([{
+    kind: 'file',
+    getAsFile: () => file,
+    getAsFileSystemHandle: async () => ({ kind: 'directory', name: 'folder' }),
+  }], file);
+  assert.equal(directory, null);
+});
+
+test('선택한 파일과 일치하지 않는 드롭 item은 handle을 capture하지 않는다', async () => {
+  const selected = new File(['selected'], 'selected.hwp', { type: 'application/x-hwp' });
+  const other = new File(['other'], 'other.hwp', { type: 'application/x-hwp' });
+  let captureCalls = 0;
+
+  const result = await captureDroppedFileHandle([{
+    kind: 'file',
+    getAsFile: () => other,
+    getAsFileSystemHandle: async () => {
+      captureCalls += 1;
+      return createHandle('other.hwp');
+    },
+  }], selected);
+
+  assert.equal(result, null);
+  assert.equal(captureCalls, 0);
 });
 
 test('saveDocumentToFileSystem은 current handle이 있으면 picker 없이 같은 파일에 저장한다', async () => {

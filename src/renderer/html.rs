@@ -126,7 +126,7 @@ impl HtmlRenderer {
                 return;
             }
             RenderNodeType::TextRun(run) => {
-                self.draw_text(&run.text, node.bbox.x, node.bbox.y, &run.style);
+                self.draw_text(run.display_or_text(), node.bbox.x, node.bbox.y, &run.style);
                 if self.show_paragraph_marks || self.show_control_codes {
                     let font_size = if run.style.font_size > 0.0 {
                         run.style.font_size
@@ -292,7 +292,16 @@ impl Renderer for HtmlRenderer {
             "sans-serif".to_string()
         } else {
             let fallback = super::generic_fallback(&style.font_family);
-            format!("'{}', {}", escape_html(&style.font_family), fallback)
+            // [#3314] 접미사 face 미설치 시 base family 가 generic 보다 먼저 구제.
+            match super::base_family_without_weight_suffix(&style.font_family) {
+                Some(base) => format!(
+                    "'{}', '{}', {}",
+                    escape_html(&style.font_family),
+                    escape_html(&base),
+                    fallback
+                ),
+                None => format!("'{}', {}", escape_html(&style.font_family), fallback),
+            }
         };
 
         // 위첨자/아래첨자: y좌표·font_size 직접 조정 (absolute 위치이므로 vertical-align 불가)

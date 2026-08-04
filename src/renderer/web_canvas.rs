@@ -36,6 +36,28 @@ use crate::paint::{
 
 const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
 
+/// Canvas 폰트의 실측 폭을 레이아웃 advance에 맞출 때 적용할 배율을 계산한다.
+///
+/// 음수 자간은 다음 글자의 시작 위치만 당기는 속성이다. 이를 글자 자체의 폭 제한으로
+/// 사용하면 한글 glyph가 가로로 눌리므로, 음수 자간에서는 폭 맞춤을 적용하지 않는다.
+fn canvas_cluster_fit_scale(
+    cluster_advance: f64,
+    visual_width: f64,
+    letter_spacing: f64,
+    pin_ascii_advance: bool,
+) -> Option<f64> {
+    if cluster_advance <= 0.0 || visual_width <= 0.0 || letter_spacing < 0.0 {
+        return None;
+    }
+    if pin_ascii_advance {
+        return Some((cluster_advance / visual_width).clamp(0.1, 2.0));
+    }
+    if visual_width > cluster_advance + 0.25 {
+        return Some((cluster_advance / visual_width).clamp(0.1, 1.0));
+    }
+    None
+}
+
 /// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장 (Task #528).
 fn expand_pua_old_hangul_canvas(text: &str) -> String {
     if !text.chars().any(|ch| map_pua_old_hangul(ch).is_some()) {
@@ -707,12 +729,7 @@ impl WebCanvasRenderer {
             } else {
                 12.0
             };
-            let font_family = if run.style.font_family.is_empty() {
-                "sans-serif".to_string()
-            } else {
-                let fallback = super::generic_fallback(&run.style.font_family);
-                format!("\"{}\" , {}", run.style.font_family, fallback)
-            };
+            let font_family = super::canvas_font_family_chain(&run.style.font_family);
             let font = format!(
                 "{}{}{:.3}px {}",
                 font_style_str, font_weight, font_size, font_family
@@ -724,10 +741,15 @@ impl WebCanvasRenderer {
             let _ = self.ctx.rotate(run.rotation * std::f64::consts::PI / 180.0);
             self.ctx.set_text_align("center");
             self.ctx.set_text_baseline("middle");
-            let _ = self.ctx.fill_text(&run.text, 0.0, 0.0);
+            let _ = self.ctx.fill_text(run.display_or_text(), 0.0, 0.0);
             self.ctx.restore();
         } else {
-            self.draw_text(&run.text, bbox.x, bbox.y + run.baseline, &run.style);
+            self.draw_text(
+                run.display_or_text(),
+                bbox.x,
+                bbox.y + run.baseline,
+                &run.style,
+            );
         }
         if self.show_paragraph_marks || self.show_control_codes {
             let is_marker = !matches!(
@@ -2146,12 +2168,7 @@ impl Renderer for WebCanvasRenderer {
             (base_font_size, y)
         };
 
-        let font_family = if style.font_family.is_empty() {
-            "sans-serif".to_string()
-        } else {
-            let fallback = super::generic_fallback(&style.font_family);
-            format!("\"{}\", {}", style.font_family, fallback)
-        };
+        let font_family = super::canvas_font_family_chain(&style.font_family);
 
         let font = format!(
             "{}{}{:.3}px {}",
@@ -2337,16 +2354,12 @@ impl Renderer for WebCanvasRenderer {
                             .ok()
                             .map(|metrics| metrics.width())
                             .and_then(|actual_w| {
-                                let visual_w = actual_w * ratio;
-                                if visual_w <= 0.0 {
-                                    None
-                                } else if pin_ascii_advance {
-                                    Some((cluster_advance / visual_w).clamp(0.1, 2.0))
-                                } else if visual_w > cluster_advance + 0.25 {
-                                    Some((cluster_advance / visual_w).clamp(0.1, 1.0))
-                                } else {
-                                    None
-                                }
+                                canvas_cluster_fit_scale(
+                                    cluster_advance,
+                                    actual_w * ratio,
+                                    style.letter_spacing,
+                                    pin_ascii_advance,
+                                )
                             })
                     } else {
                         None
@@ -2985,12 +2998,7 @@ impl WebCanvasRenderer {
             glyph_color.clone()
         };
 
-        let font_family = if style.font_family.is_empty() {
-            "sans-serif".to_string()
-        } else {
-            let fallback = super::generic_fallback(&style.font_family);
-            format!("\"{}\" , {}", style.font_family, fallback)
-        };
+        let font_family = super::canvas_font_family_chain(&style.font_family);
         let font_weight = if style.bold { "bold " } else { "" };
         let font_style_str = if style.italic { "italic " } else { "" };
         let font = format!(
@@ -3151,12 +3159,7 @@ impl WebCanvasRenderer {
             glyph_color.clone()
         };
 
-        let font_family = if style.font_family.is_empty() {
-            "sans-serif".to_string()
-        } else {
-            let fallback = super::generic_fallback(&style.font_family);
-            format!("\"{}\" , {}", style.font_family, fallback)
-        };
+        let font_family = super::canvas_font_family_chain(&style.font_family);
 
         let cx = bbox_x + box_size / 2.0;
         let cy = bbox_y + bbox_h - box_size / 2.0;
@@ -3348,7 +3351,7 @@ impl WebCanvasRenderer {
     ) {
         let mode = fill_mode.unwrap_or(ImageFillMode::FitToSize);
         match mode {
-            ImageFillMode::FitToSize | ImageFillMode::None => {
+            ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None => {
                 // crop이 있으면 source rect 기반 drawImage 사용
                 if let Some(crop_rect) = crop {
                     if let Some((img_w, img_h)) = parse_image_dimensions_canvas(data) {
@@ -3659,5 +3662,18 @@ mod tests {
         assert_eq!(color_to_css(0x00FF0000), "#0000ff"); // 파랑
         assert_eq!(color_to_css(0x00FFFFFF), "#ffffff"); // 흰색
         assert_eq!(color_to_css(0x00000000), "#000000"); // 검정
+    }
+
+    #[test]
+    fn issue_2809_negative_letter_spacing_does_not_compress_glyph() {
+        assert_eq!(canvas_cluster_fit_scale(7.5, 15.0, -7.5, false), None);
+        assert_eq!(canvas_cluster_fit_scale(7.5, 15.0, -7.5, true), None);
+    }
+
+    #[test]
+    fn non_negative_letter_spacing_keeps_existing_font_fit_policy() {
+        assert_eq!(canvas_cluster_fit_scale(7.5, 15.0, 0.0, false), Some(0.5));
+        assert_eq!(canvas_cluster_fit_scale(7.5, 15.0, 0.0, true), Some(0.5));
+        assert_eq!(canvas_cluster_fit_scale(15.0, 14.9, 0.0, false), None);
     }
 }

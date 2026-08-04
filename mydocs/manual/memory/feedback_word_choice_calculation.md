@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 단어 선택 — "산수" 대신 "계산"
 description: 기술 문서 / 코드 주석 / 보고서에서 "산수" 표현 금지. "계산" 사용
 type: feedback
-originSessionId: 263bacf0-af73-4169-8b90-2cc13f939a31
 ---
 기술 문서, 코드 주석, 보고서, 위키 등 작업지시자 대상 작성물에서 **"산수"** 표현은 사용하지 않는다. **"계산"** 으로 표현한다.
 

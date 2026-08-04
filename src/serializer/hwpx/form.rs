@@ -83,10 +83,11 @@ pub fn write_form<W: Write>(w: &mut Writer<W>, form: &FormObject) -> Result<(), 
     let fore = color_to_hex(form.fore_color);
     let back = color_to_hex(form.back_color);
     let enabled = if form.enabled { "1" } else { "0" };
-    let checked = if form.value == 1 {
-        "CHECKED"
-    } else {
-        "UNCHECKED"
+    // value: UNCHECKED/CHECKED/INDETERMINATE 3상태 (parser 의 역방향).
+    let checked = match form.value {
+        1 => "CHECKED",
+        2 => "INDETERMINATE",
+        _ => "UNCHECKED",
     };
 
     // 공통 속성 (모든 폼 타입). 순서는 한컴 산출물을 따른다.
@@ -109,7 +110,10 @@ pub fn write_form<W: Write>(w: &mut Writer<W>, form: &FormObject) -> Result<(), 
         }
         FormType::Edit => {
             attrs.push(("multiLine", prop(form, "MultiLine", "0")));
-            attrs.push(("passwordChar", prop(form, "PasswordChar", "")));
+            // [#3001] OWPML 스키마 EditType.passwordChar 의 기본값은 "*"(빈 문자열
+            // 아님, ParaList schema.xml:2632). 원본에 속성이 없던(=파서가 properties
+            // 에 못 채운) 신규/누락 케이스에서 ""로 떨어지면 마스킹 문자가 사라진다.
+            attrs.push(("passwordChar", prop(form, "PasswordChar", "*")));
             attrs.push(("maxLength", prop(form, "MaxLength", "2147483647")));
             attrs.push(("scrollBars", prop(form, "ScrollBars", "NONE")));
             attrs.push((
@@ -241,6 +245,21 @@ mod tests {
     }
 
     #[test]
+    fn checkbox_emits_indeterminate_value() {
+        // value=2 (파서가 hp:checkBtn@value="INDETERMINATE" 를 읽었을 때) 는
+        // "UNCHECKED" 로 뭉개지지 않고 그대로 "INDETERMINATE" 로 출력돼야 한다.
+        let form = FormObject {
+            form_type: FormType::CheckBox,
+            name: "CheckBox".to_string(),
+            value: 2,
+            enabled: true,
+            ..Default::default()
+        };
+        let xml = to_string(|w| write_form(w, &form));
+        assert!(xml.contains(r#"value="INDETERMINATE""#), "{xml}");
+    }
+
+    #[test]
     fn checkbox_emits_checked_value_and_caption() {
         let form = FormObject {
             form_type: FormType::CheckBox,
@@ -296,6 +315,21 @@ mod tests {
         let xml = to_string(|w| write_form(w, &form));
         assert!(xml.starts_with("<hp:edit"), "{xml}");
         assert!(xml.contains("<hp:text>입력값</hp:text>"), "{xml}");
+    }
+
+    #[test]
+    fn task3001_edit_password_char_defaults_to_asterisk() {
+        // [#3001] properties 에 "PasswordChar" 가 없으면(원본 XML 에 속성 자체가
+        // 없던 경우) OWPML 스키마 기본값 "*" 로 떨어져야 한다(schema.xml:2632).
+        // 종전엔 "" 로 떨어져 마스킹 문자가 소실됐다.
+        let form = FormObject {
+            form_type: FormType::Edit,
+            name: "Edit".to_string(),
+            enabled: true,
+            ..Default::default()
+        };
+        let xml = to_string(|w| write_form(w, &form));
+        assert!(xml.contains(r#"passwordChar="*""#), "{xml}");
     }
 
     #[test]

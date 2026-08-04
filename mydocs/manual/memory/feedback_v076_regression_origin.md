@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: v0.7.6 페이지 레이아웃 회귀의 origin — 컨트리뷰터 환경 PDF 정답지 사용
 description: v0.7.6 사이클의 외부 PR 머지 후 발생한 페이지네이션 회귀 다수의 진짜 origin 가설. 컨트리뷰터들이 자기 환경 PDF (한글뷰어 + macOS 인쇄 등) 를 정답지로 사용해서 작업지시자 환경 (한컴 2010/2022) 과 다른 페이지 분할에 맞춤
 type: feedback
-originSessionId: 263bacf0-af73-4169-8b90-2cc13f939a31
 ---
 **v0.7.6 사이클의 페이지 레이아웃 회귀 다수의 진짜 origin 가설**: 외부 컨트리뷰터들이 자기 환경의 PDF 를 정답지로 사용해 PR 검증 → 작업지시자 환경 (한컴 2010 + 2022 편집기) 과 다른 페이지 분할에 맞춰 머지 → 작업지시자 환경에서 회귀로 보임.
 

@@ -344,6 +344,18 @@ export class PageSetupDialog extends ModalDialog {
     inp.className = 'dialog-input';
     inp.step = '0.1';
     inp.min = '0';
+    // HTML min 속성은 .value 를 자동으로 clamp 하지 않는다(브라우저는 checkValidity()에서만
+    // 검사) — 음수·비정상 값이 그대로 parseFloat 되어 wasm.setPageDef 로 전달되는 것을 막는다.
+    // (#2838 번호매기기 시작 번호 clamp 누락과 동일 패턴)
+    inp.addEventListener('change', () => {
+      if (inp.value === '') return;
+      const min = inp.min !== '' ? parseFloat(inp.min) : -Infinity;
+      const max = inp.max !== '' ? parseFloat(inp.max) : Infinity;
+      const v = parseFloat(inp.value);
+      if (!Number.isFinite(v)) return;
+      const clamped = Math.min(max, Math.max(min, v));
+      if (clamped !== v) inp.value = String(clamped);
+    });
     return inp;
   }
 

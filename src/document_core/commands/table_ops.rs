@@ -54,6 +54,15 @@ impl DocumentCore {
         let row_count = table.row_count;
         let col_count = table.col_count;
 
+        // Table::insert_row()는 새 셀을 push()한 뒤 전체를
+        // sort_by_key(row, col)로 재정렬한다. local_resize_cell_widths/heights는
+        // 이 재정렬 이전의 cell 인덱스를 그대로 물고 있는 Vec<(usize, u32)>라서,
+        // 삽입 이후에는 엉뚱한(또는 범위를 벗어난) 셀을 가리키는 stale 참조가 된다.
+        // delete_table_row_native()(#2843/#2849), merge_table_cells_native()(#2832)와
+        // 동일하게, 행 삽입도 셀 인덱스 배치를 바꾸므로 함께 비워야 한다.
+        table.local_resize_cell_widths.clear();
+        table.local_resize_cell_heights.clear();
+
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -86,6 +95,12 @@ impl DocumentCore {
         let row_count = table.row_count;
         let col_count = table.col_count;
 
+        // insert_table_row_native()와 동일한 사유(위 주석 참조): Table::insert_column()도
+        // 새 셀을 push()한 뒤 sort_by_key(row, col)로 재정렬하므로 local_resize_cell_widths/
+        // heights의 인덱스 참조가 stale 해진다. 함께 비운다.
+        table.local_resize_cell_widths.clear();
+        table.local_resize_cell_heights.clear();
+
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -117,6 +132,15 @@ impl DocumentCore {
         let row_count = table.row_count;
         let col_count = table.col_count;
 
+        // Table::delete_row()는 삭제 행의 셀을 retain()으로 제거하고 남은 셀을
+        // sort_by_key(row, col)로 재정렬한다. local_resize_cell_widths/heights는
+        // 이 재정렬 이전의 cell 인덱스를 그대로 물고 있는 Vec<(usize, u32)>라서,
+        // 삭제 이후에는 엉뚱한(또는 범위를 벗어난) 셀을 가리키는 stale 참조가 된다.
+        // merge_table_cells_native()(#2832)와 동일하게, 행 삭제도 셀 인덱스 배치를
+        // 바꾸므로 함께 비워야 한다.
+        table.local_resize_cell_widths.clear();
+        table.local_resize_cell_heights.clear();
+
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -147,6 +171,14 @@ impl DocumentCore {
         table.dirty = true;
         let row_count = table.row_count;
         let col_count = table.col_count;
+
+        // Table::delete_column()은 삭제된 열의 셀들을 cells에서 제거하므로 그 뒤 셀들의
+        // 인덱스가 앞으로 당겨진다(shift). insert_table_row_native()/insert_table_column_native()
+        // (#2853/#2859), delete_table_row_native()(#2843/#2849), merge_table_cells_native()(#2832)와
+        // 동일하게, local_resize_cell_widths/heights는 삭제 이전 cell_idx를 그대로 물고 있는
+        // Vec<(usize, u32)>라서 stale 참조가 되므로 함께 비운다.
+        table.local_resize_cell_widths.clear();
+        table.local_resize_cell_heights.clear();
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -181,6 +213,15 @@ impl DocumentCore {
         table.dirty = true;
         let cell_count = table.cells.len();
 
+        // Table::merge_cells()는 비주 셀을 retain()으로 제거하고 남은 셀을
+        // sort_by_key(row, col)로 재정렬한다. local_resize_cell_widths/heights는
+        // 이 재정렬 이전의 cell 인덱스를 그대로 물고 있는 Vec<(usize, u32)>라서,
+        // 병합 이후에는 엉뚱한(또는 범위를 벗어난) 셀을 가리키는 stale 참조가 된다.
+        // transpose_unmerged_table_in_place()가 레이아웃 전면 재구성 시 이 두 필드를
+        // 비우는 것과 동일하게, 병합도 셀 인덱스 배치를 바꾸므로 함께 비워야 한다.
+        table.local_resize_cell_widths.clear();
+        table.local_resize_cell_heights.clear();
+
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -210,6 +251,12 @@ impl DocumentCore {
             .map_err(|e| HwpError::RenderError(e))?;
         table.dirty = true;
         let cell_count = table.cells.len();
+
+        // Table::split_cell()은 대상 셀을 나눈 새 셀들을 push()한 뒤 재정렬하므로
+        // insert_table_row_native()/insert_table_column_native()(#2853/#2859)와 동일한 이유로
+        // local_resize_cell_widths/heights의 cell_idx가 stale해진다. 함께 비운다.
+        table.local_resize_cell_widths.clear();
+        table.local_resize_cell_heights.clear();
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -245,6 +292,11 @@ impl DocumentCore {
             .map_err(|e| HwpError::RenderError(e))?;
         table.dirty = true;
         let cell_count = table.cells.len();
+
+        // split_table_cell_native()와 동일한 사유(위 주석 참조): split_cell_into()도 새 셀들을
+        // push() 후 재정렬하므로 local_resize_cell_widths/heights가 stale해진다.
+        table.local_resize_cell_widths.clear();
+        table.local_resize_cell_heights.clear();
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -289,6 +341,12 @@ impl DocumentCore {
             .map_err(|e| HwpError::RenderError(e))?;
         table.dirty = true;
         let cell_count = table.cells.len();
+
+        // split_table_cell_native()/split_table_cell_into_native()와 동일한 이유(위 주석 참조):
+        // split_cells_in_range()도 내부적으로 split_cell_into()를 반복 호출해 cells 배열의
+        // 인덱스 배치를 바꾸므로 local_resize_cell_widths/heights가 stale해진다. 함께 비운다.
+        table.local_resize_cell_widths.clear();
+        table.local_resize_cell_heights.clear();
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -1335,6 +1393,13 @@ impl DocumentCore {
                     Some(id) => id,
                     None => {
                         self.document.doc_info.border_fills.push(new_bf);
+                        // [#2555] DocInfo 패스스루 무효화. 이 함수는 섹션 스트림만
+                        // 지우는데 섹션과 DocInfo 는 별개 계층이라, 이게 없으면
+                        // serialize_doc_info 가 원본 스트림을 그대로 반환해
+                        // (serializer/doc_info.rs:23-33) 새 BORDER_FILL 이 저장되지 않고
+                        // 본문의 border_fill_id 만 범위를 벗어난다. 형제 호출부
+                        // (object_ops/table.rs:451, html_table_import.rs:769)는 모두 무효화한다.
+                        self.document.doc_info.raw_stream_dirty = true;
                         self.document.doc_info.border_fills.len() as u16
                     }
                 }
@@ -3124,5 +3189,53 @@ mod neighbor_border_raw_data_tests {
             "이웃 셀 기준 좌측 테두리가 갱신돼야 함"
         );
         assert!(matches!(bf.borders[0].line_type, BorderLineType::Double));
+    }
+
+    /// [#2555] 새 BorderFill push 시 DocInfo 패스스루를 무효화해야 한다.
+    ///
+    /// 이 함수는 섹션 스트림만 지우는데 섹션과 DocInfo 는 별개 계층이다.
+    /// 무효화가 없으면 serialize_doc_info 가 원본 스트림을 그대로 반환해
+    /// (serializer/doc_info.rs:23-33) 새 BORDER_FILL 이 저장되지 않고, 본문의
+    /// border_fill_id 만 범위를 벗어나 dangling 이 된다.
+    #[test]
+    fn neighbor_border_push_marks_doc_info_dirty() {
+        let mut core = core_with_two_cell_row();
+        // 파싱된 문서 상태 재현: 원본 DocInfo 스트림이 있고 아직 깨끗하다.
+        core.document.doc_info.raw_stream = Some(vec![0xCC; 64]);
+        core.document.doc_info.raw_stream_dirty = false;
+        let before_len = core.document.doc_info.border_fills.len();
+
+        let new_border = BorderLine {
+            line_type: BorderLineType::Double,
+            width: 3,
+            color: 0x00FF0000,
+        };
+        core.update_neighbor_borders(
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            &[
+                BorderLine::default(),
+                new_border,
+                BorderLine::default(),
+                BorderLine::default(),
+            ],
+        );
+
+        assert_eq!(
+            core.document.doc_info.border_fills.len(),
+            before_len + 1,
+            "새 조합이므로 BorderFill 이 push 돼야 함(전제 확인)"
+        );
+        assert!(
+            core.document.doc_info.raw_stream_dirty,
+            "DocInfo 패스스루가 무효화되지 않으면 push 한 BORDER_FILL 이 저장되지 않아 \
+             본문의 border_fill_id 가 dangling 이 된다"
+        );
     }
 }
