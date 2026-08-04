@@ -1,0 +1,167 @@
+{
+  "presets": {
+    "minimal": {
+      "description": "Minimal document for basic parsing tests",
+      "num_paragraphs": 1,
+      "num_tables": 0,
+      "num_images": 0,
+      "table_rows": 2,
+      "table_cols": 2,
+      "text_length": 20,
+      "use_styles": false,
+      "use_colors": false,
+      "include_complex_shapes": false
+    },
+    "simple": {
+      "description": "Simple document with basic text and one table",
+      "num_paragraphs": 5,
+      "num_tables": 1,
+      "num_images": 0,
+      "table_rows": 3,
+      "table_cols": 3,
+      "text_length": 50,
+      "use_styles": false,
+      "use_colors": false,
+      "include_complex_shapes": false
+    },
+    "formatted": {
+      "description": "Document with formatting and multiple tables",
+      "num_paragraphs": 10,
+      "num_tables": 2,
+      "num_images": 0,
+      "table_rows": 5,
+      "table_cols": 4,
+      "text_length": 100,
+      "use_styles": true,
+      "use_colors": true,
+      "include_complex_shapes": false
+    },
+    "multimedia": {
+      "description": "Document with images, tables, and rich formatting",
+      "num_paragraphs": 15,
+      "num_tables": 3,
+      "num_images": 2,
+      "table_rows": 6,
+      "table_cols": 5,
+      "text_length": 120,
+      "use_styles": true,
+      "use_colors": true,
+      "include_complex_shapes": false
+    },
+    "complex": {
+      "description": "Complex document for stress testing",
+      "num_paragraphs": 30,
+      "num_tables": 8,
+      "num_images": 5,
+      "table_rows": 15,
+      "table_cols": 8,
+      "text_length": 200,
+      "use_styles": true,
+      "use_colors": true,
+      "include_complex_shapes": true
+    },
+    "stress_test": {
+      "description": "Extreme document for robustness testing",
+      "num_paragraphs": 100,
+      "num_tables": 20,
+      "num_images": 10,
+      "table_rows": 50,
+      "table_cols": 10,
+      "text_length": 500,
+      "use_styles": true,
+      "use_colors": true,
+      "include_complex_shapes": true
+    }
+  },
+  "test_scenarios": {
+    "parsing_validation": {
+      "description": "Test basic parsing capabilities",
+      "documents": [
+        {"preset": "minimal", "count": 5},
+        {"preset": "simple", "count": 5}
+      ]
+    },
+    "table_handling": {
+      "description": "Test table parsing and rendering",
+      "documents": [
+        {
+          "custom": {
+            "num_paragraphs": 1,
+            "num_tables": 10,
+            "num_images": 0,
+            "table_rows": 20,
+            "table_cols": 10,
+            "text_length": 30,
+            "use_styles": false,
+            "use_colors": false,
+            "include_complex_shapes": false
+          },
+          "count": 3
+        }
+      ]
+    },
+    "image_handling": {
+      "description": "Test image parsing and embedding",
+      "documents": [
+        {
+          "custom": {
+            "num_paragraphs": 5,
+            "num_tables": 1,
+            "num_images": 15,
+            "table_rows": 3,
+            "table_cols": 3,
+            "text_length": 50,
+            "use_styles": true,
+            "use_colors": true,
+            "include_complex_shapes": false
+          },
+          "count": 3
+        }
+      ]
+    },
+    "style_handling": {
+      "description": "Test text styling and formatting",
+      "documents": [
+        {"preset": "formatted", "count": 5},
+        {"preset": "multimedia", "count": 5}
+      ]
+    },
+    "roundtrip": {
+      "description": "Test read-write roundtrip fidelity",
+      "documents": [
+        {"preset": "simple", "count": 10},
+        {"preset": "formatted", "count": 10},
+        {"preset": "multimedia", "count": 5}
+      ]
+    },
+    "performance": {
+      "description": "Performance and memory stress tests",
+      "documents": [
+        {"preset": "stress_test", "count": 3}
+      ]
+    },
+    "regression": {
+      "description": "General regression testing suite",
+      "documents": [
+        {"preset": "minimal", "count": 2},
+        {"preset": "simple", "count": 3},
+        {"preset": "formatted", "count": 3},
+        {"preset": "multimedia", "count": 2}
+      ]
+    }
+  },
+  "complexity_levels": {
+    "low": {
+      "description": "Simple documents for quick testing",
+      "estimated_parse_time_ms": 10
+    },
+    "medium": {
+      "description": "Moderate complexity for general testing",
+      "estimated_parse_time_ms": 50
+    },
+    "high": {
+      "description": "Complex documents for thorough testing",
+      "estimated_parse_time_ms": 200
+    }
+  }
+}
