@@ -12628,6 +12628,12 @@ impl TypesetEngine {
         // [#3837] 저장 vpos 가 되돌아가면 한글은 거기서 쪽을 끊었다.
         let stored_vpos_rewind_break = st.col_count == 1
             && !st.current_items.is_empty()
+            // 같은 문단이 이미 이 쪽에 놓였으면 걸지 않는다 — 되돌아감은 문단 시작 신호라
+            // 이미 시작한 뒤 걸면 문단을 쪼갠다.
+            && !st
+                .current_items
+                .iter()
+                .any(|it| page_item_para_index(it) == Some(para_idx))
             && st.current_height >= available * STORED_VPOS_REWIND_MIN_FILL
             && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para);
         if forced_page_break_line.is_none()
@@ -14565,8 +14571,16 @@ impl TypesetEngine {
             });
         // [#3837] 저장 vpos 되돌아감은 한글이 이 표를 다음 쪽 맨 위에 뒀다는 신호다
         // (21967401 응시원서: 직전 항목 vpos=41645 인데 이 표는 1000).
+        // 이 문단이 이 쪽에서 이미 시작했으면 걸지 않는다 — 되돌아감은 "이 문단이 새 쪽에서
+        // 시작한다"는 뜻이라 이미 시작한 뒤에 걸면 문단을 쪼갠다(156483831: 그림은 4쪽,
+        // 같은 문단의 표만 5쪽으로 밀려 4->5쪽).
+        let same_para_already_placed = st
+            .current_items
+            .iter()
+            .any(|it| page_item_para_index(it) == Some(para_idx));
         let stored_vpos_rewind_break = st.col_count == 1
             && !st.current_items.is_empty()
+            && !same_para_already_placed
             && st.current_height >= available * STORED_VPOS_REWIND_MIN_FILL
             && stored_vpos_rewinds(prev_stored_vpos, para);
         if (st.current_height + table_height > available
