@@ -113,14 +113,30 @@ jobs:
                 continue;
               }
 
-              await github.request(
-                'POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel',
-                {
+              try {
+                await github.request(
+                  'POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel',
+                  {
+                    owner,
+                    repo,
+                    run_id: run.id,
+                  },
+                );
+              } catch (error) {
+                // 목록을 읽은 뒤 API를 호출하는 사이 대상이 스스로 끝나면 GitHub가 409을
+                // 돌려준다. 다시 조회해 completed임을 확인한 경우만 정상 경과로 취급한다.
+                if (error.status !== 409) throw error;
+                const { data: currentRun } = await github.rest.actions.getWorkflowRun({
                   owner,
                   repo,
                   run_id: run.id,
-                },
-              );
+                });
+                if (currentRun.status !== 'completed') throw error;
+                core.info(
+                  `Skip stale run ${run.id} (${run.name}): already completed (${currentRun.conclusion ?? 'unknown'}).`,
+                );
+                continue;
+              }
               cancelled += 1;
               core.info(`Force-cancelled stale run ${run.id} (${run.name}, ${run.head_sha}).`);
             }
