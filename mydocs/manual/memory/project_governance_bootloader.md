@@ -2,7 +2,11 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
+name: project-governance-bootloader
+description: 2026-07-17 PR #2331 이후 CLAUDE.md는 38줄 부트로더 — 절차의 권위는 canonical 문서에 단일 기록
+metadata:
+  type: project
 ---
 
 PR #2331(#2072, jangster77)로 저장소 문서 거버넌스가 바뀌었다 (2026-07-17):

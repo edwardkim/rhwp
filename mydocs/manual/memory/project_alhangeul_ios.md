@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 알한글 iOS 프로젝트
 description: iPad HWP 학습 도구 — 맥북에서만 진행, 리눅스 환경과 무관
 type: project
-originSessionId: 1f035a49-cf55-4427-a5b6-ba6a493aa832
 ---
 **프로젝트**: 알한글 — iPad HWP 학습 도구 (GitHub Projects #2)
 **브랜치**: `ios/devel`

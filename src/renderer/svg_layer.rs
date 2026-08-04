@@ -31,6 +31,10 @@ impl SvgLayerRenderer {
         &mut self.renderer
     }
 
+    pub fn inner(&self) -> &SvgRenderer {
+        &self.renderer
+    }
+
     fn build_render_tree(&mut self, tree: &PageLayerTree) -> PageRenderTree {
         let mut render_tree = PageRenderTree::new(0, tree.page_width, tree.page_height);
         render_tree.root.bbox = tree.root.bounds;
@@ -291,6 +295,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 15.0,
                 field_marker: Default::default(),
+                display_text: None,
             }),
             BoundingBox::new(20.0, 20.0, 60.0, 20.0),
         ));
@@ -415,6 +420,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 16.0,
                 field_marker: Default::default(),
+                display_text: None,
             }),
             BoundingBox::new(10.0, 15.0, 40.0, 20.0),
         ));

@@ -9,8 +9,12 @@
 //! - `c:lineChart` (꺾은선) — 누적/백프로 누적(`c:grouping`) + 표식(plot 레벨
 //!   `c:marker`) 포함 (C1d #2129)
 //! - `c:pieChart` (원형)
-//! - `c:bar3DChart`·`c:pie3DChart`·`c:ofPieChart` — **2D 근사 라우팅** (C1a #1453):
-//!   3D막대→평면 막대, 3D원형/ofPie→단일 원형. 입체감·보조플롯은 미표현(후속 C2).
+//! - `c:bar3DChart` — **시어 투영 3D 렌더** (C2b #2278 v2): `c:view3D` 카메라
+//!   파싱 + 압출 3면(top/side/front) + 방(뒷벽·바닥·격자). 두께는 gapWidth 규칙.
+//! - `c:pie3DChart` — **타원+측벽 3D 렌더** (C2b #2278 Stage 2): 타원비
+//!   `sin(rotX)·cos(perspective/2°)`(정답지 실측 캘리브레이션) + 하반부 측벽.
+//! - `c:ofPieChart` — **보조플롯 렌더** (C2b #2278 Stage 3): 주 원(결합 슬라이스
+//!   포함) + 보조 원(pie)/누적 막대(bar) + `c:serLines` 연결선.
 //! - `c:scatterChart` (분산형) — `c:xVal`/`c:yVal` (x,y) 쌍, 2개 수치축,
 //!   `c:scatterStyle`로 표식/직선/곡선 구분 (C1b #1660).
 //! - `c:stockChart` (주식형) — `c:hiLowLines` 고저선 + `c:upDownBars` 캔들,
@@ -19,7 +23,7 @@
 //! - **이중 Y축** (primary + secondary) — 시리즈별 축 그룹 매핑
 //!
 //! ## 범위 외
-//! - 3D 입체감·ofPie 보조플롯(C2b #2278), 영역형, 추세선, 애니메이션, 세밀 스타일
+//! - 영역형, 추세선, 애니메이션, 세밀 스타일
 
 pub mod parser;
 pub mod renderer;
@@ -57,9 +61,9 @@ pub struct OoxmlChart {
     pub scatter_style: ScatterStyle,
     /// 범례 위치 (`c:legendPos`). 한컴 코퍼스는 전 샘플 `val="r"`. (C1c #1882 갭③)
     pub legend_pos: LegendPos,
-    /// 3D plot(`bar3DChart`/`pie3DChart`) 여부. 렌더는 2D 근사(C1a)지만 한컴 3D
-    /// 엔진의 축 정책이 2D와 달라(묶은 0~5 무헤드룸/누적세로 과헤드룸) 축 계산에
-    /// 사용. 입체감 렌더는 후속(C2b #2278). (C1c #1882 시각판정 반영)
+    /// 3D plot(`bar3DChart`/`pie3DChart`/`line3DChart`) 여부. 축 정책(묶은 0~5
+    /// 무헤드룸/누적세로 +1 step — C1c #1882) + 막대 투영 렌더 분기(C2b #2278 v2)에
+    /// 사용. 카메라 파라미터는 `view3d` 필드.
     pub is_3d: bool,
     /// stock plot의 `<c:hiLowLines/>` 존재 — 고저선. HLC/OHLC 공통. (C2a #2277)
     pub has_hi_low_lines: bool,
@@ -68,6 +72,112 @@ pub struct OoxmlChart {
     /// `<c:upDownBars><c:gapWidth val>` — 캔들 폭 = cat_span/(1+gap/100).
     /// 미지정 시 렌더러가 150(정답지 실측) 폴백. (C2a #2277)
     pub up_down_gap_width: Option<f64>,
+    /// `c:view3D` 3D 카메라. 3D plot(`bar3DChart`/`pie3DChart`/`line3DChart`)에서
+    /// Some — view3D 요소가 plotArea보다 앞에 오므로 view3D arm에서 초기화하고
+    /// plot arm은 get_or_insert 폴백만 수행. (C2b #2278 v2)
+    pub view3d: Option<View3D>,
+    /// bar/bar3D plot의 `c:gapWidth` — 3D 두께 규칙 slot/(n_eff+gap/100)용.
+    /// stock의 `up_down_gap_width`(upDownBars 내부 동명 요소)와 별도 필드로
+    /// 상호 오염 방지. 미지정 시 렌더러가 150 폴백. (C2b #2278 v2)
+    pub bar_gap_width: Option<f64>,
+    /// bar3D plot의 `c:gapDepth` — 방(씬) 깊이 = 막대 깊이×(1+gap/100).
+    /// 미지정 시 렌더러가 150 폴백. (C2b #2278 v2)
+    pub gap_depth: Option<f64>,
+    /// ofPie(원형대원형/원형대가로막대형) 보조플롯 정보. chart_type은 Pie를 유지하고
+    /// (#1453 라우팅 앵커) 이 필드 유무로 render_of_pie를 분기. (C2b #2278)
+    pub of_pie: Option<OfPieInfo>,
+}
+
+/// `c:ofPieChart` 보조플롯 파라미터 (C2b #2278)
+#[derive(Debug, Clone, PartialEq)]
+pub struct OfPieInfo {
+    /// `c:ofPieType val` — pie=원형대원형(보조 원), bar=원형대가로막대형(누적 막대)
+    pub of_pie_type: OfPieType,
+    /// `c:splitType val` — splitPos 해석 방식. 현재 count 해석은 pos(및 미지정
+    /// auto: 종전 코퍼스 정책 보존)만 적용하고, val/percent/cust 는 splitPos 를
+    /// 무시해 기본 정책(마지막 2개)으로 안전 폴백한다. (PR #2500 후속)
+    pub split_type: OfPieSplitType,
+    /// `c:splitPos val` — 보조 플롯으로 보낼 마지막 카테고리 수. 코퍼스 부재 →
+    /// None → 기본 2. (스키마상 double — f64 파싱, 사용 시 반올림·클램프)
+    pub split_pos: Option<f64>,
+    /// `c:secondPieSize val` (% — 스키마 기본 75) — 보조 플롯 크기 / 주 원 대비
+    pub second_pie_size: f64,
+    /// `c:serLines` 존재 — 결합 슬라이스→보조 플롯 연결선 2줄
+    pub has_ser_lines: bool,
+}
+
+impl Default for OfPieInfo {
+    fn default() -> Self {
+        Self {
+            of_pie_type: OfPieType::Pie,
+            split_type: OfPieSplitType::Auto,
+            split_pos: None,
+            second_pie_size: 75.0,
+            has_ser_lines: false,
+        }
+    }
+}
+
+/// `c:splitType` — ofPie 보조 플롯 항목 선택 방식 (PR #2500 후속)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum OfPieSplitType {
+    /// 미지정(스키마 기본 auto) — 앱 재량. splitPos 가 오면 종전 count 정책 유지.
+    #[default]
+    Auto,
+    /// splitPos = 마지막 N개 카테고리 수 (현재 구현 대상)
+    Pos,
+    /// splitPos = 값 임계 — 미구현, splitPos 무시 폴백
+    Val,
+    /// splitPos = 백분율 임계 — 미구현, splitPos 무시 폴백
+    Percent,
+    /// custPlt 점별 지정 — 미구현, splitPos 무시 폴백
+    Cust,
+}
+
+/// ofPie 보조 플롯 종류 (C2b #2278)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum OfPieType {
+    #[default]
+    Pie,
+    Bar,
+}
+
+/// `c:view3D` 3D 카메라 파라미터 (C2b #2278 v2).
+///
+/// 투영 알고리즘 자체는 ECMA-376 비정의(구현 재량) — 본 렌더러는 rAngAx=1을
+/// 시어(2.5차원: 앞면 직립, 깊이만 사선 — 한컴 차트 스펙 rev1.2 표 100
+/// ProjectionType=1과 동계), rAngAx=0을 회전+원근으로 해석한다.
+/// 기본값 15/20/30/true는 XSD 기본이 아니라 Office(MS-OE376) 관례 — 코퍼스
+/// 막대 4종 실측값과 일치.
+#[derive(Debug, Clone, PartialEq)]
+pub struct View3D {
+    /// `c:rotX` — 상승(elevation) 각도, 도 단위 (-90..90). 기본 15
+    pub rot_x: f64,
+    /// `c:rotY` — 회전(rotation) 각도, 도 단위 (0..360). 기본 20
+    pub rot_y: f64,
+    /// `c:perspective` (0..240). 기본 30 — rAngAx=1(시어)에서는 미적용
+    pub perspective: f64,
+    /// `c:rAngAx` — 직각 축(right-angle axes). 기본 true
+    pub r_ang_ax: bool,
+    /// `c:hPercent` — 높이 비율. 기본 100 (현 단계 기록만, 미적용)
+    pub h_percent: f64,
+    /// `c:depthPercent` — 막대 깊이/폭 비율(%). 기본 100.
+    /// 주의: ECMA 정의("차트 폭 대비 %")와 다른 **의도적 편차** — 막대 스케일
+    /// 비례 유지 목적의 캘리브레이션 결정. (C2b #2278 v2)
+    pub depth_percent: f64,
+}
+
+impl Default for View3D {
+    fn default() -> Self {
+        Self {
+            rot_x: 15.0,
+            rot_y: 20.0,
+            perspective: 30.0,
+            r_ang_ax: true,
+            h_percent: 100.0,
+            depth_percent: 100.0,
+        }
+    }
 }
 
 /// 계열 내부 `<c:marker>` 상태 — stock 종가 마커 판별용. plot 레벨
@@ -193,6 +303,10 @@ pub struct OoxmlSeries {
     pub format_code: Option<String>,
     /// 계열 내부 `<c:marker>` 상태 — stock 종가 마커 판별용. (C2a #2277)
     pub marker_symbol: SeriesMarker,
+    /// 계열 레벨 `<c:explosion val>` (%) — 쪼개진원형: 전 슬라이스를 중심각
+    /// 방향으로 반지름×값/100 만큼 이동(코퍼스 25). dPt 단위 explosion은
+    /// 코퍼스 부재로 범위 외. (C2b #2278 Stage 3 v3)
+    pub explosion: Option<f64>,
 }
 
 impl OoxmlChart {

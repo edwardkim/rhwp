@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: project_extension_publicdir_false
 description: 확장 빌드는 vite publicDir:false라 public/ 자산이 자동 복사 안 됨 — build.mjs에 개별 copy 필수. 인라인 script는 확장 CSP가 차단
 metadata: 
   node_type: memory
   type: project
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
 rhwp-chrome/rhwp-firefox 확장 빌드의 두 함정 (Task #1444, 2026-06-20):

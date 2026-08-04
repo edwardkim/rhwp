@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 컨트리뷰터 사이클 영역 사전 점검 의무
 description: PR review 시작 시 gh pr list --author <login> --state all 영역으로 컨트리뷰터 영역의 PR 누적 영역 직접 영역 점검 의무. "첫 사이클" 영역의 표현 영역 임의 추정 금지
 type: feedback
-originSessionId: 4ef64500-5782-4a52-a9a8-9330ea6c128b
 ---
 PR review 시 컨트리뷰터 영역의 사이클 영역 표현 (몇 번째 사이클 PR) 영역은 **반드시 직접 영역 점검 영역 후 영역 사용 영역**. 임의 추정 영역 (예: 본 PR 영역의 commit author 영역만 보고 영역 "첫 사이클" 영역으로 영역 가정 영역) 영역 금지 영역.
 

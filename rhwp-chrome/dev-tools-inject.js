@@ -15,7 +15,7 @@
       for (const a of links) {
         const href = a.href || '';
         const isMarked = a.getAttribute('data-hwp') === 'true';
-        const isExt = /\.(hwp|hwpx)(\?.*)?$/i.test(href);
+        const isExt = /\.(hwp|hwpx|hml)(\?.*)?$/i.test(href);
 
         if (!isMarked && !isExt) continue;
 

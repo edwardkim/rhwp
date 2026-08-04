@@ -1021,8 +1021,10 @@ fn collect_fields_from_paragraph(
                                 properties: if cell.editable_in_form() { 1 } else { 0 },
                                 extra_properties: 0,
                                 ctrl_data_name: Some(fname.clone()),
+                                instance_id: None,
                                 memo_index: 0,
                                 memo_paragraphs: Vec::new(),
+                                memo_text_direction: None,
                                 raw_parameters_xml: None,
                             },
                             location: loc,
@@ -1272,6 +1274,7 @@ fn insert_click_here_field_in_para(
         extra_properties: 0x09,
         field_id,
         ctrl_id: tags::FIELD_CLICKHERE,
+        instance_id: None,
         ctrl_data_name: if name.is_empty() {
             None
         } else {
@@ -1279,6 +1282,7 @@ fn insert_click_here_field_in_para(
         },
         memo_index: 0,
         memo_paragraphs: Vec::new(),
+        memo_text_direction: None,
         raw_parameters_xml: None,
     };
 
@@ -1292,6 +1296,7 @@ fn insert_click_here_field_in_para(
         start_char_idx: start,
         end_char_idx: start,
         control_idx: insert_idx,
+        ..Default::default()
     };
     let range_idx = para
         .field_ranges
@@ -1483,9 +1488,11 @@ mod tests {
             extra_properties: 0,
             field_id: ctrl_id,
             ctrl_id,
+            instance_id: None,
             ctrl_data_name: None,
             memo_index: 0,
             memo_paragraphs: Vec::new(),
+            memo_text_direction: None,
             raw_parameters_xml: None,
         })
     }
@@ -1502,6 +1509,7 @@ mod tests {
                 start_char_idx: 3,
                 end_char_idx: 5,
                 control_idx: 1,
+                ..Default::default()
             }],
             char_count: 21,
             char_offsets: vec![8, 9, 10, 19, 20],
@@ -1588,6 +1596,7 @@ mod tests {
                 start_char_idx: 3,
                 end_char_idx: 5,
                 control_idx: 1,
+                ..Default::default()
             }],
             char_offsets: vec![8, 9, 10, 19, 20],
             ..Default::default()
@@ -1609,6 +1618,7 @@ mod tests {
                 start_char_idx: 0,
                 end_char_idx: 2,
                 control_idx: 0,
+                ..Default::default()
             }],
             char_offsets: vec![8, 9],
             ..Default::default()
@@ -1632,6 +1642,7 @@ mod tests {
                 start_char_idx: 4,
                 end_char_idx: 7,
                 control_idx: 1,
+                ..Default::default()
             }],
             // 원본 offsets (stale after text change, but char_offsets[0] still valid for ctrls_before_text)
             char_offsets: vec![8, 9, 10, 11, 20, 21, 22],

@@ -1,13 +1,18 @@
 [package]
 name = "rhwp"
-version = "0.7.19"
+version = "0.8.2"
 edition = "2021"
 description = "HWP file viewer and editor written in Rust, targeting WebAssembly"
 license = "MIT"
 repository = "https://github.com/edwardkim/rhwp"
 
+[workspace]
+members = [".", "tools/rhwp-subsecond"]
+resolver = "2"
+
 [lib]
-crate-type = ["cdylib", "rlib"]
+# Dioxus CLI 0.7.9 classifies the first crate type when capturing hot-patch args.
+crate-type = ["rlib", "cdylib"]
 
 [[bin]]
 name = "rhwp"
@@ -22,7 +27,7 @@ wasm-bindgen = "0.2"
 cfb = "0.14"
 flate2 = "1.0"
 byteorder = "1.5"
-base64 = "0.22"
+base64 = "0.23"
 blake3 = "1"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
 quick-xml = "0.41"
@@ -42,10 +47,12 @@ serde_json = "1"
 ttf-parser = "0.25"
 
 console_error_panic_hook = { version = "0.1", optional = true }
+subsecond = { version = "=0.7.9", optional = true }
 
 [features]
 default = ["console_error_panic_hook"]
 native-skia = ["dep:resvg", "dep:skia-safe"]
+subsecond-dev = ["dep:subsecond"]
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -166,6 +173,14 @@ codegen-units = 16
 # #2269 PDF 채번 비결정 근본 정정 — svg2pdf 0.13 의 HashMap 반복(폰트 객체 방출·
 # 리소스 딕셔너리 순서)을 결정화한 벤더 패치. 업스트림(typst/svg2pdf)이 2026-07
 # 아카이브되어 기여 불가, 포크 브랜치로 대체 (Cargo.lock 이 정확한 rev 를 고정).
-# krilla-svg 마이그레이션 시 이 패치는 제거한다.
+#
+# [#2856] 공급원을 rhwp 산하 포크로 이관했다. 종전에는 기여자 개인 포크를 가리켜
+# 의존성 수명이 개인 계정에 묶여 있었고, 업스트림이 아카이브된 상태에서 그 포크가
+# 사실상 유일한 공급원이라 삭제 시 빌드가 불능이 된다. 결정화 커밋의 authorship 은
+# 그대로 보존된다(원 작성자 planet6897, 이관 동의 완료).
+#
+# [#2283] krilla-svg 마이그레이션은 하지 않기로 결정했다. 장기 방향은 Skia direct
+# 백엔드 단일화이며, 그 미지원 op 목록(gradient·pattern·shadow·connector 등)이
+# 비는 시점에 재판단한다. 그때까지 이 패치를 유지·관리한다.
 [patch.crates-io]
-svg2pdf = { git = "https://github.com/planet6897/svg2pdf", branch = "determinism-0.13" }
+svg2pdf = { git = "https://github.com/edwardkim/svg2pdf", branch = "determinism-0.13" }

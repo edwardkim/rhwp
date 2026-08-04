@@ -127,7 +127,7 @@ fn transparency_sample_restores_saved_caret_after_second_inline_picture() {
 fn enter_before_second_tac_picture_splits_inline_controls() {
     let mut core = load_transparency_core();
 
-    core.split_paragraph_native(0, 0, 1)
+    core.split_paragraph_native(0, 0, 1, None)
         .expect("두 TAC 그림 사이 Enter");
 
     assert_eq!(core.document().sections[0].paragraphs.len(), 2);
@@ -147,11 +147,11 @@ fn enter_before_second_tac_picture_splits_inline_controls() {
 fn repeated_enter_before_second_tac_picture_keeps_picture_after_blank_lines() {
     let mut core = load_transparency_core();
 
-    core.split_paragraph_native(0, 0, 1)
+    core.split_paragraph_native(0, 0, 1, None)
         .expect("두 TAC 그림 사이 Enter");
-    core.split_paragraph_native(0, 1, 0)
+    core.split_paragraph_native(0, 1, 0, None)
         .expect("두 번째 그림 앞 Enter 1회 추가");
-    core.split_paragraph_native(0, 2, 0)
+    core.split_paragraph_native(0, 2, 0, None)
         .expect("두 번째 그림 앞 Enter 2회 추가");
 
     assert_eq!(core.document().sections[0].paragraphs.len(), 4);
@@ -169,11 +169,11 @@ fn repeated_enter_before_second_tac_picture_keeps_picture_after_blank_lines() {
 fn repeated_enter_after_second_tac_picture_appends_blank_lines() {
     let mut core = load_transparency_core();
 
-    core.split_paragraph_native(0, 0, 2)
+    core.split_paragraph_native(0, 0, 2, None)
         .expect("두 번째 TAC 그림 뒤 Enter");
-    core.split_paragraph_native(0, 1, 0)
+    core.split_paragraph_native(0, 1, 0, None)
         .expect("두 번째 그림 뒤 Enter 1회 추가");
-    core.split_paragraph_native(0, 2, 0)
+    core.split_paragraph_native(0, 2, 0, None)
         .expect("두 번째 그림 뒤 Enter 2회 추가");
 
     assert_eq!(core.document().sections[0].paragraphs.len(), 4);
@@ -266,7 +266,7 @@ fn arrow_up_after_enter_before_first_tac_picture_moves_to_previous_picture_end()
         rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("load samples/투명도0-50.hwp")
     };
 
-    doc.split_paragraph_native(0, 0, 0)
+    doc.split_paragraph_native(0, 0, 0, None)
         .expect("첫 번째 TAC 그림 앞 Enter");
 
     let tree = doc.build_page_render_tree(0).expect("build render tree");

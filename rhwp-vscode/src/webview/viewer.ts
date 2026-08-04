@@ -323,7 +323,7 @@ function setZoomMenuOpen(open: boolean): void {
 
 stbZoomMenu.addEventListener("click", (e) => {
   e.stopPropagation();
-  setZoomMenuOpen(stbZoomPopup.hidden);
+  setZoomMenuOpen(stbZoomPopup.hidden !== false);
 });
 
 document.addEventListener("click", () => setZoomMenuOpen(false));

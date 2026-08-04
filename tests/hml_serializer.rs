@@ -1406,3 +1406,64 @@ fn raw_fragment_depth_boundary_matches_secure_reparse() {
     assert_eq!(blockers[0].code, "HML_INVALID_RAW_FRAGMENT");
     assert_eq!(blockers[0].xml_path, "/HWPML/HEAD/X");
 }
+
+#[test]
+fn table_with_non_default_text_wrap_round_trips_through_hml_save() {
+    // 표 SHAPEOBJECT 의 TextWrap 이 기본값(Square)이 아니면 reader 는 이미
+    // table.common.text_wrap 으로 정상적으로 되읽고(#2743 유실 수정, ec226dad),
+    // writer(write_shape_object)도 표에 대해 TextWrap 을 그대로 방출하지만,
+    // preflight 의 validate_table 이 "table.common.text_wrap != Default" 를
+    // 무조건 HML_UNSUPPORTED_IR 로 차단해 저장이 항상 실패했다. 이 값은 이미
+    // 두 방향 모두 지원되므로 preflight 차단은 불필요하다(#2890).
+    let fixture = include_str!("../samples/hml/formatting_table.hml");
+    let injected = fixture.replacen(
+        r#"NumberingType="Table" TextFlow="BothSides" ZOrder="1""#,
+        r#"NumberingType="Table" TextFlow="BothSides" TextWrap="TopAndBottom" ZOrder="1""#,
+        1,
+    );
+    assert_ne!(
+        injected, fixture,
+        "fixture 의 표 SHAPEOBJECT 태그를 찾지 못함"
+    );
+
+    let parsed = parse_document_with_metadata(injected.as_bytes())
+        .expect("TextWrap 이 주입된 표 HML 은 파싱되어야 함");
+    let metadata = parsed.hml_metadata.as_ref().expect("HML metadata");
+
+    let table = parsed
+        .document
+        .sections
+        .iter()
+        .flat_map(|section| section.paragraphs.iter())
+        .flat_map(|paragraph| paragraph.controls.iter())
+        .find_map(|control| match control {
+            Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("표가 있어야 함");
+    assert_eq!(
+        table.common.text_wrap,
+        rhwp::model::shape::TextWrap::TopAndBottom,
+        "표 TextWrap 이 파싱 단계에서 유실됨"
+    );
+
+    let bytes = serialize_hml(&parsed.document, metadata)
+        .expect("표의 비-기본값 TextWrap 저장이 preflight 에 의해 부당하게 차단됨");
+    let reparsed = DocumentCore::from_bytes(&bytes).expect("저장된 HML 은 다시 파싱되어야 함");
+    let reparsed_table = reparsed
+        .document()
+        .sections
+        .iter()
+        .flat_map(|section| section.paragraphs.iter())
+        .flat_map(|paragraph| paragraph.controls.iter())
+        .find_map(|control| match control {
+            Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("재파싱된 문서에도 표가 있어야 함");
+    assert_eq!(
+        reparsed_table.common.text_wrap,
+        rhwp::model::shape::TextWrap::TopAndBottom,
+        "왕복 저장 후 표 TextWrap 값이 보존되지 않음"
+    );
+}

@@ -1448,11 +1448,36 @@ pub fn recompose_stored_single_line_if_overflowing(
     if !stored_single || composed.lines.len() != 1 || cell_inner_width_px <= 0.0 {
         return;
     }
+    // [#2430] 발동 임계 ×1.05 는 측정(원패딩) vs 렌더(shrink패딩) 폭 발산(#2237)
+    // 으로 살짝(1.05~1.35×) 초과한 정합 셀까지 거짓 재래핑해 줄수를 부풀리고
+    // 쪽당 표 행 적재를 떨어뜨렸다(분할표 11건 과다분할 회귀). 본문 판
+    // `stored_lines_overflow`(#2525)와 동일하게 ×1.8 로 좁혀 정당한 장평/자간·
+    // 패딩 발산 범위(≤~1.5×)를 넘는 부실 저장만 재래핑한다. #2291 원 타깃
+    // (76자 1-lineseg = ~7.6× 초과, 절단 해소)은 임계 위라 계속 재래핑.
     let over = composed
         .lines
         .first()
-        .map(|l| estimate_composed_line_width(l, styles) > cell_inner_width_px * 1.05)
+        .map(|l| estimate_composed_line_width(l, styles) > cell_inner_width_px * 1.8)
         .unwrap_or(false);
+    if std::env::var("RHWP_DIAG_CELLREWRAP").is_ok() && over {
+        if let Some(l) = composed.lines.first() {
+            for run in &l.runs {
+                let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                eprintln!(
+                    "DIAG_CELLREWRAP inner={:.1} fs={:.1} lsp={:.2} font={:?} w={:.1} text={:?}",
+                    cell_inner_width_px,
+                    ts.font_size,
+                    ts.letter_spacing,
+                    ts.font_family.split(',').next().unwrap_or(""),
+                    estimate_text_width(effective_text_for_metrics(run), &ts),
+                    effective_text_for_metrics(run)
+                        .chars()
+                        .take(10)
+                        .collect::<String>(),
+                );
+            }
+        }
+    }
     if !over {
         return;
     }
@@ -1489,6 +1514,20 @@ pub fn stored_lines_overflow(
     }
     if composed.lines.len() != para.line_segs.len() {
         return false;
+    }
+    // [#2525] 비마스킹 대형 과밀: 저장 lineseg 이 장평 반영 실폭
+    // (estimate_composed_line_width 는 ts.ratio 를 자체 반영) 기준으로도 내폭을
+    // 크게(≥1.8×) 초과하면, 정당한 장평/자간 압축 범위(최소 advance 클램프 0.5×
+    // → 최대 ~2× 과밀)를 벗어난 부실 단일-저장 lineseg 다 (hwpx-02 p5: 135자
+    // 1줄 ≈4.5× 과밀 → 숫자 char_px*ratio*0.5 클램프로 0.5em 겹침). 마스킹(*)
+    // 게이트와 무관하게 fresh 재래핑한다. 정당한 장평 압축 문서는 ratio 반영
+    // 실폭이 내폭 이내라 오발동하지 않는다.
+    if composed
+        .lines
+        .iter()
+        .any(|l| estimate_composed_line_width(l, styles) > inner_width_px * 1.8)
+    {
+        return true;
     }
     // 마스킹 판별: 공백 제외 글자의 절반 이상이 '*'
     let (mut stars, mut others) = (0usize, 0usize);
@@ -1955,7 +1994,15 @@ fn is_hwp3_hwp5_missing_lineseg_legacy_bullet(
                 styles
                     .char_styles
                     .get(run.char_style_id as usize)
-                    .map(|cs| cs.font_family.split(',').next().unwrap_or("").trim() == "HY신명조")
+                    .map(|cs| {
+                        matches!(
+                            cs.font_family.split(',').next().unwrap_or("").trim(),
+                            // [#2430] 한양신명조·휴먼명조는 종전 HY신명조 치환이
+                            // 풀려 원명으로 온다 — #2070 v3/v4 규칙(원 계보가
+                            // 한양신명조 사다리) 대상 유지.
+                            "HY신명조" | "한양신명조" | "휴먼명조"
+                        )
+                    })
                     .unwrap_or(false)
             })
 }

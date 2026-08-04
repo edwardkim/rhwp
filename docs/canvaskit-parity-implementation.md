@@ -26,10 +26,11 @@ The target contract is:
 The current implementation already has a guarded CanvasKit replay path with
 explicit `default` and `compat` policy modes. It dispatches the core layer node
 kinds, clips, basic page backgrounds, vector primitives, simple raster images,
-basic form objects, root `TextRun` compatibility payloads, and the currently
-supported `GlyphOutline` color-layer subset. It still treats several text,
-image-effect, page-background fill, and document-object families as fallback or
-diagnostic work until their payload contract is strict enough for direct replay.
+basic form objects, root `TextRun` compatibility payloads, horizontal text
+special visuals, and the currently supported `GlyphOutline` color-layer subset.
+It still treats vertical text, effect-heavy text, several image effects,
+page-background fills, and document-object families as fallback or diagnostic
+work until their payload contract is strict enough for direct replay.
 
 `TextRun compatibility` remains the replay baseline for normal text. `GlyphRun`
 and `GlyphOutline` are additive sidecars, not a replacement authority by
@@ -107,8 +108,8 @@ Likely families:
 - raster image effects and crop preprocessing;
 - equation and form-object bounds;
 - placeholder and raw-SVG preview payloads;
-- root `TextRun` effects such as rotation, vertical text, tab leaders, control
-  marks, decorations, shadow, outline, and emphasis.
+- remaining root `TextRun` effects such as vertical text, ratio scaling, shadow,
+  outline, emboss, engrave, and shade.
 
 ### 3. Strict Text Variant Replay
 
@@ -146,7 +147,7 @@ document as an exact sidecar. That requires preserving the OpenType SVG em-box
 and baseline geometry in the paint payload; treating the fragment alone as
 page-positioned output would overstate parity.
 
-The additive JSON contract advances to layer schema `1.18` and resource table
+The additive JSON contract advances to layer schema `1.19` and resource table
 `1.5`. Bitmap and SVG sidecar IDs are accompanied by the encoded image bytes,
 static SVG fragments, and content-addressed keys in `resources`, so a consumer
 never receives an arena-local reference without its corresponding payload.
@@ -170,6 +171,28 @@ CanvasKit replays that tree directly, so a missing or malformed equation SVG
 does not require a DOM/SVG overlay and cannot abort the page. Non-finite,
 over-deep, oversized, or unsupported layout trees stop at an explicit readiness
 blocker instead of being reported as completed direct replay.
+
+P39 externalizes producer-positioned space, tab, paragraph-end, and line-break
+marks and replays them together with horizontal character overlap, tab leaders,
+underline, strikeout, and emphasis marks. Layer schema `1.19` advertises
+`text.charOverlapOp.bounded`, `text.controlMarkOp.positioned`,
+`text.controlMarkOp.bounded`, `text.tabLeaderOp.bounded`, and
+`text.decorationOp.bounded`. Each operation emits at most 4,096 positioned
+items or source characters and carries a completeness flag so truncation is
+never accepted as direct replay. Decoration metrics include script
+baseline/size adjustment and PUA display positions, while tab-leader endpoints
+use the same following-text clamp as Canvas2D. Combined-number character
+overlap uses the compatibility renderer's digit-count scale. `legacyVisuals: "mirror"` keeps the anchored
+`TextRun` from painting the same visual twice. Positioned text replay may split
+a run between the prepared family, the default face, and the bounded old-Hangul
+subset while retaining producer advances. At most 4,096 contiguous fallback
+spans may be planned for one run, preventing adversarial alternating-glyph
+input from multiplying CanvasKit font probes and draw calls without bound.
+Hancom boxed-number PUA characters use a deterministic vector box and digit
+fallback. A glyph that remains unresolved is an unexpected runtime diagnostic
+and causes automatic mode to fall back for the whole document revision.
+Vertical, rotated, malformed, incomplete, or over-limit special visual
+payloads remain fail-closed in preflight and replay.
 
 ### 5. Visual And Artifact Diff Widening
 
@@ -201,10 +224,12 @@ fallbacks that the selected replay plan will actually paint. A strict glyph
 outline variant does not require its source family. Each browser surface maps
 that list through the shared font catalog before lazy CanvasKit initialization;
 an unavailable family adds a surface blocker and keeps the document on
-Canvas2D. Paragraph and control mark view options are also folded into this
-transformed report and keep automatic requests on Canvas2D because their edit
-marker operations do not yet have direct replay parity. Eligible families are
-fetched under a 32 MiB per-face bound and
+Canvas2D. Paragraph and control mark view options participate in the decision
+key. `showParagraphMarks` is eligible when its producer-positioned horizontal
+marker ops pass the same replay plan, while `showControlCodes` remains a
+document-level Canvas2D blocker because structural markers such as table and
+image labels do not yet have paint ops. Unsupported marker geometry also fails
+closed. Eligible families are fetched under a 32 MiB per-face bound and
 registered before the first replay. A named family that still reaches replay
 without a prepared typeface is a document-wide resource failure, not a silent
 substitution with the default Noto face.
@@ -284,8 +309,11 @@ artifacts for regression analysis. The generated
 cache hit, so the producer and CanvasKit resource replay path cannot pass by
 rendering only the text fallback.
 
-The hard readiness set covers paragraph, table, image, font fallback, and
-font-native bitmap cases. It checks requested mode/surface, page canvas
+The hard readiness set covers paragraph, table, image, positioned paragraph
+marks, PUA fallback, and font-native bitmap cases. Synthetic renderer-contract
+tests cover character overlap, tab leaders, and decorations; focused
+document-backed visual fixtures for those three operations remain a follow-up.
+The readiness set checks requested mode/surface, page canvas
 ownership, expected/unexpected diagnostics, visual thresholds, declared layer
 payloads, warm cache hits, decoded-image pixel limits, synchronous warm replay,
 and the document load plus initial render interval. Browser scheduling and the

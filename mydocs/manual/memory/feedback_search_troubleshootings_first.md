@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 트러블슈팅 폴더 사전 검색 의무
 description: HWP 직렬화·한컴 호환·파일 손상 관련 작업 전에 mydocs/troubleshootings/ 전수 검색 필수
 type: feedback
-originSessionId: 67d1cb8f-86d4-4672-b831-a8d028a1cfcf
 ---
 직렬화·한컴 호환·"파일이 손상되었습니다" 류 작업 시작 전에 `mydocs/troubleshootings/` 폴더를 먼저 검색.
 

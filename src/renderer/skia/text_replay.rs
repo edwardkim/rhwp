@@ -22,6 +22,7 @@ pub(super) struct SkiaTextReplay<'a> {
     pub(super) canvas: &'a Canvas,
     pub(super) font_mgr: &'a FontMgr,
     pub(super) custom_typefaces: &'a HashMap<String, Typeface>,
+    pub(super) bundled_typefaces: &'a HashMap<String, Typeface>,
     pub(super) system_families: &'a SystemFontFamilies,
     pub(super) output_options: &'a LayerOutputOptions,
 }
@@ -65,8 +66,15 @@ impl SkiaTextReplay<'_> {
                     (false, false) => FontStyle::normal(),
                 };
                 let mut families = Vec::new();
+                // [#3314] 접미사 face("Noto Serif KR Black") 미설치 시 base
+                // family 가 아래 generic 폴백보다 먼저 구제 — SVG 체인과 정합.
+                let base_family =
+                    crate::renderer::base_family_without_weight_suffix(&style.font_family);
                 if !style.font_family.trim().is_empty() {
                     families.push(style.font_family.as_str());
+                }
+                if let Some(base) = base_family.as_deref() {
+                    families.push(base);
                 }
                 // 한글 fallback (CJK glyph 미보유 폰트로 fallback 시 사각형 방지).
                 // SVG 경로의 CSS font chain 과 동일한 한글 폴백 폰트 순서.
@@ -114,6 +122,16 @@ impl SkiaTextReplay<'_> {
                             family,
                             font_style,
                         ) {
+                            push(&mut chain, &mut seen, tf);
+                        }
+                    }
+                    // [#3300] 번들 최후-폴백(ttfs/opensource)은 custom·시스템
+                    // 뒤에만 선다. #2864 가 번들을 custom 에 섞은 뒤 깊은 폴백
+                    // (Noto Sans KR)이 시스템 1순위를 제치고 본문 전체를 폴백
+                    // 서체로 렌더했다(r23 발산 −6.9pp). 폰트 미설치 환경(#2293)
+                    // 에서는 앞 단계가 비므로 종전대로 번들이 한국어를 구제한다.
+                    for family in &families {
+                        if let Some(tf) = self.bundled_typefaces.get(*family).cloned() {
                             push(&mut chain, &mut seen, tf);
                         }
                     }
@@ -502,12 +520,20 @@ impl SkiaTextReplay<'_> {
                                 + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
                                 + advance / 2.0
                                 + dx;
-                            let cy = y as f32 - font_size * 0.35 + dy;
+                            let cy = y as f32
+                                - font_size
+                                    * crate::renderer::render_tree::MIDDLE_DOT_CY_OFFSET_EM as f32
+                                + dy;
                             let mut dot_paint = Paint::default();
                             dot_paint.set_anti_alias(true);
                             dot_paint.set_style(paint::Style::Fill);
                             dot_paint.set_color(color);
-                            canvas.draw_circle((cx, cy), font_size * 0.08, &dot_paint);
+                            canvas.draw_circle(
+                                (cx, cy),
+                                font_size
+                                    * crate::renderer::render_tree::MIDDLE_DOT_RADIUS_EM as f32,
+                                &dot_paint,
+                            );
                             continue;
                         }
                         if let Some(font) = font_for_text(cluster, font_size) {

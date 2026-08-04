@@ -1,6 +1,63 @@
 use super::*;
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 
+/// [#2632] `recompose_for_body_width` 는 `recompose_for_cell_width` 의 superset
+/// (`restyle_fallback_runs_by_char_shapes` 를 추가로 적용)이다. line_segs 가
+/// 없는(NO_LS) 본문 문단에서 글자모양이 섞여 있으면, compose_lines fallback 이
+/// 만든 단일 run 을 body 래퍼만 char shape 별로 재분할한다.
+/// HeightMeasurer(측정)가 cell 래퍼를 쓰던 종전엔 이 재분할이 빠져
+/// typeset/render 와 다른 값으로 측정됐다 — 그 근본 메커니즘을 여기서 고정한다.
+#[test]
+fn body_recompose_splits_fallback_run_by_char_shapes_but_cell_recompose_does_not() {
+    let para = Paragraph {
+        text: "abcdefghij".to_string(),
+        char_offsets: (0..10).collect(),
+        char_count: 11,
+        char_shapes: vec![
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            },
+            CharShapeRef {
+                start_pos: 5,
+                char_shape_id: 1,
+            },
+        ],
+        // line_segs 가 비어 있어 compose_lines 의 CHARS_PER_LINE fallback 경로를 탄다.
+        ..Default::default()
+    };
+    let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
+    // 문단 폭 안에 다 들어가도록 충분히 넓게 잡아 줄바꿈 자체는 문제되지 않게 한다.
+    let inner_width_px = 2000.0;
+
+    let mut cell_variant = compose_paragraph(&para);
+    recompose_for_cell_width(&mut cell_variant, &para, inner_width_px, &styles);
+    let cell_run_ids: Vec<u32> = cell_variant.lines[0]
+        .runs
+        .iter()
+        .map(|r| r.char_style_id)
+        .collect();
+
+    let mut body_variant = compose_paragraph(&para);
+    recompose_for_body_width(&mut body_variant, &para, inner_width_px, &styles);
+    let body_run_ids: Vec<u32> = body_variant.lines[0]
+        .runs
+        .iter()
+        .map(|r| r.char_style_id)
+        .collect();
+
+    assert_eq!(
+        cell_run_ids,
+        vec![0],
+        "cell 래퍼는 재분할하지 않아 fallback 단일 run(스타일 0)이 그대로 남아야 함"
+    );
+    assert_eq!(
+        body_run_ids,
+        vec![0, 1],
+        "body 래퍼는 restyle_fallback_runs_by_char_shapes 로 재분할해 두 글자모양이 드러나야 함"
+    );
+}
+
 /// 단일 줄, 단일 스타일 문단
 #[test]
 fn test_compose_single_line_single_style() {

@@ -6,20 +6,14 @@ import { openViewer } from './sw/viewer-launcher.js';
 import { setupContextMenus } from './sw/context-menus.js';
 import { setupDownloadInterceptor } from './sw/download-interceptor.js';
 import { setupMessageRouter } from './sw/message-router.js';
+import { handleExtensionInstalled } from './sw/extension-lifecycle.js';
 
 // 확장 설치/업데이트 시 초기화
 chrome.runtime.onInstalled.addListener((details) => {
   setupContextMenus();
-
-  if (details.reason === 'install') {
-    // 최초 설치 시 기본 설정 저장
-    chrome.storage.sync.set({
-      autoOpen: true,
-      showBadges: true,
-      hoverPreview: true,
-      disableExternalWebFonts: false
-    });
-  }
+  void handleExtensionInstalled(chrome, details).catch((error) => {
+    console.warn('[rhwp-settings] 확장 수명주기 처리 실패:', error);
+  });
 });
 
 // 확장 아이콘 클릭 → 빈 뷰어 탭 열기

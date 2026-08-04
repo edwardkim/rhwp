@@ -22,6 +22,19 @@ export interface FileSystemFileHandleLike {
   requestPermission?(descriptor?: { mode?: 'read' | 'readwrite' }): Promise<FileSystemPermissionState>;
 }
 
+/** Drag & Drop API가 반환할 수 있는 file/directory handle의 공통 최소 형태. */
+export type DroppedFileSystemHandleLike = FileSystemFileHandleLike | {
+  kind: 'directory';
+  name: string;
+};
+
+/** `getAsFileSystemHandle` 미포함 TypeScript DOM lib와도 호환하기 위한 좁은 item 타입. */
+export interface DroppedDataTransferItemLike {
+  kind: string;
+  getAsFile(): File | null;
+  getAsFileSystemHandle?(): Promise<DroppedFileSystemHandleLike | null>;
+}
+
 export interface FileSystemWindowLike {
   showOpenFilePicker?: (options?: {
     excludeAcceptAllOption?: boolean;
@@ -83,6 +96,72 @@ export function isSupportedDocumentFileName(fileName: string): boolean {
 
 export function canUseOpenFilePicker(windowLike: FileSystemWindowLike): boolean {
   return typeof windowLike.showOpenFilePicker === 'function';
+}
+
+function isSameDroppedFile(candidate: File, selected: File): boolean {
+  return candidate === selected
+    || (
+      candidate.name === selected.name
+      && candidate.size === selected.size
+      && candidate.lastModified === selected.lastModified
+      && candidate.type === selected.type
+    );
+}
+
+function isDroppedFileHandle(handle: DroppedFileSystemHandleLike | null): handle is FileSystemFileHandleLike {
+  if (!handle || handle.kind !== 'file') return false;
+  const candidate = handle as Partial<FileSystemFileHandleLike>;
+  return typeof candidate.name === 'string'
+    && typeof candidate.getFile === 'function'
+    && typeof candidate.createWritable === 'function';
+}
+
+/**
+ * Finder/Explorer drop의 선택 파일 handle을 **동기적으로** capture한다.
+ *
+ * Chromium의 `DataTransferItem.getAsFileSystemHandle()`은 drop event와 같은 tick에서
+ * 호출해야 한다. 이 함수는 파일 bytes를 읽거나 handle을 저장하지 않고 Promise만 즉시
+ * 시작한다. 호출자는 사용자 확인 뒤에만 결과를 await하여 문서를 열어야 한다 (#3259).
+ */
+export function captureDroppedFileHandle(
+  items: ArrayLike<DroppedDataTransferItemLike> | null | undefined,
+  selectedFile: File,
+): Promise<FileSystemFileHandleLike | null> {
+  if (!items) return Promise.resolve(null);
+
+  let matchedItem: DroppedDataTransferItemLike | undefined;
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index];
+    if (!item || item.kind !== 'file') continue;
+    try {
+      const candidate = item.getAsFile();
+      if (candidate && isSameDroppedFile(candidate, selectedFile)) {
+        matchedItem = item;
+        break;
+      }
+    } catch {
+      // 다음 item을 확인하거나 API 미지원 fallback으로 종료한다.
+    }
+  }
+  if (!matchedItem || typeof matchedItem.getAsFileSystemHandle !== 'function') {
+    return Promise.resolve(null);
+  }
+
+  let handlePromise: Promise<DroppedFileSystemHandleLike | null>;
+  try {
+    // 반드시 caller가 await하기 전에 실행된다. 여기서 비동기 경계를 만들면 안 된다.
+    handlePromise = matchedItem.getAsFileSystemHandle();
+  } catch {
+    return Promise.resolve(null);
+  }
+
+  return handlePromise.then(
+    (handle) => {
+      if (!isDroppedFileHandle(handle) || handle.name !== selectedFile.name) return null;
+      return handle;
+    },
+    () => null,
+  );
 }
 
 async function writeBlobToHandle(handle: FileSystemFileHandleLike, blob: Blob): Promise<void> {

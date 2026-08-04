@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: jangster77-pr-collaborator
 description: "collaborator 2명(jangster77, postmelee)이 외부 PR 머지 게이트 분담 — origin/devel의 모르는 머지는 누락 아닌 분업"
 metadata: 
   node_type: memory
   type: project
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
 **collaborator 2명 (2026-07-04 기준, API 확인)** — 작업지시자(edwardkim, admin) 외에

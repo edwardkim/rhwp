@@ -1,6 +1,9 @@
 //! Flow reservation helpers for non-inline floating objects.
 
+use crate::model::control::Control;
+use crate::model::paragraph::Paragraph;
 use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
+use crate::model::table::{Table, TablePageBreak};
 use crate::model::HwpUnit;
 
 use super::hwpunit_to_px;
@@ -16,6 +19,77 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
     !common.treat_as_char
         && matches!(common.text_wrap, TextWrap::TopAndBottom)
         && matches!(common.vert_rel_to, VertRelTo::Para)
+}
+
+/// Stored host-line evidence for the narrow native-HWP RowBreak flow contract (#2439).
+///
+/// The returned value is the non-synthetic stored line advance in HWPUNIT.  Callers may combine
+/// it with the positive object offset for pagination, or with the painted lane bottom and outer
+/// bottom for layout.  Keeping the structural predicate here prevents typeset/full/partial layout
+/// from drifting apart.  A broad empty-host outer-margin rule is disproven by #2097.
+pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
+    native_hwp5_layout: bool,
+    para: &Paragraph,
+    table: &Table,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    let has_non_whitespace_text = |paragraph: &Paragraph| {
+        paragraph
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+    };
+    if !native_hwp5_layout
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || has_non_whitespace_text(para)
+        || !matches!(table.common.vert_rel_to, VertRelTo::Para)
+        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || signed_hwpunit(table.common.vertical_offset) <= 0
+        || para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            != 1
+        || para
+            .controls
+            .iter()
+            .filter(|control| {
+                matches!(control, Control::Table(candidate)
+                    if is_para_topbottom_float(&candidate.common))
+            })
+            .count()
+            != 1
+        || !next_para.is_some_and(|next| has_non_whitespace_text(next) && next.controls.is_empty())
+    {
+        return None;
+    }
+
+    let host_seg = para
+        .line_segs
+        .iter()
+        .find(|seg| seg.tag & 0x80000000 == 0 && seg.line_height > 0)?;
+    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    if advance <= 0 {
+        return None;
+    }
+    // [#2808] 저장 vpos ladder 로 한컴이 host 줄 advance 를 실제 흐름에 계상했는지
+    // 검증한다. #2439 재현 문서(기계 반복 양식)는 ladder 가 표 높이를 접고
+    // `next.vpos - host.vpos == advance` 로 저장되는 반면(= advance 가 실 흐름 증거),
+    // 일반 물리 ladder 문서는 델타가 표 높이+offset 을 이미 포함하므로 advance 를
+    // 다시 더하면 이중 계상되어 쪽 경계 한 줄이 +1 로 밀린다 (10k r19 회귀 4건).
+    let next_vpos = next_para
+        .and_then(|next| {
+            next.line_segs
+                .iter()
+                .find(|seg| seg.tag & 0x80000000 == 0 && seg.line_height > 0)
+        })
+        .map(|seg| seg.vertical_pos)?;
+    if (next_vpos - host_seg.vertical_pos - advance).abs() > 1 {
+        return None;
+    }
+    Some(advance)
 }
 
 /// [Task #1658 v3] 페이지 하단 고정(vert=쪽·valign=Bottom) 자리차지 개체 (결재/서명 틀).

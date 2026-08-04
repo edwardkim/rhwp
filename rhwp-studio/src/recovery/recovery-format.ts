@@ -6,16 +6,15 @@ function baseNameWithoutKnownExtension(fileName: string): string {
   if (dot <= 0) return trimmed;
 
   const ext = trimmed.slice(dot).toLowerCase();
-  if (ext === '.hwp' || ext === '.hwpx') {
+  if (ext === '.hwp' || ext === '.hwpx' || ext === '.hml') {
     return trimmed.slice(0, dot);
   }
   return trimmed;
 }
 
-export function recoveryFileName(fileName: string, sourceFormat = 'hwp'): string {
+export function recoveryFileName(fileName: string): string {
   const base = baseNameWithoutKnownExtension(fileName);
-  // autosave draft는 exportHwp() 결과이므로 HWPX 출처도 복구본은 HWP로 연다.
-  if (sourceFormat.toLowerCase() === 'hwpx') return `${base} 복구본.hwp`;
+  // autosave draft는 exportHwp() 결과이므로 모든 출처의 복구본은 HWP로 생성한다.
   return `${base} 복구본.hwp`;
 }
 
@@ -34,6 +33,6 @@ export function formatDraftSize(byteLength: number): string {
 
 export function describeDraft(draft: AutosaveDraft): string {
   const format = draft.sourceFormat.toUpperCase();
-  const suffix = draft.sourceFormat.toLowerCase() === 'hwpx' ? ' → HWP 복구본' : '';
+  const suffix = ['hwpx', 'hml'].includes(draft.sourceFormat.toLowerCase()) ? ' → HWP 복구본' : '';
   return `${formatDraftSavedAt(draft.savedAt)} · ${formatDraftSize(draft.byteLength)} · ${format}${suffix}`;
 }

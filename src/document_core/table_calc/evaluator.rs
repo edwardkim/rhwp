@@ -1,7 +1,7 @@
 //! 계산식 평가기: AST → 숫자 결과
 
 use super::parser::{parse_formula, BinOpKind, FormulaNode};
-use super::tokenizer::DirectionKind;
+use super::tokenizer::{DirectionKind, WILDCARD_ROW};
 
 /// 셀 값 조회 함수 타입
 /// (col_index: 0-based, row_index: 0-based) → Option<f64>
@@ -78,7 +78,7 @@ fn resolve_cell_ref(col: char, row: u32, ctx: &TableContext) -> Result<(usize, u
             .checked_sub('A' as usize)
             .ok_or_else(|| format!("잘못된 열: {}", col))?
     };
-    let r = if row == 0 {
+    let r = if row == WILDCARD_ROW {
         ctx.current_row // 와일드카드 행
     } else {
         (row as usize)
@@ -411,5 +411,19 @@ mod tests {
         let ctx = make_ctx();
         let r = evaluate_formula("=1/0", &ctx, &sample_cell);
         assert!(r.is_err());
+    }
+
+    #[test]
+    fn test_row_zero_is_not_wildcard() {
+        // 스펙(mydocs/plans/archives/task_370.md): 행은 1부터 시작하고, 와일드카드는 '?'만 인정한다.
+        // "A0"처럼 명시적으로 0행을 참조하는 것은 잘못된 입력이며, 현재 행(current_row)으로
+        // 조용히 대체되어서는 안 된다.
+        let ctx = make_ctx(); // current_row = 4
+        let r = evaluate_formula("=A0", &ctx, &sample_cell);
+        assert!(
+            r.is_err(),
+            "A0은 현재 행(A5=41.0)으로 치환되지 않고 오류가 되어야 하는데 {:?} 를 반환함",
+            r
+        );
     }
 }

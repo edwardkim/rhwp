@@ -62,7 +62,7 @@ Foundation  Typeset   Collab    Complete
 
 ## Milestones
 
-### v0.5.0 ~ v0.7.x — Foundation (current)
+### v0.5.0 ~ v0.8.x — Foundation (current)
 
 > Reverse-engineering complete, read/write foundation established
 
@@ -374,7 +374,7 @@ local/task{N}  ──commit──commit──┐
 
 | Branch | Purpose |
 |--------|---------|
-| `main` | Release (tags: v0.7.19 etc.) |
+| `main` | Release (tags: v0.8.0 etc.) |
 | `devel` | Development integration (remote push target) |
 | `local/devel` | Local working branch of devel |
 | `local/task{N}` | GitHub Issue-numbered task branch |

@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 결함 진단 시 layer 귀속 정확화
 description: LAYOUT_OVERFLOW_DRAW 같은 진단 메시지의 emission 위치와 결함의 본질 위치를 혼동하지 말 것. 시프트의 출처를 추적해야 함
 type: feedback
-originSessionId: 4ef64500-5782-4a52-a9a8-9330ea6c128b
 ---
 LAYOUT_OVERFLOW_DRAW / LAYOUT_OVERFLOW 같은 진단 메시지가 emit 되는 위치 (`paragraph_layout.rs:875` 등) 는 **결함의 증상이 표면화하는 위치**이지 **결함의 본질 위치**가 아니다. 시프트의 출처 (어느 pi 부터 layout y 가 권위값에서 벗어나기 시작했는지) 를 추적해야 본질 위치를 찾을 수 있다.
 

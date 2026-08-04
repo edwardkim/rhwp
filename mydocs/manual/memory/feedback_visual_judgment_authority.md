@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 시각 판정은 작업지시자 직접 결정 영역
 description: 한컴 2022 편집기 / 브라우저 시각 검증은 Claude가 단정 회피, 정량 측정만 보조
 type: feedback
-originSessionId: 4861649d-834a-43c6-a262-9f08333360e8
 ---
 렌더링/레이아웃 정합성 판단은 **작업지시자가 직접** 시각 판정으로 결정한다. Claude는 단정 회피.
 

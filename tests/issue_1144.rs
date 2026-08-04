@@ -16,11 +16,19 @@ fn document_with_filename_footer() -> HwpDocument {
     doc
 }
 
+/// 화면에 실제로 그려지는 글자를 모은다.
+///
+/// 필드처럼 모델 1자가 표시 N자인 런은 `text` 에 모델 마커를 남기고 `displayText` 에
+/// 치환값을 담는다 — 스튜디오도 `op.displayText ?? op.text` 로 그린다 (Task #3216).
 fn collect_text_runs(value: &Value, out: &mut Vec<String>) {
     match value {
         Value::Object(map) => {
             if map.get("type").and_then(Value::as_str) == Some("textRun") {
-                if let Some(text) = map.get("text").and_then(Value::as_str) {
+                let rendered = map
+                    .get("displayText")
+                    .and_then(Value::as_str)
+                    .or_else(|| map.get("text").and_then(Value::as_str));
+                if let Some(text) = rendered {
                     out.push(text.to_string());
                 }
             }
@@ -144,8 +152,10 @@ fn issue_1144_empty_filename_context_resolves_to_empty_string() {
 
     let texts = layer_tree_texts(&doc);
 
-    assert!(
-        texts.iter().any(|text| text == "1\t"),
+    // 필드는 제 런으로 떨어지므로(Task #3216) 줄 전체를 이어 붙여서 본다.
+    assert_eq!(
+        texts.concat(),
+        "1\t",
         "empty filename should resolve to empty string while preserving surrounding text. texts={texts:?}"
     );
     assert!(

@@ -250,8 +250,34 @@ function getBlockedMessage(reason, hostname) {
 
 ### 설정은 즉시 반영, 즉시 확인 가능
 
-- 토글 변경 → 즉시 저장 → "저장되었습니다" 피드백
-- 설정 페이지 재진입 시 값이 유지되어야 함 (Safari `storage.local` 사용)
+- 토글 변경 → 실제 저장 성공 뒤에만 "저장되었습니다" 피드백
+- 설정 로드가 끝나기 전에는 입력을 비활성화해 DOM 기본값이 저장값을 덮지 않게 함
+- 저장 실패는 성공과 다른 오류 상태로 표시하고 재시도 가능하게 유지
+- 설정 페이지 재진입 시 값이 유지되어야 함
+  - Chrome/Edge: `storage.sync` key를 우선하고 `storage.local`의 마지막 정상 snapshot을 누락 key의 fallback으로 사용
+  - Safari: `storage.local` 사용
+
+### Chrome/Edge 설정 보존 계약
+
+- `runtime.onInstalled`의 `install`, `update`, `chrome_update`는 사용자 설정을 기본값으로
+  덮어쓰지 않는다. 깨끗한 최초 설치의 기본값은 저장소 read 시에만 적용한다.
+- `update`와 `chrome_update`에서는 sync에 쓰지 않고, 이벤트 시점에 읽을 수 있는 유효한 설정을
+  local snapshot으로 먼저 보존한 뒤 최소 수명주기 진단을 기록한다.
+- options, message router, download interceptor는 하나의 settings-store adapter를 사용한다.
+- 기존 배포본과의 호환을 위해 sync의 flat key를 유지한다.
+- 유효한 sync boolean 값이 key별 권위 값이며, 해당 key가 없거나 sync read가 실패한 경우에만
+  local snapshot을 사용한다. 두 저장소 모두 값을 제공하지 못하면 자동 열기 기본값으로 조용히
+  진행하지 않고 설정 로드 실패로 처리한다.
+- 옵션 UI는 sync read 실패 시 local snapshot을 복구 표시할 수 있지만, 다운로드 인터셉터처럼
+  탭을 만드는 자동 동작은 sync 상태를 읽지 못하면 local의 `true`만으로 허용하지 않는다. 기존
+  sync key나 schema metadata가 남아 있는데 `autoOpen`과 local snapshot만 없는 partial sync도
+  clean install과 구분해 fail-closed 처리한다. 이때 default `true`를 local snapshot으로 굳히지 않는다.
+- sync와 local snapshot이 모두 없는 clean install은 `autoOpen=true` 기본값을 유지한다. 유효한 local
+  snapshot이 있으면 누락된 sync key를 해당 snapshot에서 복구한다.
+- local snapshot에는 설정 schema version과 갱신 시각만 포함한다. 설치·업데이트 진단에도 event
+  reason과 확장 버전만 기록하고 문서 URL이나 개인정보를 넣지 않는다.
+- 저장은 권위 저장소인 sync가 성공해야 성공으로 처리한다. local snapshot은 best-effort 복구
+  백업이며, 그 기록만 실패하면 sync에 저장된 사용자 선택은 유지하고 경고를 남긴다.
 
 ---
 
@@ -410,55 +436,46 @@ node --test rhwp-shared/sw/download-interceptor-common.test.js
 
 ---
 
-## 11. 다운로드 가로채기의 Chrome/Firefox 구조 차이
+## 11. 다운로드 관찰자의 Chrome/Firefox 구조
 
-**배경**: PR #214 에서 확립. 매뉴얼 신설 섹션.
+**배경**: #1471, #1498, #1515, #1516에서 확립.
 
 ### API 차이
 
 | 이벤트 | Chrome/Edge | Firefox |
 |--------|-----------|---------|
-| 다운로드 감지 시점 | `downloads.onDeterminingFilename` (**filename 결정 직전 한 번**) | `downloads.onCreated` + `downloads.onChanged` (2단계) |
-| 파일명 변경 가능 | ✅ (콜백에서 `suggest({filename})`) | 제한적 (onCreated 에서만 가능) |
-| MIME / 크기 확정 시점 | onDeterminingFilename 에서 완전히 결정됨 | onCreated 에는 **미정**, onChanged 에서 확정 |
+| 다운로드 감지 시점 | `downloads.onCreated` + `downloads.onChanged` | `downloads.onCreated` + `downloads.onChanged` |
+| 다운로드 상태 저장 | `chrome.storage.session` | `browser.storage.session`, 미지원 시 메모리 fallback |
+| 파일명 결정 개입 | 하지 않음 | 하지 않음 |
+| MIME / 파일명 확정 | onCreated에서 미정일 수 있어 onChanged에서 재조회 | Chrome과 동일 |
 
-### Firefox 의 2단계 감지 패턴
+`onDeterminingFilename`은 다른 확장이 지정한 filename/subdirectory에 영향을 준 #1471 때문에
+Chrome/Edge에서도 사용하지 않는다.
 
-```js
-browser.downloads.onCreated.addListener((item) => {
-  // 1차: url 로 일단 HWP 의심 여부 판정
-  if (isLikelyHwp(item)) {
-    pendingIds.add(item.id);
-  }
-});
-
-browser.downloads.onChanged.addListener((delta) => {
-  // 2차: filename / mime 확정 후 재판정
-  if (!pendingIds.has(delta.id)) return;
-  browser.downloads.search({id: delta.id}).then(([item]) => {
-    if (shouldInterceptDownload(item)) { /* 가로채기 */ }
-  });
-});
-```
-
-`isLikelyHwp` 는 저비용 url 휴리스틱, `shouldInterceptDownload` 는 `rhwp-shared/` 의 공통 판정 함수.
-
-### Chrome 의 단일 단계 패턴
+### 공통 2단계 감지 패턴
 
 ```js
-chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
-  if (shouldInterceptDownload(item)) {
-    // HWP → 기본 다운로드 + 뷰어 탭 열기
-    openInViewer(item);
-    return true;  // 비동기 suggest 반환 예약
-  }
-  // HWP 가 아니면 기본 저장 위치 기억 동작 보존
-  return false;
+downloads.onCreated.addListener(async (item) => {
+  // 과거 완료 항목은 무시하고 새 download id만 session에 추적한다.
+  const decision = evaluateDownloadCreated(item, await getState(item.id));
+  if (decision.action === 'track') await setState(decision.state);
+});
+
+downloads.onChanged.addListener(async (delta) => {
+  // 추적 상태 없는 과거 이벤트는 재조회하지 않는다.
+  const state = await getState(delta.id);
+  if (!state || state.handledAt) return;
+  const [item] = await downloads.search({ id: delta.id });
+  // 공통 상태 머신과 HWP 판정을 모두 통과한 항목만 처리한다.
 });
 ```
 
 ### 교차 교훈
 
-- **판정 함수** 는 공통 (`rhwp-shared/sw/download-interceptor-common.js`) — `shouldInterceptDownload(item)`
-- **리스너 구조** 는 플랫폼별 (Chrome 단일 / Firefox 2단계)
-- 동일 판정을 두 리스너에서 호출하므로 로직 일관성 보장
+- HWP 판정은 `rhwp-shared/sw/download-interceptor-common.js`, 다운로드 신선도·상태 전이는
+  `rhwp-shared/sw/download-observer-state.js`를 공통으로 사용한다.
+- `onChanged` 단독 과거 항목, 과거 완료 `onCreated`, 이미 handled인 id는 열지 않는다.
+- 같은 download id의 비동기 처리가 겹칠 수 있으므로 탭을 열기 전 in-flight 선점이 필요하다.
+  Chrome/Edge는 설정 storage 조회 전에 id를 선점하고 `finally`에서 해제한다.
+- terminal 상태를 기록할 때는 처리 전의 오래된 state가 아니라 `handledAt`이 반영된 최신 state를
+  이어서 사용해야 한다.

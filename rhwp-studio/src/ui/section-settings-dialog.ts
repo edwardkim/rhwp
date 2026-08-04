@@ -143,8 +143,10 @@ export class SectionSettingsDialog extends ModalDialog {
       pictureNum: this.getNumComboValue(this.pictureNumCombo),
       tableNum: this.getNumComboValue(this.tableNumCombo),
       equationNum: this.getNumComboValue(this.equationNumCombo),
-      columnSpacing: ptToHwpunit(parseFloat(this.columnSpacingInput.value) || 0),
-      defaultTabSpacing: ptToHwpunit(parseFloat(this.defaultTabSpacingInput.value) || 0),
+      // #2938: HTML min='0'은 .value를 자동 clamp하지 않으므로(#2845/#2847과 동일 패턴)
+      // 직접 타이핑한 음수가 그대로 WASM으로 넘어가지 않도록 여기서 하한을 강제한다.
+      columnSpacing: Math.max(0, ptToHwpunit(parseFloat(this.columnSpacingInput.value) || 0)),
+      defaultTabSpacing: Math.max(0, ptToHwpunit(parseFloat(this.defaultTabSpacingInput.value) || 0)),
       hideHeader: this.hideHeaderCheck.checked,
       hideFooter: this.hideHeaderCheck.checked,
       hideMasterPage: this.hideMasterPageCheck.checked,

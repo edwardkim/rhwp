@@ -59,6 +59,7 @@ pub(crate) fn build_row_col_x(
     row_count: usize,
     cell_spacing: f64,
     dpi: f64,
+    width_scale: f64,
 ) -> Vec<Vec<f64>> {
     use super::super::hwpunit_to_px;
     // 셀 너비 그리드 구축 (O(cells) 탐색 1회)
@@ -70,7 +71,7 @@ pub(crate) fn build_row_col_x(
             && (cell.row as usize) < row_count
         {
             cell_width_grid[cell.row as usize][cell.col as usize] =
-                Some(hwpunit_to_px(cell.width as i32, dpi));
+                Some(hwpunit_to_px(cell.width as i32, dpi) * width_scale);
         }
     }
     let mut base_rx = vec![0.0f64; col_count + 1];
@@ -84,7 +85,7 @@ pub(crate) fn build_row_col_x(
     }
 
     let target_total = if table.common.width > 0 {
-        hwpunit_to_px(table.common.width as i32, dpi)
+        hwpunit_to_px(table.common.width as i32, dpi) * width_scale
             + cell_spacing * col_count.saturating_sub(1) as f64
     } else {
         base_rx.last().copied().unwrap_or(0.0)
@@ -96,9 +97,9 @@ pub(crate) fn build_row_col_x(
         let mut has_cell_order_row = false;
         for (r, row_x) in row_col_x_from_cells.iter_mut().enumerate().take(row_count) {
             let row_idx = r as u16;
-            if !table.local_resize_rows.contains(&row_idx)
-                && !inferred_local_resize_rows.contains(&row_idx)
-            {
+            let is_explicit_local_resize = table.local_resize_rows.contains(&row_idx);
+            let is_inferred_local_resize = inferred_local_resize_rows.contains(&row_idx);
+            if !is_explicit_local_resize && !is_inferred_local_resize {
                 continue;
             }
             let mut row_cells: Vec<_> = table
@@ -138,7 +139,7 @@ pub(crate) fn build_row_col_x(
                         if has_width_overrides {
                             (base_rx[end] - base_rx[c]).max(0.0)
                         } else {
-                            hwpunit_to_px(cell.width as i32, dpi)
+                            hwpunit_to_px(cell.width as i32, dpi) * width_scale
                         }
                     });
                 let end_x = cursor + cell_w;
@@ -156,7 +157,15 @@ pub(crate) fn build_row_col_x(
                 if residual < -0.5 {
                     valid = false;
                 } else if residual > 0.5 {
-                    candidate[col_count] += residual;
+                    if is_explicit_local_resize {
+                        // Studio 런타임의 명시적 힌트는 기존 동작을 보존한다.
+                        candidate[col_count] += residual;
+                    } else {
+                        // 자동 추론 행의 부족 폭을 마지막 셀에 몰아주면 퇴화한
+                        // 앞 셀 폭이 그대로 노출된다. 추론이 불완전하면 base grid로
+                        // 폴백하고 마지막 셀의 경계를 임의로 늘리지 않는다.
+                        valid = false;
+                    }
                 }
             }
 
@@ -405,14 +414,18 @@ pub(crate) fn render_transparent_borders(
             } else if let Some(start) = seg_start {
                 let x1 = table_x + ref_cx[start];
                 let x2 = table_x + ref_cx[ci];
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y, x2, y));
+                nodes.extend(create_editor_only_line(
+                    tree, color, width, dash, x1, y, x2, y,
+                ));
                 seg_start = None;
             }
         }
         if let Some(start) = seg_start {
             let x1 = table_x + ref_cx[start];
             let x2 = table_x + ref_cx.get(h_row.len()).copied().unwrap_or(ref_cx[start]);
-            nodes.extend(create_single_line(tree, color, width, dash, x1, y, x2, y));
+            nodes.extend(create_editor_only_line(
+                tree, color, width, dash, x1, y, x2, y,
+            ));
         }
     }
 
@@ -435,7 +448,7 @@ pub(crate) fn render_transparent_borders(
                     // x가 바뀌면 이전 세그먼트 마무리 후 새 세그먼트 시작
                     let y1 = table_y + row_y[seg_start.unwrap()];
                     let y2 = table_y + row_y[ri];
-                    nodes.extend(create_single_line(
+                    nodes.extend(create_editor_only_line(
                         tree, color, width, dash, seg_x, y1, seg_x, y2,
                     ));
                     seg_start = Some(ri);
@@ -444,7 +457,7 @@ pub(crate) fn render_transparent_borders(
             } else if let Some(start) = seg_start {
                 let y1 = table_y + row_y[start];
                 let y2 = table_y + row_y[ri];
-                nodes.extend(create_single_line(
+                nodes.extend(create_editor_only_line(
                     tree, color, width, dash, seg_x, y1, seg_x, y2,
                 ));
                 seg_start = None;
@@ -453,7 +466,7 @@ pub(crate) fn render_transparent_borders(
         if let Some(start) = seg_start {
             let y1 = table_y + row_y[start];
             let y2 = table_y + row_y.get(v_col.len()).copied().unwrap_or(row_y[start]);
-            nodes.extend(create_single_line(
+            nodes.extend(create_editor_only_line(
                 tree, color, width, dash, seg_x, y1, seg_x, y2,
             ));
         }
@@ -709,6 +722,22 @@ fn create_single_line(
             (y2 - y1).abs().max(width),
         ),
     )]
+}
+
+fn create_editor_only_line(
+    tree: &mut PageRenderTree,
+    color: u32,
+    width: f64,
+    dash: StrokeDash,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+) -> Vec<RenderNode> {
+    create_single_line(tree, color, width, dash, x1, y1, x2, y2)
+        .into_iter()
+        .map(RenderNode::with_editor_only)
+        .collect()
 }
 
 fn border_line_type_from_code(code: u8) -> BorderLineType {
@@ -1054,6 +1083,56 @@ pub(crate) fn render_cell_diagonal(
 mod tests {
     use super::*;
     use crate::model::style::DiagonalLine;
+    use crate::model::table::Cell;
+
+    fn independent_width_table(rows: &[[u32; 3]]) -> Table {
+        let mut cells = Vec::new();
+        for (row, widths) in rows.iter().enumerate() {
+            for (col, width) in widths.iter().enumerate() {
+                cells.push(Cell {
+                    row: row as u16,
+                    col: col as u16,
+                    row_span: 1,
+                    col_span: 1,
+                    width: *width,
+                    ..Default::default()
+                });
+            }
+        }
+        Table {
+            row_count: rows.len() as u16,
+            col_count: 3,
+            cells,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn degenerate_inferred_row_uses_base_grid_instead_of_expanding_last_cell() {
+        const DPI: f64 = 96.0;
+        let base_widths_hu = [12_698u32, 1_940, 5_421];
+        let mut table =
+            independent_width_table(&[[1, 1_940, 5_421], base_widths_hu, base_widths_hu]);
+        table.common.width = base_widths_hu.into_iter().sum();
+        let col_widths =
+            base_widths_hu.map(|width| crate::renderer::hwpunit_to_px(width as i32, DPI));
+
+        let row_col_x = build_row_col_x(&table, &col_widths, 3, 3, 0.0, DPI, 1.0);
+        let expected_first_boundary = col_widths[0];
+        let expected_last_width = col_widths[2];
+
+        assert!(
+            (row_col_x[0][1] - expected_first_boundary).abs() <= 0.01,
+            "퇴화한 첫 셀은 기준 grid 폭을 따라야 함: {:?}",
+            row_col_x[0]
+        );
+        assert!(
+            ((row_col_x[0][3] - row_col_x[0][2]) - expected_last_width).abs() <= 0.01,
+            "부족 폭을 마지막 셀에 몰아주면 안 됨: {:?}",
+            row_col_x[0]
+        );
+        assert_eq!(row_col_x[0], row_col_x[1]);
+    }
 
     fn center_line_style(center_line: CenterLine) -> ResolvedBorderStyle {
         ResolvedBorderStyle {

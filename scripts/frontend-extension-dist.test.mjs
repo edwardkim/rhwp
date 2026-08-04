@@ -38,6 +38,15 @@ for (const browser of ['chrome', 'firefox']) {
     for (const file of ['rhwp.js', 'rhwp.d.ts', 'rhwp_bg.wasm', 'rhwp_bg.wasm.d.ts']) {
       assert.ok(statSync(path.join(distDir, 'wasm', file)).size > 0, `${file} must be copied`);
     }
+
+    if (browser === 'chrome') {
+      const optionsHtml = readFileSync(path.join(distDir, 'options.html'), 'utf8');
+      assert.equal(findInlineScriptTags(optionsHtml).length, 0, 'options.html must not contain inline scripts');
+      assert.match(optionsHtml, /<script\s+type="module"\s+src="options\.js"><\/script>/);
+      for (const file of ['settings-store.js', 'extension-lifecycle.js']) {
+        assert.ok(statSync(path.join(distDir, 'sw', file)).size > 0, `${file} must be copied`);
+      }
+    }
   });
 }
 

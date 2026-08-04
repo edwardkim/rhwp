@@ -45,14 +45,17 @@ fn mel001_pi22_row0_height_matches_ir() {
     // 마지막 8x12 표. 헤더 row (12개 균등 cs=1 셀들) 의 첫 번째 cell-clip 의 y 추출.
     //
     // 가용 정합 — pi=22 행 0 의 cs=1 셀들 (계, 정무직, 고공단, 3․4급, 4급, ...) 의
-    // x 좌표는 211.05, 266.05, 321.05, ... (55px 간격). 그 중 첫 셀 (계 → x=211.05)
+    // x 좌표는 212.93, 267.93, 322.93, ... (55px 간격). 그 중 첫 셀 (계 → x=212.93)
     // 의 y 가 pi=22 표 시작 y 와 정합.
+    // [Issue #3396] TAC 표 x = pen + outMargin.left(141HU=1.88px) 배선으로
+    // 종전 211.05 에서 +1.88px 이동 — 본 테스트의 관심사(행 높이)와 무관한
+    // 위치 앵커만 갱신.
     let table_start_y = {
-        // x="211.0533333333333" 와 y=... 인 cell-clip rect 추출
-        let needle = "x=\"211.0533333333333\" y=\"";
+        // x="212.9333333333333" 와 y=... 인 cell-clip rect 추출
+        let needle = "x=\"212.9333333333333\" y=\"";
         let idx = svg
             .find(needle)
-            .expect("pi=22 row 0 첫 cs=1 셀 (x=211.05) 을 찾지 못함");
+            .expect("pi=22 row 0 첫 cs=1 셀 (x=212.93) 을 찾지 못함");
         let after = &svg[idx + needle.len()..];
         let end = after.find('"').expect("y 종료 인용부호 없음");
         let y: f64 = after[..end].parse().expect("y 값 파싱 실패");

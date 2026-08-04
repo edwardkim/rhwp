@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: feedback_pr_supersede_chain
 description: "동일 컨트리뷰터의 연결 PR 처리 네 패턴 — (a) close+통합 머지, (b) 머지+supersede 통합, (c) 머지+회귀 정정 후속 통합, (d) 상호 보완 둘 다 머지. review 시작 시 같은 컨트리뷰터의 전후 PR 의도 점검 필수"
 metadata: 
   node_type: memory
   type: feedback
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
 동일 컨트리뷰터가 올린 연결된 PR들의 처리 패턴 (사례 축적):
