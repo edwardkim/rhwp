@@ -1,10 +1,26 @@
 name: Cancel stale PR runs
 
 # Update branch(synchronize) 뒤 같은 devel PR의 이전 SHA run을 force-cancel한다.
-# PR source를 checkout하거나 PR이 제공한 script를 실행하지 않는다. 외부 fork PR은 GitHub가
-# pull_request token을 읽기 전용으로 낮추므로 job을 skip하고 review 절차의 수동 처리로 남긴다.
+#
+# [#3508] 이중 트리거 — pull_request(same-repo 즉시) + pull_request_target(fork, main 반영 후).
+# - 실측(#3503, 2026-07-28): pull_request_target 트리거는 **default 브랜치(main)의 워크플로
+#   파일 기준으로 등록**된다. devel에만 있는 pull_request_target 정의는 발동하지 않는다.
+#   또한 트리거를 pull_request_target 단독으로 바꾸면 pull_request run은 PR merge-ref의
+#   파일을 쓰므로 same-repo 자동 cancel까지 함께 죽는다 — 그래서 두 이벤트를 모두 선언한다.
+# - pull_request: same-repo PR 전용(가드). fork PR은 토큰이 읽기 전용으로 강등돼 actions
+#   API를 못 부른다.
+# - pull_request_target: fork PR 전용(가드). 이 파일이 다음 릴리즈로 main에 실린 뒤부터
+#   발동한다. same-repo는 pull_request 경로와 중복되지 않게 skip한다.
+# - 안전 경계: 이 워크플로는 PR source를 checkout하지 않고, PR이 제공한 어떤 코드도
+#   실행하지 않는다. 순수 GitHub API 호출뿐이다. pull_request_target의 알려진 위험은
+#   PR 코드 실행에서 나오므로 이 경계를 바꾸는 수정은 보안 리뷰 없이 금지한다.
+# - fork run은 run.pull_requests 배열이 비는 GitHub quirk가 있어 PR 번호 매치 대신
+#   head_repository + head_branch + head_sha 대조로 stale을 판정한다.
 on:
   pull_request:
+    branches: [devel]
+    types: [synchronize]
+  pull_request_target:
     branches: [devel]
     types: [synchronize]
 
@@ -13,19 +29,26 @@ permissions:
   contents: read
   pull-requests: read
 
-# 연속 synchronize에서는 최신 reaper만 유지한다. reaper 안에서도 live head를 재확인하므로
-# 취소 요청 직전 최신 SHA를 보호한다.
+# 연속 synchronize에서는 최신 reaper만 유지한다. 이벤트별로 group을 분리한다 — 같은
+# synchronize에 두 이벤트가 다 뜨는 경우(main 반영 후 same-repo), group을 공유하면
+# skip될 run이 실제 동작할 run을 cancel-in-progress로 죽일 수 있다.
 concurrency:
-  group: cancel-stale-pr-runs-${{ github.event.pull_request.number }}
+  group: cancel-stale-pr-runs-${{ github.event_name }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   cancel-stale-runs:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    # same-repo는 pull_request 경로로, fork는 pull_request_target 경로로만 실행해
+    # 이중 발동을 막는다.
+    if: >-
+      (github.event_name == 'pull_request'
+        && github.event.pull_request.head.repo.full_name == github.repository)
+      || (github.event_name == 'pull_request_target'
+        && github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-latest
     steps:
       - name: Force-cancel older pull-request runs for this PR
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -48,7 +71,14 @@ jobs:
               core.info(`PR #${pullNumber} is ${pull.state}; nothing to cancel.`);
               return;
             }
+            const headRepo = pull.head.repo ? pull.head.repo.full_name : null;
+            if (!headRepo) {
+              core.info(`PR #${pullNumber} head repository is gone; nothing to cancel.`);
+              return;
+            }
 
+            // branch 필터는 head_branch 문자열 기준이라 fork run도 잡힌다. 다른 fork의
+            // 동명 branch와 섞이지 않도록 아래 filter에서 head_repository를 반드시 대조한다.
             const runs = await github.paginate(
               github.rest.actions.listWorkflowRunsForRepo,
               {
@@ -59,10 +89,14 @@ jobs:
                 per_page: 100,
               },
             );
+            // [#3508] fork run은 run.pull_requests가 빈 배열인 경우가 있어 PR 번호 매치를
+            // 쓰지 않는다. head_repository+head_branch가 이 PR의 head를 유일하게 식별한다.
             const staleRuns = runs.filter((run) => (
               run.head_sha !== pull.head.sha
               && activeStatuses.has(run.status)
-              && (run.pull_requests || []).some((runPull) => runPull.number === pullNumber)
+              && run.head_branch === pull.head.ref
+              && run.head_repository
+              && run.head_repository.full_name === headRepo
             ));
 
             let cancelled = 0;
@@ -79,14 +113,30 @@ jobs:
                 continue;
               }
 
-              await github.request(
-                'POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel',
-                {
+              try {
+                await github.request(
+                  'POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel',
+                  {
+                    owner,
+                    repo,
+                    run_id: run.id,
+                  },
+                );
+              } catch (error) {
+                // 목록을 읽은 뒤 API를 호출하는 사이 대상이 스스로 끝나면 GitHub가 409을
+                // 돌려준다. 다시 조회해 completed임을 확인한 경우만 정상 경과로 취급한다.
+                if (error.status !== 409) throw error;
+                const { data: currentRun } = await github.rest.actions.getWorkflowRun({
                   owner,
                   repo,
                   run_id: run.id,
-                },
-              );
+                });
+                if (currentRun.status !== 'completed') throw error;
+                core.info(
+                  `Skip stale run ${run.id} (${run.name}): already completed (${currentRun.conclusion ?? 'unknown'}).`,
+                );
+                continue;
+              }
               cancelled += 1;
               core.info(`Force-cancelled stale run ${run.id} (${run.name}, ${run.head_sha}).`);
             }
