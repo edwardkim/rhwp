@@ -328,7 +328,8 @@ export class EquationPropertiesDialog {
   private handleOk(): void {
     if (!this.props) return;
 
-    const fontSize = (parseInt(this.fontSizeInput.value, 10) || 10) * 100;
+    const fontSizeRaw = Math.max(1, Math.min(127, parseInt(this.fontSizeInput.value, 10) || 10));
+    const fontSize = fontSizeRaw * 100;
     const color = hexToColorRef(this.colorInput.value);
     const baseline = parseInt(this.baselineInput.value, 10) || 0;
     const fontName = this.fontNameInput.value.trim();

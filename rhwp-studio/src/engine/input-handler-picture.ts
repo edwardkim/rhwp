@@ -4,6 +4,7 @@
 import { MovePictureCommand, MoveShapeCommand, ResizeObjectCommand } from './command';
 import type { ObjectResizeTarget } from './command';
 import { computeArrowResize, MIN_SIZE_HWP, type ArrowKey } from './picture-resize';
+import { computeRotationRecord } from './object-drag-record';
 import type { CellPathLike } from '@/core/types';
 import { showToast } from '@/ui/toast';
 
@@ -886,7 +887,7 @@ export function finishPictureResizeDrag(this: any, e: MouseEvent): void {
         const relX = r.bboxX - origX;
         const relY = r.bboxY - origY;
         const sx = isCorner ? scaleX : (state.dir === 'n' || state.dir === 's' ? 1 : scaleX);
-        const sy = isCorner ? scaleX : (state.dir === 'e' || state.dir === 'w' ? 1 : scaleY);
+        const sy = isCorner ? scaleY : (state.dir === 'e' || state.dir === 'w' ? 1 : scaleY);
         const newPx = newOrigX + relX * sx;
         const newPy = newOrigY + relY * sy;
         const deltaH = Math.round((newPx - r.bboxX) * PX2HWP);
@@ -1135,8 +1136,31 @@ export function updatePictureRotateDrag(this: any, e: MouseEvent): void {
   }
 }
 
-/** 회전 드래그 종료: 핸들을 최종 회전 위치로 스냅 */
+/** 회전 드래그 종료: 최종 회전각을 Undo 히스토리에 기록하고 핸들을 최종 위치로 스냅 */
 export function finishPictureRotateDrag(this: any, _e: MouseEvent): void {
+  // [Task #2759] 드래그 중 setObjectProperties({rotationAngle})가 문서에 이미 반영됐으나
+  // 미기록이면 undo 불가·redo 미무효화·스냅샷 undo 동반 파괴. finishPictureResizeDrag 와
+  // 동형으로 kind:'record' 로 사후 기록한다(origAngle 은 드래그 시작 시 캡처됨).
+  const state = this.pictureRotateState;
+  if (state) {
+    try {
+      const props = getObjectProperties.call(this, state.ref);
+      const finalAngle = Math.round((props?.rotationAngle as number) ?? state.origAngle);
+      const record = computeRotationRecord(state.origAngle, finalAngle);
+      if (record) {
+        this.executeOperation({
+          kind: 'record',
+          command: new ResizeObjectCommand([{
+            sec: state.ref.sec, ppi: state.ref.ppi, ci: state.ref.ci,
+            type: state.ref.type, cellPath: state.ref.cellPath,
+            before: record.before, after: record.after,
+          }]),
+        });
+      }
+    } catch (err) {
+      console.warn('[InputHandler] 개체 회전 기록 실패:', err);
+    }
+  }
   this.isPictureRotateDragging = false;
   this.pictureRotateState = null;
   this.container.style.cursor = '';

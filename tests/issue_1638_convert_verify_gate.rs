@@ -24,7 +24,7 @@ fn temp_output(name: &str, ext: &str) -> PathBuf {
 
 #[test]
 fn export_hwpx_verify_and_verify_pages_pass() {
-    let exe = env!("CARGO_BIN_EXE_rhwp");
+    let exe = rhwp_bin();
     let out = temp_output("export", "hwpx");
 
     let output = Command::new(exe)
@@ -55,7 +55,7 @@ fn export_hwpx_verify_and_verify_pages_pass() {
 
 #[test]
 fn convert_verify_and_verify_pages_pass_for_hwp_source() {
-    let exe = env!("CARGO_BIN_EXE_rhwp");
+    let exe = rhwp_bin();
     let out = temp_output("convert", "hwp");
 
     let output = Command::new(exe)
@@ -82,4 +82,10 @@ fn convert_verify_and_verify_pages_pass_for_hwp_source() {
     assert!(stdout.contains("검증 통과(--verify): IR 차이 없음"));
 
     let _ = fs::remove_file(out);
+}
+
+/// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
+/// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }

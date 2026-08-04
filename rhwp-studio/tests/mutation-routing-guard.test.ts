@@ -151,7 +151,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/ui/page-setup-dialog.ts': 1,
   'src/ui/picture-props-dialog.ts': 5,
   'src/ui/section-settings-dialog.ts': 2,
-  'src/ui/style-dialog.ts': 1,
+  'src/ui/style-dialog.ts': 2, // +1: [#3387] 삭제를 snapshot 으로 라우팅하며 services 미주입 fallback 분기 추가(원장은 표면 수만 세므로 라우팅해도 줄지 않는다)
   'src/ui/style-edit-dialog.ts': 6,
   'src/ui/table-cell-props-dialog.ts': 2,
   'src/ui/toolbar.ts': 4,
@@ -162,7 +162,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/engine/input-handler-mouse.ts': 3,
   'src/engine/input-handler-picture.ts': 11,
   'src/engine/input-handler-table.ts': 7,
-  'src/engine/input-handler-text.ts': 14,
+  'src/engine/input-handler-text.ts': 11, // #2424: raw IME delete를 command 공통 typed helper로 이관
 };
 
 test('뮤테이션 표면 원장: 신규·증가 사이트는 baseline 갱신을 강제한다', () => {

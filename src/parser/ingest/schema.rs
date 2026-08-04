@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 /// 문서 전체 — Skill이 작성하는 JSON 최상위.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct IngestDocument {
     /// 스키마 버전 (현재 "1" 만 허용).
     pub version: String,
@@ -51,6 +52,7 @@ fn default_font() -> String {
 
 /// 페이지 크기 (mm 단위).
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PageSize {
     pub width_mm: f32,
     pub height_mm: f32,
@@ -58,6 +60,7 @@ pub struct PageSize {
 
 /// 여러 문제가 공유하는 지문.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Passage {
     /// 지문 ID. `Question.passage_ref` 에서 참조한다.
     pub id: String,
@@ -68,6 +71,7 @@ pub struct Passage {
 
 /// 한 문제 단위.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Question {
     /// 문제 번호 (보통 1~30).
     pub number: u32,
@@ -104,7 +108,14 @@ fn default_auto_number() -> bool {
 }
 
 /// 지문 내 블록 (텍스트 또는 이미지).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// [#3358] `Deserialize` 는 수동 구현이다 — serde 의 internally-tagged enum 은
+/// `deny_unknown_fields` 를 지원하지 않아, 필드명 오타·구조 착오(예: boxed 에 `text`)가
+/// 조용히 무시되고 **내용이 소리 없이 유실**됐다. 전 필드 합집합([`RawStemBlock`],
+/// `deny_unknown_fields`)으로 받은 뒤 type 별 허용 필드를 검증해, 틀린 입력은
+/// 무엇이 왜 틀렸는지 힌트가 붙은 오류로 즉시 실패한다 (ingest 는 기계 생성 입력이라
+/// 관용 파싱의 이득이 없고, 실패는 빠를수록 싸다).
+#[derive(Debug, Clone, Serialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum StemBlock {
     /// 텍스트 단락.
@@ -129,8 +140,133 @@ pub enum StemBlock {
     },
 }
 
+/// [#3358] StemBlock 전 변형의 필드 합집합 — 미지 필드 거부와 type 별 검증의 중간층.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawStemBlock {
+    #[serde(rename = "type")]
+    block_type: String,
+    #[serde(default)]
+    text: Option<String>,
+    #[serde(rename = "ref", default)]
+    ref_: Option<String>,
+    #[serde(default)]
+    placement: Option<Placement>,
+    #[serde(default)]
+    title: Option<String>,
+    #[serde(default)]
+    blocks: Option<Vec<StemBlock>>,
+}
+
+impl<'de> Deserialize<'de> for StemBlock {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::de::Error;
+        let raw = RawStemBlock::deserialize(deserializer)?;
+        let forbid =
+            |present: bool, block: &str, field: &str, hint: &str| -> Result<(), D::Error> {
+                if present {
+                    Err(D::Error::custom(format!(
+                        "{block} 블록에 허용되지 않는 필드 '{field}' — {hint}"
+                    )))
+                } else {
+                    Ok(())
+                }
+            };
+        match raw.block_type.as_str() {
+            "text" => {
+                forbid(
+                    raw.ref_.is_some(),
+                    "text",
+                    "ref",
+                    "이미지는 type:\"image\" 블록을 쓰세요",
+                )?;
+                forbid(
+                    raw.placement.is_some(),
+                    "text",
+                    "placement",
+                    "placement 는 image 블록 전용입니다",
+                )?;
+                forbid(
+                    raw.title.is_some(),
+                    "text",
+                    "title",
+                    "title 은 boxed 블록 전용입니다",
+                )?;
+                forbid(
+                    raw.blocks.is_some(),
+                    "text",
+                    "blocks",
+                    "blocks 는 boxed 블록 전용입니다",
+                )?;
+                let text = raw
+                    .text
+                    .ok_or_else(|| D::Error::custom("text 블록에 'text' 필드가 필요합니다"))?;
+                Ok(StemBlock::Text { text })
+            }
+            "image" => {
+                forbid(
+                    raw.text.is_some(),
+                    "image",
+                    "text",
+                    "본문은 type:\"text\" 블록으로 넣으세요",
+                )?;
+                forbid(
+                    raw.title.is_some(),
+                    "image",
+                    "title",
+                    "title 은 boxed 블록 전용입니다",
+                )?;
+                forbid(
+                    raw.blocks.is_some(),
+                    "image",
+                    "blocks",
+                    "blocks 는 boxed 블록 전용입니다",
+                )?;
+                let ref_ = raw.ref_.ok_or_else(|| {
+                    D::Error::custom("image 블록에 'ref' 필드가 필요합니다 (media[].id 참조)")
+                })?;
+                Ok(StemBlock::Image {
+                    ref_,
+                    placement: raw.placement.unwrap_or_default(),
+                })
+            }
+            "boxed" => {
+                forbid(
+                    raw.text.is_some(),
+                    "boxed",
+                    "text",
+                    "박스 내용은 'blocks' 배열의 text 블록으로 넣으세요",
+                )?;
+                forbid(
+                    raw.ref_.is_some(),
+                    "boxed",
+                    "ref",
+                    "이미지는 blocks 안의 image 블록으로 넣으세요",
+                )?;
+                forbid(
+                    raw.placement.is_some(),
+                    "boxed",
+                    "placement",
+                    "placement 는 image 블록 전용입니다",
+                )?;
+                Ok(StemBlock::Boxed {
+                    title: raw.title,
+                    blocks: raw.blocks.unwrap_or_default(),
+                })
+            }
+            other => Err(D::Error::custom(format!(
+                "알 수 없는 블록 type '{other}' (지원: text|image|boxed)"
+            ))),
+        }
+    }
+}
+
 /// 선택지 항목.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Choice {
     /// 표시 라벨 (예: "①" U+2460).
     pub label: String,
@@ -140,6 +276,7 @@ pub struct Choice {
 
 /// 이미지 메타.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Media {
     /// 미디어 ID (예: "img/q1_passage.png").
     /// `--media-dir` 기준 상대 경로로 해석한다.
@@ -283,5 +420,70 @@ mod tests {
         assert_eq!(p_str, r#""between""#);
         let p: Placement = serde_json::from_str(r#""inline""#).unwrap();
         assert_eq!(p, Placement::Inline);
+    }
+
+    // ── [#3358] 미지 필드 거부 — 침묵 유실 대신 즉시 실패 ────────────────────
+
+    /// 관찰된 실제 사고 형태: boxed 에 text 를 주면 종전에는 빈 박스가 조용히 생겼다.
+    #[test]
+    fn boxed_with_text_is_rejected_with_hint() {
+        let e = serde_json::from_str::<StemBlock>(r#"{"type":"boxed","text":"소속: 성명:"}"#)
+            .unwrap_err()
+            .to_string();
+        assert!(e.contains("boxed 블록에 허용되지 않는 필드 'text'"), "{e}");
+        assert!(e.contains("blocks"), "힌트가 있어야 합니다: {e}");
+    }
+
+    #[test]
+    fn unknown_block_field_is_rejected() {
+        let e = serde_json::from_str::<StemBlock>(r#"{"type":"text","text":"a","bold":true}"#)
+            .unwrap_err()
+            .to_string();
+        assert!(e.contains("bold"), "{e}");
+    }
+
+    #[test]
+    fn unknown_block_type_is_rejected() {
+        let e = serde_json::from_str::<StemBlock>(r#"{"type":"table"}"#)
+            .unwrap_err()
+            .to_string();
+        assert!(e.contains("알 수 없는 블록 type 'table'"), "{e}");
+    }
+
+    #[test]
+    fn top_level_typo_is_rejected() {
+        let json = r#"{"version":"1","defaul_font":"바탕","questions":[]}"#;
+        let e = serde_json::from_str::<IngestDocument>(json)
+            .unwrap_err()
+            .to_string();
+        assert!(e.contains("defaul_font"), "{e}");
+    }
+
+    #[test]
+    fn question_typo_is_rejected() {
+        let json = r#"{
+            "version": "1",
+            "questions": [{
+                "number": 1, "stem": "Q", "choice": [], "choices": []
+            }]
+        }"#;
+        let e = serde_json::from_str::<IngestDocument>(json)
+            .unwrap_err()
+            .to_string();
+        assert!(e.contains("choice"), "{e}");
+    }
+
+    /// 필드를 전부 채운 정상 블록 3형은 종전과 동일하게 파싱된다.
+    #[test]
+    fn valid_blocks_still_parse() {
+        let b: StemBlock =
+            serde_json::from_str(r#"{"type":"image","ref":"img/a.png","placement":"below"}"#)
+                .unwrap();
+        assert!(matches!(b, StemBlock::Image { .. }));
+        let b: StemBlock = serde_json::from_str(
+            r#"{"type":"boxed","title":"<보기>","blocks":[{"type":"text","text":"본문"}]}"#,
+        )
+        .unwrap();
+        assert!(matches!(b, StemBlock::Boxed { .. }));
     }
 }

@@ -184,6 +184,62 @@ test('AutosaveManager는 저장 상태 콜백을 보낸다', async () => {
   assert.deepEqual(states, ['saving', 'saved']);
 });
 
+test('AutosaveManager는 저장 진행 중 discard가 끼어들면 저장 완료로 부활한 draft를 재삭제한다', async () => {
+  const ops: string[] = [];
+  let signalSaveEntered: () => void = () => {};
+  const saveEntered = new Promise<void>((resolve) => {
+    signalSaveEntered = resolve;
+  });
+  let resolveSave: () => void = () => {};
+  const store: AutosaveStoreLike = {
+    async saveDraft(draft) {
+      signalSaveEntered();
+      await new Promise<void>((resolve) => {
+        resolveSave = resolve;
+      });
+      ops.push(`save:${draft.id}`);
+    },
+    async deleteDraft(id) {
+      ops.push(`delete:${id}`);
+    },
+  };
+  const manager = new AutosaveManager({
+    exportBytes: () => new Uint8Array([1]),
+    schedule: { recoveryEnabled: false, idleEnabled: false },
+    idFactory: () => 'draft-race',
+    store,
+    logger: { debug() {}, warn() {} },
+  });
+
+  await manager.beginDocument({ fileName: 'race.hwp', sourceFormat: 'hwp' });
+  const flushPromise = manager.flushNow('typing');
+  await saveEntered; // 저장이 IndexedDB put 대기 중인 시점
+  const discardPromise = manager.discardCurrentDraft('host-save');
+  await discardPromise;
+  resolveSave(); // put 완료 — draft 부활 시점
+  await flushPromise;
+
+  // discard 후 완료된 저장은 draft를 부활시키므로 반드시 재삭제되어야 한다
+  assert.deepEqual(ops, ['delete:draft-race', 'save:draft-race', 'delete:draft-race']);
+});
+
+test('AutosaveManager는 discard 없는 정상 flush에서는 draft를 삭제하지 않는다', async () => {
+  const { store, saved, deleted } = createStore();
+  const manager = new AutosaveManager({
+    exportBytes: () => new Uint8Array([6]),
+    schedule: { recoveryEnabled: false, idleEnabled: false },
+    idFactory: () => 'draft-plain',
+    store,
+    logger: { debug() {}, warn() {} },
+  });
+
+  await manager.beginDocument({ fileName: 'plain.hwp', sourceFormat: 'hwp' });
+  await manager.flushNow('typing');
+
+  assert.equal(saved.length, 1);
+  assert.deepEqual(deleted, []);
+});
+
 test('AutosaveManager는 대기 중인 저장이 없으면 설정 변경만으로 draft를 저장하지 않는다', async () => {
   const { store, saved } = createStore();
   const manager = new AutosaveManager({

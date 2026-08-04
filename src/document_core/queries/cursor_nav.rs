@@ -8,7 +8,25 @@ use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::renderer::render_tree::PageRenderTree;
+use crate::renderer::render_tree::{PageRenderTree, TextRunNode};
+
+/// 화면에서는 여러 글자로 보이지만 모델에서는 marker 한 글자인 필드 런의 캐럿 경계다.
+///
+/// `compute_char_positions(run.text)`는 raw marker의 가상 글리프 폭을 반환하므로,
+/// field display 런은 레이아웃이 확정한 bbox 끝을 모델 한 글자의 끝으로 쓴다.
+fn cursor_positions_for_render_run(run: &TextRunNode, bbox_width: f64) -> Vec<f64> {
+    let is_expanded_field_marker = run.display_text.is_some()
+        && run.text.chars().count() == 1
+        && matches!(
+            run.text.chars().next(),
+            Some('\u{0015}' | '\u{0016}' | '\u{0017}' | '\u{2007}')
+        );
+    if is_expanded_field_marker {
+        vec![0.0, bbox_width]
+    } else {
+        crate::renderer::layout::compute_char_positions(&run.text, &run.style)
+    }
+}
 
 fn is_caret_logical_inline_control(ctrl: &Control) -> bool {
     is_treat_as_char_object_control(ctrl)
@@ -328,7 +346,6 @@ impl DocumentCore {
         preferred_x: f64,
         cell_ctx: Option<(usize, usize, usize, usize)>,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         // ═══ PHASE 1: preferredX 결정 ═══
@@ -1085,7 +1102,7 @@ impl DocumentCore {
                     let cc = tr.text.chars().count();
                     // 이 run이 목표 줄의 char_range에 겹치는지 확인
                     if cs < char_range.1 && cs + cc > char_range.0 {
-                        let positions = compute_char_positions(&tr.text, &tr.style);
+                        let positions = cursor_positions_for_render_run(tr, node.bbox.width);
                         result.push(RunMatch {
                             char_start: cs,
                             char_count: cc,
@@ -1823,7 +1840,7 @@ impl DocumentCore {
                         let cs = tr.char_start.unwrap_or(0);
                         let cc = tr.text.chars().count();
                         if offset >= cs && offset <= cs + cc {
-                            let pos = compute_char_positions(&tr.text, &tr.style);
+                            let pos = cursor_positions_for_render_run(tr, node.bbox.width);
                             let lo = offset - cs;
                             let xr = if lo < pos.len() {
                                 pos[lo]
@@ -1895,19 +1912,15 @@ impl DocumentCore {
                 best: &mut Option<(u8, CursorHit)>,
             ) {
                 if let RenderNodeType::TextRun(ref tr) = node.node_type {
-                    let matches_cell = tr.cell_context.as_ref().map_or(false, |ctx| {
-                        ctx.path.first().map_or(false, |entry| {
-                            ctx.parent_para_index == ppi
-                                && entry.control_index == ci
-                                && entry.cell_index == cei
-                                && entry.cell_para_index == cpi
-                        })
-                    });
+                    let matches_cell = tr
+                        .cell_context
+                        .as_ref()
+                        .is_some_and(|ctx| flat_cell_ctx_matches(ctx, ppi, ci, cei, cpi));
                     if matches_cell {
                         let cs = tr.char_start.unwrap_or(0);
                         let cc = tr.text.chars().count();
                         if offset >= cs && offset <= cs + cc {
-                            let pos = compute_char_positions(&tr.text, &tr.style);
+                            let pos = cursor_positions_for_render_run(tr, node.bbox.width);
                             let lo = offset - cs;
                             let xr = if lo < pos.len() {
                                 pos[lo]
@@ -2226,6 +2239,73 @@ impl DocumentCore {
         }
 
         Ok(format!("[{}]", rects.join(",")))
+    }
+}
+
+/// [#2651] `get_selection_rects_native` 의 셀 매칭 술어. `cell_ctx` 는 평면
+/// 3-튜플(parent_para_idx, control_idx, cell_idx)이라 애초에 중첩 셀을 정확히
+/// 지정할 수 없다 — `path.len() == 1` 가드 없이 `path[0]` 만 비교하면, 중첩
+/// 표 내부(depth>=2) run 이 그 중첩 표를 품은 바깥 셀과 동일한 `path[0]` 을
+/// 가져 잘못 매칭된다(같은 클래스의 이미 고친 `cursor_rect.rs` 버그와 동형).
+fn flat_cell_ctx_matches(
+    ctx: &crate::renderer::layout::CellContext,
+    ppi: usize,
+    ci: usize,
+    cei: usize,
+    cpi: usize,
+) -> bool {
+    ctx.path.len() == 1
+        && ctx.path.first().is_some_and(|entry| {
+            ctx.parent_para_index == ppi
+                && entry.control_index == ci
+                && entry.cell_index == cei
+                && entry.cell_para_index == cpi
+        })
+}
+
+#[cfg(test)]
+mod flat_cell_ctx_matches_tests {
+    use super::flat_cell_ctx_matches;
+    use crate::renderer::layout::{CellContext, CellPathEntry};
+
+    fn entry(control_index: usize, cell_index: usize, cell_para_index: usize) -> CellPathEntry {
+        CellPathEntry {
+            control_index,
+            cell_index,
+            cell_para_index,
+            text_direction: 0,
+        }
+    }
+
+    #[test]
+    fn matches_direct_single_level_cell() {
+        let ctx = CellContext {
+            parent_para_index: 0,
+            path: vec![entry(1, 2, 3)],
+        };
+        assert!(flat_cell_ctx_matches(&ctx, 0, 1, 2, 3));
+    }
+
+    #[test]
+    fn rejects_nested_cell_sharing_the_same_outer_path_entry() {
+        // 중첩 표 내부 run: path = [바깥 셀(1,2,3), 안쪽 셀(0,0,0)].
+        // path[0] 은 바깥 셀 질의(0,1,2,3)와 정확히 같지만, 이 run 은 실제로
+        // 안쪽 셀에 속하므로 매칭돼선 안 된다 — 종전엔 path.len() 가드가
+        // 없어 여기서 잘못 true 를 반환했다(#2651).
+        let ctx = CellContext {
+            parent_para_index: 0,
+            path: vec![entry(1, 2, 3), entry(0, 0, 0)],
+        };
+        assert!(!flat_cell_ctx_matches(&ctx, 0, 1, 2, 3));
+    }
+
+    #[test]
+    fn rejects_mismatched_outer_indices() {
+        let ctx = CellContext {
+            parent_para_index: 0,
+            path: vec![entry(1, 2, 3)],
+        };
+        assert!(!flat_cell_ctx_matches(&ctx, 0, 9, 9, 9));
     }
 }
 

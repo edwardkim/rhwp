@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/rendering_engine_design.md
-last_verified: 2026-07-16
+last_verified: 2026-07-23
 ---
 
 # RHWP 렌더링 엔진 아키텍처 설계서
@@ -386,3 +386,59 @@ rhwp --help
 | renderer (8개 파일) | 44 |
 | wasm_api | 12 |
 | 합계 | **88** |
+
+## 12. 렌더 정규화 derived state 계약
+
+`DocumentCore.document`는 저장·편집 가능한 유일한 권위 IR이다. 렌더 전용 보정은
+`RenderNormalizationState`에서 source IR과 revision으로부터 재생성하며 derived state를 다시
+source에 쓰거나 편집 때 clone 경로를 직접 mirror하지 않는다.
+
+### 상태와 revision
+
+| 상태 | 의미 | 무효화 |
+| --- | --- | --- |
+| `document_epoch` | 문서 교체·전체 재초기화 세대 | 모든 section revision 증가, path ledger 초기화 |
+| `section_revisions` | section 구조·페이지 기하 세대 | 해당 section derived projection 재생성 |
+| `path_revisions` | 구조가 안정적인 셀/caption/textbox 편집 세대 | 해당 logical path 변경 기록 |
+| `sections` | #2004 이미지 스택 immutable compatibility projection | `source_revision` 일치 시 같은 `Arc` 재사용 |
+| `overlay` | #2195 중첩 표 effective width-scale 희소 projection | 현재 source path에서 재구축, stable entry `Arc` 재사용 |
+
+일반 `mark_section_dirty()`는 pagination dirty와 section normalization revision 증가를 함께 수행한다.
+문단/control/cell 수가 바뀌지 않는 deferred cell text edit은 명시적 path revision을 먼저 올리고
+pagination만 dirty로 표시한다. #2004 compatibility projection이 실제 존재하는 section은 그
+projection만 section revision으로 무효화한 뒤 transient render 전에 source IR에서 다시 만든다.
+
+### 논리 경로와 lookup
+
+cache identity는 section/상위 문단과 다음 `RenderPathEntry`의 조합이다.
+
+- `TableCell { control_index, cell_index, paragraph_index }`
+- `TableCaption { control_index, paragraph_index }`
+- `ShapeTextBox { control_index, paragraph_index }`
+- `PictureCaption { control_index, paragraph_index }`
+
+표 캡션 API의 legacy cell sentinel은 mutation 경계에서만 해석하며 cache key에는 들어가지 않는다.
+각 단계의 control variant와 index를 source IR에서 검증하고, 불일치는 이전 entry를 반환하지 않고
+`RenderError`로 표면화한다.
+
+#2195 hot path는 source `Table` 주소로 width-scale을 O(1) 조회하지만 주소는 권위 key가 아니다.
+overlay를 만들 때 logical path map과 pointer index를 현재 source IR에서 함께 재구축한다. 이전
+projection은 path, source/effective width, 현재 pointer가 모두 같을 때만 `Arc`를 재사용한다.
+source path가 사라지면 이전 entry도 함께 사라진다.
+
+### #2004와 #2195의 표현 차이
+
+#2195는 중첩 표의 저장 폭과 부모 셀 실효 폭 사이의 배율만 달라지므로
+`NestedTableWidthProjection` 하나로 표현한다. `HeightMeasurer`와 `LayoutEngine`의 열 폭, 셀 내용 폭,
+border geometry가 같은 overlay scale을 소비하며 source `Table`/`Cell` 폭은 바뀌지 않는다.
+
+#2004 셀 이미지 스택은 TAC 재분류뿐 아니라 셀 문단 cardinality, 합성 `LINE_SEG`,
+`ComposedParagraph`를 함께 바꾸는 구조 projection이다. 현재 renderer/typeset의 slice 계약을
+보존하기 위해 영향 section에만 immutable `Arc<Vec<Paragraph>>`와
+`Arc<Vec<ComposedParagraph>>`를 둔다. 같은 section revision에서는 재복제하지 않으며 편집 경로를
+직접 수정하지 않는다. 따라서 mutable clone coherence 문제는 제거하면서 기존 #2004 조판을
+보존한다.
+
+관련 source guard는 `tests/issue_2308_render_normalized_guard.rs`, 기능·재사용·stale fallback 검증은
+`renderer::render_normalization::tests`와
+`document_core::queries::rendering::tests::issue_2308_*`가 담당한다.

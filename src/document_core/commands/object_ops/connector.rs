@@ -21,6 +21,7 @@ impl DocumentCore {
         end_subject_id: u32,
         end_subject_index: u32,
     ) {
+        let mut mutated = false;
         if let Some(section) = self.document.sections.get_mut(section_idx) {
             if let Some(para) = section.paragraphs.get_mut(para_idx) {
                 if let Some(Control::Shape(ref mut shape)) = para.controls.get_mut(control_idx) {
@@ -30,9 +31,18 @@ impl DocumentCore {
                             conn.start_subject_index = start_subject_index;
                             conn.end_subject_id = end_subject_id;
                             conn.end_subject_index = end_subject_index;
+                            mutated = true;
                         }
                     }
                 }
+            }
+            // [#2698] IR을 실제로 바꾼 경우에만 구역 패스스루를 무효화한다.
+            // 무효화하지 않으면 serialize_section 이 원본 raw_stream 을 그대로
+            // 반환해(body_text.rs:26-30) 이 편집이 저장 결과에서 사라진다.
+            // 인덱스가 빗나가 아무것도 바꾸지 않은 경로에서는 라운드트립을
+            // 깨뜨리지 않기 위해 조건부로 둔다.
+            if mutated {
+                section.raw_stream = None;
             }
         }
     }
@@ -48,6 +58,7 @@ impl DocumentCore {
     ) {
         use crate::model::shape::ConnectorControlPoint;
 
+        let mut routed = false;
         let section = match self.document.sections.get_mut(section_idx) {
             Some(s) => s,
             None => return,
@@ -84,6 +95,9 @@ impl DocumentCore {
         // 직선 연결선: 제어점 불필요
         if !conn.link_type.is_stroke() && !conn.link_type.is_arc() {
             conn.control_points.clear();
+            // [#2698] 이 조기 반환 경로도 제어점 목록을 비우는 실제 IR 변경이므로
+            // 아래 공통 무효화를 타지 못하는 만큼 여기서 직접 무효화한다.
+            section.raw_stream = None;
             return;
         }
 
@@ -136,6 +150,7 @@ impl DocumentCore {
                     point_type: 26,
                 }, // 끝 앵커
             ];
+            routed = true;
         } else {
             // ─── 꺽인 연결선: 직각 꺾임점 ───
             let mut pts = Vec::new();
@@ -207,6 +222,11 @@ impl DocumentCore {
                 point_type: 26,
             });
             conn.control_points = pts;
+            routed = true;
+        }
+        // [#2698] 제어점을 실제로 재구성한 경우에만 구역 패스스루를 무효화한다.
+        if routed {
+            section.raw_stream = None;
         }
     }
     /// 구역 내 모든 연결선을 스캔하여 연결된 도형의 현재 위치에 맞게 갱신한다.
@@ -256,6 +276,7 @@ impl DocumentCore {
         }
 
         // 2) 커넥터 찾기 및 좌표 갱신
+        let mut geometry_updated = false;
         let section = match self.document.sections.get_mut(section_idx) {
             Some(s) => s,
             None => return,
@@ -311,7 +332,14 @@ impl DocumentCore {
                 line.drawing.shape_attr.rotation_center.x = new_w as i32 / 2;
                 line.drawing.shape_attr.rotation_center.y = new_h as i32 / 2;
                 line.drawing.shape_attr.raw_rendering = Vec::new();
+                geometry_updated = true;
             }
+        }
+        // [#2698] bbox/로컬좌표를 실제로 갱신한 경우에만 구역 패스스루를 무효화한다.
+        // (3) 단계의 제어점 재계산은 recalculate_connector_routing 이 자체적으로
+        // 무효화하므로, 여기서는 좌표만 바뀌고 라우팅 대상이 없는 경우를 덮는다.
+        if geometry_updated {
+            section.raw_stream = None;
         }
 
         // 3) 제어점 재계산 (인덱스 수집 후 별도 루프 — borrow checker 대응)
@@ -343,5 +371,113 @@ impl DocumentCore {
         for (pi, ci, si, ei) in routing_targets {
             self.recalculate_connector_routing(section_idx, pi, ci, si, ei);
         }
+    }
+}
+
+/// [#2698] 커넥터 뮤테이터의 구역 패스스루 무효화 계약.
+///
+/// `serialize_section` 은 `Section::raw_stream` 이 `Some` 이면 구역 전체를 원본
+/// 그대로 반환한다(`serializer/body_text.rs:26-30`). 따라서 IR 을 고친 뮤테이터가
+/// 그 층을 무효화하지 않으면 편집이 저장 결과에서 사라진다. 이 모듈의 다른
+/// 형제(`picture.rs`/`shape.rs`/`table.rs` 등)는 전부 뮤테이션 지점에서
+/// 무효화하지만 `connector.rs` 만 누락되어 있었다.
+#[cfg(test)]
+mod connector_passthrough_invalidation_tests {
+    use crate::document_core::DocumentCore;
+    use crate::model::control::Control;
+    use crate::model::shape::{ConnectorData, LineShape, LinkLineType, ShapeObject};
+
+    /// 방금 로드한 원본 문서를 모사한다 — 커넥터 1개가 있고, 구역 패스스루가
+    /// 아직 살아 있어 저장 시 원본 바이트가 그대로 반환될 상태.
+    ///
+    /// 반환값의 `usize` 는 삽입한 커넥터의 `control_idx` 다. 빈 문서의 첫 문단은
+    /// 이미 SectionDef/ColumnDef 컨트롤을 갖고 있어 0 이 아니므로, 하드코딩하지
+    /// 않고 실제 인덱스를 돌려준다.
+    fn core_with_live_passthrough() -> (DocumentCore, usize) {
+        core_with_connector_of(LinkLineType::StrokeBoth)
+    }
+
+    fn core_with_connector_of(link_type: LinkLineType) -> (DocumentCore, usize) {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+
+        let line = LineShape {
+            connector: Some(ConnectorData {
+                link_type,
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let controls = &mut core.document.sections[0].paragraphs[0].controls;
+        let ctrl_idx = controls.len();
+        controls.push(Control::Shape(Box::new(ShapeObject::Line(line))));
+
+        core.document.sections[0].raw_stream = Some(vec![0xAB; 16]);
+        (core, ctrl_idx)
+    }
+
+    #[test]
+    fn update_connector_subject_ids_invalidates_section_passthrough() {
+        let (mut core, ctrl_idx) = core_with_live_passthrough();
+        assert!(
+            core.document.sections[0].raw_stream.is_some(),
+            "전제 성립 확인: 뮤테이션 전에는 패스스루가 살아 있어야 한다"
+        );
+
+        core.update_connector_subject_ids(0, 0, ctrl_idx, 3, 1, 4, 2);
+
+        assert!(
+            core.document.sections[0].raw_stream.is_none(),
+            "[#2698] SubjectID 를 바꿨으면 구역 패스스루가 무효화되어야 한다 — \
+             그렇지 않으면 저장 시 원본 바이트가 그대로 나가 편집이 사라진다"
+        );
+    }
+
+    #[test]
+    fn recalculate_connector_routing_invalidates_section_passthrough() {
+        let (mut core, ctrl_idx) = core_with_live_passthrough();
+        assert!(core.document.sections[0].raw_stream.is_some());
+
+        core.recalculate_connector_routing(0, 0, ctrl_idx, 1, 3);
+
+        assert!(
+            core.document.sections[0].raw_stream.is_none(),
+            "[#2698] 제어점을 재구성했으면 구역 패스스루가 무효화되어야 한다"
+        );
+    }
+
+    /// `recalculate_connector_routing` 은 링크 타입에 따라 세 갈래로 갈라지고,
+    /// 세 갈래 모두 `control_points` 를 바꾼다(꺾인=재구성, 곡선=재구성,
+    /// 직선=clear 후 조기 반환). 한 갈래만 무효화하면 나머지 둘에서 편집이
+    /// 조용히 사라지므로 갈래별로 계약을 고정한다.
+    #[test]
+    fn every_routing_branch_invalidates_section_passthrough() {
+        for link_type in [
+            LinkLineType::StrokeBoth,      // 꺾인 — 공통 경로
+            LinkLineType::ArcBoth,         // 곡선 — 별도 분기
+            LinkLineType::StraightNoArrow, // 직선 — clear 후 조기 반환
+        ] {
+            let (mut core, ctrl_idx) = core_with_connector_of(link_type);
+            core.recalculate_connector_routing(0, 0, ctrl_idx, 1, 3);
+            assert!(
+                core.document.sections[0].raw_stream.is_none(),
+                "[#2698] {link_type:?} 갈래에서 구역 패스스루가 무효화되지 않았다"
+            );
+        }
+    }
+
+    /// 무효화를 무조건 하지 않고 조건부로 둔 설계를 고정한다. 인덱스가 빗나가
+    /// 아무것도 바꾸지 않은 호출은 완전 라운드트립을 깨뜨리지 않아야 한다.
+    #[test]
+    fn no_op_call_keeps_passthrough_intact() {
+        let (mut core, _) = core_with_live_passthrough();
+
+        core.update_connector_subject_ids(0, 0, 99, 3, 1, 4, 2);
+        core.recalculate_connector_routing(0, 0, 99, 1, 3);
+
+        assert!(
+            core.document.sections[0].raw_stream.is_some(),
+            "[#2698] IR 을 바꾸지 않은 호출은 패스스루를 유지해야 한다"
+        );
     }
 }

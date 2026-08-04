@@ -1,0 +1,120 @@
+name: Cache Generation Sweep
+
+# [#3684] Actions cache 세대 누적 정리.
+#
+# 근인: rust-cache·CodeQL·frontend-wasm 이 Cargo.lock / SHA 해시별로 새 캐시를
+# 만들고, 구 세대가 GitHub 의 7일 미사용 만료까지 자리를 차지한다. 실측(2026-08-02)
+# 에서 42개 10.13GB 중 29개 7.60GB 가 구 세대였고, 논리 그룹별 최신 1개만 남기면
+# 2.53GB 로 내려간다.
+#
+# 이 워크플로는 **그룹별 최신 N세대만 남기고 나머지를 삭제**한다. 그룹은 키에서
+# 후행 해시를 뗀 것이다(예: `v0-rust-lint-Linux-x64-6f43fa4a-<lock>` →
+# `v0-rust-lint-Linux-x64-6f43fa4a`).
+#
+# 안전 경계:
+# - checkout 하지 않고 PR 코드를 실행하지 않는다.
+# - 권한은 `actions: write` 하나뿐이다.
+# - 열린 PR 의 ref 캐시는 건드리지 않는다(머지 전 재사용 대상).
+# - 그룹별로 최신 KEEP_GENERATIONS 개를 남긴다 — 진행 중 job 이 방금 만든 캐시를
+#   지우지 않기 위한 여유다.
+
+on:
+  schedule:
+    # 매일 1회. devel push 마다 돌 필요가 없다 — 세대는 Cargo.lock 변경 시에만 는다.
+    - cron: "23 18 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 삭제하지 않고 대상만 로그로 남긴다
+        required: false
+        default: true
+        type: boolean
+      keep_generations:
+        description: 그룹별로 남길 최신 세대 수
+        required: false
+        default: "2"
+        type: string
+
+permissions:
+  actions: write
+
+concurrency:
+  group: cache-generation-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Sweep stale cache generations
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+          KEEP_GENERATIONS: ${{ github.event_name == 'workflow_dispatch' && inputs.keep_generations || '2' }}
+        with:
+          script: |
+            const dryRun = process.env.DRY_RUN === 'true';
+            const keep = Math.max(1, Number(process.env.KEEP_GENERATIONS) || 2);
+
+            // 열린 PR 의 ref 는 보호한다 — 머지 전에 재사용된다.
+            const openPrs = await github.paginate(
+              github.rest.pulls.list, { ...context.repo, state: 'open', per_page: 100 },
+            );
+            const openPrRefs = new Set(openPrs.map((pr) => `refs/pull/${pr.number}/merge`));
+
+            // paginate 는 이 엔드포인트의 `actions_caches` 를 평탄화해 배열로 준다
+            // (`res.data.actions_caches` 로 접근하면 undefined — 2026-08-02 실측).
+            const caches = await github.paginate(
+              github.rest.actions.getActionsCacheList, { ...context.repo, per_page: 100 },
+            );
+
+            const before = caches.reduce((n, c) => n + c.size_in_bytes, 0);
+            const gb = (b) => (b / 1024 ** 3).toFixed(2);
+            core.info(`현재 캐시 ${caches.length}개 / ${gb(before)}GB (열린 PR ${openPrRefs.size}건 보호)`);
+
+            // 키에서 후행 해시를 떼어 논리 그룹으로 묶는다.
+            const groupOf = (key) => key.replace(/[-_][0-9a-f]{8,}$/, '');
+            const groups = new Map();
+            for (const c of caches) {
+              if (openPrRefs.has(c.ref)) continue;
+              const g = `${c.ref}::${groupOf(c.key)}`;
+              if (!groups.has(g)) groups.set(g, []);
+              groups.get(g).push(c);
+            }
+
+            const stale = [];
+            for (const [, items] of groups) {
+              items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+              stale.push(...items.slice(keep));
+            }
+
+            if (stale.length === 0) {
+              core.info(`정리 대상 없음 (그룹별 최신 ${keep}세대 유지)`);
+              return;
+            }
+
+            const staleBytes = stale.reduce((n, c) => n + c.size_in_bytes, 0);
+            core.info(`정리 대상 ${stale.length}개 / ${gb(staleBytes)}GB${dryRun ? ' [dry-run]' : ''}`);
+            for (const c of stale) {
+              core.info(`  ${dryRun ? '(예정)' : '삭제'} ${c.key} (${(c.size_in_bytes / 1024 ** 2).toFixed(0)}MB, ${c.created_at.slice(0, 10)}, ${c.ref})`);
+              if (dryRun) continue;
+              try {
+                await github.rest.actions.deleteActionsCacheById({ ...context.repo, cache_id: c.id });
+              } catch (error) {
+                // 다른 run 이 이미 지웠거나 만료됐을 수 있다 — 치명적이지 않다.
+                core.warning(`삭제 실패 ${c.key}: ${error.message}`);
+              }
+            }
+
+            const after = before - (dryRun ? 0 : staleBytes);
+            core.summary
+              .addHeading('Cache generation sweep', 3)
+              .addTable([
+                [{ data: '항목', header: true }, { data: '값', header: true }],
+                ['정리 전', `${caches.length}개 / ${gb(before)}GB`],
+                [dryRun ? '정리 예정' : '정리함', `${stale.length}개 / ${gb(staleBytes)}GB`],
+                ['정리 후(추정)', `${caches.length - (dryRun ? 0 : stale.length)}개 / ${gb(after)}GB`],
+                ['그룹별 유지 세대', String(keep)],
+                ['보호한 열린 PR', String(openPrRefs.size)],
+              ])
+              .write();

@@ -267,6 +267,34 @@ fn test_serialize_para_shape_roundtrip() {
 }
 
 #[test]
+fn serialize_para_shape_writes_outline_level_into_tail() {
+    // [#2734] 말미 4바이트는 개요 수준(0~9 = 1수준~10수준)이다. 종전엔 0 리터럴이라
+    // 재직렬화되는 모든 문단 모양의 개요 수준이 사라졌다(코퍼스 실측 872건).
+    // attr1 bit25~27 은 3비트라 한컴처럼 6 에서 포화해야 한다.
+    for lvl in 0u8..=9 {
+        let ps = ParaShape {
+            para_level: lvl,
+            ..Default::default()
+        };
+        let data = serialize_para_shape(&ps);
+        assert_eq!(data.len(), 58, "58바이트 길이 계약(#1110) 유지");
+
+        let tail = u32::from_le_bytes([data[54], data[55], data[56], data[57]]);
+        assert_eq!(
+            tail as u8, lvl,
+            "말미 4바이트에 개요 수준 {lvl} 이 실려야 함"
+        );
+
+        let attr1 = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+        assert_eq!(
+            (attr1 >> 25) & 0x07,
+            lvl.min(6) as u32,
+            "attr1 bit25~27 은 6 에서 포화(한컴 실측 규약)"
+        );
+    }
+}
+
+#[test]
 fn test_serialize_style_roundtrip() {
     let style = Style {
         raw_data: None,
@@ -277,6 +305,7 @@ fn test_serialize_style_roundtrip() {
         lang_id: 1042,
         para_shape_id: 1,
         char_shape_id: 2,
+        lock_form: false,
     };
 
     let data = serialize_style(&style);
@@ -354,6 +383,7 @@ fn test_serialize_border_fill_solid() {
             image: None,
             alpha: 0,
         },
+        three_d: false,
     };
 
     let data = serialize_border_fill(&bf);
@@ -394,6 +424,7 @@ fn test_serialize_border_fill_preserves_solid_and_image_alpha() {
             image: None,
             alpha: 180,
         },
+        three_d: false,
     };
     let data = serialize_border_fill(&bf);
     let mut r = crate::parser::byte_reader::ByteReader::new(&data[FILL_OFFSET..]);
@@ -429,6 +460,7 @@ fn test_serialize_border_fill_cross_centerline_uses_hwp5_center_bits() {
         diagonal: DiagonalLine::default(),
         center_line: CenterLine::Cross,
         fill: Fill::default(),
+        three_d: false,
     };
 
     let data = serialize_border_fill(&bf);
@@ -482,6 +514,7 @@ fn test_serialize_border_fill_image_fill_mode_uses_hwp5_values() {
                 }),
                 alpha: 0,
             },
+            three_d: false,
         };
 
         let data = serialize_border_fill(&bf);
@@ -613,6 +646,7 @@ fn test_serialize_doc_info_roundtrip() {
         lang_id: 1042,
         para_shape_id: 0,
         char_shape_id: 0,
+        lock_form: false,
     });
 
     // 직렬화 → 역직렬화
@@ -720,6 +754,7 @@ fn test_serialize_bullet_layout_and_roundtrip() {
         image_bullet: 0,
         image_data: [0; 4],
         check_bullet_char: '\0',
+        raw_para_head: None,
     };
 
     // 레이아웃: 문단 머리 정보 12바이트 후 offset 12 에 bullet_char

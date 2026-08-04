@@ -399,12 +399,17 @@ fn read_first_record(data: &[u8]) -> Result<Record, String> {
     }
 
     let pos = cursor.position() as usize;
-    if pos + size as usize > data.len() {
+    // record.rs 와 동일 근거: wasm32(usize 32비트)에서 `pos + size` 랩어라운드로
+    // 경계 검사가 무력화되는 것을 checked_add 로 막는다.
+    if pos
+        .checked_add(size as usize)
+        .map_or(true, |end| end > data.len())
+    {
         return Err(format!(
             "레코드 데이터 부족: tag={}, 필요={}, 가용={}",
             tag_id,
             size,
-            data.len() - pos
+            data.len().saturating_sub(pos)
         ));
     }
 

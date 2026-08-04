@@ -1618,6 +1618,30 @@ mod tests {
     }
 
     #[test]
+    fn task2784_table_affect_line_spacing_roundtrips() {
+        // [#2784] 표 affectLSpacing="1"(줄 간격에 영향)이 HWPX serialize→parse 왕복에서
+        // 보존되는지. 종전엔 방출측(table.rs write_pos)의 "0" 하드코딩 + 파서(section.rs
+        // pos 루프)의 arm 부재로 1→0 드롭됐다. 방출과 파서 양쪽이 load-bearing 이므로
+        // 어느 한쪽만 되돌려도 이 테스트가 red 가 된다(레드→그린 분리 검증 대상).
+        let mut doc = roundtrip_doc_with_control(table_control(&[(0, 1)]));
+        if let crate::model::control::Control::Table(t) =
+            &mut doc.sections[0].paragraphs[1].controls[0]
+        {
+            t.common.affect_line_spacing = true;
+        } else {
+            panic!("Table 컨트롤이어야 함");
+        }
+
+        let bytes = serialize_hwpx(&doc).expect("serialize");
+        let doc2 = parse_hwpx(&bytes).expect("parse");
+        let preserved = match &doc2.sections[0].paragraphs[1].controls[0] {
+            crate::model::control::Control::Table(t) => t.common.affect_line_spacing,
+            other => panic!("Table 컨트롤이어야 함: {:?}", other),
+        };
+        assert!(preserved, "표 affectLSpacing 이 왕복 보존돼야 함");
+    }
+
+    #[test]
     fn serialize_parse_roundtrip_preserves_textbox_char_shapes() {
         // 글상자 다중 run 의 serialize → parse 왕복 보존 (#1378 3단계).
         let mut doc = roundtrip_doc_with_control(textbox_control(&[(0, 1), (2, 2)]));

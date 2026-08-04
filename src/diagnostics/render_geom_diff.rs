@@ -1162,6 +1162,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: h * 0.8,
                 field_marker: Default::default(),
+                display_text: None,
             }),
             BoundingBox::new(x, y, w, h),
         )

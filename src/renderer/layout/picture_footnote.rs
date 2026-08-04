@@ -202,16 +202,8 @@ impl LayoutEngine {
             }
         };
 
-        // 원본 이미지 크기(HU) — crop 좌표 보정용
-        let original_size_hu =
-            if picture.shape_attr.original_width > 0 && picture.shape_attr.original_height > 0 {
-                Some((
-                    picture.shape_attr.original_width,
-                    picture.shape_attr.original_height,
-                ))
-            } else {
-                None
-            };
+        // crop 좌표 기준 범위(imgDim). orgSz는 개체 크기이므로 사용하지 않는다.
+        let original_size_hu = picture.crop_reference_size();
 
         // 이미지 노드 생성
         // [Task #1151 v7 항목 1] cell_ctx 의 3 필드 매핑은 CellContext::last_image_indices()
@@ -506,16 +498,7 @@ impl LayoutEngine {
             }
         };
 
-        // 원본 이미지 크기(HU)
-        let original_size_hu =
-            if picture.shape_attr.original_width > 0 && picture.shape_attr.original_height > 0 {
-                Some((
-                    picture.shape_attr.original_width,
-                    picture.shape_attr.original_height,
-                ))
-            } else {
-                None
-            };
+        let original_size_hu = picture.crop_reference_size();
 
         // 이미지 노드 생성
         let img_id = tree.next_id();
@@ -1072,6 +1055,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(x, y, num_width, line_height),
                 );
@@ -1105,6 +1089,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(x, y, width, line_height),
                 );
@@ -1304,6 +1289,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline: line_height,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(insert_x, line_y - sup_y_offset, width, line_height),
                 );

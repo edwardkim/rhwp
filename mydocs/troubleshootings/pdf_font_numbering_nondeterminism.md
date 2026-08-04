@@ -68,7 +68,9 @@ python tools/pdf_normalize_compare.py --emit x.pdf > x.norm   # 게이트용 정
 
 ### 패치 브랜치
 
-**planet6897/svg2pdf `determinism-0.13`** (커밋 2caeb0a, v0.13.0 태그 기반 2지점 수정):
+**edwardkim/svg2pdf `determinism-0.13`** (커밋 2caeb0a, v0.13.0 태그 기반 2지점 수정):
+원 작성자는 [@planet6897](https://github.com/planet6897) 이며, 공급원을 rhwp 산하로
+이관했다(#2856, 본인 동의). authorship 은 그대로 보존된다.
 
 | 지점 | 수정 | 결정화 대상 |
 |---|---|---|
@@ -86,7 +88,7 @@ python tools/pdf_normalize_compare.py --emit x.pdf > x.norm   # 게이트용 정
 
 ```toml
 [patch.crates-io]
-svg2pdf = { git = "https://github.com/planet6897/svg2pdf", branch = "determinism-0.13" }
+svg2pdf = { git = "https://github.com/edwardkim/svg2pdf", branch = "determinism-0.13" }
 ```
 
 ### 검증 (upstream/devel 640d04f7 + 패치)
@@ -98,4 +100,6 @@ svg2pdf = { git = "https://github.com/planet6897/svg2pdf", branch = "determinism
 ### 유지보수 노트
 
 - `pdf_normalize_compare.py` 게이트는 이중 안전망으로 유지한다.
-- **krilla-svg 마이그레이션 시 이 패치는 제거**한다 (svg2pdf 계열 EOL — 장기 축은 별도 이슈).
+- **krilla-svg 마이그레이션은 하지 않기로 결정**했다(#2283). 장기 방향은 Skia direct 백엔드
+  단일화이며, 그 미지원 op 목록(gradient·pattern·shadow·connector 등)이 비는 시점에
+  재판단한다. 그때까지 이 패치를 rhwp 산하 포크에서 유지·관리한다(#2856).

@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 정정 영역의 두 경로 영역 점검 영역의 패턴 영역
 description: 한 본질 영역의 정정 영역이 다중 경로 영역에 적용 영역 필요 영역인 케이스 — layout 단계 영역 정정 영역만으로는 부족 영역하고 영역 자동 보정 / reflow / pre-process 단계 영역도 동일 본질 영역 정정 영역 필수 영역
 type: feedback
-originSessionId: 4ef64500-5782-4a52-a9a8-9330ea6c128b
 ---
 본질 영역의 정정 영역이 한 경로 영역만 영역 적용 영역되면 영역 다른 경로 영역 (예: 자동 보정 / reflow / pre-process) 영역에서 회귀 영역 가능 영역. 시각 판정 영역에서 검출 영역.
 

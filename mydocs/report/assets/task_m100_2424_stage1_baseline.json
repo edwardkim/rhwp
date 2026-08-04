@@ -1,0 +1,85 @@
+{
+  "issue": 2424,
+  "commit": "12f8a820c82e34cbc61042df4b613532b8459a37",
+  "branch": "codex/issue-2424-resumable-pagination-v2",
+  "date": "2026-07-22",
+  "environment": {
+    "os": "macOS 26.5.2",
+    "arch": "arm64",
+    "rustc": "1.93.1 (01f6ddf75 2026-02-11)",
+    "cargo": "1.93.1 (083ac5135 2025-12-15)",
+    "profile": "release-test",
+    "repeats": 5,
+    "boundary_input": 56
+  },
+  "fixtures": {
+    "hwp": "samples/issue1949_giant_cell_nested_tables_perf.hwp",
+    "hwpx": "samples/issue1949_giant_cell_nested_tables_perf.hwpx"
+  },
+  "runs": {
+    "hwp": [
+      {
+        "run": 1,
+        "initial": {"total_ms": 1110.279, "measure_ms": 14.383, "typeset_ms": 1095.584, "block_table_ms": 1095.418},
+        "incremental": {"total_ms": 1174.176, "normalize_ms": 0.568, "measure_ms": 13.874, "typeset_ms": 1159.702, "block_table_ms": 1159.652, "postprocess_ms": 0.030}
+      },
+      {
+        "run": 2,
+        "initial": {"total_ms": 1056.906, "measure_ms": 13.002, "typeset_ms": 1043.683, "block_table_ms": 1043.635},
+        "incremental": {"total_ms": 991.596, "normalize_ms": 0.436, "measure_ms": 12.762, "typeset_ms": 978.363, "block_table_ms": 978.313, "postprocess_ms": 0.033}
+      },
+      {
+        "run": 3,
+        "initial": {"total_ms": 1453.941, "measure_ms": 15.417, "typeset_ms": 1438.256, "block_table_ms": 1438.205},
+        "incremental": {"total_ms": 3336.130, "normalize_ms": 0.718, "measure_ms": 23.822, "typeset_ms": 3311.536, "block_table_ms": 3311.436, "postprocess_ms": 0.052}
+      },
+      {
+        "run": 4,
+        "initial": {"total_ms": 1458.611, "measure_ms": 14.953, "typeset_ms": 1443.376, "block_table_ms": 1443.299},
+        "incremental": {"total_ms": 1058.381, "normalize_ms": 0.627, "measure_ms": 13.079, "typeset_ms": 1044.644, "block_table_ms": 1044.595, "postprocess_ms": 0.031}
+      },
+      {
+        "run": 5,
+        "initial": {"total_ms": 1031.475, "measure_ms": 12.871, "typeset_ms": 1018.374, "block_table_ms": 1018.325},
+        "incremental": {"total_ms": 1050.972, "normalize_ms": 0.422, "measure_ms": 13.030, "typeset_ms": 1037.486, "block_table_ms": 1037.438, "postprocess_ms": 0.033}
+      }
+    ],
+    "hwpx": [
+      {
+        "run": 1,
+        "initial": {"total_ms": 1188.887, "measure_ms": 16.235, "typeset_ms": 1172.383, "block_table_ms": 1172.339},
+        "incremental": {"total_ms": 1273.221, "normalize_ms": 0.475, "measure_ms": 13.993, "typeset_ms": 1258.723, "block_table_ms": 1258.674, "postprocess_ms": 0.030}
+      },
+      {
+        "run": 2,
+        "initial": {"total_ms": 979.216, "measure_ms": 12.539, "typeset_ms": 966.464, "block_table_ms": 966.433},
+        "incremental": {"total_ms": 1112.625, "normalize_ms": 0.357, "measure_ms": 12.486, "typeset_ms": 1099.749, "block_table_ms": 1099.712, "postprocess_ms": 0.032}
+      },
+      {
+        "run": 3,
+        "initial": {"total_ms": 1858.034, "measure_ms": 31.254, "typeset_ms": 1826.250, "block_table_ms": 1826.181},
+        "incremental": {"total_ms": 1228.394, "normalize_ms": 0.455, "measure_ms": 15.146, "typeset_ms": 1212.768, "block_table_ms": 1212.720, "postprocess_ms": 0.023}
+      },
+      {
+        "run": 4,
+        "initial": {"total_ms": 1093.778, "measure_ms": 13.639, "typeset_ms": 1079.863, "block_table_ms": 1079.819},
+        "incremental": {"total_ms": 1109.881, "normalize_ms": 0.402, "measure_ms": 13.030, "typeset_ms": 1096.426, "block_table_ms": 1096.385, "postprocess_ms": 0.021}
+      },
+      {
+        "run": 5,
+        "initial": {"total_ms": 1040.931, "measure_ms": 12.670, "typeset_ms": 1028.042, "block_table_ms": 1027.996},
+        "incremental": {"total_ms": 1070.689, "normalize_ms": 0.427, "measure_ms": 13.195, "typeset_ms": 1057.034, "block_table_ms": 1056.985, "postprocess_ms": 0.031}
+      }
+    ]
+  },
+  "incremental_median": {
+    "hwp": {"total_ms": 1058.381, "measure_ms": 13.079, "typeset_ms": 1044.644, "block_table_ms": 1044.595, "postprocess_ms": 0.033},
+    "hwpx": {"total_ms": 1112.625, "measure_ms": 13.195, "typeset_ms": 1099.749, "block_table_ms": 1099.712, "postprocess_ms": 0.030}
+  },
+  "correctness": {
+    "page_count": 115,
+    "partial_table_fragments": 115,
+    "changed_after_flush_count": 113,
+    "formats": ["hwp", "hwpx"]
+  }
+}

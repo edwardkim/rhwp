@@ -140,7 +140,7 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles,
             composed,
-            render_normalized: Vec::new(),
+            render_normalization: super::super::RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),
             layout_engine: LayoutEngine::new(DEFAULT_DPI),
@@ -158,6 +158,9 @@ impl DocumentCore {
             measured_sections: Vec::new(),
             dirty_paragraphs: Vec::new(),
             para_column_map: Vec::new(),
+            deferred_pagination_revision: 0,
+            deferred_pagination_descriptor: None,
+            pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
             layer_tree_json_cache: RefCell::new(Vec::new()),
             batch_mode: false,
@@ -1871,11 +1874,13 @@ mod validate_linesegs_tests {
                     start_char_idx: 0,
                     end_char_idx: 6,
                     control_idx: 0,
+                    ..Default::default()
                 },
                 FieldRange {
                     start_char_idx: 0,
                     end_char_idx: 6,
                     control_idx: 0,
+                    ..Default::default()
                 },
             ],
             ..Default::default()

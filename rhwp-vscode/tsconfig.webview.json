@@ -6,18 +6,18 @@
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "rootDir": "..",
     "outDir": "./dist/webview",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "paths": {
       "@rhwp-wasm/*": ["../pkg/*"],
       "@/*": ["../rhwp-studio/src/*"],
-      "canvaskit-wasm": ["node_modules/canvaskit-wasm/types/index.d.ts"],
-      "@noble/hashes/*": ["node_modules/@noble/hashes/*"]
+      "canvaskit-wasm": ["./node_modules/canvaskit-wasm/types/index.d.ts"],
+      "@noble/hashes/*": ["./node_modules/@noble/hashes/*"]
     }
   },
   "include": ["src/webview/**/*.ts"]

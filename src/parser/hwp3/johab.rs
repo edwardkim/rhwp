@@ -29,12 +29,12 @@ pub fn decode_johab(ch: u16) -> char {
 
         let cho = cho_map[cho_idx as usize];
         let jung = jung_map[jung_idx as usize];
-        let mut jong = jong_map[jong_idx as usize];
+        let jong = jong_map[jong_idx as usize];
 
-        if cho != -1 && jung != -1 {
-            if jong == -1 {
-                jong = 0;
-            }
+        // jong_idx == 0 은 예약된 미사용 값이며, jong_map[1] == 0 이 "받침 없음"을
+        // 나타낸다. jong == -1 을 무조건 0(받침 없음)으로 치환하면 예약/무효
+        // 조합(jong_idx 0, 18, 30, 31)이 유효한 완성형 음절로 잘못 디코딩된다.
+        if cho != -1 && jung != -1 && jong != -1 {
             let uni_val = 0xAC00 + (cho * 21 * 28) + (jung * 28) + jong;
             if let Some(c) = std::char::from_u32(uni_val as u32) {
                 return c;
@@ -98,4 +98,20 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         _ => return None,
     };
     char::from_u32(codepoint)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn decode_johab_rejects_reserved_jong_index() {
+        // cho_idx=2(초성 0), jung_idx=3(중성 0), jong_idx=0(예약/무효 값).
+        // jong_idx=0 은 종성 매핑에서 -1(무효)이며, "받침 없음"은 jong_idx=1 이
+        // 별도로 나타낸다. 무효 jong_idx 를 받침 없음으로 오인하면 존재하지
+        // 않아야 할 완성형 음절 '가'(U+AC00)가 잘못 생성된다.
+        let jong_idx = 0;
+        let ch: u16 = 0x8000 | (2 << 10) | (3 << 5) | jong_idx;
+        assert_ne!(decode_johab(ch), '가');
+    }
 }

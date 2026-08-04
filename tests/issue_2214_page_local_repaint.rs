@@ -222,17 +222,17 @@ fn issue_2214_warm_deferred_tree_and_cursor_are_exact() {
         );
         let original_text = target_paragraph(&doc).text.clone();
         warm_target_layout(&doc);
-        insert_sequential(&mut doc, 44);
+        insert_sequential(&mut doc, 56);
 
-        let expected_end = INSERT_OFFSET + 44;
+        let expected_end = INSERT_OFFSET + 56;
         assert_eq!(
             target_paragraph(&doc).text.encode_utf16().count(),
             expected_end
         );
         assert_eq!(
             target_paragraph(&doc).text,
-            format!("{original_text}{}", "1".repeat(44)),
-            "{label}: deferred edit must append exactly 44 characters"
+            format!("{original_text}{}", "1".repeat(56)),
+            "{label}: deferred edit must append exactly 56 characters"
         );
         assert_eq!(line_starts(&doc), vec![0, 44, 84, 122, 129]);
         assert_eq!(
@@ -250,7 +250,7 @@ fn issue_2214_warm_deferred_tree_and_cursor_are_exact() {
         let tree_end = target_tree_end(&doc);
         let exact = tree_end == expected_end
             && rect.page_index == 0
-            && approx_eq(rect.x, 569.7)
+            && approx_eq(rect.x, 573.9)
             // 최신 devel의 table text baseline 보정 뒤 path-near는 direct보다
             // 0.8px 위의 caret geometry를 반환한다. HWP/HWPX가 같은 기준선을
             // 공유하고 flush 전후에도 이 값이 유지되는지를 고정한다.
@@ -273,37 +273,38 @@ fn issue_2214_warm_deferred_tree_and_cursor_are_exact() {
     );
 }
 
-/// Ignored matrix의 cold/direct/path 및 44/50자 대표 계약을 빠른 GREEN으로 고정한다.
+/// Ignored matrix의 cold/direct/path 및 56/62자 대표 계약을 빠른 GREEN으로 고정한다.
+/// [#2430] HY/한양 ASCII 실측 교정으로 줄 채움 임계 44→56 이동 — 대표점 56/62 이관.
 #[test]
 fn issue_2214_cold_representative_queries_are_exact() {
     for (label, sample) in [("hwp", HWP_SAMPLE), ("hwpx", HWPX_SAMPLE)] {
         let mut direct44 = load_sample(sample);
-        insert_sequential(&mut direct44, 44);
-        let direct = direct_rect(&direct44, INSERT_OFFSET + 44);
-        assert_eq!(target_tree_end(&direct44), INSERT_OFFSET + 44);
-        assert_eq!(direct.page_index, 0, "{label}: cold 44 direct page");
-        assert!(approx_eq(direct.x, 569.7), "{label}: cold 44 direct x");
-        assert!(approx_eq(direct.y, 345.6), "{label}: cold 44 direct y");
+        insert_sequential(&mut direct44, 56);
+        let direct = direct_rect(&direct44, INSERT_OFFSET + 56);
+        assert_eq!(target_tree_end(&direct44), INSERT_OFFSET + 56);
+        assert_eq!(direct.page_index, 0, "{label}: cold 56 direct page");
+        assert!(approx_eq(direct.x, 573.9), "{label}: cold 56 direct x");
+        assert!(approx_eq(direct.y, 345.6), "{label}: cold 56 direct y");
         assert!(
             approx_eq(direct.cell_bounds.h, 945.9),
-            "{label}: cold 44 direct pre-flush bounds"
+            "{label}: cold 56 direct pre-flush bounds"
         );
-        assert!(!direct.cell_overflowed, "{label}: cold 44 direct overflow");
-        assert_eq!(direct44.page_count(), 115, "{label}: cold 44 pages");
+        assert!(!direct.cell_overflowed, "{label}: cold 56 direct overflow");
+        assert_eq!(direct44.page_count(), 115, "{label}: cold 56 pages");
 
         let mut path50 = load_sample(sample);
-        insert_sequential(&mut path50, 50);
-        let path = path_rect(&path50, INSERT_OFFSET + 50);
-        assert_eq!(target_tree_end(&path50), INSERT_OFFSET + 50);
-        assert_eq!(path.page_index, 0, "{label}: cold 50 path page");
-        assert!(approx_eq(path.x, 629.7), "{label}: cold 50 path x");
-        assert!(approx_eq(path.y, 344.8), "{label}: cold 50 path y");
+        insert_sequential(&mut path50, 62);
+        let path = path_rect(&path50, INSERT_OFFSET + 62);
+        assert_eq!(target_tree_end(&path50), INSERT_OFFSET + 62);
+        assert_eq!(path.page_index, 0, "{label}: cold 62 path page");
+        assert!(approx_eq(path.x, 621.5), "{label}: cold 62 path x");
+        assert!(approx_eq(path.y, 344.8), "{label}: cold 62 path y");
         assert!(
             approx_eq(path.cell_bounds.h, 945.9),
-            "{label}: cold 50 path pre-flush bounds"
+            "{label}: cold 62 path pre-flush bounds"
         );
-        assert!(!path.cell_overflowed, "{label}: cold 50 path overflow");
-        assert_eq!(path50.page_count(), 115, "{label}: cold 50 pages");
+        assert!(!path.cell_overflowed, "{label}: cold 62 path overflow");
+        assert_eq!(path50.page_count(), 115, "{label}: cold 62 pages");
     }
 }
 
@@ -341,7 +342,7 @@ fn issue_2214_cell_flow_transition_baseline() {
         let mut doc50 = load_sample(sample);
         let original50 = target_paragraph(&doc50).text.clone();
         let mut changed_inputs = Vec::new();
-        for inserted in 0..50 {
+        for inserted in 0..62 {
             let before = relative_flow_advance(target_paragraph(&doc50));
             let next_vpos_before = next_paragraph_vpos(&doc50);
             let result = doc50
@@ -357,7 +358,7 @@ fn issue_2214_cell_flow_transition_baseline() {
                 .expect("per-key deferred insert");
             let result = parse_cell_edit_result(result);
             let delta = relative_flow_advance(target_paragraph(&doc50)) - before;
-            let expected = if inserted == 43 { 1920 } else { 0 };
+            let expected = if inserted == 55 { 1920 } else { 0 };
             assert_eq!(
                 result.char_offset,
                 INSERT_OFFSET + inserted + 1,
@@ -388,14 +389,14 @@ fn issue_2214_cell_flow_transition_baseline() {
         }
         assert_eq!(
             changed_inputs,
-            vec![44],
+            vec![56],
             "{label}: exactly one flow boundary"
         );
         assert_eq!(line_starts(&doc50), vec![0, 44, 84, 122, 129]);
         assert_eq!(
             target_paragraph(&doc50).text,
-            format!("{original50}{}", "1".repeat(50)),
-            "{label}: 50-char sequential text"
+            format!("{original50}{}", "1".repeat(62)),
+            "{label}: 62-char sequential text"
         );
         assert_eq!(doc28.page_count(), 115, "{label}: 28-char page count");
         assert_eq!(doc50.page_count(), 115, "{label}: 50-char page count");

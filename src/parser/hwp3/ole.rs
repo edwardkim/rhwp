@@ -5,7 +5,7 @@
 
 use byteorder::{LittleEndian, ReadBytesExt};
 use snafu::Snafu;
-use std::io::{self, Read, Seek};
+use std::io::{self, Cursor, Read, Seek};
 
 #[derive(Debug, Snafu)]
 pub enum Hwp3OleError {
@@ -148,4 +148,78 @@ impl Hwp3ChartConnectionInfo {
             reserved,
         })
     }
+}
+
+/// [#3363] 추가 정보 블록 id=2(OLE 정보, 스펙 표 82)의 스토리지에서 개체별 payload를
+/// 분해한다.
+///
+/// 스펙 12.1절: 모든 OLE 개체는 하나의 CFB 스토리지에 모여 저장되고, 그림 코드에는
+/// 이름(= root 서브 스토리지명, 예: `00000000.OOO`)만 존재한다. 한컴의 HWPX 변환은
+/// 개체 서브 스토리지를 root로 승격한 standalone CFB를 `BinData/*.ole`로 방출한다
+/// (SO-SUEOP 실측: 스트림 md5 완전 동일). 여기서도 같은 재포장을 수행해 HWPX와 동일한
+/// 소비 경로(`parse_ole_container`)에 태운다.
+///
+/// 재포장에는 `cfb::CompoundFile::create()` 대신 자체 `mini_cfb` 빌더를 쓴다 —
+/// create()는 `SystemTime::now()`를 호출해 wasm32 타겟에서 panic한다.
+///
+/// 입력은 인식 정보(4바이트)를 제외한 CFB 바이트. 실패 개체는 건너뛴다(읽기 관대).
+pub fn extract_ole_payloads(cfb_bytes: &[u8]) -> Vec<(String, Vec<u8>)> {
+    let mut out = Vec::new();
+    let Ok(mut comp) = cfb::CompoundFile::open(Cursor::new(cfb_bytes.to_vec())) else {
+        return out;
+    };
+
+    // root 직속 서브 스토리지 = OLE 개체 하나 (이름 = 그림 레코드 참조명)
+    let root = std::path::Path::new("/");
+    let storages: Vec<std::path::PathBuf> = comp
+        .walk()
+        .filter(|e| e.is_storage() && !e.is_root())
+        .filter(|e| e.path().parent() == Some(root))
+        .map(|e| e.path().to_path_buf())
+        .collect();
+
+    for storage in storages {
+        let Some(name) = storage
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .filter(|n| !n.is_empty())
+        else {
+            continue;
+        };
+
+        // 개체 스토리지 직속 스트림 수집 (실존 OLE 개체 스토리지는 평탄 구조)
+        let stream_paths: Vec<(String, std::path::PathBuf)> = comp
+            .walk()
+            .filter(|e| e.is_stream())
+            .filter(|e| e.path().parent() == Some(storage.as_path()))
+            .filter_map(|e| {
+                e.path()
+                    .file_name()
+                    .map(|n| (n.to_string_lossy().to_string(), e.path().to_path_buf()))
+            })
+            .collect();
+
+        let mut named: Vec<(String, Vec<u8>)> = Vec::new();
+        for (stream_name, path) in stream_paths {
+            let Ok(mut stream) = comp.open_stream(&path) else {
+                continue;
+            };
+            let mut buf = Vec::new();
+            if stream.read_to_end(&mut buf).is_ok() {
+                named.push((stream_name, buf));
+            }
+        }
+        if named.is_empty() {
+            continue;
+        }
+
+        let refs: Vec<(&str, &[u8])> = named
+            .iter()
+            .map(|(n, d)| (n.as_str(), d.as_slice()))
+            .collect();
+        if let Ok(bytes) = crate::serializer::mini_cfb::build_cfb(&refs) {
+            out.push((name, bytes));
+        }
+    }
+    out
 }
