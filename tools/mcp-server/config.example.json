@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "rhwp": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/rhwp/tools/mcp-server/index.js"
+      ],
+      "env": {
+        "RHWP_BINARY_PATH": "/absolute/path/to/rhwp/target/release/rhwp",
+        "RHWP_TIMEOUT": "60000",
+        "RHWP_MAX_OUTPUT_SIZE": "10485760"
+      }
+    }
+  }
+}
