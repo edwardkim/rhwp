@@ -3974,10 +3974,18 @@ fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, doc_info: &Hwp3D
         }
     }
 
+    // [#3676] 구역 첫 문단의 단 정의(`cold`)는 미주와 무관하게 항상 있어야 한다. 한글은
+    // `secd` 뒤에 `cold` 가 없는 구역을 **파일 전체 거부**로 처리한다 — 미주가 없는 HWP3
+    // 변환본이 그래서 안 열렸다(`3050521 형사 제1심 소송기록`, #3676 잔여 1건).
+    // 한글 저장본과 대조하면 `CTRL_HEADER` 가 7개인데 변환본은 6개였고, 빠진 하나가
+    // 정확히 `cold` 다.
+    for section in &mut doc.sections {
+        ensure_hwp3_initial_body_column_def(&mut section.paragraphs);
+    }
+
     if state.has_endnote {
         for section in &mut doc.sections {
             section.section_def.endnote_shape = hwp3_default_endnote_shape(doc_info);
-            ensure_hwp3_initial_body_column_def(&mut section.paragraphs);
             let page_def = &section.section_def.page_def;
             let body_width_hu = page_def
                 .width
