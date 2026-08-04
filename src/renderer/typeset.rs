@@ -14184,6 +14184,17 @@ impl TypesetEngine {
             let mut cumulative = 0.0;
             let mut end_line = cursor_line;
             let mut used_saved_tail_vpos_fit = false;
+            // [#4024] 저장 사다리 신뢰(`saved_tail_vpos_fit`)는 `li..line_count` 만 보고
+            // 그때까지 쌓인 `cumulative` 를 모른다. 그래서 한 번 참이 되면 예산을 넘긴
+            // 채로 남은 줄을 계속 통과시켜 초과가 단조 증가한다(1480000 pi=724: 잔여
+            // 18.5px 에 6줄 통과, 초과 19.7 -> 137.0px).
+            //
+            // 쪽 단위 실측(무작위 대형 문서 60건): 소실 쪽의 연쇄는 전부 길이 3 이상
+            // (중앙 5, 최대초과 중앙 117.2px)인데, 소실 없는 쪽은 66% 가 길이 1~2
+            // (중앙 2, 최대초과 중앙 49.4px)다. 한컴 정답 36쪽을 고정하는
+            // `issue_554` hwp3-sample4 의 유일한 통과도 길이 1 이다.
+            const TAIL_FIT_CHAIN_CAP: usize = 2;
+            let mut tail_fit_chain = 0usize;
             for li in cursor_line..line_count {
                 if forced_page_break_line
                     .map(|break_line| li == break_line && li > cursor_line)
@@ -14289,6 +14300,15 @@ impl TypesetEngine {
                                 .max(0.0),
                             self.dpi,
                         );
+                    if saved_tail_vpos_fit
+                        && !hwp_authoritative
+                        && !native_hwp5_reset_tail_fits_actual_footnote_boundary
+                    {
+                        tail_fit_chain += 1;
+                        if tail_fit_chain > TAIL_FIT_CHAIN_CAP {
+                            break;
+                        }
+                    }
                     if !hwp_authoritative
                         && !saved_tail_vpos_fit
                         && !native_hwp5_reset_tail_fits_actual_footnote_boundary
