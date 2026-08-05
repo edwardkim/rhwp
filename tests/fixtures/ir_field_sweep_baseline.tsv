@@ -1,6 +1,5 @@
 lane	sample	path	count
 hwp5rb	143E433F503322BD33.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	24
-hwp5rb	156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
 hwp5rb	2010-01-06.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	120
 hwp5rb	2022년 국립국어원 업무계획.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	244
 hwp5rb	2025 행정업무운영 편람(최종).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1503
@@ -595,3 +594,4 @@ hwpx	tb-org-02.hwpx	sections[].paragraphs[].raw_header_extra[]	4
 hwpx	tbox-v-flow-01.hwpx	sections[].paragraphs[].controls[].text_box.paragraphs[].raw_header_extra[]	18
 hwpx	tbox-v-flow-01.hwpx	sections[].paragraphs[].raw_header_extra[]	4
 hwpx	water-mark.hwpx	sections[].paragraphs[].raw_header_extra[]	1
+hwp5rb	156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
