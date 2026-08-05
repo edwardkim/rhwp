@@ -149,6 +149,18 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
             kind: ResolvedImageKind::FormatConverted,
             suppress_effects: false,
         }),
+        // 브라우저는 WMF 를 디코드하지 못한다 — `<img>` 로 내보내면 naturalWidth=0 인 깨진
+        // 그림이 된다. `svg.rs`·`web_canvas.rs` 는 각자 내보내기 직전에 변환하지만, DOM
+        // `<img>` 경로(`getSourceImageBytes`·layer tree base64)는 여기를 지나므로 변환이
+        // 여기에도 있어야 한다.
+        "image/x-wmf" => {
+            crate::renderer::svg::convert_wmf_to_svg(data).map(|data| ResolvedImagePayload {
+                data,
+                mime: "image/svg+xml",
+                kind: ResolvedImageKind::FormatConverted,
+                suppress_effects: false,
+            })
+        }
         "image/jpeg" if is_watermark_image(image) => {
             watermark_jpeg_bytes_to_hancom_baked_png_bytes(data).map(|data| ResolvedImagePayload {
                 data,
@@ -183,17 +195,25 @@ pub(crate) fn emitted_image_bytes(
     bakes_watermark: bool,
 ) -> (&'static str, std::borrow::Cow<'_, [u8]>) {
     let mime = detect_image_mime_type(data);
-    let converted = match mime {
-        "image/bmp" => bmp_bytes_to_png_bytes(data),
-        "image/x-pcx" => pcx_bytes_to_png_bytes(data),
-        "image/tiff" => tiff_bytes_to_png_bytes(data),
+    // 변환 결과 mime 을 바이트와 함께 나른다 — WMF 는 PNG 가 아니라 SVG 로 나가므로
+    // "변환에 성공하면 PNG" 로 접으면 mime 이 바이트와 어긋난다.
+    let converted: Option<(&'static str, Vec<u8>)> = match mime {
+        "image/bmp" => bmp_bytes_to_png_bytes(data).map(|png| ("image/png", png)),
+        "image/x-pcx" => pcx_bytes_to_png_bytes(data).map(|png| ("image/png", png)),
+        "image/tiff" => tiff_bytes_to_png_bytes(data).map(|png| ("image/png", png)),
+        // `resolve_image_payload` 와 같은 분기 — 두 함수가 갈라지면 mime 만 아는 소비자
+        // (`emitted_image_mime`)와 바이트를 받는 소비자가 다른 그림을 보게 된다.
+        "image/x-wmf" => {
+            crate::renderer::svg::convert_wmf_to_svg(data).map(|svg| ("image/svg+xml", svg))
+        }
         "image/jpeg" if bakes_watermark => watermark_jpeg_bytes_to_hancom_baked_png_bytes(data)
-            .or_else(|| grayscale_jpeg_bytes_to_png_bytes(data)),
-        "image/jpeg" => grayscale_jpeg_bytes_to_png_bytes(data),
+            .or_else(|| grayscale_jpeg_bytes_to_png_bytes(data))
+            .map(|png| ("image/png", png)),
+        "image/jpeg" => grayscale_jpeg_bytes_to_png_bytes(data).map(|png| ("image/png", png)),
         _ => None,
     };
     match converted {
-        Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+        Some((converted_mime, bytes)) => (converted_mime, std::borrow::Cow::Owned(bytes)),
         None => (mime, std::borrow::Cow::Borrowed(data)),
     }
 }
@@ -935,7 +955,10 @@ mod emitted_bytes_key_agreement_tests {
     //! 고정하는 것은 "키만으로 같은 바이트를 재현할 수 있다"는 계약이고, 이 테스트가 만드는
     //! 변환 분기(BMP·TIFF·회색 JPEG·워터마크 JPEG·변환 실패 되돌림)마다 확인한다.
 
-    use super::{emitted_image_bytes, is_watermark_image};
+    use super::{
+        detect_image_mime_type, emitted_image_bytes, emitted_image_mime, is_watermark_image,
+        resolve_image_payload,
+    };
     use crate::model::image::ImageEffect;
     use crate::paint::{parse_source_image_key, source_image_key};
     use crate::renderer::render_tree::ImageNode;
@@ -1069,6 +1092,90 @@ mod emitted_bytes_key_agreement_tests {
         for (label, image) in &cases {
             assert_paths_agree(label, image);
         }
+    }
+
+    /// WMF 는 SVG 로 나가야 한다 — 원본 WMF 를 그대로 내보내면 브라우저가 못 그린다.
+    ///
+    /// `svg.rs`·`web_canvas.rs` 는 각자 내보내기 직전에 `convert_wmf_to_svg` 를 부르므로
+    /// export-svg 와 canvas 백엔드는 멀쩡했다. 그런데 DOM `<img>` 경로(`getSourceImageBytes`
+    /// 로 바이트를 받아 `Blob` 을 만드는 studio, layer tree 의 인라인 base64)는 이 함수를
+    /// 지나는데 여기에 WMF 분기가 없어서, 표 안 차트 같은 WMF 그림이 `image/x-wmf` Blob 으로
+    /// 나가 `naturalWidth === 0` 인 깨진 그림이 됐다(관세청 월간 수출입 현황 1쪽).
+    ///
+    /// 변환기 자체는 멀쩡했으므로, 이 테스트가 고정하는 것은 **변환이 이 경로에도 걸려 있는가**다.
+    #[test]
+    fn wmf_is_emitted_as_svg_not_raw_wmf() {
+        let wmf = minimal_wmf();
+        assert_eq!(
+            detect_image_mime_type(&wmf),
+            "image/x-wmf",
+            "합성 바이트가 WMF 로 판별되지 않으면 이 테스트는 아무것도 검증하지 않는다"
+        );
+
+        let (mime, bytes) = emitted_image_bytes(&wmf, false);
+        assert_eq!(
+            mime, "image/svg+xml",
+            "WMF 는 SVG 로 변환돼 나가야 한다 — 브라우저는 WMF 를 디코드하지 못한다"
+        );
+        assert!(
+            crate::renderer::svg_fragment::is_svg_prefix(&bytes),
+            "mime 만 바꾸고 바이트가 원본 WMF 면 소비자는 여전히 못 그린다"
+        );
+
+        // 바이트를 안 받는 소비자(좁은 질의의 mime 필드)도 같은 답을 내야 한다.
+        let image = ImageNode::new(9, Some(wmf.clone()));
+        let resolved = resolve_image_payload(&image);
+        assert_eq!(
+            emitted_image_mime(&wmf, resolved.as_ref(), false),
+            "image/svg+xml",
+            "mime 만 아는 경로가 갈리면 Blob 타입이 바이트와 어긋난다"
+        );
+
+        // 두 경로(JSON 인라인 · 키 조회)가 같은 바이트를 준다.
+        assert_paths_agree("WMF", &image);
+    }
+
+    /// 변환에 성공하는 최소 WMF.
+    ///
+    /// `tests/wmf_poly_negative_point_count_no_panic.rs` 의 합성 방식과 같다 —
+    /// `META_HEADER`(type=1, headersize=9 words) 뒤에 창 좌표를 세우는 레코드와 사각형
+    /// 하나를 넣고 `META_EOF` 로 닫는다. 빈 메타파일이 아니라 **그릴 것이 있는** 모양이어야
+    /// 변환 결과가 실제 SVG 도형을 담는다.
+    fn minimal_wmf() -> Vec<u8> {
+        let mut out: Vec<u8> = Vec::new();
+        let push_u16 = |v: u16, buf: &mut Vec<u8>| buf.extend_from_slice(&v.to_le_bytes());
+        let push_i16 = |v: i16, buf: &mut Vec<u8>| buf.extend_from_slice(&v.to_le_bytes());
+        let push_u32 = |v: u32, buf: &mut Vec<u8>| buf.extend_from_slice(&v.to_le_bytes());
+
+        // ── META_HEADER ──
+        push_u16(1, &mut out); // Type: memory metafile
+        push_u16(9, &mut out); // HeaderSize: 9 words
+        push_u16(0x0300, &mut out); // Version 3.0
+        push_u32(0, &mut out); // SizeLow
+        push_u32(0, &mut out); // SizeHigh 자리
+        push_u16(0, &mut out); // NumberOfObjects
+        push_u32(0, &mut out); // MaxRecord
+        push_u16(0, &mut out); // NumberOfMembers
+
+        // ── META_SETWINDOWEXT (0x020C): size 5 words ──
+        push_u32(5, &mut out);
+        push_u16(0x020C, &mut out);
+        push_i16(100, &mut out); // Height
+        push_i16(100, &mut out); // Width
+
+        // ── META_RECTANGLE (0x041B): size 7 words, (bottom, right, top, left) ──
+        push_u32(7, &mut out);
+        push_u16(0x041B, &mut out);
+        push_i16(80, &mut out);
+        push_i16(80, &mut out);
+        push_i16(20, &mut out);
+        push_i16(20, &mut out);
+
+        // ── META_EOF ──
+        push_u32(3, &mut out);
+        push_u16(0x0000, &mut out);
+
+        out
     }
 
     /// bake 가 성공하는 모양에서 두 variant 의 바이트가 **실제로 다름**을 먼저 못박는다.
