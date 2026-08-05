@@ -167,6 +167,12 @@ fn detect_image_mime_type(data: &[u8]) -> &'static str {
             || data.starts_with(&[0x01, 0x00, 0x09, 0x00]))
     {
         "image/x-wmf"
+    } else if data.len() >= 44
+        && data.starts_with(&[0x01, 0x00, 0x00, 0x00])
+        && &data[40..44] == b" EMF"
+    {
+        // EMF: EMR_HEADER(Type=1) + offset 40 의 " EMF" 시그니처 (MS-EMF 2.3.4.2)
+        "image/x-emf"
     } else if data.len() >= 2 && data.starts_with(&[0x0A, 0x05]) {
         // PCX: 0A 05 (ZSoft Paintbrush v3.0+, Task #514)
         // 브라우저 native 미지원 → emit 시 PNG 변환 필요 (svg::pcx_bytes_to_png_bytes)
@@ -2751,6 +2757,11 @@ impl Renderer for WebCanvasRenderer {
         let (render_data, render_mime): (std::borrow::Cow<[u8]>, &str) =
             if mime_type == "image/x-wmf" {
                 match crate::renderer::svg::convert_wmf_to_svg(data) {
+                    Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
+            } else if mime_type == "image/x-emf" {
+                match crate::emf::convert_to_standalone_svg(data) {
                     Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }

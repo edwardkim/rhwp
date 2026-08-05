@@ -161,6 +161,18 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
                 suppress_effects: false,
             })
         }
+        // EMF 도 WMF 와 같은 처지다 — 브라우저가 디코드하지 못하고, 변환기
+        // (`emf::convert_to_standalone_svg`)는 있는데 OLE 프리뷰 경로에서만 쓰이고
+        // 있었다. 10k 스윕에서 직접 삽입 EMF 그림 16문서가 octet-stream 으로 새어
+        // 나가는 것이 확인됐다.
+        "image/x-emf" => {
+            crate::emf::convert_to_standalone_svg(data).map(|data| ResolvedImagePayload {
+                data,
+                mime: "image/svg+xml",
+                kind: ResolvedImageKind::FormatConverted,
+                suppress_effects: false,
+            })
+        }
         "image/jpeg" if is_watermark_image(image) => {
             watermark_jpeg_bytes_to_hancom_baked_png_bytes(data).map(|data| ResolvedImagePayload {
                 data,
@@ -205,6 +217,9 @@ pub(crate) fn emitted_image_bytes(
         // (`emitted_image_mime`)와 바이트를 받는 소비자가 다른 그림을 보게 된다.
         "image/x-wmf" => {
             crate::renderer::svg::convert_wmf_to_svg(data).map(|svg| ("image/svg+xml", svg))
+        }
+        "image/x-emf" => {
+            crate::emf::convert_to_standalone_svg(data).map(|svg| ("image/svg+xml", svg))
         }
         "image/jpeg" if bakes_watermark => watermark_jpeg_bytes_to_hancom_baked_png_bytes(data)
             .or_else(|| grayscale_jpeg_bytes_to_png_bytes(data))
@@ -645,6 +660,13 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
             || data.starts_with(&[0x01, 0x00, 0x09, 0x00])
         {
             return "image/x-wmf";
+        }
+        // EMF: EMR_HEADER(Type=1) + offset 40 의 " EMF" 시그니처 (MS-EMF 2.3.4.2)
+        if data.len() >= 44
+            && data.starts_with(&[0x01, 0x00, 0x00, 0x00])
+            && &data[40..44] == b" EMF"
+        {
+            return "image/x-emf";
         }
         if data.starts_with(&[0x49, 0x49, 0x2A, 0x00])
             || data.starts_with(&[0x4D, 0x4D, 0x00, 0x2A])
@@ -1174,6 +1196,96 @@ mod emitted_bytes_key_agreement_tests {
         // ── META_EOF ──
         push_u32(3, &mut out);
         push_u16(0x0000, &mut out);
+
+        out
+    }
+
+    /// EMF 도 WMF 와 같은 계약이다 — SVG 로 변환돼 나가야 한다.
+    ///
+    /// 저장소에 `emf` 변환기가 있었지만 OLE 프리뷰 경로에서만 쓰였고, 판별기에 EMF
+    /// 매직이 없어 직접 삽입 EMF 그림은 `application/octet-stream` 으로 새어 나갔다
+    /// (10k 스윕에서 16문서·109op 확인). 이 테스트는 ① 판별이 `image/x-emf` 인지
+    /// 먼저 못박고 ② 변환이 이 경로에 걸려 있는지 ③ mime 만 아는 소비자와 바이트를
+    /// 받는 소비자가 같은 답을 내는지 확인한다.
+    #[test]
+    fn emf_is_emitted_as_svg_not_raw_emf() {
+        let emf = minimal_emf();
+        assert_eq!(
+            detect_image_mime_type(&emf),
+            "image/x-emf",
+            "합성 바이트가 EMF 로 판별되지 않으면 이 테스트는 아무것도 검증하지 않는다"
+        );
+
+        let (mime, bytes) = emitted_image_bytes(&emf, false);
+        assert_eq!(
+            mime, "image/svg+xml",
+            "EMF 는 SVG 로 변환돼 나가야 한다 — 브라우저는 EMF 를 디코드하지 못한다"
+        );
+        assert!(
+            crate::renderer::svg_fragment::is_svg_prefix(&bytes),
+            "mime 만 바꾸고 바이트가 원본 EMF 면 소비자는 여전히 못 그린다"
+        );
+
+        let image = ImageNode::new(11, Some(emf.clone()));
+        let resolved = resolve_image_payload(&image);
+        assert_eq!(
+            emitted_image_mime(&emf, resolved.as_ref(), false),
+            "image/svg+xml",
+            "mime 만 아는 경로가 갈리면 Blob 타입이 바이트와 어긋난다"
+        );
+
+        assert_paths_agree("EMF", &image);
+    }
+
+    /// 변환에 성공하는 최소 EMF.
+    ///
+    /// `src/emf/tests.rs` 의 `fixture_minimal_header_eof` 와 같은 헤더 배치다 —
+    /// EMR_HEADER(88B, frame 100×50 ×0.01mm) 뒤에 EMR_RECTANGLE 하나를 넣고
+    /// EMR_EOF 로 닫는다. **그릴 것이 있는** 모양이어야 변환 결과가 실제 SVG
+    /// 도형을 담는다.
+    fn minimal_emf() -> Vec<u8> {
+        let mut out: Vec<u8> = Vec::new();
+        let push_u16 = |v: u16, buf: &mut Vec<u8>| buf.extend_from_slice(&v.to_le_bytes());
+        let push_u32 = |v: u32, buf: &mut Vec<u8>| buf.extend_from_slice(&v.to_le_bytes());
+        let push_i32 = |v: i32, buf: &mut Vec<u8>| buf.extend_from_slice(&v.to_le_bytes());
+
+        // ── EMR_HEADER (88B) ──
+        push_u32(1, &mut out); // Type=1
+        push_u32(88, &mut out); // Size=88
+        for v in [0, 0, 1000, 500] {
+            push_i32(v, &mut out); // Bounds RECTL (장치 좌표)
+        }
+        for v in [0, 0, 10000, 5000] {
+            push_i32(v, &mut out); // Frame RECTL (0.01mm)
+        }
+        push_u32(0x464D_4520, &mut out); // Signature " EMF"
+        push_u32(0x0001_0000, &mut out); // Version
+        push_u32(88 + 24 + 20, &mut out); // Bytes: header + rectangle + eof
+        push_u32(3, &mut out); // Records
+        push_u16(1, &mut out); // Handles
+        push_u16(0, &mut out); // Reserved
+        push_u32(0, &mut out); // nDescription
+        push_u32(0, &mut out); // offDescription
+        push_u32(0, &mut out); // nPalEntries
+        push_i32(1920, &mut out); // Device SIZEL
+        push_i32(1080, &mut out);
+        push_i32(508, &mut out); // Millimeters SIZEL
+        push_i32(286, &mut out);
+        assert_eq!(out.len(), 88);
+
+        // ── EMR_RECTANGLE (0x2B): RectL 16B ──
+        push_u32(0x2B, &mut out);
+        push_u32(24, &mut out);
+        for v in [10, 20, 110, 120] {
+            push_i32(v, &mut out);
+        }
+
+        // ── EMR_EOF (0x0E): 20B ──
+        push_u32(0x0E, &mut out);
+        push_u32(20, &mut out);
+        push_u32(0, &mut out); // nPalEntries
+        push_u32(0, &mut out); // offPalEntries
+        push_u32(20, &mut out); // SizeLast
 
         out
     }

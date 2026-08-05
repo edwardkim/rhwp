@@ -86,3 +86,43 @@ pub fn convert_to_svg(bytes: &[u8], render_rect: (f32, f32, f32, f32)) -> Result
     player.play(&records)?;
     Ok(player.svg.into_string())
 }
+
+/// EMF 바이트를 **단독 SVG 문서**로 변환한다 — data URI·`<img>` 임베드용.
+///
+/// `convert_to_svg` 는 배치 영역을 아는 호출자(렌더 트리 RawSvg)를 위한
+/// viewBox/xmlns 없는 fragment 를 준다. data URI 소비자는 배치 영역이 그림
+/// 바깥(SVG `<image>`·DOM `<img>` 의 bbox)에서 정해지므로, 치수를 EMF 헤더에서
+/// 세워 문서로 감싼다: frame(0.01mm)을 pt 로 환산하고, frame 이 비어 있으면
+/// bounds(장치 좌표)를 96dpi 픽셀로 보고 환산한다.
+pub fn convert_to_standalone_svg(bytes: &[u8]) -> Option<Vec<u8>> {
+    let records = parse_emf(bytes).ok()?;
+    let header = records.iter().find_map(|record| match record {
+        Record::Header(header) => Some(header),
+        _ => None,
+    })?;
+    let frame_pt = (
+        f64::from(header.frame.width()) / 100.0 * 72.0 / 25.4,
+        f64::from(header.frame.height()) / 100.0 * 72.0 / 25.4,
+    );
+    let bounds_pt = (
+        f64::from(header.bounds.width()) * 72.0 / 96.0,
+        f64::from(header.bounds.height()) * 72.0 / 96.0,
+    );
+    let (w, h) = if frame_pt.0 > 0.0 && frame_pt.1 > 0.0 {
+        frame_pt
+    } else {
+        bounds_pt
+    };
+    if !(w > 0.0 && h > 0.0) {
+        return None;
+    }
+    let mut player = converter::Player::new((0.0, 0.0, w as f32, h as f32));
+    player.play(&records).ok()?;
+    let fragment = player.svg.into_string();
+    Some(
+        format!(
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{w:.2}\" height=\"{h:.2}\" viewBox=\"0 0 {w:.2} {h:.2}\">{fragment}</svg>"
+        )
+        .into_bytes(),
+    )
+}
