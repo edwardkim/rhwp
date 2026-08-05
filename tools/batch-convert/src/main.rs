@@ -1,7 +1,6 @@
 mod config;
 mod converter;
 mod progress;
-mod error;
 
 use anyhow::Result;
 use clap::Parser;
@@ -10,7 +9,6 @@ use std::path::PathBuf;
 
 use config::ConversionConfig;
 use converter::BatchConverter;
-use progress::ProgressTracker;
 
 #[derive(Parser, Debug)]
 #[command(name = "batch-convert")]
@@ -75,10 +73,11 @@ fn main() -> Result<()> {
     };
 
     // Locate rhwp CLI binary
-    let rhwp_bin = converter::find_rhwp_binary(args.rhwp_bin.clone())
-        .ok_or_else(|| anyhow::anyhow!(
+    let rhwp_bin = converter::find_rhwp_binary(args.rhwp_bin.clone()).ok_or_else(|| {
+        anyhow::anyhow!(
             "rhwp binary not found — pass --rhwp-bin or build it under target/{{release,debug}}/"
-        ))?;
+        )
+    })?;
     info!("Using rhwp binary: {}", rhwp_bin.display());
 
     // Create batch converter

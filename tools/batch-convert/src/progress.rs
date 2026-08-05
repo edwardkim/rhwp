@@ -1,4 +1,3 @@
-use chrono::Local;
 use std::time::Instant;
 
 /// Progress tracking for batch conversions

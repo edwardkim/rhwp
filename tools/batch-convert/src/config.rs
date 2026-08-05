@@ -1,6 +1,5 @@
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
-use anyhow::{Result, Context};
 
 /// PDF export options
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -155,17 +154,9 @@ impl ConversionConfig {
     pub fn from_file(path: &std::path::Path) -> Result<Self> {
         let content = std::fs::read_to_string(path)
             .context(format!("Failed to read config file: {}", path.display()))?;
-        let config: ConversionConfig = serde_json::from_str(&content)
-            .context("Failed to parse configuration JSON")?;
+        let config: ConversionConfig =
+            serde_json::from_str(&content).context("Failed to parse configuration JSON")?;
         Ok(config)
-    }
-
-    /// Save configuration to JSON file
-    pub fn to_file(&self, path: &std::path::Path) -> Result<()> {
-        let content = serde_json::to_string_pretty(self)?;
-        std::fs::write(path, content)
-            .context(format!("Failed to write config file: {}", path.display()))?;
-        Ok(())
     }
 
     /// Get default configuration

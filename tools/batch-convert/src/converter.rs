@@ -1,6 +1,6 @@
 use crate::config::ConversionConfig;
 use crate::progress::ProgressTracker;
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use log::*;
 use rayon::prelude::*;
 use regex::Regex;
@@ -34,7 +34,9 @@ pub fn find_rhwp_binary(explicit: Option<PathBuf>) -> Option<PathBuf> {
         }
     }
 
-    let repo_root = exe_dir.ancestors().find(|p| p.join("Cargo.toml").is_file())?;
+    let repo_root = exe_dir
+        .ancestors()
+        .find(|p| p.join("Cargo.toml").is_file())?;
     for profile in ["release", "debug"] {
         for name in ["rhwp.exe", "rhwp"] {
             let candidate = repo_root.join("target").join(profile).join(name);
@@ -109,8 +111,10 @@ impl BatchConverter {
 
         // Create output directory if it doesn't exist
         if !output_dir.exists() {
-            fs::create_dir_all(&output_dir)
-                .context(format!("Failed to create output directory: {}", output_dir.display()))?;
+            fs::create_dir_all(&output_dir).context(format!(
+                "Failed to create output directory: {}",
+                output_dir.display()
+            ))?;
         }
 
         let mut converter = BatchConverter {
@@ -133,6 +137,41 @@ impl BatchConverter {
         self.pattern_filter = Some(Regex::new(pattern)?);
         self.discover_files()?;
         Ok(())
+    }
+
+    /// `behavior.skip_existing` 용 — 활성화된 포맷의 출력이 이미 전부 있으면 true.
+    /// PDF는 단일 파일, PNG/SVG/텍스트는 페이지별 파일이 담기는 디렉터리라
+    /// 디렉터리 존재만 확인한다(빈 디렉터리는 미완료로 간주해 재변환한다).
+    fn all_outputs_exist(&self, rel_parent: &Path, file_stem: &str) -> bool {
+        let formats = &self.config.formats;
+
+        if formats.pdf {
+            let path = self
+                .output_dir
+                .join("pdf")
+                .join(rel_parent)
+                .join(format!("{}.pdf", file_stem));
+            if !path.is_file() {
+                return false;
+            }
+        }
+        for (enabled, name) in [
+            (formats.png, "png"),
+            (formats.svg, "svg"),
+            (formats.text, "text"),
+        ] {
+            if !enabled {
+                continue;
+            }
+            let dir = self.output_dir.join(name).join(rel_parent).join(file_stem);
+            let has_output = dir.is_dir()
+                && fs::read_dir(&dir).is_ok_and(|mut entries| entries.next().is_some());
+            if !has_output {
+                return false;
+            }
+        }
+
+        formats.pdf || formats.png || formats.svg || formats.text
     }
 
     fn discover_files(&mut self) -> Result<()> {
@@ -204,16 +243,15 @@ impl BatchConverter {
                 prog.increment();
 
                 // Print progress
-                if prog.current % 10 == 0 || prog.current == total_files {
-                    println!(
-                        "[{}/{}] Processing: {}",
-                        prog.current, total_files, file.path.display()
-                    );
+                if prog.current.is_multiple_of(10) || prog.current == total_files {
+                    println!("{} | {}", prog.status_line(), file.path.display());
                 }
 
                 // Handle errors
                 if let Err(ref e) = result {
-                    let file_name = file.path.file_name()
+                    let file_name = file
+                        .path
+                        .file_name()
                         .and_then(|n| n.to_str())
                         .unwrap_or("unknown")
                         .to_string();
@@ -226,9 +264,18 @@ impl BatchConverter {
             .collect();
 
         // Count results
-        let successful = results.iter().filter(|r| matches!(r, ConversionFileResult::Success)).count();
-        let failed = results.iter().filter(|r| matches!(r, ConversionFileResult::Failed)).count();
-        let skipped = results.iter().filter(|r| matches!(r, ConversionFileResult::Skipped)).count();
+        let successful = results
+            .iter()
+            .filter(|r| matches!(r, ConversionFileResult::Success))
+            .count();
+        let failed = results
+            .iter()
+            .filter(|r| matches!(r, ConversionFileResult::Failed))
+            .count();
+        let skipped = results
+            .iter()
+            .filter(|r| matches!(r, ConversionFileResult::Skipped))
+            .count();
 
         let elapsed = start_time.elapsed();
         let elapsed_seconds = elapsed.as_secs_f64();
@@ -257,12 +304,21 @@ impl BatchConverter {
             .and_then(|s| s.to_str())
             .ok_or_else(|| "Invalid file name".to_string())?;
 
+        // 입력 디렉터리 하위 구조를 출력에도 그대로 반영한다 (예: input/2026/a.hwp
+        // → output/pdf/2026/a.pdf).
+        let rel_parent = relative_path.parent().unwrap_or(Path::new(""));
+
+        if self.config.behavior.skip_existing && self.all_outputs_exist(rel_parent, file_stem) {
+            debug!("Skipping (outputs already exist): {}", input_path.display());
+            return Ok(ConversionFileResult::Skipped);
+        }
+
         // Convert to each enabled format
         let mut any_success = false;
 
         // PDF conversion
         if self.config.formats.pdf {
-            let output_subdir = self.output_dir.join("pdf");
+            let output_subdir = self.output_dir.join("pdf").join(rel_parent);
             if !dry_run && !output_subdir.exists() {
                 fs::create_dir_all(&output_subdir).ok();
             }
@@ -282,7 +338,7 @@ impl BatchConverter {
         // PNG conversion — rhwp export-png writes one file per page into a
         // directory (unlike export-pdf, which writes a single merged file).
         if self.config.formats.png {
-            let output_subdir = self.output_dir.join("png").join(file_stem);
+            let output_subdir = self.output_dir.join("png").join(rel_parent).join(file_stem);
             if !dry_run && !output_subdir.exists() {
                 fs::create_dir_all(&output_subdir).ok();
             }
@@ -300,7 +356,7 @@ impl BatchConverter {
 
         // SVG conversion — same per-page-directory convention as PNG/text.
         if self.config.formats.svg {
-            let output_subdir = self.output_dir.join("svg").join(file_stem);
+            let output_subdir = self.output_dir.join("svg").join(rel_parent).join(file_stem);
             if !dry_run && !output_subdir.exists() {
                 fs::create_dir_all(&output_subdir).ok();
             }
@@ -318,7 +374,11 @@ impl BatchConverter {
 
         // Text conversion — same per-page-directory convention as PNG/SVG.
         if self.config.formats.text {
-            let output_subdir = self.output_dir.join("text").join(file_stem);
+            let output_subdir = self
+                .output_dir
+                .join("text")
+                .join(rel_parent)
+                .join(file_stem);
             if !dry_run && !output_subdir.exists() {
                 fs::create_dir_all(&output_subdir).ok();
             }
@@ -326,7 +386,10 @@ impl BatchConverter {
             match self.convert_to_text(input_path, &output_subdir, dry_run) {
                 Ok(()) => {
                     any_success = true;
-                    debug!("Successfully converted to text: {}", output_subdir.display());
+                    debug!(
+                        "Successfully converted to text: {}",
+                        output_subdir.display()
+                    );
                 }
                 Err(e) => {
                     warn!("Failed to convert to text: {}", e);
@@ -343,7 +406,11 @@ impl BatchConverter {
 
     fn convert_to_pdf(&self, input: &Path, output: &Path, dry_run: bool) -> Result<()> {
         if dry_run {
-            debug!("[DRY RUN] Would convert {} to PDF at {}", input.display(), output.display());
+            debug!(
+                "[DRY RUN] Would convert {} to PDF at {}",
+                input.display(),
+                output.display()
+            );
             return Ok(());
         }
         debug!("Converting {} to PDF...", input.display());
@@ -352,7 +419,11 @@ impl BatchConverter {
 
     fn convert_to_png(&self, input: &Path, output: &Path, dry_run: bool) -> Result<()> {
         if dry_run {
-            debug!("[DRY RUN] Would convert {} to PNG at {}", input.display(), output.display());
+            debug!(
+                "[DRY RUN] Would convert {} to PNG at {}",
+                input.display(),
+                output.display()
+            );
             return Ok(());
         }
         debug!("Converting {} to PNG...", input.display());
@@ -361,7 +432,11 @@ impl BatchConverter {
 
     fn convert_to_svg(&self, input: &Path, output: &Path, dry_run: bool) -> Result<()> {
         if dry_run {
-            debug!("[DRY RUN] Would convert {} to SVG at {}", input.display(), output.display());
+            debug!(
+                "[DRY RUN] Would convert {} to SVG at {}",
+                input.display(),
+                output.display()
+            );
             return Ok(());
         }
         debug!("Converting {} to SVG...", input.display());
@@ -370,7 +445,11 @@ impl BatchConverter {
 
     fn convert_to_text(&self, input: &Path, output: &Path, dry_run: bool) -> Result<()> {
         if dry_run {
-            debug!("[DRY RUN] Would convert {} to text at {}", input.display(), output.display());
+            debug!(
+                "[DRY RUN] Would convert {} to text at {}",
+                input.display(),
+                output.display()
+            );
             return Ok(());
         }
         debug!("Converting {} to text...", input.display());

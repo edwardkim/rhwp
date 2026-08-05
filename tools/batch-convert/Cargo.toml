@@ -12,10 +12,8 @@ env_logger = "0.11"
 clap = { version = "4.4", features = ["derive"] }
 rayon = "1.8"
 anyhow = "1.0"
-thiserror = "1.0"
 walkdir = "2.4"
 regex = "1.10"
-chrono = "0.4"
 which = "6.0"
 
 [[bin]]
