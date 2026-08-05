@@ -177,6 +177,10 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("actions: write", aggregate)
         self.assertIn("Keep only latest nextest cost model cache", aggregate)
         self.assertNotIn("  publish-nextest-cost-model:\n", self.workflow)
+        self.assertLess(
+            aggregate.index("Check out source for nextest cost model merge"),
+            aggregate.index("Download current runtime cost slices"),
+        )
 
     def test_external_fork_restores_model_without_publishing(self) -> None:
         builder = ARCHIVE_BUILD_WORKFLOW_PATH.read_text(encoding="utf-8")

@@ -47,3 +47,11 @@ PR synchronize가 자동 CI를 만들지 않은 상태에서 `workflow_dispatch`
   .github/workflows/build-nextest-archives.yml .github/workflows/run-nextest-archives.yml
   .github/workflows/cache-generation-sweep.yml`
 - 결과: 모두 exit code 0.
+
+### 3. 원격 cache 발행 실패
+
+- 실행: PR #4076 CI run `31015216682`.
+- 결과: fallback shard 네 개와 `Build & Test`의 same-repository scope 판정은 성공했다. runtime
+  cost slice artifact 4개도 정상 download됐다.
+- 실패 원인: source merge를 위해 뒤늦게 실행한 `actions/checkout`의 기본 clean 동작이 이미 download한
+  `ci-nextest-cost-slices`를 지웠다. merge 단계가 input directory를 찾지 못해 실패했다.
