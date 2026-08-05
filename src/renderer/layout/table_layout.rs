@@ -3147,30 +3147,53 @@ impl LayoutEngine {
                             // 본문배치 속성(가로/세로 기준, 정렬, 오프셋) 적용
                             let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                            // [Task #577] TopAndBottom + vert_rel_to=Para 인 셀 내부 이미지는
-                            // anchor 라인이 이미지에 의해 displaced 되므로, layout_composed_paragraph
-                            // 가 advance 시킨 para_y 가 아닌 anchor 시점(para_y_before_compose)을 기준
-                            // 으로 해야 cell-clip 영역 내부에 정확히 배치된다. (exam_science 2번 보기 ⑤
-                            // 등 5개 이미지에서 line_height(약 15.32px) 만큼 아래로 밀려 잘림.)
-                            let top_and_bottom_para = matches!(
-                                pic.common.text_wrap,
-                                crate::model::shape::TextWrap::TopAndBottom
-                            ) && matches!(
+                            // vert_rel_to=Para 인 셀 내부 비인라인 이미지의 앵커 기준점.
+                            // `para_y` 는 `layout_composed_paragraph` 가 advance 시킨 뒤의
+                            // 값이라 한 줄 아래를 가리킨다 — 그대로 쓰면 그림이 줄 높이만큼
+                            // 내려가 셀 경계에 잘린다.
+                            //
+                            // 이 자리는 wrap 종류를 하나씩 열거하며 고쳐 왔다 —
+                            // [Task #577] TopAndBottom(exam_science 2번 보기 ⑤ 등 5개가
+                            // line_height 약 15.32px 만큼 밀려 잘림), [Task #2207] 글뒤로·
+                            // 글앞으로(오버레이는 텍스트 플로우를 밀지 않아 같은 원리).
+                            // [#4059] 그 열거에 Square·Tight·Through 가 빠져 있었다 — 관세청
+                            // 보도자료 1쪽 "한국판뉴딜" 로고가 줄 높이(17.3px)만큼 밀려 잘렸다.
+                            //
+                            // 다만 **두 무리는 기준점이 다르다.** wrap 무관하게 #577 공식
+                            // (`content_cell_y + pad_top + seg.vpos`)으로 통일해 보았더니
+                            // `pic-in-table-with-toggle` 이 한글 대비 +8.6px 에서 −43.8px 로
+                            // 더 어긋났다. 그 셀은 valign=Center 라 문단이 셀 상단이 아니라
+                            // 가운데에 놓이는데, 저 공식은 셀 콘텐츠 상단을 가리키기 때문이다.
+                            // Square 계열은 **실제 문단 top**(`para_y_before_compose`)이 맞다.
+                            //
+                            // 한글 PDF 오라클 실측 (그림 top, px):
+                            //   문서                        한글     종전      정정 후
+                            //   관세청 한국판뉴딜           191.9   208.3    191.0
+                            //   pic-in-table-with-toggle    249.5   258.1    244.8
+                            //   hwpx_sample2 p19            970.2   978.4    965.1
+                            // 잔여 약 5px 는 별개 축이다 — toggle 은 x 도 같은 크기로 어긋난다
+                            // (한글 170.1 vs 166.4). 앵커 원점(셀 padding 해석) 쪽으로 보인다.
+                            //
+                            // 이 분기는 이미 `treat_as_char == false` 안이므로 wrap 조건 없이
+                            // vert_rel_to 만 본다.
+                            let non_inline_para = matches!(
                                 pic.common.vert_rel_to,
                                 crate::model::shape::VertRelTo::Para
                             );
-                            // [Task #2207] 글뒤로/글앞으로(절대 오버레이) + Para 도 앵커
-                            // 시점 기준. 오버레이 그림은 텍스트 플로우를 밀지 않으므로
-                            // compose 후 전진된 para_y 는 한 줄 아래를 가리킨다 (#577 과
-                            // 동일 원리 — Shape 경로는 이미 wrap 무관 앵커 시점 기준).
-                            let overlay_para = matches!(
-                                pic.common.text_wrap,
-                                crate::model::shape::TextWrap::BehindText
-                                    | crate::model::shape::TextWrap::InFrontOfText
-                            ) && matches!(
-                                pic.common.vert_rel_to,
-                                crate::model::shape::VertRelTo::Para
-                            );
+                            // #2071 셀 valign 강제 + 앵커 분기 판정용. 그쪽은 한글 2024
+                            // 오라클로 TopAndBottom 한정 검증된 **별개 계약**이라 위 앵커
+                            // 정정과 함께 넓히지 않는다.
+                            let top_and_bottom_para = non_inline_para
+                                && matches!(
+                                    pic.common.text_wrap,
+                                    crate::model::shape::TextWrap::TopAndBottom
+                                );
+                            let overlay_para = non_inline_para
+                                && matches!(
+                                    pic.common.text_wrap,
+                                    crate::model::shape::TextWrap::BehindText
+                                        | crate::model::shape::TextWrap::InFrontOfText
+                                );
                             // [Task #2226] 텍스트 없는 문단에서 seg.vpos > 0 이면 그
                             // 줄은 flow 그림에 밀려난 위치다 — 그림 오프셋의 원점은
                             // 문단 시작이므로 앵커에 vpos 를 더하면 그림이 셀 아래로
@@ -3183,7 +3206,11 @@ impl LayoutEngine {
                             let anchor_y = if displaced_empty_line_para {
                                 // Square 포함 모든 비인라인 그림 — 원점은 문단 시작.
                                 content_cell_y + pad_top
-                            } else if top_and_bottom_para || overlay_para {
+                            } else if non_inline_para && !top_and_bottom_para && !overlay_para {
+                                // Square·Tight·Through — 흐름을 미는 wrap. 기준점은 셀
+                                // 콘텐츠 상단이 아니라 **실제 문단 top** 이다(valign 반영).
+                                para_y_before_compose
+                            } else if non_inline_para {
                                 para.line_segs
                                     .first()
                                     .filter(|seg| seg.vertical_pos >= 0)
