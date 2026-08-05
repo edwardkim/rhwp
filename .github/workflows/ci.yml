@@ -552,16 +552,16 @@ jobs:
 
   test-slow-shard:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-slow]
+    needs: [preflight, build-test-archive-slow]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
-        && needs['native-skia-tests'].result == 'success'
         && needs['build-test-archive-slow'].result == 'success'
       }}
     permissions:
+      actions: read
       contents: read
     with:
       label: slow shard
@@ -570,16 +570,16 @@ jobs:
 
   test-regular-shard-1:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-a]
+    needs: [preflight, build-test-archive-a]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
-        && needs['native-skia-tests'].result == 'success'
         && needs['build-test-archive-a'].result == 'success'
       }}
     permissions:
+      actions: read
       contents: read
     with:
       label: shard 1/3
@@ -588,16 +588,16 @@ jobs:
 
   test-regular-shard-2:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-slow]
+    needs: [preflight, build-test-archive-slow]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
-        && needs['native-skia-tests'].result == 'success'
         && needs['build-test-archive-slow'].result == 'success'
       }}
     permissions:
+      actions: read
       contents: read
     with:
       label: shard 2/3
@@ -606,16 +606,16 @@ jobs:
 
   test-regular-shard-3:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-b]
+    needs: [preflight, build-test-archive-b]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
-        && needs['native-skia-tests'].result == 'success'
         && needs['build-test-archive-b'].result == 'success'
       }}
     permissions:
+      actions: read
       contents: read
     with:
       label: shard 3/3
@@ -1092,6 +1092,90 @@ jobs:
               ;;
           esac
           exit "${failed}"
+
+  # [#4075] raw libtest JSON은 runner 임시 파일로만 사용하고, trusted devel push에서만
+  # target별 실행 시간 요약을 최신 1개 cache로 승격한다. PR/fork가 이 모델을 쓰기할 수 없다.
+  publish-nextest-cost-model:
+    name: Publish nextest cost model
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [build-and-test]
+    if: >-
+      ${{
+        github.event_name == 'push'
+        && github.ref == 'refs/heads/devel'
+        && needs['build-and-test'].result == 'success'
+      }}
+    concurrency:
+      group: nextest-cost-model-publish-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      actions: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Confirm current devel head
+        id: head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          current=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/devel" --jq '.object.sha')
+          if [[ "$current" == "${GITHUB_SHA}" ]]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "skip stale devel run: current=$current run=${GITHUB_SHA}"
+          fi
+
+      - name: Download current runtime cost slices
+        if: ${{ steps.head.outputs.publish == 'true' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: nextest-cost-slice-${{ github.run_id }}-*
+          path: ci-nextest-cost-slices
+          merge-multiple: true
+
+      - name: Restore previous nextest cost model
+        if: ${{ steps.head.outputs.publish == 'true' }}
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ci-nextest-cost-model
+          key: ${{ runner.os }}-nextest-cost-model-v1-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-nextest-cost-model-v1-
+
+      - name: Merge runtime cost model
+        if: ${{ steps.head.outputs.publish == 'true' }}
+        run: |
+          set -euo pipefail
+          mkdir -p ci-nextest-cost-model
+          node .github/scripts/merge_nextest_cost_model.mjs \
+            --input-dir ci-nextest-cost-slices \
+            --prior ci-nextest-cost-model/nextest-cost-model.json \
+            --output ci-nextest-cost-model/nextest-cost-model.json
+          stat --printf='nextest cost model bytes=%s\n' ci-nextest-cost-model/nextest-cost-model.json
+
+      - name: Save nextest cost model
+        if: ${{ steps.head.outputs.publish == 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ci-nextest-cost-model
+          key: ${{ runner.os }}-nextest-cost-model-v1-${{ github.sha }}
+
+      - name: Keep only latest nextest cost model cache
+        if: ${{ steps.head.outputs.publish == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/actions/caches?ref=${GITHUB_REF}&key=${RUNNER_OS}-nextest-cost-model-v1-&per_page=100" \
+            --jq '.actions_caches | sort_by(.created_at) | reverse | .[1:][] | .id' \
+            | while read -r cache_id; do
+                gh api --method DELETE "repos/${GITHUB_REPOSITORY}/actions/caches/${cache_id}"
+              done
 
   wasm-build:
     name: WASM Build

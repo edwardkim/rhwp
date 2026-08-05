@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 WORKFLOW_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/ci.yml"
+CACHE_SWEEP_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/cache-generation-sweep.yml"
 WORKER_MARKER = "  # [#2393] 기본 테스트 병렬화"
 
 
@@ -149,6 +150,32 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("Frontend unit lane expected success/skipped", aggregate)
         self.assertIn("Frontend package lane expected skipped/success", aggregate)
         self.assertIn("Unknown frontend mode", aggregate)
+
+    def test_nextest_shards_do_not_wait_for_native_skia(self) -> None:
+        for job_name in (
+            "test-slow-shard",
+            "test-regular-shard-1",
+            "test-regular-shard-2",
+            "test-regular-shard-3",
+        ):
+            with self.subTest(job=job_name):
+                job = self._job(job_name)
+                self.assertNotIn("native-skia-tests", job)
+                self.assertIn("actions: read", job)
+
+    def test_cost_model_publication_is_limited_to_successful_devel_pushes(self) -> None:
+        publisher = self._job("publish-nextest-cost-model")
+        self.assertIn("github.event_name == 'push'", publisher)
+        self.assertIn("github.ref == 'refs/heads/devel'", publisher)
+        self.assertIn("needs['build-and-test'].result == 'success'", publisher)
+        self.assertIn("actions: write", publisher)
+        self.assertIn("Keep only latest nextest cost model cache", publisher)
+
+    def test_periodic_cache_sweep_excludes_self_managed_nextest_cost_model(self) -> None:
+        sweep = CACHE_SWEEP_PATH.read_text(encoding="utf-8")
+        self.assertIn("isSelfManagedNextestCostModel", sweep)
+        self.assertIn("key.includes('-nextest-cost-model-v1-')", sweep)
+        self.assertIn("if (isSelfManagedNextestCostModel(c.key)) continue;", sweep)
 
     def test_classifier_failures_remain_fail_closed_without_failing_preflight(self) -> None:
         for step_name in (

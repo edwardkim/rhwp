@@ -23,6 +23,7 @@ jobs:
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 30
     permissions:
+      actions: read
       contents: read
 
     steps:
@@ -50,19 +51,80 @@ jobs:
         env:
           ARCHIVE_LABEL: ${{ inputs.archive_label }}
           COUNT_LABEL: ${{ inputs.count_label }}
+          GITHUB_TOKEN: ${{ github.token }}
+          COLLECT_NEXTEST_COSTS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/devel' && 'true' || 'false' }}
         run: |
-          set -o pipefail
-          log="nextest-${ARCHIVE_LABEL}.log"
-          # --extract-to . : CLI 테스트의 env!("CARGO_BIN_EXE_rhwp") 는 빌드 러너 절대 경로가
-          # 컴파일 타임에 박힌다. GitHub runner는 job 간 workspace 경로가 같으므로 workspace에
-          # 풀어 target/ 경로를 그대로 복원한다.
-          cargo nextest run \
-            --archive-file "tests-${ARCHIVE_LABEL}.tar.zst" \
-            --workspace-remap . \
-            --extract-to . \
-            2>&1 | tee "$log"
-          summary=$(sed 's/\x1b\[[0-9;]*m//g' "$log" | grep -E "Summary \[" | tail -1)
-          run=$(echo "$summary" | grep -oE "[0-9]+ tests? run" | grep -oE "^[0-9]+")
+          set -euo pipefail
+          log="${RUNNER_TEMP}/nextest-${ARCHIVE_LABEL}.log"
+          events="${RUNNER_TEMP}/nextest-${ARCHIVE_LABEL}.events.jsonl"
+          abort_file="${RUNNER_TEMP}/nextest-${ARCHIVE_LABEL}.native-skia-abort.json"
+          cost_slice="nextest-cost-slice-${ARCHIVE_LABEL}.json"
+          watch_pid=""
+          cleanup() {
+            if [[ -n "$watch_pid" ]]; then
+              kill "$watch_pid" 2>/dev/null || true
+              wait "$watch_pid" 2>/dev/null || true
+            fi
+            rm -f "$events" "$log" "$abort_file"
+          }
+          trap cleanup EXIT
+
+          # Native Skia와 archive는 산출물을 공유하지 않는다. archive가 먼저 준비되면 shard는 즉시
+          # 시작하고, watcher가 Native Skia 실패를 감지하면 이 process group만 종료한다.
+          if [[ "$COLLECT_NEXTEST_COSTS" == "true" ]]; then
+            setsid env NEXTEST_EXPERIMENTAL_LIBTEST_JSON=1 cargo nextest run \
+              --archive-file "tests-${ARCHIVE_LABEL}.tar.zst" \
+              --workspace-remap . \
+              --extract-to . \
+              --message-format libtest-json-plus \
+              --message-format-version 0.1 \
+              >"$events" 2>&1 &
+          else
+            setsid cargo nextest run \
+              --archive-file "tests-${ARCHIVE_LABEL}.tar.zst" \
+              --workspace-remap . \
+              --extract-to . \
+              >"$log" 2>&1 &
+          fi
+          nextest_pid=$!
+          node .github/scripts/watch_native_skia.mjs \
+            --process-group "$nextest_pid" \
+            --abort-file "$abort_file" \
+            --poll-ms 15000 &
+          watch_pid=$!
+
+          set +e
+          wait "$nextest_pid"
+          nextest_status=$?
+          wait "$watch_pid"
+          watch_status=$?
+          watch_pid=""
+          set -e
+          if [[ -f "$abort_file" ]]; then
+            cat "$abort_file"
+            echo "::error::Native Skia failed; terminated default-feature shard ${ARCHIVE_LABEL}"
+            exit 1
+          fi
+          if [[ "$watch_status" -ne 0 ]]; then
+            echo "::error::Native Skia watcher failed for archive ${ARCHIVE_LABEL}"
+            exit "$watch_status"
+          fi
+          if [[ "$nextest_status" -ne 0 ]]; then
+            cat "${events}" "${log}" 2>/dev/null || true
+            exit "$nextest_status"
+          fi
+
+          if [[ "$COLLECT_NEXTEST_COSTS" == "true" ]]; then
+            node .github/scripts/summarize_nextest_costs.mjs \
+              --events "$events" \
+              --archive-label "$ARCHIVE_LABEL" \
+              --output "$cost_slice"
+            run=$(jq '[.targets[].test_count] | add' "$cost_slice")
+          else
+            summary=$(sed 's/\x1b\[[0-9;]*m//g' "$log" | grep -E "Summary \[" | tail -1)
+            printf '%s\n' "$summary"
+            run=$(echo "$summary" | grep -oE "[0-9]+ tests? run" | grep -oE "^[0-9]+")
+          fi
           if [[ -z "$run" ]]; then
             echo "::error::archive ${ARCHIVE_LABEL} summary parse failed"
             exit 1
@@ -70,6 +132,17 @@ jobs:
           echo "archive=${ARCHIVE_LABEL} run=${run}"
           echo "$run" > "shard-count-${COUNT_LABEL}.txt"
           cat "shard-count-${COUNT_LABEL}.txt"
+
+      # [#4075] raw event JSON은 runner 임시 경로에서 summary 생성 뒤 cleanup trap으로 지운다.
+      # trusted devel push만 작은 target-level slice를 다음 실행의 planner에 전달한다.
+      - name: Upload ${{ inputs.label }} runtime cost
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/devel' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nextest-cost-slice-${{ github.run_id }}-${{ inputs.archive_label }}
+          path: nextest-cost-slice-${{ inputs.archive_label }}.json
+          retention-days: 1
+          if-no-files-found: error
 
       - name: Upload ${{ inputs.label }} count
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

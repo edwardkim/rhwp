@@ -17,6 +17,8 @@ name: Cache Generation Sweep
 # - 열린 PR 의 ref 캐시는 건드리지 않는다(머지 전 재사용 대상).
 # - 그룹별로 최신 KEEP_GENERATIONS 개를 남긴다 — 진행 중 job 이 방금 만든 캐시를
 #   지우지 않기 위한 여유다.
+# - nextest 비용 모델은 CI publisher가 최신 1개를 직접 교체·정리한다. 이 sweep가 그 사이의
+#   restore source를 지우지 않도록 해당 key namespace는 제외한다.
 
 on:
   schedule:
@@ -74,9 +76,11 @@ jobs:
 
             // 키에서 후행 해시를 떼어 논리 그룹으로 묶는다.
             const groupOf = (key) => key.replace(/[-_][0-9a-f]{8,}$/, '');
+            const isSelfManagedNextestCostModel = (key) => key.includes('-nextest-cost-model-v1-');
             const groups = new Map();
             for (const c of caches) {
               if (openPrRefs.has(c.ref)) continue;
+              if (isSelfManagedNextestCostModel(c.key)) continue;
               const g = `${c.ref}::${groupOf(c.key)}`;
               if (!groups.has(g)) groups.set(g, []);
               groups.get(g).push(c);

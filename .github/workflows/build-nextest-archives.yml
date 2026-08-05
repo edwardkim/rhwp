@@ -54,6 +54,16 @@ jobs:
           shared-key: test-archive
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
+      # [#4075] 비용 모델은 trusted devel push만 갱신한다. PR은 default branch의 최신 공개 모델을
+      # restore해 배정에만 쓰며, 이 파일에는 target 식별자와 시간 수치 외 정보를 넣지 않는다.
+      - name: Restore nextest target cost model
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ci-nextest-cost-model
+          key: ${{ runner.os }}-nextest-cost-model-v1-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-nextest-cost-model-v1-
+
       # [Task #1849] PR/devel push 는 release-test 전체 회귀, main/tag/manual 은 release.
       - name: Select cargo profile
         id: profile
@@ -73,11 +83,16 @@ jobs:
         run: |
           echo "profile=${{ steps.profile.outputs.cargo_profile }} event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
           cargo metadata --format-version 1 --no-deps > cargo-metadata.json
+          cost_model_args=()
+          if [[ -f ci-nextest-cost-model/nextest-cost-model.json ]]; then
+            cost_model_args=(--cost-model ci-nextest-cost-model/nextest-cost-model.json)
+          fi
           node .github/scripts/plan_nextest_target_archives.mjs \
             --input cargo-metadata.json \
             --output-dir ci-target-archives \
             --package rhwp \
-            --slow-test-target overflow_cell_baseline
+            --slow-test-target overflow_cell_baseline \
+            "${cost_model_args[@]}"
 
           for label in ${ARCHIVE_LABELS}; do
             owner=$(jq -r ".archives[\"${label}\"].builder" ci-target-archives/assignment.json)
