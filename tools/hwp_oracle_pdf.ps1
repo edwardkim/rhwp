@@ -54,9 +54,19 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $src = (Resolve-Path -LiteralPath $Source).Path
-$outDir = Split-Path -Parent $Output
-if ($outDir -and -not (Test-Path $outDir)) { New-Item -ItemType Directory -Force -Path $outDir | Out-Null }
-$out = [System.IO.Path]::GetFullPath((Join-Path (Get-Location) $Output))
+
+# 절대 경로를 그대로 `Join-Path (Get-Location)` 에 넣으면 형식 오류가 난다 — 상대 경로일
+# 때만 현재 위치를 앞에 붙인다. 한글 COM 은 상대 경로를 자기 작업 폴더 기준으로 해석하므로
+# 어느 쪽이든 절대 경로로 만들어 넘겨야 한다.
+$out = if ([System.IO.Path]::IsPathRooted($Output)) {
+  [System.IO.Path]::GetFullPath($Output)
+} else {
+  [System.IO.Path]::GetFullPath((Join-Path (Get-Location).Path $Output))
+}
+$outDir = Split-Path -Parent $out
+if ($outDir -and -not (Test-Path -LiteralPath $outDir)) {
+  New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+}
 if (Test-Path -LiteralPath $out) { Remove-Item -LiteralPath $out -Force }
 
 function Stop-HwpProcesses {
