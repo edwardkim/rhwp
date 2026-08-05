@@ -79,7 +79,7 @@ test("0밀리초 suite도 모델 전체를 무효화하지 않는다", () => {
   assert.equal(model?.targets.get("test:instant")?.runMs, 0);
 });
 
-test("비용 모델이 있으면 regular archive를 실행 시간 기준으로 나눈다", () => {
+test("비용 모델이 있으면 slow target을 포함한 네 일반 archive를 실행 시간 기준으로 나눈다", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "rhwp-nextest-cost-model-"));
   try {
     const sourceDir = path.join(directory, "sources");
@@ -97,6 +97,7 @@ test("비용 모델이 있으면 regular archive를 실행 시간 기준으로 �
       version: 1,
       fallback_run_ms: 1,
       targets: {
+        "test:slow": { run_ms: 700, samples: 1 },
         "test:a": { run_ms: 600, samples: 1 },
         "test:b": { run_ms: 500, samples: 1 },
         "test:c": { run_ms: 400, samples: 1 },
@@ -116,12 +117,47 @@ test("비용 모델이 있으면 regular archive를 실행 시간 기준으로 �
     ], { cwd: path.resolve("."), stdio: "pipe" });
 
     const plan = JSON.parse(fs.readFileSync(path.join(directory, "plan", "assignment.json"), "utf8"));
-    assert.equal(plan.assignment_strategy, "historical-run-time-source-tiebreak");
-    const regular = ["1", "2", "3"].map((label) => plan.archives[label]);
+    assert.equal(plan.assignment_strategy, "historical-run-time-four-archives");
+    assert.equal(plan.archives.slow, undefined);
+    const regular = ["1", "2", "3", "4"].map((label) => plan.archives[label]);
     const assigned = regular.flatMap((archive) => archive.targets.map((target) => target.identity));
-    assert.equal(new Set(assigned).size, 6);
+    assert.equal(new Set(assigned).size, 7);
+    assert.ok(assigned.includes("test:slow"));
     const costs = regular.map((archive) => archive.estimated_run_ms);
-    assert.ok(Math.max(...costs) - Math.min(...costs) <= 130, JSON.stringify(costs));
+    assert.ok(Math.max(...costs) - Math.min(...costs) <= 200, JSON.stringify(costs));
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("비용 모델이 없으면 전용 slow archive와 일반 세 archive fallback을 유지한다", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "rhwp-nextest-fallback-"));
+  try {
+    const sourceDir = path.join(directory, "sources");
+    fs.mkdirSync(sourceDir);
+    const names = ["slow", "a", "b", "c", "d", "e", "f"];
+    const targets = names.map((name, index) => {
+      const source = path.join(sourceDir, name + ".rs");
+      fs.writeFileSync(source, "x".repeat((index + 1) * 100));
+      return { name, kind: ["test"], test: true, src_path: source };
+    });
+    fs.writeFileSync(path.join(directory, "metadata.json"), JSON.stringify({
+      packages: [{ name: "rhwp", targets }],
+    }) + "\n");
+
+    execFileSync(process.execPath, [
+      ".github/scripts/plan_nextest_target_archives.mjs",
+      "--input", path.join(directory, "metadata.json"),
+      "--output-dir", path.join(directory, "plan"),
+      "--package", "rhwp",
+      "--slow-test-target", "slow",
+    ], { cwd: path.resolve("."), stdio: "pipe" });
+
+    const plan = JSON.parse(fs.readFileSync(path.join(directory, "plan", "assignment.json"), "utf8"));
+    assert.equal(plan.assignment_strategy, "source-size-fallback");
+    assert.deepEqual(Object.keys(plan.archives).sort(), ["1", "2", "3", "slow"]);
+    assert.deepEqual(plan.archives.slow.targets.map((target) => target.identity), ["test:slow"]);
+    assert.equal(plan.archives["4"], undefined);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }

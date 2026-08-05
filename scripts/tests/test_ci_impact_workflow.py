@@ -7,6 +7,7 @@ from pathlib import Path
 
 WORKFLOW_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/ci.yml"
 CACHE_SWEEP_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/cache-generation-sweep.yml"
+ARCHIVE_BUILD_WORKFLOW_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/build-nextest-archives.yml"
 ARCHIVE_RUN_WORKFLOW_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/run-nextest-archives.yml"
 WORKER_MARKER = "  # [#2393] 기본 테스트 병렬화"
 
@@ -133,6 +134,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "build-test-archive-slow",
             "build-test-archive-a",
             "build-test-archive-b",
+            "build-test-archive-c",
             "native-skia-tests",
         ):
             with self.subTest(job=job_name):
@@ -158,13 +160,14 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "test-regular-shard-1",
             "test-regular-shard-2",
             "test-regular-shard-3",
+            "test-regular-shard-4",
         ):
             with self.subTest(job=job_name):
                 job = self._job(job_name)
                 self.assertNotIn("native-skia-tests", job)
                 self.assertIn("actions: read", job)
 
-    def test_cost_model_publication_allows_only_trusted_full_pr_or_devel_push(self) -> None:
+    def test_cost_model_publication_allows_only_writable_pr_or_devel_push(self) -> None:
         publisher = self._job("publish-nextest-cost-model")
         self.assertIn("github.event_name == 'push'", publisher)
         self.assertIn("github.ref == 'refs/heads/devel'", publisher)
@@ -175,6 +178,25 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("needs['build-and-test'].result == 'success'", publisher)
         self.assertIn("actions: write", publisher)
         self.assertIn("Keep only latest nextest cost model cache", publisher)
+
+    def test_external_fork_restores_model_without_publishing(self) -> None:
+        builder = ARCHIVE_BUILD_WORKFLOW_PATH.read_text(encoding="utf-8")
+        publisher = self._job("publish-nextest-cost-model")
+        self.assertIn("외부 fork를 포함한 모든 PR", builder)
+        self.assertIn("actions/cache/restore", builder)
+        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", publisher)
+        self.assertIn("write 권한이 있는 caller", ARCHIVE_RUN_WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    def test_cost_aware_plan_replaces_slow_with_regular_shard_4(self) -> None:
+        archive_builder = self._job("build-test-archive-slow")
+        slow = self._job("test-slow-shard")
+        regular_four = self._job("test-regular-shard-4")
+        aggregate = self._job("build-and-test")
+        self.assertIn('archive_labels: "slow 4"', archive_builder)
+        self.assertIn("outputs.has_slow_archive == 'true'", slow)
+        self.assertIn("outputs.has_archive_4 == 'true'", regular_four)
+        self.assertIn("Fallback mode expected slow success and shard 4 skipped", aggregate)
+        self.assertIn("Cost-aware mode expected slow skipped and shard 4 success", aggregate)
 
     def test_trusted_cost_collection_is_explicit_worker_input(self) -> None:
         worker = ARCHIVE_RUN_WORKFLOW_PATH.read_text(encoding="utf-8")
@@ -187,6 +209,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "test-regular-shard-1",
             "test-regular-shard-2",
             "test-regular-shard-3",
+            "test-regular-shard-4",
         ):
             with self.subTest(job=job_name):
                 job = self._job(job_name)

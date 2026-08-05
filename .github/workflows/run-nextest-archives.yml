@@ -49,8 +49,8 @@ jobs:
         with:
           name: test-archive-${{ github.run_id }}-${{ inputs.archive_label }}
 
-      # [#2393] worker는 archive 하나만 실행하고 Summary run을 남긴다. 집계 job은 slow + 일반 세 archive의
-      # expected count와 네 worker 실행 합을 대조한다.
+      # [#2393] worker는 archive 하나만 실행하고 Summary run을 남긴다. 집계 job은 fallback slow + 1/2/3 또는
+      # 비용 model 1/2/3/4의 expected count와 네 worker 실행 합을 대조한다.
       - name: Run ${{ inputs.label }}
         env:
           ARCHIVE_LABEL: ${{ inputs.archive_label }}
@@ -138,7 +138,7 @@ jobs:
           cat "shard-count-${COUNT_LABEL}.txt"
 
       # [#4075] raw event JSON은 runner 임시 경로에서 summary 생성 뒤 cleanup trap으로 지운다.
-      # trusted caller만 작은 target-level slice를 다음 실행의 planner에 전달한다.
+      # write 권한이 있는 caller만 작은 target-level slice를 다음 실행의 planner에 전달한다.
       - name: Upload ${{ inputs.label }} runtime cost
         if: ${{ inputs.collect_costs }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

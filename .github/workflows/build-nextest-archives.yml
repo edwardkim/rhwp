@@ -15,11 +15,21 @@ on:
         description: Unique artifact suffix for this builder's expected runnable counts.
         required: true
         type: string
+    outputs:
+      has_slow_archive:
+        description: Whether this plan contains the fallback slow archive.
+        value: ${{ jobs.build.outputs.has_slow_archive }}
+      has_archive_4:
+        description: Whether this plan contains cost-aware regular archive 4.
+        value: ${{ jobs.build.outputs.has_archive_4 }}
 
 jobs:
   build:
     name: Build test archive (${{ inputs.archive_labels }})
     runs-on: ubuntu-latest
+    outputs:
+      has_slow_archive: ${{ steps.archive_plan.outputs.has_slow_archive }}
+      has_archive_4: ${{ steps.archive_plan.outputs.has_archive_4 }}
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 30
     permissions:
@@ -54,8 +64,8 @@ jobs:
           shared-key: test-archive
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
-      # [#4075] 동일 저장소 trusted PR은 PR ref scope model을, devel push는 공용 model을 갱신한다.
-      # 외부 fork PR은 restore만 하며, 이 파일에는 target 식별자와 시간 수치 외 정보를 넣지 않는다.
+      # [#4075] 외부 fork를 포함한 모든 PR은 base/default branch model을 read-only로 복원한다.
+      # model 갱신은 write 권한이 있는 devel push 또는 동일 저장소 PR만 수행한다.
       - name: Restore nextest target cost model
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -74,9 +84,10 @@ jobs:
             echo "cargo_profile=release" >> "$GITHUB_OUTPUT"
           fi
 
-      # [#3888] Cargo metadata의 test target을 slow + regular 세 archive에 독점 배정한다.
+      # [#3888] fallback은 slow + regular 세 archive, 비용 model이 있으면 regular 네 archive로 배정한다.
       # --test/--lib/--bin selector가 archive 생성과 동시에 해당 target만 compile한다.
       - name: Build and allocate default-feature test archives
+        id: archive_plan
         env:
           BUILDER: ${{ inputs.builder }}
           ARCHIVE_LABELS: ${{ inputs.archive_labels }}
@@ -94,7 +105,22 @@ jobs:
             --slow-test-target overflow_cell_baseline \
             "${cost_model_args[@]}"
 
+          if jq -e '.archives | has("slow")' ci-target-archives/assignment.json >/dev/null; then
+            echo "has_slow_archive=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_slow_archive=false" >> "$GITHUB_OUTPUT"
+          fi
+          if jq -e '.archives | has("4")' ci-target-archives/assignment.json >/dev/null; then
+            echo "has_archive_4=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_archive_4=false" >> "$GITHUB_OUTPUT"
+          fi
+
           for label in ${ARCHIVE_LABELS}; do
+            if ! jq -e --arg label "$label" '.archives | has($label)' ci-target-archives/assignment.json >/dev/null; then
+              echo "archive=${label} omitted by assignment strategy"
+              continue
+            fi
             owner=$(jq -r ".archives[\"${label}\"].builder" ci-target-archives/assignment.json)
             if [[ "$owner" != "$BUILDER" ]]; then
               echo "::error::archive ${label} belongs to builder ${owner}, not ${BUILDER}"
@@ -128,11 +154,21 @@ jobs:
           done
 
       - name: Upload slow test archive
-        if: ${{ contains(format(' {0} ', inputs.archive_labels), ' slow ') }}
+        if: ${{ contains(format(' {0} ', inputs.archive_labels), ' slow ') && steps.archive_plan.outputs.has_slow_archive == 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-archive-${{ github.run_id }}-slow
           path: tests-slow.tar.zst
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Upload test archive 4
+        if: ${{ contains(format(' {0} ', inputs.archive_labels), ' 4 ') && steps.archive_plan.outputs.has_archive_4 == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-archive-${{ github.run_id }}-4
+          path: tests-4.tar.zst
           compression-level: 0
           retention-days: 1
           if-no-files-found: error

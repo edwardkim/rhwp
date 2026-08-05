@@ -5,12 +5,14 @@ import path from "node:path";
 import { estimateTargetRunMs, readCostModel } from "./nextest_cost_model.mjs";
 
 const SLOW_LABEL = "slow";
-const REGULAR_LABELS = ["1", "2", "3"];
+const FALLBACK_REGULAR_LABELS = ["1", "2", "3"];
+const COST_AWARE_REGULAR_LABELS = ["1", "2", "3", "4"];
 const ARCHIVE_BUILDERS = new Map([
   [SLOW_LABEL, "slow"],
   ["1", "a"],
-  ["2", "slow"],
-  ["3", "b"],
+  ["2", "b"],
+  ["3", "c"],
+  ["4", "slow"],
 ]);
 
 function fail(message) {
@@ -162,14 +164,16 @@ if (slowTargets.length !== 1) {
   fail(`expected exactly one integration test target ${slowTestTarget}, found ${slowTargets.length}`);
 }
 const regularTargets = candidates.filter((target) => target !== slowTargets[0]);
-if (regularTargets.length < REGULAR_LABELS.length) {
-  fail(`need at least ${REGULAR_LABELS.length} regular targets, found ${regularTargets.length}`);
+const regularLabels = costModel ? COST_AWARE_REGULAR_LABELS : FALLBACK_REGULAR_LABELS;
+const targetsToAssign = costModel ? candidates : regularTargets;
+if (targetsToAssign.length < regularLabels.length) {
+  fail(`need at least ${regularLabels.length} assignable targets, found ${targetsToAssign.length}`);
 }
 
-// 이력이 있으면 실제 nextest 실행 시간을 우선 최소화하고 source 크기는 동률 해소에만 쓰는 LPT 배정을 사용한다.
-// 이력이 없거나 손상됐으면 기존 source-size + 동일 target 수 계약으로 자동 후퇴한다.
-const regularCapacities = splitCapacity(regularTargets.length, REGULAR_LABELS.length);
-const regularGroups = REGULAR_LABELS.map((label, index) => ({
+// 이력이 있으면 slow target도 네 일반 archive에 넣어 실제 nextest 실행 시간을 우선 최소화한다.
+// 이력이 없거나 손상됐으면 기존 전용 slow + source-size fallback 계약으로 자동 후퇴한다.
+const regularCapacities = splitCapacity(targetsToAssign.length, regularLabels.length);
+const regularGroups = regularLabels.map((label, index) => ({
   label,
   builder: ARCHIVE_BUILDERS.get(label),
   capacity: costModel ? Number.POSITIVE_INFINITY : regularCapacities[index],
@@ -178,28 +182,30 @@ const regularGroups = REGULAR_LABELS.map((label, index) => ({
   runMs: 0,
 }));
 if (costModel) {
-  regularTargets.sort((left, right) => (
+  targetsToAssign.sort((left, right) => (
     right.runMs - left.runMs
       || right.sourceBytes - left.sourceBytes
       || left.identity.localeCompare(right.identity)
   ));
-  assignCostAwareTargets(regularTargets, regularGroups);
+  assignCostAwareTargets(targetsToAssign, regularGroups);
 } else {
-  regularTargets.sort((left, right) => (
+  targetsToAssign.sort((left, right) => (
     right.sourceBytes - left.sourceBytes || left.identity.localeCompare(right.identity)
   ));
-  assignSourceBalancedTargets(regularTargets, regularGroups);
+  assignSourceBalancedTargets(targetsToAssign, regularGroups);
 }
 
 const archives = new Map();
-archives.set(SLOW_LABEL, {
-  label: SLOW_LABEL,
-  builder: ARCHIVE_BUILDERS.get(SLOW_LABEL),
-  capacity: 1,
-  targets: slowTargets,
-  sourceBytes: slowTargets[0].sourceBytes,
-  runMs: slowTargets[0].runMs,
-});
+if (!costModel) {
+  archives.set(SLOW_LABEL, {
+    label: SLOW_LABEL,
+    builder: ARCHIVE_BUILDERS.get(SLOW_LABEL),
+    capacity: 1,
+    targets: slowTargets,
+    sourceBytes: slowTargets[0].sourceBytes,
+    runMs: slowTargets[0].runMs,
+  });
+}
 for (const group of regularGroups) {
   if (group.targets.length === 0) {
     fail(`archive ${group.label} has no Cargo test target`);
@@ -207,7 +213,7 @@ for (const group of regularGroups) {
   archives.set(group.label, group);
 }
 
-const orderedLabels = [SLOW_LABEL, ...REGULAR_LABELS];
+const orderedLabels = costModel ? COST_AWARE_REGULAR_LABELS : [SLOW_LABEL, ...FALLBACK_REGULAR_LABELS];
 if (archives.size !== orderedLabels.length || orderedLabels.some((label) => !archives.has(label))) {
   fail("archive labels are incomplete");
 }
@@ -220,9 +226,9 @@ fs.rmSync(outputDir, { recursive: true, force: true });
 fs.mkdirSync(outputDir, { recursive: true });
 const plan = {
   package: packageName,
-  assignment_strategy: costModel ? "historical-run-time-source-tiebreak" : "source-size-fallback",
+  assignment_strategy: costModel ? "historical-run-time-four-archives" : "source-size-fallback",
   total_test_targets: candidates.length,
-  builders: Object.fromEntries(["slow", "a", "b"].map((builder) => {
+  builders: Object.fromEntries(["slow", "a", "b", "c"].map((builder) => {
     const ownedArchives = orderedLabels
       .map((label) => archives.get(label))
       .filter((archive) => archive.builder === builder);

@@ -463,8 +463,8 @@ jobs:
           } >> "${GITHUB_STEP_SUMMARY}"
 
   # [#2393] 기본 테스트 병렬화 — CI impact preflight가 frontend gate와 worker 조건을 나누는 경계다.
-  # [#3888] slow builder는 archive 2를 함께 만들어 runner 네 개 안에서 compile 부하를 균형화한다.
-  # regular target은 archive 1/2/3에 직접 배정하고, 네 worker는 정확히 자기 archive 하나만 내려받는다.
+  # [#4075] model 부재 시 slow + 1/2/3, model 적중 시 1/2/3/4를 각각 네 worker에 배정한다.
+  # slow builder는 두 mode의 상호 배타적인 slow/4 archive를 맡고, worker는 정확히 자기 archive 하나만 내려받는다.
   # required check 는 집계 job "Build & Test" 로 불변이다.
   build-test-archive-slow:
     uses: ./.github/workflows/build-nextest-archives.yml
@@ -491,7 +491,7 @@ jobs:
       contents: read
     with:
       builder: slow
-      archive_labels: "slow 2"
+      archive_labels: "slow 4"
       expected_count_suffix: slow
 
   build-test-archive-a:
@@ -547,8 +547,36 @@ jobs:
       contents: read
     with:
       builder: b
-      archive_labels: "3"
+      archive_labels: "2"
       expected_count_suffix: b
+
+  build-test-archive-c:
+    uses: ./.github/workflows/build-nextest-archives.yml
+    needs: [preflight, lint, frontend-unit-gates, frontend-package-gates]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.lint.result == 'success'
+        && (
+          (needs.preflight.outputs.frontend_mode == 'none'
+            && needs['frontend-unit-gates'].result == 'skipped'
+            && needs['frontend-package-gates'].result == 'skipped')
+          || (needs.preflight.outputs.frontend_mode == 'unit'
+            && needs['frontend-unit-gates'].result == 'success'
+            && needs['frontend-package-gates'].result == 'skipped')
+          || (needs.preflight.outputs.frontend_mode == 'package'
+            && needs['frontend-unit-gates'].result == 'skipped'
+            && needs['frontend-package-gates'].result == 'success')
+        )
+      }}
+    permissions:
+      contents: read
+    with:
+      builder: c
+      archive_labels: "3"
+      expected_count_suffix: c
 
   test-slow-shard:
     uses: ./.github/workflows/run-nextest-archives.yml
@@ -559,6 +587,7 @@ jobs:
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs['build-test-archive-slow'].result == 'success'
+        && needs['build-test-archive-slow'].outputs.has_slow_archive == 'true'
       }}
     permissions:
       actions: read
@@ -593,7 +622,7 @@ jobs:
       actions: read
       contents: read
     with:
-      label: shard 1/3
+      label: regular shard 1
       count_label: "1"
       archive_label: "1"
       collect_costs: >-
@@ -610,19 +639,19 @@ jobs:
 
   test-regular-shard-2:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, build-test-archive-slow]
+    needs: [preflight, build-test-archive-b]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
-        && needs['build-test-archive-slow'].result == 'success'
+        && needs['build-test-archive-b'].result == 'success'
       }}
     permissions:
       actions: read
       contents: read
     with:
-      label: shard 2/3
+      label: regular shard 2
       count_label: "2"
       archive_label: "2"
       collect_costs: >-
@@ -639,21 +668,51 @@ jobs:
 
   test-regular-shard-3:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, build-test-archive-b]
+    needs: [preflight, build-test-archive-c]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
-        && needs['build-test-archive-b'].result == 'success'
+        && needs['build-test-archive-c'].result == 'success'
       }}
     permissions:
       actions: read
       contents: read
     with:
-      label: shard 3/3
+      label: regular shard 3
       count_label: "3"
       archive_label: "3"
+      collect_costs: >-
+        ${{
+          needs.preflight.outputs.fast_pass != 'true'
+          && (
+            (github.event_name == 'push' && github.ref == 'refs/heads/devel')
+            || (
+              github.event_name == 'pull_request'
+              && github.event.pull_request.head.repo.full_name == github.repository
+            )
+          )
+        }}
+
+  test-regular-shard-4:
+    uses: ./.github/workflows/run-nextest-archives.yml
+    needs: [preflight, build-test-archive-slow]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs['build-test-archive-slow'].result == 'success'
+        && needs['build-test-archive-slow'].outputs.has_archive_4 == 'true'
+      }}
+    permissions:
+      actions: read
+      contents: read
+    with:
+      label: regular shard 4
+      count_label: "4"
+      archive_label: "4"
       collect_costs: >-
         ${{
           needs.preflight.outputs.fast_pass != 'true'
@@ -941,10 +1000,12 @@ jobs:
       - build-test-archive-slow
       - build-test-archive-a
       - build-test-archive-b
+      - build-test-archive-c
       - test-slow-shard
       - test-regular-shard-1
       - test-regular-shard-2
       - test-regular-shard-3
+      - test-regular-shard-4
       - lint
       - native-skia-tests
       - frontend-unit-gates
@@ -960,10 +1021,21 @@ jobs:
         if: >-
           ${{
             needs.preflight.outputs.fast_pass != 'true'
-            && needs['test-slow-shard'].result == 'success'
             && needs['test-regular-shard-1'].result == 'success'
             && needs['test-regular-shard-2'].result == 'success'
             && needs['test-regular-shard-3'].result == 'success'
+            && (
+              (
+                needs['build-test-archive-slow'].outputs.has_slow_archive == 'true'
+                && needs['test-slow-shard'].result == 'success'
+                && needs['test-regular-shard-4'].result == 'skipped'
+              )
+              || (
+                needs['build-test-archive-slow'].outputs.has_archive_4 == 'true'
+                && needs['test-slow-shard'].result == 'skipped'
+                && needs['test-regular-shard-4'].result == 'success'
+              )
+            )
           }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -974,10 +1046,21 @@ jobs:
         if: >-
           ${{
             needs.preflight.outputs.fast_pass != 'true'
-            && needs['test-slow-shard'].result == 'success'
             && needs['test-regular-shard-1'].result == 'success'
             && needs['test-regular-shard-2'].result == 'success'
             && needs['test-regular-shard-3'].result == 'success'
+            && (
+              (
+                needs['build-test-archive-slow'].outputs.has_slow_archive == 'true'
+                && needs['test-slow-shard'].result == 'success'
+                && needs['test-regular-shard-4'].result == 'skipped'
+              )
+              || (
+                needs['build-test-archive-slow'].outputs.has_archive_4 == 'true'
+                && needs['test-slow-shard'].result == 'skipped'
+                && needs['test-regular-shard-4'].result == 'success'
+              )
+            )
           }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -988,10 +1071,21 @@ jobs:
         if: >-
           ${{
             needs.preflight.outputs.fast_pass != 'true'
-            && needs['test-slow-shard'].result == 'success'
             && needs['test-regular-shard-1'].result == 'success'
             && needs['test-regular-shard-2'].result == 'success'
             && needs['test-regular-shard-3'].result == 'success'
+            && (
+              (
+                needs['build-test-archive-slow'].outputs.has_slow_archive == 'true'
+                && needs['test-slow-shard'].result == 'success'
+                && needs['test-regular-shard-4'].result == 'skipped'
+              )
+              || (
+                needs['build-test-archive-slow'].outputs.has_archive_4 == 'true'
+                && needs['test-slow-shard'].result == 'skipped'
+                && needs['test-regular-shard-4'].result == 'success'
+              )
+            )
           }}
         run: |
           shards=$(find . -maxdepth 1 -type f -name 'shard-count-*.txt' | wc -l | tr -d ' ')
@@ -1039,10 +1133,14 @@ jobs:
           BUILD_SLOW_RESULT: ${{ needs['build-test-archive-slow'].result }}
           BUILD_A_RESULT: ${{ needs['build-test-archive-a'].result }}
           BUILD_B_RESULT: ${{ needs['build-test-archive-b'].result }}
+          BUILD_C_RESULT: ${{ needs['build-test-archive-c'].result }}
+          HAS_SLOW_ARCHIVE: ${{ needs['build-test-archive-slow'].outputs.has_slow_archive }}
+          HAS_ARCHIVE_4: ${{ needs['build-test-archive-slow'].outputs.has_archive_4 }}
           TEST_SLOW_RESULT: ${{ needs['test-slow-shard'].result }}
           TEST_REGULAR_1_RESULT: ${{ needs['test-regular-shard-1'].result }}
           TEST_REGULAR_2_RESULT: ${{ needs['test-regular-shard-2'].result }}
           TEST_REGULAR_3_RESULT: ${{ needs['test-regular-shard-3'].result }}
+          TEST_REGULAR_4_RESULT: ${{ needs['test-regular-shard-4'].result }}
           LINT_RESULT: ${{ needs['lint'].result }}
           NATIVE_SKIA_RESULT: ${{ needs['native-skia-tests'].result }}
           FRONTEND_UNIT_RESULT: ${{ needs['frontend-unit-gates'].result }}
@@ -1055,10 +1153,14 @@ jobs:
           printf 'build_slow=%s\n' "${BUILD_SLOW_RESULT}"
           printf 'build_a=%s\n' "${BUILD_A_RESULT}"
           printf 'build_b=%s\n' "${BUILD_B_RESULT}"
+          printf 'build_c=%s\n' "${BUILD_C_RESULT}"
+          printf 'has_slow_archive=%s\n' "${HAS_SLOW_ARCHIVE}"
+          printf 'has_archive_4=%s\n' "${HAS_ARCHIVE_4}"
           printf 'test_slow=%s\n' "${TEST_SLOW_RESULT}"
           printf 'test_regular_1=%s\n' "${TEST_REGULAR_1_RESULT}"
           printf 'test_regular_2=%s\n' "${TEST_REGULAR_2_RESULT}"
           printf 'test_regular_3=%s\n' "${TEST_REGULAR_3_RESULT}"
+          printf 'test_regular_4=%s\n' "${TEST_REGULAR_4_RESULT}"
           printf 'lint=%s\n' "${LINT_RESULT}"
           printf 'native_skia=%s\n' "${NATIVE_SKIA_RESULT}"
           printf 'frontend_unit=%s\n' "${FRONTEND_UNIT_RESULT}"
@@ -1076,7 +1178,7 @@ jobs:
 
           failed=0
           if [[ "${BUILD_SLOW_RESULT}" != "success" ]]; then
-            echo "::error::Build slow/2 test archives result: ${BUILD_SLOW_RESULT}"
+            echo "::error::Build slow/4 test archive result: ${BUILD_SLOW_RESULT}"
             failed=1
           fi
           if [[ "${BUILD_A_RESULT}" != "success" ]]; then
@@ -1084,23 +1186,41 @@ jobs:
             failed=1
           fi
           if [[ "${BUILD_B_RESULT}" != "success" ]]; then
-            echo "::error::Build regular test archive 3 result: ${BUILD_B_RESULT}"
+            echo "::error::Build regular test archive 2 result: ${BUILD_B_RESULT}"
             failed=1
           fi
-          if [[ "${TEST_SLOW_RESULT}" != "success" ]]; then
-            echo "::error::Default-feature slow shard result: ${TEST_SLOW_RESULT}"
+          if [[ "${BUILD_C_RESULT}" != "success" ]]; then
+            echo "::error::Build regular test archive 3 result: ${BUILD_C_RESULT}"
             failed=1
           fi
+          case "${HAS_SLOW_ARCHIVE}/${HAS_ARCHIVE_4}" in
+            true/false)
+              if [[ "${TEST_SLOW_RESULT}" != "success" || "${TEST_REGULAR_4_RESULT}" != "skipped" ]]; then
+                echo "::error::Fallback mode expected slow success and shard 4 skipped, got: ${TEST_SLOW_RESULT}/${TEST_REGULAR_4_RESULT}"
+                failed=1
+              fi
+              ;;
+            false/true)
+              if [[ "${TEST_SLOW_RESULT}" != "skipped" || "${TEST_REGULAR_4_RESULT}" != "success" ]]; then
+                echo "::error::Cost-aware mode expected slow skipped and shard 4 success, got: ${TEST_SLOW_RESULT}/${TEST_REGULAR_4_RESULT}"
+                failed=1
+              fi
+              ;;
+            *)
+              echo "::error::Invalid archive plan mode: slow=${HAS_SLOW_ARCHIVE} archive4=${HAS_ARCHIVE_4}"
+              failed=1
+              ;;
+          esac
           if [[ "${TEST_REGULAR_1_RESULT}" != "success" ]]; then
-            echo "::error::Default-feature regular shard 1/3 result: ${TEST_REGULAR_1_RESULT}"
+            echo "::error::Default-feature regular shard 1 result: ${TEST_REGULAR_1_RESULT}"
             failed=1
           fi
           if [[ "${TEST_REGULAR_2_RESULT}" != "success" ]]; then
-            echo "::error::Default-feature regular shard 2/3 result: ${TEST_REGULAR_2_RESULT}"
+            echo "::error::Default-feature regular shard 2 result: ${TEST_REGULAR_2_RESULT}"
             failed=1
           fi
           if [[ "${TEST_REGULAR_3_RESULT}" != "success" ]]; then
-            echo "::error::Default-feature regular shard 3/3 result: ${TEST_REGULAR_3_RESULT}"
+            echo "::error::Default-feature regular shard 3 result: ${TEST_REGULAR_3_RESULT}"
             failed=1
           fi
           if [[ "${LINT_RESULT}" != "success" ]]; then
