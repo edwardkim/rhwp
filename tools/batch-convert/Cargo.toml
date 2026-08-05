@@ -19,3 +19,9 @@ which = "6.0"
 [[bin]]
 name = "batch-convert"
 path = "src/main.rs"
+
+# 통합 테스트 전용 rhwp CLI 대역(stand-in). tests/cli.rs 가
+# env!("CARGO_BIN_EXE_mock-rhwp") 로 경로를 얻어 --rhwp-bin 에 주입한다.
+[[bin]]
+name = "mock-rhwp"
+path = "src/bin/mock_rhwp.rs"

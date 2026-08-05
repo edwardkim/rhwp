@@ -7,8 +7,51 @@ use regex::Regex;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use walkdir::WalkDir;
+
+/// 출력 포맷 — rhwp CLI 하위 명령과 1:1 대응한다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ExportFormat {
+    Pdf,
+    Png,
+    Svg,
+    Text,
+}
+
+impl ExportFormat {
+    const ALL: [ExportFormat; 4] = [Self::Pdf, Self::Png, Self::Svg, Self::Text];
+
+    fn subcommand(self) -> &'static str {
+        match self {
+            Self::Pdf => "export-pdf",
+            Self::Png => "export-png",
+            Self::Svg => "export-svg",
+            Self::Text => "export-text",
+        }
+    }
+
+    /// `behavior.create_format_dirs` 용 포맷별 하위 폴더 이름
+    fn dir_name(self) -> &'static str {
+        match self {
+            Self::Pdf => "pdf",
+            Self::Png => "png",
+            Self::Svg => "svg",
+            Self::Text => "text",
+        }
+    }
+
+    /// rhwp 가 페이지별 파일에 붙이는 확장자 (산출물 존재 판정용)
+    fn page_extension(self) -> &'static str {
+        match self {
+            Self::Pdf => "pdf",
+            Self::Png => "png",
+            Self::Svg => "svg",
+            Self::Text => "txt",
+        }
+    }
+}
 
 /// `rhwp` 바이너리를 찾는다: 명시 경로 > PATH > `target/{release,debug}/rhwp`.
 ///
@@ -49,12 +92,19 @@ pub fn find_rhwp_binary(explicit: Option<PathBuf>) -> Option<PathBuf> {
     None
 }
 
-fn run_rhwp_export(rhwp_bin: &Path, subcommand: &str, input: &Path, output: &Path) -> Result<()> {
+fn run_rhwp_export(
+    rhwp_bin: &Path,
+    subcommand: &str,
+    input: &Path,
+    output: &Path,
+    extra_args: &[String],
+) -> Result<()> {
     let status = Command::new(rhwp_bin)
         .arg(subcommand)
         .arg(input)
         .arg("-o")
         .arg(output)
+        .args(extra_args)
         .status()
         .with_context(|| format!("failed to spawn rhwp {}", subcommand))?;
 
@@ -139,39 +189,67 @@ impl BatchConverter {
         Ok(())
     }
 
-    /// `behavior.skip_existing` 용 — 활성화된 포맷의 출력이 이미 전부 있으면 true.
-    /// PDF는 단일 파일, PNG/SVG/텍스트는 페이지별 파일이 담기는 디렉터리라
-    /// 디렉터리 존재만 확인한다(빈 디렉터리는 미완료로 간주해 재변환한다).
+    fn format_enabled(&self, format: ExportFormat) -> bool {
+        match format {
+            ExportFormat::Pdf => self.config.formats.pdf,
+            ExportFormat::Png => self.config.formats.png,
+            ExportFormat::Svg => self.config.formats.svg,
+            ExportFormat::Text => self.config.formats.text,
+        }
+    }
+
+    fn enabled_formats(&self) -> Vec<ExportFormat> {
+        ExportFormat::ALL
+            .iter()
+            .copied()
+            .filter(|f| self.format_enabled(*f))
+            .collect()
+    }
+
+    /// 포맷별 산출 위치. `behavior.create_format_dirs=false` 면 포맷 하위 폴더
+    /// 없이 출력 루트(+입력의 상대 경로)에 바로 놓는다. PDF는 단일 파일이고
+    /// 나머지 포맷은 rhwp 가 페이지별 파일을 쓰는 폴더다.
+    fn output_target(&self, format: ExportFormat, rel_parent: &Path, file_stem: &str) -> PathBuf {
+        let base = if self.config.behavior.create_format_dirs {
+            self.output_dir.join(format.dir_name()).join(rel_parent)
+        } else {
+            self.output_dir.join(rel_parent)
+        };
+        match format {
+            ExportFormat::Pdf => base.join(format!("{}.pdf", file_stem)),
+            _ => base.join(file_stem),
+        }
+    }
+
+    /// 산출물 존재 판정 — PDF 는 파일 존재, 나머지는 "해당 확장자 파일이 1개
+    /// 이상 담긴 폴더". create_format_dirs=false 면 png/svg/text 가 같은 폴더를
+    /// 공유하므로 폴더 존재가 아니라 확장자로 가른다.
+    fn target_exists(format: ExportFormat, target: &Path) -> bool {
+        match format {
+            ExportFormat::Pdf => target.is_file(),
+            _ => {
+                let ext = format.page_extension();
+                fs::read_dir(target).is_ok_and(|entries| {
+                    entries.filter_map(|e| e.ok()).any(|e| {
+                        let path = e.path();
+                        path.is_file()
+                            && path
+                                .extension()
+                                .and_then(|x| x.to_str())
+                                .is_some_and(|x| x.eq_ignore_ascii_case(ext))
+                    })
+                })
+            }
+        }
+    }
+
+    /// `behavior.skip_existing` 용 — 활성화된 포맷의 산출물이 이미 전부 있으면 true.
     fn all_outputs_exist(&self, rel_parent: &Path, file_stem: &str) -> bool {
-        let formats = &self.config.formats;
-
-        if formats.pdf {
-            let path = self
-                .output_dir
-                .join("pdf")
-                .join(rel_parent)
-                .join(format!("{}.pdf", file_stem));
-            if !path.is_file() {
-                return false;
-            }
-        }
-        for (enabled, name) in [
-            (formats.png, "png"),
-            (formats.svg, "svg"),
-            (formats.text, "text"),
-        ] {
-            if !enabled {
-                continue;
-            }
-            let dir = self.output_dir.join(name).join(rel_parent).join(file_stem);
-            let has_output = dir.is_dir()
-                && fs::read_dir(&dir).is_ok_and(|mut entries| entries.next().is_some());
-            if !has_output {
-                return false;
-            }
-        }
-
-        formats.pdf || formats.png || formats.svg || formats.text
+        let formats = self.enabled_formats();
+        !formats.is_empty()
+            && formats
+                .iter()
+                .all(|f| Self::target_exists(*f, &self.output_target(*f, rel_parent, file_stem)))
     }
 
     fn discover_files(&mut self) -> Result<()> {
@@ -228,40 +306,65 @@ impl BatchConverter {
 
         info!("Starting parallel conversion with {} workers", self.jobs);
 
+        // `--jobs` 는 rayon 전역 풀이 아니라 **전용 풀의 worker 수**로 강제한다.
+        // (전역 풀 + `with_max_len` 은 작업 분할 단위만 바꿀 뿐 동시에 도는
+        // worker 수를 제한하지 않는다 — PR #4052 리뷰 지적)
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(self.jobs)
+            .build()
+            .context("Failed to build Rayon thread pool")?;
+
         let progress = Arc::new(Mutex::new(ProgressTracker::new(total_files)));
         let errors: Arc<Mutex<Vec<(String, String)>>> = Arc::new(Mutex::new(Vec::new()));
+        // `behavior.fail_fast` — 파일 실패가 확정되면 아직 시작하지 않은 파일을
+        // 건너뛴다 (이미 진행 중인 파일은 마저 끝난다).
+        let abort = AtomicBool::new(false);
 
-        // Convert files in parallel
-        let results: Vec<ConversionFileResult> = self
-            .files
-            .par_iter()
-            .with_max_len(self.jobs)
-            .map(|file| {
-                let result = self.convert_file(&file.path, &file.relative_path, dry_run);
+        // Convert files in parallel (worker 상한 = 전용 풀 스레드 수)
+        let results: Vec<ConversionFileResult> = pool.install(|| {
+            self.files
+                .par_iter()
+                .map(|file| {
+                    if abort.load(Ordering::SeqCst) {
+                        debug!("Skipping (fail_fast abort): {}", file.path.display());
+                        progress.lock().unwrap().increment();
+                        return ConversionFileResult::Skipped;
+                    }
 
-                let mut prog = progress.lock().unwrap();
-                prog.increment();
+                    let result = self.convert_file(&file.path, &file.relative_path, dry_run);
 
-                // Print progress
-                if prog.current.is_multiple_of(10) || prog.current == total_files {
-                    println!("{} | {}", prog.status_line(), file.path.display());
-                }
+                    {
+                        let mut prog = progress.lock().unwrap();
+                        prog.increment();
 
-                // Handle errors
-                if let Err(ref e) = result {
-                    let file_name = file
-                        .path
-                        .file_name()
-                        .and_then(|n| n.to_str())
-                        .unwrap_or("unknown")
-                        .to_string();
-                    let error_msg = format!("{:?}", e);
-                    errors.lock().unwrap().push((file_name, error_msg));
-                }
+                        // Print progress
+                        if prog.current.is_multiple_of(10) || prog.current == total_files {
+                            println!("{} | {}", prog.status_line(), file.path.display());
+                        }
+                    }
 
-                result.unwrap_or(ConversionFileResult::Failed)
-            })
-            .collect();
+                    match result {
+                        Ok(file_result) => file_result,
+                        Err(error_msg) => {
+                            if self.config.behavior.fail_fast {
+                                abort.store(true, Ordering::SeqCst);
+                            }
+                            if self.config.behavior.collect_failed && !dry_run {
+                                self.collect_failed_input(&file.path, &file.relative_path);
+                            }
+                            let file_name = file
+                                .path
+                                .file_name()
+                                .and_then(|n| n.to_str())
+                                .unwrap_or("unknown")
+                                .to_string();
+                            errors.lock().unwrap().push((file_name, error_msg));
+                            ConversionFileResult::Failed
+                        }
+                    }
+                })
+                .collect()
+        });
 
         // Count results
         let successful = results
@@ -292,6 +395,29 @@ impl BatchConverter {
         })
     }
 
+    /// `behavior.collect_failed` — 실패한 원본을 `<출력>/failed/<상대경로>` 로
+    /// 복사해 재시도 대상만 따로 모은다. 복사 실패는 변환 실패 판정에 얹지
+    /// 않고 경고만 남긴다.
+    fn collect_failed_input(&self, input: &Path, relative_path: &Path) {
+        let dest = self.output_dir.join("failed").join(relative_path);
+        let copied = (|| -> std::io::Result<()> {
+            if let Some(parent) = dest.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            fs::copy(input, &dest)?;
+            Ok(())
+        })();
+        match copied {
+            Ok(()) => info!("Copied failed input to {}", dest.display()),
+            Err(e) => warn!(
+                "Failed to copy failed input {} to {}: {}",
+                input.display(),
+                dest.display(),
+                e
+            ),
+        }
+    }
+
     fn convert_file(
         &self,
         input_path: &Path,
@@ -313,147 +439,186 @@ impl BatchConverter {
             return Ok(ConversionFileResult::Skipped);
         }
 
-        // Convert to each enabled format
-        let mut any_success = false;
+        let mut attempted = 0usize;
+        let mut succeeded = 0usize;
+        let mut format_errors: Vec<String> = Vec::new();
 
-        // PDF conversion
-        if self.config.formats.pdf {
-            let output_subdir = self.output_dir.join("pdf").join(rel_parent);
-            if !dry_run && !output_subdir.exists() {
-                fs::create_dir_all(&output_subdir).ok();
+        for format in self.enabled_formats() {
+            let target = self.output_target(format, rel_parent, file_stem);
+
+            // `behavior.overwrite=false` — 이미 있는 산출물은 포맷 단위로
+            // 건너뛰고 다시 만들지 않는다.
+            if !self.config.behavior.overwrite && Self::target_exists(format, &target) {
+                debug!(
+                    "Skipping {} (output exists, overwrite=false): {}",
+                    format.subcommand(),
+                    target.display()
+                );
+                continue;
             }
 
-            let output_path = output_subdir.join(format!("{}.pdf", file_stem));
-            match self.convert_to_pdf(input_path, &output_path, dry_run) {
+            attempted += 1;
+            match self.export_with_retry(format, input_path, &target, dry_run) {
                 Ok(()) => {
-                    any_success = true;
-                    debug!("Successfully converted to PDF: {}", output_path.display());
-                }
-                Err(e) => {
-                    warn!("Failed to convert to PDF: {}", e);
-                }
-            }
-        }
-
-        // PNG conversion — rhwp export-png writes one file per page into a
-        // directory (unlike export-pdf, which writes a single merged file).
-        if self.config.formats.png {
-            let output_subdir = self.output_dir.join("png").join(rel_parent).join(file_stem);
-            if !dry_run && !output_subdir.exists() {
-                fs::create_dir_all(&output_subdir).ok();
-            }
-
-            match self.convert_to_png(input_path, &output_subdir, dry_run) {
-                Ok(()) => {
-                    any_success = true;
-                    debug!("Successfully converted to PNG: {}", output_subdir.display());
-                }
-                Err(e) => {
-                    warn!("Failed to convert to PNG: {}", e);
-                }
-            }
-        }
-
-        // SVG conversion — same per-page-directory convention as PNG/text.
-        if self.config.formats.svg {
-            let output_subdir = self.output_dir.join("svg").join(rel_parent).join(file_stem);
-            if !dry_run && !output_subdir.exists() {
-                fs::create_dir_all(&output_subdir).ok();
-            }
-
-            match self.convert_to_svg(input_path, &output_subdir, dry_run) {
-                Ok(()) => {
-                    any_success = true;
-                    debug!("Successfully converted to SVG: {}", output_subdir.display());
-                }
-                Err(e) => {
-                    warn!("Failed to convert to SVG: {}", e);
-                }
-            }
-        }
-
-        // Text conversion — same per-page-directory convention as PNG/SVG.
-        if self.config.formats.text {
-            let output_subdir = self
-                .output_dir
-                .join("text")
-                .join(rel_parent)
-                .join(file_stem);
-            if !dry_run && !output_subdir.exists() {
-                fs::create_dir_all(&output_subdir).ok();
-            }
-
-            match self.convert_to_text(input_path, &output_subdir, dry_run) {
-                Ok(()) => {
-                    any_success = true;
+                    succeeded += 1;
                     debug!(
-                        "Successfully converted to text: {}",
-                        output_subdir.display()
+                        "Successfully converted to {}: {}",
+                        format.dir_name(),
+                        target.display()
                     );
                 }
                 Err(e) => {
-                    warn!("Failed to convert to text: {}", e);
+                    warn!(
+                        "Failed to convert {} to {}: {:#}",
+                        input_path.display(),
+                        format.dir_name(),
+                        e
+                    );
+                    format_errors.push(format!("{}: {:#}", format.subcommand(), e));
                 }
             }
         }
 
-        if any_success {
+        if attempted == 0 {
+            // 활성 포맷 전부가 overwrite=false 로 건너뛰어졌다.
+            return Ok(ConversionFileResult::Skipped);
+        }
+        if succeeded > 0 {
             Ok(ConversionFileResult::Success)
         } else {
-            Ok(ConversionFileResult::Failed)
+            Err(format_errors.join("; "))
         }
     }
 
-    fn convert_to_pdf(&self, input: &Path, output: &Path, dry_run: bool) -> Result<()> {
-        if dry_run {
-            debug!(
-                "[DRY RUN] Would convert {} to PDF at {}",
-                input.display(),
-                output.display()
-            );
-            return Ok(());
+    /// `behavior.max_retries` — rhwp 호출이 실패하면 같은 포맷을 최대 N번 더
+    /// 시도한다 (총 시도 = 1 + N).
+    fn export_with_retry(
+        &self,
+        format: ExportFormat,
+        input: &Path,
+        target: &Path,
+        dry_run: bool,
+    ) -> Result<()> {
+        let max_retries = self.config.behavior.max_retries;
+        let mut attempt = 0u32;
+        loop {
+            match self.export_once(format, input, target, dry_run) {
+                Ok(()) => return Ok(()),
+                Err(e) if attempt < max_retries => {
+                    attempt += 1;
+                    warn!(
+                        "Retrying {} for {} (attempt {}/{}): {:#}",
+                        format.subcommand(),
+                        input.display(),
+                        attempt,
+                        max_retries,
+                        e
+                    );
+                }
+                Err(e) => return Err(e),
+            }
         }
-        debug!("Converting {} to PDF...", input.display());
-        run_rhwp_export(&self.rhwp_bin, "export-pdf", input, output)
     }
 
-    fn convert_to_png(&self, input: &Path, output: &Path, dry_run: bool) -> Result<()> {
+    fn export_once(
+        &self,
+        format: ExportFormat,
+        input: &Path,
+        target: &Path,
+        dry_run: bool,
+    ) -> Result<()> {
         if dry_run {
             debug!(
-                "[DRY RUN] Would convert {} to PNG at {}",
+                "[DRY RUN] Would run rhwp {} for {} -> {}",
+                format.subcommand(),
                 input.display(),
-                output.display()
+                target.display()
             );
             return Ok(());
         }
-        debug!("Converting {} to PNG...", input.display());
-        run_rhwp_export(&self.rhwp_bin, "export-png", input, output)
+
+        // PDF 는 단일 파일이라 부모 폴더를, 나머지는 페이지 파일이 담길 폴더
+        // 자체를 만든다.
+        let dir_to_create = match format {
+            ExportFormat::Pdf => target.parent().unwrap_or(Path::new("")).to_path_buf(),
+            _ => target.to_path_buf(),
+        };
+        if !dir_to_create.as_os_str().is_empty() {
+            fs::create_dir_all(&dir_to_create).with_context(|| {
+                format!(
+                    "Failed to create output directory: {}",
+                    dir_to_create.display()
+                )
+            })?;
+        }
+
+        run_rhwp_export(
+            &self.rhwp_bin,
+            format.subcommand(),
+            input,
+            target,
+            &self.format_args(format),
+        )
     }
 
-    fn convert_to_svg(&self, input: &Path, output: &Path, dry_run: bool) -> Result<()> {
-        if dry_run {
-            debug!(
-                "[DRY RUN] Would convert {} to SVG at {}",
-                input.display(),
-                output.display()
-            );
-            return Ok(());
+    /// config 의 포맷 옵션을 rhwp CLI 플래그로 그대로 옮긴다. 여기서 플래그로
+    /// 나가지 않는 옵션은 config 계약에도 존재하지 않는다 (config.rs 참조).
+    fn format_args(&self, format: ExportFormat) -> Vec<String> {
+        let mut args = Vec::new();
+        match format {
+            ExportFormat::Pdf => {
+                let pdf = &self.config.pdf;
+                if let Some(backend) = &pdf.backend {
+                    args.push("--backend".to_string());
+                    args.push(backend.clone());
+                }
+                if let Some(profile) = &pdf.profile {
+                    args.push("--profile".to_string());
+                    args.push(profile.clone());
+                }
+                if let Some(raster_dpi) = pdf.raster_dpi {
+                    args.push("--raster-dpi".to_string());
+                    args.push(raster_dpi.to_string());
+                }
+                if pdf.text_as_paths {
+                    args.push("--text-as-paths".to_string());
+                }
+            }
+            ExportFormat::Png => {
+                let png = &self.config.png;
+                if let Some(profile) = &png.profile {
+                    args.push("--profile".to_string());
+                    args.push(profile.clone());
+                }
+                if let Some(dpi) = png.dpi {
+                    args.push("--dpi".to_string());
+                    args.push(dpi.to_string());
+                }
+                if let Some(scale) = png.scale {
+                    args.push("--scale".to_string());
+                    args.push(scale.to_string());
+                }
+                if let Some(max_dimension) = png.max_dimension {
+                    args.push("--max-dimension".to_string());
+                    args.push(max_dimension.to_string());
+                }
+            }
+            ExportFormat::Svg => {
+                let svg = &self.config.svg;
+                if let Some(profile) = &svg.profile {
+                    args.push("--profile".to_string());
+                    args.push(profile.clone());
+                }
+                if svg.embed_fonts {
+                    args.push("--embed-fonts".to_string());
+                }
+            }
+            ExportFormat::Text => {
+                // rhwp export-text 에는 배치 변환에서 쓸 수 있는 추가 플래그가
+                // 없다 (--json/--max-chars 는 파일 저장 모드와 호환되지 않음).
+            }
         }
-        debug!("Converting {} to SVG...", input.display());
-        run_rhwp_export(&self.rhwp_bin, "export-svg", input, output)
-    }
-
-    fn convert_to_text(&self, input: &Path, output: &Path, dry_run: bool) -> Result<()> {
-        if dry_run {
-            debug!(
-                "[DRY RUN] Would convert {} to text at {}",
-                input.display(),
-                output.display()
-            );
-            return Ok(());
-        }
-        debug!("Converting {} to text...", input.display());
-        run_rhwp_export(&self.rhwp_bin, "export-text", input, output)
+        args
     }
 }
 

@@ -1,119 +1,93 @@
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
 
-/// PDF export options
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// PDF 내보내기 옵션 — 모든 필드가 `rhwp export-pdf` 의 실제 플래그로 그대로
+/// 전달된다. rhwp CLI 에 대응 플래그가 없는 옵션은 이 계약에 존재하지 않는다.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PdfOptions {
-    /// Enable color output
-    #[serde(default = "default_true")]
-    pub color: bool,
+    /// `--backend <svg|direct>` (생략 시 rhwp 기본값 svg)
+    #[serde(default)]
+    pub backend: Option<String>,
 
-    /// Compression level (0-9, 9 = maximum)
-    #[serde(default = "default_compression")]
-    pub compression: u8,
+    /// `--profile <screen|print|high-quality|fast-preview>`
+    #[serde(default)]
+    pub profile: Option<String>,
 
-    /// Include metadata
-    #[serde(default = "default_true")]
-    pub include_metadata: bool,
+    /// `--raster-dpi <DPI>` — direct backend 전용 (svg backend 는 거부)
+    #[serde(default)]
+    pub raster_dpi: Option<f64>,
 
-    /// Enable bookmarks
-    #[serde(default = "default_true")]
-    pub include_bookmarks: bool,
+    /// `--text-as-paths` — svg backend 전용 (direct backend 는 거부)
+    #[serde(default)]
+    pub text_as_paths: bool,
 }
 
-/// PNG export options
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// PNG 내보내기 옵션 — `rhwp export-png` 플래그와 1:1 대응.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PngOptions {
-    /// DPI (dots per inch)
-    #[serde(default = "default_dpi")]
-    pub dpi: u32,
+    /// `--profile <screen|print|high-quality|fast-preview>` (rhwp 기본: high-quality)
+    #[serde(default)]
+    pub profile: Option<String>,
 
-    /// Quality (1-100)
-    #[serde(default = "default_quality")]
-    pub quality: u8,
+    /// `--dpi <값>` — PNG pHYs 메타데이터. `scale` 미지정 시 scale=dpi/96 자동 계산
+    #[serde(default)]
+    pub dpi: Option<f64>,
 
-    /// Background color (hex, e.g., "ffffff")
-    #[serde(default = "default_background")]
-    pub background: String,
+    /// `--scale <배율>` — 렌더링 배율 (rhwp 기본: 1.0)
+    #[serde(default)]
+    pub scale: Option<f64>,
 
-    /// Export all pages or just first page
-    #[serde(default = "default_true")]
-    pub export_all_pages: bool,
+    /// `--max-dimension <픽셀>` — 긴 변 최대 픽셀 (VLM 입력 한도용)
+    #[serde(default)]
+    pub max_dimension: Option<u32>,
 }
 
-/// SVG export options
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// SVG 내보내기 옵션 — `rhwp export-svg` 플래그와 1:1 대응.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SvgOptions {
-    /// Preserve viewBox
-    #[serde(default = "default_true")]
-    pub preserve_viewbox: bool,
+    /// `--profile <screen|print|high-quality|fast-preview>`
+    /// (rhwp 는 `--profile` 과 `--embed-fonts` 동시 지정을 거부한다)
+    #[serde(default)]
+    pub profile: Option<String>,
 
-    /// Embed fonts
-    #[serde(default = "default_false")]
+    /// `--embed-fonts` — 사용 글자만 서브셋 임베딩
+    #[serde(default)]
     pub embed_fonts: bool,
-
-    /// Convert text to paths
-    #[serde(default = "default_false")]
-    pub text_to_paths: bool,
-
-    /// Separate layers
-    #[serde(default = "default_false")]
-    pub separate_layers: bool,
 }
 
-/// Text export options
+/// 전체 변환 설정. 알 수 없는 필드는 파싱 단계에서 거부한다 — 선언만 되고
+/// 동작하지 않는 필드가 조용히 살아남지 못하게 하는 계약 장치다.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TextOptions {
-    /// Include formatting (bold, italic, etc.)
-    #[serde(default = "default_true")]
-    pub include_formatting: bool,
-
-    /// Include table structure
-    #[serde(default = "default_true")]
-    pub include_tables: bool,
-
-    /// Include headers and footers
-    #[serde(default = "default_true")]
-    pub include_headers_footers: bool,
-
-    /// Preserve paragraphs
-    #[serde(default = "default_true")]
-    pub preserve_paragraphs: bool,
-
-    /// Line ending style (unix, windows, mac)
-    #[serde(default = "default_line_ending")]
-    pub line_ending: String,
-}
-
-/// Main conversion configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ConversionConfig {
-    /// Enabled output formats
+    /// 활성화할 출력 포맷 (하나 이상 true 여야 한다)
     pub formats: FormatsConfig,
 
-    /// PDF options
+    /// PDF 옵션
     #[serde(default)]
     pub pdf: PdfOptions,
 
-    /// PNG options
+    /// PNG 옵션
     #[serde(default)]
     pub png: PngOptions,
 
-    /// SVG options
+    /// SVG 옵션
     #[serde(default)]
     pub svg: SvgOptions,
 
-    /// Text options
-    #[serde(default)]
-    pub text: TextOptions,
-
-    /// Behavior options
+    /// 동작 옵션
     #[serde(default)]
     pub behavior: BehaviorOptions,
 }
 
-/// Format configuration
+/// 포맷 활성화 설정 — 네 필드 모두 명시해야 한다.
+/// (텍스트 내보내기는 `rhwp export-text` 에 배치 변환에서 쓸 수 있는 추가
+/// 플래그가 없어 별도 옵션 섹션이 없다)
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct FormatsConfig {
     pub pdf: bool,
     pub png: bool,
@@ -121,46 +95,102 @@ pub struct FormatsConfig {
     pub text: bool,
 }
 
-/// Behavior configuration
+/// 동작 설정 — 전 필드가 변환 경로에 실제로 연결되어 있다.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct BehaviorOptions {
-    /// Overwrite existing files
+    /// false 면 이미 존재하는 산출물을 포맷 단위로 건너뛴다 (재작성하지 않음)
     #[serde(default = "default_true")]
     pub overwrite: bool,
 
-    /// Create subdirectories per format
+    /// true 면 출력 루트에 포맷별 하위 폴더(pdf/·png/·svg/·text/)를 만든다
     #[serde(default = "default_true")]
     pub create_format_dirs: bool,
 
-    /// Copy failed files to separate directory
+    /// true 면 변환에 실패한 원본을 `<출력>/failed/` 로 복사해 모은다
     #[serde(default = "default_false")]
     pub collect_failed: bool,
 
-    /// Stop on first error
+    /// true 면 첫 파일 실패가 확정되는 즉시 아직 시작하지 않은 파일을 건너뛴다
     #[serde(default = "default_false")]
     pub fail_fast: bool,
 
-    /// Retry failed conversions
+    /// 포맷별 rhwp 호출이 실패했을 때 추가로 재시도할 횟수 (총 시도 = 1 + N)
     #[serde(default = "default_retries")]
     pub max_retries: u32,
 
-    /// Skip already converted files
+    /// true 면 활성 포맷의 산출물이 전부 존재하는 파일을 통째로 건너뛴다
     #[serde(default = "default_false")]
     pub skip_existing: bool,
 }
 
 impl ConversionConfig {
-    /// Load configuration from JSON file
+    /// JSON 설정 파일 로드 + 계약 검증
     pub fn from_file(path: &std::path::Path) -> Result<Self> {
         let content = std::fs::read_to_string(path)
             .context(format!("Failed to read config file: {}", path.display()))?;
         let config: ConversionConfig =
             serde_json::from_str(&content).context("Failed to parse configuration JSON")?;
+        config.validate()?;
         Ok(config)
     }
 
-    /// Get default configuration
-    pub fn default() -> Self {
+    /// rhwp CLI 가 파일 단위로 거부할 조합을 배치 시작 전에 걸러낸다 —
+    /// 잘못된 설정으로 수백 건을 전부 실패시키는 대신 즉시 명확히 실패한다.
+    pub fn validate(&self) -> Result<()> {
+        let formats = &self.formats;
+        if !(formats.pdf || formats.png || formats.svg || formats.text) {
+            bail!("설정 오류: 활성화된 출력 포맷이 없습니다 (formats.pdf/png/svg/text 중 하나 이상은 true 여야 합니다)");
+        }
+
+        if let Some(backend) = self.pdf.backend.as_deref() {
+            if backend != "svg" && backend != "direct" {
+                bail!(
+                    "설정 오류: pdf.backend 는 \"svg\" 또는 \"direct\" 여야 합니다 (현재: {:?})",
+                    backend
+                );
+            }
+        }
+        let direct_backend = self.pdf.backend.as_deref() == Some("direct");
+        if self.pdf.raster_dpi.is_some() && !direct_backend {
+            bail!("설정 오류: pdf.raster_dpi 는 pdf.backend=\"direct\" 에서만 쓸 수 있습니다 (rhwp export-pdf --raster-dpi 규칙)");
+        }
+        if self.pdf.text_as_paths && direct_backend {
+            bail!("설정 오류: pdf.text_as_paths 는 svg backend 전용입니다 (direct backend 는 --text-as-paths 를 거부)");
+        }
+        if let Some(dpi) = self.pdf.raster_dpi {
+            if !dpi.is_finite() || dpi <= 0.0 {
+                bail!(
+                    "설정 오류: pdf.raster_dpi 는 양수여야 합니다 (현재: {})",
+                    dpi
+                );
+            }
+        }
+
+        if let Some(dpi) = self.png.dpi {
+            if !dpi.is_finite() || dpi <= 0.0 {
+                bail!("설정 오류: png.dpi 는 양수여야 합니다 (현재: {})", dpi);
+            }
+        }
+        if let Some(scale) = self.png.scale {
+            if !scale.is_finite() || scale <= 0.0 {
+                bail!("설정 오류: png.scale 은 양수여야 합니다 (현재: {})", scale);
+            }
+        }
+        if self.png.max_dimension == Some(0) {
+            bail!("설정 오류: png.max_dimension 은 1 이상이어야 합니다");
+        }
+
+        if self.svg.embed_fonts && self.svg.profile.is_some() {
+            bail!("설정 오류: svg.embed_fonts 와 svg.profile 은 함께 쓸 수 없습니다 (rhwp export-svg 가 --embed-fonts 와 --profile 동시 지정을 거부)");
+        }
+
+        Ok(())
+    }
+}
+
+impl Default for ConversionConfig {
+    fn default() -> Self {
         ConversionConfig {
             formats: FormatsConfig {
                 pdf: true,
@@ -171,7 +201,6 @@ impl ConversionConfig {
             pdf: PdfOptions::default(),
             png: PngOptions::default(),
             svg: SvgOptions::default(),
-            text: TextOptions::default(),
             behavior: BehaviorOptions::default(),
         }
     }
@@ -186,73 +215,8 @@ fn default_false() -> bool {
     false
 }
 
-fn default_compression() -> u8 {
-    6
-}
-
-fn default_dpi() -> u32 {
-    300
-}
-
-fn default_quality() -> u8 {
-    90
-}
-
-fn default_background() -> String {
-    "ffffff".to_string()
-}
-
-fn default_line_ending() -> String {
-    "unix".to_string()
-}
-
 fn default_retries() -> u32 {
     3
-}
-
-impl Default for PdfOptions {
-    fn default() -> Self {
-        PdfOptions {
-            color: true,
-            compression: 6,
-            include_metadata: true,
-            include_bookmarks: true,
-        }
-    }
-}
-
-impl Default for PngOptions {
-    fn default() -> Self {
-        PngOptions {
-            dpi: 300,
-            quality: 90,
-            background: "ffffff".to_string(),
-            export_all_pages: true,
-        }
-    }
-}
-
-impl Default for SvgOptions {
-    fn default() -> Self {
-        SvgOptions {
-            preserve_viewbox: true,
-            embed_fonts: false,
-            text_to_paths: false,
-            separate_layers: false,
-        }
-    }
-}
-
-impl Default for TextOptions {
-    fn default() -> Self {
-        TextOptions {
-            include_formatting: true,
-            include_tables: true,
-            include_headers_footers: true,
-            preserve_paragraphs: true,
-            line_ending: "unix".to_string(),
-        }
-    }
 }
 
 impl Default for BehaviorOptions {

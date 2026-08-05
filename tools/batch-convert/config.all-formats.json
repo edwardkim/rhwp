@@ -5,31 +5,6 @@
     "svg": true,
     "text": true
   },
-  "pdf": {
-    "color": true,
-    "compression": 6,
-    "include_metadata": true,
-    "include_bookmarks": true
-  },
-  "png": {
-    "dpi": 300,
-    "quality": 90,
-    "background": "ffffff",
-    "export_all_pages": true
-  },
-  "svg": {
-    "preserve_viewbox": true,
-    "embed_fonts": false,
-    "text_to_paths": false,
-    "separate_layers": false
-  },
-  "text": {
-    "include_formatting": true,
-    "include_tables": true,
-    "include_headers_footers": true,
-    "preserve_paragraphs": true,
-    "line_ending": "unix"
-  },
   "behavior": {
     "overwrite": true,
     "create_format_dirs": true,

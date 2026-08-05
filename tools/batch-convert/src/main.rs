@@ -28,8 +28,13 @@ struct Args {
     #[arg(short, long)]
     config: Option<PathBuf>,
 
-    /// Number of parallel workers
-    #[arg(short = 'j', long, default_value = "4")]
+    /// Number of parallel workers (1 or more)
+    #[arg(
+        short = 'j',
+        long,
+        default_value_t = 4,
+        value_parser = clap::builder::RangedU64ValueParser::<usize>::new().range(1..)
+    )]
     jobs: usize,
 
     /// Enable verbose logging
