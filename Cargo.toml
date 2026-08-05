@@ -7,7 +7,7 @@ license = "MIT"
 repository = "https://github.com/edwardkim/rhwp"
 
 [workspace]
-members = [".", "tools/rhwp-subsecond", "bindings/Native"]
+members = [".", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert"]
 resolver = "2"
 
 [lib]

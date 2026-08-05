@@ -1,0 +1,19 @@
+# Build artifacts
+target/
+**/*.rs.bk
+Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Test outputs
+test-output/
+*.test
+
+# Logs
+*.log
