@@ -173,8 +173,12 @@ fn detect_image_mime_type(data: &[u8]) -> &'static str {
     {
         // EMF: EMR_HEADER(Type=1) + offset 40 의 " EMF" 시그니처 (MS-EMF 2.3.4.2)
         "image/x-emf"
-    } else if data.len() >= 2 && data.starts_with(&[0x0A, 0x05]) {
-        // PCX: 0A 05 (ZSoft Paintbrush v3.0+, Task #514)
+    } else if data.len() >= 3
+        && data[0] == 0x0A
+        && matches!(data[1], 0 | 2 | 3 | 4 | 5)
+        && data[2] == 0x01
+    {
+        // PCX: 0A + 버전바이트(0·2·3·4·5) + 인코딩 01 (Task #514, v2.8 은 #4065)
         // 브라우저 native 미지원 → emit 시 PNG 변환 필요 (svg::pcx_bytes_to_png_bytes)
         "image/x-pcx"
     } else if super::svg_fragment::is_svg_prefix(data) {

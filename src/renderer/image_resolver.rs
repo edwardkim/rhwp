@@ -677,7 +677,11 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
     if data.len() >= 12 && data.starts_with(b"RIFF") && &data[8..12] == b"WEBP" {
         return "image/webp";
     }
-    if data.len() >= 2 && data.starts_with(&[0x0A, 0x05]) {
+    // PCX 버전바이트는 0(2.5)·2(2.8 팔레트)·3(2.8 무팔레트)·4·5 가 유효하다.
+    // v5 만 잡으면 v2.8 이 octet-stream 으로 새어 변환 분기에 걸리지 못한다.
+    // 인코딩바이트 0x01(RLE)까지 봐야 0x0A 로 시작하는 다른 바이트와 안 섞인다.
+    if data.len() >= 3 && data[0] == 0x0A && matches!(data[1], 0 | 2 | 3 | 4 | 5) && data[2] == 0x01
+    {
         return "image/x-pcx";
     }
     // [#3460] HWPX BinData 는 SVG 를 그대로 담을 수 있다(`<hc:img>` → `Format="svg"`).
@@ -959,6 +963,53 @@ mod tests {
 
         assert!(bmp_bytes_to_png_bytes(&bmp).is_none());
         assert!(resolve_image_payload(&ImageNode::new(1, Some(bmp))).is_none());
+    }
+
+    /// 변환에 성공하는 최소 PCX v2.8 (버전바이트 0x03, 1bpp 모노크롬 8×1).
+    ///
+    /// 10k 스윕에서 걸린 실문서의 헤더 선두(`0A 03 01 01`)와 같은 배치다. 128B 헤더 뒤에
+    /// RLE 행 데이터가 온다 — bytes_per_line=2 이므로 한 행은 데이터 1B + 패딩 1B.
+    fn minimal_pcx_v28() -> Vec<u8> {
+        let mut out = vec![0u8; 128];
+        out[0] = 0x0A; // Identifier
+        out[1] = 0x03; // Version 2.8 without palette
+        out[2] = 0x01; // RLE encoding
+        out[3] = 0x01; // bits per pixel
+        out[8..10].copy_from_slice(&7u16.to_le_bytes()); // xmax → width 8
+        out[12..14].copy_from_slice(&300u16.to_le_bytes()); // hdpi
+        out[14..16].copy_from_slice(&300u16.to_le_bytes()); // vdpi
+        out[65] = 1; // color planes
+        out[66..68].copy_from_slice(&2u16.to_le_bytes()); // bytes per line (짝수 패딩)
+        out[68..70].copy_from_slice(&1u16.to_le_bytes()); // palette info
+        out.extend_from_slice(&[0xAA, 0x00]); // RLE 리터럴: 행 데이터 + 패딩
+        out
+    }
+
+    /// PCX v2.8 도 v5 와 같은 계약이다 — 판별돼 PNG 로 변환돼 나가야 한다 (#4065).
+    ///
+    /// 판별기가 v5(`0A 05`)만 인식하면 v2.8 은 octet-stream 으로 새어
+    /// `pcx_bytes_to_png_bytes` 분기에 걸리지 못하고, 소비자가 디코드할 수 없는
+    /// 원본 바이트가 그대로 나간다 (10k 스윕 실문서 1건).
+    #[test]
+    fn pcx_v28_is_detected_and_emitted_as_png() {
+        let pcx = minimal_pcx_v28();
+        assert_eq!(
+            super::detect_image_mime_type(&pcx),
+            "image/x-pcx",
+            "합성 바이트가 PCX 로 판별되지 않으면 이 테스트는 아무것도 검증하지 않는다"
+        );
+
+        let (mime, bytes) = emitted_image_bytes(&pcx, false);
+        assert_eq!(mime, "image/png", "PCX 는 PNG 로 변환돼 나가야 한다");
+        assert!(
+            bytes.starts_with(b"\x89PNG\r\n\x1a\n"),
+            "mime 만 바꾸고 바이트가 원본 PCX 면 소비자는 여전히 못 그린다"
+        );
+
+        let resolved = resolve_image_payload(&ImageNode::new(9, Some(pcx)))
+            .expect("v2.8 도 resolve 경로에서 변환돼야 한다");
+        assert_eq!(resolved.mime, "image/png");
+        assert_eq!(resolved.kind, ResolvedImageKind::FormatConverted);
     }
 }
 
