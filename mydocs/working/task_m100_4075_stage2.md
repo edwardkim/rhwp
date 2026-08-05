@@ -49,6 +49,14 @@ Stage 1의 publisher는 devel push만 허용한다. 이 정책은 외부 fork의
   workflow, git diff --check.
 - 결과: 비용 모델 Node test 5개 및 나머지 검증이 모두 exit code 0으로 통과했다.
 
+### 4. 원격 structured output 실패와 보정
+
+- 관측: PR #4076의 첫 trusted PR 수집 실행에서 shard 2와 3이 실패했다. event 파일 첫 줄에
+  info: sync 같은 stderr 진단이 섞여 JSON parser가 실패했다.
+- 원인: structured nextest 실행에서 stdout과 stderr을 같은 events 파일로 redirect했다.
+- 보정: stdout만 events JSONL로 보내고 stderr은 기존 log 파일로 분리한다. 실패 시에는 두 파일을
+  함께 출력한다. 이 보정 뒤 새 PR CI로 publisher와 실제 cache를 다시 확인한다.
+
 ## 원격 검증 조건
 
 이 commit push 뒤 최신 PR head에서 archive와 shard의 structured event artifact 4개, Build and Test,

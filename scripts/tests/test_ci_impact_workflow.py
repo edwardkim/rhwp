@@ -181,6 +181,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("collect_costs:", worker)
         self.assertIn("COLLECT_NEXTEST_COSTS: $" + "{{ inputs.collect_costs", worker)
         self.assertIn("if: $" + "{{ inputs.collect_costs }}", worker)
+        self.assertIn('>"$events" 2>"$log" &', worker)
         for job_name in (
             "test-slow-shard",
             "test-regular-shard-1",

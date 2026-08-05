@@ -82,7 +82,7 @@ jobs:
               --extract-to . \
               --message-format libtest-json-plus \
               --message-format-version 0.1 \
-              >"$events" 2>&1 &
+              >"$events" 2>"$log" &
           else
             setsid cargo nextest run \
               --archive-file "tests-${ARCHIVE_LABEL}.tar.zst" \
