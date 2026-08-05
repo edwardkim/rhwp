@@ -50,6 +50,12 @@ studio TS 쪽 `installMeasureTextWidth`(`globalThis.measureTextWidth`)는 `input
 - 하네스: 회귀 샘플 7종 167페이지 + 10k 코퍼스 무작위 40건 **전부 byte 일치**
   (native 축은 RHWP_* env 제거 실행 — WASM은 env 미관측이므로 공정 조건).
   데드코드 제거 후 동일 셋 재실행 47/47 일치 재확인.
+- **10k 코퍼스 전수 스윕**: 10,000건을 50건×200청크·12워커 병렬로 전수 실행.
+  렌더 대상 9,948건 **전부 byte 일치**(75,500+페이지), **발산 0건**
+  (diff/page-count-mismatch/wasm-error 없음). 나머지 52건은 렌더 이전 단계 실패 —
+  미지원 포맷 47(HWP 2.x 등), 암호 문서 5. 스윕 중 발견된 하네스 결함 2건
+  (255바이트 파일명 한계: 라벨 디렉터리 생성, native export 출력 파일명)은
+  라벨 절단 + 짧은 심링크 우회로 수정.
 - cargo fmt / clippy --lib 통과
 - release-test 전체: 통과 — lib 3252 passed 포함 전 테스트 바이너리 0 failed
 - Native Skia 3종: 통과 (skia --lib 58, issue_2225 2, render_p37 4 passed).

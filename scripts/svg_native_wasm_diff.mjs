@@ -122,7 +122,13 @@ if (!versionMatch) {
 fs.mkdirSync(opts.out, { recursive: true });
 
 // ---------- 유틸 ----------
-const stemOf = (p) => path.basename(p).replace(/\.[^.]+$/, '');
+// 파일시스템 컴포넌트 255바이트 한계 대비: 긴 한글 파일명은 잘라내고 해시로 구분한다.
+const stemOf = (p) => {
+  const stem = path.basename(p).replace(/\.[^.]+$/, '');
+  let cut = stem;
+  while (Buffer.byteLength(cut, 'utf8') > 120) cut = cut.slice(0, cut.length - 1);
+  return cut;
+};
 // 동명 문서 충돌 방지용 짧은 해시
 const shortHash = (s) => {
   let h = 0x811c9dc5;
@@ -162,6 +168,13 @@ for (const [idx, docPath] of docs.entries()) {
   const wasmDir = path.join(docOut, 'wasm');
   fs.mkdirSync(nativeDir, { recursive: true });
   fs.mkdirSync(wasmDir, { recursive: true });
+  // native export-svg 는 입력 파일명 stem 으로 페이지 SVG 를 저장하므로,
+  // 긴 파일명은 컴포넌트 255바이트 한계에 걸린다 — 짧은 심링크로 우회.
+  let exportPath = docPath;
+  if (Buffer.byteLength(path.basename(docPath), 'utf8') > 150) {
+    exportPath = path.join(docOut, `doc-${shortHash(docPath)}${path.extname(docPath)}`);
+    try { fs.symlinkSync(docPath, exportPath); } catch {}
+  }
   const entry = { source: docPath, status: 'match', pages: [] };
   report.docs.push(entry);
   console.log(`[${idx + 1}/${docs.length}] ${docPath}`);
@@ -169,7 +182,7 @@ for (const [idx, docPath] of docs.entries()) {
   // native 축
   let manifest;
   {
-    const cliArgs = ['export-svg', docPath, '--json', '-o', nativeDir];
+    const cliArgs = ['export-svg', exportPath, '--json', '-o', nativeDir];
     if (opts.profile) cliArgs.push('--profile', opts.profile);
     const r = spawnSync(opts.rhwp, cliArgs, { env: scrubbedEnv, maxBuffer: 256 * 1024 * 1024 });
     if (r.status !== 0) {
