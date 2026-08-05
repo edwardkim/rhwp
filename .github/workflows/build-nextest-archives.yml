@@ -54,8 +54,8 @@ jobs:
           shared-key: test-archive
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
-      # [#4075] 비용 모델은 trusted devel push만 갱신한다. PR은 default branch의 최신 공개 모델을
-      # restore해 배정에만 쓰며, 이 파일에는 target 식별자와 시간 수치 외 정보를 넣지 않는다.
+      # [#4075] 동일 저장소 trusted PR은 PR ref scope model을, devel push는 공용 model을 갱신한다.
+      # 외부 fork PR은 restore만 하며, 이 파일에는 target 식별자와 시간 수치 외 정보를 넣지 않는다.
       - name: Restore nextest target cost model
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:

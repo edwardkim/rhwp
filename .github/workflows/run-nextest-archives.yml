@@ -15,6 +15,10 @@ on:
         description: Archive label downloaded and executed by this worker.
         required: true
         type: string
+      collect_costs:
+        description: Whether this trusted caller may collect and publish target timing data.
+        required: true
+        type: boolean
 
 jobs:
   run:
@@ -52,7 +56,7 @@ jobs:
           ARCHIVE_LABEL: ${{ inputs.archive_label }}
           COUNT_LABEL: ${{ inputs.count_label }}
           GITHUB_TOKEN: ${{ github.token }}
-          COLLECT_NEXTEST_COSTS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/devel' && 'true' || 'false' }}
+          COLLECT_NEXTEST_COSTS: ${{ inputs.collect_costs && 'true' || 'false' }}
         run: |
           set -euo pipefail
           log="${RUNNER_TEMP}/nextest-${ARCHIVE_LABEL}.log"
@@ -134,9 +138,9 @@ jobs:
           cat "shard-count-${COUNT_LABEL}.txt"
 
       # [#4075] raw event JSON은 runner 임시 경로에서 summary 생성 뒤 cleanup trap으로 지운다.
-      # trusted devel push만 작은 target-level slice를 다음 실행의 planner에 전달한다.
+      # trusted caller만 작은 target-level slice를 다음 실행의 planner에 전달한다.
       - name: Upload ${{ inputs.label }} runtime cost
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/devel' }}
+        if: ${{ inputs.collect_costs }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nextest-cost-slice-${{ github.run_id }}-${{ inputs.archive_label }}

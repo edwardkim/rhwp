@@ -7,6 +7,7 @@ from pathlib import Path
 
 WORKFLOW_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/ci.yml"
 CACHE_SWEEP_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/cache-generation-sweep.yml"
+ARCHIVE_RUN_WORKFLOW_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/run-nextest-archives.yml"
 WORKER_MARKER = "  # [#2393] 기본 테스트 병렬화"
 
 
@@ -163,13 +164,35 @@ class CiImpactWorkflowTests(unittest.TestCase):
                 self.assertNotIn("native-skia-tests", job)
                 self.assertIn("actions: read", job)
 
-    def test_cost_model_publication_is_limited_to_successful_devel_pushes(self) -> None:
+    def test_cost_model_publication_allows_only_trusted_full_pr_or_devel_push(self) -> None:
         publisher = self._job("publish-nextest-cost-model")
         self.assertIn("github.event_name == 'push'", publisher)
         self.assertIn("github.ref == 'refs/heads/devel'", publisher)
+        self.assertIn("github.event_name == 'pull_request'", publisher)
+        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", publisher)
+        self.assertIn("github.event.pull_request.author_association", publisher)
+        self.assertIn("needs.preflight.outputs.fast_pass != 'true'", publisher)
         self.assertIn("needs['build-and-test'].result == 'success'", publisher)
         self.assertIn("actions: write", publisher)
         self.assertIn("Keep only latest nextest cost model cache", publisher)
+
+    def test_trusted_cost_collection_is_explicit_worker_input(self) -> None:
+        worker = ARCHIVE_RUN_WORKFLOW_PATH.read_text(encoding="utf-8")
+        self.assertIn("collect_costs:", worker)
+        self.assertIn("COLLECT_NEXTEST_COSTS: $" + "{{ inputs.collect_costs", worker)
+        self.assertIn("if: $" + "{{ inputs.collect_costs }}", worker)
+        for job_name in (
+            "test-slow-shard",
+            "test-regular-shard-1",
+            "test-regular-shard-2",
+            "test-regular-shard-3",
+        ):
+            with self.subTest(job=job_name):
+                job = self._job(job_name)
+                self.assertIn("collect_costs:", job)
+                self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", job)
+                self.assertIn("github.event.pull_request.author_association", job)
+                self.assertIn("needs.preflight.outputs.fast_pass != 'true'", job)
 
     def test_periodic_cache_sweep_excludes_self_managed_nextest_cost_model(self) -> None:
         sweep = CACHE_SWEEP_PATH.read_text(encoding="utf-8")
