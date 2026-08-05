@@ -64,3 +64,12 @@ fallback이 필요하다. 그러나 model이 유효하면 이 target의 실제 �
 2. model이 없을 때에는 slow와 regular 1/2/3이 실행되고 regular 4가 skipped인지 확인한다.
 3. 동일 저장소 PR publisher가 compact model cache를 남기고, 이후 devel push가 external fork도
    read-only로 restore할 수 있는 canonical model을 갱신하는지 확인한다.
+
+## 원격 검증 결과와 다음 보정
+
+- 실행: PR #4076 CI run `31013386357`.
+- 결과: fallback mode는 정상이다. `test-slow-shard`와 regular 1/2/3은 성공했고 regular 4는
+  skipped였다. runtime cost slice 4개도 upload됐다.
+- 문제: `Publish nextest cost model`만 skipped여서 cache가 저장되지 않았다. 동일 저장소 PR 조건은
+  worker의 slice 수집에서는 참으로 평가됐으므로, publisher의 복합 job-level `if` 평가 경로를
+  별도 단계의 repository ID 비교로 분리한다.

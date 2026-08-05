@@ -167,24 +167,22 @@ class CiImpactWorkflowTests(unittest.TestCase):
                 self.assertNotIn("native-skia-tests", job)
                 self.assertIn("actions: read", job)
 
-    def test_cost_model_publication_allows_only_writable_pr_or_devel_push(self) -> None:
-        publisher = self._job("publish-nextest-cost-model")
-        self.assertIn("github.event_name == 'push'", publisher)
-        self.assertIn("github.ref == 'refs/heads/devel'", publisher)
-        self.assertIn("github.event_name == 'pull_request'", publisher)
-        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", publisher)
-        self.assertNotIn("github.event.pull_request.author_association", publisher)
-        self.assertIn("needs.preflight.outputs.fast_pass != 'true'", publisher)
-        self.assertIn("needs['build-and-test'].result == 'success'", publisher)
-        self.assertIn("actions: write", publisher)
-        self.assertIn("Keep only latest nextest cost model cache", publisher)
+    def test_cost_model_publication_is_a_build_and_test_tail_step(self) -> None:
+        aggregate = self._job("build-and-test")
+        self.assertIn("Determine nextest cost model publish scope", aggregate)
+        self.assertIn("github.event.pull_request.head.repo.id", aggregate)
+        self.assertIn("github.event.pull_request.base.repo.id", aggregate)
+        self.assertIn("refs/heads/devel", aggregate)
+        self.assertIn("actions: write", aggregate)
+        self.assertIn("Keep only latest nextest cost model cache", aggregate)
+        self.assertNotIn("  publish-nextest-cost-model:\n", self.workflow)
 
     def test_external_fork_restores_model_without_publishing(self) -> None:
         builder = ARCHIVE_BUILD_WORKFLOW_PATH.read_text(encoding="utf-8")
-        publisher = self._job("publish-nextest-cost-model")
+        aggregate = self._job("build-and-test")
         self.assertIn("외부 fork를 포함한 모든 PR", builder)
         self.assertIn("actions/cache/restore", builder)
-        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", publisher)
+        self.assertIn("external fork: read-only nextest cost model restore", aggregate)
         self.assertIn("write 권한이 있는 caller", ARCHIVE_RUN_WORKFLOW_PATH.read_text(encoding="utf-8"))
 
     def test_cost_aware_plan_replaces_slow_with_regular_shard_4(self) -> None:

@@ -1012,6 +1012,7 @@ jobs:
       - frontend-package-gates
     if: ${{ always() }}
     permissions:
+      actions: write
       contents: read
 
     steps:
@@ -1257,44 +1258,30 @@ jobs:
           esac
           exit "${failed}"
 
-  # [#4075] raw libtest JSON은 runner 임시 파일로만 사용한다. 동일 저장소의 trusted PR은 PR ref
-  # scope cache를, trusted devel push는 공용 cache를 갱신한다. 외부 fork는 쓰기할 수 없다.
-  publish-nextest-cost-model:
-    name: Publish nextest cost model
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: [preflight, build-and-test]
-    if: >-
-      ${{
-        needs.preflight.outputs.fast_pass != 'true'
-        && needs['build-and-test'].result == 'success'
-        && (
-          (github.event_name == 'push' && github.ref == 'refs/heads/devel')
-          || (
-            github.event_name == 'pull_request'
-            && github.event.pull_request.head.repo.full_name == github.repository
-          )
-        )
-      }}
-    concurrency:
-      group: nextest-cost-model-publish-${{ github.ref }}
-      cancel-in-progress: false
-    permissions:
-      actions: write
-      contents: read
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Confirm current devel head
-        id: head
+      # [#4075] shard 검증이 끝난 뒤 같은 집계 job에서 compact target-time model을 발행한다.
+      # 외부 fork는 base/default branch model을 read-only로 쓰며 cache 저장·정리는 하지 않는다.
+      - name: Determine nextest cost model publish scope
+        id: cost_model_scope
+        if: ${{ needs.preflight.outputs.fast_pass != 'true' }}
         env:
+          BASE_REPOSITORY_ID: ${{ github.event.pull_request.base.repo.id }}
           GH_TOKEN: ${{ github.token }}
+          HEAD_REPOSITORY_ID: ${{ github.event.pull_request.head.repo.id }}
         run: |
           set -euo pipefail
-          if [[ "${GITHUB_EVENT_NAME}" != "push" ]]; then
-            echo "publish=true" >> "$GITHUB_OUTPUT"
-            echo "trusted pull request cache scope"
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            if [[ -n "${HEAD_REPOSITORY_ID}" && "${HEAD_REPOSITORY_ID}" == "${BASE_REPOSITORY_ID}" ]]; then
+              echo "publish=true" >> "$GITHUB_OUTPUT"
+              echo "same-repository pull request cache scope"
+            else
+              echo "publish=false" >> "$GITHUB_OUTPUT"
+              echo "external fork: read-only nextest cost model restore"
+            fi
+            exit 0
+          fi
+          if [[ "${GITHUB_EVENT_NAME}" != "push" || "${GITHUB_REF}" != "refs/heads/devel" ]]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "unsupported event for nextest cost model publication"
             exit 0
           fi
           current=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/devel" --jq '.object.sha')
@@ -1306,15 +1293,19 @@ jobs:
           echo "publish=true" >> "$GITHUB_OUTPUT"
 
       - name: Download current runtime cost slices
-        if: ${{ steps.head.outputs.publish == 'true' }}
+        if: ${{ steps.cost_model_scope.outputs.publish == 'true' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: nextest-cost-slice-${{ github.run_id }}-*
           path: ci-nextest-cost-slices
           merge-multiple: true
 
+      - name: Check out source for nextest cost model merge
+        if: ${{ steps.cost_model_scope.outputs.publish == 'true' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
       - name: Restore previous nextest cost model
-        if: ${{ steps.head.outputs.publish == 'true' }}
+        if: ${{ steps.cost_model_scope.outputs.publish == 'true' }}
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ci-nextest-cost-model
@@ -1323,7 +1314,7 @@ jobs:
             ${{ runner.os }}-nextest-cost-model-v1-
 
       - name: Merge runtime cost model
-        if: ${{ steps.head.outputs.publish == 'true' }}
+        if: ${{ steps.cost_model_scope.outputs.publish == 'true' }}
         run: |
           set -euo pipefail
           mkdir -p ci-nextest-cost-model
@@ -1334,14 +1325,14 @@ jobs:
           stat --printf='nextest cost model bytes=%s\n' ci-nextest-cost-model/nextest-cost-model.json
 
       - name: Save nextest cost model
-        if: ${{ steps.head.outputs.publish == 'true' }}
+        if: ${{ steps.cost_model_scope.outputs.publish == 'true' }}
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ci-nextest-cost-model
           key: ${{ runner.os }}-nextest-cost-model-v1-${{ github.sha }}
 
       - name: Keep only latest nextest cost model cache
-        if: ${{ steps.head.outputs.publish == 'true' }}
+        if: ${{ steps.cost_model_scope.outputs.publish == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
