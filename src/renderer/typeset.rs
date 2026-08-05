@@ -14289,9 +14289,44 @@ impl TypesetEngine {
                                 .max(0.0),
                             self.dpi,
                         );
+                    // [#4054] 각주 안전마진(40px = 3000 HWPUNIT)은 각주 영역과 본문 꼬리가
+                    // 겹칠 위험을 상수로 막는다. 그런데 저장 LineSeg 가 이 줄을 **각주 영역
+                    // 위**에 두고 있고 흐름 커서가 그 좌표보다 위에 있으면, 겹침은 rhwp·한글
+                    // 양쪽 기준 모두에서 실측으로 배제된다. 그 경우에만 마진 몫의 초과를
+                    // 통과시킨다.
+                    //
+                    // 10k 실측(판정 가능한 이른 분할 135지점): 이 마진이 최대 원인이었다 —
+                    // 73지점·133줄·42문서. 한글은 그 자리에 줄을 두는데 rhwp 만 다음 쪽으로
+                    // 밀어내며, 쪽수 지표는 뒤쪽의 저장 좌표 신뢰가 흡수해 침묵한다.
+                    let saved_line_clears_footnote_area = st.current_footnote_height > 0.0
+                        && st.col_count == 1
+                        && overflow <= st.footnote_safety_margin
+                        && para
+                            .line_segs
+                            .get(li)
+                            .and_then(|seg| {
+                                line_seg_visible_bounds_px(
+                                    seg,
+                                    current_page_vpos_base.unwrap_or(0),
+                                    self.dpi,
+                                )
+                            })
+                            .is_some_and(|(top, bottom)| {
+                                let text_limit =
+                                    st.base_available_height() - st.current_footnote_height;
+                                // (1) 저장 좌표가 쪽 안의 값이다(기준선 정합).
+                                top >= 0.0
+                                    && top <= st.base_available_height()
+                                    // (2) 한글도 이 줄을 각주 영역 위에 뒀다.
+                                    && bottom <= text_limit
+                                    // (3) 흐름 커서가 저장 좌표보다 위에 있다 — rhwp 가 실제로
+                                    //     그리는 위치는 한글보다 높다.
+                                    && st.current_height <= top + 16.0
+                            });
                     if !hwp_authoritative
                         && !saved_tail_vpos_fit
                         && !native_hwp5_reset_tail_fits_actual_footnote_boundary
+                        && !saved_line_clears_footnote_area
                     {
                         break;
                     }
