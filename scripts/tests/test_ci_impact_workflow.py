@@ -170,7 +170,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("github.ref == 'refs/heads/devel'", publisher)
         self.assertIn("github.event_name == 'pull_request'", publisher)
         self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", publisher)
-        self.assertIn("github.event.pull_request.author_association", publisher)
+        self.assertNotIn("github.event.pull_request.author_association", publisher)
         self.assertIn("needs.preflight.outputs.fast_pass != 'true'", publisher)
         self.assertIn("needs['build-and-test'].result == 'success'", publisher)
         self.assertIn("actions: write", publisher)
@@ -192,7 +192,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
                 job = self._job(job_name)
                 self.assertIn("collect_costs:", job)
                 self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", job)
-                self.assertIn("github.event.pull_request.author_association", job)
+                self.assertNotIn("github.event.pull_request.author_association", job)
                 self.assertIn("needs.preflight.outputs.fast_pass != 'true'", job)
 
     def test_periodic_cache_sweep_excludes_self_managed_nextest_cost_model(self) -> None:

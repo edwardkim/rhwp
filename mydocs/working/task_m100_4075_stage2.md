@@ -14,8 +14,8 @@ Stage 1의 publisher는 devel push만 허용한다. 이 정책은 외부 fork의
 
 ## 구현 계획
 
-1. PR head repository가 현재 repository와 같고 author association이 OWNER, MEMBER, COLLABORATOR 중
-   하나인 경우만 trusted PR로 판정한다.
+1. PR head repository가 현재 repository와 같은 경우만 trusted PR로 판정한다. 현재 repository에
+   branch를 생성하려면 write 권한이 필요하므로 별도 author association 문자열에 의존하지 않는다.
 2. trusted full PR과 devel push에서만 libtest-json-plus event를 수집하고 runtime slice artifact를
    upload한다.
 3. publisher는 full trusted PR과 devel push에서 실행한다. PR에서 생성한 cache는 pull request ref
@@ -56,6 +56,15 @@ Stage 1의 publisher는 devel push만 허용한다. 이 정책은 외부 fork의
 - 원인: structured nextest 실행에서 stdout과 stderr을 같은 events 파일로 redirect했다.
 - 보정: stdout만 events JSONL로 보내고 stderr은 기존 log 파일로 분리한다. 실패 시에는 두 파일을
   함께 출력한다. 이 보정 뒤 새 PR CI로 publisher와 실제 cache를 다시 확인한다.
+
+### 5. trusted PR publisher skip과 보정
+
+- 관측: structured output 보정 뒤 Build and Test는 성공했지만 publisher가 skipped였다.
+  preflight는 fast_pass=false였고 PR head repository도 현재 repository와 같았다.
+- 원인: job-level expression의 author_association 추가 조건이 실제 payload에서 신뢰 판정에 안정적으로
+  평가되지 않았다.
+- 보정: 동일 저장소 branch 생성 자체가 write 권한을 요구하는 GitHub 경계를 사용해 head repository
+  동일성만 확인한다. external fork는 여전히 publisher와 cost collector를 실행할 수 없다.
 
 ## 원격 검증 조건
 
