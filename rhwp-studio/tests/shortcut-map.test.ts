@@ -49,6 +49,15 @@ test('macOS 영문 입력 Option+G의 © 문자 값도 물리 KeyG로 찾아가�
   assert.equal(command({ key: '©', code: 'KeyH', altKey: true }, 'mac'), null);
 });
 
+test('개체 속성 P 단축키를 영문·한글·IME pending 입력에서 동일하게 매핑한다', () => {
+  assert.equal(command({ key: 'p', code: 'KeyP' }), 'format:object-properties');
+  assert.equal(command({ key: 'ㅔ', code: 'KeyP' }), 'format:object-properties');
+  assert.equal(command({ key: 'Process', code: 'KeyP' }), 'format:object-properties');
+  assert.equal(command({ key: 'p', code: 'KeyP', ctrlKey: true }), 'file:print');
+  assert.equal(command({ key: 'p', code: 'KeyP', shiftKey: true }), null);
+  assert.equal(command({ key: 'Process', code: 'KeyO' }), null);
+});
+
 test('표 줄/칸 추가·지우기 단축키는 대화상자 명령으로 매핑한다', () => {
   assert.equal(command({ key: 'Enter', altKey: true }, 'mac'), 'table:insert-row-col');
   assert.equal(command({ key: 'enter', altKey: true }, 'mac'), 'table:insert-row-col');

@@ -3,19 +3,21 @@ import { detectPlatformKind, type PlatformKind } from '../engine/navigation-keym
 /** 키보드 단축키 정의 */
 export interface ShortcutDef {
   /** 키 문자 (소문자). 예: 'z', 'b', '=', '-' */
-  key: string;
+  readonly key: string;
   /** 물리 키 코드. IME 입력 중 key가 Process일 때 사용한다. 예: 'KeyJ' */
-  code?: string;
+  readonly code?: string;
   /** Ctrl (Windows) 또는 Meta (Mac) */
-  ctrl?: boolean;
-  shift?: boolean;
-  alt?: boolean;
+  readonly ctrl?: boolean;
+  readonly shift?: boolean;
+  readonly alt?: boolean;
   /** 특정 플랫폼에서만 활성화해야 하는 단축키 */
-  platform?: PlatformKind;
+  readonly platform?: PlatformKind;
 }
 
+export type ShortcutEntry = readonly [ShortcutDef, string];
+
 /** 기본 단축키 → 커맨드 ID 매핑 */
-export const defaultShortcuts: [ShortcutDef, string][] = [
+export const defaultShortcuts: readonly ShortcutEntry[] = [
   // 편집
   [{ key: 'z', ctrl: true }, 'edit:undo'],
   [{ key: 'z', ctrl: true, shift: true }, 'edit:redo'],
@@ -137,7 +139,7 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
  */
 export function matchShortcut(
   e: KeyboardEvent,
-  shortcuts: [ShortcutDef, string][],
+  shortcuts: readonly ShortcutEntry[],
   platform: PlatformKind = detectPlatformKind(),
 ): string | null {
   const ctrlOrMeta = e.ctrlKey || e.metaKey;
