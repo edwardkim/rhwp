@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2020Convert_usage.md
-last_verified: 2026-07-31
+last_verified: 2026-08-05
 ---
 
 # HWP 2020 변환 client 사용법
@@ -39,7 +39,7 @@ last_verified: 2026-07-31
 rhwp에는 최신 client artifact 하나만 유지한다.
 
 ```text
-tools/hwp-convert-mcp-client-20260731-230819.tar.gz
+tools/hwp-convert-mcp-client-20260805-071707.tar.gz
 ```
 
 이전 client archive는 사용하거나 보관하지 않는다. 작업 PC에서는 새 archive만 유지한다.
@@ -51,7 +51,7 @@ MCP client tarball은 rhwp 저장소의 `tools/` 아래에 둔다. 서버 URL/to
 
 ```text
 $HOME/rhwp/
-  tools/hwp-convert-mcp-client-20260731-230819.tar.gz
+  tools/hwp-convert-mcp-client-20260805-071707.tar.gz
 
 $HOME/Devel/hwp-convert/
   .env.local
@@ -75,7 +75,7 @@ HWP2020_MCP_AUTH_TOKEN=<관리자가_제공한_토큰>
 
 ```bash
 /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert --help
 ```
@@ -84,7 +84,7 @@ PDF 변환 예:
 
 ```bash
 /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert \
   --env-file "$HOME/Devel/hwp-convert/.env.local" \
@@ -108,7 +108,7 @@ request의 `password`로 전달하며, 대화형 prompt를 열지 않는다.
 ```bash
 printf '%s\n' "$HWP_DOCUMENT_PASSWORD" | \
   /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert \
   --env-file "$HOME/Devel/hwp-convert/.env.local" \
@@ -127,22 +127,22 @@ printf '%s\n' "$HWP_DOCUMENT_PASSWORD" | \
 
 동기 `convert`는 result response가 끝날 때까지 기다린다. 긴 문서는 먼저 `start`로 `job_id`를 받고,
 `status`를 polling한 뒤 `download`로 변환본을 저장한다. `status`의 `progress_percent`는 한컴이 쪽별 진행률을
-제공하지 않아 `null`일 수 있으며, `phase`, `elapsed_ms`, `output_bytes`, `delivery`를 기준으로 확인한다.
+제공하지 않아 `null`일 수 있으며, `phase`, `elapsed_seconds`, `output_bytes`, `delivery`를 기준으로 확인한다.
 
 ```bash
 # 1. upload와 job 시작
 /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert start \
   --env-file "$HOME/Devel/hwp-convert/.env.local" \
   --input "$HOME/rhwp/samples/large-manual.hwpx" \
   --target pdf \
-  --timeout-seconds 1800
+  --timeout-seconds 3600
 
 # 2. succeeded 또는 failed가 될 때까지 상태 확인
 /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert status \
   --env-file "$HOME/Devel/hwp-convert/.env.local" \
@@ -150,7 +150,7 @@ printf '%s\n' "$HWP_DOCUMENT_PASSWORD" | \
 
 # 3. SHA-256 검증 후 client local directory에 저장
 /opt/homebrew/bin/npx -y \
-  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz" \
   -- \
   hwp2020-mcp-convert download \
   --env-file "$HOME/Devel/hwp-convert/.env.local" \
@@ -177,8 +177,10 @@ filesystem 저장과 SHA-256을 확인한 뒤에는 server job directory가 남�
 용지 또는 방향을 명시하면 한글 2020 `PageSetup`이 문서 전체에 적용된다. 내용이 재조판되어 페이지
 수가 달라질 수 있으므로, 시각 검증에서는 반드시 출력 PDF의 page size와 page count를 확인한다.
 
-긴 문서·이미지가 많은 문서·거대 표·중첩 표는 `--timeout-seconds 900` 또는 `1800`을 사용한다.
-허용 범위는 10~1800초이고, client는 이 값에 120초 여유를 더해 MCP 요청 대기 시간에도 적용한다.
+긴 문서·이미지가 많은 문서·거대 표·중첩 표는 `--timeout-seconds 1800`을 우선 사용하고, 실제
+Hancom 인쇄 시간이 1800초를 넘는 대형 문서에는 `3600`을 명시한다. 기본값은 `900`초다. `3600`은
+동일 timeout 계약을 배포한 HWP 2020 MCP server와 함께 사용한다.
+허용 범위는 10~3600초이고, client는 이 값에 120초 여유를 더해 MCP 요청 대기 시간에도 적용한다.
 따라서 SDK 기본 60초 timeout으로 먼저 종료되지 않는다.
 
 ## 선택: VS Code MCP 등록
@@ -204,7 +206,7 @@ Apple Silicon Homebrew 환경에서는 보통 `/opt/homebrew/bin/npx`다. 워크
       "command": "/opt/homebrew/bin/npx",
       "args": [
         "-y",
-        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz",
+        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz",
         "--",
         "hwp2020-mcp-bridge"
       ],
@@ -307,8 +309,8 @@ shasum -a 256 "$HOME/rhwp/pdf/example-a3-2020.pdf"
 
 ## 문제 해결
 
-- client archive가 `tools/hwp-convert-mcp-client-20260731-230819.tar.gz` 하나만 있는지 확인한다.
-- `--package=file:$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz`처럼 `file:` 스킴과
+- client archive가 `tools/hwp-convert-mcp-client-20260805-071707.tar.gz` 하나만 있는지 확인한다.
+- `--package=file:$HOME/rhwp/tools/hwp-convert-mcp-client-20260805-071707.tar.gz`처럼 `file:` 스킴과
   절대경로를 사용한다.
 - `/opt/homebrew/bin/npx`가 실제 `npx` 경로와 다르면 `mcp.json`의 `command`를 `which npx` 결과로
   바꾼다.
@@ -318,8 +320,8 @@ shasum -a 256 "$HOME/rhwp/pdf/example-a3-2020.pdf"
 - `--env-file`을 썼는데 `--server-url is required`가 나오면 `.env.local`에
   `HWP2020_MCP_SERVER_URL`을 추가하거나 `--server-url`을 직접 지정한다.
 - `--input`은 client 로컬 파일이어야 하고, `--output-dir` 상위 경로에는 쓰기 권한이 있어야 한다.
-- 큰 문서는 `--timeout-seconds`를 900~1800초로 늘린다.
-- 복잡한 문서(그림 대량·중첩 표)의 PDF 변환에는 `--timeout-seconds 900` 또는 `1800`을 지정하고,
+- 큰 문서는 `--timeout-seconds`를 900~1800초로 늘리고, 실제 인쇄가 더 길면 `3600`을 명시한다.
+- 복잡한 문서(그림 대량·중첩 표)의 PDF 변환에는 `--timeout-seconds 1800` 또는 `3600`을 지정하고,
   동기 요청 대신 `start`/`status`/`download` 흐름으로 처리한다. 한컴은 신뢰할 수 있는 쪽별 진행률을
-  제공하지 않으므로 `status.phase`, `elapsed_ms`, `output_bytes`와 최종 validation을 확인한다.
+  제공하지 않으므로 `status.phase`, `elapsed_seconds`, `output_bytes`와 최종 validation을 확인한다.
 - VS Code의 `MCP: Reset Cached Tools` 명령이 없으면 `Developer: Reload Window` 또는 재시작을 사용한다.
