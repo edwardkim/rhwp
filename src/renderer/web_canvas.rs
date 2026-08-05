@@ -173,6 +173,12 @@ fn detect_image_mime_type(data: &[u8]) -> &'static str {
     {
         // EMF: EMR_HEADER(Type=1) + offset 40 의 " EMF" 시그니처 (MS-EMF 2.3.4.2)
         "image/x-emf"
+    } else if data.len() >= 4
+        && (data.starts_with(&[0x49, 0x49, 0x2A, 0x00])
+            || data.starts_with(&[0x4D, 0x4D, 0x00, 0x2A]))
+    {
+        // TIFF: II*\0(LE)·MM\0*(BE). 브라우저 native 미지원 → PNG 변환 필요 (#4064)
+        "image/tiff"
     } else if data.len() >= 3
         && data[0] == 0x0A
         && matches!(data[1], 0 | 2 | 3 | 4 | 5)
@@ -181,6 +187,9 @@ fn detect_image_mime_type(data: &[u8]) -> &'static str {
         // PCX: 0A + 버전바이트(0·2·3·4·5) + 인코딩 01 (Task #514, v2.8 은 #4065)
         // 브라우저 native 미지원 → emit 시 PNG 변환 필요 (svg::pcx_bytes_to_png_bytes)
         "image/x-pcx"
+    } else if data.starts_with(b"%!PS") || data.starts_with(&[0xC5, 0xD0, 0xD3, 0xC6]) {
+        // PostScript: 텍스트 EPS 와 DOS EPS 바이너리 — 후자는 내장 프리뷰 변환 가능 (#4062)
+        "application/postscript"
     } else if super::svg_fragment::is_svg_prefix(data) {
         // Task #275: RawSvg 래퍼 경로 — <svg 또는 <?xml + <svg
         "image/svg+xml"
@@ -2772,6 +2781,16 @@ impl Renderer for WebCanvasRenderer {
             } else if mime_type == "image/x-pcx" {
                 match crate::renderer::image_resolver::pcx_bytes_to_png_bytes(data) {
                     Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
+            } else if mime_type == "image/tiff" {
+                match crate::renderer::image_resolver::tiff_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
+            } else if mime_type == "application/postscript" {
+                match crate::renderer::image_resolver::dos_eps_preview_bytes(data) {
+                    Some((mime, bytes)) => (std::borrow::Cow::Owned(bytes), mime),
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }
             } else {

@@ -173,6 +173,14 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
                 suppress_effects: false,
             })
         }
+        "application/postscript" => {
+            dos_eps_preview_bytes(data).map(|(mime, data)| ResolvedImagePayload {
+                data,
+                mime,
+                kind: ResolvedImageKind::FormatConverted,
+                suppress_effects: false,
+            })
+        }
         "image/jpeg" if is_watermark_image(image) => {
             watermark_jpeg_bytes_to_hancom_baked_png_bytes(data).map(|data| ResolvedImagePayload {
                 data,
@@ -221,6 +229,7 @@ pub(crate) fn emitted_image_bytes(
         "image/x-emf" => {
             crate::emf::convert_to_standalone_svg(data).map(|svg| ("image/svg+xml", svg))
         }
+        "application/postscript" => dos_eps_preview_bytes(data),
         "image/jpeg" if bakes_watermark => watermark_jpeg_bytes_to_hancom_baked_png_bytes(data)
             .or_else(|| grayscale_jpeg_bytes_to_png_bytes(data))
             .map(|png| ("image/png", png)),
@@ -286,12 +295,101 @@ pub(crate) fn bmp_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
     memoized(Conversion::Bmp, data, || {
         use image::ImageFormat;
 
-        let img = decode_image_with_format_limited(data, ImageFormat::Bmp)?;
-        let mut out = Vec::new();
-        img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
-            .ok()?;
-        Some(out)
+        if let Some(img) = decode_image_with_format_limited(data, ImageFormat::Bmp) {
+            let mut out = Vec::new();
+            img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
+                .ok()?;
+            return Some(out);
+        }
+        oversized_bmp_to_downscaled_png_bytes(data)
     })
+}
+
+/// CanvasKit 디코드 한도(8192px·32Mpix)를 넘는 초대형 BMP 폴백 (#4064).
+///
+/// 실문서의 A4 전면 스캔 BMP(34~61Mpix)가 한도 거부로 원본 그대로 방출되면
+/// SVG `<image>` 는 data URI BMP 를 표준 지원하지 않아 빈 그림이 된다.
+/// 한도 안으로 다운스케일해 PNG 로 낸다 — 상한(경성 한도)을 넘거나 헤더가
+/// 깨진 바이트는 여기서도 None 이다.
+fn oversized_bmp_to_downscaled_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
+    use image::ImageFormat;
+
+    // 시추 깊이: 한도의 8배(≈65k px · 256Mpix). 그 위는 손상 헤더로 간주한다
+    // (실측: 깨진 BMP 헤더가 w=16,318,939 같은 값을 담아 온다).
+    const HARD_MAX_DIMENSION: u32 = CANVASKIT_MAX_IMAGE_DIMENSION * 8;
+    const HARD_MAX_PIXELS: u64 = CANVASKIT_MAX_IMAGE_PIXELS * 8;
+
+    let header = canvaskit_encoded_image_header(data)?;
+    if header.format != crate::renderer::image_header::CanvasKitEncodedImageFormat::Bmp {
+        return None;
+    }
+    let (w, h) = (header.width, header.height);
+    let pixels = u64::from(w).checked_mul(u64::from(h))?;
+    if w == 0 || h == 0 || w > HARD_MAX_DIMENSION || h > HARD_MAX_DIMENSION {
+        return None;
+    }
+    if pixels > HARD_MAX_PIXELS {
+        return None;
+    }
+
+    let mut reader = image::ImageReader::with_format(Cursor::new(data), ImageFormat::Bmp);
+    let mut limits = image::Limits::default();
+    limits.max_image_width = Some(HARD_MAX_DIMENSION);
+    limits.max_image_height = Some(HARD_MAX_DIMENSION);
+    limits.max_alloc = Some(HARD_MAX_PIXELS.saturating_mul(4));
+    reader.limits(limits);
+    let img = reader.decode().ok()?;
+
+    let ratio = f64::min(
+        f64::from(CANVASKIT_MAX_IMAGE_DIMENSION) / f64::from(w.max(h)),
+        (CANVASKIT_MAX_IMAGE_PIXELS as f64 / pixels as f64).sqrt(),
+    )
+    .min(1.0);
+    let tw = ((f64::from(w) * ratio) as u32).max(1);
+    let th = ((f64::from(h) * ratio) as u32).max(1);
+    let img = img.thumbnail(tw, th);
+
+    let mut out = Vec::new();
+    img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
+        .ok()?;
+    Some(out)
+}
+
+/// DOS EPS 바이너리(preamble `C5 D0 D3 C6`)의 내장 프리뷰를 꺼내 변환한다 (#4062).
+///
+/// 텍스트 PostScript 는 자체 인터프리터가 없어 변환 불가지만, DOS EPS 헤더는
+/// WMF/TIFF 프리뷰의 오프셋·길이를 담는다 (Adobe EPSF 3.0 §5.2). 프리뷰가
+/// 있으면 기존 변환기(WMF→SVG, TIFF→PNG)로 잇는다. 프리뷰가 없거나 손상이면
+/// None — 호출부가 원본으로 되돌아간다.
+pub(crate) fn dos_eps_preview_bytes(data: &[u8]) -> Option<(&'static str, Vec<u8>)> {
+    if data.len() < 30 || !data.starts_with(&[0xC5, 0xD0, 0xD3, 0xC6]) {
+        return None;
+    }
+    let le_u32 = |off: usize| -> Option<usize> {
+        let b: [u8; 4] = data.get(off..off + 4)?.try_into().ok()?;
+        Some(u32::from_le_bytes(b) as usize)
+    };
+    let section = |off_at: usize, len_at: usize| -> Option<&[u8]> {
+        let off = le_u32(off_at)?;
+        let len = le_u32(len_at)?;
+        if len == 0 {
+            return None;
+        }
+        data.get(off..off.checked_add(len)?)
+    };
+    // 헤더 배치: [4..8) PS off, [8..12) PS len, [12..16) WMF off, [16..20) WMF len,
+    // [20..24) TIFF off, [24..28) TIFF len.
+    if let Some(wmf) = section(12, 16) {
+        if let Some(svg) = crate::renderer::svg::convert_wmf_to_svg(wmf) {
+            return Some(("image/svg+xml", svg));
+        }
+    }
+    if let Some(tiff) = section(20, 24) {
+        if let Some(png) = tiff_bytes_to_png_bytes(tiff) {
+            return Some(("image/png", png));
+        }
+    }
+    None
 }
 
 /// TIFF 바이트를 PNG 바이트로 재인코딩한다. 실패 시 None 반환.
@@ -302,12 +400,154 @@ pub(crate) fn tiff_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
     memoized(Conversion::Tiff, data, || {
         use image::ImageFormat;
 
-        let img = decode_image_with_format_limited(data, ImageFormat::Tiff)?;
-        let mut out = Vec::new();
-        img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
-            .ok()?;
-        Some(out)
+        if let Some(img) = decode_image_with_format_limited(data, ImageFormat::Tiff) {
+            let mut out = Vec::new();
+            img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
+                .ok()?;
+            return Some(out);
+        }
+        uncompressed_palette_tiff_to_png_bytes(data)
     })
+}
+
+/// image 크레이트의 tiff 디코더가 지원하지 않는 8-bit 팔레트
+/// (PhotometricInterpretation=3) TIFF 폴백 (#4064).
+///
+/// 10k 스윕에서 걸린 실문서 스캔본이 전부 이 형태(비압축·8bps·단일 plane)라
+/// 그 범위만 좁게 디코드한다 — 압축·다중 plane 팔레트는 여기서도 None 이다.
+fn uncompressed_palette_tiff_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
+    use image::{ImageFormat, RgbaImage};
+
+    let le = match data.get(..4)? {
+        [0x49, 0x49, 0x2A, 0x00] => true,
+        [0x4D, 0x4D, 0x00, 0x2A] => false,
+        _ => return None,
+    };
+    let u16_at = |off: usize| -> Option<u16> {
+        let b: [u8; 2] = data.get(off..off + 2)?.try_into().ok()?;
+        Some(if le {
+            u16::from_le_bytes(b)
+        } else {
+            u16::from_be_bytes(b)
+        })
+    };
+    let u32_at = |off: usize| -> Option<u32> {
+        let b: [u8; 4] = data.get(off..off + 4)?.try_into().ok()?;
+        Some(if le {
+            u32::from_le_bytes(b)
+        } else {
+            u32::from_be_bytes(b)
+        })
+    };
+
+    let ifd = u32_at(4)? as usize;
+    let entry_count = u16_at(ifd)? as usize;
+    // (tag, type, count, value-field offset). SHORT/LONG 단일값은 값 필드에
+    // 좌측 정렬로 인라인, 배열은 값 필드가 데이터 오프셋이다 (TIFF 6.0 §2).
+    let mut width = 0u32;
+    let mut height = 0u32;
+    let mut bits_per_sample = 0u32;
+    let mut compression = 0u32;
+    let mut photometric = u32::MAX;
+    let mut strip_offsets: Vec<u32> = Vec::new();
+    let mut strip_byte_counts: Vec<u32> = Vec::new();
+    let mut color_map_off = 0usize;
+    let mut color_map_len = 0usize;
+    for i in 0..entry_count {
+        let e = ifd + 2 + i * 12;
+        let tag = u16_at(e)?;
+        let typ = u16_at(e + 2)?;
+        let count = u32_at(e + 4)? as usize;
+        let inline_scalar = || -> Option<u32> {
+            match typ {
+                3 => u16_at(e + 8).map(u32::from),
+                4 => u32_at(e + 8),
+                _ => None,
+            }
+        };
+        let array = |out: &mut Vec<u32>| -> Option<()> {
+            let elem = match typ {
+                3 => 2usize,
+                4 => 4usize,
+                _ => return None,
+            };
+            let base = if count * elem <= 4 {
+                e + 8
+            } else {
+                u32_at(e + 8)? as usize
+            };
+            for j in 0..count {
+                out.push(match typ {
+                    3 => u32::from(u16_at(base + j * elem)?),
+                    _ => u32_at(base + j * elem)?,
+                });
+            }
+            Some(())
+        };
+        match tag {
+            256 => width = inline_scalar()?,
+            257 => height = inline_scalar()?,
+            258 if count == 1 => bits_per_sample = inline_scalar()?,
+            258 => return None, // 다중 plane 팔레트는 관측 밖
+            259 => compression = inline_scalar()?,
+            262 => photometric = inline_scalar()?,
+            273 => array(&mut strip_offsets)?,
+            279 => array(&mut strip_byte_counts)?,
+            320 => {
+                if typ != 3 {
+                    return None;
+                }
+                color_map_off = u32_at(e + 8)? as usize;
+                color_map_len = count;
+            }
+            _ => {}
+        }
+    }
+
+    if photometric != 3 || compression != 1 || bits_per_sample != 8 {
+        return None;
+    }
+    let pixels = u64::from(width).checked_mul(u64::from(height))?;
+    if width == 0
+        || height == 0
+        || width > CANVASKIT_MAX_IMAGE_DIMENSION
+        || height > CANVASKIT_MAX_IMAGE_DIMENSION
+        || pixels > CANVASKIT_MAX_IMAGE_PIXELS
+    {
+        return None;
+    }
+    // 8bps 팔레트의 ColorMap 은 R·G·B 각 256개, 16-bit 값 (TIFF 6.0 §5).
+    if color_map_len != 3 * 256 || strip_offsets.len() != strip_byte_counts.len() {
+        return None;
+    }
+    let palette_component =
+        |i: usize| -> Option<u8> { Some((u16_at(color_map_off + i * 2)? >> 8) as u8) };
+
+    let pixel_count = usize::try_from(pixels).ok()?;
+    let mut indices = Vec::with_capacity(pixel_count);
+    for (off, len) in strip_offsets.iter().zip(strip_byte_counts.iter()) {
+        let strip = data.get(*off as usize..(*off as usize).checked_add(*len as usize)?)?;
+        indices.extend_from_slice(strip);
+        if indices.len() >= pixel_count {
+            break;
+        }
+    }
+    if indices.len() < pixel_count {
+        return None;
+    }
+
+    let mut rgba = vec![0u8; pixel_count.checked_mul(4)?];
+    for (dst, &idx) in rgba.chunks_exact_mut(4).zip(indices.iter()) {
+        dst[0] = palette_component(idx as usize)?;
+        dst[1] = palette_component(256 + idx as usize)?;
+        dst[2] = palette_component(512 + idx as usize)?;
+        dst[3] = 255;
+    }
+    let img = RgbaImage::from_raw(width, height, rgba)?;
+    let mut out = Vec::new();
+    img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
+        .ok()?;
+    Some(out)
 }
 
 /// Browser SVG/Canvas decoders can expose stale color planes in old Photoshop
@@ -684,6 +924,11 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
     {
         return "image/x-pcx";
     }
+    // PostScript: 텍스트 EPS(`%!PS`)와 DOS EPS 바이너리(`C5 D0 D3 C6` preamble).
+    // 후자는 내장 WMF/TIFF 프리뷰로 변환 가능하다 (#4062).
+    if data.starts_with(b"%!PS") || data.starts_with(&[0xC5, 0xD0, 0xD3, 0xC6]) {
+        return "application/postscript";
+    }
     // [#3460] HWPX BinData 는 SVG 를 그대로 담을 수 있다(`<hc:img>` → `Format="svg"`).
     // 여기서 놓치면 data URI 가 application/octet-stream 으로 나가 브라우저·rsvg 가
     // 그리지 않고 빈 공간이 된다. WASM 판별기(web_canvas)는 이미 같은 분기를 갖고 있다.
@@ -733,7 +978,8 @@ mod tests {
     use super::{
         bmp_bytes_to_png_bytes, emitted_image_bytes, grayscale_jpeg_bytes_to_png_bytes,
         is_watermark_image, resolve_image_payload, watermark_jpeg_bytes_to_hancom_baked_png_bytes,
-        ConversionMemo, CONVERSIONS_RUN, MAX_MEMO_BYTES, MAX_MEMO_ENTRIES,
+        ConversionMemo, CANVASKIT_MAX_IMAGE_DIMENSION, CONVERSIONS_RUN, MAX_MEMO_BYTES,
+        MAX_MEMO_ENTRIES,
     };
     use crate::model::image::ImageEffect;
     use crate::paint::ResolvedImageKind;
@@ -1010,6 +1256,149 @@ mod tests {
             .expect("v2.8 도 resolve 경로에서 변환돼야 한다");
         assert_eq!(resolved.mime, "image/png");
         assert_eq!(resolved.kind, ResolvedImageKind::FormatConverted);
+    }
+
+    /// image 크레이트가 거부하는 8-bit 팔레트 TIFF (photometric=3) — 10k 스윕
+    /// 실문서 스캔본(비압축·8bps)과 같은 배치의 합성 바이트 (#4064).
+    fn minimal_palette_tiff() -> Vec<u8> {
+        let mut out = Vec::new();
+        out.extend_from_slice(&[0x49, 0x49, 0x2A, 0x00]); // II*\0 (LE)
+        out.extend_from_slice(&8u32.to_le_bytes()); // IFD offset
+        let entry = |out: &mut Vec<u8>, tag: u16, typ: u16, count: u32, value: u32| {
+            out.extend_from_slice(&tag.to_le_bytes());
+            out.extend_from_slice(&typ.to_le_bytes());
+            out.extend_from_slice(&count.to_le_bytes());
+            out.extend_from_slice(&value.to_le_bytes());
+        };
+        // IFD: 8 entries × 12B + count(2) + next(4) = 102B → 데이터는 110부터.
+        let strip_off = 110u32;
+        let color_map_off = strip_off + 4; // 2×2 인덱스 4B 뒤
+        out.extend_from_slice(&8u16.to_le_bytes());
+        entry(&mut out, 256, 3, 1, 2); // ImageWidth = 2
+        entry(&mut out, 257, 3, 1, 2); // ImageLength = 2
+        entry(&mut out, 258, 3, 1, 8); // BitsPerSample = 8
+        entry(&mut out, 259, 3, 1, 1); // Compression = none
+        entry(&mut out, 262, 3, 1, 3); // Photometric = palette
+        entry(&mut out, 273, 4, 1, strip_off); // StripOffsets
+        entry(&mut out, 279, 4, 1, 4); // StripByteCounts
+        entry(&mut out, 320, 3, 3 * 256, color_map_off); // ColorMap
+        out.extend_from_slice(&0u32.to_le_bytes()); // next IFD 없음
+        assert_eq!(out.len(), strip_off as usize);
+        out.extend_from_slice(&[0, 1, 1, 0]); // 인덱스 2×2
+                                              // ColorMap: R[256]·G[256]·B[256], 16-bit. 색 0=빨강, 1=파랑.
+        let mut plane = |c0: u16, c1: u16| {
+            let mut v = vec![0u16; 256];
+            v[0] = c0;
+            v[1] = c1;
+            for e in v {
+                out.extend_from_slice(&e.to_le_bytes());
+            }
+        };
+        plane(0xFF00, 0x0000); // R
+        plane(0x0000, 0x0000); // G
+        out.extend_from_slice(
+            &{
+                let mut v = vec![0u16; 256];
+                v[1] = 0xFF00;
+                v.iter().flat_map(|e| e.to_le_bytes()).collect::<Vec<_>>()
+            }[..],
+        ); // B
+        out
+    }
+
+    /// 팔레트 TIFF 도 PNG 로 변환돼 나가야 한다 (#4064). image 크레이트 tiff
+    /// 디코더가 photometric=RGBPalette 를 지원하지 않아 실문서 스캔본 6op 가
+    /// 원본 TIFF 그대로 새던 부류를 폴백 디코더로 고정한다.
+    #[test]
+    fn palette_tiff_is_emitted_as_png_via_fallback_decoder() {
+        let tiff = minimal_palette_tiff();
+        assert_eq!(super::detect_image_mime_type(&tiff), "image/tiff");
+        // 전제 고정: image 크레이트가 이 형태를 못 읽어야 폴백이 검증된다.
+        assert!(
+            super::decode_image_with_format_limited(&tiff, image::ImageFormat::Tiff).is_none(),
+            "image 크레이트가 팔레트 TIFF 를 읽게 되면 이 폴백은 접어도 된다"
+        );
+
+        let (mime, bytes) = emitted_image_bytes(&tiff, false);
+        assert_eq!(mime, "image/png");
+        let png = image::load_from_memory(&bytes)
+            .expect("PNG 디코드")
+            .to_rgba8();
+        assert_eq!((png.width(), png.height()), (2, 2));
+        assert_eq!(
+            png.get_pixel(0, 0).0,
+            [255, 0, 0, 255],
+            "색 0 = 팔레트 빨강"
+        );
+        assert_eq!(
+            png.get_pixel(1, 0).0,
+            [0, 0, 255, 255],
+            "색 1 = 팔레트 파랑"
+        );
+    }
+
+    /// CanvasKit 한도(8192px·32Mpix)를 넘는 BMP 는 거부 대신 한도 안으로
+    /// 다운스케일해 PNG 로 낸다 (#4064). SVG `<image>` 는 data URI BMP 를 표준
+    /// 지원하지 않아 거부하면 빈 그림이 된다 — A4 전면 스캔 실문서 4건.
+    #[test]
+    fn oversized_bmp_is_downscaled_to_png_instead_of_rejected() {
+        use image::{DynamicImage, ImageFormat, RgbImage};
+        let wide = RgbImage::from_fn(8400, 2, |x, _| image::Rgb([(x % 251) as u8, 90, 200]));
+        let mut bmp = Vec::new();
+        DynamicImage::ImageRgb8(wide)
+            .write_to(&mut Cursor::new(&mut bmp), ImageFormat::Bmp)
+            .expect("encode bmp");
+
+        let png = bmp_bytes_to_png_bytes(&bmp).expect("한도 초과 BMP 는 다운스케일로 살린다");
+        let decoded = image::load_from_memory(&png).expect("PNG 디코드");
+        assert!(
+            decoded.width() <= CANVASKIT_MAX_IMAGE_DIMENSION,
+            "다운스케일 결과가 한도 안이어야 한다 (실측 {})",
+            decoded.width()
+        );
+        assert!(decoded.width() > 0 && decoded.height() > 0);
+    }
+
+    /// DOS EPS 바이너리는 내장 TIFF/WMF 프리뷰로 변환돼 나가야 한다 (#4062).
+    /// 텍스트 PostScript 는 변환기가 없어 여전히 원본 그대로다 — 그 경계도
+    /// 함께 고정한다.
+    #[test]
+    fn dos_eps_with_tiff_preview_is_emitted_as_png() {
+        use image::{DynamicImage, ImageFormat, RgbImage};
+        let mut tiff = Vec::new();
+        DynamicImage::ImageRgb8(RgbImage::from_pixel(2, 2, image::Rgb([10, 200, 30])))
+            .write_to(&mut Cursor::new(&mut tiff), ImageFormat::Tiff)
+            .expect("encode tiff");
+
+        let mut eps = Vec::new();
+        eps.extend_from_slice(&[0xC5, 0xD0, 0xD3, 0xC6]); // preamble
+        let header_len = 30u32;
+        eps.extend_from_slice(&header_len.to_le_bytes()); // PS offset (더미)
+        eps.extend_from_slice(&0u32.to_le_bytes()); // PS length
+        eps.extend_from_slice(&0u32.to_le_bytes()); // WMF offset
+        eps.extend_from_slice(&0u32.to_le_bytes()); // WMF length
+        eps.extend_from_slice(&header_len.to_le_bytes()); // TIFF offset
+        eps.extend_from_slice(&(tiff.len() as u32).to_le_bytes()); // TIFF length
+        eps.extend_from_slice(&[0, 0]); // checksum 자리
+        assert_eq!(eps.len(), header_len as usize);
+        eps.extend_from_slice(&tiff);
+
+        assert_eq!(
+            super::detect_image_mime_type(&eps),
+            "application/postscript"
+        );
+        let (mime, bytes) = emitted_image_bytes(&eps, false);
+        assert_eq!(mime, "image/png", "TIFF 프리뷰가 PNG 로 나가야 한다");
+        assert!(bytes.starts_with(b"\x89PNG\r\n\x1a\n"));
+
+        let text_ps = b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 10 10\n".to_vec();
+        assert_eq!(
+            super::detect_image_mime_type(&text_ps),
+            "application/postscript"
+        );
+        let (mime, bytes) = emitted_image_bytes(&text_ps, false);
+        assert_eq!(mime, "application/postscript", "텍스트 PS 는 변환기가 없다");
+        assert_eq!(bytes.as_ref(), text_ps.as_slice());
     }
 }
 

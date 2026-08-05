@@ -10,7 +10,7 @@ use super::form_caption::display_form_caption;
 pub(crate) use super::image_resolver::{
     bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes,
     real_picture_watermark_bytes_to_hancom_tone_png_bytes,
-    real_picture_watermark_fill_bytes_to_hancom_tone_png_bytes,
+    real_picture_watermark_fill_bytes_to_hancom_tone_png_bytes, tiff_bytes_to_png_bytes,
     watermark_jpeg_bytes_to_hancom_baked_png_bytes,
 };
 use super::pua_oldhangul::map_pua_old_hangul;
@@ -1400,6 +1400,16 @@ impl SvgRenderer {
                     Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
                     None => (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime),
                 }
+            } else if detected_mime == "image/tiff" {
+                match tiff_bytes_to_png_bytes(&img.data) {
+                    Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
+                    None => (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime),
+                }
+            } else if detected_mime == "application/postscript" {
+                match crate::renderer::image_resolver::dos_eps_preview_bytes(&img.data) {
+                    Some((mime, bytes)) => (std::borrow::Cow::Owned(bytes), mime),
+                    None => (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime),
+                }
             } else {
                 (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime)
             };
@@ -1538,6 +1548,16 @@ impl SvgRenderer {
             } else if mime_type == "image/x-pcx" {
                 match pcx_bytes_to_png_bytes(data) {
                     Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", false),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type, false),
+                }
+            } else if mime_type == "image/tiff" {
+                match tiff_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", false),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type, false),
+                }
+            } else if mime_type == "application/postscript" {
+                match crate::renderer::image_resolver::dos_eps_preview_bytes(data) {
+                    Some((mime, bytes)) => (std::borrow::Cow::Owned(bytes), mime, false),
                     None => (std::borrow::Cow::Borrowed(data), mime_type, false),
                 }
             } else if is_watermark_image && mime_type == "image/jpeg" {
@@ -3264,6 +3284,21 @@ impl Renderer for SvgRenderer {
             } else if mime_type == "image/x-pcx" {
                 match pcx_bytes_to_png_bytes(data) {
                     Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
+            } else if mime_type == "image/bmp" {
+                match bmp_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
+            } else if mime_type == "image/tiff" {
+                match tiff_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
+            } else if mime_type == "application/postscript" {
+                match crate::renderer::image_resolver::dos_eps_preview_bytes(data) {
+                    Some((mime, bytes)) => (std::borrow::Cow::Owned(bytes), mime),
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }
             } else {

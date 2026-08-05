@@ -486,6 +486,11 @@ impl Renderer for HtmlRenderer {
                     Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }
+            } else if mime_type == "application/postscript" {
+                match crate::renderer::image_resolver::dos_eps_preview_bytes(data) {
+                    Some((mime, bytes)) => (std::borrow::Cow::Owned(bytes), mime),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
             } else {
                 (std::borrow::Cow::Borrowed(data), mime_type)
             };
