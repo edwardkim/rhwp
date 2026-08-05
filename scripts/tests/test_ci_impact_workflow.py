@@ -172,6 +172,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("Determine nextest cost model publish scope", aggregate)
         self.assertIn("github.event.pull_request.head.repo.id", aggregate)
         self.assertIn("github.event.pull_request.base.repo.id", aggregate)
+        self.assertIn('GITHUB_EVENT_NAME}" == "workflow_dispatch', aggregate)
         self.assertIn("refs/heads/devel", aggregate)
         self.assertIn("actions: write", aggregate)
         self.assertIn("Keep only latest nextest cost model cache", aggregate)
@@ -212,6 +213,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
             with self.subTest(job=job_name):
                 job = self._job(job_name)
                 self.assertIn("collect_costs:", job)
+                self.assertIn("github.event_name == 'workflow_dispatch'", job)
                 self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", job)
                 self.assertNotIn("github.event.pull_request.author_association", job)
                 self.assertIn("needs.preflight.outputs.fast_pass != 'true'", job)

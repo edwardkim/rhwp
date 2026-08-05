@@ -600,6 +600,8 @@ jobs:
         ${{
           needs.preflight.outputs.fast_pass != 'true'
           && (
+            github.event_name == 'workflow_dispatch'
+            ||
             (github.event_name == 'push' && github.ref == 'refs/heads/devel')
             || (
               github.event_name == 'pull_request'
@@ -629,6 +631,8 @@ jobs:
         ${{
           needs.preflight.outputs.fast_pass != 'true'
           && (
+            github.event_name == 'workflow_dispatch'
+            ||
             (github.event_name == 'push' && github.ref == 'refs/heads/devel')
             || (
               github.event_name == 'pull_request'
@@ -658,6 +662,8 @@ jobs:
         ${{
           needs.preflight.outputs.fast_pass != 'true'
           && (
+            github.event_name == 'workflow_dispatch'
+            ||
             (github.event_name == 'push' && github.ref == 'refs/heads/devel')
             || (
               github.event_name == 'pull_request'
@@ -687,6 +693,8 @@ jobs:
         ${{
           needs.preflight.outputs.fast_pass != 'true'
           && (
+            github.event_name == 'workflow_dispatch'
+            ||
             (github.event_name == 'push' && github.ref == 'refs/heads/devel')
             || (
               github.event_name == 'pull_request'
@@ -717,6 +725,8 @@ jobs:
         ${{
           needs.preflight.outputs.fast_pass != 'true'
           && (
+            github.event_name == 'workflow_dispatch'
+            ||
             (github.event_name == 'push' && github.ref == 'refs/heads/devel')
             || (
               github.event_name == 'pull_request'
@@ -1277,6 +1287,11 @@ jobs:
               echo "publish=false" >> "$GITHUB_OUTPUT"
               echo "external fork: read-only nextest cost model restore"
             fi
+            exit 0
+          fi
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "manual repository full CI cache scope"
             exit 0
           fi
           if [[ "${GITHUB_EVENT_NAME}" != "push" || "${GITHUB_REF}" != "refs/heads/devel" ]]; then
