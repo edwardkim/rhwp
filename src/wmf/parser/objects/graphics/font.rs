@@ -144,7 +144,18 @@ impl Font {
             },
             crate::wmf::parser::CharacterSet::parse(buf)?,
             crate::wmf::parser::OutPrecision::parse(buf)?,
-            crate::wmf::parser::ClipPrecision::parse(buf)?,
+            {
+                // ClipPrecision 은 스펙부터 "combined 가능"한 플래그 바이트인데
+                // (예: 0x50 = CLIP_LH_ANGLES|CLIP_DFA_DISABLE) 열거 파싱은 조합값을
+                // 거부해 그림 전체가 변환 불가로 번진다 (#4063). 클리핑 정밀도는
+                // 렌더 힌트라 미지의 조합은 DEFAULT 로 관용한다.
+                let (v, c) = crate::wmf::parser::read_u8_from_le_bytes(buf)?;
+                (
+                    crate::wmf::parser::ClipPrecision::from_repr(v)
+                        .unwrap_or(crate::wmf::parser::ClipPrecision::CLIP_DEFAULT_PRECIS),
+                    c,
+                )
+            },
             crate::wmf::parser::FontQuality::parse(buf)?,
             crate::wmf::parser::PitchAndFamily::parse(buf)?,
         );
@@ -239,5 +250,43 @@ impl Font {
             },
             consumed_bytes,
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 실문서 WMF 폰트 레코드의 관용 3종 (#4063): ① ClipPrecision 은 스펙부터
+    /// 조합 가능한 플래그 바이트라 0x50(CLIP_LH_ANGLES|CLIP_DFA_DISABLE) 같은
+    /// 조합이 오고, ② quality 는 GDI 실존 값 0x06(CLEARTYPE_NATURAL), ③ facename
+    /// 은 charset 표기와 어긋난 바이트가 온다. 셋 중 하나라도 파싱을 죽이면
+    /// 그림 전체가 변환 불가로 번진다.
+    #[test]
+    fn real_world_font_hint_bytes_do_not_fail_the_whole_parse() {
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(&[0u8; 10]); // height~weight i16 ×5
+        bytes.extend_from_slice(&[0, 0, 0]); // italic/underline/strike_out
+        bytes.push(0x81); // charset = HANGUL_CHARSET
+        bytes.push(0x00); // out_precision = OUT_DEFAULT_PRECIS
+        bytes.push(0x50); // clip_precision = CLIP_LH_ANGLES|CLIP_DFA_DISABLE (조합)
+        bytes.push(0x06); // quality = CLEARTYPE_NATURAL_QUALITY
+        bytes.push(0x00); // pitch_and_family
+        let mut facename = [0u8; 32];
+        facename[..2].copy_from_slice(&[0xFF, 0xFF]); // CP949 로 디코드 불가한 바이트
+        bytes.extend_from_slice(&facename);
+
+        let mut input = bytes.as_slice();
+        let (font, _) =
+            Font::parse(&mut input).expect("렌더 힌트 바이트가 폰트 파싱을 실패시키면 안 된다");
+        assert_eq!(
+            font.clip_precision,
+            crate::wmf::parser::ClipPrecision::CLIP_DEFAULT_PRECIS,
+            "미지의 조합 플래그는 DEFAULT 로 관용한다"
+        );
+        assert_eq!(
+            font.quality,
+            crate::wmf::parser::FontQuality::CLEARTYPE_NATURAL_QUALITY
+        );
     }
 }

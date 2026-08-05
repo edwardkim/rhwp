@@ -99,7 +99,7 @@ impl_from_le_bytes! {(i8, 1), (i16, 2), (i32, 4), (u8, 1), (u16, 2), (u32, 4) }
 /// # Returns
 ///
 /// - On success, returns a UTF-8 string.
-/// - On failure to decode, returns a `ParseError`.
+/// - Undecodable bytes are replaced with U+FFFD instead of failing.
 ///
 /// If `SYMBOL_CHARSET` is specified, the function uses the symbol charset table
 /// for conversion. Otherwise, it decodes using the provided encoding and
@@ -116,14 +116,11 @@ fn bytes_into_utf8(
             .replace('\0', ""))
     } else {
         let encoding: &'static encoding_rs::Encoding = charset.into();
-        let (cow, _, had_errors) = encoding.decode(bytes);
-
-        if had_errors {
-            return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
-                cause: "Failed to decode string with specified charset".to_string(),
-            });
-        }
-
+        // charset 표기와 실제 바이트가 어긋난 문자열(대개 폰트 이름)은 실문서에
+        // 흔하다 (#4063). 여기서 실패시키면 그림 전체가 변환 불가로 번지므로
+        // U+FFFD 대치를 수용한다 — 폰트 이름은 매칭 실패 시 폴백 폰트로 흘러갈
+        // 뿐 도형·좌표 해석에는 영향이 없다.
+        let (cow, _, _) = encoding.decode(bytes);
         Ok(cow.replace('\0', ""))
     }
 }
