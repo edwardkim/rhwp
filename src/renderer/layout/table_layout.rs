@@ -8576,45 +8576,17 @@ impl LayoutEngine {
         !para.text.trim().is_empty() || !para.controls.is_empty()
     }
 
-    fn mixed_nested_flow_extra_from_cut(
-        &self,
-        cell: &crate::model::table::Cell,
-        table: &crate::model::table::Table,
-        styles: &ResolvedStyleSet,
-        start_unit: usize,
-        end_unit: usize,
-    ) -> f64 {
-        let extra =
-            self.mixed_nested_flow_extra_from_cut_fast(cell, table, styles, start_unit, end_unit);
-        // [#2424 검증] RHWP_2424_SHADOW=1 이면 fast/reference 구현을 호출 단위로
-        // 비트 대조한다. corpus 게이트 통과 후 reference 구현과 함께 제거한다.
-        #[cfg(not(target_arch = "wasm32"))]
-        if std::env::var("RHWP_2424_SHADOW").is_ok_and(|value| !value.is_empty() && value != "0") {
-            let reference = self.mixed_nested_flow_extra_from_cut_reference(
-                cell, table, styles, start_unit, end_unit,
-            );
-            assert!(
-                extra.to_bits() == reference.to_bits(),
-                "MIXED_NESTED_DIVERGENCE r={} c={} lo={} hi={} fast={:?} ref={:?}",
-                cell.row,
-                cell.col,
-                start_unit,
-                end_unit,
-                extra,
-                reference,
-            );
-        }
-        extra
-    }
-
-    /// [#2424] `mixed_nested_flow_extra_from_cut_reference` 의 O(P×U)→O(U) 재작성.
+    /// [Task #1809] 종전 is_hwpx_source 조기 0 반환 제거 — 컷 이월 조각의 flow
+    /// extra 는 소스 무관 기하다. 한글 편집기 대조(admrul_0072 서명 셀: 텍스트→
+    /// 하단 경계 한글 25.5pt = extra 적용 25.9pt, 미적용 13.9pt)로 적용이 정답.
     ///
+    /// [#4129] per-para O(P×U) 재스캔을 units 1-pass run-walk 로 재작성 (O(U)).
     /// mixed 유닛은 `cell_units_uncached` 의 단일 문단 루프(ascending `pi`)에서만
     /// 생성되므로 `para_idx` 가 유닛 순서상 단조 비감소 — 문단별 mixed run 이
-    /// 연속 구간이다. run 단위로 reference 의 per-para 판정을 그대로 수행해
-    /// 비트 동일한 결과를 낸다 (단조성은 debug_assert 와 RHWP_2424_SHADOW A/B 로
-    /// 이중 검증). 거대 셀 115-fragment 문서에서 paginate 16.7s 의 주범이었다.
-    fn mixed_nested_flow_extra_from_cut_fast(
+    /// 연속 구간이다 (단조성은 아래 debug_assert 가 지킨다). 종전 구현과의 비트
+    /// 동일성은 corpus 355개 전수 RHWP_2424_SHADOW A/B 대조로 검증했고, 게이트와
+    /// reference 구현은 검증 완료 후 같은 PR 체인의 후속 레이어에서 제거했다.
+    fn mixed_nested_flow_extra_from_cut(
         &self,
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
@@ -8629,8 +8601,8 @@ impl LayoutEngine {
 
         let mut u = 0;
         while u < units.len() {
-            // reference 의 outer 루프는 0..paragraphs.len() 이라 범위 밖 para_idx
-            // 유닛은 방문 자체가 없다 — 동일하게 무시한다.
+            // 종전 per-para 루프는 0..paragraphs.len() 이라 범위 밖 para_idx
+            // 유닛은 방문 자체가 없었다 — 동일하게 무시한다.
             if !units[u].mixed_nested_fragment || units[u].para_idx >= cell.paragraphs.len() {
                 u += 1;
                 continue;
@@ -8663,63 +8635,6 @@ impl LayoutEngine {
                 units[idx].para_idx,
             );
             u = idx;
-
-            if total <= 0.5 || offset <= 0.5 {
-                continue;
-            }
-            while visible_units.last().is_some_and(|(_, trailing)| *trailing) {
-                visible_units.pop();
-            }
-            let flow_visible: f64 = visible_units.iter().map(|(height, _)| *height).sum();
-            if flow_visible <= 0.5 {
-                continue;
-            }
-            let first_visible_content_height = visible_units
-                .iter()
-                .find_map(|(height, trailing)| (!*trailing).then_some(*height))
-                .unwrap_or(0.0);
-            let offset_within_start = (offset - first_visible_content_height).max(0.0);
-            if offset_within_start > 0.5 {
-                extra += first_visible_content_height;
-            }
-        }
-
-        extra
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    fn mixed_nested_flow_extra_from_cut_reference(
-        &self,
-        cell: &crate::model::table::Cell,
-        table: &crate::model::table::Table,
-        styles: &ResolvedStyleSet,
-        start_unit: usize,
-        end_unit: usize,
-    ) -> f64 {
-        // [Task #1809] 종전 is_hwpx_source 조기 0 반환 제거 — 컷 이월 조각의 flow
-        // extra 는 소스 무관 기하다. 한글 편집기 대조(admrul_0072 서명 셀: 텍스트→
-        // 하단 경계 한글 25.5pt = extra 적용 25.9pt, 미적용 13.9pt)로 적용이 정답.
-        let units = self.cell_units(cell, table, styles);
-        let lo = start_unit.min(units.len());
-        let hi = end_unit.min(units.len()).max(lo);
-        let mut extra = 0.0;
-
-        for para_idx in 0..cell.paragraphs.len() {
-            let mut offset = 0.0;
-            let mut total = 0.0;
-            let mut visible_units: Vec<(f64, bool)> = Vec::new();
-            for (idx, unit) in units.iter().enumerate() {
-                if unit.para_idx != para_idx || !unit.mixed_nested_fragment {
-                    continue;
-                }
-                total += unit.height;
-                if idx < lo {
-                    offset += unit.height;
-                }
-                if idx >= lo && idx < hi {
-                    visible_units.push((unit.height, unit.mixed_nested_trailing));
-                }
-            }
 
             if total <= 0.5 || offset <= 0.5 {
                 continue;
