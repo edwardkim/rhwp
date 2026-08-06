@@ -1588,8 +1588,69 @@ fn cmd_gated(
     })
 }
 
+/// [#3884 G4] edit·inspect 하위 명령의 자기서술 등재 — 이름 + 요약 한 줄.
+///
+/// 부모 항목의 summary 산문에만 있던 하위 명령을 데이터로 낸다. `capabilities` 만
+/// 읽는 에이전트가 `--search redact` 로 edit 하위를 찾게 하는 것이 목적이다
+/// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
+/// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
+/// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
+const EDIT_SUBCOMMANDS: [(&str, &str); 6] = [
+    (
+        "fill-fields",
+        "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
+    ),
+    (
+        "replace-text",
+        "본문 일괄 치환 — --find/--replace, --occurrence 로 k번째만",
+    ),
+    ("set-cell", "표 셀 텍스트 기록 — --table/--row/--col/--text"),
+    (
+        "insert-image",
+        "도장·서명 그림 삽입 — --image/--page/--x/--y (HWPUNIT)",
+    ),
+    (
+        "redact",
+        "개인정보 마스킹 — --kind 선택, findings 봉투, --no-raw",
+    ),
+    ("sanitize", "메타데이터 제거 — removed 봉투, --in-place"),
+];
+
+const INSPECT_SUBCOMMANDS: [(&str, &str); 3] = [
+    (
+        "hidden-text",
+        "은닉 텍스트 탐지 — --threshold-pt 임계·--include-offpage 쪽 밖",
+    ),
+    (
+        "injection",
+        "프롬프트 주입 신호 신고 — 문서는 고치지 않고 표시만 한다",
+    ),
+    (
+        "unicode",
+        "유니코드 기만 판정 — confusable·bidi·비가시 문자, --kind 필터",
+    ),
+];
+
+/// 하위 명령 배열을 해당 부모 항목에 단다. 항목 정의 자리(cmd_json 호출)를 건드리지
+/// 않는 후처리인 이유: 저 vec 은 거의 모든 표면 PR 이 지나는 자리라, 삽입 지점을
+/// 밖으로 빼야 병렬 PR 과의 충돌면이 줄어든다.
+fn attach_subcommands(commands: &mut [serde_json::Value]) {
+    for entry in commands.iter_mut() {
+        let subs: &[(&str, &str)] = match entry["name"].as_str() {
+            Some("edit") => &EDIT_SUBCOMMANDS,
+            Some("inspect") => &INSPECT_SUBCOMMANDS,
+            _ => continue,
+        };
+        let list: Vec<serde_json::Value> = subs
+            .iter()
+            .map(|(name, summary)| serde_json::json!({ "name": name, "summary": summary }))
+            .collect();
+        entry["subcommands"] = serde_json::json!(list);
+    }
+}
+
 fn capabilities_command_entries() -> Vec<serde_json::Value> {
-    vec![
+    let mut commands = vec![
         // ── 기계 계약(--json) 명령 ──
         cmd_json(
             "info",
@@ -2317,7 +2378,9 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd("test-field", "internal", "누름틀 왕복 테스트"),
         cmd("gen-table", "internal", "표 샘플 생성"),
         cmd("gen-pua", "internal", "PUA 샘플 생성"),
-    ]
+    ];
+    attach_subcommands(&mut commands);
+    commands
 }
 
 /// [#3694] 명령 이름 목록 (did-you-mean 후보).
@@ -2378,7 +2441,26 @@ fn show_capabilities_search(query: &str, json_mode: bool) -> i32 {
         .filter(|c| {
             let name = c["name"].as_str().unwrap_or_default().to_lowercase();
             let summary = c["summary"].as_str().unwrap_or_default().to_lowercase();
-            let haystack = format!("{name} {summary}");
+            // [#3884 G4] 하위 명령의 이름·요약도 검색 대상이다 — 이것이 없으면
+            // `--search redact` 가 edit 를 못 찾아 R31 발견이 하위 명령 위에서
+            // 절반만 동작한다.
+            let subs = c["subcommands"]
+                .as_array()
+                .map(|arr| {
+                    arr.iter()
+                        .map(|s| {
+                            format!(
+                                "{} {}",
+                                s["name"].as_str().unwrap_or_default(),
+                                s["summary"].as_str().unwrap_or_default()
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                        .join(" ")
+                })
+                .unwrap_or_default()
+                .to_lowercase();
+            let haystack = format!("{name} {summary} {subs}");
             keywords.iter().all(|k| haystack.contains(k.as_str()))
         })
         .collect();
