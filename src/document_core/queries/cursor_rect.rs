@@ -2600,8 +2600,14 @@ impl DocumentCore {
 
         // 표 캡션은 cell_index=65534 센티널로 렌더 트리에도 동일하게 저장됨
 
-        // 테이블이 포함된 본문 문단의 페이지 찾기
-        let pages = self.find_pages_for_paragraph(section_idx, parent_para_idx)?;
+        // [#4128] 대상 셀 위치가 실제로 렌더되는 페이지로 좁힌다 (해석 실패 시 legacy 폴백 내장)
+        let pages = self.find_pages_for_cell_position(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            Some((cell_para_idx, char_offset)),
+        )?;
 
         struct CursorHit {
             page_index: u32,
@@ -2733,8 +2739,16 @@ impl DocumentCore {
             }
         }
 
-        // 빈 셀 fallback: 해당 셀의 아무 TextRun을 찾아 위치 반환
-        let first_page = pages[0];
+        // 빈 셀 fallback: 해당 셀의 아무 TextRun을 찾아 위치 반환.
+        // [#4128] fallback 앵커는 legacy 와 동일하게 "표의 첫 페이지" — 좁힌 후보의
+        // 첫 페이지(대상 문단이 실제 렌더되는 페이지)로 바꾸면 TextRun 없는 중첩
+        // host 문단의 캐럿 페이지가 legacy 와 달라진다. 그쪽이 UX 로는 나을 수
+        // 있으나 본 변경은 출력 불변 계약 — 개선은 별도 이슈로 다룬다.
+        let first_page = self
+            .find_pages_for_paragraph(section_idx, parent_para_idx)?
+            .first()
+            .copied()
+            .unwrap_or(pages[0]);
         let tree = self.build_page_tree(first_page)?;
         let first_page_cell_bounds =
             find_table_cell_bounds(&tree.root, parent_para_idx, control_idx, cell_idx);
@@ -2901,9 +2915,9 @@ impl DocumentCore {
             result
         }
 
-        // 해당 문단이 포함된 페이지들에서 검색
+        // [#4128] 셀이 실제로 걸친 페이지에서만 검색 (target=None: 행/블록 겹침 수준)
         let pages = self
-            .find_pages_for_paragraph(section_idx, parent_para_idx)
+            .find_pages_for_cell_position(section_idx, parent_para_idx, control_idx, cell_idx, None)
             .ok()?;
         let mut max_para: Option<usize> = None;
         for &page_num in &pages {
@@ -2975,8 +2989,22 @@ impl DocumentCore {
         let _para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, &path)?;
 
         // 커서 좌표를 렌더 트리에서 찾기 ([#2021] 힌트 페이지 우선 탐색)
+        // [#4128] 바깥 표 셀 기준으로 후보를 좁힌다. depth 1 이면 char_offset 까지,
+        // 중첩 표(depth > 1)면 바깥 셀 행/블록 겹침 수준까지만.
+        let (ctrl0, cell0, cpi0) = path[0];
+        let cell_target = if path.len() == 1 {
+            Some((cpi0, char_offset))
+        } else {
+            None
+        };
         let pages = Self::order_pages_by_hint(
-            self.find_pages_for_paragraph(section_idx, parent_para_idx)?,
+            self.find_pages_for_cell_position(
+                section_idx,
+                parent_para_idx,
+                ctrl0,
+                cell0,
+                cell_target,
+            )?,
             hint_page,
         );
 
@@ -5588,6 +5616,268 @@ mod tests {
                     base, hinted,
                     "#2021 힌트 {hint:?} 좌표 불일치 (cell {cell})"
                 );
+            }
+        }
+    }
+
+    /// [#4128] 공통 픽스처: (core, host_pi, host_ci, cell_idx).
+    /// 거대 분할 표에서 콘텐츠가 페이지에 걸치는(문단 최다) 셀을 대상으로 잡는다.
+    fn issue4128_fixture() -> (crate::document_core::DocumentCore, usize, usize, usize) {
+        let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/issue1949_giant_cell_nested_tables_perf.hwp");
+        let bytes = std::fs::read(&p).expect("read sample");
+        let core = crate::document_core::DocumentCore::from_bytes(&bytes).expect("parse");
+        let doc = core.document();
+        let mut host = None;
+        'outer: for (pi, para) in doc.sections[0].paragraphs.iter().enumerate() {
+            for (ci, c) in para.controls.iter().enumerate() {
+                if matches!(c, crate::model::control::Control::Table(_)) {
+                    host = Some((pi, ci));
+                    break 'outer;
+                }
+            }
+        }
+        let (host_pi, host_ci) = host.expect("표 없음");
+        let crate::model::control::Control::Table(ref table) =
+            doc.sections[0].paragraphs[host_pi].controls[host_ci]
+        else {
+            unreachable!()
+        };
+        // 거대 셀 = 콘텐츠가 페이지에 걸치는 셀. 이 샘플의 텍스트는 중첩 표 안에
+        // 있어 직접 text 길이는 짧다 — 문단 수가 가장 많은 셀이 페이지-스팬 셀이다.
+        let (cell_idx, _) = table
+            .cells
+            .iter()
+            .enumerate()
+            .max_by_key(|(_, c)| c.paragraphs.len())
+            .expect("셀 없음");
+        (core, host_pi, host_ci, cell_idx)
+    }
+
+    /// [#4128] 그리드: 거대 셀의 문단 축(step)을 훑고, 문단마다 offset {0, len/2, len}.
+    fn issue4128_grid(
+        core: &crate::document_core::DocumentCore,
+        host_pi: usize,
+        host_ci: usize,
+        cell_idx: usize,
+    ) -> Vec<(usize, usize)> {
+        let doc = core.document();
+        let crate::model::control::Control::Table(ref table) =
+            doc.sections[0].paragraphs[host_pi].controls[host_ci]
+        else {
+            unreachable!()
+        };
+        let paras = &table.cells[cell_idx].paragraphs;
+        let step = (paras.len() / 60).max(1);
+        let mut grid = Vec::new();
+        let mut cpi = 0usize;
+        while cpi < paras.len() {
+            let len = paras[cpi].text.chars().count();
+            grid.push((cpi, 0));
+            if len > 0 {
+                grid.push((cpi, len / 2));
+                grid.push((cpi, len));
+            }
+            cpi += step;
+        }
+        grid
+    }
+
+    /// [#4128] 셀 위치 페이지 좁히기 — legacy 부분집합이며 항상 ≤2쪽(컷 경계만 2쪽).
+    /// 그리드가 표의 전 구간을 커버하는지도 확인해 특정 페이지 쏠림을 배제한다.
+    #[test]
+    fn issue4128_cell_position_pages_subset_and_small() {
+        let (core, host_pi, host_ci, cell_idx) = issue4128_fixture();
+        let legacy = core.find_pages_for_paragraph(0, host_pi).expect("legacy");
+        assert!(
+            legacy.len() > 10,
+            "샘플 전제: 표가 다수 페이지에 걸침 (실측 {}쪽)",
+            legacy.len()
+        );
+
+        let grid = issue4128_grid(&core, host_pi, host_ci, cell_idx);
+        assert!(
+            grid.len() > 30,
+            "그리드 {}점 — 샘플 전제 확인 필요",
+            grid.len()
+        );
+        let mut covered = std::collections::BTreeSet::new();
+        for &(cpi, off) in &grid {
+            let narrowed = core
+                .find_pages_for_cell_position(0, host_pi, host_ci, cell_idx, Some((cpi, off)))
+                .expect("narrowed");
+            assert!(!narrowed.is_empty(), "cpi={cpi} off={off}: 빈 결과");
+            assert!(
+                narrowed.len() <= 2,
+                "cpi={cpi} off={off}: {}쪽 — 좁히기 실패",
+                narrowed.len()
+            );
+            assert!(
+                narrowed.iter().all(|p| legacy.contains(p)),
+                "cpi={cpi} off={off}: legacy 부분집합 위반 {narrowed:?}"
+            );
+            covered.extend(narrowed.iter().copied());
+        }
+        eprintln!(
+            "#4128: 그리드 {}점 → 커버 {}쪽 / legacy {}쪽",
+            grid.len(),
+            covered.len(),
+            legacy.len()
+        );
+        assert!(
+            covered.len() * 2 > legacy.len(),
+            "그리드가 {}쪽만 커버 (legacy {}쪽) — 특정 페이지로 쏠림",
+            covered.len(),
+            legacy.len()
+        );
+
+        // target=None(셀 전체)은 셀이 걸친 전 페이지 — 비어 있으면 안 된다.
+        let whole = core
+            .find_pages_for_cell_position(0, host_pi, host_ci, cell_idx, None)
+            .expect("whole-cell");
+        assert!(!whole.is_empty());
+        assert!(whole.iter().all(|p| legacy.contains(p)));
+    }
+
+    /// [#4128] 콜드 셀 캐럿 질의가 page tree 를 최대 2장만 빌드하는지 —
+    /// 이슈의 수용 기준("콜드 호출당 신규 빌드 ≤ 1, 컷 경계 2")을 캐시 슬롯
+    /// 계수로 판정한다.
+    #[test]
+    fn issue4128_cold_cell_rect_builds_at_most_two_page_trees() {
+        let (core, host_pi, host_ci, cell_idx) = issue4128_fixture();
+        let n_paras = {
+            let doc = core.document();
+            let crate::model::control::Control::Table(ref t) =
+                doc.sections[0].paragraphs[host_pi].controls[host_ci]
+            else {
+                unreachable!()
+            };
+            t.cells[cell_idx].paragraphs.len()
+        };
+        let built = |c: &crate::document_core::DocumentCore| {
+            c.page_tree_cache
+                .borrow()
+                .iter()
+                .filter(|t| t.is_some())
+                .count()
+        };
+        // 표 앞/중간/끝 — 문단 축으로 페이지 전 구간을 대표. 캐럿 rect 는 TextRun
+        // 이 필요하므로 각 앵커에서 가장 가까운 텍스트 문단을 고른다 (중첩 표 host
+        // 문단의 rect 실패는 legacy 와 동일 — A/C 덤프 diff 가 검증).
+        let pick_text_para = |from: usize| {
+            let doc = core.document();
+            let crate::model::control::Control::Table(ref t) =
+                doc.sections[0].paragraphs[host_pi].controls[host_ci]
+            else {
+                unreachable!()
+            };
+            let paras = &t.cells[cell_idx].paragraphs;
+            (from..paras.len())
+                .find(|&i| !paras[i].text.trim().is_empty() && !paras[i].line_segs.is_empty())
+                .unwrap_or(from)
+        };
+        for anchor in [0, n_paras / 4, n_paras / 2, n_paras * 3 / 4, n_paras - 1] {
+            let cpi = pick_text_para(anchor);
+            let path = format!(
+                r#"[{{"controlIndex":{},"cellIndex":{},"cellParaIndex":{}}}]"#,
+                host_ci, cell_idx, cpi
+            );
+            core.invalidate_page_tree_cache();
+            let r = core.get_cursor_rect_by_path_native(0, host_pi, &path, 0);
+            assert!(r.is_ok(), "cpi={cpi}: {:?}", r.err());
+            let n = built(&core);
+            assert!(n <= 2, "cpi={cpi}: 콜드 page tree {}장 빌드 (기준 ≤2)", n);
+        }
+    }
+
+    /// [#4128 진단] 샘플의 PartialTable 메타데이터 실측 — 컷 모델 확인용. 수동 실행.
+    #[test]
+    #[ignore = "진단 덤프 — 수동 실행"]
+    fn issue4128_dump_partial_table_metadata() {
+        use crate::renderer::pagination::PageItem;
+        let (core, host_pi, host_ci, cell_idx) = issue4128_fixture();
+        let doc = core.document();
+        let crate::model::control::Control::Table(ref table) =
+            doc.sections[0].paragraphs[host_pi].controls[host_ci]
+        else {
+            unreachable!()
+        };
+        eprintln!(
+            "표: {}행×{}열, page_break={:?}, cells={}",
+            table.row_count,
+            table.col_count,
+            table.page_break,
+            table.cells.len()
+        );
+        for (i, c) in table.cells.iter().enumerate() {
+            eprintln!(
+                "  cell[{i}]: row={} col={} row_span={} col_span={} paras={} text_len={}",
+                c.row,
+                c.col,
+                c.row_span,
+                c.col_span,
+                c.paragraphs.len(),
+                c.paragraphs.iter().map(|p| p.text.len()).sum::<usize>()
+            );
+        }
+        let giant = &table.cells[cell_idx];
+        for cpi in [0usize, 1, 2, 626, 1253, 2506] {
+            if let Some(p) = giant.paragraphs.get(cpi) {
+                eprintln!(
+                    "  para[{cpi}]: text_len={} segs={} controls={}",
+                    p.text.chars().count(),
+                    p.line_segs.len(),
+                    p.controls.len()
+                );
+            }
+        }
+        let units = core
+            .layout_engine
+            .debug_cell_units(giant, table, &core.styles);
+        eprintln!("units 총 {}개; 처음 14개:", units.len());
+        for (i, u) in units.iter().take(14).enumerate() {
+            eprintln!(
+                "  unit[{i}]: para={} vis=[{},{}) spacer={} nested_row={:?}",
+                u.0, u.1, u.2, u.3, u.4
+            );
+        }
+        for (pi, page) in core.pagination[0].pages.iter().enumerate() {
+            for col in &page.column_contents {
+                for item in &col.items {
+                    if let PageItem::PartialTable {
+                        para_index,
+                        control_index,
+                        start_row,
+                        end_row,
+                        is_continuation,
+                        start_cut,
+                        end_cut,
+                        is_block_split,
+                    } = item
+                    {
+                        if *para_index == host_pi && *control_index == host_ci {
+                            eprintln!(
+                                "p{pi}: rows[{start_row},{end_row}) cont={is_continuation} block={is_block_split} sc={start_cut:?} ec={end_cut:?}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// [#4128] A/C 차분 덤프 — 패치 전(devel)/후 워크트리에서 같은 명령을 실행해
+    /// 출력 diff 가 0 인지 확인한다 (pageIndex 포함 좌표 완전 동일 검증). 수동 실행:
+    /// cargo test --profile release-test --lib document_core::queries::cursor_rect \
+    ///   -- --ignored issue4128_dump --nocapture
+    #[test]
+    #[ignore = "차분 덤프 — 수동 실행"]
+    fn issue4128_dump_cell_cursor_rects_for_diff() {
+        let (core, host_pi, host_ci, cell_idx) = issue4128_fixture();
+        for (cpi, off) in issue4128_grid(&core, host_pi, host_ci, cell_idx) {
+            match core.get_cursor_rect_in_cell_native(0, host_pi, host_ci, cell_idx, cpi, off) {
+                Ok(json) => println!("DUMP {cpi} {off} {json}"),
+                Err(e) => println!("DUMP {cpi} {off} ERR {e}"),
             }
         }
     }

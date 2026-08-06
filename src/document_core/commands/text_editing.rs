@@ -4417,6 +4417,149 @@ impl DocumentCore {
             section_idx
         )))
     }
+
+    /// [#4128] 셀 내부 위치가 실제로 렌더되는 페이지만 반환한다.
+    ///
+    /// `find_pages_for_paragraph` 는 `para_index` 만 매칭해 표가 걸친 모든 페이지를
+    /// 돌려주지만, 본 함수는 PartialTable 의 행 범위·유닛 컷(pagination 메타데이터)을
+    /// `cell_units` 와 대조해 대상 위치가 있는 페이지(보통 1개, 컷 경계에서 2개)로
+    /// 좁힌다. render tree 는 짓지 않는다.
+    ///
+    /// `target`: `(cell_para_idx, char_offset)` — chars 기준. `None` 은 셀 전체
+    /// (행/블록 겹침) 질의. 셀 해석 실패(캡션 센티널·글상자 등)나 좁힌 결과가 비면
+    /// legacy `find_pages_for_paragraph` 로 폴백한다 — 후보가 넓어질 뿐 정확성은
+    /// 불변이다.
+    pub(crate) fn find_pages_for_cell_position(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        target: Option<(usize, usize)>,
+    ) -> Result<Vec<u32>, HwpError> {
+        use crate::model::control::Control;
+        use crate::renderer::pagination::PageItem;
+
+        let resolved = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|s| s.paragraphs.get(parent_para_idx))
+            .and_then(|p| p.controls.get(control_idx))
+            .and_then(|c| match c {
+                Control::Table(t) => t.cells.get(cell_idx).map(|cell| (t, cell)),
+                _ => None,
+            });
+        let Some((table, cell)) = resolved else {
+            return self.find_pages_for_paragraph(section_idx, parent_para_idx);
+        };
+
+        // char offset(chars) → 줄 인덱스. `LineSeg.text_start` 는 UTF-16 code unit
+        // 기준이므로 변환 후 마지막 `text_start <= off16` 줄을 취한다. line_segs 가
+        // 없는 문단(중첩 표 host·빈 문단)은 줄 0 = 문단 첫 유닛으로 매핑한다 —
+        // 그런 문단의 유닛 서수는 `cell_units` 의 atom 유닛이 권위라 줄 매핑이
+        // 필요 없다 (행 수준으로 강등하면 거대 셀에서 전 페이지가 후보로 남는다).
+        let line_target: Option<(usize, usize, bool)> = target.and_then(|(cpi, off)| {
+            let para = cell.paragraphs.get(cpi)?;
+            if para.line_segs.is_empty() {
+                return Some((cpi, 0, true));
+            }
+            let off16: usize = para.text.chars().take(off).map(char::len_utf16).sum();
+            let li = para
+                .line_segs
+                .partition_point(|s| (s.text_start as usize) <= off16)
+                .saturating_sub(1);
+            let at_line_start = para
+                .line_segs
+                .get(li)
+                .is_some_and(|s| s.text_start as usize == off16);
+            Some((cpi, li, at_line_start))
+        });
+
+        if section_idx >= self.pagination.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 인덱스 {} 범위 초과 (총 {}개)",
+                section_idx,
+                self.pagination.len()
+            )));
+        }
+        let mut global_offset = 0u32;
+        for (sec_i, pr) in self.pagination.iter().enumerate() {
+            if sec_i != section_idx {
+                global_offset += pr.pages.len() as u32;
+                continue;
+            }
+            let mut result = Vec::new();
+            for (local_i, page) in pr.pages.iter().enumerate() {
+                let global_page = global_offset + local_i as u32;
+                let mut contains = false;
+                'cols: for col in &page.column_contents {
+                    for item in &col.items {
+                        match item {
+                            PageItem::Table {
+                                para_index,
+                                control_index,
+                            } if *para_index == parent_para_idx
+                                && *control_index == control_idx =>
+                            {
+                                contains = true;
+                            }
+                            PageItem::PartialTable {
+                                para_index,
+                                control_index,
+                                start_row,
+                                end_row,
+                                start_cut,
+                                end_cut,
+                                is_block_split,
+                                ..
+                            } if *para_index == parent_para_idx
+                                && *control_index == control_idx =>
+                            {
+                                contains |= self
+                                    .layout_engine
+                                    .partial_table_page_contains_cell_position(
+                                        table,
+                                        cell,
+                                        *start_row,
+                                        *end_row,
+                                        start_cut,
+                                        end_cut,
+                                        *is_block_split,
+                                        line_target,
+                                        &self.styles,
+                                    );
+                            }
+                            _ => {}
+                        }
+                        if contains {
+                            break 'cols;
+                        }
+                    }
+                    // 어울림 표 host 문단은 행/컷 부기가 없다 — legacy 와 동일 포함
+                    for wp in &col.wrap_around_paras {
+                        if wp.table_para_index == parent_para_idx {
+                            contains = true;
+                            break 'cols;
+                        }
+                    }
+                }
+                if contains {
+                    result.push(global_page);
+                }
+            }
+            return if result.is_empty() {
+                // 메타데이터 해석이 어긋난 경우의 안전망 — legacy 전체 후보로 회귀
+                self.find_pages_for_paragraph(section_idx, parent_para_idx)
+            } else {
+                Ok(result)
+            };
+        }
+        Err(HwpError::RenderError(format!(
+            "구역 인덱스 {} 범위 초과",
+            section_idx
+        )))
+    }
 }
 
 fn find_text_y(node: &crate::renderer::render_tree::RenderNode, text: &str) -> Option<f64> {

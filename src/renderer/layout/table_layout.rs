@@ -5621,6 +5621,54 @@ impl LayoutEngine {
         units
     }
 
+    /// [#4128] `(cell_para_idx, target_line)` 이 속한 `cell_units` 서수.
+    /// 텍스트 줄 유닛 `(li, li+1)` / atom 유닛 `(0, line_count.max(1))` 의
+    /// `vis_start..vis_end` 계약을 그대로 조회한다. 콘텐츠(비 spacer) 유닛을
+    /// 우선하되, 빈 문단처럼 spacer 유닛만 있는 문단은 spacer 서수로 폴백한다.
+    /// 없으면 None.
+    pub(super) fn cell_unit_ordinal_for(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        cell_para_idx: usize,
+        target_line: usize,
+    ) -> Option<usize> {
+        let units = self.cell_units(cell, table, styles);
+        let hit = |u: &CellUnit| {
+            u.para_idx == cell_para_idx
+                && u.vis_start <= target_line
+                && target_line < u.vis_end.max(u.vis_start + 1)
+        };
+        units
+            .iter()
+            .position(|u| !u.empty_spacer && hit(u))
+            .or_else(|| units.iter().position(|u| hit(u)))
+    }
+
+    /// [#4128 테스트 전용] cell_units 요약: (para_idx, vis_start, vis_end,
+    /// empty_spacer, nested_row).
+    #[cfg(test)]
+    pub(crate) fn debug_cell_units(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<(usize, usize, usize, bool, Option<usize>)> {
+        self.cell_units(cell, table, styles)
+            .iter()
+            .map(|u| {
+                (
+                    u.para_idx,
+                    u.vis_start,
+                    u.vis_end,
+                    u.empty_spacer,
+                    u.nested_row,
+                )
+            })
+            .collect()
+    }
+
     fn cell_units_uncached(
         &self,
         cell: &crate::model::table::Cell,
