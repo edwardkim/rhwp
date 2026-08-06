@@ -778,6 +778,9 @@ struct TypesetState {
     /// 구역 인덱스
     section_index: usize,
     /// 각주 높이 누적
+    /// [#4090] Square 어울림 개체가 만든 세로 배제 밴드의 바닥(쪽 기준 px).
+    /// 밴드를 벗어나거나 쪽이 끝날 때 흐름을 이 값으로 끌어올린다. 0.0 = 없음.
+    square_band_bottom: f64,
     current_footnote_height: f64,
     /// [Task #1658 v3] 페이지 하단 고정 표(vert=쪽·valign=Bottom, 결재/서명 틀)의
     /// 하단 배타 영역 높이 — 겹침 허용이므로 합이 아닌 max(union). 본문 텍스트는
@@ -1452,6 +1455,7 @@ fn maybe_register_square_picture_wrap_anchor(
         st.wrap_around_cs = -1;
         st.wrap_around_sw = -1;
         st.wrap_around_any_seg = false;
+        st.close_square_band();
     }
 }
 
@@ -2884,6 +2888,7 @@ impl TypesetState {
             col_count,
             layout,
             section_index,
+            square_band_bottom: 0.0,
             current_footnote_height: 0.0,
             current_bottom_fixed_exclusion: 0.0,
             bottom_fixed_consumed_flow: 0.0,
@@ -3209,8 +3214,23 @@ impl TypesetState {
         }
     }
 
+    /// [#4090] Square 어울림 밴드 종료 — 흐름을 밴드 바닥으로 스냅한다.
+    ///
+    /// 한글은 어울림 개체 옆으로 글을 흘리되 **개체 바닥까지만** 흘리고 그 아래는
+    /// 전폭으로 복귀한다. 밴드 안에서는 흐름이 글줄만큼만 전진하므로, 밴드를 벗어날
+    /// 때(또는 쪽이 끝날 때) 개체 높이를 반영해 끌어올려야 후속 내용이 개체 안으로
+    /// 들어가지 않는다.
+    fn close_square_band(&mut self) {
+        if self.square_band_bottom > 0.0 {
+            self.current_height = self.current_height.max(self.square_band_bottom);
+            self.square_band_bottom = 0.0;
+        }
+    }
+
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
     fn flush_column(&mut self) {
+        // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.
+        self.close_square_band();
         if self.current_items.is_empty()
             && self.current_column_wrap_around_paras.is_empty()
             && self.page_start_square_pictures.is_empty()
@@ -4795,6 +4815,7 @@ impl TypesetEngine {
                 st.wrap_around_cs = -1;
                 st.wrap_around_sw = -1;
                 st.wrap_around_any_seg = false;
+                st.close_square_band();
                 // [Task #741 Stage 4] 매칭 실패 paragraph 의 vpos=0 hint (page break 의도)
                 // 발견 시 advance_column_or_new_page. wrap_around active 종료 후 추가 가드.
                 // hwp3-sample10-hwp5.hwp paragraph 26 ("● 제목차례 ●") case —
@@ -5102,6 +5123,7 @@ impl TypesetEngine {
                 st.wrap_around_cs = -1;
                 st.wrap_around_sw = -1;
                 st.wrap_around_any_seg = false;
+                st.close_square_band();
             }
             // [#1955] 명시적 쪽나누기부터는 글뒤로 표 후행 흡수도 해제 (사용자 의도 새 쪽).
             if force_page_break || para_style_break {
@@ -5291,6 +5313,7 @@ impl TypesetEngine {
                             st.wrap_around_cs = -1;
                             st.wrap_around_sw = -1;
                             st.wrap_around_any_seg = false;
+                            st.close_square_band();
                         }
                         if st.wrap_around_cs < 0 {
                             st.advance_column_or_new_page();
@@ -16497,7 +16520,30 @@ impl TypesetEngine {
             // 순효과가 반전되고, v_off 를 저장이 소비하지 않는 하위 형상
             // (pi114: +20.5→+44.1 악화) 존재. 82802 56→57(hc=51) 악화 실측.
             // vpos-스냅/NO_LS 축과의 동시 정합 없이는 적용 불가.
-            st.current_height += pre_height + table_total_height;
+            //
+            // [#4090] 단독 Square 어울림 표는 한글이 옆으로 글을 흘린다. 저장 사다리의 host
+            // 줄높이가 표 높이의 1/4 미만이면 한글은 표 높이를 흐름에 예약하지 않은 것이다.
+            // 그때는 흐름을 host 줄만큼만 전진시키고 표 높이는 **세로 배제 밴드**로 잡는다 —
+            // 밴드를 벗어나거나 쪽이 끝날 때 `close_square_band` 가 흐름을 밴드 바닥으로
+            // 끌어올린다. 전진량만 줄이면(밴드 없이) 텍스트가 표를 지나쳐 계속 옆으로 흘러
+            // 과소가 된다(실측: 156492236 24쪽 → 14쪽, 정답 17).
+            let stored_host_line_px = para
+                .line_segs
+                .iter()
+                .find(|seg| !is_synthetic_line_seg(seg))
+                .map(|seg| crate::renderer::hwpunit_to_px(seg.line_height as i32, self.dpi));
+            let hangul_flowed_beside_table = is_wrap_around_table
+                && table_total_height > 1.0
+                && stored_host_line_px.is_some_and(|lh| lh < table_total_height * 0.25);
+            if hangul_flowed_beside_table {
+                let band_top = st.current_height + pre_height;
+                st.current_height = band_top + stored_host_line_px.unwrap_or(0.0);
+                st.square_band_bottom = st
+                    .square_band_bottom
+                    .max(band_top + table_total_height);
+            } else {
+                st.current_height += pre_height + table_total_height;
+            }
         }
         // [#2243 진단] TAC 표 라인 회계 분해 — 동작 불변.
         if std::env::var("RHWP_DIAG_TAC").is_ok() {
