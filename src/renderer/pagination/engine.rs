@@ -764,6 +764,8 @@ impl Paginator {
                             para_index: para_idx,
                             table_para_index: wrap_around_table_para,
                             has_text: !is_empty_para,
+                            start_line: 0,
+                            end_line: usize::MAX,
                         });
                     continue;
                 } else {

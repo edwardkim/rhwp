@@ -1101,6 +1101,47 @@ pub(crate) fn text_anchor_square_table_strip(
     (strip_cs > 0 && strip_sw > 0).then_some((strip_cs, strip_sw))
 }
 
+/// 빈 호스트 문단의 우측 Square 표가 남긴 좌측 본문 띠를 복원한다.
+///
+/// 한글은 표를 실제 수평 오프셋에 두면서 호스트 문단에는 전폭 LINE_SEG만 저장할 수
+/// 있다. 이 경우 다음 문단의 `cs=0, sw=horizontal_offset`가 표 왼쪽 띠를 직접
+/// 가리킨다. 호스트에 가시 텍스트가 있으면 기존 `text_anchor_square_table_strip`이
+/// 담당하므로, 이 함수는 빈 호스트와 우측으로 밀린 표에만 한정한다.
+pub(crate) fn empty_host_square_table_left_strip(
+    para: &crate::model::paragraph::Paragraph,
+    column_width_hu: i32,
+) -> Option<(i32, i32)> {
+    let first = para.line_segs.first()?;
+    if first.column_start != 0
+        || (first.segment_width as i32 - column_width_hu).abs() >= 3000
+        || para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+    {
+        return None;
+    }
+
+    let left_width = para.controls.iter().find_map(|control| match control {
+        crate::model::control::Control::Table(table)
+            if !table.common.treat_as_char
+                && matches!(
+                    table.common.text_wrap,
+                    crate::model::shape::TextWrap::Square
+                )
+                && matches!(
+                    table.common.horz_align,
+                    crate::model::shape::HorzAlign::Left
+                ) =>
+        {
+            Some(table.common.horizontal_offset as i32)
+        }
+        _ => None,
+    })?;
+
+    (left_width > 0 && left_width < column_width_hu).then_some((0, left_width))
+}
+
 /// [#3314] 요청 face 의 굵기/폭 접미사를 벗긴 base family.
 ///
 /// `"Noto Serif KR Black"` → `Some("Noto Serif KR")`, 접미사가 없으면 `None`.

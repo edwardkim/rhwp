@@ -9585,10 +9585,14 @@ impl LayoutEngine {
             if wp.has_text {
                 // 텍스트 문단: composed paragraph를 사용하여 어울림 영역에 렌더링
                 let comp = composed.get(wp.para_index);
-                // 어울림 문단의 전체 줄 렌더링.
-                // 표 어울림: 각 WrapAroundPara가 별도 1-줄 문단이므로 all_lines=1.
-                // 그림 어울림: 하나의 WrapAroundPara에 여러 줄이 포함될 수 있어 전체 렌더링.
-                let end_line = comp.map(|c| c.lines.len()).unwrap_or(1);
+                // 표 옆 띠에 기록된 줄 구간만 렌더링한다. 일반 어울림 문단의
+                // `end_line=usize::MAX`는 전체 줄이라는 기존 의미를 유지한다.
+                let line_count = comp.map(|c| c.lines.len()).unwrap_or(1);
+                let start_line = wp.start_line.min(line_count);
+                let end_line = wp.end_line.min(line_count).max(start_line);
+                if start_line == end_line {
+                    continue;
+                }
                 self.layout_partial_paragraph(
                     tree,
                     col_node,
@@ -9597,7 +9601,7 @@ impl LayoutEngine {
                     styles,
                     &strip_area,
                     para_y,
-                    0,
+                    start_line,
                     end_line,
                     section_index,
                     wp.para_index,

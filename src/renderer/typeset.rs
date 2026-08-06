@@ -781,6 +781,9 @@ struct TypesetState {
     /// [#4090] Square 어울림 개체가 만든 세로 배제 밴드의 바닥(쪽 기준 px).
     /// 밴드를 벗어나거나 쪽이 끝날 때 흐름을 이 값으로 끌어올린다. 0.0 = 없음.
     square_band_bottom: f64,
+    /// Square 배제 밴드의 흐름 기준 상단. 옆 문단의 저장 좌표를 현재 흐름 좌표계로
+    /// 옮겨 밴드 바닥을 확장할 때만 사용한다.
+    square_band_top: Option<f64>,
     current_footnote_height: f64,
     /// [Task #1658 v3] 페이지 하단 고정 표(vert=쪽·valign=Bottom, 결재/서명 틀)의
     /// 하단 배타 영역 높이 — 겹침 허용이므로 합이 아닌 max(union). 본문 텍스트는
@@ -1893,6 +1896,46 @@ fn internal_vpos_page_break_line(
         })
 }
 
+/// 저장 HWPX가 명시적 다음 쪽 표제 바로 앞에 남긴 마지막 한 줄을 분리한다.
+///
+/// 일부 HWPX는 문단의 마지막 줄만 `vpos=0`으로 다음 물리 쪽에 저장하고, 이어지는
+/// 표제 문단에는 명시적 쪽나누기를 둔다. 이 tail을 현재 쪽에 합치면 한컴보다 한 쪽이
+/// 줄어든다. HWP3와 일반 HWP5는 별도 저장 규칙을 가지므로 호출부에서 HWPX stored
+/// layout으로 한정한다.
+fn hwpx_explicit_page_break_tail_line(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    line_count: usize,
+    body_height_px: f64,
+    dpi: f64,
+) -> Option<usize> {
+    if para.controls.is_empty()
+        && para_has_visible_text(para)
+        && line_count >= 2
+        && para.line_segs.len() == line_count
+        && next_para.is_some_and(|next| {
+            matches!(
+                next.column_type,
+                ColumnBreakType::Page | ColumnBreakType::Section
+            )
+        })
+    {
+        let split_line = line_count - 1;
+        let prev = para.line_segs.get(split_line - 1)?;
+        let tail = para.line_segs.get(split_line)?;
+        if !is_synthetic_line_seg(prev)
+            && !is_synthetic_line_seg(tail)
+            && prev.vertical_pos > 0
+            && tail.vertical_pos == 0
+            && hwpunit_to_px(prev.vertical_pos, dpi) >= body_height_px * 0.70
+            && hwpunit_to_px(prev.vertical_pos + prev.line_height, dpi) <= body_height_px + 1.0
+        {
+            return Some(split_line);
+        }
+    }
+    None
+}
+
 /// native HWP5의 두 줄짜리 단일 각주를 물리 페이지 경계에서 연속 fragment로 나눈다.
 ///
 /// 한컴은 본문 `LINE_SEG` reset 앞의 첫 줄은 해당 page의 separator 아래에 두고,
@@ -2889,6 +2932,7 @@ impl TypesetState {
             layout,
             section_index,
             square_band_bottom: 0.0,
+            square_band_top: None,
             current_footnote_height: 0.0,
             current_bottom_fixed_exclusion: 0.0,
             bottom_fixed_consumed_flow: 0.0,
@@ -3224,6 +3268,19 @@ impl TypesetState {
         if self.square_band_bottom > 0.0 {
             self.current_height = self.current_height.max(self.square_band_bottom);
             self.square_band_bottom = 0.0;
+            self.square_band_top = None;
+        }
+    }
+
+    /// Square 표 옆으로 흐른 문단이 표보다 아래까지 이어지면, 그 저장 좌표의 마지막
+    /// 줄까지 배제 밴드를 확장한다. 표 자체만 예약하면 전폭 복귀 뒤의 fit 경로가 그
+    /// 텍스트 높이를 잃어 뒤쪽 본문을 과도하게 같은 쪽에 배치한다.
+    fn extend_square_band_to_source_bottom(&mut self, source_offset_px: f64) {
+        if source_offset_px <= 0.0 {
+            return;
+        }
+        if let Some(top) = self.square_band_top {
+            self.square_band_bottom = self.square_band_bottom.max(top + source_offset_px);
         }
     }
 
@@ -4638,6 +4695,8 @@ impl TypesetEngine {
         para_idx: usize,
         has_table: bool,
         page_def: &PageDef,
+        composed: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
     ) -> bool {
         if st.wrap_around_cs >= 0 && !has_table {
             let para_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
@@ -4797,17 +4856,138 @@ impl TypesetEngine {
                         })
                         .unwrap_or(false);
                     if last_seg_match || is_empty_para {
+                        let source_offset_to_text_bottom = (!is_empty_para)
+                            .then(|| {
+                                let anchor_top = paragraphs
+                                    .get(st.wrap_around_table_para)?
+                                    .line_segs
+                                    .iter()
+                                    .find(|seg| !is_synthetic_line_seg(seg))?
+                                    .vertical_pos;
+                                let text_bottom = para
+                                    .line_segs
+                                    .iter()
+                                    .filter(|seg| !is_synthetic_line_seg(seg))
+                                    .map(|seg| {
+                                        seg.vertical_pos + seg.line_height + seg.line_spacing
+                                    })
+                                    .max()?;
+                                (text_bottom > anchor_top)
+                                    .then(|| hwpunit_to_px(text_bottom - anchor_top, self.dpi))
+                            })
+                            .flatten();
+                        if let Some(source_offset_px) = source_offset_to_text_bottom {
+                            st.extend_square_band_to_source_bottom(source_offset_px);
+                        }
                         // [Task #1745] 다쪽 분할 표는 첫 fragment column 에 소급 기록.
                         st.record_wrap_around_para(crate::renderer::pagination::WrapAroundPara {
                             para_index: para_idx,
                             table_para_index: st.wrap_around_table_para,
                             has_text: !is_empty_para,
+                            start_line: 0,
+                            end_line: usize::MAX,
                         });
                         return true;
+                    }
+
+                    // [#4090] 빈 표 호스트 뒤의 문단은 처음 몇 줄만 표 왼쪽 띠에
+                    // 놓이고 마지막 한 줄은 표 아래 전폭으로 돌아올 수 있다. 이 경우
+                    // 문단 전체를 일반 흐름으로 두면 띠와 전폭 줄을 함께 다시 소비해
+                    // 이후 페이지가 과도하게 늘어난다. 저장 LINE_SEG와 조판 줄이 1:1이고
+                    // 전폭 꼬리가 정확히 한 줄인 안정적인 형상만 분리한다.
+                    let wrap_prefix_len = para
+                        .line_segs
+                        .iter()
+                        .take_while(|seg| {
+                            seg.column_start == st.wrap_around_cs
+                                && seg.segment_width as i32 == st.wrap_around_sw
+                        })
+                        .count();
+                    let suffix_is_full_width = para
+                        .line_segs
+                        .get(wrap_prefix_len)
+                        .map(|seg| {
+                            seg.column_start == 0
+                                && (seg.segment_width as i32 - st.layout.column_width_hu()).abs()
+                                    <= 3_000
+                        })
+                        .unwrap_or(false);
+                    let col_width = st
+                        .layout
+                        .column_areas
+                        .get(st.current_column as usize)
+                        .map(|area| area.width)
+                        .unwrap_or(st.layout.body_area.width);
+                    let formatted = self.format_paragraph(para, composed, styles, Some(col_width));
+                    let can_split_prefix = !is_empty_para
+                        && wrap_prefix_len > 0
+                        && wrap_prefix_len + 1 == para.line_segs.len()
+                        && suffix_is_full_width
+                        && formatted.line_count() == para.line_segs.len();
+                    if can_split_prefix {
+                        let suffix_height = formatted
+                            .line_advances_sum(wrap_prefix_len..formatted.line_count())
+                            + formatted.spacing_after;
+                        if suffix_height <= st.available_height() + 0.5 {
+                            let source_offset_to_prefix_bottom = paragraphs
+                                .get(st.wrap_around_table_para)
+                                .and_then(|anchor| {
+                                    let anchor_top = anchor
+                                        .line_segs
+                                        .iter()
+                                        .find(|seg| !is_synthetic_line_seg(seg))?
+                                        .vertical_pos;
+                                    let prefix_bottom = para
+                                        .line_segs
+                                        .iter()
+                                        .take(wrap_prefix_len)
+                                        .filter(|seg| !is_synthetic_line_seg(seg))
+                                        .map(|seg| {
+                                            seg.vertical_pos + seg.line_height + seg.line_spacing
+                                        })
+                                        .max()?;
+                                    (prefix_bottom > anchor_top).then(|| {
+                                        hwpunit_to_px(prefix_bottom - anchor_top, self.dpi)
+                                    })
+                                });
+                            if let Some(source_offset_px) = source_offset_to_prefix_bottom {
+                                st.extend_square_band_to_source_bottom(source_offset_px);
+                            }
+                            st.record_wrap_around_para(
+                                crate::renderer::pagination::WrapAroundPara {
+                                    para_index: para_idx,
+                                    table_para_index: st.wrap_around_table_para,
+                                    has_text: true,
+                                    start_line: 0,
+                                    end_line: wrap_prefix_len,
+                                },
+                            );
+                            st.wrap_around_cs = -1;
+                            st.wrap_around_sw = -1;
+                            st.wrap_around_any_seg = false;
+                            st.close_square_band();
+                            if !st.current_items.is_empty()
+                                && st.current_height + suffix_height > st.available_height() + 0.5
+                            {
+                                st.advance_column_or_new_page();
+                            }
+                            st.current_items.push(PageItem::PartialParagraph {
+                                para_index: para_idx,
+                                start_line: wrap_prefix_len,
+                                end_line: formatted.line_count(),
+                            });
+                            st.current_height += suffix_height;
+                            st.vpos_ladder_dirty = true;
+                            return true;
+                        }
                     }
                     st.wrap_around_cs = -1;
                     st.wrap_around_sw = -1;
                     st.wrap_around_any_seg = false;
+                    // 이 문단은 첫 줄만 Square 띠에 있고 나머지는 표 아래 전폭으로
+                    // 복귀한다. 일반 fit 전에 띠 바닥을 흐름 하한으로 반영하지 않으면
+                    // 아래 줄이 표와 겹치는 높이를 아직 사용할 수 있다고 오판한다.
+                    st.close_square_band();
                     // fall through → 일반 paragraph 배치
                 }
             } else {
@@ -5673,6 +5853,8 @@ impl TypesetEngine {
                                 para_index: para_idx,
                                 table_para_index: anchor_pi,
                                 has_text: false,
+                                start_line: 0,
+                                end_line: usize::MAX,
                             },
                         );
                         continue;
@@ -5688,7 +5870,14 @@ impl TypesetEngine {
             // 직전에 처리한 Square wrap 표의 (cs, sw) 와 동일한 LINE_SEG 를 가진
             // 후속 paragraph 는 표 옆에 배치되므로 height 소비 없이 wrap_around_paras 에 기록.
             if self.typeset_wrap_around_paragraph(
-                &mut st, para, paragraphs, para_idx, has_table, page_def,
+                &mut st,
+                para,
+                paragraphs,
+                para_idx,
+                has_table,
+                page_def,
+                composed.get(para_idx),
+                styles,
             ) {
                 continue;
             }
@@ -5938,7 +6127,12 @@ impl TypesetEngine {
                         // 띠 (cs, sw) 를 도출해 후속 문단 매칭에 사용 (한글: 후속 문단을
                         // 표 옆 잔여 띠에 배치 — samples/task1745).
                         if let Some((strip_cs, strip_sw)) =
-                            crate::renderer::text_anchor_square_table_strip(para)
+                            crate::renderer::text_anchor_square_table_strip(para).or_else(|| {
+                                crate::renderer::empty_host_square_table_left_strip(
+                                    para,
+                                    st.layout.column_width_hu(),
+                                )
+                            })
                         {
                             st.wrap_around_cs = strip_cs;
                             st.wrap_around_sw = strip_sw;
@@ -13789,6 +13983,17 @@ impl TypesetEngine {
             st.profile.hwp3_native_layout(),
         )
         .or_else(|| {
+            st.profile.hwpx_stored_layout().then(|| {
+                hwpx_explicit_page_break_tail_line(
+                    para,
+                    paragraphs.get(para_idx + 1),
+                    fmt.line_heights.len(),
+                    st.layout.body_area.height,
+                    self.dpi,
+                )
+            })?
+        })
+        .or_else(|| {
             native_hwp5_first_footnote_overlap_break_line(
                 st,
                 para,
@@ -16539,6 +16744,7 @@ impl TypesetEngine {
                 let band_top = st.current_height + pre_height;
                 st.current_height = band_top + stored_host_line_px.unwrap_or(0.0);
                 st.square_band_bottom = st.square_band_bottom.max(band_top + table_total_height);
+                st.square_band_top = Some(band_top);
             } else {
                 st.current_height += pre_height + table_total_height;
             }

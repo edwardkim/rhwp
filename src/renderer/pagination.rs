@@ -435,6 +435,10 @@ pub struct WrapAroundPara {
     pub table_para_index: usize,
     /// 텍스트가 있는 문단인지 (false면 빈 리턴)
     pub has_text: bool,
+    /// 표 옆 띠에서 렌더할 첫 줄(포함).
+    pub start_line: usize,
+    /// 표 옆 띠에서 렌더할 끝 줄(제외). `usize::MAX`는 전체 줄을 뜻한다.
+    pub end_line: usize,
 }
 
 /// [Task #604 R3] anchor 그림/표 ↔ wrap text 문단 매칭 메타데이터.
@@ -796,6 +800,8 @@ impl PaginationResult {
                                 table_para_index: (w.table_para_index as i64 + offset as i64).max(0)
                                     as usize,
                                 has_text: w.has_text,
+                                start_line: w.start_line,
+                                end_line: w.end_line,
                             })
                             .collect(),
                         used_height: cc.used_height,
@@ -886,6 +892,8 @@ impl PaginationResult {
                     para_index: shifted_pi,
                     table_para_index: shifted_tpi,
                     has_text: w.has_text,
+                    start_line: w.start_line,
+                    end_line: w.end_line,
                 });
             }
         }
