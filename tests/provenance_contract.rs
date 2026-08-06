@@ -934,6 +934,22 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        // [#4113] 어떤 표본이든 항상 만족하는 기대(부조리 문자열의 부재)로 호출한다 —
+        // 스윕의 관심은 판정 결과가 아니라 봉투의 표지(expectations[].actual)다.
+        Recipe {
+            command: "verify",
+            doc: Some(main.clone()),
+            args: vec![
+                s("verify"),
+                p(&main),
+                s("--expect-not-contains"),
+                s("존재할리없는-스윕-문자열-4113"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         Recipe {
             command: "render-diff",
             doc: Some(main.clone()),
