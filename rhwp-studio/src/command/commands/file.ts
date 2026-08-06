@@ -59,25 +59,36 @@ import { openRecentEntry } from '@/recent/recent-open';
  * 문서를 로드한다. `file:open` 커맨드와 "최근 문서" 메타-only 항목 재열기가 공유한다.
  */
 async function openFileViaPicker(services: CommandServices): Promise<void> {
-  try {
-    const canReplace = await confirmSaveBeforeReplacingDocument(services);
-    if (!canReplace) return;
+  const canReplace = await confirmSaveBeforeReplacingDocument(services);
+  if (!canReplace) return;
 
-    const windowLike = window as FileSystemWindowLike;
-    const nativeOpenPickerAvailable = canUseOpenFilePicker(windowLike);
-    const handle = await pickOpenFileHandle(windowLike);
-    if (!handle) {
-      // File System Access API picker가 있었다면 null은 사용자 취소(예: Esc)다.
-      // 이때 숨김 input fallback을 다시 열면 파일 선택창이 곧바로 재오픈된다.
-      if (nativeOpenPickerAvailable) return;
-      const fileInput = document.getElementById('file-input') as HTMLInputElement | null;
-      if (fileInput) {
-        fileInput.dataset.skipUnsavedGuard = 'true';
-        fileInput.click();
-      }
-      return;
+  const windowLike = window as FileSystemWindowLike;
+  let nativeOpenPickerAvailable = canUseOpenFilePicker(windowLike);
+  let handle: FileSystemFileHandleLike | null = null;
+  if (nativeOpenPickerAvailable) {
+    try {
+      handle = await pickOpenFileHandle(windowLike);
+    } catch (error) {
+      // 교차 출처 서브프레임 등에서 showOpenFilePicker 자체가 거부되는 경우(SecurityError 등) —
+      // 저장 흐름(tryFileSystemSave)과 동일하게 조용히 숨김 input 폴백으로 전환한다.
+      console.warn('[file:open] File System Access API 실패, 폴백:', error);
+      nativeOpenPickerAvailable = false;
     }
+  }
 
+  if (!handle) {
+    // File System Access API picker가 있었다면 null은 사용자 취소(예: Esc)다.
+    // 이때 숨김 input fallback을 다시 열면 파일 선택창이 곧바로 재오픈된다.
+    if (nativeOpenPickerAvailable) return;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement | null;
+    if (fileInput) {
+      fileInput.dataset.skipUnsavedGuard = 'true';
+      fileInput.click();
+    }
+    return;
+  }
+
+  try {
     const { bytes, name } = await readFileFromHandle(handle);
     services.eventBus.emit('open-document-bytes', {
       bytes,
