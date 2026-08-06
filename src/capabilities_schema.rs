@@ -225,6 +225,18 @@ fn command_def() -> Value {
                 prim("string", "봉투 최상위 필드 이름"),
                 "`--json` 봉투가 싣는 필드 목록. 코드 생성기의 반환 타입 원천이다.",
             ),
+            // [#3884 G4] 하위 명령 자기서술 — 부모 명령(edit·inspect)에만 붙는다.
+            "subcommands": array_of(
+                object(
+                    json!({
+                        "name": prim("string", "하위 명령 이름. `rhwp <부모> <이름>` 으로 호출한다."),
+                        "summary": prim("string", "하위 한 줄 요약 — `--search` 매칭 대상"),
+                    }),
+                    &["name", "summary"],
+                    "하위 명령 하나의 자기서술.",
+                ),
+                "하위 명령 목록. 선언 ↔ 디스패치 대조는 tests/capabilities_subcommands_contract.rs.",
+            ),
             "requiresFeature": prim("string", "이 명령이 요구하는 빌드 feature. 게이트된 명령에만 붙는다."),
             "available": prim("boolean", "현재 바이너리에서 실제로 쓸 수 있는가 (게이트된 명령에만 붙는다)."),
         }),
