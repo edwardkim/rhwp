@@ -21337,6 +21337,81 @@ mod tests {
         assert!(stored_vpos_rewinds(previous_vpos, &current));
     }
 
+    fn hwpx_tail_page_break_candidate(break_type: ColumnBreakType) -> (Paragraph, Paragraph) {
+        let paragraph = Paragraph {
+            text: "앞 줄\n마지막 줄".to_string(),
+            line_segs: vec![
+                LineSeg {
+                    vertical_pos: 6_000,
+                    line_height: 1_000,
+                    ..Default::default()
+                },
+                LineSeg {
+                    vertical_pos: 0,
+                    line_height: 1_000,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+        let next = Paragraph {
+            column_type: break_type,
+            ..Default::default()
+        };
+        (paragraph, next)
+    }
+
+    #[test]
+    fn hwpx_explicit_page_break_tail_splits_only_last_stored_line() {
+        for break_type in [ColumnBreakType::Page, ColumnBreakType::Section] {
+            let (paragraph, next) = hwpx_tail_page_break_candidate(break_type);
+            assert_eq!(
+                hwpx_explicit_page_break_tail_line(&paragraph, Some(&next), 2, 100.0, DEFAULT_DPI,),
+                Some(1),
+                "{break_type:?} 명시 나눔 앞의 vpos=0 tail만 분리해야 한다"
+            );
+        }
+    }
+
+    #[test]
+    fn hwpx_explicit_page_break_tail_requires_all_stored_layout_evidence() {
+        let rejects = |paragraph: Paragraph, next: Paragraph, line_count| {
+            assert_eq!(
+                hwpx_explicit_page_break_tail_line(
+                    &paragraph,
+                    Some(&next),
+                    line_count,
+                    100.0,
+                    DEFAULT_DPI,
+                ),
+                None,
+                "불완전한 저장 증거는 일반 문단 쪽 경계로 승격하면 안 된다"
+            );
+        };
+
+        let (paragraph, _) = hwpx_tail_page_break_candidate(ColumnBreakType::Page);
+        rejects(paragraph, Paragraph::default(), 2);
+
+        let (paragraph, next) = hwpx_tail_page_break_candidate(ColumnBreakType::Column);
+        rejects(paragraph, next, 2);
+
+        let (mut paragraph, next) = hwpx_tail_page_break_candidate(ColumnBreakType::Page);
+        paragraph.line_segs[1].vertical_pos = 1;
+        rejects(paragraph, next, 2);
+
+        let (mut paragraph, next) = hwpx_tail_page_break_candidate(ColumnBreakType::Page);
+        paragraph.line_segs.push(LineSeg::default());
+        rejects(paragraph, next, 2);
+
+        let (mut paragraph, next) = hwpx_tail_page_break_candidate(ColumnBreakType::Page);
+        paragraph.line_segs[0].vertical_pos = 3_000;
+        rejects(paragraph, next, 2);
+
+        let (mut paragraph, next) = hwpx_tail_page_break_candidate(ColumnBreakType::Page);
+        paragraph.line_segs[0].vertical_pos = 7_000;
+        rejects(paragraph, next, 2);
+    }
+
     #[test]
     fn issue2439_native_empty_host_rowbreak_evidence_is_narrow() {
         let table = Table {
