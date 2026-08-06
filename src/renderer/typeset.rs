@@ -3907,6 +3907,34 @@ fn debug_print_endnote_line_segments(
     }
 }
 
+/// [#2424 프로파일] `typeset_section_with_variant` 하위 단계 누적 실측 — 동작 불변.
+/// `RHWP_2424_PROFILE=1`(native 전용)일 때만 채워지고 구역당 한 줄로 출력한다.
+/// `(Duration, u32)` 는 (누적 시간, 호출 수). wasm 에서는 enabled=false 로 고정되어
+/// `Instant::now` 가 호출되지 않는다 (`paginate_pass` 의 게이트 패턴과 동일).
+#[derive(Default)]
+struct Issue2424TypesetProfile {
+    setup: std::time::Duration,
+    wrap_around: (std::time::Duration, u32),
+    text_para: (std::time::Duration, u32),
+    table_para: (std::time::Duration, u32),
+    deferred_flush: (std::time::Duration, u32),
+    para_tail: (std::time::Duration, u32),
+    endnotes: std::time::Duration,
+}
+
+impl Issue2424TypesetProfile {
+    fn add(bucket: &mut (std::time::Duration, u32), started: Option<std::time::Instant>) {
+        if let Some(started) = started {
+            bucket.0 += started.elapsed();
+            bucket.1 += 1;
+        }
+    }
+
+    fn ms(duration: std::time::Duration) -> f64 {
+        duration.as_secs_f64() * 1000.0
+    }
+}
+
 impl TypesetEngine {
     pub fn new(dpi: f64) -> Self {
         Self {
@@ -5048,6 +5076,15 @@ impl TypesetEngine {
         force_break_before: &std::collections::HashSet<usize>,
         endnote_deferral: EndnoteDeferral<'_>,
     ) -> PaginationResult {
+        // [#2424 프로파일] paginate_pass 와 같은 env var 로 하위 단계 게이트.
+        #[cfg(not(target_arch = "wasm32"))]
+        let issue2424_ts_enabled =
+            std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0");
+        #[cfg(target_arch = "wasm32")]
+        let issue2424_ts_enabled = false;
+        let issue2424_ts_started = issue2424_ts_enabled.then(std::time::Instant::now);
+        let mut issue2424_prof = Issue2424TypesetProfile::default();
+
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         // [#2403] 소스분기 프로파일 — 엔진(Cell)과 state 에 한 번에 배선.
         self.profile.set(profile);
@@ -5144,6 +5181,11 @@ impl TypesetEngine {
             .rev()
             .find(|(_, p)| !(p.text.is_empty() && p.controls.is_empty()))
             .map(|(i, _)| i);
+
+        if let Some(started) = issue2424_ts_started {
+            issue2424_prof.setup = started.elapsed();
+        }
+        let issue2424_loop_started = issue2424_ts_enabled.then(std::time::Instant::now);
 
         for (para_idx, para) in paragraphs.iter().enumerate() {
             // [Task #1753] 지연 이월 표 직전에 선행 채움(prefill)으로 이미 배치된 문단 스킵.
@@ -5869,7 +5911,8 @@ impl TypesetEngine {
             // Paginator engine.rs:288-320 동일 시멘틱.
             // 직전에 처리한 Square wrap 표의 (cs, sw) 와 동일한 LINE_SEG 를 가진
             // 후속 paragraph 는 표 옆에 배치되므로 height 소비 없이 wrap_around_paras 에 기록.
-            if self.typeset_wrap_around_paragraph(
+            let issue2424_wrap_started = issue2424_ts_enabled.then(std::time::Instant::now);
+            let issue2424_wrap_absorbed = self.typeset_wrap_around_paragraph(
                 &mut st,
                 para,
                 paragraphs,
@@ -5878,7 +5921,9 @@ impl TypesetEngine {
                 page_def,
                 composed.get(para_idx),
                 styles,
-            ) {
+            );
+            Issue2424TypesetProfile::add(&mut issue2424_prof.wrap_around, issue2424_wrap_started);
+            if issue2424_wrap_absorbed {
                 continue;
             }
 
@@ -5965,6 +6010,7 @@ impl TypesetEngine {
                 }
             }
 
+            let issue2424_branch_started = issue2424_ts_enabled.then(std::time::Instant::now);
             let mut native_hwp5_footnote_break = None;
             if !has_table {
                 // --- 핵심: format → fits → place/split ---
@@ -6015,6 +6061,14 @@ impl TypesetEngine {
                     composed,
                 );
             }
+            Issue2424TypesetProfile::add(
+                if has_table {
+                    &mut issue2424_prof.table_para
+                } else {
+                    &mut issue2424_prof.text_para
+                },
+                issue2424_branch_started,
+            );
 
             // [Task #1027 Stage D] 항목 배치 후 vpos 커서 prev/base 추적 (렌더러 정합).
             // 렌더러 build_single_column: 매 항목 후 prev_layout_para 갱신, 표/Shape/
@@ -6163,6 +6217,7 @@ impl TypesetEngine {
                 }
             }
             if has_table {
+                let issue2424_flush_started = issue2424_ts_enabled.then(std::time::Instant::now);
                 self.flush_deferred_table_controls(
                     &mut st,
                     paragraphs,
@@ -6170,6 +6225,10 @@ impl TypesetEngine {
                     styles,
                     measured_tables,
                     Some(para_idx),
+                );
+                Issue2424TypesetProfile::add(
+                    &mut issue2424_prof.deferred_flush,
+                    issue2424_flush_started,
                 );
                 // [#1955] 글뒤로/글앞으로 비-TAC 표 anchor: 후행 빈 문단 흡수 arming.
                 let has_behind_float_table = para.controls.iter().any(|c| {
@@ -6185,9 +6244,11 @@ impl TypesetEngine {
             }
             // 비-TAC Picture/Shape Square wrap: engine.rs:380-397 동일 시멘틱.
             // 그림의 첫 lineseg cs가 0일 수 있어 any_seg_matches 허용 플래그 활성화.
+            let issue2424_tail_started = issue2424_ts_enabled.then(std::time::Instant::now);
             self.typeset_no_table_paragraph_tail(
                 &mut st, page_def, para, paragraphs, composed, styles, para_idx, has_table,
             );
+            Issue2424TypesetProfile::add(&mut issue2424_prof.para_tail, issue2424_tail_started);
 
             // Task #321: col 0 처리 중 body-wide TopAndBottom 표/도형이 발견되면
             // col 1+ advance 시 적용할 current_height 시작값을 미리 등록.
@@ -6659,6 +6720,11 @@ impl TypesetEngine {
             variant_prev_para_idx = Some(para_idx);
         }
 
+        let issue2424_loop_elapsed = issue2424_loop_started
+            .map(|started| started.elapsed())
+            .unwrap_or_default();
+        let issue2424_inloop_flush = issue2424_prof.deferred_flush.0;
+
         // source tail에 뒤따르는 본문이 없어 자연 page break가 일어나지 않은 경우에도,
         // deferred Square picture는 현재 쪽 FootnoteArea에 겹치지 않고 독립한 다음 physical
         // page를 가져야 한다. 일반 흐름을 되감지 않고 picture PageItem만 drain한다.
@@ -6667,6 +6733,7 @@ impl TypesetEngine {
         }
 
         // [미주 배치 — Hancom EndnoteEndOfSection/EndnoteEndOfDocument]
+        let issue2424_endnote_started = issue2424_ts_enabled.then(std::time::Instant::now);
         self.typeset_section_endnotes(
             &mut st,
             paragraphs,
@@ -6678,8 +6745,12 @@ impl TypesetEngine {
             endnote_shape,
             &endnote_deferral,
         );
+        if let Some(started) = issue2424_endnote_started {
+            issue2424_prof.endnotes = started.elapsed();
+        }
 
         // 마지막 항목 처리
+        let issue2424_final_flush_started = issue2424_ts_enabled.then(std::time::Instant::now);
         self.flush_deferred_table_controls(
             &mut st,
             paragraphs,
@@ -6687,6 +6758,10 @@ impl TypesetEngine {
             styles,
             measured_tables,
             None,
+        );
+        Issue2424TypesetProfile::add(
+            &mut issue2424_prof.deferred_flush,
+            issue2424_final_flush_started,
         );
         if !st.current_items.is_empty() {
             st.flush_column_always();
@@ -6738,6 +6813,44 @@ impl TypesetEngine {
             &page_hides,
             section_index,
         );
+
+        if let Some(started) = issue2424_ts_started {
+            let total = started.elapsed();
+            let loop_other = issue2424_loop_elapsed
+                .saturating_sub(issue2424_prof.wrap_around.0)
+                .saturating_sub(issue2424_prof.text_para.0)
+                .saturating_sub(issue2424_prof.table_para.0)
+                .saturating_sub(issue2424_inloop_flush)
+                .saturating_sub(issue2424_prof.para_tail.0);
+            let post = total
+                .saturating_sub(issue2424_prof.setup)
+                .saturating_sub(issue2424_loop_elapsed)
+                .saturating_sub(issue2424_prof.endnotes);
+            eprintln!(
+                "RHWP_2424_TYPESET_PROFILE sec={} pages={} paras={} total_ms={:.2} \
+                 setup={:.2} loop={:.2} [wrap={:.2}/{} text={:.2}/{} table={:.2}/{} \
+                 flush={:.2}/{} tail={:.2}/{} other={:.2}] endnotes={:.2} post={:.2}",
+                section_index,
+                st.pages.len(),
+                paragraphs.len(),
+                Issue2424TypesetProfile::ms(total),
+                Issue2424TypesetProfile::ms(issue2424_prof.setup),
+                Issue2424TypesetProfile::ms(issue2424_loop_elapsed),
+                Issue2424TypesetProfile::ms(issue2424_prof.wrap_around.0),
+                issue2424_prof.wrap_around.1,
+                Issue2424TypesetProfile::ms(issue2424_prof.text_para.0),
+                issue2424_prof.text_para.1,
+                Issue2424TypesetProfile::ms(issue2424_prof.table_para.0),
+                issue2424_prof.table_para.1,
+                Issue2424TypesetProfile::ms(issue2424_prof.deferred_flush.0),
+                issue2424_prof.deferred_flush.1,
+                Issue2424TypesetProfile::ms(issue2424_prof.para_tail.0),
+                issue2424_prof.para_tail.1,
+                Issue2424TypesetProfile::ms(loop_other),
+                Issue2424TypesetProfile::ms(issue2424_prof.endnotes),
+                Issue2424TypesetProfile::ms(post),
+            );
+        }
 
         PaginationResult {
             pages: st.pages,
@@ -19580,7 +19693,16 @@ impl TypesetEngine {
         let table = source.table;
         let mt = source.measured_table;
         let styles = source.styles;
+        // [#2424 프로파일] fragment 루프 하위 단계 누적 — closure 1회 = fragment 판정 1회.
+        // 스캔 두 곳 외의 잔여(배치·각주 큐·커서 전진)는 total−scan−refit 로 산출한다.
+        let issue2424_step_enabled =
+            crate::renderer::layout::table_layout::issue2424_profile_enabled();
+        let issue2424_step_started = issue2424_step_enabled.then(std::time::Instant::now);
+        let mut issue2424_iters: u64 = 0;
+        let mut issue2424_scan: (std::time::Duration, u32) = (std::time::Duration::ZERO, 0);
+        let mut issue2424_refit: (std::time::Duration, u32) = (std::time::Duration::ZERO, 0);
         continuation_context.step(|prepared, st, continuation| {
+            issue2424_iters += 1;
             let row_count = prepared.row_count;
             let cs = prepared.cell_spacing;
             let can_intra_split = prepared.can_intra_split;
@@ -19843,6 +19965,7 @@ impl TypesetEngine {
                 };
 
             // [Task #1025] split_block_start: 블록 분할 시 연속분 커서 복귀 기록.
+            let issue2424_scan_started = issue2424_step_enabled.then(std::time::Instant::now);
             let BlockTableRowScan {
                 mut consumed,
                 mut end_row,
@@ -19881,6 +20004,10 @@ impl TypesetEngine {
                     split_end_limit: 0.0,
                 },
             );
+            if let Some(started) = issue2424_scan_started {
+                issue2424_scan.0 += started.elapsed();
+                issue2424_scan.1 += 1;
+            }
             if end_row <= cursor_row {
                 end_row = cursor_row + 1;
             }
@@ -19950,6 +20077,8 @@ impl TypesetEngine {
                     let avail_refit =
                         (avail_for_rows + table_fn_reserved).min(min_anchor + pad + 0.1);
                     if avail_refit > avail_for_rows + 0.5 {
+                        let issue2424_refit_started =
+                            issue2424_step_enabled.then(std::time::Instant::now);
                         let refit = self.scan_block_table_split_rows(
                             st,
                             layout_engine,
@@ -19982,6 +20111,10 @@ impl TypesetEngine {
                                 split_end_limit: 0.0,
                             },
                         );
+                        if let Some(started) = issue2424_refit_started {
+                            issue2424_refit.0 += started.elapsed();
+                            issue2424_refit.1 += 1;
+                        }
                         // 재스캔 조각도 앵커 미포함일 때만 채택 (상한이 보증하나
                         // squeeze 허용치로 소폭 넘을 수 있어 재확인).
                         if refit.consumed > consumed + 0.5
@@ -20197,6 +20330,34 @@ impl TypesetEngine {
             continuation.advance(end_row, split_block_start, next_cut, split_end_limit > 0.0);
             TableContinuationIteration::Emitted
         });
+        if let Some(started) = issue2424_step_started {
+            use crate::renderer::layout::table_layout as issue2424_tl;
+            use std::sync::atomic::Ordering::Relaxed;
+            let total = started.elapsed();
+            let other = total
+                .saturating_sub(issue2424_scan.0)
+                .saturating_sub(issue2424_refit.0);
+            // cum: 프로세스 누적 스냅샷 (advance_row_cut / cell_units 프리미티브).
+            eprintln!(
+                "RHWP_2424_STEP_PROFILE sec={} para={} iters={} total_ms={:.2} \
+                 scan={:.2}/{} refit={:.2}/{} other={:.2} | cum arc_calls={} arc_ms={:.2} \
+                 cu_hit={} cu_miss={} cu_miss_ms={:.2}",
+                continuation_context.flow_state.section_index,
+                para_idx,
+                issue2424_iters,
+                Issue2424TypesetProfile::ms(total),
+                Issue2424TypesetProfile::ms(issue2424_scan.0),
+                issue2424_scan.1,
+                Issue2424TypesetProfile::ms(issue2424_refit.0),
+                issue2424_refit.1,
+                Issue2424TypesetProfile::ms(other),
+                issue2424_tl::ISSUE2424_ADVANCE_ROW_CUT_CALLS.load(Relaxed),
+                issue2424_tl::ISSUE2424_ADVANCE_ROW_CUT_NANOS.load(Relaxed) as f64 / 1e6,
+                issue2424_tl::ISSUE2424_CELL_UNITS_HITS.load(Relaxed),
+                issue2424_tl::ISSUE2424_CELL_UNITS_MISSES.load(Relaxed),
+                issue2424_tl::ISSUE2424_CELL_UNITS_MISS_NANOS.load(Relaxed) as f64 / 1e6,
+            );
+        }
     }
 
     // ========================================================

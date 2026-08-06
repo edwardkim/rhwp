@@ -1807,7 +1807,7 @@ mod paragraph_layout;
 mod picture_footnote;
 mod shape_layout;
 mod table_cell_content;
-mod table_layout;
+pub(crate) mod table_layout;
 mod table_partial;
 mod text_measurement;
 mod utils;

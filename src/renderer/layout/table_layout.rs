@@ -18,6 +18,35 @@ const ROWBREAK_OBJECT_BOTTOM_BLEED_TOLERANCE_PX: f64 = 64.0;
 /// 일반 그림 위치일 수 있으므로 절대 보정하지 않는다.
 const ROWBREAK_STALE_PAGE_SCALE_PICTURE_OFFSET_MIN_HU: i32 = -40_000;
 
+/// [#2424 프로파일] 분할 표 컷 프리미티브 실측 카운터 — `RHWP_2424_PROFILE` 전용, 동작 불변.
+/// 프로세스 누적이며 `RHWP_2424_STEP_PROFILE` 출력(typeset.rs)이 스냅샷을 읽는다.
+pub(crate) static ISSUE2424_ADVANCE_ROW_CUT_CALLS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+pub(crate) static ISSUE2424_ADVANCE_ROW_CUT_NANOS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+pub(crate) static ISSUE2424_CELL_UNITS_HITS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+pub(crate) static ISSUE2424_CELL_UNITS_MISSES: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+pub(crate) static ISSUE2424_CELL_UNITS_MISS_NANOS: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+
+/// [#2424 프로파일] env 게이트 1회 판정. wasm 은 항상 false 라 `Instant::now` 가
+/// 호출되지 않는다 (`paginate_pass` 의 게이트 패턴과 동일 규약).
+pub(crate) fn issue2424_profile_enabled() -> bool {
+    #[cfg(target_arch = "wasm32")]
+    {
+        false
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+        *ENABLED.get_or_init(|| {
+            std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0")
+        })
+    }
+}
+
 /// [Task #548] paragraph 의 line N 에 적용되는 effective margin_left.
 /// paragraph_layout.rs 의 line_indent 산식과 동일 (단일 룰).
 /// - positive indent: line 0 에만 +indent 적용 (첫줄 들여쓰기)
@@ -5612,9 +5641,18 @@ impl LayoutEngine {
     ) -> std::sync::Arc<Vec<CellUnit>> {
         let key = cell as *const crate::model::table::Cell as usize;
         if let Some(cached) = self.cell_units_cache.borrow().get(&key) {
+            if issue2424_profile_enabled() {
+                ISSUE2424_CELL_UNITS_HITS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            }
             return std::sync::Arc::clone(cached);
         }
+        let issue2424_started = issue2424_profile_enabled().then(std::time::Instant::now);
         let units = std::sync::Arc::new(self.cell_units_uncached(cell, table, styles));
+        if let Some(started) = issue2424_started {
+            use std::sync::atomic::Ordering::Relaxed;
+            ISSUE2424_CELL_UNITS_MISSES.fetch_add(1, Relaxed);
+            ISSUE2424_CELL_UNITS_MISS_NANOS.fetch_add(started.elapsed().as_nanos() as u64, Relaxed);
+        }
         self.cell_units_cache
             .borrow_mut()
             .insert(key, std::sync::Arc::clone(&units));
@@ -7217,6 +7255,24 @@ impl LayoutEngine {
         avail_height: f64,
         styles: &ResolvedStyleSet,
     ) -> RowCutResult {
+        let issue2424_started = issue2424_profile_enabled().then(std::time::Instant::now);
+        let result = self.advance_row_cut_inner(table, row, start_cut, avail_height, styles);
+        if let Some(started) = issue2424_started {
+            use std::sync::atomic::Ordering::Relaxed;
+            ISSUE2424_ADVANCE_ROW_CUT_CALLS.fetch_add(1, Relaxed);
+            ISSUE2424_ADVANCE_ROW_CUT_NANOS.fetch_add(started.elapsed().as_nanos() as u64, Relaxed);
+        }
+        result
+    }
+
+    fn advance_row_cut_inner(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        avail_height: f64,
+        styles: &ResolvedStyleSet,
+    ) -> RowCutResult {
         let mut row_cells: Vec<&crate::model::table::Cell> = table
             .cells
             .iter()
@@ -8521,6 +8577,118 @@ impl LayoutEngine {
     }
 
     fn mixed_nested_flow_extra_from_cut(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start_unit: usize,
+        end_unit: usize,
+    ) -> f64 {
+        let extra =
+            self.mixed_nested_flow_extra_from_cut_fast(cell, table, styles, start_unit, end_unit);
+        // [#2424 검증] RHWP_2424_SHADOW=1 이면 fast/reference 구현을 호출 단위로
+        // 비트 대조한다. corpus 게이트 통과 후 reference 구현과 함께 제거한다.
+        #[cfg(not(target_arch = "wasm32"))]
+        if std::env::var("RHWP_2424_SHADOW").is_ok_and(|value| !value.is_empty() && value != "0") {
+            let reference = self.mixed_nested_flow_extra_from_cut_reference(
+                cell, table, styles, start_unit, end_unit,
+            );
+            assert!(
+                extra.to_bits() == reference.to_bits(),
+                "MIXED_NESTED_DIVERGENCE r={} c={} lo={} hi={} fast={:?} ref={:?}",
+                cell.row,
+                cell.col,
+                start_unit,
+                end_unit,
+                extra,
+                reference,
+            );
+        }
+        extra
+    }
+
+    /// [#2424] `mixed_nested_flow_extra_from_cut_reference` 의 O(P×U)→O(U) 재작성.
+    ///
+    /// mixed 유닛은 `cell_units_uncached` 의 단일 문단 루프(ascending `pi`)에서만
+    /// 생성되므로 `para_idx` 가 유닛 순서상 단조 비감소 — 문단별 mixed run 이
+    /// 연속 구간이다. run 단위로 reference 의 per-para 판정을 그대로 수행해
+    /// 비트 동일한 결과를 낸다 (단조성은 debug_assert 와 RHWP_2424_SHADOW A/B 로
+    /// 이중 검증). 거대 셀 115-fragment 문서에서 paginate 16.7s 의 주범이었다.
+    fn mixed_nested_flow_extra_from_cut_fast(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start_unit: usize,
+        end_unit: usize,
+    ) -> f64 {
+        let units = self.cell_units(cell, table, styles);
+        let lo = start_unit.min(units.len());
+        let hi = end_unit.min(units.len()).max(lo);
+        let mut extra = 0.0;
+
+        let mut u = 0;
+        while u < units.len() {
+            // reference 의 outer 루프는 0..paragraphs.len() 이라 범위 밖 para_idx
+            // 유닛은 방문 자체가 없다 — 동일하게 무시한다.
+            if !units[u].mixed_nested_fragment || units[u].para_idx >= cell.paragraphs.len() {
+                u += 1;
+                continue;
+            }
+            let para_idx = units[u].para_idx;
+            let mut offset = 0.0;
+            let mut total = 0.0;
+            let mut visible_units: Vec<(f64, bool)> = Vec::new();
+            let mut idx = u;
+            while idx < units.len() {
+                let unit = &units[idx];
+                if unit.mixed_nested_fragment {
+                    if unit.para_idx != para_idx {
+                        break;
+                    }
+                    total += unit.height;
+                    if idx < lo {
+                        offset += unit.height;
+                    }
+                    if idx >= lo && idx < hi {
+                        visible_units.push((unit.height, unit.mixed_nested_trailing));
+                    }
+                }
+                idx += 1;
+            }
+            debug_assert!(
+                idx >= units.len() || units[idx].para_idx > para_idx,
+                "cell_units mixed para_idx 단조성 위반: {} 뒤에 {}",
+                para_idx,
+                units[idx].para_idx,
+            );
+            u = idx;
+
+            if total <= 0.5 || offset <= 0.5 {
+                continue;
+            }
+            while visible_units.last().is_some_and(|(_, trailing)| *trailing) {
+                visible_units.pop();
+            }
+            let flow_visible: f64 = visible_units.iter().map(|(height, _)| *height).sum();
+            if flow_visible <= 0.5 {
+                continue;
+            }
+            let first_visible_content_height = visible_units
+                .iter()
+                .find_map(|(height, trailing)| (!*trailing).then_some(*height))
+                .unwrap_or(0.0);
+            let offset_within_start = (offset - first_visible_content_height).max(0.0);
+            if offset_within_start > 0.5 {
+                extra += first_visible_content_height;
+            }
+        }
+
+        extra
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn mixed_nested_flow_extra_from_cut_reference(
         &self,
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
