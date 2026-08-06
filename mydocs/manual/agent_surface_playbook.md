@@ -56,6 +56,19 @@ helper 를 재사용한다. 서버 전용 경로를 새로 만들면 CLI 와 계
 
 ## 2. 추가 절차 (순서 고정)
 
+0. **잠금 확인·할당 (착수 = 할당)** — 조사보다 먼저 한다. 대상 이슈의 assignee 와
+   같은 이슈를 가리키는 열린 PR 을 확인하고, 비어 있으면 즉시 선점한다.
+   ```bash
+   gh issue view <n> --repo edwardkim/rhwp --json assignees -q '.assignees[].login'
+   gh pr list --repo edwardkim/rhwp --state open --limit 100 --search "<n>"
+   gh issue edit <n> --repo edwardkim/rhwp --add-assignee @me   # 권한 있는 계정만 성공
+   ```
+   **외부 기여자 계정은 assignee 편집이 거부된다**(실측 2026-08-06:
+   `gh issue edit --add-assignee` 가 `failed to update 1 issue` — 3회 재현). 그 경우
+   **이슈에 착수 코멘트("착수합니다 — <범위>")를 남기는 것이 잠금**이다. 선점된
+   이슈(assignee 있음 또는 착수 코멘트 있음)는 착수하지 않고, 작업을 접으면 즉시
+   해제(코멘트)한다. 사고 사례·판정 기준·볼륨 캡의 canonical 은
+   [병렬 세션 규약](../tech/autonomous_maintenance/parallel_session_protocol.md)이다.
 1. **이슈 등록** — 공백을 실측으로 서술하고(#3608 매트릭스 갱신 포함) 검증 계획을 적는다.
 2. **red 계약 테스트** — `tests/*_contract.rs` 신설. 구현 전 FAILED 를 확인한다.
    기존 테스트 파일 수정보다 신설을 우선한다(병렬 PR 충돌 회피).
@@ -63,8 +76,15 @@ helper 를 재사용한다. 서버 전용 경로를 새로 만들면 CLI 와 계
 4. **검증** — 신규 green + 인접 계약 스위트 무회귀 + `clippy -D warnings` 0 +
    rustfmt clean(변경 파일 기준).
 5. **누적 머지 충돌검사** — `upstream/devel` 에서 임시 브랜치를 만들어 열린 PR
-   브랜치 전부를 순차 merge, 충돌 0 확인. 겹치는 파일이 있으면 적층(베이스 PR 을
-   본문에 명시)으로 전환한다.
+   브랜치 전부를 순차 merge, 충돌 0 확인. 겹치는 파일이 있으면 **선등재 성립
+   여부를 먼저 보고**, 안 되면 적층(베이스 PR 을 본문에 명시, 체인 3단 이하)으로
+   전환한다.
+
+   **접합 기법 — 선등재**: 겹침이 "목록·표에 한 줄 추가" 형태이고 그 목록의 소비자가
+   기준 집합만 순회한다면(초과 항목 무해), 상대 PR 이 추가할 항목을 미리 등재해
+   머지 순서와 무관하게 무수정 통과시킬 수 있다. 실증 #3903 ↔ #3808 (SWEEP_EXEMPT
+   면제 호출표 선등재 — 누적 머지로 전후 대조). 성립 조건과 한계의 canonical 은
+   [선등재 패턴](../tech/autonomous_maintenance/pre_registration_pattern.md).
 6. **처리 문서 + 증적 2종** — `mydocs/report/task_m100_<이슈>/README.md` 에:
    ① 실행 원문(터미널 봉투) 캡처 ② **산출물을 실제 rhwp 로 열어 렌더한 화면**
    (`export-svg` → PNG 변환 → 합성). 편집 계열은 전/후 비교로.
