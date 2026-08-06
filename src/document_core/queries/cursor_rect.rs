@@ -875,57 +875,68 @@ impl DocumentCore {
             None
         }
 
+        // 대상 문단이 빈 문단(표/도형 등 컨트롤만 호스팅)이면 char_offset 매칭 텍스트가
+        // 애초에 어느 페이지에도 존재하지 않는다 — 페이지별 render tree 구축을 건너뛰고
+        // 곧장 아래의 앵커 위치 폴백(조판부호 감추기 인라인 컨트롤 / OLE / 문단 줄 위치)으로 간다.
+        let para_has_text = self
+            .get_render_paragraph_ref(section_idx, para_idx)
+            .map(|p| !p.text.is_empty())
+            .unwrap_or(true);
+
         // 후보 페이지를 순회하며 커서 위치 탐색
         // 1차: 정확한 앵커(zero-width 노드) 우선 검색, 2차: 일반 검색
-        for &page_num in &pages {
-            let tree = self.build_page_tree_cached(page_num)?;
-            if !self.show_control_codes {
-                if let Ok(para) = self.get_render_paragraph_ref(section_idx, para_idx) {
-                    if let Some(hit) = find_inline_flow_cursor_hit(
-                        &tree,
-                        section_idx,
-                        para_idx,
-                        para,
-                        char_offset,
-                        page_num,
-                    ) {
-                        return Ok(format!(
-                            "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                            hit.page_index, hit.x, hit.y, hit.height
-                        ));
+        if para_has_text {
+            for &page_num in &pages {
+                let tree = self.build_page_tree_cached(page_num)?;
+                if !self.show_control_codes {
+                    if let Ok(para) = self.get_render_paragraph_ref(section_idx, para_idx) {
+                        if let Some(hit) = find_inline_flow_cursor_hit(
+                            &tree,
+                            section_idx,
+                            para_idx,
+                            para,
+                            char_offset,
+                            page_num,
+                        ) {
+                            return Ok(format!(
+                                "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+                                hit.page_index, hit.x, hit.y, hit.height
+                            ));
+                        }
                     }
                 }
-            }
-            let render_para_for_cursor = self.get_render_paragraph_ref(section_idx, para_idx).ok();
-            let exact_hit = find_cursor_in_node(
-                &tree.root,
-                section_idx,
-                para_idx,
-                render_para_for_cursor,
-                char_offset,
-                page_num,
-                true,
-                is_list_para,
-                &footnote_marker_positions,
-            );
-            let hit_result = exact_hit.or_else(|| {
-                find_cursor_in_node(
+                let render_para_for_cursor =
+                    self.get_render_paragraph_ref(section_idx, para_idx).ok();
+                let exact_hit = find_cursor_in_node(
                     &tree.root,
                     section_idx,
                     para_idx,
                     render_para_for_cursor,
                     char_offset,
                     page_num,
-                    false,
+                    true,
                     is_list_para,
                     &footnote_marker_positions,
-                )
-            });
-            if let Some(hit) = hit_result {
-                return Ok(format!(
-                    "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                    hit.page_index, hit.x, hit.y, hit.height
-                ));
+                );
+                let hit_result = exact_hit.or_else(|| {
+                    find_cursor_in_node(
+                        &tree.root,
+                        section_idx,
+                        para_idx,
+                        render_para_for_cursor,
+                        char_offset,
+                        page_num,
+                        false,
+                        is_list_para,
+                        &footnote_marker_positions,
+                    )
+                });
+                if let Some(hit) = hit_result {
+                    return Ok(format!(
+                        "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+                        hit.page_index, hit.x, hit.y, hit.height
+                    ));
+                }
             }
         }
 
