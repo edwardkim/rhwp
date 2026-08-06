@@ -1,0 +1,54 @@
+name: examples-freshness
+
+# [로드맵 R69] 예제는 "도는 문서"다 — 깨진 예제는 문서 없는 것보다 나쁘다
+# (bindings/python/tests/test_examples.py 머리말). 검사 본체는 이미 있고
+# python-binding.yml 통합 잡이 그것을 돌리지만, 그 워크플로는 paths 필터
+# (bindings/python/** · src/ir_schema.rs)에만 반응한다 — 예제가 실제로 딛는
+# CLI 표면(src/**)이 바뀌어 예제가 깨질 때는 침묵한다(2026-08-06 실측:
+# paths 에 src/main.rs 없음).
+#
+# PR 마다 rhwp 릴리스 빌드(6분+)를 태우는 대신 주 1회 cron 으로 전체를 돈다 —
+# cache-generation-sweep.yml 의 판단("devel push 마다 돌 필요가 없다")과 같고,
+# 진행률 검증(R94 설계 §5.4)이 같은 주기를 제안하는 것과도 맞춘다.
+
+on:
+  schedule:
+    - cron: "20 19 * * 0" # 일요일 19:20 UTC = 월요일 아침 KST
+  workflow_dispatch:
+
+jobs:
+  freshness:
+    name: 예제 신선도 (rhwp 빌드 + 전 예제)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: rhwp 빌드
+        run: cargo build --release --bin rhwp
+      - name: 의존성 설치
+        working-directory: bindings/python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      # python-binding.yml 통합 잡과 같은 스텝 — 여기서는 트리거만 다르다
+      # (paths 반응이 아니라 시간). 검사 정의를 복제하지 않고 pytest 를 그대로
+      # 부르므로, 예제·검사가 늘면 이 워크플로는 자동으로 따라온다.
+      - name: 통합 테스트 + 예제 3검사
+        working-directory: bindings/python
+        env:
+          RHWP_BIN: ${{ github.workspace }}/target/release/rhwp
+        run: pytest tests/ -q
+      - name: 예제 실행
+        working-directory: bindings/python
+        env:
+          RHWP_BIN: ${{ github.workspace }}/target/release/rhwp
+        run: |
+          python examples/01_read_document.py ../../samples/field-01.hwp
+          python examples/06_ir_schema.py
+      - name: 요약
+        if: always()
+        run: echo "R69 예제 신선도 — 실패 시 CLI 표면 드리프트가 예제를 깨뜨린 것. bindings/python/tests/test_examples.py 로 로컬 재현." >> "$GITHUB_STEP_SUMMARY"
