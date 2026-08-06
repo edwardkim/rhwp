@@ -332,6 +332,7 @@ fn main() {
         Some("gen-pua") => exit_with(gen_pua_test(&args[2..])),
         Some("test-field") => exit_with(test_field_roundtrip(&args[2..])),
         Some("ir-diff") => exit_with(ir_diff(&args[2..])),
+        Some("verify") => exit_with(cmd_verify(&args[2..])),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
         Some("render-diff") => rhwp::diagnostics::render_geom_diff::run(&args[2..]),
@@ -629,6 +630,34 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "ir-diff",
             serde_json::json!(["ir-diff", "{a}", "{b}", "--json"]),
             &["identical", "diffCount", "categories"],
+        ),
+        tool(
+            "hwp_verify",
+            "문서가 기대 조건을 만족하는지 사후검증한다 — 편집 파이프라인의 마지막 게이트. 조건별 pass 가 봉투에 실리고, 불일치가 있으면 CLI 종료 코드 3. 반복 조건이 필요하면 CLI 를 직접 쓴다(도구는 각 조건 1개씩).",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "HWP/HWPX 문서 경로" },
+                    "pages": { "type": "integer", "description": "기대 쪽수" },
+                    "contains": { "type": "string", "description": "본문에 있어야 하는 문자열" },
+                    "notContains": { "type": "string", "description": "본문에 없어야 하는 문자열" },
+                    "field": { "type": "string", "description": "누름틀 기대값 — 이름=값 형식" },
+                    "format": { "type": "string", "description": "기대 형식 hwp5|hwpx|hwp3|hml" }
+                },
+                "required": ["path"],
+            }),
+            "verify",
+            serde_json::json!([
+                "verify",
+                "{path}",
+                { "when": "pages", "args": ["--expect-pages", "{pages}"] },
+                { "when": "contains", "args": ["--expect-contains", "{contains}"] },
+                { "when": "notContains", "args": ["--expect-not-contains", "{notContains}"] },
+                { "when": "field", "args": ["--expect-field", "{field}"] },
+                { "when": "format", "args": ["--expect-format", "{format}"] },
+                "--json"
+            ]),
+            &["expectations", "passCount", "failCount", "verdict"],
         ),
         tool(
             "hwp_export_svg",
@@ -2251,6 +2280,29 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "categories",
             ],
         ),
+        // [#4113 / #3918 승격 2호] 독립 사후검증 게이트 — 기대 조건 집합 대조.
+        cmd_json(
+            "verify",
+            "diagnostic",
+            "기대 조건(--expect-pages/contains/not-contains/field/format) 대조 — 전부 만족 exit 0, 불일치는 봉투 후 exit 3",
+            false,
+            &[
+                "--expect-pages",
+                "--expect-contains",
+                "--expect-not-contains",
+                "--expect-field",
+                "--expect-format",
+                "--json",
+            ],
+            &[
+                "schemaVersion",
+                "source",
+                "expectations",
+                "passCount",
+                "failCount",
+                "verdict",
+            ],
+        ),
         cmd_json(
             "render-diff",
             "diagnostic",
@@ -2937,6 +2989,7 @@ fn print_help() {
     println!("      ingest JSON(시험문제 등)을 HWPX로 생성 (rhwp-exam-ingest 파이프라인)");
     println!();
     println!("  ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>] [--json]");
+    println!("  verify <파일> --expect-pages <N> | --expect-contains <문자열> | --expect-not-contains <문자열> | --expect-field <이름=값> | --expect-format <형식> [--json]");
     println!("      두 파일의 IR(중간표현) 비교 (HWPX↔HWP 불일치 검출)");
     println!("      --json                  판정 봉투 JSON 한 줄 출력, 차이 발견 시 exit 3");
     println!("      비교 항목: text, char_count, char_offsets, char_shapes, line_segs,");
@@ -13103,6 +13156,267 @@ fn ir_diff_paragraph_fields(
         }
     }
     diffs
+}
+
+/// [#4113 / #3918 승격 2호] `verify` — 편집 파이프라인의 독립 사후검증 게이트.
+///
+/// 기대 조건 집합을 문서 실측과 대조해 전부 만족이면 exit 0, 하나라도 어긋나면
+/// **봉투를 먼저 내고** exit 3(판정 — #2707) — 판정은 데이터다(규칙 3). 실행
+/// 실패는 stdout 을 비우고 exit 1, 조립 오류는 exit 2. 실측은 전부 기존 코어
+/// 재사용이다: `page_count`·`grep`·`collect_field_records`·`detect_format`(규칙 2).
+fn cmd_verify(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp verify <파일.hwp|파일.hwpx> [--expect-pages N] \
+[--expect-contains 문자열]... [--expect-not-contains 문자열]... [--expect-field 이름=값]... \
+[--expect-format hwp5|hwpx|hwp3|hml] [--json] — 기대 조건이 최소 1개 필요합니다";
+
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut expect_pages: Option<u64> = None;
+    let mut expect_format: Option<String> = None;
+    let mut expect_contains: Vec<String> = Vec::new();
+    let mut expect_not_contains: Vec<String> = Vec::new();
+    let mut expect_fields: Vec<(String, String)> = Vec::new();
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--expect-pages" => {
+                i += 1;
+                let n = args.get(i).and_then(|v| v.parse::<u64>().ok());
+                match n {
+                    Some(n) => expect_pages = Some(n),
+                    None => {
+                        eprintln!("오류: --expect-pages 뒤에 숫자가 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--expect-contains" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => expect_contains.push(v.clone()),
+                    None => {
+                        eprintln!("오류: --expect-contains 뒤에 문자열이 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--expect-not-contains" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => expect_not_contains.push(v.clone()),
+                    None => {
+                        eprintln!("오류: --expect-not-contains 뒤에 문자열이 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--expect-field" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.split_once('=')) {
+                    Some((k, val)) if !k.is_empty() => {
+                        expect_fields.push((k.to_string(), val.to_string()))
+                    }
+                    _ => {
+                        eprintln!("오류: --expect-field 는 이름=값 형식입니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--expect-format" => {
+                i += 1;
+                match args.get(i).map(String::as_str) {
+                    Some(v @ ("hwp5" | "hwpx" | "hwp3" | "hml")) => {
+                        expect_format = Some(v.to_string())
+                    }
+                    Some(v) => {
+                        eprintln!(
+                            "오류: --expect-format 은 hwp5|hwpx|hwp3|hml 중 하나입니다 - {v}"
+                        );
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                    None => {
+                        eprintln!("오류: --expect-format 뒤에 형식이 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                eprintln!("{USAGE}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.is_some() {
+                    eprintln!("오류: 파일 경로는 하나여야 합니다 - {other}");
+                    eprintln!("{USAGE}");
+                    return EXIT_USAGE;
+                }
+                file_path = Some(other);
+            }
+        }
+        i += 1;
+    }
+    let Some(path) = file_path else {
+        eprintln!("오류: 파일 경로가 필요합니다.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let expectation_count = usize::from(expect_pages.is_some())
+        + usize::from(expect_format.is_some())
+        + expect_contains.len()
+        + expect_not_contains.len()
+        + expect_fields.len();
+    if expectation_count == 0 {
+        eprintln!("오류: 기대 조건이 없습니다 — --expect-* 로 최소 1개를 지정하세요.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    }
+
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let actual_format = match rhwp::parser::detect_format(&data) {
+        rhwp::parser::FileFormat::Hwp => "hwp5",
+        rhwp::parser::FileFormat::Hwpx => "hwpx",
+        rhwp::parser::FileFormat::Hwp3 => "hwp3",
+        rhwp::parser::FileFormat::Hml => "hml",
+        _ => "unknown",
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let mut expectations: Vec<serde_json::Value> = Vec::new();
+    let mut fail_count = 0usize;
+    let mut record = |kind: &str,
+                      subject: serde_json::Value,
+                      expected: serde_json::Value,
+                      actual: serde_json::Value,
+                      pass: bool| {
+        if !pass {
+            fail_count += 1;
+        }
+        let mut e = serde_json::json!({
+            "kind": kind, "expected": expected, "actual": actual, "pass": pass,
+        });
+        if !subject.is_null() {
+            e["subject"] = subject;
+        }
+        expectations.push(e);
+    };
+
+    if let Some(n) = expect_pages {
+        let actual = u64::from(doc.page_count());
+        record(
+            "pages",
+            serde_json::Value::Null,
+            serde_json::json!(n),
+            serde_json::json!(actual),
+            actual == n,
+        );
+    }
+    if let Some(f) = expect_format.as_deref() {
+        record(
+            "format",
+            serde_json::Value::Null,
+            serde_json::json!(f),
+            serde_json::json!(actual_format),
+            actual_format == f,
+        );
+    }
+    for s in &expect_contains {
+        let n = doc.grep(s, true, None).len();
+        record(
+            "contains",
+            serde_json::json!(s),
+            serde_json::json!(">=1"),
+            serde_json::json!(n),
+            n >= 1,
+        );
+    }
+    for s in &expect_not_contains {
+        let n = doc.grep(s, true, None).len();
+        record(
+            "notContains",
+            serde_json::json!(s),
+            serde_json::json!(0),
+            serde_json::json!(n),
+            n == 0,
+        );
+    }
+    if !expect_fields.is_empty() {
+        let records = collect_field_records(&doc);
+        for (name, want) in &expect_fields {
+            let actual = records
+                .iter()
+                .find(|r| r["name"].as_str() == Some(name.as_str()))
+                .map(|r| r["value"].clone())
+                .unwrap_or(serde_json::Value::Null);
+            let pass = actual.as_str() == Some(want.as_str());
+            record(
+                "field",
+                serde_json::json!(name),
+                serde_json::json!(want),
+                actual,
+                pass,
+            );
+        }
+    }
+    drop(record);
+
+    let verdict = if fail_count == 0 { "pass" } else { "fail" };
+    let pass_count = expectation_count - fail_count;
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": path,
+            "expectations": expectations,
+            "passCount": pass_count,
+            "failCount": fail_count,
+            "verdict": verdict,
+        });
+        println!("{}", provenance::marked(envelope, "verify"));
+    } else {
+        for e in &expectations {
+            let mark = if e["pass"].as_bool() == Some(true) {
+                "PASS"
+            } else {
+                "FAIL"
+            };
+            let subject = e["subject"]
+                .as_str()
+                .map(|s| format!(" '{s}'"))
+                .unwrap_or_default();
+            println!(
+                "{mark} {}{subject} — 기대 {} / 실측 {}",
+                e["kind"].as_str().unwrap_or(""),
+                e["expected"],
+                e["actual"]
+            );
+        }
+        println!("판정: {verdict} ({pass_count} 통과 / {fail_count} 불일치)");
+    }
+    if fail_count == 0 {
+        EXIT_OK
+    } else {
+        3 // 판정 불일치 — #2707 의 판정 코드. 봉투는 이미 냈다.
+    }
 }
 
 fn ir_diff(args: &[String]) -> i32 {

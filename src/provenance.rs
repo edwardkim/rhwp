@@ -307,6 +307,15 @@ pub const MAP: &[CommandProvenance] = &[
         note: "보수적으로 선언한다 — 과소 선언은 위험한 방향이고 과대 선언은 안전한 방향이다.",
     },
     CommandProvenance {
+        command: "verify",
+        untrusted: &[f(
+            "expectations[].actual",
+            "문서에서 읽은 실측값 — field 축은 누름틀 값 그대로이고, contains/notContains \
+             의 매치 수·pages·format 도 문서 내용이 정한다 (cmd_verify)",
+        )],
+        note: "expected·subject 는 호출자가 준 값이고, pass·verdict 는 엔진 판정이다.",
+    },
+    CommandProvenance {
         command: "render-diff",
         untrusted: NONE,
         note: "기하 차이 봉투는 경로·노드 유형·좌표·집계값만 싣는다. 본문 텍스트와 이미지 바이트는 싣지 않는다.",
