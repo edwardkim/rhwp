@@ -11,6 +11,8 @@ const subsecondWasmDir = resolve(
   'rhwp-subsecond-vite',
 );
 const useSubsecondWasm = process.env.RHWP_SUBSECOND === '1';
+// Tauri 데스크톱 빌드에서는 서비스워커(PWA)가 불필요하고 캐시 충돌 위험이 있어 제외한다.
+const isDesktopBuild = process.env.RHWP_DESKTOP === '1';
 
 export default defineConfig({
   define: {
@@ -96,7 +98,7 @@ export default defineConfig({
         });
       },
     },
-    VitePWA({
+    ...(isDesktopBuild ? [] : [VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icons/*.png'],
       manifest: {
@@ -147,6 +149,6 @@ export default defineConfig({
       devOptions: {
         enabled: false,
       },
-    }),
+    })]),
   ],
 });

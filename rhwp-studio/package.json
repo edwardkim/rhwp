@@ -10,6 +10,10 @@
     "subsecond:sync": "mkdir -p ../target/rhwp-subsecond-vite && cp ../target/dx/rhwp-subsecond/debug/web/public/wasm/rhwp-subsecond.js ../target/dx/rhwp-subsecond/debug/web/public/wasm/rhwp-subsecond_bg.wasm ../target/rhwp-subsecond-vite/",
     "dev:subsecond": "npm run subsecond:sync && RHWP_SUBSECOND=1 vite",
     "build": "tsc && vite build",
+    "build:desktop": "RHWP_DESKTOP=1 tsc && RHWP_DESKTOP=1 vite build",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
     "preview": "vite preview",
     "test": "node --test tests/*.test.ts ../npm/editor/tests/*.test.mjs",
     "e2e": "node e2e/text-flow.test.mjs",
@@ -35,6 +39,7 @@
     "e2e:manifest-check": "python3 ../scripts/check_e2e_manifest.py"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
     "@types/chrome": "^0.2.2",
     "puppeteer-core": "^25.4.0",
     "typescript": "^7.0.2",
