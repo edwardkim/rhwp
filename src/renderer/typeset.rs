@@ -16538,9 +16538,7 @@ impl TypesetEngine {
             if hangul_flowed_beside_table {
                 let band_top = st.current_height + pre_height;
                 st.current_height = band_top + stored_host_line_px.unwrap_or(0.0);
-                st.square_band_bottom = st
-                    .square_band_bottom
-                    .max(band_top + table_total_height);
+                st.square_band_bottom = st.square_band_bottom.max(band_top + table_total_height);
             } else {
                 st.current_height += pre_height + table_total_height;
             }
