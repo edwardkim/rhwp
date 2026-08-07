@@ -108,17 +108,124 @@ Stage 1 실측: `samples/SO-SUEOP.hwp` 의 `00000000.OOO` 서브 스토리지 CL
 
 ## 6. 검증
 
-*(Stage 4 결과로 확정)*
+`local_validation.md` §4.3 의 **Rust parser/model/CLI** 행 + `visual_verification_governance.md:57` 의
+직렬화 roundtrip 게이트. 모든 Cargo 명령은 **직렬 실행**, `CARGO_INCREMENTAL=0`.
+
+| 게이트 | 결과 |
+|---|---|
+| `cargo test --profile release-test --tests` | **5284 passed, 0 failed, 28 ignored** (469개 테스트 바이너리 전부 ok) |
+| `cargo test --release --test hwp5_roundtrip_baseline` | 3 passed |
+| `cargo test --test hwpx_roundtrip_baseline` | 4 passed |
+| `cargo clippy --all-targets -- -D warnings` | exit 0, 경고 0 |
+| `cargo fmt --check` | 실제 포맷 지적(`Diff in`) 0건 |
+| `git diff --check` | 오류 0 |
+| `cargo check --target wasm32-unknown-unknown --lib` | exit 0 |
+
+focused 회귀: `issue_3546_chart_preserved_on_save`(2, 암호 축 포함) ·
+`issue_3547_internal_ole_size_prefix_roundtrips`(1) · `issue_1251_ole_chart_contents`(10) ·
+`issue_4055_b1_chart_edit_probe`(9 + 1 ignored) · `issue_4097_mini_cfb_root_clsid`(3) ·
+`mini_cfb`(13) · `cfb_reader`(10) · HWP3 축(3).
+
+전체 로그: `$TMPDIR/4097_full_test.log`.
+
+### 6.1 계획과 다르게 실행한 것
+
+계획의 wasm 스모크는 `wasm-pack build --target web` 이었으나 **이 머신에 `wasm-pack` 이 설치돼 있지
+않아** `cargo check --target wasm32-unknown-unknown --lib` 로 대체했다. 이 이슈의 wasm 논점은 `usize` 가
+32비트인 타깃에서의 산술(`checked_add`/`checked_mul`, `1usize << sector_shift` 범위 검증)이고 그것은
+타깃 컴파일로 검증된다. `wasm-pack` 이 추가로 보는 바인딩 생성·번들링은 이번 변경과 무관하다.
+
+### 6.2 `cargo fmt --check` 의 newline style 경고
+
+이 체크아웃은 전역 CRLF 상태라 `Incorrect newline style` 이 1055건 나온다 — 손대지 않은 파일
+(`tools/`, `tests/*_contract.rs` 등)이 대거 포함되며 이번 변경과 무관하다. 실제 포맷 지적(`Diff in`)은
+작업 중 3건 발생했고 전부 rustfmt 제안대로 고쳐 현재 0건이다.
 
 ## 7. 한컴 실측 (AC④)
 
-*(Stage 5)*
+### 7.1 자동화로 확보한 증거 두 가지
 
-## 8. 남긴 것
+1. **코퍼스 56건 합성 대조** — `production_api_reproduces_the_hancom_validated_bytes`. #4055 가 한컴에
+   넘긴 레시피(`build_cfb` 출력 + 루트 엔트리 +80 사후 스탬프)를 동결 사본으로 두고, 프로덕션
+   `build_cfb_with_root_clsid` 출력이 전건 바이트 동일함을 단언한다.
+2. **판정 파일 그 자체와의 동일성** — Stage 5 에서 판정 번들을 프로덕션 경로로 재생성했더니 생성기가
+   변종 10종 전건 **`unchanged`**(= 디스크 내용과 전체 바이트 비교 일치)를 보고했다. 디스크의 파일은
+   **2026-08-05** 한컴 판정에 실제로 쓰인 산출물이다(같은 디렉터리의 판정 PDF 도 같은 날짜).
+
+즉 프로덕션 경로는 **한컴이 이미 정상 판정한 파일을 바이트 단위로 재현한다.** 특히
+`H-A`·`H-C`·`H-D` 는 중첩 CFB 를 실제로 재포장한 변종이라 이번 수정이 지나가는 바로 그 경로다.
+
+여기에 #4055 stage4 `:64-70` 의 디렉터리 엔트리 전수 비교(color flag 0→1·타임스탬프 무해 판정, 루트
+CLSID 가 유일한 유의미 차이)를 합치면, AC④ 는 **"새로 측정할 미지"가 아니라 "이미 측정된 것의
+재확인"** 이다.
+
+### 7.2 HWP3 글맵시 축 — 판정 완료: 가시 효과 없음 (2026-08-07 실측)
+
+차트 축(HWPX/HWP5)은 §7.1 대로 이미 판정된 파일을 바이트 단위로 재현하므로 재판정 대상이 아니었고,
+**한컴 판정 이력이 없는 HWP3 글맵시 축만** 수정 전/후 쌍(`output/issue_4097_hwp3/`,
+`PANJEONG.md` 포함)으로 판정했다. 두 파일의 차이는 **CFB 오프셋 592(=512+80)의 16바이트뿐**이다.
+
+| 파일 | `BinData/image1.ole` 루트 CLSID |
+|---|---|
+| `SO-SUEOP-before.{hwp,hwpx}` | `{00000000-0000-0000-0000-000000000000}` |
+| `SO-SUEOP-after.{hwp,hwpx}` | `{00044214-0000-0000-C000-000000000046}` |
+
+작업지시자 실측 결과:
+
+| 항목 | 결과 |
+|---|---|
+| 오류·복구 대화상자 | 4개 전부 없음 |
+| before vs after 한컴 렌더 (한컴 PDF 내보내기) | **46쪽 전부 픽셀 동일** (PyMuPDF 72dpi 해시) |
+| 개체 더블클릭 | 속성 대화상자 (before/after 동일) |
+
+**판정: "둘 다 정상" 분기 — CLSID 축은 HWP3 글맵시 렌더에 가시 효과가 없다.** 글맵시는
+`OlePres000` 미리보기(EMF)로 그려지므로 CLSID 유무가 표시에 영향을 주지 않는 것으로 보인다
+(차트는 2026-08-05 실측에서 CLSID 부재 시 통째로 비었다 — 개체 종류에 따라 거동이 다르다).
+HWP3 축 수정은 "원본이 가진 값을 버리지 않는다"는 보존 원칙으로 정당하며, **효과가 증명된 곳은
+차트 축**이다.
+
+판정의 한계: 이 실측에서 변환본 자체가 별개 결함(§9)으로 사실상 백지라 "글맵시가 보이는가"·
+"편집기가 열리는가" 축은 오염됐다. 확정 가능한 것은 before==after(CLSID 무영향)다.
+
+### 7.3 절차 상태
+
+- 오늘할일(`mydocs/orders/`)은 **미갱신** — 저장소 관례상 PR 생성 최종 준비 시점에 같은 PR diff 로 넣는다.
+- **remote push 와 PR 생성은 작업지시자 승인 대기**다.
+- 이슈 assignee 지정은 contributor 권한으로 실패했다(Stage 1 §5).
+
+## 8. 재검토와 C2b 게이트 (2026-08-07)
+
+작업지시자의 "CLSID 로 차트 정상 여부가 판정되어야 하는 것 아닌가"라는 지적을 받아 검증 체계를
+재검토했다 (`stage5` §2.5 에 상세).
+
+- **확인된 사실**: roundtrip 게이트 C1~C5 는 중첩 OLE CLSID 를 보지 않는다. C1 은
+  `bin_data_content` 의 비어있지 않은 **개수**만(`roundtrip.rs:668-679`), C2 는 내용 해시만 본다.
+  C2 가 green 인 것은 저장이 중첩 CFB 를 passthrough 하는 덕이다(`cfb_writer.rs:236-249`).
+- **채택한 조치 — C2b 게이트**: `hwp5_roundtrip_batch` 에 "중첩 OLE 루트 CLSID 보존" 검사를
+  추가했다(`nested_ole_clsid_fingerprint` + `baseline_check`/`roundtrip_one`/TSV/상태
+  `OLE_CLSID_LOSS`). 현행 passthrough 저장에서는 자동 green — 존재 이유는 **재포장이 저장 경로에
+  들어오는 날**(차트 편집 #3683 등)이다. 그때 C2(내용 해시)는 "편집분은 달라도 된다"로 완화될
+  수밖에 없지만 개체 정체성은 C2b 가 계속 지킨다. 검출기 비-공허성은
+  `nested_clsid_fingerprint_sees_chart_corpus` 가 고정한다. canonical 문서
+  (`hwp5_roundtrip_baseline.md`)에 등재했다.
+- **기각한 방향**: "B1 편집 시 C2 실패" 인과(게이트는 무편집 왕복만 돎), `OleContainer` 필드
+  선반영(diff 는 Document IR 만 봄), 별도 선행 과제 이슈(**#3557 OPEN** 이 같은 범주를 이미 다룸,
+  **#3683 은 go/no-go 미결정**). #3557 에 CLSID 축을 코멘트로 제안한다(승인 완료).
+
+## 9. 판정 중 발견한 별개 결함 — HWP3 변환본 글자 크기 ~100배 붕괴
+
+한컴 판정 과정에서 #4097 과 무관한 결함이 드러났다: 변환본(before·after 공통)을 한컴으로 열면
+**전 46쪽 10604개 텍스트 span 이 전부 ~0.12pt** 로 사실상 백지다(원본 9.7~50.5pt, 위치는 정상).
+0.12×100=12pt — 정확히 100배 패턴. before==after 46쪽 픽셀 동일이므로 #4097 무관은 증명돼 있다.
+동일 증상 기존 이슈 없음 확인 → CharShape `base_size` 실측 보강 후 별도 이슈 등록(승인 완료).
+상세는 `stage5` §5.
+
+## 10. 남긴 것
 
 - `OleContainer` 구조체에 `root_clsid` 필드를 넣지 않았다 — `parse_ole_container` 의 `Some` 게이트가
   렌더러 분기(`renderer/layout/shape_layout.rs:1964`)를 좌우하므로, B1(#3683)이 실제로 필요해질 때
-  넣는 편이 리뷰 부담이 적다.
+  넣는 편이 리뷰 부담이 적다. (재검토에서도 이 이연이 옳았음을 확인 — `diff_documents` 는
+  Document IR 만 보므로 이 필드는 검증 게이트에 기여하지 않는다.)
 - `cfb_reader.rs` 의 `LenientCfbReader` 쪽 섹터 오프셋 산식 `512 + sid * sector_size` 는 v4(4096)에서
   틀리다. 이번 `root_clsid` 는 그 식을 상속하지 않았으나(체인 순회 없음), **기존 결함은 그대로 남아
   있다** — 별도 이슈 대상이다.
