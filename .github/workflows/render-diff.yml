@@ -310,38 +310,39 @@ jobs:
 
               codeCandidateSha = sha;
               break;
+            }
 
-              if (reviewOnlyCandidates.length === 0) {
-                setResult(false, 'no-trailing-review-only-commits');
+            if (reviewOnlyCandidates.length === 0) {
+              setResult(false, 'no-trailing-review-only-commits');
+              return;
+            }
+            if (codeCandidateSha) {
+              reviewOnlyCandidates.push(codeCandidateSha);
+            }
+
+            for (const candidateSha of reviewOnlyCandidates) {
+              const result = await renderDiffResult(candidateSha, pr);
+              if (result.state === 'green') {
+                if (baseMergeBridge) {
+                  setPendingBaseMergeResult(
+                    'canvas-visual-diff-success',
+                    candidateSha,
+                    baseMergeBridge.mergeSha,
+                    baseMergeBridge.sourceParentSha,
+                  );
+                  return;
+                }
+                setResult(true, 'canvas-visual-diff-success', candidateSha);
                 return;
               }
-              if (codeCandidateSha) {
-                reviewOnlyCandidates.push(codeCandidateSha);
+              if (result.state === 'failed') {
+                setResult(false, result.reason, candidateSha);
+                return;
               }
+              core.info(`candidate not reusable yet: ${candidateSha} (${result.reason})`);
+            }
 
-              for (const candidateSha of reviewOnlyCandidates) {
-                const result = await renderDiffResult(candidateSha, pr);
-                if (result.state === 'green') {
-                  if (baseMergeBridge) {
-                    setPendingBaseMergeResult(
-                      'canvas-visual-diff-success',
-                      candidateSha,
-                      baseMergeBridge.mergeSha,
-                      baseMergeBridge.sourceParentSha,
-                    );
-                    return;
-                  }
-                  setResult(true, 'canvas-visual-diff-success', candidateSha);
-                  return;
-                }
-                if (result.state === 'failed') {
-                  setResult(false, result.reason, candidateSha);
-                  return;
-                }
-                core.info(`candidate not reusable yet: ${candidateSha} (${result.reason})`);
-              }
-
-              setResult(false, 'no-green-render-candidate');
+            setResult(false, 'no-green-render-candidate');
             } catch (error) {
               core.warning(`Render Diff preflight failed; running full Render Diff. ${error.message}`);
               setResult(false, 'preflight-error');

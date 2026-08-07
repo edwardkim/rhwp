@@ -169,6 +169,32 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         self.assertIn("renderDiffRun.head_branch !== pr.head.ref", workflow)
         self.assertIn("renderDiffRun.head_repository?.id !== pr.head.repo?.id", workflow)
 
+    def test_render_diff_preflight_keeps_candidate_lookup_outside_commit_loop(self) -> None:
+        workflow = WORKFLOWS["render-diff"].read_text(encoding="utf-8")
+        self.assertIn(
+            "codeCandidateSha = sha;\n"
+            "              break;\n"
+            "            }\n\n"
+            "            if (reviewOnlyCandidates.length === 0)",
+            workflow,
+        )
+
+        script = workflow.split("script: |\n", maxsplit=1)[1].split(
+            "\n      # 기준선 병합을 fast-pass bridge로", maxsplit=1
+        )[0]
+        script = "\n".join(
+            line.removeprefix("            ") for line in script.splitlines()
+        )
+        syntax = subprocess.run(
+            ["node", "--check"],
+            input=f"(async () => {{\n{script}\n}})();\n",
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        self.assertEqual(syntax.returncode, 0, syntax.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
