@@ -55,8 +55,11 @@ workflow를 바꾸므로 workflow 계약과 실제 Canvas visual diff 완료 여
 **수용 권고.** CI 실행 경로를 바꾼 PR은 재사용 대상에서 제외하고, mydocs-only current-base merge의
 직접 source parent만 좁게 허용하므로 기존 Full CI fallback 경계를 넓히지 않는다.
 
-이 review와 오늘할일은 code head 뒤의 trailing documentation commit으로 추가한다. PR 전체가 CI
-workflow 변경을 포함하므로 이 trailing commit도 review-only fast-pass 대상이 아니며 최신 head에서
-Full CI를 다시 완료해야 한다. 그 뒤 별도의 mydocs-only current-base 병합 PR에서 녹색 source-parent
-재사용과 fast-pass aggregate를 확인한다. merge 전에는 최신 head의 required check와 merge 상태를 다시
-확인하고 작업지시자 승인을 받는다.
+이 review와 오늘할일은 code head 뒤의 trailing documentation commit으로 추가했다. code head의 CI
+실행 경로 변경은 `8119074ce`에서 Full CI로 검증했고, trailing head `cfe6a1ccc`는 같은 녹색 candidate를
+재사용해 fast-pass됐다. CI run `31189434770`에서 모든 heavy job과 test shard가 skip됐고 Build & Test
+aggregate가 성공했으며, CodeQL run `31189434069`과 Render Diff run `31189434104`도 분석·Canvas job을
+skip하고 preflight aggregate가 성공했다.
+
+그 뒤 별도의 mydocs-only current-base 병합 PR에서 직접 source-parent 재사용과 trusted remerge bridge를
+확인한다. merge 전에는 최신 head의 required check와 merge 상태를 다시 확인하고 작업지시자 승인을 받는다.
