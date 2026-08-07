@@ -654,6 +654,34 @@ describe('verify — 독립 사후검증 게이트', () => {
     ).toEqual(['verify', 'a.hwp', '--expect-field', '이름=값', '--expect-format', 'hwpx', '--json']);
   });
 
+  it('수치 경계 축 다섯이 각 플래그로 나간다', async () => {
+    expect(
+      await argvOf(() =>
+        rhwp.verify('a.hwp', {
+          expectMinPages: 1,
+          expectMaxPages: 9,
+          expectMinChars: 100,
+          expectMinTables: 2,
+          expectTableCount: 3,
+        }),
+      ),
+    ).toEqual([
+      'verify',
+      'a.hwp',
+      '--expect-min-pages',
+      '1',
+      '--expect-max-pages',
+      '9',
+      '--expect-min-chars',
+      '100',
+      '--expect-min-tables',
+      '2',
+      '--expect-table-count',
+      '3',
+      '--json',
+    ]);
+  });
+
   it('반복 기대는 값마다 플래그를 되풀이한다 — 쉼표 결합 금지', async () => {
     expect(
       await argvOf(() =>

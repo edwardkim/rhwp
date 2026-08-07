@@ -702,6 +702,16 @@ export async function renderDiff(
 export interface VerifyOptions extends CommandOptions {
   /** 총 쪽수 기대값 (`--expect-pages`). */
   readonly expectPages?: number | undefined;
+  /** 최소 쪽수 (`--expect-min-pages`). */
+  readonly expectMinPages?: number | undefined;
+  /** 최대 쪽수 (`--expect-max-pages`). */
+  readonly expectMaxPages?: number | undefined;
+  /** 본문 최소 문자 수 (`--expect-min-chars`). */
+  readonly expectMinChars?: number | undefined;
+  /** 최소 표 개수 (`--expect-min-tables`). */
+  readonly expectMinTables?: number | undefined;
+  /** 표 개수 정확 일치 (`--expect-table-count`). */
+  readonly expectTableCount?: number | undefined;
   /** 본문에 있어야 하는 문자열 (`--expect-contains`, 반복 가능). */
   readonly expectContains?: string | readonly string[] | undefined;
   /** 본문에 없어야 하는 문자열 (`--expect-not-contains`, 반복 가능). */
@@ -728,6 +738,11 @@ export interface VerifyOptions extends CommandOptions {
 export async function verify(path: PathLike, options: VerifyOptions = {}): Promise<Envelope> {
   const args: Argument[] = ['verify', path];
   flag(args, '--expect-pages', options.expectPages);
+  flag(args, '--expect-min-pages', options.expectMinPages);
+  flag(args, '--expect-max-pages', options.expectMaxPages);
+  flag(args, '--expect-min-chars', options.expectMinChars);
+  flag(args, '--expect-min-tables', options.expectMinTables);
+  flag(args, '--expect-table-count', options.expectTableCount);
   repeat(args, '--expect-contains', options.expectContains);
   repeat(args, '--expect-not-contains', options.expectNotContains);
   repeat(args, '--expect-field', options.expectField);

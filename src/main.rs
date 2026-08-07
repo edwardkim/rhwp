@@ -639,6 +639,11 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "properties": {
                     "path": { "type": "string", "description": "HWP/HWPX 문서 경로" },
                     "pages": { "type": "integer", "description": "기대 쪽수" },
+                    "minPages": { "type": "integer", "description": "최소 쪽수" },
+                    "maxPages": { "type": "integer", "description": "최대 쪽수" },
+                    "minChars": { "type": "integer", "description": "본문 최소 문자 수" },
+                    "minTables": { "type": "integer", "description": "최소 표 개수" },
+                    "tableCount": { "type": "integer", "description": "기대 표 개수(정확히)" },
                     "contains": { "type": "string", "description": "본문에 있어야 하는 문자열" },
                     "notContains": { "type": "string", "description": "본문에 없어야 하는 문자열" },
                     "field": { "type": "string", "description": "누름틀 기대값 — 이름=값 형식" },
@@ -651,6 +656,11 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "verify",
                 "{path}",
                 { "when": "pages", "args": ["--expect-pages", "{pages}"] },
+                { "when": "minPages", "args": ["--expect-min-pages", "{minPages}"] },
+                { "when": "maxPages", "args": ["--expect-max-pages", "{maxPages}"] },
+                { "when": "minChars", "args": ["--expect-min-chars", "{minChars}"] },
+                { "when": "minTables", "args": ["--expect-min-tables", "{minTables}"] },
+                { "when": "tableCount", "args": ["--expect-table-count", "{tableCount}"] },
                 { "when": "contains", "args": ["--expect-contains", "{contains}"] },
                 { "when": "notContains", "args": ["--expect-not-contains", "{notContains}"] },
                 { "when": "field", "args": ["--expect-field", "{field}"] },
@@ -2345,10 +2355,15 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "verify",
             "diagnostic",
-            "기대 조건(--expect-pages/contains/not-contains/field/format) 대조 — 전부 만족 exit 0, 불일치는 봉투 후 exit 3",
+            "기대 조건(--expect-pages/min-pages/max-pages/min-chars/min-tables/table-count/contains/not-contains/field/format) 대조 — 전부 만족 exit 0, 불일치는 봉투 후 exit 3",
             false,
             &[
                 "--expect-pages",
+                "--expect-min-pages",
+                "--expect-max-pages",
+                "--expect-min-chars",
+                "--expect-min-tables",
+                "--expect-table-count",
                 "--expect-contains",
                 "--expect-not-contains",
                 "--expect-field",
@@ -3071,7 +3086,7 @@ fn print_help() {
     println!("      ingest JSON(시험문제 등)을 HWPX로 생성 (rhwp-exam-ingest 파이프라인)");
     println!();
     println!("  ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>] [--json]");
-    println!("  verify <파일> --expect-pages <N> | --expect-contains <문자열> | --expect-not-contains <문자열> | --expect-field <이름=값> | --expect-format <형식> [--json]");
+    println!("  verify <파일> --expect-pages <N> | --expect-min-pages <N> | --expect-max-pages <N> | --expect-min-chars <N> | --expect-min-tables <N> | --expect-table-count <N> | --expect-contains <문자열> | --expect-not-contains <문자열> | --expect-field <이름=값> | --expect-format <형식> [--json]");
     println!("      두 파일의 IR(중간표현) 비교 (HWPX↔HWP 불일치 검출)");
     println!("      --json                  판정 봉투 JSON 한 줄 출력, 차이 발견 시 exit 3");
     println!("      비교 항목: text, char_count, char_offsets, char_shapes, line_segs,");
@@ -13248,12 +13263,19 @@ fn ir_diff_paragraph_fields(
 /// 재사용이다: `page_count`·`grep`·`collect_field_records`·`detect_format`(규칙 2).
 fn cmd_verify(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp verify <파일.hwp|파일.hwpx> [--expect-pages N] \
+[--expect-min-pages N] [--expect-max-pages N] [--expect-min-chars N] \
+[--expect-min-tables N] [--expect-table-count N] \
 [--expect-contains 문자열]... [--expect-not-contains 문자열]... [--expect-field 이름=값]... \
 [--expect-format hwp5|hwpx|hwp3|hml] [--json] — 기대 조건이 최소 1개 필요합니다";
 
     let mut file_path: Option<&str> = None;
     let mut json_mode = false;
     let mut expect_pages: Option<u64> = None;
+    let mut expect_min_pages: Option<u64> = None;
+    let mut expect_max_pages: Option<u64> = None;
+    let mut expect_min_chars: Option<u64> = None;
+    let mut expect_min_tables: Option<u64> = None;
+    let mut expect_table_count: Option<u64> = None;
     let mut expect_format: Option<String> = None;
     let mut expect_contains: Vec<String> = Vec::new();
     let mut expect_not_contains: Vec<String> = Vec::new();
@@ -13263,13 +13285,23 @@ fn cmd_verify(args: &[String]) -> i32 {
     while i < args.len() {
         match args[i].as_str() {
             "--json" => json_mode = true,
-            "--expect-pages" => {
+            flag @ ("--expect-pages" | "--expect-min-pages" | "--expect-max-pages"
+            | "--expect-min-chars" | "--expect-min-tables" | "--expect-table-count") => {
                 i += 1;
                 let n = args.get(i).and_then(|v| v.parse::<u64>().ok());
                 match n {
-                    Some(n) => expect_pages = Some(n),
+                    Some(n) => {
+                        *match flag {
+                            "--expect-pages" => &mut expect_pages,
+                            "--expect-min-pages" => &mut expect_min_pages,
+                            "--expect-max-pages" => &mut expect_max_pages,
+                            "--expect-min-chars" => &mut expect_min_chars,
+                            "--expect-min-tables" => &mut expect_min_tables,
+                            _ => &mut expect_table_count,
+                        } = Some(n);
+                    }
                     None => {
-                        eprintln!("오류: --expect-pages 뒤에 숫자가 필요합니다.");
+                        eprintln!("오류: {flag} 뒤에 숫자가 필요합니다.");
                         eprintln!("{USAGE}");
                         return EXIT_USAGE;
                     }
@@ -13352,6 +13384,11 @@ fn cmd_verify(args: &[String]) -> i32 {
         return EXIT_USAGE;
     };
     let expectation_count = usize::from(expect_pages.is_some())
+        + usize::from(expect_min_pages.is_some())
+        + usize::from(expect_max_pages.is_some())
+        + usize::from(expect_min_chars.is_some())
+        + usize::from(expect_min_tables.is_some())
+        + usize::from(expect_table_count.is_some())
         + usize::from(expect_format.is_some())
         + expect_contains.len()
         + expect_not_contains.len()
@@ -13412,6 +13449,68 @@ fn cmd_verify(args: &[String]) -> i32 {
             serde_json::json!(actual),
             actual == n,
         );
+    }
+    if let Some(n) = expect_min_pages {
+        let actual = u64::from(doc.page_count());
+        record(
+            "minPages",
+            serde_json::Value::Null,
+            serde_json::json!(n),
+            serde_json::json!(actual),
+            actual >= n,
+        );
+    }
+    if let Some(n) = expect_max_pages {
+        let actual = u64::from(doc.page_count());
+        record(
+            "maxPages",
+            serde_json::Value::Null,
+            serde_json::json!(n),
+            serde_json::json!(actual),
+            actual <= n,
+        );
+    }
+    if let Some(n) = expect_min_chars {
+        // 쪽별 추출 텍스트의 문자 수 합 — export-text 와 같은 출처를 쓴다.
+        let mut actual = 0u64;
+        for page in 0..doc.page_count() {
+            match doc.extract_page_text_native(page) {
+                Ok(text) => actual += text.chars().count() as u64,
+                Err(e) => {
+                    eprintln!("오류: 본문 텍스트 추출 실패 - {}쪽: {}", page, e);
+                    return EXIT_RUNTIME;
+                }
+            }
+        }
+        record(
+            "minChars",
+            serde_json::Value::Null,
+            serde_json::json!(n),
+            serde_json::json!(actual),
+            actual >= n,
+        );
+    }
+    if expect_min_tables.is_some() || expect_table_count.is_some() {
+        use rhwp::document_core::queries::table_extract::extract_tables;
+        let actual = extract_tables(doc.document()).len() as u64;
+        if let Some(n) = expect_min_tables {
+            record(
+                "minTables",
+                serde_json::Value::Null,
+                serde_json::json!(n),
+                serde_json::json!(actual),
+                actual >= n,
+            );
+        }
+        if let Some(n) = expect_table_count {
+            record(
+                "tableCount",
+                serde_json::Value::Null,
+                serde_json::json!(n),
+                serde_json::json!(actual),
+                actual == n,
+            );
+        }
     }
     if let Some(f) = expect_format.as_deref() {
         record(

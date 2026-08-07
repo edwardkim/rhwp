@@ -141,3 +141,118 @@ fn usage_errors_are_exit_two() {
     let out = run(&["verify", s.to_str().unwrap(), "--expect-format", "pdf"]);
     assert_eq!(out.status.code(), Some(2));
 }
+
+// ── [#4113 잔여 축] min/max-pages · min-chars · min-tables · table-count ────
+
+#[test]
+fn page_bounds_and_body_floor_axes() {
+    let s = sample();
+    // 3쪽 표본: 하한 1 · 상한 999 · 본문 1자 이상 — 전부 만족이면 exit 0.
+    let out = run(&[
+        "verify",
+        s.to_str().unwrap(),
+        "--expect-min-pages",
+        "1",
+        "--expect-max-pages",
+        "999",
+        "--expect-min-chars",
+        "1",
+        "--json",
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_eq!(v["verdict"], "pass");
+    let kinds: Vec<&str> = v["expectations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|e| e["kind"].as_str().unwrap())
+        .collect();
+    assert_eq!(kinds, ["minPages", "maxPages", "minChars"]);
+
+    // 상한 위반(실제 3쪽 > 1쪽): 봉투를 먼저 내고 exit 3, actual 은 실측 쪽수.
+    let out = run(&[
+        "verify",
+        s.to_str().unwrap(),
+        "--expect-max-pages",
+        "1",
+        "--json",
+    ]);
+    assert_eq!(out.status.code(), Some(3));
+    let v = stdout_json(&out);
+    assert_eq!(v["verdict"], "fail");
+    assert_eq!(v["expectations"][0]["actual"], 3);
+
+    // 본문 하한 위반도 같은 규약.
+    let out = run(&[
+        "verify",
+        s.to_str().unwrap(),
+        "--expect-min-chars",
+        "999999999",
+        "--json",
+    ]);
+    assert_eq!(out.status.code(), Some(3));
+    assert_eq!(stdout_json(&out)["verdict"], "fail");
+}
+
+#[test]
+fn table_axes_agree_with_measured_count() {
+    let s = sample();
+    // >=0 은 항상 참 — 봉투에서 실측 표 개수를 읽어 온다.
+    let out = run(&[
+        "verify",
+        s.to_str().unwrap(),
+        "--expect-min-tables",
+        "0",
+        "--json",
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let n = stdout_json(&out)["expectations"][0]["actual"]
+        .as_u64()
+        .expect("minTables actual 은 정수");
+
+    // 실측값과 자기일관: 정확 일치는 pass, +1 요구는 fail(exit 3) + 같은 actual.
+    let exact = run(&[
+        "verify",
+        s.to_str().unwrap(),
+        "--expect-table-count",
+        &n.to_string(),
+        "--json",
+    ]);
+    assert_eq!(exact.status.code(), Some(0));
+    let over = run(&[
+        "verify",
+        s.to_str().unwrap(),
+        "--expect-table-count",
+        &(n + 1).to_string(),
+        "--json",
+    ]);
+    assert_eq!(over.status.code(), Some(3));
+    assert_eq!(stdout_json(&over)["expectations"][0]["actual"], n);
+}
+
+#[test]
+fn numeric_axis_usage_errors_are_exit_two() {
+    let s = sample();
+    for flag in [
+        "--expect-min-pages",
+        "--expect-max-pages",
+        "--expect-min-chars",
+        "--expect-min-tables",
+        "--expect-table-count",
+    ] {
+        let out = run(&["verify", s.to_str().unwrap(), flag, "abc", "--json"]);
+        assert_eq!(out.status.code(), Some(2), "{flag} 비숫자 인자");
+        assert!(out.stdout.is_empty(), "{flag} 조립 오류는 stdout 0 B");
+    }
+}

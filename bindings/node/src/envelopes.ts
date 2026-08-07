@@ -672,8 +672,9 @@ export interface ThumbnailEnvelope {
 /**
  * `rhwp verify --json` 봉투.
  *
- * 기대 조건(--expect-pages/contains/not-contains/field/format) 대조 — 전부 만족 exit 0,
- * 불일치는 봉투 후 exit 3
+ * 기대
+ * 조건(--expect-pages/min-pages/max-pages/min-chars/min-tables/table-count/contains/not-contains/field/format)
+ * 대조 — 전부 만족 exit 0, 불일치는 봉투 후 exit 3
  */
 export interface VerifyEnvelope {
   readonly expectations?: unknown;
