@@ -13283,8 +13283,12 @@ fn cmd_verify(args: &[String]) -> i32 {
     while i < args.len() {
         match args[i].as_str() {
             "--json" => json_mode = true,
-            flag @ ("--expect-pages" | "--expect-min-pages" | "--expect-max-pages"
-            | "--expect-min-chars" | "--expect-min-tables" | "--expect-table-count") => {
+            flag @ ("--expect-pages"
+            | "--expect-min-pages"
+            | "--expect-max-pages"
+            | "--expect-min-chars"
+            | "--expect-min-tables"
+            | "--expect-table-count") => {
                 i += 1;
                 let n = args.get(i).and_then(|v| v.parse::<u64>().ok());
                 match n {
