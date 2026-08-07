@@ -279,9 +279,15 @@ fn char_shade(color: ColorRef) -> Option<ColorRef> {
 /// 같은 식을 쓴다.
 ///
 /// 현실 문서에서 차이는 없다 — HWPX 60개 문서 4,298개 `charPr` 실측에서 `relSz != 100`
-/// 은 0건이었다. 덤으로, `CharShape::default()` 의 `relative_sizes = [0; 7]`(HWP3 변환
-/// 경로가 채우지 않는다)을 0% 로 오독해 **모든 글자를 0pt 로 보고**하는 사고도 구조적으로
-/// 불가능해진다.
+/// 은 0건이었다.
+///
+/// # 이력 (#4141)
+///
+/// 종전 이 주석은 "`CharShape::default()` 의 `relative_sizes = [0; 7]` 을 0% 로 오독해
+/// 모든 글자를 0pt 로 보고하는 사고도 구조적으로 불가능해진다"를 부수 논거로 들었다.
+/// 그 전제는 사라졌다 — `CharShape::default()` 는 이제 스펙 기본값 `[100; 7]` 이다
+/// (`model/style.rs`). **결론은 그대로다**: 렌더러가 안 곱하므로 판정기도 안 곱한다.
+/// 사라진 것은 근거 하나뿐이고, 아래 회귀 테스트가 0 입력에 대한 안전성을 직접 고정한다.
 pub fn effective_pt(shape: &CharShape) -> f64 {
     shape.base_size.max(0) as f64 / 100.0
 }
@@ -1076,9 +1082,13 @@ mod tests {
 
     #[test]
     fn default_relative_sizes_can_never_cause_a_zero_size_misjudgment() {
-        // `CharShape::default()` 는 relative_sizes = [0; 7] 이고 HWP3 변환 경로가 이
-        // 배열을 채우지 않는다. 이 값을 0% 로 곱했다면 HWP3 문서 전체가 0pt 로 보고됐을
-        // 것이다. relSz 를 아예 보지 않으므로 그 사고가 구조적으로 불가능하다.
+        // relSz=0 은 OWPML 유효범위 10~250 밖이지만 외부 파일에는 실제로 들어온다 —
+        // #4141 이전 rhwp 가 만든 HWP3 변환본이 전부 그렇다(CHAR_SHAPE 68,744개 전건).
+        // 그 값을 0% 로 곱했다면 문서 전체가 0pt 로 보고됐을 것이다. relSz 를 아예
+        // 보지 않으므로 그 사고가 구조적으로 불가능하다.
+        //
+        // (#4141 이후 `CharShape::default()` 자체는 [100; 7] 이다. 그래서 여기서 0 을
+        //  명시 대입한다 — 이 테스트가 지키는 것은 기본값이 아니라 *입력 내성*이다.)
         let mut cs = shape(1000, 0x0000_0000, NO_SHADE);
         cs.relative_sizes = [0; 7];
         assert!((effective_pt(&cs) - 10.0).abs() < 1e-9);

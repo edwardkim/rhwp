@@ -3206,6 +3206,72 @@ mod tests {
         assert_eq!(cs.shadow_offset_y, 10);
     }
 
+    /// [#4141] `<hh:relSz>` 자식이 없는 `charPr` 은 OWPML 기본값 100 으로 남아야 한다.
+    ///
+    /// 종전엔 `CharShape::default()` 의 파생값 0 이 남아, 그 IR 을 그대로 방출하는 라이터
+    /// (`serializer/hwpx/header.rs:638`, `serializer/char_shape.rs:21`)를 통해 유효범위
+    /// 10~250 밖의 `relSz="0"` 이 저장됐다. 한컴은 `크기 × 상대크기%` 로 해석한다.
+    #[test]
+    fn char_pr_without_rel_sz_child_defaults_to_100_percent() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:charProperties itemCnt="1">
+      <hh:charPr id="0" height="1000" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="NONE">
+        <hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+        <hh:ratio hangul="95" latin="95" hanja="95" japanese="95" other="95" symbol="95" user="95"/>
+      </hh:charPr>
+    </hh:charProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+
+        assert_eq!(
+            doc_info.char_shapes[0].relative_sizes, [100; 7],
+            "relSz 자식이 없으면 OWPML 기본값 100 이어야 한다 (Header XML schema.xml:716-728)"
+        );
+        // 명시된 장평은 그대로 살아야 한다 — 기본값 채움이 실제 값을 덮으면 안 된다.
+        assert_eq!(doc_info.char_shapes[0].ratios, [95; 7]);
+    }
+
+    /// [#4141] `charPr` id 갭을 메우는 자리도 유효한 상대크기를 가져야 한다.
+    ///
+    /// `parse_char_properties` 는 `id` 를 배열 인덱스로 쓰고 빈 자리를
+    /// `resize_with(idx + 1, CharShape::default)` 로 메운다. 그 자리가 참조되면
+    /// 저장 바이트에 relSz=0 이 그대로 나간다.
+    #[test]
+    fn char_pr_id_gap_filler_gets_valid_relative_size() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:charProperties itemCnt="2">
+      <hh:charPr id="0" height="1000" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="NONE">
+        <hh:relSz hangul="100" latin="100" hanja="100" japanese="100" other="100" symbol="100" user="100"/>
+      </hh:charPr>
+      <hh:charPr id="3" height="1000" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="NONE">
+        <hh:relSz hangul="100" latin="100" hanja="100" japanese="100" other="100" symbol="100" user="100"/>
+      </hh:charPr>
+    </hh:charProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+
+        assert!(
+            doc_info.char_shapes.len() >= 4,
+            "id 3 까지 자리가 잡혀야 한다: {}",
+            doc_info.char_shapes.len()
+        );
+        for (id, cs) in doc_info.char_shapes.iter().enumerate() {
+            assert!(
+                cs.relative_sizes.iter().all(|&v| (10..=250).contains(&v)),
+                "charPr id={id} (갭 채움 자리 포함)의 상대크기가 유효범위 10~250 밖이다: {:?}",
+                cs.relative_sizes
+            );
+        }
+    }
+
     #[test]
     fn parse_char_pr_captures_sym_mark() {
         // symMark(강조점)은 종전에 파서가 no-op 으로 무시해 hwpx 재로드 시 NONE 으로 유실됐다.
