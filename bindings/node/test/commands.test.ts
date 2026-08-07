@@ -638,6 +638,42 @@ describe('render-diff — 라운드트립과 pair', () => {
     // 한 함수가 봉투와 스트림을 다 돌려주면 호출자가 받은 값의 타입을 모른다.
     expect(await argvOf(() => rhwp.renderDiff('a.hwp'))).not.toContain('--batch');
   });
+});
+
+describe('verify — 독립 사후검증 게이트', () => {
+  it('기대 조건이 각 플래그로 나간다', async () => {
+    expect(await argvOf(() => rhwp.verify('a.hwp', { expectPages: 3 }))).toEqual([
+      'verify',
+      'a.hwp',
+      '--expect-pages',
+      '3',
+      '--json',
+    ]);
+    expect(
+      await argvOf(() => rhwp.verify('a.hwp', { expectFormat: 'hwpx', expectField: '이름=값' })),
+    ).toEqual(['verify', 'a.hwp', '--expect-field', '이름=값', '--expect-format', 'hwpx', '--json']);
+  });
+
+  it('반복 기대는 값마다 플래그를 되풀이한다 — 쉼표 결합 금지', async () => {
+    expect(
+      await argvOf(() =>
+        rhwp.verify('a.hwp', {
+          expectContains: ['갑', '을'],
+          expectNotContains: '병',
+        }),
+      ),
+    ).toEqual([
+      'verify',
+      'a.hwp',
+      '--expect-contains',
+      '갑',
+      '--expect-contains',
+      '을',
+      '--expect-not-contains',
+      '병',
+      '--json',
+    ]);
+  });
 
   it('회귀 판정을 예외로 올리는 선택이 실행 계층까지 간다', async () => {
     await argvOf(() => rhwp.renderDiff('a.hwp', 'b.hwp', { throwOnVerdict: true }));
@@ -906,6 +942,7 @@ describe('옵션을 안 주면 플래그도 안 붙는다', () => {
     ['irDiff', () => rhwp.irDiff('a.hwpx', 'b.hwp')],
     ['renderDiff', () => rhwp.renderDiff('a.hwp')],
     ['renderDiff(pair)', () => rhwp.renderDiff('a.hwp', 'b.hwp')],
+    ['verify', () => rhwp.verify('a.hwp', { expectPages: 1 })],
     ['fillFields', () => rhwp.fillFields('a.hwp', { 이름: '값' })],
     ['replaceText', () => rhwp.replaceText('a.hwp', 'x', 'y')],
     ['setCell', () => rhwp.setCell('a.hwp', 0, 0, 0, 'v')],

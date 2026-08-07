@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 34개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 35개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -670,6 +670,23 @@ export interface ThumbnailEnvelope {
 }
 
 /**
+ * `rhwp verify --json` 봉투.
+ *
+ * 기대 조건(--expect-pages/contains/not-contains/field/format) 대조 — 전부 만족 exit 0,
+ * 불일치는 봉투 후 exit 3
+ */
+export interface VerifyEnvelope {
+  readonly expectations?: unknown;
+  readonly failCount?: unknown;
+  readonly passCount?: unknown;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+  readonly verdict?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * 명령 이름 → 봉투 타입.
  *
  * `recordFields` 를 선언한 명령만 들어 있습니다 — 나머지는 `--json` 봉투를 내지 않습니다.
@@ -709,6 +726,7 @@ export interface EnvelopeByCommand {
   search: SearchEnvelope;
   "table-to-csv": TableToCsvEnvelope;
   thumbnail: ThumbnailEnvelope;
+  verify: VerifyEnvelope;
 }
 
 /** `--json` 봉투를 내는 명령 이름. */

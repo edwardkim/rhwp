@@ -175,6 +175,7 @@ export {
   setCell,
   tableToCsv,
   thumbnail,
+  verify,
   type AgentManifestOptions,
   type BatchOptions,
   type BuildFromIngestOptions,
@@ -213,6 +214,7 @@ export {
   type StructureMode,
   type TableToCsvOptions,
   type ThumbnailOptions,
+  type VerifyOptions,
   type UnicodeInspectionKind,
   type VerifiableOptions,
 } from './commands.js';

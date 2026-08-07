@@ -698,6 +698,44 @@ export async function renderDiff(
   return call(args, options);
 }
 
+/** {@link verify} 옵션 — 기대 조건이 최소 1개 있어야 한다. */
+export interface VerifyOptions extends CommandOptions {
+  /** 총 쪽수 기대값 (`--expect-pages`). */
+  readonly expectPages?: number | undefined;
+  /** 본문에 있어야 하는 문자열 (`--expect-contains`, 반복 가능). */
+  readonly expectContains?: string | readonly string[] | undefined;
+  /** 본문에 없어야 하는 문자열 (`--expect-not-contains`, 반복 가능). */
+  readonly expectNotContains?: string | readonly string[] | undefined;
+  /** `이름=값` 필드 기대값 (`--expect-field`, 반복 가능). */
+  readonly expectField?: string | readonly string[] | undefined;
+  /** 컨테이너 포맷 기대값 (`--expect-format`). */
+  readonly expectFormat?: 'hwp5' | 'hwpx' | 'hwp3' | 'hml' | undefined;
+  /**
+   * 기대 위반(exit 3)을 예외로 올릴지.
+   *
+   * 기본은 거짓 — 위반은 도구의 고장이 아니라 **문서에 대한 판정**이므로
+   * 봉투(`verdict`·`passCount`·`failCount`)로 읽는 것이 이 바인딩의 규약이다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * 독립 사후검증 게이트 — 임의 파일에 기대 조건 집합을 대조한다.
+ *
+ * 편집 축의 `verify: true`(저장 직후 자기검증)와 달리 **임의 시점·임의 파일**에
+ * 쓴다. 기대 조건이 하나도 없으면 CLI 가 사용법 오류(exit 2)를 낸다.
+ */
+export async function verify(path: PathLike, options: VerifyOptions = {}): Promise<Envelope> {
+  const args: Argument[] = ['verify', path];
+  flag(args, '--expect-pages', options.expectPages);
+  repeat(args, '--expect-contains', options.expectContains);
+  repeat(args, '--expect-not-contains', options.expectNotContains);
+  repeat(args, '--expect-field', options.expectField);
+  flag(args, '--expect-format', options.expectFormat);
+  args.push('--json');
+  return call(args, options);
+}
+
 // ── 편집 ──────────────────────────────────────────────────────────────────
 
 /**
