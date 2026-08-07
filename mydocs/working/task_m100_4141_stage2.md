@@ -161,7 +161,7 @@ CARGO_INCREMENTAL=0 cargo clippy --profile release-test --lib --tests -- -D warn
 **exit 0, 경고 0.**
 
 전체 `cargo test --profile release-test --tests` 와 `cargo clippy --all-targets` 는
-`docs_and_git_workflow.md:171-174` 에 따라 **작업지시자 승인 후** 실행한다.
+`docs_and_git_workflow.md:181-184` 에 따라 **작업지시자 승인 후** 실행한다.
 
 renderer lane(`local_validation.md:74`)은 실행하지 않는다 — `relative_sizes` 는 렌더 경로 참조가
 0건이고 렌더러가 소비하는 `ratios`·`base_size` 는 건드리지 않았다. 그 사실을
