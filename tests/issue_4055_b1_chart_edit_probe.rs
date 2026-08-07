@@ -200,6 +200,9 @@ fn locator_must_be_bounded_to_the_data_grid_window() {
 ///
 /// 바이트 동일성이 아니라 **스트림 집합과 각 스트림 바이트의 동일성**을 본다.
 /// CFB 컨테이너 레이아웃(섹터 배치)은 빌더마다 달라도 무방하다.
+///
+/// #4097 이 축을 둘로 넓혔다 — 코퍼스 28종 **× 2포맷(HWPX·HWP)** 전건에서 루트 CLSID 까지
+/// 보존되는지 본다. 재포장은 `build_cfb_with_root_clsid` 프로덕션 경로를 탄다.
 #[test]
 fn nested_cfb_repack_preserves_every_stream() {
     // parse_ole_container 가 아는 스트림 — 이 밖의 것이 있으면 그대로 재포장할 때 소실된다.
@@ -214,74 +217,76 @@ fn nested_cfb_repack_preserves_every_stream() {
     let mut unknown_seen: Vec<String> = Vec::new();
 
     for hwpx in corpus() {
-        let bytes = std::fs::read(&hwpx).expect("HWPX 읽기");
-        let doc = rhwp::parse_document(&bytes).expect("HWPX 파싱");
-        let Some(nested) = doc
-            .bin_data_content
-            .iter()
-            .map(|c| c.data.load())
-            .find(|b| b.starts_with(&[0xD0, 0xCF, 0x11, 0xE0]))
-        else {
-            continue;
-        };
-
-        let before = all_streams(&nested);
-        for (name, _) in &before {
-            if !known.contains(&name.as_str()) && !unknown_seen.contains(name) {
-                unknown_seen.push(name.clone());
-            }
-        }
-
-        let rebuilt = rebuild_cfb_preserving_clsid(&nested, &before);
-        assert_eq!(
-            root_clsid(&rebuilt),
-            root_clsid(&nested),
-            "{}: 재포장이 OLE 클래스 ID 를 보존해야 한다",
-            hwpx.display()
-        );
-        let after = all_streams(&rebuilt);
-        assert_eq!(
-            before.len(),
-            after.len(),
-            "{}: 재포장 전후 스트림 개수가 같아야 한다",
-            hwpx.display()
-        );
-        for (name, data) in &before {
-            let found = after
+        // 2포맷 축 — `.hwp` 의 중첩 CFB 도 `bin_data_content` 에서 그대로 얻힌다.
+        // HWP5 파서가 BinData 의 4바이트 LE size prefix 를 이미 `drain(..4)` 한다.
+        for path in [hwpx.clone(), hwpx.with_extension("hwp")] {
+            let label = path.display().to_string();
+            let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("{label} 읽기: {e}"));
+            let doc =
+                rhwp::parse_document(&bytes).unwrap_or_else(|e| panic!("{label} 파싱: {e:?}"));
+            let nested = doc
+                .bin_data_content
                 .iter()
-                .find(|(n, _)| n == name)
-                .unwrap_or_else(|| panic!("{}: 재포장본에 {name} 없음", hwpx.display()));
-            assert_eq!(
-                &found.1,
-                data,
-                "{}: {name} 바이트가 달라졌다",
-                hwpx.display()
-            );
-        }
+                .map(|c| c.data.load())
+                .find(|b| b.starts_with(&[0xD0, 0xCF, 0x11, 0xE0]))
+                .unwrap_or_else(|| panic!("{label}: 중첩 CFB 가 없다"));
 
-        // 재포장본이 프로덕션 소비 경로를 그대로 탄다.
-        let container = parse_ole_container(&rebuilt).expect("재포장본 컨테이너 파싱");
-        assert!(container.ooxml_chart.is_some(), "재포장본 OOXML 유지");
-        assert!(container.raw_contents.is_some(), "재포장본 레거시 유지");
-        assert!(container.preview_emf.is_some(), "재포장본 EMF 프리뷰 유지");
-        checked += 1;
+            let before = all_streams(&nested);
+            for (name, _) in &before {
+                if !known.contains(&name.as_str()) && !unknown_seen.contains(name) {
+                    unknown_seen.push(name.clone());
+                }
+            }
+
+            let rebuilt = rebuild_cfb_preserving_clsid(&nested, &before);
+            assert_eq!(
+                root_clsid(&rebuilt),
+                root_clsid(&nested),
+                "{label}: 재포장이 OLE 클래스 ID 를 보존해야 한다"
+            );
+            let after = all_streams(&rebuilt);
+            assert_eq!(
+                before.len(),
+                after.len(),
+                "{label}: 재포장 전후 스트림 개수가 같아야 한다"
+            );
+            for (name, data) in &before {
+                let found = after
+                    .iter()
+                    .find(|(n, _)| n == name)
+                    .unwrap_or_else(|| panic!("{label}: 재포장본에 {name} 없음"));
+                assert_eq!(&found.1, data, "{label}: {name} 바이트가 달라졌다");
+            }
+
+            // 재포장본이 프로덕션 소비 경로를 그대로 탄다.
+            let container = parse_ole_container(&rebuilt).expect("재포장본 컨테이너 파싱");
+            assert!(container.ooxml_chart.is_some(), "재포장본 OOXML 유지");
+            assert!(container.raw_contents.is_some(), "재포장본 레거시 유지");
+            assert!(container.preview_emf.is_some(), "재포장본 EMF 프리뷰 유지");
+            checked += 1;
+        }
     }
 
-    assert_eq!(checked, 28, "코퍼스 28종을 전건 재포장 검사해야 한다");
+    assert_eq!(
+        checked, 56,
+        "코퍼스 28종 × 2포맷을 전건 재포장 검사해야 한다"
+    );
     assert!(
         unknown_seen.is_empty(),
         "parse_ole_container 가 모르는 스트림이 코퍼스에 있다 — 4종만 뽑아 재포장하면 소실된다: {unknown_seen:?}"
     );
 }
 
-/// `mini_cfb::build_cfb` 가 루트 CLSID 를 잃는다는 사실을 못박는다.
+/// 중첩 OLE CFB 재포장이 루트 CLSID 를 **보존**하는지 못박는다.
 ///
-/// **B1 본구현의 선결 과제다.** 중첩 OLE CFB 를 재포장하는 순간 OLE 서버 식별자가
-/// 사라지고, 한컴은 개체를 알아보지 못해 틀만 그리고 내용을 비운다(2026-08-05 실측).
-/// rhwp 는 `parse_ole_container` 가 스트림 이름으로 판별하므로 이 손실을 감지하지
-/// 못한다 — 자체 왕복 검증으로는 절대 안 잡히는 종류다.
+/// #4055 스파이크에서는 `mini_cfb_repack_drops_the_ole_class_id` 라는 이름으로 **결함을**
+/// 고정하고 있었다. #4097 이 `build_cfb_with_root_clsid` 를 넣으면서 방향을 뒤집었다.
+///
+/// 중첩 OLE CFB 를 재포장하며 OLE 서버 식별자를 잃으면, 한컴은 개체를 알아보지 못해 틀만
+/// 그리고 내용을 비운다(2026-08-05 실측). rhwp 는 `parse_ole_container` 가 스트림 이름으로
+/// 판별하므로 이 손실을 감지하지 못한다 — 자체 왕복 검증으로는 절대 안 잡히는 종류다.
 #[test]
-fn mini_cfb_repack_drops_the_ole_class_id() {
+fn mini_cfb_repack_preserves_the_ole_class_id() {
     let hwpx = std::fs::read(manifest(&format!("{BASE_SAMPLE}.hwpx"))).expect("HWPX 읽기");
     let doc = rhwp::parse_document(&hwpx).expect("HWPX 파싱");
     let nested = doc
@@ -291,24 +296,31 @@ fn mini_cfb_repack_drops_the_ole_class_id() {
         .find(|b| b.starts_with(&[0xD0, 0xCF, 0x11, 0xE0]))
         .expect("중첩 CFB");
 
+    // 판정은 `cfb` 크레이트로 한다 — 프로덕션 리더로 판정하면 읽기·쓰기가 같은 오해를
+    // 공유해도 통과한다(`root_clsid` helper 주석 참조).
     let original = root_clsid(&nested);
     assert_ne!(
         original, [0u8; 16],
         "코퍼스 차트는 OLE 클래스 ID 를 달고 있다"
     );
 
-    let naive = rebuild_cfb(&all_streams(&nested));
+    // 인자 없는 `build_cfb` 가 0 을 쓰는 것은 결함이 아니라 **계약**이다 — 바깥 HWP5 CFB 는
+    // 원본도 루트 CLSID 가 0 이라 그 호출자(`cfb_writer::write_hwp_cfb`)가 이 쪽을 쓴다.
+    let zeroed = rebuild_cfb(&all_streams(&nested));
     assert_eq!(
-        root_clsid(&naive),
+        root_clsid(&zeroed),
         [0u8; 16],
-        "mini_cfb 는 CLSID 를 0 으로 고정한다 (mini_cfb.rs:422,513)"
+        "build_cfb 는 CLSID 없음([0u8;16])으로 위임한다 — 이것이 계약이다"
     );
 
+    // 여기가 #4097 이 뒤집은 단언이다. `rebuild_cfb_preserving_clsid` 는 더 이상 테스트
+    // 로컬 바이트 수술이 아니라 `ole_root_clsid` + `build_cfb_with_root_clsid` 프로덕션
+    // 경로다 — `mini_cfb` 를 되돌리면 이 단언이 red 가 된다.
     let preserved = rebuild_cfb_preserving_clsid(&nested, &all_streams(&nested));
     assert_eq!(
         root_clsid(&preserved),
         original,
-        "되박으면 원본 CLSID 가 유지된다"
+        "프로덕션 재포장이 OLE 클래스 ID 를 보존해야 한다 (#4097)"
     );
 }
 

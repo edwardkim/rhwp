@@ -216,8 +216,9 @@ pub(super) fn all_streams(cfb_bytes: &[u8]) -> Vec<(String, Vec<u8>)> {
             .read_to_end(&mut buf)
             .expect("스트림 읽기");
         // Windows 에서 `cfb` 는 `/BinData\BIN0001.OLE` 처럼 구분자를 섞어 돌려준다.
-        // `mini_cfb::build_entries` 는 `/` 로만 쪼개므로, 정규화하지 않으면 스토리지가
-        // 사라지고 `BinData\BIN0001.OLE` 라는 루트 스트림 하나로 뭉개진다.
+        // `mini_cfb` 는 이제 스스로 정규화하지만(#4097), 이 함수의 반환값을 **이름으로
+        // 비교**하는 쪽(`mutate_nested` 의 `== "/OOXMLChartContents"`, bundle 생성기의
+        // `starts_with("/BinData/")`)이 있어 여기서도 플랫폼 무관 표기로 맞춘다.
         out.push((path.to_string_lossy().replace('\\', "/"), buf));
     }
     out
@@ -234,42 +235,38 @@ pub(super) fn rebuild_cfb(streams: &[(String, Vec<u8>)]) -> Vec<u8> {
     rhwp::serializer::mini_cfb::build_cfb(&refs).expect("CFB 재포장")
 }
 
-/// CFB 루트 디렉터리 엔트리의 바이트 오프셋. 헤더의 `_uSectorShift`(0x1E)와
-/// `_sectDirStart`(0x30)로 첫 디렉터리 섹터를 구하고, 루트는 그 섹터의 첫 엔트리다.
-fn root_dir_entry_offset(cfb: &[u8]) -> usize {
-    let sector_shift = u16::from_le_bytes([cfb[0x1E], cfb[0x1F]]);
-    let sector_size = 1usize << sector_shift;
-    let dir_start = u32::from_le_bytes(cfb[0x30..0x34].try_into().expect("4바이트")) as usize;
-    (dir_start + 1) * sector_size
-}
-
-/// 루트 스토리지의 CLSID (디렉터리 엔트리 +80, 16바이트).
-pub(super) fn root_clsid(cfb: &[u8]) -> [u8; 16] {
-    let at = root_dir_entry_offset(cfb) + 80;
-    cfb[at..at + 16].try_into().expect("16바이트 CLSID")
-}
-
-/// 재포장본 루트에 CLSID 를 되박는다.
+/// 루트 스토리지의 CLSID — **판정 오라클**.
 ///
-/// `mini_cfb::build_cfb` 는 CLSID 를 0 으로 고정한다
-/// (`src/serializer/mini_cfb.rs:422,513` — "CLSID (16바이트 zero)"). 그런데 OLE 개체는
-/// **루트 CLSID 로 서버를 식별**한다. 이 코퍼스의 차트는
-/// `{4C3DA137-DC90-47B9-9BED-59DAE352A280}` 를 달고 있고, 그게 비면 한컴은 개체를
-/// 알아보지 못해 **틀과 선택 핸들만 그리고 내용을 비운다**(2026-08-05 한컴 실측).
-/// rhwp 는 스트림 이름으로 판별하므로 이 손실을 눈치채지 못한다.
-fn stamp_root_clsid(cfb: &mut [u8], clsid: [u8; 16]) {
-    let at = root_dir_entry_offset(cfb) + 80;
-    cfb[at..at + 16].copy_from_slice(&clsid);
+/// 일부러 `cfb` 크레이트로 읽는다. rhwp 의 `ole_root_clsid` 로 판정하면
+/// `assert_eq!(read(write(x)), read(x))` 가 되어, 읽기와 쓰기가 같은 오프셋 오해를
+/// 공유해도 통과해 버린다. 쓰기는 프로덕션, 채점은 독립 구현이어야 한다. (#4097)
+///
+/// `cfb` 는 CLSID 를 (LE u32, LE u16, LE u16, 8B) 로 읽어 `Uuid::from_fields` 하므로
+/// (`cfb/internal/direntry.rs:88`), `to_bytes_le()` 가 파일 원시 16바이트를 복원한다.
+pub(super) fn root_clsid(cfb: &[u8]) -> [u8; 16] {
+    cfb::CompoundFile::open(std::io::Cursor::new(cfb.to_vec()))
+        .expect("CFB 열기")
+        .root_entry()
+        .clsid()
+        .to_bytes_le()
 }
 
 /// 원본과 같은 루트 CLSID 를 유지하며 재포장한다. 중첩 OLE CFB 는 반드시 이 쪽을 쓴다.
+///
+/// #4055 스파이크에서는 `build_cfb` 출력에 CLSID 를 사후 스탬프하는 테스트 로컬 바이트
+/// 수술이었다. #4097 이 `build_cfb_with_root_clsid` 를 넣으면서 **프로덕션 경로**가 됐다 —
+/// 그 덕에 `mini_cfb` 를 되돌리면 이 helper 를 쓰는 단언들이 red 가 된다.
 pub(super) fn rebuild_cfb_preserving_clsid(
     original: &[u8],
     streams: &[(String, Vec<u8>)],
 ) -> Vec<u8> {
-    let mut rebuilt = rebuild_cfb(streams);
-    stamp_root_clsid(&mut rebuilt, root_clsid(original));
-    rebuilt
+    let clsid = rhwp::parser::ole_container::ole_root_clsid(original)
+        .expect("원본 중첩 CFB 의 루트 CLSID 를 읽을 수 있어야 한다");
+    let refs: Vec<(&str, &[u8])> = streams
+        .iter()
+        .map(|(n, d)| (n.as_str(), d.as_slice()))
+        .collect();
+    rhwp::serializer::mini_cfb::build_cfb_with_root_clsid(&refs, clsid).expect("CFB 재포장")
 }
 
 /// OOXML 의 **첫 `c:val` 안 첫 `c:v`** 텍스트만 바꾼다.
