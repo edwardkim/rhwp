@@ -14,6 +14,17 @@
 115쪽 거대 셀 문서의 깊은 행 콜드 질의가 page tree 빌드 **평균 ~57·최악 115회 → 1~2회**,
 문단축 120질의 벤치 **723s → 수 초**.
 
+## 병목 함수 (정확한 이름·경로)
+
+| 역할 | 함수 | 위치 |
+|---|---|---|
+| 과잉 후보 생성 (**원인**) | `DocumentCore::find_pages_for_paragraph` | `src/document_core/commands/text_editing.rs` |
+| 좁힌 후보 생성 (**신설**) | `DocumentCore::find_pages_for_cell_position` | `src/document_core/commands/text_editing.rs` |
+| 영향 받는 질의 진입점 | `DocumentCore::get_cursor_rect_in_cell_native` (js: `getCursorRectInCell`) / path API / `last_rendered_para_in_container` | `src/document_core/queries/cursor_rect.rs` |
+| 후보당 낭비 비용의 실체 | `DocumentCore::build_page_tree_cached` → `build_page_tree` | `src/document_core/queries/rendering.rs` |
+| 좁히기가 대조하는 메타데이터 | `PageItem::PartialTable` (start_row/end_row/start_cut/end_cut) | `src/renderer/pagination.rs` |
+| 컷 창 단일 권위 (**추출**) | `cell_cut_window` / `single_row_cut_index` | `src/renderer/layout/table_layout.rs` · `table_partial.rs` |
+
 ## 원인
 
 `find_pages_for_paragraph`(src/document_core/commands/text_editing.rs)는 `para_index`
