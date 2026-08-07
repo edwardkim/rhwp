@@ -240,6 +240,11 @@ export async function digest(path: PathLike, options: DigestOptions = {}): Promi
   return call(args, options);
 }
 
+/** `explain`은 문서의 형식·쪽수·표·필드·각주를 한 번에 요약한다. */
+export async function explain(path: PathLike, options: CommandOptions = {}): Promise<Envelope> {
+  return call(['explain', path, '--json'], options);
+}
+
 /** {@link capabilities} 옵션. */
 export interface CapabilitiesOptions extends CommandOptions {
   /** MCP 도구 매니페스트를 받을지. */
@@ -272,6 +277,31 @@ export interface IrSchemaOptions extends CommandOptions {
  */
 export async function exportIrSchema(options: IrSchemaOptions = {}): Promise<Envelope> {
   const args: Argument[] = ['export-ir-schema'];
+  toggle(args, '--bare', options.bare);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link exportPlanSchema} 옵션. */
+export interface PlanSchemaOptions extends IrSchemaOptions, OutputOptions {}
+
+/** `run` 계획서 문법의 JSON Schema. */
+export async function exportPlanSchema(options: PlanSchemaOptions = {}): Promise<Envelope> {
+  const args: Argument[] = ['export-plan-schema'];
+  toggle(args, '--bare', options.bare);
+  flag(args, '-o', options.out);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link exportAgentManifest} 옵션. */
+export interface AgentManifestOptions extends IrSchemaOptions {}
+
+/** capabilities·IR·provenance·plan schema를 한 봉투로 조립한 에이전트 매니페스트. */
+export async function exportAgentManifest(
+  options: AgentManifestOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['export-agent-manifest'];
   toggle(args, '--bare', options.bare);
   args.push('--json');
   return call(args, options);

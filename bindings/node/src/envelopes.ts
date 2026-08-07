@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 31개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 34개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -200,6 +200,44 @@ export interface EditEnvelope {
 }
 
 /**
+ * `rhwp explain --json` 봉투.
+ *
+ * 문서를 결정론적 규칙 문장으로 요약(형식·쪽수·문단·표·누름틀·각주/미주·암호 여부)
+ */
+export interface ExplainEnvelope {
+  readonly encrypted?: unknown;
+  readonly endnoteCount?: unknown;
+  readonly fields?: unknown;
+  readonly footnoteCount?: unknown;
+  readonly format?: string;
+  readonly pageCount?: number;
+  readonly paragraphCount?: unknown;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+  readonly summary?: unknown;
+  readonly tables?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-agent-manifest --json` 봉투.
+ *
+ * capabilities+irSchema+provenanceMap+planSchema 를 한 번의 호출로 조립 — 누락 축이 생기면
+ * missingAxes 로 명시 (#3828 B2)
+ */
+export interface ExportAgentManifestEnvelope {
+  readonly capabilities?: unknown;
+  readonly irSchema?: unknown;
+  readonly missingAxes?: unknown;
+  readonly planSchema?: unknown;
+  readonly provenanceMap?: unknown;
+  readonly schemaVersion?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp export-capabilities-schema --json` 봉투.
  *
  * capabilities 자기서술 자체의 JSON Schema 산출 — 명령 표면 코드 생성의 단일 출처 (#3776)
@@ -313,6 +351,21 @@ export interface ExportPdfEnvelope {
   readonly renderedCount?: number;
   readonly schemaVersion?: string;
   readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-plan-schema --json` 봉투.
+ *
+ * 계획서(run) 문법의 JSON Schema 산출 — 계획 생성의 단일 출처 (#3719 §6-4)
+ */
+export interface ExportPlanSchemaEnvelope {
+  readonly definitionCount?: unknown;
+  readonly dialect?: unknown;
+  readonly planSchemaVersion?: unknown;
+  readonly schema?: unknown;
+  readonly schemaVersion?: string;
 
   readonly [key: string]: unknown;
 }
@@ -464,6 +517,7 @@ export interface InfoEnvelope {
   readonly source?: string;
   readonly title?: string;
   readonly version?: string;
+  readonly warnings?: unknown;
 
   readonly [key: string]: unknown;
 }
@@ -629,6 +683,8 @@ export interface EnvelopeByCommand {
   digest: DigestEnvelope;
   "dump-pages": DumpPagesEnvelope;
   edit: EditEnvelope;
+  explain: ExplainEnvelope;
+  "export-agent-manifest": ExportAgentManifestEnvelope;
   "export-capabilities-schema": ExportCapabilitiesSchemaEnvelope;
   "export-doclang": ExportDoclangEnvelope;
   "export-hml": ExportHmlEnvelope;
@@ -636,6 +692,7 @@ export interface EnvelopeByCommand {
   "export-ir-schema": ExportIrSchemaEnvelope;
   "export-markdown": ExportMarkdownEnvelope;
   "export-pdf": ExportPdfEnvelope;
+  "export-plan-schema": ExportPlanSchemaEnvelope;
   "export-provenance-map": ExportProvenanceMapEnvelope;
   "export-structure": ExportStructureEnvelope;
   "export-svg": ExportSvgEnvelope;
