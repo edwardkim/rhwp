@@ -1564,3 +1564,47 @@ fn declared_record_fields_actually_appear_in_envelopes() {
         problems.join("\n"),
     );
 }
+
+/// [R10 조각] `json:true` 명령은 `recordFields` 를 비워 두고 가드를 지나갈 수 없다.
+///
+/// 위의 전수 대조는 **선언한** 필드가 실물에 나타나는지만 본다 — 선언이 아예
+/// 없거나 빈 배열이면 대조할 것이 없어 공허하게 통과한다. 즉 "선언 회피가 가드
+/// 회피의 가장 쉬운 길"(R12 가 map 축에서 봉쇄한 바로 그 부류)이 recordFields
+/// 축에는 열려 있었다. 이 래칫은 선언의 존재·비어있지 않음 자체를 전수로
+/// 요구해 그 길을 닫는다. 현재 `json:true` 전 명령이 비어있지 않은 선언을
+/// 가지므로 면제 목록은 0건으로 시작하며, 봉투 필드를 약속할 수 없는 명령이
+/// 생기면 **사유와 함께** EMPTY_RECORD_FIELDS_EXEMPT 에만 적는다.
+const EMPTY_RECORD_FIELDS_EXEMPT: &[(&str, &str)] = &[
+    // (명령, json 봉투의 고정 필드를 약속할 수 없는 사유)
+];
+
+#[test]
+fn every_json_command_declares_nonempty_record_fields() {
+    let cap = capabilities();
+    let mut problems: Vec<String> = Vec::new();
+    for c in cap["commands"].as_array().expect("commands") {
+        if c["json"] != Value::Bool(true) {
+            continue;
+        }
+        let name = c["name"].as_str().expect("name");
+        if let Some((_, why)) = EMPTY_RECORD_FIELDS_EXEMPT.iter().find(|(n, _)| *n == name) {
+            assert!(!why.trim().is_empty(), "{name} 면제 사유가 비었습니다");
+            continue;
+        }
+        let declared = c["recordFields"].as_array().map(Vec::len).unwrap_or(0);
+        if declared == 0 {
+            problems.push(format!(
+                "  - {name}: json:true 인데 recordFields 가 없거나 비어 있습니다 — \
+                 declared_record_fields_actually_appear_in_envelopes 가 공허 통과합니다"
+            ));
+        }
+    }
+    assert!(
+        problems.is_empty(),
+        "recordFields 공선언 회피 {}건:\n{}\n\n\
+         봉투가 약속하는 최상위 필드를 capabilities 에 선언하거나, 약속할 수 없다면 \
+         EMPTY_RECORD_FIELDS_EXEMPT 에 사유와 함께 적으세요.",
+        problems.len(),
+        problems.join("\n"),
+    );
+}
