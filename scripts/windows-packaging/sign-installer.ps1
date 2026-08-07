@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   RHWP Studio NSIS 설치 파일에 자체 서명 인증서로 서명한다.
@@ -83,9 +83,11 @@ Write-Host "서명 검증 중..."
 & $signtoolPath verify /pa $InstallerPath
 
 if ($LASTEXITCODE -ne 0) {
-  Write-Warning "서명 검증에 실패했습니다 (exit code $LASTEXITCODE). 자체 서명 인증서는 이 PC에" `
-    "TrustedPublisher/Root로 등록되어 있지 않으면 verify가 실패할 수 있습니다 — 실제 설치 동작은" `
-    "installer-hooks.nsh가 처리하므로 이 경고만으로 서명 자체가 실패한 것은 아닙니다."
+  # 여러 줄 문자열은 반드시 + 로 이어붙인다 — 백틱 줄바꿈만 쓰면 두 번째 줄부터
+  # Write-Warning의 위치 매개 변수로 넘어가 ParameterBindingException이 난다.
+  Write-Warning ("서명 검증에 실패했습니다 (exit code $LASTEXITCODE). 자체 서명 인증서는 이 PC에 " +
+    "TrustedPublisher/Root로 등록되어 있지 않으면 verify가 실패할 수 있습니다 — 실제 설치 동작은 " +
+    "installer-hooks.nsh가 처리하므로 이 경고만으로 서명 자체가 실패한 것은 아닙니다.")
 } else {
   Write-Host "서명 검증 완료."
 }

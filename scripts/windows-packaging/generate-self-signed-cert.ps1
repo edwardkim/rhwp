@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   RHWP Studio Windows 설치 파일 서명용 자체 서명 코드사이닝 인증서를 생성한다.
