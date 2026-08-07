@@ -2881,6 +2881,17 @@ impl HwpDocument {
         self.get_caret_position_native().map_err(|e| e.into())
     }
 
+    /// [#4180] 저장 직전 UI 캐럿을 문서 캐럿 메타데이터에 반영한다
+    /// (한컴 의미론: 저장 시점 캐럿). 범위 밖 위치는 무시 — 저장을 막지 않는다.
+    #[wasm_bindgen(js_name = setCaretPosition)]
+    pub fn set_caret_position(&mut self, section_idx: u32, para_idx: u32, char_offset: u32) {
+        self.set_caret_position_native(
+            section_idx as usize,
+            para_idx as usize,
+            char_offset as usize,
+        );
+    }
+
     /// 표의 행/열/셀 수를 반환한다.
     ///
     /// 반환: JSON `{"rowCount":N,"colCount":N,"cellCount":N}`

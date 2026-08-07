@@ -500,18 +500,29 @@ export class WasmBridge {
     return this._fileName === '새 문서.hwp';
   }
 
+  /**
+   * [#4180] 바이트 생산 직전 호출되는 훅 — 저장 시점 캐럿 스탬핑용 (main.ts 가 등록).
+   * 편집별 스탬핑은 "마지막 본문 편집 위치"를 남겨 열기 캐럿이 엉뚱한 페이지로
+   * 복원됐다. 저장/autosave/비교/히스토리 등 모든 export 경로가 이 브리지 메서드를
+   * 지나므로 여기가 단일 지점이다.
+   */
+  onBeforeExport: (() => void) | null = null;
+
   exportHwp(): Uint8Array {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.onBeforeExport?.();
     return this.doc.exportHwp();
   }
 
   exportHwpWithPassword(password: string): Uint8Array {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.onBeforeExport?.();
     return this.doc.exportHwpWithPassword(password);
   }
 
   exportHwpx(): Uint8Array {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.onBeforeExport?.();
     return this.doc.exportHwpx();
   }
 
@@ -1536,6 +1547,16 @@ export class WasmBridge {
       return JSON.parse(this.doc.getCaretPosition());
     } catch {
       return null;
+    }
+  }
+
+  /** [#4180] 저장 시점 캐럿 스탬핑 — 범위 밖 위치는 wasm 쪽에서 무시된다. */
+  setCaretPosition(sec: number, para: number, charOffset: number): void {
+    if (!this.doc) return;
+    try {
+      this.doc.setCaretPosition(sec, para, charOffset);
+    } catch {
+      // 저장을 막지 않는다
     }
   }
 

@@ -976,17 +976,7 @@ impl DocumentCore {
         } else {
             (para.controls.len() as u32) * 8
         };
-        self.document.doc_properties.caret_list_id = section_idx as u32;
-        self.document.doc_properties.caret_para_id = para_idx as u32;
-        self.document.doc_properties.caret_char_pos = caret_utf16_pos;
-        if let Some(ref mut raw) = self.document.doc_info.raw_stream {
-            let _ = crate::serializer::doc_info::surgical_update_caret(
-                raw,
-                section_idx as u32,
-                para_idx as u32,
-                caret_utf16_pos,
-            );
-        }
+        self.stamp_caret(section_idx as u32, para_idx as u32, caret_utf16_pos);
 
         if deleted_count > 0 {
             self.event_log.push(DocumentEvent::TextDeleted {
@@ -1009,6 +999,59 @@ impl DocumentCore {
             "\"charOffset\":{},\"documentPaginationPending\":{},\"flowChanged\":{}",
             new_offset, !flow_changed, flow_changed
         )))
+    }
+
+    /// char index → 캐럿 utf16 위치 (문단 끝 이상이면 끝 위치). 편집 경로 스탬핑과
+    /// `set_caret_position_native` 가 같은 계산을 공유한다 — reader
+    /// (`utf16_pos_to_char_idx`, cursor_nav.rs) 의 대칭.
+    fn caret_utf16_at(para: &Paragraph, char_idx: usize) -> u32 {
+        if char_idx < para.char_offsets.len() {
+            para.char_offsets[char_idx]
+        } else if !para.char_offsets.is_empty() {
+            let last = para.char_offsets.len() - 1;
+            let last_char = para.text.chars().nth(last);
+            para.char_offsets[last]
+                + last_char
+                    .map(|ch| if (ch as u32) > 0xFFFF { 2 } else { 1 })
+                    .unwrap_or(1)
+        } else {
+            (para.controls.len() as u32) * 8
+        }
+    }
+
+    /// [#4180] 문서 캐럿 메타데이터 스탬핑의 유일한 쓰기 지점 — doc_properties
+    /// (재직렬화 경로)와 raw_stream(passthrough 경로) 양쪽에 반영한다.
+    pub(crate) fn stamp_caret(&mut self, sec: u32, para: u32, caret_utf16: u32) {
+        self.document.doc_properties.caret_list_id = sec;
+        self.document.doc_properties.caret_para_id = para;
+        self.document.doc_properties.caret_char_pos = caret_utf16;
+        // DocInfo raw_stream 내 캐럿 위치만 surgical update (전체 재직렬화 방지)
+        if let Some(ref mut raw) = self.document.doc_info.raw_stream {
+            let _ = crate::serializer::doc_info::surgical_update_caret(raw, sec, para, caret_utf16);
+        }
+    }
+
+    /// [#4180] 저장 직전 UI 캐럿 반영 (한컴 의미론: 저장 시점 캐럿).
+    ///
+    /// 편집별 스탬핑은 "마지막 본문 편집 위치"를 남겨 열기 캐럿이 엉뚱한 페이지로
+    /// 복원됐다 — 저장 흐름이 이 함수로 현재 캐럿을 덮어쓴다. 범위 밖 위치는
+    /// 무시한다 (저장을 막지 않는다).
+    pub(crate) fn set_caret_position_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_idx: usize,
+    ) {
+        let Some(para) = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|s| s.paragraphs.get(para_idx))
+        else {
+            return;
+        };
+        let caret_utf16 = Self::caret_utf16_at(para, char_idx);
+        self.stamp_caret(section_idx as u32, para_idx as u32, caret_utf16);
     }
 
     pub fn insert_text_native(
@@ -1141,19 +1184,7 @@ impl DocumentCore {
             // 텍스트 없이 컨트롤만 있는 경우
             (para.controls.len() as u32) * 8
         };
-        self.document.doc_properties.caret_list_id = section_idx as u32;
-        self.document.doc_properties.caret_para_id = para_idx as u32;
-        self.document.doc_properties.caret_char_pos = caret_utf16_pos;
-
-        // DocInfo raw_stream 내 캐럿 위치만 surgical update (전체 재직렬화 방지)
-        if let Some(ref mut raw) = self.document.doc_info.raw_stream {
-            let _ = crate::serializer::doc_info::surgical_update_caret(
-                raw,
-                section_idx as u32,
-                para_idx as u32,
-                caret_utf16_pos,
-            );
-        }
+        self.stamp_caret(section_idx as u32, para_idx as u32, caret_utf16_pos);
 
         self.event_log.push(DocumentEvent::TextInserted {
             section: section_idx,
@@ -1267,19 +1298,7 @@ impl DocumentCore {
         } else {
             (para.controls.len() as u32) * 8
         };
-        self.document.doc_properties.caret_list_id = section_idx as u32;
-        self.document.doc_properties.caret_para_id = para_idx as u32;
-        self.document.doc_properties.caret_char_pos = caret_utf16_pos;
-
-        // DocInfo raw_stream 내 캐럿 위치만 surgical update (전체 재직렬화 방지)
-        if let Some(ref mut raw) = self.document.doc_info.raw_stream {
-            let _ = crate::serializer::doc_info::surgical_update_caret(
-                raw,
-                section_idx as u32,
-                para_idx as u32,
-                caret_utf16_pos,
-            );
-        }
+        self.stamp_caret(section_idx as u32, para_idx as u32, caret_utf16_pos);
 
         self.event_log.push(DocumentEvent::TextDeleted {
             section: section_idx,
