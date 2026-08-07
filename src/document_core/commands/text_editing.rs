@@ -54,6 +54,33 @@ fn recalculate_cell_paragraph_vpos(
         })
         .unwrap_or(paragraphs.len());
 
+    apply_cell_vpos_ladder(
+        paragraphs,
+        start_para,
+        stop_para,
+        styles,
+        dpi,
+        is_hwp3_variant,
+    );
+}
+
+/// [#4138] `[start_para, stop_para)` 구간의 셀 문단 vpos 사다리를 문단 간격·줄간격
+/// 계산으로 재배치한다. `recalculate_cell_paragraph_vpos` 의 적용 루프를 분리한 것으로,
+/// 호출자가 정지 지점(stop_para)을 결정한다 — 텍스트 편집 경로는 RowBreak 조각 경계를
+/// 존중해 그 앞에서 멈추고, 셀 폭 변경 후 전체 재래핑 경로는 저장 경계 자체가 옛 폭
+/// 기준이므로 끝까지 재배치한다.
+fn apply_cell_vpos_ladder(
+    paragraphs: &mut [Paragraph],
+    start_para: usize,
+    stop_para: usize,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    is_hwp3_variant: bool,
+) {
+    if paragraphs.is_empty() || start_para >= paragraphs.len() {
+        return;
+    }
+
     let boundary_gaps: Vec<i32> = paragraphs
         .windows(2)
         .map(|pair| {
@@ -2258,6 +2285,43 @@ impl DocumentCore {
             paragraphs,
             start_para,
             ignore_reset_at,
+            styles,
+            dpi,
+            is_hwp3_variant,
+        );
+    }
+
+    /// [#4138] 표 셀의 vpos 사다리를 처음부터 끝까지 단조 재구축한다.
+    ///
+    /// `recalculate_cell_paragraph_vpos` 는 저장 vpos 역행을 RowBreak 조각 경계
+    /// 신호로 존중해 그 앞에서 멈춘다. 셀 폭이 바뀌어 **모든** 문단을 재래핑한
+    /// 직후에는 저장 경계 자체가 옛 폭 기준이라 더 이상 신호가 아니므로, 정지
+    /// 없이 전 구간을 재배치한다. 간격 계산은 텍스트 편집 경로와 동일하다.
+    pub(crate) fn rebuild_table_cell_vpos_ladder_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+    ) {
+        let styles = &self.styles;
+        let dpi = self.dpi;
+        let is_hwp3_variant = self.document.layout_profile().hwp3_layout();
+        let Some(Control::Table(table)) = self.document.sections[section_idx].paragraphs
+            [parent_para_idx]
+            .controls
+            .get_mut(control_idx)
+        else {
+            return;
+        };
+        let Some(cell) = table.cells.get_mut(cell_idx) else {
+            return;
+        };
+        let stop_para = cell.paragraphs.len();
+        apply_cell_vpos_ladder(
+            &mut cell.paragraphs,
+            0,
+            stop_para,
             styles,
             dpi,
             is_hwp3_variant,
