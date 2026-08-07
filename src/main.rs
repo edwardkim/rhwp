@@ -13460,7 +13460,6 @@ fn cmd_verify(args: &[String]) -> i32 {
             );
         }
     }
-    drop(record);
 
     let verdict = if fail_count == 0 { "pass" } else { "fail" };
     let pass_count = expectation_count - fail_count;
