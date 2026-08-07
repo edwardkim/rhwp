@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/hwp5_roundtrip_baseline.md
-last_verified: 2026-07-27
+last_verified: 2026-08-07
 ---
 
 # HWP5 Roundtrip Baseline 가이드 (Task #1552)
@@ -19,9 +19,16 @@ last_verified: 2026-07-27
 |---|------|------|-----------|
 | C1 | IR 뼈대 diff | `parse → serialize → 재parse` 후 `diff_documents` == 0 | 구조 손실 |
 | C2 | **BinData 보존** | 원본·저장본 CFB의 BinData **decompressed 내용** 멀티셋 동일 | **그림 스트림 드롭(F1)** |
+| C2b | **중첩 OLE 루트 CLSID 보존** (#4097) | BinData 안의 중첩 CFB(4B prefix 유무 모두)에서 루트 디렉터리 엔트리 +80 의 CLSID 멀티셋 동일 | **OLE 개체 정체성 소실** — 내용이 다 있어도 CLSID 가 비면 한컴이 개체를 알아보지 못해 내용을 비워 그린다 |
 | C3 | 페이지수 복원 | `DocumentCore::from_bytes` 페이지 수 원본==저장본 | 페이지 변형 |
 | C4 | CFB 구조 | 필수 스트림(FileHeader/DocInfo/BodyText/Section0) + 섹션 수 = IR | 구조 회귀 |
 | C5 | 2-round 안정성 | 저장본 재직렬화→재parse 후 IR diff == 0 | 비결정성 |
+
+> C2b 는 현행 저장이 중첩 CFB 를 passthrough 하므로 자동 통과한다. 존재 이유는 **재포장이
+> 저장 경로에 들어오는 날**(차트 편집 #3683 등)이다 — 그때 C2 는 "편집분은 달라도 된다"로
+> 완화될 수밖에 없지만, 개체 정체성(CLSID)은 편집 후에도 보존되어야 하므로 C2b 가 계속
+> 지킨다. #3557 이 지적한 "IR 에 모델링되지 않아 `--verify` 가 못 보는" 축을 게이트에서
+> 직접 보는 장치다.
 
 > **중요**: 통과 = 구조+BinData+페이지(rhwp 자기 일관) 보존이며 **시각 충실도 보장이 아니다**.
 > C3 는 rhwp 자기 재로드 기준이라 **외부 한글에서만** 나타나는 페이지 붕괴(예: `convert`/
@@ -32,7 +39,7 @@ last_verified: 2026-07-27
 
 | 등급 | 의미 | 코드 위치 |
 |------|------|----------|
-| **A (baseline)** | C1~C5 전부 통과. 신규 HWP5 샘플 자동 포함 | `tests/hwp5_roundtrip_baseline.rs` 기본 대상 |
+| **A (baseline)** | C1~C5·C2b 전부 통과. 신규 HWP5 샘플 자동 포함 | `tests/hwp5_roundtrip_baseline.rs` 기본 대상 |
 | **B (xfail)** | 식별된 결함으로 baseline 제외. 사유 필수 | `XFAIL` 상수 |
 | **자동 제외** | HWP5 아님(HWP3/HWPML), 배포용 문서 또는 비밀번호 암호 문서 — 일반 gate에 비밀번호 입력이 없어 serializer 결함을 판정할 수 없음 | `out_of_scope()` (포맷·distribution·암호 감지) |
 
