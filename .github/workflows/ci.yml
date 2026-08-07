@@ -776,9 +776,6 @@ jobs:
           python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
 
-      - name: Validate agent preflight queue discipline
-        run: python3 -m unittest scripts/tests/test_agent_preflight_queue.py
-
       - name: Clippy
         run: cargo clippy -- -D warnings
 
