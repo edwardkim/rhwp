@@ -1251,9 +1251,10 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
         this.executeOperation({ kind: 'command', command: new InsertLineBreakCommand(this.cursor.getPosition()) });
       } else if (inCell) {
         try {
+          // [#4031] 성공한 split은 IMMEDIATE_TEXT_MUTATION_EFFECTS를 선언해
+          // executeOperation의 effects 경로가 pending 해소·runner 취소·geometry
+          // invalidation(완료 소유)을 수행한다.
           this.executeOperation({ kind: 'command', command: new SplitParagraphInCellCommand(this.cursor.getPosition()) });
-          // [#4031] 성공한 native split이 최신 revision pagination을 소유했다.
-          if (committedCellEnterSplit) this.completePaginationOwnedBySyncMutation();
         } catch (err) {
           // [#4031] structural command 실패 — 기존 full-flush barrier로 fail-closed 복귀.
           if (committedCellEnterSplit) this.flushDeferredPaginationIfNeeded('cell-enter-split-fallback', false);

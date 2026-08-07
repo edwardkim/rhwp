@@ -1458,10 +1458,12 @@ export class MergeParagraphInFootnoteCommand implements EditCommand {
 export class SplitParagraphInCellCommand implements EditCommand {
   readonly type = 'splitParagraphInCell';
   readonly timestamp = Date.now();
+  private lastMutationEffects: TextMutationEffects = NO_TEXT_MUTATION_EFFECTS;
 
   constructor(private position: DocumentPosition) {}
 
   execute(wasm: WasmBridge): DocumentPosition {
+    this.lastMutationEffects = NO_TEXT_MUTATION_EFFECTS;
     const pos = this.position;
     const sec = pos.sectionIndex;
     const ppi = pos.parentParaIndex!;
@@ -1471,7 +1473,16 @@ export class SplitParagraphInCellCommand implements EditCommand {
     } else {
       wasm.splitParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi, pos.charOffset);
     }
+    // [#4031] 네이티브 split은 paginate_if_needed()로 최신 revision을 동기 계산한다.
+    // 이 선언이 pending deferred 상태를 해소해 직후 before-full-edit flush가 no-op이 된다.
+    this.lastMutationEffects = IMMEDIATE_TEXT_MUTATION_EFFECTS;
     return cellParagraphPosition(pos, cpi + 1, 0);
+  }
+
+  consumeTextMutationEffects(): TextMutationEffects {
+    const effects = this.lastMutationEffects;
+    this.lastMutationEffects = NO_TEXT_MUTATION_EFFECTS;
+    return effects;
   }
 
   undo(wasm: WasmBridge): DocumentPosition {

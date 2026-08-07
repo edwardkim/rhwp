@@ -2814,17 +2814,6 @@ export class InputHandler {
     this.deferredPaginationRunner.cancel();
   }
 
-  /**
-   * [#4031] 성공한 native mutation의 `paginate_if_needed()`가 최신 revision을 계산했음을
-   * studio 상태에 반영한다. 이후 boundary flush는 no-op으로 수렴한다.
-   */
-  completePaginationOwnedBySyncMutation(): void {
-    this.cancelDeferredPaginationFlush();
-    this.deferredPaginationRunner.cancel();
-    this.deferredPaginationPending = false;
-    this.cursor.invalidateFocusedCellCursorGeometry();
-  }
-
   /** raw IME/iOS 텍스트 입력처럼 command를 거치지 않는 경로의 갱신 라우터. */
   private afterTextInputEdit(
     beforePos: DocumentPosition,

@@ -78,29 +78,71 @@ test('admission helper는 case Enter까지의 모든 조기 분기를 배제한�
   }
 });
 
-test('성공한 셀 split이 pagination 완료를 소유하고 실패는 full flush로 복귀한다', () => {
+test('성공한 셀 split이 effects로 pagination 완료를 선언하고 실패는 full flush로 복귀한다', () => {
+  const command = source('src/engine/command.ts');
+  const splitClass = sliceBetween(
+    command,
+    'export class SplitParagraphInCellCommand',
+    'export class MergeParagraphInCellCommand',
+  );
+  const wasmCallIdx = splitClass.indexOf('wasm.splitParagraphInCell(');
+  const effectsIdx = splitClass.indexOf('this.lastMutationEffects = IMMEDIATE_TEXT_MUTATION_EFFECTS');
+  assert.notEqual(wasmCallIdx, -1, 'splitParagraphInCell wasm 호출이 없다');
+  assert.ok(
+    effectsIdx > wasmCallIdx,
+    '완료 선언(IMMEDIATE effects)은 native split 성공 뒤에만 세팅되어야 한다(예외 시 NO 유지)',
+  );
+  assert.ok(
+    splitClass.includes('consumeTextMutationEffects()'),
+    'split command는 effects를 executeOperation에 전달해야 한다',
+  );
+
   const keyboard = source('src/engine/input-handler-keyboard.ts');
   const enterCase = sliceBetween(keyboard, "case 'Enter': {", "case 'ArrowLeft':");
-  const successIdx = enterCase.indexOf('this.completePaginationOwnedBySyncMutation()');
   const splitIdx = enterCase.indexOf('new SplitParagraphInCellCommand');
   const fallbackIdx = enterCase.indexOf(
     "this.flushDeferredPaginationIfNeeded('cell-enter-split-fallback', false)",
   );
   assert.notEqual(splitIdx, -1, 'SplitParagraphInCellCommand 실행이 없다');
-  assert.ok(successIdx > splitIdx, '완료 선언은 split 실행 뒤에 와야 한다');
   assert.ok(fallbackIdx > splitIdx, 'catch fallback full flush가 없다');
   assert.ok(
     enterCase.includes('if (committedCellEnterSplit)'),
-    '완료/복귀는 admission이 확정된 경우에만 수행해야 한다',
+    'fallback 복귀는 admission이 확정된 경우에만 수행해야 한다',
   );
 });
 
-test('소유 취소는 pending을 유지하고 완료 선언만 pending을 해소한다', () => {
+test('effects의 paginationCompleted가 pending 해소·runner 취소·geometry invalidation을 소유한다', () => {
+  const handler = source('src/engine/input-handler.ts');
+  const prepare = sliceBetween(
+    handler,
+    'private prepareTextMutationBeforeCursor(',
+    'private completeResumablePagination(',
+  );
+  const completedBlock = sliceBetween(
+    prepare,
+    'if (effects.paginationCompleted) {',
+    '}',
+  );
+  assert.ok(
+    completedBlock.includes('this.deferredPaginationRunner.cancel()'),
+    'paginationCompleted는 runner를 취소해야 한다',
+  );
+  assert.ok(
+    completedBlock.includes('this.deferredPaginationPending = false'),
+    'paginationCompleted는 pending을 해소해야 한다',
+  );
+  assert.ok(
+    prepare.includes('this.cursor.invalidateFocusedCellCursorGeometry()'),
+    'effects 경로는 focused cursor geometry를 invalidate해야 한다',
+  );
+});
+
+test('소유 취소는 pending을 유지한다 (fail-closed)', () => {
   const handler = source('src/engine/input-handler.ts');
   const cancel = sliceBetween(
     handler,
     'cancelDeferredPaginationForOwnedMutation(): void {',
-    'completePaginationOwnedBySyncMutation(): void {',
+    '/** raw IME/iOS 텍스트 입력처럼',
   );
   assert.ok(
     !cancel.includes('flushDeferredPagination()'),
@@ -113,20 +155,6 @@ test('소유 취소는 pending을 유지하고 완료 선언만 pending을 해�
   assert.ok(
     cancel.includes('this.deferredPaginationRunner.cancel()'),
     '소유 취소는 scheduled/stepping runner job을 취소해야 한다',
-  );
-
-  const complete = sliceBetween(
-    handler,
-    'completePaginationOwnedBySyncMutation(): void {',
-    'afterTextInputEdit(',
-  );
-  assert.ok(
-    complete.includes('this.deferredPaginationPending = false'),
-    '완료 선언은 pending을 해소해야 한다',
-  );
-  assert.ok(
-    complete.includes('this.cursor.invalidateFocusedCellCursorGeometry()'),
-    '완료 선언은 cursor geometry를 invalidate해야 한다',
   );
 });
 
