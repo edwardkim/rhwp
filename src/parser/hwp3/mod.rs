@@ -5565,6 +5565,22 @@ mod tests {
             "글맵시(HMapsi) 컨테이너로 판별되어야 함"
         );
 
+        // [#4097] 승격 재포장이 서브 스토리지의 OLE 클래스 ID 를 새 루트로 옮겨야 한다.
+        // parse_ole_container 는 스트림 *이름*으로만 판별하므로 위 단언들은 CLSID 가 0 이어도
+        // 통과한다 — 한컴만 개체를 알아보지 못해 내용을 비워 그린다.
+        // SO-SUEOP 실측값 {00044214-0000-0000-C000-000000000046} (글맵시 서버 클래스,
+        // mydocs/working/task_m100_4097_stage1.md §2.2).
+        let clsid = crate::parser::cfb_reader::root_clsid(&bytes)
+            .expect("재포장 CFB 의 루트 CLSID 를 읽을 수 있어야 함");
+        assert_eq!(
+            clsid,
+            [
+                0x14, 0x42, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x46
+            ],
+            "원본 서브 스토리지의 OLE 클래스 ID 가 보존되어야 함"
+        );
+
         // 2) payload 확보 그림은 Ole 컨트롤로 변환 (렌더/선택 경로 상속)
         let has_ole_control = doc.sections.iter().any(|s| {
             s.paragraphs.iter().any(|p| {
