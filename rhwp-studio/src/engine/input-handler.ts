@@ -2801,6 +2801,30 @@ export class InputHandler {
     }
   }
 
+  /**
+   * [#4031] 동기 full pagination을 소유하는 structural command(셀 Enter 분할)가 확정된
+   * 경로에서, 곧 폐기될 stale deferred job을 계산 완료 없이 취소한다.
+   * `wasm.flushDeferredPagination()`을 호출하지 않는 것이 flush 경로와의 유일한 차이다.
+   * runner.cancel()이 전진 중인 WASM resumable job까지 취소한다.
+   * `deferredPaginationPending`은 유지한다 — mutation이 실패하면 다음 boundary flush가
+   * 기존 barrier 의미론으로 복구하도록 fail-closed로 남긴다.
+   */
+  cancelDeferredPaginationForOwnedMutation(): void {
+    this.cancelDeferredPaginationFlush();
+    this.deferredPaginationRunner.cancel();
+  }
+
+  /**
+   * [#4031] 성공한 native mutation의 `paginate_if_needed()`가 최신 revision을 계산했음을
+   * studio 상태에 반영한다. 이후 boundary flush는 no-op으로 수렴한다.
+   */
+  completePaginationOwnedBySyncMutation(): void {
+    this.cancelDeferredPaginationFlush();
+    this.deferredPaginationRunner.cancel();
+    this.deferredPaginationPending = false;
+    this.cursor.invalidateFocusedCellCursorGeometry();
+  }
+
   /** raw IME/iOS 텍스트 입력처럼 command를 거치지 않는 경로의 갱신 라우터. */
   private afterTextInputEdit(
     beforePos: DocumentPosition,

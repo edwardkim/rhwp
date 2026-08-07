@@ -40,6 +40,27 @@ const SUBMODE_GLOBAL_COMMANDS = new Set([
   'edit:goto',
 ]);
 
+/**
+ * [#4031] 이 keydown이 아래 switch의 `case 'Enter'`에서 `SplitParagraphInCellCommand`로
+ * 확정 실행되는 좁은 조건인지 판정한다. 목록은 flush 지점과 `case 'Enter'` 사이의 모든
+ * 조기 분기(모드 가드·단축키 라우팅·선택 삭제)를 보수적으로 배제한다 — 하나라도
+ * 확신할 수 없으면 false를 돌려 기존 before-navigation full flush로 fail-closed한다.
+ */
+function isCommittedCellEnterSplit(this: any, e: KeyboardEvent): boolean {
+  return e.key === 'Enter'
+    && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey
+    && !this.isComposing
+    && !this.isFormMode?.()
+    && !this.cursor.isInHeaderFooter()
+    && !this.cursor.isInFootnote()
+    && !this.cursor.isInPictureObjectSelection()
+    && !this.cursor.isInTableObjectSelection()
+    && !this.cursor.isInBlockSelectionMode()
+    && !this.cursor.isInCellSelectionMode()
+    && !this.cursor.hasSelection()
+    && this.cursor.isInCell();
+}
+
 function dispatchSubmodeGlobalShortcut(this: any, e: KeyboardEvent): boolean {
   if (!this.dispatcher) return false;
   const commandId = matchShortcut(e, defaultShortcuts);
@@ -544,8 +565,17 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     return;
   }
 
+  // [#4031] 셀 Enter는 `SplitParagraphInCellCommand`의 동기 full pagination이 확정이라,
+  // 곧 폐기될 분할 전 pagination을 flush로 완주하는 대신 stale deferred job만 취소한다.
+  // admission 미충족 시 기존 full barrier 그대로다.
+  const committedCellEnterSplit = PAGINATION_BOUNDARY_KEYS.has(e.key)
+    && isCommittedCellEnterSplit.call(this, e);
   if (PAGINATION_BOUNDARY_KEYS.has(e.key)) {
-    this.flushDeferredPaginationIfNeeded('before-navigation', false);
+    if (committedCellEnterSplit) {
+      this.cancelDeferredPaginationForOwnedMutation();
+    } else {
+      this.flushDeferredPaginationIfNeeded('before-navigation', false);
+    }
   }
 
   // ─── 머리말/꼬리말 편집 모드 키보드 처리 ──────────────────
@@ -1220,7 +1250,15 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
         // Shift+Enter: 강제 줄바꿈 (문단 유지, 줄만 바꿈)
         this.executeOperation({ kind: 'command', command: new InsertLineBreakCommand(this.cursor.getPosition()) });
       } else if (inCell) {
-        this.executeOperation({ kind: 'command', command: new SplitParagraphInCellCommand(this.cursor.getPosition()) });
+        try {
+          this.executeOperation({ kind: 'command', command: new SplitParagraphInCellCommand(this.cursor.getPosition()) });
+          // [#4031] 성공한 native split이 최신 revision pagination을 소유했다.
+          if (committedCellEnterSplit) this.completePaginationOwnedBySyncMutation();
+        } catch (err) {
+          // [#4031] structural command 실패 — 기존 full-flush barrier로 fail-closed 복귀.
+          if (committedCellEnterSplit) this.flushDeferredPaginationIfNeeded('cell-enter-split-fallback', false);
+          throw err;
+        }
       } else {
         this.executeOperation({ kind: 'command', command: new SplitParagraphCommand(this.cursor.getPosition()) });
       }
