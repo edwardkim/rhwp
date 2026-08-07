@@ -24,6 +24,7 @@
     "e2e:issue-2214": "node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless",
     "e2e:issue-3815": "node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --continuous-only",
     "e2e:issue-3137-perf": "node e2e/probe-input-perf-issue3137.mjs --mode=headless",
+    "e2e:issue-4031-cell-enter": "node e2e/cell-enter-pagination-issue4031.test.mjs --mode=headless",
     "e2e:issue-2809": "node e2e/issue-2809-split-alignment.test.mjs --mode=headless",
     "e2e:issue-4159": "node e2e/issue-4159-terminal-nested-bottom-border-canvas2d.test.mjs --mode=headless",
     "e2e:issue-536": "node e2e/issue-536-boxed-pua-canvas2d.test.mjs --mode=headless",

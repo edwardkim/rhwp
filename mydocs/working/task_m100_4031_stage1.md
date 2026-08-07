@@ -51,6 +51,8 @@ run 1 기준(ms):
 3. 셀 편집은 `para_offset = 0`이라 기존 CONVERGENCE(수렴 재사용) 기계가 아예 시도되지
    않는다. 본문 문단 offset 기반이므로 셀 내부 편집에는 적용 불가.
 
+raw profile은 `mydocs/report/assets/task_m100_4031_stage1_baseline.log`에 보존한다.
+
 ## 4. pending Enter — flush 1 + pagination 1 중복 (red contract)
 
 3회 × HWP/HWPX(ms, 같은 배경 부하 아래 상대 비교):
