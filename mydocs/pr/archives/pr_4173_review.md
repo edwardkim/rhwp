@@ -14,8 +14,8 @@ last_verified: 2026-08-07
 | PR / 작성자 | [#4173](https://github.com/edwardkim/rhwp/pull/4173) / @jangster77 |
 | 연동 이슈 | [#4172](https://github.com/edwardkim/rhwp/issues/4172) |
 | 기준 `devel` | `23ff5b6f1acd67aaccdf1ecfb47a7dc1918a13ed` |
-| code head | `3ebaf5f2ff5165f569f821bb5b5402b95d07ba9b` |
-| 변경 규모 | 7 files, +407 / -63 |
+| code head | `b1ecf57e9e63a0032f25452aebbca9230ab11e23` |
+| 변경 규모 | 9 files, +531 / -80 |
 | 변경 영역 | CI, CodeQL, Render Diff preflight와 review-only fast-pass 문서·계약 테스트 |
 
 이 PR은 `mydocs/` 안의 오늘할일 등만 수동 충돌 해소한 current-base merge를 review-only bridge로
@@ -40,21 +40,32 @@ merge는 기존과 같이 full CI로 fallback한다. renderer·layout·문서 �
 따라서 PR source의 검사기 변경으로 판정을 우회하지 않으며, 검사기를 읽을 수 없거나 경로가 하나라도
 허용 범위를 벗어나면 fast-pass를 선택하지 않는다.
 
+## 최종 보정
+
+최초 code head 뒤의 review 기록 commit `8930b89b3`은 CI preflight에서 review-only fast-pass를
+선택했지만, Render Diff는 code candidate 결과를 찾지 못해 Canvas 전체 경로를 실행했다. 원인은
+Render Diff의 GitHub Script에서 candidate SHA를 찾은 직후 `break`한 뒤의 결과 조회 코드가 같은
+반복문 안에 남아 도달할 수 없었던 제어 흐름 오류였다.
+
+최종 code head `b1ecf57e9`은 결과 조회를 반복문 밖으로 옮겼다. 또한 계약 테스트는 후보 조회가
+반복문 밖에 있는지 확인하고, 추출한 Render Diff GitHub Script를 Node 문법 검사로 실행해 같은
+배치 오류를 다시 잡도록 보강했다. 이 보정은 review-only 후보 판정 범위를 넓히지 않는다.
+
 ## 완료한 검증
 
 | 검증 | 결과 |
 | --- | --- |
 | #4136 실제 merge 검사 | `current-base-merge-resolution-mydocs-only` |
-| 허용·거부 계약 | `scripts/tests/test_review_only_fast_pass_workflows.py` 포함 33 passed |
+| 허용·거부 계약 | `scripts/tests/test_review_only_fast_pass_workflows.py` 포함 34 passed |
 | CI workflow 계약 | cache sweep·workflow wiring 테스트 통과 |
 | workflow 문법 | `actionlint`로 CI, CodeQL, Render Diff 통과 |
 | 변경 정합 | `git diff --check` 통과 |
-| GitHub CI | [CI](https://github.com/edwardkim/rhwp/actions/runs/31182605377) 전체 성공 |
-| GitHub 보조 workflow | [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/31182605093), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/31182605090) 성공 |
+| GitHub CI | [CI](https://github.com/edwardkim/rhwp/actions/runs/31184307222) 전체 성공 |
+| GitHub 보조 workflow | [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/31184306396), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/31184306339) 성공 |
 
-이 PR 자체의 current base에는 새 검사기가 아직 없으므로 최초 code head는 의도대로 full CI가 실행됐다.
+이 PR 자체의 current base에는 새 검사기가 아직 없으므로 최종 code head는 의도대로 full CI가 실행됐다.
 이 문서와 오늘할일은 그 성공 head 뒤의 single-parent review-only commit이며, push 뒤 최신 head의
-preflight와 aggregate가 fast-pass로 성공하는지 다시 확인한다.
+CI·CodeQL·Render Diff preflight와 aggregate가 fast-pass로 성공하는지 다시 확인한다.
 
 ## 수용 판단
 
