@@ -96,7 +96,10 @@ pub struct SubstFont {
 }
 
 /// 글자 모양 (HWPTAG_CHAR_SHAPE)
-#[derive(Debug, Clone, Default)]
+///
+/// `Default` 는 [수동 구현](#impl-Default-for-CharShape)이다 — 파생하면 `relative_sizes` 가
+/// 스펙 위반값 0 이 된다(#4141).
+#[derive(Debug, Clone)]
 pub struct CharShape {
     /// 원본 레코드 바이트 (라운드트립 보존용, 있으면 직렬화 시 우선 사용)
     pub raw_data: Option<Vec<u8>>,
@@ -159,6 +162,75 @@ pub struct CharShape {
     pub kerning: bool,
     /// 글꼴에 어울리는 빈칸 사용 여부 (bit 25)
     pub use_font_space: bool,
+}
+
+/// `relative_sizes` 만 Rust 파생 기본값(0)이 아니라 **스펙 기본값 100** 이다. 나머지 필드는
+/// 파생값과 같다.
+///
+/// # 왜 파생 Default 로는 안 되는가 (#4141)
+///
+/// OWPML 은 `relSz` 를 `xs:positiveInteger` minInclusive=10 / maxInclusive=250,
+/// `default="100"` 으로 정의한다(`mydocs/manual/OWPML SCHEMA/Header XML schema.xml:716-728`).
+/// **0 은 타입 수준에서 이미 불법이다.** 한컴은 실효 크기를 `기준 크기 × 상대크기%` 로
+/// 해석하므로 0 이 저장되면 10pt 글자가 0.1pt 로 그려져 문서가 사실상 백지가 된다
+/// (`samples/SO-SUEOP.hwp` 변환본 한컴 PDF 실측: 46쪽 10,604 span 전부 0.12pt).
+///
+/// 이 값을 채우지 않는 생성 경로가 여럿이다 — HWP3 변환(`parser/hwp3/mod.rs:526`, HWP3
+/// 레코드에 상대크기 개념 자체가 없다), HWPX `charPr` 의 `relSz` 자식 부재와 id 갭
+/// 채움(`parser/hwpx/header.rs:588`, `:848-858`), HML `RELSIZE` 부재
+/// (`parser/hml/reader.rs:599-605`), HTML import. 세 라이터(HWP5·HWPX·HML)는 모두 가드 없이
+/// IR 값을 그대로 방출한다. 기본값을 스펙에 맞추면 그 전부가 한 곳에서 해소된다.
+///
+/// HWP5 바이너리 파서는 이미 100 을 폴백한다(`parser/doc_info.rs:542-545`) — 파생 Default 의
+/// 0 은 그 폴백과도 불일치였다.
+///
+/// # 왜 `ratios`·`base_size` 는 그대로 두는가
+///
+/// 렌더러가 소비하는 필드다(`renderer/style_resolver.rs:341`,`:355`). 기본값을 바꾸면 렌더
+/// 회귀 검증 lane 이 필요해지므로 별도 이슈로 분리한다. `relative_sizes` 는 렌더 경로에서
+/// 참조가 0건이라(`document_core/queries/hidden_text.rs:267-287`) 이 변경의 렌더 영향은 없다.
+///
+/// # 왜 필드를 전부 나열하는가
+///
+/// `CharShape` 에 필드가 추가되면 이 impl 이 컴파일 에러를 낸다. 새 필드의 기본값을 스펙과
+/// 대조하도록 강제하는 장치다 — 조용한 표류를 막는다.
+impl Default for CharShape {
+    fn default() -> Self {
+        Self {
+            raw_data: None,
+            font_ids: [0; 7],
+            ratios: [0; 7],
+            spacings: [0; 7],
+            // ↓ 이 한 줄만 파생값과 다르다 (파생값 0 은 OWPML 유효범위 10~250 밖)
+            relative_sizes: [100; 7],
+            char_offsets: [0; 7],
+            base_size: 0,
+            attr: 0,
+            italic: false,
+            bold: false,
+            underline_type: UnderlineType::None,
+            outline_type: 0,
+            shadow_type: 0,
+            shadow_offset_x: 0,
+            shadow_offset_y: 0,
+            text_color: 0,
+            underline_color: 0,
+            shade_color: 0,
+            shadow_color: 0,
+            border_fill_id: 0,
+            strike_color: 0,
+            strikethrough: false,
+            subscript: false,
+            superscript: false,
+            emboss: false,
+            engrave: false,
+            emphasis_dot: 0,
+            underline_shape: 0,
+            strike_shape: 0,
+            kerning: false,
+            use_font_space: false,
+        }
+    }
 }
 
 /// CharShape 비교: raw_data 필드 제외 (라운드트립용 원본 바이트는 논리적 동일성과 무관)
@@ -1058,6 +1130,47 @@ mod tests {
         assert!(!cs.bold);
         assert!(!cs.italic);
         assert_eq!(cs.underline_type, UnderlineType::None);
+    }
+
+    /// `Default` 수동 구현이 스펙과 어긋나는 필드는 `relative_sizes` **하나뿐**임을 고정한다.
+    ///
+    /// 이 비대칭은 의도된 것이다(#4141). `relative_sizes` 는 렌더 경로에서 참조가 0건이라
+    /// 스펙값으로 고쳐도 렌더가 안 바뀌지만, `ratios`·`base_size` 는 렌더러가 소비하므로
+    /// (`renderer/style_resolver.rs:341`,`:355`) 같이 고치면 렌더 회귀 검증이 필요해진다.
+    /// 그래서 별도 이슈로 분리했다 — 이 테스트가 그 경계를 코드에서 읽히게 한다.
+    #[test]
+    fn char_shape_default_matches_spec_only_for_relative_sizes() {
+        let cs = CharShape::default();
+
+        // 이번에 고친 것 — OWPML relSz default="100", 유효범위 10~250
+        // (mydocs/manual/OWPML SCHEMA/Header XML schema.xml:716-728)
+        assert_eq!(
+            cs.relative_sizes, [100; 7],
+            "상대크기 기본값은 OWPML 기본값 100 이어야 한다. 0 이면 한컴이 \
+             `크기 × 상대크기%` 로 해석해 전 본문을 0.1pt 로 그린다 (#4141)"
+        );
+
+        // 의도적으로 고치지 않은 것 — 렌더러가 소비하므로 별도 이슈
+        assert_eq!(
+            cs.ratios, [0; 7],
+            "장평 기본값을 바꾸려면 렌더 회귀 검증(Native Skia·시각 증적)이 필요하다. \
+             #4141 범위 밖이며 별도 이슈로 다룬다 — 무심코 바꾸지 마라"
+        );
+        assert_eq!(
+            cs.base_size, 0,
+            "기준 크기도 렌더러가 소비한다 — 위와 같은 이유"
+        );
+
+        // 0 이 스펙상 유효값이라 손대지 않는 것
+        // (OWPML offset default=0 범위 [-100,100], spacing default=0 범위 [-50,50])
+        assert_eq!(cs.char_offsets, [0; 7]);
+        assert_eq!(cs.spacings, [0; 7]);
+
+        // sentinel 로 쓰이는 색상값 — hidden_text 판정과 HML preflight 가 0 에 의존한다
+        assert_eq!(cs.shade_color, 0);
+        assert_eq!(cs.shadow_color, 0);
+        assert_eq!(cs.underline_color, 0);
+        assert_eq!(cs.text_color, 0);
     }
 
     #[test]
