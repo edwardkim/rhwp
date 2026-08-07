@@ -8598,12 +8598,17 @@ impl LayoutEngine {
         let lo = start_unit.min(units.len());
         let hi = end_unit.min(units.len()).max(lo);
         let mut extra = 0.0;
+        // [#4129 회귀 가드] 실제 유닛 방문 횟수 집계 — run-walk 는 호출당 ≤2×U.
+        // per-para 재스캔(O(P×U))류가 되살아나면 통합 테스트의 스캔 총량 상한이
+        // 폭발한다. 반환 직전 한 번에 프로세스 카운터로 누적한다.
+        let mut issue4129_visited: u64 = 0;
 
         let mut u = 0;
         while u < units.len() {
             // 종전 per-para 루프는 0..paragraphs.len() 이라 범위 밖 para_idx
             // 유닛은 방문 자체가 없었다 — 동일하게 무시한다.
             if !units[u].mixed_nested_fragment || units[u].para_idx >= cell.paragraphs.len() {
+                issue4129_visited += 1;
                 u += 1;
                 continue;
             }
@@ -8613,6 +8618,7 @@ impl LayoutEngine {
             let mut visible_units: Vec<(f64, bool)> = Vec::new();
             let mut idx = u;
             while idx < units.len() {
+                issue4129_visited += 1;
                 let unit = &units[idx];
                 if unit.mixed_nested_fragment {
                     if unit.para_idx != para_idx {
@@ -8656,6 +8662,8 @@ impl LayoutEngine {
             }
         }
 
+        crate::diagnostics::perf_counters::MIXED_NESTED_UNITS_SCANNED
+            .fetch_add(issue4129_visited, std::sync::atomic::Ordering::Relaxed);
         extra
     }
 
