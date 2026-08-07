@@ -531,7 +531,30 @@ impl LayoutEngine {
             } else {
                 false
             };
-            let effective_align = if (is_in_split_row || is_rowbreak_straddle) && cell_was_split {
+            // [#4042] 쪽 경계로 실제 잘리는 셀은 세로 가운데/아래 정렬이 성립하지 않는다.
+            // 한컴 조판 규칙: 용지 시작 y 에서 아래로 흐르며 쪽 경계에 닿으면 자른다 —
+            // 가시 슬라이스(inner_height)보다 콘텐츠가 큰 셀은 위에서부터 흘러야 하며,
+            // 가운데 정렬은 다음 쪽으로 넘어갈 콘텐츠까지 세어 가시 조각을 셀 중앙으로
+            // 밀어버린다. `cell_was_split`(문단 줄 컷)은 문단 줄은 온전하되 중첩 표 유닛이
+            // 슬라이스를 넘어 잘리는 셀(42065 Row2: 셀 안 두 표가 쪽을 넘김)을 놓친다.
+            // 그래서 전체 콘텐츠 높이(중첩 표 포함, cell_units 캐시 재사용 → O(1))가
+            // 가시 슬라이스를 넘는지 직접 본다. 넘으면 이 조각은 컷 대상이므로 Top 앵커.
+            // 넘지 않는 셀(예: #697 세로 병합 라벨)은 종전대로 valign 을 존중한다.
+            // 다중열(col_count>1) 중첩 표를 담은 셀만 대상. 단일 1×1 중첩 표는 그
+            // fragment 를 셀 중앙에 두는 것이 한컴 정답(#2195/#4058 76076, issue_2308 핀)
+            // 이고, cell_units_content_height 는 1×1 표의 full 높이를 세어 슬라이스를
+            // 넘는 것처럼 오판(false positive)하므로 제외한다. 42065 Row2 처럼 여러
+            // 다중열 표가 쪽을 넘겨 흐르는 셀만 Top 앵커가 필요하다.
+            let has_multicol_nested = cell.paragraphs.iter().any(|p| {
+                p.controls
+                    .iter()
+                    .any(|c| matches!(c, Control::Table(t) if t.col_count > 1))
+            });
+            let cell_content_cut_by_slice = has_multicol_nested
+                && self.cell_units_content_height(cell, table, styles) > inner_height + 0.5;
+            let effective_align = if (is_in_split_row || is_rowbreak_straddle)
+                && (cell_was_split || cell_content_cut_by_slice)
+            {
                 VerticalAlign::Top
             } else {
                 cell.vertical_align

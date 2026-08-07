@@ -1,0 +1,40 @@
+{
+  "templates": {
+    "minimal": {
+      "description": "가장 작은 유효 문서 — 문항 1개, 선택지 2개",
+      "questions": 1,
+      "choices_per_question": 2
+    },
+    "simple": {
+      "description": "기본 3문항 5지선다, 문항당 지문 2문단",
+      "questions": 3,
+      "choices_per_question": 5,
+      "stem_paragraphs": 2
+    },
+    "structured": {
+      "description": "머리말·꼬리말·형식 라벨 + 공유 지문 2개 + <보기> 박스",
+      "questions": 6,
+      "choices_per_question": 5,
+      "stem_paragraphs": 2,
+      "passages": 2,
+      "questions_per_passage": 2,
+      "boxed_every": 3,
+      "header_text": "국어 영역",
+      "footer_text": "1/20",
+      "form_label": "홀수형"
+    },
+    "media": {
+      "description": "이미지 블록 포함 (실물 파일 없이 placeholder 처리)",
+      "questions": 4,
+      "choices_per_question": 5,
+      "media_every": 2
+    },
+    "large": {
+      "description": "30문항 다중 페이지 스트레스 — <보기> 박스 6개 포함",
+      "questions": 30,
+      "choices_per_question": 5,
+      "stem_paragraphs": 3,
+      "boxed_every": 5
+    }
+  }
+}

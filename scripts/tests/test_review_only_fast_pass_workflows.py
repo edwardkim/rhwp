@@ -34,6 +34,23 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 self.assertIn("listJobsForWorkflowRun", workflow)
                 self.assertIn("runCreatedAt < pullCreatedAt", workflow)
 
+    def test_current_base_update_merge_requires_an_automatic_merge_tree(self) -> None:
+        for name in ("ci", "codeql"):
+            with self.subTest(workflow=name):
+                workflow = WORKFLOWS[name].read_text(encoding="utf-8")
+                self.assertIn("isCurrentBaseUpdateMerge", workflow)
+                self.assertIn("pending-base-merge-tree", workflow)
+                self.assertIn("multiple-current-base-update-merges", workflow)
+                self.assertIn("git merge-tree --write-tree", workflow)
+                self.assertIn("current-base-merge-tree-mismatch", workflow)
+                self.assertIn("current-base-update-merge-tree-green", workflow)
+                self.assertIn(
+                    "ref: refs/pull/${{ github.event.pull_request.number }}/head",
+                    workflow,
+                )
+                self.assertIn("lfs: false", workflow)
+                self.assertIn("persist-credentials: false", workflow)
+
     def test_render_diff_keeps_its_existing_pr_identity_guard(self) -> None:
         workflow = WORKFLOWS["render-diff"].read_text(encoding="utf-8")
         self.assertIn("render-diff-workflow-pr-identity-mismatch", workflow)

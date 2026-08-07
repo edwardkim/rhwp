@@ -1004,7 +1004,7 @@ impl LayoutEngine {
         let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
 
         // ── 1. 열 폭 + 행 높이 계산 ──
-        let col_widths = self.resolve_column_widths(table, col_count);
+        let mut col_widths = self.resolve_column_widths(table, col_count);
         let row_heights = self.resolve_row_heights(
             table,
             col_count,
@@ -1072,7 +1072,7 @@ impl LayoutEngine {
         // [#3658] 종료 조각 여부 — 셀 하단 초과 줄 드롭 예외 판정에 사용.
         let split_terminal = nested_split.is_some_and(|s| s.terminal);
 
-        let row_col_x = build_row_col_x(
+        let mut row_col_x = build_row_col_x(
             table,
             &col_widths,
             col_count,
@@ -1100,10 +1100,54 @@ impl LayoutEngine {
             None
         };
 
-        let table_width = row_col_x
+        let mut table_width = row_col_x
             .iter()
             .map(|rx| rx.last().copied().unwrap_or(0.0))
             .fold(col_x.last().copied().unwrap_or(0.0), f64::max);
+        // [#4042 버그 A] 셀 안 중첩 표(depth>0, 비-TAC)의 렌더 폭은 표 선언 폭(=부모 셀
+        // full 폭)으로 결정되는데, 호출자(table_partial.rs:1309 continuation, table_layout.rs
+        // 정상 비-TAC 셀 경로)는 이미 패딩을 뺀 col_area(inner_width)를 넘기고 원점도
+        // compute_table_x_position 이 패딩 반영(inner_x)해 잡는다. 빠진 단계는 폭을 그
+        // 안쪽 내용 상자(col_area.width)에 맞춰 clamp 하는 것뿐이라, 원점은 패딩만큼 우측
+        // 이동했는데 폭은 full 이라 우측이 pad_left 만큼 셀 밖으로 넘쳐 클립됐다. col_area
+        // 에 맞춰 균일 축소해 좌우 원점·폭을 정합시킨다. table_width < col_area.width 인
+        // 정상/좁은 표(#3308 가운데 배치)와 TAC 표는 조건상 no-op. 지역변수 스케일링뿐이라
+        // cell_units/projection 캐시를 재계산하지 않아 단일 패스 성능 불변.
+        // row_col_x 를 함께 축소하지 않으면 셀 내용만 줄고 테두리 세로선이 full 로 남아
+        // 우측 세로선이 어긋나므로 col_widths·col_x·row_col_x·table_width 를 동일 fit 로 축소.
+        // fit 타깃은 col_area.width 가 아니라 원점 로직(compute_table_x_position depth>0
+        // 분기, 2573-2575)이 실제로 쓰는 가용 폭 `area_w = col_area.width - om_left` 와
+        // 정확히 일치시킨다. 표 원점이 col_area.x + om_left 로 밀리므로, 폭을 col_area.width
+        // 로 맞추면 om_left(예: 조문대비표 ≈1.9px)만큼 우측이 여전히 초과한다. area_w 로
+        // 맞추면 표 우측 = (col_area.x + om_left) + area_w = col_area.x + col_area.width 로
+        // 셀 내용 우측에 정확히 flush 된다.
+        let fit_om_left = hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
+        let fit_avail_w = (col_area.width - fit_om_left).max(0.0);
+        // [#4042 버그 A] 다중열(col_count>1) 중첩 표만 대상. 1×1(단일 셀) 중첩 표는
+        // 셀 자체가 표 폭이라 render_normalization 이 부모 셀에 맞춰 스트레치(#2195/#4058
+        // 76076)하는 것이 정답 기하이며, 여기서 col_area.width 로 되축소하면 그 스트레치
+        // 를 되돌려 nested fragment 기하가 어긋난다(issue_2308 회귀). 우측 클립 defect 는
+        // 열 경계 합이 셀 내용 상자를 넘는 다중열 표의 증상이므로 col_count>1 로 한정한다
+        // (케이스별 구조 가드).
+        if depth > 0
+            && table.col_count > 1
+            && !table.common.treat_as_char
+            && table_width > fit_avail_w + 0.5
+        {
+            let fit = fit_avail_w / table_width;
+            for w in col_widths.iter_mut() {
+                *w *= fit;
+            }
+            for x in col_x.iter_mut() {
+                *x *= fit;
+            }
+            for rx in row_col_x.iter_mut() {
+                for x in rx.iter_mut() {
+                    *x *= fit;
+                }
+            }
+            table_width *= fit;
+        }
         let table_height = if let Some(col_row_y) = independent_col_row_y.as_ref() {
             col_row_y
                 .iter()

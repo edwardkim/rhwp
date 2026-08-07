@@ -63,9 +63,9 @@ jobs:
       checks: read
       pull-requests: read
     outputs:
-      fast_pass: ${{ steps.detect.outputs.fast_pass || 'false' }}
-      reason: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
-      candidate_sha: ${{ steps.detect.outputs.candidate_sha || '' }}
+      fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
+      reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
+      candidate_sha: ${{ steps.finalize.outputs.candidate_sha || '' }}
       # [#3790 Stage 4] frontend_mode·render_required에 더해 rust_required와
       # native_skia_required를 실제 worker 조건에 사용한다. CodeQL은 Stage 5까지 유지한다.
       # 모든 기본값은 full lane이다.
@@ -99,6 +99,18 @@ jobs:
               core.info(`fast_pass=${fastPass} reason=${reason} candidate_sha=${candidateSha}`);
             }
 
+            function setPendingBaseMergeResult(reason, candidateSha, mergeSha, sourceParentSha) {
+              core.setOutput('fast_pass', 'pending-base-merge-tree');
+              core.setOutput('reason', reason);
+              core.setOutput('candidate_sha', candidateSha);
+              core.setOutput('base_merge_sha', mergeSha);
+              core.setOutput('source_parent_sha', sourceParentSha);
+              core.info(
+                `fast_pass=pending-base-merge-tree reason=${reason} candidate_sha=${candidateSha} `
+                + `base_merge_sha=${mergeSha} source_parent_sha=${sourceParentSha}`,
+              );
+            }
+
             function isAllowedReviewPath(file) {
               const filename = file.filename;
               if (filename.startsWith('mydocs/')) {
@@ -130,9 +142,10 @@ jobs:
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 
-            function isCurrentBaseReviewMerge(commit, baseSha) {
+            function isCurrentBaseUpdateMerge(commit, baseSha) {
               const parents = commit.parents || [];
-              return parents.length === 2 && parents.some((parent) => parent.sha === baseSha);
+              return parents.length === 2
+                && parents.filter((parent) => parent.sha === baseSha).length === 1;
             }
 
             function latestRun(runs) {
@@ -236,6 +249,7 @@ jobs:
 
               const reviewOnlyCandidates = [];
               let codeCandidateSha = '';
+              let baseMergeBridge = null;
 
               for (let index = commits.length - 1; index >= 0; index -= 1) {
                 const sha = commits[index].sha;
@@ -244,6 +258,18 @@ jobs:
                   repo,
                   ref: sha,
                 });
+                const parents = commit.parents || [];
+                if (reviewOnlyCandidates.length > 0
+                  && isCurrentBaseUpdateMerge(commit, pr.base.sha)) {
+                  if (baseMergeBridge) {
+                    setResult(false, `multiple-current-base-update-merges:${sha}`);
+                    return;
+                  }
+                  const sourceParent = parents.find((parent) => parent.sha !== pr.base.sha);
+                  baseMergeBridge = { mergeSha: sha, sourceParentSha: sourceParent.sha };
+                  core.info(`including current-base update merge bridge ${sha}`);
+                  continue;
+                }
                 const files = commit.files || [];
 
                 // The commit endpoint may truncate very large file lists. Fall back to full CI.
@@ -254,18 +280,9 @@ jobs:
 
                 const reviewOnly = files.every((file) => isAllowedReviewPath(file));
                 if (reviewOnly) {
-                  const parents = commit.parents || [];
                   if (parents.length === 1) {
                     reviewOnlyCandidates.push(sha);
                     continue;
-                  }
-                  // Keep the narrow Update branch merge compatibility path. It is
-                  // optional: ordinary trailing review-only records do not require it.
-                  if (reviewOnlyCandidates.length > 0
-                    && isCurrentBaseReviewMerge(commit, pr.base.sha)) {
-                    reviewOnlyCandidates.push(sha);
-                    core.info(`including ${reviewOnlyLabel(files)} update-branch merge candidate ${sha}`);
-                    break;
                   }
                   setResult(false, `${reviewOnlyLabel(files)}-merge-not-reusable:${sha}`);
                   return;
@@ -286,6 +303,15 @@ jobs:
               for (const candidateSha of reviewOnlyCandidates) {
                 const result = await buildResult(candidateSha, pr);
                 if (result.state === 'green') {
+                  if (baseMergeBridge) {
+                    setPendingBaseMergeResult(
+                      `build-and-test-green:${result.conclusion}`,
+                      candidateSha,
+                      baseMergeBridge.mergeSha,
+                      baseMergeBridge.sourceParentSha,
+                    );
+                    return;
+                  }
                   setResult(true, `build-and-test-green:${result.conclusion}`, candidateSha);
                   return;
                 }
@@ -302,11 +328,85 @@ jobs:
               setResult(false, 'preflight-error');
             }
 
+      # 기준선 병합을 fast-pass bridge로 쓸 때는 untrusted source를 실행하지 않고,
+      # Git의 자동 3-way merge 결과가 실제 merge tree와 같은지만 확인한다.
+      - name: Check out current-base merge tree inputs
+        id: checkout-base-merge-tree
+        if: ${{ steps.detect.outputs.fast_pass == 'pending-base-merge-tree' }}
+        continue-on-error: true
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          fetch-depth: 0
+          lfs: false
+          persist-credentials: false
+
+      - name: Verify current-base merge tree
+        id: verify-base-merge-tree
+        if: ${{ always() && steps.detect.outputs.fast_pass == 'pending-base-merge-tree' }}
+        shell: bash
+        env:
+          BASE_MERGE_SHA: ${{ steps.detect.outputs.base_merge_sha }}
+          SOURCE_PARENT_SHA: ${{ steps.detect.outputs.source_parent_sha }}
+          CURRENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+
+          fail() {
+            printf 'verified=false\nreason=%s\n' "$1" >> "$GITHUB_OUTPUT"
+          }
+
+          if ! git cat-file -e "${BASE_MERGE_SHA}^{commit}" \
+            || ! git cat-file -e "${SOURCE_PARENT_SHA}^{commit}" \
+            || ! git cat-file -e "${CURRENT_BASE_SHA}^{commit}"; then
+            fail 'current-base-merge-input-unavailable'
+            exit 0
+          fi
+
+          if ! expected_tree="$(git merge-tree --write-tree "${SOURCE_PARENT_SHA}" "${CURRENT_BASE_SHA}" 2>/dev/null)"; then
+            fail 'current-base-merge-tree-conflict-or-unavailable'
+            exit 0
+          fi
+          expected_tree="${expected_tree%%$'\n'*}"
+          actual_tree="$(git show -s --format=%T "${BASE_MERGE_SHA}")"
+          if [[ "${expected_tree}" != "${actual_tree}" ]]; then
+            fail 'current-base-merge-tree-mismatch'
+            exit 0
+          fi
+
+          printf 'verified=true\nreason=current-base-merge-tree-match\n' >> "$GITHUB_OUTPUT"
+
+      - name: Finalize review-only fast pass
+        id: finalize
+        if: ${{ always() }}
+        shell: bash
+        env:
+          DETECTED_FAST_PASS: ${{ steps.detect.outputs.fast_pass || 'false' }}
+          DETECTED_REASON: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
+          CANDIDATE_SHA: ${{ steps.detect.outputs.candidate_sha || '' }}
+          MERGE_TREE_VERIFIED: ${{ steps.verify-base-merge-tree.outputs.verified || 'false' }}
+          MERGE_TREE_REASON: ${{ steps.verify-base-merge-tree.outputs.reason || 'not-required' }}
+        run: |
+          set -euo pipefail
+          fast_pass="${DETECTED_FAST_PASS}"
+          reason="${DETECTED_REASON}"
+          if [[ "${DETECTED_FAST_PASS}" == 'pending-base-merge-tree' ]]; then
+            if [[ "${MERGE_TREE_VERIFIED}" == 'true' ]]; then
+              fast_pass='true'
+              reason="current-base-update-merge-tree-green:${CANDIDATE_SHA}"
+            else
+              fast_pass='false'
+              reason="${MERGE_TREE_REASON}"
+            fi
+          fi
+          printf 'fast_pass=%s\nreason=%s\ncandidate_sha=%s\n' \
+            "${fast_pass}" "${reason}" "${CANDIDATE_SHA}" >> "$GITHUB_OUTPUT"
+
       # [#3790 Stage 4] PR의 classifier 구현은 PR head가 아닌 base SHA에 고정한다.
       # frontend·Rust·Native Skia 축은 활성화하며 CodeQL은 Stage 5까지 관찰한다.
       - name: Check out trusted CI impact classifier
         id: checkout-impact-classifier
-        if: ${{ steps.detect.outputs.fast_pass != 'true' }}
+        if: ${{ steps.finalize.outputs.fast_pass != 'true' }}
         continue-on-error: true
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -317,7 +417,7 @@ jobs:
 
       - name: Collect CI impact input
         id: collect-impact
-        if: ${{ steps.detect.outputs.fast_pass != 'true' }}
+        if: ${{ steps.finalize.outputs.fast_pass != 'true' }}
         continue-on-error: true
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -423,7 +523,7 @@ jobs:
 
       - name: Classify CI impact
         id: impact
-        if: ${{ steps.detect.outputs.fast_pass != 'true' }}
+        if: ${{ steps.finalize.outputs.fast_pass != 'true' }}
         continue-on-error: true
         run: >-
           node scripts/ci-impact-classifier.cjs
@@ -557,19 +657,15 @@ jobs:
 
   test-slow-shard:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-slow]
+    # [#4103] shard는 archive만 소비한다. Native Skia는 final aggregate가 별도 집계하므로
+    # 여기서 기다리지 않아 archive 완료 즉시 기본 테스트를 시작할 수 있다.
+    needs: [preflight, build-test-archive-slow]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && (
-          (needs.preflight.outputs.native_skia_required == 'true'
-            && needs['native-skia-tests'].result == 'success')
-          || (needs.preflight.outputs.native_skia_required == 'false'
-            && needs['native-skia-tests'].result == 'skipped')
-        )
         && needs['build-test-archive-slow'].result == 'success'
       }}
     permissions:
@@ -581,19 +677,13 @@ jobs:
 
   test-regular-shard-1:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-a]
+    needs: [preflight, build-test-archive-a]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && (
-          (needs.preflight.outputs.native_skia_required == 'true'
-            && needs['native-skia-tests'].result == 'success')
-          || (needs.preflight.outputs.native_skia_required == 'false'
-            && needs['native-skia-tests'].result == 'skipped')
-        )
         && needs['build-test-archive-a'].result == 'success'
       }}
     permissions:
@@ -605,19 +695,13 @@ jobs:
 
   test-regular-shard-2:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-slow]
+    needs: [preflight, build-test-archive-slow]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && (
-          (needs.preflight.outputs.native_skia_required == 'true'
-            && needs['native-skia-tests'].result == 'success')
-          || (needs.preflight.outputs.native_skia_required == 'false'
-            && needs['native-skia-tests'].result == 'skipped')
-        )
         && needs['build-test-archive-slow'].result == 'success'
       }}
     permissions:
@@ -629,19 +713,13 @@ jobs:
 
   test-regular-shard-3:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-b]
+    needs: [preflight, build-test-archive-b]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && (
-          (needs.preflight.outputs.native_skia_required == 'true'
-            && needs['native-skia-tests'].result == 'success')
-          || (needs.preflight.outputs.native_skia_required == 'false'
-            && needs['native-skia-tests'].result == 'skipped')
-        )
         && needs['build-test-archive-b'].result == 'success'
       }}
     permissions:
@@ -688,6 +766,15 @@ jobs:
 
       - name: Validate Render Diff trigger policy
         run: python3 -m unittest scripts/tests/test_render_diff_workflow.py
+
+      # [#4080] workflow 계약 테스트는 추가해 놓고 배선을 잊으면 한 번도 돌지 않는다.
+      # 아래 목록은 test_workflow_contract_wiring.py 가 강제한다 — 새 계약 테스트를
+      # 추가하면 그 테스트가 실패하므로 여기 한 줄을 같이 넣어야 한다.
+      - name: Validate workflow contracts
+        run: |
+          python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
+          python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
+          python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
 
       - name: Clippy
         run: cargo clippy -- -D warnings

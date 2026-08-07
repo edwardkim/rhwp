@@ -932,3 +932,64 @@ fn test_compute_image_crop_src_last_resort_hu_rule() {
     assert!((sw - 4.0).abs() < 0.01);
     assert!((sh - 2.0).abs() < 0.01);
 }
+
+/// [#4085] 테두리 없는 글자겹침(`border_type=0`)은 `charSz` 축소를 받지 않고
+/// 본문과 같은 글자 크기로 나가야 한다.
+///
+/// 관세청 월간 수출입 현황 p1 의 절 제목 번호 상자(U+F02B1, `charSz=-4`)가
+/// 한컴 PDF 에서 본문과 같은 `101 Tf`, 같은 baseline 으로 나온다. 축소를 걸면
+/// 본문 대비 60% 로 렌더돼 다른 폰트처럼 보인다.
+#[test]
+fn char_overlap_without_border_keeps_body_font_size() {
+    let style = TextStyle {
+        font_size: 22.67,
+        ..Default::default()
+    };
+    let overlap = CharOverlapInfo {
+        border_type: 0,
+        inner_char_size: -4,
+    };
+
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(800.0, 600.0);
+    renderer.draw_char_overlap("\u{F02B1}", &style, &overlap, 10.0, 20.0, 22.67, 22.67);
+    let output = renderer.output();
+
+    assert!(
+        output.contains("font-size=\"22.67\""),
+        "테두리 없는 글자겹침은 본문 크기 유지: {output}"
+    );
+    assert!(
+        !output.contains("<ellipse"),
+        "border_type=0 은 테두리를 그리지 않는다: {output}"
+    );
+}
+
+/// [#4085] 회귀 금지 — 테두리가 있으면 PR #1101 의 실측 축소 규칙을 유지한다.
+/// `samples/hwpx/k-water-rfp.hwpx` p13 의 반전 사각형(`charSz=-2`) 이 근거다.
+#[test]
+fn char_overlap_with_border_keeps_charsz_reduction() {
+    let style = TextStyle {
+        font_size: 22.66,
+        ..Default::default()
+    };
+    let overlap = CharOverlapInfo {
+        border_type: 4,
+        inner_char_size: -2,
+    };
+
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(800.0, 600.0);
+    renderer.draw_char_overlap("3", &style, &overlap, 10.0, 20.0, 22.66, 22.66);
+    let output = renderer.output();
+
+    // 22.66 × 0.80 = 18.128 → "18.13"
+    assert!(
+        output.contains("font-size=\"18.13\""),
+        "반전 사각형은 charSz 축소 유지: {output}"
+    );
+    assert!(
+        output.contains("<rect"),
+        "border_type=4 는 사각 테두리를 그린다: {output}"
+    );
+}

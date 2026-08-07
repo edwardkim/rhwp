@@ -2486,6 +2486,37 @@ pub fn char_overlap_advance_units(chars: &[char]) -> usize {
     usize::from(!chars.is_empty())
 }
 
+/// 글자겹침(CharOverlap) 내부 글자의 크기 비율.
+///
+/// `charSz` 는 OWPML 상 **"테두리 내부 글자의 크기 비율. 단위 %"**
+/// (`mydocs/manual/OWPML SCHEMA/ParaList XML schema.xml:571`) 다. 따라서 테두리를
+/// 그리지 않는 겹침에는 적용하지 않는다 — 축소할 "테두리 내부"가 없다.
+///
+/// `effective_border` 는 raw `border_type` 이 아니라 **실제로 테두리를 그리는지** 다.
+/// PUA 다자리 숫자는 `border_type=0` 이어도 원형 테두리로 승격되므로(각 렌더 경로의
+/// combined 분기) 그 경우는 축소가 정당하다.
+///
+/// 한컴 실측 두 건이 이 규칙을 함께 만족한다 (#4085):
+/// - `samples/hwpx/k-water-rfp.hwpx` p13 — 반전 사각형(4), `charSz=-2` → 0.80 (PR #1101)
+/// - 관세청 월간 수출입 현황 p1 — 테두리 없음(0), `charSz=-4` → 축소 없음. 한컴 PDF
+///   content stream 에서 마커와 본문이 같은 `101 Tf`, 같은 baseline 으로 나온다.
+///
+/// 음수 영역의 10% step 해석은 PR #1101 의 실측 가설을 그대로 둔다.
+pub fn char_overlap_size_ratio(effective_border: u8, inner_char_size: i8) -> f64 {
+    if effective_border == 0 {
+        return 1.0;
+    }
+    if inner_char_size > 0 {
+        // 양수 → percent ratio (HWPX 양수 case 보존: 50 = 0.5)
+        inner_char_size as f64 / 100.0
+    } else if inner_char_size < 0 {
+        // 음수 → 10% step 축소 (한컴 정합: charSz=-3 → 1.0 + (-3)×0.10 = 0.70)
+        1.0 + inner_char_size as f64 * 0.10
+    } else {
+        1.0
+    }
+}
+
 fn pua_enclosed_border_type(ch: char) -> Option<u8> {
     let cp = ch as u32;
     // U+F02B1~F02C4 (①~⑳): map_pua_bullet_char 에서 표준 원문자로 매핑 — CharOverlap 제외

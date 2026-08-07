@@ -52,9 +52,9 @@ jobs:
       checks: read
       pull-requests: read
     outputs:
-      fast_pass: ${{ steps.detect.outputs.fast_pass || 'false' }}
-      reason: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
-      candidate_sha: ${{ steps.detect.outputs.candidate_sha || '' }}
+      fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
+      reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
+      candidate_sha: ${{ steps.finalize.outputs.candidate_sha || '' }}
 
     steps:
       - name: Detect review-only fast pass
@@ -79,6 +79,18 @@ jobs:
               core.setOutput('reason', reason);
               core.setOutput('candidate_sha', candidateSha);
               core.info(`fast_pass=${fastPass} reason=${reason} candidate_sha=${candidateSha}`);
+            }
+
+            function setPendingBaseMergeResult(reason, candidateSha, mergeSha, sourceParentSha) {
+              core.setOutput('fast_pass', 'pending-base-merge-tree');
+              core.setOutput('reason', reason);
+              core.setOutput('candidate_sha', candidateSha);
+              core.setOutput('base_merge_sha', mergeSha);
+              core.setOutput('source_parent_sha', sourceParentSha);
+              core.info(
+                `fast_pass=pending-base-merge-tree reason=${reason} candidate_sha=${candidateSha} `
+                + `base_merge_sha=${mergeSha} source_parent_sha=${sourceParentSha}`,
+              );
             }
 
             function isAllowedReviewPath(file) {
@@ -113,9 +125,10 @@ jobs:
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 
-            function isCurrentBaseReviewMerge(commit, baseSha) {
+            function isCurrentBaseUpdateMerge(commit, baseSha) {
               const parents = commit.parents || [];
-              return parents.length === 2 && parents.some((parent) => parent.sha === baseSha);
+              return parents.length === 2
+                && parents.filter((parent) => parent.sha === baseSha).length === 1;
             }
 
             function latestRun(runs) {
@@ -221,6 +234,7 @@ jobs:
 
               const reviewOnlyCandidates = [];
               let codeCandidateSha = '';
+              let baseMergeBridge = null;
 
               for (let index = commits.length - 1; index >= 0; index -= 1) {
                 const sha = commits[index].sha;
@@ -229,6 +243,18 @@ jobs:
                   repo,
                   ref: sha,
                 });
+                const parents = commit.parents || [];
+                if (reviewOnlyCandidates.length > 0
+                  && isCurrentBaseUpdateMerge(commit, pr.base.sha)) {
+                  if (baseMergeBridge) {
+                    setResult(false, `multiple-current-base-update-merges:${sha}`);
+                    return;
+                  }
+                  const sourceParent = parents.find((parent) => parent.sha !== pr.base.sha);
+                  baseMergeBridge = { mergeSha: sha, sourceParentSha: sourceParent.sha };
+                  core.info(`including current-base update merge bridge ${sha}`);
+                  continue;
+                }
                 const files = commit.files || [];
 
                 // The commit endpoint may truncate very large file lists. Fall back to full CodeQL.
@@ -239,18 +265,9 @@ jobs:
 
                 const reviewOnly = files.every((file) => isAllowedReviewPath(file));
                 if (reviewOnly) {
-                  const parents = commit.parents || [];
                   if (parents.length === 1) {
                     reviewOnlyCandidates.push(sha);
                     continue;
-                  }
-                  // Keep the narrow Update branch merge compatibility path. It is
-                  // optional: ordinary trailing review-only records do not require it.
-                  if (reviewOnlyCandidates.length > 0
-                    && isCurrentBaseReviewMerge(commit, pr.base.sha)) {
-                    reviewOnlyCandidates.push(sha);
-                    core.info(`including ${reviewOnlyLabel(files)} update-branch merge candidate ${sha}`);
-                    break;
                   }
                   setResult(false, `${reviewOnlyLabel(files)}-merge-not-reusable:${sha}`);
                   return;
@@ -271,6 +288,15 @@ jobs:
               for (const candidateSha of reviewOnlyCandidates) {
                 const result = await codeqlResult(candidateSha, pr);
                 if (result.state === 'green') {
+                  if (baseMergeBridge) {
+                    setPendingBaseMergeResult(
+                      'codeql-checks-green',
+                      candidateSha,
+                      baseMergeBridge.mergeSha,
+                      baseMergeBridge.sourceParentSha,
+                    );
+                    return;
+                  }
                   setResult(true, 'codeql-checks-green', candidateSha);
                   return;
                 }
@@ -286,6 +312,80 @@ jobs:
               core.warning(`CodeQL preflight failed; running full CodeQL. ${error.message}`);
               setResult(false, 'preflight-error');
             }
+
+      # 기준선 병합을 fast-pass bridge로 쓸 때는 untrusted source를 실행하지 않고,
+      # Git의 자동 3-way merge 결과가 실제 merge tree와 같은지만 확인한다.
+      - name: Check out current-base merge tree inputs
+        id: checkout-base-merge-tree
+        if: ${{ steps.detect.outputs.fast_pass == 'pending-base-merge-tree' }}
+        continue-on-error: true
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          fetch-depth: 0
+          lfs: false
+          persist-credentials: false
+
+      - name: Verify current-base merge tree
+        id: verify-base-merge-tree
+        if: ${{ always() && steps.detect.outputs.fast_pass == 'pending-base-merge-tree' }}
+        shell: bash
+        env:
+          BASE_MERGE_SHA: ${{ steps.detect.outputs.base_merge_sha }}
+          SOURCE_PARENT_SHA: ${{ steps.detect.outputs.source_parent_sha }}
+          CURRENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+
+          fail() {
+            printf 'verified=false\nreason=%s\n' "$1" >> "$GITHUB_OUTPUT"
+          }
+
+          if ! git cat-file -e "${BASE_MERGE_SHA}^{commit}" \
+            || ! git cat-file -e "${SOURCE_PARENT_SHA}^{commit}" \
+            || ! git cat-file -e "${CURRENT_BASE_SHA}^{commit}"; then
+            fail 'current-base-merge-input-unavailable'
+            exit 0
+          fi
+
+          if ! expected_tree="$(git merge-tree --write-tree "${SOURCE_PARENT_SHA}" "${CURRENT_BASE_SHA}" 2>/dev/null)"; then
+            fail 'current-base-merge-tree-conflict-or-unavailable'
+            exit 0
+          fi
+          expected_tree="${expected_tree%%$'\n'*}"
+          actual_tree="$(git show -s --format=%T "${BASE_MERGE_SHA}")"
+          if [[ "${expected_tree}" != "${actual_tree}" ]]; then
+            fail 'current-base-merge-tree-mismatch'
+            exit 0
+          fi
+
+          printf 'verified=true\nreason=current-base-merge-tree-match\n' >> "$GITHUB_OUTPUT"
+
+      - name: Finalize review-only fast pass
+        id: finalize
+        if: ${{ always() }}
+        shell: bash
+        env:
+          DETECTED_FAST_PASS: ${{ steps.detect.outputs.fast_pass || 'false' }}
+          DETECTED_REASON: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
+          CANDIDATE_SHA: ${{ steps.detect.outputs.candidate_sha || '' }}
+          MERGE_TREE_VERIFIED: ${{ steps.verify-base-merge-tree.outputs.verified || 'false' }}
+          MERGE_TREE_REASON: ${{ steps.verify-base-merge-tree.outputs.reason || 'not-required' }}
+        run: |
+          set -euo pipefail
+          fast_pass="${DETECTED_FAST_PASS}"
+          reason="${DETECTED_REASON}"
+          if [[ "${DETECTED_FAST_PASS}" == 'pending-base-merge-tree' ]]; then
+            if [[ "${MERGE_TREE_VERIFIED}" == 'true' ]]; then
+              fast_pass='true'
+              reason="current-base-update-merge-tree-green:${CANDIDATE_SHA}"
+            else
+              fast_pass='false'
+              reason="${MERGE_TREE_REASON}"
+            fi
+          fi
+          printf 'fast_pass=%s\nreason=%s\ncandidate_sha=%s\n' \
+            "${fast_pass}" "${reason}" "${CANDIDATE_SHA}" >> "$GITHUB_OUTPUT"
 
   analyze:
     name: Analyze (${{ matrix.language }})
