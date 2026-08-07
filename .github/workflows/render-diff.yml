@@ -146,6 +146,13 @@ jobs:
                 && parents.filter((parent) => parent.sha === baseSha).length === 1;
             }
 
+            function isCiExecutionPath(filename) {
+              return filename.startsWith('.github/workflows/')
+                || filename.startsWith('.github/actions/')
+                || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/verify_review_only_merge_resolution.py';
+            }
+
             function latestRun(runs) {
               return runs
                 .slice()
@@ -156,7 +163,7 @@ jobs:
                 })[0];
             }
 
-            async function renderDiffResult(candidateSha, pr) {
+            async function renderDiffResult(candidateSha, pr, allowPriorPrBase = false) {
               const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
                 owner,
                 repo,
@@ -228,8 +235,11 @@ jobs:
                 };
               }
               const expectedIdentityStep = `Render Diff identity PR #${pr.number} base ${pr.base.sha}`;
+              const identityPrefix = `Render Diff identity PR #${pr.number} base `;
               const identityStep = (renderDiffJob.steps || []).find((step) => (
-                step.name === expectedIdentityStep
+                allowPriorPrBase
+                  ? step.name.startsWith(identityPrefix)
+                  : step.name === expectedIdentityStep
               ));
               if (identityStep?.status !== 'completed' || identityStep.conclusion !== 'success') {
                 return { state: 'failed', reason: 'canvas-visual-diff-identity-mismatch' };
@@ -265,6 +275,38 @@ jobs:
 
               if (commits.length === 0) {
                 setResult(false, 'no-pr-commits');
+                return;
+              }
+
+              const latestCommitSha = commits.at(-1).sha;
+              const { data: latestCommit } = await github.rest.repos.getCommit({
+                owner,
+                repo,
+                ref: latestCommitSha,
+              });
+              if (isCurrentBaseUpdateMerge(latestCommit, pr.base.sha)) {
+                if (prFiles.some((file) => isCiExecutionPath(file.filename))) {
+                  setResult(false, 'current-base-source-ci-execution-change');
+                  return;
+                }
+                const sourceParent = latestCommit.parents.find(
+                  (parent) => parent.sha !== pr.base.sha,
+                );
+                if (!sourceParent) {
+                  setResult(false, 'current-base-source-parent-unavailable');
+                  return;
+                }
+                const sourceResult = await renderDiffResult(sourceParent.sha, pr, true);
+                if (sourceResult.state === 'green') {
+                  setPendingBaseMergeResult(
+                    'direct-source-canvas-visual-diff-success',
+                    sourceParent.sha,
+                    latestCommitSha,
+                    sourceParent.sha,
+                  );
+                  return;
+                }
+                setResult(false, `direct-source-${sourceResult.reason}`, sourceParent.sha);
                 return;
               }
 

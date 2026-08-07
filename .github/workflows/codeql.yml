@@ -131,6 +131,13 @@ jobs:
                 && parents.filter((parent) => parent.sha === baseSha).length === 1;
             }
 
+            function isCiExecutionPath(filename) {
+              return filename.startsWith('.github/workflows/')
+                || filename.startsWith('.github/actions/')
+                || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/verify_review_only_merge_resolution.py';
+            }
+
             function latestRun(runs) {
               return runs
                 .slice()
@@ -229,6 +236,38 @@ jobs:
 
               if (commits.length === 0) {
                 setResult(false, 'no-pr-commits');
+                return;
+              }
+
+              const latestCommitSha = commits.at(-1).sha;
+              const { data: latestCommit } = await github.rest.repos.getCommit({
+                owner,
+                repo,
+                ref: latestCommitSha,
+              });
+              if (isCurrentBaseUpdateMerge(latestCommit, pr.base.sha)) {
+                if (prFiles.some((file) => isCiExecutionPath(file.filename))) {
+                  setResult(false, 'current-base-source-ci-execution-change');
+                  return;
+                }
+                const sourceParent = latestCommit.parents.find(
+                  (parent) => parent.sha !== pr.base.sha,
+                );
+                if (!sourceParent) {
+                  setResult(false, 'current-base-source-parent-unavailable');
+                  return;
+                }
+                const sourceResult = await codeqlResult(sourceParent.sha, pr);
+                if (sourceResult.state === 'green') {
+                  setPendingBaseMergeResult(
+                    'direct-source-codeql-checks-green',
+                    sourceParent.sha,
+                    latestCommitSha,
+                    sourceParent.sha,
+                  );
+                  return;
+                }
+                setResult(false, `direct-source-${sourceResult.reason}`, sourceParent.sha);
                 return;
               }
 

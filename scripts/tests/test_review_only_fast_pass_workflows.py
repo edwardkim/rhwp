@@ -67,6 +67,38 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                     workflow,
                 )
 
+    def test_current_base_merge_reuses_a_green_source_parent_except_ci_changes(self) -> None:
+        result_functions = {
+            "ci": "buildResult",
+            "codeql": "codeqlResult",
+            "render-diff": "renderDiffResult",
+        }
+        for name, workflow_path in WORKFLOWS.items():
+            with self.subTest(workflow=name):
+                workflow = workflow_path.read_text(encoding="utf-8")
+                direct_bridge_index = workflow.index("const latestCommitSha = commits.at(-1).sha;")
+                candidate_scan_index = workflow.index("const reviewOnlyCandidates = [];")
+                self.assertLess(direct_bridge_index, candidate_scan_index)
+                self.assertIn("function isCiExecutionPath(filename)", workflow)
+                self.assertIn(
+                    "current-base-source-ci-execution-change",
+                    workflow,
+                )
+                self.assertIn(
+                    f"await {result_functions[name]}(sourceParent.sha, pr",
+                    workflow,
+                )
+                self.assertIn("direct-source-", workflow)
+
+    def test_render_diff_allows_prior_base_only_for_direct_source_parent(self) -> None:
+        workflow = WORKFLOWS["render-diff"].read_text(encoding="utf-8")
+        self.assertIn(
+            "async function renderDiffResult(candidateSha, pr, allowPriorPrBase = false)",
+            workflow,
+        )
+        self.assertIn("allowPriorPrBase\n                  ? step.name.startsWith(identityPrefix)", workflow)
+        self.assertIn("await renderDiffResult(sourceParent.sha, pr, true)", workflow)
+
     def test_resolution_checker_accepts_only_mydocs_conflicts(self) -> None:
         self.assertEqual(
             self._run_resolution_check("mydocs/orders/20260807.md").returncode,
@@ -179,21 +211,25 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
             workflow,
         )
 
-        script = workflow.split("script: |\n", maxsplit=1)[1].split(
-            "\n      # 기준선 병합을 fast-pass bridge로", maxsplit=1
-        )[0]
-        script = "\n".join(
-            line.removeprefix("            ") for line in script.splitlines()
-        )
-        syntax = subprocess.run(
-            ["node", "--check"],
-            input=f"(async () => {{\n{script}\n}})();\n",
-            check=False,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        self.assertEqual(syntax.returncode, 0, syntax.stderr)
+        for name, workflow_path in WORKFLOWS.items():
+            with self.subTest(workflow=name):
+                script = workflow_path.read_text(encoding="utf-8").split(
+                    "script: |\n", maxsplit=1
+                )[1].split(
+                    "\n      # 기준선 병합을 fast-pass bridge로", maxsplit=1
+                )[0]
+                script = "\n".join(
+                    line.removeprefix("            ") for line in script.splitlines()
+                )
+                syntax = subprocess.run(
+                    ["node", "--check"],
+                    input=f"(async () => {{\n{script}\n}})();\n",
+                    check=False,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                self.assertEqual(syntax.returncode, 0, syntax.stderr)
 
 
 if __name__ == "__main__":
