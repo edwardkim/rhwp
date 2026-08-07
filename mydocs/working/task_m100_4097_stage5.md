@@ -148,7 +148,14 @@ target/release-test/rhwp.exe export-hwpx samples/SO-SUEOP.hwp output/issue_4097_
 ## 2.4 한컴 판정 결과 (2026-08-07, 작업지시자 실측)
 
 작업지시자가 4개 파일(before/after × hwp/hwpx)을 한컴으로 열고, 원본·before·after 를 한컴에서
-PDF 로 내보냈다(`output/issue_4097_hwp3/SO-SUEOP{,-before-hwp,-after-hwp}.pdf`).
+PDF 로 내보냈다. 판정 근거 PDF 는 관례(`mcp_hwp2020Convert_usage.md` — 리뷰 기준 PDF 는
+`output/` 에만 두지 않는다)에 따라 `pdf/task4097/` 에 커밋했다:
+
+| 파일 | SHA-256 |
+|---|---|
+| `SO-SUEOP.pdf` (원본 한컴 출력, 46쪽) | `78a4ca30f870e744aa13701c45d269dbe5c9d3741d3f3636311f20cfc945c629` |
+| `SO-SUEOP-before-hwp.pdf` (수정 전 변환본) | `ee0a4be9ca20391fdc114f6ad0c2ac144b38609f61b48dd95241e409eb6e97cd` |
+| `SO-SUEOP-after-hwp.pdf` (수정 후 변환본) | `7621bf3da6a84db2f144858c565a3907bd0d86ed189bfbdb56145009bd613537` |
 
 | 항목 | 결과 |
 |---|---|
