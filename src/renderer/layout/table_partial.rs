@@ -682,6 +682,9 @@ impl LayoutEngine {
                 let mixed_nested_split = cut_units.and_then(|(su, eu)| {
                     self.mixed_nested_split_from_cut(cell, table, styles, su, eu, cp_idx)
                 });
+                let nested_cursor_split = cut_units.and_then(|(su, eu)| {
+                    self.nested_table_split_from_cut_units(cell, table, styles, su, eu, cp_idx)
+                });
                 // [Task #1073] 이 문단이 per-중첩행 유닛으로 분해됐으면(가시 텍스트 없음 +
                 // 단일 중첩 표 2행+) 컷에 들어온 유닛의 `nested_row` 에서 중첩 행 범위를
                 // 얻어 NestedTableSplit 으로 넘긴다.
@@ -691,9 +694,13 @@ impl LayoutEngine {
                 // 단위여서, 문단이 여럿인 셀은 아래 `available_h` 휴리스틱으로 폴백했고 그
                 // 분기는 오프셋을 0.0 으로 고정하므로 연속 페이지가 행 0 부터 다시 그리고
                 // 뒤 행이 어느 페이지에도 나오지 않았다.
-                let nested_cut_rows: Option<(usize, usize)> = cut_units.and_then(|(su, eu)| {
-                    self.nested_row_range_from_cut_units(cell, table, styles, su, eu, cp_idx)
-                });
+                let nested_cut_rows: Option<(usize, usize)> = if nested_cursor_split.is_some() {
+                    None
+                } else {
+                    cut_units.and_then(|(su, eu)| {
+                        self.nested_row_range_from_cut_units(cell, table, styles, su, eu, cp_idx)
+                    })
+                };
                 let visible_non_inline_controls = cut_units.is_some_and(|(su, eu)| {
                     self.cell_cut_contains_non_inline_control_units(
                         cell, table, styles, su, eu, cp_idx,
@@ -706,6 +713,7 @@ impl LayoutEngine {
                 // content_y_accum 은 가시 콘텐츠만 추적하므로 스킵 시 전진하지 않는다.
                 if start_line >= end_line
                     && mixed_nested_split.is_none()
+                    && nested_cursor_split.is_none()
                     && !visible_non_inline_controls
                 {
                     continue;
@@ -1333,6 +1341,17 @@ impl LayoutEngine {
                                                 flow_height: split.flow_height,
                                                 offset_within_start: split.offset_within_start,
                                                 terminal: split.terminal,
+                                                recursive_cut: split.recursive_cut.clone(),
+                                            })
+                                        } else if let Some(split) = nested_cursor_split.as_ref() {
+                                            Some(NestedTableSplit {
+                                                start_row: split.start_row,
+                                                end_row: split.end_row,
+                                                visible_height: split.visible_height,
+                                                flow_height: split.flow_height,
+                                                offset_within_start: split.offset_within_start,
+                                                terminal: split.terminal,
+                                                recursive_cut: split.recursive_cut.clone(),
                                             })
                                         } else if let Some((row_lo, row_hi)) = nested_cut_rows {
                                             // [Task #1073] 페이지네이션 컷의 중첩행 범위로 직접
@@ -1371,6 +1390,7 @@ impl LayoutEngine {
                                                 terminal: cut_units
                                                     .is_some_and(|(_, eu)| eu == usize::MAX),
                                                 offset_within_start: 0.0,
+                                                recursive_cut: None,
                                             })
                                         } else if nested_h > available_h + 0.5 {
                                             let ncol = nested_table.col_count as usize;
@@ -1413,30 +1433,72 @@ impl LayoutEngine {
                                         });
                                         new_ctx
                                     });
-                                    let table_h_rendered = self.layout_table(
-                                        tree,
-                                        &mut cell_node,
-                                        nested_table,
-                                        section_index,
-                                        styles,
-                                        outline_numbering_id,
-                                        &ctrl_area,
-                                        nested_y,
-                                        bin_data_content,
-                                        None,
-                                        1,
-                                        None,
-                                        para_alignment,
-                                        nested_ctx,
-                                        0.0,
-                                        0.0,
-                                        None,
-                                        split_ref,
-                                        None,
-                                        None,
-                                        false,
-                                        clamp_header_negative_para_offset,
-                                    );
+                                    let table_h_rendered = if let Some(recursive_cut) = split_info
+                                        .as_ref()
+                                        .and_then(|split| split.recursive_cut.as_ref())
+                                    {
+                                        // [#4069] 측정이 자식 표의 행·CellUnit 범위를
+                                        // 재귀 투영한 경우 렌더도 같은 범위를 부분 표 경로에
+                                        // 넘긴다. scalar y clip으로 표 전체를 매 쪽 재방출하면
+                                        // vpos 리셋 프레임의 앞·뒤 문단이 서로 겹치므로, 동일
+                                        // cursor가 선택한 문단/줄/자식 표만 방출해야 한다.
+                                        let nested_host = Paragraph {
+                                            controls: vec![Control::Table(Box::new(
+                                                (**nested_table).clone(),
+                                            ))],
+                                            ..Default::default()
+                                        };
+                                        let nested_paragraphs = [nested_host];
+                                        self.layout_partial_table(
+                                            tree,
+                                            &mut cell_node,
+                                            &nested_paragraphs,
+                                            0,
+                                            0,
+                                            section_index,
+                                            styles,
+                                            outline_numbering_id,
+                                            &ctrl_area,
+                                            nested_y,
+                                            bin_data_content,
+                                            recursive_cut.start_row,
+                                            recursive_cut.end_row,
+                                            recursive_cut.start_row > 0
+                                                || !recursive_cut.start_cut.is_empty(),
+                                            &recursive_cut.start_cut,
+                                            &recursive_cut.end_cut,
+                                            recursive_cut.is_block_split,
+                                            0.0,
+                                            0.0,
+                                            None,
+                                            clamp_header_negative_para_offset,
+                                        ) - nested_y
+                                    } else {
+                                        self.layout_table(
+                                            tree,
+                                            &mut cell_node,
+                                            nested_table,
+                                            section_index,
+                                            styles,
+                                            outline_numbering_id,
+                                            &ctrl_area,
+                                            nested_y,
+                                            bin_data_content,
+                                            None,
+                                            1,
+                                            None,
+                                            para_alignment,
+                                            nested_ctx,
+                                            0.0,
+                                            0.0,
+                                            None,
+                                            split_ref,
+                                            None,
+                                            None,
+                                            false,
+                                            clamp_header_negative_para_offset,
+                                        )
+                                    };
                                     let visible_table_h = mixed_nested_split
                                         .as_ref()
                                         .map(|split| split.flow_height)

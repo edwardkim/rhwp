@@ -1295,6 +1295,17 @@ pub(crate) fn contains_old_hangul_jamo(text: &str) -> bool {
     })
 }
 
+/// 한컴 Supplementary PUA-A의 사각 안 숫자 값을 반환한다.
+///
+/// IR과 SVG는 원문 PUA를 보존한다. Canvas2D는 글리프 ID를 조회할 수 없으므로 이 값을
+/// 사용해 브라우저 글꼴과 무관한 bounded vector fallback을 그린다.
+pub(crate) fn boxed_pua_number(ch: char) -> Option<u32> {
+    let code_point = ch as u32;
+    (0xF02B1..=0xF02C4)
+        .contains(&code_point)
+        .then(|| code_point - 0xF02B0)
+}
+
 // ============================================================
 // 자동 번호 매기기 (AutoNumber)
 // ============================================================
@@ -2115,6 +2126,16 @@ mod tests {
         assert_eq!(generic_fallback("Noto Sans KR"), sans);
         // 빈 문자열
         assert_eq!(generic_fallback(""), sans);
+    }
+
+    #[test]
+    fn boxed_pua_number_covers_hancom_square_digits() {
+        assert_eq!(boxed_pua_number('\u{F02B1}'), Some(1));
+        assert_eq!(boxed_pua_number('\u{F02BA}'), Some(10));
+        assert_eq!(boxed_pua_number('\u{F02C4}'), Some(20));
+        assert_eq!(boxed_pua_number('\u{F02B0}'), None);
+        assert_eq!(boxed_pua_number('\u{F02C5}'), None);
+        assert_eq!(boxed_pua_number('1'), None);
     }
 
     #[test]

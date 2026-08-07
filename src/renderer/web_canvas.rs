@@ -2321,6 +2321,24 @@ impl Renderer for WebCanvasRenderer {
                 &font,
                 &old_hangul_font,
             );
+            // 효과 pass에서는 raw PUA를 건너뛰고, 사각 안 숫자는 한 번만 합성한다.
+            // CanvasKit도 이 대역에 글리프가 없을 때 동일한 bounded vector fallback을 쓴다.
+            for (char_idx, cluster_str) in &clusters {
+                if cluster_str.chars().count() != 1 {
+                    continue;
+                }
+                let Some(number) = cluster_str.chars().next().and_then(super::boxed_pua_number)
+                else {
+                    continue;
+                };
+                self.draw_boxed_pua_number(
+                    number,
+                    x + char_positions[*char_idx],
+                    y,
+                    style,
+                    font_size,
+                );
+            }
         } else {
             // 기본 렌더링 (효과 없음)
             self.ctx.set_fill_style_str(&color_to_css(style.color));
@@ -2362,6 +2380,13 @@ impl Renderer for WebCanvasRenderer {
                 let char_x = x + char_positions[*char_idx];
 
                 let ch = cluster_str.chars().next().unwrap_or(' ');
+
+                if cluster_str.chars().count() == 1 {
+                    if let Some(number) = super::boxed_pua_number(ch) {
+                        self.draw_boxed_pua_number(number, char_x, y, style, font_size);
+                        continue;
+                    }
+                }
 
                 // 통화 기호 등 글리프 미포함 문자: 폴백 폰트로 임시 전환
                 let needs_font_fallback = matches!(
@@ -2929,6 +2954,15 @@ impl WebCanvasRenderer {
                 if cs == " " || cs == "\t" || cs == "\u{2007}" {
                     continue;
                 }
+                if cs.chars().count() == 1
+                    && cs
+                        .chars()
+                        .next()
+                        .and_then(super::boxed_pua_number)
+                        .is_some()
+                {
+                    continue;
+                }
                 if super::contains_old_hangul_jamo(cs) {
                     ctx.set_font(old_hangul_font);
                 } else {
@@ -2998,6 +3032,42 @@ impl WebCanvasRenderer {
             // 일반 텍스트 (그림자 위에 원본)
             render_pass(&self.ctx, 0.0, 0.0, &text_color_css, false, "", 0.0);
         }
+    }
+
+    /// CanvasKit의 missing-glyph 경로와 같은 사각 안 숫자 벡터 폴백.
+    fn draw_boxed_pua_number(
+        &self,
+        number: u32,
+        x: f64,
+        baseline_y: f64,
+        style: &TextStyle,
+        font_size: f64,
+    ) {
+        let box_size = (font_size * 0.72).max(1.0);
+        let box_y = baseline_y - font_size * 0.76;
+        let color = color_to_css(style.color);
+        let font_weight = if style.bold { "bold " } else { "" };
+        let font_style = if style.italic { "italic " } else { "" };
+        let font_family = super::canvas_font_family_chain(&style.font_family);
+        let number_font_size = (font_size * 0.5).max(1.0);
+
+        self.ctx.save();
+        self.ctx.set_stroke_style_str(&color);
+        self.ctx.set_fill_style_str(&color);
+        self.ctx.set_line_width((font_size * 0.04).max(0.6));
+        self.ctx.stroke_rect(x, box_y, box_size, box_size);
+        self.ctx.set_font(&format!(
+            "{}{}{:.3}px {}",
+            font_style, font_weight, number_font_size, font_family
+        ));
+        self.ctx.set_text_align("center");
+        self.ctx.set_text_baseline("alphabetic");
+        let _ = self.ctx.fill_text(
+            &number.to_string(),
+            x + box_size / 2.0,
+            box_y + box_size * 0.72,
+        );
+        self.ctx.restore();
     }
 
     /// 글자겹침(CharOverlap)을 Canvas 2D로 렌더링한다.

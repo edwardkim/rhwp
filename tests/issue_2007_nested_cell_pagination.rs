@@ -12,10 +12,34 @@
 //! 정정: 1×1 중첩 표의 셀 콘텐츠가 한 페이지를 명백히 초과(>1000px)하면 기존
 //! `nested_table_mixed_fragment_heights`(텍스트+중첩표 문단에 쓰던 페이지 분할 fragment)
 //! 를 빈-텍스트 문단에도 적용해 splittable 유닛으로 분해 → 페이지 경계로 분할.
-//! 한글 2022 = 17페이지. 본 수정으로 6→15페이지(pi-page n_mismatch 5)로 대폭 개선.
+//! 한컴 2020 PDF = 17페이지. #4069의 완료 계약은 중첩 표를 하위 행·셀
+//! 흐름까지 분할해 빠짐·중복 없이 17페이지에 정확히 수렴하는 것이다.
 
 use std::fs;
 use std::path::Path;
+
+use rhwp::document_core::DocumentCore;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+fn page_text(node: &RenderNode, out: &mut String) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        out.push_str(&run.text);
+    }
+    for child in &node.children {
+        page_text(child, out);
+    }
+}
+
+fn normalized_page_text(core: &DocumentCore, page: u32) -> String {
+    let tree = core
+        .build_page_render_tree(page)
+        .unwrap_or_else(|error| panic!("render tree p{}: {error:?}", page + 1));
+    let mut text = String::new();
+    page_text(&tree.root, &mut text);
+    text.chars()
+        .filter(|character| !character.is_whitespace())
+        .collect()
+}
 
 #[test]
 fn issue_2007_nested_cell_content_paginates() {
@@ -28,11 +52,102 @@ fn issue_2007_nested_cell_content_paginates() {
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
         .expect("parse issue2007_nested_cell_pagination_42065.hwp");
 
-    // 한글 2022 = 17페이지. 수정 전 rhwp = 6페이지(1×1 중첩셀 콘텐츠 미분할 → 크램).
-    // 수정 후 콘텐츠가 페이지 경계로 분할되어 15페이지(±). 미분할 회귀 시 다시 ~6페이지로 붕괴.
+    // 한컴 2020 기준 PDF는 17페이지다. `>= 12`는 24페이지 공백 회귀와
+    // 23페이지 중복 회귀를 모두 통과시켜 #4069를 보호하지 못했다.
     let pages = doc.page_count();
+    assert_eq!(
+        pages, 17,
+        "#4069 중첩 흐름 분할 회귀 — 페이지 수 {pages} (한컴 2020 기준 17)"
+    );
+}
+
+#[test]
+fn issue_2007_nested_cell_cursor_has_no_boundary_duplication() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
+    let bytes = fs::read(&path).expect("fixture read");
+    let core = DocumentCore::from_bytes(&bytes).expect("fixture parse");
+    let page2 = normalized_page_text(&core, 1);
+    let page3 = normalized_page_text(&core, 2);
+
+    const FIRST_ITEM: &str = "1.출석요구및진술청취또는진술서제출요구";
+    const SECOND_ITEM: &str = "2.신고사항과관련이있다고인정되는자료등의제출요구";
     assert!(
-        pages >= 12,
-        "1×1 중첩셀 콘텐츠 미분할 회귀 — 페이지 수 {pages} (기대 ≥12, 한글 17, 수정 전 6)"
+        page2.contains(FIRST_ITEM),
+        "2쪽에 조문 대비표 제1호가 없다 — 첫 child cursor 누락"
+    );
+    assert!(
+        !page3.contains(FIRST_ITEM),
+        "3쪽에 조문 대비표 제1호가 반복됐다 — continuation cursor 중복"
+    );
+    assert!(
+        page3.contains(SECOND_ITEM),
+        "3쪽에 조문 대비표 제2호가 없다 — continuation cursor 누락"
+    );
+    assert!(
+        page3.contains("④제1항부터제3항까지"),
+        "3쪽에 조문 대비표 마지막 개정 조항이 없다 — terminal cursor 누락"
+    );
+}
+
+#[test]
+fn issue_2007_intra_paragraph_saved_frame_break_is_preserved() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
+    let bytes = fs::read(&path).expect("fixture read");
+    let core = DocumentCore::from_bytes(&bytes).expect("fixture parse");
+    let page10 = normalized_page_text(&core, 9);
+    let page11 = normalized_page_text(&core, 10);
+
+    const FRAME_START: &str = "제50조의2(조사권의남용금지)";
+    const FRAME_CONTINUATION: &str = "행하여야하며,다른목적등을위하여조사권을남용하여서는아니된다.";
+    const NEXT_ARTICLE: &str = "제50조의4(이행강제금등)";
+
+    assert!(
+        page10.contains(FRAME_START),
+        "10쪽에 저장 프레임 말미 조항이 없다"
+    );
+    assert!(
+        !page10.contains(FRAME_CONTINUATION),
+        "10쪽에 다음 저장 프레임이 겹쳤다 — 문단 내부 vpos reset 소실"
+    );
+    assert!(
+        page11.contains(FRAME_CONTINUATION),
+        "11쪽에 문단 내부 vpos reset 이후 줄이 없다"
+    );
+    assert!(
+        page11.contains(NEXT_ARTICLE),
+        "11쪽에 후속 조항이 없다 — child cursor 누락"
+    );
+}
+
+#[test]
+fn issue_2007_saved_frame_tail_nested_table_starts_before_next_frame() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
+    let bytes = fs::read(&path).expect("fixture read");
+    let core = DocumentCore::from_bytes(&bytes).expect("fixture parse");
+    let page15 = normalized_page_text(&core, 14);
+    let page16 = normalized_page_text(&core, 15);
+
+    const NESTED_TABLE_START: &str = "조달사업에관한법률";
+    const NESTED_TABLE_TAIL: &str = "제4항에따라시정요구를받은계약상대자";
+    const NEXT_FRAME: &str = "<이해관계자협의>:입법예고‧기관협의중";
+
+    assert!(
+        page15.contains(NESTED_TABLE_START),
+        "15쪽 조달청 제목 뒤 자식 표가 다음 쪽으로 통째로 밀렸다"
+    );
+    assert!(
+        page15.contains(NESTED_TABLE_TAIL),
+        "15쪽 저장 프레임 말미까지 조달청 자식 표가 이어지지 않았다"
+    );
+    assert!(
+        !page15.contains(NEXT_FRAME),
+        "다음 저장 프레임의 이해관계자 협의 제목이 15쪽에 흡수됐다"
+    );
+    assert!(
+        page16.contains(NEXT_FRAME),
+        "16쪽이 이해관계자 협의 저장 프레임에서 재개하지 않았다"
     );
 }

@@ -25,6 +25,7 @@
     "e2e:issue-3815": "node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --continuous-only",
     "e2e:issue-3137-perf": "node e2e/probe-input-perf-issue3137.mjs --mode=headless",
     "e2e:issue-2809": "node e2e/issue-2809-split-alignment.test.mjs --mode=headless",
+    "e2e:issue-536": "node e2e/issue-536-boxed-pua-canvas2d.test.mjs --mode=headless",
     "e2e:canvaskit-font-coverage": "node e2e/canvaskit-font-coverage.test.mjs",
     "e2e:embed": "node e2e/embed-transport.test.mjs --mode=headless",
     "e2e:baseline:headless": "node e2e/renderer-baseline.mjs --mode=headless --manifest=../scripts/renderer_baseline_manifest.json --output=../output/renderer-baseline/studio-headless",
