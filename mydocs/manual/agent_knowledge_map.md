@@ -301,7 +301,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 148개 필드
+### 2-2. 전수 사전 — 166개 필드
 
 `capabilities` 의 `recordFields` 합집합이다. `등장 명령` 은 자기서술 기준이며,
 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
@@ -332,6 +332,11 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `paraCount` | number | 문단 수 | `info`·`digest` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
+| `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |
+| `summary` | string | 사람용 여러 줄 요약(형식·쪽수·표·누름틀·각주) — **문서 파생** | `explain` |
+| `encrypted` | bool | 암호화 문서 여부 | `explain` |
+| `footnoteCount` | number | 각주 수 | `explain` |
+| `endnoteCount` | number | 미주 수 | `explain` |
 | `wasDistribution` | bool | 입력이 배포용(읽기전용)이었나 | `convert` |
 
 #### 요약·개요 (`digest`)
@@ -443,6 +448,10 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `categories` | object | 차이의 분류별 개수 — 키 이름 자체가 문서 파생일 수 있다 | `ir-diff` |
 | `status` | string | `render-diff` 판정(`OK`·`OVER` 등) | `render-diff` |
 | `regression` | bool | 시각 회귀로 판정했나 → exit 3 | `render-diff` |
+| `expectations` | array | 조건별 판정 `{kind,expected,actual,pass}` — 판정은 데이터 | `verify` (PR #4186 선등재) |
+| `passCount` | number | 만족한 기대 수 | `verify` (PR #4186 선등재) |
+| `failCount` | number | 불만족 기대 수 → 1 이상이면 exit 3 | `verify` (PR #4186 선등재) |
+| `verdict` | string | `pass`·`fail` 요약 판정 | `verify` (PR #4186 선등재) |
 | `via` | string | 라운드트립 경유 형식(`hwpx`·`hwp`) | `render-diff` |
 | `threshold` | number | 변위 허용 임계(px) | `render-diff` |
 | `maxDisp` | number | 전 쪽 최대 변위(px) | `render-diff` |
@@ -495,6 +504,8 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `findingCount` | number | 탐지 개수 | `inspect unicode`·`edit redact` |
 | `severityCounts` | object | `{high,medium,low}` 개수 | `inspect unicode` |
 | `kindCounts` | object | `{zero_width,bidi_override,tag_char,confusable}` 개수 | `inspect unicode` |
+| `untrustedContent` | bool | 문서 파생 값이 봉투에 실렸는지 — 출처 표지 요약 | `inspect` 3종 (자기서술 기준; 실물은 §2-5 조건부로 더 넓다) |
+| `untrustedFields` | string[] | 문서 파생 값이 실린 필드 경로 목록 | `inspect` 3종 (위와 같음) |
 
 #### 배치
 
@@ -518,6 +529,12 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `dialect` | string | JSON Schema 방언 URI | 두 schema 명령 |
 | `definitionCount` | number | `$defs` 개수 | 두 schema 명령 |
 | `irSchemaVersion` / `capabilitiesSchemaVersion` | string | 각 스키마의 자체 버전 | 각 명령 |
+| `planSchemaVersion` | string | `run` 계획서 스키마의 자체 버전 | `export-plan-schema` |
+| `capabilities` | object | 명령 표면 자기서술 봉투(내장) | `export-agent-manifest` |
+| `irSchema` | object | 공개 IR JSON Schema 봉투(내장) | `export-agent-manifest` |
+| `provenanceMap` | object | 출처 지도 봉투(내장) | `export-agent-manifest` |
+| `planSchema` | object | `run` 계획서 JSON Schema 봉투(내장) | `export-agent-manifest` |
+| `missingAxes` | string[] | 조립에서 빠진 축 이름 — 전부 있으면 빈 배열 | `export-agent-manifest` |
 
 #### 진단 (`dump-pages`)
 
