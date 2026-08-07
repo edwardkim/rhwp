@@ -875,17 +875,29 @@ impl DocumentCore {
             None
         }
 
-        // 대상 문단이 빈 문단(표/도형 등 컨트롤만 호스팅)이면 char_offset 매칭 텍스트가
+        // 대상 문단이 빈 문단(비인라인 표/도형만 호스팅)이면 char_offset 매칭 텍스트가
         // 애초에 어느 페이지에도 존재하지 않는다 — 페이지별 render tree 구축을 건너뛰고
         // 곧장 아래의 앵커 위치 폴백(조판부호 감추기 인라인 컨트롤 / OLE / 문단 줄 위치)으로 간다.
-        let para_has_text = self
+        //
+        // 단, TAC 그림·수식 같은 **인라인(treat_as_char) 컨트롤**이나 각주/미주 마커를
+        // 호스팅하는 문단은 텍스트가 비어 있어도 페이지 스캔이 인라인 앵커(그림 끝 위치,
+        // zero-width 노드)를 찾아 캐럿을 놓는다 — 스킵하면 두 그림의 캐럿이 같은 좌표로
+        // 붕괴한다 (issue_1452_saved_caret 회귀 실측). 스킵은 페이지 스캔이 원리적으로
+        // 아무것도 찾을 수 없는 경우로만 한정한다.
+        let para_page_scan_can_hit = self
             .get_render_paragraph_ref(section_idx, para_idx)
-            .map(|p| !p.text.is_empty())
+            .map(|p| {
+                !p.text.is_empty()
+                    || p.controls.iter().any(|ctrl| {
+                        is_inline_cursor_control(ctrl)
+                            || matches!(ctrl, Control::Footnote(_) | Control::Endnote(_))
+                    })
+            })
             .unwrap_or(true);
 
         // 후보 페이지를 순회하며 커서 위치 탐색
         // 1차: 정확한 앵커(zero-width 노드) 우선 검색, 2차: 일반 검색
-        if para_has_text {
+        if para_page_scan_can_hit {
             for &page_num in &pages {
                 let tree = self.build_page_tree_cached(page_num)?;
                 if !self.show_control_codes {
