@@ -1,0 +1,62 @@
+---
+kind: pr_review
+status: accepted
+canonical: mydocs/manual/pr_review_workflow.md
+last_verified: 2026-08-07
+---
+
+# PR #4177 검토 - mydocs 충돌 merge의 녹색 source head 재사용
+
+## 대상과 변경 경계
+
+| 항목 | 값 |
+| --- | --- |
+| PR / 작성자 | [#4177](https://github.com/edwardkim/rhwp/pull/4177) / @jangster77 |
+| 기준 `devel` | `f048429eb282778a49e3bb4e7f748146321721b5` |
+| code head | `8119074ceb7bd4491b7fca134b05eff99970148e` |
+| 연동 이슈 | `Closes #4176` |
+| 작성 시점 merge 상태 | `mergeable=MERGEABLE`, `mergeStateStatus=CLEAN` |
+
+라우팅은 `collaborator_self_merge`를 기본으로 하고, `intake_and_review`, `local_validation`을
+보조 경로로 적용했다. 자기 자신은 GitHub reviewer request 대상으로 지정할 수 없어 별도 reviewer
+request는 생성되지 않았다.
+
+이 PR은 최신 `devel`을 병합하면서 `mydocs/`만 수동 해소한 경우를 보완한다. 직접 source parent가
+같은 PR source의 녹색 CI, CodeQL, Render Diff 결과를 가질 때 source parent 자체가 과거 merge여도
+재사용한다. 실제 재현 대상은 #4136과 #4165다.
+
+재사용은 다음 조건을 모두 유지한다.
+
+- 최신 commit이 current-base merge이고 trusted remerge diff의 수동 해소 경로가 `mydocs/` 아래여야 한다.
+- source·test·sample·PDF·golden·baseline 충돌 해소, identity 불일치, 녹색 후보 부재는 Full CI로 fallback한다.
+- source PR이 `.github/workflows/**`, `.github/actions/**`, CI impact classifier 또는 merge-resolution
+  verifier를 수정하면 `current-base-source-ci-execution-change`으로 판정해 Full CI를 강제한다. #4170이
+  이 경계에 해당한다.
+- Render Diff의 prior-base identity 허용은 위 직접 source-parent 재사용 경로에만 한정한다.
+
+문서·render 산출물 자체의 변경은 없으므로 시각 fixture 증적 경로는 적용하지 않았다. 다만 Render Diff
+workflow를 바꾸므로 workflow 계약과 실제 Canvas visual diff 완료 여부를 검증했다.
+
+## 완료한 검증
+
+| 검증 | 결과 |
+| --- | --- |
+| workflow 계약 | `python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py scripts/tests/test_cache_sweep_workflow.py scripts/tests/test_workflow_contract_wiring.py`를 실행해 36건 통과 |
+| workflow 구문 | `actionlint .github/workflows/ci.yml .github/workflows/codeql.yml .github/workflows/render-diff.yml` 통과 |
+| 문서·diff 정합 | `python3 scripts/check_markdown_links.py --changed-from HEAD`, `git diff --check` 통과 |
+| 실제 bridge 구조 | merge-resolution checker가 #4136 `bed52d02`, #4165 `d2621a6`에 `current-base-merge-resolution-mydocs-only`를 반환 |
+| CI 실행 경계 | #4136·#4165는 CI 실행 경로 변경 없음, #4170은 `.github/workflows/ci.yml`과 `scripts/ci-impact-classifier.cjs` 변경으로 guard 대상임을 확인 |
+| GitHub CI | code head `8119074ce`에서 CI run `31188064589`의 lint, Native Skia, 세 archive build, 네 test shard, aggregate가 모두 성공 |
+| GitHub CodeQL | run `31188064054`의 Python, JavaScript/TypeScript, Rust 분석과 aggregate 성공 |
+| GitHub Render Diff | run `31188064352`의 Canvas visual diff 성공 |
+
+## 수용 판단과 다음 검증
+
+**수용 권고.** CI 실행 경로를 바꾼 PR은 재사용 대상에서 제외하고, mydocs-only current-base merge의
+직접 source parent만 좁게 허용하므로 기존 Full CI fallback 경계를 넓히지 않는다.
+
+이 review와 오늘할일은 code head 뒤의 trailing documentation commit으로 추가한다. PR 전체가 CI
+workflow 변경을 포함하므로 이 trailing commit도 review-only fast-pass 대상이 아니며 최신 head에서
+Full CI를 다시 완료해야 한다. 그 뒤 별도의 mydocs-only current-base 병합 PR에서 녹색 source-parent
+재사용과 fast-pass aggregate를 확인한다. merge 전에는 최신 head의 required check와 merge 상태를 다시
+확인하고 작업지시자 승인을 받는다.
