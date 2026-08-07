@@ -46,8 +46,8 @@ import {
   saveDocumentToFileSystem,
   type FileSystemFileHandleLike,
   type SaveDocumentResult,
-  type FileSystemWindowLike,
 } from '@/command/file-system-access';
+import { getFileSystemWindow } from '@/command/desktop-file-system';
 import { PdfPrintDialog } from '@/ui/pdf-print-dialog';
 import { userSettings } from '@/core/user-settings';
 import { showToast } from '@/ui/toast';
@@ -63,7 +63,7 @@ async function openFileViaPicker(services: CommandServices): Promise<void> {
     const canReplace = await confirmSaveBeforeReplacingDocument(services);
     if (!canReplace) return;
 
-    const windowLike = window as FileSystemWindowLike;
+    const windowLike = getFileSystemWindow();
     const nativeOpenPickerAvailable = canUseOpenFilePicker(windowLike);
     const handle = await pickOpenFileHandle(windowLike);
     if (!handle) {
@@ -193,7 +193,7 @@ async function tryFileSystemSave(
       blob,
       suggestedName,
       currentHandle,
-      windowLike: window as FileSystemWindowLike,
+      windowLike: getFileSystemWindow(),
       forceSaveAs,
       saveFormat: format,
     });
