@@ -17,6 +17,19 @@ mixed 유닛의 para_idx 단조성을 이용한 **1-pass run-walk(O(U))** 로 �
 studio(wasm) 문서 open 의 main-thread 블록 **~17s → 최장 207ms**. 페이지 수 115 동일,
 corpus 355개 문서 전수 비트 동일.
 
+## 병목 함수 (정확한 이름·경로)
+
+| 역할 | 함수 | 위치 |
+|---|---|---|
+| paginate 진입 | `DocumentCore::paginate` → `paginate_pass` | `src/document_core/queries/rendering.rs` |
+| 구역 조판 (99% 소비 지점) | `TypesetEngine::typeset_section_with_variant` | `src/renderer/typeset.rs` |
+| 표 문단 경로 | `TypesetEngine::typeset_table_paragraph` → `typeset_block_table` → `typeset_block_table_inner` | `src/renderer/typeset.rs` |
+| fragment 루프 (115회) | `TypesetEngine::step_block_table_continuation` | `src/renderer/typeset.rs` |
+| fragment 당 행 스캔 | `TypesetEngine::scan_block_table_split_rows` | `src/renderer/typeset.rs` |
+| 컷 높이 평가 (호출부) | `LayoutEngine::row_cut_content_height` | `src/renderer/layout/table_layout.rs` |
+| **병목 본체 · 수정 지점** | `LayoutEngine::mixed_nested_flow_extra_from_cut` | `src/renderer/layout/table_layout.rs` |
+| 무죄 판정된 프리미티브 | `LayoutEngine::advance_row_cut` · `cell_units` (#1949 캐시 유효) | `src/renderer/layout/table_layout.rs` |
+
 ## 진단 경로 (3단계 계측 + 샘플링)
 
 재현: `samples/issue1949_giant_cell_nested_tables_perf.hwp` (3×1 RowBreak 표,
