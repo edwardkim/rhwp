@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "RHWP Studio",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "identifier": "com.rhwp.studio",
   "build": {
     "frontendDist": "../dist",
