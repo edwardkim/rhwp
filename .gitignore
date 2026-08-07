@@ -102,3 +102,7 @@ samples/issue836/
 __pycache__/
 *.pyc
 tmp/
+
+# 코드사이닝 인증서 출력물 — generate-self-signed-cert.ps1이 생성한다.
+# 개인키(.pfx)가 저장소에 올라가지 않도록 출력 폴더째 제외한다.
+scripts/windows-packaging/out/
