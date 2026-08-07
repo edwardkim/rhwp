@@ -23,15 +23,19 @@ HWP 2020 MCP 기준 17쪽과 저장 line 경계가 일치하도록 보완했다.
 - 외부 fixture test는 17쪽과 `pi=59`, `pi=74`, `pi=183`의 세 경계를 검증한다.
 - 내부 unit test는 마지막 stored line 조건과 다음 logical line이 있으면 적용하지 않는 조건을 검증한다.
 
-## 검증 결과
+## 최신 기준선과 검증 결과
 
 focused Rust test 3건, fmt, clippy, WASM package build를 로컬에서 통과했다. 이후 code candidate
-`a9c2970…`의 GitHub CI·CodeQL·Render Diff·Native Skia·전체 shard가 성공했다. PDF 기준은 HWP 2020 MCP
-`PrintToPDFEx` `PrintMethod=0`의 A4 17쪽 산출물이다.
+`a9c2970…` 뒤 source branch에 최신 `devel`을 병합한 `afc83ff…`에서 GitHub
+[CI](https://github.com/edwardkim/rhwp/actions/runs/31148171463)·
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/31148171307)·
+[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/31148171363)·Native Skia·전체 shard가
+성공했다. 작성 시점 PR은 `MERGEABLE/CLEAN`이다. PDF 기준은 HWP 2020 MCP `PrintToPDFEx`
+`PrintMethod=0`의 A4 17쪽 산출물이다.
 
 ## 남은 범위와 rollback
 
 이번 보정은 #4094가 재현한 page count와 tail line ownership만 다룬다. 전체 페이지의 raster/pixel
-fidelity는 #3820에서 기준 PDF와 직접 비교해 별도로 판단한다. source branch에는 review-only 기록만
-추가하므로, code candidate의 녹색 CI를 재사용하는 fast-pass aggregate가 실패하면 이 기록 commit만
-원격에서 되돌리고 code 보정 commit은 유지한다.
+fidelity는 #3820에서 기준 PDF와 직접 비교해 별도로 판단한다. source branch에는 최신 `devel` 병합 뒤의
+review-only 기록만 추가하므로, `afc83ff…`의 녹색 CI를 재사용하는 fast-pass aggregate가 실패하면 그
+원인을 확인한 뒤 후속 조치를 별도로 결정한다.

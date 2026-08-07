@@ -11,8 +11,9 @@
 | 작성자·대상 | `planet6897` → `devel` |
 | contributor 원 head | `e689ef0412344e683bf65163e4f23033d3b1b390` |
 | code candidate | `a9c29700698a0c916462fedbe5025cf3cbd16e76` |
+| 최신 source head | `afc83ff72186c49894081b5786ad4ef7aa60d06f` (`devel` 병합) |
 | 관련 이슈 | #4090, #3820 |
-| 작성 시점 PR 상태 | `mergeable=MERGEABLE`, `mergeStateStatus=UNSTABLE`; trailing 기록 push 뒤 최신 상태 재확인 필요 |
+| 작성 시점 PR 상태 | `mergeable=MERGEABLE`, `mergeStateStatus=CLEAN` |
 
 ## 변경 범위
 
@@ -49,14 +50,17 @@ raster/pixel 1:1 비교는 수행하지 않았다.** 글꼴·표·개체·머리
   실행해 1건이 통과했다.
 - `CARGO_INCREMENTAL=0 cargo clippy --all-targets -- -D warnings`를 실행해 통과했다.
 - `CARGO_INCREMENTAL=0 wasm-pack build --target web --out-dir pkg`를 실행해 통과했다.
-- code candidate `a9c2970…`의 GitHub CI, CodeQL, Render Diff, Native Skia, 모든 default-feature test shard와
-  Build & Test aggregate가 성공했다.
+- 최초 review 기록 push 뒤 source branch에 최신 `devel` 병합 `afc83ff…`가 추가됐다. 이 head에서
+  [CI](https://github.com/edwardkim/rhwp/actions/runs/31148171463),
+  [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/31148171307),
+  [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/31148171363), Native Skia, 모든
+  default-feature test shard와 Build & Test aggregate가 성공했다.
 
 ## 최종 조건
 
-이 review·오늘할일 commit을 source branch에 추가한 뒤, 같은 PR source와 code candidate를 재사용한
-review-only fast-pass aggregate 및 최신 mergeability를 확인한다. 이후 merge와 기여자 안내 코멘트는
-작업지시자의 별도 승인을 받은 뒤에만 수행한다.
+최신 `devel` 병합 뒤 이 갱신 review·오늘할일 commit을 source branch에 추가한 뒤, 현재 녹색인
+`afc83ff…`를 후보로 하는 review-only fast-pass aggregate와 최신 mergeability를 확인한다. 이후 merge와
+기여자 안내 코멘트는 작업지시자의 별도 승인을 받은 뒤에만 수행한다.
 
 ```text
 base route: collaborator_external_pr.md
@@ -66,5 +70,6 @@ loaded documents: pr_review_workflow.md, pr_review/README.md,
                   collaborator_external_pr.md, intake_and_review.md,
                   local_validation.md, visual_fixture_evidence.md,
                   review_only_fast_pass.md
-current head: a9c29700698a0c916462fedbe5025cf3cbd16e76
+code candidate: a9c29700698a0c916462fedbe5025cf3cbd16e76
+current head: afc83ff72186c49894081b5786ad4ef7aa60d06f
 ```
