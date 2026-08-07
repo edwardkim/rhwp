@@ -13,6 +13,18 @@
 순회를 건너뛰고 앵커 폴백으로 직행**하도록 고쳤다. 115쪽 분할 표 문서의 콜드 캐럿 배치가
 wasm 실측 **5,093ms → 35ms**, page tree 빌드 **116회 → ≤2회**.
 
+## 병목 함수 (정확한 이름·경로)
+
+| 역할 | 함수 | 위치 |
+|---|---|---|
+| 진입점 (JS→wasm) | `HwpDocument::get_cursor_rect` (js: `getCursorRect`) | `src/wasm_api.rs` |
+| 질의 본체 · **수정 지점** | `DocumentCore::get_cursor_rect_native` | `src/document_core/queries/cursor_rect.rs` |
+| 과잉 후보 생성 | `DocumentCore::find_pages_for_paragraph` | `src/document_core/commands/text_editing.rs` |
+| 낭비 비용의 실체 (후보당 1회) | `DocumentCore::build_page_tree_cached` → `build_page_tree` | `src/document_core/queries/rendering.rs` |
+
+수정은 `get_cursor_rect_native` 의 페이지 순회 진입 조건 한 곳이다 — 나머지 함수는
+호출량이 줄어들 뿐 무변경.
+
 ## 증상과 진단 경로
 
 `samples/issue1949_giant_cell_nested_tables_perf.hwp`(3×1 RowBreak 표가 PartialTable
