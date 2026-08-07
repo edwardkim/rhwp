@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-06
+last_verified: 2026-08-07
 ---
 
 # Review-only fast-pass
@@ -30,11 +30,13 @@ Update branch, merge, rebase를 수행하지 않는다. 따라서 직전 green P
 
 다음 조건을 모두 만족해야 한다.
 
-1. candidate 이후 current head까지의 review-only commit은 single-parent다.
-2. 예외적으로 source에 이미 current base를 병합한 commit이 있으면, 그 merge는 정확히 2-parent이고
-   parent 하나만 현재 PR base SHA와 같아야 한다. 그 위에 적어도 하나의 single-parent review-only commit이
-   있어야 하며, preflight가 `git merge-tree`로 계산한 자동 3-way merge tree가 실제 merge commit tree와
-   같을 때만 candidate 탐색의 bridge로 쓸 수 있다. 이 확인은 PR source를 실행하지 않는다.
+1. candidate 이후 current head까지의 review-only commit은 single-parent다. 단, current base 병합 bridge는
+   한 번만 예외로 허용한다.
+2. current base 병합 bridge는 정확히 2-parent이고 parent 하나만 현재 PR base SHA와 같아야 한다. preflight가
+   `git merge-tree`로 계산한 자동 3-way merge tree가 실제 merge commit tree와 같으면 그대로 재사용한다.
+   자동 병합이 충돌한 경우에는 `git show --remerge-diff`가 보고하는 **수동 충돌 해소 경로 전체가 `mydocs/`
+   아래일 때만** 재사용한다. source, test, workflow, sample, PDF 등 하나라도 포함되거나 경로를 확인할 수 없으면
+   full CI로 fallback한다. 이 확인은 current base에 있는 검사기를 사용하며 PR source를 실행하지 않는다.
 3. candidate SHA는 현재 PR commit history의 code 후보여야 하며, CI·CodeQL·Render Diff 결과는 같은 PR의
    head branch, source repository, event, candidate SHA와 정확히 일치해야 한다. 현재 base 전진은 단독으로
    재사용 거부 사유가 아니다.
@@ -46,7 +48,8 @@ Update branch, merge, rebase를 수행하지 않는다. 따라서 직전 green P
    heavy worker가 skipped인 것은 정상이나 aggregate가 pending 또는 failing이면 merge하지 않는다.
 
 trailing range에 reviewer가 만든 일반 merge commit이 있으면 fast-pass는 이를 재사용하지 않는다. current base
-병합도 위 자동 merge tree 일치 조건을 만족하는 한 번의 bridge만 예외적으로 허용한다. 이 호환 경로는 문서
+병합만 위 조건을 만족하는 한 번의 bridge로 예외 허용한다. 따라서 마지막 commit이 오늘할일 충돌을 `mydocs/`
+안에서만 해소한 current-base merge여도 같은 PR source의 녹색 candidate를 재사용할 수 있다. 이 호환 경로는 문서
 기록을 위해 source에 `devel`을 병합하라는 절차가 아니다. 일반 절차는 여전히 Update branch, merge, rebase 없이
 review-only commit만 code candidate 위에 잇는다. contributor가 review 도중 source를 갱신한 경우에는 새 source를
 기존 reviewer 기록에 merge하지 말고 [2.6.1 외부 PR review 기록의 source head 정렬](multi_pr_update_branch.md#261-외부-pr-review-기록의-source-head-정렬)을
@@ -75,8 +78,8 @@ all-review-only-no-code-impact fast-pass를 즉시 선택한다. candidate의 �
 - code, test, CI workflow, Cargo.lock 변경
 - 기존 sample, PDF, golden, baseline, fixture의 수정·삭제·rename
 - 허용 목록 밖의 신규 파일
-- A 경로의 candidate workflow 누락·실패·미완료·PR identity 불일치, current-base merge tree 불일치·충돌·조회 실패,
-  또는 허용되지 않은 merge 형태
+- A 경로의 candidate workflow 누락·실패·미완료·PR identity 불일치, current-base merge tree 불일치,
+  `mydocs/` 밖 충돌 해소·해소 경로 조회 실패·복수 base merge 또는 허용되지 않은 merge 형태
 - preflight가 fast_pass=false를 반환
 
 fast-pass는 merge 조건을 없애지 않는다. 최신 head, mergeable 상태, required aggregate, 작업지시자 승인을

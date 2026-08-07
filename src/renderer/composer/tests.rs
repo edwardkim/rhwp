@@ -283,6 +283,30 @@ fn test_char_overlap_multi_component_is_single_advance() {
     assert_eq!(char_overlap_advance_units(&chars), 1);
 }
 
+/// [#4085] `charSz` 는 OWPML 상 "테두리 내부 글자의 크기 비율"이므로 테두리를
+/// 그리지 않는 겹침에는 적용하지 않는다.
+///
+/// 한컴 실측 두 건이 이 규칙을 함께 만족한다:
+/// - k-water-rfp p13 — 반전 사각형(4) + `charSz=-2` → 0.80 (PR #1101 시각 검증)
+/// - 관세청 월간 수출입 현황 p1 — 테두리 없음(0) + `charSz=-4` → 축소 없음.
+///   한컴 PDF content stream 에서 마커와 본문이 같은 `101 Tf`, 같은 baseline.
+#[test]
+fn char_overlap_size_ratio_applies_only_when_a_border_is_drawn() {
+    // 테두리 없음 — charSz 부호와 무관하게 축소하지 않는다 (#4085 관세청 오라클)
+    assert_eq!(char_overlap_size_ratio(0, -4), 1.0);
+    assert_eq!(char_overlap_size_ratio(0, 90), 1.0);
+
+    // 테두리 있음 — PR #1101 실측 규칙 보존 (회귀 금지)
+    assert_eq!(char_overlap_size_ratio(4, -2), 0.8);
+    assert!((char_overlap_size_ratio(1, -3) - 0.7).abs() < 1e-9);
+
+    // 양수는 percent 그대로
+    assert_eq!(char_overlap_size_ratio(1, 50), 0.5);
+
+    // 0 은 기본 100%
+    assert_eq!(char_overlap_size_ratio(3, 0), 1.0);
+}
+
 /// LineSeg 없는 텍스트 문단
 #[test]
 fn test_compose_no_line_segs() {

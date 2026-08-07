@@ -7,7 +7,8 @@ use skia_safe::{
 use crate::model::style::UnderlineType;
 use crate::paint::LayerOutputOptions;
 use crate::renderer::composer::{
-    decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text, CharOverlapInfo,
+    char_overlap_size_ratio, decode_pua_overlap_number, expand_pua_render_text,
+    pua_to_display_text, CharOverlapInfo,
 };
 use crate::renderer::layout::{
     compute_char_positions, is_halfwidth_cjk_quote, split_into_clusters,
@@ -222,12 +223,6 @@ impl SkiaTextReplay<'_> {
                         return;
                     }
 
-                    let size_ratio = if overlap.inner_char_size > 0 {
-                        overlap.inner_char_size as f32 / 100.0
-                    } else {
-                        1.0
-                    };
-                    let inner_size = (font_size * size_ratio).max(1.0);
                     let box_size = font_size.max(1.0);
                     let is_combined = decode_pua_overlap_number(&chars);
                     let effective_border = if overlap.border_type == 0 && is_combined.is_some() {
@@ -235,6 +230,10 @@ impl SkiaTextReplay<'_> {
                     } else {
                         overlap.border_type
                     };
+                    // charSz 는 "테두리 내부" 글자 비율 — SVG/CanvasKit 과 같은 규칙을 쓴다 (#4085).
+                    let size_ratio =
+                        char_overlap_size_ratio(effective_border, overlap.inner_char_size) as f32;
+                    let inner_size = (font_size * size_ratio).max(1.0);
                     let is_reversed = effective_border == 2 || effective_border == 4;
                     let is_circle = effective_border == 1 || effective_border == 2;
                     let is_rect = effective_border == 3 || effective_border == 4;

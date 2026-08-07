@@ -1,0 +1,21 @@
+{
+  "id": "field-read",
+  "title": "필드 조회 — 목록·존재·값·이동",
+  "ledger": [
+    "HwpCtrl.method.GetFieldList",
+    "HwpCtrl.method.FieldExist",
+    "HwpCtrl.method.GetFieldText",
+    "HwpCtrl.method.MoveToField",
+    "HwpCtrl.method.GetCurFieldName"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["GetFieldList", [0, 0]],
+    ["FieldExist", ["pt_nm"]],
+    ["FieldExist", ["__없는필드__"]],
+    ["GetFieldText", ["pt_nm"]],
+    ["MoveToField", ["pt_nm", true, true, false]],
+    ["GetCurFieldName", [0]],
+    ["GetPos", []]
+  ]
+}

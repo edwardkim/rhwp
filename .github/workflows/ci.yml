@@ -148,6 +148,13 @@ jobs:
                 && parents.filter((parent) => parent.sha === baseSha).length === 1;
             }
 
+            function isCiExecutionPath(filename) {
+              return filename.startsWith('.github/workflows/')
+                || filename.startsWith('.github/actions/')
+                || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/verify_review_only_merge_resolution.py';
+            }
+
             function latestRun(runs) {
               return runs
                 .slice()
@@ -247,6 +254,38 @@ jobs:
                 return;
               }
 
+              const latestCommitSha = commits.at(-1).sha;
+              const { data: latestCommit } = await github.rest.repos.getCommit({
+                owner,
+                repo,
+                ref: latestCommitSha,
+              });
+              if (isCurrentBaseUpdateMerge(latestCommit, pr.base.sha)) {
+                if (prFiles.some((file) => isCiExecutionPath(file.filename))) {
+                  setResult(false, 'current-base-source-ci-execution-change');
+                  return;
+                }
+                const sourceParent = latestCommit.parents.find(
+                  (parent) => parent.sha !== pr.base.sha,
+                );
+                if (!sourceParent) {
+                  setResult(false, 'current-base-source-parent-unavailable');
+                  return;
+                }
+                const sourceResult = await buildResult(sourceParent.sha, pr);
+                if (sourceResult.state === 'green') {
+                  setPendingBaseMergeResult(
+                    `direct-source-build-and-test-green:${sourceResult.conclusion}`,
+                    sourceParent.sha,
+                    latestCommitSha,
+                    sourceParent.sha,
+                  );
+                  return;
+                }
+                setResult(false, `direct-source-${sourceResult.reason}`, sourceParent.sha);
+                return;
+              }
+
               const reviewOnlyCandidates = [];
               let codeCandidateSha = '';
               let baseMergeBridge = null;
@@ -259,8 +298,7 @@ jobs:
                   ref: sha,
                 });
                 const parents = commit.parents || [];
-                if (reviewOnlyCandidates.length > 0
-                  && isCurrentBaseUpdateMerge(commit, pr.base.sha)) {
+                if (isCurrentBaseUpdateMerge(commit, pr.base.sha)) {
                   if (baseMergeBridge) {
                     setResult(false, `multiple-current-base-update-merges:${sha}`);
                     return;
@@ -328,8 +366,8 @@ jobs:
               setResult(false, 'preflight-error');
             }
 
-      # 기준선 병합을 fast-pass bridge로 쓸 때는 untrusted source를 실행하지 않고,
-      # Git의 자동 3-way merge 결과가 실제 merge tree와 같은지만 확인한다.
+      # 기준선 병합을 fast-pass bridge로 쓸 때는 untrusted source를 실행하지 않는다.
+      # 자동 3-way merge tree가 같거나, 충돌 해소가 mydocs로 한정될 때만 재사용한다.
       - name: Check out current-base merge tree inputs
         id: checkout-base-merge-tree
         if: ${{ steps.detect.outputs.fast_pass == 'pending-base-merge-tree' }}
@@ -364,7 +402,17 @@ jobs:
           fi
 
           if ! expected_tree="$(git merge-tree --write-tree "${SOURCE_PARENT_SHA}" "${CURRENT_BASE_SHA}" 2>/dev/null)"; then
-            fail 'current-base-merge-tree-conflict-or-unavailable'
+            resolution_check="$(mktemp)"
+            trap 'rm -f "${resolution_check}"' EXIT
+            if ! git show "${CURRENT_BASE_SHA}:scripts/verify_review_only_merge_resolution.py" \
+              > "${resolution_check}"; then
+              fail 'current-base-merge-resolution-check-unavailable'
+            elif resolution_reason="$(python3 "${resolution_check}" \
+              --repository . --base-sha "${CURRENT_BASE_SHA}" "${BASE_MERGE_SHA}")"; then
+              printf 'verified=true\nreason=%s\n' "${resolution_reason}" >> "$GITHUB_OUTPUT"
+            else
+              fail 'current-base-merge-resolution-not-mydocs'
+            fi
             exit 0
           fi
           expected_tree="${expected_tree%%$'\n'*}"
@@ -393,7 +441,11 @@ jobs:
           if [[ "${DETECTED_FAST_PASS}" == 'pending-base-merge-tree' ]]; then
             if [[ "${MERGE_TREE_VERIFIED}" == 'true' ]]; then
               fast_pass='true'
-              reason="current-base-update-merge-tree-green:${CANDIDATE_SHA}"
+              if [[ "${MERGE_TREE_REASON}" == 'current-base-merge-resolution-mydocs-only' ]]; then
+                reason="current-base-update-merge-resolution-mydocs-only-green:${CANDIDATE_SHA}"
+              else
+                reason="current-base-update-merge-tree-green:${CANDIDATE_SHA}"
+              fi
             else
               fast_pass='false'
               reason="${MERGE_TREE_REASON}"
@@ -657,19 +709,15 @@ jobs:
 
   test-slow-shard:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-slow]
+    # [#4103] shard는 archive만 소비한다. Native Skia는 final aggregate가 별도 집계하므로
+    # 여기서 기다리지 않아 archive 완료 즉시 기본 테스트를 시작할 수 있다.
+    needs: [preflight, build-test-archive-slow]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && (
-          (needs.preflight.outputs.native_skia_required == 'true'
-            && needs['native-skia-tests'].result == 'success')
-          || (needs.preflight.outputs.native_skia_required == 'false'
-            && needs['native-skia-tests'].result == 'skipped')
-        )
         && needs['build-test-archive-slow'].result == 'success'
       }}
     permissions:
@@ -681,19 +729,13 @@ jobs:
 
   test-regular-shard-1:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-a]
+    needs: [preflight, build-test-archive-a]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && (
-          (needs.preflight.outputs.native_skia_required == 'true'
-            && needs['native-skia-tests'].result == 'success')
-          || (needs.preflight.outputs.native_skia_required == 'false'
-            && needs['native-skia-tests'].result == 'skipped')
-        )
         && needs['build-test-archive-a'].result == 'success'
       }}
     permissions:
@@ -705,19 +747,13 @@ jobs:
 
   test-regular-shard-2:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-slow]
+    needs: [preflight, build-test-archive-slow]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && (
-          (needs.preflight.outputs.native_skia_required == 'true'
-            && needs['native-skia-tests'].result == 'success')
-          || (needs.preflight.outputs.native_skia_required == 'false'
-            && needs['native-skia-tests'].result == 'skipped')
-        )
         && needs['build-test-archive-slow'].result == 'success'
       }}
     permissions:
@@ -729,19 +765,13 @@ jobs:
 
   test-regular-shard-3:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, native-skia-tests, build-test-archive-b]
+    needs: [preflight, build-test-archive-b]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && (
-          (needs.preflight.outputs.native_skia_required == 'true'
-            && needs['native-skia-tests'].result == 'success')
-          || (needs.preflight.outputs.native_skia_required == 'false'
-            && needs['native-skia-tests'].result == 'skipped')
-        )
         && needs['build-test-archive-b'].result == 'success'
       }}
     permissions:
@@ -788,6 +818,15 @@ jobs:
 
       - name: Validate Render Diff trigger policy
         run: python3 -m unittest scripts/tests/test_render_diff_workflow.py
+
+      # [#4080] workflow 계약 테스트는 추가해 놓고 배선을 잊으면 한 번도 돌지 않는다.
+      # 아래 목록은 test_workflow_contract_wiring.py 가 강제한다 — 새 계약 테스트를
+      # 추가하면 그 테스트가 실패하므로 여기 한 줄을 같이 넣어야 한다.
+      - name: Validate workflow contracts
+        run: |
+          python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
+          python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
+          python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
 
       - name: Clippy
         run: cargo clippy -- -D warnings

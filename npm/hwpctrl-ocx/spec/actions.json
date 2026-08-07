@@ -1,0 +1,1880 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/hwpctl_Action_Table__v1.1.hwp",
+  "spec": "Action Table v1.1",
+  "actionCount": 312,
+  "actions": [
+    {
+      "actionId": "AllReplace",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "description": "모두 바꾸기"
+    },
+    {
+      "actionId": "BackwardFind",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "description": "뒤로 찾기"
+    },
+    {
+      "actionId": "BreakColDef",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "단 정의 삽입"
+    },
+    {
+      "actionId": "BreakColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "단 나누기"
+    },
+    {
+      "actionId": "BreakLine",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "line break"
+    },
+    {
+      "actionId": "BreakPage",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "쪽 나누기"
+    },
+    {
+      "actionId": "BreakPara",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "문단 나누기"
+    },
+    {
+      "actionId": "BreakSection",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "구역 나누기"
+    },
+    {
+      "actionId": "Cancel",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "ESC"
+    },
+    {
+      "actionId": "CellBorder",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "description": "셀 테두리"
+    },
+    {
+      "actionId": "CellBorderFill",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "description": "셀 테두리"
+    },
+    {
+      "actionId": "CellFill",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "description": "셀 배경"
+    },
+    {
+      "actionId": "CellZoneBorder",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "description": "셀 테두리(여러 셀에 걸쳐 적용)\n셀이 선택된 상태에서만 동작"
+    },
+    {
+      "actionId": "CellZoneBorderFill",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "description": "셀 테두리(여러 셀에 걸쳐 적용)\n셀이 선택된 상태에서만 동작"
+    },
+    {
+      "actionId": "CellZoneFill",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "description": "셀 배경(여러 셀에 걸쳐 적용)\n셀이 선택된 상태에서만 동작"
+    },
+    {
+      "actionId": "CharShape",
+      "parameterSetId": "CharShape",
+      "requiresExternalSet": false,
+      "description": "글자 모양"
+    },
+    {
+      "actionId": "CharShapeBold",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "단축키: Alt+L(글자 진하게)"
+    },
+    {
+      "actionId": "CharShapeCenterline",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "취소선(CenterLine)"
+    },
+    {
+      "actionId": "CharShapeEmboss",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "양각"
+    },
+    {
+      "actionId": "CharShapeEngrave",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "음각"
+    },
+    {
+      "actionId": "CharShapeHeight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글자 크기(글자 모양 대화상자에서 Focus이동용으로 사용)"
+    },
+    {
+      "actionId": "CharShapeHeightDecrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "크기 작게 ALT+SHIFT+R"
+    },
+    {
+      "actionId": "CharShapeHeightIncrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "크기 크게 ALT+SHIFT+E"
+    },
+    {
+      "actionId": "CharShapeItalic",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "이탤릭 ALT + SHIFT + I"
+    },
+    {
+      "actionId": "CharShapeNextFaceName",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "다음 글꼴 ALT+SHIFT+F"
+    },
+    {
+      "actionId": "CharShapeNormal",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "보통모양 ALT+SHIFT+C"
+    },
+    {
+      "actionId": "CharShapeOutline",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "외곽선"
+    },
+    {
+      "actionId": "CharShapePrevFaceName",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "이전 글꼴 ALT+SHIFT+G"
+    },
+    {
+      "actionId": "CharShapeShadow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "그림자"
+    },
+    {
+      "actionId": "CharShapeSpacing",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "자간(글자 모양 대화상자에서 Focus이동용으로 사용)"
+    },
+    {
+      "actionId": "CharShapeSpacingDecrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "자간 좁게 ALT+SHIFT+N"
+    },
+    {
+      "actionId": "CharShapeSpacingIncrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "자간 넓게 ALT+SHIFT+W"
+    },
+    {
+      "actionId": "CharShapeSubscript",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "아래첨자 ALT+SHIFT+S"
+    },
+    {
+      "actionId": "CharShapeSuperscript",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "위첨자 ALT+SHIFT+P"
+    },
+    {
+      "actionId": "CharShapeSuperSubscript",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "첨자 : \"위첨자 -> 아래첨자 -> 보통\" 반복"
+    },
+    {
+      "actionId": "CharShapeTextColorBlack",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글자색을 검정"
+    },
+    {
+      "actionId": "CharShapeTextColorBlue",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글자색을 파랑"
+    },
+    {
+      "actionId": "CharShapeTextColorBluish",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글자색을 청록"
+    },
+    {
+      "actionId": "CharShapeTextColorGreen",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글자색을 초록"
+    },
+    {
+      "actionId": "CharShapeTextColorRed",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글자색을 빨강"
+    },
+    {
+      "actionId": "CharShapeTextColorViolet",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글자색을 자주"
+    },
+    {
+      "actionId": "CharShapeTextColorWhite",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글자색을 흰색"
+    },
+    {
+      "actionId": "CharShapeTextColorYellow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글자색을 노랑"
+    },
+    {
+      "actionId": "CharShapeUnderline",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "밑줄 ALT+SHIFT+U"
+    },
+    {
+      "actionId": "CharShapeWidth",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "장평(글자 모양 대화상자에서 Focus이동용으로 사용)"
+    },
+    {
+      "actionId": "CharShapeWidthDecrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "장평 좁게 ALT+SHIFT+J"
+    },
+    {
+      "actionId": "CharShapeWidthIncrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "장평 넓게 ALT+SHIFT+K"
+    },
+    {
+      "actionId": "Close",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 리스트를 닫고 상위 리스트로 이동."
+    },
+    {
+      "actionId": "CloseEx",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 리스트를 닫고 상위 리스트로 이동.\nClose의 확장 액션으로 전체화면 보기일 때 Root list로 빠져나온다. Shift+Esc"
+    },
+    {
+      "actionId": "Delete",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "Delete"
+    },
+    {
+      "actionId": "DeleteBack",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "Backspace"
+    },
+    {
+      "actionId": "DeleteField",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "누름틀/메모지우기\n누름틀/메모 안의 내용은 지우지 않고, 단순히 누름틀만 지운다."
+    },
+    {
+      "actionId": "DeleteLine",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "CTRL-Y (한줄 지우기)"
+    },
+    {
+      "actionId": "DeleteLineEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "ALT-Y (현재 커서에서 줄 끝까지 지우기)"
+    },
+    {
+      "actionId": "DeleteWord",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "단어 지우기 CTRL-T"
+    },
+    {
+      "actionId": "DeleteWordBack",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "CTRL-BS(Back Space)"
+    },
+    {
+      "actionId": "DocSummaryInfo",
+      "parameterSetId": "SummaryInfo",
+      "requiresExternalSet": false,
+      "description": "문서 정보"
+    },
+    {
+      "actionId": "DocumentInfo",
+      "parameterSetId": "DocumentInfo",
+      "requiresExternalSet": true,
+      "description": "현재 문서에 대한 정보"
+    },
+    {
+      "actionId": "DrawObjCreatorArc",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "호 그리기"
+    },
+    {
+      "actionId": "DrawObjCreatorEllipse",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "원 그리기"
+    },
+    {
+      "actionId": "DrawObjCreatorLine",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "선 그리기"
+    },
+    {
+      "actionId": "DrawObjCreatorRectangle",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "사각형 그리기"
+    },
+    {
+      "actionId": "DrawObjCreatorTextBox",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글상자"
+    },
+    {
+      "actionId": "Erase",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "지우기"
+    },
+    {
+      "actionId": "ExecReplace",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "description": "바꾸기(실행)"
+    },
+    {
+      "actionId": "FileSetSecurity",
+      "parameterSetId": "FileSetSecurity",
+      "requiresExternalSet": true,
+      "description": "배포용 문서(출판 전용 문서).\n대화상자를 띄우지 않고 ParameterSet을 직접 설정하여 생성한다.\n예제는 “배포용 문서 만들기“ 참고"
+    },
+    {
+      "actionId": "FindDlg",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": false,
+      "description": "찾기"
+    },
+    {
+      "actionId": "ForwardFind",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "description": "앞으로 찾기"
+    },
+    {
+      "actionId": "HeaderFooter",
+      "parameterSetId": "HeaderFooter",
+      "requiresExternalSet": false,
+      "description": "머리말/꼬리말"
+    },
+    {
+      "actionId": "Hyperlink",
+      "parameterSetId": "HyperLink",
+      "requiresExternalSet": false,
+      "description": "캐럿이 필드 안에 위치했는지 여부에 따라 Insert 또는 Modify 하이퍼링크 액션"
+    },
+    {
+      "actionId": "InputCodeTable",
+      "parameterSetId": "CodeTable",
+      "requiresExternalSet": false,
+      "description": "문자표"
+    },
+    {
+      "actionId": "InsertCpNo",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "상용구 코드 넣기(현재 쪽 번호)"
+    },
+    {
+      "actionId": "InsertCpTpNo",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "상용구 코드 넣기(현재 쪽/전체 쪽)"
+    },
+    {
+      "actionId": "InsertEndnote",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "미주 입력"
+    },
+    {
+      "actionId": "InsertFieldTemplate",
+      "parameterSetId": "InsertFieldTemplate",
+      "requiresExternalSet": false,
+      "description": "필드 입력"
+    },
+    {
+      "actionId": "InsertFile",
+      "parameterSetId": "InsertFile",
+      "requiresExternalSet": false,
+      "description": "끼워 넣기"
+    },
+    {
+      "actionId": "InsertFixedWidthSpace",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "고정폭 빈칸 삽입"
+    },
+    {
+      "actionId": "InsertFootnote",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "각주 입력"
+    },
+    {
+      "actionId": "InsertHyperlink",
+      "parameterSetId": "Hyperlink",
+      "requiresExternalSet": false,
+      "description": "하이퍼링크 만들기"
+    },
+    {
+      "actionId": "InsertLine",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "선 넣기"
+    },
+    {
+      "actionId": "InsertNonBreakingSpace",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "묶음 빈칸 삽입"
+    },
+    {
+      "actionId": "InsertPageNum",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "쪽 번호 넣기"
+    },
+    {
+      "actionId": "InsertSpace",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "공백 삽입"
+    },
+    {
+      "actionId": "InsertTab",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "탭 삽입"
+    },
+    {
+      "actionId": "InsertText",
+      "parameterSetId": "InsertText",
+      "requiresExternalSet": false,
+      "description": "텍스트 삽입"
+    },
+    {
+      "actionId": "InsertTpNo",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "상용구 코드 넣기(전체 쪽수)"
+    },
+    {
+      "actionId": "ModifyCtrl",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "고치기 : 컨트롤"
+    },
+    {
+      "actionId": "ModifyFieldClickhere",
+      "parameterSetId": "InsertFieldTemplate",
+      "requiresExternalSet": false,
+      "description": "누름틀 정보 고치기"
+    },
+    {
+      "actionId": "ModifyFillProperty",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "고치기(채우기 속성 탭으로)\n만약 Ctrl(ShapeObject,누름틀, 날짜/시간 코드 등)이 선택되지 않았다면 역방향탐색(SelectCtrlReverse)을 이용해서 개체를 탐색한다. 채우기 속성이 없는 Ctrl일 경우에는 첫 번째 탭이 선택된 상태로 고치기 창이 뜬다."
+    },
+    {
+      "actionId": "ModifyHyperlink",
+      "parameterSetId": "HyperLink",
+      "requiresExternalSet": false,
+      "description": "하이퍼링크 고치기"
+    },
+    {
+      "actionId": "ModifyLineProperty",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "고치기(선/테두리 속성 탭으로)\n만약 Ctrl(ShapeObject,누름틀, 날짜/시간 코드 등)이 선택되지 않았다면 역방향탐색(SelectCtrlReverse)을 이용해서 개체를 탐색한다. 선/테두리 속성이 없는 Ctrl일 경우에는 첫 번째 탭이 선택된 상태로 고치기 창이 뜬다."
+    },
+    {
+      "actionId": "ModifyShapeObject",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "고치기 - 개체 속성"
+    },
+    {
+      "actionId": "MoveColumnBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "단의 시작점으로 이동한다. 단이 없을 경우에는 아무동작도 하지 않는다. 해당 리스트 안에서만 동작한다."
+    },
+    {
+      "actionId": "MoveColumnEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "단의 끝점으로 이동한다. 단이 없을 경우에는 아무동작도 하지 않는다. 해당 리스트 안에서만 동작한다."
+    },
+    {
+      "actionId": "MoveDocBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "문서의 시작으로 이동.\n만약 셀렉션을 확장하는 경우에는 LIST_BEGIN/END와 동일하다. 현재 서브 리스트 내에 있으면 빠져나간다."
+    },
+    {
+      "actionId": "MoveDocEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "문서의 끝으로 이동.\n만약 셀렉션을 확장하는 경우에는 LIST_BEGIN/END와 동일하다. 현재 서브 리스트 내에 있으면 빠져나간다."
+    },
+    {
+      "actionId": "MoveDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "캐럿을 (논리적 개념의) 아래로 이동시킨다."
+    },
+    {
+      "actionId": "MoveLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "캐럿을 (논리적 개념의) 왼쪽으로 이동시킨다."
+    },
+    {
+      "actionId": "MoveLineBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 위치한 줄의 시작/끝으로 이동"
+    },
+    {
+      "actionId": "MoveLineDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 줄 아래로 이동한다."
+    },
+    {
+      "actionId": "MoveLineEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 위치한 줄의 시작/끝으로 이동"
+    },
+    {
+      "actionId": "MoveLineUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 줄 위로 이동한다."
+    },
+    {
+      "actionId": "MoveListBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 리스트의 시작으로 이동"
+    },
+    {
+      "actionId": "MoveListEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 리스트의 끝으로 이동"
+    },
+    {
+      "actionId": "MoveNextChar",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 글자 뒤로 이동. 현재 리스트만을 대상으로 동작한다."
+    },
+    {
+      "actionId": "MoveNextColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "뒤 단으로 이동"
+    },
+    {
+      "actionId": "MoveNextParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "다음 문단의 시작으로 이동. 현재 리스트만을 대상으로 동작한다."
+    },
+    {
+      "actionId": "MoveNextPos",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 글자 뒤로 이동. 서브 리스트를 옮겨 다닐 수 있다."
+    },
+    {
+      "actionId": "MoveNextPosEx",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 글자 뒤로 이동. 서브 리스트를 옮겨 다닐 수 있다. (머리말, 꼬리말, 각주, 미주, 글상자 포함)"
+    },
+    {
+      "actionId": "MoveNextWord",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 단어 뒤로 이동. 현재 리스트만을 대상으로 동작한다."
+    },
+    {
+      "actionId": "MovePageBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 페이지의 시작점으로 이동한다.\n만약 캐럿의 위치가 변경되었다면 화면이 전환되어 쪽의 상단으로 페이지뷰잉이 맞춰진다."
+    },
+    {
+      "actionId": "MovePageDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "다음 페이지의 시작으로 이동. 현재 탑레벨 리스트가 아니면 탑레벨 리스트로 빠져나온다."
+    },
+    {
+      "actionId": "MovePageEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 페이지의 끝점으로 이동한다.\n만약 캐럿의 위치가 변경되었다면 화면이 전환되어 쪽의 하단으로 페이지뷰잉이 맞춰진다."
+    },
+    {
+      "actionId": "MovePageUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "이전 페이지의 시작으로 이동. 현재 탑레벨 리스트가 아니면 탑레벨 리스트로 빠져나온다."
+    },
+    {
+      "actionId": "MoveParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 위치한 문단의 시작/끝으로 이동"
+    },
+    {
+      "actionId": "MoveParaEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 위치한 문단의 시작/끝으로 이동"
+    },
+    {
+      "actionId": "MoveParentList",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 레벨 상위/탑레벨/루트 리스트로 이동한다.\n현재 루트 리스트에 위치해 있어 더 이상 상위 리스트가 없을 때는 위치 이동 없이 리턴한다. 이동한 후의 위치는 상위 리스트에서 서브리스트가 속한 컨트롤 코드가 위치한 곳이다. 위치 이동시 셀렉션은 무조건 풀린다."
+    },
+    {
+      "actionId": "MovePrevChar",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 글자 앞 이동. 현재 리스트만을 대상으로 동작한다."
+    },
+    {
+      "actionId": "MovePrevColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "앞 단으로 이동"
+    },
+    {
+      "actionId": "MovePrevParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "앞 문단의 시작으로 이동. 현재 리스트만을 대상으로 동작한다."
+    },
+    {
+      "actionId": "MovePrevParaEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "앞 문단의 끝으로 이동. 현재 리스트만을 대상으로 동작한다."
+    },
+    {
+      "actionId": "MovePrevPos",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 글자 앞으로 이동. 서브 리스트를 옮겨 다닐 수 있다."
+    },
+    {
+      "actionId": "MovePrevPosEx",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 글자 앞으로 이동. 서브 리스트를 옮겨 다닐 수 있다. (머리말, 꼬리말, 각주, 미주, 글상자 포함)"
+    },
+    {
+      "actionId": "MovePrevWord",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 단어 앞으로 이동. 현재 리스트만을 대상으로 동작한다."
+    },
+    {
+      "actionId": "MoveRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "캐럿을 (논리적 개념의) 오른쪽으로 이동시킨다."
+    },
+    {
+      "actionId": "MoveRootList",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 레벨 상위/탑레벨/루트 리스트로 이동한다.\n현재 루트 리스트에 위치해 있어 더 이상 상위 리스트가 없을 때는 위치 이동 없이 리턴한다. 이동한 후의 위치는 상위 리스트에서 서브리스트가 속한 컨트롤 코드가 위치한 곳이다. 위치 이동시 셀렉션은 무조건 풀린다."
+    },
+    {
+      "actionId": "MoveScrollDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "아래 방향으로 스크롤하면서 이동"
+    },
+    {
+      "actionId": "MoveScrollNext",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "다음 방향으로 스크롤하면서 이동"
+    },
+    {
+      "actionId": "MoveScrollPrev",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "이전 방향으로 스크롤하면서 이동"
+    },
+    {
+      "actionId": "MoveScrollUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "위 방향으로 스크롤하면서 이동"
+    },
+    {
+      "actionId": "MoveSectionDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "뒤 섹션으로 이동. 현재 루트 리스트가 아니면 루트 리스트로 빠져나온다."
+    },
+    {
+      "actionId": "MoveSectionUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "앞 섹션으로 이동. 현재 루트 리스트가 아니면 루트 리스트로 빠져나온다."
+    },
+    {
+      "actionId": "MoveSelDocBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 문서 처음"
+    },
+    {
+      "actionId": "MoveSelDocEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 문서 끝"
+    },
+    {
+      "actionId": "MoveSelDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 캐럿을 (논리적 방향) 아래로 이동"
+    },
+    {
+      "actionId": "MoveSelLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 캐럿을 (논리적 방향) 왼쪽으로 이동"
+    },
+    {
+      "actionId": "MoveSelLineBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 줄 처음"
+    },
+    {
+      "actionId": "MoveSelLineDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 한줄 아래"
+    },
+    {
+      "actionId": "MoveSelLineEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 줄 끝"
+    },
+    {
+      "actionId": "MoveSelLineUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 한줄 위"
+    },
+    {
+      "actionId": "MoveSelListBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 리스트 처음"
+    },
+    {
+      "actionId": "MoveSelListEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 리스트 끝"
+    },
+    {
+      "actionId": "MoveSelNextChar",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 다음 글자"
+    },
+    {
+      "actionId": "MoveSelNextParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 다음 문단 처음"
+    },
+    {
+      "actionId": "MoveSelNextPos",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 다음 위치"
+    },
+    {
+      "actionId": "MoveSelNextWord",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 다음 단어"
+    },
+    {
+      "actionId": "MoveSelPageDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 페이지다운"
+    },
+    {
+      "actionId": "MoveSelPageUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 페이지 업"
+    },
+    {
+      "actionId": "MoveSelParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 문단 처음"
+    },
+    {
+      "actionId": "MoveSelParaEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 문단 끝"
+    },
+    {
+      "actionId": "MoveSelPrevChar",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 이전 글자"
+    },
+    {
+      "actionId": "MoveSelPrevParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 이전 문단 시작"
+    },
+    {
+      "actionId": "MoveSelPrevParaEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 이전 문단 끝"
+    },
+    {
+      "actionId": "MoveSelPrevPos",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 이전 위치"
+    },
+    {
+      "actionId": "MoveSelPrevWord",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 이전 단어"
+    },
+    {
+      "actionId": "MoveSelRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 캐럿을 (논리적 방향) 오른쪽으로 이동"
+    },
+    {
+      "actionId": "MoveSelTopLevelBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 처음"
+    },
+    {
+      "actionId": "MoveSelTopLevelEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 끝"
+    },
+    {
+      "actionId": "MoveSelUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 캐럿을 (논리적 방향) 위로 이동"
+    },
+    {
+      "actionId": "MoveSelViewDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 아래"
+    },
+    {
+      "actionId": "MoveSelViewUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 위"
+    },
+    {
+      "actionId": "MoveSelWordBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 단어 처음"
+    },
+    {
+      "actionId": "MoveSelWordEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀렉션: 단어 끝"
+    },
+    {
+      "actionId": "MoveTopLevelBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "탑레벨 리스트의 시작으로 이동"
+    },
+    {
+      "actionId": "MoveTopLevelEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "탑레벨 리스트의 끝으로 이동"
+    },
+    {
+      "actionId": "MoveTopLevelList",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "한 레벨 상위/탑레벨/루트 리스트로 이동한다.\n현재 루트 리스트에 위치해 있어 더 이상 상위 리스트가 없을 때는 위치 이동 없이 리턴한다. 이동한 후의 위치는 상위 리스트에서 서브리스트가 속한 컨트롤 코드가 위치한 곳이다. 위치 이동시 셀렉션은 무조건 풀린다."
+    },
+    {
+      "actionId": "MoveUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "캐럿을 (논리적 개념의) 위로 이동시킨다."
+    },
+    {
+      "actionId": "MoveViewBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 뷰의 시작에 위치한 곳으로 이동"
+    },
+    {
+      "actionId": "MoveViewDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 뷰의 크기만큼 아래로 이동한다. PgDn 키의 기능이다."
+    },
+    {
+      "actionId": "MoveViewEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 뷰의 끝에 위치한 곳으로 이동"
+    },
+    {
+      "actionId": "MoveViewUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 뷰의 크기만큼 위로 이동한다. PgUp 키의 기능이다."
+    },
+    {
+      "actionId": "MoveWordBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 위치한 단어의 시작으로 이동. 현재 리스트만을 대상으로 동작한다."
+    },
+    {
+      "actionId": "MoveWordEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "현재 위치한 단어의 끝으로 이동. 현재 리스트만을 대상으로 동작한다."
+    },
+    {
+      "actionId": "PageHiding",
+      "parameterSetId": "PageHiding",
+      "requiresExternalSet": false,
+      "description": "감추기"
+    },
+    {
+      "actionId": "PageNumPos",
+      "parameterSetId": "PageNumPos",
+      "requiresExternalSet": false,
+      "description": "쪽 번호 매기기"
+    },
+    {
+      "actionId": "PageSetup",
+      "parameterSetId": "SecDef",
+      "requiresExternalSet": false,
+      "description": "편집 용지"
+    },
+    {
+      "actionId": "ParagraphShape",
+      "parameterSetId": "ParaShape",
+      "requiresExternalSet": false,
+      "description": "문단 모양"
+    },
+    {
+      "actionId": "ParagraphShapeAlignCenter",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "가운데 정렬"
+    },
+    {
+      "actionId": "ParagraphShapeAlignDistribute",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "배분 정렬"
+    },
+    {
+      "actionId": "ParagraphShapeAlignDivision",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "나눔 정렬"
+    },
+    {
+      "actionId": "ParagraphShapeAlignJustify",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "양쪽 정렬"
+    },
+    {
+      "actionId": "ParagraphShapeAlignLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "왼쪽 정렬"
+    },
+    {
+      "actionId": "ParagraphShapeAlignRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "오른쪽 정렬"
+    },
+    {
+      "actionId": "ParagraphShapeDecreaseLeftMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "왼쪽 여백 줄이기"
+    },
+    {
+      "actionId": "ParagraphShapeDecreaseLineSpacing",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "줄 간격을 점점 좁힘"
+    },
+    {
+      "actionId": "ParagraphShapeDecreaseMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "왼쪽-오른쪽 여백 줄이기"
+    },
+    {
+      "actionId": "ParagraphShapeDecreaseRightMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "오른쪽 여백 키우기"
+    },
+    {
+      "actionId": "ParagraphShapeIncreaseLeftMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "왼쪽 여백 키우기"
+    },
+    {
+      "actionId": "ParagraphShapeIncreaseLineSpacing",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "줄 간격을 점점 넓힘"
+    },
+    {
+      "actionId": "ParagraphShapeIncreaseMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "왼쪽-오른쪽 여백 키우기"
+    },
+    {
+      "actionId": "ParagraphShapeIncreaseRightMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "오른쪽 여백 줄이기"
+    },
+    {
+      "actionId": "ParagraphShapeIndentAtCaret",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "첫 줄 내어 쓰기"
+    },
+    {
+      "actionId": "ParagraphShapeIndentNegative",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "첫 줄을 한 글자 내어 씀"
+    },
+    {
+      "actionId": "ParagraphShapeIndentPositive",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "첫 줄을 한 글자 들여 씀"
+    },
+    {
+      "actionId": "ParagraphShapeProtect",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "문단 보호"
+    },
+    {
+      "actionId": "ParagraphShapeWithNext",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "다음 문단과 함께"
+    },
+    {
+      "actionId": "ParaNumberBullet",
+      "parameterSetId": "ParaShape",
+      "requiresExternalSet": false,
+      "description": "문단번호/글머리표"
+    },
+    {
+      "actionId": "ParaNumberBulletLevelDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "문단번호/글머리표 한 수준 아래로"
+    },
+    {
+      "actionId": "ParaNumberBulletLevelUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "문단번호/글머리표 한 수준 위로"
+    },
+    {
+      "actionId": "PictureInsertDialog",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "그림 넣기 (대화상자를 띄워 선택한 이미지 파일을 문서에 삽입하는 액션 : API용)"
+    },
+    {
+      "actionId": "Print",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "인쇄"
+    },
+    {
+      "actionId": "PutBullet",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글머리표 달기"
+    },
+    {
+      "actionId": "PutNewParaNumber",
+      "parameterSetId": "ParaShape",
+      "requiresExternalSet": true,
+      "description": "문단번호 새 번호 시작하기"
+    },
+    {
+      "actionId": "PutOutlineNumber",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "개요번호 달기"
+    },
+    {
+      "actionId": "PutParaNumber",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "문단번호 달기"
+    },
+    {
+      "actionId": "Redo",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "다시 실행"
+    },
+    {
+      "actionId": "RepeatFind",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "description": "다시 찾기"
+    },
+    {
+      "actionId": "ReplaceDlg",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": false,
+      "description": "찾아 바꾸기"
+    },
+    {
+      "actionId": "ReturnPrevPos",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "직전위치로 돌아가기"
+    },
+    {
+      "actionId": "ReverseFind",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "description": "거꾸로 찾기"
+    },
+    {
+      "actionId": "Select",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "선택 (F3 Key를 누른 효과)"
+    },
+    {
+      "actionId": "SelectAll",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "모두 선택"
+    },
+    {
+      "actionId": "SelectColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "칸 블록 선택 (F4 Key를 누른 효과)"
+    },
+    {
+      "actionId": "SelectCtrlFront",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "개체선택 정방향"
+    },
+    {
+      "actionId": "SelectCtrlReverse",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "개체선택 역방향"
+    },
+    {
+      "actionId": "ShapeObjAlignBottom",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "아래로 정렬"
+    },
+    {
+      "actionId": "ShapeObjAlignCenter",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "가운데로 정렬"
+    },
+    {
+      "actionId": "ShapeObjAlignHeight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "높이 맞춤"
+    },
+    {
+      "actionId": "ShapeObjAlignHorzSpacing",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "왼쪽/오른쪽 일정한 비율로 정렬"
+    },
+    {
+      "actionId": "ShapeObjAlignLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "왼쪽으로 정렬"
+    },
+    {
+      "actionId": "ShapeObjAlignMiddle",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "중간 정렬"
+    },
+    {
+      "actionId": "ShapeObjAlignRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "오른쪽으로 정렬"
+    },
+    {
+      "actionId": "ShapeObjAlignSize",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "폭/높이 맞춤"
+    },
+    {
+      "actionId": "ShapeObjAlignTop",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "위로 정렬"
+    },
+    {
+      "actionId": "ShapeObjAlignVertSpacing",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "위/아래 일정한 비율로 정렬"
+    },
+    {
+      "actionId": "ShapeObjAlignWidth",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "폭 맞춤"
+    },
+    {
+      "actionId": "ShapeObjAttachCaption",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "캡션 넣기"
+    },
+    {
+      "actionId": "ShapeObjAttachTextBox",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글 상자로 만들기"
+    },
+    {
+      "actionId": "ShapeObjBringForward",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "앞으로"
+    },
+    {
+      "actionId": "ShapeObjBringInFrontOfText",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글 앞으로"
+    },
+    {
+      "actionId": "ShapeObjBringToFront",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "맨 앞으로"
+    },
+    {
+      "actionId": "ShapeObjCtrlSendBehindText",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글 뒤로"
+    },
+    {
+      "actionId": "ShapeObjDetachCaption",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "캡션 없애기"
+    },
+    {
+      "actionId": "ShapeObjDetachTextBox",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글상자 속성 없애기"
+    },
+    {
+      "actionId": "ShapeObjDialog",
+      "parameterSetId": "ShapeObject",
+      "requiresExternalSet": false,
+      "description": "환경설정"
+    },
+    {
+      "actionId": "ShapeObjHorzFlip",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "그리기 개체 좌우 뒤집기"
+    },
+    {
+      "actionId": "ShapeObjHorzFlipOrgState",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "그리기 개체 좌우 뒤집기 원상태로 되돌리기"
+    },
+    {
+      "actionId": "ShapeObjLock",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "개체 Lock"
+    },
+    {
+      "actionId": "ShapeObjMoveDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "키로 움직이기(아래)"
+    },
+    {
+      "actionId": "ShapeObjMoveLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "키로 움직이기(왼쪽)"
+    },
+    {
+      "actionId": "ShapeObjMoveRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "키로 움직이기(오른쪽)"
+    },
+    {
+      "actionId": "ShapeObjMoveUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "키로 움직이기(위)"
+    },
+    {
+      "actionId": "ShapeObjNextObject",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "이후 개채로 이동(tab키)"
+    },
+    {
+      "actionId": "ShapeObjPrevObject",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "이전 개체로 이동(shift + tab키)"
+    },
+    {
+      "actionId": "ShapeObjResizeDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "키로 크기 조절(shift + 아래)"
+    },
+    {
+      "actionId": "ShapeObjResizeLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "키로 크기 조절(shift + 왼쪽)"
+    },
+    {
+      "actionId": "ShapeObjResizeRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "키로 크기 조절(shift + 오른쪽)"
+    },
+    {
+      "actionId": "ShapeObjResizeUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "키로 크기 조절(shift + 위)"
+    },
+    {
+      "actionId": "ShapeObjSendBack",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "뒤로"
+    },
+    {
+      "actionId": "ShapeObjSendToBack",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "맨 뒤로"
+    },
+    {
+      "actionId": "ShapeObjTableSelCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "테이블 선택상태에서 첫 번째 셀 선택하기"
+    },
+    {
+      "actionId": "ShapeObjTextBoxEdit",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "글상자 선택상태에서 편집모드로 들어가기"
+    },
+    {
+      "actionId": "ShapeObjUngroup",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "틀 풀기"
+    },
+    {
+      "actionId": "ShapeObjUnlockAll",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "개체 Unlock All"
+    },
+    {
+      "actionId": "ShapeObjVertFlip",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "그리기 개체 상하 뒤집기"
+    },
+    {
+      "actionId": "ShapeObjVertFlipOrgState",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "그리기 개체 상하 뒤집기 원상태로 되돌리기"
+    },
+    {
+      "actionId": "SpellingCheck",
+      "parameterSetId": "SpellingCheck",
+      "requiresExternalSet": false,
+      "description": "맞춤법"
+    },
+    {
+      "actionId": "TableAppendRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "줄 추가"
+    },
+    {
+      "actionId": "TableCellBlock",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 블록"
+    },
+    {
+      "actionId": "TableCellBlockCol",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 블록 (칸)"
+    },
+    {
+      "actionId": "TableCellBlockExtend",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 블록 연장(F5 + F5)"
+    },
+    {
+      "actionId": "TableCellBlockExtendAbs",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 블록 연장(SHIFT + F5)"
+    },
+    {
+      "actionId": "TableCellBlockRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 블록(줄)"
+    },
+    {
+      "actionId": "TableColBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 이동: 열 시작"
+    },
+    {
+      "actionId": "TableColEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 이동: 열 끝"
+    },
+    {
+      "actionId": "TableColPageDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 이동: 페이지다운"
+    },
+    {
+      "actionId": "TableColPageUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 이동: 페이지 업"
+    },
+    {
+      "actionId": "TableCreate",
+      "parameterSetId": "TableCreation",
+      "requiresExternalSet": false,
+      "description": "표 만들기"
+    },
+    {
+      "actionId": "TableDeleteCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 삭제"
+    },
+    {
+      "actionId": "TableDeleteColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "칸 지우기"
+    },
+    {
+      "actionId": "TableDeleteRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "줄-칸 지우기"
+    },
+    {
+      "actionId": "TableDeleteRowColumn",
+      "parameterSetId": "TableDeleteLine",
+      "requiresExternalSet": false,
+      "description": "줄-칸 지우기"
+    },
+    {
+      "actionId": "TableDistributeCellHeight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 높이를 같게"
+    },
+    {
+      "actionId": "TableDistributeCellWidth",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 너비를 같게"
+    },
+    {
+      "actionId": "TableInsertLeftColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "왼쪽 칸 삽입"
+    },
+    {
+      "actionId": "TableInsertLowerRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "아래쪽 줄 삽입"
+    },
+    {
+      "actionId": "TableInsertRightColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "오른쪽 칸 삽입"
+    },
+    {
+      "actionId": "TableInsertRowColumn",
+      "parameterSetId": "TableInsertLine",
+      "requiresExternalSet": false,
+      "description": "줄-칸 삽입"
+    },
+    {
+      "actionId": "TableInsertUpperRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "위쪽 줄 삽입"
+    },
+    {
+      "actionId": "TableLeftCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 이동: 셀 왼쪽"
+    },
+    {
+      "actionId": "TableLowerCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 이동: 셀 아래"
+    },
+    {
+      "actionId": "TableMergeCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 합치기"
+    },
+    {
+      "actionId": "TablePropertyDialog",
+      "parameterSetId": "ShapeObject",
+      "requiresExternalSet": false,
+      "description": "표 고치기"
+    },
+    {
+      "actionId": "TableResizeCellDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 셀 아래"
+    },
+    {
+      "actionId": "TableResizeCellLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 셀 왼쪽"
+    },
+    {
+      "actionId": "TableResizeCellRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 셀 오른쪽"
+    },
+    {
+      "actionId": "TableResizeCellUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 셀 위"
+    },
+    {
+      "actionId": "TableResizeDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경"
+    },
+    {
+      "actionId": "TableResizeExDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 셀 아래\nTebleResizeDown과 다른 점은 셀 블록 상태가 아니어도 동작한다는 점이다."
+    },
+    {
+      "actionId": "TableResizeExLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 셀 왼쪽\nTebleResizeLeft와 다른 점은 셀 블록 상태가 아니어도 동작한다는 점이다."
+    },
+    {
+      "actionId": "TableResizeExRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 셀 오른쪽\nTebleResizeRight와 다른 점은 셀 블록 상태가 아니어도 동작한다는 점이다."
+    },
+    {
+      "actionId": "TableResizeExUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 셀 위\nTebleResizeUp과 다른 점은 셀 블록 상태가 아니어도 동작한다는 점이다."
+    },
+    {
+      "actionId": "TableResizeLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경"
+    },
+    {
+      "actionId": "TableResizeLineDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 선아래"
+    },
+    {
+      "actionId": "TableResizeLineLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 선 왼쪽"
+    },
+    {
+      "actionId": "TableResizeLineRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 선 오른쪽"
+    },
+    {
+      "actionId": "TableResizeLineUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경: 선 위"
+    },
+    {
+      "actionId": "TableResizeRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경"
+    },
+    {
+      "actionId": "TableResizeUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 크기 변경"
+    },
+    {
+      "actionId": "TableRightCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 이동: 셀 오른쪽"
+    },
+    {
+      "actionId": "TableRightCellAppend",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 이동: 셀 오른쪽에 이어서"
+    },
+    {
+      "actionId": "TableSplitCell",
+      "parameterSetId": "TableSplitCell",
+      "requiresExternalSet": false,
+      "description": "셀 나누기"
+    },
+    {
+      "actionId": "TableSplitCellCol2",
+      "parameterSetId": "TableSplitCell",
+      "requiresExternalSet": false,
+      "description": "셀 칸 나누기"
+    },
+    {
+      "actionId": "TableSplitCellRow2",
+      "parameterSetId": "TableSplitCell",
+      "requiresExternalSet": false,
+      "description": "셀 줄 나누기"
+    },
+    {
+      "actionId": "TableStringToTable",
+      "parameterSetId": "TableStrToTbl",
+      "requiresExternalSet": false,
+      "description": "문자열을 표로"
+    },
+    {
+      "actionId": "TableSubtractRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "표 줄 삭제"
+    },
+    {
+      "actionId": "TableUpperCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "셀 이동: 셀 위"
+    },
+    {
+      "actionId": "ToggleOverwrite",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "Toggle Overwrite"
+    },
+    {
+      "actionId": "Undo",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "되살리기"
+    },
+    {
+      "actionId": "ViewZoomFitPage",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "화면 확대: 페이지에 맞춤"
+    },
+    {
+      "actionId": "ViewZoomFitWidth",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "화면 확대: 폭에 맞춤"
+    },
+    {
+      "actionId": "ViewZoomNormal",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "description": "화면 확대: 정상"
+    }
+  ]
+}

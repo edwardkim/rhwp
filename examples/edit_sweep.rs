@@ -8,11 +8,11 @@
 //!
 //! 사용:
 //!     # 스윕 → TSV (경로·전후 쪽수·변동·상태)
-//!     cargo run --release --example edit_sweep -- samples -o out/sweep/devel.tsv
+//!     cargo run --release --example edit_sweep -- samples -o output/sweep/devel.tsv
 //!     # 편집 종류 선택(기본 insert1 = para0 앞 1자 삽입)
-//!     cargo run --release --example edit_sweep -- samples -o out/sweep/a.tsv --edit insert1
+//!     cargo run --release --example edit_sweep -- samples -o output/sweep/a.tsv --edit insert1
 //!     # 두 스윕 대조 → 공통/해소/신규 분류 md 리포트
-//!     cargo run --release --example edit_sweep -- --compare out/sweep/devel.tsv out/sweep/branch.tsv -o out/sweep/report.md
+//!     cargo run --release --example edit_sweep -- --compare output/sweep/devel.tsv output/sweep/branch.tsv -o output/sweep/report.md
 //!
 //! 대상: 지정 디렉터리 재귀의 .hwp/.hwpx/.hml, 기본 <2MB 캡(--max-kb, 0=무제한).
 //! 파일 단위 panic 은 catch_unwind 로 격리해 스윕 전체를 죽이지 않고 status 에 기록한다.

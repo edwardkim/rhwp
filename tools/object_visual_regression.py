@@ -10,15 +10,15 @@ fitz 로 페이지 래스터 + 이미지 bbox 를 얻어, 개체를 읽기순으
 
 좌표계: render-tree bbox 는 96 DPI px. 한글 PDF 는 pt(72 DPI) → 96 DPI 로 래스터하여 정합.
 
-사용:
+사용 (-o 생략 시 기본 산출물 경로는 output/ovr — 루트 .gitignore 의 /output/ 아래):
     # 한글 대조 + 시각 갤러리 + baseline 저장
-    python tools/object_visual_regression.py <file.hwp> -o out/ovr --save-baseline
+    python tools/object_visual_regression.py <file.hwp> -o output/ovr --save-baseline
     # rhwp 버전 간 회귀 비교 (한글 불필요, 빠름)
-    python tools/object_visual_regression.py <file.hwp> -o out/ovr --baseline out/ovr/baseline.json --no-hwp
+    python tools/object_visual_regression.py <file.hwp> -o output/ovr --baseline output/ovr/baseline.json --no-hwp
     # rhwp 래스터 크롭까지 (native-skia 빌드 필요)
-    python tools/object_visual_regression.py <file.hwp> -o out/ovr --rhwp-png
+    python tools/object_visual_regression.py <file.hwp> -o output/ovr --rhwp-png
     # 원커맨드 before/after: 지정 ref 를 worktree 빌드해 baseline 자동 생성 → 현 트리와 대조
-    python tools/object_visual_regression.py --preset ovr5 -o out/ovr --diff-against devel
+    python tools/object_visual_regression.py --preset ovr5 -o output/ovr --diff-against devel
 
 요구: rhwp release 바이너리(+ --rhwp-png 시 native-skia). --no-hwp 아니면 Windows+한컴+pyhwpx+PyMuPDF.
 --diff-against 는 cargo 빌드 2회(기준 ref + 현 트리)를 자동 수행 — 한컴 불필요, geometry 무회귀 전용.
@@ -522,7 +522,8 @@ def run_one(f: Path, outdir: Path, args, head) -> int:
 def main() -> int:
     ap = argparse.ArgumentParser(description="개체 단위 시각/geometry 회귀 (rhwp vs 한글)")
     ap.add_argument("files", type=Path, nargs="*", help="대상 HWP (여러 개 가능, --preset 과 병용 가능)")
-    ap.add_argument("-o", "--out", type=Path, required=True)
+    ap.add_argument("-o", "--out", type=Path, default=ROOT / "output" / "ovr",
+                    help="산출물 디렉터리 (기본: <repo>/output/ovr — .gitignore 의 /output/ 아래)")
     ap.add_argument("--preset", choices=sorted(PRESETS),
                     help="관례 샘플 세트 추가 — ovr5: KTX/exam_math/21_언어/aift/biz_plan")
     ap.add_argument("--diff-against", metavar="REF",

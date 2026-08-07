@@ -1,0 +1,19 @@
+{
+  "id": "field-put-save",
+  "title": "기안문 핵심 패턴 — Open → PutFieldText → SaveAs",
+  "ledger": [
+    "HwpCtrl.method.PutFieldText",
+    "HwpCtrl.method.GetFieldText",
+    "HwpCtrl.method.SaveAs",
+    "HwpCtrl.property.IsModified"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["PutFieldText", ["pt_nm", "홍길동"]],
+    ["PutFieldText", ["med_str_dt", "2026-08-07"]],
+    ["GetFieldText", ["pt_nm"]],
+    ["GetFieldText", ["med_str_dt"]],
+    ["IsModified", []]
+  ],
+  "saveAs": "field-put-save.hwp"
+}

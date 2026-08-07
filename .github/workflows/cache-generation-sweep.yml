@@ -11,12 +11,28 @@ name: Cache Generation Sweep
 # 후행 해시를 뗀 것이다(예: `v0-rust-lint-Linux-x64-6f43fa4a-<lock>` →
 # `v0-rust-lint-Linux-x64-6f43fa4a`).
 #
+# [#4080] 세대 상한만으로는 총량이 고정되지 않는다.
+#
+# 세대 상한은 (ref, 그룹) 쌍마다 적용되므로 총량 하한이 쌍 수에 비례한다. 실측
+# (2026-08-05)에서 스윕 직후 총량이 기준선 4.73GB 에서 8.84GB 로 올랐는데, 2세대를
+# 초과한 쌍은 42개 중 3개뿐이었다. 즉 세대 상한은 지켜졌고 쌍 수가 늘었다.
+#
+# 또한 브랜치가 삭제되거나 PR 이 닫혀도 그 ref 의 캐시 최신 N개는 영구히 정리
+# 대상이 아니었다. GitHub 의 7일 미사용 만료까지 자리를 차지한다.
+#
+# 이 워크플로는 이제 두 가지를 한다.
+# 1. **고아 ref 정리** — 실재하지 않는 branch/tag, 열려 있지 않은 PR 의 캐시는
+#    세대와 무관하게 전량 삭제한다.
+# 2. **세대 상한** — 살아 있는 ref 의 (ref, 그룹) 쌍마다 최신 N세대만 남긴다.
+#
 # 안전 경계:
 # - checkout 하지 않고 PR 코드를 실행하지 않는다.
-# - 권한은 `actions: write` 하나뿐이다.
+# - 권한은 `actions: write` 와 ref 목록 조회용 `contents: read` 뿐이다.
 # - 열린 PR 의 ref 캐시는 건드리지 않는다(머지 전 재사용 대상).
 # - 그룹별로 최신 KEEP_GENERATIONS 개를 남긴다 — 진행 중 job 이 방금 만든 캐시를
 #   지우지 않기 위한 여유다.
+# - 살아 있는 ref 목록 수집이 비거나 실패하면 고아 정리를 통째로 건너뛴다. 목록을
+#   못 믿는 상태에서 삭제하면 전량 삭제가 되기 때문이다(fail-closed).
 
 on:
   schedule:
@@ -34,9 +50,15 @@ on:
         required: false
         default: "2"
         type: string
+      sweep_orphan_refs:
+        description: 실재하지 않는 ref 의 캐시를 세대와 무관하게 삭제한다
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   actions: write
+  contents: read
 
 concurrency:
   group: cache-generation-sweep
@@ -49,34 +71,114 @@ jobs:
       - name: Sweep stale cache generations
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+          # [#4080] boolean 입력에 `A && inputs.x || <기본>` 관용구를 쓰지 않는다.
+          # 기본이 true 인 입력에 false 를 넣으면 `true && false` → falsy → `|| 'true'` 로
+          # 되살아나 **끄려던 값이 켠 값이 된다**. `dry_run` 이 멀쩡했던 건 fallback 이
+          # 마침 'false' 라 우연히 일치해서일 뿐이다.
+          #
+          # boolean 입력은 fallback 없이 쓴다. 표현식의 falsy 결과가 그대로 'false' 로
+          # 렌더되므로 기본값이 저절로 맞는다.
+          #   cron 기본 false → `event == 'workflow_dispatch' && inputs.x`
+          #   cron 기본 true  → `event != 'workflow_dispatch' || inputs.x`
+          # 후자의 선례는 npm-publish.yml 의 `publish_extensions` 다.
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          SWEEP_ORPHAN_REFS: ${{ github.event_name != 'workflow_dispatch' || inputs.sweep_orphan_refs }}
+          # string 입력은 빈 값이 falsy 라 fallback 관용구가 유효하다.
           KEEP_GENERATIONS: ${{ github.event_name == 'workflow_dispatch' && inputs.keep_generations || '2' }}
+          # [#4080] 무료 한도를 **바이트로 명시**한다. GitHub 문서는 "10 GB" 라고만 쓰고
+          # 십진(10^9)인지 이진(2^30)인지 밝히지 않는다. 둘의 차이가 7.4% 라 임계 발화
+          # 시점이 달라지므로, 쿼터 가드에서 안전한 쪽인 **십진 10^10 바이트**를 쓴다.
+          # 실제 한도가 이진으로 확인되면 그때 완화한다.
+          #
+          # 표시는 GiB 로 유지한다 — #3684 이후의 기준선 시계열(4.73, 8.84 …)이 전부
+          # GiB 이라 단위를 바꾸면 대조가 끊긴다. 한도도 같은 단위로 환산해 함께 적어
+          # 백분율 산술이 눈으로 맞도록 한다.
+          LIMIT_BYTES: "10000000000"
+          WARN_PERCENT: "80"
+          FAIL_PERCENT: "95"
         with:
           script: |
             const dryRun = process.env.DRY_RUN === 'true';
             const keep = Math.max(1, Number(process.env.KEEP_GENERATIONS) || 2);
+            const sweepOrphans = process.env.SWEEP_ORPHAN_REFS !== 'false';
+            const limitBytes = Number(process.env.LIMIT_BYTES) || 10_000_000_000;
+            const warnPercent = Number(process.env.WARN_PERCENT) || 80;
+            const failPercent = Number(process.env.FAIL_PERCENT) || 95;
 
-            // 열린 PR 의 ref 는 보호한다 — 머지 전에 재사용된다.
-            const openPrs = await github.paginate(
-              github.rest.pulls.list, { ...context.repo, state: 'open', per_page: 100 },
-            );
-            const openPrRefs = new Set(openPrs.map((pr) => `refs/pull/${pr.number}/merge`));
+            const gb = (b) => (b / 1024 ** 3).toFixed(2);  // GiB 표기
 
+            // [#4080] 조회 순서가 안전 계약이다. **캐시를 먼저 읽고 ref 를 나중에 읽는다.**
+            // 캐시는 자기 ref 보다 먼저 생길 수 없으므로, 캐시 스냅샷 이후에 만들어진
+            // branch/PR 은 이 스냅샷에 캐시가 없다. 반대 순서로 읽으면 조회 사이에 열린
+            // PR 의 캐시를 고아로 오인해 지울 수 있다.
+            //
             // paginate 는 이 엔드포인트의 `actions_caches` 를 평탄화해 배열로 준다
             // (`res.data.actions_caches` 로 접근하면 undefined — 2026-08-02 실측).
             const caches = await github.paginate(
               github.rest.actions.getActionsCacheList, { ...context.repo, per_page: 100 },
             );
 
+            // 열린 PR 의 ref 는 보호한다 — 머지 전에 재사용된다.
+            //
+            // 판정 기준은 **지금 열려 있는가**이지 merge 되었는가가 아니다. merge 된 PR,
+            // 그냥 닫은 PR, 체리픽·통합 PR 로 내용만 반영하고 닫은 PR 은 전부 같다 —
+            // `refs/pull/<n>/merge` 로는 더 이상 CI 가 돌지 않고, 그 캐시는 다른 ref 가
+            // 읽지도 못한다(캐시 scope 는 생성 ref 와 base 로 제한된다). 전부 고아다.
+            // 닫힌 PR 이 다시 열리면 캐시는 cold 로 시작한다 — 받아들이는 비용이다.
+            const openPrs = await github.paginate(
+              github.rest.pulls.list, { ...context.repo, state: 'open', per_page: 100 },
+            );
+            // `/merge` 와 `/head` 를 함께 보호한다. 2026-08-06 실측 스냅샷의 캐시 ref 는
+            // `refs/heads/*` 34건과 `refs/pull/<n>/merge` 19건뿐이라 `/head` 는 지금
+            // 존재하지 않지만, 세대 상한만 받던 이전과 달리 이제는 열린 PR 것이어도
+            // 고아로 전량 삭제되므로 가정을 코드로 고정한다.
+            const openPrRefs = new Set(openPrs.flatMap((pr) => [
+              `refs/pull/${pr.number}/merge`,
+              `refs/pull/${pr.number}/head`,
+            ]));
+
+            // 실재하는 branch·tag 를 모아 살아 있는 ref 집합을 만든다. 여기 없는 ref 의
+            // 캐시는 브랜치 삭제·PR close 로 남은 고아다.
+            // 수집이 실패하거나 branch 가 0건이면 고아 정리를 건너뛴다 — 목록을 못 믿는
+            // 상태에서 삭제하면 전량 삭제가 된다.
+            const liveRefs = new Set(openPrRefs);
+            let liveRefsUsable = sweepOrphans;
+            if (sweepOrphans) {
+              try {
+                const branches = await github.paginate(
+                  github.rest.repos.listBranches, { ...context.repo, per_page: 100 },
+                );
+                const tags = await github.paginate(
+                  github.rest.repos.listTags, { ...context.repo, per_page: 100 },
+                );
+                if (branches.length === 0) {
+                  liveRefsUsable = false;
+                  core.warning('branch 목록이 비어 고아 ref 정리를 건너뛴다');
+                } else {
+                  for (const b of branches) liveRefs.add(`refs/heads/${b.name}`);
+                  for (const t of tags) liveRefs.add(`refs/tags/${t.name}`);
+                  core.info(`살아 있는 ref ${liveRefs.size}건 (branch ${branches.length}, tag ${tags.length}, 열린 PR ${openPrs.length})`);
+                }
+              } catch (error) {
+                liveRefsUsable = false;
+                core.warning(`ref 목록 조회 실패로 고아 정리를 건너뛴다: ${error.message}`);
+              }
+            }
+
             const before = caches.reduce((n, c) => n + c.size_in_bytes, 0);
-            const gb = (b) => (b / 1024 ** 3).toFixed(2);
-            core.info(`현재 캐시 ${caches.length}개 / ${gb(before)}GB (열린 PR ${openPrRefs.size}건 보호)`);
+            core.info(`현재 캐시 ${caches.length}개 / ${gb(before)}GiB (열린 PR ${openPrs.length}건 보호)`);
 
             // 키에서 후행 해시를 떼어 논리 그룹으로 묶는다.
             const groupOf = (key) => key.replace(/[-_][0-9a-f]{8,}$/, '');
+
+            const orphans = [];
             const groups = new Map();
             for (const c of caches) {
               if (openPrRefs.has(c.ref)) continue;
+              if (liveRefsUsable && !liveRefs.has(c.ref)) {
+                orphans.push(c);
+                continue;
+              }
               const g = `${c.ref}::${groupOf(c.key)}`;
               if (!groups.has(g)) groups.set(g, []);
               groups.get(g).push(c);
@@ -88,33 +190,65 @@ jobs:
               stale.push(...items.slice(keep));
             }
 
-            if (stale.length === 0) {
-              core.info(`정리 대상 없음 (그룹별 최신 ${keep}세대 유지)`);
-              return;
+            const orphanBytes = orphans.reduce((n, c) => n + c.size_in_bytes, 0);
+            const staleBytes = stale.reduce((n, c) => n + c.size_in_bytes, 0);
+            if (orphans.length > 0) {
+              core.info(`고아 ref 캐시 ${orphans.length}개 / ${gb(orphanBytes)}GiB${dryRun ? ' [dry-run]' : ''}`);
+            }
+            if (stale.length > 0) {
+              core.info(`구 세대 ${stale.length}개 / ${gb(staleBytes)}GiB${dryRun ? ' [dry-run]' : ''}`);
             }
 
-            const staleBytes = stale.reduce((n, c) => n + c.size_in_bytes, 0);
-            core.info(`정리 대상 ${stale.length}개 / ${gb(staleBytes)}GB${dryRun ? ' [dry-run]' : ''}`);
-            for (const c of stale) {
-              core.info(`  ${dryRun ? '(예정)' : '삭제'} ${c.key} (${(c.size_in_bytes / 1024 ** 2).toFixed(0)}MB, ${c.created_at.slice(0, 10)}, ${c.ref})`);
+            const targets = [...orphans, ...stale];
+            const orphanIds = new Set(orphans.map((c) => c.id));
+            let deleted = 0;
+            let deletedBytes = 0;
+            for (const c of targets) {
+              const kind = orphanIds.has(c.id) ? '고아' : '구세대';
+              core.info(`  ${dryRun ? '(예정)' : '삭제'} [${kind}] ${c.key} (${(c.size_in_bytes / 1024 ** 2).toFixed(0)}MB, ${c.created_at.slice(0, 10)}, ${c.ref})`);
               if (dryRun) continue;
               try {
                 await github.rest.actions.deleteActionsCacheById({ ...context.repo, cache_id: c.id });
+                deleted += 1;
+                deletedBytes += c.size_in_bytes;
               } catch (error) {
                 // 다른 run 이 이미 지웠거나 만료됐을 수 있다 — 치명적이지 않다.
                 core.warning(`삭제 실패 ${c.key}: ${error.message}`);
               }
             }
 
-            const after = before - (dryRun ? 0 : staleBytes);
+            if (targets.length === 0) {
+              core.info(`정리 대상 없음 (그룹별 최신 ${keep}세대 유지, 고아 ref 없음)`);
+            }
+
+            // dry-run 은 삭제하지 않으므로 대상 전량이 지워졌을 때를 예상치로 쓴다.
+            const removedBytes = dryRun ? orphanBytes + staleBytes : deletedBytes;
+            const removedCount = dryRun ? targets.length : deleted;
+            const after = before - removedBytes;
+            const afterPercent = (after / limitBytes) * 100;
+
             core.summary
               .addHeading('Cache generation sweep', 3)
               .addTable([
                 [{ data: '항목', header: true }, { data: '값', header: true }],
-                ['정리 전', `${caches.length}개 / ${gb(before)}GB`],
-                [dryRun ? '정리 예정' : '정리함', `${stale.length}개 / ${gb(staleBytes)}GB`],
-                ['정리 후(추정)', `${caches.length - (dryRun ? 0 : stale.length)}개 / ${gb(after)}GB`],
+                ['정리 전', `${caches.length}개 / ${gb(before)}GiB`],
+                ['고아 ref', `${orphans.length}개 / ${gb(orphanBytes)}GiB`],
+                ['구 세대', `${stale.length}개 / ${gb(staleBytes)}GiB`],
+                [dryRun ? '정리 예정' : '정리함', `${removedCount}개 / ${gb(removedBytes)}GiB`],
+                [dryRun ? '정리 후(추정)' : '정리 후', `${caches.length - removedCount}개 / ${gb(after)}GiB`],
+                ['한도 대비', `${afterPercent.toFixed(1)}% (한도 ${gb(limitBytes)}GiB = ${limitBytes} B)`],
                 ['그룹별 유지 세대', String(keep)],
-                ['보호한 열린 PR', String(openPrRefs.size)],
+                ['보호한 열린 PR', String(openPrs.length)],
+                ['고아 ref 정리', liveRefsUsable ? '적용' : '건너뜀'],
               ])
               .write();
+
+            // #4080: 총량이 조용히 한도에 붙는 상황을 드러낸다.
+            const usage = `정리 후 총량 ${gb(after)}GiB — 한도 ${gb(limitBytes)}GiB (${limitBytes} B) 의 ${afterPercent.toFixed(1)}%`;
+            if (afterPercent >= failPercent) {
+              core.setFailed(`${usage} (실패 임계 ${failPercent}% 초과)`);
+            } else if (afterPercent >= warnPercent) {
+              core.warning(`${usage} (경고 임계 ${warnPercent}% 초과)`);
+            } else {
+              core.info(usage);
+            }

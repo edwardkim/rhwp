@@ -198,6 +198,9 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("frontend_mode == 'none'", native)
         self.assertIn("frontend_mode == 'unit'", native)
         self.assertIn("frontend_mode == 'package'", native)
+        self.assertNotIn("build-test-archive-", native)
+        self.assertNotIn("test-regular-shard", native)
+        self.assertNotIn("test-slow-shard", native)
 
     def test_aggregate_harness_stops_at_the_next_job_boundary(self) -> None:
         step = self._step("Check Build & Test worker results")
@@ -214,25 +217,27 @@ class CiImpactWorkflowTests(unittest.TestCase):
             with self.subTest(target=target):
                 self.assertIn(f"'tests/{target}.rs'", classifier)
 
-    def test_rust_workers_require_expected_native_skia_state(self) -> None:
-        for job_name in (
-            "test-slow-shard",
-            "test-regular-shard-1",
-            "test-regular-shard-2",
-            "test-regular-shard-3",
-        ):
+    def test_rust_workers_wait_only_for_their_test_archive(self) -> None:
+        expected_archives = {
+            "test-slow-shard": "build-test-archive-slow",
+            "test-regular-shard-1": "build-test-archive-a",
+            "test-regular-shard-2": "build-test-archive-slow",
+            "test-regular-shard-3": "build-test-archive-b",
+        }
+        for job_name, archive in expected_archives.items():
             with self.subTest(job=job_name):
                 job = self._job(job_name)
                 self.assertIn("needs.preflight.outputs.rust_required == 'true'", job)
-                self.assertIn("native_skia_required == 'true'", job)
-                self.assertIn("needs['native-skia-tests'].result == 'success'", job)
-                self.assertIn("native_skia_required == 'false'", job)
-                self.assertIn("needs['native-skia-tests'].result == 'skipped'", job)
+                self.assertIn(f"needs: [preflight, {archive}]", job)
+                self.assertIn(f"needs['{archive}'].result == 'success'", job)
+                self.assertNotIn("native-skia-tests", job)
+                self.assertNotIn("native_skia_required", job)
 
     def test_aggregate_validates_expected_success_and_skipped_states(self) -> None:
         aggregate = self._job("build-and-test")
         self.assertIn("- frontend-unit-gates", aggregate)
         self.assertIn("- frontend-package-gates", aggregate)
+        self.assertIn("- native-skia-tests", aggregate)
         self.assertIn("RUST_REQUIRED:", aggregate)
         self.assertIn("NATIVE_SKIA_REQUIRED:", aggregate)
         self.assertIn("Rust lane expected success", aggregate)

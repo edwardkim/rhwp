@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/README.md
-last_verified: 2026-07-25
+last_verified: 2026-08-07
 ---
 
 # manual 문서 지도
@@ -15,7 +15,7 @@ last_verified: 2026-07-25
 | 상황 | 권위 문서 | 보조 문서 |
 | --- | --- | --- |
 | 이슈 작업의 문서·브랜치·커밋 흐름 | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) | [하이퍼 워터폴 문서 가이드](hyper_waterfall_docs_guide.md) |
-| Codex 저장소 부트스트랩 | [Codex 문서 지도](codex/README.md) | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) |
+| Codex 저장소 부트스트랩 | [Codex 문서 지도](codex/README.md) | [프로젝트 메모리 덤프](codex/MEMORY.md), [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) |
 | Claude·Codex 재사용 capability 등록·중복 판단 | [에이전트 capability 카탈로그](agent_capability_registry.md) | 각 capability의 권위 playbook |
 | 외부 PR 검토, collaborator 처리, merge 후속 | [PR 리뷰·통합 워크플로우](pr_review_workflow.md) | [조건별 PR review 가이드](pr_review/README.md), [개발 환경 가이드](dev_environment_guide.md) |
 | 로컬 빌드, 테스트, WASM 검증 | [개발 환경 가이드](dev_environment_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md) |
@@ -43,8 +43,8 @@ last_verified: 2026-07-25
 ## 문서 경계
 
 - `manual/`: 사람이 반복 수행하는 절차, 명령, 검증, 배포, 운영 규칙
-- `manual/codex/`: Codex 부트스트랩과 현행 문서·Git 절차. 종료 세션과 task memory는 `archive/`의
-  historical snapshot이며 현재 절차의 근거로 사용하지 않는다.
+- `manual/codex/`: Codex 부트스트랩, 활성 프로젝트 메모리, 현행 문서·Git 절차. 종료 세션과 task
+  memory는 `archive/`의 historical snapshot이며 현재 절차의 근거로 사용하지 않는다.
 - `manual/pr_review/`: `pr_review_workflow.md`가 역할과 변경 조건에 따라 선택하도록 지정하는
   PR review 자식 가이드다. 모 문서와 선택표를 먼저 읽고 해당 가이드만 적용한다.
 - `manual/memory/`: 과거 사용자 피드백과 프로젝트 memory의 출처를 보존하는 historical 색인이다.

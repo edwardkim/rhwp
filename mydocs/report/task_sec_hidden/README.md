@@ -67,8 +67,17 @@ HWP 스펙상 실효 크기는 `base_size × relative_sizes[언어] / 100` 이�
 은닉 판정의 기준은 "이 도구가 그려 내는 결과"여야 하므로 **`base_size` 만** 쓴다.
 
 현실 문서에서 차이는 없다 — HWPX 60개 문서 4,298개 `charPr` 실측에서 `relSz != 100` 은 0건.
-덤으로 `CharShape::default()` 의 `relative_sizes = [0; 7]`(HWP3 변환 경로가 채우지 않는다)을
-0% 로 곱해 **모든 글자를 0pt 로 보고**하는 사고가 구조적으로 불가능해진다.
+덤으로 `relative_sizes = 0` 인 파일을 0% 로 곱해 **모든 글자를 0pt 로 보고**하는 사고가
+구조적으로 불가능해진다.
+
+> **갱신 (#4141, 2026-08-07).** 위 "덤" 문장은 원래 `CharShape::default()` 가 `[0; 7]` 이고
+> HWP3 변환 경로가 그 배열을 채우지 않는다는 사실을 근거로 들었다. 그 기본값은
+> [#4141](https://github.com/edwardkim/rhwp/issues/4141) 에서 OWPML 기본값 `[100; 7]` 로
+> 바뀌었다(0 은 `relSz` 유효범위 10~250 밖이라 한컴이 본문 전체를 0.1pt 로 그렸다).
+> **판정 규칙은 그대로다** — 0 은 여전히 외부 파일로 들어올 수 있고(수정 이전 rhwp 가 만든
+> HWP3 변환본이 전부 그렇다), 곱하지 않으므로 안전하다. 회귀 고정:
+> `src/document_core/queries/hidden_text.rs` 의
+> `default_relative_sizes_can_never_cause_a_zero_size_misjudgment`.
 
 ### 배경을 어떻게 정하는가 — 안쪽부터
 

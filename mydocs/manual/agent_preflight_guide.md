@@ -95,9 +95,33 @@ py tools/agent_preflight.py --scope src/main.rs --scope tests/my_contract.rs
 선검사는 파일을 10개씩 나눠 `rustfmt`를 직접 부르고, rustfmt 자체가 실패하면
 그것을 **통과가 아니라 검사 불능**으로 보고한다.
 
+## 큐 규율 검사 — 유일한 네트워크 검사, 경고 전용
+
+병렬 세션 규약([parallel_session_protocol.md](../tech/autonomous_maintenance/parallel_session_protocol.md)
+§8-6, 확정 이슈 #3914 수용 기준 2)의 구현. `gh` 가 있고 인증돼 있으면 자동으로 돌고,
+없으면 **조용히 건너뛴다** — 네트워크 실패로 선검사 전체가 빨개지면 곧 우회당하고,
+그러면 로컬 검사까지 함께 꺼지기 때문이다. `--no-network` 로 명시적으로 끌 수 있다.
+
+세 가지를 본다. 전부 **경고 전용**이다 — 종료 코드에 영향이 없다.
+
+| 검사 | 신호 | 왜 경고인가 |
+|---|---|---|
+| 잔량 | 열린 PR > 10건 | 캡은 "10건 내외"지 하드 리밋이 아니다 |
+| 동일 이슈 중복 | 같은 이슈를 **대상으로 선언**한(제목 `#N`·본문 `closes/refs #N` 행) 열린 PR 2건 이상 | 중복 여부 판정은 사람 몫(protocol §6) |
+| 미할당 착수 | 브랜치 이름이 `task/<n>-`·`wip/fix-<n>-` 인데 이슈 #n 에 assignee 도 착수 코멘트도 없음 | 선점하고 계속하면 된다 |
+
+본문 전체의 `#N` 을 긁지 않는 이유: 조망 이슈(#3907 등) 참조가 어디에나 있어
+헛울린다. 선언된 대상만 세면 오탐이 거의 없다 — 실사고 두 건(#3902/#3903,
+#3897/#3904)은 둘 다 이 신호로 잡혔을 것이다.
+
+착수 코멘트도 단어 `착수`의 포함 여부로 판정하지 않는다. 첫 줄이
+`착수합니다 — <범위>` 형식일 때만 잠금으로 인정한다. 회고·인용·`아직 착수하지
+않음`이 새 세션을 잘못 통과시키지 않도록 하는 경계다.
+
 ## 관련 문서
 
 - [에이전트 표면 플레이북](agent_surface_playbook.md) — 표면 사용법
 - [에이전트 실패 사전](agent_troubleshooting_guide.md) — 실패 진단
 - [경량 에이전트 내성](../tech/weak_agent_proofing.md) — 가드의 설계 근거
 - [로컬 검증 게이트](pr_review/local_validation.md) — 변경 범위별 필수 검증
+- [병렬 세션 규약](../tech/autonomous_maintenance/parallel_session_protocol.md) — 큐 규율 검사의 설계 원천

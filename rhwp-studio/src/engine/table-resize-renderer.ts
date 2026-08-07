@@ -1,5 +1,6 @@
 import { VirtualScroll } from '@/view/virtual-scroll';
 import type { CellBbox } from '@/core/types';
+import { mergeBorderCoords } from './table-border-lines';
 
 /** 경계선 종류 */
 export type BorderEdgeType = 'row' | 'col';
@@ -35,9 +36,22 @@ export class TableResizeRenderer {
     }
   }
 
-  /** 셀 bbox 배열에서 행/열 경계선 좌표를 계산한다 (페이지 좌표 기준) */
-  computeBorderLines(bboxes: CellBbox[]): { rowLines: RowLine[]; colLines: ColLine[] } {
-    if (bboxes.length === 0) return { rowLines: [], colLines: [] };
+  /**
+   * 셀 bbox 배열에서 행/열 경계선 좌표를 계산한다 (페이지 좌표 기준).
+   *
+   * rowIndexByY/colIndexByX 는 병합 **전** 반올림 좌표에서 대표 괘선 인덱스를 찾는 맵이다.
+   * 셀 좌표로 인덱스를 되찾는 쪽(hitTestBorder)은 반드시 이 맵을 써야 한다 — 괘선 목록의
+   * 대표 좌표만으로 맵을 다시 만들면, 병합돼 사라진 좌표를 가진 셀의 경계를 못 찾는다.
+   */
+  computeBorderLines(bboxes: CellBbox[]): {
+    rowLines: RowLine[];
+    colLines: ColLine[];
+    rowIndexByY: Map<number, number>;
+    colIndexByX: Map<number, number>;
+  } {
+    if (bboxes.length === 0) {
+      return { rowLines: [], colLines: [], rowIndexByY: new Map(), colIndexByX: new Map() };
+    }
 
     // 표 전체 범위
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
@@ -48,12 +62,6 @@ export class TableResizeRenderer {
       maxY = Math.max(maxY, b.y + b.h);
     }
 
-    // 행 경계선 (수평): 셀 상단/하단 y 좌표 수집
-    const rowYSet = new Map<number, number>(); // y(rounded) → index
-    // 열 경계선 (수직): 셀 좌측/우측 x 좌표 수집
-    const colXSet = new Map<number, number>(); // x(rounded) → index
-
-    // 표 상단/하단, 좌측/우측 추가
     const ry = (v: number) => Math.round(v * 10) / 10; // 소수점 1자리 반올림
 
     // 모든 셀의 상/하단, 좌/우측 좌표 수집
@@ -66,19 +74,24 @@ export class TableResizeRenderer {
       colXs.add(ry(b.x + b.w));
     }
 
-    // 정렬하여 인덱스 부여
-    const sortedRowYs = [...rowYs].sort((a, b) => a - b);
-    const sortedColXs = [...colXs].sort((a, b) => a - b);
+    // 반올림 경계에 걸쳐 갈라진 같은 경계를 하나로 묶는다.
+    const rows = mergeBorderCoords(rowYs);
+    const cols = mergeBorderCoords(colXs);
 
-    const rowLines: RowLine[] = sortedRowYs.map((y, i) => ({
+    const rowLines: RowLine[] = rows.positions.map((y, i) => ({
       y, xStart: minX, xEnd: maxX, index: i,
     }));
 
-    const colLines: ColLine[] = sortedColXs.map((x, i) => ({
+    const colLines: ColLine[] = cols.positions.map((x, i) => ({
       x, yStart: minY, yEnd: maxY, index: i,
     }));
 
-    return { rowLines, colLines };
+    return {
+      rowLines,
+      colLines,
+      rowIndexByY: rows.indexByCoord,
+      colIndexByX: cols.indexByCoord,
+    };
   }
 
   /** 마우스 좌표가 경계선 위인지 판별한다 (페이지 좌표 기준) */
@@ -89,11 +102,11 @@ export class TableResizeRenderer {
   ): BorderEdge | null {
     if (bboxes.length === 0) return null;
 
-    const { rowLines, colLines } = this.computeBorderLines(bboxes);
+    // 인덱스 맵은 반드시 computeBorderLines 가 준 것을 쓴다. 괘선 목록의 대표 좌표로
+    // 다시 만들면 병합돼 사라진 좌표를 가진 셀의 경계가 잡히지 않는다.
+    const { rowIndexByY, colIndexByX } = this.computeBorderLines(bboxes);
     const pageIndex = bboxes[0].pageIndex;
     const rounded = (v: number) => Math.round(v * 10) / 10;
-    const rowIndexByY = new Map(rowLines.map(line => [rounded(line.y), line.index]));
-    const colIndexByX = new Map(colLines.map(line => [rounded(line.x), line.index]));
 
     const candidates: Array<{ edge: BorderEdge; distance: number; priority: number }> = [];
 

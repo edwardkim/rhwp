@@ -4,7 +4,8 @@
 //! 정적 출력(인쇄, PDF 변환 등)에 적합하다.
 
 use super::composer::{
-    decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text, CharOverlapInfo,
+    char_overlap_size_ratio, decode_pua_overlap_number, expand_pua_render_text,
+    pua_to_display_text, CharOverlapInfo,
 };
 use super::form_caption::display_form_caption;
 pub(crate) use super::image_resolver::{
@@ -1989,17 +1990,8 @@ impl SvgRenderer {
         let is_circle = overlap.border_type == 1 || overlap.border_type == 2;
         let is_rect = overlap.border_type == 3 || overlap.border_type == 4;
 
-        // inner_char_size 해석:
-        //   > 0 → percent ratio (HWPX 양수 case 보존: 50 = 0.5)
-        //   < 0 → 10% step 축소 (한컴 정합: charSz=-3 → 1.0 + (-3)×0.10 = 0.70, 13pt→9.1pt)
-        //   == 0 → 기본 100%
-        let size_ratio = if overlap.inner_char_size > 0 {
-            overlap.inner_char_size as f64 / 100.0
-        } else if overlap.inner_char_size < 0 {
-            1.0 + overlap.inner_char_size as f64 * 0.10
-        } else {
-            1.0
-        };
+        // charSz 는 "테두리 내부" 글자 비율이므로 테두리를 안 그리면 적용하지 않는다 (#4085).
+        let size_ratio = char_overlap_size_ratio(overlap.border_type, overlap.inner_char_size);
         let inner_font_size = font_size * size_ratio;
 
         // 한컴은 동그라미 테두리도 글자색과 동일 색상으로 그림 (raw PDF 0 0 1 RG/rg).
@@ -2138,14 +2130,9 @@ impl SvgRenderer {
         let is_circle = effective_border == 1 || effective_border == 2;
         let is_rect = effective_border == 3 || effective_border == 4;
 
-        // inner_char_size 해석 (draw_char_overlap와 동일 — 음수=10% step 축소)
-        let size_ratio = if overlap.inner_char_size > 0 {
-            overlap.inner_char_size as f64 / 100.0
-        } else if overlap.inner_char_size < 0 {
-            1.0 + overlap.inner_char_size as f64 * 0.10
-        } else {
-            1.0
-        };
+        // draw_char_overlap와 동일 규칙. 여기서는 effective_border 가 0이 아니므로
+        // (border_type=0 → 원형 승격) 축소 게이트에 걸리지 않는다 (#4085).
+        let size_ratio = char_overlap_size_ratio(effective_border, overlap.inner_char_size);
         let inner_font_size = font_size * size_ratio;
 
         let glyph_color = color_to_svg(style.color);

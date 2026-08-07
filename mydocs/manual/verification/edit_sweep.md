@@ -25,13 +25,13 @@ PR #2314 검증에서 일회성 하네스로 수행해 "devel 변동 70건 → P
 
 ```bash
 # devel 에서 baseline 스윕
-git switch devel && cargo run --release --example edit_sweep -- samples -o out/sweep/devel.tsv
+git switch devel && cargo run --release --example edit_sweep -- samples -o output/sweep/devel.tsv
 
 # 작업 브랜치에서 스윕
-git switch <branch> && cargo run --release --example edit_sweep -- samples -o out/sweep/branch.tsv
+git switch <branch> && cargo run --release --example edit_sweep -- samples -o output/sweep/branch.tsv
 
 # 대조 → 공통/해소/신규 분류 리포트 (PR 본문 첨부용)
-cargo run --release --example edit_sweep -- --compare out/sweep/devel.tsv out/sweep/branch.tsv -o out/sweep/report.md
+cargo run --release --example edit_sweep -- --compare output/sweep/devel.tsv output/sweep/branch.tsv -o output/sweep/report.md
 ```
 
 실측: 581 샘플 전수 스윕 약 12초 (release, M-계열 macOS). 편집 종류는
@@ -45,7 +45,7 @@ cargo run --release --example edit_sweep -- --compare out/sweep/devel.tsv out/sw
   정당 성장 여부를 가려야 하며, 자동 게이트는 후보 검출까지만 담당한다.
 - 상태 전이(ok↔parse/edit/panic)는 커버리지 변화로 별도 분류 — 무변동
   위장을 막는다.
-- baseline TSV 는 커밋하지 않는다(출력은 `out/` 아래).
+- baseline TSV 는 커밋하지 않는다(출력은 `.gitignore`된 `output/` 아래).
 
 ## 한계
 

@@ -45,6 +45,11 @@ local CI 검증이 완료된 경우 review 문서와 오늘할일은 실행 결�
 않은 GitHub Actions·작업지시자 승인·merge만 미래 조건으로 남기며, 완료 검증을 "실행할 예정"으로
 표현하지 않는다.
 
+source branch의 오늘할일이 최신 `upstream/devel`보다 오래된 경우에는
+[최신 `devel` 오늘할일을 보존하는 trailing 기록](../pr_review_workflow.md#321-최신-devel-오늘할일을-보존하는-trailing-기록)을
+따른다. 최신 내용을 source에 복사하거나 `devel`을 병합하지 않고, merge tree에서 기존 기록과 새 기록이
+함께 보존되는지 검증한다.
+
 ## 9.3 PR head push
 
 contributor 원 commit을 rewrite하지 않는다. review 문서·오늘할일·보정 code는 별도 commit으로 나누고,

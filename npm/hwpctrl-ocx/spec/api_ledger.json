@@ -1,0 +1,7936 @@
+{
+  "schemaVersion": "1.0",
+  "target": "웹한글컨트롤 API v2.4 (WebHwpCtrl) 100% 호환",
+  "oracleVersion": "한글2022 (설치본 COM)",
+  "summary": {
+    "total": 484,
+    "done": 0,
+    "byStatus": {
+      "unimplemented": 480,
+      "implemented": 4
+    },
+    "byUnit": {
+      "property": {
+        "unimplemented": 30,
+        "implemented": 1
+      },
+      "method": {
+        "unimplemented": 85,
+        "implemented": 3
+      },
+      "event": {
+        "unimplemented": 3
+      },
+      "action": {
+        "unimplemented": 312
+      },
+      "parameterSet": {
+        "unimplemented": 50
+      }
+    }
+  },
+  "entries": [
+    {
+      "id": "Action.property.ActID",
+      "unit": "property",
+      "object": "Action",
+      "name": "ActID",
+      "arity": 0,
+      "section": "4.2.1",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.property.SetID",
+      "unit": "property",
+      "object": "Action",
+      "name": "SetID",
+      "arity": 0,
+      "section": "4.2.2",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.method.CreateSet",
+      "unit": "method",
+      "object": "Action",
+      "name": "CreateSet",
+      "arity": 0,
+      "section": "4.3.1",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.method.GetDefault",
+      "unit": "method",
+      "object": "Action",
+      "name": "GetDefault",
+      "arity": 1,
+      "section": "4.3.2",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.method.PopupDialog",
+      "unit": "method",
+      "object": "Action",
+      "name": "PopupDialog",
+      "arity": 3,
+      "section": "4.3.3",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.method.Execute",
+      "unit": "method",
+      "object": "Action",
+      "name": "Execute",
+      "arity": 3,
+      "section": "4.3.4",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.method.Run",
+      "unit": "method",
+      "object": "Action",
+      "name": "Run",
+      "arity": 2,
+      "section": "4.3.5",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "CtrlCode.property.CtrlCh",
+      "unit": "property",
+      "object": "CtrlCode",
+      "name": "CtrlCh",
+      "arity": 0,
+      "section": "5.2.1",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "CtrlCode.property.CtrlID",
+      "unit": "property",
+      "object": "CtrlCode",
+      "name": "CtrlID",
+      "arity": 0,
+      "section": "5.2.2",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "CtrlCode.property.Next",
+      "unit": "property",
+      "object": "CtrlCode",
+      "name": "Next",
+      "arity": 0,
+      "section": "5.2.3",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "CtrlCode.property.Prev",
+      "unit": "property",
+      "object": "CtrlCode",
+      "name": "Prev",
+      "arity": 0,
+      "section": "5.2.4",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "CtrlCode.property.Properties",
+      "unit": "property",
+      "object": "CtrlCode",
+      "name": "Properties",
+      "arity": 0,
+      "section": "5.2.5",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "CtrlCode.property.UserDesc",
+      "unit": "property",
+      "object": "CtrlCode",
+      "name": "UserDesc",
+      "arity": 0,
+      "section": "5.2.6",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "CtrlCode.method.GetAnchorPos",
+      "unit": "method",
+      "object": "CtrlCode",
+      "name": "GetAnchorPos",
+      "arity": 1,
+      "section": "5.3.1",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.property.Count",
+      "unit": "property",
+      "object": "ParameterSet",
+      "name": "Count",
+      "arity": 0,
+      "section": "6.2.1",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.property.IsSet",
+      "unit": "property",
+      "object": "ParameterSet",
+      "name": "IsSet",
+      "arity": 0,
+      "section": "6.2.2",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.property.SetID",
+      "unit": "property",
+      "object": "ParameterSet",
+      "name": "SetID",
+      "arity": 0,
+      "section": "6.2.3",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.method.Clone",
+      "unit": "method",
+      "object": "ParameterSet",
+      "name": "Clone",
+      "arity": 0,
+      "section": "6.3.1",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.method.CreateItemArray",
+      "unit": "method",
+      "object": "ParameterSet",
+      "name": "CreateItemArray",
+      "arity": 2,
+      "section": "6.3.2",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.method.CreateItemSet",
+      "unit": "method",
+      "object": "ParameterSet",
+      "name": "CreateItemSet",
+      "arity": 2,
+      "section": "6.3.3",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.method.GetInterSection",
+      "unit": "method",
+      "object": "ParameterSet",
+      "name": "GetInterSection",
+      "arity": 1,
+      "section": "6.3.4",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.method.IsEquivalent",
+      "unit": "method",
+      "object": "ParameterSet",
+      "name": "IsEquivalent",
+      "arity": 1,
+      "section": "6.3.5",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.method.Item",
+      "unit": "method",
+      "object": "ParameterSet",
+      "name": "Item",
+      "arity": 1,
+      "section": "6.3.6",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.method.ItemExist",
+      "unit": "method",
+      "object": "ParameterSet",
+      "name": "ItemExist",
+      "arity": 1,
+      "section": "6.3.7",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.method.Merge",
+      "unit": "method",
+      "object": "ParameterSet",
+      "name": "Merge",
+      "arity": 1,
+      "section": "6.3.8",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.method.RemoveAll",
+      "unit": "method",
+      "object": "ParameterSet",
+      "name": "RemoveAll",
+      "arity": 1,
+      "section": "6.3.9",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.method.RemoveItem",
+      "unit": "method",
+      "object": "ParameterSet",
+      "name": "RemoveItem",
+      "arity": 1,
+      "section": "6.3.10",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.method.SetItem",
+      "unit": "method",
+      "object": "ParameterSet",
+      "name": "SetItem",
+      "arity": 2,
+      "section": "6.3.11",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterArray.property.Count",
+      "unit": "property",
+      "object": "ParameterArray",
+      "name": "Count",
+      "arity": 0,
+      "section": "7.2.1",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterArray.property.IsSet",
+      "unit": "property",
+      "object": "ParameterArray",
+      "name": "IsSet",
+      "arity": 0,
+      "section": "7.2.2",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterArray.method.Clone",
+      "unit": "method",
+      "object": "ParameterArray",
+      "name": "Clone",
+      "arity": 0,
+      "section": "7.3.1",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterArray.method.Copy",
+      "unit": "method",
+      "object": "ParameterArray",
+      "name": "Copy",
+      "arity": 1,
+      "section": "7.3.2",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterArray.method.Item",
+      "unit": "method",
+      "object": "ParameterArray",
+      "name": "Item",
+      "arity": 1,
+      "section": "7.3.3",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterArray.method.SetItem",
+      "unit": "method",
+      "object": "ParameterArray",
+      "name": "SetItem",
+      "arity": 2,
+      "section": "7.3.4",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.CellShape",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "CellShape",
+      "arity": 0,
+      "section": "8.2.1",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.CharShape",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "CharShape",
+      "arity": 0,
+      "section": "8.2.2",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.CurFieldState",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "CurFieldState",
+      "arity": 0,
+      "section": "8.2.3",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.EditMode",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "EditMode",
+      "arity": 0,
+      "section": "8.2.4",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "doc-basic"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.property.EngineProperties",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "EngineProperties",
+      "arity": 0,
+      "section": "8.2.5",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.HeadCtrl",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "HeadCtrl",
+      "arity": 0,
+      "section": "8.2.6",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.IsEmpty",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "IsEmpty",
+      "arity": 0,
+      "section": "8.2.7",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "doc-basic"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.property.IsModified",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "IsModified",
+      "arity": 0,
+      "section": "8.2.8",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "doc-basic",
+          "field-put-save"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.property.LastCtrl",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "LastCtrl",
+      "arity": 0,
+      "section": "8.2.9",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.PageCount",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "PageCount",
+      "arity": 0,
+      "section": "8.2.10",
+      "status": "implemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "doc-basic"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.property.ParaShape",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "ParaShape",
+      "arity": 0,
+      "section": "8.2.11",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.ParentCtrl",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "ParentCtrl",
+      "arity": 0,
+      "section": "8.2.12",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.SelectionMode",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "SelectionMode",
+      "arity": 0,
+      "section": "8.2.13",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "doc-basic"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.property.Version",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "Version",
+      "arity": 0,
+      "section": "8.2.14",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "doc-basic"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.property.ViewProperties",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "ViewProperties",
+      "arity": 0,
+      "section": "8.2.15",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.ScrollPosInfo",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "ScrollPosInfo",
+      "arity": 0,
+      "section": "8.2.16",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.ReadOnlyMode",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "ReadOnlyMode",
+      "arity": 0,
+      "section": "8.2.17",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.property.CurSelectedCtrl",
+      "unit": "property",
+      "object": "HwpCtrl",
+      "name": "CurSelectedCtrl",
+      "arity": 0,
+      "section": "8.2.18",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.Clear",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "Clear",
+      "arity": 1,
+      "section": "8.3.1",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.CreateAction",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "CreateAction",
+      "arity": 1,
+      "section": "8.3.2",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.CreateField",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "CreateField",
+      "arity": 3,
+      "section": "8.3.3",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.CreatePageImage",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "CreatePageImage",
+      "arity": 3,
+      "section": "8.3.4",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.CreateSet",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "CreateSet",
+      "arity": 1,
+      "section": "8.3.5",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.DeleteCtrl",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "DeleteCtrl",
+      "arity": 1,
+      "section": "8.3.6",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.FieldExist",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "FieldExist",
+      "arity": 1,
+      "section": "8.3.7",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "field-read"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetCurFieldName",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetCurFieldName",
+      "arity": 1,
+      "section": "8.3.8",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "field-read"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetFieldList",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetFieldList",
+      "arity": 2,
+      "section": "8.3.9",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "field-read"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetFieldText",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetFieldText",
+      "arity": 1,
+      "section": "8.3.10",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "field-put-save",
+          "field-read"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetMousePos",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetMousePos",
+      "arity": 2,
+      "section": "8.3.11",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetPos",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetPos",
+      "arity": 0,
+      "section": "8.3.12",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "doc-basic"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetPosBySet",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetPosBySet",
+      "arity": 0,
+      "section": "8.3.13",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetSelectedPos",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetSelectedPos",
+      "arity": 0,
+      "section": "8.3.14",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetSelectedPosBySet",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetSelectedPosBySet",
+      "arity": 2,
+      "section": "8.3.15",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetTableCellAddr",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetTableCellAddr",
+      "arity": 1,
+      "section": "8.3.16",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetText",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetText",
+      "arity": 0,
+      "section": "8.3.17",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetTextBySet",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetTextBySet",
+      "arity": 1,
+      "section": "8.3.18",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetTextFile",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetTextFile",
+      "arity": 2,
+      "section": "8.3.19",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetViewStatus",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetViewStatus",
+      "arity": 0,
+      "section": "8.3.20",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.InitScan",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "InitScan",
+      "arity": 6,
+      "section": "8.3.21",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.Insert",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "Insert",
+      "arity": 5,
+      "section": "8.3.22",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.InsertBackgroundPicture",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "InsertBackgroundPicture",
+      "arity": 9,
+      "section": "8.3.23",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.InsertCtrl",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "InsertCtrl",
+      "arity": 2,
+      "section": "8.3.24",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.InsertPicture",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "InsertPicture",
+      "arity": 9,
+      "section": "8.3.25",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.IsCommandLock",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "IsCommandLock",
+      "arity": 1,
+      "section": "8.3.26",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.KeyIndicator",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "KeyIndicator",
+      "arity": 0,
+      "section": "8.3.27",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.LockCommand",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "LockCommand",
+      "arity": 2,
+      "section": "8.3.28",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.ModifyFieldProperties",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "ModifyFieldProperties",
+      "arity": 3,
+      "section": "8.3.29",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.MovePos",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "MovePos",
+      "arity": 3,
+      "section": "8.3.30",
+      "status": "implemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "doc-basic"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.method.MoveToField",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "MoveToField",
+      "arity": 4,
+      "section": "8.3.31",
+      "status": "implemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "field-read"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.method.MoveToFieldEx",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "MoveToFieldEx",
+      "arity": 5,
+      "section": "8.3.32",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.Open",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "Open",
+      "arity": 5,
+      "section": "8.3.33",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.PutFieldText",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "PutFieldText",
+      "arity": 2,
+      "section": "8.3.34",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "field-put-save"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.method.ReleaseScan",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "ReleaseScan",
+      "arity": 0,
+      "section": "8.3.35",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.RenameField",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "RenameField",
+      "arity": 2,
+      "section": "8.3.36",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.ReplaceAction",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "ReplaceAction",
+      "arity": 2,
+      "section": "8.3.37",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.Run",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "Run",
+      "arity": 3,
+      "section": "8.3.38",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.SaveAs",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "SaveAs",
+      "arity": 5,
+      "section": "8.3.39",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "field-put-save"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.method.SelectText",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "SelectText",
+      "arity": 4,
+      "section": "8.3.40",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.SetCurFieldName",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "SetCurFieldName",
+      "arity": 4,
+      "section": "8.3.41",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.SetFieldViewOption",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "SetFieldViewOption",
+      "arity": 1,
+      "section": "8.3.42",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.SetPos",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "SetPos",
+      "arity": 3,
+      "section": "8.3.43",
+      "status": "implemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [
+          "doc-basic"
+        ],
+        "lastRun": null,
+        "diff": 1
+      }
+    },
+    {
+      "id": "HwpCtrl.method.SetPosBySet",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "SetPosBySet",
+      "arity": 1,
+      "section": "8.3.44",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.SetTextFile",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "SetTextFile",
+      "arity": 5,
+      "section": "8.3.45",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.SetToolBar",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "SetToolBar",
+      "arity": 2,
+      "section": "8.3.46",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.ShowStatusBar",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "ShowStatusBar",
+      "arity": 1,
+      "section": "8.3.47",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.ShowToolBar",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "ShowToolBar",
+      "arity": 1,
+      "section": "8.3.48",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.ShowRibbon",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "ShowRibbon",
+      "arity": 1,
+      "section": "8.3.49",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.OpenDocument",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "OpenDocument",
+      "arity": 3,
+      "section": "8.3.50",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.SaveDocument",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "SaveDocument",
+      "arity": 3,
+      "section": "8.3.51",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.InsertDocument",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "InsertDocument",
+      "arity": 2,
+      "section": "8.3.52",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.IsSpellCheckCompleted",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "IsSpellCheckCompleted",
+      "arity": 0,
+      "section": "8.3.53",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetHeadingString",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetHeadingString",
+      "arity": 0,
+      "section": "8.3.54",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetCtrlHorizontalOffset",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetCtrlHorizontalOffset",
+      "arity": 2,
+      "section": "8.3.55",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetCtrlVerticalOffset",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetCtrlVerticalOffset",
+      "arity": 2,
+      "section": "8.3.56",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.SolarToLunar",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "SolarToLunar",
+      "arity": 3,
+      "section": "8.3.57",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.SolarToLunarBySet",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "SolarToLunarBySet",
+      "arity": 3,
+      "section": "8.3.58",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.LunarToSolar",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "LunarToSolar",
+      "arity": 4,
+      "section": "8.3.59",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.LunarToSolarBySet",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "LunarToSolarBySet",
+      "arity": 4,
+      "section": "8.3.60",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.ShowVerticalScroll",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "ShowVerticalScroll",
+      "arity": 1,
+      "section": "8.3.61",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.ShowHorizontalScroll",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "ShowHorizontalScroll",
+      "arity": 1,
+      "section": "8.3.62",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.ShowCaret",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "ShowCaret",
+      "arity": 1,
+      "section": "8.3.63",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.CreatePageImageEx",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "CreatePageImageEx",
+      "arity": 8,
+      "section": "8.3.64",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.GetPageText",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "GetPageText",
+      "arity": 2,
+      "section": "8.3.65",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.PrintDocument",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "PrintDocument",
+      "arity": 0,
+      "section": "8.3.66",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.method.AddEventListener",
+      "unit": "method",
+      "object": "HwpCtrl",
+      "name": "AddEventListener",
+      "arity": 2,
+      "section": "8.3.67",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "specArityAmbiguous": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.event.OnMouseLButtonDown",
+      "unit": "event",
+      "object": "HwpCtrl",
+      "name": "OnMouseLButtonDown",
+      "arity": 2,
+      "section": "8.4.1",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.event.OnMouseLButtonUp",
+      "unit": "event",
+      "object": "HwpCtrl",
+      "name": "OnMouseLButtonUp",
+      "arity": 2,
+      "section": "8.4.2",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "HwpCtrl.event.OnScroll",
+      "unit": "event",
+      "object": "HwpCtrl",
+      "name": "OnScroll",
+      "arity": 0,
+      "section": "8.4.3",
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "specArityAmbiguous": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.AllReplace",
+      "unit": "action",
+      "object": "Action",
+      "name": "AllReplace",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.BackwardFind",
+      "unit": "action",
+      "object": "Action",
+      "name": "BackwardFind",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.BreakColDef",
+      "unit": "action",
+      "object": "Action",
+      "name": "BreakColDef",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.BreakColumn",
+      "unit": "action",
+      "object": "Action",
+      "name": "BreakColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.BreakLine",
+      "unit": "action",
+      "object": "Action",
+      "name": "BreakLine",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.BreakPage",
+      "unit": "action",
+      "object": "Action",
+      "name": "BreakPage",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.BreakPara",
+      "unit": "action",
+      "object": "Action",
+      "name": "BreakPara",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.BreakSection",
+      "unit": "action",
+      "object": "Action",
+      "name": "BreakSection",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.Cancel",
+      "unit": "action",
+      "object": "Action",
+      "name": "Cancel",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CellBorder",
+      "unit": "action",
+      "object": "Action",
+      "name": "CellBorder",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CellBorderFill",
+      "unit": "action",
+      "object": "Action",
+      "name": "CellBorderFill",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CellFill",
+      "unit": "action",
+      "object": "Action",
+      "name": "CellFill",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CellZoneBorder",
+      "unit": "action",
+      "object": "Action",
+      "name": "CellZoneBorder",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CellZoneBorderFill",
+      "unit": "action",
+      "object": "Action",
+      "name": "CellZoneBorderFill",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CellZoneFill",
+      "unit": "action",
+      "object": "Action",
+      "name": "CellZoneFill",
+      "parameterSetId": "CellBorderFill",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShape",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShape",
+      "parameterSetId": "CharShape",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeBold",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeBold",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeCenterline",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeCenterline",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeEmboss",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeEmboss",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeEngrave",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeEngrave",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeHeight",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeHeight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeHeightDecrease",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeHeightDecrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeHeightIncrease",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeHeightIncrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeItalic",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeItalic",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeNextFaceName",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeNextFaceName",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeNormal",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeNormal",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeOutline",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeOutline",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapePrevFaceName",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapePrevFaceName",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeShadow",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeShadow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeSpacing",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeSpacing",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeSpacingDecrease",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeSpacingDecrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeSpacingIncrease",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeSpacingIncrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeSubscript",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeSubscript",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeSuperscript",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeSuperscript",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeSuperSubscript",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeSuperSubscript",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeTextColorBlack",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeTextColorBlack",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeTextColorBlue",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeTextColorBlue",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeTextColorBluish",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeTextColorBluish",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeTextColorGreen",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeTextColorGreen",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeTextColorRed",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeTextColorRed",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeTextColorViolet",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeTextColorViolet",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeTextColorWhite",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeTextColorWhite",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeTextColorYellow",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeTextColorYellow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeUnderline",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeUnderline",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeWidth",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeWidth",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeWidthDecrease",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeWidthDecrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CharShapeWidthIncrease",
+      "unit": "action",
+      "object": "Action",
+      "name": "CharShapeWidthIncrease",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.Close",
+      "unit": "action",
+      "object": "Action",
+      "name": "Close",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.CloseEx",
+      "unit": "action",
+      "object": "Action",
+      "name": "CloseEx",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.Delete",
+      "unit": "action",
+      "object": "Action",
+      "name": "Delete",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DeleteBack",
+      "unit": "action",
+      "object": "Action",
+      "name": "DeleteBack",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DeleteField",
+      "unit": "action",
+      "object": "Action",
+      "name": "DeleteField",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DeleteLine",
+      "unit": "action",
+      "object": "Action",
+      "name": "DeleteLine",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DeleteLineEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "DeleteLineEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DeleteWord",
+      "unit": "action",
+      "object": "Action",
+      "name": "DeleteWord",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DeleteWordBack",
+      "unit": "action",
+      "object": "Action",
+      "name": "DeleteWordBack",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DocSummaryInfo",
+      "unit": "action",
+      "object": "Action",
+      "name": "DocSummaryInfo",
+      "parameterSetId": "SummaryInfo",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DocumentInfo",
+      "unit": "action",
+      "object": "Action",
+      "name": "DocumentInfo",
+      "parameterSetId": "DocumentInfo",
+      "requiresExternalSet": true,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DrawObjCreatorArc",
+      "unit": "action",
+      "object": "Action",
+      "name": "DrawObjCreatorArc",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DrawObjCreatorEllipse",
+      "unit": "action",
+      "object": "Action",
+      "name": "DrawObjCreatorEllipse",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DrawObjCreatorLine",
+      "unit": "action",
+      "object": "Action",
+      "name": "DrawObjCreatorLine",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DrawObjCreatorRectangle",
+      "unit": "action",
+      "object": "Action",
+      "name": "DrawObjCreatorRectangle",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.DrawObjCreatorTextBox",
+      "unit": "action",
+      "object": "Action",
+      "name": "DrawObjCreatorTextBox",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.Erase",
+      "unit": "action",
+      "object": "Action",
+      "name": "Erase",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ExecReplace",
+      "unit": "action",
+      "object": "Action",
+      "name": "ExecReplace",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.FileSetSecurity",
+      "unit": "action",
+      "object": "Action",
+      "name": "FileSetSecurity",
+      "parameterSetId": "FileSetSecurity",
+      "requiresExternalSet": true,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.FindDlg",
+      "unit": "action",
+      "object": "Action",
+      "name": "FindDlg",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ForwardFind",
+      "unit": "action",
+      "object": "Action",
+      "name": "ForwardFind",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.HeaderFooter",
+      "unit": "action",
+      "object": "Action",
+      "name": "HeaderFooter",
+      "parameterSetId": "HeaderFooter",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.Hyperlink",
+      "unit": "action",
+      "object": "Action",
+      "name": "Hyperlink",
+      "parameterSetId": "HyperLink",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InputCodeTable",
+      "unit": "action",
+      "object": "Action",
+      "name": "InputCodeTable",
+      "parameterSetId": "CodeTable",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertCpNo",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertCpNo",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertCpTpNo",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertCpTpNo",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertEndnote",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertEndnote",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertFieldTemplate",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertFieldTemplate",
+      "parameterSetId": "InsertFieldTemplate",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertFile",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertFile",
+      "parameterSetId": "InsertFile",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertFixedWidthSpace",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertFixedWidthSpace",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertFootnote",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertFootnote",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertHyperlink",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertHyperlink",
+      "parameterSetId": "Hyperlink",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertLine",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertLine",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertNonBreakingSpace",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertNonBreakingSpace",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertPageNum",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertPageNum",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertSpace",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertSpace",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertTab",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertTab",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertText",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertText",
+      "parameterSetId": "InsertText",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.InsertTpNo",
+      "unit": "action",
+      "object": "Action",
+      "name": "InsertTpNo",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ModifyCtrl",
+      "unit": "action",
+      "object": "Action",
+      "name": "ModifyCtrl",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ModifyFieldClickhere",
+      "unit": "action",
+      "object": "Action",
+      "name": "ModifyFieldClickhere",
+      "parameterSetId": "InsertFieldTemplate",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ModifyFillProperty",
+      "unit": "action",
+      "object": "Action",
+      "name": "ModifyFillProperty",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ModifyHyperlink",
+      "unit": "action",
+      "object": "Action",
+      "name": "ModifyHyperlink",
+      "parameterSetId": "HyperLink",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ModifyLineProperty",
+      "unit": "action",
+      "object": "Action",
+      "name": "ModifyLineProperty",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ModifyShapeObject",
+      "unit": "action",
+      "object": "Action",
+      "name": "ModifyShapeObject",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveColumnBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveColumnBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveColumnEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveColumnEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveDocBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveDocBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveDocEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveDocEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveLeft",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveLineBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveLineBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveLineDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveLineDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveLineEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveLineEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveLineUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveLineUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveListBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveListBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveListEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveListEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveNextChar",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveNextChar",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveNextColumn",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveNextColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveNextParaBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveNextParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveNextPos",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveNextPos",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveNextPosEx",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveNextPosEx",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveNextWord",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveNextWord",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MovePageBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MovePageBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MovePageDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "MovePageDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MovePageEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MovePageEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MovePageUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "MovePageUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveParaBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveParaEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveParaEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveParentList",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveParentList",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MovePrevChar",
+      "unit": "action",
+      "object": "Action",
+      "name": "MovePrevChar",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MovePrevColumn",
+      "unit": "action",
+      "object": "Action",
+      "name": "MovePrevColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MovePrevParaBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MovePrevParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MovePrevParaEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MovePrevParaEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MovePrevPos",
+      "unit": "action",
+      "object": "Action",
+      "name": "MovePrevPos",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MovePrevPosEx",
+      "unit": "action",
+      "object": "Action",
+      "name": "MovePrevPosEx",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MovePrevWord",
+      "unit": "action",
+      "object": "Action",
+      "name": "MovePrevWord",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveRight",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveRootList",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveRootList",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveScrollDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveScrollDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveScrollNext",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveScrollNext",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveScrollPrev",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveScrollPrev",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveScrollUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveScrollUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSectionDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSectionDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSectionUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSectionUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelDocBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelDocBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelDocEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelDocEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelLeft",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelLineBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelLineBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelLineDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelLineDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelLineEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelLineEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelLineUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelLineUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelListBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelListBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelListEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelListEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelNextChar",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelNextChar",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelNextParaBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelNextParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelNextPos",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelNextPos",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelNextWord",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelNextWord",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelPageDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelPageDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelPageUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelPageUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelParaBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelParaEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelParaEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelPrevChar",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelPrevChar",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelPrevParaBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelPrevParaBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelPrevParaEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelPrevParaEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelPrevPos",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelPrevPos",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelPrevWord",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelPrevWord",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelRight",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelTopLevelBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelTopLevelBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelTopLevelEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelTopLevelEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelViewDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelViewDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelViewUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelViewUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelWordBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelWordBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveSelWordEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveSelWordEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveTopLevelBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveTopLevelBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveTopLevelEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveTopLevelEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveTopLevelList",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveTopLevelList",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveViewBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveViewBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveViewDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveViewDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveViewEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveViewEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveViewUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveViewUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveWordBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveWordBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.MoveWordEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "MoveWordEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.PageHiding",
+      "unit": "action",
+      "object": "Action",
+      "name": "PageHiding",
+      "parameterSetId": "PageHiding",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.PageNumPos",
+      "unit": "action",
+      "object": "Action",
+      "name": "PageNumPos",
+      "parameterSetId": "PageNumPos",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.PageSetup",
+      "unit": "action",
+      "object": "Action",
+      "name": "PageSetup",
+      "parameterSetId": "SecDef",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShape",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShape",
+      "parameterSetId": "ParaShape",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeAlignCenter",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeAlignCenter",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeAlignDistribute",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeAlignDistribute",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeAlignDivision",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeAlignDivision",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeAlignJustify",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeAlignJustify",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeAlignLeft",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeAlignLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeAlignRight",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeAlignRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeDecreaseLeftMargin",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeDecreaseLeftMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeDecreaseLineSpacing",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeDecreaseLineSpacing",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeDecreaseMargin",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeDecreaseMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeDecreaseRightMargin",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeDecreaseRightMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeIncreaseLeftMargin",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeIncreaseLeftMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeIncreaseLineSpacing",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeIncreaseLineSpacing",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeIncreaseMargin",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeIncreaseMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeIncreaseRightMargin",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeIncreaseRightMargin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeIndentAtCaret",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeIndentAtCaret",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeIndentNegative",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeIndentNegative",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeIndentPositive",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeIndentPositive",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeProtect",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeProtect",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParagraphShapeWithNext",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParagraphShapeWithNext",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParaNumberBullet",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParaNumberBullet",
+      "parameterSetId": "ParaShape",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParaNumberBulletLevelDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParaNumberBulletLevelDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ParaNumberBulletLevelUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "ParaNumberBulletLevelUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.PictureInsertDialog",
+      "unit": "action",
+      "object": "Action",
+      "name": "PictureInsertDialog",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.Print",
+      "unit": "action",
+      "object": "Action",
+      "name": "Print",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.PutBullet",
+      "unit": "action",
+      "object": "Action",
+      "name": "PutBullet",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.PutNewParaNumber",
+      "unit": "action",
+      "object": "Action",
+      "name": "PutNewParaNumber",
+      "parameterSetId": "ParaShape",
+      "requiresExternalSet": true,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.PutOutlineNumber",
+      "unit": "action",
+      "object": "Action",
+      "name": "PutOutlineNumber",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.PutParaNumber",
+      "unit": "action",
+      "object": "Action",
+      "name": "PutParaNumber",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.Redo",
+      "unit": "action",
+      "object": "Action",
+      "name": "Redo",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.RepeatFind",
+      "unit": "action",
+      "object": "Action",
+      "name": "RepeatFind",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ReplaceDlg",
+      "unit": "action",
+      "object": "Action",
+      "name": "ReplaceDlg",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ReturnPrevPos",
+      "unit": "action",
+      "object": "Action",
+      "name": "ReturnPrevPos",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ReverseFind",
+      "unit": "action",
+      "object": "Action",
+      "name": "ReverseFind",
+      "parameterSetId": "FindReplace",
+      "requiresExternalSet": true,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.Select",
+      "unit": "action",
+      "object": "Action",
+      "name": "Select",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.SelectAll",
+      "unit": "action",
+      "object": "Action",
+      "name": "SelectAll",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.SelectColumn",
+      "unit": "action",
+      "object": "Action",
+      "name": "SelectColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.SelectCtrlFront",
+      "unit": "action",
+      "object": "Action",
+      "name": "SelectCtrlFront",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.SelectCtrlReverse",
+      "unit": "action",
+      "object": "Action",
+      "name": "SelectCtrlReverse",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAlignBottom",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAlignBottom",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAlignCenter",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAlignCenter",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAlignHeight",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAlignHeight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAlignHorzSpacing",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAlignHorzSpacing",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAlignLeft",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAlignLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAlignMiddle",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAlignMiddle",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAlignRight",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAlignRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAlignSize",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAlignSize",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAlignTop",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAlignTop",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAlignVertSpacing",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAlignVertSpacing",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAlignWidth",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAlignWidth",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAttachCaption",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAttachCaption",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjAttachTextBox",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjAttachTextBox",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjBringForward",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjBringForward",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjBringInFrontOfText",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjBringInFrontOfText",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjBringToFront",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjBringToFront",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjCtrlSendBehindText",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjCtrlSendBehindText",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjDetachCaption",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjDetachCaption",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjDetachTextBox",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjDetachTextBox",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjDialog",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjDialog",
+      "parameterSetId": "ShapeObject",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjHorzFlip",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjHorzFlip",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjHorzFlipOrgState",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjHorzFlipOrgState",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjLock",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjLock",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjMoveDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjMoveDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjMoveLeft",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjMoveLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjMoveRight",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjMoveRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjMoveUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjMoveUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjNextObject",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjNextObject",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjPrevObject",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjPrevObject",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjResizeDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjResizeDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjResizeLeft",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjResizeLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjResizeRight",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjResizeRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjResizeUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjResizeUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjSendBack",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjSendBack",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjSendToBack",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjSendToBack",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjTableSelCell",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjTableSelCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjTextBoxEdit",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjTextBoxEdit",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjUngroup",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjUngroup",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjUnlockAll",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjUnlockAll",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjVertFlip",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjVertFlip",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ShapeObjVertFlipOrgState",
+      "unit": "action",
+      "object": "Action",
+      "name": "ShapeObjVertFlipOrgState",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.SpellingCheck",
+      "unit": "action",
+      "object": "Action",
+      "name": "SpellingCheck",
+      "parameterSetId": "SpellingCheck",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableAppendRow",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableAppendRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableCellBlock",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableCellBlock",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableCellBlockCol",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableCellBlockCol",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableCellBlockExtend",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableCellBlockExtend",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableCellBlockExtendAbs",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableCellBlockExtendAbs",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableCellBlockRow",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableCellBlockRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableColBegin",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableColBegin",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableColEnd",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableColEnd",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableColPageDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableColPageDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableColPageUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableColPageUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableCreate",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableCreate",
+      "parameterSetId": "TableCreation",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableDeleteCell",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableDeleteCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableDeleteColumn",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableDeleteColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableDeleteRow",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableDeleteRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableDeleteRowColumn",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableDeleteRowColumn",
+      "parameterSetId": "TableDeleteLine",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableDistributeCellHeight",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableDistributeCellHeight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableDistributeCellWidth",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableDistributeCellWidth",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableInsertLeftColumn",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableInsertLeftColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableInsertLowerRow",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableInsertLowerRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableInsertRightColumn",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableInsertRightColumn",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableInsertRowColumn",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableInsertRowColumn",
+      "parameterSetId": "TableInsertLine",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableInsertUpperRow",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableInsertUpperRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableLeftCell",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableLeftCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableLowerCell",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableLowerCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableMergeCell",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableMergeCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TablePropertyDialog",
+      "unit": "action",
+      "object": "Action",
+      "name": "TablePropertyDialog",
+      "parameterSetId": "ShapeObject",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeCellDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeCellDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeCellLeft",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeCellLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeCellRight",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeCellRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeCellUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeCellUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeExDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeExDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeExLeft",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeExLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeExRight",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeExRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeExUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeExUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeLeft",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeLineDown",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeLineDown",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeLineLeft",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeLineLeft",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeLineRight",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeLineRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeLineUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeLineUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeRight",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeRight",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableResizeUp",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableResizeUp",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableRightCell",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableRightCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableRightCellAppend",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableRightCellAppend",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableSplitCell",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableSplitCell",
+      "parameterSetId": "TableSplitCell",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableSplitCellCol2",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableSplitCellCol2",
+      "parameterSetId": "TableSplitCell",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableSplitCellRow2",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableSplitCellRow2",
+      "parameterSetId": "TableSplitCell",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableStringToTable",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableStringToTable",
+      "parameterSetId": "TableStrToTbl",
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableSubtractRow",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableSubtractRow",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.TableUpperCell",
+      "unit": "action",
+      "object": "Action",
+      "name": "TableUpperCell",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ToggleOverwrite",
+      "unit": "action",
+      "object": "Action",
+      "name": "ToggleOverwrite",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.Undo",
+      "unit": "action",
+      "object": "Action",
+      "name": "Undo",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": true,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ViewZoomFitPage",
+      "unit": "action",
+      "object": "Action",
+      "name": "ViewZoomFitPage",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ViewZoomFitWidth",
+      "unit": "action",
+      "object": "Action",
+      "name": "ViewZoomFitWidth",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "Action.ViewZoomNormal",
+      "unit": "action",
+      "object": "Action",
+      "name": "ViewZoomNormal",
+      "parameterSetId": null,
+      "requiresExternalSet": false,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.BorderFill",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "BorderFill",
+      "aliases": [],
+      "itemCount": 27,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.BorderFillExt",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "BorderFillExt",
+      "aliases": [],
+      "itemCount": 6,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.BulletShape",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "BulletShape",
+      "aliases": [],
+      "itemCount": 11,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.Caption",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "Caption",
+      "aliases": [],
+      "itemCount": 4,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.Cell",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "Cell",
+      "aliases": [],
+      "itemCount": 8,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.CellBorderFill",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "CellBorderFill",
+      "aliases": [],
+      "itemCount": 5,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.CharShape",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "CharShape",
+      "aliases": [],
+      "itemCount": 65,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.CodeTable",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "CodeTable",
+      "aliases": [],
+      "itemCount": 1,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.ColDef",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "ColDef",
+      "aliases": [],
+      "itemCount": 11,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.CtrlData",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "CtrlData",
+      "aliases": [],
+      "itemCount": 1,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.DocumentInfo",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "DocumentInfo",
+      "aliases": [],
+      "itemCount": 17,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.DrawArcType",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "DrawArcType",
+      "aliases": [],
+      "itemCount": 2,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.DrawFillAttr",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "DrawFillAttr",
+      "aliases": [],
+      "itemCount": 25,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.DrawImageAttr",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "DrawImageAttr",
+      "aliases": [],
+      "itemCount": 19,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.DrawLayout",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "DrawLayout",
+      "aliases": [],
+      "itemCount": 3,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.DrawLineAttr",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "DrawLineAttr",
+      "aliases": [],
+      "itemCount": 12,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.DrawRotate",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "DrawRotate",
+      "aliases": [],
+      "itemCount": 7,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.DrawShadow",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "DrawShadow",
+      "aliases": [],
+      "itemCount": 5,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.DrawShear",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "DrawShear",
+      "aliases": [],
+      "itemCount": 2,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.EngineProperties",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "EngineProperties",
+      "aliases": [],
+      "itemCount": 7,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.FileSetSecurity",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "FileSetSecurity",
+      "aliases": [],
+      "itemCount": 3,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.FindReplace",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "FindReplace",
+      "aliases": [],
+      "itemCount": 23,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.FootnoteShape",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "FootnoteShape",
+      "aliases": [
+        "EndnoteShape"
+      ],
+      "itemCount": 17,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.HeaderFooter",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "HeaderFooter",
+      "aliases": [],
+      "itemCount": 3,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.HyperLink",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "HyperLink",
+      "aliases": [],
+      "itemCount": 5,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.InsertFieldTemplate",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "InsertFieldTemplate",
+      "aliases": [],
+      "itemCount": 6,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.InsertFile",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "InsertFile",
+      "aliases": [],
+      "itemCount": 7,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.InsertText",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "InsertText",
+      "aliases": [],
+      "itemCount": 1,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.ListParaPos",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "ListParaPos",
+      "aliases": [],
+      "itemCount": 3,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.ListProperties",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "ListProperties",
+      "aliases": [],
+      "itemCount": 7,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.MemoShape",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "MemoShape",
+      "aliases": [],
+      "itemCount": 7,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.NumberingShape",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "NumberingShape",
+      "aliases": [],
+      "itemCount": 2,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.PageBorderFill",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "PageBorderFill",
+      "aliases": [],
+      "itemCount": 8,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.PageDef",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "PageDef",
+      "aliases": [],
+      "itemCount": 13,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.PageHiding",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "PageHiding",
+      "aliases": [],
+      "itemCount": 1,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.PageNumCtrl",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "PageNumCtrl",
+      "aliases": [],
+      "itemCount": 1,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.PageNumPos",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "PageNumPos",
+      "aliases": [],
+      "itemCount": 6,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.ParaShape",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "ParaShape",
+      "aliases": [],
+      "itemCount": 32,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.SecDef",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "SecDef",
+      "aliases": [],
+      "itemCount": 32,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.ShapeObject",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "ShapeObject",
+      "aliases": [],
+      "itemCount": 30,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.SpellingCheck",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "SpellingCheck",
+      "aliases": [],
+      "itemCount": 11,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.SummaryInfo",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "SummaryInfo",
+      "aliases": [],
+      "itemCount": 2,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.TabDef",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "TabDef",
+      "aliases": [],
+      "itemCount": 23,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.Table",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "Table",
+      "aliases": [],
+      "itemCount": 3,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.TableCreation",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "TableCreation",
+      "aliases": [],
+      "itemCount": 11,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.TableDeleteLine",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "TableDeleteLine",
+      "aliases": [],
+      "itemCount": 13,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.TableInsertLine",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "TableInsertLine",
+      "aliases": [],
+      "itemCount": 1,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.TableSplitCell",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "TableSplitCell",
+      "aliases": [],
+      "itemCount": 2,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.TableStrToTbl",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "TableStrToTbl",
+      "aliases": [],
+      "itemCount": 5,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    },
+    {
+      "id": "ParameterSet.ViewProperties",
+      "unit": "parameterSet",
+      "object": "ParameterSet",
+      "name": "ViewProperties",
+      "aliases": [],
+      "itemCount": 5,
+      "status": "unimplemented",
+      "notes": "",
+      "legacyHwpctl": false,
+      "oracle": {
+        "scenarios": [],
+        "lastRun": null,
+        "diff": null
+      }
+    }
+  ]
+}

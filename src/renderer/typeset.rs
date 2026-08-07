@@ -778,6 +778,12 @@ struct TypesetState {
     /// 구역 인덱스
     section_index: usize,
     /// 각주 높이 누적
+    /// [#4090] Square 어울림 개체가 만든 세로 배제 밴드의 바닥(쪽 기준 px).
+    /// 밴드를 벗어나거나 쪽이 끝날 때 흐름을 이 값으로 끌어올린다. 0.0 = 없음.
+    square_band_bottom: f64,
+    /// Square 배제 밴드의 흐름 기준 상단. 옆 문단의 저장 좌표를 현재 흐름 좌표계로
+    /// 옮겨 밴드 바닥을 확장할 때만 사용한다.
+    square_band_top: Option<f64>,
     current_footnote_height: f64,
     /// [Task #1658 v3] 페이지 하단 고정 표(vert=쪽·valign=Bottom, 결재/서명 틀)의
     /// 하단 배타 영역 높이 — 겹침 허용이므로 합이 아닌 max(union). 본문 텍스트는
@@ -1452,6 +1458,7 @@ fn maybe_register_square_picture_wrap_anchor(
         st.wrap_around_cs = -1;
         st.wrap_around_sw = -1;
         st.wrap_around_any_seg = false;
+        st.close_square_band();
     }
 }
 
@@ -1887,6 +1894,46 @@ fn internal_vpos_page_break_line(
                 None
             }
         })
+}
+
+/// 저장 HWPX가 명시적 다음 쪽 표제 바로 앞에 남긴 마지막 한 줄을 분리한다.
+///
+/// 일부 HWPX는 문단의 마지막 줄만 `vpos=0`으로 다음 물리 쪽에 저장하고, 이어지는
+/// 표제 문단에는 명시적 쪽나누기를 둔다. 이 tail을 현재 쪽에 합치면 한컴보다 한 쪽이
+/// 줄어든다. HWP3와 일반 HWP5는 별도 저장 규칙을 가지므로 호출부에서 HWPX stored
+/// layout으로 한정한다.
+fn hwpx_explicit_page_break_tail_line(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    line_count: usize,
+    body_height_px: f64,
+    dpi: f64,
+) -> Option<usize> {
+    if para.controls.is_empty()
+        && para_has_visible_text(para)
+        && line_count >= 2
+        && para.line_segs.len() == line_count
+        && next_para.is_some_and(|next| {
+            matches!(
+                next.column_type,
+                ColumnBreakType::Page | ColumnBreakType::Section
+            )
+        })
+    {
+        let split_line = line_count - 1;
+        let prev = para.line_segs.get(split_line - 1)?;
+        let tail = para.line_segs.get(split_line)?;
+        if !is_synthetic_line_seg(prev)
+            && !is_synthetic_line_seg(tail)
+            && prev.vertical_pos > 0
+            && tail.vertical_pos == 0
+            && hwpunit_to_px(prev.vertical_pos, dpi) >= body_height_px * 0.70
+            && hwpunit_to_px(prev.vertical_pos + prev.line_height, dpi) <= body_height_px + 1.0
+        {
+            return Some(split_line);
+        }
+    }
+    None
 }
 
 /// native HWP5의 두 줄짜리 단일 각주를 물리 페이지 경계에서 연속 fragment로 나눈다.
@@ -2884,6 +2931,8 @@ impl TypesetState {
             col_count,
             layout,
             section_index,
+            square_band_bottom: 0.0,
+            square_band_top: None,
             current_footnote_height: 0.0,
             current_bottom_fixed_exclusion: 0.0,
             bottom_fixed_consumed_flow: 0.0,
@@ -3209,8 +3258,36 @@ impl TypesetState {
         }
     }
 
+    /// [#4090] Square 어울림 밴드 종료 — 흐름을 밴드 바닥으로 스냅한다.
+    ///
+    /// 한글은 어울림 개체 옆으로 글을 흘리되 **개체 바닥까지만** 흘리고 그 아래는
+    /// 전폭으로 복귀한다. 밴드 안에서는 흐름이 글줄만큼만 전진하므로, 밴드를 벗어날
+    /// 때(또는 쪽이 끝날 때) 개체 높이를 반영해 끌어올려야 후속 내용이 개체 안으로
+    /// 들어가지 않는다.
+    fn close_square_band(&mut self) {
+        if self.square_band_bottom > 0.0 {
+            self.current_height = self.current_height.max(self.square_band_bottom);
+            self.square_band_bottom = 0.0;
+            self.square_band_top = None;
+        }
+    }
+
+    /// Square 표 옆으로 흐른 문단이 표보다 아래까지 이어지면, 그 저장 좌표의 마지막
+    /// 줄까지 배제 밴드를 확장한다. 표 자체만 예약하면 전폭 복귀 뒤의 fit 경로가 그
+    /// 텍스트 높이를 잃어 뒤쪽 본문을 과도하게 같은 쪽에 배치한다.
+    fn extend_square_band_to_source_bottom(&mut self, source_offset_px: f64) {
+        if source_offset_px <= 0.0 {
+            return;
+        }
+        if let Some(top) = self.square_band_top {
+            self.square_band_bottom = self.square_band_bottom.max(top + source_offset_px);
+        }
+    }
+
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
     fn flush_column(&mut self) {
+        // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.
+        self.close_square_band();
         if self.current_items.is_empty()
             && self.current_column_wrap_around_paras.is_empty()
             && self.page_start_square_pictures.is_empty()
@@ -3827,6 +3904,34 @@ fn debug_print_endnote_line_segments(
             tac_desc,
             run_text
         );
+    }
+}
+
+/// [#2424 프로파일] `typeset_section_with_variant` 하위 단계 누적 실측 — 동작 불변.
+/// `RHWP_2424_PROFILE=1`(native 전용)일 때만 채워지고 구역당 한 줄로 출력한다.
+/// `(Duration, u32)` 는 (누적 시간, 호출 수). wasm 에서는 enabled=false 로 고정되어
+/// `Instant::now` 가 호출되지 않는다 (`paginate_pass` 의 게이트 패턴과 동일).
+#[derive(Default)]
+struct Issue2424TypesetProfile {
+    setup: std::time::Duration,
+    wrap_around: (std::time::Duration, u32),
+    text_para: (std::time::Duration, u32),
+    table_para: (std::time::Duration, u32),
+    deferred_flush: (std::time::Duration, u32),
+    para_tail: (std::time::Duration, u32),
+    endnotes: std::time::Duration,
+}
+
+impl Issue2424TypesetProfile {
+    fn add(bucket: &mut (std::time::Duration, u32), started: Option<std::time::Instant>) {
+        if let Some(started) = started {
+            bucket.0 += started.elapsed();
+            bucket.1 += 1;
+        }
+    }
+
+    fn ms(duration: std::time::Duration) -> f64 {
+        duration.as_secs_f64() * 1000.0
     }
 }
 
@@ -4618,6 +4723,8 @@ impl TypesetEngine {
         para_idx: usize,
         has_table: bool,
         page_def: &PageDef,
+        composed: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
     ) -> bool {
         if st.wrap_around_cs >= 0 && !has_table {
             let para_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
@@ -4777,17 +4884,138 @@ impl TypesetEngine {
                         })
                         .unwrap_or(false);
                     if last_seg_match || is_empty_para {
+                        let source_offset_to_text_bottom = (!is_empty_para)
+                            .then(|| {
+                                let anchor_top = paragraphs
+                                    .get(st.wrap_around_table_para)?
+                                    .line_segs
+                                    .iter()
+                                    .find(|seg| !is_synthetic_line_seg(seg))?
+                                    .vertical_pos;
+                                let text_bottom = para
+                                    .line_segs
+                                    .iter()
+                                    .filter(|seg| !is_synthetic_line_seg(seg))
+                                    .map(|seg| {
+                                        seg.vertical_pos + seg.line_height + seg.line_spacing
+                                    })
+                                    .max()?;
+                                (text_bottom > anchor_top)
+                                    .then(|| hwpunit_to_px(text_bottom - anchor_top, self.dpi))
+                            })
+                            .flatten();
+                        if let Some(source_offset_px) = source_offset_to_text_bottom {
+                            st.extend_square_band_to_source_bottom(source_offset_px);
+                        }
                         // [Task #1745] 다쪽 분할 표는 첫 fragment column 에 소급 기록.
                         st.record_wrap_around_para(crate::renderer::pagination::WrapAroundPara {
                             para_index: para_idx,
                             table_para_index: st.wrap_around_table_para,
                             has_text: !is_empty_para,
+                            start_line: 0,
+                            end_line: usize::MAX,
                         });
                         return true;
+                    }
+
+                    // [#4090] 빈 표 호스트 뒤의 문단은 처음 몇 줄만 표 왼쪽 띠에
+                    // 놓이고 마지막 한 줄은 표 아래 전폭으로 돌아올 수 있다. 이 경우
+                    // 문단 전체를 일반 흐름으로 두면 띠와 전폭 줄을 함께 다시 소비해
+                    // 이후 페이지가 과도하게 늘어난다. 저장 LINE_SEG와 조판 줄이 1:1이고
+                    // 전폭 꼬리가 정확히 한 줄인 안정적인 형상만 분리한다.
+                    let wrap_prefix_len = para
+                        .line_segs
+                        .iter()
+                        .take_while(|seg| {
+                            seg.column_start == st.wrap_around_cs
+                                && seg.segment_width as i32 == st.wrap_around_sw
+                        })
+                        .count();
+                    let suffix_is_full_width = para
+                        .line_segs
+                        .get(wrap_prefix_len)
+                        .map(|seg| {
+                            seg.column_start == 0
+                                && (seg.segment_width as i32 - st.layout.column_width_hu()).abs()
+                                    <= 3_000
+                        })
+                        .unwrap_or(false);
+                    let col_width = st
+                        .layout
+                        .column_areas
+                        .get(st.current_column as usize)
+                        .map(|area| area.width)
+                        .unwrap_or(st.layout.body_area.width);
+                    let formatted = self.format_paragraph(para, composed, styles, Some(col_width));
+                    let can_split_prefix = !is_empty_para
+                        && wrap_prefix_len > 0
+                        && wrap_prefix_len + 1 == para.line_segs.len()
+                        && suffix_is_full_width
+                        && formatted.line_count() == para.line_segs.len();
+                    if can_split_prefix {
+                        let suffix_height = formatted
+                            .line_advances_sum(wrap_prefix_len..formatted.line_count())
+                            + formatted.spacing_after;
+                        if suffix_height <= st.available_height() + 0.5 {
+                            let source_offset_to_prefix_bottom = paragraphs
+                                .get(st.wrap_around_table_para)
+                                .and_then(|anchor| {
+                                    let anchor_top = anchor
+                                        .line_segs
+                                        .iter()
+                                        .find(|seg| !is_synthetic_line_seg(seg))?
+                                        .vertical_pos;
+                                    let prefix_bottom = para
+                                        .line_segs
+                                        .iter()
+                                        .take(wrap_prefix_len)
+                                        .filter(|seg| !is_synthetic_line_seg(seg))
+                                        .map(|seg| {
+                                            seg.vertical_pos + seg.line_height + seg.line_spacing
+                                        })
+                                        .max()?;
+                                    (prefix_bottom > anchor_top).then(|| {
+                                        hwpunit_to_px(prefix_bottom - anchor_top, self.dpi)
+                                    })
+                                });
+                            if let Some(source_offset_px) = source_offset_to_prefix_bottom {
+                                st.extend_square_band_to_source_bottom(source_offset_px);
+                            }
+                            st.record_wrap_around_para(
+                                crate::renderer::pagination::WrapAroundPara {
+                                    para_index: para_idx,
+                                    table_para_index: st.wrap_around_table_para,
+                                    has_text: true,
+                                    start_line: 0,
+                                    end_line: wrap_prefix_len,
+                                },
+                            );
+                            st.wrap_around_cs = -1;
+                            st.wrap_around_sw = -1;
+                            st.wrap_around_any_seg = false;
+                            st.close_square_band();
+                            if !st.current_items.is_empty()
+                                && st.current_height + suffix_height > st.available_height() + 0.5
+                            {
+                                st.advance_column_or_new_page();
+                            }
+                            st.current_items.push(PageItem::PartialParagraph {
+                                para_index: para_idx,
+                                start_line: wrap_prefix_len,
+                                end_line: formatted.line_count(),
+                            });
+                            st.current_height += suffix_height;
+                            st.vpos_ladder_dirty = true;
+                            return true;
+                        }
                     }
                     st.wrap_around_cs = -1;
                     st.wrap_around_sw = -1;
                     st.wrap_around_any_seg = false;
+                    // 이 문단은 첫 줄만 Square 띠에 있고 나머지는 표 아래 전폭으로
+                    // 복귀한다. 일반 fit 전에 띠 바닥을 흐름 하한으로 반영하지 않으면
+                    // 아래 줄이 표와 겹치는 높이를 아직 사용할 수 있다고 오판한다.
+                    st.close_square_band();
                     // fall through → 일반 paragraph 배치
                 }
             } else {
@@ -4795,6 +5023,7 @@ impl TypesetEngine {
                 st.wrap_around_cs = -1;
                 st.wrap_around_sw = -1;
                 st.wrap_around_any_seg = false;
+                st.close_square_band();
                 // [Task #741 Stage 4] 매칭 실패 paragraph 의 vpos=0 hint (page break 의도)
                 // 발견 시 advance_column_or_new_page. wrap_around active 종료 후 추가 가드.
                 // hwp3-sample10-hwp5.hwp paragraph 26 ("● 제목차례 ●") case —
@@ -4847,6 +5076,15 @@ impl TypesetEngine {
         force_break_before: &std::collections::HashSet<usize>,
         endnote_deferral: EndnoteDeferral<'_>,
     ) -> PaginationResult {
+        // [#2424 프로파일] paginate_pass 와 같은 env var 로 하위 단계 게이트.
+        #[cfg(not(target_arch = "wasm32"))]
+        let issue2424_ts_enabled =
+            std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0");
+        #[cfg(target_arch = "wasm32")]
+        let issue2424_ts_enabled = false;
+        let issue2424_ts_started = issue2424_ts_enabled.then(std::time::Instant::now);
+        let mut issue2424_prof = Issue2424TypesetProfile::default();
+
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         // [#2403] 소스분기 프로파일 — 엔진(Cell)과 state 에 한 번에 배선.
         self.profile.set(profile);
@@ -4943,6 +5181,11 @@ impl TypesetEngine {
             .rev()
             .find(|(_, p)| !(p.text.is_empty() && p.controls.is_empty()))
             .map(|(i, _)| i);
+
+        if let Some(started) = issue2424_ts_started {
+            issue2424_prof.setup = started.elapsed();
+        }
+        let issue2424_loop_started = issue2424_ts_enabled.then(std::time::Instant::now);
 
         for (para_idx, para) in paragraphs.iter().enumerate() {
             // [Task #1753] 지연 이월 표 직전에 선행 채움(prefill)으로 이미 배치된 문단 스킵.
@@ -5102,6 +5345,7 @@ impl TypesetEngine {
                 st.wrap_around_cs = -1;
                 st.wrap_around_sw = -1;
                 st.wrap_around_any_seg = false;
+                st.close_square_band();
             }
             // [#1955] 명시적 쪽나누기부터는 글뒤로 표 후행 흡수도 해제 (사용자 의도 새 쪽).
             if force_page_break || para_style_break {
@@ -5291,6 +5535,7 @@ impl TypesetEngine {
                             st.wrap_around_cs = -1;
                             st.wrap_around_sw = -1;
                             st.wrap_around_any_seg = false;
+                            st.close_square_band();
                         }
                         if st.wrap_around_cs < 0 {
                             st.advance_column_or_new_page();
@@ -5650,6 +5895,8 @@ impl TypesetEngine {
                                 para_index: para_idx,
                                 table_para_index: anchor_pi,
                                 has_text: false,
+                                start_line: 0,
+                                end_line: usize::MAX,
                             },
                         );
                         continue;
@@ -5664,9 +5911,19 @@ impl TypesetEngine {
             // Paginator engine.rs:288-320 동일 시멘틱.
             // 직전에 처리한 Square wrap 표의 (cs, sw) 와 동일한 LINE_SEG 를 가진
             // 후속 paragraph 는 표 옆에 배치되므로 height 소비 없이 wrap_around_paras 에 기록.
-            if self.typeset_wrap_around_paragraph(
-                &mut st, para, paragraphs, para_idx, has_table, page_def,
-            ) {
+            let issue2424_wrap_started = issue2424_ts_enabled.then(std::time::Instant::now);
+            let issue2424_wrap_absorbed = self.typeset_wrap_around_paragraph(
+                &mut st,
+                para,
+                paragraphs,
+                para_idx,
+                has_table,
+                page_def,
+                composed.get(para_idx),
+                styles,
+            );
+            Issue2424TypesetProfile::add(&mut issue2424_prof.wrap_around, issue2424_wrap_started);
+            if issue2424_wrap_absorbed {
                 continue;
             }
 
@@ -5753,6 +6010,7 @@ impl TypesetEngine {
                 }
             }
 
+            let issue2424_branch_started = issue2424_ts_enabled.then(std::time::Instant::now);
             let mut native_hwp5_footnote_break = None;
             if !has_table {
                 // --- 핵심: format → fits → place/split ---
@@ -5803,6 +6061,14 @@ impl TypesetEngine {
                     composed,
                 );
             }
+            Issue2424TypesetProfile::add(
+                if has_table {
+                    &mut issue2424_prof.table_para
+                } else {
+                    &mut issue2424_prof.text_para
+                },
+                issue2424_branch_started,
+            );
 
             // [Task #1027 Stage D] 항목 배치 후 vpos 커서 prev/base 추적 (렌더러 정합).
             // 렌더러 build_single_column: 매 항목 후 prev_layout_para 갱신, 표/Shape/
@@ -5915,7 +6181,12 @@ impl TypesetEngine {
                         // 띠 (cs, sw) 를 도출해 후속 문단 매칭에 사용 (한글: 후속 문단을
                         // 표 옆 잔여 띠에 배치 — samples/task1745).
                         if let Some((strip_cs, strip_sw)) =
-                            crate::renderer::text_anchor_square_table_strip(para)
+                            crate::renderer::text_anchor_square_table_strip(para).or_else(|| {
+                                crate::renderer::empty_host_square_table_left_strip(
+                                    para,
+                                    st.layout.column_width_hu(),
+                                )
+                            })
                         {
                             st.wrap_around_cs = strip_cs;
                             st.wrap_around_sw = strip_sw;
@@ -5946,6 +6217,7 @@ impl TypesetEngine {
                 }
             }
             if has_table {
+                let issue2424_flush_started = issue2424_ts_enabled.then(std::time::Instant::now);
                 self.flush_deferred_table_controls(
                     &mut st,
                     paragraphs,
@@ -5953,6 +6225,10 @@ impl TypesetEngine {
                     styles,
                     measured_tables,
                     Some(para_idx),
+                );
+                Issue2424TypesetProfile::add(
+                    &mut issue2424_prof.deferred_flush,
+                    issue2424_flush_started,
                 );
                 // [#1955] 글뒤로/글앞으로 비-TAC 표 anchor: 후행 빈 문단 흡수 arming.
                 let has_behind_float_table = para.controls.iter().any(|c| {
@@ -5968,9 +6244,11 @@ impl TypesetEngine {
             }
             // 비-TAC Picture/Shape Square wrap: engine.rs:380-397 동일 시멘틱.
             // 그림의 첫 lineseg cs가 0일 수 있어 any_seg_matches 허용 플래그 활성화.
+            let issue2424_tail_started = issue2424_ts_enabled.then(std::time::Instant::now);
             self.typeset_no_table_paragraph_tail(
                 &mut st, page_def, para, paragraphs, composed, styles, para_idx, has_table,
             );
+            Issue2424TypesetProfile::add(&mut issue2424_prof.para_tail, issue2424_tail_started);
 
             // Task #321: col 0 처리 중 body-wide TopAndBottom 표/도형이 발견되면
             // col 1+ advance 시 적용할 current_height 시작값을 미리 등록.
@@ -6442,6 +6720,11 @@ impl TypesetEngine {
             variant_prev_para_idx = Some(para_idx);
         }
 
+        let issue2424_loop_elapsed = issue2424_loop_started
+            .map(|started| started.elapsed())
+            .unwrap_or_default();
+        let issue2424_inloop_flush = issue2424_prof.deferred_flush.0;
+
         // source tail에 뒤따르는 본문이 없어 자연 page break가 일어나지 않은 경우에도,
         // deferred Square picture는 현재 쪽 FootnoteArea에 겹치지 않고 독립한 다음 physical
         // page를 가져야 한다. 일반 흐름을 되감지 않고 picture PageItem만 drain한다.
@@ -6450,6 +6733,7 @@ impl TypesetEngine {
         }
 
         // [미주 배치 — Hancom EndnoteEndOfSection/EndnoteEndOfDocument]
+        let issue2424_endnote_started = issue2424_ts_enabled.then(std::time::Instant::now);
         self.typeset_section_endnotes(
             &mut st,
             paragraphs,
@@ -6461,8 +6745,12 @@ impl TypesetEngine {
             endnote_shape,
             &endnote_deferral,
         );
+        if let Some(started) = issue2424_endnote_started {
+            issue2424_prof.endnotes = started.elapsed();
+        }
 
         // 마지막 항목 처리
+        let issue2424_final_flush_started = issue2424_ts_enabled.then(std::time::Instant::now);
         self.flush_deferred_table_controls(
             &mut st,
             paragraphs,
@@ -6470,6 +6758,10 @@ impl TypesetEngine {
             styles,
             measured_tables,
             None,
+        );
+        Issue2424TypesetProfile::add(
+            &mut issue2424_prof.deferred_flush,
+            issue2424_final_flush_started,
         );
         if !st.current_items.is_empty() {
             st.flush_column_always();
@@ -6521,6 +6813,44 @@ impl TypesetEngine {
             &page_hides,
             section_index,
         );
+
+        if let Some(started) = issue2424_ts_started {
+            let total = started.elapsed();
+            let loop_other = issue2424_loop_elapsed
+                .saturating_sub(issue2424_prof.wrap_around.0)
+                .saturating_sub(issue2424_prof.text_para.0)
+                .saturating_sub(issue2424_prof.table_para.0)
+                .saturating_sub(issue2424_inloop_flush)
+                .saturating_sub(issue2424_prof.para_tail.0);
+            let post = total
+                .saturating_sub(issue2424_prof.setup)
+                .saturating_sub(issue2424_loop_elapsed)
+                .saturating_sub(issue2424_prof.endnotes);
+            eprintln!(
+                "RHWP_2424_TYPESET_PROFILE sec={} pages={} paras={} total_ms={:.2} \
+                 setup={:.2} loop={:.2} [wrap={:.2}/{} text={:.2}/{} table={:.2}/{} \
+                 flush={:.2}/{} tail={:.2}/{} other={:.2}] endnotes={:.2} post={:.2}",
+                section_index,
+                st.pages.len(),
+                paragraphs.len(),
+                Issue2424TypesetProfile::ms(total),
+                Issue2424TypesetProfile::ms(issue2424_prof.setup),
+                Issue2424TypesetProfile::ms(issue2424_loop_elapsed),
+                Issue2424TypesetProfile::ms(issue2424_prof.wrap_around.0),
+                issue2424_prof.wrap_around.1,
+                Issue2424TypesetProfile::ms(issue2424_prof.text_para.0),
+                issue2424_prof.text_para.1,
+                Issue2424TypesetProfile::ms(issue2424_prof.table_para.0),
+                issue2424_prof.table_para.1,
+                Issue2424TypesetProfile::ms(issue2424_prof.deferred_flush.0),
+                issue2424_prof.deferred_flush.1,
+                Issue2424TypesetProfile::ms(issue2424_prof.para_tail.0),
+                issue2424_prof.para_tail.1,
+                Issue2424TypesetProfile::ms(loop_other),
+                Issue2424TypesetProfile::ms(issue2424_prof.endnotes),
+                Issue2424TypesetProfile::ms(post),
+            );
+        }
 
         PaginationResult {
             pages: st.pages,
@@ -13766,6 +14096,17 @@ impl TypesetEngine {
             st.profile.hwp3_native_layout(),
         )
         .or_else(|| {
+            st.profile.hwpx_stored_layout().then(|| {
+                hwpx_explicit_page_break_tail_line(
+                    para,
+                    paragraphs.get(para_idx + 1),
+                    fmt.line_heights.len(),
+                    st.layout.body_area.height,
+                    self.dpi,
+                )
+            })?
+        })
+        .or_else(|| {
             native_hwp5_first_footnote_overlap_break_line(
                 st,
                 para,
@@ -16497,7 +16838,29 @@ impl TypesetEngine {
             // 순효과가 반전되고, v_off 를 저장이 소비하지 않는 하위 형상
             // (pi114: +20.5→+44.1 악화) 존재. 82802 56→57(hc=51) 악화 실측.
             // vpos-스냅/NO_LS 축과의 동시 정합 없이는 적용 불가.
-            st.current_height += pre_height + table_total_height;
+            //
+            // [#4090] 단독 Square 어울림 표는 한글이 옆으로 글을 흘린다. 저장 사다리의 host
+            // 줄높이가 표 높이의 1/4 미만이면 한글은 표 높이를 흐름에 예약하지 않은 것이다.
+            // 그때는 흐름을 host 줄만큼만 전진시키고 표 높이는 **세로 배제 밴드**로 잡는다 —
+            // 밴드를 벗어나거나 쪽이 끝날 때 `close_square_band` 가 흐름을 밴드 바닥으로
+            // 끌어올린다. 전진량만 줄이면(밴드 없이) 텍스트가 표를 지나쳐 계속 옆으로 흘러
+            // 과소가 된다(실측: 156492236 24쪽 → 14쪽, 정답 17).
+            let stored_host_line_px = para
+                .line_segs
+                .iter()
+                .find(|seg| !is_synthetic_line_seg(seg))
+                .map(|seg| crate::renderer::hwpunit_to_px(seg.line_height as i32, self.dpi));
+            let hangul_flowed_beside_table = is_wrap_around_table
+                && table_total_height > 1.0
+                && stored_host_line_px.is_some_and(|lh| lh < table_total_height * 0.25);
+            if hangul_flowed_beside_table {
+                let band_top = st.current_height + pre_height;
+                st.current_height = band_top + stored_host_line_px.unwrap_or(0.0);
+                st.square_band_bottom = st.square_band_bottom.max(band_top + table_total_height);
+                st.square_band_top = Some(band_top);
+            } else {
+                st.current_height += pre_height + table_total_height;
+            }
         }
         // [#2243 진단] TAC 표 라인 회계 분해 — 동작 불변.
         if std::env::var("RHWP_DIAG_TAC").is_ok() {
@@ -19330,7 +19693,16 @@ impl TypesetEngine {
         let table = source.table;
         let mt = source.measured_table;
         let styles = source.styles;
+        // [#2424 프로파일] fragment 루프 하위 단계 누적 — closure 1회 = fragment 판정 1회.
+        // 스캔 두 곳 외의 잔여(배치·각주 큐·커서 전진)는 total−scan−refit 로 산출한다.
+        let issue2424_step_enabled =
+            crate::renderer::layout::table_layout::issue2424_profile_enabled();
+        let issue2424_step_started = issue2424_step_enabled.then(std::time::Instant::now);
+        let mut issue2424_iters: u64 = 0;
+        let mut issue2424_scan: (std::time::Duration, u32) = (std::time::Duration::ZERO, 0);
+        let mut issue2424_refit: (std::time::Duration, u32) = (std::time::Duration::ZERO, 0);
         continuation_context.step(|prepared, st, continuation| {
+            issue2424_iters += 1;
             let row_count = prepared.row_count;
             let cs = prepared.cell_spacing;
             let can_intra_split = prepared.can_intra_split;
@@ -19593,6 +19965,7 @@ impl TypesetEngine {
                 };
 
             // [Task #1025] split_block_start: 블록 분할 시 연속분 커서 복귀 기록.
+            let issue2424_scan_started = issue2424_step_enabled.then(std::time::Instant::now);
             let BlockTableRowScan {
                 mut consumed,
                 mut end_row,
@@ -19631,6 +20004,10 @@ impl TypesetEngine {
                     split_end_limit: 0.0,
                 },
             );
+            if let Some(started) = issue2424_scan_started {
+                issue2424_scan.0 += started.elapsed();
+                issue2424_scan.1 += 1;
+            }
             if end_row <= cursor_row {
                 end_row = cursor_row + 1;
             }
@@ -19700,6 +20077,8 @@ impl TypesetEngine {
                     let avail_refit =
                         (avail_for_rows + table_fn_reserved).min(min_anchor + pad + 0.1);
                     if avail_refit > avail_for_rows + 0.5 {
+                        let issue2424_refit_started =
+                            issue2424_step_enabled.then(std::time::Instant::now);
                         let refit = self.scan_block_table_split_rows(
                             st,
                             layout_engine,
@@ -19732,6 +20111,10 @@ impl TypesetEngine {
                                 split_end_limit: 0.0,
                             },
                         );
+                        if let Some(started) = issue2424_refit_started {
+                            issue2424_refit.0 += started.elapsed();
+                            issue2424_refit.1 += 1;
+                        }
                         // 재스캔 조각도 앵커 미포함일 때만 채택 (상한이 보증하나
                         // squeeze 허용치로 소폭 넘을 수 있어 재확인).
                         if refit.consumed > consumed + 0.5
@@ -19947,6 +20330,34 @@ impl TypesetEngine {
             continuation.advance(end_row, split_block_start, next_cut, split_end_limit > 0.0);
             TableContinuationIteration::Emitted
         });
+        if let Some(started) = issue2424_step_started {
+            use crate::renderer::layout::table_layout as issue2424_tl;
+            use std::sync::atomic::Ordering::Relaxed;
+            let total = started.elapsed();
+            let other = total
+                .saturating_sub(issue2424_scan.0)
+                .saturating_sub(issue2424_refit.0);
+            // cum: 프로세스 누적 스냅샷 (advance_row_cut / cell_units 프리미티브).
+            eprintln!(
+                "RHWP_2424_STEP_PROFILE sec={} para={} iters={} total_ms={:.2} \
+                 scan={:.2}/{} refit={:.2}/{} other={:.2} | cum arc_calls={} arc_ms={:.2} \
+                 cu_hit={} cu_miss={} cu_miss_ms={:.2}",
+                continuation_context.flow_state.section_index,
+                para_idx,
+                issue2424_iters,
+                Issue2424TypesetProfile::ms(total),
+                Issue2424TypesetProfile::ms(issue2424_scan.0),
+                issue2424_scan.1,
+                Issue2424TypesetProfile::ms(issue2424_refit.0),
+                issue2424_refit.1,
+                Issue2424TypesetProfile::ms(other),
+                issue2424_tl::ISSUE2424_ADVANCE_ROW_CUT_CALLS.load(Relaxed),
+                issue2424_tl::ISSUE2424_ADVANCE_ROW_CUT_NANOS.load(Relaxed) as f64 / 1e6,
+                issue2424_tl::ISSUE2424_CELL_UNITS_HITS.load(Relaxed),
+                issue2424_tl::ISSUE2424_CELL_UNITS_MISSES.load(Relaxed),
+                issue2424_tl::ISSUE2424_CELL_UNITS_MISS_NANOS.load(Relaxed) as f64 / 1e6,
+            );
+        }
     }
 
     // ========================================================
@@ -21085,6 +21496,81 @@ mod tests {
         let previous_vpos = preceding_stored_vpos(&paragraphs, 1);
         assert_eq!(previous_vpos, Some(41_645));
         assert!(stored_vpos_rewinds(previous_vpos, &current));
+    }
+
+    fn hwpx_tail_page_break_candidate(break_type: ColumnBreakType) -> (Paragraph, Paragraph) {
+        let paragraph = Paragraph {
+            text: "앞 줄\n마지막 줄".to_string(),
+            line_segs: vec![
+                LineSeg {
+                    vertical_pos: 6_000,
+                    line_height: 1_000,
+                    ..Default::default()
+                },
+                LineSeg {
+                    vertical_pos: 0,
+                    line_height: 1_000,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+        let next = Paragraph {
+            column_type: break_type,
+            ..Default::default()
+        };
+        (paragraph, next)
+    }
+
+    #[test]
+    fn hwpx_explicit_page_break_tail_splits_only_last_stored_line() {
+        for break_type in [ColumnBreakType::Page, ColumnBreakType::Section] {
+            let (paragraph, next) = hwpx_tail_page_break_candidate(break_type);
+            assert_eq!(
+                hwpx_explicit_page_break_tail_line(&paragraph, Some(&next), 2, 100.0, DEFAULT_DPI,),
+                Some(1),
+                "{break_type:?} 명시 나눔 앞의 vpos=0 tail만 분리해야 한다"
+            );
+        }
+    }
+
+    #[test]
+    fn hwpx_explicit_page_break_tail_requires_all_stored_layout_evidence() {
+        let rejects = |paragraph: Paragraph, next: Paragraph, line_count| {
+            assert_eq!(
+                hwpx_explicit_page_break_tail_line(
+                    &paragraph,
+                    Some(&next),
+                    line_count,
+                    100.0,
+                    DEFAULT_DPI,
+                ),
+                None,
+                "불완전한 저장 증거는 일반 문단 쪽 경계로 승격하면 안 된다"
+            );
+        };
+
+        let (paragraph, _) = hwpx_tail_page_break_candidate(ColumnBreakType::Page);
+        rejects(paragraph, Paragraph::default(), 2);
+
+        let (paragraph, next) = hwpx_tail_page_break_candidate(ColumnBreakType::Column);
+        rejects(paragraph, next, 2);
+
+        let (mut paragraph, next) = hwpx_tail_page_break_candidate(ColumnBreakType::Page);
+        paragraph.line_segs[1].vertical_pos = 1;
+        rejects(paragraph, next, 2);
+
+        let (mut paragraph, next) = hwpx_tail_page_break_candidate(ColumnBreakType::Page);
+        paragraph.line_segs.push(LineSeg::default());
+        rejects(paragraph, next, 2);
+
+        let (mut paragraph, next) = hwpx_tail_page_break_candidate(ColumnBreakType::Page);
+        paragraph.line_segs[0].vertical_pos = 3_000;
+        rejects(paragraph, next, 2);
+
+        let (mut paragraph, next) = hwpx_tail_page_break_candidate(ColumnBreakType::Page);
+        paragraph.line_segs[0].vertical_pos = 7_000;
+        rejects(paragraph, next, 2);
     }
 
     #[test]

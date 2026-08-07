@@ -1,0 +1,3537 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+  "spec": "ParameterSet Table v1.2",
+  "setCount": 50,
+  "itemCount": 521,
+  "sets": [
+    {
+      "setId": "BorderFill",
+      "aliases": [],
+      "description": "테두리/배경의 일반 속성",
+      "itemCount": 27,
+      "items": [
+        {
+          "item": "BorderTypeLeft",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "4방향 테두리 종류 : 왼쪽 [선 종류]"
+        },
+        {
+          "item": "BorderTypeRight",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "4방향 테두리 종류 : 오른쪽"
+        },
+        {
+          "item": "BorderTypeTop",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "4방향 테두리 종류 : 위"
+        },
+        {
+          "item": "BorderTypeBottom",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "4방향 테두리 종류 : 아래"
+        },
+        {
+          "item": "BorderWidthLeft",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "4방향 테두리 두께 : 왼쪽 [선 굵기]"
+        },
+        {
+          "item": "BorderWidthRight",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "4방향 테두리 두께 : 오른쪽"
+        },
+        {
+          "item": "BorderWidthTop",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "4방향 테두리 두께 : 위"
+        },
+        {
+          "item": "BorderWidthBottom",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "4방향 테두리 두께 : 아래"
+        },
+        {
+          "item": "BorderCorlorLeft",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "4방향 테두리 색깔 : 왼쪽\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        },
+        {
+          "item": "BorderColorRight",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "4방향 테두리 색깔 : 오른쪽\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        },
+        {
+          "item": "BorderColorTop",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "4방향 테두리 색깔 : 위\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        },
+        {
+          "item": "BorderColorBottom",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "4방향 테두리 색깔 :아래\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        },
+        {
+          "item": "SlashFlag",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "슬래쉬 대각선 플래그 : \n비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.\nbit 0 = 하단 대각선\nbit 1 = 중앙 대각선\nbit 2 = 상단 대각선\n더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다."
+        },
+        {
+          "item": "BackSlashFlag",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "백슬래쉬 대각선 플래그 : \n비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.\nbit 0 = 하단 대각선\nbit 1 = 중앙 대각선\nbit 2 = 상단 대각선\n더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다."
+        },
+        {
+          "item": "DiagonalType",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "선 종류\n셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용"
+        },
+        {
+          "item": "DiagonalWidth",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "선 굵기\n셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용"
+        },
+        {
+          "item": "DiagonalColor",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "선 색상\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)\n셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용"
+        },
+        {
+          "item": "BorderFill3D",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "3차원 효과 : 0 = off, 1 = on"
+        },
+        {
+          "item": "Shadow",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그림자 효과 : 0 = off, 1 = on"
+        },
+        {
+          "item": "FillAttr",
+          "type": "PIT_SET",
+          "subType": "DrawFillAttr",
+          "description": "배경 채우기 속성"
+        },
+        {
+          "item": "CrookedSlashFlag",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "꺾인 대각선 플래그 (bit 0, 1이 각각 slash, back slash의 가운데 대각선이 꺾인 대각선임을 나타낸다.)"
+        },
+        {
+          "item": "BreakCellSeparateLine",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "자동으로 나뉜 표의 경계선 설정 :\n0 = 경계선 설정을 기본 값에 따름, 1 = 사용자가 경계선 설정"
+        },
+        {
+          "item": "CounterSlashFlag",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "슬래쉬 대각선의 역방향 플래그(우상향 대각선) :\n0 = 순방향, 1 = 역방향"
+        },
+        {
+          "item": "CounterBackSlashFlag",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "역슬래쉬 대각선의 역방향 플래그(좌상향 대각선) :\n0 = 순방향, 1 = 역방향"
+        },
+        {
+          "item": "CenterLineFlag",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "중심선 : ( 0 = 중심선 없음, 1 = 중심선 있음)\n더 자세한 내용은 하단의 ※ 중심선의 형태를 참고한다."
+        },
+        {
+          "item": "CrookedSlashFlag1",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "Low Byte CrookedSlashFlag (슬래쉬 대각선의 꺾임 여부)\n(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔)"
+        },
+        {
+          "item": "CrookedSlashFlag2",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "High Byte CrookedSlashFlag (역슬래쉬 대각선의 꺾임 여부)\n(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔)"
+        }
+      ]
+    },
+    {
+      "setId": "BorderFillExt",
+      "aliases": [],
+      "description": "UI 구현을 위한 BorderFill 확장",
+      "itemCount": 6,
+      "items": [
+        {
+          "item": "TypeHorz",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "중앙선 종류 : 가로 [선 종류]"
+        },
+        {
+          "item": "TypeVert",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "중앙선 종류 : 세로"
+        },
+        {
+          "item": "WidthHorz",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "중앙선 두께 : 가로 [선 굵기]"
+        },
+        {
+          "item": "WidthVert",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "중앙선 두께 : 세로"
+        },
+        {
+          "item": "ColorHorz",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "중앙선 색깔 : 가로\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        },
+        {
+          "item": "ColorVert",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "중앙선 색깔 : 세로\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        }
+      ]
+    },
+    {
+      "setId": "BulletShape",
+      "aliases": [],
+      "description": "불릿 모양(글머리표 모양)",
+      "itemCount": 11,
+      "items": [
+        {
+          "item": "HasCharShape",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "자체적인 글자 모양을 사용할지 여부 :\n0 = 스타일을 따라감, 1 = 자체 모양을 가짐"
+        },
+        {
+          "item": "CharShape",
+          "type": "PIT_SET",
+          "subType": "CharShape",
+          "description": "글자 모양 (HasCharShape가 1일 경우에만 사용)"
+        },
+        {
+          "item": "WidthAdjust",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "번호 너비 보정 값 (HWPUNIT)"
+        },
+        {
+          "item": "TextOffset",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "본문과의 거리 (percent or HWPUNIT)"
+        },
+        {
+          "item": "Alignment",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "번호 정렬 :\n0 = 왼쪽 정렬, 1 = 가운데 정렬, 2 = 오른쪽 정렬"
+        },
+        {
+          "item": "UseInstWidth",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "번호 너비를 문서 내 문자열의 너비에 따를지 여부 on / off"
+        },
+        {
+          "item": "AutoIndent",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "번호 너비 자동 들여쓰기 여부 : 0 = 들여쓰기 안함, 1 = 들여쓰기"
+        },
+        {
+          "item": "TextOffsetType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "본문과의 거리 종류 : 0 = percent, 1 = HWPUNIT"
+        },
+        {
+          "item": "BulletChar",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "불릿 문자 코드"
+        },
+        {
+          "item": "HasImage",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그림 글머리표 여부 : 0 = 일반 글머리표, 1 = 그림 글머리표"
+        },
+        {
+          "item": "BulletImage",
+          "type": "PIT_SET",
+          "subType": "DrawImageAttr",
+          "description": "글머리표 이미지"
+        }
+      ]
+    },
+    {
+      "setId": "Caption",
+      "aliases": [],
+      "description": "캡션 속성",
+      "itemCount": 4,
+      "items": [
+        {
+          "item": "Side",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "방향. 0 = 왼쪽, 1 = 오른쪽, 2 = 위, 3 =  아래"
+        },
+        {
+          "item": "Width",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "캡션 폭 (가로 방향일 때만 사용됨. 단위 HWPUNIT)"
+        },
+        {
+          "item": "Gap",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "캡션과 틀 사이 간격(HWPUNIT)"
+        },
+        {
+          "item": "CapFullSize",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "캡션 폭에 여백을 포함할지 여부 (세로 방향일 때만 사용됨)"
+        }
+      ]
+    },
+    {
+      "setId": "Cell",
+      "aliases": [],
+      "description": "셀",
+      "itemCount": 8,
+      "items": [
+        {
+          "item": "HasMargin",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "테이블의 기본 셀 여백 대신 자체 셀 여백을 적용할지 여부. (on / off)"
+        },
+        {
+          "item": "Protected",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "사용자 편집을 막을지 여부 : 0 = off, 1 = on"
+        },
+        {
+          "item": "Header",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "제목 셀인지 여부 : 0 = off, 1 = on"
+        },
+        {
+          "item": "Width",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "셀의 폭 (HWPUNIT)"
+        },
+        {
+          "item": "Height",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "셀의 높이 (HWPUNIT)"
+        },
+        {
+          "item": "Editable",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "양식모드에서 편집 가능 여부 : 0 = off, 1 = on"
+        },
+        {
+          "item": "Dirty",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "초기화 상태인지 수정된 상태인지 여부 : 0 = off, 1 = on"
+        },
+        {
+          "item": "CellCtrlData",
+          "type": "PIT_SET",
+          "subType": "CtrlData",
+          "description": "셀 데이터"
+        }
+      ]
+    },
+    {
+      "setId": "CellBorderFill",
+      "aliases": [],
+      "description": "셀 테두리/배경",
+      "itemCount": 5,
+      "items": [
+        {
+          "item": "ApplyTo",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "적용 대상 : 0 = 선택된 셀, 1 = 전체 셀, 2 = 여러 셀에 걸쳐 적용"
+        },
+        {
+          "item": "NoNeighborCell",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "주변 셀에 선 모양을 적용하지 않을지 여부 (1이면 적용하지 않는다)"
+        },
+        {
+          "item": "TableBorderFill",
+          "type": "PIT_SET",
+          "subType": "BorderFill",
+          "description": "표 테두리/배경"
+        },
+        {
+          "item": "AllCellsBorderFill",
+          "type": "PIT_SET",
+          "subType": "BorderFill",
+          "description": "전체 셀의 테두리/배경"
+        },
+        {
+          "item": "SelCellsBorderFill",
+          "type": "PIT_SET",
+          "subType": "BorderFill",
+          "description": "선택된 셀의 테두리/배경"
+        }
+      ]
+    },
+    {
+      "setId": "CharShape",
+      "aliases": [],
+      "description": "글자 모양",
+      "itemCount": 65,
+      "items": [
+        {
+          "item": "FaceNameHangul",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "글꼴 이름 (한글)"
+        },
+        {
+          "item": "FaceNameLatin",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "글꼴 이름 (영문)"
+        },
+        {
+          "item": "FaceNameHanja",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "글꼴 이름 (한자)"
+        },
+        {
+          "item": "FaceNameJapanese",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "글꼴 이름 (일본어)"
+        },
+        {
+          "item": "FaceNameOther",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "글꼴 이름 (기타)"
+        },
+        {
+          "item": "FaceNameSymbol",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "글꼴 이름 (심벌)"
+        },
+        {
+          "item": "FaceNameUser",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "글꼴 이름 (사용자)"
+        },
+        {
+          "item": "FontTypeHangul",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "폰트 종류 (한글) : 0 = don't care, 1 = TTF, 2 = HFT"
+        },
+        {
+          "item": "FontTypeLatin",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "폰트 종류 (영문) : 0 = don't care, 1 = TTF, 2 = HFT"
+        },
+        {
+          "item": "FontTypeHanja",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "폰트 종류 (한자) : 0 = don't care, 1 = TTF, 2 = HFT"
+        },
+        {
+          "item": "FontTypeJapanese",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "폰트 종류 (일본어) : 0 = don't care, 1 = TTF, 2 = HFT"
+        },
+        {
+          "item": "FontTypeOther",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "폰트 종류 (기타) : 0 = don't care, 1 = TTF, 2 = HFT"
+        },
+        {
+          "item": "FontTypeSymbol",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "폰트 종류 (심벌) : 0 = don't care, 1 = TTF, 2 = HFT"
+        },
+        {
+          "item": "FontTypeUser",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "폰트 종류 (사용자) : 0 = don't care, 1 = TTF, 2 = HFT"
+        },
+        {
+          "item": "SizeHangul",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 크기 비율. (한글) 10% - 250%"
+        },
+        {
+          "item": "SizeLatin",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 크기 비율. (영문) 10% - 250%"
+        },
+        {
+          "item": "SizeHanja",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 크기 비율. (한자) 10% - 250%"
+        },
+        {
+          "item": "SizeJapanese",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 크기 비율. (일본어) 10% - 250%"
+        },
+        {
+          "item": "SizeOther",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 크기 비율. (기타) 10% - 250%"
+        },
+        {
+          "item": "SizeSymbol",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 크기 비율. (심벌) 10% - 250%"
+        },
+        {
+          "item": "SizeUser",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 크기 비율. (사용자) 10% - 250%"
+        },
+        {
+          "item": "RatioHangul",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 장평 비율. (한글) 50% - 200%"
+        },
+        {
+          "item": "RatioLatin",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 장평 비율. (영문) 50% - 200%"
+        },
+        {
+          "item": "RatioHanja",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 장평 비율. (한자) 50% - 200%"
+        },
+        {
+          "item": "RatioJapanese",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 장평 비율. (일본어) 50% - 200%"
+        },
+        {
+          "item": "RatioOther",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 장평 비율. (기타) 50% - 200%"
+        },
+        {
+          "item": "RatioSymbol",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 장평 비율. (심벌) 50% - 200%"
+        },
+        {
+          "item": "RatioUser",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각 언어별 장평 비율. (사용자) 50% - 200%"
+        },
+        {
+          "item": "SpacingHangul",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 자간. (한글) -50% - 50%"
+        },
+        {
+          "item": "SpacingLatin",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 자간. (영문) -50% - 50%"
+        },
+        {
+          "item": "SpacingHanja",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 자간. (한자) -50% - 50%"
+        },
+        {
+          "item": "SpacingJapanese",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 자간. (일본어) -50% - 50%"
+        },
+        {
+          "item": "SpacingOther",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 자간. (기타) -50% - 50%"
+        },
+        {
+          "item": "SpacingSymbol",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 자간. (심벌) -50% - 50%"
+        },
+        {
+          "item": "SpacingUser",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 자간. (사용자) -50% - 50%"
+        },
+        {
+          "item": "OffsetHangul",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 오프셋. (한글) -100% - 100%"
+        },
+        {
+          "item": "OffsetLatin",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 오프셋. (영문) -100% - 100%"
+        },
+        {
+          "item": "OffsetHanja",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 오프셋. (한자) -100% - 100%"
+        },
+        {
+          "item": "OffsetJapanese",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 오프셋. (일본어) -100% - 100%"
+        },
+        {
+          "item": "OffsetOther",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 오프셋. (기타) -100% - 100%"
+        },
+        {
+          "item": "OffsetSymbol",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 오프셋. (심벌) -100% - 100%"
+        },
+        {
+          "item": "OffsetUser",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "각 언어별 오프셋. (사용자) -100% - 100%"
+        },
+        {
+          "item": "Bold",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "Bold : 0 = off, 1 = on"
+        },
+        {
+          "item": "Italic",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "Italic : 0 = off, 1 = on"
+        },
+        {
+          "item": "SmallCaps",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "Small Caps : 0 = off, 1 = on"
+        },
+        {
+          "item": "Emboss",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "Emboss : 0 = off, 1 = on"
+        },
+        {
+          "item": "Engrave",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "Engrave : 0 = off, 1 = on"
+        },
+        {
+          "item": "SuperScript",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "Superscript : 0 = off, 1 = on"
+        },
+        {
+          "item": "SubScript",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "Subscript : 0 = off, 1 = on"
+        },
+        {
+          "item": "UnderlineType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "밑줄 종류 : \n 0 = none, 1 = bottom, 2 = center, 3 = top"
+        },
+        {
+          "item": "OutlineType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "외곽선 종류 :\n 0 = none, 1 = solid, 2 = dot, 3 = thick, \n 4 = dash, 5 = dashdot, 6 = dashdotdot"
+        },
+        {
+          "item": "ShadowType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그림자 종류 :\n 0 = none, 1 = drop, 2 = continuous"
+        },
+        {
+          "item": "TextColor",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "글자색. (COLORREF)\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        },
+        {
+          "item": "ShadeColor",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "음영색. (COLORREF)\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        },
+        {
+          "item": "UnderlineShape",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "밑줄 모양 : 선 종류"
+        },
+        {
+          "item": "UnderlineColor",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "밑줄 색 (COLORREF)\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        },
+        {
+          "item": "ShadowOffsetX",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "그림자 간격 (X 방향) -100% - 100%"
+        },
+        {
+          "item": "ShadowOffsetY",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "그림자 간격 (Y 방향) -100% - 100%"
+        },
+        {
+          "item": "ShadowColor",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "그림자 색 (COLORREF)\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        },
+        {
+          "item": "StrikeOutType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "취소선 종류 :\n 0 = none, 1 = red single, 2 = red double, \n 3 = text single, 4 = text double"
+        },
+        {
+          "item": "DiacSymMark",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "강조점 종류 :\n 0 = none, 1 = 검정 동그라미, 2 = 속 빈 동그라미"
+        },
+        {
+          "item": "UseFontSpace",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "글꼴에 어울리는 빈칸 : 0 = off, 1 = on"
+        },
+        {
+          "item": "UseKerning",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "커닝 : 0 = off, 1 = on"
+        },
+        {
+          "item": "Height",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "글자 크기 (HWPUNIT)"
+        },
+        {
+          "item": "BorderFill",
+          "type": "PIT_SET",
+          "subType": "BorderFill",
+          "description": "테두리/배경"
+        }
+      ]
+    },
+    {
+      "setId": "CodeTable",
+      "aliases": [],
+      "description": "문자표",
+      "itemCount": 1,
+      "items": [
+        {
+          "item": "Text",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "삽입될 스트링"
+        }
+      ]
+    },
+    {
+      "setId": "ColDef",
+      "aliases": [],
+      "description": "단 정의 속성",
+      "itemCount": 11,
+      "items": [
+        {
+          "item": "Type",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "단 종류 : \n0 = 보통 다단, 1 = 배분 다단, 2 = 평행 다단"
+        },
+        {
+          "item": "Count",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "단 개수. 1-255까지."
+        },
+        {
+          "item": "SameSize",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "단의 너비를 같도록 할지 여부 :\n0 = 단 너비 각자 지정, 1 = 단 너비 동일"
+        },
+        {
+          "item": "SameGap",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "단 사이 간격(HWPUNIT) \nSAME_SIZE가 1일 때만 사용된다."
+        },
+        {
+          "item": "WidthGap",
+          "type": "PIT_ARRAY",
+          "subType": "PIT_UI2",
+          "description": "각 단의 너비와 간격(HWPUNIT)\ncol*2 = 단의 폭, col*2 + 1 = 단 사이 간격.\n영역 전체의 폭을 Column ratio base (=32768)로 보았을 때의 비율로 환산한다.\nSameSize가 0일 때만 사용된다.\n배열의 아이템의 개수는 Count*2-1과 같아야 한다."
+        },
+        {
+          "item": "Layout",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "단 방향 지정 :\n0 = 왼쪽부터, 1 = 오른쪽부터, 2 = 맞쪽"
+        },
+        {
+          "item": "LineType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "선 종류."
+        },
+        {
+          "item": "LineWidth",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "선 굵기."
+        },
+        {
+          "item": "LineColor",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "선 색깔. (COLORREF)\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        },
+        {
+          "item": "ApplyTo",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "적용범위 :\n0 = 선택된 다단\n1 = 선택된 문자열\n2 = 현재 다단\n3 = 개체 전체\n4 = 선택된 셀\n5 = 현재 구역\n6 = 문서 전체\n7 = 현재 셀\n8 = 새 쪽으로\n9 = 새 다단으로\n10 = 모든 셀"
+        },
+        {
+          "item": "ApplyClass",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "적용범위의 분류. 아래 값의 조합이다.\n0x0001 = 선택된 다단\n0x0002 = 선택된 문자열\n0x0004 = 현재 다단\n0x0008 = 개체 전체\n0x0010 = 선택된 셀\n0x0020 = 현재 구역\n0x0040 = 문서전체\n0x0080 = 현재 셀\n0x0100 = 새 쪽으로\n0x0200 = 새 다단으로\n0x0400 = 모든 셀"
+        }
+      ]
+    },
+    {
+      "setId": "CtrlData",
+      "aliases": [],
+      "description": "컨트롤 데이터",
+      "itemCount": 1,
+      "items": [
+        {
+          "item": "Name",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "사용자가 지정한 컨트롤의 이름."
+        }
+      ]
+    },
+    {
+      "setId": "DocumentInfo",
+      "aliases": [],
+      "description": "문서에 대한 정보",
+      "itemCount": 17,
+      "items": [
+        {
+          "item": "CurPara",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "현재 위치한 문단"
+        },
+        {
+          "item": "CurPos",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "현재 위치한 오프셋"
+        },
+        {
+          "item": "CurParaLen",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "현재 위치한 문단의 길이"
+        },
+        {
+          "item": "CurCtrl",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "현재 리스트의 종류\n0 = 일반 텍스트\n1 = 글상자\n기타 = 컨트롤 ID"
+        },
+        {
+          "item": "CurParaCount",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "현재 리스트의 문단 수"
+        },
+        {
+          "item": "RootPara",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "루트 리스트의 현재 문단"
+        },
+        {
+          "item": "RootPos",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "루트 리스트의 현재 오프셋"
+        },
+        {
+          "item": "RootParaCout",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "루트 리스트의 문단 수"
+        },
+        {
+          "item": "DetailInfo",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "자세한 정보를 구할지 여부\nDetail~ 로 시작하는 아이템의 정보를 얻기 위해서는 이 값을 1로 넣어준 후에 액션을 실행해준다."
+        },
+        {
+          "item": "DetailCharCount",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "문서에 포함된 글자 수"
+        },
+        {
+          "item": "DetailWordCount",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "문서에 포함된 어절 수"
+        },
+        {
+          "item": "DetailLineCount",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "문서에 포함된 줄 수"
+        },
+        {
+          "item": "DetailPageCount",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "문서에 포함된 쪽 수"
+        },
+        {
+          "item": "DetailCurPage",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "현재 쪽 번호"
+        },
+        {
+          "item": "DetailCurPrtPage",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "현재 쪽 번호 (인쇄 번호)"
+        },
+        {
+          "item": "SectionInfo",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "구역의 속성까지 구할지 여부\nSecDef 아이템은 이 값을 1로 넣어준 후 액션을 실행한 후에 얻을 수 있다."
+        },
+        {
+          "item": "SecDef",
+          "type": "PIT_SET",
+          "subType": "SecDef",
+          "description": "구역의 속성"
+        }
+      ]
+    },
+    {
+      "setId": "DrawArcType",
+      "aliases": [],
+      "description": "그리기 개체의 부채꼴 테두리 모양",
+      "itemCount": 2,
+      "items": [
+        {
+          "item": "Type",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "호의 유형 :\n0 = 호, 1 = 부채꼴, 2 = 화살모양"
+        },
+        {
+          "item": "Interval",
+          "type": "PIT_ARRAY",
+          "subType": "PIT_I",
+          "description": "확장타원(호)에서 호의 시작점과 끝점을 나타내게 한다."
+        }
+      ]
+    },
+    {
+      "setId": "DrawFillAttr",
+      "aliases": [],
+      "description": "그리기 개체의 채우기 속성",
+      "itemCount": 25,
+      "items": [
+        {
+          "item": "Type",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "배경 유형\n0 = 채우기 없음\n1 = 면색 또는 무늬색\n2 = 그림\n3 = 그러데이션"
+        },
+        {
+          "item": "WinBrushFaceColor",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "면 색 (RGB 0x00BBGGRR)"
+        },
+        {
+          "item": "WinBrushHatchColor",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "무늬 색 (RGB 0x00BBGGRR)"
+        },
+        {
+          "item": "WinBrushFaceStyle",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "무늬 스타일"
+        },
+        {
+          "item": "WinBrushAlpha",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "면/무늬 색 투명도"
+        },
+        {
+          "item": "FileName",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "ShapeObject의 배경을 그림으로 선택했을 경우. 또는 그림개체일 경우의 그림파일 경로"
+        },
+        {
+          "item": "Embedded",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE)"
+        },
+        {
+          "item": "PicEffect",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그림 효과  \n0 = 실제 이미지 그대로\n1 = 그레이스케일\n2 = 흑백 효과"
+        },
+        {
+          "item": "Brightness",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "명도 (-100 ~ 100)"
+        },
+        {
+          "item": "Contrast",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "밝기 (-100 ~ 100)"
+        },
+        {
+          "item": "Reverse",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "반전 유무"
+        },
+        {
+          "item": "DrawFillImageType",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "ShapeObject의 배경일 경우에만 의미 있는 아이템, 배경을 채우는 방식을 결정한다. (그림개체에는 해당사항 없음)\n0 = 바둑판식으로\n1 = 가로/위만 바둑판식으로 배열\n2 = 가로/아래만 바둑판식으로 배열\n3 = 세로/왼쪽만 바둑판식으로 배열\n4 = 세로/오른쪽만 바둑판식으로 배열\n5 = 크기에 맞추어\n6 = 가운데로\n7 = 가운데 위로\n8 = 가운데 아래로\n9 = 왼쪽 가운데로\n10 = 왼쪽 위로\n11 = 왼쪽 아래로\n12 = 오른쪽 가운데로\n13 = 오른쪽 위로\n14 = 오른쪽 아래로"
+        },
+        {
+          "item": "SkipLeft",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 왼쪽 자르기"
+        },
+        {
+          "item": "SkipRight",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 오른쪽 자르기"
+        },
+        {
+          "item": "SkipTop",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 위 자르기"
+        },
+        {
+          "item": "SkipBottom",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 아래 자르기"
+        },
+        {
+          "item": "OriginalSizeX",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 X size"
+        },
+        {
+          "item": "OriginalSizeY",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 Y size"
+        },
+        {
+          "item": "InsideMarginLeft",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (왼쪽)"
+        },
+        {
+          "item": "InsideMarginRight",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (오른쪽)"
+        },
+        {
+          "item": "InsideMarginTop",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (위)"
+        },
+        {
+          "item": "InsideMarginBottom",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (아래)"
+        },
+        {
+          "item": "WindowsBrush",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "현재 선택된 brush의 type이 면/무늬 브러시인가를 나타냄"
+        },
+        {
+          "item": "ImageBrush",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "현재 선택된 brush의 type이 그림 브러시인가를 나타냄"
+        },
+        {
+          "item": "ImageAlpha",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그림 개체/배경 투명도"
+        }
+      ]
+    },
+    {
+      "setId": "DrawImageAttr",
+      "aliases": [],
+      "description": "그림 개체 속성",
+      "itemCount": 19,
+      "items": [
+        {
+          "item": "FileName",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "ShapeObject의 배경을 그림으로 선택했을 경우 또는 그림개체일 경우의 그림파일 경로"
+        },
+        {
+          "item": "Embedded",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE)"
+        },
+        {
+          "item": "PicEffect",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그림 효과  \n0 = 실제 이미지 그대로\n1 = 그레이스케일\n2 = 흑백 효과"
+        },
+        {
+          "item": "Brightness",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "명도 (-100 ~ 100)"
+        },
+        {
+          "item": "Contrast",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "밝기 (-100 ~ 100)"
+        },
+        {
+          "item": "Reverse",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "반전 유무"
+        },
+        {
+          "item": "DrawFillImageType",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "ShapeObject의 배경일 경우에만 의미 있는 아이템, 배경을 채우는 방식을 결정한다. (그림개체에는 해당사항 없음)\n0 = 바둑판식으로\n1 = 가로/위만 바둑판식으로 배열\n2 = 가로/아래만 바둑판식으로 배열\n3 = 세로/왼쪽만 바둑판식으로 배열\n4 = 세로/오른쪽만 바둑판식으로 배열\n5 = 크기에 맞추어\n6 = 가운데로\n7 = 가운데 위로\n8 = 가운데 아래로\n9 = 왼쪽 가운데로\n10 = 왼쪽 위로\n11 = 왼쪽 아래로\n12 = 오른쪽 가운데로\n13 = 오른쪽 위로\n14 = 오른쪽 아래로"
+        },
+        {
+          "item": "SkipLeft",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 왼쪽 자르기"
+        },
+        {
+          "item": "SkipRight",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 오른쪽 자르기"
+        },
+        {
+          "item": "SkipTop",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 위 자르기"
+        },
+        {
+          "item": "SkipBottom",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 아래 자르기"
+        },
+        {
+          "item": "OriginalSizeX",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 X size"
+        },
+        {
+          "item": "OriginalSizeY",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 Y size"
+        },
+        {
+          "item": "InsideMarginLeft",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (왼쪽)"
+        },
+        {
+          "item": "InsideMarginRight",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (오른쪽)"
+        },
+        {
+          "item": "InsideMarginTop",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (위)"
+        },
+        {
+          "item": "InsideMarginBottom",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (아래)"
+        },
+        {
+          "item": "WindowsBrush",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "현재 선택된 brush의 type이 면/무늬 브러시인가를 나타냄"
+        },
+        {
+          "item": "ImageBrush",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "현재 선택된 brush의 type이 그림 브러시인가를 나타냄"
+        }
+      ]
+    },
+    {
+      "setId": "DrawLayout",
+      "aliases": [],
+      "description": "그리기 개체의 Layout",
+      "itemCount": 3,
+      "items": [
+        {
+          "item": "CreateNumPt",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "생성할 점의 수"
+        },
+        {
+          "item": "CreatePt",
+          "type": "PIT_ARRAY",
+          "subType": "PIT_I",
+          "description": "생성할 점의 위치정보\nPOINT(x,y)로 계산되므로 CreateNumPt*2의 개수로 구성 됨."
+        },
+        {
+          "item": "CurveSegmentInfo",
+          "type": "PIT_ARRAY",
+          "subType": "PIT_UI1",
+          "description": "곡선 세그먼트 정보"
+        }
+      ]
+    },
+    {
+      "setId": "DrawLineAttr",
+      "aliases": [],
+      "description": "그리기 개체의 선 속성",
+      "itemCount": 12,
+      "items": [
+        {
+          "item": "Color",
+          "type": "PMT_UINT32",
+          "subType": "",
+          "description": "선 색깔\nRGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)"
+        },
+        {
+          "item": "Style",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "선의 style"
+        },
+        {
+          "item": "Width",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "선의 width"
+        },
+        {
+          "item": "EndCap",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "선의 endcap"
+        },
+        {
+          "item": "HeadStyle",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "선의 시작 화살표 모양"
+        },
+        {
+          "item": "TailStyle",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "선의 끝 화살표 모양"
+        },
+        {
+          "item": "HeadSize",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "선의 시작 화살표 크기"
+        },
+        {
+          "item": "TailSize",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "선의 끝 화살표 크기"
+        },
+        {
+          "item": "HeadFill",
+          "type": "PMT_BOOL",
+          "subType": "",
+          "description": "선의 시작 화살표 채움 유무"
+        },
+        {
+          "item": "TailFill",
+          "type": "PMT_BOOL",
+          "subType": "",
+          "description": "선의 끝 화살표 채움 유무"
+        },
+        {
+          "item": "OutLineStyle",
+          "type": "PMT_UINT",
+          "subType": "",
+          "description": "선두께 외부/내부/일반 적용"
+        },
+        {
+          "item": "Alpha",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "투명도"
+        }
+      ]
+    },
+    {
+      "setId": "DrawRotate",
+      "aliases": [],
+      "description": "그리기 개체 회전 정보",
+      "itemCount": 7,
+      "items": [
+        {
+          "item": "Command",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "회전 중심의 기준 설정\n0 = 일반 회전\n1 = 회전 영역의 중심을 기준으로 회전\n2 = 그리기 개체 중심을 기준으로 회전\n3 = 회전 영역의 중심을 기준으로 회전 & 중심이 변경됨"
+        },
+        {
+          "item": "CenterX",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "회전 중심의 X 좌표"
+        },
+        {
+          "item": "CenterY",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "회전 중심의 Y 좌표"
+        },
+        {
+          "item": "ObjectCenterX",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "그리기 개체의 중심 X 좌표"
+        },
+        {
+          "item": "ObjectCenterY",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "그리기 개체의 중심 Y 좌표"
+        },
+        {
+          "item": "Angle",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "회전 각"
+        },
+        {
+          "item": "RotateImage",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그림 회전 여부\n0 = 회전 안 함\n1 = 회전함"
+        }
+      ]
+    },
+    {
+      "setId": "DrawShadow",
+      "aliases": [],
+      "description": "그리기 개체 그림자 정보",
+      "itemCount": 5,
+      "items": [
+        {
+          "item": "ShadowType",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "그림자 종류.\n0 = none, 1 = drop, 2 = continuous"
+        },
+        {
+          "item": "ShadowColor",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "그림자 색 (COLORREF)"
+        },
+        {
+          "item": "ShadowOffsetX",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "그림자 X축 간격 (-48% ~ 48%)"
+        },
+        {
+          "item": "ShadowOffsetY",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "그림자 Y축 간격 (-48% ~ 48%)"
+        },
+        {
+          "item": "ShadowAlpha",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그림자 투명도"
+        }
+      ]
+    },
+    {
+      "setId": "DrawShear",
+      "aliases": [],
+      "description": "그리기 개체 기울이기 정보",
+      "itemCount": 2,
+      "items": [
+        {
+          "item": "XFactor",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "X축 기울이기 각도"
+        },
+        {
+          "item": "YFactor",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "Y축 기울이기 각도"
+        }
+      ]
+    },
+    {
+      "setId": "EngineProperties",
+      "aliases": [],
+      "description": "환경 설정 옵션",
+      "itemCount": 7,
+      "items": [
+        {
+          "item": "DoAnyCursorEdit",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "마우스로 두 번 누르기 한곳에 입력가능"
+        },
+        {
+          "item": "DoOutLineStyle0",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "개요 번호 삽입 문단에 개요 스타일 자동 적용"
+        },
+        {
+          "item": "InsertLock",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "삽입 잠금"
+        },
+        {
+          "item": "TabMoveCell",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "표 안에서 <Tab>으로 셀 이동"
+        },
+        {
+          "item": "FaxDriver",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "팩스 드라이버"
+        },
+        {
+          "item": "PDFDriver",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "PDF 드라이버"
+        },
+        {
+          "item": "EnableAutoSpell",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "맞춤법 도우미 작동"
+        }
+      ]
+    },
+    {
+      "setId": "FileSetSecurity",
+      "aliases": [],
+      "description": "배포용 문서",
+      "itemCount": 3,
+      "items": [
+        {
+          "item": "Password",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "배포용 문서 암호(7자리 이상 가능)"
+        },
+        {
+          "item": "NoPrint",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "프린트 가능한 배포용 문서를 만들지의 여부\n0 : 프린트 가능\n1 : 프린트 가능하지 않음"
+        },
+        {
+          "item": "NoCopy",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "문서 내용 복사가 가능한 배포용 문서를 만들지의 여부\n0 : 복사 가능\n1 : 복사 가능하지 않음"
+        }
+      ]
+    },
+    {
+      "setId": "FindReplace",
+      "aliases": [],
+      "description": "찾기/찾아 바꾸기",
+      "itemCount": 23,
+      "items": [
+        {
+          "item": "FindString",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "찾을 문자열"
+        },
+        {
+          "item": "ReplaceString",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "바꿀 문자열"
+        },
+        {
+          "item": "Direction",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "찾을 방향 :\n0 = 아래쪽, 1 = 위쪽, 2 = 문서 전체"
+        },
+        {
+          "item": "MatchCase",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "대소문자 구별 (on / off)"
+        },
+        {
+          "item": "AllWordForms",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "문자열 결합 (on / off)"
+        },
+        {
+          "item": "SeveralWords",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "여러 단어 찾기 (on / off)"
+        },
+        {
+          "item": "UseWildCards",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "아무개 문자 (on / off)"
+        },
+        {
+          "item": "WholeWordOnly",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "온전한 낱말 (on / off)"
+        },
+        {
+          "item": "AutoSpell",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "토씨 자동 교정 (on / off)"
+        },
+        {
+          "item": "ReplaceMode",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "찾아 바꾸기 모드 (on / off)"
+        },
+        {
+          "item": "IgnoreFindString",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "찾을 문자열 무시 (on / off)"
+        },
+        {
+          "item": "IgnoreReplaceString",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "바꿀 문자열 무시 (on / off)"
+        },
+        {
+          "item": "FindCharShape",
+          "type": "PIT_SET",
+          "subType": "CharShape",
+          "description": "찾을 글자 모양"
+        },
+        {
+          "item": "FindParaShape",
+          "type": "PIT_SET",
+          "subType": "ParaShape",
+          "description": "찾을 문단 모양"
+        },
+        {
+          "item": "ReplaceCharShape",
+          "type": "PIT_SET",
+          "subType": "CharShape",
+          "description": "바꿀 글자 모양"
+        },
+        {
+          "item": "ReplaceParaShape",
+          "type": "PIT_SET",
+          "subType": "ParaShape",
+          "description": "바꿀 문단 모양"
+        },
+        {
+          "item": "FindStyle",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "찾을 스타일"
+        },
+        {
+          "item": "ReplaceStyle",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "바꿀 스타일"
+        },
+        {
+          "item": "IgnoreMessage",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "메시지박스 표시 안함. (on / off)"
+        },
+        {
+          "item": "HanjaFromHangul",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "한글임으로 한자 차기"
+        },
+        {
+          "item": "FindJaso",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "자소로 찾기 (on / off)"
+        },
+        {
+          "item": "FindRegExp",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "정규식(조건식)으로 찾기 (on / off)"
+        },
+        {
+          "item": "FindType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "다시 찾기를 할 때 마지막으로 실행한 [찾기 TRUE]를 할 것인가 [찾아가기 FALSE]할 것인가의 여부"
+        }
+      ]
+    },
+    {
+      "setId": "FootnoteShape",
+      "aliases": [
+        "EndnoteShape"
+      ],
+      "description": "미주 / 각주 모양",
+      "itemCount": 17,
+      "items": [
+        {
+          "item": "NumberFormat",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "번호모양"
+        },
+        {
+          "item": "UserChar",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "사용자 기호 (WCHAR)"
+        },
+        {
+          "item": "PrefixChar",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "앞 장식 문자 (WCHAR)"
+        },
+        {
+          "item": "Suffix",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "뒤 장식 문자 (WCHAR)"
+        },
+        {
+          "item": "PlaceAt",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "위치\n- 각주용 옵션 (한 페이지 내에서 각주를 다단에 어떻게 위치시킬지)\n0 = 각 단마다 따로 배열\n1 = 통단으로 배열\n2 = 가장 오른쪽 단에 배열\n\n- 미주용 옵션 (문서 내에서 미주를 어디에 위치시킬지)\n0 = 문서의 마지막\n1 = 구역의 마지막"
+        },
+        {
+          "item": "Restart",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "번호 매기기\n0 = 앞 구역에 이어서\n1 = 현재 구역부터 새로 시작\n2 = 쪽마다 새로 시작 (각주 전용)"
+        },
+        {
+          "item": "NewNumber",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "시작 번호 (1 .. n)\n번호 매기기 값이 ‘쪽마다 새로 시작’ 일 때만 사용된다."
+        },
+        {
+          "item": "LineLength",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "구분선 길이 (HWPUNIT)"
+        },
+        {
+          "item": "LineType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "선 종류"
+        },
+        {
+          "item": "LineWidth",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "선 굵기"
+        },
+        {
+          "item": "SpaceAboveLine",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "구분선 위 여백 (HWPUNIT)"
+        },
+        {
+          "item": "SpaceBelowLine",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "구분선 아래 여백 (HWPUNIT)"
+        },
+        {
+          "item": "SpaceBetweenNotes",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "주석 사이 여백 (HWPUNIT)"
+        },
+        {
+          "item": "SuperScript",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "각주 내용 중 번호 코드의 모양을 위첨자 형식으로 할지"
+        },
+        {
+          "item": "BeneathText",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "텍스트에 이어 바로 출력할지 여부 (on / off)"
+        },
+        {
+          "item": "ApplyTo",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "적용범위\n0 = 선택된 구역\n1 = 선택된 문자열\n2 = 현재 구역\n3 = 문서전체\n4 = 새 구역 : 현재 위치부터 새로"
+        },
+        {
+          "item": "ApplyClass",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "적용범위의 분류 (대화상자를 호출할 경우 사용)\n0x01 = 선택된 구역\n0x02 = 선택된 문자열\n0x04 = 현재 구역\n0x08 = 문서전체\n0x10 = 새 구역 : 현재 위치부터 새로"
+        }
+      ]
+    },
+    {
+      "setId": "HeaderFooter",
+      "aliases": [],
+      "description": "머리말/꼬리말",
+      "itemCount": 3,
+      "items": [
+        {
+          "item": "HeaderFooterCtrlType",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "머리말/꼬리말 종류 : 0 = 머리말, 1 = 꼬리말"
+        },
+        {
+          "item": "HeaderFooterStyle",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "머리말/꼬리말 마당 스타일"
+        },
+        {
+          "item": "Type",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "머리말/꼬리말 위치 : 0 = 양쪽, 1 = 짝수쪽, 2 = 홀수쪽"
+        }
+      ]
+    },
+    {
+      "setId": "HyperLink",
+      "aliases": [],
+      "description": "하이퍼링크 삽입 / 고치기",
+      "itemCount": 5,
+      "items": [
+        {
+          "item": "Text",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "하이퍼링크가 표시되는 문자열"
+        },
+        {
+          "item": "Command",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "Command String 참조"
+        },
+        {
+          "item": "NoLInk",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "\"연결 안함\" 여부"
+        },
+        {
+          "item": "ShapeObject",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "그림 및 그리기객체가 Selection되어 있는지 여부"
+        },
+        {
+          "item": "DirectInsert",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "현재 캐럿 위치에 무조건 하이퍼링크 삽입 여부 (블록지정 상태면 블록해제 후 삽입)"
+        }
+      ]
+    },
+    {
+      "setId": "InsertFieldTemplate",
+      "aliases": [],
+      "description": "문서마당 정보",
+      "itemCount": 6,
+      "items": [
+        {
+          "item": "ShowSingle",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "문서마당 정보 대화상자에서 페이지(탭) 보이기 옵션 :\n-1 = 모든 페이지 보이기\n0 = 누름틀 페이지만 보이기\n1 = 개인 정보 페이지만 보이기\n2 = 문서 요약 페이지만 보이기\n3 = 만든 날짜 페이지만 보이기\n4 = 파일 경로 페이지만 보이기"
+        },
+        {
+          "item": "TemplateDirection",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "필드 컨트롤의 안내문/지시문"
+        },
+        {
+          "item": "TemplateHelp",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "필드 컨트롤의 도움말"
+        },
+        {
+          "item": "TemplateName",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "필드 이름 (name)"
+        },
+        {
+          "item": "TemplateType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "필드의 종류.\nTemplateDirection/Help/Name의 값이 실제로 적용되는 위치 :\n0 = 누름틀, 1 = 개인 정보, 2 = 문서 요약, 3 = 만든 날짜, 4 = 파일 경로"
+        },
+        {
+          "item": "Editable",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "필드의 양식모드에서 편집여부\n0 = 편집 불가능\n1 = 편집 가능"
+        }
+      ]
+    },
+    {
+      "setId": "InsertFile",
+      "aliases": [],
+      "description": "파일 삽입",
+      "itemCount": 7,
+      "items": [
+        {
+          "item": "FileName",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "삽입할 파일의 이름"
+        },
+        {
+          "item": "FileFormat",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "삽입할 파일의 확장자"
+        },
+        {
+          "item": "FileArg",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "삽입할 파일의 Argument"
+        },
+        {
+          "item": "KeepSection",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "끼워 넣을 문서를 구역으로 나누어 쪽 모양을 유지할지 여부 on / off"
+        },
+        {
+          "item": "KeepCharshape",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "끼워 넣을 문서의 글자 모양을 유지할지 여부 on / off"
+        },
+        {
+          "item": "KeepParashape",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "끼워 넣을 문서의 문단 모양을 유지할지 여부 on / off"
+        },
+        {
+          "item": "KeepStyle",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "끼워 넣을 문서의 스타일을 유지할지 여부 on / off"
+        }
+      ]
+    },
+    {
+      "setId": "InsertText",
+      "aliases": [],
+      "description": "텍스트 삽입",
+      "itemCount": 1,
+      "items": [
+        {
+          "item": "Text",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "삽입할 텍스트"
+        }
+      ]
+    },
+    {
+      "setId": "ListParaPos",
+      "aliases": [],
+      "description": "커서의 위치",
+      "itemCount": 3,
+      "items": [
+        {
+          "item": "List",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "현재 위치한 리스트"
+        },
+        {
+          "item": "Para",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "현재 위치한 문단"
+        },
+        {
+          "item": "Pos",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "현재 위치한 글자"
+        }
+      ]
+    },
+    {
+      "setId": "ListProperties",
+      "aliases": [],
+      "description": "서브 리스트의 속성",
+      "itemCount": 7,
+      "items": [
+        {
+          "item": "TextDirection",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "글자 방향. (세부 스펙은 미정)"
+        },
+        {
+          "item": "LineWrap",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "경계에서 줄 나눔 방식\n0 = 일반적인 줄 바꿈\n1 = 줄을 바꾸지 않음\n2 = 자간을 조정하여 한 줄을 유지"
+        },
+        {
+          "item": "VertAlign",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "세로 정렬\n0 = 위로 정렬\n1 = 가운데 정렬\n2 = 아래로 정렬"
+        },
+        {
+          "item": "MarginLeft",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "각 방향 여백 : 왼쪽"
+        },
+        {
+          "item": "MarginRight",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "각 방향 여백 : 오른쪽"
+        },
+        {
+          "item": "MarginTop",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "각 방향 여백 : 위"
+        },
+        {
+          "item": "MarginBottom",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "각 방향 여백 : 아래"
+        }
+      ]
+    },
+    {
+      "setId": "MemoShape",
+      "aliases": [],
+      "description": "메모 모양",
+      "itemCount": 7,
+      "items": [
+        {
+          "item": "Width",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "너비 (HWPUNIT)"
+        },
+        {
+          "item": "LineType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "선 종류"
+        },
+        {
+          "item": "LineWidth",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "선 굵기"
+        },
+        {
+          "item": "LineColor",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "선 색깔 (COLORREF)"
+        },
+        {
+          "item": "FillColor",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "채우기 색깔 (COLORREF)"
+        },
+        {
+          "item": "ActiveFillColor",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "활성화된 채우기 색깔 (COLORREF)"
+        },
+        {
+          "item": "MemoType",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "메모 종류 - 현재 사용안 함\n1 = 메모 넣기, 2 = 메모 지우기, 3 = 메모 고치기"
+        }
+      ]
+    },
+    {
+      "setId": "NumberingShape",
+      "aliases": [],
+      "description": "문단 번호 모양 정의",
+      "itemCount": 2,
+      "items": [
+        {
+          "item": "StartNumber",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "시작 번호 (0 = 앞 구역에 이어, n = 지정한 번호로 시작)\n* 0은 구역의 개요 정의에만 사용된다."
+        },
+        {
+          "item": "NewList",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "새로운 번호 목록을 시작할지 여부\n* 문단 모양(ParaShap)의 서브셋으로 포함될 때만 의미 있다.\n* get일 때는 이 아이템은 아예 생성되지 않으며, set일 때는 TRUE가 아니면 NumberingShape 서브셋 전체가 지정되지 않은 것처럼 무시된다."
+        }
+      ]
+    },
+    {
+      "setId": "PageBorderFill",
+      "aliases": [],
+      "description": "구역의 쪽 테두리/배경",
+      "itemCount": 8,
+      "items": [
+        {
+          "item": "TextBorder",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "TRUE = 본문 기준, FALSE = 종이 기준"
+        },
+        {
+          "item": "HeaderInside",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "머리말 포함 (on / off)"
+        },
+        {
+          "item": "FooterInside",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "꼬리말 포함 (on / off)"
+        },
+        {
+          "item": "FillArea",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "채울 영역\n0 = 종이\n1 = 쪽\n2 = 테두리"
+        },
+        {
+          "item": "OffsetLeft",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "4방향 간격 (HWPUNIT) : 왼쪽"
+        },
+        {
+          "item": "OffsetRight",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "4방향 간격 (HWPUNIT) : 오른쪽"
+        },
+        {
+          "item": "OffsetTop",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "4방향 간격 (HWPUNIT) : 위"
+        },
+        {
+          "item": "OffsetBottom",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "4방향 간격 (HWPUNIT) : 아래"
+        }
+      ]
+    },
+    {
+      "setId": "PageDef",
+      "aliases": [],
+      "description": "구역 내의 용지 설정 속성",
+      "itemCount": 13,
+      "items": [
+        {
+          "item": "PaperWidth",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "용지 가로 크기 (HWPUNIT)"
+        },
+        {
+          "item": "PaperHeight",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "용지 세로 크기 (HWPUNIT)"
+        },
+        {
+          "item": "Landscape",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "용지 방향. 0 = 좁게, 1 = 넓게"
+        },
+        {
+          "item": "LeftMargin",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "왼쪽 여백 (HWPUNIT)"
+        },
+        {
+          "item": "RightMargin",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "오른쪽 여백 (HWPUNIT)"
+        },
+        {
+          "item": "TopMargin",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "위 여백 (HWPUNIT)"
+        },
+        {
+          "item": "BottomMargin",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "아래 여백 (HWPUNIT)"
+        },
+        {
+          "item": "HeaderLen",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "머리말 길이 (HWPUNIT)"
+        },
+        {
+          "item": "FooterLen",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "꼬리말 길이 (HWPUNIT)"
+        },
+        {
+          "item": "GutterLen",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "제본 여백 (HWPUNIT)"
+        },
+        {
+          "item": "GutterType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "편집 방법. \n0 = 한쪽 편집, 1 = 맞쪽 편집, 2 = 위로 넘기기"
+        },
+        {
+          "item": "ApplyTo",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "적용범위\n0 = 선택된 구역\n1 = 선택된 문자열\n2 = 현재 구역\n3 = 문서전체\n4 = 새 구역 : 현재 위치부터 새로"
+        },
+        {
+          "item": "ApplyClass",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "적용범위의 분류 (대화상자를 호출할 경우 사용)\n0x01 = 선택된 구역\n0x02 = 선택된 문자열\n0x04 = 현재 구역\n0x08 = 문서전체\n0x10 = 새 구역 : 현재 위치부터 새로"
+        }
+      ]
+    },
+    {
+      "setId": "PageHiding",
+      "aliases": [],
+      "description": "감추기",
+      "itemCount": 1,
+      "items": [
+        {
+          "item": "Fields",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "감출 대상 비트 필드.\n0x01 = 머리말\n0x02 = 꼬리말\n0x04 = 바탕쪽\n0x08 = 테두리\n0x10 = 배경\n0x20 = 쪽번호 위치"
+        }
+      ]
+    },
+    {
+      "setId": "PageNumCtrl",
+      "aliases": [],
+      "description": "페이지번호",
+      "itemCount": 1,
+      "items": [
+        {
+          "item": "PageStartsOn",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "페이지 번호 적용 옵션. \n0 = 양쪽\n1 = 짝수쪽\n2 = 홀수쪽"
+        }
+      ]
+    },
+    {
+      "setId": "PageNumPos",
+      "aliases": [],
+      "description": "쪽 번호 위치",
+      "itemCount": 6,
+      "items": [
+        {
+          "item": "NumberFormat",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "번호 모양 :\n0 = 1, 2, 3\n1 = ①, ②, ③\n2 = Ⅰ, Ⅱ, Ⅲ\n3 = ⅰ, ⅱ, ⅲ\n4 = A, B, C\n8 = 가, 나, 다\n13 = 一, 二, 三\n15 = 갑, 을, 병\n16 = 甲, 乙, 丙\n※ 중간에 빈 번호에도 문자포맷이 존재하나 이곳에서 사용하지 않아 생략함"
+        },
+        {
+          "item": "UserChar",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "사용자 기호(WCHAR)."
+        },
+        {
+          "item": "PrefixChar",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "앞 장식 문자(WCHAR)."
+        },
+        {
+          "item": "SuffixChar",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "뒤 장식 문자(WCHAR)."
+        },
+        {
+          "item": "SideChar",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "양쪽 옆 장식 문자(WCHAR). L'-'만 사용할 수 있다."
+        },
+        {
+          "item": "DrawPos",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "번호 위치\n0 = 쪽 번호 없음\n1 = 왼쪽 위,\n2 = 가운데 위,\n3 = 오른쪽 위,\n4 = 왼쪽 아래,\n5 = 가운데 아래,\n6 = 오른쪽 아래,\n7 = 바깥쪽 위,\n8 = 바깥쪽 아래,\n9 = 안쪽 위,\n10 = 안쪽 아래"
+        }
+      ]
+    },
+    {
+      "setId": "ParaShape",
+      "aliases": [],
+      "description": "문단 모양",
+      "itemCount": 32,
+      "items": [
+        {
+          "item": "LeftMargin",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "왼쪽 여백 (URC)"
+        },
+        {
+          "item": "RightMargin",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "오른쪽 여백 (URC)"
+        },
+        {
+          "item": "Indentation",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "들여쓰기/내어 쓰기 (URC)"
+        },
+        {
+          "item": "PrevSpacing",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "문단 간격 위 (URC)"
+        },
+        {
+          "item": "NextSpacing",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "문단 간격 아래 (URC)"
+        },
+        {
+          "item": "LineSpacingType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "줄 간격 종류 (HWPUNIT)\n0 = 글자에 따라\n1 = 고정 값\n2 = 여백만 지정"
+        },
+        {
+          "item": "LineSpacing",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "줄 간격 값. \n줄 간격 종류(LineSpacingType)에 따라 :\n- \"글자에 따라\"일 경우(0 - 500%)\n- “고정 값”일 경우(URC)\n- “여백만 지정”일 경우(URC)"
+        },
+        {
+          "item": "AlignType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "정렬 방식\n0 = 양쪽 정렬\n1 = 왼쪽 정렬\n2 = 오른쪽 정렬\n3 = 가운데 정렬\n4 = 배분 정렬\n5 = 나눔 정렬 (공백에만 배분)"
+        },
+        {
+          "item": "BreakLatinWord",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "줄 나눔 단위 (라틴 문자)\n0 = 단어\n1 = 하이픈\n2 = 글자"
+        },
+        {
+          "item": "BreakNonLatinWord",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "단위 (비 라틴 문자) TRUE = 글자, FALSE = 어절"
+        },
+        {
+          "item": "SnapToGrid",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "편집 용지의 줄 격자 사용 (on / off)"
+        },
+        {
+          "item": "Condense",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "공백 최소값 (0 - 75%)"
+        },
+        {
+          "item": "WidowOrphan",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "외톨이줄 보호 (on / off)"
+        },
+        {
+          "item": "KeepWithNext",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "다음 문단과 함께 (on / off)"
+        },
+        {
+          "item": "KeepLinesTogether",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "문단 보호 (on / off)"
+        },
+        {
+          "item": "PagebreakBefore",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "문단 앞에서 항상 쪽 나눔 (on / off)"
+        },
+        {
+          "item": "TextAlignment",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "세로 정렬\n0 = 글꼴기준\n1 = 위\n2 = 가운데\n3 = 아래"
+        },
+        {
+          "item": "FontLineHeight",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "글꼴에 어울리는 줄 높이 (on / off)"
+        },
+        {
+          "item": "HeadingType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "문단 머리 모양\n0 = 없음\n1 = 개요\n2 = 번호\n3 = 불릿"
+        },
+        {
+          "item": "Level",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "단계 (0 - 6)"
+        },
+        {
+          "item": "BorderConnect",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "문단 테두리/배경 - 테두리 연결 (on / off)"
+        },
+        {
+          "item": "BorderText",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "문단 테두리/배경 - 여백 무시 (0 = 단, 1 = 텍스트)"
+        },
+        {
+          "item": "BorderOffsetLeft",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "문단 테두리/배경 - 4방향 간격 (HWPUNIT) : 왼쪽"
+        },
+        {
+          "item": "BorderOffsetRight",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "문단 테두리/배경 - 4방향 간격 (HWPUNIT) : 오른쪽"
+        },
+        {
+          "item": "BorderOffsetTop",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "문단 테두리/배경 - 4방향 간격 (HWPUNIT) : 위"
+        },
+        {
+          "item": "BorderOffsetBottom",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "문단 테두리/배경 - 4방향 간격 (HWPUNIT) : 아래"
+        },
+        {
+          "item": "TailType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "문단 꼬리 모양 (마지막 꼬리 줄 적용) on/off"
+        },
+        {
+          "item": "LineWrap",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "글꼴에 어울리는 줄 높이 (on/off)"
+        },
+        {
+          "item": "TabDef",
+          "type": "PIT_SET",
+          "subType": "TabDef",
+          "description": "탭 정의"
+        },
+        {
+          "item": "Numbering",
+          "type": "PIT_SET",
+          "subType": "NumberingShape",
+          "description": "문단 번호\n문단 머리 모양(HeadingType)이 ‘개요’, ‘번호’ 일 때 사용"
+        },
+        {
+          "item": "Bullet",
+          "type": "PIT_SET",
+          "subType": "BulletShape",
+          "description": "불릿 모양\n문단 머리 모양(HeadingType)이 ‘불릿’(글머리표) 일 때 사용"
+        },
+        {
+          "item": "BorderFill",
+          "type": "PIT_SET",
+          "subType": "BorderFill",
+          "description": "테두리/배경"
+        }
+      ]
+    },
+    {
+      "setId": "SecDef",
+      "aliases": [],
+      "description": "구역의 속성",
+      "itemCount": 32,
+      "items": [
+        {
+          "item": "TextDirection",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "글자 방향"
+        },
+        {
+          "item": "StartsOn",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "구역 나눔으로 새 페이지가 생길 때의 페이지 번호 적용 옵션\n 0 = 이어서, 1 = 홀수, 2 = 짝수, 3 = 임의 값"
+        },
+        {
+          "item": "LineGrid",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "세로로 줄맞춤을 할지 여부.\n 0 = off, 1 - n = 간격을 HWPUNIT 단위로 지정"
+        },
+        {
+          "item": "CharGrid",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "가로로 줄맞춤을 할지 여부.\n 0 = off, 1 - n = 간격을 HWPUNIT 단위로 지정"
+        },
+        {
+          "item": "PageDef",
+          "type": "PIT_SET",
+          "subType": "PageDef",
+          "description": "용지 설정 정보"
+        },
+        {
+          "item": "HideEmptyLine",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "빈 줄 감춤 on / off"
+        },
+        {
+          "item": "SpaceBetweenColumns",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "동일한 페이지에서 서로 다른 단 사이의 간격"
+        },
+        {
+          "item": "TabStop",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "기본 탭 간격"
+        },
+        {
+          "item": "FootnoteShape",
+          "type": "PIT_SET",
+          "subType": "FootnoteShape",
+          "description": "각주 모양"
+        },
+        {
+          "item": "EndnoteShape",
+          "type": "PIT_SET",
+          "subType": "FootnoteShape",
+          "description": "미주 모양"
+        },
+        {
+          "item": "HideHeader",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "구역의 첫 쪽에만 머리말 감추기 옵션 on / off"
+        },
+        {
+          "item": "HideFooter",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "구역의 첫 쪽에만 꼬리말 감추기 옵션 on / off"
+        },
+        {
+          "item": "HideMasterPage",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "구역의 첫 쪽에만 바탕쪽 감추기 옵션 on / off"
+        },
+        {
+          "item": "HideBorder",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "구역의 첫 쪽에만 테두리 감추기 옵션 on / off"
+        },
+        {
+          "item": "HideFill",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "구역의 첫 쪽에만 배경 감추기 옵션 on / off"
+        },
+        {
+          "item": "HidePageNumPos",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "구역의 첫 쪽에만 쪽번호 감추기 옵션 on / off"
+        },
+        {
+          "item": "FirstBorder",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "구역의 첫 쪽에만 테두리 표시 옵션 on / off"
+        },
+        {
+          "item": "FirstFill",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "구역의 첫 쪽에만 배경 표시 옵션 on / off"
+        },
+        {
+          "item": "OutlineShape",
+          "type": "PIT_SET",
+          "subType": "NumberingShape",
+          "description": "개요 번호"
+        },
+        {
+          "item": "PageBorderFillBoth",
+          "type": "PIT_SET",
+          "subType": "PageBorderFill",
+          "description": "쪽 테두리/배경  (양쪽)"
+        },
+        {
+          "item": "PageBorderFillEven",
+          "type": "PIT_SET",
+          "subType": "PageBorderFill",
+          "description": "쪽 테두리/배경  (짝수)"
+        },
+        {
+          "item": "PageBorderFillOdd",
+          "type": "PIT_SET",
+          "subType": "PageBorderFill",
+          "description": "쪽 테두리/배경  (홀수)"
+        },
+        {
+          "item": "PageNumber",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "쪽 시작 번호\n 0 = 앞 구역에 이어, n = 새 번호로 시작"
+        },
+        {
+          "item": "FigureNumber",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "그림 시작 번호\n 0 = 앞 구역에 이어, n = 새 번호로 시작"
+        },
+        {
+          "item": "TableNumber",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "표 시작 번호\n 0 = 앞 구역에 이어, n = 새 번호로 시작"
+        },
+        {
+          "item": "EquationNumber",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "수식 시작 번호\n 0 = 앞 구역에 이어, n = 새 번호로 시작"
+        },
+        {
+          "item": "WongojiFormat",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "원고지 방식의 포맷팅. CHAR_GRID가 지정되어야 함."
+        },
+        {
+          "item": "MemoShape",
+          "type": "PIT_SET",
+          "subType": "MemoShape",
+          "description": "메모 모양"
+        },
+        {
+          "item": "TextVerticalWidthHead",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "머리말/꼬리말 세로쓰기 여부"
+        },
+        {
+          "item": "ApplyTo",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "적용범위\n0 = 선택된 구역\n1 = 선택된 문자열\n2 = 현재 구역\n3 = 문서전체\n4 = 새 구역 : 현재 위치부터 새로"
+        },
+        {
+          "item": "ApplyClass",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "적용범위의 분류 (대화상자를 호출할 경우 사용)\n0x01 = 선택된 구역\n0x02 = 선택된 문자열\n0x04 = 현재 구역\n0x08 = 문서전체\n0x10 = 새 구역 : 현재 위치부터 새로"
+        },
+        {
+          "item": "ApplyToPageBorderFill",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "채울 영역 분류 (PageBorder 액션에서 사용)\n0 = 종이, 1 = 쪽, 2 = 테두리"
+        }
+      ]
+    },
+    {
+      "setId": "ShapeObject",
+      "aliases": [],
+      "description": "그리기 개체의 공통 속성 (도형, 글상자, 표, 그림 등)",
+      "itemCount": 30,
+      "items": [
+        {
+          "item": "TreatAsChar",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "글자처럼 취급 on / off"
+        },
+        {
+          "item": "AffectsLine",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "줄 간격에 영향을 줄지 여부 on / off (TreatAsChar가 TRUE일 경우에만 사용된다)"
+        },
+        {
+          "item": "VertRelTo",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "세로 위치의 기준.\n0 = 종이 영역(Paper)\n1 = 쪽 영역(Page)\n2 = 문단 영역(Paragraph)\n(TreatAsChar가 FALSE일 경우에만 사용된다)"
+        },
+        {
+          "item": "VertAlign",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "VertRelTo값에 따른 상대적인 정렬 기준.\nVertRelTo값이 2(문단영역)일 경우 0 값만 사용할 수 있다.\n0 = 위(Top)\n1 = 가운데(Center)\n2 = 아래(Bottom)"
+        },
+        {
+          "item": "VertOffset",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "VertRelTo와 VertAlign을 기준으로 한 Y축 위치 오프셋 값. HWPUNIT 단위."
+        },
+        {
+          "item": "HorzRelTo",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "가로 위치의 기준.\n0 = 종이 영역(Paper)\n1 = 쪽 영역(Page)\n2 = 다단 영역(Column)\n3 = 문단 영역(Paragraph)\n(TreatAsChar가 FALSE일 경우에만 사용된다)"
+        },
+        {
+          "item": "HorzAlign",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "HorzRelTo값에 따른 상대적인 정렬 기준.\nHorzRelTo값이 3(문단영역)일 경우 0~2 사이의 값만 사용할 수 있다.\n0 = 왼쪽(Left)\n1 = 가운데(Center)\n2 = 오른쪽(Right)\n3 = 안쪽(Inside)\n4 = 바깥쪽(Outside)"
+        },
+        {
+          "item": "HorzOffset",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "HorzRelTo와 HorzAlign을 기준으로 한 X축 위치 오프셋 값. HWPUNIT 단위."
+        },
+        {
+          "item": "FlowWithText",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그리기 개체의 세로 위치를 쪽 영역 안쪽으로 제한할지 여부 on / off\nVertRelTo값이 2(문단영역)일 경우에만 의미가 있다."
+        },
+        {
+          "item": "AllowOverlap",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "다른 개체와 겹치는 것을 허용할지 여부 on / off\nTreatAsChar가 FALSE일 때만 의미가 있으며, FlowWithText가 TRUE이면 AllowOverlap은 항상 FALSE로 간주한다."
+        },
+        {
+          "item": "WidthRelTo",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "개체 너비 기준.\n0 = 종이(Paper)\n1 = 쪽(Page)\n2 = 다단(Column)\n3 = 문단(Paragraph)\n4 = 고정 값(Absolute)"
+        },
+        {
+          "item": "Width",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "개체 너비 값.\nWidthRelTo에 따라 값의 의미 및 단위가 달라진다."
+        },
+        {
+          "item": "HeightRelTo",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "개체 높이 기준.\n0 = 종이(Paper)\n1 = 쪽(Page)\n2 = 고정 값(Absolute)"
+        },
+        {
+          "item": "Height",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "개체 높이 값.\nHeightRelTo에 다라 값의 의미 및 단위가 달라진다."
+        },
+        {
+          "item": "ProtectSize",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "크기 보호 on / off"
+        },
+        {
+          "item": "TextWrap",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그리기 개체와 본문 사이의 배치 방법.\n0 = 어울림(Square)\n1 = 자리 차지(Top & Bottom)\n2 = 글 뒤로(Behind Text)\n3 = 글 앞으로(In front of Text)\n4 = 경계를 명확히 지킴(Tight) - 현재 사용안함\n5 = 경계를 통과함(Through) - 현재 사용안함\n(TreatAsChar가 FALSE일 경우에만 사용된다)"
+        },
+        {
+          "item": "TextFlow",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "그리기 개체의 좌/우 어느 쪽에 글을 배치할지 지정하는 옵션. TextWrap의 값이 0일 때만 유효하다.\n0 = 양쪽 모두(Both)\n1 = 왼쪽만(Left Only)\n2 = 오른쪽만(Right Only)\n3 = 왼쪽과 오른쪽 중 넓은 쪽(Largest Only)"
+        },
+        {
+          "item": "OutsideMarginLeft",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "개체의 바깥 여백. (왼쪽) HWPUNIT 단위"
+        },
+        {
+          "item": "OutsideMarginRight",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "개체의 바깥 여백. (오른쪽) HWPUNIT 단위"
+        },
+        {
+          "item": "OutsideMarginTop",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "개체의 바깥 여백. (위) HWPUNIT 단위"
+        },
+        {
+          "item": "OutsideMarginBottom",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "개체의 바깥 여백. (아래) HWPUNIT 단위"
+        },
+        {
+          "item": "NumberingType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "이 개체가 속하는 번호 범주.\n0 = 없음, 1 = 그림, 2 = 표, 3 = 수식"
+        },
+        {
+          "item": "LayoutWidth",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "개체가 페이지에 배열될 때 계산되는 폭의 값"
+        },
+        {
+          "item": "LayoutHeight",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "개체가 페이지에 배열될 때 계산되는 높이 값"
+        },
+        {
+          "item": "Lock",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "개체 보호하기 on / off"
+        },
+        {
+          "item": "HoldAnchorObj",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "쪽 나눔 방지 on / off"
+        },
+        {
+          "item": "PageNumber",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "개체가 존재 하는 페이지"
+        },
+        {
+          "item": "AdjustSelection",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "개체 Selection 상태 TRUE/FALSE"
+        },
+        {
+          "item": "AdjustTextBox",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "글상자로 TRUE/FALSE"
+        },
+        {
+          "item": "AdjustPrevObjAttr",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "앞개체 속성 따라가기 TRUE/FALSE"
+        }
+      ]
+    },
+    {
+      "setId": "SpellingCheck",
+      "aliases": [],
+      "description": "행정용어순화 (맞춤법검사)",
+      "itemCount": 11,
+      "items": [
+        {
+          "item": "ShapeDrawLayOut",
+          "type": "PIT_SET",
+          "subType": "DrawLayout",
+          "description": "그리기 개체의 Layout"
+        },
+        {
+          "item": "ShapeDrawLineAttr",
+          "type": "PIT_SET",
+          "subType": "DrawLineAttr",
+          "description": "그리기 개체의 Line 속성"
+        },
+        {
+          "item": "ShapeDrawFillAttr",
+          "type": "PIT_SET",
+          "subType": "DrawFillAttr",
+          "description": "그리기 개체의 Fill 속성"
+        },
+        {
+          "item": "ShapeDrawImageAttr",
+          "type": "PIT_SET",
+          "subType": "DrawImageAttr",
+          "description": "그림 개체 속성"
+        },
+        {
+          "item": "ShapeDrawArcType",
+          "type": "PIT_SET",
+          "subType": "DrawArcType",
+          "description": "호 그리기 개체 유형"
+        },
+        {
+          "item": "ShapeDrawRotate",
+          "type": "PIT_SET",
+          "subType": "DrawRotate",
+          "description": "그리기 개체 회전"
+        },
+        {
+          "item": "ShapeDrawShear",
+          "type": "PIT_SET",
+          "subType": "DrawShear",
+          "description": "그리기 개체 기울이기"
+        },
+        {
+          "item": "ShapeDrawShadow",
+          "type": "PIT_SET",
+          "subType": "DrawShadow",
+          "description": "그림자"
+        },
+        {
+          "item": "ShapeTableCell",
+          "type": "PIT_SET",
+          "subType": "Cell",
+          "description": "셀 정보"
+        },
+        {
+          "item": "ShapeListProperties",
+          "type": "PIT_SET",
+          "subType": "ListProperties",
+          "description": "서브 list 속성"
+        },
+        {
+          "item": "ShapeCaption",
+          "type": "PIT_SET",
+          "subType": "Caption",
+          "description": "캡션"
+        }
+      ]
+    },
+    {
+      "setId": "SummaryInfo",
+      "aliases": [],
+      "description": "문서 정보",
+      "itemCount": 2,
+      "items": [
+        {
+          "item": "NotifyResult",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "맞춤법 검사 결과를 통보 받을지 여부. TRUE/FALSE"
+        },
+        {
+          "item": "CheckStart",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "맞춤법 검사 시작 여부. TRUE/FALSE\n(맞춤법 대화상자가 표시되면서 맞춤법 검사가 시작되는 옵션)"
+        }
+      ]
+    },
+    {
+      "setId": "TabDef",
+      "aliases": [],
+      "description": "탭 정의",
+      "itemCount": 23,
+      "items": [
+        {
+          "item": "Title",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "제목"
+        },
+        {
+          "item": "Subject",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "주제"
+        },
+        {
+          "item": "Author",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "지은이"
+        },
+        {
+          "item": "Date",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "날짜"
+        },
+        {
+          "item": "KeyWords",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "키워드"
+        },
+        {
+          "item": "Comments",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "기타"
+        },
+        {
+          "item": "CreationTimeLow",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "작성한 날짜 (low)"
+        },
+        {
+          "item": "CreationTimeHigh",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "작성한 날짜 (high)"
+        },
+        {
+          "item": "ModifiedTimeLow",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "마지막 수정한 날짜 (low)"
+        },
+        {
+          "item": "ModifiedTimeHigh",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "마지막 수정한 날짜 (high)"
+        },
+        {
+          "item": "PrintedTimeLow",
+          "type": "PIT_UI",
+          "subType": "",
+          "description": "마지막 인쇄한 날짜 (low)"
+        },
+        {
+          "item": "PrintedTimeHigh",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "마지막 인쇄한 날짜 (high)"
+        },
+        {
+          "item": "LastSavedBy",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "마지막 저장한 사람"
+        },
+        {
+          "item": "Characters",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "문서분량 (글자)"
+        },
+        {
+          "item": "Words",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "문서분량 (낱말)"
+        },
+        {
+          "item": "Lines",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "문서분량 (줄)"
+        },
+        {
+          "item": "Paragraphs",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "문서분량 (문단)"
+        },
+        {
+          "item": "Pages",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "문서분량 (쪽)"
+        },
+        {
+          "item": "CopyPapers",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "문서분량 (원고지)"
+        },
+        {
+          "item": "Etcetera",
+          "type": "PMT_INT",
+          "subType": "",
+          "description": "문서분량 (표, 그림 등)"
+        },
+        {
+          "item": "DocVersion",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "문서 파일 버전"
+        },
+        {
+          "item": "HwpVersion",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "문서를 생성한 글 워드프로그램의 버전"
+        },
+        {
+          "item": "HanjaChar",
+          "type": "PIT_I1",
+          "subType": "",
+          "description": "문서분량 (한자 수)"
+        }
+      ]
+    },
+    {
+      "setId": "Table",
+      "aliases": [],
+      "description": "표",
+      "itemCount": 3,
+      "items": [
+        {
+          "item": "AutoTabLeft",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "문단 왼쪽 끝 탭 (on / off)"
+        },
+        {
+          "item": "AutoTabRight",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "문단 오른쪽 끝 탭 (on / off)"
+        },
+        {
+          "item": "TabItem",
+          "type": "PIT_ARRAY",
+          "subType": "PIT_I",
+          "description": "각각의 탭 정의. \n하나의 탭 아이템은 세 개의 인수로 표현되어 있음.\n(n * 3 + 0) - PIT_I : 탭 위치 (URC)\n(n * 3 + 1) - PIT_I : 채울 모양 (아래참조)\n(n * 3 + 2) - PIT_I : 탭 종류 (아래참조.)\n채울 모양 :\n선 종류\n탭 종류 :\n0 = 왼쪽 \n1 = 오른쪽\n2 = 가운데\n3 = 소수점"
+        }
+      ]
+    },
+    {
+      "setId": "TableCreation",
+      "aliases": [],
+      "description": "표 생성",
+      "itemCount": 11,
+      "items": [
+        {
+          "item": "PageBreak",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "표가 페이지 경계에 걸렸을 때의 처리 방식\n0 = 나누지 않는다.\n1 = 테이블은 나누지만 셀은 나누지 않는다.\n2 = 셀 내의 텍스트도 나눈다."
+        },
+        {
+          "item": "RepeatHeader",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "제목 행을 반복할지 여부. (on / off)"
+        },
+        {
+          "item": "CellSpacing",
+          "type": "PIT_UI4",
+          "subType": "",
+          "description": "셀 간격(HTML의 셀 간격과 동일 의미. HWPUNIT)"
+        },
+        {
+          "item": "CellMarginLeft",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "기본 셀 안쪽 여백(왼쪽)"
+        },
+        {
+          "item": "CellMarginRight",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "기본 셀 안쪽 여백(오른쪽)"
+        },
+        {
+          "item": "CellMarginTop",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "기본 셀 안쪽 여백(위쪽)"
+        },
+        {
+          "item": "CellMarginBottom",
+          "type": "PIT_I4",
+          "subType": "",
+          "description": "기본 셀 안쪽 여백(아래쪽)"
+        },
+        {
+          "item": "BorderFill",
+          "type": "PIT_SET",
+          "subType": "BorderFill",
+          "description": "표에 적용되는 테두리/배경"
+        },
+        {
+          "item": "TableCharInfo",
+          "type": "PIT_SET",
+          "subType": "TableChartInfo",
+          "description": "표와 연결된 차트 정보 - 차트 미완성"
+        },
+        {
+          "item": "TableBorderFill",
+          "type": "PIT_SET",
+          "subType": "BorderFill",
+          "description": "표에 적용되는 테두리/배경"
+        },
+        {
+          "item": "Cell",
+          "type": "PIT_SET",
+          "subType": "Cell",
+          "description": "셀 속성"
+        }
+      ]
+    },
+    {
+      "setId": "TableDeleteLine",
+      "aliases": [],
+      "description": "표의 줄/칸 삭제",
+      "itemCount": 13,
+      "items": [
+        {
+          "item": "Rows",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "행 수 (생략하면 5)"
+        },
+        {
+          "item": "Cols",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "칼럼 수 (생략하면 5)"
+        },
+        {
+          "item": "RowHeight",
+          "type": "PIT_ARRAY",
+          "subType": "PIT_I4",
+          "description": "행의 디폴트 높이 (PIT_I4)"
+        },
+        {
+          "item": "ColWidth",
+          "type": "PIT_ARRAY",
+          "subType": "PIT_I4",
+          "description": "칼럼의 디폴트 폭 (PIT_I4)"
+        },
+        {
+          "item": "CellInfo",
+          "type": "PIT_ARRAY",
+          "subType": "PIT_I4",
+          "description": "정보가 없는 셀은 디폴트값을 따라가므로 모든 셀에 대해 정보를 줄 필요는 없다."
+        },
+        {
+          "item": "WidthType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "너비"
+        },
+        {
+          "item": "HeightType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "높이"
+        },
+        {
+          "item": "WidthValue",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "너비 값"
+        },
+        {
+          "item": "HeightValue",
+          "type": "PIT_I",
+          "subType": "",
+          "description": "높이 값"
+        },
+        {
+          "item": "TableTemplateValue",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "표 마당 적용 여부"
+        },
+        {
+          "item": "TableProperties",
+          "type": "PIT_SET",
+          "subType": "Table",
+          "description": "초기 표 속성"
+        },
+        {
+          "item": "TableTemplate",
+          "type": "PIT_SET",
+          "subType": "TableTemplate",
+          "description": "표마당 적용 속성"
+        },
+        {
+          "item": "TableDrawProperties",
+          "type": "PIT_SET",
+          "subType": "TableDrawPen",
+          "description": "마우스로 선을 그릴 때 속성"
+        }
+      ]
+    },
+    {
+      "setId": "TableInsertLine",
+      "aliases": [],
+      "description": "표의 줄/칸 삽입",
+      "itemCount": 1,
+      "items": [
+        {
+          "item": "Type",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "0 = 줄, 1 = 칸"
+        }
+      ]
+    },
+    {
+      "setId": "TableSplitCell",
+      "aliases": [],
+      "description": "셀 나누기",
+      "itemCount": 2,
+      "items": [
+        {
+          "item": "Side",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "방향"
+        },
+        {
+          "item": "Count",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "개수"
+        }
+      ]
+    },
+    {
+      "setId": "TableStrToTbl",
+      "aliases": [],
+      "description": "문자열을 표로",
+      "itemCount": 5,
+      "items": [
+        {
+          "item": "Cols",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "칸 수"
+        },
+        {
+          "item": "Rows",
+          "type": "PIT_UI2",
+          "subType": "",
+          "description": "줄 수"
+        },
+        {
+          "item": "DistributeHeight",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "줄 높이를 같게"
+        },
+        {
+          "item": "Merge",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "나누기 전에 합치기"
+        },
+        {
+          "item": "Mode2",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "셀 나누기 모드 2, 셀 나누기를 할 때, adjust를 생략하고 셀이 어긋나는 것을 방지한다."
+        }
+      ]
+    },
+    {
+      "setId": "ViewProperties",
+      "aliases": [],
+      "description": "뷰의 속성",
+      "itemCount": 5,
+      "items": [
+        {
+          "item": "DelimiterType",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "분리 문자(탭, 쉼표, 공백)"
+        },
+        {
+          "item": "UserDefine",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "사용자 정의 필드 구분 기호"
+        },
+        {
+          "item": "AutoOrDefine",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "자동으로 할 것인지 분리 문자를 지정 할 것인지를 결정"
+        },
+        {
+          "item": "KeepSeperator",
+          "type": "PIT_UI1",
+          "subType": "",
+          "description": "선택 사항 (구분자 유지)"
+        },
+        {
+          "item": "DelimiterEtc",
+          "type": "PIT_BSTR",
+          "subType": "",
+          "description": "기타 문자 필드 구분 기호"
+        }
+      ]
+    }
+  ]
+}

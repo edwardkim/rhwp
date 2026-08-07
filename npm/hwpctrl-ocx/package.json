@@ -1,0 +1,22 @@
+{
+  "name": "@rhwp/hwpctrl",
+  "version": "0.0.0",
+  "description": "웹한글컨트롤(WebHwpCtrl) API v2.4 호환 층 — rhwp WASM 기반",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edwardkim/rhwp"
+  },
+  "files": [
+    "src",
+    "spec"
+  ],
+  "scripts": {
+    "spec": "python ../../tools/hwpctrl_compat/extract_spec.py",
+    "ledger": "python ../../tools/hwpctrl_compat/build_ledger.py",
+    "ledger:check": "python ../../tools/hwpctrl_compat/build_ledger.py --check",
+    "gate": "python ../../tools/hwpctrl_compat/run_gate.py --impl legacy"
+  }
+}

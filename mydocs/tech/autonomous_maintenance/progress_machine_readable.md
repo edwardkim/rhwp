@@ -2,14 +2,14 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/autonomous_maintenance/progress_machine_readable.md
-last_verified: 2026-08-04
+last_verified: 2026-08-07
 ---
 
 # 진행률 기계 산출 — 등급 태그 파싱에서 대시보드까지 (R94)
 
 > 로드맵 [#3907](https://github.com/edwardkim/rhwp/issues/3907) J그룹 **R94** 의 설계 문서다.
-> R94 의 등급은 `[가설]` 이다 — **구현이 없다.**
-> 이 문서는 "이렇게 하면 된다"가 아니라 **"이렇게 하려면 무엇이 필요한가"** 를 적는다.
+> R94의 P2 형식 검증은 `tools/roadmap_progress.py`로 구현돼 `[실측]`이다.
+> 증거 토큰·이슈 상태·가설 역방향을 검증하는 P1 이후 범위(V3~V5)는 여전히 제안이다.
 
 ## 0. 이 문서의 등급 선언
 

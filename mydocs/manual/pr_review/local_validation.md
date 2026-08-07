@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-07-25
+last_verified: 2026-08-08
 ---
 
 # 로컬 사전 검증
@@ -70,12 +70,29 @@ devel 위에 PR head를 합친 결과 tree와 conflict를 확인한다. conflict
 | 변경 범위 | 기본 검증 |
 | --- | --- |
 | mydocs만 변경 | git diff --check, 문서 경로·링크·변경 범위 확인. Cargo 생략 |
-| Rust parser/model/CLI | focused test, release-test 전체, fmt, clippy |
-| renderer/layout/typeset/WASM | focused test, release-test 전체, Native Skia 3종, wasm-pack build, 시각 증적 |
+| Rust parser/model/CLI | focused test, release-test 전체, fmt, clippy. 단, 4.3.0의 검토 재사용 조건이면 focused test와 GitHub 전체 CI 근거 |
+| renderer/layout/typeset/WASM | focused test, release-test 전체, Native Skia 3종, wasm-pack build, 시각 증적. 단, 4.3.0의 검토 재사용 조건이면 focused test, WASM·시각 증적과 GitHub 전체 CI 근거 |
 | rhwp-studio만 변경 | TypeScript 검사, npm test, 실제 browser 동작 |
 | npm/editor public API·transport·type | 아래 package 검증 |
 | CI workflow | workflow 구문·변경 조건·최신 GitHub Actions 결과 |
 | 기존 golden/baseline/fixture | 관련 focused test, snapshot 결정성, 최신 PR head CI |
+
+### 4.3.0 PR 검토의 GitHub Full CI 재사용
+
+이 표의 기본 검증은 새 code head를 만들거나 아직 GitHub 전체 검증이 없는 PR에 적용한다. 이미
+GitHub Full CI가 완료된 code head를 maintainer가 재검토할 때는
+[통합 워크플로우의 3.2.2절](../pr_review_workflow.md#322-녹색-github-code-head의-중복-로컬-전체-회귀-생략)의
+네 조건을 모두 만족하면, 해당 code head에서 이미 성공한 `release-test` 전체와 Native Skia 광범위
+회귀를 로컬에서 반복하지 않는다.
+
+- 이 예외는 source·test·fixture·workflow·baseline·asset 보정이 전혀 없고, current-base merge가
+  clean 또는 `mydocs/` 한정 bridge인 경우에만 사용한다.
+- focused test, `git diff --check`, 변경 문서 링크 검사, renderer의 실제 WASM/브라우저 시각 검증은
+  생략하지 않는다.
+- Docker 등 표준 실행 환경이 없어서 host fallback을 썼다면, 표준 경로를 통과했다고 쓰지 않고
+  대체 명령과 환경 부재를 review 문서에 함께 기록한다.
+- candidate SHA와 녹색 run, 생략한 명령과 사유를 PR review 문서에 적고, 최신 trailing 문서 head의
+  aggregate 상태는 merge 직전에 다시 확인한다.
 
 신규 CLI 통합 테스트는 `env!("CARGO_BIN_EXE_rhwp")`를 실행 경로로 직접 사용하지 않는다. nextest archive가
 런타임에 주입하는 `CARGO_BIN_EXE_rhwp`를 먼저 읽고 컴파일타임 값을 fallback으로 쓰는 기존 `rhwp_bin()`

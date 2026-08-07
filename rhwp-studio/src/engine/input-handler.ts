@@ -6,8 +6,10 @@ import { CaretRenderer } from './caret-renderer';
 import { FieldMarkerRenderer } from './field-marker-renderer';
 import { SelectionRenderer } from './selection-renderer';
 import { CommandHistory } from './history';
-import { DeleteSelectionCommand, ApplyCharFormatCommand, ApplyParaFormatCommand, SnapshotCommand, SetFormValueCommand, TextMutationEffectAccumulator, IMMEDIATE_TEXT_MUTATION_EFFECTS } from './command';
+import { DeleteSelectionCommand, ApplyCharFormatCommand, ApplyParaFormatCommand, SnapshotCommand, SubmodeSnapshotCommand, SetFormValueCommand, TextMutationEffectAccumulator, IMMEDIATE_TEXT_MUTATION_EFFECTS } from './command';
 import type { OperationDescriptor, ParaFormatTarget, RefreshPolicy, TextMutationEffects, EditCommand, EditContext, FormValueTarget } from './command';
+import { selectCellIndicesInRange, paraFormatTargetsForCellBlock } from './cell-block-format';
+import type { SelectedCellBlock } from './cell-block-format';
 import { VirtualScroll } from '@/view/virtual-scroll';
 import { ViewportManager } from '@/view/viewport-manager';
 import type {
@@ -77,6 +79,7 @@ type PagePoint = {
   pageX: number;
   pageY: number;
 };
+
 
 const FORMAT_COPY_CHAR_KEYS: Array<keyof CharProperties> = [
   'fontSize',
@@ -1832,17 +1835,70 @@ export class InputHandler {
 
   // ─── 서식 적용 ─────────────────────────────────────────
 
+  /**
+   * 서식을 적용할 대상이 있는가 — 텍스트 선택 또는 F5 셀 블록 선택.
+   *
+   * hasSelection() 은 anchor/fnAnchor 만 보므로 셀 블록 선택에서 false 다. 서식 경로가
+   * 그것만 보면 여러 칸을 골라도 글자 서식이 통째로 반환돼 아무 일도 일어나지 않는다.
+   * 같은 판정을 이미 command/format-paste-availability.ts 가 쓰고 있다.
+   */
+  private hasFormatTargetSelection(): boolean {
+    return this.cursor.hasSelection() || this.cursor.isInCellSelectionMode();
+  }
+
   /** 선택 범위에 글자 서식을 적용한다 */
   private applyCharFormat(props: Partial<CharProperties>): void {
+    const block = this.getSelectedCellBlock();
+    if (block) {
+      // F5 블록에서 Ctrl+클릭으로 모든 셀을 제외한 경우다. 빈 블록을 일반 텍스트
+      // 선택 없음으로 fallback하면 앵커 셀 하나를 바꾸므로, history도 만들지 않고 끝낸다.
+      if (block.cellIndices.length === 0) return;
+      this.applyCharFormatToCellBlock(block, props);
+      return;
+    }
     const sel = this.cursor.getSelectionOrdered();
     if (!sel) return;
     const cmd = new ApplyCharFormatCommand(sel.start, sel.end, props);
     this.executeOperation({ kind: 'command', command: cmd });
   }
 
+  /**
+   * 셀 블록 안 모든 셀의 모든 문단 전체 범위에 글자 서식을 적용한다.
+   *
+   * ApplyCharFormatCommand 는 한 셀 안의 문단만 순회한다(cellPathJsonForPara 가 start 의
+   * 셀 경로를 재사용). 여러 셀에 걸친 글자 서식 커맨드가 없어서, 같은 블록을 대상으로 하는
+   * applyCopiedCellPropsToSelection 과 같은 스냅샷 경로를 쓴다.
+   * 근본 해결: ParaFormatEntry 에 셀 좌표를 실어 ApplyCharFormatCommand 가 셀 목록을
+   * 받게 하면 셀별 charShapeId 되돌리기가 되고 스냅샷이 필요 없어진다.
+   *
+   * 빈 문단(len 0)은 건너뛴다 — 본문 텍스트 선택에서도 ApplyCharFormatCommand 가 같은
+   * 조건(to <= from)으로 건너뛴다.
+   */
+  private applyCharFormatToCellBlock(block: SelectedCellBlock, props: Partial<CharProperties>): void {
+    const propsJson = JSON.stringify(props);
+    const cursorBefore = this.cursor.getPosition();
+    this.executeOperation({
+      kind: 'snapshot',
+      operationType: 'applyCharFormatCellBlock',
+      operation: (wasm) => {
+        for (const cellIdx of block.cellIndices) {
+          const paraCount = wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx);
+          for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
+            const len = wasm.getCellParagraphLength(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx);
+            if (len <= 0) continue;
+            wasm.applyCharFormatInCell(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx, 0, len, propsJson);
+          }
+        }
+        return { ...cursorBefore };
+      },
+    });
+  }
+
   /** 토글 서식 적용 (상호 배타 처리 포함) */
   private applyToggleFormat(prop: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'emboss' | 'engrave' | 'outline' | 'superscript' | 'subscript'): void {
-    if (!this.cursor.hasSelection()) return;
+    if (!this.hasFormatTargetSelection()) return;
+    // 셀 블록에서는 커서가 있는 앵커 셀의 현재 값이 토글 방향을 정한다. 칸마다 값이 다를 때
+    // 블록 전체를 한 방향으로 맞추려면 기준이 하나여야 하고, 텍스트 선택도 같은 기준이다.
     const current = this.getCharPropertiesAtCursor();
 
     if (prop === 'emboss') {
@@ -1900,11 +1956,89 @@ export class InputHandler {
   /** 커서 위치 문단에 문단 서식을 적용한다 */
   private applyParaFormat(props: Record<string, unknown>): void {
     try {
+      if (this.applyParaFormatInNoteOrHeader(props)) return;
       const targets = this.getParaFormatTargetsAtCursor();
       this.executeParaFormatCommand(targets, props);
     } catch (err) {
       console.warn('[InputHandler] applyParaFormat 실패:', err);
     }
+  }
+
+  /**
+   * 머리말/꼬리말·각주 문단에 문단 서식을 적용한다. 해당 문맥이 아니면 false.
+   *
+   * 코어에는 `applyParaFormatInHf` / `applyParaFormatInFootnote` 가 이미 있는데 호출하는
+   * 곳이 없었다 — `getParaFormatTargetsForRange` 가 두 문맥에서 빈 배열을 반환해 정렬·줄
+   * 간격이 아무 반응 없이 끝났다. 조회 쪽(`getParaProperties`)은 두 문맥을 정확히 분기하고
+   * 있어 툴바 표시만 맞고 적용은 안 되는 상태였다.
+   *
+   * `ApplyParaFormatCommand` 의 되돌리기는 문단 모양 ID 를 `setParaShapeId` /
+   * `setCellParaShapeId` 로 복원하는데 이 두 문맥용 setter 가 코어에 없다. 되돌리기를
+   * 포기하지 않으려고 표 구조 변경과 같은 스냅샷 경로를 쓴다.
+   * 근본 해결: 코어에 `setParaShapeIdInHf` / `setParaShapeIdInFootnote` 를 추가하고
+   * `ParaFormatTarget` 에 두 갈래를 넣어 네 문맥(본문/셀/머리말/각주)을 한 커맨드로 통일한다.
+   */
+  private applyParaFormatInNoteOrHeader(props: Record<string, unknown>): boolean {
+    const cur = this.cursor;
+    const propsJson = JSON.stringify(props);
+    const cursorBefore = cur.getPosition();
+
+    if (cur.isInHeaderFooter()) {
+      const isHeader = cur.headerFooterMode === 'header';
+      const sectionIdx = cur.hfSectionIdx;
+      const applyTo = cur.hfApplyTo;
+      const hfParaIdx = cur.hfParaIdx;
+      const hfCharOffset = cur.hfCharOffset;
+      this.executeOperation({
+        kind: 'snapshot',
+        operationType: 'applyParaFormatInHf',
+        editContext: {
+          mode: 'headerFooter',
+          sectionIdx,
+          isHeader,
+          applyTo,
+          paraIdx: hfParaIdx,
+          charOffset: hfCharOffset,
+        },
+        operation: (wasm) => {
+          wasm.applyParaFormatInHf(sectionIdx, isHeader, applyTo, hfParaIdx, propsJson);
+          return { ...cursorBefore };
+        },
+      });
+      return true;
+    }
+
+    if (cur.isInFootnote()) {
+      // 인자 축은 조회 쪽(getParaProperties)과 같다 — sec / para / controlIdx / innerParaIdx.
+      const sectionIdx = cur.fnSectionIdx;
+      const paraIdx = cur.fnParaIdx;
+      const controlIdx = cur.fnControlIdx;
+      const innerParaIdx = cur.fnInnerParaIdx;
+      const charOffset = cur.fnCharOffset;
+      const footnoteIndex = cur.fnFootnoteIndex;
+      const pageNum = cur.fnPageNum;
+      this.executeOperation({
+        kind: 'snapshot',
+        operationType: 'applyParaFormatInFootnote',
+        editContext: {
+          mode: 'footnote',
+          sectionIdx,
+          paraIdx,
+          controlIdx,
+          footnoteIndex,
+          pageNum,
+          innerParaIdx,
+          charOffset,
+        },
+        operation: (wasm) => {
+          wasm.applyParaFormatInFootnote(sectionIdx, paraIdx, controlIdx, innerParaIdx, propsJson);
+          return { ...cursorBefore };
+        },
+      });
+      return true;
+    }
+
+    return false;
   }
 
   private executeParaFormatCommand(targets: ParaFormatTarget[], props: Record<string, unknown>): boolean {
@@ -1917,11 +2051,50 @@ export class InputHandler {
     return true;
   }
 
+  /**
+   * F5 셀 블록 선택에 든 셀 목록을 만든다. 블록 선택이 아니면 null.
+   *
+   * 셀 블록 선택은 cellAnchor/cellFocus 축이라 텍스트 선택(anchor)을 만들지 않는다.
+   * 그래서 서식 경로가 getSelectionOrdered() 만 보면 커서가 있는 앵커 셀 하나만 대상이
+   * 된다 — 여러 칸을 골라도 첫 칸만 바뀌는 증상.
+   *
+   * 셀 산출 축은 같은 블록을 대상으로 하는 applyCopiedCellPropsToSelection 과 같게 맞춘다
+   * (getCellTableContext + getSelectedCellRange + getExcludedCells, 중첩 표 제외).
+   */
+  private getSelectedCellBlock(): SelectedCellBlock | null {
+    if (!this.cursor.isInCellSelectionMode()) return null;
+    const ctx = this.cursor.getCellTableContext();
+    const range = this.cursor.getSelectedCellRange();
+    if (!ctx || !range) return null;
+    // 중첩 표는 getParaFormatTargetsForRange 도 cellPath.length > 1 을 대상에서 빼므로
+    // 여기서 빠져도 동작이 달라지지 않는다. 지원하려면 ...ByPath 축으로 별도 배선이 필요하다.
+    if (ctx.cellPath && ctx.cellPath.length > 1) return null;
+
+    const dims = this.wasm.getTableDimensions(ctx.sec, ctx.ppi, ctx.ci);
+    const cellIndices = selectCellIndicesInRange(
+      dims.cellCount,
+      (cellIdx) => this.wasm.getCellInfo(ctx.sec, ctx.ppi, ctx.ci, cellIdx),
+      range,
+      this.cursor.getExcludedCells(),
+    );
+    return { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci, cellIndices };
+  }
+
   private getParaFormatTargetsAtCursor(): ParaFormatTarget[] {
+    const block = this.getSelectedCellBlock();
+    if (block) return this.getParaFormatTargetsForCellBlock(block);
     const sel = this.cursor.getSelectionOrdered();
     if (sel) return this.getParaFormatTargetsForRange(sel.start, sel.end);
     const pos = this.cursor.getPosition();
     return this.getParaFormatTargetsForRange(pos, pos);
+  }
+
+  /** 셀 블록 안 모든 셀의 모든 문단을 문단 서식 대상으로 만든다 */
+  private getParaFormatTargetsForCellBlock(block: SelectedCellBlock): ParaFormatTarget[] {
+    return paraFormatTargetsForCellBlock(
+      block,
+      (cellIdx) => this.wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx),
+    );
   }
 
   private getParaFormatTargetsForRange(start: DocumentPosition, end: DocumentPosition): ParaFormatTarget[] {
@@ -2100,19 +2273,10 @@ export class InputHandler {
       const pos = this.cursor.getPosition();
       const inFootnote = this.cursor.isInFootnote();
       const inCell = !inFootnote && pos.parentParaIndex !== undefined;
-      const paraProps = inFootnote
-        ? this.wasm.getParaPropertiesInFootnote(
-            this.cursor.fnSectionIdx,
-            this.cursor.fnParaIdx,
-            this.cursor.fnControlIdx,
-            this.cursor.fnInnerParaIdx,
-          )
-        : inCell
-        ? this.wasm.getCellParaPropertiesAt(
-            pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!,
-            pos.cellIndex!, pos.cellParaIndex!,
-          )
-        : this.wasm.getParaPropertiesAt(pos.sectionIndex, pos.paragraphIndex);
+      // 문단 모양 대화상자와 같은 리더를 쓴다. 여기에 갈래를 따로 두면 문맥이 하나 빠져도
+      // 컴파일이 통과하고, 실제로 머리말/꼬리말 갈래가 빠져 있었다 — 머리말 편집 중 툴바와
+      // 눈금자가 본문 문단 값을 보여줬다(대화상자는 머리말 값을 정확히 읽는데).
+      const paraProps = this.getParaProperties();
       this.eventBus.emit('cursor-para-changed', paraProps);
 
       // 스타일 드롭다운 갱신용
@@ -2339,7 +2503,17 @@ export class InputHandler {
       }
       case 'snapshot': {
         const cursorBefore = this.cursor.getPosition();
-        const cmd = new SnapshotCommand(desc.operationType, cursorBefore, cursorBefore, desc.operation);
+        // 일반 snapshot은 구조 편집의 본문 복귀 의미를 유지한다. HF/FN 안에서만
+        // 문맥을 보존하는 전용 명령을 써서 undo/redo의 대상 범위를 호출부가 드러낸다.
+        const cmd = desc.editContext
+          ? new SubmodeSnapshotCommand(
+              desc.operationType,
+              cursorBefore,
+              cursorBefore,
+              desc.operation,
+              desc.editContext,
+            )
+          : new SnapshotCommand(desc.operationType, cursorBefore, cursorBefore, desc.operation);
         const newPos = this.history.execute(cmd, this.wasm);
         const markPastedFieldEndOutside = this.pastedFieldEndOutsidePending;
         // 무변경 경로에서도 pending 플래그는 소비한다 — 남겨 두면 다음 연산으로 샌다.
@@ -4463,14 +4637,13 @@ export class InputHandler {
       operationType: 'formatCopyCellProps',
       operation: (wasm) => {
         const dims = wasm.getTableDimensions(ctx.sec, ctx.ppi, ctx.ci);
-        const excluded = this.cursor.getExcludedCells();
-        for (let cellIdx = 0; cellIdx < dims.cellCount; cellIdx++) {
-          const info = wasm.getCellInfo(ctx.sec, ctx.ppi, ctx.ci, cellIdx);
-          if (info.row < range.startRow || info.row > range.endRow ||
-              info.col < range.startCol || info.col > range.endCol) {
-            continue;
-          }
-          if (excluded.has(`${info.row},${info.col}`)) continue;
+        const cellIndices = selectCellIndicesInRange(
+          dims.cellCount,
+          (cellIdx) => wasm.getCellInfo(ctx.sec, ctx.ppi, ctx.ci, cellIdx),
+          range,
+          this.cursor.getExcludedCells(),
+        );
+        for (const cellIdx of cellIndices) {
           wasm.setCellProperties(ctx.sec, ctx.ppi, ctx.ci, cellIdx, props);
         }
         return this.cursor.getPosition();
@@ -4497,7 +4670,7 @@ export class InputHandler {
 
   /** 글꼴 크기 증감 (커맨드 시스템용, delta: HWPUNIT, 1pt=100) */
   adjustFontSize(delta: number): void {
-    if (!this.cursor.hasSelection()) return;
+    if (!this.hasFormatTargetSelection()) return;
     const current = this.getCharPropertiesAtCursor();
     const newSize = Math.max(100, (current.fontSize ?? 1000) + delta); // 최소 1pt
     this.applyCharFormat({ fontSize: newSize });
@@ -4505,7 +4678,7 @@ export class InputHandler {
 
   /** 장평 증감 (커맨드 시스템용, delta: percent point) */
   adjustCharRatio(delta: number): void {
-    if (!this.cursor.hasSelection()) return;
+    if (!this.hasFormatTargetSelection()) return;
     const current = this.getCharPropertiesAtCursor();
     const currentRatio = current.ratios?.[0] ?? 100;
     const nextRatio = Math.max(50, Math.min(200, Math.round(currentRatio + delta)));
@@ -4514,7 +4687,7 @@ export class InputHandler {
 
   /** 자간 증감 (커맨드 시스템용, delta: percent point) */
   adjustCharSpacing(delta: number): void {
-    if (!this.cursor.hasSelection()) return;
+    if (!this.hasFormatTargetSelection()) return;
     const current = this.getCharPropertiesAtCursor();
     const currentSpacing = current.spacings?.[0] ?? 0;
     const nextSpacing = Math.max(-50, Math.min(50, Math.round(currentSpacing + delta)));

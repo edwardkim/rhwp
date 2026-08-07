@@ -569,7 +569,13 @@ export class Toolbar {
       const val = Math.round(props.lineSpacing);
       this.ensureLsOption(val);
       this.lsSelect.value = String(val);
+      return;
     }
+    // 백분율이 아닌 줄 간격(고정 값/최소/여백만 지정)은 이 백분율 목록으로 표현할 수 없다.
+    // 직전 문단의 값을 남겨 두면 두 가지가 함께 깨진다 — 표시가 실제와 어긋나고, 사용자가
+    // 그 표시값과 같은 항목을 고르면 select 의 change 가 발화하지 않아(핸들러가 change 에
+    // 달려 있다) "눌러도 안 먹고 여러 번 눌러야 반영되는" 상태가 된다. 비워서 둘 다 막는다.
+    this.lsSelect.selectedIndex = -1;
   }
 
   /** 커서 위치의 스타일을 드롭다운에 반영한다 */

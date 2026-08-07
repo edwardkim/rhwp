@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-07-25
+last_verified: 2026-08-07
 ---
 
 # PR 접수와 리뷰 기록
@@ -73,6 +73,8 @@ python tools/object_visual_regression.py --preset ovr5 -o output/poc/ovr --diff-
 
 maintainer 일반 경로는 처리 중 active 경로에 작성하고, 완료 후 archive로 이동한다.
 collaborator self-merge와 collaborator 매개 외부 PR은 해당 기본 경로 문서가 정한 archive 경로를 처음부터 쓴다.
+PR 번호는 PR 생성 시점에 확정하며 생성 전에 예측하지 않는다. collaborator self-merge는 PR을 생성해
+번호를 받은 뒤 reviewer assign을 거쳐 번호 기반 review 문서를 같은 PR의 후속 commit으로 추가한다.
 
 ~~~text
 mydocs/pr/pr_N_review.md

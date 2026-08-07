@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-07-16
+last_verified: 2026-08-07
 ---
 
 # Documentation And Git Workflow
@@ -166,7 +166,17 @@ PR 댓글 톤은 과장하지 않는다. "정말 감사합니다", "정성스러
 내부 타스크 브랜치에서 PR은 작업지시자 별도 승인 후에만 생성한다.
 
 - "PR 준비"는 커밋, 검증 기록, PR 본문 초안, 생성 명령 준비까지를 의미한다.
-- `gh pr create` 실행, Open PR 생성, Draft/Open 상태 전환은 별도 승인을 받은 뒤 진행한다.
+- `gh pr create` 실행(Open 또는 Draft PR 생성)과 Draft의 Ready 전환은 각각 별도 승인을 받은 뒤
+  진행한다.
+- PR 번호는 원격 head branch를 push한 뒤 GitHub에서 PR 생성이 성공할 때 채번된다. Issue와
+  PR은 같은 번호 공간을 쓰지만, 아직 생성하지 않은 PR 번호를 예측해 `pr_N_*` 파일명으로
+  사용하지 않는다.
+- 구현과 로컬 검증이 끝난 merge 후보는 별도의 Draft 지시가 없으면 Open PR로 생성한다.
+  Draft는 완료되지 않은 WIP를 공유하거나 조기 검토를 받는 목적을 작업지시자가 명시적으로 승인한
+  경우에만 쓴다. 번호 확보 자체는 Draft 생성 근거가 아니다.
+- PR 생성으로 번호 `N`을 받으면 역할별 review 절차에 따라 `pr_N_review.md`와 필요한
+  오늘할일을 작성해 같은 PR branch의 후속 commit으로 push한다. 이 기록 commit을 포함한
+  최신 PR head가 CI와 최종 merge 판단의 기준이다.
 - 실수로 승인 없이 PR을 열었으면 작업지시자 지시에 따라 즉시 close하고, 후속 진행은 승인 대기 상태로 되돌린다.
 - PR 직전 전체 CI 성격의 긴 검증(`cargo test --verbose`, `cargo clippy -- -D warnings` 등)은
   focused test와 visual sweep 결과를 공유한 뒤 작업지시자 승인을 받은 경우에만 실행한다.

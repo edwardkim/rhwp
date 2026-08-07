@@ -40,14 +40,13 @@ import {
   type PrintSurface,
 } from '@/command/print-surface';
 import {
-  canUseOpenFilePicker,
-  pickOpenFileHandle,
   readFileFromHandle,
   saveDocumentToFileSystem,
   type FileSystemFileHandleLike,
   type SaveDocumentResult,
   type FileSystemWindowLike,
 } from '@/command/file-system-access';
+import { openDocumentViaPicker } from '../file-open-picker';
 import { PdfPrintDialog } from '@/ui/pdf-print-dialog';
 import { userSettings } from '@/core/user-settings';
 import { showToast } from '@/ui/toast';
@@ -59,37 +58,14 @@ import { openRecentEntry } from '@/recent/recent-open';
  * 문서를 로드한다. `file:open` 커맨드와 "최근 문서" 메타-only 항목 재열기가 공유한다.
  */
 async function openFileViaPicker(services: CommandServices): Promise<void> {
-  try {
-    const canReplace = await confirmSaveBeforeReplacingDocument(services);
-    if (!canReplace) return;
-
-    const windowLike = window as FileSystemWindowLike;
-    const nativeOpenPickerAvailable = canUseOpenFilePicker(windowLike);
-    const handle = await pickOpenFileHandle(windowLike);
-    if (!handle) {
-      // File System Access API picker가 있었다면 null은 사용자 취소(예: Esc)다.
-      // 이때 숨김 input fallback을 다시 열면 파일 선택창이 곧바로 재오픈된다.
-      if (nativeOpenPickerAvailable) return;
-      const fileInput = document.getElementById('file-input') as HTMLInputElement | null;
-      if (fileInput) {
-        fileInput.dataset.skipUnsavedGuard = 'true';
-        fileInput.click();
-      }
-      return;
-    }
-
-    const { bytes, name } = await readFileFromHandle(handle);
-    services.eventBus.emit('open-document-bytes', {
-      bytes,
-      fileName: name,
-      fileHandle: handle,
-      skipUnsavedGuard: true,
-    });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error('[file:open] 열기 실패:', msg);
-    alert(`파일 열기에 실패했습니다:\n${msg}`);
-  }
+  await openDocumentViaPicker({
+    canReplace: () => confirmSaveBeforeReplacingDocument(services),
+    windowLike: window as FileSystemWindowLike,
+    findFileInput: () => document.getElementById('file-input') as HTMLInputElement | null,
+    emitOpenDocument: (payload) => services.eventBus.emit('open-document-bytes', payload),
+    warn: (message, error) => console.warn(message, error),
+    alert: (message) => alert(message),
+  });
 }
 
 /** 최근 문서 핸들의 읽기 권한을 확인/요청한다. 최종 'granted' 여부 반환. */

@@ -144,6 +144,10 @@ describe('조회 명령 — argv 모양', () => {
     expect(valueAfter(argv, '--max-chars')).toBe('800');
   });
 
+  it('explain', async () => {
+    expect(await argvOf(() => rhwp.explain('a.hwp'))).toEqual(['explain', 'a.hwp', '--json']);
+  });
+
   it('capabilities — 문서를 받지 않고 --json 도 붙이지 않는다', async () => {
     expect(await argvOf(() => rhwp.capabilities())).toEqual(['capabilities']);
     expect(await argvOf(() => rhwp.capabilities({ mcp: true }))).toEqual(['capabilities', '--mcp']);
@@ -171,6 +175,24 @@ describe('조회 명령 — argv 모양', () => {
       '--bare',
       '-o',
       'caps.json',
+      '--json',
+    ]);
+  });
+
+  it('export-plan-schema — bare·out 을 JSON 봉투와 함께 보낸다', async () => {
+    expect(await argvOf(() => rhwp.exportPlanSchema({ bare: true, out: 'plan.json' }))).toEqual([
+      'export-plan-schema',
+      '--bare',
+      '-o',
+      'plan.json',
+      '--json',
+    ]);
+  });
+
+  it('export-agent-manifest — bare 를 JSON 봉투와 함께 보낸다', async () => {
+    expect(await argvOf(() => rhwp.exportAgentManifest({ bare: true }))).toEqual([
+      'export-agent-manifest',
+      '--bare',
       '--json',
     ]);
   });
@@ -860,8 +882,11 @@ describe('옵션을 안 주면 플래그도 안 붙는다', () => {
     ['fields', () => rhwp.fields('a.hwp')],
     ['search', () => rhwp.search('a.hwp', 'x')],
     ['digest', () => rhwp.digest('a.hwp')],
+    ['explain', () => rhwp.explain('a.hwp')],
     ['capabilities', () => rhwp.capabilities()],
     ['exportIrSchema', () => rhwp.exportIrSchema()],
+    ['exportPlanSchema', () => rhwp.exportPlanSchema()],
+    ['exportAgentManifest', () => rhwp.exportAgentManifest()],
     ['exportCapabilitiesSchema', () => rhwp.exportCapabilitiesSchema()],
     ['exportProvenanceMap', () => rhwp.exportProvenanceMap()],
     ['tableToCsv', () => rhwp.tableToCsv('a.hwp')],

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -45,6 +46,16 @@ class CapabilityRegistryFormatTests(unittest.TestCase):
         self.assertIsNotNone(cells)
         self.assertEqual(len(cells), 7)
         self.assertEqual(cells[2], "`export-svg \\| export-pdf` 대조")
+
+    def test_inline_code_filename_is_not_interpreted_as_a_link(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            document = Path(directory) / "report.md"
+            document.write_text(
+                "`admrul_downloads\\3190263_[별지](문서).hwp` [실제 링크](guide.md)\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(CHECKER.destinations_in_markdown(document), [(1, "guide.md")])
 
 
 if __name__ == "__main__":

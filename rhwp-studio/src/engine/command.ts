@@ -218,7 +218,14 @@ export type OperationDescriptor =
   | { kind: 'command'; command: EditCommand; meta?: OperationMetadata }
   // [Task #2370] snapshot 의 operation 은 아무것도 바꾸지 않았을 때 `null` 을 반환해
   // "기록하지 말 것"을 알린다(그 경우 커서 이동·리프레시도 건너뛴다).
-  | { kind: 'snapshot'; operationType: string; operation: (wasm: WasmBridge) => DocumentPosition | null; meta?: OperationMetadata }
+  | {
+      kind: 'snapshot';
+      operationType: string;
+      operation: (wasm: WasmBridge) => DocumentPosition | null;
+      /** 본문 좌표와 분리된 HF/FN 편집 문맥. undo/redo 뒤 같은 문맥으로 돌아간다. */
+      editContext?: EditContext;
+      meta?: OperationMetadata;
+    }
   | { kind: 'record'; command: EditCommand; meta?: OperationMetadata };
 
 // ─── 본문/셀 분기 헬퍼 ────────────────────────────────
@@ -2051,4 +2058,25 @@ export class SnapshotCommand implements EditCommand {
       this.afterId = null;
     }
   }
+}
+
+/**
+ * 머리말/꼬리말·각주 안에서만 쓰는 스냅샷 명령.
+ *
+ * 일반 SnapshotCommand는 구조 편집처럼 undo 뒤 본문으로 돌아가야 하는 작업도 담당한다.
+ * 그래서 편집 문맥을 일반 클래스에 붙이지 않고, 서브모드를 보존해야 하는 호출부만 이 타입을
+ * 명시적으로 선택한다.
+ */
+export class SubmodeSnapshotCommand extends SnapshotCommand {
+  constructor(
+    operationType: string,
+    cursorBefore: DocumentPosition,
+    cursorAfter: DocumentPosition,
+    operation: ((wasm: WasmBridge) => DocumentPosition | null) | null,
+    private readonly context: EditContext,
+  ) {
+    super(operationType, cursorBefore, cursorAfter, operation);
+  }
+
+  editContext(): EditContext { return this.context; }
 }

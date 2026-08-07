@@ -85,8 +85,14 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 - PR을 생성하면 CI가 자동으로 빌드 + 테스트 + Clippy를 실행합니다
 - CI가 통과하지 않으면 merge할 수 없습니다
 - 메인테이너의 코드 리뷰 승인 후 merge됩니다
+- Issue와 PR은 같은 번호 공간을 쓰며, PR 번호는 **PR 생성이 성공한 시점**에 채번됩니다.
+  생성 전에 다음 번호를 예측하거나, 번호만 확보하기 위해 Draft PR을 만들지 마세요.
+- 구현과 PR 전 검증을 마친 기여는 일반 Open PR로 제출합니다. Draft는 아직 완료되지 않은 WIP에
+  대해 조기 피드백을 요청할 때만 사용합니다.
 - **하나의 PR에 여러 fix를 담을 때는 이슈별로 커밋을 분리**해주세요. 여러 수정이 한 커밋에
   섞이면 회귀 추적·선별 반영·리뷰가 어려워져 머지가 지연됩니다.
+- **`mydocs/orders/YYYYMMDD.md`는 PR에 포함하지 마세요.** 이 파일은 병합 결과와 후속 작업을 관리하는
+  메인터너 전용 일일 운영 기록입니다. 필요한 기록은 PR 병합 뒤 메인터너가 작성합니다.
 
 ### Claude·Codex capability 기여
 
@@ -184,23 +190,23 @@ cargo fmt --all -- --check       # CI와 같은 포맷 검증
 
 ```bash
 # 개체(표·그림) geometry 무회귀 — 원커맨드: devel 을 worktree 빌드해 baseline 자동 생성 후
-# 현 트리와 대조, PR 본문용 markdown 요약(out/ovr/ovr_diff.md)까지 출력
-python tools/object_visual_regression.py --preset ovr5 -o out/ovr --diff-against devel
+# 현 트리와 대조, PR 본문용 markdown 요약(output/ovr/ovr_diff.md)까지 출력
+python tools/object_visual_regression.py --preset ovr5 -o output/ovr --diff-against devel
 
 # (수동 3단계 흐름도 그대로 동작 — 수정 전 baseline 저장, 수정 후 비교)
-python tools/object_visual_regression.py <샘플.hwp> -o out/ovr --no-hwp --save-baseline
-python tools/object_visual_regression.py <샘플.hwp> -o out/ovr2 --no-hwp --baseline out/ovr/baseline.json
+python tools/object_visual_regression.py <샘플.hwp> -o output/ovr --no-hwp --save-baseline
+python tools/object_visual_regression.py <샘플.hwp> -o output/ovr2 --no-hwp --baseline output/ovr/baseline.json
 
 # 편집-스윕 — 편집 경로 PR(vpos·pagination·undo)의 가짜 페이지 변동 검출
 # devel 과 브랜치에서 각각 스윕 → 공통/해소/신규 분류 리포트 (신규 존재 시 exit 1)
-cargo run --release --example edit_sweep -- samples -o out/sweep/branch.tsv
-cargo run --release --example edit_sweep -- --compare out/sweep/devel.tsv out/sweep/branch.tsv -o out/sweep/report.md
+cargo run --release --example edit_sweep -- samples -o output/sweep/branch.tsv
+cargo run --release --example edit_sweep -- --compare output/sweep/devel.tsv output/sweep/branch.tsv -o output/sweep/report.md
 
 # 라운드트립 시각 기하 회귀
 cargo run --release --bin rhwp -- render-diff <샘플.hwp>
 
 # HWPX→HWP 변환 페이지네이션 정합
-python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir out/rtf -o out/rtf/result.tsv
+python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir output/rtf -o output/rtf/result.tsv
 ```
 
 - OVR(개체 시각 회귀)로 "변경 범위 밖 문서의 개체가 움직이지 않았음"을 결과와 함께
@@ -299,7 +305,7 @@ rhwp는 코드뿐 아니라 **작업 과정의 기록**도 프로젝트의 일�
 
 | 폴더 | 용도 |
 |------|------|
-| `orders/` | 일일 작업지시 (`yyyymmdd.md`만 허용) |
+| `orders/` | 메인터너 전용 일일 운영 기록 (`yyyymmdd.md`만 허용, 외부 기여자 PR에서는 수정하지 않음) |
 | `plans/` | 수행 계획서, 구현 계획서 |
 | `working/` | 단계별 완료 보고서 (`_stage{N}.md`) |
 | `report/` | 최종 결과보고서 (`_report.md`) **— 최종 보고서는 반드시 여기** |
@@ -307,7 +313,7 @@ rhwp는 코드뿐 아니라 **작업 과정의 기록**도 프로젝트의 일�
 | `tech/` | 기술 조사·분석 (스펙 정오표, 라이브러리 발견 등) |
 | `manual/` | 사용자/개발자 매뉴얼 |
 | `troubleshootings/` | 트러블슈팅 (재발 방지용 해결 기록) |
-| `pr/` | **외부 기여자 PR 검토 기록** (메인테이너가 관리, 기여자는 작성 불필요) |
+| `pr/` | **PR 검토 기록** (메인테이너·collaborator가 관리, 외부 기여자는 작성 불필요) |
 
 ### 문서 메타데이터 (front matter)
 
@@ -352,8 +358,13 @@ python3 scripts/check_markdown_links.py      # 상대 링크 검사
 ### 기여자가 작성해야 하는 문서 범위
 
 기여자는 본인 작업 범위(내부 타스크 문서: `plans/`, `working/`, `report/`, `tech/`, `troubleshootings/` 등)만 작성합니다.
+`orders/`는 병합 뒤 상태를 기록하는 메인터너 전용 운영 문서이므로, 외부 기여자 PR에서 만들거나 갱신하지
+않습니다.
 
-**`pr/` 폴더는 메인테이너가 PR을 검토한 기록을 남기는 전용 공간**이므로, 기여자는 직접 작성할 필요가 없습니다. 메인테이너가 PR을 리뷰하면서 `pr_{번호}_review.md`, `pr_{번호}_report.md` 등을 자동으로 생성합니다. 이 파일들은 나중에 **PR 처리 이력으로 공개**되므로, 본인 PR이 어떻게 검토되었는지 추적 가능합니다.
+**`pr/` 폴더는 메인테이너와 collaborator가 PR을 검토한 기록을 남기는 전용 공간**이므로,
+외부 기여자는 직접 작성할 필요가 없습니다. PR 생성으로 번호가 확정된 뒤 메인테이너나 collaborator가
+`pr_{번호}_review.md`, `pr_{번호}_report.md` 등을 해당 PR branch의 후속 commit으로 생성합니다. 이 파일들은
+나중에 **PR 처리 이력으로 공개**되므로, 본인 PR이 어떻게 검토되었는지 추적 가능합니다.
 
 ### 이 규칙이 애매하다면
 

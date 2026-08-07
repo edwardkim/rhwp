@@ -6075,6 +6075,10 @@ impl DocumentCore {
         use crate::renderer::layout::resolve_numbering_id;
         use crate::renderer::pagination::PageItem;
 
+        // [#4126/#4128 회귀 가드] 콜드 캐럿 질의의 O(pages) 빌드 폭증 판별용 작업량 카운터.
+        crate::diagnostics::perf_counters::PAGE_TREE_BUILDS
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+
         self.layout_engine
             .set_show_transparent_borders(self.show_transparent_borders);
         self.layout_engine.set_clip_enabled(self.clip_enabled);

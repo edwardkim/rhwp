@@ -1,0 +1,28 @@
+{
+  "id": "p1-field-query",
+  "title": "P1 필드 조회 계약 — 목록 옵션·현재 필드·표시 옵션",
+  "ledger": [
+    "HwpCtrl.method.GetFieldList",
+    "HwpCtrl.method.FieldExist",
+    "HwpCtrl.method.GetCurFieldName",
+    "HwpCtrl.method.SetFieldViewOption",
+    "HwpCtrl.method.ModifyFieldProperties"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["GetFieldList", [0, 0]],
+    ["GetFieldList", [1, 0]],
+    ["GetFieldList", [0, 1]],
+    ["GetFieldList", [0, 2]],
+    ["FieldExist", ["pt_nm"]],
+    ["FieldExist", ["pt_nm#0"]],
+    ["FieldExist", ["__없는필드__"]],
+    ["GetCurFieldName", [0]],
+    ["MoveToField", ["pt_nm", true, true, false]],
+    ["GetCurFieldName", [0]],
+    ["GetCurFieldName", [1]],
+    ["SetFieldViewOption", [1]],
+    ["SetFieldViewOption", [2]],
+    ["ModifyFieldProperties", ["pt_nm", 0, 0]]
+  ]
+}

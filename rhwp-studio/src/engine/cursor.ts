@@ -2,6 +2,8 @@ import type { DocumentPosition, CursorRect, LineInfo, CellPathEntry, NavContextE
 import type { WasmBridge } from '@/core/wasm-bridge';
 // [#2756] 셀 좌표 축 헬퍼는 command.ts 와 단일 정의를 공유한다(축 유도 복제 금지).
 import { cellAxisPath, type FocusedCellCursorGeometry } from './command';
+// 제외 셀 Set 의 키 형식은 조립하는 쪽과 조회하는 쪽이 반드시 같아야 한다 → 단일 정의.
+import { excludedCellKey } from './cell-block-format';
 
 type CellSelectionReason = 'manual' | 'protected';
 
@@ -1467,7 +1469,7 @@ export class CursorState {
   /** Ctrl+클릭: 해당 셀을 선택에서 제외/복원 토글. */
   ctrlToggleCell(row: number, col: number): void {
     if (!this._cellSelectionMode) return;
-    const key = `${row},${col}`;
+    const key = excludedCellKey(row, col);
     if (this.excludedCells.has(key)) {
       this.excludedCells.delete(key);
     } else {
