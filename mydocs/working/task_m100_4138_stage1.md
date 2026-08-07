@@ -129,6 +129,9 @@ Issue: [#4138](https://github.com/edwardkim/rhwp/issues/4138) (외부 리포트:
   의미론을 직접 핀하는 스위트.
 - `cargo fmt --check`: 본 과제 변경 파일 clean (잔여 diff 는 타 세션의 임시 프로브
   `tests/tmp_bold_probe.rs` 뿐 — 본 과제 밖).
-- release-test 전체·clippy 전체는 PR CI 성격이므로 작업지시자 승인 후 실행 예정
-  (`pr_review` 게이트 규칙). 시각 증적(분할 전후 렌더 비교)은 studio 브라우저 경로로
-  후속 확보 예정 — 분할 op 이 CLI 미노출이라 네이티브 export 로는 재현 불가.
+- 전체 게이트 (2026-08-07, 작업지시자 완주 지시로 실행 — merge 된 #4122 포함
+  devel 기준 rebase 커밋, 격리 worktree): fmt PASS · clippy(-D warnings) PASS ·
+  release-test `--tests` PASS(**5,350 passed / 0 failed**, 473 targets) ·
+  native-skia 3종 PASS · wasm-pack build PASS.
+- 시각 증적: `render_page_svg_native` 로 네이티브 확보 (위 "시각 증적" 절) —
+  studio 브라우저 경로 불요했음. studio wasm 도 재빌드해 실기 확인 경로 제공.
