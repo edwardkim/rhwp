@@ -244,8 +244,7 @@ jobs:
                   ref: sha,
                 });
                 const parents = commit.parents || [];
-                if (reviewOnlyCandidates.length > 0
-                  && isCurrentBaseUpdateMerge(commit, pr.base.sha)) {
+                if (isCurrentBaseUpdateMerge(commit, pr.base.sha)) {
                   if (baseMergeBridge) {
                     setResult(false, `multiple-current-base-update-merges:${sha}`);
                     return;
@@ -313,8 +312,8 @@ jobs:
               setResult(false, 'preflight-error');
             }
 
-      # 기준선 병합을 fast-pass bridge로 쓸 때는 untrusted source를 실행하지 않고,
-      # Git의 자동 3-way merge 결과가 실제 merge tree와 같은지만 확인한다.
+      # 기준선 병합을 fast-pass bridge로 쓸 때는 untrusted source를 실행하지 않는다.
+      # 자동 3-way merge tree가 같거나, 충돌 해소가 mydocs로 한정될 때만 재사용한다.
       - name: Check out current-base merge tree inputs
         id: checkout-base-merge-tree
         if: ${{ steps.detect.outputs.fast_pass == 'pending-base-merge-tree' }}
@@ -349,7 +348,17 @@ jobs:
           fi
 
           if ! expected_tree="$(git merge-tree --write-tree "${SOURCE_PARENT_SHA}" "${CURRENT_BASE_SHA}" 2>/dev/null)"; then
-            fail 'current-base-merge-tree-conflict-or-unavailable'
+            resolution_check="$(mktemp)"
+            trap 'rm -f "${resolution_check}"' EXIT
+            if ! git show "${CURRENT_BASE_SHA}:scripts/verify_review_only_merge_resolution.py" \
+              > "${resolution_check}"; then
+              fail 'current-base-merge-resolution-check-unavailable'
+            elif resolution_reason="$(python3 "${resolution_check}" \
+              --repository . --base-sha "${CURRENT_BASE_SHA}" "${BASE_MERGE_SHA}")"; then
+              printf 'verified=true\nreason=%s\n' "${resolution_reason}" >> "$GITHUB_OUTPUT"
+            else
+              fail 'current-base-merge-resolution-not-mydocs'
+            fi
             exit 0
           fi
           expected_tree="${expected_tree%%$'\n'*}"
@@ -378,7 +387,11 @@ jobs:
           if [[ "${DETECTED_FAST_PASS}" == 'pending-base-merge-tree' ]]; then
             if [[ "${MERGE_TREE_VERIFIED}" == 'true' ]]; then
               fast_pass='true'
-              reason="current-base-update-merge-tree-green:${CANDIDATE_SHA}"
+              if [[ "${MERGE_TREE_REASON}" == 'current-base-merge-resolution-mydocs-only' ]]; then
+                reason="current-base-update-merge-resolution-mydocs-only-green:${CANDIDATE_SHA}"
+              else
+                reason="current-base-update-merge-tree-green:${CANDIDATE_SHA}"
+              fi
             else
               fast_pass='false'
               reason="${MERGE_TREE_REASON}"

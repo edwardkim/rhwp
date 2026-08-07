@@ -157,7 +157,9 @@ source에 없는 archive link를 도입하거나 today add/add 충돌과 불필�
 
 이 방식은 source history를 선형으로 유지하면서, 실제 merge tree에는 최신 `devel`의 기존 오늘 기록과
 현재 PR 기록이 함께 남는지 확인한다. 변경되지 않은 경계를 찾을 수 없거나 simulation이 충돌하면 source에
-`devel`을 억지로 병합하지 말고 작업지시자에게 보고한다.
+`devel`을 억지로 병합하지 말고 작업지시자에게 보고한다. 불가피하게 current base를 병합해 오늘할일 충돌을
+해소한 경우에는 [review-only fast-pass](pr_review/review_only_fast_pass.md)의 `mydocs/` 한정 bridge 검증을
+따르며, source·test·workflow·증적 파일 충돌 해소에는 이 예외를 적용하지 않는다.
 
 ### 3.3 순차로 유지할 일
 
