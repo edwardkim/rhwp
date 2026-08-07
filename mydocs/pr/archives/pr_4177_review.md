@@ -62,6 +62,10 @@ base identity를 다시 확인하면서 더 이전의 실제 Canvas 성공 결�
 
 - Stage 2 workflow 계약, cache sweep, workflow wiring은 37건 통과했다.
 - `actionlint .github/workflows/render-diff.yml`, Markdown 링크 검사, `git diff --check`를 통과했다.
+- Stage 2 code head `f571572a9`의 CI run `31190273592`에서 lint, Native Skia, 세 archive build,
+  네 test shard와 aggregate가 모두 성공했다.
+- CodeQL run `31190269950`의 Python, JavaScript/TypeScript, Rust 분석과 aggregate, Render Diff run
+  `31190270359`의 Canvas visual diff가 모두 성공했다.
 
 ## 수용 판단과 다음 검증
 
@@ -73,7 +77,8 @@ candidate를 재사용해 fast-pass됐다. CI run `31189434770`에서 모든 hea
 Build & Test aggregate가 성공했으며, CodeQL run `31189434069`과 Render Diff run `31189434104`도
 분석·Canvas job을 skip하고 preflight aggregate가 성공했다.
 
-Stage 2는 Render Diff workflow와 계약을 변경하므로 최신 code head에서 CI·CodeQL·Render Diff를 다시
-완료해야 한다. 그 뒤 trailing 문서 head가 `8119074ce`의 실제 Canvas 성공 candidate를 재사용하는지
-확인한다. 별도의 mydocs-only current-base 병합 PR은 사용자가 수동 conflict resolve로 검증한다. merge
-전에는 최신 head의 required check와 merge 상태를 다시 확인하고 작업지시자 승인을 받는다.
+Stage 2는 Render Diff workflow와 계약을 변경하므로 `f571572a9`에서 CI·CodeQL·Render Diff Full CI를
+다시 완료했다. 이 최종 review·오늘할일 commit은 trailing documentation commit으로 push해
+`f571572a9`의 실제 Canvas 성공 candidate를 재사용하는지 확인한다. 별도의 mydocs-only current-base
+병합 PR은 사용자가 수동 conflict resolve로 검증한다. merge 전에는 최신 head의 required check와 merge
+상태를 다시 확인하고 작업지시자 승인을 받는다.
