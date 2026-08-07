@@ -25,7 +25,10 @@ fn dictionary_section() -> String {
         .expect("지식지도를 읽을 수 없다");
     let start = text.find("### 2-2.").expect("§2-2 헤딩이 없다");
     let rest = &text[start..];
-    let end = rest[8..].find("\n### ").map(|i| i + 8).unwrap_or(rest.len());
+    let end = rest[8..]
+        .find("\n### ")
+        .map(|i| i + 8)
+        .unwrap_or(rest.len());
     rest[..end].to_string()
 }
 
@@ -101,7 +104,13 @@ fn dictionary_heading_count_matches_rows() {
         .lines()
         .next()
         .and_then(|h| {
-            h.split('—').nth(1)?.trim().strip_suffix("개 필드")?.trim().parse().ok()
+            h.split('—')
+                .nth(1)?
+                .trim()
+                .strip_suffix("개 필드")?
+                .trim()
+                .parse()
+                .ok()
         })
         .expect("§2-2 헤딩에서 'N개 필드' 를 읽지 못했다");
     assert_eq!(
