@@ -186,6 +186,7 @@ pub const PROFILES: &[AgentProfile] = &[
         summary: "변환·편집 무손실 게이트 — 판정은 데이터(identical/diffCount)",
         tools: &[
             "hwp_ir_diff",
+            "hwp_verify",
             "hwp_convert_hwpx",
             "hwp_convert_hwp5",
             "hwp_export_hml",
