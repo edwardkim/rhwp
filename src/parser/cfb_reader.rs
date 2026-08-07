@@ -715,9 +715,10 @@ impl LenientCfbReader {
 ///
 /// 전체 파싱을 하지 않는다 — 헤더 두 필드만 본다. `_uSectorShift`(0x1E)로 섹터 크기를,
 /// `_sectDirStart`(0x30)로 첫 디렉터리 섹터 SID 를 구한다. 헤더가 앞 512바이트를 차지하므로
-/// 섹터 SID `n` 의 파일 오프셋은 `(n + 1) * sector_size` 이고, 루트는 그 섹터의 0번 엔트리다.
-/// (v3 는 `sector_size == 512` 라 `512 + n * sector_size` 와 같지만, v4(4096)에서는 이 식이라야
-/// 맞다 — 같은 파일 `LenientCfbReader` 쪽의 `512 + sid * sector_size` 는 v4 에서 틀리다.)
+/// 섹터 SID `n` 의 파일 오프셋은 `512 + n * sector_size` 이고, 루트는 그 섹터의 0번 엔트리다.
+/// 헤더 크기는 CFB v3/v4 모두 512바이트다. 따라서 v3(512B sector)에서는
+/// `(n + 1) * sector_size` 와 우연히 같지만, v4(4096B sector)에서는 반드시 헤더 512바이트를
+/// 별도로 더해야 한다.
 ///
 /// 형식이 어긋나면 `None` 을 돌려주고 패닉하지 않는다. 패닉은 WASM 모듈 전체를 죽여 편집 중인
 /// 다른 문서까지 잃게 하므로, `LenientCfbReader::open` 의 섹터 지수 검증과 같은 근거로 전 구간에
@@ -736,9 +737,8 @@ pub fn root_clsid(cfb: &[u8]) -> Option<[u8; 16]> {
     let dir_start = u32::from_le_bytes(cfb[0x30..0x34].try_into().ok()?) as usize;
     // ENDOFCHAIN(0xFFFFFFFE) 같은 특수값과 거대 SID 는 checked 연산이 걸러낸다.
     // wasm32 에서는 usize 가 32비트라 곱셈이 실제로 넘칠 수 있어 checked_mul 이 필수다.
-    let at = dir_start
-        .checked_add(1)?
-        .checked_mul(sector_size)?
+    let at = 512usize
+        .checked_add(dir_start.checked_mul(sector_size)?)?
         .checked_add(80)?;
     let end = at.checked_add(16)?;
     if end > cfb.len() {
@@ -818,6 +818,27 @@ mod tests {
         d[32..34].copy_from_slice(&6u16.to_le_bytes()); // mini sector size = 1 << 6
         d[68..72].copy_from_slice(&0xFFFF_FFFEu32.to_le_bytes()); // first DIFAT = EOC
         d
+    }
+
+    #[test]
+    fn root_clsid_reads_v4_directory_after_fixed_header() {
+        // CFB v4도 헤더는 512B이며 첫 섹터는 그 직후에 시작한다. SID=1인 디렉터리는
+        // 512 + 1 * 4096에 있으므로 `(SID + 1) * 4096`로 계산하면 다른 위치를 읽는다.
+        const CLSID: [u8; 16] = [
+            0x37, 0xa1, 0x3d, 0x4c, 0x90, 0xdc, 0xb9, 0x47, 0x9b, 0xed, 0x59, 0xda, 0xe3, 0x52,
+            0xa2, 0x80,
+        ];
+        const SECTOR_SIZE: usize = 4096;
+        const DIRECTORY_SID: usize = 1;
+
+        let mut d = minimal_header();
+        d[30..32].copy_from_slice(&12u16.to_le_bytes());
+        d[48..52].copy_from_slice(&(DIRECTORY_SID as u32).to_le_bytes());
+        d.resize(512 + (DIRECTORY_SID + 1) * SECTOR_SIZE, 0);
+        let directory = 512 + DIRECTORY_SID * SECTOR_SIZE;
+        d[directory + 80..directory + 96].copy_from_slice(&CLSID);
+
+        assert_eq!(root_clsid(&d), Some(CLSID));
     }
 
     #[test]
