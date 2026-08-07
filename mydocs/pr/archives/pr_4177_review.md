@@ -50,16 +50,30 @@ workflow를 바꾸므로 workflow 계약과 실제 Canvas visual diff 완료 여
 | GitHub CodeQL | run `31188064054`의 Python, JavaScript/TypeScript, Rust 분석과 aggregate 성공 |
 | GitHub Render Diff | run `31188064352`의 Canvas visual diff 성공 |
 
+## 추가 보정
+
+첫 trailing 문서 head `cfe6a1ccc`는 `8119074ce`의 실제 Canvas 성공 결과를 재사용해 fast-pass됐다.
+그 뒤 문서 결과 정정 head `b3d328ce5`는 중간 후보 `cfe6a1ccc`의 Canvas `skipped`를 실패로 간주해
+더 이전의 `8119074ce`를 탐색하지 않고 Canvas를 재실행했다.
+
+Stage 2 보정은 Canvas `skipped`를 재사용 불가 후보로만 분류한다. 후보 loop는 같은 PR·branch·repository·
+base identity를 다시 확인하면서 더 이전의 실제 Canvas 성공 결과를 계속 찾는다. 실제 실패·identity 불일치와
+실행 중 후보는 기존 full Render Diff fallback 또는 대기 처리를 유지한다.
+
+- Stage 2 workflow 계약, cache sweep, workflow wiring은 37건 통과했다.
+- `actionlint .github/workflows/render-diff.yml`, Markdown 링크 검사, `git diff --check`를 통과했다.
+
 ## 수용 판단과 다음 검증
 
 **수용 권고.** CI 실행 경로를 바꾼 PR은 재사용 대상에서 제외하고, mydocs-only current-base merge의
 직접 source parent만 좁게 허용하므로 기존 Full CI fallback 경계를 넓히지 않는다.
 
-이 review와 오늘할일은 code head 뒤의 trailing documentation commit으로 추가했다. code head의 CI
-실행 경로 변경은 `8119074ce`에서 Full CI로 검증했고, trailing head `cfe6a1ccc`는 같은 녹색 candidate를
-재사용해 fast-pass됐다. CI run `31189434770`에서 모든 heavy job과 test shard가 skip됐고 Build & Test
-aggregate가 성공했으며, CodeQL run `31189434069`과 Render Diff run `31189434104`도 분석·Canvas job을
-skip하고 preflight aggregate가 성공했다.
+`8119074ce`의 CI 실행 경로 변경은 Full CI로 검증했고, 첫 trailing head `cfe6a1ccc`는 같은 녹색
+candidate를 재사용해 fast-pass됐다. CI run `31189434770`에서 모든 heavy job과 test shard가 skip됐고
+Build & Test aggregate가 성공했으며, CodeQL run `31189434069`과 Render Diff run `31189434104`도
+분석·Canvas job을 skip하고 preflight aggregate가 성공했다.
 
-그 뒤 별도의 mydocs-only current-base 병합 PR에서 직접 source-parent 재사용과 trusted remerge bridge를
-확인한다. merge 전에는 최신 head의 required check와 merge 상태를 다시 확인하고 작업지시자 승인을 받는다.
+Stage 2는 Render Diff workflow와 계약을 변경하므로 최신 code head에서 CI·CodeQL·Render Diff를 다시
+완료해야 한다. 그 뒤 trailing 문서 head가 `8119074ce`의 실제 Canvas 성공 candidate를 재사용하는지
+확인한다. 별도의 mydocs-only current-base 병합 PR은 사용자가 수동 conflict resolve로 검증한다. merge
+전에는 최신 head의 required check와 merge 상태를 다시 확인하고 작업지시자 승인을 받는다.

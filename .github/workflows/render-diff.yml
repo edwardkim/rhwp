@@ -228,6 +228,12 @@ jobs:
                   reason: `canvas-visual-diff-not-completed:${renderDiffJob.status}`,
                 };
               }
+              if (renderDiffJob.conclusion === 'skipped') {
+                return {
+                  state: 'skipped',
+                  reason: `canvas-visual-diff-skipped:${candidateSha}`,
+                };
+              }
               if (renderDiffJob.conclusion !== 'success') {
                 return {
                   state: 'failed',

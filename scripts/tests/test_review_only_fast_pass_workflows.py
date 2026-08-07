@@ -99,6 +99,21 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         self.assertIn("allowPriorPrBase\n                  ? step.name.startsWith(identityPrefix)", workflow)
         self.assertIn("await renderDiffResult(sourceParent.sha, pr, true)", workflow)
 
+    def test_render_diff_skips_a_reused_candidate_before_trying_an_older_canvas_result(
+        self,
+    ) -> None:
+        workflow = WORKFLOWS["render-diff"].read_text(encoding="utf-8")
+        self.assertIn("state: 'skipped'", workflow)
+        self.assertIn("canvas-visual-diff-skipped:${candidateSha}", workflow)
+        self.assertLess(
+            workflow.index("if (renderDiffJob.conclusion === 'skipped')"),
+            workflow.index("if (renderDiffJob.conclusion !== 'success')"),
+        )
+        self.assertLess(
+            workflow.index("if (result.state === 'failed')"),
+            workflow.index("candidate not reusable yet: ${candidateSha}"),
+        )
+
     def test_resolution_checker_accepts_only_mydocs_conflicts(self) -> None:
         self.assertEqual(
             self._run_resolution_check("mydocs/orders/20260807.md").returncode,
