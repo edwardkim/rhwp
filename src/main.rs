@@ -631,7 +631,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             serde_json::json!(["ir-diff", "{a}", "{b}", "--json"]),
             &["identical", "diffCount", "categories"],
         ),
-        tool(
+        tool_with_optional_args(
             "hwp_verify",
             "문서가 기대 조건을 만족하는지 사후검증한다 — 편집 파이프라인의 마지막 게이트. 조건별 pass 가 봉투에 실리고, 불일치가 있으면 CLI 종료 코드 3. 반복 조건이 필요하면 CLI 를 직접 쓴다(도구는 각 조건 1개씩).",
             serde_json::json!({
@@ -647,15 +647,13 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "required": ["path"],
             }),
             "verify",
+            serde_json::json!(["verify", "{path}", "--json"]),
             serde_json::json!([
-                "verify",
-                "{path}",
                 { "when": "pages", "args": ["--expect-pages", "{pages}"] },
                 { "when": "contains", "args": ["--expect-contains", "{contains}"] },
                 { "when": "notContains", "args": ["--expect-not-contains", "{notContains}"] },
                 { "when": "field", "args": ["--expect-field", "{field}"] },
-                { "when": "format", "args": ["--expect-format", "{format}"] },
-                "--json"
+                { "when": "format", "args": ["--expect-format", "{format}"] }
             ]),
             &["expectations", "passCount", "failCount", "verdict"],
         ),
