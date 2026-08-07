@@ -34,7 +34,10 @@ __all__ = [
     "digest",
     "extract_data",
     "inspect",
+    "explain",
     "export_provenance_map",
+    "export_plan_schema",
+    "export_agent_manifest",
     "ir_diff",
     "thumbnail",
     "extract_pages",
@@ -219,6 +222,35 @@ def export_provenance_map(
 ) -> Envelope:
     """봉투 필드의 문서 출처·신뢰 표지를 내보낸다."""
     return Envelope(run_json(["export-provenance-map", "--json"], timeout=timeout))
+
+
+def explain(path: PathLike, *, timeout: Optional[float] = DEFAULT_TIMEOUT) -> Envelope:
+    """문서의 형식·쪽수·표·누름틀·각주를 한 번에 요약한다."""
+    return Envelope(run_json(["explain", path, "--json"], timeout=timeout))
+
+
+def export_plan_schema(
+    *,
+    bare: bool = False,
+    out: Optional[PathLike] = None,
+    timeout: Optional[float] = DEFAULT_TIMEOUT,
+) -> Envelope:
+    """``run`` 계획서 문법의 JSON Schema."""
+    args: List[Any] = ["export-plan-schema"]
+    _switch(args, "--bare", bare)
+    _flag(args, "-o", out)
+    args.append("--json")
+    return Envelope(run_json(args, timeout=timeout))
+
+
+def export_agent_manifest(
+    *, bare: bool = False, timeout: Optional[float] = DEFAULT_TIMEOUT
+) -> Envelope:
+    """capabilities·IR·provenance·plan schema 를 한 봉투로 조립한 에이전트 매니페스트."""
+    args: List[Any] = ["export-agent-manifest"]
+    _switch(args, "--bare", bare)
+    args.append("--json")
+    return Envelope(run_json(args, timeout=timeout))
 
 
 # ── 산출 ────────────────────────────────────────────────────────────────

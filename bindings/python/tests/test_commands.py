@@ -125,6 +125,27 @@ def test_export_provenance_map_builds_command(captured: List[List[Any]]) -> None
     assert _as_strings(captured[0]) == ["export-provenance-map", "--json"]
 
 
+def test_explain_builds_command(captured: List[List[Any]]) -> None:
+    rhwp.explain("a.hwp")
+    assert _as_strings(captured[0]) == ["explain", "a.hwp", "--json"]
+
+
+def test_export_plan_schema_flags(captured: List[List[Any]]) -> None:
+    rhwp.export_plan_schema()
+    assert _as_strings(captured[0]) == ["export-plan-schema", "--json"]
+    rhwp.export_plan_schema(bare=True, out="plan.json")
+    assert _as_strings(captured[1]) == [
+        "export-plan-schema", "--bare", "-o", "plan.json", "--json",
+    ]
+
+
+def test_export_agent_manifest_flags(captured: List[List[Any]]) -> None:
+    rhwp.export_agent_manifest()
+    assert _as_strings(captured[0]) == ["export-agent-manifest", "--json"]
+    rhwp.export_agent_manifest(bare=True)
+    assert _as_strings(captured[1]) == ["export-agent-manifest", "--bare", "--json"]
+
+
 def test_inspect_builds_each_supported_command(captured: List[List[Any]]) -> None:
     rhwp.inspect("a.hwp", "hidden-text", threshold_pt=0.5, include_offpage=True)
     rhwp.inspect("a.hwp", "injection", min_confidence="high", include_fields=True)
