@@ -707,6 +707,46 @@ impl LenientCfbReader {
     }
 }
 
+/// CFB 루트 디렉터리 엔트리의 CLSID(오프셋 +80, 16바이트)를 읽는다. (#4097)
+///
+/// OLE 개체는 이 값으로 서버를 식별한다. 재포장할 때 보존하지 않으면 한컴이 개체를 알아보지
+/// 못해 틀과 선택 핸들만 그리고 내용을 비운다(2026-08-05 실측). 짝이 되는 쓰기측은
+/// `serializer::mini_cfb::build_cfb_with_root_clsid` 다.
+///
+/// 전체 파싱을 하지 않는다 — 헤더 두 필드만 본다. `_uSectorShift`(0x1E)로 섹터 크기를,
+/// `_sectDirStart`(0x30)로 첫 디렉터리 섹터 SID 를 구한다. 헤더가 앞 512바이트를 차지하므로
+/// 섹터 SID `n` 의 파일 오프셋은 `(n + 1) * sector_size` 이고, 루트는 그 섹터의 0번 엔트리다.
+/// (v3 는 `sector_size == 512` 라 `512 + n * sector_size` 와 같지만, v4(4096)에서는 이 식이라야
+/// 맞다 — 같은 파일 `LenientCfbReader` 쪽의 `512 + sid * sector_size` 는 v4 에서 틀리다.)
+///
+/// 형식이 어긋나면 `None` 을 돌려주고 패닉하지 않는다. 패닉은 WASM 모듈 전체를 죽여 편집 중인
+/// 다른 문서까지 잃게 하므로, `LenientCfbReader::open` 의 섹터 지수 검증과 같은 근거로 전 구간에
+/// 바운드 검사를 건다.
+pub fn root_clsid(cfb: &[u8]) -> Option<[u8; 16]> {
+    if cfb.len() < 512 || cfb[0..8] != *b"\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" {
+        return None;
+    }
+    // 섹터 크기 지수는 파일에서 온 값(0~65535)이라 검증 없이 shift 하면 안 된다.
+    // wasm32(usize=32bit)에서 `1usize << 32` 는 debug 패닉 / release 마스킹이다.
+    let sector_shift = u16::from_le_bytes([cfb[0x1E], cfb[0x1F]]) as usize;
+    if !(9..=12).contains(&sector_shift) {
+        return None;
+    }
+    let sector_size = 1usize << sector_shift;
+    let dir_start = u32::from_le_bytes(cfb[0x30..0x34].try_into().ok()?) as usize;
+    // ENDOFCHAIN(0xFFFFFFFE) 같은 특수값과 거대 SID 는 checked 연산이 걸러낸다.
+    // wasm32 에서는 usize 가 32비트라 곱셈이 실제로 넘칠 수 있어 checked_mul 이 필수다.
+    let at = dir_start
+        .checked_add(1)?
+        .checked_mul(sector_size)?
+        .checked_add(80)?;
+    let end = at.checked_add(16)?;
+    if end > cfb.len() {
+        return None;
+    }
+    cfb[at..end].try_into().ok()
+}
+
 /// zlib/deflate 압축 해제
 ///
 /// HWP는 raw deflate (wbits=-15) 사용. 실패 시 표준 zlib도 시도.
