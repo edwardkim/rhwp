@@ -64,19 +64,15 @@ R71~R73 이 그 서버 코어와 탈취 방어를 머지한 실적이고, R74~R8
   자식에게 상속되지 않는다.
 - **의존** — R71.
 
-## R74 MCP resources 표면 `[이슈]`
+## R74 MCP resources 표면 `[완료]`
 
 - **한 줄** — 스키마·레시피를 MCP resources 프로토콜로 노출한다.
-- **지금** — #3627. 서버는 지금 tools/* 만 응답하고 resources/* 는 미구현이다.
-  스키마(`export-*-schema`)와 레시피는 CLI·파일로만 닿을 수 있어, MCP 클라이언트가
-  프로토콜 표준 경로로 그것을 읽을 방법이 없다.
-- **설계** — resources/list·resources/read 를 구현해 스키마·레시피를 리소스로
-  낸다. 노출 목록은 도구 정의(R71)와 같은 모양으로 단일 원천에서 파생시켜, 리소스
-  선언과 실물이 갈라지지 않게 한다.
-- **착수 게이트** — resources 프로토콜 범위 확정 — 어느 문서를 리소스로 낼지
-  (스키마만인지, 레시피까지인지, capabilities 도 포함인지).
-- **DoD** — resources/list·resources/read 가 응답하고, 노출 목록이 단일 출처에서
-  파생되며 드리프트 가드가 선언 ↔ 실물을 대조한다.
+- **지금** — #3627의 잔여는 [#4116](https://github.com/edwardkim/rhwp/pull/4116)에서
+  착지했다. resources/list·resources/read가 capabilities 매니페스트·문서 3편에
+  스키마 3종과 레시피 6편을 더해 응답한다. 스키마는 export-*-schema와 같은 생성기,
+  레시피는 원본 `include_str!`에서 파생한다.
+- **DoD** — 달성: 광고한 모든 URI를 list→read 왕복하는 계약 test가 MIME·본문·JSON
+  파싱을 대조하고, 미지 URI의 `-32002`·`data.uri`도 고정한다.
 - **의존** — R71.
 
 ## R75 rmcp 전환 재평가 `[가설]`
@@ -136,16 +132,14 @@ R71~R73 이 그 서버 코어와 탈취 방어를 머지한 실적이고, R74~R8
   표면을 덮는 범위가 명시된다.
 - **의존** — 트랙 B R14·R15, R71.
 
-## R79 레시피의 MCP 리소스 서빙 `[가설]`
+## R79 레시피의 MCP 리소스 서빙 `[완료]`
 
 - **한 줄** — 레시피를 MCP resources 로 서빙해 에이전트가 프로토콜로 직접 읽는다.
-- **지금** — 레시피는 파일·CLI 로만 닿는다. R74 가 스키마를 resources 표면에 올리면,
-  레시피도 같은 표면에 얹을 수 있다 — 그 표면이 아직 없다.
-- **설계** — R74 의 resources 표면을 레시피로 확장한다 — 레시피 인덱스를
-  resources/list, 개별 레시피 본문을 resources/read 로.
-- **착수 게이트** — R74(resources 표면) 머지.
-- **DoD** — resources/list 가 레시피를 열거하고 resources/read 가 개별 레시피
-  본문을 낸다.
+- **지금** — [#4116](https://github.com/edwardkim/rhwp/pull/4116)이 R74와 함께
+  레시피 6편을 `rhwp://recipes/01~06` URI로 서빙했다. 설치본에도 본문이 남도록
+  런타임 파일 읽기 대신 컴파일 시점 `include_str!`을 사용한다.
+- **DoD** — 달성: resources/list가 레시피를 열거하고 resources/read가 각 본문을
+  `text/markdown`으로 반환하며, R74의 list→read 계약 test가 함께 검증한다.
 - **의존** — R74, 트랙 D(레시피 원천).
 
 ## R80 에이전트 관측성(호출 통계 옵트인) `[가설]`

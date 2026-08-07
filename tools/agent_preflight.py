@@ -709,7 +709,9 @@ QUEUE_CAP = 10
 TARGET_IN_BODY = re.compile(r"(?im)^\s*(?:closes|fixes|resolves|refs)\s*:?\s+#(\d{3,5})\b")
 TARGET_IN_TITLE = re.compile(r"#(\d{3,5})\b")
 BRANCH_ISSUE = re.compile(r"^(?:task|wip/fix|fix|feat)[/-](\d{3,5})-")
-CLAIM_MARK = "착수"  # 착수 코멘트 판별 — protocol §5-1 (외부 기여자의 1차 잠금 매체)
+# 잠금은 protocol §5-1의 명시 형식만 인정한다. 단순히 "착수"가 들어간 회고·인용·
+# "아직 착수하지 않음"은 잠금이 아니므로, 부분 문자열 검사는 새 세션을 잘못 통과시킨다.
+CLAIM_COMMENT = re.compile(r"(?m)^\s*착수합니다\s*[—-]\s*\S")
 
 
 def check_queue_discipline(repo: Path, rep: Report) -> None:
@@ -787,7 +789,9 @@ def check_queue_discipline(repo: Path, rep: Report) -> None:
         rep.skip(f"{check}·잠금", f"조회 실패({type(e).__name__})")
         return
     assignees = [a.get("login", "") for a in data.get("assignees", []) if a.get("login")]
-    claimed = any(CLAIM_MARK in (c.get("body") or "") for c in data.get("comments", []))
+    claimed = any(
+        CLAIM_COMMENT.search(c.get("body") or "") for c in data.get("comments", [])
+    )
     if not assignees and not claimed:
         rep.warn(
             check,

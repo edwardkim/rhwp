@@ -630,7 +630,7 @@ gh pr list --repo edwardkim/rhwp --state open --limit 100 --json number,body \
 이 검사는 **오탐이 거의 없고**(선언 기반) **사고 두 건을 모두 잡았을 것이다** —
 #3902/#3903 은 둘 다 본문에 `#3885`, #3897/#3904 는 둘 다 `#3884` 를 적었다.
 
-### 8-6. 선검사에 붙일 때의 형태 (제안)
+### 8-6. 선검사의 큐 규율 검사 (구현)
 
 `tools/agent_preflight.py` 는 이미 `Report.fail/ok/skip` 로 **모든 실패를 모아 한 번에
 보고**하고 종료 코드 계약(0 통과 / 1 실패 / 2 사용법 오류)을 가진다. 큐 검사는 그
@@ -663,11 +663,11 @@ gh pr list --repo edwardkim/rhwp --state open --limit 100 --json number,body \
 3번이 특히 값싸다. 브랜치 이름은 로컬에서 읽고, 확인은 `gh issue view` 한 번이다.
 
 > [!NOTE]
-> 이 절은 **제안이고 구현되지 않았다.** `tools/agent_preflight.py` 에 큐 관련 검사가
-> 있는지 확인했고 **없다** — 현재 검사는 오염·문서 배치·ReDoS·fmt·MCP 스키마·속성
-> 배선·help 커버·MCP 도구 커버·선언 플래그 실재·실패 경로 stdout 이다.
-> 구현 여부와 형태는 [#3914](https://github.com/edwardkim/rhwp/issues/3914) 수용 기준
-> 2번의 몫이다.
+> [#4106](https://github.com/edwardkim/rhwp/pull/4106)이 이 형태를
+> `tools/agent_preflight.py::check_queue_discipline()`으로 구현했다. 잔량·선언 기반
+> 중복·브랜치 잠금을 모두 경고 전용으로 보고하고, `gh` 부재·미인증·조회 실패는
+> 조용히 건너뛴다. 외부 기여자의 잠금 코멘트는 `착수합니다 — <범위>` 형식만 인정해
+> 회고의 단어 하나가 잠금으로 오인되지 않게 한다.
 
 ---
 

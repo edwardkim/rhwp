@@ -97,25 +97,23 @@ L1 은 이 저장소의 가장 낮은 층이자 가장 자주 무너지는 층�
 - **DoD** — 달성(허용목록 0 유지가 지속 조건).
 - **의존** — R2·R5, 트랙 B 의 스윕 기구.
 
-## R7 edit·inspect 하위 명령 자기서술 등재 `[이슈]`
+## R7 edit·inspect 하위 명령 자기서술 등재 `[완료]`
 
 - **한 줄** — `capabilities` 만 읽는 에이전트가 `edit` 6종·`inspect` 3종 하위
   명령의 존재를 알게 한다.
-- **지금** — #3884 G4. 실측: `capabilities` 의 commands 에는 `edit`·`inspect`
-  부모만 있고, 실제 하위는 `edit <fill-fields|replace-text|set-cell|insert-image|
-  redact|sanitize>`·`inspect <hidden-text|injection|unicode>` 9종. 실패 자체는
-  규약을 지킨다(exit 2 + stdout 0 B) — 깨짐이 아니라 **발견 가능성의 공백**이라
-  `capabilities --search`(R31)가 이 위에서 절반만 동작한다. R6 의 28건 중 15건이
-  같은 뿌리(하위 명령 사각)였다는 것이 정량 근거다.
+- **지금** — #3884 G4는 [#4114](https://github.com/edwardkim/rhwp/pull/4114)에서
+  착지했다. `edit` 6종·`inspect` 3종을 `commands[].subcommands`에 name·summary로
+  등재했고, `capabilities --search redact`와 `--search hidden-text`가 각 부모를
+  찾는다. 선언↔USAGE↔디스패치와 검색을 고정한 계약 test 4건이 있다.
 - **설계** — 저장소에 이미 선례가 있다: `capabilities` 본문의
   `batch.subcommands` 배열. 같은 모양으로 `edit`·`inspect` 항목에
   `subcommands: [...]` 를 더하고, 하위별 `recordFields` 분화가 필요한지가 설계
   질문이다(현재 `edit` 는 부모 하나에 전 하위의 필드 합집합을 선언 — R6 가드가
   합집합 기준이라 동작은 하지만, 소비자는 "어느 하위가 어느 필드를 내는지"를
   모른다). 1차: subcommands 배열 + 요약 한 줄. 2차(별도 판단): 하위별 선언 분화.
-- **착수 게이트** — 없음(추가 근거 불요, 선례 존재). 메인테이너의 모양 승인만.
-- **DoD** — `capabilities --search "redact"` 가 edit 하위를 찾는다. 드리프트
-  가드: 디스패치의 실제 하위 목록 ↔ 선언 대조 테스트 1본.
+- **DoD** — 달성: `capabilities --search "redact"`가 edit 하위를 찾고, 디스패치의
+  실제 하위 목록 ↔ 선언 대조 계약 test가 고정한다. 하위별 `recordFields` 분화는
+  별도 판단으로 남는다.
 - **의존** — R6(정량 근거), R31(효과 수혜자).
 
 ## R8 진단 명령 부류 판정 `[이슈]`
