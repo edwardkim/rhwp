@@ -28,6 +28,8 @@ last_verified: 2026-08-07
 2. 단어 인용과 실제 착수 형식의 Python 회귀 2건을 추가했다.
 3. #4106 구현에 맞춰 protocol §8-6의 구현 상태를 정렬했다.
 4. R7, R74, R79, R94와 README 기계 집계를 누적 구현 상태로 정렬했다.
+5. 최초 node-binding CI가 발견한 세 capabilities JSON 명령의 Node wrapper를 추가하고,
+   capabilities 생성 타입을 31개에서 34개 봉투로 재생성했다.
 
 `5db125857`은 CI 워크플로에 Python 회귀를 추가했던 변경을 작업지시자 지시에 따라 별도 revert했다.
 따라서 통합 branch의 최종 CI 워크플로 diff는 없다.
@@ -38,6 +40,8 @@ last_verified: 2026-08-07
   3 passed, `actionlint`, `git diff --check`를 통과했다.
 - capabilities 계약 4+17 passed, MCP resources·server 계약 3+22 passed, `cargo fmt --check`,
   `cargo clippy --all-targets -- -D warnings`를 통과했다.
+- Node binding은 실제 `target/release-test/rhwp`와 17 files·445 tests, typecheck, build,
+  생성 타입 최신 검사를 통과했다.
 - Python·문서 보정 뒤 Cargo 전체 회귀는 실행하지 않았다.
 - 원격 push, 통합 PR 생성, GitHub comment, merge는 아직 수행하지 않았다.
 - 통합 PR을 만들려면 현재 branch의 review 문서 commit을 추가한 뒤, 최신 `upstream/devel`과 원 PR
