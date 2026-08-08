@@ -4257,7 +4257,10 @@ impl LayoutEngine {
             let use_saved_cell_para_vpos = use_top_vpos_anchor
                 || trust_stored_cell_flow
                 || has_initial_tac_shape_host(&cell.paragraphs);
-            if use_saved_cell_para_vpos && !has_nested_table && has_stored_para_anchor {
+            if use_saved_cell_para_vpos
+                && (!has_nested_table || trust_stored_cell_flow)
+                && has_stored_para_anchor
+            {
                 if let Some(first_seg) = para.line_segs.first() {
                     if first_seg.vertical_pos >= 0 {
                         let spacing_before = styles
@@ -6028,6 +6031,17 @@ impl LayoutEngine {
                 .paragraphs
                 .iter()
                 .any(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))));
+            // HWPX block-TAC 셀의 nested table은 예외다. 이 형상은 모든 문단의
+            // 연속된 LineSeg.vpos가 셀 기준 좌표를 보존하며, 이를 무시하면
+            // Center 정렬의 순차 flow가 누적되어 실제로 fit하는 하위 표가 다음
+            // 쪽으로 clip된다 (#3820 production HWPX p144). 아래의 stored-flow
+            // 신뢰 조건(연속 anchor, extent, 비-flow 객체)을 통과한 경우에만 허용해
+            // Task #362의 일반 nested-table 누적-vpos 차단은 유지한다.
+            let hwpx_noninline_tac_nested_stored_flow = self.profile.get().hwpx_stored_layout()
+                && table.common.treat_as_char
+                && !table.common.flow_with_text
+                && matches!(table.page_break, TablePageBreak::None)
+                && has_nested_table;
             let first_line_vpos = cell
                 .paragraphs
                 .first()
@@ -6039,7 +6053,8 @@ impl LayoutEngine {
             // 지오메트리를 신뢰한다: 정렬 기준 콘텐츠 높이를 저장 extent 로
             // 바꾸고, 문단 배치도 저장 vpos 스냅을 강제한다 (한컴 실측:
             // 가사 top = 셀 top + pad + 센터 오프셋(저장 extent 기준) + vpos).
-            let (stored_flow_extent, stored_flow_line_sum) = if !has_nested_table
+            let (stored_flow_extent, stored_flow_line_sum) = if (!has_nested_table
+                || hwpx_noninline_tac_nested_stored_flow)
                 && !cell.paragraphs.is_empty()
                 && cell.paragraphs.iter().all(|p| !p.line_segs.is_empty())
             {
@@ -6083,12 +6098,20 @@ impl LayoutEngine {
                 .iter()
                 .enumerate()
                 .all(|(idx, para)| crate::renderer::first_seg_vpos_is_anchor(para, idx));
-            let trust_stored_cell_flow = (depth > 0 || table.common.treat_as_char)
+            let stored_flow_shape_is_trusted = (depth > 0 || table.common.treat_as_char)
                 && stored_flow_extent > 0.0
-                && stored_flow_extent + 0.5 < total_content_height
                 && non_flow_object_extent <= stored_flow_extent + 0.5
                 && stored_flow_extent + 0.5 >= 0.5 * stored_flow_line_sum
                 && stored_flow_has_para_anchors;
+            // 일반 셀은 저장 extent가 자체 측정값보다 실제로 압축된 경우에만
+            // anchor를 신뢰한다. 다만 위의 좁은 HWPX block-TAC nested-table 형상은
+            // extent와 자체 측정값이 같아도 문단별 vpos가 하위 표의 실제 위치를
+            // 담고 있다. 이 경우에는 total height는 변하지 않지만 순차 배치만
+            // 저장 anchor로 복원해야 한다 (#3820 p144).
+            let trust_stored_cell_flow = stored_flow_shape_is_trusted
+                && (stored_flow_extent + 0.5 < total_content_height
+                    || (hwpx_noninline_tac_nested_stored_flow
+                        && (stored_flow_extent - total_content_height).abs() <= 0.5));
             let total_content_height = if trust_stored_cell_flow {
                 stored_flow_extent
             } else {

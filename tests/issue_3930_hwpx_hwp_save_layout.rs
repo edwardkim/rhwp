@@ -1,8 +1,9 @@
-//! Issue #3930 — HWPX 저장 뒤 표 분할과 바탕쪽 선택을 보존한다.
+//! Issue #3930/#3820 — HWPX 저장 뒤 표 분할·바탕쪽과 PDF page owner를 보존한다.
 
 use std::fs;
 use std::path::Path;
 
+use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::header_footer::{HeaderFooterApply, MasterPage};
 use rhwp::model::shape::ShapeObject;
@@ -19,6 +20,18 @@ fn page_tree(document: &HwpDocument, page: u32) -> String {
     document
         .get_page_render_tree(page)
         .unwrap_or_else(|error| panic!("p{} render tree: {error:?}", page + 1))
+}
+
+/// PDF p144 안에서 끝나는 붙임 표가 `page tree`에만 남고 물리적으로 쪽 밖으로
+/// 잘리는 퇴행을 막는다. 새 DocumentCore로 독립 렌더해 앞선 tree 조회의 카운터를
+/// 섞지 않는다 (#3820 Stage 65).
+fn page_overflow_cell_lines(bytes: &[u8], page: u32) -> u32 {
+    let document = DocumentCore::from_bytes(bytes).expect("overflow fixture parse");
+    let _ = document.take_overflow_cell_lines();
+    document
+        .render_page_svg_native(page)
+        .unwrap_or_else(|error| panic!("p{} render: {error:?}", page + 1));
+    document.take_overflow_cell_lines()
 }
 
 fn master_page_text(master_page: &MasterPage) -> String {
@@ -50,7 +63,14 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     // CLI가 사용하는 native HwpDocument 래퍼까지 동일하게 통과해야 한다.
     let mut source = HwpDocument::from_bytes(&bytes).expect("HWPX fixture parse");
 
-    assert_eq!(source.page_count(), 387, "원본 편람 쪽수");
+    // 한컴 2024 PDF p144에는 "붙임 파일에 직인 날인 방법" 표의 안내·예시가
+    // 모두 있어야 한다. raw `treatAsChar=1`만 보고 block table을 조기 분할하면
+    // p145로 이월되어 이후 page owner가 연쇄적으로 한 쪽씩 밀린다 (#3820).
+    assert_eq!(
+        source.page_count(),
+        386,
+        "p144 조기 이월 보정 뒤 원본 편람 쪽수"
+    );
     let source_p30_tree = page_tree(&source, PAGE_30);
     let source_p144_tree = page_tree(&source, PAGE_144);
     let source_p145_tree = page_tree(&source, PAGE_145);
@@ -64,12 +84,17 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         "원본 p30 바탕쪽은 장 제목으로 바뀌면 안 된다"
     );
     assert!(
-        !source_p144_tree.contains(ATTACHMENT_GUIDANCE),
-        "원본 p144에는 붙임 안내 블록이 남으면 안 된다"
+        source_p144_tree.contains(ATTACHMENT_GUIDANCE),
+        "한컴 PDF p144와 같이 붙임 안내 블록은 원본 p144에 있어야 한다"
     );
     assert!(
-        source_p145_tree.contains(ATTACHMENT_GUIDANCE),
-        "원본 p145에는 붙임 안내 블록이 있어야 한다"
+        !source_p145_tree.contains(ATTACHMENT_GUIDANCE),
+        "원본 p145는 앞 표의 붙임 안내 블록을 다시 갖지 않아야 한다"
+    );
+    assert_eq!(
+        page_overflow_cell_lines(&bytes, PAGE_144),
+        0,
+        "PDF p144에 완결된 붙임 표의 하위 안내·caption은 쪽 밖으로 clip되면 안 된다"
     );
     let source_border_fill = &source.document().doc_info.border_fills[67];
     assert_eq!(
@@ -119,8 +144,8 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
 
     assert_eq!(
         reloaded.page_count(),
-        387,
-        "p144 표가 다음 쪽으로 계속 이월돼야 한다"
+        source.page_count(),
+        "저장 HWP도 p144 table owner를 HWPX 원본과 같게 보존해야 한다"
     );
     for (page, source_tree) in [
         (PAGE_30, source_p30_tree),

@@ -1,6 +1,6 @@
 ---
 kind: analysis
-status: active
+status: completed
 canonical: mydocs/working/task_m100_3820_stage1.md
 last_verified: 2026-08-08
 ---
@@ -65,3 +65,44 @@ effective height로 제한해 host-spacing 반올림 때문에 다음 content를
 
 보정 후 p144 table 하단이 physical body를 넘거나 후속 owner가 겹치면 이 가설을 폐기하고,
 `MeasuredTable` row-height/host-spacing 합산 경로를 별도 Stage로 분석한다.
+
+## 구현 결과
+
+whole-fit 보정만으로는 p144의 render tree owner는 맞았지만, 하위 caption 세 줄이
+physical body 밖으로 각각 13.7px, 6.3px, 21.0px clip됐다. 따라서 중단 조건에 따라
+`MeasuredTable`을 바꾸지 않고 같은 outer cell의 layout을 다시 조사했다.
+
+원인은 `src/renderer/layout/table_layout.rs`의 Task #362 일반 차단이었다. nested table이
+있으면 모든 stored `LineSeg.vpos`를 쓰지 않아 Center 셀의 문단이 순차 flow로 다시
+쌓였고, p144 outer cell의 inner 2×3 caption table이 약 170px 아래로 밀렸다. 대상 HWPX
+outer cell은 다음의 독립 근거를 모두 만족한다.
+
+| 확인 항목 | 값 |
+| --- | --- |
+| outer table | `treatAsChar=1`, `flowWithText=0`, `pageBreak=NONE` |
+| nested-cell stored extent / 자체 측정 | 676.1px / 676.1px |
+| stored line-height 합 | 467.6px |
+| nested/wrap physical bottom | 676.1px 이하 |
+| 문단 anchor | 모든 문단의 연속 `vpos` 사다리 보유 |
+
+따라서 일반 nested-cell의 cumulative/reset `vpos` 차단은 유지하고, HWPX stored-layout의
+non-inline block-TAC에만 위 형상 검사를 통과했을 때 문단 위치 anchor를 복원했다. extent가
+자체 측정과 같은 경우에도 전체 높이는 바꾸지 않고 좌표만 복원한다. 이로써 p144의 image
+caption이 PDF와 같이 쪽 안에서 끝나며, p145에는 앞 table의 content가 남지 않는다.
+
+`tests/issue_3930_hwpx_hwp_save_layout.rs`는 PDF p144 owner뿐 아니라 새 `DocumentCore`
+렌더에서 해당 쪽의 `overflow_cell_lines == 0`도 고정한다. tree에만 text가 남고 실제 paint가
+footer 밖으로 잘리는 우회 회귀를 막는다.
+
+## 검증 결과
+
+- `cargo test --profile release-test --test issue_3930_hwpx_hwp_save_layout -- --nocapture` — 통과.
+- `cargo test --profile release-test --test issue_1891 -- --nocapture` — 4/4 통과. Task #362의
+  일반 HWPX nested-table clip guard가 유지됨을 확인했다.
+- `cargo test --profile release-test --test overflow_cell_baseline -- --nocapture` — 통과,
+  678 fixtures(3 skip), nonzero 17 documents, total 691 lines. baseline을 변경하지 않았다.
+- p143–p146 180 DPI direct PDF sweep — SVG 386/386, requested raster 4/4. p144의 하위
+  예시/caption은 body 안에 있고 p145 owner도 PDF와 일치한다. 근거 PNG는
+  `mydocs/pr/assets/task_m100_3820_stage65_hwpx_noninline_tac_fit/review_144.png`,
+  `review_145.png` 및 `summary.json`에 보존했다. font/ink raster 차이는 overlay의
+  pixel proxy와 분리해 page-owner 및 physical clip을 직접 판정했다.

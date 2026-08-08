@@ -19275,13 +19275,30 @@ impl TypesetEngine {
         let measured_excess = table_total - declared_object_total;
         let declared_excess_within_drift =
             measured_excess <= (declared_object_total * 0.10).min(64.0);
+        // HWPX에서는 `treatAsChar` bit만으로 inline 표가 되지 않는다. stored-layout
+        // 문서의 `flowWithText=0` 표는 block table인데, raw bit를 그대로 사용하면
+        // declared whole-fit에서 제외되어 generic row cut이 저장 row height를 다시
+        // 팽창시키고, 실제로 들어가는 표까지 다음 쪽으로 조기 이월한다 (#3820 p144).
+        // 이 좁은 경로는 쪽나눔=None·footnote 없음·실측 높이 fit을 함께 요구한다.
+        // 진짜 inline TAC와 native HWP5의 기존 정책은 `uses_tac_table_flow`에 맡긴다.
+        let hwpx_noninline_tac_measured_fit = self.profile.get().hwpx_stored_layout()
+            && table.common.treat_as_char
+            && !self.uses_tac_table_flow(table)
+            && matches!(table.page_break, crate::model::table::TablePageBreak::None)
+            && ft.table_footnotes.is_empty()
+            && st.current_height + ft.effective_height <= available + 0.5;
+        let declared_fit_height = if hwpx_noninline_tac_measured_fit {
+            ft.effective_height
+        } else {
+            declared_object_total
+        };
         let declared_table_whole_fits = !uses_painted_row_footprint_for_whole_fit
             && declared_fit_scope_ok
             && declared_excess_within_drift
             && !ft.strict_following_plain_text_fit
-            && !table.common.treat_as_char
+            && (!table.common.treat_as_char || hwpx_noninline_tac_measured_fit)
             && declared_object_total > host_spacing_total
-            && st.current_height + declared_object_total <= available;
+            && st.current_height + declared_fit_height <= available;
         if host_line_trails_float_stack {
             // [#2813] 앵커 줄 아이템을 float 스택 뒤로 이연(한글 문서순) —
             // 스택 첫 표 배치 전에 걸려야 렌더 순서가 표→줄로 나온다.
@@ -19317,7 +19334,7 @@ impl TypesetEngine {
                 if let Some(advance) = single_row_object_height_advance {
                     advance
                 } else if is_para_topbottom_float(&table.common)
-                    && para_has_non_whitespace_text(para)
+                    && (para_has_non_whitespace_text(para) || hwpx_noninline_tac_measured_fit)
                 {
                     ft.effective_height
                 } else {
