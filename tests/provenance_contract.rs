@@ -361,6 +361,13 @@ const SWEEP_EXEMPT: &[(&str, &str)] = &[
          --bare가 아닌 모드도 특정 문서가 아닌 스키마 봉투를 낸다. \
          봉투 모양은 tests/plan_schema_contract.rs 가 따로 고정한다.",
     ),
+    (
+        "export-ontology",
+        "문서를 입력으로 받지 않는다 — 자기서술(IR 스키마·capabilities·MCP 도구·출처 \
+         지도)에서 기계 유도한 JSON-LD 온톨로지다. --bare가 아닌 모드도 특정 문서가 \
+         아닌 온톨로지 봉투를 낸다. 봉투 모양은 tests/ontology_contract.rs 가 따로 \
+         고정한다.",
+    ),
 ];
 
 fn s(v: &str) -> String {
@@ -1444,6 +1451,7 @@ fn sweep_exempt_envelopes_still_carry_provenance_marks() {
             "export-plan-schema",
             vec![s("export-plan-schema"), s("--json")],
         ),
+        ("export-ontology", vec![s("export-ontology"), s("--json")]),
         (
             "build-from-ingest",
             vec![

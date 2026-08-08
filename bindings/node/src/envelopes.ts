@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 34개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 35개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -333,6 +333,22 @@ export interface ExportMarkdownEnvelope {
   readonly renderedCount?: number;
   readonly schemaVersion?: string;
   readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-ontology --json` 봉투.
+ *
+ * 자기서술에서 기계 유도한 JSON-LD 온톨로지 산출 — IR 클래스·속성, 명령/MCP 행위, 신뢰 술어
+ * (#3907 O1)
+ */
+export interface ExportOntologyEnvelope {
+  readonly actionCount?: unknown;
+  readonly classCount?: unknown;
+  readonly ontology?: unknown;
+  readonly propertyCount?: unknown;
+  readonly schemaVersion?: string;
 
   readonly [key: string]: unknown;
 }
@@ -691,6 +707,7 @@ export interface EnvelopeByCommand {
   "export-hwpx": ExportHwpxEnvelope;
   "export-ir-schema": ExportIrSchemaEnvelope;
   "export-markdown": ExportMarkdownEnvelope;
+  "export-ontology": ExportOntologyEnvelope;
   "export-pdf": ExportPdfEnvelope;
   "export-plan-schema": ExportPlanSchemaEnvelope;
   "export-provenance-map": ExportProvenanceMapEnvelope;

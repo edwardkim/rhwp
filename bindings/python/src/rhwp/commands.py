@@ -221,6 +221,26 @@ def export_provenance_map(
     return Envelope(run_json(["export-provenance-map", "--json"], timeout=timeout))
 
 
+def export_ontology(
+    *,
+    bare: bool = False,
+    out: Optional[PathLike] = None,
+    timeout: Optional[float] = DEFAULT_TIMEOUT,
+) -> Envelope:
+    """자기서술에서 기계 유도한 JSON-LD 온톨로지 (#3907 O1).
+
+    IR 스키마·capabilities·MCP 도구 정의·봉투 출처 지도에서 실행 시점에
+    유도한다 — 손 나열 상수가 없으므로 원천 선언이 바뀌면 함께 바뀐다.
+    ``bare=True`` 면 봉투 없이 JSON-LD 본문(``@context``·``@graph``)만 받는다.
+    문서를 입력으로 받지 않는다(도구 자신의 서술이지 특정 문서의 속성이 아니다).
+    """
+    args: List[Any] = ["export-ontology"]
+    _switch(args, "--bare", bare)
+    _flag(args, "-o", out)
+    args.append("--json")
+    return Envelope(run_json(args, timeout=timeout))
+
+
 # ── 산출 ────────────────────────────────────────────────────────────────
 
 

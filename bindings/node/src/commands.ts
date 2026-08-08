@@ -330,6 +330,33 @@ export async function exportCapabilitiesSchema(
   return call(args, options);
 }
 
+/** {@link exportOntology} 옵션. */
+export interface OntologyOptions extends IrSchemaOptions, OutputOptions {
+  /**
+   * 온톨로지를 이 파일로 저장한다.
+   *
+   * 저장해도 stdout 은 봉투를 유지한다(`output`·`bytes` 가 담긴다) —
+   * {@link exportCapabilitiesSchema} 와 같은 축이다.
+   */
+  readonly out?: PathLike | undefined;
+}
+
+/**
+ * 자기서술에서 기계 유도한 JSON-LD 온톨로지 (#3907 O1).
+ *
+ * IR 스키마·capabilities·MCP 도구 정의·봉투 출처 지도에서 실행 시점에 유도한다 —
+ * 손 나열 상수가 없으므로 원천 선언이 바뀌면 온톨로지가 함께 바뀐다. `bare` 면
+ * 봉투 없이 JSON-LD 본문(`@context`·`@graph`)만 받아 RDF 도구에 바로 먹인다.
+ * 문서를 입력으로 받지 않는다(도구 자신의 서술이지 특정 문서의 속성이 아니다).
+ */
+export async function exportOntology(options: OntologyOptions = {}): Promise<Envelope> {
+  const args: Argument[] = ['export-ontology'];
+  toggle(args, '--bare', options.bare);
+  flag(args, '-o', options.out);
+  args.push('--json');
+  return call(args, options);
+}
+
 export {
   csvToTable,
   exportProvenanceMap,

@@ -259,7 +259,8 @@ def test_binding_covers_every_agent_value_command(wired_binary: Path) -> None:
             "export-pdf", "export-markdown", "export-hml", "export-doclang", "export-hwpx", "convert",
             "search", "fields", "digest", "extract-data", "inspect", "ir-diff", "thumbnail", "extract-pages",
             "build-from-ingest", "edit", "batch", "run", "capabilities", "export-ir-schema",
-            "export-capabilities-schema", "export-provenance-map", "csv-to-table",
+            "export-capabilities-schema", "export-provenance-map", "export-ontology",
+            "csv-to-table",
     }
     missing = declared - exported
     assert not missing, (

@@ -415,6 +415,13 @@ pub const MAP: &[CommandProvenance] = &[
         note: "본 지도 자신 — 문서를 열지 않는다.",
     },
     CommandProvenance {
+        command: "export-ontology",
+        untrusted: NONE,
+        note: "문서를 열지 않는다 — 자기서술(IR 스키마·capabilities·MCP 도구·본 지도)에서 \
+               기계 유도한 JSON-LD 온톨로지다. 본 지도의 untrusted 경로는 온톨로지 안에서 \
+               신뢰 술어(rhwp:untrustedFields)로 다시 실린다.",
+    },
+    CommandProvenance {
         command: "export-agent-manifest",
         untrusted: NONE,
         note: "문서를 열지 않는다 — capabilities·export-ir-schema·export-provenance-map·\

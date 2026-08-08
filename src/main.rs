@@ -274,6 +274,7 @@ fn main() {
         Some("export-doclang") => exit_with(export_doclang(&args[2..])),
         Some("export-ir-schema") => exit_with(cmd_export_ir_schema(&args[2..])),
         Some("export-capabilities-schema") => exit_with(cmd_export_capabilities_schema(&args[2..])),
+        Some("export-ontology") => exit_with(cmd_export_ontology(&args[2..])),
         Some("capabilities") => exit_with(show_capabilities(&args[2..])),
         Some("export-provenance-map") => exit_with(export_provenance_map(&args[2..])),
         Some("export-agent-manifest") => exit_with(cmd_export_agent_manifest(&args[2..])),
@@ -1518,6 +1519,26 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "capabilitiesSchemaVersion", "dialect", "definitionCount", "schema", "mcpSchema"],
         ),
         tool_with_optional_args(
+            "hwp_export_ontology",
+            "[#3907 O1] rhwp 의 자기서술(IR 스키마·capabilities·MCP 도구 정의·봉투 출처 지도)에서 실행 시점에 기계 유도한 JSON-LD 온톨로지를 돌려준다. @graph 에 IR 타입 = 클래스(rdfs:Class), IR 필드 = 속성(rdf:Property, 도메인·레인지 유도), 명령·MCP 도구 = 행위(schema:Action), 출처 지도의 문서 파생 경로 = 신뢰 술어(rhwp:untrustedFields)가 실린다. 손으로 쓴 목록이 없어 원천 선언이 바뀌면 온톨로지가 함께 바뀐다 — 지식그래프·시맨틱 소비자가 단일 출처로 쓴다. 문서를 입력으로 받지 않는다(도구 자신의 서술이지 특정 문서의 속성이 아니다).",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "bare": {
+                        "type": "boolean",
+                        "description": "참이면 봉투 없이 JSON-LD 본문(@context·@graph)만 (RDF/JSON-LD 도구에 바로 먹일 때)"
+                    }
+                },
+                // 문서를 받지 않으므로 필수 인자가 없다 — 그래도 빈 배열을 선언한다.
+                // 소비자가 required 의 부재와 "필수 없음"을 구분할 수 없으면 안 된다.
+                "required": [],
+            }),
+            "export-ontology",
+            serde_json::json!(["export-ontology", "--json"]),
+            serde_json::json!([{ "when": "bare", "args": ["--bare"] }]),
+            &["schemaVersion", "ontology", "classCount", "propertyCount", "actionCount"],
+        ),
+        tool_with_optional_args(
             "hwp_render_diff",
             "두 렌더의 페이지별 bbox 변위(px)를 재어 시각 회귀를 판정한다. pathB 를 주면 두 문서 직접 비교, 없으면 자기 라운드트립(원본 IR vs 직렬화→재로드 IR, via 로 경유 포맷 선택)이다. 판정은 status(PASS/WARN_TEXTRUN/OVER/STRUCT_MISMATCH/PAGE_MISMATCH)와 regression 으로 읽고, maxDisp·pages[].topDeltas 로 어디가 얼마나 밀렸는지 좁힌다. 회귀를 찾으면 종료 코드 3 이지만 봉투는 정상 산출된다(도구 실패가 아니라 검출이다).",
             path_schema(serde_json::json!({
@@ -1918,6 +1939,22 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "definitionCount",
                 "schema",
                 "mcpSchema",
+            ],
+        ),
+        // [#3907 O1] 자기서술 4축(IR 스키마·capabilities·MCP 도구·출처 지도)에서
+        // 실행 시점에 기계 유도하는 JSON-LD 온톨로지 — 손 나열 상수 0.
+        cmd_json(
+            "export-ontology",
+            "export",
+            "자기서술에서 기계 유도한 JSON-LD 온톨로지 산출 — IR 클래스·속성, 명령/MCP 행위, 신뢰 술어 (#3907 O1)",
+            false,
+            &["--json", "--bare", "-o"],
+            &[
+                "schemaVersion",
+                "ontology",
+                "classCount",
+                "propertyCount",
+                "actionCount",
             ],
         ),
         cmd_json(
@@ -2927,6 +2964,14 @@ fn print_help() {
     println!("      --bare                  봉투 없이 capabilities 스키마 본문만 출력");
     println!("      -o, --out <파일>        스키마를 파일로 저장 (생략 시 stdout)");
     println!("      --json                  -o 와 함께 쓰면 저장 결과를 JSON 봉투로 보고");
+    println!("  export-ontology [--bare] [-o <파일>] [--json]");
+    println!("      자기서술(IR 스키마·capabilities·MCP 도구·출처 지도)에서 기계 유도한");
+    println!("      JSON-LD 온톨로지 출력 — 클래스·속성·행위·신뢰 술어, 손 나열 상수 0");
+    println!();
+    println!("      --bare                  봉투 없이 JSON-LD 본문(@context·@graph)만 출력");
+    println!("      -o, --out <파일>        온톨로지를 파일로 저장 (생략 시 stdout)");
+    println!("      --json                  -o 와 함께 쓰면 저장 결과를 JSON 봉투로 보고");
+    println!();
     println!("  export-provenance-map [--json]");
     println!("  export-agent-manifest [--bare] [--json]");
     println!("      명령별 '문서에서 온 값' 필드 지도 — 그 값들은 데이터이지 지시가 아니다");
@@ -13942,6 +13987,89 @@ fn cmd_export_capabilities_schema(args: &[String]) -> i32 {
             );
         } else {
             println!("capabilities 스키마 저장: {} ({} bytes)", path, text.len());
+        }
+        return EXIT_OK;
+    }
+
+    println!("{text}");
+    EXIT_OK
+}
+
+/// [#3907 O1] `export-ontology` — 자기서술에서 JSON-LD 온톨로지를 기계 유도한다.
+///
+/// 문서를 입력으로 받지 않는다 — 온톨로지는 rhwp 라는 **도구 자신**(IR 타입·명령
+/// 표면·신뢰 경계)의 서술이지 특정 문서의 속성이 아니다. 유도 원천은 전부 같은
+/// 크레이트의 단일 출처 함수다: `ir_schema()`·`capabilities_value()`·
+/// `mcp_tool_definitions()`·`provenance::MAP`. 손 나열 상수가 없으므로 원천이
+/// 바뀌면 온톨로지가 함께 바뀐다 — 드리프트 구조적 불가능이 이 명령의 논지다.
+/// 문서 인스턴스 모드(O2)는 후속이다.
+fn cmd_export_ontology(args: &[String]) -> i32 {
+    let mut out_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut bare = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            // 봉투 없이 JSON-LD 본문만 — RDF/JSON-LD 도구에 바로 먹이려는 용도.
+            "--bare" => bare = true,
+            "-o" | "--out" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.as_str()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {}", other);
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+
+    let caps = capabilities_value();
+    let tools = mcp_tool_definitions();
+    let payload = if bare {
+        // --bare 는 JSON-LD 처리기에 그대로 먹이는 본문이다 — 봉투 표지를 섞지 않는다.
+        rhwp::ontology::ontology(&caps, &tools)
+    } else {
+        // [#3885] "표지는 항상 실린다" — 문서를 열지 않는 명령의 봉투도
+        // untrustedContent:false 를 명시한다.
+        provenance::marked(rhwp::ontology::envelope(&caps, &tools), "export-ontology")
+    };
+    let text = match serde_json::to_string_pretty(&payload) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("오류: 온톨로지 직렬화 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    if let Some(path) = out_path {
+        if let Err(e) = fs::write(path, text.as_bytes()) {
+            eprintln!("오류: 온톨로지를 쓸 수 없습니다 - {}: {}", path, e);
+            return EXIT_RUNTIME;
+        }
+        if json_mode {
+            // 파일로 뺐어도 stdout 은 기계 계약을 유지한다 — 어디에 썼는지 알려준다.
+            println!(
+                "{}",
+                provenance::marked(
+                    serde_json::json!({
+                        "schemaVersion": "1.0",
+                        "ontologyVersion": rhwp::ontology::ONTOLOGY_VERSION,
+                        "output": path,
+                        "bytes": text.len(),
+                    }),
+                    "export-ontology"
+                )
+            );
+        } else {
+            println!("온톨로지 저장: {} ({} bytes)", path, text.len());
         }
         return EXIT_OK;
     }

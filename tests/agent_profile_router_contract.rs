@@ -299,12 +299,16 @@ fn every_stateless_tool_belongs_to_some_specific_profile() {
     // `hwp_export_plan_schema`(#3719 §6-4)도 같은 성격이다 — 문서를 입력으로 받지 않고
     // `hwp_run_plan` 이 받는 계획서 **문법**을 서술한다. 계획을 실제로 수행하는
     // `hwp_run_plan` 은 업무 프로필에 있고, 그 문법 설명서만 여기 남는다.
+    // `hwp_export_ontology`(#3907 O1)도 같은 성격이다 — 문서를 입력으로 받지 않고
+    // 자기서술 4축에서 유도한 JSON-LD 온톨로지를 낸다. 지식그래프·시맨틱 소비자를
+    // 위한 개발자 도구이지 특정 업무 직무의 도구가 아니다.
     let meta_only_by_design: std::collections::HashSet<&str> = [
         "hwp_export_ir_schema",
         "hwp_export_capabilities_schema",
         "hwp_export_provenance_map",
         "hwp_export_agent_manifest",
         "hwp_export_plan_schema",
+        "hwp_export_ontology",
     ]
     .into_iter()
     .collect();

@@ -197,6 +197,20 @@ describe('조회 명령 — argv 모양', () => {
     ]);
   });
 
+  it('export-ontology', async () => {
+    expect(await argvOf(() => rhwp.exportOntology())).toEqual(['export-ontology', '--json']);
+  });
+
+  it('export-ontology — bare·out 을 JSON 봉투와 함께 보낸다', async () => {
+    expect(await argvOf(() => rhwp.exportOntology({ bare: true, out: 'onto.jsonld' }))).toEqual([
+      'export-ontology',
+      '--bare',
+      '-o',
+      'onto.jsonld',
+      '--json',
+    ]);
+  });
+
   it('export-provenance-map — 문서 경로 없이 JSON 봉투를 요청한다', async () => {
     expect(await argvOf(() => rhwp.exportProvenanceMap())).toEqual(['export-provenance-map', '--json']);
   });
@@ -888,6 +902,7 @@ describe('옵션을 안 주면 플래그도 안 붙는다', () => {
     ['exportPlanSchema', () => rhwp.exportPlanSchema()],
     ['exportAgentManifest', () => rhwp.exportAgentManifest()],
     ['exportCapabilitiesSchema', () => rhwp.exportCapabilitiesSchema()],
+    ['exportOntology', () => rhwp.exportOntology()],
     ['exportProvenanceMap', () => rhwp.exportProvenanceMap()],
     ['tableToCsv', () => rhwp.tableToCsv('a.hwp')],
     ['csvToTable', () => rhwp.csvToTable('a.hwp', { csv: 'a.csv', table: 0 })],
