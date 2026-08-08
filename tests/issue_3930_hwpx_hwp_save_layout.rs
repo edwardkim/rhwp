@@ -8,6 +8,7 @@ use rhwp::model::control::Control;
 use rhwp::model::header_footer::{HeaderFooterApply, MasterPage};
 use rhwp::model::shape::ShapeObject;
 use rhwp::model::style::BorderLineType;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
 const FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwpx";
@@ -32,6 +33,22 @@ fn page_overflow_cell_lines(bytes: &[u8], page: u32) -> u32 {
         .render_page_svg_native(page)
         .unwrap_or_else(|error| panic!("p{} render: {error:?}", page + 1));
     document.take_overflow_cell_lines()
+}
+
+fn collect_stamp_placeholder_tables(node: &RenderNode, out: &mut Vec<(f64, f64, f64, f64)>) {
+    if matches!(
+        &node.node_type,
+        RenderNodeType::Table(table)
+            if table.row_count == 1
+                && table.col_count == 1
+                && (node.bbox.width - 56.7).abs() <= 0.2
+                && (node.bbox.height - 56.7).abs() <= 0.2
+    ) {
+        out.push((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
+    }
+    for child in &node.children {
+        collect_stamp_placeholder_tables(child, out);
+    }
 }
 
 fn master_page_text(master_page: &MasterPage) -> String {
@@ -223,4 +240,42 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     }
     assert_eq!(grouped_picture.image_attr.brightness, 0);
     assert_eq!(grouped_picture.image_attr.contrast, 8);
+}
+
+/// PDF p144의 자동날인 안내는 같은 빈 host paragraph의 `BehindText` 1×1 table 세 개를
+/// `horzOffset=4868,13553,22830HU`로 한 줄에 놓는다. nested non-TAC의 generic flow가
+/// 각 table 높이만큼 cursor를 전진하면 세 점선 상자가 세로로 쌓여, page owner가 맞아도
+/// 눈에 보이는 fidelity가 깨진다 (#3820 Stage 66).
+#[test]
+fn issue_3820_hwpx_behind_text_stamp_placeholders_keep_common_y_and_offsets() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE);
+    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
+    let core = DocumentCore::from_bytes(&bytes).expect("HWPX fixture parse");
+    let page = core
+        .build_page_render_tree(PAGE_144)
+        .expect("render PDF p144");
+    let mut stamps = Vec::new();
+    collect_stamp_placeholder_tables(&page.root, &mut stamps);
+    stamps.sort_by(|left, right| left.0.total_cmp(&right.0));
+
+    assert_eq!(
+        stamps.len(),
+        3,
+        "p144 automatic-stamp guide must retain three 1×1 placeholder tables: {stamps:?}"
+    );
+    let expected_x = [182.0, 297.8, 421.5];
+    for ((x, y, width, height), expected_x) in stamps.iter().zip(expected_x) {
+        assert!(
+            (*x - expected_x).abs() <= 0.3,
+            "p144 HWPX horzOffset anchor mismatch: x={x:.1}, expected={expected_x:.1}, stamps={stamps:?}"
+        );
+        assert!(
+            (*y - stamps[0].1).abs() <= 0.3,
+            "p144 BehindText placeholders must share one paragraph y: stamps={stamps:?}"
+        );
+        assert!(
+            (*width - 56.7).abs() <= 0.2 && (*height - 56.7).abs() <= 0.2,
+            "p144 placeholder physical size must preserve the PDF's 4251HU square: {stamps:?}"
+        );
+    }
 }

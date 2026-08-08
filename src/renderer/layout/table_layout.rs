@@ -5184,6 +5184,25 @@ impl LayoutEngine {
                     }
                     Control::Table(nested_table) => {
                         let is_tac_table = nested_table.common.treat_as_char;
+                        // HWPX의 같은 빈 host 문단 안에 있는 `글 뒤로` 1×1 표는
+                        // 문단 흐름을 차지하지 않는 overlay control이다. 특히 자동날인
+                        // 안내처럼 세 control이 같은 `vpos`에 있고 horzOffset만 다른
+                        // 경우, 일반 nested-table 경로처럼 table_h만큼 para_y를 전진하면
+                        // PDF의 가로 3개 상자가 세로로 쌓인다 (#3820 p144).
+                        //
+                        // HWP5의 legacy non-TAC 정렬이나 HWPX TopAndBottom 표까지
+                        // horizontal offset을 강제하면 기존 셀 레이아웃을 바꾼다. stored
+                        // HWPX의 paragraph-relative BehindText + Column anchor에만
+                        // 한정해 parent cell x를 explicit anchor로 넘긴다. 기존
+                        // compute_table_x_position은 이 override에 non-TAC horzOffset을
+                        // 더하므로 offset의 부호/단위 규칙은 한 곳에 유지된다.
+                        let hwpx_nested_behind_text_overlay =
+                            self.profile.get().hwpx_stored_layout()
+                                && !is_tac_table
+                                && matches!(nested_table.common.text_wrap, TextWrap::BehindText)
+                                && nested_table.common.flow_with_text
+                                && matches!(nested_table.common.vert_rel_to, VertRelTo::Para)
+                                && matches!(nested_table.common.horz_rel_to, HorzRelTo::Column);
                         let nested_y = if has_preceding_text {
                             para_y
                         } else {
@@ -5468,17 +5487,19 @@ impl LayoutEngine {
                                 nested_ctx,
                                 0.0,
                                 0.0,
-                                None,
+                                hwpx_nested_behind_text_overlay.then_some(inner_area.x),
                                 nested_split,
                                 None,
                                 None,
                                 false,
                                 clamp_header_negative_para_offset,
                             );
-                            para_y = nested_y
-                                + nested_split
-                                    .map(|split| split.flow_height)
-                                    .unwrap_or(table_h);
+                            if !hwpx_nested_behind_text_overlay {
+                                para_y = nested_y
+                                    + nested_split
+                                        .map(|split| split.flow_height)
+                                        .unwrap_or(table_h);
+                            }
                         }
                         has_preceding_text = true;
                     }

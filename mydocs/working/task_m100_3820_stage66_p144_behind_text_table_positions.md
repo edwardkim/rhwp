@@ -1,6 +1,6 @@
 ---
 kind: analysis
-status: active
+status: completed
 canonical: mydocs/working/task_m100_3820_stage1.md
 last_verified: 2026-08-08
 ---
@@ -63,3 +63,28 @@ cell origin을 explicit x anchor로 넘기고, 해당 control은 paragraph flow 
 
 이 predicate가 다른 HWPX inline/TopAndBottom 표 또는 nested-cell normal flow를 바꾸면
 보정을 폐기한다. `BehindText`와 해당 stored anchor가 없는 표에는 offset을 강제하지 않는다.
+
+## 구현 결과
+
+`Control::Table`의 nested non-TAC branch에
+`hwpx_nested_behind_text_overlay` predicate를 추가했다. predicate가 참이면
+`inline_x_override=Some(inner_area.x)`를 전달해 기존 `compute_table_x_position()`의
+non-TAC horizontal-offset 합산을 재사용하고, `para_y`를 table height로 갱신하지 않는다.
+따라서 같은 host paragraph의 세 control은 공통 y를 유지하면서 `horzOffset`만큼 분리된다.
+
+`tests/issue_3930_hwpx_hwp_save_layout.rs`에는 p144에서 56.7px 1×1 점선 표 세 개의
+수와 PDF 기준 좌표 `x=182.0, 297.8, 421.5`, 공통 y를 고정했다. table owner만 맞고
+상자를 세로로 쌓는 회귀를 render tree 수준에서 차단한다.
+
+180 DPI p143--p146 direct PDF sweep은 SVG 386/386, requested raster 4/4로 완료했다.
+새 p144 review에서는 세 점선 상자가 PDF와 같이 가로 한 줄로 놓인다. 증적은
+`mydocs/pr/assets/task_m100_3820_stage66_hwpx_behind_text_table_positions/review_144.png`,
+`review_145.png`, `summary.json`에 보존했다.
+
+## 검증 결과
+
+- `cargo fmt --check` — 통과.
+- `cargo test --profile release-test --test issue_3930_hwpx_hwp_save_layout -- --nocapture` — 2/2 통과.
+- `cargo test --profile release-test --test issue_1891 -- --nocapture` — 4/4 통과.
+- `cargo test --profile release-test --test overflow_cell_baseline -- --nocapture` — 통과,
+  678 fixtures(3 skip), nonzero 17 documents, total 691 lines. baseline 변경 없음.
