@@ -757,6 +757,26 @@ describe('편집 명령 — argv 모양', () => {
 
 // ── 대량 ────────────────────────────────────────────────────────────────────
 
+describe('scan — 코퍼스 발견은 batch 의 앞 단계다', () => {
+  it('경로 하나는 그대로, 옵션은 각 플래그로 나간다', async () => {
+    expect(await argvOf(() => rhwp.scan('폴더'))).toEqual(['scan', '폴더', '--json']);
+    expect(
+      await argvOf(() => rhwp.scan('폴더', { probe: true, maxDepth: 2, limit: 100 })),
+    ).toEqual(['scan', '폴더', '--probe', '--max-depth', '2', '--limit', '100', '--json']);
+  });
+
+  it('여러 루트는 위치 인자로 나란히 실린다 — stdin 이 아니다', async () => {
+    expect(await argvOf(() => rhwp.scan(['a', 'b']))).toEqual(['scan', 'a', 'b', '--json']);
+    expect(lastOptions().stdin).toBeUndefined();
+  });
+
+  it('빈 목록은 프로세스를 띄우기 전에 거절한다', async () => {
+    const before = seen.argv.length;
+    await expect(rhwp.scan([])).rejects.toThrow(/최소 1개/);
+    expect(seen.argv.length, '실행이 일어나면 안 된다').toBe(before);
+  });
+});
+
 describe('batch — 목록은 인자가 아니라 stdin 이다', () => {
   it('기본 모양', async () => {
     expect(await argvOf(() => rhwp.batch('info', ['a.hwp']))).toEqual(['batch', 'info', '--json']);
@@ -872,6 +892,8 @@ describe('옵션을 안 주면 플래그도 안 붙는다', () => {
     '--min-confidence',
     '--include-fields',
     '--kind',
+    '--probe',
+    '--max-depth',
   ];
 
   const minimal: [string, () => Promise<unknown>][] = [
@@ -909,6 +931,7 @@ describe('옵션을 안 주면 플래그도 안 붙는다', () => {
     ['fillFields', () => rhwp.fillFields('a.hwp', { 이름: '값' })],
     ['replaceText', () => rhwp.replaceText('a.hwp', 'x', 'y')],
     ['setCell', () => rhwp.setCell('a.hwp', 0, 0, 0, 'v')],
+    ['scan', () => rhwp.scan('dir')],
     ['batch', () => rhwp.batch('info', ['a.hwp'])],
   ];
 

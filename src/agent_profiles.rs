@@ -161,6 +161,7 @@ pub const PROFILES: &[AgentProfile] = &[
         name: "아카이브검색",
         summary: "대량 문서 RAG·감사 — 수백 건 스윕과 근거 쪽 번호 인용",
         tools: &[
+            "hwp_scan",
             "hwp_batch",
             "hwp_batch_search",
             "hwp_search",
@@ -174,7 +175,8 @@ pub const PROFILES: &[AgentProfile] = &[
         ],
         session_tools: Some(SESSION_READ_TOOLS),
         recipe: &[
-            "hwp_batch subcommand=info 로 아카이브 대장화",
+            "hwp_scan 으로 폴더에서 문서 발견·분류 (확장자↔매직 불일치·암호 문서 선별)",
+            "hwp_batch subcommand=info 로 아카이브 대장화 (paths 는 hwp_scan 의 files[].path)",
             "출처가 불분명한 문서는 hwp_inspect_injection/hwp_inspect_hidden_text/hwp_inspect_unicode 로 먼저 선별",
             "hwp_batch_search 로 전 문서 검색 (어느 문서 몇 쪽)",
             "대형 문서 반복 조회는 hwp_open → hwp_doc_search/hwp_doc_text",

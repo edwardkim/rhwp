@@ -43,6 +43,7 @@ __all__ = [
     "replace_text",
     "set_cell",
     "csv_to_table",
+    "scan",
     "batch",
     "capabilities",
 ]
@@ -479,6 +480,36 @@ def csv_to_table(
 
 
 # ── 대량 ────────────────────────────────────────────────────────────────
+
+
+def scan(
+    *paths: PathLike,
+    probe: bool = False,
+    max_depth: Optional[int] = None,
+    limit: Optional[int] = None,
+    timeout: Optional[float] = DEFAULT_TIMEOUT,
+) -> Envelope:
+    """디렉터리 재귀 발견·분류 — ``batch`` 의 앞 단계.
+
+    ``batch`` 는 경로 목록을 이미 갖고 있다는 전제에서 시작한다. 이 명령이 그
+    목록을 만든다: HWP 계열 파일을 찾아 확장자 주장과 매직 감지를 대조하고
+    (``extMismatch``), ``probe=True`` 면 실제로 열어 파싱 가능/암호 필요를
+    기록한다. 발견은 판정이 아니므로 게이트 종료 코드(3)가 없다.
+
+    Args:
+        paths: 검색할 폴더(재귀) 또는 파일 경로 — 최소 1개.
+        probe: 각 파일을 실제로 열어 파싱 가능·암호 필요·쪽수를 기록.
+        max_depth: 재귀 최대 깊이 (1 = 지정 폴더만).
+        limit: 최대 파일 수 — 넘으면 봉투에 ``truncated: true``.
+    """
+    if not paths:
+        raise ValueError("검색할 경로가 없습니다 — scan 은 최소 1개가 필요합니다")
+    args: List[Any] = ["scan", *paths]
+    _switch(args, "--probe", probe)
+    _flag(args, "--max-depth", max_depth)
+    _flag(args, "--limit", limit)
+    args.append("--json")
+    return Envelope(run_json(args, timeout=timeout))
 
 
 def batch(

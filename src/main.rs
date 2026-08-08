@@ -279,6 +279,7 @@ fn main() {
         Some("export-agent-manifest") => exit_with(cmd_export_agent_manifest(&args[2..])),
         Some("mcp-serve") => exit_with(mcp_serve::run(&args[2..])),
         Some("batch") => exit_with(run_batch(&args[2..])),
+        Some("scan") => exit_with(cmd_scan(&args[2..])),
         Some("info") => exit_with(show_info(&args[2..])),
         Some("digest") => exit_with(digest_document(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
@@ -1051,6 +1052,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "untrustedContent",
                 "untrustedFields",
             ],
+        ),
+        // [#3918 승격 3호] 코퍼스 발견 — hwp_batch 의 paths 목록을 만드는 앞 단계.
+        tool_with_optional_args(
+            "hwp_scan",
+            "디렉터리를 재귀로 걸어 HWP 계열 파일을 발견·분류한다 — 확장자 주장과 매직 감지를 대조하고(extMismatch), probe 를 켜면 실제로 열어 파싱 가능·암호 필요·쪽수를 기록한다. hwp_batch 의 앞 단계: files[].path 를 paths 로 이어 붙인다. 발견은 판정이 아니라 데이터이므로 게이트 종료 코드가 없다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "검색할 폴더(재귀) 또는 파일 경로" },
+                    "probe": { "type": "boolean", "description": "각 파일을 실제로 열어 파싱 가능·암호 필요·쪽수를 기록" },
+                    "maxDepth": { "type": "integer", "minimum": 1, "description": "재귀 최대 깊이 (1 = 지정 폴더만)" },
+                    "limit": { "type": "integer", "minimum": 1, "description": "최대 파일 수 — 넘으면 봉투에 truncated:true" }
+                },
+                "required": ["path"],
+            }),
+            "scan",
+            serde_json::json!(["scan", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "probe", "args": ["--probe"] },
+                { "when": "maxDepth", "args": ["--max-depth", "{maxDepth}"] },
+                { "when": "limit", "args": ["--limit", "{limit}"] }
+            ]),
+            &["schemaVersion", "roots", "files", "summary"],
         ),
         tool_with_optional_args(
             "hwp_batch",
@@ -2268,6 +2292,15 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "notFound",
             ],
         ),
+        // [#3918 승격 3호] 코퍼스 발견 — batch 가 전제하는 "경로 목록"의 원천.
+        cmd_json(
+            "scan",
+            "batch",
+            "디렉터리 재귀 발견·분류 — 확장자↔매직 대조(extMismatch), --probe 파싱 시도(암호·쪽수), batch stdin 목록의 원천",
+            false,
+            &["--probe", "--max-depth", "--limit", "--json"],
+            &["schemaVersion", "roots", "files", "summary"],
+        ),
         // ── 진단 ──
         cmd("dump", "diagnostic", "문서 조판부호 구조 덤프"),
         cmd_json(
@@ -2770,6 +2803,14 @@ fn print_help() {
     println!("      --json                  결과를 JSON으로 stdout에 출력 (파일 저장 안 함)");
     println!("      --max-chars <N>         본문 문자 상한 (--json 전용, 기본: 무제한). 넘으면");
     println!("                              봉투에 truncated:true·omittedCount 를 남긴다");
+    println!();
+    println!("  scan <경로...> [--probe] [--max-depth <N>] [--limit <N>] [--json]");
+    println!("      디렉터리를 재귀로 걸어 HWP 계열 파일을 발견·분류 (batch 목록의 원천)");
+    println!("      확장자 주장과 매직 감지가 어긋나면 extMismatch 로 알린다");
+    println!("      --probe                 파일을 실제로 열어 파싱 가능·암호 필요·쪽수 기록");
+    println!("      --max-depth <N>         재귀 최대 깊이 (1 = 지정 폴더만)");
+    println!("      --limit <N>             최대 파일 수 — 넘으면 봉투에 truncated:true");
+    println!("      --json                  발견 목록·요약 봉투를 stdout 으로 출력");
     println!();
     println!("  batch <export-text|info|export-structure|export-tables|fields|search|extract-data|convert> --json [--threads <N>]");
     println!(
@@ -5916,6 +5957,302 @@ fn export_markdown(args: &[String]) -> i32 {
 /// [#3238] batch — 파일 목록을 stdin(한 줄당 하나)으로 받아 한 프로세스에서 전건 처리하고
 /// NDJSON 스트림을 stdout 으로 낸다. 건별 실패는 `error` 레코드로 스트림을 계속하되,
 /// 하나라도 실패하면 [#2707] 계약대로 종료 코드 1 로 끝난다.
+/// [#3918 승격 3호] `scan` — 코퍼스 발견·분류. `batch` 의 앞 단계.
+///
+/// `batch` 는 "경로 목록을 이미 갖고 있다"는 전제에서 시작한다. 이 명령이 그 목록을
+/// 만든다: 디렉터리를 재귀로 걸어 HWP 계열 파일을 찾고, 확장자 주장과 매직 감지를
+/// 대조하고(`extMismatch`), `--probe` 면 실제로 열어 파싱 가능/암호 필요/쪽수를
+/// 기록한다. rhwp-agent 실험 표면의 `scan`(#3922)이 검증해 둔 축의 승격이며, 실측은
+/// 전부 기존 코어 재사용이다: `parser::detect_format`·`load_document`·`page_count`.
+///
+/// 발견은 판정이 아니므로 게이트 종료 코드(3)가 없다 — 파싱 실패·확장자 불일치도
+/// exit 0 의 데이터다(판정은 데이터, #2707). 실행 실패는 stdout 을 비우고 exit 1,
+/// 조립 오류는 exit 2. 결정성: 파일 순서는 경로 문자열 오름차순으로 고정한다 —
+/// 같은 트리는 언제나 같은 순서로 나온다(재현 가능한 코퍼스 목록).
+fn cmd_scan(args: &[String]) -> i32 {
+    const USAGE: &str =
+        "사용법: rhwp scan <경로...> [--probe] [--max-depth <N>] [--limit <N>] [--json]";
+
+    /// 확장자가 주장하는 포맷. `.hwp` 는 HWP5/HWP3 겸용 확장자라 "hwp"(모호)로 둔다.
+    fn ext_claim(path: &std::path::Path) -> Option<&'static str> {
+        let ext = path.extension()?.to_str()?.to_ascii_lowercase();
+        match ext.as_str() {
+            "hwp" => Some("hwp"),
+            "hwpx" => Some("hwpx"),
+            "hml" => Some("hml"),
+            _ => None,
+        }
+    }
+
+    /// 확장자 주장과 매직 감지가 어긋나는가. `.hwp` 는 hwp5·hwp3 둘 다 정상이다.
+    fn ext_mismatch(claim: &str, magic: &str) -> bool {
+        match claim {
+            "hwp" => !matches!(magic, "hwp5" | "hwp3"),
+            other => other != magic,
+        }
+    }
+
+    /// `parser::FileFormat` → `info --json` 의 `format` 토큰 (verify 와 같은 지도).
+    fn format_token(format: rhwp::parser::FileFormat) -> &'static str {
+        use rhwp::parser::FileFormat;
+        match format {
+            FileFormat::Hwp => "hwp5",
+            FileFormat::Hwpx => "hwpx",
+            FileFormat::Hwp3 => "hwp3",
+            FileFormat::Hml => "hml",
+            FileFormat::DrmProtected => "drm-protected",
+            FileFormat::Empty => "empty",
+            FileFormat::Unknown => "unknown",
+        }
+    }
+
+    /// 재귀 걷기 — 심볼릭 링크는 따라가지 않는다(순환 방지).
+    fn walk(
+        dir: &std::path::Path,
+        depth: usize,
+        max_depth: Option<usize>,
+        out: &mut Vec<std::path::PathBuf>,
+    ) -> Result<(), String> {
+        let entries = std::fs::read_dir(dir)
+            .map_err(|e| format!("폴더를 읽을 수 없습니다 - {}: {e}", dir.display()))?;
+        for entry in entries {
+            let entry = entry.map_err(|e| format!("항목을 읽을 수 없습니다 - {e}"))?;
+            let path = entry.path();
+            let file_type = entry
+                .file_type()
+                .map_err(|e| format!("파일 유형을 읽을 수 없습니다 - {}: {e}", path.display()))?;
+            if file_type.is_symlink() {
+                continue;
+            }
+            if file_type.is_dir() {
+                if max_depth.map(|m| depth < m).unwrap_or(true) {
+                    walk(&path, depth + 1, max_depth, out)?;
+                }
+            } else if file_type.is_file() && ext_claim(&path).is_some() {
+                out.push(path);
+            }
+        }
+        Ok(())
+    }
+
+    let mut json_mode = false;
+    let mut probe = false;
+    let mut max_depth: Option<usize> = None;
+    let mut limit: Option<usize> = None;
+    let mut roots: Vec<String> = Vec::new();
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--probe" => probe = true,
+            "--max-depth" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
+                    Some(n) if n >= 1 => max_depth = Some(n),
+                    _ => {
+                        eprintln!("오류: --max-depth 뒤에 1 이상의 정수가 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--limit" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
+                    Some(n) if n >= 1 => limit = Some(n),
+                    _ => {
+                        eprintln!("오류: --limit 뒤에 1 이상의 정수가 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                eprintln!("{USAGE}");
+                return EXIT_USAGE;
+            }
+            path => roots.push(path.to_string()),
+        }
+        i += 1;
+    }
+    if roots.is_empty() {
+        eprintln!("오류: 검색할 경로를 하나 이상 지정해주세요.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    }
+
+    // ① 대상 수집 — 루트마다 걷고, 전체를 경로 문자열로 정렬해 결정적 순서를 만든다.
+    let mut files: Vec<std::path::PathBuf> = Vec::new();
+    for root in &roots {
+        let path = std::path::Path::new(root);
+        if path.is_file() {
+            files.push(path.to_path_buf());
+            continue;
+        }
+        if !path.is_dir() {
+            eprintln!("오류: 경로가 존재하지 않습니다 - {root}");
+            return EXIT_RUNTIME;
+        }
+        if let Err(message) = walk(path, 1, max_depth, &mut files) {
+            eprintln!("오류: {message}");
+            return EXIT_RUNTIME;
+        }
+    }
+    files.sort_by_key(|p| p.to_string_lossy().to_string());
+    files.dedup();
+
+    // 상한은 정렬 **뒤에** 적용한다 — 남는 부분집합도 결정적이어야 한다.
+    let mut truncated = false;
+    if let Some(limit) = limit {
+        if files.len() > limit {
+            files.truncate(limit);
+            truncated = true;
+        }
+    }
+
+    // ② 파일별 레코드.
+    let mut records: Vec<serde_json::Value> = Vec::new();
+    let mut by_format: std::collections::BTreeMap<String, u64> = Default::default();
+    let mut mismatch_count = 0u64;
+    let mut probe_failed = 0u64;
+    let mut needs_password = 0u64;
+
+    for file in &files {
+        let display = file.to_string_lossy().to_string();
+        let meta = match fs::metadata(file) {
+            Ok(m) => m,
+            Err(e) => {
+                eprintln!("오류: 파일 정보를 읽을 수 없습니다 - {display}: {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+        let data = match fs::read(file) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("오류: 파일을 읽을 수 없습니다 - {display}: {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+        let claim = ext_claim(file).unwrap_or("hwp");
+        let magic = format_token(rhwp::parser::detect_format(&data));
+        let mismatch = ext_mismatch(claim, magic);
+
+        let probe_value = if probe {
+            let started = std::time::Instant::now();
+            match load_document(&data) {
+                Ok(doc) => serde_json::json!({
+                    "parseOk": true,
+                    "needsPassword": false,
+                    "pageCount": doc.page_count(),
+                    "ms": started.elapsed().as_millis() as u64,
+                }),
+                Err(fail) => {
+                    probe_failed += 1;
+                    let (needs, message) = match fail {
+                        LoadError::NeedPassword => {
+                            (true, "비밀번호가 필요한 암호 문서입니다".to_string())
+                        }
+                        LoadError::WrongPassword => (
+                            true,
+                            "비밀번호가 일치하지 않거나 암호화 데이터가 손상되었습니다".to_string(),
+                        ),
+                        LoadError::Other(msg) => (false, msg),
+                    };
+                    if needs {
+                        needs_password += 1;
+                    }
+                    serde_json::json!({
+                        "parseOk": false,
+                        "needsPassword": needs,
+                        "error": message,
+                        "ms": started.elapsed().as_millis() as u64,
+                    })
+                }
+            }
+        } else {
+            serde_json::Value::Null
+        };
+
+        *by_format.entry(magic.to_string()).or_insert(0) += 1;
+        if mismatch {
+            mismatch_count += 1;
+        }
+        let modified_unix = meta
+            .modified()
+            .ok()
+            .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+            .map(|d| d.as_secs());
+        records.push(serde_json::json!({
+            "path": display,
+            "bytes": meta.len(),
+            "modifiedUnix": modified_unix,
+            "extFormat": claim,
+            "magicFormat": magic,
+            "extMismatch": mismatch,
+            "probe": probe_value,
+        }));
+    }
+
+    let summary = serde_json::json!({
+        "total": records.len(),
+        "byFormat": by_format,
+        "extMismatch": mismatch_count,
+        "probed": probe,
+        "probeFailed": if probe { serde_json::json!(probe_failed) } else { serde_json::Value::Null },
+        "needsPassword": if probe { serde_json::json!(needs_password) } else { serde_json::Value::Null },
+        "truncated": truncated,
+    });
+
+    // ③ 출력.
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "roots": roots,
+            "files": records,
+            "summary": summary,
+        });
+        println!("{}", provenance::marked(envelope, "scan"));
+        return EXIT_OK;
+    }
+
+    println!("rhwp scan — {}개 파일", records.len());
+    for record in &records {
+        let mut notes: Vec<&str> = Vec::new();
+        if record["extMismatch"].as_bool() == Some(true) {
+            notes.push("확장자 불일치");
+        }
+        if record["probe"]["needsPassword"].as_bool() == Some(true) {
+            notes.push("암호 필요");
+        } else if record["probe"]["parseOk"].as_bool() == Some(false) {
+            notes.push("파싱 실패");
+        }
+        let notes = if notes.is_empty() {
+            String::new()
+        } else {
+            format!("  [{}]", notes.join(", "))
+        };
+        println!(
+            "  {}  {}  {}바이트{notes}",
+            record["magicFormat"].as_str().unwrap_or("?"),
+            record["path"].as_str().unwrap_or("?"),
+            record["bytes"].as_u64().unwrap_or(0),
+        );
+    }
+    println!(
+        "합계: {} · 확장자 불일치 {}{}",
+        records.len(),
+        mismatch_count,
+        if probe {
+            format!(" · 파싱 실패 {probe_failed} (암호 필요 {needs_password})")
+        } else {
+            String::new()
+        }
+    );
+    EXIT_OK
+}
+
 fn run_batch(args: &[String]) -> i32 {
     use std::io::{BufRead, Write};
 

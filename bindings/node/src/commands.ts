@@ -788,6 +788,40 @@ export async function setCell(
 
 // ── 대량 ──────────────────────────────────────────────────────────────────
 
+/** {@link scan} 옵션. */
+export interface ScanOptions extends CommandOptions {
+  /** 각 파일을 실제로 열어 파싱 가능·암호 필요·쪽수를 기록한다 (`--probe`). */
+  readonly probe?: boolean | undefined;
+  /** 재귀 최대 깊이 — 1 이면 지정 폴더만 (`--max-depth`). */
+  readonly maxDepth?: number | undefined;
+  /** 최대 파일 수 — 넘으면 봉투에 `truncated: true` (`--limit`). */
+  readonly limit?: number | undefined;
+}
+
+/**
+ * 디렉터리 재귀 발견·분류 — {@link batch} 의 앞 단계.
+ *
+ * `batch` 는 경로 목록을 이미 갖고 있다는 전제에서 시작한다. 이 명령이 그 목록을
+ * 만든다: HWP 계열 파일을 찾아 확장자 주장과 매직 감지를 대조하고(`extMismatch`),
+ * `probe` 를 켜면 실제로 열어 파싱 가능/암호 필요를 기록한다. 발견은 판정이
+ * 아니므로 게이트 종료 코드(3)가 없다 — 분류는 봉투의 데이터로 읽는다.
+ */
+export async function scan(
+  paths: PathLike | readonly PathLike[],
+  options: ScanOptions = {},
+): Promise<Envelope> {
+  const roots = typeof paths === 'string' ? [paths] : paths;
+  if (roots.length === 0) {
+    throw new Error('검색할 경로가 없습니다 — scan 은 최소 1개가 필요합니다');
+  }
+  const args: Argument[] = ['scan', ...roots];
+  toggle(args, '--probe', options.probe);
+  flag(args, '--max-depth', options.maxDepth);
+  flag(args, '--limit', options.limit);
+  args.push('--json');
+  return call(args, options);
+}
+
 /** {@link batch} 옵션. */
 export interface BatchOptions extends CommandOptions {
   /**

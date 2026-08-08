@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 34개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 35개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -616,6 +616,21 @@ export interface RunEnvelope {
 }
 
 /**
+ * `rhwp scan --json` 봉투.
+ *
+ * 디렉터리 재귀 발견·분류 — 확장자↔매직 대조(extMismatch), --probe 파싱 시도(암호·쪽수), batch
+ * stdin 목록의 원천
+ */
+export interface ScanEnvelope {
+  readonly files?: unknown;
+  readonly roots?: unknown;
+  readonly schemaVersion?: string;
+  readonly summary?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp search --json` 봉투.
  *
  * 문서 검색 결과를 구역·문단·페이지·문자 오프셋 주소와 함께 출력
@@ -706,6 +721,7 @@ export interface EnvelopeByCommand {
   "ir-diff": IrDiffEnvelope;
   "render-diff": RenderDiffEnvelope;
   run: RunEnvelope;
+  scan: ScanEnvelope;
   search: SearchEnvelope;
   "table-to-csv": TableToCsvEnvelope;
   thumbnail: ThumbnailEnvelope;

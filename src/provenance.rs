@@ -348,6 +348,17 @@ pub const MAP: &[CommandProvenance] = &[
                레코드의 표지는 그 레코드에 실제로 있는 필드만 담는다.",
     },
     CommandProvenance {
+        command: "scan",
+        untrusted: &[f(
+            "files[].probe.error",
+            "--probe 파싱 실패 메시지 — 파서가 문서 바이트를 읽다 만든 문자열이라 \
+             문서 내용 조각이 섞일 수 있다 (cmd_scan)",
+        )],
+        note: "path·bytes·extFormat 은 파일시스템 실측이고 magicFormat·extMismatch· \
+               pageCount 는 엔진 판정이다. 문서 파생 가능성은 probe.error 하나뿐이며, \
+               표지는 그 필드가 실제로 실린 호출에만 붙는다.",
+    },
+    CommandProvenance {
         command: "export-svg",
         untrusted: NONE,
         note: "매니페스트는 산출 경로·바이트·쪽수뿐이다. 문서 텍스트는 SVG 파일 \

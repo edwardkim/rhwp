@@ -281,6 +281,21 @@ def test_csv_to_table_builds_command(captured: List[List[Any]]) -> None:
 # ── 대량 ────────────────────────────────────────────────────────────────
 
 
+def test_scan_builds_command(captured: List[List[Any]]) -> None:
+    rhwp.scan("폴더")
+    assert _as_strings(captured[0]) == ["scan", "폴더", "--json"]
+    rhwp.scan("a", "b", probe=True, max_depth=2, limit=100)
+    assert _as_strings(captured[1]) == [
+        "scan", "a", "b", "--probe", "--max-depth", "2", "--limit", "100", "--json",
+    ]
+
+
+def test_scan_rejects_empty_input() -> None:
+    with pytest.raises(ValueError) as caught:
+        rhwp.scan()
+    assert "최소 1개" in str(caught.value)
+
+
 def test_batch_streams_paths_through_stdin(monkeypatch: pytest.MonkeyPatch) -> None:
     seen: Dict[str, Any] = {}
 
