@@ -348,21 +348,36 @@ fn main() {
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
         // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
         other => {
-            match other {
+            // [#4220 T4] 수복 한 줄은 stderr 마지막 줄이어야 하므로(소비자는 마지막
+            // `수복: ` 줄 하나만 파싱한다) 산문을 모두 낸 뒤에 방출한다. 두 부류만
+            // 결정론적이다: 확신 교정(임계 내 오타)과 명령 누락(발견 경로는 언제나
+            // capabilities). 임계 밖 오타는 수복 줄도 침묵한다 — 오제안 0.
+            let recovery: Option<(String, &str)> = match other {
                 Some(command) => {
                     eprintln!("오류: 알 수 없는 명령입니다 - {}", command);
                     // [#3694] did-you-mean — 후보는 capabilities 단일 출처. 이름 환각을
                     // 교정 단서 없이 돌려보내면 경량 에이전트는 맹목 재시도 루프에 빠진다.
                     let names = capabilities_command_names();
-                    if let Some(hint) = closest_name(command, names.iter().map(String::as_str)) {
+                    let hint = closest_name(command, names.iter().map(String::as_str));
+                    if let Some(hint) = &hint {
                         eprintln!("힌트: 가장 가까운 명령은 '{hint}' 입니다");
                     }
+                    hint.map(|h| (h, "요청한 이름이 없음 — 가장 가까운 실존 명령으로 교정"))
                 }
-                None => eprintln!("오류: 명령을 지정해주세요."),
-            }
+                None => {
+                    eprintln!("오류: 명령을 지정해주세요.");
+                    Some((
+                        "capabilities".to_string(),
+                        "명령이 지정되지 않음 — 실행 가능한 명령 목록·계약은 capabilities 가 자기서술",
+                    ))
+                }
+            };
             eprintln!("rhwp v{}", rhwp::version());
             eprintln!("사용법: rhwp <명령> [옵션]");
             eprintln!("'rhwp --help'로 자세한 사용법을 확인하세요.");
+            if let Some((name, why)) = recovery {
+                eprint_usage_recovery(&name, None, why);
+            }
             process::exit(EXIT_USAGE);
         }
     }
@@ -2424,6 +2439,29 @@ pub(crate) fn closest_name<'a, I: IntoIterator<Item = &'a str>>(
     let (d, name) = best?;
     let cap = (input.chars().count() / 3).clamp(1, 3);
     (d <= cap).then(|| name.to_string())
+}
+
+/// [#4220 T4] 사용법 오류(exit 2)의 stderr **마지막 줄**에 싣는 정형 수복 한 줄.
+///
+/// 문법: `수복: ` 접두어 + 한 줄 JSON `{"nextCall":{"name":<명령>,"subcommand"?:<하위>,"why":<이유>}}`.
+/// `nextCall` 어휘는 MCP 오류 봉투(R72, `tool_error_with_next`)와 같다 — CLI 와 MCP 가
+/// 같은 모양을 쓰면 소비자가 한 어휘로 수복 루프를 짠다. 계약 3면:
+///
+/// 1. **오제안 0(R72)** — 다음 호출이 결정론적으로 정해지는 실패 부류에서만 호출한다.
+///    애매하면 이 줄 자체가 없어야 하므로, 호출부가 확신 판정(#3694 임계 등)을 먼저 한다.
+/// 2. **`name` 실존** — 호출부 책임이고 계약 테스트(`tests/nextcall_cli_contract.rs`)가
+///    capabilities 단일 출처와 대조해 고정한다. `arguments` 는 싣지 않는다: CLI 는
+///    호출자의 나머지 argv 가 옳다고 검증한 바 없고(오제안 0 은 인자에도 적용된다),
+///    비밀번호 같은 민감 인자를 stderr 로 되울리지 않는 뜻도 겸한다.
+/// 3. **stdout 무침해** — 실패 3면 계약(#2707: exit 2·stdout 0 B·stderr 안내)에
+///    stderr 한 줄만 더하는 추가 전용 확장이다. 산문(오류·힌트·사용법)을 모두 낸 뒤
+///    마지막에 호출해야 한다 — 소비자는 "마지막 `수복: ` 줄 하나"만 파싱한다.
+fn eprint_usage_recovery(next_command: &str, subcommand: Option<&str>, why: &str) {
+    let mut next = serde_json::json!({ "name": next_command, "why": why });
+    if let Some(sub) = subcommand {
+        next["subcommand"] = serde_json::json!(sub);
+    }
+    eprintln!("수복: {}", serde_json::json!({ "nextCall": next }));
 }
 
 /// [#3828 B1] `capabilities --search <키워드...> [--json]` — commands[].name·summary 를
@@ -17897,13 +17935,24 @@ fn inspect_command(args: &[String]) -> i32 {
         Some("unicode") => inspect_unicode(&args[1..]),
         Some(other) => {
             eprintln!("오류: 알 수 없는 inspect 하위 명령입니다 - {other}");
-            if let Some(hint) = closest_name(other, ["hidden-text", "injection", "unicode"]) {
+            let hint = closest_name(other, ["hidden-text", "injection", "unicode"]);
+            if let Some(hint) = &hint {
                 eprintln!("혹시 이것인가요? inspect {hint}");
             }
             eprintln!("{USAGE}");
+            // [#4220 T4] 확신 교정(#3694 임계 내)일 때만 정형 수복 줄 — 임계 밖은 침묵.
+            if let Some(hint) = hint {
+                eprint_usage_recovery(
+                    "inspect",
+                    Some(&hint),
+                    "요청한 이름이 없음 — 가장 가까운 실존 하위 명령으로 교정",
+                );
+            }
             EXIT_USAGE
         }
         None => {
+            // [#4220 T4] 하위 명령 누락은 어느 축을 원했는지 결정론적으로 알 수 없다 —
+            // 수복 줄을 지어내지 않는다(오제안 0).
             eprintln!("오류: inspect 하위 명령을 지정해주세요 (hidden-text|injection|unicode).");
             eprintln!("{USAGE}");
             EXIT_USAGE

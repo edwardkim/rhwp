@@ -89,6 +89,13 @@ rhwp --password '문서비밀번호' export-text protected.hwp -o output/
 | 4 | `--verify-pages` 페이지 수 불일치 | `convert` / `export-hwpx` 전용 (아래 §3) |
 
 - 알 수 없는 명령·옵션은 **경고 후 진행하지 않고** 즉시 2로 끝난다. 안내는 stderr 로 나간다.
+- **정형 수복 줄 (#4220 T4)** — 사용법 오류(2) 중 다음 호출이 결정론적으로 정해지는
+  부류(임계 내 오타의 확신 교정, 명령 누락 → `capabilities`)에서는 stderr **마지막 줄**에
+  `수복: {"nextCall":{"name":...,"subcommand"?,...,"why":...}}` 한 줄이 붙는다. `nextCall` 어휘는
+  MCP 오류 봉투(R72)와 같고, `name` 은 반드시 실존 명령이다. 애매한 경로(임계 밖 오타,
+  하위 명령 누락)와 런타임 실패(1)에는 이 줄 자체가 없다 — 오제안 0. stdout 은 여전히
+  0 바이트다. 소비자는 "마지막 `수복: ` 줄 하나"만 파싱하면 된다
+  (계약: `tests/nextcall_cli_contract.rs`).
 - 페이지 단위 내보내기 명령의 "N개 … 완료" 메시지는 **실제로 저장에 성공한 개수**다.
   한 장이라도 실패하면 종료 코드는 1이다.
 - `export-png` 는 `native-skia` feature 없이 빌드된 바이너리에서 2로 끝난다(기능 부재).
