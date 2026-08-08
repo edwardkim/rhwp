@@ -16,6 +16,29 @@ use super::utils::{
 };
 use super::HwpxError;
 
+/// 리소스 테이블(charShapes/paraShapes 등)의 `id` 속성 상한.
+///
+/// [#4281] `id` 는 XML 텍스트에서 `parse_u32`로 그대로 온 값이라, 상한 없이
+/// `resize_with(id + 1, ..)` 하면 `id="2000000000"` 같은 몇 바이트짜리 속성이
+/// 240GB 할당 시도로 이어져 `handle_alloc_error` → abort 로 프로세스가 죽는다.
+/// 같은 패턴이 HML 리소스 테이블(`FONT`/`CHARSHAPE`/`PARASHAPE`/...)에서 이미
+/// `#2743`으로 발견·수정됐다(`HmlLimits::max_resource_id`, 기본값도 65,535).
+/// 정상 문서의 리소스 테이블 길이는 이 상한에 전혀 근접하지 않는다.
+const MAX_RESOURCE_ID: usize = 65_535;
+
+/// `values[index] = value`를 상한 내에서만 수행한다. 초과 시 아무것도
+/// 할당하지 않고 `false`를 반환한다 — 호출부는 해당 리소스를 건너뛴다.
+fn set_indexed<T: Default>(values: &mut Vec<T>, index: usize, value: T) -> bool {
+    if index > MAX_RESOURCE_ID {
+        return false;
+    }
+    if values.len() <= index {
+        values.resize_with(index + 1, T::default);
+    }
+    values[index] = value;
+    true
+}
+
 /// `<hh:strikeout shape="..."/>` 의 shape 값이 실제 렌더링되는 취소선인지
 /// 판정한다 (화이트리스트).
 ///
@@ -847,12 +870,7 @@ fn parse_char_shape(
     // id 가 없는(비정상) 항목만 등장 순서 fallback 으로 push.
     match id {
         Some(idx) => {
-            if doc_info.char_shapes.len() <= idx {
-                doc_info
-                    .char_shapes
-                    .resize_with(idx + 1, CharShape::default);
-            }
-            doc_info.char_shapes[idx] = cs;
+            set_indexed(&mut doc_info.char_shapes, idx, cs);
         }
         None => doc_info.char_shapes.push(cs),
     }
@@ -946,12 +964,7 @@ fn parse_para_shape(
     // 이유로 등장 순서 push 대신 id 로 배치한다.
     match id {
         Some(idx) => {
-            if doc_info.para_shapes.len() <= idx {
-                doc_info
-                    .para_shapes
-                    .resize_with(idx + 1, ParaShape::default);
-            }
-            doc_info.para_shapes[idx] = ps;
+            set_indexed(&mut doc_info.para_shapes, idx, ps);
         }
         None => doc_info.para_shapes.push(ps),
     }
@@ -3582,6 +3595,31 @@ mod tests {
         assert_eq!(
             cs1.base_size, 2000,
             "charPrIDRef=1 은 id=\"1\" 항목이어야 함"
+        );
+    }
+
+    #[test]
+    fn test_char_pr_huge_id_does_not_allocate_unbounded_memory() {
+        // [#4281] id 는 XML 텍스트에서 그대로 온 usize 라, 상한 없이
+        // resize_with(id+1, ..) 하면 몇 백 바이트짜리 파일로 수백 GB 할당을
+        // 시도하다 abort 한다. 상한을 넘는 id 는 조용히 건너뛰어야 한다
+        // (패닉/abort 없이 정상 반환, 해당 id 는 char_shapes 에 채워지지 않음).
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:charProperties itemCnt="1">
+      <hh:charPr id="4000000000" height="1000" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="NONE">
+        <hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+      </hh:charPr>
+    </hh:charProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        assert!(
+            doc_info.char_shapes.len() <= 65_536,
+            "상한 초과 id 는 char_shapes 를 부풀리지 않아야 함 (len={})",
+            doc_info.char_shapes.len()
         );
     }
 
