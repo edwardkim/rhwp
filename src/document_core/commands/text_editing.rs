@@ -6307,4 +6307,154 @@ mod tests {
             );
         }
     }
+
+    /// [#4149] 셀 문단 편집의 단일 관문 reflow_cell_paragraph / _by_path 를 지나면
+    /// 단일줄 과밀 판정 memo 가 미판정으로 돌아가야 한다 (reflow_line_segs 수렴점).
+    #[test]
+    fn issue4149_reflow_cell_paragraph_clears_single_line_overflow_memo() {
+        use crate::model::control::Control;
+        use crate::model::paragraph::SingleLineOverflowMemo;
+        use crate::model::table::{Cell, Table};
+
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+
+        let mut cell_para = Paragraph::default();
+        cell_para.text = "ABCDE".to_string();
+        cell_para.char_count = 6;
+        cell_para.char_offsets = vec![0, 1, 2, 3, 4];
+        cell_para.char_shapes = vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }];
+        let key = SingleLineOverflowMemo::width_key(123.0);
+        cell_para.single_line_overflow_memo.set(key, true);
+        assert!(!cell_para.single_line_overflow_memo.is_unjudged());
+
+        let table = Table {
+            cells: vec![Cell {
+                width: 8000, // 내폭 > 0 이어야 관문이 reflow_line_segs 까지 진행
+                paragraphs: vec![cell_para],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        core.document.sections[0].paragraphs[0]
+            .controls
+            .push(Control::Table(Box::new(table)));
+        let ctrl_idx = core.document.sections[0].paragraphs[0].controls.len() - 1;
+
+        // flat 관문
+        core.reflow_cell_paragraph(0, 0, ctrl_idx, 0, 0);
+        let memo_after = |core: &DocumentCore| {
+            let Control::Table(t) = &core.document.sections[0].paragraphs[0].controls[ctrl_idx]
+            else {
+                panic!("expected table");
+            };
+            t.cells[0].paragraphs[0]
+                .single_line_overflow_memo
+                .is_unjudged()
+        };
+        assert!(
+            memo_after(&core),
+            "reflow_cell_paragraph 경유 후 memo 는 미판정이어야 함"
+        );
+
+        // path 관문도 동일하게 비워야 한다.
+        {
+            let Control::Table(t) = &mut core.document.sections[0].paragraphs[0].controls[ctrl_idx]
+            else {
+                panic!("expected table");
+            };
+            t.cells[0].paragraphs[0]
+                .single_line_overflow_memo
+                .set(key, true);
+        }
+        core.reflow_cell_paragraph_by_path(0, 0, &[(ctrl_idx, 0, 0)], 0);
+        assert!(
+            memo_after(&core),
+            "reflow_cell_paragraph_by_path 경유 후 memo 는 미판정이어야 함"
+        );
+    }
+
+    /// [#4149 적대 리뷰] 셀 문단 인라인 그림 삭제가 char_offsets 를 −8 시프트하며
+    /// compose 입력을 바꾸는데, 남은 그림 height>0 분기
+    /// (reflow_paragraph_line_segs_after_control_delete branch 1)는 reflow_line_segs
+    /// 를 타지 않아 memo 무효화가 누락됐었다 — stale Some(false) verdict 가
+    /// 재래핑을 억제하면 과폭 절단 렌더. 실명령 경로로 무효화를 고정한다.
+    #[test]
+    fn issue4149_cell_picture_delete_clears_single_line_overflow_memo() {
+        use crate::model::control::Control;
+        use crate::model::image::Picture;
+        use crate::model::paragraph::{LineSeg, SingleLineOverflowMemo};
+        use crate::model::table::{Cell, Table};
+
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+
+        // 저장 ls==1 + 인라인 그림 2개 + 넓은 char run 셀 문단 (리뷰어 시나리오).
+        let mut cell_para = Paragraph::default();
+        cell_para.text = "가나다라마바사아".to_string();
+        let n = cell_para.text.chars().count() as u32;
+        // 그림 2개(8×2 code unit)가 텍스트 앞에 배치된 오프셋 구조.
+        cell_para.char_offsets = (0..n).map(|i| 16 + i).collect();
+        cell_para.char_count = n + 16 + 1;
+        cell_para.char_shapes = vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }];
+        cell_para.line_segs = vec![LineSeg {
+            text_start: 0,
+            line_height: 800,
+            baseline_distance: 640,
+            ..Default::default()
+        }];
+        let mut pic = Picture::default();
+        pic.common.width = 1000;
+        pic.common.height = 1000; // 남은 그림 height>0 → branch 1 (높이 조정만)
+        cell_para
+            .controls
+            .push(Control::Picture(Box::new(pic.clone())));
+        cell_para.controls.push(Control::Picture(Box::new(pic)));
+        cell_para.ctrl_data_records = vec![None, None];
+
+        // 렌더 1회로 설정된 판정을 모사 — 삭제 후 fresh 실측과 모순일 수 있는
+        // stale verdict.
+        let stale_key = SingleLineOverflowMemo::width_key(321.0);
+        cell_para.single_line_overflow_memo.set(stale_key, false);
+
+        let table = Table {
+            cells: vec![Cell {
+                width: 8000,
+                paragraphs: vec![cell_para],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        core.document.sections[0].paragraphs[0]
+            .controls
+            .push(Control::Table(Box::new(table)));
+        let ctrl_idx = core.document.sections[0].paragraphs[0].controls.len() - 1;
+
+        let path_json = format!(
+            r#"[{{"controlIdx":{},"cellIdx":0,"cellParaIdx":0}}]"#,
+            ctrl_idx
+        );
+        core.delete_cell_picture_control_by_path_native(0, 0, &path_json, 0)
+            .expect("셀 그림 삭제");
+
+        let Control::Table(t) = &core.document.sections[0].paragraphs[0].controls[ctrl_idx] else {
+            panic!("expected table");
+        };
+        let para = &t.cells[0].paragraphs[0];
+        assert_eq!(para.controls.len(), 1, "그림 1개가 삭제돼야 함");
+        assert!(
+            para.single_line_overflow_memo.get(stale_key).is_none(),
+            "인라인 그림 삭제 후 stale verdict 가 남으면 재래핑 억제 → 과폭 절단 렌더"
+        );
+        assert!(
+            para.single_line_overflow_memo.is_unjudged(),
+            "삭제 직후 memo 는 미판정 상태여야 함 (다음 렌더에서 fresh 재판정)"
+        );
+    }
 }

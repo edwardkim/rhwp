@@ -9,7 +9,7 @@ use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use super::{px_to_hwpunit, TextStyle};
 use crate::model::control::Control;
 use crate::model::document::Section;
-use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph, SingleLineOverflowMemo};
 
 /// 글자겹침(CharOverlap) 렌더링 정보
 #[derive(Debug, Clone, serde::Serialize)]
@@ -1528,11 +1528,28 @@ pub fn recompose_stored_single_line_if_overflowing(
     // `stored_lines_overflow`(#2525)와 동일하게 ×1.8 로 좁혀 정당한 장평/자간·
     // 패딩 발산 범위(≤~1.5×)를 넘는 부실 저장만 재래핑한다. #2291 원 타깃
     // (76자 1-lineseg = ~7.6× 초과, 절단 해소)은 임계 위라 계속 재래핑.
-    let over = composed
-        .lines
-        .first()
-        .map(|l| estimate_composed_line_width(l, styles) > cell_inner_width_px * 1.8)
-        .unwrap_or(false);
+    //
+    // [#4149] 판정 memo — 같은 (문단 text·char_shapes, 셀 내폭)이면 판정이 결정적
+    // 인데, 페이지 트리 재빌드마다 estimate_composed_line_width 재측정이 반복돼
+    // 거대 셀 문서의 캐럿 rect 질의당 ~30% 를 차지했다. 폭 키(f32 bits 패킹)로
+    // 판정만 memo 하고(측정 생략), over=true 의 fresh 재래핑 자체는 매 빌드 그대로
+    // 수행한다 — 재래핑 결과는 composed 에만 반영되고 저장 line_segs 는 안 바뀌므로
+    // 재래핑을 생략하면 절단 렌더 회귀. text/char_shapes 변경 경로는
+    // `invalidate_single_line_overflow_memo` 로 비운다 (셀 크기 조정은 키 불일치로
+    // 자연 재판정).
+    let width_key = SingleLineOverflowMemo::width_key(cell_inner_width_px);
+    let over = match para.single_line_overflow_memo.get(width_key) {
+        Some(memoized) => memoized,
+        None => {
+            let measured = composed
+                .lines
+                .first()
+                .map(|l| estimate_composed_line_width(l, styles) > cell_inner_width_px * 1.8)
+                .unwrap_or(false);
+            para.single_line_overflow_memo.set(width_key, measured);
+            measured
+        }
+    };
     if std::env::var("RHWP_DIAG_CELLREWRAP").is_ok() && over {
         if let Some(l) = composed.lines.first() {
             for run in &l.runs {

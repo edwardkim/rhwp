@@ -1421,6 +1421,9 @@ fn remove_field_in_para(para: &mut Paragraph, char_offset: usize) -> Result<(), 
 /// 원본 char_offsets에서 컨트롤 배치 패턴을 보존하면서,
 /// 텍스트 길이 변경(필드 값 삽입)에 맞게 오프셋을 재계산한다.
 pub(crate) fn rebuild_char_offsets(para: &mut Paragraph) {
+    // [#4149] 호출부는 방금 text/controls 수술을 마친 상태다 (필드 제거·필드값
+    // 기입·클립보드 트림 등, 셀 문단 포함) — 단일줄 과밀 memo 무효화의 수렴점.
+    para.invalidate_single_line_overflow_memo();
     let text_chars: Vec<char> = para.text.chars().collect();
     let text_len = text_chars.len();
 

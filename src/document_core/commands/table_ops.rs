@@ -3328,6 +3328,8 @@ impl DocumentCore {
                         cell_para.text = text;
                         let new_len = cell_para.text.chars().count();
                         cell_para.char_offsets = (0..new_len).map(|i| i as u32).collect();
+                        // [#4149] 원시 text 대입 — 단일줄 과밀 memo 무효화.
+                        cell_para.invalidate_single_line_overflow_memo();
                     }
                 }
             }

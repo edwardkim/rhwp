@@ -60,6 +60,10 @@ fn recompute_clipboard_control_mask(para: &Paragraph) -> u32 {
 }
 
 fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph) {
+    // [#4149] clip 사본이지만 다중 문단 붙여넣기에서 중간 문단이 통째로 문서에
+    // 스플라이스되어 렌더 입력이 될 수 있다 — 컨트롤 제거로 compose 입력이
+    // 바뀌므로 단일줄 과밀 memo 를 무효화한다.
+    para.invalidate_single_line_overflow_memo();
     let old_controls = std::mem::take(&mut para.controls);
     let old_records = std::mem::take(&mut para.ctrl_data_records);
     let mut index_map = vec![None; old_controls.len()];
