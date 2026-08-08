@@ -199,6 +199,50 @@ test('빈 셀 블록 글자 서식은 history 없이 no-op 이다', () => {
     '모든 셀 제외 시 글자 서식이 no-op으로 끝나지 않는다');
 });
 
+test('[#4151] 토글 방향은 셀 블록 모드에서 블록 앵커 셀의 서식을 읽는다', () => {
+  // 커서 위치 조회(getCharPropertiesAtCursor)는 셀 블록 모드에서 블록 밖(호스트 문단 등)을
+  // 읽어 방금 적용한 서식이 보이지 않는다 — current[prop] 이 이전 값에 머물러 !current[prop]
+  // 이 항상 같은 방향이 되고, 두 번째 클릭이 해제가 아니라 재적용이 된다.
+  const ih = source('src/engine/input-handler.ts');
+  const start = ih.indexOf('private applyToggleFormat(');
+  assert.notEqual(start, -1, 'applyToggleFormat 을 찾지 못했다');
+  const body = ih.slice(start, ih.indexOf('\n  }\n', start));
+  assert.match(body, /this\.getSelectedCellBlock\(\)/,
+    '토글 방향 산출에 셀 블록 분기가 없다');
+  assert.match(body,
+    /\?\s*this\.getCharPropertiesAtCellBlockAnchor\(\w+\)\s*\n?\s*:\s*this\.getCharPropertiesAtCursor\(\)/,
+    '셀 블록 모드에서 블록 앵커 셀 대신 커서 위치의 서식으로 토글 방향을 정한다');
+});
+
+test('[#4151] 셀 블록 적용 직후 cursor-format-changed 를 앵커 셀 기준으로 방출한다', () => {
+  // 텍스트 선택 경로는 적용 후 emitCursorFormatState 로 툴바 눌림 상태를 재조회·방출하지만,
+  // 셀 블록 경로는 이 후처리가 없으면 툴바가 이전 상태로 남는다. emitCursorFormatState 는
+  // 커서 위치 기준이라 블록에는 오답 — 앵커 셀 서식을 직접 방출해야 한다.
+  const ih = source('src/engine/input-handler.ts');
+  const start = ih.indexOf('private applyCharFormatToCellBlock');
+  assert.notEqual(start, -1, 'applyCharFormatToCellBlock 이 없다');
+  const body = ih.slice(start, ih.indexOf('\n  }\n', start));
+  const applyAt = body.indexOf('this.executeOperation(');
+  const emitAt = body.indexOf("this.eventBus.emit('cursor-format-changed'");
+  assert.notEqual(emitAt, -1, '적용 후 cursor-format-changed 방출이 없다');
+  assert.ok(applyAt !== -1 && applyAt < emitAt, '상태 방출이 서식 적용보다 앞에 있다');
+  assert.match(body,
+    /emit\('cursor-format-changed',\s*this\.getCharPropertiesAtCellBlockAnchor\(block\)\)/,
+    '방출 값이 블록 앵커 셀 서식이 아니다');
+});
+
+test('[#4151] 앵커 셀 서식 기준은 블록 첫 셀의 첫 글자다', () => {
+  // 토글 방향(applyToggleFormat)과 툴바 상태 방출이 같은 기준을 공유해야 두 번째 클릭의
+  // 해제 방향과 버튼 표시가 일치한다. 기준 조회는 이 함수 한 곳에만 둔다.
+  const ih = source('src/engine/input-handler.ts');
+  const start = ih.indexOf('private getCharPropertiesAtCellBlockAnchor');
+  assert.notEqual(start, -1, 'getCharPropertiesAtCellBlockAnchor 가 없다');
+  const body = ih.slice(start, ih.indexOf('\n  }\n', start));
+  assert.match(body,
+    /getCellCharPropertiesAt\(block\.sec, block\.ppi, block\.ci, block\.cellIndices\[0\], 0, 0\)/,
+    '앵커 기준이 블록 첫 셀의 첫 글자가 아니다');
+});
+
 test('모양 붙여넣기도 같은 셀 산출 함수를 쓴다', () => {
   // 같은 블록을 대상으로 하는 두 경로가 필터를 각자 갖고 있으면 한쪽만 고쳐진다.
   const ih = source('src/engine/input-handler.ts');

@@ -1892,14 +1892,33 @@ export class InputHandler {
         return { ...cursorBefore };
       },
     });
+    // [#4151] 블록 적용 경로는 텍스트 선택 경로의 "적용 → 상태 재조회·방출" 후처리를 타지
+    // 않아 툴바 눌림 상태가 이전 값으로 남는다. 적용 직후 앵커 셀 기준으로 방출해 동기화한다.
+    try {
+      this.eventBus.emit('cursor-format-changed', this.getCharPropertiesAtCellBlockAnchor(block));
+    } catch {
+      // 문서 상태 경합 시 다음 캐럿 이동에서 자연 동기화
+    }
+  }
+
+  /** [#4151] 셀 블록 서식의 토글 방향·툴바 상태 기준: 블록 첫 셀의 첫 글자 서식. */
+  private getCharPropertiesAtCellBlockAnchor(block: SelectedCellBlock): CharProperties {
+    return this.wasm.getCellCharPropertiesAt(block.sec, block.ppi, block.ci, block.cellIndices[0], 0, 0);
   }
 
   /** 토글 서식 적용 (상호 배타 처리 포함) */
   private applyToggleFormat(prop: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'emboss' | 'engrave' | 'outline' | 'superscript' | 'subscript'): void {
     if (!this.hasFormatTargetSelection()) return;
-    // 셀 블록에서는 커서가 있는 앵커 셀의 현재 값이 토글 방향을 정한다. 칸마다 값이 다를 때
+    // 셀 블록에서는 앵커 셀 텍스트의 현재 값이 토글 방향을 정한다. 칸마다 값이 다를 때
     // 블록 전체를 한 방향으로 맞추려면 기준이 하나여야 하고, 텍스트 선택도 같은 기준이다.
-    const current = this.getCharPropertiesAtCursor();
+    // [#4151] 커서 위치 조회는 셀 블록 모드에서 블록 밖(호스트 문단 등)을 읽어 방금 적용한
+    // 서식이 보이지 않는다 — 두 번째 클릭이 해제가 아니라 재적용이 되는 원인. 블록 모드에선
+    // 블록 첫 셀의 첫 글자 서식을 기준으로 삼는다. 빈 블록(전 셀 Ctrl+클릭 제외)은 앵커
+    // 셀이 없으므로 커서 기준 폴백 — applyCharFormat 이 어차피 빈 블록에서 조기 종료한다.
+    const toggleBlock = this.getSelectedCellBlock();
+    const current = toggleBlock && toggleBlock.cellIndices.length > 0
+      ? this.getCharPropertiesAtCellBlockAnchor(toggleBlock)
+      : this.getCharPropertiesAtCursor();
 
     if (prop === 'emboss') {
       const newVal = !current.emboss;
