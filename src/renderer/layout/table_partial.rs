@@ -1356,6 +1356,19 @@ impl LayoutEngine {
                         cell, table, styles, su, eu, cp_idx,
                     )
                 });
+                let has_table_ctrl = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
+                // [#3820 Stage 77] HWP5에는 내부 표 control만 있고 LINE_SEG가 전혀
+                // 없는 셀 문단이 있다(76076 p35 row 6). 이 표가 들어 있는 outer
+                // fragment가 아직 source cut을 쓰지 않는다면, `(0, 0)`은 비가시
+                // 판정이 아니라 control-only 문단의 합성 결과다. normal-table path와
+                // 같이 control을 배치해야 한다. cut fragment에서는 단위 소유권을
+                // 유지해 다음 쪽 표를 앞쪽에 중복 방출하지 않는다.
+                let uncut_control_only_nested_table = cut_units.is_none()
+                    && has_table_ctrl
+                    && para
+                        .text
+                        .chars()
+                        .all(|ch| ch.is_whitespace() || ch == '\r' || ch == '\n');
 
                 // [Task #993] 컷 범위 밖 문단은 이전/다음 페이지 소속 — 이 페이지에서
                 // 스킵한다. cell_line_ranges_from_cut 이 가시 유닛만 범위에 넣으므로
@@ -1365,6 +1378,7 @@ impl LayoutEngine {
                     && mixed_nested_split.is_none()
                     && nested_cursor_split.is_none()
                     && !visible_non_inline_controls
+                    && !uncut_control_only_nested_table
                 {
                     continue;
                 }
@@ -1426,9 +1440,6 @@ impl LayoutEngine {
                     }
                 };
                 let cell_context_opt = Some(cell_context.clone());
-
-                // 표 컨트롤 유무 판별
-                let has_table_ctrl = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
 
                 // 인라인 이미지가 있는 문단: compose 전 위치를 저장
                 let para_y_before_compose = para_y;
