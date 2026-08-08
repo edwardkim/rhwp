@@ -484,7 +484,7 @@ export function onInput(this: any, e?: InputEvent): void {
   // IME 조합 중: 이전 조합 텍스트 삭제 → 현재 조합 텍스트 삽입 (실시간 렌더링)
   // Undo 스택에는 기록하지 않음 (compositionend에서 한 번에 기록)
   if (this.isComposing && this.compositionAnchor) {
-    const anchor = this.compositionAnchor;
+    let anchor = this.compositionAnchor;
     const beforePageIndex = this.cursor.getRect()?.pageIndex;
     if (!this.canInsertTextInFormMode?.(anchor)) {
       this.textarea.value = '';
@@ -492,7 +492,25 @@ export function onInput(this: any, e?: InputEvent): void {
     }
     this.resetRawTextMutationEffects();
 
-    this.replaceTextAtRaw(anchor, this.compositionLength, text);
+    try {
+      this.replaceTextAtRaw(anchor, this.compositionLength, text);
+    } catch (err) {
+      // wasm 의 deferred replace 범위 가드가 거부하면(외부 변이로 앵커·길이가 낡은
+      // 경합) 여기서 던진 채 두면 onInput 전체가 죽어 조합 추적이 낡은 값으로
+      // wedge 된다. 조합을 현재 캐럿에 재정박하고 이번 조합 텍스트를 새로 삽입해
+      // 입력 스트림을 잇는다 — 실패분은 다음 캐럿 이동에서 자연 동기화된다.
+      console.warn('[InputHandler] 조합 replace 거부 — 현재 캐럿에 재정박:', err);
+      anchor = { ...this.cursor.getPosition() };
+      this.compositionAnchor = anchor;
+      this.compositionLength = 0;
+      try {
+        this.replaceTextAtRaw(anchor, 0, text);
+      } catch (err2) {
+        console.warn('[InputHandler] 조합 재정박 삽입 실패 — 이번 업데이트 무시:', err2);
+        this.textarea.value = '';
+        return;
+      }
+    }
     // 다음 조합 업데이트의 삭제 count는 scalar 단위다.
     this.compositionLength = charCount(text);
     if (text) this._lastCompositionText = text;
