@@ -474,6 +474,22 @@ fn test_split_cell_not_merged() {
 }
 
 #[test]
+fn test_split_cell_zero_span_cell_does_not_panic() {
+    // [#4280] 손상된 HML 문서는 <CELL ColSpan="0" .../>처럼 span 0을 실어
+    // 보낼 수 있다(src/parser/hml/reader.rs 참고). split_cell()이 span 0을
+    // 거르지 않으면 orig_width / orig_col_span 0-나누기 또는 빈
+    // split_col_widths[0] 인덱싱으로 패닉했다. 에러로 거부되어야 한다(회귀 방지).
+    let mut table = make_table(2, 2);
+    if let Some(cell) = table.cells.iter_mut().find(|c| c.col == 0 && c.row == 0) {
+        cell.col_span = 0;
+        cell.row_span = 2;
+    }
+
+    let result = table.split_cell(0, 0);
+    assert!(result.is_err());
+}
+
+#[test]
 fn test_split_cell_width_distribution() {
     let mut table = make_table(2, 3);
     // 열 0~1 병합 (폭: 3600 + 3600 = 7200)

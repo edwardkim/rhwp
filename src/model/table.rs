@@ -1505,6 +1505,15 @@ impl Table {
         if orig_col_span <= 1 && orig_row_span <= 1 {
             return Err("병합되지 않은 셀은 나눌 수 없습니다".to_string());
         }
+        // [#4280] col_span/row_span은 HML "ColSpan"/"RowSpan"="0" 같은 손상된
+        // 문서에서 0으로 파싱될 수 있다(parser/hml/reader.rs의 parse_attribute는
+        // 속성이 없을 때만 unwrap_or(1)을 적용하고, 명시적 "0"은 그대로 통과시킨다).
+        // span 0이 섞이면 아래 `orig_width / orig_col_span`이 0-나누기로 패닉하거나,
+        // `target_col..target_col+0` 빈 범위로 split_col_widths가 비어
+        // `split_col_widths[0]`에서 index-out-of-bounds로 패닉한다.
+        if orig_col_span == 0 || orig_row_span == 0 {
+            return Err("손상된 셀(span 0)은 나눌 수 없습니다".to_string());
+        }
 
         // 열폭 계산: 다른 행의 col_span==1 셀에서 실제 폭 추출, 없으면 균등 분배
         let col_widths = self.get_column_widths();
