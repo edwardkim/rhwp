@@ -5146,6 +5146,16 @@ impl LayoutEngine {
             RenderNodeType::Column(col_content.column_index),
             layout_rect_to_bbox(col_area),
         );
+        // [#3820 Stage 72] typeset은 wrap 문단을 실제 anchor 표가 있는 column에
+        // 기록한다. PaginationResult의 전역 목록은 이전 호환 필드라 현재 경로에서는
+        // 비어 있다. 전역 목록만 넘기면 기록된 prefix가 layout까지 전달되지 않아
+        // right-side Square 표 옆 본문이 소실된다(issue4090 p5/p7/p15/p17).
+        // 전역 목록은 기존 synthetic/legacy caller의 fallback으로만 보존한다.
+        let column_wrap_around_paras = if col_content.wrap_around_paras.is_empty() {
+            wrap_around_paras
+        } else {
+            &col_content.wrap_around_paras
+        };
 
         self.prime_column_layout_env(layout);
 
@@ -5335,7 +5345,7 @@ impl LayoutEngine {
                         multi_col_width,
                         y_offset,
                         prev_tac_seg_applied,
-                        wrap_around_paras,
+                        column_wrap_around_paras,
                         &col_content.wrap_anchors,
                     );
                     y_offset = new_y;
@@ -6165,7 +6175,7 @@ impl LayoutEngine {
                 multi_col_width,
                 y_offset,
                 prev_tac_seg_applied,
-                wrap_around_paras,
+                column_wrap_around_paras,
                 &col_content.wrap_anchors,
             );
             if zero_between_shape_tail_margin_px > 0.0 {
@@ -7813,7 +7823,19 @@ impl LayoutEngine {
                 let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
                 let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
                 // [Task #1745] 텍스트 혼합 anchor: 후속 어울림 문단 띠는 표 geometry 로.
-                let (strip_x, strip_width) = crate::renderer::text_anchor_square_table_strip(para)
+                //
+                // [#3820 Stage 72] 빈 host의 우측 Square 표는 host LINE_SEG가 전폭인
+                // 반면 다음 문단이 표 왼쪽 띠를 저장한다. typeset은 이미 같은 helper로
+                // 해당 문단을 WrapAroundPara로 흡수하므로, layout도 동일한 strip을 써야
+                // 한다. 여기서 host의 전폭을 fallback으로 쓰면 prefix가 표 옆이 아닌
+                // 전폭 compose 경로에 남아 paint되지 않는다(issue4090 p5/p7/p15/p17).
+                let strip = crate::renderer::text_anchor_square_table_strip(para).or_else(|| {
+                    crate::renderer::empty_host_square_table_left_strip(
+                        para,
+                        px_to_hwpunit(col_area.width, self.dpi),
+                    )
+                });
+                let (strip_x, strip_width) = strip
                     .map(|(cs, sw)| {
                         (
                             col_area.x + hwpunit_to_px(cs, self.dpi),
@@ -8719,7 +8741,13 @@ impl LayoutEngine {
                     let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
                     // [Task #1745] 텍스트 혼합 anchor: 후속 어울림 문단 띠는 표 geometry 로,
                     // 호스트 텍스트는 이미 "분할 표 첫 부분" 경로에서 렌더됨 → 이중 렌더 방지.
-                    let strip = crate::renderer::text_anchor_square_table_strip(para);
+                    let strip =
+                        crate::renderer::text_anchor_square_table_strip(para).or_else(|| {
+                            crate::renderer::empty_host_square_table_left_strip(
+                                para,
+                                px_to_hwpunit(col_area.width, self.dpi),
+                            )
+                        });
                     let (strip_x, strip_width) = strip
                         .map(|(cs, sw)| {
                             (
