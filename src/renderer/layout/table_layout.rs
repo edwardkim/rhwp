@@ -5571,6 +5571,34 @@ impl LayoutEngine {
         flag
     }
 
+    /// [#4167] 문단의 cell-units 기여 지문 — 편집이 units 를 실제로 바꿨는지 판별용.
+    ///
+    /// units 산출이 읽는 문단 입력만 포함한다: line_segs 의 (vertical_pos, line_height,
+    /// tag) 수열(개수 포함), controls 수, 공백/빈 문단 클래스. `text_start` 와
+    /// `segment_width` 는 제자리 타이핑에도 매 키 변하지만 units 산출이 읽지 않으므로
+    /// 제외한다(위 `cell_units_uncached` 전 구간 grep 근거). 인접 문단 결합(직전 끝
+    /// seg·직후 첫 seg 참조)도 이 지문에 담긴 경계 seg 로 판별된다 — 지문 불변이면
+    /// 이웃 기여도 불변이다.
+    pub(crate) fn cell_paragraph_units_fingerprint(
+        para: &crate::model::paragraph::Paragraph,
+    ) -> u64 {
+        use std::hash::{Hash, Hasher};
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        para.line_segs.len().hash(&mut h);
+        for seg in &para.line_segs {
+            seg.vertical_pos.hash(&mut h);
+            seg.line_height.hash(&mut h);
+            // units 산출이 tag 에서 읽는 비트는 synthetic 판별(bit 31)뿐이다. 원본
+            // 로드 tag 의 여타 비트(예: 0x100000)는 reflow 가 재방출하지 않아 첫
+            // 편집에서 무의미하게 지문을 바꾸므로 마스킹한다.
+            (seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY).hash(&mut h);
+        }
+        para.controls.len().hash(&mut h);
+        para.text.is_empty().hash(&mut h);
+        para.text.trim().is_empty().hash(&mut h);
+        h.finish()
+    }
+
     /// [Issue #2214/#2424] 텍스트 편집 뒤 edited cell의 memoized units를 국소 무효화한다.
     ///
     /// cached owner flag가 false인데 edited paragraph가 false→true가 된 경우에만
@@ -5584,6 +5612,7 @@ impl LayoutEngine {
         owner_table: &crate::model::table::Table,
         local_before: bool,
         local_after: bool,
+        unit_fingerprint_unchanged: bool,
     ) {
         let edited_cell_key = edited_cell as *const crate::model::table::Cell as usize;
         let owner_table_key = owner_table as *const crate::model::table::Table as usize;
@@ -5621,6 +5650,12 @@ impl LayoutEngine {
             return;
         }
 
+        // [#4167] 편집 문단의 units 기여 지문이 불변이면(제자리 타이핑 — 줄 수·높이
+        // 불변) 캐시된 units 벡터 전체가 그대로 유효하다 — 거대 셀(수천 문단)의
+        // 전량 recompose(11ms/키)를 생략한다. 지문이 다르면 종전대로 셀 단위 제거.
+        if unit_fingerprint_unchanged {
+            return;
+        }
         self.cell_units_cache.borrow_mut().remove(&edited_cell_key);
         if local_became_true && cached_owner_flag.is_none() {
             // cell_units entry가 있으면 owner flag도 먼저 warm된다는 현재 cache invariant에
@@ -9935,6 +9970,7 @@ mod row_cut_tests {
                     sibling_before,
                     target_shape_before,
                     owner_flag_before,
+                    target_units_fp_before,
                 ) = {
                     let table = owner_table(&core);
                     let target = &table.cells[2];
@@ -9957,6 +9993,7 @@ mod row_cut_tests {
                                 .any(|control| matches!(control, Control::Table(_))),
                         ),
                         uncached_table_flag(table),
+                        LayoutEngine::cell_paragraph_units_fingerprint(target_para),
                     )
                 };
                 assert!(
@@ -10030,11 +10067,29 @@ mod row_cut_tests {
                 let table_scan_count = core.layout_engine.table_nested_text_flag_scan_count.get();
                 let target_recomputed = !std::sync::Arc::ptr_eq(&target_before, &target_after);
                 let sibling_reused = std::sync::Arc::ptr_eq(&sibling_before, &sibling_after);
-                let desired = membership == (false, true, true)
-                    && target_recomputed
-                    && sibling_reused
-                    && owner_flag_after == owner_flag_before
-                    && table_scan_count == 0;
+                // [#4167 갱신 이력] 기대값을 "무조건 evict"에서 "units 지문 변화 시에만
+                // evict"로 변경. 제자리 1자 삽입은 units 지문(줄 수·높이·vpos·synthetic·
+                // 공백 클래스) 불변이라 캐시 항등 보존이 정답이 됐다 — 재계산해도 동일
+                // 벡터가 나옴은 issue4167_units_fingerprint_doc_contract 가 고정한다.
+                // 실측상 두 phase 의 최종 삽입 모두 지문 불변(재래핑 없음)이며, 지문이
+                // 변하는 편집의 evict 계약은 issue4167_fingerprint_unchanged_edit_
+                // retains_cell_units 의 false 분기가 고정한다.
+                let target_units_fp_after =
+                    LayoutEngine::cell_paragraph_units_fingerprint(&target.paragraphs[5]);
+                let fp_stable = target_units_fp_after == target_units_fp_before;
+                let desired = if fp_stable {
+                    membership == (true, true, true)
+                        && !target_recomputed
+                        && sibling_reused
+                        && owner_flag_after == owner_flag_before
+                        && table_scan_count == 0
+                } else {
+                    membership == (false, true, true)
+                        && target_recomputed
+                        && sibling_reused
+                        && owner_flag_after == owner_flag_before
+                        && table_scan_count == 0
+                };
                 eprintln!(
                     "#2214 {label}: membership={membership:?} target_recomputed={target_recomputed} sibling_reused={sibling_reused} owner_flag={owner_flag_before}->{owner_flag_after} table_scans={table_scan_count}"
                 );
@@ -10298,6 +10353,7 @@ mod row_cut_tests {
             &edited_table,
             false,
             false,
+            false,
         );
 
         let cell_cache = eng.cell_units_cache.borrow();
@@ -10357,7 +10413,13 @@ mod row_cut_tests {
         eng.table_nested_text_flag_scan_count.set(0);
 
         owner_table.cells[0].paragraphs[0].insert_text_at(0, "x");
-        eng.invalidate_cell_units_after_text_edit(&owner_table.cells[0], &owner_table, false, true);
+        eng.invalidate_cell_units_after_text_edit(
+            &owner_table.cells[0],
+            &owner_table,
+            false,
+            true,
+            false,
+        );
 
         assert!(eng.cell_units_cache.borrow().is_empty());
         assert_eq!(
@@ -10433,6 +10495,7 @@ mod row_cut_tests {
             &edited_table,
             false,
             true,
+            false,
         );
 
         let membership = {
@@ -10538,6 +10601,7 @@ mod row_cut_tests {
             &edited_table,
             false,
             true,
+            false,
         );
 
         let membership = {
@@ -10616,7 +10680,13 @@ mod row_cut_tests {
 
         owner_table.cells[0].paragraphs[0].text.clear();
         owner_table.cells[0].paragraphs[0].char_count = 0;
-        eng.invalidate_cell_units_after_text_edit(&owner_table.cells[0], &owner_table, true, false);
+        eng.invalidate_cell_units_after_text_edit(
+            &owner_table.cells[0],
+            &owner_table,
+            true,
+            false,
+            false,
+        );
 
         assert!(
             owner_table.cells.iter().all(|cell| {
@@ -10654,6 +10724,86 @@ mod row_cut_tests {
             eng.table_nested_text_flag_scan_count.get(),
             1,
             "owner table must be rescanned once after deletion"
+        );
+    }
+
+    /// [#4167] 지문 불변 편집(제자리 타이핑)은 memoized cell units 를 보존한다.
+    #[test]
+    fn issue4167_fingerprint_unchanged_edit_retains_cell_units() {
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let owner_table = table(vec![cell(0, 0, vec![text_para(3, 0)])]);
+        let _ = eng.cell_units(&owner_table.cells[0], &owner_table, &styles);
+        let key = &owner_table.cells[0] as *const crate::model::table::Cell as usize;
+        assert!(eng.cell_units_cache.borrow().contains_key(&key), "warmed");
+
+        eng.invalidate_cell_units_after_text_edit(
+            &owner_table.cells[0],
+            &owner_table,
+            true,
+            true,
+            true,
+        );
+        assert!(
+            eng.cell_units_cache.borrow().contains_key(&key),
+            "지문 불변이면 entry 를 보존해야 한다 — 제거되면 거대 셀 타이핑마다 전량 recompose (#4167)"
+        );
+
+        eng.invalidate_cell_units_after_text_edit(
+            &owner_table.cells[0],
+            &owner_table,
+            true,
+            true,
+            false,
+        );
+        assert!(
+            !eng.cell_units_cache.borrow().contains_key(&key),
+            "지문 변경이면 종전대로 제거해야 한다"
+        );
+    }
+
+    /// [#4167] units 지문은 units 산출이 읽는 입력에만 반응한다.
+    #[test]
+    fn issue4167_units_fingerprint_sensitivity() {
+        let base = text_para(3, 0);
+        let fp = LayoutEngine::cell_paragraph_units_fingerprint;
+
+        // 불변이어야 하는 변이: text_start·segment_width 시프트, synthetic 외 tag 비트
+        let mut typed = base.clone();
+        for seg in &mut typed.line_segs {
+            seg.text_start += 1;
+            seg.segment_width += 120;
+            seg.tag |= 0x0010_0000; // 원본 로드 tag 잔여 비트 — units 미소비
+        }
+        assert_eq!(
+            fp(&base),
+            fp(&typed),
+            "제자리 타이핑 급 변이는 지문 불변이어야 한다"
+        );
+
+        // 변해야 하는 변이: 줄 수, 줄 높이, synthetic 비트, 공백 클래스
+        let mut grown = base.clone();
+        grown.line_segs.push(grown.line_segs[0].clone());
+        assert_ne!(fp(&base), fp(&grown), "줄 수 변화는 지문이 변해야 한다");
+
+        let mut taller = base.clone();
+        taller.line_segs[1].line_height += 240;
+        assert_ne!(fp(&base), fp(&taller), "줄 높이 변화는 지문이 변해야 한다");
+
+        let mut synthetic = base.clone();
+        synthetic.line_segs[1].tag |= crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+        assert_ne!(
+            fp(&base),
+            fp(&synthetic),
+            "synthetic 비트는 지문이 변해야 한다"
+        );
+
+        let mut spacer = base.clone();
+        spacer.text = "   ".to_string();
+        assert_ne!(
+            fp(&base),
+            fp(&spacer),
+            "공백 스페이서 클래스 전이는 지문이 변해야 한다"
         );
     }
 }

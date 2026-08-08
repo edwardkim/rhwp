@@ -1461,6 +1461,8 @@ impl DocumentCore {
             crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                 cell_para,
             );
+        let units_fp_before =
+            crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(cell_para);
         let deleted_count = if delete_count > 0 {
             cell_para.delete_text_at(char_offset, delete_count)
         } else {
@@ -1531,6 +1533,18 @@ impl DocumentCore {
                 ),
             )
         };
+        let units_fp_unchanged = self
+            .get_cell_paragraph_ref(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )
+            .is_some_and(|p| {
+                crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
+                    == units_fp_before
+            });
         let cell_flow_changed = flow_advance_before != flow_advance_after;
         let new_offset = char_offset + new_chars_count;
         let focused_after = if focused_target_is_table_cell {
@@ -1561,6 +1575,7 @@ impl DocumentCore {
                         table,
                         local_contribution_before,
                         local_contribution_after,
+                        units_fp_unchanged,
                     );
                 }
             }
@@ -1798,6 +1813,8 @@ impl DocumentCore {
             crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                 cell_para,
             );
+        let units_fp_before =
+            crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(cell_para);
         let deleted_count = cell_para.delete_text_at(char_offset, count);
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
@@ -1839,6 +1856,18 @@ impl DocumentCore {
                 ),
             )
         };
+        let units_fp_unchanged = self
+            .get_cell_paragraph_ref(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )
+            .is_some_and(|p| {
+                crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
+                    == units_fp_before
+            });
         let cell_flow_changed = flow_advance_before != flow_advance_after;
         let focused_after = if focused_target_is_table_cell {
             self.get_cell_paragraph_ref(
@@ -1869,6 +1898,7 @@ impl DocumentCore {
                         table,
                         local_contribution_before,
                         local_contribution_after,
+                        units_fp_unchanged,
                     );
                 }
             }

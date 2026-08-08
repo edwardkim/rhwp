@@ -28086,3 +28086,104 @@ fn issue4149_adjacent_cursor_rect_profile_loop() {
     }
     eprintln!("[profile-loop] 끝");
 }
+
+/// [조사] deferred 편집 직후 첫 캐럿 질의 ~20ms 의 귀속 — find_pages vs 나머지.
+#[test]
+fn issue4149_deferred_edit_first_cursor_query_decomposition() {
+    use std::time::Instant;
+    let bytes =
+        std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let _ = doc.page_count();
+    // 웜업
+    let _ = doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 6, 5);
+    let t = Instant::now();
+    let _ = doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 6, 5);
+    println!("[deferred-q] 웜 질의={:?}", t.elapsed());
+
+    // cp29: 다줄 텍스트 문단 (조사 실측 [0,46,84,...]) — 실타이핑 대표 사례.
+    // cp6(공백 스페이서)은 삽입이 spacer 클래스를 바꿔 정당 evict 되는 반례다.
+    doc.insert_text_in_cell_deferred_pagination(0, 0, 2, 2, 29, 5, "X")
+        .expect("deferred insert");
+    let t = Instant::now();
+    let pages = doc
+        .find_pages_for_cell_position(0, 0, 2, 2, Some((29, 6)))
+        .expect("pages");
+    println!(
+        "[deferred-q] 편집 직후 find_pages={:?} → {:?}",
+        t.elapsed(),
+        pages
+    );
+    let t = Instant::now();
+    let _ = doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 29, 6);
+    println!("[deferred-q] 편집 직후 rect(질의1)={:?}", t.elapsed());
+    let t = Instant::now();
+    let _ = doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 29, 6);
+    println!("[deferred-q] rect(질의2)={:?}", t.elapsed());
+}
+
+/// [조사] deferred 편집 후 cell_units 재계산 11ms 의 내부 귀속 — sample 용 핫루프.
+#[test]
+#[ignore]
+fn issue4149_deferred_units_rebuild_profile_loop() {
+    let bytes =
+        std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let _ = doc.page_count();
+    let _ = doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 6, 5);
+    eprintln!("[units-loop] 시작 pid={}", std::process::id());
+    for i in 0..400 {
+        let ch = if i % 2 == 0 { "X" } else { "" };
+        if ch.is_empty() {
+            let _ = doc.delete_text_in_cell_deferred_pagination(0, 0, 2, 2, 6, 5, 1);
+        } else {
+            let _ = doc.insert_text_in_cell_deferred_pagination(0, 0, 2, 2, 6, 5, ch);
+        }
+        let _ = doc.find_pages_for_cell_position(0, 0, 2, 2, Some((6, 5)));
+    }
+    eprintln!("[units-loop] 끝");
+}
+
+/// [#4167] units 지문의 실문서 계약: 텍스트 문단 제자리 타이핑은 지문 불변(캐시
+/// 보존 → find_pages µs 급), 공백 스페이서 문단에 글자 삽입은 클래스 전이로 지문
+/// 변경(정당 evict). cp6 은 공백 5자 스페이서, cp29 는 다줄 텍스트 문단이다.
+#[test]
+fn issue4167_units_fingerprint_doc_contract() {
+    use crate::renderer::layout::LayoutEngine;
+    let bytes =
+        std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let _ = doc.page_count();
+    let para = |doc: &HwpDocument, cp: usize| -> Paragraph {
+        match &doc.document.sections[0].paragraphs[0].controls[2] {
+            Control::Table(t) => t.cells[2].paragraphs[cp].clone(),
+            _ => panic!("표가 아님"),
+        }
+    };
+
+    // 텍스트 문단: 삽입 전후 지문 불변 (원본 tag 잔여 비트는 마스킹됨)
+    let text_before = para(&doc, 29);
+    doc.insert_text_in_cell_deferred_pagination(0, 0, 2, 2, 29, 5, "X")
+        .expect("insert");
+    let text_after = para(&doc, 29);
+    assert_eq!(
+        LayoutEngine::cell_paragraph_units_fingerprint(&text_before),
+        LayoutEngine::cell_paragraph_units_fingerprint(&text_after),
+        "텍스트 문단 제자리 삽입은 units 지문 불변이어야 한다 (#4167 스킵 전제)"
+    );
+
+    // 스페이서 문단: 삽입이 trim-empty 클래스를 바꿔 지문 변경
+    let spacer_before = para(&doc, 6);
+    assert!(
+        spacer_before.text.trim().is_empty(),
+        "cp6 은 공백 스페이서 전제"
+    );
+    doc.insert_text_in_cell_deferred_pagination(0, 0, 2, 2, 6, 5, "X")
+        .expect("insert");
+    let spacer_after = para(&doc, 6);
+    assert_ne!(
+        LayoutEngine::cell_paragraph_units_fingerprint(&spacer_before),
+        LayoutEngine::cell_paragraph_units_fingerprint(&spacer_after),
+        "스페이서 → 텍스트 전이는 지문이 변해 evict 되어야 한다"
+    );
+}
