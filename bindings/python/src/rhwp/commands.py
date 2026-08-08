@@ -39,6 +39,7 @@ __all__ = [
     "export_plan_schema",
     "export_agent_manifest",
     "ir_diff",
+    "render_diff",
     "thumbnail",
     "extract_pages",
     "build_from_ingest",
@@ -424,6 +425,31 @@ def ir_diff(
 ) -> Envelope:
     """두 문서의 IR 차이 — 무엇이 달라졌는지 범주별로."""
     return Envelope(run_json(["ir-diff", a, b, "--json"], timeout=timeout))
+
+
+def render_diff(
+    path: PathLike,
+    path_b: Optional[PathLike] = None,
+    *,
+    via: Optional[str] = None,
+    page: Optional[int] = None,
+    max_disp: Optional[float] = None,
+    raise_on_verdict: bool = False,
+    timeout: Optional[float] = DEFAULT_TIMEOUT,
+) -> Envelope:
+    """시각 회귀 판정 — 페이지별 렌더 결과를 자기 왕복(1건) 또는 전/후(2건) 비교한다.
+
+    ``path_b`` 생략 시 ``path`` 를 자기 자신과 렌더 왕복 비교(회귀 도구 자체
+    검증). 판정 실패(exit 3)는 기본적으로 예외가 아니다 — 봉투를 읽어 판단하라.
+    """
+    args: List[Any] = ["render-diff", path]
+    if path_b is not None:
+        args.append(path_b)
+    _flag(args, "--via", via)
+    _flag(args, "-p", page)
+    _flag(args, "--max-disp", max_disp)
+    args.append("--json")
+    return Envelope(run_json(args, timeout=timeout, raise_on_verdict=raise_on_verdict))
 
 
 # ── 편집 ────────────────────────────────────────────────────────────────

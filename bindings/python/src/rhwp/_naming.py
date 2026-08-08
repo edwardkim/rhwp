@@ -15,7 +15,13 @@ __all__ = ["to_snake", "to_camel", "snake_keys", "camel_keys"]
 
 # 연속 대문자(약어) 경계를 살린다: "pageCountA" → "page_count_a",
 # "irDiff" → "ir_diff", "sourceB" → "source_b", "HTMLPage" → "html_page".
-_ACRONYM_BOUNDARY = re.compile(r"([A-Z]+)([A-Z][a-z])")
+#
+# [트랙 G R61 D-6] 앞 그룹을 가변 길이([A-Z]+)로 두면 "AAAA…Aa" 류 입력에서
+# 파국적 역추적(catastrophic backtracking)이 걸린다. Node 바인딩은 고정 길이
+# ([A-Z])로 이미 고쳤고, mydocs/tech/bindings/parity_contract.md §7이
+# "새 바인딩은 고정 길이 쪽을 쓴다"로 동등성까지 확인해뒀다(HTMLPage →
+# html_page 결과가 두 표현 모두 동일). 판단 문제가 아니라 이미 결정된 이식이다.
+_ACRONYM_BOUNDARY = re.compile(r"([A-Z])([A-Z][a-z])")
 _WORD_BOUNDARY = re.compile(r"([a-z0-9])([A-Z])")
 
 

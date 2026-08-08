@@ -79,6 +79,7 @@ from .commands import (
     info,
     inspect,
     ir_diff,
+    render_diff,
     replace_text,
     scan,
     search,
@@ -97,7 +98,7 @@ from .errors import (
     RhwpError,
     RhwpRuntimeError,
     SessionClosedError,
-    TimeoutError,
+    RhwpTimeoutError,
     UsageError,
     VerdictFailed,
 )
@@ -156,6 +157,7 @@ __all__ = [
     "export_hwpx",
     "convert",
     "ir_diff",
+    "render_diff",
     # 1층 — 편집
     "fill_fields",
     "replace_text",
@@ -198,7 +200,7 @@ __all__ = [
     "VerdictFailed",
     "ProtocolError",
     "SessionClosedError",
-    "TimeoutError",
+    "RhwpTimeoutError",
     # 종료 코드 사전
     "EXIT_OK",
     "EXIT_RUNTIME",

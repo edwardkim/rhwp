@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Union
 
 from ._binary import find_binary
-from .errors import ProtocolError, RhwpError, TimeoutError, raise_for_exit
+from .errors import ProtocolError, RhwpError, RhwpTimeoutError, raise_for_exit
 
 __all__ = ["run_json", "run_ndjson", "run_raw", "CompletedRun", "DEFAULT_TIMEOUT"]
 
@@ -89,7 +89,7 @@ def run_raw(
         envelope_hint: 예외에 담을 봉투 (이미 파싱했을 때).
 
     Raises:
-        TimeoutError: 제한 시간 초과. 자식 프로세스는 죽인 뒤 올라온다.
+        RhwpTimeoutError: 제한 시간 초과. 자식 프로세스는 죽인 뒤 올라온다.
         BinaryNotFoundError: 실행 파일을 못 찾음.
         UsageError / RhwpRuntimeError / VerdictFailed: ``check`` 가 참일 때.
     """
@@ -109,7 +109,7 @@ def run_raw(
             cwd=str(cwd) if cwd is not None else None,
         )
     except subprocess.TimeoutExpired as exc:
-        raise TimeoutError(
+        raise RhwpTimeoutError(
             f"제한 시간 {timeout}초를 초과했습니다",
             argv=argv,
             stderr=_decode(exc.stderr),

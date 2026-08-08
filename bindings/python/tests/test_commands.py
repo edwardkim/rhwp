@@ -251,6 +251,23 @@ def test_ir_diff_takes_two_paths(captured: List[List[Any]]) -> None:
     assert _as_strings(captured[0]) == ["ir-diff", "a.hwp", "b.hwp", "--json"]
 
 
+def test_render_diff_self_roundtrip_when_path_b_omitted(
+    captured: List[List[Any]],
+) -> None:
+    """[트랙 G R61 D-2] Node에는 있었지만 파이썬 바인딩에 없던 명령."""
+    rhwp.render_diff("a.hwp")
+    assert _as_strings(captured[0]) == ["render-diff", "a.hwp", "--json"]
+
+
+def test_render_diff_before_after_with_options(captured: List[List[Any]]) -> None:
+    rhwp.render_diff("before.hwp", "after.hwp", via="svg", page=2, max_disp=0.5)
+    args = _as_strings(captured[0])
+    assert args[:3] == ["render-diff", "before.hwp", "after.hwp"]
+    assert args[args.index("--via") + 1] == "svg"
+    assert args[args.index("-p") + 1] == "2"
+    assert args[args.index("--max-disp") + 1] == "0.5"
+
+
 # ── 편집 ────────────────────────────────────────────────────────────────
 
 
