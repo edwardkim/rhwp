@@ -3,6 +3,9 @@
 //! font-metric-gen 도구로 TTF 파일에서 추출.
 //! 수동 편집 금지.
 
+use std::collections::HashMap;
+use std::sync::OnceLock;
+
 #[derive(Debug)]
 pub struct HangulMetric {
     pub cho_groups: u8,
@@ -155,7 +158,79 @@ fn resolve_metric_alias(name: &str) -> &str {
     }
 }
 
+/// (bold, italic) → 색인 슬롯 번호. 조합이 4개뿐이라 이름당 배열로 선계산한다.
+fn metric_slot_index(bold: bool, italic: bool) -> usize {
+    ((bold as usize) << 1) | (italic as usize)
+}
+
+/// 이름별 선계산 색인 — 슬롯 값은 (metric, bold_fallback).
+///
+/// [#4149] 글자 측정마다 find_metric 이 호출되어 600 엔트리 선형 스캔
+/// (문자열 비교 × 최대 3단 폴백)이 캐럿 rect 질의 지연의 주요 원인이었다.
+/// 이름이 테이블에 있으면 3단(이름만 매칭)이 항상 성공하므로 슬롯에 Option 이
+/// 필요 없고, 조회 실패 = 이름 부재 = 기존 None 과 동일하다.
+///
+/// 키를 (name, bold, italic) 튜플 대신 이름 단독으로 두는 이유: 튜플 키는
+/// &'static str 수명 때문에 임의 사용자 폰트명(&str)으로 borrow 조회가 불가능하다.
+static METRIC_INDEX: OnceLock<HashMap<&'static str, [(&'static FontMetric, bool); 4]>> =
+    OnceLock::new();
+
+fn metric_index() -> &'static HashMap<&'static str, [(&'static FontMetric, bool); 4]> {
+    METRIC_INDEX.get_or_init(|| {
+        // 선형 스캔의 "테이블 첫 매칭 우선" 계약 재현: 테이블 순서대로 순회하며
+        // (name, bold, italic) 조합별 첫 엔트리와 이름 첫 등장 엔트리만 기록한다.
+        struct FirstSeen {
+            exact: [Option<&'static FontMetric>; 4],
+            first: &'static FontMetric,
+        }
+        let mut seen: HashMap<&'static str, FirstSeen> = HashMap::new();
+        for m in FONT_METRICS.iter() {
+            let entry = seen.entry(m.name).or_insert(FirstSeen {
+                exact: [None; 4],
+                first: m,
+            });
+            let idx = metric_slot_index(m.bold, m.italic);
+            if entry.exact[idx].is_none() {
+                entry.exact[idx] = Some(m);
+            }
+        }
+        // 슬롯 선주입 순서 = legacy 폴백 사다리와 동일:
+        // 1단 정확 매칭 → 2단 bold 매칭(italic 무시) → 3단 이름만 첫 엔트리.
+        seen.into_iter()
+            .map(|(name, fs)| {
+                let mut slots = [(fs.first, false); 4];
+                for bold in [false, true] {
+                    for italic in [false, true] {
+                        slots[metric_slot_index(bold, italic)] =
+                            if let Some(m) = fs.exact[metric_slot_index(bold, italic)] {
+                                (m, false)
+                            } else if let Some(m) = fs.exact[metric_slot_index(bold, false)] {
+                                (m, false)
+                            } else {
+                                // bold 요청이었으면 Faux Bold 보정 표시 (legacy 3단과 동일)
+                                (fs.first, bold)
+                            };
+                    }
+                }
+                (name, slots)
+            })
+            .collect()
+    })
+}
+
 pub fn find_metric(name: &str, bold: bool, italic: bool) -> Option<MetricMatch> {
+    let name = resolve_metric_alias(name);
+    let slots = metric_index().get(name)?;
+    let (metric, bold_fallback) = slots[metric_slot_index(bold, italic)];
+    Some(MetricMatch {
+        metric,
+        bold_fallback,
+    })
+}
+
+/// 기존 선형 스캔 구현 — 색인 등가성 검증 전용으로 보존 (수정 금지).
+#[cfg(test)]
+fn legacy_find_metric(name: &str, bold: bool, italic: bool) -> Option<MetricMatch> {
     let name = resolve_metric_alias(name);
     // 정확한 매칭 (name + bold + italic)
     if let Some(m) = FONT_METRICS
@@ -46229,5 +46304,125 @@ mod tests {
         let m = find_metric("함초롬바탕", false, false);
         assert!(m.is_some(), "함초롬바탕 기존 매핑 회귀");
         assert_eq!(m.unwrap().metric.name, "HCR Batang");
+    }
+
+    #[test]
+    fn index_matches_legacy_linear_scan_exhaustively() {
+        // [#4149] O(1) 색인 도입 계약: legacy 선형 스캔(3단 폴백 사다리)과
+        // 결과가 100% 동일해야 한다. FONT_METRICS 전체 name + 알려진 alias
+        // 전체 + 테이블에 없는 임의 이름 × (bold, italic) 4조합 전수 비교.
+        let mut names: Vec<&str> = FONT_METRICS.iter().map(|m| m.name).collect();
+        // resolve_metric_alias 좌변 전체 (별칭 추가 시 여기도 갱신).
+        names.extend([
+            "함초롬돋움",
+            "한컴돋움",
+            "돋움",
+            "함초롬바탕",
+            "한컴바탕",
+            "바탕",
+            "맑은 고딕",
+            "나눔고딕",
+            "나눔명조",
+            "바탕체",
+            "굴림",
+            "궁서",
+            "굴림체",
+            "돋움체",
+            "궁서체",
+            "D2Coding",
+            "D2 Coding",
+            "고운바탕",
+            "Gowun Batang",
+            "고운돋움",
+            "Gowun Dodum",
+            "Pretendard",
+            "프리텐다드",
+            "HY중고딕",
+            "HY견고딕",
+            "HY헤드라인M",
+            "HY견명조",
+            "HY신명조",
+            "HY그래픽",
+            "HY궁서",
+            "한양신명조",
+            "한양중고딕",
+            "한양견명조",
+            "한양견고딕",
+            "휴먼명조",
+            "신명조",
+            "HY수평선B",
+            "HY수평선M",
+            "HY울릉도B",
+            "HY울릉도M",
+            "HY태백B",
+            "HY동녘B",
+            "HY동녘M",
+            "HY각헤드라인M",
+            "본한글",
+            "본한글vf",
+            "본한글 Medium",
+            "본한글M",
+            "본고딕",
+            "본고딕vf",
+            "Source Han Sans",
+            "Source Han Sans K",
+            "Source Han Sans KR",
+            "SourceHanSans",
+            "SourceHanSansKR",
+            "SourceHanSansK",
+            "Noto Sans CJK KR",
+            "본명조",
+            "본명조vf",
+            "본명조M",
+            "Source Han Serif",
+            "Source Han Serif K",
+            "Source Han Serif KR",
+            "SourceHanSerif",
+            "SourceHanSerifKR",
+            "SourceHanSerifK",
+            "Noto Serif CJK KR",
+        ]);
+        // 테이블에 없는 임의 사용자 폰트명 — 기존과 동일하게 None 이어야 한다.
+        names.extend([
+            "NoSuchFont-Regular",
+            "가상의사용자폰트",
+            "Comic Sans MS",
+            "",
+        ]);
+
+        for name in names {
+            for bold in [false, true] {
+                for italic in [false, true] {
+                    let new = find_metric(name, bold, italic);
+                    let old = legacy_find_metric(name, bold, italic);
+                    match (new, old) {
+                        (None, None) => {}
+                        (Some(n), Some(o)) => {
+                            assert!(
+                                std::ptr::eq(n.metric, o.metric),
+                                "metric 불일치: {name:?} bold={bold} italic={italic} \
+                                 (new={}/b{}/i{}, old={}/b{}/i{})",
+                                n.metric.name,
+                                n.metric.bold,
+                                n.metric.italic,
+                                o.metric.name,
+                                o.metric.bold,
+                                o.metric.italic,
+                            );
+                            assert_eq!(
+                                n.bold_fallback, o.bold_fallback,
+                                "bold_fallback 불일치: {name:?} bold={bold} italic={italic}"
+                            );
+                        }
+                        (n, o) => panic!(
+                            "Some/None 불일치: {name:?} bold={bold} italic={italic} \
+                             new={} old={}",
+                            n.is_some(),
+                            o.is_some()
+                        ),
+                    }
+                }
+            }
+        }
     }
 }
