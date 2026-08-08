@@ -4482,6 +4482,83 @@ impl DocumentCore {
         )))
     }
 
+    /// [#4179] 본문 텍스트 매칭 스캔용 후보 페이지 — `find_pages_for_paragraph` 에서
+    /// 호스트 문단 텍스트가 원리적으로 렌더될 수 없는 페이지를 뺀다.
+    ///
+    /// 분할 표 호스트 문단의 본문 텍스트는 표 시작 페이지(cont=false, 표 앞/옆 줄)
+    /// 또는 표가 끝까지 소비된 페이지(end_cut 빈 Vec, 표 뒤 줄)에만 렌더된다.
+    /// 순수-중간 연속 컷(cont=true && end_cut 비어있지 않음)은 표가 페이지 바닥까지
+    /// 이어져 텍스트 줄이 배치될 수 없다 — 실측: dump-pages 와 render tree 전수 대조.
+    /// #4127 의 문단 단위 스킵을 페이지 단위로 일반화한 것으로, 제외 근거가 같아
+    /// 스캔 순서·결과 좌표는 불변이다. 필터가 후보를 전부 비우면(어울림 폴백 등
+    /// 예상 밖 구성) 원본 후보로 폴백한다 — #4128 과 같은 보수 계약.
+    pub(crate) fn find_text_scan_pages_for_paragraph(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Result<Vec<u32>, HwpError> {
+        use crate::renderer::pagination::PageItem;
+
+        let pages = self.find_pages_for_paragraph(section_idx, para_idx)?;
+        let global_offset: u32 = self.pagination[..section_idx]
+            .iter()
+            .map(|pr| pr.pages.len() as u32)
+            .sum();
+        let pr = &self.pagination[section_idx];
+
+        let page_can_render_para_text = |global_page: u32| -> bool {
+            let Some(page) = global_page
+                .checked_sub(global_offset)
+                .and_then(|local| pr.pages.get(local as usize))
+            else {
+                // 다른 구역 페이지(어울림 폴백 등) — 판정 불가면 후보 유지
+                return true;
+            };
+            for col in &page.column_contents {
+                for item in &col.items {
+                    match item {
+                        PageItem::PartialTable {
+                            para_index,
+                            is_continuation,
+                            end_cut,
+                            ..
+                        } if *para_index == para_idx => {
+                            if !*is_continuation || end_cut.is_empty() {
+                                return true;
+                            }
+                        }
+                        PageItem::FullParagraph { para_index }
+                        | PageItem::PartialParagraph { para_index, .. }
+                        | PageItem::Table { para_index, .. }
+                        | PageItem::Shape { para_index, .. }
+                            if *para_index == para_idx =>
+                        {
+                            return true;
+                        }
+                        _ => {}
+                    }
+                }
+                for wp in &col.wrap_around_paras {
+                    if wp.para_index == para_idx || wp.table_para_index == para_idx {
+                        return true;
+                    }
+                }
+            }
+            false
+        };
+
+        let filtered: Vec<u32> = pages
+            .iter()
+            .copied()
+            .filter(|&gp| page_can_render_para_text(gp))
+            .collect();
+        if filtered.is_empty() {
+            Ok(pages)
+        } else {
+            Ok(filtered)
+        }
+    }
+
     /// [#4128] 셀 내부 위치가 실제로 렌더되는 페이지만 반환한다.
     ///
     /// `find_pages_for_paragraph` 는 `para_index` 만 매칭해 표가 걸친 모든 페이지를

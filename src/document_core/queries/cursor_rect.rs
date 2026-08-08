@@ -264,8 +264,9 @@ impl DocumentCore {
         };
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
-        // 문단이 포함된 페이지 찾기
-        let pages = self.find_pages_for_paragraph(section_idx, para_idx)?;
+        // 문단이 포함된 페이지 찾기 — [#4179] 텍스트가 렌더될 수 없는
+        // 순수-중간 연속 컷 페이지는 후보에서 제외 (스캔 순서·결과 좌표 불변)
+        let pages = self.find_text_scan_pages_for_paragraph(section_idx, para_idx)?;
 
         let footnote_marker_positions: Vec<(usize, usize)> = self
             .get_render_paragraph_ref(section_idx, para_idx)
