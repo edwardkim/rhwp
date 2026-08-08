@@ -23,6 +23,7 @@ last_verified: 2026-08-08
 - 줄 band/order drift 후보
 - **그림·float 주변의 본문이 좁은 세로 열로 재흐름한 단별 text-flow collapse 후보**
 - **Square/Tight/Through 그림의 물리 box를 본문 TextLine이 3행 이상 가로지르거나 edge에 맞닿는 후보**
+- **우측 Body 표의 좌측 strip은 PDF에 본문 잉크가 있지만 rhwp에서 거의 비는 non-inline table wrap 후보**
 - **구조 heuristic에 걸리지 않는 glyph·PUA·제품명 표시 차이**의 review 후보
 
 이 도구의 절차상 지위는 [시각 검증 거버넌스의 라우팅 표](visual_verification_governance.md)를
@@ -419,6 +420,7 @@ summary: /path/to/rhwp/output/task1274/summary.json
 | `question` | PDF/rhwp 문항 marker y drift 후보 |
 | `glyph` | 옛자모·PUA TextRun의 국소 raster 불일치 후보 |
 | `wrap` | fidelity와 같은 Square/Tight/Through 그림↔본문 physical-overlap 또는 edge-clearance-loss 후보 |
+| `tablewrap` | 우측 Body table 좌측 strip의 PDF 본문 잉크가 rhwp에서 소실된 non-inline wrap 후보 |
 
 권장 판정 기준:
 
@@ -441,6 +443,11 @@ summary: /path/to/rhwp/output/task1274/summary.json
   render-tree source 정보의 한계가 있으므로 자동 불합격이나 PDF 정답 판정으로 승격하지 않는다.
 - `wrap` 판정에 필요한 render tree가 빠지거나 손상된 run은 clean 결과가 아니라 **infrastructure
   failure**다. tree export를 복구한 뒤 다시 실행한다.
+- `tablewrap`은 `Table`이 Body의 오른쪽에 있고, 해당 table의 세로 범위에서 Body 좌측 strip의 PDF
+  content ink density가 `0.025` 이상인데 rhwp ink가 그 15% 이하일 때만 후보가 된다. 따라서 단순
+  우측 정렬 standalone table(양쪽 strip이 비어 있음)과 소폭 font raster 차이는 제외한다. HWPX
+  non-inline Square table이 다음 문단 prefix를 소실하는 형상을 빠르게 찾는 용도이며, PDF review로
+  wrap 의도를 확인하기 전에는 자동 결함 확정이 아니다.
 - `flowcollapse`은 본문이 그림 옆의 비정상적인 세로 열로 분해되는 회귀를 우선 올리는 강한 후보다.
   자동 불합격은 아니지만 `review`와 PDF를 즉시 대조한다.
 - `flowcollapse` 계산은 render tree의 **Body bbox**를 우선 frame으로 쓰고, Body table 영역을 양쪽
@@ -453,7 +460,7 @@ summary: /path/to/rhwp/output/task1274/summary.json
 요약만 빠르게 보기:
 
 ```bash
-jq -r '.[] | [.key, .svg_pages, .pdf_pages, (.visual_metrics.flagged_page_count // 0), (.visual_metrics.frame_overflow_pages|join(",")), (.visual_metrics.line_band_drift_pages|join(",")), (.visual_metrics.column_line_band_drift_pages|join(",")), (.visual_metrics.column_text_flow_collapse_pages|join(",")), (.visual_metrics.square_wrap_text_overlap_pages|join(",")), (.visual_metrics.line_order_overlap_pages|join(",")), (.visual_metrics.question_marker_drift_pages|join(",")), (.visual_metrics.legacy_glyph_visual_pages|join(","))] | @tsv' output/task1274/summary.json
+jq -r '.[] | [.key, .svg_pages, .pdf_pages, (.visual_metrics.flagged_page_count // 0), (.visual_metrics.frame_overflow_pages|join(",")), (.visual_metrics.line_band_drift_pages|join(",")), (.visual_metrics.column_line_band_drift_pages|join(",")), (.visual_metrics.column_text_flow_collapse_pages|join(",")), (.visual_metrics.square_wrap_text_overlap_pages|join(",")), (.visual_metrics.right_table_left_strip_text_deficit_pages|join(",")), (.visual_metrics.line_order_overlap_pages|join(",")), (.visual_metrics.question_marker_drift_pages|join(",")), (.visual_metrics.legacy_glyph_visual_pages|join(","))] | @tsv' output/task1274/summary.json
 ```
 
 ## PR에 기록할 때
@@ -467,9 +474,9 @@ PR 리뷰/보고서에는 다음을 분리해 적는다.
 예:
 
 ```markdown
-| target | SVG/PDF pages | flagged | frame | line | column | wrap | order | question | glyph |
-|---|---:|---:|---|---|---|---|---|---|---|
-| `2024-09-between20` | 24/24 | 1 | `[]` | `[11]` | `[11]` | `[]` | `[11]` | `[]` | `[]` |
+| target | SVG/PDF pages | flagged | frame | line | column | wrap | tablewrap | order | question | glyph |
+|---|---:|---:|---|---|---|---|---|---|---|---|
+| `2024-09-between20` | 24/24 | 1 | `[]` | `[11]` | `[11]` | `[]` | `[]` | `[11]` | `[]` | `[]` |
 ```
 
 ## 한계
@@ -482,6 +489,9 @@ PR 리뷰/보고서에는 다음을 분리해 적는다.
   3행 이상(`physical_overlap`), 또는 image 왼쪽/오른쪽 edge에서 `≤1px`로 맞닿거나 얕게 침범하는 3행
   이상(`edge_clearance_loss`)을 후보화한다. 1–2행·Body 밖 text·PDF와 위치만 다른 경우는 놓칠 수 있어,
   fidelity text/table 원장 및 PDF review의 대체물이 아니다.
+- `tablewrap`은 PDF/rhwp raster와 render-tree Table bbox를 함께 요구하므로 PDF가 없는 자체 회귀
+  검증에는 적용할 수 없다. 우측 표의 left strip에 의도적인 빈 여백이 있더라도 PDF도 비어 있으면
+  후보가 되지 않지만, PDF의 그림·색면처럼 본문 이외 잉크가 strip을 채운 경우는 review에서 제외한다.
 - 반대로 glyph·글자폭·PUA/제품명 convention 차이는 구조 후보가 0건이어도 실제 fidelity 결함일 수
   있다. 옛자모·PUA는 `legacy_glyph_visual_mismatch`로 우선 후보화하지만, 낮은 잉크 일치율과
   review의 반복 차이는 raw/IR/paint 경로로 분리한다.

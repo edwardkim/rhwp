@@ -242,6 +242,34 @@ class FidelityLayoutBridgeTests(unittest.TestCase):
             ],
         }
 
+    @staticmethod
+    def right_table_wrap_tree() -> dict[str, object]:
+        return {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 400, "h": 500},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 20, "y": 20, "w": 360, "h": 420},
+                    "children": [
+                        {
+                            "type": "Table",
+                            "pi": 44,
+                            "ci": 1,
+                            "bbox": {"x": 220, "y": 100, "w": 120, "h": 180},
+                            "children": [],
+                        }
+                    ],
+                }
+            ],
+        }
+
+    @staticmethod
+    def draw_left_strip_text(image: Image.Image) -> None:
+        draw = ImageDraw.Draw(image)
+        for y in (120, 145, 170, 195, 220, 245):
+            draw.line((32, y, 198, y), fill=(0, 0, 0), width=3)
+
     def test_uses_fidelity_square_wrap_detector(self) -> None:
         for text_wrap in ("Square", "Tight", "Through"):
             with self.subTest(text_wrap=text_wrap):
@@ -273,6 +301,33 @@ class FidelityLayoutBridgeTests(unittest.TestCase):
         self.assertEqual(len(candidates), 1)
         self.assertEqual(candidates[0]["pi"], 1355)
         self.assertEqual(candidates[0]["image_top_drift_px"], 50.0)
+
+    def test_right_table_left_strip_deficit_detects_dropped_wrap_prefix(self) -> None:
+        tree = self.right_table_wrap_tree()
+        rhwp = Image.new("RGB", (400, 500), "white")
+        pdf = Image.new("RGB", (400, 500), "white")
+        self.draw_left_strip_text(pdf)
+
+        candidates = SWEEP.render_tree_right_table_left_strip_text_deficit_candidates(
+            tree, rhwp, pdf
+        )
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["pi"], 44)
+        self.assertLess(candidates[0]["rhwp_to_pdf_ink_ratio"], 0.15)
+
+    def test_right_table_left_strip_deficit_ignores_matched_wrap_text(self) -> None:
+        tree = self.right_table_wrap_tree()
+        rhwp = Image.new("RGB", (400, 500), "white")
+        pdf = Image.new("RGB", (400, 500), "white")
+        self.draw_left_strip_text(rhwp)
+        self.draw_left_strip_text(pdf)
+
+        candidates = SWEEP.render_tree_right_table_left_strip_text_deficit_candidates(
+            tree, rhwp, pdf
+        )
+
+        self.assertEqual(candidates, [])
 
     def test_rejects_missing_or_malformed_render_tree(self) -> None:
         for tree in (None, {}, {"type": "Page"}):
@@ -361,6 +416,16 @@ class FidelityLayoutBridgeTests(unittest.TestCase):
 
         self.assertEqual(summary["deferred_square_picture_top_drift_pages"], [127])
         self.assertEqual(flagged[0]["page"], 127)
+
+    def test_summary_includes_right_table_left_strip_text_deficit_flag(self) -> None:
+        summary, flagged = SWEEP.visual_summary_for_pages(
+            [{"page": 5, "flags": ["right_table_left_strip_text_deficit"]}],
+            Path("metrics.json"),
+            Path("question_flow.json"),
+        )
+
+        self.assertEqual(summary["right_table_left_strip_text_deficit_pages"], [5])
+        self.assertEqual(flagged[0]["page"], 5)
 
 
 class LegacyGlyphVisualCandidateTests(unittest.TestCase):

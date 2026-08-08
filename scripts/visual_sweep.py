@@ -79,6 +79,10 @@ ENDNOTE_SEPARATOR_MIN_RUN_PX = 70
 ENDNOTE_SEPARATOR_GAP_DRIFT_LIMIT_PX = 18.0
 LEGACY_GLYPH_MIN_INK_PIXELS = 24
 LEGACY_GLYPH_MAX_INK_MATCH_PERCENT = 80.0
+RIGHT_TABLE_LEFT_STRIP_MIN_PDF_INK_DENSITY = 0.025
+RIGHT_TABLE_LEFT_STRIP_MAX_RHWP_TO_PDF_INK_RATIO = 0.15
+RIGHT_TABLE_LEFT_STRIP_MIN_WIDTH_PX = 48
+RIGHT_TABLE_LEFT_STRIP_MIN_HEIGHT_PX = 48
 QUESTION_TITLE_RE = re.compile(r"^\s*문\s*(\d+)")
 CHOICE_MARKER_ONLY_RE = re.compile(r"^[①-⑳]+$")
 PAGE_NUMBER_FOOTER_RE = re.compile(r"^\s*-\s*\d+\s*-\s*$")
@@ -820,6 +824,9 @@ def visual_summary_for_pages(
         "equation_text_overlap_pages": flagged_numbers("equation_text_overlap"),
         "square_wrap_text_overlap_pages": flagged_numbers("square_wrap_text_overlap"),
         "deferred_square_picture_top_drift_pages": flagged_numbers("deferred_square_picture_top_drift"),
+        "right_table_left_strip_text_deficit_pages": flagged_numbers(
+            "right_table_left_strip_text_deficit"
+        ),
         "question_title_text_overlap_pages": flagged_numbers("question_title_text_overlap"),
         "line_order_overlap_pages": flagged_numbers("line_order_overlap"),
         "render_tree_frame_tail_overflow_pages": flagged_numbers("render_tree_frame_tail_overflow"),
@@ -2390,6 +2397,125 @@ def render_tree_body_table_masks(
     return masks
 
 
+def render_tree_right_table_left_strip_text_deficit_candidates(
+    page_tree: dict[str, object] | None,
+    rhwp_image: Image.Image,
+    pdf_image: Image.Image,
+) -> list[dict[str, object]]:
+    """Find a PDF-text-filled strip that rhwp leaves empty beside a right table.
+
+    A non-inline HWPX Square table does not expose its wrap mode in the render
+    tree.  When its successor paragraph prefix is dropped, however, the tree
+    still gives an authoritative table rectangle: the strip from the Body's
+    left edge to that right-side table is nearly blank in rhwp while the Hancom
+    PDF contains several lines of ink.  This complements the overlap detector:
+    nothing overlaps in this failure, so line/overflow-only rules stay quiet.
+
+    The signal is deliberately raster-backed and candidate-only.  A standalone
+    right-aligned table leaves both peers blank and is ignored; a font baseline
+    difference cannot reduce a text-filled strip to 15% of the PDF ink.
+    """
+    if page_tree is None:
+        return []
+
+    body: dict[str, object] | None = None
+    tables: list[dict[str, object]] = []
+
+    def visit(node: dict[str, object], region: str = "outside") -> None:
+        nonlocal body
+        node_type = node.get("type")
+        if node_type in {"Body", "FootnoteArea", "Footer", "Header"}:
+            region = str(node_type)
+        if node_type == "Body" and body is None:
+            body = node
+        if region == "Body" and node_type == "Table":
+            # Nested table cells are part of their owning top-level table and
+            # must not generate a second, artificial left strip.
+            tables.append(node)
+            return
+        children = node.get("children")
+        if isinstance(children, list):
+            for child in children:
+                if isinstance(child, dict):
+                    visit(child, region)
+
+    visit(page_tree)
+    if body is None:
+        return []
+    body_bbox = render_tree_bbox(body)
+    if body_bbox is None:
+        return []
+    body_x, body_y, body_width, body_height = body_bbox
+    body_right = body_x + body_width
+    body_bottom = body_y + body_height
+
+    rhwp_gray = rhwp_image.convert("L")
+    pdf_gray = pdf_image.convert("L")
+
+    def ink_stats(image: Image.Image, raster_bbox: list[int]) -> tuple[int, float]:
+        left, top, width, height = raster_bbox
+        histogram = image.crop((left, top, left + width, top + height)).histogram()
+        ink = sum(histogram[:232])
+        return ink, ink / max(1, width * height)
+
+    candidates: list[dict[str, object]] = []
+    for table in tables:
+        table_bbox = render_tree_bbox(table)
+        if table_bbox is None:
+            continue
+        table_x, table_y, table_width, table_height = table_bbox
+        if (
+            table_width <= 0.0
+            or table_height <= 0.0
+            or table_x <= body_x
+            or table_y + table_height <= body_y
+            or table_y >= body_bottom
+            or table_x >= body_right
+        ):
+            continue
+        strip_bbox = (
+            body_x,
+            max(body_y, table_y),
+            min(table_x, body_right) - body_x,
+            min(table_y + table_height, body_bottom) - max(body_y, table_y),
+        )
+        rhwp_strip = raster_bbox_for_render_tree_bbox(page_tree, strip_bbox, rhwp_image)
+        pdf_strip = raster_bbox_for_render_tree_bbox(page_tree, strip_bbox, pdf_image)
+        if rhwp_strip is None or pdf_strip is None:
+            continue
+        if (
+            rhwp_strip[2] < RIGHT_TABLE_LEFT_STRIP_MIN_WIDTH_PX
+            or rhwp_strip[3] < RIGHT_TABLE_LEFT_STRIP_MIN_HEIGHT_PX
+            or pdf_strip[2] < RIGHT_TABLE_LEFT_STRIP_MIN_WIDTH_PX
+            or pdf_strip[3] < RIGHT_TABLE_LEFT_STRIP_MIN_HEIGHT_PX
+        ):
+            continue
+        rhwp_ink, rhwp_density = ink_stats(rhwp_gray, rhwp_strip)
+        pdf_ink, pdf_density = ink_stats(pdf_gray, pdf_strip)
+        if (
+            pdf_density < RIGHT_TABLE_LEFT_STRIP_MIN_PDF_INK_DENSITY
+            or rhwp_ink > pdf_ink * RIGHT_TABLE_LEFT_STRIP_MAX_RHWP_TO_PDF_INK_RATIO
+        ):
+            continue
+        candidates.append(
+            {
+                "pi": table.get("pi"),
+                "ci": table.get("ci"),
+                "table_bbox": [round(value, 1) for value in table_bbox],
+                "left_strip_bbox": [round(value, 1) for value in rhwp_strip],
+                "pdf_ink_pixels": pdf_ink,
+                "rhwp_ink_pixels": rhwp_ink,
+                "pdf_ink_density": round(pdf_density, 4),
+                "rhwp_ink_density": round(rhwp_density, 4),
+                "rhwp_to_pdf_ink_ratio": round(rhwp_ink / max(1, pdf_ink), 4),
+            }
+        )
+    candidates.sort(
+        key=lambda item: float(item["rhwp_to_pdf_ink_ratio"])
+    )
+    return candidates[:20]
+
+
 def render_tree_body_raster_frame(
     page_tree: dict[str, object] | None,
     image: Image.Image,
@@ -3445,6 +3571,9 @@ def analyze_page(
     deferred_square_picture_top_drifts = (
         render_tree_deferred_square_picture_top_drift_candidates(page_tree)
     )
+    right_table_left_strip_text_deficits = (
+        render_tree_right_table_left_strip_text_deficit_candidates(page_tree, rhwp, pdf)
+    )
     column_line_drifts = column_line_band_drifts(rhwp, pdf, rhwp_frame, pdf_frame)
     column_line_drift_candidates = column_line_band_drift_candidates(column_line_drifts)
     rhwp_table_masks = render_tree_body_table_masks(page_tree, rhwp)
@@ -3658,6 +3787,8 @@ def analyze_page(
         flags.append("square_wrap_text_overlap")
     if deferred_square_picture_top_drifts:
         flags.append("deferred_square_picture_top_drift")
+    if right_table_left_strip_text_deficits:
+        flags.append("right_table_left_strip_text_deficit")
     if (
         expected_separator
         and separator_gap_delta is not None
@@ -3679,6 +3810,7 @@ def analyze_page(
         equation_overlaps
         or square_wrap_text_overlaps
         or deferred_square_picture_top_drifts
+        or right_table_left_strip_text_deficits
         or question_title_overlaps
         or line_order_overlaps
         or frame_tail_flow_overflow
@@ -3715,6 +3847,7 @@ def analyze_page(
                 "equation_text_overlap": equation_overlaps,
                 "square_wrap_text_overlap": square_wrap_text_overlaps,
                 "deferred_square_picture_top_drift": deferred_square_picture_top_drifts,
+                "right_table_left_strip_text_deficit": right_table_left_strip_text_deficits,
                 "question_title_text_overlap": question_title_overlaps,
                 "line_order_overlap": line_order_overlaps,
                 "render_tree_frame_tail_overflow": frame_tail_overflows,
@@ -3777,6 +3910,7 @@ def analyze_page(
         "equation_text_overlap_candidates": equation_overlaps,
         "square_wrap_text_overlap_candidates": square_wrap_text_overlaps,
         "deferred_square_picture_top_drift_candidates": deferred_square_picture_top_drifts,
+        "right_table_left_strip_text_deficit_candidates": right_table_left_strip_text_deficits,
         "question_title_text_overlap_candidates": question_title_overlaps,
         "line_order_overlap_candidates": line_order_overlaps,
         "render_tree_frame_tail_overflow_candidates": frame_tail_overflows,
@@ -3933,6 +4067,16 @@ def draw_render_tree_overlays(
                 f"c{item.get('ci')} lines={item.get('overlap_line_count')}"
             )
             draw.text((x, max(label_h + 2, y - 18)), label, fill=(220, 0, 0), font=font)
+    for item in render_overlays.get("right_table_left_strip_text_deficit", [])[:4]:
+        anchor = draw_bbox(item.get("left_strip_bbox"), (220, 0, 0), 3)
+        draw_bbox(item.get("table_bbox"), (255, 140, 0), 2)
+        if anchor is not None:
+            x, y = anchor
+            label = (
+                f"table left strip pi {item.get('pi')} c{item.get('ci')} "
+                f"ink={item.get('rhwp_ink_pixels')}/{item.get('pdf_ink_pixels')}"
+            )
+            draw.text((x, max(label_h + 2, y - 18)), label, fill=(220, 0, 0), font=font)
     for item in render_overlays.get("deferred_square_picture_top_drift", [])[:4]:
         anchor = draw_bbox(item.get("image_bbox"), (180, 0, 180), 3)
         draw_bbox(item.get("first_wrap_line_bbox"), (110, 0, 180), 2)
@@ -4075,6 +4219,11 @@ def analyze_pages(
             for page in flagged_pages
             if "deferred_square_picture_top_drift" in page["flags"]
         ],
+        "right_table_left_strip_text_deficit_pages": [
+            page["page"]
+            for page in flagged_pages
+            if "right_table_left_strip_text_deficit" in page["flags"]
+        ],
         "question_title_text_overlap_pages": [
             page["page"] for page in flagged_pages if "question_title_text_overlap" in page["flags"]
         ],
@@ -4103,6 +4252,7 @@ def analyze_pages(
         f"eq={summary['equation_text_overlap_pages']} "
         f"wrap={summary['square_wrap_text_overlap_pages']} "
         f"deferred={summary['deferred_square_picture_top_drift_pages']} "
+        f"tablewrap={summary['right_table_left_strip_text_deficit_pages']} "
         f"title={summary['question_title_text_overlap_pages']} "
         f"order={summary['line_order_overlap_pages']} "
         f"tail={summary['render_tree_frame_tail_overflow_pages']} "
