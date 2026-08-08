@@ -6,9 +6,20 @@
 
 from __future__ import annotations
 
+from typing import Any, List
+
 import pytest
 
-from rhwp.plan import Plan, PlanResult
+import rhwp
+import rhwp.commands
+import rhwp.plan
+from rhwp.plan import Plan, PlanResult, clear_plan_capability_cache
+
+
+@pytest.fixture(autouse=True)
+def _reset_dry_run_cache() -> None:
+    # [트랙 G R61 D-4] _dry_run_support 는 모듈 전역 캐시라 시험 간 오염을 막는다.
+    clear_plan_capability_cache()
 
 
 def test_builder_produces_contract_shaped_plan() -> None:
@@ -146,3 +157,93 @@ def test_run_result_exposes_steps_and_verify() -> None:
     verify = result.verify
     assert verify is not None and verify.identical
     assert result.changed_pages == [0]
+
+
+# ── check() 의 --dry-run 지원 게이트 (트랙 G R61 D-4) ─────────────────────
+
+
+def _fake_capabilities(*, supports_dry_run: bool):  # type: ignore[no-untyped-def]
+    def fake_run_json(args, **kwargs):  # type: ignore[no-untyped-def]
+        flags = ["--json", "--plan-json"]
+        if supports_dry_run:
+            flags.append("--dry-run")
+        return {
+            "schemaVersion": "1.0",
+            "commands": [{"name": "run", "flags": flags}],
+        }
+
+    return fake_run_json
+
+
+def test_check_proceeds_when_binary_declares_dry_run_support(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: List[List[Any]] = []
+
+    def fake_capabilities_run_json(args, **kwargs):  # type: ignore[no-untyped-def]
+        calls.append(list(args))
+        return _fake_capabilities(supports_dry_run=True)(args, **kwargs)
+
+    def fake_plan_run_json(args, **kwargs):  # type: ignore[no-untyped-def]
+        calls.append(list(args))
+        return {"schemaVersion": "1.0", "dryRun": True, "invalid": [], "preview": []}
+
+    monkeypatch.setattr(rhwp.commands, "run_json", fake_capabilities_run_json)
+    monkeypatch.setattr(rhwp.plan, "run_json", fake_plan_run_json)
+
+    result = Plan("a.hwp", "b.hwp").fill_fields({"이름": "값"}).check()
+    assert result.is_dry_run
+    assert len(calls) == 2  # capabilities 1회 + run --plan-json 1회
+
+
+def test_check_raises_and_does_not_execute_when_dry_run_unsupported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # [D-4] 옛 바이너리(#3759 이전)는 dryRun 필드를 무시하고 진짜로 실행할 수
+    # 있다 — 확인 없이 넘기면 "검사만 한 줄" 알았던 호출이 문서를 편집한다.
+    plan_run_json_calls: List[List[Any]] = []
+
+    monkeypatch.setattr(
+        rhwp.commands, "run_json", _fake_capabilities(supports_dry_run=False)
+    )
+
+    def fake_plan_run_json(args, **kwargs):  # type: ignore[no-untyped-def]
+        plan_run_json_calls.append(list(args))
+        return {"schemaVersion": "1.0"}
+
+    monkeypatch.setattr(rhwp.plan, "run_json", fake_plan_run_json)
+
+    with pytest.raises(rhwp.RhwpError, match="dry-run"):
+        Plan("a.hwp", "b.hwp").fill_fields({"이름": "값"}).check()
+
+    assert plan_run_json_calls == []  # 프로세스를 아예 안 띄웠다
+
+
+def test_check_caches_capability_lookup_across_calls(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    capability_calls: List[List[Any]] = []
+
+    def fake_capabilities_run_json(args, **kwargs):  # type: ignore[no-untyped-def]
+        capability_calls.append(list(args))
+        return _fake_capabilities(supports_dry_run=True)(args, **kwargs)
+
+    monkeypatch.setattr(rhwp.commands, "run_json", fake_capabilities_run_json)
+    monkeypatch.setattr(
+        rhwp.plan,
+        "run_json",
+        lambda args, **kwargs: {
+            "schemaVersion": "1.0",
+            "dryRun": True,
+            "invalid": [],
+            "preview": [],
+        },
+    )
+
+    Plan("a.hwp", "b.hwp").fill_fields({"이름": "값"}).check()
+    Plan("a.hwp", "b.hwp").fill_fields({"이름": "값2"}).check()
+    assert len(capability_calls) == 1  # 두 번째 호출은 캐시를 쓴다
+
+    clear_plan_capability_cache()
+    Plan("a.hwp", "b.hwp").fill_fields({"이름": "값3"}).check()
+    assert len(capability_calls) == 2  # 캐시를 비우면 다시 묻는다
