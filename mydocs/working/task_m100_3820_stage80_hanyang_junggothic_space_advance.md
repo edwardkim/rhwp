@@ -77,7 +77,11 @@ wrap 및 table fragment geometry만 direct oracle로 수용했다.
 | `overflow_cell_baseline` | 678 samples, 17 non-zero documents, 691 lines; passed (기준선 증가 없음) |
 | `cargo fmt --check` | passed |
 | `cargo test --profile release-test --tests` | exit 0; 모든 unit/integration/visual baseline 통과 |
+| Native Skia `skia --lib` | 58 passed; 0 failed |
+| Native Skia `issue_2225_missing_picture_placeholder` | 2 passed; 0 failed |
+| Native Skia `render_p37_direct_pdf_export` | 4 passed; 0 failed |
 | `cargo clippy --profile release-test --all-targets -- -D warnings` | passed |
+| `wasm-pack build --target web --out-dir pkg` | passed; Web package 생성 |
 
 따라서 이번 Stage 80은 p35의 `…반죽된` / `용기를 … 인근에` 직접 PDF 줄바꿈 계약과
 p35/p36 표 조각 경계를 회복하면서 기존 전체 회귀 기준도 보존한다. PDF paint font와 SVG의
