@@ -553,8 +553,11 @@ impl Table {
         };
         self.cell_grid = vec![None; grid_len];
         for (idx, cell) in self.cells.iter().enumerate() {
-            for r in cell.row..(cell.row + cell.row_span) {
-                for c in cell.col..(cell.col + cell.col_span) {
+            // [#4264] row/col은 파일에서 그대로 온 u16이고 span은 상한 검증이 없어
+            // (row_span/col_span은 .max(1)로 최소값만 보장) row+row_span이 u16 상한을
+            // 넘을 수 있다. addressed_grid_len()과 같은 saturating 패턴으로 맞춘다.
+            for r in cell.row..cell.row.saturating_add(cell.row_span) {
+                for c in cell.col..cell.col.saturating_add(cell.col_span) {
                     let gi = (r as usize) * cc + (c as usize);
                     if gi < self.cell_grid.len() {
                         self.cell_grid[gi] = Some(idx);
@@ -1012,12 +1015,14 @@ impl Table {
         // 삽입 지점을 걸치는 병합 셀 추적
         let mut covered_cols = vec![false; self.col_count as usize];
 
+        // [#4264] row+row_span/col+col_span 은 파일에서 그대로 온 u16 이라
+        // saturating_add 없이 더하면 오버플로 패닉한다(rebuild_grid()와 동일 원인).
         for cell in &mut self.cells {
             // 병합 셀이 삽입 지점을 걸치는 경우: row_span 확장
-            if cell.row < target_row && cell.row + cell.row_span > target_row {
+            if cell.row < target_row && cell.row.saturating_add(cell.row_span) > target_row {
                 cell.row_span += 1;
                 // 이 셀이 커버하는 열 표시
-                for c in cell.col..(cell.col + cell.col_span).min(self.col_count) {
+                for c in cell.col..cell.col.saturating_add(cell.col_span).min(self.col_count) {
                     covered_cols[c as usize] = true;
                 }
             }
@@ -1065,7 +1070,9 @@ impl Table {
         }
 
         // row_count 갱신 및 row_sizes 재계산 (행별 셀 개수)
-        self.row_count += 1;
+        // [#4264] row_count도 파일에서 그대로 온 u16이라 이미 65535인 손상된
+        // 문서에서 삽입을 시도하면 오버플로 패닉했다.
+        self.row_count = self.row_count.saturating_add(1);
         self.rebuild_row_sizes();
 
         // 행 우선 순서 정렬
@@ -1105,13 +1112,15 @@ impl Table {
         // 병합 셀 확장 + 기존 셀 시프트
         let mut covered_rows = vec![false; self.row_count as usize];
 
+        // [#4264] row+row_span/col+col_span 은 파일에서 그대로 온 u16 이라
+        // saturating_add 없이 더하면 오버플로 패닉한다(rebuild_grid()와 동일 원인).
         for cell in &mut self.cells {
             // 병합 셀이 삽입 지점을 걸치는 경우: col_span 확장
-            if cell.col < target_col && cell.col + cell.col_span > target_col {
+            if cell.col < target_col && cell.col.saturating_add(cell.col_span) > target_col {
                 cell.col_span += 1;
                 cell.width += new_col_width;
                 // 이 셀이 커버하는 행 표시
-                for r in cell.row..(cell.row + cell.row_span).min(self.row_count) {
+                for r in cell.row..cell.row.saturating_add(cell.row_span).min(self.row_count) {
                     covered_rows[r as usize] = true;
                 }
             }
@@ -1158,7 +1167,9 @@ impl Table {
         }
 
         // col_count 갱신 및 row_sizes 재계산 (행별 셀 개수)
-        self.col_count += 1;
+        // [#4264] col_count도 파일에서 그대로 온 u16이라 이미 65535인 손상된
+        // 문서에서 삽입을 시도하면 오버플로 패닉했다.
+        self.col_count = self.col_count.saturating_add(1);
         self.rebuild_row_sizes();
 
         // 행 우선 순서 정렬
@@ -1201,8 +1212,10 @@ impl Table {
         let original_height = self.common.height;
 
         // 삭제 행을 걸치는 병합 셀: row_span 축소
+        // [#4264] row/row_span은 파일에서 그대로 온 u16이라 saturating_add 없이
+        // 더하면 오버플로 패닉한다(rebuild_grid()와 동일 원인).
         for cell in &mut self.cells {
-            if cell.row < row_idx && cell.row + cell.row_span > row_idx {
+            if cell.row < row_idx && cell.row.saturating_add(cell.row_span) > row_idx {
                 cell.row_span -= 1;
             }
         }
@@ -1272,8 +1285,10 @@ impl Table {
         let deleted_width = col_widths[col_idx as usize];
 
         // 삭제 열을 걸치는 병합 셀: col_span 축소, width 축소
+        // [#4264] col/col_span은 파일에서 그대로 온 u16이라 saturating_add 없이
+        // 더하면 오버플로 패닉한다(rebuild_grid()와 동일 원인).
         for cell in &mut self.cells {
-            if cell.col < col_idx && cell.col + cell.col_span > col_idx {
+            if cell.col < col_idx && cell.col.saturating_add(cell.col_span) > col_idx {
                 cell.col_span -= 1;
                 if cell.width >= deleted_width {
                     cell.width -= deleted_width;
@@ -1697,13 +1712,17 @@ impl Table {
             }
             let cell = &mut self.cells[i];
 
+            // [#4264] col/row 는 파일에서 그대로 온 u16 이라 saturating_add 없이
+            // 더하면 오버플로 패닉한다(rebuild_grid()와 동일 원인).
             // --- 열 방향 조정 ---
             if extra_cols > 0 {
                 if cell.col > target_col {
                     cell.col += extra_cols;
                 } else if cell.col == target_col {
                     cell.col_span += extra_cols;
-                } else if cell.col < target_col && cell.col + cell.col_span > target_col {
+                } else if cell.col < target_col
+                    && cell.col.saturating_add(cell.col_span) > target_col
+                {
                     cell.col_span += extra_cols;
                 }
             }
@@ -1714,7 +1733,9 @@ impl Table {
                     cell.row += extra_rows;
                 } else if cell.row == target_row {
                     cell.row_span += extra_rows;
-                } else if cell.row < target_row && cell.row + cell.row_span > target_row {
+                } else if cell.row < target_row
+                    && cell.row.saturating_add(cell.row_span) > target_row
+                {
                     cell.row_span += extra_rows;
                 }
             }
@@ -1752,8 +1773,9 @@ impl Table {
         }
 
         // 테이블 메타 갱신
-        self.col_count += extra_cols;
-        self.row_count += extra_rows;
+        // [#4264] col_count/row_count 도 파일에서 그대로 온 u16 이다.
+        self.col_count = self.col_count.saturating_add(extra_cols);
+        self.row_count = self.row_count.saturating_add(extra_rows);
 
         self.cells.sort_by_key(|c| (c.row, c.col));
         self.rebuild_row_sizes();

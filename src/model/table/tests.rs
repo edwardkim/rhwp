@@ -161,6 +161,23 @@ fn test_insert_row_out_of_bounds() {
     assert!(table.insert_row(5, true).is_err());
 }
 
+#[test]
+fn test_insert_row_near_u16_max_span_does_not_panic() {
+    // [#4264] row/row_span은 파일에서 그대로 온 u16이고 row_count도 별도의
+    // 손상 가능한 u16 필드라, row=60000·row_span=6000(합이 u16 상한 초과)인
+    // 셀이 row_count=65535인 손상된 문서에 실릴 수 있다. saturating_add 없이
+    // 더하면 오버플로 패닉했다.
+    let mut table = make_table(2, 2);
+    table.row_count = 65535;
+    if let Some(cell) = table.cells.iter_mut().find(|c| c.col == 0 && c.row == 0) {
+        cell.row = 60000;
+        cell.row_span = 6000;
+    }
+
+    // 패닉 없이 처리되기만 하면 된다 (성공/실패 여부는 이 시험의 관심사가 아님).
+    let _ = table.insert_row(60001, true);
+}
+
 // === insert_column 테스트 ===
 
 #[test]
@@ -235,6 +252,22 @@ fn test_insert_column_with_merged_cell() {
 fn test_insert_column_out_of_bounds() {
     let mut table = make_table(2, 2);
     assert!(table.insert_column(5, true).is_err());
+}
+
+#[test]
+fn test_insert_column_near_u16_max_span_does_not_panic() {
+    // [#4264] insert_row 쪽과 대칭인 결함. col/col_span은 파일에서 그대로
+    // 온 u16이고 col_count도 별도로 손상 가능한 u16 필드라, col=60000·
+    // col_span=6000(합이 u16 상한 초과)인 셀이 col_count=65535인 손상된
+    // 문서에 실릴 수 있다. saturating_add 없이 더하면 오버플로 패닉했다.
+    let mut table = make_table(2, 2);
+    table.col_count = 65535;
+    if let Some(cell) = table.cells.iter_mut().find(|c| c.col == 0 && c.row == 0) {
+        cell.col = 60000;
+        cell.col_span = 6000;
+    }
+
+    let _ = table.insert_column(60001, true);
 }
 
 // === set_column_widths 테스트 ===
@@ -593,6 +626,22 @@ fn test_delete_row_out_of_bounds() {
     assert!(table.delete_row(5).is_err());
 }
 
+#[test]
+fn test_delete_row_near_u16_max_span_does_not_panic() {
+    // [#4264] delete_row 쪽 결함. row/row_span은 파일에서 그대로 온 u16이고
+    // row_count도 별도로 손상 가능한 u16 필드라, row=60000·row_span=6000
+    // (합이 u16 상한 초과)인 셀이 row_count=65535인 손상된 문서에 실릴 수
+    // 있다. saturating_add 없이 더하면 오버플로 패닉했다.
+    let mut table = make_table(2, 2);
+    table.row_count = 65535;
+    if let Some(cell) = table.cells.iter_mut().find(|c| c.col == 0 && c.row == 0) {
+        cell.row = 60000;
+        cell.row_span = 6000;
+    }
+
+    let _ = table.delete_row(60001);
+}
+
 // === delete_column 테스트 ===
 
 #[test]
@@ -691,6 +740,22 @@ fn test_delete_column_single_column_error() {
 fn test_delete_column_out_of_bounds() {
     let mut table = make_table(2, 2);
     assert!(table.delete_column(5).is_err());
+}
+
+#[test]
+fn test_delete_column_near_u16_max_span_does_not_panic() {
+    // [#4264] delete_row 쪽과 대칭인 결함. col/col_span은 파일에서 그대로
+    // 온 u16이고 col_count도 별도로 손상 가능한 u16 필드라, col=60000·
+    // col_span=6000(합이 u16 상한 초과)인 셀이 col_count=65535인 손상된
+    // 문서에 실릴 수 있다. saturating_add 없이 더하면 오버플로 패닉했다.
+    let mut table = make_table(2, 2);
+    table.col_count = 65535;
+    if let Some(cell) = table.cells.iter_mut().find(|c| c.col == 0 && c.row == 0) {
+        cell.col = 60000;
+        cell.col_span = 6000;
+    }
+
+    let _ = table.delete_column(60001);
 }
 
 // === cell_grid / cell_at 테스트 ===
