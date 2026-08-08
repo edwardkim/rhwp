@@ -233,10 +233,18 @@ def test_export_hwpx_verify_flags(captured: List[List[Any]]) -> None:
     assert "--verify-pages" in args
 
 
+def test_export_hwpx_out_is_positional_not_a_flag(captured: List[List[Any]]) -> None:
+    # [트랙 G R61 D-1] CLI 는 `export-hwpx <입력> [출력] ...` — 위치 인자다.
+    # `-o` 플래그로 조립하면 CLI 가 알 수 없는 옵션으로 거부한다(exit 2).
+    rhwp.export_hwpx("a.hwp", out="b.hwpx")
+    assert _as_strings(captured[0]) == ["export-hwpx", "a.hwp", "b.hwpx", "--json"]
+
+
 def test_export_hwpx_without_verify(captured: List[List[Any]]) -> None:
     rhwp.export_hwpx("a.hwp")
     args = _as_strings(captured[0])
     assert "--verify" not in args
+    assert "-o" not in args
 
 
 def test_convert_verify_flag(captured: List[List[Any]]) -> None:
@@ -244,6 +252,21 @@ def test_convert_verify_flag(captured: List[List[Any]]) -> None:
     args = _as_strings(captured[0])
     assert args[0] == "convert"
     assert "--verify" in args
+
+
+def test_convert_out_is_positional_not_a_flag(captured: List[List[Any]]) -> None:
+    # [트랙 G R61 D-1] 같은 결함이 convert 에도 있었다 — `convert <입력> <출력> ...`.
+    rhwp.convert("a.hwpx", out="b.hwp")
+    assert _as_strings(captured[0]) == ["convert", "a.hwpx", "b.hwp", "--json"]
+
+
+def test_convert_without_out_raises_usage_error(captured: List[List[Any]]) -> None:
+    # [트랙 G R61 D-1] convert 는 산출 경로가 필수다(기본 경로 없음) — Node
+    # 바인딩(assertDryRunSupported 와 같은 계열의 선검증)과 동일하게, 프로세스를
+    # 띄우기도 전에 UsageError 로 무엇이 빠졌는지 이름으로 알려야 한다.
+    with pytest.raises(rhwp.UsageError):
+        rhwp.convert("a.hwpx")
+    assert captured == []  # 프로세스를 아예 안 띄웠다
 
 
 def test_ir_diff_takes_two_paths(captured: List[List[Any]]) -> None:

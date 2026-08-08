@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Union
 
 from ._process import DEFAULT_TIMEOUT, run_json, run_ndjson
+from .errors import EXIT_USAGE, UsageError
 from .models import Envelope
 
 __all__ = [
@@ -392,11 +393,15 @@ def export_hwpx(
 ) -> Envelope:
     """HWP → HWPX 변환.
 
+    ``out`` 은 CLI 의 **위치 인자**다(``export-hwpx <입력> [출력] ...`` — 플래그가
+    아니다). 생략하면 CLI 가 자체 기본 경로를 쓴다.
+
     ``verify=True`` 면 봉투에 ``verify.identical`` 이 담긴다. 판정 실패(exit 3)는
     기본적으로 예외가 아니다 — 봉투를 읽어 판단하라.
     """
     args: List[Any] = ["export-hwpx", path]
-    _flag(args, "-o", out)
+    if out is not None:
+        args.append(out)
     _switch(args, "--verify", verify)
     _switch(args, "--verify-pages", verify_pages)
     args.append("--json")
@@ -411,9 +416,23 @@ def convert(
     raise_on_verdict: bool = False,
     timeout: Optional[float] = DEFAULT_TIMEOUT,
 ) -> Envelope:
-    """HWPX → HWP 변환."""
-    args: List[Any] = ["convert", path]
-    _flag(args, "-o", out)
+    """HWPX → HWP 변환.
+
+    ``out`` 은 CLI 의 **위치 인자**이고(``convert <입력> <출력> ...``), 여기서는
+    **필수**다 — 기본 산출 경로가 없어서, 빠뜨리면 CLI 가 사용법 오류로 끝난다.
+    프로세스를 띄우기 전에 여기서 같은 판정을 내려 무엇이 빠졌는지 이름으로
+    알린다(Node 바인딩의 ``convert`` 와 같은 계약).
+
+    Raises:
+        UsageError: ``out`` 을 주지 않았을 때.
+    """
+    if out is None:
+        raise UsageError(
+            "convert 는 산출 경로가 필요합니다 — out 인자를 지정하세요",
+            argv=["convert", str(path), "--json"],
+            exit_code=EXIT_USAGE,
+        )
+    args: List[Any] = ["convert", path, out]
     _switch(args, "--verify", verify)
     args.append("--json")
     return Envelope(run_json(args, timeout=timeout, raise_on_verdict=raise_on_verdict))
