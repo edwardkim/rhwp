@@ -26,7 +26,8 @@
 use serde_json::{json, Value};
 
 /// capabilities 스키마 버전. 봉투 schemaVersion 과 독립적으로 진화한다.
-pub const CAPABILITIES_SCHEMA_VERSION: &str = "1.1";
+/// 1.2: McpTool 에 annotations(MCP 표준 ToolAnnotations) 필드 추가 (#4220 T3, minor).
+pub const CAPABILITIES_SCHEMA_VERSION: &str = "1.2";
 
 /// JSON Schema draft — 소비자(코드 생성기)가 파서를 고를 수 있게 명시한다.
 const SCHEMA_DIALECT: &str = "https://json-schema.org/draft/2020-12/schema";
@@ -333,9 +334,42 @@ fn mcp_tool_def() -> Value {
                 prim("string", "봉투 필드 이름"),
                 "이 도구가 돌려주는 JSON 봉투의 최상위 필드 목록.",
             ),
+            "annotations": r("McpToolAnnotations"),
         }),
         &["name", "description", "inputSchema", "cli"],
         "MCP 도구 하나의 정의. 호스트가 tools/list 에 그대로 등록할 수 있는 모양이다.",
+    )
+}
+
+/// [#4220 T3] MCP 표준 ToolAnnotations (2025-03-26 개정판 신설) — 호스트가 실행 전에
+/// 도구 성격을 판정하는 힌트. rhwp 는 스펙 기본값에 기대지 않고 4필드를 전부 명시한다.
+fn mcp_tool_annotations_def() -> Value {
+    object(
+        json!({
+            "readOnlyHint": prim(
+                "boolean",
+                "true 면 환경을 바꾸지 않는다 — 파일을 쓰지 않는 조회·stdout 전용 도구. 유도 근거: outputFields 에 산출 경로 필드(output/outputDir)가 없음.",
+            ),
+            "destructiveHint": prim(
+                "boolean",
+                "true 면 파괴적 갱신이 가능하다 — 원본을 덮어쓰는 --in-place 축이 있는 도구만. 산출 분리(-o) 도구는 추가형이라 false. readOnlyHint=false 일 때만 의미가 있다.",
+            ),
+            "idempotentHint": prim(
+                "boolean",
+                "true 면 같은 인자 재실행이 추가 효과를 내지 않는다 — 무상태 도구는 매번 원본에서 다시 계산하는 결정론 변환이라 전부 true.",
+            ),
+            "openWorldHint": prim(
+                "boolean",
+                "true 면 외부 개방 세계(네트워크 등)와 상호작용한다. rhwp 도구는 로컬 파일만 다루므로 전부 false.",
+            ),
+        }),
+        &[
+            "readOnlyHint",
+            "destructiveHint",
+            "idempotentHint",
+            "openWorldHint",
+        ],
+        "MCP 표준 tool annotations — tools/list 에 그대로 실리는 도구 성격 힌트. MCP 규약상 신뢰할 수 없는 서버의 힌트는 참고용이다(클라이언트 확인 대체 불가).",
     )
 }
 
@@ -455,7 +489,7 @@ pub fn capabilities_schema() -> Value {
 
     json!({
         "$schema": SCHEMA_DIALECT,
-        "$id": "https://github.com/edwardkim/rhwp/schema/capabilities/1.1",
+        "$id": "https://github.com/edwardkim/rhwp/schema/capabilities/1.2",
         "title": "rhwp capabilities",
         "capabilitiesSchemaVersion": CAPABILITIES_SCHEMA_VERSION,
         "description":
@@ -476,6 +510,7 @@ pub fn mcp_manifest_schema() -> Value {
         ("McpServerInfo", mcp_server_info_def()),
         ("McpInvocation", mcp_invocation_def()),
         ("McpTool", mcp_tool_def()),
+        ("McpToolAnnotations", mcp_tool_annotations_def()),
         ("McpInputSchema", mcp_input_schema_def()),
         ("McpCliBinding", mcp_cli_binding_def()),
         ("McpOptionalArg", mcp_optional_arg_def()),
@@ -488,7 +523,7 @@ pub fn mcp_manifest_schema() -> Value {
 
     json!({
         "$schema": SCHEMA_DIALECT,
-        "$id": "https://github.com/edwardkim/rhwp/schema/capabilities-mcp/1.1",
+        "$id": "https://github.com/edwardkim/rhwp/schema/capabilities-mcp/1.2",
         "title": "rhwp MCP tool manifest",
         "capabilitiesSchemaVersion": CAPABILITIES_SCHEMA_VERSION,
         "description":

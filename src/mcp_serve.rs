@@ -495,7 +495,32 @@ fn resource_error_response(
     response
 }
 
-/// tools/list 응답: 선언 도구(MCP 필수 3종만 노출) + 세션 도구 3종.
+/// [#4220 T3] 세션 도구의 annotations — 읽기/편집 경계는 프로필 경계의 단일 출처인
+/// `agent_profiles::SESSION_READ_TOOLS` 에서 유도하고, 그 표가 말하지 않는 축만
+/// 여기서 판정한다:
+///
+/// - 파일 쓰기 축(`writes_file`): inputSchema 에 `output` 경로 속성이 있는 도구
+///   (`hwp_doc_render_page`/`hwp_doc_save`)는 read 표에 있어도 readOnlyHint=false —
+///   디스크에 산출물을 쓰는 것은 환경 변경이다.
+/// - `destructiveHint`: `hwp_doc_save` 만 true. `output` 이 hwp_open 으로 연 **원본
+///   경로일 수 있고** 같은 경로 거부가 없다(session_save 는 그대로 fs::write 한다) —
+///   무상태 표면의 `--in-place` 축에 해당하는 세션의 덮어쓰기 축이다.
+///   `hwp_doc_render_page` 는 새 SVG 산출물을 만드는 추가형이라 false.
+/// - `idempotentHint`: `hwp_open` 은 호출마다 새 docId 를 발급하므로 false.
+///   `hwp_doc_replace_text` 는 **이미 치환된 IR 위에** 다시 적용돼 겹칠 수 있으므로
+///   false (find 가 replace 의 부분열이면 재실행이 결과를 또 바꾼다 — 매번 원본에서
+///   다시 계산하는 무상태 `hwp_replace_text` 가 true 인 것과 대비된다). 그 밖은
+///   같은 인자 재실행이 같은 상태로 수렴한다(fill/set 계열은 값 대입, save 는 같은
+///   스냅숏 재기록, close 재호출은 상태 무변경 오류).
+fn session_tool_annotations(name: &str, writes_file: bool) -> serde_json::Value {
+    let read_axis = crate::agent_profiles::SESSION_READ_TOOLS.contains(&name);
+    let read_only = read_axis && !writes_file;
+    let destructive = name == "hwp_doc_save";
+    let idempotent = !matches!(name, "hwp_open" | "hwp_doc_replace_text");
+    crate::mcp_annotations(read_only, destructive, idempotent)
+}
+
+/// tools/list 응답: 선언 도구(MCP 필수 3종 + annotations 노출) + 세션 도구.
 fn served_tools(
     tool_defs: &[serde_json::Value],
     session_allows: &dyn Fn(&str) -> bool,
@@ -507,6 +532,9 @@ fn served_tools(
                 "name": t["name"],
                 "description": t["description"],
                 "inputSchema": t["inputSchema"],
+                // [#4220 T3] 매니페스트(capabilities --mcp)가 유도해 둔 값을 그대로
+                // 되비춘다 — 서버가 따로 판정하면 두 표면이 어긋난다(단일 출처).
+                "annotations": t["annotations"],
             })
         })
         .collect();
@@ -642,6 +670,15 @@ fn served_tools(
             "required": ["docId"]
         }
     }));
+    // [#4220 T3] 세션 도구 annotations — 정의 리터럴에 값을 복제하지 않고 이름·
+    // 스키마에서 한 자리에서 유도한다(무상태 도구의 outputFields 유도와 같은 원칙).
+    for t in &mut session {
+        let name = t["name"].as_str().unwrap_or_default().to_string();
+        let writes_file = t["inputSchema"]["properties"]
+            .as_object()
+            .is_some_and(|props| props.contains_key("output"));
+        t["annotations"] = session_tool_annotations(&name, writes_file);
+    }
     tools.extend(
         session
             .into_iter()

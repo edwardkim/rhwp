@@ -1549,7 +1549,68 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             add_password_stdin_contract(definition);
         }
     }
+    // [#4220 T3] MCP 표준 tool annotations — 손으로 나열한 표가 아니라 각 도구의
+    // **기존 선언**(outputFields 의 산출 경로 필드, cli 배선의 --in-place 축)에서
+    // 유도해 단다. 도구를 추가·개편하면 주석이 자동으로 따라오고, 유도 규칙 자체는
+    // tests/mcp_tool_annotations_contract.rs 가 실물 출력으로 대조한다.
+    for definition in &mut tools {
+        definition["annotations"] = derive_mcp_tool_annotations(definition);
+    }
     tools
+}
+
+/// [#4220 T3] MCP 표준 `annotations` 값 하나 (2025-03-26 개정판 신설 ToolAnnotations,
+/// 2025-06-18 유지 — schema.ts 의 readOnlyHint/destructiveHint/idempotentHint/openWorldHint).
+///
+/// 스펙 기본값(readOnlyHint=false, destructiveHint=true, idempotentHint=false,
+/// openWorldHint=true)에 기대지 않고 네 필드를 전부 명시한다 — inputSchema.required 를
+/// 빈 배열이라도 반드시 선언하는 것과 같은 이유로, 소비자가 "선언 누락"과 "기본값
+/// 의도"를 구분할 수 있어야 한다.
+///
+/// `openWorldHint` 는 전 도구 공통 false 다: rhwp 도구는 로컬 파일만 다루며
+/// 네트워크 등 외부 개방 세계에 닿는 축이 없다.
+fn mcp_annotations(read_only: bool, destructive: bool, idempotent: bool) -> serde_json::Value {
+    serde_json::json!({
+        "readOnlyHint": read_only,
+        "destructiveHint": destructive,
+        "idempotentHint": idempotent,
+        "openWorldHint": false,
+    })
+}
+
+/// [#4220 T3] 무상태 도구 하나의 annotations 유도 — 근거는 그 도구 자신의 선언이다.
+///
+/// - `readOnlyHint`: 봉투 `outputFields` 에 산출 경로 필드(`output`/`outputDir`)가
+///   없으면 true. 파일을 쓰지 않는 도구는 환경을 바꾸지 않는다 — 조회(query)와
+///   stdout 전용 export(hwp_export_text·hwp_export_tables 등)가 여기 속한다.
+///   `hwp_table_to_csv` 처럼 출력이 선택인 도구는 "쓸 수 있다"는 이유로 false 다
+///   (힌트는 안전 방향으로 보수적이어야 한다).
+/// - `destructiveHint`: cli 배선에 `--in-place` 축이 있을 때만 true. 그 밖의 쓰기는
+///   전부 산출 분리(-o) 원칙의 추가형(additive)이다 — 원본 문서를 덮지 않는다
+///   (redact 의 원본 보호 exit 2, export 계열의 같은 경로 거부가 그 증거다).
+/// - `idempotentHint`: 무상태 도구는 전부 true — 매 호출이 같은 원본에서 다시
+///   계산하는 결정론 변환이라, 같은 인자 재실행은 같은 산출을 다시 쓸 뿐 추가
+///   효과가 없다(세션 편집 누적과 대비되는 성질이다 — mcp_serve 참고).
+fn derive_mcp_tool_annotations(definition: &serde_json::Value) -> serde_json::Value {
+    let writes_files = definition["outputFields"].as_array().is_some_and(|fields| {
+        fields
+            .iter()
+            .any(|f| matches!(f.as_str(), Some("output" | "outputDir")))
+    });
+    let in_place = cli_wiring_has_flag(&definition["cli"], "--in-place");
+    mcp_annotations(!writes_files, in_place, true)
+}
+
+/// cli 배선(필수 `args` + `optionalArgs[].args`)에 특정 플래그가 있는가.
+fn cli_wiring_has_flag(cli: &serde_json::Value, flag: &str) -> bool {
+    let args_contain = |args: &serde_json::Value| {
+        args.as_array()
+            .is_some_and(|a| a.iter().any(|t| t.as_str() == Some(flag)))
+    };
+    args_contain(&cli["args"])
+        || cli["optionalArgs"]
+            .as_array()
+            .is_some_and(|opts| opts.iter().any(|o| args_contain(&o["args"])))
 }
 
 /// [#3263] 도구 자기서술 — 에이전트가 첫 호출 1회로 명령·계약·스키마를 파악하는 입구.
