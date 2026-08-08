@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-08-03
+last_verified: 2026-08-08
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -476,22 +476,68 @@ HWP 파일 정보 표시(버전/구역 수/암호화 등).
   `{"schemaVersion":"1.0","source","format":"hwp5|hwpx|hwp3|hml","sizeBytes","version","sections","pageCount","paraCount","fonts"}`.
   `version` 은 HML 이면 null. 스키마 계약은 `export-text --json` 항목과 동일 규칙.
 
-### `digest <파일> [--max-chars N] [--json]` (#3633)
+### `digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]` (#3633)
 초소형 모델용 매크로 1호 — "info 로 훑고 → export-structure 로 개요를 얻고 →
 export-text 로 첫 장을 읽는" 3단 파이프라인을 **한 번 호출**로 수행한다. 도구
 체이닝을 못 하는 로컬 소형 모델(4B급)이 1차 소비자다. 설계 결정은
 [초소형 모델용 매크로 도구 축 설계 결정](../tech/tiny_model_macro_tools.md).
-- 기계 전용 명령: `--json` 유무와 무관하게 항상 봉투 **한 줄 JSON** 을 낸다 —
+- 기계 전용 명령: `--json` 유무와 무관하게 항상 봉투 **한 줄 JSON** 을 낸다.
+  기본 모드 봉투 —
   `{"schemaVersion":"1.0","source","format","pageCount","paraCount","outline":[최상위 노드 제목 최대 20개],"excerpt","truncated","nextStep"}`
 - `excerpt` 는 페이지 0~2 텍스트를 `--max-chars`(기본 2000) **문자 수**에서 절단한
   발췌. 절단되면 `truncated:true`.
 - `nextStep` 은 고정 문자열 계약(다음 행동 유도문) — 문구 변경은
   `tests/digest_macro_contract.rs` 가 잡는다.
+- `--sections` (#3633 후속): 페이지 발췌 대신 **주소 보존 절 단위 청크**를 낸다.
+  봉투는 `outline`/`excerpt` 대신
+  `"sectionsMode","sectionCount","sections":[{"title","page","charCount","excerpt"}]`.
+  `page` 는 절 제목 문단의 글로벌 쪽 번호(0부터)라 요약 결과가 원문 쪽으로
+  되짚어진다. 절별 발췌 상한은 **기본 240자**(`--max-chars` 가 절별 상한이 된다),
+  청크는 최대 50개까지 싣고 전체 개수는 `sectionCount` 로 따로 실어 봉투만 보고
+  누락 여부를 판정한다. 구조 없는 문서는 쪽 단위 폴백으로 강등하되
+  `sectionsMode:"page"` 로 강등 사실을 명시한다(`title` 은 빈 문자열).
+- `--pages <a..b>` (#3633 후속): 해당 쪽 범위만 발췌한다 — **0 기준, 양끝 포함,
+  `a<=b`**(형식이 어긋나면 exit 2). 봉투에 `"pages":{"from","to"}` 가 실리고,
+  끝 쪽이 문서 끝을 넘으면 마지막 쪽으로 잘라 낸다(시작 쪽이 범위 밖이면 exit 1).
+  `nextStep` 이 같은 폭의 다음 범위 호출(`이어서 digest --json --pages a..b`)을
+  안내해 체이닝을 못 하는 모델도 "이어 읽기"를 계획 없이 수행한다 — 남은 범위가
+  없으면 완료 유도문으로 바뀐다.
+- `--sections` 와 `--pages` 는 동시에 쓸 수 없다(exit 2).
 - 실패 시 stdout 0바이트, 종료 코드는 #2707 계약(0/1/2).
 
 ```bash
 # 처음 보는 문서를 한 번 호출로 파악
 rhwp digest 편람.hwp --json --max-chars 500
+# 절 단위 청크로 문서 지도를 얻는다 (쪽 주소 보존)
+rhwp digest 편람.hwp --sections --json
+# 대형 문서를 10쪽 창으로 나눠 읽는다 — nextStep 이 다음 창을 안내
+rhwp digest 편람.hwp --pages 0..9 --json
+```
+
+### `explain <파일.hwp|파일.hwpx|파일.hml> [--json]` (#3828)
+문서를 처음 보는 에이전트를 위한 **결정론적 요약** — 형식·쪽수·문단 수, 표 개수와
+크기·병합 여부, 누름틀 이름, 각주/미주 개수, 암호 여부를 규칙 문장으로 낸다.
+기존 조회(`info`·`export-structure`·`export-tables`·`fields`)가 이미 계산한 값의
+템플릿 조립일 뿐, 새 판정 로직도 LLM 판정도 없다. "부분 목록 금지"(#3719) 원칙대로
+표·누름틀 이름은 축약·상위 N개 자르기 없이 전부 나열한다.
+- 기본 출력은 사람 문장 요약. `--json` 이면 봉투 —
+  `{"schemaVersion":"1.0","source","format","pageCount","paragraphCount","tables":[{"index","rows","cols","hasMergedCells"}],"fields":[누름틀 이름],"footnoteCount","endnoteCount","encrypted","summary"}`
+- `capabilities --mcp` 의 `hwp_explain` 도구와 봉투 생성 함수를 공유한다 —
+  recordFields 선언과 CLI `--json` 출력이 어긋날 수 없다.
+- 문단 수 키는 `paragraphCount` 다 — `info`/`digest` 봉투의 `paraCount` 와 표기가
+  다르므로 소비자는 봉투별 키를 그대로 쓴다.
+- `tables[].index` 는 0 기준으로 `export-tables`·`table-to-csv` 의 표 번호와
+  일치한다. `summary` 문장 속 "표 1(3×4)" 번호만 사람용 1 기준이다.
+- `tables` 는 크기·병합 여부만 싣고 **셀 텍스트를 싣지 않는다** — 내용은
+  `export-tables` 의 몫이다.
+- 암호 문서는 다른 명령과 같은 규약을 따른다 — 비밀번호 없으면 exit 2, 틀리면
+  exit 1 (`--password`/`--password-stdin`).
+
+```bash
+# 처음 보는 문서의 전체 그림을 문장 요약으로
+rhwp explain 편람.hwp
+# 기계용 봉투 (hwp_explain 과 동일 계약)
+rhwp explain 편람.hwp --json | jq '{format, pageCount, tables, fields}'
 ```
 
 ### `search <파일> [--json] [--ignore-case] [--limit N] [--] <검색어>` (#3283)
@@ -1137,3 +1183,6 @@ Hancom Office가 저장한 HWP와 rhwp가 생성한 HWP의 DocInfo CHAR_SHAPE를
   실행 검증은 빌드 가능한 환경(CI 등)에서 재확인이 필요하다.
 - 2026-08-05 현행화: `hwp5-char-shape-audit`를 §4 HWP5 저장 계약 진단 명령으로 추가했다.
   선택 `--source-hwpx`는 원본 `charPr` 장식 속성의 출처 교차 집계만 수행하며 문서를 변경하지 않는다.
+- 2026-08-08 현행화: `src/main.rs` 디스패치·`--help` 대비 뒤처진 드리프트 2건 정정 —
+  `digest` 에 `--sections`/`--pages a..b`(#3633 후속) 등재, `explain`(#3828) 절 신설.
+  봉투 필드는 `capabilities --mcp` 의 `hwp_digest`/`hwp_explain` recordFields 실물과 대조했다.
