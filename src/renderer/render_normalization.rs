@@ -39,9 +39,12 @@ pub struct RenderPath {
     pub target_control_index: Option<usize>,
 }
 
-/// [#3308] 중첩 표 셀-폭 스트레치의 하한 비율. 이 값 미만(진짜 좁은 표)은
-/// 선언 폭을 유지하고 셀 내 가운데 배치한다(레이아웃 쪽 처리).
-pub(crate) const NESTED_STRETCH_MIN_RATIO: f64 = 0.9;
+/// 비-TAC 중첩 표는 저장 폭을 조판 폭으로 쓴다. 한컴 PDF는 부모 셀보다 근소하게
+/// 좁은 1×1 표도 자동 확장하지 않는다(76076 p34: 36,572HU 유지).
+///
+/// 과거의 0.9 하한 스트레치는 페이지 수만 맞춘 보정이었다. 저장 폭을 넓히면
+/// continuation 가용폭이 달라져 PDF 줄바꿈과 표 조각 경계가 모두 어긋난다.
+pub(crate) const NESTED_STRETCH_MIN_RATIO: f64 = 1.0;
 
 impl RenderPath {
     pub fn top_level(section_index: usize, parent_paragraph_index: usize) -> Self {
@@ -116,12 +119,10 @@ impl RenderNormalizationOverlay {
                     nested_path.target_control_index = Some(control_index);
 
                     let source_width = nested.common.width;
-                    // [#3308] 스트레치는 근소 미달(셀 폭의 90% 이상)에만 적용한다.
-                    // 기원(#2195) 보호 대상(규제영향분석서 계열)의 실측 비율은 전부
-                    // 0.956~0.995 인 반면, 한컴이 선언 폭을 유지·가운데 배치하는
-                    // 진짜 좁은 표(직인 1×2, 0.679)까지 셀 폭으로 늘리면 열 원점이
-                    // 오른쪽으로 밀린다(정답지 대비 +97.5px). 한컴 편집기 크기 판독
-                    // (115.13mm=선언값)·재저장 실험·정답지 픽셀로 3중 확인.
+                    // 비-TAC nested table은 한컴 PDF가 저장 폭을 유지한다. 과거에는
+                    // 근소 미달 폭만 부모 셀까지 확장했지만, 76076 p34에서 36,572HU를
+                    // 37,966HU로 넓히면 continuation 폭이 +5px가 되어 줄 끝과 쪽 경계가
+                    // 틀어진다는 것을 PDF bbox로 재확인했다.
                     if !nested.common.treat_as_char
                         && source_width > 0
                         && u64::from(source_width) < u64::from(cell.width)
@@ -189,18 +190,18 @@ mod tests {
     use crate::model::paragraph::Paragraph;
     use crate::model::table::Cell;
 
-    /// [#3308] 스트레치 하한 계약 — 근소 미달만 투영, 진짜 좁은 표는 선언 폭 유지.
+    /// 비-TAC nested table은 근소 미달도 포함해 선언 폭을 유지한다.
     #[test]
-    fn stretch_floor_excludes_truly_narrow_nested_tables() {
-        // 하한(0.9) 미만: 투영 없음 → width_scale 1.0 (선언 폭 유지, 셀 내 가운데는 레이아웃 담당)
+    fn nested_tables_keep_declared_width() {
         let narrow = document_with_nested_table(1_358, 2_000); // 0.679 — 직인 fixture 실측 비율
         let overlay = RenderNormalizationOverlay::from_document(&narrow);
         assert_eq!(overlay.nested_table_projection_count(), 0);
 
-        // 하한 이상(근소 미달): 셀 폭 스트레치 유지 (#2195 보호 대상 0.956~0.995 계열)
+        // 0.956처럼 부모 셀에 거의 맞더라도 한컴 PDF는 저장 폭을 넓히지 않는다
+        // (76076 p34의 36,572HU nested table).
         let near_fit = document_with_nested_table(1_912, 2_000); // 0.956
         let overlay = RenderNormalizationOverlay::from_document(&near_fit);
-        assert_eq!(overlay.nested_table_projection_count(), 1);
+        assert_eq!(overlay.nested_table_projection_count(), 0);
     }
 
     fn document_with_nested_table(source_width: u32, parent_width: u32) -> Document {
@@ -266,56 +267,30 @@ mod tests {
     }
 
     #[test]
-    fn nested_width_projection_keeps_source_ir_immutable() {
+    fn near_fit_nested_table_has_no_render_width_projection() {
         let document = document_with_nested_table(1_900, 2_000);
         let overlay = RenderNormalizationOverlay::from_document(&document);
         let nested = nested_table(&document);
-        let projection = overlay
-            .projection_for_path(&nested_path())
-            .expect("nested width projection");
 
         assert_eq!(nested.common.width, 1_900, "source width must not change");
         assert_eq!(nested.cells[0].width, 1_900, "source cell width");
-        assert_eq!(projection.source_width, 1_900);
-        assert_eq!(projection.effective_width, 2_000);
         assert!(
-            (overlay.nested_table_width_scale(nested) - 2_000.0 / 1_900.0).abs() < f64::EPSILON
+            (overlay.nested_table_width_scale(nested) - 1.0).abs() < f64::EPSILON,
+            "stored nested-table width must be used without parent-cell projection"
         );
+        assert!(overlay.projection_for_path(&nested_path()).is_none());
     }
 
     #[test]
-    fn stable_projection_reuses_arc_identity() {
+    fn repeated_normalization_has_no_stale_width_projection() {
         let document = document_with_nested_table(1_900, 2_000);
         let first = RenderNormalizationOverlay::from_document(&document);
         let second = RenderNormalizationOverlay::from_document_reusing(&document, &first);
-        let first_projection = first
-            .projection_for_path(&nested_path())
-            .expect("first projection");
-        let second_projection = second
-            .projection_for_path(&nested_path())
-            .expect("second projection");
 
-        assert!(Arc::ptr_eq(&first_projection, &second_projection));
-    }
-
-    #[test]
-    fn unrelated_path_edit_reuses_nested_projection_identity() {
-        let mut document = document_with_nested_table(1_900, 2_000);
-        let first = RenderNormalizationOverlay::from_document(&document);
-        let first_projection = first
-            .projection_for_path(&nested_path())
-            .expect("initial projection");
-
-        document.sections[0].paragraphs[0].text = "unrelated edit".to_string();
-        let second = RenderNormalizationOverlay::from_document_reusing(&document, &first);
-        let second_projection = second
-            .projection_for_path(&nested_path())
-            .expect("projection after unrelated edit");
-
-        assert!(
-            Arc::ptr_eq(&first_projection, &second_projection),
-            "an unrelated stable-path edit must preserve the nested projection Arc"
-        );
+        assert_eq!(first.nested_table_projection_count(), 0);
+        assert_eq!(second.nested_table_projection_count(), 0);
+        assert!(first.projection_for_path(&nested_path()).is_none());
+        assert!(second.projection_for_path(&nested_path()).is_none());
     }
 
     #[test]

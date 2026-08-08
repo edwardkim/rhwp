@@ -1018,9 +1018,10 @@ impl HeightMeasurer {
         control_index: usize,
         styles: &ResolvedStyleSet,
         depth: usize,
-        // [#2195] 중첩 표 스트레치 배율: 부모 셀 inner / 중첩 표 저장 폭 (>=1.0).
-        // 한글은 내부 표를 부모 셀 inner 폭으로 확장 배치한다 (76076 표325 r6:
-        // 저장 487.6px vs 실효 ~506px, 근거설명 셀 41줄 오라클 + 휴먼명조 사다리).
+        // [#2195] 중첩 표 render-only 폭 보정의 호환 매개변수. 비-TAC 중첩 표는
+        // 저장 폭으로 측정한다(76076 표325 r6: 487.6px). 부모 셀 폭으로의 근소
+        // 확장은 PDF 줄바꿈·조각 높이를 바꾸므로 RenderNormalizationOverlay가
+        // 1.0을 반환한다.
         width_scale: f64,
     ) -> MeasuredTable {
         let width_scale =

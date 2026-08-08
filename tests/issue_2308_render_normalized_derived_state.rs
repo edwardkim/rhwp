@@ -1,10 +1,9 @@
-//! Issue #2308 functional regression for the #2195 sparse width overlay.
+//! Issue #2308 functional regression for nested-table derived geometry.
 //!
-//! Page-count pins do not catch a width-scale consumer that drifts only the split
-//! height of a nested 1×1 table. The two continuation fragments are pinned after
+//! Page-count pins do not catch a nested 1×1 table whose width normalization
+//! drifts only the split height. The two continuation fragments are pinned after
 //! direct comparison with the HWP 2024/Hancom PDF fixture: the second fragment
-//! begins at the page's content top, rather than retaining the pre-#3637 stale
-//! cell-local offset.
+//! begins at the page's content top while retaining the stored table width.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -140,12 +139,15 @@ fn text_run_is_partially_painted(node: &RenderNode, needle: &str, clip: Option<C
 }
 
 #[test]
-fn issue_2308_sparse_width_overlay_keeps_nested_fragment_geometry() {
+fn issue_2308_saved_nested_width_keeps_fragment_geometry() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/76076_regulatory_analysis.hwp");
     let bytes = fs::read(path).expect("read #2195 authority fixture");
     let core = DocumentCore::from_bytes(&bytes).expect("parse #2195 authority fixture");
 
-    let expected = [(32, 351.1, 649.3), (33, 77.1, 395.2)];
+    // p34's 1×1 rationale fragment occupies 426.9px in the HWP 2024 PDF.
+    // The former 395.2px pin came from stretching saved 36,572HU to the parent
+    // cell width, which shortened the fragment and shifted its text wrapping.
+    let expected = [(32, 351.1, 649.3), (33, 77.1, 426.9)];
     for (page, expected_y, expected_height) in expected {
         let tree = core
             .build_page_render_tree(page)
@@ -156,7 +158,7 @@ fn issue_2308_sparse_width_overlay_keeps_nested_fragment_geometry() {
             fragments.iter().any(|(y, height)| {
                 (y - expected_y).abs() <= 0.2 && (height - expected_height).abs() <= 0.2
             }),
-            "page {} nested fragment must preserve Hancom-aligned geometry \
+            "page {} nested fragment must preserve PDF-aligned geometry \
              y={expected_y:.1} h={expected_height:.1}; got {fragments:?}",
             page + 1
         );
@@ -205,6 +207,11 @@ fn issue_2308_nested_non_tac_table_keeps_saved_horizontal_cell_margin() {
         .expect("p34 outer activity-cost table (pi=325)");
     let nested =
         find_nested_single_cell_table(outer).expect("p34 nested single-cell rationale table");
+    assert!(
+        (nested.bbox.width - 487.6).abs() <= 0.2,
+        "p34 nested-table width={:.1}; HWP 2024 PDF retains saved 36,572HU (487.6px)",
+        nested.bbox.width
+    );
     let mut rights = Vec::new();
     collect_visible_text_line_rights(nested, &mut rights);
     let rightmost = rights.into_iter().fold(f64::NEG_INFINITY, f64::max);
