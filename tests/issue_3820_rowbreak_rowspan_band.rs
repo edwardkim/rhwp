@@ -67,6 +67,24 @@ fn issue_3820_rowbreak_rowspan_band_keeps_pdf_page_35_36_boundary() {
         (1040.0..=1046.0).contains(&p35_table_bottom),
         "p35 outer table bottom={p35_table_bottom:.1}px; the PDF retains the RowBreak blank tail through ≈1043px"
     );
+    assert!(
+        contains_text(
+            &p35.root,
+            "최근 빵 등 식품을 제조하는 사업장에서 밀가루 등이 반죽된"
+        ),
+        "p35 한양중고딕 본문은 PDF처럼 `…반죽된`에서 줄바꿈해야 함"
+    );
+    assert!(
+        !contains_text(&p35.root, "밀가루 등이 반죽된 용"),
+        "p35 한양중고딕의 과소 공백폭으로 `용`이 앞줄에 남으면 안 됨"
+    );
+    assert!(
+        contains_text(
+            &p35.root,
+            "용기를 들어 올려 부어주는 기계(이하 “볼 리프트”라 한다) 인근에"
+        ),
+        "p35 다음 줄은 PDF처럼 `용기를 … 인근에`로 끝나야 함"
+    );
 
     // Hancom PDF p36 has the blank tail of that row, but not its text; the
     // next visible row (`11.영향평가 여부`) begins only after that tail at y≈108px.

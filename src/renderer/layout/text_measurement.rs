@@ -1044,6 +1044,20 @@ fn haansoft_latin_override(primary_name: &str, c: char) -> Option<f64> {
     None
 }
 
+/// #3820 `76076_regulatory_analysis` 한컴 PDF p35의 한양중고딕 공백 advance.
+///
+/// HWP의 일반적인 U+0020 반각 규약(`em/2`)과 달리, 원명 `한양중고딕`으로
+/// 작성된 표 본문은 한컴 PDF의 p35 line decision에 맞춘 550/1024em advance가 필요하다. p35의
+/// 107자 무-`LINE_SEG` 셀에서 한글 advance와 cell 폭은 RHWP와 일치하지만, 이
+/// 공백 차이(약 2.17px/space)가 누적되어 `…반죽된` 뒤 `용` 한 글자가 잘못
+/// 앞줄에 남는다. 자동 생성 TTF hmtx 테이블은 바꾸지 않고 PDF의 line-decision
+/// 보정만 이 원명에 국한한다. `HY중고딕`은 별 face이므로 반각 규약을 유지한다.
+const HANYANG_JUNGGOTHIC_PDF_SPACE_UNITS: u16 = 550;
+
+fn hanyang_junggothic_pdf_space_width(primary_name: &str) -> Option<u16> {
+    (primary_name == "한양중고딕").then_some(HANYANG_JUNGGOTHIC_PDF_SPACE_UNITS)
+}
+
 /// [#2070] ㆍ(U+318D) 폭은 SYMBOL 폰트별: 한양신명조 = 전각(사다리 v3 실측),
 /// 명조(HY견명조 치환) 등 여타 = 반각 (80168 개정안{{7}} p9/p13 '시ㆍ도조례'
 /// 1줄 오라클, 개정안{{1}} P21 마크와 반각 양립 검증). embedded 메트릭
@@ -1083,9 +1097,10 @@ fn measure_char_width_embedded(
         return Some(w);
     }
     let mm = font_metrics_data::find_metric(primary_name, bold, italic)?;
-    // HWP 반각 처리: space 및 한컴이 반각으로 처리하는 구두점/기호
+    // HWP 반각 처리: space 및 한컴이 반각으로 처리하는 구두점/기호.
+    // #3820 한양중고딕 원명은 Hancom PDF의 별도 word gap을 따른다.
     let w = if c == ' ' {
-        mm.metric.em_size / 2
+        hanyang_junggothic_pdf_space_width(primary_name).unwrap_or(mm.metric.em_size / 2)
     } else {
         let glyph_w = mm.metric.get_width(c)?;
         // 한컴은 스마트 따옴표 등을 반각으로 처리.
@@ -1694,6 +1709,33 @@ mod tests {
             (w("한양견고딕", '0') - fs * 0.565).abs() < 0.05,
             "견고딕 '0' {}",
             w("한양견고딕", '0')
+        );
+    }
+
+    /// #3820 — 한양중고딕 원명 space만 한컴 PDF p35의 word gap으로 보정한다.
+    /// 실제 TTF hmtx 생성 테이블을 변경하지 않아 HY중고딕과 다른 Hanyang face의
+    /// 일반 반각 space 계약은 그대로다.
+    #[test]
+    fn issue_3820_hanyang_junggothic_space_uses_pdf_advance_only() {
+        let fs = 40.0 / 3.0; // 10pt = 13.333px
+        let hanyang = measure_char_width_embedded("한양중고딕", false, false, ' ', fs)
+            .expect("한양중고딕 space metric");
+        let hy = measure_char_width_embedded("HY중고딕", false, false, ' ', fs)
+            .expect("HY중고딕 space metric");
+        let other = measure_char_width_embedded("한양견고딕", false, false, ' ', fs)
+            .expect("한양견고딕 space metric");
+
+        assert!(
+            (hanyang - quantize_hwp_px(fs * 550.0 / 1024.0)).abs() < f64::EPSILON,
+            "한양중고딕 PDF space advance={hanyang:.3}"
+        );
+        assert!(
+            (hy - quantize_hwp_px(fs * 0.5)).abs() < f64::EPSILON,
+            "HY중고딕 일반 반각 space={hy:.3}"
+        );
+        assert!(
+            (other - quantize_hwp_px(fs * 0.5)).abs() < f64::EPSILON,
+            "다른 한양 face 일반 반각 space={other:.3}"
         );
     }
 
