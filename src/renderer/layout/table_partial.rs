@@ -1182,7 +1182,8 @@ impl LayoutEngine {
                     let visual_height = line_ranges.as_ref().map(|ranges| {
                         let mut total = 0.0;
                         let para_count = cell.paragraphs.len();
-                        for (pi, ((comp, para), &(start, end))) in composed_paras
+                        for (pi, ((comp, para), &(start, end))) in composed_store
+                            .eager_slice()
                             .iter()
                             .zip(cell.paragraphs.iter())
                             .zip(ranges.iter())
