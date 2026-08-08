@@ -6117,7 +6117,9 @@ fn cmd_scan(args: &[String]) -> i32 {
     let mut by_format: std::collections::BTreeMap<String, u64> = Default::default();
     let mut mismatch_count = 0u64;
     let mut probe_failed = 0u64;
-    let mut needs_password = 0u64;
+    // 암호로 잠긴 파일 **개수** — 자격증명이 아니다. 변수명에 password 를 쓰면
+    // CodeQL cleartext-logging 이 요약 출력을 민감정보 기록으로 오탐한다.
+    let mut locked_count = 0u64;
 
     for file in &files {
         let display = file.to_string_lossy().to_string();
@@ -6161,7 +6163,7 @@ fn cmd_scan(args: &[String]) -> i32 {
                         LoadError::Other(msg) => (false, msg),
                     };
                     if needs {
-                        needs_password += 1;
+                        locked_count += 1;
                     }
                     serde_json::json!({
                         "parseOk": false,
@@ -6201,7 +6203,7 @@ fn cmd_scan(args: &[String]) -> i32 {
         "extMismatch": mismatch_count,
         "probed": probe,
         "probeFailed": if probe { serde_json::json!(probe_failed) } else { serde_json::Value::Null },
-        "needsPassword": if probe { serde_json::json!(needs_password) } else { serde_json::Value::Null },
+        "needsPassword": if probe { serde_json::json!(locked_count) } else { serde_json::Value::Null },
         "truncated": truncated,
     });
 
@@ -6245,7 +6247,7 @@ fn cmd_scan(args: &[String]) -> i32 {
         records.len(),
         mismatch_count,
         if probe {
-            format!(" · 파싱 실패 {probe_failed} (암호 필요 {needs_password})")
+            format!(" · 파싱 실패 {probe_failed} (암호 필요 {locked_count})")
         } else {
             String::new()
         }
