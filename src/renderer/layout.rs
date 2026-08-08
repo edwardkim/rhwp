@@ -3,9 +3,7 @@
 //! 페이지 분할 결과를 받아 각 요소의 정확한 위치와 크기를 계산하고
 //! 렌더 트리(PageRenderTree)를 생성한다.
 
-use super::composer::{
-    compose_paragraph, effective_text_for_metrics, first_text_line, ComposedParagraph,
-};
+use super::composer::{compose_paragraph, effective_text_for_metrics, ComposedParagraph};
 use super::float_placement::{
     horizontal_range, is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu,
     signed_hwpunit, FloatLaneSet, FloatPlacementContext,
@@ -220,22 +218,12 @@ fn square_wrap_first_narrow_line_vpos_px(
     Some(hwpunit_to_px(narrow_vpos - base_vpos, dpi))
 }
 
-/// [#4384] TAC 표 앞 F081C 채움줄에 한컴 서명/날인 PUA(U+F012B)가 섞여 있는지 판정한다.
-///
-/// 종전에는 표 셀 텍스트가 "접수증"/"Filing Receipt" 문구를 담고 있는지로 이 표가
-/// 서명/날인 자리를 필요로 하는지 판정했다. 그러나 실측(`samples/복학원서.hwp`
-/// 문단 16)에서 F081C 채움 안에 U+F012B 한 글자가 실제로 섞여 저장돼 있음을 확인했다
-/// — 한컴이 서명/날인 자리를 만들 때 채움 문자 사이에 이 PUA 를 심어 저장하는 게
-/// 원인이다(`issue_937`: U+F012B 는 어디서나 `(인)` 으로 렌더돼야 하는 범용 한컴
-/// 서명/날인 기호). 표 제목 문구는 사용자가 언제든 편집해 사라지지만, 이 PUA 는
-/// 문서가 실제로 서명/날인 자리를 저장했다는 구조적 사실 자체라 편집으로 없어지지
-/// 않는다. 10,000건 실 문서 코퍼스에서 이 F081C+F012B 조합을 쓰는 문서는
-/// `samples/복학원서.hwp` 계열 외에 없었다(#4384 조사) — 문구 매칭보다 좁으면 좁았지
-/// 넓지 않다.
-fn tac_filler_line_has_signature_marker(composed: Option<&ComposedParagraph>) -> bool {
-    composed
-        .and_then(|c| c.lines.first())
-        .is_some_and(|line| line.runs.iter().any(|run| run.text.contains('\u{F012B}')))
+fn table_contains_receipt_title(table: &crate::model::table::Table) -> bool {
+    table.cells.iter().any(|cell| {
+        cell.paragraphs
+            .iter()
+            .any(|para| para.text.contains("Filing Receipt") || para.text.contains("접 수 증"))
+    })
 }
 
 fn tac_receipt_filler_prefix(
@@ -248,7 +236,7 @@ fn tac_receipt_filler_prefix(
     if control_index != 0
         || !table.common.treat_as_char
         || para.line_segs.len() < 2
-        || !tac_filler_line_has_signature_marker(composed)
+        || !table_contains_receipt_title(table)
     {
         return None;
     }
@@ -262,8 +250,7 @@ fn tac_receipt_filler_prefix(
         for ch in run.text.chars() {
             match ch {
                 '\u{F081C}' => filler_count += 1,
-                // [#4384] 이 문자의 존재가 위 tac_filler_line_has_signature_marker 게이트를
-                // 통과시킨 실제 근거다 — filler_count 에는 넣지 않고 통과만 시킨다.
+                // 한컴 전용 날인 기호가 같이 저장된 변형도 같은 선으로 취급한다.
                 '\u{F012B}' | '\u{FFFC}' | ' ' | '\t' | '\r' | '\n' => {}
                 _ => return None,
             }
@@ -328,7 +315,7 @@ fn receipt_seal_line_text(
 }
 
 fn push_tac_receipt_seal_line(
-    tree: &mut LayoutFrame,
+    tree: &mut PageRenderTree,
     col_node: &mut RenderNode,
     section_index: usize,
     para_index: usize,
@@ -411,12 +398,12 @@ fn tac_receipt_post_f081c_line(
     if control_index != 0
         || !table.common.treat_as_char
         || para.line_segs.len() < 2
-        || !tac_filler_line_has_signature_marker(composed)
+        || !table_contains_receipt_title(table)
     {
         return None;
     }
 
-    let positions = para.control_text_positions();
+    let positions = crate::document_core::find_control_text_positions(para);
     let table_pos = *positions.get(control_index)?;
     let text_chars: Vec<char> = para.text.chars().collect();
     if table_pos >= text_chars.len() {
@@ -453,7 +440,7 @@ fn tac_receipt_post_f081c_line(
 
 #[allow(clippy::too_many_arguments)]
 fn push_tac_post_f081c_line(
-    tree: &mut LayoutFrame,
+    tree: &mut PageRenderTree,
     col_node: &mut RenderNode,
     section_index: usize,
     para_index: usize,
@@ -1648,7 +1635,7 @@ fn force_para_end_on_last_run(col_node: &mut RenderNode) {
 
 /// 빈 TopAndBottom 표 host 문단의 조판부호를 표 시작 위치에 직접 그린다.
 fn push_empty_para_end_mark(
-    tree: &mut LayoutFrame,
+    tree: &mut PageRenderTree,
     col_node: &mut RenderNode,
     para: &Paragraph,
     styles: &ResolvedStyleSet,
@@ -2624,7 +2611,7 @@ impl LayoutEngine {
         // 단별 콘텐츠 레이아웃
         let mut paper_images: Vec<RenderNode> = Vec::new();
         self.build_columns(
-            tree.frame_mut(),
+            &mut tree,
             &mut body_node,
             &mut paper_images,
             page_content,
@@ -2769,7 +2756,7 @@ impl LayoutEngine {
             .unwrap_or(false);
         let mut footer_node = if !hide_footer {
             self.build_footer(
-                tree.frame_mut(),
+                &mut tree,
                 page_content,
                 footer_paragraphs,
                 composed,
@@ -2807,7 +2794,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_header_footer_paragraphs(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         area_node: &mut RenderNode,
         hf_paragraphs: &[Paragraph],
         _composed: &[ComposedParagraph],
@@ -3188,7 +3175,7 @@ impl LayoutEngine {
         para: &Paragraph,
         an_type: crate::model::control::AutoNumberType,
     ) -> Vec<usize> {
-        let ctrl_positions = para.control_text_positions();
+        let ctrl_positions = crate::document_core::helpers::find_control_text_positions(para);
         let text_chars: Vec<char> = para.text.chars().collect();
         let mut positions = Vec::new();
         let mut search_from = 0usize;
@@ -3522,35 +3509,21 @@ impl LayoutEngine {
                     )
                 };
 
-                let top_nodes =
-                    create_border_line_nodes(tree.frame_mut(), &borders[2], bx, by, bx + bw, by);
+                let top_nodes = create_border_line_nodes(tree, &borders[2], bx, by, bx + bw, by);
                 for n in top_nodes {
                     tree.root.children.push(n);
                 }
-                let bottom_nodes = create_border_line_nodes(
-                    tree.frame_mut(),
-                    &borders[3],
-                    bx,
-                    by + bh,
-                    bx + bw,
-                    by + bh,
-                );
+                let bottom_nodes =
+                    create_border_line_nodes(tree, &borders[3], bx, by + bh, bx + bw, by + bh);
                 for n in bottom_nodes {
                     tree.root.children.push(n);
                 }
-                let left_nodes =
-                    create_border_line_nodes(tree.frame_mut(), &borders[0], bx, by, bx, by + bh);
+                let left_nodes = create_border_line_nodes(tree, &borders[0], bx, by, bx, by + bh);
                 for n in left_nodes {
                     tree.root.children.push(n);
                 }
-                let right_nodes = create_border_line_nodes(
-                    tree.frame_mut(),
-                    &borders[1],
-                    bx + bw,
-                    by,
-                    bx + bw,
-                    by + bh,
-                );
+                let right_nodes =
+                    create_border_line_nodes(tree, &borders[1], bx + bw, by, bx + bw, by + bh);
                 for n in right_nodes {
                     tree.root.children.push(n);
                 }
@@ -3698,7 +3671,7 @@ impl LayoutEngine {
                                         height: paper_area.height,
                                     };
                                     self.layout_shape(
-                                        tree.frame_mut(),
+                                        tree,
                                         target_node,
                                         &mp.paragraphs,
                                         pi,
@@ -3747,7 +3720,7 @@ impl LayoutEngine {
                                     positioned.common.horz_align = HorzAlign::Left;
                                     positioned.common.vert_align = VertAlign::Top;
                                     self.layout_picture(
-                                        tree.frame_mut(),
+                                        tree,
                                         target_node,
                                         &positioned,
                                         &pic_area,
@@ -3768,7 +3741,7 @@ impl LayoutEngine {
                                     // 바탕쪽 표: PAPER 기준은 paper_area, PAGE 기준은 위에서 설정한
                                     // current_body_area를 통해 본문 영역으로 계산된다.
                                     self.layout_table(
-                                        tree.frame_mut(),
+                                        tree,
                                         target_node,
                                         t,
                                         section_index,
@@ -3818,7 +3791,7 @@ impl LayoutEngine {
                             }
                         }
                         mp_y_offset = self.layout_paragraph(
-                            tree.frame_mut(),
+                            tree,
                             &mut mp_node,
                             para,
                             Some(&comp),
@@ -3854,7 +3827,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_header_footer_picture(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         area_node: &mut RenderNode,
         pic: &crate::model::image::Picture,
         area: &LayoutRect,
@@ -3971,7 +3944,7 @@ impl LayoutEngine {
                                 kind: crate::renderer::render_tree::HeaderFooterKind::Header,
                             };
                             self.layout_header_footer_paragraphs(
-                                tree.frame_mut(),
+                                tree,
                                 &mut header_node,
                                 &header.paragraphs,
                                 composed,
@@ -4072,7 +4045,7 @@ impl LayoutEngine {
     /// 꼬리말 영역 노드를 생성하여 반환한다.
     fn build_footer(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         page_content: &PageContent,
         paragraphs: &[Paragraph],
         composed: &[ComposedParagraph],
@@ -4179,7 +4152,7 @@ impl LayoutEngine {
             );
 
             self.layout_footnote_area(
-                tree.frame_mut(),
+                tree,
                 &mut fn_node,
                 &page_content.footnotes,
                 paragraphs,
@@ -4337,7 +4310,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn build_columns(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         body_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         page_content: &PageContent,
@@ -4666,7 +4639,7 @@ impl LayoutEngine {
     /// zone_layout 기준 + y 범위 인자로 단 구분선을 그린다.
     fn emit_zone_column_separators(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         body_node: &mut RenderNode,
         zone_layout: &PageLayoutInfo,
         y_start: f64,
@@ -4789,11 +4762,10 @@ impl LayoutEngine {
             active_master_page: None,
             extra_master_pages: Vec::new(),
         };
-        // [#4277] 높이 측정 전용 — paint 트리가 아니라 흐름 상태만 만든다.
-        let mut frame = LayoutFrame::new(0, col_area.width, col_area.y + col_area.height);
+        let mut tree = PageRenderTree::new(0, col_area.width, col_area.y + col_area.height);
         let mut paper_images: Vec<RenderNode> = Vec::new();
         let (_node, y_offset) = self.build_single_column(
-            &mut frame,
+            &mut tree,
             &mut paper_images,
             &col_content,
             &page_content,
@@ -4819,7 +4791,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn render_para_border_groups(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         composed: &[ComposedParagraph],
         col_node: &mut RenderNode,
         styles: &ResolvedStyleSet,
@@ -5124,7 +5096,7 @@ impl LayoutEngine {
 
     fn build_single_column(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         paper_images: &mut Vec<RenderNode>,
         col_content: &ColumnContent,
         page_content: &PageContent,
@@ -6449,7 +6421,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_column_item(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
@@ -6603,7 +6575,11 @@ impl LayoutEngine {
                         if has_real_text {
                             if let Some(comp) = comp {
                                 // 컨트롤 전용 줄(runs가 모두 제어문자)을 건너뛰고 텍스트 줄부터 렌더링
-                                let text_start_line = first_text_line(comp);
+                                let text_start_line = comp.lines.iter().position(|line| {
+                                    line.runs.iter().any(|r| {
+                                        r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+                                    })
+                                });
                                 if let Some(start_line) = text_start_line {
                                     para_start_y.insert(*para_index, y_offset);
                                     y_offset = self.layout_partial_paragraph(
@@ -6889,7 +6865,8 @@ impl LayoutEngine {
                 start_cut,
                 end_cut,
                 is_block_split,
-                row_cursor_is_nested,
+                end_row_height_override,
+                start_row_height_override,
             } => {
                 y_offset = self.layout_partial_table_item(
                     tree,
@@ -6903,7 +6880,8 @@ impl LayoutEngine {
                     start_cut,
                     end_cut,
                     *is_block_split,
-                    *row_cursor_is_nested,
+                    *end_row_height_override,
+                    *start_row_height_override,
                     &ctx,
                     y_offset,
                 );
@@ -6952,7 +6930,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_endnote_separator_item(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         col_node: &mut RenderNode,
         col_area: &LayoutRect,
         mut y_offset: f64,
@@ -7007,7 +6985,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_table_control_block(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
@@ -7900,7 +7878,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_table_item(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
@@ -8441,7 +8419,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_partial_table_item(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         col_node: &mut RenderNode,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
         para_index: usize,
@@ -8452,7 +8430,8 @@ impl LayoutEngine {
         start_cut: &[usize],
         end_cut: &[usize],
         is_block_split: bool,
-        row_cursor_is_nested: bool,
+        end_row_height_override: Option<f64>,
+        start_row_height_override: Option<f64>,
         ctx: &ColumnItemCtx,
         mut y_offset: f64,
     ) -> f64 {
@@ -8634,7 +8613,8 @@ impl LayoutEngine {
             start_cut,
             end_cut,
             is_block_split,
-            row_cursor_is_nested,
+            end_row_height_override,
+            start_row_height_override,
             pt_margin_left,
             pt_margin_right,
             pt_mt,
@@ -8794,7 +8774,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_shape_item(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
@@ -9696,7 +9676,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_wrap_around_paras(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         col_node: &mut RenderNode,
         paragraphs: &[Paragraph],
         composed: &[ComposedParagraph],
@@ -10006,7 +9986,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_column_shapes_pass(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageRenderTree,
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         col_content: &ColumnContent,
@@ -10307,7 +10287,9 @@ impl LayoutEngine {
         col_area: &LayoutRect,
         control_index: usize,
     ) -> f64 {
-        let positions = para.control_text_positions();
+        use crate::document_core::find_control_text_positions;
+
+        let positions = find_control_text_positions(para);
         let ctrl_text_pos = positions.get(control_index).copied().unwrap_or(0);
 
         // margin_left를 미리 계산 (text_pos=0 early return에도 사용)

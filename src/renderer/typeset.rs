@@ -14,7 +14,7 @@ use crate::model::header_footer::HeaderFooterApply;
 use crate::model::page::{ColumnDef, ColumnType, PageDef};
 use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 use crate::model::shape::CaptionDirection;
-use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
+use crate::renderer::composer::{compose_paragraph, ComposedParagraph};
 use crate::renderer::float_placement::{
     horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float,
     native_empty_host_rowbreak_line_advance_hu, signed_hwpunit, FloatLaneSet,
@@ -45,17 +45,25 @@ struct BlockTableRowScan {
     split_block_start: Option<usize>,
     split_end_cut: Vec<usize>,
     split_end_limit: f64,
+    /// 마지막으로 포함한 완전 행을 현재 조각의 남은 물리 높이로 압축할 때의
+    /// 렌더 전용 높이 상한. continuation은 끝행의 full cut으로 빈 tail을
+    /// 소비한 뒤 다음 행으로 전진한다.
+    end_row_height_override: Option<f64>,
 }
 
 /// [#2424] block-table continuation loop의 재개 지점.
 ///
 /// 행과 셀별 절대 unit cut, rowspan block cut 여부, continuation 여부를 owned state로
 /// 묶어 fragment budget 경계에서 그대로 보존한다.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 struct TableContinuationCursor {
     row: usize,
     start_cut: Vec<usize>,
     start_cut_is_block: bool,
+    /// 앞 조각에서 셀 내용은 전부 소비됐지만 그 행의 빈 하단 밴드는 다음
+    /// 조각에 남는 경우의 물리 높이. `start_cut`이 내용을 숨기고 이 값은
+    /// 테두리/그리드만 이어 준다.
+    start_row_height_override: Option<f64>,
     is_continuation: bool,
     fragments_emitted: usize,
     /// fragment queue에서 이미 page에 등록한 표 각주 수.
@@ -81,6 +89,7 @@ impl TableContinuationCursor {
         self.row = self.row.saturating_add(1);
         self.start_cut.clear();
         self.start_cut_is_block = false;
+        self.start_row_height_override = None;
         self.is_continuation = true;
     }
 
@@ -91,6 +100,7 @@ impl TableContinuationCursor {
         cut: Vec<usize>,
         has_intra_row_split: bool,
     ) {
+        self.start_row_height_override = None;
         if has_intra_row_split {
             self.row = split_block_start.unwrap_or(end_row.saturating_sub(1));
             self.start_cut = cut;
@@ -108,6 +118,7 @@ impl TableContinuationCursor {
         self.row = row_count;
         self.start_cut.clear();
         self.start_cut_is_block = false;
+        self.start_row_height_override = None;
         if emitted_fragment {
             self.fragments_emitted = self.fragments_emitted.saturating_add(1);
         }
@@ -277,6 +288,7 @@ struct BlockRowScanVars {
     landscape_short_row_max_height: f64,
     rowbreak_split_row_overflow_tolerance: f64,
     strict_painted_bottom_fit: bool,
+    start_row_height_override: Option<f64>,
 }
 
 /// [#2064] `compute_endnote_metrics` 의 호출-시점 입력 묶음 — 라운드 5 클로저의 캡처를
@@ -2659,12 +2671,7 @@ fn is_stored_anchor_picture_table(table: &crate::model::table::Table) -> bool {
 /// 동작한다. 두 경로가 다른 표를 참조하면 행 수가 1 대 N으로 갈라져, 보이지
 /// 않는 래퍼 행 높이가 쪽 소비에 더해진다. `table_layout` 및
 /// `HeightMeasurer::measure_table_impl`의 unwrap 조건과 의도적으로 동일하다.
-///
-/// [Issue #4326] fallback `Paginator`(`pagination/engine.rs`)도 같은 unwrap 여부를
-/// `PageItem::PartialTable::row_cursor_is_nested`에 실어야 하므로 crate 내부에 공개한다.
-pub(crate) fn row_geometry_table(
-    table: &crate::model::table::Table,
-) -> &crate::model::table::Table {
+fn row_geometry_table(table: &crate::model::table::Table) -> &crate::model::table::Table {
     let mut effective = table;
     loop {
         if effective.row_count != 1 || effective.col_count != 1 || effective.cells.len() != 1 {
@@ -12159,7 +12166,8 @@ impl TypesetEngine {
                         start_cut,
                         end_cut,
                         is_block_split,
-                        row_cursor_is_nested,
+                        end_row_height_override,
+                        start_row_height_override,
                     } => lookup_local(*para_index).map(|l| PageItem::PartialTable {
                         para_index: l + 1,
                         control_index: *control_index,
@@ -12169,7 +12177,8 @@ impl TypesetEngine {
                         start_cut: start_cut.clone(),
                         end_cut: end_cut.clone(),
                         is_block_split: *is_block_split,
-                        row_cursor_is_nested: *row_cursor_is_nested,
+                        end_row_height_override: *end_row_height_override,
+                        start_row_height_override: *start_row_height_override,
                     }),
                     PageItem::Shape {
                         para_index,
@@ -13516,13 +13525,13 @@ impl TypesetEngine {
     ) -> f64 {
         use crate::renderer::layout::{layout_rect_to_bbox, LayoutEngine};
         use crate::renderer::page_layout::LayoutRect;
-        use crate::renderer::render_tree::{LayoutFrame, RenderNode, RenderNodeType};
+        use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 
-        // 렌더 `layout_column_item` 의 FullParagraph 텍스트 경로 정합: 실제 텍스트가 있는 para 는
-        // **leading 컨트롤-전용 줄**(수식 객체마커 ￼ 등)을 건너뛰고 첫 텍스트 줄부터 그린다.
-        // `composer::first_text_line` 로 판정을 공유해(#4312) 재구현 divergence(sep20/20
-        // pi=936: 측정 127.7 vs 렌더 101.3)를 구조적으로 막는다. 객체-전용 para(TAC 그림 등)는
-        // 0 부터(렌더도 동일). Partial 은 항목 지정 줄 범위 그대로.
+        // 렌더 `layout_column_item` 의 FullParagraph 텍스트 경로 정합(layout.rs has_real_text):
+        // 실제 텍스트가 있는 para 는 **leading 컨트롤-전용 줄**(수식 객체마커 ￼ 등)을 건너뛰고
+        // `text_start_line` 부터 그린다. scratch 가 start_line=0 으로 그 줄을 포함하면 수식 다줄
+        // para 가 +수십px 과대 측정된다(sep20/20 pi=936: 127.7 vs 렌더 101.3). 객체-전용 para
+        // (TAC 그림 등)는 0 부터(렌더도 동일). Partial 은 항목 지정 줄 범위 그대로.
         let (start_line, end_line) = match item {
             PageItem::PartialParagraph {
                 start_line,
@@ -13535,7 +13544,15 @@ impl TypesetEngine {
                     .chars()
                     .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace());
                 let start = if has_real_text {
-                    first_text_line(item_composed).unwrap_or(0)
+                    item_composed
+                        .lines
+                        .iter()
+                        .position(|line| {
+                            line.runs
+                                .iter()
+                                .any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
+                        })
+                        .unwrap_or(0)
                 } else {
                     0
                 };
@@ -13549,20 +13566,16 @@ impl TypesetEngine {
             width: en_col_w,
             height,
         };
-        // [#4277] 페이지네이션 측정은 paint 트리를 만들지 않는다 — 레이아웃 재귀가 실제로
-        // 쓰는 건 흐름 상태(id 카운터 + 인라인 Shape 레지스트리 + 페이지 기하)뿐이므로
-        // `LayoutFrame` 만 만든다. `col_node` 는 방출된 노드를 받는 sink 로만 쓰이고
-        // 높이만 읽은 뒤 버려진다.
         let scratch = LayoutEngine::new(self.dpi);
-        let mut frame = LayoutFrame::new(0, en_col_w, height);
-        let col_id = frame.next_id();
+        let mut tree = PageRenderTree::new(0, en_col_w, height);
+        let col_id = tree.next_id();
         let mut col_node = RenderNode::new(
             col_id,
             RenderNodeType::Column(0),
             layout_rect_to_bbox(&col_area),
         );
         let y_after = scratch.layout_partial_paragraph(
-            &mut frame,
+            &mut tree,
             &mut col_node,
             item_para,
             Some(item_composed),
@@ -17527,6 +17540,7 @@ impl TypesetEngine {
             landscape_short_row_max_height,
             rowbreak_split_row_overflow_tolerance,
             strict_painted_bottom_fit,
+            start_row_height_override,
         } = v;
         let BlockTableRowScan {
             mut consumed,
@@ -17534,10 +17548,22 @@ impl TypesetEngine {
             mut split_block_start,
             mut split_end_cut,
             mut split_end_limit,
+            mut end_row_height_override,
         } = scan;
         let mut r = cursor_row;
         while r < row_count {
             let cs_before = if r > cursor_row { cs } else { 0.0 };
+            // [#3820 Stage 76] 직전 fragment가 내용은 모두 소비한 채 남긴
+            // rowspan 행의 빈 꼬리 밴드. start_cut이 셀 텍스트를 숨기므로 여기서는
+            // 물리 높이만 소비한 뒤 다음 행의 정상 스캔으로 이어 간다.
+            if r == cursor_row {
+                if let Some(height) = start_row_height_override {
+                    consumed += height;
+                    r += 1;
+                    end_row = r;
+                    continue;
+                }
+            }
             // rowspan 보호 블록 — 블록 전체를 분할 없이 한 단위로.
             let (b_start, b_end, _) = mt.row_block_for(r);
             let block_size = b_end.saturating_sub(b_start);
@@ -17912,6 +17938,80 @@ impl TypesetEngine {
                     r += 1;
                     end_row = r;
                     continue;
+                }
+                // [#3820 Stage 76] 이전 행에서 시작한 rowspan이 닿는 짧은
+                // RowBreak 행은 실제 텍스트 한 줄이 현재 쪽의 잔여에 이미 모두
+                // 들어가도, 선언 높이만 커서 통째로 다음 쪽으로 밀릴 수 있다.
+                // 이 경우 한컴은 마지막 행 밴드를 남은 물리 높이로 끝내고 다음
+                // 행부터 재개한다(76076 p35→p36 `주요내용`). 일반 rowspan 행을
+                // 전역으로 분할하지 않고, prior-span + 비중첩 + 내용 완전 소비
+                // 조건에서만 렌더 높이 상한을 carry 한다.
+                let has_prior_rowspan_cover = table.cells.iter().any(|c| {
+                    c.row_span > 1
+                        && (c.row as usize) < r
+                        && r < c.row as usize + c.row_span as usize
+                });
+                let row_has_nested = table.cells.iter().any(|c| {
+                    c.row as usize == r
+                        && c.paragraphs.iter().any(|p| {
+                            p.controls
+                                .iter()
+                                .any(|ctrl| matches!(ctrl, Control::Table(_)))
+                        })
+                });
+                let rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                let row_start_cut: &[usize] = if r == cursor_row { start_cut } else { &[] };
+                if mt.allows_row_break_split()
+                    && can_intra_split
+                    && r > cursor_row
+                    && has_prior_rowspan_cover
+                    && !row_has_nested
+                    && rest > 0.0
+                {
+                    let padding = layout_engine.row_remaining_visible_padding_height(
+                        table,
+                        r,
+                        row_start_cut,
+                        styles,
+                    );
+                    let content_budget = (rest - padding).max(0.0);
+                    let probe = layout_engine.advance_row_cut(
+                        table,
+                        r,
+                        row_start_cut,
+                        content_budget,
+                        styles,
+                    );
+                    let visible_height = layout_engine.row_cut_content_height(
+                        table,
+                        r,
+                        row_start_cut,
+                        &probe.end_cut,
+                        styles,
+                    );
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN RSPAN_BAND? r={} h={:.1} rest={:.1} visible={:.1} fully={} nested={}",
+                            r, h, rest, visible_height, probe.fully_consumed, row_has_nested
+                        );
+                    }
+                    if probe.fully_consumed && visible_height <= rest + 0.5 {
+                        consumed += cs_before + rest;
+                        r += 1;
+                        end_row = r;
+                        end_row_height_override = Some(rest);
+                        // 다음 조각은 같은 행의 full cut에서 재개해, 남은 빈
+                        // 밴드만 그린 뒤 다음 물리 행으로 넘어간다.
+                        split_end_cut = probe.end_cut;
+                        split_end_limit = rest;
+                        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                            eprintln!(
+                                "DIAG_SCAN RSPAN_BAND r={} limit={:.1} visible={:.1} declared={:.1}",
+                                r - 1, rest, visible_height, h
+                            );
+                        }
+                        break;
+                    }
                 }
                 // [#2236 진단] rowspan 행 경계 정지 — 동작 불변.
                 if std::env::var("RHWP_DIAG_SCAN").is_ok() {
@@ -18305,6 +18405,7 @@ impl TypesetEngine {
             split_block_start,
             split_end_cut,
             split_end_limit,
+            end_row_height_override,
         }
     }
 
@@ -20307,11 +20408,6 @@ impl TypesetEngine {
         let row_geometry_table = source.row_geometry_table;
         let mt = source.measured_table;
         let styles = source.styles;
-        // [Issue #4326] 이 continuation이 방출하는 모든 PartialTable의 start_row/end_row/
-        // start_cut/end_cut은 `row_geometry_table` 기준(투명 1×1 래퍼를 벗긴 표일 수
-        // 있다)이다. 렌더러가 `end_row <= table.row_count` 로 값을 되추론하던 것을,
-        // 결정 시점의 이 포인터 비교로 데이터화해 PageItem에 함께 싣는다.
-        let row_cursor_is_nested = !std::ptr::eq(row_geometry_table, table);
         // [#2424 프로파일] fragment 루프 하위 단계 누적 — closure 1회 = fragment 판정 1회.
         // 스캔 두 곳 외의 잔여(배치·각주 큐·커서 전진)는 total−scan−refit 로 산출한다.
         let issue2424_step_enabled =
@@ -20352,6 +20448,7 @@ impl TypesetEngine {
             let cursor_row = continuation.row;
             let is_continuation = continuation.is_continuation;
             let start_cut_is_block = continuation.start_cut_is_block;
+            let start_row_height_override = continuation.start_row_height_override;
             // `register_queued_table_footnotes` can advance the continuation while
             // the rest of this iteration still needs the original cut geometry.
             // Keep that geometry as a local value rather than borrowing the cursor
@@ -20366,6 +20463,7 @@ impl TypesetEngine {
             // 블록 컷이면 이 가드를 건너뛰어 컷을 보존한다.
             if !start_cut_is_block
                 && !start_cut.is_empty()
+                && start_row_height_override.is_none()
                 && can_intra_split
                 && layout_engine
                     .advance_row_cut(row_geometry_table, cursor_row, &start_cut, f64::MAX, styles)
@@ -20599,6 +20697,7 @@ impl TypesetEngine {
                 mut split_block_start,
                 mut split_end_cut,
                 mut split_end_limit,
+                mut end_row_height_override,
             } = self.scan_block_table_split_rows(
                 st,
                 layout_engine,
@@ -20623,6 +20722,7 @@ impl TypesetEngine {
                     landscape_short_row_max_height,
                     rowbreak_split_row_overflow_tolerance,
                     strict_painted_bottom_fit: strict_following_plain_text_fit,
+                    start_row_height_override,
                 },
                 BlockTableRowScan {
                     consumed: 0.0,
@@ -20630,6 +20730,7 @@ impl TypesetEngine {
                     split_block_start: None,
                     split_end_cut: Vec::new(),
                     split_end_limit: 0.0,
+                    end_row_height_override: None,
                 },
             );
             if let Some(started) = issue2424_scan_started {
@@ -20736,6 +20837,7 @@ impl TypesetEngine {
                                 landscape_short_row_max_height,
                                 rowbreak_split_row_overflow_tolerance,
                                 strict_painted_bottom_fit: strict_following_plain_text_fit,
+                                start_row_height_override,
                             },
                             BlockTableRowScan {
                                 consumed: 0.0,
@@ -20743,6 +20845,7 @@ impl TypesetEngine {
                                 split_block_start: None,
                                 split_end_cut: Vec::new(),
                                 split_end_limit: 0.0,
+                                end_row_height_override: None,
                             },
                         );
                         if let Some(started) = issue2424_refit_started {
@@ -20769,6 +20872,7 @@ impl TypesetEngine {
                             split_block_start = refit.split_block_start;
                             split_end_cut = refit.split_end_cut;
                             split_end_limit = refit.split_end_limit;
+                            end_row_height_override = refit.end_row_height_override;
                             if end_row <= cursor_row {
                                 end_row = cursor_row + 1;
                             }
@@ -20854,7 +20958,8 @@ impl TypesetEngine {
                         start_cut: continuation.start_cut.clone(),
                         end_cut: Vec::new(),
                         is_block_split: start_cut_is_block,
-                        row_cursor_is_nested,
+                        end_row_height_override,
+                        start_row_height_override,
                     });
                     // 마지막 fragment: spacing_after만 포함 (Paginator engine.rs:1051 동일)
                     // host line advance/positive offset은 원 anchor 조각의 계약이며,
@@ -20931,7 +21036,8 @@ impl TypesetEngine {
                 end_cut: split_end_cut.clone(),
                 // [Task #1025] 이번 분할이 블록 분할이거나 start_cut 이 이미 블록 인덱스.
                 is_block_split: split_block_start.is_some() || start_cut_is_block,
-                row_cursor_is_nested,
+                end_row_height_override,
+                start_row_height_override,
             });
             // [#2238] 중간 fragment 가시높이 부기 — used_height(flush 시 current_height)
             // 표시용. advance 직후 current_height 가 리셋되므로 흐름/기하 불변.
@@ -20969,7 +21075,13 @@ impl TypesetEngine {
             } else {
                 Vec::new()
             };
+            let next_start_row_height_override = end_row_height_override.and_then(|limit| {
+                let full = cut_row_h.get(end_row.saturating_sub(1)).copied()?;
+                let tail = (full - limit).max(0.0);
+                (tail > 0.5).then_some(tail)
+            });
             continuation.advance(end_row, split_block_start, next_cut, split_end_limit > 0.0);
+            continuation.start_row_height_override = next_start_row_height_override;
             TableContinuationIteration::Emitted
         });
         if let Some(started) = issue2424_step_started {
@@ -22835,7 +22947,8 @@ mod tests {
                 start_cut: Vec::new(),
                 end_cut: Vec::new(),
                 is_block_split: false,
-                row_cursor_is_nested: false,
+                end_row_height_override: None,
+                start_row_height_override: None,
             }]),
             page_with_items(vec![PageItem::PartialTable {
                 para_index: 7,
@@ -22846,7 +22959,8 @@ mod tests {
                 start_cut: Vec::new(),
                 end_cut: Vec::new(),
                 is_block_split: false,
-                row_cursor_is_nested: false,
+                end_row_height_override: None,
+                start_row_height_override: None,
             }]),
         ];
 
