@@ -7,6 +7,12 @@ last_verified: 2026-08-08
 
 # Task #3820 Stage 65 — HWPX non-inline `treatAsChar` table fit
 
+> **후속 보정으로 대체된 시각 증적**: 이 Stage의 `review_144.png`는 outer
+> block-TAC table의 page fit/clip만 다룬 당시 결과다. 같은 p144의 세 점선
+> `BehindText` 표가 세로로 쌓이는 별도 결함은 Stage 66에서 수정됐다. 최종 위치
+> 판정에는 [`task_m100_3820_stage66_p144_behind_text_table_positions.md`](task_m100_3820_stage66_p144_behind_text_table_positions.md)와
+> `mydocs/pr/assets/task_m100_3820_stage66_hwpx_behind_text_table_positions/review_144.png`를 사용한다.
+
 ## Stage 64에서 확정한 PDF 계약
 
 대상은 `samples/2025 행정업무운영 편람(최종).hwpx`와 한컴 2024 기준 PDF
