@@ -67,6 +67,10 @@ pub fn run(args: &[String]) -> i32 {
     // [#3629] 직무 프로필: tools/list 자체를 역할 세트로 필터 — 호스트 설정 한 줄로
     // '행정서식 전용 서버'를 등록한다. 단일 출처는 agent_profiles::PROFILES.
     let mut profile: Option<&'static crate::agent_profiles::AgentProfile> = None;
+    // [트랙 H R80] 옵트인 관측성 1단계 — 기본은 꺼짐, 문서 내용·경로·인자 값은
+    // 절대 수집하지 않는다(mydocs/tech/agent_architecture/observability_contract.md
+    // §3). 도구명별 호출 수·오류 수만 센다.
+    let mut stats = false;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
@@ -86,6 +90,7 @@ pub fn run(args: &[String]) -> i32 {
                     }
                 }
             }
+            "--stats" => stats = true,
             other => {
                 eprintln!("알 수 없는 옵션: {other}");
                 return crate::EXIT_USAGE;
@@ -112,6 +117,10 @@ pub fn run(args: &[String]) -> i32 {
         Some(p) => crate::agent_profiles::allows_session_tool(p, name),
     };
     let mut sessions = Sessions::new();
+    // 도구명 → (호출 수, 오류 수). 키는 서버가 정의한 유한 집합(도구명)뿐이고
+    // 값은 정수 계수뿐이다 — 문서 내용·경로·인자 값은 이 맵에 절대 담지 않는다.
+    let mut call_stats: std::collections::HashMap<String, (u64, u64)> =
+        std::collections::HashMap::new();
 
     for line in stdin.lock().lines() {
         let line = match line {
@@ -203,7 +212,25 @@ pub fn run(args: &[String]) -> i32 {
                 }),
             ),
             "tools/call" => {
-                match handle_tool_call(&params, &tool_defs, &session_allows, &mut sessions) {
+                let result = handle_tool_call(&params, &tool_defs, &session_allows, &mut sessions);
+                if stats {
+                    // 도구명은 params.name(호출자가 요청한 그대로) — 없으면
+                    // "(무명)"으로 집계해 파싱 실패까지 계수에 잡히게 한다.
+                    let tool_name = params
+                        .get("name")
+                        .and_then(|n| n.as_str())
+                        .unwrap_or("(무명)");
+                    let is_error = match &result {
+                        Err(_) => true,
+                        Ok(v) => v.get("isError").and_then(|b| b.as_bool()).unwrap_or(false),
+                    };
+                    let entry = call_stats.entry(tool_name.to_string()).or_insert((0, 0));
+                    entry.0 += 1;
+                    if is_error {
+                        entry.1 += 1;
+                    }
+                }
+                match result {
                     Ok(result) => ok_response(id, result),
                     Err(e) => error_response(id, INVALID_PARAMS, &e),
                 }
@@ -225,7 +252,29 @@ pub fn run(args: &[String]) -> i32 {
         };
         write_msg(&stdout, &response);
     }
+    if stats {
+        write_stats_summary(&call_stats);
+    }
     crate::EXIT_OK
+}
+
+/// [트랙 H R80 1단계] 도구명별 호출 수·오류 수를 stderr 로 한 번 요약한다.
+///
+/// stdout 은 JSON-RPC 프로토콜 전용이라(INV-04) 통계는 여기로만 나간다. 문서
+/// 내용·경로·인자 값·오류 메시지 원문은 이 함수에도, `call_stats` 자체에도
+/// 들어오지 않는다 — 애초에 도구명과 정수 계수만 쌓았기 때문이다.
+fn write_stats_summary(call_stats: &std::collections::HashMap<String, (u64, u64)>) {
+    if call_stats.is_empty() {
+        eprintln!("mcp-serve --stats: 도구 호출 없음");
+        return;
+    }
+    let mut names: Vec<&String> = call_stats.keys().collect();
+    names.sort();
+    eprintln!("mcp-serve --stats: 도구별 호출 수/오류 수");
+    for name in names {
+        let (calls, errors) = call_stats[name];
+        eprintln!("  {name}: {calls}회 호출, 오류 {errors}건");
+    }
 }
 
 fn write_msg(stdout: &std::io::Stdout, msg: &serde_json::Value) {

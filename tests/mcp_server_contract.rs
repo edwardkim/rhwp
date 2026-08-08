@@ -9,7 +9,7 @@
 //! `hwp_doc_text` 가 재파싱 없이 핸들에서 읽으며, `hwp_close` 가 해제한다.
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 
@@ -787,4 +787,142 @@ fn resources_read_unknown_uri_returns_resource_not_found() {
     );
     let r = s.request("resources/read", serde_json::json!({}));
     assert_eq!(r["error"]["code"], -32602, "{r}");
+}
+
+// ── R80 1단계: --stats 옵트인 관측성 ────────────────────────────────────
+//
+// mydocs/tech/agent_architecture/observability_contract.md 의 §3(금지 목록)을
+// 계약 테스트로 고정한다 — INV-07("무동작 플래그 금지")에 따라 플래그와
+// 계약 테스트가 같은 PR 로 들어간다.
+
+/// `--stats` 없는 `mcp-serve` 는 §1 그대로 — 계측 0, 추가 stderr 출력 0.
+#[test]
+fn mcp_serve_without_stats_flag_emits_nothing_extra_on_stderr() {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .arg("mcp-serve")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("rhwp mcp-serve 실행 실패");
+    {
+        let mut stdin = child.stdin.take().expect("stdin");
+        let mut stdout = BufReader::new(child.stdout.take().expect("stdout"));
+        writeln!(
+            stdin,
+            r#"{{"jsonrpc":"2.0","id":1,"method":"initialize","params":{{"protocolVersion":"2025-06-18","capabilities":{{}},"clientInfo":{{"name":"contract-test","version":"0"}}}}}}"#
+        )
+        .expect("초기화 쓰기 실패");
+        stdin.flush().expect("flush");
+        let mut line = String::new();
+        stdout.read_line(&mut line).expect("초기화 응답 읽기 실패");
+        // stdin 을 닫아 서버가 EOF 로 정상 종료하게 한다.
+    }
+    let status = child.wait().expect("서버 종료 대기 실패");
+    assert!(status.success(), "서버가 비정상 종료했습니다: {status:?}");
+    let mut stderr_out = String::new();
+    child
+        .stderr
+        .take()
+        .expect("stderr")
+        .read_to_string(&mut stderr_out)
+        .expect("stderr 읽기 실패");
+    assert!(
+        stderr_out.is_empty(),
+        "--stats 없이도 stderr 에 출력이 났습니다: {stderr_out:?}"
+    );
+}
+
+/// `--stats` 는 도구명별 호출 수·오류 수만 stderr 로 낸다 — 문서 내용·경로·
+/// 인자 값은 계약(§3)에 따라 절대 새어 나가면 안 된다.
+#[test]
+fn mcp_serve_stats_summarizes_call_counts_without_leaking_document_data() {
+    let p = sample(SAMPLE);
+    // 존재하지 않는 경로 — 오류 호출을 만들면서, 통계에 새면 안 될 "민감한
+    // 경로 성분"의 대역으로도 쓴다(경로는 계약 §3 상 준식별자로 금지 항목).
+    let bogus_path = "/no/such/문서-극비-누설되면-안됨-72d9f3.hwp";
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .arg("mcp-serve")
+        .arg("--stats")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("rhwp mcp-serve --stats 실행 실패");
+    {
+        let mut stdin = child.stdin.take().expect("stdin");
+        let mut stdout = BufReader::new(child.stdout.take().expect("stdout"));
+        let mut line = String::new();
+
+        writeln!(
+            stdin,
+            r#"{{"jsonrpc":"2.0","id":1,"method":"initialize","params":{{"protocolVersion":"2025-06-18","capabilities":{{}},"clientInfo":{{"name":"contract-test","version":"0"}}}}}}"#
+        )
+        .expect("초기화 쓰기 실패");
+        stdin.flush().expect("flush");
+        stdout.read_line(&mut line).expect("초기화 응답 읽기 실패");
+
+        // 성공 호출 1건 — 실제 문서 경로를 실어 보낸다(통계에 새면 안 됨).
+        let ok_call = serde_json::json!({
+            "jsonrpc": "2.0", "id": 2, "method": "tools/call",
+            "params": {"name": "hwp_info", "arguments": {"path": p.to_str().unwrap()}}
+        });
+        writeln!(stdin, "{ok_call}").expect("hwp_info 성공 호출 쓰기 실패");
+        stdin.flush().expect("flush");
+        line.clear();
+        stdout.read_line(&mut line).expect("hwp_info 성공 응답 읽기 실패");
+
+        // 오류 호출 1건(같은 도구, 존재하지 않는 경로) — isError:true 경로를
+        // 태워 오류 수 집계와 "경로는 절대 안 샌다"를 같은 호출로 검증한다.
+        let err_call = serde_json::json!({
+            "jsonrpc": "2.0", "id": 3, "method": "tools/call",
+            "params": {"name": "hwp_info", "arguments": {"path": bogus_path}}
+        });
+        writeln!(stdin, "{err_call}").expect("hwp_info 오류 호출 쓰기 실패");
+        stdin.flush().expect("flush");
+        line.clear();
+        let n = stdout.read_line(&mut line).expect("hwp_info 오류 응답 읽기 실패");
+        assert!(n > 0, "서버가 오류 호출 후 응답 없이 종료했습니다");
+        let resp: serde_json::Value = serde_json::from_str(line.trim()).expect("응답 JSON 파싱 실패");
+        assert_eq!(
+            resp["result"]["isError"], true,
+            "존재하지 않는 경로는 isError:true 여야 합니다: {resp}"
+        );
+
+        // stdin 을 닫아 서버가 EOF 로 정상 종료하며 통계를 stderr 로 낸다.
+    }
+    let status = child.wait().expect("서버 종료 대기 실패");
+    assert!(status.success(), "서버가 비정상 종료했습니다: {status:?}");
+    let mut stderr_out = String::new();
+    child
+        .stderr
+        .take()
+        .expect("stderr")
+        .read_to_string(&mut stderr_out)
+        .expect("stderr 읽기 실패");
+
+    assert!(
+        stderr_out.contains("mcp-serve --stats"),
+        "--stats 요약 머리글이 없습니다: {stderr_out:?}"
+    );
+    assert!(
+        stderr_out.contains("hwp_info"),
+        "hwp_info 호출이 도구명으로 집계되지 않았습니다: {stderr_out:?}"
+    );
+    assert!(
+        stderr_out.contains("2회 호출") && stderr_out.contains("오류 1건"),
+        "호출 수 2·오류 수 1 이 집계되지 않았습니다: {stderr_out:?}"
+    );
+
+    // §3 금지 목록 — 문서 경로는 성공·오류 어느 쪽이든 stderr 에 어떤
+    // 형태로도 나타나면 안 된다.
+    assert!(
+        !stderr_out.contains(p.to_str().unwrap()),
+        "성공 호출의 문서 경로가 --stats 출력에 샜습니다: {stderr_out:?}"
+    );
+    assert!(
+        !stderr_out.contains(bogus_path) && !stderr_out.contains("극비-누설되면-안됨"),
+        "오류 호출의 문서 경로가 --stats 출력에 샜습니다: {stderr_out:?}"
+    );
 }
