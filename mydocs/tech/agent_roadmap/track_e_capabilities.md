@@ -69,17 +69,22 @@ last_verified: 2026-08-04
 - **DoD** — 달성: 폴더 입력에서 날짜·금액·수량이 일괄 추출된다.
 - **의존** — R41.
 
-## R46 렌더 견고성 연속 `[이슈]`
+## R46 렌더 견고성 연속 `[완료]`
 
 - **한 줄** — 기형 입력이 렌더러를 패닉시키던 결함을 연속 발굴한다.
-- **지금** — PR #3875. WMF POLYLINE/POLYGON 의 **음수 NumberOfPoints** 가 capacity
-  overflow 패닉을 냈다(red→green 실증). 이런 파서 견고성 결함의 연속 발굴 축이다.
-- **설계** — 기형 입력(음수 NumberOfPoints)을 capacity 할당 전에 거른다. 이런
-  결함은 하나 고치고 끝이 아니라 코퍼스·퍼즈로 연속 발굴되는 축이라, 발견 1건마다
-  red→green 회귀를 스위트에 남긴다(트랙 B 악성 코퍼스와 같은 방법).
-- **착수 게이트** — 없음(PR 존재). 다음 행동은 머지 유도·리뷰 대응.
-- **DoD** — PR #3875 머지. 음수 NumberOfPoints WMF 가 패닉 대신 정직한 오류로
-  처리되고, red→green 회귀가 스위트에 남는다.
+- **지금** — PR #3875 는 CLOSED(직접 머지가 아니라 통합 PR #3895, 머지 커밋
+  `c09c67324`로 착지) — WMF POLYLINE/POLYGON 의 **음수 NumberOfPoints** 가
+  capacity overflow 패닉을 냈다(red→green 실증). 후속 스윕(음수 StringLength,
+  META_TEXTOUT/META_EXTTEXTOUT)은 PR #3921 → 통합 PR #3935(머지 커밋
+  `301d0fe5f`)로 착지. 가드는 `src/wmf/parser/records/drawing/polygon.rs:53`·
+  `poly_line.rs`·`text_out.rs:64`·`ext_text_out.rs`에 실물로 있다.
+- **설계(보장)** — 기형 입력(음수 NumberOfPoints·StringLength)을 capacity
+  할당 전에 거른다. 이런 결함은 하나 고치고 끝이 아니라 코퍼스·퍼즈로 연속
+  발굴되는 축이라, 발견마다 red→green 회귀를 스위트에 남긴다(트랙 B 악성
+  코퍼스와 같은 방법).
+- **DoD** — 달성: 음수 NumberOfPoints·StringLength WMF 가 패닉 대신 정직한
+  처리로 바뀌었고, 회귀 시험 `tests/wmf_poly_negative_point_count_no_panic.rs`·
+  `tests/wmf_text_negative_string_length_no_panic.rs`가 스위트에 남는다.
 - **의존** — 트랙 B(악성·기형 코퍼스 회귀와 짝).
 
 ## R47 표 셀 내 검색 경계 `[완료]`
