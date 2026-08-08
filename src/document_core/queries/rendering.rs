@@ -470,7 +470,7 @@ fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
     para_shape_ratio < 0.05 && char_shape_ratio < 0.15
 }
 
-fn uses_hwp3_origin_flow_spacing_before(document: &Document) -> bool {
+pub(crate) fn uses_hwp3_origin_flow_spacing_before(document: &Document) -> bool {
     // HWP3-origin HWP5 변환본은 parser 단계에서 ParaShape spacing 계열을 절반으로
     // 정규화하므로, 본문 흐름 계산에서는 원래 spacing_before를 복원한다.
     // 원본 HWP3는 HWP3 parser가 만든 spacing 값을 기준으로 삼아 여기서 재확대하지 않는다.

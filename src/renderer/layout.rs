@@ -1797,6 +1797,10 @@ pub struct LayoutEngine {
     /// `cell_units_uncached` 안에서 계산되어 52,694 셀 표에서 O(셀²)(≈28억) 로 폭증했다.
     /// `cell_units_cache` 와 동일 조판 경계에서 clear 한다.
     table_nested_text_flag_cache: std::cell::RefCell<std::collections::HashMap<usize, bool>>,
+    /// [#4149] 셀 커서 fast path 프로브 차단 스캔(개요/번호 문단·AutoNumber 컨트롤
+    /// 보유 여부)의 표 포인터 키 메모 — 거대 표 서브트리 재스캔 방지.
+    /// `cell_units_cache` 와 동일 조판 경계에서 clear 한다.
+    cursor_probe_block_cache: std::cell::RefCell<std::collections::HashMap<usize, bool>>,
     /// Issue #2214 test-only: cache miss가 실제 table-wide scan으로 이어진 횟수.
     #[cfg(test)]
     table_nested_text_flag_scan_count: std::cell::Cell<usize>,
@@ -1814,6 +1818,8 @@ mod utils;
 
 pub(crate) use paragraph_layout::ensure_min_baseline;
 pub(crate) use table_layout::border_style_has_diagonal;
+// [#4149] 셀 커서 fast path 프로브 (document_core::queries::cursor_rect 전용)
+pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
     extract_tab_leaders_with_extended, find_next_tab_stop, is_cjk_char, is_halfwidth_cjk_quote,
@@ -1876,6 +1882,7 @@ impl LayoutEngine {
             hwpx_page_preview: std::cell::RefCell::new(None),
             cell_units_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             table_nested_text_flag_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
+            cursor_probe_block_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             #[cfg(test)]
             table_nested_text_flag_scan_count: std::cell::Cell::new(0),
         }
@@ -1886,6 +1893,7 @@ impl LayoutEngine {
     pub fn clear_layout_caches(&self) {
         self.cell_units_cache.borrow_mut().clear();
         self.table_nested_text_flag_cache.borrow_mut().clear();
+        self.cursor_probe_block_cache.borrow_mut().clear();
     }
 
     pub(crate) fn set_render_normalization_overlay(
@@ -4884,6 +4892,25 @@ impl LayoutEngine {
         }
     }
 
+    /// 단(column) 콘텐츠 레이아웃 전에 페이지 좌표계 상태를 채운다.
+    /// build_single_column 과 [#4149] 셀 커서 fast path 프로브가 공유한다 —
+    /// 프로브가 전량 빌드와 동일한 좌표계(용지 폭/본문 영역)에서 동작해야
+    /// cell_units 메모 등 포인터-키 캐시가 동일 값으로 채워진다.
+    pub(crate) fn prime_column_layout_env(&self, layout: &PageLayoutInfo) {
+        // 현재 페이지 용지 너비 설정 (표 HorzRelTo::Paper 위치 계산용)
+        self.current_paper_width.set(layout.page_width);
+        // [#3637] 쪽 높이도 여기서 채운다. 바탕쪽 분기(위)에서만 채우면 바탕쪽 없는
+        // 문서에서 0 으로 남아 셀 넘침 진단이 통째로 침묵한다.
+        self.current_page_height.set(layout.page_height);
+        // 현재 페이지 본문 영역 설정 (표 HorzRelTo::Page / VertRelTo::Page 계산용 — Task #347)
+        let ba = &layout.body_area;
+        self.current_body_area
+            .set((ba.x, ba.y, ba.width, ba.height));
+
+        // 문단 테두리 범위 수집 초기화
+        self.para_border_ranges.borrow_mut().clear();
+    }
+
     fn build_single_column(
         &self,
         tree: &mut PageRenderTree,
@@ -4909,18 +4936,7 @@ impl LayoutEngine {
             layout_rect_to_bbox(col_area),
         );
 
-        // 현재 페이지 용지 너비 설정 (표 HorzRelTo::Paper 위치 계산용)
-        self.current_paper_width.set(layout.page_width);
-        // [#3637] 쪽 높이도 여기서 채운다. 바탕쪽 분기(위)에서만 채우면 바탕쪽 없는
-        // 문서에서 0 으로 남아 셀 넘침 진단이 통째로 침묵한다.
-        self.current_page_height.set(layout.page_height);
-        // 현재 페이지 본문 영역 설정 (표 HorzRelTo::Page / VertRelTo::Page 계산용 — Task #347)
-        let ba = &layout.body_area;
-        self.current_body_area
-            .set((ba.x, ba.y, ba.width, ba.height));
-
-        // 문단 테두리 범위 수집 초기화
-        self.para_border_ranges.borrow_mut().clear();
+        self.prime_column_layout_env(layout);
 
         // TopAndBottom 글상자/표/이미지의 앵커 문단별 예약 높이 목록
         let mut shape_reserved = self.calculate_shape_reserved_heights(
@@ -8348,6 +8364,7 @@ impl LayoutEngine {
             pt_margin_right,
             pt_mt,
             false,
+            None,
         );
         if render_deferred_rowbreak_host_text_after {
             if let Some(para) = paragraphs.get(para_index) {

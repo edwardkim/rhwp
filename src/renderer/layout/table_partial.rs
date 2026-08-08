@@ -1,6 +1,6 @@
 //! 페이지 분할 표 레이아웃 (layout_partial_table)
 
-use super::super::composer::compose_paragraph;
+use super::super::composer::{compose_paragraph, ComposedParagraph};
 use super::super::height_measurer::MeasuredTable;
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
@@ -106,6 +106,115 @@ fn expand_terminal_cell_clip_to_nested_table_descendants(
 }
 
 // 표 수평 정렬 보조 타입은 table_layout.rs에 통합됨
+
+/// [#4149] 셀 커서 fast path 프로브 — 부분 표 조각 레이아웃을 대상 셀 하나로 제한한다.
+///
+/// 계약: 방출되는 노드의 좌표는 전량 레이아웃과 완전 동일해야 한다 — 프로브는
+/// "생략"만 하고 "변형"은 하지 않는다 (셀 방출 루프는 셀-간 캐리가 없음이 근거).
+pub(crate) struct PartialTableCellProbe {
+    /// 대상 셀 인덱스 — 이 셀만 방출한다.
+    pub(crate) cell_idx: usize,
+    /// 이 문단까지 방출 후 중단한다 (캐럿 문단 — 이후 문단은 캐럿 탐색에 불필요하고
+    /// 앞 문단의 y 에도 영향이 없다).
+    pub(crate) stop_after_para: usize,
+    /// true 면 컷 창 문단(`window_paras`)만 순회·compose 한다. 사전 게이트가
+    /// (a) 컷 존재, (b) shrink 조기탈출(다중줄 문단 존재), (c) effective Top 정렬을
+    /// 증명한 경우에만 true 가 된다.
+    pub(crate) windowed: bool,
+    /// `windowed` 일 때 컷 창에 유닛이 있는 문단 범위 [lo, hi] (inclusive).
+    /// 범위 밖 문단은 컷 창에 유닛이 없어 전량 레이아웃에서도 skip 됨이 증명된다.
+    pub(crate) window_paras: (usize, usize),
+}
+
+/// [#4149] 셀 문단 compose 저장소 — windowed 프로브에서만 lazy.
+///
+/// Lazy 슬롯의 compose 결과는 Eager 경로와 동일한 변환 순서
+/// (compose → recompose_for_cell_width → recompose_stored_single_line_if_overflowing)를
+/// 문단 단위로 적용한다. windowed 프로브 게이트가 shrink 를 조기탈출로 증명하므로
+/// Lazy 에서 inner_width 는 Eager 와 동일하다.
+enum CellComposedStore {
+    Eager(Vec<ComposedParagraph>),
+    Lazy(Vec<Option<ComposedParagraph>>),
+}
+
+impl CellComposedStore {
+    fn get(
+        &mut self,
+        cpi: usize,
+        cell: &crate::model::table::Cell,
+        inner_width: f64,
+        styles: &ResolvedStyleSet,
+    ) -> &ComposedParagraph {
+        match self {
+            CellComposedStore::Eager(v) => &v[cpi],
+            CellComposedStore::Lazy(slots) => {
+                if slots[cpi].is_none() {
+                    let para = &cell.paragraphs[cpi];
+                    let mut comp = compose_paragraph(para);
+                    crate::renderer::composer::recompose_for_cell_width(
+                        &mut comp,
+                        para,
+                        inner_width,
+                        styles,
+                    );
+                    if cell.text_direction == 0 {
+                        crate::renderer::composer::recompose_stored_single_line_if_overflowing(
+                            &mut comp,
+                            para,
+                            inner_width,
+                            styles,
+                        );
+                    }
+                    slots[cpi] = Some(comp);
+                }
+                slots[cpi].as_ref().unwrap()
+            }
+        }
+    }
+
+    /// 전량 슬라이스가 필요한 경로(세로쓰기 등)를 위한 완전 구성.
+    fn materialize(
+        &mut self,
+        cell: &crate::model::table::Cell,
+        inner_width: f64,
+        styles: &ResolvedStyleSet,
+    ) {
+        if matches!(self, CellComposedStore::Lazy(_)) {
+            let mut v = Vec::with_capacity(cell.paragraphs.len());
+            for cpi in 0..cell.paragraphs.len() {
+                v.push(self.get(cpi, cell, inner_width, styles).clone());
+            }
+            *self = CellComposedStore::Eager(v);
+        }
+    }
+
+    /// Eager 전제 슬라이스 접근 — windowed 프로브 게이트 밖에서만 호출된다.
+    fn eager_slice(&self) -> &[ComposedParagraph] {
+        match self {
+            CellComposedStore::Eager(v) => v,
+            CellComposedStore::Lazy(_) => {
+                unreachable!("windowed 프로브에서 전량 compose 접근 금지")
+            }
+        }
+    }
+}
+
+/// [#4149] 프로브 사전 계획 결과.
+pub(crate) enum ProbeCutPlan {
+    /// 프로브로 다룰 수 없는 조합 (rowspan 셀, 빈 창 등) — legacy 폴백.
+    Unsupported,
+    /// 이 조각에서 셀이 컷되지 않음 (전체 가시). 소형 셀 한정 전량 프로브 가능.
+    Uncut,
+    /// 컷 존재. `window_paras` = 창에 유닛이 있는 문단 범위 [lo, hi] (inclusive).
+    Cut {
+        window_paras: (usize, usize),
+        /// 전량 레이아웃의 `cell_was_split` 이 true 임이 증명됨 (s>0 문단 존재
+        /// 또는 창 밖 미가시 문단의 compose 줄 수 ≥ 1).
+        split_proven: bool,
+        /// 대상 문단이 창 안에 있는가 — 밖이면 이 페이지에 대상 문단 run 이 없다.
+        target_in_window: bool,
+    },
+}
 
 /// [Task #1025] `row` 를 포함하는 rowspan 블록 범위 `[b_start, b_end)`.
 /// rs>1 셀이 겹치는 행을 전이적으로 확장한다(겹침 없으면 `[row, row+1)`).
@@ -312,6 +421,200 @@ impl LayoutEngine {
         ord >= su && (ord < eu || (ord == eu && at_line_start))
     }
 
+    /// [#4149] 커서 fast path 의 프로브 사전 계획 — 이 PartialTable 조각에서 `cell` 의
+    /// 컷 창과 창 문단 범위를 계산한다. 분할 게이트 판정은
+    /// `layout_partial_table_cells` 의 셀 방출 판정과 동일 산식 — 드리프트 금지.
+    /// memoize 된 `cell_units` 만 사용하며 render tree 를 짓지 않는다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn partial_table_cell_probe_plan(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        start_row: usize,
+        end_row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        is_block_split: bool,
+        styles: &ResolvedStyleSet,
+        target_para: usize,
+    ) -> ProbeCutPlan {
+        // rowspan 셀은 straddle 높이-컷 경로(is_rowbreak_straddle)가 얽혀 보수적 폴백.
+        if cell.row_span > 1 {
+            return ProbeCutPlan::Unsupported;
+        }
+        let cell_row = cell.row as usize;
+        let cell_end_row = cell_row + (cell.row_span as usize).max(1);
+        // 분할 게이트 — layout_partial_table_cells 와 동일 판정
+        let split_start_block = if is_block_split && !start_cut.is_empty() {
+            Some(rowspan_block_range(table, start_row))
+        } else {
+            None
+        };
+        let split_end_block = if is_block_split && !end_cut.is_empty() {
+            Some(rowspan_block_range(table, end_row.saturating_sub(1)))
+        } else {
+            None
+        };
+        let is_split_start_row = if is_block_split {
+            split_start_block.is_some_and(|(s, e)| cell_row < e && cell_end_row > s)
+        } else {
+            !start_cut.is_empty() && cell_row == start_row
+        };
+        let is_split_end_row = if is_block_split {
+            split_end_block.is_some_and(|(s, e)| cell_row < e && cell_end_row > s)
+        } else {
+            !end_cut.is_empty() && cell_row == end_row.saturating_sub(1)
+        };
+        if !(is_split_start_row || is_split_end_row) {
+            // row_span==1 이므로 is_rowbreak_straddle(rowspan>1 전제) 도달 불가 — 전체 가시.
+            return ProbeCutPlan::Uncut;
+        }
+        let (su, eu) = cell_cut_window(
+            table,
+            cell,
+            is_block_split,
+            is_split_start_row,
+            split_start_block,
+            is_split_end_row,
+            split_end_block,
+            start_cut,
+            end_cut,
+            None,
+        );
+        let units = self.cell_units(cell, table, styles);
+        let lo = su.min(units.len());
+        let hi = eu.min(units.len()).max(lo);
+        if lo >= hi {
+            return ProbeCutPlan::Unsupported;
+        }
+        let mut pmin = usize::MAX;
+        let mut pmax = 0usize;
+        for u in &units[lo..hi] {
+            pmin = pmin.min(u.para_idx);
+            pmax = pmax.max(u.para_idx);
+        }
+        if pmin == usize::MAX || pmax >= cell.paragraphs.len() {
+            return ProbeCutPlan::Unsupported;
+        }
+        // cell_was_split 증명 — 전량 레이아웃의 `s != 0 || e != total` 판정과 동치인
+        // 충분조건만 취한다:
+        //   (a) 어떤 문단의 가시 시작줄 s > 0, 또는
+        //   (b) 창 밖 미가시 문단((0,0))의 compose 줄 수 ≥ 1 (recompose 는 줄을
+        //       늘리기만 하므로 pre-recompose ≥ 1 ⇒ post ≥ 1 > 0 = e).
+        let ranges = self.cell_line_ranges_from_cut(cell, table, styles, su, eu);
+        let mut split_proven = ranges.iter().any(|&(s, _)| s > 0);
+        if !split_proven {
+            for (i, &(s, e)) in ranges.iter().enumerate() {
+                if s == 0 && e == 0 && (i < pmin || i > pmax) {
+                    if compose_paragraph(&cell.paragraphs[i]).lines.is_empty() {
+                        continue;
+                    }
+                    split_proven = true;
+                    break;
+                }
+            }
+        }
+        ProbeCutPlan::Cut {
+            window_paras: (pmin, pmax),
+            split_proven,
+            target_in_window: (pmin..=pmax).contains(&target_para),
+        }
+    }
+
+    /// [#4149] 표 서브트리(호스트 표 + 중첩 표/글상자/캡션)가 프로브를 차단하는
+    /// 상태 의존 요소를 갖는지 — 표 포인터 키 메모.
+    ///
+    /// 차단 근거: (a) 개요/번호 문단은 auto counter 를 소비하는데 프로브는 이전
+    /// 페이지 replay 없이 셀 하나만 레이아웃하므로 번호가 어긋난다.
+    /// (b) AutoNumber/NewNumber 컨트롤·캡션 자동번호도 동일. (c) 묶음 개체는 내부
+    /// 글상자 유무를 싸게 판정할 수 없어 보수적으로 차단.
+    pub(crate) fn table_subtree_blocks_cursor_probe(
+        &self,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        fn paras_block(paras: &[Paragraph], styles: &ResolvedStyleSet) -> bool {
+            use crate::model::style::HeadType;
+            for p in paras {
+                let head = styles
+                    .para_styles
+                    .get(p.para_shape_id as usize)
+                    .map(|s| s.head_type)
+                    .unwrap_or(HeadType::None);
+                if matches!(head, HeadType::Outline | HeadType::Number) {
+                    return true;
+                }
+                for c in &p.controls {
+                    match c {
+                        Control::AutoNumber(_) | Control::NewNumber(_) => return true,
+                        Control::Table(t) => {
+                            // 캡션은 존재 자체가 아니라 auto counter 소비 요소
+                            // (개요/번호 헤드·AutoNumber)를 가질 때만 차단한다 —
+                            // layout_caption 은 apply_auto_numbers_to_composed 로만
+                            // counter 를 만진다.
+                            if let Some(cap) = t.caption.as_ref() {
+                                if paras_block(&cap.paragraphs, styles) {
+                                    return true;
+                                }
+                            }
+                            for cell in &t.cells {
+                                if paras_block(&cell.paragraphs, styles) {
+                                    return true;
+                                }
+                            }
+                        }
+                        Control::Shape(s) => {
+                            use crate::model::shape::ShapeObject;
+                            let drawing = match &**s {
+                                ShapeObject::Rectangle(sh) => Some(&sh.drawing),
+                                ShapeObject::Ellipse(sh) => Some(&sh.drawing),
+                                ShapeObject::Polygon(sh) => Some(&sh.drawing),
+                                ShapeObject::Curve(sh) => Some(&sh.drawing),
+                                ShapeObject::Line(_) | ShapeObject::Arc(_) => None,
+                                // Group/Chart/Ole 등은 내부 글상자·캡션을 싸게 확인할 수
+                                // 없어 보수적으로 차단한다.
+                                _ => return true,
+                            };
+                            if let Some(d) = drawing {
+                                if let Some(cap) = d.caption.as_ref() {
+                                    if paras_block(&cap.paragraphs, styles) {
+                                        return true;
+                                    }
+                                }
+                                if let Some(tb) = d.text_box.as_ref() {
+                                    if paras_block(&tb.paragraphs, styles) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                        Control::Picture(pic) => {
+                            if let Some(cap) = pic.caption.as_ref() {
+                                if paras_block(&cap.paragraphs, styles) {
+                                    return true;
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            false
+        }
+        let key = table as *const crate::model::table::Table as usize;
+        if let Some(&cached) = self.cursor_probe_block_cache.borrow().get(&key) {
+            return cached;
+        }
+        let blocked = table
+            .cells
+            .iter()
+            .any(|c| paras_block(&c.paragraphs, styles));
+        self.cursor_probe_block_cache
+            .borrow_mut()
+            .insert(key, blocked);
+        blocked
+    }
+
     /// [#2029 추출] 부분 표의 셀 방출 루프 — 셀 geometry/배경/반복 헤더와 셀
     /// 문단 배치를 `table_node.children` 에 방출한다. 셀-간 캐리 없음(실측 muts 0,
     /// 외부 sink = table_node 단일) — 원본 무변경 이동.
@@ -349,8 +652,14 @@ impl LayoutEngine {
         v_edges: &mut Vec<Vec<Option<BorderLine>>>,
         measured_table: Option<&MeasuredTable>,
         clamp_header_negative_para_offset: bool,
+        probe: Option<&PartialTableCellProbe>,
     ) {
         for (cell_idx, cell) in table.cells.iter().enumerate() {
+            // [#4149] 프로브: 대상 셀만 방출. 셀 방출 루프는 셀-간 캐리가 없어
+            // (실측 muts 0, 외부 sink = table_node 단일) 생략이 대상 셀 좌표를 바꾸지 않는다.
+            if probe.is_some_and(|p| p.cell_idx != cell_idx) {
+                continue;
+            }
             let cell_row = cell.row as usize;
             let cell_col = cell.col as usize;
             if cell_col >= col_count || cell_row >= row_count {
@@ -501,51 +810,64 @@ impl LayoutEngine {
             let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
                 self.resolve_cell_padding(cell, table);
 
-            // 셀 내 문단 구성
-            let mut composed_paras: Vec<_> = cell
-                .paragraphs
-                .iter()
-                .map(|p| compose_paragraph(p))
-                .collect();
+            // [#4149] windowed 프로브면 창 문단만 lazy compose. 그 외에는 종전과
+            // 동일한 순서로 전량 compose → shrink → recompose.
+            let probe_windowed = probe.is_some_and(|p| p.windowed);
+            let mut composed_store: CellComposedStore;
+            if probe_windowed {
+                // shrink 생략 근거: 프로브 사전 게이트가 line_segs>=2 문단 존재를
+                // 증명했고, shrunk_cell_horizontal_padding 은 그 경우 composed 를
+                // 읽지 않고 패딩을 그대로 반환한다 (조기 탈출과 동일 결과).
+                composed_store = CellComposedStore::Lazy(vec![None; cell.paragraphs.len()]);
+            } else {
+                // 셀 내 문단 구성
+                let mut composed_paras: Vec<_> = cell
+                    .paragraphs
+                    .iter()
+                    .map(|p| compose_paragraph(p))
+                    .collect();
 
-            // 텍스트 오버플로우 시 좌우 패딩 축소
-            let (new_pl, new_pr) = self.shrink_cell_padding_for_overflow(
-                pad_left,
-                pad_right,
-                cell_w,
-                &composed_paras,
-                &cell.paragraphs,
-                styles,
-                cell.apply_inner_margin,
-            );
-            pad_left = new_pl;
-            pad_right = new_pr;
+                // 텍스트 오버플로우 시 좌우 패딩 축소
+                let (new_pl, new_pr) = self.shrink_cell_padding_for_overflow(
+                    pad_left,
+                    pad_right,
+                    cell_w,
+                    &composed_paras,
+                    &cell.paragraphs,
+                    styles,
+                    cell.apply_inner_margin,
+                );
+                pad_left = new_pl;
+                pad_right = new_pr;
+
+                let inner_width_for_recompose = (cell_w - pad_left - pad_right).max(0.0);
+                // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
+                // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
+                for (cpi, para) in cell.paragraphs.iter().enumerate() {
+                    if let Some(comp) = composed_paras.get_mut(cpi) {
+                        crate::renderer::composer::recompose_for_cell_width(
+                            comp,
+                            para,
+                            inner_width_for_recompose,
+                            styles,
+                        );
+                        // [#2291] 부실 저장(ls==1·실폭 초과) 재분할 — 가로쓰기 셀 한정.
+                        if cell.text_direction == 0 {
+                            crate::renderer::composer::recompose_stored_single_line_if_overflowing(
+                                comp,
+                                para,
+                                inner_width_for_recompose,
+                                styles,
+                            );
+                        }
+                    }
+                }
+                composed_store = CellComposedStore::Eager(composed_paras);
+            }
 
             let inner_x = cell_x + pad_left;
             let inner_width = (cell_w - pad_left - pad_right).max(0.0);
             let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
-
-            // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
-            // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
-            for (cpi, para) in cell.paragraphs.iter().enumerate() {
-                if let Some(comp) = composed_paras.get_mut(cpi) {
-                    crate::renderer::composer::recompose_for_cell_width(
-                        comp,
-                        para,
-                        inner_width,
-                        styles,
-                    );
-                    // [#2291] 부실 저장(ls==1·실폭 초과) 재분할 — 가로쓰기 셀 한정.
-                    if cell.text_direction == 0 {
-                        crate::renderer::composer::recompose_stored_single_line_if_overflowing(
-                            comp,
-                            para,
-                            inner_width,
-                            styles,
-                        );
-                    }
-                }
-            }
 
             // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
             // 블록 분할이면 블록-셀 (row,col) 인덱스, 그 외는 행내 row_span==1 col 인덱스.
@@ -612,9 +934,14 @@ impl LayoutEngine {
             // 셀 내 텍스트 높이 (분할 행이면 줄 범위 내만 계산)
             // spacing_before: 셀 첫 문단 제외, spacing_after: 셀 마지막 문단 제외
             let split_para_count = cell.paragraphs.len();
-            let total_content_height = if let Some(ref ranges) = line_ranges {
+            // [#4149] windowed 프로브: 아래에서 effective_align 이 Top 으로 확정되므로
+            // (cell_was_split=true 사전 증명) total_content_height 는 미사용 — 0 고정.
+            let total_content_height = if probe_windowed {
+                0.0
+            } else if let Some(ref ranges) = line_ranges {
                 let mut total = 0.0;
-                for (pi, ((comp, para), &(start, end))) in composed_paras
+                for (pi, ((comp, para), &(start, end))) in composed_store
+                    .eager_slice()
                     .iter()
                     .zip(cell.paragraphs.iter())
                     .zip(ranges.iter())
@@ -669,7 +996,7 @@ impl LayoutEngine {
                         .unwrap_or(0);
                     let vpos_h = hwpunit_to_px(last_seg_end, self.dpi);
                     let line_h = self.calc_composed_paras_content_height(
-                        &composed_paras,
+                        composed_store.eager_slice(),
                         &cell.paragraphs,
                         styles,
                     );
@@ -683,7 +1010,7 @@ impl LayoutEngine {
                         .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs))
                 } else {
                     self.calc_composed_paras_content_height(
-                        &composed_paras,
+                        composed_store.eager_slice(),
                         &cell.paragraphs,
                         styles,
                     )
@@ -698,9 +1025,17 @@ impl LayoutEngine {
             // 그대로 visible 처리한다면 (= 실제 split 적용 안 받은 cell, 예: inner-table-01.hwp
             // cell[10] '사업개요' 라벨) 원본 cell.vertical_align 을 사용한다. split 적용으로
             // line 일부가 잘린 cell 만 Top 강제.
-            let cell_was_split = if let Some(ref ranges) = line_ranges {
+            let cell_was_split = if probe_windowed {
+                // [#4149] windowed 프로브 사전 게이트가 증명한 값 (s>0 문단 존재 또는
+                // 창 밖 미가시 문단의 compose 줄 수 ≥ 1) — 전량 판정과 동치.
+                true
+            } else if let Some(ref ranges) = line_ranges {
                 ranges.iter().enumerate().any(|(i, &(s, e))| {
-                    let total = composed_paras.get(i).map(|c| c.lines.len()).unwrap_or(0);
+                    let total = composed_store
+                        .eager_slice()
+                        .get(i)
+                        .map(|c| c.lines.len())
+                        .unwrap_or(0);
                     s != 0 || e != total
                 })
             } else {
@@ -746,6 +1081,9 @@ impl LayoutEngine {
 
             // 세로쓰기 셀: 별도 레이아웃 경로 (가로 레이아웃 루프 대신)
             if cell.text_direction != 0 {
+                // [#4149] 프로브가 세로쓰기 셀을 대상으로 삼는 일은 게이트로 막지만,
+                // 방어적으로 전량 구성 후 동일 경로를 태운다 (좌표 동일).
+                composed_store.materialize(cell, inner_width, styles);
                 let vert_inner_area = LayoutRect {
                     x: inner_x,
                     y: cell_y + pad_top,
@@ -755,7 +1093,7 @@ impl LayoutEngine {
                 self.layout_vertical_cell_text(
                     tree,
                     &mut cell_node,
-                    &composed_paras,
+                    composed_store.eager_slice(),
                     &cell.paragraphs,
                     styles,
                     &vert_inner_area,
@@ -812,7 +1150,7 @@ impl LayoutEngine {
                 }
                 last_idx
             } else {
-                composed_paras.len().saturating_sub(1)
+                cell.paragraphs.len().saturating_sub(1)
             };
 
             let mut para_y = text_y_start;
@@ -839,11 +1177,29 @@ impl LayoutEngine {
             } else {
                 0
             };
-            for (cp_idx, (composed, para)) in composed_paras
-                .iter()
-                .zip(cell.paragraphs.iter())
-                .enumerate()
-            {
+            // [#4149] windowed 프로브: 컷 창에 유닛이 없는 문단은 아래 skip 판정의
+            // 네 조건(line_ranges·mixed·nested·non-inline)이 모두 창 유닛에서만
+            // 유도되므로 전량 레이아웃에서도 반드시 skip 된다 — 순회 자체를 생략한다.
+            // stop_after_para 이후 문단은 캐럿 문단의 좌표에 영향이 없어 중단한다.
+            let (loop_start, loop_end_excl) = match probe {
+                Some(p) if p.windowed => {
+                    let (lo, hi) = p.window_paras;
+                    let end = hi
+                        .saturating_add(1)
+                        .min(cell.paragraphs.len())
+                        .min(p.stop_after_para.saturating_add(1));
+                    (lo.min(end), end)
+                }
+                Some(p) => (
+                    0,
+                    cell.paragraphs
+                        .len()
+                        .min(p.stop_after_para.saturating_add(1)),
+                ),
+                None => (0, cell.paragraphs.len()),
+            };
+            for cp_idx in loop_start..loop_end_excl {
+                let para = &cell.paragraphs[cp_idx];
                 // 분할 행이면 해당 문단의 줄 범위 적용
                 let (start_line, end_line) = if let Some(ref ranges) = line_ranges {
                     if cp_idx < ranges.len() {
@@ -852,7 +1208,13 @@ impl LayoutEngine {
                         (0, 0) // 범위 밖 문단은 렌더링하지 않음
                     }
                 } else {
-                    (0, composed.lines.len())
+                    (
+                        0,
+                        composed_store
+                            .get(cp_idx, cell, inner_width, styles)
+                            .lines
+                            .len(),
+                    )
                 };
                 let mixed_nested_split = cut_units.and_then(|(su, eu)| {
                     self.mixed_nested_split_from_cut(cell, table, styles, su, eu, cp_idx)
@@ -893,6 +1255,9 @@ impl LayoutEngine {
                 {
                     continue;
                 }
+
+                // [#4149] 가시 문단만 여기 도달 — lazy 슬롯은 이 시점에 compose 된다.
+                let composed = composed_store.get(cp_idx, cell, inner_width, styles);
 
                 if preserve_linear_single_cell_vpos {
                     let target_seg = para
@@ -1647,6 +2012,8 @@ impl LayoutEngine {
                                             0.0,
                                             None,
                                             clamp_header_negative_para_offset,
+                                            // [#4149] 프로브는 최외곽 표 한정 — 중첩 재귀는 전량
+                                            None,
                                         ) - nested_y
                                     } else {
                                         self.layout_table(
@@ -1693,7 +2060,7 @@ impl LayoutEngine {
 
                 if has_table_ctrl && mixed_nested_split.is_none() {
                     // LINE_SEG vpos 기반으로 para_y 보정.
-                    let is_last_para = cp_idx + 1 == composed_paras.len();
+                    let is_last_para = cp_idx + 1 == cell.paragraphs.len();
                     if !is_last_para {
                         if let Some(next_para) = cell.paragraphs.get(cp_idx + 1) {
                             if let Some(next_seg) = next_para.line_segs.first() {
@@ -1801,6 +2168,7 @@ impl LayoutEngine {
         host_margin_right: f64,
         measured_table: Option<&MeasuredTable>,
         clamp_header_negative_para_offset: bool,
+        probe: Option<&PartialTableCellProbe>,
     ) -> f64 {
         let para = match paragraphs.get(para_index) {
             Some(p) => p,
@@ -2331,6 +2699,7 @@ impl LayoutEngine {
             &mut v_edges,
             measured_table,
             clamp_header_negative_para_offset,
+            probe,
         );
 
         // 엣지 기반 테두리 렌더링

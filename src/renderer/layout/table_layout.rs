@@ -458,8 +458,9 @@ pub(super) struct CellUnit {
     /// 반드시 보존한다. 문단 사이 reset의 orphan/sliver 완화 계약과 구분한다.
     stored_frame_break_before: bool,
     vpos_gap_before: bool,
-    /// 이 유닛이 속한 문단 인덱스 (셀 내).
-    para_idx: usize,
+    /// 이 유닛이 속한 문단 인덱스 (셀 내). [#4149] 커서 프로브 계획이 창 문단
+    /// 범위를 계산할 때 형제 모듈(table_partial)에서 읽는다.
+    pub(super) para_idx: usize,
     /// 이 유닛이 visible 일 때 기여하는 문단 내 줄 범위 `[vis_start, vis_end)`.
     /// 텍스트 줄 유닛 = `(li, li+1)`, 중첩/빈 atom = `(0, line_count.max(1))`.
     vis_start: usize,
