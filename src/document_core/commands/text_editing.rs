@@ -3672,9 +3672,19 @@ impl DocumentCore {
             .get_mut(control_idx)
         {
             Some(Control::Table(table)) => {
-                table.cells[cell_idx]
-                    .paragraphs
-                    .insert(new_cell_para_idx, new_para);
+                // [#4288] cell_idx == 65534 는 표 캡션 접근 sentinel이다
+                // (get_cell_paragraph_mut와 동일 관례). 이 분기를 빼먹으면
+                // table.cells[65534] 인덱싱으로 패닉한다 — 손상된 문서가 아니라
+                // 캡션 문단에서 Enter(분할)를 누르는 정상 편집 동작만으로도 발생.
+                if cell_idx == 65534 {
+                    if let Some(ref mut cap) = table.caption {
+                        cap.paragraphs.insert(new_cell_para_idx, new_para);
+                    }
+                } else {
+                    table.cells[cell_idx]
+                        .paragraphs
+                        .insert(new_cell_para_idx, new_para);
+                }
                 table.dirty = true;
             }
             Some(Control::Shape(shape)) => {
@@ -3790,9 +3800,20 @@ impl DocumentCore {
             .get_mut(control_idx)
         {
             Some(Control::Table(table)) => {
-                let removed = table.cells[cell_idx].paragraphs.remove(cell_para_idx);
-                removed_meta = removed.capture_meta();
-                merge_point = table.cells[cell_idx].paragraphs[prev_idx].merge_from(&removed);
+                // [#4288] split 쪽과 동일한 캡션 sentinel 결함. cell_idx==65534를
+                // 걸러내지 않으면 table.cells[65534]에서 패닉한다.
+                if cell_idx == 65534 {
+                    let cap = table.caption.as_mut().ok_or_else(|| {
+                        HwpError::RenderError("지정된 표 컨트롤에 캡션이 없습니다".to_string())
+                    })?;
+                    let removed = cap.paragraphs.remove(cell_para_idx);
+                    removed_meta = removed.capture_meta();
+                    merge_point = cap.paragraphs[prev_idx].merge_from(&removed);
+                } else {
+                    let removed = table.cells[cell_idx].paragraphs.remove(cell_para_idx);
+                    removed_meta = removed.capture_meta();
+                    merge_point = table.cells[cell_idx].paragraphs[prev_idx].merge_from(&removed);
+                }
                 table.dirty = true;
             }
             Some(Control::Shape(shape)) => {
@@ -5395,6 +5416,71 @@ mod tests {
         ));
         assert!(!is_focused_table_cell_target(&document, 0, 0, 1, 0, 0));
         assert!(!is_focused_table_cell_target(&document, 0, 0, 0, 1, 0));
+    }
+
+    /// [#4288] cell_idx==TABLE_CAPTION_CELL_SENTINEL(65534)는 표 캡션 접근
+    /// sentinel이다(get_cell_paragraph_mut 등 다른 함수는 이미 처리). split/merge는
+    /// 이 sentinel을 걸러내지 않고 table.cells[65534]를 그대로 인덱싱해 패닉했다 —
+    /// 손상된 문서가 아니라 캡션에서 Enter/Backspace를 누르는 정상 편집만으로 재현.
+    fn table_with_caption(paragraphs: Vec<Paragraph>) -> Document {
+        use crate::model::document::Section;
+        use crate::model::shape::Caption;
+        use crate::model::table::{Cell, Table};
+
+        let table = Table {
+            cells: vec![Cell {
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            }],
+            caption: Some(Caption {
+                paragraphs,
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        Document {
+            sections: vec![Section {
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Table(Box::new(table))],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn split_paragraph_in_caption_cell_does_not_panic() {
+        let mut core = DocumentCore::new_empty();
+        core.document = table_with_caption(vec![Paragraph::default()]);
+
+        let result = core.split_paragraph_in_cell_native(
+            0,
+            0,
+            0,
+            crate::document_core::TABLE_CAPTION_CELL_SENTINEL,
+            0,
+            0,
+            None,
+        );
+        assert!(result.is_ok(), "캡션 문단 분할이 패닉 없이 처리되어야 함");
+    }
+
+    #[test]
+    fn merge_paragraph_in_caption_cell_does_not_panic() {
+        let mut core = DocumentCore::new_empty();
+        core.document =
+            table_with_caption(vec![Paragraph::default(), Paragraph::default()]);
+
+        let result = core.merge_paragraph_in_cell_native(
+            0,
+            0,
+            0,
+            crate::document_core::TABLE_CAPTION_CELL_SENTINEL,
+            1,
+        );
+        assert!(result.is_ok(), "캡션 문단 병합이 패닉 없이 처리되어야 함");
     }
 
     /// 본문 문단 병합의 undo 가 사라진 문단의 스코프 메타데이터를 되돌리는지 (Task #2342).
