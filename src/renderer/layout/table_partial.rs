@@ -726,6 +726,7 @@ impl LayoutEngine {
         bin_data_content: &[BinDataContent],
         start_row: usize,
         end_row: usize,
+        end_row_height_override: Option<f64>,
         is_continuation: bool,
         start_cut: &[usize],
         end_cut: &[usize],
@@ -1166,10 +1167,68 @@ impl LayoutEngine {
             } else {
                 cell.vertical_align
             };
+            // [#3820 Stage 78] RowBreak 마지막 physical tail은 paginator가 정한
+            // 정확한 높이(override)를 사용한다. 저장 LINE_SEG가 glyph em보다 작은
+            // 경우, 그 raw 줄높이만으로 Center를 계산하면 한 줄짜리 텍스트가 tail의
+            // 지나치게 아래로 내려간다. 실제 paint glyph가 차지하는 em은 Center
+            // 정렬의 최소 콘텐츠 높이여야 한다. 이 보정은 end-tail을 실제로 소유한
+            // 셀에만 적용해 일반 저장 줄높이/행 높이 해석에는 영향을 주지 않는다.
+            let owns_end_tail = end_row_height_override.is_some()
+                && end_row.checked_sub(1).is_some_and(|last_row| {
+                    cell_row <= last_row && last_row < cell_row + cell.row_span as usize
+                });
+            let centered_content_height =
+                if effective_align == VerticalAlign::Center && owns_end_tail {
+                    let visual_height = line_ranges.as_ref().map(|ranges| {
+                        let mut total = 0.0;
+                        let para_count = cell.paragraphs.len();
+                        for (pi, ((comp, para), &(start, end))) in composed_paras
+                            .iter()
+                            .zip(cell.paragraphs.iter())
+                            .zip(ranges.iter())
+                            .enumerate()
+                        {
+                            let para_style = styles.para_styles.get(para.para_shape_id as usize);
+                            let is_last_para = pi + 1 == para_count;
+                            if start == 0 && end > 0 && pi > 0 {
+                                total += para_style.map(|s| s.spacing_before).unwrap_or(0.0);
+                            }
+                            for li in start..end.min(comp.lines.len()) {
+                                let line = &comp.lines[li];
+                                let raw_height = hwpunit_to_px(line.line_height, self.dpi);
+                                let glyph_em = line
+                                    .runs
+                                    .iter()
+                                    .filter_map(|run| {
+                                        styles
+                                            .char_styles
+                                            .get(run.char_style_id as usize)
+                                            .map(|style| style.font_size)
+                                    })
+                                    .fold(0.0f64, f64::max);
+                                let line_height = raw_height.max(glyph_em);
+                                let is_cell_last_line = is_last_para && li + 1 == comp.lines.len();
+                                total += line_height;
+                                if !is_cell_last_line {
+                                    total += hwpunit_to_px(line.line_spacing, self.dpi);
+                                }
+                            }
+                            if end == comp.lines.len() && end > start && !is_last_para {
+                                total += para_style.map(|s| s.spacing_after).unwrap_or(0.0);
+                            }
+                        }
+                        total
+                    });
+                    visual_height
+                        .map(|height| total_content_height.max(height))
+                        .unwrap_or(total_content_height)
+                } else {
+                    total_content_height
+                };
             let text_y_start = match effective_align {
                 VerticalAlign::Top => cell_y + pad_top,
                 VerticalAlign::Center => {
-                    cell_y + pad_top + (inner_height - total_content_height).max(0.0) / 2.0
+                    cell_y + pad_top + (inner_height - centered_content_height).max(0.0) / 2.0
                 }
                 VerticalAlign::Bottom => {
                     cell_y + pad_top + (inner_height - total_content_height).max(0.0)
@@ -2982,16 +3041,19 @@ impl LayoutEngine {
         // [#3820 Stage 76] RowBreak 표의 rowspan-연속 밴드에서 실제 셀 내용은
         // 현재 쪽에 모두 들어가지만, 원본 선언 행 높이만 남은 공간보다 큰 경우가
         // 있다. 페이지네이터는 다음 조각을 다음 행부터 재개하고 이 조각의 마지막
-        // 행만 남은 물리 높이에 맞춰 소비한다. 렌더러도 같은 마지막 행 상한을
-        // 적용해야 p35의 `주요내용`을 보인 뒤 p36을 다음 행에서 시작한다.
+        // 행만 남은 물리 높이에 맞춰 소비한다. 렌더러도 같은 마지막 행의 **정확한
+        // 물리 높이**를 적용해야 p35의 `주요내용`을 보인 뒤 p36을 다음 행에서
+        // 시작한다. auto layout이 내용 한 줄(23px)만으로 행을 축소한 경우에는
+        // `min`이 남은 75px band를 다시 버리므로, 여기서 limit은 상한이 아니라
+        // fragment-local row height다.
         if let Some(limit) = start_row_height_override {
             if start_row < row_count {
-                row_heights[start_row] = row_heights[start_row].min(limit.max(0.0));
+                row_heights[start_row] = limit.max(0.0);
             }
         }
         if let Some(limit) = end_row_height_override {
             if let Some(last) = end_row.checked_sub(1).filter(|r| *r < row_count) {
-                row_heights[last] = row_heights[last].min(limit.max(0.0));
+                row_heights[last] = limit.max(0.0);
             }
         }
 
@@ -3173,6 +3235,7 @@ impl LayoutEngine {
             bin_data_content,
             start_row,
             end_row,
+            end_row_height_override,
             is_continuation,
             start_cut,
             end_cut,

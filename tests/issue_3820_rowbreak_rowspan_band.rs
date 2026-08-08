@@ -38,17 +38,34 @@ fn table_count(node: &RenderNode) -> usize {
         + node.children.iter().map(table_count).sum::<usize>()
 }
 
+fn owned_table_bottom(node: &RenderNode, para_index: usize, control_index: usize) -> Option<f64> {
+    if let RenderNodeType::Table(table) = &node.node_type {
+        if table.para_index == Some(para_index) && table.control_index == Some(control_index) {
+            return Some(node.bbox.y + node.bbox.height);
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| owned_table_bottom(child, para_index, control_index))
+}
+
 #[test]
 fn issue_3820_rowbreak_rowspan_band_keeps_pdf_page_35_36_boundary() {
     let core = core();
 
-    // Hancom PDF p35: `주요내용` is still painted at y≈736pt (≈979px CSS).
+    // Hancom PDF p35: `주요내용` is still painted at y≈748pt (≈997px CSS).
     let p35 = core.build_page_render_tree(34).expect("render HWP PDF p35");
     let summary_y = text_y(&p35.root, "주요내용")
         .expect("p35 must retain the `주요내용` content before the page boundary");
     assert!(
-        (975.0..=984.0).contains(&summary_y),
+        (995.0..=1001.0).contains(&summary_y),
         "p35 `주요내용` y={summary_y:.1}px; PDF-aligned row band must remain at the footer"
+    );
+    let p35_table_bottom =
+        owned_table_bottom(&p35.root, 347, 0).expect("p35 must retain the outer RowBreak table");
+    assert!(
+        (1040.0..=1046.0).contains(&p35_table_bottom),
+        "p35 outer table bottom={p35_table_bottom:.1}px; the PDF retains the RowBreak blank tail through ≈1043px"
     );
 
     // Hancom PDF p36 has the blank tail of that row, but not its text; the
