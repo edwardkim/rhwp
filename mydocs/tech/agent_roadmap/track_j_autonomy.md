@@ -57,9 +57,14 @@ R94~R99 는 그 위에 얹는 자동화 가설, R100 은 최종 판정 실험이
 - **설계** — canonical 절차의 assignee 지정 단계를 잠금으로 승격한다 — 착수 시
   assignee 를 선점하고, 선점 여부를 착수 전 확인한다. 잠금 매체는 새 데몬이 아니라
   이미 있는 GitHub assignee 필드다(트랙 C 의 비목표 — 잠금 데몬 금지 — 와 일치).
-- **착수 게이트** — 워크플로 문서에 "착수 시 assignee 선점" 명문화.
-- **DoD** — 워크플로 문서가 assignee 선점을 세션 간 잠금으로 명문화하고, 선점 확인이
-  canonical 절차 ③ 에 못박힌다.
+- **착수 게이트** — (없음 — 아래로 충족.) 워크플로 문서에 "착수 시 assignee
+  선점" 명문화.
+- **DoD** — `agent_surface_playbook.md` §2 는 이미 이 규약을 담았다(#4105→#4140).
+  다만 **일반** Issue Workflow(`docs_and_git_workflow.md`, 트랙 A 추가 작업뿐
+  아니라 전 작업 유형이 쓰는 canonical 절차) 는 그때까지 절차 ③을 "이슈 assignee
+  지정"이라고만 적어, 이게 곧 세션 간 잠금이라는 명문화·재확인 명령·외부 기여자
+  대체 경로가 없었다 — 이번에 `docs_and_git_workflow.md` §Issue Workflow ③에
+  직접 보강했다(PR 링크는 머지 후 갱신). `[완료]` 승급은 그 PR 머지 후.
 - **의존** — 트랙 C(협업 canonical 절차).
 
 ## R94 이 지도의 진행률 기계 산출 `[실측]`

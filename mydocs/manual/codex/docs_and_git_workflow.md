@@ -79,7 +79,22 @@ mydocs/report/{주제}_{회차}_{YYYYMMDD}.md
 
 1. GitHub Issue 확인 또는 생성 (**신규 등록 전 동일 증상 선행 검색** — 아래)
 2. 열린 PR 확인
-3. 이슈 assignee 지정
+3. 이슈 assignee 지정 — **이 단계가 곧 세션 간 잠금이다.** GitHub 에 별도 잠금
+   기제가 없어, assignee 가 비어 있으면 병렬로 도는 다른 세션이 같은 이슈를
+   합리적으로 "열린 작업"으로 보고 동시에 집는다(실제 재발 사고 기록:
+   [병렬 세션 규약](../../tech/autonomous_maintenance/parallel_session_protocol.md)
+   §4-2). 조사를 시작하기 **전에** 확인·할당한다:
+   ```bash
+   gh issue view <n> --repo edwardkim/rhwp --json assignees -q '.assignees[].login'
+   gh issue edit <n> --repo edwardkim/rhwp --add-assignee @me   # 권한 있는 계정만 성공
+   ```
+   `gh issue edit --add-assignee` 가 403 등으로 실패하면(외부 기여자는 보통
+   실패한다) 코멘트가 대체 잠금이다:
+   ```bash
+   gh issue comment <n> --repo edwardkim/rhwp --body "착수합니다 — <범위>"
+   ```
+   canonical 은 [병렬 세션 규약](../../tech/autonomous_maintenance/parallel_session_protocol.md)
+   §5-1 — 이 단계는 그 규약의 요약이지 대체가 아니다.
 4. 작업 브랜치 생성 또는 전환
 5. 역할별 절차에 따라 오늘할일 또는 PR review 문서 갱신
 6. 계획서 작성
