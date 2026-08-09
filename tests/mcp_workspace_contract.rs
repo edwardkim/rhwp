@@ -10,6 +10,11 @@
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, ChildStdin, Command, Stdio};
 
+/// nextest archive가 런타임에 재매핑해 주입하는 binary 경로를 우선한다(#3289).
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
+
 struct Server {
     child: Child,
     stdin: ChildStdin,
@@ -19,7 +24,7 @@ struct Server {
 
 impl Server {
     fn spawn(extra_args: &[&str]) -> Server {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        let mut child = Command::new(rhwp_bin())
             .arg("mcp-serve")
             .args(extra_args)
             .stdin(Stdio::piped())
@@ -172,6 +177,53 @@ fn workspace_tools_are_listed() {
     ] {
         assert!(names.contains(&expected), "{expected} 미등재: {names:?}");
     }
+}
+
+#[test]
+fn workspace_scan_cap_keeps_the_lexicographically_first_paths() {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    const SCAN_CAP: usize = 10_000;
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock")
+        .as_nanos();
+    let root =
+        std::env::temp_dir().join(format!("rhwp-workspace-cap-{}-{nonce}", std::process::id()));
+    let first_dir = root.join("a");
+    std::fs::create_dir_all(&first_dir).expect("workspace dirs");
+    std::fs::write(first_dir.join("00000.hwp"), []).expect("first path");
+    // root 자체에서 상한을 채워도 뒤에 순회할 a/00000.hwp가 경로순으로 더 앞선다.
+    // 발견 순서에서 먼저 자르는 구현은 이 항목을 영구히 놓친다.
+    for index in 0..SCAN_CAP {
+        std::fs::write(root.join(format!("z{index:05}.hwp")), []).expect("capped path");
+    }
+
+    let root_arg = root.to_string_lossy().into_owned();
+    let mut server = Server::spawn(&["--workspace", &root_arg]);
+    let (err, list) = server.call("hwp_ws_list", serde_json::json!({}));
+    assert!(!err, "hwp_ws_list 실패: {list}");
+    assert_eq!(list["count"], SCAN_CAP, "상한 크기: {list}");
+    assert_eq!(list["truncated"], true, "상한 초과 표지: {list}");
+    let entries = list["entries"].as_array().expect("entries 배열");
+    assert_eq!(entries[0]["id"], "w1");
+    let first = entries[0]["path"].as_str().expect("first path");
+    assert!(
+        std::path::Path::new(first).ends_with(std::path::Path::new("a").join("00000.hwp")),
+        "순회 순서가 아니라 경로순 첫 항목이어야 한다: {first}"
+    );
+    assert!(
+        !entries.iter().any(|entry| {
+            entry["path"]
+                .as_str()
+                .map(|path| path.ends_with("z09999.hwp"))
+                .unwrap_or(false)
+        }),
+        "경로순 상한 밖의 마지막 항목이 남았다"
+    );
+
+    drop(server);
+    std::fs::remove_dir_all(root).expect("temporary workspace cleanup");
 }
 
 #[cfg(unix)]

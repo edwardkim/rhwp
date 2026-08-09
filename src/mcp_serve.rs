@@ -104,7 +104,11 @@ fn scan_workspace(root: &std::path::Path) -> Result<Workspace, String> {
     let canonical_root = root
         .canonicalize()
         .map_err(|e| format!("{} 경로 확인 실패: {e}", root.display()))?;
-    let mut found: Vec<(std::path::PathBuf, String, u64)> = Vec::new();
+    // 순회 순서는 파일시스템마다 다르므로 발견 순서에서 상한을 자르면 같은
+    // workspace가 서로 다른 w1.. id를 낸다. 최대 힙에는 경로순으로 가장 작은
+    // WORKSPACE_SCAN_CAP개만 남겨 메모리 상한과 결정적 subset을 함께 지킨다.
+    let mut found: std::collections::BinaryHeap<(std::path::PathBuf, String, u64)> =
+        std::collections::BinaryHeap::new();
     let mut stack = vec![root.to_path_buf()];
     let mut visited_dirs = std::collections::HashSet::from([canonical_root.clone()]);
     let mut truncated = false;
@@ -152,17 +156,24 @@ fn scan_workspace(root: &std::path::Path) -> Result<Workspace, String> {
             if ext != "hwp" && ext != "hwpx" && ext != "hml" {
                 continue;
             }
-            if found.len() >= WORKSPACE_SCAN_CAP {
-                truncated = true;
-                break;
-            }
             let size_bytes = entry.metadata().map(|m| m.len()).unwrap_or(0);
-            found.push((path, ext, size_bytes));
-        }
-        if truncated {
-            break;
+            let candidate = (path, ext, size_bytes);
+            if found.len() < WORKSPACE_SCAN_CAP {
+                found.push(candidate);
+            } else {
+                truncated = true;
+                let precedes_largest = found
+                    .peek()
+                    .map(|largest| candidate.0.cmp(&largest.0).is_lt())
+                    .unwrap_or(false);
+                if precedes_largest {
+                    found.pop();
+                    found.push(candidate);
+                }
+            }
         }
     }
+    let mut found = found.into_vec();
     found.sort_by(|a, b| a.0.cmp(&b.0));
     let entries = found
         .into_iter()

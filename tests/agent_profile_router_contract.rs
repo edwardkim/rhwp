@@ -6,8 +6,13 @@
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Command, Output, Stdio};
 
+/// nextest archive가 런타임에 재매핑해 주입하는 binary 경로를 우선한다(#3289).
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
+
 fn run(args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    Command::new(rhwp_bin())
         .args(args)
         .output()
         .expect("rhwp 실행 실패")
@@ -66,7 +71,7 @@ fn unknown_profile_is_usage_error_with_listing() {
 fn serve_profile_filters_tools_list_and_session() {
     // 행정서식(session=true)은 세션 도구 포함, 데이터분석(session=false)은 제외.
     for (profile, expect_session) in [("행정서식", true), ("데이터분석", false)] {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        let mut child = Command::new(rhwp_bin())
             .args(["mcp-serve", "--profile", profile])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -117,7 +122,7 @@ fn serve_profile_filters_tools_list_and_session() {
 
 #[test]
 fn serve_profile_rejects_all_hidden_session_tool_calls() {
-    let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let mut child = Command::new(rhwp_bin())
         .args(["mcp-serve", "--profile", "데이터분석"])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -182,7 +187,7 @@ fn readonly_profile_serves_no_session_write_tools() {
         "hwp_doc_replace_text",
     ];
 
-    let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let mut child = Command::new(rhwp_bin())
         .args(["mcp-serve", "--profile", "아카이브검색"])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -240,7 +245,7 @@ fn readonly_profile_serves_no_session_write_tools() {
 /// 도구 정의를 자동 생성하는 소비자가 실물과 다른 표면을 얻는다.
 #[test]
 fn capabilities_declares_the_session_tools_it_actually_serves() {
-    let out = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let out = Command::new(rhwp_bin())
         .args(["capabilities", "--mcp", "--profile", "아카이브검색"])
         .output()
         .expect("capabilities");
@@ -259,7 +264,7 @@ fn capabilities_declares_the_session_tools_it_actually_serves() {
     assert_eq!(v["profile"]["session"], true, "{v}");
 
     // 세션을 안 여는 프로필은 sessionTools 가 null 이다.
-    let out = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let out = Command::new(rhwp_bin())
         .args(["capabilities", "--mcp", "--profile", "데이터분석"])
         .output()
         .expect("capabilities");
