@@ -304,7 +304,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 178개 필드
+### 2-2. 전수 사전 — 182개 필드
 
 `capabilities` 의 `recordFields` 합집합이다. `등장 명령` 은 자기서술 기준이며,
 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
@@ -451,8 +451,17 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `planSha256` | string | 계획서 원문 바이트의 SHA-256 | `replay` |
 | `outputSha256` | string | 임시 재실행 산출 바이트의 SHA-256 — 영수증의 몸통 | `replay` |
 | `expectedOutputSha256` | string\|null | 검증(verify) 모드에서 호출자가 주장한 산출 해시. 발급(attest) 모드는 `null` | `replay` |
-| `reproduced` | boolean\|null | 재현 판정 — `false` 면 exit 3. 발급 모드는 `null` | `replay` |
+| `reproduced` | boolean\|null\|number | `replay` 는 재현 판정(`false` 면 exit 3, 발급 모드는 `null`), `audit` 는 재현 성공 캡슐 수 — **같은 이름, 다른 타입** | `replay`·`audit` |
 | `toolVersion` | string | 재현 조건 고정용 rhwp 버전 — 같은 계획이라도 버전이 다르면 산출이 다를 수 있다 | `replay` |
+
+#### 노동 감사 (`audit`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `root` | string | 감사한 캡슐 폴더 경로(호출자 에코) | `audit` |
+| `total` | number | 발견한 `*.capsule.json` 수 — 0개면 봉투 없이 exit 2 | `audit` |
+| `failed` | array | 재현 실패 회계 — 캡슐 이름과 사유(또는 기대/실측 해시). 비어 있지 않으면 exit 3 | `audit` |
+| `reproducedRate` | number | 재현율(0.0~1.0) = `reproduced`/`total` | `audit` |
 
 #### 판정·비교
 

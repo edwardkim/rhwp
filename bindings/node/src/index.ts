@@ -142,6 +142,7 @@ export {
 // ── 1층: 무상태 명령 ────────────────────────────────────────────────────────
 
 export {
+  audit,
   batch,
   buildFromIngest,
   capabilities,
@@ -181,6 +182,7 @@ export {
   thumbnail,
   verify,
   type AgentManifestOptions,
+  type AuditOptions,
   type BatchOptions,
   type BuildFromIngestOptions,
   type CapabilitiesOptions,

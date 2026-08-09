@@ -815,6 +815,28 @@ export async function replay(
   return call(args, options);
 }
 
+/** {@link audit} 옵션. */
+export interface AuditOptions extends CommandOptions {
+  /**
+   * 재현 실패(exit 3)를 예외로 올릴지.
+   *
+   * 기본은 거짓 — 회계는 봉투(`failed`·`reproducedRate`)로 읽는 것이 이 바인딩의 규약이다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * [#4393] 에이전트 노동 감사 — 작업 캡슐(`*.capsule.json`) 폴더를 전수 재실행해
+ * 재현율을 회계한다. 재현되지 않은 캡슐이 하나라도 있으면 exit 3 ·
+ * `failed` 에 캡슐별 사유가 남는다.
+ *
+ * @param root - 캡슐 폴더 경로. `*.capsule.json` 이 0개면 CLI 가 사용법 오류(exit 2)를 낸다.
+ */
+export async function audit(root: PathLike, options: AuditOptions = {}): Promise<Envelope> {
+  const args: Argument[] = ['audit', root, '--json'];
+  return call(args, options);
+}
+
 // ── 편집 ──────────────────────────────────────────────────────────────────
 
 /**

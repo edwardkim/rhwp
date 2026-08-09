@@ -306,6 +306,13 @@ pub const MAP: &[CommandProvenance] = &[
                준 값의 에코다.",
     },
     CommandProvenance {
+        command: "audit",
+        untrusted: NONE,
+        note: "감사 봉투는 root(호출자 에코)·개수 회계(total/reproduced/reproducedRate)와 \
+               failed[](캡슐 파일 이름·실패 사유·기대/실측 해시)뿐이다 — 캡슐은 문서가 \
+               아니라 호출자 산출물이고, 문서 문자열은 재실행 내부에 머문다.",
+    },
+    CommandProvenance {
         command: "ir-diff",
         untrusted: &[f(
             "categories",
