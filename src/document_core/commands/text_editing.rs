@@ -5805,6 +5805,13 @@ mod tests {
                 .iter()
                 .map(|&text_start| LineSeg {
                     text_start,
+                    // 실제 native HWP의 유효 LINE_SEG처럼 양의 dimension을 둔다.
+                    // 대량 삭제가 `[0, 20]`을 `[0, 0]`으로 접은 경우에도 prefix
+                    // guard가 full reflow를 선택하는지를 검증한다.
+                    line_height: 1000,
+                    text_height: 900,
+                    baseline_distance: 750,
+                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                     ..Default::default()
                 })
                 .collect(),

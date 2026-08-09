@@ -84,7 +84,8 @@ impl RenderNormalizationOverlay {
 
     pub fn from_document_reusing(document: &Document, previous: &Self) -> Self {
         let mut overlay = Self::default();
-        let native_hwp5_layout = document.layout_profile().native_hwp5_layout();
+        let hwp5_stored_pagination_layout =
+            document.layout_profile().hwp5_stored_pagination_layout();
         for (section_index, section) in document.sections.iter().enumerate() {
             for (parent_paragraph_index, paragraph) in section.paragraphs.iter().enumerate() {
                 for (control_index, control) in paragraph.controls.iter().enumerate() {
@@ -96,7 +97,7 @@ impl RenderNormalizationOverlay {
                         table,
                         path,
                         control_index,
-                        native_hwp5_layout,
+                        hwp5_stored_pagination_layout,
                         previous,
                     );
                 }
@@ -110,7 +111,7 @@ impl RenderNormalizationOverlay {
         owner_table: &Table,
         path: RenderPath,
         owner_control_index: usize,
-        native_hwp5_layout: bool,
+        hwp5_stored_pagination_layout: bool,
         previous: &Self,
     ) {
         for (cell_index, cell) in owner_table.cells.iter().enumerate() {
@@ -141,7 +142,7 @@ impl RenderNormalizationOverlay {
                         && u64::from(source_width) < u64::from(cell.width)
                         && f64::from(source_width)
                             >= f64::from(cell.width) * NESTED_STRETCH_MIN_RATIO;
-                    let short_rowbreak_child_projection = native_hwp5_layout
+                    let short_rowbreak_child_projection = hwp5_stored_pagination_layout
                         && Self::is_native_short_rowbreak_child_near_fit(
                             owner_table,
                             cell,
@@ -183,7 +184,7 @@ impl RenderNormalizationOverlay {
                         nested,
                         nested_path,
                         control_index,
-                        native_hwp5_layout,
+                        hwp5_stored_pagination_layout,
                         previous,
                     );
                 }
@@ -347,7 +348,9 @@ mod tests {
         let document = short_rowbreak_document(1_912, 2_000, 1_000, 2_000);
         let overlay = RenderNormalizationOverlay::from_document(&document);
         let nested = nested_table_at_final_row(&document);
-        assert!(overlay.projection_for_path(&short_rowbreak_nested_path()).is_some());
+        assert!(overlay
+            .projection_for_path(&short_rowbreak_nested_path())
+            .is_some());
         assert!(overlay.nested_table_width_scale(nested) > 1.0);
         assert!(overlay.uses_owner_content_box(nested));
 

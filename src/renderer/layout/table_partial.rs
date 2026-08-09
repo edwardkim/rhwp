@@ -2274,96 +2274,97 @@ impl LayoutEngine {
                                     };
 
                                     // 중첩 표가 가용 공간을 초과하면 NestedTableSplit 적용
-                                    let split_info =
-                                        if let Some(split) = mixed_nested_split.as_ref() {
-                                            Some(NestedTableSplit {
-                                                start_row: split.start_row,
-                                                end_row: split.end_row,
-                                                visible_height: split.visible_height,
-                                                flow_height: split.flow_height,
-                                                offset_within_start: split.offset_within_start,
-                                                content_offset: split.content_offset,
-                                                force_source_start_cut: split.force_source_start_cut,
-                                                terminal: split.terminal,
-                                                recursive_cut: split.recursive_cut.clone(),
-                                            })
-                                        } else if let Some(split) = nested_cursor_split.as_ref() {
-                                            Some(NestedTableSplit {
-                                                start_row: split.start_row,
-                                                end_row: split.end_row,
-                                                visible_height: split.visible_height,
-                                                flow_height: split.flow_height,
-                                                offset_within_start: split.offset_within_start,
-                                                content_offset: split.content_offset,
-                                                force_source_start_cut: split.force_source_start_cut,
-                                                terminal: split.terminal,
-                                                recursive_cut: split.recursive_cut.clone(),
-                                            })
-                                        } else if let Some((row_lo, row_hi)) = nested_cut_rows {
-                                            // [Task #1073] 페이지네이션 컷의 중첩행 범위로 직접
-                                            // NestedTableSplit 구성 — 연속 페이지가 start_row 부터
-                                            // 렌더(available_h 휴리스틱의 row0 재렌더 결함 정정).
-                                            let ncol = nested_table.col_count as usize;
-                                            let nrow = nested_table.row_count as usize;
-                                            let nrow_heights = self.resolve_row_heights(
-                                                nested_table,
-                                                ncol,
-                                                nrow,
-                                                None,
-                                                styles,
-                                                true,
-                                            );
-                                            let ncs = hwpunit_to_px(
-                                                nested_table.cell_spacing as i32,
-                                                self.dpi,
-                                            );
-                                            let start_row = row_lo.min(nrow);
-                                            let end_row = row_hi.min(nrow).max(start_row);
-                                            let mut vis_h = 0.0;
-                                            for r in start_row..end_row {
-                                                vis_h += nrow_heights[r];
-                                                if r + 1 < end_row {
-                                                    vis_h += ncs;
-                                                }
+                                    let split_info = if let Some(split) =
+                                        mixed_nested_split.as_ref()
+                                    {
+                                        Some(NestedTableSplit {
+                                            start_row: split.start_row,
+                                            end_row: split.end_row,
+                                            visible_height: split.visible_height,
+                                            flow_height: split.flow_height,
+                                            offset_within_start: split.offset_within_start,
+                                            content_offset: split.content_offset,
+                                            force_source_start_cut: split.force_source_start_cut,
+                                            terminal: split.terminal,
+                                            recursive_cut: split.recursive_cut.clone(),
+                                        })
+                                    } else if let Some(split) = nested_cursor_split.as_ref() {
+                                        Some(NestedTableSplit {
+                                            start_row: split.start_row,
+                                            end_row: split.end_row,
+                                            visible_height: split.visible_height,
+                                            flow_height: split.flow_height,
+                                            offset_within_start: split.offset_within_start,
+                                            content_offset: split.content_offset,
+                                            force_source_start_cut: split.force_source_start_cut,
+                                            terminal: split.terminal,
+                                            recursive_cut: split.recursive_cut.clone(),
+                                        })
+                                    } else if let Some((row_lo, row_hi)) = nested_cut_rows {
+                                        // [Task #1073] 페이지네이션 컷의 중첩행 범위로 직접
+                                        // NestedTableSplit 구성 — 연속 페이지가 start_row 부터
+                                        // 렌더(available_h 휴리스틱의 row0 재렌더 결함 정정).
+                                        let ncol = nested_table.col_count as usize;
+                                        let nrow = nested_table.row_count as usize;
+                                        let nrow_heights = self.resolve_row_heights(
+                                            nested_table,
+                                            ncol,
+                                            nrow,
+                                            None,
+                                            styles,
+                                            true,
+                                        );
+                                        let ncs = hwpunit_to_px(
+                                            nested_table.cell_spacing as i32,
+                                            self.dpi,
+                                        );
+                                        let start_row = row_lo.min(nrow);
+                                        let end_row = row_hi.min(nrow).max(start_row);
+                                        let mut vis_h = 0.0;
+                                        for r in start_row..end_row {
+                                            vis_h += nrow_heights[r];
+                                            if r + 1 < end_row {
+                                                vis_h += ncs;
                                             }
-                                            Some(NestedTableSplit {
-                                                start_row,
-                                                end_row,
-                                                visible_height: vis_h,
-                                                flow_height: vis_h,
-                                                content_offset: 0.0,
-                                                force_source_start_cut: false,
-                                                // [#3658] per-중첩행 컷 경로도 마지막 유닛까지
-                                                // 포함한 컷(end_cut=[])이면 종료 조각이다.
-                                                terminal: cut_units
-                                                    .is_some_and(|(_, eu)| eu == usize::MAX),
-                                                offset_within_start: 0.0,
-                                                recursive_cut: None,
-                                            })
-                                        } else if nested_h > available_h + 0.5 {
-                                            let ncol = nested_table.col_count as usize;
-                                            let nrow = nested_table.row_count as usize;
-                                            let nrow_heights = self.resolve_row_heights(
-                                                nested_table,
-                                                ncol,
-                                                nrow,
-                                                None,
-                                                styles,
-                                                true,
-                                            );
-                                            let ncell_spacing = hwpunit_to_px(
-                                                nested_table.cell_spacing as i32,
-                                                self.dpi,
-                                            );
-                                            Some(calc_nested_split_rows(
-                                                &nrow_heights,
-                                                ncell_spacing,
-                                                0.0,
-                                                available_h,
-                                            ))
-                                        } else {
-                                            None
-                                        };
+                                        }
+                                        Some(NestedTableSplit {
+                                            start_row,
+                                            end_row,
+                                            visible_height: vis_h,
+                                            flow_height: vis_h,
+                                            content_offset: 0.0,
+                                            force_source_start_cut: false,
+                                            // [#3658] per-중첩행 컷 경로도 마지막 유닛까지
+                                            // 포함한 컷(end_cut=[])이면 종료 조각이다.
+                                            terminal: cut_units
+                                                .is_some_and(|(_, eu)| eu == usize::MAX),
+                                            offset_within_start: 0.0,
+                                            recursive_cut: None,
+                                        })
+                                    } else if nested_h > available_h + 0.5 {
+                                        let ncol = nested_table.col_count as usize;
+                                        let nrow = nested_table.row_count as usize;
+                                        let nrow_heights = self.resolve_row_heights(
+                                            nested_table,
+                                            ncol,
+                                            nrow,
+                                            None,
+                                            styles,
+                                            true,
+                                        );
+                                        let ncell_spacing = hwpunit_to_px(
+                                            nested_table.cell_spacing as i32,
+                                            self.dpi,
+                                        );
+                                        Some(calc_nested_split_rows(
+                                            &nrow_heights,
+                                            ncell_spacing,
+                                            0.0,
+                                            available_h,
+                                        ))
+                                    } else {
+                                        None
+                                    };
                                     let split_ref = split_info.as_ref().filter(|s| {
                                         s.start_row > 0
                                             || s.end_row < nested_table.row_count as usize

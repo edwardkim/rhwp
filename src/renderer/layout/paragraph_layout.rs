@@ -272,7 +272,7 @@ fn authoritative_stored_line_start_px(
 fn uses_hwp5_stored_line_start_profile(
     profile: crate::model::provenance::LayoutCompatibilityProfile,
 ) -> bool {
-    profile.native_hwp5_layout() || profile.hwp5_origin_hwpx()
+    profile.hwp5_stored_pagination_layout()
 }
 
 fn composed_line_char_end(comp: &ComposedParagraph, line_idx: usize) -> usize {

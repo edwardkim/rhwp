@@ -7304,7 +7304,7 @@ impl LayoutEngine {
                     let v_offset_px =
                         hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi);
                     let fragment_outer_top_px = native_empty_host_rowbreak_line_advance_hu(
-                        self.profile.get().native_hwp5_layout(),
+                        self.profile.get().hwp5_stored_pagination_layout(),
                         para,
                         t,
                         paragraphs.get(para_index + 1),
@@ -7324,7 +7324,7 @@ impl LayoutEngine {
                                 )
                             })
                     } else if let Some(stored_top) = native_empty_single_topbottom_table_saved_top(
-                        self.profile.get().native_hwp5_layout(),
+                        self.profile.get().hwp5_stored_pagination_layout(),
                         para,
                         paragraphs.get(para_index + 1),
                         t,
@@ -7661,7 +7661,7 @@ impl LayoutEngine {
                 // this source contract deliberately narrower than generic
                 // empty floats: Square sibling lanes and stored HWPX layout
                 // have separate coordinate contracts.
-                let empty_rowbreak_flow_end = if self.profile.get().native_hwp5_layout()
+                let empty_rowbreak_flow_end = if self.profile.get().hwp5_stored_pagination_layout()
                     && is_current_empty_para_float
                     && !is_current_empty_square_sibling_float
                     && is_para_topbottom_float(&t.common)
@@ -8219,7 +8219,7 @@ impl LayoutEngine {
                     .get(control_index)
                     .and_then(|control| match control {
                         Control::Table(table) => native_empty_host_rowbreak_line_advance_hu(
-                            self.profile.get().native_hwp5_layout(),
+                            self.profile.get().hwp5_stored_pagination_layout(),
                             para,
                             table,
                             paragraphs.get(para_index + 1),

@@ -60,7 +60,10 @@ fn collect_visible_text_line_rights(node: &RenderNode, rights: &mut Vec<f64>) {
 
 fn contains_text(node: &RenderNode, needle: &str) -> bool {
     matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text.contains(needle))
-        || node.children.iter().any(|child| contains_text(child, needle))
+        || node
+            .children
+            .iter()
+            .any(|child| contains_text(child, needle))
 }
 
 #[derive(Clone, Copy)]

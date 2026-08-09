@@ -25791,7 +25791,10 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
             "#2214 {label}: transient max={transient_max} rect={transient_rect}; flushed max={flushed_max} rect={flushed_rect}; cuts transient={transient_cut:?} flushed={flushed_cut:?}"
         );
 
-        assert_eq!(transient_max, target_end, "{label}: scoped warm tree coherence");
+        assert_eq!(
+            transient_max, target_end,
+            "{label}: scoped warm tree coherence"
+        );
         assert_eq!(flushed_max, target_end, "{label}: flush oracle");
         assert_eq!(
             transient_ranges, flushed_ranges,
@@ -25995,8 +25998,7 @@ fn issue3137_focused_cell_geometry_matches_exact_rect() {
             .as_u64()
             .unwrap_or_else(|| {
                 panic!("{label} {operation}: missing focused patch page: {mutation}")
-            })
-            as u32
+            }) as u32
     }
 
     fn rect_number(rect: &Value, key: &str) -> f64 {
@@ -26469,7 +26471,7 @@ fn issue2424_resumable_delete_commits_only_after_final_fragment() {
             130,
             &"1".repeat(boundary_inserts),
         )
-            .expect("prepare fifth cell line");
+        .expect("prepare fifth cell line");
         doc.flush_deferred_pagination()
             .expect("commit expanded pagination");
         let expanded_cuts = issue2214_target_cuts(&doc);
@@ -26545,15 +26547,7 @@ fn issue2424_resumable_delete_commits_only_after_final_fragment() {
 
         let mut oracle = HwpDocument::from_bytes(&bytes).expect("load delete oracle");
         oracle
-            .insert_text_in_cell_native(
-                0,
-                0,
-                2,
-                2,
-                5,
-                130,
-                &"1".repeat(boundary_inserts - 1),
-            )
+            .insert_text_in_cell_native(0, 0, 2, 2, 5, 130, &"1".repeat(boundary_inserts - 1))
             .expect("full-pagination delete oracle state");
         assert_eq!(
             committed_cuts,

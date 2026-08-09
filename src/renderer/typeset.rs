@@ -15192,7 +15192,10 @@ impl TypesetEngine {
                     // 행만 선언 총높이에 맞춘다 (76076 p81→82). 전체 비율 축소는 정상
                     // 헤더/짧은 행까지 줄이므로 금지하고, helper가 마지막 행만 줄일 수
                     // 있는 구조·64px 이내 drift를 다시 확인한다.
-                    let native_empty_rowbreak_nested_tail = self.profile.get().native_hwp5_layout()
+                    let native_empty_rowbreak_nested_tail = self
+                        .profile
+                        .get()
+                        .hwp5_stored_pagination_layout()
                         && !table.common.treat_as_char
                         && matches!(
                             table.page_break,
@@ -15277,7 +15280,7 @@ impl TypesetEngine {
         // advance plus the positive visual offset is part of the flow boundary. Keep the gate
         // narrow: the broad `v_off + margin` experiment is disproven by #2097.
         let positive_empty_host_rowbreak_tail = native_empty_host_rowbreak_line_advance_hu(
-            self.profile.get().native_hwp5_layout(),
+            self.profile.get().hwp5_stored_pagination_layout(),
             para,
             table,
             next_para,
@@ -18208,8 +18211,8 @@ impl TypesetEngine {
             // `cell_units`가 fragment를 만들더라도 그 값이 1이라 atomic으로 남는다.
             // 동일 storage/physical-height gate와 실제 multi-unit 확인을 통해서만
             // 해당 행을 `advance_row_cut`에 전달한다 (76076 p81→82).
-            let native_short_parent_child_splittable = layout_engine
-                .native_short_parent_child_row_is_fragmentable(table, r, styles);
+            let native_short_parent_child_splittable =
+                layout_engine.native_short_parent_child_row_is_fragmentable(table, r, styles);
             let splittable = can_intra_split
                 && (mt.is_row_splittable(r) || native_short_parent_child_splittable);
             if !splittable {

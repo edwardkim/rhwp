@@ -295,20 +295,39 @@ pub fn fit_measured_table_nested_tail_to_declared_height(
     }
 
     let last_row = row_count - 1;
-    let last_row_has_single_block_child = table.cells.iter().any(|cell| {
-        cell.row as usize == last_row
-            && cell.row_span == 1
-            && cell.paragraphs.iter().any(|paragraph| {
+    // 이 fit은 일반 "마지막 행에 1×1 표가 있는" 표를 위한 것이 아니다. HWP5
+    // RowBreak 저장 계약의 짧은 tail은 첫 문단이 text 없는 단일 child owner이고,
+    // 뒤에는 vpos=0의 빈 reset만 남는다. marker HWPX까지 profile 범위를 넓길 때
+    // 느슨한 기존 조건을 그대로 쓰면 일반 nested table의 declared height도 회수해
+    // 원본/재파스 수직 기준선이 달라진다 (#1939 p23/p39/p70).
+    let last_row_has_owned_short_block_child = table.cells.iter().any(|cell| {
+        if cell.row as usize != last_row || cell.row_span != 1 {
+            return false;
+        }
+        let Some(host) = cell.paragraphs.first() else {
+            return false;
+        };
+        let mut children = host.controls.iter().filter_map(|control| match control {
+            Control::Table(child) => Some(child.as_ref()),
+            _ => None,
+        });
+        let Some(child) = children.next() else {
+            return false;
+        };
+        host.text.trim().is_empty()
+            && children.next().is_none()
+            && cell.paragraphs.iter().skip(1).all(|paragraph| {
                 paragraph.text.trim().is_empty()
-                    && paragraph.controls.iter().any(|control| {
-                        matches!(control, Control::Table(child)
-                            if !child.common.treat_as_char
-                                && child.row_count == 1
-                                && child.col_count == 1)
-                    })
+                    && paragraph.controls.is_empty()
+                    && paragraph.line_segs.len() <= 1
             })
+            && !child.common.treat_as_char
+            && child.row_count == 1
+            && child.col_count == 1
+            && child.cells.len() == 1
+            && child.cells[0].paragraphs.len() <= 3
     });
-    if !last_row_has_single_block_child {
+    if !last_row_has_owned_short_block_child {
         return None;
     }
 

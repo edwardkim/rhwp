@@ -1289,16 +1289,29 @@ fn reflow_line_segs_impl(
     let mut reflow_start_idx = 0usize;
     let mut reflow_is_first_line = true;
     let mut token_start = 0usize;
-    if para.controls.is_empty() {
+    // `DocumentCore::new_empty()`의 기본 source_format도 Hwp이므로 형식만으로는
+    // 합성 test/new-document LineSeg를 native 저장 경계로 오인할 수 없다. 실제 HWP
+    // LINE_SEG가 가진 line-height와, 0에서 시작해 엄격히 증가하는 start가 모두
+    // 있어야 prefix를 권위 경계로 채택한다. 범위 삭제는 삭제된 여러 줄을 같은
+    // start로 접을 수 있으므로 duplicate/역행 경계는 full reflow가 안전하다.
+    let authoritative_line_seg_prefix = has_valid_orig
+        && original_line_segs
+            .first()
+            .is_some_and(|seg| seg.text_start == 0)
+        && original_line_segs
+            .windows(2)
+            .all(|pair| pair[0].text_start < pair[1].text_start);
+    if para.controls.is_empty() && authoritative_line_seg_prefix {
         if let Some(edit_char_offset) = preserve_prefix_for_edit {
             // Delete-at-end는 삭제 뒤 `char_offsets`에 caret 위치가 없지만, 텍스트
             // UTF-16 끝은 정확한 token boundary다. 삭제된 마지막 글자가 있던 줄의
             // 앞줄부터 다시 채워야 5→4 shrink도 표현할 수 있다.
             let edit_is_document_end = edit_char_offset == text_len;
-            let edit_utf16 = para.char_offsets.get(edit_char_offset).copied().or_else(|| {
-                edit_is_document_end
-                    .then(|| para.text.encode_utf16().count() as u32)
-            });
+            let edit_utf16 = para
+                .char_offsets
+                .get(edit_char_offset)
+                .copied()
+                .or_else(|| edit_is_document_end.then(|| para.text.encode_utf16().count() as u32));
             let affected_line = edit_utf16.and_then(|offset| {
                 let line = original_line_segs
                     .iter()

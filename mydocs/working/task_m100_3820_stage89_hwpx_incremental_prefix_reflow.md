@@ -96,3 +96,34 @@ CARGO_TARGET_DIR=target/pr-review CARGO_INCREMENTAL=0 \
 
 전체 `cargo test --profile release-test --tests`는 아직 이 source revision으로 재실행하지
 않았다. 다음 단계에서 장시간 실행을 중단하지 않고 최종 summary까지 확인한다.
+
+## 전체 회귀의 반례 — by-path 대량 삭제
+
+현재 revision의 전체 `release-test --tests`는 `3374 passed; 1 failed; 13 ignored`였다. 유일한
+실패는 `delete_text_in_cell_by_path_reflows_depth1_cell_line_segs`이며, 폭 200 HWPUNIT 셀에서
+40자 중 39자를 지운 뒤 1자만 남았는데 `LINE_SEG`가 2줄로 남았다.
+
+이 경로는 `reflow_cell_paragraph()`가 `edit_char_offset=None`으로
+`reflow_cell_paragraph_with_edit()`를 호출한다. 따라서 native HWP prefix 보존 조건을 전혀
+통과하지 않는다. 원인을 prefix policy로 돌리거나 이 test의 기대를 낮추면 안 된다. 공통
+`reflow_line_segs()`/`fill_lines()`가 마지막 텍스트 뒤에 빈 줄을 만들었는지, 또는 낮은 셀 폭에서
+새 `initial_is_first_line` 전달이 기존 full-reflow 의미를 바꿨는지를 먼저 단독 test로 확인한다.
+
+수정 조건은 단순하다. edit offset이 없는 full reflow는 1자 문단을 정확히 1 line segment로
+만들어야 하며, HWP/HWPX 증분 suffix contract와 cache 안전성에 영향을 주지 않아야 한다. 다음
+source 변경 전에는 이 test 단독 재현과 `fill_lines()`의 empty-tail 경로를 기록한다.
+
+### 원인 확정과 보정 설계
+
+단독 재현에서 `fill_lines()`는 원인이 아니었다. `delete_text_in_cell_by_path()`의 depth-1
+위임은 native delete를 타며, `Paragraph::delete_text_at(0, 39)`가 기존 `LINE_SEG` start
+`[0, 20]`을 삭제 구간 시작으로 shift해 `[0, 0]`으로 만든다. 그 다음 prefix selector가
+`rposition(text_start <= 0)`으로 **두 번째** `0`을 선택하고, 첫 번째 `0`을 보존한 뒤 한 글자
+suffix를 다시 생성했다. 결과는 start `[0, 0]`인 두 줄이다.
+
+이는 저장 LINE_SEG가 더 이상 authoritative prefix가 아닌 경우다. prefix reflow의 전제에
+`text_start`가 엄격 증가한다는 검사를 추가한다. duplicate/역행 start, 첫 start가 0이 아닌
+경우, token/char-offset 경계를 찾지 못하는 경우는 모두 기존 full reflow로 fallback한다.
+실제 Stage 86 HWP target의 `[0,44,84,122]`와 HWPX full-reflow 경로는 이 guard의 영향을
+받지 않는다. 보정 뒤 첫 Cargo gate는 다시 `issue_2430_cell_rewrap_threshold` 2/2이고,
+그 다음 이 #2755 regression, Stage 89 targeted 다섯 건, 전체 `--tests` 순서로 확인한다.

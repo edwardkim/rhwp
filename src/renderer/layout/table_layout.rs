@@ -2368,9 +2368,8 @@ impl LayoutEngine {
         let scalar_single_row_fragment_content_offset = nested_split
             .filter(|_| scalar_single_row_fragment)
             .map(|split| split.content_offset);
-        let scalar_force_source_start_cut = nested_split.is_some_and(|split| {
-            scalar_single_row_fragment && split.force_source_start_cut
-        });
+        let scalar_force_source_start_cut = nested_split
+            .is_some_and(|split| scalar_single_row_fragment && split.force_source_start_cut);
         let scalar_single_row_continuation = scalar_single_row_continuation_offset.is_some();
         let mut row_col_x = build_row_col_x(
             table,
@@ -3180,7 +3179,7 @@ impl LayoutEngine {
             // following table back down (76076 p81→82).  The helper verifies the
             // actual last-row 1×1 block-child shape and the bounded drift; this
             // outer gate confines it to the native TopAndBottom RowBreak contract.
-            let native_rowbreak_nested_tail = self.profile.get().native_hwp5_layout()
+            let native_rowbreak_nested_tail = self.profile.get().hwp5_stored_pagination_layout()
                 && !table.common.treat_as_char
                 && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
                 && matches!(table.common.vert_rel_to, VertRelTo::Para)
@@ -5518,13 +5517,12 @@ impl LayoutEngine {
                             let native_short_parent_child_split = self
                                 .profile
                                 .get()
-                                .native_hwp5_layout()
+                                .hwp5_stored_pagination_layout()
                                 && self.native_short_parent_child_fragment_eligible(
                                     table,
                                     cell,
                                     nested_table,
-                                    self
-                                        .nested_table_mixed_fragment_heights(nested_table, styles)
+                                    self.nested_table_mixed_fragment_heights(nested_table, styles)
                                         .iter()
                                         .map(|fragment| fragment.height)
                                         .sum(),
@@ -7013,8 +7011,8 @@ impl LayoutEngine {
                 && !self
                     .render_normalization_overlay()
                     .uses_owner_content_box(table);
-            let (pad_left, pad_right, pad_top, pad_bottom) = self
-                .resolve_cell_padding_for_context(cell, table, preserve_saved_small_margin);
+            let (pad_left, pad_right, pad_top, pad_bottom) =
+                self.resolve_cell_padding_for_context(cell, table, preserve_saved_small_margin);
             let cell_w = if cell.width < 0x8000_0000 {
                 hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table)
             } else {
@@ -7451,7 +7449,7 @@ impl LayoutEngine {
         child_flow_height: f64,
     ) -> bool {
         let parent_declared_height = hwpunit_to_px(table.common.height as i32, self.dpi);
-        let eligible = self.profile.get().native_hwp5_layout()
+        let eligible = self.profile.get().hwp5_stored_pagination_layout()
             && !table.common.treat_as_char
             && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, VertRelTo::Para)
@@ -7486,20 +7484,17 @@ impl LayoutEngine {
             && parent_declared_height > 0.0
             && child_flow_height > parent_declared_height + 0.5;
         if std::env::var("RHWP_DIAG_SHORT_CHILD").is_ok()
-            && child
-                .cells
-                .first()
-                .is_some_and(|child_cell| {
-                    child_cell
-                        .paragraphs
-                        .iter()
-                        .any(|paragraph| paragraph.text.contains("구내운반차 안전조치"))
-                })
+            && child.cells.first().is_some_and(|child_cell| {
+                child_cell
+                    .paragraphs
+                    .iter()
+                    .any(|paragraph| paragraph.text.contains("구내운반차 안전조치"))
+            })
         {
             eprintln!(
                 "DIAG_SHORT_CHILD eligible={} native={} parent=(rows={},h={:.1},wrap={:?},vert={:?},break={:?}) cell=(row={},span={},paras={}) child=(cols={},tac={},cells={},paras={},flow={:.1})",
                 eligible,
-                self.profile.get().native_hwp5_layout(),
+                self.profile.get().hwp5_stored_pagination_layout(),
                 table.row_count,
                 parent_declared_height,
                 table.common.text_wrap,
@@ -7532,7 +7527,7 @@ impl LayoutEngine {
         cell: &crate::model::table::Cell,
         child: &crate::model::table::Table,
     ) -> bool {
-        self.profile.get().native_hwp5_layout()
+        self.profile.get().hwp5_stored_pagination_layout()
             && !table.common.treat_as_char
             && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, VertRelTo::Para)
@@ -7593,8 +7588,7 @@ impl LayoutEngine {
                         table,
                         cell,
                         child,
-                        self
-                            .nested_table_mixed_fragment_heights(child, styles)
+                        self.nested_table_mixed_fragment_heights(child, styles)
                             .iter()
                             .map(|fragment| fragment.height)
                             .sum::<f64>(),
@@ -10984,8 +10978,7 @@ impl LayoutEngine {
                 table,
                 cell,
                 child,
-                self
-                    .nested_table_mixed_fragment_heights(child, styles)
+                self.nested_table_mixed_fragment_heights(child, styles)
                     .iter()
                     .map(|fragment| fragment.height)
                     .sum(),
