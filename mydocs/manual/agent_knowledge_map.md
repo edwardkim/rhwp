@@ -304,7 +304,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 172개 필드
+### 2-2. 전수 사전 — 173개 필드
 
 `capabilities` 의 `recordFields` 합집합이다. `등장 명령` 은 자기서술 기준이며,
 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
@@ -526,6 +526,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `commands` | array\|object | `capabilities` 는 명령 배열, `export-provenance-map` 은 명령→출처 객체 — **같은 이름, 다른 타입** | `capabilities`·`export-provenance-map` |
 | `exitCodes` | object | 종료 코드 0~4 의 의미 | `capabilities` |
 | `batch` | object | batch 축·플래그·집계 규칙 선언 | `capabilities` |
+| `schemaRegistry` | object | 버전 레지스트리 자기서술(`crateVersion`+네 축 `axes[]`) — 전 버전 축을 한 호출로 대조하는 단일 출처 (#4329) | `capabilities` |
 | `envelopeFlags` | object | `untrustedContent`/`untrustedFields` 의 뜻 | `export-provenance-map` |
 | `pathSyntax` | string | 필드 경로 표기법(`.`/`[]`) | `export-provenance-map` |
 | `policy` | object | 출처 표지 정책(`coverage`·`conservatism`·`guards`·`meaning`) | `export-provenance-map` |
