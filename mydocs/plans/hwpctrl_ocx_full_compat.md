@@ -3061,6 +3061,140 @@ Linux 공식 게이트가 붉었다. 79개 3,458호출 중 **3개 시나리오 1
 철거 PR 은 **단일 커밋 revert 로 복구 가능**해야 한다. 삭제와 이관을 한 커밋에 담고, 그 커밋
 메시지에 §6.2.1 실측 결과를 남긴다.
 
+### 6.3 U 단계 — UI 층: 컨트롤의 화면 면 (제안, 미착수)
+
+이 층은 지금 **완전한 headless** 다. `src/index.mjs` 에서 DOM 접촉은 저장 다운로드용
+`document.createElement('a')` 한 곳뿐이고, 화면·캐럿·스크롤·마우스는 어디에도 없다. 그런데
+규격의 컨트롤은 **화면이 절반**이다 — 웹한글컨트롤은 페이지에 앉는 편집 뷰이지 API 묶음이
+아니다.
+
+#### 6.3.1 왜 별도 축인가 — 오라클이 못 재는 면이다
+
+UI 면이 `unimplemented` 로 남은 이유는 구현을 미뤄서가 아니라 **COM 오라클이 이 면을 재지
+못하기 때문**이다. 실측(§4.65·§4.69)으로 `AddEventListener`·이벤트 3종·`Show*` 계열은 COM
+개체에 **아예 없고**(`AttributeError`) — 웹한글컨트롤은 COM 이 아니다 — 있는 것도 관측창이
+없다. 즉 **상한 312 는 이 하니스의 상한이지 제품의 상한이 아니고**, 그 너머가 정확히 UI 면이다.
+
+| 갈래 | 항목 | 수 | 지금 원장 |
+|---|---|---:|---|
+| 이벤트 | `OnMouseLButtonDown/Up`·`OnScroll`·`AddEventListener` | 4 | unimplemented |
+| UI 표시 | `ShowCaret`·`ShowToolBar`·`ShowRibbon`·`ShowStatusBar`·`ShowH/VScroll`·`SetToolBar` | 7 | unimplemented |
+| 뷰 상태 | `GetMousePos`·`GetViewStatus`·`ScrollPosInfo`·`PrintDocument` | 4 | unimplemented |
+| 줌 | `ViewZoomFitPage/FitWidth/Normal` | 3 | unimplemented |
+| 뷰포트 이동 | `MoveView*`·`MoveScroll*`·`MoveSelView*` | 10 | unimplemented |
+| (2차) 다중 선택 | `ShapeObjAlign*` — 마우스가 있어야 맥락이 선다("맞추기 11종은 만들 수 없는 맥락이다" 절) | 11 | 맥락을 못 만듦 |
+| (2차) 대화상자 | 대화상자 계열 | 31+ | 구조적 막힘 |
+
+직접 UI 면 **28** + 마우스가 여는 것 11 + 장기 대화상자 31 — 남은 176 의 절반 가까이가 UI
+호스트를 전제로 한다.
+
+#### 6.3.2 studio 를 쓰는 형태 — 넷 중 하나
+
+`rhwp-studio` 를 실측했다. 층은 깨끗하다:
+
+```
+core/   WasmBridge(3,082줄) — 문서·WASM 경계, EventBus      ← 절단면
+view/   22파일 — CanvasView·VirtualScroll·CoordinateSystem·canvas2d/CanvasKit
+engine/ 27파일 — 마우스/키보드 입력·CursorState·Caret/SelectionRenderer·히스토리
+ui/     앱 크롬(툴바·대화상자)
+embed/  iframe MessagePort RPC (loadFile/getPageSvg/export 뷰어 계약)
+```
+
+view·engine 은 `@/core` 만 바라보고 ui 에 의존하지 않는다 — 절단면은 **WasmBridge 하나**다.
+
+**제약이 먼저다.** §6.2 P7 의 종착점은 "studio 가 이 패키지로 이관"이다. 장기 의존 방향이
+studio → hwpctrl 로 이미 정해져 있으므로, **hwpctrl 이 studio 소스를 import 하는 순간 순환**이
+되고 P7 과 정면 충돌한다. 선택지는 이 제약이 가른다.
+
+| 형태 | 내용 | 판정 |
+|---|---|---|
+| A. 자체 최소 뷰 | WASM 의 `renderPageSvg`/`hitTest`/캐럿 API 로 패키지 안에 얇은 뷰 | **U1 채택** — 무의존·문서 상태 단일 |
+| B. 표면 추출 | WasmBridge 호출면을 `DocumentPort` 로 좁혀 view+engine 을 공유 패키지로 | **U2 채택** — P7 과 같은 캠페인으로 |
+| C. iframe embed 재활용 | studio embed 런타임을 iframe 으로 | 기각 — 문서 상태가 둘이 되어 API 의미가 깨짐 |
+| D. 전체 프록시 | API 호출을 studio 로 위임 | 기각 — 오라클로 검증한 308 의 의미가 검증 안 된 코드로 이동 |
+
+#### 6.3.3 U0 — 검증 계층부터 정한다
+
+UI 면은 COM 오라클로 판정할 수 없다. 판정 없이 구현부터 하면 이 캠페인이 막아 온 함정 —
+"반환값만 보면 아무 일도 안 하는 구현이 통과한다" — 이 UI 에서 재발한다.
+
+- 원장에 **`web-contract`** 상태를 추가한다(`substituted` 의 확장). 근거는 오라클 diff 가 아니라
+  **e2e 시나리오 링크**다. studio 에 puppeteer-core 기반 e2e 인프라가 이미 있어 재사용한다.
+- **오라클 규율은 불변이다.** `verified` 집계와 상한 312 는 그대로 두고, UI 면은 별도로 센다.
+  두 수를 섞으면 312 가 다시 흐려진다.
+- 계약의 출처는 v2.4 규격 문서다. 다만 이 캠페인에서 규격이 실물과 다른 사례가 반복됐으므로
+  (`SetCurFieldName` 인자 수 등), **실물 웹한글컨트롤이 설치된 환경의 확보 가능 여부를 U0 에서
+  타진한다.** 확보되면 UI 면도 차등 대조가 가능해진다 — 그때 `web-contract` 를 `verified` 급으로
+  올릴 길이 열린다.
+
+#### 6.3.4 U1 — 패키지 안 최소 뷰
+
+필요한 WASM API 는 **이미 다 있다**: `renderPageSvg`(이 층의 `CreatePageImage` 가 이미 쓴다),
+`hitTest`(`wasm_api.rs:2620`), `getCaretPosition`/`caret_stops`, `pageCount`. 새 코어 작업이 없다.
+
+- **진입점 분리.** core 는 headless 계약 불변. 뷰는 별도 엔트리로:
+  `import { attachView } from '@rhwp/hwpctrl/view'; attachView(ctrl, container, opts)`.
+  기존 소비자·하니스는 영향 0.
+- **배선.** ctrl 은 이벤트 emitter 슬롯만 갖고(`AddEventListener` 표면), 발화는 뷰가 한다.
+  `Show*` 는 뷰가 붙으면 실제 토글, 없으면 기존 대체 계약(no-op) 유지. 마우스는
+  `hitTest` → `SetPos` → `OnMouseLButtonDown/Up`, 스크롤은 `OnScroll`.
+- **범위.** 표시·이동·이벤트까지. 뷰 안 타이핑 편집(입력기·드래그)은 U1 범위 밖 — API 편집이
+  뷰에 반영되는 것까지가 U1 이다.
+
+#### 6.3.5 U1 성능 설계 — 실측이 먼저다
+
+이 기계(Node 22, release WASM, 2026-08-10)에서 지배 비용을 쟀다:
+
+| 문서 | 열기 | 쪽 | `renderPageSvg` 1차/2차 | SVG 크기/쪽 | `hitTest` 평균 |
+|---|---:|---:|---|---|---:|
+| para-001 (소형) | 31ms | 3 | 2~13ms / 2~4ms | 253~622KB | 0.38ms |
+| hongbo (0.6MB) | 5ms | 4 | 1~5ms / 1~2ms | 300~464KB | 0.11ms |
+| 생생도시보고서 (176MB) | 333ms | 275 | 1~6ms / 0~4ms | 30~594KB | 0.01ms |
+
+읽는 법은 하나다. **쪽 단위 비용은 싸고(수 ms), 위험은 총량이다.** 275쪽을 전부 올리면 SVG
+문자열만 ~110MB 고 DOM 노드는 그보다 무겁다. 10k 코퍼스에는 1,697쪽짜리도 있다(`hangul_version_oracle_r1` 보고서). 그래서
+정책은 "쪽 렌더는 아끼지 않고, 동시 탑재는 인색하게"다.
+
+| 축 | 정책 | 근거 |
+|---|---|---|
+| 탑재 예산 | 가시 영역 ±2쪽, 동시 탑재 상한 8쪽, LRU 퇴거. 미탑재 쪽은 치수만 가진 placeholder | 쪽당 재렌더 수 ms — 퇴거 후 재진입 비용이 싸다 |
+| 가상 스크롤 | IntersectionObserver. 스크롤 중 placeholder 허용, 렌더는 비동기 | 첫 판부터 넣는다 — 나중에 붙이면 전면 재작업 |
+| 편집 반영 | 변이 API → 탑재 쪽만 무효화. 같은 틱 다발 호출은 microtask 로 **합쳐서 1회** 재렌더 | 실사용 패턴이 `PutFieldText` 다발 후 확인이다 — N연발이 N회 재렌더가 되면 안 된다 |
+| 캐럿·선택 | SVG 와 분리된 **오버레이 레이어**. 캐럿 이동·타이핑 표시는 오버레이만 움직인다 | 키 입력마다 쪽 재렌더 금지 |
+| 마우스 | `hitTest` 동기 호출 허용 | 0.4ms 이하 실측 |
+| 줌 | SVG 는 벡터 — `ViewZoom*` 3종은 CSS transform 으로 **재렌더 0** | 캔버스 백엔드로 갈 때만 재래스터가 생긴다(U2) |
+| 긴 문서 편집 | 코어의 deferred pagination(`beginDeferredPagination`/`step`/`flush`)을 그대로 소비 | studio 와 같은 계약 — U1 이 새 축을 만들지 않는다 |
+| 인쇄 | `PrintDocument` 는 전 쪽이 필요 — 275쪽 ≈ 생성 1.1s + ~110MB. 50쪽 단위 청크 생성, 인쇄 후 즉시 해제 | 한 번에 만들면 대형 문서에서 탭이 죽는다 |
+
+#### 6.3.6 U1 성능 게이트 — 시간이 아니라 호출 수를 센다
+
+절대 시간은 기계 의존이라 게이트로 못 쓴다(`local_validation.md` §4.3.0.1 의 원칙). e2e 에서
+`renderPageSvg` 를 세는 래퍼로 감싸 **결정적 관측**을 단언한다:
+
+- 스크롤 한 사이클의 `renderPageSvg` 호출 수 ≤ 새로 가시화된 쪽 수
+- `PutFieldText` N연발 후 호출 수 ≤ 탑재 쪽 수 (**N 에 비례하면 실패**)
+- 캐럿 이동·타이핑 표시에서 호출 수 **0** (오버레이만)
+- 동시 탑재 쪽 수 ≤ 예산(8)
+
+#### 6.3.7 U2 — studio 표면 추출, P7 과 같은 캠페인으로
+
+뷰 안 타이핑·드래그·다중 선택이 요구되는 시점에 B 형태로 간다. WasmBridge 3,082줄에서
+view+engine 이 실제 부르는 표면을 `DocumentPort` 로 추출해 공유 패키지로 내리고, studio 와
+hwpctrl 이 함께 소비한다. `ShapeObjAlign` 11종(다중 선택)과 대화상자 계열은 여기서 열린다.
+
+**P7 과 묶는 이유** — P7 이 어차피 studio 를 이 패키지 위로 옮기며 ui/ 와 편집 표면을 가른다.
+따로 하면 같은 절단을 두 번 한다. 성능 관점에서도 U2 가 CanvasKit 백엔드를 가져오는 시점이라
+(대형 문서 스크롤 프레임), U1 의 SVG 뷰는 그대로 **경량 폴백**으로 남긴다.
+
+#### 6.3.8 리스크
+
+| 리스크 | 완화 |
+|---|---|
+| UI 면의 정답지 부재 — 규격 문서가 실물과 다른 전례 다수 | U0 에서 실물 웹한글컨트롤 환경 확보를 먼저 타진. 확보 전에는 `web-contract` 로만 올리고 `verified` 와 섞지 않는다 |
+| SVG 뷰의 DOM 폭주(대형 문서) | 탑재 예산 8쪽 + LRU + placeholder. 게이트 §6.3.6 이 지킨다 |
+| U1 뷰가 studio 와 미묘하게 다르게 그림 | 같은 코어 렌더러(`renderPageSvg`) 소비 — 시각 정답지가 갈리지 않는다. CLI `export-svg` 와 같은 표면 |
+| 이벤트 계약(발화 순서·인자)을 잴 오라클이 없음 | v2.4 규격 + e2e 로 계약을 못박고, 실물 확보 시 재검 |
+
 ---
 
 ## 7. 리스크
