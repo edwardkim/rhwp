@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/tech/agent_roadmap/track_g_bindings.md
-last_verified: 2026-08-04
+last_verified: 2026-08-09
 ---
 
 # 트랙 G — 바인딩·플랫폼 (R61~R70)
@@ -51,7 +51,14 @@ dataclass 매핑(R62)이 그 재사용의 바닥이고, WASM(R64~R65)이 플랫�
 
 - **한 줄** — 파이썬·노드 바인딩을 서명과 함께 PyPI·npm 으로 배포한다.
 - **지금** — 없음. 바인딩 코드는 있으나 공개 레지스트리 배포 경로·서명 인프라가
-  없다.
+  없다. 수요 실측(2026-08-09, #4327): #227 이 PyO3+PyPI 배포를 제안했고 그
+  제안자가 서드파티 파이썬 바인딩을 직접 만들었으며, 루트 README 스스로 "PyPI
+  배포 전"을 안내한다. 파이썬 래퍼(hatchling·의존성 0)는 실재하나 실행 바이너리를
+  `RHWP_BIN` 으로 요구한다 — **휠에 플랫폼 바이너리를 동봉하는 파이프라인**이 이
+  단계의 실체다([user_demand_survey_2026h2.md](user_demand_survey_2026h2.md)
+  §4·§5 P1). `@rhwp/node`(CLI 바인딩)도 같은 모양(npm 미배포)이다 — 웹 축의
+  `@rhwp/core`·`@rhwp/editor` 는 이미 npm 배포 중이라, 배포 격차는 에이전트 축에만
+  남아 있다.
 - **설계** — 트랙 D R38(바이너리 배포)·R67(버전 정책, 이 트랙)과 **같은 서명 인프라를
   공유**한다 — 바인딩 릴리스가 별도 서명 체계를 새로 세우면 신뢰 뿌리가 갈린다.
   버전은 R67 이 정하는 semver×스키마 규약을 따른다.
