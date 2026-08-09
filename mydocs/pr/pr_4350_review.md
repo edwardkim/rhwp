@@ -1,6 +1,6 @@
 ---
 kind: pr_review
-status: local-validation-passed
+status: remote-validation-in-progress
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-10
 ---
@@ -22,11 +22,11 @@ last_verified: 2026-08-10
 | 검토 기준 devel | `e48fe86947fbf9a44b1b98c7037150751af541ab` — 원 head의 조상임을 확인 |
 | 작성 시점 원격 참고 상태 | `MERGEABLE` / `CLEAN`, 원 head GitHub checks 성공. merge 전 재확인 필요 |
 | 가시성 branch | `review/kevin9327-20260810-pr4350` |
-| 메인터너 code head | `d1dad3c07c4bb5569e3e94e37e3e9b3d31edee28` |
-| GitHub 상태 변경 | reviewer assign, comment, push, review, merge 모두 미수행 |
+| 메인터너 code head | `8429ce9f49c6bd48d8a357a419c36a3d053dba82` |
+| GitHub 상태 변경 | reviewer `jangster77` 지정, correction push 수행; comment, review, merge 미수행 |
 
-이번 작업지시는 로컬 메인터너 보정과 기록까지이며 GitHub mutation 승인을 포함하지 않는다. 따라서
-접수 가이드의 reviewer assign도 실행하지 않았고, 이 문서의 원격 상태는 2026-08-10 조회 시점 참고값이다.
+메인터너 correction은 원 contributor branch에 비강제 fast-forward로 push했다. 이 문서의 원격 상태와
+CI 결과는 2026-08-10 조회 시점 참고값이며 merge 권한을 뜻하지 않는다.
 
 ## contributor 변경 범위
 
@@ -71,6 +71,18 @@ contributor commits는 수정·squash·rebase하지 않았으며 위 1차 메인
 이 보정은 Job Object가 아니며 외부 abrupt wrapper 종료를 가로채지 않는다는 한계를 코드 주석과 아래
 잔여 위험에 함께 고정했다. contributor와 기존 메인터너 commit은 재작성하지 않았다.
 
+## 원격 CI에서 확인한 readiness race와 후속 보정
+
+correction push 뒤 GitHub Actions run `31335998868`의 Node integration에서 POSIX signal 회귀 한 건이
+실패했다. 제품 wrapper가 아니라 테스트용 fake server가 signal handler보다 먼저 `READY`를 출력해,
+runner가 그 사이에 신호를 보내면 child가 기본 signal 종료하고 wrapper가 exit 1을 반환하는 fixture
+경쟁이었다.
+
+후속 commit `8429ce9f49c6bd48d8a357a419c36a3d053dba82`
+(`test(node): close signal readiness race`)은 SIGINT·SIGTERM handler 등록 뒤에만 `READY`를 출력한다.
+따라서 readiness 표지는 이제 “server process가 존재한다”뿐 아니라 “두 handler 설치가 끝났다”는
+barrier다. production wrapper 동작은 바꾸지 않았으며 contributor와 기존 메인터너 이력도 보존했다.
+
 ## 완료한 검증
 
 | 게이트 | 결과 |
@@ -81,7 +93,9 @@ contributor commits는 수정·squash·rebase하지 않았으며 위 1차 메인
 | 실제 `rhwp.exe` initialize 및 stdin EOF 종료 | Windows 통합 테스트에서 통과 |
 | POSIX SIGINT/SIGTERM 전달·자식 PID 회수 계약 | 테스트를 추가했으나 현재 Windows host에서는 platform skip |
 | Windows wrapper 통제 강제 종료 | 실제 parent·grandchild tree를 만들고 `taskkill /T /F` 뒤 두 PID 종료 확인 |
-| `git diff --check origin/pr/4350..d1dad3c0` | 통과 |
+| readiness 후속의 `npm.cmd run typecheck`, `node --check` | 통과 |
+| readiness 후속 POSIX focused test | Windows host에서 platform skip; Linux 재실행 대기 |
+| `git diff --check origin/pr/4350..8429ce9f` | 통과 |
 
 `npm ci`는 89 packages를 설치했고 tracked dependency 파일은 바꾸지 않았다. 설치 과정의 audit 결과
 1 low·1 high는 기존 lock dependency 상태이며 이 보정에서 자동 수정하지 않았다.
@@ -95,15 +109,13 @@ contributor commits는 수정·squash·rebase하지 않았으며 위 1차 메인
   await/reap할 수 없다. 따라서 명시적 `process.exit()`·native crash의 완전한 회수 계약으로 주장하지 않는다.
 - Windows 회귀는 wrapper가 직접 호출하는 `forceKillChildTree()`의 parent/grandchild 종료를 입증한다.
   외부 abrupt wrapper 종료를 재현하거나 보증하는 테스트는 아니다.
-- 현재 host가 Windows라 POSIX 신호 회귀는 실행되지 않았다. 원격 후보를 만들면 Linux GitHub Actions에서
-  해당 테스트의 실제 통과가 필수다.
-- source/test를 추가한 local head이므로 원 contributor head의 기존 녹색 CI를 메인터너 보정의 근거로
-  재사용하지 않는다. push 승인이 나면 새 head 전체 required checks가 필요하다.
+- 현재 host가 Windows라 POSIX 신호 회귀는 실행되지 않았다. `8429ce9f` 원격 head의 Linux GitHub
+  Actions에서 해당 테스트의 실제 통과가 필수다.
+- 첫 correction 원격 run은 fixture race로 실패했고 보정 head의 required checks는 다시 실행 중이다.
+  이전 녹색 job이나 실패 전 성공 job을 최신 head의 근거로 재사용하지 않는다.
 
 ## 조건부 권고
 
 **POSIX signal·정상 EOF와 wrapper 통제 Windows 강제 종료에서 확인한 blocker는 해소되어 조건부 통합
-권고다.** 다만 현재 branch는 로컬 전용이며
-push 또는 merge 승인이 없다. 작업지시자가 반영 경로를 승인한 뒤 새 원격 head에서 package integration과
-Linux 신호 회귀를 포함한 required checks가 모두 통과하고, 별도의 명시적 merge 승인이 있을 때만
-통합할 수 있다.
+권고다.** correction은 원격 branch에 반영됐지만, 새 head에서 package integration과 Linux 신호 회귀를
+포함한 required checks가 모두 통과하고 별도의 명시적 merge 승인이 있을 때만 통합할 수 있다.
