@@ -31,13 +31,14 @@ last_verified: 2026-08-10
 | 1층 가중치 병합 | 같은 조상의 파인튜닝들 | soup·task arithmetic·TIES·DARE·진화적 병합 | **상품화** (오픈웨이트 일상) | 이미 N (soup 은 원래 N개) | 병합 레시피 = 계획서, 병합 산출 = 캡슐 (§9.4) |
 | 2층 MoE 업사이클링 | N개를 전문가로 공존 | sparse upcycling·프랑켄MoE | 실용 (커뮤니티 실증) | 구조적으로 N | 동일 — "합쳐진 산출물"의 한 형태 |
 | 3층 시스템 수준 | 서로 다른 모델을 제품 하나로 | 라우팅·증류·추론 합의(MoA) | **프런티어의 실제 방식** | 이미 N | 멀티 에이전트 합본 문서 = 같은 문제 (§7.2) |
-| 검증 층 (공백) | 위 전부의 **출처** | 모델 카드·AIBOM — 전부 자기 신고 | **공백** | 합칠수록 커짐 | **여기가 우리 자리** — 해시 체인 + 재현 검증 (§6) |
+| 검증 층 (공백) | 위 전부의 **출처와 재현성** | 카드·BOM·C2PA의 서명/결속과 레시피 재실행은 서로 다른 보장 | **재현 공백** | 합칠수록 커짐 | **여기가 우리 자리** — 해시 결속 + 재현 검증 (§6) |
 
 핵심 논증: 합침 기술은 층마다 이미 왔거나 오고 있고, 합쳐진 결과물이 늘수록
-"무엇을 어디서 얼마나 섞었나"를 **제3자가 검증할 방법**의 공백이 커진다. 자기
-신고(카드·매니페스트)는 검증이 아니다. rhwp 계보 축은 이 공백에 정확히 꽂힌다 —
-해시 체인(변조 폭로)과 재실행 재현(`--deep`)을 이미 가졌고, 부족한 것은 부모가
-N개가 되는 것뿐이다.
+"무엇을 어디서 얼마나 섞었나"를 **제3자가 재현할 방법**의 공백이 커진다. 카드의
+작성자 입력, BOM의 구성 목록, C2PA의 서명·자산 결속은 각각 유용하지만 병합 레시피
+재실행과 같은 보장은 아니다. rhwp 계보 축은 이 재현 공백을 겨냥한다. 다만 단일
+부모 해시 체인을 N개로 늘리는 것만으로는 충분하지 않다. 각 부모 산출을 자식의
+구체적 입력 슬롯에 결속하고, 입력까지 포함한 실행 키로 재현해야 한다(§7).
 
 ---
 
@@ -57,10 +58,11 @@ N개가 되는 것뿐이다.
 산출물의 부모는 N개다. 모델 세계의 병합·MoE·라우팅도 구조가 같다: N개의 조상,
 하나의 산출물, 그리고 "어떤 조상을 얼마나 섞었나"라는 검증 불가능한 주장.
 
-문서 엔진이 이 문서를 갖는 이유는 감상이 아니다. rhwp 는 결정론(같은 계획 →
-같은 바이트)을 실측으로 가진 드문 실행 기반이고, 그 위에 영수증→감사→계보를
-이미 쌓았다. 합류(DAG)는 이 사다리의 다음 단이며, 문서 작업에서 먼저 실증한
-구조가 모델 아티팩트로 일반화된다(§9.4).
+문서 엔진이 이 문서를 갖는 이유는 감상이 아니다. rhwp 는 PR #4406의 제한된
+run/replay 회귀에서 같은 입력·계획의 바이트 재현을 실측했고, 그 위에
+영수증→감사→계보 후보를 쌓았다. 이 근거를 엔진 전체나 모든 외부 재료의 결정론으로
+확대하지 않는다. 합류(DAG)는 이 사다리의 다음 단이며, 문서 작업에서 먼저 실증한
+구조가 모델 아티팩트로 일반화될 수 있는지를 M4에서 따로 검증한다(§9.4).
 
 ---
 
@@ -174,21 +176,28 @@ soup 은 원래 N개 평균이고, TIES/DARE 는 N 태스크 병합용이며, �
 
 ## 6. 검증 공백 — 합침의 증명이 없다
 
-### 6.1 자기 신고와 검증의 차이
+### 6.1 무결성·진술·재현성은 서로 다른 보장이다
 
-현존 출처 표기 수단을 전수하면:
+현존 수단은 한 묶음의 "자기 신고"가 아니라 서로 다른 층을 담당한다.
 
-- **모델 카드** — 조상·데이터·라이선스를 적는 문서. **선의에 의존하는 자기 신고**.
-- **AIBOM** (AI Bill of Materials) — SBOM 의 AI 판. 구성요소 목록의 표준화이지,
-  목록이 **사실인지 검증하는 장치가 아니다.**
-- **C2PA** — 미디어 출처 서명. 서명은 "누가 주장했나"를 고정하지 "주장이 재현
-  되나"를 고정하지 않는다.
-- **허깅페이스 계보 메타데이터** — base_model 태그 등. 역시 신고제.
+- **모델 카드와 허깅페이스 계보 메타데이터** — 조상·데이터·라이선스를 기록한다.
+  허깅페이스의 [`base_model`](https://huggingface.co/docs/hub/main/model-cards#specifying-a-base-model)은
+  병합 조상 여러 개도 표현하지만 저장소 작성자가 넣는 메타데이터다.
+- **AIBOM** (AI Bill of Materials) — 모델·데이터·도구 등 구성요소의 목록과 교환
+  형식을 다룬다. 생성 방식, 서명, 투명성 로그와 결합하면 신뢰 수준이 달라지므로
+  AIBOM 전체를 하나의 검증 수준으로 단정하지 않는다.
+- **C2PA** — 단순 자기 신고보다 강하다. Content Credential은 서명된 manifest를
+  자산에 암호학적으로 결속하고 ingredient 계보와 변조 여부를 검증한다
+  ([C2PA 2.2 explainer](https://spec.c2pa.org/specifications/specifications/2.2/explainer/Explainer.html),
+  [technical specification](https://spec.c2pa.org/specifications/specifications/2.2/specs/C2PA_Specification.html)).
+  다만 서명된 assertion의 의미가 참인지, 병합 레시피를 다시 실행하면 같은 산출이
+  나오는지까지 자동으로 증명하지는 않는다.
 
-전부 필요한 수단이지만, 공통 한계가 하나다: **재현 검증이 없다.** 병합 모델이
-"A 60% + B 40%"라고 신고해도, 제3자가 그 레시피로 재실행해 같은 가중치가 나오는지
-확인하는 절차가 표준에 없다. §2.3에서 봤듯 가중치에서 조상을 역산할 수도 없으므로,
-신고가 틀려도(고의든 실수든) **잡을 방법이 구조적으로 없다.**
+따라서 남은 공백은 **출처 수단 전체가 아니라 레시피 재현성**이다. 병합 모델이
+"A 60% + B 40%"라고 기록해도 제3자가 정확한 입력 아티팩트·도구·연산 조건으로
+재실행해 같은 가중치를 얻는지는 별도 계약이다. §2.3에서 봤듯 산출 가중치만으로
+조상 기여를 일반적으로 복원할 수 없으므로, 레시피·입력 digest·실행 프로필을 함께
+결속해야 한다.
 
 ### 6.2 오염 전파 — 공백의 비용
 
@@ -207,18 +216,18 @@ rhwp 가 문서에서 먼저 닫고 모델로 일반화하는 순서(§9.4)가 �
 
 ### 6.4 rhwp 계보의 차별점
 
-[PR #4406](https://github.com/edwardkim/rhwp/pull/4406) 기준으로 이미 가진 것:
+[PR #4406](https://github.com/edwardkim/rhwp/pull/4406)의 merge 후보가 제공하는 것:
 
 1. **해시 체인** — 자식이 부모 캡슐 파일의 SHA-256 을 내장. 사후 변조는
    `parentOk:false` 로 폭로된다 (실측 테스트 고정).
 2. **계보 불변식** — 부모의 산출 해시 == 자식의 입력 해시(`lineageOk`). "이전
    작업의 산출이 다음 작업의 입력"이라는 연대기의 정의 자체를 판정한다.
-3. **재현 검증** — `--deep` 이 링크마다 계획을 재실행해 산출 해시를 대조한다.
-   신고제가 아니라 **재실행이 증거**다. 이것이 가능한 이유는 rhwp 의 바이트
-   결정론이 실측돼 있기 때문이다 (run↔replay 교차 결정론까지
-   [#4406](https://github.com/edwardkim/rhwp/pull/4406) 테스트로 고정).
+3. **재현 검증** — `--deep` 이 각 캡슐의 결속된 plan text를 재실행하고 입력·step·
+   산출 해시를 대조한다. 현재 회귀가 증명하는 범위는 해당 run/replay 계획과 fixture다.
 
-부족한 것은 단 하나 — **부모가 1개**다. 합류를 표현할 수 없다. §7이 그 확장이다.
+다음 단계에는 세 요소가 함께 필요하다. **(1) 다중 부모 표현, (2) 각 부모 산출과
+자식 입력 슬롯의 해시 결속, (3) 계획뿐 아니라 입력·도구 조건까지 포함한 재실행
+식별자**다. §7은 이 세 계약을 함께 확장한다.
 
 ---
 
@@ -241,15 +250,18 @@ reproduced)하고, 깨지면 exit 3 + `brokenAt`.
 
 ### 7.2 필연 시나리오 — 합류는 이미 파이프라인에 있다
 
-- **시나리오 M (합본).** `split-document` 로 3분할 → 에이전트 3기가 병렬 편집
-  (캡슐 a·b·c 발급) → 합본 에이전트가 최종본 발급(캡슐 d). d 의 진짜 부모는
-  {a, b, c} 인데 현행 스키마는 1개만 지목할 수 있다 — **역사를 왜곡해야 기록이
-  가능한 상태.**
-- **시나리오 R (재료).** 본문 편집의 입력 문서는 부모 1개지만, `csv-to-table` 로
-  주입한 CSV, `insert-image` 의 도장 이미지도 산출물의 정체성을 결정한다. 이들은
-  "입력 공급자"가 아니라 **재료**다 — 역할 구분이 필요하다.
+- **시나리오 M (합본).** 분할 캡슐 s → 에이전트 3기의 편집 캡슐 a·b·c → 합본
+  캡슐 d라면 5노드 DAG다. s가 여러 조각을 산출했다면 `outputs[]`, d가 세 문서를
+  읽었다면 `inputs[]` digest가 먼저 필요하다. 현행 run 계획은 단일 `input`/
+  `output` 계약이므로 이 시나리오는 현재 명령의 완료 기능이 아니라 다중 아티팩트
+  계약을 요구하는 착수 사례다.
+- **시나리오 R (재료).** `csv-to-table` 의 CSV나 `insert-image` 의 그림도 산출물의
+  정체성을 결정한다. 현재 replay plan의 step 집합에는 이 두 명령이 없고, 경로
+  문자열만 기록해도 재료 바이트는 결속되지 않는다. 이들을 parent로 승격하려면
+  먼저 실행기가 외부 입력 슬롯과 그 바이트 digest를 영수증에 기록해야 한다.
 - **모델 세계 대응.** mergekit YAML 의 `models:` 리스트가 정확히 `parents[]` 다.
-  문서 합본의 스키마를 그대로 병합 레시피에 재사용할 수 있다(§9.4).
+  단, 각 model 항목의 정확한 가중치 digest와 실행 프로필까지 결속해야 문서 합본의
+  스키마를 병합 레시피에 재사용할 수 있다(§9.4).
 
 ### 7.3 스키마 v1.1 — `parents[]`
 
@@ -258,66 +270,110 @@ reproduced)하고, 깨지면 exit 3 + `brokenAt`.
   "schemaVersion": "1.1",
   "kind": "workCapsule",
   "parents": [
-    { "capsule": "a.capsule.json", "sha256": "…", "role": "primary" },
-    { "capsule": "b.capsule.json", "sha256": "…", "role": "material" },
-    { "capsule": "c.capsule.json", "sha256": "…", "role": "material" }
+    {
+      "capsule": "a.capsule.json",
+      "sha256": "…",
+      "role": "primary",
+      "binding": { "parentOutput": "output", "childInput": "inputs[0]", "sha256": "…" }
+    },
+    {
+      "capsule": "b.capsule.json",
+      "sha256": "…",
+      "role": "material",
+      "binding": { "parentOutput": "output", "childInput": "steps[1].image", "sha256": "…" }
+    }
   ],
   "plan": { "...": "…" },
-  "receipt": { "...": "…" }
+  "receipt": {
+    "inputs": [
+      { "slot": "inputs[0]", "sha256": "…" },
+      { "slot": "steps[1].image", "sha256": "…" }
+    ],
+    "outputs": [ { "slot": "output", "sha256": "…" } ],
+    "...": "…"
+  }
 }
 ```
 
-- **role 규약.** `primary` = 입력 공급자(자식 계획의 `input` 을 산출한 부모),
-  **정확히 0~1개**. `material` = 재료(CSV·이미지·참조 문서 등을 산출한 부모),
-  0~N개. 계획 스키마가 다중 입력(`inputs[]`)을 갖게 되는 날 `primary` N개로
-  재확장한다 — 스키마에 여지를 남기는 결정이며 지금 과설계하지 않는다.
+- **role 규약.** `primary` = 주 문서·모델 입력, `material` = CSV·이미지·참조
+  아티팩트다. 역할은 UI·정책 분류이며 검증 강도를 낮추지 않는다. 둘 다 0~N개를
+  허용하되 모든 비-root edge는 `binding`이 필수다. 현행 단일 입력 발급기는
+  `primary` 0~1개만 만들고, 다중 primary는 `inputs[]` 실행기가 생긴 뒤 연다.
+- **edge 결속.** `sha256`은 부모 **캡슐 파일** digest다. `binding.sha256`은 부모의
+  지정 `receipt.outputs[]` digest, 자식의 지정 `receipt.inputs[]` digest와 모두
+  같아야 한다. 경로나 role만 같은 것은 계보가 아니다. 발급 시 부모 capsule과
+  자식이 실제 읽은 입력 snapshot을 대조하고 하나라도 없거나 다르면 발급을 거절한다.
 - **하위호환 정규화.** 읽기: v1.0 의 `parent`(객체) → `parents` 1원소
-  (`role:"primary"`), `parent:null` → `parents:[]`. 쓰기: v1.1부터 `parents` 만
-  쓴다. 정규화는 읽는 쪽 한 곳(lineage 로더)에 두고 발급부는 갈라지지 않는다.
-- **CLI.** `replay --capsule … --parent A [--parent-material B --parent-material C]`
-  — 기존 `--parent` 는 의미 불변(primary), 재료는 새 플래그로. 반복 지정 허용.
+  (`role:"primary"`, `output`→`input`, 기존 두 receipt 해시로 binding 구성),
+  `parent:null` → `parents:[]`. 쓰기: v1.1부터 `parents`와 slot digest를 쓴다.
+  정규화는 lineage 로더 한 곳에서 수행한다.
+- **발급 검증.** unknown role/slot, 중복 child slot, 빈 binding, 64자리 hex가 아닌
+  digest, 같은 실파일의 자기 parent, 부모 수 상한 초과를 fail-closed로 거절한다.
+- **CLI.** 기존 `--parent A`는 `primary:output→input` 의미를 유지한다. 추가 edge는
+  `--parent-input <child-slot>=<capsule>#<parent-output-slot>`와
+  `--parent-material ...` 같은 명시적 slot mapping을 반복 지정한다. capsule 경로만
+  받는 material 플래그는 어떤 바이트를 결속하는지 알 수 없으므로 허용하지 않는다.
 
 ### 7.4 판정의 N-부모 일반화
 
 | 축 | 단일 사슬 (v1.0) | DAG (v1.1) |
 |---|---|---|
 | `parentOk` | 부모 파일 해시 == 기록 해시 | **모든** 부모에 대해 각각 판정 |
-| `lineageOk` | 부모 산출 == 자식 입력 | **primary 부모에만** 적용. material 은 파일 무결(parentOk)만 — 재료 바이트는 계획서(`plan`)의 해당 step 인자에 이미 고정돼 있으므로 이중 판정하지 않는다 |
-| `reproduced` | 링크당 재실행 1회 | 노드당 재실행 1회 (§7.6 비용 회계) |
+| `lineageOk` | 부모 산출 == 자식 입력 | role과 무관하게 각 edge의 부모 output == binding == 자식 input slot을 판정 |
+| `reproduced` | 링크당 재실행 1회 | 서로 다른 **실행 키**마다 1회 (§7.7 비용 회계) |
 
-불변식의 정신은 유지된다: **연대기는 "산출이 입력이 되는 것"이고, 재료는 "산출에
-섞여 들어가는 것"이다.** 전자는 해시 등식으로, 후자는 부모 파일 무결로 판정한다.
+불변식의 정신은 유지된다: **모든 계보 edge는 부모 산출이 자식이 실제 읽은 특정
+입력이라는 등식**이다. primary/material은 표현상의 역할 차이일 뿐, material을
+`parentOk`만으로 통과시키지 않는다.
 
 ### 7.5 걷기 알고리즘 (의사코드)
 
 ```text
 lineage(head, deep):
-  visited = {}                       # 캡슐 "파일 해시" 기준 — 경로 별칭 무력화
-  queue = [(head, 대조기록=None)]
+  visited = {}                       # canonical 실제 경로/file-id → node id
+  contentIndex = {}                  # fileSha256 → node ids (복사본 보고용, 병합 키 아님)
+  queue = [(head, incomingEdge=None)]
   nodes, edges, broken = [], [], []
-  while queue and len(nodes) <= 1000:          # 사슬의 길이 가드 승계
-    (path, 대조) = queue.pop_front()
-    bytes = read(path)  |  실패 → broken += [path], 계속
-    fsha = sha256(bytes)
-    if fsha in visited:                        # 다이아몬드 합류 — 공통 조상
-      edges += [(대조.자식, visited[fsha])]     # 간선만 추가, 재검증·재실행 없음
+  while queue:
+    (path, incoming) = queue.pop_front()
+    if incoming and len(edges) >= MAX_EDGES:
+      broken += [명시적 edge limit 오류]; break
+    canonical = canonicalize(path) | 실패 → incoming을 broken으로 기록, 계속
+    if canonical in visited:
+      edge = incoming을 기존 node의 digest·output slot과 대조해 판정
+      edges += [edge]                # 다이아몬드 간선도 판정을 생략하지 않음
       continue
-    node = parse+판정(§7.4)                    # parentOk 는 대조기록으로
-    if deep and node.planSha256 not in 재실행캐시:
-      재실행캐시[node.planSha256] = 재실행해시   # 같은 계획은 1회만
-    visited[fsha] = node.id
-    for p in node.parents:
-      queue.push((resolve(p.capsule, base=path.dir), 대조=(node, p.sha256, p.role)))
-  valid = broken == [] and 모든 판정 참
+    if len(nodes) >= MAX_NODES:
+      broken += [명시적 node limit 오류]; break
+    bytes = read(canonical) | 실패 → incoming을 broken으로 기록, 계속
+    fsha = sha256(bytes)
+    node = strictParseAndValidate(bytes)
+    node.id = nodes.len
+    visited[canonical] = node.id
+    contentIndex[fsha] += [node.id]
+    nodes += [node]
+    if incoming:
+      edges += [incoming을 fsha·node output·child input slot과 대조한 판정]
+    if deep:
+      executionKey = (node.planSha256, orderedInputSlotDigests,
+                      actualToolVersion, actualExecutionProfileSha256)
+      executionKey가 완전할 때만 동일 키 결과를 재사용하고, 아니면 node를 직접 재실행
+    for p in node.parents의 선언 순서:
+      queue 길이가 MAX_QUEUE 이상이면 명시적 limit 오류
+      queue.push((resolve(p.capsule, base=canonical.dir), incomingEdge=(node.id, p)))
+  valid = broken == [] and 모든 node·edge 판정 참
 ```
 
-- **방문 키가 경로가 아니라 파일 해시**인 이유: 같은 캡슐을 다른 상대 경로로 두 번
-  가리키는 별칭이 DAG 에서는 정상 상황이다. 해시 키는 별칭을 자동 병합하고, 변조된
-  사본은 자동 분리한다 — 자료구조가 보안 판정을 겸한다.
-- **다이아몬드 1회 검증**: A→{B,C}→D 에서 D 는 한 번만 파싱·재실행된다. 간선은
-  전부 기록되므로 그래프는 온전하다.
+- **방문 키는 file hash 단독이 아니다.** 같은 JSON bytes를 다른 폴더에 복사하면
+  내부 상대 parent 경로가 서로 다른 대상을 뜻할 수 있다. hash만으로 병합하면 한
+  복사본의 계보를 건너뛴다. canonical path(가능한 플랫폼에서는 file identity)를
+  방문 키로 쓰면 같은 실파일의 상대·symlink 별칭은 합치고, 별도 복사본은 각 위치를
+  기준으로 파싱한다. file hash는 무결성과 동일 내용 보고에만 쓴다.
+- **다이아몬드 1회 검증**: child→parent 방향으로 D→{B,C}→A인 그래프에서 같은
+  실파일 A는 한 번만 파싱·재실행한다. B→A와 C→A 두 간선의 결속 판정은 모두 남긴다.
 - **순환**: 해시 체인 특성상 진짜 순환은 만들 수 없으나(자식 해시를 부모가 미리 알 수
-  없다), 손상·위조 입력에 대한 방어로 노드 상한 1000을 유지한다.
+  없다), 손상·위조 입력과 자원 고갈 방어는 별개다. 노드·간선·queue 상한을 각각
+  두고 `>=` 경계 회귀로 정확히 제한한다.
 
 ### 7.6 봉투 v1.1 (전체 예시)
 
@@ -327,33 +383,44 @@ lineage(head, deep):
   "head": "d.capsule.json",
   "mode": "dag",
   "nodes": [
-    { "id": 0, "capsule": "d.capsule.json", "inputSha256": "…", "outputSha256": "…",
-      "parentOk": [true, true, true], "lineageOk": true, "reproduced": true },
+    { "id": 0, "capsule": "d.capsule.json", "fileSha256": "…",
+      "inputs": [ { "slot": "inputs[0]", "sha256": "…" } ],
+      "outputs": [ { "slot": "output", "sha256": "…" } ], "reproduced": true },
     { "id": 1, "capsule": "a.capsule.json", "…": "…" }
   ],
-  "edges": [ { "child": 0, "parent": 1, "role": "primary" },
-             { "child": 0, "parent": 2, "role": "material" } ],
+  "edges": [
+    { "child": 0, "parent": 1, "role": "primary", "parentOutput": "output",
+      "childInput": "inputs[0]", "sha256": "…", "parentOk": true, "lineageOk": true }
+  ],
   "roots": [1, 2, 3],
-  "depth": 4,
+  "nodeCount": 4,
+  "edgeCount": 3,
+  "maxDepth": 2,
   "valid": true,
   "brokenAt": null,
   "broken": []
 }
 ```
 
-- 단일 사슬 입력이면 `mode:"chain"` 으로 v1.0 봉투와 동형 유지(`links[]` 별칭 제공
-  여부는 구현 시 결정) — 기존 소비자를 깨지 않는 것이 원칙이다.
-- `brokenAt`(첫 파손)은 호환 유지, `broken[]`(전체 파손 목록)을 추가한다 — DAG 에선
-  독립 가지가 병렬로 깨질 수 있어 "첫 번째"만으로는 회계가 안 된다.
+- v1.0 캡슐만으로 된 단일 사슬은 정규화 뒤에도 **기존 v1.0 봉투와 `links[]` key를
+  그대로 출력**한다. v1.1 capsule 또는 다중 edge가 하나라도 있으면 위 v1.1 봉투를
+  출력한다. 새 소비자는 `schemaVersion`과 `mode`로 분기하며, 미정의 alias에
+  하위호환을 맡기지 않는다.
+- edge별 `parentOk`/`lineageOk`를 두어 parent 배열 순서에 의미를 숨기지 않는다.
+  `brokenAt`은 선언 순서 BFS에서 처음 발견한 파손으로 유지하고, `broken[]`은 같은
+  순서의 전체 파손 목록이다. `nodeCount`·`edgeCount`·`maxDepth`의 의미도 분리한다.
 - exit 규약 불변: 0 유효 / 1 IO / 2 사용법 / 3 계보 깨짐(판정은 봉투 데이터).
 
 ### 7.7 비용 회계 (`--deep`)
 
-- 재실행 횟수 = **고유 planSha256 수** (노드 수가 아니다 — §7.5 캐시).
-- 시나리오 M(4노드) 실측 예상: 분할 1 + 편집 3 + 합본 1 = 계획 5종 → 재실행 5회.
-  현행 단일 사슬 `--deep` 의 링크당 비용과 동일 오더이며, 합류가 비용을 폭발시키지
-  않는다.
-- `--deep` 없는 기본 모드는 해시 대조만이라 노드 1000개도 밀리초 오더다.
+- 재실행 횟수의 안전한 상한은 노드 수다. 캐시할 수 있는 단위는 **고유 실행 키**
+  `(planSha256, 정렬된 입력 slot digest, 실제 toolVersion,
+  실제 executionProfileSha256)`다.
+  같은 plan text를 같은 경로의 서로 다른 입력 바이트에 적용한 두 캡슐은 별도 키다.
+- 시나리오 M은 분할 s + 편집 a·b·c + 합본 d의 5노드다. 다섯 실행 키가 모두
+  다르면 5회 재실행한다. 공통 조상은 DAG 방문 집합으로 한 번만 실행한다.
+- `--deep` 없는 기본 모드는 파일·캡슐·edge 해시 대조만 수행한다. 1,000노드 성능은
+  구현 뒤 benchmark로 측정하며 설계 문서에서 밀리초를 선결론 내리지 않는다.
 
 ---
 
@@ -363,10 +430,10 @@ lineage(head, deep):
 |---|---|---|---|
 | T1 | 부모 캡슐 사후 변조 | 기록 해시 대조 | `parentOk:false`, exit 3 — **v1.0에서 이미 실측 고정** |
 | T2 | 부모 바꿔치기 (다른 캡슐로 교체) | 동일 (파일 해시가 다르다) | `parentOk:false` |
-| T3 | 산출-입력 사슬 위조 (중간 산출물 몰래 교체) | 계보 불변식 | `lineageOk:false` |
+| T3 | 산출-입력 사슬 위조 (primary 또는 material 몰래 교체) | edge의 부모 output↔binding↔자식 input slot 3자 대조 | `lineageOk:false` |
 | T4 | 결과만 그럴듯한 캡슐 (재실행 불일치) | `--deep` 재현 | `reproduced:false` |
-| T5 | 재료 누락 신고 (material 부모를 빼고 발급) | **부분만** — 계획서 step 인자에 재료 바이트/경로가 남아 교차 대조 가능하나, 자동 판정은 M3 범위 | 정직 조항: v1.1 자동으로는 못 잡는다 |
-| T6 | 다이아몬드 위조 (같은 조상을 다른 내용 사본 2개로) | 해시 방문 키 | 사본이 다르면 다른 노드로 분리 — 조상 위장이 성립하지 않는다 |
+| T5 | 재료 누락 신고 | 선언된 외부 input slot 전부에 parent binding을 요구 | 선언된 slot 누락은 발급 실패. 계획 밖 비밀 입력까지는 검출 못 함 |
+| T6 | 동일 bytes 캡슐 복사본의 상대 경로 의미 혼동 | canonical 실파일 방문 키 + 위치별 상대 경로 해석 | 별도 복사본은 별도 node. 같은 논리 조상이라는 주장은 stable identity/앵커 없이는 증명 못 함 |
 | T7 | **역사 전체 재작성** (뿌리부터 전부 재발급) | **해시 체인만으로는 못 잡는다** | 외부 앵커 필요 — 타임스탬프·서명·투명성 로그는 **후속 축**으로 남긴다 (본 설계 범위 밖임을 명시) |
 
 T7 을 숨기지 않는 것이 이 표의 요점이다. git 도 동일한 한계를 갖고(히스토리 강제
@@ -379,10 +446,10 @@ T7 을 숨기지 않는 것이 이 표의 요점이다. git 도 동일한 한계
 
 | 단계 | 내용 | DoD (전부 실측 게이트) |
 |---|---|---|
-| **M1** 스키마+정규화 | `parents[]`·role, v1.0 읽기 정규화, `--parent-material` | v1.0 캡슐이 새 lineage 에서 판정 불변(회귀) + v1.1 발급·재독 왕복 테스트 + 참고문헌 링크 원문 검증 |
-| **M2** DAG 걷기 | §7.5 알고리즘, `mode:"dag"` 봉투, `broken[]` | 다이아몬드 픽스처(A→{B,C}→D) 유효 + T2/T3 변조 검출 + 별칭 경로 1회 방문 |
-| **M3** audit×lineage | 폴더 전수에서 체인/DAG 자동 발견·일괄 계보 감사 + T5 교차 대조 | 캡슐 6개(체인 1 + DAG 1) 폴더에서 그래프 2개 자동 식별·회계 |
-| **M4** 모델 레시피 PoC | mergekit YAML 을 `plan` 자리에 감싼 캡슐 — 동형 검증 실험 | 실험 브랜치 한정. 문서 밖 아티팩트 1종의 계보가 같은 검증기로 도는 것 |
+| **M1** 스키마+edge 결속 | `parents[]`·role·binding, receipt `inputs[]`/`outputs[]`, v1.0 정규화 | 기존 v1.0 입력의 봉투 key/exit 판정 불변 + v1.1 발급·재독 + 누락·중복 slot/unknown role/self-parent/mismatch 거절 + 참고문헌 원문 검증 |
+| **M2** DAG 걷기 | canonical 실파일 방문, v1.1 `nodes[]`/`edges[]`/`broken[]`, 자원 상한 | 5노드 D→{A,B,C}→S 유효 + 모든 edge 판정 + symlink 별칭 1회 방문 + 같은 bytes·다른 폴더 상대 parent 회귀 + 정확한 limit 경계 |
+| **M3** audit×lineage | 폴더 전수에서 체인/DAG 자동 발견·일괄 감사 + 외부 input slot 완전성 | 체인 1 + DAG 1 자동 식별·회계, 선언 slot의 parent 누락 거절, 계획 밖 입력은 비검출 한계로 보고 |
+| **M4** 모델 레시피 PoC | mergekit YAML·정확한 model digest·실행 프로필을 감싼 캡슐 | 실험 브랜치 한정. 같은 실행 키의 byte-identical 재현과 입력/프로필 하나 변경 시 cache 미재사용 |
 
 각 단계는 독립 PR 이고, M1 착수 조건은 문서 머리에 적었다. **완료 표기는 머지
 링크와 함께만** — 이 표의 어떤 칸도 지금 완료가 아니다.
@@ -396,13 +463,13 @@ T7 을 숨기지 않는 것이 이 표의 요점이다. git 도 동일한 한계
 | 계획 | run 계획서 JSON | mergekit YAML 레시피 |
 | 영수증 | 입력·계획·산출 SHA-256 | 조상 가중치·레시피·산출 가중치 SHA-256 |
 | 부모들 | 이전 작업 캡슐들 | 조상 모델 캡슐들 |
-| 재현 | 계획 재실행 → 같은 바이트 | 레시피 재실행 → 같은 가중치 (병합 산술은 결정론) |
+| 재현 | 계획+입력 snapshot 재실행 → 같은 바이트 | 레시피+가중치 digest+실행 프로필 재실행 → 같은 직렬화 바이트 |
 
-가중치 병합은 부동소수점 산술이라 재현 조건(연산 순서·정밀도) 고정이 문서보다
-까다롭다 — 그래서 M4 는 PoC 이고 실험 브랜치 한정이다. 그러나 1층 병합(soup·
-TIES·DARE)은 GPU 비결정성이 개입하는 학습이 아니라 **순수 텐서 산술**이므로,
-조건 고정 시 재현 가능성이 학습보다 압도적으로 높다. 검증 인프라가 먼저 있고
-대상이 따라오는 순서 — 문서에서 실증하고 모델로 일반화한다.
+가중치 병합은 학습보다 연산 범위가 좁지만 부동소수점 연산 순서·device/kernel·
+dtype·라이브러리 버전·직렬화 방식에 따라 바이트가 달라질 수 있다. 따라서 "순수
+텐서 산술"만으로 결정론을 선언하지 않는다. M4는 실행 프로필을 해시하고 같은
+프로필에서 byte-identical 재현이 실제로 되는지 확인하는 PoC이며, 수치 근사 동등성은
+별도 판정으로 분리한다.
 
 ---
 

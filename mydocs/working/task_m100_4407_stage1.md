@@ -12,13 +12,14 @@
 - §2–4 정세 3층: 가중치 병합(soup→task arithmetic→TIES/DARE→진화적 병합, 성립
   직관과 한계까지) · MoE 업사이클링 · 시스템 수준(라우팅·증류·MoA).
 - §5 시간축 전망 — 확신도(높음/중간/낮음) 열로 판단과 실측을 구분.
-- §6 검증 공백 논증 — 모델 카드·AIBOM·C2PA 가 전부 "자기 신고"이고 재현 검증이
-  없다는 것, 오염 전파 리콜 불가 비용, 문서 세계가 같은 문제의 실증장인 이유.
-- §7 DAG 설계 — parents[] v1.1 스키마(role: primary/material), v1.0 하위호환
-  정규화, 판정 3축의 N-부모 일반화, 파일 해시 방문 키 BFS(별칭 병합·다이아몬드
-  1회 검증), 봉투 v1.1 전체 예시, --deep 비용 회계(고유 planSha256 캐시).
+- §6 검증 공백 논증 — 모델 카드·BOM의 진술, C2PA의 서명·자산 결속, 레시피
+  재현성을 서로 다른 보장으로 구분하고, 남은 재현 공백과 문서 실증장의 범위를 명시.
+- §7 DAG 설계 — `parents[]` v1.1 스키마(role + edge binding), receipt
+  `inputs[]`/`outputs[]`, v1.0 봉투 하위호환, 모든 parent output↔child input slot
+  결속, canonical 실파일 방문 키 BFS, 실행 입력·도구 프로필까지 포함한 deep cache key.
 - §8 위협 모델 T1–T7 — 역사 전체 재작성(T7)은 해시 체인만으로 못 잡는다고
-  정직하게 명시(외부 앵커는 후속 축).
+  명시하고, 계획 밖 비밀 입력과 별도 복사본의 논리 identity도 자동 검출 범위 밖으로
+  분리(외부 앵커는 후속 축).
 - §9 단계 M1–M4 + DoD, M4(모델 레시피 캡슐 동형 검증)의 논지.
 
 ## 서지 규약 (정직 조항)
@@ -32,3 +33,16 @@ arXiv 식별자는 원문 초록 대조로 검증한 4건(2203.05482 · 2311.030
 - scripts/check_markdown_links.py · scripts/check_document_metadata.py 통과
 - 교차 참조는 전부 이슈/PR URL — 미머지 문서 상대링크 금지 규약 준수
 - `track_*.md` 집계 밖 `trend_` 접두어 — roadmap_progress 집계 불변
+
+## 메인터너 검토 보정
+
+- 동일 plan text라도 입력 digest가 다르면 재실행 결과를 공유할 수 없어
+  `planSha256` 단독 cache를 실행 키로 교체했다.
+- material parent의 capsule 무결성만으로는 그 산출물이 자식 재료였음을 증명하지
+  못하므로 모든 edge에 parent output↔child input slot digest 결속을 요구했다.
+- 같은 capsule bytes를 다른 폴더에 복사하면 상대 parent 의미가 달라질 수 있어
+  file hash 단독 방문 키를 canonical 실파일 기준으로 교체했다.
+- 4노드라고 쓰고 5개 작업을 세던 합본 예시를 분할 s + 편집 a·b·c + 합본 d의
+  5노드로 바로잡고, 현행 run plan에는 다중 input/재료 step이 없음을 명시했다.
+- C2PA는 단순 자기 신고가 아니라 manifest와 자산을 암호학적으로 결속하므로,
+  강점을 인정하면서 레시피 재실행과는 다른 보장이라고 범위를 바로잡았다.
