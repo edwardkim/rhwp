@@ -35,6 +35,10 @@ const PAGE_118: u32 = 117;
 const PAGE_119: u32 = 118;
 const PAGE_120: u32 = 119;
 const PAGE_121: u32 = 120;
+const PAGE_129: u32 = 128;
+const PAGE_130: u32 = 129;
+const PAGE_131: u32 = 130;
+const PAGE_132: u32 = 131;
 const PAGE_126: u32 = 125;
 const PAGE_127: u32 = 126;
 const PAGE_37: u32 = 36;
@@ -1021,6 +1025,88 @@ fn native_hwp5_earlier_marker_projects_the_p120_footnote_before_body_reset() {
         p120_body_bottom.expect("p120 para 1293 body")
             <= p120_separator_top.expect("p120 footnote separator") + 0.5,
         "p120 para 1293은 projected FootnoteArea를 침범하면 안 됨"
+    );
+}
+
+#[test]
+fn native_hwp5_body_footnotes_follow_the_p129_and_p131_reset_pages() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage103 HWP evidence fixture");
+
+    assert_eq!(
+        doc.page_count(),
+        215,
+        "정책연구 기준 PDF와 215쪽을 유지해야 함"
+    );
+    let trees = [PAGE_129, PAGE_130, PAGE_131, PAGE_132].map(|page| {
+        doc.build_page_render_tree(page)
+            .unwrap_or_else(|e| panic!("render physical page {}: {e}", page + 1))
+    });
+
+    let mut p129_lines = Vec::new();
+    let mut p130_lines = Vec::new();
+    paragraph_line_indices(&trees[0].root, 1372, &mut p129_lines);
+    paragraph_line_indices(&trees[1].root, 1372, &mut p130_lines);
+    p129_lines.sort_unstable();
+    p129_lines.dedup();
+    p130_lines.sort_unstable();
+    p130_lines.dedup();
+    assert_eq!(
+        p129_lines,
+        (0..6).collect::<Vec<_>>(),
+        "p129 para 1372 owner"
+    );
+    assert_eq!(
+        p130_lines,
+        (6..9).collect::<Vec<_>>(),
+        "p130 para 1372 owner"
+    );
+
+    let mut p131_lines = Vec::new();
+    let mut p132_lines = Vec::new();
+    paragraph_line_indices(&trees[2].root, 1382, &mut p131_lines);
+    paragraph_line_indices(&trees[3].root, 1382, &mut p132_lines);
+    p131_lines.sort_unstable();
+    p131_lines.dedup();
+    p132_lines.sort_unstable();
+    p132_lines.dedup();
+    assert_eq!(p131_lines, vec![0, 1], "p131 para 1382 owner");
+    assert_eq!(p132_lines, vec![2], "p132 para 1382 owner");
+
+    let mut notes = [String::new(), String::new(), String::new(), String::new()];
+    for (tree, text) in trees.iter().zip(notes.iter_mut()) {
+        footnote_text(&tree.root, false, text);
+    }
+    assert!(
+        notes[0].contains("176)") && notes[0].contains("일상생"),
+        "p129는 각주 176의 번호와 reset 전 prefix를 소유해야 함: {}",
+        notes[0]
+    );
+    assert!(
+        !notes[0].contains("활이나 직업적 활동"),
+        "p129는 각주 176 reset tail을 미리 소유하면 안 됨: {}",
+        notes[0]
+    );
+    assert!(
+        notes[1].contains("활이나 직업적 활동")
+            && notes[1].contains("177)")
+            && notes[1].contains("178)")
+            && !notes[1].contains("176)"),
+        "p130은 번호를 반복하지 않은 각주 176 tail과 177·178을 소유해야 함: {}",
+        notes[1]
+    );
+    assert!(
+        notes[2].contains("179)") && !notes[2].contains("180)"),
+        "p131은 PDF처럼 각주 179만 소유해야 함: {}",
+        notes[2]
+    );
+    assert!(
+        notes[3].contains("180)")
+            && notes[3].contains("181)")
+            && notes[3].contains("대로 호적 등으로"),
+        "p132는 각주 180 전체와 181을 소유해야 함: {}",
+        notes[3]
     );
 }
 

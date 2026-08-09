@@ -524,7 +524,7 @@ struct TableBreakToken {
 /// 모든 각주가 새 쪽 하나에는 들어가지만 현재 잔여에는 전부 들어가지 않는 작은
 /// RowBreak 표만 이 정보를 이용해 fragment별 각주 예약을 늦춘다.
 #[derive(Debug, Clone, Copy)]
-struct TableCellFootnoteFragmentSplit {
+struct NativeHwp5FootnoteFragmentSplit {
     prefix: FootnoteFragment,
     prefix_height: f64,
     suffix: FootnoteFragment,
@@ -545,7 +545,7 @@ struct TableCellFootnote {
     /// Renderer가 실제 줄바꿈·trailing line-spacing까지 합산한 높이. RowBreak
     /// fragment queue는 이 값을 써야 URL 각주가 본문 위로 침범하지 않는다.
     content_height: f64,
-    fragment_split: Option<TableCellFootnoteFragmentSplit>,
+    fragment_split: Option<NativeHwp5FootnoteFragmentSplit>,
 }
 
 /// 표 cell 각주의 실제 렌더 높이. 일반 paginator의 빠른 저장 LineSeg 추정과 달리
@@ -2081,19 +2081,19 @@ fn native_hwp5_footnote_fragment_height(
         .sum()
 }
 
-/// native HWP5 RowBreak 표 셀 각주의 저장 line reset을 physical footnote fragment로
-/// 보존한다.
+/// native HWP5 각주의 저장 line reset을 physical footnote fragment로 보존한다.
 ///
 /// p728의 note 77처럼 셀 marker는 첫 table fragment에 있고 각주 문단의 세 번째
 /// stored line이 `vpos=0`으로 다시 시작할 수 있다. 한컴 PDF는 reset 앞 두 줄을
 /// marker page에, 뒤 두 줄을 다음 table fragment page에 둔다. queue가 note 전체를
 /// 원자적으로 넘기면 첫 page에서 note number가 사라지고 다음 page body와 각주가
-/// 겹친다. generic wrap/capacity 추측이 아니라 stored line count와 reset이 composer
+/// 겹친다. 같은 저장 계약은 본문 marker가 물리 page 경계를 넘는 p129의 note 176에도
+/// 적용된다. generic wrap/capacity 추측이 아니라 stored line count와 reset이 composer
 /// line count에 정확히 대응하는 경우만 인정한다.
-fn native_hwp5_table_cell_footnote_reset_fragments(
+fn native_hwp5_footnote_reset_fragments(
     footnote: &Footnote,
     dpi: f64,
-) -> Option<TableCellFootnoteFragmentSplit> {
+) -> Option<NativeHwp5FootnoteFragmentSplit> {
     let mut flat_lines = Vec::new();
     let mut split_line = None;
     for paragraph in &footnote.paragraphs {
@@ -2158,12 +2158,59 @@ fn native_hwp5_table_cell_footnote_reset_fragments(
             })
             .sum()
     };
-    Some(TableCellFootnoteFragmentSplit {
+    Some(NativeHwp5FootnoteFragmentSplit {
         prefix_height: fragment_height(prefix),
         suffix_height: fragment_height(suffix),
         prefix,
         suffix,
     })
+}
+
+/// native HWP5 본문 각주 marker 뒤에서 현재 쪽의 `PartialParagraph`가 시작하는
+/// stored reset을 찾는다.
+///
+/// control 순회는 문단 전체의 pagination이 끝난 뒤 실행된다. 따라서 marker가 이전
+/// 완료 page에 있고 같은 문단의 reset tail이 current page에 있으면, 현재 item은
+/// `start_line > marker_line`인 PartialParagraph다. 임의의 줄 되감김을 각주 owner로
+/// 오인하지 않도록 단일 Footnote control, 정확한 `vpos > 0 -> 0` 경계로 한정한다.
+fn native_hwp5_body_footnote_tail_reset(
+    st: &TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    ctrl_idx: usize,
+) -> Option<(usize, usize)> {
+    if !st.profile.native_hwp5_layout()
+        || st.col_count != 1
+        || para.controls.len() != 1
+        || !matches!(para.controls.get(ctrl_idx), Some(Control::Footnote(_)))
+        || !para_has_visible_text(para)
+    {
+        return None;
+    }
+
+    let control_pos = *para.control_text_positions().get(ctrl_idx)?;
+    let marker_line = para
+        .line_segs
+        .iter()
+        .enumerate()
+        .rev()
+        .find(|(_, line)| !is_synthetic_line_seg(line) && line.text_start as usize <= control_pos)?
+        .0;
+    let reset_line = st.current_items.iter().rev().find_map(|item| match item {
+        PageItem::PartialParagraph {
+            para_index,
+            start_line,
+            ..
+        } if *para_index == para_idx && *start_line > marker_line => Some(*start_line),
+        _ => None,
+    })?;
+    let previous = para.line_segs.get(reset_line.checked_sub(1)?)?;
+    let next = para.line_segs.get(reset_line)?;
+    (!is_synthetic_line_seg(previous)
+        && !is_synthetic_line_seg(next)
+        && previous.vertical_pos > 0
+        && next.vertical_pos == 0)
+        .then_some((marker_line, reset_line))
 }
 
 /// 실제 각주 영역과 겹치는 native HWP5 본문 문단의 저장 reset을 찾는다.
@@ -6984,9 +7031,8 @@ impl TypesetEngine {
                                 native_hwp5_final_marker_footnote_uses_next_reset_page(
                                     &st, para_idx, para, paragraphs, ctrl_idx, fn_ctrl, fn_height,
                                 );
-                            let fragments = native_hwp5_footnote_break
-                                .filter(|footnote_break| footnote_break.split_footnote)
-                                .and_then(|_| native_hwp5_two_line_footnote_fragments(fn_ctrl));
+                            let body_tail_reset =
+                                native_hwp5_body_footnote_tail_reset(&st, para_idx, para, ctrl_idx);
                             // 두 줄 각주는 full-note owner route와 다른 계약이다. marker
                             // anchor에 첫 line을 소급하고 tail current page에 두 번째 line을
                             // 두는 기존 fallback을 보존한다(p31 note 30).
@@ -7023,52 +7069,89 @@ impl TypesetEngine {
                             } else {
                                 None
                             };
+                            // marker 본문이 이미 두 physical page로 나뉜 경우, 각주 자체의
+                            // stored reset도 일대일이면 prefix는 marker page, suffix는 현재
+                            // tail page가 소유한다(p129 note 176). 표 셀용으로 검증된 같은
+                            // 보수적 판정을 재사용하되 Body tail과 기존 marker-page 각주를
+                            // 모두 확인해 일반 각주를 임의 capacity로 나누지 않는다.
+                            let stored_reset_fragments = body_tail_reset
+                                .filter(|_| multi_note_routed.is_some())
+                                .and_then(|_| {
+                                    native_hwp5_footnote_reset_fragments(fn_ctrl, self.dpi)
+                                });
+                            let fragments = native_hwp5_footnote_break
+                                .filter(|footnote_break| footnote_break.split_footnote)
+                                .and_then(|_| native_hwp5_two_line_footnote_fragments(fn_ctrl))
+                                .map(|(prefix, suffix)| NativeHwp5FootnoteFragmentSplit {
+                                    prefix_height: native_hwp5_footnote_fragment_height(
+                                        fn_ctrl, prefix, self.dpi,
+                                    ),
+                                    suffix_height: native_hwp5_footnote_fragment_height(
+                                        fn_ctrl, suffix, self.dpi,
+                                    ),
+                                    prefix,
+                                    suffix,
+                                })
+                                .or(stored_reset_fragments);
+                            // 기존 각주가 있는 marker page의 마지막 prefix line에서 바로
+                            // body reset이 시작되고 각주 자체에는 fragment reset이 없으면,
+                            // 한컴은 새 각주 전체를 tail page로 보낸다(p131 note 180).
+                            // marker가 reset보다 더 앞선 일반 split과 내부 reset 각주는 각각
+                            // 기존 marker owner/fragment 경로를 유지한다.
+                            let whole_note_owned_by_tail_page = stored_reset_fragments.is_none()
+                                && multi_note_routed.is_some()
+                                && body_tail_reset.is_some_and(|(marker_line, reset_line)| {
+                                    marker_line + 1 == reset_line
+                                        && para.line_segs.get(marker_line).is_some_and(|line| {
+                                            hwpunit_to_px(
+                                                line.vertical_pos + line.line_height,
+                                                self.dpi,
+                                            ) >= st.layout.body_area.height * 0.90
+                                        })
+                                });
                             // first-footnote collision은 기존에 `Some(None)` 자체도
                             // “현재 page에 둔다”는 결정이었다. 그 결정을 multi-note
                             // filter로 덮으면 p30 note 29가 tail p31에 떨어진다.
-                            let routed = match collision_routed {
-                                Some(route) => route,
-                                None => multi_note_routed,
+                            let routed = if whole_note_owned_by_tail_page {
+                                None
+                            } else {
+                                match collision_routed {
+                                    Some(route) => route,
+                                    None => multi_note_routed,
+                                }
                             };
                             let fragment_routed_page = fragments.as_ref().and_then(|_| {
-                                collision_routed.flatten().or_else(|| {
-                                    // reset 직전 줄 안의 marker라도 current item의 char 범위를
-                                    // 찾지 못하면 일반 라우터는 tail page를 가리킨다. 이 좁은
-                                    // HWP5 형상은 저장 reset 전 page가 첫 footnote line owner다.
-                                    st.pages.len().checked_sub(2).map(|page_idx| (page_idx, 0))
-                                })
+                                collision_routed
+                                    .flatten()
+                                    .or(multi_note_routed)
+                                    .or_else(|| {
+                                        // reset 직전 줄 안의 marker라도 current item의 char 범위를
+                                        // 찾지 못하면 일반 라우터는 tail page를 가리킨다. 이 좁은
+                                        // HWP5 형상은 저장 reset 전 page가 첫 footnote line owner다.
+                                        st.pages.len().checked_sub(2).map(|page_idx| (page_idx, 0))
+                                    })
                             });
                             if let Some((page_idx, _)) = fragment_routed_page {
-                                if let Some((first_fragment, continuation_fragment)) = fragments {
-                                    let first_height = native_hwp5_footnote_fragment_height(
-                                        fn_ctrl,
-                                        first_fragment,
-                                        self.dpi,
-                                    );
-                                    let continuation_height = native_hwp5_footnote_fragment_height(
-                                        fn_ctrl,
-                                        continuation_fragment,
-                                        self.dpi,
-                                    );
+                                if let Some(split) = fragments {
                                     if st.pages.len() > page_idx + 1
                                         && st.add_footnote_fragment_to_completed_page(
                                             page_idx,
                                             fn_ctrl.number,
                                             source.clone(),
-                                            first_fragment,
-                                            first_height,
+                                            split.prefix,
+                                            split.prefix_height,
                                         )
                                     {
                                         if let Some(page) = st.pages.last_mut() {
                                             page.footnotes.push(FootnoteRef {
                                                 number: fn_ctrl.number,
                                                 source: source.clone(),
-                                                fragment: Some(continuation_fragment),
+                                                fragment: Some(split.suffix),
                                             });
                                         }
                                         st.add_footnote_fragment_height(
-                                            continuation_height,
-                                            continuation_fragment.draw_separator,
+                                            split.suffix_height,
+                                            split.suffix.draw_separator,
                                         );
                                         continue;
                                     }
@@ -15558,9 +15641,7 @@ impl TypesetEngine {
                             .profile
                             .get()
                             .native_hwp5_layout()
-                            .then(|| {
-                                native_hwp5_table_cell_footnote_reset_fragments(fn_ctrl, self.dpi)
-                            })
+                            .then(|| native_hwp5_footnote_reset_fragments(fn_ctrl, self.dpi))
                             .flatten();
                         table_footnotes.push(TableCellFootnote {
                             number: fn_ctrl.number,
