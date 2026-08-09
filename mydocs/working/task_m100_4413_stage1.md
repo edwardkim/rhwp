@@ -61,7 +61,7 @@ nested_table_in_cell_round_trips_through_import ... FAILED (패닉)
 
 ## 5. 이 작업에서 고치지 않은 것
 
-전부 [#4426](https://github.com/edwardkim/rhwp/issues/4426) 으로 열었다.
+전부 [#4426](https://github.com/edwardkim/rhwp/issues/4427) 으로 열었다.
 
 1. `table_to_html`(`clipboard.rs:1705`)이 `table.caption` 을 방출하지 않는다 — 최상위·중첩 모두.
 2. `picture_to_html`(`:1816`)이 `pic.caption` 을 방출하지 않는다.
