@@ -2370,6 +2370,26 @@ fn native_hwp5_final_marker_footnote_uses_next_reset_page(
     st.current_height > projected_available + 0.5
 }
 
+/// 일반 Body 각주 하나의 content 높이를 layout과 같은 composed line metric으로 잰다.
+fn native_hwp5_exact_footnote_content_height(footnote: &Footnote, dpi: f64) -> f64 {
+    let mut total = 0.0;
+    for (note_para_idx, note_para) in footnote.paragraphs.iter().enumerate() {
+        let composed = compose_paragraph(note_para);
+        if composed.lines.is_empty() {
+            total += hwpunit_to_px(400, dpi);
+            continue;
+        }
+        let note_last_para = note_para_idx + 1 == footnote.paragraphs.len();
+        for (line_idx, line) in composed.lines.iter().enumerate() {
+            total += hwpunit_to_px(line.line_height, dpi);
+            if !(note_last_para && line_idx + 1 == composed.lines.len()) {
+                total += hwpunit_to_px(line.line_spacing, dpi);
+            }
+        }
+    }
+    total
+}
+
 /// 현재 page의 일반 Body 각주를 layout과 같은 composed line metric으로 재측정한다.
 ///
 /// 일반 pagination의 `current_footnote_height`는 빠른 stored-LineSeg 추정이다. 긴 URL이나
@@ -2403,20 +2423,7 @@ fn native_hwp5_existing_body_footnote_area_height(
             return None;
         };
 
-        for (note_para_idx, note_para) in footnote.paragraphs.iter().enumerate() {
-            let composed = compose_paragraph(note_para);
-            if composed.lines.is_empty() {
-                total += hwpunit_to_px(400, dpi);
-                continue;
-            }
-            let note_last_para = note_para_idx + 1 == footnote.paragraphs.len();
-            for (line_idx, line) in composed.lines.iter().enumerate() {
-                total += hwpunit_to_px(line.line_height, dpi);
-                if !(note_last_para && line_idx + 1 == composed.lines.len()) {
-                    total += hwpunit_to_px(line.line_spacing, dpi);
-                }
-            }
-        }
+        total += native_hwp5_exact_footnote_content_height(footnote, dpi);
         if footnote_idx + 1 < footnotes.len() {
             total += st.footnote_between_notes_margin;
         }
@@ -2441,7 +2448,6 @@ fn native_hwp5_existing_footnote_reset_overlap_break_line(
     if !st.profile.native_hwp5_layout()
         || st.col_count != 1
         || st.current_footnote_height <= 0.0
-        || !para.controls.is_empty()
         || !para_has_visible_text(para)
         || para.line_segs.len() < fmt.line_heights.len()
     {
@@ -2451,7 +2457,15 @@ fn native_hwp5_existing_footnote_reset_overlap_break_line(
     let page_vpos_base = st.vpos_page_base.or(st.vpos_lazy_base).unwrap_or(0);
     let actual_footnote_height =
         native_hwp5_existing_body_footnote_area_height(st, paragraphs, dpi)?;
-    let footnote_top = (st.layout.body_area.height - actual_footnote_height).max(0.0);
+    let control_positions = para.control_text_positions();
+    let mut current_footnotes = Vec::with_capacity(para.controls.len());
+    for (control_index, control) in para.controls.iter().enumerate() {
+        let Control::Footnote(footnote) = control else {
+            // 표·그림 등 다른 inline control의 owner 계약과 섞지 않는다.
+            return None;
+        };
+        current_footnotes.push((*control_positions.get(control_index)?, footnote.as_ref()));
+    }
     const FLOW_SOURCE_TOLERANCE_PX: f64 = 2.0;
     const FOOTNOTE_BOUNDARY_TOLERANCE_PX: f64 = 0.5;
 
@@ -2476,6 +2490,30 @@ fn native_hwp5_existing_footnote_reset_overlap_break_line(
                 return None;
             }
 
+            // 현재 문단의 각주는 본문을 배치한 뒤 등록된다. marker가 reset 직전 줄에
+            // 있으면 이미 존재하는 각주만으로 계산한 top은 늦고, 새 note가 사후에
+            // FootnoteArea를 위로 키워 방금 배치한 다음 줄과 겹친다. 이 candidate보다
+            // 앞에 marker가 있는 현재 문단 각주만 exact 높이로 투영한다.
+            let next_text_start = next.text_start as usize;
+            let prev_text_range = prev.text_start as usize..next_text_start;
+            let marker_on_prev_line = current_footnotes
+                .iter()
+                .any(|(position, _)| prev_text_range.contains(position));
+            if !current_footnotes.is_empty() && !marker_on_prev_line {
+                return None;
+            }
+            let projected_current_notes: Vec<&Footnote> = current_footnotes
+                .iter()
+                .filter(|(position, _)| *position < next_text_start)
+                .map(|(_, footnote)| *footnote)
+                .collect();
+            let projected_footnote_height = actual_footnote_height
+                + projected_current_notes.len() as f64 * st.footnote_between_notes_margin
+                + projected_current_notes
+                    .iter()
+                    .map(|footnote| native_hwp5_exact_footnote_content_height(footnote, dpi))
+                    .sum::<f64>();
+            let footnote_top = (st.layout.body_area.height - projected_footnote_height).max(0.0);
             let flow_prev_bottom = flow_prev_top + fmt.line_heights[prev_idx];
             let flow_next_bottom =
                 flow_prev_top + fmt.line_advance(prev_idx) + fmt.line_heights[next_idx];

@@ -20,6 +20,8 @@ const PAGE_31: u32 = 30;
 const PAGE_32: u32 = 31;
 const PAGE_68: u32 = 67;
 const PAGE_69: u32 = 68;
+const PAGE_74: u32 = 73;
+const PAGE_75: u32 = 74;
 const PAGE_58: u32 = 57;
 const PAGE_59: u32 = 58;
 const PAGE_76: u32 = 75;
@@ -842,6 +844,60 @@ fn native_hwp5_existing_footnote_reset_moves_the_p43_tail_before_the_separator()
         assert!(
             !p44_notes.contains(&format!("{number})")),
             "p44 must not inherit p43 footnote {number}: {p44_notes}"
+        );
+    }
+}
+
+#[test]
+fn native_hwp5_current_marker_projects_the_p74_footnote_before_body_reset() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage99 HWP evidence fixture");
+
+    assert_eq!(
+        doc.page_count(),
+        215,
+        "정책연구 기준 PDF와 215쪽을 유지해야 함"
+    );
+    let p74 = page_text(&doc, PAGE_74);
+    let p75 = page_text(&doc, PAGE_75);
+    assert!(
+        p74.contains("장기이식 환자 및 기증") && !p74.contains("자동화시스템"),
+        "p74는 PDF처럼 para 839의 첫 줄에서 끝나야 함: {p74}"
+    );
+    assert!(
+        p75.contains("자에 대한 정보를 관리하기 위한 자동화시스템"),
+        "p75는 PDF처럼 para 839 reset 줄부터 시작해야 함: {p75}"
+    );
+
+    let p74_tree = doc
+        .build_page_render_tree(PAGE_74)
+        .expect("render physical page 74");
+    let p75_tree = doc
+        .build_page_render_tree(PAGE_75)
+        .expect("render physical page 75");
+    let mut p74_body_bottom = None;
+    let mut p74_separator_top = None;
+    paragraph_bottom(&p74_tree.root, 839, &mut p74_body_bottom);
+    footnote_separator_top(&p74_tree.root, &mut p74_separator_top);
+    assert!(
+        p74_body_bottom.expect("p74 para 839 body")
+            <= p74_separator_top.expect("p74 footnote separator") + 0.5,
+        "p74 para 839는 projected FootnoteArea를 침범하면 안 됨"
+    );
+    let mut p75_body_bottom = None;
+    paragraph_bottom(&p75_tree.root, 839, &mut p75_body_bottom);
+    assert!(
+        p75_body_bottom.is_some(),
+        "p75가 para 839 reset tail을 소유해야 함"
+    );
+
+    let mut p74_notes = String::new();
+    footnote_text(&p74_tree.root, false, &mut p74_notes);
+    for number in [99, 100] {
+        assert!(
+            p74_notes.contains(&format!("{number})")),
+            "p74 FootnoteArea가 note {number}를 소유해야 함: {p74_notes}"
         );
     }
 }

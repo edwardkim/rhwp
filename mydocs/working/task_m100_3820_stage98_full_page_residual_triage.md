@@ -117,3 +117,8 @@ outline이었다. 따라서 휴먼고딕에는 outline sans 우선 보호를 추
 
 이 보호 범위는 `--font-style` SVG다. embedded/full mode와 WASM Canvas는 별도 font data 및
 조판 계약이므로 이 stage에서 같은 치환을 추측 적용하지 않는다.
+
+사용자가 지목한 Stage 96의 86712 p65도 새 바이너리로 다시 생성했다.
+`output/task-3820-stage98-86712-p65-fontstyle/`의 rhwp raster에는 한글 두부가 없고
+`svg-glyph-risk-report.tsv`도 p65 0건이다. PDF 대비 pixel diff는 11.13%로, 글꼴 획·자폭과
+표 높이 차이는 후속 layout/font fidelity 대상이며 두부 제거와 별개로 남긴다.
