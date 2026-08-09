@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/agent_surface_playbook.md
-last_verified: 2026-08-03
+last_verified: 2026-08-09
 ---
 
 # 에이전트 표면 플레이북 — 표면을 더하는 절차와, 그 표면을 굴리는 실무
@@ -897,13 +897,13 @@ $ rhwp inspect unicode samples/hwp3-sample.hwp --json
 `scannedChars:20736` 이 "훑었는데 없었다"의 증거다. 0이면 탐지기가 아니라 **입력**을
 의심한다.
 
-주입 조사는 기본 8축만 본다. 누름틀 이름·안내문·메모까지 보려면 `--include-fields`:
+주입 조사는 기본 9축만 본다. 누름틀 이름·안내문·메모까지 보려면 `--include-fields`:
 
 ```
 $ rhwp inspect injection samples/field-01.hwp --json --include-fields
 {"clean":true,"highestConfidence":null,"includeFields":true,"minConfidence":"low",
  "scanScopes":["body","tableCell","textBox","equation","footnote","endnote","header","footer",
-               "fieldName","fieldGuide","fieldCommand","hiddenComment"],
+               "caption","fieldName","fieldGuide","fieldCommand","hiddenComment","fieldMemo"],
  "signalCount":0, … }
 ```
 

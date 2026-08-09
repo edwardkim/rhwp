@@ -208,6 +208,22 @@ pub(crate) fn get_textbox_from_shape_mut(
     drawing.text_box.as_mut()
 }
 
+/// ShapeObject에서 캡션을 추출하는 헬퍼 (#4321).
+///
+/// 대부분의 변형은 공통 `DrawingObjAttr`(`.drawing()`) 아래 `caption` 을 두지만, `Group`과
+/// (묶음 자식으로 중첩된) `Picture`는 `drawing()` 이 `None`이고 캡션을 자기 struct에 직접
+/// 갖는다 — 그 둘만 예외 분기한다.
+pub(crate) fn get_caption_from_shape(
+    shape: &crate::model::shape::ShapeObject,
+) -> Option<&crate::model::shape::Caption> {
+    use crate::model::shape::ShapeObject;
+    match shape {
+        ShapeObject::Group(g) => g.caption.as_ref(),
+        ShapeObject::Picture(p) => p.caption.as_ref(),
+        _ => shape.drawing().and_then(|d| d.caption.as_ref()),
+    }
+}
+
 /// 문단 목록에서 DocumentPath를 따라 중첩 표에 대한 가변 참조를 얻는다.
 ///
 /// 경로 형식:

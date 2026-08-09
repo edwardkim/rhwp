@@ -19047,9 +19047,16 @@ fn injection_scan_scopes(include_fields: bool) -> Vec<&'static str> {
         "endnote",
         "header",
         "footer",
+        "caption",
     ];
     if include_fields {
-        scopes.extend(["fieldName", "fieldGuide", "fieldCommand", "hiddenComment"]);
+        scopes.extend([
+            "fieldName",
+            "fieldGuide",
+            "fieldCommand",
+            "hiddenComment",
+            "fieldMemo",
+        ]);
     }
     scopes
 }
