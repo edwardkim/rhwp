@@ -218,12 +218,22 @@ fn square_wrap_first_narrow_line_vpos_px(
     Some(hwpunit_to_px(narrow_vpos - base_vpos, dpi))
 }
 
-fn table_contains_receipt_title(table: &crate::model::table::Table) -> bool {
-    table.cells.iter().any(|cell| {
-        cell.paragraphs
-            .iter()
-            .any(|para| para.text.contains("Filing Receipt") || para.text.contains("접 수 증"))
-    })
+/// [#4384] TAC 표 앞 F081C 채움줄에 한컴 서명/날인 PUA(U+F012B)가 섞여 있는지 판정한다.
+///
+/// 종전에는 표 셀 텍스트가 "접수증"/"Filing Receipt" 문구를 담고 있는지로 이 표가
+/// 서명/날인 자리를 필요로 하는지 판정했다. 그러나 실측(`samples/복학원서.hwp`
+/// 문단 16)에서 F081C 채움 안에 U+F012B 한 글자가 실제로 섞여 저장돼 있음을 확인했다
+/// — 한컴이 서명/날인 자리를 만들 때 채움 문자 사이에 이 PUA 를 심어 저장하는 게
+/// 원인이다(`issue_937`: U+F012B 는 어디서나 `(인)` 으로 렌더돼야 하는 범용 한컴
+/// 서명/날인 기호). 표 제목 문구는 사용자가 언제든 편집해 사라지지만, 이 PUA 는
+/// 문서가 실제로 서명/날인 자리를 저장했다는 구조적 사실 자체라 편집으로 없어지지
+/// 않는다. 10,000건 실 문서 코퍼스에서 이 F081C+F012B 조합을 쓰는 문서는
+/// `samples/복학원서.hwp` 계열 외에 없었다(#4384 조사) — 문구 매칭보다 좁으면 좁았지
+/// 넓지 않다.
+fn tac_filler_line_has_signature_marker(composed: Option<&ComposedParagraph>) -> bool {
+    composed
+        .and_then(|c| c.lines.first())
+        .is_some_and(|line| line.runs.iter().any(|run| run.text.contains('\u{F012B}')))
 }
 
 fn tac_receipt_filler_prefix(
@@ -236,7 +246,7 @@ fn tac_receipt_filler_prefix(
     if control_index != 0
         || !table.common.treat_as_char
         || para.line_segs.len() < 2
-        || !table_contains_receipt_title(table)
+        || !tac_filler_line_has_signature_marker(composed)
     {
         return None;
     }
@@ -250,7 +260,8 @@ fn tac_receipt_filler_prefix(
         for ch in run.text.chars() {
             match ch {
                 '\u{F081C}' => filler_count += 1,
-                // 한컴 전용 날인 기호가 같이 저장된 변형도 같은 선으로 취급한다.
+                // [#4384] 이 문자의 존재가 위 tac_filler_line_has_signature_marker 게이트를
+                // 통과시킨 실제 근거다 — filler_count 에는 넣지 않고 통과만 시킨다.
                 '\u{F012B}' | '\u{FFFC}' | ' ' | '\t' | '\r' | '\n' => {}
                 _ => return None,
             }
@@ -398,7 +409,7 @@ fn tac_receipt_post_f081c_line(
     if control_index != 0
         || !table.common.treat_as_char
         || para.line_segs.len() < 2
-        || !table_contains_receipt_title(table)
+        || !tac_filler_line_has_signature_marker(composed)
     {
         return None;
     }
