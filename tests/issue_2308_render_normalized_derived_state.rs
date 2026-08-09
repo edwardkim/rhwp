@@ -144,10 +144,11 @@ fn issue_2308_saved_nested_width_keeps_fragment_geometry() {
     let bytes = fs::read(path).expect("read #2195 authority fixture");
     let core = DocumentCore::from_bytes(&bytes).expect("parse #2195 authority fixture");
 
-    // p34's 1×1 rationale fragment occupies 426.9px in the HWP 2024 PDF.
-    // The former 395.2px pin came from stretching saved 36,572HU to the parent
-    // cell width, which shortened the fragment and shifted its text wrapping.
-    let expected = [(32, 351.1, 649.3), (33, 77.1, 426.9)];
+    // p33's first fragment begins at the row-6 boundary in the HWP 2024 PDF;
+    // its old 351.1px pin predated the empty RowBreak host flow correction and
+    // incorrectly described a point inside the preceding row. p34's 1×1
+    // rationale fragment retains the stored 426.9px continuation geometry.
+    let expected = [(32, 400.4, 649.3), (33, 77.1, 426.9)];
     for (page, expected_y, expected_height) in expected {
         let tree = core
             .build_page_render_tree(page)

@@ -7652,6 +7652,34 @@ impl LayoutEngine {
                 } else {
                     0.0
                 };
+                // Native HWP5's empty 1×1 RowBreak host has a separate flow
+                // box from its minimum painted cell box.  The former layout
+                // branch advanced only to `table_visual_end`; a run of 1300HU
+                // anchors therefore used the 21.1px padded paint height and
+                // discarded the 566HU outer margins, instead of consuming the
+                // declared 17.3px height plus both margins (76076 p33). Keep
+                // this source contract deliberately narrower than generic
+                // empty floats: Square sibling lanes and stored HWPX layout
+                // have separate coordinate contracts.
+                let empty_rowbreak_flow_end = if self.profile.get().native_hwp5_layout()
+                    && is_current_empty_para_float
+                    && !is_current_empty_square_sibling_float
+                    && is_para_topbottom_float(&t.common)
+                    && matches!(t.page_break, TablePageBreak::RowBreak)
+                    && t.row_count == 1
+                    && t.col_count == 1
+                    && t.cells.len() == 1
+                {
+                    let declared_height_px = hwpunit_to_px(t.common.height as i32, self.dpi);
+                    let outer_top_px = hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                    let outer_bottom_px = hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
+                    Some(
+                        (table_y_start + declared_height_px + outer_top_px + outer_bottom_px)
+                            .max(table_visual_end + outer_bottom_px),
+                    )
+                } else {
+                    None
+                };
                 y_offset = if is_current_visible_para_float {
                     if signed_hwpunit(t.common.vertical_offset) > 0 {
                         if issue2439_visible_host_stack {
@@ -7682,7 +7710,7 @@ impl LayoutEngine {
                 } else if table_visual_shift > 0.0 {
                     (table_visual_end - table_visual_shift).max(table_y_before)
                 } else {
-                    table_visual_end
+                    empty_rowbreak_flow_end.unwrap_or(table_visual_end)
                 };
                 let signed_vertical_offset = signed_hwpunit(t.common.vertical_offset);
                 let zero_offset_has_following_coanchored_float = signed_vertical_offset == 0
