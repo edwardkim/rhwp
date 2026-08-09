@@ -15231,6 +15231,13 @@ fn validated_capsule_plan(capsule: &serde_json::Value) -> Result<(serde_json::Va
     let steps = capsule["receipt"]["steps"]
         .as_u64()
         .ok_or_else(|| "receipt.steps 가 음이 아닌 정수가 아님".to_string())?;
+    let plan_steps = plan["steps"]
+        .as_array()
+        .ok_or_else(|| "plan.steps 배열 없음".to_string())?
+        .len() as u64;
+    if steps != plan_steps {
+        return Err("plan.steps 길이와 receipt.steps 불일치".to_string());
+    }
     Ok((plan, steps))
 }
 
@@ -15749,15 +15756,23 @@ fn cmd_audit(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
-    let mut capsules: Vec<std::path::PathBuf> = entries
-        .flatten()
-        .map(|e| e.path())
-        .filter(|p| {
-            p.file_name()
-                .and_then(|n| n.to_str())
-                .is_some_and(|n| n.ends_with(".capsule.json"))
-        })
-        .collect();
+    let mut capsules: Vec<std::path::PathBuf> = Vec::new();
+    for entry in entries {
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(e) => {
+                eprintln!("오류: 폴더 항목을 열거할 수 없습니다 - {dir}: {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+        let path = entry.path();
+        if path
+            .file_name()
+            .is_some_and(|name| name.to_string_lossy().ends_with(".capsule.json"))
+        {
+            capsules.push(path);
+        }
+    }
     capsules.sort();
     if capsules.is_empty() {
         eprintln!("오류: {dir} 에 *.capsule.json 이 없습니다 — 감사 대상 없음.");
@@ -15768,9 +15783,8 @@ fn cmd_audit(args: &[String]) -> i32 {
     for (idx, path) in capsules.iter().enumerate() {
         let name = path
             .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or_default()
-            .to_string();
+            .map(|name| name.to_string_lossy().into_owned())
+            .unwrap_or_else(|| path.display().to_string());
         let fail = |reason: String| serde_json::json!({ "capsule": name, "error": reason });
         let text = match fs::read_to_string(path) {
             Ok(t) => t,

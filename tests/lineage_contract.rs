@@ -225,6 +225,20 @@ fn two_link_chain_is_valid_and_tampered_parent_is_exposed() {
         .as_str()
         .unwrap_or_default()
         .contains("plan 과 planText"));
+
+    let mut b_with_tampered_steps = b.clone();
+    b_with_tampered_steps["receipt"]["steps"] = serde_json::json!(999);
+    std::fs::write(
+        &cap_b,
+        serde_json::to_string_pretty(&b_with_tampered_steps).unwrap(),
+    )
+    .unwrap();
+    let (code, env) = lineage(&cap_b, false);
+    assert_eq!(code, Some(3), "shallow step 변조도 fail-closed: {env}");
+    assert!(env["links"][0]["error"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("plan.steps 길이와 receipt.steps"));
     std::fs::write(&cap_b, &b_original).unwrap();
 
     // 부모 캡슐을 사후 변조 — 자식이 기록한 파일 해시가 폭로한다.

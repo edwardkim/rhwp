@@ -160,7 +160,10 @@ fn tampered_plan_and_step_receipt_do_not_receive_reproduction_credit() {
         .as_str()
         .unwrap_or_default()
         .contains("plan 과 planText")));
-    assert!(failures.iter().any(|failure| failure["kind"] == "steps"));
+    assert!(failures.iter().any(|failure| failure["error"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("plan.steps 길이와 receipt.steps")));
     let _ = std::fs::remove_dir_all(&dir);
 }
 
