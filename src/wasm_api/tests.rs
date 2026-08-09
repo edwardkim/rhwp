@@ -406,6 +406,84 @@ fn issue_1470_style_update_preserves_direct_char_shape() {
     );
 }
 
+/// [#4325] `table.dirty`가 문서 범위로 지워지고 구역 범위로 소비되는 스코프 불일치 회귀.
+///
+/// `updateStyleShapes`는 스타일을 쓰는 모든 구역의 표를 `mark_cell_control_dirty`로
+/// dirty 마킹한 뒤, `0..num_sections`을 돌며 구역별로 `rebuild_section`을 호출한다.
+/// `rebuild_section(0)`이 유발하는 `paginate()` 패스는 아직 `dirty_sections[1]`이
+/// false라 구역 1을 건너뛰지만, 그 패스 끝에서 표 dirty 플래그를 지우는 루프가
+/// 문서 전체 범위였다 — 건너뛴 구역 1의 표까지 dirty가 사라졌다. 이후
+/// `rebuild_section(1)`이 구역 1을 실제로 재측정할 차례가 오면 `table.dirty`가
+/// 이미 false라 `measure_section_incremental`이 변경 전 `MeasuredTable`을 그대로
+/// clone해 구역 1의 표 높이가 영구히 stale로 남았다(원본 편집 전까지 복구 안 됨).
+#[test]
+fn issue_4325_style_update_second_section_table_not_left_stale() {
+    use crate::model::style::{CharShape, ParaShape, Style};
+
+    let mut doc = HwpDocument::create_empty();
+    doc.document.doc_info.char_shapes.push(CharShape {
+        base_size: 1000, // 10pt
+        ..Default::default()
+    });
+    doc.document.doc_info.para_shapes.push(ParaShape::default());
+    doc.document.doc_info.styles.push(Style {
+        local_name: "바탕글".to_string(),
+        english_name: "Normal".to_string(),
+        lang_id: 1042,
+        para_shape_id: 0,
+        char_shape_id: 0,
+        ..Default::default()
+    });
+
+    // 구역 0에 2x2 표 삽입 + 줄바꿈되는 셀 텍스트 (이슈 실측: "같은 표 + 줄바꿈되는 텍스트")
+    doc.create_table_native(0, 0, 0, 2, 2)
+        .expect("표 삽입 (구역0)");
+    let wrap_text = "가".repeat(120);
+    doc.insert_text_in_cell_native(0, 0, 0, 0, 0, 0, &wrap_text)
+        .expect("셀 텍스트 삽입 (구역0)");
+
+    // 구역 1: 구역 0과 완전히 같은 표+텍스트를 가진 구역을 추가한다 (이슈 실측: 2구역 문서).
+    let mut two_section_doc = doc.document.clone();
+    let section0 = two_section_doc.sections[0].clone();
+    two_section_doc.sections.push(section0);
+    doc.set_document(two_section_doc);
+
+    assert_eq!(doc.document.sections.len(), 2, "구역 2개 문서 준비");
+    assert_eq!(doc.measured_tables.len(), 2);
+    assert_eq!(
+        doc.measured_tables[0][0].total_height, doc.measured_tables[1][0].total_height,
+        "복제 직후 두 구역의 표 높이는 같아야 한다 (기준선)"
+    );
+    assert!(
+        doc.dirty_sections.iter().all(|d| !d),
+        "set_document 직후 paginate가 두 구역을 모두 처리해야 한다"
+    );
+    let before_height = doc.measured_tables[0][0].total_height;
+
+    // 스타일 글자모양을 36pt로 일괄 변경 (이슈 실측 시나리오)
+    assert!(
+        doc.update_style_shapes(0, r#"{"fontSize":3600}"#, "{}"),
+        "스타일 글자모양 수정 (36pt)"
+    );
+
+    let after0 = doc.measured_tables[0][0].total_height;
+    let after1 = doc.measured_tables[1][0].total_height;
+
+    assert!(
+        after0 > before_height,
+        "구역0 표 높이는 36pt 반영으로 커져야 한다 (before={before_height}, after0={after0})"
+    );
+    assert_eq!(
+        after0, after1,
+        "issue #4325 회귀: 구역1 표가 구역0과 동일한 표/텍스트인데도 stale MeasuredTable로 \
+         남았다 (before={before_height}, after0={after0}, after1={after1})"
+    );
+    assert_eq!(
+        doc.measured_tables[0][0].row_heights, doc.measured_tables[1][0].row_heights,
+        "issue #4325 회귀: 구역1 표의 행 높이가 구역0과 달라지면 안 된다"
+    );
+}
+
 #[test]
 fn issue_1470_character_style_does_not_replace_para_style() {
     use crate::model::paragraph::CharShapeRef;

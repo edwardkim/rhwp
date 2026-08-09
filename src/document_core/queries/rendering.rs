@@ -4011,6 +4011,10 @@ impl DocumentCore {
             self.dirty_paragraphs.push(None);
         }
         self.dirty_paragraphs.truncate(sec_count);
+        // [#4325] 이번 패스에서 실제로 재측정한 구역만 표시한다. dirty가 아니어서 건너뛴
+        // 구역은 표 dirty 플래그를 지우면 안 된다 — 지우는 범위와 소비하는 범위(측정 스킵)가
+        // 어긋나면 그 구역의 표가 이후 dirty로 마킹돼도 이번 패스의 clear로 소실된다.
+        let mut remeasured_sections = vec![false; sec_count];
 
         // 구역 간 쪽번호 위치/번호 상속
         let mut carry_page_number_pos: Option<crate::model::control::PageNumberPos> = None;
@@ -4580,6 +4584,7 @@ impl DocumentCore {
             }
             self.pagination[idx] = result;
             self.dirty_sections[idx] = false;
+            remeasured_sections[idx] = true;
             // 문단 dirty 비트맵 초기화 (모든 문단 clean)
             let para_count = section.paragraphs.len();
             self.dirty_paragraphs[idx] = Some(vec![false; para_count]);
@@ -4619,8 +4624,14 @@ impl DocumentCore {
             *off = 0;
         }
 
-        // 표 dirty 플래그 초기화
-        for section in &mut self.document.sections {
+        // 표 dirty 플래그 초기화. [#4325] 이번 패스에서 재측정하지 않고 건너뛴 구역은
+        // 제외한다 — 그 구역의 표는 measure_section_incremental이 아직 소비하지 않았으므로
+        // dirty를 여기서 지우면 이후 실제로 재측정될 때 변경 전 MeasuredTable을 그대로
+        // clone하게 된다(issue #4325).
+        for (idx, section) in self.document.sections.iter_mut().enumerate() {
+            if !remeasured_sections[idx] {
+                continue;
+            }
             for para in &mut section.paragraphs {
                 for ctrl in &mut para.controls {
                     if let Control::Table(table) = ctrl {
