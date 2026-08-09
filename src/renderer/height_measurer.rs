@@ -2442,35 +2442,12 @@ impl HeightMeasurer {
     }
 
     /// 캡션의 높이를 측정한다.
+    ///
+    /// 산식은 `composer::caption_height_px`가 단일 정의다(#4320) — 렌더 쪽
+    /// `LayoutEngine::calculate_caption_height`도 같은 함수를 호출해 compose 폴백
+    /// 유무로 측정·렌더 결과가 갈라지지 않는다.
     fn measure_caption(&self, caption: &Option<Caption>) -> f64 {
-        let caption = match caption {
-            Some(c) => c,
-            None => return 0.0,
-        };
-
-        if caption.paragraphs.is_empty() {
-            return 0.0;
-        }
-
-        let mut total_height = 0.0;
-        for para in &caption.paragraphs {
-            if para.line_segs.is_empty() {
-                total_height += hwpunit_to_px(400, self.dpi); // 기본 줄 높이
-            } else {
-                for (i, seg) in para.line_segs.iter().enumerate() {
-                    let line_h = hwpunit_to_px(seg.line_height, self.dpi);
-                    // 마지막 줄은 line_spacing 제외
-                    let spacing = if i < para.line_segs.len() - 1 {
-                        hwpunit_to_px(seg.line_spacing, self.dpi)
-                    } else {
-                        0.0
-                    };
-                    total_height += line_h + spacing;
-                }
-            }
-        }
-
-        total_height
+        super::composer::caption_height_px(caption, self.dpi)
     }
 }
 

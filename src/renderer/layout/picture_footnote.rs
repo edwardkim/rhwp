@@ -658,47 +658,15 @@ impl LayoutEngine {
     }
 
     /// 캡션의 총 높이를 계산한다.
+    ///
+    /// 산식은 `composer::caption_height_px`가 단일 정의다(#4320) — height_measurer 의
+    /// `measure_caption`도 같은 함수를 호출한다.
     pub(crate) fn calculate_caption_height(
         &self,
         caption: &Option<Caption>,
         _styles: &ResolvedStyleSet,
     ) -> f64 {
-        let caption = match caption {
-            Some(c) => c,
-            None => return 0.0,
-        };
-
-        if caption.paragraphs.is_empty() {
-            return 0.0;
-        }
-
-        let mut line_seg_height = 0.0f64;
-        let mut composed_height = 0.0f64;
-        for para in &caption.paragraphs {
-            if let (Some(first), Some(last)) = (para.line_segs.first(), para.line_segs.last()) {
-                let para_top = first.vertical_pos.min(0);
-                let para_bottom = last.vertical_pos + last.line_height;
-                line_seg_height =
-                    line_seg_height.max(hwpunit_to_px(para_bottom - para_top, self.dpi));
-            }
-
-            let composed = compose_paragraph(para);
-            if composed.lines.is_empty() {
-                composed_height += hwpunit_to_px(400, self.dpi); // 기본 줄 높이
-            } else {
-                for (i, line) in composed.lines.iter().enumerate() {
-                    let line_h = hwpunit_to_px(line.line_height, self.dpi);
-                    let spacing = if i < composed.lines.len() - 1 {
-                        hwpunit_to_px(line.line_spacing, self.dpi)
-                    } else {
-                        0.0 // 마지막 줄은 line_spacing 제외
-                    };
-                    composed_height += line_h + spacing;
-                }
-            }
-        }
-
-        line_seg_height.max(composed_height)
+        super::super::composer::caption_height_px(caption, self.dpi)
     }
 
     /// 캡션을 레이아웃한다.

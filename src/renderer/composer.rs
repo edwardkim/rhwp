@@ -6,10 +6,11 @@
 
 use super::layout::{estimate_text_width, resolved_to_text_style};
 use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
-use super::{px_to_hwpunit, TextStyle};
+use super::{hwpunit_to_px, px_to_hwpunit, TextStyle};
 use crate::model::control::Control;
 use crate::model::document::Section;
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph, SingleLineOverflowMemo};
+use crate::model::shape::Caption;
 
 /// 글자겹침(CharOverlap) 렌더링 정보
 #[derive(Debug, Clone, serde::Serialize)]
@@ -340,6 +341,55 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
     convert_pua_display_text(&mut composed);
 
     composed
+}
+
+/// 캡션(문단 목록)의 총 높이를 px 로 계산한다.
+///
+/// 렌더(`calculate_caption_height`)와 측정(`measure_caption`)이 각자 재구현하며 갈라졌던
+/// 산식을 통일한 것이다(#4320). 저장된 `line_segs` 는 한컴이 실제로 배치한 레이아웃 값이므로
+/// `compose_paragraph` 재계산 높이의 하한으로 쓴다 — `line_segs`가 있어도 폰트 대체 등으로
+/// 재계산 높이가 더 작게 나오면 실제보다 낮게 예약되어 다음 요소가 겹친다
+/// (`2d973021c`가 `samples/rowbreak-problem-pages.hwpx`에서 고친 오버랩이 이 경우다).
+/// `line_segs`가 비어 있으면(레이아웃 전/미저장 캡션) `compose_paragraph`로만 계산한다.
+pub fn caption_height_px(caption: &Option<Caption>, dpi: f64) -> f64 {
+    let caption = match caption {
+        Some(c) => c,
+        None => return 0.0,
+    };
+
+    if caption.paragraphs.is_empty() {
+        return 0.0;
+    }
+
+    // line_segs가 비어 컴포즈로 대체할 때 쓰는 기본 줄 높이(HWPUNIT).
+    const DEFAULT_LINE_HEIGHT_HWPUNIT: i32 = 400;
+
+    let mut line_seg_height = 0.0f64;
+    let mut composed_height = 0.0f64;
+    for para in &caption.paragraphs {
+        if let (Some(first), Some(last)) = (para.line_segs.first(), para.line_segs.last()) {
+            let para_top = first.vertical_pos.min(0);
+            let para_bottom = last.vertical_pos + last.line_height;
+            line_seg_height = line_seg_height.max(hwpunit_to_px(para_bottom - para_top, dpi));
+        }
+
+        let composed = compose_paragraph(para);
+        if composed.lines.is_empty() {
+            composed_height += hwpunit_to_px(DEFAULT_LINE_HEIGHT_HWPUNIT, dpi); // 기본 줄 높이
+        } else {
+            for (i, line) in composed.lines.iter().enumerate() {
+                let line_h = hwpunit_to_px(line.line_height, dpi);
+                let spacing = if i < composed.lines.len() - 1 {
+                    hwpunit_to_px(line.line_spacing, dpi)
+                } else {
+                    0.0 // 마지막 줄은 line_spacing 제외
+                };
+                composed_height += line_h + spacing;
+            }
+        }
+    }
+
+    line_seg_height.max(composed_height)
 }
 
 /// Hanyang-PUA 옛한글 코드포인트·한컴 PUA와 legacy 제품명을 렌더링용 텍스트로 변환한다.
