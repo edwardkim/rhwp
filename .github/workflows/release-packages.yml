@@ -30,20 +30,34 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.ver.outputs.version }}
+      source_sha: ${{ steps.ver.outputs.source_sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # 수동 재실행도 입력 태그의 소스를 검증한다. 태그 push 는 원래 ref 를 유지한다.
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
       - name: 태그 == Cargo.toml 검증
         id: ver
         shell: bash
+        env:
+          REQUESTED_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            TAG="${{ github.event.inputs.tag }}"
-          else
-            TAG="${{ github.ref_name }}"
+          set -euo pipefail
+          TAG="$REQUESTED_TAG"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "지원하지 않는 릴리스 태그 형식: $TAG" >&2
+            exit 1
+          fi
+          TAG_SHA="$(git rev-parse --verify "refs/tags/$TAG^{commit}")"
+          HEAD_SHA="$(git rev-parse HEAD)"
+          if [[ "$HEAD_SHA" != "$TAG_SHA" ]]; then
+            echo "checkout 소스가 요청 태그와 다릅니다: HEAD=$HEAD_SHA tag=$TAG_SHA" >&2
+            exit 1
           fi
           VERSION="${TAG#v}"
           python3 tools/set_package_version.py "${VERSION}" --check
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "source_sha=${HEAD_SHA}" >> "$GITHUB_OUTPUT"
 
   build-wheels:
     name: 휠 ${{ matrix.wheel_tag }}
@@ -72,6 +86,8 @@ jobs:
             wheel_tag: py3-none-win_amd64
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.version-gate.outputs.source_sha }}
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
@@ -138,6 +154,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.version-gate.outputs.source_sha }}
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
@@ -184,6 +202,8 @@ jobs:
         working-directory: bindings/node
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.version-gate.outputs.source_sha }}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '20'
