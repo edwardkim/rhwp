@@ -74,14 +74,41 @@ def info(path: PathLike, *, timeout: Optional[float] = DEFAULT_TIMEOUT) -> Envel
     return Envelope(run_json(["info", path, "--json"], timeout=timeout))
 
 
-def export_text(path: PathLike, *, timeout: Optional[float] = DEFAULT_TIMEOUT) -> Envelope:
-    """쪽별 평문 추출."""
-    return Envelope(run_json(["export-text", path, "--json"], timeout=timeout))
+def export_text(
+    path: PathLike,
+    *,
+    page: Optional[int] = None,
+    max_chars: Optional[int] = None,
+    timeout: Optional[float] = DEFAULT_TIMEOUT,
+) -> Envelope:
+    """쪽별 평문 추출.
+
+    [트랙 G R61 D-12] ``page``/``max_chars`` 는 CLI 에 있었지만 이 래퍼에는
+    없었다(Node 바인딩엔 있었음). ``page`` 로 특정 쪽만, ``max_chars`` 로
+    쪽당 상한을 준다(기본은 무제한 — #3787 S7).
+    """
+    args: List[Any] = ["export-text", path]
+    _flag(args, "-p", page)
+    _flag(args, "--max-chars", max_chars)
+    args.append("--json")
+    return Envelope(run_json(args, timeout=timeout))
 
 
-def export_structure(path: PathLike, *, timeout: Optional[float] = DEFAULT_TIMEOUT) -> Envelope:
-    """문서 구조(제목 계층·절)."""
-    return Envelope(run_json(["export-structure", path, "--json"], timeout=timeout))
+def export_structure(
+    path: PathLike,
+    *,
+    mode: Optional[str] = None,
+    timeout: Optional[float] = DEFAULT_TIMEOUT,
+) -> Envelope:
+    """문서 구조(제목 계층·절).
+
+    [트랙 G R61 D-12] ``mode``(``auto``/``outline``/``clause``)가 CLI 에 있었지만
+    이 래퍼에는 없었다.
+    """
+    args: List[Any] = ["export-structure", path]
+    _flag(args, "--mode", mode)
+    args.append("--json")
+    return Envelope(run_json(args, timeout=timeout))
 
 
 def export_tables(path: PathLike, *, timeout: Optional[float] = DEFAULT_TIMEOUT) -> Envelope:
@@ -140,12 +167,17 @@ def digest(
     *,
     sections: bool = False,
     pages: Optional[str] = None,
+    max_chars: Optional[int] = None,
     timeout: Optional[float] = DEFAULT_TIMEOUT,
 ) -> Envelope:
-    """요약용 청킹 — 주소를 보존한 절 단위 또는 쪽 범위 창."""
+    """요약용 청킹 — 주소를 보존한 절 단위 또는 쪽 범위 창.
+
+    [트랙 G R61 D-12] ``max_chars``가 CLI 에 있었지만 이 래퍼에는 없었다.
+    """
     args: List[Any] = ["digest", path]
     _switch(args, "--sections", sections)
     _flag(args, "--pages", pages)
+    _flag(args, "--max-chars", max_chars)
     args.append("--json")
     return Envelope(run_json(args, timeout=timeout))
 
@@ -420,10 +452,23 @@ def convert(
 
 
 def ir_diff(
-    a: PathLike, b: PathLike, *, timeout: Optional[float] = DEFAULT_TIMEOUT
+    a: PathLike,
+    b: PathLike,
+    *,
+    section: Optional[int] = None,
+    paragraph: Optional[int] = None,
+    timeout: Optional[float] = DEFAULT_TIMEOUT,
 ) -> Envelope:
-    """두 문서의 IR 차이 — 무엇이 달라졌는지 범주별로."""
-    return Envelope(run_json(["ir-diff", a, b, "--json"], timeout=timeout))
+    """두 문서의 IR 차이 — 무엇이 달라졌는지 범주별로.
+
+    [트랙 G R61 D-12] ``section``/``paragraph``(``-s``/``-p`` — 특정 구역·
+    문단으로 좁혀서 비교)가 CLI 에 있었지만 이 래퍼에는 없었다.
+    """
+    args: List[Any] = ["ir-diff", a, b]
+    _flag(args, "-s", section)
+    _flag(args, "-p", paragraph)
+    args.append("--json")
+    return Envelope(run_json(args, timeout=timeout))
 
 
 # ── 편집 ────────────────────────────────────────────────────────────────

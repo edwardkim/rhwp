@@ -21,7 +21,7 @@ from typing import List, Optional
 
 from .errors import BinaryNotFoundError
 
-__all__ = ["find_binary", "clear_cache", "binary_name", "BUNDLED_DIR"]
+__all__ = ["find_binary", "clear_cache", "binary_name", "BUNDLED_DIR", "ENV_VAR"]
 
 #: 환경변수 이름 — 문서 §3 고정.
 ENV_VAR = "RHWP_BIN"

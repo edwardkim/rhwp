@@ -51,9 +51,24 @@ def test_export_text_builds_command(captured: List[List[Any]]) -> None:
     assert _as_strings(captured[0]) == ["export-text", "a.hwp", "--json"]
 
 
+def test_export_text_page_and_max_chars(captured: List[List[Any]]) -> None:
+    """[트랙 G R61 D-12] page/max_chars 가 CLI 에 있었지만 래퍼에 없었다."""
+    rhwp.export_text("a.hwp", page=2, max_chars=500)
+    args = _as_strings(captured[0])
+    assert args[args.index("-p") + 1] == "2"
+    assert args[args.index("--max-chars") + 1] == "500"
+
+
 def test_export_structure_builds_command(captured: List[List[Any]]) -> None:
     rhwp.export_structure("a.hwp")
     assert _as_strings(captured[0]) == ["export-structure", "a.hwp", "--json"]
+
+
+def test_export_structure_mode(captured: List[List[Any]]) -> None:
+    """[트랙 G R61 D-12] mode 가 CLI 에 있었지만 래퍼에 없었다."""
+    rhwp.export_structure("a.hwp", mode="outline")
+    args = _as_strings(captured[0])
+    assert args[args.index("--mode") + 1] == "outline"
 
 
 def test_export_tables_builds_command(captured: List[List[Any]]) -> None:
@@ -97,6 +112,13 @@ def test_digest_flags(captured: List[List[Any]]) -> None:
     args = _as_strings(captured[0])
     assert "--sections" in args
     assert args[args.index("--pages") + 1] == "1-3"
+
+
+def test_digest_max_chars(captured: List[List[Any]]) -> None:
+    """[트랙 G R61 D-12] max_chars 가 CLI 에 있었지만 래퍼에 없었다."""
+    rhwp.digest("a.hwp", max_chars=300)
+    args = _as_strings(captured[0])
+    assert args[args.index("--max-chars") + 1] == "300"
 
 
 def test_digest_without_options(captured: List[List[Any]]) -> None:
@@ -249,6 +271,14 @@ def test_convert_verify_flag(captured: List[List[Any]]) -> None:
 def test_ir_diff_takes_two_paths(captured: List[List[Any]]) -> None:
     rhwp.ir_diff("a.hwp", "b.hwp")
     assert _as_strings(captured[0]) == ["ir-diff", "a.hwp", "b.hwp", "--json"]
+
+
+def test_ir_diff_section_and_paragraph(captured: List[List[Any]]) -> None:
+    """[트랙 G R61 D-12] section/paragraph(-s/-p) 가 CLI 에 있었지만 래퍼에 없었다."""
+    rhwp.ir_diff("a.hwp", "b.hwp", section=1, paragraph=3)
+    args = _as_strings(captured[0])
+    assert args[args.index("-s") + 1] == "1"
+    assert args[args.index("-p") + 1] == "3"
 
 
 # ── 편집 ────────────────────────────────────────────────────────────────

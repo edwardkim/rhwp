@@ -49,7 +49,21 @@ class Session:
     한 서버에서 열고 싶을 때만 직접 만든다.
     """
 
-    def __init__(self, *, profile: Optional[str] = None, timeout: Optional[float] = 300.0) -> None:
+    def __init__(
+        self,
+        *,
+        profile: Optional[str] = None,
+        timeout: Optional[float] = 300.0,
+        cwd: Optional[PathLike] = None,
+    ) -> None:
+        # [트랙 G R61 D-14] Node 바인딩엔 세션 자식 프로세스의 작업 디렉터리를
+        # 지정하는 cwd 옵션이 있었지만 파이썬엔 없었다 — 상대 경로 인자를 쓰는
+        # 호출자는 파이썬 프로세스 자신의 cwd 에 암묵 의존했다.
+        #
+        # 주의: self._timeout 은 여기서 저장만 하고 아직 어디서도 소비하지 않는다
+        # (요청-응답 왕복에 실제 제한 시간을 걸려면 stdout 읽기를 별도 스레드로
+        # 옮겨야 하는 더 큰 변경이 필요하다 — 별도 후속 작업으로 남긴다. 지금은
+        # 응답이 없으면 무기한 블록한다).
         self._timeout = timeout
         self._next_id = 0
         self._lock = threading.Lock()
@@ -67,6 +81,7 @@ class Session:
                 encoding="utf-8",
                 errors="replace",
                 bufsize=1,  # 줄 단위 — JSON-RPC 프레임이 줄이다.
+                cwd=str(cwd) if cwd is not None else None,
             )
         except OSError as exc:
             raise RhwpError(f"mcp-serve 기동에 실패했습니다: {exc}", argv=argv) from exc

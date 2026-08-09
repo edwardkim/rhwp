@@ -308,9 +308,9 @@ rhwp.export_pdf("큰문서.hwp", out="a.pdf", timeout=None)   # 무제한
 `batch` 는 전 레코드를 모은다. 스트리밍이 필요하면 저수준 API 를 쓴다.
 
 ```python
-from rhwp._process import iter_ndjson
+import rhwp
 
-for record in iter_ndjson(["batch", "info", "--json"], stdin=paths_text):
+for record in rhwp.iter_ndjson(["batch", "info", "--json"], stdin=paths_text):
     handle(record)     # 나오는 대로 처리
 ```
 

@@ -20,7 +20,14 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Union
 from ._binary import find_binary
 from .errors import ProtocolError, RhwpError, TimeoutError, raise_for_exit
 
-__all__ = ["run_json", "run_ndjson", "run_raw", "CompletedRun", "DEFAULT_TIMEOUT"]
+__all__ = [
+    "run_json",
+    "run_ndjson",
+    "run_raw",
+    "iter_ndjson",
+    "CompletedRun",
+    "DEFAULT_TIMEOUT",
+]
 
 #: 기본 제한 시간(초). 대형 문서 렌더가 수십 초 걸릴 수 있어 넉넉히 잡는다.
 #: ``None`` 을 넘기면 무제한.

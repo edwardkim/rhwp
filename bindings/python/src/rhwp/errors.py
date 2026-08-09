@@ -33,6 +33,7 @@ __all__ = [
     "EXIT_VERIFY",
     "EXIT_VERIFY_PAGES",
     "raise_for_exit",
+    "is_known_exit_code",
 ]
 
 #: 성공.
@@ -163,6 +164,16 @@ def _quote(arg: str) -> str:
         return arg
     escaped = arg.replace('"', '\\"')
     return f'"{escaped}"'
+
+
+def is_known_exit_code(code: int) -> bool:
+    """[트랙 G R61 D-18] 이 바인딩이 아는 종료 코드(0/1/2/3/4)인지.
+
+    Node 바인딩의 ``isKnownExitCode`` 를 그대로 이식했다. 모르는 코드를
+    미리 걸러내고 싶은 호출자(로깅·재시도 판단)를 위한 것 — 실제 처리는
+    :func:`raise_for_exit` 가 한다.
+    """
+    return code in (EXIT_OK, EXIT_RUNTIME, EXIT_USAGE, EXIT_VERIFY, EXIT_VERIFY_PAGES)
 
 
 def raise_for_exit(

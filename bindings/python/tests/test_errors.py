@@ -102,3 +102,22 @@ def test_error_str_includes_last_stderr_line() -> None:
             stderr="첫 줄\n오류: 진짜 사유는 여기",
         )
     assert "진짜 사유는 여기" in str(caught.value)
+
+
+# ── D-18: raise_for_exit/is_known_exit_code 패키지 루트 노출 ──────────────
+
+
+def test_raise_for_exit_exported_at_package_root() -> None:
+    """[D-18] errors.__all__ 엔 있었지만 __init__.py 가 실제로 임포트하지 않았다."""
+    import rhwp
+
+    assert rhwp.raise_for_exit is raise_for_exit
+
+
+def test_is_known_exit_code() -> None:
+    """[D-18] Node의 isKnownExitCode 대응이 파이썬엔 없었다."""
+    from rhwp.errors import is_known_exit_code
+
+    for code in (EXIT_OK, EXIT_RUNTIME, EXIT_USAGE, EXIT_VERIFY, EXIT_VERIFY_PAGES):
+        assert is_known_exit_code(code)
+    assert not is_known_exit_code(42)

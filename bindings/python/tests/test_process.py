@@ -108,3 +108,12 @@ def test_boolean_argument_is_rejected() -> None:
 def test_path_arguments_are_stringified(tmp_path: Path) -> None:
     result = run_raw(["ok", tmp_path], check=False)
     assert str(tmp_path) in result.argv
+
+
+def test_iter_ndjson_is_exported_at_package_root() -> None:
+    """[트랙 G R61 D-13] iter_ndjson 이 __all__ 에 없어 공개 API가 아니었다."""
+    import rhwp
+    from rhwp import _process
+
+    assert "iter_ndjson" in _process.__all__
+    assert rhwp.iter_ndjson is _process.iter_ndjson
