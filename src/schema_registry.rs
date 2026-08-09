@@ -47,7 +47,10 @@ pub const IR_SCHEMA_VERSION: &str = "1.0";
 pub const CAPABILITIES_SCHEMA_VERSION: &str = "1.3";
 
 /// 계획서 문법 버전 — `export-plan-schema` 봉투의 `planSchemaVersion`.
-pub const PLAN_SCHEMA_VERSION: &str = "1.0";
+///
+/// - 1.1: 계획서 루트에 선택 `preconditions.inputSha256`(CAS — 실행 전 입력 해시
+///   전제, #4378 R22) 추가 (minor).
+pub const PLAN_SCHEMA_VERSION: &str = "1.1";
 
 /// 릴리스 semver — Cargo.toml 의 단일 출처를 컴파일 시점에 읽는다.
 /// `rhwp::version()` 과 같은 원천이므로 두 값은 구조적으로 같다.

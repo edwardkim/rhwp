@@ -157,7 +157,8 @@ fn envelope_carries_version_dialect_and_definition_count() {
     assert_eq!(out.status.code(), Some(0), "{args:?}");
     let v: serde_json::Value = serde_json::from_slice(&out.stdout).expect("봉투 JSON");
     assert_eq!(v["schemaVersion"], "1.0", "{v}");
-    assert_eq!(v["planSchemaVersion"], "1.0", "{v}");
+    // [#4378] 1.1: preconditions.inputSha256(CAS) 추가 — 이력은 schema_registry.
+    assert_eq!(v["planSchemaVersion"], "1.1", "{v}");
     assert_eq!(
         v["dialect"], "https://json-schema.org/draft/2020-12/schema",
         "소비자가 파서를 고를 수 있어야 한다: {v}"

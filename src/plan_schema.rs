@@ -147,6 +147,11 @@ fn plan_def() -> Value {
                 "Assertions",
                 "저장 전에 통과해야 하는 단언. 생략하면 기본값으로 판정한다.",
             ),
+            "preconditions": r_doc(
+                "Preconditions",
+                "[#4378 R22] 실행 전 전제(CAS). 하나라도 어긋나면 실행 0·저장 0 으로 \
+                 거절한다(exit 2, invalid[].code=preconditionFailed).",
+            ),
             "dryRun": json!({
                 "type": "boolean",
                 "default": false,
@@ -159,6 +164,24 @@ fn plan_def() -> Value {
         "`rhwp run` 이 받는 편집 계획서. 도구 호출을 체이닝하는 대신 의도 하나를 선언하면 \
          실행기가 전 step 의 실행 가능성을 먼저 판정하고(불가 시 실행 0·exit 2), \
          인메모리 원자 실행 뒤 단언 통과 시에만 저장한다.",
+    )
+}
+
+/// [#4378 R22] 실행 전 전제 — 계획이 세워진 시점의 문서 상태를 고정한다.
+fn preconditions_def() -> Value {
+    object(
+        json!({
+            "inputSha256": prim(
+                "string",
+                "input 파일 전체의 SHA-256(64자리 16진, 대소문자 무관). 실행 시점의 \
+                 실제 해시와 다르면 — 계획 수립 후 다른 에이전트/사람이 문서를 바꿨다는 \
+                 뜻이므로 — 아무것도 적용하지 않고 invalid[](code=preconditionFailed)로 \
+                 거절한다. 경합 유실(#3905: 두 exit 0 이 편집 하나를 무신호로 지움)의 \
+                 차단기다. 해시는 `rhwp-agent fingerprint` 또는 sha256sum 으로 얻는다.",
+            ),
+        }),
+        &["inputSha256"],
+        "실행 전 전제. 현재 축은 inputSha256 하나이며, 축 추가는 minor 다.",
     )
 }
 
@@ -428,6 +451,7 @@ pub fn plan_schema() -> Value {
     // 정의가 늘면 json! 매크로 재귀 한도에 걸린다 — 맵으로 조립한다.
     let defs: serde_json::Map<String, Value> = [
         ("Plan", plan_def()),
+        ("Preconditions", preconditions_def()),
         ("Assertions", assertions_def()),
         ("Step", step_def()),
         ("FillFieldsStep", fill_fields_step_def()),

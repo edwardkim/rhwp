@@ -15023,6 +15023,58 @@ fn cmd_export_agent_manifest(args: &[String]) -> i32 {
 /// 뿌리라서 절차 대신 **의도(계획서)** 를 받는다. 판정은 전부 데이터다:
 /// 선검증 위반 = invalid[] + exit 2(실행 0), verify 단언 실패 = exit 3(디스크
 /// 무변경), 성공 = step 저널 + verify + exit 0(단 한 번 저장).
+/// [#4378 R24] `--expect-sha256` CAS 대조. 불일치는 "검증 단언 실패" 계열(exit 3,
+/// #2707 사전)이다 — 문서가 기대 상태가 아니면 한 바이트도 쓰지 않는다.
+fn sha256_hex_of(bytes: &[u8]) -> String {
+    use sha2::{Digest, Sha256};
+    let out = Sha256::digest(bytes);
+    let mut hex = String::with_capacity(out.len() * 2);
+    for b in out {
+        use std::fmt::Write as _;
+        let _ = write!(hex, "{b:02x}");
+    }
+    hex
+}
+
+/// 기대 해시가 주어졌을 때만 검사한다. 형식 오류는 exit 2, 불일치는 exit 3 을
+/// 돌려주고 봉투/진단을 직접 낸다. `None` 이면 통과.
+fn check_expect_sha256(
+    expect: Option<&str>,
+    bytes: &[u8],
+    source: &str,
+    json_mode: bool,
+) -> Option<i32> {
+    let expect = expect?;
+    let normalized = expect.trim().to_ascii_lowercase();
+    if normalized.len() != 64 || !normalized.bytes().all(|b| b.is_ascii_hexdigit()) {
+        eprintln!("오류: --expect-sha256 값은 64자리 16진이어야 합니다: {expect}");
+        return Some(EXIT_USAGE);
+    }
+    let actual = sha256_hex_of(bytes);
+    if actual == normalized {
+        return None;
+    }
+    if json_mode {
+        let envelope = provenance::marked(
+            serde_json::json!({
+                "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                "source": source,
+                "preconditionFailed": {
+                    "kind": "inputSha256",
+                    "expected": normalized,
+                    "actual": actual,
+                },
+                "error": "입력 문서가 기대 해시와 다릅니다 — 다른 에이전트/사람이 먼저 바꿨을 수 있습니다. 문서를 다시 읽고 계획을 재수립하세요 (#3905 CAS).",
+            }),
+            "edit",
+        );
+        println!("{envelope}");
+    } else {
+        eprintln!("검증 실패: 입력 해시 불일치 (기대 {normalized} / 실제 {actual}) — 저장하지 않았습니다.");
+    }
+    Some(3) // #2707: 검증 단언 실패
+}
+
 fn cmd_run_plan(args: &[String]) -> i32 {
     let mut plan_path: Option<&str> = None;
     let mut plan_inline: Option<&str> = None;
@@ -15225,11 +15277,48 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     let assert_not_found_empty = plan["assertions"]["notFoundEmpty"]
         .as_bool()
         .unwrap_or(true);
+    // [#4378 R22] preconditions.inputSha256 — 형식은 여기서(usage), 대조는 읽기 직후.
+    let expected_input_sha = match plan["preconditions"]["inputSha256"].as_str() {
+        Some(raw) => {
+            let normalized = raw.trim().to_ascii_lowercase();
+            if normalized.len() != 64 || !normalized.bytes().all(|b| b.is_ascii_hexdigit()) {
+                return usage("preconditions.inputSha256 은 64자리 16진이어야 합니다");
+            }
+            Some(normalized)
+        }
+        None => None,
+    };
 
     let bytes = match fs::read(input) {
         Ok(d) => d,
         Err(e) => return fail(format!("입력을 읽을 수 없습니다 - {}: {}", input, e)),
     };
+    // [#4378 R22] CAS — 계획이 세워진 시점의 문서가 아니면 실행 0·저장 0 으로
+    // 거절한다(#3905 M1: 두 exit 0 이 편집 하나를 지우는 경합의 차단기).
+    if let Some(expected) = expected_input_sha.as_deref() {
+        let actual = sha256_hex_of(&bytes);
+        if actual != expected {
+            return (
+                provenance::marked(
+                    serde_json::json!({
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                        "planVersion": "1.0",
+                        "input": input,
+                        "invalid": [{
+                            "step": serde_json::Value::Null,
+                            "action": "preconditions",
+                            "code": "preconditionFailed",
+                            "reason": "입력 문서가 계획의 기대 해시와 다릅니다 — 계획 수립 후 문서가 바뀌었습니다. 실행 0·저장 0. 문서를 다시 읽고 재계획하세요 (#3905 CAS).",
+                            "expected": expected,
+                            "actual": actual,
+                        }],
+                    }),
+                    "run",
+                ),
+                EXIT_USAGE,
+            );
+        }
+    }
     let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
         Ok(d) => d,
         Err(e) => return fail(format!("HWP 파싱 실패 - {}", e)),
@@ -16175,6 +16264,8 @@ fn edit_replace_text(args: &[String]) -> i32 {
     let mut json_mode = false;
     // [#3702] 저장 직후 자기검증 — 판정은 데이터, 차이 시 exit 3.
     let mut verify_mode = false;
+    // [#4378 R24] CAS — 입력이 이 해시일 때만 진행(다른 에이전트의 선행 편집 감지).
+    let mut expect_sha256: Option<String> = None;
     // [#3395] 문서 순서 k번째(0 기준) 매치만 치환 — 체크박스류 반복 문자 지목.
     let mut occurrence: Option<usize> = None;
 
@@ -16225,6 +16316,16 @@ fn edit_replace_text(args: &[String]) -> i32 {
             "--dry-run" => dry_run = true,
             "--json" => json_mode = true,
             "--verify" => verify_mode = true,
+            "--expect-sha256" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => expect_sha256 = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --expect-sha256 뒤에 64자리 16진 해시가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
@@ -16257,6 +16358,11 @@ fn edit_replace_text(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
+    // [#4378 R24] 파싱 전에 CAS 대조 — 기대 상태가 아니면 여기서 끝(디스크 무변경).
+    if let Some(code) = check_expect_sha256(expect_sha256.as_deref(), &bytes, file_path, json_mode)
+    {
+        return code;
+    }
     let mut doc = match load_document(&bytes) {
         Ok(d) => d,
         Err(e) => return e.report(),
