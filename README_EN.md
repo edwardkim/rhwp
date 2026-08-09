@@ -192,6 +192,52 @@ document.getElementById('viewer').innerHTML = doc.renderPageSvg(0);
 | [@rhwp/editor](https://www.npmjs.com/package/@rhwp/editor) | Full editor UI (iframe embed) | `npm i @rhwp/editor` |
 | [@rhwp/core](https://www.npmjs.com/package/@rhwp/core) | WASM parser/renderer (API) | `npm i @rhwp/core` |
 
+## Install — CLI & MCP without building
+
+Grab a platform binary from [Releases](https://github.com/edwardkim/rhwp/releases/latest) —
+every release ships linux x86_64, macOS (x86_64/aarch64) and windows x86_64 archives
+plus `SHA256SUMS.txt` for integrity verification.
+
+```bash
+tar xzf rhwp-v*-linux-x86_64.tar.gz          # unzip on Windows
+sha256sum -c SHA256SUMS.txt --ignore-missing # optional integrity check
+./rhwp capabilities                          # first call — machine-readable self-description of every command
+```
+
+Put it on your PATH and the MCP snippet below works as-is. Package-manager
+listings (winget · scoop · brew) are tracked on the roadmap.
+
+## Use with AI Agents (MCP)
+
+rhwp embeds an MCP (Model Context Protocol) server — one line of config lets
+Claude Code and other MCP hosts read, search, fill and convert HWP/HWPX files:
+
+```jsonc
+// .mcp.json
+{ "mcpServers": { "rhwp": { "command": "rhwp", "args": ["mcp-serve"] } } }
+```
+
+The `rhwp` executable from the Install section above is all you need — no
+source build. Start with `hwp_info` → `hwp_search` → `hwp_fill_fields`; for
+large documents use the `hwp_open` → `hwp_doc_*` session tools to query and
+edit without re-parsing. Full tool map:
+[MCP integration guide](mydocs/manual/mcp_integration_guide.md) (Korean).
+CLI-only? `rhwp capabilities` is the single machine-readable entry point.
+
+## Use from Python
+
+`bindings/python` re-packages the CLI `--json` envelopes and the `mcp-serve`
+session contract (zero runtime dependencies). Not yet on PyPI — install in
+editable mode and point `RHWP_BIN` at a release binary or your build:
+
+```bash
+pip install -e bindings/python
+export RHWP_BIN=/path/to/rhwp        # release binary from the Install section works
+```
+
+Docs: [README](bindings/python/README.md) · [API](bindings/python/docs/API.md) ·
+[Cookbook](bindings/python/docs/COOKBOOK.md)
+
 ## Quick Start (Build from Source)
 
 New contributors: start with the [onboarding guide](mydocs/eng/manual/onboarding_guide.md). It covers project architecture, debugging tools, and the development workflow at a glance.
