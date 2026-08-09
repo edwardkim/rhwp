@@ -180,9 +180,8 @@ terminal fragment가 current 또는 flushed 상태임을 확인한 뒤 현재 �
 
 Current/Flushed terminal 판정과 exact-height 예약을 최종 고정하기 전의 구현으로
 1-based p86–p95 10쪽을 raster화해 한컴 2020 기준 PDF와 페이지별로 직접 비교했다.
-아래 결과와 assets는 원인·owner 판정의 선행 증적으로 유지한다. 최종 고정 source와
-동일 binary로 다시 수행하는 visual sweep은 아직 pending이며, 아래 수치를 최종
-시각 게이트 통과로 해석하지 않는다.
+아래 결과와 compare/ledger assets는 원인·owner 판정의 선행 증적으로 유지한다.
+최종 고정 source와 동일 binary의 visual sweep은 다음 절에서 별도로 완료했다.
 
 - PDF/render tree 쪽수: 215/215.
 - 직접 raster 대조에서 p87의 marker와 각주 본문 138이 같은 쪽에 복원됐고 p88은
@@ -211,12 +210,21 @@ Current/Flushed terminal 판정과 exact-height 예약을 최종 고정하기 �
 - [page-count ledger](../pr/assets/task_m100_3820_stage107_policy_p087_footnote138_loss/page-count-ledger.tsv)
 - [layout ledger](../pr/assets/task_m100_3820_stage107_policy_p087_footnote138_loss/layout-candidates.tsv)
 
-같은 선행 구현으로 `visual_sweep.py`의 3-way review를 p87·88·90·91·94·95에
-실행했다. 요청/완료는 6/6, SVG/render tree는 215/215, raster/review/overlay는
-각각 6/6이며 자동 visual flag는 0건이었다. 평균 pixel match는 89.959%, 최저는
-89.097%였고, `visual_accuracy_proxy_percent`는 글꼴 raster 차이에 민감해 평균
-9.000%이므로 합격 수치로 해석하지 않는다. 최종 고정 source의 3-way review와
-페이지별 PDF 직접 판정은 별도로 다시 수행해야 한다.
+## 최종 committed-source visual sweep
+
+구현 commit `7093985f04227c2a8a132f2adb0c77bee39da1fa`와 SHA-256
+`c88b9d91254920dad1ff28805219b4540c76770110e33bcc8422eec7202e72dd`인
+`target/pr-review/release-test/rhwp`로 `visual_sweep.py`의 3-way review를
+p87·88·90·91·94·95에 다시 실행했다.
+
+- 요청/완료 6/6, 누락 0, run state `complete`.
+- SVG/render tree 215/215, raster/review/overlay 각각 6/6.
+- 자동 visual flag 0건.
+- 직접 확대 판정: p87은 138, p88은 139, p90은 141, p91은 142–145,
+  p94에는 147 없음, p95는 147을 소유해 한컴 PDF와 일치한다.
+- 평균 pixel match 89.959%, 최저 89.097%다. 평균
+  `visual_accuracy_proxy_percent` 9.000%는 글꼴 raster 차이에 민감하므로 합격
+  수치로 사용하지 않고 owner·표 fragment·본문/각주 기하를 직접 판정했다.
 
 - [p87 3-way review](../pr/assets/task_m100_3820_stage107_policy_p087_footnote138_loss/review_p087_final.png)
 - [p88 3-way review](../pr/assets/task_m100_3820_stage107_policy_p087_footnote138_loss/review_p088_final.png)
@@ -226,6 +234,7 @@ Current/Flushed terminal 판정과 exact-height 예약을 최종 고정하기 �
 - [p95 3-way review](../pr/assets/task_m100_3820_stage107_policy_p087_footnote138_loss/review_p095_final.png)
 - [overlay metrics](../pr/assets/task_m100_3820_stage107_policy_p087_footnote138_loss/overlay_metrics.json)
 - [visual sweep manifest](../pr/assets/task_m100_3820_stage107_policy_p087_footnote138_loss/visual_sweep_manifest.json)
+- [visual sweep summary](../pr/assets/task_m100_3820_stage107_policy_p087_footnote138_loss/visual_sweep_summary.json)
 
 ## 최종 검증 게이트
 
@@ -244,8 +253,8 @@ Current/Flushed terminal 판정과 exact-height 예약을 최종 고정하기 �
   **exit 0**.
 - Native Skia 게이트: lib `skia` 58/58, #2225 2/2, direct PDF p37 4/4,
   모두 passed.
-- 최종 고정 source와 동일 binary의 p86–p95 visual sweep 및 한컴 PDF 직접 판정:
-  **pending**.
+- 최종 고정 source와 동일 binary의 p87·88·90·91·94·95 visual sweep 및 한컴 PDF
+  직접 판정: **passed**. 6/6 완료, 자동 flag 0건, 각주 owner 일치.
 - WASM build와 브라우저 최종 확인: **작업지시자 수동 게이트 / pending**.
 
 ## Stage 96 p65 대체폰트 재감사
@@ -270,6 +279,7 @@ PDF를 훼손한다. 이 재감사에서는 추가 폰트 코드를 변경하지
 `has_table` 가드 때문에 Body 등록에서도 제외되고 있었다. native HWP5의 저장된 번호형
 RowBreak 표 host, 유일한 표 뒤 형제 각주, Current/Flushed terminal fragment라는
 좁은 계약에서만 기존 각주 등록 경로를 재사용해 p87/p91/p95 소유권을 복원했다.
-focused 33/33과 두 합성 회귀, 전체 release-test, Clippy, Native Skia까지 통과했다.
-최종 고정 binary의 6쪽 visual sweep과 한컴 PDF 직접 판정을 마지막으로 기록한 뒤
-Stage 107을 커밋한다.
+focused 33/33과 두 합성 회귀, 전체 release-test, Clippy, Native Skia를 통과했다.
+구현 commit과 동일한 binary의 6쪽 visual sweep에서도 215/215쪽, 자동 flag 0건,
+각주 owner·표 fragment·본문/각주 기하의 PDF 일치를 확인했다. 따라서 Stage 107의
+p87/p91/p95 표 host 형제 각주 소유권 결함은 해결로 판정한다.
