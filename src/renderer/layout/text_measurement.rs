@@ -1490,6 +1490,72 @@ mod tests {
         );
     }
 
+    /// [진단] 흔한 폰트의 라틴 metric 커버리지 — 없으면 0.5em 폴백(캐럿·재래핑 부정확).
+    /// `cargo test --lib latin_metric_coverage_report -- --nocapture` 로 표를 본다.
+    #[test]
+    fn latin_metric_coverage_report() {
+        let fonts = [
+            "바탕",
+            "돋움",
+            "굴림",
+            "궁서",
+            "맑은 고딕",
+            "함초롬바탕",
+            "함초롬돋움",
+            "한컴바탕",
+            "한컴돋움",
+            "HY견고딕",
+            "HY견명조",
+            "HY중고딕",
+            "HY신명조",
+            "휴먼명조",
+            "한양신명조",
+            "중고딕",
+            "Noto Sans KR",
+            "Noto Serif KR",
+            "Batang",
+            "Dotum",
+            "Gulim",
+            "Arial",
+            "Times New Roman",
+            "Calibri",
+            "KoPub바탕체",
+            "KoPub돋움체",
+            "나눔고딕",
+            "나눔명조",
+            "굴림체",
+            "돋움체",
+        ];
+        let mut have = 0;
+        for f in fonts {
+            let ok = font_family_has_metrics(f, false, false);
+            // 함초롬바탕/HCR 은 haansoft_latin_override 로 별도 per-glyph 표를 타므로
+            // metric 유무와 무관하게 정확하다 — 표시해 둔다.
+            // 함초롬(HCR)·KoPub 은 별도 per-glyph 경로가 있어 metric 유무와 무관하게 정확하다.
+            let dedicated = f.contains("함초롬")
+                || f.contains("HCR")
+                || f.contains("KoPub")
+                || measure_char_width_embedded(f, false, false, 'E', 100.0).is_some();
+            let tag = if ok {
+                "metric 있음"
+            } else if dedicated {
+                "전용 표(정확)"
+            } else {
+                "→ 0.5em 폴백"
+            };
+            println!("  {f:<22} {tag}");
+            have += (ok || dedicated) as u32;
+        }
+        println!(
+            "
+  {}/{} 정확, 나머지는 라틴 0.5em 폴백",
+            have,
+            fonts.len()
+        );
+        // 회귀 가드 — 흔한 폰트 커버리지가 떨어지면 캐럿·재래핑이 부정확해진다(§4.29).
+        assert!(have >= 29, "라틴 metric 커버리지 회귀: {have}/30");
+    }
+
     /// 테스트용 고정 폭 텍스트 측정기
     ///
     /// 모든 문자를 동일한 폭으로 측정한다.

@@ -14418,9 +14418,18 @@ fn ir_sweep(args: &[String]) -> i32 {
         return EXIT_RUNTIME;
     };
 
-    let divs = sweep_documents(&doc_a, &doc_b);
+    let report = match sweep_documents(&doc_a, &doc_b) {
+        Ok(r) => r,
+        Err(e) => {
+            eprintln!("전수 비교 실패: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    // `examples()` 는 진단용 표본이라 상한이 있다 — 건수는 반드시 `total()` 을 쓴다.
+    let total = report.total();
+    let examples = report.examples();
     if json_mode {
-        let rows: Vec<serde_json::Value> = divs
+        let rows: Vec<serde_json::Value> = examples
             .iter()
             .take(max_lines.unwrap_or(usize::MAX))
             .map(|d| serde_json::json!({ "path": d.path, "left": d.left, "right": d.right }))
@@ -14429,21 +14438,21 @@ fn ir_sweep(args: &[String]) -> i32 {
             "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "a": file_a,
             "b": file_b,
-            "identical": divs.is_empty(),
-            "diffCount": divs.len(),
-            "truncated": rows.len() < divs.len(),
-            "categories": tally(&divs),
+            "identical": report.is_empty(),
+            "diffCount": total,
+            "truncated": rows.len() < total,
+            "categories": tally(&report),
             "divergences": rows,
         });
         println!("{}", provenance::marked(envelope, "ir-sweep"));
         // `ir-diff` 와 같은 규약 — 차이가 있으면 3.
-        return if divs.is_empty() { EXIT_OK } else { 3 };
+        return if report.is_empty() { EXIT_OK } else { 3 };
     }
 
-    for d in divs.iter().take(max_lines.unwrap_or(200)) {
+    for d in examples.iter().take(max_lines.unwrap_or(200)) {
         println!("{} : {} → {}", d.path, d.left, d.right);
     }
-    println!("\n=== 전수 비교 완료: 차이 {} 건 ===", divs.len());
+    println!("\n=== 전수 비교 완료: 차이 {total} 건 ===");
     EXIT_OK
 }
 
