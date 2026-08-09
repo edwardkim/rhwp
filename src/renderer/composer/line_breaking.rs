@@ -1095,10 +1095,10 @@ pub(crate) fn reflow_line_segs(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    reflow_line_segs_impl(para, available_width_px, styles, dpi, None);
+    let _ = reflow_line_segs_impl(para, available_width_px, styles, dpi, None);
 }
 
-/// native HWP 셀 텍스트 편집은 수정된 줄 이전의 저장 LINE_SEG를 그대로 둔다.
+/// 저장 LINE_SEG가 유효한 셀 텍스트 편집은 수정된 줄 이전의 경계를 그대로 둔다.
 ///
 /// 한컴은 중간 줄의 짧은 edit에서 문단 전체를 다시 나누지 않는다. prefix 경계를 다시
 /// 계산하면 뒤 줄의 가용 폭이 인위적으로 커져 실제 HWP 저장본과 다른 다음 줄 전환을 만들 수
@@ -1110,14 +1110,14 @@ pub(crate) fn reflow_line_segs_after_cell_text_edit(
     styles: &ResolvedStyleSet,
     dpi: f64,
     edit_char_offset: usize,
-) {
+) -> bool {
     reflow_line_segs_impl(
         para,
         available_width_px,
         styles,
         dpi,
         Some(edit_char_offset),
-    );
+    )
 }
 
 fn reflow_line_segs_impl(
@@ -1126,7 +1126,7 @@ fn reflow_line_segs_impl(
     styles: &ResolvedStyleSet,
     dpi: f64,
     preserve_prefix_for_edit: Option<usize>,
-) {
+) -> bool {
     // [#4149] 셀 편집의 단일 관문(reflow_cell_paragraph[_by_path])과 서식 적용
     // (formatting.rs) 이 모두 여기로 수렴한다 — 단일줄 과밀 memo 무효화.
     para.invalidate_single_line_overflow_memo();
@@ -1251,7 +1251,7 @@ fn reflow_line_segs_impl(
             }
             para.line_segs = vec![seg];
         }
-        return;
+        return false;
     }
 
     let text_chars: Vec<char> = para.text.chars().collect();
@@ -1274,7 +1274,7 @@ fn reflow_line_segs_impl(
         english_break_unit,
         korean_break_unit,
     );
-    // native HWP incremental edit는 저장된 앞선 줄을 유지한다. LINE_SEG start가 현재
+    // 저장 LINE_SEG 기반 incremental edit는 앞선 줄을 유지한다. LINE_SEG start가 현재
     // char_offsets와 token 경계 모두에 정확히 대응할 때만 suffix reflow를 허용한다.
     // 그렇지 않으면 (HWPX 합성 boundary, inline control, token 내부 boundary 등) full
     // reflow가 보수적인 경로다.
@@ -1412,6 +1412,7 @@ fn reflow_line_segs_impl(
     }
 
     para.line_segs = new_line_segs;
+    preserved_prefix_len > 0
 }
 
 /// 구역 내 문단들의 vertical_pos를 순차적으로 재계산한다.

@@ -5899,6 +5899,26 @@ impl DocumentCore {
             return None;
         }
         let template = candidates.pop().expect("길이 1을 확인한 focused line");
+        // HWPX 원본 LINE_SEG가 권위 폭을 담은 경우에는 cell layout이 다시 계산한 폭보다
+        // 마지막 줄이 더 넓을 수 있다. same-line tail edit는 그 저장 폭까지 허용해야
+        // #2214의 실제 61번째 boundary 전에도 #3137 cache patch를 유지한다. 이 값은
+        // patch 허용 guard에만 사용하고, 기존 cached TextRun style은 바꾸지 않는다.
+        let line_width_limit = if matches!(self.source_format, crate::parser::FileFormat::Hwpx) {
+            paragraph
+                .line_segs
+                .get(line_index)
+                .filter(|segment| {
+                    segment.segment_width > 0
+                        && segment.tag
+                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            == 0
+                })
+                .map(|segment| crate::renderer::hwpunit_to_px(segment.segment_width, self.dpi))
+                .filter(|width| width.is_finite() && *width > 0.0)
+                .unwrap_or(template.layout_style.available_width)
+        } else {
+            template.layout_style.available_width
+        };
         if !template.line_bbox.x.is_finite()
             || !template.line_bbox.y.is_finite()
             || !template.line_bbox.width.is_finite()
@@ -5978,9 +5998,7 @@ impl DocumentCore {
             char_start += run_len;
             x += width;
         }
-        if char_start != new_text_len
-            || x - template.run_x > template.layout_style.available_width + 0.051
-        {
+        if char_start != new_text_len || x - template.run_x > line_width_limit + 0.051 {
             return None;
         }
 
