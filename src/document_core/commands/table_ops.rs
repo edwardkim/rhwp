@@ -822,7 +822,7 @@ impl DocumentCore {
         };
         for (cell_idx, para_count) in stale_cells {
             for cell_para_idx in 0..para_count {
-                self.reflow_cell_paragraph(
+                self.reflow_cell_paragraph_after_split(
                     section_idx,
                     parent_para_idx,
                     control_idx,

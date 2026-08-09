@@ -18631,6 +18631,14 @@ impl TypesetEngine {
                 });
                 let continuation_nested_owner_boundary =
                     r == cursor_row && is_continuation && !row_start_cut.is_empty();
+                // `r == cursor_row`라도 이미 잘린 native HWP 행의 continuation이면
+                // fresh page의 첫 행이 아니다. 이 tail은 `advance_row_cut`의 논리
+                // height보다 실제 paint footprint가 클 수 있어, HWPX 저장 layout과
+                // 달리 실제 body 경계로 재-cut해야 한다 (#4138).
+                let native_continuation_row_tail = !st.profile.hwpx_stored_layout()
+                    && r == cursor_row
+                    && is_continuation
+                    && !row_start_cut.is_empty();
                 // 새 표의 앞선 행들이 현재 쪽에 먼저 놓인 뒤 마지막 1×1 child 행이
                 // 시작될 때는 logical cut tail이 0px로 보고될 수 있다. 그러나 실제
                 // child viewport·frame은 다음 쪽 source unit을 가리므로, 이 역시
@@ -18644,13 +18652,19 @@ impl TypesetEngine {
                         || (fresh_late_nested_row && !nested_physical_tail))
                     && split_candidate_rows_height - avail_for_rows
                         > MIXED_NESTED_OWNER_DRIFT_MIN_PX;
+                // Native continuation의 paint tail은 logical row cut보다 실제로 더
+                // 내려갈 수 있다. 이 경우만 sub-pixel 경계로 다시 cut한다. 일반
+                // native HWP(no stored LineSeg 포함)에 이 엄격값을 넓게 적용하면,
+                // 한컴이 허용하는 저장/측정 drift까지 page break로 바뀐다.
                 let split_row_overflow_tolerance =
-                    if mt.allows_row_break_split() && !mixed_nested_owner_guard {
+                    if native_continuation_row_tail || mixed_nested_owner_guard {
+                        0.1
+                    } else if mt.allows_row_break_split() {
                         rowbreak_split_row_overflow_tolerance
                     } else {
                         0.1
                     };
-                if (r > cursor_row || mixed_nested_owner_guard)
+                if (r > cursor_row || mixed_nested_owner_guard || native_continuation_row_tail)
                     && split_candidate_rows_height > avail_for_rows + split_row_overflow_tolerance
                 {
                     // 보이는 조각은 orphan 기준을 통과해도 row-area 예산은 넘을 수 있다.
@@ -18666,7 +18680,9 @@ impl TypesetEngine {
                     // height; reserve it too, so the next page begins at the
                     // first omitted source unit rather than one line late.
                     let painted_tail = (split_total - res.consumed_height - padding).max(0.0);
-                    let retry_budget = if mixed_nested_owner_guard {
+                    let retry_uses_painted_tail =
+                        mixed_nested_owner_guard || native_continuation_row_tail;
+                    let retry_budget = if retry_uses_painted_tail {
                         (budget - over - painted_tail - 0.5).max(0.0)
                     } else {
                         (budget - over - 0.5).max(0.0)
@@ -21107,12 +21123,16 @@ impl TypesetEngine {
             } else {
                 LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX
             };
-            let rowbreak_split_row_overflow_tolerance =
-                if st.profile.hwpx_stored_layout() || !st.has_stored_line_segs {
-                    HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
-                } else {
-                    ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
-                };
+            // 64px 여유는 한컴 저장 layout 및 stored LineSeg가 없는 재조판 source의
+            // 측정 drift를 위한 기존 정책이다. 실제 native continuation paint tail은
+            // scan loop에서만 strict cut으로 별도 처리한다.
+            let rowbreak_split_row_overflow_tolerance = if st.profile.hwpx_stored_layout()
+                || !st.has_stored_line_segs
+            {
+                HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
+            } else {
+                ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
+            };
 
             // [Task #1025] split_block_start: 블록 분할 시 연속분 커서 복귀 기록.
             let issue2424_scan_started = issue2424_step_enabled.then(std::time::Instant::now);

@@ -1077,6 +1077,86 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
     }
 }
 
+/// 본문 뒤 남은 폭에 놓이지 않는 inline control은 별도 physical line을 가진다.
+///
+/// 종전 cell reflow는 text token만 줄바꿈한 뒤 첫 LineSeg를 표 높이만큼 키웠다.
+/// 그 결과 분할로 폭이 좁아진 셀에서 `text + inline object`가 한 줄로 합쳐졌다.
+/// 한컴은 control 위치부터 object 전용 LineSeg를 만들어 다음 physical line으로 보낸다
+/// (#4138: 1×2 split 뒤 nested table/picture host). control 자체가 셀 폭을 넘거나,
+/// control 앞의 실제 text 폭과 합쳐 현재 줄의 폭을 넘는 경우만 대상으로 한다.
+/// 같은 줄에 들어가는 작은 object와 복수 control 문단의 기존 reflow는 건드리지 않는다.
+fn inline_control_requires_own_line(
+    para: &Paragraph,
+    text_chars: &[char],
+    line_breaks: &[LineBreakResult],
+    available_width_px: f64,
+    indent_px: f64,
+    reflow_is_first_line: bool,
+    styles: &ResolvedStyleSet,
+) -> Option<(usize, i32)> {
+    let text_len = para.text.chars().count();
+    let positions = para.control_text_positions();
+    let mut candidates = para
+        .controls
+        .iter()
+        .zip(positions)
+        .filter_map(|(control, position)| {
+            let (width, height) = inline_control_size_hwp(control)?;
+            (position > 0 && position <= text_len).then_some((position, width, height))
+        });
+    let (position, control_width, height) = candidates.next()?;
+    // 여러 inline control은 일반 placement가 순서를 보존해야 하므로 이 좁은
+    // single-control 계약 밖이다.
+    if candidates.next().is_some() {
+        return None;
+    }
+
+    // 같은 text offset에서 새 줄이 시작되면 control은 그 줄의 선두에 놓인다.
+    // 그렇지 않으면 control 직전 text가 실제로 속한 줄을 선택한다. 마지막 글자
+    // 뒤의 control은 마지막 text line에 속한다.
+    let (line_idx, line) = line_breaks
+        .iter()
+        .enumerate()
+        .find(|(_, line)| line.start_idx == position)
+        .or_else(|| {
+            line_breaks
+                .iter()
+                .enumerate()
+                .rfind(|(_, line)| line.start_idx < position && position <= line.end_idx)
+        })?;
+    let is_first_line = reflow_is_first_line && line_idx == 0;
+    let available_hwp = if indent_px > 0.0 && is_first_line {
+        to_hwp((available_width_px - indent_px).max(1.0))
+    } else if indent_px < 0.0 && !is_first_line {
+        to_hwp((available_width_px + indent_px).max(1.0))
+    } else {
+        to_hwp(available_width_px)
+    };
+    let prefix: String = text_chars[line.start_idx..position].iter().collect();
+    let prefix_width = to_hwp(measure_token_width(
+        &prefix,
+        line.start_idx,
+        &para.char_offsets,
+        &para.char_shapes,
+        styles,
+        0,
+    ));
+
+    (control_width > available_hwp + LINE_BREAK_TOLERANCE
+        || prefix_width + control_width > available_hwp + LINE_BREAK_TOLERANCE)
+        .then_some((position, height))
+}
+
+fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
+    para.char_offsets
+        .get(char_index)
+        .copied()
+        .or_else(|| {
+            (char_index >= para.char_offsets.len()).then(|| para.text.encode_utf16().count() as u32)
+        })
+        .unwrap_or(char_index as u32)
+}
+
 fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
     if height_hwp > seg.line_height {
         seg.line_height = height_hwp;
@@ -1095,7 +1175,22 @@ pub(crate) fn reflow_line_segs(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    let _ = reflow_line_segs_impl(para, available_width_px, styles, dpi, None);
+    let _ = reflow_line_segs_impl(para, available_width_px, styles, dpi, None, false);
+}
+
+/// 셀 분할로 저장 폭이 stale해진 문단을 다시 조판한다.
+///
+/// 한컴은 좁아진 셀에서만 본문 뒤의 inline control을 별도 source line으로 저장한다.
+/// 이 규칙을 일반 reflow에 적용하면 원본 문서의 이미 권위적인 control host line까지
+/// 분리되어 pagination이 달라진다 (#4138/#2424). 호출자는 split 직후 stale-cell
+/// 복구 경로로 한정한다.
+pub(crate) fn reflow_line_segs_after_cell_split(
+    para: &mut Paragraph,
+    available_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) {
+    let _ = reflow_line_segs_impl(para, available_width_px, styles, dpi, None, true);
 }
 
 /// 저장 LINE_SEG가 유효한 셀 텍스트 편집은 수정된 줄 이전의 경계를 그대로 둔다.
@@ -1117,6 +1212,7 @@ pub(crate) fn reflow_line_segs_after_cell_text_edit(
         styles,
         dpi,
         Some(edit_char_offset),
+        false,
     )
 }
 
@@ -1126,6 +1222,7 @@ fn reflow_line_segs_impl(
     styles: &ResolvedStyleSet,
     dpi: f64,
     preserve_prefix_for_edit: Option<usize>,
+    split_stale_cell_reflow: bool,
 ) -> bool {
     // [#4149] 셀 편집의 단일 관문(reflow_cell_paragraph[_by_path])과 서식 적용
     // (formatting.rs) 이 모두 여기로 수렴한다 — 단일줄 과밀 memo 무효화.
@@ -1356,41 +1453,62 @@ fn reflow_line_segs_impl(
         reflow_start_idx,
         reflow_is_first_line,
     );
+    let forced_inline_line = split_stale_cell_reflow
+        .then(|| {
+            inline_control_requires_own_line(
+                para,
+                &text_chars,
+                &line_breaks,
+                available_width_px,
+                indent_px,
+                reflow_is_first_line,
+                styles,
+            )
+        })
+        .flatten();
     let preserved_prefix_len = preserved_prefix.len();
     let mut new_line_segs: Vec<LineSeg> = preserved_prefix;
-    for lb in &line_breaks {
+    for (line_idx, lb) in line_breaks.iter().enumerate() {
         let utf16_start = if new_line_segs.is_empty() {
             0 // 첫 번째 줄의 text_start는 항상 0 (문단 시작)
-        } else if lb.start_idx < para.char_offsets.len() {
-            para.char_offsets[lb.start_idx]
-        } else if !para.char_offsets.is_empty() {
-            // start_idx가 텍스트 끝을 넘을 때: 마지막 문자 다음 UTF-16 위치
-            let last_idx = para.char_offsets.len() - 1;
-            let last_char_utf16_len = para
-                .text
-                .chars()
-                .nth(last_idx)
-                .map(|c| c.len_utf16() as u32)
-                .unwrap_or(1);
-            para.char_offsets[last_idx] + last_char_utf16_len
         } else {
-            lb.start_idx as u32
+            char_index_to_utf16_offset(para, lb.start_idx)
         };
         let fs = if lb.max_font_size > 0.0 {
             lb.max_font_size
         } else {
             12.0
         };
-        new_line_segs.push(make_line_seg(utf16_start as u32, fs));
+        let mut text_seg = make_line_seg(utf16_start, fs);
+        if forced_inline_line.is_some_and(|(position, _)| position == lb.start_idx) {
+            let (_, height_hwp) = forced_inline_line.expect("checked inline control");
+            apply_inline_control_line_height(&mut text_seg, height_hwp);
+        }
+        new_line_segs.push(text_seg);
+
+        // control이 text line 한가운데/끝에 있으면 먼저 text prefix를 확정하고,
+        // control offset에서 다음 LineSeg를 삽입한다. 단순히 vector 끝에 붙이면
+        // 중간 nested table 뒤의 text가 control보다 앞에서 그려진다.
+        let control_after_text = forced_inline_line.is_some_and(|(position, _)| {
+            position > lb.start_idx
+                && (position < lb.end_idx
+                    || (position == lb.end_idx && line_idx + 1 == line_breaks.len()))
+        });
+        if control_after_text {
+            let (position, height_hwp) = forced_inline_line.expect("checked inline control");
+            let mut control_seg = make_line_seg(char_index_to_utf16_offset(para, position), fs);
+            apply_inline_control_line_height(&mut control_seg, height_hwp);
+            new_line_segs.push(control_seg);
+        }
     }
 
     if new_line_segs.is_empty() {
         new_line_segs.push(make_line_seg(0, 12.0));
     }
 
-    // 인라인 TAC 개체의 높이 반영: 개체가 포함된 줄의 line_height를 개체 높이 이상으로 보정
-    {
+    if forced_inline_line.is_none() {
         if let Some(height_hwp) = inline_control_line_height_hwp(para) {
+            // 기존 인라인 TAC 개체는 해당 문단의 최초 line box에 남긴다.
             if let Some(seg) = new_line_segs.first_mut() {
                 apply_inline_control_line_height(seg, height_hwp);
             }

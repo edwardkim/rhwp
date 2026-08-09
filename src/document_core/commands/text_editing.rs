@@ -2236,6 +2236,30 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
             None,
+            false,
+        );
+    }
+
+    /// 셀 분할로 폭이 바뀌어 저장 LINE_SEG가 stale해진 문단만 재조판한다.
+    ///
+    /// 일반 편집 reflow는 원래 control host line을 보존해야 한다. split 경로만 한컴의
+    /// 좁아진 셀 규칙(본문 뒤 inline control을 별도 line으로 저장)을 opt-in한다.
+    pub(crate) fn reflow_cell_paragraph_after_split(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+    ) {
+        self.reflow_cell_paragraph_with_edit(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            None,
+            true,
         );
     }
 
@@ -2256,6 +2280,7 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
             Some(edit_char_offset),
+            false,
         );
     }
 
@@ -2267,6 +2292,7 @@ impl DocumentCore {
         cell_idx: usize,
         cell_para_idx: usize,
         edit_char_offset: Option<usize>,
+        split_stale_cell_reflow: bool,
     ) {
         use crate::renderer::hwpunit_to_px;
 
@@ -2382,7 +2408,16 @@ impl DocumentCore {
                             }
                         }
                     } else {
-                        reflow_line_segs(cell_para, final_width, &styles, self.dpi);
+                        if split_stale_cell_reflow {
+                            crate::renderer::composer::reflow_line_segs_after_cell_split(
+                                cell_para,
+                                final_width,
+                                &styles,
+                                self.dpi,
+                            );
+                        } else {
+                            reflow_line_segs(cell_para, final_width, &styles, self.dpi);
+                        }
                     }
                 }
             }

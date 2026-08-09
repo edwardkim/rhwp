@@ -39,6 +39,16 @@ fn target_table(doc: &rhwp::wasm_api::HwpDocument) -> &Table {
     }
 }
 
+/// 편집한 native HWP의 제품 경로는 저장 뒤 다시 여는 것이다. 메모리 `page_count()`는
+/// serializer가 정규화하는 line segment/문단 상태를 거치지 않으므로, 한컴 PDF와의
+/// 쪽수 oracle에는 저장본을 재파싱한 값만 사용한다.
+fn saved_hwp_page_count(doc: &rhwp::wasm_api::HwpDocument) -> u32 {
+    let bytes = doc.export_hwp_native().expect("분할 HWP 저장");
+    rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+        .expect("분할 HWP 재파싱")
+        .page_count()
+}
+
 /// 저장 seg 폭이 셀 폭을 넘는(=옛 폭 기준 stale) 문단 수.
 ///
 /// 텍스트 없이 컨트롤만 호스팅하는 문단은 제외한다: `reflow_line_segs` 는 이
@@ -79,6 +89,30 @@ fn ladder_regressions(table: &Table, row: u16) -> usize {
     regressions
 }
 
+/// 좁아진 셀에서 본문 뒤에 남은 폭을 넘는 inline control은 독립 줄을 가져야 한다.
+///
+/// 한컴 2020이 분할 HWP를 HWPX로 재저장한 오라클에서 p288(중간 nested table),
+/// p322/p2001(nested table), p2286(trailing picture)는 모두 text prefix와 control
+/// source line이 나뉜다. 이 경계가 합쳐지면 객체가 셀 우측 경계에서 clip되고 이후
+/// RowBreak page owner도 달라진다.
+fn split_inline_control_line_regressions(table: &Table, row: u16) -> usize {
+    let Some(cell) = table
+        .cells
+        .iter()
+        .find(|cell| cell.row == row && cell.col == 0)
+    else {
+        return 1;
+    };
+    [288usize, 322, 2001, 2286]
+        .into_iter()
+        .filter(|para_idx| {
+            cell.paragraphs
+                .get(*para_idx)
+                .is_none_or(|para| para.line_segs.len() != 2)
+        })
+        .count()
+}
+
 /// 셀 나누기(1×2) 뒤: stale seg 0, 사다리 단조, 페이지 흐름 복원.
 #[test]
 fn split_cell_into_reflows_stale_segs_and_rebuilds_ladder() {
@@ -102,14 +136,18 @@ fn split_cell_into_reflows_stale_segs_and_rebuilds_ladder() {
         "#4138 회귀: 재래핑된 셀의 vpos 사다리가 {regressions}회 역행. \
          컷 기계가 hard break 로 오판해 페이지를 과소 적재한다."
     );
-
-    // 실측 거동 핀 (한컴 정답 쪽수는 미확인 — #4138 미해결 항목).
-    // 수정 원복 시 118쪽(stale 줄로 과소 계산), 사다리 재구축 생략 시 222쪽(과소 적재).
-    let pages = doc.page_count();
     assert_eq!(
-        pages, 195,
-        "#4138 회귀: 분할 뒤 쪽수 {pages} (기대 195). 118 이면 reflow 누락, \
-         222 이면 vpos 사다리 재구축 누락."
+        split_inline_control_line_regressions(table, TARGET_ROW),
+        0,
+        "#4138 회귀: text + inline control source line이 다시 합쳐짐"
+    );
+
+    // 한컴 2020은 같은 1×2 분할 저장본을 197쪽 PDF로 출력한다. 제품 경로인 native
+    // HWP 저장→재파싱에서도 정확히 같은 쪽수를 유지해야 한다.
+    let pages = saved_hwp_page_count(&doc);
+    assert_eq!(
+        pages, 197,
+        "#4138 회귀: 저장 뒤 재파싱 쪽수 {pages} (한컴 2020 PDF=197)"
     );
 }
 
@@ -134,5 +172,14 @@ fn split_cells_in_range_reflows_stale_segs() {
         0,
         "#4138 회귀(범위 분할): vpos 사다리 역행"
     );
-    assert_eq!(doc.page_count(), 195, "#4138 회귀(범위 분할): 쪽수 불일치");
+    assert_eq!(
+        split_inline_control_line_regressions(table, TARGET_ROW),
+        0,
+        "#4138 회귀(범위 분할): text + inline control source line 재결합"
+    );
+    assert_eq!(
+        saved_hwp_page_count(&doc),
+        197,
+        "#4138 회귀(범위 분할): 저장 뒤 재파싱 쪽수 불일치"
+    );
 }
