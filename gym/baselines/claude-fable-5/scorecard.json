@@ -1,0 +1,196 @@
+{
+  "kind": "gymScorecard",
+  "schemaVersion": "1.0",
+  "agent": "claude-fable-5",
+  "score": 26,
+  "max": 26,
+  "tasks": [
+    {
+      "id": "T01",
+      "tier": 1,
+      "title": "문서 신상 파악",
+      "pass": true,
+      "checks": [
+        {
+          "name": "쪽수 일치",
+          "op": "answer_eq",
+          "ok": true,
+          "expected": 17,
+          "actual": 17
+        }
+      ]
+    },
+    {
+      "id": "T02",
+      "tier": 1,
+      "title": "전수 검색",
+      "pass": true,
+      "checks": [
+        {
+          "name": "매치 수 일치",
+          "op": "len_answer_eq",
+          "ok": true,
+          "expected": 316,
+          "actual": 316
+        }
+      ]
+    },
+    {
+      "id": "T03",
+      "tier": 2,
+      "title": "서식 조사",
+      "pass": true,
+      "checks": [
+        {
+          "name": "필드 수 일치",
+          "op": "len_answer_eq",
+          "ok": true,
+          "expected": 11,
+          "actual": 11
+        }
+      ]
+    },
+    {
+      "id": "T04",
+      "tier": 2,
+      "title": "데이터 추출",
+      "pass": true,
+      "checks": [
+        {
+          "name": "추출 항목 수 일치",
+          "op": "len_answer_eq",
+          "ok": true,
+          "expected": 146,
+          "actual": 146
+        }
+      ]
+    },
+    {
+      "id": "T05",
+      "tier": 2,
+      "title": "표 수확",
+      "pass": true,
+      "checks": [
+        {
+          "name": "표 수 일치",
+          "op": "len_answer_eq",
+          "ok": true,
+          "expected": 5,
+          "actual": 5
+        }
+      ]
+    },
+    {
+      "id": "T06",
+      "tier": 2,
+      "title": "문구 치환",
+      "pass": true,
+      "checks": [
+        {
+          "name": "신문구 존재",
+          "op": "len_ge",
+          "ok": true,
+          "expected": ">=1",
+          "actual": 1
+        }
+      ]
+    },
+    {
+      "id": "T07",
+      "tier": 3,
+      "title": "서식 채움",
+      "pass": true,
+      "checks": [
+        {
+          "name": "채운 값이 필드에 실재",
+          "op": "deep_contains",
+          "ok": true,
+          "expected": "contains '홍길동'",
+          "actual": true
+        }
+      ]
+    },
+    {
+      "id": "T08",
+      "tier": 3,
+      "title": "표 셀 교정",
+      "pass": true,
+      "checks": [
+        {
+          "name": "셀 값 반영",
+          "op": "deep_contains",
+          "ok": true,
+          "expected": "contains '짐검증'",
+          "actual": true
+        }
+      ]
+    },
+    {
+      "id": "T09",
+      "tier": 3,
+      "title": "원자 계획 실행",
+      "pass": true,
+      "checks": [
+        {
+          "name": "1단계 반영",
+          "op": "len_ge",
+          "ok": true,
+          "expected": ">=1",
+          "actual": 1
+        },
+        {
+          "name": "2단계 반영",
+          "op": "len_ge",
+          "ok": true,
+          "expected": ">=1",
+          "actual": 7
+        }
+      ]
+    },
+    {
+      "id": "T10",
+      "tier": 3,
+      "title": "결정론 실증",
+      "pass": true,
+      "checks": [
+        {
+          "name": "바이트 동일",
+          "op": "same_hash",
+          "ok": true,
+          "expected": "b653721e88d24f95",
+          "actual": "b653721e88d24f95"
+        }
+      ]
+    },
+    {
+      "id": "T11",
+      "tier": 2,
+      "title": "보안 스윕",
+      "pass": true,
+      "checks": [
+        {
+          "name": "신호 수 일치",
+          "op": "len_answer_eq",
+          "ok": true,
+          "expected": 0,
+          "actual": 0
+        }
+      ]
+    },
+    {
+      "id": "T12",
+      "tier": 2,
+      "title": "변환 자기검증",
+      "pass": true,
+      "checks": [
+        {
+          "name": "변환물 IR 대조",
+          "op": "answer_eq",
+          "ok": true,
+          "expected": true,
+          "actual": true
+        }
+      ]
+    }
+  ]
+}

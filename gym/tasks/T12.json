@@ -1,0 +1,28 @@
+{
+  "id": "T12",
+  "tier": 2,
+  "title": "변환 자기검증",
+  "input": "samples/field-01.hwp",
+  "instructions": "입력 HWP 를 HWPX 로 변환해 conv.hwpx 로 제출하라. 변환 명령의 자기검증(verify) 봉투를 읽고 IR 동등 여부를 answer.json 에 {\"identical\": true|false} 로 함께 제출하라. 힌트: rhwp convert <입력> conv.hwpx --verify --json (verify 봉투의 IR 대조 결과를 읽어라).",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "변환물 IR 대조",
+      "op": "answer_eq",
+      "answer": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "{file:conv.hwpx}",
+        "--json"
+      ],
+      "path": "identical",
+      "expect_exit": 0
+    }
+  ]
+}
