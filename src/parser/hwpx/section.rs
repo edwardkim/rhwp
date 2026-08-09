@@ -593,7 +593,12 @@ fn parse_paragraph(
                     }
                     b"tab" => {
                         text_parts.push("\t".to_string());
-                        para.tab_extended.push(parse_tab_extension(ce));
+                        // "데이터 없음" 마커(width=0, #4403)는 tab_extended 에 싣지 않는다 —
+                        // 렌더러가 TabDef 기준으로 다시 계산하도록 원본처럼 비워 둔다.
+                        let ext = parse_tab_extension(ce);
+                        if !is_tab_no_data_marker(&ext) {
+                            para.tab_extended.push(ext);
+                        }
                     }
                     b"lineseg" => {
                         // 단독 lineseg (linesegarray 밖에 나올 경우)
@@ -1616,7 +1621,12 @@ fn read_text_content_with_tabs(
                     b"lineBreak" | b"columnBreak" => text.push('\n'),
                     b"tab" => {
                         text.push('\t');
-                        tab_ext_buf.push(parse_tab_extension(ce));
+                        // "데이터 없음" 마커(width=0, #4403)는 tab_extended 에 싣지 않는다 —
+                        // 렌더러가 TabDef 기준으로 다시 계산하도록 원본처럼 비워 둔다.
+                        let ext = parse_tab_extension(ce);
+                        if !is_tab_no_data_marker(&ext) {
+                            tab_ext_buf.push(ext);
+                        }
                     }
                     b"nbSpace" => text.push('\u{00A0}'),
                     b"fwSpace" => text.push('\u{2007}'),
@@ -1650,6 +1660,18 @@ fn parse_tab_extension(e: &quick_xml::events::BytesStart) -> [u16; 7] {
     ext[2] = (tab_type << 8) | leader;
 
     ext
+}
+
+/// `<hp:tab width="0" leader="0" type="1"/>` — 서식기(`serializer/hwpx/section.rs`
+/// `TAB_NO_DATA_WIDTH_MARKER`)가 `tab_extended` 항목이 없던 "암묵적 기본 탭"을 내보낼 때
+/// 쓰는 정확한 마커다(#4403). 실제 탭은 폭 0 이 나올 수 없으므로(시각적으로 아무 효과가 없어
+/// 한컴도 만들지 않는다) 안전한 신호로 쓴다. `leader`/`type` 까지 우리 서식기의 고정 폴백값과
+/// 정확히 일치할 때만 마커로 인정해, width=0 인 (극히 드문) 진짜 캡처 데이터를 오인해 버리지
+/// 않도록 한다. 이 마커를 만나면 `tab_extended` 에 항목을 추가하지 않아, 렌더러가 문단의 실제
+/// `TabDef`/커서 위치 기준 `find_next_tab_stop` 으로 탭 정지를 다시 계산하게 한다 — HWP5
+/// 바이너리 파서의 동형 널 마커 스킵(`parser/body_text.rs` `is_null_ext`, #1892)과 같은 규약.
+fn is_tab_no_data_marker(ext: &[u16; 7]) -> bool {
+    ext[0] == 0 && ext[2] == 0x0100
 }
 
 // ─── Table ───
@@ -7234,6 +7256,34 @@ mod tests {
         let para = &section.paragraphs[0];
         assert_eq!(para.text, "A\t(페이지 표기)");
         assert_eq!(para.tab_extended, vec![[17283, 0, 0x0203, 0, 0, 0, 9]]);
+    }
+
+    #[test]
+    fn test_parse_hwpx_tab_width_zero_marker_not_recorded_as_ext() {
+        // #4403: 직렬화기가 "데이터 없음" 마커(width=0)로 내보낸 암묵적 기본 탭은
+        // 재적재 시 tab_extended 항목을 만들면 안 된다 — 만들면 렌더러가 그 폭을
+        // 실제 계산값으로 신뢰해(`total + width`) 문단의 진짜 TabDef(예: 우측 정렬)를
+        // 무시하고 커서 위치와 무관한 고정 거리만 전진시킨다. width=0 은 실제 탭에서
+        // 나올 수 없는 값(폭 0인 탭은 시각 효과가 없음)이라 안전한 마커다. 탭 문자(\t)
+        // 자체는 그대로 보존해야 한다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:t>I.소설의 이해<hp:tab width="0" leader="0" type="1"/>3</hp:t>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let para = &section.paragraphs[0];
+        assert_eq!(para.text, "I.소설의 이해\t3");
+        assert!(
+            para.tab_extended.is_empty(),
+            "width=0 마커는 tab_extended 에 실리면 안 됨: {:?}",
+            para.tab_extended
+        );
     }
 
     #[test]

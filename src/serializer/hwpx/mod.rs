@@ -590,10 +590,13 @@ mod tests {
         let mut sec0 = archive.by_name("Contents/section0.xml").expect("section0");
         let mut xml = String::new();
         std::io::Read::read_to_string(&mut sec0, &mut xml).expect("read");
-        // Stage 2.3 (ref_mixed 기반): 혼합 콘텐츠 + tab 속성 포함
+        // Stage 2.3 (ref_mixed 기반): 혼합 콘텐츠 + tab 속성 포함.
+        // [#4403] tab_extended 데이터 없는 암묵적 기본 탭은 "데이터 없음" 마커
+        // (width=0)로 방출한다 — 고정 상수(옛 4000)를 emit 하면 재적재 시 렌더러가
+        // 그 폭을 실제 계산값으로 신뢰해 문단의 진짜 TabDef 를 무시한다.
         assert!(
             xml.contains(
-                r#"<hp:t>A<hp:tab width="4000" leader="0" type="1"/>B<hp:lineBreak/>C</hp:t>"#
+                r#"<hp:t>A<hp:tab width="0" leader="0" type="1"/>B<hp:lineBreak/>C</hp:t>"#
             ),
             "mixed content not rendered: {}",
             xml
