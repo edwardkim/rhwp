@@ -19,8 +19,8 @@ last_verified: 2026-08-10
 
 Stage 98은 native HWP의 `dirty_flag`가 저장 경계를 넘지 못하는 조건에서, 저장·재파싱
 뒤에도 남는 `split_cell_into(1×2)` 구조만 continuation strict-cut의 근거로 사용했다.
-현재 작업트리에는 이 판별을 **원문 셀 col 0 / 빈 템플릿 셀 col 1** 순서로 더 좁히는
-소스 변경과 음성 단위 회귀가 미커밋 상태로 남아 있다. 또한 #4138 저장·재파싱 fixture가
+이 stage는 판별을 **원문 셀 col 0 / 빈 템플릿 셀 col 1** 순서로 더 좁히는
+소스 변경과 음성 단위 회귀를 `3c87142ed`에 반영했다. 또한 #4138 저장·재파싱 fixture가
 원문 문단의 기존 instanceId와 새 빈 peer의 zeroed instanceId를 직접 고정하는 회귀도
 추가돼 있다. 이 stage는 그 provenance 보정만 다루며, 정책연구 PDF의 다음 시각 후보
 판정은 후속 stage로 분리한다.

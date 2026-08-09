@@ -69,10 +69,11 @@ fn saved_hwp_page_count_and_split_provenance(doc: &rhwp::wasm_api::HwpDocument) 
         .iter()
         .find(|cell| cell.row == TARGET_ROW && cell.col == 1)
         .expect("분할 빈 peer");
+    let source_instance_id = paragraph_instance_id(&source.paragraphs[0])
+        .expect("원문 셀 첫 문단은 instanceId 4바이트를 보존해야 한다");
     assert_ne!(
-        paragraph_instance_id(&source.paragraphs[0]),
-        Some(0),
-        "원문 셀 첫 문단은 기존 instanceId를 보존해야 한다"
+        source_instance_id, 0,
+        "원문 셀 첫 문단은 0이 아닌 기존 instanceId를 보존해야 한다"
     );
     assert_eq!(
         paragraph_instance_id(&peer.paragraphs[0]),
