@@ -6,6 +6,43 @@ description = "HWP file viewer and editor written in Rust, targeting WebAssembly
 license = "MIT"
 repository = "https://github.com/edwardkim/rhwp"
 
+# [#4375] cargo-binstall — `cargo binstall rhwp` 가 기존 릴리스 자산을 그대로
+# 받도록 자산 이름을 타깃별로 매핑한다(빌드 없는 설치, crates.io 게시와 무관).
+# 아카이브는 rhwp/<bin> 구조(release-binary.yml 패키징 계약).
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/rhwp-v{ version }-linux-x86_64.tar.gz"
+bin-dir = "rhwp/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-apple-darwin]
+pkg-url = "{ repo }/releases/download/v{ version }/rhwp-v{ version }-macos-x86_64.tar.gz"
+
+[package.metadata.binstall.overrides.aarch64-apple-darwin]
+pkg-url = "{ repo }/releases/download/v{ version }/rhwp-v{ version }-macos-aarch64.tar.gz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-url = "{ repo }/releases/download/v{ version }/rhwp-v{ version }-windows-x86_64.zip"
+pkg-fmt = "zip"
+
+# [#4375] cargo-deb — release-installers.yml 이 .deb 를 릴리스에 첨부한다.
+[package.metadata.deb]
+maintainer = "edwardkim <https://github.com/edwardkim>"
+copyright = "MIT — https://github.com/edwardkim/rhwp/blob/devel/LICENSE"
+extended-description = "HWP/HWPX document engine: parse, edit, render, convert. CLI with machine-readable --json envelopes and a built-in MCP server (rhwp mcp-serve)."
+section = "utils"
+priority = "optional"
+assets = [
+    ["target/release/rhwp", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/rhwp/README.md", "644"],
+]
+
+# [#4375] cargo-generate-rpm — 동일 잡이 .rpm 을 첨부한다.
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/rhwp", dest = "/usr/bin/rhwp", mode = "755" },
+    { source = "README.md", dest = "/usr/share/doc/rhwp/README.md", mode = "644", doc = true },
+]
+
 [workspace]
 members = [".", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert"]
 resolver = "2"

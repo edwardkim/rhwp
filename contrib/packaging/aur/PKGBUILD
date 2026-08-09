@@ -1,0 +1,21 @@
+# [#4375] AUR 패키지(rhwp-bin) — 릴리스 바이너리 기반. AUR 등재는 메인테이너(또는
+# 위임자)의 AUR 계정으로 제출한다(절차: installer_channels_guide.md §AUR).
+# 버전 갱신: pkgver 와 sha256sums 를 tools/update_channel_manifests.py 후속 확장으로.
+# Maintainer: edwardkim <https://github.com/edwardkim>
+pkgname=rhwp-bin
+pkgver=0.8.2
+pkgrel=1
+pkgdesc="HWP/HWPX document engine — parse, edit, render, convert (CLI + MCP server)"
+arch=('x86_64')
+url="https://github.com/edwardkim/rhwp"
+license=('MIT')
+provides=('rhwp')
+conflicts=('rhwp')
+source=("$url/releases/download/v$pkgver/rhwp-v$pkgver-linux-x86_64.tar.gz")
+sha256sums=('3225246533eca2b10ec2926228aee0d1cbf0ea6de0553e053ec8d6cb79fa9570')
+
+package() {
+    install -Dm755 "$srcdir/rhwp/rhwp" "$pkgdir/usr/bin/rhwp"
+    install -Dm644 "$srcdir/rhwp/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 "$srcdir/rhwp/README.md" "$pkgdir/usr/share/doc/$pkgname/README.md"
+}

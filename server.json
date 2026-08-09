@@ -1,0 +1,27 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.edwardkim/rhwp",
+  "description": "HWP/HWPX document engine MCP server — read, search, edit, convert and render Korean HWP documents with machine-verifiable envelopes and sessions.",
+  "version": "0.8.2",
+  "websiteUrl": "https://github.com/edwardkim/rhwp",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/edwardkim/rhwp",
+      "version": "0.8.2",
+      "transport": { "type": "stdio" }
+    },
+    {
+      "registryType": "pypi",
+      "identifier": "rhwp",
+      "version": "0.8.2",
+      "transport": { "type": "stdio" }
+    },
+    {
+      "registryType": "npm",
+      "identifier": "@rhwp/node",
+      "version": "0.8.2",
+      "transport": { "type": "stdio" }
+    }
+  ]
+}

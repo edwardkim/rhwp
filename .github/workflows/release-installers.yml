@@ -1,0 +1,114 @@
+name: Release Installers
+
+# Issue #4375 — 설치 채널 잔여 일괄: deb·rpm·MSI 를 릴리스 자산으로 첨부하고,
+# crates.io 게시는 이중 게이트(시크릿 + publish --dry-run) 뒤에서만 시도한다.
+# deb/rpm/MSI 는 GITHUB_TOKEN(contents: write)만 쓴다 — 머지 후 다음 태그부터
+# 자동 첨부(별도 시크릿 불요).
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name (예: v0.8.2 — 기존 릴리스에 자산 추가)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.v.outputs.tag }}
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - id: v
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+  linux-packages:
+    name: deb + rpm
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: installers-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: 빌드 + 패키징
+        run: |
+          cargo build --release --bin rhwp
+          cargo install cargo-deb cargo-generate-rpm --locked
+          cargo deb -p rhwp --no-build -o dist/
+          cargo generate-rpm -p . -o dist/
+          ls -la dist/
+      - name: 릴리스에 첨부
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ needs.version.outputs.tag }}" dist/*.deb dist/*.rpm --clobber
+
+  msi:
+    name: Windows MSI (WiX v4)
+    needs: version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: msi-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: 빌드 + MSI
+        shell: bash
+        run: |
+          cargo build --release --bin rhwp
+          dotnet tool install --global wix
+          wix build contrib/packaging/msi/rhwp.wxs \
+            -d Version=${{ needs.version.outputs.version }} \
+            -d BinPath=target/release/rhwp.exe \
+            -o rhwp-${{ needs.version.outputs.tag }}-x86_64.msi
+      - name: 릴리스에 첨부
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ needs.version.outputs.tag }}" rhwp-*.msi --clobber
+
+  crates-io:
+    name: crates.io (이중 게이트)
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+      - name: 게이트 ① 시크릿 · ② dry-run
+        shell: bash
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [[ -z "${CARGO_REGISTRY_TOKEN}" ]]; then
+            echo "::notice title=crates.io 생략::CRATES_IO_TOKEN 미등록 — 게시 안 함. 활성 조건은 mydocs/manual/installer_channels_guide.md §crates.io (패키징 include 정비 선행)."
+            exit 0
+          fi
+          if ! cargo publish -p rhwp --dry-run --locked; then
+            echo "::warning title=crates.io 보류::publish --dry-run 실패 — 패키징 include 정비(임베드 파일 50건·10MB 상한)가 선행입니다. 게시하지 않습니다."
+            exit 0
+          fi
+          cargo publish -p rhwp --locked
