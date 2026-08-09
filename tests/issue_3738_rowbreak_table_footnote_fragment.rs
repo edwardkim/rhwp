@@ -65,6 +65,10 @@ const PAGE_172: u32 = 171;
 const PAGE_173: u32 = 172;
 const PAGE_174: u32 = 173;
 const PAGE_175: u32 = 174;
+const PAGE_176: u32 = 175;
+const PAGE_177: u32 = 176;
+const PAGE_178: u32 = 177;
+const PAGE_179: u32 = 178;
 const PAGE_182: u32 = 181;
 const PAGE_183: u32 = 182;
 const PAGE_199: u32 = 198;
@@ -1107,6 +1111,70 @@ fn native_hwp5_body_footnotes_follow_the_p129_and_p131_reset_pages() {
             && notes[3].contains("대로 호적 등으로"),
         "p132는 각주 180 전체와 181을 소유해야 함: {}",
         notes[3]
+    );
+}
+
+#[test]
+fn native_hwp5_repeated_zero_footnotes_continue_on_p177_and_p179() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage104 HWP evidence fixture");
+
+    assert_eq!(
+        doc.page_count(),
+        215,
+        "정책연구 기준 PDF와 215쪽을 유지해야 함"
+    );
+    let trees = [PAGE_176, PAGE_177, PAGE_178, PAGE_179].map(|page| {
+        doc.build_page_render_tree(page)
+            .unwrap_or_else(|e| panic!("render physical page {}: {e}", page + 1))
+    });
+    let mut notes = [String::new(), String::new(), String::new(), String::new()];
+    for (tree, text) in trees.iter().zip(notes.iter_mut()) {
+        footnote_text(&tree.root, false, text);
+    }
+
+    assert!(
+        notes[0].contains("234)")
+            && notes[0].contains("using moderately and")
+            && !notes[0].contains("severely steatotic donor livers"),
+        "p176은 table-cell 각주 234의 첫 stored line만 소유해야 함: {}",
+        notes[0]
+    );
+    assert!(
+        !notes[1].contains("234)")
+            && notes[1].contains("severely steatotic donor livers")
+            && notes[1].contains("235)"),
+        "p177은 번호를 반복하지 않은 각주 234 tail과 235를 소유해야 함: {}",
+        notes[1]
+    );
+    assert!(
+        notes[2].contains("240)")
+            && notes[2].contains("이식대상자도")
+            && !notes[2].contains("HTLV-1")
+            && !notes[2].contains("양성인 경우에는 별도로 검토함"),
+        "p178은 body 각주 240의 첫 stored line만 소유해야 함: {}",
+        notes[2]
+    );
+    assert!(
+        !notes[3].contains("240)")
+            && notes[3].contains("HTLV-1")
+            && notes[3].contains("양성인 경우에는 별도로 검토함")
+            && notes[3].contains("jikeisurgery.jp")
+            && notes[3].contains("241)")
+            && notes[3].contains("242)"),
+        "p179는 번호를 반복하지 않은 각주 240 tail과 241·242를 소유해야 함: {}",
+        notes[3]
+    );
+
+    let mut p178_body_bottom = None;
+    let mut p178_separator_top = None;
+    paragraph_bottom(&trees[2].root, 1865, &mut p178_body_bottom);
+    footnote_separator_top(&trees[2].root, &mut p178_separator_top);
+    assert!(
+        p178_body_bottom.expect("p178 para 1865 body")
+            <= p178_separator_top.expect("p178 footnote separator") + 0.5,
+        "p178 para 1865 본문은 각주 236~240 prefix 영역을 침범하면 안 됨"
     );
 }
 
