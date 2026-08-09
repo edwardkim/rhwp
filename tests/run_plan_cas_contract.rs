@@ -213,13 +213,18 @@ fn concurrent_in_place_plans_with_one_expected_hash_cannot_both_commit() {
     let find = existing_snippet();
     let plan_a = in_place_plan_json(&input, &expected, &find, "가");
     let plan_b = in_place_plan_json(&input, &expected, &find, "나");
+    let barrier =
+        std::env::temp_dir().join(format!("rhwp_cas_barrier_{}_{nonce}", std::process::id()));
+    std::fs::create_dir(&barrier).expect("CAS barrier 폴더");
 
     let mut first = Command::new(rhwp_bin())
         .args(["run", "--plan-json", &plan_a, "--json"])
+        .env("RHWP_INTERNAL_TEST_CAS_BARRIER", &barrier)
         .spawn()
         .expect("첫 CAS 실행");
     let mut second = Command::new(rhwp_bin())
         .args(["run", "--plan-json", &plan_b, "--json"])
+        .env("RHWP_INTERNAL_TEST_CAS_BARRIER", &barrier)
         .spawn()
         .expect("둘째 CAS 실행");
     let first_status = first.wait().expect("첫 CAS 종료").code();
@@ -227,12 +232,22 @@ fn concurrent_in_place_plans_with_one_expected_hash_cannot_both_commit() {
     let mut codes = [first_status, second_status];
     codes.sort();
     assert_eq!(codes, [Some(0), Some(2)], "정확히 한 실행만 commit");
+    let checked = std::fs::read_dir(&barrier)
+        .expect("CAS barrier 읽기")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_name().to_string_lossy().starts_with("checked-"))
+        .count();
+    assert_eq!(
+        checked, 1,
+        "잠금이 없으면 두 프로세스가 최초 해시 검사를 모두 통과하는 mutation proof"
+    );
     assert_ne!(
         Sha256::digest(std::fs::read(&input).expect("최종 입력")),
         Sha256::digest(original),
         "성공한 한 편집은 실제 파일을 바꿔야 한다"
     );
     let _ = std::fs::remove_file(input);
+    let _ = std::fs::remove_dir_all(barrier);
 }
 
 // ── edit 단발 축 (R24, 기함: replace-text) ───────────────────────────────

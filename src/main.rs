@@ -15061,6 +15061,62 @@ impl CasPathLock {
     }
 }
 
+/// 통합 회귀에서 두 별도 프로세스를 잠금 시도 직전까지 모은다. 환경변수가 없으면
+/// 완전한 no-op이며, 일반 CLI 계약에는 노출되지 않는다.
+fn cas_test_synchronize_before_lock() -> Result<(), String> {
+    let Some(directory) = std::env::var_os("RHWP_INTERNAL_TEST_CAS_BARRIER") else {
+        return Ok(());
+    };
+    let directory = std::path::PathBuf::from(directory);
+    fs::write(
+        directory.join(format!("arrived-{}", std::process::id())),
+        b"",
+    )
+    .map_err(|e| e.to_string())?;
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+    loop {
+        let arrived = fs::read_dir(&directory)
+            .map_err(|e| e.to_string())?
+            .filter_map(Result::ok)
+            .filter(|entry| entry.file_name().to_string_lossy().starts_with("arrived-"))
+            .count();
+        if arrived >= 2 {
+            return Ok(());
+        }
+        if std::time::Instant::now() >= deadline {
+            return Err("CAS test barrier 에 두 프로세스가 도착하지 않았습니다".to_string());
+        }
+        std::thread::sleep(std::time::Duration::from_millis(10));
+    }
+}
+
+/// 최초 해시 검사를 통과한 프로세스를 표시한다. 잠금이 사라진 mutation에서는 두
+/// marker가 생기고, 정상 구현에서는 첫 writer만 이 경계에 도달한다.
+fn cas_test_mark_checked_and_wait() {
+    let Some(directory) = std::env::var_os("RHWP_INTERNAL_TEST_CAS_BARRIER") else {
+        return;
+    };
+    let directory = std::path::PathBuf::from(directory);
+    let _ = fs::write(
+        directory.join(format!("checked-{}", std::process::id())),
+        b"",
+    );
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(1);
+    while std::time::Instant::now() < deadline {
+        let checked = fs::read_dir(&directory)
+            .ok()
+            .into_iter()
+            .flatten()
+            .filter_map(Result::ok)
+            .filter(|entry| entry.file_name().to_string_lossy().starts_with("checked-"))
+            .count();
+        if checked >= 2 {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(10));
+    }
+}
+
 /// 기대 해시가 주어졌을 때만 검사한다. 형식 오류는 exit 2, 불일치는 exit 3 을
 /// 돌려주고 봉투/진단을 직접 낸다. `None` 이면 통과.
 fn check_expect_sha256(
@@ -15329,14 +15385,19 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     };
 
     let _cas_lock = match expected_input_sha.as_ref() {
-        Some(_) => match CasPathLock::acquire(Path::new(input)) {
-            Ok(lock) => Some(lock),
-            Err(e) => {
-                return fail(format!(
-                    "입력 문서 CAS 잠금을 얻을 수 없습니다 - {input}: {e}"
-                ))
+        Some(_) => {
+            if let Err(e) = cas_test_synchronize_before_lock() {
+                return fail(e);
             }
-        },
+            match CasPathLock::acquire(Path::new(input)) {
+                Ok(lock) => Some(lock),
+                Err(e) => {
+                    return fail(format!(
+                        "입력 문서 CAS 잠금을 얻을 수 없습니다 - {input}: {e}"
+                    ))
+                }
+            }
+        }
         None => None,
     };
     let bytes = match fs::read(input) {
@@ -15371,6 +15432,7 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
         if actual != expected {
             return precondition_failure(expected, actual);
         }
+        cas_test_mark_checked_and_wait();
     }
     let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
         Ok(d) => d,
@@ -16419,13 +16481,19 @@ fn edit_replace_text(args: &[String]) -> i32 {
     }
 
     let _cas_lock = match expect_sha256.as_ref() {
-        Some(_) => match CasPathLock::acquire(Path::new(file_path)) {
-            Ok(lock) => Some(lock),
-            Err(e) => {
-                eprintln!("오류: 입력 문서 CAS 잠금을 얻을 수 없습니다 - {file_path}: {e}");
+        Some(_) => {
+            if let Err(e) = cas_test_synchronize_before_lock() {
+                eprintln!("오류: {e}");
                 return EXIT_RUNTIME;
             }
-        },
+            match CasPathLock::acquire(Path::new(file_path)) {
+                Ok(lock) => Some(lock),
+                Err(e) => {
+                    eprintln!("오류: 입력 문서 CAS 잠금을 얻을 수 없습니다 - {file_path}: {e}");
+                    return EXIT_RUNTIME;
+                }
+            }
+        }
         None => None,
     };
     let bytes = match fs::read(file_path) {
@@ -16439,6 +16507,9 @@ fn edit_replace_text(args: &[String]) -> i32 {
     if let Some(code) = check_expect_sha256(expect_sha256.as_deref(), &bytes, file_path, json_mode)
     {
         return code;
+    }
+    if expect_sha256.is_some() {
+        cas_test_mark_checked_and_wait();
     }
     let mut doc = match load_document(&bytes) {
         Ok(d) => d,
