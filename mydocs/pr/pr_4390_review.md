@@ -12,8 +12,9 @@ last_verified: 2026-08-10
 **메인터너 보정 뒤 조건부 수용 권고.** contributor 변경은 문서에 적은 하네스 성질 여섯 가지를
 `tools/harness_proofs.py` 한 명령으로 실행해 PASS/FAIL로 판정하는 공개 스코어카드를 추가한다.
 검토에서 P2의 문서 계약은 정확히 68개 명령인데 실행 판정은 50개 이상만 요구해, 최대 18개 명령이
-사라져도 거짓 PASS가 되는 차단점을 확인했다. 원 contributor history 위의 별도 보정 commit으로
-정확한 68개 계약과 focused 회귀 테스트를 추가했다.
+사라져도 거짓 PASS가 되는 차단점을 확인했다. 첫 보정 뒤에도 중복 이름 68개와 null 계약 객체가
+통과하고, P5는 `untrustedContent:false`·빈 `untrustedFields`도 키만 있으면 통과했다. 원 contributor
+history 위의 별도 보정 commit들로 명령·계약 객체·출처 표지의 실제 의미와 음성 회귀를 고정했다.
 
 local candidate는 검증을 통과했지만 아직 원격에 push되지 않았다. Python 실행 코드와 test가
 바뀌었으므로 review-only fast-pass를 적용하지 않는다. 최신 candidate의 GitHub checks,
@@ -32,7 +33,7 @@ mergeability 재확인과 작업지시자의 push·review·merge 승인이 최�
 | source merge 상태 | `MERGEABLE`, `CLEAN`; merge 전 최신 상태 재확인 필요 |
 | source checks | source head 기준 required checks 성공; local correction에는 원격 CI 없음 |
 | 가시성 branch | `review/kevin9327-20260810-pr4390` |
-| local code candidate | `48a80dc09a9a876165292777546ec124f195a82a` |
+| local code candidate | `bc93618d678d29522ab22873322b2962a9eb736b` |
 | 기준 devel | `e48fe86947fbf9a44b1b98c7037150751af541ab` |
 
 기준 devel은 contributor source head의 조상이고, 가시성 branch는 source 뒤에 메인터너 commit만
@@ -52,9 +53,10 @@ mergeability 재확인과 작업지시자의 push·review·merge 승인이 최�
 ## 발견한 차단점과 메인터너 보정
 
 문서는 P2를 "68개 명령의 계약 전수 자기서술"로 고정했지만 원 runner는
-`n_cmd >= 50`만 확인했다. 명령이 68개에서 50개까지 줄어도 PASS가 되므로 스코어카드가 주장하는
-전수 검증을 수행하지 못했다. 기존 detail도 두 계약 필드의 개별 상태가 아니라 전체 `ok`만
-출력해 실패 원인을 구분하기 어려웠다.
+`n_cmd >= 50`만 확인했다. 첫 보정으로 개수는 정확해졌지만 `commands` 원소와 이름을 보지 않아 같은
+이름 68개도 통과했고, `exitCodes:null`·`jsonContract:null`도 키 존재만으로 통과했다. P5도 문서 파생
+값이 있는 `info` 봉투에서 `untrustedContent`가 `true`이고 `untrustedFields`가 비어 있지 않아야 한다는
+의미 대신 두 키의 존재만 확인했다.
 
 메인터너 보정 `48a80dc09a9a876165292777546ec124f195a82a`은 다음을 추가했다.
 
@@ -62,17 +64,27 @@ mergeability 재확인과 작업지시자의 push·review·merge 승인이 최�
 - detail에 실제·기대 명령 수와 `exitCodes`, `jsonContract` 존재 여부를 각각 출력한다.
 - `tools/test_harness_proofs.py`에서 68개 성공, 67·69개 실패, 계약 필드 누락 실패를 고정한다.
 
+후속 보정 `bc93618d678d29522ab22873322b2962a9eb736b`은 남은 false-PASS를 닫았다.
+
+- 68개 원소가 모두 object이고 비어 있지 않은 고유 `name`을 갖는지 확인한다.
+- `exitCodes`는 object이며 핵심 0·1·2 의미가 비어 있지 않은 문자열인지, `jsonContract`는 object이며
+  `stdout`·`schemaPolicy` 의미가 비어 있지 않은 문자열인지 확인한다.
+- P5는 `untrustedContent is True`, 비어 있지 않은 문자열 경로 배열 `untrustedFields`를 함께 요구한다.
+- 중복 이름, 비-object 원소, null·빈 계약, `untrustedContent:false`, 빈·잘못된 출처 경로를 음성 회귀로
+  고정한다.
+
 실행 단계와 rollback 경계는 [구현·검토 계획](pr_4390_review_impl.md)에 기록했다.
 
 ## 완료한 로컬 검증
 
 | 명령 | 결과 |
 | --- | --- |
-| `python -m unittest tools.test_harness_proofs -v` | 3 / 3 통과 |
+| `python -m unittest tools.test_harness_proofs -v` | 8 / 8 통과 |
 | `python -m py_compile tools/harness_proofs.py tools/test_harness_proofs.py` | 통과 |
 | `python tools/harness_proofs.py --json` | 6 / 6 통과 |
-| P2 실물 detail | `commands=68 (expected=68), exitCodes=True, jsonContract=True` |
-| `git diff --check origin/pr/4390..48a80dc0` | 통과 |
+| P2 실물 detail | `commands=68 (expected=68, unique names), exitCodes=['0', '1', '2'], jsonContract=['stdout', 'schemaPolicy']` |
+| P5 실물 detail | `untrustedContent=True, untrustedFields=['title', 'fonts[]']` |
+| `git diff --check origin/pr/4390..bc93618d` | 통과 |
 
 실물 proof에는 같은 검토 사이클에서 새로 빌드한 #4330 debug `rhwp`를 지정했다. #4390에는 Rust
 변경이 없고 해당 binary가 실제 68-command capabilities를 제공해 수정된 runner의 green 경로와
