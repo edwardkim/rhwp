@@ -1,0 +1,213 @@
+{
+  "id": "pM-flip",
+  "title": "개체 뒤집기 넷 — 저장본에 남는 자취로 잰다",
+  "note": "**게이트가 아니라 탐침이다 — 규칙을 다 못 밝혔다.**\n\n밝힌 것: 뒤집기는 그 축 비트를 토글하고 `0x0003_0000` 두 비트를 함께 세운다. 행렬은 그 축의 배율이 −1 이 되고 이동량이 붙는데, 이동량은 **그 변의 길이를 짝수로 내린 값**이다(8475→8474 · 8250→8250 · 6750→6750 · 7425→7424 — 배율 없는 개체 네 관측 모두 일치).\n\n못 밝힌 것 둘.\n\n1. **표시 비트가 언제 지워지는가.** 한 축만 뒤집었다 되돌리면 남는데(`pM2-vv`: 720898 → 720896), 두 축을 뒤집고 차례로 되돌리면 마지막에 지워진다(이 시나리오 넷째 자취: 720898 → 524288). 두 관측이 어긋나 규칙이 안 선다.\n2. **배율이 걸린 개체의 이동량.** 같은 개체가 8756 이었다 8758 이었다 한다(`pM5-resized`).\n\n구현을 붙였다가 **되돌렸다.** 앞쪽 관측에만 맞는 규칙을 호환 층에 심으면 틀린 기하를 조용히 쓰게 된다. 다시 붙이려면 표시 비트부터 갈라야 한다 — 축마다 따로인지, 축 둘이 모두 한 번씩 돌았는지를 세는지.",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "fw": {
+      "win": "{out}/pM-fw.hwp",
+      "posix": "{out}/pM-fw.hwp"
+    },
+    "f0": {
+      "win": "{out}/pM-f0.hwp",
+      "posix": "{out}/pM-f0.hwp"
+    },
+    "f1": {
+      "win": "{out}/pM-f1.hwp",
+      "posix": "{out}/pM-f1.hwp"
+    },
+    "f2": {
+      "win": "{out}/pM-f2.hwp",
+      "posix": "{out}/pM-f2.hwp"
+    },
+    "f3": {
+      "win": "{out}/pM-f3.hwp",
+      "posix": "{out}/pM-f3.hwp"
+    },
+    "f4": {
+      "win": "{out}/pM-f4.hwp",
+      "posix": "{out}/pM-f4.hwp"
+    },
+    "f5": {
+      "win": "{out}/pM-f5.hwp",
+      "posix": "{out}/pM-f5.hwp"
+    },
+    "f6": {
+      "win": "{out}/pM-f6.hwp",
+      "posix": "{out}/pM-f6.hwp"
+    }
+  },
+  "ignorePaths": [
+    "common.attr",
+    "common.hwp5_gen_shape_attr_bit28"
+  ],
+  "deltas": [
+    {
+      "from": "f0",
+      "to": "f1",
+      "label": "ShapeObjHorzFlip"
+    },
+    {
+      "from": "f1",
+      "to": "f2",
+      "label": "ShapeObjVertFlip"
+    },
+    {
+      "from": "f2",
+      "to": "f3",
+      "label": "ShapeObjHorzFlipOrgState (축을 끈다)"
+    },
+    {
+      "from": "f3",
+      "to": "f4",
+      "label": "ShapeObjVertFlipOrgState (축을 끈다)"
+    },
+    {
+      "from": "f4",
+      "to": "f5",
+      "label": "ShapeObjHorzFlipOrgState (표시 비트를 지운다)"
+    },
+    {
+      "from": "f5",
+      "to": "f6",
+      "label": "ShapeObjHorzFlipOrgState (이제 무동작)"
+    }
+  ],
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "fw"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f0"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f1"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjVertFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f2"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f3"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjVertFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f4"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f5"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f6"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}
