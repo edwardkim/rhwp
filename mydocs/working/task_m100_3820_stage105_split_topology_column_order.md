@@ -101,7 +101,8 @@ template_cell.col == 1
   역방향 행을 음성으로 고정했다.
 - `issue_4138_split_cell_stale_linesegs`: 2/2 passed. 두 편집 API 경로 모두 native HWP
   저장→재파싱 후 197쪽을 유지하고, col 0 원문 instanceId non-zero / col 1 빈
-  peer instanceId zero를 직접 단언했다.
+  peer instanceId zero를 직접 단언했다. 최종 감사에서는 원문 instanceId가 누락된
+  `None`이어도 통과할 수 없도록 먼저 값을 요구한 뒤 non-zero를 단언하도록 강화했다.
 - `issue_2097_bottom_squeeze_page_pins`: 1/1 passed. 일반 2열 표의 2쪽 한컴
   oracle을 유지했다.
 - `issue_1858`: 1/1 passed. 빈 왼쪽/본문 오른쪽 자연 표를 포함한 1쪽 pin을
