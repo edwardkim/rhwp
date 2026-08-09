@@ -292,14 +292,22 @@ fn served_tools_reflect_manifest_and_session_tools_are_consistent() {
         // 세션에도 개방 세계 축은 없다.
         assert_eq!(a["openWorldHint"], false, "{name}: {a}");
         match name {
-            // 핸들 조회 5종 — 환경 무변경.
+            // 핸들 조회 6종 — 환경 무변경 (tree 는 #4357 의 안정 ID 구조 조회).
             "hwp_doc_text" | "hwp_doc_info" | "hwp_doc_fields" | "hwp_doc_tables"
-            | "hwp_doc_search" => {
+            | "hwp_doc_search" | "hwp_doc_tree" => {
                 assert_eq!(a["readOnlyHint"], true, "{name}: {a}");
                 assert_eq!(a["destructiveHint"], false, "{name}: {a}");
             }
-            // open 은 호출마다 새 docId — 읽기 전용이되 멱등은 아니다.
-            "hwp_open" => {
+            // [#4357 W1] 워크스페이스 조회 2종 — 인벤토리·변이 저널. 환경 무변경이고
+            // 같은 인자 재호출이 같은 관찰로 수렴한다(저널은 조회 자체가 기록을 안 남긴다).
+            "hwp_ws_list" | "hwp_ws_journal" => {
+                assert_eq!(a["readOnlyHint"], true, "{name}: {a}");
+                assert_eq!(a["destructiveHint"], false, "{name}: {a}");
+                assert_eq!(a["idempotentHint"], true, "{name}: {a}");
+            }
+            // open 계열은 호출마다 새 docId — 읽기 전용이되 멱등은 아니다.
+            // ws_open 은 session_open 위임이라 hwp_open 과 같은 판정이다(#4357).
+            "hwp_open" | "hwp_ws_open" => {
                 assert_eq!(a["readOnlyHint"], true, "{name}: {a}");
                 assert_eq!(a["idempotentHint"], false, "{name}: {a}");
             }
@@ -333,7 +341,7 @@ fn served_tools_reflect_manifest_and_session_tools_are_consistent() {
         }
     }
     assert_eq!(
-        session_seen, 12,
+        session_seen, 16,
         "세션 도구 수가 달라졌다 — agent_profiles::ALL_SESSION_TOOLS 와 이 계약을 함께 갱신하라"
     );
 }

@@ -903,7 +903,8 @@ fn resource_error_response(
 ///   경로일 수 있고** 같은 경로 거부가 없다(session_save 는 그대로 fs::write 한다) —
 ///   무상태 표면의 `--in-place` 축에 해당하는 세션의 덮어쓰기 축이다.
 ///   `hwp_doc_render_page` 는 새 SVG 산출물을 만드는 추가형이라 false.
-/// - `idempotentHint`: `hwp_open` 은 호출마다 새 docId 를 발급하므로 false.
+/// - `idempotentHint`: `hwp_open` 은 호출마다 새 docId 를 발급하므로 false —
+///   `hwp_ws_open` 은 같은 `session_open` 위임이라 같은 이유로 false 다(#4357).
 ///   `hwp_doc_replace_text` 는 **이미 치환된 IR 위에** 다시 적용돼 겹칠 수 있으므로
 ///   false (find 가 replace 의 부분열이면 재실행이 결과를 또 바꾼다 — 매번 원본에서
 ///   다시 계산하는 무상태 `hwp_replace_text` 가 true 인 것과 대비된다). 그 밖은
@@ -913,7 +914,7 @@ fn session_tool_annotations(name: &str, writes_file: bool) -> serde_json::Value 
     let read_axis = crate::agent_profiles::SESSION_READ_TOOLS.contains(&name);
     let read_only = read_axis && !writes_file;
     let destructive = name == "hwp_doc_save";
-    let idempotent = !matches!(name, "hwp_open" | "hwp_doc_replace_text");
+    let idempotent = !matches!(name, "hwp_open" | "hwp_ws_open" | "hwp_doc_replace_text");
     crate::mcp_annotations(read_only, destructive, idempotent)
 }
 
