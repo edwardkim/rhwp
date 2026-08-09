@@ -58,12 +58,14 @@ async function expectSignalForwarded(signal: 'SIGINT' | 'SIGTERM'): Promise<void
     fakeServer,
     [
       "'use strict';",
-      'process.stdout.write(`READY ${process.pid}\\n`);',
       'const stop = (signal) => {',
       '  process.stdout.write(`FORWARDED ${signal}\\n`, () => process.exit(0));',
       '};',
       "process.on('SIGINT', () => stop('SIGINT'));",
       "process.on('SIGTERM', () => stop('SIGTERM'));",
+      // READY는 signal handler 등록이 끝났다는 barrier다. 먼저 출력하면 CI가
+      // handler 설치 전 신호를 보내 child가 기본 signal 종료하는 race가 생긴다.
+      'process.stdout.write(`READY ${process.pid}\\n`);',
       'setInterval(() => {}, 1_000);',
     ].join('\n'),
   );
