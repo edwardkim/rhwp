@@ -70,6 +70,10 @@ cache_policy:
   진행자나 사람이 실시간으로 명령, 탐색 방향, 해답을 주면 `guided`로 분리한다.
   사람+에이전트 페어에서 사람이 고정 run package를 중계하고 제출만 하는 것은
   허용하지만, 그 경계를 넘는 상호작용은 모두 guidance log에 남긴다.
+- 결과의 `guidance_class`는 `open-book/self-discovery | guided` enum이다. 시작값은
+  `open-book/self-discovery`이고 live human hint가 한 번이라도 있으면 `guided`로
+  단방향 전환한다. 이 분류는 task 의미가 아니라 실행 조건이므로 `task_variant_id`
+  바깥에 기록한다.
 
 ## 2. organizer run-package manifest
 
@@ -96,19 +100,30 @@ input:
   sha256: <input-sha256>
 target: T1|T2|T3|T4|T5
 template_version: <result-template-version>
-required_artifact: <artifact-type-and-location>
+required_artifact_contract:
+  type: <participant-visible-artifact-type>
+  format: <participant-visible-format-contract>
+  semantic_requirements: <participant-visible-semantic-contract>
 evidence_contract: <machine-checkable-acceptance-contract>
 task_variant_id: sha256:<canonical-task-variant-sha256>
+submission_destination: <run-instance-storage-locator>
 submission_endpoint: <append-only-receipt-authority-endpoint>
 timestamp_authority_id: <must-match-environment-manifest>
 aggregation_plan:
-  task_mix_id: <preregistered-mix-id-or-null>
-  task_mix_sha256: <preregistered-variants-and-weights-sha256-or-null>
+  task_mix_by_guidance_class:
+    open-book/self-discovery: <mix-id-and-sha256-or-null>
+    guided: <separate-mix-id-and-sha256-or-null>
 ```
 
 `protocol.sha256`와 `repo.sha`는 protocol과 source 기준을 각각 고정한다. input의
 경로·SHA-256, target, 결과 template version, required artifact와 evidence contract,
 submission endpoint도 같은 package의 일부다.
+
+`required_artifact_contract`는 참가자에게 dispatch 때 보이는 type·format·semantic
+requirements다. 반면 `submission_destination`은 회차별 storage locator이므로 package에는
+고정하되 variant hash에는 넣지 않는다. 같은 artifact contract에서 bucket/path만 바뀐
+실행은 같은 variant일 수 있지만, artifact type·format·semantic requirement가 바뀌면
+새 variant다.
 
 `task_variant_id`는 다음 object의 RFC 8785 canonical JSON bytes에 대한 SHA-256이다.
 필드 값이 하나라도 바뀌면 새 variant다.
@@ -118,14 +133,20 @@ submission endpoint도 같은 package의 일부다.
   "evidence_contract": "<exact contract>",
   "input_sha256": "<input sha256>",
   "prompt": "<exact natural-language prompt>",
+  "required_artifact_contract": {
+    "format": "<exact participant-visible format>",
+    "semantic_requirements": "<exact participant-visible requirements>",
+    "type": "<exact participant-visible type>"
+  },
   "target": "<T1..T5>",
   "template_version": "<exact version>"
 }
 ```
 
 즉 `task_variant_id = sha256(canonical target + exact prompt + input SHA-256 +
-template version + evidence contract)`이며, 문자열 단순 이어붙이기가 아니라 위
-canonical object를 hash한다.
+template version + required_artifact_contract + evidence contract)`이며, 문자열 단순
+이어붙이기가 아니라 위 canonical object를 hash한다. `submission_destination`,
+receipt sequence와 storage locator는 이 object에 넣지 않는다.
 
 ## 3. 공개 과제·evidence contract
 
@@ -191,15 +212,17 @@ package_id / package_sha256 / protocol_sha256 / repo_sha:
 environment_id / task_variant_id:
 에이전트/모델:
 target / template_version:
+required_artifact_contract / evidence_contract:
+submission_destination:
 dispatch receipt sequence/log-id/received_at (t0):
 earliest valid receipt sequence/log-id/received_at (t1):
 artifact_sha256 / evidence_sha256:
 validation_timestamp / validation_latency:
 소요: mm:ss (t1 - t0)
 완주: 예/아니오 (30분 cutoff는 receipt received_at 기준)
-required artifact / evidence:
+submitted artifact / evidence:
 막힌 지점:
-cohort: open-book/self-discovery | guided
+guidance_class: open-book/self-discovery | guided
 guidance log: (live human hint가 없으면 "없음")
 ```
 
@@ -208,18 +231,19 @@ guidance log: (live human hint가 없으면 "없음")
 각 행은 canonical run-package bytes, `package_sha256`, canonical environment manifest,
 dispatch/submission receipt 원장을 가리켜야 한다.
 
-| 회차 | package/hash | protocol/repo | environment_id | task_variant_id | t0 receipt | t1 receipt | validation timestamp/latency | 소요·완주 | cohort·막힌 지점 |
+| 회차 | package/hash | protocol/repo | environment_id | task_variant_id | guidance_class | t0 receipt | t1 receipt | validation timestamp/latency | 소요·완주·막힌 지점 |
 |---|---|---|---|---|---|---|---|---|---|
 | (첫 회차 대기 — #4355 접수) | | | | | | | | | |
 
 - **막힌 지점 1건 = 이슈 1건** — 해당 트랙(A 봉투 / B 가드 / D 발견 / H MCP)으로
   분리하고 ledger에 연결한다.
 - 완주 사례는 온보딩 사례집(`onboarding_cases_2026h2.md` 계열)에 등재한다.
-- 기본 집계 key는 `(protocol_sha256, repo_sha, environment_id, task_variant_id)`다.
-  네 값 중 하나라도 다른 회차를 같은 cell에 합치지 않는다.
+- 기본 집계 key는 `(protocol_sha256, repo_sha, environment_id, task_variant_id,
+  guidance_class)`다. 다섯 값 중 하나라도 다른 회차를 같은 cell에 합치지 않는다.
 - overall은 첫 dispatch 전에 task variant 목록과 weight를 canonical bytes+SHA-256으로
-  고정한 `task_mix_id`가 있을 때만 계산한다. 사후에 쉬운 variant를 추가하거나 weight를
-  바꾸지 않으며, preregistered mix/weight가 없는 결과는 variant별로만 보고한다.
+  고정한 `task_mix_id`가 있을 때만 계산한다. mix와 weight는 guidance class별로 따로
+  preregister한다. `open-book/self-discovery`와 `guided` 결과를 하나의 overall로
+  합치지 않으며, preregistered mix/weight가 없는 class는 variant별로만 보고한다.
 - R100 게이트("30분") 판정은 이 실측과 별도 no-manual protocol로만 한다.
 
 ## 7. merge/run 전 blocker와 residual
@@ -242,4 +266,7 @@ issue/PR 본문이나 comment를 변경하지 않았으므로, notice 게시와 
   `t0`/`t1`에 사용하기.
 - validation feedback을 cutoff 전에 전달하거나 validation timestamp를 `t1`로 사용하기.
 - 다른 `task_variant_id`를 합치거나 사후 task mix·weight로 overall을 만들기.
+- `required_artifact_contract` 변경을 같은 variant로 두거나 run-instance
+  `submission_destination` 변경만으로 새 variant를 만들기.
+- 서로 다른 `guidance_class`를 같은 집계 cell이나 overall에 합치기.
 - v1 결과만으로 "매뉴얼 없이 30분 달성"을 선언하기.
