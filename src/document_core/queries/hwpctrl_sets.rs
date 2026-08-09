@@ -28,6 +28,25 @@ fn bit(value: bool) -> u8 {
     u8::from(value)
 }
 
+/// 자리·크기·순서를 가진 개체의 공통 속성. 없는 갈래(누름틀·구역 정의 따위)는 `None` 이다.
+fn control_common(ctrl: &Control) -> Option<&crate::model::shape::CommonObjAttr> {
+    match ctrl {
+        Control::Table(t) => Some(&t.common),
+        Control::Shape(s) => Some(s.common()),
+        Control::Picture(p) => Some(&p.common),
+        _ => None,
+    }
+}
+
+fn control_common_mut(ctrl: &mut Control) -> Option<&mut crate::model::shape::CommonObjAttr> {
+    match ctrl {
+        Control::Table(t) => Some(&mut t.common),
+        Control::Shape(s) => Some(s.common_mut()),
+        Control::Picture(p) => Some(&mut p.common),
+        _ => None,
+    }
+}
+
 /// 문단 켜고끄기 비트 — 원본은 `attr1`, 5.0.1.7 이후 문서는 `attr2` 에 같은 뜻을 싣는다.
 fn para_flag(shape: &crate::model::style::ParaShape, attr1_bit: u32, attr2_bit: u32) -> bool {
     (shape.attr1 >> attr1_bit) & 1 != 0 || (shape.attr2 >> attr2_bit) & 1 != 0
@@ -1066,6 +1085,154 @@ impl DocumentCore {
         Ok(r#"{"ok":true,"moved":true}"#.to_string())
     }
 
+    /// 개체의 **앞뒤 순서**를 바꾼다 — 웹한글컨트롤 `Run("ShapeObj{BringToFront,SendToBack,
+    /// BringForward,SendBack,BringInFrontOfText,CtrlSendBehindText}")`.
+    ///
+    /// 규칙은 한글 저장본의 앞뒤 두 벌을 견줘 실측했다(`probes/pZ2-*.json`). 어느 API 도
+    /// 결과를 안 비추지만 파일에는 `CTRL_HEADER` 의 `z_order` 로 적힌다.
+    ///
+    /// | 갈래 | 잰 것 |
+    /// |---|---|
+    /// | `front` | 고른 개체가 맨 위로, **그 위에 있던 것들은 한 칸씩 내려온다**(0,1,2 에서 z=0 을 올리면 1,2,0 이 아니라 → 2 이고 나머지가 0,1) |
+    /// | `back` | 맨 아래로, 그 아래 있던 것들이 한 칸씩 올라간다 |
+    /// | `forward` | 바로 위의 것과 **자리를 맞바꾼다**(한 칸) |
+    /// | `backward` | 바로 아래의 것과 맞바꾼다 |
+    /// | `behindText`·`inFrontOfText` | `z_order` 가 아니라 **`text_wrap`** 이다 |
+    ///
+    /// 마지막 둘이 순서가 아니라 배치라는 것은 이름만 보면 안 갈린다 — 실측으로 갈렸다.
+    ///
+    /// 겨루는 무리는 **같은 구역의 모든 개체**로 잡는다. 실측은 한 문단 안의 셋으로만 했으니
+    /// 문단을 넘는 무리 짓기는 아직 안 잰 자리다.
+    pub fn set_control_z_order_at(
+        &mut self,
+        para_in_list: usize,
+        control_index: usize,
+        mode: &str,
+    ) -> Result<String, HwpError> {
+        use crate::model::shape::TextWrap;
+
+        let (sec, para_idx) = root_para_location(self, para_in_list)
+            .ok_or_else(|| HwpError::InvalidField(format!("본문 문단 {} 없음", para_in_list)))?;
+        let section = self
+            .document
+            .sections
+            .get_mut(sec)
+            .ok_or_else(|| HwpError::InvalidField(format!("구역 {} 없음", sec)))?;
+
+        // 배치(글 앞/뒤)는 순서와 다른 축이다 — 고른 개체 하나만 건드린다.
+        if let Some(wrap) = match mode {
+            "behindText" => Some(TextWrap::BehindText),
+            "inFrontOfText" => Some(TextWrap::InFrontOfText),
+            _ => None,
+        } {
+            let para = section
+                .paragraphs
+                .get_mut(para_idx)
+                .ok_or_else(|| HwpError::InvalidField(format!("문단 {} 없음", para_idx)))?;
+            let ctrl = para
+                .controls
+                .get_mut(control_index)
+                .ok_or_else(|| HwpError::InvalidField(format!("컨트롤 {} 없음", control_index)))?;
+            let Some(c) = control_common_mut(ctrl) else {
+                return Ok(r#"{"ok":false,"reason":"배치를 가진 개체가 아니다"}"#.to_string());
+            };
+            c.text_wrap = wrap;
+            // packed `attr` 을 함께 고쳐야 저장에 실린다 — enum 만 바꾸면 묻힌다.
+            crate::serializer::control::sync_text_wrap_bits(c);
+            section.raw_stream = None;
+            return Ok(r#"{"ok":true}"#.to_string());
+        }
+
+        // 구역의 개체를 전부 모아 순서를 다시 매긴다.
+        let mut slots: Vec<(usize, usize, i32)> = Vec::new();
+        for (pi, para) in section.paragraphs.iter().enumerate() {
+            for (ci, ctrl) in para.controls.iter().enumerate() {
+                if let Some(c) = control_common(ctrl) {
+                    slots.push((pi, ci, c.z_order));
+                }
+            }
+        }
+        let Some(&(_, _, target_z)) = slots
+            .iter()
+            .find(|&&(pi, ci, _)| pi == para_idx && ci == control_index)
+        else {
+            return Ok(r#"{"ok":false,"reason":"순서를 가진 개체가 아니다"}"#.to_string());
+        };
+        let top = slots.iter().map(|&(_, _, z)| z).max().unwrap_or(target_z);
+        let bottom = slots.iter().map(|&(_, _, z)| z).min().unwrap_or(target_z);
+
+        // 새 순서를 계산한다. 바뀌는 것이 없으면(이미 맨 위에서 더 올리기 따위) 그대로 둔다.
+        let renumber = |z: i32| -> i32 {
+            match mode {
+                "front" => {
+                    if z == target_z {
+                        top
+                    } else if z > target_z {
+                        z - 1
+                    } else {
+                        z
+                    }
+                }
+                "back" => {
+                    if z == target_z {
+                        bottom
+                    } else if z < target_z {
+                        z + 1
+                    } else {
+                        z
+                    }
+                }
+                // 한 칸은 **맞바꾸기**다 — 위/아래 하나와만 자리를 바꾼다.
+                "forward" => {
+                    if z == target_z && target_z < top {
+                        z + 1
+                    } else if z == target_z + 1 && target_z < top {
+                        z - 1
+                    } else {
+                        z
+                    }
+                }
+                "backward" => {
+                    if z == target_z && target_z > bottom {
+                        z - 1
+                    } else if z == target_z - 1 && target_z > bottom {
+                        z + 1
+                    } else {
+                        z
+                    }
+                }
+                _ => z,
+            }
+        };
+        if !matches!(mode, "front" | "back" | "forward" | "backward") {
+            return Ok(format!(
+                r#"{{"ok":false,"reason":"모르는 갈래: {}"}}"#,
+                mode
+            ));
+        }
+
+        let mut moved = false;
+        for (pi, ci, z) in slots {
+            let new_z = renumber(z);
+            if new_z == z {
+                continue;
+            }
+            moved = true;
+            if let Some(c) = section
+                .paragraphs
+                .get_mut(pi)
+                .and_then(|p| p.controls.get_mut(ci))
+                .and_then(control_common_mut)
+            {
+                c.z_order = new_z;
+            }
+        }
+        if moved {
+            section.raw_stream = None;
+        }
+        Ok(format!(r#"{{"ok":true,"moved":{}}}"#, moved))
+    }
+
     /// 쪽마다 **캐럿이 설 수 있는 첫 자리** — 웹한글컨트롤 `Run("MovePage*")` 용.
     ///
     /// 줄과 달리 쪽 경계는 **파일이 안 알려 준다.** 저장 vpos 가 되돌아가는 자리로 두 곳은
@@ -2093,5 +2260,87 @@ mod tests {
         assert_eq!(escape_outside_cp949(source), "가&#9702;€");
         assert_eq!(json_escape(source), "\"가◦€\"");
         assert_eq!(json_escape(&escape_outside_cp949(source)), "\"가&#9702;€\"");
+    }
+
+    /// 앞뒤 순서 — 한글 저장본으로 잰 규칙(`scenarios/pL-zorder.json`)을 코어 단위로 굳힌다.
+    mod z_order {
+        use super::*;
+        use crate::model::shape::{RectangleShape, TextWrap};
+
+        /// 순서만 다른 개체 셋을 한 문단에 세운다.
+        fn core_with_three() -> DocumentCore {
+            let mut core = DocumentCore::new_empty();
+            let controls = (0..3)
+                .map(|z| {
+                    let mut r = RectangleShape::default();
+                    r.common.z_order = z;
+                    Control::Shape(Box::new(ShapeObject::Rectangle(r)))
+                })
+                .collect();
+            core.document.sections.push(Section {
+                paragraphs: vec![Paragraph {
+                    controls,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            });
+            core
+        }
+
+        fn orders(core: &DocumentCore) -> Vec<i32> {
+            core.document.sections[0].paragraphs[0]
+                .controls
+                .iter()
+                .filter_map(control_common)
+                .map(|c| c.z_order)
+                .collect()
+        }
+
+        /// 맨 위로 보내면 **위에 있던 것들이 한 칸씩 내려온다** — 자리만 맞바꾸는 것이 아니다.
+        #[test]
+        fn bring_to_front_pushes_the_rest_down() {
+            let mut core = core_with_three();
+            core.set_control_z_order_at(0, 0, "front").unwrap();
+            assert_eq!(orders(&core), vec![2, 0, 1]);
+        }
+
+        /// 맨 아래로 보내면 아래 있던 것들이 한 칸씩 올라온다.
+        #[test]
+        fn send_to_back_pulls_the_rest_up() {
+            let mut core = core_with_three();
+            core.set_control_z_order_at(0, 2, "back").unwrap();
+            assert_eq!(orders(&core), vec![1, 2, 0]);
+        }
+
+        /// 한 칸은 **이웃과 맞바꾸기**다. 맨 위에서 더 올리면 아무 일도 없다.
+        #[test]
+        fn one_step_swaps_with_the_neighbour() {
+            let mut core = core_with_three();
+            core.set_control_z_order_at(0, 0, "forward").unwrap();
+            assert_eq!(orders(&core), vec![1, 0, 2]);
+
+            let mut core = core_with_three();
+            core.set_control_z_order_at(0, 2, "backward").unwrap();
+            assert_eq!(orders(&core), vec![0, 2, 1]);
+
+            let mut core = core_with_three();
+            let out = core.set_control_z_order_at(0, 2, "forward").unwrap();
+            assert_eq!(orders(&core), vec![0, 1, 2]);
+            assert!(out.contains("\"moved\":false"), "{out}");
+        }
+
+        /// 글 앞/뒤는 이름과 달리 **순서가 아니라 배치**다 — `z_order` 를 건드리면 안 된다.
+        #[test]
+        fn text_wrap_modes_do_not_touch_the_order() {
+            let mut core = core_with_three();
+            core.set_control_z_order_at(0, 1, "behindText").unwrap();
+            assert_eq!(orders(&core), vec![0, 1, 2]);
+            let common = control_common(&core.document.sections[0].paragraphs[0].controls[1]);
+            assert_eq!(common.map(|c| c.text_wrap), Some(TextWrap::BehindText));
+
+            core.set_control_z_order_at(0, 1, "inFrontOfText").unwrap();
+            let common = control_common(&core.document.sections[0].paragraphs[0].controls[1]);
+            assert_eq!(common.map(|c| c.text_wrap), Some(TextWrap::InFrontOfText));
+        }
     }
 }

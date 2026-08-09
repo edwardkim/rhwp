@@ -1,31 +1,24 @@
 {
-  "id": "pL-zorder",
-  "title": "앞으로 보내기 — 저장본에 남는 자취로 잰다",
+  "id": "pZ-zbehind",
+  "title": "ShapeObjCtrlSendBehindText — 1번째 개체",
   "ledger": [],
   "open": "samples/mix-shape-01.hwp",
   "paths": {
-    "z0": {
-      "win": "{out}/pL-z0.hwp",
-      "posix": "{out}/pL-z0.hwp"
+    "a": {
+      "win": "{out}/pZ-zbehind-a.hwp",
+      "posix": "{out}/pZ-zbehind-a.hwp"
     },
-    "z1": {
-      "win": "{out}/pL-z1.hwp",
-      "posix": "{out}/pL-z1.hwp"
+    "b": {
+      "win": "{out}/pZ-zbehind-b.hwp",
+      "posix": "{out}/pZ-zbehind-b.hwp"
     }
   },
-  "deltas": [
-    {
-      "from": "z0",
-      "to": "z1",
-      "label": "ShapeObjBringToFront"
-    }
-  ],
   "calls": [
     [
       "SaveAs",
       [
         {
-          "$path": "z0"
+          "$path": "a"
         },
         "HWP",
         ""
@@ -46,16 +39,20 @@
       ]
     ],
     [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
       "Run",
       [
-        "ShapeObjBringToFront"
+        "ShapeObjCtrlSendBehindText"
       ]
     ],
     [
       "SaveAs",
       [
         {
-          "$path": "z1"
+          "$path": "b"
         },
         "HWP",
         ""

@@ -4,10 +4,10 @@
   "oracleVersion": "한글2022 (설치본 COM)",
   "summary": {
     "total": 484,
-    "done": 312,
+    "done": 318,
     "byStatus": {
-      "verified": 306,
-      "unimplemented": 172,
+      "verified": 312,
+      "unimplemented": 166,
       "substituted": 6
     },
     "byUnit": {
@@ -25,8 +25,8 @@
         "unimplemented": 3
       },
       "action": {
-        "unimplemented": 138,
-        "verified": 174
+        "unimplemented": 132,
+        "verified": 180
       },
       "parameterSet": {
         "verified": 49,
@@ -6249,13 +6249,15 @@
       "name": "ShapeObjBringForward",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pL-zorder"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -6265,13 +6267,15 @@
       "name": "ShapeObjBringInFrontOfText",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pL-zorder"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -6281,13 +6285,15 @@
       "name": "ShapeObjBringToFront",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pL-zorder"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -6297,13 +6303,15 @@
       "name": "ShapeObjCtrlSendBehindText",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pL-zorder"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -6595,13 +6603,15 @@
       "name": "ShapeObjSendBack",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pL-zorder"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -6611,13 +6621,15 @@
       "name": "ShapeObjSendToBack",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pL-zorder"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {

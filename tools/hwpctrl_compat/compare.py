@@ -187,6 +187,13 @@ def compare_deltas(exe: Path, definition: dict, ocx_dir: Path, rhwp_dir: Path) -
     **차이끼리 견주는 것이 요점이다.** 두 층의 저장본은 원래부터 다르다(직렬화기가 다르다).
     앞뒤의 차분을 보면 그 바탕 차이가 상쇄되고 액션이 한 일만 남는다.
     """
+    # **잰 비결정만** 걸러 낸다. 시나리오가 이름을 적고 그 이유를 `note` 에 남긴다.
+    # 거른 수를 판정에 실어 조용히 숨을 수 없게 한다.
+    ignore = tuple(definition.get("ignorePaths", []))
+
+    def keep(row: dict) -> bool:
+        return not (ignore and str(row.get("path", "")).endswith(ignore))
+
     out = []
     for spec in definition.get("deltas", []):
         label = spec.get("label") or f"{spec['from']}→{spec['to']}"
@@ -208,8 +215,10 @@ def compare_deltas(exe: Path, definition: dict, ocx_dir: Path, rhwp_dir: Path) -
         if errs:
             out.append({"label": label, "verdict": "DELTA_ERROR", "detail": "; ".join(errs)})
             continue
-        ocx_rows = {delta_key(r) for r in pair["ocx"].get("divergences", [])}
-        rhwp_rows = {delta_key(r) for r in pair["rhwp"].get("divergences", [])}
+        all_ocx = pair["ocx"].get("divergences", [])
+        all_rhwp = pair["rhwp"].get("divergences", [])
+        ocx_rows = {delta_key(r) for r in all_ocx if keep(r)}
+        rhwp_rows = {delta_key(r) for r in all_rhwp if keep(r)}
         only_ocx = sorted(ocx_rows - rhwp_rows)
         only_rhwp = sorted(rhwp_rows - ocx_rows)
         out.append({
@@ -217,6 +226,7 @@ def compare_deltas(exe: Path, definition: dict, ocx_dir: Path, rhwp_dir: Path) -
             "verdict": "MATCH" if not only_ocx and not only_rhwp else "DELTA_DIFF",
             "ocxCount": len(ocx_rows),
             "rhwpCount": len(rhwp_rows),
+            "ignored": (len(all_ocx) - len(ocx_rows)) + (len(all_rhwp) - len(rhwp_rows)),
             # 양쪽 다 아무 자취도 안 남겼으면 그 초록에는 뜻이 없다 — 따로 표시한다.
             "empty": not ocx_rows and not rhwp_rows,
             "onlyOcx": [f"{p}: {a} → {b}" for p, a, b in only_ocx[:20]],
@@ -316,8 +326,9 @@ def main() -> int:
         print(f"  {rep['scenario']}: {codes} | L3 {l3}")
         for d in rep.get("l3Deltas", []):
             mark = "빈 자취" if d.get("empty") else d["verdict"]
+            skipped = f" · 거른 것 {d['ignored']}" if d.get("ignored") else ""
             print(f"      자취 {d['label']}: {mark}"
-                  f" (오라클 {d.get('ocxCount', '-')} · rhwp {d.get('rhwpCount', '-')})")
+                  f" (오라클 {d.get('ocxCount', '-')} · rhwp {d.get('rhwpCount', '-')}{skipped})")
             for line in d.get("onlyOcx", [])[:5]:
                 print(f"        오라클만: {line}")
             for line in d.get("onlyRhwp", [])[:5]:

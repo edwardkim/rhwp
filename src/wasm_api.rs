@@ -5590,6 +5590,20 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 개체의 앞뒤 순서를 바꾼다 — 웹한글컨트롤 `Run("ShapeObjBringToFront")` 계열.
+    ///
+    /// `mode` 는 `front`·`back`·`forward`·`backward`·`inFrontOfText`·`behindText`.
+    #[wasm_bindgen(js_name = setControlZOrderAt)]
+    pub fn set_control_z_order_at_api(
+        &mut self,
+        para_in_list: u32,
+        control_index: u32,
+        mode: &str,
+    ) -> Result<String, JsValue> {
+        self.set_control_z_order_at(para_in_list as usize, control_index as usize, mode)
+            .map_err(|e| e.into())
+    }
+
     /// 쪽 하나의 글 — 웹한글컨트롤 `GetPageText`.
     #[wasm_bindgen(js_name = getPageText)]
     pub fn page_text_api(&self, page_index: u32) -> Result<String, JsValue> {
