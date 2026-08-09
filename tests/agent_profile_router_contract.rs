@@ -116,7 +116,7 @@ fn serve_profile_filters_tools_list_and_session() {
 }
 
 #[test]
-fn serve_profile_rejects_hidden_session_tool_calls() {
+fn serve_profile_rejects_all_hidden_session_tool_calls() {
     let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
         .args(["mcp-serve", "--profile", "데이터분석"])
         .stdin(Stdio::piped())
@@ -126,25 +126,40 @@ fn serve_profile_rejects_hidden_session_tool_calls() {
         .expect("mcp-serve");
     let mut stdin = child.stdin.take().unwrap();
     let mut stdout = BufReader::new(child.stdout.take().unwrap());
-    writeln!(
-        stdin,
-        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"hwp_open","arguments":{{"path":"not-used.hwp"}}}}}}"#
-    )
-    .unwrap();
-    stdin.flush().unwrap();
+    for (id, name) in [
+        "hwp_open",
+        "hwp_ws_list",
+        "hwp_ws_open",
+        "hwp_doc_tree",
+        "hwp_ws_journal",
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        writeln!(
+            stdin,
+            r#"{{"jsonrpc":"2.0","id":{},"method":"tools/call","params":{{"name":"{name}","arguments":{{}}}}}}"#,
+            id + 1
+        )
+        .unwrap();
+        stdin.flush().unwrap();
 
-    let mut line = String::new();
-    assert!(stdout.read_line(&mut line).unwrap() > 0, "조기 종료");
-    let response: serde_json::Value = serde_json::from_str(line.trim()).unwrap();
-    let result = &response["result"];
-    assert_eq!(result["isError"], true, "{response}");
-    assert!(
-        result["content"][0]["text"]
-            .as_str()
-            .unwrap_or_default()
-            .contains("세션 도구"),
-        "{response}"
-    );
+        let mut line = String::new();
+        assert!(
+            stdout.read_line(&mut line).unwrap() > 0,
+            "조기 종료: {name}"
+        );
+        let response: serde_json::Value = serde_json::from_str(line.trim()).unwrap();
+        let result = &response["result"];
+        assert_eq!(result["isError"], true, "{name}: {response}");
+        assert!(
+            result["content"][0]["text"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("세션 도구"),
+            "{name} 호출이 프로필 경계를 우회했습니다: {response}"
+        );
+    }
     let _ = child.kill();
     let _ = child.wait();
 }

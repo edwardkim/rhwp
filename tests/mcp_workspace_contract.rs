@@ -173,3 +173,54 @@ fn workspace_tools_are_listed() {
         assert!(names.contains(&expected), "{expected} 미등재: {names:?}");
     }
 }
+
+#[cfg(unix)]
+#[test]
+fn workspace_scan_does_not_follow_file_or_directory_symlinks() {
+    use std::os::unix::fs::symlink;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock")
+        .as_nanos();
+    let temp = std::env::temp_dir().join(format!(
+        "rhwp-workspace-symlink-{}-{nonce}",
+        std::process::id()
+    ));
+    let root = temp.join("root");
+    let real_dir = root.join("real");
+    let outside_dir = temp.join("outside");
+    std::fs::create_dir_all(&real_dir).expect("workspace dirs");
+    std::fs::create_dir_all(&outside_dir).expect("outside dir");
+    std::fs::write(real_dir.join("inside.hwp"), b"inside").expect("inside file");
+    let outside_file = outside_dir.join("outside.hwp");
+    std::fs::write(&outside_file, b"outside").expect("outside file");
+    symlink(&outside_file, root.join("outside-link.hwp")).expect("file symlink");
+    // 디렉터리 링크를 따라가지 않으면 같은 디렉터리의 중복 방문뿐 아니라
+    // root 를 가리키는 링크가 만드는 순환도 같은 경계에서 차단된다.
+    symlink(&real_dir, root.join("linked-dir")).expect("directory symlink");
+
+    let root_arg = root.to_string_lossy().into_owned();
+    let mut server = Server::spawn(&["--workspace", &root_arg]);
+    let (err, list) = server.call("hwp_ws_list", serde_json::json!({}));
+    assert!(!err, "hwp_ws_list 실패: {list}");
+    assert_eq!(
+        list["count"], 1,
+        "링크 대상은 인벤토리 밖이어야 한다: {list}"
+    );
+    assert_eq!(
+        list["truncated"], false,
+        "링크 순환으로 상한에 닿으면 안 된다"
+    );
+    assert!(
+        list["entries"][0]["path"]
+            .as_str()
+            .unwrap_or_default()
+            .ends_with("inside.hwp"),
+        "실물 workspace 파일만 남아야 한다: {list}"
+    );
+
+    drop(server);
+    std::fs::remove_dir_all(temp).expect("temporary workspace cleanup");
+}

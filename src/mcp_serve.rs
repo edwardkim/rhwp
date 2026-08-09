@@ -101,8 +101,12 @@ fn scan_workspace(root: &std::path::Path) -> Result<Workspace, String> {
             root.display()
         ));
     }
+    let canonical_root = root
+        .canonicalize()
+        .map_err(|e| format!("{} 경로 확인 실패: {e}", root.display()))?;
     let mut found: Vec<(std::path::PathBuf, String, u64)> = Vec::new();
     let mut stack = vec![root.to_path_buf()];
+    let mut visited_dirs = std::collections::HashSet::from([canonical_root.clone()]);
     let mut truncated = false;
     while let Some(dir) = stack.pop() {
         let entries = match std::fs::read_dir(&dir) {
@@ -116,8 +120,26 @@ fn scan_workspace(root: &std::path::Path) -> Result<Workspace, String> {
             if name.starts_with('.') {
                 continue;
             }
-            if path.is_dir() {
-                stack.push(path);
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+            // 심볼릭 링크·junction을 따라가면 root 밖 문서가 인벤토리에 들어오거나
+            // 디렉터리 순환이 파일 상한과 무관하게 계속될 수 있다. 워크스페이스는
+            // 선택한 디렉터리의 실물 항목만 다룬다.
+            if file_type.is_symlink() {
+                continue;
+            }
+            if file_type.is_dir() {
+                let resolved = match path.canonicalize() {
+                    Ok(p) => p,
+                    Err(e) => return Err(format!("{} 경로 확인 실패: {e}", path.display())),
+                };
+                if resolved.starts_with(&canonical_root) && visited_dirs.insert(resolved) {
+                    stack.push(path);
+                }
+                continue;
+            }
+            if !file_type.is_file() {
                 continue;
             }
             let Some(ext) = path
@@ -1200,21 +1222,7 @@ fn handle_tool_call(
 }
 
 fn is_session_tool(name: &str) -> bool {
-    matches!(
-        name,
-        "hwp_open"
-            | "hwp_doc_text"
-            | "hwp_doc_info"
-            | "hwp_doc_fields"
-            | "hwp_doc_tables"
-            | "hwp_doc_render_page"
-            | "hwp_doc_search"
-            | "hwp_doc_replace_text"
-            | "hwp_doc_set_cell"
-            | "hwp_doc_fill_fields"
-            | "hwp_doc_save"
-            | "hwp_close"
-    )
+    crate::agent_profiles::ALL_SESSION_TOOLS.contains(&name)
 }
 
 /// [#3699] 교정 호출 동봉 오류 — error 필드가 기존 원문을 담아 하위호환.
