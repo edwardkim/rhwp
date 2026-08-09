@@ -190,6 +190,17 @@ pub struct CharShape {
 /// 회귀 검증 lane 이 필요해지므로 별도 이슈로 분리한다. `relative_sizes` 는 렌더 경로에서
 /// 참조가 0건이라(`document_core/queries/hidden_text.rs:267-287`) 이 변경의 렌더 영향은 없다.
 ///
+/// # 음영색 sentinel (#4155)
+///
+/// `shade_color` 의 파생 기본값 0 은 **검정**이고, HWP5 라이터가 그대로 저장하면 한컴이
+/// 글자마다 순검정 사각형을 칠해 본문 전체가 검정 막대가 된다(`samples/SO-SUEOP.hwp`
+/// 변환본 한컴 PDF 실측: 3쪽에 줄 크기 검정 fill 65개, 원본은 글리프 크기 35개).
+/// rhwp 자신은 이 결함을 볼 수 없다 — 렌더러가 검정을 "음영 없음" sentinel 로 읽는다.
+///
+/// 한컴은 "음영 없음"을 `0xFFFFFFFF` 로 쓴다 — 코퍼스 380건에서 22,189회, 검정은 0회다.
+/// HWPX `shadeColor="none"` 과 한/글 HML `4294967295` 도 같은 값으로 수렴한다. 정의는
+/// [`crate::model::color::NONE`] 하나이며, 세 라이터(HWP5·HWPX·HML)가 무수정으로 정합한다.
+///
 /// # 왜 필드를 전부 나열하는가
 ///
 /// `CharShape` 에 필드가 추가되면 이 impl 이 컴파일 에러를 낸다. 새 필드의 기본값을 스펙과
@@ -215,7 +226,8 @@ impl Default for CharShape {
             shadow_offset_y: 0,
             text_color: 0,
             underline_color: 0,
-            shade_color: 0,
+            // ↓ 파생값 0(검정)은 한컴이 본문을 검정 막대로 덮게 만든다 (#4155)
+            shade_color: super::color::NONE,
             shadow_color: 0,
             border_fill_id: 0,
             strike_color: 0,
@@ -1132,14 +1144,15 @@ mod tests {
         assert_eq!(cs.underline_type, UnderlineType::None);
     }
 
-    /// `Default` 수동 구현이 스펙과 어긋나는 필드는 `relative_sizes` **하나뿐**임을 고정한다.
+    /// `Default` 수동 구현이 파생값과 어긋나는 필드는 `relative_sizes`(#4141)와
+    /// `shade_color`(#4155) **둘뿐**임을 고정한다.
     ///
-    /// 이 비대칭은 의도된 것이다(#4141). `relative_sizes` 는 렌더 경로에서 참조가 0건이라
-    /// 스펙값으로 고쳐도 렌더가 안 바뀌지만, `ratios`·`base_size` 는 렌더러가 소비하므로
-    /// (`renderer/style_resolver.rs:341`,`:355`) 같이 고치면 렌더 회귀 검증이 필요해진다.
-    /// 그래서 별도 이슈로 분리했다 — 이 테스트가 그 경계를 코드에서 읽히게 한다.
+    /// 이 비대칭은 의도된 것이다. 두 필드는 파생값이 각각 스펙 위반(relSz 유효범위 밖)과
+    /// 실제 색(검정)이라 저장 바이트에서 한컴을 깨뜨렸다. 반면 `ratios`·`base_size` 는
+    /// 렌더러가 소비하므로(`renderer/style_resolver.rs:341`,`:355`) 같이 고치면 렌더 회귀
+    /// 검증이 필요해진다. 그래서 별도 이슈로 남겼다 — 이 테스트가 그 경계를 읽히게 한다.
     #[test]
-    fn char_shape_default_matches_spec_only_for_relative_sizes() {
+    fn char_shape_default_matches_spec_only_for_relative_sizes_and_shade() {
         let cs = CharShape::default();
 
         // 이번에 고친 것 — OWPML relSz default="100", 유효범위 10~250
@@ -1166,8 +1179,16 @@ mod tests {
         assert_eq!(cs.char_offsets, [0; 7]);
         assert_eq!(cs.spacings, [0; 7]);
 
-        // sentinel 로 쓰이는 색상값 — hidden_text 판정과 HML preflight 가 0 에 의존한다
-        assert_eq!(cs.shade_color, 0);
+        // 이번에 고친 것 — "음영 없음"은 색이 아니라 sentinel 이다. 파생값 0(검정)을
+        // HWP5 로 저장하면 한컴이 글자마다 순검정 사각형을 칠한다 (#4155).
+        assert_eq!(
+            cs.shade_color,
+            crate::model::color::NONE,
+            "음영 없음 sentinel 은 한컴 HWP5·HWPX \"none\"·한/글 HML 4294967295 와 같은 \
+             0xFFFFFFFF 다 (#4155). 0 으로 되돌리면 HWP3 변환본이 검정 막대가 된다"
+        );
+
+        // 0 이 그대로 유효한 나머지 색상값
         assert_eq!(cs.shadow_color, 0);
         assert_eq!(cs.underline_color, 0);
         assert_eq!(cs.text_color, 0);
