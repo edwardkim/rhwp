@@ -39,6 +39,15 @@ renderer, fixture, baseline은 바꾸지 않아 visual sweep 대상은 아니다
 해시 뒤 교체해도 엔진 closure가 해시된 스냅샷을 받는 unit 회귀를 추가했으며, 새 replay CLI
 테스트도 nextest 런타임 binary 경로를 우선 사용한다.
 
+후속 독립 검토에서는 그 스냅샷이 전역 temp 아래 예측 가능한 이름으로 만들어지고 Unix에서
+기본 `0644`가 될 수 있으며 정상 반환 경로의 수동 삭제에 의존한다는 보안 차단점을 확인했다.
+민감 문서가 다른 로컬 사용자에게 노출되거나 비정상 반환 뒤 남을 수 있는 경계다.
+
+후속 메인터너 코드 커밋 `ffe7e4e1fd30cc65a097c9bad7b7f88e244afdab`은 `src/main.rs`에서
+입력과 임시 산출을 고유 전용 scratch 디렉터리로 묶었다. Unix 디렉터리는 `0700`, 입력은
+`0600`으로 생성하며 `ReplayScratchDir::drop()`이 모든 반환 경로에서 디렉터리 전체를
+정리한다. unit 회귀는 해시 스냅샷 소비, plan input 복원, Unix 권한, RAII 제거를 함께 고정한다.
+
 ## 완료한 검증
 
 | 검증 | 결과 |
@@ -50,9 +59,9 @@ renderer, fixture, baseline은 바꾸지 않아 visual sweep 대상은 아니다
 
 ## 리스크와 권고
 
-- 임시 입력은 같은 확장자를 유지하며 create-new 이름 충돌을 제한된 재시도로 처리한다.
-- 보정 head의 Windows 외 러너와 full CI는 push 뒤 확인해야 한다.
+- Windows focused 실행에서 RAII 정리는 확인했다. `cfg(unix)`의 `0700`/`0600` 권한 단언은
+  Unix hosted runner에서 확인해야 한다.
+- 최신 보정 head의 full CI와 다중 러너 결과는 push 뒤 확인해야 한다.
 - 후속 적층 PR #4399와 #4406도 각각 같은 결함을 독립 보정해야 한다.
 
 **최신 head full CI 통과 후 조건부 merge 권고. merge는 별도 승인 대상이다.**
-
