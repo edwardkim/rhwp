@@ -337,6 +337,7 @@ fn main() {
         Some("ir-diff") => exit_with(ir_diff(&args[2..])),
         Some("ir-sweep") => exit_with(ir_sweep(&args[2..])),
         Some("dump-anchors") => exit_with(dump_anchors(&args[2..])),
+        Some("dump-carets") => exit_with(dump_carets(&args[2..])),
         Some("verify") => exit_with(cmd_verify(&args[2..])),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
@@ -14266,6 +14267,108 @@ fn dump_anchors(args: &[String]) -> i32 {
             }
         }
     }
+    EXIT_OK
+}
+
+/// 문단 전 오프셋의 **캐럿 사각형**(x·y·height)을 찍는다 — studio 가 딛는 `getCursorRect`.
+///
+/// 줌·DPI 무관한 **문서 좌표**의 캐럿 기하다(한글의 화면 캐럿과 달리 안정적이다). 캐럿 높이는
+/// 폰트에 달리므로 폰트별 표본으로 돌려 크기를 견준다. `--json` 은 한 줄 계약 봉투.
+fn dump_carets(args: &[String]) -> i32 {
+    if args.is_empty() {
+        eprintln!("사용법: rhwp dump-carets <파일> [--json] [-s <구역>] [-p <문단>]");
+        return EXIT_USAGE;
+    }
+    let path = &args[0];
+    let json_mode = args.iter().any(|a| a == "--json");
+    let mut sec_filter: Option<usize> = None;
+    let mut para_filter: Option<usize> = None;
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "-s" | "--section" if i + 1 < args.len() => {
+                sec_filter = args[i + 1].parse().ok();
+                i += 2;
+            }
+            "-p" | "--para" if i + 1 < args.len() => {
+                para_filter = args[i + 1].parse().ok();
+                i += 2;
+            }
+            _ => i += 1,
+        }
+    }
+
+    let data = match std::fs::read(path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("읽기 실패: {path} — {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let structure = match rhwp::parser::parse_document(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("파싱 실패: {path} — {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            let _ = &e;
+            eprintln!("문서 로드 실패: {path}");
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let mut rows: Vec<serde_json::Value> = Vec::new();
+    for (si, sec) in structure.sections.iter().enumerate() {
+        if sec_filter.is_some_and(|f| f != si) {
+            continue;
+        }
+        for (pi, para) in sec.paragraphs.iter().enumerate() {
+            if para_filter.is_some_and(|f| f != pi) {
+                continue;
+            }
+            // 문단 끝까지(포함) 캐럿을 둔다 — 마지막은 문단 부호 앞자리다.
+            let last = para.char_count as usize;
+            for off in 0..=last {
+                let Ok(raw) = doc.get_cursor_rect_native(si, pi, off) else {
+                    continue;
+                };
+                let Ok(v) = serde_json::from_str::<serde_json::Value>(&raw) else {
+                    continue;
+                };
+                rows.push(serde_json::json!({
+                    "section": si,
+                    "para": pi,
+                    "offset": off,
+                    "pageIndex": v.get("pageIndex"),
+                    "x": v.get("x"),
+                    "y": v.get("y"),
+                    "height": v.get("height"),
+                }));
+            }
+        }
+    }
+
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "file": path,
+            "count": rows.len(),
+            "carets": rows,
+        });
+        println!("{}", provenance::marked(envelope, "dump-carets"));
+        return EXIT_OK;
+    }
+    for r in &rows {
+        println!(
+            "s{}p{} off{:>3}: page {} x={:>7} y={:>7} h={}",
+            r["section"], r["para"], r["offset"], r["pageIndex"], r["x"], r["y"], r["height"]
+        );
+    }
+    println!("\n=== 캐럿 {} 개 ===", rows.len());
     EXIT_OK
 }
 
