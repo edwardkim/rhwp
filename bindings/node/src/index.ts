@@ -84,6 +84,7 @@ export {
   EXIT_USAGE,
   EXIT_VERIFY,
   EXIT_VERIFY_PAGES,
+  EnvelopeKeyError,
   ProtocolError,
   RhwpError,
   RhwpRuntimeError,
@@ -226,6 +227,7 @@ export {
 // ── 2층: 세션 ───────────────────────────────────────────────────────────────
 
 export {
+  DEFAULT_SESSION_TIMEOUT_MS,
   Document,
   Session,
   openDocument,

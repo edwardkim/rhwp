@@ -14,6 +14,7 @@
  */
 
 import { accessSync, constants, statSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -47,6 +48,21 @@ export function bundledDir(): string {
       ? __dirname
       : dirname(fileURLToPath(import.meta.url));
   return join(here, '_bin');
+}
+
+/**
+ * 선행 `~` 를 홈 디렉터리로 확장한다 (`~`, `~/경로`, 윈도우의 `~\경로`).
+ *
+ * 파이썬 `_binary.py:70` 의 `Path(raw).expanduser()` 와 대칭 — `RHWP_BIN=~/bin/rhwp`
+ * 가 파이썬에서는 되고 Node 에서는 `resolve()` 가 `~` 를 그냥 리터럴 문자로 다뤄
+ * 안 됐다(D-16).
+ */
+function expandTilde(raw: string): string {
+  if (raw === '~') return homedir();
+  if (raw.startsWith('~/') || (process.platform === 'win32' && raw.startsWith('~\\'))) {
+    return join(homedir(), raw.slice(2));
+  }
+  return raw;
 }
 
 /** 실행 가능한 **파일**인지. 디렉터리·깨진 링크·권한 없음을 모두 건다. */
@@ -83,7 +99,7 @@ function fromEnv(): string | undefined {
   const raw = (process.env[ENV_VAR] ?? '').trim();
   if (!raw) return undefined;
 
-  let candidate = resolve(raw);
+  let candidate = resolve(expandTilde(raw));
   try {
     if (statSync(candidate).isDirectory()) {
       candidate = join(candidate, binaryName());

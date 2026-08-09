@@ -19,6 +19,8 @@ import { BinaryNotFoundError } from '../src/errors.js';
 let root: string;
 let savedBin: string | undefined;
 let savedPath: string | undefined;
+const HOME_VAR = process.platform === 'win32' ? 'USERPROFILE' : 'HOME';
+let savedHome: string | undefined;
 
 /** 예외를 값으로 잡는다 — 메시지까지 봐야 "어디에 두면 되는지" 계약을 확인할 수 있다. */
 function capture(run: () => unknown): unknown {
@@ -49,6 +51,7 @@ function makeExecutable(dir: string): string {
 beforeEach(() => {
   savedBin = process.env[ENV_VAR];
   savedPath = process.env['PATH'];
+  savedHome = process.env[HOME_VAR];
   root = mkdtempSync(join(tmpdir(), 'rhwp-node-bin-'));
   delete process.env[ENV_VAR];
   // PATH 를 비워 둔다 — 개발 머신에 진짜 rhwp 가 설치돼 있으면 탐색 결과가
@@ -60,6 +63,7 @@ beforeEach(() => {
 afterEach(() => {
   restoreEnv(ENV_VAR, savedBin);
   restoreEnv('PATH', savedPath);
+  restoreEnv(HOME_VAR, savedHome);
   clearBinaryCache();
   rmSync(root, { recursive: true, force: true });
 });
@@ -150,6 +154,22 @@ describe('RHWP_BIN 해석', () => {
     mkdirSync(join(root, binaryName()), { recursive: true });
     process.env[ENV_VAR] = root;
     expect(() => findBinary()).toThrow(BinaryNotFoundError);
+  });
+
+  it('[D-16] 선행 ~ 를 홈 디렉터리로 확장한다', () => {
+    // 파이썬 _binary.py:70 의 Path(raw).expanduser() 와 대칭 — RHWP_BIN=~/bin/rhwp
+    // 가 파이썬에서는 됐지만 Node 의 resolve() 는 ~ 를 리터럴로 다뤄 안 됐다.
+    process.env[HOME_VAR] = root;
+    const target = makeExecutable(join(root, 'bin'));
+    process.env[ENV_VAR] = '~/bin/' + binaryName();
+    expect(findBinary()).toBe(resolve(target));
+  });
+
+  it('[D-16] 단독 ~ 하나도 홈 디렉터리로 확장한다', () => {
+    process.env[HOME_VAR] = root;
+    const target = makeExecutable(root);
+    process.env[ENV_VAR] = '~';
+    expect(findBinary()).toBe(resolve(target));
   });
 });
 

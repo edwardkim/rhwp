@@ -37,7 +37,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { ENV_VAR, clearBinaryCache } from '../src/binary.js';
 import { Envelope } from '../src/envelope.js';
-import { ProtocolError, SessionClosedError, UsageError } from '../src/errors.js';
+import { ProtocolError, RhwpTimeoutError, SessionClosedError, UsageError } from '../src/errors.js';
 import { Document, Session, openDocument } from '../src/session.js';
 
 // ── 가짜 mcp-serve ──────────────────────────────────────────────────────────
@@ -395,6 +395,40 @@ describe('Session — JSON-RPC 프레임 취급', () => {
       replace: '②③④ 한글',
     });
     expect(argsOf(result)).toEqual({ find: '가나다 라마바', replace: '②③④ 한글' });
+  });
+});
+
+// ── 제한 시간(D-14) ─────────────────────────────────────────────────────────
+
+describe('Session — 호출 제한 시간', () => {
+  it('제한 시간을 넘기면 RhwpTimeoutError 이고 세션은 죽지 않는다', async () => {
+    // 파이썬판 Session(timeout=300.0) 과 대칭 — 예전엔 Node 에 이 옵션이 아예
+    // 없어 응답이 영원히 안 와도 끊을 방법이 없었다(D-14). stdio 가 이벤트
+    // 기반이라 process.ts 의 전체-프로세스 타임아웃과 달리, 호출 하나만 정리하고
+    // 자식 프로세스나 세션 전체는 건드리지 않는다.
+    const session = new Session({ cwd: fake.dir, profile: 'slow-echo', timeoutMs: 5 });
+    live.push(session);
+
+    const first = await capture(session.call('hwp_doc_info', { docId: 'doc-1' }));
+    expect(first).toBeInstanceOf(RhwpTimeoutError);
+    expect((first as RhwpTimeoutError).message).toContain('hwp_doc_info');
+    expect((first as RhwpTimeoutError).message).toContain('5ms');
+
+    // 뒤이은 호출도 독립적으로 타임아웃돼야 한다 — 첫 호출이 세션을 닫거나
+    // 다음 요청의 id 대조를 어그러뜨리면 안 된다.
+    const second = await capture(session.call('hwp_doc_fields', { docId: 'doc-1' }));
+    expect(second).toBeInstanceOf(RhwpTimeoutError);
+
+    // 타임아웃 이후 서버가 실제로 보낸 응답(약 40ms 뒤)이 늦게 도착해도, 이미
+    // 정리된 id 라 무시돼야 한다 — 다음 요청과 뒤섞이면 "A 의 답이 B 에게 간다".
+    await sleep(80);
+  });
+
+  it('제한 시간을 넉넉히 주면 평소처럼 동작한다', async () => {
+    const session = new Session({ cwd: fake.dir, timeoutMs: 5000 });
+    live.push(session);
+    const result = await session.call('hwp_doc_info', { docId: 'doc-1' });
+    expect(result.get<string>('tool')).toBe('hwp_doc_info');
   });
 });
 

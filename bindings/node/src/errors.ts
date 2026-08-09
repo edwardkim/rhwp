@@ -183,6 +183,15 @@ export class ProtocolError extends RhwpError {}
 /** 이미 닫힌 세션 핸들을 다시 썼다. */
 export class SessionClosedError extends RhwpError {}
 
+/**
+ * 봉투에 없는 필드를 물었다 ({@link module:envelope.Envelope.get}).
+ *
+ * 파이썬판은 `KeyError`/`AttributeError` — 표준 예외 계열이지만 최소한 하나의
+ * 계열이다. Node 의 `Envelope.get` 은 예전엔 일반 `Error` 를 던져 `catch (e) {
+ * if (e instanceof RhwpError) … }` 로 거르는 코드가 이 예외를 놓쳤다(D-17).
+ */
+export class EnvelopeKeyError extends RhwpError {}
+
 /** 제한 시간 안에 끝나지 않았다. 자식 프로세스는 종료를 시도한 뒤 던져진다. */
 export class RhwpTimeoutError extends RhwpError {}
 

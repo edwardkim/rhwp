@@ -13,6 +13,7 @@
  * @packageDocumentation
  */
 
+import { EnvelopeKeyError } from './errors.js';
 import { toCamel, toSnake } from './naming.js';
 
 /** 봉투의 기본 모양 — 생성 타입이 없을 때의 안전한 상한. */
@@ -132,7 +133,7 @@ export class Envelope<T extends RawEnvelope = RawEnvelope> {
     const camel = toCamel(key);
     if (camel in record) return record[camel] as V;
 
-    throw new Error(
+    throw new EnvelopeKeyError(
       `봉투에 '${key}' 필드가 없습니다. 있는 필드: ${this.keys().sort().join(', ')}`,
     );
   }
