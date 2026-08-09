@@ -967,14 +967,6 @@ impl Scope {
             Scope::HiddenComment => "hiddenComment",
         }
     }
-
-    /// `--include-fields` 로만 열리는 영역인가.
-    pub fn requires_include_fields(self) -> bool {
-        matches!(
-            self,
-            Scope::FieldName | Scope::FieldGuide | Scope::FieldCommand | Scope::HiddenComment
-        )
-    }
 }
 
 /// 주소가 붙은 신호 1건 — 봉투에 그대로 실린다.

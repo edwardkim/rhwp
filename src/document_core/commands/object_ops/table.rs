@@ -1162,15 +1162,6 @@ impl DocumentCore {
         }
         (0, 0)
     }
-    /// 표의 모든 셀 bbox를 반환한다 (네이티브).
-    pub(crate) fn get_table_cell_bboxes_native(
-        &self,
-        section_idx: usize,
-        parent_para_idx: usize,
-        control_idx: usize,
-    ) -> Result<String, HwpError> {
-        self.get_table_cell_bboxes_from_page(section_idx, parent_para_idx, control_idx, 0)
-    }
     /// page_hint부터 탐색하여 표의 셀 bbox를 반환한다 (네이티브).
     /// page_hint에서 못 찾으면 앞쪽도 탐색한다 (페이지 분할된 표 대응).
     pub(crate) fn get_table_cell_bboxes_from_page(

@@ -736,11 +736,6 @@ impl DocumentCore {
         Ok(format!("{{\"ok\":true,\"hidden\":{}}}", hidden))
     }
 
-    /// 특정 페이지의 머리말/꼬리말이 감추기 상태인지 확인한다.
-    pub fn is_header_footer_hidden(&self, page_num: u32, is_header: bool) -> bool {
-        self.hidden_header_footer.contains(&(page_num, is_header))
-    }
-
     /// 머리말/꼬리말 문단 리플로우
     fn reflow_hf_paragraph(
         &mut self,
