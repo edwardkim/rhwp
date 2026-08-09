@@ -375,6 +375,48 @@ fn inline_controls_preserve_text_offsets_and_unsupported_paths() {
     }
 }
 
+/// [#4386] `COLDEF Count="2"` 이상인 다단 정의는 `Control::ColumnDef`로 채워져야 한다.
+/// 종전엔 `is_unsupported_inline`의 허용 목록에만 있고 `capture_start`에 처리 분기가
+/// 없어, 경고 없이 조용히 드롭되고 렌더러가 항상 단일 단으로 그렸다(모든 fixture가
+/// `Count="1"`이라 우연히 통과했다). 속성 값(`Layout`/`SameGap`/`SameSize`/`Type`)은
+/// `samples/hml/aligns.hml`의 실물 `COLDEF Count="1" Layout="Left" SameGap="0"
+/// SameSize="true" Type="Newspaper"` 관찰값을 그대로 따른다.
+#[test]
+fn coldef_with_two_columns_populates_column_def_control_without_warning() {
+    let xml = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P ParaShape="0" Style="0"><TEXT CharShape="0"><SECDEF CharGrid="0"><PAGEDEF GutterType="LeftOnly" Height="84188" Landscape="0" Width="59528"><PAGEMARGIN Bottom="4252" Footer="4252" Gutter="0" Header="4252" Left="8504" Right="8504" Top="5668"/></PAGEDEF></SECDEF><COLDEF Count="2" Layout="Left" SameGap="850" SameSize="true" Type="Newspaper"/><CHAR>two columns</CHAR></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
+    let parsed = parse_hml(xml).expect("multi-column HML should parse");
+    let paragraph = &parsed.document.sections[0].paragraphs[0];
+
+    let column_def = paragraph
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::ColumnDef(column_def) => Some(column_def),
+            _ => None,
+        })
+        .expect("COLDEF must produce a Control::ColumnDef, not be silently dropped");
+    assert_eq!(column_def.column_count, 2);
+    assert!(column_def.same_width);
+    assert_eq!(column_def.spacing, 850);
+    assert_eq!(
+        column_def.column_type,
+        rhwp::model::page::ColumnType::Normal
+    );
+    assert_eq!(
+        column_def.direction,
+        rhwp::model::page::ColumnDirection::LeftToRight
+    );
+
+    assert!(
+        !parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.xml_path.ends_with("/COLDEF")),
+        "COLDEF must not be reported as a generic unsupported element: {:?}",
+        parsed.warnings
+    );
+}
+
 #[test]
 fn does_not_detect_malformed_utf8_as_hml() {
     let mut bytes = HML_29.as_bytes().to_vec();
@@ -720,7 +762,11 @@ fn maps_real_hwpml_291_formatting_table_fixture_without_losing_inline_order() {
 
     assert_eq!(paragraphs.len(), 2);
     assert_eq!(paragraphs[0].text, "123456");
-    assert_eq!(paragraphs[0].char_offsets, [0, 1, 2, 11, 12, 13]);
+    // [#4386] paragraphs[0]는 SECDEF 다음에 COLDEF(Count="1")를 갖고 있다. COLDEF가
+    // 더는 조용히 드롭되지 않고 인라인 컨트롤 자리(8 raw unit)를 반영하므로, "123"의
+    // 시작 위치가 종전 0이 아니라 COLDEF 뒤인 8로 옮겨간다. paragraphs[1]에는
+    // SECDEF/COLDEF가 없어 그대로 [0, 1, 2, 11, 12, 13]이다(표 컨트롤 자리만 반영).
+    assert_eq!(paragraphs[0].char_offsets, [8, 9, 10, 19, 20, 21]);
     assert_eq!(paragraphs[1].text, "abcefg");
     assert_eq!(paragraphs[1].char_offsets, [0, 1, 2, 11, 12, 13]);
     assert_eq!(parsed.document.doc_info.char_shapes[5].base_size, 1600);
@@ -730,8 +776,16 @@ fn maps_real_hwpml_291_formatting_table_fixture_without_losing_inline_order() {
     );
     assert_eq!(parsed.document.doc_info.styles[17].local_name, "차례 3");
 
-    let Control::Shape(shape) = &paragraphs[0].controls[0] else {
-        panic!("first inline control should be a shape");
+    // [#4386] paragraphs[0]의 첫 인라인 컨트롤은 이제 COLDEF에서 만들어진
+    // Control::ColumnDef다(SECDEF 다음, RECTANGLE 앞의 원문 순서 그대로). Count="1"
+    // 이라 렌더링 결과는 종전과 같지만, 더는 조용히 사라지지 않고 순서대로 채워진다.
+    let Control::ColumnDef(column_def) = &paragraphs[0].controls[0] else {
+        panic!("first inline control should be the COLDEF-derived ColumnDef");
+    };
+    assert_eq!(column_def.column_count, 1);
+
+    let Control::Shape(shape) = &paragraphs[0].controls[1] else {
+        panic!("second inline control should be a shape");
     };
     let ShapeObject::Rectangle(rectangle) = shape.as_ref() else {
         panic!("fixture shape should be a rectangle");

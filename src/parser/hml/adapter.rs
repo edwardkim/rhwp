@@ -130,6 +130,7 @@ fn into_control(source: HmlControl) -> Result<Control, HmlError> {
         HmlControl::Equation(equation) => Ok(into_equation(equation)),
         HmlControl::Rectangle(rectangle) => into_rectangle(rectangle),
         HmlControl::Table(table) => into_table(table),
+        HmlControl::ColumnDef(column_def) => Ok(Control::ColumnDef(column_def)),
     }
 }
 
