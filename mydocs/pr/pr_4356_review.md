@@ -31,6 +31,8 @@ loaded documents: `pr_review_workflow.md`, `pr_review/README.md`,
 | 원 변경 규모 | 실험 프로토콜 1파일, `+77/-0`, contributor 커밋 1개 |
 | 1차 메인터너 보정 | `540b2aea8ea03d44f5c6250fb1305fb3f7c85486` — `docs(roadmap): make #4356 experiment start reproducible` |
 | 후속 protocol 보정 | `e03935281a9450f529f6fd818ccfb47b256c16d2` — `docs(roadmap): define #4356 open-book cohort` |
+| 1차 trailing review | `7c306013da14eef6b20524345bccdfe1c335ee15` — `docs(pr): update #4356 open-book review` |
+| 증적 결속 보정 | `e3b4a993c923b60ec6678dadcebc9a08d2522e21` — `docs(roadmap): bind #4356 experiment receipts` |
 
 원 변경은 R100의 "30분 첫 유효 산출" 공개 실험 절차를 제안한다. 메인터너
 보정은 프로토콜과 이 review·구현 기록만 바꾸며 source, test, workflow, fixture,
@@ -51,19 +53,32 @@ preinstalled toolchain을 고정하지 않았고, `t1`을 진행자의 validatio
 검증 지연이 참가자 시간에 더해지는 문제도 남았다. run package의 source·input·prompt·
 artifact·submission 계약과 30분 cutoff timestamp 기준도 없었다.
 
+open-book 후속 보정에도 측정 무결성 공백이 남았다. `environment_id`가 canonical
+manifest hash로 정의되지 않아 CPU·RAM·network·clock·cache 차이를 같은 label로
+숨길 수 있었다. run package bytes와 dispatch가 hash로 결속되지 않았고, file
+submission timestamp를 허용해 서로 다른 clock과 filesystem mtime이 `t1`에 섞일 수
+있었다. prompt·input·template·evidence contract가 다른 task를 구분하는 variant ID와
+사전 고정된 overall task mix도 없었다.
+
 ## 메인터너 보정
 
 - v1을 **open-book/self-discovery source cohort**로 재정의했다. public repo, docs,
   issue·PR history 열람은 허용하고 live human hint만 `guided`로 분리한다.
-- empty workspace에 exact `environment_id`, OS image digest, preinstalled toolchain
-  manifest를 고정한다. checkout, binary, package, build artifact, warm cache는 없으며
-  다른 environment는 별도 cohort다.
-- organizer run-package manifest에 `package_id`, protocol SHA, exact repo SHA와 자연어
-  prompt, input path/SHA, target/template version, required artifact/evidence contract,
-  submission endpoint, dispatch timestamp를 고정하고 ledger에 원문을 남긴다.
-- `t1`을 사후 valid로 판정된 가장 이른 제출의 server/file submission timestamp로
-  정의했다. validation timestamp/latency는 별도이며, cutoff도 submission timestamp로
-  판정하고 validation feedback은 cutoff 뒤에만 전달한다.
+- `environment_id`를 OS image, architecture/CPU class/vCPU/RAM, network, clock·timestamp
+  authority, preinstalled tools, cache policy를 담은 RFC 8785 canonical manifest의
+  SHA-256으로 정의했다. checkout, binary, package, build artifact, warm cache가 없는
+  empty workspace만 같은 environment cohort에 넣는다.
+- organizer run-package의 canonical bytes와 `package_sha256`에 package/protocol/repo,
+  exact prompt, input path/SHA, target/template, artifact/evidence, environment와
+  submission authority를 고정하고 ledger에 원문 bytes를 남긴다.
+- canonical run-package bytes와 `package_sha256`을 동일 authority의 append-only
+  dispatch/submission receipt에 결속했다. receipt는 package/hash/sequence/artifact·
+  evidence hash/`received_at`/authority와 signature 또는 immutable log ID를 가진다.
+- dispatch receipt의 `received_at`을 `t0`, 사후 valid인 가장 이른 submission
+  receipt의 `received_at`을 `t1`로 고정하고 filesystem mtime을 배제했다.
+- target, exact prompt, input SHA, template, evidence contract의 canonical hash인
+  `task_variant_id`를 추가했다. protocol/repo/environment/variant별로만 기본 집계하고,
+  overall은 사전 고정 task mix·weight가 있을 때만 계산한다.
 - 공개 #4355와 PR body의 repo-or-release/private legacy 문구에 대해 merge/run 전
   maintainer notice가 필요함을 잔여 blocker로 기록했다. 외부 표면은 변경하지 않았다.
 
@@ -71,9 +86,11 @@ artifact·submission 계약과 30분 cutoff timestamp 기준도 없었다.
 
 | 검증 | 결과 |
 | --- | --- |
-| cohort·환경 불변식 검사 | open-book/self-discovery, live hint=`guided`, exact `environment_id`/OS digest/toolchain manifest와 source-only empty workspace가 존재 |
-| run-package schema 검사 | package/protocol/repo/prompt/input/target/template/artifact/evidence/endpoint/dispatch 필드가 모두 존재 |
-| timestamp 계약 검사 | earliest valid submission timestamp=`t1`, validation timestamp/latency 분리, submission cutoff, feedback-after-cutoff가 존재 |
+| cohort 불변식 검사 | open-book/self-discovery, live hint=`guided`, source-only empty workspace가 존재 |
+| environment identity 검사 | RFC 8785 canonical manifest SHA-256 정의와 OS/arch/CPU/vCPU/RAM/network/clock-authority/tool/cache 필드가 존재 |
+| run-package schema 검사 | canonical package SHA와 protocol/repo/prompt/input/target/template/artifact/evidence/environment/authority 필드가 모두 존재 |
+| receipt·시간 계약 검사 | append-only package/sequence/artifact/evidence/received_at/authority/signature-or-log schema, 같은 authority `t0`/`t1`, mtime 금지와 feedback-after-cutoff가 존재 |
+| variant·집계 검사 | canonical `task_variant_id`, 4-tuple 기본 집계, preregistered task mix·weight만 overall 허용 |
 | stale private rubric 제거 | "참가자에게 전달 금지", "비공개 기준", 진행자 validation 시각=`t1` 문구가 없음 |
 | external residual 확인 | #4355/PR body legacy notice가 merge/run 전 blocker이고 외부 mutation은 미수행으로 기록됨 |
 | Markdown 상대 링크 검사 | 프로토콜과 review·구현 기록의 저장소 내부 링크 통과 |
@@ -88,7 +105,11 @@ artifact·submission 계약과 30분 cutoff timestamp 기준도 없었다.
   필요하다. 식별자만 같게 두고 환경을 바꾸면 결과를 집계할 수 없다.
 - 공개 issue #4355와 PR body에 maintainer notice가 게시·확인되기 전에는 merge 또는
   첫 run을 진행하지 않는다. 이 로컬 보정에는 외부 mutation 권한이 포함되지 않았다.
+- 첫 run 전 canonical environment/package serializer와 append-only timestamp authority를
+  실제로 준비하고 receipt signature 또는 immutable log 검증을 smoke해야 한다. 문서만
+  존재하는 상태에서는 측정 dispatch를 시작하지 않는다.
+- variant ID나 preregistered mix hash가 없는 과거 결과는 새 overall에 소급 혼합하지 않는다.
 - 최신 PR head의 required checks와 mergeability는 실제 push 뒤 다시 확인해야 한다.
 - 이 로컬 보정은 remote에 push하거나 GitHub 상태를 바꾸지 않았다.
 
-**maintainer notice와 최신 CI가 확인될 때까지 merge/run 보류.**
+**maintainer notice·receipt infrastructure·최신 CI가 확인될 때까지 merge/run 보류.**
