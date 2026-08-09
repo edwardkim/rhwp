@@ -26,6 +26,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLE = ROOT / "samples" / "basic" / "issue2007_nested_cell_pagination_42065.hwp"
+EXPECTED_COMMAND_COUNT = 68
 
 
 def find_binary() -> str:
@@ -51,6 +52,26 @@ def run(bin_path: str, args: list, timeout: int = 120):
     )
 
 
+def command_surface_contract(caps: object) -> tuple[bool, str]:
+    if not isinstance(caps, dict):
+        return False, f"capabilities JSON 형식 오류: object가 아님 ({type(caps).__name__})"
+
+    commands = caps.get("commands")
+    n_cmd = len(commands) if isinstance(commands, list) else None
+    has_exit_codes = "exitCodes" in caps
+    has_json_contract = "jsonContract" in caps
+    ok = (
+        n_cmd == EXPECTED_COMMAND_COUNT
+        and has_exit_codes
+        and has_json_contract
+    )
+    detail = (
+        f"commands={n_cmd!r} (expected={EXPECTED_COMMAND_COUNT}), "
+        f"exitCodes={has_exit_codes}, jsonContract={has_json_contract}"
+    )
+    return ok, detail
+
+
 def proofs(bin_path: str) -> list:
     results = []
 
@@ -73,14 +94,12 @@ def proofs(bin_path: str) -> list:
     # P2 자기서술 규모 — 명령 표면이 기계 계약으로 전수 서술된다.
     try:
         caps = json.loads(a.stdout)
-        n_cmd = len(caps.get("commands", []))
-        ok = n_cmd >= 50 and "exitCodes" in caps and "jsonContract" in caps
-        detail = f"commands={n_cmd}, exitCodes/jsonContract 존재={ok}"
+        ok, detail = command_surface_contract(caps)
     except Exception as e:  # noqa: BLE001 - 판정용 러너
         ok, detail = False, f"JSON 파싱 실패: {e}"
     record(
         "P2",
-        "명령 표면 전수 자기서술 — capabilities 가 50+ 명령의 계약을 싣는다",
+        f"명령 표면 전수 자기서술 — capabilities 가 정확히 {EXPECTED_COMMAND_COUNT}개 명령의 계약을 싣는다",
         "rhwp capabilities | jq '.commands|length'",
         ok,
         detail,
