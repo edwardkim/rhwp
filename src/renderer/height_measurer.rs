@@ -300,21 +300,21 @@ pub fn fit_measured_table_nested_tail_to_declared_height(
     // 뒤에는 vpos=0의 빈 reset만 남는다. marker HWPX까지 profile 범위를 넓길 때
     // 느슨한 기존 조건을 그대로 쓰면 일반 nested table의 declared height도 회수해
     // 원본/재파스 수직 기준선이 달라진다 (#1939 p23/p39/p70).
-    let last_row_has_owned_short_block_child = table.cells.iter().any(|cell| {
+    let last_row_owned_block_child = table.cells.iter().find_map(|cell| {
         if cell.row as usize != last_row || cell.row_span != 1 {
-            return false;
+            return None;
         }
         let Some(host) = cell.paragraphs.first() else {
-            return false;
+            return None;
         };
         let mut children = host.controls.iter().filter_map(|control| match control {
             Control::Table(child) => Some(child.as_ref()),
             _ => None,
         });
         let Some(child) = children.next() else {
-            return false;
+            return None;
         };
-        host.text.trim().is_empty()
+        (host.text.trim().is_empty()
             && children.next().is_none()
             && cell.paragraphs.iter().skip(1).all(|paragraph| {
                 paragraph.text.trim().is_empty()
@@ -324,12 +324,12 @@ pub fn fit_measured_table_nested_tail_to_declared_height(
             && !child.common.treat_as_char
             && child.row_count == 1
             && child.col_count == 1
-            && child.cells.len() == 1
-            && child.cells[0].paragraphs.len() <= 3
+            && child.cells.len() == 1)
+            .then_some(child)
     });
-    if !last_row_has_owned_short_block_child {
+    let Some(last_row_owned_block_child) = last_row_owned_block_child else {
         return None;
-    }
+    };
 
     let spacing_total = measured.cell_spacing * row_count.saturating_sub(1) as f64;
     let target_row_sum = (hwpunit_to_px(table.common.height as i32, dpi) - spacing_total).max(0.0);
@@ -342,11 +342,20 @@ pub fn fit_measured_table_nested_tail_to_declared_height(
     // 축소로 해결되는 작은 측정 drift만 허용한다. 큰 차이는 선언높이가 stale-min인
     // 문서일 수 있으므로 기존 콘텐츠 기반 분할에 맡긴다.
     let reduction = current_tail - target_tail;
+    // 일반 nested tail은 큰 선언/실측 차이를 stale height로 간주해 fit하지 않는다.
+    // 단, native RowBreak의 마지막 empty-host 1×1 short child는 기준 PDF가 parent
+    // 선언 viewport에서 첫 visual line을 먼저 소유하고 다음 fragment로 이어 그린다.
+    // 이 구조만 child table의 stored height가 parent보다 큰 것으로 식별된다. p33/p34의
+    // 일반 nested-table 반례는 child <= parent라 여기로 들어오지 않는다.
+    let owner_short_child_overflow = last_row_owned_block_child
+        .cells
+        .first()
+        .is_some_and(|cell| cell.paragraphs.len() <= 3)
+        && last_row_owned_block_child.common.height > table.common.height;
     if target_tail <= 0.0
         || reduction <= 0.5
-        || reduction > 64.0
-        || target_tail < current_tail * 0.85
         || current_row_sum <= target_row_sum
+        || (!owner_short_child_overflow && (reduction > 64.0 || target_tail < current_tail * 0.85))
     {
         return None;
     }

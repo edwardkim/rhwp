@@ -7502,12 +7502,9 @@ impl LayoutEngine {
             && parent_declared_height > 0.0
             && child_flow_height > parent_declared_height + 0.5;
         if std::env::var("RHWP_DIAG_SHORT_CHILD").is_ok()
-            && child.cells.first().is_some_and(|child_cell| {
-                child_cell
-                    .paragraphs
-                    .iter()
-                    .any(|paragraph| paragraph.text.contains("구내운반차 안전조치"))
-            })
+            && child.row_count == 1
+            && child.col_count == 1
+            && child.cells.len() == 1
         {
             eprintln!(
                 "DIAG_SHORT_CHILD eligible={} native={} parent=(rows={},h={:.1},wrap={:?},vert={:?},break={:?}) cell=(row={},span={},paras={}) child=(cols={},tac={},cells={},paras={},flow={:.1})",
@@ -7601,12 +7598,6 @@ impl LayoutEngine {
                 let Some(child) = children.as_slice().first().copied() else {
                     return false;
                 };
-                let candidate = child.cells.first().is_some_and(|child_cell| {
-                    child_cell
-                        .paragraphs
-                        .iter()
-                        .any(|paragraph| paragraph.text.contains("구내운반차 안전조치"))
-                });
                 let eligible = self.native_short_parent_child_fragment_eligible(
                     table,
                     cell,
@@ -7620,25 +7611,12 @@ impl LayoutEngine {
                     return false;
                 }
                 let units = self.cell_units(cell, table, styles);
-                let fragmentable = units
+                units
                     .iter()
                     .filter(|unit| !unit.empty_spacer)
                     .take(2)
                     .count()
-                    == 2;
-                if candidate && std::env::var("RHWP_DIAG_SHORT_CHILD").is_ok() {
-                    eprintln!(
-                        "DIAG_SHORT_CHILD_SPLIT row_arg={} cell_row={} children={} eligible={} units={} non_spacer={} fragmentable={}",
-                        row,
-                        cell.row,
-                        children.len(),
-                        eligible,
-                        units.len(),
-                        units.iter().filter(|unit| !unit.empty_spacer).count(),
-                        fragmentable,
-                    );
-                }
-                fragmentable
+                    == 2
             })
     }
 
@@ -9523,23 +9501,6 @@ impl LayoutEngine {
         if tail.iter().any(|unit| unit.hard_break_before) || tail_height > fresh_page_height + 0.5 {
             return false;
         }
-        if std::env::var("RHWP_DIAG_NESTED_REWIND").is_ok() {
-            eprintln!(
-                "DIAG_NESTED_REWIND rows={} cols={} start={} j={} table_atom={} after={} src={} after_src={} tail_units={} tail_h={:.1} fresh_h={:.1}",
-                table.row_count,
-                table.col_count,
-                start,
-                *j,
-                table_atom,
-                after_table,
-                table_source_para,
-                after_source_para,
-                tail.len(),
-                tail_height,
-                fresh_page_height,
-            );
-        }
-
         *h = units[start..=end_before_table]
             .iter()
             .map(|unit| unit.height)
