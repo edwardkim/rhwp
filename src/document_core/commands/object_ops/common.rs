@@ -25,8 +25,8 @@ impl DocumentCore {
         | (1 << 26)
         | (1 << 28);
     pub(crate) fn sync_common_obj_attr_known_bits(c: &mut crate::model::shape::CommonObjAttr) {
-        let packed =
-            crate::document_core::converters::common_obj_attr_writer::pack_common_attr_bits(c);
+        // [#4400] pack_common_attr_bits 는 serializer 소유로 이동했다.
+        let packed = crate::serializer::control::pack_common_attr_bits(c);
         c.attr = (c.attr & !Self::COMMON_OBJ_ATTR_KNOWN_MASK)
             | (packed & Self::COMMON_OBJ_ATTR_KNOWN_MASK);
     }

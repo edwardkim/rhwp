@@ -28,8 +28,11 @@ use crate::model::style::{BorderFill, BorderLineType, Fill, FillType};
 use crate::model::table::{Cell, Table, TablePageBreak};
 use crate::parser::FileFormat;
 
-use super::common_obj_attr_writer::{pack_common_attr_bits, serialize_common_obj_attr};
+use super::common_obj_attr_writer::serialize_common_obj_attr;
 use super::hwpx_master_page_slots::materialize_hwp5_master_page_slots;
+// [#4400] bit packing 은 serializer 소유 — document_core::converters 는 더 이상 이 로직을
+// 직접 갖지 않는다.
+use crate::serializer::control::pack_common_attr_bits;
 
 /// 어댑터 실행 보고서.
 ///

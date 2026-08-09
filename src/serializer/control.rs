@@ -6,7 +6,6 @@
 use super::body_text::serialize_paragraph_list;
 use super::byte_writer::{char_to_wchar, ByteWriter};
 
-use crate::document_core::converters::common_obj_attr_writer::pack_common_attr_bits;
 use crate::model::control::*;
 use crate::model::document::SectionDef;
 use crate::model::footnote::FootnoteShape;
@@ -16,8 +15,9 @@ use crate::model::image::{ImageEffect, Picture};
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType, PageBorderFill, PageDef};
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
-    Caption, CaptionDirection, CaptionVertAlign, CommonObjAttr, DrawingObjAttr, HorzRelTo,
-    OleShape, ShapeComponentAttr, ShapeObject, TextFlow, TextWrap, VertRelTo,
+    Caption, CaptionDirection, CaptionVertAlign, CommonObjAttr, DrawingObjAttr, HorzAlign,
+    HorzRelTo, OleShape, ShapeComponentAttr, ShapeObject, SizeCriterion, TextFlow, TextWrap,
+    VertAlign, VertRelTo,
 };
 use crate::model::style::{Fill, FillType, ImageFillMode, ShapeBorderLine};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
@@ -2035,6 +2035,147 @@ fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
         w.write_bytes(&common.raw_extra).unwrap();
     }
     w.into_bytes()
+}
+
+/// `CommonObjAttr` 의 enum 필드들로부터 attr u32 비트를 합성한다.
+///
+/// [#4400] `document_core/converters/common_obj_attr_writer.rs` 에서 이 파일로 이동했다.
+/// CTRL_HEADER attr 비트 레이아웃을 아는 것은 본질적으로 직렬화 로직이고, 이 파일의
+/// `serialize_common_obj_attr`(및 `document_core::converters::common_obj_attr_writer::
+/// serialize_common_obj_attr` 어댑터)가 유일한 소비 목적이다 — 직렬화기가 도리어
+/// `document_core` 를 참조하는 역방향 의존을 없앤다. `document_core` 쪽에서 필요한
+/// 호출(패스스루 무효화에 준하는 attr 동기화, `sync_anchor_bits`)은 이 pub(crate)
+/// 함수를 그대로 가져다 쓴다.
+///
+/// 비트 레이아웃 (parser/control/shape.rs 의 역방향):
+/// - bit 0: treat_as_char
+/// - bit 2: affect_line_spacing (줄 간격에 영향 — [#2784], 스펙 표 70)
+/// - bit 3-4: vert_rel_to (Paper=0, Page=1, Para=2)
+/// - bit 5-7: vert_align
+/// - bit 8-9: horz_rel_to
+/// - bit 10-12: horz_align
+/// - bit 13: flow_with_text (HWPX object contract)
+/// - bit 14: allow_overlap (HWPX object contract)
+/// - bit 15-17: width_criterion
+/// - bit 18-19: height_criterion
+/// - bit 21-23: text_wrap
+/// - bit 24-25: text_flow
+/// - bit 20: size protect when VertRelTo is Para
+/// - bit 26: HWPX GenShape storage high bit 후보
+/// - bit 28: HWPX GenShape numbering category high bit 후보
+pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
+    let mut a: u32 = 0;
+    if common.treat_as_char {
+        a |= 0x01;
+    }
+    // [#2784] affectLSpacing — 개체 공통 속성 attr bit 2 (스펙 표 70).
+    if common.affect_line_spacing {
+        a |= 1 << 2;
+    }
+    a |= (vert_rel_to_to_bits(common.vert_rel_to) & 0x03) << 3;
+    a |= (vert_align_to_bits(common.vert_align) & 0x07) << 5;
+    a |= (horz_rel_to_to_bits(common.horz_rel_to) & 0x03) << 8;
+    a |= (horz_align_to_bits(common.horz_align) & 0x07) << 10;
+    if common.flow_with_text {
+        a |= 1 << 13;
+    }
+    if common.allow_overlap {
+        a |= 1 << 14;
+    }
+    if common.size_protect {
+        a |= 1 << 20;
+    }
+    a |= (width_criterion_to_bits(common.width_criterion) & 0x07) << 15;
+    a |= (height_criterion_to_bits(common.height_criterion) & 0x03) << 18;
+    a |= (text_wrap_to_bits(common.text_wrap) & 0x07) << 21;
+    a |= (text_flow_to_bits(common.text_flow) & 0x03) << 24;
+    if common.hwp5_gen_shape_attr_bit26 {
+        a |= 1 << 26;
+    }
+    if common.hwp5_gen_shape_attr_bit28 {
+        a |= 1 << 28;
+    }
+    a
+}
+
+/// [#4400] `document_core::converters::common_obj_attr_writer::sync_anchor_bits` 가
+/// 앵커 비트(tac/vert_rel/horz_rel)만 재기입할 때도 이 두 헬퍼가 필요해 `pub(crate)`.
+pub(crate) fn vert_rel_to_to_bits(v: VertRelTo) -> u32 {
+    match v {
+        VertRelTo::Paper => 0,
+        VertRelTo::Page => 1,
+        VertRelTo::Para => 2,
+    }
+}
+
+fn vert_align_to_bits(v: VertAlign) -> u32 {
+    match v {
+        VertAlign::Top => 0,
+        VertAlign::Center => 1,
+        VertAlign::Bottom => 2,
+        VertAlign::Inside => 3,
+        VertAlign::Outside => 4,
+    }
+}
+
+pub(crate) fn horz_rel_to_to_bits(v: HorzRelTo) -> u32 {
+    match v {
+        HorzRelTo::Paper => 0,
+        HorzRelTo::Page => 1,
+        HorzRelTo::Column => 2,
+        HorzRelTo::Para => 3,
+    }
+}
+
+fn horz_align_to_bits(v: HorzAlign) -> u32 {
+    match v {
+        HorzAlign::Left => 0,
+        HorzAlign::Center => 1,
+        HorzAlign::Right => 2,
+        HorzAlign::Inside => 3,
+        HorzAlign::Outside => 4,
+    }
+}
+
+fn width_criterion_to_bits(v: SizeCriterion) -> u32 {
+    match v {
+        SizeCriterion::Paper => 0,
+        SizeCriterion::Page => 1,
+        SizeCriterion::Column => 2,
+        SizeCriterion::Para => 3,
+        SizeCriterion::Absolute => 4,
+    }
+}
+
+fn height_criterion_to_bits(v: SizeCriterion) -> u32 {
+    match v {
+        SizeCriterion::Paper => 0,
+        SizeCriterion::Page => 1,
+        // height 는 Absolute 만 의미 있음 (parser bit 18-19, 2비트만 사용)
+        _ => 2,
+    }
+}
+
+fn text_wrap_to_bits(v: TextWrap) -> u32 {
+    // hwplib 기준: 0=어울림(Square), 1=자리차지(TopAndBottom), 2=글뒤로(BehindText), 3=글앞으로(InFrontOfText)
+    // Tight/Through 는 HWP 5.0 에 직접 매핑이 없어 Square 로 폴백.
+    match v {
+        TextWrap::Square => 0,
+        TextWrap::Tight => 0,
+        TextWrap::Through => 0,
+        TextWrap::TopAndBottom => 1,
+        TextWrap::BehindText => 2,
+        TextWrap::InFrontOfText => 3,
+    }
+}
+
+fn text_flow_to_bits(v: TextFlow) -> u32 {
+    match v {
+        TextFlow::BothSides => 0,
+        TextFlow::LeftOnly => 1,
+        TextFlow::RightOnly => 2,
+        TextFlow::LargestOnly => 3,
+    }
 }
 
 /// SHAPE_COMPONENT 데이터 직렬화 (ShapeComponentAttr만 — Picture, Group용)
