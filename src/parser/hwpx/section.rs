@@ -6115,7 +6115,15 @@ fn parse_hp_chart_element(
 
     let mut extent: Option<(i32, i32)> = None;
     let mut shape_attr = ShapeComponentAttr::default();
-    parse_common_shape_children(reader, &mut common, b"chart", &mut extent, &mut shape_attr)?;
+    let mut caption: Option<crate::model::shape::Caption> = None;
+    parse_common_shape_children(
+        reader,
+        &mut common,
+        b"chart",
+        &mut extent,
+        &mut shape_attr,
+        &mut caption,
+    )?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
     }
@@ -6135,6 +6143,12 @@ fn parse_hp_chart_element(
     ole.extent_x = if ext_x > 0 { ext_x } else { 7200 };
     ole.extent_y = if ext_y > 0 { ext_y } else { 7200 };
     apply_hwpx_ole_shape_component_contract(&mut ole);
+    // [#4319] HWP5 파서(parser/control/shape.rs:213)와 동형 정규화 — drawing.caption
+    // 에 남기지 않고 OleShape 자신의 caption 필드로 옮긴다. 게이트(shape_caption,
+    // serializer/hwpx/roundtrip.rs)는 `x.caption` 만 보므로 정규화하지 않으면
+    // drawing.caption 잔류가 라운드트립 비교에서 보이지 않는다.
+    ole.drawing.caption = caption;
+    ole.caption = ole.drawing.caption.take();
     Ok(Some(Control::Shape(Box::new(ShapeObject::Ole(Box::new(
         ole,
     ))))))
@@ -6215,7 +6229,15 @@ fn parse_hp_ole_element(
 
     let mut extent: Option<(i32, i32)> = None;
     let mut shape_attr = ShapeComponentAttr::default();
-    parse_common_shape_children(reader, &mut common, b"ole", &mut extent, &mut shape_attr)?;
+    let mut caption: Option<crate::model::shape::Caption> = None;
+    parse_common_shape_children(
+        reader,
+        &mut common,
+        b"ole",
+        &mut extent,
+        &mut shape_attr,
+        &mut caption,
+    )?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
     }
@@ -6231,6 +6253,10 @@ fn parse_hp_ole_element(
     ole.extent_x = if ext_x > 0 { ext_x } else { 7200 };
     ole.extent_y = if ext_y > 0 { ext_y } else { 7200 };
     apply_hwpx_ole_shape_component_contract(&mut ole);
+    // [#4319] HWP5 파서(parser/control/shape.rs:222)와 동형 정규화 — 차트와 동일한
+    // 이유로 drawing.caption 이 아니라 ole.caption 에 남겨야 게이트가 검출한다.
+    ole.drawing.caption = caption;
+    ole.caption = ole.drawing.caption.take();
     Ok(Some(Control::Shape(Box::new(ShapeObject::Ole(Box::new(
         ole,
     ))))))
@@ -6278,6 +6304,12 @@ fn parse_common_shape_children(
     // [#3546] `<hp:rotationInfo>` 수집용. 종전 미파싱으로 저장 시 기본값으로
     // 되쓰여 rotateimage="1" 등 원본 값이 뒤집혔다(#2726 sz 기준 유실과 동형).
     shape_attr_out: &mut ShapeComponentAttr,
+    // [#4319] `<hp:caption>` 수집용. 종전엔 이 공용 자식 파서(차트·OLE 전용)에
+    // caption arm 이 없어 캡션 subList 가 파싱 단계에서 완전히 유실됐다 —
+    // 도형(parse_shape_object)·묶음(parse_container)·그림(parse_picture) 은 모두
+    // 캡션을 읽지만 차트·OLE 만 빠져 있었다. HWP5 파서(parser/control/shape.rs:213,
+    // 222)와 동형으로 drawing.caption 에 채운 뒤 호출자가 `.caption` 으로 정규화한다.
+    caption_out: &mut Option<crate::model::shape::Caption>,
 ) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
     loop {
@@ -6403,6 +6435,11 @@ fn parse_common_shape_children(
                     // shape comment 사라짐).
                     b"shapeComment" => {
                         common.description = read_dutmal_text(reader, b"shapeComment")?;
+                    }
+                    // [#4319] 캡션 — 미적재 시 라운드트립에서 캡션 subList 소실(다른
+                    // 도형 변형과 동형, parse_shape_object/parse_container 참고).
+                    b"caption" => {
+                        *caption_out = Some(parse_table_caption(ce, reader)?);
                     }
                     _ => {}
                 }
@@ -8791,6 +8828,104 @@ mod tests {
         assert!(
             ole.common.locked,
             "lock=\"1\" 이 common.locked 에 보존돼야 한다"
+        );
+    }
+
+    // ---------- #4319: 차트·OLE 캡션 파싱 ----------
+
+    /// [#4319] `<hp:chart>` 내부 `<hp:caption>` — 종전엔 공용 자식 파서
+    /// (`parse_common_shape_children`, 차트·OLE 전용)에 caption arm 이 없어
+    /// 캡션 subList 가 파싱 단계에서 완전히 유실됐다(표/도형/묶음/그림은 모두
+    /// 캡션을 읽지만 차트·OLE 만 빠져 있었다). 캡션 구조는 실 코퍼스 hp:pic
+    /// 캡션 실측(outMargin 뒤·shapeComment 앞, side/fullSz/width/gap/lastWidth
+    /// 속성 + subList/p/run/t)과 OWPML AbstractShapeObjectType 스키마
+    /// (sz→pos→outMargin→caption→shapeComment 순서, hp:chart/hp:ole 모두 이
+    /// 타입을 상속)를 그대로 따른다.
+    #[test]
+    fn issue4319_chart_caption_parses_into_caption_field() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:chart id="1" zOrder="0" numberingType="NONE" textWrap="SQUARE" textFlow="BOTH_SIDES" chartIDRef="Chart/chart1.xml" instid="1">
+        <hp:sz width="4000" height="3000" widthRelTo="ABSOLUTE" heightRelTo="ABSOLUTE" protect="0"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+        <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+        <hp:caption side="BOTTOM" fullSz="0" width="4000" gap="850" lastWidth="4000">
+          <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
+            <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+              <hp:run charPrIDRef="0"><hp:t>그림 1. 매출 추이</hp:t></hp:run>
+            </hp:p>
+          </hp:subList>
+        </hp:caption>
+      </hp:chart>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected chart (modeled as OLE) shape");
+        };
+        let caption = ole
+            .caption
+            .as_ref()
+            .expect("<hp:caption> 이 ole.caption 에 적재돼야 한다 (#4319)");
+        assert_eq!(caption.paragraphs.len(), 1);
+        assert_eq!(caption.paragraphs[0].text, "그림 1. 매출 추이");
+        assert!(
+            ole.drawing.caption.is_none(),
+            "HWP5 파서와 동형 정규화 — drawing.caption 은 비어 있어야 한다 \
+             (shape_caption 게이트는 x.caption 만 본다)"
+        );
+    }
+
+    /// [#4319] `<hp:ole>` 내부 `<hp:caption>` — chart 와 동일한 결함, 동일한 수정.
+    #[test]
+    fn issue4319_ole_caption_parses_into_caption_field() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="1" zOrder="0" numberingType="NONE" textWrap="SQUARE" textFlow="BOTH_SIDES" binaryItemIDRef="ole1" instid="1">
+        <hp:sz width="4000" height="3000" widthRelTo="ABSOLUTE" heightRelTo="ABSOLUTE" protect="0"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+        <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+        <hp:caption side="BOTTOM" fullSz="0" width="4000" gap="850" lastWidth="4000">
+          <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
+            <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+              <hp:run charPrIDRef="0"><hp:t>수식 1. 표준편차 계산</hp:t></hp:run>
+            </hp:p>
+          </hp:subList>
+        </hp:caption>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected OLE shape");
+        };
+        let caption = ole
+            .caption
+            .as_ref()
+            .expect("<hp:caption> 이 ole.caption 에 적재돼야 한다 (#4319)");
+        assert_eq!(caption.paragraphs.len(), 1);
+        assert_eq!(caption.paragraphs[0].text, "수식 1. 표준편차 계산");
+        assert!(
+            ole.drawing.caption.is_none(),
+            "HWP5 파서와 동형 정규화 — drawing.caption 은 비어 있어야 한다"
         );
     }
 }

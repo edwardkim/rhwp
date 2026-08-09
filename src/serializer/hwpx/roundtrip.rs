@@ -2455,6 +2455,130 @@ mod tests {
         }
     }
 
+    // ---------- #4319: 차트·OLE 캡션 (게이트 동승) ----------
+    //
+    // #1403 은 pic/line/group 캡션 소실 검출을 고정했지만 Chart/Ole 는 빠졌다.
+    // shape_caption() 자체는 이미 `Chart(x) => &x.caption, Ole(x) => &x.caption`
+    // 로 올바른 필드를 보므로(비교기는 문제 없음), 아래 두 테스트는 그 사실을
+    // 고정한다. 진짜 결함은 HWPX 파서가 `<hp:chart>`/`<hp:ole>` 의 `<hp:caption>`
+    // 을 애초에 파싱하지 않아 `x.caption` 이 원본 파싱 시점부터 항상 None 이었다는
+    // 것 — 그러면 저장 전/후 IR 비교(diff_documents)는 None==None 이라 손실이
+    // 보이지 않는다(이 파일의 게이트가 비교하는 두 IR 모두 같은 파서를 거치므로).
+    // 아래 issue4319_*_caption_roundtrips 는 실제 파서·직렬화기를 왕복시켜
+    // 그 손실 자체(및 재발 방지 수정)를 고정한다.
+
+    #[test]
+    fn issue4319_ole_caption_loss_in_gate() {
+        // OLE 개체(OleShape.caption) 경로 — #1403 에 빠졌던 변형을 채운다.
+        let mut oa = crate::model::shape::OleShape::default();
+        oa.caption = Some(caption_with_paras(1));
+        let ob = crate::model::shape::OleShape::default();
+        let a = doc_with_control(crate::model::control::Control::Shape(Box::new(
+            crate::model::shape::ShapeObject::Ole(Box::new(oa)),
+        )));
+        let b = doc_with_control(crate::model::control::Control::Shape(Box::new(
+            crate::model::shape::ShapeObject::Ole(Box::new(ob)),
+        )));
+        let diff = diff_documents(&a, &b);
+        assert_eq!(diff.differences.len(), 1, "{:?}", diff.differences);
+        match &diff.differences[0] {
+            IrDifference::ObjectCaption { path, detail, .. } => {
+                assert_eq!(path, "/ctrl[0]shape.caption");
+                assert_eq!(detail, "missing: expected=Some actual=None");
+            }
+            other => panic!("ObjectCaption 여야 함: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn issue4319_chart_caption_loss_in_gate() {
+        // HWPX 차트는 OleShape(chart_id_ref=Some) 로 모델링된다 — chart_id_ref 유무와
+        // 무관하게 같은 shape_caption() 분기(Ole)를 타는지 고정.
+        let mut oa = crate::model::shape::OleShape::default();
+        oa.chart_id_ref = Some("Chart/chart1.xml".to_string());
+        oa.caption = Some(caption_with_paras(1));
+        let mut ob = crate::model::shape::OleShape::default();
+        ob.chart_id_ref = Some("Chart/chart1.xml".to_string());
+        let a = doc_with_control(crate::model::control::Control::Shape(Box::new(
+            crate::model::shape::ShapeObject::Ole(Box::new(oa)),
+        )));
+        let b = doc_with_control(crate::model::control::Control::Shape(Box::new(
+            crate::model::shape::ShapeObject::Ole(Box::new(ob)),
+        )));
+        let diff = diff_documents(&a, &b);
+        assert_eq!(diff.differences.len(), 1, "{:?}", diff.differences);
+        match &diff.differences[0] {
+            IrDifference::ObjectCaption { path, detail, .. } => {
+                assert_eq!(path, "/ctrl[0]shape.caption");
+                assert_eq!(detail, "missing: expected=Some actual=None");
+            }
+            other => panic!("ObjectCaption 여야 함: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn issue4319_ole_caption_roundtrips() {
+        // 실제 파서·직렬화기 왕복(serialize_hwpx → parse_hwpx) — 종전엔
+        // parse_hp_ole_element 에 caption arm 이 없어 재파싱 후 캡션이 사라졌다
+        // (write_ole 자체는 이미 캡션을 써 왔다 — 파서만 못 읽었다).
+        let mut cap = caption_with_paras(1);
+        cap.paragraphs[0].text = "OLE 캡션".to_string();
+        cap.paragraphs[0].char_shapes = to_refs(&[(0, 0)]);
+        let mut ole = crate::model::shape::OleShape::default();
+        ole.caption = Some(cap);
+        let mut a = roundtrip_doc_with_control(crate::model::control::Control::Shape(Box::new(
+            crate::model::shape::ShapeObject::Ole(Box::new(ole)),
+        )));
+        a.sections[0].paragraphs[0].char_shapes = to_refs(&[(0, 0)]);
+        let out = serialize_hwpx(&a).expect("serialize");
+        let b = parse_hwpx(&out).expect("reparse");
+        let diff = diff_documents(&a, &b);
+        assert!(diff.is_empty(), "{:?}", diff.differences);
+        match &b.sections[0].paragraphs[1].controls[0] {
+            crate::model::control::Control::Shape(s) => match s.as_ref() {
+                crate::model::shape::ShapeObject::Ole(o2) => {
+                    let c2 = o2.caption.as_ref().expect("캡션 보존 (#4319)");
+                    assert_eq!(c2.paragraphs[0].text, "OLE 캡션");
+                }
+                other => panic!("Ole 여야 함: {other:?}"),
+            },
+            other => panic!("Shape 여야 함: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn issue4319_chart_caption_roundtrips() {
+        // hp:chart 재방출 경로(write_chart_element/parse_hp_chart_element) 왕복 —
+        // 파서 수정만으로는 부족하다: write_chart_element 는 종전 write_caption 호출이
+        // 없어 파서를 고쳐도 저장 시 다시 유실됐다(hp:ole 방출 경로와 달리 hp:chart
+        // 재방출 경로만 캡션을 안 썼다). 두 수정이 함께 있어야 왕복이 무손실이다.
+        let mut cap = caption_with_paras(1);
+        cap.paragraphs[0].text = "차트 캡션".to_string();
+        cap.paragraphs[0].char_shapes = to_refs(&[(0, 0)]);
+        let mut ole = crate::model::shape::OleShape::default();
+        ole.chart_id_ref = Some("Chart/chart1.xml".to_string());
+        ole.bin_data_id = 60001;
+        ole.caption = Some(cap);
+        let mut a = roundtrip_doc_with_control(crate::model::control::Control::Shape(Box::new(
+            crate::model::shape::ShapeObject::Ole(Box::new(ole)),
+        )));
+        a.sections[0].paragraphs[0].char_shapes = to_refs(&[(0, 0)]);
+        let out = serialize_hwpx(&a).expect("serialize");
+        let b = parse_hwpx(&out).expect("reparse");
+        let diff = diff_documents(&a, &b);
+        assert!(diff.is_empty(), "{:?}", diff.differences);
+        match &b.sections[0].paragraphs[1].controls[0] {
+            crate::model::control::Control::Shape(s) => match s.as_ref() {
+                crate::model::shape::ShapeObject::Ole(o2) => {
+                    let c2 = o2.caption.as_ref().expect("캡션 보존 (#4319)");
+                    assert_eq!(c2.paragraphs[0].text, "차트 캡션");
+                }
+                other => panic!("Ole(chart) 여야 함: {other:?}"),
+            },
+            other => panic!("Shape 여야 함: {other:?}"),
+        }
+    }
+
     // ---------- #1392: shapeComment(객체 설명) 게이트 동승 ----------
 
     #[test]

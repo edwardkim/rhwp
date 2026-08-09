@@ -449,7 +449,7 @@ fn write_chart_switch<W: Write>(
                 "hp:case",
                 &[("hp:required-namespace", OOXML_CHART_REQUIRED_NS)],
             )?;
-            write_chart_element(w, ole, chart_id_ref)?;
+            write_chart_element(w, ole, chart_id_ref, ctx)?;
             end_tag(w, "hp:case")?;
             start_tag(w, "hp:default")?;
             write_ole(w, fallback, ctx)?;
@@ -457,7 +457,7 @@ fn write_chart_switch<W: Write>(
             end_tag(w, "hp:switch")?;
             Ok(())
         }
-        None => write_chart_element(w, ole, chart_id_ref),
+        None => write_chart_element(w, ole, chart_id_ref, ctx),
     }
 }
 
@@ -465,6 +465,7 @@ fn write_chart_element<W: Write>(
     w: &mut Writer<W>,
     ole: &OleShape,
     chart_id_ref: &str,
+    ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
     let c = &ole.common;
     let id_str = c.instance_id.to_string();
@@ -486,6 +487,12 @@ fn write_chart_element<W: Write>(
     write_sz(w, c)?;
     write_pos(w, c)?;
     write_out_margin(w, c)?;
+    // [#4319] 캡션 — 종전엔 hp:chart 재방출 경로에만 write_caption 호출이 없어
+    // 파서를 고쳐도(ole.caption 정상 적재) 저장 시 다시 유실됐다(hp:ole 방출
+    // 경로인 write_ole 는 이미 캡션을 쓴다 — 그쪽과 동형으로 맞춘다).
+    if let Some(cap) = &ole.caption {
+        write_caption(w, cap, ctx)?;
+    }
     end_tag(w, "hp:chart")?;
     Ok(())
 }
