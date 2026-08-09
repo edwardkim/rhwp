@@ -25468,6 +25468,7 @@ fn issue2214_target_cuts(doc: &HwpDocument) -> Vec<Issue2214TargetCut> {
                         start_cut,
                         end_cut,
                         is_block_split,
+                        ..
                     } => Some(Issue2214TargetCut {
                         page_index: page.page_index,
                         start_row: *start_row,

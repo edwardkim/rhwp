@@ -72,22 +72,6 @@ fn transparent_nested_table(table: &crate::model::table::Table) -> &crate::model
     transparent_nested_table(nested)
 }
 
-/// Resolves the table that owns a `PartialTable` row cursor.
-///
-/// Pagination only names an inner table's rows when a cursor lies outside the
-/// outer wrapper's one-row domain.  Keep a genuine 1×1 outer table intact until
-/// that proof exists; it may own a deliberate visible frame.
-fn fragment_row_geometry_table(
-    table: &crate::model::table::Table,
-    end_row: usize,
-) -> &crate::model::table::Table {
-    if end_row <= table.row_count as usize {
-        table
-    } else {
-        transparent_nested_table(table)
-    }
-}
-
 /// 분할 셀 조각에서 실제로 보이는 첫 줄의 저장 vpos를 찾는다.
 ///
 /// `cell_line_ranges_from_cut`은 문단 중간 줄에서 시작할 수 있다. 문단 첫 줄을
@@ -2347,6 +2331,11 @@ impl LayoutEngine {
                                             &recursive_cut.start_cut,
                                             &recursive_cut.end_cut,
                                             recursive_cut.is_block_split,
+                                            // recursive_cut의 행 cursor는 이미 이 호출의
+                                            // `nested_table` 자신의 행 기준(#4069 재귀
+                                            // 투영)이다. 투명 래퍼 벗기기는 별개 좌표계
+                                            // 판정(#4326)이라 여기서는 항상 false.
+                                            false,
                                             0.0,
                                             0.0,
                                             None,
@@ -2514,6 +2503,7 @@ impl LayoutEngine {
         start_cut: &[usize],
         end_cut: &[usize],
         is_block_split: bool,
+        row_cursor_is_nested: bool,
         host_margin_left: f64,
         host_margin_right: f64,
         measured_table: Option<&MeasuredTable>,
@@ -2571,6 +2561,7 @@ impl LayoutEngine {
             start_cut,
             end_cut,
             is_block_split,
+            row_cursor_is_nested,
             host_margin_left,
             host_margin_right,
             measured_table,
@@ -2604,6 +2595,7 @@ impl LayoutEngine {
         start_cut: &[usize],
         end_cut: &[usize],
         is_block_split: bool,
+        row_cursor_is_nested: bool,
         host_margin_left: f64,
         host_margin_right: f64,
         measured_table: Option<&MeasuredTable>,
@@ -2620,25 +2612,28 @@ impl LayoutEngine {
             host_line_spacing,
         } = host;
 
-        // Pagination can deliberately use the rows of a transparent 1×1 wrapper's
-        // nested table.  The measured-table path has used that effective table since
-        // the wrapper-unwrapping rule was introduced, but a `PartialTable` still
-        // identifies its source by the outer control.  Rendering the outer 1-row
-        // table with an inner-table row cursor made a continuation beginning at row
-        // 1 paint no remaining rows at all (#3637, HWP 2020 p7).
+        // [Issue #4326] Pagination can deliberately use the rows of a transparent
+        // 1×1 wrapper's nested table.  The measured-table path has used that
+        // effective table since the wrapper-unwrapping rule was introduced, but a
+        // `PartialTable` used to identify its source by the outer control alone —
+        // whether `start_row`/`end_row` addressed the outer table's own row domain
+        // or the unwrapped nested table's was reconstructed here from
+        // `end_row <= outer_table.row_count`. That inference collided with a
+        // genuine single-row fragment of the *nested* table (`end_row == 1`),
+        // which is indistinguishable by value from "the outer wrapper's own row 0"
+        // (#4326: `margin_bottom` sweep flips 24/40 values into duplicate-printed,
+        // body-overflowing table fragments). `row_cursor_is_nested` now carries
+        // that coordinate-system decision from pagination as data, so this is a
+        // direct dispatch rather than a second heuristic.
         //
-        // Only unwrap when the fragment cursor is outside the outer table's row
-        // domain.  A genuine 1×1 table containing a nested table can otherwise be
-        // intentionally rendered as its own one-row frame.
-        // A native HWP5 RowBreak wrapper owns its physical clip/frame only
-        // while the partial cursor still names its own outer row.  Once the
-        // cursor is outside that one-row domain, pagination has selected rows
-        // of the transparent nested content table.  Sending that cursor back
-        // through the outer wrapper paints the whole inner table in one page
-        // fragment (#1921 p16).  `fragment_row_geometry_table` preserves the
-        // outer table for its own row domain, so issue2007's native frame path
-        // remains intact.
-        let table = fragment_row_geometry_table(outer_table, end_row);
+        // A native HWP5 RowBreak wrapper owns its physical clip/frame only while
+        // the partial cursor still names its own outer row (#1921 p16, #3637, HWP
+        // 2020 p7); `row_cursor_is_nested == false` preserves that path unchanged.
+        let table = if row_cursor_is_nested {
+            transparent_nested_table(outer_table)
+        } else {
+            outer_table
+        };
 
         if table.cells.is_empty() {
             return y_start;

@@ -2659,7 +2659,12 @@ fn is_stored_anchor_picture_table(table: &crate::model::table::Table) -> bool {
 /// 동작한다. 두 경로가 다른 표를 참조하면 행 수가 1 대 N으로 갈라져, 보이지
 /// 않는 래퍼 행 높이가 쪽 소비에 더해진다. `table_layout` 및
 /// `HeightMeasurer::measure_table_impl`의 unwrap 조건과 의도적으로 동일하다.
-fn row_geometry_table(table: &crate::model::table::Table) -> &crate::model::table::Table {
+///
+/// [Issue #4326] fallback `Paginator`(`pagination/engine.rs`)도 같은 unwrap 여부를
+/// `PageItem::PartialTable::row_cursor_is_nested`에 실어야 하므로 crate 내부에 공개한다.
+pub(crate) fn row_geometry_table(
+    table: &crate::model::table::Table,
+) -> &crate::model::table::Table {
     let mut effective = table;
     loop {
         if effective.row_count != 1 || effective.col_count != 1 || effective.cells.len() != 1 {
@@ -12154,6 +12159,7 @@ impl TypesetEngine {
                         start_cut,
                         end_cut,
                         is_block_split,
+                        row_cursor_is_nested,
                     } => lookup_local(*para_index).map(|l| PageItem::PartialTable {
                         para_index: l + 1,
                         control_index: *control_index,
@@ -12163,6 +12169,7 @@ impl TypesetEngine {
                         start_cut: start_cut.clone(),
                         end_cut: end_cut.clone(),
                         is_block_split: *is_block_split,
+                        row_cursor_is_nested: *row_cursor_is_nested,
                     }),
                     PageItem::Shape {
                         para_index,
@@ -20287,6 +20294,11 @@ impl TypesetEngine {
         let row_geometry_table = source.row_geometry_table;
         let mt = source.measured_table;
         let styles = source.styles;
+        // [Issue #4326] 이 continuation이 방출하는 모든 PartialTable의 start_row/end_row/
+        // start_cut/end_cut은 `row_geometry_table` 기준(투명 1×1 래퍼를 벗긴 표일 수
+        // 있다)이다. 렌더러가 `end_row <= table.row_count` 로 값을 되추론하던 것을,
+        // 결정 시점의 이 포인터 비교로 데이터화해 PageItem에 함께 싣는다.
+        let row_cursor_is_nested = !std::ptr::eq(row_geometry_table, table);
         // [#2424 프로파일] fragment 루프 하위 단계 누적 — closure 1회 = fragment 판정 1회.
         // 스캔 두 곳 외의 잔여(배치·각주 큐·커서 전진)는 total−scan−refit 로 산출한다.
         let issue2424_step_enabled =
@@ -20829,6 +20841,7 @@ impl TypesetEngine {
                         start_cut: continuation.start_cut.clone(),
                         end_cut: Vec::new(),
                         is_block_split: start_cut_is_block,
+                        row_cursor_is_nested,
                     });
                     // 마지막 fragment: spacing_after만 포함 (Paginator engine.rs:1051 동일)
                     // host line advance/positive offset은 원 anchor 조각의 계약이며,
@@ -20905,6 +20918,7 @@ impl TypesetEngine {
                 end_cut: split_end_cut.clone(),
                 // [Task #1025] 이번 분할이 블록 분할이거나 start_cut 이 이미 블록 인덱스.
                 is_block_split: split_block_start.is_some() || start_cut_is_block,
+                row_cursor_is_nested,
             });
             // [#2238] 중간 fragment 가시높이 부기 — used_height(flush 시 current_height)
             // 표시용. advance 직후 current_height 가 리셋되므로 흐름/기하 불변.
@@ -22808,6 +22822,7 @@ mod tests {
                 start_cut: Vec::new(),
                 end_cut: Vec::new(),
                 is_block_split: false,
+                row_cursor_is_nested: false,
             }]),
             page_with_items(vec![PageItem::PartialTable {
                 para_index: 7,
@@ -22818,6 +22833,7 @@ mod tests {
                 start_cut: Vec::new(),
                 end_cut: Vec::new(),
                 is_block_split: false,
+                row_cursor_is_nested: false,
             }]),
         ];
 
