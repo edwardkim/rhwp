@@ -1040,8 +1040,14 @@ def render_target(
     export_log = base / "export.log"
     tree_log = base / "render_tree.log"
     if not any(svg_dir.glob("*.svg")):
+        # 증적 SVG는 원 문서의 legacy face를 그대로 쓰되, `--font-style`이
+        # `한양중고딕 → HY중고딕/HYGothic-Medium` 같은 설치명 alias를 @font-face
+        # local()로 명시한다. 렌더 위치는 rhwp가 이미 확정한 SVG 좌표를 유지하므로
+        # PDF 비교의 layout oracle을 바꾸지 않으며, 검증 host에서 한글이 두부(□)로
+        # rasterize되는 것을 막는다. 실제 폰트 데이터는 저작권 폰트를 증적에 복제하지
+        # 않도록 넣지 않고, portable 판정본은 아래 PNG review/compare로 보관한다.
         run(
-            [rhwp_bin, "export-svg", str(hwp), "-o", str(svg_dir)],
+            [rhwp_bin, "export-svg", str(hwp), "--font-style", "-o", str(svg_dir)],
             cwd=root,
             log_path=export_log,
         )

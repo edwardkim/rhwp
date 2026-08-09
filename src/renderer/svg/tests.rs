@@ -54,6 +54,23 @@ fn test_svg_draw_text_medium_weight() {
 }
 
 #[test]
+fn legacy_hanyang_faces_have_portable_local_aliases() {
+    // HWPX가 저장한 legacy face와 실제 설치 font의 family/full name이 다르다.
+    // `--font-style` SVG가 이 순서를 잃으면 검증 host에서 무관한 폴백 또는
+    // 두부(□)로 rasterize되어 PDF 대조 증적이 무효해진다.
+    assert_eq!(
+        font_local_aliases("한양중고딕"),
+        vec!["한양중고딕", "HY중고딕", "HYGothic-Medium"]
+    );
+    assert_eq!(known_font_filenames("한양중고딕"), vec!["H2GTRM.TTF"]);
+    assert_eq!(
+        known_font_filenames("휴먼명조").first(),
+        Some(&"HMKMM.TTF"),
+        "휴먼명조에는 HY견명조(HYMJRE)가 아니라 HMKMM을 우선 사용해야 함"
+    );
+}
+
+#[test]
 fn test_svg_draw_text_superscript_adjusts_baseline_and_size() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);

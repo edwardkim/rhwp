@@ -3497,6 +3497,13 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
         "바탕체" => vec!["바탕체", "BatangChe"],
         "궁서" => vec!["궁서", "Gungsuh"],
         "궁서체" => vec!["궁서체", "GungsuhChe"],
+        // HWPX는 legacy face `한양중고딕`을 보존하지만, 설치된 한양 글꼴의
+        // family/full name은 각각 `HY중고딕`/`HYGothic-Medium`이다. 이 별칭을
+        // `--font-style`과 portable SVG의 local() 해석에 모두 남겨야 글꼴이
+        // 설치된 검증 host에서 Verdana 같은 무관한 폴백이나 두부로 떨어지지 않는다.
+        "한양중고딕" => vec!["한양중고딕", "HY중고딕", "HYGothic-Medium"],
+        "HY중고딕" => vec!["HY중고딕", "HYGothic-Medium"],
+        "휴먼명조" => vec!["휴먼명조", "HumanMyeongJo"],
         _ => vec![],
     }
 }
@@ -3511,6 +3518,7 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
             vec!["hamchod-r.ttf", "HDOTUM.TTF"]
         }
         "HY헤드라인M" | "HYHeadLine M" => vec!["H2HDRM.TTF"],
+        "HY중고딕" | "HYGothic-Medium" | "한양중고딕" => vec!["H2GTRM.TTF"],
         "HY견고딕" | "HYGothic-Extra" | "한양견고딕" => vec!["HYGTRE.TTF"],
         "HY그래픽" | "HYGraphic-Medium" => vec!["HYGPRM.TTF"],
         "HY견명조" | "HYMyeongJo-Extra" | "한양견명조" => vec!["HYMJRE.TTF"],
@@ -3529,7 +3537,9 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         "궁서" | "Gungsuh" => vec!["gungsuh.ttc", "GUNGSUH.TTC", "hamchob-r.ttf"],
         "굴림체" | "GulimChe" => vec!["gulim.ttc", "hamchod-r.ttf"],
         "바탕체" | "BatangChe" => vec!["batang.ttc", "hamchob-r.ttf"],
-        "휴먼명조" => vec!["HYMJRE.TTF", "hamchob-r.ttf"],
+        // Human Myeongjo의 실제 배포 파일은 HMKMM.TTF다. HYMJRE은 HY견명조라
+        // `휴먼명조` SVG를 임베드/스타일로 내보낼 때 우선 후보가 될 수 없다.
+        "휴먼명조" => vec!["HMKMM.TTF", "HYMJRE.TTF", "hamchob-r.ttf"],
         "새바탕" | "새돋움" | "새굴림" | "새궁서" => {
             vec!["hamchob-r.ttf", "hamchod-r.ttf"]
         }

@@ -108,9 +108,12 @@ rhwp export-svg samples/exam_kor.hwp \
 우선한다. 자세한 폰트 fallback 동작은 [export-png 명령 가이드](../export_png_command.md)의
 폰트 섹션을 참고한다.
 
-현재 `scripts/visual_sweep.py`는 `export-svg` 호출에 `--font-path`를 전달하지
-않는다. 자동 sweep은 시스템 fontconfig와 기본 탐색 경로 기준으로 실행되므로,
-폰트 민감 문서는 다음 중 하나로 판정한다.
+현재 `scripts/visual_sweep.py`는 `export-svg --font-style`을 사용한다. 이는 SVG에
+`@font-face src: local(...)` 별칭을 넣어 원 문서의 legacy face와 실제 설치 family/full name
+차이(예: `한양중고딕` → `HY중고딕`/`HYGothic-Medium`) 때문에 SVG raster가 두부(□)로
+떨어지는 것을 줄인다. 이 옵션은 SVG 좌표를 바꾸거나 글꼴 바이너리를 embed하지 않으며,
+`--font-path`를 전달하는 것은 아니다. 자동 sweep은 여전히 시스템 fontconfig와 기본 탐색 경로
+기준으로 실행되므로, 폰트 민감 문서는 다음 중 하나로 판정한다.
 
 - 컨트리뷰터와 메인테이너가 동일한 공개 한글 폰트 환경을 맞춘 뒤 sweep 실행
 - `rhwp export-svg --font-path ...`로 수동 SVG를 내보내고 별도 시각 판정

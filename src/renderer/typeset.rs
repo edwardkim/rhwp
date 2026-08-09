@@ -18241,13 +18241,63 @@ impl TypesetEngine {
                 mt.max_padding_for_row(r)
             };
             let budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
-            let res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
+            let mut res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
             // [#2236 진단] 인트라 컷 시도 결과 — 동작 불변.
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(
                     "DIAG_SCAN CUT_TRY r={} budget={:.1} padding={:.1} consumed_h={:.1} fully={} end_cut={:?}",
                     r, budget, padding, res.consumed_height, res.fully_consumed, res.end_cut
                 );
+            }
+            // Native HWP5의 empty-host → 1×1 child → 내부 표 형상은 child 본문의
+            // 앞 몇 줄만 쪽 끝에 두면 실제 ink가 다음 internal table보다 한 쪽 먼저
+            // 누출한다. 선행 묶음 전체가 새 본문에는 들어가는 경우에만, 현재 row를
+            // 소비하지 않고 새 page에서 다시 시작한다 (86712 r27).
+            if r > cursor_row
+                && layout_engine.should_defer_fresh_rowbreak_wrapper_prefix(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    st.layout.body_area.height,
+                    styles,
+                )
+            {
+                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                    eprintln!(
+                        "DIAG_SCAN DEFER_WRAPPER_PREFIX r={} end_cut={:?}",
+                        r, res.end_cut
+                    );
+                }
+                end_row = r;
+                break;
+            }
+            if r == cursor_row && row_start_cut.is_empty() {
+                if let Some(safe_end_cut) = layout_engine
+                    .fresh_rowbreak_wrapper_safe_prefix_end_cut(
+                        table,
+                        r,
+                        row_start_cut,
+                        &res.end_cut,
+                        styles,
+                    )
+                {
+                    let safe_total = layout_engine.row_cut_content_height(
+                        table,
+                        r,
+                        row_start_cut,
+                        &safe_end_cut,
+                        styles,
+                    );
+                    res.end_cut = safe_end_cut;
+                    res.consumed_height = (safe_total - padding).max(0.0);
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN SAFE_WRAPPER_PREFIX r={} consumed_h={:.1} end_cut={:?}",
+                            r, res.consumed_height, res.end_cut
+                        );
+                    }
+                }
             }
             if res.fully_consumed {
                 // [#2236] rowspan 블록 중간 행 밴드 컷: 행 자체 콘텐츠는 예산 안에

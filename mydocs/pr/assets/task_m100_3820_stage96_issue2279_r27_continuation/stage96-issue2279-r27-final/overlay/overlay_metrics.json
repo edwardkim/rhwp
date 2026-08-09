@@ -1,0 +1,97 @@
+{
+  "summary": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 88.62446,
+    "worst_pixel_match_percent": 85.98348,
+    "average_ink_match_percent": 8.73948,
+    "worst_ink_match_percent": 7.20295,
+    "average_visual_accuracy_proxy_percent": 8.73948,
+    "worst_visual_accuracy_proxy_percent": 7.20295,
+    "worst_pages": [
+      28,
+      27,
+      29
+    ]
+  },
+  "pages": [
+    {
+      "page": 27,
+      "rhwp_png": "/tmp/rhwp-stage96-final-current/stage96-issue2279-r27-final-current/rhwp_png/rhwp_027.png",
+      "pdf_png": "/tmp/rhwp-stage96-final-current/stage96-issue2279-r27-final-current/pdf_png/pdf-27.png",
+      "overlay_png": "/tmp/rhwp-stage96-final-current/stage96-issue2279-r27-final-current/overlay/overlay_027.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 96897,
+      "diff_ratio": 0.1086701,
+      "pixel_match_percent": 89.13299,
+      "ink_union_pixels": 105286,
+      "ink_diff_pixels": 96897,
+      "ink_diff_ratio": 0.92032179,
+      "ink_match_percent": 7.96782,
+      "visual_accuracy_proxy_percent": 7.96782,
+      "mean_abs_channel_delta": 18.789,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        75,
+        712,
+        1083
+      ]
+    },
+    {
+      "page": 28,
+      "rhwp_png": "/tmp/rhwp-stage96-final-current/stage96-issue2279-r27-final-current/rhwp_png/rhwp_028.png",
+      "pdf_png": "/tmp/rhwp-stage96-final-current/stage96-issue2279-r27-final-current/pdf_png/pdf-28.png",
+      "overlay_png": "/tmp/rhwp-stage96-final-current/stage96-issue2279-r27-final-current/overlay/overlay_028.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 124980,
+      "diff_ratio": 0.14016522,
+      "pixel_match_percent": 85.98348,
+      "ink_union_pixels": 134681,
+      "ink_diff_pixels": 124980,
+      "ink_diff_ratio": 0.92797054,
+      "ink_match_percent": 7.20295,
+      "visual_accuracy_proxy_percent": 7.20295,
+      "mean_abs_channel_delta": 21.403,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        75,
+        712,
+        1083
+      ]
+    },
+    {
+      "page": 29,
+      "rhwp_png": "/tmp/rhwp-stage96-final-current/stage96-issue2279-r27-final-current/rhwp_png/rhwp_029.png",
+      "pdf_png": "/tmp/rhwp-stage96-final-current/stage96-issue2279-r27-final-current/pdf_png/pdf-29.png",
+      "overlay_png": "/tmp/rhwp-stage96-final-current/stage96-issue2279-r27-final-current/overlay/overlay_029.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 82417,
+      "diff_ratio": 0.09243076,
+      "pixel_match_percent": 90.75692,
+      "ink_union_pixels": 92653,
+      "ink_diff_pixels": 82417,
+      "ink_diff_ratio": 0.88952328,
+      "ink_match_percent": 11.04767,
+      "visual_accuracy_proxy_percent": 11.04767,
+      "mean_abs_channel_delta": 15.611,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        75,
+        712,
+        1083
+      ]
+    }
+  ]
+}
