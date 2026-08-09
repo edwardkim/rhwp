@@ -19,8 +19,8 @@ loaded documents: `pr_review_workflow.md`, `pr_review/README.md`,
 `multi_pr_update_branch.md`, `review_only_fast_pass.md`,
 `codex/docs_and_git_workflow.md`
 
-current head: `67e7c3bcdb29753532c4f4d500cbf2d5d003b6d0` (로컬 메인터너 보정,
-remote push 전)
+current head: `f42bf99fb39de80f8ff48d03bff2130aceec7ef5` (후속 로컬 메인터너
+문서 보정, trailing review 갱신 전·remote push 전)
 
 GitHub reviewer assign은 이 독립 검토 작업의 명시적 GitHub mutation 금지 때문에
 수행하지 않았다.
@@ -72,6 +72,26 @@ commit 위에 적층돼야 한다는 뜻은 아니다.
   input/output 영수증이 선행되어야 함을 명시했다.
 - C2PA의 무결성·서명 보장과 레시피 재현성을 구분하고 공식 spec을 연결했다.
 
+후속 독립 재검토에서는 세 경계를 더 좁혔다. 첫째, file identity를 방문 주키에
+사용하면 hardlink alias의 서로 다른 접근 base가 같은 inode라는 이유로 합쳐져 상대
+parent 계보 하나를 건너뛸 수 있었다. 둘째, v1.1 "전체 예시"가 4 node·3 edge star로
+남아 본문이 정의한 5 node 합본 DAG와 맞지 않았다. 셋째, C2PA 설명이 active asset의
+현재 hard binding 검증과 ingredient 추가 시점의 validation record를 구분하지 않았다.
+
+후속 문서 보정 `f42bf99f`는 다음을 반영했다.
+
+- 방문 주키를 `(canonicalized access path, resolution base)`로 한정했다. file-id는
+  symlink 보조 확인·보고에만 쓰고 hardlink dedup을 금지했으며, M2 DoD에 hardlink
+  alias distinct-lineage 회귀를 추가했다.
+- v1.1 봉투 예시를 D→{A,B,C}→S의 5 node·6 edge로 완성했다. node id, 각 edge의
+  slot digest, `roots:[4]`, `nodeCount:5`, `edgeCount:6`, head=1 기준 node depth와
+  `maxDepth:3`이 모두 일치한다.
+- C2PA active asset은 hard binding으로 현재 asset/manifest 변조를 검출하지만,
+  ingredient bytes가 보통 포함되지 않아 소비자가 ingredient hard binding을 같은
+  방식으로 다시 검증하지 못한다는 2.2 §7.3.2 경계를 기록했다. ingredient 추가 당시
+  hard binding·credential 유효성을 검사해 validation record를 남기는 보장과 replay
+  재현을 분리했다.
+
 contributor commit은 rewrite하지 않았고 보정은 원 head의 single-parent 후속
 commit이다.
 
@@ -83,8 +103,9 @@ commit이다.
 | `python scripts/check_markdown_links.py --changed-from refs/remotes/origin/devel ...` | 통과, 변경 문서 2개 |
 | `python scripts/check_document_metadata.py` | 통과, 522개 문서 이상 없음 |
 | `python tools/roadmap_progress.py` | 통과, 100개 트랙 집계·결번 0·중복 0·README 일치 |
+| v1.1 예시 JSON parse·그래프 불변식 대조 | 통과, 5 node·6 edge·root 4·`maxDepth:3`, 모든 edge id 유효 |
 | `git diff --check` | 통과 |
-| 원문 대조 | arXiv 4건의 제목·핵심 수치, C2PA 2.2 spec, Hugging Face `base_model` 공식 문서 확인 |
+| 원문 대조 | arXiv 4건, C2PA 2.2 §7.3.2 active/ingredient 경계, Hugging Face `base_model` 공식 문서 확인 |
 | Cargo / 시각 검증 | 생략. source·test·fixture·renderer 변경 없음 |
 
 ## 리스크와 권고
