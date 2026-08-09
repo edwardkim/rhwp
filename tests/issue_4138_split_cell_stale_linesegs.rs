@@ -42,11 +42,44 @@ fn target_table(doc: &rhwp::wasm_api::HwpDocument) -> &Table {
 /// 편집한 native HWP의 제품 경로는 저장 뒤 다시 여는 것이다. 메모리 `page_count()`는
 /// serializer가 정규화하는 line segment/문단 상태를 거치지 않으므로, 한컴 PDF와의
 /// 쪽수 oracle에는 저장본을 재파싱한 값만 사용한다.
-fn saved_hwp_page_count(doc: &rhwp::wasm_api::HwpDocument) -> u32 {
+fn saved_hwp(doc: &rhwp::wasm_api::HwpDocument) -> rhwp::wasm_api::HwpDocument {
     let bytes = doc.export_hwp_native().expect("분할 HWP 저장");
-    rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .expect("분할 HWP 재파싱")
-        .page_count()
+    rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("분할 HWP 재파싱")
+}
+
+fn paragraph_instance_id(para: &rhwp::model::paragraph::Paragraph) -> Option<u32> {
+    para.raw_header_extra
+        .get(6..10)
+        .map(|bytes| u32::from_le_bytes(bytes.try_into().expect("instanceId 4바이트")))
+}
+
+/// `Cell::new_from_template`가 만든 오른쪽 빈 peer의 zeroed instanceId는 HWP5
+/// 저장·재파싱 뒤에도 남는다. 이 값과 clone metadata가 renderer의 strict-cut
+/// provenance이므로 실제 제품 저장 경계에서 직접 고정한다.
+fn saved_hwp_page_count_and_split_provenance(doc: &rhwp::wasm_api::HwpDocument) -> u32 {
+    let reparsed = saved_hwp(doc);
+    let table = target_table(&reparsed);
+    let source = table
+        .cells
+        .iter()
+        .find(|cell| cell.row == TARGET_ROW && cell.col == 0)
+        .expect("분할 원문 셀");
+    let peer = table
+        .cells
+        .iter()
+        .find(|cell| cell.row == TARGET_ROW && cell.col == 1)
+        .expect("분할 빈 peer");
+    assert_ne!(
+        paragraph_instance_id(&source.paragraphs[0]),
+        Some(0),
+        "원문 셀 첫 문단은 기존 instanceId를 보존해야 한다"
+    );
+    assert_eq!(
+        paragraph_instance_id(&peer.paragraphs[0]),
+        Some(0),
+        "new_from_template 빈 peer는 저장 뒤에도 zeroed instanceId여야 한다"
+    );
+    reparsed.page_count()
 }
 
 /// 저장 seg 폭이 셀 폭을 넘는(=옛 폭 기준 stale) 문단 수.
@@ -144,7 +177,7 @@ fn split_cell_into_reflows_stale_segs_and_rebuilds_ladder() {
 
     // 한컴 2020은 같은 1×2 분할 저장본을 197쪽 PDF로 출력한다. 제품 경로인 native
     // HWP 저장→재파싱에서도 정확히 같은 쪽수를 유지해야 한다.
-    let pages = saved_hwp_page_count(&doc);
+    let pages = saved_hwp_page_count_and_split_provenance(&doc);
     assert_eq!(
         pages, 197,
         "#4138 회귀: 저장 뒤 재파싱 쪽수 {pages} (한컴 2020 PDF=197)"
@@ -178,7 +211,7 @@ fn split_cells_in_range_reflows_stale_segs() {
         "#4138 회귀(범위 분할): text + inline control source line 재결합"
     );
     assert_eq!(
-        saved_hwp_page_count(&doc),
+        saved_hwp_page_count_and_split_provenance(&doc),
         197,
         "#4138 회귀(범위 분할): 저장 뒤 재파싱 쪽수 불일치"
     );

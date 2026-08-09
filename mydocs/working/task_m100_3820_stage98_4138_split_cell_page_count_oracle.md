@@ -454,22 +454,29 @@ span하고 대상 행에는 원문 셀과 `new_from_template`로 만든 빈 셀�
 제거한 대조는 2쪽으로 복구돼 인과를 분리했다. 새 #4138 split-topology strict-cut은 이
 fixture에서 발동하지 않는다.
 
-보정은 native visible-host 선방출을 번호가 명시된 `표 N`/`Table N` 캡션으로 한정한다.
-`표 27`과 `Table 27`은 양성, `1. 편성기준`과 `표 작성 기준`은 음성인 단위 회귀를 추가했다.
+보정은 native visible-host 선방출을 번호가 명시된 `표 N`/`Table N` 캡션 또는 문단의 직접
+`AutoNumber(Table)`/`NewNumber(Table)` 컨트롤로 한정한다. `표 27`과 `Table 27`, literal 번호
+대신 표 자동번호를 가진 문단은 양성이고, `1. 편성기준`, `표 작성 기준`, 다른 종류 자동번호는
+음성인 단위 회귀를 추가했다.
 그 결과 `issue_2097_bottom_squeeze_page_pins`는 다시 1/1 통과하면서 정책 p90의 실제 캡션
 선방출 계약은 유지된다.
 
 한편 split 판별은 단순한 `col_count > 1`/full-span 행 공존만으로는 실제 다열 표와 충돌할 수
-있다. 저장 뒤에도 유지되는 다음 두 조건을 모두 요구하도록 문서화·구현했다.
+있다. 저장 뒤에도 유지되는 다음 조건을 모두 요구하도록 문서화·구현했다.
 
 1. 정확히 2열이고 현재 행 외의 셀은 모두 새 열 수 전체를 span한다.
-2. 현재 continuation 행은 폭·높이·padding·border가 같은 독립 2셀이고, 하나만 실제 본문을
-   가지며 다른 하나는 `new_from_template`가 만든 단일 빈 문단 셀이다.
+2. 현재 continuation 행은 폭·높이·padding·border가 같은 독립 2셀이고, 왼쪽 셀만 실제 본문을
+   가지며 오른쪽 셀은 단일 빈 문단이다.
+3. 원문 첫 문단의 nonzero `instanceId`와 달리 빈 peer의 `instanceId`는 0이고, 이 4바이트를
+   제외한 raw header·첫 char shape·첫 LineSeg·문단 shape/style·셀 raw metadata가 clone 관계다.
 
 이는 `split_cell_into`가 원문 셀은 유지하고 새 짝 셀만 빈 템플릿으로 만드는 실제 구현과
-저장본 구조를 직접 식별한다. 구현은 두 셀의 폭(1 HwpUnit 이내)·높이·border fill·네 방향
-padding, 두 셀의 독립 1×1 span, 다른 행의 전폭 span까지 함께 확인한다. 즉 같은 본문을
-가진 일반 2열 행이나 원래부터 다열인 표에는 발동하지 않는다.
+저장본 구조를 직접 식별한다. 실제 #4138 HWP 저장→재파싱본에서 원문 셀 첫 문단은
+`instanceId=0x80000000`, 빈 peer는 `instanceId=0`이고 이 차이가 보존된다. 구현은 두 셀의
+폭(1 HwpUnit 이내)·높이·border fill·네 방향 padding, 두 셀의 독립 1×1 span, 다른 행의 전폭
+span까지 함께 확인한다. 양쪽 본문 행과 독립 nonzero instanceId의 자연 빈 셀은 제외된다.
+실제 자연작성 반례 `issue1858_paper_anchor_float_stack.hwpx`의 빈 왼쪽/본문 오른쪽 행도
+방향·instanceId 조건에서 제외되고 기존 1쪽 pin을 유지한다.
 
 검증 결과는 다음과 같다.
 
@@ -501,11 +508,14 @@ focused 및 clippy를 다시 확인했고 결과는 아래에 기록했다.
 ### 커밋 전 반례 감사와 추가 보정 계획
 
 커밋 직전 구조 감사에서 기존 양성 fixture만으로는 드러나지 않는 두 반례를 확인했다. 먼저
-split topology의 빈 짝 셀은 현재 단일 빈 문단과 짧은 char stream만 검사한다. 그러나 실제
-`new_from_template`가 만든 셀은 문단의 `has_para_text`도 `false`다. 이 플래그를 확인하지
-않으면 사용자가 원래 만든 빈 우측 셀을 가진 2열 RowBreak 표가 희박하게 strict-cut 대상으로
-오인될 수 있다. 따라서 template-empty 조건에 `has_para_text == false`를 추가하고, 보이는
-문자는 비어 있어도 `has_para_text == true`인 자연 작성 셀을 음성 회귀로 고정한다.
+split topology의 빈 짝 셀은 단일 빈 문단과 짧은 char stream만으로 식별할 수 없다.
+`has_para_text=false`는 HWPX의 자연 작성 빈 셀에도 생기며, 실제
+`issue1858_paper_anchor_float_stack.hwpx`가 전폭 행 뒤 빈 왼쪽/본문 오른쪽 2열 구조를 가진다.
+따라서 이 플래그는 빈 셀의 필요조건으로만 두고, `split_cell_into(1×2)`가 만드는 본문 왼쪽·
+peer 오른쪽 방향과 `new_from_template`의 zeroed instanceId, 나머지 raw metadata clone 관계를
+함께 요구한다. `has_para_text=true`, 독립 nonzero instanceId, 빈 왼쪽/본문 오른쪽을 각각 음성
+회귀로 고정하고, #4138 실제 HWP 저장→재파싱 integration에서 원문 nonzero/peer zero instanceId를
+직접 단언한다.
 
 둘째, `char_index_to_utf16_offset`의 마지막 fallback이 `char_offsets`가 완전히 비어 있을 때
 문자 인덱스를 그대로 반환한다. BMP 문자에는 우연히 맞지만 `"😀\\n"`처럼 surrogate pair가
@@ -528,9 +538,11 @@ split topology의 빈 짝 셀은 현재 단일 빈 문단과 짧은 char stream�
 
 - `issue_2430_cell_rewrap_threshold`: 2/2 passed.
 - `utf16_offset_tests`: 2/2 passed. control-gap stream end 18과 `"😀\\n"` end 3을 직접 고정했다.
-- `reparsed_single_column_split_topology_is_narrow`: 1/1 passed. `has_para_text=true`인 자연 작성
-  빈 셀 음성 반례를 포함한다.
-- `issue_4138_split_cell_stale_linesegs`: 2/2 passed. 저장·재파싱 결과는 197쪽이다.
+- `reparsed_single_column_split_topology_is_narrow`: 1/1 passed. `has_para_text=true`, 독립 nonzero
+  instanceId, 빈 왼쪽/본문 오른쪽의 자연 작성 반례를 포함한다.
+- `issue_4138_split_cell_stale_linesegs`: 2/2 passed. 저장·재파싱 결과는 197쪽이며 원문
+  instanceId nonzero/빈 peer zero를 직접 단언한다.
+- `issue_1858`: 1/1 passed. 자연작성 빈 왼쪽/본문 오른쪽 표를 포함한 문서의 1쪽 pin을 보존한다.
 - `test_cursor_rect_after_line_break_at_end`: 1/1 passed.
 - `issue2424_resumable_pagination_commits_only_after_final_fragment`: 1/1 passed, 원본 115쪽이다.
 - `issue_1921_59043_pagination_pin`: 5/5 passed. p8 사각 그림의 셀 내부 containment를 포함한다.

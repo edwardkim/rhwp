@@ -783,6 +783,9 @@ fn is_reparsed_single_column_cell_split_row(
 
     let content_cell = content_cells[0];
     let template_cell = template_cells[0];
+    if content_cell.col != 0 || template_cell.col != 1 {
+        return false;
+    }
     let Some(source_para) = content_cell.paragraphs.first() else {
         return false;
     };
@@ -22857,6 +22860,14 @@ mod tests {
         assert!(
             !is_reparsed_single_column_cell_split_row(&natural_blank, 1),
             "독립 instanceId를 가진 자연 작성 빈 셀은 zeroed template clone이 아니다"
+        );
+
+        let mut blank_left = split.clone();
+        blank_left.cells[1].col = 1;
+        blank_left.cells[2].col = 0;
+        assert!(
+            !is_reparsed_single_column_cell_split_row(&blank_left, 1),
+            "빈 왼쪽/본문 오른쪽의 자연 2열 행은 split_cell_into(1×2) 형상이 아니다"
         );
 
         let mut mixed_grid = split;
