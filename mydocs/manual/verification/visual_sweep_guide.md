@@ -24,6 +24,8 @@ last_verified: 2026-08-08
 - **그림·float 주변의 본문이 좁은 세로 열로 재흐름한 단별 text-flow collapse 후보**
 - **Square/Tight/Through 그림의 물리 box를 본문 TextLine이 3행 이상 가로지르거나 edge에 맞닿는 후보**
 - **우측 Body 표의 좌측 strip은 PDF에 본문 잉크가 있지만 rhwp에서 거의 비는 non-inline table wrap 후보**
+- **표 셀의 visible line 경계 침범 또는 visible-ending 자연 text 폭 위험 후보**
+- **명시적 SVG clip이 glyph 근사 band의 상·하단을 2px 이상 부분 절단하는 후보**
 - **구조 heuristic에 걸리지 않는 glyph·PUA·제품명 표시 차이**의 review 후보
 
 이 도구의 절차상 지위는 [시각 검증 거버넌스의 라우팅 표](visual_verification_governance.md)를
@@ -37,6 +39,13 @@ PR에서는 이 가이드를 직접 시작점으로 쓴다.
 직접 재사용하여 `square_wrap_text_overlap` flag와 annotation으로 남긴다. 반면 PDF↔SVG text owner,
 그림 앞 문단의 `float-owner-shift`, 표 fragment, page-count ledger는 sweep이 다시 계산하지 않으므로
 fidelity 원장을 함께 보존해야 한다.
+표 우측선 밖으로 문단이 돌출되는 경우에는 `table-cell-text-boundary-candidates.tsv`, 페이지 경계나
+셀 clip에서 글자 윗부분·아랫부분이 잘리는 경우에는 `svg-text-band-clip-candidates.tsv`를 먼저 본다.
+전자는 중첩 셀을 자기 소유 Cell에만 귀속하고, overflowing edge가 선행/후행 공백뿐인 TextRun은
+제외한다. visible 문자로 끝나는 자연 폭은 `natural_visible_width_risk`로 올리지만 저장 자간/justify
+뒤에는 실제 glyph가 안쪽에 들어올 수 있다.
+후자는 완전히 clip 밖인 stale text를 제외한다. 글꼴 bbox와 근사 glyph band 때문에 false positive가
+가능하므로 physical page의 PDF/rhwp raster로 반드시 확정한다.
 이 bridge의 render tree가 없거나 JSON이 손상되면 sweep은 `flagged=0`을 보고하지 않고 실패해야 한다.
 `fidelity_compare`의 Python 환경과 실행 명령은
 [도구 README](../../../tools/fidelity_compare/README.md)를 따른다. 저장소 로컬 `venv/`의 공통
@@ -458,6 +467,12 @@ summary: /path/to/rhwp/output/task1274/summary.json
   오인되는 false positive를 막기 위한 것이며, 표 row fragment·owner가 같다는 뜻은 아니다. 표가 관련된
   페이지는 `fidelity_compare` text ledger, table/footer/frame 후보와 3-way review를 별도로 확인한다.
 - `line`, `column`, `order` 후보는 실제 시각 차이인지 false positive인지 비교 이미지를 열어 확인한다.
+- `table-cell-text-boundary`의 `line_boundary_overflow`는 line bbox 자체의 침범이고,
+  `natural_visible_width_risk`는 visible 문자로 끝나는 run의 자연 폭 위험이다. 후자는 PDF와
+  최종 SVG glyph 위치에서 실제 선을 넘는지로 확정한다. 중첩 표 text는 외부 셀 후보로 합산하지 않는다.
+- `svg-text-band-clip` 후보는 glyph 상·하단의 partial clip만 뜻한다. 같은 줄의 연속 glyph가 여러 행으로
+  기록될 수 있으므로 `(page, clip_ids, baseline_y, edges)` 단위로 묶어 review한다. 근사 ink band는
+  baseline `-0.8em..+0.2em`이므로 exact font outline이나 raster 판정을 대신하지 않는다.
 - 후보가 남아도 메인테이너 SVG/웹/한컴 시각 판정이 통과하면 blocker가 아닐 수 있다.
 
 요약만 빠르게 보기:

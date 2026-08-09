@@ -994,6 +994,14 @@ HWP 문서를 HWPX(ZIP+XML)로 변환 저장. `convert`(배포용 해제)와 별
   `table-fragment-candidates.tsv`는 같은 source `(pi, ci)` Body 표가 인접 render-tree 쪽에 연속한 경우와
   표/footer·frame 신호, 또는 쪽 하단 표와 24자 이상 text delta를 rows/cols·bbox·쪽 신호와 함께 묶는다.
   이는 visual review 우선순위 후보일 뿐 **PDF table row owner나 표 분할 정답을 판정하지 않는다.**
+  `table-cell-text-boundary-candidates.tsv`는 visible TextLine이 소유 Cell 경계를 2px 이상 넘거나
+  visible 문자로 끝나는 자연 TextRun 폭이 선을 넘는 p34형 위험을 기록한다. 후자는
+  `natural_visible_width_risk`로 구분하며 저장 자간/justify 뒤 실제 glyph 침범을 뜻하지 않는다.
+  overflowing edge가 그리지 않는 선행/후행 공백뿐이면 후보에서 제외한다.
+  `svg-text-band-clip-candidates.tsv`는 명시적 SVG clip이 glyph 근사 band의 상·하단을 2px 이상 부분
+  절단하는 글자 잘림을 기록한다. band는 baseline `-0.8em..+0.2em`이며 완전히 clip 밖인 stale
+  continuation과 중첩 셀의 외부 소유
+  오인은 제외하지만, 두 원장 모두 PDF raster로 확정해야 하는 candidate다.
   `page-count-ledger.tsv`는 PDF↔전체 SVG/render-tree page count drift를 별도로 드러낸다. 이 신호들은
   모두 candidate일 뿐 전역 page-break 보정의 근거는 아니다. 같은 문자만으로는 표 row geometry·same-page
   overlap을 판정할 수 없다.

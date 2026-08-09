@@ -869,6 +869,244 @@ def text_line_has_visible_paint(node: Mapping[str, object]) -> bool:
     return visible or not found_text_run
 
 
+def visible_text_run_text(node: Mapping[str, object]) -> str | None:
+    """Return painted TextRun text, excluding blank/private layout markers."""
+    if node.get("type") != "TextRun":
+        return None
+    display = node.get("displayText")
+    source = node.get("text")
+    text = display if isinstance(display, str) else source
+    if not isinstance(text, str) or not text.replace("\U000f081c", "").strip():
+        return None
+    return text
+
+
+def table_cell_text_boundary_candidates(
+    tree: Mapping[str, object],
+    *,
+    minimum_overflow_px: float = 2.0,
+) -> list[dict[str, object]]:
+    """Find painted line boxes and visible-ending natural width risks in Cells.
+
+    A TextRun bbox is its natural measured width, not necessarily the final SVG
+    glyph extent after stored spacing/justification.  A run whose overflowing
+    edge is only trailing/leading whitespace is therefore ignored while a run
+    ending in a visible character remains a review candidate.  A TextLine that
+    itself crosses the Cell is reported directly. Descendant Cells are never
+    charged to an outer Cell, and wholly detached retained continuation nodes
+    are ignored.
+    """
+    candidates: list[dict[str, object]] = []
+
+    def collect_owned_text_lines(
+        cell: Mapping[str, object],
+    ) -> list[
+        tuple[
+            tuple[float, float, float, float],
+            list[tuple[tuple[float, float, float, float], str]],
+            bool,
+        ]
+    ]:
+        lines: list[
+            tuple[
+                tuple[float, float, float, float],
+                list[tuple[tuple[float, float, float, float], str]],
+                bool,
+            ]
+        ] = []
+
+        def collect_runs(
+            node: Mapping[str, object],
+            runs: list[tuple[tuple[float, float, float, float], str]],
+        ) -> None:
+            if node.get("type") == "Cell":
+                return
+            text = visible_text_run_text(node)
+            if text is not None:
+                box = bbox_from_node(node)
+                if box is not None and box[2] > 0.0 and box[3] > 0.0:
+                    runs.append((box, text))
+            children = node.get("children")
+            if isinstance(children, list):
+                for child in children:
+                    if isinstance(child, Mapping):
+                        collect_runs(child, runs)
+
+        def walk(node: Mapping[str, object], *, is_owner: bool) -> None:
+            if not is_owner and node.get("type") == "Cell":
+                return
+            if node.get("type") == "TextLine":
+                line_box = bbox_from_node(node)
+                if line_box is None or line_box[2] <= 0.0 or line_box[3] <= 0.0:
+                    return
+                runs: list[tuple[tuple[float, float, float, float], str]] = []
+                collect_runs(node, runs)
+                visible = bool(runs) or text_line_has_visible_paint(node)
+                if visible:
+                    lines.append((line_box, runs, visible))
+                return
+            children = node.get("children")
+            if isinstance(children, list):
+                for child in children:
+                    if isinstance(child, Mapping):
+                        walk(child, is_owner=False)
+
+        walk(cell, is_owner=True)
+        return lines
+
+    def inspect_cell(
+        cell: Mapping[str, object], table: Mapping[str, object] | None
+    ) -> None:
+        cell_box = bbox_from_node(cell)
+        if cell_box is None or cell_box[2] <= 0.0 or cell_box[3] <= 0.0:
+            return
+        cell_left, cell_top, cell_width, cell_height = cell_box
+        cell_right = cell_left + cell_width
+        cell_bottom = cell_top + cell_height
+        def overflow_for(
+            box: tuple[float, float, float, float],
+        ) -> dict[str, float]:
+            box_left, box_top, box_width, box_height = box
+            box_right = box_left + box_width
+            box_bottom = box_top + box_height
+            return {
+                "left": max(0.0, cell_left - box_left),
+                "right": max(0.0, box_right - cell_right),
+                "top": max(0.0, cell_top - box_top),
+                "bottom": max(0.0, box_bottom - cell_bottom),
+            }
+
+        def overlaps_cell(box: tuple[float, float, float, float]) -> bool:
+            box_left, box_top, box_width, box_height = box
+            return (
+                min(cell_right, box_left + box_width) - max(cell_left, box_left) > 0.0
+                and min(cell_bottom, box_top + box_height) - max(cell_top, box_top)
+                > 0.0
+            )
+
+        def append_candidate(
+            *,
+            candidate_kind: str,
+            node_type: str,
+            text_box: tuple[float, float, float, float],
+            line_box: tuple[float, float, float, float],
+            edges: tuple[str, ...],
+            overflow: Mapping[str, float],
+            edge_clearance_px: float,
+            text: str,
+        ) -> None:
+            candidates.append(
+                {
+                    "pi": table.get("pi") if table is not None else None,
+                    "ci": table.get("ci") if table is not None else None,
+                    "rows": table.get("rows") if table is not None else None,
+                    "cols": table.get("cols") if table is not None else None,
+                    "row": cell.get("row"),
+                    "col": cell.get("col"),
+                    "candidate_kind": candidate_kind,
+                    "cell_bbox": tuple(round(value, 1) for value in cell_box),
+                    "node_type": node_type,
+                    "line_bbox": tuple(round(value, 1) for value in line_box),
+                    "text_bbox": tuple(round(value, 1) for value in text_box),
+                    "edges": edges,
+                    "edge_clearance_px": round(edge_clearance_px, 1),
+                    "overflow_left_px": round(overflow["left"], 1),
+                    "overflow_right_px": round(overflow["right"], 1),
+                    "overflow_top_px": round(overflow["top"], 1),
+                    "overflow_bottom_px": round(overflow["bottom"], 1),
+                    "max_overflow_px": round(max(overflow.values()), 1),
+                    "text": text,
+                }
+            )
+
+        for line_box, runs, _visible in collect_owned_text_lines(cell):
+            if not overlaps_cell(line_box):
+                continue
+            line_overflow = overflow_for(line_box)
+            line_edges = tuple(
+                edge
+                for edge in ("left", "right", "top", "bottom")
+                if line_overflow[edge] >= minimum_overflow_px
+            )
+            if line_edges:
+                append_candidate(
+                    candidate_kind="line_boundary_overflow",
+                    node_type="TextLine",
+                    text_box=line_box,
+                    line_box=line_box,
+                    edges=line_edges,
+                    overflow=line_overflow,
+                    edge_clearance_px=0.0,
+                    text="painted line",
+                )
+                continue
+
+            line_left, _line_top, line_width, _line_height = line_box
+            line_right = line_left + line_width
+            horizontal_clearance = {
+                "left": max(0.0, line_left - cell_left),
+                "right": max(0.0, cell_right - line_right),
+            }
+            for text_box, text in runs:
+                if not overlaps_cell(text_box):
+                    continue
+                overflow = overflow_for(text_box)
+                edge_text = text.strip("\U000f081c")
+                edges = tuple(
+                    edge
+                    for edge in ("left", "right")
+                    if overflow[edge] >= minimum_overflow_px
+                    and edge_text
+                    and not (
+                        edge == "left" and edge_text[0].isspace()
+                        or edge == "right" and edge_text[-1].isspace()
+                    )
+                )
+                if not edges:
+                    continue
+                append_candidate(
+                    candidate_kind="natural_visible_width_risk",
+                    node_type="TextRun",
+                    text_box=text_box,
+                    line_box=line_box,
+                    edges=edges,
+                    overflow=overflow,
+                    edge_clearance_px=min(horizontal_clearance[edge] for edge in edges),
+                    text=text,
+                )
+
+    def walk(
+        node: Mapping[str, object],
+        table: Mapping[str, object] | None = None,
+        source_table: Mapping[str, object] | None = None,
+    ) -> None:
+        node_type = node.get("type")
+        if node_type == "Table":
+            table = node
+            if node.get("pi") is not None or node.get("ci") is not None:
+                source_table = node
+        if node_type == "Cell":
+            inspect_cell(node, source_table or table)
+        children = node.get("children")
+        if isinstance(children, list):
+            for child in children:
+                if isinstance(child, Mapping):
+                    walk(child, table, source_table)
+
+    walk(tree)
+    return sorted(
+        candidates,
+        key=lambda candidate: (
+            float(candidate["cell_bbox"][1]),
+            float(candidate["cell_bbox"][0]),
+            float(candidate["text_bbox"][1]),
+            float(candidate["text_bbox"][0]),
+            str(candidate["pi"]),
+            str(candidate["ci"]),
+        ),
+    )
+
+
 def table_cell_text_overlap_candidates(
     tree: Mapping[str, object],
 ) -> list[dict[str, object]]:
@@ -1830,6 +2068,52 @@ def write_table_cell_text_overlap_ledger(
     return report_path
 
 
+def write_table_cell_text_boundary_ledger(
+    work_dir: Path,
+    tree_dir: Path,
+    requested_pages: Sequence[int],
+) -> Path:
+    """Write visible text boxes that cross their owning Cell by at least 2px."""
+    report_path = work_dir / "table-cell-text-boundary-candidates.tsv"
+    with report_path.open("w", encoding="utf-8") as report:
+        report.write(
+            "page\tpi\tci\trows\tcols\trow\tcol\tcandidate_kind\tcell_bbox\t"
+            "node_type\tline_bbox\ttext_bbox\tedges\tedge_clearance_px\t"
+            "max_overflow_px\tleft_px\tright_px\ttop_px\tbottom_px\ttext\tnote\n"
+        )
+        for page_index in requested_pages:
+            tree_path = tree_path_for_page(tree_dir, page_index)
+            if tree_path is None:
+                continue
+            try:
+                tree = json.loads(tree_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError, json.JSONDecodeError):
+                continue
+            if not isinstance(tree, Mapping):
+                continue
+            for candidate in table_cell_text_boundary_candidates(tree):
+                edges = candidate["edges"]
+                assert isinstance(edges, tuple)
+                text = str(candidate["text"]).replace("\t", " ").replace("\n", " ")
+                report.write(
+                    f"{page_index + 1}\t{format_number(candidate['pi'])}\t"
+                    f"{format_number(candidate['ci'])}\t{format_number(candidate['rows'])}\t"
+                    f"{format_number(candidate['cols'])}\t{format_number(candidate['row'])}\t"
+                    f"{format_number(candidate['col'])}\t{candidate['candidate_kind']}\t"
+                    f"{format_bbox(candidate['cell_bbox'])}\t{candidate['node_type']}\t"
+                    f"{format_bbox(candidate['line_bbox'])}\t"
+                    f"{format_bbox(candidate['text_bbox'])}\t{','.join(edges)}\t"
+                    f"{float(candidate['edge_clearance_px']):.1f}\t"
+                    f"{float(candidate['max_overflow_px']):.1f}\t"
+                    f"{float(candidate['overflow_left_px']):.1f}\t"
+                    f"{float(candidate['overflow_right_px']):.1f}\t"
+                    f"{float(candidate['overflow_top_px']):.1f}\t"
+                    f"{float(candidate['overflow_bottom_px']):.1f}\t{text}\t"
+                    "candidate only; line crosses Cell or visible-ending natural width exceeds it\n"
+                )
+    return report_path
+
+
 def _svg_local_name(element: ET.Element) -> str:
     return element.tag.rsplit("}", 1)[-1]
 
@@ -1891,6 +2175,152 @@ def _clip_id_from_attr(value: str | None) -> str | None:
         return None
     match = re.fullmatch(r"\s*url\(#([^)]+)\)\s*", value)
     return match.group(1) if match else None
+
+
+def svg_text_band_clip_candidates(
+    svg_path: Path,
+    *,
+    minimum_clipped_px: float = 2.0,
+) -> list[dict[str, object]]:
+    """Find visible glyph bands partially cut by explicit SVG clips.
+
+    The vertical glyph approximation intentionally matches
+    :func:`svg_visible_text`.  Only a *partial* intersection is reported:
+    wholly excluded stale continuation text is ignored, as is text whose x
+    baseline does not touch the effective clip.  Transformed text is skipped
+    because its axis-aligned local coordinates cannot be compared safely.
+    """
+    root = ET.parse(svg_path).getroot()
+    clip_rectangles = _svg_clip_rectangles(root)
+    candidates: list[dict[str, object]] = []
+
+    def walk(
+        element: ET.Element,
+        active_clip: tuple[float, float, float, float] | None,
+        active_clip_ids: tuple[str, ...],
+        *,
+        fully_clipped: bool,
+        transformed: bool,
+        hidden: bool,
+    ) -> None:
+        tag = _svg_local_name(element)
+        if tag in {"defs", "clipPath"}:
+            return
+        next_hidden = hidden or element.get("display") == "none" or element.get(
+            "visibility"
+        ) == "hidden"
+        opacity = element.get("opacity")
+        if opacity is not None:
+            try:
+                next_hidden = next_hidden or float(opacity) <= 0.0
+            except ValueError:
+                pass
+        next_transformed = transformed or bool(element.get("transform"))
+        next_clip = active_clip
+        next_clip_ids = active_clip_ids
+        next_fully_clipped = fully_clipped
+        clip_id = _clip_id_from_attr(element.get("clip-path"))
+        if clip_id is not None and clip_id in clip_rectangles:
+            next_clip_ids = (*next_clip_ids, clip_id)
+            if not next_fully_clipped:
+                intersection = _intersect_svg_rectangles(
+                    next_clip, clip_rectangles[clip_id]
+                )
+                next_fully_clipped = next_clip is not None and intersection is None
+                next_clip = intersection
+
+        if tag == "text":
+            text = "".join(element.itertext())
+            visible_text = text.replace("\U000f081c", "").strip()
+            if (
+                next_hidden
+                or next_transformed
+                or next_fully_clipped
+                or not next_clip_ids
+                or next_clip is None
+                or not visible_text
+                or element.get("fill") == "none"
+            ):
+                return
+            x = _svg_float(element, "x")
+            y = _svg_float(element, "y")
+            font_size = _svg_float(element, "font-size")
+            if x is None or y is None or font_size is None or font_size <= 0.0:
+                return
+            # Requiring the baseline x to meet the clip avoids flagging a
+            # spatially unrelated retained text node with the same y band.
+            if x < next_clip[0] - 0.01 or x > next_clip[2] + 0.01:
+                return
+            # The visibility ledger uses a deliberately generous 1.0em/0.3em
+            # band so it never drops potentially painted text.  That envelope
+            # is too wide for *partial clip* detection: Korean/Latin ink is
+            # normally within roughly 0.8em above and 0.2em below the baseline.
+            # Keep this a candidate heuristic; browser/PDF raster remains the
+            # authority for exact font-specific outlines.
+            text_top = y - font_size * 0.8
+            text_bottom = y + font_size * 0.2
+            visible_top = max(text_top, next_clip[1])
+            visible_bottom = min(text_bottom, next_clip[3])
+            visible_height = visible_bottom - visible_top
+            band_height = text_bottom - text_top
+            if visible_height <= 0.0 or visible_height >= band_height - 0.01:
+                return
+            clipped_top = max(0.0, next_clip[1] - text_top)
+            clipped_bottom = max(0.0, text_bottom - next_clip[3])
+            edges = tuple(
+                edge
+                for edge, amount in (
+                    ("top", clipped_top),
+                    ("bottom", clipped_bottom),
+                )
+                if amount >= minimum_clipped_px
+            )
+            if not edges:
+                return
+            candidates.append(
+                {
+                    "text": text,
+                    "x": round(x, 1),
+                    "baseline_y": round(y, 1),
+                    "font_size": round(font_size, 1),
+                    "band_top": round(text_top, 1),
+                    "band_bottom": round(text_bottom, 1),
+                    "edges": edges,
+                    "clipped_top_px": round(clipped_top, 1),
+                    "clipped_bottom_px": round(clipped_bottom, 1),
+                    "visible_height_ratio": round(visible_height / band_height, 3),
+                    "clip_ids": next_clip_ids,
+                    "clip_rect": tuple(round(value, 1) for value in next_clip),
+                }
+            )
+            return
+
+        for child in element:
+            walk(
+                child,
+                next_clip,
+                next_clip_ids,
+                fully_clipped=next_fully_clipped,
+                transformed=next_transformed,
+                hidden=next_hidden,
+            )
+
+    walk(
+        root,
+        None,
+        (),
+        fully_clipped=False,
+        transformed=False,
+        hidden=False,
+    )
+    return sorted(
+        candidates,
+        key=lambda candidate: (
+            float(candidate["baseline_y"]),
+            float(candidate["x"]),
+            str(candidate["text"]),
+        ),
+    )
 
 
 def svg_vertical_lines_with_clips(
@@ -2347,6 +2777,48 @@ def svg_table_horizontal_border_clip_candidates(
             float(candidate["line_y"]),
         ),
     )
+
+
+def write_svg_text_band_clip_ledger(
+    work_dir: Path,
+    svg_dir: Path,
+    requested_pages: Sequence[int],
+) -> Path:
+    """Write partially clipped visible SVG glyph-band candidates."""
+    report_path = work_dir / "svg-text-band-clip-candidates.tsv"
+    with report_path.open("w", encoding="utf-8") as report:
+        report.write(
+            "page\tx\tbaseline_y\tfont_size\tband_top\tband_bottom\tedges\t"
+            "clipped_top_px\tclipped_bottom_px\tvisible_height_ratio\tclip_ids\t"
+            "clip_rect\ttext\tnote\n"
+        )
+        for page_index in requested_pages:
+            svg_paths = list(svg_dir.glob(f"*_{page_index + 1:03}.svg"))
+            if not svg_paths:
+                continue
+            try:
+                candidates = svg_text_band_clip_candidates(svg_paths[0])
+            except (ET.ParseError, OSError, ValueError):
+                continue
+            for candidate in candidates:
+                edges = candidate["edges"]
+                clip_ids = candidate["clip_ids"]
+                assert isinstance(edges, tuple)
+                assert isinstance(clip_ids, tuple)
+                text = str(candidate["text"]).replace("\t", " ").replace("\n", " ")
+                report.write(
+                    f"{page_index + 1}\t{float(candidate['x']):.1f}\t"
+                    f"{float(candidate['baseline_y']):.1f}\t"
+                    f"{float(candidate['font_size']):.1f}\t"
+                    f"{float(candidate['band_top']):.1f}\t"
+                    f"{float(candidate['band_bottom']):.1f}\t{','.join(edges)}\t"
+                    f"{float(candidate['clipped_top_px']):.1f}\t"
+                    f"{float(candidate['clipped_bottom_px']):.1f}\t"
+                    f"{float(candidate['visible_height_ratio']):.3f}\t"
+                    f"{','.join(clip_ids)}\t{format_bbox(candidate['clip_rect'])}\t"
+                    f"{text}\tcandidate only; visible glyph band is partially cut by SVG clip\n"
+                )
+    return report_path
 
 
 def write_svg_table_border_clip_ledger(
@@ -2901,6 +3373,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             tree_dir,
             requested_pages,
         )
+        write_table_cell_text_boundary_ledger(
+            work_dir,
+            tree_dir,
+            requested_pages,
+        )
+        write_svg_text_band_clip_ledger(
+            work_dir,
+            svg_dir,
+            requested_pages,
+        )
         write_svg_table_border_clip_ledger(
             work_dir,
             svg_dir,
@@ -2957,6 +3439,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("layout ledger:", work_dir / "layout-candidates.tsv")
         print("table fragment candidates:", work_dir / "table-fragment-candidates.tsv")
         print("table cell text-overlap candidates:", work_dir / "table-cell-text-overlap-candidates.tsv")
+        print(
+            "table cell text-boundary candidates:",
+            work_dir / "table-cell-text-boundary-candidates.tsv",
+        )
+        print(
+            "SVG text-band clip candidates:",
+            work_dir / "svg-text-band-clip-candidates.tsv",
+        )
         print(
             "SVG table-border clip candidates:",
             work_dir / "svg-table-border-clip-candidates.tsv",
