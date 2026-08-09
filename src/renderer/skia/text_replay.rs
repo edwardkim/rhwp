@@ -381,8 +381,8 @@ impl SkiaTextReplay<'_> {
                     1.0
                 };
                 let has_ratio = (ratio - 1.0).abs() > 0.01;
-                let shade_rgb = style.shade_color & 0x00FF_FFFF;
-                if shade_rgb != 0x00FF_FFFF && shade_rgb != 0 && text_width > 0.0 {
+                if crate::model::color::char_shade(style.shade_color).is_some() && text_width > 0.0
+                {
                     let mut shade = Paint::default();
                     shade.set_anti_alias(true);
                     shade.set_style(paint::Style::Fill);

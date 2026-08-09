@@ -1555,6 +1555,8 @@ impl PaintTextStyle {
             && !self.superscript
             && !self.subscript
             && self.emphasis_dot == 0
-            && (self.shade_color & 0x00FF_FFFF) == 0x00FF_FFFF
+            // [#4155] 종전엔 흰색만 "음영 없음"으로 봐서, 미지정 잔재 0 을 가진 텍스트
+            // (HWP3 변환본 전건)가 늘 fill-only 경로에서 빠졌다. 판정 정본은 model::color.
+            && crate::model::color::char_shade(self.shade_color).is_none()
     }
 }

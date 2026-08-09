@@ -2053,12 +2053,11 @@ fn text_run_transition_detail(
     if !text_visual_geometry_is_valid(bbox, run, &display_text) {
         return Some("invalidGeometry");
     }
-    let shade_rgb = run.style.shade_color & 0x00FF_FFFF;
     let has_paint_effects = run.style.outline_type != 0
         || run.style.shadow_type != 0
         || run.style.emboss
         || run.style.engrave
-        || (shade_rgb != 0 && shade_rgb != 0x00FF_FFFF)
+        || crate::model::color::char_shade(run.style.shade_color).is_some()
         || (run.style.ratio - 1.0).abs() > f64::EPSILON;
     let has_old_hangul = display_text.chars().any(|ch| {
         matches!(

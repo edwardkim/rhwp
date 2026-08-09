@@ -559,7 +559,8 @@ fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
 
     let text_color = r.read_color_ref().unwrap_or(0);
     let underline_color = r.read_color_ref().unwrap_or(0);
-    let shade_color = r.read_color_ref().unwrap_or(0xFFFFFF);
+    // 읽기 실패 시 "음영 없음". 종전 0xFFFFFF(흰색)도 렌더에선 같지만 저장값이 달랐다 (#4155)
+    let shade_color = r.read_color_ref().unwrap_or(crate::model::color::NONE);
     let shadow_color = r.read_color_ref().unwrap_or(0xB2B2B2);
 
     // 5.0.2.1 이후: 글자 테두리/배경 ID

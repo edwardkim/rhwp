@@ -308,7 +308,11 @@ fn hwp3_shaded_samples_match_hancom_gray() {
             ));
         }
     }
-    assert!(failures.is_empty(), "한컴 실측 불일치:\n{}", failures.join("\n"));
+    assert!(
+        failures.is_empty(),
+        "한컴 실측 불일치:\n{}",
+        failures.join("\n")
+    );
 }
 
 // ── ④ public 저장 경로 ─────────────────────────────────────────────────────
@@ -339,7 +343,10 @@ fn hwp3_export_hwpx_keeps_shade_color_contract() {
     let so_sueop = hwpx_header_xml(SO_SUEOP);
     let char_pr = so_sueop.matches("<hh:charPr ").count();
     let none = so_sueop.matches(r#"shadeColor="none""#).count();
-    assert!(char_pr > 0, "{SO_SUEOP}: charPr 이 없다 — 저장 경로를 확인하라");
+    assert!(
+        char_pr > 0,
+        "{SO_SUEOP}: charPr 이 없다 — 저장 경로를 확인하라"
+    );
     assert_eq!(
         none, char_pr,
         "{SO_SUEOP}: charPr {char_pr}개 중 shadeColor=\"none\" 은 {none}개다. \
