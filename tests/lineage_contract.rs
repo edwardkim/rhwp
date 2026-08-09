@@ -293,6 +293,99 @@ fn bare_capsule_filename_resolves_parent_against_current_directory() {
 }
 
 #[test]
+fn capsule_path_cannot_overwrite_the_same_parent_file() {
+    let dir = make_dir("same_parent");
+    let parent = dir.join("parent.capsule.json");
+    let original = b"parent sentinel bytes";
+    std::fs::write(&parent, original).unwrap();
+    let plan = plan_json(SAMPLE, &dir.join("unused-output.hwp"), &existing_snippet());
+
+    let o = run(&[
+        "replay",
+        "--plan-json",
+        &plan,
+        "--capsule",
+        parent.to_str().unwrap(),
+        "--parent",
+        parent.to_str().unwrap(),
+        "--json",
+    ]);
+    assert_eq!(o.status.code(), Some(2));
+    assert!(o.stdout.is_empty(), "거절 경로 stdout은 비어야 한다");
+    assert!(String::from_utf8_lossy(&o.stderr).contains("같은 기존 파일"));
+    assert_eq!(std::fs::read(&parent).unwrap(), original);
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[cfg(unix)]
+#[test]
+fn capsule_symlink_alias_cannot_overwrite_the_parent_file() {
+    use std::os::unix::fs::symlink;
+
+    let dir = make_dir("parent_symlink");
+    let parent = dir.join("parent.capsule.json");
+    let alias = dir.join("alias.capsule.json");
+    let original = b"parent sentinel bytes";
+    std::fs::write(&parent, original).unwrap();
+    symlink(&parent, &alias).unwrap();
+    let plan = plan_json(SAMPLE, &dir.join("unused-output.hwp"), &existing_snippet());
+
+    let o = run(&[
+        "replay",
+        "--plan-json",
+        &plan,
+        "--capsule",
+        alias.to_str().unwrap(),
+        "--parent",
+        parent.to_str().unwrap(),
+        "--json",
+    ]);
+    assert_eq!(o.status.code(), Some(2));
+    assert!(o.stdout.is_empty(), "거절 경로 stdout은 비어야 한다");
+    assert!(String::from_utf8_lossy(&o.stderr).contains("같은 기존 파일"));
+    assert_eq!(std::fs::read(&parent).unwrap(), original);
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn invalid_utf8_capsule_is_not_lossily_accepted_as_json() {
+    let dir = make_dir("invalid_utf8");
+    let cap = dir.join("invalid.capsule.json");
+    let plan = plan_json(SAMPLE, &dir.join("unused-output.hwp"), &existing_snippet());
+    let o = run(&[
+        "replay",
+        "--plan-json",
+        &plan,
+        "--capsule",
+        cap.to_str().unwrap(),
+        "--json",
+    ]);
+    assert_eq!(o.status.code(), Some(0));
+
+    // U+FFFD로 치환하면 유효한 JSON 문자열이 되므로 기존 lossy parser는 통과했다.
+    let mut bytes = std::fs::read(&cap).unwrap();
+    let closing = bytes
+        .iter()
+        .rposition(|byte| *byte == b'}')
+        .expect("최상위 JSON 닫힘");
+    let mut injected = b",\n  \"invalidUtf8\": \"".to_vec();
+    injected.push(0xff);
+    injected.extend_from_slice(b"\"\n");
+    bytes.splice(closing..closing, injected);
+    std::fs::write(&cap, bytes).unwrap();
+
+    let (code, env) = lineage(&cap, false);
+    assert_eq!(code, Some(3), "invalid UTF-8은 계보 실패: {env}");
+    assert_eq!(env["valid"], false);
+    assert_eq!(env["brokenAt"], cap.to_str().unwrap());
+    assert!(env["links"][0]["error"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("JSON 파싱 실패"));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn failure_conventions() {
     // 무인자 → 사용법 오류.
     let o = run(&["lineage"]);

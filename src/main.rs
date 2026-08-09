@@ -15440,6 +15440,12 @@ fn cmd_replay(args: &[String]) -> i32 {
                         return EXIT_RUNTIME;
                     }
                 };
+                if paths_refer_to_same_file(std::path::Path::new(cp), &parent_abs) {
+                    eprintln!(
+                        "오류: --capsule과 --parent가 같은 기존 파일을 가리킵니다 — 부모 캡슐을 덮어쓰지 않습니다."
+                    );
+                    return EXIT_USAGE;
+                }
                 let bytes = match fs::read(&parent_abs) {
                     Ok(bytes) => bytes,
                     Err(e) => {
@@ -15567,18 +15573,17 @@ fn cmd_lineage(args: &[String]) -> i32 {
             }
         };
         let file_sha = replay_sha256_hex(&bytes);
-        let capsule: serde_json::Value =
-            match serde_json::from_str(&String::from_utf8_lossy(&bytes)) {
-                Ok(v) => v,
-                Err(e) => {
-                    valid = false;
-                    broken_at = Some(name.clone());
-                    links.push(
+        let capsule: serde_json::Value = match serde_json::from_slice(&bytes) {
+            Ok(v) => v,
+            Err(e) => {
+                valid = false;
+                broken_at = Some(name.clone());
+                links.push(
                     serde_json::json!({ "capsule": name, "error": format!("JSON 파싱 실패: {e}") }),
                 );
-                    break;
-                }
-            };
+                break;
+            }
+        };
         if capsule["kind"] != "workCapsule" {
             valid = false;
             broken_at = Some(name.clone());
