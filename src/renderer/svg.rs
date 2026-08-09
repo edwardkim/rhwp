@@ -3515,21 +3515,22 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
             "휴먼명조",
             "HumanMyeongJo",
         ],
-        "한양신명조" => vec![
-            "Batang",
-            "바탕",
-            "AppleMyungjo",
-            "Noto Serif CJK KR",
-            "한양신명조",
-            "HY신명조",
+        // HMKMG.TTF도 HMKMM과 같은 EBDT 혼합 배포본이며 Chrome에서 local face를
+        // 선택한 뒤 표준 한글을 전부 .notdef로 그리는 것이 확인됐다. style SVG의
+        // 고정 좌표는 유지하고 outline sans를 먼저 사용한다.
+        "휴먼고딕" => vec![
+            "Malgun Gothic",
+            "맑은 고딕",
+            "Apple SD Gothic Neo",
+            "Noto Sans KR ExtraLight",
+            "Noto Sans KR",
+            "Pretendard",
+            "휴먼고딕",
         ],
-        "HY신명조" => vec![
-            "Batang",
-            "바탕",
-            "AppleMyungjo",
-            "Noto Serif CJK KR",
-            "HY신명조",
-        ],
+        // H2MJSM.TTF의 실제 family/full name은 아래 두 이름이며 정상 outline이다.
+        // 휴먼명조의 EBDT 문제를 이 face까지 확대해 원 글꼴 fidelity를 잃지 않는다.
+        "한양신명조" => vec!["한양신명조", "HY신명조", "HYSinMyeongJo-Medium"],
+        "HY신명조" => vec!["HY신명조", "HYSinMyeongJo-Medium"],
         _ => vec![],
     }
 }
@@ -3550,7 +3551,9 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         "HY견명조" | "HYMyeongJo-Extra" | "한양견명조" => vec!["HYMJRE.TTF"],
         // [#2430] 한양신명조: 종전 HY신명조 치환과 동일 임베드 유지.
         // (휴먼명조는 아래 기존 전용 arm 이 담당)
-        "HY신명조" | "한양신명조" => vec!["HYSNMJ.TTF", "hamchob-r.ttf"],
+        "HY신명조" | "한양신명조" => {
+            vec!["H2MJSM.TTF", "HYSNMJ.TTF", "hamchob-r.ttf"]
+        }
         "Latin Modern Math" => vec![
             "latinmodern-math.otf",
             "LatinModernMath-Regular.otf",

@@ -75,15 +75,89 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
         "Chrome에서 bitmap HMKMM을 먼저 고르면 한글이 두부가 되므로 outline 대체가 우선이어야 함"
     );
     assert_eq!(
-        font_local_aliases("한양신명조").first(),
-        Some(&"Batang"),
-        "legacy 신명조도 SVG에서는 portable outline serif를 먼저 선택해야 함"
+        font_local_aliases("휴먼고딕"),
+        vec![
+            "Malgun Gothic",
+            "맑은 고딕",
+            "Apple SD Gothic Neo",
+            "Noto Sans KR ExtraLight",
+            "Noto Sans KR",
+            "Pretendard",
+            "휴먼고딕",
+        ],
+        "Chrome에서 HMKMG를 먼저 고르면 한글이 두부가 되므로 outline 대체가 우선이어야 함"
+    );
+    assert_eq!(
+        font_local_aliases("한양신명조"),
+        vec!["한양신명조", "HY신명조", "HYSinMyeongJo-Medium"],
+        "정상 outline인 HY신명조는 원 face를 먼저 유지해야 함"
     );
     assert_eq!(known_font_filenames("한양중고딕"), vec!["H2GTRM.TTF"]);
     assert_eq!(
         known_font_filenames("휴먼명조").first(),
         Some(&"HMKMM.TTF"),
         "휴먼명조에는 HY견명조(HYMJRE)가 아니라 HMKMM을 우선 사용해야 함"
+    );
+    assert_eq!(
+        known_font_filenames("한양신명조").first(),
+        Some(&"H2MJSM.TTF"),
+        "Windows 설치본의 실제 한양신명조 파일을 먼저 찾아야 함"
+    );
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
+    let mut renderer = SvgRenderer::new();
+    renderer.font_embed_mode = FontEmbedMode::Style;
+    for family in ["휴먼명조", "휴먼고딕", "한양신명조"] {
+        renderer
+            .font_codepoints
+            .entry(family.to_string())
+            .or_default()
+            .extend("한글".chars());
+    }
+
+    let css = generate_font_style(
+        &renderer,
+        &[],
+        &std::collections::HashMap::<String, Vec<u8>>::new(),
+    );
+    let human_myeongjo = css
+        .lines()
+        .find(|line| line.contains("font-family: \"휴먼명조\""))
+        .expect("휴먼명조 style rule");
+    assert!(
+        human_myeongjo
+            .find("local(\"Batang\")")
+            .expect("Batang local")
+            < human_myeongjo
+                .find("local(\"휴먼명조\")")
+                .expect("휴먼명조 local"),
+        "실제 CSS에서도 outline 명조가 깨진 HMKMM local보다 앞서야 함"
+    );
+    let human_gothic = css
+        .lines()
+        .find(|line| line.contains("font-family: \"휴먼고딕\""))
+        .expect("휴먼고딕 style rule");
+    assert!(
+        human_gothic
+            .find("local(\"Malgun Gothic\")")
+            .expect("Malgun Gothic local")
+            < human_gothic
+                .find("local(\"휴먼고딕\")")
+                .expect("휴먼고딕 local"),
+        "실제 CSS에서도 outline 고딕이 깨진 HMKMG local보다 앞서야 함"
+    );
+    let hanyang = css
+        .lines()
+        .find(|line| line.contains("font-family: \"한양신명조\""))
+        .expect("한양신명조 style rule");
+    assert!(
+        hanyang.contains(
+            "local(\"한양신명조\"), local(\"HY신명조\"), local(\"HYSinMyeongJo-Medium\")"
+        ),
+        "정상 outline 한양신명조의 local 우선순위를 보존해야 함"
     );
 }
 

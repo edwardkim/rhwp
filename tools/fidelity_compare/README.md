@@ -33,9 +33,9 @@ venv/bin/python -m pip install pypdf pypdfium2 pillow
 Chrome raster가 사용할 수 있게 하여, 한양중고딕·휴먼명조 같은 설치 글꼴이 있는데도 비교
 PNG가 두부(□)로 채워지는 하네스 오염을 막는다. 글꼴 바이너리를 SVG에 embed하지 않으며,
 라이선스가 있는 로컬 글꼴 설치와 `RHWP_FONT_PATH_DIR` 계약은 그대로 유지한다.
-`휴먼명조`/`한양신명조`처럼 일부 legacy bitmap local face가 Chrome에서 선택은 되지만
-표준 한글을 `.notdef`로 그리는 경우에는 SVG의 고정 좌표를 유지한 채 Batang·AppleMyungjo·
-Noto Serif CJK KR 같은 outline 명조를 먼저 선택한다.
+`휴먼명조`/`휴먼고딕`의 HMKMM/HMKMG처럼 일부 legacy EBDT local face가 Chrome에서 선택은
+되지만 표준 한글을 `.notdef`로 그리는 경우에는 SVG의 고정 좌표를 유지한 채 outline
+명조·고딕을 먼저 선택한다. 반면 정상 outline인 HY신명조는 원 face 우선순위를 보존한다.
 
 실행 파일은 플랫폼에 맞춰 자동 탐색한다.
 

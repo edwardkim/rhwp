@@ -97,3 +97,23 @@ Batang/바탕, AppleMyungjo, Noto Serif CJK KR outline 대체를 먼저 두고 l
 이 stage 커밋과 검증에서 제외한다. 이 커밋을 깨끗한 detached worktree에서 다시 빌드한 뒤
 issue2007 p11 및 17쪽 전수를 새 output 경로로 렌더해 두부 제거를 확인한다. 이후 Stage 99는
 정책연구 p74→p75의 body/footnote 예약과 paragraph owner를 분석한다.
+
+### 깨끗한 바이너리 재검증과 alias 범위 정정
+
+커밋 `1685e3102`를 `/Users/tsjang/rhwp-stage98-verify`의 detached worktree에서 전용
+`target/stage98-clean`으로 빌드했다. p11 단일 비교와 17쪽 전수를 새 output에 생성했고,
+p11--p15는 모두 한글 glyph로 raster되어 종전 두부가 사라졌다. glyph-risk 원장도 이 구간은
+0건이다. pixel diff는 p11 24.94%, p10 24.26%, p14 23.01% 등으로 여전히 크므로 이는 비교
+하네스 오염 제거 결과일 뿐 layout fidelity 완료가 아니다.
+
+- 단일 p11: `output/task-3820-stage98-issue2007-outline-font/`
+- 17쪽 전수: `output/task-3820-stage98-issue2007-fontstyle-full/`
+
+설치 글꼴 전수 table/Chrome smoke를 추가로 확인한 결과 HMKMM과 같은 증상은
+`HMKMG.TTF(휴먼고딕)`에서도 재현됐다. 반면 `H2MJSM.TTF(HY신명조)`는 EBDT가 없는 정상
+outline이었다. 따라서 휴먼고딕에는 outline sans 우선 보호를 추가하되, 한양신명조는
+`한양신명조` → `HY신명조` → `HYSinMyeongJo-Medium` 원 face 순서를 복원한다. 실제
+`generate_font_style` CSS 순서와 Windows 파일명 `H2MJSM.TTF`도 Rust 회귀로 고정한다.
+
+이 보호 범위는 `--font-style` SVG다. embedded/full mode와 WASM Canvas는 별도 font data 및
+조판 계약이므로 이 stage에서 같은 치환을 추측 적용하지 않는다.
