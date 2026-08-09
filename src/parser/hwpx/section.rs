@@ -3543,6 +3543,24 @@ fn parse_connect_line_type_attr(e: &quick_xml::events::BytesStart) -> LinkLineTy
     LinkLineType::StraightNoArrow
 }
 
+/// [#4388] `<hp:arc>` 전용 `type` 속성 (OWPML `CArcType::WriteElement` —
+/// hancom-io/hwpx-owpml-model `ArcType.cpp`) — `g_ArcTypeList`: NORMAL(0)/PIE(1)/CHORD(2).
+/// `ArcShape.arc_type` (0: Arc, 1: CircularSector, 2: Bow) 와 1:1 대응. 같은 이름의
+/// `type` 속성이 `<hp:connectLine>`(연결선 화살표 종류) 등 다른 도형 태그에도 쓰이므로
+/// 반드시 `<hp:arc>` 요소 자체(shape_type == b"arc")에서만 호출한다.
+fn parse_arc_type_attr(e: &quick_xml::events::BytesStart) -> u8 {
+    for attr in e.attributes().flatten() {
+        if attr.key.as_ref() == b"type" {
+            return match attr_str(&attr).to_ascii_uppercase().as_str() {
+                "PIE" => 1,
+                "CHORD" => 2,
+                _ => 0,
+            };
+        }
+    }
+    0
+}
+
 /// shape 내부의 `<hp:fillBrush>` 자식 요소를 파싱하여 Fill을 반환한다.
 fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError> {
     use crate::model::style::{FillType, GradientFill, ImageFill, ImageFillMode, SolidFill};
@@ -3867,6 +3885,13 @@ fn parse_shape_object(
 
     let object_ids = parse_object_element_attrs(e, &mut common, &mut shape_attr);
     let connect_line_type = parse_connect_line_type_attr(e);
+    // [#4388] `<hp:arc>` 전용 `type` 속성 — 다른 태그의 동명 `type` 속성과
+    // 섞이지 않도록 shape_type == b"arc" 로 한정한다.
+    let arc_type = if shape_type == b"arc" {
+        parse_arc_type_attr(e)
+    } else {
+        0
+    };
     let mut connect_start_subject_id = 0_u32;
     let mut connect_start_subject_index = 0_u32;
     let mut connect_end_subject_id = 0_u32;
@@ -4132,11 +4157,13 @@ fn parse_shape_object(
         b"arc" => ShapeObject::Arc(ArcShape {
             common,
             drawing,
-            // [Task #1598] 호 전용 지오메트리(center/축). arc_type 은 태그속성(추후).
+            // [Task #1598] 호 전용 지오메트리(center/축).
+            // [#4388] arc_type 은 `<hp:arc>` 자체의 `type` 속성(NORMAL/PIE/CHORD) —
+            // 태그속성으로 읽는다(hancom-io/hwpx-owpml-model `ArcType.cpp` 확인).
+            arc_type,
             center: e_center,
             axis1: e_axis1,
             axis2: e_axis2,
-            ..Default::default()
         }),
         b"polygon" => ShapeObject::Polygon(PolygonShape {
             common,

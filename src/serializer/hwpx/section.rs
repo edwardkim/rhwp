@@ -1426,6 +1426,17 @@ pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
             | Control::Header(_)
             | Control::Footer(_)
             | Control::AutoNumber(_)
+            // [#4388] HWP3 유래 Hyperlink 도 Picture/Table 과 동형인 U+FFFC 오브젝트
+            // 슬롯이다(HWP3 파서가 문단 텍스트에 마커 1개를 넣고 controls 에 대응
+            // 컨트롤을 push — src/parser/hwp3/mod.rs). 슬롯으로 등록해야 (a) 다른
+            // 컨트롤과 섞인 문단에서 위치 정합이 일관되고, (b) `--verify` 재파싱
+            // 비교(`diff_paragraph_char_shapes`, roundtrip.rs)가 render_control_slot 의
+            // catch-all 드롭을 검출한다.
+            | Control::Hyperlink(_)
+            // [#4388] HWP5/HWP3 유래 Unknown 도 PARA_TEXT 상에서 0x000B 확장 컨트롤
+            // 문자(Table/Picture 와 동일 char class)로 위치를 점유한다. 슬롯 등록
+            // 이유는 Hyperlink 와 동일 — 위치 정합 + `--verify` 손실 검출.
+            | Control::Unknown(_)
     )
 }
 
@@ -1562,6 +1573,61 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                 out.push_str(&render_col_pr_ctrl(cd));
             }
         }
+        // [#4388] `Control::Hyperlink` 는 현재 HWP3 파서만 생성하는 legacy IR
+        // 표현이다 (`src/parser/hwp3/mod.rs`) — HWP3 문서의 하이퍼링크는 Picture/
+        // Table 처럼 문단 텍스트에 U+FFFC 마커 1개를 점유하는 "오브젝트형" 슬롯이고,
+        // 표시 텍스트(`text`)는 para.text 가 아니라 컨트롤 자체에 별도 보존된다.
+        // 반면 HWPX 는 하이퍼링크를 `Control::Field(FieldType::Hyperlink)` 로 표현하며
+        // 이는 fieldBegin/fieldEnd 가 문단 텍스트의 실제 글자 범위를 감싸는 인라인
+        // 구조다 — 표시 텍스트가 파라그래프 문자 스트림 안에 있어야 한다는 뜻이라,
+        // 이 컨트롤을 그대로 Field 로 접었다간 문단을 재구성(문자 삽입 + char_shapes/
+        // line_segs 재계산)해야 해 안전하게 변환할 수 없다. 종전엔 catch-all
+        // `_ => {}` 로 떨어져 경고 없이 사라졌다(#4388) — 조용히 버리지 않도록 경고를
+        // 남기고 슬롯만 소비한다(문단 내 후속 컨트롤의 char-offset 정합은 유지, 표시
+        // 텍스트·URL 만 유실). `is_hwpx_inline_slot` 에도 등록해 `--verify` 재파싱
+        // 비교가 이 손실을 실제로 검출하게 한다.
+        Control::Hyperlink(hl) => {
+            eprintln!(
+                "[hwpx] 경고: Hyperlink 컨트롤을 HWPX로 저장할 수 없어 드롭됩니다 \
+                 (url={:?}, text={:?}) — HWPX는 하이퍼링크를 Field(HYPERLINK)로 표현하며 \
+                 이 변환은 아직 지원되지 않습니다.",
+                hl.url, hl.text
+            );
+        }
+        // [#4388] `Control::Unknown` 은 HWP5/HWP3 바이너리 파서가 인식하지 못한
+        // ctrl_id(FourCC) 를 보존하는 fallback 이며 HWPX 파서는 절대 만들지 않는다
+        // (grep 확인). HWP5 는 PARA_TEXT 에 0x000B 확장 컨트롤 문자로 위치를 남기고
+        // (Table/Picture 와 같은 char class) CTRL_HEADER 만 최소 보존한다 — 즉 실제
+        // 문서에서도 위치를 점유하는 오브젝트형 슬롯이지만, HWPX 는 "인식 못 한
+        // 컨트롤"을 표현할 제네릭 요소가 없고 원본 바이트도 보존돼 있지 않아
+        // (`UnknownControl` 은 ctrl_id 하나뿐) 변환 자체가 불가능하다. 종전엔
+        // catch-all `_ => {}` 로 떨어져 경고 없이 사라졌다 — 조용히 버리지 않도록
+        // 경고를 남기고 슬롯만 소비한다. `is_hwpx_inline_slot` 에도 등록해
+        // `--verify` 가 이 손실을 검출하게 한다(Hyperlink 와 동형 처리).
+        Control::Unknown(u) => {
+            eprintln!(
+                "[hwpx] 경고: 인식할 수 없는 컨트롤(ctrl_id=0x{:08X})을 HWPX로 저장할 수 \
+                 없어 드롭됩니다 — 원본 컨트롤의 세부 데이터가 보존되지 않아 이 변환은 \
+                 지원되지 않습니다.",
+                u.ctrl_id
+            );
+        }
+        // [#4388 census] 여기 도달하는 나머지 `Control` 변형은 두 가지뿐이며 둘 다
+        // 조사·분류를 거쳤다 — 새 변형을 추가할 때 이 목록을 갱신할 것:
+        //   - `SectionDef`: 의도적 무해 no-op. 위치 슬롯 축(hidden 슬롯 정합, 이 함수
+        //     966행 근처 주석)만 소비하고 XML 은 별도 경로(`<hp:secPr>` 섹션 템플릿)가
+        //     방출한다 — 여기서 다시 방출하면 중복이 된다.
+        //   - `HiddenComment`: **구현 누락으로 확인됨(경고 미부착)**. HWPX 는
+        //     `<hp:hiddenComment>` 네이티브 표현이 있고 파서(`parse_ctrl_hidden_comment`)
+        //     는 이미 sub-paragraph 까지 온전히 읽지만 직렬화기엔 대응 방출 arm 이
+        //     없다. 다만 이 컨트롤은 PARA_TEXT 상 폭이 0(파서가 위치 마커를 push 하지
+        //     않음 — Bookmark 와 동형)이라 실제 문서에서는 `render_runs` 의
+        //     mismatch-분기 `is_hwpx_inline_slot` 필터(위쪽, "제외된 hidden 슬롯 후보"
+        //     블록 부근)에서 먼저 걸러져 이 함수 자체에 거의 도달하지 않는다 — 여기
+        //     경고 arm 을 추가해도 사실상 죽은 코드라 붙이지 않았다. 진짜 수정은
+        //     Bookmark 의 `emit_inorder_bookmarks` 류 zero-width in-order 방출
+        //     인프라가 필요한 별도 작업(그 로직은 #1591/#1627/#1584 이력이 보여주듯
+        //     섬세하다) — 후속 이슈로 분리 권장.
         _ => {}
     }
 }
@@ -2063,7 +2129,32 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
         ),
         _ => String::new(),
     };
-    render_common_shape_xml(tag, c, caption, drawing, points, &geom_tail, ctx)
+    // [#4388] `<hp:arc>` 전용 `type` 속성(NORMAL/PIE/CHORD) — OWPML `CArcType` 계약.
+    // 종전엔 이 속성 자체가 방출되지 않아 `arc_type` 이 항상 0(NORMAL)으로 저장됐다.
+    let extra_attrs = match shape {
+        ShapeObject::Arc(a) => format!(r#" type="{}""#, arc_type_hwpx_str(a.arc_type)),
+        _ => String::new(),
+    };
+    render_common_shape_xml(
+        tag,
+        c,
+        caption,
+        drawing,
+        points,
+        &geom_tail,
+        &extra_attrs,
+        ctx,
+    )
+}
+
+/// [#4388] `ArcShape.arc_type` (0: Arc, 1: CircularSector, 2: Bow) →
+/// `<hp:arc>` 의 `type` 속성값. `parse_arc_type_attr` 의 역매핑.
+fn arc_type_hwpx_str(arc_type: u8) -> &'static str {
+    match arc_type {
+        1 => "PIE",
+        2 => "CHORD",
+        _ => "NORMAL",
+    }
 }
 
 fn render_common_shape_xml(
@@ -2073,6 +2164,8 @@ fn render_common_shape_xml(
     drawing: Option<&crate::model::shape::DrawingObjAttr>,
     points: &[crate::model::Point],
     geom_tail: &str,
+    // [#4388] 태그별 부가 속성(현재는 `<hp:arc type="...">` 전용) — 없으면 "".
+    extra_attrs: &str,
     ctx: &mut SerializeContext,
 ) -> String {
     // 도형 좌표계 블록(offset/orgSz/curSz/flip/rotationInfo/renderingInfo) — 누락 시
@@ -2121,7 +2214,7 @@ fn render_common_shape_xml(
         .unwrap_or(c.instance_id);
     let mut out = format!(
         concat!(
-            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="{tf}" lock="{lock}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
+            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="{tf}" lock="{lock}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}"{extra}>"#,
             "{block}",
             "{geometry}",
             r#"<hp:sz width="{w}" height="{h}" widthRelTo="{wrt}" heightRelTo="{hrt}" protect="{prot}"/>"#,
@@ -2129,6 +2222,7 @@ fn render_common_shape_xml(
             r#"<hp:outMargin left="{ml}" right="{mr}" top="{mt}" bottom="{mb}"/>"#,
         ),
         tag = tag,
+        extra = extra_attrs,
         block = shape_block,
         geometry = geometry,
         id = c.instance_id,
@@ -2832,7 +2926,7 @@ mod tests {
         let mut c = CommonObjAttr::default();
         c.text_flow = TextFlow::LargestOnly;
         let mut ctx = SerializeContext::default();
-        let xml = render_common_shape_xml("ellipse", &c, &None, None, &[], "", &mut ctx);
+        let xml = render_common_shape_xml("ellipse", &c, &None, None, &[], "", "", &mut ctx);
         assert!(
             xml.contains(r#"textFlow="LARGEST_ONLY""#),
             "공용 도형 textFlow 이 IR 값이어야 함: {xml}"
@@ -2849,6 +2943,7 @@ mod tests {
             &None,
             None,
             &[],
+            "",
             "",
             &mut ctx,
         );
@@ -2877,7 +2972,8 @@ mod tests {
         let c = CommonObjAttr::default();
         let mut ctx = SerializeContext::default();
 
-        let xml = render_common_shape_xml("polygon", &c, &None, Some(&drawing), &[], "", &mut ctx);
+        let xml =
+            render_common_shape_xml("polygon", &c, &None, Some(&drawing), &[], "", "", &mut ctx);
         assert!(
             xml.contains("<hp:drawText"),
             "polygon 도형이 drawText 를 방출해야 함: {xml}"
@@ -2892,7 +2988,7 @@ mod tests {
             ..Default::default()
         };
         let xml_empty =
-            render_common_shape_xml("polygon", &c, &None, Some(&empty), &[], "", &mut ctx);
+            render_common_shape_xml("polygon", &c, &None, Some(&empty), &[], "", "", &mut ctx);
         assert!(
             !xml_empty.contains("<hp:drawText"),
             "빈 글상자는 drawText 를 방출하지 않아야 함"
@@ -2918,7 +3014,8 @@ mod tests {
         let mut ctx = SerializeContext::default();
 
         for tag in ["ellipse", "arc", "polygon", "curve", "chart"] {
-            let xml = render_common_shape_xml(tag, &c, &None, Some(&drawing), &[], "", &mut ctx);
+            let xml =
+                render_common_shape_xml(tag, &c, &None, Some(&drawing), &[], "", "", &mut ctx);
             assert!(
                 xml.contains(r#"widthRelTo="COLUMN""#),
                 "{tag}: 너비 기준 COLUMN 이 보존되어야 함: {xml}"
@@ -2949,7 +3046,8 @@ mod tests {
         let drawing = DrawingObjAttr::default();
         let mut ctx = SerializeContext::default();
 
-        let xml = render_common_shape_xml("polygon", &c, &None, Some(&drawing), &[], "", &mut ctx);
+        let xml =
+            render_common_shape_xml("polygon", &c, &None, Some(&drawing), &[], "", "", &mut ctx);
         assert!(
             xml.contains(r#"protect="0""#),
             "size_protect=false 여도 protect=\"0\" 속성이 방출되어야 함: {xml}"
@@ -2985,8 +3083,16 @@ mod tests {
                 height_criterion: criterion,
                 ..Default::default()
             };
-            let xml =
-                render_common_shape_xml("polygon", &c, &None, Some(&drawing), &[], "", &mut ctx);
+            let xml = render_common_shape_xml(
+                "polygon",
+                &c,
+                &None,
+                Some(&drawing),
+                &[],
+                "",
+                "",
+                &mut ctx,
+            );
             assert!(
                 xml.contains(&format!(r#"heightRelTo="{expected}""#)),
                 "{criterion:?} → heightRelTo=\"{expected}\" 이어야 함: {xml}"

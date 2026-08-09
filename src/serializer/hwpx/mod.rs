@@ -862,6 +862,135 @@ mod tests {
     }
 
     #[test]
+    fn issue4388_hyperlink_control_drop_is_not_silent() {
+        // [#4388] `Control::Hyperlink` 는 HWP3 파서만 생성하는 legacy IR 이며 HWPX 는
+        // 대응 표현이 없다(HWPX 는 하이퍼링크를 Field(HYPERLINK) 로 표현). 종전엔
+        // `render_control_slot` 의 catch-all `_ => {}` 로 떨어져 **경고도 없이** 사라졌고,
+        // `--verify` 재파싱 비교도 `is_hwpx_inline_slot` 에 등록돼 있지 않아 이 손실을
+        // 검출하지 못했다(이중 침묵). 수정 전: 두 번째 assert(ParagraphControls 검출)가
+        // RED(빈 diff — 손실을 놓침). 수정 후: 컨트롤은 여전히 드롭되지만(HWPX 로 안전
+        // 하게 변환할 방법이 없음) `is_hwpx_inline_slot` 등록으로 diff 가 손실을 검출한다.
+        use crate::model::control::{Control, Hyperlink};
+        use crate::model::paragraph::CharShapeRef;
+        use crate::model::style::CharShape;
+        use crate::serializer::hwpx::roundtrip::IrDifference;
+
+        let mut doc = Document::default();
+        // char_shapes[0] 을 등록해 char_shape_id=0 참조가 유효하도록 한다(그렇지
+        // 않으면 직렬화가 "미등록 ID 참조" 로 실패). 값도 명시해 빈 char_shapes 문단이
+        // reparse 시 (0,0) 을 합성하는 무관한 사전조건 diff(#1592 인접 관례)가 섞여
+        // 아래 diff 단언이 우연히 통과하지 않도록 한다.
+        doc.doc_info.char_shapes.push(CharShape::default());
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        para.text = "ab".to_string();
+        para.char_offsets = vec![0, 9];
+        para.char_count = 11; // (11-1-2)/8 = 1 슬롯 (task1587_ruby_control_roundtrips 와 동일 관례)
+        para.char_shapes = vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }];
+        para.controls.push(Control::Hyperlink(Hyperlink {
+            url: "http://example.com".to_string(),
+            text: "example".to_string(),
+        }));
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize hyperlink");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+
+        let hyperlinks_after: Vec<_> = doc2.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::Hyperlink(_)))
+            .collect();
+        assert!(
+            hyperlinks_after.is_empty(),
+            "Hyperlink 는 HWPX 로 안전하게 변환할 대응 표현이 없어 드롭되는 것이 현재 계약이다: {:?}",
+            doc2.sections[0].paragraphs[0].controls
+        );
+
+        // 핵심 회귀 방지: --verify 가 쓰는 diff_documents 가 이 손실을 실제로
+        // `ParagraphControls` 차이로 검출해야 한다(단순 "diff 가 비어있지 않다" 는
+        // 무관한 다른 필드의 우연한 diff 로도 통과할 수 있어 불충분). is_hwpx_inline_slot
+        // 에 Hyperlink 를 등록하지 않으면 이 diff 자체가 비어(빈 Vec) 손실을 놓친다 —
+        // #4388 이 지적한 "조용한 손실"의 두 번째 축(직렬화 드롭 + 검증 사각지대).
+        let diff = crate::serializer::hwpx::roundtrip::diff_documents(&doc, &doc2);
+        let has_controls_diff = diff
+            .differences
+            .iter()
+            .any(|d| matches!(d, IrDifference::ParagraphControls { .. }));
+        assert!(
+            has_controls_diff,
+            "diff_documents(--verify 경로)가 Hyperlink 컨트롤 손실을 ParagraphControls 로 \
+             검출해야 함: {:?}",
+            diff.differences
+        );
+    }
+
+    #[test]
+    fn issue4388_unknown_control_drop_is_not_silent() {
+        // [#4388] catch-all 전수 census 중 Hyperlink 와 동형인 두 번째 사례. HWP5/HWP3
+        // 바이너리 파서가 인식하지 못한 ctrl_id 는 `Control::Unknown` 으로 남는데(HWPX
+        // 파서는 이 변형을 절대 만들지 않는다 — grep 확인), HWP5 PARA_TEXT 는 그 자리를
+        // Table/Picture 와 같은 0x000B 확장 컨트롤 문자(8유닛)로 표시한다. HWPX 는 "인식
+        // 못 한 컨트롤"을 표현할 수단이 없고 `UnknownControl` 은 ctrl_id 하나만 보존해
+        // 원본 바이트도 없다 — 변환 불가가 맞다. 다만 종전엔 catch-all 로 떨어져
+        // **경고 없이** 사라졌고 `--verify` 도 놓쳤다. Hyperlink 테스트와 동일하게 두
+        // 축(드롭 자체 + verify 검출)을 함께 확인한다.
+        use crate::model::control::{Control, UnknownControl};
+        use crate::model::paragraph::CharShapeRef;
+        use crate::model::style::CharShape;
+        use crate::serializer::hwpx::roundtrip::IrDifference;
+
+        let mut doc = Document::default();
+        doc.doc_info.char_shapes.push(CharShape::default());
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        // "a" + 오브젝트 마커(U+FFFC) + "b" — Table/Picture 와 동일한 8유닛 슬롯 관례.
+        para.text = "a\u{fffc}b".to_string();
+        para.char_offsets = vec![0, 1, 9];
+        para.char_count = 11; // 1(a) + 8(obj) + 1(b) + 1(종단 관례) = 11
+        para.char_shapes = vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }];
+        para.controls.push(Control::Unknown(UnknownControl {
+            ctrl_id: 0x1234_5678,
+        }));
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize unknown");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+
+        let unknowns_after: Vec<_> = doc2.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::Unknown(_)))
+            .collect();
+        assert!(
+            unknowns_after.is_empty(),
+            "Unknown 컨트롤은 HWPX 로 변환할 대응 표현·원본 바이트가 없어 드롭되는 것이 \
+             현재 계약이다: {:?}",
+            doc2.sections[0].paragraphs[0].controls
+        );
+
+        let diff = crate::serializer::hwpx::roundtrip::diff_documents(&doc, &doc2);
+        let has_controls_diff = diff
+            .differences
+            .iter()
+            .any(|d| matches!(d, IrDifference::ParagraphControls { .. }));
+        assert!(
+            has_controls_diff,
+            "diff_documents(--verify 경로)가 Unknown 컨트롤 손실을 ParagraphControls 로 \
+             검출해야 함: {:?}",
+            diff.differences
+        );
+    }
+
+    #[test]
     fn task1591_bookmark_not_hoisted_before_slot() {
         // [#1591] 북마크가 슬롯 컨트롤(표 등) 뒤에 있을 때, 직렬화기가 북마크를 문단
         // 시작으로 hoisting 하면 컨트롤 순서가 뒤바뀐다. [#1591 v2] 슬롯 있는 문단의
