@@ -3532,12 +3532,9 @@ impl DocumentCore {
                 cell.height = (cell.height as i64 + step).max(0) as u32;
             } else {
                 cell.width = (cell.width as i64 + step).max(0) as u32;
-                // 보존 바이트의 폭도 같이 옮긴다 — 안 그러면 저장에서 묻힌다.
-                if cell.raw_list_extra.len() >= 2 {
-                    let w = u16::try_from(cell.width).unwrap_or(u16::MAX).to_le_bytes();
-                    cell.raw_list_extra[0] = w[0];
-                    cell.raw_list_extra[1] = w[1];
-                }
+                // 보존 바이트(텍스트 영역 폭)도 **같은 델타**로 옮긴다 — 폭과 다른 셀이 있어
+                // 절대값으로 덮으면 오프셋을 지운다(§4.21).
+                cell.shift_text_area_width(step);
             }
         }
         table.dirty = true;
@@ -3621,11 +3618,7 @@ impl DocumentCore {
                     cell.height = (cell.height as i64 + step) as u32;
                 } else {
                     cell.width = (cell.width as i64 + step) as u32;
-                    if cell.raw_list_extra.len() >= 2 {
-                        let w = u16::try_from(cell.width).unwrap_or(u16::MAX).to_le_bytes();
-                        cell.raw_list_extra[0] = w[0];
-                        cell.raw_list_extra[1] = w[1];
-                    }
+                    cell.shift_text_area_width(step);
                 }
             }
         }
@@ -4129,6 +4122,29 @@ mod neighbor_border_raw_data_tests {
             assert_eq!((cell(2, 0).height, cell(2, 0).row_span), (217, 1));
             assert_eq!((cell(0, 1).height, cell(0, 1).row_span), (500, 1));
             assert_eq!((cell(1, 1).height, cell(1, 1).row_span), (500, 2));
+        }
+
+        /// 폭과 다른 텍스트 영역 폭(폭+30 셀)은 리사이즈 뒤에도 그 오프셋을 지킨다.
+        /// 절대값으로 덮던 옛 코드는 이 +30 을 지웠다(전수 스캔에서 414셀 발견).
+        #[test]
+        fn text_area_width_keeps_its_offset() {
+            let mut core = core_with_grid();
+            match &mut core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Table(t) => {
+                    for cell in &mut t.cells {
+                        // 폭 1000, 보존 바이트엔 1030 — 상수 +30.
+                        cell.raw_list_extra = 1030u16.to_le_bytes().to_vec();
+                    }
+                }
+                _ => unreachable!(),
+            }
+            core.resize_table_cell_native(0, 0, 0, 0, 0, false, true)
+                .unwrap();
+            let t = table(&core);
+            let c00 = t.cells.iter().find(|x| x.row == 0 && x.col == 0).unwrap();
+            let field = u16::from_le_bytes([c00.raw_list_extra[0], c00.raw_list_extra[1]]);
+            // 폭이 1000→1283(+283)이면 보존 바이트도 1030→1313 — 오프셋 30 유지.
+            assert_eq!(field, 1313, "폭+283 이면 텍스트폭도 +283");
         }
 
         /// 마지막 열에는 옮길 경계가 없다 — 무동작(안 잰 자리라 지어내지 않는다).

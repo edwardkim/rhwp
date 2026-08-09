@@ -134,15 +134,23 @@ def run_rhwp(scenario: Path, out_dir: Path, impl: str, timeout: int) -> str:
         "--impl",
         impl,
     ]
-    try:
-        proc = subprocess.run(cmd, capture_output=True, timeout=timeout, check=False)
-    except subprocess.TimeoutExpired:
-        return "STALL"
-    sys.stdout.write(proc.stdout.decode("utf-8", "replace"))
-    if proc.returncode != 0:
-        sys.stderr.write(proc.stderr.decode("utf-8", "replace")[-2000:])
-        return "ERR"
-    return "OK"
+    # node 가 **정상 출력을 다 쓴 뒤** 종료 어서션(`UV_HANDLE_CLOSING`)으로 비영 코드를
+    # 내는 일이 매 실행 한 건꼴로 있다(매번 다른 시나리오). 산출 JSON 은 멀쩡하므로 한 번
+    # 다시 돌려 가른다 — 진짜 실패면 재시도도 같은 코드로 죽고, 종료 잡음이면 초록이 된다.
+    last = None
+    for attempt in range(2):
+        try:
+            proc = subprocess.run(cmd, capture_output=True, timeout=timeout, check=False)
+        except subprocess.TimeoutExpired:
+            return "STALL"
+        sys.stdout.write(proc.stdout.decode("utf-8", "replace"))
+        if proc.returncode == 0:
+            return "OK"
+        last = proc.stderr.decode("utf-8", "replace")
+        if attempt == 0:
+            sys.stdout.write(f"  (재시도 — 종료 코드 {proc.returncode})\n")
+    sys.stderr.write((last or "")[-2000:])
+    return "ERR"
 
 
 def validate_rhwp_output(scenario: Path, out_dir: Path) -> str:
