@@ -9,18 +9,11 @@ use crate::model::path::PathSegment;
 use crate::model::style::BorderLineType;
 
 pub(crate) fn is_treat_as_char_object_control(ctrl: &Control) -> bool {
-    match ctrl {
-        Control::Shape(shape) => shape.common().treat_as_char,
-        Control::Table(table) => table.common.treat_as_char,
-        Control::Picture(picture) => picture.common.treat_as_char,
-        Control::Equation(equation) => equation.common.treat_as_char,
-        _ => false,
-    }
+    ctrl.is_treat_as_char_object()
 }
 
 fn is_logical_inline_control(ctrl: &Control) -> bool {
-    is_treat_as_char_object_control(ctrl)
-        || matches!(ctrl, Control::Footnote(_) | Control::Endnote(_))
+    ctrl.is_logical_inline()
 }
 
 /// 문단의 탐색 가능한 텍스트 길이를 반환한다.

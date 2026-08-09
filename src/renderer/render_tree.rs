@@ -1324,6 +1324,21 @@ pub type InlineShapeKey = (usize, usize, usize, Vec<(usize, usize, usize)>);
 /// 넘긴 `col_node` 에 붙고, 트리에서 실제로 쓰이던 건 id 카운터와 인라인 Shape 좌표
 /// 레지스트리(둘 다 `#[serde(skip)]`, 즉 직렬화되는 산출물이 아님)뿐이었다. 그 둘을 여기로
 /// 분리해, 높이만 필요한 측정 호출부가 paint 트리를 만들지 않고도 재귀에 진입할 수 있게 한다.
+///
+/// # 불변식 — 페이지 기하는 `PageRenderTree.root` 와 반드시 일치해야 한다
+///
+/// `page_index`/`page_bbox` 는 재귀가 예전에 `root.node_type` 의 `PageNode` 와 `root.bbox`
+/// 에서 직접 읽던 값의 사본이다. `PageRenderTree::new` 가 프레임을 같은 인자로 만들므로
+/// 생성 시점에는 항상 일치하고, 레이아웃 도중에는 양쪽 다 변경되지 않는다.
+///
+/// **두 곳을 갈라놓지 말 것.** `root.bbox`/`root.node_type` 를 나중에 바꾸면서 프레임을
+/// 갱신하지 않으면 `page_bbox()`/`page_size()` 가 조용히 낡은 값을 준다. 실제로
+/// `svg_layer.rs` 의 layer→render 변환은 `root.bbox` 만 덮어쓰는데, 그 트리는 레이아웃
+/// 재귀에 들어가지 않으므로 오늘은 무해하다 — 그 전제가 깨지면 이 불변식도 깨진다.
+///
+/// 또한 프레임은 **항상 하나의 페이지를 나타낸다**. 종전 코드가 `root` 가 `PageNode` 인지
+/// 런타임에 확인하던 자리(`shape_layout.rs` 의 hmapsi 미리보기 게이트)는, 프레임이 페이지
+/// 기하 없이는 생성될 수 없다는 이 구성 불변식으로 대체됐다.
 #[derive(Debug, Clone)]
 pub struct LayoutFrame {
     /// 다음 노드 ID 카운터

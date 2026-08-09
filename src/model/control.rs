@@ -60,6 +60,29 @@ pub enum Control {
     Unknown(UnknownControl),
 }
 
+impl Control {
+    /// 개체가 글자처럼 취급(treat_as_char)되는가.
+    ///
+    /// 텍스트 흐름 안에서 한 글자 폭을 차지하는 개체 판정의 기반이다.
+    pub fn is_treat_as_char_object(&self) -> bool {
+        match self {
+            Control::Shape(shape) => shape.common().treat_as_char,
+            Control::Table(table) => table.common.treat_as_char,
+            Control::Picture(picture) => picture.common.treat_as_char,
+            Control::Equation(equation) => equation.common.treat_as_char,
+            _ => false,
+        }
+    }
+
+    /// 편집/커서 이동에서 논리적으로 한 글자 폭을 차지하는 컨트롤인가.
+    ///
+    /// `treat_as_char` 개체에 각주·미주를 더한 것. `SectionDef`/`ColumnDef` 같은
+    /// 구조 컨트롤은 흐름에서 자리를 차지하지 않으므로 제외된다.
+    pub fn is_logical_inline(&self) -> bool {
+        self.is_treat_as_char_object() || matches!(self, Control::Footnote(_) | Control::Endnote(_))
+    }
+}
+
 /// [#2727] `Equation::attr` 의 bit 0 — 수식이 차지하는 범위.
 ///
 /// set = 줄 단위 (HWPX `lineMode="LINE"`), clear = 글자 단위 (`lineMode="CHAR"`).
