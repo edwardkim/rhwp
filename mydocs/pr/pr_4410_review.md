@@ -55,7 +55,8 @@ commit 위에 적층돼야 한다는 뜻은 아니다.
 삼는 방식도 같은 bytes 복사본이 서로 다른 폴더에서 상대 parent를 다르게 해석하는
 경우 한 계보를 건너뛴다. 합본 예시는 4노드라고 적고 분할 1 + 편집 3 + 합본 1의
 5개 작업을 계산했다. C2PA를 모델 카드와 함께 전부 자기 신고로 분류한 설명도
-서명된 manifest와 자산/ingredient를 암호학적으로 결속하는 실제 보장을 누락했다.
+active asset hard binding과 ingredient 추가 시점 validation record라는 실제 보장을
+누락했다.
 
 메인터너 문서 보정 `67e7c3bc`는 다음을 반영했다.
 
@@ -92,6 +93,13 @@ parent 계보 하나를 건너뛸 수 있었다. 둘째, v1.1 "전체 예시"가
   hard binding·credential 유효성을 검사해 validation record를 남기는 보장과 replay
   재현을 분리했다.
 
+마지막 독립 재검토에서는 root S의 source input에 parent edge가 없는데 T5와 M3가 모든
+input slot에 parent binding을 요구해 5-node 예시를 자체 규약상 invalid로 만드는 모순을
+확인했다. 후속 설계 보정 `58cf7d4c`는 `parents:[]` root의 입력을 계보 밖
+`external` source digest로 명시하고, 모든 비-root input에만 정확히 한 parent binding을
+요구한다. root digest는 실행 입력을 결속하지만 제3자 provenance anchor는 아니라는 한계도
+기록했다. 이 review의 C2PA 요약도 active asset과 ingredient validation 경계에 맞췄다.
+
 contributor commit은 rewrite하지 않았고 보정은 원 head의 single-parent 후속
 commit이다.
 
@@ -104,6 +112,7 @@ commit이다.
 | `python scripts/check_document_metadata.py` | 통과, 522개 문서 이상 없음 |
 | `python tools/roadmap_progress.py` | 통과, 100개 트랙 집계·결번 0·중복 0·README 일치 |
 | v1.1 예시 JSON parse·그래프 불변식 대조 | 통과, 5 node·6 edge·root 4·`maxDepth:3`, 모든 edge id 유효 |
+| root/input binding 규약 대조 | root S input은 `external` digest, 비-root input 6개는 edge binding 6개와 일대일 |
 | `git diff --check` | 통과 |
 | 원문 대조 | arXiv 4건, C2PA 2.2 §7.3.2 active/ingredient 경계, Hugging Face `base_model` 공식 문서 확인 |
 | Cargo / 시각 검증 | 생략. source·test·fixture·renderer 변경 없음 |
