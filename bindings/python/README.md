@@ -180,3 +180,21 @@ pytest tests/ -q -m "not integration"     # 바이너리 없이 단위만
 ## 라이선스
 
 MIT — rhwp 본체와 동일합니다.
+
+## 프레임워크 로더 (선택 의존성, #4340)
+
+RAG 파이프라인에 쪽 단위로 꽂는 어댑터를 동봉한다 — 본체는 여전히 의존성 0 이고,
+어댑터가 각 프레임워크를 사용 시점에 지연 임포트한다(미설치면 설치 힌트 예외).
+
+```python
+# pip install langchain-core
+from rhwp.integrations.langchain import RHWPLoader
+docs = RHWPLoader("공문.hwp").load()   # 쪽마다 Document — metadata: source/format/page/total_pages
+
+# pip install llama-index-core
+from rhwp.integrations.llama_index import RHWPReader
+docs = RHWPReader().load_data("공문.hwp")
+```
+
+쪽 번호(`page`)는 1-기반 위치 번호다 — 검색 결과를 "몇 쪽"으로 되짚는 인용
+근거가 공공 문서 활용의 상수라서, 로더가 결정론적으로 부여한다.
