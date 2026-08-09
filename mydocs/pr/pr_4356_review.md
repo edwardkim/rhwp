@@ -33,6 +33,8 @@ loaded documents: `pr_review_workflow.md`, `pr_review/README.md`,
 | 후속 protocol 보정 | `e03935281a9450f529f6fd818ccfb47b256c16d2` — `docs(roadmap): define #4356 open-book cohort` |
 | 1차 trailing review | `7c306013da14eef6b20524345bccdfe1c335ee15` — `docs(pr): update #4356 open-book review` |
 | 증적 결속 보정 | `e3b4a993c923b60ec6678dadcebc9a08d2522e21` — `docs(roadmap): bind #4356 experiment receipts` |
+| 증적 trailing review | `4d4359e46fdb2686c9f028e7a6e1c69be5a5bc39` — `docs(pr): record #4356 receipt review` |
+| 집계 identity 보정 | `51e069bd131ff14f901ede1c49f9aaf41b38f5be` — `docs(roadmap): complete #4356 aggregation identity` |
 
 원 변경은 R100의 "30분 첫 유효 산출" 공개 실험 절차를 제안한다. 메인터너
 보정은 프로토콜과 이 review·구현 기록만 바꾸며 source, test, workflow, fixture,
@@ -60,6 +62,14 @@ submission timestamp를 허용해 서로 다른 clock과 filesystem mtime이 `t1
 있었다. prompt·input·template·evidence contract가 다른 task를 구분하는 variant ID와
 사전 고정된 overall task mix도 없었다.
 
+증적 결속 보정 뒤에도 `task_variant_id`가 참가자에게 보이는 산출물의 type·format·
+semantic requirements를 hash하지 않았다. 한 `required_artifact` 값에 산출물 의미와
+회차별 제출 위치를 함께 적으면 의미가 다른 과제를 같은 variant로 집계하거나 storage
+locator만 바뀐 실행을 다른 variant로 나눌 수 있다. 또한 4-tuple 집계 key에는
+`guidance_class`가 없어 live human hint를 받은 `guided` 결과와 self-discovery 결과가
+같은 cell과 overall에 섞일 수 있었고, 사전 등록 task mix·weight도 guidance class별
+분리를 강제하지 않았다.
+
 ## 메인터너 보정
 
 - v1을 **open-book/self-discovery source cohort**로 재정의했다. public repo, docs,
@@ -76,9 +86,13 @@ submission timestamp를 허용해 서로 다른 clock과 filesystem mtime이 `t1
   evidence hash/`received_at`/authority와 signature 또는 immutable log ID를 가진다.
 - dispatch receipt의 `received_at`을 `t0`, 사후 valid인 가장 이른 submission
   receipt의 `received_at`을 `t1`로 고정하고 filesystem mtime을 배제했다.
-- target, exact prompt, input SHA, template, evidence contract의 canonical hash인
-  `task_variant_id`를 추가했다. protocol/repo/environment/variant별로만 기본 집계하고,
-  overall은 사전 고정 task mix·weight가 있을 때만 계산한다.
+- target, exact prompt, input SHA, template, participant-visible
+  `required_artifact_contract`(type·format·semantic requirements), evidence contract의
+  canonical hash인 `task_variant_id`를 추가했다. 회차별 `submission_destination` storage
+  locator는 package에는 고정하지만 variant hash에서는 제외한다.
+- 기본 집계 key를 `(protocol_sha256, repo_sha, environment_id, task_variant_id,
+  guidance_class)` 5-tuple로 고정했다. 결과와 ledger에 `guidance_class`를 기록하고,
+  preregistered task mix·weight와 overall도 guidance class별로 분리한다.
 - 공개 #4355와 PR body의 repo-or-release/private legacy 문구에 대해 merge/run 전
   maintainer notice가 필요함을 잔여 blocker로 기록했다. 외부 표면은 변경하지 않았다.
 
@@ -90,7 +104,8 @@ submission timestamp를 허용해 서로 다른 clock과 filesystem mtime이 `t1
 | environment identity 검사 | RFC 8785 canonical manifest SHA-256 정의와 OS/arch/CPU/vCPU/RAM/network/clock-authority/tool/cache 필드가 존재 |
 | run-package schema 검사 | canonical package SHA와 protocol/repo/prompt/input/target/template/artifact/evidence/environment/authority 필드가 모두 존재 |
 | receipt·시간 계약 검사 | append-only package/sequence/artifact/evidence/received_at/authority/signature-or-log schema, 같은 authority `t0`/`t1`, mtime 금지와 feedback-after-cutoff가 존재 |
-| variant·집계 검사 | canonical `task_variant_id`, 4-tuple 기본 집계, preregistered task mix·weight만 overall 허용 |
+| artifact-bound variant 검사 | canonical `task_variant_id`가 participant-visible artifact type·format·semantic requirements와 evidence contract를 포함하고 `submission_destination`·storage locator를 제외함 |
+| guidance·집계 검사 | 결과·ledger의 `guidance_class`, 5-tuple 기본 집계, guidance class별 preregistered task mix·weight와 분리된 overall이 존재 |
 | stale private rubric 제거 | "참가자에게 전달 금지", "비공개 기준", 진행자 validation 시각=`t1` 문구가 없음 |
 | external residual 확인 | #4355/PR body legacy notice가 merge/run 전 blocker이고 외부 mutation은 미수행으로 기록됨 |
 | Markdown 상대 링크 검사 | 프로토콜과 review·구현 기록의 저장소 내부 링크 통과 |
@@ -108,7 +123,10 @@ submission timestamp를 허용해 서로 다른 clock과 filesystem mtime이 `t1
 - 첫 run 전 canonical environment/package serializer와 append-only timestamp authority를
   실제로 준비하고 receipt signature 또는 immutable log 검증을 smoke해야 한다. 문서만
   존재하는 상태에서는 측정 dispatch를 시작하지 않는다.
-- variant ID나 preregistered mix hash가 없는 과거 결과는 새 overall에 소급 혼합하지 않는다.
+- live hint 발생 여부를 guidance log에 빠짐없이 남기고 `guided` 전환은 되돌리지 않는다.
+  이 분류를 신뢰할 수 없는 결과는 어느 guidance class 집계에도 넣지 않는다.
+- artifact contract가 결속된 variant ID, `guidance_class`, class별 preregistered mix hash가
+  없는 과거 결과는 새 cell이나 overall에 소급 혼합하지 않는다.
 - 최신 PR head의 required checks와 mergeability는 실제 push 뒤 다시 확인해야 한다.
 - 이 로컬 보정은 remote에 push하거나 GitHub 상태를 바꾸지 않았다.
 
