@@ -2823,6 +2823,60 @@ fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
     ls.tag & 0x80000000 != 0
 }
 
+/// Native HWP5 can encode a table title as visible text in the table's host
+/// paragraph instead of as `Table::caption`.  When the stored host line fits
+/// wholly inside the table's positive paragraph-relative offset, Hancom paints
+/// that line in the offset lane before the first RowBreak fragment.  Deferring
+/// every visible host until the terminal fragment moves such titles to the
+/// following page (policy report table 27, p90 -> p91).
+///
+/// Keep this narrower than the generic visible-host path: a single table,
+/// stored (non-synthetic) line geometry, native HWP5, and an offset at least as
+/// tall as the complete stored host span.  A shorter offset denotes a genuine
+/// post-table host (#1686), and co-anchored table stacks have separate ordering
+/// rules (#2439).
+fn native_hwp5_rowbreak_host_precedes_first_fragment(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+) -> bool {
+    if !para_has_non_whitespace_text(para)
+        || !is_para_topbottom_float(&table.common)
+        || !matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        )
+        || para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            != 1
+    {
+        return false;
+    }
+
+    let vertical_offset = signed_hwpunit(table.common.vertical_offset);
+    if vertical_offset <= 0 {
+        return false;
+    }
+
+    let mut stored = para
+        .line_segs
+        .iter()
+        .filter(|seg| !is_synthetic_line_seg(seg) && seg.line_height > 0);
+    let Some(first) = stored.next() else {
+        return false;
+    };
+    let last = stored.last().unwrap_or(first);
+    let stored_host_span = last
+        .vertical_pos
+        .saturating_sub(first.vertical_pos)
+        .saturating_add(last.line_height)
+        .max(0);
+
+    stored_host_span > 0 && stored_host_span <= vertical_offset
+}
+
 /// [#2098] 쪽-하단 고정 틀(vert=쪽, valign=Bottom) 표의 빈 앵커 문단 — 저장 vpos=0 은
 /// 쪽 기준 절대배치 산물이라 흐름 리셋(새 쪽) 신호가 아니다 (opengov 결재문서 계열
 /// 36358528 pi8: 한글은 p1 하단 배치인데 리셋 오독으로 p2 단독 +1쪽). 앵커 배치는
@@ -19824,6 +19878,13 @@ impl TypesetEngine {
         const NATIVE_REWIND_FIRST_FRAGMENT_PAINT_FOOTER_GUARD_PX: f64 = 4.0;
         let first_fragment_painted_row_footer_guard =
             if native_hwp5_rewinding_rowbreak_uses_painted_row_footprint
+                // A visible host line that occupies the table's own positive
+                // offset lane moves the painted fragment down by only the
+                // offset remainder.  The exact existing-footnote boundary is
+                // already authoritative for this path; subtracting the p106
+                // empty-host safety guard again drops table 27's final fitting
+                // row by ~1px after its caption is restored.
+                && !native_hwp5_rowbreak_host_precedes_first_fragment(para, table)
                 && whole_row_fit_h
                     .iter()
                     .zip(&cut_row_h)
@@ -20293,14 +20354,17 @@ impl TypesetEngine {
                 seg.vertical_pos
                     > crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi)
             });
-        if st.profile.hwpx_stored_layout()
+        let native_hwp5_host_precedes_first_fragment = st.profile.native_hwp5_layout()
+            && native_hwp5_rowbreak_host_precedes_first_fragment(para, table);
+        if (st.profile.hwpx_stored_layout()
             && host_vpos_is_cumulative
             && !table.common.treat_as_char
             && is_para_topbottom_float(&table.common)
             && matches!(
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
-            )
+            ))
+            || native_hwp5_host_precedes_first_fragment
         {
             self.pre_emit_visible_rowbreak_host_text(st, para_idx, para, composed_all, styles);
         }

@@ -131,6 +131,18 @@ fn table_bottom(node: &RenderNode, para_index: usize, bottom: &mut Option<f64>) 
     }
 }
 
+fn table_top(node: &RenderNode, para_index: usize, top: &mut Option<f64>) {
+    if let RenderNodeType::Table(table) = &node.node_type {
+        if table.para_index == Some(para_index) {
+            let candidate = node.bbox.y;
+            *top = Some(top.map_or(candidate, |current| current.min(candidate)));
+        }
+    }
+    for child in &node.children {
+        table_top(child, para_index, top);
+    }
+}
+
 fn images_for_control(
     node: &RenderNode,
     para_index: usize,
@@ -400,6 +412,47 @@ fn native_hwp5_rowbreak_table_reclaims_only_the_actual_existing_footnote_boundar
     let p90_tree = doc
         .build_page_render_tree(PAGE_90)
         .expect("render physical page 90");
+    let p91_tree = doc
+        .build_page_render_tree(PAGE_91)
+        .expect("render physical page 91");
+    let p90_items = doc.dump_page_items(Some(PAGE_90));
+    let host_pos = p90_items
+        .find("PartialParagraph  pi=962")
+        .expect("p90 must pre-emit table 27 host caption");
+    let table_pos = p90_items
+        .find("PartialTable   pi=962 ci=0  rows=0..6")
+        .expect("p90 must own table 27 rows 0..6");
+    assert!(
+        host_pos < table_pos,
+        "p90 table 27 host caption must precede its first fragment:\n{p90_items}"
+    );
+    let p91_items = doc.dump_page_items(Some(PAGE_91));
+    assert!(
+        p91_items.contains("PartialTable   pi=962 ci=0  rows=6..7")
+            && !p91_items.contains("PartialParagraph  pi=962"),
+        "p91 must contain only table 27's terminal row, not its host caption:\n{p91_items}"
+    );
+
+    let mut p90_caption_lines = Vec::new();
+    let mut p91_caption_lines = Vec::new();
+    paragraph_line_boxes(&p90_tree.root, 962, &mut p90_caption_lines);
+    paragraph_line_boxes(&p91_tree.root, 962, &mut p91_caption_lines);
+    let mut p90_table_top = None;
+    table_top(&p90_tree.root, 962, &mut p90_table_top);
+    assert_eq!(
+        p90_caption_lines.len(),
+        1,
+        "p90 must render the single stored table 27 caption line"
+    );
+    assert!(
+        p90_caption_lines[0].y + p90_caption_lines[0].height
+            <= p90_table_top.expect("p90 pi=962 table top") + 0.5,
+        "p90 table 27 caption must stay above its first table fragment"
+    );
+    assert!(
+        p91_caption_lines.is_empty(),
+        "p91 must not repeat or defer the pi=962 caption: {p91_caption_lines:?}"
+    );
     let mut p90_table_bottom = None;
     let mut p90_separator_top = None;
     table_bottom(&p90_tree.root, 962, &mut p90_table_bottom);
