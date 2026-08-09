@@ -13,8 +13,8 @@ last_verified: 2026-08-10
 
 ## 1. 동향 실측 — "사람용 표면을 제거한 런타임"이 실물이 됐다
 
-Cloudflare 가 2026-08-07 **에이전트 전용 브라우저 엔진 Kitesurf** 를 발표했다.
-요지(전부 아래 출처에서 확인):
+Cloudflare 가 2026-08-06 **에이전트 전용 브라우저 엔진 Kitesurf** 를 발표했고,
+공식 기술 글은 2026-08-07 수정됐다. 요지(전부 아래 출처에서 확인):
 
 - 사람용 브라우저의 표면(탭·테마·확장·시각 장식)을 제거하고, 에이전트가 실제로
   쓰는 것만 남겼다 — 구조 읽기·추출, 폼 채우기, 스크린샷(그라운딩), JS 실행,
@@ -22,12 +22,15 @@ Cloudflare 가 2026-08-07 **에이전트 전용 브라우저 엔진 Kitesurf** �
 - Chromium 없이 **Rust 로 새로 구현**했고 V8 isolate(Workers)에서 실행한다. 다만
   isolate는 상주 브라우저가 아니라 **한 task의 수명에 묶인 ephemeral 세션**이며,
   서비스는 가능한 한 stateless로 유지한다. task가 끝나면 세션도 폐기된다.
-- Cloudflare의 Chrome 대비 측정에서 스크린샷/HTML 추출은 CPU를 각각 3.1배/3.8배,
-  메모리를 4.7배/7.0배 적게 썼다. 그 대신 wall time은 각각 1.8배/1.7배
-  **느렸다**. 자원 절감은 지연 단축과 같은 주장이 아니다.
+- Cloudflare의 성능 표는 **14개 URL의 quick-action corpus**에서 Kitesurf와 이미
+  떠 있는 **Chromium warm pool**을 비교한 결과다. 이 조건에서 스크린샷/HTML
+  추출은 CPU를 각각 3.1배/3.8배, 메모리를 4.7배/7.0배 적게 썼다. 그 대신 wall
+  time은 각각 1.8배/1.7배 **느렸다**. 자원 절감은 지연 단축, cold-start 비교,
+  일반 브라우징 workload 전체에 대한 주장과 같지 않다.
 - 한계도 공개했다. 비디오·WebGL은 미지원이고 복잡 페이지는 여전히 Chromium이
-  필요하다. 인증 상태를 약 10분보다 오래 이어 가는 persistent browsing session도
-  이 task-scoped 모델의 대상이 아니다.
+  필요하다. **10분짜리 인증 세션처럼 persistent state가 필요한 작업**도 이
+  task-scoped 모델의 대상이 아니다. 10분은 상태 지속 여부를 가르는 임계값이
+  아니라 공식 글이 든 작업 예시다.
 
 출처(접속 2026-08-10):
 [Cloudflare 공식 기술 글](https://blog.cloudflare.com/kitesurf/) ·
@@ -36,9 +39,10 @@ Cloudflare 가 2026-08-07 **에이전트 전용 브라우저 엔진 Kitesurf** �
 [Mac Observer](https://www.macobserver.com/news/cloudflare-launches-kitesurf-browser-exclusively-for-ai-agents/)
 
 **원리 추출**(실명 비교가 아니라 원리로): ① 에이전트 소비자는 픽셀이 아니라
-**구조와 결정론**을 산다. ② 사람 표면과 장기 상태를 빼면 task 단위 격리의 CPU·
-메모리 비용을 줄일 수 있지만 wall time 지연이라는 교환비가 남는다. ③ "무엇을 못
-하는지"와 상태 수명을 함께 공개하는 것이 신뢰 표면이다.
+**구조와 결정론**을 산다. ② 14-URL quick-action 실측은 task 단위 격리의 CPU·
+메모리 절감과 wall-time 지연 교환비를 보여 주지만, warm Chromium 이외 조건으로
+일반화할 수 없다. ③ "무엇을 못 하는지"와 상태 수명을 함께 공개하는 것이 신뢰
+표면이다.
 
 ## 2. rhwp 에의 사상(寫像) — 웹의 Kitesurf = 문서의 workspace
 
