@@ -19,17 +19,20 @@ class ReleaseInstallersWorkflowTests(unittest.TestCase):
             encoding="utf-8"
         )
 
-    def test_dispatch_resolves_tag_to_an_immutable_validated_source(self) -> None:
-        self.assertIn(
-            "ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}",
-            self.workflow,
-        )
+    def test_dispatch_requires_the_workflow_ref_to_match_a_stable_tag(self) -> None:
+        self.assertIn("ref: ${{ github.ref }}", self.workflow)
+        self.assertIn("fetch-depth: 0", self.workflow)
         self.assertIn("source_sha: ${{ steps.v.outputs.source_sha }}", self.workflow)
         self.assertEqual(
             self.workflow.count("ref: ${{ needs.version.outputs.source_sha }}"),
             3,
         )
         self.assertIn('git rev-parse --verify "refs/tags/$TAG^{commit}"', self.workflow)
+        self.assertIn(
+            'if [[ ! "$TAG" =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]]',
+            self.workflow,
+        )
+        self.assertIn("과거 release backfill은 지원하지 않습니다", self.workflow)
         self.assertIn('if [[ "$VERSION" != "$CARGO_VERSION" ]]', self.workflow)
 
     def test_installer_has_stock_macos_checksum_fallback(self) -> None:

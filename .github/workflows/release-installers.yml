@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag name (예: v0.8.2 — 기존 릴리스에 자산 추가)'
+        description: 'Stable tag (workflow ref와 같은 commit인 vX.Y.Z 재실행만 허용)'
         required: true
 
 permissions:
@@ -28,8 +28,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # 수동 재실행은 입력 태그, 태그 push 는 이벤트 ref 자체를 검증한다.
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+          # workflow에 존재하는 packaging 구현을 사용한다. 수동 입력 tag가 이 ref와
+          # 다른 commit이면 아래 gate가 old-release backfill을 명시적으로 거부한다.
+          ref: ${{ github.ref }}
+          fetch-depth: 0
       - id: v
         shell: bash
         env:
@@ -37,14 +39,15 @@ jobs:
         run: |
           set -euo pipefail
           TAG="$REQUESTED_TAG"
-          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
-            echo "지원하지 않는 릴리스 태그 형식: $TAG" >&2
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "installer workflow는 stable vX.Y.Z tag만 지원합니다: $TAG" >&2
             exit 1
           fi
           TAG_SHA="$(git rev-parse --verify "refs/tags/$TAG^{commit}")"
           HEAD_SHA="$(git rev-parse HEAD)"
           if [[ "$HEAD_SHA" != "$TAG_SHA" ]]; then
-            echo "checkout 소스가 요청 태그와 다릅니다: HEAD=$HEAD_SHA tag=$TAG_SHA" >&2
+            echo "과거 release backfill은 지원하지 않습니다: workflow ref HEAD=$HEAD_SHA requested tag=$TAG_SHA" >&2
+            echo "요청 tag와 같은 ref에서 workflow를 다시 실행하세요." >&2
             exit 1
           fi
           VERSION="${TAG#v}"
