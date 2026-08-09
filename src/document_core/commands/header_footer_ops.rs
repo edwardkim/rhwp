@@ -1,5 +1,6 @@
 //! 머리말/꼬리말 생성·조회·텍스트 편집 관련 native 메서드
 
+use super::formatting::para_shape_mods_affect_text_flow;
 use crate::document_core::helpers::{
     build_tab_def_from_json, json_has_border_keys, json_has_tab_keys, parse_json_i16_array,
     parse_para_shape_mods,
@@ -858,8 +859,12 @@ impl DocumentCore {
             para.para_shape_id = new_id;
         }
 
-        // 줄간격 변경 시 LineSeg 재계산
-        if mods.line_spacing.is_some() || mods.line_spacing_type.is_some() {
+        // 줄바꿈에 영향을 주는 변경 시 LineSeg 재계산.
+        //
+        // [#4324] formatting.rs의 apply_para_format_native/apply_para_format_in_cell_native
+        // 와 동일한 게이트 결함 — 줄간격만 보고 여백/들여쓰기/줄나눔 단위를 놓쳤다.
+        // para_shape_mods_affect_text_flow(formatting.rs:16 부근)로 판정을 통일한다.
+        if para_shape_mods_affect_text_flow(&mods) {
             self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
         }
 
