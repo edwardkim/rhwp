@@ -1,0 +1,66 @@
+name: Docker CLI Image
+
+# Issue #4354 — `docker run ghcr.io/edwardkim/rhwp` 한 줄 유입관.
+#
+# 시크릿 불요: ghcr.io 게시는 GITHUB_TOKEN(packages: write)만 쓴다 — 이 워크플로의
+# 머지가 곧 활성화다. PR 이 Dockerfile.cli 를 건드리면 게시 없이 빌드만 검증한다.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    paths:
+      - 'Dockerfile.cli'
+      - '.github/workflows/docker-publish.yml'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name (예: v0.8.2)'
+        required: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: 이미지 빌드${{ github.event_name == 'pull_request' && ' (검증만)' || ' + ghcr 게시' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: 버전 결정
+        id: ver
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            TAG="pr-${{ github.event.number }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: 빌드
+        run: docker build -f Dockerfile.cli -t rhwp-cli:local .
+
+      - name: 스모크 — capabilities 봉투가 나온다
+        run: |
+          docker run --rm rhwp-cli:local capabilities | head -c 200
+          echo
+          docker run --rm rhwp-cli:local --version
+
+      - name: ghcr 로그인·게시 (태그/수동 실행만)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          IMAGE=ghcr.io/${{ github.repository_owner }}/rhwp
+          docker tag rhwp-cli:local "$IMAGE:$VERSION"
+          docker tag rhwp-cli:local "$IMAGE:latest"
+          docker push "$IMAGE:$VERSION"
+          docker push "$IMAGE:latest"

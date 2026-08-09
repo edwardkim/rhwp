@@ -3,3 +3,7 @@ pkg/
 mydocs/
 .git/
 *.wasm
+samples/
+rhwp-studio/node_modules/
+bindings/node/node_modules/
+Dockerfile.cli
