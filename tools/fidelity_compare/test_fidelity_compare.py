@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -50,6 +51,57 @@ class VisibleSvgTextTests(unittest.TestCase):
             "visible_svg_only": 48,
             "clip_excluded_chars": 30,
         }])
+
+
+class SvgExportFontFallbackTests(unittest.TestCase):
+    def test_single_page_export_enables_local_font_fallback_aliases(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+            calls.append(command)
+            (svg_dir / "sample_001.svg").write_text("<svg/>", encoding="utf-8")
+            return subprocess.CompletedProcess(command, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as directory:
+            svg_dir = Path(directory)
+            original_run = fidelity_compare.subprocess.run
+            fidelity_compare.subprocess.run = fake_run
+            try:
+                rendered = fidelity_compare.render_svg(
+                    "rhwp", Path("sample.hwp"), svg_dir, 0
+                )
+            finally:
+                fidelity_compare.subprocess.run = original_run
+
+        self.assertTrue(rendered)
+        self.assertEqual(len(calls), 1)
+        self.assertIn("--font-style", calls[0])
+
+    def test_full_export_enables_local_font_fallback_aliases(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+            calls.append(command)
+            return subprocess.CompletedProcess(command, 0, '{"pageCount":1}', "")
+
+        with tempfile.TemporaryDirectory() as directory:
+            svg_dir = Path(directory)
+            original_run = fidelity_compare.subprocess.run
+            fidelity_compare.subprocess.run = fake_run
+            try:
+                rendered = fidelity_compare.render_all_svg(
+                    "rhwp", Path("sample.hwp"), svg_dir
+                )
+                manifest = (svg_dir / "export-svg-manifest.json").read_text(
+                    encoding="utf-8"
+                )
+            finally:
+                fidelity_compare.subprocess.run = original_run
+
+        self.assertTrue(rendered)
+        self.assertEqual(manifest, '{"pageCount":1}')
+        self.assertEqual(len(calls), 1)
+        self.assertIn("--font-style", calls[0])
 
 
 if __name__ == "__main__":

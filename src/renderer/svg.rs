@@ -3503,7 +3503,33 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
         // 설치된 검증 host에서 Verdana 같은 무관한 폴백이나 두부로 떨어지지 않는다.
         "한양중고딕" => vec!["한양중고딕", "HY중고딕", "HYGothic-Medium"],
         "HY중고딕" => vec!["HY중고딕", "HYGothic-Medium"],
-        "휴먼명조" => vec!["휴먼명조", "HumanMyeongJo"],
+        // HMKMM.TTF 같은 legacy 휴먼명조 배포본은 EBDT bitmap strike를 포함하며,
+        // Blink/Chrome이 local face를 선택하고도 표준 한글을 .notdef(□)로 그릴 수 있다.
+        // SVG 좌표는 이미 조판 결과로 고정되어 있으므로 portable outline serif를 먼저
+        // 선택하고, native face는 해당 환경에서 대체글꼴이 없을 때만 마지막에 시도한다.
+        "휴먼명조" => vec![
+            "Batang",
+            "바탕",
+            "AppleMyungjo",
+            "Noto Serif CJK KR",
+            "휴먼명조",
+            "HumanMyeongJo",
+        ],
+        "한양신명조" => vec![
+            "Batang",
+            "바탕",
+            "AppleMyungjo",
+            "Noto Serif CJK KR",
+            "한양신명조",
+            "HY신명조",
+        ],
+        "HY신명조" => vec![
+            "Batang",
+            "바탕",
+            "AppleMyungjo",
+            "Noto Serif CJK KR",
+            "HY신명조",
+        ],
         _ => vec![],
     }
 }

@@ -730,6 +730,7 @@ def render_svg(rhwp: str, source: Path, svg_dir: Path, page_index: int) -> bool:
         rhwp,
         "export-svg",
         str(source),
+        "--font-style",
         "-p",
         str(page_index),
         "-o",
@@ -758,7 +759,15 @@ def render_svg(rhwp: str, source: Path, svg_dir: Path, page_index: int) -> bool:
 
 def render_all_svg(rhwp: str, source: Path, svg_dir: Path) -> bool:
     """한 번의 export로 전체 SVG cache를 만들고 raw manifest도 보관한다."""
-    command = [rhwp, "export-svg", str(source), "--json", "-o", str(svg_dir)]
+    command = [
+        rhwp,
+        "export-svg",
+        str(source),
+        "--font-style",
+        "--json",
+        "-o",
+        str(svg_dir),
+    ]
     font_path = os.environ.get("RHWP_FONT_PATH_DIR")
     if font_path:
         command.extend(["--font-path", font_path])

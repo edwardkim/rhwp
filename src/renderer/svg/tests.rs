@@ -62,6 +62,23 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
         font_local_aliases("한양중고딕"),
         vec!["한양중고딕", "HY중고딕", "HYGothic-Medium"]
     );
+    assert_eq!(
+        font_local_aliases("휴먼명조"),
+        vec![
+            "Batang",
+            "바탕",
+            "AppleMyungjo",
+            "Noto Serif CJK KR",
+            "휴먼명조",
+            "HumanMyeongJo",
+        ],
+        "Chrome에서 bitmap HMKMM을 먼저 고르면 한글이 두부가 되므로 outline 대체가 우선이어야 함"
+    );
+    assert_eq!(
+        font_local_aliases("한양신명조").first(),
+        Some(&"Batang"),
+        "legacy 신명조도 SVG에서는 portable outline serif를 먼저 선택해야 함"
+    );
     assert_eq!(known_font_filenames("한양중고딕"), vec!["H2GTRM.TTF"]);
     assert_eq!(
         known_font_filenames("휴먼명조").first(),
