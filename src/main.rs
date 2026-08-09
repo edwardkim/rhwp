@@ -15278,15 +15278,24 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
         .as_bool()
         .unwrap_or(true);
     // [#4378 R22] preconditions.inputSha256 — 형식은 여기서(usage), 대조는 읽기 직후.
-    let expected_input_sha = match plan["preconditions"]["inputSha256"].as_str() {
-        Some(raw) => {
-            let normalized = raw.trim().to_ascii_lowercase();
-            if normalized.len() != 64 || !normalized.bytes().all(|b| b.is_ascii_hexdigit()) {
-                return usage("preconditions.inputSha256 은 64자리 16진이어야 합니다");
-            }
-            Some(normalized)
-        }
+    // 키가 있는데 타입이 잘못된 경우를 "전제조건 없음"으로 낮추면 CAS 경계가
+    // fail-open 된다. 생략만 허용하고, 명시된 값은 반드시 문자열이어야 한다.
+    let expected_input_sha = match plan.get("preconditions") {
         None => None,
+        Some(serde_json::Value::Object(preconditions)) => match preconditions.get("inputSha256") {
+            None => None,
+            Some(serde_json::Value::String(raw)) => {
+                let normalized = raw.trim().to_ascii_lowercase();
+                if normalized.len() != 64 || !normalized.bytes().all(|b| b.is_ascii_hexdigit()) {
+                    return usage("preconditions.inputSha256 은 64자리 16진이어야 합니다");
+                }
+                Some(normalized)
+            }
+            Some(_) => {
+                return usage("preconditions.inputSha256 은 문자열이어야 합니다");
+            }
+        },
+        Some(_) => return usage("preconditions 는 객체여야 합니다"),
     };
 
     let bytes = match fs::read(input) {

@@ -18,8 +18,12 @@ use sha2::{Digest, Sha256};
 const SAMPLE: &str = "samples/basic/issue2007_nested_cell_pagination_42065.hwp";
 const ZERO64: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
+
 fn run(args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    Command::new(rhwp_bin())
         .args(args)
         .output()
         .expect("rhwp 실행")
@@ -120,6 +124,47 @@ fn plan_with_malformed_sha_is_usage_error() {
         env["error"].as_str().unwrap_or_default().contains("64자리"),
         "{env}"
     );
+}
+
+#[test]
+fn plan_with_non_string_precondition_is_usage_error() {
+    let out = tmp("plan_non_string");
+    let find = existing_snippet();
+    for value in [
+        serde_json::Value::Null,
+        serde_json::json!(42),
+        serde_json::json!(true),
+        serde_json::json!({ "sha": ZERO64 }),
+    ] {
+        let mut plan: serde_json::Value =
+            serde_json::from_str(&plan_json(None, &out, &find)).expect("계획 JSON");
+        plan["preconditions"] = serde_json::json!({ "inputSha256": value });
+        let o = run(&["run", "--plan-json", &plan.to_string(), "--json"]);
+        assert_eq!(o.status.code(), Some(2), "잘못된 타입은 거절: {plan}");
+        let env: serde_json::Value = serde_json::from_slice(&o.stdout).expect("봉투");
+        assert!(
+            env["error"].as_str().unwrap_or_default().contains("문자열"),
+            "{env}"
+        );
+        assert!(!out.exists(), "잘못된 전제조건은 산출물을 쓰지 않는다");
+    }
+}
+
+#[test]
+fn plan_with_non_object_preconditions_is_usage_error() {
+    let out = tmp("plan_non_object");
+    let find = existing_snippet();
+    let mut plan: serde_json::Value =
+        serde_json::from_str(&plan_json(None, &out, &find)).expect("계획 JSON");
+    plan["preconditions"] = serde_json::json!([]);
+    let o = run(&["run", "--plan-json", &plan.to_string(), "--json"]);
+    assert_eq!(o.status.code(), Some(2));
+    let env: serde_json::Value = serde_json::from_slice(&o.stdout).expect("봉투");
+    assert!(
+        env["error"].as_str().unwrap_or_default().contains("객체"),
+        "{env}"
+    );
+    assert!(!out.exists());
 }
 
 // ── edit 단발 축 (R24, 기함: replace-text) ───────────────────────────────
