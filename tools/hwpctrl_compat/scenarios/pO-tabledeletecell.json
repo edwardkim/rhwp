@@ -1,0 +1,108 @@
+{
+  "id": "pO-tabledeletecell",
+  "title": "TableDeleteCell — 이름과 달리 블록의 글을 비운다",
+  "note": "이름만 보면 칸을 지울 것 같은데 **블록이 덮은 칸들의 글을 비운다**(실측, 계획서 §4.21). 격자·캐럿은 그대로다. 원래 빈 칸은 자취를 안 남기므로 (0,0)~(1,1) 네 칸을 덮어도 자취는 셋이다 — (0,1)이 원래 비었다. 블록이 없으면 무동작인데 그 검증은 자취로 못 넣는다(빈 자취는 통과가 아니라는 규칙과 부딪힌다) — `probes/pD-del-noblock.json` 으로 남겼다(저장본 차이 0 실측). 첫 저장(`w`)은 버린다 — 문서를 연 뒤 첫 저장에만 붙는 비결정 비트를 재는 자리 밖으로 뺀다.",
+  "ledger": [
+    "Action.TableDeleteCell"
+  ],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pO-w.hwp",
+      "posix": "{out}/pO-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pO-a.hwp",
+      "posix": "{out}/pO-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pO-b.hwp",
+      "posix": "{out}/pO-b.hwp"
+    }
+  },
+  "deltas": [
+    {
+      "from": "a",
+      "to": "b",
+      "label": "TableDeleteCell (블록 4칸, 자취 3칸)"
+    }
+  ],
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        2,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlock"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlockExtend"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableRightCell"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableLowerCell"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableDeleteCell"
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ],
+    [
+      "SelectionMode",
+      []
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

@@ -2049,6 +2049,21 @@ impl DocumentCore {
                 true,
                 false,
             ),
+            // 한 칸만 크기 조절 — 경계가 어긋나며 격자가 갈라진다(§4.21).
+            "resizeCellRight" | "resizeCellLeft" | "resizeCellDown" | "resizeCellUp" => {
+                let dir = op.trim_start_matches("resizeCell");
+                let vertical = matches!(dir, "Down" | "Up");
+                let forward = matches!(dir, "Right" | "Down");
+                self.resize_table_cell_native(
+                    section,
+                    host_para,
+                    control_index,
+                    row,
+                    col,
+                    vertical,
+                    forward,
+                )
+            }
             // 칸 크기 조절 열둘 — `Ex` 는 평범한 것과 자취가 같아 같은 갈래로 보낸다(§4.21).
             "resizeRight" | "resizeLeft" | "resizeDown" | "resizeUp" | "resizeLineRight"
             | "resizeLineLeft" | "resizeLineDown" | "resizeLineUp" => {
@@ -2112,6 +2127,78 @@ impl DocumentCore {
             row.max(end_row),
             col.max(end_col),
         )
+    }
+
+    /// 셀 블록이 덮은 칸들의 **글을 비운다** — 웹한글컨트롤 `Run("TableDeleteCell")`.
+    ///
+    /// 이름과 달리 칸을 지우는 것이 아니다(실측, 계획서 §4.21). 블록 직사각형 안 모든 칸의
+    /// 내용이 **빈 문단 하나**가 되고 격자·캐럿은 그대로다. 원래 빈 칸은 자취를 안 남긴다.
+    /// 블록이 없으면 무동작이다(저장본 차이 0).
+    ///
+    /// 규약은 `table_merge_at_cursor` 와 같다 — 블록 첫 칸의 리스트와 끝 칸의 (행, 열).
+    pub fn clear_table_cells_at_cursor(
+        &mut self,
+        list_id: u32,
+        end_row: u16,
+        end_col: u16,
+    ) -> Result<String, HwpError> {
+        let (section, host_para, control_index, row, col) = {
+            let (_, lists) = self.collect_fields_and_lists();
+            let entry = lists
+                .iter()
+                .find(|l| l.list_id == list_id)
+                .ok_or_else(|| HwpError::InvalidField(format!("리스트 {} 없음", list_id)))?;
+            let grid = entry
+                .grid
+                .ok_or_else(|| HwpError::InvalidField("표 셀이 아니다".into()))?;
+            if entry.host_list_id != ROOT_LIST_ID {
+                return Ok(r#"{"ok":false,"reason":"중첩 표는 아직 다루지 않는다"}"#.to_string());
+            }
+            (
+                entry.section_index,
+                entry.host_para_index,
+                entry.control_index,
+                grid.row,
+                grid.col,
+            )
+        };
+        let (r1, r2) = (row.min(end_row), row.max(end_row));
+        let (c1, c2) = (col.min(end_col), col.max(end_col));
+        let table = self.get_table_mut(section, host_para, control_index)?;
+        let mut cleared = false;
+        for cell in table.cells.iter_mut() {
+            if cell.row < r1 || cell.row > r2 || cell.col < c1 || cell.col > c2 {
+                continue;
+            }
+            // 실측한 자취 그대로다: 글·좌표·줄만 비고 문단 객체(서식·보존 바이트)는 남는다.
+            // 문단 여럿·컨트롤 든 칸은 잰 적이 없다 — "빈 문단 하나"가 빈 칸의 정의라
+            // (`Cell::new_empty` 도 그렇다) 그 꼴로 줄인다.
+            cell.paragraphs.truncate(1);
+            let Some(para) = cell.paragraphs.first_mut() else {
+                continue;
+            };
+            if para.text.is_empty() && para.controls.is_empty() {
+                continue; // 원래 빈 칸 — 자취를 안 남긴다(실측).
+            }
+            cleared = true;
+            para.text.clear();
+            para.char_count = 1;
+            para.char_offsets.clear();
+            para.char_shapes.truncate(1);
+            if let Some(first) = para.char_shapes.first_mut() {
+                first.start_pos = 0;
+            }
+            para.range_tags.clear();
+            para.line_segs.clear();
+            para.tab_extended.clear();
+            para.controls.clear();
+            para.has_para_text = false;
+        }
+        if cleared {
+            table.dirty = true;
+            self.document.sections[section].raw_stream = None;
+        }
+        Ok(format!(r#"{{"ok":true,"cleared":{}}}"#, cleared))
     }
 
     /// 문단 하나의 캐럿 경계 — 웹한글컨트롤 `MoveParaBegin`·`MoveParaEnd` 가 가는 자리.

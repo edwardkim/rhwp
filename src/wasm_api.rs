@@ -5756,6 +5756,18 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 셀 블록이 덮은 칸들의 글을 비운다 — `Run("TableDeleteCell")`. 규약은 merge 와 같다.
+    #[wasm_bindgen(js_name = clearTableCellsAtCursor)]
+    pub fn clear_table_cells_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        end_row: u32,
+        end_col: u32,
+    ) -> Result<String, JsValue> {
+        self.clear_table_cells_at_cursor(list_id, end_row as u16, end_col as u16)
+            .map_err(|e| e.into())
+    }
+
     /// 커서 좌표(list/para)로 문단 서식을 건다 — 웹한글컨트롤 `Run("ParagraphShape*")`.
     #[wasm_bindgen(js_name = applyParaFormatAtCursor)]
     pub fn apply_para_format_at_cursor_api(

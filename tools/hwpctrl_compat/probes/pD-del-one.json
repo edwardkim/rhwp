@@ -1,0 +1,76 @@
+{
+  "id": "pD-del-one",
+  "title": "TableDeleteCell — one",
+  "ledger": [],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pD-del-one-w.hwp",
+      "posix": "{out}/pD-del-one-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pD-del-one-a.hwp",
+      "posix": "{out}/pD-del-one-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pD-del-one-b.hwp",
+      "posix": "{out}/pD-del-one-b.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        2,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlock"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableDeleteCell"
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

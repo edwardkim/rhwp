@@ -4,10 +4,10 @@
   "oracleVersion": "한글2022 (설치본 COM)",
   "summary": {
     "total": 484,
-    "done": 330,
+    "done": 335,
     "byStatus": {
-      "verified": 324,
-      "unimplemented": 154,
+      "verified": 329,
+      "unimplemented": 149,
       "substituted": 6
     },
     "byUnit": {
@@ -25,8 +25,8 @@
         "unimplemented": 3
       },
       "action": {
-        "unimplemented": 120,
-        "verified": 192
+        "unimplemented": 115,
+        "verified": 197
       },
       "parameterSet": {
         "verified": 49,
@@ -1348,7 +1348,6 @@
         "scenarios": [
           "p2-scan-cellmulti",
           "p2-scan-order",
-          "p2-scan-plain",
           "p2-scan-small"
         ],
         "lastRun": null,
@@ -1428,7 +1427,6 @@
         "scenarios": [
           "p2-scan-cellmulti",
           "p2-scan-order",
-          "p2-scan-plain",
           "p2-scan-small"
         ],
         "lastRun": null,
@@ -1697,7 +1695,6 @@
         "scenarios": [
           "p2-scan-cellmulti",
           "p2-scan-order",
-          "p2-scan-plain",
           "p2-scan-small"
         ],
         "lastRun": null,
@@ -6957,13 +6954,15 @@
       "name": "TableDeleteCell",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pO-tabledeletecell"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7215,13 +7214,15 @@
       "name": "TableResizeCellDown",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pP-TableResizeCellDown"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7231,13 +7232,15 @@
       "name": "TableResizeCellLeft",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pP-TableResizeCellLeft"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7247,13 +7250,15 @@
       "name": "TableResizeCellRight",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pP-TableResizeCellRight"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7263,13 +7268,15 @@
       "name": "TableResizeCellUp",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pP-TableResizeCellUp"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {

@@ -516,6 +516,9 @@ const ACTIONS = {
   TableSplitCellRow2: { kind: 'tableEdit', op: 'splitRow2' },
   TableSplitCellCol2: { kind: 'tableEdit', op: 'splitCol2' },
   TableMergeCell: { kind: 'tableMerge' },
+  // 이름과 달리 칸을 지우지 않는다 — **블록이 덮은 칸들의 글을 비운다**(실측, 계획서 §4.21).
+  // 격자·캐럿은 그대로고, 블록이 없으면 무동작이다(저장본 차이 0).
+  TableDeleteCell: { kind: 'tableClear' },
 
   TableInsertUpperRow: { kind: 'tableEdit', op: 'insertRowAbove' },
   TableInsertLowerRow: { kind: 'tableEdit', op: 'insertRowBelow' },
@@ -527,6 +530,12 @@ const ACTIONS = {
   // 평범한 것은 캐럿 칸의 **열/행 전체**가 ±283, `Line` 은 오른쪽·아래 이웃과 짝으로
   // **경계를 옮긴다**. `Ex` 는 평범한 것과 자취가 **완전히 같아** 같은 갈래로 보낸다 —
   // 이름만 보면 다른 일을 할 것 같은데 아니다.
+  // `Cell` 갈래는 **그 칸 하나만** 경계를 옮긴다 — 다른 행·열은 그대로라 격자가 갈라진다
+  // (147행 3열에서 한 칸 폭을 늘리면 열이 넷이 된다, 실측 §4.21).
+  TableResizeCellRight: { kind: 'tableEdit', op: 'resizeCellRight' },
+  TableResizeCellLeft: { kind: 'tableEdit', op: 'resizeCellLeft' },
+  TableResizeCellDown: { kind: 'tableEdit', op: 'resizeCellDown' },
+  TableResizeCellUp: { kind: 'tableEdit', op: 'resizeCellUp' },
   TableResizeRight: { kind: 'tableEdit', op: 'resizeRight' },
   TableResizeLeft: { kind: 'tableEdit', op: 'resizeLeft' },
   TableResizeDown: { kind: 'tableEdit', op: 'resizeDown' },
@@ -2321,11 +2330,17 @@ export class HwpCtrl {
       callback?.(null, done, callbackUserData);
       return;
     }
-    if (action.kind === 'tableEdit' || action.kind === 'tableMerge') {
+    if (
+      action.kind === 'tableEdit' ||
+      action.kind === 'tableMerge' ||
+      action.kind === 'tableClear'
+    ) {
       const done =
         action.kind === 'tableMerge'
           ? this.#runTableMerge(actionID)
-          : this.#runTableEdit(actionID, action);
+          : action.kind === 'tableClear'
+            ? this.#runTableClear(actionID)
+            : this.#runTableEdit(actionID, action);
       if (done) this.#modified = true;
       callback?.(null, done, callbackUserData);
       return;
@@ -3010,6 +3025,14 @@ export class HwpCtrl {
       }
       const target = this.#tableMoveTarget(action.to, here, siblings, at);
       if (!target || target === here) return true; // 표 가장자리 — 제자리
+      // 셀 블록을 **넓히는 중**이면 이동이 블록 끝을 끌고 간다(실측: Extend → 오른쪽 →
+      // 아래로 가면 `SelectionMode` 가 19 로 남고 그 뒤 `TableDeleteCell` 이 (0,0)~(1,1)
+      // 네 칸을 비운다). 캐럿 규칙은 보통 이동과 같다 — 간 칸의 처음.
+      if (this.#selectionMode === SELECTION_TABLE_EXTEND && this.#tableBlock) {
+        this.#tableBlock = { from: this.#tableBlock.from, to: target };
+        this.#cursor = { list: target.listId, para: 0, pos: 0 };
+        return true;
+      }
       this.#clearSelection();
       // **앞으로 가면 그 칸의 처음, 뒤로 가면 그 칸의 끝**이다(Tab·Shift+Tab 과 같다).
       // 실측: 9 → 오른쪽 10/0/0(끝은 24), 9 → 왼쪽 8/0/0·7/0/19, 9 → 위 6/0/2(끝이 2).
@@ -3072,6 +3095,34 @@ export class HwpCtrl {
       (l) => this.#sameTable(l, table) && l.row === first.row && l.col === first.col,
     );
     if (target) this.#cursor = { list: target.listId, para: 0, pos: 0 };
+    return true;
+  }
+
+  /**
+   * 셀 블록이 덮은 칸들의 글을 비운다 — `TableDeleteCell` 의 실제 동작이다(실측).
+   *
+   * 한 칸 블록도 된다(merge 와 달리 `from === to` 를 막지 않는다). 캐럿과 블록은 그대로
+   * 둔다 — 오라클의 `GetPos` 가 블록 끝 칸을 그대로 가리켰다. 블록이 없으면 무동작이다.
+   */
+  #runTableClear(actionID) {
+    const block = this.#tableBlock;
+    if (!block) return false;
+    let ok = false;
+    try {
+      const raw = this.#doc.clearTableCellsAtCursor(
+        block.from.listId,
+        block.to.row,
+        block.to.col,
+      );
+      ok = parseJson(raw, { ok: false }).ok !== false;
+    } catch (e) {
+      console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+      return false;
+    }
+    if (!ok) return false;
+    // 리스트 번호는 안 변하지만 문단 수·내용이 변했다 — 모델을 다시 읽는다.
+    this.#listModel = null;
+    this.#sections = null;
     return true;
   }
 
