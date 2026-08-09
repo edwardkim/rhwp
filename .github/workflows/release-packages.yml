@@ -1,0 +1,206 @@
+name: Release Packages
+
+# Issue #4336 (R63) — PyPI/npm 릴리스 파이프라인.
+#
+# 설계 요지:
+# - 휠 4종(플랫폼 바이너리 동봉) + sdist(순수) 를 태그마다 만들고 각 플랫폼에서
+#   설치 스모크(동봉 탐색 2순위로 실행)까지 검증한다 — 여기까지는 시크릿 없이 돈다.
+# - 게시는 시크릿 게이트: PYPI_API_TOKEN / NPM_TOKEN 미등록이면 명시적으로
+#   건너뛴다(로그에 사유). 즉 이 워크플로의 머지는 배포 "능력"의 채택이고,
+#   시크릿 등록이 배포 "실행"의 채택이다 — 결정이 두 단계로 분리돼 있다.
+# - 버전 정합: 태그 = Cargo.toml = 바인딩 패키지 버전 (version_policy.md §6).
+#   tools/set_package_version.py 가 검증·정렬을 담당한다.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name (예: v0.8.3 — 검증·빌드만, 게시는 시크릿 있을 때)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  version-gate:
+    name: 버전 정합 게이트
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: 태그 == Cargo.toml 검증
+        id: ver
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          VERSION="${TAG#v}"
+          python3 tools/set_package_version.py "${VERSION}" --check
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+  build-wheels:
+    name: 휠 ${{ matrix.wheel_tag }}
+    needs: version-gate
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+            binary_name: rhwp
+            # ubuntu-latest(24.04) glibc 2.39 — PEP 600 에 따라 정직하게 표기한다.
+            wheel_tag: py3-none-manylinux_2_39_x86_64
+          - target: x86_64-apple-darwin
+            runner: macos-14
+            binary_name: rhwp
+            wheel_tag: py3-none-macosx_10_12_x86_64
+          - target: aarch64-apple-darwin
+            runner: macos-14
+            binary_name: rhwp
+            wheel_tag: py3-none-macosx_11_0_arm64
+          - target: x86_64-pc-windows-msvc
+            runner: windows-latest
+            binary_name: rhwp.exe
+            wheel_tag: py3-none-win_amd64
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Ensure Rust target is installed
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Cache cargo dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.target }}-cargo-
+
+      - name: Build release binary
+        run: cargo build --release --bin rhwp --target ${{ matrix.target }}
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 버전을 태그로 정렬
+        shell: bash
+        run: python tools/set_package_version.py "${{ needs.version-gate.outputs.version }}"
+
+      - name: 휠 빌드 (바이너리 동봉)
+        shell: bash
+        env:
+          RHWP_WHEEL_BUNDLE: target/${{ matrix.target }}/release/${{ matrix.binary_name }}
+          RHWP_WHEEL_TAG: ${{ matrix.wheel_tag }}
+        run: |
+          python -m pip install --upgrade pip build hatchling
+          python -m build --wheel --outdir dist bindings/python
+
+      - name: 설치 스모크 — 동봉 탐색(2순위)으로 실행돼야 한다
+        shell: bash
+        run: |
+          python -m pip install dist/*.whl
+          python - <<'EOF'
+          import os, subprocess
+          assert "RHWP_BIN" not in os.environ, "스모크는 RHWP_BIN 없이 돌아야 동봉 경로를 증명한다"
+          from rhwp._binary import find_binary
+          p = find_binary()
+          assert "_bin" in str(p), f"동봉 경로가 아니라 {p} 가 잡혔다"
+          out = subprocess.run([str(p), "--version"], capture_output=True, text=True, check=True)
+          print("동봉 바이너리:", p)
+          print("버전:", out.stdout.strip() or out.stderr.strip())
+          EOF
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: wheel-${{ matrix.wheel_tag }}
+          path: dist/*.whl
+
+  build-sdist:
+    name: sdist (순수)
+    needs: version-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: 패키지 버전을 태그로 정렬
+        run: python tools/set_package_version.py "${{ needs.version-gate.outputs.version }}"
+      - name: sdist 빌드
+        run: |
+          python -m pip install --upgrade pip build hatchling
+          python -m build --sdist --outdir dist bindings/python
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
+  publish-pypi:
+    name: PyPI 게시 (시크릿 게이트)
+    needs: [version-gate, build-wheels, build-sdist]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: dist
+          merge-multiple: true
+      - name: 게시 또는 명시적 생략
+        shell: bash
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          ls -la dist/
+          if [[ -z "${TWINE_PASSWORD}" ]]; then
+            echo "::notice title=PyPI 게시 생략::PYPI_API_TOKEN 미등록 — 빌드·스모크 검증까지만 수행했습니다. 게시를 켜려면 저장소 시크릿에 토큰을 등록하세요 (mydocs/manual/release_packages_guide.md)."
+            exit 0
+          fi
+          python -m pip install --upgrade twine
+          python -m twine upload --non-interactive dist/*
+
+  publish-npm:
+    name: npm @rhwp/node 게시 (시크릿 게이트)
+    needs: version-gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bindings/node
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      - name: 패키지 버전을 태그로 정렬
+        working-directory: .
+        run: python3 tools/set_package_version.py "${{ needs.version-gate.outputs.version }}"
+      - name: 빌드 (커밋된 생성 타입 기준 — 드리프트는 node-binding.yml 의 gen:check 가 게이트)
+        run: |
+          npm ci
+          npm run build
+      - name: 게시 또는 명시적 생략
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [[ -z "${NODE_AUTH_TOKEN}" ]]; then
+            echo "::notice title=npm 게시 생략::NPM_TOKEN 미등록 — 빌드 검증까지만 수행했습니다. 게시를 켜려면 저장소 시크릿에 토큰을 등록하세요 (mydocs/manual/release_packages_guide.md)."
+            exit 0
+          fi
+          npm publish --access public

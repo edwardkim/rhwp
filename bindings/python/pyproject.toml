@@ -42,6 +42,12 @@ Issues = "https://github.com/edwardkim/rhwp/issues"
 [tool.hatch.build.targets.wheel]
 packages = ["src/rhwp"]
 
+# [#4336 R63] 릴리스 파이프라인이 환경변수(RHWP_WHEEL_BUNDLE·RHWP_WHEEL_TAG)를
+# 줄 때만 rhwp/_bin/ 에 바이너리를 동봉하고 플랫폼 태그를 단다. 환경변수가
+# 없으면 훅은 아무것도 하지 않는다(로컬 -e 설치·sdist 는 종전과 동일).
+[tool.hatch.build.targets.wheel.hooks.custom]
+path = "hatch_build.py"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # 바이너리가 없는 환경에서도 단위 테스트는 돌아야 한다 — 통합만 건너뛴다.
