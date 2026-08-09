@@ -1468,18 +1468,57 @@ fn parse_col_line(e: &quick_xml::events::BytesStart, cd: &mut ColumnDef) {
 /// schema.xml:1415` ColumnDefType). HWPX 는 절대값이므로 `proportional_widths`
 /// 는 건드리지 않는다 — `ColumnDef::default()` 의 `false` 가 이미 정답이다
 /// (HWP 5.0 바이너리 파서(body_text.rs)만 비례값이라 true 로 켠다).
+///
+/// [#4387 후속] 스키마상 `width` 는 `xs:positiveInteger`(상한 없음)인데
+/// `ColumnDef.widths/gaps: Vec<HwpUnit16>` 은 i16(최대 32767 HWPUNIT ≈
+/// 115.6mm)이다. A3 등 큰 용지나 비대칭 다단(예: 35000+13000)처럼 실측치가
+/// i16 범위를 넘으면 공용 `parse_i16`(무경고 0-폴백)이 조용히 0으로 떨어뜨려
+/// 단이 통째로 사라진다 — IR 폭 확장은 HWP5 바이너리 경로까지 파급이 커
+/// 이번 범위를 넘으므로, 대신 saturating 클램프로 "조용한 소실/부호反전"을
+/// "포화값으로 잘림 + 경고"로 좁힌다. 근본 해결(IR 타입 확장)은 별도 이슈로
+/// 추적한다.
 fn parse_col_sz(e: &quick_xml::events::BytesStart, cd: &mut ColumnDef) {
     let mut width: HwpUnit16 = 0;
     let mut gap: HwpUnit16 = 0;
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
-            b"width" => width = parse_i16(&attr),
-            b"gap" => gap = parse_i16(&attr),
+            b"width" => width = parse_hwpunit16_saturating(&attr, "colSz@width"),
+            // gap 은 스키마상 xs:nonNegativeInteger — 음수 폴백 없이 0 이상만 허용.
+            b"gap" => gap = parse_hwpunit16_saturating(&attr, "colSz@gap").max(0),
             _ => {}
         }
     }
     cd.widths.push(width);
     cd.gaps.push(gap);
+}
+
+/// XML 정수 속성을 `HwpUnit16`(i16)로 saturating 변환한다.
+///
+/// 공용 `parse_i16`(utils.rs)은 `str::parse::<i16>()` 오버플로 시 무경고
+/// `unwrap_or(0)`이라 `positiveInteger` 등 무제한 스키마 값이 i16 범위를 넘으면
+/// 조용히 0이 된다(#4387 후속 — colSz 처럼 HWPX 가 절대 HWPUNIT 을 그대로
+/// 담는 자리에서 실측 재현됨). i64 로 먼저 파싱해 i16 범위로 clamp 하고,
+/// 실제로 잘렸을 때만 stderr 경고를 남긴다(section.rs 의 다른 속성 파서들과
+/// 달리 이 값은 손실 시 단이 통째로 사라지는 시각적 결함으로 이어져 무음
+/// 폴백이 특히 위험하다).
+fn parse_hwpunit16_saturating(
+    attr: &quick_xml::events::attributes::Attribute,
+    field: &str,
+) -> HwpUnit16 {
+    let raw = attr_str(attr);
+    match raw.parse::<i64>() {
+        Ok(v) => {
+            let clamped = v.clamp(HwpUnit16::MIN as i64, HwpUnit16::MAX as i64) as HwpUnit16;
+            if clamped as i64 != v {
+                eprintln!(
+                    "경고: {} 값 {} 이(가) HwpUnit16 범위를 초과해 {} 로 잘렸습니다",
+                    field, v, clamped
+                );
+            }
+            clamped
+        }
+        Err(_) => 0,
+    }
 }
 
 fn parse_hwpx_line_type(value: &str) -> u8 {
@@ -8698,6 +8737,77 @@ mod tests {
         assert_eq!(cd.separator_type, 1);
         assert_eq!(cd.separator_width, 1);
         assert_eq!(cd.separator_color, 0x00000000);
+    }
+
+    #[test]
+    fn issue4387_col_sz_parses_individual_widths_and_gaps() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ctrl>
+        <hp:colPr type="NEWSPAPER" layout="LEFT" colCount="2" sameSz="0" sameGap="0">
+          <hp:colSz width="4000" gap="500"/>
+          <hp:colSz width="6000" gap="0"/>
+        </hp:colPr>
+      </hp:ctrl>
+      <hp:t>A</hp:t>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::ColumnDef(cd) = &section.paragraphs[0].controls[0] else {
+            panic!("expected ColumnDef control");
+        };
+        assert!(!cd.same_width);
+        assert_eq!(
+            cd.widths,
+            vec![4000, 6000],
+            "단별 너비가 파싱돼야 함(#4387)"
+        );
+        assert_eq!(cd.gaps, vec![500, 0], "단별 간격이 파싱돼야 함(#4387)");
+        assert!(!cd.proportional_widths, "HWPX colSz 는 절대 HWPUNIT");
+    }
+
+    /// [#4387 후속] `colSz@width` 는 스키마상 `xs:positiveInteger`(상한 없음)인데
+    /// `ColumnDef.widths` 는 `Vec<i16>`(최대 32767). A3 등 큰 용지·비대칭 다단에서
+    /// 나올 수 있는 40000(≈141mm) 처럼 i16 범위를 넘는 값을 공용 `parse_i16` 로
+    /// 파싱하면 `str::parse::<i16>()` 오버플로 에러를 `unwrap_or(0)` 이 삼켜
+    /// widths=[0, 13000] 처럼 무경고 0-폴백됐다(단이 통째로 사라짐 — 수정 전
+    /// 코드로 직접 재현·확인). saturating 클램프로 i16::MAX 로 잘리는지
+    /// 확인한다 — 0 이 되면 안 된다.
+    #[test]
+    fn issue4387_col_sz_width_overflow_saturates_not_zeroes() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ctrl>
+        <hp:colPr type="NEWSPAPER" layout="LEFT" colCount="2" sameSz="0" sameGap="0">
+          <hp:colSz width="40000" gap="500"/>
+          <hp:colSz width="13000" gap="-7"/>
+        </hp:colPr>
+      </hp:ctrl>
+      <hp:t>A</hp:t>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::ColumnDef(cd) = &section.paragraphs[0].controls[0] else {
+            panic!("expected ColumnDef control");
+        };
+        assert_eq!(
+            cd.widths[0],
+            i16::MAX,
+            "i16 범위를 넘는 width 는 0 이 아니라 i16::MAX 로 saturate 해야 함"
+        );
+        assert_eq!(cd.widths[1], 13000, "범위 내 값은 그대로 보존돼야 함");
+        assert_eq!(
+            cd.gaps[1], 0,
+            "음수 gap(스키마상 nonNegativeInteger 위반)은 0 으로 클램프돼야 함"
+        );
     }
 
     #[test]
