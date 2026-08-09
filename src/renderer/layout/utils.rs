@@ -34,6 +34,20 @@ pub(crate) fn find_bin_data<'a>(
     bin_data_content.iter().find(|c| c.id == bin_data_id)
 }
 
+/// [#2550] `find_bin_data` + 압축 해제 상한 로드.
+///
+/// 상한 초과(deflate bomb 포함)는 `None` — 이미지 누락과 같은 placeholder 경로로
+/// 접는다. 렌더 경로의 무제한 `load()` 는 이 함수로 대체한다.
+pub(crate) fn find_bin_data_bytes(
+    bin_data_content: &[BinDataContent],
+    bin_data_id: u16,
+) -> Option<Vec<u8>> {
+    find_bin_data(bin_data_content, bin_data_id).and_then(|c| {
+        c.data
+            .load_limited(crate::model::bin_data::MAX_BIN_DATA_BYTES)
+    })
+}
+
 /// Picture의 렌더 표시 크기(HWPUNIT)를 반환한다.
 ///
 /// 일부 HWP5 그림은 `CommonObjAttr.width/height`보다

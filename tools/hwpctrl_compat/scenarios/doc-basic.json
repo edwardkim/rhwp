@@ -1,0 +1,21 @@
+{
+  "id": "doc-basic",
+  "title": "쪽수와 커서 이동 — 읽기 전용 (P0 자체 검증용)",
+  "ledger": [
+    "HwpCtrl.property.PageCount",
+    "HwpCtrl.method.SetPos",
+    "HwpCtrl.method.GetPos",
+    "HwpCtrl.method.MovePos"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["PageCount", []],
+    ["GetPos", []],
+    ["MovePos", [3, 0, 0]],
+    ["GetPos", []],
+    ["MovePos", [2, 0, 0]],
+    ["GetPos", []],
+    ["SetPos", [0, 1, 0]],
+    ["GetPos", []]
+  ]
+}

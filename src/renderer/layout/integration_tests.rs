@@ -972,6 +972,199 @@ mod tests {
         );
     }
 
+    /// #3821: page-tail Square 그림의 wrap band는 첫 vpos-reset 문단에서 끊기면 안
+    /// 된다. 실물 HWP p156에서 그림 64(pi=1692, ci=1) 옆의 visible p1697 text는
+    /// 그림 왼쪽 narrow band 안에 끝나며, HWP outer-left margin(510HU)이 만든
+    /// 실제 PDF 공백(약 5.7px @96dpi)을 보존해야 한다.
+    #[test]
+    fn issue_3821_page_tail_square_picture_wrap_reaches_visible_text_after_guides() {
+        let Some(core) = load_document(
+            "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        ) else {
+            return;
+        };
+        // `build_page_render_tree`는 0-based page index를 받는다. 기준 PDF human p156.
+        let tree = core
+            .build_page_render_tree(155)
+            .expect("#3821 fixture human p156 render failed");
+
+        fn find_image<'a>(node: &'a RenderNode, result: &mut Option<&'a RenderNode>) {
+            if let RenderNodeType::Image(image) = &node.node_type {
+                if image.para_index == Some(1692) && image.control_index == Some(1) {
+                    *result = Some(node);
+                }
+            }
+            for child in &node.children {
+                find_image(child, result);
+            }
+        }
+
+        fn collect_visible_lines<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+            if node.visible {
+                if let RenderNodeType::TextLine(line) = &node.node_type {
+                    let has_visible_text = node.children.iter().any(|child| {
+                        matches!(&child.node_type, RenderNodeType::TextRun(run) if !run.display_or_text().trim().is_empty())
+                    });
+                    if line.para_index == Some(1697) && has_visible_text {
+                        out.push(node);
+                    }
+                }
+            }
+            for child in &node.children {
+                collect_visible_lines(child, out);
+            }
+        }
+
+        let mut image_node = None;
+        find_image(&tree.root, &mut image_node);
+        let image = image_node.expect("#3821: p156 pi=1692 ci=1 image not found");
+        let image_top = image.bbox.y;
+        let image_bottom = image.bbox.y + image.bbox.height;
+        let image_left = image.bbox.x;
+
+        let mut visible_lines = Vec::new();
+        collect_visible_lines(&tree.root, &mut visible_lines);
+        let lines_in_image_band: Vec<_> = visible_lines
+            .into_iter()
+            .filter(|line| {
+                line.bbox.y < image_bottom - 0.5 && line.bbox.y + line.bbox.height > image_top + 0.5
+            })
+            .collect();
+        assert!(
+            !lines_in_image_band.is_empty(),
+            "#3821: p1697 visible lines in picture vertical band not found",
+        );
+
+        let line_right = lines_in_image_band
+            .iter()
+            .map(|line| line.bbox.x + line.bbox.width)
+            .fold(f64::NEG_INFINITY, f64::max);
+        let actual_gap = image_left - line_right;
+        assert!(
+            actual_gap >= 5.0,
+            "#3821: p1697 line band must retain PDF-like outer-left margin; image_left={image_left:.1}, line_right={line_right:.1}, gap={actual_gap:.1}",
+        );
+        assert!(
+            actual_gap <= 8.0,
+            "#3821: p1697 gap must come from the 510HU outer-left margin, not an arbitrary global shift: {actual_gap:.1}px",
+        );
+    }
+
+    /// #3820: stored-vpos rewind를 가진 native HWP5 RowBreak 표는 선언 높이가 아니라
+    /// 실제 paint 행 높이로 first fragment를 판단한다. 이 fixture에서 p94 표 28은 0–2행,
+    /// p95는 마지막 3행이며, p106 표 29는 0–2행 뒤 p107에서 재개해야 한다.
+    #[test]
+    fn issue_3820_rewinding_rowbreak_uses_painted_first_fragment_boundary() {
+        let Some(core) = load_document(
+            "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        ) else {
+            return;
+        };
+
+        fn rows_for_table(node: &RenderNode, para_index: usize, out: &mut Vec<u16>) {
+            if matches!(
+                &node.node_type,
+                RenderNodeType::Table(table) if table.para_index == Some(para_index)
+            ) {
+                for child in &node.children {
+                    if let RenderNodeType::TableCell(cell) = &child.node_type {
+                        if !out.contains(&cell.row) {
+                            out.push(cell.row);
+                        }
+                    }
+                }
+            }
+            for child in &node.children {
+                rows_for_table(child, para_index, out);
+            }
+        }
+
+        fn page_rows(
+            core: &crate::document_core::DocumentCore,
+            page: usize,
+            pi: usize,
+        ) -> Vec<u16> {
+            let tree = core
+                .build_page_render_tree(page as u32)
+                .unwrap_or_else(|err| panic!("#3820: p{} render failed: {err}", page + 1));
+            let mut rows = Vec::new();
+            rows_for_table(&tree.root, pi, &mut rows);
+            rows.sort_unstable();
+            rows
+        }
+
+        assert_eq!(page_rows(&core, 93, 1000), vec![0, 1, 2], "#3820 p94 표 28");
+        assert_eq!(page_rows(&core, 94, 1000), vec![3], "#3820 p95 표 28");
+        assert_eq!(
+            page_rows(&core, 105, 1136),
+            vec![0, 1, 2],
+            "#3820 p106 표 29"
+        );
+        assert_eq!(
+            page_rows(&core, 106, 1136),
+            vec![3, 4, 5, 6, 7],
+            "#3820 p107 표 29",
+        );
+    }
+
+    /// native HWP의 빈-host 2행 그림+caption RowBreak 표 뒤에 빈 guide 문단들이
+    /// 저장된 경우에도, 다음 실본문은 caption의 실제 paint 하단 뒤에서 시작해야 한다.
+    ///
+    /// 이 fixture의 p182(pi=1904)는 양수 vertical offset을 갖는다. 종전에는 empty
+    /// float의 예약 높이만 소비해 caption 행보다 약 12px 위에서 pi=1911이 시작했다.
+    #[test]
+    fn issue_3738_picture_caption_float_clears_caption_before_next_body_text() {
+        let Some(core) = load_document(
+            "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        ) else {
+            return;
+        };
+        let tree = core
+            .build_page_render_tree(181)
+            .unwrap_or_else(|err| panic!("#3738 p182 render failed: {err}"));
+
+        fn collect_bounds(
+            node: &RenderNode,
+            table_bottom: &mut Option<f64>,
+            next_body_top: &mut Option<f64>,
+        ) {
+            match &node.node_type {
+                RenderNodeType::Table(table) if table.para_index == Some(1904) => {
+                    *table_bottom = Some(node.bbox.y + node.bbox.height);
+                }
+                RenderNodeType::TextLine(line) if line.para_index == Some(1911) => {
+                    let has_visible_text = node.children.iter().any(|child| {
+                        matches!(
+                            &child.node_type,
+                            RenderNodeType::TextRun(run) if !run.display_or_text().trim().is_empty()
+                        )
+                    });
+                    if has_visible_text {
+                        *next_body_top = Some(
+                            next_body_top
+                                .map(|top| top.min(node.bbox.y))
+                                .unwrap_or(node.bbox.y),
+                        );
+                    }
+                }
+                _ => {}
+            }
+            for child in &node.children {
+                collect_bounds(child, table_bottom, next_body_top);
+            }
+        }
+
+        let mut table_bottom = None;
+        let mut next_body_top = None;
+        collect_bounds(&tree.root, &mut table_bottom, &mut next_body_top);
+        let table_bottom = table_bottom.expect("#3738 p182 picture+caption table not found");
+        let next_body_top = next_body_top.expect("#3738 p182 next body text not found");
+        assert!(
+            next_body_top >= table_bottom + 0.5,
+            "#3738 p182 next body text overlaps picture caption: table_bottom={table_bottom:.1}, next_body_top={next_body_top:.1}",
+        );
+    }
+
     /// Issue #1230: Square-wrap(어울림) 비-TAC 그림에서 `shape_attr.current_*` 가
     /// `common`(개체 틀)보다 부풀려진 경우(KICE EMF 그래프 패턴: common=198px,
     /// current=367px), 텍스트는 파일 LINE_SEG(sw) 기준 common 만큼만 좁혀지는데

@@ -218,7 +218,14 @@ export type OperationDescriptor =
   | { kind: 'command'; command: EditCommand; meta?: OperationMetadata }
   // [Task #2370] snapshot 의 operation 은 아무것도 바꾸지 않았을 때 `null` 을 반환해
   // "기록하지 말 것"을 알린다(그 경우 커서 이동·리프레시도 건너뛴다).
-  | { kind: 'snapshot'; operationType: string; operation: (wasm: WasmBridge) => DocumentPosition | null; meta?: OperationMetadata }
+  | {
+      kind: 'snapshot';
+      operationType: string;
+      operation: (wasm: WasmBridge) => DocumentPosition | null;
+      /** 본문 좌표와 분리된 HF/FN 편집 문맥. undo/redo 뒤 같은 문맥으로 돌아간다. */
+      editContext?: EditContext;
+      meta?: OperationMetadata;
+    }
   | { kind: 'record'; command: EditCommand; meta?: OperationMetadata };
 
 // ─── 본문/셀 분기 헬퍼 ────────────────────────────────
@@ -530,6 +537,32 @@ function doGetTextRange(wasm: WasmBridge, pos: DocumentPosition, count: number):
   }
 }
 
+/**
+ * [#4162] 캐럿 대기 글자 모양(pending char shape) — 방금 삽입된 range 에 글자 서식을 건다.
+ *
+ * ApplyCharFormatCommand.execute() 의 셀/본문 분기와 같은 축이다(셀은 항상 ...ByPath).
+ * from === to(빈 range)면 적용 대상이 없으므로 아무것도 하지 않는다.
+ */
+export function applyCharShapeModsToRange(
+  wasm: WasmBridge,
+  pos: DocumentPosition,
+  from: number,
+  to: number,
+  props: Partial<CharProperties>,
+): void {
+  if (to <= from) return;
+  const propsJson = JSON.stringify(props);
+  if (isCell(pos)) {
+    wasm.applyCharFormatInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), from, to, propsJson);
+  } else {
+    wasm.applyCharFormat(pos.sectionIndex, pos.paragraphIndex, from, to, propsJson);
+  }
+}
+
+function sameCharFormat(a: Partial<CharProperties> | undefined, b: Partial<CharProperties> | undefined): boolean {
+  return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+}
+
 // ─── 텍스트 삽입 명령 ─────────────────────────────────
 
 export class InsertTextCommand implements EditCommand {
@@ -541,14 +574,24 @@ export class InsertTextCommand implements EditCommand {
     private position: DocumentPosition,
     private text: string,
     timestamp?: number,
+    /** [#4162] 선택 없이 지정한 예약 글자 모양 — 삽입된 텍스트에 그대로 건다. */
+    private charFormat?: Partial<CharProperties>,
   ) {
     this.timestamp = timestamp ?? Date.now();
+  }
+
+  getCharFormat(): Partial<CharProperties> | undefined {
+    return this.charFormat;
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
     this.lastMutationEffects = NO_TEXT_MUTATION_EFFECTS;
     this.lastMutationEffects = insertTextWithMutationEffects(wasm, this.position, this.text);
-    return { ...this.position, charOffset: this.position.charOffset + this.text.length };
+    const after = { ...this.position, charOffset: this.position.charOffset + this.text.length };
+    if (this.charFormat) {
+      applyCharShapeModsToRange(wasm, this.position, this.position.charOffset, after.charOffset, this.charFormat);
+    }
+    return after;
   }
 
   consumeTextMutationEffects(): TextMutationEffects {
@@ -588,8 +631,10 @@ export class InsertTextCommand implements EditCommand {
     if (other.timestamp - this.timestamp > 300) return null;
     // 줄바꿈/탭 포함 시 병합 불가
     if (other.text.includes('\n') || other.text.includes('\t')) return null;
+    // [#4162] 예약 글자 모양이 다르면 하나의 undo 단위로 묶지 않는다
+    if (!sameCharFormat(this.charFormat, other.charFormat)) return null;
 
-    return new InsertTextCommand(this.position, this.text + other.text, this.timestamp);
+    return new InsertTextCommand(this.position, this.text + other.text, this.timestamp, this.charFormat);
   }
 }
 
@@ -1451,10 +1496,12 @@ export class MergeParagraphInFootnoteCommand implements EditCommand {
 export class SplitParagraphInCellCommand implements EditCommand {
   readonly type = 'splitParagraphInCell';
   readonly timestamp = Date.now();
+  private lastMutationEffects: TextMutationEffects = NO_TEXT_MUTATION_EFFECTS;
 
   constructor(private position: DocumentPosition) {}
 
   execute(wasm: WasmBridge): DocumentPosition {
+    this.lastMutationEffects = NO_TEXT_MUTATION_EFFECTS;
     const pos = this.position;
     const sec = pos.sectionIndex;
     const ppi = pos.parentParaIndex!;
@@ -1464,7 +1511,16 @@ export class SplitParagraphInCellCommand implements EditCommand {
     } else {
       wasm.splitParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi, pos.charOffset);
     }
+    // [#4031] 네이티브 split은 paginate_if_needed()로 최신 revision을 동기 계산한다.
+    // 이 선언이 pending deferred 상태를 해소해 직후 before-full-edit flush가 no-op이 된다.
+    this.lastMutationEffects = IMMEDIATE_TEXT_MUTATION_EFFECTS;
     return cellParagraphPosition(pos, cpi + 1, 0);
+  }
+
+  consumeTextMutationEffects(): TextMutationEffects {
+    const effects = this.lastMutationEffects;
+    this.lastMutationEffects = NO_TEXT_MUTATION_EFFECTS;
+    return effects;
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
@@ -2051,4 +2107,25 @@ export class SnapshotCommand implements EditCommand {
       this.afterId = null;
     }
   }
+}
+
+/**
+ * 머리말/꼬리말·각주 안에서만 쓰는 스냅샷 명령.
+ *
+ * 일반 SnapshotCommand는 구조 편집처럼 undo 뒤 본문으로 돌아가야 하는 작업도 담당한다.
+ * 그래서 편집 문맥을 일반 클래스에 붙이지 않고, 서브모드를 보존해야 하는 호출부만 이 타입을
+ * 명시적으로 선택한다.
+ */
+export class SubmodeSnapshotCommand extends SnapshotCommand {
+  constructor(
+    operationType: string,
+    cursorBefore: DocumentPosition,
+    cursorAfter: DocumentPosition,
+    operation: ((wasm: WasmBridge) => DocumentPosition | null) | null,
+    private readonly context: EditContext,
+  ) {
+    super(operationType, cursorBefore, cursorAfter, operation);
+  }
+
+  editContext(): EditContext { return this.context; }
 }

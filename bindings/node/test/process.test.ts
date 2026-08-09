@@ -192,6 +192,24 @@ describe('runRaw — 원문 접근과 인자 조립', () => {
     expect(error).toBeInstanceOf(RhwpTimeoutError);
     expect((error as RhwpTimeoutError).message).toContain('300ms');
   });
+
+  it('[D-20] envelopeHint 를 주면 실패 예외에 봉투가 실린다', async () => {
+    // runJson 은 stdout 을 직접 파싱해 자동으로 봉투를 실어 보내지만, runRaw 는
+    // 원문만 돌려주므로 호출자가 미리 파싱해 둔 봉투가 있으면 여기로 넘겨야
+    // 판정 근거가 예외에서 빠지지 않는다 — 파이썬 `_process.py` 의
+    // `envelope_hint` 와 대칭.
+    const hint = { verify: { identical: false, diffCount: 3 } };
+    const error = await captureAsync(
+      runRaw(fake.args('runtime'), { envelopeHint: hint }),
+    );
+    expect(error).toBeInstanceOf(RhwpRuntimeError);
+    expect((error as RhwpRuntimeError).envelope).toEqual(hint);
+  });
+
+  it('[D-20] envelopeHint 를 안 주면 예외의 봉투는 undefined 다 (기존 동작 불변)', async () => {
+    const error = await captureAsync(runRaw(fake.args('runtime')));
+    expect((error as RhwpRuntimeError).envelope).toBeUndefined();
+  });
 });
 
 describe('runNdjson — 배치는 부분 실패도 실패다', () => {

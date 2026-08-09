@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "key": "task3820-stage63-final-p7-p17",
+  "provenance": {
+    "hwp": {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+    },
+    "pdf": {
+      "path": "pdf/basic/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "sha256": "9b0390f856bb9ad43337679babf6677209b7c7ab678b6616fcc6d6d5551ff1c4"
+    },
+    "git_head": "74fecfd68ae0b479d2af422be6401c0b17efc0ae",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "fd201f988e0cca9d8fe11a08e9e54551a44fa013413252e4fcc04485e90b336f"
+    },
+    "rhwp_binary": {
+      "configured": "target/task-3820-stage63-final-pr-gate/release-test/rhwp",
+      "path": "target/task-3820-stage63-final-pr-gate/release-test/rhwp",
+      "sha256": "e0debebb26ffb23a90b32e9086a3b59e580b9ec754ffa233a2e14d6e744d2b8e"
+    }
+  },
+  "dpi": 180,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "requested_page_shards": [
+    [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ]
+  ],
+  "run_state": "complete"
+}

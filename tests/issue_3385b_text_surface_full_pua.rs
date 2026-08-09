@@ -21,6 +21,8 @@ use std::process::Command;
 const LINE_SAMPLE: &str = "samples/hwp3-sample11.hwp";
 /// 책괄호(《》)가 PUA 로 조판된 문서.
 const BRACKET_SAMPLE: &str = "samples/exam_kor.hwp";
+/// 중첩 표 안의 Wingdings 계열 글머리표가 반복되는 HWP 5.0 문서.
+const TRIANGLE_BULLET_SAMPLE: &str = "samples/basic/issue2007_nested_cell_pagination_42065.hwp";
 
 fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
@@ -130,4 +132,36 @@ fn render_keeps_the_boxed_number_passthrough() {
         "렌더에서 사각 안 숫자 원문이 사라졌다 — 텍스트 표면 변환이 렌더까지 번졌다"
     );
     let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// `U+F02FB`는 전용 HNC 글꼴이 없으면 두부로 보이는 작은 오른쪽 삼각형이다.
+///
+/// 같은 composer 출력이 SVG와 Canvas에 공급되므로, SVG에 원문 PUA가 없고 `▸`가
+/// 방출되는 계약을 고정한다. 텍스트 표면도 같은 검증된 대체값을 사용해야 한다.
+#[test]
+fn nested_table_triangle_bullet_is_font_independent_in_svg_and_text() {
+    let svg_dir = out_dir("triangle-svg");
+    let svg = export("export-svg", TRIANGLE_BULLET_SAMPLE, &svg_dir);
+    assert!(
+        !svg.contains('\u{F02FB}'),
+        "SVG에 U+F02FB가 남으면 공개 글꼴 환경에서 두부가 된다"
+    );
+    assert!(
+        svg.contains('▸'),
+        "검증된 작은 오른쪽 삼각형 글머리표가 SVG에 방출되지 않았다"
+    );
+
+    let text_dir = out_dir("triangle-text");
+    let text = export("export-text", TRIANGLE_BULLET_SAMPLE, &text_dir);
+    assert!(
+        !text.contains('\u{F02FB}'),
+        "추출 텍스트에 U+F02FB가 남았다"
+    );
+    assert!(
+        text.contains('▸'),
+        "추출 텍스트에 읽을 수 있는 작은 오른쪽 삼각형이 없다"
+    );
+
+    let _ = std::fs::remove_dir_all(&svg_dir);
+    let _ = std::fs::remove_dir_all(&text_dir);
 }

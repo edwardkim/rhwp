@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/autonomous_maintenance/parallel_session_protocol.md
-last_verified: 2026-08-04
+last_verified: 2026-08-06
 ---
 
 # 병렬 세션 규약 — 착수 = 할당
@@ -29,7 +29,8 @@ last_verified: 2026-08-04
 ```bash
 gh issue view <n> --repo edwardkim/rhwp --json assignees -q '.assignees[].login'
 gh pr list --repo edwardkim/rhwp --state open --limit 100 --search "<n>"
-gh issue edit <n> --repo edwardkim/rhwp --add-assignee @me
+gh issue edit <n> --repo edwardkim/rhwp --add-assignee @me   # 권한 있는 계정만 성공
+gh issue comment <n> --repo edwardkim/rhwp --body "착수합니다 — <범위>"  # 외부 기여자의 잠금은 이것
 ```
 
 ---
@@ -321,8 +322,24 @@ gh issue view <n> --repo edwardkim/rhwp --json assignees -q '.assignees[].login'
 gh issue edit <n> --repo edwardkim/rhwp --add-assignee @me
 ```
 
-**assignee 가 이미 있으면 착수하지 않는다.** 같은 계정이 이미 걸려 있어도 마찬가지다 —
-같은 계정의 다른 세션이 잡고 있다는 뜻이기 때문이고, 그게 정확히 이 사고의 형태다.
+> [!IMPORTANT]
+> **실측(2026-08-06): 외부 기여자 계정은 assignee 편집이 거부된다.** #3914·#3884·#3627
+> 세 이슈에 `gh issue edit <n> --add-assignee kevin9327` 을 실행한 결과 세 건 모두
+> `failed to update 1 issue` — GitHub 는 collaborator(또는 해당 이슈에 assignable 한
+> 계정)만 지정을 허용한다. 명령 자체는 실행되므로 `gh` 의 projectCards 문제(아래 NOTE)와는
+> 별개다. 따라서 잠금 매체는 계정 권한에 따라 갈린다:
+>
+> | 계정 | 1차 잠금 매체 |
+> |---|---|
+> | 메인테이너·collaborator | `assignee` 지정 |
+> | **외부 기여자(병렬 세션 포함)** | **이슈 착수 코멘트** — `"착수합니다 — <범위>"` 형식, 범위를 반드시 적는다(§10-3 부분 잠금 겸용) |
+>
+> 착수 전 확인도 두 매체를 다 본다 — assignee 가 비어 있어도 **착수 코멘트가 있으면
+> 선점된 것**이다. 이 실측으로 §11 의 미확인 4번이 해소됐다.
+
+**assignee(또는 착수 코멘트)가 이미 있으면 착수하지 않는다.** 같은 계정이 이미 걸려
+있어도 마찬가지다 — 같은 계정의 다른 세션이 잡고 있다는 뜻이기 때문이고, 그게 정확히
+이 사고의 형태다.
 
 **작업을 접거나 미루면 즉시 해제한다.** 걸어 놓고 안 하는 것은 큐를 막는다.
 
@@ -613,7 +630,7 @@ gh pr list --repo edwardkim/rhwp --state open --limit 100 --json number,body \
 이 검사는 **오탐이 거의 없고**(선언 기반) **사고 두 건을 모두 잡았을 것이다** —
 #3902/#3903 은 둘 다 본문에 `#3885`, #3897/#3904 는 둘 다 `#3884` 를 적었다.
 
-### 8-6. 선검사에 붙일 때의 형태 (제안)
+### 8-6. 선검사의 큐 규율 검사 (구현)
 
 `tools/agent_preflight.py` 는 이미 `Report.fail/ok/skip` 로 **모든 실패를 모아 한 번에
 보고**하고 종료 코드 계약(0 통과 / 1 실패 / 2 사용법 오류)을 가진다. 큐 검사는 그
@@ -646,11 +663,11 @@ gh pr list --repo edwardkim/rhwp --state open --limit 100 --json number,body \
 3번이 특히 값싸다. 브랜치 이름은 로컬에서 읽고, 확인은 `gh issue view` 한 번이다.
 
 > [!NOTE]
-> 이 절은 **제안이고 구현되지 않았다.** `tools/agent_preflight.py` 에 큐 관련 검사가
-> 있는지 확인했고 **없다** — 현재 검사는 오염·문서 배치·ReDoS·fmt·MCP 스키마·속성
-> 배선·help 커버·MCP 도구 커버·선언 플래그 실재·실패 경로 stdout 이다.
-> 구현 여부와 형태는 [#3914](https://github.com/edwardkim/rhwp/issues/3914) 수용 기준
-> 2번의 몫이다.
+> [#4106](https://github.com/edwardkim/rhwp/pull/4106)이 이 형태를
+> `tools/agent_preflight.py::check_queue_discipline()`으로 구현했다. 잔량·선언 기반
+> 중복·브랜치 잠금을 모두 경고 전용으로 보고하고, `gh` 부재·미인증·조회 실패는
+> 조용히 건너뛴다. 외부 기여자의 잠금 코멘트는 `착수합니다 — <범위>` 형식만 인정해
+> 회고의 단어 하나가 잠금으로 오인되지 않게 한다.
 
 ---
 
@@ -660,7 +677,7 @@ gh pr list --repo edwardkim/rhwp --state open --limit 100 --json number,body \
 
 | 시점 | 할 것 | 명령 |
 |---|---|---|
-| **착수 결정 직후** | assignee 확인 → 비었으면 할당 | `gh issue view <n> --json assignees` / `gh issue edit <n> --add-assignee @me` |
+| **착수 결정 직후** | assignee·착수 코멘트 확인 → 비었으면 선점 (외부 기여자는 착수 코멘트가 잠금 — §5-1 실측) | `gh issue view <n> --json assignees` / `gh issue edit <n> --add-assignee @me` / `gh issue comment <n> --body "착수합니다 — <범위>"` |
 | 〃 | 같은 이슈의 열린 PR 확인 | `gh pr list --state open --limit 100 --search "<n>"` |
 | 〃 | 열린 PR 잔량 확인 (10건 내외) | `gh pr list --author @me --state open --limit 100 -q length` |
 | **브랜치** | `upstream/devel` 기준. 적층은 3단 이하 | — |
@@ -710,7 +727,7 @@ gh pr list --repo edwardkim/rhwp --state open --limit 100 --json number,body \
 | 1 | [README](README.md) §3-2 의 08-01 개설 건수 불일치(문서 14 vs 실측 48)의 **원인** | `28+18+14=60` 이 정확히 떨어져 "최신 60건 조회 절단"이 유력하나, 원 명령을 복원해 확인하지 못함 |
 | 2 | 볼륨 캡 **10 이라는 숫자의 산출 근거**(리뷰 처리량 실측 등) | 메인테이너 요청값이라는 것만 확인. 산출 과정은 확인 못 함 |
 | 3 | 적층(stacking) 허용 여부 — #3719 §7 은 "3단 이하 안전", #3796 §6 은 "적층 금지" | **두 문서가 어긋난다.** 어느 쪽이 현행인지 확인 못 함 |
-| 4 | `gh issue edit --add-assignee` 가 이 저장소에서 정상 동작하는지 | `gh pr edit` 는 projectCards 조회로 실패한다고 기록됨(`../../orders/20260722.md`). `gh issue edit` 도 같은 제약인지 실행으로 확인 못 함 |
+| 4 | ~~`gh issue edit --add-assignee` 가 이 저장소에서 정상 동작하는지~~ | **해소(2026-08-06 실측, §5-1)** — 명령은 실행되나 외부 기여자 권한으로 `failed to update 1 issue`(3이슈 3회 재현). projectCards 류 오류가 아니라 GitHub assignable 권한 제약. 우회 = 착수 코멘트 선점 |
 | 5 | 인계 커밋 `e54f16e14`(#3902) · `d0a1dc360`(#3904) 의 현재 접근 가능 여부 | 닫힌 PR 의 브랜치라 정리됐을 수 있음. 확인 못 함 |
 | 6 | 이슈 **부분 범위** 잠금(코멘트 선언 등)의 실효성 | 제안일 뿐 실증 없음 |
 | 7 | 잠금 **만료 규칙**의 존재 | 저장소에서 찾지 못함 |

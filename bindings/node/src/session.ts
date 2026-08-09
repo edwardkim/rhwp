@@ -22,7 +22,16 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 
 import { findBinary } from './binary.js';
 import { Envelope, type RawEnvelope } from './envelope.js';
-import { ProtocolError, RhwpError, SessionClosedError, UsageError } from './errors.js';
+import {
+  ProtocolError,
+  RhwpError,
+  RhwpTimeoutError,
+  SessionClosedError,
+  UsageError,
+} from './errors.js';
+
+/** 세션 호출 기본 제한 시간(ms). `null` 을 주면 무제한. */
+export const DEFAULT_SESSION_TIMEOUT_MS = 300_000;
 
 /** JSON-RPC 응답 프레임. */
 interface RpcResponse {
@@ -38,6 +47,14 @@ export interface SessionOptions {
   readonly profile?: string | undefined;
   /** 작업 디렉터리. */
   readonly cwd?: string | undefined;
+  /**
+   * 호출 하나당 제한 시간(ms). 기본 {@link DEFAULT_SESSION_TIMEOUT_MS}, `null` 이면 무제한.
+   *
+   * 파이썬판(`Session(timeout=300.0)`)엔 있었지만 Node 엔 없어 응답이 영원히
+   * 안 와도 끊지 못했다(D-14). stdio 가 이벤트 기반이라 파이썬처럼 블로킹
+   * `readline` 을 건드릴 필요 없이 대기 중인 요청 하나만 타이머로 정리하면 된다.
+   */
+  readonly timeoutMs?: number | null | undefined;
 }
 
 /**
@@ -56,15 +73,22 @@ export class Session {
   private buffer = '';
   private readonly pending = new Map<
     number,
-    { resolve: (value: RpcResponse) => void; reject: (reason: unknown) => void }
+    {
+      resolve: (value: RpcResponse) => void;
+      reject: (reason: unknown) => void;
+      timer?: NodeJS.Timeout;
+    }
   >();
   private stderrText = '';
+  private readonly timeoutMs: number | null;
 
   constructor(options: SessionOptions = {}) {
     const binary = findBinary();
     const args = ['mcp-serve'];
     if (options.profile) args.push('--profile', options.profile);
     this.argv = [binary, ...args];
+    this.timeoutMs =
+      options.timeoutMs === null ? null : (options.timeoutMs ?? DEFAULT_SESSION_TIMEOUT_MS);
 
     try {
       this.child = spawn(binary, args, {
@@ -117,6 +141,7 @@ export class Session {
     const waiter = this.pending.get(id);
     if (!waiter) return; // 우리가 기다리지 않는 id — 무시가 안전하다.
     this.pending.delete(id);
+    if (waiter.timer) clearTimeout(waiter.timer);
     waiter.resolve(message);
   }
 
@@ -126,7 +151,10 @@ export class Session {
       exitCode: this.child.exitCode ?? undefined,
       stderr: this.stderrText,
     });
-    for (const waiter of this.pending.values()) waiter.reject(error);
+    for (const waiter of this.pending.values()) {
+      if (waiter.timer) clearTimeout(waiter.timer);
+      waiter.reject(error);
+    }
     this.pending.clear();
   }
 
@@ -157,6 +185,14 @@ export class Session {
     name: string,
     args: Readonly<Record<string, unknown>>,
   ): Promise<Envelope<T>> {
+    // 앞선 요청이 제한 시간을 넘겼다면 그 요청이 서버에서 실제로 끝났는지 알 수
+    // 없다. 같은 프로세스에 다음 편집을 밀어 넣으면 타임아웃으로 실패했다고 본
+    // 작업까지 뒤늦게 저장될 수 있으므로 세션을 재사용하지 않는다.
+    if (this.closed) {
+      throw new SessionClosedError(`세션이 이미 닫혔습니다 (도구: ${name})`, {
+        argv: this.argv,
+      });
+    }
     this.nextId += 1;
     const id = this.nextId;
     const request = {
@@ -167,9 +203,38 @@ export class Session {
     };
 
     const response = await new Promise<RpcResponse>((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
+      const waiter: {
+        resolve: (value: RpcResponse) => void;
+        reject: (reason: unknown) => void;
+        timer?: NodeJS.Timeout;
+      } = { resolve, reject };
+      this.pending.set(id, waiter);
+
+      if (this.timeoutMs !== null) {
+        waiter.timer = setTimeout(() => {
+          if (!this.pending.delete(id)) return;
+          // JSON-RPC stdio에는 진행 중인 도구 호출을 취소하는 계약이 없다. 대기만
+          // 끊으면 서버가 편집/저장을 뒤늦게 끝낼 수 있으므로, 불확정 세션 자체를
+          // 종료해 이후 호출과 재시도를 안전하게 분리한다.
+          this.closed = true;
+          try {
+            this.child.kill('SIGKILL');
+          } catch {
+            /* 이미 종료됐으면 timeout 예외를 우선 보존한다. */
+          }
+          reject(
+            new RhwpTimeoutError(
+              `${name} 호출이 제한 시간 ${this.timeoutMs}ms 를 초과했습니다`,
+              { argv: this.argv, stderr: this.stderrText },
+            ),
+          );
+        }, this.timeoutMs);
+        waiter.timer.unref?.();
+      }
+
       if (this.child.exitCode !== null || !this.child.stdin.writable) {
         this.pending.delete(id);
+        if (waiter.timer) clearTimeout(waiter.timer);
         reject(
           new ProtocolError('mcp-serve 가 이미 종료되어 요청을 보낼 수 없습니다', {
             argv: this.argv,
@@ -182,6 +247,7 @@ export class Session {
       this.child.stdin.write(`${JSON.stringify(request)}\n`, 'utf8', (err) => {
         if (err) {
           this.pending.delete(id);
+          if (waiter.timer) clearTimeout(waiter.timer);
           reject(
             new ProtocolError(`mcp-serve 로 쓰기에 실패했습니다: ${err.message}`, {
               argv: this.argv,

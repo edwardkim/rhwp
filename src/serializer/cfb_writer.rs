@@ -11,7 +11,7 @@
 use std::io::Write;
 
 use crate::model::bin_data::BinDataContent;
-use crate::model::bin_data::{BinData, BinDataType};
+use crate::model::bin_data::{BinData, BinDataType, MAX_BIN_DATA_BYTES};
 use crate::model::document::{Document, Preview};
 use crate::password_crypto::{encrypt_hwp5_stream, HWP5_ENCRYPT_VERSION};
 
@@ -229,11 +229,55 @@ fn write_hwp_cfb(
         let storage_name = format!("BIN{:04X}.{}", storage_id, ext);
         let path = format!("/BinData/{}", storage_name);
 
+        // [#2550] 압축 해제 상한. 초과 항목(deflate bomb 포함)은 해제 없이 원본
+        // 저장 바이트를 그대로 통과시킨다 — 재압축·OLE prefix 복원·매직 판정은
+        // 해제된 바이트에만 의미가 있고, 원본 스트림은 이미 그 처리가 끝난
+        // 형태이므로 전부 건너뛴다. 정상 대용량 개체는 무손실, 폭탄은 애초에
+        // 해제하지 않으므로 OOM 이 없다.
+        let bytes = match content.data.load_limited(MAX_BIN_DATA_BYTES) {
+            Some(bytes) => bytes,
+            None => match content.data.load_raw() {
+                // 저장 형태를 그대로 쓰려면 그 압축 상태가 이 문서에서 기대되는
+                // 상태와 같아야 한다. 다르면(암호 저장의 압축 강제 등) 읽는 쪽이
+                // 압축 바이트를 원본으로 오해해 조용히 깨지므로 통과시키지 않는다.
+                Some(stored) if stored.compressed == should_compress => {
+                    streams.push((path, encrypt_if_password(stored.bytes, password)));
+                    continue;
+                }
+                Some(_) => {
+                    // 상한 초과 + 압축 상태 불일치 — 해제(OOM 위험)도, 그대로 쓰기
+                    // (오독)도 안 된다. 렌더·클립보드와 같은 placeholder 로 접는다.
+                    eprintln!(
+                        "경고: BinData {} 압축 해제 상한 {}MB 초과이고 저장 압축 상태가 달라 \
+                         빈 스트림으로 대체합니다 (#2550)",
+                        storage_name,
+                        MAX_BIN_DATA_BYTES / (1024 * 1024)
+                    );
+                    streams.push((path, encrypt_if_password(Vec::new(), password)));
+                    continue;
+                }
+                // HWPX ZIP·인메모리 항목처럼 원본 HWP5 저장 형태가 없는 경우에는
+                // 안전한 raw passthrough가 불가능하다. 여기서 `load()`로 되돌아가면
+                // HWPX deflate bomb가 다시 무제한 materialize되므로 placeholder로
+                // 접는다. 이미 메모리에 있는 `Loaded` 값도 `load_limited()`에서
+                // 길이를 확인했으므로 같은 경로를 탄다.
+                None => {
+                    eprintln!(
+                        "경고: BinData {} 압축 해제 상한 {}MB 초과이고 원본 저장 형태가 없어 \
+                         빈 스트림으로 대체합니다 (#2550)",
+                        storage_name,
+                        MAX_BIN_DATA_BYTES / (1024 * 1024)
+                    );
+                    streams.push((path, encrypt_if_password(Vec::new(), password)));
+                    continue;
+                }
+            },
+        };
+
         // OLE Storage 복원: 파서(`load_bin_data_content`)는 내부 CFB 를 바로 노출하기 위해
         // 선두 4-byte LE size prefix 를 제거(`drain(..4)`)한다. 직렬화 시 이를 다시 붙이지
         // 않으면 한컴이 CFB 매직(D0CF11E0)을 OLE 개체 크기(~3.75GB)로 오인하여
         // "메모리 부족" 오류가 발생한다. 파서의 strip 조건을 그대로 미러링한다.
-        let bytes = content.data.load();
         let is_ole_storage = bytes.len() >= 8
             && bytes[..8] == CFB_MAGIC
             && bin_data_list

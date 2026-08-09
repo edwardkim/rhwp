@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/dev_environment_guide.md
-last_verified: 2026-07-17
+last_verified: 2026-08-08
 ---
 
 # 개발 환경 가이드
@@ -15,6 +15,7 @@ last_verified: 2026-07-17
 - Rust stable toolchain과 Cargo
 - `wasm-pack`
 - Node.js와 npm
+- Python 3.12(PDF/SVG 기준 비교를 수행할 때)
 - Git
 - 선택 도구: `actionlint`, Poppler(`pdfinfo`, `pdftoppm`), `rsvg-convert`
 
@@ -26,7 +27,28 @@ cargo --version
 wasm-pack --version
 node --version
 npm --version
+python3.12 --version
 ```
+
+## Python 로컬 가상환경
+
+PDF raster·픽셀 대조처럼 추가 Python 패키지가 필요한 저장소 도구는 시스템 Python에
+직접 설치하지 않고 저장소 루트의 Python 3.12 `venv/`만 사용한다. macOS·Linux의 시스템
+Python은 PEP 668에 따라 직접 설치를 거부할 수 있고, 전역 설치는 다른 작업의 의존성을
+바꿀 수 있다. `venv/`는 `.gitignore`의 `/venv/` 규칙으로 Git 대상에서 제외한다.
+
+저장소 루트에서 최초 1회 다음처럼 만든다.
+
+```bash
+python3.12 -m venv venv
+venv/bin/python --version
+```
+
+POSIX 셸에서는 activate 여부와 무관하게 `venv/bin/python`을 명시해 실행한다. Windows에서는
+`venv\\Scripts\\python.exe`를 사용한다. 설치 실패를 피하려고 시스템 Python에
+`--break-system-packages`를 사용하거나 `venv/` 내용을 Git에 추가하지 않는다. 필요한 패키지와
+실행 명령은 각 도구 문서가 정의하며, PDF/SVG 기준 비교는
+[`tools/fidelity_compare/README.md`](../../tools/fidelity_compare/README.md)를 따른다.
 
 ## 저장소와 브랜치
 
@@ -80,6 +102,13 @@ wasm-pack build --target web --out-dir pkg
 ```
 
 TypeScript와 CSS는 Vite가 다시 읽지만 Rust 변경은 위 빌드가 끝나야 브라우저에 반영된다.
+
+## 웹한글컨트롤 호환 층
+
+`@rhwp/hwpctrl` 개발은 일반 WASM 빌드 외에 패키지 공개 경로 검사와 OS별 시나리오 gate를 쓴다.
+macOS·Linux도 WASM 자체 시나리오 검증을 실행할 수 있으며, Hancom 2022 COM Oracle의 새 수집은
+Windows 전용이다. 소비자 연결 방법, 지원 범위, fixture 대조와 live Oracle의 검증 경계는
+[웹한글컨트롤 호환 개발 가이드](webhwpctrl_compat_development.md)를 따른다.
 
 ## rhwp-studio
 

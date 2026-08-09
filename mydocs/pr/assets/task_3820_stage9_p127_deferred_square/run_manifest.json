@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "key": "stage9-p127-deferred-square",
+  "provenance": {
+    "hwp": {
+      "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113"
+    },
+    "pdf": {
+      "path": "pdf/pr3740/hwp/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-2020.pdf",
+      "sha256": "7879ffee6313575132187c44c0090cd2e62c32c12c29b7eabd989181acf27b3a"
+    },
+    "git_head": "309c5f1236c5e140af99e768f185765372f878ca",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "19bc32b00a486e412fac37ef07ea30f5307bd22d52d57dfade0616919bdffbdf"
+    },
+    "rhwp_binary": {
+      "configured": "target/task-3820-3821-fidelity/release-test/rhwp",
+      "path": "target/task-3820-3821-fidelity/release-test/rhwp",
+      "sha256": "fc19d178f1af178982454dc95681af6ac02fe0b32ab0f8a16cf692b4ef9dad62"
+    }
+  },
+  "dpi": 144,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    126,
+    127,
+    156
+  ],
+  "requested_page_shards": [
+    [
+      126,
+      127,
+      156
+    ]
+  ],
+  "run_state": "complete"
+}

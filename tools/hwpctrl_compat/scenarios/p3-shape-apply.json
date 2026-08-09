@@ -1,0 +1,46 @@
+{
+  "id": "p3-shape-apply",
+  "title": "P3 블록과 글자 모양 걸기 — 범위·토글·셀 블록",
+  "note": "누름틀을 블록으로 잡는 축은 여기서 다루지 않는다. 그 범위는 문단 내 pos 라서 char_offsets 결함(계획서 4.6.1)에 물려 있다 — 오라클은 8..18, rhwp 는 16..34. 블록 없는 Run 도 뺐다(한글은 '다음에 칠 글자'의 대기 서식을 바꾸는데 이 층은 그 상태를 모델링하지 않는다).",
+  "ledger": [
+    "HwpCtrl.method.SelectText",
+    "HwpCtrl.method.GetSelectedPos",
+    "HwpCtrl.method.Run",
+    "Action.CharShapeBold",
+    "Action.CharShapeItalic"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["PutFieldText", ["pt_nm", "김철수"]],
+    ["MoveToField", ["pt_nm", true, true, false]],
+    ["GetSelectedPos", []],
+
+    ["SelectText", [0, 0, 0, 3]],
+    ["GetSelectedPos", []],
+    ["SelectionMode", []],
+    ["CharShape.Item", ["Bold"]],
+    ["Run", ["CharShapeBold"]],
+    ["CharShape.Item", ["Bold"]],
+    ["Run", ["CharShapeBold"]],
+    ["CharShape.Item", ["Bold"]],
+    ["Run", ["CharShapeBold"]],
+    ["CharShape.Item", ["Bold"]],
+    ["GetSelectedPos", []],
+
+    ["MoveToField", ["pt_nm", true, true, true]],
+    ["SelectionMode", []],
+    ["GetSelectedPos", []],
+
+    ["PutFieldText", ["pt_no", "A-1"]],
+    ["MoveToField", ["pt_no", true, true, true]],
+    ["SelectionMode", []],
+    ["Run", ["CharShapeItalic"]],
+    ["MoveToField", ["pt_no", true, true, false]],
+    ["CharShape.Item", ["Italic"]],
+    ["CharShape.Item", ["Bold"]],
+
+    ["MovePos", [2, 0, 0]],
+    ["SelectionMode", []],
+    ["GetSelectedPos", []]
+  ]
+}

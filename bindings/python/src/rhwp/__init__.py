@@ -48,9 +48,9 @@ if plan.check().ok:      # 디스크 무변경 검사
 
 from __future__ import annotations
 
-from ._binary import ENV_VAR, clear_cache, find_binary
+from ._binary import BUNDLED_DIR, ENV_VAR, binary_name, clear_cache, find_binary
 from ._naming import to_camel, to_snake
-from ._process import CompletedRun, run_json, run_ndjson, run_raw
+from ._process import CompletedRun, iter_ndjson, run_json, run_ndjson, run_raw
 from .commands import (
     batch,
     build_from_ingest,
@@ -58,11 +58,15 @@ from .commands import (
     convert,
     csv_to_table,
     digest,
+    explain,
+    export_agent_manifest,
+    export_plan_schema,
     export_provenance_map,
     export_doclang,
     export_hml,
     export_hwpx,
     export_markdown,
+    export_ontology,
     export_pdf,
     export_structure,
     export_svg,
@@ -75,7 +79,9 @@ from .commands import (
     info,
     inspect,
     ir_diff,
+    render_diff,
     replace_text,
+    scan,
     search,
     set_cell,
     table_to_csv,
@@ -92,11 +98,14 @@ from .errors import (
     RhwpError,
     RhwpRuntimeError,
     SessionClosedError,
+    RhwpTimeoutError,
     TimeoutError,
     UsageError,
     VerdictFailed,
+    is_known_exit_code,
+    raise_for_exit,
 )
-from .models import Envelope, VerifyReport
+from .models import Envelope, VerifyPagesReport, VerifyReport
 from .plan import Plan, PlanResult, run_plan
 from .schema import (
     FieldDef,
@@ -121,6 +130,8 @@ __all__ = [
     "ENV_VAR",
     "find_binary",
     "clear_cache",
+    "binary_name",
+    "BUNDLED_DIR",
     # 1층 — 조회
     "info",
     "export_text",
@@ -130,9 +141,13 @@ __all__ = [
     "fields",
     "search",
     "digest",
+    "explain",
     "extract_data",
     "inspect",
     "export_provenance_map",
+    "export_plan_schema",
+    "export_agent_manifest",
+    "export_ontology",
     "capabilities",
     # 1층 — 산출
     "export_svg",
@@ -147,12 +162,14 @@ __all__ = [
     "export_hwpx",
     "convert",
     "ir_diff",
+    "render_diff",
     # 1층 — 편집
     "fill_fields",
     "replace_text",
     "set_cell",
     "csv_to_table",
     # 1층 — 대량
+    "scan",
     "batch",
     # 2층 — 세션
     "open",
@@ -173,10 +190,12 @@ __all__ = [
     # 모델
     "Envelope",
     "VerifyReport",
+    "VerifyPagesReport",
     # 저수준
     "run_json",
     "run_ndjson",
     "run_raw",
+    "iter_ndjson",
     "CompletedRun",
     "to_snake",
     "to_camel",
@@ -188,6 +207,7 @@ __all__ = [
     "VerdictFailed",
     "ProtocolError",
     "SessionClosedError",
+    "RhwpTimeoutError",
     "TimeoutError",
     # 종료 코드 사전
     "EXIT_OK",
@@ -195,4 +215,6 @@ __all__ = [
     "EXIT_USAGE",
     "EXIT_VERIFY",
     "EXIT_VERIFY_PAGES",
+    "raise_for_exit",
+    "is_known_exit_code",
 ]

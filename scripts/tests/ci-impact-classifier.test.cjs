@@ -85,10 +85,17 @@ test('Rust renderer changes require Rust, Native Skia, Canvas, and Rust CodeQL',
   assert.equal(result.classification_status, 'classified');
 });
 
-test('Native Skia integration test changes run Rust and Native Skia without Canvas', () => {
+test('Native Skia integration test and support changes run Rust and Native Skia without Canvas', () => {
   for (const filename of [
+    'tests/cli_exit_codes_native.rs',
+    'tests/issue_1144_native.rs',
+    'tests/issue_2083_hide_fill_page_background.rs',
     'tests/issue_2225_missing_picture_placeholder.rs',
+    'tests/issue_2292_chart_png_clip.rs',
+    'tests/issue_2293_chart_png_text.rs',
     'tests/render_p37_direct_pdf_export.rs',
+    'tests/support/cli_exit_code_support.rs',
+    'tests/support/issue_1144_support.rs',
   ]) {
     const result = classifyChanges({
       eventName: 'pull_request',

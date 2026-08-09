@@ -220,12 +220,37 @@ def destinations_in_markdown(source: Path) -> list[tuple[int, str]]:
         if in_fence:
             continue
 
-        for match in INLINE_LINK_RE.finditer(line):
+        for match in INLINE_LINK_RE.finditer(mask_inline_code_spans(line)):
             destinations.append((line_number, match.group(1) or match.group(2)))
         reference_match = REFERENCE_LINK_RE.match(line)
         if reference_match:
             destinations.append((line_number, reference_match.group(1) or reference_match.group(2)))
     return destinations
+
+
+def mask_inline_code_spans(line: str) -> str:
+    """Mask balanced inline code spans without changing character offsets."""
+
+    masked = list(line)
+    index = 0
+    while index < len(line):
+        if line[index] != "`":
+            index += 1
+            continue
+
+        delimiter_end = index
+        while delimiter_end < len(line) and line[delimiter_end] == "`":
+            delimiter_end += 1
+        delimiter = line[index:delimiter_end]
+        closing = line.find(delimiter, delimiter_end)
+        if closing < 0:
+            index = delimiter_end
+            continue
+
+        for position in range(index, closing + len(delimiter)):
+            masked[position] = " "
+        index = closing + len(delimiter)
+    return "".join(masked)
 
 
 def resolve_local_destination(source: Path, destination: str) -> Path | None:

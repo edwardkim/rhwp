@@ -173,6 +173,18 @@ pub fn is_hmapsi_ole_container(cfb_bytes: &[u8]) -> bool {
     contains_bytes(cfb_bytes, b"HMapsi") || contains_bytes(cfb_bytes, b"Hmapsi file")
 }
 
+/// 중첩 OLE CFB 의 루트 CLSID(= OLE 서버 클래스 ID)를 읽는다. (#4097)
+///
+/// `parse_ole_container` 는 스트림 **이름**으로만 개체를 판별하므로 CLSID 를 보지 않는다.
+/// 그래서 재포장에서 CLSID 가 사라져도 rhwp 의 왕복 검증·조립 검증은 전부 통과했고
+/// **한컴에서만** 드러났다. 중첩 CFB 를 다시 쓸 때는 이 값을 읽어
+/// `serializer::mini_cfb::build_cfb_with_root_clsid` 에 넘겨야 한다.
+///
+/// 바이트 해석은 `cfb_reader::root_clsid` 한 곳에서만 한다 — 오프셋 지식을 복제하지 않는다.
+pub fn ole_root_clsid(cfb_bytes: &[u8]) -> Option<[u8; 16]> {
+    crate::parser::cfb_reader::root_clsid(cfb_bytes)
+}
+
 fn contains_bytes(haystack: &[u8], needle: &[u8]) -> bool {
     !needle.is_empty() && haystack.windows(needle.len()).any(|w| w == needle)
 }

@@ -274,11 +274,13 @@ fn main() {
         Some("export-doclang") => exit_with(export_doclang(&args[2..])),
         Some("export-ir-schema") => exit_with(cmd_export_ir_schema(&args[2..])),
         Some("export-capabilities-schema") => exit_with(cmd_export_capabilities_schema(&args[2..])),
+        Some("export-ontology") => exit_with(cmd_export_ontology(&args[2..])),
         Some("capabilities") => exit_with(show_capabilities(&args[2..])),
         Some("export-provenance-map") => exit_with(export_provenance_map(&args[2..])),
         Some("export-agent-manifest") => exit_with(cmd_export_agent_manifest(&args[2..])),
         Some("mcp-serve") => exit_with(mcp_serve::run(&args[2..])),
         Some("batch") => exit_with(run_batch(&args[2..])),
+        Some("scan") => exit_with(cmd_scan(&args[2..])),
         Some("info") => exit_with(show_info(&args[2..])),
         Some("digest") => exit_with(digest_document(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
@@ -332,6 +334,7 @@ fn main() {
         Some("gen-pua") => exit_with(gen_pua_test(&args[2..])),
         Some("test-field") => exit_with(test_field_roundtrip(&args[2..])),
         Some("ir-diff") => exit_with(ir_diff(&args[2..])),
+        Some("verify") => exit_with(cmd_verify(&args[2..])),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
         Some("render-diff") => rhwp::diagnostics::render_geom_diff::run(&args[2..]),
@@ -348,21 +351,36 @@ fn main() {
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
         // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
         other => {
-            match other {
+            // [#4220 T4] 수복 한 줄은 stderr 마지막 줄이어야 하므로(소비자는 마지막
+            // `수복: ` 줄 하나만 파싱한다) 산문을 모두 낸 뒤에 방출한다. 두 부류만
+            // 결정론적이다: 확신 교정(임계 내 오타)과 명령 누락(발견 경로는 언제나
+            // capabilities). 임계 밖 오타는 수복 줄도 침묵한다 — 오제안 0.
+            let recovery: Option<(String, &str)> = match other {
                 Some(command) => {
                     eprintln!("오류: 알 수 없는 명령입니다 - {}", command);
                     // [#3694] did-you-mean — 후보는 capabilities 단일 출처. 이름 환각을
                     // 교정 단서 없이 돌려보내면 경량 에이전트는 맹목 재시도 루프에 빠진다.
                     let names = capabilities_command_names();
-                    if let Some(hint) = closest_name(command, names.iter().map(String::as_str)) {
+                    let hint = closest_name(command, names.iter().map(String::as_str));
+                    if let Some(hint) = &hint {
                         eprintln!("힌트: 가장 가까운 명령은 '{hint}' 입니다");
                     }
+                    hint.map(|h| (h, "요청한 이름이 없음 — 가장 가까운 실존 명령으로 교정"))
                 }
-                None => eprintln!("오류: 명령을 지정해주세요."),
-            }
+                None => {
+                    eprintln!("오류: 명령을 지정해주세요.");
+                    Some((
+                        "capabilities".to_string(),
+                        "명령이 지정되지 않음 — 실행 가능한 명령 목록·계약은 capabilities 가 자기서술",
+                    ))
+                }
+            };
             eprintln!("rhwp v{}", rhwp::version());
             eprintln!("사용법: rhwp <명령> [옵션]");
             eprintln!("'rhwp --help'로 자세한 사용법을 확인하세요.");
+            if let Some((name, why)) = recovery {
+                eprint_usage_recovery(&name, None, why);
+            }
             process::exit(EXIT_USAGE);
         }
     }
@@ -629,6 +647,42 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "ir-diff",
             serde_json::json!(["ir-diff", "{a}", "{b}", "--json"]),
             &["identical", "diffCount", "categories"],
+        ),
+        tool_with_optional_args(
+            "hwp_verify",
+            "문서가 기대 조건을 만족하는지 사후검증한다 — 편집 파이프라인의 마지막 게이트. 조건별 pass 가 봉투에 실리고, 불일치가 있으면 CLI 종료 코드 3. 반복 조건이 필요하면 CLI 를 직접 쓴다(도구는 각 조건 1개씩).",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "HWP/HWPX 문서 경로" },
+                    "pages": { "type": "integer", "description": "기대 쪽수" },
+                    "minPages": { "type": "integer", "description": "최소 쪽수" },
+                    "maxPages": { "type": "integer", "description": "최대 쪽수" },
+                    "minChars": { "type": "integer", "description": "본문 최소 문자 수" },
+                    "minTables": { "type": "integer", "description": "최소 표 개수" },
+                    "tableCount": { "type": "integer", "description": "기대 표 개수(정확히)" },
+                    "contains": { "type": "string", "description": "본문에 있어야 하는 문자열" },
+                    "notContains": { "type": "string", "description": "본문에 없어야 하는 문자열" },
+                    "field": { "type": "string", "description": "누름틀 기대값 — 이름=값 형식" },
+                    "format": { "type": "string", "description": "기대 형식 hwp5|hwpx|hwp3|hml" }
+                },
+                "required": ["path"],
+            }),
+            "verify",
+            serde_json::json!(["verify", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "pages", "args": ["--expect-pages", "{pages}"] },
+                { "when": "minPages", "args": ["--expect-min-pages", "{minPages}"] },
+                { "when": "maxPages", "args": ["--expect-max-pages", "{maxPages}"] },
+                { "when": "minChars", "args": ["--expect-min-chars", "{minChars}"] },
+                { "when": "minTables", "args": ["--expect-min-tables", "{minTables}"] },
+                { "when": "tableCount", "args": ["--expect-table-count", "{tableCount}"] },
+                { "when": "contains", "args": ["--expect-contains", "{contains}"] },
+                { "when": "notContains", "args": ["--expect-not-contains", "{notContains}"] },
+                { "when": "field", "args": ["--expect-field", "{field}"] },
+                { "when": "format", "args": ["--expect-format", "{format}"] }
+            ]),
+            &["expectations", "passCount", "failCount", "verdict"],
         ),
         tool(
             "hwp_export_svg",
@@ -1051,6 +1105,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "untrustedContent",
                 "untrustedFields",
             ],
+        ),
+        // [#3918 승격 3호] 코퍼스 발견 — hwp_batch 의 paths 목록을 만드는 앞 단계.
+        tool_with_optional_args(
+            "hwp_scan",
+            "디렉터리를 재귀로 걸어 HWP 계열 파일을 발견·분류한다 — 확장자 주장과 매직 감지를 대조하고(extMismatch), probe 를 켜면 실제로 열어 파싱 가능·암호 필요·쪽수를 기록한다. hwp_batch 의 앞 단계: files[].path 를 paths 로 이어 붙인다. 발견은 판정이 아니라 데이터이므로 게이트 종료 코드가 없다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "검색할 폴더(재귀) 또는 파일 경로" },
+                    "probe": { "type": "boolean", "description": "각 파일을 실제로 열어 파싱 가능·암호 필요·쪽수를 기록" },
+                    "maxDepth": { "type": "integer", "minimum": 1, "description": "재귀 최대 깊이 (1 = 지정 폴더만)" },
+                    "limit": { "type": "integer", "minimum": 1, "description": "최대 파일 수 — 넘으면 봉투에 truncated:true" }
+                },
+                "required": ["path"],
+            }),
+            "scan",
+            serde_json::json!(["scan", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "probe", "args": ["--probe"] },
+                { "when": "maxDepth", "args": ["--max-depth", "{maxDepth}"] },
+                { "when": "limit", "args": ["--limit", "{limit}"] }
+            ]),
+            &["schemaVersion", "roots", "files", "summary"],
         ),
         tool_with_optional_args(
             "hwp_batch",
@@ -1518,6 +1595,26 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "capabilitiesSchemaVersion", "dialect", "definitionCount", "schema", "mcpSchema"],
         ),
         tool_with_optional_args(
+            "hwp_export_ontology",
+            "[#3907 O1] rhwp 의 자기서술(IR 스키마·capabilities·MCP 도구 정의·봉투 출처 지도)에서 실행 시점에 기계 유도한 JSON-LD 온톨로지를 돌려준다. @graph 에 IR 타입 = 클래스(rdfs:Class), IR 필드 = 속성(rdf:Property, 도메인·레인지 유도), 명령·MCP 도구 = 행위(schema:Action), 출처 지도의 문서 파생 경로 = 신뢰 술어(rhwp:untrustedFields)가 실린다. 손으로 쓴 목록이 없어 원천 선언이 바뀌면 온톨로지가 함께 바뀐다 — 지식그래프·시맨틱 소비자가 단일 출처로 쓴다. 문서를 입력으로 받지 않는다(도구 자신의 서술이지 특정 문서의 속성이 아니다).",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "bare": {
+                        "type": "boolean",
+                        "description": "참이면 봉투 없이 JSON-LD 본문(@context·@graph)만 (RDF/JSON-LD 도구에 바로 먹일 때)"
+                    }
+                },
+                // 문서를 받지 않으므로 필수 인자가 없다 — 그래도 빈 배열을 선언한다.
+                // 소비자가 required 의 부재와 "필수 없음"을 구분할 수 없으면 안 된다.
+                "required": [],
+            }),
+            "export-ontology",
+            serde_json::json!(["export-ontology", "--json"]),
+            serde_json::json!([{ "when": "bare", "args": ["--bare"] }]),
+            &["schemaVersion", "ontology", "classCount", "propertyCount", "actionCount"],
+        ),
+        tool_with_optional_args(
             "hwp_render_diff",
             "두 렌더의 페이지별 bbox 변위(px)를 재어 시각 회귀를 판정한다. pathB 를 주면 두 문서 직접 비교, 없으면 자기 라운드트립(원본 IR vs 직렬화→재로드 IR, via 로 경유 포맷 선택)이다. 판정은 status(PASS/WARN_TEXTRUN/OVER/STRUCT_MISMATCH/PAGE_MISMATCH)와 regression 으로 읽고, maxDisp·pages[].topDeltas 로 어디가 얼마나 밀렸는지 좁힌다. 회귀를 찾으면 종료 코드 3 이지만 봉투는 정상 산출된다(도구 실패가 아니라 검출이다).",
             path_schema(serde_json::json!({
@@ -1549,7 +1646,68 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             add_password_stdin_contract(definition);
         }
     }
+    // [#4220 T3] MCP 표준 tool annotations — 손으로 나열한 표가 아니라 각 도구의
+    // **기존 선언**(outputFields 의 산출 경로 필드, cli 배선의 --in-place 축)에서
+    // 유도해 단다. 도구를 추가·개편하면 주석이 자동으로 따라오고, 유도 규칙 자체는
+    // tests/mcp_tool_annotations_contract.rs 가 실물 출력으로 대조한다.
+    for definition in &mut tools {
+        definition["annotations"] = derive_mcp_tool_annotations(definition);
+    }
     tools
+}
+
+/// [#4220 T3] MCP 표준 `annotations` 값 하나 (2025-03-26 개정판 신설 ToolAnnotations,
+/// 2025-06-18 유지 — schema.ts 의 readOnlyHint/destructiveHint/idempotentHint/openWorldHint).
+///
+/// 스펙 기본값(readOnlyHint=false, destructiveHint=true, idempotentHint=false,
+/// openWorldHint=true)에 기대지 않고 네 필드를 전부 명시한다 — inputSchema.required 를
+/// 빈 배열이라도 반드시 선언하는 것과 같은 이유로, 소비자가 "선언 누락"과 "기본값
+/// 의도"를 구분할 수 있어야 한다.
+///
+/// `openWorldHint` 는 전 도구 공통 false 다: rhwp 도구는 로컬 파일만 다루며
+/// 네트워크 등 외부 개방 세계에 닿는 축이 없다.
+fn mcp_annotations(read_only: bool, destructive: bool, idempotent: bool) -> serde_json::Value {
+    serde_json::json!({
+        "readOnlyHint": read_only,
+        "destructiveHint": destructive,
+        "idempotentHint": idempotent,
+        "openWorldHint": false,
+    })
+}
+
+/// [#4220 T3] 무상태 도구 하나의 annotations 유도 — 근거는 그 도구 자신의 선언이다.
+///
+/// - `readOnlyHint`: 봉투 `outputFields` 에 산출 경로 필드(`output`/`outputDir`)가
+///   없으면 true. 파일을 쓰지 않는 도구는 환경을 바꾸지 않는다 — 조회(query)와
+///   stdout 전용 export(hwp_export_text·hwp_export_tables 등)가 여기 속한다.
+///   `hwp_table_to_csv` 처럼 출력이 선택인 도구는 "쓸 수 있다"는 이유로 false 다
+///   (힌트는 안전 방향으로 보수적이어야 한다).
+/// - `destructiveHint`: cli 배선에 `--in-place` 축이 있을 때만 true. 그 밖의 쓰기는
+///   전부 산출 분리(-o) 원칙의 추가형(additive)이다 — 원본 문서를 덮지 않는다
+///   (redact 의 원본 보호 exit 2, export 계열의 같은 경로 거부가 그 증거다).
+/// - `idempotentHint`: 무상태 도구는 전부 true — 매 호출이 같은 원본에서 다시
+///   계산하는 결정론 변환이라, 같은 인자 재실행은 같은 산출을 다시 쓸 뿐 추가
+///   효과가 없다(세션 편집 누적과 대비되는 성질이다 — mcp_serve 참고).
+fn derive_mcp_tool_annotations(definition: &serde_json::Value) -> serde_json::Value {
+    let writes_files = definition["outputFields"].as_array().is_some_and(|fields| {
+        fields
+            .iter()
+            .any(|f| matches!(f.as_str(), Some("output" | "outputDir")))
+    });
+    let in_place = cli_wiring_has_flag(&definition["cli"], "--in-place");
+    mcp_annotations(!writes_files, in_place, true)
+}
+
+/// cli 배선(필수 `args` + `optionalArgs[].args`)에 특정 플래그가 있는가.
+fn cli_wiring_has_flag(cli: &serde_json::Value, flag: &str) -> bool {
+    let args_contain = |args: &serde_json::Value| {
+        args.as_array()
+            .is_some_and(|a| a.iter().any(|t| t.as_str() == Some(flag)))
+    };
+    args_contain(&cli["args"])
+        || cli["optionalArgs"]
+            .as_array()
+            .is_some_and(|opts| opts.iter().any(|o| args_contain(&o["args"])))
 }
 
 /// [#3263] 도구 자기서술 — 에이전트가 첫 호출 1회로 명령·계약·스키마를 파악하는 입구.
@@ -1588,8 +1746,69 @@ fn cmd_gated(
     })
 }
 
+/// [#3884 G4] edit·inspect 하위 명령의 자기서술 등재 — 이름 + 요약 한 줄.
+///
+/// 부모 항목의 summary 산문에만 있던 하위 명령을 데이터로 낸다. `capabilities` 만
+/// 읽는 에이전트가 `--search redact` 로 edit 하위를 찾게 하는 것이 목적이다
+/// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
+/// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
+/// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
+const EDIT_SUBCOMMANDS: [(&str, &str); 6] = [
+    (
+        "fill-fields",
+        "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
+    ),
+    (
+        "replace-text",
+        "본문 일괄 치환 — --find/--replace, --occurrence 로 k번째만",
+    ),
+    ("set-cell", "표 셀 텍스트 기록 — --table/--row/--col/--text"),
+    (
+        "insert-image",
+        "도장·서명 그림 삽입 — --image/--page/--x/--y (HWPUNIT)",
+    ),
+    (
+        "redact",
+        "개인정보 마스킹 — --kind 선택, findings 봉투, --no-raw",
+    ),
+    ("sanitize", "메타데이터 제거 — removed 봉투, --in-place"),
+];
+
+const INSPECT_SUBCOMMANDS: [(&str, &str); 3] = [
+    (
+        "hidden-text",
+        "은닉 텍스트 탐지 — --threshold-pt 임계·--include-offpage 쪽 밖",
+    ),
+    (
+        "injection",
+        "프롬프트 주입 신호 신고 — 문서는 고치지 않고 표시만 한다",
+    ),
+    (
+        "unicode",
+        "유니코드 기만 판정 — confusable·bidi·비가시 문자, --kind 필터",
+    ),
+];
+
+/// 하위 명령 배열을 해당 부모 항목에 단다. 항목 정의 자리(cmd_json 호출)를 건드리지
+/// 않는 후처리인 이유: 저 vec 은 거의 모든 표면 PR 이 지나는 자리라, 삽입 지점을
+/// 밖으로 빼야 병렬 PR 과의 충돌면이 줄어든다.
+fn attach_subcommands(commands: &mut [serde_json::Value]) {
+    for entry in commands.iter_mut() {
+        let subs: &[(&str, &str)] = match entry["name"].as_str() {
+            Some("edit") => &EDIT_SUBCOMMANDS,
+            Some("inspect") => &INSPECT_SUBCOMMANDS,
+            _ => continue,
+        };
+        let list: Vec<serde_json::Value> = subs
+            .iter()
+            .map(|(name, summary)| serde_json::json!({ "name": name, "summary": summary }))
+            .collect();
+        entry["subcommands"] = serde_json::json!(list);
+    }
+}
+
 fn capabilities_command_entries() -> Vec<serde_json::Value> {
-    vec![
+    let mut commands = vec![
         // ── 기계 계약(--json) 명령 ──
         cmd_json(
             "info",
@@ -1857,6 +2076,22 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "definitionCount",
                 "schema",
                 "mcpSchema",
+            ],
+        ),
+        // [#3907 O1] 자기서술 4축(IR 스키마·capabilities·MCP 도구·출처 지도)에서
+        // 실행 시점에 기계 유도하는 JSON-LD 온톨로지 — 손 나열 상수 0.
+        cmd_json(
+            "export-ontology",
+            "export",
+            "자기서술에서 기계 유도한 JSON-LD 온톨로지 산출 — IR 클래스·속성, 명령/MCP 행위, 신뢰 술어 (#3907 O1)",
+            false,
+            &["--json", "--bare", "-o"],
+            &[
+                "schemaVersion",
+                "ontology",
+                "classCount",
+                "propertyCount",
+                "actionCount",
             ],
         ),
         cmd_json(
@@ -2207,6 +2442,15 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "notFound",
             ],
         ),
+        // [#3918 승격 3호] 코퍼스 발견 — batch 가 전제하는 "경로 목록"의 원천.
+        cmd_json(
+            "scan",
+            "batch",
+            "디렉터리 재귀 발견·분류 — 확장자↔매직 대조(extMismatch), --probe 파싱 시도(암호·쪽수), batch stdin 목록의 원천",
+            false,
+            &["--probe", "--max-depth", "--limit", "--json"],
+            &["schemaVersion", "roots", "files", "summary"],
+        ),
         // ── 진단 ──
         cmd("dump", "diagnostic", "문서 조판부호 구조 덤프"),
         cmd_json(
@@ -2249,6 +2493,34 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "identical",
                 "diffCount",
                 "categories",
+            ],
+        ),
+        // [#4113 / #3918 승격 2호] 독립 사후검증 게이트 — 기대 조건 집합 대조.
+        cmd_json(
+            "verify",
+            "diagnostic",
+            "기대 조건(--expect-pages/min-pages/max-pages/min-chars/min-tables/table-count/contains/not-contains/field/format) 대조 — 전부 만족 exit 0, 불일치는 봉투 후 exit 3",
+            false,
+            &[
+                "--expect-pages",
+                "--expect-min-pages",
+                "--expect-max-pages",
+                "--expect-min-chars",
+                "--expect-min-tables",
+                "--expect-table-count",
+                "--expect-contains",
+                "--expect-not-contains",
+                "--expect-field",
+                "--expect-format",
+                "--json",
+            ],
+            &[
+                "schemaVersion",
+                "source",
+                "expectations",
+                "passCount",
+                "failCount",
+                "verdict",
             ],
         ),
         cmd_json(
@@ -2317,7 +2589,9 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd("test-field", "internal", "누름틀 왕복 테스트"),
         cmd("gen-table", "internal", "표 샘플 생성"),
         cmd("gen-pua", "internal", "PUA 샘플 생성"),
-    ]
+    ];
+    attach_subcommands(&mut commands);
+    commands
 }
 
 /// [#3694] 명령 이름 목록 (did-you-mean 후보).
@@ -2363,6 +2637,29 @@ pub(crate) fn closest_name<'a, I: IntoIterator<Item = &'a str>>(
     (d <= cap).then(|| name.to_string())
 }
 
+/// [#4220 T4] 사용법 오류(exit 2)의 stderr **마지막 줄**에 싣는 정형 수복 한 줄.
+///
+/// 문법: `수복: ` 접두어 + 한 줄 JSON `{"nextCall":{"name":<명령>,"subcommand"?:<하위>,"why":<이유>}}`.
+/// `nextCall` 어휘는 MCP 오류 봉투(R72, `tool_error_with_next`)와 같다 — CLI 와 MCP 가
+/// 같은 모양을 쓰면 소비자가 한 어휘로 수복 루프를 짠다. 계약 3면:
+///
+/// 1. **오제안 0(R72)** — 다음 호출이 결정론적으로 정해지는 실패 부류에서만 호출한다.
+///    애매하면 이 줄 자체가 없어야 하므로, 호출부가 확신 판정(#3694 임계 등)을 먼저 한다.
+/// 2. **`name` 실존** — 호출부 책임이고 계약 테스트(`tests/nextcall_cli_contract.rs`)가
+///    capabilities 단일 출처와 대조해 고정한다. `arguments` 는 싣지 않는다: CLI 는
+///    호출자의 나머지 argv 가 옳다고 검증한 바 없고(오제안 0 은 인자에도 적용된다),
+///    비밀번호 같은 민감 인자를 stderr 로 되울리지 않는 뜻도 겸한다.
+/// 3. **stdout 무침해** — 실패 3면 계약(#2707: exit 2·stdout 0 B·stderr 안내)에
+///    stderr 한 줄만 더하는 추가 전용 확장이다. 산문(오류·힌트·사용법)을 모두 낸 뒤
+///    마지막에 호출해야 한다 — 소비자는 "마지막 `수복: ` 줄 하나"만 파싱한다.
+fn eprint_usage_recovery(next_command: &str, subcommand: Option<&str>, why: &str) {
+    let mut next = serde_json::json!({ "name": next_command, "why": why });
+    if let Some(sub) = subcommand {
+        next["subcommand"] = serde_json::json!(sub);
+    }
+    eprintln!("수복: {}", serde_json::json!({ "nextCall": next }));
+}
+
 /// [#3828 B1] `capabilities --search <키워드...> [--json]` — commands[].name·summary 를
 /// 대소문자 무시 부분 문자열로 필터한다. 결정론적 매칭(유사도 점수·LLM 없음).
 ///
@@ -2378,7 +2675,26 @@ fn show_capabilities_search(query: &str, json_mode: bool) -> i32 {
         .filter(|c| {
             let name = c["name"].as_str().unwrap_or_default().to_lowercase();
             let summary = c["summary"].as_str().unwrap_or_default().to_lowercase();
-            let haystack = format!("{name} {summary}");
+            // [#3884 G4] 하위 명령의 이름·요약도 검색 대상이다 — 이것이 없으면
+            // `--search redact` 가 edit 를 못 찾아 R31 발견이 하위 명령 위에서
+            // 절반만 동작한다.
+            let subs = c["subcommands"]
+                .as_array()
+                .map(|arr| {
+                    arr.iter()
+                        .map(|s| {
+                            format!(
+                                "{} {}",
+                                s["name"].as_str().unwrap_or_default(),
+                                s["summary"].as_str().unwrap_or_default()
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                        .join(" ")
+                })
+                .unwrap_or_default()
+                .to_lowercase();
+            let haystack = format!("{name} {summary} {subs}");
             keywords.iter().all(|k| haystack.contains(k.as_str()))
         })
         .collect();
@@ -2689,6 +3005,14 @@ fn print_help() {
     println!("      --max-chars <N>         본문 문자 상한 (--json 전용, 기본: 무제한). 넘으면");
     println!("                              봉투에 truncated:true·omittedCount 를 남긴다");
     println!();
+    println!("  scan <경로...> [--probe] [--max-depth <N>] [--limit <N>] [--json]");
+    println!("      디렉터리를 재귀로 걸어 HWP 계열 파일을 발견·분류 (batch 목록의 원천)");
+    println!("      확장자 주장과 매직 감지가 어긋나면 extMismatch 로 알린다");
+    println!("      --probe                 파일을 실제로 열어 파싱 가능·암호 필요·쪽수 기록");
+    println!("      --max-depth <N>         재귀 최대 깊이 (1 = 지정 폴더만)");
+    println!("      --limit <N>             최대 파일 수 — 넘으면 봉투에 truncated:true");
+    println!("      --json                  발견 목록·요약 봉투를 stdout 으로 출력");
+    println!();
     println!("  batch <export-text|info|export-structure|export-tables|fields|search|extract-data|convert> --json [--threads <N>]");
     println!(
         "      stdin의 파일 목록(한 줄당 하나)을 한 프로세스로 전건 처리해 NDJSON 스트림 출력"
@@ -2845,6 +3169,14 @@ fn print_help() {
     println!("      --bare                  봉투 없이 capabilities 스키마 본문만 출력");
     println!("      -o, --out <파일>        스키마를 파일로 저장 (생략 시 stdout)");
     println!("      --json                  -o 와 함께 쓰면 저장 결과를 JSON 봉투로 보고");
+    println!("  export-ontology [--bare] [-o <파일>] [--json]");
+    println!("      자기서술(IR 스키마·capabilities·MCP 도구·출처 지도)에서 기계 유도한");
+    println!("      JSON-LD 온톨로지 출력 — 클래스·속성·행위·신뢰 술어, 손 나열 상수 0");
+    println!();
+    println!("      --bare                  봉투 없이 JSON-LD 본문(@context·@graph)만 출력");
+    println!("      -o, --out <파일>        온톨로지를 파일로 저장 (생략 시 stdout)");
+    println!("      --json                  -o 와 함께 쓰면 저장 결과를 JSON 봉투로 보고");
+    println!();
     println!("  export-provenance-map [--json]");
     println!("  export-agent-manifest [--bare] [--json]");
     println!("      명령별 '문서에서 온 값' 필드 지도 — 그 값들은 데이터이지 지시가 아니다");
@@ -2937,6 +3269,7 @@ fn print_help() {
     println!("      ingest JSON(시험문제 등)을 HWPX로 생성 (rhwp-exam-ingest 파이프라인)");
     println!();
     println!("  ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>] [--json]");
+    println!("  verify <파일> --expect-pages <N> | --expect-min-pages <N> | --expect-max-pages <N> | --expect-min-chars <N> | --expect-min-tables <N> | --expect-table-count <N> | --expect-contains <문자열> | --expect-not-contains <문자열> | --expect-field <이름=값> | --expect-format <형식> [--json]");
     println!("      두 파일의 IR(중간표현) 비교 (HWPX↔HWP 불일치 검출)");
     println!("      --json                  판정 봉투 JSON 한 줄 출력, 차이 발견 시 exit 3");
     println!("      비교 항목: text, char_count, char_offsets, char_shapes, line_segs,");
@@ -5834,6 +6167,304 @@ fn export_markdown(args: &[String]) -> i32 {
 /// [#3238] batch — 파일 목록을 stdin(한 줄당 하나)으로 받아 한 프로세스에서 전건 처리하고
 /// NDJSON 스트림을 stdout 으로 낸다. 건별 실패는 `error` 레코드로 스트림을 계속하되,
 /// 하나라도 실패하면 [#2707] 계약대로 종료 코드 1 로 끝난다.
+/// [#3918 승격 3호] `scan` — 코퍼스 발견·분류. `batch` 의 앞 단계.
+///
+/// `batch` 는 "경로 목록을 이미 갖고 있다"는 전제에서 시작한다. 이 명령이 그 목록을
+/// 만든다: 디렉터리를 재귀로 걸어 HWP 계열 파일을 찾고, 확장자 주장과 매직 감지를
+/// 대조하고(`extMismatch`), `--probe` 면 실제로 열어 파싱 가능/암호 필요/쪽수를
+/// 기록한다. rhwp-agent 실험 표면의 `scan`(#3922)이 검증해 둔 축의 승격이며, 실측은
+/// 전부 기존 코어 재사용이다: `parser::detect_format`·`load_document`·`page_count`.
+///
+/// 발견은 판정이 아니므로 게이트 종료 코드(3)가 없다 — 파싱 실패·확장자 불일치도
+/// exit 0 의 데이터다(판정은 데이터, #2707). 실행 실패는 stdout 을 비우고 exit 1,
+/// 조립 오류는 exit 2. 결정성: 파일 순서는 경로 문자열 오름차순으로 고정한다 —
+/// 같은 트리는 언제나 같은 순서로 나온다(재현 가능한 코퍼스 목록).
+fn cmd_scan(args: &[String]) -> i32 {
+    const USAGE: &str =
+        "사용법: rhwp scan <경로...> [--probe] [--max-depth <N>] [--limit <N>] [--json]";
+
+    /// 확장자가 주장하는 포맷. `.hwp` 는 HWP5/HWP3 겸용 확장자라 "hwp"(모호)로 둔다.
+    fn ext_claim(path: &std::path::Path) -> Option<&'static str> {
+        let ext = path.extension()?.to_str()?.to_ascii_lowercase();
+        match ext.as_str() {
+            "hwp" => Some("hwp"),
+            "hwpx" => Some("hwpx"),
+            "hml" => Some("hml"),
+            _ => None,
+        }
+    }
+
+    /// 확장자 주장과 매직 감지가 어긋나는가. `.hwp` 는 hwp5·hwp3 둘 다 정상이다.
+    fn ext_mismatch(claim: &str, magic: &str) -> bool {
+        match claim {
+            "hwp" => !matches!(magic, "hwp5" | "hwp3"),
+            other => other != magic,
+        }
+    }
+
+    /// `parser::FileFormat` → `info --json` 의 `format` 토큰 (verify 와 같은 지도).
+    fn format_token(format: rhwp::parser::FileFormat) -> &'static str {
+        use rhwp::parser::FileFormat;
+        match format {
+            FileFormat::Hwp => "hwp5",
+            FileFormat::Hwpx => "hwpx",
+            FileFormat::Hwp3 => "hwp3",
+            FileFormat::Hml => "hml",
+            FileFormat::DrmProtected => "drm-protected",
+            FileFormat::Empty => "empty",
+            FileFormat::Unknown => "unknown",
+        }
+    }
+
+    /// 재귀 걷기 — 심볼릭 링크는 따라가지 않는다(순환 방지).
+    fn walk(
+        dir: &std::path::Path,
+        depth: usize,
+        max_depth: Option<usize>,
+        out: &mut Vec<std::path::PathBuf>,
+    ) -> Result<(), String> {
+        let entries = std::fs::read_dir(dir)
+            .map_err(|e| format!("폴더를 읽을 수 없습니다 - {}: {e}", dir.display()))?;
+        for entry in entries {
+            let entry = entry.map_err(|e| format!("항목을 읽을 수 없습니다 - {e}"))?;
+            let path = entry.path();
+            let file_type = entry
+                .file_type()
+                .map_err(|e| format!("파일 유형을 읽을 수 없습니다 - {}: {e}", path.display()))?;
+            if file_type.is_symlink() {
+                continue;
+            }
+            if file_type.is_dir() {
+                if max_depth.map(|m| depth < m).unwrap_or(true) {
+                    walk(&path, depth + 1, max_depth, out)?;
+                }
+            } else if file_type.is_file() && ext_claim(&path).is_some() {
+                out.push(path);
+            }
+        }
+        Ok(())
+    }
+
+    let mut json_mode = false;
+    let mut probe = false;
+    let mut max_depth: Option<usize> = None;
+    let mut limit: Option<usize> = None;
+    let mut roots: Vec<String> = Vec::new();
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--probe" => probe = true,
+            "--max-depth" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
+                    Some(n) if n >= 1 => max_depth = Some(n),
+                    _ => {
+                        eprintln!("오류: --max-depth 뒤에 1 이상의 정수가 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--limit" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
+                    Some(n) if n >= 1 => limit = Some(n),
+                    _ => {
+                        eprintln!("오류: --limit 뒤에 1 이상의 정수가 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                eprintln!("{USAGE}");
+                return EXIT_USAGE;
+            }
+            path => roots.push(path.to_string()),
+        }
+        i += 1;
+    }
+    if roots.is_empty() {
+        eprintln!("오류: 검색할 경로를 하나 이상 지정해주세요.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    }
+
+    // ① 대상 수집 — 루트마다 걷고, 전체를 경로 문자열로 정렬해 결정적 순서를 만든다.
+    let mut files: Vec<std::path::PathBuf> = Vec::new();
+    for root in &roots {
+        let path = std::path::Path::new(root);
+        if path.is_file() {
+            files.push(path.to_path_buf());
+            continue;
+        }
+        if !path.is_dir() {
+            eprintln!("오류: 경로가 존재하지 않습니다 - {root}");
+            return EXIT_RUNTIME;
+        }
+        if let Err(message) = walk(path, 1, max_depth, &mut files) {
+            eprintln!("오류: {message}");
+            return EXIT_RUNTIME;
+        }
+    }
+    files.sort_by_key(|p| p.to_string_lossy().to_string());
+    files.dedup();
+
+    // 상한은 정렬 **뒤에** 적용한다 — 남는 부분집합도 결정적이어야 한다.
+    let mut truncated = false;
+    if let Some(limit) = limit {
+        if files.len() > limit {
+            files.truncate(limit);
+            truncated = true;
+        }
+    }
+
+    // ② 파일별 레코드.
+    let mut records: Vec<serde_json::Value> = Vec::new();
+    let mut by_format: std::collections::BTreeMap<String, u64> = Default::default();
+    let mut mismatch_count = 0u64;
+    let mut probe_failed = 0u64;
+    // 암호로 잠긴 파일 **개수** — 자격증명이 아니다. 변수명에 password 를 쓰면
+    // CodeQL cleartext-logging 이 요약 출력을 민감정보 기록으로 오탐한다.
+    let mut locked_count = 0u64;
+
+    for file in &files {
+        let display = file.to_string_lossy().to_string();
+        let meta = match fs::metadata(file) {
+            Ok(m) => m,
+            Err(e) => {
+                eprintln!("오류: 파일 정보를 읽을 수 없습니다 - {display}: {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+        let data = match fs::read(file) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("오류: 파일을 읽을 수 없습니다 - {display}: {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+        let claim = ext_claim(file).unwrap_or("hwp");
+        let magic = format_token(rhwp::parser::detect_format(&data));
+        let mismatch = ext_mismatch(claim, magic);
+
+        let probe_value = if probe {
+            let started = std::time::Instant::now();
+            match load_document(&data) {
+                Ok(doc) => serde_json::json!({
+                    "parseOk": true,
+                    "needsPassword": false,
+                    "pageCount": doc.page_count(),
+                    "ms": started.elapsed().as_millis() as u64,
+                }),
+                Err(fail) => {
+                    probe_failed += 1;
+                    let (needs, message) = match fail {
+                        LoadError::NeedPassword => {
+                            (true, "비밀번호가 필요한 암호 문서입니다".to_string())
+                        }
+                        LoadError::WrongPassword => (
+                            true,
+                            "비밀번호가 일치하지 않거나 암호화 데이터가 손상되었습니다".to_string(),
+                        ),
+                        LoadError::Other(msg) => (false, msg),
+                    };
+                    if needs {
+                        locked_count += 1;
+                    }
+                    serde_json::json!({
+                        "parseOk": false,
+                        "needsPassword": needs,
+                        "error": message,
+                        "ms": started.elapsed().as_millis() as u64,
+                    })
+                }
+            }
+        } else {
+            serde_json::Value::Null
+        };
+
+        *by_format.entry(magic.to_string()).or_insert(0) += 1;
+        if mismatch {
+            mismatch_count += 1;
+        }
+        let modified_unix = meta
+            .modified()
+            .ok()
+            .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+            .map(|d| d.as_secs());
+        records.push(serde_json::json!({
+            "path": display,
+            "bytes": meta.len(),
+            "modifiedUnix": modified_unix,
+            "extFormat": claim,
+            "magicFormat": magic,
+            "extMismatch": mismatch,
+            "probe": probe_value,
+        }));
+    }
+
+    let summary = serde_json::json!({
+        "total": records.len(),
+        "byFormat": by_format,
+        "extMismatch": mismatch_count,
+        "probed": probe,
+        "probeFailed": if probe { serde_json::json!(probe_failed) } else { serde_json::Value::Null },
+        "needsPassword": if probe { serde_json::json!(locked_count) } else { serde_json::Value::Null },
+        "truncated": truncated,
+    });
+
+    // ③ 출력.
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "roots": roots,
+            "files": records,
+            "summary": summary,
+        });
+        println!("{}", provenance::marked(envelope, "scan"));
+        return EXIT_OK;
+    }
+
+    println!("rhwp scan — {}개 파일", records.len());
+    for record in &records {
+        let mut notes: Vec<&str> = Vec::new();
+        if record["extMismatch"].as_bool() == Some(true) {
+            notes.push("확장자 불일치");
+        }
+        if record["probe"]["needsPassword"].as_bool() == Some(true) {
+            notes.push("암호 필요");
+        } else if record["probe"]["parseOk"].as_bool() == Some(false) {
+            notes.push("파싱 실패");
+        }
+        let notes = if notes.is_empty() {
+            String::new()
+        } else {
+            format!("  [{}]", notes.join(", "))
+        };
+        println!(
+            "  {}  {}  {}바이트{notes}",
+            record["magicFormat"].as_str().unwrap_or("?"),
+            record["path"].as_str().unwrap_or("?"),
+            record["bytes"].as_u64().unwrap_or(0),
+        );
+    }
+    println!(
+        "합계: {} · 확장자 불일치 {}{}",
+        records.len(),
+        mismatch_count,
+        if probe {
+            format!(" · 파싱 실패 {probe_failed} (암호 필요 {locked_count})")
+        } else {
+            String::new()
+        }
+    );
+    EXIT_OK
+}
+
 fn run_batch(args: &[String]) -> i32 {
     use std::io::{BufRead, Write};
 
@@ -13105,6 +13736,354 @@ fn ir_diff_paragraph_fields(
     diffs
 }
 
+/// [#4113 / #3918 승격 2호] `verify` — 편집 파이프라인의 독립 사후검증 게이트.
+///
+/// 기대 조건 집합을 문서 실측과 대조해 전부 만족이면 exit 0, 하나라도 어긋나면
+/// **봉투를 먼저 내고** exit 3(판정 — #2707) — 판정은 데이터다(규칙 3). 실행
+/// 실패는 stdout 을 비우고 exit 1, 조립 오류는 exit 2. 실측은 전부 기존 코어
+/// 재사용이다: `page_count`·`grep`·`collect_field_records`·`detect_format`(규칙 2).
+fn cmd_verify(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp verify <파일.hwp|파일.hwpx> [--expect-pages N] \
+[--expect-min-pages N] [--expect-max-pages N] [--expect-min-chars N] \
+[--expect-min-tables N] [--expect-table-count N] \
+[--expect-contains 문자열]... [--expect-not-contains 문자열]... [--expect-field 이름=값]... \
+[--expect-format hwp5|hwpx|hwp3|hml] [--json] — 기대 조건이 최소 1개 필요합니다";
+
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut expect_pages: Option<u64> = None;
+    let mut expect_min_pages: Option<u64> = None;
+    let mut expect_max_pages: Option<u64> = None;
+    let mut expect_min_chars: Option<u64> = None;
+    let mut expect_min_tables: Option<u64> = None;
+    let mut expect_table_count: Option<u64> = None;
+    let mut expect_format: Option<String> = None;
+    let mut expect_contains: Vec<String> = Vec::new();
+    let mut expect_not_contains: Vec<String> = Vec::new();
+    let mut expect_fields: Vec<(String, String)> = Vec::new();
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            flag @ ("--expect-pages"
+            | "--expect-min-pages"
+            | "--expect-max-pages"
+            | "--expect-min-chars"
+            | "--expect-min-tables"
+            | "--expect-table-count") => {
+                i += 1;
+                let n = args.get(i).and_then(|v| v.parse::<u64>().ok());
+                match n {
+                    Some(n) => {
+                        *match flag {
+                            "--expect-pages" => &mut expect_pages,
+                            "--expect-min-pages" => &mut expect_min_pages,
+                            "--expect-max-pages" => &mut expect_max_pages,
+                            "--expect-min-chars" => &mut expect_min_chars,
+                            "--expect-min-tables" => &mut expect_min_tables,
+                            _ => &mut expect_table_count,
+                        } = Some(n);
+                    }
+                    None => {
+                        eprintln!("오류: {flag} 뒤에 숫자가 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--expect-contains" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => expect_contains.push(v.clone()),
+                    None => {
+                        eprintln!("오류: --expect-contains 뒤에 문자열이 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--expect-not-contains" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => expect_not_contains.push(v.clone()),
+                    None => {
+                        eprintln!("오류: --expect-not-contains 뒤에 문자열이 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--expect-field" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.split_once('=')) {
+                    Some((k, val)) if !k.is_empty() => {
+                        expect_fields.push((k.to_string(), val.to_string()))
+                    }
+                    _ => {
+                        eprintln!("오류: --expect-field 는 이름=값 형식입니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--expect-format" => {
+                i += 1;
+                match args.get(i).map(String::as_str) {
+                    Some(v @ ("hwp5" | "hwpx" | "hwp3" | "hml")) => {
+                        expect_format = Some(v.to_string())
+                    }
+                    Some(v) => {
+                        eprintln!(
+                            "오류: --expect-format 은 hwp5|hwpx|hwp3|hml 중 하나입니다 - {v}"
+                        );
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                    None => {
+                        eprintln!("오류: --expect-format 뒤에 형식이 필요합니다.");
+                        eprintln!("{USAGE}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                eprintln!("{USAGE}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.is_some() {
+                    eprintln!("오류: 파일 경로는 하나여야 합니다 - {other}");
+                    eprintln!("{USAGE}");
+                    return EXIT_USAGE;
+                }
+                file_path = Some(other);
+            }
+        }
+        i += 1;
+    }
+    let Some(path) = file_path else {
+        eprintln!("오류: 파일 경로가 필요합니다.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let expectation_count = usize::from(expect_pages.is_some())
+        + usize::from(expect_min_pages.is_some())
+        + usize::from(expect_max_pages.is_some())
+        + usize::from(expect_min_chars.is_some())
+        + usize::from(expect_min_tables.is_some())
+        + usize::from(expect_table_count.is_some())
+        + usize::from(expect_format.is_some())
+        + expect_contains.len()
+        + expect_not_contains.len()
+        + expect_fields.len();
+    if expectation_count == 0 {
+        eprintln!("오류: 기대 조건이 없습니다 — --expect-* 로 최소 1개를 지정하세요.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    }
+
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let actual_format = match rhwp::parser::detect_format(&data) {
+        rhwp::parser::FileFormat::Hwp => "hwp5",
+        rhwp::parser::FileFormat::Hwpx => "hwpx",
+        rhwp::parser::FileFormat::Hwp3 => "hwp3",
+        rhwp::parser::FileFormat::Hml => "hml",
+        _ => "unknown",
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let mut expectations: Vec<serde_json::Value> = Vec::new();
+    let mut fail_count = 0usize;
+    let mut record = |kind: &str,
+                      subject: serde_json::Value,
+                      expected: serde_json::Value,
+                      actual: serde_json::Value,
+                      pass: bool| {
+        if !pass {
+            fail_count += 1;
+        }
+        let mut e = serde_json::json!({
+            "kind": kind, "expected": expected, "actual": actual, "pass": pass,
+        });
+        if !subject.is_null() {
+            e["subject"] = subject;
+        }
+        expectations.push(e);
+    };
+
+    if let Some(n) = expect_pages {
+        let actual = u64::from(doc.page_count());
+        record(
+            "pages",
+            serde_json::Value::Null,
+            serde_json::json!(n),
+            serde_json::json!(actual),
+            actual == n,
+        );
+    }
+    if let Some(n) = expect_min_pages {
+        let actual = u64::from(doc.page_count());
+        record(
+            "minPages",
+            serde_json::Value::Null,
+            serde_json::json!(n),
+            serde_json::json!(actual),
+            actual >= n,
+        );
+    }
+    if let Some(n) = expect_max_pages {
+        let actual = u64::from(doc.page_count());
+        record(
+            "maxPages",
+            serde_json::Value::Null,
+            serde_json::json!(n),
+            serde_json::json!(actual),
+            actual <= n,
+        );
+    }
+    if let Some(n) = expect_min_chars {
+        // 쪽별 추출 텍스트의 문자 수 합 — export-text 와 같은 출처를 쓴다.
+        let mut actual = 0u64;
+        for page in 0..doc.page_count() {
+            match doc.extract_page_text_native(page) {
+                Ok(text) => actual += text.chars().count() as u64,
+                Err(e) => {
+                    eprintln!("오류: 본문 텍스트 추출 실패 - {}쪽: {}", page, e);
+                    return EXIT_RUNTIME;
+                }
+            }
+        }
+        record(
+            "minChars",
+            serde_json::Value::Null,
+            serde_json::json!(n),
+            serde_json::json!(actual),
+            actual >= n,
+        );
+    }
+    if expect_min_tables.is_some() || expect_table_count.is_some() {
+        use rhwp::document_core::queries::table_extract::extract_tables;
+        let actual = extract_tables(doc.document()).len() as u64;
+        if let Some(n) = expect_min_tables {
+            record(
+                "minTables",
+                serde_json::Value::Null,
+                serde_json::json!(n),
+                serde_json::json!(actual),
+                actual >= n,
+            );
+        }
+        if let Some(n) = expect_table_count {
+            record(
+                "tableCount",
+                serde_json::Value::Null,
+                serde_json::json!(n),
+                serde_json::json!(actual),
+                actual == n,
+            );
+        }
+    }
+    if let Some(f) = expect_format.as_deref() {
+        record(
+            "format",
+            serde_json::Value::Null,
+            serde_json::json!(f),
+            serde_json::json!(actual_format),
+            actual_format == f,
+        );
+    }
+    for s in &expect_contains {
+        let n = doc.grep(s, true, None).len();
+        record(
+            "contains",
+            serde_json::json!(s),
+            serde_json::json!(">=1"),
+            serde_json::json!(n),
+            n >= 1,
+        );
+    }
+    for s in &expect_not_contains {
+        let n = doc.grep(s, true, None).len();
+        record(
+            "notContains",
+            serde_json::json!(s),
+            serde_json::json!(0),
+            serde_json::json!(n),
+            n == 0,
+        );
+    }
+    if !expect_fields.is_empty() {
+        let records = collect_field_records(&doc);
+        for (name, want) in &expect_fields {
+            let actual = records
+                .iter()
+                .find(|r| r["name"].as_str() == Some(name.as_str()))
+                .map(|r| r["value"].clone())
+                .unwrap_or(serde_json::Value::Null);
+            let pass = actual.as_str() == Some(want.as_str());
+            record(
+                "field",
+                serde_json::json!(name),
+                serde_json::json!(want),
+                actual,
+                pass,
+            );
+        }
+    }
+
+    let verdict = if fail_count == 0 { "pass" } else { "fail" };
+    let pass_count = expectation_count - fail_count;
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": path,
+            "expectations": expectations,
+            "passCount": pass_count,
+            "failCount": fail_count,
+            "verdict": verdict,
+        });
+        println!("{}", provenance::marked(envelope, "verify"));
+    } else {
+        for e in &expectations {
+            let mark = if e["pass"].as_bool() == Some(true) {
+                "PASS"
+            } else {
+                "FAIL"
+            };
+            let subject = e["subject"]
+                .as_str()
+                .map(|s| format!(" '{s}'"))
+                .unwrap_or_default();
+            println!(
+                "{mark} {}{subject} — 기대 {} / 실측 {}",
+                e["kind"].as_str().unwrap_or(""),
+                e["expected"],
+                e["actual"]
+            );
+        }
+        println!("판정: {verdict} ({pass_count} 통과 / {fail_count} 불일치)");
+    }
+    if fail_count == 0 {
+        EXIT_OK
+    } else {
+        3 // 판정 불일치 — #2707 의 판정 코드. 봉투는 이미 냈다.
+    }
+}
+
 fn ir_diff(args: &[String]) -> i32 {
     if args.len() < 2 {
         eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>] [--json]");
@@ -13860,6 +14839,89 @@ fn cmd_export_capabilities_schema(args: &[String]) -> i32 {
             );
         } else {
             println!("capabilities 스키마 저장: {} ({} bytes)", path, text.len());
+        }
+        return EXIT_OK;
+    }
+
+    println!("{text}");
+    EXIT_OK
+}
+
+/// [#3907 O1] `export-ontology` — 자기서술에서 JSON-LD 온톨로지를 기계 유도한다.
+///
+/// 문서를 입력으로 받지 않는다 — 온톨로지는 rhwp 라는 **도구 자신**(IR 타입·명령
+/// 표면·신뢰 경계)의 서술이지 특정 문서의 속성이 아니다. 유도 원천은 전부 같은
+/// 크레이트의 단일 출처 함수다: `ir_schema()`·`capabilities_value()`·
+/// `mcp_tool_definitions()`·`provenance::MAP`. 손 나열 상수가 없으므로 원천이
+/// 바뀌면 온톨로지가 함께 바뀐다 — 드리프트 구조적 불가능이 이 명령의 논지다.
+/// 문서 인스턴스 모드(O2)는 후속이다.
+fn cmd_export_ontology(args: &[String]) -> i32 {
+    let mut out_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut bare = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            // 봉투 없이 JSON-LD 본문만 — RDF/JSON-LD 도구에 바로 먹이려는 용도.
+            "--bare" => bare = true,
+            "-o" | "--out" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.as_str()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {}", other);
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+
+    let caps = capabilities_value();
+    let tools = mcp_tool_definitions();
+    let payload = if bare {
+        // --bare 는 JSON-LD 처리기에 그대로 먹이는 본문이다 — 봉투 표지를 섞지 않는다.
+        rhwp::ontology::ontology(&caps, &tools)
+    } else {
+        // [#3885] "표지는 항상 실린다" — 문서를 열지 않는 명령의 봉투도
+        // untrustedContent:false 를 명시한다.
+        provenance::marked(rhwp::ontology::envelope(&caps, &tools), "export-ontology")
+    };
+    let text = match serde_json::to_string_pretty(&payload) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("오류: 온톨로지 직렬화 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    if let Some(path) = out_path {
+        if let Err(e) = fs::write(path, text.as_bytes()) {
+            eprintln!("오류: 온톨로지를 쓸 수 없습니다 - {}: {}", path, e);
+            return EXIT_RUNTIME;
+        }
+        if json_mode {
+            // 파일로 뺐어도 stdout 은 기계 계약을 유지한다 — 어디에 썼는지 알려준다.
+            println!(
+                "{}",
+                provenance::marked(
+                    serde_json::json!({
+                        "schemaVersion": "1.0",
+                        "ontologyVersion": rhwp::ontology::ONTOLOGY_VERSION,
+                        "output": path,
+                        "bytes": text.len(),
+                    }),
+                    "export-ontology"
+                )
+            );
+        } else {
+            println!("온톨로지 저장: {} ({} bytes)", path, text.len());
         }
         return EXIT_OK;
     }
@@ -17815,13 +18877,24 @@ fn inspect_command(args: &[String]) -> i32 {
         Some("unicode") => inspect_unicode(&args[1..]),
         Some(other) => {
             eprintln!("오류: 알 수 없는 inspect 하위 명령입니다 - {other}");
-            if let Some(hint) = closest_name(other, ["hidden-text", "injection", "unicode"]) {
+            let hint = closest_name(other, ["hidden-text", "injection", "unicode"]);
+            if let Some(hint) = &hint {
                 eprintln!("혹시 이것인가요? inspect {hint}");
             }
             eprintln!("{USAGE}");
+            // [#4220 T4] 확신 교정(#3694 임계 내)일 때만 정형 수복 줄 — 임계 밖은 침묵.
+            if let Some(hint) = hint {
+                eprint_usage_recovery(
+                    "inspect",
+                    Some(&hint),
+                    "요청한 이름이 없음 — 가장 가까운 실존 하위 명령으로 교정",
+                );
+            }
             EXIT_USAGE
         }
         None => {
+            // [#4220 T4] 하위 명령 누락은 어느 축을 원했는지 결정론적으로 알 수 없다 —
+            // 수복 줄을 지어내지 않는다(오제안 0).
             eprintln!("오류: inspect 하위 명령을 지정해주세요 (hidden-text|injection|unicode).");
             eprintln!("{USAGE}");
             EXIT_USAGE

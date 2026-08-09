@@ -319,8 +319,13 @@ fn rowbreak_page17_keeps_database_separation_line_before_example_box() {
         let page17 = doc
             .build_page_render_tree(16)
             .unwrap_or_else(|e| panic!("render {sample} page 17: {e}"));
-        let database_line = text_line_bbox_containing(&page17.root, "별도")
-            .unwrap_or_else(|| panic!("{sample} page 17 should render the separate-table line"));
+        // `별도`만 검색하면 후속 예시 표의 "별도 개방DB"를 잘못 집을 수 있다.
+        // PDF p17에서 예시 상자 바로 앞에 있어야 하는 정확한 source line을 고정한다.
+        let database_line =
+            text_line_bbox_containing(&page17.root, "공공데이터를 별도 테이블(table)로 구성·설계")
+                .unwrap_or_else(|| {
+                    panic!("{sample} page 17 should render the separate-table line")
+                });
         let example_caption = text_line_bbox_containing(&page17.root, "예시")
             .unwrap_or_else(|| panic!("{sample} page 17 should render the example caption"));
         let database_line_bottom = database_line.y + database_line.height;

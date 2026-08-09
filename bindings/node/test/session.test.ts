@@ -37,7 +37,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { ENV_VAR, clearBinaryCache } from '../src/binary.js';
 import { Envelope } from '../src/envelope.js';
-import { ProtocolError, SessionClosedError, UsageError } from '../src/errors.js';
+import { ProtocolError, RhwpTimeoutError, SessionClosedError, UsageError } from '../src/errors.js';
 import { Document, Session, openDocument } from '../src/session.js';
 
 // ── 가짜 mcp-serve ──────────────────────────────────────────────────────────
@@ -395,6 +395,38 @@ describe('Session — JSON-RPC 프레임 취급', () => {
       replace: '②③④ 한글',
     });
     expect(argsOf(result)).toEqual({ find: '가나다 라마바', replace: '②③④ 한글' });
+  });
+});
+
+// ── 제한 시간(D-14) ─────────────────────────────────────────────────────────
+
+describe('Session — 호출 제한 시간', () => {
+  it('제한 시간을 넘기면 RhwpTimeoutError 후 세션을 종료한다', async () => {
+    // stdio MCP에는 실행 중인 tools/call을 취소하는 계약이 없다. 대기만 끊으면
+    // 호출자는 실패로 보는데 서버는 편집/저장을 뒤늦게 끝낼 수 있다. 그래서
+    // timeout은 세션 경계를 끝내고, 재시도는 새 세션에서만 하게 한다.
+    const session = new Session({ cwd: fake.dir, profile: 'slow-echo', timeoutMs: 5 });
+    live.push(session);
+
+    const first = await capture(session.call('hwp_doc_info', { docId: 'doc-1' }));
+    expect(first).toBeInstanceOf(RhwpTimeoutError);
+    expect((first as RhwpTimeoutError).message).toContain('hwp_doc_info');
+    expect((first as RhwpTimeoutError).message).toContain('5ms');
+
+    // 뒤이은 호출은 서버로 전송하지 않는다. 첫 작업의 완료 여부가 불명확한데
+    // 같은 세션에 재시도/추가 편집을 적재하면 늦은 부작용과 순서를 보장할 수 없다.
+    const second = await capture(session.call('hwp_doc_fields', { docId: 'doc-1' }));
+    expect(second).toBeInstanceOf(SessionClosedError);
+
+    // 자식을 강제 종료했으므로 늦은 응답/편집 결과가 살아남지 않는다.
+    await sleep(80);
+  });
+
+  it('제한 시간을 넉넉히 주면 평소처럼 동작한다', async () => {
+    const session = new Session({ cwd: fake.dir, timeoutMs: 5000 });
+    live.push(session);
+    const result = await session.call('hwp_doc_info', { docId: 'doc-1' });
+    expect(result.get<string>('tool')).toBe('hwp_doc_info');
   });
 });
 

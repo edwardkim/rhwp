@@ -73,6 +73,25 @@ def test_verify_reparse_error_is_surfaced() -> None:
     assert report.reparse_error == "손상"
 
 
+def test_verify_pages_property_distinguishes_absent_from_failed() -> None:
+    """[트랙 G R61 D-10] verify 와 대칭인 verifyPages 접근자가 없었다."""
+    from rhwp.models import VerifyPagesReport
+
+    not_requested = Envelope({"output": "a.hwp", "verifyPages": None})
+    assert not_requested.verify_pages is None
+
+    failed = Envelope({"verifyPages": {"before": 5, "after": 4, "identical": False}})
+    report = failed.verify_pages
+    assert isinstance(report, VerifyPagesReport)
+    assert report.before == 5
+    assert report.after == 4
+    assert report.identical is False
+    assert not report  # __bool__ 이 판정을 대변한다
+
+    passed = Envelope({"verifyPages": {"before": 5, "after": 5, "identical": True}})
+    assert bool(passed.verify_pages)
+
+
 def test_changed_pages_distinguishes_unknown_from_empty() -> None:
     """``None``(모름)과 ``[]``(바뀐 쪽 없음)은 다른 결론이다."""
     unknown = Envelope({"changedPages": None})

@@ -1,0 +1,11 @@
+field	value
+build_head	c4d0ae5547b7e402f22cc7b1f4e84f2caa52ab13
+upstream_base	5a4f26d0d0a4e2fc96f4b73510d2aecdad916722
+source	/Users/tsjang/rhwp/samples/basic/issue2007_nested_cell_pagination_42065.hwp
+reference_pdf	/Users/tsjang/rhwp/pdf/basic/issue2007_nested_cell_pagination_42065-2020.pdf
+reference_grade	Hancom Office 2020 PDF oracle
+rhwp_binary	/Users/tsjang/rhwp/target/task-3820-stage57-exact-head/release-test/rhwp
+rhwp_binary_sha256	3460d593d12d15502f4b7a01a3115e7be77ff7e7d56de9ccdd4e3d1f22427d5d
+dpi	144
+pages	11-13
+result	17 SVG / 17 render-tree / 17 reference pages; visual sweep flagged 0

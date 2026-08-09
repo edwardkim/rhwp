@@ -44,10 +44,100 @@ defaults:
     shell: bash
 
 jobs:
+  preflight:
+    name: Node binding fast-pass preflight
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    outputs:
+      run_bindings: ${{ steps.detect.outputs.run_bindings || 'true' }}
+      reason: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
+    steps:
+      - name: Detect trailing documentation commit
+        id: detect
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          retries: 3
+          script: |
+            function setResult(runBindings, reason) {
+              core.setOutput('run_bindings', runBindings ? 'true' : 'false');
+              core.setOutput('reason', reason);
+              core.info(`run_bindings=${runBindings} reason=${reason}`);
+            }
+
+            function latestRun(runs) {
+              return runs.slice().sort((a, b) => (
+                Date.parse(b.completed_at || b.created_at || 0)
+                - Date.parse(a.completed_at || a.created_at || 0)
+              ))[0];
+            }
+
+            try {
+              if (context.eventName !== 'pull_request' || context.payload.action !== 'synchronize') {
+                setResult(true, 'not-trailing-pull-request-update');
+                return;
+              }
+
+              const { owner, repo } = context.repo;
+              const pr = context.payload.pull_request;
+              const headCommit = await github.rest.repos.getCommit({
+                owner,
+                repo,
+                ref: pr.head.sha,
+              });
+              if (headCommit.data.parents.length !== 1) {
+                setResult(true, 'head-is-not-a-single-parent-commit');
+                return;
+              }
+
+              const parentSha = headCommit.data.parents[0].sha;
+              const comparison = await github.rest.repos.compareCommits({
+                owner,
+                repo,
+                base: parentSha,
+                head: pr.head.sha,
+              });
+              const files = comparison.data.files || [];
+              if (
+                comparison.data.ahead_by !== 1
+                || files.length === 0
+                || files.some((file) => !file.filename.startsWith('mydocs/'))
+              ) {
+                setResult(true, 'head-delta-is-not-mydocs-only');
+                return;
+              }
+
+              const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner,
+                repo,
+                workflow_id: 'node-binding.yml',
+                event: 'pull_request',
+                per_page: 100,
+              });
+              const previousRun = latestRun(workflowRuns.filter((run) => (
+                run.head_sha === parentSha
+                && run.head_branch === pr.head.ref
+                && run.head_repository?.id === pr.head.repo?.id
+              )));
+              if (previousRun?.status === 'completed' && previousRun.conclusion === 'success') {
+                setResult(false, `mydocs-only-after-green-node-binding:${parentSha}`);
+                return;
+              }
+
+              setResult(true, `missing-green-node-binding:${parentSha}`);
+            } catch (error) {
+              core.warning(`binding preflight failed closed: ${error.message}`);
+              setResult(true, 'preflight-error');
+            }
+
   unit:
     # 탐색·이름 변환·예외 매핑·계획 직렬화는 순수 로직이다. 여기서 rhwp 를 빌드해야
     # 한다면 "바이너리 없이 돈다"는 계약이 이미 깨진 것이다.
     name: 단위 (바이너리 없이)
+    needs: preflight
+    if: ${{ needs.preflight.outputs.run_bindings == 'true' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -80,6 +170,8 @@ jobs:
   integration:
     # 실제 바이너리와 실제 문서로 왕복. 봉투 필드 이름이 바뀌면 여기서만 드러난다.
     name: 통합 (rhwp 빌드)
+    needs: preflight
+    if: ${{ needs.preflight.outputs.run_bindings == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -114,6 +206,8 @@ jobs:
   package:
     # exports 맵·files·듀얼 산출물이 실제로 만들어지는지. 설정 파일만 보고는 알 수 없다.
     name: 패키지 빌드
+    needs: preflight
+    if: ${{ needs.preflight.outputs.run_bindings == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -154,6 +248,8 @@ jobs:
     # 커밋된 생성 타입이 지금의 스키마와 같은지. 다르면 실패시킨다 — 낡은 타입은
     # "컴파일은 되는데 런타임에 필드가 없는" 가장 나쁜 형태로 드러난다.
     name: 생성 타입 최신 검사
+    needs: preflight
+    if: ${{ needs.preflight.outputs.run_bindings == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

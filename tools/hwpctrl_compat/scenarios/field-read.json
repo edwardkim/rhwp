@@ -1,0 +1,55 @@
+{
+  "id": "field-read",
+  "title": "필드 조회 — 이동한 뒤 커서가 어느 필드에 있나 (P0 자체 검증용)",
+  "ledger": [
+    "HwpCtrl.method.GetCurFieldName",
+    "HwpCtrl.method.MoveToField"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    [
+      "GetFieldList",
+      [
+        0,
+        0
+      ]
+    ],
+    [
+      "FieldExist",
+      [
+        "pt_nm"
+      ]
+    ],
+    [
+      "FieldExist",
+      [
+        "__없는필드__"
+      ]
+    ],
+    [
+      "GetFieldText",
+      [
+        "pt_nm"
+      ]
+    ],
+    [
+      "MoveToField",
+      [
+        "pt_nm",
+        true,
+        true,
+        false
+      ]
+    ],
+    [
+      "GetCurFieldName",
+      [
+        0
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ]
+  ]
+}

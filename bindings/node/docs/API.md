@@ -44,6 +44,8 @@ findBinary({ refresh: true });   // 캐시 무시하고 재탐색
 
 환경변수를 **줬는데 못 쓰면** 조용히 다음 경로로 넘어가지 않고 즉시 실패한다.
 탐색은 동기 함수다 — 경로 확인에 I/O 대기가 필요 없고, 모든 명령의 첫 줄에서 불린다.
+`RHWP_BIN=~/bin/rhwp`처럼 선행 `~`를 쓰면 macOS·Linux에서 홈 디렉터리로 확장한다.
+Windows에서는 `~\\bin\\rhwp.exe`도 같은 방식으로 쓸 수 있다.
 
 ### `clearBinaryCache(): void`
 
@@ -566,6 +568,11 @@ try {
 | `call(name, args)` | 도구 하나 호출 → `Envelope` |
 | `close()` | 서버 정리. **멱등** |
 
+생성 옵션은 `profile`, `cwd`, `timeoutMs`다. `timeoutMs`는 호출 하나당 제한 시간이며,
+기본은 `DEFAULT_SESSION_TIMEOUT_MS`(300000ms), `null`이면 무제한이다. stdio MCP에는
+진행 중인 도구 호출의 취소 계약이 없으므로 제한 시간을 넘으면 `RhwpTimeoutError`와 함께
+자식 서버를 종료한다. 해당 세션은 재사용하지 말고 새 `Session`을 만들어 재시도한다.
+
 프로토콜 취급 규약:
 
 | 상황 | 처리 | 왜 |
@@ -809,6 +816,7 @@ RhwpError
 ├── VerdictFailed          exit 3/4 — throwOnVerdict: true 일 때만
 ├── ProtocolError          stdout 이 계약 위반
 ├── SessionClosedError     닫힌 핸들 재사용
+├── EnvelopeKeyError       봉투에 없는 필드 조회
 └── RhwpTimeoutError       제한 시간 초과
 ```
 
@@ -881,6 +889,7 @@ batch 계열. **부분 실패를 예외로 올리지 않는다** — 성공 레�
 ### `runRaw(args, opts?): Promise<CompletedRun>`
 
 원문 결과. `CompletedRun` 은 `{ argv, exitCode, stdout, stderr }`.
+이미 파싱한 실패 봉투를 `envelopeHint`로 주면 `RhwpError.envelope`에 보존한다.
 
 ### `iterNdjson<T>(args, opts?): AsyncIterableIterator<T>`
 

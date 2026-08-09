@@ -267,3 +267,47 @@ def test_profile_is_passed_to_server(normal_server: Path) -> None:
         assert session is not None
     finally:
         session.close()
+
+
+def test_cwd_is_passed_to_subprocess(
+    normal_server: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """[트랙 G R61 D-14] Node 바인딩엔 세션 cwd 옵션이 있었지만 파이썬엔 없었다."""
+    import subprocess as subprocess_module
+
+    captured_kwargs: dict = {}
+    real_popen = subprocess_module.Popen
+
+    def fake_popen(argv, **kwargs):  # type: ignore[no-untyped-def]
+        captured_kwargs.update(kwargs)
+        return real_popen(argv, **kwargs)
+
+    monkeypatch.setattr(subprocess_module, "Popen", fake_popen)
+    work_dir = tmp_path / "work"
+    work_dir.mkdir()
+
+    session = Session(cwd=work_dir)
+    try:
+        assert captured_kwargs.get("cwd") == str(work_dir)
+    finally:
+        session.close()
+
+
+def test_cwd_defaults_to_none(normal_server: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """cwd 를 안 주면 부모 프로세스의 cwd 를 그대로 물려받아야 한다(기존 동작 불변)."""
+    import subprocess as subprocess_module
+
+    captured_kwargs: dict = {}
+    real_popen = subprocess_module.Popen
+
+    def fake_popen(argv, **kwargs):  # type: ignore[no-untyped-def]
+        captured_kwargs.update(kwargs)
+        return real_popen(argv, **kwargs)
+
+    monkeypatch.setattr(subprocess_module, "Popen", fake_popen)
+
+    session = Session()
+    try:
+        assert captured_kwargs.get("cwd") is None
+    finally:
+        session.close()

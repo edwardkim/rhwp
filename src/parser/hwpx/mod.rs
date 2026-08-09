@@ -20,7 +20,7 @@ pub mod utils;
 
 use std::collections::{HashMap, HashSet};
 
-use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
+use crate::model::bin_data::{BinData, BinDataContent, BinDataType, MAX_BIN_DATA_BYTES};
 use crate::model::document::{Document, FileHeader, HwpVersion, Section};
 
 fn is_internal_bin_data_href(href: &str) -> bool {
@@ -127,6 +127,27 @@ impl crate::model::bin_data::BinDataResolver for HwpxBinResolver {
                 None
             }
         }
+    }
+
+    /// [#2550] HWPX BinData의 길이·존재 질의는 ZIP 중앙 디렉터리의 비압축 크기로
+    /// 판정한다. 종전 trait 기본 구현은 `resolve()`를 호출해 256MB 초과 엔트리도
+    /// materialize했으므로 DocLang·외부 이미지 확인만으로 deflate bomb가 풀렸다.
+    ///
+    /// 내부 OLE은 size prefix 제거 뒤 실제 길이가 최대 4 byte 작을 수 있다. 빈 값
+    /// 판정과 상한 적용에는 원본 size가 충분하며, `load_limited()`가 실제 바이트를
+    /// 요청할 때 정확한 정규화 길이를 다시 확인한다.
+    fn resolved_len(&self, key: &str) -> usize {
+        let mut reader = match self.reader.lock() {
+            Ok(reader) => reader,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        reader
+            .file_size_limited(key, MAX_BIN_DATA_BYTES)
+            .unwrap_or(0)
+    }
+
+    fn resolved_is_empty(&self, key: &str) -> bool {
+        self.resolved_len(key) == 0
     }
 }
 

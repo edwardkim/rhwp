@@ -151,6 +151,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/clipboard.rs",
+        "copy_selection_in_cell_by_path_native",
+        Exempt::SessionState,
+        "경로 기반 복사 — 읽기 후 `self.clipboard` 에만 기록.",
+    ),
+    (
+        "commands/clipboard.rs",
         "copy_control_native",
         Exempt::SessionState,
         "복사 — `self.clipboard` / `self.paste_cascade_count` 만 변경.",
@@ -397,6 +403,81 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "replace_nth_native",
         Exempt::DelegatesTo("replace_matches_native"),
         "[#3395] k번째 매치 치환 — replace_all_native 와 같은 공통 헬퍼에 위임. 무효화는 헬퍼가 수행.",
+    ),
+    (
+        "queries/field_query.rs",
+        "insert_click_here_field_at_cursor",
+        Exempt::DelegatesTo("insert_click_here_field_at"),
+        "웹한글컨트롤 커서 좌표(list/para/pos)를 구역·문단·글자 번호로 옮겨 넘길 뿐이다. \
+         삽입과 무효화는 본문 경로(`insert_click_here_field_at`)와 셀 경로 \
+         (`insert_click_here_field_at_by_path`)가 한다.",
+    ),
+    (
+        "queries/hwpctrl_sets.rs",
+        "apply_char_format_at_cursor",
+        Exempt::DelegatesTo("apply_char_format_native"),
+        "좌표만 옮긴다(코드 유닛 → 글자 번호). 서식 적용과 무효화는 본문 경로 \
+         (`apply_char_format_native`)와 셀 경로(`apply_char_format_in_cell_by_path`)가 한다.",
+    ),
+    (
+        "queries/hwpctrl_sets.rs",
+        "split_para_at_cursor",
+        Exempt::DelegatesTo("split_paragraph_native"),
+        "좌표만 옮긴다(코드 유닛 → 글자 번호). 가르기와 무효화는 본문 경로 \
+         (`split_paragraph_native`)와 셀 경로(`split_paragraph_in_cell_by_path`)가 한다.",
+    ),
+    (
+        "commands/table_ops.rs",
+        "delete_table_control_native",
+        Exempt::DelegatesTo("delete_control_native_impl"),
+        "표만 받는지 검사하고 넘긴다. 지우기와 무효화는 `delete_control_native_impl` 이 한다.",
+    ),
+    (
+        "commands/table_ops.rs",
+        "delete_control_native",
+        Exempt::DelegatesTo("delete_control_native_impl"),
+        "갈래 검사 없이 넘길 뿐이다. 지우기와 무효화는 `delete_control_native_impl` 이 한다.",
+    ),
+    (
+        "queries/hwpctrl_sets.rs",
+        "delete_control_at",
+        Exempt::DelegatesTo("delete_control_native"),
+        "본문 문단 번호를 구역·문단으로 풀어 넘길 뿐이다. 지우기와 무효화는 아래가 한다.",
+    ),
+    (
+        "queries/hwpctrl_sets.rs",
+        "insert_text_at_cursor",
+        Exempt::DelegatesTo("insert_text_native"),
+        "좌표만 옮긴다(코드 유닛 → 글자 번호). 끼우기와 무효화는 본문 경로 \
+         (`insert_text_native`)와 셀 경로(`insert_text_in_cell_by_path`)가 한다.",
+    ),
+    (
+        "queries/hwpctrl_sets.rs",
+        "table_merge_at_cursor",
+        Exempt::DelegatesTo("merge_table_cells_native"),
+        "리스트 아이디를 구역·문단·컨트롤·행·열로 풀어 넘길 뿐이다. 합치는 것과 무효화는 \
+         `merge_table_cells_native` 가 한다.",
+    ),
+    (
+        "queries/hwpctrl_sets.rs",
+        "table_edit_at_cursor",
+        Exempt::DelegatesTo("insert_table_row_native"),
+        "리스트 아이디를 구역·문단·컨트롤·행·열로 풀어 넘길 뿐이다. 표를 고치는 것과 무효화는 \
+         `insert_table_row_native`·`delete_table_row_native` 같은 표 편집 API 가 한다.",
+    ),
+    (
+        "queries/hwpctrl_sets.rs",
+        "delete_at_cursor",
+        Exempt::DelegatesTo("delete_text_native"),
+        "좌표만 옮긴다(코드 유닛 → 글자 번호). 삭제와 무효화는 본문 경로 \
+         (`delete_text_native`)와 셀 경로(`delete_range_in_cell_by_path`)가 한다.",
+    ),
+    (
+        "queries/hwpctrl_sets.rs",
+        "apply_para_format_at_cursor",
+        Exempt::DelegatesTo("apply_para_format_native"),
+        "리스트 아이디를 구역·문단으로 풀어 넘길 뿐이다. 서식 적용과 무효화는 본문 경로 \
+         (`apply_para_format_native`)와 셀 경로(`apply_para_format_in_cell_native`)가 한다.",
     ),
     // ── 판정 보류 ──────────────────────────────────────────────────────────
     (

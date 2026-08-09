@@ -29,6 +29,7 @@ pub mod writer;
 use std::collections::HashSet;
 use std::fmt::Write as _;
 
+use crate::model::bin_data::MAX_BIN_DATA_BYTES;
 use crate::model::document::{Document, HWP5_ORIGIN_HWPX_MARKER_PATH};
 
 use super::SerializeError;
@@ -144,7 +145,20 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
         // (D0CF11E0)을 OLE 개체 크기(~3.75GB)로 오인하여 "메모리 부족" 오류가 발생한다.
         // HWP5 저장기(`cfb_writer`, #954)와 동형의 복원 — prefix 가 없던(비 CFB) 입력은
         // 매직 검사에서 걸러져 영향이 없다.
-        let bytes = data.data.load();
+        //
+        // [#2550] 압축 해제 상한. HWP5 저장과 달리 ZIP 엔트리는 해제된 바이트의
+        // 재압축이 필수라 원본 통과 fallback 이 없다. 상한 초과는 [#1917] 이 정한
+        // 로드 실패 의미(빈 엔트리 placeholder + pic 컨트롤 보존)를 그대로 따른다 —
+        // 여기서 오류로 중단하면 폭탄 문서 하나가 저장 자체를 막는다.
+        let bytes = data.data.load_limited(MAX_BIN_DATA_BYTES).unwrap_or_else(|| {
+            eprintln!(
+                "경고: BinData {}({}) 로드 실패 또는 압축 해제 상한 {}MB 초과 — 빈 엔트리로 대체 (#2550)",
+                entry.bin_data_id,
+                entry.href,
+                MAX_BIN_DATA_BYTES / (1024 * 1024)
+            );
+            Vec::new()
+        });
         const CFB_MAGIC: [u8; 8] = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
         let payload: Vec<u8> = if data.extension.eq_ignore_ascii_case("ole")
             && bytes.len() >= 8
@@ -176,7 +190,21 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
                     entry.bin_data_id
                 ))
             })?;
-        z.write_deflated(&entry.href, &data.data.load())?;
+        // [#2550] 차트 파트도 같은 상한 — bin_data_content 를 공유하므로 폭탄 표면이다.
+        // 상한 초과·로드 실패는 위 BinData 엔트리와 같은 빈 파트 placeholder 다.
+        let chart_bytes = data
+            .data
+            .load_limited(MAX_BIN_DATA_BYTES)
+            .unwrap_or_else(|| {
+                eprintln!(
+                    "경고: 차트 BinData {}({}) 로드 실패 또는 압축 해제 상한 {}MB 초과 — 빈 파트로 대체 (#2550)",
+                    entry.bin_data_id,
+                    entry.href,
+                    MAX_BIN_DATA_BYTES / (1024 * 1024)
+                );
+                Vec::new()
+            });
+        z.write_deflated(&entry.href, &chart_bytes)?;
     }
 
     // 9. Contents/content.hpf — 항상 동적 경로 + BinData 매니페스트 엔트리

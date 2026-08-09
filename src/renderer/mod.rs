@@ -1101,6 +1101,47 @@ pub(crate) fn text_anchor_square_table_strip(
     (strip_cs > 0 && strip_sw > 0).then_some((strip_cs, strip_sw))
 }
 
+/// 빈 호스트 문단의 우측 Square 표가 남긴 좌측 본문 띠를 복원한다.
+///
+/// 한글은 표를 실제 수평 오프셋에 두면서 호스트 문단에는 전폭 LINE_SEG만 저장할 수
+/// 있다. 이 경우 다음 문단의 `cs=0, sw=horizontal_offset`가 표 왼쪽 띠를 직접
+/// 가리킨다. 호스트에 가시 텍스트가 있으면 기존 `text_anchor_square_table_strip`이
+/// 담당하므로, 이 함수는 빈 호스트와 우측으로 밀린 표에만 한정한다.
+pub(crate) fn empty_host_square_table_left_strip(
+    para: &crate::model::paragraph::Paragraph,
+    column_width_hu: i32,
+) -> Option<(i32, i32)> {
+    let first = para.line_segs.first()?;
+    if first.column_start != 0
+        || (first.segment_width as i32 - column_width_hu).abs() >= 3000
+        || para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+    {
+        return None;
+    }
+
+    let left_width = para.controls.iter().find_map(|control| match control {
+        crate::model::control::Control::Table(table)
+            if !table.common.treat_as_char
+                && matches!(
+                    table.common.text_wrap,
+                    crate::model::shape::TextWrap::Square
+                )
+                && matches!(
+                    table.common.horz_align,
+                    crate::model::shape::HorzAlign::Left
+                ) =>
+        {
+            Some(table.common.horizontal_offset as i32)
+        }
+        _ => None,
+    })?;
+
+    (left_width > 0 && left_width < column_width_hu).then_some((0, left_width))
+}
+
 /// [#3314] 요청 face 의 굵기/폭 접미사를 벗긴 base family.
 ///
 /// `"Noto Serif KR Black"` → `Some("Noto Serif KR")`, 접미사가 없으면 `None`.
@@ -1146,13 +1187,41 @@ pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
     (tokens.len() < original_len).then(|| tokens.join(" "))
 }
 
-/// [#3314] 렌더용 폴백 체인 문자열: `요청 face → (base family) → generic 체인`.
+/// 현재 설치된 글꼴로 보완 가능한 legacy face 의 대체명.
+///
+/// HWPX 는 `한양중고딕`(또는 `HY중고딕`)을 계속 요청하지만, macOS 개발 환경에
+/// 원본 `HYGothic-Medium`은 없다. 함께 설치된 `HY견고딕`은 유니코드는 그리지만
+/// 기준 PDF보다 지나치게 굵고 넓다. 반면 `MALGUN.TTF`의 `Malgun Gothic`은 유니코드
+/// 한글과 중간 굵기/폭을 안정적으로 제공해 HWP 2024 PDF와 가장 가깝다.
+/// 원 face 는 첫 번째로 보존하므로 원본이 설치된 환경의 출력은 바뀌지 않는다.
+fn installed_render_font_alias(font_family: &str) -> Option<&'static str> {
+    match font_family {
+        "한양중고딕" | "HY중고딕" => Some("Malgun Gothic"),
+        _ => None,
+    }
+}
+
+/// SVG/CSS `font-family`에서 쓸 단일 인용 family 이름.
+///
+/// font name 자체에 작은따옴표나 역슬래시가 들어갈 수 있으므로 단순히 `'{}'`로
+/// 감싸면 `Tom's Handwriting` 같은 이름이 중간에서 끝나 잘못된 CSS가 된다.
+fn css_single_quoted_font_family(font_family: &str) -> String {
+    let escaped = font_family.replace('\\', "\\\\").replace('\'', "\\'");
+    format!("'{escaped}'")
+}
+
+/// [#3314] 렌더용 폴백 체인 문자열: `요청 face → (한컴 대체 face) → (base family) → generic 체인`.
 pub fn render_font_family_chain(font_family: &str) -> String {
     let fb = generic_fallback(font_family);
-    match base_family_without_weight_suffix(font_family) {
-        Some(base) => format!("{},'{}',{}", font_family, base, fb),
-        None => format!("{},{}", font_family, fb),
+    let mut families = vec![css_single_quoted_font_family(font_family)];
+    if let Some(alias) = installed_render_font_alias(font_family) {
+        families.push(css_single_quoted_font_family(alias));
     }
+    if let Some(base) = base_family_without_weight_suffix(font_family) {
+        families.push(css_single_quoted_font_family(&base));
+    }
+    families.push(fb.to_string());
+    families.join(",")
 }
 
 /// Canvas 2D 렌더용 인용 font-family 체인.
@@ -1166,10 +1235,15 @@ pub fn canvas_font_family_chain(font_family: &str) -> String {
     }
 
     let fallback = generic_fallback(font_family);
-    match base_family_without_weight_suffix(font_family) {
-        Some(base) => format!("\"{}\", \"{}\", {}", font_family, base, fallback),
-        None => format!("\"{}\", {}", font_family, fallback),
+    let mut families = vec![format!("\"{}\"", font_family)];
+    if let Some(alias) = installed_render_font_alias(font_family) {
+        families.push(format!("\"{}\"", alias));
     }
+    if let Some(base) = base_family_without_weight_suffix(font_family) {
+        families.push(format!("\"{}\"", base));
+    }
+    families.push(fallback.to_string());
+    families.join(", ")
 }
 
 /// CSS generic fallback 반환 (serif 또는 sans-serif)
@@ -1252,6 +1326,38 @@ pub(crate) fn contains_old_hangul_jamo(text: &str) -> bool {
             0x1100..=0x11FF | 0xA960..=0xA97F | 0xD7B0..=0xD7FF
         )
     })
+}
+
+/// 한컴 Supplementary PUA-A의 사각 안 숫자 값을 반환한다.
+///
+/// IR은 원문 PUA를 보존하고, 렌더러는 이 값을 사용해 backend/font와 무관한 사각형+숫자를
+/// 합성한다.
+pub(crate) fn boxed_pua_number(ch: char) -> Option<u32> {
+    let code_point = ch as u32;
+    (0xF02B1..=0xF02C4)
+        .contains(&code_point)
+        .then(|| code_point - 0xF02B0)
+}
+
+/// 실제 `CharOverlap`에 저장된 한컴 사각 안 숫자의 렌더 의미를 반환한다 (#4158).
+///
+/// 이 PUA 범위는 문자 자체가 사각형 의미를 포함하므로 raw `border_type=0`이어도 사각형을
+/// 그린다. 작성된 명시적 테두리는 보존한다. 다중 문자 겹침은 별도의 자리별 PUA 디코더가
+/// 담당하므로 여기서는 의도적으로 제외한다.
+pub(crate) fn boxed_pua_char_overlap_semantics(
+    chars: &[char],
+    raw_border_type: u8,
+) -> Option<(u32, u8)> {
+    let [ch] = chars else {
+        return None;
+    };
+    let number = boxed_pua_number(*ch)?;
+    let effective_border = if raw_border_type == 0 {
+        3
+    } else {
+        raw_border_type
+    };
+    Some((number, effective_border))
 }
 
 // ============================================================
@@ -2013,15 +2119,35 @@ mod tests {
         assert_eq!(base_family_without_weight_suffix("Light"), None);
         // 렌더 체인: 요청 face → base → generic
         let chain = render_font_family_chain("Noto Serif KR Black");
-        assert!(chain.starts_with("Noto Serif KR Black,'Noto Serif KR',"));
+        assert!(chain.starts_with("'Noto Serif KR Black','Noto Serif KR',"));
         let plain = render_font_family_chain("맑은 고딕");
-        assert!(plain.starts_with("맑은 고딕,'Malgun Gothic'"));
+        assert!(plain.starts_with("'맑은 고딕','Malgun Gothic'"));
+        assert!(render_font_family_chain("Tom's Handwriting")
+            .starts_with("'Tom\\'s Handwriting','Malgun Gothic'"));
+        assert!(
+            render_font_family_chain(r"Legacy\Face").starts_with(r"'Legacy\\Face','Malgun Gothic'")
+        );
+
+        assert_eq!(
+            render_font_family_chain("한양중고딕"),
+            format!(
+                "'한양중고딕','Malgun Gothic',{}",
+                generic_fallback("한양중고딕")
+            )
+        );
 
         assert_eq!(
             canvas_font_family_chain("Noto Serif KR Black"),
             format!(
                 "\"Noto Serif KR Black\", \"Noto Serif KR\", {}",
                 generic_fallback("Noto Serif KR Black")
+            )
+        );
+        assert_eq!(
+            canvas_font_family_chain("HY중고딕"),
+            format!(
+                "\"HY중고딕\", \"Malgun Gothic\", {}",
+                generic_fallback("HY중고딕")
             )
         );
         assert_eq!(
@@ -2074,6 +2200,37 @@ mod tests {
         assert_eq!(generic_fallback("Noto Sans KR"), sans);
         // 빈 문자열
         assert_eq!(generic_fallback(""), sans);
+    }
+
+    #[test]
+    fn boxed_pua_number_covers_hancom_square_digits() {
+        assert_eq!(boxed_pua_number('\u{F02B1}'), Some(1));
+        assert_eq!(boxed_pua_number('\u{F02BA}'), Some(10));
+        assert_eq!(boxed_pua_number('\u{F02C4}'), Some(20));
+        assert_eq!(boxed_pua_number('\u{F02B0}'), None);
+        assert_eq!(boxed_pua_number('\u{F02C5}'), None);
+        assert_eq!(boxed_pua_number('1'), None);
+    }
+
+    #[test]
+    fn boxed_pua_char_overlap_promotes_only_implicit_square_border() {
+        assert_eq!(
+            boxed_pua_char_overlap_semantics(&['\u{F02B1}'], 0),
+            Some((1, 3))
+        );
+        assert_eq!(
+            boxed_pua_char_overlap_semantics(&['\u{F02C4}'], 0),
+            Some((20, 3))
+        );
+        assert_eq!(
+            boxed_pua_char_overlap_semantics(&['\u{F02B1}'], 1),
+            Some((1, 1))
+        );
+        assert_eq!(
+            boxed_pua_char_overlap_semantics(&['\u{F02B1}', '\u{F02B2}'], 0),
+            None
+        );
+        assert_eq!(boxed_pua_char_overlap_semantics(&['1'], 0), None);
     }
 
     #[test]

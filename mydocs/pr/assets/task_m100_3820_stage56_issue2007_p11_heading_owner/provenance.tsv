@@ -1,0 +1,6 @@
+role	path	grade
+source	/Users/tsjang/rhwp/samples/basic/issue2007_nested_cell_pagination_42065.hwp	원본 입력
+reference_pdf	/Users/tsjang/rhwp/pdf/basic/issue2007_nested_cell_pagination_42065-2020.pdf	Hancom Office 2020 PDF oracle
+rhwp_binary	/Users/tsjang/rhwp/target/issue2007-cut-analysis-agent/release-test/rhwp	SHA256 620286cf42fb88f56988846c69c541590dbabdf51b7c02ea9c5166bf6a6af28d
+visual_sweep	/Users/tsjang/rhwp/scripts/visual_sweep.py	144dpi, pages 11-13
+fidelity_compare	/Users/tsjang/rhwp/tools/fidelity_compare/fidelity_compare.py	pixel-and-text + layout-ledger, pages 11-13

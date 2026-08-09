@@ -1,0 +1,48 @@
+{
+  "id": "p2-cursor-lists",
+  "title": "P2 커서 리스트 좌표 — 열자마자 자리·필드 이동·리스트 지정·상위 이동",
+  "note": "누름틀의 문단 내 pos 는 여기서 고정하지 않는다 — char_offsets 결함(계획서 4.6.1)이 문단마다 다르게 센다. 이동이 옳은지는 GetCurFieldName 으로 읽어 확인한다.",
+  "ledger": [
+    "HwpCtrl.method.GetPos",
+    "HwpCtrl.method.SetPos",
+    "HwpCtrl.method.MovePos",
+    "HwpCtrl.method.MoveToField",
+    "HwpCtrl.method.GetCurFieldName"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["GetPos", []],
+    ["GetCurFieldName", [0]],
+
+    ["MovePos", [2, 0, 0]],
+    ["GetPos", []],
+    ["MovePos", [3, 0, 0]],
+    ["GetPos", []],
+    ["MovePos", [26, 0, 0]],
+    ["GetPos", []],
+
+    ["MoveToField", ["pt_nm", true, true, false]],
+    ["GetPos", []],
+    ["GetCurFieldName", [0]],
+    ["MoveToField", ["cutoff_price", true, true, false]],
+    ["GetPos", []],
+    ["GetCurFieldName", [0]],
+    ["MoveToField", ["partial_patient_responsibility_price_31", true, true, false]],
+    ["GetCurFieldName", [0]],
+    ["MoveToField", ["med_str_dt", true, true, false]],
+    ["GetCurFieldName", [0]],
+    ["MoveToField", ["__없는필드__", true, true, false]],
+
+    ["SetPos", [2, 0, 0]],
+    ["GetCurFieldName", [0]],
+    ["SetPos", [299, 0, 0]],
+    ["GetPos", []],
+    ["GetCurFieldName", [0]],
+    ["MovePos", [24, 0, 0]],
+    ["GetPos", []],
+    ["SetPos", [400, 0, 0]],
+    ["GetPos", []],
+    ["MovePos", [0, 9, 0]],
+    ["GetPos", []]
+  ]
+}

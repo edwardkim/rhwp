@@ -519,6 +519,8 @@ pub(crate) fn parse_para_shape_mods(json: &str) -> crate::model::style::ParaShap
             "center" => Alignment::Center,
             "justify" => Alignment::Justify,
             "distribute" => Alignment::Distribute,
+            // 나눔 정렬 — 한글 `ParagraphShapeAlignDivision`(AlignType 5).
+            "split" | "division" => Alignment::Split,
             _ => Alignment::Justify,
         });
     }

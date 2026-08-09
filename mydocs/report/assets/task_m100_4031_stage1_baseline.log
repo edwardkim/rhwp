@@ -1,0 +1,246 @@
+test issue_4031_profile_cold_enter_split ... RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=1135.149 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=1152.706 invalidate_ms=0.000 normalize_ms=0.054 setup_ms=0.150 measure_ms=16.235 typeset_ms=1136.108 postprocess_ms=0.158 cleanup_ms=0.000 other_ms=0.000
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=1114.503 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=1129.953 invalidate_ms=0.000 normalize_ms=0.027 setup_ms=0.001 measure_ms=15.117 typeset_ms=1114.647 postprocess_ms=0.160 cleanup_ms=0.000 other_ms=0.000
+RHWP_4031_COLD_ENTER run=1 format=hwp pos=top stroke=1 split_ms=1130.165 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=1109.254 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=1124.344 invalidate_ms=0.000 normalize_ms=0.027 setup_ms=0.001 measure_ms=14.768 typeset_ms=1109.392 postprocess_ms=0.155 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=1 format=hwp pos=top stroke=2 split_ms=1124.480 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=1157.190 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=1172.493 invalidate_ms=0.000 normalize_ms=0.029 setup_ms=0.001 measure_ms=14.987 typeset_ms=1157.327 postprocess_ms=0.149 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=1 format=hwp pos=top stroke=3 split_ms=1172.602 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=1176.758 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=1192.233 invalidate_ms=0.000 normalize_ms=0.047 setup_ms=0.001 measure_ms=15.083 typeset_ms=1176.891 postprocess_ms=0.210 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=1 format=hwp pos=bottom stroke=1 split_ms=1192.323 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=1513.882 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=1529.575 invalidate_ms=0.000 normalize_ms=0.029 setup_ms=0.001 measure_ms=15.218 typeset_ms=1514.032 postprocess_ms=0.295 cleanup_ms=0.000 other_ms=0.000
+RHWP_4031_COLD_ENTER run=1 format=hwp pos=bottom stroke=2 split_ms=1529.676 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=2206.500 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=2229.945 invalidate_ms=0.000 normalize_ms=0.064 setup_ms=0.001 measure_ms=22.739 typeset_ms=2206.758 postprocess_ms=0.381 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=1 format=hwp pos=bottom stroke=3 split_ms=2230.145 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=2512.469 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=2546.318 invalidate_ms=0.000 normalize_ms=0.032 setup_ms=0.001 measure_ms=33.461 typeset_ms=2512.653 postprocess_ms=0.170 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=2211.009 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=2238.053 invalidate_ms=0.000 normalize_ms=0.033 setup_ms=0.001 measure_ms=26.541 typeset_ms=2211.165 postprocess_ms=0.312 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=1 format=hwpx pos=top stroke=1 split_ms=2238.300 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=2364.477 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=2394.326 invalidate_ms=0.000 normalize_ms=0.072 setup_ms=0.001 measure_ms=29.377 typeset_ms=2364.682 postprocess_ms=0.193 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=1 format=hwpx pos=top stroke=2 split_ms=2394.499 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=2389.590 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=2415.668 invalidate_ms=0.000 normalize_ms=0.035 setup_ms=0.001 measure_ms=25.296 typeset_ms=2389.783 postprocess_ms=0.552 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=1 format=hwpx pos=top stroke=3 split_ms=2415.832 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3087.792 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3132.592 invalidate_ms=0.000 normalize_ms=0.046 setup_ms=0.001 measure_ms=44.111 typeset_ms=3088.064 postprocess_ms=0.368 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=1 format=hwpx pos=bottom stroke=1 split_ms=3132.864 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3222.037 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3263.597 invalidate_ms=0.000 normalize_ms=0.048 setup_ms=0.001 measure_ms=40.974 typeset_ms=3222.277 postprocess_ms=0.294 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=1 format=hwpx pos=bottom stroke=2 split_ms=3263.848 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=2830.295 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=2871.095 invalidate_ms=0.000 normalize_ms=0.053 setup_ms=0.001 measure_ms=40.058 typeset_ms=2830.569 postprocess_ms=0.411 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=1 format=hwpx pos=bottom stroke=3 split_ms=2871.452 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3217.675 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3253.404 invalidate_ms=0.000 normalize_ms=0.039 setup_ms=0.001 measure_ms=35.073 typeset_ms=3217.893 postprocess_ms=0.396 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3091.344 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3135.035 invalidate_ms=0.000 normalize_ms=0.053 setup_ms=0.001 measure_ms=43.074 typeset_ms=3091.613 postprocess_ms=0.293 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwp pos=top stroke=1 split_ms=3135.697 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=2955.441 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=2987.933 invalidate_ms=0.000 normalize_ms=0.046 setup_ms=0.001 measure_ms=31.837 typeset_ms=2955.666 postprocess_ms=0.382 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwp pos=top stroke=2 split_ms=2988.143 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3385.913 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3425.929 invalidate_ms=0.000 normalize_ms=0.088 setup_ms=0.001 measure_ms=39.368 typeset_ms=3386.178 postprocess_ms=0.292 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwp pos=top stroke=3 split_ms=3426.215 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=4508.896 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=4553.841 invalidate_ms=0.000 normalize_ms=0.045 setup_ms=0.001 measure_ms=44.171 typeset_ms=4509.220 postprocess_ms=0.403 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwp pos=bottom stroke=1 split_ms=4553.996 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3629.987 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3679.158 invalidate_ms=0.000 normalize_ms=0.145 setup_ms=0.001 measure_ms=48.284 typeset_ms=3630.267 postprocess_ms=0.459 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwp pos=bottom stroke=2 split_ms=3679.854 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3377.585 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3421.682 invalidate_ms=0.000 normalize_ms=0.089 setup_ms=0.001 measure_ms=43.295 typeset_ms=3377.837 postprocess_ms=0.458 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwp pos=bottom stroke=3 split_ms=3421.907 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3154.384 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3193.042 invalidate_ms=0.000 normalize_ms=0.045 setup_ms=0.001 measure_ms=38.012 typeset_ms=3154.644 postprocess_ms=0.338 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3346.045 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3388.341 invalidate_ms=0.000 normalize_ms=0.045 setup_ms=0.001 measure_ms=41.659 typeset_ms=3346.311 postprocess_ms=0.323 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwpx pos=top stroke=1 split_ms=3388.866 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3563.865 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3607.000 invalidate_ms=0.000 normalize_ms=0.045 setup_ms=0.001 measure_ms=42.478 typeset_ms=3564.142 postprocess_ms=0.333 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwpx pos=top stroke=2 split_ms=3607.183 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3543.100 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3585.960 invalidate_ms=0.001 normalize_ms=0.054 setup_ms=0.001 measure_ms=42.172 typeset_ms=3543.367 postprocess_ms=0.364 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwpx pos=top stroke=3 split_ms=3586.267 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3632.780 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3677.789 invalidate_ms=0.000 normalize_ms=0.084 setup_ms=0.001 measure_ms=44.040 typeset_ms=3633.139 postprocess_ms=0.523 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwpx pos=bottom stroke=1 split_ms=3677.985 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3548.271 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3593.051 invalidate_ms=0.000 normalize_ms=0.047 setup_ms=0.001 measure_ms=44.150 typeset_ms=3548.552 postprocess_ms=0.300 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwpx pos=bottom stroke=2 split_ms=3593.266 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3419.122 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3462.334 invalidate_ms=0.000 normalize_ms=0.048 setup_ms=0.001 measure_ms=42.530 typeset_ms=3419.372 postprocess_ms=0.382 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=2 format=hwpx pos=bottom stroke=3 split_ms=3462.565 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3590.355 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3634.349 invalidate_ms=0.000 normalize_ms=0.074 setup_ms=0.002 measure_ms=43.106 typeset_ms=3590.612 postprocess_ms=0.554 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3656.751 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3712.761 invalidate_ms=0.000 normalize_ms=0.046 setup_ms=0.001 measure_ms=55.309 typeset_ms=3657.035 postprocess_ms=0.369 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwp pos=top stroke=1 split_ms=3713.325 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3472.448 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3516.820 invalidate_ms=0.000 normalize_ms=0.125 setup_ms=0.001 measure_ms=43.626 typeset_ms=3472.692 postprocess_ms=0.374 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwp pos=top stroke=2 split_ms=3517.066 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3430.464 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3471.363 invalidate_ms=0.000 normalize_ms=0.158 setup_ms=0.001 measure_ms=39.939 typeset_ms=3430.717 postprocess_ms=0.546 cleanup_ms=0.001 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwp pos=top stroke=3 split_ms=3471.620 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3373.806 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3422.260 invalidate_ms=0.001 normalize_ms=0.055 setup_ms=0.001 measure_ms=47.645 typeset_ms=3374.146 postprocess_ms=0.412 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwp pos=bottom stroke=1 split_ms=3422.475 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3305.783 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3344.789 invalidate_ms=0.000 normalize_ms=0.058 setup_ms=0.001 measure_ms=38.317 typeset_ms=3306.020 postprocess_ms=0.392 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwp pos=bottom stroke=2 split_ms=3344.984 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3304.301 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3341.802 invalidate_ms=0.000 normalize_ms=0.046 setup_ms=0.001 measure_ms=36.940 typeset_ms=3304.525 postprocess_ms=0.288 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwp pos=bottom stroke=3 split_ms=3342.056 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3321.755 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3362.560 invalidate_ms=0.000 normalize_ms=0.050 setup_ms=0.001 measure_ms=40.055 typeset_ms=3322.062 postprocess_ms=0.390 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3387.796 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3430.544 invalidate_ms=0.000 normalize_ms=0.045 setup_ms=0.001 measure_ms=41.975 typeset_ms=3388.126 postprocess_ms=0.396 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwpx pos=top stroke=1 split_ms=3431.125 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3331.908 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3372.911 invalidate_ms=0.000 normalize_ms=0.048 setup_ms=0.001 measure_ms=40.308 typeset_ms=3332.162 postprocess_ms=0.391 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwpx pos=top stroke=2 split_ms=3373.184 pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3391.193 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3436.056 invalidate_ms=0.001 normalize_ms=0.047 setup_ms=0.001 measure_ms=44.175 typeset_ms=3391.524 postprocess_ms=0.308 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwpx pos=top stroke=3 split_ms=3436.255 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3307.573 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3356.569 invalidate_ms=0.000 normalize_ms=0.047 setup_ms=0.001 measure_ms=48.041 typeset_ms=3307.990 postprocess_ms=0.489 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwpx pos=bottom stroke=1 split_ms=3356.743 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3482.419 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3523.462 invalidate_ms=0.001 normalize_ms=0.050 setup_ms=0.001 measure_ms=40.138 typeset_ms=3482.735 postprocess_ms=0.536 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwpx pos=bottom stroke=2 split_ms=3523.660 pages=116
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=116 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3410.816 pages_added=115
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=116 total_ms=3454.843 invalidate_ms=0.000 normalize_ms=0.051 setup_ms=0.001 measure_ms=43.439 typeset_ms=3411.050 postprocess_ms=0.301 cleanup_ms=0.000 other_ms=0.001
+RHWP_4031_COLD_ENTER run=3 format=hwpx pos=bottom stroke=3 split_ms=3455.049 pages=116
+test issue_4031_profile_pending_enter_flush_vs_skip ... RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3323.068 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3364.132 invalidate_ms=0.000 normalize_ms=0.048 setup_ms=0.001 measure_ms=40.278 typeset_ms=3323.329 postprocess_ms=0.474 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3306.317 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3364.082 invalidate_ms=0.000 normalize_ms=0.048 setup_ms=0.001 measure_ms=57.010 typeset_ms=3306.653 postprocess_ms=0.368 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3417.623 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3463.183 invalidate_ms=0.000 normalize_ms=0.045 setup_ms=0.001 measure_ms=44.802 typeset_ms=3418.039 postprocess_ms=0.295 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3282.990 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3326.130 invalidate_ms=0.000 normalize_ms=0.050 setup_ms=0.001 measure_ms=42.465 typeset_ms=3283.255 postprocess_ms=0.359 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=0 pages=115 total_ms=0.057 invalidate_ms=0.000 normalize_ms=0.048 setup_ms=0.001 measure_ms=0.000 typeset_ms=0.000 postprocess_ms=0.000 cleanup_ms=0.000 other_ms=0.007
+RHWP_4031_PENDING_ENTER run=1 format=hwp flush_ms=3423.262 split_after_flush_ms=3364.793 skip_flush_split_ms=3326.781 post_flush_ms=0.119 post_flush_state=fallback pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3468.177 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3509.643 invalidate_ms=0.000 normalize_ms=0.044 setup_ms=0.001 measure_ms=40.731 typeset_ms=3468.455 postprocess_ms=0.410 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=4087.947 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=4125.660 invalidate_ms=0.000 normalize_ms=0.044 setup_ms=0.001 measure_ms=36.991 typeset_ms=4088.223 postprocess_ms=0.399 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3572.172 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3621.881 invalidate_ms=0.000 normalize_ms=0.047 setup_ms=0.001 measure_ms=49.092 typeset_ms=3572.427 postprocess_ms=0.310 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3466.067 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3513.502 invalidate_ms=0.000 normalize_ms=0.046 setup_ms=0.001 measure_ms=46.689 typeset_ms=3466.357 postprocess_ms=0.407 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=0 pages=115 total_ms=0.053 invalidate_ms=0.000 normalize_ms=0.046 setup_ms=0.001 measure_ms=0.000 typeset_ms=0.000 postprocess_ms=0.000 cleanup_ms=0.000 other_ms=0.006
+RHWP_4031_PENDING_ENTER run=1 format=hwpx flush_ms=4467.391 split_after_flush_ms=4126.162 skip_flush_split_ms=3514.203 post_flush_ms=0.088 post_flush_state=fallback pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3624.103 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3667.648 invalidate_ms=0.001 normalize_ms=0.046 setup_ms=0.001 measure_ms=42.889 typeset_ms=3624.344 postprocess_ms=0.366 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3789.095 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3831.648 invalidate_ms=0.000 normalize_ms=0.046 setup_ms=0.001 measure_ms=41.888 typeset_ms=3789.382 postprocess_ms=0.330 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3532.381 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3575.061 invalidate_ms=0.003 normalize_ms=0.048 setup_ms=0.001 measure_ms=41.959 typeset_ms=3532.653 postprocess_ms=0.395 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3781.462 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3829.803 invalidate_ms=0.000 normalize_ms=0.045 setup_ms=0.001 measure_ms=47.351 typeset_ms=3781.833 postprocess_ms=0.571 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=0 pages=115 total_ms=0.077 invalidate_ms=0.000 normalize_ms=0.062 setup_ms=0.001 measure_ms=0.000 typeset_ms=0.000 postprocess_ms=0.000 cleanup_ms=0.000 other_ms=0.012
+RHWP_4031_PENDING_ENTER run=2 format=hwp flush_ms=3576.308 split_after_flush_ms=3832.298 skip_flush_split_ms=3830.315 post_flush_ms=0.116 post_flush_state=fallback pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3570.271 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3614.633 invalidate_ms=0.000 normalize_ms=0.040 setup_ms=0.001 measure_ms=43.744 typeset_ms=3570.533 postprocess_ms=0.313 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3454.651 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3501.414 invalidate_ms=0.000 normalize_ms=0.044 setup_ms=0.001 measure_ms=45.969 typeset_ms=3454.961 postprocess_ms=0.438 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3710.193 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3754.328 invalidate_ms=0.000 normalize_ms=0.040 setup_ms=0.001 measure_ms=43.400 typeset_ms=3710.434 postprocess_ms=0.451 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3431.008 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3476.681 invalidate_ms=0.000 normalize_ms=0.085 setup_ms=0.001 measure_ms=44.931 typeset_ms=3431.264 postprocess_ms=0.398 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=0 pages=115 total_ms=0.077 invalidate_ms=0.000 normalize_ms=0.067 setup_ms=0.001 measure_ms=0.000 typeset_ms=0.000 postprocess_ms=0.000 cleanup_ms=0.000 other_ms=0.008
+RHWP_4031_PENDING_ENTER run=2 format=hwpx flush_ms=3709.714 split_after_flush_ms=3502.048 skip_flush_split_ms=3477.336 post_flush_ms=0.160 post_flush_state=fallback pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3683.786 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3727.717 invalidate_ms=0.000 normalize_ms=0.065 setup_ms=0.001 measure_ms=42.969 typeset_ms=3684.263 postprocess_ms=0.418 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3606.567 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3649.177 invalidate_ms=0.000 normalize_ms=0.076 setup_ms=0.001 measure_ms=41.786 typeset_ms=3606.856 postprocess_ms=0.456 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3808.164 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3857.117 invalidate_ms=0.000 normalize_ms=0.089 setup_ms=0.001 measure_ms=48.306 typeset_ms=3808.400 postprocess_ms=0.319 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3789.438 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3837.077 invalidate_ms=0.000 normalize_ms=0.051 setup_ms=0.001 measure_ms=46.763 typeset_ms=3789.796 postprocess_ms=0.465 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=0 pages=115 total_ms=0.081 invalidate_ms=0.000 normalize_ms=0.066 setup_ms=0.001 measure_ms=0.000 typeset_ms=0.000 postprocess_ms=0.000 cleanup_ms=0.000 other_ms=0.014
+RHWP_4031_PENDING_ENTER run=3 format=hwp flush_ms=3530.568 split_after_flush_ms=3649.802 skip_flush_split_ms=3837.687 post_flush_ms=0.123 post_flush_state=fallback pages=115
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3876.625 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3925.103 invalidate_ms=0.000 normalize_ms=0.089 setup_ms=0.002 measure_ms=46.645 typeset_ms=3876.936 postprocess_ms=1.429 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3751.432 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3795.055 invalidate_ms=0.000 normalize_ms=0.090 setup_ms=0.001 measure_ms=42.765 typeset_ms=3751.742 postprocess_ms=0.455 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3388.771 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=initial sections=1 dirty_sections=1 pages=115 total_ms=3427.509 invalidate_ms=0.000 normalize_ms=0.058 setup_ms=0.001 measure_ms=37.920 typeset_ms=3389.139 postprocess_ms=0.390 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_CONTINUATION_CURSOR section=0 para=0 control=2 fragments=115 steps=1 budget=18446744073709551615 final_row=3 rows=3
+RHWP_2424_BLOCK_TABLE_PROFILE section=0 para=0 control=2 rows=3 elapsed_ms=3398.924 pages_added=114
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=1 pages=115 total_ms=3452.009 invalidate_ms=0.001 normalize_ms=0.074 setup_ms=0.001 measure_ms=51.839 typeset_ms=3399.732 postprocess_ms=0.360 cleanup_ms=0.000 other_ms=0.001
+RHWP_2424_PAGINATION_PROFILE mode=incremental sections=1 dirty_sections=0 pages=115 total_ms=0.077 invalidate_ms=0.000 normalize_ms=0.066 setup_ms=0.001 measure_ms=0.000 typeset_ms=0.000 postprocess_ms=0.000 cleanup_ms=0.000 other_ms=0.010
+RHWP_4031_PENDING_ENTER run=3 format=hwpx flush_ms=3858.122 split_after_flush_ms=3795.592 skip_flush_split_ms=3452.857 post_flush_ms=0.106 post_flush_state=fallback pages=115

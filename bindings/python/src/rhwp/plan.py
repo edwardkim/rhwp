@@ -190,7 +190,14 @@ class Plan:
 
         위반이 있으면 예외가 아니라 ``result.violations`` 로 돌려준다. 계획을
         고쳐서 다시 검사하는 것이 정상 흐름이기 때문이다.
+
+        연결된 ``rhwp`` 바이너리가 계획 ``--dry-run`` 을 지원하는지 실행 전에
+        확인한다(:func:`_assert_dry_run_supported`). 확인 없이 넘기면, 옛
+        바이너리가 ``dryRun`` 필드를 무시하고 **진짜로 실행**해도 호출자는
+        "검사만 했다"고 믿게 된다 — 검사인 줄 알고 문서가 조용히 편집되는
+        사고를 막는 게이트다(Node 바인딩 ``assertDryRunSupported`` 와 동일 계약).
         """
+        _assert_dry_run_supported(timeout=timeout)
         return _execute(self.to_dict(dry_run=True), timeout=timeout)
 
     def run(self, *, timeout: Optional[float] = DEFAULT_TIMEOUT) -> PlanResult:
@@ -200,6 +207,49 @@ class Plan:
     def __repr__(self) -> str:  # pragma: no cover - 표현만
         actions = ", ".join(s["action"] for s in self._steps)
         return f"Plan({self._input} → {self._output}: [{actions}])"
+
+
+# [트랙 G R61 D-4] 세션·프로세스 생애 동안 한 번만 물으면 되는 정적 사실이라
+# 모듈 전역 캐시로 둔다 — Node 바인딩의 `dryRunSupport` 모듈 캐시와 동일 계약.
+_dry_run_support: Optional[bool] = None
+
+
+def clear_plan_capability_cache() -> None:
+    """``--dry-run`` 지원 여부 캐시를 비운다. 테스트 격리용."""
+    global _dry_run_support
+    _dry_run_support = None
+
+
+def _assert_dry_run_supported(*, timeout: Optional[float]) -> None:
+    """연결된 ``rhwp`` 가 계획 ``--dry-run`` 을 실제로 지원하는지 확인한다.
+
+    :meth:`Plan.check` 는 ``dryRun: true`` 를 실어 보내지만, 이 필드를 모르는
+    옛 바이너리(#3759 이전)는 조용히 무시하고 **진짜로 실행**할 수 있다 — 호출자는
+    "검사만 했다"고 믿지만 문서가 실제로 편집된다. ``capabilities()`` 로 ``run``
+    명령의 ``flags`` 에 ``--dry-run`` 이 실제로 선언돼 있는지 물어, 없으면 실행
+    전에 :class:`~rhwp.errors.RhwpError` 로 막는다(Node 바인딩
+    ``assertDryRunSupported`` 와 동일 계약).
+    """
+    global _dry_run_support
+    if _dry_run_support is None:
+        from .commands import capabilities
+
+        caps = capabilities(timeout=timeout)
+        supported = False
+        for command in caps.raw.get("commands", []):
+            if isinstance(command, Mapping) and command.get("name") == "run":
+                supported = "--dry-run" in command.get("flags", [])
+                break
+        _dry_run_support = supported
+
+    if not _dry_run_support:
+        from .errors import RhwpError
+
+        raise RhwpError(
+            "이 rhwp 는 계획 --dry-run 을 지원하지 않습니다(#3759 이전 버전으로 보입니다). "
+            "check() 를 실행으로 대체하지 않습니다 — 검사인 줄 알고 문서가 편집되면 안 됩니다. "
+            "rhwp 를 갱신하거나, 위험을 감수한다면 run() 을 명시적으로 부르세요."
+        )
 
 
 def _execute(plan: Mapping[str, Any], *, timeout: Optional[float]) -> PlanResult:

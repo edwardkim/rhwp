@@ -169,6 +169,20 @@ fn distribute_hwp_units(total: HwpUnit, count: u16) -> Vec<HwpUnit> {
         .collect()
 }
 
+/// 손상된 표 메타데이터를 편집할 때 u16 좌표·span·개수가 넘지 않게 한다.
+fn checked_table_u16_add(value: u16, delta: u16, field: &str) -> Result<u16, String> {
+    value
+        .checked_add(delta)
+        .ok_or_else(|| format!("{field}가 u16 범위를 초과합니다"))
+}
+
+fn checked_table_span_end(start: u16, span: u16, axis: &str) -> Result<u16, String> {
+    if span == 0 {
+        return Err(format!("손상된 셀({axis} span 0)은 편집할 수 없습니다"));
+    }
+    checked_table_u16_add(start, span, &format!("셀 {axis} 범위"))
+}
+
 /// 세로 정렬
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub enum VerticalAlign {
@@ -204,12 +218,17 @@ impl Cell {
             // 센티널로 보고 표 패딩 폴백 유지.
             return cell_padding >= 0;
         }
-        // [#2195] aim=false 는 **전 축 표 기본** — pad 통제 사다리 2종 실측:
+        // [#2195] aim=false 는 원칙적으로 **전 축 표 기본** — pad 통제 사다리
+        // 2종 실측:
         // (1) 표(0,0,141,141)+셀(510,510,141,141): 실효 좌우 0·상하 141,
         // (2) 표(510,510,223,223)+셀 동일: inner = 표폭-1020(좌우 510x2)·상하 223.
-        // 종전 #1785 보존 규칙(cell>table 시 셀 채택)은 사다리와 불합치 — 제거.
-        // (36381023 결재란 RT 케이스는 전체 게이트로 재검증.)
-        let _ = allow_saved_small_cell_margin;
+        // 단, 셀 안의 비글자표가 표 자체에는 좌우 0·상하 141HU만 저장하고 셀에는
+        // 510HU 좌우 margin을 보존한 HWP5 형상은 한컴이 그 작은 저장 여백을 쓴다.
+        // 이는 일반 표의 `inMargin=(0,0,141,141)` 사다리를 뒤집지 않도록 호출자가
+        // 중첩 비글자표 문맥에서만 허용한다 (#2308 p34).
+        if allow_saved_small_cell_margin && cell_padding > table_padding && cell_padding < 2500 {
+            return true;
+        }
         false
     }
 
@@ -548,8 +567,11 @@ impl Table {
         };
         self.cell_grid = vec![None; grid_len];
         for (idx, cell) in self.cells.iter().enumerate() {
-            for r in cell.row..(cell.row + cell.row_span) {
-                for c in cell.col..(cell.col + cell.col_span) {
+            // [#4264] row/col은 파일에서 그대로 온 u16이고 span은 상한 검증이 없어
+            // (row_span/col_span은 .max(1)로 최소값만 보장) row+row_span이 u16 상한을
+            // 넘을 수 있다. addressed_grid_len()과 같은 saturating 패턴으로 맞춘다.
+            for r in cell.row..cell.row.saturating_add(cell.row_span) {
+                for c in cell.col..cell.col.saturating_add(cell.col_span) {
                     let gi = (r as usize) * cc + (c as usize);
                     if gi < self.cell_grid.len() {
                         self.cell_grid[gi] = Some(idx);
@@ -988,11 +1010,28 @@ impl Table {
             ));
         }
 
+        let new_row_count = checked_table_u16_add(self.row_count, 1, "표 행 수")?;
+        let target_row = if below {
+            checked_table_u16_add(row_idx, 1, "삽입 행 인덱스")?
+        } else {
+            row_idx
+        };
+        // 변형 전에 모든 좌표와 span의 증가 가능 여부를 확인한다. saturating_add만
+        // 쓰면 count는 포화됐는데 셀만 움직이는 불일치가 남는다.
+        for cell in &self.cells {
+            let row_end = checked_table_span_end(cell.row, cell.row_span, "행")?;
+            if cell.row >= target_row {
+                checked_table_u16_add(cell.row, 1, "셀 행 인덱스")?;
+            }
+            if cell.row < target_row && row_end > target_row {
+                checked_table_u16_add(cell.row_span, 1, "셀 행 span")?;
+            }
+        }
+
         let stretched_new_row_height = self
             .stretched_row_heights()
             .and_then(|heights| heights.get(row_idx as usize).copied());
         let original_height = self.common.height;
-        let target_row = if below { row_idx + 1 } else { row_idx };
         let col_widths = self.get_column_widths();
 
         // 셀 height용
@@ -1007,18 +1046,22 @@ impl Table {
         // 삽입 지점을 걸치는 병합 셀 추적
         let mut covered_cols = vec![false; self.col_count as usize];
 
+        // [#4264] row+row_span/col+col_span 은 파일에서 그대로 온 u16 이라
+        // saturating_add 없이 더하면 오버플로 패닉한다(rebuild_grid()와 동일 원인).
         for cell in &mut self.cells {
             // 병합 셀이 삽입 지점을 걸치는 경우: row_span 확장
-            if cell.row < target_row && cell.row + cell.row_span > target_row {
-                cell.row_span += 1;
+            if cell.row < target_row
+                && checked_table_span_end(cell.row, cell.row_span, "행")? > target_row
+            {
+                cell.row_span = checked_table_u16_add(cell.row_span, 1, "셀 행 span")?;
                 // 이 셀이 커버하는 열 표시
-                for c in cell.col..(cell.col + cell.col_span).min(self.col_count) {
+                for c in cell.col..cell.col.saturating_add(cell.col_span).min(self.col_count) {
                     covered_cols[c as usize] = true;
                 }
             }
             // target_row 이상의 셀은 1행 아래로 시프트
             if cell.row >= target_row {
-                cell.row += 1;
+                cell.row = checked_table_u16_add(cell.row, 1, "셀 행 인덱스")?;
             }
         }
 
@@ -1031,7 +1074,11 @@ impl Table {
                 let template = self
                     .cells
                     .iter()
-                    .find(|cell| cell.col == c && cell.col_span == 1 && cell.row == target_row + 1)
+                    .find(|cell| {
+                        cell.col == c
+                            && cell.col_span == 1
+                            && cell.row == target_row.saturating_add(1)
+                    })
                     .or_else(|| {
                         if target_row > 0 {
                             self.cells.iter().find(|cell| {
@@ -1060,7 +1107,9 @@ impl Table {
         }
 
         // row_count 갱신 및 row_sizes 재계산 (행별 셀 개수)
-        self.row_count += 1;
+        // [#4264] row_count도 파일에서 그대로 온 u16이라 이미 65535인 손상된
+        // 문서에서 삽입을 시도하면 오버플로 패닉했다.
+        self.row_count = new_row_count;
         self.rebuild_row_sizes();
 
         // 행 우선 순서 정렬
@@ -1091,8 +1140,23 @@ impl Table {
             ));
         }
 
+        let new_col_count = checked_table_u16_add(self.col_count, 1, "표 열 수")?;
+        let target_col = if right {
+            checked_table_u16_add(col_idx, 1, "삽입 열 인덱스")?
+        } else {
+            col_idx
+        };
+        for cell in &self.cells {
+            let col_end = checked_table_span_end(cell.col, cell.col_span, "열")?;
+            if cell.col >= target_col {
+                checked_table_u16_add(cell.col, 1, "셀 열 인덱스")?;
+            }
+            if cell.col < target_col && col_end > target_col {
+                checked_table_u16_add(cell.col_span, 1, "셀 열 span")?;
+            }
+        }
+
         let original_height = self.common.height;
-        let target_col = if right { col_idx + 1 } else { col_idx };
         let col_widths = self.get_column_widths();
         let row_heights = self.get_row_heights();
         let new_col_width = col_widths[col_idx as usize];
@@ -1100,19 +1164,23 @@ impl Table {
         // 병합 셀 확장 + 기존 셀 시프트
         let mut covered_rows = vec![false; self.row_count as usize];
 
+        // [#4264] row+row_span/col+col_span 은 파일에서 그대로 온 u16 이라
+        // saturating_add 없이 더하면 오버플로 패닉한다(rebuild_grid()와 동일 원인).
         for cell in &mut self.cells {
             // 병합 셀이 삽입 지점을 걸치는 경우: col_span 확장
-            if cell.col < target_col && cell.col + cell.col_span > target_col {
-                cell.col_span += 1;
+            if cell.col < target_col
+                && checked_table_span_end(cell.col, cell.col_span, "열")? > target_col
+            {
+                cell.col_span = checked_table_u16_add(cell.col_span, 1, "셀 열 span")?;
                 cell.width += new_col_width;
                 // 이 셀이 커버하는 행 표시
-                for r in cell.row..(cell.row + cell.row_span).min(self.row_count) {
+                for r in cell.row..cell.row.saturating_add(cell.row_span).min(self.row_count) {
                     covered_rows[r as usize] = true;
                 }
             }
             // target_col 이상의 셀은 1열 오른쪽으로 시프트
             if cell.col >= target_col {
-                cell.col += 1;
+                cell.col = checked_table_u16_add(cell.col, 1, "셀 열 인덱스")?;
             }
         }
 
@@ -1124,7 +1192,11 @@ impl Table {
                 let template = self
                     .cells
                     .iter()
-                    .find(|cell| cell.row == r && cell.row_span == 1 && cell.col == target_col + 1)
+                    .find(|cell| {
+                        cell.row == r
+                            && cell.row_span == 1
+                            && cell.col == target_col.saturating_add(1)
+                    })
                     .or_else(|| {
                         if target_col > 0 {
                             self.cells.iter().find(|cell| {
@@ -1153,7 +1225,9 @@ impl Table {
         }
 
         // col_count 갱신 및 row_sizes 재계산 (행별 셀 개수)
-        self.col_count += 1;
+        // [#4264] col_count도 파일에서 그대로 온 u16이라 이미 65535인 손상된
+        // 문서에서 삽입을 시도하면 오버플로 패닉했다.
+        self.col_count = new_col_count;
         self.rebuild_row_sizes();
 
         // 행 우선 순서 정렬
@@ -1196,8 +1270,10 @@ impl Table {
         let original_height = self.common.height;
 
         // 삭제 행을 걸치는 병합 셀: row_span 축소
+        // [#4264] row/row_span은 파일에서 그대로 온 u16이라 saturating_add 없이
+        // 더하면 오버플로 패닉한다(rebuild_grid()와 동일 원인).
         for cell in &mut self.cells {
-            if cell.row < row_idx && cell.row + cell.row_span > row_idx {
+            if cell.row < row_idx && cell.row.saturating_add(cell.row_span) > row_idx {
                 cell.row_span -= 1;
             }
         }
@@ -1267,8 +1343,10 @@ impl Table {
         let deleted_width = col_widths[col_idx as usize];
 
         // 삭제 열을 걸치는 병합 셀: col_span 축소, width 축소
+        // [#4264] col/col_span은 파일에서 그대로 온 u16이라 saturating_add 없이
+        // 더하면 오버플로 패닉한다(rebuild_grid()와 동일 원인).
         for cell in &mut self.cells {
-            if cell.col < col_idx && cell.col + cell.col_span > col_idx {
+            if cell.col < col_idx && cell.col.saturating_add(cell.col_span) > col_idx {
                 cell.col_span -= 1;
                 if cell.width >= deleted_width {
                     cell.width -= deleted_width;
@@ -1500,11 +1578,25 @@ impl Table {
         if orig_col_span <= 1 && orig_row_span <= 1 {
             return Err("병합되지 않은 셀은 나눌 수 없습니다".to_string());
         }
+        // [#4280] col_span/row_span은 HML "ColSpan"/"RowSpan"="0" 같은 손상된
+        // 문서에서 0으로 파싱될 수 있다(parser/hml/reader.rs의 parse_attribute는
+        // 속성이 없을 때만 unwrap_or(1)을 적용하고, 명시적 "0"은 그대로 통과시킨다).
+        // span 0이 섞이면 아래 `orig_width / orig_col_span`이 0-나누기로 패닉하거나,
+        // `target_col..target_col+0` 빈 범위로 split_col_widths가 비어
+        // `split_col_widths[0]`에서 index-out-of-bounds로 패닉한다.
+        if orig_col_span == 0 || orig_row_span == 0 {
+            return Err("손상된 셀(span 0)은 나눌 수 없습니다".to_string());
+        }
+        let col_end = checked_table_span_end(target_col, orig_col_span, "열")?;
+        let row_end = checked_table_span_end(target_row, orig_row_span, "행")?;
+        if col_end > self.col_count || row_end > self.row_count {
+            return Err("손상된 셀 범위가 표 크기를 벗어나 나눌 수 없습니다".to_string());
+        }
 
         // 열폭 계산: 다른 행의 col_span==1 셀에서 실제 폭 추출, 없으면 균등 분배
         let col_widths = self.get_column_widths();
         let split_col_widths: Vec<HwpUnit> = {
-            let has_real = (target_col..target_col + orig_col_span).all(|c| {
+            let has_real = (target_col..col_end).all(|c| {
                 self.cells.iter().any(|cell| {
                     cell.col == c
                         && cell.col_span == 1
@@ -1512,7 +1604,7 @@ impl Table {
                 })
             });
             if has_real {
-                (target_col..target_col + orig_col_span)
+                (target_col..col_end)
                     .map(|c| col_widths[c as usize])
                     .collect()
             } else {
@@ -1524,7 +1616,7 @@ impl Table {
         // 행높이 계산: 다른 열의 row_span==1 셀에서 실제 높이 추출, 없으면 균등 분배
         let raw_row_heights = self.get_raw_row_heights();
         let split_row_heights: Vec<HwpUnit> = {
-            let has_real = (target_row..target_row + orig_row_span).all(|r| {
+            let has_real = (target_row..row_end).all(|r| {
                 self.cells.iter().any(|cell| {
                     cell.row == r
                         && cell.row_span == 1
@@ -1532,7 +1624,7 @@ impl Table {
                 })
             });
             if has_real {
-                (target_row..target_row + orig_row_span)
+                (target_row..row_end)
                     .map(|r| raw_row_heights[r as usize])
                     .collect()
             } else {
@@ -1558,8 +1650,8 @@ impl Table {
         // 새 셀 생성: 범위 내 (target_col, target_row) 제외한 모든 위치
         for ri in 0..orig_row_span {
             for ci in 0..orig_col_span {
-                let r = target_row + ri;
-                let c = target_col + ci;
+                let r = checked_table_u16_add(target_row, ri, "분할 셀 행 인덱스")?;
+                let c = checked_table_u16_add(target_col, ci, "분할 셀 열 인덱스")?;
                 if r == target_row && c == target_col {
                     continue; // 주 셀 위치 스킵
                 }
@@ -1642,8 +1734,39 @@ impl Table {
         let extra_rows = if n_rows > rs { n_rows - rs } else { 0 };
 
         // 서브셀이 차지할 그리드 열/행 수
-        let grid_cols = cs + extra_cols; // = max(m_cols, cs)
-        let grid_rows = rs + extra_rows; // = max(n_rows, rs)
+        let grid_cols = checked_table_u16_add(cs, extra_cols, "분할 열 span")?; // = max(m_cols, cs)
+        let grid_rows = checked_table_u16_add(rs, extra_rows, "분할 행 span")?; // = max(n_rows, rs)
+        let new_col_count = checked_table_u16_add(self.col_count, extra_cols, "표 열 수")?;
+        let new_row_count = checked_table_u16_add(self.row_count, extra_rows, "표 행 수")?;
+        let target_col_end = checked_table_span_end(target_col, grid_cols, "열")?;
+        let target_row_end = checked_table_span_end(target_row, grid_rows, "행")?;
+        if target_col_end > new_col_count || target_row_end > new_row_count {
+            return Err("손상된 셀 범위가 표 크기를 벗어나 분할할 수 없습니다".to_string());
+        }
+
+        // 모든 변형의 u16 증가를 먼저 검증한다. 이후의 쓰기는 이 검사와 같은
+        // checked_add를 사용하므로 실패 시 부분 편집이 남지 않는다.
+        for (i, cell) in self.cells.iter().enumerate() {
+            if i == cell_idx {
+                continue;
+            }
+            if extra_cols > 0 {
+                let col_end = checked_table_span_end(cell.col, cell.col_span, "열")?;
+                if cell.col > target_col {
+                    checked_table_u16_add(cell.col, extra_cols, "셀 열 인덱스")?;
+                } else if cell.col == target_col || col_end > target_col {
+                    checked_table_u16_add(cell.col_span, extra_cols, "셀 열 span")?;
+                }
+            }
+            if extra_rows > 0 {
+                let row_end = checked_table_span_end(cell.row, cell.row_span, "행")?;
+                if cell.row > target_row {
+                    checked_table_u16_add(cell.row, extra_rows, "셀 행 인덱스")?;
+                } else if cell.row == target_row || row_end > target_row {
+                    checked_table_u16_add(cell.row_span, extra_rows, "셀 행 span")?;
+                }
+            }
+        }
 
         // 폭 분배: 균등 분배 (나머지는 첫 셀에 가산)
         let base_w = target_width / m_cols as u32;
@@ -1678,11 +1801,13 @@ impl Table {
         // 서브셀의 그리드 col 오프셋 계산 (col_span 누적)
         let mut sub_col_offsets: Vec<u16> = vec![0; m_cols as usize];
         for i in 1..m_cols as usize {
-            sub_col_offsets[i] = sub_col_offsets[i - 1] + sub_cspans[i - 1];
+            sub_col_offsets[i] =
+                checked_table_u16_add(sub_col_offsets[i - 1], sub_cspans[i - 1], "분할 열 오프셋")?;
         }
         let mut sub_row_offsets: Vec<u16> = vec![0; n_rows as usize];
         for i in 1..n_rows as usize {
-            sub_row_offsets[i] = sub_row_offsets[i - 1] + sub_rspans[i - 1];
+            sub_row_offsets[i] =
+                checked_table_u16_add(sub_row_offsets[i - 1], sub_rspans[i - 1], "분할 행 오프셋")?;
         }
 
         // 기존 셀 조정 (대상 셀 제외)
@@ -1692,25 +1817,31 @@ impl Table {
             }
             let cell = &mut self.cells[i];
 
+            // [#4264] col/row 는 파일에서 그대로 온 u16 이라 saturating_add 없이
+            // 더하면 오버플로 패닉한다(rebuild_grid()와 동일 원인).
             // --- 열 방향 조정 ---
             if extra_cols > 0 {
                 if cell.col > target_col {
-                    cell.col += extra_cols;
+                    cell.col = checked_table_u16_add(cell.col, extra_cols, "셀 열 인덱스")?;
                 } else if cell.col == target_col {
-                    cell.col_span += extra_cols;
-                } else if cell.col < target_col && cell.col + cell.col_span > target_col {
-                    cell.col_span += extra_cols;
+                    cell.col_span = checked_table_u16_add(cell.col_span, extra_cols, "셀 열 span")?;
+                } else if cell.col < target_col
+                    && checked_table_span_end(cell.col, cell.col_span, "열")? > target_col
+                {
+                    cell.col_span = checked_table_u16_add(cell.col_span, extra_cols, "셀 열 span")?;
                 }
             }
 
             // --- 행 방향 조정 ---
             if extra_rows > 0 {
                 if cell.row > target_row {
-                    cell.row += extra_rows;
+                    cell.row = checked_table_u16_add(cell.row, extra_rows, "셀 행 인덱스")?;
                 } else if cell.row == target_row {
-                    cell.row_span += extra_rows;
-                } else if cell.row < target_row && cell.row + cell.row_span > target_row {
-                    cell.row_span += extra_rows;
+                    cell.row_span = checked_table_u16_add(cell.row_span, extra_rows, "셀 행 span")?;
+                } else if cell.row < target_row
+                    && checked_table_span_end(cell.row, cell.row_span, "행")? > target_row
+                {
+                    cell.row_span = checked_table_u16_add(cell.row_span, extra_rows, "셀 행 span")?;
                 }
             }
         }
@@ -1732,8 +1863,16 @@ impl Table {
                 if ri == 0 && ci == 0 {
                     continue;
                 } // 주 셀 스킵
-                let r = target_row + sub_row_offsets[ri as usize];
-                let c = target_col + sub_col_offsets[ci as usize];
+                let r = checked_table_u16_add(
+                    target_row,
+                    sub_row_offsets[ri as usize],
+                    "분할 셀 행 인덱스",
+                )?;
+                let c = checked_table_u16_add(
+                    target_col,
+                    sub_col_offsets[ci as usize],
+                    "분할 셀 열 인덱스",
+                )?;
                 let w = sub_widths[ci as usize];
                 let h = sub_heights[ri as usize];
                 let mut new_cell = Cell::new_from_template(c, r, w, h, &template);
@@ -1747,8 +1886,9 @@ impl Table {
         }
 
         // 테이블 메타 갱신
-        self.col_count += extra_cols;
-        self.row_count += extra_rows;
+        // [#4264] col_count/row_count 도 파일에서 그대로 온 u16 이다.
+        self.col_count = new_col_count;
+        self.row_count = new_row_count;
 
         self.cells.sort_by_key(|c| (c.row, c.col));
         self.rebuild_row_sizes();

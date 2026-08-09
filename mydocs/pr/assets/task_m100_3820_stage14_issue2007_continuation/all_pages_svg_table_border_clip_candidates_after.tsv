@@ -1,0 +1,44 @@
+page	pi	ci	rows	cols	edge	table_bbox	line_x	line_y0	line_y1	stroke_width	visible_width_ratio	clip_ids	clip_rect	note
+1	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+2	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+3	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+4	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+5	-	-	1	1	right	84.2,2568.0,643.2,1296.2	727.5	2568.0	3864.2	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,995.1	candidate only; outer table stroke is emitted but hidden by SVG clip
+5	-	-	1	1	right	84.2,5781.2,643.2,434.5	727.5	5781.2	6215.7	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,995.1	candidate only; outer table stroke is emitted but hidden by SVG clip
+5	-	-	1	1	right	84.2,6219.5,643.2,933.6	727.5	6219.5	7153.1	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,995.1	candidate only; outer table stroke is emitted but hidden by SVG clip
+6	-	-	1	1	right	84.2,2605.3,643.2,1296.2	727.5	2605.3	3901.5	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1028.3	candidate only; outer table stroke is emitted but hidden by SVG clip
+6	-	-	1	1	right	84.2,5818.5,643.2,434.5	727.5	5818.5	6253.0	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1028.3	candidate only; outer table stroke is emitted but hidden by SVG clip
+6	-	-	1	1	right	84.2,6256.8,643.2,933.6	727.5	6256.8	7190.3	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1028.3	candidate only; outer table stroke is emitted but hidden by SVG clip
+7	-	-	1	1	right	84.2,2592.5,643.2,1296.2	727.5	2592.5	3888.7	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1019.8	candidate only; outer table stroke is emitted but hidden by SVG clip
+7	-	-	1	1	right	84.2,5805.7,643.2,434.5	727.5	5805.7	6240.2	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1019.8	candidate only; outer table stroke is emitted but hidden by SVG clip
+7	-	-	1	1	right	84.2,6244.0,643.2,933.6	727.5	6244.0	7177.5	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1019.8	candidate only; outer table stroke is emitted but hidden by SVG clip
+8	-	-	1	1	right	84.2,1750.3,643.2,1296.2	727.5	1750.3	3046.5	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1022.4	candidate only; outer table stroke is emitted but hidden by SVG clip
+8	-	-	1	1	right	84.2,4963.5,643.2,434.5	727.5	4963.5	5398.1	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1022.4	candidate only; outer table stroke is emitted but hidden by SVG clip
+8	-	-	1	1	right	84.2,5401.8,643.2,933.6	727.5	5401.8	6335.4	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1022.4	candidate only; outer table stroke is emitted but hidden by SVG clip
+9	-	-	1	1	right	84.2,1021.6,643.2,1296.2	727.5	1021.6	2317.8	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1020.4	candidate only; outer table stroke is emitted but hidden by SVG clip
+9	-	-	1	1	right	84.2,4234.8,643.2,434.5	727.5	4234.8	4669.4	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1020.4	candidate only; outer table stroke is emitted but hidden by SVG clip
+9	-	-	1	1	right	84.2,4673.1,643.2,933.6	727.5	4673.1	5606.7	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1020.4	candidate only; outer table stroke is emitted but hidden by SVG clip
+10	-	-	1	1	right	84.2,208.2,643.2,1296.2	727.5	208.2	1504.4	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1027.5	candidate only; outer table stroke is emitted but hidden by SVG clip
+10	-	-	1	1	right	84.2,3421.5,643.2,434.5	727.5	3421.5	3856.0	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1027.5	candidate only; outer table stroke is emitted but hidden by SVG clip
+10	-	-	1	1	right	84.2,3859.7,643.2,933.6	727.5	3859.7	4793.3	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1027.5	candidate only; outer table stroke is emitted but hidden by SVG clip
+11	-	-	1	1	right	84.2,-678.4,643.2,1296.2	727.5	-678.4	617.8	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1000.3	candidate only; outer table stroke is emitted but hidden by SVG clip
+11	-	-	1	1	right	84.2,2575.4,643.2,434.5	727.5	2575.4	3009.9	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1000.3	candidate only; outer table stroke is emitted but hidden by SVG clip
+11	-	-	1	1	right	84.2,3013.7,643.2,933.6	727.5	3013.7	3947.2	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1000.3	candidate only; outer table stroke is emitted but hidden by SVG clip
+12	-	-	1	1	right	84.2,-1549.5,643.2,1296.2	727.5	-1549.5	-253.3	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1021.2	candidate only; outer table stroke is emitted but hidden by SVG clip
+12	-	-	1	1	right	84.2,1749.5,643.2,434.5	727.5	1749.5	2184.1	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1021.2	candidate only; outer table stroke is emitted but hidden by SVG clip
+12	-	-	1	1	right	84.2,2187.8,643.2,933.6	727.5	2187.8	3121.4	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1021.2	candidate only; outer table stroke is emitted but hidden by SVG clip
+13	-	-	1	1	right	84.2,-2429.9,643.2,1296.2	727.5	-2429.9	-1133.7	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1031.9	candidate only; outer table stroke is emitted but hidden by SVG clip
+13	-	-	1	1	right	84.2,959.9,643.2,434.5	727.5	959.9	1394.4	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1031.9	candidate only; outer table stroke is emitted but hidden by SVG clip
+13	-	-	1	1	right	84.2,1398.2,643.2,933.6	727.5	1398.2	2331.7	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1031.9	candidate only; outer table stroke is emitted but hidden by SVG clip
+14	-	-	1	1	right	84.2,-3320.8,643.2,1296.2	727.5	-3320.8	-2024.7	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1022.2	candidate only; outer table stroke is emitted but hidden by SVG clip
+14	-	-	1	1	right	84.2,68.9,643.2,434.5	727.5	68.9	503.4	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1022.2	candidate only; outer table stroke is emitted but hidden by SVG clip
+14	-	-	1	1	right	84.2,556.3,643.2,933.6	727.5	556.3	1489.8	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1022.2	candidate only; outer table stroke is emitted but hidden by SVG clip
+15	-	-	1	1	right	84.2,-4212.6,643.2,1296.2	727.5	-4212.6	-2916.4	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1017.5	candidate only; outer table stroke is emitted but hidden by SVG clip
+15	-	-	1	1	right	84.2,-822.8,643.2,434.5	727.5	-822.8	-388.3	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1017.5	candidate only; outer table stroke is emitted but hidden by SVG clip
+15	-	-	1	1	right	84.2,-335.5,643.2,933.6	727.5	-335.5	598.1	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1017.5	candidate only; outer table stroke is emitted but hidden by SVG clip
+16	-	-	1	1	right	84.2,-5099.6,643.2,1296.2	727.5	-5099.6	-3803.4	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1028.3	candidate only; outer table stroke is emitted but hidden by SVG clip
+16	-	-	1	1	right	84.2,-1709.8,643.2,434.5	727.5	-1709.8	-1275.3	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1028.3	candidate only; outer table stroke is emitted but hidden by SVG clip
+16	-	-	1	1	right	84.2,-1222.5,643.2,933.6	727.5	-1222.5	-288.9	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,1028.3	candidate only; outer table stroke is emitted but hidden by SVG clip
+17	-	-	1	1	right	84.2,-5982.8,643.2,1296.2	727.5	-5982.8	-4686.6	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,241.9	candidate only; outer table stroke is emitted but hidden by SVG clip
+17	-	-	1	1	right	84.2,-2593.0,643.2,434.5	727.5	-2593.0	-2158.5	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,241.9	candidate only; outer table stroke is emitted but hidden by SVG clip
+17	-	-	1	1	right	84.2,-2105.7,643.2,933.6	727.5	-2105.7	-1172.1	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,726.7,241.9	candidate only; outer table stroke is emitted but hidden by SVG clip

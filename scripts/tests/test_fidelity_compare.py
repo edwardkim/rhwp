@@ -296,6 +296,90 @@ class TextLayerComparisonTests(unittest.TestCase):
         self.assertIn("52\t53\trhwp_later_than_reference", report)
         self.assertIn(moved, report)
 
+    def test_successor_top_float_refines_early_owner_shift(self) -> None:
+        moved = Counter("그림앞문단이기준PDF에서는다음쪽으로이어짐")
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1000},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 50, "y": 50, "w": 700, "h": 900},
+                    "children": [
+                        {
+                            "type": "Image",
+                            "pi": 1276,
+                            "ci": 0,
+                            "textWrap": "TopAndBottom",
+                            "bbox": {"x": 100, "y": 80, "w": 400, "h": 300},
+                        }
+                    ],
+                }
+            ],
+        }
+        differences = {
+            117: (Counter(), moved),
+            118: (moved, Counter()),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tree_dir = root / "render_tree"
+            tree_dir.mkdir()
+            (tree_dir / "document_119.json").write_text(
+                json.dumps(tree), encoding="utf-8"
+            )
+
+            candidates = FIDELITY.successor_float_owner_shift_candidates(
+                tree_dir, [117, 118], differences
+            )
+            FIDELITY.write_successor_float_owner_shift_ledger(
+                root, tree_dir, [117, 118], differences
+            )
+            report = (root / "float-owner-shift-candidates.tsv").read_text(
+                encoding="utf-8"
+            )
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["direction"], "rhwp_earlier_than_reference")
+        self.assertEqual(candidates[0]["float"]["pi"], 1276)
+        self.assertEqual(candidates[0]["float"]["text_wrap"], "TopAndBottom")
+        self.assertIn("118\t119\trhwp_earlier_than_reference", report)
+        self.assertIn("\t1276\t0\tTopAndBottom\t", report)
+
+    def test_successor_float_owner_shift_ignores_lower_page_float(self) -> None:
+        moved = Counter("그림앞문단이기준PDF에서는다음쪽으로이어짐")
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1000},
+            "children": [
+                {
+                    "type": "Body",
+                    "children": [
+                        {
+                            "type": "Image",
+                            "textWrap": "TopAndBottom",
+                            "bbox": {"x": 100, "y": 400, "w": 400, "h": 300},
+                        }
+                    ],
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            tree_dir = Path(directory)
+            (tree_dir / "document_119.json").write_text(
+                json.dumps(tree), encoding="utf-8"
+            )
+            candidates = FIDELITY.successor_float_owner_shift_candidates(
+                tree_dir,
+                [117, 118],
+                {
+                    117: (Counter(), moved),
+                    118: (moved, Counter()),
+                },
+            )
+
+        self.assertEqual(candidates, [])
+
     def test_numbered_page_count_ignores_manifest_and_non_page_files(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -326,6 +410,269 @@ class TextLayerComparisonTests(unittest.TestCase):
         self.assertIn("reference_pdf\t215\t0\tfull PDF", report)
         self.assertIn("rhwp_svg\t-\t-\tnot counted", report)
         self.assertIn("rhwp_render_tree\t219\t4\tfull render tree", report)
+
+
+class SvgTableBorderClipCandidateTests(unittest.TestCase):
+    def test_reports_right_table_border_hidden_by_parent_clip(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1000},
+            "children": [
+                {
+                    "type": "Table",
+                    "pi": 6,
+                    "ci": 0,
+                    "rows": 12,
+                    "cols": 5,
+                    "bbox": {"x": 80, "y": 200, "w": 650, "h": 700},
+                    "children": [
+                        {"type": "Line", "bbox": {"x": 730, "y": 200, "w": 2, "h": 700}}
+                    ],
+                }
+            ],
+        }
+        svg = """<svg xmlns=\"http://www.w3.org/2000/svg\">
+          <defs><clipPath id=\"body-clip\"><rect x=\"75\" y=\"100\" width=\"650\" height=\"850\"/></clipPath></defs>
+          <g clip-path=\"url(#body-clip)\"><line x1=\"730\" y1=\"200\" x2=\"730\" y2=\"900\" stroke=\"#000\" stroke-width=\"2\"/></g>
+        </svg>"""
+
+        with tempfile.TemporaryDirectory() as directory:
+            svg_path = Path(directory) / "p004.svg"
+            svg_path.write_text(svg, encoding="utf-8")
+            candidates = FIDELITY.svg_table_border_clip_candidates(svg_path, tree)
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["pi"], 6)
+        self.assertEqual(candidates[0]["edge"], "right")
+        self.assertEqual(candidates[0]["visible_width_ratio"], 0.0)
+        self.assertEqual(candidates[0]["clip_ids"], ("body-clip",))
+
+    def test_ignores_an_unclipped_or_non_table_vertical_stroke(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1000},
+            "children": [
+                {
+                    "type": "Table",
+                    "bbox": {"x": 80, "y": 200, "w": 650, "h": 700},
+                    "children": [
+                        {"type": "Line", "bbox": {"x": 730, "y": 200, "w": 2, "h": 700}}
+                    ],
+                }
+            ],
+        }
+        svg = """<svg xmlns=\"http://www.w3.org/2000/svg\">
+          <line x1=\"730\" y1=\"200\" x2=\"730\" y2=\"900\" stroke=\"#000\" stroke-width=\"2\"/>
+          <line x1=\"30\" y1=\"200\" x2=\"30\" y2=\"900\" stroke=\"#000\" stroke-width=\"2\"/>
+        </svg>"""
+
+        with tempfile.TemporaryDirectory() as directory:
+            svg_path = Path(directory) / "p004.svg"
+            svg_path.write_text(svg, encoding="utf-8")
+            candidates = FIDELITY.svg_table_border_clip_candidates(svg_path, tree)
+
+        self.assertEqual(candidates, [])
+
+
+class SvgTableHorizontalBorderClipCandidateTests(unittest.TestCase):
+    def test_reports_bottom_table_frame_hidden_by_parent_clip(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1000},
+            "children": [
+                {
+                    "type": "Table",
+                    "pi": 7,
+                    "ci": 1,
+                    "rows": 1,
+                    "cols": 1,
+                    "bbox": {"x": 80, "y": 200, "w": 650, "h": 700},
+                    "children": [
+                        {"type": "Line", "bbox": {"x": 80, "y": 900, "w": 650, "h": 2}}
+                    ],
+                }
+            ],
+        }
+        svg = """<svg xmlns="http://www.w3.org/2000/svg">
+          <defs><clipPath id="cell-clip"><rect x="75" y="100" width="660" height="798"/></clipPath></defs>
+          <g clip-path="url(#cell-clip)"><line x1="80" y1="900" x2="730" y2="900" stroke="#000" stroke-width="2"/></g>
+        </svg>"""
+
+        with tempfile.TemporaryDirectory() as directory:
+            svg_path = Path(directory) / "p010.svg"
+            svg_path.write_text(svg, encoding="utf-8")
+            candidates = FIDELITY.svg_table_horizontal_border_clip_candidates(svg_path, tree)
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["pi"], 7)
+        self.assertEqual(candidates[0]["edge"], "bottom")
+        self.assertEqual(candidates[0]["visible_height_ratio"], 0.0)
+        self.assertEqual(candidates[0]["clip_ids"], ("cell-clip",))
+
+    def test_reports_missing_physical_bottom_frame_before_source_border(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1000},
+            "children": [
+                {
+                    "type": "Table",
+                    "pi": 7,
+                    "ci": 1,
+                    "rows": 1,
+                    "cols": 1,
+                    "bbox": {"x": 80, "y": 200, "w": 650, "h": 700},
+                    "children": [
+                        {"type": "Line", "bbox": {"x": 80, "y": 900, "w": 650, "h": 2}}
+                    ],
+                }
+            ],
+        }
+        svg = """<svg xmlns="http://www.w3.org/2000/svg">
+          <defs><clipPath id="cell-clip"><rect x="75" y="100" width="660" height="750"/></clipPath></defs>
+          <g clip-path="url(#cell-clip)"><line x1="80" y1="900" x2="730" y2="900" stroke="#000" stroke-width="2"/></g>
+        </svg>"""
+
+        with tempfile.TemporaryDirectory() as directory:
+            svg_path = Path(directory) / "p010.svg"
+            svg_path.write_text(svg, encoding="utf-8")
+            candidates = FIDELITY.svg_table_horizontal_border_clip_candidates(svg_path, tree)
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["edge"], "bottom")
+        self.assertEqual(candidates[0]["line_y"], 850.0)
+        self.assertEqual(candidates[0]["visible_height_ratio"], 0.0)
+
+
+class TableCellTextOverlapCandidateTests(unittest.TestCase):
+    def test_reports_painted_lines_overlapping_within_one_cell(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1000},
+            "children": [
+                {
+                    "type": "Table",
+                    "pi": 7,
+                    "ci": 1,
+                    "rows": 2,
+                    "cols": 2,
+                    "bbox": {"x": 80, "y": 200, "w": 600, "h": 300},
+                    "children": [
+                        {
+                            "type": "Cell",
+                            "row": 1,
+                            "col": 1,
+                            "bbox": {"x": 380, "y": 250, "w": 290, "h": 180},
+                            "children": [
+                                {
+                                    "type": "TextLine",
+                                    "bbox": {"x": 400, "y": 280, "w": 240, "h": 20},
+                                    "children": [
+                                        {
+                                            "type": "TextRun",
+                                            "text": "첫 줄",
+                                            "bbox": {"x": 400, "y": 280, "w": 240, "h": 20},
+                                        }
+                                    ],
+                                },
+                                {
+                                    "type": "TextLine",
+                                    "bbox": {"x": 420, "y": 286, "w": 220, "h": 20},
+                                    "children": [
+                                        {
+                                            "type": "TextRun",
+                                            "text": "겹친 줄",
+                                            "bbox": {"x": 420, "y": 286, "w": 220, "h": 20},
+                                        }
+                                    ],
+                                },
+                                {
+                                    "type": "Cell",
+                                    "row": 0,
+                                    "col": 0,
+                                    "bbox": {"x": 430, "y": 280, "w": 100, "h": 50},
+                                    "children": [
+                                        {
+                                            "type": "TextLine",
+                                            "bbox": {"x": 430, "y": 280, "w": 100, "h": 20},
+                                            "children": [
+                                                {
+                                                    "type": "TextRun",
+                                                    "text": "중첩 셀",
+                                                    "bbox": {"x": 430, "y": 280, "w": 100, "h": 20},
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        candidates = FIDELITY.table_cell_text_overlap_candidates(tree)
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["pi"], 7)
+        self.assertEqual(candidates[0]["row"], 1)
+        self.assertEqual(candidates[0]["overlap_pair_count"], 1)
+        self.assertEqual(candidates[0]["max_overlap_y_px"], 14.0)
+
+    def test_ignores_separated_lines_and_empty_guides(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1000},
+            "children": [
+                {
+                    "type": "Table",
+                    "bbox": {"x": 80, "y": 200, "w": 600, "h": 300},
+                    "children": [
+                        {
+                            "type": "Cell",
+                            "bbox": {"x": 80, "y": 200, "w": 600, "h": 300},
+                            "children": [
+                                {
+                                    "type": "TextLine",
+                                    "bbox": {"x": 100, "y": 240, "w": 300, "h": 18},
+                                    "children": [
+                                        {
+                                            "type": "TextRun",
+                                            "text": "정상 줄",
+                                            "bbox": {"x": 100, "y": 240, "w": 300, "h": 18},
+                                        }
+                                    ],
+                                },
+                                {
+                                    "type": "TextLine",
+                                    "bbox": {"x": 100, "y": 270, "w": 300, "h": 18},
+                                    "children": [
+                                        {
+                                            "type": "TextRun",
+                                            "text": "다음 줄",
+                                            "bbox": {"x": 100, "y": 270, "w": 300, "h": 18},
+                                        }
+                                    ],
+                                },
+                                {
+                                    "type": "TextLine",
+                                    "bbox": {"x": 100, "y": 242, "w": 300, "h": 18},
+                                    "children": [
+                                        {
+                                            "type": "TextRun",
+                                            "text": "  ",
+                                            "bbox": {"x": 100, "y": 242, "w": 300, "h": 18},
+                                        }
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        self.assertEqual(FIDELITY.table_cell_text_overlap_candidates(tree), [])
 
 
 class LayoutCandidateTests(unittest.TestCase):
@@ -487,6 +834,115 @@ class LayoutCandidateTests(unittest.TestCase):
         self.assertEqual(candidates[0]["pi"], 1355)
         self.assertEqual(candidates[0]["overlap_line_count"], 3)
         self.assertEqual(FIDELITY.layout_candidates(tree)[4], 1)
+
+    def test_square_wrapped_image_edge_contact_is_a_candidate(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1100},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 50, "y": 50, "w": 700, "h": 900},
+                    "children": [
+                        {
+                            "type": "Image",
+                            "pi": 1692,
+                            "ci": 1,
+                            "textWrap": "Square",
+                            "bbox": {"x": 400, "y": 120, "w": 220, "h": 260},
+                        },
+                        *[
+                            {
+                                "type": "TextLine",
+                                "bbox": {"x": 100, "y": y, "w": 300, "h": 16},
+                                "children": [{"type": "TextRun", "text": "본문"}],
+                            }
+                            for y in (150, 180, 210)
+                        ],
+                    ],
+                }
+            ],
+        }
+
+        candidates = FIDELITY.square_wrap_text_overlap_candidates(tree)
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["pi"], 1692)
+        self.assertEqual(candidates[0]["candidate_kind"], "edge_clearance_loss")
+        self.assertEqual(candidates[0]["edge"], "left")
+        self.assertEqual(candidates[0]["edge_contact_line_count"], 3)
+        self.assertEqual(candidates[0]["min_clearance_px"], 0.0)
+        self.assertEqual(FIDELITY.layout_candidates(tree)[4], 1)
+
+    def test_square_wrapped_image_with_pdf_like_edge_clearance_is_not_a_candidate(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1100},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 50, "y": 50, "w": 700, "h": 900},
+                    "children": [
+                        {
+                            "type": "Image",
+                            "textWrap": "Square",
+                            "bbox": {"x": 400, "y": 120, "w": 220, "h": 260},
+                        },
+                        *[
+                            {
+                                "type": "TextLine",
+                                "bbox": {"x": 100, "y": y, "w": 294, "h": 16},
+                                "children": [{"type": "TextRun", "text": "본문"}],
+                            }
+                            for y in (150, 180, 210)
+                        ],
+                    ],
+                }
+            ],
+        }
+
+        self.assertEqual(FIDELITY.square_wrap_text_overlap_candidates(tree), [])
+
+    def test_deferred_square_picture_below_body_top_is_a_candidate(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1100},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 50, "y": 80, "w": 700, "h": 900},
+                    "children": [
+                        {
+                            "type": "Column",
+                            "bbox": {"x": 50, "y": 80, "w": 700, "h": 900},
+                            "children": [
+                                {
+                                    "type": "Image",
+                                    "pi": 1355,
+                                    "ci": 0,
+                                    "textWrap": "Square",
+                                    "bbox": {"x": 440, "y": 128, "w": 220, "h": 260},
+                                },
+                                {
+                                    "type": "TextLine",
+                                    "pi": 1356,
+                                    "bbox": {"x": 90, "y": 80, "w": 320, "h": 16},
+                                    "children": [{"type": "TextRun", "text": "본문"}],
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        candidates = FIDELITY.deferred_square_picture_page_top_drift_candidates(tree)
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["pi"], 1355)
+        self.assertEqual(candidates[0]["candidate_kind"], "deferred_page_start_offset_drift")
+        self.assertEqual(candidates[0]["image_top_drift_px"], 48.0)
+        self.assertEqual(FIDELITY.layout_candidates(tree)[5], 1)
 
     def test_square_wrap_ignores_empty_full_width_guide_lines(self) -> None:
         tree = {

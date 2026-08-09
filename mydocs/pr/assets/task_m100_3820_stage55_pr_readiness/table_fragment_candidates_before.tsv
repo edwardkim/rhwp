@@ -1,0 +1,11 @@
+page	next_page	pi	ci	rows	cols	next_rows	next_cols	bbox	next_bbox	signals	page_text_delta_chars	next_page_text_delta_chars	page_bottom_gap_px	next_page_bottom_gap_px	note
+10	11	0	0	1	1	1	1	77.5,115.3,646.5,879.9	77.5,115.3,646.5,897.3	same_pi_ci_adjacent_fragment|next_page_table_footer	-	16	127.3	109.9	candidate only; does not assert PDF table row owner or fragment correctness
+10	11	0	0	1	1	1	1	77.5,115.3,646.5,879.9	80.5,118.3,643.2,477.6	same_pi_ci_adjacent_fragment	-	16	127.3	526.6	candidate only; does not assert PDF table row owner or fragment correctness
+10	11	0	0	1	1	1	1	80.5,178.3,643.2,805.9	77.5,115.3,646.5,897.3	same_pi_ci_adjacent_fragment|next_page_table_footer	-	16	138.3	109.9	candidate only; does not assert PDF table row owner or fragment correctness
+10	11	0	0	1	1	1	1	80.5,178.3,643.2,805.9	80.5,118.3,643.2,477.6	same_pi_ci_adjacent_fragment	-	16	138.3	526.6	candidate only; does not assert PDF table row owner or fragment correctness
+10	11	7	1	1	1	1	1	75.6,113.4,649.4,877.6	75.6,113.4,649.4,895.1	same_pi_ci_adjacent_fragment	-	16	131.5	114.0	candidate only; does not assert PDF table row owner or fragment correctness
+11	12	0	0	1	1	1	1	77.5,115.3,646.5,897.3	77.5,115.3,646.3,833.4	same_pi_ci_adjacent_fragment|page_table_footer	16	105	109.9	173.8	candidate only; does not assert PDF table row owner or fragment correctness
+11	12	0	0	1	1	1	1	80.5,118.3,643.2,477.6	77.5,115.3,646.3,833.4	same_pi_ci_adjacent_fragment	16	105	526.6	173.8	candidate only; does not assert PDF table row owner or fragment correctness
+11	12	7	1	1	1	1	1	75.6,113.4,649.4,895.1	75.6,113.4,649.2,834.9	same_pi_ci_adjacent_fragment	16	105	114.0	174.2	candidate only; does not assert PDF table row owner or fragment correctness
+12	13	0	0	1	1	1	1	77.5,115.3,646.3,833.4	77.5,115.3,648.4,882.4	same_pi_ci_adjacent_fragment	105	-	173.8	124.8	candidate only; does not assert PDF table row owner or fragment correctness
+12	13	7	1	1	1	1	1	75.6,113.4,649.2,834.9	75.6,113.4,651.2,880.1	same_pi_ci_adjacent_fragment	105	-	174.2	129.0	candidate only; does not assert PDF table row owner or fragment correctness

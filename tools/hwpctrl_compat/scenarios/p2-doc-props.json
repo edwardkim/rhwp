@@ -1,0 +1,33 @@
+{
+  "id": "p2-doc-props",
+  "title": "P2 문서 속성 — 빈 문서 여부·편집 모드·블록 상태",
+  "note": "Version 과 IsModified 는 여기서 대조하지 않는다. Version 은 규격 §8.2.14 가 '웹한글의 버전'이라고 못박아 설치된 한글을 재는 COM 오라클이 판정자가 될 수 없고, IsModified 는 한글의 실행취소 경계를 따라가 한 박자 늦게 선다(값은 이미 들어갔는데도 첫 쓰기 뒤 false).",
+  "ledger": [
+    "HwpCtrl.property.IsEmpty",
+    "HwpCtrl.property.EditMode",
+    "HwpCtrl.property.SelectionMode"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["IsEmpty", []],
+    ["EditMode", []],
+    ["SelectionMode", []],
+
+    ["MoveToField", ["pt_nm", true, true, true]],
+    ["SelectionMode", []],
+    ["MoveToField", ["med_str_dt", true, true, true]],
+    ["SelectionMode", []],
+
+    ["PutFieldText", ["med_str_dt", "2026-08-08"]],
+    ["GetFieldText", ["med_str_dt"]],
+    ["MoveToField", ["med_str_dt", true, true, true]],
+    ["SelectionMode", []],
+    ["MoveToField", ["pt_nm", true, true, true]],
+    ["SelectionMode", []],
+    ["MovePos", [2, 0, 0]],
+    ["SelectionMode", []],
+
+    ["IsEmpty", []],
+    ["EditMode", []]
+  ]
+}

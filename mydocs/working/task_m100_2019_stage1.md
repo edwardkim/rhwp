@@ -4,12 +4,20 @@
 
 ## 산출
 
-- `output/poc/task2019/nogo_sample.txt` — 무회귀 표본 **80문서**:
+아래 기준선·표본 목록·캡처 하네스·오라클 메모는 Stage 1 당시 `output/poc/task2019/`에 만든 POC다.
+[PR #4154](https://github.com/edwardkim/rhwp/pull/4154)에서 이 네 파일의 저장소 추적본을 제거했으며,
+[삭제 전 Git 이력](https://github.com/edwardkim/rhwp/tree/5a4f26d0d0a4e2fc96f4b73510d2aecdad916722/output/poc/task2019)으로만
+보존한다. 현행 장기 근거는 [최종·정정 보고서](../report/task_m100_2019_report.md),
+[tracked 회귀 래칫](../../tests/issue_2019_floating_form_overpagination.rs)과
+`samples/hwpx/issue2019_floating_form_74312.hwpx`다.
+
+- `output/poc/task2019/nogo_sample.txt` — 당시 무회귀 표본 **80문서**:
   8차 서베이 `pipage.tsv` MATCH 랜덤 60 + MORE 클러스터(글상자/도형 밀집 과분할) 20 + 74312(중복 흡수).
-- `output/poc/task2019/capture_pages.py` — dump-pages 페이지수 캡처 하네스(before/after 공용).
-- `output/poc/task2019/baseline.tsv` — 80문서 **현재(미수정) 페이지수**.
-- `output/poc/task2019/oracle_truth.txt` — 74312 정답(한글2022 PDF): **18쪽**.
-- `output/poc/task2019/74312_before_rhwp11_vs_hwp4.png` — 결함 시각 증거(왼쪽 서식 조각 깨짐 vs 오른쪽 한글 정상 표).
+- `output/poc/task2019/capture_pages.py` — 당시 dump-pages 페이지수 캡처 하네스(before/after 공용).
+- `output/poc/task2019/baseline.tsv` — 80문서 **당시 미수정본 페이지수**.
+- `output/poc/task2019/oracle_truth.txt` — 당시 기록한 74312 정답(한글2022 PDF): **18쪽**.
+- `output/poc/task2019/74312_before_rhwp11_vs_hwp4.png` — 당시 비추적 결함 시각 증거
+  (왼쪽 서식 조각 깨짐 vs 오른쪽 한글 정상 표). #4154 삭제 목록에는 포함되지 않았다.
 
 ## 기준선 핵심 수치
 

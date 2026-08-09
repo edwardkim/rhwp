@@ -348,6 +348,12 @@ pub(crate) fn parse_common_obj_attr(ctrl_data: &[u8]) -> CommonObjAttr {
     common.flow_with_text = attr & (1 << 13) != 0;
     common.allow_overlap = attr & (1 << 14) != 0;
     common.size_protect = attr & (1 << 20) != 0;
+    // 개체 잠금 — HWP5 는 attr **비트 30** 에 싣는다.
+    //
+    // 실측으로 뽑았다: 한글이 `Ctrl.Properties.Item("Lock")` 을 1 로 답하는 표들의 attr 이
+    // 안 잠긴 표보다 정확히 `2^30` 만큼 크다(같은 문서 안 표 열둘로 대조). 여태 HWPX 경로에서만
+    // 읽고 HWP5 는 늘 `false` 여서, 잠긴 개체가 저장·변환에서 풀려 나갔다.
+    common.locked = attr & (1 << 30) != 0;
     common.hwp5_gen_shape_attr_bit26 = attr & (1 << 26) != 0;
     common.hwp5_gen_shape_attr_bit28 = attr & (1 << 28) != 0;
     common.vert_rel_to = match (attr >> 3) & 0x03 {

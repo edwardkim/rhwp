@@ -15,6 +15,7 @@ last_verified: 2026-07-19
 | 주제 | 권위 또는 우선 진입점 | 관련 상세 문서 |
 | --- | --- | --- |
 | HWP 5.0 구현 차이 | [HWP 5.0 스펙 문서 정오표](hwp_spec_errata.md) | [한글 문서 파일 형식 5.0 개정 1.3](한글문서파일형식_5.0_revision1.3.md), [HWP 제어 데이터](hwp_ctrl_data.md) |
+| HWP↔OWPML(HWPX) 정합 관찰(공개용) | [HWP/OWPML 정합 관찰 노트](owpml_conformance_observations.md) | [HWP 5.0 스펙 문서 정오표](hwp_spec_errata.md), [한컴 공식 OWPML 모델 참조 가이드](hwpx_hancom_reference.md) |
 | 포맷 파서와 공통 IR 책임 경계 | [포맷 파서와 공통 Document IR 경계](parser_architecture.md) | [HWP/HWPX IR 차이](hwp_hwpx_ir_differences.md) |
 | IR 저장·직렬화와 무효화 계약 | [HWP 저장 기술 가이드](hwp_save_guide.md) | [직렬화 passthrough·무효화 계약](serialization_passthrough_contract.md) |
 | HWPX와 HWP IR 차이 | [HWP/HWPX IR 차이](hwp_hwpx_ir_differences.md) | [HWPX 한컴 참조](hwpx_hancom_reference.md), [HWPX DVC 참조](hwpx_dvc_reference.md), [로컬 OWPML XML 스키마](../manual/owpml_schema_reference.md) |
@@ -29,7 +30,7 @@ last_verified: 2026-07-19
 | CI cache 정책 이력 | [Issue #1664 cache 정책 결정](ci_cache_policy_1664.md) | 현재 동작은 `.github/workflows/ci.yml` 재확인 |
 | WASM toolchain 버전 | [wasm-pack 버전 고정 정책](wasm_pack_version_policy.md) | 현재 설치 동작은 `.github/actions/install-wasm-pack/action.yml`과 `Dockerfile` 재확인 |
 | 에이전트 표면 내성 설계 | [경량 에이전트 내성 — CLI·MCP 계약 확장 4건](weak_agent_proofing.md) | [에이전트 실패 사전](../manual/agent_troubleshooting_guide.md), [에이전트 표면 플레이북](../manual/agent_surface_playbook.md) |
-| 에이전트 표면의 층과 순서 | [에이전트 아키텍처 지도](agent_architecture/README.md) | [4층 모델](agent_architecture/layer_model.md), [로드맵 지도](agent_architecture/roadmap_atlas.md), [불변식](agent_architecture/invariants.md), [결정 이력](agent_architecture/decision_log.md), [미해결 공백](agent_architecture/open_gaps.md) — 탑다운 로드맵 #3880 |
+| 에이전트 표면의 층과 순서 | [에이전트 아키텍처 지도](agent_architecture/README.md) | [4층 모델](agent_architecture/layer_model.md), [로드맵 지도](agent_architecture/roadmap_atlas.md), [불변식](agent_architecture/invariants.md), [결정 이력](agent_architecture/decision_log.md), [미해결 공백](agent_architecture/open_gaps.md), [관측성 계약](agent_architecture/observability_contract.md), [생태계 지표](agent_architecture/ecosystem_metrics.md), [MCP 스펙 개정 추종 대장](agent_architecture/mcp_spec_ledger.md) — 탑다운 로드맵 #3880 |
 | 자율 유지보수 — 병렬 세션·드리프트·엔드게임 | [자율 유지보수 지도](autonomous_maintenance/README.md) | [병렬 세션 규약](autonomous_maintenance/parallel_session_protocol.md), [선등재 패턴](autonomous_maintenance/pre_registration_pattern.md), [드리프트 감지](autonomous_maintenance/drift_detection.md), [엔드게임 판정](autonomous_maintenance/endgame_criteria.md) — 로드맵 #3907 J그룹 |
 | 에이전트 보안 — 문서가 에이전트를 조종하는 경로 | [에이전트 보안 문서 지도](agent_security/README.md) | [위협 모델](agent_security/threat_model.md), [공격 표면](agent_security/attack_surface.md), [소비 에이전트 가이드](agent_security/consumer_guide.md), 로드맵 #3793·구현 #3787 |
 | 신뢰할 수 없는 문서에 대한 경계 | [에이전트 경계 무결성 계약 — 경로·교정단서·자원한계·핸들](agent_boundary_contract.md) | 회귀 `tests/boundary_integrity_contract.rs`, 처리 결과 [task_sec_boundary](../report/task_sec_boundary/README.md) |

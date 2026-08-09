@@ -1,0 +1,72 @@
+{
+  "id": "p1-field-write",
+  "title": "P1 필드 쓰기 계약 — 다중 필드(0x02)·덮어쓰기·커서 위치 생성",
+  "ledger": [
+    "HwpCtrl.method.CreateField",
+    "HwpCtrl.method.MovePos"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    [
+      "PutFieldText",
+      [
+        "pt_nm\u0002med_str_dt",
+        "홍길동\u00022026-08-07"
+      ]
+    ],
+    [
+      "GetFieldText",
+      [
+        "pt_nm\u0002med_str_dt"
+      ]
+    ],
+    [
+      "GetFieldText",
+      [
+        "med_end_dt"
+      ]
+    ],
+    [
+      "PutFieldText",
+      [
+        "pt_nm",
+        "김철수"
+      ]
+    ],
+    [
+      "GetFieldText",
+      [
+        "pt_nm"
+      ]
+    ],
+    [
+      "MovePos",
+      [
+        2,
+        0,
+        0
+      ]
+    ],
+    [
+      "CreateField",
+      [
+        "안내문구",
+        "메모내용",
+        "새필드"
+      ]
+    ],
+    [
+      "FieldExist",
+      [
+        "새필드"
+      ]
+    ],
+    [
+      "GetCurFieldName",
+      [
+        0
+      ]
+    ]
+  ],
+  "saveAs": "p1-field-write.hwp"
+}

@@ -144,6 +144,10 @@ describe('조회 명령 — argv 모양', () => {
     expect(valueAfter(argv, '--max-chars')).toBe('800');
   });
 
+  it('explain', async () => {
+    expect(await argvOf(() => rhwp.explain('a.hwp'))).toEqual(['explain', 'a.hwp', '--json']);
+  });
+
   it('capabilities — 문서를 받지 않고 --json 도 붙이지 않는다', async () => {
     expect(await argvOf(() => rhwp.capabilities())).toEqual(['capabilities']);
     expect(await argvOf(() => rhwp.capabilities({ mcp: true }))).toEqual(['capabilities', '--mcp']);
@@ -171,6 +175,38 @@ describe('조회 명령 — argv 모양', () => {
       '--bare',
       '-o',
       'caps.json',
+      '--json',
+    ]);
+  });
+
+  it('export-plan-schema — bare·out 을 JSON 봉투와 함께 보낸다', async () => {
+    expect(await argvOf(() => rhwp.exportPlanSchema({ bare: true, out: 'plan.json' }))).toEqual([
+      'export-plan-schema',
+      '--bare',
+      '-o',
+      'plan.json',
+      '--json',
+    ]);
+  });
+
+  it('export-agent-manifest — bare 를 JSON 봉투와 함께 보낸다', async () => {
+    expect(await argvOf(() => rhwp.exportAgentManifest({ bare: true }))).toEqual([
+      'export-agent-manifest',
+      '--bare',
+      '--json',
+    ]);
+  });
+
+  it('export-ontology', async () => {
+    expect(await argvOf(() => rhwp.exportOntology())).toEqual(['export-ontology', '--json']);
+  });
+
+  it('export-ontology — bare·out 을 JSON 봉투와 함께 보낸다', async () => {
+    expect(await argvOf(() => rhwp.exportOntology({ bare: true, out: 'onto.jsonld' }))).toEqual([
+      'export-ontology',
+      '--bare',
+      '-o',
+      'onto.jsonld',
       '--json',
     ]);
   });
@@ -616,6 +652,70 @@ describe('render-diff — 라운드트립과 pair', () => {
     // 한 함수가 봉투와 스트림을 다 돌려주면 호출자가 받은 값의 타입을 모른다.
     expect(await argvOf(() => rhwp.renderDiff('a.hwp'))).not.toContain('--batch');
   });
+});
+
+describe('verify — 독립 사후검증 게이트', () => {
+  it('기대 조건이 각 플래그로 나간다', async () => {
+    expect(await argvOf(() => rhwp.verify('a.hwp', { expectPages: 3 }))).toEqual([
+      'verify',
+      'a.hwp',
+      '--expect-pages',
+      '3',
+      '--json',
+    ]);
+    expect(
+      await argvOf(() => rhwp.verify('a.hwp', { expectFormat: 'hwpx', expectField: '이름=값' })),
+    ).toEqual(['verify', 'a.hwp', '--expect-field', '이름=값', '--expect-format', 'hwpx', '--json']);
+  });
+
+  it('수치 경계 축 다섯이 각 플래그로 나간다', async () => {
+    expect(
+      await argvOf(() =>
+        rhwp.verify('a.hwp', {
+          expectMinPages: 1,
+          expectMaxPages: 9,
+          expectMinChars: 100,
+          expectMinTables: 2,
+          expectTableCount: 3,
+        }),
+      ),
+    ).toEqual([
+      'verify',
+      'a.hwp',
+      '--expect-min-pages',
+      '1',
+      '--expect-max-pages',
+      '9',
+      '--expect-min-chars',
+      '100',
+      '--expect-min-tables',
+      '2',
+      '--expect-table-count',
+      '3',
+      '--json',
+    ]);
+  });
+
+  it('반복 기대는 값마다 플래그를 되풀이한다 — 쉼표 결합 금지', async () => {
+    expect(
+      await argvOf(() =>
+        rhwp.verify('a.hwp', {
+          expectContains: ['갑', '을'],
+          expectNotContains: '병',
+        }),
+      ),
+    ).toEqual([
+      'verify',
+      'a.hwp',
+      '--expect-contains',
+      '갑',
+      '--expect-contains',
+      '을',
+      '--expect-not-contains',
+      '병',
+      '--json',
+    ]);
+  });
 
   it('회귀 판정을 예외로 올리는 선택이 실행 계층까지 간다', async () => {
     await argvOf(() => rhwp.renderDiff('a.hwp', 'b.hwp', { throwOnVerdict: true }));
@@ -735,6 +835,26 @@ describe('편집 명령 — argv 모양', () => {
 
 // ── 대량 ────────────────────────────────────────────────────────────────────
 
+describe('scan — 코퍼스 발견은 batch 의 앞 단계다', () => {
+  it('경로 하나는 그대로, 옵션은 각 플래그로 나간다', async () => {
+    expect(await argvOf(() => rhwp.scan('폴더'))).toEqual(['scan', '폴더', '--json']);
+    expect(
+      await argvOf(() => rhwp.scan('폴더', { probe: true, maxDepth: 2, limit: 100 })),
+    ).toEqual(['scan', '폴더', '--probe', '--max-depth', '2', '--limit', '100', '--json']);
+  });
+
+  it('여러 루트는 위치 인자로 나란히 실린다 — stdin 이 아니다', async () => {
+    expect(await argvOf(() => rhwp.scan(['a', 'b']))).toEqual(['scan', 'a', 'b', '--json']);
+    expect(lastOptions().stdin).toBeUndefined();
+  });
+
+  it('빈 목록은 프로세스를 띄우기 전에 거절한다', async () => {
+    const before = seen.argv.length;
+    await expect(rhwp.scan([])).rejects.toThrow(/최소 1개/);
+    expect(seen.argv.length, '실행이 일어나면 안 된다').toBe(before);
+  });
+});
+
 describe('batch — 목록은 인자가 아니라 stdin 이다', () => {
   it('기본 모양', async () => {
     expect(await argvOf(() => rhwp.batch('info', ['a.hwp']))).toEqual(['batch', 'info', '--json']);
@@ -850,6 +970,8 @@ describe('옵션을 안 주면 플래그도 안 붙는다', () => {
     '--min-confidence',
     '--include-fields',
     '--kind',
+    '--probe',
+    '--max-depth',
   ];
 
   const minimal: [string, () => Promise<unknown>][] = [
@@ -860,9 +982,13 @@ describe('옵션을 안 주면 플래그도 안 붙는다', () => {
     ['fields', () => rhwp.fields('a.hwp')],
     ['search', () => rhwp.search('a.hwp', 'x')],
     ['digest', () => rhwp.digest('a.hwp')],
+    ['explain', () => rhwp.explain('a.hwp')],
     ['capabilities', () => rhwp.capabilities()],
     ['exportIrSchema', () => rhwp.exportIrSchema()],
+    ['exportPlanSchema', () => rhwp.exportPlanSchema()],
+    ['exportAgentManifest', () => rhwp.exportAgentManifest()],
     ['exportCapabilitiesSchema', () => rhwp.exportCapabilitiesSchema()],
+    ['exportOntology', () => rhwp.exportOntology()],
     ['exportProvenanceMap', () => rhwp.exportProvenanceMap()],
     ['tableToCsv', () => rhwp.tableToCsv('a.hwp')],
     ['csvToTable', () => rhwp.csvToTable('a.hwp', { csv: 'a.csv', table: 0 })],
@@ -881,9 +1007,11 @@ describe('옵션을 안 주면 플래그도 안 붙는다', () => {
     ['irDiff', () => rhwp.irDiff('a.hwpx', 'b.hwp')],
     ['renderDiff', () => rhwp.renderDiff('a.hwp')],
     ['renderDiff(pair)', () => rhwp.renderDiff('a.hwp', 'b.hwp')],
+    ['verify', () => rhwp.verify('a.hwp', { expectPages: 1 })],
     ['fillFields', () => rhwp.fillFields('a.hwp', { 이름: '값' })],
     ['replaceText', () => rhwp.replaceText('a.hwp', 'x', 'y')],
     ['setCell', () => rhwp.setCell('a.hwp', 0, 0, 0, 'v')],
+    ['scan', () => rhwp.scan('dir')],
     ['batch', () => rhwp.batch('info', ['a.hwp'])],
   ];
 

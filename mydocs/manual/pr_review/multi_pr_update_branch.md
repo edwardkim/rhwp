@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-07-25
+last_verified: 2026-08-06
 ---
 
 # 다수 PR과 update branch 처리
@@ -160,7 +160,10 @@ collaborator가 외부 contributor PR의 source branch에 archive review·오늘
 
 3. collaborator commit 위로 `git merge <new-contributor-head>`를 실행하지 않는다. 그 merge는 대개
    current `devel`을 직접 parent로 갖지 않아 fast-pass가 `mydocs-only-merge-not-reusable`로 거부한다.
-   VS Code 그래프의 가시성은 같은 branch에서 contributor head를 조상으로 두는 선형 history로 유지한다.
+   current `devel`을 source에 이미 병합한 예외는 [review-only fast-pass](review_only_fast_pass.md)의
+   자동 merge tree 일치 조건을 충족할 때만 제한적으로 재사용할 수 있지만, 이 예외도 새 merge 생성을
+   정당화하지 않는다. VS Code 그래프의 가시성은 같은 branch에서 contributor head를 조상으로 두는 선형
+   history로 유지한다.
 4. collaborator commit이 이미 contributor source branch에 push됐거나, replay 범위에 merge·미확인 commit이
    있으면 history를 억지로 정리하거나 contributor branch를 force-push하지 않는다. 최신 source에서 full CI를
    받거나, 작업지시자의 명시 승인을 받아 별도 처리 경로를 선택한다.

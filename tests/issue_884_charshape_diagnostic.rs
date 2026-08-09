@@ -25,6 +25,17 @@ use rhwp::wasm_api::HwpDocument;
 use std::fs;
 use std::path::Path;
 
+/// SVG attribute values are XML-escaped.  The normal renderer emits the CSS
+/// family list with single-quoted primary faces, so the serialized source has
+/// `&apos;HY…&apos;`; an older emitter may leave the primary face unquoted.
+///
+/// The regression contract is the declared primary family, not either valid
+/// XML spelling.
+fn svg_declares_primary_font_family(element: &str, family: &str) -> bool {
+    element.contains(&format!("font-family=\"&apos;{family}&apos;"))
+        || element.contains(&format!("font-family=\"{family}"))
+}
+
 #[test]
 fn issue_884_chungnam_jisajang_uses_hy_supb_per_stream_offset() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
@@ -44,10 +55,10 @@ fn issue_884_chungnam_jisajang_uses_hy_supb_per_stream_offset() {
         let abs_idx = search_from + idx;
         let element_start = svg[..abs_idx].rfind("<text").expect("<text> 시작 못 찾음");
         let element = &svg[element_start..abs_idx + 5];
-        if element.contains("font-family=\"HY수평선B") {
+        if svg_declares_primary_font_family(element, "HY수평선B") {
             uses_hy_supb = true;
         }
-        if element.contains("font-family=\"HY헤드라인M") {
+        if svg_declares_primary_font_family(element, "HY헤드라인M") {
             uses_hy_headlinem = true;
         }
         search_from = abs_idx + 5;

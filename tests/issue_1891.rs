@@ -193,3 +193,25 @@ fn issue_1891_link_bin_data_stable_across_two_rounds() {
         "bin_data_content (id, 크기) 2-round 보존 — 인덱스 시프트 회귀"
     );
 }
+
+/// [#3820 Stage 53] direct HWPX의 저장 reset 보정은 reset 없는 일반 중첩 표의
+/// legacy scalar 측정까지 바꾸면 안 된다. 이 문서의 깊은 중첩 표는 그 과확장 시
+/// 마지막 쪽에서 보이지 않는 줄이 34→56으로 증가한다.
+#[test]
+fn issue_1891_external_link_overflow_cell_lines_do_not_grow() {
+    let data = read_sample();
+    let doc = DocumentCore::from_bytes(&data).expect("parse issue1891 sample");
+    let _ = doc.take_overflow_cell_lines();
+
+    let mut total = 0u64;
+    for page in 0..doc.page_count() {
+        doc.render_page_svg_native(page)
+            .unwrap_or_else(|e| panic!("render page {}: {e:?}", page + 1));
+        total += u64::from(doc.take_overflow_cell_lines());
+    }
+
+    assert!(
+        total <= 34,
+        "direct HWPX 일반 중첩 표의 쪽 밖 소실 줄이 증가함: {total} > 34"
+    );
+}

@@ -47,6 +47,11 @@ PosixPath('/usr/local/bin/rhwp')
 
 바이너리 경로 환경변수 이름(`"RHWP_BIN"`).
 
+### `rhwp.binary_name()` / `rhwp.BUNDLED_DIR`
+
+현재 플랫폼의 실행 파일 이름과 패키지 동봉 바이너리 디렉터리다. 배포 점검이나
+테스트에서 실행 파일 탐색 위치를 확인할 때 쓴다.
+
 ---
 
 ## 1층 — 무상태 명령
@@ -62,8 +67,8 @@ PosixPath('/usr/local/bin/rhwp')
 | 함수 | 대응 CLI | 돌려주는 것 |
 |---|---|---|
 | `info(path)` | `info` | 포맷·쪽수·구역수·문단수·글꼴 |
-| `export_text(path)` | `export-text` | 쪽별 평문 |
-| `export_structure(path)` | `export-structure` | 제목 계층·절 |
+| `export_text(path, *, page=None, max_chars=None)` | `export-text` | 쪽별 평문 |
+| `export_structure(path, *, mode=None)` | `export-structure` | 제목 계층·절 |
 | `export_tables(path)` | `export-tables` | 표 전량 + 셀 좌표 |
 | `fields(path)` | `fields` | 누름틀 목록 |
 | `capabilities(*, mcp=False)` | `capabilities` | 도구 자기서술 |
@@ -87,7 +92,7 @@ for m in rhwp.search("보고서.hwp", "예산").matches:
 
 `-` 로 시작하는 검색어도 그대로 넘길 수 있다 — 내부에서 `--` 구분자를 쓴다.
 
-### `digest(path, *, sections=False, pages=None)`
+### `digest(path, *, sections=False, pages=None, max_chars=None)`
 
 요약·RAG 용 청킹. `sections=True` 는 주소를 보존한 절 단위, `pages="1-5"` 는 쪽 범위 창.
 
@@ -116,13 +121,19 @@ if not result.verify.identical:
     print(f"차이 {result.verify.diff_count}건")   # 예외가 아니라 판정이다
 ```
 
-### `convert(path, *, out=None, verify=False, raise_on_verdict=False)`
+### `convert(path, *, out, verify=False, raise_on_verdict=False)`
 
-HWPX → HWP 변환.
+HWPX → HWP 변환. `out`은 CLI의 위치 인자이며 필수다. 생략하면 프로세스를
+실행하기 전에 `UsageError`가 발생한다.
 
-### `ir_diff(a, b)`
+### `ir_diff(a, b, *, section=None, paragraph=None)`
 
 두 문서의 IR 차이를 범주별로.
+
+### `render_diff(path, path_b=None, *, via=None, page=None, max_disp=None, raise_on_verdict=False)`
+
+페이지 렌더 결과를 비교한다. `path_b`를 생략하면 한 문서의 렌더 왕복을 검사하고,
+지정하면 두 문서의 전/후 렌더를 비교한다.
 
 ### 편집
 
@@ -200,13 +211,18 @@ with rhwp.open("서식.hwp") as doc:
 
 **예외**: `SessionClosedError` — 닫힌 핸들 재사용.
 
-### `class Session`
+### `class Session(profile=None, timeout=300.0, cwd=None)`
 
 `mcp-serve` 자식 프로세스 하나를 감싼 JSON-RPC 클라이언트. 여러 문서를 한 서버에서
 열고 싶을 때만 직접 만든다.
 
 - `call(name, arguments) -> Envelope` — 도구 하나 호출
 - `close()` — 서버 정리(멱등)
+- `cwd`: 자식 `mcp-serve`의 작업 디렉터리. 상대 경로 문서를 열 때 지정한다.
+
+`timeout` 값은 생성자 호환용으로 보관되며, 현재 Python stdio 구현은 개별 요청의
+블로킹 읽기를 중단하지 못한다. 요청 제한 시간은 1층 함수의 `timeout`을 사용하거나
+별도 프로세스 경계를 둔다.
 
 `with` 를 쓰면 예외로 빠져나가도 정리된다. **서버가 남으면 다음 작업이 파일을 못 연다.**
 
@@ -330,6 +346,7 @@ env["page_count"]   # 변환 키
 | `raw` | 원문 봉투 **사본** |
 | `schema_version` | 봉투 스키마 버전 |
 | `verify` | `VerifyReport` 또는 `None`(검증 안 함) |
+| `verify_pages` | `VerifyPagesReport` 또는 `None`(쪽수 검증 안 함) |
 | `changed_pages` | `List[int]` 또는 `None`(확정 불가) |
 | `get_path("verify.identical", default=None)` | 점 경로 조회 |
 
@@ -347,6 +364,15 @@ env["page_count"]   # 변환 키
 | `reparse_error` | 저장본을 못 읽었을 때의 사유 |
 | `__bool__` | `identical` 과 같다 |
 
+### `class VerifyPagesReport(Envelope)`
+
+| 멤버 | 설명 |
+|---|---|
+| `before` | 저장 전 메모리 IR 쪽수 |
+| `after` | 저장 후 재파싱한 쪽수 |
+| `identical` | 저장 전후 쪽수가 같은가 |
+| `__bool__` | `identical` 과 같다 |
+
 ---
 
 ## 예외
@@ -359,8 +385,11 @@ RhwpError
 ├── VerdictFailed          exit 3/4 — raise_on_verdict=True 일 때만
 ├── ProtocolError          stdout 이 계약 위반
 ├── SessionClosedError     닫힌 핸들 재사용
-└── TimeoutError           제한 시간 초과
+└── RhwpTimeoutError       제한 시간 초과
 ```
+
+새 코드는 내장 예외와 구별되는 `RhwpTimeoutError`를 사용한다. 이전 버전 호환을 위해
+`TimeoutError`는 같은 클래스를 가리키는 별칭으로만 유지한다.
 
 모든 예외가 갖는 것:
 

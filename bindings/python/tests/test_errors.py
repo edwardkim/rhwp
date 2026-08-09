@@ -15,6 +15,7 @@ from rhwp.errors import (
     EXIT_VERIFY,
     EXIT_VERIFY_PAGES,
     RhwpRuntimeError,
+    RhwpTimeoutError,
     UsageError,
     VerdictFailed,
     raise_for_exit,
@@ -102,3 +103,89 @@ def test_error_str_includes_last_stderr_line() -> None:
             stderr="첫 줄\n오류: 진짜 사유는 여기",
         )
     assert "진짜 사유는 여기" in str(caught.value)
+
+
+# ── D-5: _quote 역슬래시 이스케이프 ──────────────────────────────────────
+
+
+def test_error_command_escapes_trailing_backslash() -> None:
+    """[D-5] 끝이 역슬래시인 경로가 닫는 따옴표를 집어삼키면 안 된다."""
+    with pytest.raises(RhwpRuntimeError) as caught:
+        raise_for_exit(
+            EXIT_RUNTIME, argv=["rhwp", "info", "C:\\경로\\", "--json"]
+        )
+    command = caught.value.command
+    # 역슬래시가 이스케이프돼 닫는 따옴표가 살아 있어야 한다 — 짝이 맞아야
+    # 셸에 그대로 붙여넣었을 때 다음 토큰을 집어삼키지 않는다.
+    assert command.count('"') % 2 == 0, f"따옴표 짝이 안 맞습니다: {command!r}"
+    assert '"C:\\\\경로\\\\"' in command
+
+
+# ── D-7: TimeoutError → RhwpTimeoutError ────────────────────────────────
+
+
+def test_timeout_error_is_named_rhwp_timeout_error() -> None:
+    """[D-7] 내장 TimeoutError 를 가리지 않는다 — rhwp 예외임이 이름으로 드러난다."""
+    import builtins
+
+    from rhwp.errors import RhwpError
+
+    err = RhwpTimeoutError("제한 시간 초과", argv=["rhwp", "info", "a.hwp"])
+    assert isinstance(err, RhwpError)
+    assert err.__class__.__name__ == "RhwpTimeoutError"
+    # 내장 TimeoutError 와 무관한 별개 클래스여야 한다 — 가려 쓰지 않는다.
+    assert not issubclass(RhwpTimeoutError, builtins.TimeoutError)
+
+
+def test_timeout_error_compatibility_alias_preserves_existing_handlers() -> None:
+    """이전 공개 이름도 같은 rhwp 예외를 잡되, 새 이름을 표준으로 쓴다."""
+    import rhwp
+
+    assert rhwp.TimeoutError is RhwpTimeoutError
+
+
+# ── D-8: UsageError.next_call ────────────────────────────────────────────
+
+
+def test_usage_error_extracts_next_call_from_envelope() -> None:
+    """[D-8] 봉투의 nextCall(교정 호출 힌트)을 구조화해 꺼낼 수 있어야 한다."""
+    envelope = {
+        "error": "닫힌 핸들",
+        "nextCall": {"name": "hwp_open", "arguments": {"path": "a.hwp"}},
+    }
+    with pytest.raises(UsageError) as caught:
+        raise_for_exit(
+            EXIT_USAGE,
+            argv=["rhwp", "mcp-serve"],
+            stderr="오류: 닫힌 핸들",
+            envelope=envelope,
+        )
+    assert caught.value.next_call == {
+        "name": "hwp_open",
+        "arguments": {"path": "a.hwp"},
+    }
+
+
+def test_usage_error_without_next_call_returns_none() -> None:
+    with pytest.raises(UsageError) as caught:
+        raise_for_exit(EXIT_USAGE, argv=["rhwp"], stderr="오류: 인자가 필요합니다")
+    assert caught.value.next_call is None
+
+
+# ── D-18: raise_for_exit/is_known_exit_code 패키지 루트 노출 ──────────────
+
+
+def test_raise_for_exit_exported_at_package_root() -> None:
+    """[D-18] errors.__all__ 엔 있었지만 __init__.py 가 실제로 임포트하지 않았다."""
+    import rhwp
+
+    assert rhwp.raise_for_exit is raise_for_exit
+
+
+def test_is_known_exit_code() -> None:
+    """[D-18] Node의 isKnownExitCode 대응이 파이썬엔 없었다."""
+    from rhwp.errors import is_known_exit_code
+
+    for code in (EXIT_OK, EXIT_RUNTIME, EXIT_USAGE, EXIT_VERIFY, EXIT_VERIFY_PAGES):
+        assert is_known_exit_code(code)
+    assert not is_known_exit_code(42)

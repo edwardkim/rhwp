@@ -27854,3 +27854,336 @@ fn split_rejects_corrupted_cell_row_span_overflow_before_mutation() {
     assert_eq!(table.cells[0].row, u16::MAX - 2);
     assert_eq!(table.cells[0].row_span, 3);
 }
+
+/// [#4149 조사] Enter→Delete 왕복(내용 무변경 복원)이 셀 문단의 저장 line_segs 를
+/// 보존하는지 계측한다. 두 원천을 분리한다:
+///
+///   A) 무편집 divergence — 로드 직후 저장 segs vs `reflow_cell_paragraph` 재계산.
+///      다르면 그 문단은 "한 번이라도 건드리는 순간" 한컴 원본 줄바꿈 증거를 잃는
+///      잠재 모집단이다.
+///   B) 왕복 실측 — split→merge(내용 복원) 전후 저장 segs 대조. 불변식
+///      "무변경 편집 왕복은 레이아웃 보존" 위반의 직접 증거.
+///
+/// 구조상 왕복 결과는 reflow 결과와 같아야 하므로 B의 변경 집합은 A의 divergence
+/// 집합과 일치할 것으로 기대한다 — 일치하면 원인은 왕복 경로가 아니라 "reflow 가
+/// 원본 줄바꿈과 다르다"로 좁혀진다. 요약은 --nocapture 로 출력.
+#[test]
+fn issue4149_cell_lineseg_roundtrip_survey() {
+    let path = "samples/issue1949_giant_cell_nested_tables_perf.hwp";
+    let bytes = std::fs::read(path).expect("issue1949 샘플 읽기");
+
+    // (ppi, ci, cell, para) — 최외곽 표, 다줄(>=2 segs), UTF-16 4자 이상
+    fn survey(doc: &HwpDocument) -> Vec<(usize, usize, usize, usize)> {
+        let mut out = Vec::new();
+        for (ppi, para) in doc.document.sections[0].paragraphs.iter().enumerate() {
+            for (ci, ctrl) in para.controls.iter().enumerate() {
+                if let Control::Table(t) = ctrl {
+                    for (cell_idx, cell) in t.cells.iter().enumerate() {
+                        for (cp, p) in cell.paragraphs.iter().enumerate() {
+                            if p.line_segs.len() >= 2 && p.text.encode_utf16().count() >= 4 {
+                                out.push((ppi, ci, cell_idx, cp));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        out
+    }
+    fn cell_para<'a>(doc: &'a HwpDocument, t: (usize, usize, usize, usize)) -> &'a Paragraph {
+        match &doc.document.sections[0].paragraphs[t.0].controls[t.1] {
+            Control::Table(tbl) => &tbl.cells[t.2].paragraphs[t.3],
+            _ => panic!("표가 아님"),
+        }
+    }
+    // 줄바꿈 증거(text_start 수열)와 기하(vpos/width)를 분리해 본다
+    fn breaks(p: &Paragraph) -> Vec<u32> {
+        p.line_segs.iter().map(|s| s.text_start).collect()
+    }
+    fn geom(p: &Paragraph) -> Vec<(i32, i32, i32)> {
+        p.line_segs
+            .iter()
+            .map(|s| (s.vertical_pos, s.segment_width, s.line_height))
+            .collect()
+    }
+
+    // ── A) 무편집: 저장 segs vs reflow 재계산 ─────────────────────────────
+    let mut doc_a = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let targets = survey(&doc_a);
+    assert!(!targets.is_empty(), "다줄 셀 문단이 없으면 계측 무의미");
+    let (mut a_same, mut a_breaks, mut a_geom_only) = (0usize, 0usize, 0usize);
+    let mut a_break_examples = Vec::new();
+    let mut a_divergent = std::collections::HashSet::new();
+    for &t in &targets {
+        let before = (breaks(cell_para(&doc_a, t)), geom(cell_para(&doc_a, t)));
+        doc_a.reflow_cell_paragraph(0, t.0, t.1, t.2, t.3);
+        let after = (breaks(cell_para(&doc_a, t)), geom(cell_para(&doc_a, t)));
+        if before.0 != after.0 {
+            a_breaks += 1;
+            a_divergent.insert(t);
+            if a_break_examples.len() < 3 {
+                a_break_examples.push((t, before.0.clone(), after.0.clone()));
+            }
+        } else if before.1 != after.1 {
+            a_geom_only += 1;
+            a_divergent.insert(t);
+        } else {
+            a_same += 1;
+        }
+    }
+    println!(
+        "[#4149-A] 무편집 다줄 셀 문단 {}개: 보존 {} / 줄바꿈 divergence {} / 기하만 {}",
+        targets.len(),
+        a_same,
+        a_breaks,
+        a_geom_only
+    );
+    for (t, b, a) in &a_break_examples {
+        println!(
+            "[#4149-A] 예시 ppi{} ci{} cell{} para{}: 저장 {:?} → 재계산 {:?}",
+            t.0, t.1, t.2, t.3, b, a
+        );
+    }
+
+    // ── B) 왕복: split(중간)→merge 전후 저장 segs ────────────────────────
+    let mut doc_b = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let roundtrip_targets: Vec<_> = targets.iter().copied().take(12).collect();
+    let (mut b_same, mut b_breaks, mut b_geom_only) = (0usize, 0usize, 0usize);
+    let mut b_matches_a = true;
+    for &t in &roundtrip_targets {
+        let p = cell_para(&doc_b, t);
+        let text_before = p.text.clone();
+        let (bk_before, gm_before) = (breaks(p), geom(p));
+        let mid = (text_before.encode_utf16().count() / 2).max(1);
+        doc_b
+            .split_paragraph_in_cell_native(0, t.0, t.1, t.2, t.3, mid, None)
+            .expect("split");
+        doc_b
+            .merge_paragraph_in_cell_native(0, t.0, t.1, t.2, t.3 + 1)
+            .expect("merge");
+        let p = cell_para(&doc_b, t);
+        assert_eq!(
+            p.text, text_before,
+            "왕복 후 텍스트 복원은 전제 (ppi{} cell{})",
+            t.0, t.2
+        );
+        let changed = if bk_before != breaks(p) {
+            b_breaks += 1;
+            true
+        } else if gm_before != geom(p) {
+            b_geom_only += 1;
+            true
+        } else {
+            b_same += 1;
+            false
+        };
+        if changed != a_divergent.contains(&t) {
+            b_matches_a = false;
+            println!(
+                "[#4149-B] 예외: ppi{} ci{} cell{} para{} — 왕복 변경={} vs A divergence={}",
+                t.0,
+                t.1,
+                t.2,
+                t.3,
+                changed,
+                a_divergent.contains(&t)
+            );
+        }
+    }
+    println!(
+        "[#4149-B] Enter→Delete 왕복 {}개: 보존 {} / 줄바꿈 변경 {} / 기하만 변경 {}",
+        roundtrip_targets.len(),
+        b_same,
+        b_breaks,
+        b_geom_only
+    );
+    println!(
+        "[#4149-B] 왕복 변경 집합 == A divergence 집합: {} — true 면 왕복 자체는 reflow 를 \
+         충실히 따르고, 원인은 reflow vs 한컴 원본 줄바꿈 차이로 좁혀진다",
+        b_matches_a
+    );
+}
+
+/// [조사] 거대 셀 문서 타이핑 지연의 진짜 병목 분해 — getCursorRectInCell 60ms 의
+/// 내부 귀속. 브라우저 트레이스(조합 업데이트마다 getCursorRectInCell 56~60ms)의
+/// wasm 안쪽을 페이즈별로 실측한다:
+///   1) find_pages_for_cell_position (페이지 좁히기)
+///   2) build_page_tree (uncached — LayoutEngine::build_render_tree 포함)
+///   3) get_cursor_rect_in_cell_native 전체
+///   4) 거대 표가 없는 쪽의 build_page_tree (차등 — 표 레이아웃 귀속 증거)
+#[test]
+fn issue4149_adjacent_giant_cell_cursor_rect_latency_decomposition() {
+    use std::time::Instant;
+    let bytes =
+        std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let pages = doc.page_count();
+    println!("[cursor-rect] 총 {pages}쪽");
+
+    // 캐럿 좌표: 브라우저 실측과 동일 (ppi0 ci2 cell2 para6 off5)
+    let t = Instant::now();
+    let cand = doc
+        .find_pages_for_cell_position(0, 0, 2, 2, Some((6, 5)))
+        .expect("페이지 좁히기");
+    println!(
+        "[cursor-rect] 1) find_pages_for_cell_position={:?} → {:?}",
+        t.elapsed(),
+        cand
+    );
+
+    let target_page = cand[0];
+    for i in 0..3 {
+        let t = Instant::now();
+        let _ = doc.build_page_tree(target_page).expect("페이지 트리");
+        println!(
+            "[cursor-rect] 2) build_page_tree(p{target_page}) #{i}={:?}",
+            t.elapsed()
+        );
+    }
+    // find_page(구성 조회)만 분리 — 나머지가 LayoutEngine::build_render_tree 귀속
+    for i in 0..2 {
+        let t = Instant::now();
+        let _ = doc.find_page(target_page).expect("find_page");
+        println!(
+            "[cursor-rect] 2b) find_page(p{target_page}) #{i}={:?}",
+            t.elapsed()
+        );
+    }
+    // 차등: 마지막 쪽 (다른 내용 구성)
+    let last = pages - 1;
+    let t = Instant::now();
+    let _ = doc.build_page_tree(last).expect("페이지 트리");
+    println!(
+        "[cursor-rect] 4) build_page_tree(p{last})={:?}",
+        t.elapsed()
+    );
+
+    for i in 0..3 {
+        let t = Instant::now();
+        let _ = doc
+            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 6, 5)
+            .expect("커서 rect");
+        println!(
+            "[cursor-rect] 3) get_cursor_rect_in_cell_native #{i}={:?}",
+            t.elapsed()
+        );
+    }
+}
+
+/// [조사] 프로파일링용 핫루프 — macOS `sample` 로 build_render_tree 내부 귀속.
+/// `--ignored` 로만 실행.
+#[test]
+#[ignore]
+fn issue4149_adjacent_cursor_rect_profile_loop() {
+    let bytes =
+        std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let _ = doc.page_count();
+    let _ = doc.find_pages_for_cell_position(0, 0, 2, 2, Some((6, 5)));
+    eprintln!("[profile-loop] 시작 pid={}", std::process::id());
+    for _ in 0..600 {
+        let _ = doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 6, 5);
+    }
+    eprintln!("[profile-loop] 끝");
+}
+
+/// [조사] deferred 편집 직후 첫 캐럿 질의 ~20ms 의 귀속 — find_pages vs 나머지.
+#[test]
+fn issue4149_deferred_edit_first_cursor_query_decomposition() {
+    use std::time::Instant;
+    let bytes =
+        std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let _ = doc.page_count();
+    // 웜업
+    let _ = doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 6, 5);
+    let t = Instant::now();
+    let _ = doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 6, 5);
+    println!("[deferred-q] 웜 질의={:?}", t.elapsed());
+
+    // cp29: 다줄 텍스트 문단 (조사 실측 [0,46,84,...]) — 실타이핑 대표 사례.
+    // cp6(공백 스페이서)은 삽입이 spacer 클래스를 바꿔 정당 evict 되는 반례다.
+    doc.insert_text_in_cell_deferred_pagination(0, 0, 2, 2, 29, 5, "X")
+        .expect("deferred insert");
+    let t = Instant::now();
+    let pages = doc
+        .find_pages_for_cell_position(0, 0, 2, 2, Some((29, 6)))
+        .expect("pages");
+    println!(
+        "[deferred-q] 편집 직후 find_pages={:?} → {:?}",
+        t.elapsed(),
+        pages
+    );
+    let t = Instant::now();
+    let _ = doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 29, 6);
+    println!("[deferred-q] 편집 직후 rect(질의1)={:?}", t.elapsed());
+    let t = Instant::now();
+    let _ = doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 29, 6);
+    println!("[deferred-q] rect(질의2)={:?}", t.elapsed());
+}
+
+/// [조사] deferred 편집 후 cell_units 재계산 11ms 의 내부 귀속 — sample 용 핫루프.
+#[test]
+#[ignore]
+fn issue4149_deferred_units_rebuild_profile_loop() {
+    let bytes =
+        std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let _ = doc.page_count();
+    let _ = doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 6, 5);
+    eprintln!("[units-loop] 시작 pid={}", std::process::id());
+    for i in 0..400 {
+        let ch = if i % 2 == 0 { "X" } else { "" };
+        if ch.is_empty() {
+            let _ = doc.delete_text_in_cell_deferred_pagination(0, 0, 2, 2, 6, 5, 1);
+        } else {
+            let _ = doc.insert_text_in_cell_deferred_pagination(0, 0, 2, 2, 6, 5, ch);
+        }
+        let _ = doc.find_pages_for_cell_position(0, 0, 2, 2, Some((6, 5)));
+    }
+    eprintln!("[units-loop] 끝");
+}
+
+/// [#4167] units 지문의 실문서 계약: 텍스트 문단 제자리 타이핑은 지문 불변(캐시
+/// 보존 → find_pages µs 급), 공백 스페이서 문단에 글자 삽입은 클래스 전이로 지문
+/// 변경(정당 evict). cp6 은 공백 5자 스페이서, cp29 는 다줄 텍스트 문단이다.
+#[test]
+fn issue4167_units_fingerprint_doc_contract() {
+    use crate::renderer::layout::LayoutEngine;
+    let bytes =
+        std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let _ = doc.page_count();
+    let para = |doc: &HwpDocument, cp: usize| -> Paragraph {
+        match &doc.document.sections[0].paragraphs[0].controls[2] {
+            Control::Table(t) => t.cells[2].paragraphs[cp].clone(),
+            _ => panic!("표가 아님"),
+        }
+    };
+
+    // 텍스트 문단: 삽입 전후 지문 불변 (원본 tag 잔여 비트는 마스킹됨)
+    let text_before = para(&doc, 29);
+    doc.insert_text_in_cell_deferred_pagination(0, 0, 2, 2, 29, 5, "X")
+        .expect("insert");
+    let text_after = para(&doc, 29);
+    assert_eq!(
+        LayoutEngine::cell_paragraph_units_fingerprint(&text_before),
+        LayoutEngine::cell_paragraph_units_fingerprint(&text_after),
+        "텍스트 문단 제자리 삽입은 units 지문 불변이어야 한다 (#4167 스킵 전제)"
+    );
+
+    // 스페이서 문단: 삽입이 trim-empty 클래스를 바꿔 지문 변경
+    let spacer_before = para(&doc, 6);
+    assert!(
+        spacer_before.text.trim().is_empty(),
+        "cp6 은 공백 스페이서 전제"
+    );
+    doc.insert_text_in_cell_deferred_pagination(0, 0, 2, 2, 6, 5, "X")
+        .expect("insert");
+    let spacer_after = para(&doc, 6);
+    assert_ne!(
+        LayoutEngine::cell_paragraph_units_fingerprint(&spacer_before),
+        LayoutEngine::cell_paragraph_units_fingerprint(&spacer_after),
+        "스페이서 → 텍스트 전이는 지문이 변해 evict 되어야 한다"
+    );
+}

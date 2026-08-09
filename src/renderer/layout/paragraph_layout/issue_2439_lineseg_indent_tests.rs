@@ -206,9 +206,9 @@ fn synthetic_or_non_body_geometry_does_not_override_para_margin() {
 
 #[test]
 fn hwp5_origin_hwpx_keeps_the_hwp5_stored_line_start_contract() {
-    let native_hwp5 = LayoutCompatibilityProfile::new(false, false, false, false, true);
-    let hwp5_origin_hwpx = LayoutCompatibilityProfile::new(false, false, false, true, false);
-    let original_hwpx = LayoutCompatibilityProfile::new(false, false, true, false, false);
+    let native_hwp5 = LayoutCompatibilityProfile::new(false, false, false, false, false, true);
+    let hwp5_origin_hwpx = LayoutCompatibilityProfile::new(false, false, false, true, true, false);
+    let original_hwpx = LayoutCompatibilityProfile::new(false, false, true, true, false, false);
 
     assert!(uses_hwp5_stored_line_start_profile(native_hwp5));
     assert!(uses_hwp5_stored_line_start_profile(hwp5_origin_hwpx));

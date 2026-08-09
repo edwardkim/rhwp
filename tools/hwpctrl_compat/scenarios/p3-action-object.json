@@ -1,0 +1,98 @@
+{
+  "id": "p3-action-object",
+  "title": "Action 객체 — ActID·SetID·CreateSet·GetDefault·Run·Execute",
+  "ledger": [
+    "HwpCtrl.method.CreateAction",
+    "Action.property.ActID",
+    "Action.property.SetID",
+    "Action.method.CreateSet",
+    "Action.method.GetDefault",
+    "Action.method.Run",
+    "Action.method.Execute"
+  ],
+  "open": "samples/2026_oss_rst.hwp",
+  "calls": [
+    [
+      "CreateAction(\"MoveDocEnd\").ActID",
+      []
+    ],
+    [
+      "CreateAction(\"MoveDocEnd\").SetID",
+      []
+    ],
+    [
+      "CreateAction(\"CharShape\").ActID",
+      []
+    ],
+    [
+      "CreateAction(\"CharShape\").SetID",
+      []
+    ],
+    [
+      "CreateAction(\"CharShape\").CreateSet.SetID",
+      []
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        6,
+        0
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ],
+    [
+      "CreateAction(\"MoveDocEnd\").Run",
+      []
+    ],
+    [
+      "GetPos",
+      []
+    ],
+    [
+      "CreateAction(\"MoveDocBegin\").Run",
+      []
+    ],
+    [
+      "GetPos",
+      []
+    ],
+    [
+      "CreateAction(\"MoveDocEnd\").Execute",
+      [
+        {
+          "$obj": "CreateAction(\"CharShape\").CreateSet"
+        }
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ],
+    [
+      "CreateAction(\"CharShape\").GetDefault",
+      [
+        {
+          "$obj": "CreateAction(\"CharShape\").CreateSet"
+        }
+      ]
+    ],
+    [
+      "CreateAction(\"CharShape\").Execute",
+      [
+        {
+          "$obj": "CreateAction(\"CharShape\").CreateSet"
+        }
+      ]
+    ],
+    [
+      "CharShape.Item",
+      [
+        "Height"
+      ]
+    ]
+  ]
+}

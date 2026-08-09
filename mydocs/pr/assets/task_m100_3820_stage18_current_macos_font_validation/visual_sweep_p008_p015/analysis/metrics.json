@@ -1,0 +1,5604 @@
+[
+  {
+    "page": 8,
+    "flags": [],
+    "rhwp_frame": [
+      315,
+      299,
+      1078,
+      1645
+    ],
+    "pdf_frame": [
+      312,
+      336,
+      1075,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -11.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 35,
+      "pdf_count": 36,
+      "paired": 35,
+      "max_abs_delta_px": 82.0,
+      "p90_abs_delta_px": 39.0,
+      "mean_abs_delta_px": 38.5
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          315,
+          299,
+          694,
+          1645
+        ],
+        "pdf_frame": [
+          312,
+          336,
+          691,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 35,
+          "pdf_count": 36,
+          "paired": 35,
+          "max_abs_delta_px": 82.0,
+          "p90_abs_delta_px": 39.0,
+          "mean_abs_delta_px": 38.5
+        },
+        "rhwp_first_band": {
+          "y0": 308,
+          "y1": 328,
+          "x0": 486,
+          "x1": 692,
+          "pixels": 1370,
+          "cy": 318.0
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1575,
+          "x0": 568,
+          "x1": 622,
+          "pixels": 52,
+          "cy": 1574.5
+        },
+        "pdf_first_band": {
+          "y0": 346,
+          "y1": 367,
+          "x0": 483,
+          "x1": 689,
+          "pixels": 1486,
+          "cy": 356.5
+        },
+        "pdf_last_band": {
+          "y0": 1591,
+          "y1": 1592,
+          "x0": 591,
+          "x1": 600,
+          "pixels": 18,
+          "cy": 1591.5
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          698,
+          299,
+          1078,
+          1645
+        ],
+        "pdf_frame": [
+          695,
+          336,
+          1075,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 34,
+          "pdf_count": 33,
+          "paired": 33,
+          "max_abs_delta_px": 39.5,
+          "p90_abs_delta_px": 38.5,
+          "mean_abs_delta_px": 37.8
+        },
+        "rhwp_first_band": {
+          "y0": 307,
+          "y1": 328,
+          "x0": 700,
+          "x1": 886,
+          "pixels": 1272,
+          "cy": 317.5
+        },
+        "rhwp_last_band": {
+          "y0": 1497,
+          "y1": 1497,
+          "x0": 700,
+          "x1": 1076,
+          "pixels": 377,
+          "cy": 1497.0
+        },
+        "pdf_first_band": {
+          "y0": 346,
+          "y1": 366,
+          "x0": 699,
+          "x1": 868,
+          "pixels": 1225,
+          "cy": 356.0
+        },
+        "pdf_last_band": {
+          "y0": 1479,
+          "y1": 1480,
+          "x0": 697,
+          "x1": 1073,
+          "pixels": 754,
+          "cy": 1479.5
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [],
+    "column_text_flow_masked_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "pdf_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          168,
+          1080,
+          1516
+        ],
+        "pdf_frame": [
+          597,
+          168,
+          1079,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      }
+    ],
+    "column_text_flow_table_masks": {
+      "rhwp": [
+        [
+          111,
+          168,
+          1096,
+          1501
+        ]
+      ],
+      "pdf": [
+        [
+          111,
+          168,
+          1095,
+          1501
+        ]
+      ]
+    },
+    "column_text_flow_body_frames": {
+      "rhwp": [
+        111,
+        168,
+        1080,
+        1516
+      ],
+      "pdf": [
+        111,
+        168,
+        1079,
+        1516
+      ]
+    },
+    "column_text_flow_reflowing_float_present": false,
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 3,
+      "pdf_count": 1,
+      "paired": 1,
+      "deltas_px": [
+        -901.0
+      ],
+      "max_abs_delta_px": 901.0,
+      "mean_abs_delta_px": 901.0,
+      "rhwp_regions": [
+        {
+          "x0": 507.0,
+          "y0": 299.0,
+          "x1": 619.0,
+          "y1": 395.0,
+          "w": 112.0,
+          "h": 96.0,
+          "cy": 347.0,
+          "tiles": 25.0
+        },
+        {
+          "x0": 523.0,
+          "y0": 1051.0,
+          "x1": 1078.0,
+          "y1": 1147.0,
+          "w": 555.0,
+          "h": 96.0,
+          "cy": 1099.0,
+          "tiles": 152.0
+        },
+        {
+          "x0": 987.0,
+          "y0": 1371.0,
+          "x1": 1078.0,
+          "y1": 1419.0,
+          "w": 91.0,
+          "h": 48.0,
+          "cy": 1395.0,
+          "tiles": 8.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 536.0,
+          "y0": 1200.0,
+          "x1": 1016.0,
+          "y1": 1296.0,
+          "w": 480.0,
+          "h": 96.0,
+          "cy": 1248.0,
+          "tiles": 132.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 0,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        []
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/svg/issue2007_nested_cell_pagination_42065_008.svg",
+    "render_tree_json": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/render_tree/render_tree_008.json",
+    "equation_text_overlap_candidates": [],
+    "square_wrap_text_overlap_candidates": [],
+    "deferred_square_picture_top_drift_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [
+      {
+        "path": "root/2/0/0/0/0/0/109/0/18",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "제기할 수 있다.",
+        "overflow_px": 5023.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          6655.2,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/17",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "  ⑤ 제4항에 따라 시정요구를 받은 계약상대자는 대통령령으로 정하는 바에 따라 조달청장에게 이의를 ",
+        "overflow_px": 5004.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          6636.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/16",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "야 한다.",
+        "overflow_px": 4986.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          6617.8,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/15",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "「국가를 당사자로 하는 계약에 관한 법률」 등 관계 법령이나 계약조건에 따라 처분 등 조치를 취하여",
+        "overflow_px": 4967.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          6599.2,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/14",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "  ④ 조달청장은 불공정한 수요물자 조달행위가 확인된 계약상대자에 대하여는 시정을 요구할 수 있으며, ",
+        "overflow_px": 4948.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          6580.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/13",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "하며, 다른 목적 등을 위하여 권한을 남용하여서는 아니 된다.",
+        "overflow_px": 4930.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          6561.8,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/12",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "  ③ 제1항에 따라 조사를 수행하는 공무원은 이 법의 시행을 위하여 필요한 최소한의 범위에서 행하여야 ",
+        "overflow_px": 4911.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          6543.2,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/11",
+        "pi": 7,
+        "question": null,
+        "question_text": null,
+        "text": "  ② 제1항에 따라 조사를 수행하는 공무원은 그 권한을 표시하는 증표를 관계인에게 제시하여야 한다.",
+        "overflow_px": 4892.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          6524.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/10",
+        "pi": 6,
+        "question": null,
+        "question_text": null,
+        "text": "  5. 우수조달물품등의 지정을 거짓이나 부정한 방법으로 받은 행위",
+        "overflow_px": 4874.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          6505.8,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/9",
+        "pi": 5,
+        "question": null,
+        "question_text": null,
+        "text": "  4. 수요기관 등의 사전 승인 없이 계약규격과 상이한 제품을 납품하는 행위",
+        "overflow_px": 4855.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          6487.2,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/8",
+        "pi": 4,
+        "question": null,
+        "question_text": null,
+        "text": "  3. 원산지를 거짓으로 표시하여 납품하는 행위",
+        "overflow_px": 4836.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          6468.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/7",
+        "pi": 3,
+        "question": null,
+        "question_text": null,
+        "text": "  2. 직접생산기준을 위반하여 납품하는 행위",
+        "overflow_px": 4818.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          6449.8,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/6",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "류를 제출하는 행위",
+        "overflow_px": 4799.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          6431.2,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/5",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "  1. 입찰자 또는 계약상대자 등이 입찰 또는 계약, 납품검사 등에 관한 서류를 위조·변조하거나 거짓 서",
+        "overflow_px": 4780.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          6412.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/4",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "출을 요구하거나 사무소·사업장·공장 등을 방문하여 시설·서류 등을 조사하게 할 수 있다.",
+        "overflow_px": 4762.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          6393.8,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/3",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "수하고, 그 신고 내용의 조사를 위하여 필요한 경우 소속 공무원으로 하여금 계약상대자에게 자료의 제",
+        "overflow_px": 4743.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          6375.2,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/2",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "음 각 호의 어느 하나에 해당하는 행위(이하 \"불공정한 수요물자 조달행위\"라 한다)에 대하여 신고를 접",
+        "overflow_px": 4724.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          6356.5,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/1",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "제9조의3(불공정한 수요물자 조달행위의 조사) ① 조달청장은 수요물자 조달과정에서 공정성을 해치는 다",
+        "overflow_px": 4706.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          6337.8,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/109/0/0",
+        "pi": 0,
+        "question": null,
+        "question_text": null,
+        "text": "▸조달사업에 관한 법률",
+        "overflow_px": 4683.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          6313.3,
+          621.4,
+          14.7
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/108/0/51",
+        "pi": 23,
+        "question": null,
+        "question_text": null,
+        "text": "부터 제180조의3까지의 규정을 위반한 사항인 경우에는 증권선물위원회를 말한다)의 요구에 불응한 자",
+        "overflow_px": 4653.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          6285.1,
+          616.9,
+          13.3
+        ]
+      }
+    ],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": null
+  },
+  {
+    "page": 9,
+    "flags": [
+      "render_tree_frame_tail_overflow",
+      "column_line_band_drift"
+    ],
+    "rhwp_frame": [
+      207,
+      401,
+      1078,
+      1645
+    ],
+    "pdf_frame": [
+      205,
+      444,
+      1075,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -11.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 24,
+      "pdf_count": 26,
+      "paired": 24,
+      "max_abs_delta_px": 45.0,
+      "p90_abs_delta_px": 44.5,
+      "mean_abs_delta_px": 41.9
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          207,
+          401,
+          640,
+          1645
+        ],
+        "pdf_frame": [
+          205,
+          444,
+          638,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 18,
+          "pdf_count": 19,
+          "paired": 18,
+          "max_abs_delta_px": 132.5,
+          "p90_abs_delta_px": 131.5,
+          "mean_abs_delta_px": 75.5
+        },
+        "rhwp_first_band": {
+          "y0": 443,
+          "y1": 464,
+          "x0": 219,
+          "x1": 423,
+          "pixels": 1536,
+          "cy": 453.5
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1576,
+          "x0": 568,
+          "x1": 622,
+          "pixels": 57,
+          "cy": 1575.0
+        },
+        "pdf_first_band": {
+          "y0": 488,
+          "y1": 509,
+          "x0": 215,
+          "x1": 422,
+          "pixels": 1687,
+          "cy": 498.5
+        },
+        "pdf_last_band": {
+          "y0": 1591,
+          "y1": 1591,
+          "x0": 592,
+          "x1": 599,
+          "pixels": 8,
+          "cy": 1591.0
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          644,
+          401,
+          1078,
+          1645
+        ],
+        "pdf_frame": [
+          642,
+          444,
+          1075,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 36,
+          "pdf_count": 36,
+          "paired": 36,
+          "max_abs_delta_px": 45.0,
+          "p90_abs_delta_px": 45.0,
+          "mean_abs_delta_px": 43.8
+        },
+        "rhwp_first_band": {
+          "y0": 406,
+          "y1": 427,
+          "x0": 656,
+          "x1": 981,
+          "pixels": 2121,
+          "cy": 416.5
+        },
+        "rhwp_last_band": {
+          "y0": 1447,
+          "y1": 1448,
+          "x0": 646,
+          "x1": 1076,
+          "pixels": 862,
+          "cy": 1447.5
+        },
+        "pdf_first_band": {
+          "y0": 450,
+          "y1": 471,
+          "x0": 653,
+          "x1": 967,
+          "pixels": 2185,
+          "cy": 460.5
+        },
+        "pdf_last_band": {
+          "y0": 1489,
+          "y1": 1490,
+          "x0": 644,
+          "x1": 1073,
+          "pixels": 860,
+          "cy": 1489.5
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          207,
+          401,
+          640,
+          1645
+        ],
+        "pdf_frame": [
+          205,
+          444,
+          638,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 18,
+          "pdf_count": 19,
+          "paired": 18,
+          "max_abs_delta_px": 132.5,
+          "p90_abs_delta_px": 131.5,
+          "mean_abs_delta_px": 75.5
+        },
+        "rhwp_first_band": {
+          "y0": 443,
+          "y1": 464,
+          "x0": 219,
+          "x1": 423,
+          "pixels": 1536,
+          "cy": 453.5
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1576,
+          "x0": 568,
+          "x1": 622,
+          "pixels": 57,
+          "cy": 1575.0
+        },
+        "pdf_first_band": {
+          "y0": 488,
+          "y1": 509,
+          "x0": 215,
+          "x1": 422,
+          "pixels": 1687,
+          "cy": 498.5
+        },
+        "pdf_last_band": {
+          "y0": 1591,
+          "y1": 1591,
+          "x0": 592,
+          "x1": 599,
+          "pixels": 8,
+          "cy": 1591.0
+        }
+      }
+    ],
+    "column_text_flow_masked_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "pdf_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          168,
+          1080,
+          1516
+        ],
+        "pdf_frame": [
+          597,
+          168,
+          1079,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      }
+    ],
+    "column_text_flow_table_masks": {
+      "rhwp": [
+        [
+          111,
+          168,
+          1096,
+          1491
+        ]
+      ],
+      "pdf": [
+        [
+          111,
+          168,
+          1095,
+          1491
+        ]
+      ]
+    },
+    "column_text_flow_body_frames": {
+      "rhwp": [
+        111,
+        168,
+        1080,
+        1516
+      ],
+      "pdf": [
+        111,
+        168,
+        1079,
+        1516
+      ]
+    },
+    "column_text_flow_reflowing_float_present": false,
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 2,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_regions": [
+        {
+          "x0": 239.0,
+          "y0": 849.0,
+          "x1": 431.0,
+          "y1": 961.0,
+          "w": 192.0,
+          "h": 112.0,
+          "cy": 905.0,
+          "tiles": 49.0
+        },
+        {
+          "x0": 239.0,
+          "y0": 1025.0,
+          "x1": 431.0,
+          "y1": 1137.0,
+          "w": 192.0,
+          "h": 112.0,
+          "cy": 1081.0,
+          "tiles": 41.0
+        }
+      ],
+      "pdf_regions": []
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 1,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": [
+          {
+            "x0": 440.0,
+            "x1": 641.0,
+            "y0": 1465.0,
+            "y1": 1466.0,
+            "length": 202.0,
+            "cy": 1465.5,
+            "gap_height": 2.0
+          }
+        ]
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 0,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        []
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/svg/issue2007_nested_cell_pagination_42065_009.svg",
+    "render_tree_json": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/render_tree/render_tree_009.json",
+    "equation_text_overlap_candidates": [],
+    "square_wrap_text_overlap_candidates": [],
+    "deferred_square_picture_top_drift_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [
+      {
+        "path": "root/2/0/0/0/0/0/117/0/18",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "제기할 수 있다.",
+        "overflow_px": 4296.9,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          5928.6,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/17",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "  ⑤ 제4항에 따라 시정요구를 받은 계약상대자는 대통령령으로 정하는 바에 따라 조달청장에게 이의를 ",
+        "overflow_px": 4278.2,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5909.9,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/16",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "야 한다.",
+        "overflow_px": 4259.6,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          5891.3,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/15",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "「국가를 당사자로 하는 계약에 관한 법률」 등 관계 법령이나 계약조건에 따라 처분 등 조치를 취하여",
+        "overflow_px": 4240.9,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          5872.6,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/14",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "  ④ 조달청장은 불공정한 수요물자 조달행위가 확인된 계약상대자에 대하여는 시정을 요구할 수 있으며, ",
+        "overflow_px": 4222.2,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5853.9,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/13",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "하며, 다른 목적 등을 위하여 권한을 남용하여서는 아니 된다.",
+        "overflow_px": 4203.6,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          5835.3,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/12",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "  ③ 제1항에 따라 조사를 수행하는 공무원은 이 법의 시행을 위하여 필요한 최소한의 범위에서 행하여야 ",
+        "overflow_px": 4184.9,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5816.6,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/11",
+        "pi": 7,
+        "question": null,
+        "question_text": null,
+        "text": "  ② 제1항에 따라 조사를 수행하는 공무원은 그 권한을 표시하는 증표를 관계인에게 제시하여야 한다.",
+        "overflow_px": 4166.2,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5797.9,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/10",
+        "pi": 6,
+        "question": null,
+        "question_text": null,
+        "text": "  5. 우수조달물품등의 지정을 거짓이나 부정한 방법으로 받은 행위",
+        "overflow_px": 4147.6,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5779.3,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/9",
+        "pi": 5,
+        "question": null,
+        "question_text": null,
+        "text": "  4. 수요기관 등의 사전 승인 없이 계약규격과 상이한 제품을 납품하는 행위",
+        "overflow_px": 4128.9,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5760.6,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/8",
+        "pi": 4,
+        "question": null,
+        "question_text": null,
+        "text": "  3. 원산지를 거짓으로 표시하여 납품하는 행위",
+        "overflow_px": 4110.2,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5741.9,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/7",
+        "pi": 3,
+        "question": null,
+        "question_text": null,
+        "text": "  2. 직접생산기준을 위반하여 납품하는 행위",
+        "overflow_px": 4091.6,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5723.3,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/6",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "류를 제출하는 행위",
+        "overflow_px": 4072.9,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          5704.6,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/5",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "  1. 입찰자 또는 계약상대자 등이 입찰 또는 계약, 납품검사 등에 관한 서류를 위조·변조하거나 거짓 서",
+        "overflow_px": 4054.2,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5685.9,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/4",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "출을 요구하거나 사무소·사업장·공장 등을 방문하여 시설·서류 등을 조사하게 할 수 있다.",
+        "overflow_px": 4035.6,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          5667.3,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/3",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "수하고, 그 신고 내용의 조사를 위하여 필요한 경우 소속 공무원으로 하여금 계약상대자에게 자료의 제",
+        "overflow_px": 4016.9,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          5648.6,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/2",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "음 각 호의 어느 하나에 해당하는 행위(이하 \"불공정한 수요물자 조달행위\"라 한다)에 대하여 신고를 접",
+        "overflow_px": 3998.2,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          5629.9,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/1",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "제9조의3(불공정한 수요물자 조달행위의 조사) ① 조달청장은 수요물자 조달과정에서 공정성을 해치는 다",
+        "overflow_px": 3979.6,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5611.3,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/117/0/0",
+        "pi": 0,
+        "question": null,
+        "question_text": null,
+        "text": "▸조달사업에 관한 법률",
+        "overflow_px": 3956.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5586.7,
+          621.4,
+          14.7
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/116/0/51",
+        "pi": 23,
+        "question": null,
+        "question_text": null,
+        "text": "부터 제180조의3까지의 규정을 위반한 사항인 경우에는 증권선물위원회를 말한다)의 요구에 불응한 자",
+        "overflow_px": 3926.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          5558.5,
+          616.9,
+          13.3
+        ]
+      }
+    ],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/analysis/annotated_009.png"
+  },
+  {
+    "page": 10,
+    "flags": [
+      "render_tree_frame_tail_overflow",
+      "line_band_drift",
+      "column_line_band_drift",
+      "large_ink_region_drift"
+    ],
+    "rhwp_frame": [
+      39,
+      270,
+      1152,
+      1645
+    ],
+    "pdf_frame": [
+      39,
+      347,
+      1151,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -11.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 54,
+      "pdf_count": 49,
+      "paired": 49,
+      "max_abs_delta_px": 129.0,
+      "p90_abs_delta_px": 72.0,
+      "mean_abs_delta_px": 70.9
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          39,
+          270,
+          593,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          347,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 52,
+          "pdf_count": 49,
+          "paired": 49,
+          "max_abs_delta_px": 131.0,
+          "p90_abs_delta_px": 72.0,
+          "mean_abs_delta_px": 70.7
+        },
+        "rhwp_first_band": {
+          "y0": 273,
+          "y1": 294,
+          "x0": 126,
+          "x1": 491,
+          "pixels": 3335,
+          "cy": 283.5
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1575,
+          "x0": 562,
+          "x1": 589,
+          "pixels": 24,
+          "cy": 1574.5
+        },
+        "pdf_first_band": {
+          "y0": 351,
+          "y1": 372,
+          "x0": 121,
+          "x1": 519,
+          "pixels": 2489,
+          "cy": 361.5
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 567,
+          "x1": 591,
+          "pixels": 25,
+          "cy": 1587.0
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          270,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          347,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 41,
+          "pdf_count": 40,
+          "paired": 40,
+          "max_abs_delta_px": 84.5,
+          "p90_abs_delta_px": 47.0,
+          "mean_abs_delta_px": 29.3
+        },
+        "rhwp_first_band": {
+          "y0": 306,
+          "y1": 326,
+          "x0": 599,
+          "x1": 1091,
+          "pixels": 3202,
+          "cy": 316.0
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1575,
+          "x0": 603,
+          "x1": 628,
+          "pixels": 24,
+          "cy": 1574.5
+        },
+        "pdf_first_band": {
+          "y0": 375,
+          "y1": 393,
+          "x0": 599,
+          "x1": 1074,
+          "pixels": 2540,
+          "cy": 384.0
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 599,
+          "x1": 624,
+          "pixels": 25,
+          "cy": 1587.0
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          39,
+          270,
+          593,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          347,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 52,
+          "pdf_count": 49,
+          "paired": 49,
+          "max_abs_delta_px": 131.0,
+          "p90_abs_delta_px": 72.0,
+          "mean_abs_delta_px": 70.7
+        },
+        "rhwp_first_band": {
+          "y0": 273,
+          "y1": 294,
+          "x0": 126,
+          "x1": 491,
+          "pixels": 3335,
+          "cy": 283.5
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1575,
+          "x0": 562,
+          "x1": 589,
+          "pixels": 24,
+          "cy": 1574.5
+        },
+        "pdf_first_band": {
+          "y0": 351,
+          "y1": 372,
+          "x0": 121,
+          "x1": 519,
+          "pixels": 2489,
+          "cy": 361.5
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 567,
+          "x1": 591,
+          "pixels": 25,
+          "cy": 1587.0
+        }
+      }
+    ],
+    "column_text_flow_masked_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "pdf_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          168,
+          1080,
+          1516
+        ],
+        "pdf_frame": [
+          597,
+          168,
+          1079,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      }
+    ],
+    "column_text_flow_table_masks": {
+      "rhwp": [
+        [
+          111,
+          168,
+          1096,
+          1508
+        ]
+      ],
+      "pdf": [
+        [
+          111,
+          168,
+          1095,
+          1508
+        ]
+      ]
+    },
+    "column_text_flow_body_frames": {
+      "rhwp": [
+        111,
+        168,
+        1080,
+        1516
+      ],
+      "pdf": [
+        111,
+        168,
+        1079,
+        1516
+      ]
+    },
+    "column_text_flow_reflowing_float_present": false,
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 1,
+      "pdf_count": 1,
+      "paired": 1,
+      "deltas_px": [
+        459.0
+      ],
+      "max_abs_delta_px": 459.0,
+      "mean_abs_delta_px": 459.0,
+      "rhwp_regions": [
+        {
+          "x0": 647.0,
+          "y0": 1342.0,
+          "x1": 1047.0,
+          "y1": 1422.0,
+          "w": 400.0,
+          "h": 80.0,
+          "cy": 1382.0,
+          "tiles": 91.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 135.0,
+          "y0": 347.0,
+          "x1": 1079.0,
+          "y1": 1499.0,
+          "w": 944.0,
+          "h": 1152.0,
+          "cy": 923.0,
+          "tiles": 2974.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 1,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": [
+          {
+            "x0": 968.0,
+            "x1": 1065.0,
+            "y0": 1001.0,
+            "y1": 1002.0,
+            "length": 98.0,
+            "cy": 1001.5,
+            "gap_height": 2.0
+          }
+        ]
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 0,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        []
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/svg/issue2007_nested_cell_pagination_42065_010.svg",
+    "render_tree_json": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/render_tree/render_tree_010.json",
+    "equation_text_overlap_candidates": [],
+    "square_wrap_text_overlap_candidates": [],
+    "deferred_square_picture_top_drift_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [
+      {
+        "path": "root/2/0/0/0/0/0/119/0/18",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "제기할 수 있다.",
+        "overflow_px": 3481.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          5113.1,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/17",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "  ⑤ 제4항에 따라 시정요구를 받은 계약상대자는 대통령령으로 정하는 바에 따라 조달청장에게 이의를 ",
+        "overflow_px": 3462.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5094.4,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/16",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "야 한다.",
+        "overflow_px": 3444.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          5075.7,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/15",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "「국가를 당사자로 하는 계약에 관한 법률」 등 관계 법령이나 계약조건에 따라 처분 등 조치를 취하여",
+        "overflow_px": 3425.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          5057.1,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/14",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "  ④ 조달청장은 불공정한 수요물자 조달행위가 확인된 계약상대자에 대하여는 시정을 요구할 수 있으며, ",
+        "overflow_px": 3406.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5038.4,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/13",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "하며, 다른 목적 등을 위하여 권한을 남용하여서는 아니 된다.",
+        "overflow_px": 3388.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          5019.7,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/12",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "  ③ 제1항에 따라 조사를 수행하는 공무원은 이 법의 시행을 위하여 필요한 최소한의 범위에서 행하여야 ",
+        "overflow_px": 3369.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          5001.1,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/11",
+        "pi": 7,
+        "question": null,
+        "question_text": null,
+        "text": "  ② 제1항에 따라 조사를 수행하는 공무원은 그 권한을 표시하는 증표를 관계인에게 제시하여야 한다.",
+        "overflow_px": 3350.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4982.4,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/10",
+        "pi": 6,
+        "question": null,
+        "question_text": null,
+        "text": "  5. 우수조달물품등의 지정을 거짓이나 부정한 방법으로 받은 행위",
+        "overflow_px": 3332.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4963.7,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/9",
+        "pi": 5,
+        "question": null,
+        "question_text": null,
+        "text": "  4. 수요기관 등의 사전 승인 없이 계약규격과 상이한 제품을 납품하는 행위",
+        "overflow_px": 3313.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4945.1,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/8",
+        "pi": 4,
+        "question": null,
+        "question_text": null,
+        "text": "  3. 원산지를 거짓으로 표시하여 납품하는 행위",
+        "overflow_px": 3294.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4926.4,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/7",
+        "pi": 3,
+        "question": null,
+        "question_text": null,
+        "text": "  2. 직접생산기준을 위반하여 납품하는 행위",
+        "overflow_px": 3276.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4907.7,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/6",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "류를 제출하는 행위",
+        "overflow_px": 3257.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          4889.1,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/5",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "  1. 입찰자 또는 계약상대자 등이 입찰 또는 계약, 납품검사 등에 관한 서류를 위조·변조하거나 거짓 서",
+        "overflow_px": 3238.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4870.4,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/4",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "출을 요구하거나 사무소·사업장·공장 등을 방문하여 시설·서류 등을 조사하게 할 수 있다.",
+        "overflow_px": 3220.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          4851.7,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/3",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "수하고, 그 신고 내용의 조사를 위하여 필요한 경우 소속 공무원으로 하여금 계약상대자에게 자료의 제",
+        "overflow_px": 3201.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          4833.1,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/2",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "음 각 호의 어느 하나에 해당하는 행위(이하 \"불공정한 수요물자 조달행위\"라 한다)에 대하여 신고를 접",
+        "overflow_px": 3182.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          4814.4,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/1",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "제9조의3(불공정한 수요물자 조달행위의 조사) ① 조달청장은 수요물자 조달과정에서 공정성을 해치는 다",
+        "overflow_px": 3164.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4795.7,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/119/0/0",
+        "pi": 0,
+        "question": null,
+        "question_text": null,
+        "text": "▸조달사업에 관한 법률",
+        "overflow_px": 3140.9,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4771.2,
+          621.4,
+          14.7
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/118/0/51",
+        "pi": 23,
+        "question": null,
+        "question_text": null,
+        "text": "부터 제180조의3까지의 규정을 위반한 사항인 경우에는 증권선물위원회를 말한다)의 요구에 불응한 자",
+        "overflow_px": 3111.3,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          4743.0,
+          616.9,
+          13.3
+        ]
+      }
+    ],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/analysis/annotated_010.png"
+  },
+  {
+    "page": 11,
+    "flags": [
+      "render_tree_frame_tail_overflow",
+      "column_line_band_drift"
+    ],
+    "rhwp_frame": [
+      39,
+      527,
+      1152,
+      1645
+    ],
+    "pdf_frame": [
+      39,
+      517,
+      1151,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -10.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 38,
+      "pdf_count": 41,
+      "paired": 38,
+      "max_abs_delta_px": 119.5,
+      "p90_abs_delta_px": 57.0,
+      "mean_abs_delta_px": 40.1
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          39,
+          527,
+          593,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          517,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 36,
+          "pdf_count": 39,
+          "paired": 36,
+          "max_abs_delta_px": 125.0,
+          "p90_abs_delta_px": 50.0,
+          "mean_abs_delta_px": 37.6
+        },
+        "rhwp_first_band": {
+          "y0": 531,
+          "y1": 551,
+          "x0": 126,
+          "x1": 591,
+          "pixels": 3048,
+          "cy": 541.0
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1575,
+          "x0": 562,
+          "x1": 589,
+          "pixels": 24,
+          "cy": 1574.5
+        },
+        "pdf_first_band": {
+          "y0": 521,
+          "y1": 542,
+          "x0": 121,
+          "x1": 582,
+          "pixels": 2304,
+          "cy": 531.5
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 567,
+          "x1": 591,
+          "pixels": 25,
+          "cy": 1587.0
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          527,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          517,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 27,
+          "pdf_count": 24,
+          "paired": 24,
+          "max_abs_delta_px": 314.5,
+          "p90_abs_delta_px": 169.0,
+          "mean_abs_delta_px": 120.8
+        },
+        "rhwp_first_band": {
+          "y0": 531,
+          "y1": 551,
+          "x0": 599,
+          "x1": 1091,
+          "pixels": 1409,
+          "cy": 541.0
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1575,
+          "x0": 600,
+          "x1": 628,
+          "pixels": 24,
+          "cy": 1574.5
+        },
+        "pdf_first_band": {
+          "y0": 521,
+          "y1": 542,
+          "x0": 599,
+          "x1": 1074,
+          "pixels": 3122,
+          "cy": 531.5
+        },
+        "pdf_last_band": {
+          "y0": 1591,
+          "y1": 1592,
+          "x0": 599,
+          "x1": 606,
+          "pixels": 16,
+          "cy": 1591.5
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          527,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          517,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 27,
+          "pdf_count": 24,
+          "paired": 24,
+          "max_abs_delta_px": 314.5,
+          "p90_abs_delta_px": 169.0,
+          "mean_abs_delta_px": 120.8
+        },
+        "rhwp_first_band": {
+          "y0": 531,
+          "y1": 551,
+          "x0": 599,
+          "x1": 1091,
+          "pixels": 1409,
+          "cy": 541.0
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1575,
+          "x0": 600,
+          "x1": 628,
+          "pixels": 24,
+          "cy": 1574.5
+        },
+        "pdf_first_band": {
+          "y0": 521,
+          "y1": 542,
+          "x0": 599,
+          "x1": 1074,
+          "pixels": 3122,
+          "cy": 531.5
+        },
+        "pdf_last_band": {
+          "y0": 1591,
+          "y1": 1592,
+          "x0": 599,
+          "x1": 606,
+          "pixels": 16,
+          "cy": 1591.5
+        }
+      }
+    ],
+    "column_text_flow_masked_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "pdf_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 2,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": {
+          "y0": 1485,
+          "y1": 1486,
+          "x0": 123,
+          "x1": 591,
+          "pixels": 862,
+          "cy": 1485.5
+        },
+        "pdf_last_band": {
+          "y0": 1497,
+          "y1": 1498,
+          "x0": 123,
+          "x1": 587,
+          "pixels": 313,
+          "cy": 1497.5
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          168,
+          1080,
+          1516
+        ],
+        "pdf_frame": [
+          597,
+          168,
+          1079,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 2,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": {
+          "y0": 1485,
+          "y1": 1486,
+          "x0": 599,
+          "x1": 1076,
+          "pixels": 28,
+          "cy": 1485.5
+        },
+        "pdf_last_band": {
+          "y0": 1497,
+          "y1": 1498,
+          "x0": 599,
+          "x1": 1076,
+          "pixels": 320,
+          "cy": 1497.5
+        }
+      }
+    ],
+    "column_text_flow_table_masks": {
+      "rhwp": [
+        [
+          111,
+          168,
+          1096,
+          1485
+        ]
+      ],
+      "pdf": [
+        [
+          111,
+          168,
+          1095,
+          1485
+        ]
+      ]
+    },
+    "column_text_flow_body_frames": {
+      "rhwp": [
+        111,
+        168,
+        1080,
+        1516
+      ],
+      "pdf": [
+        111,
+        168,
+        1079,
+        1516
+      ]
+    },
+    "column_text_flow_reflowing_float_present": false,
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 2,
+      "pdf_count": 3,
+      "paired": 2,
+      "deltas_px": [
+        218.0,
+        250.0
+      ],
+      "max_abs_delta_px": 250.0,
+      "mean_abs_delta_px": 234.0,
+      "rhwp_regions": [
+        {
+          "x0": 135.0,
+          "y0": 527.0,
+          "x1": 1095.0,
+          "y1": 1327.0,
+          "w": 960.0,
+          "h": 800.0,
+          "cy": 927.0,
+          "tiles": 1701.0
+        },
+        {
+          "x0": 135.0,
+          "y0": 1343.0,
+          "x1": 1079.0,
+          "y1": 1487.0,
+          "w": 944.0,
+          "h": 144.0,
+          "cy": 1415.0,
+          "tiles": 259.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 151.0,
+          "y0": 517.0,
+          "x1": 1063.0,
+          "y1": 901.0,
+          "w": 912.0,
+          "h": 384.0,
+          "cy": 709.0,
+          "tiles": 781.0
+        },
+        {
+          "x0": 135.0,
+          "y0": 981.0,
+          "x1": 1063.0,
+          "y1": 1349.0,
+          "w": 928.0,
+          "h": 368.0,
+          "cy": 1165.0,
+          "tiles": 525.0
+        },
+        {
+          "x0": 135.0,
+          "y0": 1349.0,
+          "x1": 1079.0,
+          "y1": 1493.0,
+          "w": 944.0,
+          "h": 144.0,
+          "cy": 1421.0,
+          "tiles": 243.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 1,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": [
+          {
+            "x0": 154.0,
+            "x1": 343.0,
+            "y0": 565.0,
+            "y1": 566.0,
+            "length": 190.0,
+            "cy": 565.5,
+            "gap_height": 2.0
+          }
+        ]
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 0,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        []
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/svg/issue2007_nested_cell_pagination_42065_011.svg",
+    "render_tree_json": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/render_tree/render_tree_011.json",
+    "equation_text_overlap_candidates": [],
+    "square_wrap_text_overlap_candidates": [],
+    "deferred_square_picture_top_drift_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [
+      {
+        "path": "root/2/0/0/0/0/0/121/0/18",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "제기할 수 있다.",
+        "overflow_px": 2647.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          4278.7,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/17",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "  ⑤ 제4항에 따라 시정요구를 받은 계약상대자는 대통령령으로 정하는 바에 따라 조달청장에게 이의를 ",
+        "overflow_px": 2628.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4260.1,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/16",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "야 한다.",
+        "overflow_px": 2609.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          4241.4,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/15",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "「국가를 당사자로 하는 계약에 관한 법률」 등 관계 법령이나 계약조건에 따라 처분 등 조치를 취하여",
+        "overflow_px": 2591.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          4222.7,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/14",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "  ④ 조달청장은 불공정한 수요물자 조달행위가 확인된 계약상대자에 대하여는 시정을 요구할 수 있으며, ",
+        "overflow_px": 2572.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4204.1,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/13",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "하며, 다른 목적 등을 위하여 권한을 남용하여서는 아니 된다.",
+        "overflow_px": 2553.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          4185.4,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/12",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "  ③ 제1항에 따라 조사를 수행하는 공무원은 이 법의 시행을 위하여 필요한 최소한의 범위에서 행하여야 ",
+        "overflow_px": 2535.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4166.7,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/11",
+        "pi": 7,
+        "question": null,
+        "question_text": null,
+        "text": "  ② 제1항에 따라 조사를 수행하는 공무원은 그 권한을 표시하는 증표를 관계인에게 제시하여야 한다.",
+        "overflow_px": 2516.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4148.1,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/10",
+        "pi": 6,
+        "question": null,
+        "question_text": null,
+        "text": "  5. 우수조달물품등의 지정을 거짓이나 부정한 방법으로 받은 행위",
+        "overflow_px": 2497.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4129.4,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/9",
+        "pi": 5,
+        "question": null,
+        "question_text": null,
+        "text": "  4. 수요기관 등의 사전 승인 없이 계약규격과 상이한 제품을 납품하는 행위",
+        "overflow_px": 2479.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4110.7,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/8",
+        "pi": 4,
+        "question": null,
+        "question_text": null,
+        "text": "  3. 원산지를 거짓으로 표시하여 납품하는 행위",
+        "overflow_px": 2460.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4092.1,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/7",
+        "pi": 3,
+        "question": null,
+        "question_text": null,
+        "text": "  2. 직접생산기준을 위반하여 납품하는 행위",
+        "overflow_px": 2441.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4073.4,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/6",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "류를 제출하는 행위",
+        "overflow_px": 2423.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          4054.7,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/5",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "  1. 입찰자 또는 계약상대자 등이 입찰 또는 계약, 납품검사 등에 관한 서류를 위조·변조하거나 거짓 서",
+        "overflow_px": 2404.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          4036.1,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/4",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "출을 요구하거나 사무소·사업장·공장 등을 방문하여 시설·서류 등을 조사하게 할 수 있다.",
+        "overflow_px": 2385.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          4017.4,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/3",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "수하고, 그 신고 내용의 조사를 위하여 필요한 경우 소속 공무원으로 하여금 계약상대자에게 자료의 제",
+        "overflow_px": 2367.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          3998.7,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/2",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "음 각 호의 어느 하나에 해당하는 행위(이하 \"불공정한 수요물자 조달행위\"라 한다)에 대하여 신고를 접",
+        "overflow_px": 2348.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          3980.1,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/1",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "제9조의3(불공정한 수요물자 조달행위의 조사) ① 조달청장은 수요물자 조달과정에서 공정성을 해치는 다",
+        "overflow_px": 2329.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3961.4,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/121/0/0",
+        "pi": 0,
+        "question": null,
+        "question_text": null,
+        "text": "▸조달사업에 관한 법률",
+        "overflow_px": 2306.6,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3936.9,
+          621.4,
+          14.7
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/120/0/51",
+        "pi": 23,
+        "question": null,
+        "question_text": null,
+        "text": "부터 제180조의3까지의 규정을 위반한 사항인 경우에는 증권선물위원회를 말한다)의 요구에 불응한 자",
+        "overflow_px": 2277.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          3908.7,
+          616.9,
+          13.3
+        ]
+      }
+    ],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/analysis/annotated_011.png"
+  },
+  {
+    "page": 12,
+    "flags": [
+      "render_tree_frame_tail_overflow",
+      "line_band_drift",
+      "column_line_band_drift",
+      "large_ink_region_drift"
+    ],
+    "rhwp_frame": [
+      126,
+      236,
+      1078,
+      1645
+    ],
+    "pdf_frame": [
+      39,
+      113,
+      1151,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -10.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 45,
+      "pdf_count": 48,
+      "paired": 45,
+      "max_abs_delta_px": 125.0,
+      "p90_abs_delta_px": 100.5,
+      "mean_abs_delta_px": 75.1
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          126,
+          236,
+          600,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          113,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 44,
+          "pdf_count": 46,
+          "paired": 44,
+          "max_abs_delta_px": 132.0,
+          "p90_abs_delta_px": 100.5,
+          "mean_abs_delta_px": 75.2
+        },
+        "rhwp_first_band": {
+          "y0": 247,
+          "y1": 268,
+          "x0": 140,
+          "x1": 260,
+          "pixels": 1144,
+          "cy": 257.5
+        },
+        "rhwp_last_band": {
+          "y0": 1582,
+          "y1": 1582,
+          "x0": 586,
+          "x1": 598,
+          "pixels": 9,
+          "cy": 1582.0
+        },
+        "pdf_first_band": {
+          "y0": 189,
+          "y1": 214,
+          "x0": 123,
+          "x1": 364,
+          "pixels": 1681,
+          "cy": 201.5
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 567,
+          "x1": 591,
+          "pixels": 25,
+          "cy": 1587.0
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          604,
+          236,
+          1078,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          113,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 30,
+          "pdf_count": 33,
+          "paired": 30,
+          "max_abs_delta_px": 103.0,
+          "p90_abs_delta_px": 66.0,
+          "mean_abs_delta_px": 50.4
+        },
+        "rhwp_first_band": {
+          "y0": 287,
+          "y1": 305,
+          "x0": 606,
+          "x1": 1067,
+          "pixels": 2463,
+          "cy": 296.0
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1575,
+          "x0": 618,
+          "x1": 628,
+          "pixels": 20,
+          "cy": 1574.5
+        },
+        "pdf_first_band": {
+          "y0": 231,
+          "y1": 232,
+          "x0": 599,
+          "x1": 1076,
+          "pixels": 320,
+          "cy": 231.5
+        },
+        "pdf_last_band": {
+          "y0": 1591,
+          "y1": 1592,
+          "x0": 599,
+          "x1": 606,
+          "pixels": 16,
+          "cy": 1591.5
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          126,
+          236,
+          600,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          113,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 44,
+          "pdf_count": 46,
+          "paired": 44,
+          "max_abs_delta_px": 132.0,
+          "p90_abs_delta_px": 100.5,
+          "mean_abs_delta_px": 75.2
+        },
+        "rhwp_first_band": {
+          "y0": 247,
+          "y1": 268,
+          "x0": 140,
+          "x1": 260,
+          "pixels": 1144,
+          "cy": 257.5
+        },
+        "rhwp_last_band": {
+          "y0": 1582,
+          "y1": 1582,
+          "x0": 586,
+          "x1": 598,
+          "pixels": 9,
+          "cy": 1582.0
+        },
+        "pdf_first_band": {
+          "y0": 189,
+          "y1": 214,
+          "x0": 123,
+          "x1": 364,
+          "pixels": 1681,
+          "cy": 201.5
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 567,
+          "x1": 591,
+          "pixels": 25,
+          "cy": 1587.0
+        }
+      }
+    ],
+    "column_text_flow_masked_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "pdf_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          168,
+          1080,
+          1516
+        ],
+        "pdf_frame": [
+          597,
+          168,
+          1079,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      }
+    ],
+    "column_text_flow_table_masks": {
+      "rhwp": [
+        [
+          111,
+          168,
+          1096,
+          1499
+        ]
+      ],
+      "pdf": [
+        [
+          111,
+          168,
+          1095,
+          1499
+        ]
+      ]
+    },
+    "column_text_flow_body_frames": {
+      "rhwp": [
+        111,
+        168,
+        1080,
+        1516
+      ],
+      "pdf": [
+        111,
+        168,
+        1079,
+        1516
+      ]
+    },
+    "column_text_flow_reflowing_float_present": false,
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 6,
+      "pdf_count": 7,
+      "paired": 6,
+      "deltas_px": [
+        515.0,
+        -101.0,
+        187.0,
+        99.0,
+        275.0,
+        395.0
+      ],
+      "max_abs_delta_px": 515.0,
+      "mean_abs_delta_px": 262.0,
+      "rhwp_regions": [
+        {
+          "x0": 126.0,
+          "y0": 284.0,
+          "x1": 1070.0,
+          "y1": 1148.0,
+          "w": 944.0,
+          "h": 864.0,
+          "cy": 716.0,
+          "tiles": 1660.0
+        },
+        {
+          "x0": 910.0,
+          "y0": 732.0,
+          "x1": 1070.0,
+          "y1": 796.0,
+          "w": 160.0,
+          "h": 64.0,
+          "cy": 764.0,
+          "tiles": 30.0
+        },
+        {
+          "x0": 622.0,
+          "y0": 828.0,
+          "x1": 830.0,
+          "y1": 876.0,
+          "w": 208.0,
+          "h": 48.0,
+          "cy": 852.0,
+          "tiles": 25.0
+        },
+        {
+          "x0": 846.0,
+          "y0": 828.0,
+          "x1": 1070.0,
+          "y1": 876.0,
+          "w": 224.0,
+          "h": 48.0,
+          "cy": 852.0,
+          "tiles": 32.0
+        },
+        {
+          "x0": 190.0,
+          "y0": 1100.0,
+          "x1": 510.0,
+          "y1": 1148.0,
+          "w": 320.0,
+          "h": 48.0,
+          "cy": 1124.0,
+          "tiles": 52.0
+        },
+        {
+          "x0": 126.0,
+          "y0": 1164.0,
+          "x1": 1070.0,
+          "y1": 1500.0,
+          "w": 944.0,
+          "h": 336.0,
+          "cy": 1332.0,
+          "tiles": 761.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 119.0,
+          "y0": 177.0,
+          "x1": 375.0,
+          "y1": 225.0,
+          "w": 256.0,
+          "h": 48.0,
+          "cy": 201.0,
+          "tiles": 26.0
+        },
+        {
+          "x0": 135.0,
+          "y0": 241.0,
+          "x1": 1079.0,
+          "y1": 1489.0,
+          "w": 944.0,
+          "h": 1248.0,
+          "cy": 865.0,
+          "tiles": 2327.0
+        },
+        {
+          "x0": 711.0,
+          "y0": 641.0,
+          "x1": 1063.0,
+          "y1": 689.0,
+          "w": 352.0,
+          "h": 48.0,
+          "cy": 665.0,
+          "tiles": 30.0
+        },
+        {
+          "x0": 791.0,
+          "y0": 721.0,
+          "x1": 1063.0,
+          "y1": 785.0,
+          "w": 272.0,
+          "h": 64.0,
+          "cy": 753.0,
+          "tiles": 52.0
+        },
+        {
+          "x0": 535.0,
+          "y0": 817.0,
+          "x1": 1063.0,
+          "y1": 881.0,
+          "w": 528.0,
+          "h": 64.0,
+          "cy": 849.0,
+          "tiles": 90.0
+        },
+        {
+          "x0": 695.0,
+          "y0": 913.0,
+          "x1": 1063.0,
+          "y1": 961.0,
+          "w": 368.0,
+          "h": 48.0,
+          "cy": 937.0,
+          "tiles": 39.0
+        },
+        {
+          "x0": 919.0,
+          "y0": 993.0,
+          "x1": 1015.0,
+          "y1": 1057.0,
+          "w": 96.0,
+          "h": 64.0,
+          "cy": 1025.0,
+          "tiles": 18.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 2,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": [
+          {
+            "x0": 638.0,
+            "x1": 837.0,
+            "y0": 1333.0,
+            "y1": 1334.0,
+            "length": 200.0,
+            "cy": 1333.5,
+            "gap_height": 2.0
+          },
+          {
+            "x0": 682.0,
+            "x1": 827.0,
+            "y0": 1393.0,
+            "y1": 1394.0,
+            "length": 146.0,
+            "cy": 1393.5,
+            "gap_height": 2.0
+          }
+        ]
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 0,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        []
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/svg/issue2007_nested_cell_pagination_42065_012.svg",
+    "render_tree_json": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/render_tree/render_tree_012.json",
+    "equation_text_overlap_candidates": [],
+    "square_wrap_text_overlap_candidates": [],
+    "deferred_square_picture_top_drift_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [
+      {
+        "path": "root/2/0/0/0/0/0/124/0/18",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "제기할 수 있다.",
+        "overflow_px": 1809.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          3441.2,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/17",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "  ⑤ 제4항에 따라 시정요구를 받은 계약상대자는 대통령령으로 정하는 바에 따라 조달청장에게 이의를 ",
+        "overflow_px": 1790.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3422.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/16",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "야 한다.",
+        "overflow_px": 1772.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          3403.8,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/15",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "「국가를 당사자로 하는 계약에 관한 법률」 등 관계 법령이나 계약조건에 따라 처분 등 조치를 취하여",
+        "overflow_px": 1753.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          3385.2,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/14",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "  ④ 조달청장은 불공정한 수요물자 조달행위가 확인된 계약상대자에 대하여는 시정을 요구할 수 있으며, ",
+        "overflow_px": 1734.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3366.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/13",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "하며, 다른 목적 등을 위하여 권한을 남용하여서는 아니 된다.",
+        "overflow_px": 1716.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          3347.8,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/12",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "  ③ 제1항에 따라 조사를 수행하는 공무원은 이 법의 시행을 위하여 필요한 최소한의 범위에서 행하여야 ",
+        "overflow_px": 1697.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3329.2,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/11",
+        "pi": 7,
+        "question": null,
+        "question_text": null,
+        "text": "  ② 제1항에 따라 조사를 수행하는 공무원은 그 권한을 표시하는 증표를 관계인에게 제시하여야 한다.",
+        "overflow_px": 1678.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3310.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/10",
+        "pi": 6,
+        "question": null,
+        "question_text": null,
+        "text": "  5. 우수조달물품등의 지정을 거짓이나 부정한 방법으로 받은 행위",
+        "overflow_px": 1660.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3291.8,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/9",
+        "pi": 5,
+        "question": null,
+        "question_text": null,
+        "text": "  4. 수요기관 등의 사전 승인 없이 계약규격과 상이한 제품을 납품하는 행위",
+        "overflow_px": 1641.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3273.2,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/8",
+        "pi": 4,
+        "question": null,
+        "question_text": null,
+        "text": "  3. 원산지를 거짓으로 표시하여 납품하는 행위",
+        "overflow_px": 1622.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3254.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/7",
+        "pi": 3,
+        "question": null,
+        "question_text": null,
+        "text": "  2. 직접생산기준을 위반하여 납품하는 행위",
+        "overflow_px": 1604.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3235.8,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/6",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "류를 제출하는 행위",
+        "overflow_px": 1585.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          3217.2,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/5",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "  1. 입찰자 또는 계약상대자 등이 입찰 또는 계약, 납품검사 등에 관한 서류를 위조·변조하거나 거짓 서",
+        "overflow_px": 1566.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3198.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/4",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "출을 요구하거나 사무소·사업장·공장 등을 방문하여 시설·서류 등을 조사하게 할 수 있다.",
+        "overflow_px": 1548.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          3179.8,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/3",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "수하고, 그 신고 내용의 조사를 위하여 필요한 경우 소속 공무원으로 하여금 계약상대자에게 자료의 제",
+        "overflow_px": 1529.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          3161.2,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/2",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "음 각 호의 어느 하나에 해당하는 행위(이하 \"불공정한 수요물자 조달행위\"라 한다)에 대하여 신고를 접",
+        "overflow_px": 1510.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          3142.5,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/1",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "제9조의3(불공정한 수요물자 조달행위의 조사) ① 조달청장은 수요물자 조달과정에서 공정성을 해치는 다",
+        "overflow_px": 1492.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3123.8,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/124/0/0",
+        "pi": 0,
+        "question": null,
+        "question_text": null,
+        "text": "▸조달사업에 관한 법률",
+        "overflow_px": 1469.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          3099.3,
+          621.4,
+          14.7
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/123/0/51",
+        "pi": 23,
+        "question": null,
+        "question_text": null,
+        "text": "부터 제180조의3까지의 규정을 위반한 사항인 경우에는 증권선물위원회를 말한다)의 요구에 불응한 자",
+        "overflow_px": 1439.4,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          3071.1,
+          616.9,
+          13.3
+        ]
+      }
+    ],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/analysis/annotated_012.png"
+  },
+  {
+    "page": 13,
+    "flags": [],
+    "rhwp_frame": [
+      39,
+      349,
+      1152,
+      1645
+    ],
+    "pdf_frame": [
+      39,
+      328,
+      1151,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -11.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 45,
+      "pdf_count": 46,
+      "paired": 45,
+      "max_abs_delta_px": 71.0,
+      "p90_abs_delta_px": 22.5,
+      "mean_abs_delta_px": 21.9
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          39,
+          349,
+          593,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          328,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 43,
+          "pdf_count": 44,
+          "paired": 43,
+          "max_abs_delta_px": 77.0,
+          "p90_abs_delta_px": 22.5,
+          "mean_abs_delta_px": 23.0
+        },
+        "rhwp_first_band": {
+          "y0": 358,
+          "y1": 377,
+          "x0": 126,
+          "x1": 270,
+          "pixels": 792,
+          "cy": 367.5
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1575,
+          "x0": 562,
+          "x1": 589,
+          "pixels": 24,
+          "cy": 1574.5
+        },
+        "pdf_first_band": {
+          "y0": 336,
+          "y1": 356,
+          "x0": 123,
+          "x1": 271,
+          "pixels": 774,
+          "cy": 346.0
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 567,
+          "x1": 591,
+          "pixels": 25,
+          "cy": 1587.0
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          349,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          328,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 36,
+          "pdf_count": 37,
+          "paired": 36,
+          "max_abs_delta_px": 77.0,
+          "p90_abs_delta_px": 22.5,
+          "mean_abs_delta_px": 23.2
+        },
+        "rhwp_first_band": {
+          "y0": 385,
+          "y1": 405,
+          "x0": 599,
+          "x1": 1079,
+          "pixels": 2698,
+          "cy": 395.0
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1575,
+          "x0": 599,
+          "x1": 628,
+          "pixels": 29,
+          "cy": 1574.5
+        },
+        "pdf_first_band": {
+          "y0": 363,
+          "y1": 384,
+          "x0": 599,
+          "x1": 1076,
+          "pixels": 2565,
+          "cy": 373.5
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 602,
+          "x1": 624,
+          "pixels": 27,
+          "cy": 1587.0
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [],
+    "column_text_flow_masked_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "pdf_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          168,
+          1080,
+          1516
+        ],
+        "pdf_frame": [
+          597,
+          168,
+          1079,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      }
+    ],
+    "column_text_flow_table_masks": {
+      "rhwp": [
+        [
+          111,
+          168,
+          1096,
+          1515
+        ]
+      ],
+      "pdf": [
+        [
+          111,
+          168,
+          1095,
+          1515
+        ]
+      ]
+    },
+    "column_text_flow_body_frames": {
+      "rhwp": [
+        111,
+        168,
+        1080,
+        1516
+      ],
+      "pdf": [
+        111,
+        168,
+        1079,
+        1516
+      ]
+    },
+    "column_text_flow_reflowing_float_present": false,
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 4,
+      "pdf_count": 5,
+      "paired": 4,
+      "deltas_px": [
+        189.0,
+        117.0,
+        885.0,
+        333.0
+      ],
+      "max_abs_delta_px": 885.0,
+      "mean_abs_delta_px": 381.0,
+      "rhwp_regions": [
+        {
+          "x0": 135.0,
+          "y0": 349.0,
+          "x1": 1079.0,
+          "y1": 1325.0,
+          "w": 944.0,
+          "h": 976.0,
+          "cy": 837.0,
+          "tiles": 2097.0
+        },
+        {
+          "x0": 967.0,
+          "y0": 493.0,
+          "x1": 1079.0,
+          "y1": 541.0,
+          "w": 112.0,
+          "h": 48.0,
+          "cy": 517.0,
+          "tiles": 18.0
+        },
+        {
+          "x0": 119.0,
+          "y0": 1341.0,
+          "x1": 247.0,
+          "y1": 1421.0,
+          "w": 128.0,
+          "h": 80.0,
+          "cy": 1381.0,
+          "tiles": 26.0
+        },
+        {
+          "x0": 135.0,
+          "y0": 1437.0,
+          "x1": 1015.0,
+          "y1": 1517.0,
+          "w": 880.0,
+          "h": 80.0,
+          "cy": 1477.0,
+          "tiles": 221.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 151.0,
+          "y0": 328.0,
+          "x1": 1063.0,
+          "y1": 968.0,
+          "w": 912.0,
+          "h": 640.0,
+          "cy": 648.0,
+          "tiles": 1218.0
+        },
+        {
+          "x0": 567.0,
+          "y0": 360.0,
+          "x1": 1063.0,
+          "y1": 440.0,
+          "w": 496.0,
+          "h": 80.0,
+          "cy": 400.0,
+          "tiles": 126.0
+        },
+        {
+          "x0": 919.0,
+          "y0": 472.0,
+          "x1": 1063.0,
+          "y1": 520.0,
+          "w": 144.0,
+          "h": 48.0,
+          "cy": 496.0,
+          "tiles": 20.0
+        },
+        {
+          "x0": 135.0,
+          "y0": 984.0,
+          "x1": 1063.0,
+          "y1": 1304.0,
+          "w": 928.0,
+          "h": 320.0,
+          "cy": 1144.0,
+          "tiles": 651.0
+        },
+        {
+          "x0": 119.0,
+          "y0": 1384.0,
+          "x1": 1031.0,
+          "y1": 1496.0,
+          "w": 912.0,
+          "h": 112.0,
+          "cy": 1440.0,
+          "tiles": 245.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 3,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": [
+          {
+            "x0": 154.0,
+            "x1": 271.0,
+            "y0": 355.0,
+            "y1": 356.0,
+            "length": 118.0,
+            "cy": 355.5,
+            "gap_height": 2.0
+          },
+          {
+            "x0": 888.0,
+            "x1": 1065.0,
+            "y0": 383.0,
+            "y1": 384.0,
+            "length": 178.0,
+            "cy": 383.5,
+            "gap_height": 2.0
+          },
+          {
+            "x0": 580.0,
+            "x1": 779.0,
+            "y0": 1123.0,
+            "y1": 1124.0,
+            "length": 200.0,
+            "cy": 1123.5,
+            "gap_height": 2.0
+          }
+        ]
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 0,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        []
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/svg/issue2007_nested_cell_pagination_42065_013.svg",
+    "render_tree_json": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/render_tree/render_tree_013.json",
+    "equation_text_overlap_candidates": [],
+    "square_wrap_text_overlap_candidates": [],
+    "deferred_square_picture_top_drift_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [
+      {
+        "path": "root/2/0/0/0/0/0/130/0/18",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "제기할 수 있다.",
+        "overflow_px": 1019.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          2651.5,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/17",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "  ⑤ 제4항에 따라 시정요구를 받은 계약상대자는 대통령령으로 정하는 바에 따라 조달청장에게 이의를 ",
+        "overflow_px": 1001.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          2632.8,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/16",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "야 한다.",
+        "overflow_px": 982.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          2614.2,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/15",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "「국가를 당사자로 하는 계약에 관한 법률」 등 관계 법령이나 계약조건에 따라 처분 등 조치를 취하여",
+        "overflow_px": 963.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          2595.5,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/14",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "  ④ 조달청장은 불공정한 수요물자 조달행위가 확인된 계약상대자에 대하여는 시정을 요구할 수 있으며, ",
+        "overflow_px": 945.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          2576.8,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/13",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "하며, 다른 목적 등을 위하여 권한을 남용하여서는 아니 된다.",
+        "overflow_px": 926.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          2558.2,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/12",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "  ③ 제1항에 따라 조사를 수행하는 공무원은 이 법의 시행을 위하여 필요한 최소한의 범위에서 행하여야 ",
+        "overflow_px": 907.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          2539.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/11",
+        "pi": 7,
+        "question": null,
+        "question_text": null,
+        "text": "  ② 제1항에 따라 조사를 수행하는 공무원은 그 권한을 표시하는 증표를 관계인에게 제시하여야 한다.",
+        "overflow_px": 889.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          2520.8,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/10",
+        "pi": 6,
+        "question": null,
+        "question_text": null,
+        "text": "  5. 우수조달물품등의 지정을 거짓이나 부정한 방법으로 받은 행위",
+        "overflow_px": 870.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          2502.2,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/9",
+        "pi": 5,
+        "question": null,
+        "question_text": null,
+        "text": "  4. 수요기관 등의 사전 승인 없이 계약규격과 상이한 제품을 납품하는 행위",
+        "overflow_px": 851.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          2483.5,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/8",
+        "pi": 4,
+        "question": null,
+        "question_text": null,
+        "text": "  3. 원산지를 거짓으로 표시하여 납품하는 행위",
+        "overflow_px": 833.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          2464.8,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/7",
+        "pi": 3,
+        "question": null,
+        "question_text": null,
+        "text": "  2. 직접생산기준을 위반하여 납품하는 행위",
+        "overflow_px": 814.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          2446.2,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/6",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "류를 제출하는 행위",
+        "overflow_px": 795.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          2427.5,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/5",
+        "pi": 2,
+        "question": null,
+        "question_text": null,
+        "text": "  1. 입찰자 또는 계약상대자 등이 입찰 또는 계약, 납품검사 등에 관한 서류를 위조·변조하거나 거짓 서",
+        "overflow_px": 777.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          2408.8,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/4",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "출을 요구하거나 사무소·사업장·공장 등을 방문하여 시설·서류 등을 조사하게 할 수 있다.",
+        "overflow_px": 758.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          2390.2,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/3",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "수하고, 그 신고 내용의 조사를 위하여 필요한 경우 소속 공무원으로 하여금 계약상대자에게 자료의 제",
+        "overflow_px": 739.8,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          2371.5,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/2",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "음 각 호의 어느 하나에 해당하는 행위(이하 \"불공정한 수요물자 조달행위\"라 한다)에 대하여 신고를 접",
+        "overflow_px": 721.1,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          104.4,
+          2352.8,
+          608.1,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/1",
+        "pi": 1,
+        "question": null,
+        "question_text": null,
+        "text": "제9조의3(불공정한 수요물자 조달행위의 조사) ① 조달청장은 수요물자 조달과정에서 공정성을 해치는 다",
+        "overflow_px": 702.5,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          2334.2,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/130/0/0",
+        "pi": 0,
+        "question": null,
+        "question_text": null,
+        "text": "▸조달사업에 관한 법률",
+        "overflow_px": 679.3,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          2309.6,
+          621.4,
+          14.7
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/129/0/51",
+        "pi": 23,
+        "question": null,
+        "question_text": null,
+        "text": "부터 제180조의3까지의 규정을 위반한 사항인 경우에는 증권선물위원회를 말한다)의 요구에 불응한 자",
+        "overflow_px": 649.7,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          2281.4,
+          616.9,
+          13.3
+        ]
+      }
+    ],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": null
+  },
+  {
+    "page": 14,
+    "flags": [],
+    "rhwp_frame": [
+      126,
+      352,
+      1091,
+      1645
+    ],
+    "pdf_frame": [
+      39,
+      337,
+      1151,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -10.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 47,
+      "pdf_count": 46,
+      "paired": 46,
+      "max_abs_delta_px": 77.0,
+      "p90_abs_delta_px": 14.5,
+      "mean_abs_delta_px": 11.6
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          126,
+          352,
+          606,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          337,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 47,
+          "pdf_count": 46,
+          "paired": 46,
+          "max_abs_delta_px": 77.0,
+          "p90_abs_delta_px": 14.5,
+          "mean_abs_delta_px": 11.7
+        },
+        "rhwp_first_band": {
+          "y0": 359,
+          "y1": 377,
+          "x0": 158,
+          "x1": 604,
+          "pixels": 2384,
+          "cy": 368.0
+        },
+        "rhwp_last_band": {
+          "y0": 1582,
+          "y1": 1582,
+          "x0": 586,
+          "x1": 603,
+          "pixels": 8,
+          "cy": 1582.0
+        },
+        "pdf_first_band": {
+          "y0": 345,
+          "y1": 363,
+          "x0": 121,
+          "x1": 591,
+          "pixels": 2282,
+          "cy": 354.0
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 567,
+          "x1": 591,
+          "pixels": 25,
+          "cy": 1587.0
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          610,
+          352,
+          1091,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          337,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 33,
+          "pdf_count": 31,
+          "paired": 31,
+          "max_abs_delta_px": 134.5,
+          "p90_abs_delta_px": 71.5,
+          "mean_abs_delta_px": 36.7
+        },
+        "rhwp_first_band": {
+          "y0": 359,
+          "y1": 377,
+          "x0": 612,
+          "x1": 1079,
+          "pixels": 2282,
+          "cy": 368.0
+        },
+        "rhwp_last_band": {
+          "y0": 1574,
+          "y1": 1575,
+          "x0": 618,
+          "x1": 628,
+          "pixels": 20,
+          "cy": 1574.5
+        },
+        "pdf_first_band": {
+          "y0": 345,
+          "y1": 363,
+          "x0": 599,
+          "x1": 1074,
+          "pixels": 2285,
+          "cy": 354.0
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1589,
+          "x0": 599,
+          "x1": 624,
+          "pixels": 41,
+          "cy": 1587.5
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [],
+    "column_text_flow_masked_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "pdf_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          168,
+          1080,
+          1516
+        ],
+        "pdf_frame": [
+          597,
+          168,
+          1079,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      }
+    ],
+    "column_text_flow_table_masks": {
+      "rhwp": [
+        [
+          111,
+          168,
+          1096,
+          1516
+        ]
+      ],
+      "pdf": [
+        [
+          111,
+          168,
+          1095,
+          1516
+        ]
+      ]
+    },
+    "column_text_flow_body_frames": {
+      "rhwp": [
+        111,
+        168,
+        1080,
+        1516
+      ],
+      "pdf": [
+        111,
+        168,
+        1079,
+        1516
+      ]
+    },
+    "column_text_flow_reflowing_float_present": false,
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 5,
+      "pdf_count": 5,
+      "paired": 5,
+      "deltas_px": [
+        23.0,
+        -209.0,
+        -433.0,
+        -329.0,
+        -145.0
+      ],
+      "max_abs_delta_px": 433.0,
+      "mean_abs_delta_px": 227.8,
+      "rhwp_regions": [
+        {
+          "x0": 126.0,
+          "y0": 352.0,
+          "x1": 1091.0,
+          "y1": 736.0,
+          "w": 965.0,
+          "h": 384.0,
+          "cy": 544.0,
+          "tiles": 748.0
+        },
+        {
+          "x0": 670.0,
+          "y0": 528.0,
+          "x1": 1086.0,
+          "y1": 576.0,
+          "w": 416.0,
+          "h": 48.0,
+          "cy": 552.0,
+          "tiles": 50.0
+        },
+        {
+          "x0": 590.0,
+          "y0": 688.0,
+          "x1": 830.0,
+          "y1": 736.0,
+          "w": 240.0,
+          "h": 48.0,
+          "cy": 712.0,
+          "tiles": 33.0
+        },
+        {
+          "x0": 126.0,
+          "y0": 752.0,
+          "x1": 510.0,
+          "y1": 832.0,
+          "w": 384.0,
+          "h": 80.0,
+          "cy": 792.0,
+          "tiles": 65.0
+        },
+        {
+          "x0": 126.0,
+          "y0": 848.0,
+          "x1": 1086.0,
+          "y1": 1520.0,
+          "w": 960.0,
+          "h": 672.0,
+          "cy": 1184.0,
+          "tiles": 1431.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 135.0,
+          "y0": 337.0,
+          "x1": 1063.0,
+          "y1": 705.0,
+          "w": 928.0,
+          "h": 368.0,
+          "cy": 521.0,
+          "tiles": 707.0
+        },
+        {
+          "x0": 119.0,
+          "y0": 737.0,
+          "x1": 279.0,
+          "y1": 785.0,
+          "w": 160.0,
+          "h": 48.0,
+          "cy": 761.0,
+          "tiles": 18.0
+        },
+        {
+          "x0": 119.0,
+          "y0": 801.0,
+          "x1": 1063.0,
+          "y1": 1489.0,
+          "w": 944.0,
+          "h": 688.0,
+          "cy": 1145.0,
+          "tiles": 1393.0
+        },
+        {
+          "x0": 855.0,
+          "y0": 1089.0,
+          "x1": 1063.0,
+          "y1": 1153.0,
+          "w": 208.0,
+          "h": 64.0,
+          "cy": 1121.0,
+          "tiles": 41.0
+        },
+        {
+          "x0": 695.0,
+          "y0": 1297.0,
+          "x1": 1063.0,
+          "y1": 1361.0,
+          "w": 368.0,
+          "h": 64.0,
+          "cy": 1329.0,
+          "tiles": 73.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 0,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        []
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/svg/issue2007_nested_cell_pagination_42065_014.svg",
+    "render_tree_json": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/render_tree/render_tree_014.json",
+    "equation_text_overlap_candidates": [],
+    "square_wrap_text_overlap_candidates": [],
+    "deferred_square_picture_top_drift_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [
+      {
+        "path": "root/2/0/0/0/0/0/132/0/18",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "제기할 수 있다.",
+        "overflow_px": 188.3,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          1820.0,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/132/0/17",
+        "pi": 10,
+        "question": null,
+        "question_text": null,
+        "text": "  ⑤ 제4항에 따라 시정요구를 받은 계약상대자는 대통령령으로 정하는 바에 따라 조달청장에게 이의를 ",
+        "overflow_px": 169.6,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          1801.3,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/132/0/16",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "야 한다.",
+        "overflow_px": 151.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          1782.7,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/132/0/15",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "「국가를 당사자로 하는 계약에 관한 법률」 등 관계 법령이나 계약조건에 따라 처분 등 조치를 취하여",
+        "overflow_px": 132.3,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          1764.0,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/132/0/14",
+        "pi": 9,
+        "question": null,
+        "question_text": null,
+        "text": "  ④ 조달청장은 불공정한 수요물자 조달행위가 확인된 계약상대자에 대하여는 시정을 요구할 수 있으며, ",
+        "overflow_px": 113.6,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          1745.3,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/132/0/13",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "하며, 다른 목적 등을 위하여 권한을 남용하여서는 아니 된다.",
+        "overflow_px": 95.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          103.7,
+          1726.7,
+          608.7,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/132/0/12",
+        "pi": 8,
+        "question": null,
+        "question_text": null,
+        "text": "  ③ 제1항에 따라 조사를 수행하는 공무원은 이 법의 시행을 위하여 필요한 최소한의 범위에서 행하여야 ",
+        "overflow_px": 76.3,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          1708.0,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/132/0/11",
+        "pi": 7,
+        "question": null,
+        "question_text": null,
+        "text": "  ② 제1항에 따라 조사를 수행하는 공무원은 그 권한을 표시하는 증표를 관계인에게 제시하여야 한다.",
+        "overflow_px": 57.6,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          1689.3,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/132/0/10",
+        "pi": 6,
+        "question": null,
+        "question_text": null,
+        "text": "  5. 우수조달물품등의 지정을 거짓이나 부정한 방법으로 받은 행위",
+        "overflow_px": 39.0,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          1670.7,
+          621.4,
+          13.3
+        ]
+      },
+      {
+        "path": "root/2/0/0/0/0/0/132/0/9",
+        "pi": 5,
+        "question": null,
+        "question_text": null,
+        "text": "  4. 수요기관 등의 사전 승인 없이 계약규격과 상이한 제품을 납품하는 행위",
+        "overflow_px": 20.3,
+        "frame_bottom": 1645,
+        "column": 0,
+        "bbox": [
+          91.0,
+          1652.0,
+          621.4,
+          13.3
+        ]
+      }
+    ],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": null
+  },
+  {
+    "page": 15,
+    "flags": [],
+    "rhwp_frame": [
+      126,
+      113,
+      1152,
+      1645
+    ],
+    "pdf_frame": [
+      39,
+      113,
+      1151,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -11.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 52,
+      "pdf_count": 51,
+      "paired": 51,
+      "max_abs_delta_px": 44.0,
+      "p90_abs_delta_px": 12.5,
+      "mean_abs_delta_px": 9.6
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          126,
+          113,
+          637,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          113,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 52,
+          "pdf_count": 50,
+          "paired": 50,
+          "max_abs_delta_px": 44.0,
+          "p90_abs_delta_px": 18.5,
+          "mean_abs_delta_px": 9.7
+        },
+        "rhwp_first_band": {
+          "y0": 175,
+          "y1": 188,
+          "x0": 128,
+          "x1": 632,
+          "pixels": 1972,
+          "cy": 181.5
+        },
+        "rhwp_last_band": {
+          "y0": 1582,
+          "y1": 1582,
+          "x0": 586,
+          "x1": 601,
+          "pixels": 12,
+          "cy": 1582.0
+        },
+        "pdf_first_band": {
+          "y0": 179,
+          "y1": 180,
+          "x0": 121,
+          "x1": 591,
+          "pixels": 317,
+          "cy": 179.5
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 567,
+          "x1": 591,
+          "pixels": 25,
+          "cy": 1587.0
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          641,
+          113,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          113,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 36,
+          "pdf_count": 41,
+          "paired": 36,
+          "max_abs_delta_px": 165.5,
+          "p90_abs_delta_px": 139.5,
+          "mean_abs_delta_px": 78.8
+        },
+        "rhwp_first_band": {
+          "y0": 175,
+          "y1": 188,
+          "x0": 643,
+          "x1": 1091,
+          "pixels": 1874,
+          "cy": 181.5
+        },
+        "rhwp_last_band": {
+          "y0": 1488,
+          "y1": 1489,
+          "x0": 643,
+          "x1": 1077,
+          "pixels": 509,
+          "cy": 1488.5
+        },
+        "pdf_first_band": {
+          "y0": 179,
+          "y1": 180,
+          "x0": 602,
+          "x1": 1074,
+          "pixels": 318,
+          "cy": 179.5
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 604,
+          "x1": 624,
+          "pixels": 25,
+          "cy": 1587.0
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [
+      {
+        "column": 1,
+        "rhwp_frame": [
+          641,
+          113,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          113,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 36,
+          "pdf_count": 41,
+          "paired": 36,
+          "max_abs_delta_px": 165.5,
+          "p90_abs_delta_px": 139.5,
+          "mean_abs_delta_px": 78.8
+        },
+        "rhwp_first_band": {
+          "y0": 175,
+          "y1": 188,
+          "x0": 643,
+          "x1": 1091,
+          "pixels": 1874,
+          "cy": 181.5
+        },
+        "rhwp_last_band": {
+          "y0": 1488,
+          "y1": 1489,
+          "x0": 643,
+          "x1": 1077,
+          "pixels": 509,
+          "cy": 1488.5
+        },
+        "pdf_first_band": {
+          "y0": 179,
+          "y1": 180,
+          "x0": 602,
+          "x1": 1074,
+          "pixels": 318,
+          "cy": 179.5
+        },
+        "pdf_last_band": {
+          "y0": 1586,
+          "y1": 1588,
+          "x0": 604,
+          "x1": 624,
+          "pixels": 25,
+          "cy": 1587.0
+        }
+      }
+    ],
+    "column_text_flow_masked_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "pdf_frame": [
+          111,
+          168,
+          593,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          168,
+          1080,
+          1516
+        ],
+        "pdf_frame": [
+          597,
+          168,
+          1079,
+          1516
+        ],
+        "drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "rhwp_first_band": null,
+        "rhwp_last_band": null,
+        "pdf_first_band": null,
+        "pdf_last_band": null
+      }
+    ],
+    "column_text_flow_table_masks": {
+      "rhwp": [
+        [
+          111,
+          168,
+          1096,
+          1509
+        ]
+      ],
+      "pdf": [
+        [
+          111,
+          168,
+          1095,
+          1509
+        ]
+      ]
+    },
+    "column_text_flow_body_frames": {
+      "rhwp": [
+        111,
+        168,
+        1080,
+        1516
+      ],
+      "pdf": [
+        111,
+        168,
+        1079,
+        1516
+      ]
+    },
+    "column_text_flow_reflowing_float_present": false,
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 2,
+      "pdf_count": 4,
+      "paired": 2,
+      "deltas_px": [
+        -8.0,
+        368.0
+      ],
+      "max_abs_delta_px": 368.0,
+      "mean_abs_delta_px": 188.0,
+      "rhwp_regions": [
+        {
+          "x0": 126.0,
+          "y0": 161.0,
+          "x1": 1102.0,
+          "y1": 881.0,
+          "w": 976.0,
+          "h": 720.0,
+          "cy": 521.0,
+          "tiles": 1652.0
+        },
+        {
+          "x0": 126.0,
+          "y0": 945.0,
+          "x1": 1086.0,
+          "y1": 1489.0,
+          "w": 960.0,
+          "h": 544.0,
+          "cy": 1217.0,
+          "tiles": 1103.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 135.0,
+          "y0": 177.0,
+          "x1": 1063.0,
+          "y1": 881.0,
+          "w": 928.0,
+          "h": 704.0,
+          "cy": 529.0,
+          "tiles": 1490.0
+        },
+        {
+          "x0": 887.0,
+          "y0": 817.0,
+          "x1": 1063.0,
+          "y1": 881.0,
+          "w": 176.0,
+          "h": 64.0,
+          "cy": 849.0,
+          "tiles": 37.0
+        },
+        {
+          "x0": 119.0,
+          "y0": 897.0,
+          "x1": 279.0,
+          "y1": 977.0,
+          "w": 160.0,
+          "h": 80.0,
+          "cy": 937.0,
+          "tiles": 28.0
+        },
+        {
+          "x0": 135.0,
+          "y0": 993.0,
+          "x1": 1079.0,
+          "y1": 1489.0,
+          "w": 944.0,
+          "h": 496.0,
+          "cy": 1241.0,
+          "tiles": 1047.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 1,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": [
+          {
+            "x0": 314.0,
+            "x1": 509.0,
+            "y0": 365.0,
+            "y1": 366.0,
+            "length": 196.0,
+            "cy": 365.5,
+            "gap_height": 2.0
+          }
+        ]
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 0,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        []
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/svg/issue2007_nested_cell_pagination_42065_015.svg",
+    "render_tree_json": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/render_tree/render_tree_015.json",
+    "equation_text_overlap_candidates": [],
+    "square_wrap_text_overlap_candidates": [],
+    "deferred_square_picture_top_drift_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": null
+  }
+]

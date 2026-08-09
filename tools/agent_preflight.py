@@ -27,7 +27,12 @@
     # 커밋 범위를 선언하면 오염까지 검사한다
     py tools/agent_preflight.py --scope src/main.rs --scope tests/my_contract.rs
 
-종료 코드: 0 통과 / 1 실패 있음 / 2 사용법 오류
+큐 규율 검사(잔량 캡·동일 이슈 중복 PR·미할당 착수)는 gh 가 있고 인증돼 있으면
+자동으로 함께 돈다 — 결과는 **경고 전용**이라 종료 코드에 영향이 없고, 네트워크가
+없으면 조용히 건너뛴다. `--no-network` 로 명시적으로 끌 수 있다.
+(병렬 세션 규약 §8-6, #3914 수용 기준 2)
+
+종료 코드: 0 통과 / 1 실패 있음 / 2 사용법 오류 — 경고는 코드에 반영되지 않는다
 """
 
 from __future__ import annotations
@@ -40,6 +45,13 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+
+# 자기 출력 인코딩 고정 — Windows 콘솔(cp949)에서 보고 메시지의 em-dash 가
+# UnicodeEncodeError 를 내며 검사기 자신을 죽인다(건너뜀·경고 출력 경로에서 실측).
+# 자식 프로세스는 run() 이 PYTHONIOENCODING 으로 고정하지만 자기 stdout 은 별개다.
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
 
 # ── 검사 결과 ────────────────────────────────────────────────────────────────
 
@@ -56,6 +68,7 @@ class Report:
     findings: list[Finding] = field(default_factory=list)
     skipped: list[tuple[str, str]] = field(default_factory=list)
     passed: list[str] = field(default_factory=list)
+    warnings: list[tuple[str, str]] = field(default_factory=list)
 
     def fail(self, check: str, detail: str, fix: str) -> None:
         self.findings.append(Finding(check, detail, fix))
@@ -65,6 +78,15 @@ class Report:
 
     def ok(self, check: str) -> None:
         self.passed.append(check)
+
+    def warn(self, check: str, detail: str) -> None:
+        """경고 전용 채널 — 종료 코드에 영향을 주지 않는다.
+
+        큐 규율(§11 절) 같은 검사의 실패는 "계약 위반(고쳐야 함)"이 아니라
+        "규율 이탈(판단 필요)"이다. fail 로 내면 캡("10건 내외")이 하드 리밋으로
+        둔갑하고, 곧 --static-only 로 우회당한다.
+        """
+        self.warnings.append((check, detail))
 
 
 def run(cmd: list[str], cwd: Path | None = None, stdin_data: str | None = None):
@@ -236,6 +258,11 @@ def check_redos(repo: Path, files: list[Path], rep: Report) -> None:
     hits = 0
     for path in files:
         if path.suffix not in {".rs", ".py", ".ts", ".js"}:
+            continue
+        # 자기 자신은 스캔하지 않는다 — 검출 패턴(EXPONENTIAL·POLYNOMIAL·예시 문자열)이
+        # 문자 그대로 들어 있어, 이 파일이 변경 집합에 들면 자기 검출부를 잡는
+        # 자기스캔 오탐이 난다(2026-08-06 실측: 검출기 리터럴 3건).
+        if path.name == "agent_preflight.py":
             continue
         try:
             text = path.read_text(encoding="utf-8", errors="replace")
@@ -664,6 +691,119 @@ def check_undeclared_commands_are_not_invisible(binary: Path, caps_j, helptext: 
         rep.ok(f"{check} ({len(silent)}개 미선언 명령, 미지 플래그는 거부함)")
 
 
+# ── 11. 큐 규율 (네트워크, 경고 전용) ────────────────────────────────────────
+
+# 병렬 세션 규약 §8-6 (mydocs/tech/autonomous_maintenance/parallel_session_protocol.md,
+# 확정 이슈 #3914 수용 기준 2)의 구현이다. 기존 검사와 성질이 셋 다르다:
+#   ① gh + 네트워크 + 인증 의존 — 없으면 조용히 건너뛴다. 네트워크 실패로 선검사가
+#      통째로 빨개지면 다음 사람은 우회하고, 로컬 검사까지 함께 꺼진다.
+#   ② 실패의 뜻이 "계약 위반"이 아니라 "규율 이탈 — 판단 필요"다. warn 전용이고
+#      종료 코드에 영향이 없다(캡은 "10건 내외"지 하드 리밋이 아니다).
+#   ③ 근거는 선언만 쓴다 — PR 이 스스로 적은 대상 이슈(제목·closes/refs 행)와
+#      브랜치 이름의 이슈 번호. 파일 겹침 추정은 쓰지 않는다(오탐이 정상 작업을 막는다).
+
+QUEUE_REPO = "edwardkim/rhwp"
+QUEUE_CAP = 10
+# 본문 전체의 #N 을 긁지 않는다 — 조망 이슈(#3907 등) 참조가 어디에나 있어 헛울린다.
+# 제목의 #N 과 본문의 closes/fixes/resolves/refs 행만 "선언된 대상"으로 센다.
+TARGET_IN_BODY = re.compile(r"(?im)^\s*(?:closes|fixes|resolves|refs)\s*:?\s+#(\d{3,5})\b")
+TARGET_IN_TITLE = re.compile(r"#(\d{3,5})\b")
+BRANCH_ISSUE = re.compile(r"^(?:task|wip/fix|fix|feat)[/-](\d{3,5})-")
+# 잠금은 protocol §5-1의 명시 형식만 인정한다. 단순히 "착수"가 들어간 회고·인용·
+# "아직 착수하지 않음"은 잠금이 아니므로, 부분 문자열 검사는 새 세션을 잘못 통과시킨다.
+CLAIM_COMMENT = re.compile(r"(?m)^\s*착수합니다\s*[—-]\s*\S")
+
+
+def check_queue_discipline(repo: Path, rep: Report) -> None:
+    check = "큐 규율"
+    try:
+        probe = run(["gh", "auth", "status"], cwd=repo)
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        rep.skip(check, "gh 없음/응답 없음 — 네트워크 검사 건너뜀")
+        return
+    if probe.returncode != 0:
+        rep.skip(check, "gh 미인증 — 네트워크 검사 건너뜀")
+        return
+
+    try:
+        r = run(
+            ["gh", "pr", "list", "--repo", QUEUE_REPO, "--state", "open",
+             "--limit", "100", "--json", "number,title,body"],
+            cwd=repo,
+        )
+        if r.returncode != 0:
+            rep.skip(check, f"gh pr list 실패 — {(r.stderr or '').strip()[:80]}")
+            return
+        prs = json.loads(r.stdout or "[]")
+    except Exception as e:  # 네트워크 검사는 어떤 이유로든 선검사를 막지 않는다
+        rep.skip(check, f"조회 실패({type(e).__name__}) — 네트워크 검사 건너뜀")
+        return
+
+    warned = False
+
+    # ① 잔량 — 열린 PR 캡(10건 내외, protocol §8-1)
+    if len(prs) > QUEUE_CAP:
+        warned = True
+        rep.warn(
+            check,
+            f"열린 PR {len(prs)}건 — 캡 {QUEUE_CAP}건 내외 초과. "
+            "신규 제출을 멈추고 머지·리베이스 우선 (#3719 §7, 슬롯이 빌 때까지 이슈로만 예약)",
+        )
+
+    # ② 동일 이슈 중복 — 선언된 대상 이슈가 겹치는 열린 PR (protocol §8-5 고신뢰 신호)
+    by_issue: dict[str, list[int]] = {}
+    for pr in prs:
+        targets = set(TARGET_IN_TITLE.findall(pr.get("title") or ""))
+        targets |= set(TARGET_IN_BODY.findall(pr.get("body") or ""))
+        for n in targets:
+            by_issue.setdefault(n, []).append(pr["number"])
+    for n, nums in sorted(by_issue.items()):
+        if len(nums) >= 2:
+            warned = True
+            pretty = " ".join(f"#{p}" for p in sorted(nums))
+            rep.warn(
+                check,
+                f"이슈 #{n} 를 대상으로 선언한 열린 PR 이 {len(nums)}건 — {pretty}. "
+                "중복이면 protocol §6 판정(포함 관계→검증 깊이→접합 비용), §7 인계 절차",
+            )
+
+    # ③ 미할당 착수 — 현재 브랜치가 가리키는 이슈에 잠금이 있는가 (protocol §5-1)
+    br = run(["git", "symbolic-ref", "--short", "-q", "HEAD"], cwd=repo)
+    m = BRANCH_ISSUE.match(br.stdout.strip()) if br.returncode == 0 else None
+    if m is None:
+        if not warned:
+            rep.ok(f"{check} (열린 PR {len(prs)}건; 브랜치에 이슈 번호 없음 — 잠금 검사 생략)")
+        return
+    issue = m.group(1)
+    try:
+        r = run(
+            ["gh", "issue", "view", issue, "--repo", QUEUE_REPO,
+             "--json", "assignees,comments"],
+            cwd=repo,
+        )
+        if r.returncode != 0:
+            rep.skip(f"{check}·잠금", f"이슈 #{issue} 조회 실패 — {(r.stderr or '').strip()[:80]}")
+            return
+        data = json.loads(r.stdout or "{}")
+    except Exception as e:
+        rep.skip(f"{check}·잠금", f"조회 실패({type(e).__name__})")
+        return
+    assignees = [a.get("login", "") for a in data.get("assignees", []) if a.get("login")]
+    claimed = any(
+        CLAIM_COMMENT.search(c.get("body") or "") for c in data.get("comments", [])
+    )
+    if not assignees and not claimed:
+        rep.warn(
+            check,
+            f"브랜치가 이슈 #{issue} 를 가리키는데 assignee 도 착수 코멘트도 없다 — "
+            f'선점하라: gh issue comment {issue} --repo {QUEUE_REPO} '
+            f'--body "착수합니다 — <범위>" (외부 기여자는 assignee 편집이 거부된다, protocol §5-1 실측)',
+        )
+    elif not warned:
+        lock = ",".join(assignees) if assignees else "착수 코멘트"
+        rep.ok(f"{check} (열린 PR {len(prs)}건; #{issue} 잠금={lock})")
+
+
 # ── 엔트리 ───────────────────────────────────────────────────────────────────
 
 
@@ -689,6 +829,11 @@ def main() -> int:
         help="이 커밋이 건드려야 할 경로 접두사. 선언하면 그 밖의 staged 파일을 오염으로 본다",
     )
     ap.add_argument("--repo", default=".", help="저장소 루트 (기본: 현재 디렉터리)")
+    ap.add_argument(
+        "--no-network",
+        action="store_true",
+        help="큐 규율 검사(gh 필요)를 건너뛴다. 네트워크가 없으면 자동으로 건너뛰므로 보통 불필요",
+    )
     args = ap.parse_args()
 
     repo = Path(args.repo).resolve()
@@ -703,6 +848,8 @@ def main() -> int:
     check_doc_placement(repo, files, rep)
     check_redos(repo, files, rep)
     check_fmt(repo, files, rep)
+    if not args.no_network:
+        check_queue_discipline(repo, rep)
 
     if not args.static_only:
         binary = Path(args.bin) if args.bin else repo / "target" / "release" / "rhwp"
@@ -739,6 +886,12 @@ def main() -> int:
         print(f"  통과   {name}")
     for name, why in rep.skipped:
         print(f"  건너뜀 {name} — {why}")
+
+    if rep.warnings:
+        print()
+        print(f"경고 {len(rep.warnings)}건 — 차단 아님, 판단 필요 (종료 코드 무관)")
+        for check, detail in rep.warnings:
+            print(f"  ! [{check}] {detail}")
 
     if rep.findings:
         print()

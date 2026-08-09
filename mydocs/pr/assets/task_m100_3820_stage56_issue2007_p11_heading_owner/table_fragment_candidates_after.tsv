@@ -1,0 +1,15 @@
+page	next_page	pi	ci	rows	cols	next_rows	next_cols	bbox	next_bbox	signals	page_text_delta_chars	next_page_text_delta_chars	page_bottom_gap_px	next_page_bottom_gap_px	note
+10	11	0	0	1	1	1	1	77.5,115.3,646.5,879.9	77.5,115.3,646.5,855.7	same_pi_ci_adjacent_fragment	-	7	127.3	151.5	candidate only; does not assert PDF table row owner or fragment correctness
+10	11	0	0	1	1	1	1	77.5,115.3,646.5,879.9	80.5,118.3,643.2,477.6	same_pi_ci_adjacent_fragment	-	7	127.3	526.6	candidate only; does not assert PDF table row owner or fragment correctness
+10	11	0	0	1	1	1	1	80.5,178.3,643.2,805.9	77.5,115.3,646.5,855.7	same_pi_ci_adjacent_fragment	-	7	138.3	151.5	candidate only; does not assert PDF table row owner or fragment correctness
+10	11	0	0	1	1	1	1	80.5,178.3,643.2,805.9	80.5,118.3,643.2,477.6	same_pi_ci_adjacent_fragment	-	7	138.3	526.6	candidate only; does not assert PDF table row owner or fragment correctness
+10	11	7	1	1	1	1	1	75.6,113.4,649.4,877.6	75.6,113.4,649.4,857.2	same_pi_ci_adjacent_fragment	-	7	131.5	151.9	candidate only; does not assert PDF table row owner or fragment correctness
+11	12	0	0	1	1	1	1	77.5,115.3,646.5,855.7	77.5,115.3,646.3,871.3	same_pi_ci_adjacent_fragment	7	6	151.5	135.9	candidate only; does not assert PDF table row owner or fragment correctness
+11	12	0	0	1	1	1	1	80.5,118.3,643.2,477.6	77.5,115.3,646.3,871.3	same_pi_ci_adjacent_fragment	7	6	526.6	135.9	candidate only; does not assert PDF table row owner or fragment correctness
+11	12	7	1	1	1	1	1	75.6,113.4,649.4,857.2	75.6,113.4,649.2,872.8	same_pi_ci_adjacent_fragment	7	6	151.9	136.3	candidate only; does not assert PDF table row owner or fragment correctness
+12	13	0	0	1	1	1	1	77.5,115.3,646.3,871.3	77.5,115.3,648.4,882.4	same_pi_ci_adjacent_fragment|next_page_bottom_near_material_text_delta	6	43	135.9	124.8	candidate only; does not assert PDF table row owner or fragment correctness
+12	13	7	1	1	1	1	1	75.6,113.4,649.2,872.8	75.6,113.4,651.2,880.1	same_pi_ci_adjacent_fragment|next_page_bottom_near_material_text_delta	6	43	136.3	129.0	candidate only; does not assert PDF table row owner or fragment correctness
+13	-	-	-	1	1	-	-	82.3,907.3,643.2,78.9	-	page_bottom_near_material_text_delta	43	-	136.3	-	candidate only; does not assert PDF table row owner or fragment correctness
+13	14	0	0	1	1	1	1	77.5,115.3,648.4,882.4	77.5,115.3,648.4,863.8	same_pi_ci_adjacent_fragment|page_bottom_near_material_text_delta	43	-	124.8	143.4	candidate only; does not assert PDF table row owner or fragment correctness
+13	14	0	0	1	1	1	1	77.5,115.3,648.4,882.4	80.5,542.0,643.2,464.7	same_pi_ci_adjacent_fragment|page_bottom_near_material_text_delta	43	-	124.8	115.8	candidate only; does not assert PDF table row owner or fragment correctness
+13	14	7	1	1	1	1	1	75.6,113.4,651.2,880.1	75.6,113.4,651.2,861.6	same_pi_ci_adjacent_fragment|page_bottom_near_material_text_delta	43	-	129.0	147.5	candidate only; does not assert PDF table row owner or fragment correctness

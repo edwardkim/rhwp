@@ -86,12 +86,51 @@ fn bindata_fingerprint(bytes: &[u8]) -> Option<BTreeMap<u64, usize>> {
     Some(multiset)
 }
 
-/// orig 멀티셋에서 rt 가 덮지 못한 항목 수(= 소실된 BinData 스트림 수).
+/// [#4097] C2b — 중첩 OLE CFB(BinData 안의 CFB 컨테이너)의 **루트 CLSID** 지문 멀티셋.
+///
+/// OLE 개체는 루트 스토리지 엔트리의 CLSID 로 서버를 식별한다 — 스트림 내용이 다 있어도
+/// 이 값이 비면 한컴이 개체를 알아보지 못해 틀만 그리고 내용을 비운다(2026-08-05 실측).
+/// C2(내용 해시)는 스트림 바이트 전체를 보므로 현행 passthrough 저장에서는 이 검사도
+/// 자동 green 이다 — 존재 이유는 **재포장이 저장 경로에 들어오는 날**(차트 편집 #3683 등)
+/// 이다. 그때 내용 해시 검사는 "편집분은 달라도 된다"로 완화될 수밖에 없는데, 정체성
+/// (CLSID)은 편집 후에도 보존되어야 하므로 이 검사가 계속 지킨다. #3557 이 지적한
+/// "IR 에 모델링되지 않아 --verify 가 못 보는" 축을 게이트에서 직접 보는 것이기도 하다.
+///
+/// BinData OLE 스토리지는 4바이트 LE 크기 prefix 뒤에 CFB 가 온다(#3547) — prefix 유무
+/// 두 형태를 모두 인식한다. CFB 가 아닌 BinData(그림 등)는 건너뛴다.
+fn nested_ole_clsid_fingerprint(bytes: &[u8]) -> Option<BTreeMap<[u8; 16], usize>> {
+    const CFB_MAGIC: [u8; 8] = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
+    let mut reader = CfbReader::open(bytes).ok()?;
+    let names = reader.list_bin_data();
+    let mut multiset: BTreeMap<[u8; 16], usize> = BTreeMap::new();
+    for name in names {
+        let raw = match reader.read_bin_data(&name) {
+            Ok(r) => r,
+            Err(_) => continue,
+        };
+        let content = decompress_stream(&raw).unwrap_or(raw);
+        let cfb = if content.starts_with(&CFB_MAGIC) {
+            &content[..]
+        } else if content.len() > 12 && content[4..12] == CFB_MAGIC {
+            &content[4..]
+        } else {
+            continue;
+        };
+        let Some(clsid) = crate::parser::cfb_reader::root_clsid(cfb) else {
+            continue;
+        };
+        *multiset.entry(clsid).or_insert(0) += 1;
+    }
+    Some(multiset)
+}
+
+/// orig 멀티셋에서 rt 가 덮지 못한 항목 수(= 소실된 항목 수).
 /// rt 가 더 많이 가진 항목(gained)은 손실이 아니므로 무시한다.
-fn bindata_lost(orig: &BTreeMap<u64, usize>, rt: &BTreeMap<u64, usize>) -> usize {
+/// C2(BinData 내용 해시)와 C2b(중첩 CLSID)가 공유한다.
+fn multiset_lost<K: Ord>(orig: &BTreeMap<K, usize>, rt: &BTreeMap<K, usize>) -> usize {
     let mut lost = 0;
-    for (hash, &cnt) in orig {
-        let have = rt.get(hash).copied().unwrap_or(0);
+    for (key, &cnt) in orig {
+        let have = rt.get(key).copied().unwrap_or(0);
         if cnt > have {
             lost += cnt - have;
         }
@@ -159,6 +198,10 @@ struct RoundtripRow {
     bindata_total: Option<usize>,
     /// C2 — 저장본에서 소실된 BinData 스트림 수(내용 멀티셋 기준).
     bindata_lost: usize,
+    /// C2b — 원본의 중첩 OLE CFB 수(루트 CLSID 지문 기준). `None` = 검사 생략. (#4097)
+    nested_clsid_total: Option<usize>,
+    /// C2b — 저장본에서 소실된 중첩 OLE 루트 CLSID 수(멀티셋 기준). (#4097)
+    nested_clsid_lost: usize,
     /// C3 — 원본/저장본의 rhwp 페이지 수. `None` = 재로드 실패/패닉.
     page_before: Option<u32>,
     page_after: Option<u32>,
@@ -191,6 +234,8 @@ impl RoundtripRow {
             "IR_DIFF"
         } else if self.bindata_lost > 0 {
             "BINDATA_LOSS"
+        } else if self.nested_clsid_lost > 0 {
+            "OLE_CLSID_LOSS"
         } else if self.cfb_struct_ok == Some(false) {
             "CFB_STRUCT_FAIL"
         } else if self.page_mismatch() {
@@ -217,6 +262,7 @@ impl RoundtripRow {
         }
         !(self.parse_ok && self.serialize_ok && self.reparse_ok)
             || self.bindata_lost > 0
+            || self.nested_clsid_lost > 0
             || self.cfb_struct_ok == Some(false)
             || self.page_mismatch()
             || !self.round2_error.is_empty()
@@ -248,6 +294,8 @@ fn roundtrip_one(path: &Path, rel_path: &str, rt_path: &Path) -> RoundtripRow {
         ir_diff_summary: String::new(),
         bindata_total: None,
         bindata_lost: 0,
+        nested_clsid_total: None,
+        nested_clsid_lost: 0,
         page_before: None,
         page_after: None,
         cfb_struct_ok: None,
@@ -335,7 +383,16 @@ fn roundtrip_one(path: &Path, rel_path: &str, rt_path: &Path) -> RoundtripRow {
     // C2 — BinData 스트림 보존 (원본 bytes vs 저장본 out 의 내용 멀티셋 비교)
     if let (Some(orig_fp), Some(rt_fp)) = (bindata_fingerprint(&bytes), bindata_fingerprint(&out)) {
         row.bindata_total = Some(orig_fp.values().sum());
-        row.bindata_lost = bindata_lost(&orig_fp, &rt_fp);
+        row.bindata_lost = multiset_lost(&orig_fp, &rt_fp);
+    }
+
+    // C2b — 중첩 OLE 루트 CLSID 보존 (#4097). 내용(C2)과 별개로 개체 정체성을 본다.
+    if let (Some(orig_id), Some(rt_id)) = (
+        nested_ole_clsid_fingerprint(&bytes),
+        nested_ole_clsid_fingerprint(&out),
+    ) {
+        row.nested_clsid_total = Some(orig_id.values().sum());
+        row.nested_clsid_lost = multiset_lost(&orig_id, &rt_id);
     }
 
     // C3 — 페이지수 복원 (rhwp 자기 일관 기준; 외부 한글-only 붕괴는 미검출 한계)
@@ -387,12 +444,29 @@ pub fn baseline_check(bytes: &[u8]) -> Result<(), String> {
 
     // C2 BinData 보존
     if let (Some(orig_fp), Some(rt_fp)) = (bindata_fingerprint(bytes), bindata_fingerprint(&out)) {
-        let lost = bindata_lost(&orig_fp, &rt_fp);
+        let lost = multiset_lost(&orig_fp, &rt_fp);
         if lost > 0 {
             return Err(format!(
                 "BinData 소실 {}/{}",
                 lost,
                 orig_fp.values().sum::<usize>()
+            ));
+        }
+    }
+
+    // C2b 중첩 OLE 루트 CLSID 보존 (#4097). 현행 passthrough 저장에서는 자동 green —
+    // 재포장이 저장 경로에 들어오는 날(차트 편집 등) C2 를 편집 허용으로 완화해도
+    // 개체 정체성은 이 검사가 계속 지킨다.
+    if let (Some(orig_id), Some(rt_id)) = (
+        nested_ole_clsid_fingerprint(bytes),
+        nested_ole_clsid_fingerprint(&out),
+    ) {
+        let lost = multiset_lost(&orig_id, &rt_id);
+        if lost > 0 {
+            return Err(format!(
+                "중첩 OLE 루트 CLSID 소실 {}/{} — 한컴이 개체를 알아보지 못한다 (#4097)",
+                lost,
+                orig_id.values().sum::<usize>()
             ));
         }
     }
@@ -462,11 +536,11 @@ fn write_tsv(out_dir: &Path, rows: &[RoundtripRow]) -> Result<PathBuf, String> {
         None => "-",
     };
     let mut tsv = String::from(
-        "sample\tstatus\tparse_ok\tserialize_ok\treparse_ok\tir_diff_count\tbindata_total\tbindata_lost\tpage_before\tpage_after\tcfb_struct_ok\tround2_diff\telapsed_ms\terror\tir_diff_summary\tcfb_problems\tround2_error\n",
+        "sample\tstatus\tparse_ok\tserialize_ok\treparse_ok\tir_diff_count\tbindata_total\tbindata_lost\tnested_clsid_total\tnested_clsid_lost\tpage_before\tpage_after\tcfb_struct_ok\tround2_diff\telapsed_ms\terror\tir_diff_summary\tcfb_problems\tround2_error\n",
     );
     for row in rows {
         tsv.push_str(&format!(
-            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
             tsv_escape(&row.rel_path),
             row.status(),
             row.parse_ok,
@@ -475,6 +549,8 @@ fn write_tsv(out_dir: &Path, rows: &[RoundtripRow]) -> Result<PathBuf, String> {
             opt_to_str(row.ir_diff_count),
             opt_to_str(row.bindata_total),
             row.bindata_lost,
+            opt_to_str(row.nested_clsid_total),
+            row.nested_clsid_lost,
             opt_u32(row.page_before),
             opt_u32(row.page_after),
             opt_bool(row.cfb_struct_ok),
@@ -579,6 +655,13 @@ pub fn run(args: &[String]) {
                 fmt_opt(row.bindata_total)
             ));
         }
+        if row.nested_clsid_lost > 0 {
+            extra.push_str(&format!(
+                " ole_clsid_lost={}/{}",
+                row.nested_clsid_lost,
+                fmt_opt(row.nested_clsid_total)
+            ));
+        }
         if row.page_mismatch() {
             extra.push_str(&format!(
                 " pg={}→{}",
@@ -634,6 +717,8 @@ mod tests {
             ir_diff_summary: String::new(),
             bindata_total: None,
             bindata_lost: 0,
+            nested_clsid_total: None,
+            nested_clsid_lost: 0,
             page_before: None,
             page_after: None,
             cfb_struct_ok: Some(true),
@@ -699,14 +784,34 @@ mod tests {
     }
 
     #[test]
-    fn bindata_lost_counts_only_missing() {
+    fn multiset_lost_counts_only_missing() {
         let orig: BTreeMap<u64, usize> = [(1, 2), (2, 1), (3, 1)].into_iter().collect();
         // rt 가 hash=1 하나만 가지고 hash=3 소실, hash=2 유지, gained hash=9 무시
         let rt: BTreeMap<u64, usize> = [(1, 1), (2, 1), (9, 5)].into_iter().collect();
         // 소실: hash=1 (2→1, 1개) + hash=3 (1→0, 1개) = 2
-        assert_eq!(bindata_lost(&orig, &rt), 2);
+        assert_eq!(multiset_lost(&orig, &rt), 2);
         // 동일 멀티셋이면 0
-        assert_eq!(bindata_lost(&orig, &orig), 0);
+        assert_eq!(multiset_lost(&orig, &orig), 0);
+    }
+
+    /// [#4097] C2b 검출기가 실제로 중첩 CFB 를 본다 — 자동 green 이 공허하지 않다는 증명.
+    ///
+    /// 차트 코퍼스 `.hwp` 는 `/BinData/BIN0001.OLE` 에 4바이트 prefix + deflate 로 중첩 CFB 를
+    /// 담고 있고, 그 루트 CLSID 는 비-0 이다(#4097 Stage 1 실측: 56건 전부
+    /// `{4C3DA137-DC90-47B9-9BED-59DAE352A280}`). 검출기가 이것을 정확히 1건으로 세고
+    /// 비-0 CLSID 를 읽어야 한다 — 못 읽으면 C2b 는 "검사할 게 없어서 green" 인 상태다.
+    #[test]
+    fn nested_clsid_fingerprint_sees_chart_corpus() {
+        let path = Path::new("samples/chart/세로막대형/묶은세로막대형.hwp");
+        let bytes = fs::read(path).expect("차트 코퍼스는 저장소에 커밋되어 있다");
+        let fp = nested_ole_clsid_fingerprint(&bytes).expect("바깥 CFB 열기");
+        assert_eq!(
+            fp.values().sum::<usize>(),
+            1,
+            "중첩 OLE CFB 1건을 세야 한다"
+        );
+        let clsid = *fp.keys().next().unwrap();
+        assert_ne!(clsid, [0u8; 16], "차트 개체의 루트 CLSID 는 비-0 이다");
     }
 
     #[test]

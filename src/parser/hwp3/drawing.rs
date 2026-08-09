@@ -611,6 +611,7 @@ pub fn parse_drawing_object_tree(
         doc_border_fills,
         doc_tab_defs,
         pic_name_to_id,
+        0,
     )?;
 
     if root_nodes.is_empty() {
@@ -628,6 +629,14 @@ pub fn parse_drawing_object_tree(
     }
 }
 
+/// [#4285] `has_child`(connection_info bit 1)는 파일에서 그대로 온 값이라,
+/// 재귀 깊이에 상한이 없으면 중첩된 Container 객체 체인 하나로 네이티브
+/// 스택을 고갈시켜 프로세스를 죽일 수 있다(패닉과 달리 catch_unwind로 못
+/// 잡음). 최소 92바이트짜리 Container 객체를 수만 겹 중첩해도
+/// HWP3_MAX_RECORD_SIZE(256MiB) 안에 들어간다. HmlLimits::max_depth와 같은
+/// 취지로 상한을 둔다.
+const MAX_DRAWING_OBJECT_DEPTH: u32 = 256;
+
 fn parse_shape_list(
     cursor: &mut std::io::Cursor<&[u8]>,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -635,7 +644,16 @@ fn parse_shape_list(
     doc_border_fills: &mut Vec<crate::model::style::BorderFill>,
     doc_tab_defs: &mut Vec<crate::model::style::TabDef>,
     pic_name_to_id: &mut HashMap<String, u16>,
+    depth: u32,
 ) -> Result<Vec<ShapeObject>, Hwp3Error> {
+    if depth > MAX_DRAWING_OBJECT_DEPTH {
+        return Err(Hwp3Error::ParseError {
+            message: format!(
+                "Drawing object nesting exceeds {} levels",
+                MAX_DRAWING_OBJECT_DEPTH
+            ),
+        });
+    }
     let mut list = Vec::new();
     loop {
         let raw_obj =
@@ -661,6 +679,7 @@ fn parse_shape_list(
                 doc_border_fills,
                 doc_tab_defs,
                 pic_name_to_id,
+                depth + 1,
             )?;
             if let ShapeObject::Group(ref mut g) = node {
                 g.children = children;
@@ -1110,6 +1129,67 @@ mod hypertext_bookmark_underread_tests {
             cursor.position(),
             hypertext_len,
             "하이퍼텍스트 정보 파싱이 책갈피 필드를 32바이트로 소비하지 않음"
+        );
+    }
+}
+
+#[cfg(test)]
+mod drawing_object_recursion_depth_tests {
+    use super::*;
+    use std::io::Cursor;
+
+    /// object_type=0(Container)에 connection_info=0x0002(has_child, no
+    /// sibling)만 실은 최소 92바이트 공통 헤더를 만든다.
+    fn container_block() -> Vec<u8> {
+        let mut buf = Vec::new();
+        buf.extend_from_slice(&0u32.to_le_bytes()); // header_length
+        buf.extend_from_slice(&0u16.to_le_bytes()); // object_type = 0 (Container)
+        buf.extend_from_slice(&0x0002u16.to_le_bytes()); // connection_info: has_child, !has_sibling
+        buf.extend_from_slice(&[0u8; 8]); // relative_pos
+        buf.extend_from_slice(&[0u8; 8]); // object_size
+        buf.extend_from_slice(&[0u8; 8]); // absolute_pos
+        buf.extend_from_slice(&[0u8; 16]); // bounds
+        buf.extend_from_slice(&[0u8; 32]); // basic_attr: line_style..pattern_color
+        buf.extend_from_slice(&[0u8; 8]); // basic_attr: textbox_margin
+        buf.extend_from_slice(&0u32.to_le_bytes()); // basic_attr: options
+        buf
+    }
+
+    // [#4285] has_child 는 파일에서 그대로 온 값이라 재귀 깊이 상한이 없으면
+    // Container 객체를 깊이 중첩한 파일 하나로 네이티브 스택을 고갈시켜
+    // 프로세스를 죽인다(catch_unwind로 못 잡음). MAX_DRAWING_OBJECT_DEPTH를
+    // 넘는 중첩이 패닉/abort 대신 파싱 오류로 거부되는지 확인한다.
+    #[test]
+    fn deeply_nested_container_chain_is_rejected_not_stack_overflowed() {
+        let mut buf = Vec::new();
+        buf.extend_from_slice(&24u32.to_le_bytes()); // frame header_length (<=24: 하이퍼텍스트 없음)
+        buf.extend_from_slice(&0u32.to_le_bytes()); // z_order
+        buf.extend_from_slice(&1u32.to_le_bytes()); // object_count
+        buf.extend_from_slice(&[0u8; 16]); // bounds
+
+        for _ in 0..(MAX_DRAWING_OBJECT_DEPTH as usize + 4) {
+            buf.extend_from_slice(&container_block());
+        }
+
+        let mut doc_char_shapes = Vec::new();
+        let mut doc_para_shapes = Vec::new();
+        let mut doc_border_fills = Vec::new();
+        let mut doc_tab_defs = Vec::new();
+        let mut pic_name_to_id = HashMap::new();
+
+        let mut cursor = Cursor::new(buf.as_slice());
+        let result = parse_drawing_object_tree(
+            &mut cursor,
+            &mut doc_char_shapes,
+            &mut doc_para_shapes,
+            &mut doc_border_fills,
+            &mut doc_tab_defs,
+            &mut pic_name_to_id,
+        );
+
+        assert!(
+            result.is_err(),
+            "상한을 넘는 중첩은 패닉 대신 오류로 거부되어야 함"
         );
     }
 }

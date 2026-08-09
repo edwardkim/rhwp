@@ -1,0 +1,51 @@
+{
+  "id": "p3-shape-read",
+  "title": "P3 서식 읽기 — 캐럿 자리의 글자 모양·문단 모양",
+  "note": "서식은 값이 아니라 ParameterSet 객체로 온다. 러너의 점 표기(CharShape.Item)로 항목 값을 직접 대조한다 — 객체 타입만 보면 아무것도 안 담은 구현이 통과한다.",
+  "ledger": [
+    "HwpCtrl.property.CharShape",
+    "HwpCtrl.property.ParaShape",
+    "ParameterSet.method.Item",
+    "ParameterSet.method.ItemExist",
+    "ParameterSet.property.SetID"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["MoveToField", ["pt_nm", true, true, false]],
+    ["CharShape.SetID", []],
+    ["CharShape.Item", ["FaceNameHangul"]],
+    ["CharShape.Item", ["FaceNameLatin"]],
+    ["CharShape.Item", ["Height"]],
+    ["CharShape.Item", ["Bold"]],
+    ["CharShape.Item", ["Italic"]],
+    ["CharShape.Item", ["UnderlineType"]],
+    ["CharShape.Item", ["StrikeOutType"]],
+    ["CharShape.Item", ["TextColor"]],
+    ["CharShape.Item", ["SizeHangul"]],
+    ["CharShape.Item", ["RatioHangul"]],
+    ["CharShape.Item", ["SpacingHangul"]],
+    ["CharShape.Item", ["OffsetHangul"]],
+    ["CharShape.ItemExist", ["Height"]],
+    ["CharShape.ItemExist", ["__없는항목__"]],
+
+    ["ParaShape.SetID", []],
+    ["ParaShape.Item", ["AlignType"]],
+    ["ParaShape.Item", ["LineSpacingType"]],
+    ["ParaShape.Item", ["LineSpacing"]],
+    ["ParaShape.Item", ["LeftMargin"]],
+    ["ParaShape.Item", ["RightMargin"]],
+    ["ParaShape.Item", ["Indentation"]],
+    ["ParaShape.Item", ["PrevSpacing"]],
+    ["ParaShape.Item", ["NextSpacing"]],
+    ["ParaShape.Item", ["HeadingType"]],
+    ["ParaShape.Item", ["Level"]],
+
+    ["MovePos", [0, 1, 0]],
+    ["CharShape.Item", ["FaceNameHangul"]],
+    ["CharShape.Item", ["Height"]],
+    ["ParaShape.Item", ["AlignType"]],
+    ["MovePos", [0, 2, 0]],
+    ["CharShape.Item", ["FaceNameHangul"]],
+    ["ParaShape.Item", ["LineSpacing"]]
+  ]
+}

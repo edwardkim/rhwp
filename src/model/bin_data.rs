@@ -1,5 +1,30 @@
 //! 바이너리 데이터 (BinData, 이미지/OLE 참조)
 
+/// BinData 개별 항목의 압축 해제 상한 (바이트).
+///
+/// [#2550] 저장·클립보드·렌더 경로가 무제한 `load()` 로 deflate bomb 에 노출되어
+/// 있었다. 폰트 전용 상한(`MAX_EMBEDDED_FONT_BYTES` 32MB)보다 큰 실문서 임베드
+/// (이미지·OLE)가 존재하므로, HWP3 레코드 상한(`check_record_count` 의
+/// `HWP3_MAX_RECORD_SIZE`)과 같은 256MB 로 정합한다.
+///
+/// 초과 시 동작은 경로별로 다르다:
+/// - 렌더·클립보드·질의: placeholder (누락 이미지와 동일 경로)
+/// - HWP5 저장: 압축 해제 없이 원본 저장 바이트 통과 ([`BinDataBytes::load_raw`])
+pub const MAX_BIN_DATA_BYTES: usize = 256 * 1024 * 1024;
+
+/// 원본 컨테이너에 저장된 형태 그대로의 BinData 바이트 (압축 해제 없음).
+///
+/// [#2550] 상한 초과 항목을 저장 경로가 손실 없이 통과시킬 때 쓴다. 저장 형태를
+/// 그대로 다시 쓰려면 **그 바이트가 압축된 상태인지**를 함께 알아야 한다 — 소비 측이
+/// 기대하는 압축 상태와 다르면 압축 바이트를 원본으로 오해해 조용히 깨지기 때문이다.
+#[derive(Debug, Clone)]
+pub struct StoredBinData {
+    /// 저장된 형태의 바이트. 암호 문서는 복호화(크기 1:1)만 거친다.
+    pub bytes: Vec<u8>,
+    /// `bytes` 가 압축된 상태인지 여부.
+    pub compressed: bool,
+}
+
 /// 바이너리 데이터 아이템 (HWPTAG_BIN_DATA)
 #[derive(Debug, Clone, Default)]
 pub struct BinData {
@@ -115,6 +140,16 @@ pub trait BinDataResolver:
     /// 빈 항목인지 판정하기 위한 경로다.
     fn resolved_is_empty(&self, key: &str) -> bool {
         self.resolve(key).is_empty()
+    }
+
+    /// 원본 컨테이너에 저장된 형태 그대로의 바이트를 반환한다 (압축 해제 없음).
+    ///
+    /// [#2550] 저장 경로가 상한 초과 항목(deflate bomb 포함)을 데이터 손실 없이
+    /// 통과시키기 위한 경로다. 복호화(크기 1:1)는 수행하되 압축 해제는 하지 않으므로
+    /// 반환 크기는 저장된 스트림 크기에 묶인다. 저장 형태를 노출할 수 없는
+    /// 컨테이너는 `None` 을 반환한다 (기본값).
+    fn resolve_raw(&self, _key: &str) -> Option<StoredBinData> {
+        None
     }
 }
 
@@ -238,6 +273,18 @@ impl BinDataBytes {
         }
     }
 
+    /// 원본 컨테이너에 저장된 형태 그대로의 바이트를 얻는다 (압축 해제 없음).
+    ///
+    /// [#2550] `load_limited` 가 상한 초과로 실패한 항목을 저장 경로가 데이터 손실
+    /// 없이 통과시킬 때 사용한다. `Loaded` 는 이미 해제된 메모리 바이트라 저장
+    /// 형태가 없으므로 `None` 이다 (해당 항목은 폭탄 위험도 없다).
+    pub fn load_raw(&self) -> Option<StoredBinData> {
+        match self {
+            BinDataBytes::Loaded(_) => None,
+            BinDataBytes::Lazy { resolver, key } => resolver.resolve_raw(key),
+        }
+    }
+
     /// 바이트 길이. `Lazy` 인 경우 압축 해제가 발생하므로 렌더 경로의
     /// 반복 호출은 피하고 `load()` 결과를 재사용한다.
     pub fn len(&self) -> usize {
@@ -341,6 +388,40 @@ mod tests {
         };
         assert_eq!(bd.data_type, BinDataType::Embedding);
         assert_eq!(bd.extension.as_deref(), Some("jpg"));
+    }
+
+    #[test]
+    fn load_raw_exposes_stored_form_only_for_container_resolvers() {
+        #[derive(Debug)]
+        struct RawResolver;
+
+        impl BinDataResolver for RawResolver {
+            fn resolve(&self, _key: &str) -> Vec<u8> {
+                vec![0; 8]
+            }
+
+            fn resolve_raw(&self, key: &str) -> Option<StoredBinData> {
+                Some(StoredBinData {
+                    bytes: key.as_bytes().to_vec(),
+                    compressed: true,
+                })
+            }
+        }
+
+        let lazy = BinDataBytes::Lazy {
+            resolver: std::sync::Arc::new(RawResolver),
+            key: "BIN0001.jpg".to_string(),
+        };
+        let stored = lazy
+            .load_raw()
+            .expect("컨테이너 리졸버는 저장 형태를 노출한다");
+        assert_eq!(stored.bytes, b"BIN0001.jpg".to_vec());
+        assert!(stored.compressed);
+        // Loaded/인메모리 공유 바이트는 저장 형태가 없어 None 이다 (#2550).
+        assert!(BinDataBytes::Loaded(vec![1, 2]).load_raw().is_none());
+        assert!(BinDataBytes::from_shared(vec![1, 2, 3])
+            .load_raw()
+            .is_none());
     }
 
     #[test]

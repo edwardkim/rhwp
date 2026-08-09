@@ -1,0 +1,97 @@
+{
+  "summary": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 90.5731,
+    "worst_pixel_match_percent": 88.20668,
+    "average_ink_match_percent": 15.62125,
+    "worst_ink_match_percent": 8.97769,
+    "average_visual_accuracy_proxy_percent": 15.62125,
+    "worst_visual_accuracy_proxy_percent": 8.97769,
+    "worst_pages": [
+      126,
+      127,
+      156
+    ]
+  },
+  "pages": [
+    {
+      "page": 126,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage9-p127-deferred-square/stage9-p127-deferred-square/rhwp_png/rhwp_126.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage9-p127-deferred-square/stage9-p127-deferred-square/pdf_png/pdf-126.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage9-p127-deferred-square/stage9-p127-deferred-square/overlay/overlay_126.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 161743,
+      "diff_ratio": 0.08064392,
+      "pixel_match_percent": 91.93561,
+      "ink_union_pixels": 177696,
+      "ink_diff_pixels": 161743,
+      "ink_diff_ratio": 0.91022308,
+      "ink_match_percent": 8.97769,
+      "visual_accuracy_proxy_percent": 8.97769,
+      "mean_abs_channel_delta": 11.519,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        141,
+        165,
+        1049,
+        1621
+      ]
+    },
+    {
+      "page": 127,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage9-p127-deferred-square/stage9-p127-deferred-square/rhwp_png/rhwp_127.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage9-p127-deferred-square/stage9-p127-deferred-square/pdf_png/pdf-127.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage9-p127-deferred-square/stage9-p127-deferred-square/overlay/overlay_127.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 236532,
+      "diff_ratio": 0.11793319,
+      "pixel_match_percent": 88.20668,
+      "ink_union_pixels": 283180,
+      "ink_diff_pixels": 236532,
+      "ink_diff_ratio": 0.83527085,
+      "ink_match_percent": 16.47291,
+      "visual_accuracy_proxy_percent": 16.47291,
+      "mean_abs_channel_delta": 14.822,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        142,
+        124,
+        1048,
+        1620
+      ]
+    },
+    {
+      "page": 156,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage9-p127-deferred-square/stage9-p127-deferred-square/rhwp_png/rhwp_156.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage9-p127-deferred-square/stage9-p127-deferred-square/pdf_png/pdf-156.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage9-p127-deferred-square/stage9-p127-deferred-square/overlay/overlay_156.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 168935,
+      "diff_ratio": 0.0842298,
+      "pixel_match_percent": 91.57702,
+      "ink_union_pixels": 214966,
+      "ink_diff_pixels": 168935,
+      "ink_diff_ratio": 0.78586846,
+      "ink_match_percent": 21.41315,
+      "visual_accuracy_proxy_percent": 21.41315,
+      "mean_abs_channel_delta": 10.373,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        141,
+        125,
+        1048,
+        1621
+      ]
+    }
+  ]
+}

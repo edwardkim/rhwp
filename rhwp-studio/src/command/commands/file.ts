@@ -40,13 +40,12 @@ import {
   type PrintSurface,
 } from '@/command/print-surface';
 import {
-  canUseOpenFilePicker,
-  pickOpenFileHandle,
   readFileFromHandle,
   saveDocumentToFileSystem,
   type FileSystemFileHandleLike,
   type SaveDocumentResult,
 } from '@/command/file-system-access';
+import { openDocumentViaPicker } from '../file-open-picker';
 import { getFileSystemWindow } from '@/command/desktop-file-system';
 import { singleFlight } from '@/command/single-flight';
 import { PdfPrintDialog } from '@/ui/pdf-print-dialog';
@@ -62,37 +61,15 @@ import { openRecentEntry } from '@/recent/recent-open';
  * 직접 부르지 말고 {@link openFileViaPicker}(동시 진행 가드가 걸린 래퍼)를 쓴다.
  */
 async function openFileViaPickerOnce(services: CommandServices): Promise<void> {
-  try {
-    const canReplace = await confirmSaveBeforeReplacingDocument(services);
-    if (!canReplace) return;
-
-    const windowLike = getFileSystemWindow();
-    const nativeOpenPickerAvailable = canUseOpenFilePicker(windowLike);
-    const handle = await pickOpenFileHandle(windowLike);
-    if (!handle) {
-      // File System Access API picker가 있었다면 null은 사용자 취소(예: Esc)다.
-      // 이때 숨김 input fallback을 다시 열면 파일 선택창이 곧바로 재오픈된다.
-      if (nativeOpenPickerAvailable) return;
-      const fileInput = document.getElementById('file-input') as HTMLInputElement | null;
-      if (fileInput) {
-        fileInput.dataset.skipUnsavedGuard = 'true';
-        fileInput.click();
-      }
-      return;
-    }
-
-    const { bytes, name } = await readFileFromHandle(handle);
-    services.eventBus.emit('open-document-bytes', {
-      bytes,
-      fileName: name,
-      fileHandle: handle,
-      skipUnsavedGuard: true,
-    });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error('[file:open] 열기 실패:', msg);
-    alert(`파일 열기에 실패했습니다:\n${msg}`);
-  }
+  await openDocumentViaPicker({
+    canReplace: () => confirmSaveBeforeReplacingDocument(services),
+    // 데스크톱(Tauri)에서는 네이티브 다이얼로그 어댑터, 웹에서는 브라우저 window.
+    windowLike: getFileSystemWindow(),
+    findFileInput: () => document.getElementById('file-input') as HTMLInputElement | null,
+    emitOpenDocument: (payload) => services.eventBus.emit('open-document-bytes', payload),
+    warn: (message, error) => console.warn(message, error),
+    alert: (message) => alert(message),
+  });
 }
 
 /**

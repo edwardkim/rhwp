@@ -1720,6 +1720,109 @@ impl crate::model::bin_data::BinDataResolver for Hwp5BinResolver {
         }
         (bytes.len() <= max_bytes).then_some(bytes)
     }
+
+    /// [#2550] 저장된 형태 그대로의 바이트 — 압축 해제 없이 반환한다.
+    ///
+    /// 복호화는 크기 1:1 변환이라 deflate bomb 위험이 없으므로 수행한다. 반환
+    /// 바이트는 원본 스트림과 같은 압축 상태이며, OLE size prefix 도 (압축 안에)
+    /// 그대로 들어 있다 — 저장 경로가 이 바이트를 그대로 기록하면 왕복 무손실이다.
+    fn resolve_raw(&self, key: &str) -> Option<crate::model::bin_data::StoredBinData> {
+        let raw = {
+            let mut cfb = match self.cfb.lock() {
+                Ok(cfb) => cfb,
+                Err(poisoned) => poisoned.into_inner(),
+            };
+            match cfb.read_bin_data(key) {
+                Ok(data) => data,
+                Err(error) => {
+                    eprintln!("경고: BinData '{}' 원본 로드 실패: {}", key, error);
+                    return None;
+                }
+            }
+        };
+        let bytes = if self.encrypted {
+            let password = self.password.as_deref().unwrap_or(&[]);
+            // `decrypt_hwp5_stream` 은 입력 길이로 truncate 하므로 크기가 보존된다.
+            crypto::decrypt_password_stream(&raw, password)
+        } else {
+            raw
+        };
+        Some(crate::model::bin_data::StoredBinData {
+            compressed: self.compressed_streams.get(key).copied().unwrap_or(false),
+            bytes,
+        })
+    }
+
+    /// [#2550] `resolve().len()` 의 bounded 미러 — 출력을 materialize 하지 않는다.
+    ///
+    /// 상한(비암호 [`MAX_BIN_DATA_BYTES`](crate::model::bin_data::MAX_BIN_DATA_BYTES),
+    /// 암호 `MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES`) 초과 항목은 bounded 로드 경로가
+    /// placeholder 로 접으므로 길이도 0 으로 보고한다.
+    fn resolved_len(&self, key: &str) -> usize {
+        let raw = {
+            let mut cfb = match self.cfb.lock() {
+                Ok(cfb) => cfb,
+                Err(poisoned) => poisoned.into_inner(),
+            };
+            match cfb.read_bin_data(key) {
+                Ok(data) => data,
+                Err(_) => return 0,
+            }
+        };
+
+        let stream_compressed = self.compressed_streams.get(key).copied().unwrap_or(false);
+        let (plain, len) = if self.encrypted {
+            // 복호화(1:1) 후 압축 여부에 따라 길이만 센다. resolve() 는 오류·상한
+            // 초과 시 빈 값을 반환하므로 길이도 0 이다.
+            let password = self.password.as_deref().unwrap_or(&[]);
+            let plain = crypto::decrypt_password_stream(&raw, password);
+            let len = if stream_compressed {
+                match cfb_reader::decompressed_len_capped(
+                    &plain,
+                    crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES,
+                ) {
+                    Ok(len) => len,
+                    Err(_) => return 0,
+                }
+            } else if plain.len() > crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES {
+                return 0;
+            } else {
+                plain.len()
+            };
+            (plain, len)
+        } else {
+            let len = match cfb_reader::decompressed_len_capped(
+                &raw,
+                crate::model::bin_data::MAX_BIN_DATA_BYTES,
+            ) {
+                Ok(len) => len,
+                Err(cfb_reader::CfbError::LimitExceeded(_)) => return 0,
+                // 해제 실패 시 원본 바이트를 그대로 노출하는 resolve() 를 미러링.
+                Err(_) => raw.len(),
+            };
+            (raw, len)
+        };
+
+        // resolve() 의 OLE size prefix strip 을 선두 12바이트만 해제해 미러링한다.
+        if len >= 12 && self.ole_streams.contains(key) {
+            let head = if self.encrypted && !stream_compressed {
+                plain.get(..12).map(<[u8]>::to_vec).unwrap_or_default()
+            } else {
+                cfb_reader::decompress_stream_prefix(&plain, 12)
+                    .unwrap_or_else(|_| plain.get(..12).map(<[u8]>::to_vec).unwrap_or_default())
+            };
+            let cfb_magic = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
+            if head.len() >= 12 && head[..8] != cfb_magic && head[4..12] == cfb_magic {
+                return len - 4;
+            }
+        }
+        len
+    }
+
+    /// [#2550] 상한 초과 항목은 placeholder(빈 값) 의미이므로 길이 0 판정을 공유한다.
+    fn resolved_is_empty(&self, key: &str) -> bool {
+        self.resolved_len(key) == 0
+    }
 }
 
 fn load_bin_data_content(

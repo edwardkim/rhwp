@@ -14,7 +14,11 @@
 
 ## Stage 1 — 진단 하네스 + 기준선 캡처
 
-- 산출: `output/poc/task2019/baseline.tsv` — (a) 74312 rhwp 페이지수(81, 결함) + 한글 오라클(18, 정답), (b) 무회귀 표본 페이지수 기준선.
+- 당시 산출: `output/poc/task2019/baseline.tsv` — (a) 74312 rhwp 페이지수(81, 결함) + 한글
+  오라클(18, 정답), (b) 무회귀 표본 페이지수 기준선. 이 비추적 POC는
+  [PR #4154](https://github.com/edwardkim/rhwp/pull/4154)에서 제거했으며, 현행 근거는
+  [최종·정정 보고서](../report/task_m100_2019_report.md)와
+  [tracked 회귀 래칫](../../tests/issue_2019_floating_form_overpagination.rs)에 보존한다.
 - 무회귀 표본: 8차 서베이 `pipage.tsv` 에서 MATCH 판정 랜덤 60 + MORE 클러스터(글상자/도형 밀집) 20 + #2004 재현(1613000)·#2015 재현 파일 = 총 ~85문서의 **현재(HEAD, 미수정) 페이지수**를 dump-pages로 캡처.
 - 74312 서식 페이지 export-png 현재 상태(조각 깨짐) 캡처(before).
 - **커밋**: 하네스 스크립트 + baseline.tsv + `task_m100_2019_stage1.md`.

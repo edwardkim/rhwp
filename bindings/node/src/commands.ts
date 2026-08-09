@@ -240,6 +240,11 @@ export async function digest(path: PathLike, options: DigestOptions = {}): Promi
   return call(args, options);
 }
 
+/** `explain`은 문서의 형식·쪽수·표·필드·각주를 한 번에 요약한다. */
+export async function explain(path: PathLike, options: CommandOptions = {}): Promise<Envelope> {
+  return call(['explain', path, '--json'], options);
+}
+
 /** {@link capabilities} 옵션. */
 export interface CapabilitiesOptions extends CommandOptions {
   /** MCP 도구 매니페스트를 받을지. */
@@ -277,6 +282,31 @@ export async function exportIrSchema(options: IrSchemaOptions = {}): Promise<Env
   return call(args, options);
 }
 
+/** {@link exportPlanSchema} 옵션. */
+export interface PlanSchemaOptions extends IrSchemaOptions, OutputOptions {}
+
+/** `run` 계획서 문법의 JSON Schema. */
+export async function exportPlanSchema(options: PlanSchemaOptions = {}): Promise<Envelope> {
+  const args: Argument[] = ['export-plan-schema'];
+  toggle(args, '--bare', options.bare);
+  flag(args, '-o', options.out);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link exportAgentManifest} 옵션. */
+export interface AgentManifestOptions extends IrSchemaOptions {}
+
+/** capabilities·IR·provenance·plan schema를 한 봉투로 조립한 에이전트 매니페스트. */
+export async function exportAgentManifest(
+  options: AgentManifestOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['export-agent-manifest'];
+  toggle(args, '--bare', options.bare);
+  args.push('--json');
+  return call(args, options);
+}
+
 /** {@link exportCapabilitiesSchema} 옵션. */
 export interface CapabilitiesSchemaOptions extends IrSchemaOptions, OutputOptions {
   /**
@@ -294,6 +324,33 @@ export async function exportCapabilitiesSchema(
   options: CapabilitiesSchemaOptions = {},
 ): Promise<Envelope> {
   const args: Argument[] = ['export-capabilities-schema'];
+  toggle(args, '--bare', options.bare);
+  flag(args, '-o', options.out);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link exportOntology} 옵션. */
+export interface OntologyOptions extends IrSchemaOptions, OutputOptions {
+  /**
+   * 온톨로지를 이 파일로 저장한다.
+   *
+   * 저장해도 stdout 은 봉투를 유지한다(`output`·`bytes` 가 담긴다) —
+   * {@link exportCapabilitiesSchema} 와 같은 축이다.
+   */
+  readonly out?: PathLike | undefined;
+}
+
+/**
+ * 자기서술에서 기계 유도한 JSON-LD 온톨로지 (#3907 O1).
+ *
+ * IR 스키마·capabilities·MCP 도구 정의·봉투 출처 지도에서 실행 시점에 유도한다 —
+ * 손 나열 상수가 없으므로 원천 선언이 바뀌면 온톨로지가 함께 바뀐다. `bare` 면
+ * 봉투 없이 JSON-LD 본문(`@context`·`@graph`)만 받아 RDF 도구에 바로 먹인다.
+ * 문서를 입력으로 받지 않는다(도구 자신의 서술이지 특정 문서의 속성이 아니다).
+ */
+export async function exportOntology(options: OntologyOptions = {}): Promise<Envelope> {
+  const args: Argument[] = ['export-ontology'];
   toggle(args, '--bare', options.bare);
   flag(args, '-o', options.out);
   args.push('--json');
@@ -668,6 +725,59 @@ export async function renderDiff(
   return call(args, options);
 }
 
+/** {@link verify} 옵션 — 기대 조건이 최소 1개 있어야 한다. */
+export interface VerifyOptions extends CommandOptions {
+  /** 총 쪽수 기대값 (`--expect-pages`). */
+  readonly expectPages?: number | undefined;
+  /** 최소 쪽수 (`--expect-min-pages`). */
+  readonly expectMinPages?: number | undefined;
+  /** 최대 쪽수 (`--expect-max-pages`). */
+  readonly expectMaxPages?: number | undefined;
+  /** 본문 최소 문자 수 (`--expect-min-chars`). */
+  readonly expectMinChars?: number | undefined;
+  /** 최소 표 개수 (`--expect-min-tables`). */
+  readonly expectMinTables?: number | undefined;
+  /** 표 개수 정확 일치 (`--expect-table-count`). */
+  readonly expectTableCount?: number | undefined;
+  /** 본문에 있어야 하는 문자열 (`--expect-contains`, 반복 가능). */
+  readonly expectContains?: string | readonly string[] | undefined;
+  /** 본문에 없어야 하는 문자열 (`--expect-not-contains`, 반복 가능). */
+  readonly expectNotContains?: string | readonly string[] | undefined;
+  /** `이름=값` 필드 기대값 (`--expect-field`, 반복 가능). */
+  readonly expectField?: string | readonly string[] | undefined;
+  /** 컨테이너 포맷 기대값 (`--expect-format`). */
+  readonly expectFormat?: 'hwp5' | 'hwpx' | 'hwp3' | 'hml' | undefined;
+  /**
+   * 기대 위반(exit 3)을 예외로 올릴지.
+   *
+   * 기본은 거짓 — 위반은 도구의 고장이 아니라 **문서에 대한 판정**이므로
+   * 봉투(`verdict`·`passCount`·`failCount`)로 읽는 것이 이 바인딩의 규약이다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * 독립 사후검증 게이트 — 임의 파일에 기대 조건 집합을 대조한다.
+ *
+ * 편집 축의 `verify: true`(저장 직후 자기검증)와 달리 **임의 시점·임의 파일**에
+ * 쓴다. 기대 조건이 하나도 없으면 CLI 가 사용법 오류(exit 2)를 낸다.
+ */
+export async function verify(path: PathLike, options: VerifyOptions = {}): Promise<Envelope> {
+  const args: Argument[] = ['verify', path];
+  flag(args, '--expect-pages', options.expectPages);
+  flag(args, '--expect-min-pages', options.expectMinPages);
+  flag(args, '--expect-max-pages', options.expectMaxPages);
+  flag(args, '--expect-min-chars', options.expectMinChars);
+  flag(args, '--expect-min-tables', options.expectMinTables);
+  flag(args, '--expect-table-count', options.expectTableCount);
+  repeat(args, '--expect-contains', options.expectContains);
+  repeat(args, '--expect-not-contains', options.expectNotContains);
+  repeat(args, '--expect-field', options.expectField);
+  flag(args, '--expect-format', options.expectFormat);
+  args.push('--json');
+  return call(args, options);
+}
+
 // ── 편집 ──────────────────────────────────────────────────────────────────
 
 /**
@@ -757,6 +867,40 @@ export async function setCell(
 }
 
 // ── 대량 ──────────────────────────────────────────────────────────────────
+
+/** {@link scan} 옵션. */
+export interface ScanOptions extends CommandOptions {
+  /** 각 파일을 실제로 열어 파싱 가능·암호 필요·쪽수를 기록한다 (`--probe`). */
+  readonly probe?: boolean | undefined;
+  /** 재귀 최대 깊이 — 1 이면 지정 폴더만 (`--max-depth`). */
+  readonly maxDepth?: number | undefined;
+  /** 최대 파일 수 — 넘으면 봉투에 `truncated: true` (`--limit`). */
+  readonly limit?: number | undefined;
+}
+
+/**
+ * 디렉터리 재귀 발견·분류 — {@link batch} 의 앞 단계.
+ *
+ * `batch` 는 경로 목록을 이미 갖고 있다는 전제에서 시작한다. 이 명령이 그 목록을
+ * 만든다: HWP 계열 파일을 찾아 확장자 주장과 매직 감지를 대조하고(`extMismatch`),
+ * `probe` 를 켜면 실제로 열어 파싱 가능/암호 필요를 기록한다. 발견은 판정이
+ * 아니므로 게이트 종료 코드(3)가 없다 — 분류는 봉투의 데이터로 읽는다.
+ */
+export async function scan(
+  paths: PathLike | readonly PathLike[],
+  options: ScanOptions = {},
+): Promise<Envelope> {
+  const roots = typeof paths === 'string' ? [paths] : paths;
+  if (roots.length === 0) {
+    throw new Error('검색할 경로가 없습니다 — scan 은 최소 1개가 필요합니다');
+  }
+  const args: Argument[] = ['scan', ...roots];
+  toggle(args, '--probe', options.probe);
+  flag(args, '--max-depth', options.maxDepth);
+  flag(args, '--limit', options.limit);
+  args.push('--json');
+  return call(args, options);
+}
 
 /** {@link batch} 옵션. */
 export interface BatchOptions extends CommandOptions {

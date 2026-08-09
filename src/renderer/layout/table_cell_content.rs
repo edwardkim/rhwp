@@ -11,7 +11,7 @@ use super::border_rendering::{
 use super::text_measurement::{
     is_cjk_char, is_vertical_rotate_char, resolved_to_text_style, vertical_substitute_char,
 };
-use super::utils::{extract_shape_transform, find_bin_data};
+use super::utils::{extract_shape_transform, find_bin_data_bytes};
 use super::{CellContext, CellPathEntry, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
@@ -274,6 +274,7 @@ impl LayoutEngine {
                             if let Some(last) = new_ctx.path.last_mut() {
                                 last.cell_index = cell_idx;
                                 last.cell_para_index = ci.cell_para_index;
+                                last.text_direction = text_direction;
                             }
                             Some(new_ctx)
                         } else {
@@ -760,8 +761,7 @@ impl LayoutEngine {
                             };
 
                             let bin_id = pic.image_attr.bin_data_id;
-                            let img_data =
-                                find_bin_data(bin_data_content, bin_id).map(|bd| bd.data.load());
+                            let img_data = find_bin_data_bytes(bin_data_content, bin_id);
                             let img_node_id = tree.next_id();
                             // [Task #1151 v4] 셀 안 inline picture 의 cell context + outer
                             // 정보 보존. rendering.rs:1495 의 Image JSON 직렬화 에 cellIdx/

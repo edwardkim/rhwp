@@ -665,10 +665,12 @@ pub fn diff_documents(a: &Document, b: &Document) -> IrDiff {
     // [#3505] 바이트가 0인 항목은 세지 않는다. HWP3 파서는 그림 컨트롤마다 id·확장자·
     // 바이트가 모두 빈 placeholder 를 만드는데(hwp3-sample10.hwp 3건), 저장기가 그것을
     // 쓰지 않는 것은 손실이 아니다. 실제 이미지는 컨트롤 내부 경로로 실려 렌더된다.
+    // [#2550] 빈 판정에 전체 해제(`load()`)를 쓰지 않는다 — `is_empty()` 는 리졸버의
+    // bounded 경로를 타므로 deflate bomb 에도 안전하다.
     let non_empty = |d: &Document| -> usize {
         d.bin_data_content
             .iter()
-            .filter(|c| !c.data.load().is_empty())
+            .filter(|c| !c.data.is_empty())
             .count()
     };
     if non_empty(a) != non_empty(b) {

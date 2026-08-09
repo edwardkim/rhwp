@@ -1,5 +1,5 @@
 ---
-kind: contract
+kind: canonical
 status: active
 canonical: mydocs/tech/envelope_provenance.md
 last_verified: 2026-08-02

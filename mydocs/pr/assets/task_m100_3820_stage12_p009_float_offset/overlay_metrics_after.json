@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "compared_pages": 1,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 92.25435,
+    "worst_pixel_match_percent": 92.25435,
+    "average_ink_match_percent": 44.12352,
+    "worst_ink_match_percent": 44.12352,
+    "average_visual_accuracy_proxy_percent": 44.12352,
+    "worst_visual_accuracy_proxy_percent": 44.12352,
+    "worst_pages": [
+      9
+    ]
+  },
+  "pages": [
+    {
+      "page": 9,
+      "rhwp_png": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/rhwp_png/rhwp_009.png",
+      "pdf_png": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/pdf_png/pdf-009.png",
+      "overlay_png": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/overlay/overlay_009.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 69065,
+      "diff_ratio": 0.07745648,
+      "pixel_match_percent": 92.25435,
+      "ink_union_pixels": 123603,
+      "ink_diff_pixels": 69065,
+      "ink_diff_ratio": 0.55876475,
+      "ink_match_percent": 44.12352,
+      "visual_accuracy_proxy_percent": 44.12352,
+      "mean_abs_channel_delta": 8.556,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        95,
+        83,
+        705,
+        1079
+      ]
+    }
+  ]
+}

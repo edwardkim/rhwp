@@ -11,8 +11,10 @@ import {
   type HmlSaveState,
 } from './hml-save-capability';
 import {
+  getSelectionRectsInCellByPathWithPageHints,
   getSelectionRectsInCellWithPageHints,
   type CellSelectionRectDocument,
+  type PathCellSelectionRectDocument,
   type SelectionPageHints,
 } from './selection-page-hints';
 import {
@@ -500,18 +502,29 @@ export class WasmBridge {
     return this._fileName === '새 문서.hwp';
   }
 
+  /**
+   * [#4180] 바이트 생산 직전 호출되는 훅 — 저장 시점 캐럿 스탬핑용 (main.ts 가 등록).
+   * 편집별 스탬핑은 "마지막 본문 편집 위치"를 남겨 열기 캐럿이 엉뚱한 페이지로
+   * 복원됐다. 저장/autosave/비교/히스토리 등 모든 export 경로가 이 브리지 메서드를
+   * 지나므로 여기가 단일 지점이다.
+   */
+  onBeforeExport: (() => void) | null = null;
+
   exportHwp(): Uint8Array {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.onBeforeExport?.();
     return this.doc.exportHwp();
   }
 
   exportHwpWithPassword(password: string): Uint8Array {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.onBeforeExport?.();
     return this.doc.exportHwpWithPassword(password);
   }
 
   exportHwpx(): Uint8Array {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.onBeforeExport?.();
     return this.doc.exportHwpx();
   }
 
@@ -1539,6 +1552,16 @@ export class WasmBridge {
     }
   }
 
+  /** [#4180] 저장 시점 캐럿 스탬핑 — 범위 밖 위치는 wasm 쪽에서 무시된다. */
+  setCaretPosition(sec: number, para: number, charOffset: number): void {
+    if (!this.doc) return;
+    try {
+      this.doc.setCaretPosition(sec, para, charOffset);
+    } catch {
+      // 저장을 막지 않는다
+    }
+  }
+
   getTableDimensions(sec: number, parentPara: number, controlIdx: number): TableDimensions {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getTableDimensions(sec, parentPara, controlIdx));
@@ -2277,6 +2300,23 @@ export class WasmBridge {
     );
   }
 
+  getSelectionRectsInCellByPath(sec: number, parentPara: number, path: string, startCellPara: number, startOffset: number, endCellPara: number, endOffset: number, pageHints?: SelectionPageHints): SelectionRect[] {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return getSelectionRectsInCellByPathWithPageHints(
+      this.doc as unknown as PathCellSelectionRectDocument,
+      {
+        sectionIdx: sec,
+        parentParaIdx: parentPara,
+        path,
+        startCellParaIdx: startCellPara,
+        startCharOffset: startOffset,
+        endCellParaIdx: endCellPara,
+        endCharOffset: endOffset,
+      },
+      pageHints,
+    );
+  }
+
   getSelectionRectsInFootnote(pageNum: number, footnoteIndex: number, startFnPara: number, startOffset: number, endFnPara: number, endOffset: number): SelectionRect[] {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse((this.doc as any).getSelectionRectsInFootnote(pageNum, footnoteIndex, startFnPara, startOffset, endFnPara, endOffset));
@@ -2302,6 +2342,11 @@ export class WasmBridge {
   copySelectionInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, startCellPara: number, startOffset: number, endCellPara: number, endOffset: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.copySelectionInCell(sec, parentPara, controlIdx, cellIdx, startCellPara, startOffset, endCellPara, endOffset);
+  }
+
+  copySelectionInCellByPath(sec: number, parentPara: number, pathJson: string, startCellPara: number, startOffset: number, endCellPara: number, endOffset: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).copySelectionInCellByPath(sec, parentPara, pathJson, startCellPara, startOffset, endCellPara, endOffset);
   }
 
   pasteInternal(sec: number, para: number, charOffset: number): string {
@@ -2369,6 +2414,11 @@ export class WasmBridge {
   exportSelectionInCellHtml(sec: number, parentPara: number, controlIdx: number, cellIdx: number, startCellPara: number, startOffset: number, endCellPara: number, endOffset: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.exportSelectionInCellHtml(sec, parentPara, controlIdx, cellIdx, startCellPara, startOffset, endCellPara, endOffset);
+  }
+
+  exportSelectionInCellHtmlByPath(sec: number, parentPara: number, pathJson: string, startCellPara: number, startOffset: number, endCellPara: number, endOffset: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).exportSelectionInCellHtmlByPath(sec, parentPara, pathJson, startCellPara, startOffset, endCellPara, endOffset);
   }
 
   pasteHtml(sec: number, para: number, charOffset: number, html: string): string {
@@ -2750,6 +2800,8 @@ export class WasmBridge {
   getFieldList(): Array<{
     fieldId: number;
     fieldType: string;
+    /** 셀 구역 이름(가상 필드)이면 true. `fieldType` 은 누름틀과 셀 필드를 가르지 못한다. */
+    cellField: boolean;
     name: string;
     guide: string;
     command: string;

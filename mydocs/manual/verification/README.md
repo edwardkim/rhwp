@@ -20,6 +20,7 @@ last_verified: 2026-07-30
 | 표·그림 geometry 무회귀 | [개체 시각 회귀 하니스](object_visual_regression.md) | [페이지·PI 매칭 오라클](verify_pi_page_vs_hangul.md) |
 | 편집 전후 페이지 수 무회귀 | [편집-스윕 하니스](edit_sweep.md) | [개체 시각 회귀 하니스](object_visual_regression.md) |
 | HWPX→HWP 페이지네이션 정합 | [roundtrip fidelity 하니스](roundtrip_fidelity_harness.md) | [한글 페이지 충실도 오라클](hangul_page_oracle.md) |
+| 한글 버전 간 페이지네이션 차이 확정(정답지 버전 판단) | [한글 버전별 페이지네이션 대조](hangul_version_oracle.md) | [한글 페이지 충실도 오라클](hangul_page_oracle.md) |
 | 한글 PDF 줄 baseline 대조 | [한글 PDF baseline](hangul_pdf_baseline.md) | [시각 클리핑 검출기](visual_clipping_detector.md) |
 | native↔WASM SVG 문자열 패리티 | [native↔WASM SVG 패리티 하네스](svg_native_wasm_parity.md) | [SVG 회귀 diff](svg_regression_diff.md) |
 

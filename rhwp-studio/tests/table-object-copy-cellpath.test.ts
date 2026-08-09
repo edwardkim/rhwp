@@ -3,53 +3,72 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-// [Task #2880] 표 객체 선택(isInTableObjectSelection) Ctrl+C/Ctrl+X 핸들러가
-// 그림 개체 선택 핸들러(pictureCellPathJson 사용부)와 달리 cellPathJson 을
-// wasm.copyControl/exportControlHtml 에 전달하지 않아, 셀 안 중첩 표를
-// 복사·잘라내기하면 native 가 본문 표로 오인하는 회귀를 막는 source-guard.
-//
-// 이 파일은 무거운 WasmBridge/DOM mock 없이, "표 selection 블록의
-// copyControl(...) 호출이 반드시 cellPathJson 인자를 포함한다"는 사실만
-// 소스 텍스트 수준에서 검증한다 (getSelectedTableRef().cellPath 를 실제로
-// native 호출에 흘려보내는지 확인).
+import { tableObjectClipboardTarget } from '../src/engine/table-object-clipboard-target.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
+const nestedPath = [
+  { controlIndex: 1, cellIndex: 0, cellParaIndex: 0 },
+  { controlIndex: 2, cellIndex: 0, cellParaIndex: 12 },
+  { controlIndex: 0, cellIndex: 0, cellParaIndex: 0 },
+];
 
 function source(path: string): string {
   return readFileSync(join(rootDir, path), 'utf8');
 }
 
-test('표 객체 선택 Ctrl+C/Ctrl+X 는 copyControl/exportControlHtml 에 cellPathJson 을 전달한다', () => {
-  const src = source('src/engine/input-handler-keyboard.ts');
+test('#4272 중첩 표 객체는 마지막 엔트리를 control, prefix를 owner path로 사용한다', () => {
+  assert.deepEqual(
+    tableObjectClipboardTarget({ ci: 1, cellPath: nestedPath }),
+    {
+      controlIndex: 0,
+      ownerCellPathJson: JSON.stringify(nestedPath.slice(0, -1)),
+    },
+  );
+});
 
-  const tableSelectionBlockStart = src.indexOf('this.cursor.isInTableObjectSelection()');
-  assert.notEqual(tableSelectionBlockStart, -1, '표 객체 선택 모드 블록을 찾지 못함');
+test('#4272 본문 표 객체는 기존 ref.ci와 빈 owner path를 유지한다', () => {
+  assert.deepEqual(
+    tableObjectClipboardTarget({ ci: 3 }),
+    { controlIndex: 3, ownerCellPathJson: '' },
+  );
+});
 
-  const ctrlCStart = src.indexOf("e.key === 'c'", tableSelectionBlockStart);
-  const ctrlXStart = src.indexOf("e.key === 'x'", tableSelectionBlockStart);
+test('#4272 키보드와 command 복사는 같은 표 객체 주소 변환을 사용한다', () => {
+  const keyboard = source('src/engine/input-handler-keyboard.ts');
+  const handler = source('src/engine/input-handler.ts');
+
+  const tableSelectionStart = keyboard.indexOf('// Ctrl+C → 표 복사');
+  const ctrlCStart = keyboard.indexOf("e.key === 'c'", tableSelectionStart);
+  const ctrlXStart = keyboard.indexOf("e.key === 'x'", ctrlCStart);
   assert.notEqual(ctrlCStart, -1, '표 Ctrl+C 핸들러를 찾지 못함');
-  assert.notEqual(ctrlXStart, -1, '표 Ctrl+X 핸들러를 찾지 못함');
+  assert.notEqual(ctrlXStart, -1, '표 Ctrl+X 경계를 찾지 못함');
+  const ctrlCBlock = keyboard.slice(ctrlCStart, ctrlXStart);
+  assert.match(ctrlCBlock, /const target = tableObjectClipboardTarget\(ref\);/);
+  assert.match(
+    ctrlCBlock,
+    /wasm\.copyControl\([\s\S]*?target\.controlIndex, target\.ownerCellPathJson/,
+  );
+  assert.match(
+    ctrlCBlock,
+    /wasm\.exportControlHtml\([\s\S]*?target\.controlIndex, target\.ownerCellPathJson/,
+  );
 
-  const ctrlCBlock = src.slice(ctrlCStart, ctrlXStart);
-  const ctrlVStart = src.indexOf("e.key === 'v'", ctrlXStart);
-  const ctrlXBlock = src.slice(ctrlXStart, ctrlVStart === -1 ? undefined : ctrlVStart);
-
-  for (const [label, block] of [['Ctrl+C', ctrlCBlock], ['Ctrl+X', ctrlXBlock]] as const) {
-    assert.match(
-      block,
-      /const cellPathJson = pictureCellPathJson\(ref\);/,
-      `표 ${label} 핸들러가 ref.cellPath 를 cellPathJson 으로 계산하지 않음 (회귀)`,
-    );
-    assert.match(
-      block,
-      /wasm\.copyControl\(ref\.sec, ref\.ppi, ref\.ci, cellPathJson\)/,
-      `표 ${label} 핸들러의 copyControl 호출에 cellPathJson 인자가 없음 (회귀)`,
-    );
-    assert.match(
-      block,
-      /wasm\.exportControlHtml\(ref\.sec, ref\.ppi, ref\.ci, cellPathJson\)/,
-      `표 ${label} 핸들러의 exportControlHtml 호출에 cellPathJson 인자가 없음 (회귀)`,
-    );
-  }
+  const performCopyStart = handler.indexOf('performCopy(): void');
+  const performCopyEnd = handler.indexOf('\n  /**', performCopyStart + 1);
+  const performCopyBlock = handler.slice(
+    performCopyStart,
+    performCopyEnd === -1 ? undefined : performCopyEnd,
+  );
+  const tableBranchStart = performCopyBlock.indexOf('this.cursor.isInTableObjectSelection()');
+  const tableBranch = performCopyBlock.slice(tableBranchStart);
+  assert.notEqual(tableBranchStart, -1, 'performCopy 표 객체 분기를 찾지 못함');
+  assert.match(tableBranch, /const target = tableObjectClipboardTarget\(ref\);/);
+  assert.match(
+    tableBranch,
+    /wasm\.copyControl\([\s\S]*?target\.controlIndex, target\.ownerCellPathJson/,
+  );
+  assert.match(
+    tableBranch,
+    /wasm\.exportControlHtml\([\s\S]*?target\.controlIndex, target\.ownerCellPathJson/,
+  );
 });

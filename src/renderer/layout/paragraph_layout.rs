@@ -17,7 +17,7 @@ use super::text_measurement::{
     extract_tab_leaders_with_extended, find_next_tab_stop, resolved_to_text_style,
 };
 use super::utils::{
-    expand_numbering_format, extract_shape_transform, find_bin_data,
+    expand_numbering_format, extract_shape_transform, find_bin_data_bytes,
     numbering_format_to_number_format, picture_display_size_hu, resolve_numbering_id,
 };
 use super::{CellContext, LayoutEngine};
@@ -2151,7 +2151,7 @@ impl LayoutEngine {
                             }
                             let img_y = (y + baseline - pic_h).max(y);
                             let bin_data_id = pic.image_attr.bin_data_id;
-                            let image_data = find_bin_data(bdc, bin_data_id).map(|c| c.data.load());
+                            let image_data = find_bin_data_bytes(bdc, bin_data_id);
                             let crop = {
                                 let c = &pic.crop;
                                 if c.right > c.left
@@ -3312,6 +3312,12 @@ impl LayoutEngine {
                         page_h,
                         text_y - page_h,
                     );
+                    if std::env::var("RHWP_DIAG_OVERFLOW_CELL").is_ok() {
+                        eprintln!(
+                            "DIAG_OVERFLOW_CELL_CTX: section={} pi={} line={} ctx={cell_ctx:?}",
+                            section_index, para_index, line_idx,
+                        );
+                    }
                 }
             }
             // [Task #604 R3] wrap_anchor 가 있으면 본 문단은 anchor 그림/표 옆 wrap text.
@@ -5058,8 +5064,7 @@ impl LayoutEngine {
                                 };
                                 let img_y = base_img_y + sibling_reserved_px;
                                 let bin_data_id = pic.image_attr.bin_data_id;
-                                let image_data =
-                                    find_bin_data(bdc, bin_data_id).map(|c| c.data.load());
+                                let image_data = find_bin_data_bytes(bdc, bin_data_id);
                                 let crop = {
                                     let c = &pic.crop;
                                     if c.right > c.left
@@ -6213,7 +6218,7 @@ impl LayoutEngine {
                             };
                             let img_y = base_img_y + sibling_reserved_px;
                             let bin_data_id = pic.image_attr.bin_data_id;
-                            let image_data = find_bin_data(bdc, bin_data_id).map(|c| c.data.load());
+                            let image_data = find_bin_data_bytes(bdc, bin_data_id);
                             let crop = {
                                 let c = &pic.crop;
                                 if c.right > c.left

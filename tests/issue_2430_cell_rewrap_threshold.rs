@@ -13,6 +13,34 @@
 //! +4/회귀 0 으로 무회귀 확인.)
 
 use rhwp::document_core::DocumentCore;
+use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
+
+fn find_table(root: &RenderNode, para_index: usize, control_index: usize) -> Option<&RenderNode> {
+    if matches!(
+        &root.node_type,
+        RenderNodeType::Table(table)
+            if table.para_index == Some(para_index)
+                && table.control_index == Some(control_index)
+    ) {
+        return Some(root);
+    }
+    root.children
+        .iter()
+        .find_map(|child| find_table(child, para_index, control_index))
+}
+
+fn text_line_bbox_containing(root: &RenderNode, needle: &str) -> Option<BoundingBox> {
+    if matches!(root.node_type, RenderNodeType::TextLine(_))
+        && root.children.iter().any(
+            |child| matches!(&child.node_type, RenderNodeType::TextRun(run) if run.text.contains(needle)),
+        )
+    {
+        return Some(root.bbox);
+    }
+    root.children
+        .iter()
+        .find_map(|child| text_line_bbox_containing(child, needle))
+}
 
 #[test]
 fn issue_2430_cell_rewrap_threshold_no_oversplit() {
@@ -21,9 +49,41 @@ fn issue_2430_cell_rewrap_threshold_no_oversplit() {
     let bytes = std::fs::read(&path).expect("read fixture");
     let core = DocumentCore::from_bytes(&bytes).expect("parse");
     let pages = core.page_count();
-    // 한글 정답 39쪽. 셀 재래핑 임계가 ×1.05 로 되돌아가면 40쪽(+1) 과다분할.
+    // 한글 정답 39쪽. 셀 재래핑 임계가 ×1.05 로 되돌아가면 40쪽(+1) 과다분할한다.
+    // #4069 저장 프레임 전파가 p14 셀의 무시되는 빈 Enter를 경계로 오인하면
+    // 반대로 38쪽(-1)으로 줄어드는 것도 이 계약이 함께 검출한다.
     assert_eq!(
         pages, 39,
-        "1382000 은 한글 기준 39쪽이어야 함 (셀 재래핑 임계 완화 회귀 시 40쪽). #2430"
+        "1382000은 한글 기준 39쪽이어야 함 (40쪽=재래핑, 38쪽=빈 Enter 프레임 오인). #2430 #4069"
+    );
+}
+
+#[test]
+fn issue_2430_page16_keeps_leading_blank_paragraph_in_cell() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/task2430/1382000_domestic_violence_survey.hwp");
+    let bytes = std::fs::read(&path).expect("read fixture");
+    let core = DocumentCore::from_bytes(&bytes).expect("parse");
+    let page16 = core
+        .build_page_render_tree(15)
+        .expect("render physical page 16");
+    let table = find_table(&page16.root, 90, 0).expect("page 16 outer 1x1 table pi=90 ci=0");
+    let cell = table
+        .children
+        .iter()
+        .find(|node| matches!(&node.node_type, RenderNodeType::TableCell(cell) if cell.row == 0 && cell.col == 0))
+        .expect("outer table cell (0,0)");
+    let first_text = text_line_bbox_containing(cell, "연구과제명")
+        .expect("first visible paragraph after the leading empty Enter");
+    let top_gap = first_text.y - cell.bbox.y;
+
+    // 한컴 2020 PDF 물리 16쪽은 셀의 p[0] 빈 Enter를 한 줄로 조판한 뒤
+    // p[1] `○ 연구과제명`을 시작한다. 수정 전에는 빈 문단을 0높이로 접어
+    // top_gap=0.9px였고, 정본은 약 27px다.
+    assert!(
+        top_gap >= 20.0,
+        "셀 (0,0)의 선두 빈 Enter가 조판되지 않았다: table_top={:.2}, text_top={:.2}, gap={top_gap:.2}",
+        cell.bbox.y,
+        first_text.y
     );
 }

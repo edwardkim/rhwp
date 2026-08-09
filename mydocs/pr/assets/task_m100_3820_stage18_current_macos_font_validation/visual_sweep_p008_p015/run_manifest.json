@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "key": "issue2007-current-macos-p008-p015",
+  "provenance": {
+    "hwp": {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+    },
+    "pdf": {
+      "path": "pdf/basic/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "sha256": "1f9d2f5705a64899c2b081832d2e6548dfe7bc3b9d1fb1b92f41221d39c8b3e7"
+    },
+    "git_head": "b3c5b106ba9dd2975c1e3a25e679eca7650cf2c3",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "a116ec87db15fba119b30d22d18a85e62580881d3223555c453a35a1a77799b4"
+    },
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/target/task-3820-3821-fidelity/release/rhwp",
+      "path": "target/task-3820-3821-fidelity/release/rhwp",
+      "sha256": "02e92eb1d56944740d52856e9a9cfe695c283e2b7109a073f621694bf6ae898d"
+    }
+  },
+  "dpi": 144,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "requested_page_shards": [
+    [
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ]
+  ],
+  "run_state": "complete"
+}

@@ -235,15 +235,22 @@ fn assert_page3_latin_poppy_resolves_to_palatino(rel_path: &str) {
     let svg = render_svg(rel_path, 2);
     let latin_c_attrs = extract_text_attrs(&svg, "C");
     assert!(
-        latin_c_attrs
-            .iter()
-            .any(|attrs| attrs.contains("font-family=\"Palatino Linotype,")),
+        latin_c_attrs.iter().any(|attrs| {
+            // SVG attribute serialization must XML-escape the CSS family-name
+            // quotes. Assert the semantic family list rather than a single
+            // serializer spelling (plain `'` vs `&apos;`).
+            attrs
+                .replace("&apos;", "'")
+                .contains("font-family=\"'Palatino Linotype',")
+        }),
         "{rel_path} p3 Latin glyphs must resolve HCI Poppy to Palatino Linotype: {latin_c_attrs:?}"
     );
     assert!(
-        latin_c_attrs
-            .iter()
-            .all(|attrs| !attrs.contains("font-family=\"HCI Poppy,")),
+        latin_c_attrs.iter().all(|attrs| {
+            !attrs
+                .replace("&apos;", "'")
+                .contains("font-family=\"'HCI Poppy',")
+        }),
         "{rel_path} p3 Latin glyphs must not fall back through unresolved HCI Poppy: {latin_c_attrs:?}"
     );
 }

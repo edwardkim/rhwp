@@ -90,16 +90,108 @@ fn deepest_bottom(node: &RenderNode) -> f64 {
         .fold(own, |a, b| if b > a { b } else { a })
 }
 
+/// 실제 Cell clip 안에 온전히 남은 text만 누적한다. RenderTree에는 clip 바깥으로
+/// 배치된 다음 조각의 노드도 진단용으로 남을 수 있으므로, raw node text만 보면
+/// p26 하단에서 잘린 p27 source owner를 오탐한다.
+fn fully_visible_text(node: &RenderNode, clip_top: f64, clip_bottom: f64, out: &mut String) {
+    let (next_top, next_bottom) = if matches!(&node.node_type, RenderNodeType::TableCell(_)) {
+        (
+            clip_top.max(node.bbox.y),
+            clip_bottom.min(node.bbox.y + node.bbox.height),
+        )
+    } else {
+        (clip_top, clip_bottom)
+    };
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        let bottom = node.bbox.y + node.bbox.height;
+        if node.bbox.y >= next_top - TOLERANCE_PX && bottom <= next_bottom + TOLERANCE_PX {
+            out.push_str(&run.text);
+        }
+    }
+    for child in &node.children {
+        fully_visible_text(child, next_top, next_bottom, out);
+    }
+}
+
+/// page 밖에 시작한 셀 TextLine은 SVG clip으로 숨겨도 사용자에게 보이지 않는다.
+/// 다음 페이지 소유 줄을 현재 page의 RenderTree에 생성하지 않는지를 직접 고정한다.
+fn cell_lines_starting_below_page(
+    node: &RenderNode,
+    inside_cell: bool,
+    page_bottom: f64,
+    found: &mut Vec<f64>,
+) {
+    let inside_cell = inside_cell || matches!(&node.node_type, RenderNodeType::TableCell(_));
+    if inside_cell
+        && matches!(&node.node_type, RenderNodeType::TextLine(_))
+        && node.bbox.y >= page_bottom - TOLERANCE_PX
+    {
+        found.push(node.bbox.y);
+    }
+    for child in &node.children {
+        cell_lines_starting_below_page(child, inside_cell, page_bottom, found);
+    }
+}
+
 /// 중첩 표가 부모 셀 안에서 시작해, 쪽 아래로 컨테이너째 흘러내리지 않는다.
 #[test]
 fn nested_table_starts_inside_its_parent_cell() {
     let bytes = std::fs::read(sample_path()).expect("표본 읽기");
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("파싱");
     let page_count = doc.page_count();
+    // HWP 2020 PrintToPDFEx fresh oracle (2026-08-06) is 31 pages.  This also
+    // prevents the terminal run of empty paragraphs after the last nested table
+    // from materializing as a 32nd blank page.
+    assert_eq!(
+        page_count, 31,
+        "HWP 2020 기준 31쪽과 달라졌다 — 중첩 표 조각 또는 문서 말미 빈 문단의 쪽 소유를 확인하라"
+    );
+
+    // HWP 2020 PDF p26의 마지막 source line은 "시간당 근로임금…"이고,
+    // p27은 바로 다음 "사업체노동력조사…"로 시작한다. p26의 painted tail을
+    // 좁히기만 하면 p27에서 첫 줄이 중복되고, pagination만 앞당기면 p27의
+    // 첫 줄이 사라진다. 실제 Cell clip 안의 소유를 양쪽에서 함께 고정한다.
+    let mut p26_text = String::new();
+    let p26 = doc
+        .build_page_render_tree(25)
+        .expect("HWP 2020 p26 render tree");
+    fully_visible_text(&p26.root, f64::NEG_INFINITY, f64::INFINITY, &mut p26_text);
     assert!(
-        page_count >= 30,
-        "쪽이 너무 적다({page_count}) — 중첩 표가 걸치는 뒷쪽들이 있어야 이 경로를 탄다. \
-         표본이 바뀌었는지 확인하라"
+        p26_text.contains("시간당 근로임금은"),
+        "p26은 HWP 2020이 소유한 마지막 임금 기준 줄을 보여야 한다"
+    );
+    assert!(
+        !p26_text.contains("사업체노동력조사"),
+        "p26에 p27 source owner가 가시 상태로 남았다"
+    );
+
+    let mut p27_text = String::new();
+    let p27 = doc
+        .build_page_render_tree(26)
+        .expect("HWP 2020 p27 render tree");
+    fully_visible_text(&p27.root, f64::NEG_INFINITY, f64::INFINITY, &mut p27_text);
+    assert!(
+        p27_text.contains("사업체노동력조사"),
+        "p27은 HWP 2020이 소유한 다음 사업체 조사 줄부터 재개해야 한다"
+    );
+    assert!(
+        !p27_text.contains("시간당 근로임금은"),
+        "p27에 p26의 마지막 source line이 중복됐다"
+    );
+
+    // p28 하단의 12×3 손자 표는 이 쪽에 들어오는 두 행만 그리고, 나머지는 p29
+    // continuation이 소유한다. 전체 표를 먼저 만든 뒤 조상 Cell clip으로 숨기면 SVG는
+    // 겉보기에는 맞아도 쪽 하단 밖 TextLine이 남아 overflow-cell gate를 우회한다.
+    let p28 = doc
+        .build_page_render_tree(27)
+        .expect("HWP 2020 p28 render tree");
+    let mut p28_hidden_cell_lines = Vec::new();
+    let p28_bottom = p28.root.bbox.y + p28.root.bbox.height;
+    cell_lines_starting_below_page(&p28.root, false, p28_bottom, &mut p28_hidden_cell_lines);
+    assert!(
+        p28_hidden_cell_lines.is_empty(),
+        "p28 Cell clip 아래에 다음 쪽 소유 TextLine이 {}개 남았다: {p28_hidden_cell_lines:?}",
+        p28_hidden_cell_lines.len(),
     );
 
     let mut escapes = Vec::new();

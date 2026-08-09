@@ -1,0 +1,97 @@
+{
+  "summary": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 90.03711,
+    "worst_pixel_match_percent": 86.72775,
+    "average_ink_match_percent": 31.4601,
+    "worst_ink_match_percent": 10.85026,
+    "average_visual_accuracy_proxy_percent": 31.4601,
+    "worst_visual_accuracy_proxy_percent": 10.85026,
+    "worst_pages": [
+      127,
+      118,
+      119
+    ]
+  },
+  "pages": [
+    {
+      "page": 118,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage8-p118-owner/stage8-p118-owner/rhwp_png/rhwp_118.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage8-p118-owner/stage8-p118-owner/pdf_png/pdf-118.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage8-p118-owner/stage8-p118-owner/overlay/overlay_118.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 198740,
+      "diff_ratio": 0.09909037,
+      "pixel_match_percent": 90.09096,
+      "ink_union_pixels": 294040,
+      "ink_diff_pixels": 198740,
+      "ink_diff_ratio": 0.67589444,
+      "ink_match_percent": 32.41056,
+      "visual_accuracy_proxy_percent": 32.41056,
+      "mean_abs_channel_delta": 12.125,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        142,
+        161,
+        1048,
+        1621
+      ]
+    },
+    {
+      "page": 119,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage8-p118-owner/stage8-p118-owner/rhwp_png/rhwp_119.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage8-p118-owner/stage8-p118-owner/pdf_png/pdf-119.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage8-p118-owner/stage8-p118-owner/overlay/overlay_119.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 134526,
+      "diff_ratio": 0.06707372,
+      "pixel_match_percent": 93.29263,
+      "ink_union_pixels": 275214,
+      "ink_diff_pixels": 134526,
+      "ink_diff_ratio": 0.48880508,
+      "ink_match_percent": 51.11949,
+      "visual_accuracy_proxy_percent": 51.11949,
+      "mean_abs_channel_delta": 9.232,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        141,
+        125,
+        1046,
+        1620
+      ]
+    },
+    {
+      "page": 127,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage8-p118-owner/stage8-p118-owner/rhwp_png/rhwp_127.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage8-p118-owner/stage8-p118-owner/pdf_png/pdf-127.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-3821-fidelity/stage8-p118-owner/stage8-p118-owner/overlay/overlay_127.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 266194,
+      "diff_ratio": 0.13272246,
+      "pixel_match_percent": 86.72775,
+      "ink_union_pixels": 298592,
+      "ink_diff_pixels": 266194,
+      "ink_diff_ratio": 0.89149743,
+      "ink_match_percent": 10.85026,
+      "visual_accuracy_proxy_percent": 10.85026,
+      "mean_abs_channel_delta": 15.572,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        142,
+        125,
+        1048,
+        1620
+      ]
+    }
+  ]
+}

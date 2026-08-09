@@ -51,9 +51,24 @@ def test_export_text_builds_command(captured: List[List[Any]]) -> None:
     assert _as_strings(captured[0]) == ["export-text", "a.hwp", "--json"]
 
 
+def test_export_text_page_and_max_chars(captured: List[List[Any]]) -> None:
+    """[트랙 G R61 D-12] page/max_chars 가 CLI 에 있었지만 래퍼에 없었다."""
+    rhwp.export_text("a.hwp", page=2, max_chars=500)
+    args = _as_strings(captured[0])
+    assert args[args.index("-p") + 1] == "2"
+    assert args[args.index("--max-chars") + 1] == "500"
+
+
 def test_export_structure_builds_command(captured: List[List[Any]]) -> None:
     rhwp.export_structure("a.hwp")
     assert _as_strings(captured[0]) == ["export-structure", "a.hwp", "--json"]
+
+
+def test_export_structure_mode(captured: List[List[Any]]) -> None:
+    """[트랙 G R61 D-12] mode 가 CLI 에 있었지만 래퍼에 없었다."""
+    rhwp.export_structure("a.hwp", mode="outline")
+    args = _as_strings(captured[0])
+    assert args[args.index("--mode") + 1] == "outline"
 
 
 def test_export_tables_builds_command(captured: List[List[Any]]) -> None:
@@ -99,6 +114,13 @@ def test_digest_flags(captured: List[List[Any]]) -> None:
     assert args[args.index("--pages") + 1] == "1-3"
 
 
+def test_digest_max_chars(captured: List[List[Any]]) -> None:
+    """[트랙 G R61 D-12] max_chars 가 CLI 에 있었지만 래퍼에 없었다."""
+    rhwp.digest("a.hwp", max_chars=300)
+    args = _as_strings(captured[0])
+    assert args[args.index("--max-chars") + 1] == "300"
+
+
 def test_digest_without_options(captured: List[List[Any]]) -> None:
     rhwp.digest("a.hwp")
     args = _as_strings(captured[0])
@@ -123,6 +145,36 @@ def test_capabilities_mcp_flag(captured: List[List[Any]]) -> None:
 def test_export_provenance_map_builds_command(captured: List[List[Any]]) -> None:
     rhwp.export_provenance_map()
     assert _as_strings(captured[0]) == ["export-provenance-map", "--json"]
+
+
+def test_explain_builds_command(captured: List[List[Any]]) -> None:
+    rhwp.explain("a.hwp")
+    assert _as_strings(captured[0]) == ["explain", "a.hwp", "--json"]
+
+
+def test_export_plan_schema_flags(captured: List[List[Any]]) -> None:
+    rhwp.export_plan_schema()
+    assert _as_strings(captured[0]) == ["export-plan-schema", "--json"]
+    rhwp.export_plan_schema(bare=True, out="plan.json")
+    assert _as_strings(captured[1]) == [
+        "export-plan-schema", "--bare", "-o", "plan.json", "--json",
+    ]
+
+
+def test_export_agent_manifest_flags(captured: List[List[Any]]) -> None:
+    rhwp.export_agent_manifest()
+    assert _as_strings(captured[0]) == ["export-agent-manifest", "--json"]
+    rhwp.export_agent_manifest(bare=True)
+    assert _as_strings(captured[1]) == ["export-agent-manifest", "--bare", "--json"]
+
+
+def test_export_ontology_builds_command(captured: List[List[Any]]) -> None:
+    rhwp.export_ontology()
+    assert _as_strings(captured[0]) == ["export-ontology", "--json"]
+    rhwp.export_ontology(bare=True, out="onto.jsonld")
+    assert _as_strings(captured[1]) == [
+        "export-ontology", "--bare", "-o", "onto.jsonld", "--json",
+    ]
 
 
 def test_inspect_builds_each_supported_command(captured: List[List[Any]]) -> None:
@@ -203,10 +255,18 @@ def test_export_hwpx_verify_flags(captured: List[List[Any]]) -> None:
     assert "--verify-pages" in args
 
 
+def test_export_hwpx_out_is_positional_not_a_flag(captured: List[List[Any]]) -> None:
+    # [트랙 G R61 D-1] CLI 는 `export-hwpx <입력> [출력] ...` — 위치 인자다.
+    # `-o` 플래그로 조립하면 CLI 가 알 수 없는 옵션으로 거부한다(exit 2).
+    rhwp.export_hwpx("a.hwp", out="b.hwpx")
+    assert _as_strings(captured[0]) == ["export-hwpx", "a.hwp", "b.hwpx", "--json"]
+
+
 def test_export_hwpx_without_verify(captured: List[List[Any]]) -> None:
     rhwp.export_hwpx("a.hwp")
     args = _as_strings(captured[0])
     assert "--verify" not in args
+    assert "-o" not in args
 
 
 def test_convert_verify_flag(captured: List[List[Any]]) -> None:
@@ -216,9 +276,49 @@ def test_convert_verify_flag(captured: List[List[Any]]) -> None:
     assert "--verify" in args
 
 
+def test_convert_out_is_positional_not_a_flag(captured: List[List[Any]]) -> None:
+    # [트랙 G R61 D-1] 같은 결함이 convert 에도 있었다 — `convert <입력> <출력> ...`.
+    rhwp.convert("a.hwpx", out="b.hwp")
+    assert _as_strings(captured[0]) == ["convert", "a.hwpx", "b.hwp", "--json"]
+
+
+def test_convert_without_out_raises_usage_error(captured: List[List[Any]]) -> None:
+    # [트랙 G R61 D-1] convert 는 산출 경로가 필수다(기본 경로 없음) — Node
+    # 바인딩(assertDryRunSupported 와 같은 계열의 선검증)과 동일하게, 프로세스를
+    # 띄우기도 전에 UsageError 로 무엇이 빠졌는지 이름으로 알려야 한다.
+    with pytest.raises(rhwp.UsageError):
+        rhwp.convert("a.hwpx")
+    assert captured == []  # 프로세스를 아예 안 띄웠다
+
+
 def test_ir_diff_takes_two_paths(captured: List[List[Any]]) -> None:
     rhwp.ir_diff("a.hwp", "b.hwp")
     assert _as_strings(captured[0]) == ["ir-diff", "a.hwp", "b.hwp", "--json"]
+
+
+def test_render_diff_self_roundtrip_when_path_b_omitted(
+    captured: List[List[Any]],
+) -> None:
+    """[트랙 G R61 D-2] Node에는 있었지만 파이썬 바인딩에 없던 명령."""
+    rhwp.render_diff("a.hwp")
+    assert _as_strings(captured[0]) == ["render-diff", "a.hwp", "--json"]
+
+
+def test_render_diff_before_after_with_options(captured: List[List[Any]]) -> None:
+    rhwp.render_diff("before.hwp", "after.hwp", via="svg", page=2, max_disp=0.5)
+    args = _as_strings(captured[0])
+    assert args[:3] == ["render-diff", "before.hwp", "after.hwp"]
+    assert args[args.index("--via") + 1] == "svg"
+    assert args[args.index("-p") + 1] == "2"
+    assert args[args.index("--max-disp") + 1] == "0.5"
+
+
+def test_ir_diff_section_and_paragraph(captured: List[List[Any]]) -> None:
+    """[트랙 G R61 D-12] section/paragraph(-s/-p) 가 CLI 에 있었지만 래퍼에 없었다."""
+    rhwp.ir_diff("a.hwp", "b.hwp", section=1, paragraph=3)
+    args = _as_strings(captured[0])
+    assert args[args.index("-s") + 1] == "1"
+    assert args[args.index("-p") + 1] == "3"
 
 
 # ── 편집 ────────────────────────────────────────────────────────────────
@@ -279,6 +379,21 @@ def test_csv_to_table_builds_command(captured: List[List[Any]]) -> None:
 
 
 # ── 대량 ────────────────────────────────────────────────────────────────
+
+
+def test_scan_builds_command(captured: List[List[Any]]) -> None:
+    rhwp.scan("폴더")
+    assert _as_strings(captured[0]) == ["scan", "폴더", "--json"]
+    rhwp.scan("a", "b", probe=True, max_depth=2, limit=100)
+    assert _as_strings(captured[1]) == [
+        "scan", "a", "b", "--probe", "--max-depth", "2", "--limit", "100", "--json",
+    ]
+
+
+def test_scan_rejects_empty_input() -> None:
+    with pytest.raises(ValueError) as caught:
+        rhwp.scan()
+    assert "최소 1개" in str(caught.value)
 
 
 def test_batch_streams_paths_through_stdin(monkeypatch: pytest.MonkeyPatch) -> None:

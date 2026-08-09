@@ -1,0 +1,4 @@
+page	pi	ci	rows	cols	edge	table_bbox	line_x	line_y0	line_y1	stroke_width	visible_width_ratio	clip_ids	clip_rect	note
+4	-	-	12	5	right	79.3,215.3,650.1,773.8	729.4	215.3	989.0	1.9	0.000	body-clip-3,cell-clip-11	75.6,168.9,725.7,989.1	candidate only; outer table stroke is emitted but hidden by SVG clip
+4	-	-	12	5	right	79.3,215.3,650.1,773.8	728.6	456.5	693.2	0.5	0.000	body-clip-3,cell-clip-11,cell-clip-110	225.1,448.9,725.7,700.8	candidate only; outer table stroke is emitted but hidden by SVG clip
+4	-	-	3	5	right	232.7,456.5,496.0,236.7	728.6	456.5	693.2	0.5	0.000	body-clip-3,cell-clip-11,cell-clip-110	225.1,448.9,725.7,700.8	candidate only; outer table stroke is emitted but hidden by SVG clip

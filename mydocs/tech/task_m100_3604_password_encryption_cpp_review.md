@@ -1,6 +1,7 @@
 ---
-kind: technical-note
+kind: decision
 status: active
+canonical: mydocs/tech/task_m100_3604_password_encryption_cpp_review.md
 issue: 3604
 last_verified: 2026-08-01
 ---

@@ -43,6 +43,15 @@ export interface RunOptions {
   readonly cwd?: string | undefined;
   /** exit 3/4 도 예외로 올릴지. 기본은 판정을 값으로 다룬다. */
   readonly throwOnVerdict?: boolean | undefined;
+  /**
+   * 예외에 실을 봉투 (호출자가 이미 파싱해 뒀을 때).
+   *
+   * {@link runJson} 은 stdout 을 직접 파싱해 자동으로 실어 보내지만,
+   * {@link runRaw} 는 원문만 돌려주므로 호출자가 미리 파싱한 봉투가 있으면
+   * 여기로 넘겨야 판정 근거가 예외에서 빠지지 않는다(D-20, 파이썬
+   * `_process.py` 의 `envelope_hint` 와 대칭).
+   */
+  readonly envelopeHint?: RawEnvelope | undefined;
 }
 
 /** 실행 결과 원문. */
@@ -173,6 +182,7 @@ export async function runRaw(
     raiseForExit(result.exitCode, {
       argv: result.argv,
       stderr: result.stderr,
+      envelope: options.envelopeHint,
       throwOnVerdict: options.throwOnVerdict ?? false,
     });
   }

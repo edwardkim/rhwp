@@ -1,0 +1,18 @@
+{
+  "id": "p1-field-list",
+  "title": "P1 필드 목록 — 순회 순서와 option 비트, 순번 표기",
+  "ledger": [
+    "HwpCtrl.method.GetFieldList"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["GetFieldList", [0, 0]],
+    ["GetFieldList", [1, 0]],
+    ["GetFieldList", [0, 1]],
+    ["GetFieldList", [0, 2]],
+    ["GetFieldList", [0, 3]],
+    ["GetFieldList", [0, 4]],
+    ["GetFieldList", [1, 1]],
+    ["GetFieldList", [1, 2]]
+  ]
+}

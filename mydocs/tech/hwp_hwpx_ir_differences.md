@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/tech/parser_architecture.md
-last_verified: 2026-07-17
+last_verified: 2026-08-09
 ---
 
 # HWP ↔ HWPX IR 차이점 정리
@@ -89,14 +89,22 @@ HWPX 파싱 시 HWP 바이너리와 동일한 IR(중간 표현)을 생성하기 
 - 위치/크기 정보는 `table.common` 필드에서 직접 참조
 - **HWPX 판별**: `raw_ctrl_data.is_empty()` → HWPX 파일의 표
 
-## 6. 향후 추가 조사 필요 항목
+## 6. HWPX 구현 현황 (2026-08-09 재검증)
+
+과거 "향후 추가 조사 필요"로 남아 있던 항목들이다. 아래 일곱 항목의 구현 현황
+표시는 전부 스테일이었다 — 2026-08-09 기준 코드 확인 결과 대부분 이미
+구현이 끝나 있었다.
 
 | 항목 | HWP | HWPX | 상태 |
 |------|-----|------|------|
-| Shape CommonObjAttr | CTRL_HEADER 파싱 | `<shapeObject>` 요소 | 부분 구현 |
-| 각주/미주 | CTRL_FOOTNOTE | `<footNote>` | HWPX 미구현 |
-| 머리말/꼬리말 | CTRL_HEADER/FOOTER | `<headerFooter>` | HWPX 미구현 |
-| 그리기 객체 | control/shape.rs | `<rect>`, `<line>` 등 | HWPX 미구현 |
-| 필드/하이퍼링크 | CTRL 태그 | `<ctrl>` | HWPX 미구현 |
-| HWPX→HWP 변환 | - | - | 미구현 |
-| HWP→HWPX 변환 | - | - | 미구현 |
+| Shape CommonObjAttr | CTRL_HEADER 파싱 | `<shapeObject>` 요소 | 구현됨(추정) — 파서가 rect/ellipse/line/arc/polygon/curve/container를 처리하고, 직렬화는 `src/serializer/hwpx/shape.rs`(테스트 28개) + `section.rs:1939-2066`의 `render_shape()`에 있다. round-trip 비교는 `src/serializer/hwpx/roundtrip.rs:463-479`. 원래 "부분 구현"이 가리키던 구체적 공백은 특정하지 못함 |
+| 각주/미주 | CTRL_FOOTNOTE | `<footNote>`/`<endNote>` | 구현됨 — 파서 `parse_ctrl_footnote()`(`src/parser/hwpx/section.rs:4743`), 직렬화 `render_footnote()`/`render_endnote()`(`src/serializer/hwpx/section.rs:2286,2303`). footNotePr/endNotePr 서식까지 Task #1050·#1984·#2716·#2742·#2779로 반영 |
+| 머리말/꼬리말 | CTRL_HEADER/FOOTER | `<hp:header>`/`<hp:footer>`, MasterPage | 구현됨 — 파서 `parse_ctrl_header()`/footer(`src/parser/hwpx/section.rs:4685,4732`), 직렬화 `render_header()`/`render_footer()`(`src/serializer/hwpx/section.rs:1802,1818`). MasterPage(EVEN/ODD/BOTH 적용)도 파싱·직렬화 존재 |
+| 그리기 객체 | control/shape.rs | `<rect>`,`<line>`,`<ellipse>`,`<arc>`,`<polygon>`,`<curve>`,`<container>` 등 | 구현됨 — 파서가 7종 도형+그룹을 전량 처리(`src/parser/hwpx/section.rs:4076-4149`), 직렬화도 대칭(`src/serializer/hwpx/shape.rs`, `section.rs:1940-2058`) |
+| 필드/하이퍼링크 | CTRL 태그 | `<ctrl>` (Bookmark/Hyperlink/Field) | 구현됨 — 파서 `src/parser/hwpx/section.rs:4615,4663`, 직렬화 `src/serializer/hwpx/field.rs`(Bookmark·Hyperlink·Field 3종) |
+| HWPX→HWP 변환 | - | - | 구현됨 — `src/document_core/converters/hwpx_to_hwp.rs`(Task #178, 4232행, 테스트 52개), `export_hwp_with_adapter()`(`src/document_core/commands/document.rs:1234-1243`)가 저장 경로에 연결. CLI `rhwp convert`(`mydocs/manual/cli_commands.md:937`) |
+| HWP→HWPX 변환 | - | - | 구현됨 — `export_hwpx_native()`, CLI `rhwp export-hwpx`(#1868, `src/main.rs:11776-11942`), `--verify`/`--verify-pages`/`--output-password` 지원(`mydocs/manual/cli_commands.md:960-977`) |
+
+(1~5절의 표 CommonObjAttr·apply_inner_margin·LINE_SEG/vpos·어울림 판정·
+raw_ctrl_data 서술은 "미구현" 프레이밍이 아니라 포맷 차이 사실 서술이라 이번
+재검증 범위 밖이다.)

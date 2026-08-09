@@ -1,0 +1,39 @@
+{
+  "id": "p3-field-pos",
+  "title": "P3 누름틀의 문단 내 위치 — 안내문까지 센 스트림 좌표",
+  "note": "한글은 빈 누름틀에 안내문 글자를 스트림에 담고, rhwp 는 적재 때 지운다. 그래서 위치를 char_offsets 로 세면 어긋난다. 원본 바이트로 확인한 규칙(글자 1 · 확장 컨트롤 8 · 빈 누름틀의 안내문 길이)으로 다시 센다.",
+  "ledger": [
+    "HwpCtrl.method.MoveToField",
+    "HwpCtrl.method.GetPos",
+    "HwpCtrl.method.GetSelectedPos"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["MoveToField", ["med_str_dt", true, true, false]],
+    ["GetPos", []],
+    ["MoveToField", ["med_end_dt", true, true, false]],
+    ["GetPos", []],
+    ["MoveToField", ["partial_patient_responsibility_price_31", true, true, false]],
+    ["GetPos", []],
+    ["MoveToField", ["uninsurance_price_31", true, true, false]],
+    ["GetPos", []],
+    ["MoveToField", ["card_company", true, true, false]],
+    ["GetPos", []],
+    ["MoveToField", ["card_number", true, true, false]],
+    ["GetPos", []],
+
+    ["SetPos", [9, 0, 0]],
+    ["Run", ["MoveListEnd"]],
+    ["GetPos", []],
+
+    ["PutFieldText", ["med_str_dt", "2026-08-08"]],
+    ["MoveToField", ["med_str_dt", true, true, false]],
+    ["GetPos", []],
+    ["MoveToField", ["med_str_dt", true, true, true]],
+    ["GetSelectedPos", []],
+    ["SelectionMode", []],
+
+    ["MoveToField", ["med_end_dt", true, true, false]],
+    ["GetPos", []]
+  ]
+}

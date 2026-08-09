@@ -1,0 +1,4 @@
+measure	pages	delta_from_reference	scope	note
+reference_pdf	31	0	full PDF	comparison baseline
+rhwp_svg	-	-	not counted	page-count difference is a candidate, not a global-break fix
+rhwp_render_tree	31	0	full render tree	page-count difference is a candidate, not a global-break fix

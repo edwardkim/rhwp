@@ -205,6 +205,50 @@ fn issue2439_full_table_top_matches_first_partial_fragment_top() {
 }
 
 #[test]
+fn native_multiline_visible_float_uses_host_end_only_for_short_offset() {
+    let mut table = Table {
+        common: CommonObjAttr {
+            treat_as_char: false,
+            text_wrap: TextWrap::TopAndBottom,
+            vert_rel_to: VertRelTo::Para,
+            vertical_offset: 4_000,
+            flow_with_text: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let para = Paragraph {
+        text: "표 앞 본문 첫째 줄\n둘째 줄\n셋째 줄".to_string(),
+        line_segs: vec![
+            LineSeg {
+                vertical_pos: 0,
+                line_height: 1_000,
+                ..Default::default()
+            },
+            LineSeg {
+                vertical_pos: 2_000,
+                line_height: 1_000,
+                ..Default::default()
+            },
+            LineSeg {
+                vertical_pos: 4_000,
+                line_height: 1_000,
+                ..Default::default()
+            },
+        ],
+        controls: vec![Control::Table(Box::new(table.clone()))],
+        ..Default::default()
+    };
+
+    assert!(native_multiline_visible_float_table_top(true, &para, &table, 100.0, 96.0).is_some());
+
+    // p9 같은 3줄 host에서 offset(5,317 HU)이 마지막 줄의 bottom(5,000 HU)
+    // 이후를 이미 가리키면, host 높이를 다시 가산하지 않아야 한다.
+    table.common.vertical_offset = 5_317;
+    assert!(native_multiline_visible_float_table_top(true, &para, &table, 100.0, 96.0).is_none());
+}
+
+#[test]
 fn stored_layout_relocated_picture_caption_uses_next_saved_flow_anchor() {
     let picture = Picture {
         common: CommonObjAttr {

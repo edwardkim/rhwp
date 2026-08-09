@@ -307,6 +307,15 @@ pub const MAP: &[CommandProvenance] = &[
         note: "보수적으로 선언한다 — 과소 선언은 위험한 방향이고 과대 선언은 안전한 방향이다.",
     },
     CommandProvenance {
+        command: "verify",
+        untrusted: &[f(
+            "expectations[].actual",
+            "문서에서 읽은 실측값 — field 축은 누름틀 값 그대로이고, contains/notContains \
+             의 매치 수·pages·format 도 문서 내용이 정한다 (cmd_verify)",
+        )],
+        note: "expected·subject 는 호출자가 준 값이고, pass·verdict 는 엔진 판정이다.",
+    },
+    CommandProvenance {
         command: "render-diff",
         untrusted: NONE,
         note: "기하 차이 봉투는 경로·노드 유형·좌표·집계값만 싣는다. 본문 텍스트와 이미지 바이트는 싣지 않는다.",
@@ -346,6 +355,17 @@ pub const MAP: &[CommandProvenance] = &[
         note: "batch 는 자체 스키마가 없다 — NDJSON 레코드가 서브커맨드 봉투 모양 \
                그대로다. 그래서 여기 목록은 batch 서브커맨드들의 합집합이고, 각 \
                레코드의 표지는 그 레코드에 실제로 있는 필드만 담는다.",
+    },
+    CommandProvenance {
+        command: "scan",
+        untrusted: &[f(
+            "files[].probe.error",
+            "--probe 파싱 실패 메시지 — 파서가 문서 바이트를 읽다 만든 문자열이라 \
+             문서 내용 조각이 섞일 수 있다 (cmd_scan)",
+        )],
+        note: "path·bytes·extFormat 은 파일시스템 실측이고 magicFormat·extMismatch· \
+               pageCount 는 엔진 판정이다. 문서 파생 가능성은 probe.error 하나뿐이며, \
+               표지는 그 필드가 실제로 실린 호출에만 붙는다.",
     },
     CommandProvenance {
         command: "export-svg",
@@ -413,6 +433,13 @@ pub const MAP: &[CommandProvenance] = &[
         command: "export-provenance-map",
         untrusted: NONE,
         note: "본 지도 자신 — 문서를 열지 않는다.",
+    },
+    CommandProvenance {
+        command: "export-ontology",
+        untrusted: NONE,
+        note: "문서를 열지 않는다 — 자기서술(IR 스키마·capabilities·MCP 도구·본 지도)에서 \
+               기계 유도한 JSON-LD 온톨로지다. 본 지도의 untrusted 경로는 온톨로지 안에서 \
+               신뢰 술어(rhwp:untrustedFields)로 다시 실린다.",
     },
     CommandProvenance {
         command: "export-agent-manifest",

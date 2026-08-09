@@ -17,6 +17,14 @@ closes #
 - [ ] 웹(WASM) 렌더링 확인 (해당하는 경우)
 - [ ] `.claude/agents/`, `.claude/skills/`, `.agents/skills/` 변경 시: [capability 카탈로그](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/agent_capability_registry.md)의 등록·검증 규칙을 반영
 
+## 성능 영향 및 측정 결과 (해당하는 경우)
+
+- 예상 영향: <!-- 개선 / 회귀 가능성 / 영향 없음 / 미확인 -->
+- 재현·측정: <!-- 공개 sample, 명령, 환경, 변경 전후 관측값. 측정 환경이 없으면 "미측정" -->
+
+> 특정 장비의 절대 성능 수치나 메인테이너 전용·비공개 벤치마크 통과는 PR 제출 조건이 아닙니다.
+> 공개된 결정적 성능 회귀 테스트와 GitHub required checks는 기존과 같이 적용됩니다.
+
 ## 스크린샷
 
 변경 전후 비교가 필요한 경우 첨부해주세요.

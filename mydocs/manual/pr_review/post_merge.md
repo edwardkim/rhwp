@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-07-25
+last_verified: 2026-08-09
 ---
 
 # Merge 후속 처리
@@ -238,15 +238,17 @@ contributor fork의 head는 위 `upstream` 조회 대상이 아니다. PR metada
 
 ### 7.7.1 검토 전용 target
 
-CARGO_TARGET_DIR=target/<review-name>처럼 이번 review만을 위해 만든 exact target 하위 directory는
-branch·worktree 정리 뒤에만 정리한다. shared target/debug, target/release, target/release-test,
-target/wasm32-unknown-unknown와 사용자·다른 도구 산출물은 삭제 대상으로 가정하지 않는다.
+PR review Cargo 검증의 고정 경로 `target/pr-review`는 branch·worktree 정리 뒤에도 보존한다. 이 경로는
+다음 review의 일반 컴파일 산출물을 재사용하는 shared review cache이며, 빌드 뒤 이동하면 통합 테스트에
+박힌 절대 실행 경로가 깨질 수 있다. shared target/debug, target/release, target/release-test,
+target/wasm32-unknown-unknown와 사용자·다른 도구 산출물도 삭제 대상으로 가정하지 않는다.
 
 ~~~bash
 find target -mindepth 1 -maxdepth 1 -type d -exec du -sh {} \;
 pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 ~~~
 
-실행 중인 Cargo/Rust가 그 directory를 쓰면 유지한다. 현재 review 전용임을 확인한 정확한 하위 경로만
-제거하거나 복구 가능한 환경에서는 휴지통으로 이동한다. 이후 남은 target 하위 경로를 확인하고, 정리한
-정확한 이름과 보존한 shared 경로를 최종 상태에 기록한다.
+실행 중인 Cargo/Rust가 있으면 해당 target을 유지한다. `target/pr-review`는 정리하지 않고, 종료된 과거
+`target/review-*`처럼 고정 cache와 구별되는 exact legacy review directory만 소유·미사용을 확인한 뒤
+제거하거나 복구 가능한 환경에서는 휴지통으로 이동한다. 이후 남은 target 하위 경로와 보존한
+`target/pr-review`를 최종 상태에 기록한다.

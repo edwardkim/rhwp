@@ -1,0 +1,106 @@
+[
+  {
+    "key": "issue3820-stage12-p09-offset-guard",
+    "hwp": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+    "pdf": "pdf/pr3740/hwp/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-2020.pdf",
+    "requested_pages": [
+      9
+    ],
+    "completed_pages": [
+      9
+    ],
+    "missing_pages": [],
+    "run_state": "complete",
+    "run_manifest": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/run_manifest.json",
+    "exported_svg_pages": 215,
+    "exported_render_tree_pages": 215,
+    "exported_pdf_pages": 1,
+    "rasterized_svg_pages": 1,
+    "rasterized_pdf_pages": 1,
+    "svg_pages": 1,
+    "render_tree_pages": 1,
+    "pdf_pages": 1,
+    "compare_pages": 1,
+    "overlay_pages": 1,
+    "review_pages": 1,
+    "pdf_question_markers": 0,
+    "contact_sheet": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/contact_sheet.png",
+    "overlay_contact_sheet": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/overlay_contact_sheet.png",
+    "review_contact_sheet": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/review_contact_sheet.png",
+    "analysis_dir": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/analysis",
+    "overlay_dir": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/overlay",
+    "review_dir": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 92.25435,
+      "worst_pixel_match_percent": 92.25435,
+      "average_ink_match_percent": 44.12352,
+      "worst_ink_match_percent": 44.12352,
+      "average_visual_accuracy_proxy_percent": 44.12352,
+      "worst_visual_accuracy_proxy_percent": 44.12352,
+      "worst_pages": [
+        9
+      ]
+    },
+    "overlay_metrics_json": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 1,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "column_text_flow_collapse_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [
+        9
+      ],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "square_wrap_text_overlap_pages": [],
+      "deferred_square_picture_top_drift_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "legacy_glyph_visual_pages": [],
+      "metrics_json": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/analysis/metrics.json",
+      "question_flow_json": "/tmp/rhwp-stage12-p09-offset-guard-20260805/issue3820-stage12-p09-offset-guard/analysis/question_flow.json"
+    },
+    "flagged_pages": []
+  }
+]

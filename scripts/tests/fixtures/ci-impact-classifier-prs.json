@@ -147,5 +147,24 @@
       "classifier_version": "2",
       "reason": "fail-closed:cargo-contract"
     }
+  },
+  {
+    "pr": 4040,
+    "title": "fix(ci/#4040): 파일 게이트된 native-skia test 3건을 CI 에 회복한다",
+    "files": [
+      { "filename": "tests/issue_2083_hide_fill_page_background.rs", "status": "modified" },
+      { "filename": "tests/issue_2292_chart_png_clip.rs", "status": "modified" },
+      { "filename": "tests/issue_2293_chart_png_text.rs", "status": "modified" }
+    ],
+    "expected": {
+      "rust_required": "true",
+      "frontend_mode": "none",
+      "render_required": "false",
+      "native_skia_required": "true",
+      "codeql_languages": "rust",
+      "classification_status": "classified",
+      "classifier_version": "2",
+      "reason": "classified:native-skia-rust"
+    }
   }
 ]

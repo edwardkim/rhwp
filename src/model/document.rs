@@ -302,6 +302,7 @@ impl Document {
             self.provenance.format == SourceFormat::Hwp3,
             (self.provenance.format == SourceFormat::Hwpx && !hwp5_origin_hwpx)
                 || self.provenance.hwpx_lineage,
+            self.provenance.format == SourceFormat::Hwpx,
             hwp5_origin_hwpx,
             self.provenance.format == SourceFormat::Hwp5
                 && !self.provenance.hwp3_lineage

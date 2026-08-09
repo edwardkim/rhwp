@@ -1,0 +1,1857 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/hwpctl_API_v2.4.hwp",
+  "spec": "웹한글컨트롤 API v2.4",
+  "entryCount": 122,
+  "entries": [
+    {
+      "object": "Action",
+      "kind": "property",
+      "name": "ActID",
+      "section": "4.2.1",
+      "syntax": "act.ActID",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "ActionID를 String 형태로 return 한다.",
+      "description": "액션 ID를 나타낸다. 읽기 전용. 액션 ID의 종류 및 설명은 별도 문서 참조."
+    },
+    {
+      "object": "Action",
+      "kind": "property",
+      "name": "SetID",
+      "section": "4.2.2",
+      "syntax": "act.SetID",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "액션이 사용하는 SetID를 String 형태로 return 한다.",
+      "description": "액션이 사용하는 parameter set ID를 나타낸다. 읽기 전용."
+    },
+    {
+      "object": "Action",
+      "kind": "method",
+      "name": "CreateSet",
+      "section": "4.3.1",
+      "syntax": "act.CreateSet()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": 0,
+      "arityMismatch": false,
+      "returns": "성공시 ParameterSet 객체를 return 한다. Parameter Set을 사용하지 않는 Action은 null 객체를 리턴한다.",
+      "description": "액션과 대응하는 Parameter Set을 생성한다."
+    },
+    {
+      "object": "Action",
+      "kind": "method",
+      "name": "GetDefault",
+      "section": "4.3.2",
+      "syntax": "act.GetDefault(param)",
+      "args": [
+        "param"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "성공시 true, 실패시 false",
+      "description": "현재 상태에 따라 액션 실행에 필요한 인수를 구한다."
+    },
+    {
+      "object": "Action",
+      "kind": "method",
+      "name": "PopupDialog",
+      "section": "4.3.3",
+      "syntax": "act.PopupDialog(param, callback, callbackUserData)",
+      "args": [
+        "param",
+        "callback",
+        "callbackUserData"
+      ],
+      "arity": 3,
+      "declaredArity": 3,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "액션의 대화상자를 띄운다"
+    },
+    {
+      "object": "Action",
+      "kind": "method",
+      "name": "Execute",
+      "section": "4.3.4",
+      "syntax": "act.Execute(param, callback, callbackUserData)",
+      "args": [
+        "param",
+        "callback",
+        "callbackUserData"
+      ],
+      "arity": 3,
+      "declaredArity": 3,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "지정한 인수로 액션을 실행한다."
+    },
+    {
+      "object": "Action",
+      "kind": "method",
+      "name": "Run",
+      "section": "4.3.5",
+      "syntax": "act.Run(callback, callbackUserData)",
+      "args": [
+        "callback",
+        "callbackUserData"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "액션을 실행한다. 문서 내부의 표, 각주 등의 컨트롤(특수 문자)를 나타내는 오브젝트이다. 5.2. Properties"
+    },
+    {
+      "object": "CtrlCode",
+      "kind": "property",
+      "name": "CtrlCh",
+      "section": "5.2.1",
+      "syntax": "ctrlCode.CtrlCh",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "현재 컨트롤의 컨트롤 문자를 Number 타입으로 리턴한다.",
+      "description": "컨트롤 문자. 읽기 전용."
+    },
+    {
+      "object": "CtrlCode",
+      "kind": "property",
+      "name": "CtrlID",
+      "section": "5.2.2",
+      "syntax": "ctrlCode.CtrlID",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "현재 컨트롤의 ID를 String 타입으로 리턴한다.",
+      "description": "컨트롤 ID. 읽기 전용."
+    },
+    {
+      "object": "CtrlCode",
+      "kind": "property",
+      "name": "Next",
+      "section": "5.2.3",
+      "syntax": "ctrlCode.Next",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "현재 컨트롤의 뒤 컨트롤을 CtrlCode 객체 타입으로 리턴한다.",
+      "description": "다음 컨트롤. 읽기 전용."
+    },
+    {
+      "object": "CtrlCode",
+      "kind": "property",
+      "name": "Prev",
+      "section": "5.2.4",
+      "syntax": "ctrlCode.Prev",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "현재 컨트롤의 앞 컨트롤을 CtrlCode 객체 타입으로 리턴한다.",
+      "description": "앞 컨트롤. 읽기 전용."
+    },
+    {
+      "object": "CtrlCode",
+      "kind": "property",
+      "name": "Properties",
+      "section": "5.2.5",
+      "syntax": "ctrlCode.Properties",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "컨트롤의 속성을 ParameterSet 객체 타입으로 리턴한다.",
+      "description": "컨트롤의 속성을 나타낸다."
+    },
+    {
+      "object": "CtrlCode",
+      "kind": "property",
+      "name": "UserDesc",
+      "section": "5.2.6",
+      "syntax": "ctrlCode.UserDesc()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "컨트롤의 종류를 사용자에게 보여줄 수 있는 localize된 문자열로 나타낸다. 읽 기 전용."
+    },
+    {
+      "object": "CtrlCode",
+      "kind": "method",
+      "name": "GetAnchorPos",
+      "section": "5.3.1",
+      "syntax": "ctrlCode.GetAnchorPos(type)",
+      "args": [
+        "type"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "성공했을 경우 ListParaPos ParameterSet이 리턴 된다. 실패했을 경우 null이 리턴된다.",
+      "description": "컨트롤의 anchor의 위치를 리턴한다. 오브젝트간 또는 액션의 실행에 필요한 정보를 주고 받을 수 있도록 하기 위한 오브젝트이다."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "property",
+      "name": "Count",
+      "section": "6.2.1",
+      "syntax": "set.Count",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "아이템 개수를 Number 타입으로 리턴한다",
+      "description": "현재 존재하는 아이템의 개수를 나타낸다. 읽기 전용."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "property",
+      "name": "IsSet",
+      "section": "6.2.2",
+      "syntax": "set.IsSet",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "parameterSet 객체인지 boolean 타입으로 리턴한다. parameterSet인 경우 true, parameterArray인 경우 false를 리턴한다.",
+      "description": "parameter set인지 여부를 나타낸다. 읽기 전용."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "property",
+      "name": "SetID",
+      "section": "6.2.3",
+      "syntax": "set.SetID",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "SetID를 String 타입으로 리턴한다.",
+      "description": "parameter set의 ID를 나타낸다. 읽기 전용."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "method",
+      "name": "Clone",
+      "section": "6.3.1",
+      "syntax": "set.Clone()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": 0,
+      "arityMismatch": false,
+      "returns": "동일한 데이터를 가진 parameter set을 복사하여 ParameterSet 객체 타입으로 리턴한다.",
+      "description": "parameter set을 복사한다."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "method",
+      "name": "CreateItemArray",
+      "section": "6.3.2",
+      "syntax": "set.CreateItemArray(itemid, count)",
+      "args": [
+        "itemid",
+        "count"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "인자에 따라 parameter array를 생성하고, ParameterArray 객체 타입으로 리턴 한다.",
+      "description": "아이템으로 parameter array 타입의 배열을 생성한다."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "method",
+      "name": "CreateItemSet",
+      "section": "6.3.3",
+      "syntax": "set.CreateItemSet(itemid, setid)",
+      "args": [
+        "itemid",
+        "setid"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "생성된 서브 셋을 ParameterSet 객체 타입으로 리턴한다.",
+      "description": "아이템으로 parameter set을 생성한다."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "method",
+      "name": "GetInterSection",
+      "section": "6.3.4",
+      "syntax": "set.GetInterSection(srcset)",
+      "args": [
+        "srcset"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "두 set에 공통적으로 존재하고, 값도 동일한 아이템만으로 구성된 intersection set을 구한다."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "method",
+      "name": "IsEquivalent",
+      "section": "6.3.5",
+      "syntax": "set.IsEquivalent(srcset)",
+      "args": [
+        "srcset"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "동일하면 True, 다르면 False",
+      "description": "두 set의 내용이 동일한 값을 가지고 있는지 검사한다."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "method",
+      "name": "Item",
+      "section": "6.3.6",
+      "syntax": "set.Item(itemid)",
+      "args": [
+        "itemid"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "아이템의 값, 만약 지정한 아이템이 존재하지 않으면 아이템의 포맷에 따라 0 또는 빈 문자열을 리턴한다.",
+      "description": "지정한 아이템의 값을 리턴한다."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "method",
+      "name": "ItemExist",
+      "section": "6.3.7",
+      "syntax": "set.ItemExist(itemid)",
+      "args": [
+        "itemid"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "존재하면 True, 존재하지 않으면 False",
+      "description": "지정한 아이템이 존재하는지 검사한다."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "method",
+      "name": "Merge",
+      "section": "6.3.8",
+      "syntax": "set.Merge(srcset)",
+      "args": [
+        "srcset"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "두 set의 내용을 병합한다. 결과는 \"this의 모든 아이템 + srcset에만 존재하는 아이템\"이다."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "method",
+      "name": "RemoveAll",
+      "section": "6.3.9",
+      "syntax": "set.RemoveAll(setID)",
+      "args": [
+        "setID"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "parameter set을 초기화한다."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "method",
+      "name": "RemoveItem",
+      "section": "6.3.10",
+      "syntax": "set.RemoveItem(itemid)",
+      "args": [
+        "itemid"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "지정한 아이템을 삭제한다."
+    },
+    {
+      "object": "ParameterSet",
+      "kind": "method",
+      "name": "SetItem",
+      "section": "6.3.11",
+      "syntax": "set.SetItem(itemid, value)",
+      "args": [
+        "itemid",
+        "value"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "지정한 아이템의 값을 설정한다. parameter set의 아이템으로 배열을 표현하는 데 사용된다. 일반적인 method의 독립적인 인수로 사용되는 일은 없고, parameter set의 아이템으로만 사용된다. 7.2. Properties"
+    },
+    {
+      "object": "ParameterArray",
+      "kind": "property",
+      "name": "Count",
+      "section": "7.2.1",
+      "syntax": "itemArray.Count",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "배열의 크기를 Number 타입으로 리턴한다.",
+      "description": "배열의 크기를 나타낸다."
+    },
+    {
+      "object": "ParameterArray",
+      "kind": "property",
+      "name": "IsSet",
+      "section": "7.2.2",
+      "syntax": "itemArray.IsSet",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "parameterSet인 경우 true, parameterArray인 경우 false를 리턴한다.",
+      "description": "parameter set인지 여부를 나타낸다. 읽기 전용."
+    },
+    {
+      "object": "ParameterArray",
+      "kind": "method",
+      "name": "Clone",
+      "section": "7.3.1",
+      "syntax": "itemArray.Clone()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": 0,
+      "arityMismatch": false,
+      "returns": "성공시 복사된 ParameterArray 객체를 리턴한다. 실패시 null을 리턴한다.",
+      "description": "동일한 크기와 데이터를 갖는 ParameterArray 개체를 복사하여 돌려준다."
+    },
+    {
+      "object": "ParameterArray",
+      "kind": "method",
+      "name": "Copy",
+      "section": "7.3.2",
+      "syntax": "itemArray.Copy(srcarray)",
+      "args": [
+        "srcarray"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "",
+      "description": ""
+    },
+    {
+      "object": "ParameterArray",
+      "kind": "method",
+      "name": "Item",
+      "section": "7.3.3",
+      "syntax": "itemArray.Item(index)",
+      "args": [
+        "index"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "index에 해당하는 원소의 값을 리턴한다.",
+      "description": "지정한 원소의 값을 리턴한다."
+    },
+    {
+      "object": "ParameterArray",
+      "kind": "method",
+      "name": "SetItem",
+      "section": "7.3.4",
+      "syntax": "itemArray.SetItem(index, value)",
+      "args": [
+        "index",
+        "value"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "지정한 원소의 값을 설정한다. HwpCtrl 오브젝트는 한글 컨트롤의 메인 오브젝트로서 다른 오브젝트의 생성,  툴 바 제어 등 컨트롤 전반적인 기능 외에 사용 빈도수가 높고 중요한 대부분의 메소 드들을 사용자에게 직접 제공한다. 8.2. Properties"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "CellShape",
+      "section": "8.2.1",
+      "syntax": "HwpCtrl.CellShape",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "블록된 셀 혹은, 현재 캐럿이 위치한 셀의 속성을 ParameterSet 객체 타입으로 리 턴한다.",
+      "description": "현재 선택되어 있는 표와 셀의 모양 정보를 나타낸다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "CharShape",
+      "section": "8.2.2",
+      "syntax": "HwpCtrl.CharShape",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "블록된 구역 혹은, 현재 캐럿이 위치한 곳의 글자 모양을 ParameterSet 객체 타입 으로 리턴한다.",
+      "description": "현재 selection의 글자 모양을 나타낸다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "CurFieldState",
+      "section": "8.2.3",
+      "syntax": "HwpCtrl.CurFieldState",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "캐럿이 위치한 필드의 상태 정보를 구한다. 읽기 전용."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "EditMode",
+      "section": "8.2.4",
+      "syntax": "HwpCtrl.EditMode",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "현재 편집 모드를 Number 타입으로 리턴한다.",
+      "description": "현재 편집 모드"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "EngineProperties",
+      "section": "8.2.5",
+      "syntax": "HwpCtrl.EngineProperties",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "환경 설정 정보 Return Value 환경 설정 정보를 ParameterSet 객체 타입으로 리턴한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "HeadCtrl",
+      "section": "8.2.6",
+      "syntax": "HwpCtrl.CellShape",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "문서 중 첫번째 컨트롤을 HwpCtrlCode 객체 타입으로 리턴한다.",
+      "description": "문서 중 첫번째 컨트롤. 읽기 전용."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "IsEmpty",
+      "section": "8.2.7",
+      "syntax": "HwpCtrl.IsEmpty",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "빈 문서인지 여부를 Boolean 타입으로 리턴한다.",
+      "description": "아무 내용도 들어있지 않은 빈 문서인지 여부를 나타낸다. 읽기 전용."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "IsModified",
+      "section": "8.2.8",
+      "syntax": "HwpCtrl.IsModified",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "변경 상태를 Boolean 타입으로 리턴한다.",
+      "description": "문서가 변경되었는지 나타낸다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "LastCtrl",
+      "section": "8.2.9",
+      "syntax": "HwpCtrl.LastCtrl",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "문서의 마지막 컨트롤을 CtrlCode 객체 타입으로 리턴한다.",
+      "description": "문서 중 마지막 컨트롤. 읽기 전용."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "PageCount",
+      "section": "8.2.10",
+      "syntax": "HwpCtrl.PageCount",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "문서의 페이지 수. 읽기 전용. 문서의 페이지 수를 Number 타입으로 리턴한다"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "ParaShape",
+      "section": "8.2.11",
+      "syntax": "HwpCtrl.ParaShape",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "블록된 구역 혹은, 현재 캐럿이 위치한 곳의 문단 모양을 ParameterSet 객체 타입 으로 리턴한다.",
+      "description": "현재 selection의 문단 모양을 나타낸다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "ParentCtrl",
+      "section": "8.2.12",
+      "syntax": "HwpCtrl.ParentCtrl",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "현재 캐럿의 상위 컨트롤을 CtrlCode 객체 타입으로 리턴한다.",
+      "description": "현재 캐럿의 상위 컨트롤. 읽기 전용."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "SelectionMode",
+      "section": "8.2.13",
+      "syntax": "HwpCtrl.SelectionMode",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "문서의 내용이 어떤 selection 상태인가를 알려준다. 읽기 전용."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "Version",
+      "section": "8.2.14",
+      "syntax": "HwpCtrl.Version",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "웹한글의 버전을 구한다. 읽기 전용."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "ViewProperties",
+      "section": "8.2.15",
+      "syntax": "HwpCtrl.ViewProperties",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "View의 상태 정보"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "ScrollPosInfo",
+      "section": "8.2.16",
+      "syntax": "HwpCtrl.ScrollPosInfo",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "View 스크롤바 위치 정보 HorzPos 수평 스크롤바 Position HorzLimitPos 수평 스크롤바 Limit Position (쓰기 X) VertPos 수직 스크롤바 Position VertLimitPos 수직 스크롤바 Limit Position (쓰기 X)"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "ReadOnlyMode",
+      "section": "8.2.17",
+      "syntax": "HwpCtrl.ReadOnlyMode",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "읽기 전용인지 Boolean타입으로 리턴한다.",
+      "description": "현재 문서가 읽기 전용인지 여부를 판단하고, 읽기 전용 모드를 설정한다. 설정값 true, false"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "property",
+      "name": "CurSelectedCtrl",
+      "section": "8.2.18",
+      "syntax": "HwpCtrl.CurSelectedCtrl",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "현재 선택된 컨트롤을 CtrlCode 객체 타입으로 리턴한다.",
+      "description": "현재 선택된 컨트롤. 읽기 전용."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "Clear",
+      "section": "8.3.1",
+      "syntax": "HwpCtrl.Clear(option)",
+      "args": [
+        "option"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "현재 편집중인 문서의 내용을 닫고 빈문서 편집 상태로 돌아간다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "CreateAction",
+      "section": "8.3.2",
+      "syntax": "HwpCtrl.CreateAction(actionID)",
+      "args": [
+        "actionID"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "성공시 Action 객체를 리턴한다. 존재하지 않는 액션 ID를 입력하면 null을 리턴한다.",
+      "description": "Action 객체를 생성한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "CreateField",
+      "section": "8.3.3",
+      "syntax": "HwpCtrl.CreateField(direction, memo, name)",
+      "args": [
+        "direction",
+        "memo",
+        "name"
+      ],
+      "arity": 3,
+      "declaredArity": 3,
+      "arityMismatch": false,
+      "returns": "성공이면 True, 실패면 False Remark memo Parameter는 ActiveX 한/글 컨트롤과 호환용으로 사용되는 Parameter이 다. 웹한글에서는 내용을 확인할 수 없으나 누름틀 저장 후 데스크탑 한/글에서 메모 내용을 확인할 수 있다.",
+      "description": "캐럿의 현재 위치에 누름틀을 생성한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "CreatePageImage",
+      "section": "8.3.4",
+      "syntax": "HwpCtrl.CreatePageImage(fileName, pgno, format)",
+      "args": [
+        "fileName",
+        "pgno",
+        "format"
+      ],
+      "arity": 3,
+      "declaredArity": 5,
+      "arityMismatch": true,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "지정한 페이지의 이미지를 파일로 생성한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "CreateSet",
+      "section": "8.3.5",
+      "syntax": "HwpCtrl.CreateSet(setid)",
+      "args": [
+        "setid"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "생성된 ParameterSet 객체를 리턴한다.",
+      "description": "parameter set을 생성한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "DeleteCtrl",
+      "section": "8.3.6",
+      "syntax": "HwpCtrl.DeleteCtrl(ctrl)",
+      "args": [
+        "ctrl"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "문서내 컨트롤을 삭제한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "FieldExist",
+      "section": "8.3.7",
+      "syntax": "HwpCtrl.FieldExist(field)",
+      "args": [
+        "field"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "문서 중에 지정한 데이터 필드가 존재하는지 검사한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetCurFieldName",
+      "section": "8.3.8",
+      "syntax": "HwpCtrl.GetCurFieldName(option)",
+      "args": [
+        "option"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "필드 이름이 돌아온다. 필드 이름이 없는 경우 빈 문자열이 돌아온다.",
+      "description": "현재 캐럿 위치의 데이터 필드 이름을 구한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetFieldList",
+      "section": "8.3.9",
+      "syntax": "HwpCtrl.GetFieldList(number, option)",
+      "args": [
+        "number",
+        "option"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "각 필드 사이를 문자코드 0x02로 구분하여 다음과 같은 형식으로 리턴 한다. (가 장 마지막 필드에는 0x02가 붙지 않는다.) \"필드이름#1\\x02필드이름#2\\x02...필드이름#n\"",
+      "description": "문서 중의 필드 리스트를 구한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetFieldText",
+      "section": "8.3.10",
+      "syntax": "HwpCtrl.GetFieldText(fieldlist)",
+      "args": [
+        "fieldlist"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "텍스트 데이터가 돌아온다. 텍스트에서 탭은 '\\t'(0x9), 문단 바뀜은 CR/LF(0x0D/0x0A)로 표현되며, 이외의 특수 코드는 포함되지 않는다. 필드 텍스트 의 끝은 0x02로 표현되며, 그 이후 다음 필드의 텍스트가 연속해서 지정한 필드 리스트의 개수만큼 위치한다. 지정한 이름의 필드가 없거나 사용자가 해당 필드에 아무 텍스트도 입력하지 않았으면 해당 텍스트에는 빈 문자열이 돌아온다.",
+      "description": "지정한 필드에서 문자열을 구한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetMousePos",
+      "section": "8.3.11",
+      "syntax": "HwpCtrl.GetMousePos(Xrelto, Yrelto)",
+      "args": [
+        "Xrelto",
+        "Yrelto"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "\"MousePos\" ParameterSet이 리턴된다. [Set ID] MousePos Item ID",
+      "description": "마우스의 현재 위치를 구한다1 XRelTo 가로 상대적 기준 0 : 종이 1 : 쪽 YRelTo 세로 상대적 기준 0 : 종이 1 : 쪽 Page 페이지 번호 ( 0 based) X 가로 클릭한 위치 (HWPUNIT) Y 세로 클릭한 위치 (HWPUNIT)"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetPos",
+      "section": "8.3.12",
+      "syntax": "HwpCtrl.GetPos()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "캐럿 위치 정보를 Object 타입으로 리턴한다. Object의 Property는 다음과 같다. list : 캐럿이 위치한 문서 내 리스트 아이디. para : 캐럿이 위치한 문단 아이디. pos : 캐럿이 위치한 문단 내 글자 단위 위치.",
+      "description": "현재 캐럿의 위치 정보를 얻어온다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetPosBySet",
+      "section": "8.3.13",
+      "syntax": "HwpCtrl.GetPosBySet()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": 0,
+      "arityMismatch": false,
+      "returns": "캐럿의 위치에 대한 ParameterSet 객체를 리턴한다.",
+      "description": "현재 캐럿의 위치 정보를 얻어온다. (GetPos의 ParameterSet 버젼)"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetSelectedPos",
+      "section": "8.3.14",
+      "syntax": "HwpCtrl.GetSelectedPos()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "캐럿 위치 정보를 Object 타입으로 리턴한다. Object의 Property는 다음과 같다. slist : 설정된 블록의 시작 리스트 아이디. spara : 설정된 블록의 시작 문단 아이디. spos : 설정된 블록의 문단 내 시작 글자 단위 위치. elist : 설정된 블록의 끝 리스트 아이디. epara : 설정된 블록의 끝 문단 아이디. epos : 설정된 블록의 문단 내 끝 글자 단위 위치.",
+      "description": "현재 설정된 블록의 위치 정보를 얻어온다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetSelectedPosBySet",
+      "section": "8.3.15",
+      "syntax": "HwpCtrl.GetSelectedPosBySet(sset, eset)",
+      "args": [
+        "sset",
+        "eset"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "현재 설정된 블록의 위치 정보를 얻어온다. (GetSelectedPos의 ParameterSet 버젼)"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetTableCellAddr",
+      "section": "8.3.16",
+      "syntax": "HwpCtrl.GetTableCellAddr(type)",
+      "args": [
+        "type"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "0~n까지의 행, 열을 얻어온다. 커서가 셀에 있지 않거나, 실패하면 –1을 리턴한다.",
+      "description": "현재 커서가 위치한 셀의 주소 정보를 얻어온다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetText",
+      "section": "8.3.17",
+      "syntax": "HwpCtrl.GetText()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "Object 타입으로 리턴한다. Property는 다음과 같다. text : 텍스트 데이터가 돌아온다. 텍스트에서 탭은 '\\t'(0x9), 문단 바뀜은 CR/LF(0x0D/0x0A)로 표현되며, 이외의 특수 코드는 포함되지 않는다. result : 결과값을 Number 타입으로 리턴한다. 다음과 같은 결과값을 리턴한다. 0 \t= 텍스트 정보 없음. 1 \t= 리스트의 끝. 2 \t= 일반 텍스트. 3 \t= 다음 문단. 4 \t= 제어문자 내부로 들어감. 5\t= 제어 문자를 빠져 나옴. 101 \t= 초기화 안됨. (InitScan() 실패 또는 InitScan()를 실행하지 않은 경우.) 102 \t= 텍스트 변환 실패.",
+      "description": "문서 중에서 텍스트를 얻는다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetTextBySet",
+      "section": "8.3.18",
+      "syntax": "HwpCtrl.GetTextBySet(text)",
+      "args": [
+        "text"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "다음과 같은 결과값을 리턴한다. 0 \t= 텍스트 정보 없음. 1 \t= 리스트의 끝. 2 \t= 일반 텍스트. 3 \t= 다음 문단. 4 \t= 제어문자 내부로 들어감. 5\t= 제어 문자를 빠져 나옴. 101 \t= 초기화 안됨. (InitScan() 실패 또는 InitScan()를 실행하지 않은 경우.) 102 \t= 텍스트 변환 실패.",
+      "description": "문서 중에서 텍스트를 얻는다.(GetText의 ParameterSet 버젼)"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetTextFile",
+      "section": "8.3.19",
+      "syntax": "HwpCtrl.GetTextFile(format. option, callback)",
+      "args": [
+        "format. option",
+        "callback"
+      ],
+      "arity": 2,
+      "declaredArity": 3,
+      "arityMismatch": true,
+      "returns": "저장된 텍스트로 파일을 String 타입으로 리턴한다.",
+      "description": "현재 열린 문서를 문자열로 넘겨준다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetViewStatus",
+      "section": "8.3.20",
+      "syntax": "HwpCtrl.GetViewStatus()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "현재 보이고 있는 View의 절대 Pos값을 알려준다. Type 0 (현재 View의 절대값 Pos를 알려준다.) ViewPosX 현재 뷰의 X값 ViewPosY 현재 뷰의 Y값"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "InitScan",
+      "section": "8.3.21",
+      "syntax": "HwpCtrl.InitScan(option, rang, spara, spos, epara, epos)",
+      "args": [
+        "option",
+        "rang",
+        "spara",
+        "spos",
+        "epara",
+        "epos"
+      ],
+      "arity": 6,
+      "declaredArity": 6,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "문서 검색을 위한 준비 작업을 한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "Insert",
+      "section": "8.3.22",
+      "syntax": "HwpCtrl.Insert(path, format, arg, callback, callbackUserData)",
+      "args": [
+        "path",
+        "format",
+        "arg",
+        "callback",
+        "callbackUserData"
+      ],
+      "arity": 5,
+      "declaredArity": 5,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false Argument가 제대로 들어왔는지 정도의 판단을 할 수 있으며 실제로 문서 Insert 의 성공 여부는 콜백함수의 인자로 들어가는 result에서 확인할 수 있다.",
+      "description": "현재 캐럿 위치에 문서 파일을 삽입한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "InsertBackgroundPicture",
+      "section": "8.3.23",
+      "syntax": "HwpCtrl.InsertBackgroundPicture(bordertype, path, embedded, filloption, watermark, effect, brightnss, contrast, callback)",
+      "args": [
+        "bordertype",
+        "path",
+        "embedded",
+        "filloption",
+        "watermark",
+        "effect",
+        "brightnss",
+        "contrast",
+        "callback"
+      ],
+      "arity": 9,
+      "declaredArity": 8,
+      "arityMismatch": true,
+      "returns": "성공했을 경우 true, 실패했을 경우 false",
+      "description": "배경이미지를 넣는다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "InsertCtrl",
+      "section": "8.3.24",
+      "syntax": "HwpCtrl.InsertCtrl(ctrlid, initparam)",
+      "args": [
+        "ctrlid",
+        "initparam"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "생성된 CtrlCode 객체를 리턴한다.",
+      "description": "현재 캐럿 위치에 컨트롤을 삽입한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "InsertPicture",
+      "section": "8.3.25",
+      "syntax": "HwpCtrl.InsertPicture(path, embeded, sizeoption, reverse, watermark, effect, width, height, callback)",
+      "args": [
+        "path",
+        "embeded",
+        "sizeoption",
+        "reverse",
+        "watermark",
+        "effect",
+        "width",
+        "height",
+        "callback"
+      ],
+      "arity": 9,
+      "declaredArity": 8,
+      "arityMismatch": true,
+      "returns": "",
+      "description": "현재 캐럿의 위치에 그림을 삽입한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "IsCommandLock",
+      "section": "8.3.26",
+      "syntax": "HwpCtrl.IsCommandLock(actionID)",
+      "args": [
+        "actionID"
+      ],
+      "arity": 1,
+      "declaredArity": 3,
+      "arityMismatch": true,
+      "returns": "해당 액션이 잠금상태이면 True를 리턴하고, 잠금상태가 아니면 False를 리턴한다.",
+      "description": "특정 액션이 잠금 상태인지 여부를 조사한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "KeyIndicator",
+      "section": "8.3.27",
+      "syntax": "HwpCtrl.KeyIndicator();",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "상태바에 나타날 정보를 Object형태로 리턴한다. result : 성공 실패 여부 seccnt : 총 구역 secno : 현재 구역 prnpageno : 쪽 colno :　단 line : 줄 pos : 칸 over : true:수정 false:삽입",
+      "description": "상태바에 나타날 정보를 알아낸다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "LockCommand",
+      "section": "8.3.28",
+      "syntax": "HwpCtrl.LockCommand(actionID, lock)",
+      "args": [
+        "actionID",
+        "lock"
+      ],
+      "arity": 2,
+      "declaredArity": 3,
+      "arityMismatch": true,
+      "returns": "",
+      "description": "특정 액션이 실행되지 않도록 잠근다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "ModifyFieldProperties",
+      "section": "8.3.29",
+      "syntax": "HwpCtrl.ModifyFieldProperties(field, remove, add)",
+      "args": [
+        "field",
+        "remove",
+        "add"
+      ],
+      "arity": 3,
+      "declaredArity": 3,
+      "arityMismatch": false,
+      "returns": "음수가 리턴되면 에러임을 나타낸다. 그 외의 리턴값은 아래 remark 참조",
+      "description": "지정한 필드의 속성을 바꾼다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "MovePos",
+      "section": "8.3.30",
+      "syntax": "HwpCtrl.MovePos(moveID, para, pos)",
+      "args": [
+        "moveID",
+        "para",
+        "pos"
+      ],
+      "arity": 3,
+      "declaredArity": 3,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "캐럿의 위치를 옮긴다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "MoveToField",
+      "section": "8.3.31",
+      "syntax": "HwpCtrl.MoveToField(field, text, start, select)",
+      "args": [
+        "field",
+        "text",
+        "start",
+        "select"
+      ],
+      "arity": 4,
+      "declaredArity": 4,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "지정한 필드로 캐럿을 이동한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "MoveToFieldEx",
+      "section": "8.3.32",
+      "syntax": "HwpCtrl.MoveToFieldEx(field, text, start, boolean, select)",
+      "args": [
+        "field",
+        "text",
+        "start",
+        "boolean",
+        "select"
+      ],
+      "arity": 5,
+      "declaredArity": 4,
+      "arityMismatch": true,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "지정한 필드로 캐럿을 이동한 후 캐럿 위치로 화면을 이동한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "Open",
+      "section": "8.3.33",
+      "syntax": "HwpCtrl.Open(path, format, arg, callback, callbackUserData)",
+      "args": [
+        "path",
+        "format",
+        "arg",
+        "callback",
+        "callbackUserData"
+      ],
+      "arity": 5,
+      "declaredArity": 5,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false Argument가 제대로 들어왔는지 정도의 판단을 할 수 있으며 실제로 문서 Open 의 성공 여부는 콜백함수의 인자로 들어가는 result에서 확인할 수 있다.",
+      "description": "문서 파일을 연다"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "PutFieldText",
+      "section": "8.3.34",
+      "syntax": "HwpCtrl.PutFieldText(fieldlist, textlist)",
+      "args": [
+        "fieldlist",
+        "textlist"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "지정한 필드의 내용을 채운다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "ReleaseScan",
+      "section": "8.3.35",
+      "syntax": "HwpCtrl.ReleaseScan()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "InitScan()으로 설정된 정보를 초기화 한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "RenameField",
+      "section": "8.3.36",
+      "syntax": "HwpCtrl.RenameField(oldname, newname)",
+      "args": [
+        "oldname",
+        "newname"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "지정한 필드의 이름을 바꾼다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "ReplaceAction",
+      "section": "8.3.37",
+      "syntax": "HwpCtrl.ReplaceAction(oldActionID, newActionID)",
+      "args": [
+        "oldActionID",
+        "newActionID"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "성공여부, ActionID 가 잘못된 경우에는 실패.",
+      "description": "메뉴나 단축키로 호출되는 Action을 교체한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "Run",
+      "section": "8.3.38",
+      "syntax": "HwpCtrl.Run(actionID, callback, callbackUserData)",
+      "args": [
+        "actionID",
+        "callback",
+        "callbackUserData"
+      ],
+      "arity": 3,
+      "declaredArity": 3,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "액션을 실행한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "SaveAs",
+      "section": "8.3.39",
+      "syntax": "HwpCtrl.SaveAs(fileName, format, arg, callback, callbackUserData)",
+      "args": [
+        "fileName",
+        "format",
+        "arg",
+        "callback",
+        "callbackUserData"
+      ],
+      "arity": 5,
+      "declaredArity": 5,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "현재 편집중인 문서를 지정한 이름으로 저장한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "SelectText",
+      "section": "8.3.40",
+      "syntax": "HwpCtrl.SelectText(spara, spos, epara, epos)",
+      "args": [
+        "spara",
+        "spos",
+        "epara",
+        "epos"
+      ],
+      "arity": 4,
+      "declaredArity": 4,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "블록을 설정한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "SetCurFieldName",
+      "section": "8.3.41",
+      "syntax": "HwpCtrl.SetCurFieldName(fieldname, option, direction, memo)",
+      "args": [
+        "fieldname",
+        "option",
+        "direction",
+        "memo"
+      ],
+      "arity": 4,
+      "declaredArity": 4,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "현재 캐럿 위치의 데이터 필드 이름을 설정한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "SetFieldViewOption",
+      "section": "8.3.42",
+      "syntax": "HwpCtrl.SetFieldViewOption(option)",
+      "args": [
+        "option"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "설정된 속성이 리턴된다. 에러일 경우 0 이 리턴된다.",
+      "description": "양식 모드와 읽기 전용모드일때 현재 열린 문서의 필드의 겉보기 속성(『』표시)을 바꾼다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "SetPos",
+      "section": "8.3.43",
+      "syntax": "HwpCtrl.SetPos(list, para, pos)",
+      "args": [
+        "list",
+        "para",
+        "pos"
+      ],
+      "arity": 3,
+      "declaredArity": 3,
+      "arityMismatch": false,
+      "returns": "성공시 true, 실패시 false",
+      "description": "캐럿을 문서 내 특정 위치로 위치시킨다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "SetPosBySet",
+      "section": "8.3.44",
+      "syntax": "HwpCtrl.SetPosBySet(pos)",
+      "args": [
+        "pos"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "캐럿을 문서 내 특정 위치로 위치시킨다. (SetPos의 ParameterSet 버젼)"
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "SetTextFile",
+      "section": "8.3.45",
+      "syntax": "HwpCtrl.SetTextFile(data, format, option, callback, callbackUserData)",
+      "args": [
+        "data",
+        "format",
+        "option",
+        "callback",
+        "callbackUserData"
+      ],
+      "arity": 5,
+      "declaredArity": 3,
+      "arityMismatch": true,
+      "returns": "성공하면 true, 실패하면 false Remark return받은 boolean 값은 Argument가 제대로 들어왔고, 함수가 제대로 동작을 하 였는지를 판별할 수 있고, 서버를 통해서 문서가 제대로 SetTextFile 됬는지 여부 는 콜백함수의 인자로 들어오는 result에서 확인할 수 있다.",
+      "description": "문서를 문자열로 지정한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "SetToolBar",
+      "section": "8.3.46",
+      "syntax": "HwpCtrl.SetToolBar(option, ToolBarID)",
+      "args": [
+        "option",
+        "ToolBarID"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "툴바를 등록/보이기/감추기/삭제할 수 있다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "ShowStatusBar",
+      "section": "8.3.47",
+      "syntax": "HwpCtrl.ShowStatusBar(show)",
+      "args": [
+        "show"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "동작 여부(true or false)",
+      "description": "상태바를 표시하거나 감춘다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "ShowToolBar",
+      "section": "8.3.48",
+      "syntax": "HwpCtrl.ShowToolBar(show)",
+      "args": [
+        "show"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "툴바를 화면에 Show/Hide한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "ShowRibbon",
+      "section": "8.3.49",
+      "syntax": "HwpCtrl.ShowRibbon(show)",
+      "args": [
+        "show"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "리본 메뉴를 화면에 Show/Hide한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "OpenDocument",
+      "section": "8.3.50",
+      "syntax": "HwpCtrl.OpenDocument(path, format, callback)",
+      "args": [
+        "path",
+        "format",
+        "callback"
+      ],
+      "arity": 3,
+      "declaredArity": 3,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false Argument가 제대로 들어왔는지 정도의 판단을 할 수 있으며 실제로 문서 Open 의 성공 여부는 콜백함수의 인자로 들어가는 result에서 확인할 수 있다.",
+      "description": ""
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "SaveDocument",
+      "section": "8.3.51",
+      "syntax": "HwpCtrl.SaveDocument(fileName, format, callback)",
+      "args": [
+        "fileName",
+        "format",
+        "callback"
+      ],
+      "arity": 3,
+      "declaredArity": 2,
+      "arityMismatch": true,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": ""
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "InsertDocument",
+      "section": "8.3.52",
+      "syntax": "HwpCtrl.InsertDocument(path, callback)",
+      "args": [
+        "path",
+        "callback"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false Argument가 제대로 들어왔는지 정도의 판단을 할 수 있으며 실제로 문서 Insert 의 성공 여부는 콜백함수의 인자로 들어가는 result에서 확인할 수 있다.",
+      "description": "현재 캐럿 위치에 문서 파일을 삽입한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "IsSpellCheckCompleted",
+      "section": "8.3.53",
+      "syntax": "HwpCtrl.IsSpellCheckCompleted()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": 0,
+      "arityMismatch": false,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "맞춤법검사가 완료되었는지를 판단한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetHeadingString",
+      "section": "8.3.54",
+      "syntax": "HwpCtrl.GetHeadingString()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": 0,
+      "arityMismatch": false,
+      "returns": "문단번호 또는 글머리표를 String 타입으로 return한다. 문단번호나 글머리표가 없다면 빈문자열을 return한다.",
+      "description": "현재 캐럿이 위치한 문단의 문단번호/글머리표를 얻어낸다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetCtrlHorizontalOffset",
+      "section": "8.3.55",
+      "syntax": "HwpCtrl.GetCtrlHorizontalOffset(ctrl, relTo)",
+      "args": [
+        "ctrl",
+        "relTo"
+      ],
+      "arity": 2,
+      "declaredArity": 1,
+      "arityMismatch": true,
+      "returns": "X좌표를 Number 타입으로 return 한다.",
+      "description": "컨트롤의 X 좌표를 얻어낸다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetCtrlVerticalOffset",
+      "section": "8.3.56",
+      "syntax": "HwpCtrl.GetCtrlVerticalOffset(ctrl, relTo)",
+      "args": [
+        "ctrl",
+        "relTo"
+      ],
+      "arity": 2,
+      "declaredArity": 1,
+      "arityMismatch": true,
+      "returns": "Y좌표를 Number 타입으로 return 한다.",
+      "description": "컨트롤의 Y 좌표를 얻어낸다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "SolarToLunar",
+      "section": "8.3.57",
+      "syntax": "HwpCtrl.SolarToLunar(solarYear, solarMonth, solarDay)",
+      "args": [
+        "solarYear",
+        "solarMonth",
+        "solarDay"
+      ],
+      "arity": 3,
+      "declaredArity": 1,
+      "arityMismatch": true,
+      "returns": "날짜 정보를 Object 타입으로 return 한다. Object의 Property는 다음과 같다. year : 음력 연도 month : 음력 달 day : 음력 날 leap :  윤달 여부 result : 성공시 true, 실패시 false",
+      "description": "양력을 음력으로 변환한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "SolarToLunarBySet",
+      "section": "8.3.58",
+      "syntax": "HwpCtrl.SolarToLunarBySet(solarYear, solarMonth, solarDay)",
+      "args": [
+        "solarYear",
+        "solarMonth",
+        "solarDay"
+      ],
+      "arity": 3,
+      "declaredArity": 1,
+      "arityMismatch": true,
+      "returns": "날짜 정보를 ParameterSet 객체 타입으로 return 한다.",
+      "description": "양력을 음력으로 변환한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "LunarToSolar",
+      "section": "8.3.59",
+      "syntax": "HwpCtrl.LunarToSolar(lunarYear, lunarMonth, lunarDay, leap)",
+      "args": [
+        "lunarYear",
+        "lunarMonth",
+        "lunarDay",
+        "leap"
+      ],
+      "arity": 4,
+      "declaredArity": 1,
+      "arityMismatch": true,
+      "returns": "날짜 정보를 Object 타입으로 return 한다. Object의 Property는 다음과 같다. year : 양력 연도 month : 양력 달 day : 양력 날 result : 성공시 true, 실패시 false",
+      "description": "음력을 양력으로 변환한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "LunarToSolarBySet",
+      "section": "8.3.60",
+      "syntax": "HwpCtrl.LunarToSolarBySet(lunarYear, lunarMonth, lunarDay, leab)",
+      "args": [
+        "lunarYear",
+        "lunarMonth",
+        "lunarDay",
+        "leab"
+      ],
+      "arity": 4,
+      "declaredArity": 1,
+      "arityMismatch": true,
+      "returns": "날짜 정보를 ParameterSet 객체 타입으로 return 한다.",
+      "description": "음력을 양력으로 변환한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "ShowVerticalScroll",
+      "section": "8.3.61",
+      "syntax": "HwpCtrl.ShowVerticalShow(show)",
+      "args": [
+        "show"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "세로 스크롤을 숨김/보이기 처리한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "ShowHorizontalScroll",
+      "section": "8.3.62",
+      "syntax": "HwpCtrl.ShowHorizontalScroll(show)",
+      "args": [
+        "show"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "가로 스크롤을 숨김/보이기 처리한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "ShowCaret",
+      "section": "8.3.63",
+      "syntax": "HwpCtrl.ShowCaret(show)",
+      "args": [
+        "show"
+      ],
+      "arity": 1,
+      "declaredArity": 1,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "캐럿을 숨김/보이기 처리한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "CreatePageImageEx",
+      "section": "8.3.64",
+      "syntax": "HwpCtrl.CreatePageImage(fileName, pgno, resolution, depth, format, option, callback, callbackUserData)",
+      "args": [
+        "fileName",
+        "pgno",
+        "resolution",
+        "depth",
+        "format",
+        "option",
+        "callback",
+        "callbackUserData"
+      ],
+      "arity": 8,
+      "declaredArity": 5,
+      "arityMismatch": true,
+      "returns": "성공하면 true, 실패하면 false 여기서 성공/실패는 필요한 인자가 제대로 들어 있고, 비동기 로직을 제외한 부분 이 제대로 동작하였는지를 판별한다. 비동기 액션이므로 return 값이 true이더라도 네트워크등의 문제로 실패 할 수 있 다. 정확한 성공/실패 여부는 callback함수의 인자로 들어오는 object의 result 속성을 통해서 판별할 수 있다.",
+      "description": "지정한 페이지의 이미지를 파일로 생성한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "GetPageText",
+      "section": "8.3.65",
+      "syntax": "HwpCtrl.GetPageText(pageNo, option)",
+      "args": [
+        "pageNo",
+        "option"
+      ],
+      "arity": 2,
+      "declaredArity": 1,
+      "arityMismatch": true,
+      "returns": "",
+      "description": "특정 페이지의 텍스트를 얻는다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "PrintDocument",
+      "section": "8.3.66",
+      "syntax": "HwpCtrl.PrintDocument()",
+      "args": [],
+      "arity": 0,
+      "declaredArity": null,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "문서를 PDF로 변환하여 보여준다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "method",
+      "name": "AddEventListener",
+      "section": "8.3.67",
+      "syntax": "HwpCtrl.AddEventListener(eventType, listener)",
+      "args": [
+        "eventType",
+        "listener"
+      ],
+      "arity": 2,
+      "declaredArity": 1,
+      "arityMismatch": true,
+      "returns": "성공하면 true, 실패하면 false",
+      "description": "이벤트 리스너를 추가한다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "event",
+      "name": "OnMouseLButtonDown",
+      "section": "8.4.1",
+      "syntax": "OnMouseLButtonDown(x, y)",
+      "args": [
+        "x",
+        "y"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "마우스의 왼쪽 버튼이 눌렸음을 알린다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "event",
+      "name": "OnMouseLButtonUp",
+      "section": "8.4.2",
+      "syntax": "OnMouseLButtonUp(x, y)",
+      "args": [
+        "x",
+        "y"
+      ],
+      "arity": 2,
+      "declaredArity": 2,
+      "arityMismatch": false,
+      "returns": "",
+      "description": "마우스의 왼쪽 버튼이 눌렸다가 떨어젔음을 알린다."
+    },
+    {
+      "object": "HwpCtrl",
+      "kind": "event",
+      "name": "OnScroll",
+      "section": "8.4.3",
+      "syntax": "OnScroll",
+      "args": [],
+      "arity": 0,
+      "declaredArity": 0,
+      "arityMismatch": false,
+      "returns": "",
+      "description": ""
+    }
+  ]
+}

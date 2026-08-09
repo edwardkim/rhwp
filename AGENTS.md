@@ -8,15 +8,16 @@
 ## 문서 로딩 순서
 
 1. `CLAUDE.md`
-2. `mydocs/README.md`
-3. 작업 성격에 맞는 `mydocs/manual/README.md` 또는 `mydocs/tech/README.md`
-4. 개발·문서·Git 작업은 `mydocs/manual/codex/docs_and_git_workflow.md`
-5. PR 검토·merge·후속 처리는 `mydocs/manual/pr_review_workflow.md`를 먼저 읽고,
+2. Codex는 프로젝트 메모리 덤프 `mydocs/manual/codex/MEMORY.md`
+3. `mydocs/README.md`
+4. 작업 성격에 맞는 `mydocs/manual/README.md` 또는 `mydocs/tech/README.md`
+5. 개발·문서·Git 작업은 `mydocs/manual/codex/docs_and_git_workflow.md`
+6. PR 검토·merge·후속 처리는 `mydocs/manual/pr_review_workflow.md`를 먼저 읽고,
    `mydocs/manual/pr_review/README.md`의 선택표가 지정한 기본·보조 자식 문서를 작업 전에 모두 읽는다.
-6. 로컬 빌드·WASM 검증은 `mydocs/manual/dev_environment_guide.md`,
+7. 로컬 빌드·WASM 검증은 `mydocs/manual/dev_environment_guide.md`,
    변경 범위별 검증 게이트는 `mydocs/manual/pr_review/local_validation.md`의 4.3
-7. CLI 작업은 `mydocs/manual/cli_commands.md`
-8. 시각 검증은 `mydocs/manual/verification/visual_verification_governance.md`와 `mydocs/manual/verification/visual_sweep_guide.md`
+8. CLI 작업은 `mydocs/manual/cli_commands.md`
+9. 시각 검증은 `mydocs/manual/verification/visual_verification_governance.md`와 `mydocs/manual/verification/visual_sweep_guide.md`
 
 더 구체적인 문서가 이 요약과 다르면 그 문서를 따른다.
 

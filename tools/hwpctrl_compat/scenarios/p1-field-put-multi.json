@@ -1,0 +1,33 @@
+{
+  "id": "p1-field-put-multi",
+  "title": "P1 다중 필드 기록(0x02)과 저장",
+  "ledger": [
+    "HwpCtrl.method.PutFieldText",
+    "HwpCtrl.method.GetFieldText",
+    "HwpCtrl.method.SaveAs",
+    "HwpCtrl.method.Open"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    [
+      "PutFieldText",
+      [
+        "pt_nm\u0002med_str_dt",
+        "홍길동\u00022026-08-07"
+      ]
+    ],
+    [
+      "GetFieldText",
+      [
+        "pt_nm\u0002med_str_dt"
+      ]
+    ],
+    [
+      "GetFieldText",
+      [
+        "med_end_dt"
+      ]
+    ]
+  ],
+  "saveAs": "p1-field-put-multi.hwp"
+}

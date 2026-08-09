@@ -490,6 +490,24 @@ fn make_minimal_bmp_2x2() -> Vec<u8> {
     v
 }
 
+/// 최소 2x2 RGB TIFF를 생성한다 (브라우저가 data URI를 직접 decode하지 못하는 회귀용).
+fn make_minimal_tiff_2x2() -> Vec<u8> {
+    use image::{DynamicImage, ImageFormat, Rgb, RgbImage};
+    use std::io::Cursor;
+
+    let mut image = RgbImage::new(2, 2);
+    for y in 0..2 {
+        for x in 0..2 {
+            image.put_pixel(x, y, Rgb([32 + x as u8, 96 + y as u8, 160]));
+        }
+    }
+    let mut tiff = Vec::new();
+    DynamicImage::ImageRgb8(image)
+        .write_to(&mut Cursor::new(&mut tiff), ImageFormat::Tiff)
+        .expect("TIFF fixture encode");
+    tiff
+}
+
 #[test]
 fn test_bmp_to_png_success() {
     let bmp = make_minimal_bmp_2x2();
@@ -560,6 +578,23 @@ fn test_page_background_image_pcx_converts_to_png() {
     let output = renderer.output();
     assert!(output.contains("data:image/png;base64,iVBORw0KGgo"));
     assert!(!output.contains("data:image/x-pcx"));
+}
+
+#[test]
+fn test_image_node_tiff_converts_to_png_for_svg() {
+    let image = ImageNode::new(1, Some(make_minimal_tiff_2x2()));
+    let bbox = BoundingBox::new(10.0, 20.0, 100.0, 50.0);
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(200.0, 100.0);
+
+    renderer.render_image_node(&image, &bbox);
+
+    let output = renderer.output();
+    assert!(
+        output.contains("data:image/png;base64,iVBORw0KGgo"),
+        "SVG picture TIFF must be browser-compatible PNG: {output}"
+    );
+    assert!(!output.contains("data:image/tiff"));
 }
 
 #[test]
@@ -931,4 +966,91 @@ fn test_compute_image_crop_src_last_resort_hu_rule() {
     assert!((sy - -2.0).abs() < 0.01);
     assert!((sw - 4.0).abs() < 0.01);
     assert!((sh - 2.0).abs() < 0.01);
+}
+
+/// [#4085] 테두리 없는 글자겹침(`border_type=0`)은 `charSz` 축소를 받지 않고
+/// 본문과 같은 글자 크기로 나가야 한다.
+///
+/// 관세청 월간 수출입 현황 p1 의 절 제목 번호(`charSz=-4`)가
+/// 한컴 PDF 에서 본문과 같은 `101 Tf`, 같은 baseline 으로 나온다. 축소를 걸면
+/// 본문 대비 60% 로 렌더돼 다른 폰트처럼 보인다.
+#[test]
+fn char_overlap_without_border_keeps_body_font_size() {
+    let style = TextStyle {
+        font_size: 22.67,
+        ..Default::default()
+    };
+    let overlap = CharOverlapInfo {
+        border_type: 0,
+        inner_char_size: -4,
+    };
+
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(800.0, 600.0);
+    renderer.draw_char_overlap("1", &style, &overlap, 10.0, 20.0, 22.67, 22.67);
+    let output = renderer.output();
+
+    assert!(
+        output.contains("font-size=\"22.67\""),
+        "테두리 없는 글자겹침은 본문 크기 유지: {output}"
+    );
+    assert!(
+        !output.contains("<ellipse"),
+        "border_type=0 은 테두리를 그리지 않는다: {output}"
+    );
+}
+
+/// [#4158] 실제 CharOverlap의 U+F02B1은 raw border가 0이어도 문자 자체의 의미에 따라
+/// 사각형과 숫자 1로 합성해야 한다. raw PUA를 폰트에 맡기면 backend별 tofu가 생긴다.
+#[test]
+fn boxed_pua_char_overlap_draws_square_and_number() {
+    let style = TextStyle {
+        font_size: 22.67,
+        ..Default::default()
+    };
+    let overlap = CharOverlapInfo {
+        border_type: 0,
+        inner_char_size: 0,
+    };
+
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(800.0, 600.0);
+    renderer.draw_char_overlap("\u{F02B1}", &style, &overlap, 10.0, 20.0, 22.67, 22.67);
+    let output = renderer.output();
+
+    assert!(output.contains("<rect"), "사각 테두리 필요: {output}");
+    assert!(output.contains(">1</text>"), "숫자 1 합성 필요: {output}");
+    assert!(
+        !output.contains('\u{F02B1}'),
+        "raw PUA를 렌더 출력에 남기지 않음: {output}"
+    );
+}
+
+/// [#4085] 회귀 금지 — 테두리가 있으면 PR #1101 의 실측 축소 규칙을 유지한다.
+/// `samples/hwpx/k-water-rfp.hwpx` p13 의 반전 사각형(`charSz=-2`) 이 근거다.
+#[test]
+fn char_overlap_with_border_keeps_charsz_reduction() {
+    let style = TextStyle {
+        font_size: 22.66,
+        ..Default::default()
+    };
+    let overlap = CharOverlapInfo {
+        border_type: 4,
+        inner_char_size: -2,
+    };
+
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(800.0, 600.0);
+    renderer.draw_char_overlap("3", &style, &overlap, 10.0, 20.0, 22.66, 22.66);
+    let output = renderer.output();
+
+    // 22.66 × 0.80 = 18.128 → "18.13"
+    assert!(
+        output.contains("font-size=\"18.13\""),
+        "반전 사각형은 charSz 축소 유지: {output}"
+    );
+    assert!(
+        output.contains("<rect"),
+        "border_type=4 는 사각 테두리를 그린다: {output}"
+    );
 }

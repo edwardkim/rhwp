@@ -292,7 +292,7 @@ with rhwp.open("큰문서.hwp") as doc:   # 한 번만 파싱
     doc.info(); doc.fields(); doc.tables()
 ```
 
-### `TimeoutError: 제한 시간 300초를 초과했습니다`
+### `RhwpTimeoutError: 제한 시간 300초를 초과했습니다`
 
 대형 문서 렌더·변환이 오래 걸린다.
 
@@ -308,9 +308,9 @@ rhwp.export_pdf("큰문서.hwp", out="a.pdf", timeout=None)   # 무제한
 `batch` 는 전 레코드를 모은다. 스트리밍이 필요하면 저수준 API 를 쓴다.
 
 ```python
-from rhwp._process import iter_ndjson
+import rhwp
 
-for record in iter_ndjson(["batch", "info", "--json"], stdin=paths_text):
+for record in rhwp.iter_ndjson(["batch", "info", "--json"], stdin=paths_text):
     handle(record)     # 나오는 대로 처리
 ```
 

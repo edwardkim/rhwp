@@ -1,0 +1,588 @@
+{
+  "page": 14,
+  "flags": [],
+  "rhwp_frame": [
+    126,
+    352,
+    1091,
+    1645
+  ],
+  "pdf_frame": [
+    39,
+    337,
+    1151,
+    1645
+  ],
+  "rhwp_outside_frame_pixels": 0,
+  "pdf_outside_frame_pixels": 0,
+  "rhwp_outside_frame_max_y": null,
+  "pdf_outside_frame_max_y": null,
+  "rhwp_outside_frame_extent_px": null,
+  "pdf_outside_frame_extent_px": null,
+  "frame_overflow_tolerated_bleed": false,
+  "paper_size_footer_frame_bleed": false,
+  "rhwp_outside_frame_bleed_px": 0,
+  "pdf_outside_frame_bleed_px": 0,
+  "content_bottom_delta_px": -10.0,
+  "red_marker_drift": {
+    "rhwp_count": 0,
+    "pdf_count": 0,
+    "paired": 0,
+    "max_abs_delta_px": null,
+    "mean_abs_delta_px": null
+  },
+  "line_band_drift": {
+    "rhwp_count": 47,
+    "pdf_count": 46,
+    "paired": 46,
+    "max_abs_delta_px": 77.0,
+    "p90_abs_delta_px": 14.5,
+    "mean_abs_delta_px": 11.6
+  },
+  "column_line_band_drift": [
+    {
+      "column": 0,
+      "rhwp_frame": [
+        126,
+        352,
+        606,
+        1645
+      ],
+      "pdf_frame": [
+        39,
+        337,
+        593,
+        1645
+      ],
+      "drift": {
+        "rhwp_count": 47,
+        "pdf_count": 46,
+        "paired": 46,
+        "max_abs_delta_px": 77.0,
+        "p90_abs_delta_px": 14.5,
+        "mean_abs_delta_px": 11.7
+      },
+      "rhwp_first_band": {
+        "y0": 359,
+        "y1": 377,
+        "x0": 158,
+        "x1": 604,
+        "pixels": 2384,
+        "cy": 368.0
+      },
+      "rhwp_last_band": {
+        "y0": 1582,
+        "y1": 1582,
+        "x0": 586,
+        "x1": 603,
+        "pixels": 8,
+        "cy": 1582.0
+      },
+      "pdf_first_band": {
+        "y0": 345,
+        "y1": 363,
+        "x0": 121,
+        "x1": 591,
+        "pixels": 2282,
+        "cy": 354.0
+      },
+      "pdf_last_band": {
+        "y0": 1586,
+        "y1": 1588,
+        "x0": 567,
+        "x1": 591,
+        "pixels": 25,
+        "cy": 1587.0
+      }
+    },
+    {
+      "column": 1,
+      "rhwp_frame": [
+        610,
+        352,
+        1091,
+        1645
+      ],
+      "pdf_frame": [
+        597,
+        337,
+        1151,
+        1645
+      ],
+      "drift": {
+        "rhwp_count": 33,
+        "pdf_count": 31,
+        "paired": 31,
+        "max_abs_delta_px": 134.5,
+        "p90_abs_delta_px": 71.5,
+        "mean_abs_delta_px": 36.7
+      },
+      "rhwp_first_band": {
+        "y0": 359,
+        "y1": 377,
+        "x0": 612,
+        "x1": 1079,
+        "pixels": 2282,
+        "cy": 368.0
+      },
+      "rhwp_last_band": {
+        "y0": 1574,
+        "y1": 1575,
+        "x0": 618,
+        "x1": 628,
+        "pixels": 20,
+        "cy": 1574.5
+      },
+      "pdf_first_band": {
+        "y0": 345,
+        "y1": 363,
+        "x0": 599,
+        "x1": 1074,
+        "pixels": 2285,
+        "cy": 354.0
+      },
+      "pdf_last_band": {
+        "y0": 1586,
+        "y1": 1589,
+        "x0": 599,
+        "x1": 624,
+        "pixels": 41,
+        "cy": 1587.5
+      }
+    }
+  ],
+  "column_line_band_drift_candidates": [],
+  "column_text_flow_masked_line_band_drift": [
+    {
+      "column": 0,
+      "rhwp_frame": [
+        111,
+        168,
+        593,
+        1516
+      ],
+      "pdf_frame": [
+        111,
+        168,
+        593,
+        1516
+      ],
+      "drift": {
+        "rhwp_count": 0,
+        "pdf_count": 0,
+        "paired": 0,
+        "max_abs_delta_px": null,
+        "mean_abs_delta_px": null
+      },
+      "rhwp_first_band": null,
+      "rhwp_last_band": null,
+      "pdf_first_band": null,
+      "pdf_last_band": null
+    },
+    {
+      "column": 1,
+      "rhwp_frame": [
+        597,
+        168,
+        1080,
+        1516
+      ],
+      "pdf_frame": [
+        597,
+        168,
+        1079,
+        1516
+      ],
+      "drift": {
+        "rhwp_count": 0,
+        "pdf_count": 0,
+        "paired": 0,
+        "max_abs_delta_px": null,
+        "mean_abs_delta_px": null
+      },
+      "rhwp_first_band": null,
+      "rhwp_last_band": null,
+      "pdf_first_band": null,
+      "pdf_last_band": null
+    }
+  ],
+  "column_text_flow_table_masks": {
+    "rhwp": [
+      [
+        111,
+        168,
+        1096,
+        1516
+      ]
+    ],
+    "pdf": [
+      [
+        111,
+        168,
+        1095,
+        1516
+      ]
+    ]
+  },
+  "column_text_flow_body_frames": {
+    "rhwp": [
+      111,
+      168,
+      1080,
+      1516
+    ],
+    "pdf": [
+      111,
+      168,
+      1079,
+      1516
+    ]
+  },
+  "column_text_flow_reflowing_float_present": false,
+  "column_text_flow_collapse_candidates": [],
+  "large_ink_region_drift": {
+    "rhwp_count": 5,
+    "pdf_count": 5,
+    "paired": 5,
+    "deltas_px": [
+      23.0,
+      -209.0,
+      -433.0,
+      -329.0,
+      -145.0
+    ],
+    "max_abs_delta_px": 433.0,
+    "mean_abs_delta_px": 227.8,
+    "rhwp_regions": [
+      {
+        "x0": 126.0,
+        "y0": 352.0,
+        "x1": 1091.0,
+        "y1": 736.0,
+        "w": 965.0,
+        "h": 384.0,
+        "cy": 544.0,
+        "tiles": 748.0
+      },
+      {
+        "x0": 670.0,
+        "y0": 528.0,
+        "x1": 1086.0,
+        "y1": 576.0,
+        "w": 416.0,
+        "h": 48.0,
+        "cy": 552.0,
+        "tiles": 50.0
+      },
+      {
+        "x0": 590.0,
+        "y0": 688.0,
+        "x1": 830.0,
+        "y1": 736.0,
+        "w": 240.0,
+        "h": 48.0,
+        "cy": 712.0,
+        "tiles": 33.0
+      },
+      {
+        "x0": 126.0,
+        "y0": 752.0,
+        "x1": 510.0,
+        "y1": 832.0,
+        "w": 384.0,
+        "h": 80.0,
+        "cy": 792.0,
+        "tiles": 65.0
+      },
+      {
+        "x0": 126.0,
+        "y0": 848.0,
+        "x1": 1086.0,
+        "y1": 1520.0,
+        "w": 960.0,
+        "h": 672.0,
+        "cy": 1184.0,
+        "tiles": 1431.0
+      }
+    ],
+    "pdf_regions": [
+      {
+        "x0": 135.0,
+        "y0": 337.0,
+        "x1": 1063.0,
+        "y1": 705.0,
+        "w": 928.0,
+        "h": 368.0,
+        "cy": 521.0,
+        "tiles": 707.0
+      },
+      {
+        "x0": 119.0,
+        "y0": 737.0,
+        "x1": 279.0,
+        "y1": 785.0,
+        "w": 160.0,
+        "h": 48.0,
+        "cy": 761.0,
+        "tiles": 18.0
+      },
+      {
+        "x0": 119.0,
+        "y0": 801.0,
+        "x1": 1063.0,
+        "y1": 1489.0,
+        "w": 944.0,
+        "h": 688.0,
+        "cy": 1145.0,
+        "tiles": 1393.0
+      },
+      {
+        "x0": 855.0,
+        "y0": 1089.0,
+        "x1": 1063.0,
+        "y1": 1153.0,
+        "w": 208.0,
+        "h": 64.0,
+        "cy": 1121.0,
+        "tiles": 41.0
+      },
+      {
+        "x0": 695.0,
+        "y0": 1297.0,
+        "x1": 1063.0,
+        "y1": 1361.0,
+        "w": 368.0,
+        "h": 64.0,
+        "cy": 1329.0,
+        "tiles": 73.0
+      }
+    ]
+  },
+  "endnote_shape_ui": {
+    "separator_visible": true,
+    "separator_above_mm": 0.79,
+    "between_notes_mm": 0.0,
+    "separator_below_mm": 2.0,
+    "separator_length_mm": 43.321
+  },
+  "endnote_separator_gap": {
+    "expected_separator": true,
+    "separator_below_mm": 2.0,
+    "separator_above_mm": 0.79,
+    "between_notes_mm": 0.0,
+    "separator_length_px": 163.7,
+    "rhwp": {
+      "expected_separator": true,
+      "candidate_count": 0,
+      "selected": null,
+      "gap_px": null,
+      "first_content_y": null,
+      "first_marker_y": null,
+      "candidates": []
+    },
+    "pdf": {
+      "expected_separator": true,
+      "candidate_count": 0,
+      "selected": null,
+      "gap_px": null,
+      "first_content_y": null,
+      "first_marker_y": null,
+      "candidates": []
+    },
+    "gap_delta_px": null
+  },
+  "endnote_no_separator_content_start": null,
+  "between_notes_marker_gap": {
+    "expected_between_notes_mm": 0.0,
+    "expected_between_notes_px": null,
+    "rhwp_marker_count": 0,
+    "pdf_marker_count": 0,
+    "paired_gap_count": 0,
+    "max_abs_delta_px": null,
+    "mean_abs_delta_px": null,
+    "rhwp_marker_y": [],
+    "pdf_marker_y": [],
+    "rhwp_marker_y_by_column": [
+      []
+    ],
+    "pdf_marker_y_by_column": [
+      []
+    ],
+    "rhwp_gaps_px": [],
+    "pdf_gaps_px": [],
+    "pairs": []
+  },
+  "svg": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/svg/issue2007_nested_cell_pagination_42065_014.svg",
+  "render_tree_json": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/render_tree/render_tree_014.json",
+  "equation_text_overlap_candidates": [],
+  "square_wrap_text_overlap_candidates": [],
+  "deferred_square_picture_top_drift_candidates": [],
+  "question_title_text_overlap_candidates": [],
+  "line_order_overlap_candidates": [],
+  "render_tree_frame_tail_overflow_candidates": [
+    {
+      "path": "root/2/0/0/0/0/0/132/0/18",
+      "pi": 10,
+      "question": null,
+      "question_text": null,
+      "text": "제기할 수 있다.",
+      "overflow_px": 188.3,
+      "frame_bottom": 1645,
+      "column": 0,
+      "bbox": [
+        103.7,
+        1820.0,
+        608.7,
+        13.3
+      ]
+    },
+    {
+      "path": "root/2/0/0/0/0/0/132/0/17",
+      "pi": 10,
+      "question": null,
+      "question_text": null,
+      "text": "  ⑤ 제4항에 따라 시정요구를 받은 계약상대자는 대통령령으로 정하는 바에 따라 조달청장에게 이의를 ",
+      "overflow_px": 169.6,
+      "frame_bottom": 1645,
+      "column": 0,
+      "bbox": [
+        91.0,
+        1801.3,
+        621.4,
+        13.3
+      ]
+    },
+    {
+      "path": "root/2/0/0/0/0/0/132/0/16",
+      "pi": 9,
+      "question": null,
+      "question_text": null,
+      "text": "야 한다.",
+      "overflow_px": 151.0,
+      "frame_bottom": 1645,
+      "column": 0,
+      "bbox": [
+        103.7,
+        1782.7,
+        608.7,
+        13.3
+      ]
+    },
+    {
+      "path": "root/2/0/0/0/0/0/132/0/15",
+      "pi": 9,
+      "question": null,
+      "question_text": null,
+      "text": "「국가를 당사자로 하는 계약에 관한 법률」 등 관계 법령이나 계약조건에 따라 처분 등 조치를 취하여",
+      "overflow_px": 132.3,
+      "frame_bottom": 1645,
+      "column": 0,
+      "bbox": [
+        103.7,
+        1764.0,
+        608.7,
+        13.3
+      ]
+    },
+    {
+      "path": "root/2/0/0/0/0/0/132/0/14",
+      "pi": 9,
+      "question": null,
+      "question_text": null,
+      "text": "  ④ 조달청장은 불공정한 수요물자 조달행위가 확인된 계약상대자에 대하여는 시정을 요구할 수 있으며, ",
+      "overflow_px": 113.6,
+      "frame_bottom": 1645,
+      "column": 0,
+      "bbox": [
+        91.0,
+        1745.3,
+        621.4,
+        13.3
+      ]
+    },
+    {
+      "path": "root/2/0/0/0/0/0/132/0/13",
+      "pi": 8,
+      "question": null,
+      "question_text": null,
+      "text": "하며, 다른 목적 등을 위하여 권한을 남용하여서는 아니 된다.",
+      "overflow_px": 95.0,
+      "frame_bottom": 1645,
+      "column": 0,
+      "bbox": [
+        103.7,
+        1726.7,
+        608.7,
+        13.3
+      ]
+    },
+    {
+      "path": "root/2/0/0/0/0/0/132/0/12",
+      "pi": 8,
+      "question": null,
+      "question_text": null,
+      "text": "  ③ 제1항에 따라 조사를 수행하는 공무원은 이 법의 시행을 위하여 필요한 최소한의 범위에서 행하여야 ",
+      "overflow_px": 76.3,
+      "frame_bottom": 1645,
+      "column": 0,
+      "bbox": [
+        91.0,
+        1708.0,
+        621.4,
+        13.3
+      ]
+    },
+    {
+      "path": "root/2/0/0/0/0/0/132/0/11",
+      "pi": 7,
+      "question": null,
+      "question_text": null,
+      "text": "  ② 제1항에 따라 조사를 수행하는 공무원은 그 권한을 표시하는 증표를 관계인에게 제시하여야 한다.",
+      "overflow_px": 57.6,
+      "frame_bottom": 1645,
+      "column": 0,
+      "bbox": [
+        91.0,
+        1689.3,
+        621.4,
+        13.3
+      ]
+    },
+    {
+      "path": "root/2/0/0/0/0/0/132/0/10",
+      "pi": 6,
+      "question": null,
+      "question_text": null,
+      "text": "  5. 우수조달물품등의 지정을 거짓이나 부정한 방법으로 받은 행위",
+      "overflow_px": 39.0,
+      "frame_bottom": 1645,
+      "column": 0,
+      "bbox": [
+        91.0,
+        1670.7,
+        621.4,
+        13.3
+      ]
+    },
+    {
+      "path": "root/2/0/0/0/0/0/132/0/9",
+      "pi": 5,
+      "question": null,
+      "question_text": null,
+      "text": "  4. 수요기관 등의 사전 승인 없이 계약규격과 상이한 제품을 납품하는 행위",
+      "overflow_px": 20.3,
+      "frame_bottom": 1645,
+      "column": 0,
+      "bbox": [
+        91.0,
+        1652.0,
+        621.4,
+        13.3
+      ]
+    }
+  ],
+  "render_tree_frame_tail_overflow_suppressed_candidates": [],
+  "question_marker_drift_candidates": [],
+  "legacy_glyph_visual_candidates": [],
+  "annotated": null
+}

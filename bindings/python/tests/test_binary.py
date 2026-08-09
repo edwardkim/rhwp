@@ -100,3 +100,16 @@ def test_refresh_bypasses_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch)
 def test_binary_name_matches_platform() -> None:
     expected = "rhwp.exe" if sys.platform == "win32" else "rhwp"
     assert _binary.binary_name() == expected
+
+
+def test_env_var_is_in_module_all() -> None:
+    """[트랙 G R61 D-15] ENV_VAR 가 __all__ 에 없었다(import 는 됐지만 메타데이터 누락)."""
+    assert "ENV_VAR" in _binary.__all__
+
+
+def test_binary_name_and_bundled_dir_exported_at_package_root() -> None:
+    """[트랙 G R61 D-15] binary_name/BUNDLED_DIR 가 패키지 루트에 노출되지 않았다."""
+    import rhwp
+
+    assert rhwp.binary_name is _binary.binary_name
+    assert rhwp.BUNDLED_DIR == _binary.BUNDLED_DIR

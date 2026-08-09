@@ -1,0 +1,97 @@
+{
+  "summary": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 86.85632,
+    "worst_pixel_match_percent": 85.25361,
+    "average_ink_match_percent": 8.21803,
+    "worst_ink_match_percent": 5.67881,
+    "average_visual_accuracy_proxy_percent": 8.21803,
+    "worst_visual_accuracy_proxy_percent": 5.67881,
+    "worst_pages": [
+      12,
+      11,
+      13
+    ]
+  },
+  "pages": [
+    {
+      "page": 11,
+      "rhwp_png": "/tmp/rhwp-stage57-exact-head-visual.iCJEe5/issue2007-stage57-exact-head/rhwp_png/rhwp_011.png",
+      "pdf_png": "/tmp/rhwp-stage57-exact-head-visual.iCJEe5/issue2007-stage57-exact-head/pdf_png/pdf-11.png",
+      "overlay_png": "/tmp/rhwp-stage57-exact-head-visual.iCJEe5/issue2007-stage57-exact-head/overlay/overlay_011.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 295760,
+      "diff_ratio": 0.14746386,
+      "pixel_match_percent": 85.25361,
+      "ink_union_pixels": 316114,
+      "ink_diff_pixels": 295760,
+      "ink_diff_ratio": 0.93561184,
+      "ink_match_percent": 6.43882,
+      "visual_accuracy_proxy_percent": 6.43882,
+      "mean_abs_channel_delta": 22.584,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        120,
+        177,
+        1085,
+        1594
+      ]
+    },
+    {
+      "page": 12,
+      "rhwp_png": "/tmp/rhwp-stage57-exact-head-visual.iCJEe5/issue2007-stage57-exact-head/rhwp_png/rhwp_012.png",
+      "pdf_png": "/tmp/rhwp-stage57-exact-head-visual.iCJEe5/issue2007-stage57-exact-head/pdf_png/pdf-12.png",
+      "overlay_png": "/tmp/rhwp-stage57-exact-head-visual.iCJEe5/issue2007-stage57-exact-head/overlay/overlay_012.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 285149,
+      "diff_ratio": 0.14217329,
+      "pixel_match_percent": 85.78267,
+      "ink_union_pixels": 302317,
+      "ink_diff_pixels": 285149,
+      "ink_diff_ratio": 0.94321193,
+      "ink_match_percent": 5.67881,
+      "visual_accuracy_proxy_percent": 5.67881,
+      "mean_abs_channel_delta": 21.409,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        121,
+        186,
+        1076,
+        1594
+      ]
+    },
+    {
+      "page": 13,
+      "rhwp_png": "/tmp/rhwp-stage57-exact-head-visual.iCJEe5/issue2007-stage57-exact-head/rhwp_png/rhwp_013.png",
+      "pdf_png": "/tmp/rhwp-stage57-exact-head-visual.iCJEe5/issue2007-stage57-exact-head/pdf_png/pdf-13.png",
+      "overlay_png": "/tmp/rhwp-stage57-exact-head-visual.iCJEe5/issue2007-stage57-exact-head/overlay/overlay_013.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 209937,
+      "diff_ratio": 0.10467311,
+      "pixel_match_percent": 89.53269,
+      "ink_union_pixels": 240028,
+      "ink_diff_pixels": 209937,
+      "ink_diff_ratio": 0.87463546,
+      "ink_match_percent": 12.53645,
+      "visual_accuracy_proxy_percent": 12.53645,
+      "mean_abs_channel_delta": 14.537,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        121,
+        186,
+        1088,
+        1594
+      ]
+    }
+  ]
+}

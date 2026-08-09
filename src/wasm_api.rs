@@ -2881,6 +2881,17 @@ impl HwpDocument {
         self.get_caret_position_native().map_err(|e| e.into())
     }
 
+    /// [#4180] 저장 직전 UI 캐럿을 문서 캐럿 메타데이터에 반영한다
+    /// (한컴 의미론: 저장 시점 캐럿). 범위 밖 위치는 무시 — 저장을 막지 않는다.
+    #[wasm_bindgen(js_name = setCaretPosition)]
+    pub fn set_caret_position(&mut self, section_idx: u32, para_idx: u32, char_offset: u32) {
+        self.set_caret_position_native(
+            section_idx as usize,
+            para_idx as usize,
+            char_offset as usize,
+        );
+    }
+
     /// 표의 행/열/셀 수를 반환한다.
     ///
     /// 반환: JSON `{"rowCount":N,"colCount":N,"cellCount":N}`
@@ -5340,45 +5351,16 @@ impl HwpDocument {
                             Some(new_name.to_string())
                         };
                         // ctrl_data_records 바이너리 갱신
-                        update_ctrl_data_name(&mut para.ctrl_data_records, ci, new_name);
+                        crate::document_core::queries::field_query::write_ctrl_data_name(
+                            &mut para.ctrl_data_records,
+                            ci,
+                            new_name,
+                        );
                         return true;
                     }
                 }
             }
             false
-        }
-
-        /// ctrl_data_records[ci]의 필드 이름 부분을 새 이름으로 재구축
-        fn update_ctrl_data_name(records: &mut Vec<Option<Vec<u8>>>, ci: usize, new_name: &str) {
-            // records 확장 (인덱스 부족 시)
-            while records.len() <= ci {
-                records.push(None);
-            }
-            if let Some(ref mut data) = records[ci] {
-                if data.len() >= 12 {
-                    // 헤더(10바이트) 보존, 이름 부분 재구축
-                    let header = data[..10].to_vec();
-                    let name_chars: Vec<u16> = new_name.encode_utf16().collect();
-                    let name_len = name_chars.len() as u16;
-                    let mut new_data = header;
-                    new_data.extend_from_slice(&name_len.to_le_bytes());
-                    for ch in &name_chars {
-                        new_data.extend_from_slice(&ch.to_le_bytes());
-                    }
-                    *data = new_data;
-                }
-            } else {
-                // CTRL_DATA가 없었던 경우: 새로 생성
-                // 기본 헤더(10바이트) + 이름
-                let name_chars: Vec<u16> = new_name.encode_utf16().collect();
-                let name_len = name_chars.len() as u16;
-                let mut data = vec![0x1Bu8, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x40, 0x01, 0x00];
-                data.extend_from_slice(&name_len.to_le_bytes());
-                for ch in &name_chars {
-                    data.extend_from_slice(&ch.to_le_bytes());
-                }
-                records[ci] = Some(data);
-            }
         }
 
         for sec in &mut self.document.sections {
@@ -5422,6 +5404,306 @@ impl HwpDocument {
             }
         }
         r#"{"ok":false}"#.to_string()
+    }
+
+    /// 커서 좌표(list/para/pos)로 글자 서식을 건다 — 웹한글컨트롤 `Run("CharShape*")`.
+    ///
+    /// `endPos` 가 문단 길이를 넘으면 끝까지로 자른다. `pos` 는 코드 유닛이다.
+    #[wasm_bindgen(js_name = applyCharFormatAtCursor)]
+    pub fn apply_char_format_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        para_in_list: u32,
+        start_pos: u32,
+        end_pos: u32,
+        props_json: &str,
+    ) -> Result<String, JsValue> {
+        self.apply_char_format_at_cursor(
+            list_id,
+            para_in_list as usize,
+            start_pos as usize,
+            end_pos as usize,
+            props_json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 커서 좌표(list/para/pos)로 글자를 지운다 — 웹한글컨트롤 `Run("Delete*")`.
+    ///
+    /// `pos` 는 코드 유닛이고, 빈 범위면 아무 일도 하지 않는다.
+    #[wasm_bindgen(js_name = deleteAtCursor)]
+    pub fn delete_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        para_in_list: u32,
+        start_pos: u32,
+        end_pos: u32,
+    ) -> Result<String, JsValue> {
+        self.delete_at_cursor(
+            list_id,
+            para_in_list as usize,
+            start_pos as usize,
+            end_pos as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 커서가 든 셀을 기준으로 표를 고친다 — 웹한글컨트롤 `Run("TableInsert*"·"TableDelete*")`.
+    ///
+    /// `op` 는 `insertRowAbove`·`insertRowBelow`·`insertColLeft`·`insertColRight`·
+    /// `deleteRow`·`deleteCol`.
+    #[wasm_bindgen(js_name = tableEditAtCursor)]
+    pub fn table_edit_at_cursor_api(&mut self, list_id: u32, op: &str) -> Result<String, JsValue> {
+        self.table_edit_at_cursor(list_id, op).map_err(|e| e.into())
+    }
+
+    /// 문서가 담은 컨트롤 사슬 — `HeadCtrl`·`LastCtrl` 과 `Next`·`Prev` 가 딛는다.
+    #[wasm_bindgen(js_name = getControls)]
+    pub fn get_controls(&self) -> String {
+        self.controls_json()
+    }
+
+    /// 컨트롤 하나를 지운다 — 웹한글컨트롤 `DeleteCtrl`.
+    #[wasm_bindgen(js_name = deleteControlAt)]
+    pub fn delete_control_at_api(
+        &mut self,
+        list_id: u32,
+        para_in_list: u32,
+        control_index: u32,
+    ) -> Result<String, JsValue> {
+        self.delete_control_at(list_id, para_in_list as usize, control_index as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// 자동 번호 끼우기 — `InsertPageNum`·`InsertCpNo`·`InsertTpNo`. `kind` 는
+    /// `page`·`current`·`total`.
+    #[wasm_bindgen(js_name = insertAutoNumberAtCursor)]
+    pub fn insert_auto_number_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        para_in_list: u32,
+        pos: u32,
+        kind: &str,
+    ) -> Result<String, JsValue> {
+        self.insert_auto_number_at_cursor(list_id, para_in_list as usize, pos as usize, kind)
+            .map_err(|e| e.into())
+    }
+
+    /// 구역마다 첫 본문 문단 번호 — `MoveSectionUp`·`MoveSectionDown` 이 딛는다.
+    #[wasm_bindgen(js_name = getSectionStarts)]
+    pub fn get_section_starts(&self) -> String {
+        self.section_starts_json()
+    }
+
+    /// 나누기 — 웹한글컨트롤 `Run("BreakPage"·"BreakColumn"·"BreakColDef"·"BreakSection")`.
+    ///
+    /// `kind` 는 `page`·`column`·`colDef`·`section`.
+    #[wasm_bindgen(js_name = breakAtCursor)]
+    pub fn break_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        para_in_list: u32,
+        pos: u32,
+        kind: &str,
+    ) -> Result<String, JsValue> {
+        self.break_at_cursor(list_id, para_in_list as usize, pos as usize, kind)
+            .map_err(|e| e.into())
+    }
+
+    /// 개체의 잠금을 켜고 끈다 — 웹한글컨트롤 `ShapeObjLock`·`ShapeObjUnlockAll`.
+    ///
+    /// 문단·컨트롤 번호에 `u32::MAX` 를 주면 "모두"라는 뜻이다(모두 풀기가 쓴다).
+    #[wasm_bindgen(js_name = setControlLock)]
+    pub fn set_control_lock_api(
+        &mut self,
+        para_in_list: u32,
+        control_index: u32,
+        locked: bool,
+    ) -> Result<String, JsValue> {
+        let some = |v: u32| (v != u32::MAX).then_some(v as usize);
+        self.set_control_lock(some(para_in_list), some(control_index), locked)
+            .map_err(|e| e.into())
+    }
+
+    /// 커서가 든 필드의 상태 — 웹한글컨트롤 `CurFieldState`.
+    #[wasm_bindgen(js_name = getCurFieldState)]
+    pub fn get_cur_field_state(&self, list_id: u32, para_in_list: u32, pos: u32) -> u32 {
+        self.cur_field_state(list_id, para_in_list as usize, pos as usize)
+    }
+
+    /// 커서가 든 셀의 모양 — 웹한글컨트롤 `CellShape` 파라미터셋.
+    #[wasm_bindgen(js_name = getCellShapeSet)]
+    pub fn get_cell_shape_set(&self, list_id: u32) -> String {
+        self.cell_shape_set_json(list_id)
+    }
+
+    /// 본문에 놓인 개체 목록 — `Run("ShapeObjNextObject")` 따위가 딛는다.
+    #[wasm_bindgen(js_name = getObjects)]
+    pub fn get_objects(&self) -> String {
+        self.objects_json()
+    }
+
+    /// 커서 자리에서 문단을 가른다 — 웹한글컨트롤 `Run("BreakPara")`.
+    #[wasm_bindgen(js_name = splitParaAtCursor)]
+    pub fn split_para_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        para_in_list: u32,
+        pos: u32,
+    ) -> Result<String, JsValue> {
+        self.split_para_at_cursor(list_id, para_in_list as usize, pos as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// 커서 좌표(list/para/pos)에 글자를 끼운다 — 웹한글컨트롤 `Run("Insert*Space")`.
+    #[wasm_bindgen(js_name = insertTextAtCursor)]
+    pub fn insert_text_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        para_in_list: u32,
+        pos: u32,
+        text: &str,
+    ) -> Result<String, JsValue> {
+        self.insert_text_at_cursor(list_id, para_in_list as usize, pos as usize, text)
+            .map_err(|e| e.into())
+    }
+
+    /// 커서가 든 셀에서 `(endRow, endCol)` 까지를 하나로 합친다 — `Run("TableMergeCell")`.
+    #[wasm_bindgen(js_name = tableMergeAtCursor)]
+    pub fn table_merge_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        end_row: u32,
+        end_col: u32,
+    ) -> Result<String, JsValue> {
+        self.table_merge_at_cursor(list_id, end_row as u16, end_col as u16)
+            .map_err(|e| e.into())
+    }
+
+    /// 커서 좌표(list/para)로 문단 서식을 건다 — 웹한글컨트롤 `Run("ParagraphShape*")`.
+    #[wasm_bindgen(js_name = applyParaFormatAtCursor)]
+    pub fn apply_para_format_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        para_in_list: u32,
+        props_json: &str,
+    ) -> Result<String, JsValue> {
+        self.apply_para_format_at_cursor(list_id, para_in_list as usize, props_json)
+            .map_err(|e| e.into())
+    }
+
+    /// 지금 단어의 끝 — `MoveWordEnd` 가 가는 자리(다음 공백 글자의 자리).
+    #[wasm_bindgen(js_name = getWordEnd)]
+    pub fn get_word_end(&self, list_id: u32, para_in_list: u32, pos: u32) -> String {
+        self.word_end_json(list_id, para_in_list as usize, pos as usize)
+    }
+
+    /// 단어가 시작하는 자리들 — `MoveNextWord` 류가 딛는 눈금(코드 유닛).
+    #[wasm_bindgen(js_name = getWordStarts)]
+    pub fn get_word_starts(&self, list_id: u32, para_in_list: u32) -> String {
+        self.word_starts_json(list_id, para_in_list as usize)
+    }
+
+    /// 줄이 시작하는 자리들 — `MoveLineBegin`·`MoveLineEnd` 가 딛는 값(코드 유닛).
+    #[wasm_bindgen(js_name = getLineStarts)]
+    pub fn get_line_starts(&self, list_id: u32, para_in_list: u32) -> String {
+        self.line_starts_json(list_id, para_in_list as usize)
+    }
+
+    /// 캐럿이 설 수 있는 자리들 — 한 글자 이동(`MoveNextChar` 류)이 딛는 눈금.
+    #[wasm_bindgen(js_name = getCaretStops)]
+    pub fn get_caret_stops(&self, list_id: u32, para_in_list: u32) -> String {
+        self.caret_stops_json(list_id, para_in_list as usize)
+    }
+
+    /// 문단 하나의 캐럿 경계 — `MoveParaBegin`·`MoveParaEnd`·`MoveListBegin/End` 가 딛는 값.
+    #[wasm_bindgen(js_name = getParaBounds)]
+    pub fn get_para_bounds(&self, list_id: u32, para_in_list: u32) -> String {
+        self.para_bounds_json(list_id, para_in_list as usize)
+    }
+
+    /// 커서 자리의 글자 모양 — 웹한글컨트롤 `CharShape` 파라미터셋 값(§8.2.2).
+    ///
+    /// 항목 이름과 단위는 한글 것이다(`Height` 는 HWPUNIT, `AlignType` 은 코드값).
+    #[wasm_bindgen(js_name = getCharShapeSet)]
+    pub fn get_char_shape_set(&self, list_id: u32, para_in_list: u32, pos: u32) -> String {
+        self.char_shape_set_json(list_id, para_in_list as usize, pos as usize)
+    }
+
+    /// 커서 자리의 문단 모양 — 웹한글컨트롤 `ParaShape` 파라미터셋 값(§8.2.11).
+    #[wasm_bindgen(js_name = getParaShapeSet)]
+    pub fn get_para_shape_set(&self, list_id: u32, para_in_list: u32) -> String {
+        self.para_shape_set_json(list_id, para_in_list as usize)
+    }
+
+    /// 아무 내용도 없는 빈 문서인가 — 웹한글컨트롤 `IsEmpty`(§8.2.7).
+    #[wasm_bindgen(js_name = isEmptyDocument)]
+    pub fn is_empty_document_api(&self) -> bool {
+        self.is_empty_document()
+    }
+
+    /// 한글 커서 좌표(list/para/pos)에 누름틀을 넣는다 — 웹한글컨트롤 `CreateField`.
+    ///
+    /// `pos` 는 코드 유닛이다(확장 컨트롤 하나가 8칸). 글자 번호를 받는
+    /// `insertClickHereField` 와 좌표계가 다르다.
+    #[wasm_bindgen(js_name = insertClickHereFieldAtCursor)]
+    pub fn insert_click_here_field_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        para_in_list: u32,
+        pos: u32,
+        guide: &str,
+        memo: &str,
+        name: &str,
+        editable: bool,
+    ) -> Result<String, JsValue> {
+        self.insert_click_here_field_at_cursor(
+            list_id,
+            para_in_list as usize,
+            pos as usize,
+            guide,
+            memo,
+            name,
+            editable,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 한글 커서 좌표계(`list`/`para`/`pos`)를 쓰는 데 필요한 문서 사실.
+    ///
+    /// 리스트 표와 루트 리스트의 시작·끝 위치를 함께 준다. 자세한 계약은
+    /// `DocumentCore::get_cursor_model_json`.
+    #[wasm_bindgen(js_name = getCursorModel)]
+    pub fn get_cursor_model(&self) -> String {
+        self.get_cursor_model_json()
+    }
+
+    /// 문서에 저장된 캐럿 위치를 **원본 값 그대로** 돌려준다.
+    ///
+    /// 한글은 문서를 열면 이 자리에 캐럿을 놓는다(`GetPos` 첫 답과 일치). studio 의
+    /// `getCaretPosition` 은 이 값을 구역/문단으로 해석하지만, 여기서는 해석하지 않는다 —
+    /// `list` 는 구역 번호가 아니라 리스트 아이디다.
+    #[wasm_bindgen(js_name = getStoredCaret)]
+    pub fn get_stored_caret(&self) -> String {
+        let props = &self.document.doc_properties;
+        format!(
+            "{{\"list\":{},\"para\":{},\"pos\":{}}}",
+            props.caret_list_id, props.caret_para_id, props.caret_char_pos,
+        )
+    }
+
+    /// 필드 이름을 바꾼다 — 누름틀과 셀 필드를 모두 다룬다.
+    ///
+    /// `updateClickHereProps` 는 누름틀 전용이라 셀 필드에서 `{"ok":false}` 를 돌려준다.
+    /// 웹한글컨트롤 `RenameField`(§8.3.36)의 계약은 두 갈래를 가리지 않는다.
+    ///
+    /// 반환: JSON `{"ok":true,"renamed":N}` / `{"ok":false,"renamed":0}`
+    #[wasm_bindgen(js_name = renameField)]
+    pub fn rename_field_api(&mut self, oldname: &str, newname: &str) -> String {
+        match self.rename_field_by_name(oldname, newname) {
+            Ok(json) => json,
+            Err(_) => r#"{"ok":false,"renamed":0}"#.to_string(),
+        }
     }
 
     // ─── 경로 기반 중첩 표 API ───────────────────────────────
@@ -5619,6 +5901,59 @@ impl HwpDocument {
                 json_u32(options_json, "controlIdx").unwrap_or(0) as usize,
                 json_u32(options_json, "cellIdx").unwrap_or(0) as usize,
             )),
+            json_u32(options_json, "startPageHint").zip(json_u32(options_json, "endPageHint")),
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 전체 cellPath로 중첩 셀 선택 영역의 줄별 사각형을 반환한다(#4272).
+    ///
+    /// `path_json`의 마지막 엔트리는 선택 대상 셀을 지정하며, 시작·끝 문단 인덱스는
+    /// 별도 인자로 받아 여러 문단 선택도 같은 컨테이너 경로에서 처리한다.
+    #[wasm_bindgen(js_name = getSelectionRectsInCellByPath)]
+    pub fn get_selection_rects_in_cell_by_path(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        start_cell_para_idx: u32,
+        start_char_offset: u32,
+        end_cell_para_idx: u32,
+        end_char_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.get_selection_rects_in_cell_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            path_json,
+            start_cell_para_idx as usize,
+            start_char_offset as usize,
+            end_cell_para_idx as usize,
+            end_char_offset as usize,
+            None,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// `getSelectionRectsInCellByPath`의 page hint options 변형(#4272).
+    ///
+    /// options JSON 키: `{ sectionIdx, parentParaIdx, path, startCellParaIdx,
+    /// startCharOffset, endCellParaIdx, endCharOffset, startPageHint?, endPageHint? }`.
+    /// `path`는 cellPath JSON 문자열이다.
+    #[wasm_bindgen(js_name = getSelectionRectsInCellByPathEx)]
+    pub fn get_selection_rects_in_cell_by_path_ex(
+        &self,
+        options_json: &str,
+    ) -> Result<String, JsValue> {
+        use crate::document_core::helpers::{json_str, json_u32};
+        let path_json = json_str(options_json, "path").unwrap_or_default();
+        self.get_selection_rects_in_cell_by_path_native(
+            json_u32(options_json, "sectionIdx").unwrap_or(0) as usize,
+            json_u32(options_json, "parentParaIdx").unwrap_or(0) as usize,
+            &path_json,
+            json_u32(options_json, "startCellParaIdx").unwrap_or(0) as usize,
+            json_u32(options_json, "startCharOffset").unwrap_or(0) as usize,
+            json_u32(options_json, "endCellParaIdx").unwrap_or(0) as usize,
+            json_u32(options_json, "endCharOffset").unwrap_or(0) as usize,
             json_u32(options_json, "startPageHint").zip(json_u32(options_json, "endPageHint")),
         )
         .map_err(|e| e.into())
@@ -7160,6 +7495,31 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 전체 cellPath가 가리키는 중첩 셀의 선택 영역을 내부 클립보드에 복사한다(#4272).
+    #[wasm_bindgen(js_name = copySelectionInCellByPath)]
+    pub fn copy_selection_in_cell_by_path(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        start_cell_para_idx: u32,
+        start_char_offset: u32,
+        end_cell_para_idx: u32,
+        end_char_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.copy_selection_in_cell_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            start_cell_para_idx as usize,
+            start_char_offset as usize,
+            end_cell_para_idx as usize,
+            end_char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 컨트롤 객체(표, 이미지, 도형)를 내부 클립보드에 복사한다.
     ///
     /// [Task #1161] `cell_path_json` 이 빈 문자열/`"[]"` 면 본문, 그 외에는 셀/글상자
@@ -7331,6 +7691,31 @@ impl HwpDocument {
             json_u32(options_json, "startCharOffset").unwrap_or(0) as usize,
             json_u32(options_json, "endCellParaIdx").unwrap_or(0) as usize,
             json_u32(options_json, "endCharOffset").unwrap_or(0) as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 전체 cellPath가 가리키는 중첩 셀 선택을 HTML로 변환한다(#4272).
+    #[wasm_bindgen(js_name = exportSelectionInCellHtmlByPath)]
+    pub fn export_selection_in_cell_html_by_path(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        start_cell_para_idx: u32,
+        start_char_offset: u32,
+        end_cell_para_idx: u32,
+        end_char_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.export_selection_in_cell_html_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            start_cell_para_idx as usize,
+            start_char_offset as usize,
+            end_cell_para_idx as usize,
+            end_char_offset as usize,
         )
         .map_err(|e| e.into())
     }
@@ -7594,6 +7979,16 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = getStructure)]
     pub fn get_structure(&self, mode: &str) -> Result<String, JsValue> {
         self.core.get_structure_native(mode).map_err(|e| e.into())
+    }
+
+    /// 문단 모양의 개요 번호만 탐색 정보로 반환한다.
+    ///
+    /// 일반 문단의 `1.` 같은 텍스트는 분석하지 않는다.
+    #[wasm_bindgen(js_name = getOutlineNavigation)]
+    pub fn get_outline_navigation(&self) -> Result<String, JsValue> {
+        self.core
+            .get_outline_navigation_native()
+            .map_err(|e| e.into())
     }
 
     /// 책갈피 추가

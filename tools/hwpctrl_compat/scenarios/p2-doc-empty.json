@@ -1,0 +1,16 @@
+{
+  "id": "p2-doc-empty",
+  "title": "P2 빈 문서 — 열지 않은 컨트롤의 문서 속성",
+  "ledger": [
+    "HwpCtrl.property.IsEmpty",
+    "HwpCtrl.property.EditMode",
+    "HwpCtrl.property.SelectionMode",
+    "HwpCtrl.property.PageCount"
+  ],
+  "calls": [
+    ["IsEmpty", []],
+    ["PageCount", []],
+    ["EditMode", []],
+    ["SelectionMode", []]
+  ]
+}

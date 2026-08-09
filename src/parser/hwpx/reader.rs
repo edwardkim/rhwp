@@ -124,6 +124,33 @@ impl HwpxReader {
             .map_err(|e| HwpxError::ZipError(format!("{} 읽기 실패: {}", path, e)))
     }
 
+    /// ZIP central directory의 비압축 크기만 상한과 비교한다.
+    ///
+    /// BinData 존재 여부·길이처럼 실제 바이트가 필요 없는 질의가 ZIP payload를
+    /// materialize하지 않도록 쓴다. 실제 읽기는 반드시
+    /// [`Self::read_file_bytes_limited`]를 다시 거치므로, 손상된 size 메타데이터를
+    /// 신뢰해 상한을 우회하지 않는다.
+    pub fn file_size_limited(&mut self, path: &str, max_bytes: usize) -> Result<usize, HwpxError> {
+        let file = self
+            .archive
+            .by_name(path)
+            .map_err(|e| HwpxError::MissingFile(format!("{}: {}", path, e)))?;
+        let max_bytes = max_bytes.min(MAX_BINDATA_SIZE);
+        let size = usize::try_from(file.size()).map_err(|_| {
+            HwpxError::ZipError(format!(
+                "{} 읽기 실패: HWPX entry size does not fit usize",
+                path
+            ))
+        })?;
+        if size > max_bytes {
+            return Err(HwpxError::ZipError(format!(
+                "{} 읽기 실패: HWPX entry exceeds {} byte limit (possible decompression bomb)",
+                path, max_bytes
+            )));
+        }
+        Ok(size)
+    }
+
     /// 아카이브 내 파일 목록을 반환한다.
     pub fn file_names(&self) -> Vec<String> {
         self.archive.file_names().map(|s| s.to_string()).collect()

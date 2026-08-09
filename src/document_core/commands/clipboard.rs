@@ -16,6 +16,17 @@ use crate::model::paragraph::{FieldRange, LineSeg, Paragraph};
 /// 약 2mm (1mm = 7200/25.4 ≈ 283.46 HWPUNIT). 한컴 정합은 작업지시자 시각 대조로 미세조정.
 const PASTE_CASCADE_STEP_HU: u32 = 567;
 
+/// [#2550] 압축 해제 상한 초과 항목(deflate bomb 포함)에 대한 공통 오류.
+///
+/// 범위 초과(`범위 초과`)와 같은 `RenderError` 계열이라 호출부 처리 경로가 같다.
+fn bin_data_over_limit_error(bin_data_id: u16) -> HwpError {
+    HwpError::RenderError(format!(
+        "바이너리 데이터 {} 압축 해제 상한 {}MB 초과",
+        bin_data_id,
+        crate::model::bin_data::MAX_BIN_DATA_BYTES / (1024 * 1024)
+    ))
+}
+
 fn clipboard_paragraphs_contain_field(paragraphs: &[Paragraph]) -> bool {
     paragraphs.iter().any(|para| !para.field_ranges.is_empty())
 }
@@ -60,6 +71,10 @@ fn recompute_clipboard_control_mask(para: &Paragraph) -> u32 {
 }
 
 fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph) {
+    // [#4149] clip 사본이지만 다중 문단 붙여넣기에서 중간 문단이 통째로 문서에
+    // 스플라이스되어 렌더 입력이 될 수 있다 — 컨트롤 제거로 compose 입력이
+    // 바뀌므로 단일줄 과밀 memo 를 무효화한다.
+    para.invalidate_single_line_overflow_memo();
     let old_controls = std::mem::take(&mut para.controls);
     let old_records = std::mem::take(&mut para.ctrl_data_records);
     let mut index_map = vec![None; old_controls.len()];
@@ -476,6 +491,64 @@ impl DocumentCore {
         self.clipboard = Some(ClipboardData {
             paragraphs: clip_paragraphs,
             plain_text: plain_text.clone(),
+        });
+
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"text\":\"{}\"",
+            escaped
+        )))
+    }
+
+    /// 전체 cellPath가 가리키는 중첩 셀의 선택 영역을 내부 클립보드에 복사한다(#4272).
+    pub fn copy_selection_in_cell_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        start_cell_para_idx: usize,
+        start_char_offset: usize,
+        end_cell_para_idx: usize,
+        end_char_offset: usize,
+    ) -> Result<String, HwpError> {
+        if path.is_empty() {
+            return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
+        }
+        if start_cell_para_idx > end_cell_para_idx {
+            return Err(HwpError::RenderError(
+                "시작 위치가 끝 위치보다 뒤에 있음".to_string(),
+            ));
+        }
+
+        let mut clip_paragraphs = Vec::new();
+        for cell_para_idx in start_cell_para_idx..=end_cell_para_idx {
+            let mut para_path = path.to_vec();
+            para_path.last_mut().unwrap().2 = cell_para_idx;
+            let para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, &para_path)?;
+            let start = if cell_para_idx == start_cell_para_idx {
+                start_char_offset
+            } else {
+                0
+            };
+            let end = if cell_para_idx == end_cell_para_idx {
+                end_char_offset
+            } else {
+                para.text.chars().count()
+            };
+            clip_paragraphs.push(clip_paragraph_text_range_for_clipboard(para, start, end));
+        }
+
+        for para in &mut clip_paragraphs {
+            strip_structural_controls_for_text_clipboard(para);
+        }
+        let plain_text = clip_paragraphs
+            .iter()
+            .map(|para| para.text.as_str())
+            .collect::<Vec<_>>()
+            .join("\n");
+        let escaped = super::super::helpers::json_escape(&plain_text);
+        self.clipboard = Some(ClipboardData {
+            paragraphs: clip_paragraphs,
+            plain_text,
         });
 
         Ok(super::super::helpers::json_ok_with(&format!(
@@ -1297,6 +1370,39 @@ impl DocumentCore {
         Ok(html)
     }
 
+    /// 전체 cellPath가 가리키는 중첩 셀의 선택 영역을 HTML로 변환한다(#4272).
+    pub fn export_selection_in_cell_html_by_path_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        start_cell_para_idx: usize,
+        start_char_offset: usize,
+        end_cell_para_idx: usize,
+        end_char_offset: usize,
+    ) -> Result<String, HwpError> {
+        if path.is_empty() {
+            return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
+        }
+        if start_cell_para_idx > end_cell_para_idx {
+            return Err(HwpError::RenderError(
+                "시작 위치가 끝 위치보다 뒤에 있음".to_string(),
+            ));
+        }
+
+        let mut html = String::from("<html><body>\n<!--StartFragment-->\n");
+        for cell_para_idx in start_cell_para_idx..=end_cell_para_idx {
+            let mut para_path = path.to_vec();
+            para_path.last_mut().unwrap().2 = cell_para_idx;
+            let para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, &para_path)?;
+            let start = (cell_para_idx == start_cell_para_idx).then_some(start_char_offset);
+            let end = (cell_para_idx == end_cell_para_idx).then_some(end_char_offset);
+            html.push_str(&self.paragraph_to_html(para, start, end));
+        }
+        html.push_str("<!--EndFragment-->\n</body></html>");
+        Ok(html)
+    }
+
     /// 컨트롤 객체를 HTML 문자열로 변환한다.
     pub fn export_control_html_native(
         &self,
@@ -1633,8 +1739,11 @@ impl DocumentCore {
             None
         };
 
-        if let Some(bdc) = image_data {
-            let bytes = bdc.data.load();
+        // [#2550] 상한 초과(deflate bomb 포함)는 이미지 누락과 같은 빈 조각으로 접는다.
+        if let Some(bytes) = image_data.and_then(|bdc| {
+            bdc.data
+                .load_limited(crate::model::bin_data::MAX_BIN_DATA_BYTES)
+        }) {
             let base64_data = base64::engine::general_purpose::STANDARD.encode(&bytes);
             let mime_type = detect_clipboard_image_mime(&bytes);
 
@@ -1691,7 +1800,9 @@ impl DocumentCore {
                 HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
             })?;
 
-        Ok(bdc.data.load())
+        bdc.data
+            .load_limited(crate::model::bin_data::MAX_BIN_DATA_BYTES)
+            .ok_or_else(|| bin_data_over_limit_error(bin_data_id))
     }
 
     /// 컨트롤의 이미지 MIME 타입을 반환한다.
@@ -1733,7 +1844,11 @@ impl DocumentCore {
                 HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
             })?;
 
-        Ok(detect_clipboard_image_mime(&bdc.data.load()).to_string())
+        let bytes = bdc
+            .data
+            .load_limited(crate::model::bin_data::MAX_BIN_DATA_BYTES)
+            .ok_or_else(|| bin_data_over_limit_error(bin_data_id))?;
+        Ok(detect_clipboard_image_mime(&bytes).to_string())
     }
 
     /// BinData ID(1-based)로 이미지 바이너리 데이터를 반환한다.
@@ -1750,7 +1865,9 @@ impl DocumentCore {
             .ok_or_else(|| {
                 HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
             })?;
-        Ok(bdc.data.load())
+        bdc.data
+            .load_limited(crate::model::bin_data::MAX_BIN_DATA_BYTES)
+            .ok_or_else(|| bin_data_over_limit_error(bin_data_id))
     }
 
     /// BinData ID(1-based)로 이미지 MIME 타입을 반환한다.
@@ -1767,7 +1884,11 @@ impl DocumentCore {
             .ok_or_else(|| {
                 HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
             })?;
-        Ok(detect_clipboard_image_mime(&bdc.data.load()).to_string())
+        let bytes = bdc
+            .data
+            .load_limited(crate::model::bin_data::MAX_BIN_DATA_BYTES)
+            .ok_or_else(|| bin_data_over_limit_error(bin_data_id))?;
+        Ok(detect_clipboard_image_mime(&bytes).to_string())
     }
 
     // === 클립보드 HTML 붙여넣기 ===

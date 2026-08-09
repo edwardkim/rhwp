@@ -1,0 +1,6 @@
+field	value
+mode	pixel-and-text
+requested_pages_1based	11,12,13
+completed_pages_1based	11,12,13
+missing_pages_1based	-
+run_state	complete

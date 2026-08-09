@@ -236,7 +236,7 @@ def ir_schema(*, timeout: Optional[float] = DEFAULT_TIMEOUT) -> IrSchema:
     문서를 입력으로 받지 않는다 — 스키마는 **타입의 자기서술**이지 특정 문서의
     속성이 아니다.
     """
-    envelope = run_json(["export-ir-schema"], timeout=timeout)
+    envelope = run_json(["export-ir-schema", "--json"], timeout=timeout)
     return IrSchema(envelope)
 
 
@@ -246,7 +246,7 @@ def capabilities_schema(*, timeout: Optional[float] = DEFAULT_TIMEOUT) -> IrSche
     문서를 입력으로 받지 않는다. ``capabilities`` 가 명령·플래그·봉투를 설명한다면,
     이 스키마는 그 설명을 기계적으로 소비할 수 있는 모양을 제공한다.
     """
-    envelope = run_json(["export-capabilities-schema"], timeout=timeout)
+    envelope = run_json(["export-capabilities-schema", "--json"], timeout=timeout)
     return IrSchema(envelope)
 
 
@@ -274,9 +274,9 @@ def _scalar_hint(spec: Any) -> str:
 # Envelope 를 쓰는 소비자를 위한 편의 — 봉투 그대로 받고 싶을 때.
 def ir_schema_envelope(*, timeout: Optional[float] = DEFAULT_TIMEOUT) -> Envelope:
     """봉투를 그대로 돌려준다 (definitionCount 등 메타 포함)."""
-    return Envelope(run_json(["export-ir-schema"], timeout=timeout))
+    return Envelope(run_json(["export-ir-schema", "--json"], timeout=timeout))
 
 
 def capabilities_schema_envelope(*, timeout: Optional[float] = DEFAULT_TIMEOUT) -> Envelope:
     """명령 표면 스키마 봉투를 그대로 돌려준다 (MCP 스키마 메타 포함)."""
-    return Envelope(run_json(["export-capabilities-schema"], timeout=timeout))
+    return Envelope(run_json(["export-capabilities-schema", "--json"], timeout=timeout))

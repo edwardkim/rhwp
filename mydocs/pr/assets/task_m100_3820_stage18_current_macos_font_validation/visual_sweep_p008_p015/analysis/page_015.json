@@ -1,0 +1,450 @@
+{
+  "page": 15,
+  "flags": [],
+  "rhwp_frame": [
+    126,
+    113,
+    1152,
+    1645
+  ],
+  "pdf_frame": [
+    39,
+    113,
+    1151,
+    1645
+  ],
+  "rhwp_outside_frame_pixels": 0,
+  "pdf_outside_frame_pixels": 0,
+  "rhwp_outside_frame_max_y": null,
+  "pdf_outside_frame_max_y": null,
+  "rhwp_outside_frame_extent_px": null,
+  "pdf_outside_frame_extent_px": null,
+  "frame_overflow_tolerated_bleed": false,
+  "paper_size_footer_frame_bleed": false,
+  "rhwp_outside_frame_bleed_px": 0,
+  "pdf_outside_frame_bleed_px": 0,
+  "content_bottom_delta_px": -11.0,
+  "red_marker_drift": {
+    "rhwp_count": 0,
+    "pdf_count": 0,
+    "paired": 0,
+    "max_abs_delta_px": null,
+    "mean_abs_delta_px": null
+  },
+  "line_band_drift": {
+    "rhwp_count": 52,
+    "pdf_count": 51,
+    "paired": 51,
+    "max_abs_delta_px": 44.0,
+    "p90_abs_delta_px": 12.5,
+    "mean_abs_delta_px": 9.6
+  },
+  "column_line_band_drift": [
+    {
+      "column": 0,
+      "rhwp_frame": [
+        126,
+        113,
+        637,
+        1645
+      ],
+      "pdf_frame": [
+        39,
+        113,
+        593,
+        1645
+      ],
+      "drift": {
+        "rhwp_count": 52,
+        "pdf_count": 50,
+        "paired": 50,
+        "max_abs_delta_px": 44.0,
+        "p90_abs_delta_px": 18.5,
+        "mean_abs_delta_px": 9.7
+      },
+      "rhwp_first_band": {
+        "y0": 175,
+        "y1": 188,
+        "x0": 128,
+        "x1": 632,
+        "pixels": 1972,
+        "cy": 181.5
+      },
+      "rhwp_last_band": {
+        "y0": 1582,
+        "y1": 1582,
+        "x0": 586,
+        "x1": 601,
+        "pixels": 12,
+        "cy": 1582.0
+      },
+      "pdf_first_band": {
+        "y0": 179,
+        "y1": 180,
+        "x0": 121,
+        "x1": 591,
+        "pixels": 317,
+        "cy": 179.5
+      },
+      "pdf_last_band": {
+        "y0": 1586,
+        "y1": 1588,
+        "x0": 567,
+        "x1": 591,
+        "pixels": 25,
+        "cy": 1587.0
+      }
+    },
+    {
+      "column": 1,
+      "rhwp_frame": [
+        641,
+        113,
+        1152,
+        1645
+      ],
+      "pdf_frame": [
+        597,
+        113,
+        1151,
+        1645
+      ],
+      "drift": {
+        "rhwp_count": 36,
+        "pdf_count": 41,
+        "paired": 36,
+        "max_abs_delta_px": 165.5,
+        "p90_abs_delta_px": 139.5,
+        "mean_abs_delta_px": 78.8
+      },
+      "rhwp_first_band": {
+        "y0": 175,
+        "y1": 188,
+        "x0": 643,
+        "x1": 1091,
+        "pixels": 1874,
+        "cy": 181.5
+      },
+      "rhwp_last_band": {
+        "y0": 1488,
+        "y1": 1489,
+        "x0": 643,
+        "x1": 1077,
+        "pixels": 509,
+        "cy": 1488.5
+      },
+      "pdf_first_band": {
+        "y0": 179,
+        "y1": 180,
+        "x0": 602,
+        "x1": 1074,
+        "pixels": 318,
+        "cy": 179.5
+      },
+      "pdf_last_band": {
+        "y0": 1586,
+        "y1": 1588,
+        "x0": 604,
+        "x1": 624,
+        "pixels": 25,
+        "cy": 1587.0
+      }
+    }
+  ],
+  "column_line_band_drift_candidates": [
+    {
+      "column": 1,
+      "rhwp_frame": [
+        641,
+        113,
+        1152,
+        1645
+      ],
+      "pdf_frame": [
+        597,
+        113,
+        1151,
+        1645
+      ],
+      "drift": {
+        "rhwp_count": 36,
+        "pdf_count": 41,
+        "paired": 36,
+        "max_abs_delta_px": 165.5,
+        "p90_abs_delta_px": 139.5,
+        "mean_abs_delta_px": 78.8
+      },
+      "rhwp_first_band": {
+        "y0": 175,
+        "y1": 188,
+        "x0": 643,
+        "x1": 1091,
+        "pixels": 1874,
+        "cy": 181.5
+      },
+      "rhwp_last_band": {
+        "y0": 1488,
+        "y1": 1489,
+        "x0": 643,
+        "x1": 1077,
+        "pixels": 509,
+        "cy": 1488.5
+      },
+      "pdf_first_band": {
+        "y0": 179,
+        "y1": 180,
+        "x0": 602,
+        "x1": 1074,
+        "pixels": 318,
+        "cy": 179.5
+      },
+      "pdf_last_band": {
+        "y0": 1586,
+        "y1": 1588,
+        "x0": 604,
+        "x1": 624,
+        "pixels": 25,
+        "cy": 1587.0
+      }
+    }
+  ],
+  "column_text_flow_masked_line_band_drift": [
+    {
+      "column": 0,
+      "rhwp_frame": [
+        111,
+        168,
+        593,
+        1516
+      ],
+      "pdf_frame": [
+        111,
+        168,
+        593,
+        1516
+      ],
+      "drift": {
+        "rhwp_count": 0,
+        "pdf_count": 0,
+        "paired": 0,
+        "max_abs_delta_px": null,
+        "mean_abs_delta_px": null
+      },
+      "rhwp_first_band": null,
+      "rhwp_last_band": null,
+      "pdf_first_band": null,
+      "pdf_last_band": null
+    },
+    {
+      "column": 1,
+      "rhwp_frame": [
+        597,
+        168,
+        1080,
+        1516
+      ],
+      "pdf_frame": [
+        597,
+        168,
+        1079,
+        1516
+      ],
+      "drift": {
+        "rhwp_count": 0,
+        "pdf_count": 0,
+        "paired": 0,
+        "max_abs_delta_px": null,
+        "mean_abs_delta_px": null
+      },
+      "rhwp_first_band": null,
+      "rhwp_last_band": null,
+      "pdf_first_band": null,
+      "pdf_last_band": null
+    }
+  ],
+  "column_text_flow_table_masks": {
+    "rhwp": [
+      [
+        111,
+        168,
+        1096,
+        1509
+      ]
+    ],
+    "pdf": [
+      [
+        111,
+        168,
+        1095,
+        1509
+      ]
+    ]
+  },
+  "column_text_flow_body_frames": {
+    "rhwp": [
+      111,
+      168,
+      1080,
+      1516
+    ],
+    "pdf": [
+      111,
+      168,
+      1079,
+      1516
+    ]
+  },
+  "column_text_flow_reflowing_float_present": false,
+  "column_text_flow_collapse_candidates": [],
+  "large_ink_region_drift": {
+    "rhwp_count": 2,
+    "pdf_count": 4,
+    "paired": 2,
+    "deltas_px": [
+      -8.0,
+      368.0
+    ],
+    "max_abs_delta_px": 368.0,
+    "mean_abs_delta_px": 188.0,
+    "rhwp_regions": [
+      {
+        "x0": 126.0,
+        "y0": 161.0,
+        "x1": 1102.0,
+        "y1": 881.0,
+        "w": 976.0,
+        "h": 720.0,
+        "cy": 521.0,
+        "tiles": 1652.0
+      },
+      {
+        "x0": 126.0,
+        "y0": 945.0,
+        "x1": 1086.0,
+        "y1": 1489.0,
+        "w": 960.0,
+        "h": 544.0,
+        "cy": 1217.0,
+        "tiles": 1103.0
+      }
+    ],
+    "pdf_regions": [
+      {
+        "x0": 135.0,
+        "y0": 177.0,
+        "x1": 1063.0,
+        "y1": 881.0,
+        "w": 928.0,
+        "h": 704.0,
+        "cy": 529.0,
+        "tiles": 1490.0
+      },
+      {
+        "x0": 887.0,
+        "y0": 817.0,
+        "x1": 1063.0,
+        "y1": 881.0,
+        "w": 176.0,
+        "h": 64.0,
+        "cy": 849.0,
+        "tiles": 37.0
+      },
+      {
+        "x0": 119.0,
+        "y0": 897.0,
+        "x1": 279.0,
+        "y1": 977.0,
+        "w": 160.0,
+        "h": 80.0,
+        "cy": 937.0,
+        "tiles": 28.0
+      },
+      {
+        "x0": 135.0,
+        "y0": 993.0,
+        "x1": 1079.0,
+        "y1": 1489.0,
+        "w": 944.0,
+        "h": 496.0,
+        "cy": 1241.0,
+        "tiles": 1047.0
+      }
+    ]
+  },
+  "endnote_shape_ui": {
+    "separator_visible": true,
+    "separator_above_mm": 0.79,
+    "between_notes_mm": 0.0,
+    "separator_below_mm": 2.0,
+    "separator_length_mm": 43.321
+  },
+  "endnote_separator_gap": {
+    "expected_separator": true,
+    "separator_below_mm": 2.0,
+    "separator_above_mm": 0.79,
+    "between_notes_mm": 0.0,
+    "separator_length_px": 163.7,
+    "rhwp": {
+      "expected_separator": true,
+      "candidate_count": 0,
+      "selected": null,
+      "gap_px": null,
+      "first_content_y": null,
+      "first_marker_y": null,
+      "candidates": []
+    },
+    "pdf": {
+      "expected_separator": true,
+      "candidate_count": 1,
+      "selected": null,
+      "gap_px": null,
+      "first_content_y": null,
+      "first_marker_y": null,
+      "candidates": [
+        {
+          "x0": 314.0,
+          "x1": 509.0,
+          "y0": 365.0,
+          "y1": 366.0,
+          "length": 196.0,
+          "cy": 365.5,
+          "gap_height": 2.0
+        }
+      ]
+    },
+    "gap_delta_px": null
+  },
+  "endnote_no_separator_content_start": null,
+  "between_notes_marker_gap": {
+    "expected_between_notes_mm": 0.0,
+    "expected_between_notes_px": null,
+    "rhwp_marker_count": 0,
+    "pdf_marker_count": 0,
+    "paired_gap_count": 0,
+    "max_abs_delta_px": null,
+    "mean_abs_delta_px": null,
+    "rhwp_marker_y": [],
+    "pdf_marker_y": [],
+    "rhwp_marker_y_by_column": [
+      []
+    ],
+    "pdf_marker_y_by_column": [
+      []
+    ],
+    "rhwp_gaps_px": [],
+    "pdf_gaps_px": [],
+    "pairs": []
+  },
+  "svg": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/svg/issue2007_nested_cell_pagination_42065_015.svg",
+  "render_tree_json": "/private/tmp/rhwp-visual-sweep-p008-p015.zk77tg/issue2007-current-macos-p008-p015/render_tree/render_tree_015.json",
+  "equation_text_overlap_candidates": [],
+  "square_wrap_text_overlap_candidates": [],
+  "deferred_square_picture_top_drift_candidates": [],
+  "question_title_text_overlap_candidates": [],
+  "line_order_overlap_candidates": [],
+  "render_tree_frame_tail_overflow_candidates": [],
+  "render_tree_frame_tail_overflow_suppressed_candidates": [],
+  "question_marker_drift_candidates": [],
+  "legacy_glyph_visual_candidates": [],
+  "annotated": null
+}

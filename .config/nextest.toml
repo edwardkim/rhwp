@@ -1,0 +1,8 @@
+# 로컬 전체 회귀에서 매우 긴 baseline을 먼저 시작한다. nextest는 테스트별로
+# 별도 프로세스를 실행하므로, 이 우선순위는 다른 Cargo 실행을 병렬로 띄우지 않고도
+# 긴 작업을 전체 실행 시간과 겹치게 한다.
+nextest-version = { required = "0.9.91", recommended = "0.9.140" }
+
+[[profile.default.overrides]]
+filter = "binary(overflow_cell_baseline)"
+priority = 100

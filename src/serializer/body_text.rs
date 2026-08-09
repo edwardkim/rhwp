@@ -468,13 +468,39 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
     // trailing FIELD_END 중 FIELD_BEGIN이 이미 본문에 배치된 경우 (orphan)
     let mut trailing_orphan_ends: Vec<u32> = Vec::new();
 
+    // [#4.6] 위치별 방출 순서를 명시하기 위한 두 갈래.
+    //
+    // 파서는 FIELD_BEGIN/END 를 **스택(LIFO)** 으로 짝짓는다(`parser/body_text.rs`). 그래서 한
+    // 필드가 끝나는 자리에서 다음 필드가 시작하면 END 가 BEGIN 보다 먼저 나가야 하고, 빈
+    // 필드(시작==끝)는 자기 BEGIN 뒤에 END 가 붙어야 한다. 두 경우를 한 통에 담으면 순서를
+    // 가릴 수 없다.
+    //
+    // - `field_ends`       : 시작 < 끝 — 그 자리의 **모든 것보다 먼저** 나간다.
+    // - `empty_field_ends` : 시작 == 끝 — 자기 BEGIN **직후에** 나간다.
+    let mut empty_field_ends: BTreeMap<usize, Vec<FieldEndMarker>> = BTreeMap::new();
+    // 컨트롤 → 그 컨트롤이 여는 필드의 시작 문자 위치. FIELD_BEGIN 은 이 위치보다 앞에
+    // 나올 수 없다 — 갭 크기만 보고 밀어 넣으면 뒤 필드의 BEGIN 이 앞 갭으로 빨려 들어가
+    // 위치 0 에 두 개가 겹쳐 방출된다.
+    let mut field_begin_pos: HashMap<usize, usize> = HashMap::new();
+    for fr in &para.field_ranges {
+        field_begin_pos
+            .entry(fr.control_idx)
+            .and_modify(|p| *p = (*p).min(fr.start_char_idx))
+            .or_insert(fr.start_char_idx);
+    }
+
     for fr in &para.field_ranges {
         let marker = if let Some(control) = para.controls.get(fr.control_idx) {
             field_end_marker(control)
         } else {
             FieldEndMarker::default()
         };
-        if fr.end_char_idx < text_len {
+        if fr.end_char_idx < text_len && fr.start_char_idx == fr.end_char_idx {
+            empty_field_ends
+                .entry(fr.end_char_idx)
+                .or_default()
+                .push(marker);
+        } else if fr.end_char_idx < text_len {
             field_ends.entry(fr.end_char_idx).or_default().push(marker);
         } else {
             // trailing FIELD_END: control_idx가 남은 컨트롤에 포함되는지 판별은
@@ -536,19 +562,49 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
         // 예약 없이 갭을 컨트롤로 채우면 FIELD_END 전용 갭(8 cu)을 다음 컨트롤이
         // 선점하여 이후 모든 char_offsets 가 시프트되고, 재파싱 시 lineseg
         // text_start 매핑이 어긋나 줄바꿈 위치가 이동한다 (seoul_0043 글상자).
-        let pending_field_end_cus = field_ends
+        // ① 여기서 **끝나는** 필드의 FIELD_END — 이 자리의 무엇보다 먼저 닫는다.
+        //    (그래야 같은 자리에서 시작하는 다음 필드의 BEGIN 과 뒤엉키지 않는다)
+        if let Some(markers) = field_ends.get(&i) {
+            for &marker in markers {
+                push_field_end_ctrl(&mut code_units, marker);
+                prev_end += 8;
+            }
+        }
+
+        // ② 갭 채우기 — 빈 필드의 END 자리는 예약해 둔다.
+        let pending_field_end_cus = empty_field_ends
             .get(&i)
             .map(|markers| markers.len() as u32 * 8)
             .unwrap_or(0);
-        while prev_end + 8 + pending_field_end_cus <= offset && ctrl_idx < para.controls.len() {
+        while prev_end + 8 + pending_field_end_cus <= offset
+            && ctrl_idx < para.controls.len()
+            // 필드를 여는 컨트롤은 자기 시작 위치 전에 방출하지 않는다.
+            && field_begin_pos
+                .get(&ctrl_idx)
+                .is_none_or(|&start| start <= i)
+        {
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             ctrl_idx += 1;
             prev_end += 8;
         }
 
-        // FIELD_END 삽입: 컨트롤(FIELD_BEGIN) 뒤, 텍스트 문자 앞
-        if let Some(markers) = field_ends.get(&i) {
+        // ③ 이 자리에서 시작하는 필드의 FIELD_BEGIN 은 **갭 예산과 무관하게 강제 방출**한다.
+        //    갭은 텍스트 편집 뒤 실제 구조보다 크거나 작게 남을 수 있어서, 예산만 믿으면
+        //    필드가 통째로 사라진다(막기만 했을 때 실제로 165→164 로 줄었다).
+        while ctrl_idx < para.controls.len()
+            && field_begin_pos
+                .get(&ctrl_idx)
+                .is_some_and(|&start| start == i)
+        {
+            let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
+            push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+            ctrl_idx += 1;
+            prev_end += 8;
+        }
+
+        // ④ 빈 필드(시작==끝)의 FIELD_END — 자기 BEGIN 직후.
+        if let Some(markers) = empty_field_ends.get(&i) {
             for &marker in markers {
                 push_field_end_ctrl(&mut code_units, marker);
                 prev_end += 8;

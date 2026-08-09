@@ -1983,7 +1983,11 @@ impl DocumentCore {
                     }
                 }
             }
-            let _ = any_removed;
+            if any_removed {
+                // [#4149] text/char_shapes 직접 수술 — 단일줄 과밀 memo 무효화
+                // (process_table 경유로 셀 문단에도 적용된다).
+                para.invalidate_single_line_overflow_memo();
+            }
         }
 
         fn process_table(table: &mut crate::model::table::Table) {

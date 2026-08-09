@@ -1,0 +1,28 @@
+{
+  "id": "p1-field-exist",
+  "title": "P1 필드 존재 판정",
+  "ledger": [
+    "HwpCtrl.method.FieldExist"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    [
+      "FieldExist",
+      [
+        "pt_nm"
+      ]
+    ],
+    [
+      "FieldExist",
+      [
+        "pt_nm#0"
+      ]
+    ],
+    [
+      "FieldExist",
+      [
+        "__없는필드__"
+      ]
+    ]
+  ]
+}

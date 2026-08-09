@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-08-03
+last_verified: 2026-08-08
 ---
 
 # PDF/SVG visual sweep 가이드
@@ -22,7 +22,7 @@ last_verified: 2026-08-03
 - 수식/본문 겹침 후보
 - 줄 band/order drift 후보
 - **그림·float 주변의 본문이 좁은 세로 열로 재흐름한 단별 text-flow collapse 후보**
-- **Square/Tight/Through 그림의 물리 box를 본문 TextLine이 3행 이상 가로지르는 후보**
+- **Square/Tight/Through 그림의 물리 box를 본문 TextLine이 3행 이상 가로지르거나 edge에 맞닿는 후보**
 - **구조 heuristic에 걸리지 않는 glyph·PUA·제품명 표시 차이**의 review 후보
 
 이 도구의 절차상 지위는 [시각 검증 거버넌스의 라우팅 표](visual_verification_governance.md)를
@@ -34,8 +34,12 @@ PR에서는 이 가이드를 직접 시작점으로 쓴다.
 `tools/fidelity_compare/fidelity_compare.py --text-only --export-all-svg --layout-ledger`로 전수 후보를
 수집한다. visual sweep은 그 중 Square/Tight/Through 그림↔본문 기하 규칙을 같은 render tree에서
 직접 재사용하여 `square_wrap_text_overlap` flag와 annotation으로 남긴다. 반면 PDF↔SVG text owner,
-표 fragment, page-count ledger는 sweep이 다시 계산하지 않으므로 fidelity 원장을 함께 보존해야 한다.
+그림 앞 문단의 `float-owner-shift`, 표 fragment, page-count ledger는 sweep이 다시 계산하지 않으므로
+fidelity 원장을 함께 보존해야 한다.
 이 bridge의 render tree가 없거나 JSON이 손상되면 sweep은 `flagged=0`을 보고하지 않고 실패해야 한다.
+`fidelity_compare`의 Python 환경과 실행 명령은
+[도구 README](../../../tools/fidelity_compare/README.md)를 따른다. 저장소 로컬 `venv/`의 공통
+계약은 그 문서가 연결하는 [개발 환경 가이드](../dev_environment_guide.md)가 정의한다.
 
 ## 필수 도구
 
@@ -414,7 +418,7 @@ summary: /path/to/rhwp/output/task1274/summary.json
 | `tail` | render tree 기준 tail overflow 후보 |
 | `question` | PDF/rhwp 문항 marker y drift 후보 |
 | `glyph` | 옛자모·PUA TextRun의 국소 raster 불일치 후보 |
-| `wrap` | fidelity와 같은 Square/Tight/Through 그림↔본문 physical-overlap 후보 |
+| `wrap` | fidelity와 같은 Square/Tight/Through 그림↔본문 physical-overlap 또는 edge-clearance-loss 후보 |
 
 권장 판정 기준:
 
@@ -426,9 +430,15 @@ summary: /path/to/rhwp/output/task1274/summary.json
 - PR 의 실제 변경 목적을 먼저 확인한다. 렌더링 개선 PR 이 아니면 visual sweep 차이는 참고 자료이며,
   그 차이만으로 merge 보류나 reject 결론을 내리지 않는다.
 - `frame`, `question`, `title`, `tail`, `eq` 후보는 우선 검토 대상이다.
-- `wrap`은 Square/Tight/Through 그림이 본문 흐름 영역을 예약해야 하는 계약의 강한 후보다. annotation의
-  image/첫·마지막 교차 line bbox와 PDF review를 즉시 대조한다. 다만 의도된 overlay와 render-tree
-  source 정보의 한계가 있으므로 자동 불합격이나 PDF 정답 판정으로 승격하지 않는다.
+- `tail`은 render tree의 page bbox를 **현재 raster DPI 좌표**로 투영한 뒤, 해당 bbox에
+  실제 rhwp 잉크가 있는 TextLine만 세어 만든다. 페이지 밖에만 남은 continuation node나
+  ancestor clip으로 보이지 않는 node는 tail 후보가 아니다. 따라서 고 DPI sweep의 `tail`은
+  render-tree 논리 좌표만으로는 재현·판정하지 않는다.
+- `wrap`은 Square/Tight/Through 그림이 본문 흐름 영역과 outer clearance를 예약해야 하는 계약의 강한
+  후보다. annotation의 `candidate_kind`가 `physical_overlap`이면 image/첫·마지막 교차 line bbox를,
+  `edge_clearance_loss`이면 image edge와 최소 clearance를 PDF review와 즉시 대조한다. 후자는 HWP
+  outer margin 유실로 glyph와 그림 테두리가 맞닿는 결함을 포착한다. 의도된 overlay·zero-margin source와
+  render-tree source 정보의 한계가 있으므로 자동 불합격이나 PDF 정답 판정으로 승격하지 않는다.
 - `wrap` 판정에 필요한 render tree가 빠지거나 손상된 run은 clean 결과가 아니라 **infrastructure
   failure**다. tree export를 복구한 뒤 다시 실행한다.
 - `flowcollapse`은 본문이 그림 옆의 비정상적인 세로 열로 분해되는 회귀를 우선 올리는 강한 후보다.
@@ -469,7 +479,8 @@ PR 리뷰/보고서에는 다음을 분리해 적는다.
 - 표의 같은-page geometry·row fragment는 `flowcollapse`만으로 판정하지 않는다. 이 신호는 표 영역을
   의도적으로 mask하므로, PDF text owner 차이와 render tree/table geometry를 함께 대조해야 한다.
 - `wrap`은 80px 이상 Square/Tight/Through 이미지와 image 폭의 절반 이상을 가로지르는 Body TextLine
-  3행 이상만 후보화한다. 1–2행·좁은 교차·Body 밖 text·PDF와 위치만 다른 경우는 놓칠 수 있어,
+  3행 이상(`physical_overlap`), 또는 image 왼쪽/오른쪽 edge에서 `≤1px`로 맞닿거나 얕게 침범하는 3행
+  이상(`edge_clearance_loss`)을 후보화한다. 1–2행·Body 밖 text·PDF와 위치만 다른 경우는 놓칠 수 있어,
   fidelity text/table 원장 및 PDF review의 대체물이 아니다.
 - 반대로 glyph·글자폭·PUA/제품명 convention 차이는 구조 후보가 0건이어도 실제 fidelity 결함일 수
   있다. 옛자모·PUA는 `legacy_glyph_visual_mismatch`로 우선 후보화하지만, 낮은 잉크 일치율과

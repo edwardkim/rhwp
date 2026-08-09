@@ -20,6 +20,7 @@ export class ViewportManager {
   private zoom = 1.0;
   private container: HTMLElement | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private resizeAnimationFrame: number | null = null;
   private scrollAnimationFrame: number | null = null;
   private zoomAnimationFrame: number | null = null;
   private zoomAnimationTimestamp: number | null = null;
@@ -29,6 +30,7 @@ export class ViewportManager {
   private onScrollBound: () => void;
   private onWheelBound: (e: WheelEvent) => void;
   private onZoomAnimationFrameBound: (timestamp: number) => void;
+  private onResizeObserverErrorBound: (e: ErrorEvent) => void;
   private eventBus: EventBus;
 
   constructor(eventBus: EventBus) {
@@ -36,6 +38,7 @@ export class ViewportManager {
     this.onScrollBound = this.onScroll.bind(this);
     this.onWheelBound = this.onWheel.bind(this);
     this.onZoomAnimationFrameBound = this.onZoomAnimationFrame.bind(this);
+    this.onResizeObserverErrorBound = this.onResizeObserverError.bind(this);
   }
 
   /** 스크롤 컨테이너에 연결한다 */
@@ -45,9 +48,26 @@ export class ViewportManager {
     container.addEventListener('scroll', this.onScrollBound, { passive: true });
     container.addEventListener('wheel', this.onWheelBound, { passive: false });
 
+    // 크로미움은 이 경고를 실제 스크립트 예외가 아니라 window `error` 이벤트로 합성
+    // 보고한다. 아래 콜백이 동기 DOM 변이를 하지 않아도(매크로태스크로 미룸) 대형
+    // 문서 초기 렌더처럼 같은 프레임에 다른 요소들이 대량으로 리사이즈되면 여전히
+    // 뜰 수 있는, 기능에 영향 없는 잡음이라 uncaught error 로 새지 않게 막는다.
+    window.addEventListener('error', this.onResizeObserverErrorBound);
+
     this.resizeObserver = new ResizeObserver(() => {
-      this.updateViewportSize();
-      this.eventBus.emit('viewport-resize', this.viewportWidth, this.viewportHeight);
+      if (this.resizeAnimationFrame !== null) return;
+
+      // 리스너가 레이아웃을 다시 계산해 컨테이너 크기가 같은 프레임에 또 바뀌면
+      // "ResizeObserver loop completed with undelivered notifications"가 발생한다.
+      // rAF 는 **같은 렌더링 프레임 안**(레이아웃·RO 전달 이전)에 실행되므로 이 루프를
+      // 벗어나지 못한다 — 실측으로 경고가 계속 발생했다. 매크로태스크(setTimeout 0)로
+      // 프레임 경계를 넘겨 변이를 다음 프레임의 관찰 사이클로 미룬다.
+      this.resizeAnimationFrame = window.setTimeout(() => {
+        this.resizeAnimationFrame = null;
+        if (!this.container) return;
+        this.updateViewportSize();
+        this.eventBus.emit('viewport-resize', this.viewportWidth, this.viewportHeight);
+      }, 0);
     });
     this.resizeObserver.observe(container);
     this.updateViewportSize();
@@ -61,12 +81,25 @@ export class ViewportManager {
     }
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
+    window.removeEventListener('error', this.onResizeObserverErrorBound);
+    if (this.resizeAnimationFrame !== null) {
+      clearTimeout(this.resizeAnimationFrame);
+      this.resizeAnimationFrame = null;
+    }
     if (this.scrollAnimationFrame !== null) {
       cancelAnimationFrame(this.scrollAnimationFrame);
       this.scrollAnimationFrame = null;
     }
     this.cancelZoomAnimation();
     this.container = null;
+  }
+
+  /** ResizeObserver 잡음 window error 를 uncaught 로 전파하지 않도록 막는다. */
+  private onResizeObserverError(e: ErrorEvent): void {
+    if (e.message?.includes('ResizeObserver loop')) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }
   }
 
   private onScroll(): void {

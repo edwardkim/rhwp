@@ -1,0 +1,27 @@
+{
+  "name": "@rhwp/hwpctrl",
+  "version": "0.0.0",
+  "description": "웹한글컨트롤(WebHwpCtrl) API v2.4 호환 층 — rhwp WASM 기반",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edwardkim/rhwp"
+  },
+  "files": [
+    "src",
+    "spec"
+  ],
+  "scripts": {
+    "spec": "node ../../tools/hwpctrl_compat/python_runner.mjs extract_spec.py",
+    "ledger": "node ../../tools/hwpctrl_compat/python_runner.mjs build_ledger.py",
+    "ledger:check": "node ../../tools/hwpctrl_compat/python_runner.mjs build_ledger.py --check",
+    "test:contract": "node --test test/package_contract.test.mjs",
+    "gate": "npm run test:contract && node ../../tools/hwpctrl_compat/python_runner.mjs run_gate.py --impl npm/hwpctrl-ocx/src/index.mjs",
+    "gate:legacy": "node ../../tools/hwpctrl_compat/python_runner.mjs run_gate.py --impl legacy"
+  }
+}

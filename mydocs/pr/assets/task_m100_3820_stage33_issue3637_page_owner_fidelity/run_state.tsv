@@ -1,0 +1,6 @@
+field	value
+mode	text-only
+requested_pages_1based	25,26,27,28,29,30,31
+completed_pages_1based	25,26,27,28,29,30,31
+missing_pages_1based	-
+run_state	complete

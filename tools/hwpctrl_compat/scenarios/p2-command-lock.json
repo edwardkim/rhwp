@@ -1,0 +1,78 @@
+{
+  "id": "p2-command-lock",
+  "title": "P2 명령 잠금",
+  "note": "잠긴 액션은 Run 이 아무 일도 하지 않는다(잠근 채 MoveNextChar 를 걸면 캐럿이 그대로). 잠금은 그 액션에만 걸리고 다른 액션은 멀쩡히 움직인다. 잠금을 푼 뒤의 첫 이동은 시나리오에 넣지 않았다 — 오라클이 그 자리에서 안 움직이는데 이유를 아직 모른다.",
+  "ledger": [
+    "HwpCtrl.method.LockCommand",
+    "HwpCtrl.method.IsCommandLock"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    [
+      "IsCommandLock",
+      [
+        "MoveNextChar"
+      ]
+    ],
+    [
+      "LockCommand",
+      [
+        "MoveNextChar",
+        true
+      ]
+    ],
+    [
+      "IsCommandLock",
+      [
+        "MoveNextChar"
+      ]
+    ],
+    [
+      "IsCommandLock",
+      [
+        "MovePrevChar"
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        262,
+        0,
+        3
+      ]
+    ],
+    [
+      "Run",
+      [
+        "MoveNextChar"
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ],
+    [
+      "Run",
+      [
+        "MovePrevChar"
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ],
+    [
+      "LockCommand",
+      [
+        "MoveNextChar",
+        false
+      ]
+    ],
+    [
+      "IsCommandLock",
+      [
+        "MoveNextChar"
+      ]
+    ]
+  ]
+}

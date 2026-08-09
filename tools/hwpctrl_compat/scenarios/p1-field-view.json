@@ -1,0 +1,31 @@
+{
+  "id": "p1-field-view",
+  "title": "P1 필드 표시 옵션과 속성 조회",
+  "ledger": [
+    "HwpCtrl.method.SetFieldViewOption",
+    "HwpCtrl.method.ModifyFieldProperties"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    [
+      "SetFieldViewOption",
+      [
+        1
+      ]
+    ],
+    [
+      "SetFieldViewOption",
+      [
+        2
+      ]
+    ],
+    [
+      "ModifyFieldProperties",
+      [
+        "pt_nm",
+        0,
+        0
+      ]
+    ]
+  ]
+}

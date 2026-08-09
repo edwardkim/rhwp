@@ -270,8 +270,19 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
     }
     .page-wrapper {
       flex-shrink: 0;
+      position: relative;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       background: white;
+    }
+    .outline-highlight {
+      position: absolute;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      background: var(--vscode-editor-findMatchHighlightBackground, rgba(234, 92, 0, 0.33));
+      border-top: 1px solid var(--vscode-editor-findMatchBorder, #ea5c00);
+      border-bottom: 1px solid var(--vscode-editor-findMatchBorder, #ea5c00);
+      box-sizing: border-box;
     }
     /* 2쪽 보기: 두 쪽을 좌우로 배치 */
     .page-row {
@@ -290,7 +301,7 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
       position: relative;
     }
     #nav-sidebar {
-      width: 240px;
+      width: var(--nav-sidebar-width, 240px);
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
@@ -303,6 +314,20 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
       width: 0;
       border-right: none;
     }
+    #nav-resizer {
+      width: 6px;
+      flex-shrink: 0;
+      cursor: col-resize;
+      background: transparent;
+      outline: none;
+    }
+    #nav-resizer:hover,
+    #nav-resizer:focus-visible,
+    #app-shell.sidebar-resizing #nav-resizer {
+      background: var(--vscode-focusBorder, #007acc);
+    }
+    #app-shell.sidebar-collapsed #nav-resizer { display: none; }
+    #app-shell.sidebar-resizing #nav-sidebar { transition: none; }
     /* 접혔을 때 편집영역 좌측에 나타나는 열기 버튼 */
     #nav-reopen {
       position: absolute;
@@ -399,6 +424,41 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
       color: var(--vscode-sideBar-foreground, #ccc);
     }
     .nav-item:hover { background: rgba(255,255,255,0.06); }
+    /* 방향키로 훑을 때 지금 선택된 개요가 어디인지 보이게 한다. */
+    .nav-outline-item:focus {
+      background: var(--vscode-list-activeSelectionBackground, rgba(255,255,255,0.12));
+      color: var(--vscode-list-activeSelectionForeground, inherit);
+      outline: 1px solid var(--vscode-focusBorder, #007fd4);
+      outline-offset: -1px;
+    }
+    .nav-outline-item {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .nav-outline-toggle,
+    .nav-outline-spacer {
+      width: 16px;
+      height: 18px;
+      flex: 0 0 16px;
+    }
+    .nav-outline-toggle {
+      padding: 0;
+      border: none;
+      border-radius: 3px;
+      background: transparent;
+      color: var(--vscode-sideBar-foreground, #ccc);
+      cursor: pointer;
+      font: inherit;
+      line-height: 18px;
+    }
+    .nav-outline-toggle:hover { background: rgba(255,255,255,0.1); }
+    .nav-outline-label {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .nav-empty {
       padding: 12px 8px;
       font-size: 12px;
@@ -534,7 +594,7 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
     <div id="nav-sidebar">
       <div id="nav-tabs">
         <button class="nav-tab active" data-tab="thumb" title="\uc378\ub124\uc77c">\uc378\ub124\uc77c</button>
-        <button class="nav-tab" data-tab="outline" title="\ubaa9\ucc28">\ubaa9\ucc28</button>
+        <button class="nav-tab" data-tab="outline" title="\uac1c\uc694">\uac1c\uc694</button>
         <button class="nav-tab" data-tab="bookmark" title="\ubd81\ub9c8\ud06c">\ubd81\ub9c8\ud06c</button>
         <button id="nav-collapse" title="\uc0ac\uc774\ub4dc\ubc14 \ub2eb\uae30">\u25c0</button>
       </div>
@@ -544,6 +604,7 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
         <div class="nav-panel" data-panel="bookmark" hidden></div>
       </div>
     </div>
+    <div id="nav-resizer" role="separator" aria-orientation="vertical" aria-label="사이드바 너비 조절" tabindex="0"></div>
     <div id="scroll-container" data-wasm-uri="${wasmUri}" data-canvaskit-font-uri="${canvasKitDefaultFontUri}" data-canvaskit-fonts-base-uri="${fontsBase}"><div id="scroll-content"></div></div>
     <button id="nav-reopen" title="\uc0ac\uc774\ub4dc\ubc14 \uc5f4\uae30">\u25b6</button>
   </div>

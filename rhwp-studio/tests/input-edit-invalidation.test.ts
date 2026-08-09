@@ -106,33 +106,27 @@ test('raw IME/iOS 입력은 flow effect를 cursor lookup 전에 소비하고 ref
   );
 });
 
-test('IME 조합 caret은 시작 시 보존한 anchor 좌표를 재사용한다', () => {
+test('IME 조합 caret은 매 갱신마다 anchor의 현재 위치를 다시 조회한다', () => {
+  // [#4150] 조합 시작 좌표를 compositionAnchorRect 필드에 캐시하고 조합 갱신마다
+  // 재사용하던 이전 구현은, 캐시를 무효화해야 하는 호출부(afterPageLocalEdit) 중
+  // 하나가 누락되면서 같은 페이지 안 reflow(줄바꿈) 뒤에도 옛 좌표에 조합
+  // 오버레이가 그려져 실제 캔버스 텍스트와 겹쳤다(issue #4150). 캐시 자체를
+  // 없애고 anchor의 실제 위치를 매번 다시 조회하면, 무효화를 잊는 호출부가
+  // 늘어나도 이 버그 계열이 재발할 수 없다.
   const inputHandlerSource = readFileSync(new URL('../src/engine/input-handler.ts', import.meta.url), 'utf8');
   const textSource = readFileSync(new URL('../src/engine/input-handler-text.ts', import.meta.url), 'utf8');
 
-  assert.match(inputHandlerSource, /private compositionAnchorRect: CursorRect \| null = null;/);
-  assert.match(
+  assert.doesNotMatch(
     inputHandlerSource,
-    /private captureCompositionAnchorRect\(anchor: DocumentPosition\): void \{[\s\S]*?CursorState\.comparePositions\(current, anchor\) === 0[\s\S]*?cellBounds: rect\.cellBounds \? \{ \.\.\.rect\.cellBounds \} : undefined,[\s\S]*?\}/,
-    '조합 시작 좌표는 현재 logical cursor와 anchor가 정확히 같을 때만 캐시해야 한다',
-  );
-  assert.match(textSource, /this\.captureCompositionAnchorRect\(basePos\);\s*this\.isComposing = true;/);
-  assert.match(
-    inputHandlerSource,
-    /let startRect = this\.compositionAnchorRect;\s*if \(!startRect\) \{[\s\S]*?this\.wasm\.getCursorRectInCell\(/,
-    '캐시가 없을 때만 기존 exact anchor lookup으로 fallback해야 한다',
+    /compositionAnchorRect/,
+    '조합 anchor 좌표는 캐시하지 않는다 — 캐시가 있으면 무효화를 잊는 호출부가 재발할 수 있다',
   );
   assert.match(
     inputHandlerSource,
-    /this\.compositionAnchorRect = \{\s*\.\.\.startRect,\s*cellBounds: startRect\.cellBounds \? \{ \.\.\.startRect\.cellBounds \} : undefined,\s*\};/,
-    'fallback exact lookup 결과도 이후 조합 갱신에서 재사용해야 한다',
+    /let startRect: CursorRect;\s*if \(this\.cursor\.isInHeaderFooter\(\)\) \{[\s\S]*?this\.wasm\.getCursorRectInCell\(/,
+    '조합 caret 갱신마다 anchor의 exact 위치를 다시 조회해야 한다(캐시 히트 분기가 없어야 함)',
   );
-  assert.match(
-    inputHandlerSource,
-    /private completeResumablePagination\([\s\S]*?if \(this\.isComposing\) \{\s*this\.compositionAnchorRect = null;\s*\}[\s\S]*?this\.cursor\.moveTo\(position\);/,
-    'shadow pagination commit은 이전 공개 레이아웃의 anchor 좌표를 폐기해야 한다',
-  );
-  assert.match(textSource, /this\.compositionAnchor = null;\s*this\.clearCompositionAnchorRect\(\);/);
+  assert.doesNotMatch(textSource, /captureCompositionAnchorRect|clearCompositionAnchorRect/);
 });
 
 test('raw 셀 입력은 command와 같은 typed mutation helper를 사용한다', () => {
@@ -309,7 +303,6 @@ test('문서 전환은 deferred·IME·iOS 입력 세션 상태를 격리한다',
   assert.match(deactivateSource, /this\.deferredPaginationRunner\.cancel\(\);/);
   assert.match(deactivateSource, /this\.deferredPaginationPending = false;/);
   assert.match(deactivateSource, /this\.resetRawTextMutationEffects\(\);/);
-  assert.match(deactivateSource, /this\.compositionAnchorRect = null;/);
   assert.match(deactivateSource, /this\._lastComposedText = '';/);
   assert.match(deactivateSource, /this\._iosAnchor = null;/);
   assert.match(deactivateSource, /this\._iosRequiresFullRefresh = false;/);

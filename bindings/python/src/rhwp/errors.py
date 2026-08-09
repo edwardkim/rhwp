@@ -26,6 +26,7 @@ __all__ = [
     "VerdictFailed",
     "ProtocolError",
     "SessionClosedError",
+    "RhwpTimeoutError",
     "TimeoutError",
     "EXIT_OK",
     "EXIT_RUNTIME",
@@ -33,6 +34,7 @@ __all__ = [
     "EXIT_VERIFY",
     "EXIT_VERIFY_PAGES",
     "raise_for_exit",
+    "is_known_exit_code",
 ]
 
 #: 성공.
@@ -118,6 +120,20 @@ class UsageError(RhwpError):
                 return stripped[len("힌트:") :].strip()
         return None
 
+    @property
+    def next_call(self) -> Optional[Mapping[str, Any]]:
+        """[트랙 G R61 D-8] 봉투의 ``nextCall``(서버가 실어 보낸 교정 호출)을 꺼낸다.
+
+        닫힌 세션 핸들 호출처럼, 도구가 "다음엔 이걸 부르라"는 구조화된 힌트를
+        봉투에 실을 때가 있다(``{name, arguments}``). 없으면 ``None``.
+        """
+        if self.envelope is None:
+            return None
+        next_call = self.envelope.get("nextCall")
+        if isinstance(next_call, Mapping) and "name" in next_call:
+            return dict(next_call)
+        return None
+
 
 class RhwpRuntimeError(RhwpError):
     """exit 1 — 읽기·파싱·렌더·쓰기가 실패했다.
@@ -153,16 +169,43 @@ class SessionClosedError(RhwpError):
     """이미 닫힌 세션 핸들을 다시 썼다."""
 
 
-class TimeoutError(RhwpError):  # noqa: A001 - 내장 이름 가림은 의도적(패키지 일관성)
-    """제한 시간 안에 끝나지 않았다. 자식 프로세스는 종료를 시도한 뒤 올라온다."""
+class RhwpTimeoutError(RhwpError):
+    """제한 시간 안에 끝나지 않았다. 자식 프로세스는 종료를 시도한 뒤 올라온다.
+
+    [트랙 G R61 D-7] Node 바인딩은 처음부터 ``RhwpTimeoutError`` 였고, 파이썬만
+    내장 ``TimeoutError`` 를 가려 썼다. ``parity_contract.md`` §7 D-7 이 이름을
+    ``RhwpTimeoutError`` 로 통일하기로 결정했다 — 내장 이름 가림은 `except
+    TimeoutError` 를 쓰는 코드가 rhwp 예외인지 표준 라이브러리 예외인지 한눈에
+    구분 못 하게 만드는 대가가 이름 일관성보다 컸다.
+    """
+
+
+# 기존 공개 API를 쓰던 호출자가 예외 처리만으로 깨지지 않게 한다. 새 코드는
+# 내장 이름과 구별되는 RhwpTimeoutError를 사용한다.
+TimeoutError = RhwpTimeoutError  # noqa: A001
 
 
 def _quote(arg: str) -> str:
-    """공백·따옴표가 있으면 감싼다 — 재현 명령이 그대로 붙여넣기 가능하도록."""
-    if arg and not any(ch.isspace() or ch in "\"'" for ch in arg):
+    """공백·따옴표·백슬래시가 있으면 감싼다 — 재현 명령이 그대로 붙여넣기 가능하도록.
+
+    [트랙 G R61 D-5] 역슬래시를 이스케이프하지 않으면 `C:\\경로\\` 처럼 끝이
+    역슬래시인 인자가 닫는 따옴표를 집어삼킨다. 역슬래시를 **먼저** 이스케이프한
+    뒤 큰따옴표를 이스케이프해야 한다 — 순서를 바꾸면 이중 이스케이프된다.
+    """
+    if arg and not any(ch.isspace() or ch in "\"'\\" for ch in arg):
         return arg
-    escaped = arg.replace('"', '\\"')
+    escaped = arg.replace("\\", "\\\\").replace('"', '\\"')
     return f'"{escaped}"'
+
+
+def is_known_exit_code(code: int) -> bool:
+    """[트랙 G R61 D-18] 이 바인딩이 아는 종료 코드(0/1/2/3/4)인지.
+
+    Node 바인딩의 ``isKnownExitCode`` 를 그대로 이식했다. 모르는 코드를
+    미리 걸러내고 싶은 호출자(로깅·재시도 판단)를 위한 것 — 실제 처리는
+    :func:`raise_for_exit` 가 한다.
+    """
+    return code in (EXIT_OK, EXIT_RUNTIME, EXIT_USAGE, EXIT_VERIFY, EXIT_VERIFY_PAGES)
 
 
 def raise_for_exit(

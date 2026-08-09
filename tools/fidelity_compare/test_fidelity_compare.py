@@ -1,0 +1,56 @@
+"""Focused regression tests for the PDF/SVG fidelity candidate extractors."""
+
+from __future__ import annotations
+
+import importlib.util
+import sys
+import tempfile
+import unittest
+from collections import Counter
+from pathlib import Path
+
+
+MODULE_PATH = Path(__file__).with_name("fidelity_compare.py")
+SPEC = importlib.util.spec_from_file_location("fidelity_compare", MODULE_PATH)
+assert SPEC is not None and SPEC.loader is not None
+fidelity_compare = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = fidelity_compare
+SPEC.loader.exec_module(fidelity_compare)
+
+
+class VisibleSvgTextTests(unittest.TestCase):
+    def test_ancestor_clip_excludes_off_page_text_but_keeps_partial_line(self) -> None:
+        svg = """<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\">
+<defs><clipPath id=\"body\"><rect x=\"0\" y=\"0\" width=\"100\" height=\"100\"/></clipPath>
+<clipPath id=\"cell\"><rect x=\"0\" y=\"40\" width=\"100\" height=\"10\"/></clipPath></defs>
+<g clip-path=\"url(#body)\"><text x=\"10\" y=\"-10\" font-size=\"10\">hidden-top</text>
+<text x=\"10\" y=\"20\" font-size=\"10\">body-visible</text>
+<g clip-path=\"url(#cell)\"><text x=\"10\" y=\"20\" font-size=\"10\">hidden-cell</text>
+<text x=\"10\" y=\"47\" font-size=\"10\">partial-cell</text></g></g></svg>"""
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "sample.svg"
+            path.write_text(svg, encoding="utf-8")
+            visible, excluded = fidelity_compare.svg_visible_text(path)
+
+        self.assertEqual(visible, "body-visiblepartial-cell")
+        self.assertGreaterEqual(excluded, len("hidden-tophidden-cell"))
+
+    def test_visible_text_excess_requires_preserved_reference_text(self) -> None:
+        candidates = fidelity_compare.visible_text_excess_candidates(
+            {
+                0: (Counter(), Counter("x" * 48)),
+                1: (Counter("missing" * 4), Counter("y" * 100)),
+            },
+            {0: 30, 1: 0},
+        )
+
+        self.assertEqual(candidates, [{
+            "page": 0,
+            "reference_only": 0,
+            "visible_svg_only": 48,
+            "clip_excluded_chars": 30,
+        }])
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

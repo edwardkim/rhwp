@@ -1,0 +1,28 @@
+{
+  "id": "p1-field-rename",
+  "title": "P1 필드 이름 변경 — 셀 필드·누름틀·중복 이름·리스트 인자·없는 이름",
+  "ledger": [
+    "HwpCtrl.method.RenameField"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["PutFieldText", ["pt_nm", "김철수"]],
+    ["RenameField", ["pt_nm", "환자명"]],
+    ["FieldExist", ["환자명"]],
+    ["FieldExist", ["pt_nm"]],
+    ["GetFieldText", ["환자명"]],
+
+    ["RenameField", ["pt_no", "접수번호"]],
+    ["FieldExist", ["pt_no"]],
+    ["FieldExist", ["접수번호"]],
+
+    ["RenameField", ["med_str_dt\u0002med_end_dt", "시작일\u0002종료일"]],
+    ["FieldExist", ["시작일"]],
+    ["FieldExist", ["med_end_dt"]],
+    ["FieldExist", ["종료일"]],
+
+    ["RenameField", ["없는필드", "아무개"]],
+    ["FieldExist", ["아무개"]]
+  ],
+  "saveAs": "p1-field-rename.hwp"
+}

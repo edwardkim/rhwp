@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-08-03
+last_verified: 2026-08-08
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -89,6 +89,13 @@ rhwp --password '문서비밀번호' export-text protected.hwp -o output/
 | 4 | `--verify-pages` 페이지 수 불일치 | `convert` / `export-hwpx` 전용 (아래 §3) |
 
 - 알 수 없는 명령·옵션은 **경고 후 진행하지 않고** 즉시 2로 끝난다. 안내는 stderr 로 나간다.
+- **정형 수복 줄 (#4220 T4)** — 사용법 오류(2) 중 다음 호출이 결정론적으로 정해지는
+  부류(임계 내 오타의 확신 교정, 명령 누락 → `capabilities`)에서는 stderr **마지막 줄**에
+  `수복: {"nextCall":{"name":...,"subcommand"?,...,"why":...}}` 한 줄이 붙는다. `nextCall` 어휘는
+  MCP 오류 봉투(R72)와 같고, `name` 은 반드시 실존 명령이다. 애매한 경로(임계 밖 오타,
+  하위 명령 누락)와 런타임 실패(1)에는 이 줄 자체가 없다 — 오제안 0. stdout 은 여전히
+  0 바이트다. 소비자는 "마지막 `수복: ` 줄 하나"만 파싱하면 된다
+  (계약: `tests/nextcall_cli_contract.rs`).
 - 페이지 단위 내보내기 명령의 "N개 … 완료" 메시지는 **실제로 저장에 성공한 개수**다.
   한 장이라도 실패하면 종료 코드는 1이다.
 - `export-png` 는 `native-skia` feature 없이 빌드된 바이너리에서 2로 끝난다(기능 부재).
@@ -476,22 +483,68 @@ HWP 파일 정보 표시(버전/구역 수/암호화 등).
   `{"schemaVersion":"1.0","source","format":"hwp5|hwpx|hwp3|hml","sizeBytes","version","sections","pageCount","paraCount","fonts"}`.
   `version` 은 HML 이면 null. 스키마 계약은 `export-text --json` 항목과 동일 규칙.
 
-### `digest <파일> [--max-chars N] [--json]` (#3633)
+### `digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]` (#3633)
 초소형 모델용 매크로 1호 — "info 로 훑고 → export-structure 로 개요를 얻고 →
 export-text 로 첫 장을 읽는" 3단 파이프라인을 **한 번 호출**로 수행한다. 도구
 체이닝을 못 하는 로컬 소형 모델(4B급)이 1차 소비자다. 설계 결정은
 [초소형 모델용 매크로 도구 축 설계 결정](../tech/tiny_model_macro_tools.md).
-- 기계 전용 명령: `--json` 유무와 무관하게 항상 봉투 **한 줄 JSON** 을 낸다 —
+- 기계 전용 명령: `--json` 유무와 무관하게 항상 봉투 **한 줄 JSON** 을 낸다.
+  기본 모드 봉투 —
   `{"schemaVersion":"1.0","source","format","pageCount","paraCount","outline":[최상위 노드 제목 최대 20개],"excerpt","truncated","nextStep"}`
 - `excerpt` 는 페이지 0~2 텍스트를 `--max-chars`(기본 2000) **문자 수**에서 절단한
   발췌. 절단되면 `truncated:true`.
 - `nextStep` 은 고정 문자열 계약(다음 행동 유도문) — 문구 변경은
   `tests/digest_macro_contract.rs` 가 잡는다.
+- `--sections` (#3633 후속): 페이지 발췌 대신 **주소 보존 절 단위 청크**를 낸다.
+  봉투는 `outline`/`excerpt` 대신
+  `"sectionsMode","sectionCount","sections":[{"title","page","charCount","excerpt"}]`.
+  `page` 는 절 제목 문단의 글로벌 쪽 번호(0부터)라 요약 결과가 원문 쪽으로
+  되짚어진다. 절별 발췌 상한은 **기본 240자**(`--max-chars` 가 절별 상한이 된다),
+  청크는 최대 50개까지 싣고 전체 개수는 `sectionCount` 로 따로 실어 봉투만 보고
+  누락 여부를 판정한다. 구조 없는 문서는 쪽 단위 폴백으로 강등하되
+  `sectionsMode:"page"` 로 강등 사실을 명시한다(`title` 은 빈 문자열).
+- `--pages <a..b>` (#3633 후속): 해당 쪽 범위만 발췌한다 — **0 기준, 양끝 포함,
+  `a<=b`**(형식이 어긋나면 exit 2). 봉투에 `"pages":{"from","to"}` 가 실리고,
+  끝 쪽이 문서 끝을 넘으면 마지막 쪽으로 잘라 낸다(시작 쪽이 범위 밖이면 exit 1).
+  `nextStep` 이 같은 폭의 다음 범위 호출(`이어서 digest --json --pages a..b`)을
+  안내해 체이닝을 못 하는 모델도 "이어 읽기"를 계획 없이 수행한다 — 남은 범위가
+  없으면 완료 유도문으로 바뀐다.
+- `--sections` 와 `--pages` 는 동시에 쓸 수 없다(exit 2).
 - 실패 시 stdout 0바이트, 종료 코드는 #2707 계약(0/1/2).
 
 ```bash
 # 처음 보는 문서를 한 번 호출로 파악
 rhwp digest 편람.hwp --json --max-chars 500
+# 절 단위 청크로 문서 지도를 얻는다 (쪽 주소 보존)
+rhwp digest 편람.hwp --sections --json
+# 대형 문서를 10쪽 창으로 나눠 읽는다 — nextStep 이 다음 창을 안내
+rhwp digest 편람.hwp --pages 0..9 --json
+```
+
+### `explain <파일.hwp|파일.hwpx|파일.hml> [--json]` (#3828)
+문서를 처음 보는 에이전트를 위한 **결정론적 요약** — 형식·쪽수·문단 수, 표 개수와
+크기·병합 여부, 누름틀 이름, 각주/미주 개수, 암호 여부를 규칙 문장으로 낸다.
+기존 조회(`info`·`export-structure`·`export-tables`·`fields`)가 이미 계산한 값의
+템플릿 조립일 뿐, 새 판정 로직도 LLM 판정도 없다. "부분 목록 금지"(#3719) 원칙대로
+표·누름틀 이름은 축약·상위 N개 자르기 없이 전부 나열한다.
+- 기본 출력은 사람 문장 요약. `--json` 이면 봉투 —
+  `{"schemaVersion":"1.0","source","format","pageCount","paragraphCount","tables":[{"index","rows","cols","hasMergedCells"}],"fields":[누름틀 이름],"footnoteCount","endnoteCount","encrypted","summary"}`
+- `capabilities --mcp` 의 `hwp_explain` 도구와 봉투 생성 함수를 공유한다 —
+  recordFields 선언과 CLI `--json` 출력이 어긋날 수 없다.
+- 문단 수 키는 `paragraphCount` 다 — `info`/`digest` 봉투의 `paraCount` 와 표기가
+  다르므로 소비자는 봉투별 키를 그대로 쓴다.
+- `tables[].index` 는 0 기준으로 `export-tables`·`table-to-csv` 의 표 번호와
+  일치한다. `summary` 문장 속 "표 1(3×4)" 번호만 사람용 1 기준이다.
+- `tables` 는 크기·병합 여부만 싣고 **셀 텍스트를 싣지 않는다** — 내용은
+  `export-tables` 의 몫이다.
+- 암호 문서는 다른 명령과 같은 규약을 따른다 — 비밀번호 없으면 exit 2, 틀리면
+  exit 1 (`--password`/`--password-stdin`).
+
+```bash
+# 처음 보는 문서의 전체 그림을 문장 요약으로
+rhwp explain 편람.hwp
+# 기계용 봉투 (hwp_explain 과 동일 계약)
+rhwp explain 편람.hwp --json | jq '{format, pageCount, tables, fields}'
 ```
 
 ### `search <파일> [--json] [--ignore-case] [--limit N] [--] <검색어>` (#3283)
@@ -925,11 +978,14 @@ HWP 문서를 HWPX(ZIP+XML)로 변환 저장. `convert`(배포용 해제)와 별
   단, 한컴 기준 PDF가 있는 대형 문서는 `tools/fidelity_compare/fidelity_compare.py`의 direct pair
   `--source <HWP/HWPX> --reference-pdf <PDF> --label <ASCII>`를 사용한다. 먼저
   `--text-only --export-all-svg --layout-ledger`로 PDF text↔SVG text 및 render-tree 기하 후보(본문/각주,
-  표/footer, frame, Square/Tight/Through 그림을 3행 이상 침범한 본문)를 전수 수집하고, 후보 페이지만
+  표/footer, frame, Square/Tight/Through 그림을 3행 이상 넓게 침범하거나 edge에 맞닿는 본문)를 전수 수집하고, 후보 페이지만
   pixel compare/visual sweep으로 확정한다. 이때 `text-owner-shift-candidates.tsv`의 인접 쪽
   reciprocal text difference와 `text-owner-sequence-candidates.tsv`의 NFC·공백 정규화 16자 이상
   순서 보존 text 이동은 각주·본문·caption이 한 쪽 이르게/늦게 놓인 physical owner 후보를 바로 묶어 준다.
   후자는 p52→p53 URL처럼 다른 본문과 문자 Counter가 상쇄되는 이동을 보완한다.
+  `float-owner-shift-candidates.tsv`는 그 중 `rhwp_earlier_than_reference` 이동과 다음 페이지 상단
+  Body `TopAndBottom`/`Square`/`Tight`/`Through` 그림을 묶어, 그림 앞 본문이 한 페이지 이르게
+  확정된 p118→p119 유형을 우선 검토 후보로 낸다. 그림만으로는 후보가 되지 않는다.
   `table-fragment-candidates.tsv`는 같은 source `(pi, ci)` Body 표가 인접 render-tree 쪽에 연속한 경우와
   표/footer·frame 신호, 또는 쪽 하단 표와 24자 이상 text delta를 rows/cols·bbox·쪽 신호와 함께 묶는다.
   이는 visual review 우선순위 후보일 뿐 **PDF table row owner나 표 분할 정답을 판정하지 않는다.**
@@ -1137,3 +1193,6 @@ Hancom Office가 저장한 HWP와 rhwp가 생성한 HWP의 DocInfo CHAR_SHAPE를
   실행 검증은 빌드 가능한 환경(CI 등)에서 재확인이 필요하다.
 - 2026-08-05 현행화: `hwp5-char-shape-audit`를 §4 HWP5 저장 계약 진단 명령으로 추가했다.
   선택 `--source-hwpx`는 원본 `charPr` 장식 속성의 출처 교차 집계만 수행하며 문서를 변경하지 않는다.
+- 2026-08-08 현행화: `src/main.rs` 디스패치·`--help` 대비 뒤처진 드리프트 2건 정정 —
+  `digest` 에 `--sections`/`--pages a..b`(#3633 후속) 등재, `explain`(#3828) 절 신설.
+  봉투 필드는 `capabilities --mcp` 의 `hwp_digest`/`hwp_explain` recordFields 실물과 대조했다.

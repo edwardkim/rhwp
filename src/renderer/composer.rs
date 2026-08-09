@@ -9,7 +9,7 @@ use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use super::{px_to_hwpunit, TextStyle};
 use crate::model::control::Control;
 use crate::model::document::Section;
-use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph, SingleLineOverflowMemo};
 
 /// 글자겹침(CharOverlap) 렌더링 정보
 #[derive(Debug, Clone, serde::Serialize)]
@@ -1528,11 +1528,28 @@ pub fn recompose_stored_single_line_if_overflowing(
     // `stored_lines_overflow`(#2525)와 동일하게 ×1.8 로 좁혀 정당한 장평/자간·
     // 패딩 발산 범위(≤~1.5×)를 넘는 부실 저장만 재래핑한다. #2291 원 타깃
     // (76자 1-lineseg = ~7.6× 초과, 절단 해소)은 임계 위라 계속 재래핑.
-    let over = composed
-        .lines
-        .first()
-        .map(|l| estimate_composed_line_width(l, styles) > cell_inner_width_px * 1.8)
-        .unwrap_or(false);
+    //
+    // [#4149] 판정 memo — 같은 (문단 text·char_shapes, 셀 내폭)이면 판정이 결정적
+    // 인데, 페이지 트리 재빌드마다 estimate_composed_line_width 재측정이 반복돼
+    // 거대 셀 문서의 캐럿 rect 질의당 ~30% 를 차지했다. 폭 키(f32 bits 패킹)로
+    // 판정만 memo 하고(측정 생략), over=true 의 fresh 재래핑 자체는 매 빌드 그대로
+    // 수행한다 — 재래핑 결과는 composed 에만 반영되고 저장 line_segs 는 안 바뀌므로
+    // 재래핑을 생략하면 절단 렌더 회귀. text/char_shapes 변경 경로는
+    // `invalidate_single_line_overflow_memo` 로 비운다 (셀 크기 조정은 키 불일치로
+    // 자연 재판정).
+    let width_key = SingleLineOverflowMemo::width_key(cell_inner_width_px);
+    let over = match para.single_line_overflow_memo.get(width_key) {
+        Some(memoized) => memoized,
+        None => {
+            let measured = composed
+                .lines
+                .first()
+                .map(|l| estimate_composed_line_width(l, styles) > cell_inner_width_px * 1.8)
+                .unwrap_or(false);
+            para.single_line_overflow_memo.set(width_key, measured);
+            measured
+        }
+    };
     if std::env::var("RHWP_DIAG_CELLREWRAP").is_ok() && over {
         if let Some(l) = composed.lines.first() {
             for run in &l.runs {
@@ -2486,6 +2503,37 @@ pub fn char_overlap_advance_units(chars: &[char]) -> usize {
     usize::from(!chars.is_empty())
 }
 
+/// 글자겹침(CharOverlap) 내부 글자의 크기 비율.
+///
+/// `charSz` 는 OWPML 상 **"테두리 내부 글자의 크기 비율. 단위 %"**
+/// (`mydocs/manual/OWPML SCHEMA/ParaList XML schema.xml:571`) 다. 따라서 테두리를
+/// 그리지 않는 겹침에는 적용하지 않는다 — 축소할 "테두리 내부"가 없다.
+///
+/// `effective_border` 는 raw `border_type` 이 아니라 **실제로 테두리를 그리는지** 다.
+/// PUA 다자리 숫자는 `border_type=0` 이어도 원형 테두리로 승격되므로(각 렌더 경로의
+/// combined 분기) 그 경우는 축소가 정당하다.
+///
+/// 한컴 실측 두 건이 이 규칙을 함께 만족한다 (#4085):
+/// - `samples/hwpx/k-water-rfp.hwpx` p13 — 반전 사각형(4), `charSz=-2` → 0.80 (PR #1101)
+/// - 관세청 월간 수출입 현황 p1 — 테두리 없음(0), `charSz=-4` → 축소 없음. 한컴 PDF
+///   content stream 에서 마커와 본문이 같은 `101 Tf`, 같은 baseline 으로 나온다.
+///
+/// 음수 영역의 10% step 해석은 PR #1101 의 실측 가설을 그대로 둔다.
+pub fn char_overlap_size_ratio(effective_border: u8, inner_char_size: i8) -> f64 {
+    if effective_border == 0 {
+        return 1.0;
+    }
+    if inner_char_size > 0 {
+        // 양수 → percent ratio (HWPX 양수 case 보존: 50 = 0.5)
+        inner_char_size as f64 / 100.0
+    } else if inner_char_size < 0 {
+        // 음수 → 10% step 축소 (한컴 정합: charSz=-3 → 1.0 + (-3)×0.10 = 0.70)
+        1.0 + inner_char_size as f64 * 0.10
+    } else {
+        1.0
+    }
+}
+
 fn pua_enclosed_border_type(ch: char) -> Option<u8> {
     let cp = ch as u32;
     // U+F02B1~F02C4 (①~⑳): map_pua_bullet_char 에서 표준 원문자로 매핑 — CharOverlap 제외
@@ -2559,7 +2607,7 @@ pub fn pua_to_display_text(ch: char) -> Option<String> {
     if let Some(replacement) = pua_plain_text_display(ch) {
         return Some(replacement.to_string());
     }
-    // U+F02B1~F02C4 는 map_pua_bullet_char 에서 ①~⑳ 으로 매핑 — 여기 도달 불가
+    // U+F02B1~F02C4 는 렌더러의 boxed_pua_char_overlap_semantics 가 먼저 처리한다 (#4158).
     // 반전 사각형 안의 숫자: U+F02CE(1) ~ U+F02E1(20)
     if (0xF02CE..=0xF02E1).contains(&cp) {
         let num = cp - 0xF02CD;
@@ -2570,10 +2618,9 @@ pub fn pua_to_display_text(ch: char) -> Option<String> {
 
 /// [#3385] **텍스트 추출 전용** PUA 표시 변환.
 ///
-/// 렌더 경로는 U+F02B1~F02C4(사각 안 숫자)를 **일부러 원문 그대로 흘린다** — 표준
-/// ①~⑳ 로 매핑하면 1순위 폰트의 *원 안* 글리프가 즉시 잡혀 한컴 정답지의 *사각 안*
-/// 글리프와 멀어지기 때문이다(Task #509 → 캡스톤 F-1 에서 표준 매핑을 되돌린 근거가
-/// `map_pua_bullet_char` 에 남아 있다).
+/// IR은 U+F02B1~F02C4(사각 안 숫자) 원문을 보존하고, 렌더러는 폰트 글리프 대신 결정적인
+/// 사각형+숫자를 합성한다(#4158). 표준 ①~⑳ 로 직접 렌더하면 1순위 폰트의 *원 안* 글리프가
+/// 잡혀 한컴 정답지의 *사각 안* 의미와 달라지므로 렌더 표시 문자열로는 사용하지 않는다.
 ///
 /// 그러나 **텍스트 표면은 사정이 다르다.** 추출 결과는 폰트가 없는 소비자(RAG·LLM·grep)
 /// 에게 가므로 원문 PUA 는 읽을 수 없는 코드포인트일 뿐이다. 그래서 렌더 결정은 그대로
@@ -2599,8 +2646,8 @@ pub fn pua_to_text_surface(text: &str) -> std::borrow::Cow<'_, str> {
 
 fn text_surface_replacement(ch: char) -> Option<String> {
     let cp = ch as u32;
-    // 사각 안 숫자 1~20 — 렌더는 사각 글리프를 위해 원문을 유지하지만, 텍스트에서는
-    // 둘러싸인 숫자라는 뜻이 전달되면 충분하다.
+    // 사각 안 숫자 1~20 — IR은 원문을 유지하고 렌더는 사각형+숫자를 합성하지만, 텍스트
+    // 표면에서는 둘러싸인 숫자라는 뜻이 전달되면 충분하다.
     if (0xF02B1..=0xF02C4).contains(&cp) {
         let n = cp - 0xF02B1; // 0-based
         return char::from_u32(0x2460 + n).map(|c| c.to_string());
@@ -2612,8 +2659,8 @@ fn text_surface_replacement(ch: char) -> Option<String> {
     // 렌더의 글리프 치환 표(`map_pua_bullet_char`)를 텍스트 표면에도 적용한다.
     //
     // 새 매핑을 지어내지 않고 **렌더가 이미 쓰는 표를 재사용**한다 — 근거(한컴 정답지
-    // 실측)가 그 표에 붙어 있고, 렌더 동작은 바뀌지 않는다. 사각 안 숫자(U+F02B1~F02C4)는
-    // 그 표에서 의도적으로 원문 유지라 위 분기가 계속 담당한다.
+    // 실측)가 그 표에 붙어 있다. 사각 안 숫자(U+F02B1~F02C4)는 그 표와 별도로 위 분기가
+    // 계속 담당한다.
     //
     // 규모: 저장소 샘플 346건 중 50건이 추출 텍스트에 PUA 를 흘렸고, 그중 U+F080F
     // (굵은 가로선 ━)만 155,709자다. hwp3-sample11.hwp 는 한 쪽 1,398자 중 181자가

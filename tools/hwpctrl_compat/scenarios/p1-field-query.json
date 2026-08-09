@@ -1,0 +1,15 @@
+{
+  "id": "p1-field-query",
+  "title": "P1 커서 위 필드 조회 — 필드로 이동한 뒤 현재 필드 이름",
+  "ledger": [
+    "HwpCtrl.method.GetCurFieldName",
+    "HwpCtrl.method.MoveToField"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["GetCurFieldName", [0]],
+    ["MoveToField", ["pt_nm", true, true, false]],
+    ["GetCurFieldName", [0]],
+    ["GetCurFieldName", [1]]
+  ]
+}

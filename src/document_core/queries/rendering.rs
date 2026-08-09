@@ -470,7 +470,7 @@ fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
     para_shape_ratio < 0.05 && char_shape_ratio < 0.15
 }
 
-fn uses_hwp3_origin_flow_spacing_before(document: &Document) -> bool {
+pub(crate) fn uses_hwp3_origin_flow_spacing_before(document: &Document) -> bool {
     // HWP3-origin HWP5 변환본은 parser 단계에서 ParaShape spacing 계열을 절반으로
     // 정규화하므로, 본문 흐름 계산에서는 원래 spacing_before를 복원한다.
     // 원본 HWP3는 HWP3 parser가 만든 spacing 값을 기준으로 삼아 여기서 재확대하지 않는다.
@@ -932,12 +932,13 @@ impl DocumentCore {
 
     /// 바이너리 데이터를 0-based `bin_data_content` 인덱스로 반환한다.
     /// [Task #2263] 지연 로딩 도입으로 바이트를 빌려줄 수 없어 소유값을 반환한다.
+    /// [#2550] 압축 해제 상한 초과(deflate bomb 포함)는 항목 없음과 같은 `None` 이다.
     pub fn get_bin_data(&self, index: usize) -> Option<Vec<u8>> {
         // 공개 계약은 소유 `Vec` 이다 — 호출부가 WASM 경계로 넘긴다.
-        self.document
-            .bin_data_content
-            .get(index)
-            .map(|b| b.data.load())
+        self.document.bin_data_content.get(index).and_then(|b| {
+            b.data
+                .load_limited(crate::model::bin_data::MAX_BIN_DATA_BYTES)
+        })
     }
 
     /// [#3668] 직전 렌더에서 발생한 `LAYOUT_OVERFLOW_CELL` 줄 수를 읽고 리셋한다.
@@ -1737,7 +1738,10 @@ impl DocumentCore {
         }
         let content =
             crate::renderer::layout::find_bin_data(&self.document.bin_data_content, bin_data_id)?;
-        let data = content.data.load_shared();
+        // [#2550] 상한 초과는 레이아웃이 이미 placeholder 로 그린 항목이라 바이트도 없다.
+        let data = content
+            .data
+            .load_limited_shared(crate::model::bin_data::MAX_BIN_DATA_BYTES)?;
         let (mime, bytes) =
             crate::renderer::image_resolver::emitted_image_bytes(&data, variant.bakes_watermark());
         Some((mime, bytes.into_owned()))
@@ -6074,6 +6078,10 @@ impl DocumentCore {
         use crate::model::style::HeadType;
         use crate::renderer::layout::resolve_numbering_id;
         use crate::renderer::pagination::PageItem;
+
+        // [#4126/#4128 회귀 가드] 콜드 캐럿 질의의 O(pages) 빌드 폭증 판별용 작업량 카운터.
+        crate::diagnostics::perf_counters::PAGE_TREE_BUILDS
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
         self.layout_engine
             .set_show_transparent_borders(self.show_transparent_borders);

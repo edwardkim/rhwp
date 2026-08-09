@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/bug_hunting_playbook.md
-last_verified: 2026-07-29
+last_verified: 2026-08-08
 ---
 
 # 버그 헌팅 playbook — 실사례 여정 기반 탑다운
@@ -144,12 +144,13 @@ IR 대조로 영원히 잡히지 않는다.
 - **예시(실물)**: `samples/` 원본과 `pdf/`의 버전 표기 한컴 기준 PDF 쌍(업무계획 35쪽·
   수학 20쪽·법학적성시험 언어이해 15쪽 A3). `samples/` 동반 PDF만 있는 등록 쌍은 도구·버전·
   provenance를 별도 확인하기 전에는 참고 자료로만 쓴다.
-- **흐름**: `tools/fidelity_compare`(#3389)로 한컴 PDF ↔ rhwp export-svg 를 페이지별 나란히
+- **흐름**: [`tools/fidelity_compare`](../../tools/fidelity_compare/README.md)(#3389)로 한컴 PDF ↔
+  rhwp export-svg 를 페이지별 나란히
   시트 + 픽셀 diff% 랭킹으로 만들고, 같은 실행의 `text-report.tsv`에서 PDF 텍스트층 ↔
   SVG `<text>` 문자 멀티셋 차이를 확인한다. 픽셀 상위 쪽과 문자 소실·과잉 쪽을 합쳐 후보를
   좁힌 뒤 사람이 감사한다. 저장소 트리를 깨끗하게 유지해야 하면 `--out-dir`로 외부 경로를 쓴다.
   ```bash
-  python tools/fidelity_compare/fidelity_compare.py plan 0 34 \
+  venv/bin/python tools/fidelity_compare/fidelity_compare.py plan 0 34 \
     --out-dir /tmp/rhwp-fidelity-plan
   sort -t $'\t' -k2,2nr -k3,3nr /tmp/rhwp-fidelity-plan/text-report.tsv | head
   ```

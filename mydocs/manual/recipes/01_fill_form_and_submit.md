@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/recipes/01_fill_form_and_submit.md
-last_verified: 2026-08-03
+last_verified: 2026-08-08
 ---
 
 # 레시피 1 — 서식 문서를 채워서 제출용으로 만들기
@@ -133,24 +133,29 @@ rhwp edit fill-fields samples/form-01.hwp --data @data.json -o out.hwp --verify 
 ## 3단계(선택) — 도장·서명을 이미지로 붙인다: `edit insert-image`
 
 관공서 서식은 값만 채워서는 끝나지 않는다 — 직인·서명 이미지가 특정 좌표에
-들어가야 완성이다. `edit insert-image`는 mm 단위 좌표로 그림을 앉힌다.
+들어가야 완성이다. `edit insert-image`는 **HWPUNIT(1/7200 inch)** 단위 좌표로
+그림을 앉힌다 — mm 도 픽셀도 아니다. 1mm ≈ 283.46 HWPUNIT 이므로 "가로·세로
+100mm 지점에 30mm 도장"은 `--x 28346 --y 28346 --width 8504 --height 8504` 다
+([단위 환산](../cli_commands.md#단위-환산) 참조).
 
 ```bash
 rhwp edit insert-image form-01_filled.hwp \
   --image seal.png \
-  --page 0 --x 100 --y 100 --width 30 --height 30 \
+  --page 0 --x 28346 --y 28346 --width 8504 --height 8504 \
   -o form-01_sealed.hwp --json
 ```
 
 실측 출력(이 저장소의 표본 PNG로 실행):
 
 ```json
-{"binDataId":1,"changedPages":[0],"dryRun":false,"height":30,"image":"…/seal.png","output":"…/form-01_sealed.hwp","outputFormat":"hwp5","overflow":[],"page":0,"schemaVersion":"1.0","source":"…/form-01_filled.hwp","verify":null,"width":30,"x":100,"y":100}
+{"binDataId":1,"changedPages":[0],"dryRun":false,"height":8504,"image":"…/seal.png","output":"…/form-01_sealed.hwp","outputFormat":"hwp5","overflow":[],"page":0,"schemaVersion":"1.0","source":"…/form-01_filled.hwp","untrustedContent":false,"untrustedFields":[],"verify":null,"width":8504,"x":28346,"y":28346}
 ```
 
-`x`/`y`/`width`/`height`는 모두 mm, 페이지 좌상단 기준이다. `--page 0`은 첫 페이지
-(0부터 시작). `edit fill-fields`와 마찬가지로 `--verify`를 붙일 수 있다 — 저장
-직후 재파싱해서 그림이 실제로 그 좌표에 들어갔는지 대조한다.
+`x`/`y`/`width`/`height`는 모두 HWPUNIT(1/7200 inch), 용지 왼쪽 위 모서리 기준이다
+(A4 세로 = 59528×84188 HWPUNIT). mm 로 오해하면 30 HWPUNIT ≈ 0.1mm — 도장이 점만
+하게 찍히거나 아예 안 보인다. `--page 0`은 첫 페이지(0부터 시작).
+`edit fill-fields`와 마찬가지로 `--verify`를 붙일 수 있다 — 저장 직후 재파싱해서
+그림이 실제로 그 좌표에 들어갔는지 대조한다.
 
 `overflow` 배열이 비어 있지 않으면 이미지가 페이지 여백을 벗어났다는 뜻이다(삽입
 자체는 막지 않는다 — 판단은 호출자 몫).

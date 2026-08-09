@@ -8,6 +8,7 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { EnvelopeKeyError, RhwpError } from '../src/errors.js';
 import { Envelope, VerifyReport, asEnvelope } from '../src/envelope.js';
 import type { RawEnvelope } from '../src/envelope.js';
 
@@ -85,6 +86,16 @@ describe('없는 필드', () => {
     // 필수 필드에 getOr 를 쓰면 위의 보호를 스스로 버리는 것이다 — 그래서
     // 기본값을 명시하도록 강제한다(인자 하나짜리 오버로드가 없다).
     expect(env.getOr<number | null>('changedPages', null)).toBeNull();
+  });
+
+  it('[D-17] 없는 필드 예외는 RhwpError 계열이다', () => {
+    // 예전엔 일반 Error 를 던져 `catch (e) { if (e instanceof RhwpError) … }` 로
+    // 거르는 코드가 이 예외를 놓쳤다. 파이썬판은 표준 예외 계열(KeyError/
+    // AttributeError)이라도 최소한 하나의 계열이었다 — Node 는 계열 밖이었다.
+    const env = new Envelope({ pageCount: 3 });
+    const error = capture(() => env.get('없는필드'));
+    expect(error).toBeInstanceOf(RhwpError);
+    expect(error).toBeInstanceOf(EnvelopeKeyError);
   });
 
   it('값이 undefined 인 필드는 "있는" 필드다', () => {

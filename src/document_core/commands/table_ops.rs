@@ -696,6 +696,8 @@ impl DocumentCore {
         table.local_resize_cell_widths.clear();
         table.local_resize_cell_heights.clear();
 
+        self.reflow_stale_cells_after_split(section_idx, parent_para_idx, control_idx);
+
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -736,6 +738,8 @@ impl DocumentCore {
         table.local_resize_cell_widths.clear();
         table.local_resize_cell_heights.clear();
 
+        self.reflow_stale_cells_after_split(section_idx, parent_para_idx, control_idx);
+
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -749,6 +753,62 @@ impl DocumentCore {
             "\"cellCount\":{}",
             cell_count
         )))
+    }
+
+    /// [#4138] 셀 나누기 뒤 stale 저장 line_segs 재계산 + vpos 사다리 재구축.
+    ///
+    /// `Table::split_cell*` 는 셀 폭·배치만 바꾸고 저장 line_segs 는 그대로 두므로,
+    /// 렌더러(LayoutEngine::layout_paragraph)가 옛 폭 기준 줄을 그대로 그려 새(더
+    /// 좁은) 셀 클립 경계에서 glyph 가 잘린다. 대상 판별: 저장 seg 폭이 셀 폭을
+    /// 넘으면 stale 로 확정한다 — seg 폭은 항상 패딩만큼 셀 폭보다 작게 계산되므로
+    /// 초과는 옛 폭의 증거다 (`resize_table_cells_native` 의 reflow 계약을 분할에도
+    /// 적용; 분할이 만든 새 셀은 원본 line_segs 를 클론하므로 같은 판별에 걸린다).
+    ///
+    /// per-para reflow 는 각 문단의 vpos 원점을 보존한 채 내부 줄만 다시 싸므로,
+    /// 줄 수가 늘어난 문단 뒤에서 사다리가 역행하고(실측: para[5] 끝 22920 뒤
+    /// para[6] 시작 17160) 컷 기계가 이를 RowBreak hard break 로 오판해 페이지를
+    /// 과소 적재한다. 재래핑한 셀은 사다리를 처음부터 단조 재구축한다.
+    fn reflow_stale_cells_after_split(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) {
+        let stale_cells: Vec<(usize, usize)> = {
+            let para = &self.document.sections[section_idx].paragraphs[parent_para_idx];
+            let Some(Control::Table(table)) = para.controls.get(control_idx) else {
+                return;
+            };
+            table
+                .cells
+                .iter()
+                .enumerate()
+                .filter(|(_, cell)| {
+                    cell.paragraphs
+                        .iter()
+                        .flat_map(|p| p.line_segs.iter())
+                        .any(|ls| (ls.segment_width as i64) > (cell.width as i64))
+                })
+                .map(|(ci, cell)| (ci, cell.paragraphs.len()))
+                .collect()
+        };
+        for (cell_idx, para_count) in stale_cells {
+            for cell_para_idx in 0..para_count {
+                self.reflow_cell_paragraph(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                );
+            }
+            self.rebuild_table_cell_vpos_ladder_native(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+            );
+        }
     }
 
     /// 범위 내 셀들을 각각 N줄 × M칸으로 분할한다 (네이티브).
@@ -785,6 +845,8 @@ impl DocumentCore {
         // 인덱스 배치를 바꾸므로 local_resize_cell_widths/heights가 stale해진다. 함께 비운다.
         table.local_resize_cell_widths.clear();
         table.local_resize_cell_heights.clear();
+
+        self.reflow_stale_cells_after_split(section_idx, parent_para_idx, control_idx);
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -3130,6 +3192,29 @@ impl DocumentCore {
         parent_para_idx: usize,
         control_idx: usize,
     ) -> Result<String, HwpError> {
+        self.delete_control_native_impl(section_idx, parent_para_idx, control_idx, true)
+    }
+
+    /// 문단이 담은 컨트롤 하나를 지운다 — 갈래를 가리지 않는다(웹한글컨트롤 `DeleteCtrl`).
+    ///
+    /// 표 전용 경로와 같은 몸을 쓴다. 확장 컨트롤이 차지하던 여덟 칸을 닫는 일(뒤따르는
+    /// `char_offsets` 를 8씩 당기고 `char_count` 를 줄이는 것)이 갈래와 무관하기 때문이다.
+    pub fn delete_control_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<String, HwpError> {
+        self.delete_control_native_impl(section_idx, parent_para_idx, control_idx, false)
+    }
+
+    fn delete_control_native_impl(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        require_table: bool,
+    ) -> Result<String, HwpError> {
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
                 "구역 인덱스 {} 범위 초과",
@@ -3152,10 +3237,12 @@ impl DocumentCore {
                 )));
             }
             // 표 컨트롤인지 확인
-            if !matches!(
-                &para.controls[control_idx],
-                crate::model::control::Control::Table(_)
-            ) {
+            if require_table
+                && !matches!(
+                    &para.controls[control_idx],
+                    crate::model::control::Control::Table(_)
+                )
+            {
                 return Err(HwpError::RenderError(
                     "지정된 컨트롤이 표가 아닙니다".to_string(),
                 ));
@@ -3328,6 +3415,8 @@ impl DocumentCore {
                         cell_para.text = text;
                         let new_len = cell_para.text.chars().count();
                         cell_para.char_offsets = (0..new_len).map(|i| i as u32).collect();
+                        // [#4149] 원시 text 대입 — 단일줄 과밀 memo 무효화.
+                        cell_para.invalidate_single_line_overflow_memo();
                     }
                 }
             }

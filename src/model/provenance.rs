@@ -50,6 +50,7 @@ pub struct LayoutCompatibilityProfile {
     hwp3_native_layout: bool,
     hwp3_password_layout: bool,
     hwpx_stored_layout: bool,
+    hwpx_container: bool,
     hwp5_origin_hwpx: bool,
     native_hwp5_layout: bool,
 }
@@ -59,6 +60,7 @@ impl LayoutCompatibilityProfile {
         hwp3_layout: bool,
         hwp3_native_layout: bool,
         hwpx_stored_layout: bool,
+        hwpx_container: bool,
         hwp5_origin_hwpx: bool,
         native_hwp5_layout: bool,
     ) -> Self {
@@ -67,6 +69,7 @@ impl LayoutCompatibilityProfile {
             hwp3_native_layout,
             hwp3_password_layout: false,
             hwpx_stored_layout,
+            hwpx_container,
             hwp5_origin_hwpx,
             native_hwp5_layout,
         }
@@ -109,6 +112,15 @@ impl LayoutCompatibilityProfile {
         self.hwpx_stored_layout
     }
 
+    /// 입력 원본이 실제 HWPX(OWPML ZIP) 컨테이너인지 여부.
+    ///
+    /// `hwpx_stored_layout()`과 달리 rhwp HWPX→HWP 변환 계보는 포함하지 않는다.
+    /// 컨테이너에만 존재하는 물리 조각 결함 보정은 이 질의를 사용해야 변환 HWP의
+    /// 정상 HWP5 뷰포트를 바꾸지 않는다.
+    pub fn hwpx_container(&self) -> bool {
+        self.hwpx_container
+    }
+
     /// rhwp 가 HWP5 원본에서 내보낸 HWPX 인지 — HWPX 컨테이너라도 HWP5 원본의
     /// 저장 행 높이·pagination marker 를 보존한다. 기존 `is_hwp5_origin_hwpx` 동치.
     pub fn hwp5_origin_hwpx(&self) -> bool {
@@ -126,6 +138,6 @@ impl Default for LayoutCompatibilityProfile {
     fn default() -> Self {
         // 렌더러 단위 테스트와 생성기 경로가 역사적으로 all-false 프로필을
         // HWP5 기본값으로 사용했다. 새 출처 신호도 같은 기본 의미를 보존한다.
-        Self::new(false, false, false, false, true)
+        Self::new(false, false, false, false, false, true)
     }
 }

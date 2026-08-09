@@ -117,6 +117,17 @@ class Envelope(Mapping[str, Any]):
         return VerifyReport(value) if isinstance(value, Mapping) else None
 
     @property
+    def verify_pages(self) -> Optional["VerifyPagesReport"]:
+        """[트랙 G R61 D-10] `--verify-pages` 보고가 있으면 :class:`VerifyPagesReport`,
+        미요청이면 ``None``.
+
+        :attr:`verify` 와 같은 규약이다 — ``None`` 은 "검증 안 함"이지 "검증 실패"가
+        아니다.
+        """
+        value = self._raw.get("verifyPages")
+        return VerifyPagesReport(value) if isinstance(value, Mapping) else None
+
+    @property
     def changed_pages(self) -> Optional[List[int]]:
         """편집이 바꾼 쪽 목록(0 기준). 확정 불가·무산출이면 ``None``.
 
@@ -159,6 +170,33 @@ class VerifyReport(Envelope):
 
     def __bool__(self) -> bool:
         """``if result.verify:`` 가 "통과했나"로 읽히도록."""
+        return self.identical
+
+
+class VerifyPagesReport(Envelope):
+    """`verifyPages` 하위 봉투 — `--verify-pages` 요청 시 저장 전/후 쪽수 비교."""
+
+    __slots__ = ()
+
+    @property
+    def before(self) -> Optional[int]:
+        """저장 전(메모리 IR) 쪽수."""
+        value = self._raw.get("before")
+        return None if value is None else int(value)
+
+    @property
+    def after(self) -> Optional[int]:
+        """저장 후 재파싱한 쪽수."""
+        value = self._raw.get("after")
+        return None if value is None else int(value)
+
+    @property
+    def identical(self) -> bool:
+        """저장 전후 쪽수가 같은가. 이 값이 판정의 전부다."""
+        return bool(self._raw.get("identical", False))
+
+    def __bool__(self) -> bool:
+        """``if result.verify_pages:`` 가 "통과했나"로 읽히도록."""
         return self.identical
 
 

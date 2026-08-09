@@ -2,9 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  getSelectionRectsInCellByPathWithPageHints,
   getSelectionRectsInCellWithPageHints,
   type CellSelectionRectDocument,
   type CellSelectionRectQuery,
+  type PathCellSelectionRectDocument,
+  type PathCellSelectionRectQuery,
   type SelectionPageHints,
 } from '../src/core/selection-page-hints.ts';
 
@@ -86,4 +89,52 @@ test('구버전 WASM에 Ex가 없으면 hints가 있어도 positional로 복구�
     [],
   );
   assert.deepEqual(calls, [[0, 0, 2, 2, 1250, 0, 1275, 1]]);
+});
+
+const pathQuery: PathCellSelectionRectQuery = {
+  sectionIdx: 0,
+  parentParaIdx: 7,
+  path: JSON.stringify([
+    { controlIndex: 1, cellIndex: 0, cellParaIndex: 0 },
+    { controlIndex: 2, cellIndex: 0, cellParaIndex: 12 },
+    { controlIndex: 0, cellIndex: 50, cellParaIndex: 0 },
+  ]),
+  startCellParaIdx: 0,
+  startCharOffset: 0,
+  endCellParaIdx: 0,
+  endCharOffset: 5,
+};
+
+test('중첩 셀은 전체 path와 endpoint page hint를 Ex options로 전달한다', () => {
+  const calls: unknown[] = [];
+  const doc: PathCellSelectionRectDocument = {
+    getSelectionRectsInCellByPath() {
+      throw new Error('hinted path에서 positional API를 호출하면 안 됨');
+    },
+    getSelectionRectsInCellByPathEx(optionsJson) {
+      calls.push(JSON.parse(optionsJson));
+      return '[{"pageIndex":4,"x":10,"y":20,"width":30,"height":12}]';
+    },
+  };
+
+  const rects = getSelectionRectsInCellByPathWithPageHints(doc, pathQuery, {
+    startPageHint: 4,
+    endPageHint: 4,
+  });
+
+  assert.equal(rects.length, 1);
+  assert.deepEqual(calls, [{ ...pathQuery, startPageHint: 4, endPageHint: 4 }]);
+});
+
+test('중첩 셀 page hint가 없으면 같은 path positional API를 유지한다', () => {
+  const calls: unknown[][] = [];
+  const doc: PathCellSelectionRectDocument = {
+    getSelectionRectsInCellByPath(...args) {
+      calls.push(args);
+      return '[]';
+    },
+  };
+
+  assert.deepEqual(getSelectionRectsInCellByPathWithPageHints(doc, pathQuery), []);
+  assert.deepEqual(calls, [[0, 7, pathQuery.path, 0, 0, 0, 5]]);
 });

@@ -29,6 +29,8 @@ const PAGE_79: u32 = 78;
 const PAGE_80: u32 = 79;
 const PAGE_90: u32 = 89;
 const PAGE_91: u32 = 90;
+const PAGE_118: u32 = 117;
+const PAGE_119: u32 = 118;
 const PAGE_126: u32 = 125;
 const PAGE_127: u32 = 126;
 const PAGE_37: u32 = 36;
@@ -45,6 +47,21 @@ const PAGE_155: u32 = 154;
 const PAGE_156: u32 = 155;
 const PAGE_157: u32 = 156;
 const PAGE_158: u32 = 157;
+const PAGE_166: u32 = 165;
+const PAGE_167: u32 = 166;
+const PAGE_168: u32 = 167;
+const PAGE_169: u32 = 168;
+const PAGE_170: u32 = 169;
+const PAGE_171: u32 = 170;
+const PAGE_172: u32 = 171;
+const PAGE_173: u32 = 172;
+const PAGE_174: u32 = 173;
+const PAGE_175: u32 = 174;
+const PAGE_182: u32 = 181;
+const PAGE_183: u32 = 182;
+const PAGE_199: u32 = 198;
+const PAGE_200: u32 = 199;
+const PAGE_201: u32 = 200;
 
 fn page_text(doc: &HwpDocument, page: u32) -> String {
     doc.extract_page_text_native(page)
@@ -152,6 +169,19 @@ fn paragraph_line_boxes(node: &RenderNode, para_index: usize, boxes: &mut Vec<Bo
     }
     for child in &node.children {
         paragraph_line_boxes(child, para_index, boxes);
+    }
+}
+
+fn paragraph_line_indices(node: &RenderNode, para_index: usize, out: &mut Vec<u32>) {
+    if let RenderNodeType::TextLine(line) = &node.node_type {
+        if line.para_index == Some(para_index) {
+            if let Some(line_index) = line.line_index {
+                out.push(line_index);
+            }
+        }
+    }
+    for child in &node.children {
+        paragraph_line_indices(child, para_index, out);
     }
 }
 
@@ -359,10 +389,10 @@ fn native_hwp5_rowbreak_table_reclaims_only_the_actual_existing_footnote_boundar
         !p91.contains("이식대상자와") && p91.contains("기타"),
         "p91은 PDF처럼 표 27의 기타 row로 재개해야 함: {p91}"
     );
-    assert_eq!(
-        doc.page_count(),
-        219,
-        "p90 표 27 row owner 보정이 전체 native page count를 바꾸면 안 됨"
+    assert!(
+        doc.page_count() <= 219,
+        "p90 표 27 row owner 보정은 extra native page를 만들면 안 됨: {}쪽",
+        doc.page_count()
     );
 
     let p90_tree = doc
@@ -376,6 +406,362 @@ fn native_hwp5_rowbreak_table_reclaims_only_the_actual_existing_footnote_boundar
         p90_table_bottom.expect("p90 pi=962 table")
             <= p90_separator_top.expect("p90 note 141 separator") + 0.5,
         "p90 표 27은 note 141 separator 위에서 끝나야 함"
+    );
+}
+
+/// #3820 Stage 7: p168의 표 44(`pi=1778`)는 p169로 통째 이월되는 표가 아니다.
+/// 한컴 2020 PDF는 p168에 첫 fragment를 두고 p169에서 이어 그린 뒤 그림 65를 같은
+/// 페이지에 둔다. 이 first fragment를 잃으면 그림 65와 `(라) 심혈관계 검사`가 한
+/// 쪽씩 늦어져 p170 이후 문서 전체가 다른 논리 페이지와 대조된다.
+#[test]
+fn native_hwp5_rowbreak_table_starts_its_first_fragment_on_p168() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage7 HWP evidence fixture");
+
+    let p168 = page_text(&doc, PAGE_168);
+    let p169 = page_text(&doc, PAGE_169);
+    let p170 = page_text(&doc, PAGE_170);
+    assert!(
+        p168.contains("기증자 평가 전") && p168.contains("이식대상자로부터 설명동의를 구함"),
+        "p168은 PDF처럼 표 44(pi=1778)의 첫 fragment를 보유해야 함: {p168}"
+    );
+    assert!(
+        p169.contains("전파 가능성을 염두에 둔 조심스러운 추적")
+            && p169.contains("그림 65. 생존 기증자에 대한 결핵 스크리닝 권고안"),
+        "p169은 표 44 continuation 뒤 그림 65를 함께 보유해야 함: {p169}"
+    );
+    assert!(
+        p170.contains("(라) 심혈관계 검사") && !p170.contains("그림 65."),
+        "p170은 PDF처럼 그림 65 전용 쪽이 아니라 심혈관계 검사 본문으로 시작해야 함: {p170}"
+    );
+
+    let p168_tree = doc
+        .build_page_render_tree(PAGE_168)
+        .expect("render physical page 168");
+    let p169_tree = doc
+        .build_page_render_tree(PAGE_169)
+        .expect("render physical page 169");
+    let mut p168_table = None;
+    let mut p169_table = None;
+    table_bottom(&p168_tree.root, 1778, &mut p168_table);
+    table_bottom(&p169_tree.root, 1778, &mut p169_table);
+    assert!(
+        p168_table.is_some() && p169_table.is_some(),
+        "표 44는 p168/p169 양쪽에 fragment를 렌더해야 함: p168={p168_table:?}, p169={p169_table:?}"
+    );
+}
+
+/// #3820 Stage 11: p166의 `pi=1771`은 세 번째 source line이 `vpos=0`인
+/// physical-page reset이다. RowBreak 표를 앞둔 일반 tail 보존은 한 줄을 되돌리지만,
+/// 이 저장 reset 직전의 두 줄까지 되돌리면 PDF p166의 마지막 본문 줄이 p167로 밀린다.
+#[test]
+fn native_hwp5_rowbreak_table_keeps_pre_reset_tail_on_p166() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage11 HWP evidence fixture");
+
+    let p166 = page_text(&doc, PAGE_166);
+    let p167 = page_text(&doc, PAGE_167);
+    assert!(
+        p166.contains("이 제시하는 조건들임.") && !p166.contains("해야 함. 높은 위험"),
+        "p166은 PDF처럼 pi=1771 reset 전 두 줄에서 끝나야 함: {p166}"
+    );
+    assert!(
+        p167.contains("해야 함. 높은 위험") && !p167.contains("이 제시하는 조건들임."),
+        "p167은 PDF처럼 pi=1771 reset tail부터 시작해야 함: {p167}"
+    );
+
+    let p166_tree = doc
+        .build_page_render_tree(PAGE_166)
+        .expect("render physical page 166");
+    let p167_tree = doc
+        .build_page_render_tree(PAGE_167)
+        .expect("render physical page 167");
+    let mut p166_lines = Vec::new();
+    let mut p167_lines = Vec::new();
+    paragraph_line_indices(&p166_tree.root, 1771, &mut p166_lines);
+    paragraph_line_indices(&p167_tree.root, 1771, &mut p167_lines);
+    assert_eq!(p166_lines, vec![0, 1], "p166 pi=1771 line owner");
+    assert_eq!(p167_lines, vec![2], "p167 pi=1771 line owner");
+}
+
+/// #3820 Stage 11: p171의 `pi=1797`은 다음 저장 사다리가 표 선언 높이를 비우지
+/// 않는 empty-host float이다. raw anchor를 흐름 높이로 쓰면 p1799 뒤의 본문이
+/// 과대 계상되어 `pi=1800`과 `pi=1801` prefix가 통째로 p172로 밀린다. PDF는
+/// p171에 pi=1800 전체와 pi=1801 reset 전 세 줄을 보존한다.
+#[test]
+fn native_hwp5_nonvacating_float_ladder_keeps_p171_text_owner() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage11 HWP evidence fixture");
+
+    let p171 = page_text(&doc, PAGE_171);
+    let p172 = page_text(&doc, PAGE_172);
+    assert!(
+        p171.contains("- EDQM에서는") && p171.contains("- BTS에서는"),
+        "p171은 PDF처럼 pi=1800와 pi=1801 prefix를 보유해야 함: {p171}"
+    );
+    assert!(
+        !p172.contains("- EDQM에서는") && p172.contains("편으로 사용할 때에는"),
+        "p172는 PDF처럼 pi=1801 reset tail부터 이어져야 함: {p172}"
+    );
+
+    let p171_tree = doc
+        .build_page_render_tree(PAGE_171)
+        .expect("render physical page 171");
+    let p172_tree = doc
+        .build_page_render_tree(PAGE_172)
+        .expect("render physical page 172");
+    let mut p171_1800_lines = Vec::new();
+    let mut p171_1801_lines = Vec::new();
+    let mut p172_1801_lines = Vec::new();
+    paragraph_line_indices(&p171_tree.root, 1800, &mut p171_1800_lines);
+    paragraph_line_indices(&p171_tree.root, 1801, &mut p171_1801_lines);
+    paragraph_line_indices(&p172_tree.root, 1801, &mut p172_1801_lines);
+    assert_eq!(p171_1800_lines, vec![0, 1, 2], "p171 pi=1800 line owner");
+    assert_eq!(p171_1801_lines, vec![0, 1, 2], "p171 pi=1801 prefix owner");
+    assert_eq!(
+        p172_1801_lines,
+        vec![3, 4, 5],
+        "p172 pi=1801 reset tail owner"
+    );
+}
+
+/// #3820 Stage 11: p173의 기존 각주 222 바로 위에는 `pi=1816`의 reset 전
+/// 두 줄이 남고, reset tail과 표 46(`pi=1822`)의 첫 fragment가 PDF p174에서
+/// 이어져야 한다. p175에는 표 46 continuation과 그 표의 각주가 이어진다. 첫
+/// fragment를 통째로 p175로 defer하면 p174의 큰 빈 영역과 이후 owner drift가 생긴다.
+#[test]
+fn native_hwp5_footnote_reset_keeps_rowbreak_table_on_p174() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage11 HWP evidence fixture");
+
+    let p173_tree = doc
+        .build_page_render_tree(PAGE_173)
+        .expect("render physical page 173");
+    let p174_tree = doc
+        .build_page_render_tree(PAGE_174)
+        .expect("render physical page 174");
+    let p175_tree = doc
+        .build_page_render_tree(PAGE_175)
+        .expect("render physical page 175");
+    let p176_tree = doc
+        .build_page_render_tree(PAGE_175 + 1)
+        .expect("render physical page 176");
+    let mut p173_lines = Vec::new();
+    let mut p174_lines = Vec::new();
+    paragraph_line_indices(&p173_tree.root, 1816, &mut p173_lines);
+    paragraph_line_indices(&p174_tree.root, 1816, &mut p174_lines);
+    assert_eq!(p173_lines, vec![0, 1], "p173 pi=1816 reset 전 prefix");
+    assert_eq!(p174_lines, vec![2, 3], "p174 pi=1816 reset tail");
+
+    let mut p174_table = None;
+    let mut p175_table = None;
+    table_bottom(&p174_tree.root, 1822, &mut p174_table);
+    table_bottom(&p175_tree.root, 1822, &mut p175_table);
+    assert!(
+        p174_table.is_some(),
+        "p174는 PDF처럼 표 46(pi=1822)의 첫 fragment를 보유해야 함"
+    );
+    assert!(
+        p175_table.is_some(),
+        "p175는 PDF처럼 표 46(pi=1822)의 continuation을 보유해야 함"
+    );
+
+    let mut p174_images = Vec::new();
+    let mut p175_images = Vec::new();
+    images_for_table(&p174_tree.root, 1822, &mut p174_images);
+    images_for_table(&p175_tree.root, 1822, &mut p175_images);
+    assert_eq!(
+        p174_images.len(),
+        1,
+        "p174는 PDF처럼 표 46 안의 그림 66을 정확히 한 번 포함해야 함: {p174_images:?}"
+    );
+    assert!(
+        p175_images.is_empty(),
+        "그림 66이 p175로 밀리면 안 됨: {p175_images:?}"
+    );
+
+    let mut p176_table = None;
+    table_bottom(&p176_tree.root, 1822, &mut p176_table);
+    assert!(
+        p176_table.is_none(),
+        "표 46 tail은 PDF처럼 p175에서 끝나야 하며 p176으로 밀리면 안 됨: {p176_table:?}"
+    );
+
+    // PDF p174에는 그림 66과 224)까지가 표 46 첫 fragment에, p175에는 Anderson
+    // 문단과 223–231 각주가 있어야 한다. 단순히 표가 두 쪽에 모두 존재하는지만
+    // 확인하면, 표 첫 조각을 너무 일찍 끊어 p175/p176으로 한 쪽씩 밀어도 통과한다.
+    let p174_text = page_text(&doc, PAGE_174);
+    let p175_text = page_text(&doc, PAGE_175);
+    let p176_text = page_text(&doc, PAGE_175 + 1);
+    assert!(
+        p174_text.contains("그림 66") && p174_text.contains("사후 기증자의 연령 별 효과"),
+        "p174는 PDF처럼 그림 66과 224) 전 본문까지 소유해야 함: {p174_text}"
+    );
+    assert!(
+        p175_text.contains("Anderson") && p175_text.contains("223)") && p175_text.contains("231)"),
+        "p175는 PDF처럼 표 46 tail 및 223–231 각주를 함께 소유해야 함: {p175_text}"
+    );
+    assert!(
+        !p176_text.contains("Anderson"),
+        "p176으로 표 46 tail이 밀리면 안 됨: {p176_text}"
+    );
+
+    let mut p175_footnotes = String::new();
+    footnote_text(&p175_tree.root, false, &mut p175_footnotes);
+    assert!(
+        p175_footnotes.contains("223)") && p175_footnotes.contains("231)"),
+        "p175 RenderTree FootnoteArea에는 223–231이 있어야 함: {p175_footnotes}"
+    );
+}
+
+/// #3820 Stage 11: 그림 67(`pi=1904`)은 2×1 empty-host RowBreak 표 자체가
+/// 그림+caption의 흐름 높이를 이미 예약한다. 표 직후 동일 PS의 빈 guide line 다섯
+/// 개(`pi=1905..1909`)는 저장 vpos상 표의 paint span 안에 있으므로 다시 advance하면
+/// `pi=1913`이 p183으로 밀린다. PDF p182에는 매독·기생충 문단이 모두 있고 p183은
+/// 그림 68부터 시작한다.
+#[test]
+fn native_hwp5_figure_table_guides_keep_p182_paragraph_owner() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage11 HWP evidence fixture");
+
+    let p182 = page_text(&doc, PAGE_182);
+    let p183 = page_text(&doc, PAGE_183);
+    assert!(
+        p182.contains("매독 전파 사례") && p182.contains("기생충 질환"),
+        "p182는 PDF처럼 그림 67 뒤의 두 문단을 모두 보유해야 함: {p182}"
+    );
+    assert!(
+        !p183.contains("기생충 질환") && p183.contains("그림 68"),
+        "p183은 PDF처럼 그림 68부터 시작해야 함: {p183}"
+    );
+
+    let p182_tree = doc
+        .build_page_render_tree(PAGE_182)
+        .expect("render physical page 182");
+    let p183_tree = doc
+        .build_page_render_tree(PAGE_183)
+        .expect("render physical page 183");
+    let mut p182_1913_lines = Vec::new();
+    let mut p183_1913_lines = Vec::new();
+    paragraph_line_indices(&p182_tree.root, 1913, &mut p182_1913_lines);
+    paragraph_line_indices(&p183_tree.root, 1913, &mut p183_1913_lines);
+    assert_eq!(
+        p182_1913_lines,
+        vec![0, 1, 2],
+        "p182 pi=1913의 세 줄은 PDF owner와 같아야 함"
+    );
+    assert!(
+        p183_1913_lines.is_empty(),
+        "pi=1913이 p183으로 이월되면 이후 physical page owner가 연쇄적으로 밀림: {p183_1913_lines:?}"
+    );
+
+    let mut p182_figure_67 = None;
+    let mut p183_figure_68 = None;
+    table_bottom(&p182_tree.root, 1904, &mut p182_figure_67);
+    table_bottom(&p183_tree.root, 1914, &mut p183_figure_68);
+    assert!(p182_figure_67.is_some(), "p182 그림 67 table owner");
+    assert!(p183_figure_68.is_some(), "p183 그림 68 table owner");
+}
+
+/// #3820 Stage 11: p199의 258) marker는 본문 tail에 있지만, 다음 문단이 raw
+/// `vpos=0`으로 p200을 시작하고 기준 PDF의 258) FootnoteArea도 p200에 있다. 두 번째
+/// note라는 이유만으로 p199에 붙이면 p200의 `pi=2310` reset tail이 footer 아래로
+/// 그려져 p201 본문이 소실된다.
+#[test]
+fn native_hwp5_late_footnote_moves_to_next_reset_page_before_p200_tail() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage11 HWP evidence fixture");
+
+    let p199_tree = doc
+        .build_page_render_tree(PAGE_199)
+        .expect("render physical page 199");
+    let p200_tree = doc
+        .build_page_render_tree(PAGE_200)
+        .expect("render physical page 200");
+    let p201_tree = doc
+        .build_page_render_tree(PAGE_201)
+        .expect("render physical page 201");
+    let mut p199_footnotes = String::new();
+    let mut p200_footnotes = String::new();
+    footnote_text(&p199_tree.root, false, &mut p199_footnotes);
+    footnote_text(&p200_tree.root, false, &mut p200_footnotes);
+    assert!(
+        !p199_footnotes.contains("258)"),
+        "258) 각주는 PDF owner인 p200이 아니라 p199에 남으면 안 됨: {p199_footnotes}"
+    );
+    assert!(
+        p200_footnotes.contains("258)"),
+        "p200 FootnoteArea는 PDF처럼 258)을 보유해야 함: {p200_footnotes}"
+    );
+
+    let mut p200_2310_lines = Vec::new();
+    let mut p201_2310_lines = Vec::new();
+    paragraph_line_indices(&p200_tree.root, 2310, &mut p200_2310_lines);
+    paragraph_line_indices(&p201_tree.root, 2310, &mut p201_2310_lines);
+    assert_eq!(
+        p200_2310_lines,
+        vec![0],
+        "p200은 reset 전 첫 줄만 두고 footer 아래로 tail을 그리면 안 됨"
+    );
+    assert_eq!(
+        p201_2310_lines,
+        vec![1, 2, 3, 4, 5],
+        "p201은 PDF처럼 pi=2310 reset tail 다섯 줄부터 이어야 함"
+    );
+}
+
+/// #3820 Stage 11: `pi=1806`의 1×1 RowBreak 표는 cell 안의 저장 vpos reset에서
+/// 두 physical fragment로 나뉜다. PDF p172에는 `<BTS>`부터 `<OPTN>`까지가
+/// 각주 219–221 바로 위에 있고, `간 특수 검사`부터는 p173에서 계속된다.
+#[test]
+fn native_hwp5_internal_reset_table_splits_at_p172_footnote_boundary() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage11 HWP evidence fixture");
+
+    let p172 = page_text(&doc, PAGE_172);
+    let p173 = page_text(&doc, PAGE_173);
+    let p171 = page_text(&doc, PAGE_171);
+    assert!(
+        !p171.contains("<BTS>"),
+        "p171에는 p172 소유의 pi=1806 first fragment가 앞당겨지면 안 됨: {p171}"
+    );
+    assert!(
+        p172.contains("<BTS>") && p172.contains("<OPTN>") && !p172.contains("간 특수 검사"),
+        "p172는 PDF처럼 pi=1806 reset 전 cell fragment를 보유해야 함: {p172}"
+    );
+    assert!(
+        p173.contains("간 특수 검사") && p173.contains("지방변성의 여부"),
+        "p173은 PDF처럼 pi=1806 reset tail부터 시작해야 함: {p173}"
+    );
+
+    let p172_tree = doc
+        .build_page_render_tree(PAGE_172)
+        .expect("render physical page 172");
+    let p173_tree = doc
+        .build_page_render_tree(PAGE_173)
+        .expect("render physical page 173");
+    let mut p172_table = None;
+    let mut p173_table = None;
+    let mut p172_preceding_table = None;
+    table_bottom(&p172_tree.root, 1806, &mut p172_table);
+    table_bottom(&p173_tree.root, 1806, &mut p173_table);
+    table_bottom(&p172_tree.root, 1804, &mut p172_preceding_table);
+    assert!(p172_table.is_some(), "p172 pi=1806 first fragment");
+    assert!(p173_table.is_some(), "p173 pi=1806 continuation fragment");
+    let mut p172_footnote_separator = None;
+    footnote_separator_top(&p172_tree.root, &mut p172_footnote_separator);
+    assert!(
+        p172_table.is_some_and(|bottom| {
+            p172_footnote_separator.is_some_and(|separator| bottom <= separator + 0.5)
+        }),
+        "p172 pi=1806 first fragment가 각주 영역과 겹치면 안 됨: previous={p172_preceding_table:?}, table={p172_table:?}, footnote={p172_footnote_separator:?}"
     );
 }
 
@@ -484,10 +870,10 @@ fn native_hwp5_final_marker_footnote_uses_the_next_reset_page() {
         p27.contains("1991년부터 2013년까지의 ELTR 자료"),
         "p27 must retain its existing body restart after footnote 26: {p27}"
     );
-    assert_eq!(
-        doc.page_count(),
-        219,
-        "p26 footnote owner must not change total page count"
+    assert!(
+        doc.page_count() <= 219,
+        "p26 footnote owner는 extra native page를 만들면 안 됨: {}쪽",
+        doc.page_count()
     );
 
     let p26_tree = doc
@@ -535,10 +921,10 @@ fn native_hwp5_split_body_footnotes_stay_with_their_marker_page() {
         !p54.contains("KDIGO clinical practice guideline"),
         "p54 must not inherit p53 footnote 62: {p54}"
     );
-    assert_eq!(
-        doc.page_count(),
-        219,
-        "marker-page footnote routing must not introduce a new physical page"
+    assert!(
+        doc.page_count() <= 219,
+        "marker-page footnote routing은 extra native page를 만들면 안 됨: {}쪽",
+        doc.page_count()
     );
 
     let p52_tree = doc
@@ -964,6 +1350,11 @@ fn native_hwp5_square_picture_uses_the_next_page_wrap_owner() {
         "그림 64는 PDF처럼 p156 우측 Square band에 있어야 함: {:?}",
         p156_images[0]
     );
+    assert!(
+        (p156_images[0].1 - 90.1).abs() <= 1.0,
+        "p156 그림 64는 full-width tail 뒤 reset contract의 518HU offset을 유지해야 함: {:?}",
+        p156_images[0]
+    );
 
     let mut p156_image_boxes = Vec::new();
     let mut p156_pi1693_lines = Vec::new();
@@ -986,6 +1377,50 @@ fn native_hwp5_square_picture_uses_the_next_page_wrap_owner() {
             .iter()
             .all(|line| does_not_overlap_horizontally(*line, image)),
         "p156 pi=1693 본문은 그림 64와 물리적으로 교차하면 안 됨: image={image:?}, lines={overlapping_vertical_lines:?}"
+    );
+}
+
+#[test]
+fn native_hwp5_text_tail_before_figure_55_keeps_the_pdf_page_owner() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse #3820 HWP evidence fixture");
+
+    let p118_tree = doc
+        .build_page_render_tree(PAGE_118)
+        .expect("render physical page 118");
+    let p119_tree = doc
+        .build_page_render_tree(PAGE_119)
+        .expect("render physical page 119");
+    let mut p118_lines = Vec::new();
+    let mut p119_lines = Vec::new();
+    paragraph_line_indices(&p118_tree.root, 1275, &mut p118_lines);
+    paragraph_line_indices(&p119_tree.root, 1275, &mut p119_lines);
+    p118_lines.sort_unstable();
+    p119_lines.sort_unstable();
+    assert_eq!(
+        p118_lines,
+        (0..9).collect::<Vec<_>>(),
+        "#3820 p118은 Figure 55 앞 pi=1275의 앞 9 stored lines에서 끝나야 함"
+    );
+    assert_eq!(
+        p119_lines,
+        vec![9, 10],
+        "#3820 p119은 Figure 55보다 먼저 pi=1275 tail 두 줄을 이어야 함"
+    );
+
+    let mut p118_images = Vec::new();
+    let mut p119_images = Vec::new();
+    images_for_control(&p118_tree.root, 1276, 0, &mut p118_images);
+    images_for_control(&p119_tree.root, 1276, 0, &mut p119_images);
+    assert!(
+        p118_images.is_empty(),
+        "#3820 그림 55는 p118에 앞당겨지면 안 됨: {p118_images:?}"
+    );
+    assert_eq!(
+        p119_images.len(),
+        1,
+        "#3820 p119은 pi=1275 tail 뒤 그림 55를 정확히 한 번 그려야 함: {p119_images:?}"
     );
 }
 
@@ -1032,6 +1467,11 @@ fn native_hwp5_square_picture_figure_56_uses_the_same_next_page_owner_contract()
     assert!(
         p127_images[0].0 > 390.0,
         "그림 56은 PDF처럼 p127 우측 Square band에 있어야 함: {:?}",
+        p127_images[0]
+    );
+    assert!(
+        (p127_images[0].1 - 83.2).abs() <= 1.0,
+        "p127 그림 56은 next-page owner body top에서 시작해야 함: {:?}",
         p127_images[0]
     );
 

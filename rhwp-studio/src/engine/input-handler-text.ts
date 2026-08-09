@@ -384,12 +384,10 @@ export function onCompositionStart(this: any): void {
     this.textarea.value = '';
     this.isComposing = false;
     this.compositionAnchor = null;
-    this.clearCompositionAnchorRect();
     this.compositionLength = 0;
     return;
   }
 
-  this.captureCompositionAnchorRect(basePos);
   this.isComposing = true;
   if (this.cursor.isInHeaderFooter()) {
     // 머리말/꼬리말 모드에서는 hfCharOffset을 anchor의 charOffset으로 사용
@@ -409,7 +407,6 @@ export function onCompositionEnd(this: any): void {
 
   this.isComposing = false;
   this.compositionAnchor = null;
-  this.clearCompositionAnchorRect();
   this.compositionLength = 0;
   this.textarea.value = '';
   this.caret.hideComposition();
@@ -484,7 +481,7 @@ export function onInput(this: any, e?: InputEvent): void {
   // IME 조합 중: 이전 조합 텍스트 삭제 → 현재 조합 텍스트 삽입 (실시간 렌더링)
   // Undo 스택에는 기록하지 않음 (compositionend에서 한 번에 기록)
   if (this.isComposing && this.compositionAnchor) {
-    const anchor = this.compositionAnchor;
+    let anchor = this.compositionAnchor;
     const beforePageIndex = this.cursor.getRect()?.pageIndex;
     if (!this.canInsertTextInFormMode?.(anchor)) {
       this.textarea.value = '';
@@ -492,10 +489,39 @@ export function onInput(this: any, e?: InputEvent): void {
     }
     this.resetRawTextMutationEffects();
 
-    this.replaceTextAtRaw(anchor, this.compositionLength, text);
+    try {
+      this.replaceTextAtRaw(anchor, this.compositionLength, text);
+    } catch (err) {
+      // wasm 의 deferred replace 범위 가드가 거부하면(외부 변이로 앵커·길이가 낡은
+      // 경합) 여기서 던진 채 두면 onInput 전체가 죽어 조합 추적이 낡은 값으로
+      // wedge 된다. 조합을 현재 캐럿에 재정박하고 이번 조합 텍스트를 새로 삽입해
+      // 입력 스트림을 잇는다 — 실패분은 다음 캐럿 이동에서 자연 동기화된다.
+      console.warn('[InputHandler] 조합 replace 거부 — 현재 캐럿에 재정박:', err);
+      // 머리말/꼬리말·각주 모드에서는 cursor.getPosition()이 진입 전 본문 위치로
+      // 고정돼 있고 실제 오프셋은 hfCharOffset/fnCharOffset에 있다(onCompositionStart와
+      // 동일 규약). 이 override 없이 그대로 쓰면 insertTextAtRaw/deleteTextAt이 정확한
+      // hfParaIdx/hfSectionIdx에 엉뚱한 본문 charOffset을 실어 보낸다.
+      anchor = this.cursor.isInHeaderFooter()
+        ? { ...this.cursor.getPosition(), charOffset: this.cursor.hfCharOffset }
+        : this.cursor.isInFootnote()
+          ? { ...this.cursor.getPosition(), charOffset: this.cursor.fnCharOffset }
+          : { ...this.cursor.getPosition() };
+      this.compositionAnchor = anchor;
+      this.compositionLength = 0;
+      try {
+        this.replaceTextAtRaw(anchor, 0, text);
+      } catch (err2) {
+        console.warn('[InputHandler] 조합 재정박 삽입 실패 — 이번 업데이트 무시:', err2);
+        this.textarea.value = '';
+        return;
+      }
+    }
     // 다음 조합 업데이트의 삭제 count는 scalar 단위다.
     this.compositionLength = charCount(text);
     if (text) this._lastCompositionText = text;
+    // [#4162] 캐럿 대기 서식이 있으면 이번 조합 텍스트 전체(매 갱신마다 새로 깔린 range)에
+    // 적용한다. Command 를 거치지 않는 raw 삽입이라 InsertTextCommand 의 서식 적용을 못 탄다.
+    this.applyPendingCharShapeToRange?.(anchor, charCount(text));
 
     // cursor.moveTo() 내부의 exact lookup 전에 deferred mutation을 등록하고,
     // 실제 cell-flow 경계에서만 동기 flush한다.
@@ -646,7 +672,8 @@ export function onInput(this: any, e?: InputEvent): void {
     this.textarea.value = '';
     return;
   }
-  this.executeOperation({ kind: 'command', command: new InsertTextCommand(insertPos, text) });
+  // [#4162] 선택 없이 지정한 서식은 예약(pending)돼 있다 — 있으면 삽입 커맨드에 실어 보낸다.
+  this.executeOperation({ kind: 'command', command: new InsertTextCommand(insertPos, text, undefined, this.getPendingCharShape?.()) });
   if (refreshClickHereGuide) {
     this.refreshClickHereAfterFirstInput?.();
   }

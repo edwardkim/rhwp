@@ -4,7 +4,10 @@
 
 ## 산출
 
-- `output/poc/task2004/baseline.tsv` — 오라클(한글 2022) vs rhwp 현재 페이지 수, 변종 분류.
+- 역사적 산출물 `output/poc/task2004/baseline.tsv` — 오라클(한글 2022) vs 당시 rhwp 페이지 수와
+  변종 분류. [PR #4154](https://github.com/edwardkim/rhwp/pull/4154)에서 비추적 POC 정책에 따라
+  저장소에서 제거했으며, 당시 핵심 수치는 아래 표와
+  [Git 이력](https://github.com/edwardkim/rhwp/blob/5a4f26d0d0a4e2fc96f4b73510d2aecdad916722/output/poc/task2004/baseline.tsv)에 보존한다.
 - 오라클 재현: `scratchpad/hwp_paramap.py`(pyhwpx rmtree 가드, SetPos+current_page), `paramap_multi.py`(다중).
 
 ## 기준선

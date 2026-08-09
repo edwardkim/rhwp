@@ -16,9 +16,99 @@ on:
       - ".github/workflows/python-binding.yml"
 
 jobs:
+  preflight:
+    name: Python binding fast-pass preflight
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    outputs:
+      run_bindings: ${{ steps.detect.outputs.run_bindings || 'true' }}
+      reason: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
+    steps:
+      - name: Detect trailing documentation commit
+        id: detect
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          retries: 3
+          script: |
+            function setResult(runBindings, reason) {
+              core.setOutput('run_bindings', runBindings ? 'true' : 'false');
+              core.setOutput('reason', reason);
+              core.info(`run_bindings=${runBindings} reason=${reason}`);
+            }
+
+            function latestRun(runs) {
+              return runs.slice().sort((a, b) => (
+                Date.parse(b.completed_at || b.created_at || 0)
+                - Date.parse(a.completed_at || a.created_at || 0)
+              ))[0];
+            }
+
+            try {
+              if (context.eventName !== 'pull_request' || context.payload.action !== 'synchronize') {
+                setResult(true, 'not-trailing-pull-request-update');
+                return;
+              }
+
+              const { owner, repo } = context.repo;
+              const pr = context.payload.pull_request;
+              const headCommit = await github.rest.repos.getCommit({
+                owner,
+                repo,
+                ref: pr.head.sha,
+              });
+              if (headCommit.data.parents.length !== 1) {
+                setResult(true, 'head-is-not-a-single-parent-commit');
+                return;
+              }
+
+              const parentSha = headCommit.data.parents[0].sha;
+              const comparison = await github.rest.repos.compareCommits({
+                owner,
+                repo,
+                base: parentSha,
+                head: pr.head.sha,
+              });
+              const files = comparison.data.files || [];
+              if (
+                comparison.data.ahead_by !== 1
+                || files.length === 0
+                || files.some((file) => !file.filename.startsWith('mydocs/'))
+              ) {
+                setResult(true, 'head-delta-is-not-mydocs-only');
+                return;
+              }
+
+              const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner,
+                repo,
+                workflow_id: 'python-binding.yml',
+                event: 'pull_request',
+                per_page: 100,
+              });
+              const previousRun = latestRun(workflowRuns.filter((run) => (
+                run.head_sha === parentSha
+                && run.head_branch === pr.head.ref
+                && run.head_repository?.id === pr.head.repo?.id
+              )));
+              if (previousRun?.status === 'completed' && previousRun.conclusion === 'success') {
+                setResult(false, `mydocs-only-after-green-python-binding:${parentSha}`);
+                return;
+              }
+
+              setResult(true, `missing-green-python-binding:${parentSha}`);
+            } catch (error) {
+              core.warning(`binding preflight failed closed: ${error.message}`);
+              setResult(true, 'preflight-error');
+            }
+
   unit:
     # 단위 테스트는 rhwp 빌드 없이 돈다 — 탐색·변환·예외 매핑·계획 직렬화는 순수 로직.
     name: 단위 (바이너리 없이)
+    needs: preflight
+    if: ${{ needs.preflight.outputs.run_bindings == 'true' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -49,6 +139,8 @@ jobs:
   integration:
     # 실제 바이너리와 실제 문서로 왕복. 패리티 가드가 여기서 돈다.
     name: 통합 (rhwp 빌드)
+    needs: preflight
+    if: ${{ needs.preflight.outputs.run_bindings == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -79,6 +171,8 @@ jobs:
 
   wheel:
     name: 휠 빌드
+    needs: preflight
+    if: ${{ needs.preflight.outputs.run_bindings == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

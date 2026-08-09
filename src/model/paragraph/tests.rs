@@ -288,6 +288,78 @@ fn test_delete_text_char_shapes_shift() {
 }
 
 #[test]
+fn test_delete_text_preserves_right_char_shape_at_collapsed_boundary() {
+    let mut para = Paragraph {
+        text: "ABCDEFGH".to_string(),
+        char_count: 8,
+        char_offsets: (0..8).collect(),
+        char_shapes: vec![
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 10,
+            },
+            CharShapeRef {
+                start_pos: 2,
+                char_shape_id: 99,
+            },
+            CharShapeRef {
+                start_pos: 5,
+                char_shape_id: 20,
+            },
+        ],
+        ..Default::default()
+    };
+
+    // 가운데의 별도 서식 런("CDE")을 지우면 오른쪽 원문("FGH")의 서식이
+    // 삭제 경계로 이동해 보존되어야 한다.
+    assert_eq!(para.delete_text_at(2, 3), 3);
+    assert_eq!(para.text, "ABFGH");
+    assert_eq!(para.char_shape_id_at(1), Some(10));
+    assert_eq!(para.char_shape_id_at(2), Some(20));
+    assert_eq!(para.char_shape_id_at(4), Some(20));
+    let refs: Vec<_> = para
+        .char_shapes
+        .iter()
+        .map(|shape| (shape.start_pos, shape.char_shape_id))
+        .collect();
+    assert_eq!(refs, vec![(0, 10), (2, 20)]);
+}
+
+#[test]
+fn test_delete_text_to_end_keeps_leftmost_collapsed_char_shape() {
+    let mut para = Paragraph {
+        text: "ABCDEFGH".to_string(),
+        char_count: 8,
+        char_offsets: (0..8).collect(),
+        char_shapes: vec![
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 10,
+            },
+            CharShapeRef {
+                start_pos: 2,
+                char_shape_id: 99,
+            },
+            CharShapeRef {
+                start_pos: 5,
+                char_shape_id: 20,
+            },
+        ],
+        ..Default::default()
+    };
+
+    // 오른쪽 원문이 없는 끝 삭제는 기존처럼 첫 경계를 남긴다.
+    assert_eq!(para.delete_text_at(2, 6), 6);
+    assert_eq!(para.text, "AB");
+    let refs: Vec<_> = para
+        .char_shapes
+        .iter()
+        .map(|shape| (shape.start_pos, shape.char_shape_id))
+        .collect();
+    assert_eq!(refs, vec![(0, 10), (2, 99)]);
+}
+
+#[test]
 fn test_delete_text_line_segs_shift() {
     let mut para = Paragraph {
         text: "HelXXlo\nWorld".to_string(),

@@ -1,0 +1,9 @@
+page	pi	ci	rows	cols	edge	table_bbox	line_x0	line_x1	line_y	stroke_width	visible_height_ratio	clip_ids	clip_rect	note
+9	-	-	8	4	bottom	84.2,277.3,634.9,720.1	84.2	719.2	997.3	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,727.7,992.4	candidate only; table top/bottom frame stroke is clipped at a page boundary
+10	-	-	1	1	bottom	84.2,191.2,643.2,1296.2	84.2	727.4	1003.7	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,727.7,1003.7	candidate only; table top/bottom frame stroke is clipped at a page boundary
+11	-	-	1	1	top	84.2,-694.4,643.2,1296.2	84.2	727.5	117.1	0.5	0.500	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,727.7,988.3	candidate only; table top/bottom frame stroke is clipped at a page boundary
+11	-	-	1	1	bottom	85.8,646.1,635.0,345.3	85.8	720.8	991.4	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,727.7,988.3	candidate only; table top/bottom frame stroke is clipped at a page boundary
+12	-	-	1	1	bottom	84.2,157.6,635.0,842.4	84.2	719.2	1000.0	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,727.7,997.5	candidate only; table top/bottom frame stroke is clipped at a page boundary
+13	-	-	1	1	bottom	84.2,919.3,643.2,434.5	84.2	727.4	1008.1	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,727.7,1008.1	candidate only; table top/bottom frame stroke is clipped at a page boundary
+14	-	-	1	1	top	84.2,51.6,643.2,434.5	84.2	727.5	117.1	0.5	0.500	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,727.7,1008.9	candidate only; table top/bottom frame stroke is clipped at a page boundary
+14	-	-	1	1	bottom	84.2,538.9,643.2,933.6	84.2	727.4	1008.9	0.5	0.000	body-clip-3,cell-clip-6,cell-clip-8	79.3,117.1,727.7,1008.9	candidate only; table top/bottom frame stroke is clipped at a page boundary

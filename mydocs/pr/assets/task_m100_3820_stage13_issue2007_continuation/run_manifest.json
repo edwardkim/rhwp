@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "key": "issue2007-stage13-final",
+  "provenance": {
+    "hwp": {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+    },
+    "pdf": {
+      "path": "pdf/basic/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "sha256": "1f9d2f5705a64899c2b081832d2e6548dfe7bc3b9d1fb1b92f41221d39c8b3e7"
+    },
+    "git_head": "f6e3dfb1b3f9669083195f5f413c3a273f952df9",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "faf5b1986f6ef881d760d1b5881b855882e23141286852d0741bae1202b3de07"
+    },
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/target/task-3820-3821-fidelity/release-test/rhwp",
+      "path": "target/task-3820-3821-fidelity/release-test/rhwp",
+      "sha256": "b74fdd9ab42a696a6b798611bb534cc6a41b492c73e1c101b3293449d25a199d"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "requested_page_shards": [
+    [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ]
+  ],
+  "run_state": "complete"
+}

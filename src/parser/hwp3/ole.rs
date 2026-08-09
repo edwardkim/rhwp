@@ -162,6 +162,9 @@ impl Hwp3ChartConnectionInfo {
 /// 재포장에는 `cfb::CompoundFile::create()` 대신 자체 `mini_cfb` 빌더를 쓴다 —
 /// create()는 `SystemTime::now()`를 호출해 wasm32 타겟에서 panic한다.
 ///
+/// 승격할 때 서브 스토리지의 **CLSID 도 새 루트로 옮긴다** — OLE 개체는 그 값으로 서버를
+/// 식별하므로, 비우면 한컴이 개체를 알아보지 못해 내용을 비워 그린다 (#4097).
+///
 /// 입력은 인식 정보(4바이트)를 제외한 CFB 바이트. 실패 개체는 건너뛴다(읽기 관대).
 pub fn extract_ole_payloads(cfb_bytes: &[u8]) -> Vec<(String, Vec<u8>)> {
     let mut out = Vec::new();
@@ -171,14 +174,17 @@ pub fn extract_ole_payloads(cfb_bytes: &[u8]) -> Vec<(String, Vec<u8>)> {
 
     // root 직속 서브 스토리지 = OLE 개체 하나 (이름 = 그림 레코드 참조명)
     let root = std::path::Path::new("/");
-    let storages: Vec<std::path::PathBuf> = comp
+    let storages: Vec<(std::path::PathBuf, [u8; 16])> = comp
         .walk()
         .filter(|e| e.is_storage() && !e.is_root())
         .filter(|e| e.path().parent() == Some(root))
-        .map(|e| e.path().to_path_buf())
+        // [#4097] 서브 스토리지의 CLSID 를 함께 들고 간다 — 승격 후 새 루트에 실어야 한다.
+        // `cfb` 는 CLSID 를 (LE u32, LE u16, LE u16, 8B) 로 읽어 `Uuid::from_fields` 하므로
+        // (`cfb/internal/direntry.rs:88`), `to_bytes_le()` 가 파일 원시 16바이트를 복원한다.
+        .map(|e| (e.path().to_path_buf(), e.clsid().to_bytes_le()))
         .collect();
 
-    for storage in storages {
+    for (storage, storage_clsid) in storages {
         let Some(name) = storage
             .file_name()
             .map(|n| n.to_string_lossy().to_string())
@@ -217,9 +223,88 @@ pub fn extract_ole_payloads(cfb_bytes: &[u8]) -> Vec<(String, Vec<u8>)> {
             .iter()
             .map(|(n, d)| (n.as_str(), d.as_slice()))
             .collect();
-        if let Ok(bytes) = crate::serializer::mini_cfb::build_cfb(&refs) {
+        // [#4097] 승격 재포장은 반드시 CLSID 를 실어야 한다. 비우면 한컴이 개체를 알아보지
+        // 못해 틀과 선택 핸들만 그리고 내용을 비운다.
+        if let Ok(bytes) =
+            crate::serializer::mini_cfb::build_cfb_with_root_clsid(&refs, storage_clsid)
+        {
             out.push((name, bytes));
         }
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// mini_cfb 출력에서 이름으로 디렉터리 엔트리를 찾아 CLSID(+80)를 스탬프한다.
+    ///
+    /// `cfb` 크레이트의 `set_storage_clsid` 를 쓰지 않는 이유는 `Uuid` 타입 이름이 필요해
+    /// `uuid` 를 dev-dependency 로 끌어들이기 때문이다. mini_cfb 는 sector_shift=9,
+    /// first dir sector=0 고정이라 엔트리가 파일 오프셋 512 부터 128바이트씩 이어진다.
+    fn stamp_named_entry_clsid(cfb: &mut [u8], target: &str, clsid: [u8; 16]) {
+        let mut at = 512;
+        while at + 128 <= cfb.len() {
+            let name_len = u16::from_le_bytes([cfb[at + 64], cfb[at + 65]]) as usize;
+            if name_len >= 2 && name_len <= 64 {
+                let units: Vec<u16> = cfb[at..at + name_len - 2]
+                    .chunks_exact(2)
+                    .map(|c| u16::from_le_bytes([c[0], c[1]]))
+                    .collect();
+                if String::from_utf16_lossy(&units) == target {
+                    cfb[at + 80..at + 96].copy_from_slice(&clsid);
+                    return;
+                }
+            }
+            at += 128;
+        }
+        panic!("디렉터리 엔트리 '{target}' 를 찾지 못했다");
+    }
+
+    /// [#4097] 서브 스토리지를 루트로 승격할 때 CLSID 도 함께 옮겨야 한다.
+    ///
+    /// SO-SUEOP 실측값은 `{00044214-0000-0000-C000-000000000046}` 이지만(글맵시 서버 클래스,
+    /// `mydocs/working/task_m100_4097_stage1.md` §2.2), 여기서는 특정 GUID 를 하드코딩하지 않고
+    /// **배선 자체**를 증명한다 — 원본 서브 스토리지에 있던 값이 출력 루트에 나타나는가.
+    #[test]
+    fn task4097_promoted_sub_storage_clsid_becomes_the_new_root_clsid() {
+        const CLSID: [u8; 16] = [
+            0x14, 0x42, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x46,
+        ];
+        let mut src = crate::serializer::mini_cfb::build_cfb(&[
+            ("/00000000.OOO/Contents", &[1u8; 64][..]),
+            ("/00000000.OOO/\u{2}OlePres000", &[2u8; 64][..]),
+        ])
+        .expect("합성 CFB");
+        stamp_named_entry_clsid(&mut src, "00000000.OOO", CLSID);
+
+        let out = extract_ole_payloads(&src);
+        assert_eq!(out.len(), 1, "root 직속 서브 스토리지 1건이 승격되어야 함");
+        assert_eq!(out[0].0, "00000000.OOO");
+        assert_eq!(
+            crate::parser::cfb_reader::root_clsid(&out[0].1),
+            Some(CLSID),
+            "승격된 서브 스토리지의 CLSID 가 새 루트로 옮겨져야 한다 (#4097)"
+        );
+
+        // 스트림 내용도 그대로 넘어가는지 — 재포장이 CLSID 만 보고 나머지를 흘리면 안 된다.
+        let container = crate::parser::ole_container::parse_ole_container(&out[0].1)
+            .expect("재포장본을 parse_ole_container 가 열 수 있어야 함");
+        assert!(container.raw_contents.is_some(), "Contents 유지");
+    }
+
+    /// CLSID 가 없는(0) 서브 스토리지는 0 인 채로 승격된다 — 없는 값을 지어내지 않는다.
+    #[test]
+    fn task4097_zero_sub_storage_clsid_stays_zero() {
+        let src = crate::serializer::mini_cfb::build_cfb(&[("/OBJ/Contents", &[3u8; 32][..])])
+            .expect("합성 CFB");
+        let out = extract_ole_payloads(&src);
+        assert_eq!(out.len(), 1);
+        assert_eq!(
+            crate::parser::cfb_reader::root_clsid(&out[0].1),
+            Some([0u8; 16])
+        );
+    }
 }
