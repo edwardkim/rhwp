@@ -137,37 +137,72 @@ pub fn serialize_control(
                 size: data.len() as u32,
                 data,
             });
-            // [Task #852 Stage 2.5] ClickHere 필드의 CTRL_DATA 자식 레코드 (0x57, 26 bytes).
-            // 정답지 (samples/form-01.hwp) reverse engineering 구조:
-            //   0..2   0x021b (헤더 magic)
-            //   2..6   0x00000001
-            //   6..8   0x4000 (HWP5 CTRL_DATA flag — 정답지 관찰)
-            //   8..10  0x0001
-            //   10..12 u16 LE wchar_count (필드 이름 길이)
-            //   12..   UTF-16 LE 필드 이름 (예: "myMsg01")
+            // [Task #852 Stage 2.5][#4396] 필드의 CTRL_DATA 자식 레코드(ParameterSet,
+            // `mydocs/eng/tech/hwp_ctrl_data.md`). 정답지 (samples/form-01.hwp) reverse
+            // engineering 구조(이름 아이템 하나만 있을 때, 여전히 정확히 이 바이트를 만든다):
+            //   0..2   0x021b (ps_id)
+            //   2..4   count(u16)
+            //   4..6   dummy(u16) — 여기까지 4바이트가 옛 "0x00000001" 표기와 같다(count=1,dummy=0)
+            //   6..8   item_id (0x4000=이름, #4396 확장 0x4010=파라미터 트리)
+            //   8..10  item_type(0x0001=String)
+            //   10..12 u16 LE 길이(문자수)
+            //   12..   UTF-16 LE 본문
+            //   (item_id/item_type/len/본문 을 count 개 반복)
             //
-            // ctrl_data_name (HWPX `<hp:fieldBegin name="...">`) 우선, 비어있으면 생성 안 함.
-            if matches!(f.field_type, FieldType::ClickHere) && ctrl_data_record.is_none() {
-                if let Some(name) = &f.ctrl_data_name {
-                    if !name.is_empty() {
-                        let name_utf16: Vec<u16> = name.encode_utf16().collect();
-                        let nlen = name_utf16.len();
-                        let mut cdata = Vec::with_capacity(12 + nlen * 2);
-                        cdata.extend_from_slice(&0x021bu16.to_le_bytes());
-                        cdata.extend_from_slice(&0x00000001u32.to_le_bytes());
-                        cdata.extend_from_slice(&0x4000u16.to_le_bytes());
-                        cdata.extend_from_slice(&0x0001u16.to_le_bytes());
-                        cdata.extend_from_slice(&(nlen as u16).to_le_bytes());
-                        for ch in &name_utf16 {
+            // 이름은 ctrl_data_name(HWPX `<hp:fieldBegin name="...">`, ClickHere 전용 —
+            // 기존 계약 유지), 파라미터 트리는 `f.parameters`(HWPX 파서 또는 이전 HWP5
+            // CTRL_DATA 확장 아이템에서 채워짐, 전 필드 타입) — 원본에 CTRL_DATA 가 이미
+            // 있으면(ctrl_data_record.is_some()) 그 바이트를 그대로 보존하므로 여기서는
+            // 만들지 않는다.
+            if ctrl_data_record.is_none() {
+                let name_item = if matches!(f.field_type, FieldType::ClickHere) {
+                    f.ctrl_data_name.as_deref().filter(|n| !n.is_empty())
+                } else {
+                    None
+                };
+                let params_xml = if f.parameters.is_empty() {
+                    None
+                } else {
+                    let xml = f.parameters.render_xml("parameters");
+                    // ParameterSet String 아이템 길이는 u16 하나(최대 65535 UTF-16 코드
+                    // 유닛)로 인코딩된다. 실측 코퍼스(3,418건)에서 관측된 값은 전부 수백
+                    // 자 이내라 여유가 크지만, 넘으면 조용히 자르는 대신 이 확장 아이템
+                    // 자체를 생략해 CTRL_HEADER 의 command/memo_index 만이라도 보존한다.
+                    if xml.encode_utf16().count() > u16::MAX as usize {
+                        None
+                    } else {
+                        Some(xml)
+                    }
+                };
+                if name_item.is_some() || params_xml.is_some() {
+                    let mut items: Vec<(u16, Vec<u16>)> = Vec::new();
+                    if let Some(name) = name_item {
+                        items.push((tags::CTRL_DATA_ITEM_NAME, name.encode_utf16().collect()));
+                    }
+                    if let Some(xml) = &params_xml {
+                        items.push((
+                            tags::CTRL_DATA_ITEM_PARAMS_XML,
+                            xml.encode_utf16().collect(),
+                        ));
+                    }
+                    let mut cdata = Vec::new();
+                    cdata.extend_from_slice(&tags::CTRL_DATA_PS_ID_FIELD.to_le_bytes());
+                    cdata.extend_from_slice(&(items.len() as u16).to_le_bytes());
+                    cdata.extend_from_slice(&0u16.to_le_bytes()); // dummy
+                    for (item_id, utf16) in &items {
+                        cdata.extend_from_slice(&item_id.to_le_bytes());
+                        cdata.extend_from_slice(&tags::CTRL_DATA_ITEM_TYPE_STRING.to_le_bytes());
+                        cdata.extend_from_slice(&(utf16.len() as u16).to_le_bytes());
+                        for ch in utf16 {
                             cdata.extend_from_slice(&ch.to_le_bytes());
                         }
-                        records.push(Record {
-                            tag_id: tags::HWPTAG_CTRL_DATA,
-                            level: level + 1,
-                            size: cdata.len() as u32,
-                            data: cdata,
-                        });
                     }
+                    records.push(Record {
+                        tag_id: tags::HWPTAG_CTRL_DATA,
+                        level: level + 1,
+                        size: cdata.len() as u32,
+                        data: cdata,
+                    });
                 }
             }
         }

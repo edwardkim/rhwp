@@ -237,6 +237,29 @@ pub const fn is_field_ctrl_id(id: u32) -> bool {
     (id >> 24) == b'%' as u32
 }
 
+// ============================================================
+// CTRL_DATA(HWPTAG_CTRL_DATA) ParameterSet ID — 필드/책갈피 이름 (표 154 부속)
+// ============================================================
+//
+// `mydocs/eng/tech/hwp_ctrl_data.md` 문서화된 구조: ps_id(2)+count(2)+dummy(2) 헤더
+// 뒤에 [item_id(2)+item_type(2)+value] 아이템이 `count` 개 이어진다.
+
+/// 필드/책갈피 CTRL_DATA 의 ParameterSet ID (hwplib 실측).
+pub const CTRL_DATA_PS_ID_FIELD: u16 = 0x021b;
+/// 필드/책갈피 이름을 담는 아이템 ID (String 타입, hwplib 실측).
+pub const CTRL_DATA_ITEM_NAME: u16 = 0x4000;
+/// [#4396] `<hp:parameters>` 트리(`ParameterList::render_xml`) 를 문자열로 담는
+/// rhwp 확장 아이템 ID. 공식 hwplib/스펙에 문서화된 값이 아니라, ParameterSet 이
+/// count 기반으로 자기 서술적인 아이템을 나열하는 확장 가능한 구조라는 점에
+/// 기대어 rhwp 엔진이 자체적으로 정한 값이다(HWP5 실물 파일에 이 item_id 가
+/// 이미 다른 의미로 쓰인다는 증거는 찾지 못했다 — 0x4000 바로 다음 값이라 동일
+/// ps_id 내 name 아이템과 인접해 두 아이템을 함께 훑기 쉽다). 이 rhwp 로 왕복하는
+/// 문서에서만 의미를 가지며, 한컴 오피스가 이 아이템을 인식하지 못해도 count 를
+/// 넘는 범위를 읽지 않는 한 무해해야 한다 — 실제 한컴 앱 상호운용은 검증되지 않았다.
+pub const CTRL_DATA_ITEM_PARAMS_XML: u16 = 0x4010;
+/// ParameterSet 아이템 타입: String (길이(2) + UTF-16LE 본문).
+pub const CTRL_DATA_ITEM_TYPE_STRING: u16 = 0x0001;
+
 /// 4바이트 ASCII 문자열을 u32 컨트롤 ID로 변환 (컴파일 타임)
 ///
 /// HWP 파일에서 ctrl_id는 첫 문자가 MSB에 위치하는 big-endian 문자열 인코딩이다.

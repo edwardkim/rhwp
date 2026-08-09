@@ -272,6 +272,381 @@ pub struct GuideResidue {
     pub char_shape_id: u32,
 }
 
+/// HWPX `<hp:parameters>`/`<hp:listParam>` 트리의 원소 하나 (#4396).
+///
+/// OWPML `hp:ParameterList`(`mydocs/manual/OWPML SCHEMA/ParaList XML schema.xml:2764`)가
+/// 이름·타입·구조를 규정한다 — booleanParam/integerParam/floatParam/stringParam 4종의
+/// 스칼라와 재귀하는 listParam 1종, 도합 5종. 각 파라미터의 **의미는 해석하지 않고**
+/// 이름과 타입 그대로 보존한다(HWP5 왕복 시 `Prop`/`Direction`/`Path`/`Category` 등이
+/// `Command` 하나로 축소되던 손실의 근본 수정).
+#[derive(Debug, Clone, PartialEq)]
+pub enum Parameter {
+    Boolean {
+        name: Option<String>,
+        value: bool,
+    },
+    Integer {
+        name: Option<String>,
+        value: i64,
+    },
+    Float {
+        name: Option<String>,
+        value: f32,
+    },
+    String {
+        name: Option<String>,
+        value: String,
+        /// 원본 `xml:space="preserve"` 표시 여부. stringParam 만 갖는 속성(스키마).
+        preserve_space: bool,
+    },
+    /// 재귀 `hp:listParam` — 이름은 중첩된 `ParameterList::name` 이 갖는다(이중 보관 방지).
+    List(ParameterList),
+}
+
+/// `hp:ParameterList` 자체 — `<hp:parameters>`(필드 루트) 또는 `<hp:listParam>`(중첩) 둘 다
+/// 이 표현을 쓴다. `cnt` 속성은 `items.len()` 에서 유도하므로 별도 저장하지 않는다.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct ParameterList {
+    pub name: Option<String>,
+    pub items: Vec<Parameter>,
+}
+
+impl ParameterList {
+    /// 값을 하나도 담지 않은 트리인지 — `Field::parameters` 미보존/미확보 상태의 판별에 쓴다.
+    pub fn is_empty(&self) -> bool {
+        self.items.is_empty()
+    }
+
+    /// 캐노니컬 텍스트 형태로 직렬화한다(`<hp:{tag} cnt="N" name="...">...</hp:{tag}>`).
+    ///
+    /// 이 텍스트 형태는 HWPX 직렬화기와 HWP5 CTRL_DATA 보존(#4396) 양쪽이 공유하는
+    /// 포맷 중립 인코딩이다 — OWPML 문법을 그대로 따르므로 HWPX 파서(`parser::hwpx::section`)
+    /// 의 트리 파서로 되읽을 수 있고, HWP5 CTRL_DATA 아이템 문자열로도 그대로 저장할 수 있다.
+    /// `tag` 는 루트 호출 시 `"parameters"`, 중첩 리스트는 `"listParam"`.
+    pub fn render_xml(&self, tag: &str) -> String {
+        let mut out = String::new();
+        out.push_str("<hp:");
+        out.push_str(tag);
+        out.push_str(&format!(" cnt=\"{}\"", self.items.len().max(1)));
+        out.push_str(" name=\"");
+        out.push_str(&escape_parameter_xml(self.name.as_deref().unwrap_or("")));
+        out.push_str("\">");
+        for item in &self.items {
+            item.render_xml_into(&mut out);
+        }
+        out.push_str("</hp:");
+        out.push_str(tag);
+        out.push('>');
+        out
+    }
+}
+
+impl Parameter {
+    fn render_xml_into(&self, out: &mut String) {
+        match self {
+            Parameter::Boolean { name, value } => {
+                render_scalar_param(out, "booleanParam", name, if *value { "1" } else { "0" });
+            }
+            Parameter::Integer { name, value } => {
+                render_scalar_param(out, "integerParam", name, &value.to_string());
+            }
+            Parameter::Float { name, value } => {
+                render_scalar_param(out, "floatParam", name, &value.to_string());
+            }
+            Parameter::String {
+                name,
+                value,
+                preserve_space,
+            } => {
+                out.push_str("<hp:stringParam name=\"");
+                out.push_str(&escape_parameter_xml(name.as_deref().unwrap_or("")));
+                out.push('"');
+                if *preserve_space {
+                    out.push_str(" xml:space=\"preserve\"");
+                }
+                out.push('>');
+                out.push_str(&escape_parameter_xml(value));
+                out.push_str("</hp:stringParam>");
+            }
+            Parameter::List(list) => out.push_str(&list.render_xml("listParam")),
+        }
+    }
+}
+
+fn render_scalar_param(out: &mut String, tag: &str, name: &Option<String>, text: &str) {
+    out.push_str("<hp:");
+    out.push_str(tag);
+    out.push_str(" name=\"");
+    out.push_str(&escape_parameter_xml(name.as_deref().unwrap_or("")));
+    out.push_str("\">");
+    out.push_str(text);
+    out.push_str("</hp:");
+    out.push_str(tag);
+    out.push('>');
+}
+
+/// `ParameterList::render_xml` 전용 최소 XML 텍스트/속성값 이스케이프.
+/// `parser::hwpx::section::escape_xml_text` 와 동일한 계약(4종 예약 문자 + 제어문자 제거).
+fn escape_parameter_xml(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '&' => out.push_str("&amp;"),
+            '<' => out.push_str("&lt;"),
+            '>' => out.push_str("&gt;"),
+            '"' => out.push_str("&quot;"),
+            '\u{09}' | '\u{0A}' | '\u{0D}' => out.push(c),
+            '\u{20}'..='\u{D7FF}' | '\u{E000}'..='\u{FFFD}' | '\u{10000}'..='\u{10FFFF}' => {
+                out.push(c)
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
+impl ParameterList {
+    /// `render_xml` 이 만든 캐노니컬 텍스트를 다시 트리로 되읽는다 (HWP5 CTRL_DATA
+    /// 확장 아이템 복원용, #4396).
+    ///
+    /// **우리 자신이 `render_xml` 로 만든 문자열만** 상대하는 최소 파서다 — 임의 XML
+    /// (주석·CDATA·일반 엔터티 참조·속성 순서 변형 등)은 다루지 않는다. 이 코덱은
+    /// rhwp 엔진 내부 왕복 전용이며 실물 HWPX 파일을 파싱하지 않는다(그건
+    /// `parser::hwpx::section::parse_field_parameters` 의 몫 — quick_xml 기반으로
+    /// 별도 구현돼 있다).
+    pub fn parse_xml(xml: &str) -> Option<ParameterList> {
+        let mut pos = 0usize;
+        let (_, list) = parse_list_tag(xml, &mut pos)?;
+        Some(list)
+    }
+}
+
+/// `<hp:TAG cnt="N" name="...">...items...</hp:TAG>` 하나를 파싱한다.
+/// 진입 시 `s[*pos..]` 는 반드시 `<hp:` 로 시작해야 한다. 반환: (태그 이름, 트리).
+fn parse_list_tag(s: &str, pos: &mut usize) -> Option<(String, ParameterList)> {
+    expect_lit(s, pos, "<hp:")?;
+    let tag = read_ident(s, pos)?;
+    skip_attr(s, pos, "cnt")?;
+    let name = read_attr(s, pos, "name")?;
+    expect_lit(s, pos, ">")?;
+    let close = format!("</hp:{tag}>");
+    let mut items = Vec::new();
+    while !s[*pos..].starts_with(&close) {
+        items.push(parse_one_param(s, pos)?);
+    }
+    *pos += close.len();
+    Some((
+        tag,
+        ParameterList {
+            name: Some(name),
+            items,
+        },
+    ))
+}
+
+fn parse_one_param(s: &str, pos: &mut usize) -> Option<Parameter> {
+    if !s[*pos..].starts_with("<hp:") {
+        return None;
+    }
+    let after = &s[*pos + 4..];
+    if after.starts_with("listParam") {
+        let (_, list) = parse_list_tag(s, pos)?;
+        return Some(Parameter::List(list));
+    }
+    for tag in ["booleanParam", "integerParam", "floatParam", "stringParam"] {
+        if !after.starts_with(tag) {
+            continue;
+        }
+        *pos += 4 + tag.len();
+        let name = read_attr(s, pos, "name")?;
+        let preserve_space =
+            tag == "stringParam" && try_consume_lit(s, pos, " xml:space=\"preserve\"");
+        expect_lit(s, pos, ">")?;
+        let close = format!("</hp:{tag}>");
+        let raw_text = read_until(s, pos, &close)?;
+        expect_lit(s, pos, &close)?;
+        let text = unescape_parameter_xml(&raw_text);
+        return Some(match tag {
+            "booleanParam" => Parameter::Boolean {
+                name: Some(name),
+                value: matches!(text.trim(), "1" | "true"),
+            },
+            "integerParam" => Parameter::Integer {
+                name: Some(name),
+                value: text.trim().parse::<i64>().unwrap_or(0),
+            },
+            "floatParam" => Parameter::Float {
+                name: Some(name),
+                value: text.trim().parse::<f32>().unwrap_or(0.0),
+            },
+            _ => Parameter::String {
+                name: Some(name),
+                value: text,
+                preserve_space,
+            },
+        });
+    }
+    None
+}
+
+fn read_ident(s: &str, pos: &mut usize) -> Option<String> {
+    let rest = &s[*pos..];
+    let end = rest.find(|c: char| c == ' ' || c == '>')?;
+    let ident = rest[..end].to_string();
+    *pos += end;
+    Some(ident)
+}
+
+/// ` key="value"` 속성을 값은 버리고 건너뛴다(`cnt` — `items.len()` 에서 유도되므로).
+fn skip_attr(s: &str, pos: &mut usize, key: &str) -> Option<()> {
+    let needle = format!(" {key}=\"");
+    expect_lit(s, pos, &needle)?;
+    let end = s[*pos..].find('"')?;
+    *pos += end + 1;
+    Some(())
+}
+
+/// ` key="value"` 속성을 읽어 이스케이프를 되돌린 값을 반환한다.
+fn read_attr(s: &str, pos: &mut usize, key: &str) -> Option<String> {
+    let needle = format!(" {key}=\"");
+    expect_lit(s, pos, &needle)?;
+    let end = s[*pos..].find('"')?;
+    let value = unescape_parameter_xml(&s[*pos..*pos + end]);
+    *pos += end + 1;
+    Some(value)
+}
+
+fn expect_lit(s: &str, pos: &mut usize, lit: &str) -> Option<()> {
+    if !s[*pos..].starts_with(lit) {
+        return None;
+    }
+    *pos += lit.len();
+    Some(())
+}
+
+fn try_consume_lit(s: &str, pos: &mut usize, lit: &str) -> bool {
+    if s[*pos..].starts_with(lit) {
+        *pos += lit.len();
+        true
+    } else {
+        false
+    }
+}
+
+/// `*pos` 부터 `marker` 직전까지를 반환한다. `*pos` 는 `marker` 시작 위치로 이동한다
+/// (소비는 호출부가 `expect_lit` 로 한다).
+fn read_until(s: &str, pos: &mut usize, marker: &str) -> Option<String> {
+    let idx = s[*pos..].find(marker)?;
+    let text = s[*pos..*pos + idx].to_string();
+    *pos += idx;
+    Some(text)
+}
+
+/// `escape_parameter_xml` 의 역변환 — 우리 자신이 방출하는 4종 예약 문자 엔터티만 되돌린다.
+fn unescape_parameter_xml(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut i = 0;
+    while i < s.len() {
+        if s.as_bytes()[i] == b'&' {
+            if s[i..].starts_with("&amp;") {
+                out.push('&');
+                i += 5;
+                continue;
+            } else if s[i..].starts_with("&lt;") {
+                out.push('<');
+                i += 4;
+                continue;
+            } else if s[i..].starts_with("&gt;") {
+                out.push('>');
+                i += 4;
+                continue;
+            } else if s[i..].starts_with("&quot;") {
+                out.push('"');
+                i += 6;
+                continue;
+            }
+        }
+        let ch_len = s[i..].chars().next().map(|c| c.len_utf8()).unwrap_or(1);
+        out.push_str(&s[i..i + ch_len]);
+        i += ch_len;
+    }
+    out
+}
+
+#[cfg(test)]
+mod parameter_list_codec_tests {
+    use super::*;
+
+    fn sample_tree() -> ParameterList {
+        ParameterList {
+            name: Some(String::new()),
+            items: vec![
+                Parameter::Integer {
+                    name: Some("Prop".to_string()),
+                    value: 9,
+                },
+                Parameter::String {
+                    name: Some("Command".to_string()),
+                    value: "Clickhere:set:66:Direction:wstring:23:이곳을 마우스로 누르고 <입력>하세요 & \"확인\""
+                        .to_string(),
+                    preserve_space: true,
+                },
+                Parameter::String {
+                    name: Some("Direction".to_string()),
+                    value: "이곳을 마우스로 누르고 내용을 입력하세요.".to_string(),
+                    preserve_space: false,
+                },
+                Parameter::Boolean {
+                    name: Some("Fiexde".to_string()),
+                    value: true,
+                },
+                Parameter::Boolean {
+                    name: Some("RefHyperLink".to_string()),
+                    value: false,
+                },
+                Parameter::Float {
+                    name: Some("Ratio".to_string()),
+                    value: 1.5,
+                },
+                Parameter::List(ParameterList {
+                    name: Some("623".to_string()),
+                    items: vec![Parameter::Integer {
+                        name: Some("16384".to_string()),
+                        value: 42,
+                    }],
+                }),
+            ],
+        }
+    }
+
+    #[test]
+    fn render_then_parse_round_trips_the_tree() {
+        let original = sample_tree();
+        let xml = original.render_xml("parameters");
+        assert!(xml.starts_with("<hp:parameters cnt=\"7\" name=\"\">"));
+        assert!(xml.ends_with("</hp:parameters>"));
+        let parsed = ParameterList::parse_xml(&xml).expect("parse_xml 실패");
+        assert_eq!(parsed, original);
+    }
+
+    #[test]
+    fn empty_list_round_trips() {
+        let original = ParameterList {
+            name: Some(String::new()),
+            items: vec![],
+        };
+        let xml = original.render_xml("parameters");
+        let parsed = ParameterList::parse_xml(&xml).expect("parse_xml 실패");
+        assert_eq!(parsed, original);
+    }
+
+    #[test]
+    fn is_empty_reflects_items() {
+        assert!(ParameterList::default().is_empty());
+        assert!(!sample_tree().is_empty());
+    }
+}
+
 /// 필드 컨트롤
 #[derive(Debug, Clone, Default)]
 pub struct Field {
@@ -303,10 +678,29 @@ pub struct Field {
     pub memo_text_direction: Option<String>,
     /// HWPX `<hp:parameters>` 요소 원문 verbatim (#1391).
     ///
-    /// 전 fieldBegin 타입(MEMO/HYPERLINK/FORMULA/BOOKMARK 등)이 parameters 를
-    /// 가지나 IR 은 Command/Number 만 추출하므로, 무손실 roundtrip 을 위해 원문을
-    /// 그대로 보존한다 (HWP5 경로엔 무관 — HWPX 파서만 적재).
+    /// HWPX→HWPX 왕복 전용 바이트 정확 캐시다 — 이미 코퍼스 전수(3,418건)로 검증된
+    /// `diff_documents`/`strip_cross_format_noise` 원문 비교 계약(`serializer/hwpx/roundtrip.rs`)
+    /// 이 이 필드의 문자열을 그대로 비교하므로, 값이 있으면 직렬화기가 그 바이트를 그대로
+    /// 재사용한다 (HWP5 경로엔 안 쓴다 — HWPX 파서만 적재).
+    ///
+    /// `parameters`(아래, #4396)가 같은 `<hp:parameters>` 를 **의미 있는 트리**로 담는
+    /// 별도 표현이다 — 중복이 아니라 용도가 다르다: 이 필드는 "포맷을 벗어나지 않을 때
+    /// 원문을 한 글자도 안 바꾼다"는 이미 검증된 계약을 지키는 캐시이고, `parameters`
+    /// 는 그 계약이 성립하지 않는 경로(HWPX→HWP5→HWPX, 또는 API 로 새로 만든 필드)에서
+    /// `Command` 하나로 축소되지 않도록 다시 조립하는 데 쓰는 근거 데이터다. 파서는 두
+    /// 필드를 같은 파스 1회에서 함께 채운다.
     pub raw_parameters_xml: Option<String>,
+    /// `<hp:parameters>` 트리의 파싱된(named) 표현 (#4396). 스펙(`ParameterList`)이 규정한
+    /// 5종 그대로 보존 — 의미 해석 없이 이름·타입·값만 옮긴다.
+    ///
+    /// HWPX 파서는 항상 이 필드를 채운다(전 fieldBegin 타입). HWP5 파서는 CTRL_DATA 확장
+    /// 아이템(`parser::control::CTRL_DATA_ITEM_PARAMS_XML`, 있으면)에서 복원한다 — 없으면
+    /// 빈 트리(`ParameterList::default()`)로 "정보 없음"을 뜻한다.
+    ///
+    /// 직렬화기는 `raw_parameters_xml` 이 있으면 그것을 우선 쓰고, 없고 이 트리가
+    /// 비어있지 않으면 `render_xml` 로 재조립하며, 둘 다 없으면(트리도 빈 상태) 기존처럼
+    /// `command` 하나만 담은 최소 `<hp:parameters cnt="1">` 를 합성한다(순수 API 생성 필드).
+    pub parameters: ParameterList,
     /// [#3545] 적재 정규화(`clear_initial_field_texts`)가 지운 안내문 본문 run 의 잔재.
     ///
     /// 한컴은 미기입 누름틀(dirty="0")의 안내문을 **파일에는 본문 run 으로 유지**하고

@@ -136,6 +136,7 @@ fn parse_field_control(ctrl_id: u32, ctrl_data: &[u8]) -> Control {
         memo_paragraphs: Vec::new(),
         memo_text_direction: None,
         raw_parameters_xml: None,
+        parameters: Default::default(),
         guide_residue: None,
     })
 }
