@@ -328,23 +328,25 @@ let hwp = doc.export_hwp_native()?;
 
 p5에는 control이 없고 셀 폭·padding·문단 margin/indent/spacing도 같았다. 원인은
 RowBreak 허용치가 아니라 12pt `한양신명조` U+0020 line decision이었다. 전역 512 실험은
-#4138을 197쪽으로 만들었지만, #3820 p81에서 직접 검증된 14pt 411 계약까지 덮으므로
-채택하지 않았다. 최종 범위는 다음과 같다.
+#4138을 197쪽으로 만들었지만, 원본 issue1949의 한컴 115쪽을 116쪽으로 바꾸고 #3820 p81의
+411 계약까지 덮으므로 채택하지 않았다. 최종 범위는 다음과 같다.
 
-- 12pt `한양신명조`: 일반 반각 512/1024em
-- #3820 p81의 14pt `한양신명조`: 411/1024em
+- 원본/일반 12pt `한양신명조`: 411/1024em, issue1949 115쪽 보존
+- 셀 분할 직후 stale 재조판의 12pt `한양신명조`: 일반 반각 512/1024em
+- #3820 p81의 일반 14pt `한양신명조`: 411/1024em
 - 10pt `한양신명조`: 일반 반각 512/1024em
 
-구현은 원명 전체나 `12pt 이상` 범위가 아니라 정확한 14pt(56/3px, 허용 오차 0.01px)에만
-411을 반환한다. 이와 함께 좁아진 셀의 `text + inline control`을 독립 physical line으로
-분리하고, native continuation의 실제 paint tail만 strict cut하는 보정을 유지한다.
+구현은 기존 12pt 이상 411 측정을 보존하고, `reflow_line_segs_after_cell_split`의 전용
+tokenization에서 정확한 12pt(16px, 허용 오차 0.01px)에만 512를 반환한다. 이와 함께
+좁아진 셀의 `text + inline control`을 독립 physical line으로 분리하고, native continuation의
+실제 paint tail만 strict cut하는 보정을 유지한다.
 
 ## 최종 focused 검증
 
 공통 환경은 `CARGO_TARGET_DIR=target/pr-review CARGO_INCREMENTAL=0`, profile은
 `release-test`다.
 
-- `issue_3820_hanyang_shinmyeongjo_space_is_p81_14pt_only`: 1 passed
+- `issue_3820_hanyang_shinmyeongjo_space_is_standard_body_only`: 1 passed
 - `issue_4138_split_cell_stale_linesegs`: 2 passed, 두 API 모두 저장·재파싱 197쪽
 - `issue_2308_render_normalized_derived_state`: 5 passed
 - `issue_2430_cell_rewrap_threshold`: 2 passed
@@ -376,3 +378,20 @@ source line 분리를 일반 `reflow_line_segs`에 넣은 뒤 전체 `cargo test
 같은 전체 회귀에서 `test_cursor_rect_after_line_break_at_end`도 line-break flag 단언으로
 실패했다. 이것은 inline control이 없는 문단이므로 위 범위 축소 뒤에도 남는지 분리해 다시
 확인한다. 남으면 현재 작업과 독립된 기존 dirty 변경으로 취급해 원인을 분리한다.
+
+### 원본 115쪽 oracle과 split 197쪽을 함께 만족시키는 공백 범위
+
+원본 HWP의 이미 보관된 한컴 PDF는 115쪽이다.
+
+- `pdf/issue1949_giant_cell_nested_tables_perf-2020.pdf`: 115쪽
+- `pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf`: 115쪽
+
+따라서 전체 `issue2424`가 115→116으로 바뀐 상태에서 회귀 게이트를 116으로 바꾸는 것은
+근거가 없다. 확인 결과 12pt `한양신명조`를 전역 일반 반각으로 바꾸면 split 뒤에는 197쪽을
+맞추지만, 원본의 권위 저장 LineSeg까지 재계산하는 경로에서 116쪽을 만들었다.
+
+해결은 두 규칙을 섞지 않는 것이다. 기본 text metric은 원래의 411/1024em(원본 115쪽)을
+유지한다. `reflow_stale_cells_after_split`가 부르는 전용 tokenization에서만, 정확히 12pt
+`한양신명조` 공백을 512/1024em으로 측정한다. 그 helper는 장평·자간·낱말 간격도 일반
+측정과 같은 식으로 적용하므로, 단순 상수 치환이 아닌 동일한 스타일 연산의 base advance만
+바꾼다. 이 경계가 한컴 2020의 "폭 변경 뒤 저장" 동작과 원본 저장본을 동시에 보존한다.

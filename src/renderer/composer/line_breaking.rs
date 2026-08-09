@@ -9,6 +9,7 @@ use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::style::LineSpacingType;
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, is_cjk_char, resolved_to_text_style,
+    stale_split_hanyang_shinmyeongjo_space_width,
 };
 use crate::renderer::px_to_hwpunit;
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
@@ -157,6 +158,28 @@ pub(crate) fn tokenize_paragraph(
     english_break_unit: u8,
     korean_break_unit: u8,
 ) -> Vec<BreakToken> {
+    tokenize_paragraph_with_split_cell_space_metric(
+        text_chars,
+        char_offsets,
+        char_shapes,
+        styles,
+        english_break_unit,
+        korean_break_unit,
+        false,
+    )
+}
+
+/// `split_stale_cell_reflow`는 한컴이 폭 변경 뒤 다시 저장하는 12pt 한양신명조
+/// 공백 규칙을 쓴다. 일반 HWP/HWPX tokenization은 저장 LineSeg 호환성을 위해 끈다.
+fn tokenize_paragraph_with_split_cell_space_metric(
+    text_chars: &[char],
+    char_offsets: &[u32],
+    char_shapes: &[CharShapeRef],
+    styles: &ResolvedStyleSet,
+    english_break_unit: u8,
+    korean_break_unit: u8,
+    split_stale_cell_reflow: bool,
+) -> Vec<BreakToken> {
     let text_len = text_chars.len();
     if text_len == 0 {
         return Vec::new();
@@ -212,7 +235,12 @@ pub(crate) fn tokenize_paragraph(
             } else {
                 12.0
             };
-            let w = estimate_text_width_unrounded(" ", &ts);
+            let w = if split_stale_cell_reflow {
+                stale_split_hanyang_shinmyeongjo_space_width(&ts)
+                    .unwrap_or_else(|| estimate_text_width_unrounded(" ", &ts))
+            } else {
+                estimate_text_width_unrounded(" ", &ts)
+            };
             tokens.push(BreakToken::Space {
                 idx: i,
                 width: w,
@@ -1363,13 +1391,14 @@ fn reflow_line_segs_impl(
     let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
 
     // 토큰화 → 줄 채움 → LineSeg 생성
-    let tokens = tokenize_paragraph(
+    let tokens = tokenize_paragraph_with_split_cell_space_metric(
         &text_chars,
         &para.char_offsets,
         &para.char_shapes,
         styles,
         english_break_unit,
         korean_break_unit,
+        split_stale_cell_reflow,
     );
     // 저장 LINE_SEG 기반 incremental edit는 앞선 줄을 유지한다. LINE_SEG start가 현재
     // char_offsets와 token 경계 모두에 정확히 대응할 때만 suffix reflow를 허용한다.
