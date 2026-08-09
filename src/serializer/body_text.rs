@@ -238,12 +238,18 @@ fn serialize_paragraph_with_msb(
 
     // PARA_TEXT를 먼저 직렬화하여 실제 char_count를 계산한다.
     // char_count가 PARA_TEXT code unit 수와 불일치하면 한컴이 파일 손상으로 판단한다.
+    //
+    // [#4402] `serialize_para_text` 는 미기입 누름틀의 안내문 잔재(`Field.guide_residue`)를
+    // 함께 되살리고, 그로 인해 벌어진 위치들을 `residue_shifts` 로 돌려준다 — 아래
+    // PARA_CHAR_SHAPE 가 그 시프트를 반영해야 텍스트 버퍼와 서식 경계가 어긋나지 않는다.
     let has_content = !para.text.is_empty() || !para.controls.is_empty();
-    let text_data = if has_content || (para.has_para_text && para.char_count > 1) {
-        Some(serialize_para_text(para))
-    } else {
-        None
-    };
+    let (text_data, residue_shifts): (Option<Vec<u8>>, Vec<GuideResidueShift>) =
+        if has_content || (para.has_para_text && para.char_count > 1) {
+            let result = serialize_para_text(para);
+            (Some(result.bytes), result.residue_shifts)
+        } else {
+            (None, Vec::new())
+        };
 
     // char_count 재계산: PARA_TEXT가 있으면 code unit 수, 없으면 모델 값 사용
     let actual_char_count = if let Some(ref td) = text_data {
@@ -279,7 +285,15 @@ fn serialize_paragraph_with_msb(
 
     // PARA_CHAR_SHAPE (항상 출력 — HWP 필수)
     {
-        let data = serialize_para_char_shape(effective_char_shapes);
+        let shifted_char_shapes;
+        let char_shapes_for_record: &[CharShapeRef] = if residue_shifts.is_empty() {
+            effective_char_shapes
+        } else {
+            shifted_char_shapes =
+                shift_char_shapes_for_residues(effective_char_shapes, &residue_shifts);
+            &shifted_char_shapes
+        };
+        let data = serialize_para_char_shape(char_shapes_for_record);
         records.push(Record {
             tag_id: tags::HWPTAG_PARA_CHAR_SHAPE,
             level: base_level + 1,
@@ -445,15 +459,87 @@ fn push_extended_ctrl(code_units: &mut Vec<u16>, ctrl_code: u16, ctrl_id: u32) {
 /// 테스트용 public wrapper
 #[cfg(test)]
 pub fn test_serialize_para_text(para: &Paragraph) -> Vec<u8> {
-    serialize_para_text(para)
+    serialize_para_text(para).bytes
 }
 
-fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
+/// [#4402] `serialize_para_text` 가 되살린 안내문 잔재 1건의 위치 정보.
+///
+/// `position` 은 삽입 **이전** 좌표계 — 즉 적재 시 삭제 수술이 남긴, 지금 `para.char_shapes`/
+/// `para.char_offsets` 가 쓰는 collapsed 좌표 — 기준 UTF-16 code unit 위치다.
+/// `PARA_CHAR_SHAPE` 를 되살린 텍스트 폭만큼 뒤로 미는 데 쓴다
+/// (`shift_char_shapes_for_residues`).
+struct GuideResidueShift {
+    position: u32,
+    width: u32,
+    char_shape_id: u32,
+}
+
+struct ParaTextResult {
+    bytes: Vec<u8>,
+    /// 문단 안에서 되살린 안내문 잔재들 — 위치 오름차순.
+    residue_shifts: Vec<GuideResidueShift>,
+}
+
+/// [#4402] HWP5 저장에서도 미기입 누름틀 안내문을 되살릴지 판정한다.
+///
+/// `#3545` 가 HWPX 저장(`emit_guide_residue`, `src/serializer/hwpx/section.rs`)에 붙인 것과
+/// 동일한 게이트 — 값이 채워진 필드(start != end)와 사용자가 비운 필드(dirty bit 15)는
+/// 건너뛴다. 중복 주입·사용자가 비운 값의 부활을 막는다.
+fn guide_residue_for<'a>(
+    para: &'a Paragraph,
+    fr: &crate::model::paragraph::FieldRange,
+) -> Option<&'a crate::model::control::GuideResidue> {
+    if fr.start_char_idx != fr.end_char_idx {
+        return None;
+    }
+    let Some(Control::Field(f)) = para.controls.get(fr.control_idx) else {
+        return None;
+    };
+    if f.is_dirty() {
+        return None;
+    }
+    let residue = f.guide_residue.as_ref()?;
+    if residue.text.is_empty() {
+        return None;
+    }
+    Some(residue)
+}
+
+/// 안내문 텍스트를 UTF-16 code unit 으로 인코딩해 `code_units` 에 밀어 넣고, 되돌린 폭과
+/// 위치를 `residue_shifts` 에 기록한다 (`shift_char_shapes_for_residues` 가 소비한다).
+///
+/// `position` 은 삽입 시점 기준 아직 시프트를 반영하지 않은 현재 좌표.
+fn push_guide_residue(
+    code_units: &mut Vec<u16>,
+    residue_shifts: &mut Vec<GuideResidueShift>,
+    residue: &crate::model::control::GuideResidue,
+    position: u32,
+) {
+    let start_len = code_units.len();
+    for c in residue.text.chars() {
+        let mut buf = [0u16; 2];
+        for cu in c.encode_utf16(&mut buf) {
+            code_units.push(*cu);
+        }
+    }
+    let width = (code_units.len() - start_len) as u32;
+    if width == 0 {
+        return;
+    }
+    residue_shifts.push(GuideResidueShift {
+        position,
+        width,
+        char_shape_id: residue.char_shape_id,
+    });
+}
+
+fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
     let mut code_units: Vec<u16> = Vec::new();
     let text_chars: Vec<char> = para.text.chars().collect();
     let mut ctrl_idx = 0;
     let mut prev_end: u32 = 0;
     let mut tab_idx: usize = 0; // TAB 확장 데이터 인덱스
+    let mut residue_shifts: Vec<GuideResidueShift> = Vec::new();
 
     // field_ranges에서 FIELD_END 삽입 정보를 수집
     // 두 종류로 분류:
@@ -467,6 +553,13 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
     let mut trailing_end_after_ctrl: HashMap<usize, Vec<FieldEndMarker>> = HashMap::new();
     // trailing FIELD_END 중 FIELD_BEGIN이 이미 본문에 배치된 경우 (orphan)
     let mut trailing_orphan_ends: Vec<u32> = Vec::new();
+    // [#4402] empty_field_ends/trailing_end_after_ctrl 과 같은 키로 안내문 잔재를 매핑 —
+    // 자기 FIELD_END 직전에 되살린다. mismatch(orphan) 경로는 #3545 와 동일하게 제외한다
+    // (슬롯 위치 추정이 이미 무너진 퇴화 경로라 주입이 개선이라 단정할 수 없다).
+    let mut empty_field_residues: BTreeMap<usize, Vec<&crate::model::control::GuideResidue>> =
+        BTreeMap::new();
+    let mut trailing_residues: HashMap<usize, Vec<&crate::model::control::GuideResidue>> =
+        HashMap::new();
 
     // [#4.6] 위치별 방출 순서를 명시하기 위한 두 갈래.
     //
@@ -495,11 +588,18 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
         } else {
             FieldEndMarker::default()
         };
+        let residue = guide_residue_for(para, fr);
         if fr.end_char_idx < text_len && fr.start_char_idx == fr.end_char_idx {
             empty_field_ends
                 .entry(fr.end_char_idx)
                 .or_default()
                 .push(marker);
+            if let Some(residue) = residue {
+                empty_field_residues
+                    .entry(fr.end_char_idx)
+                    .or_default()
+                    .push(residue);
+            }
         } else if fr.end_char_idx < text_len {
             field_ends.entry(fr.end_char_idx).or_default().push(marker);
         } else {
@@ -509,6 +609,12 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
                 .entry(fr.control_idx)
                 .or_default()
                 .push(marker);
+            if let Some(residue) = residue {
+                trailing_residues
+                    .entry(fr.control_idx)
+                    .or_default()
+                    .push(residue);
+            }
         }
     }
 
@@ -604,6 +710,13 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
         }
 
         // ④ 빈 필드(시작==끝)의 FIELD_END — 자기 BEGIN 직후.
+        // [#4402] 안내문 잔재는 자기 FIELD_END 바로 앞에 되살린다 (HWPX
+        // `emit_field_end_at` 과 동일 순서 — BEGIN 뒤, END 앞).
+        if let Some(residues) = empty_field_residues.get(&i) {
+            for &residue in residues {
+                push_guide_residue(&mut code_units, &mut residue_shifts, residue, prev_end);
+            }
+        }
         if let Some(markers) = empty_field_ends.get(&i) {
             for &marker in markers {
                 push_field_end_ctrl(&mut code_units, marker);
@@ -660,14 +773,27 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
 
     // 남은 컨트롤 배치 + trailing FIELD_END 인터리빙
     // FIELD_BEGIN 컨트롤 직후에 대응하는 FIELD_END를 삽입하여 올바른 순서를 보장한다.
+    //
+    // [#4402] 이 구간은 본디 위치 예산(offset/prev_end 갭 채우기)을 추적하지 않지만,
+    // `char_shapes` 시프트 계산은 절대 위치가 필요하다 — `prev_end` 를 그대로 이어 써서
+    // (메인 루프가 끝난 시점 값에서 시작) 8 code unit 씩 전진시킨다.
     while ctrl_idx < para.controls.len() {
         let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
         push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+        prev_end += 8;
+
+        // 이 컨트롤(FIELD_BEGIN)에 대응하는 안내문 잔재 — 자기 FIELD_END 바로 앞.
+        if let Some(residues) = trailing_residues.get(&ctrl_idx) {
+            for &residue in residues {
+                push_guide_residue(&mut code_units, &mut residue_shifts, residue, prev_end);
+            }
+        }
 
         // 이 컨트롤(FIELD_BEGIN)에 대응하는 trailing FIELD_END 삽입
         if let Some(end_markers) = trailing_end_after_ctrl.remove(&ctrl_idx) {
             for marker in end_markers {
                 push_field_end_ctrl(&mut code_units, marker);
+                prev_end += 8;
             }
         }
 
@@ -676,6 +802,10 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
 
     // orphan trailing FIELD_END: FIELD_BEGIN이 본문 갭에서 이미 배치된 경우
     // (trailing_end_after_ctrl에 남아있는 항목 = ctrl_idx가 이미 소진된 컨트롤)
+    //
+    // [#4402] 이 경로의 안내문 잔재는 의도적으로 되살리지 않는다 — 슬롯 위치 추정이
+    // 이미 무너진 mismatch/퇴화 경로라 주입이 개선이라 단정할 수 없다는 #3545 의
+    // HWPX 축 판단(`emit_guide_residue` 는 이 경로를 다루지 않는다)을 그대로 따른다.
     for end_markers in trailing_end_after_ctrl.values() {
         for &marker in end_markers {
             push_field_end_ctrl(&mut code_units, marker);
@@ -690,7 +820,73 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
     for cu in &code_units {
         bytes.extend_from_slice(&cu.to_le_bytes());
     }
-    bytes
+    residue_shifts.sort_by_key(|s| s.position);
+    ParaTextResult {
+        bytes,
+        residue_shifts,
+    }
+}
+
+/// [#4402] `PARA_CHAR_SHAPE` 에 되살린 안내문 잔재 폭을 반영해 `start_pos` 를 민다.
+///
+/// HWP5 의 char_shape 는 (HWPX 의 런별 `charPrIDRef` 와 달리) 문단 텍스트 버퍼 안 절대
+/// UTF-16 위치를 가리키는 표다. `serialize_para_text` 가 삽입한 잔재 폭만큼 그 뒤 항목을
+/// 밀어주지 않으면 이후 모든 서식 경계가 어긋난다.
+///
+/// 적재 시 삭제 수술(`document_core::commands::document`)은 (a) 삭제 범위 **안**의 경계를
+/// 삭제 시작점(`u_start`)으로 접고 (b) 삭제 범위 **뒤**의 경계는 `u_start` 로 감산해 옮긴다 —
+/// 둘 다 결과적으로 `u_start` 에 위치가 겹칠 수 있다(zero-width). `residue.char_shape_id` 는
+/// 삭제 **전** 좌표에서 `u_start` 이하 마지막 항목(= 잔재 자신의 서식)을 가리키므로, 같은
+/// 위치에 묶인 항목들 중 그 id 를 가진 것까지는 그대로 두고(잔재가 시작하는 지점) 그 뒤부터
+/// 미는 것이 되돌리기의 역연산이다. 그 id 를 못 찾으면(잔재 자신의 항목이 `u_start` 보다
+/// 앞에 있던 축퇴 경로) 묶음 전체가 삭제 범위 뒤에서 온 것으로 보고 첫 항목부터 민다.
+fn shift_char_shapes_for_residues(
+    char_shapes: &[CharShapeRef],
+    residue_shifts: &[GuideResidueShift],
+) -> Vec<CharShapeRef> {
+    if residue_shifts.is_empty() {
+        return char_shapes.to_vec();
+    }
+    let mut result = Vec::with_capacity(char_shapes.len());
+    let mut shift: u32 = 0;
+    let mut next = 0usize;
+    let mut i = 0usize;
+    while i < char_shapes.len() {
+        while next < residue_shifts.len()
+            && residue_shifts[next].position < char_shapes[i].start_pos
+        {
+            shift += residue_shifts[next].width;
+            next += 1;
+        }
+        if next < residue_shifts.len() && residue_shifts[next].position == char_shapes[i].start_pos
+        {
+            let pos = char_shapes[i].start_pos;
+            let mut j = i;
+            while j < char_shapes.len() && char_shapes[j].start_pos == pos {
+                j += 1;
+            }
+            let residue = &residue_shifts[next];
+            let anchor = (i..j).find(|&k| char_shapes[k].char_shape_id == residue.char_shape_id);
+            let shift_from = anchor.map(|a| a + 1).unwrap_or(i);
+            for (k, cs) in char_shapes.iter().enumerate().take(j).skip(i) {
+                let extra = if k < shift_from { 0 } else { residue.width };
+                result.push(CharShapeRef {
+                    start_pos: pos + shift + extra,
+                    char_shape_id: cs.char_shape_id,
+                });
+            }
+            shift += residue.width;
+            next += 1;
+            i = j;
+            continue;
+        }
+        result.push(CharShapeRef {
+            start_pos: char_shapes[i].start_pos + shift,
+            char_shape_id: char_shapes[i].char_shape_id,
+        });
+        i += 1;
+    }
+    result
 }
 
 /// PARA_CHAR_SHAPE 직렬화
