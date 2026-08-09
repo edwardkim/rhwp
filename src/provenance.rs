@@ -298,6 +298,14 @@ pub const MAP: &[CommandProvenance] = &[
         note: "input·output·steps[].find 는 계획서(호출자)가 준 값이다.",
     },
     CommandProvenance {
+        command: "replay",
+        untrusted: NONE,
+        note: "영수증 봉투는 해시(inputSha256·planSha256·outputSha256)·모드·step 수·\
+               도구 버전·재현 판정뿐이다 — run 과 달리 저널을 싣지 않아 문서 문자열이 \
+               나갈 자리가 없다. input 경로와 expectedOutputSha256 은 계획서(호출자)가 \
+               준 값의 에코다.",
+    },
+    CommandProvenance {
         command: "ir-diff",
         untrusted: &[f(
             "categories",

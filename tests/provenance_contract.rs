@@ -801,6 +801,15 @@ fn recipes() -> Vec<Recipe> {
             ndjson: true,
         },
         Recipe {
+            // replay 영수증 — 봉투가 해시·카운트뿐(문서 문자열 없음)임을 실측으로 고정.
+            command: "replay",
+            doc: Some(table.clone()),
+            args: vec![s("replay"), s("--plan-json"), plan.clone(), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
             command: "run",
             doc: Some(table.clone()),
             args: vec![s("run"), s("--plan-json"), plan, s("--json")],

@@ -778,6 +778,43 @@ export async function verify(path: PathLike, options: VerifyOptions = {}): Promi
   return call(args, options);
 }
 
+/** {@link replay} 옵션. */
+export interface ReplayOptions extends CommandOptions {
+  /**
+   * 검증 모드 — 주장된 산출의 SHA-256(64자리 16진).
+   *
+   * 재현 산출과 다르면 exit 3 · `reproduced: false`.
+   */
+  readonly expectOutputSha256?: string | undefined;
+  /**
+   * 재현 실패(exit 3)를 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(`reproduced`)로 읽는 것이 이 바인딩의 규약이다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * [#4391] 작업 영수증 — 계획을 **임시 산출**로 재실행해 (입력·계획·산출) SHA-256
+ * 3종 영수증을 발급(attest)하고, `expectOutputSha256` 을 주면 타인의 작업 주장을
+ * 재현 검증한다(verify — 불일치 exit 3, `reproduced: false`). 사용자 파일은
+ * 건드리지 않는다(계획의 `output` 은 임시 경로로 대체).
+ *
+ * @param plan - `run` 과 같은 계획서 객체, 또는 계획서 JSON 파일 경로.
+ */
+export async function replay(
+  plan: Readonly<Record<string, unknown>> | PathLike,
+  options: ReplayOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] =
+    typeof plan === 'string'
+      ? ['replay', plan]
+      : ['replay', '--plan-json', JSON.stringify(plan)];
+  flag(args, '--expect-output-sha256', options.expectOutputSha256);
+  args.push('--json');
+  return call(args, options);
+}
+
 // ── 편집 ──────────────────────────────────────────────────────────────────
 
 /**

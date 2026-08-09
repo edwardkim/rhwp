@@ -304,7 +304,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 172개 필드
+### 2-2. 전수 사전 — 178개 필드
 
 `capabilities` 의 `recordFields` 합집합이다. `등장 명령` 은 자기서술 기준이며,
 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
@@ -438,10 +438,21 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
 | `planVersion` | string | 계획서 버전. `"1.0"` 이 아니면 실행 0 · exit 2 | `run` |
-| `steps` | array | 실행 저널 — step 마다 `action` 과 그 step 의 판정 필드가 그대로 | `run` |
+| `steps` | array\|number | `run` 은 실행 저널(step 마다 `action` 과 판정 필드), `replay` 는 실행된 step 수 — **같은 이름, 다른 타입** | `run`·`replay` |
 | `invalid` | array | **정적 선검증 위반.** 비어 있지 않으면 한 step 도 실행하지 않는다 | `run` |
 | `assertions` | object | 적용된 단언 `{verify,notFoundEmpty}` — 미지정 기본값도 명시해 저널에 남는다 | `run` (실측; `recordFields` 에는 없다) |
 | `preview` | array | `--dry-run` 전용. 선검증이 이미 계산한 대상 목록 | `run --dry-run` (실측) |
+
+#### 작업 영수증 (`replay`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `inputSha256` | string | 계획서 `input` 문서 바이트의 SHA-256 | `replay` |
+| `planSha256` | string | 계획서 원문 바이트의 SHA-256 | `replay` |
+| `outputSha256` | string | 임시 재실행 산출 바이트의 SHA-256 — 영수증의 몸통 | `replay` |
+| `expectedOutputSha256` | string\|null | 검증(verify) 모드에서 호출자가 주장한 산출 해시. 발급(attest) 모드는 `null` | `replay` |
+| `reproduced` | boolean\|null | 재현 판정 — `false` 면 exit 3. 발급 모드는 `null` | `replay` |
+| `toolVersion` | string | 재현 조건 고정용 rhwp 버전 — 같은 계획이라도 버전이 다르면 산출이 다를 수 있다 | `replay` |
 
 #### 판정·비교
 
