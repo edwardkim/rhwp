@@ -313,6 +313,13 @@ pub const MAP: &[CommandProvenance] = &[
                아니라 호출자 산출물이고, 문서 문자열은 재실행 내부에 머문다.",
     },
     CommandProvenance {
+        command: "lineage",
+        untrusted: NONE,
+        note: "계보 봉투는 head(호출자 에코)·depth·판정 불리언(valid·parentOk·lineageOk· \
+               reproduced)·캡슐 파일 경로(brokenAt·links[].capsule)·해시뿐이다 — 캡슐은 \
+               호출자 산출물이고, 문서 문자열은 --deep 재실행 내부에 머문다.",
+    },
+    CommandProvenance {
         command: "ir-diff",
         untrusted: &[f(
             "categories",

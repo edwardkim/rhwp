@@ -829,6 +829,20 @@ fn recipes() -> Vec<Recipe> {
             ndjson: false,
         },
         Recipe {
+            // lineage 깨진 머리 — kind 불일치 캡슐 하나로 valid:false 경로(exit 3)를
+            // 고정한다. 봉투는 경로·해시·판정뿐, 문서 오라클이 없다(doc: None).
+            command: "lineage",
+            doc: None,
+            args: vec![
+                s("lineage"),
+                p(&audit_dir.join("broken.capsule.json")),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
             command: "run",
             doc: Some(table.clone()),
             args: vec![s("run"), s("--plan-json"), plan, s("--json")],

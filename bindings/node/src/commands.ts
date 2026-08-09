@@ -837,6 +837,32 @@ export async function audit(root: PathLike, options: AuditOptions = {}): Promise
   return call(args, options);
 }
 
+/** {@link lineage} 옵션. */
+export interface LineageOptions extends CommandOptions {
+  /** 링크마다 재실행 재현(`reproduced`)까지 판정할지 — 링크 수만큼 재실행 비용이 든다. */
+  readonly deep?: boolean | undefined;
+  /**
+   * 깨진 계보(exit 3)를 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(`valid`·`brokenAt`·`links[]`)로 읽는 것이 이 바인딩의 규약이다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * [#4401] 작업 계보 — 캡슐 해시 체인을 머리부터 거슬러 검증한다. 링크마다
+ * 부모 파일 무결(`parentOk`)과 계보 불변식(부모 산출 해시 == 자식 입력 해시,
+ * `lineageOk`)을 판정하고, `deep` 이면 재실행 재현(`reproduced`)까지 본다.
+ * 깨진 체인은 exit 3 · `brokenAt` 이 어느 링크인지 가리킨다.
+ *
+ * @param head - 체인의 머리(최신) 캡슐 경로. 없으면 CLI 가 실행 오류(exit 1)를 낸다.
+ */
+export async function lineage(head: PathLike, options: LineageOptions = {}): Promise<Envelope> {
+  const args: Argument[] = ['lineage', head, '--json'];
+  if (options.deep) args.push('--deep');
+  return call(args, options);
+}
+
 // ── 편집 ──────────────────────────────────────────────────────────────────
 
 /**
