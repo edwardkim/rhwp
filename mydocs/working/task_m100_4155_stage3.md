@@ -85,17 +85,38 @@ Native Skia 게이트로 본다.
 | `cargo test --profile release-test --features native-skia skia --lib` | **58 passed / 0 failed** |
 | `--features native-skia --test issue_2225_missing_picture_placeholder` | **2 passed / 0 failed** |
 | `--features native-skia --test render_p37_direct_pdf_export` | **4 passed / 0 failed** |
-| `wasm-pack build --target web --out-dir pkg` | **통과** — `pkg/` 생성 (`rhwp_bg.wasm` 외 6파일) |
+| `docker compose --env-file .env.docker run --rm --build wasm` | **통과** — `pkg/` 생성, `wasm-opt` 까지 완주 |
 
-`wasm-pack` 이 이 작업 환경에 설치돼 있지 않았다(`~/.cargo/bin` 에 rustup shim 만 있고 cargo
-install 산물이 0개, Homebrew 에도 없음 — PATH 문제가 아니라 미설치였다). host fallback 으로
-넘기지 않고 `cargo install wasm-pack`(0.15.0)으로 설치해 **표준 명령을 그대로 실행**했다.
-`wasm-bindgen-cli` 0.2.125 는 wasm-pack 이 자동 설치했고 `wasm-opt` 최적화까지 완주했다.
+WASM 빌드의 프로젝트 표준은 **Docker 경유**다
+(`mydocs/manual/memory/project_wasm_docker_build.md`, 2026-07-19 작업지시자 교정).
+호스트 `wasm-pack` 직접 실행은 표준이 아니다. `pkg/` 는 `.gitignore` 대상(`/pkg/`)이라
+커밋에 포함되지 않는다 — 빌드 통과 자체가 게이트다.
 
-`pkg/` 는 `.gitignore` 에 있어(`/pkg/`) 커밋 대상이 아니다 — 빌드 통과만 게이트다.
+### 5.1 부수 발견 — 낡은 로컬 이미지가 wasm-pack 버전 고정을 무력화하고 있었다
 
-`dev_environment_guide.md` 는 `wasm-pack build` 를 요구하면서 설치 방법을 적어두지 않았다.
-같은 환경을 새로 꾸리는 사람이 막히는 지점이므로 가이드에 한 줄 추가할 만하다(후속).
+`--build` 없이 표준 명령을 처음 돌렸을 때 컨테이너가 **wasm-pack 0.14.0** 으로 빌드했다.
+Dockerfile 은 [#2233](https://github.com/edwardkim/rhwp/issues/2233) 으로 "CI 와 단일 정책,
+재현성 목적"이라며 `cargo install wasm-pack@0.15.0` 을 고정해 두었는데도 그렇다.
+
+| 사실 | 값 |
+| --- | --- |
+| 로컬 `rhwp-wasm:latest` 이미지 생성 | 2026-05-03 |
+| Dockerfile 의 0.15.0 고정 커밋 | `d4a32ab29` 2026-05-16 |
+
+`docker compose run` 은 기존 이미지를 재사용하고 Dockerfile 변경을 감지해 다시 굽지 않는다.
+즉 이미지를 만든 뒤 고정 버전을 올린 시점부터, 로컬 표준 경로는 조용히 **고정 이전 버전**으로
+돌고 있었다. 재현성 고정이 로컬에서는 성립하지 않았다는 뜻이다.
+
+`--build` 를 붙여 이미지를 다시 굽고 재실행해 **0.15.0 으로 게이트를 닫았다**
+(`docker compose ... --entrypoint wasm-pack wasm --version` → `wasm-pack 0.15.0` 확인).
+이 PR 의 판정에는 영향이 없다(두 버전 모두 빌드 성공). 다만 게이트 문서가 `--build` 를
+말하지 않으면 같은 함정이 반복되므로 후속으로 남긴다.
+
+### 5.2 문서 불일치 (기존 기록 재확인)
+
+`dev_environment_guide.md` 는 WASM canonical 인데 Docker 경로가 **누락**돼 있고 호스트
+`wasm-pack build` 만 적어 두었다. 이 불일치는 2026-07-19 에 이미 발견돼
+`project_wasm_docker_build.md` 에 "문서 불일치 보수 대상"으로 기록돼 있다. 아직 미해소다.
 
 `paint` 축의 동작 변경 2건(`is_fill_only_glyph_replay`·`textVisualEffect`)이 실제로 소비되는
 경로가 이 3종이다 — SVG 무회귀만으로는 덮이지 않는 범위를 여기서 닫는다.

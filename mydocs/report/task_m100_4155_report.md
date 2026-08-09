@@ -127,11 +127,16 @@ HWP3 에서 뒤집혀 시각 검증 레인이 어차피 필요했다. 같은 레
 | Native Skia `skia --lib` | **58 passed / 0 failed** |
 | Native Skia `issue_2225_missing_picture_placeholder` | **2 passed / 0 failed** |
 | Native Skia `render_p37_direct_pdf_export` | **4 passed / 0 failed** |
-| `wasm-pack build --target web --out-dir pkg` | **통과** — `pkg/` 생성, `wasm-opt` 까지 완주 |
+| WASM (`docker compose --env-file .env.docker run --rm --build wasm`) | **통과** — `pkg/` 생성, `wasm-opt` 완주 |
 
-`wasm-pack` 이 이 환경에 설치돼 있지 않아(PATH 문제가 아니라 미설치) `cargo install
-wasm-pack`(0.15.0)으로 설치한 뒤 **표준 명령을 그대로** 실행했다. 대체 경로로 갈음하지
-않았다. `pkg/` 는 `.gitignore` 대상이라 커밋에 포함되지 않는다.
+WASM 빌드의 프로젝트 표준은 Docker 경유다(`mydocs/manual/memory/project_wasm_docker_build.md`).
+`pkg/` 는 `.gitignore` 대상이라 커밋에 포함되지 않는다.
+
+이 과정에서 **로컬 Docker 이미지가 wasm-pack 버전 고정을 무력화하고 있었음**을 발견했다 —
+이미지는 2026-05-03 생성인데 Dockerfile 의 `wasm-pack@0.15.0` 고정은 2026-05-16(`d4a32ab29`)에
+들어왔고, `docker compose run` 은 이미지를 다시 굽지 않아 0.14.0 으로 돌고 있었다. `--build` 로
+다시 구워 0.15.0 에서 게이트를 닫았다. 상세와 후속 제안은
+[stage3](../working/task_m100_4155_stage3.md) §5.1.
 
 ### 6.3 시각 증적
 
@@ -166,6 +171,11 @@ target/release-test/rhwp convert samples/hwp3-sample11.hwp /tmp/sample11-4155.hw
   이번에 원인을 확인하지 않았다.
 - `shade_color: Option<ColorRef>` IR 리팩터링. sentinel 을 아예 없애는 것이 정답이지만
   소비처가 많아 독립 이슈다.
+- **검증 환경 두 건** (이 PR 과 무관, 별도 이슈 후보):
+  ① `docker compose run` 이 낡은 이미지를 재사용해 Dockerfile 의 wasm-pack 버전 고정(#2233)이
+  로컬에서 무력화된다 — 게이트 문서에 `--build` 명시 필요([stage3](../working/task_m100_4155_stage3.md) §5.1).
+  ② `dev_environment_guide.md`(WASM canonical)에 Docker 경로 누락 — 2026-07-19 에 이미
+  기록된 미해소 문서 불일치([stage3](../working/task_m100_4155_stage3.md) §5.2).
 
 ## 8. 부수 정정
 
