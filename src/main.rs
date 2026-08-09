@@ -15144,13 +15144,14 @@ fn cmd_replay(args: &[String]) -> i32 {
         eprintln!("오류: 계획에 input 이 필요합니다.");
         return EXIT_USAGE;
     };
-    let input_sha = match fs::read(&input) {
-        Ok(b) => sha256_hex(&b),
+    let input_bytes = match fs::read(&input) {
+        Ok(b) => b,
         Err(e) => {
             eprintln!("오류: 입력을 읽을 수 없습니다 - {input}: {e}");
             return EXIT_RUNTIME;
         }
     };
+    let input_sha = sha256_hex(&input_bytes);
     // 산출 형식은 계획의 output 확장자가 정한다 — 임시 경로도 같은 확장자를 쓴다.
     let ext = plan["output"]
         .as_str()
@@ -15164,7 +15165,17 @@ fn cmd_replay(args: &[String]) -> i32 {
     ));
     plan["output"] = serde_json::json!(temp_out.to_string_lossy());
 
-    let (engine_env, engine_code) = run_plan_engine(&plan);
+    // 영수증의 inputSha256 과 엔진이 소비하는 바이트는 반드시 같은 스냅샷이어야
+    // 한다. 원 경로를 다시 열면 두 읽기 사이의 교체가 다른 입력으로 서명된다.
+    let (engine_env, engine_code) =
+        match with_replay_input_snapshot(&mut plan, &input_bytes, &plan_sha, run_plan_engine) {
+            Ok(result) => result,
+            Err(e) => {
+                let _ = fs::remove_file(&temp_out);
+                eprintln!("오류: 재실행 입력 스냅샷을 만들 수 없습니다 - {e}");
+                return EXIT_RUNTIME;
+            }
+        };
     if engine_code != 0 {
         let _ = fs::remove_file(&temp_out);
         if json_mode {
@@ -15227,6 +15238,56 @@ fn cmd_replay(args: &[String]) -> i32 {
         Some(false) => 3, // #2707: 검증 단언 실패 — 주장된 산출과 재현 산출이 다르다.
         _ => EXIT_OK,
     }
+}
+
+/// replay가 해시한 입력과 엔진이 읽는 입력을 한 파일 스냅샷으로 묶는다.
+/// closure가 끝나면 계획의 원래 input을 복원하고 임시 파일을 제거한다.
+fn with_replay_input_snapshot<T>(
+    plan: &mut serde_json::Value,
+    input_bytes: &[u8],
+    plan_sha: &str,
+    execute: impl FnOnce(&serde_json::Value) -> T,
+) -> Result<T, String> {
+    use std::io::Write;
+
+    let input = plan["input"]
+        .as_str()
+        .ok_or_else(|| "계획에 input 이 필요합니다".to_string())?;
+    let ext = std::path::Path::new(input)
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("hwp");
+    let mut snapshot = None;
+    for attempt in 0..128_u16 {
+        let candidate = std::env::temp_dir().join(format!(
+            "rhwp-replay-input-{}-{}-{attempt}.{ext}",
+            std::process::id(),
+            &plan_sha[..12]
+        ));
+        match fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&candidate)
+        {
+            Ok(mut file) => {
+                if let Err(e) = file.write_all(input_bytes) {
+                    let _ = fs::remove_file(&candidate);
+                    return Err(e.to_string());
+                }
+                snapshot = Some(candidate);
+                break;
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(e) => return Err(e.to_string()),
+        }
+    }
+    let snapshot = snapshot.ok_or_else(|| "사용 가능한 임시 파일 이름이 없습니다".to_string())?;
+    let original_input = plan["input"].clone();
+    plan["input"] = serde_json::json!(snapshot.to_string_lossy());
+    let result = execute(plan);
+    plan["input"] = original_input;
+    let _ = fs::remove_file(snapshot);
+    Ok(result)
 }
 
 fn cmd_run_plan(args: &[String]) -> i32 {
@@ -19445,7 +19506,7 @@ mod tests {
     use super::{
         allows_implicit_sibling_resources, cli_output_password, cli_password,
         set_cli_output_password, set_cli_password, strip_global_auth_options,
-        tab_ext_semantic_differs, EXIT_USAGE,
+        tab_ext_semantic_differs, with_replay_input_snapshot, EXIT_USAGE,
     };
     use rhwp::parser::FileFormat;
 
@@ -19454,6 +19515,28 @@ mod tests {
         assert!(!allows_implicit_sibling_resources(FileFormat::Hml));
         assert!(allows_implicit_sibling_resources(FileFormat::Hwp));
         assert!(allows_implicit_sibling_resources(FileFormat::Hwpx));
+    }
+
+    #[test]
+    fn replay_engine_receives_the_hashed_input_snapshot() {
+        let original =
+            std::env::temp_dir().join(format!("rhwp-replay-original-{}.hwp", std::process::id()));
+        std::fs::write(&original, b"original bytes").expect("원본 작성");
+        let mut plan = serde_json::json!({ "input": original.to_string_lossy() });
+        let seen = with_replay_input_snapshot(
+            &mut plan,
+            b"hashed snapshot",
+            "0000000000000000000000000000000000000000000000000000000000000000",
+            |snapshot_plan| {
+                std::fs::write(&original, b"changed after hashing").expect("원본 교체");
+                std::fs::read(snapshot_plan["input"].as_str().expect("스냅샷 경로"))
+                    .expect("스냅샷 읽기")
+            },
+        )
+        .expect("스냅샷 실행");
+        assert_eq!(seen, b"hashed snapshot");
+        assert_eq!(plan["input"], original.to_string_lossy().as_ref());
+        let _ = std::fs::remove_file(original);
     }
 
     #[test]
