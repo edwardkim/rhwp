@@ -145,6 +145,17 @@ fn table_bottom(node: &RenderNode, para_index: usize, bottom: &mut Option<f64>) 
     }
 }
 
+fn table_boxes_for_paragraph(node: &RenderNode, para_index: usize, boxes: &mut Vec<BoundingBox>) {
+    if let RenderNodeType::Table(table) = &node.node_type {
+        if table.para_index == Some(para_index) {
+            boxes.push(node.bbox);
+        }
+    }
+    for child in &node.children {
+        table_boxes_for_paragraph(child, para_index, boxes);
+    }
+}
+
 fn table_top(node: &RenderNode, para_index: usize, top: &mut Option<f64>) {
     if let RenderNodeType::Table(table) = &node.node_type {
         if table.para_index == Some(para_index) {
@@ -250,6 +261,44 @@ fn footnote_text(node: &RenderNode, in_footnote: bool, text: &mut String) {
     }
     for child in &node.children {
         footnote_text(child, in_footnote, text);
+    }
+}
+
+fn assert_footnote_owner<const N: usize>(
+    notes: &[String; N],
+    pages: &[u32; N],
+    number: &str,
+    expected_page_index: usize,
+    needles: &[&str],
+) {
+    let marker = format!("{number})");
+    for (index, text) in notes.iter().enumerate() {
+        let physical_page = pages[index] + 1;
+        if index == expected_page_index {
+            assert_eq!(
+                text.matches(&marker).count(),
+                1,
+                "p{physical_page}는 각주 {number} 번호를 정확히 한 번 소유해야 함: {text}"
+            );
+            for needle in needles {
+                assert!(
+                    text.contains(needle),
+                    "p{physical_page} 각주 {number}에 고유 본문이 누락됨 ({needle}): {text}"
+                );
+            }
+        } else {
+            assert_eq!(
+                text.matches(&marker).count(),
+                0,
+                "p{physical_page}는 각주 {number} 번호를 소유하면 안 됨: {text}"
+            );
+            for needle in needles {
+                assert!(
+                    !text.contains(needle),
+                    "p{physical_page}에 각주 {number}의 marker 없는 fragment가 남으면 안 됨 ({needle}): {text}"
+                );
+            }
+        }
     }
 }
 
@@ -1047,42 +1096,87 @@ fn native_hwp5_body_footnotes_follow_the_p129_and_p131_reset_pages() {
         215,
         "정책연구 기준 PDF와 215쪽을 유지해야 함"
     );
-    let trees = [PAGE_129, PAGE_130, PAGE_131, PAGE_132].map(|page| {
+    let pages = [PAGE_129, PAGE_130, PAGE_131, PAGE_132, PAGE_132 + 1];
+    let trees = pages.map(|page| {
         doc.build_page_render_tree(page)
             .unwrap_or_else(|e| panic!("render physical page {}: {e}", page + 1))
     });
 
-    let mut p129_lines = Vec::new();
-    let mut p130_lines = Vec::new();
-    paragraph_line_indices(&trees[0].root, 1372, &mut p129_lines);
-    paragraph_line_indices(&trees[1].root, 1372, &mut p130_lines);
-    p129_lines.sort_unstable();
-    p129_lines.dedup();
-    p130_lines.sort_unstable();
-    p130_lines.dedup();
-    assert_eq!(
-        p129_lines,
+    let expected_1372 = [
         (0..6).collect::<Vec<_>>(),
-        "p129 para 1372 owner"
+        (6..9).collect::<Vec<_>>(),
+        Vec::new(),
+        Vec::new(),
+        Vec::new(),
+    ];
+    let expected_1382 = [Vec::new(), Vec::new(), vec![0, 1], vec![2], Vec::new()];
+    for (index, tree) in trees.iter().enumerate() {
+        let mut lines_1372 = Vec::new();
+        let mut lines_1382 = Vec::new();
+        paragraph_line_indices(&tree.root, 1372, &mut lines_1372);
+        paragraph_line_indices(&tree.root, 1382, &mut lines_1382);
+        lines_1372.sort_unstable();
+        lines_1382.sort_unstable();
+        assert_eq!(
+            lines_1372,
+            expected_1372[index],
+            "p{} para 1372 owner 또는 중복 line",
+            pages[index] + 1
+        );
+        assert_eq!(
+            lines_1382,
+            expected_1382[index],
+            "p{} para 1382 owner 또는 중복 line",
+            pages[index] + 1
+        );
+    }
+
+    let mut table_1377_boxes = Vec::new();
+    let mut table_1379_boxes = Vec::new();
+    for tree in &trees {
+        let mut boxes_1377 = Vec::new();
+        let mut boxes_1379 = Vec::new();
+        table_boxes_for_paragraph(&tree.root, 1377, &mut boxes_1377);
+        table_boxes_for_paragraph(&tree.root, 1379, &mut boxes_1379);
+        table_1377_boxes.push(boxes_1377);
+        table_1379_boxes.push(boxes_1379);
+    }
+    assert_eq!(
+        table_1377_boxes.iter().map(Vec::len).collect::<Vec<_>>(),
+        vec![0, 0, 1, 0, 0],
+        "pi1377 표는 p131에만 정확히 한 번 있어야 함"
     );
     assert_eq!(
-        p130_lines,
-        (6..9).collect::<Vec<_>>(),
-        "p130 para 1372 owner"
+        table_1379_boxes.iter().map(Vec::len).collect::<Vec<_>>(),
+        vec![0, 0, 1, 0, 0],
+        "pi1379 표는 p131에만 정확히 한 번 있어야 함"
     );
 
-    let mut p131_lines = Vec::new();
-    let mut p132_lines = Vec::new();
-    paragraph_line_indices(&trees[2].root, 1382, &mut p131_lines);
-    paragraph_line_indices(&trees[3].root, 1382, &mut p132_lines);
-    p131_lines.sort_unstable();
-    p131_lines.dedup();
-    p132_lines.sort_unstable();
-    p132_lines.dedup();
-    assert_eq!(p131_lines, vec![0, 1], "p131 para 1382 owner");
-    assert_eq!(p132_lines, vec![2], "p132 para 1382 owner");
+    let p131_table_1377 = table_1377_boxes[2][0];
+    let p131_table_1379 = table_1379_boxes[2][0];
+    let mut p131_body_boxes = Vec::new();
+    paragraph_line_boxes(&trees[2].root, 1382, &mut p131_body_boxes);
+    let p131_body_top = p131_body_boxes
+        .iter()
+        .map(|bbox| bbox.y)
+        .reduce(f64::min)
+        .expect("p131 para 1382 lines");
+    assert!(
+        p131_table_1377.y + p131_table_1377.height <= p131_table_1379.y + 0.5,
+        "p131 pi1377 표는 pi1379 표를 침범하면 안 됨"
+    );
+    assert!(
+        p131_table_1379.y + p131_table_1379.height <= p131_body_top + 0.5,
+        "p131 pi1379 표는 pi1382 본문을 침범하면 안 됨"
+    );
 
-    let mut notes = [String::new(), String::new(), String::new(), String::new()];
+    let mut notes = [
+        String::new(),
+        String::new(),
+        String::new(),
+        String::new(),
+        String::new(),
+    ];
     for (tree, text) in trees.iter().zip(notes.iter_mut()) {
         footnote_text(&tree.root, false, text);
     }
@@ -1104,18 +1198,43 @@ fn native_hwp5_body_footnotes_follow_the_p129_and_p131_reset_pages() {
         "p130은 번호를 반복하지 않은 각주 176 tail과 177·178을 소유해야 함: {}",
         notes[1]
     );
-    assert!(
-        notes[2].contains("179)") && !notes[2].contains("180)"),
-        "p131은 PDF처럼 각주 179만 소유해야 함: {}",
-        notes[2]
+    assert_footnote_owner(&notes, &pages, "179", 2, &["KAKENHI-PROJECT-24593293"]);
+    assert_footnote_owner(
+        &notes,
+        &pages,
+        "180",
+        3,
+        &["본인 확인뿐만 아니라", "대로 호적 등으로"],
     );
-    assert!(
-        notes[3].contains("180)")
-            && notes[3].contains("181)")
-            && notes[3].contains("대로 호적 등으로"),
-        "p132는 각주 180 전체와 181을 소유해야 함: {}",
-        notes[3]
-    );
+    assert_footnote_owner(&notes, &pages, "181", 3, &["hishinzoku.pdf"]);
+
+    for index in [2, 3] {
+        let physical_page = pages[index] + 1;
+        let mut body_bottom = None;
+        let mut separator_top = None;
+        let mut footnote_bottom = None;
+        let mut footer_top = None;
+        paragraph_bottom(&trees[index].root, 1382, &mut body_bottom);
+        footnote_separator_top(&trees[index].root, &mut separator_top);
+        footnote_and_footer(&trees[index].root, &mut footnote_bottom, &mut footer_top);
+        let separator_top = separator_top.expect("p131/p132 footnote separator");
+        assert!(
+            body_bottom.expect("p131/p132 para 1382 body") <= separator_top + 0.5,
+            "p{physical_page} pi1382 본문은 각주 separator를 침범하면 안 됨"
+        );
+        assert!(
+            footnote_bottom.expect("p131/p132 footnote bottom")
+                <= footer_top.expect("p131/p132 footer top") + 1.0,
+            "p{physical_page} FootnoteArea는 footer를 침범하면 안 됨"
+        );
+        if index == 2 {
+            assert!(
+                p131_table_1377.y + p131_table_1377.height <= separator_top + 0.5
+                    && p131_table_1379.y + p131_table_1379.height <= separator_top + 0.5,
+                "p131 표는 각주 separator를 침범하면 안 됨"
+            );
+        }
+    }
 }
 
 #[test]
