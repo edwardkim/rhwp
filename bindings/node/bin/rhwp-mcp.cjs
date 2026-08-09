@@ -10,13 +10,46 @@
  */
 'use strict';
 
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
+const path = require('node:path');
 
 const SHUTDOWN_GRACE_MS = 5_000;
 
 function fail(message) {
   process.stderr.write(message + '\n');
   process.exit(2);
+}
+
+function childIsRunning(child) {
+  return child.exitCode === null && child.signalCode === null;
+}
+
+function killChild(child, signal) {
+  if (!childIsRunning(child)) return false;
+  try {
+    return child.kill(signal);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 강제 종료를 wrapper가 통제하는 경로에서는 Windows도 direct child만 남기지
+ * 않고 process tree 전체를 닫는다. 외부 TerminateProcess가 wrapper 자체를
+ * 바로 끊는 경우에는 이 함수가 실행되지 않으므로 Job Object의 대체물은 아니다.
+ */
+function forceKillChildTree(child) {
+  if (!childIsRunning(child)) return false;
+  if (process.platform === 'win32' && Number.isInteger(child.pid) && child.pid > 0) {
+    const windowsRoot = process.env.SystemRoot || process.env.windir || 'C:\\Windows';
+    const taskkill = path.join(windowsRoot, 'System32', 'taskkill.exe');
+    const result = spawnSync(taskkill, ['/PID', String(child.pid), '/T', '/F'], {
+      stdio: 'ignore',
+      windowsHide: true,
+    });
+    if (result.status === 0) return true;
+  }
+  return killChild(child, 'SIGKILL');
 }
 
 function main() {
@@ -51,28 +84,25 @@ function main() {
   let forceKillTimer;
   const signalHandlers = new Map();
 
-  const childIsRunning = () => child.exitCode === null && child.signalCode === null;
-  const killChild = (signal) => {
-    if (!childIsRunning()) return false;
-    try {
-      return child.kill(signal);
-    } catch {
-      return false;
-    }
-  };
-
   // MCP hosts usually stop stdio servers by closing stdin. If they signal the
   // wrapper PID instead, the real server must receive the same signal rather
   // than surviving as an orphan. A second signal (or the grace timeout) is an
   // explicit request to stop waiting for graceful shutdown.
   const forwardSignal = (signal) => {
     if (shutdownSignal !== undefined) {
-      killChild('SIGKILL');
+      forceKillChildTree(child);
       return;
     }
     shutdownSignal = signal;
-    if (!killChild(signal)) return;
-    forceKillTimer = setTimeout(() => killChild('SIGKILL'), SHUTDOWN_GRACE_MS);
+    // Windows child.kill(signal)은 direct process를 TerminateProcess로 끊어
+    // 손자 프로세스를 남길 수 있다. handler가 실제로 실행된 경로에서는 처음부터
+    // taskkill /T /F로 tree를 닫는다. POSIX는 기존 graceful forwarding을 유지한다.
+    if (process.platform === 'win32') {
+      forceKillChildTree(child);
+      return;
+    }
+    if (!killChild(child, signal)) return;
+    forceKillTimer = setTimeout(() => forceKillChildTree(child), SHUTDOWN_GRACE_MS);
   };
 
   for (const signal of ['SIGINT', 'SIGTERM']) {
@@ -85,7 +115,7 @@ function main() {
   // wrapper alive until the child is reaped; this hook is only a last-resort,
   // synchronous termination request.
   const stopChildOnWrapperExit = () => {
-    killChild('SIGTERM');
+    forceKillChildTree(child);
   };
   process.once('exit', stopChildOnWrapperExit);
 
@@ -107,4 +137,7 @@ function main() {
   });
 }
 
-main();
+// bin을 require하는 Windows process-tree 회귀는 실제 server를 기동하지 않는다.
+module.exports = { forceKillChildTree };
+
+if (require.main === module) main();
