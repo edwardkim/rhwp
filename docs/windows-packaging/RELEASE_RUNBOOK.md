@@ -65,6 +65,15 @@ npm run build:desktop
 npm run tauri:build
 ```
 
+인증서가 그 자리에 없으면 컴파일도 시작하지 못하고 아래에서 멈춘다 — `tauri.conf.json`이 인증서를
+번들 리소스로 선언하기 때문이다. `.cer`은 저장소에 커밋하지 않으므로(→ [0단계](#0-사전-준비-최초-1회-이후-재사용)),
+새로 clone한 머신에서 특히 자주 만난다.
+
+```
+resource path `packaging\cert\rhwp-studio-cert.cer` doesn't exist
+failed to build app: failed to build app
+```
+
 산출물: `rhwp-studio/src-tauri/target/release/bundle/nsis/RHWP Studio_<version>_x64-setup.exe`
 
 `<version>`은 `rhwp-studio/src-tauri/tauri.conf.json`의 `version` 값이다 — `package.json`이 아니다.
