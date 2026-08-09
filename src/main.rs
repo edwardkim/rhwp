@@ -347,6 +347,7 @@ fn main() {
         Some("edit") => exit_with(run_edit(&args[2..])),
         Some("run") => exit_with(cmd_run_plan(&args[2..])),
         Some("replay") => exit_with(cmd_replay(&args[2..])),
+        Some("audit") => exit_with(cmd_audit(&args[2..])),
         // [#3719 §6-4] 계획을 *만드는* 쪽의 정답지 — `run` 바로 옆에 둔다.
         Some("export-plan-schema") => exit_with(cmd_export_plan_schema(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
@@ -1577,6 +1578,20 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             serde_json::json!([{ "when": "expectOutputSha256", "args": ["--expect-output-sha256", "{expectOutputSha256}"] }]),
             &["schemaVersion", "mode", "input", "inputSha256", "planSha256", "outputSha256", "toolVersion", "steps", "reproduced", "expectedOutputSha256"],
         ),
+        tool(
+            "hwp_audit",
+            "[#4393] 에이전트 노동 감사 — 작업 캡슐(*.capsule.json) 폴더를 전수 재실행해 재현율을 회계한다. 개별 검증은 hwp_replay, 조직 규모 일괄은 이 도구. 불일치 1건 = exit 3, failed[] 에 캡슐별 기대/실제 해시.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "dir": { "type": "string", "description": "*.capsule.json 이 담긴 폴더 (비재귀)" }
+                },
+                "required": ["dir"],
+            }),
+            "audit",
+            serde_json::json!(["audit", "{dir}", "--json"]),
+            &["schemaVersion", "root", "total", "reproduced", "failed", "reproducedRate"],
+        ),
         tool_with_optional_args(
             "hwp_export_plan_schema",
             "[#3719 §6-4] hwp_run_plan 이 받는 **계획서 자체**의 JSON Schema 를 돌려준다. hwp_run_plan 이 계획을 실행한다면 이 도구는 계획을 어떻게 쓰는지 알려준다 — step 4종의 필수·선택 필드, 조건절 if 의 문법, assertions 의 뜻이 판별 유니온으로 적혀 있다. 계획을 처음 만들 때 한 번 받아 두면 필드명을 지어내 invalid[] 로 되돌아오는 왕복을 없앨 수 있다. 문서를 입력으로 받지 않는다(계획서 문법의 서술이지 특정 문서의 속성이 아니다).",
@@ -1929,7 +1944,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             "query",
             "계획을 임시 산출로 재실행해 작업 영수증(입력·계획·산출 SHA-256)을 발급하고, --expect-output-sha256 로 타인의 작업 주장을 재현 검증한다 — 불일치는 exit 3 (#4391)",
             false,
-            &["--json", "--plan-json", "--expect-output-sha256"],
+            &["--json", "--plan-json", "--expect-output-sha256", "--capsule"],
             &[
                 "schemaVersion",
                 "mode",
@@ -1941,6 +1956,21 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "steps",
                 "reproduced",
                 "expectedOutputSha256",
+            ],
+        ),
+        cmd_json(
+            "audit",
+            "query",
+            "작업 캡슐(*.capsule.json) 폴더 전수 재실행·대조 — 에이전트 노동의 재현율 회계. 불일치 1건이라도 있으면 exit 3 (#4393)",
+            false,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "root",
+                "total",
+                "reproduced",
+                "failed",
+                "reproducedRate",
             ],
         ),
         // [#3719 §6-4] 계획서 문법의 단일 출처 — `run` 바로 뒤에 둔다. 계획을 실행하는
@@ -3471,6 +3501,7 @@ fn print_help() {
     println!("      --bare 는 봉투 없이 스키마 본문만 (JSON Schema 도구 입력용)");
     println!("  run <계획.json> [--json]              선언적 편집 계획 실행 (#3703)");
     println!("  replay <계획.json> [--expect-output-sha256 <hex>] [--json]  작업 영수증 발급·재현 검증 (#4391)");
+    println!("  audit <캡슐 폴더> [--json]            작업 캡슐 전수 재검증 — 재현율 회계 (#4393)");
     println!("      전 step 을 정적 선검증(불가 시 실행 0·exit 2)하고 인메모리로 원자");
     println!("      실행해 단언(verify) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경.");
     println!("      steps: fill_fields{{data}} · replace_text{{find,replace[,occurrence]}}");
@@ -15065,18 +15096,57 @@ fn cmd_export_agent_manifest(args: &[String]) -> i32 {
 /// 3종을 발급(attest)하거나, 기대 산출 해시와 대조해 타인의 작업 주장을
 /// 재현 검증(verify)한다. 전제는 실측된 바이트 결정론(같은 계획 = 같은 산출)이고,
 /// 사용자 파일은 절대 건드리지 않는다 — 계획의 output 은 임시 경로로 대체된다.
-fn cmd_replay(args: &[String]) -> i32 {
-    fn sha256_hex(bytes: &[u8]) -> String {
-        use sha2::{Digest, Sha256};
-        Sha256::digest(bytes)
-            .iter()
-            .map(|b| format!("{b:02x}"))
-            .collect()
-    }
+fn replay_sha256_hex(bytes: &[u8]) -> String {
+    use sha2::{Digest, Sha256};
+    Sha256::digest(bytes)
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
+}
 
+/// [#4393] replay·audit 공용 실행 코어 — 계획을 **임시 산출**로 실행해 (산출
+/// SHA-256, step 수)를 얻는다. 임시 파일은 성공·실패 모두 정리한다. 계획의
+/// output 은 이 함수가 임시 경로로 덮어쓴다(호출자는 필요 시 사전 clone).
+fn replay_execute_to_temp(
+    plan: &mut serde_json::Value,
+    tag: &str,
+) -> Result<(String, usize), (String, i32)> {
+    let ext = plan["output"]
+        .as_str()
+        .and_then(|o| std::path::Path::new(o).extension().and_then(|e| e.to_str()))
+        .unwrap_or("hwp")
+        .to_string();
+    let temp_out =
+        std::env::temp_dir().join(format!("rhwp-replay-{}-{tag}.{ext}", std::process::id()));
+    plan["output"] = serde_json::json!(temp_out.to_string_lossy());
+    let (engine_env, engine_code) = run_plan_engine(plan);
+    if engine_code != 0 {
+        let _ = fs::remove_file(&temp_out);
+        return Err((
+            format!("계획 재실행 실패 (engine exit {engine_code})"),
+            engine_code,
+        ));
+    }
+    let bytes = match fs::read(&temp_out) {
+        Ok(b) => b,
+        Err(e) => {
+            let _ = fs::remove_file(&temp_out);
+            return Err((
+                format!("재실행 산출을 읽을 수 없습니다 - {e}"),
+                EXIT_RUNTIME,
+            ));
+        }
+    };
+    let _ = fs::remove_file(&temp_out);
+    let steps = engine_env["steps"].as_array().map(|s| s.len()).unwrap_or(0);
+    Ok((replay_sha256_hex(&bytes), steps))
+}
+
+fn cmd_replay(args: &[String]) -> i32 {
     let mut plan_path: Option<&str> = None;
     let mut plan_inline: Option<&str> = None;
     let mut expected: Option<String> = None;
+    let mut capsule_path: Option<String> = None;
     let mut json_mode = false;
     let mut i = 0;
     while i < args.len() {
@@ -15100,6 +15170,16 @@ fn cmd_replay(args: &[String]) -> i32 {
                         eprintln!(
                             "오류: --expect-output-sha256 뒤에 64자리 16진 해시가 필요합니다."
                         );
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--capsule" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => capsule_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --capsule 뒤에 저장 경로가 필요합니다.");
                         return EXIT_USAGE;
                     }
                 }
@@ -15132,7 +15212,7 @@ fn cmd_replay(args: &[String]) -> i32 {
             return EXIT_USAGE;
         }
     };
-    let plan_sha = sha256_hex(plan_text.as_bytes());
+    let plan_sha = replay_sha256_hex(plan_text.as_bytes());
     let mut plan: serde_json::Value = match serde_json::from_str(&plan_text) {
         Ok(v) => v,
         Err(e) => {
@@ -15145,54 +15225,30 @@ fn cmd_replay(args: &[String]) -> i32 {
         return EXIT_USAGE;
     };
     let input_sha = match fs::read(&input) {
-        Ok(b) => sha256_hex(&b),
+        Ok(b) => replay_sha256_hex(&b),
         Err(e) => {
             eprintln!("오류: 입력을 읽을 수 없습니다 - {input}: {e}");
             return EXIT_RUNTIME;
         }
     };
-    // 산출 형식은 계획의 output 확장자가 정한다 — 임시 경로도 같은 확장자를 쓴다.
-    let ext = plan["output"]
-        .as_str()
-        .and_then(|o| std::path::Path::new(o).extension().and_then(|e| e.to_str()))
-        .unwrap_or("hwp")
-        .to_string();
-    let temp_out = std::env::temp_dir().join(format!(
-        "rhwp-replay-{}-{}.{ext}",
-        std::process::id(),
-        &plan_sha[..12]
-    ));
-    plan["output"] = serde_json::json!(temp_out.to_string_lossy());
-
-    let (engine_env, engine_code) = run_plan_engine(&plan);
-    if engine_code != 0 {
-        let _ = fs::remove_file(&temp_out);
-        if json_mode {
-            println!(
-                "{}",
-                provenance::marked(
-                    serde_json::json!({
-                        "schemaVersion": "1.0",
-                        "error": format!("계획 재실행 실패 (engine exit {engine_code}) — 영수증을 발급하지 않습니다"),
-                        "engine": engine_env,
-                    }),
-                    "replay",
-                )
-            );
-        } else {
-            eprintln!("재실행 실패 (exit {engine_code}) — 영수증 없음");
-        }
-        return engine_code;
-    }
-    let output_sha = match fs::read(&temp_out) {
-        Ok(b) => sha256_hex(&b),
-        Err(e) => {
-            eprintln!("오류: 재실행 산출을 읽을 수 없습니다 - {e}");
-            return EXIT_RUNTIME;
+    let plan_original = plan.clone();
+    let (output_sha, steps) = match replay_execute_to_temp(&mut plan, &plan_sha[..12]) {
+        Ok(v) => v,
+        Err((msg, code)) => {
+            if json_mode {
+                println!(
+                    "{}",
+                    provenance::marked(
+                        serde_json::json!({ "schemaVersion": "1.0", "error": msg }),
+                        "replay",
+                    )
+                );
+            } else {
+                eprintln!("{msg} — 영수증 없음");
+            }
+            return code;
         }
     };
-    let _ = fs::remove_file(&temp_out);
-    let steps = engine_env["steps"].as_array().map(|s| s.len()).unwrap_or(0);
     let reproduced = expected.as_deref().map(|e| e == output_sha);
     let envelope = provenance::marked(
         serde_json::json!({
@@ -15209,6 +15265,22 @@ fn cmd_replay(args: &[String]) -> i32 {
         }),
         "replay",
     );
+    if let Some(cp) = capsule_path.as_deref() {
+        // [#4393] 작업 캡슐 — 계획(원본 output 보존)+영수증의 자기완결 교환 형식.
+        let capsule = serde_json::json!({
+            "schemaVersion": "1.0",
+            "kind": "workCapsule",
+            "plan": plan_original,
+            "receipt": envelope,
+        });
+        if let Err(e) = fs::write(
+            cp,
+            serde_json::to_string_pretty(&capsule).unwrap_or_default(),
+        ) {
+            eprintln!("오류: 캡슐 저장 실패 - {cp}: {e}");
+            return EXIT_RUNTIME;
+        }
+    }
     if json_mode {
         println!("{envelope}");
     } else {
@@ -15226,6 +15298,133 @@ fn cmd_replay(args: &[String]) -> i32 {
     match reproduced {
         Some(false) => 3, // #2707: 검증 단언 실패 — 주장된 산출과 재현 산출이 다르다.
         _ => EXIT_OK,
+    }
+}
+
+/// [#4393] 에이전트 노동 감사 — 작업 캡슐(*.capsule.json) 폴더를 전수 재실행해
+/// 재현율을 회계한다. 개별 영수증(replay)이 작업 하나의 증명이라면, audit 은
+/// 조직 규모의 "에이전트가 한 일" 전체에 대한 회계감사다. 불일치 1건 = exit 3.
+fn cmd_audit(args: &[String]) -> i32 {
+    let mut dir: Option<&str> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            other if !other.starts_with("--") && dir.is_none() => dir = Some(other),
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let Some(dir) = dir else {
+        eprintln!("사용법: rhwp audit <캡슐 폴더> [--json]  (대상: *.capsule.json)");
+        return EXIT_USAGE;
+    };
+    let entries = match fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(e) => {
+            eprintln!("오류: 폴더를 읽을 수 없습니다 - {dir}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut capsules: Vec<std::path::PathBuf> = entries
+        .flatten()
+        .map(|e| e.path())
+        .filter(|p| {
+            p.file_name()
+                .and_then(|n| n.to_str())
+                .is_some_and(|n| n.ends_with(".capsule.json"))
+        })
+        .collect();
+    capsules.sort();
+    if capsules.is_empty() {
+        eprintln!("오류: {dir} 에 *.capsule.json 이 없습니다 — 감사 대상 없음.");
+        return EXIT_USAGE;
+    }
+    let mut reproduced_count = 0usize;
+    let mut failed: Vec<serde_json::Value> = Vec::new();
+    for (idx, path) in capsules.iter().enumerate() {
+        let name = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or_default()
+            .to_string();
+        let fail = |reason: String| serde_json::json!({ "capsule": name, "error": reason });
+        let text = match fs::read_to_string(path) {
+            Ok(t) => t,
+            Err(e) => {
+                failed.push(fail(format!("읽기 실패: {e}")));
+                continue;
+            }
+        };
+        let capsule: serde_json::Value = match serde_json::from_str(&text) {
+            Ok(v) => v,
+            Err(e) => {
+                failed.push(fail(format!("JSON 파싱 실패: {e}")));
+                continue;
+            }
+        };
+        if capsule["kind"] != "workCapsule" {
+            failed.push(fail("kind 가 workCapsule 이 아님".into()));
+            continue;
+        }
+        let Some(expected) = capsule["receipt"]["outputSha256"].as_str() else {
+            failed.push(fail("receipt.outputSha256 없음".into()));
+            continue;
+        };
+        let mut plan = capsule["plan"].clone();
+        if !plan.is_object() {
+            failed.push(fail("plan 없음".into()));
+            continue;
+        }
+        match replay_execute_to_temp(&mut plan, &format!("audit{idx}")) {
+            Ok((actual, _steps)) => {
+                if actual == expected {
+                    reproduced_count += 1;
+                } else {
+                    failed.push(serde_json::json!({
+                        "capsule": name,
+                        "expected": expected,
+                        "actual": actual,
+                    }));
+                }
+            }
+            Err((msg, _code)) => failed.push(fail(msg)),
+        }
+    }
+    let total = capsules.len();
+    let rate = reproduced_count as f64 / total as f64;
+    let envelope = provenance::marked(
+        serde_json::json!({
+            "schemaVersion": "1.0",
+            "root": dir,
+            "total": total,
+            "reproduced": reproduced_count,
+            "failed": failed,
+            "reproducedRate": rate,
+        }),
+        "audit",
+    );
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!("에이전트 노동 감사 — {dir}");
+        println!(
+            "  캡슐 {total} · 재현 {reproduced_count} · 실패 {} · 재현율 {:.1}%",
+            total - reproduced_count,
+            rate * 100.0
+        );
+        for f in &failed {
+            println!("  [FAIL] {}", f["capsule"].as_str().unwrap_or("?"));
+        }
+    }
+    if failed.is_empty() {
+        EXIT_OK
+    } else {
+        3 // #2707: 검증 단언 실패 — 재현되지 않은 작업이 있다.
     }
 }
 

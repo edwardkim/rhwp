@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 38개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 39개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -22,6 +22,23 @@ import type { RawVerifyReport } from './envelope.js';
 
 /** 이 파일을 만들어 낸 capabilities 스냅샷 버전(= rhwp 버전). */
 export const CAPABILITIES_SNAPSHOT_VERSION = '0.8.2';
+
+/**
+ * `rhwp audit --json` 봉투.
+ *
+ * 작업 캡슐(*.capsule.json) 폴더 전수 재실행·대조 — 에이전트 노동의 재현율 회계. 불일치
+ * 1건이라도 있으면 exit 3 (#4393)
+ */
+export interface AuditEnvelope {
+  readonly failed?: unknown;
+  readonly reproduced?: unknown;
+  readonly reproducedRate?: unknown;
+  readonly root?: unknown;
+  readonly schemaVersion?: string;
+  readonly total?: unknown;
+
+  readonly [key: string]: unknown;
+}
 
 /**
  * `rhwp batch --json` 봉투.
@@ -745,6 +762,7 @@ export interface VerifyEnvelope {
  * `recordFields` 를 선언한 명령만 들어 있습니다 — 나머지는 `--json` 봉투를 내지 않습니다.
  */
 export interface EnvelopeByCommand {
+  audit: AuditEnvelope;
   batch: BatchEnvelope;
   "build-from-ingest": BuildFromIngestEnvelope;
   capabilities: CapabilitiesEnvelope;

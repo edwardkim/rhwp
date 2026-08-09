@@ -190,6 +190,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_ir_diff",
             "hwp_verify",
             "hwp_replay",
+            "hwp_audit",
             "hwp_convert_hwpx",
             "hwp_convert_hwp5",
             "hwp_export_hml",
