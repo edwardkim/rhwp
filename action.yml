@@ -1,0 +1,72 @@
+# [#4353] GitHub Action — CI 에서 rhwp 설치 한 스텝.
+#
+#   - uses: edwardkim/rhwp@devel        # 또는 릴리스 태그 고정
+#     with:
+#       version: v0.8.2                 # 생략하면 latest
+#   - run: rhwp info 문서.hwp --json
+#
+# 릴리스 자산(release-binary.yml 산출: 4플랫폼 + SHA256SUMS)을 받아 무결성
+# 검증 후 PATH 에 놓는다. 자체 검증은 .github/workflows/action-selftest.yml
+# (PR 경로에서 3-OS 실설치 스모크).
+name: 'Setup rhwp'
+description: 'HWP/HWPX 문서 엔진 rhwp CLI 를 설치한다 (릴리스 바이너리 + SHA256 검증 + PATH 등록)'
+branding:
+  icon: 'file-text'
+  color: 'blue'
+
+inputs:
+  version:
+    description: '설치할 릴리스 태그 (예: v0.8.2). 기본은 latest.'
+    required: false
+    default: 'latest'
+  token:
+    description: '릴리스 조회·다운로드용 토큰. 기본 github.token 이면 충분하다.'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  version:
+    description: '실제 설치된 릴리스 태그'
+    value: ${{ steps.install.outputs.version }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: rhwp 설치
+      id: install
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        REQ_VERSION: ${{ inputs.version }}
+        # 포크에서 액션을 시험할 때도 그 포크의 릴리스를 본다.
+        REPO: ${{ github.action_repository || 'edwardkim/rhwp' }}
+      run: |
+        set -euo pipefail
+        if [[ "$REQ_VERSION" == "latest" ]]; then
+          TAG="$(gh release view --repo "$REPO" --json tagName -q .tagName)"
+        else
+          TAG="$REQ_VERSION"
+        fi
+        case "${RUNNER_OS}-${RUNNER_ARCH}" in
+          Linux-X64)    SUFFIX="linux-x86_64";  EXT="tar.gz"; BIN="rhwp"     ;;
+          macOS-X64)    SUFFIX="macos-x86_64";  EXT="tar.gz"; BIN="rhwp"     ;;
+          macOS-ARM64)  SUFFIX="macos-aarch64"; EXT="tar.gz"; BIN="rhwp"     ;;
+          Windows-X64)  SUFFIX="windows-x86_64"; EXT="zip";   BIN="rhwp.exe" ;;
+          *) echo "지원하지 않는 러너: ${RUNNER_OS}-${RUNNER_ARCH}"; exit 1 ;;
+        esac
+        ASSET="rhwp-${TAG}-${SUFFIX}.${EXT}"
+        DEST="${RUNNER_TEMP}/rhwp-setup"
+        mkdir -p "$DEST"
+        gh release download "$TAG" --repo "$REPO" -p "$ASSET" -p "SHA256SUMS.txt" -D "$DEST"
+        ( cd "$DEST" && sha256sum -c SHA256SUMS.txt --ignore-missing )
+        if [[ "$EXT" == "zip" ]]; then
+          unzip -q "$DEST/$ASSET" -d "$DEST"
+        else
+          tar -xzf "$DEST/$ASSET" -C "$DEST"
+        fi
+        # 아카이브 구조: rhwp/<바이너리> (release-binary.yml 패키징 계약)
+        install -d "$DEST/bin" 2>/dev/null || mkdir -p "$DEST/bin"
+        mv "$DEST/rhwp/$BIN" "$DEST/bin/$BIN"
+        echo "$DEST/bin" >> "$GITHUB_PATH"
+        echo "version=$TAG" >> "$GITHUB_OUTPUT"
+        echo "설치: $TAG ($SUFFIX)"

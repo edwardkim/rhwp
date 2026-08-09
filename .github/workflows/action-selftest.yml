@@ -1,0 +1,35 @@
+name: Action Self-test
+
+# Issue #4353 — 루트 action.yml 의 자체 검증. 이 워크플로가 곧 "액션이 실제로
+# 설치를 해내는가"의 증거다: PR 이 액션을 건드리면 3-OS 에서 실설치→실행까지 돈다.
+
+on:
+  pull_request:
+    paths:
+      - 'action.yml'
+      - '.github/workflows/action-selftest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-14]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: 액션으로 rhwp 설치 (latest)
+        id: setup
+        uses: ./
+      - name: 스모크 — 버전·자기서술
+        shell: bash
+        run: |
+          echo "설치된 버전: ${{ steps.setup.outputs.version }}"
+          rhwp --version
+          rhwp capabilities | head -c 200
+          echo
