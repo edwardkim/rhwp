@@ -1475,6 +1475,21 @@ pub(crate) fn vertical_substitute_char(c: char) -> Option<char> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn issue_4442_noto_sans_kr_regular_ascii_shared_width_uses_tracked_advances() {
+        let style = TextStyle {
+            font_family: "Noto Sans KR".to_string(),
+            font_size: 1000.0,
+            ..Default::default()
+        };
+
+        assert_eq!(estimate_text_width_unrounded("AVATAR", &style), 3633.0);
+        assert_eq!(
+            compute_char_positions("AVATAR", &style),
+            vec![0.0, 608.0, 1183.0, 1791.0, 2390.0, 2998.0, 3633.0]
+        );
+    }
+
     /// 테스트용 고정 폭 텍스트 측정기
     ///
     /// 모든 문자를 동일한 폭으로 측정한다.
