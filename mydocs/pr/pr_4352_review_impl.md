@@ -12,19 +12,22 @@ last_verified: 2026-08-10
 | 구분 | SHA / 내용 |
 | --- | --- |
 | contributor source | `440b4a472dc58f0d7c1c9af0525e520c321003c3` |
-| maintainer correction | Kitesurf 상태·성능 정정, W1 persistent 경계, review·구현 기록 |
+| first maintainer correction | `1901ab81d6a44e68bd45b01e7baf4ef9908d8fdc` — `docs(roadmap): correct #4352 Kitesurf state model` |
+| follow-up docs correction | `7062c5495bad5b529973554eca1675c1c7de77d1` — `docs(roadmap): qualify #4352 Kitesurf evidence` |
+| trailing review update | 이 문서를 포함한 `docs(pr): update #4352 follow-up evidence` commit |
 
 ## 실행 내용
 
-1. 원 PR head와 Cloudflare 공식 기술 글의 architecture, session lifetime, benchmark
-   표를 대조했다.
-2. Kitesurf의 task-scoped ephemeral/stateless 모델과 W1의 persistent workspace를
-   분리하고, CPU·메모리 절감과 wall-time 지연을 함께 기록했다.
-3. 대상 Markdown 링크, 필수 출처·수치·상태 문구와 whitespace를 검사했다.
-4. 원 head가 보정 branch의 조상이고 후속 범위가 single-parent이며 merge commit이
-   없음을 확인했다.
+1. 원 PR head와 Cloudflare 공식 기술 글의 announcement/edit date, architecture,
+   session lifetime, benchmark corpus와 baseline을 대조했다.
+2. 1차 보정 `1901ab81...`을 보존하고 그 뒤에 14-URL quick-action corpus,
+   Chromium warm pool, 10분짜리 persistent-state 예시를 정정한 docs commit을 더했다.
+3. 대상 Markdown 링크, 필수 출처·날짜·수치·조건 문구와 whitespace를 검사했다.
+4. 이 review update를 docs correction 뒤의 별도 single-parent commit으로 추가하고,
+   원 head부터 merge commit 없는 선형 history인지 확인했다.
 
 ## rollback
 
-문제가 생기면 원 source 뒤의 이 trailing 메인터너 commit만 revert한다. contributor
-commit은 amend, rebase, reset 또는 force-push하지 않는다.
+후속 한정에 문제가 생기면 trailing review update와 `7062c549...`를 역순으로
+revert한다. 메인터너 보정 전체를 제거해야 할 때만 그 뒤 `1901ab81...`도 revert한다.
+contributor source는 amend, rebase, reset 또는 force-push하지 않는다.
