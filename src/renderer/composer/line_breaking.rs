@@ -1087,7 +1087,7 @@ fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
     }
 }
 
-pub(crate) fn reflow_line_segs(
+pub fn reflow_line_segs(
     para: &mut Paragraph,
     available_width_px: f64,
     styles: &ResolvedStyleSet,

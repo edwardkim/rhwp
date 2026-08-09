@@ -2758,8 +2758,13 @@ pub mod lineseg_compare;
 
 pub(crate) use line_breaking::{
     is_line_end_forbidden, is_line_start_forbidden, paragraph_flow_end, recalculate_section_vpos,
-    reflow_line_segs, tokenize_paragraph, BreakToken,
+    tokenize_paragraph, BreakToken,
 };
+
+// [#3211] 저장 HWP LineSeg(한컴 기준값) 대비 비캐시 재계산 정합성을 tests/ 통합 테스트에서
+// 검증하려면 재계산 진입점이 크레이트 밖에서도 보여야 한다 — 비교 상대인 lineseg_compare 가
+// 이미 pub mod 인 것과 짝을 맞춘다.
+pub use line_breaking::reflow_line_segs;
 
 #[cfg(test)]
 mod lineseg_compare_tests;
