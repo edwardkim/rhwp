@@ -315,6 +315,94 @@ fn hwp3_shaded_samples_match_hancom_gray() {
     );
 }
 
+// ── ③-2 한컴 자기 변환본을 정답지로 쓴다 ─────────────────────────────────────
+
+/// `samples/hwp3-sampleN-hwp5.hwp` 는 **한컴이 같은 원본을 직접 변환한** 산출물이다.
+/// 저장소 안에 정답지가 있으므로 CI 에서 한컴 없이도 값 정합을 판정할 수 있다.
+///
+/// 개수는 맞출 수 없다 — 한컴은 CHAR_SHAPE 를 중복 제거해 수십 개만 남기고 우리는
+/// 문단마다 쌓아 수천 개를 낸다(별개 사안). 대신 **값 집합**을 본다: 우리가 내는 음영색은
+/// 한컴이 같은 문서에서 낸 값들 안에 있어야 한다.
+///
+/// 수정 전에는 `hwp3-sample16` 에서 `0x00000000`×6,516 와 `0x0000ff00`×4 가 나왔는데
+/// 한컴의 값은 `0xffffffff`×162 와 `0x00d8d8d8`×1 이었다 — 교집합이 0 이었다.
+#[test]
+fn shade_values_are_a_subset_of_hancom_own_conversion() {
+    // (HWP3 원본, 한컴이 변환한 같은 문서)
+    let pairs: &[(&str, &str)] = &[
+        ("samples/hwp3-sample.hwp", "samples/hwp3-sample-hwp5.hwp"),
+        ("samples/hwp3-sample4.hwp", "samples/hwp3-sample4-hwp5.hwp"),
+        (
+            "samples/hwp3-sample10.hwp",
+            "samples/hwp3-sample10-hwp5.hwp",
+        ),
+        (
+            "samples/hwp3-sample11.hwp",
+            "samples/hwp3-sample11-hwp5.hwp",
+        ),
+        (
+            "samples/hwp3-sample13.hwp",
+            "samples/hwp3-sample13-hwp5.hwp",
+        ),
+        (
+            "samples/hwp3-sample14.hwp",
+            "samples/hwp3-sample14-hwp5.hwp",
+        ),
+        (
+            "samples/hwp3-sample16.hwp",
+            "samples/hwp3-sample16-hwp5.hwp",
+        ),
+        (
+            "samples/hwp3-sample19.hwp",
+            "samples/hwp3-sample19-hwp5.hwp",
+        ),
+    ];
+
+    let mut compared = 0usize;
+    let mut failures = Vec::new();
+    for (src, oracle) in pairs {
+        let (src_path, oracle_path) = (repo_path(src), repo_path(oracle));
+        if !src_path.exists() || !oracle_path.exists() {
+            continue;
+        }
+        let Some(hwp5) = convert_to_hwp5_bytes(&src_path) else {
+            continue;
+        };
+        compared += 1;
+
+        let mut hancom: Vec<u32> =
+            shade_colors(oracle, &std::fs::read(&oracle_path).expect("읽기"));
+        hancom.sort_unstable();
+        hancom.dedup();
+
+        let mut extra: Vec<u32> = shade_colors(src, &hwp5)
+            .into_iter()
+            .filter(|v| !hancom.contains(v))
+            .collect();
+        extra.sort_unstable();
+        extra.dedup();
+
+        if !extra.is_empty() {
+            failures.push(format!(
+                "  {src}: 한컴이 내지 않는 음영색 {extra:08x?} 를 냈다 \
+                 (한컴 값 집합: {hancom:08x?})"
+            ));
+        }
+    }
+
+    assert!(
+        compared >= 6,
+        "한컴 변환본 짝이 {compared}건뿐이다 — 표본 배치를 확인하라"
+    );
+    assert!(
+        failures.is_empty(),
+        "한컴 자기 변환본과 값이 어긋난다 ({compared}쌍 중 {}쌍):\n{}\n{}",
+        failures.len(),
+        failures.join("\n"),
+        why_it_matters()
+    );
+}
+
 // ── ④ public 저장 경로 ─────────────────────────────────────────────────────
 
 /// `DocumentCore::export_hwp_with_adapter` 도 같은 계약을 지킨다.
