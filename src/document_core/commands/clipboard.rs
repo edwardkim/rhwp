@@ -1656,9 +1656,13 @@ impl DocumentCore {
                 // 병합된 셀은 첫 번째 셀만 출력 (rowspan/colspan 은 merge 된 셀 정보)
                 let mut td_style = String::new();
 
-                // 셀 배경/테두리 (BorderFill)
+                // 셀 배경/테두리 (BorderFill) — border_fill_id는 1-based
+                // (styles.border_styles는 0-based). 다른 소비처(예:
+                // renderer/layout/table_layout.rs, document_core/queries/hidden_text.rs)와
+                // 동일하게 -1 보정한다. [#4412]
                 if cell.border_fill_id > 0 {
-                    if let Some(bs) = self.styles.border_styles.get(cell.border_fill_id as usize) {
+                    let idx = (cell.border_fill_id as usize).saturating_sub(1);
+                    if let Some(bs) = self.styles.border_styles.get(idx) {
                         self.apply_border_fill_css(&mut td_style, bs);
                     }
                 }
@@ -2106,6 +2110,87 @@ mod nested_cell_paste_reflow_tests {
             paras[0].line_segs.len() > 1,
             "폭 200 최내곽 셀에 40자를 붙여넣으면 여러 줄로 재래핑돼야 함 (실제 {}줄)",
             paras[0].line_segs.len()
+        );
+    }
+}
+
+/// [#4412] `table_to_html`(문서 간 복사·붙여넣기 HTML 경로)이 `cell.border_fill_id`를
+/// 1-based 보정 없이 `styles.border_styles`(0-based)에 그대로 인덱싱해, 실제 BorderFill보다
+/// 한 칸 뒤(id 기준 +1)의 BorderFill 색상이 붙던 결함의 회귀 테스트.
+#[cfg(test)]
+mod clipboard_border_fill_offset_tests {
+    use crate::document_core::DocumentCore;
+    use crate::model::style::{BorderFill, BorderLine, BorderLineType, Fill, FillType, SolidFill};
+    use crate::model::table::{Cell, Table};
+    use crate::renderer::style_resolver::resolve_styles;
+
+    /// 4방향 동일한 실선 테두리 + 단색 채우기를 갖는 BorderFill을 만든다.
+    fn border_fill(border_color: u32, fill_color: u32) -> BorderFill {
+        let line = BorderLine {
+            line_type: BorderLineType::Solid,
+            width: 2,
+            color: border_color,
+        };
+        BorderFill {
+            borders: [line, line, line, line],
+            fill: Fill {
+                fill_type: FillType::Solid,
+                solid: Some(SolidFill {
+                    background_color: fill_color,
+                    pattern_color: 0,
+                    pattern_type: 0,
+                }),
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }
+
+    /// border_fills = [default0, default1, decoy(회색), REAL(녹/청), decoy2(주황/자홍)].
+    /// `cell.border_fill_id = 4`(1-based)는 index 3(REAL)을 가리켜야 하며, 색이 한 칸
+    /// 밀려 index 4(decoy2)를 가리키면 안 된다.
+    #[test]
+    fn table_to_html_uses_correct_border_fill_for_1_based_id() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+
+        core.document.doc_info.border_fills = vec![
+            border_fill(0x000000, 0x000000), // index 0 → id 1 (default0)
+            border_fill(0x000000, 0x000000), // index 1 → id 2 (default1)
+            border_fill(0xC0C0C0, 0xC0C0C0), // index 2 → id 3 (decoy, 회색)
+            border_fill(0x00FF00, 0xFFFF00), // index 3 → id 4 (REAL, 테두리#00ff00/배경#00ffff)
+            border_fill(0x008CFF, 0xFF00FF), // index 4 → id 5 (decoy2, 테두리#ff8c00/배경#ff00ff)
+        ];
+        core.styles = resolve_styles(&core.document.doc_info, core.dpi);
+
+        let table = Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                col_span: 1,
+                row_span: 1,
+                width: 2000,
+                border_fill_id: 4,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        let html = core.table_to_html(&table);
+
+        assert!(
+            html.contains("border-left:2.0px solid #00ff00"),
+            "REAL(id=4, index 3)의 테두리색(#00ff00)이 출력되지 않음:\n{html}"
+        );
+        assert!(
+            html.contains("background-color:#00ffff"),
+            "REAL(id=4, index 3)의 배경색(#00ffff)이 출력되지 않음:\n{html}"
+        );
+        assert!(
+            !html.contains("#ff8c00") && !html.contains("#ff00ff"),
+            "decoy2(id=5, index 4)의 색상이 한 칸 밀려 출력됨:\n{html}"
         );
     }
 }
