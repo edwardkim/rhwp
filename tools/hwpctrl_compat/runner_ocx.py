@@ -323,7 +323,11 @@ def main() -> int:
     with io.open(args.scenario, encoding="utf-8") as fh:
         scenario = json.load(fh)
 
-    out_dir = Path(args.out)
+    # **절대경로로 못박는다.** `$path` 로 넓힌 상대 경로를 한글에 넘기면 답도 오류도 없이
+    # 멈춘다 — `SaveAs("output/…/x.hwp")` 하나로 오라클이 십 분을 넘겨 죽었다. 시나리오 끝
+    # 저장은 `output_paths` 가 `.resolve()` 를 거쳐 무사했던 탓에 이 갈래만 조용히 달랐다.
+    # (Node 러너는 이미 `resolve(args.out)` 를 한다.)
+    out_dir = Path(args.out).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     returns_path, rejected_path, _ = clear_previous_outputs(scenario, out_dir)
     result = run(scenario, out_dir, args.expect_version)

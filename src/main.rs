@@ -335,6 +335,7 @@ fn main() {
         Some("gen-pua") => exit_with(gen_pua_test(&args[2..])),
         Some("test-field") => exit_with(test_field_roundtrip(&args[2..])),
         Some("ir-diff") => exit_with(ir_diff(&args[2..])),
+        Some("ir-sweep") => exit_with(ir_sweep(&args[2..])),
         Some("verify") => exit_with(cmd_verify(&args[2..])),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
@@ -14198,6 +14199,91 @@ fn cmd_verify(args: &[String]) -> i32 {
     } else {
         3 // 판정 불일치 — #2707 의 판정 코드. 봉투는 이미 냈다.
     }
+}
+
+/// 두 문서의 IR 을 **전수** 대조한다 — `diagnostics::ir_field_sweep` 을 CLI 로 낸 것.
+///
+/// `ir-diff` 와 갈리는 점은 **비교 대상이 손으로 나열되지 않는다**는 것이다. `ir-diff` 는
+/// 사건 대응으로 쌓인 화이트리스트라 `z_order`·도형 변환 행렬·표 속성 같은 것을 아예 보지
+/// 않는다. 실제로 한글이 `ShapeObjBringToFront` 를 저장본에 적어 두었는데 `ir-diff` 는
+/// "동일" 이라 답했고, 이 스윕은 `common.z_order` 가 1↔2 로 뒤바뀐 것을 그대로 짚었다.
+///
+/// 쓰임새는 **편집 액션의 자취를 재는 것**이다. 어떤 API 도 결과를 안 비추는 액션이라도
+/// 저장본은 적으므로, 같은 문서의 앞뒤 저장본을 이걸로 대조하면 관측창이 생긴다
+/// (`tools/hwpctrl_compat` 의 L3).
+fn ir_sweep(args: &[String]) -> i32 {
+    use rhwp::diagnostics::ir_field_sweep::{sweep_documents, tally};
+
+    if args.len() < 2 {
+        eprintln!("사용법: rhwp ir-sweep <파일A> <파일B> [--json] [--max-lines <N>]");
+        return EXIT_USAGE;
+    }
+    let (file_a, file_b) = (&args[0], &args[1]);
+    let mut json_mode = false;
+    let mut max_lines: Option<usize> = None;
+    let is_value = |idx: usize| idx < args.len() && !args[idx].starts_with('-');
+    let mut i = 2;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => {
+                json_mode = true;
+                i += 1;
+            }
+            "--max-lines" if is_value(i + 1) => {
+                max_lines = args[i + 1].parse().ok();
+                i += 2;
+            }
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+    }
+
+    let mut load = |path: &String| match std::fs::read(path) {
+        Ok(bytes) => match rhwp::parser::parse_document(&bytes) {
+            Ok(doc) => Some(doc),
+            Err(e) => {
+                eprintln!("파싱 실패: {path} — {e}");
+                None
+            }
+        },
+        Err(e) => {
+            eprintln!("읽기 실패: {path} — {e}");
+            None
+        }
+    };
+    let (Some(doc_a), Some(doc_b)) = (load(file_a), load(file_b)) else {
+        return EXIT_RUNTIME;
+    };
+
+    let divs = sweep_documents(&doc_a, &doc_b);
+    if json_mode {
+        let rows: Vec<serde_json::Value> = divs
+            .iter()
+            .take(max_lines.unwrap_or(usize::MAX))
+            .map(|d| serde_json::json!({ "path": d.path, "left": d.left, "right": d.right }))
+            .collect();
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "a": file_a,
+            "b": file_b,
+            "identical": divs.is_empty(),
+            "diffCount": divs.len(),
+            "truncated": rows.len() < divs.len(),
+            "categories": tally(&divs),
+            "divergences": rows,
+        });
+        println!("{}", provenance::marked(envelope, "ir-sweep"));
+        // `ir-diff` 와 같은 규약 — 차이가 있으면 3.
+        return if divs.is_empty() { EXIT_OK } else { 3 };
+    }
+
+    for d in divs.iter().take(max_lines.unwrap_or(200)) {
+        println!("{} : {} → {}", d.path, d.left, d.right);
+    }
+    println!("\n=== 전수 비교 완료: 차이 {} 건 ===", divs.len());
+    EXIT_OK
 }
 
 fn ir_diff(args: &[String]) -> i32 {

@@ -28,7 +28,7 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
@@ -251,8 +251,14 @@ async function main() {
     let ctrl;
     // 저장은 호스트가 받는다 — 규격상 브라우저에서는 다운로드다(v2.4 §2.2).
     let savedBytes = null;
-    const onSave = (bytes) => {
+    // 시나리오가 **중간에** `SaveAs` 를 걸면(앞뒤 저장본을 떠 액션의 자취를 재는 L3) 그
+    // 자리에서 파일로 흘린다. 이름이 절대경로일 때만 그렇게 한다 — 시나리오 끝의
+    // `saveAs` 는 이름만 주고 러너가 `outDir` 아래에 쓴다.
+    const onSave = (bytes, fileName) => {
       savedBytes = bytes;
+      if (typeof fileName === 'string' && isAbsolute(fileName)) {
+        writeFileSync(fileName, bytes);
+      }
     };
     // 규격이 **경로**를 받는 API(`InsertPicture`)를 위한 호스트 고리. 오라클은 바탕화면에서
     // 그 경로를 그대로 열므로 이쪽도 같은 경로를 읽어 준다.

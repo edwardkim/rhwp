@@ -74,6 +74,11 @@ def resolve_args(args: list, definition: dict, key: str, repo: Path, out_dir: Pa
 
     `{repo}`·`{out}` 을 넓혀 준다. 산출 경로를 `{out}` 아래로 적으면 시나리오가 저장소 작업본에
     쓰레기를 남기지 않는다 — Linux 에서 실제로 남겼다.
+
+    **넘겨받는 `repo`·`out_dir` 은 절대경로여야 한다** — 러너가 그렇게 넘긴다. 상대 경로를
+    한글에 넘기면 답도 오류도 없이 **멈춘다**(`SaveAs("output/…/x.hwp")` 하나로 오라클이 십
+    분을 넘겨 죽었다). 여기서 절대화하지 않는 것은 이 함수가 두 플랫폼의 경로를 같이 다루기
+    때문이다 — 자체 검사가 POSIX 경로를 넣는데 Windows 에서 `resolve()` 하면 드라이브가 붙는다.
     """
     table = definition.get("paths") or {}
     out = []

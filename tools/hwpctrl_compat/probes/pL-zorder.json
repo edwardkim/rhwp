@@ -1,0 +1,65 @@
+{
+  "id": "pL-zorder",
+  "title": "앞으로 보내기 — 저장본에 남는 자취로 잰다",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "z0": {
+      "win": "{out}/pL-z0.hwp",
+      "posix": "{out}/pL-z0.hwp"
+    },
+    "z1": {
+      "win": "{out}/pL-z1.hwp",
+      "posix": "{out}/pL-z1.hwp"
+    }
+  },
+  "deltas": [
+    {
+      "from": "z0",
+      "to": "z1",
+      "label": "ShapeObjBringToFront"
+    }
+  ],
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "z0"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjBringToFront"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "z1"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}
