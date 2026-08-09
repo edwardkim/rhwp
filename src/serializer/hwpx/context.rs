@@ -162,21 +162,12 @@ impl SerializeContext {
         }
 
         // 인라인 컨트롤(표/그림 등)의 borderFillIDRef를 사전 등록하여
-        // assert_all_refs_resolved 검증 시 누락 방지.
+        // assert_all_refs_resolved 검증 시 누락 방지. 중첩 표(셀 안의 표)와
+        // 글상자·머리말/꼬리말·각주/미주 안의 표까지 재귀한다(아래
+        // `register_border_fills_in_paragraphs` 참조, `table_extract::collect_from_paragraph`
+        // 와 같은 위상의 재귀).
         for sec in &doc.sections {
-            for para in &sec.paragraphs {
-                for ctrl in &para.controls {
-                    if let Control::Table(tbl) = ctrl {
-                        ctx.border_fill_ids.register(tbl.border_fill_id);
-                        for zone in &tbl.zones {
-                            ctx.border_fill_ids.register(zone.border_fill_id);
-                        }
-                        for cell in &tbl.cells {
-                            ctx.border_fill_ids.register(cell.border_fill_id);
-                        }
-                    }
-                }
-            }
+            register_border_fills_in_paragraphs(&mut ctx, &sec.paragraphs, 0);
         }
 
         // BinData: bin_data_content의 storage_id → manifest 엔트리 생성.
@@ -328,6 +319,71 @@ impl SerializeContext {
     }
 }
 
+/// 재귀 스캔 최대 깊이 — `table_extract::MAX_NEST_DEPTH` 와 같은 값.
+/// 순환 참조가 없는 정상 IR에서는 닿지 않고, 적대적/손상 입력에서 무한 재귀를 막는다.
+const MAX_BORDER_FILL_SCAN_DEPTH: usize = 8;
+
+/// 표 하나의 `border_fill_id`(표/영역/셀)를 등록한다.
+fn register_table_border_fills(ctx: &mut SerializeContext, table: &crate::model::table::Table) {
+    ctx.border_fill_ids.register(table.border_fill_id);
+    for zone in &table.zones {
+        ctx.border_fill_ids.register(zone.border_fill_id);
+    }
+    for cell in &table.cells {
+        ctx.border_fill_ids.register(cell.border_fill_id);
+    }
+}
+
+/// 문단 목록을 재귀하며 표(및 중첩 표)의 `border_fill_id`를 사전 등록한다.
+///
+/// `table_extract::collect_from_paragraph`/`nested_tables`(#3719 계열 표 추출)와 같은
+/// 위상의 재귀 — 표 셀 안의 표(중첩 표), 글상자, 머리말/꼬리말, 각주/미주까지 내려간다.
+/// 종전에는 `doc.sections[].paragraphs[]`의 최상위 `Control::Table`만 훑어 셀 안에 중첩된
+/// 표나 글상자·머리말/꼬리말·각주/미주 안의 표의 `border_fill_id`가 등록에서 빠졌다.
+/// 그 표가 실제 직렬화(`table.rs`의 `reference()` 호출)에서 참조되면
+/// `assert_all_refs_resolved`가 "미등록 ID 참조 발견"으로 하드 실패해 문서 전체의
+/// `export-hwpx`가 산출물 없이 실패했다(실측: 정부 보고서 표 107개 중 중첩 표 1개를 가진
+/// 문서에서 `borderFillIDRef: [0]` 미등록으로 재현).
+fn register_border_fills_in_paragraphs(
+    ctx: &mut SerializeContext,
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    depth: usize,
+) {
+    if depth >= MAX_BORDER_FILL_SCAN_DEPTH {
+        return;
+    }
+    for para in paragraphs {
+        for ctrl in &para.controls {
+            match ctrl {
+                Control::Table(tbl) => {
+                    register_table_border_fills(ctx, tbl);
+                    for cell in &tbl.cells {
+                        register_border_fills_in_paragraphs(ctx, &cell.paragraphs, depth + 1);
+                    }
+                }
+                Control::Shape(shape) => {
+                    if let Some(tb) = shape.drawing().and_then(|d| d.text_box.as_ref()) {
+                        register_border_fills_in_paragraphs(ctx, &tb.paragraphs, depth + 1);
+                    }
+                }
+                Control::Header(h) => {
+                    register_border_fills_in_paragraphs(ctx, &h.paragraphs, depth + 1);
+                }
+                Control::Footer(f) => {
+                    register_border_fills_in_paragraphs(ctx, &f.paragraphs, depth + 1);
+                }
+                Control::Footnote(f) => {
+                    register_border_fills_in_paragraphs(ctx, &f.paragraphs, depth + 1);
+                }
+                Control::Endnote(e) => {
+                    register_border_fills_in_paragraphs(ctx, &e.paragraphs, depth + 1);
+                }
+                _ => {}
+            }
+        }
+    }
+}
+
 fn mime_from_ext(ext: &str) -> &'static str {
     match ext.to_ascii_lowercase().as_str() {
         "png" => "image/png",
@@ -394,6 +450,60 @@ mod tests {
             !ctx.numbering_ids.is_registered(&0),
             "0 은 1-based 축에 없음 (회귀 가드)"
         );
+    }
+
+    #[test]
+    fn nested_table_border_fill_id_registered() {
+        // 실측(정부 보고서, 표 107개 중 1개가 셀 안에 표를 담은 문서)에서 재현: 종전에는
+        // `doc.sections[].paragraphs[]`의 최상위 `Control::Table`만 훑어 셀 안에 중첩된
+        // 표의 `border_fill_id`가 등록에서 빠졌다. 그 표가 실제 직렬화에서 참조되면
+        // `assert_all_refs_resolved`가 "미등록 ID 참조 발견"으로 하드 실패해 문서 전체의
+        // `export-hwpx`가 산출물 없이 실패했다 — 이 테스트는 그 등록 누락의 회귀 가드다.
+        use crate::model::paragraph::Paragraph;
+        use crate::model::table::{Cell, Table};
+
+        const OUTER_BORDER_FILL_ID: u16 = 1;
+        const INNER_BORDER_FILL_ID: u16 = 2; // outer와 달라 별도 등록이 필요함을 보장.
+
+        let mut inner_table = Table::default();
+        inner_table.border_fill_id = INNER_BORDER_FILL_ID;
+        inner_table.row_count = 1;
+        inner_table.col_count = 1;
+        inner_table.cells = vec![Cell::new_empty(0, 0, 1000, 1000, INNER_BORDER_FILL_ID)];
+
+        let mut outer_cell = Cell::new_empty(0, 0, 5000, 5000, OUTER_BORDER_FILL_ID);
+        outer_cell.paragraphs = vec![{
+            let mut p = Paragraph::new_empty();
+            p.controls.push(Control::Table(Box::new(inner_table)));
+            p
+        }];
+
+        let mut outer_table = Table::default();
+        outer_table.border_fill_id = OUTER_BORDER_FILL_ID;
+        outer_table.row_count = 1;
+        outer_table.col_count = 1;
+        outer_table.cells = vec![outer_cell];
+
+        let mut doc = Document::default();
+        let mut para = Paragraph::new_empty();
+        para.controls.push(Control::Table(Box::new(outer_table)));
+        doc.sections = vec![crate::model::document::Section {
+            paragraphs: vec![para],
+            ..Default::default()
+        }];
+
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        assert!(
+            ctx.border_fill_ids.is_registered(&INNER_BORDER_FILL_ID),
+            "중첩 표(셀 안의 표)의 border_fill_id도 사전 등록되어야 한다"
+        );
+
+        // table.rs 의 실제 직렬화 경로와 동형: 중첩 표가 참조하는 시점을 재현해도
+        // assert_all_refs_resolved 가 통과해야 한다(수정 전에는 여기서 실패했다).
+        ctx.border_fill_ids.reference(OUTER_BORDER_FILL_ID);
+        ctx.border_fill_ids.reference(INNER_BORDER_FILL_ID);
+        ctx.assert_all_refs_resolved()
+            .expect("중첩 표 border_fill_id 참조가 미등록으로 남으면 안 된다");
     }
 
     #[test]
