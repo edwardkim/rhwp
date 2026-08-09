@@ -550,18 +550,19 @@ struct TableCellFootnote {
     fragment_split: Option<NativeHwp5FootnoteFragmentSplit>,
 }
 
-/// 표 cell 각주의 실제 렌더 높이. 일반 paginator의 빠른 저장 LineSeg 추정과 달리
+/// 각주의 실제 렌더 높이. 일반 paginator의 빠른 저장 LineSeg 추정과 달리
 /// `layout_footnote_area`와 같은 composed line/line-spacing 규칙을 쓴다. 긴 URL은
 /// renderer에서 두 줄 이상으로 재래핑되므로, 저장 LineSeg 한 줄만 예약하면 본문과
-/// FootnoteArea가 겹친다.
-fn estimate_queued_table_footnote_height(footnote: &Footnote, dpi: f64) -> f64 {
+/// FootnoteArea가 겹친다. 문단 자체가 없는 malformed 각주는 실제 layout처럼 0을
+/// 반환하고, 비어 있는 문단만 layout의 400HU 안내 줄을 예약한다.
+fn composed_footnote_content_height(footnote: &Footnote, dpi: f64) -> f64 {
     let total_lines: usize = footnote
         .paragraphs
         .iter()
         .map(|para| compose_paragraph(para).lines.len().max(1))
         .sum();
     if total_lines == 0 {
-        return hwpunit_to_px(400, dpi);
+        return 0.0;
     }
 
     let mut height = 0.0;
@@ -581,7 +582,13 @@ fn estimate_queued_table_footnote_height(footnote: &Footnote, dpi: f64) -> f64 {
             }
         }
     }
-    height.max(hwpunit_to_px(400, dpi))
+    height
+}
+
+/// 표 셀 fragment queue의 기존 최소 예약값은 400HU다. Body 각주의 exact metric과
+/// 섞지 않고 queue 경로에서만 이 하한을 유지한다.
+fn queued_table_footnote_content_height(footnote: &Footnote, dpi: f64) -> f64 {
+    composed_footnote_content_height(footnote, dpi).max(hwpunit_to_px(400, dpi))
 }
 
 // ========================================================
@@ -2588,26 +2595,6 @@ fn native_hwp5_final_marker_footnote_uses_next_reset_page(
     st.current_height > projected_available + 0.5
 }
 
-/// 일반 Body 각주 하나의 content 높이를 layout과 같은 composed line metric으로 잰다.
-fn native_hwp5_exact_footnote_content_height(footnote: &Footnote, dpi: f64) -> f64 {
-    let mut total = 0.0;
-    for (note_para_idx, note_para) in footnote.paragraphs.iter().enumerate() {
-        let composed = compose_paragraph(note_para);
-        if composed.lines.is_empty() {
-            total += hwpunit_to_px(400, dpi);
-            continue;
-        }
-        let note_last_para = note_para_idx + 1 == footnote.paragraphs.len();
-        for (line_idx, line) in composed.lines.iter().enumerate() {
-            total += hwpunit_to_px(line.line_height, dpi);
-            if !(note_last_para && line_idx + 1 == composed.lines.len()) {
-                total += hwpunit_to_px(line.line_spacing, dpi);
-            }
-        }
-    }
-    total
-}
-
 /// 현재 page의 일반 Body 각주를 layout과 같은 composed line metric으로 재측정한다.
 ///
 /// 일반 pagination의 `current_footnote_height`는 빠른 stored-LineSeg 추정이다. 긴 URL이나
@@ -2641,7 +2628,7 @@ fn native_hwp5_existing_body_footnote_area_height(
             return None;
         };
 
-        total += native_hwp5_exact_footnote_content_height(footnote, dpi);
+        total += composed_footnote_content_height(footnote, dpi);
         if footnote_idx + 1 < footnotes.len() {
             total += st.footnote_between_notes_margin;
         }
@@ -2729,7 +2716,7 @@ fn native_hwp5_existing_footnote_reset_overlap_break_line(
                 + projected_current_notes.len() as f64 * st.footnote_between_notes_margin
                 + projected_current_notes
                     .iter()
-                    .map(|footnote| native_hwp5_exact_footnote_content_height(footnote, dpi))
+                    .map(|footnote| composed_footnote_content_height(footnote, dpi))
                     .sum::<f64>();
             let footnote_top = (st.layout.body_area.height - projected_footnote_height).max(0.0);
             let flow_prev_bottom = flow_prev_top + fmt.line_heights[prev_idx];
@@ -3709,6 +3696,84 @@ impl TypesetState {
                 0.0
             }
             + content_height
+    }
+
+    /// 현재 page의 body/각주 lane에 새 각주 fragment가 들어가는지 판정한다.
+    ///
+    /// `overlap_guard`는 table fragment처럼 pagination의 flow origin과 실제 paint
+    /// 하단이 어긋날 수 있는 경로에서만 사용한다. 후보 식별과 fit을 분리해 caller가
+    /// 현재 page에 각주를 추가해도 되는지를 같은 식으로 판정하게 한다.
+    fn footnote_fragment_fits_current_page(
+        &self,
+        content_height: f64,
+        draw_separator: bool,
+        reserve_safety_margin: bool,
+        overlap_guard: f64,
+    ) -> bool {
+        let projected = self.projected_footnote_fragment_height(content_height, draw_separator);
+        let projected_margin = if projected > 0.0 && reserve_safety_margin {
+            self.footnote_safety_margin
+        } else {
+            0.0
+        };
+        let reclaim = if self.section_has_no_footer {
+            self.layout.footer_area.height.max(0.0)
+        } else {
+            0.0
+        };
+        let page_available = (self.base_available_height()
+            - (projected - reclaim).max(0.0)
+            - projected_margin
+            - self.current_zone_y_offset
+            - self.current_bottom_fixed_exclusion)
+            .max(0.0);
+        let footnote_only_capacity = (self.base_available_height()
+            - self.current_zone_y_offset
+            - self.current_bottom_fixed_exclusion)
+            .max(0.0);
+
+        (projected - reclaim).max(0.0) + projected_margin <= footnote_only_capacity + 0.5
+            && self.current_height + overlap_guard <= page_available + 0.5
+    }
+
+    /// 동일 표의 terminal fragment가 아직 current column에 있는지, 직전에 flush된
+    /// page에 있는지 구분한다. `Some(true)`는 current, `Some(false)`는 flushed다.
+    fn native_table_host_terminal_fragment_placement(
+        &self,
+        para_index: usize,
+        control_index: usize,
+        row_count: u16,
+    ) -> Option<bool> {
+        let is_terminal = |item: &PageItem| match item {
+            PageItem::Table {
+                para_index: item_para_index,
+                control_index: item_control_index,
+            } => *item_para_index == para_index && *item_control_index == control_index,
+            PageItem::PartialTable {
+                para_index: item_para_index,
+                control_index: item_control_index,
+                end_row,
+                end_cut,
+                ..
+            } => {
+                *item_para_index == para_index
+                    && *item_control_index == control_index
+                    && *end_row == usize::from(row_count)
+                    && end_cut.is_empty()
+            }
+            _ => false,
+        };
+
+        if self.current_items.iter().any(&is_terminal) {
+            return Some(true);
+        }
+        self.pages
+            .iter()
+            .rev()
+            .flat_map(|page| page.column_contents.iter().rev())
+            .flat_map(|column| column.items.iter().rev())
+            .any(is_terminal)
+            .then_some(false)
     }
 
     /// 이미 flush된 분할 문단의 앵커 page에 첫 native-HWP5 각주를 소급 등록한다.
@@ -7211,11 +7276,108 @@ impl TypesetEngine {
                         }
                     }
                     Control::Footnote(fn_ctrl) => {
-                        if !has_table {
-                            let source = FootnoteSource::Body {
-                                para_index: para_idx,
-                                control_index: ctrl_idx,
+                        let source = FootnoteSource::Body {
+                            para_index: para_idx,
+                            control_index: ctrl_idx,
+                        };
+                        let native_table_host_footnote = if st.profile.native_hwp5_layout()
+                            && st.col_count == 1
+                            && para
+                                .controls
+                                .iter()
+                                .filter(|control| matches!(control, Control::Footnote(_)))
+                                .count()
+                                == 1
+                        {
+                            let mut top_level_tables =
+                                para.controls
+                                    .iter()
+                                    .enumerate()
+                                    .filter_map(|(index, control)| {
+                                        if let Control::Table(table) = control {
+                                            Some((index, table))
+                                        } else {
+                                            None
+                                        }
+                                    });
+                            match (top_level_tables.next(), top_level_tables.next()) {
+                                (Some((table_control_index, table)), None)
+                                    if table_control_index + 1 == ctrl_idx
+                                        && native_hwp5_rowbreak_host_precedes_first_fragment(
+                                            para, table,
+                                        ) =>
+                                {
+                                    let full_content_height =
+                                        composed_footnote_content_height(fn_ctrl, self.dpi);
+                                    st.native_table_host_terminal_fragment_placement(
+                                        para_idx,
+                                        table_control_index,
+                                        table.row_count,
+                                    )
+                                    .map(
+                                        |terminal_fragment_is_current| {
+                                            let split = native_hwp5_footnote_reset_fragments(
+                                                fn_ctrl, self.dpi,
+                                            )
+                                            .filter(|split| {
+                                                split.force_next_page && st.col_count == 1
+                                            });
+                                            let (content_height, draw_separator) = split
+                                                .map(|split| {
+                                                    (
+                                                        split.prefix_height,
+                                                        split.prefix.draw_separator,
+                                                    )
+                                                })
+                                                .unwrap_or_else(|| (full_content_height, true));
+                                            (
+                                                terminal_fragment_is_current,
+                                                content_height,
+                                                draw_separator,
+                                                full_content_height,
+                                            )
+                                        },
+                                    )
+                                }
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        };
+                        if let Some((
+                            terminal_fragment_is_current,
+                            content_height,
+                            draw_separator,
+                            full_content_height,
+                        )) = native_table_host_footnote
+                        {
+                            let overlap_guard = if terminal_fragment_is_current {
+                                32.0
+                            } else {
+                                0.0
                             };
+                            if !st.footnote_fragment_fits_current_page(
+                                content_height,
+                                draw_separator,
+                                true,
+                                overlap_guard,
+                            ) {
+                                // terminal 표가 이미 확정된 page의 body/각주 lane을
+                                // 소급 축소하지 않는다. 각주가 들어갈 공간이 없으면 표
+                                // owner를 먼저 flush하고 fresh page에 보존한다.
+                                st.force_new_page();
+                            }
+                            // 표 셀 내부 각주는 table fragment queue가 별도로 등록하지만,
+                            // 넘버링 caption 뒤의 최상위 형제 각주는 Body source다.
+                            // 일반 Body marker-page 소급 heuristic을 타지 않는다
+                            // (정책연구 p87/p91/p95의 note 138/142/147).
+                            self.register_unqueued_table_footnote_with_content_height(
+                                &mut st,
+                                fn_ctrl,
+                                source,
+                                full_content_height,
+                            );
+                        } else if !has_table {
                             let fn_height = estimate_footnote_note_height(fn_ctrl, self.dpi);
                             let move_to_next_reset_page =
                                 native_hwp5_final_marker_footnote_uses_next_reset_page(
@@ -15890,9 +16052,7 @@ impl TypesetEngine {
                             cell_para_index: cp_idx,
                             cell_control_index: cc_idx,
                             row: cell.row as usize,
-                            content_height: estimate_queued_table_footnote_height(
-                                fn_ctrl, self.dpi,
-                            ),
+                            content_height: queued_table_footnote_content_height(fn_ctrl, self.dpi),
                             fragment_split,
                         });
                     }
@@ -20814,14 +20974,31 @@ impl TypesetEngine {
         None
     }
 
-    /// fragment queue를 거치지 않는 표의 cell-footnote를 현재 marker page에
-    /// 등록한다. 첫 두 stored line이 `vpos=0 -> 0`으로 명시적으로 재시작하면
-    /// prefix만 marker page에 두고 suffix는 다음 physical page에 둔다.
+    /// fragment queue를 거치지 않는 표 셀 각주 또는 표 host의 Body 형제 각주를
+    /// 현재 owner page에 등록한다. 첫 두 stored line이 `vpos=0 -> 0`으로 명시적으로
+    /// 재시작하면 prefix만 owner page에 두고 suffix는 다음 physical page에 둔다.
     fn register_unqueued_table_footnote(
         &self,
         st: &mut TypesetState,
         footnote: &Footnote,
         source: FootnoteSource,
+    ) {
+        self.register_unqueued_table_footnote_with_content_height(
+            st,
+            footnote,
+            source,
+            estimate_footnote_note_height(footnote, self.dpi),
+        );
+    }
+
+    /// `register_unqueued_table_footnote`와 같은 owner/fragment 계약을 사용하되,
+    /// caller가 layout과 같은 composed-line metric으로 잰 content 높이를 예약한다.
+    fn register_unqueued_table_footnote_with_content_height(
+        &self,
+        st: &mut TypesetState,
+        footnote: &Footnote,
+        source: FootnoteSource,
+        content_height: f64,
     ) {
         let split = st
             .profile
@@ -20858,7 +21035,7 @@ impl TypesetEngine {
                 fragment: None,
             });
         }
-        st.add_footnote_height(estimate_footnote_note_height(footnote, self.dpi));
+        st.add_footnote_height(content_height);
     }
 
     /// RowBreak 표의 cell-footnote queue를 현재 fragment page에 들어가는 만큼만
@@ -20878,33 +21055,9 @@ impl TypesetEngine {
         relax_terminal_table_footnote_fit: bool,
     ) {
         let note_fits = |st: &TypesetState, content_height: f64, draw_separator: bool| {
-            let projected = st.projected_footnote_fragment_height(content_height, draw_separator);
             // 단일단의 중간 RowBreak fragment 뒤에는 같은 page에 이어질 본문이 없다.
             // 다음 fragment가 새 page에서 시작하므로, 이 fragment의 table-cell 각주는
             // 일반 본문 후속 배치를 위한 40px safety buffer를 중복 예약하지 않는다.
-            let projected_margin = if projected > 0.0
-                && (terminal_fragment || st.col_count != 1)
-                && !relax_terminal_table_footnote_fit
-            {
-                st.footnote_safety_margin
-            } else {
-                0.0
-            };
-            let reclaim = if st.section_has_no_footer {
-                st.layout.footer_area.height.max(0.0)
-            } else {
-                0.0
-            };
-            let page_available = (st.base_available_height()
-                - (projected - reclaim).max(0.0)
-                - projected_margin
-                - st.current_zone_y_offset
-                - st.current_bottom_fixed_exclusion)
-                .max(0.0);
-            let footnote_only_capacity = (st.base_available_height()
-                - st.current_zone_y_offset
-                - st.current_bottom_fixed_exclusion)
-                .max(0.0);
             // `current_height`는 flow origin 기준이고 FootnoteArea는 page-body 기준으로
             // 내려온다. native HWP5 table fragment에서는 이 두 origin의 차이만큼 table
             // 하단이 separator에 먼저 닿는다. queue 대상에만 32px 물리 guard를 둬
@@ -20920,8 +21073,12 @@ impl TypesetEngine {
             } else {
                 0.0
             };
-            !((projected - reclaim).max(0.0) + projected_margin > footnote_only_capacity + 0.5
-                || st.current_height + table_footnote_overlap_guard > page_available + 0.5)
+            st.footnote_fragment_fits_current_page(
+                content_height,
+                draw_separator,
+                (terminal_fragment || st.col_count != 1) && !relax_terminal_table_footnote_fit,
+                table_footnote_overlap_guard,
+            )
         };
         let add_note = |st: &mut TypesetState,
                         note: &TableCellFootnote,
@@ -22736,6 +22893,47 @@ mod tests {
             }],
             ..Default::default()
         }
+    }
+
+    #[test]
+    fn composed_footnote_height_separates_body_exact_metric_from_table_queue_floor() {
+        let dpi = 96.0;
+        let empty_footnote = Footnote::default();
+        assert_eq!(composed_footnote_content_height(&empty_footnote, dpi), 0.0);
+        assert_eq!(
+            queued_table_footnote_content_height(&empty_footnote, dpi),
+            hwpunit_to_px(400, dpi),
+        );
+
+        let short_line = Footnote {
+            paragraphs: vec![Paragraph {
+                text: "짧음".to_string(),
+                char_count: 3,
+                line_segs: vec![LineSeg {
+                    line_height: 200,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        assert_eq!(
+            composed_footnote_content_height(&short_line, dpi),
+            hwpunit_to_px(200, dpi),
+        );
+        assert_eq!(
+            queued_table_footnote_content_height(&short_line, dpi),
+            hwpunit_to_px(400, dpi),
+        );
+
+        let empty_paragraph = Footnote {
+            paragraphs: vec![Paragraph::default()],
+            ..Default::default()
+        };
+        assert_eq!(
+            composed_footnote_content_height(&empty_paragraph, dpi),
+            hwpunit_to_px(400, dpi),
+        );
     }
 
     fn single_column_split_topology() -> Table {

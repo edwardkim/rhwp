@@ -29,8 +29,12 @@ const PAGE_77: u32 = 76;
 const PAGE_78: u32 = 77;
 const PAGE_79: u32 = 78;
 const PAGE_80: u32 = 79;
+const PAGE_87: u32 = 86;
+const PAGE_88: u32 = 87;
 const PAGE_90: u32 = 89;
 const PAGE_91: u32 = 90;
+const PAGE_94: u32 = 93;
+const PAGE_95: u32 = 94;
 const PAGE_118: u32 = 117;
 const PAGE_119: u32 = 118;
 const PAGE_120: u32 = 119;
@@ -1828,5 +1832,293 @@ fn native_hwp5_square_picture_figure_56_uses_the_same_next_page_owner_contract()
             .iter()
             .all(|line| does_not_overlap_horizontally(*line, image)),
         "p127 pi=1356 본문은 그림 56과 물리적으로 교차하면 안 됨: image={image:?}, lines={overlapping_vertical_lines:?}"
+    );
+}
+
+#[test]
+fn native_hwp5_table_host_footnotes_follow_the_terminal_fragment_page() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage107 HWP evidence fixture");
+
+    assert_eq!(
+        doc.page_count(),
+        215,
+        "정책연구 기준 PDF와 215쪽을 유지해야 함"
+    );
+    let pages = [PAGE_87, PAGE_88, PAGE_90, PAGE_91, PAGE_94, PAGE_95].map(|page| {
+        doc.build_page_render_tree(page)
+            .unwrap_or_else(|e| panic!("render physical page {}: {e}", page + 1))
+    });
+    let mut notes = [
+        String::new(),
+        String::new(),
+        String::new(),
+        String::new(),
+        String::new(),
+        String::new(),
+    ];
+    for (tree, text) in pages.iter().zip(notes.iter_mut()) {
+        footnote_text(&tree.root, false, text);
+    }
+
+    assert!(
+        notes[0].contains("138)") && notes[0].contains("부록 내용 표로 정리"),
+        "p87은 표 26 terminal fragment와 형제 각주 138을 같이 소유해야 함: {}",
+        notes[0]
+    );
+    assert_eq!(
+        notes[0].matches("138)").count(),
+        1,
+        "p87은 각주 138을 정확히 한 번만 렌더해야 함: {}",
+        notes[0]
+    );
+    assert!(
+        !notes[1].contains("138)") && notes[1].contains("139)"),
+        "p88은 각주 138을 이월·중복 소유하지 않고 기존 139를 유지해야 함: {}",
+        notes[1]
+    );
+    assert!(
+        !notes[2].contains("142)")
+            && notes[2].contains("141)")
+            && notes[3].contains("142)")
+            && notes[3].contains("유럽 28개국과 노르웨이 분석"),
+        "각주 142는 표 27의 p90 first fragment가 아니라 p91 terminal fragment owner여야 함: p90={}, p91={}",
+        notes[2],
+        notes[3]
+    );
+    assert_eq!(
+        notes[3].matches("142)").count(),
+        1,
+        "p91은 각주 142를 정확히 한 번만 렌더해야 함: {}",
+        notes[3]
+    );
+    for number in 143..=145 {
+        assert!(
+            notes[3].contains(&format!("{number})")),
+            "p91은 기존 후속 각주 {number}를 유지해야 함: {}",
+            notes[3]
+        );
+    }
+    assert!(
+        !notes[4].contains("147)")
+            && notes[5].contains("147)")
+            && notes[5].contains("eutoolbox_living_kidney_donation_en.pdf"),
+        "각주 147은 표 28의 p94 first fragment가 아니라 p95 terminal fragment owner여야 함: p94={}, p95={}",
+        notes[4],
+        notes[5]
+    );
+    assert_eq!(
+        notes[5].matches("147)").count(),
+        1,
+        "p95는 각주 147을 정확히 한 번만 렌더해야 함: {}",
+        notes[5]
+    );
+
+    for (tree, page, table_para, following_body_para) in [
+        (&pages[0], "p87", 937, 940),
+        (&pages[3], "p91", 962, 972),
+        (&pages[5], "p95", 1000, 1009),
+    ] {
+        let mut table_end = None;
+        let mut body_end = None;
+        let mut separator = None;
+        let mut footnote_end = None;
+        let mut footer_start = None;
+        table_bottom(&tree.root, table_para, &mut table_end);
+        paragraph_bottom(&tree.root, following_body_para, &mut body_end);
+        footnote_separator_top(&tree.root, &mut separator);
+        footnote_and_footer(&tree.root, &mut footnote_end, &mut footer_start);
+        let separator = separator.unwrap_or_else(|| panic!("{page} footnote separator"));
+        assert!(
+            table_end.is_some_and(|bottom| bottom <= separator + 0.5),
+            "{page} terminal table은 각주 separator를 침범하면 안 됨: table={table_end:?}, separator={separator:.1}"
+        );
+        assert!(
+            body_end.is_some_and(|bottom| bottom <= separator + 0.5),
+            "{page} 후속 본문은 각주 separator를 침범하면 안 됨: body={body_end:?}, separator={separator:.1}"
+        );
+        assert!(
+            footnote_end.is_some_and(|bottom| {
+                footer_start.is_some_and(|footer| bottom <= footer + 1.0)
+            }),
+            "{page} 각주 영역은 footer를 침범하면 안 됨: footnote={footnote_end:?}, footer={footer_start:?}"
+        );
+    }
+}
+
+#[test]
+fn native_hwp5_table_host_footnote_capacity_fallback_preserves_note_once() {
+    use rhwp::model::control::Control;
+
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("parse stage107 capacity fixture");
+    let mut document = doc.document().clone();
+    let footnote = document.sections[0].paragraphs[937]
+        .controls
+        .iter_mut()
+        .find_map(|control| match control {
+            Control::Footnote(footnote) if footnote.number == 138 => Some(footnote),
+            _ => None,
+        })
+        .expect("pi937 table host sibling footnote 138");
+    let template = footnote
+        .paragraphs
+        .first()
+        .cloned()
+        .expect("footnote 138 body paragraph");
+    // 원본 terminal page의 잔여보다 크지만 fresh page에는 충분히 들어가는 각주를
+    // 만든다. 후보+fit을 하나의 bool로 합치면 이 경우 has_table no-op으로 흘러
+    // 각주가 문서 전체에서 사라진다.
+    footnote
+        .paragraphs
+        .extend((0..58).map(|_| template.clone()));
+    doc.set_document(document);
+
+    let p87 = doc
+        .build_page_render_tree(PAGE_87)
+        .expect("render enlarged-note terminal page");
+    let p88 = doc
+        .build_page_render_tree(PAGE_88)
+        .expect("render enlarged-note fallback page");
+    let mut p87_notes = String::new();
+    let mut p88_notes = String::new();
+    footnote_text(&p87.root, false, &mut p87_notes);
+    footnote_text(&p88.root, false, &mut p88_notes);
+
+    assert!(
+        !p87_notes.contains("138)"),
+        "확대 각주 138은 공간이 모자란 terminal p87에 겹쳐 넣으면 안 됨: {p87_notes}"
+    );
+    assert_eq!(
+        p88_notes.matches("138)").count(),
+        1,
+        "공간 부족 fallback은 새 physical page에 각주 138을 정확히 한 번 보존해야 함: {p88_notes}"
+    );
+    assert!(
+        p88_notes.contains("부록 내용 표로 정리"),
+        "fallback page는 각주 138 본문을 보존해야 함: {p88_notes}"
+    );
+
+    let mut footnote_end = None;
+    let mut footer_start = None;
+    footnote_and_footer(&p88.root, &mut footnote_end, &mut footer_start);
+    assert!(
+        footnote_end.is_some_and(|bottom| {
+            footer_start.is_some_and(|footer| bottom <= footer + 1.0)
+        }),
+        "fallback 각주 영역은 footer를 침범하면 안 됨: footnote={footnote_end:?}, footer={footer_start:?}"
+    );
+}
+
+#[test]
+fn native_hwp5_table_host_footnote_survives_after_terminal_table_page_is_flushed() {
+    use rhwp::model::control::Control;
+    use rhwp::model::footnote::Footnote;
+
+    fn find_nested_footnote(controls: &[Control], number: u16) -> Option<Box<Footnote>> {
+        for control in controls {
+            match control {
+                Control::Footnote(footnote) if footnote.number == number => {
+                    return Some(footnote.clone());
+                }
+                Control::Table(table) => {
+                    for cell in &table.cells {
+                        for paragraph in &cell.paragraphs {
+                            if let Some(footnote) =
+                                find_nested_footnote(&paragraph.controls, number)
+                            {
+                                return Some(footnote);
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        None
+    }
+
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("parse stage107 terminal-flush fixture");
+    let mut document = doc.document().clone();
+
+    // 실제 fixture의 note 234는 첫 두 stored line이 vpos=0인 table-cell 각주다.
+    // terminal fragment에서 prefix를 등록한 뒤 suffix용 fresh page를 만들므로,
+    // 이어지는 표 host 형제 각주를 처리할 때 terminal 표는 current_items에 없다.
+    let mut split_cell_footnote = document.sections[0]
+        .paragraphs
+        .iter()
+        .find_map(|paragraph| find_nested_footnote(&paragraph.controls, 234))
+        .expect("table-cell footnote 234 repeated-zero template");
+    split_cell_footnote.number = 60_000;
+
+    let table = document.sections[0].paragraphs[937]
+        .controls
+        .iter_mut()
+        .find_map(|control| match control {
+            Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("pi937 table 26");
+    let terminal_row = table
+        .cells
+        .iter()
+        .map(|cell| cell.row)
+        .max()
+        .expect("table 26 terminal row");
+    let terminal_cell = table
+        .cells
+        .iter_mut()
+        .find(|cell| cell.row == terminal_row && cell.row_span == 1)
+        .expect("table 26 terminal row cell");
+    terminal_cell
+        .paragraphs
+        .last_mut()
+        .expect("table 26 terminal cell paragraph")
+        .controls
+        .push(Control::Footnote(split_cell_footnote));
+    doc.set_document(document);
+
+    let pages = [PAGE_87, PAGE_88, PAGE_88 + 1].map(|page| {
+        doc.build_page_render_tree(page)
+            .unwrap_or_else(|e| panic!("render terminal-flush physical page {}: {e}", page + 1))
+    });
+    let mut notes = [String::new(), String::new(), String::new()];
+    for (tree, text) in pages.iter().zip(notes.iter_mut()) {
+        footnote_text(&tree.root, false, text);
+    }
+
+    assert!(
+        notes[0].contains("60000)") && notes[0].contains("using moderately and"),
+        "p87은 합성 table-cell 각주의 prefix를 소유해 terminal page flush를 일으켜야 함: {}",
+        notes[0]
+    );
+    assert!(
+        !notes[1].contains("60000)") && notes[1].contains("severely steatotic donor livers"),
+        "p88은 번호를 반복하지 않은 합성 table-cell 각주 tail을 먼저 소유해야 함: {}",
+        notes[1]
+    );
+    assert_eq!(
+        notes.iter().map(|text| text.matches("138)").count()).sum::<usize>(),
+        1,
+        "terminal-not-current 경로에서도 표 host 형제 각주 138을 정확히 한 번 보존해야 함: {notes:?}"
+    );
+    assert!(
+        notes[1].contains("138)") && notes[1].contains("부록 내용 표로 정리"),
+        "표 host 형제 각주 138은 terminal 뒤 current footnote page의 기존 tail 다음에 등록돼야 함: {}",
+        notes[1]
+    );
+
+    let mut footnote_end = None;
+    let mut footer_start = None;
+    footnote_and_footer(&pages[1].root, &mut footnote_end, &mut footer_start);
+    assert!(
+        footnote_end.is_some_and(|bottom| {
+            footer_start.is_some_and(|footer| bottom <= footer + 1.0)
+        }),
+        "terminal-not-current fallback 각주 영역은 footer를 침범하면 안 됨: footnote={footnote_end:?}, footer={footer_start:?}"
     );
 }
