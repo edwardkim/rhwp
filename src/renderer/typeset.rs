@@ -13509,7 +13509,7 @@ impl TypesetEngine {
     ) -> f64 {
         use crate::renderer::layout::{layout_rect_to_bbox, LayoutEngine};
         use crate::renderer::page_layout::LayoutRect;
-        use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
+        use crate::renderer::render_tree::{LayoutFrame, RenderNode, RenderNodeType};
 
         // 렌더 `layout_column_item` 의 FullParagraph 텍스트 경로 정합(layout.rs has_real_text):
         // 실제 텍스트가 있는 para 는 **leading 컨트롤-전용 줄**(수식 객체마커 ￼ 등)을 건너뛰고
@@ -13550,16 +13550,20 @@ impl TypesetEngine {
             width: en_col_w,
             height,
         };
+        // [#4277] 페이지네이션 측정은 paint 트리를 만들지 않는다 — 레이아웃 재귀가 실제로
+        // 쓰는 건 흐름 상태(id 카운터 + 인라인 Shape 레지스트리 + 페이지 기하)뿐이므로
+        // `LayoutFrame` 만 만든다. `col_node` 는 방출된 노드를 받는 sink 로만 쓰이고
+        // 높이만 읽은 뒤 버려진다.
         let scratch = LayoutEngine::new(self.dpi);
-        let mut tree = PageRenderTree::new(0, en_col_w, height);
-        let col_id = tree.next_id();
+        let mut frame = LayoutFrame::new(0, en_col_w, height);
+        let col_id = frame.next_id();
         let mut col_node = RenderNode::new(
             col_id,
             RenderNodeType::Column(0),
             layout_rect_to_bbox(&col_area),
         );
         let y_after = scratch.layout_partial_paragraph(
-            &mut tree,
+            &mut frame,
             &mut col_node,
             item_para,
             Some(item_composed),

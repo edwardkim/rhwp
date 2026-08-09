@@ -1025,10 +1025,6 @@ fn char_level_break_hwp(
     (results, lw, line_max_fs)
 }
 
-/// 문단의 line_segs를 텍스트 내용과 컬럼 너비에 맞게 재계산한다.
-///
-/// 텍스트 편집(삽입/삭제) 후 호출하여 줄 바꿈을 재배치한다.
-/// `available_width_px`는 문단 여백을 제외한 사용 가능 너비(px)이다.
 fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
     para.controls
         .iter()
@@ -1087,6 +1083,10 @@ fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
     }
 }
 
+/// 문단의 line_segs를 텍스트 내용과 컬럼 너비에 맞게 재계산한다.
+///
+/// 텍스트 편집(삽입/삭제) 후 호출하여 줄 바꿈을 재배치한다.
+/// `available_width_px`는 문단 여백을 제외한 사용 가능 너비(px)이다.
 pub(crate) fn reflow_line_segs(
     para: &mut Paragraph,
     available_width_px: f64,
@@ -1099,7 +1099,6 @@ pub(crate) fn reflow_line_segs(
     // 기존 LineSeg에서 dimension 값 보존 (원본 HWP 호환성 유지)
     let seg_width_hwp = px_to_hwpunit(available_width_px, dpi);
     let orig = para.line_segs.first().cloned();
-    let has_valid_orig = orig.as_ref().map(|ls| ls.line_height > 0).unwrap_or(false);
 
     // ParaPr의 줄간격 설정 (합성 LineSeg에서 line_spacing 계산에 사용)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);

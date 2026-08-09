@@ -184,7 +184,7 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
     // 쉼표/고정탭/일반 글자가 한 줄에 섞인 문단은 [0,0,2,2,4] 같은 raw
     // position 자체가 편집자가 입력한 순서다. 여기에 \u{FFFC}를 재합성하면
     // TAC가 쉼표/탭 뒤로 밀려 순서가 깨진다.
-    let raw_positions = find_control_text_positions(para);
+    let raw_positions = para.control_text_positions();
     let raw_inline_positions: Vec<usize> = para
         .controls
         .iter()
@@ -1129,12 +1129,6 @@ fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
     result
 }
 
-/// char_offsets 갭을 분석하여 각 컨트롤의 텍스트 내 삽입 위치를 결정한다.
-/// → document_core::helpers::find_control_text_positions 으로 위임
-fn find_control_text_positions(para: &Paragraph) -> Vec<usize> {
-    crate::document_core::find_control_text_positions(para)
-}
-
 fn is_render_inline_control(ctrl: &Control) -> bool {
     match ctrl {
         Control::Picture(pic) => pic.common.treat_as_char,
@@ -1159,7 +1153,7 @@ fn find_render_inline_control_positions(para: &Paragraph) -> Vec<usize> {
         return positions;
     }
 
-    find_control_text_positions(para)
+    para.control_text_positions()
 }
 
 /// CharOverlap 컨트롤의 글자를 조합된 텍스트에 올바른 위치로 삽입한다.
@@ -1186,7 +1180,7 @@ fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) 
     }
 
     // 모든 컨트롤의 텍스트 위치 결정
-    let control_positions = find_control_text_positions(para);
+    let control_positions = para.control_text_positions();
 
     // CharOverlap별 (텍스트위치, 런) 수집
     let mut insertions: Vec<(usize, ComposedTextRun)> = Vec::new();

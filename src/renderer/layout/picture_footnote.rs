@@ -56,7 +56,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_picture(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         parent_node: &mut RenderNode,
         picture: &crate::model::image::Picture,
         container: &LayoutRect,
@@ -93,7 +93,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_picture_full(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         parent_node: &mut RenderNode,
         picture: &crate::model::image::Picture,
         container: &LayoutRect,
@@ -389,7 +389,7 @@ impl LayoutEngine {
     /// 본문 그림(Picture) 개체를 레이아웃하고 업데이트된 y_offset을 반환한다.
     pub(crate) fn layout_body_picture(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         parent_node: &mut RenderNode,
         picture: &crate::model::image::Picture,
         container: &LayoutRect,
@@ -704,7 +704,7 @@ impl LayoutEngine {
     /// 캡션을 레이아웃한다.
     pub(crate) fn layout_caption(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         parent_node: &mut RenderNode,
         caption: &Caption,
         styles: &ResolvedStyleSet,
@@ -780,7 +780,7 @@ impl LayoutEngine {
 
     fn layout_caption_topbottom_pictures(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         parent_node: &mut RenderNode,
         para: &Paragraph,
         caption_area: &LayoutRect,
@@ -925,7 +925,7 @@ impl LayoutEngine {
     /// 각주 영역 레이아웃 (구분선 + 각주 문단들)
     pub(crate) fn layout_footnote_area(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         fn_node: &mut RenderNode,
         footnotes: &[FootnoteRef],
         paragraphs: &[Paragraph],
@@ -1080,7 +1080,7 @@ impl LayoutEngine {
     /// base_cs_id: 번호 스타일 결정용 기본 char_shape_id (문단의 char_shapes[0])
     pub(crate) fn layout_footnote_paragraph_with_number(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         parent: &mut RenderNode,
         composed: &ComposedParagraph,
         styles: &ResolvedStyleSet,
@@ -1225,7 +1225,7 @@ impl LayoutEngine {
     /// 마지막 TextLine의 마지막 TextRun 우측에 윗첨자 번호를 추가한다.
     pub(crate) fn add_footnote_superscripts(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         parent: &mut RenderNode,
         para: &Paragraph,
         _styles: &ResolvedStyleSet,
@@ -1241,8 +1241,8 @@ impl LayoutEngine {
         }
 
         // 각주/미주의 (번호, 텍스트 위치) 수집 — ComposedParagraph에서 미리 계산된 위치 사용
-        // 폴백: find_control_text_positions로 직접 계산
-        let ctrl_positions = crate::document_core::helpers::find_control_text_positions(para);
+        // 폴백: control_text_positions로 직접 계산
+        let ctrl_positions = para.control_text_positions();
         let mut footnotes: Vec<(String, usize)> = Vec::new();
         for (ci, ctrl) in para.controls.iter().enumerate() {
             let marker_text = match ctrl {
@@ -1553,7 +1553,7 @@ impl LayoutEngine {
     /// border_attr의 bit 0~5가 선 종류, border_width가 두께 (0이면 기본 0.1mm)
     pub(crate) fn render_picture_border(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         parent: &mut RenderNode,
         picture: &crate::model::image::Picture,
         x: f64,

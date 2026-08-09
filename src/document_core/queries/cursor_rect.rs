@@ -3019,7 +3019,7 @@ impl DocumentCore {
         use crate::model::control::Control;
         use crate::renderer::layout::{layout_rect_to_bbox, PartialTableCellProbe, ProbeCutPlan};
         use crate::renderer::pagination::PageItem;
-        use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
+        use crate::renderer::render_tree::{LayoutFrame, RenderNode, RenderNodeType};
         use FastCellRectOutcome::{Hit, NoHit, Unsupported};
 
         let Ok((page_content, paragraphs, _composed)) = self.find_page(page_num) else {
@@ -3247,12 +3247,13 @@ impl DocumentCore {
             .unwrap_or(0);
 
         // ── 대상 셀 하나만 방출하는 프로브 레이아웃 ──
-        let mut scratch_tree = PageRenderTree::new(
+        // [#4277] 캐럿 rect 프로브도 paint 트리가 아니라 흐름 상태만 만든다.
+        let mut scratch_frame = LayoutFrame::new(
             page_content.page_index,
             layout.page_width,
             layout.page_height,
         );
-        let col_id = scratch_tree.next_id();
+        let col_id = scratch_frame.next_id();
         let mut scratch_col = RenderNode::new(
             col_id,
             RenderNodeType::Column(col.column_index),
@@ -3274,7 +3275,7 @@ impl DocumentCore {
             window_paras,
         };
         self.layout_engine.layout_partial_table(
-            &mut scratch_tree,
+            &mut scratch_frame,
             &mut scratch_col,
             paragraphs,
             parent_para_idx,
@@ -4499,13 +4500,6 @@ impl DocumentCore {
             offset += count;
         }
         (0, 0)
-    }
-
-    /// 해당 페이지에서 활성화된 머리말/꼬리말의 apply_to 값을 반환한다.
-    fn get_active_hf_apply_to(&self, _section_idx: usize, page_num: u32, is_header: bool) -> u8 {
-        self.get_active_hf_info(page_num, is_header)
-            .map(|(_, apply_to)| apply_to)
-            .unwrap_or(0)
     }
 
     /// 해당 페이지에서 활성화된 머리말/꼬리말의 (source_section_index, apply_to)를 반환한다.

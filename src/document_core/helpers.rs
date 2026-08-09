@@ -147,35 +147,11 @@ pub(crate) fn find_control_text_positions(para: &Paragraph) -> Vec<usize> {
 /// `find_control_text_positions()` 는 HWP/HWPX record stream 의 raw text position 을 보존한다.
 /// 반면 커서 이동은 `SectionDef`, `ColumnDef` 같은 구조 컨트롤을 건너뛰고,
 /// Shape/Table/Picture/Equation/Footnote/Endnote 같은 인라인 개체만 한 글자 폭으로 센다.
+///
+/// 알고리즘 본체는 [`Paragraph::logical_control_positions`] 로 이동했으며, 본 함수는
+/// 기존 호출 경로를 유지하기 위한 thin wrapper 다.
 pub(crate) fn find_logical_control_positions(para: &Paragraph) -> Vec<usize> {
-    if para.text.is_empty() && para.char_offsets.is_empty() {
-        let mut inline_seen = 0usize;
-        let mut positions = Vec::with_capacity(para.controls.len());
-
-        for ctrl in &para.controls {
-            positions.push(inline_seen);
-            if is_logical_inline_control(ctrl) {
-                inline_seen += 1;
-            }
-        }
-
-        return positions;
-    }
-
-    let text_positions = find_control_text_positions(para);
-    let text_len = para.text.chars().count();
-    let mut inline_seen = 0usize;
-    let mut positions = Vec::with_capacity(para.controls.len());
-
-    for (ci, ctrl) in para.controls.iter().enumerate() {
-        let text_pos = text_positions.get(ci).copied().unwrap_or(text_len);
-        positions.push(text_pos + inline_seen);
-        if is_logical_inline_control(ctrl) {
-            inline_seen += 1;
-        }
-    }
-
-    positions
+    para.logical_control_positions()
 }
 
 /// ShapeObject에서 TextBox를 추출하는 헬퍼

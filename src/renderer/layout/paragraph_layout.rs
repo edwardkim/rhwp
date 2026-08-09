@@ -1165,7 +1165,7 @@ fn needs_word_distribution(
 fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec<(usize, String)> {
     if show_ctrl {
         if let Some(ref pa) = para {
-            let ctrl_positions = crate::document_core::helpers::find_logical_control_positions(pa);
+            let ctrl_positions = pa.logical_control_positions();
             pa.controls
                 .iter()
                 .enumerate()
@@ -1214,7 +1214,7 @@ fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec
 impl LayoutEngine {
     pub(crate) fn layout_inline_table_paragraph(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         col_node: &mut RenderNode,
         para: &Paragraph,
         composed: Option<&ComposedParagraph>,
@@ -1964,7 +1964,7 @@ impl LayoutEngine {
     /// 문단 전체를 레이아웃하여 단 노드에 추가
     pub(crate) fn layout_paragraph(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         col_node: &mut RenderNode,
         para: &Paragraph,
         composed: Option<&ComposedParagraph>,
@@ -2001,7 +2001,7 @@ impl LayoutEngine {
     /// 문단 일부를 레이아웃하여 단 노드에 추가
     pub(crate) fn layout_partial_paragraph(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         col_node: &mut RenderNode,
         para: &Paragraph,
         composed: Option<&ComposedParagraph>,
@@ -2111,7 +2111,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn place_unmatched_line_tac_pictures(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         line_node: &mut RenderNode,
         comp_line: &ComposedLine,
         para: Option<&Paragraph>,
@@ -2192,7 +2192,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn place_empty_line_tac_forms(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         line_node: &mut RenderNode,
         comp_line: &ComposedLine,
         para: Option<&Paragraph>,
@@ -2253,7 +2253,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn place_empty_line_inline_equations(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         line_node: &mut RenderNode,
         comp_line: &ComposedLine,
         composed: &ComposedParagraph,
@@ -2530,7 +2530,7 @@ impl LayoutEngine {
 
     pub(crate) fn layout_composed_paragraph(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         col_node: &mut RenderNode,
         composed: &ComposedParagraph,
         styles: &ResolvedStyleSet,
@@ -4319,7 +4319,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn emit_line_runs(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         line_node: &mut RenderNode,
         col_node: &mut RenderNode,
         comp_line: &crate::renderer::composer::ComposedLine,
@@ -5485,7 +5485,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_click_here_and_bookmark_markers(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         line_node: &mut RenderNode,
         p: &Paragraph,
         comp_line: &crate::renderer::composer::ComposedLine,
@@ -5739,7 +5739,7 @@ impl LayoutEngine {
 
         // 책갈피 조판부호 마커
         if ctrl_codes {
-            let ctrl_positions = crate::document_core::helpers::find_logical_control_positions(p);
+            let ctrl_positions = p.logical_control_positions();
             for (ci, ctrl) in p.controls.iter().enumerate() {
                 if let Control::Bookmark(_bm) = ctrl {
                     let char_pos = ctrl_positions.get(ci).copied().unwrap_or(0);
@@ -6133,7 +6133,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_empty_runs_line(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         line_node: &mut RenderNode,
         comp_line: &crate::renderer::composer::ComposedLine,
         composed: &ComposedParagraph,
@@ -6308,7 +6308,7 @@ impl LayoutEngine {
     /// 원본 문단 데이터로 레이아웃 (ComposedParagraph 없는 경우 fallback)
     pub(crate) fn layout_raw_paragraph(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         col_node: &mut RenderNode,
         para: &Paragraph,
         col_area: &LayoutRect,
@@ -6622,7 +6622,7 @@ pub(crate) fn calc_sibling_topandbottom_reserved_hu(
 /// `layout_picture_full` 가 본문/머리말/꼬리말 path 의 진입점 helper 인 것과 짝.
 #[allow(clippy::too_many_arguments)]
 fn make_picture_image_node(
-    tree: &mut PageRenderTree,
+    tree: &mut LayoutFrame,
     pic: &crate::model::image::Picture,
     section_index: usize,
     para_index: usize,

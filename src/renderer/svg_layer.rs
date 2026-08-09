@@ -35,7 +35,7 @@ impl SvgLayerRenderer {
         &self.renderer
     }
 
-    fn build_render_tree(&mut self, tree: &PageLayerTree) -> PageRenderTree {
+    fn render_tree_from_layer_tree(&mut self, tree: &PageLayerTree) -> PageRenderTree {
         let mut render_tree = PageRenderTree::new(0, tree.page_width, tree.page_height);
         render_tree.root.bbox = tree.root.bounds;
         render_tree.root.children = self.expand_children(&tree.root);
@@ -243,7 +243,7 @@ impl LayerRenderer for SvgLayerRenderer {
         self.renderer.debug_overlay = tree.output_options.debug_overlay;
         self.renderer.show_missing_picture_placeholder = tree.profile.shows_editor_visuals();
         self.renderer.show_editor_only_nodes = tree.profile.shows_editor_visuals();
-        let render_tree = self.build_render_tree(tree);
+        let render_tree = self.render_tree_from_layer_tree(tree);
         self.renderer.render_tree(&render_tree);
         Ok(())
     }

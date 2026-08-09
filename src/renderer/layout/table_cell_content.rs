@@ -29,7 +29,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_vertical_cell_text(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         cell_node: &mut RenderNode,
         composed_paras: &[ComposedParagraph],
         paragraphs: &[Paragraph],
@@ -319,7 +319,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_cell_shape(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         cell_node: &mut RenderNode,
         shape: &crate::model::shape::ShapeObject,
         inner_area: &LayoutRect,
@@ -416,7 +416,7 @@ impl LayoutEngine {
     /// enclosing_ctx: (section_index, body_para_index, 상위 경로, 표의 컨트롤 인덱스)
     pub(crate) fn layout_embedded_table(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         parent: &mut RenderNode,
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,

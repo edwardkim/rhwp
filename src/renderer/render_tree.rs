@@ -1318,64 +1318,48 @@ pub struct EquationNode {
 /// 튜플 목록. 섹션 단위(셀 외부)는 빈 Vec.
 pub type InlineShapeKey = (usize, usize, usize, Vec<(usize, usize, usize)>);
 
-/// 한 페이지의 렌더 트리
-#[derive(Debug, Clone, Serialize)]
-pub struct PageRenderTree {
-    /// 루트 노드
-    pub root: RenderNode,
+/// 레이아웃 재귀가 들고 다니는 흐름 상태 (paint 출력 아님).
+///
+/// [#4277] 레이아웃 재귀는 `PageRenderTree` 를 **출력**으로 쓰지 않는다 — 노드는 호출자가
+/// 넘긴 `col_node` 에 붙고, 트리에서 실제로 쓰이던 건 id 카운터와 인라인 Shape 좌표
+/// 레지스트리(둘 다 `#[serde(skip)]`, 즉 직렬화되는 산출물이 아님)뿐이었다. 그 둘을 여기로
+/// 분리해, 높이만 필요한 측정 호출부가 paint 트리를 만들지 않고도 재귀에 진입할 수 있게 한다.
+#[derive(Debug, Clone)]
+pub struct LayoutFrame {
     /// 다음 노드 ID 카운터
-    #[serde(skip)]
     next_id: NodeId,
     /// 인라인 Shape 좌표 맵: (section, para, control, cell_path) → (x, y)
-    #[serde(skip)]
     inline_shape_positions: std::collections::HashMap<InlineShapeKey, (f64, f64)>,
+    /// 페이지 인덱스. 재귀가 페인트 root 의 `PageNode` 에서 읽던 값 (#4277).
+    page_index: u32,
+    /// 페이지 bbox. 재귀가 페인트 root 의 bbox 에서 읽던 값 — 레이아웃 도중 불변이다.
+    page_bbox: BoundingBox,
 }
 
-/// `clip_overlapping_same_bin_images` 전용 대략적 replay plane 분류.
-///
-/// `src/paint/replay_order.rs` (`paint_op_replay_plane_with_layer`,
-/// `cap_master_page_plane`) 가 실제 페인트 backend 에서 적용하는 재생 순서는
-/// Background → BehindText → Flow → InFrontOfText 로, **트리 순서와 무관하게
-/// plane 별로 별도 재생**된다. 즉 트리 순서상 `BehindText` 개체가 `Flow`
-/// 개체보다 뒤에 있어도 실제로는 `BehindText` 가 먼저(더 아래에) 그려진다.
-/// clip 함수는 "트리 순서 = z 순서(먼저 그려짐 = 아래)"를 가정하므로, plane
-/// 이 다른 페어는 이 가정이 성립하지 않아 clip 방향을 잘못 판단할 수 있다
-/// (아래에 깔릴 그림이 아니라 위에 그려질 그림이 잘리는 역방향 clip).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum ClipReplayPlane {
-    BehindText,
-    Flow,
-    InFrontOfText,
-}
-
-impl ClipReplayPlane {
-    fn from_text_wrap(wrap: Option<TextWrap>) -> Self {
-        match wrap {
-            Some(TextWrap::BehindText) => Self::BehindText,
-            Some(TextWrap::InFrontOfText) => Self::InFrontOfText,
-            _ => Self::Flow,
-        }
-    }
-}
-
-impl PageRenderTree {
-    /// 새 페이지 렌더 트리 생성
+impl LayoutFrame {
+    /// 새 흐름 상태. id 는 root(0) 다음부터 발급한다.
     pub fn new(page_index: u32, width: f64, height: f64) -> Self {
-        let root = RenderNode::new(
-            0,
-            RenderNodeType::Page(PageNode {
-                page_index,
-                width,
-                height,
-                section_index: 0,
-            }),
-            BoundingBox::new(0.0, 0.0, width, height),
-        );
         Self {
-            root,
             next_id: 1,
             inline_shape_positions: std::collections::HashMap::new(),
+            page_index,
+            page_bbox: BoundingBox::new(0.0, 0.0, width, height),
         }
+    }
+
+    /// 페이지 인덱스
+    pub fn page_index(&self) -> u32 {
+        self.page_index
+    }
+
+    /// 페이지 bbox (실제 clip 기준)
+    pub fn page_bbox(&self) -> BoundingBox {
+        self.page_bbox
+    }
+
+    /// 페이지 폭/높이
+    pub fn page_size(&self) -> (f64, f64) {
+        (self.page_bbox.width, self.page_bbox.height)
     }
 
     /// `CellContext` 를 InlineShapeKey 의 cell_path 부분으로 변환.
@@ -1439,6 +1423,109 @@ impl PageRenderTree {
         let id = self.next_id;
         self.next_id += 1;
         id
+    }
+}
+
+/// 한 페이지의 렌더 트리
+#[derive(Debug, Clone, Serialize)]
+pub struct PageRenderTree {
+    /// 루트 노드
+    pub root: RenderNode,
+    /// 레이아웃 흐름 상태 (id 카운터 + 인라인 Shape 레지스트리). 직렬화 대상 아님.
+    #[serde(skip)]
+    pub(crate) frame: LayoutFrame,
+}
+
+/// `clip_overlapping_same_bin_images` 전용 대략적 replay plane 분류.
+///
+/// `src/paint/replay_order.rs` (`paint_op_replay_plane_with_layer`,
+/// `cap_master_page_plane`) 가 실제 페인트 backend 에서 적용하는 재생 순서는
+/// Background → BehindText → Flow → InFrontOfText 로, **트리 순서와 무관하게
+/// plane 별로 별도 재생**된다. 즉 트리 순서상 `BehindText` 개체가 `Flow`
+/// 개체보다 뒤에 있어도 실제로는 `BehindText` 가 먼저(더 아래에) 그려진다.
+/// clip 함수는 "트리 순서 = z 순서(먼저 그려짐 = 아래)"를 가정하므로, plane
+/// 이 다른 페어는 이 가정이 성립하지 않아 clip 방향을 잘못 판단할 수 있다
+/// (아래에 깔릴 그림이 아니라 위에 그려질 그림이 잘리는 역방향 clip).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ClipReplayPlane {
+    BehindText,
+    Flow,
+    InFrontOfText,
+}
+
+impl ClipReplayPlane {
+    fn from_text_wrap(wrap: Option<TextWrap>) -> Self {
+        match wrap {
+            Some(TextWrap::BehindText) => Self::BehindText,
+            Some(TextWrap::InFrontOfText) => Self::InFrontOfText,
+            _ => Self::Flow,
+        }
+    }
+}
+
+impl PageRenderTree {
+    /// 새 페이지 렌더 트리 생성
+    pub fn new(page_index: u32, width: f64, height: f64) -> Self {
+        let root = RenderNode::new(
+            0,
+            RenderNodeType::Page(PageNode {
+                page_index,
+                width,
+                height,
+                section_index: 0,
+            }),
+            BoundingBox::new(0.0, 0.0, width, height),
+        );
+        Self {
+            root,
+            frame: LayoutFrame::new(page_index, width, height),
+        }
+    }
+
+    /// 레이아웃 흐름 상태 가변 참조 — 재귀 진입 시 `&mut tree.frame` 으로 넘긴다.
+    pub(crate) fn frame_mut(&mut self) -> &mut LayoutFrame {
+        &mut self.frame
+    }
+
+    /// 인라인 Shape 좌표 등록 (셀 컨텍스트 포함).
+    /// [Task #1151 v4] 셀 안인 경우 InlineShapeKey 의 para 는 호출자가 전달한
+    /// cell paragraph idx 가 아닌 **outer paragraph idx** (`cell_ctx.parent_para_index`)
+    /// 로 정규화한다. cursor_rect 의 hit-test 가 `section.paragraphs.get(pi)` 로
+    /// outer paragraph 에서 table → cell → cell paragraph 경로로 resolve 하기 위해
+    /// 정합 필요.
+    pub fn set_inline_shape_position(
+        &mut self,
+        sec: usize,
+        para: usize,
+        ctrl: usize,
+        cell_ctx: Option<&crate::renderer::layout::CellContext>,
+        x: f64,
+        y: f64,
+    ) {
+        self.frame
+            .set_inline_shape_position(sec, para, ctrl, cell_ctx, x, y);
+    }
+
+    /// 인라인 Shape 좌표 조회 (셀 컨텍스트 포함). `LayoutFrame` 위임.
+    pub fn get_inline_shape_position(
+        &self,
+        sec: usize,
+        para: usize,
+        ctrl: usize,
+        cell_ctx: Option<&crate::renderer::layout::CellContext>,
+    ) -> Option<(f64, f64)> {
+        self.frame
+            .get_inline_shape_position(sec, para, ctrl, cell_ctx)
+    }
+
+    /// 인라인 Shape 좌표 전체 참조 (hitTest용)
+    pub fn inline_shape_positions(&self) -> &std::collections::HashMap<InlineShapeKey, (f64, f64)> {
+        self.frame.inline_shape_positions()
+    }
+
+    /// 새 노드 ID 할당
+    pub fn next_id(&mut self) -> NodeId {
+        self.frame.next_id()
     }
 
     /// dirty 노드 존재 여부

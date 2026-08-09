@@ -387,7 +387,7 @@ const NESTED_FRAGMENT_FRAME_INSET_EPSILON_PX: f64 = 0.05;
 const NESTED_FRAGMENT_FRAME_TARGET_EPSILON_PX: f64 = 0.05;
 
 fn push_fragment_border_line(
-    tree: &mut PageRenderTree,
+    tree: &mut LayoutFrame,
     table_node: &mut RenderNode,
     x1: f64,
     y1: f64,
@@ -462,7 +462,7 @@ fn reconstructs_clipped_fragment_bottom(table_node: &RenderNode) -> bool {
 /// frame was emitted (issue2007 p11/p14).  Prefer moving that exact source
 /// line inward; add a line only when the source did not retain one.
 fn ensure_fragment_horizontal_frame_inside_clip(
-    tree: &mut PageRenderTree,
+    tree: &mut LayoutFrame,
     table_node: &mut RenderNode,
     table_left: f64,
     table_right: f64,
@@ -753,7 +753,7 @@ fn suppress_future_nested_table_border_residue(node: &mut RenderNode, clip_botto
 /// this helper intentionally accepts the ancestor clip rather than requiring
 /// the table itself to own it (42065 p10-p14).
 fn reconstruct_nested_table_fragment_frame(
-    tree: &mut PageRenderTree,
+    tree: &mut LayoutFrame,
     table_node: &mut RenderNode,
     clip_top: f64,
     clip_bottom: f64,
@@ -891,7 +891,7 @@ fn reconstruct_nested_table_fragment_frame(
 /// repair first, while this pass reaches the real bordered table below an
 /// unbordered RowBreak wrapper.
 fn reconstruct_nested_table_descendant_fragment_frames(
-    tree: &mut PageRenderTree,
+    tree: &mut LayoutFrame,
     node: &mut RenderNode,
     clip_top: f64,
     clip_bottom: f64,
@@ -923,7 +923,7 @@ fn reconstruct_nested_table_descendant_fragment_frames(
 /// with current-page content, and the small source-spacer translation is
 /// limited to the direct siblings following a suppressed residual tail.
 fn repair_clipped_nested_table_fragment_frame(
-    tree: &mut PageRenderTree,
+    tree: &mut LayoutFrame,
     node: &mut RenderNode,
     suppress_bottom_text_residue: bool,
     repair_unclipped_hwpx_top_residue: bool,
@@ -1155,7 +1155,7 @@ fn repair_clipped_nested_table_fragment_frame(
 /// only delegates to the direct-child-table helper above, so it cannot widen a
 /// continuation's vertical viewport or reveal a future-page text tail.
 pub(super) fn extend_completed_nested_table_border_clips(
-    tree: &mut PageRenderTree,
+    tree: &mut LayoutFrame,
     node: &mut RenderNode,
     suppress_bottom_text_residue: bool,
     repair_unclipped_hwpx_top_residue: bool,
@@ -1284,7 +1284,7 @@ fn has_independent_col_row_y(col_row_y: &[Vec<f64>], row_y: &[f64]) -> bool {
 }
 
 fn render_cell_box_borders(
-    tree: &mut PageRenderTree,
+    tree: &mut LayoutFrame,
     bs: &ResolvedBorderStyle,
     x: f64,
     y: f64,
@@ -2006,7 +2006,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_table(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         col_node: &mut RenderNode,
         table: &crate::model::table::Table,
         section_index: usize,
@@ -3770,7 +3770,7 @@ impl LayoutEngine {
     /// 셀 배경 렌더링 (fill_color + pattern + gradient)
     pub(crate) fn render_cell_background(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         cell_node: &mut RenderNode,
         border_style: Option<&crate::renderer::style_resolver::ResolvedBorderStyle>,
         cell_x: f64,
@@ -4083,7 +4083,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_horizontal_cell_paragraphs(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         table_node: &mut RenderNode,
         cell_node: &mut RenderNode,
         cell: &crate::model::table::Cell,
@@ -5629,7 +5629,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_table_cells(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut LayoutFrame,
         table_node: &mut RenderNode,
         table: &crate::model::table::Table,
         section_index: usize,
@@ -5978,8 +5978,9 @@ impl LayoutEngine {
             // viewport를 포함한 채 호출될 수 있다. 렌더 트리의 page bbox는 실제
             // SVG/Canvas clip이므로, 그 밖으로 나간 셀은 그 logical viewport 안에
             // 있더라도 Center/Bottom 기준으로 배치하면 안 된다.
-            let page_view_top = tree.root.bbox.y;
-            let page_view_bottom = tree.root.bbox.y + tree.root.bbox.height;
+            let page_bbox = tree.page_bbox();
+            let page_view_top = page_bbox.y;
+            let page_view_bottom = page_bbox.y + page_bbox.height;
             let cell_intersects_page_viewport =
                 cell_y < page_view_bottom - 0.5 && cell_y + cell_h > page_view_top + 0.5;
             let cell_clipped_by_page_viewport = depth > 0
