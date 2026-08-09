@@ -13,8 +13,12 @@ use std::process::{Command, Output};
 const SAMPLE: &str = "samples/basic/issue2007_nested_cell_pagination_42065.hwp";
 const ZERO64: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
+
 fn run(args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    Command::new(rhwp_bin())
         .args(args)
         .output()
         .expect("rhwp 실행")
@@ -122,7 +126,7 @@ fn two_link_chain_is_valid_and_tampered_parent_is_exposed() {
     );
     let b: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&cap_b).unwrap()).unwrap();
-    assert_eq!(b["parent"]["capsule"], cap_a.to_str().unwrap());
+    assert_eq!(b["parent"]["capsule"], "a.capsule.json");
     assert_eq!(b["parent"]["sha256"].as_str().map(str::len), Some(64));
 
     // 체인 유효 — parentOk(파일 무결)와 lineageOk(부모 산출=자식 입력)가 모두 참.
@@ -141,6 +145,28 @@ fn two_link_chain_is_valid_and_tampered_parent_is_exposed() {
     assert_eq!(code, Some(0), "{env}");
     assert_eq!(env["links"][0]["reproduced"], true);
     assert_eq!(env["links"][1]["reproduced"], true);
+
+    // 링크 해시를 지우면 검증을 생략하지 않고 머리 캡슐에서 즉시 실패한다.
+    let b_original = std::fs::read_to_string(&cap_b).unwrap();
+    let mut b_without_sha = b.clone();
+    b_without_sha["parent"]
+        .as_object_mut()
+        .unwrap()
+        .remove("sha256");
+    std::fs::write(
+        &cap_b,
+        serde_json::to_string_pretty(&b_without_sha).unwrap(),
+    )
+    .unwrap();
+    let (code, env) = lineage(&cap_b, false);
+    assert_eq!(code, Some(3), "누락 해시는 fail-closed: {env}");
+    assert_eq!(env["valid"], false);
+    assert_eq!(env["brokenAt"], cap_b.to_str().unwrap());
+    assert!(env["links"][0]["error"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("parent.sha256"));
+    std::fs::write(&cap_b, b_original).unwrap();
 
     // 부모 캡슐을 사후 변조 — 자식이 기록한 파일 해시가 폭로한다.
     let mut a: serde_json::Value =

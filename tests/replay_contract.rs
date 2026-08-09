@@ -12,8 +12,12 @@ use std::process::{Command, Output};
 const SAMPLE: &str = "samples/basic/issue2007_nested_cell_pagination_42065.hwp";
 const ZERO64: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
+
 fn run(args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    Command::new(rhwp_bin())
         .args(args)
         .output()
         .expect("rhwp 실행")
