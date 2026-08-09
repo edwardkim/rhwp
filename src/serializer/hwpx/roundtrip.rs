@@ -1846,6 +1846,47 @@ mod tests {
     }
 
     #[test]
+    fn issue4388_diff_documents_hyperlink_not_compared_as_control() {
+        // [#4388 후속] Hyperlink 도 Bookmark 와 동형으로 비교 제외해야 한다.
+        // is_hwpx_inline_slot 에 한때 등록했다가 되돌린 회귀 가드 — 등록하면
+        // `roundtrip::diff_documents`(포맷 비종속, `convert`(HWP5 대상) `--verify` 도
+        // 재사용)가 HWP5 직렬화기의 기존(이슈 범위 밖) Hyperlink ctrl_id=0 고정 손실을
+        // 새로 "검출"해, hwp3-sample16.hwp 를 쓰는
+        // `tests/issue_hwp3_bookmark_native.rs::bookmarks_survive_saving_to_hwp5` 처럼
+        // 하이퍼링크와 무관한 기존 테스트가 깨진다(실측 확인됨). Hyperlink 가
+        // 사라져도 diff 가 비어 있어야 한다 — HWPX 직렬화기 자체의 드롭 경고는
+        // `warn_if_unrepresentable_in_hwpx` 가 별도로 담당(section.rs).
+        use crate::model::control::{Control, Hyperlink};
+
+        let mut a = doc_with_control(Control::Hyperlink(Hyperlink {
+            url: "http://example.com".to_string(),
+            text: "example".to_string(),
+        }));
+        a.sections[0].paragraphs[0].controls.push(picture_control());
+        let b = doc_with_control(picture_control());
+        assert!(
+            diff_documents(&a, &b).is_empty(),
+            "Hyperlink 손실은 diff_documents 비교에서 제외되어야 함(is_hwpx_inline_slot 미등록)"
+        );
+    }
+
+    #[test]
+    fn issue4388_diff_documents_unknown_not_compared_as_control() {
+        // [#4388 후속] Unknown 도 동일 이유로 비교 제외.
+        use crate::model::control::{Control, UnknownControl};
+
+        let mut a = doc_with_control(Control::Unknown(UnknownControl {
+            ctrl_id: 0x1234_5678,
+        }));
+        a.sections[0].paragraphs[0].controls.push(picture_control());
+        let b = doc_with_control(picture_control());
+        assert!(
+            diff_documents(&a, &b).is_empty(),
+            "Unknown 손실은 diff_documents 비교에서 제외되어야 함(is_hwpx_inline_slot 미등록)"
+        );
+    }
+
+    #[test]
     fn diff_documents_same_cell_controls_is_empty() {
         let a = doc_with_control(table_control_with_cell_controls(vec![picture_control()]));
         let b = doc_with_control(table_control_with_cell_controls(vec![picture_control()]));

@@ -865,21 +865,27 @@ mod tests {
     fn issue4388_hyperlink_control_drop_is_not_silent() {
         // [#4388] `Control::Hyperlink` 는 HWP3 파서만 생성하는 legacy IR 이며 HWPX 는
         // 대응 표현이 없다(HWPX 는 하이퍼링크를 Field(HYPERLINK) 로 표현). 종전엔
-        // `render_control_slot` 의 catch-all `_ => {}` 로 떨어져 **경고도 없이** 사라졌고,
-        // `--verify` 재파싱 비교도 `is_hwpx_inline_slot` 에 등록돼 있지 않아 이 손실을
-        // 검출하지 못했다(이중 침묵). 수정 전: 두 번째 assert(ParagraphControls 검출)가
-        // RED(빈 diff — 손실을 놓침). 수정 후: 컨트롤은 여전히 드롭되지만(HWPX 로 안전
-        // 하게 변환할 방법이 없음) `is_hwpx_inline_slot` 등록으로 diff 가 손실을 검출한다.
+        // `render_control_slot` 의 catch-all `_ => {}` 로 떨어져 **경고도 없이** 사라졌다.
+        // 이 테스트는 "드롭 자체"만 확인한다 — 드롭이 실제로 조용하지 않은지(stderr
+        // 경고)는 이 코드베이스의 기존 관례상 단위 테스트로 캡처하지 않는다(Table/
+        // Picture/Field 직렬화 실패 eprintln! 도 동일). `warn_if_unrepresentable_in_hwpx`
+        // (section.rs)가 실제 경고를 담당한다.
+        //
+        // [#4388 후속] `--verify` 가 이 손실을 검출해야 한다는 조건은 **되돌렸다** —
+        // `is_hwpx_inline_slot` 에 Hyperlink 를 등록했더니 그 목록을 공유하는
+        // `roundtrip::diff_documents`(포맷 비종속, `convert`(HWP5 대상) `--verify` 도
+        // 재사용)가 HWP5 직렬화기의 기존(이슈 범위 밖) Hyperlink 손실까지 새로
+        // "검출"해 `tests/issue_hwp3_bookmark_native.rs::bookmarks_survive_saving_to_hwp5`
+        // 가 hwp3-sample16.hwp 에서 깨졌다(실측 재현). 그 회귀 가드는
+        // `roundtrip.rs::issue4388_diff_documents_hyperlink_not_compared_as_control` 로
+        // 옮겼다 — "diff 가 검출해야 함"이 아니라 "diff 가 검출하면 안 됨"으로 반전.
         use crate::model::control::{Control, Hyperlink};
         use crate::model::paragraph::CharShapeRef;
         use crate::model::style::CharShape;
-        use crate::serializer::hwpx::roundtrip::IrDifference;
 
         let mut doc = Document::default();
         // char_shapes[0] 을 등록해 char_shape_id=0 참조가 유효하도록 한다(그렇지
-        // 않으면 직렬화가 "미등록 ID 참조" 로 실패). 값도 명시해 빈 char_shapes 문단이
-        // reparse 시 (0,0) 을 합성하는 무관한 사전조건 diff(#1592 인접 관례)가 섞여
-        // 아래 diff 단언이 우연히 통과하지 않도록 한다.
+        // 않으면 직렬화가 "미등록 ID 참조" 로 실패).
         doc.doc_info.char_shapes.push(CharShape::default());
         let mut section = crate::model::document::Section::default();
         let mut para = crate::model::paragraph::Paragraph::default();
@@ -911,21 +917,13 @@ mod tests {
             doc2.sections[0].paragraphs[0].controls
         );
 
-        // 핵심 회귀 방지: --verify 가 쓰는 diff_documents 가 이 손실을 실제로
-        // `ParagraphControls` 차이로 검출해야 한다(단순 "diff 가 비어있지 않다" 는
-        // 무관한 다른 필드의 우연한 diff 로도 통과할 수 있어 불충분). is_hwpx_inline_slot
-        // 에 Hyperlink 를 등록하지 않으면 이 diff 자체가 비어(빈 Vec) 손실을 놓친다 —
-        // #4388 이 지적한 "조용한 손실"의 두 번째 축(직렬화 드롭 + 검증 사각지대).
-        let diff = crate::serializer::hwpx::roundtrip::diff_documents(&doc, &doc2);
-        let has_controls_diff = diff
-            .differences
-            .iter()
-            .any(|d| matches!(d, IrDifference::ParagraphControls { .. }));
+        // [#4388 후속] is_hwpx_inline_slot 미등록 회귀 가드 — 등록하면 mismatch-분기
+        // (render_runs) 가 이 컨트롤을 슬롯으로 취급해 위치 축이 바뀐다.
         assert!(
-            has_controls_diff,
-            "diff_documents(--verify 경로)가 Hyperlink 컨트롤 손실을 ParagraphControls 로 \
-             검출해야 함: {:?}",
-            diff.differences
+            !crate::serializer::hwpx::section::is_hwpx_inline_slot(&Control::Hyperlink(
+                Hyperlink::default()
+            )),
+            "Hyperlink 는 is_hwpx_inline_slot 에 등록되면 안 됨(#4388 후속 회귀 참조)"
         );
     }
 
@@ -936,13 +934,15 @@ mod tests {
         // 파서는 이 변형을 절대 만들지 않는다 — grep 확인), HWP5 PARA_TEXT 는 그 자리를
         // Table/Picture 와 같은 0x000B 확장 컨트롤 문자(8유닛)로 표시한다. HWPX 는 "인식
         // 못 한 컨트롤"을 표현할 수단이 없고 `UnknownControl` 은 ctrl_id 하나만 보존해
-        // 원본 바이트도 없다 — 변환 불가가 맞다. 다만 종전엔 catch-all 로 떨어져
-        // **경고 없이** 사라졌고 `--verify` 도 놓쳤다. Hyperlink 테스트와 동일하게 두
-        // 축(드롭 자체 + verify 검출)을 함께 확인한다.
+        // 원본 바이트도 없다 — 변환 불가가 맞다. 종전엔 catch-all 로 떨어져 **경고
+        // 없이** 사라졌다 — 이제 `warn_if_unrepresentable_in_hwpx` 가 경고한다(stderr
+        // 캡처는 Hyperlink 테스트와 동일한 이유로 이 테스트에서 확인하지 않는다).
+        //
+        // [#4388 후속] Hyperlink 와 동일하게 --verify 검출 요구는 되돌렸다 — 이유와
+        // 회귀 가드는 `roundtrip.rs::issue4388_diff_documents_unknown_not_compared_as_control`.
         use crate::model::control::{Control, UnknownControl};
         use crate::model::paragraph::CharShapeRef;
         use crate::model::style::CharShape;
-        use crate::serializer::hwpx::roundtrip::IrDifference;
 
         let mut doc = Document::default();
         doc.doc_info.char_shapes.push(CharShape::default());
@@ -977,16 +977,11 @@ mod tests {
             doc2.sections[0].paragraphs[0].controls
         );
 
-        let diff = crate::serializer::hwpx::roundtrip::diff_documents(&doc, &doc2);
-        let has_controls_diff = diff
-            .differences
-            .iter()
-            .any(|d| matches!(d, IrDifference::ParagraphControls { .. }));
         assert!(
-            has_controls_diff,
-            "diff_documents(--verify 경로)가 Unknown 컨트롤 손실을 ParagraphControls 로 \
-             검출해야 함: {:?}",
-            diff.differences
+            !crate::serializer::hwpx::section::is_hwpx_inline_slot(&Control::Unknown(
+                UnknownControl::default()
+            )),
+            "Unknown 은 is_hwpx_inline_slot 에 등록되면 안 됨(#4388 후속 회귀 참조)"
         );
     }
 

@@ -944,7 +944,16 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     hidden.push(i);
                     false
                 } else {
-                    is_hwpx_inline_slot(c)
+                    let slot = is_hwpx_inline_slot(c);
+                    // [#4388] Hyperlink/Unknown 은 슬롯이 아니라 여기서 조용히
+                    // 제외된다(Bookmark 와 같은 취급) — is_hwpx_inline_slot 에
+                    // 등록하지 않기로 한 대가로, 이 실제 배제 지점에서 직접
+                    // 경고한다. Bookmark/HiddenComment 등 다른 non-slot 컨트롤은
+                    // 이 헬퍼가 내부적으로 무시한다.
+                    if !slot {
+                        warn_if_unrepresentable_in_hwpx(c);
+                    }
+                    slot
                 };
                 if keep {
                     s.push(c);
@@ -1407,6 +1416,25 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
         .saturating_sub(para.orphan_field_ends.len() as u32) as usize
 }
 
+/// HWPX 인라인 슬롯(U+FFFC 오브젝트 위치)을 점유하는 컨트롤인지 판정한다.
+///
+/// 이 목록은 두 곳에서 쓰인다: `render_runs`(이 파일, mismatch-분기 위치 축)와
+/// `roundtrip::diff_documents`(포맷 비종속 IR 비교 — `export-hwpx` **뿐 아니라**
+/// `convert`(HWP5 대상) `--verify` 도 재사용한다).
+///
+/// **[#4388] `Control::Hyperlink`/`Control::Unknown` 은 의도적으로 여기 등록하지
+/// 않는다.** 둘 다 HWP3/HWP5 PARA_TEXT 상에서는 Picture/Table 과 동형인 U+FFFC
+/// 오브젝트 슬롯(위치 점유)이라 처음엔 등록했으나, 등록하면 HWP5 직렬화기가 이미
+/// (이슈 범위 밖으로) Hyperlink 의 ctrl_id 를 0 으로 고정해 버려 CTRL_HEADER 자체를
+/// 안 쓰는 기존 HWP5 경로 손실까지 `diff_documents` 가 새로 "검출"해,
+/// `bookmarks_survive_saving_to_hwp5`(tests/issue_hwp3_bookmark_native.rs) 같이
+/// 하이퍼링크와 무관한 기존 회귀 테스트가 hwp3-sample16.hwp 에서 깨졌다(#4388 후속
+/// 보고, 실측 재현: s0 문단 27/32/196/657 이 전부 Hyperlink). "조용히 버리지
+/// 말라"는 경고 축이지 비교 축이 아니다 — 경고는 `render_control_slot` catch-all과
+/// `render_runs` 의 mismatch-분기 제외 지점(`warn_if_unrepresentable_in_hwpx` 호출)
+/// 두 곳에서 낸다. 회귀 가드: `roundtrip.rs` 의
+/// `issue4388_diff_documents_hyperlink_not_compared_as_control`/
+/// `issue4388_diff_documents_unknown_not_compared_as_control`.
 pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
     matches!(
         control,
@@ -1426,17 +1454,6 @@ pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
             | Control::Header(_)
             | Control::Footer(_)
             | Control::AutoNumber(_)
-            // [#4388] HWP3 유래 Hyperlink 도 Picture/Table 과 동형인 U+FFFC 오브젝트
-            // 슬롯이다(HWP3 파서가 문단 텍스트에 마커 1개를 넣고 controls 에 대응
-            // 컨트롤을 push — src/parser/hwp3/mod.rs). 슬롯으로 등록해야 (a) 다른
-            // 컨트롤과 섞인 문단에서 위치 정합이 일관되고, (b) `--verify` 재파싱
-            // 비교(`diff_paragraph_char_shapes`, roundtrip.rs)가 render_control_slot 의
-            // catch-all 드롭을 검출한다.
-            | Control::Hyperlink(_)
-            // [#4388] HWP5/HWP3 유래 Unknown 도 PARA_TEXT 상에서 0x000B 확장 컨트롤
-            // 문자(Table/Picture 와 동일 char class)로 위치를 점유한다. 슬롯 등록
-            // 이유는 Hyperlink 와 동일 — 위치 정합 + `--verify` 손실 검출.
-            | Control::Unknown(_)
     )
 }
 
@@ -1573,19 +1590,49 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                 out.push_str(&render_col_pr_ctrl(cd));
             }
         }
-        // [#4388] `Control::Hyperlink` 는 현재 HWP3 파서만 생성하는 legacy IR
-        // 표현이다 (`src/parser/hwp3/mod.rs`) — HWP3 문서의 하이퍼링크는 Picture/
-        // Table 처럼 문단 텍스트에 U+FFFC 마커 1개를 점유하는 "오브젝트형" 슬롯이고,
-        // 표시 텍스트(`text`)는 para.text 가 아니라 컨트롤 자체에 별도 보존된다.
-        // 반면 HWPX 는 하이퍼링크를 `Control::Field(FieldType::Hyperlink)` 로 표현하며
-        // 이는 fieldBegin/fieldEnd 가 문단 텍스트의 실제 글자 범위를 감싸는 인라인
-        // 구조다 — 표시 텍스트가 파라그래프 문자 스트림 안에 있어야 한다는 뜻이라,
-        // 이 컨트롤을 그대로 Field 로 접었다간 문단을 재구성(문자 삽입 + char_shapes/
-        // line_segs 재계산)해야 해 안전하게 변환할 수 없다. 종전엔 catch-all
-        // `_ => {}` 로 떨어져 경고 없이 사라졌다(#4388) — 조용히 버리지 않도록 경고를
-        // 남기고 슬롯만 소비한다(문단 내 후속 컨트롤의 char-offset 정합은 유지, 표시
-        // 텍스트·URL 만 유실). `is_hwpx_inline_slot` 에도 등록해 `--verify` 재파싱
-        // 비교가 이 손실을 실제로 검출하게 한다.
+        // [#4388] Hyperlink/Unknown 은 HWPX 로 옮길 대응 표현이 없어 여기서도
+        // 드롭된다("exact" 슬롯 분기 — 모든 컨트롤이 위치 슬롯인 문단). 경고는
+        // `warn_if_unrepresentable_in_hwpx` 하나로 통일한다(mismatch-분기 제외
+        // 지점, 위쪽 934행 부근과 동일 호출). 이 함수 아래 catch-all 이 처리한다.
+        //
+        // [#4388 census] catch-all `_`(warn 호출 포함)에 실제로 도달하는 나머지
+        // `Control` 변형은 세 가지 — 새 변형을 추가할 때 이 목록을 갱신할 것:
+        //   - `Hyperlink`/`Unknown`: 위 참조. 조용히 버리지 않도록 경고.
+        //   - `SectionDef`: 의도적 무해 no-op. 위치 슬롯 축(hidden 슬롯 정합, 이 함수
+        //     966행 근처 주석)만 소비하고 XML 은 별도 경로(`<hp:secPr>` 섹션 템플릿)가
+        //     방출한다 — 여기서 다시 방출하면 중복이 된다. warn 헬퍼도 이 변형은
+        //     무시한다.
+        //   - `HiddenComment`: **구현 누락으로 확인됨(경고 미부착)**. HWPX 는
+        //     `<hp:hiddenComment>` 네이티브 표현이 있고 파서(`parse_ctrl_hidden_comment`)
+        //     는 이미 sub-paragraph 까지 온전히 읽지만 직렬화기엔 대응 방출 arm 이
+        //     없다. 다만 이 컨트롤은 PARA_TEXT 상 폭이 0(파서가 위치 마커를 push 하지
+        //     않음 — Bookmark 와 동형)이라 실제 문서에서는 `render_runs` 의
+        //     mismatch-분기 필터(위쪽, "제외된 hidden 슬롯 후보" 블록 부근)에서 먼저
+        //     걸러져 이 함수 자체에 거의 도달하지 않는다 — 진짜 수정은 Bookmark 의
+        //     `emit_inorder_bookmarks` 류 zero-width in-order 방출 인프라가 필요한
+        //     별도 작업(그 로직은 #1591/#1627/#1584 이력이 보여주듯 섬세하다) —
+        //     후속 이슈로 분리 권장.
+        c => warn_if_unrepresentable_in_hwpx(c),
+    }
+}
+
+/// [#4388] HWPX 로 옮길 대응 표현이 없어 드롭되는 컨트롤(Hyperlink/Unknown)을
+/// **조용히 버리지 않도록** 경고만 남긴다. 두 호출 지점(이 함수 위쪽
+/// `render_runs` 의 mismatch-분기 제외 시점, `render_control_slot` 의
+/// catch-all)에서 공유한다 — 한 문단의 한 컨트롤은 두 분기 중 하나로만
+/// 소비되므로 중복 경고는 없다.
+///
+/// **`is_hwpx_inline_slot` 에는 등록하지 않는다.** 그 목록은
+/// `roundtrip::diff_documents` 의 IR 비교(포맷 비종속 — `export-hwpx` 뿐 아니라
+/// `convert`(HWP5 대상) `--verify` 도 재사용)에도 쓰이는데, 등록해봤다면 HWP5
+/// 직렬화기가 이슈 범위 밖에서 이미 Hyperlink 의 ctrl_id 를 0 으로 고정해 버려
+/// CTRL_HEADER 자체를 쓰지 않는 기존 HWP5 손실까지 새로 "검출"되어
+/// `tests/issue_hwp3_bookmark_native.rs::bookmarks_survive_saving_to_hwp5`
+/// 처럼 하이퍼링크와 무관한 기존 회귀 테스트가 깨진다(#4388 후속 보고, 실측
+/// 재현: hwp3-sample16.hwp 문단 27/32/196/657 이 전부 Hyperlink). "조용히
+/// 버리지 말라"는 경고 축과 "IR 비교에 넣는다"는 검증 축은 별개다.
+fn warn_if_unrepresentable_in_hwpx(control: &Control) {
+    match control {
         Control::Hyperlink(hl) => {
             eprintln!(
                 "[hwpx] 경고: Hyperlink 컨트롤을 HWPX로 저장할 수 없어 드롭됩니다 \
@@ -1594,16 +1641,6 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                 hl.url, hl.text
             );
         }
-        // [#4388] `Control::Unknown` 은 HWP5/HWP3 바이너리 파서가 인식하지 못한
-        // ctrl_id(FourCC) 를 보존하는 fallback 이며 HWPX 파서는 절대 만들지 않는다
-        // (grep 확인). HWP5 는 PARA_TEXT 에 0x000B 확장 컨트롤 문자로 위치를 남기고
-        // (Table/Picture 와 같은 char class) CTRL_HEADER 만 최소 보존한다 — 즉 실제
-        // 문서에서도 위치를 점유하는 오브젝트형 슬롯이지만, HWPX 는 "인식 못 한
-        // 컨트롤"을 표현할 제네릭 요소가 없고 원본 바이트도 보존돼 있지 않아
-        // (`UnknownControl` 은 ctrl_id 하나뿐) 변환 자체가 불가능하다. 종전엔
-        // catch-all `_ => {}` 로 떨어져 경고 없이 사라졌다 — 조용히 버리지 않도록
-        // 경고를 남기고 슬롯만 소비한다. `is_hwpx_inline_slot` 에도 등록해
-        // `--verify` 가 이 손실을 검출하게 한다(Hyperlink 와 동형 처리).
         Control::Unknown(u) => {
             eprintln!(
                 "[hwpx] 경고: 인식할 수 없는 컨트롤(ctrl_id=0x{:08X})을 HWPX로 저장할 수 \
@@ -1612,22 +1649,6 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                 u.ctrl_id
             );
         }
-        // [#4388 census] 여기 도달하는 나머지 `Control` 변형은 두 가지뿐이며 둘 다
-        // 조사·분류를 거쳤다 — 새 변형을 추가할 때 이 목록을 갱신할 것:
-        //   - `SectionDef`: 의도적 무해 no-op. 위치 슬롯 축(hidden 슬롯 정합, 이 함수
-        //     966행 근처 주석)만 소비하고 XML 은 별도 경로(`<hp:secPr>` 섹션 템플릿)가
-        //     방출한다 — 여기서 다시 방출하면 중복이 된다.
-        //   - `HiddenComment`: **구현 누락으로 확인됨(경고 미부착)**. HWPX 는
-        //     `<hp:hiddenComment>` 네이티브 표현이 있고 파서(`parse_ctrl_hidden_comment`)
-        //     는 이미 sub-paragraph 까지 온전히 읽지만 직렬화기엔 대응 방출 arm 이
-        //     없다. 다만 이 컨트롤은 PARA_TEXT 상 폭이 0(파서가 위치 마커를 push 하지
-        //     않음 — Bookmark 와 동형)이라 실제 문서에서는 `render_runs` 의
-        //     mismatch-분기 `is_hwpx_inline_slot` 필터(위쪽, "제외된 hidden 슬롯 후보"
-        //     블록 부근)에서 먼저 걸러져 이 함수 자체에 거의 도달하지 않는다 — 여기
-        //     경고 arm 을 추가해도 사실상 죽은 코드라 붙이지 않았다. 진짜 수정은
-        //     Bookmark 의 `emit_inorder_bookmarks` 류 zero-width in-order 방출
-        //     인프라가 필요한 별도 작업(그 로직은 #1591/#1627/#1584 이력이 보여주듯
-        //     섬세하다) — 후속 이슈로 분리 권장.
         _ => {}
     }
 }
