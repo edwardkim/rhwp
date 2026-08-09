@@ -12,6 +12,7 @@ on:
   pull_request:
     paths:
       - 'Dockerfile.cli'
+      - '.dockerignore'
       - '.github/workflows/docker-publish.yml'
   workflow_dispatch:
     inputs:
@@ -63,10 +64,12 @@ jobs:
               echo "버전 불일치: tag=$VERSION Cargo.toml=$CARGO_VERSION" >&2
               exit 1
             fi
-            if [[ "$VERSION" == *-* ]]; then
-              PUBLISH_LATEST=false
-            else
+            # latest 는 새 stable tag push에서만 전진시킨다. 수동 재실행은 과거
+            # stable tag를 선택할 수 있으므로 version tag만 다시 게시한다.
+            if [[ "$EVENT_NAME" == "push" && "$VERSION" != *-* ]]; then
               PUBLISH_LATEST=true
+            else
+              PUBLISH_LATEST=false
             fi
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -96,5 +99,5 @@ jobs:
             docker tag rhwp-cli:local "$IMAGE:latest"
             docker push "$IMAGE:latest"
           else
-            echo "::notice title=latest 유지::prerelease 태그 $VERSION 은 latest 를 갱신하지 않습니다."
+            echo "::notice title=latest 유지::prerelease 또는 수동 재실행 $VERSION 은 latest 를 갱신하지 않습니다."
           fi

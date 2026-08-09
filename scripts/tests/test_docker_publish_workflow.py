@@ -24,8 +24,15 @@ class DockerPublishWorkflowTests(unittest.TestCase):
         self.assertIn('git rev-parse --verify "refs/tags/$TAG^{commit}"', self.workflow)
         self.assertIn('CARGO_VERSION="$(awk -F', self.workflow)
 
-    def test_prerelease_does_not_move_latest(self) -> None:
-        self.assertIn('if [[ "$VERSION" == *-* ]]', self.workflow)
+    def test_dockerignore_changes_run_the_image_build(self) -> None:
+        pull_request = self.workflow.split("  workflow_dispatch:", maxsplit=1)[0]
+        self.assertIn("      - '.dockerignore'", pull_request)
+
+    def test_only_a_stable_tag_push_moves_latest(self) -> None:
+        self.assertIn(
+            'if [[ "$EVENT_NAME" == "push" && "$VERSION" != *-* ]]',
+            self.workflow,
+        )
         self.assertIn("PUBLISH_LATEST: ${{ steps.ver.outputs.publish_latest }}", self.workflow)
         latest_tag = self.workflow.index('docker tag rhwp-cli:local "$IMAGE:latest"')
         latest_guard = self.workflow.index('if [[ "$PUBLISH_LATEST" == "true" ]]')
