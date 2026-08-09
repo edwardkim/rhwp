@@ -33,6 +33,8 @@ const PAGE_90: u32 = 89;
 const PAGE_91: u32 = 90;
 const PAGE_118: u32 = 117;
 const PAGE_119: u32 = 118;
+const PAGE_120: u32 = 119;
+const PAGE_121: u32 = 120;
 const PAGE_126: u32 = 125;
 const PAGE_127: u32 = 126;
 const PAGE_37: u32 = 36;
@@ -953,6 +955,73 @@ fn native_hwp5_current_marker_projects_the_p74_footnote_before_body_reset() {
             "p74 FootnoteArea가 note {number}를 소유해야 함: {p74_notes}"
         );
     }
+}
+
+#[test]
+fn native_hwp5_earlier_marker_projects_the_p120_footnote_before_body_reset() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse stage102 HWP evidence fixture");
+
+    assert_eq!(
+        doc.page_count(),
+        215,
+        "정책연구 기준 PDF와 215쪽을 유지해야 함"
+    );
+    let p120 = page_text(&doc, PAGE_120);
+    let p121 = page_text(&doc, PAGE_121);
+    assert!(
+        p120.contains("규정하고 있음.") && !p120.contains("A) 기증자가"),
+        "p120은 PDF처럼 para 1293 reset 앞에서 끝나야 함: {p120}"
+    );
+    assert!(
+        p121.contains("A) 기증자가 법적으로 가능한 연령이 되어야 하고"),
+        "p121은 PDF처럼 para 1293 reset 줄부터 시작해야 함: {p121}"
+    );
+
+    let p120_tree = doc
+        .build_page_render_tree(PAGE_120)
+        .expect("render physical page 120");
+    let p121_tree = doc
+        .build_page_render_tree(PAGE_121)
+        .expect("render physical page 121");
+    let mut p120_lines = Vec::new();
+    let mut p121_lines = Vec::new();
+    paragraph_line_indices(&p120_tree.root, 1293, &mut p120_lines);
+    paragraph_line_indices(&p121_tree.root, 1293, &mut p121_lines);
+    p120_lines.sort_unstable();
+    p120_lines.dedup();
+    p121_lines.sort_unstable();
+    p121_lines.dedup();
+    assert_eq!(p120_lines, vec![0, 1, 2, 3], "p120 para 1293 owner");
+    assert_eq!(
+        p121_lines,
+        (4..14).collect::<Vec<_>>(),
+        "p121 para 1293 owner"
+    );
+
+    let mut p120_notes = String::new();
+    let mut p121_notes = String::new();
+    footnote_text(&p120_tree.root, false, &mut p120_notes);
+    footnote_text(&p121_tree.root, false, &mut p121_notes);
+    assert!(
+        p120_notes.contains("158)"),
+        "p120이 marker 이전 각주 158을 소유해야 함: {p120_notes}"
+    );
+    assert!(
+        !p121_notes.contains("158)"),
+        "p121은 각주 158을 중복 소유하면 안 됨: {p121_notes}"
+    );
+
+    let mut p120_body_bottom = None;
+    let mut p120_separator_top = None;
+    paragraph_bottom(&p120_tree.root, 1293, &mut p120_body_bottom);
+    footnote_separator_top(&p120_tree.root, &mut p120_separator_top);
+    assert!(
+        p120_body_bottom.expect("p120 para 1293 body")
+            <= p120_separator_top.expect("p120 footnote separator") + 0.5,
+        "p120 para 1293은 projected FootnoteArea를 침범하면 안 됨"
+    );
 }
 
 #[test]

@@ -2186,9 +2186,10 @@ struct NativeHwp5FootnoteBreak {
 fn native_hwp5_first_footnote_overlap_break_line(
     st: &TypesetState,
     para: &Paragraph,
-    line_count: usize,
+    fmt: &FormattedParagraph,
     dpi: f64,
 ) -> Option<NativeHwp5FootnoteBreak> {
+    let line_count = fmt.line_heights.len();
     if !st.profile.native_hwp5_layout()
         || !st.is_first_footnote_on_page
         || st.current_footnote_height > 0.0
@@ -2234,6 +2235,13 @@ fn native_hwp5_first_footnote_overlap_break_line(
     }
 
     let footnote_top = st.layout.body_area.height - footnote_height;
+    let projected_reclaim = st.footer_band_reclaim_for_height(footnote_height);
+    let projected_available = (st.base_available_height()
+        - (footnote_height - projected_reclaim).max(0.0)
+        - st.footnote_safety_margin
+        - st.current_zone_y_offset
+        - st.current_bottom_fixed_exclusion)
+        .max(0.0);
     let page_vpos_base = st.vpos_page_base.or(st.vpos_lazy_base).unwrap_or(0);
     para.line_segs[..line_count]
         .windows(2)
@@ -2265,12 +2273,27 @@ fn native_hwp5_first_footnote_overlap_break_line(
                 && trailing_bottom > footnote_top + 0.5
                 && (prev.text_start as usize..next.text_start as usize)
                     .contains(&footnote_control_pos);
-            (trailing_spacing_only_overlap || first_line_footnote_fragment_overlap).then_some(
-                NativeHwp5FootnoteBreak {
+            // 첫 각주의 marker가 reset보다 앞선 prefix에 있고, renderer와 같은 flow
+            // advance에서 reset 직전 줄만 projected FootnoteArea+safety 안에 들어가면
+            // 저장 reset은 실제 physical page 경계다. marker를 reset 직전 한 줄로
+            // 제한하면 정책연구 p120처럼 marker(line 1)와 reset(line 4) 사이에 본문이
+            // 있는 정상 형상을 놓친다.
+            let marker_before_reset = footnote_control_pos < next.text_start as usize;
+            let flow_prev_top =
+                st.current_height + fmt.spacing_before + fmt.line_advances_sum(0..prev_idx);
+            let flow_prev_bottom = flow_prev_top + fmt.line_heights[prev_idx];
+            let flow_next_bottom =
+                flow_prev_top + fmt.line_advance(prev_idx) + fmt.line_heights[prev_idx + 1];
+            let projected_boundary_overlap = marker_before_reset
+                && flow_prev_bottom <= projected_available + 0.5
+                && flow_next_bottom > projected_available + 0.5;
+            (trailing_spacing_only_overlap
+                || first_line_footnote_fragment_overlap
+                || projected_boundary_overlap)
+                .then_some(NativeHwp5FootnoteBreak {
                     body_break_line: prev_idx + 1,
                     split_footnote: first_line_footnote_fragment_overlap,
-                },
-            )
+                })
         })
 }
 
@@ -6400,12 +6423,8 @@ impl TypesetEngine {
                     .unwrap_or(st.layout.body_area.width);
                 let formatted =
                     self.format_paragraph(para, composed.get(para_idx), styles, Some(col_w));
-                native_hwp5_footnote_break = native_hwp5_first_footnote_overlap_break_line(
-                    &st,
-                    para,
-                    formatted.line_heights.len(),
-                    self.dpi,
-                );
+                native_hwp5_footnote_break =
+                    native_hwp5_first_footnote_overlap_break_line(&st, para, &formatted, self.dpi);
                 let is_last_in_section = para_idx + 1 == paragraphs.len();
                 // [Task #1027 Stage D] fit 직전 vpos 스냅으로 누적 drift 제거 (렌더러 정합).
                 self.vpos_snap_current_height(
@@ -14510,13 +14529,8 @@ impl TypesetEngine {
             })?
         })
         .or_else(|| {
-            native_hwp5_first_footnote_overlap_break_line(
-                st,
-                para,
-                fmt.line_heights.len(),
-                self.dpi,
-            )
-            .map(|footnote_break| footnote_break.body_break_line)
+            native_hwp5_first_footnote_overlap_break_line(st, para, fmt, self.dpi)
+                .map(|footnote_break| footnote_break.body_break_line)
         })
         .or_else(|| {
             sample16_missing_lineseg_tail_break_line(
