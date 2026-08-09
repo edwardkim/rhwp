@@ -48,6 +48,7 @@ import {
   type SaveDocumentResult,
 } from '@/command/file-system-access';
 import { getFileSystemWindow } from '@/command/desktop-file-system';
+import { singleFlight } from '@/command/single-flight';
 import { PdfPrintDialog } from '@/ui/pdf-print-dialog';
 import { userSettings } from '@/core/user-settings';
 import { showToast } from '@/ui/toast';
@@ -57,8 +58,10 @@ import { openRecentEntry } from '@/recent/recent-open';
 /**
  * 파일 열기 대화상자(File System Access picker, 미지원 시 숨김 input 폴백)를 열어
  * 문서를 로드한다. `file:open` 커맨드와 "최근 문서" 메타-only 항목 재열기가 공유한다.
+ *
+ * 직접 부르지 말고 {@link openFileViaPicker}(동시 진행 가드가 걸린 래퍼)를 쓴다.
  */
-async function openFileViaPicker(services: CommandServices): Promise<void> {
+async function openFileViaPickerOnce(services: CommandServices): Promise<void> {
   try {
     const canReplace = await confirmSaveBeforeReplacingDocument(services);
     if (!canReplace) return;
@@ -91,6 +94,20 @@ async function openFileViaPicker(services: CommandServices): Promise<void> {
     alert(`파일 열기에 실패했습니다:\n${msg}`);
   }
 }
+
+/**
+ * 열기 요청은 한 번에 하나만 진행한다.
+ *
+ * 웹(File System Access) 경로에는 창 단위 "picker active" 플래그가 있어, 앞선 picker가
+ * 어떤 이유로든 정리되지 않은 채 남아 있으면 다음 요청이
+ * `NotAllowedError: File picker already active.` 로 거부된다. 이때 화면에는 대화상자가
+ * 보이지 않는 상태로 오류 알림만 떠서 사용자에게는 원인 없는 실패로 보인다. 앱에서
+ * 중복 요청을 걸러 이 알림이 뜨지 않게 한다 — 건너뛴 요청은 조용히 무시된다.
+ *
+ * 데스크톱(Tauri 네이티브 다이얼로그) 경로에는 이 플래그 제약이 없지만, 열기 대화상자를
+ * 두 개 겹쳐 띄우지 않는 편이 동작이 일관되므로 같은 가드를 적용한다.
+ */
+const openFileViaPicker = singleFlight(openFileViaPickerOnce);
 
 /** 최근 문서 핸들의 읽기 권한을 확인/요청한다. 최종 'granted' 여부 반환. */
 async function ensureReadPermission(handle: FileSystemFileHandleLike): Promise<boolean> {
