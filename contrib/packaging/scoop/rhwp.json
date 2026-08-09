@@ -1,0 +1,19 @@
+{
+    "version": "0.8.2",
+    "description": "HWP/HWPX document engine — parse, edit, render, convert (CLI + MCP server)",
+    "homepage": "https://github.com/edwardkim/rhwp",
+    "license": "MIT",
+    "url": "https://github.com/edwardkim/rhwp/releases/download/v0.8.2/rhwp-v0.8.2-windows-x86_64.zip",
+    "hash": "d99b952ce2322d59530b86453a7314ebe18e86bdea165d2b75ef0b2af39ec6de",
+    "extract_dir": "rhwp",
+    "bin": "rhwp.exe",
+    "checkver": {
+        "github": "https://github.com/edwardkim/rhwp"
+    },
+    "autoupdate": {
+        "url": "https://github.com/edwardkim/rhwp/releases/download/v$version/rhwp-v$version-windows-x86_64.zip",
+        "hash": {
+            "url": "https://github.com/edwardkim/rhwp/releases/download/v$version/SHA256SUMS.txt"
+        }
+    }
+}

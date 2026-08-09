@@ -1,0 +1,8 @@
+# [#4338 R38] winget 버전 매니페스트 — microsoft/winget-pkgs 제출 원본.
+# 제출 시 저장소 경로는 manifests/e/Edwardkim/rhwp/0.8.2/ 형태가 된다.
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
+PackageIdentifier: Edwardkim.rhwp
+PackageVersion: 0.8.2
+DefaultLocale: ko-KR
+ManifestType: version
+ManifestVersion: 1.6.0
