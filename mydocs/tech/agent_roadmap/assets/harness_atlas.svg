@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" font-family="'Segoe UI','Malgun Gothic',sans-serif">
+  <!-- [#4383] rhwp 에이전트 하네스 전도 — 손제작 결정론 SVG (외부 자산 0) -->
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="960" height="620" fill="#0f172a"/>
+  <text x="480" y="44" text-anchor="middle" fill="#f8fafc" font-size="26" font-weight="700">rhwp 에이전트 하네스 전도</text>
+  <text x="480" y="68" text-anchor="middle" fill="#94a3b8" font-size="13">문서가 들어와 계약으로 나간다 — 전 층이 머지된 실물 (R1~R100) + 공개 실험 (R100) + 지평 (R101~R200)</text>
+
+  <!-- 입력 -->
+  <rect x="30" y="100" width="150" height="64" rx="10" fill="#1e293b" stroke="#475569"/>
+  <text x="105" y="127" text-anchor="middle" fill="#e2e8f0" font-size="14" font-weight="600">HWP · HWPX</text>
+  <text x="105" y="146" text-anchor="middle" fill="#94a3b8" font-size="11">HWP3 · HML — 공통 IR</text>
+
+  <!-- L1 봉투 -->
+  <rect x="220" y="88" width="215" height="88" rx="10" fill="#172554" stroke="#3b82f6"/>
+  <text x="327" y="112" text-anchor="middle" fill="#93c5fd" font-size="12" font-weight="700">L1 봉투 무결</text>
+  <text x="327" y="131" text-anchor="middle" fill="#e2e8f0" font-size="12">--json 계약 · 종료코드 사전</text>
+  <text x="327" y="148" text-anchor="middle" fill="#e2e8f0" font-size="12">출처 표지 S1 · recordFields 전수</text>
+  <text x="327" y="166" text-anchor="middle" fill="#64748b" font-size="10">R1–R7 머지 · schemaRegistry #4330</text>
+
+  <!-- L2 가드 -->
+  <rect x="475" y="88" width="215" height="88" rx="10" fill="#3f1d2e" stroke="#f43f5e"/>
+  <text x="582" y="112" text-anchor="middle" fill="#fda4af" font-size="12" font-weight="700">L2 가드 · 신뢰</text>
+  <text x="582" y="131" text-anchor="middle" fill="#e2e8f0" font-size="12">보안 계약 S1–S10 · 악성 코퍼스</text>
+  <text x="582" y="148" text-anchor="middle" fill="#e2e8f0" font-size="12">CAS preconditions · --expect-sha256</text>
+  <text x="582" y="166" text-anchor="middle" fill="#64748b" font-size="10">R11–R14 머지 · CAS #4381</text>
+
+  <!-- 세션/워크스페이스 -->
+  <rect x="730" y="88" width="200" height="88" rx="10" fill="#122b22" stroke="#10b981"/>
+  <text x="830" y="112" text-anchor="middle" fill="#6ee7b7" font-size="12" font-weight="700">런타임</text>
+  <text x="830" y="131" text-anchor="middle" fill="#e2e8f0" font-size="12">세션 hwp_doc_* · workspace</text>
+  <text x="830" y="148" text-anchor="middle" fill="#e2e8f0" font-size="12">안정 ID 트리 · 변이 SHA-256 저널</text>
+  <text x="830" y="166" text-anchor="middle" fill="#64748b" font-size="10">R41·R71 머지 · W1 #4361</text>
+
+  <line x1="180" y1="132" x2="216" y2="132" stroke="#64748b" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="435" y1="132" x2="471" y2="132" stroke="#64748b" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="690" y1="132" x2="726" y2="132" stroke="#64748b" stroke-width="2" marker-end="url(#ar)"/>
+
+  <!-- 실행 3층 -->
+  <rect x="220" y="212" width="710" height="70" rx="10" fill="#1e293b" stroke="#475569"/>
+  <text x="240" y="238" fill="#e2e8f0" font-size="13" font-weight="700">실행 3층</text>
+  <text x="240" y="260" fill="#94a3b8" font-size="12">① 무상태 CLI (60+ 명령, batch 병렬)   ② 세션 (재파싱 없는 반복 ×120.6)   ③ run 계획서 (선검증 → CAS → 원자 저장 → 저널 → verify)</text>
+  <line x1="575" y1="176" x2="575" y2="208" stroke="#64748b" stroke-width="2" marker-end="url(#ar)"/>
+
+  <!-- L3 발견/채널 -->
+  <rect x="30" y="318" width="900" height="96" rx="10" fill="#251f38" stroke="#8b5cf6"/>
+  <text x="50" y="344" fill="#c4b5fd" font-size="13" font-weight="700">L3 발견 · 유입 (전 채널 개통/큐)</text>
+  <text x="50" y="368" fill="#e2e8f0" font-size="12">capabilities 자기서술 · explain · 레시피 01–10 · llms.txt  |  MCP: mcp-serve · npx rhwp-mcp · server.json  |  pip 휠 · scoop · brew · winget · MSI · deb · rpm · binstall · AUR</text>
+  <text x="50" y="390" fill="#e2e8f0" font-size="12">docker run ghcr.io/…/rhwp  ·  GitHub Action 한 스텝  ·  install.sh / install.ps1  ·  LangChain · LlamaIndex 쪽 단위 로더</text>
+  <text x="50" y="408" fill="#64748b" font-size="10">R31–R40 · #4332 #4337 #4339 #4345 #4350 #4372 #4373 #4376 #4342</text>
+  <line x1="480" y1="282" x2="480" y2="314" stroke="#64748b" stroke-width="2" marker-end="url(#ar)"/>
+
+  <!-- L4 + 실험 -->
+  <rect x="30" y="450" width="440" height="90" rx="10" fill="#1c2f16" stroke="#84cc16"/>
+  <text x="50" y="476" fill="#bef264" font-size="13" font-weight="700">L4 표준 · 자가 진화</text>
+  <text x="50" y="498" fill="#e2e8f0" font-size="12">planSchema · irSchema · capabilities 1.3 · schemaRegistry</text>
+  <text x="50" y="518" fill="#e2e8f0" font-size="12">버전 정책 canonical · 소비자 대사 채널 (U2)</text>
+  <text x="50" y="534" fill="#64748b" font-size="10">R81–R84 머지 · #4330 · version_policy.md</text>
+
+  <rect x="490" y="450" width="440" height="90" rx="10" fill="#33230f" stroke="#f59e0b"/>
+  <text x="510" y="476" fill="#fcd34d" font-size="13" font-weight="700">판정과 지평</text>
+  <text x="510" y="498" fill="#e2e8f0" font-size="12">R100 공개 실험 — 무안내 30분 · 과제 T1–T5 · 측정 대장 (#4355)</text>
+  <text x="510" y="518" fill="#e2e8f0" font-size="12">R101–R200 지평 — 의미론 · 증명 · 경제 · 보편 엔진 · 문명 보존</text>
+  <text x="510" y="534" fill="#64748b" font-size="10">#4356 · horizon_r101_r200.md · 전도 #4368</text>
+
+  <line x1="250" y1="414" x2="250" y2="446" stroke="#64748b" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="710" y1="414" x2="710" y2="446" stroke="#64748b" stroke-width="2" marker-end="url(#ar)"/>
+
+  <text x="480" y="586" text-anchor="middle" fill="#64748b" font-size="11">결정론이 원칙이다 — 자기서술·검색·explain 에 모델이 끼지 않고, 모든 변이는 해시로 자기검증한다</text>
+  <text x="480" y="604" text-anchor="middle" fill="#475569" font-size="10">rhwp agent-native harness · 2026-08 · mydocs/tech/agent_roadmap</text>
+</svg>
