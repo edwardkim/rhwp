@@ -34,7 +34,9 @@ renderer, fixture, baseline은 바꾸지 않아 visual sweep 대상은 아니다
 계보 검사가 누락되거나 형식이 잘못된 receipt·parent 해시를 빈 값으로 받아 검증을 건너뛸 수
 있었다. 자식 캡슐과 같은 폴더의 부모 경로를 원 문자열로 저장한 뒤 다시 자식 폴더에 결합해
 상대 경로가 중복될 수 있었고, 적층된 replay·audit에는 해시한 입력과 엔진이 실제로 읽는 입력이
-달라질 수 있는 TOCTOU 및 nextest binary 경로 문제가 남아 있었다.
+달라질 수 있는 TOCTOU 및 nextest binary 경로 문제가 남아 있었다. 독립 재검토에서는 bare
+capsule 경로의 빈 parent 디렉터리, `parent` 필드 누락의 합법 root 오인, plan·step 영수증을
+대조하지 않는 audit/deep lineage, 전역 임시 폴더의 민감 입력 노출 위험도 확인했다.
 
 메인터너 코드 커밋 `7584408f`는 다음을 보정했다.
 
@@ -44,16 +46,30 @@ renderer, fixture, baseline은 바꾸지 않아 visual sweep 대상은 아니다
 - parent 해시 누락, 상대 부모 경로, audit 입력 receipt 변조, 해시 뒤 원본 교체 회귀를 추가한다.
 - replay·audit·lineage CLI 테스트는 nextest 런타임 binary 경로를 우선한다.
 
+후속 코드 커밋 `37d866ed`는 다음을 추가 보정했다.
+
+- bare capsule 파일명은 현재 디렉터리를 기준으로 부모 경로를 정규화하고 `parent` 필드 누락은 실패한다.
+- 원 plan text를 캡슐에 보존해 `planSha256`, parsed plan, 실제 step 수를 audit와 lineage가 대조한다.
+- replay 입력·산출은 Unix mode 0700 전용 scratch 폴더와 0600 입력 파일에 두고 RAII로 정리한다.
+- 누락 plan/parent, plan·step 변조, bare 경로, scratch 정리 회귀를 추가한다.
+
+두 번째 후속 코드 커밋 `2d593563`은 shallow lineage도 plan step 수와 receipt를 즉시
+대조하고, audit 폴더 항목 열거 오류를 조용히 제외하지 않고 fail-closed 처리한다. 비 UTF-8
+prefix의 capsule 이름도 lossy 표시 이름으로 감사 분모와 실패 보고에서 보존한다.
+
 contributor history는 rewrite하지 않았고 보정은 원 head의 single-parent 후속 커밋이다.
 
 ## 완료한 검증
 
 | 검증 | 결과 |
 | --- | --- |
-| `cargo test --test replay_contract --test audit_contract --test lineage_contract` | 통과, 9/9 |
+| `cargo test --test replay_contract --test audit_contract --test lineage_contract` | 통과, 11/11 |
 | `cargo test --bin rhwp replay_engine_receives_the_hashed_input_snapshot` | 통과, 1/1 |
-| 누락 parent SHA 회귀 | exit 3, `valid: false` |
-| 상대 부모 경로 회귀 | `a.capsule.json` 저장 및 정상 추적 |
+| 누락 parent·plan SHA 회귀 | exit 3, `valid: false` |
+| bare capsule 상대 부모 경로 회귀 | `a.capsule.json` 저장 및 정상 추적 |
+| plan·step 영수증 변조 회귀 | audit exit 3, 재현 credit 0 |
+| replay scratch 수명 회귀 | 실행 후 전용 폴더 제거 확인 |
+| audit 항목 열거 | per-entry 오류를 무시하지 않는 명시적 실패 경로 확인 |
 | `git diff --check` | 통과 |
 | 시각 검증 | 생략. 계보·영수증 실행과 계약 테스트만 변경 |
 
