@@ -58,7 +58,13 @@ runs:
         DEST="${RUNNER_TEMP}/rhwp-setup"
         mkdir -p "$DEST"
         gh release download "$TAG" --repo "$REPO" -p "$ASSET" -p "SHA256SUMS.txt" -D "$DEST"
-        ( cd "$DEST" && sha256sum -c SHA256SUMS.txt --ignore-missing )
+        # macOS 러너에는 GNU sha256sum 이 없다(exit 127) — perl shasum 이 같은
+        # SHA256SUMS.txt 형식을 검증한다. 어느 쪽이든 불일치·부재는 set -e 가 잡는다.
+        ( cd "$DEST" && if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum -c SHA256SUMS.txt --ignore-missing
+          else
+            shasum -a 256 -c SHA256SUMS.txt --ignore-missing
+          fi )
         if [[ "$EXT" == "zip" ]]; then
           unzip -q "$DEST/$ASSET" -d "$DEST"
         else
