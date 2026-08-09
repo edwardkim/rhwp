@@ -3,7 +3,9 @@
 //! 페이지 분할 결과를 받아 각 요소의 정확한 위치와 크기를 계산하고
 //! 렌더 트리(PageRenderTree)를 생성한다.
 
-use super::composer::{compose_paragraph, effective_text_for_metrics, ComposedParagraph};
+use super::composer::{
+    compose_paragraph, effective_text_for_metrics, first_text_line, ComposedParagraph,
+};
 use super::float_placement::{
     horizontal_range, is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu,
     signed_hwpunit, FloatLaneSet, FloatPlacementContext,
@@ -6565,11 +6567,7 @@ impl LayoutEngine {
                         if has_real_text {
                             if let Some(comp) = comp {
                                 // 컨트롤 전용 줄(runs가 모두 제어문자)을 건너뛰고 텍스트 줄부터 렌더링
-                                let text_start_line = comp.lines.iter().position(|line| {
-                                    line.runs.iter().any(|r| {
-                                        r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
-                                    })
-                                });
+                                let text_start_line = first_text_line(comp);
                                 if let Some(start_line) = text_start_line {
                                     para_start_y.insert(*para_index, y_offset);
                                     y_offset = self.layout_partial_paragraph(

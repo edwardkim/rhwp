@@ -14,7 +14,7 @@ use crate::model::header_footer::HeaderFooterApply;
 use crate::model::page::{ColumnDef, ColumnType, PageDef};
 use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 use crate::model::shape::CaptionDirection;
-use crate::renderer::composer::{compose_paragraph, ComposedParagraph};
+use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
 use crate::renderer::float_placement::{
     horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float,
     native_empty_host_rowbreak_line_advance_hu, signed_hwpunit, FloatLaneSet,
@@ -13511,11 +13511,11 @@ impl TypesetEngine {
         use crate::renderer::page_layout::LayoutRect;
         use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 
-        // 렌더 `layout_column_item` 의 FullParagraph 텍스트 경로 정합(layout.rs has_real_text):
-        // 실제 텍스트가 있는 para 는 **leading 컨트롤-전용 줄**(수식 객체마커 ￼ 등)을 건너뛰고
-        // `text_start_line` 부터 그린다. scratch 가 start_line=0 으로 그 줄을 포함하면 수식 다줄
-        // para 가 +수십px 과대 측정된다(sep20/20 pi=936: 127.7 vs 렌더 101.3). 객체-전용 para
-        // (TAC 그림 등)는 0 부터(렌더도 동일). Partial 은 항목 지정 줄 범위 그대로.
+        // 렌더 `layout_column_item` 의 FullParagraph 텍스트 경로 정합: 실제 텍스트가 있는 para 는
+        // **leading 컨트롤-전용 줄**(수식 객체마커 ￼ 등)을 건너뛰고 첫 텍스트 줄부터 그린다.
+        // `composer::first_text_line` 로 판정을 공유해(#4312) 재구현 divergence(sep20/20
+        // pi=936: 측정 127.7 vs 렌더 101.3)를 구조적으로 막는다. 객체-전용 para(TAC 그림 등)는
+        // 0 부터(렌더도 동일). Partial 은 항목 지정 줄 범위 그대로.
         let (start_line, end_line) = match item {
             PageItem::PartialParagraph {
                 start_line,
@@ -13528,15 +13528,7 @@ impl TypesetEngine {
                     .chars()
                     .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace());
                 let start = if has_real_text {
-                    item_composed
-                        .lines
-                        .iter()
-                        .position(|line| {
-                            line.runs
-                                .iter()
-                                .any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
-                        })
-                        .unwrap_or(0)
+                    first_text_line(item_composed).unwrap_or(0)
                 } else {
                     0
                 };

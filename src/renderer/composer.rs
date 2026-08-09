@@ -342,6 +342,19 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
     composed
 }
 
+/// 컴포즈드 줄 목록에서 첫 "텍스트 포함 줄"(런에 텍스트 성격 문자가 있는 줄)의 인덱스.
+/// 실제 텍스트가 있는 문단은 leading 컨트롤-전용 줄(수식 객체마커 ￼ 등)을 건너뛰고 이
+/// 줄부터 그린다 — `LayoutEngine::layout_column_item`(실제 렌더)과
+/// `TypesetEngine::measure_endnote_para_advance`(측정 전용)가 이 판정을 공유한다.
+/// 종전엔 각자 재구현해 sep20/20(pi=936, 측정 127.7px vs 렌더 101.3px)에서 갈라졌다(#4312).
+pub(crate) fn first_text_line(composed: &ComposedParagraph) -> Option<usize> {
+    composed.lines.iter().position(|line| {
+        line.runs
+            .iter()
+            .any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
+    })
+}
+
 /// Hanyang-PUA 옛한글 코드포인트·한컴 PUA와 legacy 제품명을 렌더링용 텍스트로 변환한다.
 ///
 /// 한컴 자체 폰트 (함초롬바탕 LVT 등) 는 PUA 영역에 옛한글 글리프를 직접
