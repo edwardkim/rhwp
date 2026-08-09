@@ -1,8 +1,13 @@
 {
   "id": "pM-flip",
   "title": "개체 뒤집기 넷 — 저장본에 남는 자취로 잰다",
-  "note": "**게이트가 아니라 탐침이다 — 규칙을 다 못 밝혔다.**\n\n밝힌 것: 뒤집기는 그 축 비트를 토글하고 `0x0003_0000` 두 비트를 함께 세운다. 행렬은 그 축의 배율이 −1 이 되고 이동량이 붙는데, 이동량은 **그 변의 길이를 짝수로 내린 값**이다(8475→8474 · 8250→8250 · 6750→6750 · 7425→7424 — 배율 없는 개체 네 관측 모두 일치).\n\n못 밝힌 것 둘.\n\n1. **표시 비트가 언제 지워지는가.** 한 축만 뒤집었다 되돌리면 남는데(`pM2-vv`: 720898 → 720896), 두 축을 뒤집고 차례로 되돌리면 마지막에 지워진다(이 시나리오 넷째 자취: 720898 → 524288). 두 관측이 어긋나 규칙이 안 선다.\n2. **배율이 걸린 개체의 이동량.** 같은 개체가 8756 이었다 8758 이었다 한다(`pM5-resized`).\n\n구현을 붙였다가 **되돌렸다.** 앞쪽 관측에만 맞는 규칙을 호환 층에 심으면 틀린 기하를 조용히 쓰게 된다. 다시 붙이려면 표시 비트부터 갈라야 한다 — 축마다 따로인지, 축 둘이 모두 한 번씩 돌았는지를 세는지.",
-  "ledger": [],
+  "note": "어느 API 도 결과를 안 비추는 계열이라 **저장본 앞뒤 차분**으로 잰다(계획서 §4.20·§4.22). 첫 저장(`fw`)은 버린다 — 문서를 연 뒤 첫 저장에만 붙는 비결정 비트를 재는 자리 밖으로 뺀다.\n\n`ignorePaths` 의 `shape_attr.flip` 은 **세션 부산물 비트(0x30000) 때문**이다. 같은 파일 상태(flip=720898)에서 `VertFlipOrgState` 를 걸어도 앞선 이력에 따라 그 비트가 남기도(`pM2-vv`: →720896) 지워지기도(`pM-flip` 경로: →524288) 한다 — 파일 밖 상태의 함수라 대조가 성립하지 않는다. 한글이 저장한 HWPX 의 `<hp:flip>` 도 horizontal·vertical 두 속성뿐이라 그 비트를 담을 자리가 없다(`probes/pM9-hwpx.json`). 뜻 있는 축은 `horz_flip`·`vert_flip` 제 줄로, 행렬은 `render_*` 로 따로 견주므로 눈머는 축이 없다.\n\n마지막 두 걸음(f4→f5·f5→f6, OrgState 를 거듭 누르기)은 그 부산물 비트만 만지거나 아무 일도 안 하므로 거른 뒤 빈 자취가 된다 — 빈 자취는 통과가 아니라는 규칙과 부딪혀 delta 로 세지 않고 호출만 남겼다(L2 반환은 대조된다).\n\n이동량은 `even_ceil(cur) − 2·(org%2)` 다 — 배율 0~3걸음 × 두 축 × 홀짝 org 여덟 관측이 전부 맞고, 같은 크기를 다른 이력으로 만들어도 같은 값이다(`pM6-*`·`pM8-path`). 이 게이트는 배율 없는 개체만 태운다 — 배율을 만드는 `ShapeObjResize*` 가 rhwp 에서 아직 변환 행렬을 안 갱신해(별도 결함) 그 차이가 뒤집기 자취에 섞이기 때문이다.\n\n`raw_rendering` 을 거르는 이유: 변환 행렬의 **원본 바이트**라 뜻은 `render_sx`·`render_sy`·`render_tx`·`render_ty`·`render_b`·`render_c` 제 줄로 전부 따로 견줘진다. 블록 구조(행렬 개수)가 두 직렬화기에서 달라 **같은 변화가 다른 오프셋에** 나타난다 — 실제로 sx 부호 바이트(0x3F→0xBF)와 tx=8474 의 f64 바이트(141·192·64)가 양쪽에 똑같이 있는데 자리만 어긋나 diff 로 새었다.",
+  "ledger": [
+    "Action.ShapeObjHorzFlip",
+    "Action.ShapeObjVertFlip",
+    "Action.ShapeObjHorzFlipOrgState",
+    "Action.ShapeObjVertFlipOrgState"
+  ],
   "open": "samples/mix-shape-01.hwp",
   "paths": {
     "fw": {
@@ -39,6 +44,8 @@
     }
   },
   "ignorePaths": [
+    "shape_attr.flip",
+    "shape_attr.raw_rendering",
     "common.attr",
     "common.hwp5_gen_shape_attr_bit28"
   ],
@@ -46,32 +53,22 @@
     {
       "from": "f0",
       "to": "f1",
-      "label": "ShapeObjHorzFlip"
+      "label": "ShapeObjHorzFlip (켬)"
     },
     {
       "from": "f1",
       "to": "f2",
-      "label": "ShapeObjVertFlip"
+      "label": "ShapeObjVertFlip (켬)"
     },
     {
       "from": "f2",
       "to": "f3",
-      "label": "ShapeObjHorzFlipOrgState (축을 끈다)"
+      "label": "ShapeObjHorzFlipOrgState (끔)"
     },
     {
       "from": "f3",
       "to": "f4",
-      "label": "ShapeObjVertFlipOrgState (축을 끈다)"
-    },
-    {
-      "from": "f4",
-      "to": "f5",
-      "label": "ShapeObjHorzFlipOrgState (표시 비트를 지운다)"
-    },
-    {
-      "from": "f5",
-      "to": "f6",
-      "label": "ShapeObjHorzFlipOrgState (이제 무동작)"
+      "label": "ShapeObjVertFlipOrgState (끔)"
     }
   ],
   "calls": [

@@ -1233,6 +1233,85 @@ impl DocumentCore {
         Ok(format!(r#"{{"ok":true,"moved":{}}}"#, moved))
     }
 
+    /// 개체를 뒤집는다 — 웹한글컨트롤 `Run("ShapeObj{Horz,Vert}Flip[OrgState]")`.
+    ///
+    /// 저장본 앞뒤 대조로 실측했다(`probes/pM*.json`, 계획서 §4.20·§4.22). 파일에는
+    /// `SHAPE_COMPONENT` 의 뒤집기 비트와 **변환 행렬**로 적힌다.
+    ///
+    /// - 뒤집기는 그 축 비트(0x01/0x02)를 토글한다. `OrgState` 는 켜져 있으면 끄고 아니면
+    ///   무동작이다.
+    /// - 행렬: 켜면 그 축의 배율이 **−(cur/org)** 가 되고 이동량이 붙는다. 이동량은
+    ///   `even_ceil(cur) − 2·(org % 2)` 다 — 여덟 관측(배율 0~3걸음 × 두 축 × 홀짝 org)이
+    ///   전부 맞고, 같은 크기를 다른 이력으로 만들어도 같은 값이라 **상태의 함수**다
+    ///   (`probes/pM8-path.json`).
+    /// - 한글이 함께 세우는 `0x0003_0000` 두 비트는 **흉내 내지 않는다.** 같은 파일 상태에서
+    ///   이력에 따라 지워지기도 남기도 하는 세션 부산물이고(§4.20), 한글이 저장한 HWPX 의
+    ///   `<hp:flip>` 에는 horizontal·vertical 두 속성뿐이라 담을 자리도 없다. 대조도 그
+    ///   비트를 거른다(`shape_attr.flip` 은 축이 `horz_flip`/`vert_flip` 제 줄로 따로 보인다).
+    pub fn set_control_flip_at(
+        &mut self,
+        para_in_list: usize,
+        control_index: usize,
+        vertical: bool,
+        org_state: bool,
+    ) -> Result<String, HwpError> {
+        let (sec, para_idx) = root_para_location(self, para_in_list)
+            .ok_or_else(|| HwpError::InvalidField(format!("본문 문단 {} 없음", para_in_list)))?;
+        let section = self
+            .document
+            .sections
+            .get_mut(sec)
+            .ok_or_else(|| HwpError::InvalidField(format!("구역 {} 없음", sec)))?;
+        let para = section
+            .paragraphs
+            .get_mut(para_idx)
+            .ok_or_else(|| HwpError::InvalidField(format!("문단 {} 없음", para_idx)))?;
+        let Some(Control::Shape(shape)) = para.controls.get_mut(control_index) else {
+            return Ok(r#"{"ok":false,"reason":"뒤집을 수 있는 개체가 아니다"}"#.to_string());
+        };
+        let sa = shape.shape_attr_mut();
+
+        let axis_bit: u32 = if vertical { 0x02 } else { 0x01 };
+        if org_state && sa.flip & axis_bit == 0 {
+            // 이미 원래 상태다. 한글은 이때 세션 부산물 비트를 지우기도 하지만 그 비트는
+            // 흉내 내지 않으므로 여기서는 정말 아무 일도 없다.
+            return Ok(r#"{"ok":true,"moved":false}"#.to_string());
+        }
+        sa.flip ^= axis_bit;
+        let on = sa.flip & axis_bit != 0;
+
+        let (cur, org) = if vertical {
+            (sa.current_height, sa.original_height)
+        } else {
+            (sa.current_width, sa.original_width)
+        };
+        let scale = if org > 0 {
+            f64::from(cur) / f64::from(org)
+        } else {
+            1.0
+        };
+        // 이동량 — `even_ceil(cur) − 2·(org % 2)`(실측 §4.22).
+        let shift = if on {
+            f64::from(cur + (cur & 1) - 2 * (org & 1))
+        } else {
+            0.0
+        };
+        let sign = if on { -1.0 } else { 1.0 };
+        if vertical {
+            sa.vert_flip = on;
+            sa.render_sy = sign * scale;
+            sa.render_ty = shift;
+        } else {
+            sa.horz_flip = on;
+            sa.render_sx = sign * scale;
+            sa.render_tx = shift;
+        }
+        // 원본 바이트를 비워야 직렬화가 행렬을 다시 만든다 — `attr` 과 같은 덫이다.
+        sa.raw_rendering = Vec::new();
+        section.raw_stream = None;
+        Ok(r#"{"ok":true,"moved":true}"#.to_string())
+    }
+
     /// 쪽마다 **캐럿이 설 수 있는 첫 자리** — 웹한글컨트롤 `Run("MovePage*")` 용.
     ///
     /// 줄과 달리 쪽 경계는 **파일이 안 알려 준다.** 저장 vpos 가 되돌아가는 자리로 두 곳은
@@ -2434,6 +2513,66 @@ mod tests {
             let out = core.set_control_z_order_at(0, 2, "forward").unwrap();
             assert_eq!(orders(&core), vec![0, 1, 2]);
             assert!(out.contains("\"moved\":false"), "{out}");
+        }
+
+        /// 뒤집기 — 축 토글·OrgState 복원·행렬. 이동량 식은 여덟 관측의 요약이다(§4.22).
+        #[test]
+        fn flip_matrix_follows_the_measured_formula() {
+            let mut core = core_with_three();
+            let sa = |c: &DocumentCore| match &c.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => {
+                    let a = s.shape_attr();
+                    (a.flip, a.horz_flip, a.render_sx, a.render_tx)
+                }
+                _ => unreachable!(),
+            };
+            match &mut core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => {
+                    let a = s.shape_attr_mut();
+                    a.original_width = 8475;
+                    a.current_width = 8475;
+                }
+                _ => unreachable!(),
+            }
+
+            // 배율 없음·홀수 폭: even_ceil(8475) − 2 = 8474.
+            core.set_control_flip_at(0, 0, false, false).unwrap();
+            assert_eq!(sa(&core), (0x01, true, -1.0, 8474.0));
+
+            // OrgState — 켜져 있으면 끈다. 표시 비트는 흉내 내지 않으므로 축만 진다.
+            core.set_control_flip_at(0, 0, false, true).unwrap();
+            assert_eq!(sa(&core), (0x00, false, 1.0, 0.0));
+
+            // 이미 원래 상태면 무동작이다.
+            let out = core.set_control_flip_at(0, 0, false, true).unwrap();
+            assert!(out.contains("\"moved\":false"), "{out}");
+
+            // 배율 걸림·짝수 cur: even_ceil(8758) − 2 = 8756, sx = −8758/8475 (실측 r1).
+            match &mut core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => s.shape_attr_mut().current_width = 8758,
+                _ => unreachable!(),
+            }
+            core.set_control_flip_at(0, 0, false, false).unwrap();
+            let (_, on, sx, tx) = sa(&core);
+            assert!(on);
+            assert_eq!(tx, 8756.0);
+            assert!((sx - (-(8758.0 / 8475.0))).abs() < 1e-12, "{sx}");
+
+            // 홀수 cur·짝수 org: even_ceil(7033) − 0 = 7034 (실측 v1).
+            match &mut core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => {
+                    let a = s.shape_attr_mut();
+                    a.original_height = 6750;
+                    a.current_height = 7033;
+                }
+                _ => unreachable!(),
+            }
+            core.set_control_flip_at(0, 0, true, false).unwrap();
+            let ty = match &core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => s.shape_attr().render_ty,
+                _ => unreachable!(),
+            };
+            assert_eq!(ty, 7034.0);
         }
 
         /// 글 앞/뒤는 이름과 달리 **순서가 아니라 배치**다 — `z_order` 를 건드리면 안 된다.

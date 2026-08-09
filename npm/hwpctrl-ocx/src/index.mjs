@@ -430,6 +430,16 @@ const ACTIONS = {
   // 어느 API 도 결과를 안 비춘다. **저장본에는 적힌다** — 앞뒤 두 벌을 견줘 규칙을 실측했다
   // (`probes/pZ2-*.json`, 계획서 §4.19). 맨 앞/뒤는 나머지가 한 칸씩 밀리고, 한 칸은
   // 이웃과 맞바꾼다. 마지막 둘은 이름과 달리 **순서가 아니라 배치**(`text_wrap`)다.
+  // ── 뒤집기 ──
+  //
+  // 순서와 마찬가지로 반환값에는 안 비치고 저장본에만 남는다. `OrgState` 는 토글이 아니라
+  // **원래대로 되돌리기**다(켜져 있을 때만 끈다). 한글이 함께 세우는 표시 비트(0x30000)는
+  // 세션 부산물이라 흉내 내지 않는다 — 근거는 계획서 §4.20·§4.22.
+  ShapeObjHorzFlip: { kind: 'objectFlip', vertical: false, orgState: false },
+  ShapeObjVertFlip: { kind: 'objectFlip', vertical: true, orgState: false },
+  ShapeObjHorzFlipOrgState: { kind: 'objectFlip', vertical: false, orgState: true },
+  ShapeObjVertFlipOrgState: { kind: 'objectFlip', vertical: true, orgState: true },
+
   ShapeObjBringToFront: { kind: 'objectZOrder', mode: 'front' },
   ShapeObjSendToBack: { kind: 'objectZOrder', mode: 'back' },
   ShapeObjBringForward: { kind: 'objectZOrder', mode: 'forward' },
@@ -2469,6 +2479,26 @@ export class HwpCtrl {
         this.#ctrls = null;
         this.#modified = true;
       }
+      callback?.(null, ok, callbackUserData);
+      return;
+    }
+    if (action.kind === 'objectFlip') {
+      const here = this.#selectedObject;
+      let ok = false;
+      if (here) {
+        try {
+          const raw = this.#doc.setControlFlipAt(
+            here.para,
+            here.controlIndex,
+            action.vertical,
+            action.orgState,
+          );
+          ok = parseJson(raw, { ok: false }).ok !== false;
+        } catch (e) {
+          console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+        }
+      }
+      if (ok) this.#modified = true;
       callback?.(null, ok, callbackUserData);
       return;
     }

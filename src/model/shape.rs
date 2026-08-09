@@ -466,6 +466,22 @@ impl ShapeObject {
         }
     }
 
+    /// 개체 요소 속성 가변 참조 반환
+    pub fn shape_attr_mut(&mut self) -> &mut ShapeComponentAttr {
+        match self {
+            ShapeObject::Line(s) => &mut s.drawing.shape_attr,
+            ShapeObject::Rectangle(s) => &mut s.drawing.shape_attr,
+            ShapeObject::Ellipse(s) => &mut s.drawing.shape_attr,
+            ShapeObject::Arc(s) => &mut s.drawing.shape_attr,
+            ShapeObject::Polygon(s) => &mut s.drawing.shape_attr,
+            ShapeObject::Curve(s) => &mut s.drawing.shape_attr,
+            ShapeObject::Group(g) => &mut g.shape_attr,
+            ShapeObject::Picture(p) => &mut p.shape_attr,
+            ShapeObject::Chart(c) => &mut c.drawing.shape_attr,
+            ShapeObject::Ole(o) => &mut o.drawing.shape_attr,
+        }
+    }
+
     /// 개체 타입명 반환
     pub fn shape_name(&self) -> &'static str {
         match self {

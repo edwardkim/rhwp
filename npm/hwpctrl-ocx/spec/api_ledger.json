@@ -4,10 +4,10 @@
   "oracleVersion": "한글2022 (설치본 COM)",
   "summary": {
     "total": 484,
-    "done": 335,
+    "done": 339,
     "byStatus": {
-      "verified": 329,
-      "unimplemented": 149,
+      "verified": 333,
+      "unimplemented": 145,
       "substituted": 6
     },
     "byUnit": {
@@ -25,8 +25,8 @@
         "unimplemented": 3
       },
       "action": {
-        "unimplemented": 115,
-        "verified": 197
+        "unimplemented": 111,
+        "verified": 201
       },
       "parameterSet": {
         "verified": 49,
@@ -1348,6 +1348,7 @@
         "scenarios": [
           "p2-scan-cellmulti",
           "p2-scan-order",
+          "p2-scan-plain",
           "p2-scan-small"
         ],
         "lastRun": null,
@@ -1427,6 +1428,7 @@
         "scenarios": [
           "p2-scan-cellmulti",
           "p2-scan-order",
+          "p2-scan-plain",
           "p2-scan-small"
         ],
         "lastRun": null,
@@ -1695,6 +1697,7 @@
         "scenarios": [
           "p2-scan-cellmulti",
           "p2-scan-order",
+          "p2-scan-plain",
           "p2-scan-small"
         ],
         "lastRun": null,
@@ -6372,13 +6375,15 @@
       "name": "ShapeObjHorzFlip",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pM-flip"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -6388,13 +6393,15 @@
       "name": "ShapeObjHorzFlipOrgState",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pM-flip"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -6710,13 +6717,15 @@
       "name": "ShapeObjVertFlip",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pM-flip"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -6726,13 +6735,15 @@
       "name": "ShapeObjVertFlipOrgState",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pM-flip"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {

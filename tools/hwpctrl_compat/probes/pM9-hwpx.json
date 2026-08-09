@@ -1,0 +1,64 @@
+{
+  "id": "pM9-hwpx",
+  "title": "뒤집힌 개체를 한글이 HWPX 로 어떻게 적나",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "h": {
+      "win": "{out}/pM9-flip.hwpx",
+      "posix": "{out}/pM9-flip.hwpx"
+    },
+    "h2": {
+      "win": "{out}/pM9-unflip.hwpx",
+      "posix": "{out}/pM9-unflip.hwpx"
+    }
+  },
+  "calls": [
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "h"
+        },
+        "HWPX",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "h2"
+        },
+        "HWPX",
+        ""
+      ]
+    ]
+  ]
+}

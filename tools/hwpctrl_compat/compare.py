@@ -189,10 +189,25 @@ def compare_deltas(exe: Path, definition: dict, ocx_dir: Path, rhwp_dir: Path) -
     """
     # **잰 비결정만** 걸러 낸다. 시나리오가 이름을 적고 그 이유를 `note` 에 남긴다.
     # 거른 수를 판정에 실어 조용히 숨을 수 없게 한다.
+    #
+    # 일치는 **필드 경계**로 본다 — 이름 뒤가 경로 끝이거나 `[`·`.` 일 때만 거른다.
+    # 끝일치(endswith)만 보던 때 `raw_rendering[23]`·`raw_rendering.n` 처럼 배열로 펼쳐진
+    # 줄이 안 걸려 새었다. 부분일치(substring)로 뭉개면 `attr` 이 `raw_table_record_attr`
+    # 까지 지우는 반대 사고가 난다.
     ignore = tuple(definition.get("ignorePaths", []))
 
+    def matches(path: str, name: str) -> bool:
+        i = path.find(name)
+        while i != -1:
+            end = i + len(name)
+            if end == len(path) or path[end] in "[.":
+                return True
+            i = path.find(name, i + 1)
+        return False
+
     def keep(row: dict) -> bool:
-        return not (ignore and str(row.get("path", "")).endswith(ignore))
+        path = str(row.get("path", ""))
+        return not any(matches(path, name) for name in ignore)
 
     out = []
     for spec in definition.get("deltas", []):
