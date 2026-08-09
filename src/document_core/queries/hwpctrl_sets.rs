@@ -1033,6 +1033,36 @@ impl DocumentCore {
         };
         c.width = (c.width as i64 + d_width as i64).max(0) as u32;
         c.height = (c.height as i64 + d_height as i64).max(0) as u32;
+        let (w, h) = (c.width, c.height);
+        // **`SHAPE_COMPONENT` 도 함께 정착시킨다** — 한글은 두 단계다(리사이즈 직후 저장엔
+        // `common` 만, 다음 저장에서 `current_*`·배율 행렬 `sx=cur/org`·`rotation_center
+        // = cur/2 가 따라온다 — `probes/pQ-settle.json` 실측). rhwp 가 `common` 만 바꾸면
+        // 그 정착이 영원히 안 와 저장본의 행렬이 옛 크기로 남는다(계획서 §4.23).
+        let sa = match para
+            .controls
+            .get_mut(control_index)
+            .expect("바로 위에서 확인했다")
+        {
+            Control::Shape(s) => Some(s.shape_attr_mut()),
+            Control::Picture(p) => Some(&mut p.shape_attr),
+            _ => None,
+        };
+        if let Some(sa) = sa {
+            sa.current_width = w;
+            sa.current_height = h;
+            if sa.original_width > 0 {
+                let sx = f64::from(w) / f64::from(sa.original_width);
+                sa.render_sx = if sa.render_sx < 0.0 { -sx } else { sx };
+            }
+            if sa.original_height > 0 {
+                let sy = f64::from(h) / f64::from(sa.original_height);
+                sa.render_sy = if sa.render_sy < 0.0 { -sy } else { sy };
+            }
+            sa.rotation_center.x = (w / 2) as i32;
+            sa.rotation_center.y = (h / 2) as i32;
+            // 원본 바이트를 비워야 직렬화가 행렬을 새 크기로 다시 만든다.
+            sa.raw_rendering = Vec::new();
+        }
         section.raw_stream = None;
         Ok(r#"{"ok":true}"#.to_string())
     }
@@ -2513,6 +2543,42 @@ mod tests {
             let out = core.set_control_z_order_at(0, 2, "forward").unwrap();
             assert_eq!(orders(&core), vec![0, 1, 2]);
             assert!(out.contains("\"moved\":false"), "{out}");
+        }
+
+        /// 리사이즈는 `SHAPE_COMPONENT` 까지 정착시켜야 한다 — 한글의 두 번째 저장이
+        /// 만드는 상태가 정답지다(§4.23). `common` 만 바꾸면 행렬이 옛 크기로 남는다.
+        #[test]
+        fn resize_settles_the_shape_component_too() {
+            let mut core = core_with_three();
+            match &mut core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => {
+                    let c = s.common_mut();
+                    c.width = 8475;
+                    c.height = 6750;
+                    let a = s.shape_attr_mut();
+                    a.original_width = 8475;
+                    a.current_width = 8475;
+                    a.original_height = 6750;
+                    a.current_height = 6750;
+                    a.raw_rendering = vec![1, 2, 3];
+                }
+                _ => unreachable!(),
+            }
+            core.resize_control_at(0, 0, 283, 0).unwrap();
+            match &core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => {
+                    let a = s.shape_attr();
+                    assert_eq!(a.current_width, 8758);
+                    assert!(
+                        (a.render_sx - 8758.0 / 8475.0).abs() < 1e-12,
+                        "{}",
+                        a.render_sx
+                    );
+                    assert_eq!(a.rotation_center.x, 4379, "cur/2 — 실측 4237→4379");
+                    assert!(a.raw_rendering.is_empty(), "행렬 원본을 비워야 재생성된다");
+                }
+                _ => unreachable!(),
+            }
         }
 
         /// 뒤집기 — 축 토글·OrgState 복원·행렬. 이동량 식은 여덟 관측의 요약이다(§4.22).
