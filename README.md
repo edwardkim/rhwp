@@ -232,7 +232,7 @@ if plan.check().ok:
 ```bash
 tar xzf rhwp-v*-linux-x86_64.tar.gz          # windows 는 zip 해제
 sha256sum -c SHA256SUMS.txt --ignore-missing # 무결성 확인 (선택)
-./rhwp capabilities                          # 첫 확인 — 전 명령 기계 계약 자기서술
+./rhwp/rhwp capabilities                     # 첫 확인 — 전 명령 기계 계약 자기서술
 ```
 
 PATH 에 두면 아래 MCP 절의 `"command": "rhwp"` 와 파이썬 절의 `RHWP_BIN` 이
