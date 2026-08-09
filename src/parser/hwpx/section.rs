@@ -1749,7 +1749,7 @@ fn parse_table(
                         table.cells.push(cell);
                     }
                     b"caption" => {
-                        let caption = parse_table_caption(ce, reader)?;
+                        let caption = parse_caption(ce, reader)?;
                         table.caption = Some(caption);
                     }
                     _ => {}
@@ -2050,8 +2050,27 @@ fn pack_hwpx_common_obj_attr(common: &CommonObjAttr) -> u32 {
     attr
 }
 
+fn parse_caption_sub_list_attrs(
+    e: &quick_xml::events::BytesStart,
+    caption: &mut crate::model::shape::Caption,
+) {
+    use crate::model::shape::CaptionVertAlign;
+
+    for attr in e.attributes().flatten() {
+        if attr.key.as_ref() == b"vertAlign" {
+            caption.vert_align = match attr_str(&attr).as_str() {
+                "CENTER" => CaptionVertAlign::Center,
+                "BOTTOM" => CaptionVertAlign::Bottom,
+                // 누락·미지·미래 lexical 값은 모델 기본값을 쓴다. 다른 HWPX subList
+                // enum 파서가 알 수 없는 값을 기본값으로 관용 처리하는 정책과 같다.
+                _ => CaptionVertAlign::Top,
+            };
+        }
+    }
+}
+
 /// `<hp:caption>` 파싱 — 표(#1387)·그림/도형/묶음(#1403) 공유.
-fn parse_table_caption(
+fn parse_caption(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
 ) -> Result<crate::model::shape::Caption, HwpxError> {
@@ -2084,10 +2103,17 @@ fn parse_table_caption(
             Ok(Event::Start(ref ce)) => {
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
-                if local == b"p" {
-                    let (para, _) = parse_paragraph(ce, reader)?;
-                    caption.paragraphs.push(para);
+                match local {
+                    b"subList" => parse_caption_sub_list_attrs(ce, &mut caption),
+                    b"p" => {
+                        let (para, _) = parse_paragraph(ce, reader)?;
+                        caption.paragraphs.push(para);
+                    }
+                    _ => {}
                 }
+            }
+            Ok(Event::Empty(ref ce)) if local_name(ce.name().as_ref()) == b"subList" => {
+                parse_caption_sub_list_attrs(ce, &mut caption);
             }
             Ok(Event::End(ref end)) => {
                 if local_name(end.name().as_ref()) == b"caption" {
@@ -2422,7 +2448,7 @@ fn parse_picture(
             }
             // 그림 캡션 (#1403) — 미적재 시 roundtrip 에서 캡션 subList 소실
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"caption" => {
-                caption = Some(parse_table_caption(ce, reader)?);
+                caption = Some(parse_caption(ce, reader)?);
             }
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
@@ -3883,7 +3909,7 @@ fn parse_shape_object(
             }
             // 도형 캡션 (#1403) — 미적재 시 roundtrip 에서 캡션 subList 소실
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"caption" => {
-                caption = Some(parse_table_caption(ce, reader)?);
+                caption = Some(parse_caption(ce, reader)?);
             }
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
@@ -4185,7 +4211,7 @@ fn parse_container(
         match reader.read_event_into(&mut buf) {
             // 묶음 개체 캡션 (#1403) — 미적재 시 roundtrip 에서 캡션 subList 소실
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"caption" => {
-                caption = Some(parse_table_caption(ce, reader)?);
+                caption = Some(parse_caption(ce, reader)?);
             }
             // 묶음 개체 설명 (#1392) — 미적재 시 roundtrip 에서 소실
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"shapeComment" => {
