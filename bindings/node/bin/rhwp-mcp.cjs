@@ -12,6 +12,8 @@
 
 const { spawn } = require('node:child_process');
 
+const SHUTDOWN_GRACE_MS = 5_000;
+
 function fail(message) {
   process.stderr.write(message + '\n');
   process.exit(2);
@@ -44,8 +46,65 @@ function main() {
   const child = spawn(binary, ['mcp-serve', ...process.argv.slice(2)], {
     stdio: 'inherit',
   });
-  child.on('error', (err) => fail(`rhwp 실행 실패: ${err.message}`));
-  child.on('exit', (code, signal) => process.exit(signal ? 1 : code == null ? 1 : code));
+
+  let shutdownSignal;
+  let forceKillTimer;
+  const signalHandlers = new Map();
+
+  const childIsRunning = () => child.exitCode === null && child.signalCode === null;
+  const killChild = (signal) => {
+    if (!childIsRunning()) return false;
+    try {
+      return child.kill(signal);
+    } catch {
+      return false;
+    }
+  };
+
+  // MCP hosts usually stop stdio servers by closing stdin. If they signal the
+  // wrapper PID instead, the real server must receive the same signal rather
+  // than surviving as an orphan. A second signal (or the grace timeout) is an
+  // explicit request to stop waiting for graceful shutdown.
+  const forwardSignal = (signal) => {
+    if (shutdownSignal !== undefined) {
+      killChild('SIGKILL');
+      return;
+    }
+    shutdownSignal = signal;
+    if (!killChild(signal)) return;
+    forceKillTimer = setTimeout(() => killChild('SIGKILL'), SHUTDOWN_GRACE_MS);
+  };
+
+  for (const signal of ['SIGINT', 'SIGTERM']) {
+    const handler = () => forwardSignal(signal);
+    signalHandlers.set(signal, handler);
+    process.on(signal, handler);
+  }
+
+  // Covers an explicit process.exit() path. Signal handlers above keep the
+  // wrapper alive until the child is reaped; this hook is only a last-resort,
+  // synchronous termination request.
+  const stopChildOnWrapperExit = () => {
+    killChild('SIGTERM');
+  };
+  process.once('exit', stopChildOnWrapperExit);
+
+  const cleanup = () => {
+    if (forceKillTimer !== undefined) clearTimeout(forceKillTimer);
+    process.removeListener('exit', stopChildOnWrapperExit);
+    for (const [signal, handler] of signalHandlers) {
+      process.removeListener(signal, handler);
+    }
+  };
+
+  child.once('error', (err) => {
+    cleanup();
+    fail(`rhwp 실행 실패: ${err.message}`);
+  });
+  child.once('exit', (code, signal) => {
+    cleanup();
+    process.exitCode = signal ? 1 : code == null ? 1 : code;
+  });
 }
 
 main();

@@ -11,7 +11,8 @@
  * 여기서 한 번 빌드해 실제 배포물과 같은 경로를 검증한다.
  */
 import { execSync, spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -35,13 +36,79 @@ function runOnce(env: NodeJS.ProcessEnv, input?: string): Promise<{ code: number
     let err = '';
     child.stdout.on('data', (d) => {
       out += String(d);
-      // initialize 응답 한 줄이면 충분 — 서버를 종료시킨다.
-      if (out.includes('"jsonrpc"')) child.kill();
+      // initialize 응답 한 줄이면 충분 — stdin EOF 로 서버를 정상 종료시킨다.
+      if (out.includes('"jsonrpc"') && !child.stdin.destroyed) child.stdin.end();
     });
     child.stderr.on('data', (d) => (err += String(d)));
     child.on('exit', (code) => resolve({ code, out, err }));
     if (input !== undefined) child.stdin.write(input);
   });
+}
+
+async function expectSignalForwarded(signal: 'SIGINT' | 'SIGTERM'): Promise<void> {
+  const dir = mkdtempSync(path.join(tmpdir(), 'rhwp-mcp-signal-'));
+  const fakeServer = path.join(dir, 'mcp-serve');
+  writeFileSync(
+    fakeServer,
+    [
+      "'use strict';",
+      'process.stdout.write(`READY ${process.pid}\\n`);',
+      'const stop = (signal) => {',
+      '  process.stdout.write(`FORWARDED ${signal}\\n`, () => process.exit(0));',
+      '};',
+      "process.on('SIGINT', () => stop('SIGINT'));",
+      "process.on('SIGTERM', () => stop('SIGTERM'));",
+      'setInterval(() => {}, 1_000);',
+    ].join('\n'),
+  );
+
+  const wrapper = spawn(process.execPath, [BIN], {
+    cwd: dir,
+    env: { ...process.env, RHWP_BIN: process.execPath },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let out = '';
+  let err = '';
+  let serverPid: number | undefined;
+
+  try {
+    const ready = new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error(`fake server 준비 시간 초과: ${out}\n${err}`)), 10_000);
+      wrapper.stdout.on('data', (chunk) => {
+        out += String(chunk);
+        const match = out.match(/READY (\d+)/);
+        if (match?.[1] !== undefined) {
+          serverPid = Number(match[1]);
+          clearTimeout(timer);
+          resolve();
+        }
+      });
+      wrapper.stderr.on('data', (chunk) => (err += String(chunk)));
+      wrapper.once('error', reject);
+    });
+    const exited = new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((resolve) => {
+      wrapper.once('exit', (code, exitSignal) => resolve({ code, signal: exitSignal }));
+    });
+
+    await ready;
+    expect(wrapper.kill(signal)).toBe(true);
+    const status = await exited;
+
+    expect(status).toEqual({ code: 0, signal: null });
+    expect(out).toContain(`FORWARDED ${signal}`);
+    expect(serverPid).toBeDefined();
+    expect(() => process.kill(serverPid!, 0)).toThrow();
+  } finally {
+    if (wrapper.exitCode === null && wrapper.signalCode === null) wrapper.kill('SIGKILL');
+    if (serverPid !== undefined) {
+      try {
+        process.kill(serverPid, 'SIGKILL');
+      } catch {
+        // 이미 wrapper가 회수했다.
+      }
+    }
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 describe('rhwp-mcp bin', () => {
@@ -59,4 +126,13 @@ describe('rhwp-mcp bin', () => {
     expect(code).toBe(2);
     expect(err).toContain('releases');
   }, 30_000);
+
+  it.skipIf(process.platform === 'win32')(
+    'SIGINT와 SIGTERM을 실제 서버에 전달하고 자식을 회수한다',
+    async () => {
+      await expectSignalForwarded('SIGINT');
+      await expectSignalForwarded('SIGTERM');
+    },
+    30_000,
+  );
 });
