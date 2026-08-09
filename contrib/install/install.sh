@@ -4,7 +4,7 @@
 #   curl -fsSL https://raw.githubusercontent.com/edwardkim/rhwp/devel/contrib/install/install.sh | bash
 #   # 또는: ./install.sh v0.8.2 ~/.local/bin
 #
-# ① 버전 해석(latest→GitHub API) ② tar.gz+SHA256SUMS 다운로드 ③ sha256sum -c
+# ① 버전 해석(latest→GitHub API) ② tar.gz+SHA256SUMS 다운로드 ③ SHA-256 검증
 # ④ 해체(rhwp/rhwp) ⑤ 설치 디렉터리 배치(기본 ~/.local/bin, PATH 는 안내만).
 set -euo pipefail
 
@@ -31,7 +31,24 @@ trap 'rm -rf "$TMP"' EXIT
 echo "다운로드: $BASE/$ASSET"
 curl -fsSL -o "$TMP/$ASSET" "$BASE/$ASSET"
 curl -fsSL -o "$TMP/SHA256SUMS.txt" "$BASE/SHA256SUMS.txt"
-( cd "$TMP" && sha256sum -c SHA256SUMS.txt --ignore-missing )
+( cd "$TMP"
+  if ! awk -v asset="$ASSET" '
+      { name = $2; sub(/^\*/, "", name) }
+      name == asset { print; found = 1 }
+      END { if (!found) exit 1 }
+    ' SHA256SUMS.txt > SHA256SUMS.asset.txt; then
+      echo "SHA256SUMS.txt 에 $ASSET 항목이 없습니다" >&2
+      exit 1
+  fi
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum -c SHA256SUMS.asset.txt
+elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 -c SHA256SUMS.asset.txt
+else
+    echo "SHA-256 검증 도구가 없습니다 (sha256sum 또는 shasum 필요)" >&2
+    exit 1
+  fi
+)
 echo "무결성 확인: SHA-256 일치"
 
 tar -xzf "$TMP/$ASSET" -C "$TMP"

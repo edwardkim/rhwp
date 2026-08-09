@@ -24,17 +24,38 @@ jobs:
     outputs:
       tag: ${{ steps.v.outputs.tag }}
       version: ${{ steps.v.outputs.version }}
+      source_sha: ${{ steps.v.outputs.source_sha }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # 수동 재실행은 입력 태그, 태그 push 는 이벤트 ref 자체를 검증한다.
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
       - id: v
         shell: bash
+        env:
+          REQUESTED_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            TAG="${{ github.event.inputs.tag }}"
-          else
-            TAG="${{ github.ref_name }}"
+          set -euo pipefail
+          TAG="$REQUESTED_TAG"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "지원하지 않는 릴리스 태그 형식: $TAG" >&2
+            exit 1
+          fi
+          TAG_SHA="$(git rev-parse --verify "refs/tags/$TAG^{commit}")"
+          HEAD_SHA="$(git rev-parse HEAD)"
+          if [[ "$HEAD_SHA" != "$TAG_SHA" ]]; then
+            echo "checkout 소스가 요청 태그와 다릅니다: HEAD=$HEAD_SHA tag=$TAG_SHA" >&2
+            exit 1
+          fi
+          VERSION="${TAG#v}"
+          CARGO_VERSION="$(awk -F '"' '/^version = "/ { print $2; exit }' Cargo.toml)"
+          if [[ "$VERSION" != "$CARGO_VERSION" ]]; then
+            echo "버전 불일치: tag=$VERSION Cargo.toml=$CARGO_VERSION" >&2
+            exit 1
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
 
   linux-packages:
     name: deb + rpm
@@ -42,6 +63,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.version.outputs.source_sha }}
       - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -68,6 +91,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.version.outputs.source_sha }}
       - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -78,13 +103,16 @@ jobs:
           key: msi-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: 빌드 + MSI
         shell: bash
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          TAG: ${{ needs.version.outputs.tag }}
         run: |
           cargo build --release --bin rhwp
           dotnet tool install --global wix
           wix build contrib/packaging/msi/rhwp.wxs \
-            -d Version=${{ needs.version.outputs.version }} \
+            -d Version="$VERSION" \
             -d BinPath=target/release/rhwp.exe \
-            -o rhwp-${{ needs.version.outputs.tag }}-x86_64.msi
+            -o "rhwp-$TAG-x86_64.msi"
       - name: 릴리스에 첨부
         shell: bash
         env:
@@ -97,6 +125,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.version.outputs.source_sha }}
       - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
       - name: 게이트 ① 시크릿 · ② dry-run
         shell: bash
