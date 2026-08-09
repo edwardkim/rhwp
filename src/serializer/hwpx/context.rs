@@ -160,6 +160,14 @@ impl SerializeContext {
         for (idx, _) in doc.doc_info.styles.iter().enumerate() {
             ctx.style_ids.register(idx as u16);
         }
+        // [#1933 보강] style 0 은 `effective_style_id`/`write_styles` 계약상 "항상
+        // 등록됨" 취급이다 — `<hh:styles>` 블록 자체가 없는(styles 비어있는) 정상
+        // HWPX 도 파라그래프가 암묵적 기본 style 0을 참조할 수 있고, `write_styles`
+        // 는 그 경우 블록을 그대로 생략한다(header.rs). 종전에는 `doc_info.styles`
+        // 가 비어 있으면 0도 등록되지 않아, 있는 그대로 되돌려 쓰는 정상적인
+        // round-trip이 `assert_all_refs_resolved` 에서 "미등록 styleIDRef: [0]" 로
+        // 하드 실패했다(예: styles 블록이 없는 샘플의 HWPX 자기 왕복).
+        ctx.style_ids.register(0);
 
         // 인라인 컨트롤(표/그림 등)의 borderFillIDRef를 사전 등록하여
         // assert_all_refs_resolved 검증 시 누락 방지.
@@ -358,6 +366,22 @@ mod tests {
         let doc = Document::default();
         let ctx = SerializeContext::collect_from_document(&doc);
         ctx.assert_all_refs_resolved().expect("empty doc must pass");
+    }
+
+    /// [Issue #4395] `doc_info.styles` 가 비어 있어도(=`<hh:styles>` 블록 없음) style id 0 은
+    /// 항상 등록된 것으로 취급해야 한다 — `effective_style_id`(아래)의 기존 계약이자,
+    /// `write_styles`(header.rs)가 빈 목록일 때 블록 자체를 생략하는 정상 동작과 짝을 이룬다.
+    /// 수정 전에는 `doc.doc_info.styles` 순회로만 등록해서 목록이 비면 0 도 미등록으로 남아,
+    /// styleIDRef=0 을 참조하는 문단이 있는 문서(예: `samples/task2156/width_ladder.hwpx`)의
+    /// 저장 자체가 "미등록 ID 참조 발견: styleIDRef: [0]" 로 하드 실패했다.
+    #[test]
+    fn style_zero_always_registered_without_explicit_style_list() {
+        let doc = Document::default();
+        assert!(doc.doc_info.styles.is_empty());
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        ctx.style_ids.reference(0);
+        ctx.assert_all_refs_resolved()
+            .expect("style 0 must always be registered, even with an empty style list (#4395)");
     }
 
     #[test]
