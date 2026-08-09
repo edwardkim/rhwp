@@ -287,6 +287,14 @@ impl Cell {
         self.set_list_header_flag(CELL_FLAG_EDITABLE_IN_FORM, value);
     }
 
+    /// LIST_HEADER 속성 상위 절반의 비트를 세우거나 지운다.
+    ///
+    /// **이 필드는 이름과 달리 폭이 아니다** — LIST_HEADER 속성 u32 의 상위 16비트다(계획서
+    /// §4.21). 진짜 텍스트 영역 폭은 `raw_list_extra` 앞머리 u16 에 있다.
+    pub fn set_list_header_flag_pub(&mut self, flag: u16, value: bool) {
+        self.set_list_header_flag(flag, value);
+    }
+
     fn set_list_header_flag(&mut self, flag: u16, value: bool) {
         if value {
             self.list_header_width_ref |= flag;

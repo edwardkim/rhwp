@@ -2049,6 +2049,26 @@ impl DocumentCore {
                 true,
                 false,
             ),
+            // 칸 크기 조절 열둘 — `Ex` 는 평범한 것과 자취가 같아 같은 갈래로 보낸다(§4.21).
+            "resizeRight" | "resizeLeft" | "resizeDown" | "resizeUp" | "resizeLineRight"
+            | "resizeLineLeft" | "resizeLineDown" | "resizeLineUp" => {
+                let line_mode = op.starts_with("resizeLine");
+                let dir = op
+                    .trim_start_matches("resizeLine")
+                    .trim_start_matches("resize");
+                let vertical = matches!(dir, "Down" | "Up");
+                let forward = matches!(dir, "Right" | "Down");
+                self.resize_table_native(
+                    section,
+                    host_para,
+                    control_index,
+                    row,
+                    col,
+                    vertical,
+                    forward,
+                    line_mode,
+                )
+            }
             _ => Err(HwpError::InvalidField(format!("모르는 표 편집 '{}'", op))),
         }
     }

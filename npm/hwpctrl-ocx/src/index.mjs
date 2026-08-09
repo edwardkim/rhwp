@@ -521,6 +521,25 @@ const ACTIONS = {
   TableInsertLowerRow: { kind: 'tableEdit', op: 'insertRowBelow' },
   TableInsertLeftColumn: { kind: 'tableEdit', op: 'insertColLeft' },
   TableInsertRightColumn: { kind: 'tableEdit', op: 'insertColRight' },
+  // ── 칸 크기 조절 열둘 ──
+  //
+  // 어느 API 도 결과를 안 비춘다. 저장본 앞뒤 차분으로 규칙을 실측했다(계획서 §4.21).
+  // 평범한 것은 캐럿 칸의 **열/행 전체**가 ±283, `Line` 은 오른쪽·아래 이웃과 짝으로
+  // **경계를 옮긴다**. `Ex` 는 평범한 것과 자취가 **완전히 같아** 같은 갈래로 보낸다 —
+  // 이름만 보면 다른 일을 할 것 같은데 아니다.
+  TableResizeRight: { kind: 'tableEdit', op: 'resizeRight' },
+  TableResizeLeft: { kind: 'tableEdit', op: 'resizeLeft' },
+  TableResizeDown: { kind: 'tableEdit', op: 'resizeDown' },
+  TableResizeUp: { kind: 'tableEdit', op: 'resizeUp' },
+  TableResizeExRight: { kind: 'tableEdit', op: 'resizeRight' },
+  TableResizeExLeft: { kind: 'tableEdit', op: 'resizeLeft' },
+  TableResizeExDown: { kind: 'tableEdit', op: 'resizeDown' },
+  TableResizeExUp: { kind: 'tableEdit', op: 'resizeUp' },
+  TableResizeLineRight: { kind: 'tableEdit', op: 'resizeLineRight' },
+  TableResizeLineLeft: { kind: 'tableEdit', op: 'resizeLineLeft' },
+  TableResizeLineDown: { kind: 'tableEdit', op: 'resizeLineDown' },
+  TableResizeLineUp: { kind: 'tableEdit', op: 'resizeLineUp' },
+
   TableDeleteRow: { kind: 'tableEdit', op: 'deleteRow' },
   TableDeleteColumn: { kind: 'tableEdit', op: 'deleteCol' },
 

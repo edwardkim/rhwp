@@ -4,10 +4,10 @@
   "oracleVersion": "한글2022 (설치본 COM)",
   "summary": {
     "total": 484,
-    "done": 318,
+    "done": 330,
     "byStatus": {
-      "verified": 312,
-      "unimplemented": 166,
+      "verified": 324,
+      "unimplemented": 154,
       "substituted": 6
     },
     "byUnit": {
@@ -25,8 +25,8 @@
         "unimplemented": 3
       },
       "action": {
-        "unimplemented": 132,
-        "verified": 180
+        "unimplemented": 120,
+        "verified": 192
       },
       "parameterSet": {
         "verified": 49,
@@ -1482,7 +1482,8 @@
       "specArityAmbiguous": false,
       "oracle": {
         "scenarios": [
-          "p8-insertctrl"
+          "p8-insertctrl",
+          "pH-insertrepeat"
         ],
         "lastRun": null,
         "diff": 0
@@ -1501,7 +1502,8 @@
       "specArityAmbiguous": true,
       "oracle": {
         "scenarios": [
-          "pF-insertpicture"
+          "pF-insertpicture",
+          "pH-insertrepeat"
         ],
         "lastRun": null,
         "diff": 0
@@ -7277,13 +7279,15 @@
       "name": "TableResizeDown",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeDown"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7293,13 +7297,15 @@
       "name": "TableResizeExDown",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeExDown"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7309,13 +7315,15 @@
       "name": "TableResizeExLeft",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeExLeft"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7325,13 +7333,15 @@
       "name": "TableResizeExRight",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeExRight"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7341,13 +7351,15 @@
       "name": "TableResizeExUp",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeExUp"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7357,13 +7369,15 @@
       "name": "TableResizeLeft",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeLeft"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7373,13 +7387,15 @@
       "name": "TableResizeLineDown",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeLineDown"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7389,13 +7405,15 @@
       "name": "TableResizeLineLeft",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeLineLeft"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7405,13 +7423,15 @@
       "name": "TableResizeLineRight",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeLineRight"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7421,13 +7441,15 @@
       "name": "TableResizeLineUp",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeLineUp"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7437,13 +7459,15 @@
       "name": "TableResizeRight",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeRight"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {
@@ -7453,13 +7477,15 @@
       "name": "TableResizeUp",
       "parameterSetId": null,
       "requiresExternalSet": false,
-      "status": "unimplemented",
+      "status": "verified",
       "notes": "",
       "legacyHwpctl": false,
       "oracle": {
-        "scenarios": [],
+        "scenarios": [
+          "pN-TableResizeUp"
+        ],
         "lastRun": null,
-        "diff": null
+        "diff": 0
       }
     },
     {

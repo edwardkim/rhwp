@@ -3461,6 +3461,89 @@ impl DocumentCore {
             json_escape(formula)
         ))
     }
+
+    /// 표의 칸 크기를 한 걸음 바꾼다 — 웹한글컨트롤 `Run("TableResize*")` 계열 열둘.
+    ///
+    /// 한글 저장본의 앞뒤 두 벌을 견줘 실측했다(`probes/pT-*.json`, 계획서 §4.21). 어느 API 도
+    /// 결과를 안 비추지만 파일에는 그대로 적힌다.
+    ///
+    /// | 갈래 | 잰 규칙 |
+    /// |---|---|
+    /// | 평범 (`TableResizeRight` 따위) | 캐럿 칸의 **열/행 전체**가 ±283. 표의 선언 크기는 그대로다 |
+    /// | `Line` | **경계를 옮긴다** — 캐럿 칸의 오른쪽·아래 이웃과 짝으로 ∓283 |
+    /// | `Ex` | 평범한 것과 자취가 **완전히 같다**(네 방향 중 셋은 집합이 일치) |
+    ///
+    /// 걸음은 **283 HWPUNIT** 으로 개체 크기 조절과 같다(개체 이동의 56 과 다르다).
+    ///
+    /// **`raw_list_extra` 를 함께 고쳐야 한다.** 그 앞머리 u16 이 셀 폭 그 자체인데
+    /// (7384 → `[216,28]`) LIST_HEADER 뒤의 보존 바이트라 `cell.width` 만 고치면 저장에서
+    /// 묻힌다. `attr`·`raw_rendering`·배치 비트에 이은 네 번째 같은 덫이다. 세로 조절에서는
+    /// 안 건드린다 — 폭 필드이기 때문이다(실측: 높이가 바뀌어도 0건).
+    ///
+    /// 안 다루는 것: 병합된 칸(`col_span`/`row_span` > 1)이 걸린 표는 잰 적이 없다. 마지막
+    /// 열·행에서 `Line` 을 걸면 옮길 경계가 없어 아무 일도 하지 않는다(이것도 안 쟀다).
+    pub fn resize_table_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        row: u16,
+        col: u16,
+        vertical: bool,
+        forward: bool,
+        line_mode: bool,
+    ) -> Result<String, HwpError> {
+        /// 한 걸음. 개체 크기 조절과 같은 값이다(실측).
+        const STEP: i64 = 283;
+        /// LIST_HEADER 속성 상위 절반의 bit 8 — "이 칸의 크기를 방금 바꿨다"(실측 §4.21).
+        const CELL_FLAG_JUST_RESIZED: u16 = 0x0100;
+
+        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+        if table.cells.iter().any(|c| c.col_span > 1 || c.row_span > 1) {
+            return Ok(r#"{"ok":false,"reason":"병합된 칸이 있는 표는 아직 안 쟀다"}"#.to_string());
+        }
+        let primary = if vertical { row } else { col };
+        let neighbour = primary + 1;
+        let last = if vertical {
+            table.row_count.saturating_sub(1)
+        } else {
+            table.col_count.saturating_sub(1)
+        };
+        if line_mode && primary >= last {
+            // 옮길 경계가 없다. 한글이 무엇을 하는지 안 쟀으므로 아무 일도 하지 않는다.
+            return Ok(r#"{"ok":true,"moved":false}"#.to_string());
+        }
+        let delta = if forward { STEP } else { -STEP };
+
+        let mut moved = false;
+        for cell in table.cells.iter_mut() {
+            let at = if vertical { cell.row } else { cell.col };
+            let step = if at == primary {
+                delta
+            } else if line_mode && at == neighbour {
+                -delta
+            } else {
+                cell.set_list_header_flag_pub(CELL_FLAG_JUST_RESIZED, false);
+                continue;
+            };
+            moved = true;
+            cell.set_list_header_flag_pub(CELL_FLAG_JUST_RESIZED, true);
+            if vertical {
+                cell.height = (cell.height as i64 + step).max(0) as u32;
+            } else {
+                cell.width = (cell.width as i64 + step).max(0) as u32;
+                // 보존 바이트의 폭도 같이 옮긴다 — 안 그러면 저장에서 묻힌다.
+                if cell.raw_list_extra.len() >= 2 {
+                    let w = u16::try_from(cell.width).unwrap_or(u16::MAX).to_le_bytes();
+                    cell.raw_list_extra[0] = w[0];
+                    cell.raw_list_extra[1] = w[1];
+                }
+            }
+        }
+        table.dirty = true;
+        self.document.sections[section_idx].raw_stream = None;
+        Ok(format!(r#"{{"ok":true,"moved":{}}}"#, moved))
+    }
 }
 
 /// 셀 텍스트에서 숫자를 추출한다 (콤마 제거, 공백 무시).
