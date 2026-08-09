@@ -31,5 +31,8 @@ jobs:
         run: |
           echo "설치된 버전: ${{ steps.setup.outputs.version }}"
           rhwp --version
-          rhwp capabilities | head -c 200
+          # head 로 직접 파이프하면 200바이트 뒤 파이프가 닫혀 rhwp 가 EPIPE 패닉
+          # (exit 101)하고 pipefail 이 스텝을 실패시킨다 — 파일 경유로 자른다.
+          rhwp capabilities > capabilities.json
+          head -c 200 capabilities.json
           echo
