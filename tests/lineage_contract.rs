@@ -1,0 +1,175 @@
+//! [#4401] 작업 계보 계약 — `replay --parent` 링크 + `rhwp lineage` 체인 검증.
+//!
+//! 고정하는 것: ① 2링크 왕복 — 실산출(run)→캡슐 A→캡슐 B(parent A) 체인이
+//! 유효(depth 2)하고, **계보 불변식**(부모 산출 해시 == 자식 입력 해시)이
+//! run↔replay 교차 결정론 위에서 성립한다, ② 부모 파일 사후 변조는 기록 해시
+//! 대조(parentOk:false)로 폭로되고 exit 3 + brokenAt 명세, ③ `--deep` 은 링크마다
+//! 재실행 재현을 판정한다, ④ 머리 캡슐 없음/무인자/미지 옵션의 실패 규약.
+
+#![cfg(not(target_arch = "wasm32"))]
+
+use std::process::{Command, Output};
+
+const SAMPLE: &str = "samples/basic/issue2007_nested_cell_pagination_42065.hwp";
+const ZERO64: &str = "0000000000000000000000000000000000000000000000000000000000000000";
+
+fn run(args: &[&str]) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .args(args)
+        .output()
+        .expect("rhwp 실행")
+}
+
+fn existing_snippet() -> String {
+    let o = run(&["export-text", SAMPLE, "-p", "0", "--json"]);
+    assert_eq!(o.status.code(), Some(0));
+    let env: serde_json::Value = serde_json::from_slice(&o.stdout).expect("봉투");
+    let text = env["pages"][0]["text"].as_str().expect("쪽 텍스트");
+    let chars: Vec<char> = text.chars().filter(|c| !c.is_whitespace()).collect();
+    chars[..2].iter().collect()
+}
+
+fn make_dir(tag: &str) -> std::path::PathBuf {
+    let dir = std::env::temp_dir().join(format!("rhwp_lineage_{tag}_{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("계보 폴더");
+    dir
+}
+
+fn plan_json(input: &str, output: &std::path::Path, find: &str) -> String {
+    serde_json::json!({
+        "planVersion": "1.0",
+        "input": input,
+        "output": output.to_string_lossy(),
+        "steps": [{ "action": "replace_text", "find": find, "replace": find }],
+    })
+    .to_string()
+}
+
+fn lineage(head: &std::path::Path, deep: bool) -> (Option<i32>, serde_json::Value) {
+    let head = head.to_str().unwrap();
+    let mut args = vec!["lineage", head, "--json"];
+    if deep {
+        args.insert(2, "--deep");
+    }
+    let o = run(&args);
+    let env = serde_json::from_slice(&o.stdout).unwrap_or(serde_json::json!({}));
+    (o.status.code(), env)
+}
+
+#[test]
+fn two_link_chain_is_valid_and_tampered_parent_is_exposed() {
+    let dir = make_dir("chain");
+    let find = existing_snippet();
+
+    // 실작업 1: run 으로 O1 을 실제 디스크에 산출.
+    let o1 = dir.join("o1.hwp");
+    let plan_a = plan_json(SAMPLE, &o1, &find);
+    let plan_a_path = dir.join("plan_a.json");
+    std::fs::write(&plan_a_path, &plan_a).unwrap();
+    let o = run(&["run", plan_a_path.to_str().unwrap(), "--json"]);
+    assert_eq!(
+        o.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&o.stdout)
+    );
+    assert!(o1.exists());
+
+    // 캡슐 A 발급 (부모 없음 — 계보의 뿌리).
+    let cap_a = dir.join("a.capsule.json");
+    let o = run(&[
+        "replay",
+        "--plan-json",
+        &plan_a,
+        "--capsule",
+        cap_a.to_str().unwrap(),
+        "--json",
+    ]);
+    assert_eq!(
+        o.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&o.stdout)
+    );
+
+    // 뿌리 하나만으로도 계보는 유효 — depth 1, 판정 축 3종은 전부 null.
+    let (code, env) = lineage(&cap_a, false);
+    assert_eq!(code, Some(0), "{env}");
+    assert_eq!(env["depth"], 1);
+    assert_eq!(env["valid"], true);
+    assert_eq!(env["links"][0]["parentOk"], serde_json::Value::Null);
+    assert_eq!(env["links"][0]["lineageOk"], serde_json::Value::Null);
+
+    // 실작업 2: O1 을 입력으로 하는 캡슐 B — parent 로 A 를 지목.
+    let plan_b = plan_json(o1.to_str().unwrap(), &dir.join("o2.hwp"), &find);
+    let cap_b = dir.join("b.capsule.json");
+    let o = run(&[
+        "replay",
+        "--plan-json",
+        &plan_b,
+        "--capsule",
+        cap_b.to_str().unwrap(),
+        "--parent",
+        cap_a.to_str().unwrap(),
+        "--json",
+    ]);
+    assert_eq!(
+        o.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&o.stdout)
+    );
+    let b: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&cap_b).unwrap()).unwrap();
+    assert_eq!(b["parent"]["capsule"], cap_a.to_str().unwrap());
+    assert_eq!(b["parent"]["sha256"].as_str().map(str::len), Some(64));
+
+    // 체인 유효 — parentOk(파일 무결)와 lineageOk(부모 산출=자식 입력)가 모두 참.
+    // lineageOk 는 run 이 쓴 O1 과 replay 의 임시 재실행이 같은 바이트라는
+    // run↔replay 교차 결정론의 직접 증거다.
+    let (code, env) = lineage(&cap_b, false);
+    assert_eq!(code, Some(0), "{env}");
+    assert_eq!(env["depth"], 2);
+    assert_eq!(env["valid"], true);
+    assert_eq!(env["brokenAt"], serde_json::Value::Null);
+    assert_eq!(env["links"][1]["parentOk"], true);
+    assert_eq!(env["links"][1]["lineageOk"], true, "계보 불변식: {env}");
+
+    // --deep: 링크마다 재실행 재현까지.
+    let (code, env) = lineage(&cap_b, true);
+    assert_eq!(code, Some(0), "{env}");
+    assert_eq!(env["links"][0]["reproduced"], true);
+    assert_eq!(env["links"][1]["reproduced"], true);
+
+    // 부모 캡슐을 사후 변조 — 자식이 기록한 파일 해시가 폭로한다.
+    let mut a: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&cap_a).unwrap()).unwrap();
+    a["receipt"]["outputSha256"] = serde_json::json!(ZERO64);
+    std::fs::write(&cap_a, serde_json::to_string_pretty(&a).unwrap()).unwrap();
+
+    let (code, env) = lineage(&cap_b, false);
+    assert_eq!(code, Some(3), "변조된 계보 = 검증 단언 실패: {env}");
+    assert_eq!(env["valid"], false);
+    assert_eq!(env["brokenAt"], cap_a.to_str().unwrap());
+    assert_eq!(env["links"][1]["parentOk"], false);
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn failure_conventions() {
+    // 무인자 → 사용법 오류.
+    let o = run(&["lineage"]);
+    assert_eq!(o.status.code(), Some(2));
+    // 미지 옵션 → 사용법 오류.
+    let o = run(&["lineage", "x.capsule.json", "--nope"]);
+    assert_eq!(o.status.code(), Some(2));
+    // 머리 캡슐이 없음 → 실행 오류(1) + stdout 0바이트 (실패 stdout 순수성).
+    let o = run(&["lineage", "definitely_missing.capsule.json", "--json"]);
+    assert_eq!(o.status.code(), Some(1));
+    assert!(
+        o.stdout.is_empty(),
+        "{}",
+        String::from_utf8_lossy(&o.stdout)
+    );
+}

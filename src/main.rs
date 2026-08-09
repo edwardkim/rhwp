@@ -348,6 +348,7 @@ fn main() {
         Some("run") => exit_with(cmd_run_plan(&args[2..])),
         Some("replay") => exit_with(cmd_replay(&args[2..])),
         Some("audit") => exit_with(cmd_audit(&args[2..])),
+        Some("lineage") => exit_with(cmd_lineage(&args[2..])),
         // [#3719 §6-4] 계획을 *만드는* 쪽의 정답지 — `run` 바로 옆에 둔다.
         Some("export-plan-schema") => exit_with(cmd_export_plan_schema(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
@@ -1578,6 +1579,22 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             serde_json::json!([{ "when": "expectOutputSha256", "args": ["--expect-output-sha256", "{expectOutputSha256}"] }]),
             &["schemaVersion", "mode", "input", "inputSha256", "planSha256", "outputSha256", "toolVersion", "steps", "reproduced", "expectedOutputSha256"],
         ),
+        tool_with_optional_args(
+            "hwp_lineage",
+            "[#4401] 작업 계보 검증 — 캡슐 해시 체인을 머리부터 거슬러 부모 파일 무결(기록 해시 대조)·계보 불변식(부모 산출=자식 입력)을 판정하고, deep 이면 링크마다 재실행 재현까지 확인한다. 깨진 체인은 exit 3, 봉투의 brokenAt·links[] 가 어느 링크가 왜 깨졌는지 명세.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "capsule": { "type": "string", "description": "체인의 머리(최신) 캡슐 경로" },
+                    "deep": { "type": "boolean", "description": "링크마다 재실행 재현까지 확인" }
+                },
+                "required": ["capsule"],
+            }),
+            "lineage",
+            serde_json::json!(["lineage", "{capsule}", "--json"]),
+            serde_json::json!([{ "when": "deep", "args": ["--deep"] }]),
+            &["schemaVersion", "head", "depth", "valid", "brokenAt", "links"],
+        ),
         tool(
             "hwp_audit",
             "[#4393] 에이전트 노동 감사 — 작업 캡슐(*.capsule.json) 폴더를 전수 재실행해 재현율을 회계한다. 개별 검증은 hwp_replay, 조직 규모 일괄은 이 도구. 불일치 1건 = exit 3, failed[] 에 캡슐별 기대/실제 해시.",
@@ -1944,7 +1961,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             "query",
             "계획을 임시 산출로 재실행해 작업 영수증(입력·계획·산출 SHA-256)을 발급하고, --expect-output-sha256 로 타인의 작업 주장을 재현 검증한다 — 불일치는 exit 3 (#4391)",
             false,
-            &["--json", "--plan-json", "--expect-output-sha256", "--capsule"],
+            &["--json", "--plan-json", "--expect-output-sha256", "--capsule", "--parent"],
             &[
                 "schemaVersion",
                 "mode",
@@ -1956,6 +1973,21 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "steps",
                 "reproduced",
                 "expectedOutputSha256",
+            ],
+        ),
+        cmd_json(
+            "lineage",
+            "query",
+            "작업 캡슐 해시 체인을 거슬러 연대기를 검증 — 부모 파일 무결·계보 불변식(부모 산출=자식 입력)·(--deep) 링크별 재현. 깨진 체인은 exit 3, brokenAt 명세 (#4401)",
+            false,
+            &["--json", "--deep"],
+            &[
+                "schemaVersion",
+                "head",
+                "depth",
+                "valid",
+                "brokenAt",
+                "links",
             ],
         ),
         cmd_json(
@@ -3502,6 +3534,7 @@ fn print_help() {
     println!("  run <계획.json> [--json]              선언적 편집 계획 실행 (#3703)");
     println!("  replay <계획.json> [--expect-output-sha256 <hex>] [--json]  작업 영수증 발급·재현 검증 (#4391)");
     println!("  audit <캡슐 폴더> [--json]            작업 캡슐 전수 재검증 — 재현율 회계 (#4393)");
+    println!("  lineage <캡슐.json> [--deep] [--json]  작업 계보(해시 체인) 연대기 검증 (#4401)");
     println!("      전 step 을 정적 선검증(불가 시 실행 0·exit 2)하고 인메모리로 원자");
     println!("      실행해 단언(verify) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경.");
     println!("      steps: fill_fields{{data}} · replace_text{{find,replace[,occurrence]}}");
@@ -15147,6 +15180,7 @@ fn cmd_replay(args: &[String]) -> i32 {
     let mut plan_inline: Option<&str> = None;
     let mut expected: Option<String> = None;
     let mut capsule_path: Option<String> = None;
+    let mut parent_path: Option<String> = None;
     let mut json_mode = false;
     let mut i = 0;
     while i < args.len() {
@@ -15170,6 +15204,16 @@ fn cmd_replay(args: &[String]) -> i32 {
                         eprintln!(
                             "오류: --expect-output-sha256 뒤에 64자리 16진 해시가 필요합니다."
                         );
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--parent" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => parent_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --parent 뒤에 부모 캡슐 경로가 필요합니다.");
                         return EXIT_USAGE;
                     }
                 }
@@ -15267,9 +15311,25 @@ fn cmd_replay(args: &[String]) -> i32 {
     );
     if let Some(cp) = capsule_path.as_deref() {
         // [#4393] 작업 캡슐 — 계획(원본 output 보존)+영수증의 자기완결 교환 형식.
+        // [#4401] --parent 가 있으면 부모 캡슐 파일의 SHA-256 을 내장해 계보
+        // 링크를 만든다 — 부모가 나중에 변조되면 lineage 가 이 해시로 폭로한다.
+        let parent_link = match parent_path.as_deref() {
+            Some(pp) => match fs::read(pp) {
+                Ok(bytes) => serde_json::json!({
+                    "capsule": pp,
+                    "sha256": replay_sha256_hex(&bytes),
+                }),
+                Err(e) => {
+                    eprintln!("오류: 부모 캡슐을 읽을 수 없습니다 - {pp}: {e}");
+                    return EXIT_RUNTIME;
+                }
+            },
+            None => serde_json::Value::Null,
+        };
         let capsule = serde_json::json!({
             "schemaVersion": "1.0",
             "kind": "workCapsule",
+            "parent": parent_link,
             "plan": plan_original,
             "receipt": envelope,
         });
@@ -15298,6 +15358,169 @@ fn cmd_replay(args: &[String]) -> i32 {
     match reproduced {
         Some(false) => 3, // #2707: 검증 단언 실패 — 주장된 산출과 재현 산출이 다르다.
         _ => EXIT_OK,
+    }
+}
+
+/// [#4401] 작업 계보 — 캡슐 해시 체인을 머리부터 거슬러 검증한다.
+///
+/// 3중 판정: ① 부모 파일 무결(자식이 기록한 부모 파일 SHA-256 과 실물 대조 —
+/// 사후 변조는 여기서 폭로된다) ② 계보 불변식(부모의 산출 해시 == 자식의 입력
+/// 해시 — "이전 작업의 산출이 다음 작업의 입력"이라는 연대기의 정의) ③ `--deep`
+/// 이면 링크마다 재실행 재현까지. 판정은 봉투 데이터(valid·brokenAt·links[])이고
+/// 깨진 체인은 exit 3 이다.
+fn cmd_lineage(args: &[String]) -> i32 {
+    let mut head: Option<&str> = None;
+    let mut deep = false;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--deep" => deep = true,
+            other if !other.starts_with("--") && head.is_none() => head = Some(other),
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let Some(head) = head else {
+        eprintln!("사용법: rhwp lineage <캡슐.json> [--deep] [--json]");
+        return EXIT_USAGE;
+    };
+    let mut links: Vec<serde_json::Value> = Vec::new();
+    let mut valid = true;
+    let mut broken_at: Option<String> = None;
+    let mut current = std::path::PathBuf::from(head);
+    // 자식이 기록한 (부모 파일 해시, 자식 입력 해시) — 다음 링크에서 대조한다.
+    let mut recorded_parent_sha: Option<String> = None;
+    let mut child_input_sha: Option<String> = None;
+    let mut guard = 0usize;
+    loop {
+        guard += 1;
+        let name = current.display().to_string();
+        if guard > 1000 {
+            valid = false;
+            broken_at = Some(name);
+            links.push(serde_json::json!({ "error": "체인 길이 1000 초과 — 순환 의심" }));
+            break;
+        }
+        let bytes = match fs::read(&current) {
+            Ok(b) => b,
+            Err(e) => {
+                if links.is_empty() {
+                    eprintln!("오류: 캡슐을 읽을 수 없습니다 - {name}: {e}");
+                    return EXIT_RUNTIME;
+                }
+                valid = false;
+                broken_at = Some(name.clone());
+                links.push(serde_json::json!({ "capsule": name, "error": format!("부모 캡슐 읽기 실패: {e}") }));
+                break;
+            }
+        };
+        let file_sha = replay_sha256_hex(&bytes);
+        let capsule: serde_json::Value = match serde_json::from_str(&String::from_utf8_lossy(
+            &bytes,
+        )) {
+            Ok(v) => v,
+            Err(e) => {
+                valid = false;
+                broken_at = Some(name.clone());
+                links.push(
+                    serde_json::json!({ "capsule": name, "error": format!("JSON 파싱 실패: {e}") }),
+                );
+                break;
+            }
+        };
+        if capsule["kind"] != "workCapsule" {
+            valid = false;
+            broken_at = Some(name.clone());
+            links.push(
+                serde_json::json!({ "capsule": name, "error": "kind 가 workCapsule 이 아님" }),
+            );
+            break;
+        }
+        let input_sha = capsule["receipt"]["inputSha256"]
+            .as_str()
+            .unwrap_or_default()
+            .to_string();
+        let output_sha = capsule["receipt"]["outputSha256"]
+            .as_str()
+            .unwrap_or_default()
+            .to_string();
+        let parent_ok = recorded_parent_sha.as_deref().map(|r| r == file_sha);
+        let lineage_ok = child_input_sha.as_deref().map(|ci| output_sha == ci);
+        let reproduced = if deep {
+            let mut plan = capsule["plan"].clone();
+            match replay_execute_to_temp(&mut plan, &format!("lineage{guard}")) {
+                Ok((actual, _)) => Some(actual == output_sha),
+                Err(_) => Some(false),
+            }
+        } else {
+            None
+        };
+        links.push(serde_json::json!({
+            "capsule": name,
+            "inputSha256": input_sha,
+            "outputSha256": output_sha,
+            "parentOk": parent_ok,
+            "lineageOk": lineage_ok,
+            "reproduced": reproduced,
+        }));
+        if parent_ok == Some(false) || lineage_ok == Some(false) || reproduced == Some(false) {
+            valid = false;
+            broken_at = Some(name);
+            break;
+        }
+        let parent = &capsule["parent"];
+        if parent.is_null() {
+            break;
+        }
+        let Some(pp) = parent["capsule"].as_str() else {
+            valid = false;
+            broken_at = Some(name);
+            break;
+        };
+        recorded_parent_sha = parent["sha256"].as_str().map(str::to_string);
+        child_input_sha = Some(input_sha);
+        let pp_path = std::path::PathBuf::from(pp);
+        current = if pp_path.is_absolute() {
+            pp_path
+        } else {
+            current
+                .parent()
+                .unwrap_or(std::path::Path::new("."))
+                .join(pp_path)
+        };
+    }
+    let envelope = provenance::marked(
+        serde_json::json!({
+            "schemaVersion": "1.0",
+            "head": head,
+            "depth": links.len(),
+            "valid": valid,
+            "brokenAt": broken_at,
+            "links": links,
+        }),
+        "lineage",
+    );
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!(
+            "작업 계보 — {head}: 깊이 {} · {}",
+            envelope["depth"],
+            if valid { "유효" } else { "깨짐" }
+        );
+        if let Some(b) = envelope["brokenAt"].as_str() {
+            println!("  brokenAt: {b}");
+        }
+    }
+    if valid {
+        EXIT_OK
+    } else {
+        3 // #2707: 검증 단언 실패 — 연대기가 깨졌다.
     }
 }
 

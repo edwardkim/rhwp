@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 39개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 40개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -603,6 +603,23 @@ export interface IrDiffEnvelope {
 }
 
 /**
+ * `rhwp lineage --json` 봉투.
+ *
+ * 작업 캡슐 해시 체인을 거슬러 연대기를 검증 — 부모 파일 무결·계보 불변식(부모 산출=자식
+ * 입력)·(--deep) 링크별 재현. 깨진 체인은 exit 3, brokenAt 명세 (#4401)
+ */
+export interface LineageEnvelope {
+  readonly brokenAt?: unknown;
+  readonly depth?: unknown;
+  readonly head?: unknown;
+  readonly links?: unknown;
+  readonly schemaVersion?: string;
+  readonly valid?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp render-diff --json` 봉투.
  *
  * 왕복/두 파일 렌더 기하 차이 검증 — --json 회귀 검출은 exit 3 (--batch 는 NDJSON)
@@ -793,6 +810,7 @@ export interface EnvelopeByCommand {
   info: InfoEnvelope;
   inspect: InspectEnvelope;
   "ir-diff": IrDiffEnvelope;
+  lineage: LineageEnvelope;
   "render-diff": RenderDiffEnvelope;
   replay: ReplayEnvelope;
   run: RunEnvelope;
