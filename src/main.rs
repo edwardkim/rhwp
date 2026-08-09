@@ -8,6 +8,7 @@ mod agent_profiles;
 mod atomic_file;
 mod mcp_serve;
 use rhwp::provenance;
+use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 /// [#2707] CLI 종료 코드 계약 — 성공.
 const EXIT_OK: i32 = 0;
@@ -412,7 +413,7 @@ fn mcp_manifest_value(profile: Option<&'static agent_profiles::AgentProfile>) ->
 
     provenance::marked(
         serde_json::json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
         "protocol": "mcp",
         "server": {
             "suggestedName": "rhwp",
@@ -1924,6 +1925,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             &["--search"],
             &[
                 "schemaVersion",
+                "schemaRegistry",
                 "tool",
                 "version",
                 "exitCodes",
@@ -2701,7 +2703,7 @@ fn show_capabilities_search(query: &str, json_mode: bool) -> i32 {
 
     if json_mode {
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "tool": "rhwp",
             "version": rhwp::version(),
             "search": query,
@@ -2817,9 +2819,14 @@ fn capabilities_value() -> serde_json::Value {
     let commands = capabilities_command_entries();
 
     serde_json::json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
         "tool": "rhwp",
         "version": rhwp::version(),
+        // [#4329 R67×R83] 전 버전 축(봉투·IR·capabilities·plan + crate semver)의
+        // 단일 출처 자기서술 — 외부 소비자가 이 한 번의 호출로 상류 버전을 기계
+        // 대조한다(#4327 U2). 값의 원천은 rhwp::schema_registry 이고, 여기와
+        // 각 export-*-schema 봉투의 일치는 tests/schema_registry_contract.rs 가 고정.
+        "schemaRegistry": rhwp::schema_registry::registry_value(),
         // hwp5 는 convert·extract-pages·edit -o *.hwp 가 실제로 내는 산출 형식이다
         // (봉투의 format/outputFormat 이 "hwp5"). 쓰기 목록에서 빠져 있어 매니페스트만
         // 읽은 에이전트가 "HWP5 로는 못 쓴다"고 오판했다.
@@ -3794,7 +3801,7 @@ fn export_svg(args: &[String]) -> i32 {
 
     if json_mode {
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "format": "svg",
             "outputDir": output_dir,
@@ -4870,7 +4877,7 @@ fn export_pdf(args: &[String]) -> i32 {
                 "{}",
                 provenance::marked(
                     serde_json::json!({
-                        "schemaVersion": "1.0",
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                         "source": file_path,
                         "format": "pdf",
                         "backend": backend_name,
@@ -5073,7 +5080,7 @@ fn export_text(args: &[String]) -> i32 {
         // (`search --limit` 이 전수 grep 후 절단하는 것과 같은 이유, #3353).
         let (page_objs, omitted_count) = truncate_page_texts(&extracted, max_chars);
         let result = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "pageCount": page_objs.len(),
             "truncated": omitted_count > 0,
@@ -5383,7 +5390,7 @@ fn table_to_csv(args: &[String]) -> i32 {
             })
             .collect();
         let mut envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "tableCount": tables.len(),
             "tables": tables,
@@ -5637,7 +5644,7 @@ fn csv_to_table(args: &[String]) -> i32 {
     if !invalid.is_empty() {
         if json_mode {
             let envelope = serde_json::json!({
-                "schemaVersion": "1.0",
+                "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                 "source": file_path,
                 "csv": csv_path,
                 "table": table_no,
@@ -5778,7 +5785,7 @@ fn csv_to_table(args: &[String]) -> i32 {
 
     if json_mode {
         let mut envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "csv": csv_path,
             "table": table_no,
@@ -6137,7 +6144,7 @@ fn export_markdown(args: &[String]) -> i32 {
             "{}",
             provenance::marked(
                 serde_json::json!({
-                    "schemaVersion": "1.0",
+                    "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                     "source": file_path,
                     "format": "markdown",
                     "outputDir": output_dir,
@@ -6420,7 +6427,7 @@ fn cmd_scan(args: &[String]) -> i32 {
     // ③ 출력.
     if json_mode {
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "roots": roots,
             "files": records,
             "summary": summary,
@@ -7502,7 +7509,7 @@ fn batch_record(mode: BatchMode<'_>, path: &str) -> serde_json::Value {
 fn batch_fail_record(path: &str, message: String) -> serde_json::Value {
     provenance::marked(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": path,
             "error": message,
             "exitClass": "runtime",
@@ -7542,7 +7549,7 @@ fn batch_export_text_record_inner(path: &str) -> serde_json::Value {
 
     provenance::marked(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": path,
             "pageCount": page_count,
             "text": text,
@@ -7764,7 +7771,7 @@ fn batch_convert_record_inner(
     let envelope = |verify: serde_json::Value, verify_pages: serde_json::Value| {
         provenance::marked(
             serde_json::json!({
-                "schemaVersion": "1.0",
+                "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                 "source": path,
                 "output": output_path.display().to_string(),
                 "format": "hwp5",
@@ -7846,7 +7853,7 @@ fn structure_json_value(
 ) -> serde_json::Value {
     provenance::marked(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "mode": st.mode,
             "nodeCount": st.node_count,
@@ -7863,7 +7870,7 @@ fn tables_json_value(
 ) -> serde_json::Value {
     provenance::marked(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "tableCount": tables.len(),
             "tables": tables,
@@ -7880,7 +7887,7 @@ fn fields_json_value(file_path: &str, fields: &[serde_json::Value]) -> serde_jso
         .collect();
     provenance::marked(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "fieldCount": fields.len(),
             "fields": fields,
@@ -7949,7 +7956,7 @@ fn search_json_value(
 ) -> serde_json::Value {
     provenance::marked(
         serde_json::json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
         "source": file_path,
         "query": query,
         "caseSensitive": case_sensitive,
@@ -8077,7 +8084,7 @@ fn info_json_value(
     let para_count: usize = document.sections.iter().map(|s| s.paragraphs.len()).sum();
     provenance::marked(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "format": format_str,
             "sizeBytes": file_size,
@@ -8342,7 +8349,7 @@ fn digest_document(args: &[String]) -> i32 {
 
         let truncated = any_truncated || section_count > sections.len();
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "format": info["format"],
             "pageCount": info["pageCount"],
@@ -8394,7 +8401,7 @@ fn digest_document(args: &[String]) -> i32 {
             DIGEST_PAGES_DONE_NEXT_STEP.to_string()
         };
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "format": info["format"],
             "pageCount": info["pageCount"],
@@ -8437,7 +8444,7 @@ fn digest_document(args: &[String]) -> i32 {
     let (excerpt, truncated) = cut(excerpt_src, max_chars.unwrap_or(DIGEST_DEFAULT_MAX_CHARS));
 
     let envelope = serde_json::json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
         "source": file_path,
         "format": info["format"],
         "pageCount": info["pageCount"],
@@ -9245,7 +9252,7 @@ fn dump_pages(args: &[String]) -> i32 {
         // [#3697] 페이지네이션 진단 기계 계약 (#3608 1-C). stdout 은 순수 JSON 단건 봉투 —
         // 진행/요약 출력은 내지 않는다 (jsonContract 규약).
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "pageCount": page_count,
             "pageFilter": target_page,
@@ -11090,7 +11097,7 @@ fn extract_data_json_value(
 ) -> serde_json::Value {
     provenance::marked(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "kind": kind,
             "itemCount": items.len(),
@@ -11559,7 +11566,7 @@ fn extract_pages(args: &[String]) -> i32 {
             "{}",
             provenance::marked(
                 serde_json::json!({
-                    "schemaVersion": "1.0",
+                    "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                     "source": input,
                     "output": output,
                     "from": from,
@@ -11649,7 +11656,7 @@ fn convert_hwp(args: &[String]) -> i32 {
                 "{}",
                 provenance::marked(
                     serde_json::json!({
-                        "schemaVersion": "1.0",
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                         "source": input_path,
                         "output": output_path,
                         "format": "hwp5",
@@ -11898,7 +11905,7 @@ fn export_doclang(args: &[String]) -> i32 {
                     "{}",
                     provenance::marked(
                         serde_json::json!({
-                            "schemaVersion": "1.0",
+                            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                             "source": file_path,
                             "output": output_path.display().to_string(),
                             "format": "doclang",
@@ -12008,7 +12015,7 @@ fn export_hwpx(args: &[String]) -> i32 {
                 "{}",
                 provenance::marked(
                     serde_json::json!({
-                        "schemaVersion": "1.0",
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                         "source": positionals[0],
                         "output": output_path.display().to_string(),
                         "format": "hwpx",
@@ -12244,7 +12251,7 @@ fn export_hml(args: &[String]) {
             "{}",
             provenance::marked(
                 serde_json::json!({
-                    "schemaVersion": "1.0",
+                    "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                     "source": paths.input.display().to_string(),
                     "output": paths.output.display().to_string(),
                     "format": "hml",
@@ -12375,7 +12382,7 @@ fn build_from_ingest(args: &[String]) -> i32 {
                     "{}",
                     provenance::marked(
                         serde_json::json!({
-                            "schemaVersion": "1.0",
+                            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                             "source": input,
                             "output": output,
                             "format": "hwpx",
@@ -14049,7 +14056,7 @@ fn cmd_verify(args: &[String]) -> i32 {
     let pass_count = expectation_count - fail_count;
     if json_mode {
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": path,
             "expectations": expectations,
             "passCount": pass_count,
@@ -14368,7 +14375,7 @@ fn ir_diff(args: &[String]) -> i32 {
     if json_mode {
         // [#3274] 계약 봉투 한 줄 — 카테고리 버킷(BTreeMap)은 키 정렬이 결정적이다.
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "a": file_a,
             "b": file_b,
             "identical": total_diffs == 0,
@@ -14675,7 +14682,7 @@ fn cmd_export_ir_schema(args: &[String]) -> i32 {
                 "{}",
                 provenance::marked(
                     serde_json::json!({
-                        "schemaVersion": "1.0",
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                         "irSchemaVersion": rhwp::ir_schema::IR_SCHEMA_VERSION,
                         "output": path,
                         "bytes": text.len(),
@@ -14754,7 +14761,7 @@ fn cmd_export_plan_schema(args: &[String]) -> i32 {
                 "{}",
                 provenance::marked(
                     serde_json::json!({
-                        "schemaVersion": "1.0",
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                         "planSchemaVersion": rhwp::plan_schema::PLAN_SCHEMA_VERSION,
                         "output": path,
                         "bytes": text.len(),
@@ -14828,7 +14835,7 @@ fn cmd_export_capabilities_schema(args: &[String]) -> i32 {
                 "{}",
                 provenance::marked(
                     serde_json::json!({
-                        "schemaVersion": "1.0",
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                         "capabilitiesSchemaVersion":
                             rhwp::capabilities_schema::CAPABILITIES_SCHEMA_VERSION,
                         "output": path,
@@ -14912,7 +14919,7 @@ fn cmd_export_ontology(args: &[String]) -> i32 {
                 "{}",
                 provenance::marked(
                     serde_json::json!({
-                        "schemaVersion": "1.0",
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                         "ontologyVersion": rhwp::ontology::ONTOLOGY_VERSION,
                         "output": path,
                         "bytes": text.len(),
@@ -15184,7 +15191,7 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     fn usage(reason: &str) -> (serde_json::Value, i32) {
         (
             provenance::marked(
-                serde_json::json!({ "schemaVersion": "1.0", "error": reason }),
+                serde_json::json!({ "schemaVersion": ENVELOPE_SCHEMA_VERSION, "error": reason }),
                 "run",
             ),
             EXIT_USAGE,
@@ -15193,7 +15200,7 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     fn fail(reason: String) -> (serde_json::Value, i32) {
         (
             provenance::marked(
-                serde_json::json!({ "schemaVersion": "1.0", "error": reason }),
+                serde_json::json!({ "schemaVersion": ENVELOPE_SCHEMA_VERSION, "error": reason }),
                 "run",
             ),
             EXIT_RUNTIME,
@@ -15439,7 +15446,7 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
         return (
             provenance::marked(
                 serde_json::json!({
-                    "schemaVersion": "1.0", "planVersion": "1.0",
+                    "schemaVersion": ENVELOPE_SCHEMA_VERSION, "planVersion": "1.0",
                     "input": input, "output": output, "invalid": invalid,
                 }),
                 "run",
@@ -15454,7 +15461,7 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     if plan["dryRun"].as_bool().unwrap_or(false) {
         return (
             serde_json::json!({
-                "schemaVersion": "1.0", "planVersion": "1.0", "dryRun": true,
+                "schemaVersion": ENVELOPE_SCHEMA_VERSION, "planVersion": "1.0", "dryRun": true,
                 "input": input, "output": output,
                 "preview": preview, "invalid": [],
                 "assertions": { "notFoundEmpty": assert_not_found_empty, "verify": assert_verify },
@@ -15659,7 +15666,7 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
             return (
                 provenance::marked(
                     serde_json::json!({
-                        "schemaVersion": "1.0", "planVersion": "1.0",
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION, "planVersion": "1.0",
                         "input": input, "output": output,
                         "steps": journal_steps, "verify": verify_report,
                         "error": "verify 단언 실패 — 디스크 무변경",
@@ -15676,7 +15683,7 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     (
         provenance::marked(
             serde_json::json!({
-                "schemaVersion": "1.0", "planVersion": "1.0",
+                "schemaVersion": ENVELOPE_SCHEMA_VERSION, "planVersion": "1.0",
                 "input": input, "output": output, "outputFormat": out_format.label(),
                 "steps": journal_steps, "verify": verify_report,
                 "changedPages": changed_pages,
@@ -16128,7 +16135,7 @@ fn fill_fields_core(
     };
 
     let mut envelope = serde_json::json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
         "source": file_path,
         "dryRun": dry_run,
         "changedPages": changed_pages,
@@ -16346,7 +16353,7 @@ fn edit_replace_text(args: &[String]) -> i32 {
 
     if json_mode {
         let mut envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "find": find,
             "replace": replace,
@@ -16642,7 +16649,7 @@ fn edit_redact(args: &[String]) -> i32 {
             }
         }
         let mut envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "kinds": kinds.iter().map(|k| k.as_str()).collect::<Vec<_>>(),
             "mask": mask_char.to_string(),
@@ -17109,7 +17116,7 @@ fn edit_sanitize(args: &[String]) -> i32 {
 
     if json_mode {
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "keepPreview": keep_preview,
             "removedCount": removed.len(),
@@ -17672,7 +17679,7 @@ fn edit_set_cell(args: &[String]) -> i32 {
 
     if json_mode {
         let mut envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "table": table_no,
             "row": row,
@@ -18101,7 +18108,7 @@ fn edit_insert_image(args: &[String]) -> i32 {
 
     if json_mode {
         let mut envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "image": image_path,
             "page": page_arg,
@@ -18350,7 +18357,7 @@ fn explain_json_value(
     );
     provenance::marked(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "format": format_label,
             "pageCount": page_count,
@@ -18534,7 +18541,7 @@ fn inspect_hidden_text(args: &[String]) -> i32 {
 
     if json_mode {
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "thresholdPt": opts.threshold_pt,
             "includeOffPage": opts.include_off_page,
@@ -18791,7 +18798,7 @@ fn inspect_unicode(args: &[String]) -> i32 {
     if json_mode {
         // 0건이면 findings: [] · clean: true — "검사했는데 깨끗함"과 "검사 안 함"은 다르다.
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "kindFilter": kind_label,
             "scannedChars": scanned_chars,
@@ -18986,7 +18993,7 @@ fn inspect_injection(args: &[String]) -> i32 {
 
     if json_mode {
         let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "minConfidence": min_confidence.label(),
             "includeFields": include_fields,
@@ -19145,7 +19152,7 @@ fn extract_thumbnail(args: &[String]) -> i32 {
     // [#3600] JSON 봉투 공통부 — 모드별로 output/base64/dataUri 만 달라진다.
     let envelope_base = |extra: serde_json::Value| {
         let mut v = serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": input_path,
             "format": result.format,
             "mime": mime,

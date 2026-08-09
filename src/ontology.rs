@@ -35,6 +35,7 @@ use serde_json::{json, Map, Value};
 
 use crate::ir_schema;
 use crate::provenance;
+use crate::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 /// 온톨로지 산출물 버전. 봉투 `schemaVersion` 과 독립적으로 진화한다.
 pub const ONTOLOGY_VERSION: &str = "1.0";
@@ -431,7 +432,7 @@ pub fn envelope(capabilities: &Value, mcp_tools: &[Value]) -> Value {
     let body = ontology(capabilities, mcp_tools);
     let (class_count, property_count, action_count) = counts(&body);
     json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
         "ontology": body,
         "classCount": class_count,
         "propertyCount": property_count,

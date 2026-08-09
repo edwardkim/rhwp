@@ -19,8 +19,11 @@
 
 use serde_json::{json, Value};
 
-/// 공개 IR 스키마 버전. 봉투 schemaVersion 과 독립적으로 진화한다.
-pub const IR_SCHEMA_VERSION: &str = "1.0";
+use crate::schema_registry::ENVELOPE_SCHEMA_VERSION;
+
+/// 공개 IR 스키마 버전 — 단일 출처는 [`crate::schema_registry`](#4329). 여기서는
+/// 재수출만 해 기존 호출부 경로를 보존한다.
+pub use crate::schema_registry::IR_SCHEMA_VERSION;
 
 /// JSON Schema draft — 소비자(코드 생성기)가 파서를 고를 수 있게 명시한다.
 const SCHEMA_DIALECT: &str = "https://json-schema.org/draft/2020-12/schema";
@@ -849,7 +852,8 @@ pub fn ir_schema() -> Value {
 
     json!({
         "$schema": SCHEMA_DIALECT,
-        "$id": "https://github.com/edwardkim/rhwp/schema/ir/1.0",
+        // [#4329] $id 의 버전 조각도 레지스트리 상수에서 파생 — 리터럴 산개 금지.
+        "$id": format!("https://github.com/edwardkim/rhwp/schema/ir/{IR_SCHEMA_VERSION}"),
         "title": "rhwp Document IR",
         "irSchemaVersion": IR_SCHEMA_VERSION,
         "description":
@@ -868,7 +872,7 @@ pub fn envelope() -> Value {
         .map(|o| o.len())
         .unwrap_or(0);
     json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
         "irSchemaVersion": IR_SCHEMA_VERSION,
         "dialect": SCHEMA_DIALECT,
         "definitionCount": def_count,

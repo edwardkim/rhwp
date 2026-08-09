@@ -68,6 +68,7 @@ export interface CapabilitiesEnvelope {
   readonly batch?: unknown;
   readonly commands?: unknown;
   readonly exitCodes?: unknown;
+  readonly schemaRegistry?: unknown;
   readonly schemaVersion?: string;
   readonly tool?: string;
   readonly version?: string;

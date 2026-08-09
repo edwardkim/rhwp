@@ -482,8 +482,10 @@ pub fn roundtrip_geom(data: &[u8], via: Via) -> Result<DocGeomDiff, HwpError> {
 /// 기본 변위 임계값(px). Stage 3 에서 실측 분포로 보정한다.
 const DEFAULT_MAX_DISP: f64 = 1.0;
 
-/// `--json` 봉투 스키마 버전. 필드 추가는 허용, 변경·삭제는 범프한다.
-const SCHEMA_VERSION: &str = "1.0";
+/// `--json` 봉투 스키마 버전 — 다른 명령들과 같은 봉투 축이므로 단일
+/// 출처([`crate::schema_registry`], #4329)를 별칭으로 쓴다. 필드 추가는 허용,
+/// 변경·삭제는 범프한다는 규약도 그쪽이 canonical 이다.
+use crate::schema_registry::ENVELOPE_SCHEMA_VERSION as SCHEMA_VERSION;
 
 // 종료 코드 — #2707 사전. 회귀 **검출**(도구는 정상 동작)과 런타임 **실패**를 같은
 // 코드로 뭉개면 CI 는 "렌더가 깨졌다"와 "파일을 못 읽었다"를 구분할 수 없다.

@@ -25,9 +25,11 @@
 
 use serde_json::{json, Value};
 
-/// capabilities 스키마 버전. 봉투 schemaVersion 과 독립적으로 진화한다.
-/// 1.2: McpTool 에 annotations(MCP 표준 ToolAnnotations) 필드 추가 (#4220 T3, minor).
-pub const CAPABILITIES_SCHEMA_VERSION: &str = "1.2";
+use crate::schema_registry::ENVELOPE_SCHEMA_VERSION;
+
+/// capabilities 스키마 버전 — 단일 출처·판올림 이력은 [`crate::schema_registry`]
+/// (#4329). 여기서는 재수출만 해 기존 호출부 경로를 보존한다.
+pub use crate::schema_registry::CAPABILITIES_SCHEMA_VERSION;
 
 /// JSON Schema draft — 소비자(코드 생성기)가 파서를 고를 수 있게 명시한다.
 const SCHEMA_DIALECT: &str = "https://json-schema.org/draft/2020-12/schema";
@@ -83,6 +85,7 @@ fn capabilities_def() -> Value {
     object(
         json!({
             "schemaVersion": prim("string", "이 봉투의 스키마 버전 (현재 \"1.0\")"),
+            "schemaRegistry": r("SchemaRegistry"),
             "tool": prim("string", "도구 이름. 항상 \"rhwp\"."),
             "version": prim("string", "rhwp 버전 — `rhwp --version` 과 같은 원천"),
             "formats": r("Formats"),
@@ -98,6 +101,7 @@ fn capabilities_def() -> Value {
         }),
         &[
             "schemaVersion",
+            "schemaRegistry",
             "tool",
             "version",
             "formats",
@@ -109,6 +113,39 @@ fn capabilities_def() -> Value {
             "untrustedFields",
         ],
         "`rhwp capabilities` 의 stdout 봉투. 에이전트가 첫 호출 1회로 명령 표면 전체를 파악하는 입구다.",
+    )
+}
+
+/// [#4329 R67×R83] `schemaRegistry` — 전 버전 축의 단일 출처 자기서술.
+fn schema_registry_def() -> Value {
+    object(
+        json!({
+            "crateVersion": prim("string", "릴리스 semver — Cargo.toml 단일 출처(`rhwp --version` 과 동일)."),
+            "axes": array_of(
+                object(
+                    json!({
+                        "axis": enum_of(
+                            &[
+                                ("envelope", "명령별 --json 봉투 최상위 schemaVersion"),
+                                ("ir", "export-ir-schema 의 irSchemaVersion"),
+                                ("capabilities", "export-capabilities-schema 의 capabilitiesSchemaVersion"),
+                                ("plan", "export-plan-schema 의 planSchemaVersion"),
+                            ],
+                            "버전 축 이름 — 고정 집합(추가는 capabilities minor).",
+                        ),
+                        "version": prim("string", "이 축의 현재 버전."),
+                        "surface": prim("string", "이 버전이 노출되는 봉투·명령 표면."),
+                        "bump": prim("string", "판올림 규약 서술."),
+                    }),
+                    &["axis", "version", "surface", "bump"],
+                    "버전 축 하나의 자기서술.",
+                ),
+                "전 버전 축 목록 — 소비자는 여기 값과 자기 지원 버전을 대조한다.",
+            ),
+            "policy": prim("string", "버전 정책 canonical 문서의 저장소 경로."),
+        }),
+        &["crateVersion", "axes", "policy"],
+        "스키마 버전 레지스트리(#4329) — 외부 소비자가 상류 버전 진화를 기계로 추종하는 대사 채널(#4327 U2).",
     )
 }
 
@@ -473,6 +510,7 @@ pub fn capabilities_schema() -> Value {
     // 정의가 늘면 json! 매크로 재귀 한도에 걸린다 — 맵으로 조립한다.
     let defs: serde_json::Map<String, Value> = [
         ("Capabilities", capabilities_def()),
+        ("SchemaRegistry", schema_registry_def()),
         ("Formats", formats_def()),
         ("ExitCodes", exit_codes_def()),
         ("JsonContract", json_contract_def()),
@@ -489,7 +527,8 @@ pub fn capabilities_schema() -> Value {
 
     json!({
         "$schema": SCHEMA_DIALECT,
-        "$id": "https://github.com/edwardkim/rhwp/schema/capabilities/1.2",
+        // [#4329] $id 의 버전 조각도 레지스트리 상수에서 파생 — 리터럴 산개 금지.
+        "$id": format!("https://github.com/edwardkim/rhwp/schema/capabilities/{CAPABILITIES_SCHEMA_VERSION}"),
         "title": "rhwp capabilities",
         "capabilitiesSchemaVersion": CAPABILITIES_SCHEMA_VERSION,
         "description":
@@ -523,7 +562,8 @@ pub fn mcp_manifest_schema() -> Value {
 
     json!({
         "$schema": SCHEMA_DIALECT,
-        "$id": "https://github.com/edwardkim/rhwp/schema/capabilities-mcp/1.2",
+        // [#4329] $id 의 버전 조각도 레지스트리 상수에서 파생 — 리터럴 산개 금지.
+        "$id": format!("https://github.com/edwardkim/rhwp/schema/capabilities-mcp/{CAPABILITIES_SCHEMA_VERSION}"),
         "title": "rhwp MCP tool manifest",
         "capabilitiesSchemaVersion": CAPABILITIES_SCHEMA_VERSION,
         "description":
@@ -543,7 +583,7 @@ pub fn envelope() -> Value {
     let mcp_schema = mcp_manifest_schema();
     let def_count = definition_count(&schema) + definition_count(&mcp_schema);
     json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
         "capabilitiesSchemaVersion": CAPABILITIES_SCHEMA_VERSION,
         "dialect": SCHEMA_DIALECT,
         "definitionCount": def_count,

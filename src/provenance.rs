@@ -40,6 +40,8 @@
 
 use serde_json::{json, Value};
 
+use crate::schema_registry::ENVELOPE_SCHEMA_VERSION;
+
 /// 문서 파생 필드 하나의 선언.
 pub struct UntrustedField {
     /// 봉투 안의 경로. `.` 는 객체 하위, `[]` 는 배열 원소 전개를 뜻한다.
@@ -559,7 +561,7 @@ pub fn map_json(version: &str) -> Value {
         );
     }
     json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
         "tool": "rhwp",
         "version": version,
         "envelopeFlags": {

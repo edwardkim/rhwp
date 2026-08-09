@@ -19,6 +19,7 @@
 use std::collections::HashMap;
 use std::io::{BufRead, Write};
 
+use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 use rhwp::wasm_api::HwpDocument;
 
 const PROTOCOL_VERSION: &str = "2025-06-18";
@@ -932,7 +933,7 @@ fn session_open(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
     );
     tool_ok_text(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "docId": doc_id,
             "source": path,
             "pageCount": page_count,
@@ -1069,7 +1070,7 @@ fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
     let (page_objs, omitted_count) = crate::truncate_page_texts(&extracted, max_chars);
     tool_ok_text(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "docId": doc_id,
             "pageCount": page_objs.len(),
             "truncated": omitted_count > 0,
@@ -1166,7 +1167,7 @@ fn session_render_page(args: &serde_json::Value, sessions: &mut Sessions) -> ser
     }
     tool_ok_text(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "docId": id,
             "page": page,
             "format": "svg",
@@ -1303,7 +1304,7 @@ fn session_replace_text(args: &serde_json::Value, sessions: &mut Sessions) -> se
     };
     tool_ok_text(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "docId": doc_id,
             "find": find,
             "replace": replace,
@@ -1432,7 +1433,7 @@ fn session_set_cell(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
     let changed_pages = changed_pages_value(&mut sd.doc, &[(sec, para)]);
     tool_ok_text(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "docId": id,
             "table": table_no, "row": row, "col": col,
             "oldText": old_text,
@@ -1558,7 +1559,7 @@ fn session_fill_fields(args: &serde_json::Value, sessions: &mut Sessions) -> ser
 
     tool_ok_text(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "docId": doc_id,
             "changedPages": changed_pages,
             "filledCount": filled.len(),
@@ -1626,7 +1627,7 @@ fn session_save(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
     };
     tool_ok_text(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "docId": doc_id,
             "output": output,
             "outputFormat": format.label(),
@@ -1651,7 +1652,7 @@ fn session_close(args: &serde_json::Value, sessions: &mut Sessions) -> serde_jso
     }
     tool_ok_text(
         serde_json::json!({
-            "schemaVersion": "1.0",
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "docId": doc_id,
             "closed": true,
         })

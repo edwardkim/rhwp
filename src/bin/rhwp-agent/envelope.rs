@@ -25,7 +25,10 @@ pub const EXIT_GATE: i32 = 3;
 /// 필드 경로들("`.`" 은 객체 하위, "`[]`" 는 배열 원소 — 본 CLI 와 같은 문법).
 pub fn envelope(command: &str, mut payload: Value, untrusted: &[&str]) -> Value {
     if let Some(map) = payload.as_object_mut() {
-        map.insert("schemaVersion".into(), json!("1.0"));
+        map.insert(
+            "schemaVersion".into(),
+            json!(rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION),
+        );
         map.insert("tool".into(), json!("rhwp-agent"));
         map.insert("command".into(), json!(command));
         map.insert("version".into(), json!(rhwp::version()));

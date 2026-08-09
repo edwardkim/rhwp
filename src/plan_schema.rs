@@ -35,8 +35,13 @@
 
 use serde_json::{json, Value};
 
-/// 계획 스키마 버전. 봉투 schemaVersion·계획서 planVersion 과 독립적으로 진화한다.
-pub const PLAN_SCHEMA_VERSION: &str = "1.0";
+use crate::schema_registry::ENVELOPE_SCHEMA_VERSION;
+
+/// 계획 스키마 버전 — 단일 출처는 [`crate::schema_registry`](#4329). 여기서는
+/// 재수출만 해 기존 호출부 경로를 보존한다. 봉투 schemaVersion·계획서
+/// planVersion(아래 `REQUIRED_PLAN_VERSION`, 계획 파일이 선언하는 문법 수용
+/// 게이트)과는 여전히 독립적으로 진화한다.
+pub use crate::schema_registry::PLAN_SCHEMA_VERSION;
 
 /// 계획서가 선언해야 하는 `planVersion` 값 — 실행기가 이 값만 받는다.
 const REQUIRED_PLAN_VERSION: &str = "1.0";
@@ -439,7 +444,8 @@ pub fn plan_schema() -> Value {
 
     json!({
         "$schema": SCHEMA_DIALECT,
-        "$id": "https://github.com/edwardkim/rhwp/schema/plan/1.0",
+        // [#4329] $id 의 버전 조각도 레지스트리 상수에서 파생 — 리터럴 산개 금지.
+        "$id": format!("https://github.com/edwardkim/rhwp/schema/plan/{PLAN_SCHEMA_VERSION}"),
         "title": "rhwp 편집 계획서",
         "planSchemaVersion": PLAN_SCHEMA_VERSION,
         "description":
@@ -469,7 +475,7 @@ pub fn envelope() -> Value {
     let schema = plan_schema();
     let def_count = definition_count(&schema);
     json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
         "planSchemaVersion": PLAN_SCHEMA_VERSION,
         "dialect": SCHEMA_DIALECT,
         "definitionCount": def_count,
