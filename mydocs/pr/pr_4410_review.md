@@ -19,8 +19,8 @@ loaded documents: `pr_review_workflow.md`, `pr_review/README.md`,
 `multi_pr_update_branch.md`, `review_only_fast_pass.md`,
 `codex/docs_and_git_workflow.md`
 
-current head: `f42bf99fb39de80f8ff48d03bff2130aceec7ef5` (후속 로컬 메인터너
-문서 보정, trailing review 갱신 전·remote push 전)
+latest design correction: `58cf7d4c` (root external input 경계). trailing review 기록이
+뒤따르며 remote push 전이다.
 
 GitHub reviewer assign은 이 독립 검토 작업의 명시적 GitHub mutation 금지 때문에
 수행하지 않았다.

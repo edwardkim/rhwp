@@ -17,7 +17,8 @@ last_verified: 2026-08-10
 | maintainer follow-up design correction | `f42bf99fb39de80f8ff48d03bff2130aceec7ef5` — access path identity, 완전한 DAG 예시, C2PA §7.3.2 경계 |
 | maintainer review 2 | `047d286ef28b847d85c65eb8c35097cf5581dfb2` — 첫 후속 검토 갱신 |
 | maintainer follow-up design correction 2 | `58cf7d4c` — root external input과 비-root binding 경계 |
-| maintainer review 3 | 이 문서와 `pr_4410_review.md`의 trailing 갱신 commit |
+| maintainer review 3 | `fe33191b` — root-input과 C2PA review 갱신 |
+| maintainer record closure | 이 문서와 `pr_4410_review.md`의 trailing 기록 정합 commit |
 
 ## 단계
 
@@ -40,6 +41,6 @@ last_verified: 2026-08-10
 
 ## rollback
 
-문제가 생기면 review 3, `58cf7d4c`, `047d286e`, `f42bf99f`, `2c0a70e8`,
+문제가 생기면 record closure, `fe33191b`, `58cf7d4c`, `047d286e`, `f42bf99f`, `2c0a70e8`,
 `67e7c3bc`를 역순 revert한다. contributor commit은 amend, rebase 또는 force-push하지
 않는다.
