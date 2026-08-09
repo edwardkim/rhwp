@@ -31,12 +31,13 @@ last_verified: 2026-08-10
 | 1층 가중치 병합 | 같은 조상의 파인튜닝들 | soup·task arithmetic·TIES·DARE·진화적 병합 | **상품화** (오픈웨이트 일상) | 이미 N (soup 은 원래 N개) | 병합 레시피 = 계획서, 병합 산출 = 캡슐 (§9.4) |
 | 2층 MoE 업사이클링 | N개를 전문가로 공존 | sparse upcycling·프랑켄MoE | 실용 (커뮤니티 실증) | 구조적으로 N | 동일 — "합쳐진 산출물"의 한 형태 |
 | 3층 시스템 수준 | 서로 다른 모델을 제품 하나로 | 라우팅·증류·추론 합의(MoA) | **프런티어의 실제 방식** | 이미 N | 멀티 에이전트 합본 문서 = 같은 문제 (§7.2) |
-| 검증 층 (공백) | 위 전부의 **출처와 재현성** | 카드·BOM·C2PA의 서명/결속과 레시피 재실행은 서로 다른 보장 | **재현 공백** | 합칠수록 커짐 | **여기가 우리 자리** — 해시 결속 + 재현 검증 (§6) |
+| 검증 층 (공백) | 위 전부의 **출처와 재현성** | 카드·BOM·C2PA의 active asset 결속/ingredient 추가시 검증 기록과 레시피 재실행은 서로 다른 보장 | **재현 공백** | 합칠수록 커짐 | **여기가 우리 자리** — 해시 결속 + 재현 검증 (§6) |
 
 핵심 논증: 합침 기술은 층마다 이미 왔거나 오고 있고, 합쳐진 결과물이 늘수록
 "무엇을 어디서 얼마나 섞었나"를 **제3자가 재현할 방법**의 공백이 커진다. 카드의
-작성자 입력, BOM의 구성 목록, C2PA의 서명·자산 결속은 각각 유용하지만 병합 레시피
-재실행과 같은 보장은 아니다. rhwp 계보 축은 이 재현 공백을 겨냥한다. 다만 단일
+작성자 입력, BOM의 구성 목록, C2PA의 active asset 무결성과 ingredient 추가 시점
+검증 기록은 각각 유용하지만 병합 레시피 재실행과 같은 보장은 아니다. rhwp 계보
+축은 이 재현 공백을 겨냥한다. 다만 단일
 부모 해시 체인을 N개로 늘리는 것만으로는 충분하지 않다. 각 부모 산출을 자식의
 구체적 입력 슬롯에 결속하고, 입력까지 포함한 실행 키로 재현해야 한다(§7).
 
@@ -186,12 +187,18 @@ soup 은 원래 N개 평균이고, TIES/DARE 는 N 태스크 병합용이며, �
 - **AIBOM** (AI Bill of Materials) — 모델·데이터·도구 등 구성요소의 목록과 교환
   형식을 다룬다. 생성 방식, 서명, 투명성 로그와 결합하면 신뢰 수준이 달라지므로
   AIBOM 전체를 하나의 검증 수준으로 단정하지 않는다.
-- **C2PA** — 단순 자기 신고보다 강하다. Content Credential은 서명된 manifest를
-  자산에 암호학적으로 결속하고 ingredient 계보와 변조 여부를 검증한다
+- **C2PA** — 단순 자기 신고보다 강하지만 active asset과 ingredient의 보장을
+  구분해야 한다. active asset은 hard binding으로 manifest와 자산을 결속하므로 현재
+  자산 변경과 manifest/provenance 변조를 검출할 수 있다. 반면 composed asset에
+  포함된 ingredient provenance는 실제 ingredient bytes가 보통 함께 있지 않아
+  소비자가 hard binding을 같은 방식으로 다시 검증할 수 없다. C2PA 2.2 §7.3.2는
+  ingredient가 추가될 당시 그 hard binding과 Content Credential 유효성을 검증하고,
+  그 **시점의 validation record**를 active asset의 Content Credential에 포함한다고
+  설명한다
   ([C2PA 2.2 explainer](https://spec.c2pa.org/specifications/specifications/2.2/explainer/Explainer.html),
   [technical specification](https://spec.c2pa.org/specifications/specifications/2.2/specs/C2PA_Specification.html)).
-  다만 서명된 assertion의 의미가 참인지, 병합 레시피를 다시 실행하면 같은 산출이
-  나오는지까지 자동으로 증명하지는 않는다.
+  이 기록은 ingredient bytes의 현재 재검증이나 병합 레시피 재실행과 동일하지 않다.
+  서명된 assertion의 의미가 사실인지도 C2PA 자체가 가치 판단하지 않는다.
 
 따라서 남은 공백은 **출처 수단 전체가 아니라 레시피 재현성**이다. 병합 모델이
 "A 60% + B 40%"라고 기록해도 제3자가 정확한 입력 아티팩트·도구·연산 조건으로
@@ -330,7 +337,7 @@ reproduced)하고, 깨지면 exit 3 + `brokenAt`.
 
 ```text
 lineage(head, deep):
-  visited = {}                       # canonical 실제 경로/file-id → node id
+  visited = {}                       # (canonicalizedAccessPath, resolutionBase) → node id
   contentIndex = {}                  # fileSha256 → node ids (복사본 보고용, 병합 키 아님)
   queue = [(head, incomingEdge=None)]
   nodes, edges, broken = [], [], []
@@ -338,18 +345,20 @@ lineage(head, deep):
     (path, incoming) = queue.pop_front()
     if incoming and len(edges) >= MAX_EDGES:
       broken += [명시적 edge limit 오류]; break
-    canonical = canonicalize(path) | 실패 → incoming을 broken으로 기록, 계속
-    if canonical in visited:
+    access = canonicalizeAccessPath(path) | 실패 → incoming을 broken으로 기록, 계속
+    resolutionBase = canonicalizeResolutionBase(path.parent)
+    visitKey = (access, resolutionBase)
+    if visitKey in visited:
       edge = incoming을 기존 node의 digest·output slot과 대조해 판정
       edges += [edge]                # 다이아몬드 간선도 판정을 생략하지 않음
       continue
     if len(nodes) >= MAX_NODES:
       broken += [명시적 node limit 오류]; break
-    bytes = read(canonical) | 실패 → incoming을 broken으로 기록, 계속
+    bytes = read(access) | 실패 → incoming을 broken으로 기록, 계속
     fsha = sha256(bytes)
     node = strictParseAndValidate(bytes)
     node.id = nodes.len
-    visited[canonical] = node.id
+    visited[visitKey] = node.id
     contentIndex[fsha] += [node.id]
     nodes += [node]
     if incoming:
@@ -360,15 +369,16 @@ lineage(head, deep):
       executionKey가 완전할 때만 동일 키 결과를 재사용하고, 아니면 node를 직접 재실행
     for p in node.parents의 선언 순서:
       queue 길이가 MAX_QUEUE 이상이면 명시적 limit 오류
-      queue.push((resolve(p.capsule, base=canonical.dir), incomingEdge=(node.id, p)))
+      queue.push((resolve(p.capsule, base=resolutionBase), incomingEdge=(node.id, p)))
   valid = broken == [] and 모든 node·edge 판정 참
 ```
 
-- **방문 키는 file hash 단독이 아니다.** 같은 JSON bytes를 다른 폴더에 복사하면
-  내부 상대 parent 경로가 서로 다른 대상을 뜻할 수 있다. hash만으로 병합하면 한
-  복사본의 계보를 건너뛴다. canonical path(가능한 플랫폼에서는 file identity)를
-  방문 키로 쓰면 같은 실파일의 상대·symlink 별칭은 합치고, 별도 복사본은 각 위치를
-  기준으로 파싱한다. file hash는 무결성과 동일 내용 보고에만 쓴다.
+- **방문 주키는 `(canonicalized access path, resolution base)`다.** 같은 JSON
+  bytes나 같은 file identity라도 접근 경로의 base가 다르면 내부 상대 parent가
+  다른 대상을 뜻할 수 있다. 따라서 hardlink alias는 서로 다른 access path로 각각
+  방문하며 절대 dedup하지 않는다. file identity는 symlink가 같은 실파일을 가리키는지
+  보조 확인·보고하는 데만 쓰고 방문 주키를 대체하지 않는다. file hash도 무결성과
+  동일 내용 보고에만 쓴다.
 - **다이아몬드 1회 검증**: child→parent 방향으로 D→{B,C}→A인 그래프에서 같은
   실파일 A는 한 번만 파싱·재실행한다. B→A와 C→A 두 간선의 결속 판정은 모두 남긴다.
 - **순환**: 해시 체인 특성상 진짜 순환은 만들 수 없으나(자식 해시를 부모가 미리 알 수
@@ -383,19 +393,100 @@ lineage(head, deep):
   "head": "d.capsule.json",
   "mode": "dag",
   "nodes": [
-    { "id": 0, "capsule": "d.capsule.json", "fileSha256": "…",
-      "inputs": [ { "slot": "inputs[0]", "sha256": "…" } ],
-      "outputs": [ { "slot": "output", "sha256": "…" } ], "reproduced": true },
-    { "id": 1, "capsule": "a.capsule.json", "…": "…" }
+    {
+      "id": 0,
+      "depth": 1,
+      "capsule": "d.capsule.json",
+      "fileSha256": "9999999999999999999999999999999999999999999999999999999999999999",
+      "inputs": [
+        { "slot": "inputs[0]", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+        { "slot": "inputs[1]", "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+        { "slot": "inputs[2]", "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" }
+      ],
+      "outputs": [
+        { "slot": "output", "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd" }
+      ],
+      "reproduced": true
+    },
+    {
+      "id": 1,
+      "depth": 2,
+      "capsule": "a.capsule.json",
+      "fileSha256": "8888888888888888888888888888888888888888888888888888888888888888",
+      "inputs": [
+        { "slot": "input", "sha256": "1111111111111111111111111111111111111111111111111111111111111111" }
+      ],
+      "outputs": [
+        { "slot": "output", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }
+      ],
+      "reproduced": true
+    },
+    {
+      "id": 2,
+      "depth": 2,
+      "capsule": "b.capsule.json",
+      "fileSha256": "7777777777777777777777777777777777777777777777777777777777777777",
+      "inputs": [
+        { "slot": "input", "sha256": "2222222222222222222222222222222222222222222222222222222222222222" }
+      ],
+      "outputs": [
+        { "slot": "output", "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
+      ],
+      "reproduced": true
+    },
+    {
+      "id": 3,
+      "depth": 2,
+      "capsule": "c.capsule.json",
+      "fileSha256": "6666666666666666666666666666666666666666666666666666666666666666",
+      "inputs": [
+        { "slot": "input", "sha256": "3333333333333333333333333333333333333333333333333333333333333333" }
+      ],
+      "outputs": [
+        { "slot": "output", "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" }
+      ],
+      "reproduced": true
+    },
+    {
+      "id": 4,
+      "depth": 3,
+      "capsule": "s.capsule.json",
+      "fileSha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "inputs": [
+        { "slot": "input", "sha256": "0000000000000000000000000000000000000000000000000000000000000000" }
+      ],
+      "outputs": [
+        { "slot": "parts[0]", "sha256": "1111111111111111111111111111111111111111111111111111111111111111" },
+        { "slot": "parts[1]", "sha256": "2222222222222222222222222222222222222222222222222222222222222222" },
+        { "slot": "parts[2]", "sha256": "3333333333333333333333333333333333333333333333333333333333333333" }
+      ],
+      "reproduced": true
+    }
   ],
   "edges": [
     { "child": 0, "parent": 1, "role": "primary", "parentOutput": "output",
-      "childInput": "inputs[0]", "sha256": "…", "parentOk": true, "lineageOk": true }
+      "childInput": "inputs[0]", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "parentOk": true, "lineageOk": true },
+    { "child": 0, "parent": 2, "role": "primary", "parentOutput": "output",
+      "childInput": "inputs[1]", "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "parentOk": true, "lineageOk": true },
+    { "child": 0, "parent": 3, "role": "primary", "parentOutput": "output",
+      "childInput": "inputs[2]", "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "parentOk": true, "lineageOk": true },
+    { "child": 1, "parent": 4, "role": "primary", "parentOutput": "parts[0]",
+      "childInput": "input", "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "parentOk": true, "lineageOk": true },
+    { "child": 2, "parent": 4, "role": "primary", "parentOutput": "parts[1]",
+      "childInput": "input", "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "parentOk": true, "lineageOk": true },
+    { "child": 3, "parent": 4, "role": "primary", "parentOutput": "parts[2]",
+      "childInput": "input", "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "parentOk": true, "lineageOk": true }
   ],
-  "roots": [1, 2, 3],
-  "nodeCount": 4,
-  "edgeCount": 3,
-  "maxDepth": 2,
+  "roots": [4],
+  "nodeCount": 5,
+  "edgeCount": 6,
+  "maxDepth": 3,
   "valid": true,
   "brokenAt": null,
   "broken": []
@@ -408,7 +499,8 @@ lineage(head, deep):
   하위호환을 맡기지 않는다.
 - edge별 `parentOk`/`lineageOk`를 두어 parent 배열 순서에 의미를 숨기지 않는다.
   `brokenAt`은 선언 순서 BFS에서 처음 발견한 파손으로 유지하고, `broken[]`은 같은
-  순서의 전체 파손 목록이다. `nodeCount`·`edgeCount`·`maxDepth`의 의미도 분리한다.
+  순서의 전체 파손 목록이다. node `depth`는 head=1로 시작하고 `maxDepth`는 root까지
+  가장 긴 node-depth다. `nodeCount`·`edgeCount`·`maxDepth`의 의미를 분리한다.
 - exit 규약 불변: 0 유효 / 1 IO / 2 사용법 / 3 계보 깨짐(판정은 봉투 데이터).
 
 ### 7.7 비용 회계 (`--deep`)
@@ -433,7 +525,7 @@ lineage(head, deep):
 | T3 | 산출-입력 사슬 위조 (primary 또는 material 몰래 교체) | edge의 부모 output↔binding↔자식 input slot 3자 대조 | `lineageOk:false` |
 | T4 | 결과만 그럴듯한 캡슐 (재실행 불일치) | `--deep` 재현 | `reproduced:false` |
 | T5 | 재료 누락 신고 | 선언된 외부 input slot 전부에 parent binding을 요구 | 선언된 slot 누락은 발급 실패. 계획 밖 비밀 입력까지는 검출 못 함 |
-| T6 | 동일 bytes 캡슐 복사본의 상대 경로 의미 혼동 | canonical 실파일 방문 키 + 위치별 상대 경로 해석 | 별도 복사본은 별도 node. 같은 논리 조상이라는 주장은 stable identity/앵커 없이는 증명 못 함 |
+| T6 | 동일 bytes·hardlink capsule의 상대 경로 의미 혼동 | canonicalized access path + resolution base 방문 키 | 별도 access path는 같은 file-id여도 별도 node. 같은 논리 조상이라는 주장은 stable identity/앵커 없이는 증명 못 함 |
 | T7 | **역사 전체 재작성** (뿌리부터 전부 재발급) | **해시 체인만으로는 못 잡는다** | 외부 앵커 필요 — 타임스탬프·서명·투명성 로그는 **후속 축**으로 남긴다 (본 설계 범위 밖임을 명시) |
 
 T7 을 숨기지 않는 것이 이 표의 요점이다. git 도 동일한 한계를 갖고(히스토리 강제
@@ -447,7 +539,7 @@ T7 을 숨기지 않는 것이 이 표의 요점이다. git 도 동일한 한계
 | 단계 | 내용 | DoD (전부 실측 게이트) |
 |---|---|---|
 | **M1** 스키마+edge 결속 | `parents[]`·role·binding, receipt `inputs[]`/`outputs[]`, v1.0 정규화 | 기존 v1.0 입력의 봉투 key/exit 판정 불변 + v1.1 발급·재독 + 누락·중복 slot/unknown role/self-parent/mismatch 거절 + 참고문헌 원문 검증 |
-| **M2** DAG 걷기 | canonical 실파일 방문, v1.1 `nodes[]`/`edges[]`/`broken[]`, 자원 상한 | 5노드 D→{A,B,C}→S 유효 + 모든 edge 판정 + symlink 별칭 1회 방문 + 같은 bytes·다른 폴더 상대 parent 회귀 + 정확한 limit 경계 |
+| **M2** DAG 걷기 | access path+resolution base 방문, v1.1 `nodes[]`/`edges[]`/`broken[]`, 자원 상한 | 5노드·6-edge D→{A,B,C}→S 유효 + 모든 edge 판정 + 같은 base의 symlink 별칭 보조 식별 + hardlink alias를 서로 다른 계보로 방문 + 같은 bytes·다른 폴더 상대 parent 회귀 + 정확한 limit 경계 |
 | **M3** audit×lineage | 폴더 전수에서 체인/DAG 자동 발견·일괄 감사 + 외부 input slot 완전성 | 체인 1 + DAG 1 자동 식별·회계, 선언 slot의 parent 누락 거절, 계획 밖 입력은 비검출 한계로 보고 |
 | **M4** 모델 레시피 PoC | mergekit YAML·정확한 model digest·실행 프로필을 감싼 캡슐 | 실험 브랜치 한정. 같은 실행 키의 byte-identical 재현과 입력/프로필 하나 변경 시 cache 미재사용 |
 

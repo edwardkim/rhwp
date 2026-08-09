@@ -12,11 +12,12 @@
 - §2–4 정세 3층: 가중치 병합(soup→task arithmetic→TIES/DARE→진화적 병합, 성립
   직관과 한계까지) · MoE 업사이클링 · 시스템 수준(라우팅·증류·MoA).
 - §5 시간축 전망 — 확신도(높음/중간/낮음) 열로 판단과 실측을 구분.
-- §6 검증 공백 논증 — 모델 카드·BOM의 진술, C2PA의 서명·자산 결속, 레시피
-  재현성을 서로 다른 보장으로 구분하고, 남은 재현 공백과 문서 실증장의 범위를 명시.
+- §6 검증 공백 논증 — 모델 카드·BOM의 진술, C2PA active asset의 hard binding,
+  ingredient 추가 시점 validation record, 레시피 재현성을 서로 다른 보장으로 구분.
 - §7 DAG 설계 — `parents[]` v1.1 스키마(role + edge binding), receipt
   `inputs[]`/`outputs[]`, v1.0 봉투 하위호환, 모든 parent output↔child input slot
-  결속, canonical 실파일 방문 키 BFS, 실행 입력·도구 프로필까지 포함한 deep cache key.
+  결속, access path+resolution base 방문 키 BFS, 실행 입력·도구 프로필까지 포함한
+  deep cache key.
 - §8 위협 모델 T1–T7 — 역사 전체 재작성(T7)은 해시 체인만으로 못 잡는다고
   명시하고, 계획 밖 비밀 입력과 별도 복사본의 논리 identity도 자동 검출 범위 밖으로
   분리(외부 앵커는 후속 축).
@@ -40,9 +41,13 @@ arXiv 식별자는 원문 초록 대조로 검증한 4건(2203.05482 · 2311.030
   `planSha256` 단독 cache를 실행 키로 교체했다.
 - material parent의 capsule 무결성만으로는 그 산출물이 자식 재료였음을 증명하지
   못하므로 모든 edge에 parent output↔child input slot digest 결속을 요구했다.
-- 같은 capsule bytes를 다른 폴더에 복사하면 상대 parent 의미가 달라질 수 있어
-  file hash 단독 방문 키를 canonical 실파일 기준으로 교체했다.
+- 같은 capsule bytes나 hardlink도 접근 base가 다르면 상대 parent 의미가 달라질 수
+  있어 방문 주키를 `(canonicalized access path, resolution base)`로 한정했다.
+  file-id는 symlink 보조 확인·보고에만 쓰고 hardlink dedup은 금지했다.
 - 4노드라고 쓰고 5개 작업을 세던 합본 예시를 분할 s + 편집 a·b·c + 합본 d의
   5노드로 바로잡고, 현행 run plan에는 다중 input/재료 step이 없음을 명시했다.
-- C2PA는 단순 자기 신고가 아니라 manifest와 자산을 암호학적으로 결속하므로,
-  강점을 인정하면서 레시피 재실행과는 다른 보장이라고 범위를 바로잡았다.
+- C2PA active asset은 manifest와 자산을 hard binding하지만 ingredient bytes가 없는
+  소비 시점에는 ingredient hard binding을 같은 방식으로 다시 검증하지 못한다.
+  §7.3.2에 따라 ingredient 추가 당시의 검증 record를 남기는 보장과 레시피 재실행을
+  구분했다.
+- 봉투 예시를 D→{A,B,C}→S의 5 node·6 edge·root S·`maxDepth:3`으로 완성했다.
