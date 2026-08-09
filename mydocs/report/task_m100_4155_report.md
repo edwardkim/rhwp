@@ -4,7 +4,7 @@
 - **계획서**: [`mydocs/plans/task_m100_4155.md`](../plans/task_m100_4155.md)
 - **단계 기록**: [stage1](../working/task_m100_4155_stage1.md) · [stage2](../working/task_m100_4155_stage2.md) · [stage3](../working/task_m100_4155_stage3.md)
 - **브랜치**: `task_m100_4155_hwp3_char_shade` (분기 기준 `upstream/devel` `e48fe8694`)
-- **커밋**: `71f607188` · `604eaf2f8` · `5c95b4619`
+- **커밋**: `71f607188`(수정) · `604eaf2f8`(계약) · `5c95b4619`(술어 통일) · `463f44992`(한컴 오라클)
 - **작성 시각**: 2026-08-09 KST
 
 ## 1. 요약
@@ -100,10 +100,25 @@ HWP3 에서 뒤집혀 시각 검증 레인이 어차피 필요했다. 같은 레
 | `src/parser/hwp3/mod.rs` | `hwp3_char_shade_color` 신설 + 배선 + 단위 테스트 3종 | 1 |
 | `src/parser/hml/reader.rs` | `ShadeColor` 부재 → sentinel | 1 |
 | `src/document_core/builders/exam_paper.rs` | 명시 `shade_color: 0` 제거 | 1 |
-| `tests/issue_4155_hwp3_char_shade_contract.rs` (신설) | 저장 계약 6종 | 2 |
+| `tests/issue_4155_hwp3_char_shade_contract.rs` (신설) | 저장 계약 7종 (한컴 오라클 포함) | 2·4 |
 | renderer 5종 · paint 2종 · `hidden_text.rs` · `parser/doc_info.rs` | 술어 위임 | 3 |
 
 ## 6. 검증
+
+### 6.0 통과 기준
+
+이 이슈는 **값이 틀렸다**는 이슈지 파일이 같아야 한다는 이슈가 아니다. 변환본과 한컴 산출물의
+동일성은 기준이 될 수 없다 — §6.4 의 3쪽 대조가 보여주듯 자동 번호·머리말 같은 다른 축의 기존
+결함이 남아 있고 그것들은 이 이슈 범위가 아니다. 기준은 두 축이다.
+
+| 축 | 기준 | 오라클 | 결과 |
+| --- | --- | --- | --- |
+| ① 증상 소멸 | 변환본 본문에 줄 크기 검정 fill 이 없다 | 한컴 PDF (사람 판정) | ✅ §6.4 |
+| ② 값 정합 | 우리 `shade_color` ⊆ 한컴이 **같은 문서**를 변환한 값 집합 | `samples/hwp3-sampleN-hwp5.hwp` (CI 자동) | ✅ 8/8 |
+
+②의 정답지가 저장소 안에 있다는 것이 핵심이다. `hwp3-sampleN-hwp5.hwp` 는 한컴이 같은 HWP3
+원본을 직접 변환한 산출물이므로, 한컴 없는 CI 에서도 값 정합을 판정할 수 있다. 개수는 맞출 수
+없다(한컴은 CHAR_SHAPE 를 중복 제거해 수십 개, 우리는 문단마다 쌓아 수천 개 — 별개 사안).
 
 ### 6.1 변이 검증 (red 기준선)
 
@@ -120,6 +135,8 @@ HWP3 에서 뒤집혀 시각 검증 레인이 어차피 필요했다. 같은 레
 
 | 게이트 | 결과 |
 | --- | --- |
+| `--test issue_4155_hwp3_char_shade_contract` | **7 passed / 0 failed** |
+| 한컴 자기 변환본 오라클 (8쌍) | **8/8 우리 값 ⊆ 한컴 값** |
 | `cargo test --profile release-test --lib` | **3,379 passed / 0 failed** |
 | `cargo test --profile release-test --tests` | **5,510 passed / 0 failed** |
 | `cargo fmt --check` | 통과 |
@@ -152,18 +169,48 @@ WASM 빌드의 프로젝트 표준은 Docker 경유다(`mydocs/manual/memory/pro
 표 셀 채우기가 아니라 글자 음영으로 새로 그려진 것이 확정된다. L2(술어 통일)는 4표본 전 페이지
 **바이트 동일**로 렌더 무영향이 확인됐다.
 
-### 6.4 한컴 판정 (작업지시자)
+### 6.4 한컴 판정 — **통과** (2026-08-09, 작업지시자)
 
-```bash
-target/release-test/rhwp convert samples/SO-SUEOP.hwp /tmp/so-sueop-4155.hwp
-target/release-test/rhwp convert samples/hwp3-sample11.hwp /tmp/sample11-4155.hwp
-```
+이슈가 결함을 잰 것과 같은 계측이다. 변환본을 한컴 2022(12.0.0.535)로 열어 PDF 로 내보내고
+원본의 한컴 PDF 와 같은 쪽을 대조했다.
 
-판정 기준: ① `SO-SUEOP` 본문의 검정 막대 소멸 ② 음영이 있는 표본의 회색 톤이 한컴 저장본과
-일치. **최종 시각 판정 권위는 작업지시자다** — 자체 SVG 는 무회귀 증적일 뿐이다.
+| 자료 | 내용 |
+| --- | --- |
+| `SO-SUEOP.pdf` | 원본의 한컴 PDF (정답지, 46쪽) |
+| `so-sueop-4155.pdf` | **변환본**의 한컴 PDF (47쪽) |
+
+**3쪽 판정: 검정 막대 완전 소멸.** 본문 전체가 정상 판독된다. 이슈가 보고한 "줄 크기 검정
+fill 65개, 전부 (0,0,0)"이 0 이 됐다. 결함이 없어졌다는 1차 근거다.
+
+같은 쪽에 **남은 차이**가 있으나 전부 이 이슈 밖의 기존 결함이다 — 음영과 무관하고, 이 변경은
+음영 사각형만 건드리므로(SO-SUEOP 자체 SVG 는 수정 전후 바이트 동일) 인과가 없다.
+
+- 자동 번호 글리프 붕괴: 정답지 `(1) 주제`·`가. 줄거리`·`(가) 발단:` → 변환본 `❶ 주제`·
+  `. 줄거리`·`) 발단:`
+- 머리말: 정답지는 좌우 분리 + 밑줄, 변환본은 붙어 있고 밑줄 없음
+- 들여쓰기가 전반적으로 더 깊음, 쪽수 46 vs 47 ([#2151] 계열)
+
+**회색 톤 축**은 `SO-SUEOP` 으로 볼 수 없다(전건 비율 0 이라 음영이 아예 없다). 대신
+`hwp3-sample5` 를 쓴다 — 6% 음영 4건이 있고, 한컴 변환본 3종(기본·2018·2024)이 모두
+`#EFEFEF` 를 낸다. 우리 변환본도 `#EFEFEF` 로 **값이 정확히 일치**한다(§6.2 오라클 테스트가
+CI 에서 이를 고정한다). 시각 확인용 산출물은 `output/issue_4155/sample5-4155.hwp` 다.
+
+[#2151]: https://github.com/edwardkim/rhwp/issues/2151
 
 ## 7. 후속으로 넘기는 것
 
+- **`hwp3-sample16` 변환본을 한컴이 열지 못한다** — 이 PR 과 **무관한 기존 결함**이며 별도
+  이슈로 등록해야 한다. 판정 근거는 아래와 같다.
+  - 원본 `samples/hwp3-sample16.hwp` 와 한컴 변환본 `samples/hwp3-sample16-hwp5.hwp` 는
+    **둘 다 열린다**. 우리 변환본만 "파일 형식/손상" 계열 대화상자 후 거부된다.
+  - 이 변경 **이전** 코드로 만든 변환본도 같이 거부된다. 두 파일의 DocInfo 12,739 레코드 중
+    다른 것은 `CHAR_SHAPE` 음영색 6,520건뿐이고 레코드 수·길이·`Section0`·CFB 구조는 전부
+    동일하다 — 즉 이 변경은 인과가 없다.
+  - [#3676] 이 밝힌 한컴 거부 3계약(구역당 `PAGE_BORDER_FILL`=3, 그림 좌표 비-0, 개체
+    `local file version`)을 **전부 통과**한다(구역0: 3 / 그림 7개 중 0 / 개체 16개 중 0).
+    네 번째 미발견 계약이거나 다른 계열이다.
+  - `convert --verify`·`--verify-pages` 도 통과한다(IR 차이 없음, 64쪽) — rhwp 자신은 이
+    결함을 볼 수 없다. #3676 의 계약 테스트는 `hwp3-sample.hwp` 만 덮는다.
 - `hwp3_table_cell_shade_color` 의 절상 반올림(15%/6% 에서 ±1). 셀 음영이 있는 HWP3 표본을
   한컴으로 저장해 실측한 뒤 별도 이슈로 글자용과 통일한다.
 - `hwp3-sample11` 의 음영 CHAR_SHAPE 가 저장 바이트에는 있으나 렌더 본문 런에서 참조되지
@@ -184,3 +231,5 @@ target/release-test/rhwp convert samples/hwp3-sample11.hwp /tmp/sample11-4155.hw
 `validate_char_shape` 는 리터럴 0 이 아니라 `CharShape::default()` 와 **상대 비교**하고
 `shade_color` 는 검사 목록에 **없다**. `hidden_text` 도 `opaque_rgb` 가 상위 바이트로 먼저
 거른다. 기본값 변경을 막는 근거가 아니었으므로 주석을 실측에 맞게 고쳤다.
+
+[#3676]: https://github.com/edwardkim/rhwp/issues/3676

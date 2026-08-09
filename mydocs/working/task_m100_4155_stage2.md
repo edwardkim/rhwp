@@ -66,6 +66,12 @@ fn hwp3_char_shade_color(palette_index: u8, shade_ratio: u8) -> Option<crate::mo
 | ④ | `public_document_core_export_also_avoids_black_char_shade` | public 저장 경로 |
 | ⑤ | `hwp3_export_hwpx_keeps_shade_color_contract` | HWPX `"none"` 전수 + 음영 보존 |
 | ⑥ | `hml_roundtrip_without_shadecolor_emits_no_shade_sentinel` | HML `4294967295` |
+| ③-2 | `shade_values_are_a_subset_of_hancom_own_conversion` | **한컴 자기 변환본과 값 집합 정합** |
+
+③-2 가 가장 강한 기준이다. `samples/hwp3-sampleN-hwp5.hwp` 는 한컴이 같은 HWP3 원본을 직접
+변환한 산출물이라, 저장소 안에 정답지가 있는 셈이다 — 손으로 옮겨 적은 기대값(③)과 달리
+사람이 잘못 베낄 여지가 없다. 8쌍 실측에서 수정 후는 8/8 통과, 수정 전 `hwp3-sample16` 은
+`{0x00000000×6516, 0x0000ff00×4}` 로 한컴 집합과 교집합이 0 이었다.
 
 ③ 이 없으면 lerp 를 절상으로 구현해도 ①②④ 는 전부 통과한다 — 검정만 아니면 되기 때문이다.
 ③ 은 `0xd8d8d8`·`0xefefef`·`0x999999` 를 이름으로 요구하므로 절상 구현에서 red 가 된다.
