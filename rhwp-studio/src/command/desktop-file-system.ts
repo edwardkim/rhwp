@@ -1,15 +1,21 @@
 /**
  * 데스크톱(Tauri/WebView2) 파일 시스템 어댑터.
  *
- * WebView2는 File System Access API의 picker를 구현하지 않는다.
- * `window.showOpenFilePicker`/`showSaveFilePicker`는 함수로 **존재하지만** 호출해도
- * 다이얼로그가 뜨지 않고 Promise가 영원히 pending으로 남는다. Blink는 첫 호출 시
- * 창에 "picker active" 플래그를 세우고 브라우저 프로세스 응답에서 해제하는데,
- * 그 응답이 오지 않으므로 플래그가 영구히 남아 두 번째 호출부터
- * `NotAllowedError: File picker already active.`로 거부된다.
+ * WebView2에서도 File System Access API picker 자체는 동작한다 — 2026-08-09 실측으로
+ * 확인했다. `showOpenFilePicker`는 Tauri 창을 소유자로 하는 모달 다이얼로그
+ * ("이 사이트에서 읽을 수 있는 파일 선택")를 띄우고, 취소하면 `AbortError`로 거부된다.
+ * 이 모듈의 도입 커밋(#00db75a5)은 "picker가 열리지 않는다"고 적었으나 그 진단은
+ * 틀렸다. 당시 Promise가 pending으로 보인 것은 다이얼로그가 사용자 입력을 기다리고
+ * 있었기 때문이고, 창 목록을 확인하지 않아 놓친 것이다.
  *
- * 그래서 데스크톱에서는 picker 존재 여부로 능력을 판정할 수 없다. 이 모듈은
- * Tauri dialog 플러그인의 네이티브 다이얼로그와 fs 플러그인의 경로 기반 읽기/쓰기로
+ * 그럼에도 데스크톱 셸이 네이티브 다이얼로그를 쓰는 이유는 두 가지다.
+ * 1. **경로 기반 핸들** — dialog/fs 플러그인은 실제 파일 경로를 주므로 저장이 원본 경로
+ *    덮어쓰기로 확정되고, 설치 시 등록하는 `.hwp`/`.hwpx` 파일 연결과 표현이 일관된다.
+ * 2. **동시 호출 안전** — FSA에는 창 단위 "picker active" 플래그가 있어 열기 요청이
+ *    겹치면 `NotAllowedError: File picker already active.`로 실패한다. 네이티브
+ *    다이얼로그에는 이 제약이 없다.
+ *
+ * 이 모듈은 Tauri dialog 플러그인의 네이티브 다이얼로그와 fs 플러그인의 경로 기반 읽기/쓰기로
  * {@link FileSystemWindowLike}/{@link FileSystemFileHandleLike} 계약을 그대로 구현해,
  * 상위 저장/열기 로직(`file-system-access.ts`, `commands/file.ts`)이 웹과 동일한
  * 코드 경로를 쓰도록 한다.
