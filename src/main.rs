@@ -346,6 +346,7 @@ fn main() {
         Some("explain") => exit_with(explain_document(&args[2..])),
         Some("edit") => exit_with(run_edit(&args[2..])),
         Some("run") => exit_with(cmd_run_plan(&args[2..])),
+        Some("replay") => exit_with(cmd_replay(&args[2..])),
         // [#3719 §6-4] 계획을 *만드는* 쪽의 정답지 — `run` 바로 옆에 둔다.
         Some("export-plan-schema") => exit_with(cmd_export_plan_schema(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
@@ -1555,6 +1556,28 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "steps[].confusable", "steps[].skipped", "verify", "invalid", "changedPages", "dryRun", "preview"],
         ),
         tool_with_optional_args(
+            "hwp_replay",
+            "[#4391] 작업 영수증 — 계획을 **임시 산출**로 재실행해 (입력·계획·산출) SHA-256 3종 영수증을 발급(attest)하거나, expectOutputSha256 을 주면 타인의 작업 주장을 재현 검증한다(verify — 불일치 exit 3, reproduced:false). 사용자 파일은 절대 건드리지 않는다(계획의 output 은 임시 경로로 대체). 전제는 결정론: 같은 계획의 재실행은 같은 산출 바이트를 낸다(replay_contract 가 고정).",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "plan": {
+                        "type": "object",
+                        "description": "hwp_run_plan 과 같은 계획서. output 경로는 영수증 발급 시 무시(임시 산출로 대체)되고 확장자만 산출 형식 결정에 쓰인다"
+                    },
+                    "expectOutputSha256": {
+                        "type": "string",
+                        "description": "검증 모드 — 주장된 산출의 SHA-256(64자리 16진). 재현 산출과 다르면 exit 3"
+                    }
+                },
+                "required": ["plan"],
+            }),
+            "replay",
+            serde_json::json!(["replay", "--plan-json", "{plan}", "--json"]),
+            serde_json::json!([{ "when": "expectOutputSha256", "args": ["--expect-output-sha256", "{expectOutputSha256}"] }]),
+            &["schemaVersion", "mode", "input", "inputSha256", "planSha256", "outputSha256", "toolVersion", "steps", "reproduced", "expectedOutputSha256"],
+        ),
+        tool_with_optional_args(
             "hwp_export_plan_schema",
             "[#3719 §6-4] hwp_run_plan 이 받는 **계획서 자체**의 JSON Schema 를 돌려준다. hwp_run_plan 이 계획을 실행한다면 이 도구는 계획을 어떻게 쓰는지 알려준다 — step 4종의 필수·선택 필드, 조건절 if 의 문법, assertions 의 뜻이 판별 유니온으로 적혀 있다. 계획을 처음 만들 때 한 번 받아 두면 필드명을 지어내 invalid[] 로 되돌아오는 왕복을 없앨 수 있다. 문서를 입력으로 받지 않는다(계획서 문법의 서술이지 특정 문서의 속성이 아니다).",
             serde_json::json!({
@@ -1897,6 +1920,27 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "steps",
                 "verify",
                 "invalid",
+            ],
+        ),
+        // [#4391] 작업 영수증 — run 계획의 제3자 재현·증명. 사용자 파일은 건드리지
+        // 않는다(임시 산출만). attest = 영수증 발급, --expect-output-sha256 = 검증.
+        cmd_json(
+            "replay",
+            "query",
+            "계획을 임시 산출로 재실행해 작업 영수증(입력·계획·산출 SHA-256)을 발급하고, --expect-output-sha256 로 타인의 작업 주장을 재현 검증한다 — 불일치는 exit 3 (#4391)",
+            false,
+            &["--json", "--plan-json", "--expect-output-sha256"],
+            &[
+                "schemaVersion",
+                "mode",
+                "input",
+                "inputSha256",
+                "planSha256",
+                "outputSha256",
+                "toolVersion",
+                "steps",
+                "reproduced",
+                "expectedOutputSha256",
             ],
         ),
         // [#3719 §6-4] 계획서 문법의 단일 출처 — `run` 바로 뒤에 둔다. 계획을 실행하는
@@ -3426,6 +3470,7 @@ fn print_help() {
     println!("      공개 IR 의 JSON Schema — 외부 바인딩 코드 생성의 단일 출처");
     println!("      --bare 는 봉투 없이 스키마 본문만 (JSON Schema 도구 입력용)");
     println!("  run <계획.json> [--json]              선언적 편집 계획 실행 (#3703)");
+    println!("  replay <계획.json> [--expect-output-sha256 <hex>] [--json]  작업 영수증 발급·재현 검증 (#4391)");
     println!("      전 step 을 정적 선검증(불가 시 실행 0·exit 2)하고 인메모리로 원자");
     println!("      실행해 단언(verify) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경.");
     println!("      steps: fill_fields{{data}} · replace_text{{find,replace[,occurrence]}}");
@@ -15016,6 +15061,174 @@ fn cmd_export_agent_manifest(args: &[String]) -> i32 {
 /// 뿌리라서 절차 대신 **의도(계획서)** 를 받는다. 판정은 전부 데이터다:
 /// 선검증 위반 = invalid[] + exit 2(실행 0), verify 단언 실패 = exit 3(디스크
 /// 무변경), 성공 = step 저널 + verify + exit 0(단 한 번 저장).
+/// [#4391] 작업 영수증 — 계획을 **임시 산출**로 재실행해 (입력·계획·산출) SHA-256
+/// 3종을 발급(attest)하거나, 기대 산출 해시와 대조해 타인의 작업 주장을
+/// 재현 검증(verify)한다. 전제는 실측된 바이트 결정론(같은 계획 = 같은 산출)이고,
+/// 사용자 파일은 절대 건드리지 않는다 — 계획의 output 은 임시 경로로 대체된다.
+fn cmd_replay(args: &[String]) -> i32 {
+    fn sha256_hex(bytes: &[u8]) -> String {
+        use sha2::{Digest, Sha256};
+        Sha256::digest(bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect()
+    }
+
+    let mut plan_path: Option<&str> = None;
+    let mut plan_inline: Option<&str> = None;
+    let mut expected: Option<String> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--plan-json" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => plan_inline = Some(v.as_str()),
+                    None => {
+                        eprintln!("오류: --plan-json 뒤에 계획 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--expect-output-sha256" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => expected = Some(v.trim().to_ascii_lowercase()),
+                    None => {
+                        eprintln!(
+                            "오류: --expect-output-sha256 뒤에 64자리 16진 해시가 필요합니다."
+                        );
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if !other.starts_with("--") && plan_path.is_none() => plan_path = Some(other),
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    if let Some(e) = expected.as_deref() {
+        if e.len() != 64 || !e.bytes().all(|b| b.is_ascii_hexdigit()) {
+            eprintln!("오류: --expect-output-sha256 값은 64자리 16진이어야 합니다: {e}");
+            return EXIT_USAGE;
+        }
+    }
+    let plan_text: String = match (plan_inline, plan_path) {
+        (Some(inline), _) => inline.to_string(),
+        (None, Some(path)) => match fs::read_to_string(path) {
+            Ok(t) => t,
+            Err(e) => {
+                eprintln!("오류: 계획을 읽을 수 없습니다 - {path}: {e}");
+                return EXIT_RUNTIME;
+            }
+        },
+        (None, None) => {
+            eprintln!("사용법: rhwp replay <계획.json> [--plan-json <json>] [--expect-output-sha256 <hex>] [--json]");
+            return EXIT_USAGE;
+        }
+    };
+    let plan_sha = sha256_hex(plan_text.as_bytes());
+    let mut plan: serde_json::Value = match serde_json::from_str(&plan_text) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 계획 JSON 파싱 실패 - {e}");
+            return EXIT_USAGE;
+        }
+    };
+    let Some(input) = plan["input"].as_str().map(str::to_string) else {
+        eprintln!("오류: 계획에 input 이 필요합니다.");
+        return EXIT_USAGE;
+    };
+    let input_sha = match fs::read(&input) {
+        Ok(b) => sha256_hex(&b),
+        Err(e) => {
+            eprintln!("오류: 입력을 읽을 수 없습니다 - {input}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    // 산출 형식은 계획의 output 확장자가 정한다 — 임시 경로도 같은 확장자를 쓴다.
+    let ext = plan["output"]
+        .as_str()
+        .and_then(|o| std::path::Path::new(o).extension().and_then(|e| e.to_str()))
+        .unwrap_or("hwp")
+        .to_string();
+    let temp_out = std::env::temp_dir().join(format!(
+        "rhwp-replay-{}-{}.{ext}",
+        std::process::id(),
+        &plan_sha[..12]
+    ));
+    plan["output"] = serde_json::json!(temp_out.to_string_lossy());
+
+    let (engine_env, engine_code) = run_plan_engine(&plan);
+    if engine_code != 0 {
+        let _ = fs::remove_file(&temp_out);
+        if json_mode {
+            println!(
+                "{}",
+                provenance::marked(
+                    serde_json::json!({
+                        "schemaVersion": "1.0",
+                        "error": format!("계획 재실행 실패 (engine exit {engine_code}) — 영수증을 발급하지 않습니다"),
+                        "engine": engine_env,
+                    }),
+                    "replay",
+                )
+            );
+        } else {
+            eprintln!("재실행 실패 (exit {engine_code}) — 영수증 없음");
+        }
+        return engine_code;
+    }
+    let output_sha = match fs::read(&temp_out) {
+        Ok(b) => sha256_hex(&b),
+        Err(e) => {
+            eprintln!("오류: 재실행 산출을 읽을 수 없습니다 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let _ = fs::remove_file(&temp_out);
+    let steps = engine_env["steps"].as_array().map(|s| s.len()).unwrap_or(0);
+    let reproduced = expected.as_deref().map(|e| e == output_sha);
+    let envelope = provenance::marked(
+        serde_json::json!({
+            "schemaVersion": "1.0",
+            "mode": if expected.is_some() { "verify" } else { "attest" },
+            "input": input,
+            "inputSha256": input_sha,
+            "planSha256": plan_sha,
+            "outputSha256": output_sha,
+            "toolVersion": rhwp::version(),
+            "steps": steps,
+            "reproduced": reproduced,
+            "expectedOutputSha256": expected,
+        }),
+        "replay",
+    );
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!("작업 영수증 — 입력 {input}");
+        println!("  inputSha256:  {input_sha}");
+        println!("  planSha256:   {plan_sha}");
+        println!(
+            "  outputSha256: {output_sha}  (steps {steps}, rhwp v{})",
+            rhwp::version()
+        );
+        if let Some(r) = reproduced {
+            println!("  reproduced:   {r}");
+        }
+    }
+    match reproduced {
+        Some(false) => 3, // #2707: 검증 단언 실패 — 주장된 산출과 재현 산출이 다르다.
+        _ => EXIT_OK,
+    }
+}
+
 fn cmd_run_plan(args: &[String]) -> i32 {
     let mut plan_path: Option<&str> = None;
     let mut plan_inline: Option<&str> = None;
