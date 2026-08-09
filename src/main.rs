@@ -15158,26 +15158,27 @@ fn cmd_replay(args: &[String]) -> i32 {
         .and_then(|o| std::path::Path::new(o).extension().and_then(|e| e.to_str()))
         .unwrap_or("hwp")
         .to_string();
-    let temp_out = std::env::temp_dir().join(format!(
-        "rhwp-replay-{}-{}.{ext}",
-        std::process::id(),
-        &plan_sha[..12]
-    ));
+    let scratch = match replay_scratch_dir(&plan_sha[..12]) {
+        Ok(scratch) => scratch,
+        Err(e) => {
+            eprintln!("오류: 재실행 전용 임시 폴더를 만들 수 없습니다 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let temp_out = scratch.0.join(format!("output.{ext}"));
     plan["output"] = serde_json::json!(temp_out.to_string_lossy());
 
     // 영수증의 inputSha256 과 엔진이 소비하는 바이트는 반드시 같은 스냅샷이어야
     // 한다. 원 경로를 다시 열면 두 읽기 사이의 교체가 다른 입력으로 서명된다.
     let (engine_env, engine_code) =
-        match with_replay_input_snapshot(&mut plan, &input_bytes, &plan_sha, run_plan_engine) {
+        match with_replay_input_snapshot(&mut plan, &input_bytes, &scratch.0, run_plan_engine) {
             Ok(result) => result,
             Err(e) => {
-                let _ = fs::remove_file(&temp_out);
                 eprintln!("오류: 재실행 입력 스냅샷을 만들 수 없습니다 - {e}");
                 return EXIT_RUNTIME;
             }
         };
     if engine_code != 0 {
-        let _ = fs::remove_file(&temp_out);
         if json_mode {
             println!(
                 "{}",
@@ -15202,7 +15203,6 @@ fn cmd_replay(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
-    let _ = fs::remove_file(&temp_out);
     let steps = engine_env["steps"].as_array().map(|s| s.len()).unwrap_or(0);
     let reproduced = expected.as_deref().map(|e| e == output_sha);
     let envelope = provenance::marked(
@@ -15240,15 +15240,51 @@ fn cmd_replay(args: &[String]) -> i32 {
     }
 }
 
+struct ReplayScratchDir(std::path::PathBuf);
+
+impl Drop for ReplayScratchDir {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
+
+fn replay_scratch_dir(tag: &str) -> Result<ReplayScratchDir, String> {
+    #[cfg(unix)]
+    use std::os::unix::fs::DirBuilderExt;
+
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|e| e.to_string())?
+        .as_nanos();
+    for attempt in 0..128_u16 {
+        let candidate = std::env::temp_dir().join(format!(
+            "rhwp-replay-{}-{nonce:x}-{tag}-{attempt}",
+            std::process::id()
+        ));
+        let mut builder = fs::DirBuilder::new();
+        #[cfg(unix)]
+        builder.mode(0o700);
+        match builder.create(&candidate) {
+            Ok(()) => return Ok(ReplayScratchDir(candidate)),
+            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(e) => return Err(e.to_string()),
+        }
+    }
+    Err("사용 가능한 임시 폴더 이름이 없습니다".to_string())
+}
+
 /// replay가 해시한 입력과 엔진이 읽는 입력을 한 파일 스냅샷으로 묶는다.
-/// closure가 끝나면 계획의 원래 input을 복원하고 임시 파일을 제거한다.
+/// closure가 끝나면 계획의 원래 input을 복원한다. 전용 임시 폴더와 그 안의
+/// 입력·산출은 ReplayScratchDir가 모든 반환 경로에서 함께 제거한다.
 fn with_replay_input_snapshot<T>(
     plan: &mut serde_json::Value,
     input_bytes: &[u8],
-    plan_sha: &str,
+    scratch_dir: &std::path::Path,
     execute: impl FnOnce(&serde_json::Value) -> T,
 ) -> Result<T, String> {
     use std::io::Write;
+    #[cfg(unix)]
+    use std::os::unix::fs::OpenOptionsExt;
 
     let input = plan["input"]
         .as_str()
@@ -15257,36 +15293,18 @@ fn with_replay_input_snapshot<T>(
         .extension()
         .and_then(|e| e.to_str())
         .unwrap_or("hwp");
-    let mut snapshot = None;
-    for attempt in 0..128_u16 {
-        let candidate = std::env::temp_dir().join(format!(
-            "rhwp-replay-input-{}-{}-{attempt}.{ext}",
-            std::process::id(),
-            &plan_sha[..12]
-        ));
-        match fs::OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&candidate)
-        {
-            Ok(mut file) => {
-                if let Err(e) = file.write_all(input_bytes) {
-                    let _ = fs::remove_file(&candidate);
-                    return Err(e.to_string());
-                }
-                snapshot = Some(candidate);
-                break;
-            }
-            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
-            Err(e) => return Err(e.to_string()),
-        }
-    }
-    let snapshot = snapshot.ok_or_else(|| "사용 가능한 임시 파일 이름이 없습니다".to_string())?;
+    let snapshot = scratch_dir.join(format!("input.{ext}"));
+    let mut options = fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    options.mode(0o600);
+    let mut file = options.open(&snapshot).map_err(|e| e.to_string())?;
+    file.write_all(input_bytes).map_err(|e| e.to_string())?;
+    drop(file);
     let original_input = plan["input"].clone();
     plan["input"] = serde_json::json!(snapshot.to_string_lossy());
     let result = execute(plan);
     plan["input"] = original_input;
-    let _ = fs::remove_file(snapshot);
     Ok(result)
 }
 
@@ -19504,7 +19522,7 @@ fn extract_thumbnail(args: &[String]) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::{
-        allows_implicit_sibling_resources, cli_output_password, cli_password,
+        allows_implicit_sibling_resources, cli_output_password, cli_password, replay_scratch_dir,
         set_cli_output_password, set_cli_password, strip_global_auth_options,
         tab_ext_semantic_differs, with_replay_input_snapshot, EXIT_USAGE,
     };
@@ -19523,19 +19541,47 @@ mod tests {
             std::env::temp_dir().join(format!("rhwp-replay-original-{}.hwp", std::process::id()));
         std::fs::write(&original, b"original bytes").expect("원본 작성");
         let mut plan = serde_json::json!({ "input": original.to_string_lossy() });
+        let scratch = replay_scratch_dir("unit").expect("전용 임시 폴더");
+        let scratch_path = scratch.0.clone();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            assert_eq!(
+                std::fs::metadata(&scratch_path)
+                    .expect("전용 임시 폴더 metadata")
+                    .permissions()
+                    .mode()
+                    & 0o777,
+                0o700
+            );
+        }
         let seen = with_replay_input_snapshot(
             &mut plan,
             b"hashed snapshot",
-            "0000000000000000000000000000000000000000000000000000000000000000",
+            &scratch.0,
             |snapshot_plan| {
                 std::fs::write(&original, b"changed after hashing").expect("원본 교체");
-                std::fs::read(snapshot_plan["input"].as_str().expect("스냅샷 경로"))
-                    .expect("스냅샷 읽기")
+                let snapshot_path = snapshot_plan["input"].as_str().expect("스냅샷 경로");
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    assert_eq!(
+                        std::fs::metadata(snapshot_path)
+                            .expect("입력 스냅샷 metadata")
+                            .permissions()
+                            .mode()
+                            & 0o777,
+                        0o600
+                    );
+                }
+                std::fs::read(snapshot_path).expect("스냅샷 읽기")
             },
         )
         .expect("스냅샷 실행");
         assert_eq!(seen, b"hashed snapshot");
         assert_eq!(plan["input"], original.to_string_lossy().as_ref());
+        drop(scratch);
+        assert!(!scratch_path.exists(), "전용 임시 폴더는 RAII 정리");
         let _ = std::fs::remove_file(original);
     }
 
