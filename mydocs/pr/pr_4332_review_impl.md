@@ -12,7 +12,9 @@ last_verified: 2026-08-10
 | 구분 | SHA / 내용 |
 | --- | --- |
 | contributor source | `5237006d60b9f136383ae1279336df2c194712a6` |
-| maintainer docs correction | 이 문서, review 기록, README 실행 경로 보정 커밋 |
+| maintainer docs correction | `c89eeb7f` — README 실행 경로와 최초 review 기록 |
+| maintainer review follow-up | `b1ba5071` — 원 contributor 변경 규모 정정 |
+| maintainer record closure | 이 문서의 trailing 기록 정합 커밋 |
 
 ## 단계
 
@@ -25,5 +27,5 @@ last_verified: 2026-08-10
 
 ## rollback
 
-문제가 생기면 이 trailing 메인터너 커밋만 revert한다. contributor commit은 amend, rebase 또는
-force-push하지 않는다.
+문제가 생기면 record closure, `b1ba5071`, `c89eeb7f`를 역순 revert한다. contributor commit은
+amend, rebase 또는 force-push하지 않는다.
