@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/rendering_engine_design.md
-last_verified: 2026-07-23
+last_verified: 2026-08-09
 ---
 
 # RHWP 렌더링 엔진 아키텍처 설계서
@@ -407,6 +407,12 @@ source에 쓰거나 편집 때 clone 경로를 직접 mirror하지 않는다.
 문단/control/cell 수가 바뀌지 않는 deferred cell text edit은 명시적 path revision을 먼저 올리고
 pagination만 dirty로 표시한다. #2004 compatibility projection이 실제 존재하는 section은 그
 projection만 section revision으로 무효화한 뒤 transient render 전에 source IR에서 다시 만든다.
+
+### kill 범위 규칙 (#4335)
+
+`dirty_sections`/`dirty_paragraphs`/`Table.dirty`류 무효화 플래그의 clear(kill)는 그 플래그를 읽는
+모든 지점(use)의 immediate dominator에서만 수행한다 — 그보다 넓은 범위(예: 처리한 구역 하나만 읽고
+전체 구역을 clear)에서 지우면 아직 소비되지 않은 dirty 정보가 죽어 stale 캐시가 영구히 남는다(#4325).
 
 ### 논리 경로와 lookup
 
