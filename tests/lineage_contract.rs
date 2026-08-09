@@ -24,6 +24,14 @@ fn run(args: &[&str]) -> Output {
         .expect("rhwp 실행")
 }
 
+fn run_in(dir: &std::path::Path, args: &[&str]) -> Output {
+    Command::new(rhwp_bin())
+        .current_dir(dir)
+        .args(args)
+        .output()
+        .expect("rhwp 실행")
+}
+
 fn existing_snippet() -> String {
     let o = run(&["export-text", SAMPLE, "-p", "0", "--json"]);
     assert_eq!(o.status.code(), Some(0));
@@ -166,7 +174,58 @@ fn two_link_chain_is_valid_and_tampered_parent_is_exposed() {
         .as_str()
         .unwrap_or_default()
         .contains("parent.sha256"));
-    std::fs::write(&cap_b, b_original).unwrap();
+    std::fs::write(&cap_b, &b_original).unwrap();
+
+    // parent 필드 자체가 없으면 합법 root 로 오인하지 않고 즉시 실패한다.
+    let mut b_without_parent = b.clone();
+    b_without_parent.as_object_mut().unwrap().remove("parent");
+    std::fs::write(
+        &cap_b,
+        serde_json::to_string_pretty(&b_without_parent).unwrap(),
+    )
+    .unwrap();
+    let (code, env) = lineage(&cap_b, false);
+    assert_eq!(code, Some(3), "누락 parent 필드는 fail-closed: {env}");
+    assert_eq!(env["valid"], false);
+    assert_eq!(env["brokenAt"], cap_b.to_str().unwrap());
+    assert!(env["links"][0]["error"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("parent 필드"));
+    std::fs::write(&cap_b, &b_original).unwrap();
+
+    // 계획 해시나 캡슐 계획이 누락·변조되면 shallow 검사도 fail-closed 한다.
+    let mut b_without_plan_sha = b.clone();
+    b_without_plan_sha["receipt"]
+        .as_object_mut()
+        .unwrap()
+        .remove("planSha256");
+    std::fs::write(
+        &cap_b,
+        serde_json::to_string_pretty(&b_without_plan_sha).unwrap(),
+    )
+    .unwrap();
+    let (code, env) = lineage(&cap_b, false);
+    assert_eq!(code, Some(3), "누락 계획 해시는 fail-closed: {env}");
+    assert!(env["links"][0]["error"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("planSha256"));
+
+    let mut b_with_tampered_plan = b.clone();
+    b_with_tampered_plan["plan"]["steps"] = serde_json::json!([]);
+    std::fs::write(
+        &cap_b,
+        serde_json::to_string_pretty(&b_with_tampered_plan).unwrap(),
+    )
+    .unwrap();
+    let (code, env) = lineage(&cap_b, false);
+    assert_eq!(code, Some(3), "계획 변조는 fail-closed: {env}");
+    assert!(env["links"][0]["error"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("plan 과 planText"));
+    std::fs::write(&cap_b, &b_original).unwrap();
 
     // 부모 캡슐을 사후 변조 — 자식이 기록한 파일 해시가 폭로한다.
     let mut a: serde_json::Value =
@@ -179,6 +238,43 @@ fn two_link_chain_is_valid_and_tampered_parent_is_exposed() {
     assert_eq!(env["valid"], false);
     assert_eq!(env["brokenAt"], cap_a.to_str().unwrap());
     assert_eq!(env["links"][1]["parentOk"], false);
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn bare_capsule_filename_resolves_parent_against_current_directory() {
+    let dir = make_dir("bare_filename");
+    let input = std::fs::canonicalize(SAMPLE).expect("샘플 절대 경로");
+    let plan = plan_json(
+        input.to_str().unwrap(),
+        &dir.join("bare-output.hwp"),
+        &existing_snippet(),
+    );
+    std::fs::write(dir.join("a.capsule.json"), b"parent bytes").unwrap();
+
+    let o = run_in(
+        &dir,
+        &[
+            "replay",
+            "--plan-json",
+            &plan,
+            "--capsule",
+            "b.capsule.json",
+            "--parent",
+            "a.capsule.json",
+            "--json",
+        ],
+    );
+    assert_eq!(
+        o.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&o.stderr)
+    );
+    let capsule: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(dir.join("b.capsule.json")).unwrap())
+            .unwrap();
+    assert_eq!(capsule["parent"]["capsule"], "a.capsule.json");
     let _ = std::fs::remove_dir_all(&dir);
 }
 

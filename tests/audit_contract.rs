@@ -125,6 +125,46 @@ fn tampered_input_receipt_is_caught_before_output_credit() {
 }
 
 #[test]
+fn tampered_plan_and_step_receipt_do_not_receive_reproduction_credit() {
+    let dir = make_dir("plan_tamper");
+    let find = existing_snippet();
+    issue_capsule(&dir, "plan.capsule.json", &find);
+    issue_capsule(&dir, "steps.capsule.json", &find);
+
+    let plan_path = dir.join("plan.capsule.json");
+    let mut plan_capsule: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&plan_path).unwrap()).unwrap();
+    plan_capsule["plan"]["steps"] = serde_json::json!([]);
+    std::fs::write(
+        &plan_path,
+        serde_json::to_string_pretty(&plan_capsule).unwrap(),
+    )
+    .unwrap();
+
+    let steps_path = dir.join("steps.capsule.json");
+    let mut steps_capsule: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&steps_path).unwrap()).unwrap();
+    steps_capsule["receipt"]["steps"] = serde_json::json!(999);
+    std::fs::write(
+        &steps_path,
+        serde_json::to_string_pretty(&steps_capsule).unwrap(),
+    )
+    .unwrap();
+
+    let (code, env) = audit(&dir);
+    assert_eq!(code, Some(3), "계획·step 영수증 변조는 감사 실패: {env}");
+    assert_eq!(env["reproduced"], 0);
+    let failures = env["failed"].as_array().expect("실패 목록");
+    assert_eq!(failures.len(), 2);
+    assert!(failures.iter().any(|failure| failure["error"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("plan 과 planText")));
+    assert!(failures.iter().any(|failure| failure["kind"] == "steps"));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn empty_dir_is_usage_error_with_silent_stdout() {
     let dir = make_dir("empty");
     let o = run(&["audit", dir.to_str().unwrap(), "--json"]);
