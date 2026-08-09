@@ -242,7 +242,9 @@ impl LayerRenderer for SvgLayerRenderer {
         self.renderer.show_control_codes = tree.output_options.show_control_codes;
         self.renderer.debug_overlay = tree.output_options.debug_overlay;
         self.renderer.show_missing_picture_placeholder = tree.profile.shows_editor_visuals();
-        self.renderer.show_editor_only_nodes = tree.profile.shows_editor_visuals();
+        // [#4379] `profile` 자체를 그대로 넘긴다 — legacy 렌더러의 editor_only 판정이
+        // paint LayerBuilder 와 같은 `RenderProfile::shows_editor_visuals` 호출로 수렴한다.
+        self.renderer.profile = tree.profile;
         let render_tree = self.build_render_tree(tree);
         self.renderer.render_tree(&render_tree);
         Ok(())
@@ -388,6 +390,82 @@ mod tests {
 
         assert!(screen.output().contains("stroke-dasharray=\"6 3\""));
         assert!(!print.output().contains("stroke-dasharray=\"6 3\""));
+    }
+
+    /// [Issue #4379] `editor_only` 표시 판정은 legacy(`SvgRenderer::profile`)와 layer
+    /// (`LayerBuilder`/`paint/builder.rs:75`) 양쪽이 같은 `RenderProfile::shows_editor_visuals`
+    /// 술어를 호출해야 한다. 이 대조 테스트가 "같은 입력에 같은 결과" 계약의 최소 범위다 —
+    /// 프로필 4종 전부에서 두 경로의 SVG 출력이 바이트 단위로 같고, editor_only 콘텐츠의
+    /// 표시 여부가 `shows_editor_visuals()` 와 일치해야 한다. 한쪽 기본값만 바뀌면 이 테스트가
+    /// 잡는다(#4374 PR 리뷰에서 이 두 경로의 차이를 "시각 증적"으로 오해한 사고가 계기).
+    #[test]
+    fn editor_only_gate_matches_across_legacy_and_layer_paths_for_every_profile() {
+        for profile in [
+            RenderProfile::FastPreview,
+            RenderProfile::Screen,
+            RenderProfile::Print,
+            RenderProfile::HighQuality,
+        ] {
+            let mut render_tree = PageRenderTree::new(0, 100.0, 80.0);
+            render_tree.root.node_type = RenderNodeType::Page(PageNode {
+                page_index: 0,
+                width: 100.0,
+                height: 80.0,
+                section_index: 0,
+            });
+            // 항상 보여야 하는 일반 콘텐츠 — 프로필과 무관.
+            render_tree.root.children.push(RenderNode::new(
+                40,
+                RenderNodeType::Rectangle(RectangleNode::new(
+                    0.0,
+                    ShapeStyle {
+                        fill_color: Some(0x00112233),
+                        ..Default::default()
+                    },
+                    None,
+                )),
+                BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+            ));
+            // 편집 화면 전용 장식(예: 투명 테두리 안내선) — editor_only 로만 표시를 가른다.
+            render_tree.root.children.push(
+                RenderNode::new(
+                    41,
+                    RenderNodeType::Rectangle(RectangleNode::new(
+                        0.0,
+                        ShapeStyle {
+                            fill_color: Some(0x00445566),
+                            ..Default::default()
+                        },
+                        None,
+                    )),
+                    BoundingBox::new(40.0, 0.0, 20.0, 20.0),
+                )
+                .with_editor_only(),
+            );
+
+            let mut legacy = SvgRenderer::new();
+            legacy.profile = profile;
+            legacy.render_tree(&render_tree);
+
+            let layer_tree = LayerBuilder::new(profile).build(&render_tree);
+            let mut layer = SvgLayerRenderer::new();
+            layer.render_page(&layer_tree).unwrap();
+
+            assert_eq!(
+                layer.output(),
+                legacy.output(),
+                "profile={profile:?} 에서 legacy/layer SVG 출력이 갈림"
+            );
+
+            let shows_editor_only = profile.shows_editor_visuals();
+            assert_eq!(
+                legacy.output().contains("665544"),
+                shows_editor_only,
+                "profile={profile:?}: editor_only 장식 표시 여부가 shows_editor_visuals()={shows_editor_only} 와 다름"
+            );
+            // 일반 콘텐츠는 모든 프로필에서 보여야 한다.
+            assert!(legacy.output().contains("332211"));
+        }
     }
 
     #[test]

@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-08-08
+last_verified: 2026-08-09
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -126,8 +126,13 @@ HWP/HWPX → SVG.
 - `--embed-fonts` — 폰트 서브셋 임베딩(사용 글자만 base64)
 - `--embed-fonts=full` — 폰트 전체 임베딩
 - `--font-path <경로>` — 폰트 탐색 경로(여러 번 지정 가능)
-- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시 기존
-  (legacy) 경로 — 인쇄 등가 억제 동작.
+- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시 기존(legacy) 경로
+  (`render_page_svg_native` → `SvgRenderer` 직행, paint 계층 미경유)다.
+  **legacy 경로는 인쇄 등가 출력이 아니다** — 기본값이 `RenderProfile::Screen` 과 같아
+  `editor_only` 노드(빈 누름틀 안내문 등)를 편집 화면처럼 표시한다. 그림 미지정
+  placeholder만 예외로 항상 억제된다(#2225). 인쇄 등가 산출물이 필요하면 이 옵션으로
+  `--profile print`(또는 `high-quality`)를 명시한다 — 두 경로의 배경과 `editor_only`
+  판정 통합은 #4379.
   **제약**: `--font-style`/`--embed-fonts` 와 함께 사용할 수 없다(오류 종료).
 
 ### `export-png <파일> [옵션]` *(native-skia feature 필요)*

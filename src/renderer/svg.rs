@@ -86,15 +86,19 @@ pub struct SvgRenderer {
     pub debug_overlay: bool,
     /// 편집 화면 전용 missing-picture placeholder 표시 여부.
     pub show_missing_picture_placeholder: bool,
-    /// [#3375] `editor_only` 노드(빈 누름틀 안내문 등) 표시 여부.
+    /// [#3375/#4379] `editor_only` 노드(빈 누름틀 안내문 등) 표시 판정의 단일 권위.
     ///
-    /// 한컴은 편집 화면에서만 보여 주는 요소를 인쇄·PDF 에서는 내보내지 않는다. paint
-    /// LayerBuilder 는 이미 `editor_only` 를 프로필로 걸러내지만 SVG 렌더러는 렌더 트리를
-    /// 직접 순회해 그 계약 밖에 있었다.
+    /// 한컴은 편집 화면에서만 보여 주는 요소를 인쇄·PDF 에서는 내보내지 않는다. 이 판정은
+    /// paint `LayerBuilder`(`paint/builder.rs`)의 `node.editor_only && !profile.shows_editor_visuals()`
+    /// 와 **같은 술어**(`RenderProfile::shows_editor_visuals`)를 호출한다 — 예전에는 이 필드가
+    /// 독립된 bool(`show_editor_only_nodes`)이라 두 경로가 각자 기본값을 들고 있었고, 한쪽만
+    /// 고치면 조용히 갈라질 수 있었다(#4379).
     ///
-    /// 기본값은 **표시(true)** 다 — 프로필 개념이 없는 legacy 경로(편집 화면 렌더)는 종전대로
-    /// 트리를 그대로 그린다. 프로필을 아는 layer 경로만 `shows_editor_visuals()` 로 내린다.
-    pub show_editor_only_nodes: bool,
+    /// 기본값은 `RenderProfile::Screen`(`shows_editor_visuals() == true`) — 프로필 개념이
+    /// 없던 legacy 경로(편집 화면 렌더)가 종전대로 트리를 그대로 그리던 동작과 동일하다.
+    /// 프로필을 아는 layer 경로(`svg_layer.rs`)는 이 필드를 자신의 `RenderProfile` 로 그대로
+    /// 대입한다.
+    pub profile: crate::paint::RenderProfile,
     /// 디버그 오버레이용: 문단별 경계 수집 (pi → bbox)
     overlay_para_bounds: std::collections::HashMap<usize, OverlayBounds>,
     /// 디버그 오버레이용: 표 경계 수집
@@ -177,7 +181,7 @@ impl SvgRenderer {
             show_control_codes: false,
             debug_overlay: false,
             show_missing_picture_placeholder: false,
-            show_editor_only_nodes: true,
+            profile: crate::paint::RenderProfile::Screen,
             overlay_para_bounds: std::collections::HashMap::new(),
             overlay_table_bounds: Vec::new(),
             overlay_image_bounds: Vec::new(),
@@ -266,9 +270,9 @@ impl SvgRenderer {
         if !node.visible {
             return;
         }
-        // [#3375] 편집 화면 전용 요소는 인쇄 등가 profile 에서 내보내지 않는다
-        // (paint LayerBuilder 의 `editor_only` 계약과 동형).
-        if node.editor_only && !self.show_editor_only_nodes {
+        // [#3375/#4379] 편집 화면 전용 요소는 인쇄 등가 profile 에서 내보내지 않는다 —
+        // paint LayerBuilder(`paint/builder.rs:75`)와 같은 술어를 호출한다.
+        if node.editor_only && !self.profile.shows_editor_visuals() {
             return;
         }
 
