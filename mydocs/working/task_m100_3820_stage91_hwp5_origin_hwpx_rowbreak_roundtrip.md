@@ -115,3 +115,34 @@ target/pr-review/release-test/deps/issue_1939-… \
 24.7px 누적 기준선 차이와 p34의 중복 source line 모두 이 gate에서 해소됐다. 이후
 `issue_1891`, Stage 89 focused edit gates, 그리고 최종 전체 release-test는 순차 실행해
 이 결과를 전체 회귀 성공으로 승격해야 한다. baseline·fixture·PDF 정답은 변경하지 않았다.
+
+### focused 후속 검증
+
+`issue_1891_hwp5_origin_hwpx_export_reparse_keeps_page_count`는 `1 passed; 0 failed`로
+82쪽 보존을 재확인했다. Stage 89가 고정한 아래 라이브러리 계약도 모두 각
+`1 passed; 0 failed`다.
+
+- `wasm_api::tests::issue2214_scoped_cache_coherence_preserves_transient_pagination`
+- `wasm_api::tests::issue2424_resumable_pagination_commits_only_after_final_fragment`
+- `wasm_api::tests::issue2424_resumable_delete_commits_only_after_final_fragment`
+- `wasm_api::tests::issue2424_new_edit_stales_old_job_and_sync_flush_restarts_latest_revision`
+- `wasm_api::tests::issue3137_focused_cell_geometry_matches_exact_rect`
+
+수정 직전 `issue_2430_cell_rewrap_threshold`도 `2 passed; 0 failed`였다. 따라서
+source-owner tail fit의 구조 재협소화가 marker 82쪽 및 incremental cell reflow/cache
+계약을 바꾸지 않았음을 확인했다. 다음은 전체 release-test의 최종 summary 확인이다.
+
+## 전체 회귀 결과와 다음 이월
+
+전체 `CARGO_TARGET_DIR=target/pr-review CARGO_INCREMENTAL=0 cargo test --profile
+release-test --tests`는 final exit code `101`로 실패했다. 실패는 #1939 marker HWPX
+gate가 아니라 `issue_2020_bokhak_receipt_seal_line_and_stamp_align` 단일 test다.
+
+해당 test는 날짜 옆 `㊞`이 한컴과 같이 빨간 원 내부 좌측에 있어야 한다는 contract를
+검사한다. 현 관측값은 `text=(560.1, 996.1)`, `circle=(656.1, 993.1)`로 x축 96px가
+벌어져 있다. 같은 test binary의 나머지 세 test는 통과했다.
+
+이 failure를 HWP5-origin RowBreak 보정의 회귀로 단정하지 않는다. 다음 단계에서
+`issue_2020` fixture의 original/roundtrip 형상, 현재 worktree의 pending normalization
+변경, 그리고 baseline commit의 결과를 분리해 비교한다. 기준 PDF나 test assertion은
+원인 확인 전 변경하지 않는다.
