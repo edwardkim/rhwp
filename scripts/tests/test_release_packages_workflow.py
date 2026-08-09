@@ -36,6 +36,21 @@ class ReleasePackagesWorkflowTests(unittest.TestCase):
         self.assertIn('git rev-parse --verify "refs/tags/$TAG^{commit}"', self.workflow)
         self.assertIn('python3 tools/set_package_version.py "${VERSION}" --check', self.workflow)
 
+    def test_prerelease_npm_publish_never_uses_latest(self) -> None:
+        self.assertIn('if [[ "$VERSION" == *-* ]]', self.workflow)
+        self.assertIn("NPM_DIST_TAG=next", self.workflow)
+        self.assertIn("NPM_DIST_TAG=latest", self.workflow)
+        self.assertIn(
+            "NPM_DIST_TAG: ${{ needs.version-gate.outputs.npm_dist_tag }}",
+            self.workflow,
+        )
+        self.assertIn('npm publish --access public --tag "$NPM_DIST_TAG"', self.workflow)
+
+    def test_wheel_smoke_python_matches_each_artifact_architecture(self) -> None:
+        self.assertEqual(self.workflow.count("python_arch: x64"), 3)
+        self.assertEqual(self.workflow.count("python_arch: arm64"), 1)
+        self.assertIn("architecture: ${{ matrix.python_arch }}", self.workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

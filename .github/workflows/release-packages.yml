@@ -31,6 +31,7 @@ jobs:
     outputs:
       version: ${{ steps.ver.outputs.version }}
       source_sha: ${{ steps.ver.outputs.source_sha }}
+      npm_dist_tag: ${{ steps.ver.outputs.npm_dist_tag }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -56,8 +57,14 @@ jobs:
           fi
           VERSION="${TAG#v}"
           python3 tools/set_package_version.py "${VERSION}" --check
+          if [[ "$VERSION" == *-* ]]; then
+            NPM_DIST_TAG=next
+          else
+            NPM_DIST_TAG=latest
+          fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "source_sha=${HEAD_SHA}" >> "$GITHUB_OUTPUT"
+          echo "npm_dist_tag=${NPM_DIST_TAG}" >> "$GITHUB_OUTPUT"
 
   build-wheels:
     name: 휠 ${{ matrix.wheel_tag }}
@@ -70,19 +77,23 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             runner: ubuntu-latest
             binary_name: rhwp
+            python_arch: x64
             # ubuntu-latest(24.04) glibc 2.39 — PEP 600 에 따라 정직하게 표기한다.
             wheel_tag: py3-none-manylinux_2_39_x86_64
           - target: x86_64-apple-darwin
             runner: macos-14
             binary_name: rhwp
+            python_arch: x64
             wheel_tag: py3-none-macosx_10_12_x86_64
           - target: aarch64-apple-darwin
             runner: macos-14
             binary_name: rhwp
+            python_arch: arm64
             wheel_tag: py3-none-macosx_11_0_arm64
           - target: x86_64-pc-windows-msvc
             runner: windows-latest
             binary_name: rhwp.exe
+            python_arch: x64
             wheel_tag: py3-none-win_amd64
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -114,6 +125,9 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
+          # macos-14 Apple Silicon에서 x86_64 wheel smoke는 Rosetta x64 Python,
+          # arm64 wheel smoke는 native Python supported tags로 설치한다.
+          architecture: ${{ matrix.python_arch }}
 
       - name: 패키지 버전을 태그로 정렬
         shell: bash
@@ -218,9 +232,10 @@ jobs:
       - name: 게시 또는 명시적 생략
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_DIST_TAG: ${{ needs.version-gate.outputs.npm_dist_tag }}
         run: |
           if [[ -z "${NODE_AUTH_TOKEN}" ]]; then
             echo "::notice title=npm 게시 생략::NPM_TOKEN 미등록 — 빌드 검증까지만 수행했습니다. 게시를 켜려면 저장소 시크릿에 토큰을 등록하세요 (mydocs/manual/release_packages_guide.md)."
             exit 0
           fi
-          npm publish --access public
+          npm publish --access public --tag "$NPM_DIST_TAG"
