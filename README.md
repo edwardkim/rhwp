@@ -194,7 +194,7 @@ document.getElementById('viewer').innerHTML = doc.renderPageSvg(0);
 
 ```bash
 pip install -e bindings/python      # PyPI 배포 전
-export RHWP_BIN=$(pwd)/target/release/rhwp
+export RHWP_BIN=$(pwd)/target/release/rhwp   # 또는 릴리스 바이너리 경로 (아래 "설치" 절 — 소스 빌드 불필요)
 ```
 
 ```python
@@ -221,6 +221,22 @@ if plan.check().ok:
 [요리책](bindings/python/docs/COOKBOOK.md) ·
 [문제 해결](bindings/python/docs/TROUBLESHOOTING.md) ·
 [이주 가이드](bindings/python/docs/MIGRATION.md)
+
+## 설치 — 빌드 없이 CLI·MCP 쓰기
+
+빌드 도구 없이 CLI(그리고 아래 MCP 서버)를 바로 쓰려면
+[Releases](https://github.com/edwardkim/rhwp/releases/latest)에서 플랫폼 바이너리를
+받으세요 — 매 릴리스에 linux x86_64 · macOS(x86_64/aarch64) · windows x86_64
+4종과 무결성 검증용 `SHA256SUMS.txt` 가 첨부됩니다.
+
+```bash
+tar xzf rhwp-v*-linux-x86_64.tar.gz          # windows 는 zip 해제
+sha256sum -c SHA256SUMS.txt --ignore-missing # 무결성 확인 (선택)
+./rhwp capabilities                          # 첫 확인 — 전 명령 기계 계약 자기서술
+```
+
+PATH 에 두면 아래 MCP 절의 `"command": "rhwp"` 와 파이썬 절의 `RHWP_BIN` 이
+그대로 동작합니다. 설치 관리자 등재(winget·scoop·brew)는 로드맵에서 추적합니다.
 
 ## Quick Start (소스 빌드)
 
@@ -269,6 +285,9 @@ MCP 호스트가 HWP/HWPX 를 읽고·검색하고·채우고·변환한다:
 // .mcp.json
 { "mcpServers": { "rhwp": { "command": "rhwp", "args": ["mcp-serve"] } } }
 ```
+
+`rhwp` 실행 파일은 위 "설치" 절의 릴리스 바이너리면 충분하다 — 소스 빌드 없이
+바로 동작한다.
 
 첫 호출 3종 (조사 → 위치 → 채움):
 
