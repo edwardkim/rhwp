@@ -16,7 +16,7 @@ last_verified: 2026-08-10
 | 원 PR head | `5237006d60b9f136383ae1279336df2c194712a6` |
 | 기준 devel | `e48fe86947fbf9a44b1b98c7037150751af541ab` |
 | 가시성 브랜치 | `review/kevin9327-20260810-pr4332` |
-| 원 변경 규모 | `README.md` 1파일, contributor 커밋 1개 |
+| 원 변경 규모 | `README.md`, `mydocs/working/task_m100_4331_stage1.md` 2파일, `+52/-1`, contributor 커밋 1개 |
 
 원 변경은 릴리스 아카이브 다운로드와 첫 실행 예제를 루트 README에 추가한다. 실행 코드,
 renderer, fixture, baseline은 바꾸지 않으므로 visual sweep 대상은 아니다.
