@@ -660,6 +660,34 @@ impl DocumentCore {
         table.local_resize_cell_widths.clear();
         table.local_resize_cell_heights.clear();
 
+        // 주 셀 폭이 흡수된 셀들만큼 넓어졌으므로 문단들을 새 폭으로 재배치(line_segs
+        // 재계산)한다. set_table_column_widths_native/resize_table_cells_native와 동일 규약
+        // — 폭을 바꾸는 명령은 모두 recompose_section 전에 reflow_cell_paragraph 를 부른다.
+        // 병합 후 주 셀은 sort_by_key(row, col) 재정렬을 거치므로 인덱스가 아니라
+        // (row, col)로 다시 찾는다.
+        let reflow_cell: Option<(usize, usize)> = {
+            let para = &self.document.sections[section_idx].paragraphs[parent_para_idx];
+            if let Some(Control::Table(t)) = para.controls.get(control_idx) {
+                t.cells
+                    .iter()
+                    .position(|c| c.row == start_row && c.col == start_col)
+                    .map(|idx| (idx, t.cells[idx].paragraphs.len()))
+            } else {
+                None
+            }
+        };
+        if let Some((cell_idx, para_count)) = reflow_cell {
+            for cell_para_idx in 0..para_count {
+                self.reflow_cell_paragraph(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                );
+            }
+        }
+
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
