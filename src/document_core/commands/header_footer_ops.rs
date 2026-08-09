@@ -1709,7 +1709,8 @@ mod tests {
             let para = core.get_hf_paragraph_mut(0, true, 0, 0).unwrap();
             para.text = text.clone();
             para.char_offsets = (0..text.chars().count() as u32).collect();
-            para.char_count = text.chars().count() as u32;
+            // 공통 IR 의 char_count 는 문단 종결자를 포함한다 (model/paragraph.rs).
+            para.char_count = text.chars().count() as u32 + 1;
             para.char_shapes = vec![CharShapeRef {
                 start_pos: 0,
                 char_shape_id: 0,
