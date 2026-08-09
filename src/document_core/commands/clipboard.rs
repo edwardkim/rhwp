@@ -16,6 +16,41 @@ use crate::model::paragraph::{FieldRange, LineSeg, Paragraph};
 /// 약 2mm (1mm = 7200/25.4 ≈ 283.46 HWPUNIT). 한컴 정합은 작업지시자 시각 대조로 미세조정.
 const PASTE_CASCADE_STEP_HU: u32 = 567;
 
+/// [#4413] 셀 안 컨트롤을 HTML로 변환하는 재귀(표 안의 표 안의 표…)의 깊이 상한.
+/// `table_extract::MAX_NEST_DEPTH`/`explain::MAX_NEST_DEPTH`/`hidden_text::MAX_NEST_DEPTH`와
+/// 같은 값·형태 — 병적으로 깊은 중첩 문서에서 export 재귀가 스택을 태우지 않게 막는다.
+const MAX_NEST_DEPTH: usize = 8;
+
+/// 셀 HTML 내보내기에서 지원하지 않는 컨트롤을 경고 주석에 남기기 위한 표시 이름.
+/// `Control::Table`/`Control::Picture`는 `control_to_html`이 직접 처리하므로 이 경로를
+/// 타지 않지만, 매치 순서가 바뀌어도 무해한 이름을 반환하도록 모든 변형을 다룬다.
+fn control_kind_label(control: &Control) -> &'static str {
+    match control {
+        Control::SectionDef(_) => "SectionDef",
+        Control::ColumnDef(_) => "ColumnDef",
+        Control::Table(_) => "Table",
+        Control::Shape(_) => "Shape",
+        Control::Picture(_) => "Picture",
+        Control::Header(_) => "Header",
+        Control::Footer(_) => "Footer",
+        Control::Footnote(_) => "Footnote",
+        Control::Endnote(_) => "Endnote",
+        Control::AutoNumber(_) => "AutoNumber",
+        Control::NewNumber(_) => "NewNumber",
+        Control::PageNumberPos(_) => "PageNumberPos",
+        Control::Bookmark(_) => "Bookmark",
+        Control::Hyperlink(_) => "Hyperlink",
+        Control::Ruby(_) => "Ruby",
+        Control::CharOverlap(_) => "CharOverlap",
+        Control::PageHide(_) => "PageHide",
+        Control::HiddenComment(_) => "HiddenComment",
+        Control::Equation(_) => "Equation",
+        Control::Field(_) => "Field",
+        Control::Form(_) => "Form",
+        Control::Unknown(_) => "Unknown",
+    }
+}
+
 /// [#2550] 압축 해제 상한 초과 항목(deflate bomb 포함)에 대한 공통 오류.
 ///
 /// 범위 초과(`범위 초과`)와 같은 `RenderError` 계열이라 호출부 처리 경로가 같다.
@@ -1363,7 +1398,9 @@ impl DocumentCore {
             } else {
                 None
             };
-            html.push_str(&self.paragraph_to_html(cpara, start, end));
+            // [#4413] 이 셀은 본문 직속(depth 0) 표의 셀이므로 그 안 문단에
+            // 붙은 컨트롤(중첩 표·그림 등)은 depth 1부터 검사한다.
+            html.push_str(&self.cell_paragraph_to_html(cpara, start, end, 1));
         }
 
         html.push_str("<!--EndFragment-->\n</body></html>");
@@ -1391,13 +1428,18 @@ impl DocumentCore {
         }
 
         let mut html = String::from("<html><body>\n<!--StartFragment-->\n");
+        // [#4413] path 의 각 항목이 표 중첩 한 단계이므로, 그 안 문단의
+        // 컨트롤은 path.len() 깊이(= 이 셀 자체가 이미 path.len()번 중첩된
+        // 지점)에서부터 검사한다. cell_path 가 1개면 depth 1부터 시작하는
+        // `export_selection_in_cell_html_native`와 같은 규칙이다.
+        let control_depth = path.len();
         for cell_para_idx in start_cell_para_idx..=end_cell_para_idx {
             let mut para_path = path.to_vec();
             para_path.last_mut().unwrap().2 = cell_para_idx;
             let para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, &para_path)?;
             let start = (cell_para_idx == start_cell_para_idx).then_some(start_char_offset);
             let end = (cell_para_idx == end_cell_para_idx).then_some(end_char_offset);
-            html.push_str(&self.paragraph_to_html(para, start, end));
+            html.push_str(&self.cell_paragraph_to_html(para, start, end, control_depth));
         }
         html.push_str("<!--EndFragment-->\n</body></html>");
         Ok(html)
@@ -1419,7 +1461,9 @@ impl DocumentCore {
             .ok_or_else(|| HwpError::RenderError(format!("컨트롤 {} 범위 초과", control_idx)))?;
 
         let mut html = String::from("<html><body>\n<!--StartFragment-->\n");
-        html.push_str(&self.control_to_html(control));
+        // 직접 선택해 내보내는 컨트롤은 문서 안 실제 중첩 위치와 무관하게 새
+        // export 루트로 취급한다 — depth 0부터 MAX_NEST_DEPTH 예산을 새로 받는다.
+        html.push_str(&self.control_to_html(control, 0));
         html.push_str("<!--EndFragment-->\n</body></html>");
         Ok(html)
     }
@@ -1628,16 +1672,37 @@ impl DocumentCore {
     }
 
     /// Control 객체를 HTML로 변환한다.
-    pub(crate) fn control_to_html(&self, control: &Control) -> String {
+    ///
+    /// `depth`는 이 컨트롤을 담은 셀의 표 중첩 깊이(0 = 최상위 표 바로 안)다.
+    /// `Control::Table`이 `depth >= MAX_NEST_DEPTH`이면 재귀를 멈추고 생략
+    /// 사실을 주석으로 남긴다 — `table_extract::MAX_NEST_DEPTH`와 같은 값·형태.
+    /// `Control::Table`/`Control::Picture` 외 변형은 아직 셀 안에서 내보내기를
+    /// 지원하지 않는다 [#4413]. 지원 범위 확장은 #4414 소관이라 여기서는 조용히
+    /// 버리지 않고 어떤 컨트롤이 생략됐는지 HTML 주석 경고로 남긴다.
+    pub(crate) fn control_to_html(&self, control: &Control, depth: usize) -> String {
         match control {
-            Control::Table(table) => self.table_to_html(table),
+            Control::Table(table) => {
+                if depth >= MAX_NEST_DEPTH {
+                    return format!(
+                        "<!-- rhwp: 표 중첩 깊이 상한({})을 넘어 생략됨 -->\n",
+                        MAX_NEST_DEPTH
+                    );
+                }
+                self.table_to_html(table, depth)
+            }
             Control::Picture(pic) => self.picture_to_html(pic),
-            _ => String::new(),
+            other => format!(
+                "<!-- rhwp: 셀 안 {} 컨트롤은 클립보드 HTML 내보내기 미지원 - 경고: 내용 생략됨 -->\n",
+                control_kind_label(other)
+            ),
         }
     }
 
     /// Table 컨트롤을 HTML <table>로 변환한다.
-    pub(crate) fn table_to_html(&self, table: &crate::model::table::Table) -> String {
+    /// `depth`는 이 표 자체의 중첩 깊이(0 = 최상위) — 셀 안 문단의 컨트롤을
+    /// 처리할 때는 `depth + 1`을 넘겨, 그 컨트롤이 표이면 `control_to_html`이
+    /// 상한을 검사한 뒤 그 값으로 재귀한다.
+    pub(crate) fn table_to_html(&self, table: &crate::model::table::Table, depth: usize) -> String {
         use crate::renderer::style_resolver::ResolvedBorderStyle;
 
         let mut html = String::from(
@@ -1679,9 +1744,11 @@ impl DocumentCore {
 
                 html.push_str(&format!("<td {}>\n", td_attrs));
 
-                // 셀 내부 문단들
+                // 셀 내부 문단들 — 텍스트뿐 아니라 문단에 붙은 컨트롤(중첩
+                // 표·그림 등)도 함께 내보낸다 [#4413]. 이 표 자체는 depth이므로
+                // 그 셀 문단의 컨트롤은 depth+1에서 검사한다.
                 for cpara in &cell.paragraphs {
-                    html.push_str(&self.paragraph_to_html(cpara, None, None));
+                    html.push_str(&self.cell_paragraph_to_html(cpara, None, None, depth + 1));
                 }
 
                 html.push_str("</td>\n");
@@ -1690,6 +1757,30 @@ impl DocumentCore {
         }
 
         html.push_str("</table>\n");
+        html
+    }
+
+    /// 셀 안 문단을 HTML로 변환한다 — 텍스트(`paragraph_to_html`)에 더해
+    /// `para.controls`(중첩 표·그림 등)도 순회해 이어붙인다.
+    ///
+    /// [#4413] 셀 내용 내보내기가 `para.controls`를 전혀 보지 않아 표 셀 안의
+    /// 중첩 표·이미지가 경고 없이 통째로 사라지던 결함 수정. `paragraph_to_html`
+    /// 자체는 본문(셀 밖) 선택 내보내기와도 공유하므로 그대로 두고, 셀 전용
+    /// 진입점에서만 컨트롤을 이어붙인다.
+    ///
+    /// `depth`는 이 문단을 담은 셀이 속한 표의 중첩 깊이다 — `control_to_html`에
+    /// 그대로 전달해 `MAX_NEST_DEPTH` 상한을 적용한다.
+    pub(crate) fn cell_paragraph_to_html(
+        &self,
+        para: &Paragraph,
+        start_offset: Option<usize>,
+        end_offset: Option<usize>,
+        depth: usize,
+    ) -> String {
+        let mut html = self.paragraph_to_html(para, start_offset, end_offset);
+        for ctrl in &para.controls {
+            html.push_str(&self.control_to_html(ctrl, depth));
+        }
         html
     }
 
@@ -2106,6 +2197,356 @@ mod nested_cell_paste_reflow_tests {
             paras[0].line_segs.len() > 1,
             "폭 200 최내곽 셀에 40자를 붙여넣으면 여러 줄로 재래핑돼야 함 (실제 {}줄)",
             paras[0].line_segs.len()
+        );
+    }
+}
+
+/// #4413: `paragraph_to_html`이 `para.text`만 읽고 `para.controls`를 보지 않아
+/// 표 셀 안의 중첩 표·이미지가 문서 간 복사에서 통째로 사라지던 결함의 회귀 테스트.
+#[cfg(test)]
+mod cell_control_export_tests {
+    use super::MAX_NEST_DEPTH;
+    use crate::document_core::DocumentCore;
+    use crate::model::control::{Bookmark, Control};
+    use crate::model::document::{Document, Section};
+    use crate::model::image::{ImageAttr, Picture};
+    use crate::model::paragraph::Paragraph;
+    use crate::model::shape::CommonObjAttr;
+    use crate::model::table::{Cell, Table};
+
+    /// 본문 문단 하나에 표 컨트롤(1x1)을 붙이고, 그 유일한 셀의 문단으로
+    /// `outer_cell_para`를 넣는다. 반환값은 (core, parent_para_idx, control_idx, cell_idx).
+    fn core_with_body_table(outer_cell_para: Paragraph) -> (DocumentCore, usize, usize, usize) {
+        let outer_table = Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                col_span: 1,
+                row_span: 1,
+                width: 5000,
+                paragraphs: vec![outer_cell_para],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        let mut body_para = Paragraph::default();
+        body_para
+            .controls
+            .push(Control::Table(Box::new(outer_table)));
+
+        let mut section = Section::default();
+        section.paragraphs.push(body_para);
+        let mut doc = Document::default();
+        doc.sections.push(section);
+
+        let mut core = DocumentCore::new_empty();
+        core.document = doc;
+
+        (core, 0, 0, 0)
+    }
+
+    fn make_inner_table_with_marker(marker: &str) -> Table {
+        let mut inner_para = Paragraph::default();
+        inner_para.text = marker.to_string();
+        inner_para.char_offsets = (0..inner_para.text.chars().count() as u32).collect();
+
+        Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                col_span: 1,
+                row_span: 1,
+                width: 2000,
+                paragraphs: vec![inner_para],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    /// [적대적 검증 대조군] 내부 클립보드(같은 문서)는 원래 셀의 컨트롤을
+    /// 보존한다 — 이슈 #4413이 명시한 대조군. `copy_selection_in_cell_native`는
+    /// `Paragraph::clone()`으로 셀 문단을 통째로 복사하고, `strip_structural_
+    /// controls_for_text_clipboard`가 SectionDef/ColumnDef만 제거하므로
+    /// `Control::Table`은 그대로 남는다.
+    #[test]
+    fn internal_clipboard_preserves_nested_table_in_cell_control_group() {
+        let mut outer_cell_para = Paragraph::default();
+        outer_cell_para
+            .controls
+            .push(Control::Table(Box::new(make_inner_table_with_marker(
+                "INNERMARK",
+            ))));
+
+        let (mut core, parent_para_idx, control_idx, cell_idx) =
+            core_with_body_table(outer_cell_para);
+
+        core.copy_selection_in_cell_native(0, parent_para_idx, control_idx, cell_idx, 0, 0, 0, 0)
+            .expect("내부 클립보드 복사가 성공해야 함");
+
+        let clip = core.clipboard.as_ref().expect("클립보드가 채워져야 함");
+        assert_eq!(clip.paragraphs.len(), 1);
+        assert!(
+            matches!(clip.paragraphs[0].controls.first(), Some(Control::Table(_))),
+            "내부 클립보드(같은 문서 안 복사)는 중첩 표 컨트롤을 보존해야 함(대조군). 실제 controls: {:?}",
+            clip.paragraphs[0].controls
+        );
+    }
+
+    /// #4413 red→green: 셀 문단에 붙은 `Control::Table`(중첩 표)이 셀 내용 HTML
+    /// 내보내기에서 사라지면 안 된다. 수정 전에는 `export_selection_in_cell_html_native`가
+    /// `paragraph_to_html`만 호출해(controls 미참조) 안쪽 표가 전혀 나타나지 않았다.
+    #[test]
+    fn nested_table_in_cell_is_exported_to_html() {
+        let mut outer_cell_para = Paragraph::default();
+        outer_cell_para
+            .controls
+            .push(Control::Table(Box::new(make_inner_table_with_marker(
+                "INNERMARK",
+            ))));
+
+        let (core, parent_para_idx, control_idx, cell_idx) = core_with_body_table(outer_cell_para);
+
+        let html = core
+            .export_selection_in_cell_html_native(
+                0,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                0,
+                0,
+                0,
+                0,
+            )
+            .expect("셀 내용 HTML 내보내기가 성공해야 함");
+
+        assert_eq!(
+            html.matches("<table").count(),
+            1,
+            "셀 안 중첩 표가 <table 하나로 내보내져야 함. 실제 HTML: {html}"
+        );
+        assert!(
+            html.contains("INNERMARK"),
+            "안쪽 표 셀 텍스트가 내보낸 HTML에 있어야 함. 실제 HTML: {html}"
+        );
+    }
+
+    /// #4413 red→green, cellPath 버전(#4272): `export_selection_in_cell_html_by_path_native`도
+    /// 같은 결함을 공유했다 — cellPath 하나짜리 얕은 셀도 컨트롤을 보지 않았다.
+    #[test]
+    fn nested_table_in_cell_by_path_is_exported_to_html() {
+        let mut outer_cell_para = Paragraph::default();
+        outer_cell_para
+            .controls
+            .push(Control::Table(Box::new(make_inner_table_with_marker(
+                "INNERMARK",
+            ))));
+
+        let (core, parent_para_idx, control_idx, cell_idx) = core_with_body_table(outer_cell_para);
+        let path = vec![(control_idx, cell_idx, 0)];
+
+        let html = core
+            .export_selection_in_cell_html_by_path_native(0, parent_para_idx, &path, 0, 0, 0, 0)
+            .expect("cellPath 셀 내용 HTML 내보내기가 성공해야 함");
+
+        assert!(
+            html.contains("<table"),
+            "cellPath 경로로 내보내도 셀 안 중첩 표가 나와야 함. 실제 HTML: {html}"
+        );
+        assert!(
+            html.contains("INNERMARK"),
+            "cellPath 경로로 내보내도 안쪽 표 셀 텍스트가 있어야 함. 실제 HTML: {html}"
+        );
+    }
+
+    /// #4413 red→green: 셀 문단에 붙은 `Control::Picture`(셀 안 이미지)가 셀 내용
+    /// HTML 내보내기에서 사라지면 안 된다.
+    #[test]
+    fn picture_in_cell_is_exported_to_html() {
+        let mut outer_cell_para = Paragraph::default();
+        outer_cell_para
+            .controls
+            .push(Control::Picture(Box::new(Picture {
+                common: CommonObjAttr {
+                    treat_as_char: true,
+                    width: 1000,
+                    height: 1000,
+                    ..Default::default()
+                },
+                image_attr: ImageAttr {
+                    bin_data_id: 1,
+                    ..Default::default()
+                },
+                ..Default::default()
+            })));
+
+        let (mut core, parent_para_idx, control_idx, cell_idx) =
+            core_with_body_table(outer_cell_para);
+        core.document
+            .bin_data_content
+            .push(crate::model::bin_data::BinDataContent {
+                id: 1,
+                data: crate::model::bin_data::BinDataBytes::from_shared(vec![
+                    0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A,
+                ]),
+                extension: "png".to_string(),
+            });
+
+        let html = core
+            .export_selection_in_cell_html_native(
+                0,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                0,
+                0,
+                0,
+                0,
+            )
+            .expect("셀 내용 HTML 내보내기가 성공해야 함");
+
+        assert!(
+            html.contains("<img"),
+            "셀 안 이미지가 <img>로 내보내져야 함. 실제 HTML: {html}"
+        );
+    }
+
+    /// [본문 대조군] 본문(셀 밖) 그림은 애초에 문제가 없었다 — 직접 컨트롤을
+    /// 선택해 내보내는 `export_control_html_native` 경로는 셀 순회와 무관하게
+    /// 항상 `control_to_html`을 탔다. 위치(셀 안 vs 본문 직접 선택)에 결함이
+    /// 국한됨을 확정하는 대조군.
+    #[test]
+    fn body_level_picture_export_via_control_html_was_already_fine() {
+        let pic = Picture {
+            common: CommonObjAttr {
+                treat_as_char: true,
+                width: 1000,
+                height: 1000,
+                ..Default::default()
+            },
+            image_attr: ImageAttr {
+                bin_data_id: 1,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let mut body_para = Paragraph::default();
+        body_para.controls.push(Control::Picture(Box::new(pic)));
+
+        let mut section = Section::default();
+        section.paragraphs.push(body_para);
+        let mut doc = Document::default();
+        doc.sections.push(section);
+        doc.bin_data_content
+            .push(crate::model::bin_data::BinDataContent {
+                id: 1,
+                data: crate::model::bin_data::BinDataBytes::from_shared(vec![
+                    0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A,
+                ]),
+                extension: "png".to_string(),
+            });
+
+        let mut core = DocumentCore::new_empty();
+        core.document = doc;
+
+        let html = core
+            .export_control_html_native(0, 0, &[], 0)
+            .expect("본문 컨트롤 HTML 내보내기가 성공해야 함");
+
+        assert!(
+            html.contains("<img"),
+            "본문에서 직접 선택한 그림은 원래도 <img>로 내보내져야 함. 실제 HTML: {html}"
+        );
+    }
+
+    /// #4413 수정: `Control::Table`/`Control::Picture` 외의 셀 안 컨트롤(예: 책갈피)은
+    /// 아직 지원 대상이 아니다(#4414 소관) — 조용히 버리지 않고 HTML 주석 경고를
+    /// 남겨야 한다.
+    #[test]
+    fn unsupported_cell_control_leaves_warning_comment_not_silent_drop() {
+        let mut outer_cell_para = Paragraph::default();
+        outer_cell_para
+            .controls
+            .push(Control::Bookmark(Bookmark::default()));
+
+        let (core, parent_para_idx, control_idx, cell_idx) = core_with_body_table(outer_cell_para);
+
+        let html = core
+            .export_selection_in_cell_html_native(
+                0,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                0,
+                0,
+                0,
+                0,
+            )
+            .expect("셀 내용 HTML 내보내기가 성공해야 함");
+
+        assert!(
+            html.contains("<!--") && html.contains("Bookmark"),
+            "지원하지 않는 셀 컨트롤은 조용히 버리지 말고 어떤 컨트롤이 생략됐는지 \
+             HTML 주석 경고를 남겨야 함. 실제 HTML: {html}"
+        );
+    }
+
+    /// #4413 수정: 표 중첩 HTML 변환 재귀에 `MAX_NEST_DEPTH` 상한이 실제로 걸린다.
+    /// `MAX_NEST_DEPTH + 4`단 깊이로 표를 중첩시키고 최상위에서 내보내면, 가장
+    /// 안쪽(마커 포함) 표는 상한을 넘어 렌더링되지 않고 생략 주석만 남아야 한다.
+    /// 상한이 없으면 병적으로 깊은 중첩 문서에서 export 재귀가 스택을 태울 수 있다.
+    #[test]
+    fn nested_table_recursion_is_capped_at_max_depth() {
+        const LEVELS: usize = MAX_NEST_DEPTH + 4;
+
+        let mut table = make_inner_table_with_marker("DEEPMARK");
+        for _ in 0..LEVELS {
+            let mut wrapper_para = Paragraph::default();
+            wrapper_para.controls.push(Control::Table(Box::new(table)));
+            table = Table {
+                row_count: 1,
+                col_count: 1,
+                cells: vec![Cell {
+                    row: 0,
+                    col: 0,
+                    col_span: 1,
+                    row_span: 1,
+                    width: 2000,
+                    paragraphs: vec![wrapper_para],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            };
+        }
+
+        let mut body_para = Paragraph::default();
+        body_para.controls.push(Control::Table(Box::new(table)));
+
+        let mut section = Section::default();
+        section.paragraphs.push(body_para);
+        let mut doc = Document::default();
+        doc.sections.push(section);
+
+        let mut core = DocumentCore::new_empty();
+        core.document = doc;
+
+        let html = core
+            .export_control_html_native(0, 0, &[], 0)
+            .expect("최상위 표 컨트롤 HTML 내보내기가 성공해야 함");
+
+        assert!(
+            !html.contains("DEEPMARK"),
+            "깊이 상한을 넘는 가장 안쪽 표는 렌더링되면 안 됨. 실제 HTML: {html}"
+        );
+        assert!(
+            html.contains("깊이 상한"),
+            "깊이 상한에 걸리면 생략 사실을 주석으로 남겨야 함. 실제 HTML: {html}"
         );
     }
 }

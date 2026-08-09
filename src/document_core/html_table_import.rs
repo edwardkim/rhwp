@@ -122,15 +122,19 @@ impl DocumentCore {
                             _ => 0u8,           // 미지정 → Center (HWP 기본)
                         };
 
-                    // 셀 내용 HTML 추출
+                    // 셀 내용 HTML 추출 — 셀 안에 같은 태그 이름의 중첩 표(예:
+                    // 우리 clipboard export 가 내보내는 중첩 <table>도 셀에
+                    // <td>를 쓴다)가 있으면 얕은 find 는 안쪽 셀의 닫는 태그에서
+                    // 먼저 멈춰 바깥 셀 내용을 잘라먹는다(#4413 왕복 검증 중
+                    // 발견). <tr> 경계 탐색에 이미 쓰는 깊이 추적 헬퍼를 그대로
+                    // 재사용해 같은 태그 이름의 중첩을 건너뛴다.
                     let content_start = cell_abs + gt + 1;
                     let close_tag = format!("</{}>", tag_name);
-                    let content_end =
-                        if let Some(close) = tr_inner_lower[content_start..].find(&close_tag) {
-                            content_start + close
-                        } else {
-                            tr_inner.len()
-                        };
+                    let cell_close = find_closing_tag(tr_inner, cell_abs, tag_name);
+                    let content_end = cell_close
+                        .saturating_sub(close_tag.len())
+                        .max(content_start)
+                        .min(tr_inner.len());
                     let content_html = tr_inner[content_start..content_end].to_string();
 
                     row_cells.push(ParsedCell {
@@ -148,7 +152,9 @@ impl DocumentCore {
                         vertical_align,
                     });
 
-                    td_pos = content_end + close_tag.len();
+                    td_pos = content_end
+                        .saturating_add(close_tag.len())
+                        .min(tr_inner_lower.len());
                 } else {
                     break;
                 }
@@ -1019,5 +1025,79 @@ impl DocumentCore {
         para.controls.push(Control::Picture(Box::new(pic)));
 
         paragraphs.push(para);
+    }
+}
+
+/// #4413: clipboard export가 셀 안 중첩 표를 `<table>`로 내보내도, import 쪽이 셀
+/// 내용(`<td>...</td>`) 경계를 얕은(비-깊이추적) `find`로 잘라내면 안쪽 표에서
+/// 잘못 멈춰 왕복이 깨진다. `<tr>` 경계 탐색에 이미 쓰는 `find_closing_tag` 깊이
+/// 추적을 셀 경계에도 재사용해 중첩 `<td>`를 올바르게 건너뛰는지 검증한다.
+#[cfg(test)]
+mod nested_table_cell_boundary_tests {
+    use crate::document_core::DocumentCore;
+    use crate::model::control::Control;
+    use crate::model::paragraph::Paragraph;
+
+    /// red→green: 바깥 셀 안에 중첩 `<table>`이 있는 HTML을 파싱하면, 바깥 셀은
+    /// "OUTER" 텍스트 문단과 중첩 `Control::Table`(안쪽 셀 텍스트 "INNER") 문단을
+    /// 모두 포함해야 한다. 수정 전에는 셀 내용 추출이 안쪽 `</td>`에서 먼저 멈춰
+    /// 바깥 셀 내용이 잘리고(중첩 표가 통째로 사라지거나 파싱이 깨졌다).
+    #[test]
+    fn nested_table_in_cell_round_trips_through_import() {
+        let mut core = DocumentCore::new_empty();
+        core.document
+            .doc_info
+            .char_shapes
+            .push(crate::model::style::CharShape::default());
+        core.document
+            .doc_info
+            .para_shapes
+            .push(crate::model::style::ParaShape::default());
+        core.document
+            .doc_info
+            .border_fills
+            .push(crate::model::style::BorderFill::default());
+
+        let html =
+            r#"<table><tr><td>OUTER<table><tr><td>INNER</td></tr></table></td></tr></table>"#;
+        let mut paragraphs: Vec<Paragraph> = Vec::new();
+        core.parse_table_html(&mut paragraphs, html);
+
+        assert_eq!(paragraphs.len(), 1, "표 문단 1개가 나와야 함");
+        let outer_table = match &paragraphs[0].controls.first() {
+            Some(Control::Table(t)) => t.as_ref(),
+            other => panic!("Table 컨트롤이어야 함, 실제: {other:?}"),
+        };
+        assert_eq!(outer_table.cells.len(), 1, "바깥 표는 셀 1개");
+
+        let outer_cell_paragraphs = &outer_table.cells[0].paragraphs;
+        let has_outer_text = outer_cell_paragraphs
+            .iter()
+            .any(|p| p.text.contains("OUTER"));
+        assert!(
+            has_outer_text,
+            "바깥 셀 텍스트 'OUTER'가 살아있어야 함. 실제 문단들: {outer_cell_paragraphs:?}"
+        );
+
+        let inner_table = outer_cell_paragraphs.iter().find_map(|p| {
+            p.controls.iter().find_map(|c| match c {
+                Control::Table(t) => Some(t.as_ref()),
+                _ => None,
+            })
+        });
+        let inner_table = inner_table.unwrap_or_else(|| {
+            panic!(
+                "바깥 셀 문단 중 하나에 중첩 Control::Table이 있어야 함. 실제 문단들: {outer_cell_paragraphs:?}"
+            )
+        });
+        assert_eq!(inner_table.cells.len(), 1, "안쪽 표는 셀 1개");
+        assert!(
+            inner_table.cells[0]
+                .paragraphs
+                .iter()
+                .any(|p| p.text.contains("INNER")),
+            "안쪽 셀 텍스트 'INNER'가 살아있어야 함. 실제: {:?}",
+            inner_table.cells[0].paragraphs
+        );
     }
 }
