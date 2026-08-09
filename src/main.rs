@@ -15420,19 +15420,18 @@ fn cmd_lineage(args: &[String]) -> i32 {
             }
         };
         let file_sha = replay_sha256_hex(&bytes);
-        let capsule: serde_json::Value = match serde_json::from_str(&String::from_utf8_lossy(
-            &bytes,
-        )) {
-            Ok(v) => v,
-            Err(e) => {
-                valid = false;
-                broken_at = Some(name.clone());
-                links.push(
+        let capsule: serde_json::Value =
+            match serde_json::from_str(&String::from_utf8_lossy(&bytes)) {
+                Ok(v) => v,
+                Err(e) => {
+                    valid = false;
+                    broken_at = Some(name.clone());
+                    links.push(
                     serde_json::json!({ "capsule": name, "error": format!("JSON 파싱 실패: {e}") }),
                 );
-                break;
-            }
-        };
+                    break;
+                }
+            };
         if capsule["kind"] != "workCapsule" {
             valid = false;
             broken_at = Some(name.clone());
