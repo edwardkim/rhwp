@@ -190,13 +190,9 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
                 let ctrl_data = ctrl_data_record.map(|r| r.data.clone());
 
                 // CTRL_DATA에서 필드 이름 추출 → Field.ctrl_data_name에 설정
-                // [#4396] 같은 ParameterSet(ps_id=0x021b)에 rhwp 확장 아이템으로 함께
-                // 실려온 `<hp:parameters>` 트리도 있으면 복원한다(HWP5 경로에서
-                // Prop/Direction/Path/Category 등이 Command 하나로 축소되지 않도록).
                 if let Control::Field(ref mut field) = control {
                     if let Some(ref cd) = ctrl_data {
                         field.ctrl_data_name = parse_ctrl_data_field_name(cd);
-                        field.parameters = parse_ctrl_data_field_parameters(cd).unwrap_or_default();
                     }
                 }
 
@@ -934,64 +930,34 @@ fn parse_page_border_fill(data: &[u8]) -> PageBorderFill {
     pbf
 }
 
-/// CTRL_DATA(ps_id=0x021b) ParameterSet 안에서 `item_id` 가 일치하는 String 아이템의
-/// 값을 찾는다 (`mydocs/eng/tech/hwp_ctrl_data.md`).
+/// CTRL_DATA에서 필드 이름을 추출한다.
 ///
-/// 레이아웃: `ps_id(2) + count(2) + dummy(2)` 헤더 뒤에
-/// `[item_id(2) + item_type(2) + len(2) + WCHAR[len]]` 이 `count` 개 이어진다.
-/// 필드/책갈피 CTRL_DATA 는 실측상 전부 String 타입 아이템만 쓰므로(이름 —
-/// `tags::CTRL_DATA_ITEM_NAME` — 및 #4396 확장 파라미터 트리 —
-/// `tags::CTRL_DATA_ITEM_PARAMS_XML`) 하나의 워크로 훑는다. 알 수 없는(비 String) 타입을
-/// 만나면 그 다음 아이템 경계를 알 수 없으므로 더 읽지 않고 멈춘다.
-fn read_ctrl_data_string_item(data: &[u8], want_item_id: u16) -> Option<String> {
-    if data.len() < 6 {
+/// CTRL_DATA 레이아웃 (누름틀 필드):
+///   바이트 0~9: 헤더 (paramset 등)
+///   바이트 10~11: WORD - 필드 이름 길이 (글자 수)
+///   바이트 12~: WCHAR[len] - 필드 이름 (UTF-16LE)
+fn parse_ctrl_data_field_name(data: &[u8]) -> Option<String> {
+    if data.len() < 12 {
         return None;
     }
-    let count = u16::from_le_bytes([data[2], data[3]]) as usize;
-    let mut offset = 6usize;
-    for _ in 0..count {
-        if offset + 4 > data.len() {
-            break;
-        }
-        let item_id = u16::from_le_bytes([data[offset], data[offset + 1]]);
-        let item_type = u16::from_le_bytes([data[offset + 2], data[offset + 3]]);
-        offset += 4;
-        if item_type != tags::CTRL_DATA_ITEM_TYPE_STRING {
-            break;
-        }
-        if offset + 2 > data.len() {
-            break;
-        }
-        let len = u16::from_le_bytes([data[offset], data[offset + 1]]) as usize;
-        offset += 2;
-        if offset + len * 2 > data.len() {
-            break;
-        }
-        if item_id == want_item_id {
-            let wchars: Vec<u16> = data[offset..offset + len * 2]
-                .chunks_exact(2)
-                .map(|c| u16::from_le_bytes([c[0], c[1]]))
-                .collect();
-            let value = String::from_utf16_lossy(&wchars);
-            return if value.is_empty() { None } else { Some(value) };
-        }
-        offset += len * 2;
+    let name_len = u16::from_le_bytes([data[10], data[11]]) as usize;
+    if name_len == 0 {
+        return None;
     }
-    None
-}
-
-/// CTRL_DATA에서 필드/책갈피 이름을 추출한다.
-fn parse_ctrl_data_field_name(data: &[u8]) -> Option<String> {
-    read_ctrl_data_string_item(data, tags::CTRL_DATA_ITEM_NAME)
-}
-
-/// [#4396] CTRL_DATA에서 rhwp 확장 아이템(`CTRL_DATA_ITEM_PARAMS_XML`)으로 보존된
-/// `<hp:parameters>` 트리를 복원한다. 이 아이템은 HWPX→HWP5 저장(`serializer::control`)
-/// 이 `field.parameters` 가 비어있지 않을 때만 써넣으므로, 없으면(순정 HWP5 문서 등)
-/// `None` — 정상 상태다.
-fn parse_ctrl_data_field_parameters(data: &[u8]) -> Option<crate::model::control::ParameterList> {
-    let xml = read_ctrl_data_string_item(data, tags::CTRL_DATA_ITEM_PARAMS_XML)?;
-    crate::model::control::ParameterList::parse_xml(&xml)
+    let name_bytes = &data[12..];
+    if name_bytes.len() < name_len * 2 {
+        return None;
+    }
+    let wchars: Vec<u16> = name_bytes[..name_len * 2]
+        .chunks_exact(2)
+        .map(|c| u16::from_le_bytes([c[0], c[1]]))
+        .collect();
+    let name = String::from_utf16_lossy(&wchars);
+    if name.is_empty() {
+        None
+    } else {
+        Some(name)
+    }
 }
 
 #[cfg(test)]

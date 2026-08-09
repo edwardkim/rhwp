@@ -686,20 +686,29 @@ pub struct Field {
     /// `parameters`(아래, #4396)가 같은 `<hp:parameters>` 를 **의미 있는 트리**로 담는
     /// 별도 표현이다 — 중복이 아니라 용도가 다르다: 이 필드는 "포맷을 벗어나지 않을 때
     /// 원문을 한 글자도 안 바꾼다"는 이미 검증된 계약을 지키는 캐시이고, `parameters`
-    /// 는 그 계약이 성립하지 않는 경로(HWPX→HWP5→HWPX, 또는 API 로 새로 만든 필드)에서
-    /// `Command` 하나로 축소되지 않도록 다시 조립하는 데 쓰는 근거 데이터다. 파서는 두
-    /// 필드를 같은 파스 1회에서 함께 채운다.
+    /// 는 그 계약이 성립하지 않는 경로(HWPX 파싱 직후, 또는 API 로 새로 만든 필드)에서도
+    /// `Command` 외 나머지 named param 을 의미 있게 들고 있기 위한 근거 데이터다. 파서는
+    /// 두 필드를 같은 파스 1회에서 함께 채운다.
     pub raw_parameters_xml: Option<String>,
     /// `<hp:parameters>` 트리의 파싱된(named) 표현 (#4396). 스펙(`ParameterList`)이 규정한
     /// 5종 그대로 보존 — 의미 해석 없이 이름·타입·값만 옮긴다.
     ///
-    /// HWPX 파서는 항상 이 필드를 채운다(전 fieldBegin 타입). HWP5 파서는 CTRL_DATA 확장
-    /// 아이템(`parser::control::CTRL_DATA_ITEM_PARAMS_XML`, 있으면)에서 복원한다 — 없으면
-    /// 빈 트리(`ParameterList::default()`)로 "정보 없음"을 뜻한다.
+    /// HWPX 파서는 항상 이 필드를 채운다(전 fieldBegin 타입). **HWP5 파서는 채우지
+    /// 않는다** — `pdf/hwpspec-2024.pdf` §4.2.8(HWPTAG_CTRL_DATA, 표 61)·
+    /// §4.2.10.11(책갈피)·§4.2.10.15(필드)를 확인한 결과, HWP5 CTRL_DATA 의
+    /// ParameterSet 은 "필드 이름"(item_id=0x4000, hwplib 실측) 외에는 필드별 item ID
+    /// 스키마가 스펙에 규정돼 있지 않다. 스펙에 없는 값을 임의로 정해 써넣는 방법도
+    /// 검토했으나(`item_id=0x4010`) `document_core::converters::hwpx_to_hwp` 의
+    /// `0x4000+idx` 순차 할당과 충돌 가능성이 있어 되돌렸다(#4396 리뷰) — 검증되지 않은
+    /// 바이트를 실물 HWP5 파일에 심지 않는다는 판단이다.
     ///
+    /// 따라서 HWPX→HWP5→HWPX 왕복에서는 `command`/`memo_index`(HWP5 CTRL_HEADER 에
+    /// 실제 슬롯이 있는 항목)를 뺀 나머지가 손실된다 — `serializer::control` 의
+    /// `field_parameter_loss_warning` 이 그 손실을 조용히 넘기지 않고 경고로 낸다.
     /// 직렬화기는 `raw_parameters_xml` 이 있으면 그것을 우선 쓰고, 없고 이 트리가
-    /// 비어있지 않으면 `render_xml` 로 재조립하며, 둘 다 없으면(트리도 빈 상태) 기존처럼
-    /// `command` 하나만 담은 최소 `<hp:parameters cnt="1">` 를 합성한다(순수 API 생성 필드).
+    /// 비어있지 않으면(예: HWPX→HWPX 재직렬화, API 로 트리를 직접 채운 필드) `render_xml`
+    /// 로 재조립하며, 둘 다 없으면 기존처럼 `command` 하나만 담은 최소
+    /// `<hp:parameters cnt="1">` 를 합성한다.
     pub parameters: ParameterList,
     /// [#3545] 적재 정규화(`clear_initial_field_texts`)가 지운 안내문 본문 run 의 잔재.
     ///
