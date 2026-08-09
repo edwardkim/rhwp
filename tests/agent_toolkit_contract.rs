@@ -572,6 +572,7 @@ fn scan_jsonl_streams_records_then_summary() {
     assert_eq!(first["record"], "file", "{first}");
     assert_eq!(first["schemaVersion"], "1.0", "{first}");
     assert_eq!(last["record"], "summary", "{last}");
+    assert_eq!(last["schemaVersion"], "1.0", "{last}");
     assert_eq!(last["total"], 1, "{last}");
 }
 

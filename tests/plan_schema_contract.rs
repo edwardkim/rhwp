@@ -1207,6 +1207,7 @@ fn agent_manifest_carries_the_plan_schema_axis() {
     let out = run(&args);
     assert_eq!(out.status.code(), Some(0), "{args:?}");
     let v: serde_json::Value = serde_json::from_slice(&out.stdout).expect("매니페스트 JSON");
+    assert_eq!(v["schemaVersion"], "1.0", "{v}");
     assert_eq!(
         v["missingAxes"],
         serde_json::json!([]),

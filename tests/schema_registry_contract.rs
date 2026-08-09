@@ -62,6 +62,43 @@ fn rs_files_under(dir: &Path, acc: &mut Vec<PathBuf>) {
     }
 }
 
+fn has_envelope_version_literal(statement: &str) -> bool {
+    let compact = statement
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect::<String>();
+    let object_literal = compact.contains(r#""schemaVersion":""#);
+    let insert_without_registry = compact.contains(r#"insert("schemaVersion""#)
+        && !compact.contains("ENVELOPE_SCHEMA_VERSION");
+    let assignment_without_registry = (compact.contains(r#"["schemaVersion"]="#)
+        || compact.contains(r#"['schemaVersion']="#))
+        && !compact.contains("ENVELOPE_SCHEMA_VERSION");
+    object_literal || insert_without_registry || assignment_without_registry
+}
+
+#[test]
+fn source_scanner_recognizes_object_insert_and_assignment_literals() {
+    assert!(has_envelope_version_literal(r#""schemaVersion": "1.0","#));
+    assert!(has_envelope_version_literal(
+        r#"map.insert(
+            "schemaVersion".into(),
+            json!("9.9"),
+        );"#
+    ));
+    assert!(has_envelope_version_literal(
+        r#"value["schemaVersion"] = serde_json::json!("1.0");"#
+    ));
+    assert!(!has_envelope_version_literal(
+        r#""schemaVersion": ENVELOPE_SCHEMA_VERSION,"#
+    ));
+    assert!(!has_envelope_version_literal(
+        r#"map.insert(
+            "schemaVersion".into(),
+            json!(ENVELOPE_SCHEMA_VERSION),
+        );"#
+    ));
+}
+
 /// 레지스트리 밖의 버전 리터럴·상수 정의를 전수 스캔으로 금지한다.
 ///
 /// 스캔 대상은 `src/` 전체(.rs)다. tests/ 는 대상이 아니다 — 테스트가 기대값을
@@ -84,14 +121,26 @@ fn no_version_literals_outside_registry() {
             continue;
         }
         let text = std::fs::read_to_string(&path).expect("소스 읽기");
+        let mut statement_start = 1;
+        for statement in text.split_inclusive(';') {
+            // ① 봉투 버전 리터럴 — 객체, Map::insert, 인덱스 대입 형태를
+            // 공백·개행과 무관하게 잡는다.
+            if has_envelope_version_literal(statement) {
+                violations.push(format!(
+                    "{}:{}: {}",
+                    path.display(),
+                    statement_start,
+                    statement.split_whitespace().collect::<Vec<_>>().join(" ")
+                ));
+            }
+            statement_start += statement.bytes().filter(|b| *b == b'\n').count();
+        }
         for (i, line) in text.lines().enumerate() {
-            // ① 봉투 버전 리터럴 — json! 조립에서 값을 직접 박는 형태.
-            let envelope_literal = line.contains(r#""schemaVersion": ""#);
             // ② 축 상수 재정의 — 재수출(pub use)은 허용, 값 정의는 금지.
             let const_definition = line.contains(r#"SCHEMA_VERSION: &str = ""#);
             // ③ $id 버전 조각 리터럴 — format!(…{상수}) 파생만 허용.
             let id_literal = line.contains("rhwp/schema/") && line.contains("/1.");
-            if envelope_literal || const_definition || id_literal {
+            if const_definition || id_literal {
                 violations.push(format!("{}:{}: {}", path.display(), i + 1, line.trim()));
             }
         }

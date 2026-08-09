@@ -14968,7 +14968,10 @@ fn agent_manifest_value(bare: bool) -> serde_json::Value {
         return serde_json::Value::Object(fields);
     }
     let mut envelope = serde_json::Map::new();
-    envelope.insert("schemaVersion".to_string(), serde_json::json!("1.0"));
+    envelope.insert(
+        "schemaVersion".to_string(),
+        serde_json::json!(ENVELOPE_SCHEMA_VERSION),
+    );
     envelope.extend(fields);
     serde_json::Value::Object(envelope)
 }
