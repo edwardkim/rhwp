@@ -24,12 +24,18 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: 액션으로 rhwp 설치 (latest)
-        id: setup
+        id: setup-first
         uses: ./
+      - name: 같은 job 에서 재설치
+        id: setup-second
+        uses: ./
+        with:
+          version: ${{ steps.setup-first.outputs.version }}
       - name: 스모크 — 버전·자기서술
         shell: bash
         run: |
-          echo "설치된 버전: ${{ steps.setup.outputs.version }}"
+          test "${{ steps.setup-first.outputs.version }}" = "${{ steps.setup-second.outputs.version }}"
+          echo "설치된 버전: ${{ steps.setup-second.outputs.version }}"
           rhwp --version
           # head 로 직접 파이프하면 200바이트 뒤 파이프가 닫혀 rhwp 가 EPIPE 패닉
           # (exit 101)하고 pipefail 이 스텝을 실패시킨다 — 파일 경유로 자른다.

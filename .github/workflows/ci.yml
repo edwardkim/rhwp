@@ -826,6 +826,7 @@ jobs:
         run: |
           python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
           python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
+          python3 -m unittest scripts/tests/test_setup_action.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
 
       - name: Clippy
