@@ -126,6 +126,97 @@ fn tampered_input_receipt_is_caught_before_output_credit() {
 }
 
 #[test]
+fn output_neutral_plan_and_receipt_step_tampering_are_caught() {
+    let dir = make_dir("plan_tamper");
+    let find = existing_snippet();
+    issue_capsule(&dir, "plan.capsule.json", &find);
+    issue_capsule(&dir, "plan-text.capsule.json", &find);
+    issue_capsule(&dir, "steps.capsule.json", &find);
+
+    // replay는 output을 scratch 경로로 바꾸므로 이 plan 필드만 바꾸면 산출은 같다.
+    // 그래도 raw planText와 불일치하므로 감사 성공으로 집계하면 안 된다.
+    let plan_path = dir.join("plan.capsule.json");
+    let mut plan_capsule: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&plan_path).unwrap()).unwrap();
+    plan_capsule["plan"]["output"] = serde_json::json!("output-neutral-tamper.hwp");
+    std::fs::write(
+        &plan_path,
+        serde_json::to_string_pretty(&plan_capsule).unwrap(),
+    )
+    .unwrap();
+
+    // parsed plan과 planText를 함께 바꿔도 원문 receipt.planSha256과 불일치한다.
+    let plan_text_path = dir.join("plan-text.capsule.json");
+    let mut plan_text_capsule: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&plan_text_path).unwrap()).unwrap();
+    let mut changed_plan: serde_json::Value =
+        serde_json::from_str(plan_text_capsule["planText"].as_str().unwrap()).unwrap();
+    changed_plan["output"] = serde_json::json!("another-output-neutral-tamper.hwp");
+    plan_text_capsule["plan"] = changed_plan.clone();
+    plan_text_capsule["planText"] =
+        serde_json::json!(serde_json::to_string(&changed_plan).unwrap());
+    std::fs::write(
+        &plan_text_path,
+        serde_json::to_string_pretty(&plan_text_capsule).unwrap(),
+    )
+    .unwrap();
+
+    let steps_path = dir.join("steps.capsule.json");
+    let mut steps_capsule: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&steps_path).unwrap()).unwrap();
+    steps_capsule["receipt"]["steps"] = serde_json::json!(999);
+    std::fs::write(
+        &steps_path,
+        serde_json::to_string_pretty(&steps_capsule).unwrap(),
+    )
+    .unwrap();
+
+    let (code, env) = audit(&dir);
+    assert_eq!(code, Some(3), "계획·step 영수증 변조는 감사 실패: {env}");
+    assert_eq!(env["reproduced"], 0);
+    let failures = env["failed"].as_array().expect("실패 목록");
+    assert_eq!(failures.len(), 3);
+    let failure_for = |name: &str| {
+        failures
+            .iter()
+            .find(|failure| failure["capsule"] == name)
+            .unwrap_or_else(|| panic!("{name} 실패 없음: {env}"))
+    };
+    assert!(failure_for("plan.capsule.json")["error"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("plan 과 planText"));
+    assert!(failure_for("plan-text.capsule.json")["error"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("planText 와 receipt.planSha256"));
+    assert!(failure_for("steps.capsule.json")["error"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("receipt.steps 와 planText.steps"));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[cfg(unix)]
+#[test]
+fn non_utf8_capsule_name_is_included_and_reported() {
+    use std::os::unix::ffi::OsStringExt;
+
+    let dir = make_dir("non_utf8");
+    let name = std::ffi::OsString::from_vec(b"\xff-bad.capsule.json".to_vec());
+    std::fs::write(dir.join(name), b"{}").unwrap();
+
+    let (code, env) = audit(&dir);
+    assert_eq!(code, Some(3), "비 UTF-8 이름 capsule도 감사 대상: {env}");
+    assert_eq!(env["total"], 1);
+    assert_eq!(env["reproduced"], 0);
+    let reported = env["failed"][0]["capsule"].as_str().unwrap_or_default();
+    assert!(!reported.is_empty());
+    assert!(reported.ends_with("-bad.capsule.json"), "{reported:?}");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn empty_dir_is_usage_error_with_silent_stdout() {
     let dir = make_dir("empty");
     let o = run(&["audit", dir.to_str().unwrap(), "--json"]);
