@@ -23,7 +23,7 @@ Docker CLI packaging과 workflow만 바뀌며 renderer, layout, fixture, sample 
 | 규모 | 3 files, +98 / -0, contributor commits 2개 |
 | 상태 | `MERGEABLE` / `CLEAN`, Full CI·CodeQL·Docker CLI Image build 성공 |
 | 가시성 branch | `review/kevin9327-20260810-pr4372` |
-| 메인터너 code candidate | `71aecd1273864ae42b5b19fa9382aa43c8f0ef77` |
+| 메인터너 code candidate | `1a4f0524af120a7bdc6e8ab8ed4cbddd320291fa` |
 
 ## Contributor 변경 범위
 
@@ -38,6 +38,9 @@ Docker build context에서 누락되지 않도록 `.dockerignore`를 보정했�
   요청 태그와 다른 source를 게시할 수 있었다.
 - tag push 조건 `v*`에는 prerelease도 포함되지만 모든 publish가 `:latest`를 갱신해,
   rc/beta/alpha image가 stable latest를 대체할 수 있었다.
+- 최초 보정 뒤에도 과거 stable tag의 manual dispatch가 `latest`를 과거 image로 되돌릴 수 있었다.
+- `Dockerfile.cli`가 `COPY . .`를 쓰는데 PR trigger paths에 `.dockerignore`가 없어, 실제 build context
+  보정만 바뀌면 Docker image check가 실행되지 않았다.
 
 ## 메인터너 보정
 
@@ -49,13 +52,20 @@ Docker build context에서 누락되지 않도록 `.dockerignore`를 보정했�
 - `scripts/tests/test_docker_publish_workflow.py`: source와 latest 보호 계약
 - `.github/workflows/ci.yml`: 새 계약 테스트 배선
 
+독립 후속 검토 뒤 `1a4f0524af120a7bdc6e8ab8ed4cbddd320291fa`
+(`fix(maintainer): #4372 latest rollback과 dockerignore gate 차단`)을 추가했다.
+
+- `.github/workflows/docker-publish.yml`: `latest`는 stable tag **push**에서만 갱신하고 manual dispatch는
+  version tag만 게시한다. `.dockerignore` 변경도 PR Docker build를 트리거한다.
+- `scripts/tests/test_docker_publish_workflow.py`: stable push 조건과 `.dockerignore` path 계약을 고정한다.
+
 ## 완료한 로컬 검증
 
 | 검증 | 결과 |
 | --- | --- |
-| `python -m unittest scripts.tests.test_docker_publish_workflow scripts.tests.test_workflow_contract_wiring -v` | 5 / 5 통과 |
-| `git diff --check origin/pr/4372..71aecd1273864ae42b5b19fa9382aa43c8f0ef77` | 통과 |
-| commit graph | correction commit의 유일한 parent가 contributor head와 일치 |
+| `python -m unittest scripts.tests.test_docker_publish_workflow scripts.tests.test_workflow_contract_wiring -v` | 6 / 6 통과 |
+| `git diff --check origin/pr/4372..1a4f0524af120a7bdc6e8ab8ed4cbddd320291fa` | 통과 |
+| commit graph | contributor history를 rewrite하지 않고 maintainer code/docs/code를 single-parent로 연결 |
 
 실제 Docker build와 GHCR publish는 로컬에서 재실행하지 않았다. `actionlint`도 로컬에 없어,
 최신 원격 head의 workflow parser, Docker build smoke와 Full CI가 남아 있다.
@@ -63,7 +73,7 @@ Docker build context에서 누락되지 않도록 `.dockerignore`를 보정했�
 ## 최종 권고
 
 **메인터너 보정 포함 조건부 수용 권고.** 기존 contributor head의 녹색 Docker/CI 결과는 새
-workflow code candidate를 검증하지 않는다. push 승인 뒤 correction과 review 기록을 fast-forward로
+workflow code candidate를 검증하지 않는다. push 승인 뒤 corrections와 review 기록을 fast-forward로
 반영하고 최신 head의 Full CI, Docker CLI Image check, required aggregate와 mergeability가 모두
 성공해야 한다. 그 후에도 별도 merge 승인이 필요하며, 현재는 원격 변경 권한이 없다.
 

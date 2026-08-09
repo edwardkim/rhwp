@@ -12,7 +12,9 @@ last_verified: 2026-08-10
 1. `c1d4da0878c94c898a4ebb903c4b9f6b46fc14b2` — contributor의 Docker CLI/GHCR 구현
 2. `91782d3364b3b8929cac00a4d449e6785d93e6a1` — contributor의 Docker context 보정
 3. `71aecd1273864ae42b5b19fa9382aa43c8f0ef77` — maintainer code/test/workflow 보정
-4. 이 문서를 포함하는 별도 trailing review-doc commit
+4. `a12ac6ce0b00daaf5abdd78f8294fdcd87a25549` — 최초 maintainer review-doc commit
+5. `1a4f0524af120a7bdc6e8ab8ed4cbddd320291fa` — maintainer latest/path 후속 보정
+6. 이 갱신을 포함하는 별도 trailing review-doc commit
 
 Contributor commits는 그대로 두고 maintainer commit만 선형으로 이었다. 검토 판정은
 [PR #4372 검토 기록](pr_4372_review.md)에 있다.
@@ -20,7 +22,8 @@ Contributor commits는 그대로 두고 maintainer commit만 선형으로 이었
 ## 단계
 
 1. **완료:** contributor head와 기존 CI/Docker check를 접수 기준으로 고정했다.
-2. **완료:** tag/source/Cargo 검증과 prerelease latest 보호를 maintainer commit 하나로 추가했다.
+2. **완료:** tag/source/Cargo 검증, stable push 전용 latest 정책과 `.dockerignore` trigger를
+   두 maintainer code commit으로 추가했다.
 3. **완료:** focused contract tests, CI 배선, diff와 single-parent history를 검증했다.
 4. **대기:** 명시적 push 승인 뒤 maintainer correction과 review-doc commit만 source branch에
    fast-forward push하고 원격 head가 예상 SHA인지 확인한다.
@@ -33,8 +36,8 @@ Contributor commits는 그대로 두고 maintainer commit만 선형으로 이었
 ## Rollback
 
 - push 전 rollback은 visibility branch/worktree 제거로 한정된다.
-- push 뒤 merge 전에는 review-doc commit을 먼저 revert한 뒤
-  `71aecd1273864ae42b5b19fa9382aa43c8f0ef77`을 revert한다.
+- push 뒤 merge 전에는 최신 review-doc commit, `1a4f0524af120a7bdc6e8ab8ed4cbddd320291fa`,
+  최초 review-doc commit과 `71aecd1273864ae42b5b19fa9382aa43c8f0ef77`을 역순 revert한다.
 - merge 후에도 역순 revert를 사용하며 contributor history를 rebase, amend 또는 force-push하지 않는다.
 
 현재 작업에는 push나 merge 권한이 포함되지 않는다.
