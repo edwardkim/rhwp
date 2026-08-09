@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="793.7066666666667" height="1122.5066666666667" viewBox="0 0 793.7066666666667 1122.5066666666667">
 <style>
-@font-face { font-family: "함초롬바탕"; src: local("함초롬바탕"), local("HCR Batang"); }
-@font-face { font-family: "굴림"; src: local("굴림"), local("Gulim"); }
-@font-face { font-family: "바탕"; src: local("바탕"), local("Batang"); }
-@font-face { font-family: "휴먼명조"; src: local("휴먼명조"), local("HumanMyeongJo"); }
 @font-face { font-family: "한양중고딕"; src: local("한양중고딕"), local("HY중고딕"), local("HYGothic-Medium"); }
+@font-face { font-family: "휴먼명조"; src: local("Batang"), local("바탕"), local("AppleMyungjo"), local("Noto Serif CJK KR"), local("휴먼명조"), local("HumanMyeongJo"); }
+@font-face { font-family: "굴림"; src: local("굴림"), local("Gulim"); }
+@font-face { font-family: "함초롬바탕"; src: local("함초롬바탕"), local("HCR Batang"); }
+@font-face { font-family: "바탕"; src: local("바탕"), local("Batang"); }
 </style>
 
 <defs>

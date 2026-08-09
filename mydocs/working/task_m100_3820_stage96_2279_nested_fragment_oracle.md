@@ -723,3 +723,136 @@ p81/p82 short RowBreak child owner contract 한 건에서 멈췄다. 한컴 2024
 다음 stage에서 원본 PDF p81--p82 렌더·outer row 구조를 먼저 분석해 별도 보정한다. 이 stage의
 전체 release-test 결과는 baseline failure 때문에 exit 0이 아니며, focused 성공을 전체 성공으로
 기록하지 않는다.
+
+### 2026-08-10 #2308 재현을 현 stage에서 계속 다루는 이유와 관측
+
+사용자가 요구한 전체 회귀는 실패를 기존 baseline이라는 이유로 통과 처리할 수 없다. 따라서
+Stage 96의 86712 보정과 원인을 분리한 뒤에도 #2308을 같은 작업 흐름에서 계속 조사한다.
+독립 Oracle은 `samples/issue1891/76076_regulatory_analysis-2024.pdf` p81--p82이며, RHWP
+현재 `export-text -p 80/81` 결과는 p81에 목표 child 첫 줄이 없고 p82가 다음처럼 통째로
+소유함을 확인했다.
+
+```text
+p82: ○ 구내운반차 안전조치를 통해 근로자와 부딪히는 등의 사고
+p82: 를 예방함으로써 산업재해 감소 …
+```
+
+이는 PDF의 p81 `… 등의 사고` / p82 `를 예방…` 분할과 다르므로 test가 과도한 것이 아니다.
+`RHWP_DIAG_SHORT_CHILD=1`은 target parent가 native stored-pagination RowBreak, 5행,
+마지막 host row, 1×1 non-TAC child(3 문단), parent 110.7px 대비 child flow 196.4px라서
+short-child eligibility 자체는 참임을 보였다. 반면 `native_short_parent_child_row_is_fragmentable`
+의 target-specific trace는 아직 출력되지 않았다. 즉 현재 failure는 source child 형태를 못 찾은
+것이 아니라, 해당 table이 page-tail row-cut path에 도달하기 전에 통째로 다음 조각으로 이월되는
+경로일 가능성이 크다.
+
+다음 수정 전에는 `fit_measured_table_nested_tail_to_declared_height`의 applied/rejected 사유와
+target parent의 pagination row cursor를 계측한다. page budget·font metric·전체 RowBreak tolerance를
+추측으로 조정하지 않으며, p34 saved cell margin과 p81/p82 owner contract를 함께 유지한다.
+
+### 2026-08-10 #2308 수치 근인 — short child의 선언 tail을 일반 stale-height로 오인
+
+`fit_measured_table_nested_tail_to_declared_height` 계측에서 target parent의 measured row는
+`[23.28, 23.28, 23.28, 23.28, 218.56]px`이고, table 선언 총높이 110.7px에서 앞 네 행을
+제외한 마지막 row target은 17.6px이었다. 즉 reduction은 201.0px이다. 기존 helper는
+`reduction <= 64px` 및 target tail이 기존 tail의 85% 이상일 때만 fit을 허용하므로 이
+구조를 거절한다. 결과적으로 typeset은 p81의 남은 공간에서 마지막 child row를 분할하지
+않고 p82로 통째로 보낸다.
+
+PDF는 일반 표 높이 축소를 요구하지 않는다. 마지막 host가 text 없는 single table control이고
+reset-only trailing paragraph를 가지며, child가 non-TAC 1×1·3문단 이하이고
+`child.common.height > parent.common.height`인 native RowBreak short-child만 예외다.
+이 조건은 동일 fixture의 p33/p34 counterexample(각각 child stored height가 parent 이하)을
+제외한다. 따라서 다음 변경은 64px/85% 일반 가드를 폐기하지 않고, 이 exact structure에만
+큰 마지막-tail fit을 허용한다. 그 뒤 p81에는 첫 line, p82에는 source continuation만
+paint되는지를 #2308 assertion과 PDF direct 비교로 확인한다.
+
+### 2026-08-10 PDF raster 직접 대조 — 선행 pi=831 small-tail fit 누락
+
+PDF p81과 현재 SVG p81을 144dpi로 직접 렌더해 비교했다. current RHWP는 direct-benefit
+table(pi=831)의 bottom이 PDF보다 약 50 CSS px 아래이며, 그 결과 indirect-benefit table
+(pi=842)는 현 page에 62.3px만 남아 앞 3행에서 끝난다. PDF에는 pi=842의 앞 4행과
+`○ … 등의 사고` 첫 줄까지 존재한다.
+
+pi=831 계측은 measured rows가 `[23.28, 23.28, 23.28, 23.28, 23.28, 44.08, 524.37]px`,
+선언 높이는 634.7px이다. 마지막 nested-tail만 50px 줄이면 PDF와 같은 다음 표 시작 위치가
+나온다. 이 50px은 기존 small-drift 안전 범위(64px 이내, tail의 85% 이상)에 든다. 그러나
+최근 helper가 `child paragraphs <= 3`을 **모든** fit의 전제조건으로 삼아, 13문단인 pi=831까지
+제외했다. 3문단 조건은 p842처럼 큰 overflow를 예외적으로 fit할 때만 필요하다.
+
+따라서 helper를 두 판정으로 분리한다.
+
+1. text 없는 single-child host/reset-only tail인 1×1 child는 기존 64px/85% small-drift fit을
+   문단 수와 무관하게 허용한다. 이는 pi=831의 50px PDF geometry를 회복한다.
+2. 그 범위를 넘는 large fit은 3문단 이하이고 child stored height가 parent보다 큰
+   short-child에만 허용한다. p842 first-line owner에만 적용되며 p33/p34의 반례를 배제한다.
+
+이후 p81 SVG에서 pi=831 bottom과 pi=842의 4행/첫 줄을 PDF와 다시 대조하고, p34 saved margin과
+focused/전체 release-test를 실행한다.
+
+### 2026-08-10 #2308 two-tier fit 결과
+
+두 판정을 분리해 적용했다. exact empty-host/single-child/reset-only 형태에는 문단 수와
+무관하게 기존의 small-drift 한계(64px, 85%)를 유지하고, 이를 넘는 fit은 3문단 이하이며
+child stored height가 parent보다 큰 short-child에만 열었다. source path나 문구를 식별자로
+사용하지 않았으며, table/row/control 구조와 선언 높이만 사용한다.
+
+수정 뒤 `issue_2308_render_normalized_derived_state`는 5/5 통과했다. PDF p81--p82를
+144dpi raster로, RHWP 최종 source는 SVG로 다시 대조했다. RHWP p81에는 PDF와 같이
+`○ 구내운반차 안전조치를 통해 근로자와 부딪히는 등의 사고`의 첫 줄이 남고, p82 export-text는
+`를 예방함으로써 산업재해 감소…`로 시작한다. 즉 pi=831의 50px small-tail 측정 drift와
+pi=842의 native short-child owner 경계가 함께 회복됐다.
+
+같은 source에서 focused regression은 다음과 같다.
+
+```text
+issue_2430_cell_rewrap_threshold: 2 passed; 0 failed
+issue_2308_render_normalized_derived_state: 5 passed; 0 failed
+issue_2097_band_fill: 1 passed; 0 failed
+issue_2279_layout_oracles: 4 passed; 0 failed
+issue_1921_59043_pagination_pin: 5 passed; 0 failed
+```
+
+전체 `cargo test --profile release-test --tests`는 이 focused matrix와 PDF 대조가 끝난
+최종 source에서 별도로 실행해 종료 코드와 test summary를 기록한다.
+
+### 2026-08-10 전체 release-test 결과 — #4138 기준선 분리 필요
+
+최종 source에서 `CARGO_TARGET_DIR=target/pr-review CARGO_INCREMENTAL=0 cargo test --profile
+release-test --tests`를 실행했다. 최적화 빌드 713개가 완료되고 단위 3,391개와 다수 integration
+fixture가 실행된 뒤, `issue_4138_split_cell_stale_linesegs`의 두 test가 191쪽을 산출해 195쪽
+기대값 assertion에서 실패했다. 따라서 전체 명령은 **exit 101**이며 통과로 기록하지 않는다.
+
+```text
+split_cell_into_reflows_stale_segs_and_rebuilds_ladder: 191 pages, expected 195
+split_cells_in_range_reflows_stale_segs: 191 pages, expected 195
+```
+
+이 fixture는 Stage 96의 86712/76076 nested-row 보정과 다른 편집/reflow 경로다. 그러나 focused
+성공만으로 분리 결론을 내리지 않는다. 다음 단계는 변경 없는 `1ea5f0210` worktree에서 같은
+`issue_4138` test를 실행해 기준선과 현재의 191/195 결과를 직접 비교하는 것이다.
+
+기준 worktree 결과도 **동일한 exit 101, 191 pages**였다. 그러므로 Stage 96 보정이 #4138의
+page count를 195에서 191로 바꾼 회귀는 아니다. 다만 195라는 oracle과 현재 `devel` 구현이
+불일치하는 baseline 결함/기대값 결함 중 어느 쪽인지는 아직 미판정이다. 다음 조사에서는 test
+fixture의 원본 페이지 수, edit 뒤 한컴 2020 재저장/렌더 기준이 191 또는 195 중 어디를 지지하는지
+확인한 뒤에만 구현 또는 기대값을 수정한다.
+
+### 2026-08-10 후속 완료 — #4138과 p65 fallback 증적
+
+#4138의 한컴 2020 현재 입력 오라클 판정과 197쪽 복원은
+`task_m100_3820_stage98_4138_split_cell_page_count_oracle.md`에서 완료했다. Stage 96에서
+기록한 191/195는 원인 분리 과정의 중간값이며 최종 기대값이 아니다.
+
+또한 `stage96-issue2279-r27-final/svg/86712_regulatory_analysis_065.svg`를 현재 HEAD로
+재생성해 오래된 font-face 선언을 갱신했다. 기존 SVG는 `휴먼명조`의 local 후보를
+`휴먼명조`, `HumanMyeongJo`로만 제한해, 이 Mac에서 bitmap EBDT 위주의 `HMKMM.TTF`를
+Chrome이 선택하면 한글이 두부로 보일 수 있었다. 현재 선언은 다음 outline 우선순위를 쓴다.
+
+```text
+Batang → 바탕 → AppleMyungjo → Noto Serif CJK KR → 휴먼명조 → HumanMyeongJo
+```
+
+현재 Mac raster는 `/System/Library/Fonts/Supplemental/AppleMyungjo.ttf`를 선택했고 p65
+제목 한글이 정상 출력됐다. `한양중고딕`도 설치된 `H2GTRM.TTF`의 실제 family
+`HY중고딕`과 연결된다. 따라서 별도 문서별 font hack을 추가하지 않고, outline fallback을
+앞세운 현재 공통 SVG 계약과 재생성 증적을 사용한다.
