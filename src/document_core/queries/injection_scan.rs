@@ -1259,7 +1259,10 @@ mod tests {
     use crate::model::document::Section;
     use crate::model::image::Picture;
     use crate::model::paragraph::{FieldRange, Paragraph};
-    use crate::model::shape::{Caption, DrawingObjAttr, GroupShape, RectangleShape, ShapeObject};
+    use crate::model::shape::{
+        ArcShape, Caption, ChartShape, CurveShape, DrawingObjAttr, EllipseShape, GroupShape,
+        LineShape, OleShape, PolygonShape, RectangleShape, ShapeObject,
+    };
     use crate::model::table::Table;
 
     fn tools() -> Vec<String> {
@@ -1588,7 +1591,9 @@ mod tests {
 
     #[test]
     fn drawing_shape_caption_paragraphs_are_scanned() {
-        // Rectangle/Ellipse/Polygon/Curve/Chart/Ole 는 공통 DrawingObjAttr.caption 을 쓴다.
+        // Line/Rectangle/Ellipse/Arc/Polygon/Curve 는 공통 DrawingObjAttr.caption 을 쓴다.
+        // Chart/Ole 은 캡션이 다른 자리로 옮겨진다 — 아래
+        // `every_shape_variant_with_a_caption_is_scanned` 가 그 갈림을 전수로 고정한다.
         let rect = RectangleShape {
             drawing: DrawingObjAttr {
                 caption: Some(payload_caption()),
@@ -1605,6 +1610,125 @@ mod tests {
         assert!(
             scopes.contains(&"caption"),
             "그리기 개체 캡션 안 신호가 안 잡혔습니다: {scopes:?}"
+        );
+    }
+
+    /// [회귀 #4321 후속] `get_caption_from_shape` 가 놓쳤던 자리: Chart/Ole 은 `.drawing()`
+    /// 이 `Some` 이지만 파서가 캡션을 파싱 직후 `drawing.caption` 밖으로 `.take()` 해
+    /// `chart.caption`/`ole.caption` 로 옮긴다(`src/parser/control/shape.rs:213,222`). 공통
+    /// `.drawing()` 폴백만 믿으면 이 둘만 조용히 빠진다 — 8개 변형 전부를 한 표로 고정해
+    /// 같은 실수(새 변형 추가 시 폴백만 믿는 것)가 재발해도 여기서 잡히게 한다.
+    #[test]
+    fn every_shape_variant_with_a_caption_is_scanned() {
+        let caption = || Some(payload_caption());
+        let variants: Vec<(&str, ShapeObject)> = vec![
+            (
+                "Line",
+                ShapeObject::Line(LineShape {
+                    drawing: DrawingObjAttr {
+                        caption: caption(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ),
+            (
+                "Rectangle",
+                ShapeObject::Rectangle(RectangleShape {
+                    drawing: DrawingObjAttr {
+                        caption: caption(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ),
+            (
+                "Ellipse",
+                ShapeObject::Ellipse(EllipseShape {
+                    drawing: DrawingObjAttr {
+                        caption: caption(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ),
+            (
+                "Arc",
+                ShapeObject::Arc(ArcShape {
+                    drawing: DrawingObjAttr {
+                        caption: caption(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ),
+            (
+                "Polygon",
+                ShapeObject::Polygon(PolygonShape {
+                    drawing: DrawingObjAttr {
+                        caption: caption(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ),
+            (
+                "Curve",
+                ShapeObject::Curve(CurveShape {
+                    drawing: DrawingObjAttr {
+                        caption: caption(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ),
+            (
+                "Group",
+                ShapeObject::Group(GroupShape {
+                    caption: caption(),
+                    ..Default::default()
+                }),
+            ),
+            (
+                "Picture(nested)",
+                ShapeObject::Picture(Box::new(Picture {
+                    caption: caption(),
+                    ..Default::default()
+                })),
+            ),
+            (
+                // 회귀 대상: drawing() 은 Some 인데 caption 은 chart.caption 에 있다.
+                "Chart",
+                ShapeObject::Chart(Box::new(ChartShape {
+                    caption: caption(),
+                    ..Default::default()
+                })),
+            ),
+            (
+                // 회귀 대상: drawing() 은 Some 인데 caption 은 ole.caption 에 있다.
+                "Ole",
+                ShapeObject::Ole(Box::new(OleShape {
+                    caption: caption(),
+                    ..Default::default()
+                })),
+            ),
+        ];
+
+        let mut missed: Vec<&str> = Vec::new();
+        for (name, shape) in variants {
+            let para = Paragraph {
+                controls: vec![Control::Shape(Box::new(shape))],
+                ..Default::default()
+            };
+            let core = core_with(vec![para]);
+            let scopes = scopes_found(&core, false);
+            if !scopes.contains(&"caption") {
+                missed.push(name);
+            }
+        }
+        assert!(
+            missed.is_empty(),
+            "다음 ShapeObject 변형의 캡션이 스캔에서 빠졌습니다: {missed:?}"
         );
     }
 
