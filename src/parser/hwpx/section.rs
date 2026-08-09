@@ -1401,7 +1401,7 @@ fn parse_col_pr(e: &quick_xml::events::BytesStart) -> ColumnDef {
     cd
 }
 
-/// <hp:colPr> 요소의 속성과 자식 <hp:colLine> 파싱 → ColumnDef
+/// <hp:colPr> 요소의 속성과 자식 <hp:colLine>/<hp:colSz> 파싱 → ColumnDef
 fn parse_col_pr_with_children(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
@@ -1414,6 +1414,7 @@ fn parse_col_pr_with_children(
                 let cname = ce.name();
                 match local_name(cname.as_ref()) {
                     b"colLine" => parse_col_line(ce, &mut cd),
+                    b"colSz" => parse_col_sz(ce, &mut cd),
                     _ => {}
                 }
             }
@@ -1424,6 +1425,10 @@ fn parse_col_pr_with_children(
                     b"colLine" => {
                         parse_col_line(ce, &mut cd);
                         skip_element(reader, b"colLine")?;
+                    }
+                    b"colSz" => {
+                        parse_col_sz(ce, &mut cd);
+                        skip_element(reader, b"colSz")?;
                     }
                     _ => {
                         let tag = local.to_vec();
@@ -1454,6 +1459,27 @@ fn parse_col_line(e: &quick_xml::events::BytesStart, cd: &mut ColumnDef) {
             _ => {}
         }
     }
+}
+
+/// <hp:colSz width="..." gap="..."/> 파싱 → ColumnDef.widths/gaps (#4387).
+///
+/// `sameSz="false"` 일 때 단 개수만큼(최대 255) 반복되는 요소로, 단별 절대
+/// HWPUNIT 너비·뒤 간격을 담는다 (`mydocs/manual/OWPML SCHEMA/ParaList XML
+/// schema.xml:1415` ColumnDefType). HWPX 는 절대값이므로 `proportional_widths`
+/// 는 건드리지 않는다 — `ColumnDef::default()` 의 `false` 가 이미 정답이다
+/// (HWP 5.0 바이너리 파서(body_text.rs)만 비례값이라 true 로 켠다).
+fn parse_col_sz(e: &quick_xml::events::BytesStart, cd: &mut ColumnDef) {
+    let mut width: HwpUnit16 = 0;
+    let mut gap: HwpUnit16 = 0;
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"width" => width = parse_i16(&attr),
+            b"gap" => gap = parse_i16(&attr),
+            _ => {}
+        }
+    }
+    cd.widths.push(width);
+    cd.gaps.push(gap);
 }
 
 fn parse_hwpx_line_type(value: &str) -> u8 {

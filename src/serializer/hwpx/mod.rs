@@ -575,6 +575,83 @@ mod tests {
         );
     }
 
+    /// #4387: 불균등 다단(단별 개별 너비/간격, `sameSz="false"`)이 HWPX 왕복에서
+    /// 균등 폭으로 저하되지 않아야 한다. `<hp:colSz>` 미방출/미파싱 시
+    /// `ColumnDef.widths`/`gaps` 가 비어 렌더러(page_layout.rs
+    /// calculate_column_areas) 가 same_width=false 조건을 만족 못 하고 균등
+    /// 분할 분기로 폴백한다.
+    #[test]
+    fn issue4387_unequal_column_widths_roundtrip() {
+        use crate::model::control::Control;
+        use crate::model::document::Section;
+        use crate::model::page::{ColumnDef, ColumnType};
+        use crate::model::paragraph::Paragraph;
+
+        let mut cd = ColumnDef::default();
+        cd.column_type = ColumnType::Normal;
+        cd.column_count = 2;
+        cd.same_width = false;
+        cd.widths = vec![4000, 6000];
+        cd.gaps = vec![500, 0];
+
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        para.controls.push(Control::ColumnDef(cd));
+
+        let mut section = Section::default();
+        section.paragraphs.push(para);
+        let mut doc = Document::default();
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize unequal columns");
+
+        // 직렬화된 XML에 단별 colSz 가 실제로 들어갔는지 ZIP에서 추출해 확인.
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("valid zip");
+        let mut sec0 = archive.by_name("Contents/section0.xml").expect("section0");
+        let mut xml = String::new();
+        sec0.read_to_string(&mut xml).expect("read");
+        assert!(
+            xml.contains(r#"sameSz="0""#),
+            "sameSz=false 가 방출돼야 함: {}",
+            &xml[..900.min(xml.len())]
+        );
+        assert!(
+            xml.contains(r#"<hp:colSz width="4000" gap="500"/>"#)
+                && xml.contains(r#"<hp:colSz width="6000" gap="0"/>"#),
+            "colSz 요소가 방출돼야 함(#4387): {}",
+            &xml[..900.min(xml.len())]
+        );
+        drop(sec0);
+
+        // 왕복 확인: 다시 파싱했을 때 개별 너비/간격이 그대로 복원돼야 한다.
+        let parsed = parse_hwpx(&bytes).expect("parse back");
+        let p0 = &parsed.sections[0].paragraphs[0];
+        let cd2 = p0
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                Control::ColumnDef(cd) => Some(cd),
+                _ => None,
+            })
+            .expect("ColumnDef control roundtrips");
+        assert!(!cd2.same_width);
+        assert_eq!(
+            cd2.widths,
+            vec![4000, 6000],
+            "단별 너비가 왕복에서 보존돼야 함(#4387)"
+        );
+        assert_eq!(
+            cd2.gaps,
+            vec![500, 0],
+            "단별 간격이 왕복에서 보존돼야 함(#4387)"
+        );
+        assert!(
+            !cd2.proportional_widths,
+            "HWPX colSz 는 절대 HWPUNIT — 비례값 플래그가 켜지면 안 됨"
+        );
+    }
+
     #[test]
     fn tab_and_linebreak_emitted_inline() {
         let mut doc = Document::default();

@@ -1601,7 +1601,7 @@ fn generated_field_parameters(field: &Field) -> Option<String> {
 }
 
 /// 셀·글상자 subList 인라인 `<hp:ctrl><hp:colPr .../></hp:ctrl>` (#1379 3단계).
-/// `parse_col_pr` / `parse_col_line`(parser/hwpx/section.rs)의 역매핑.
+/// `parse_col_pr` / `parse_col_line` / `parse_col_sz`(parser/hwpx/section.rs)의 역매핑.
 fn render_col_pr_ctrl(cd: &ColumnDef) -> String {
     let col_type = match cd.column_type {
         ColumnType::Distribute => "BalancedNewspaper",
@@ -1616,14 +1616,28 @@ fn render_col_pr_ctrl(cd: &ColumnDef) -> String {
         r#"<hp:ctrl><hp:colPr id="" type="{}" layout="{}" colCount="{}" sameSz="{}" sameGap="{}""#,
         col_type, layout, cd.column_count, cd.same_width as u8, cd.spacing,
     );
-    if cd.separator_type != 0 {
+    // [#4387] sameSz="false"(단 너비 개별 지정)일 때 <hp:colSz>(단별 너비·간격,
+    // ColumnDefType 스키마상 colLine 다음 자식)를 방출한다. 미방출 시 HWPX
+    // 왕복에서 불균등 단 너비가 사라지고 렌더러(page_layout.rs
+    // calculate_column_areas)가 균등 분할로 저하한다.
+    let mut col_sz_xml = String::new();
+    if !cd.same_width {
+        for (i, w) in cd.widths.iter().enumerate() {
+            let gap = cd.gaps.get(i).copied().unwrap_or(0);
+            col_sz_xml.push_str(&format!(r#"<hp:colSz width="{}" gap="{}"/>"#, w, gap));
+        }
+    }
+    if cd.separator_type != 0 || !col_sz_xml.is_empty() {
         out.push('>');
-        out.push_str(&format!(
-            r#"<hp:colLine type="{}" width="{} mm" color="{}"/>"#,
-            col_line_type_str(cd.separator_type),
-            line_width_mm(cd.separator_width),
-            super::shape::color_to_hex(cd.separator_color),
-        ));
+        if cd.separator_type != 0 {
+            out.push_str(&format!(
+                r#"<hp:colLine type="{}" width="{} mm" color="{}"/>"#,
+                col_line_type_str(cd.separator_type),
+                line_width_mm(cd.separator_width),
+                super::shape::color_to_hex(cd.separator_color),
+            ));
+        }
+        out.push_str(&col_sz_xml);
         out.push_str("</hp:colPr></hp:ctrl>");
     } else {
         out.push_str("/></hp:ctrl>");
