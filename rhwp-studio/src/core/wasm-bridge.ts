@@ -21,6 +21,19 @@ import {
   parseLocalBodyTextReplaceResult,
   type LocalBodyTextReplaceResult,
 } from './local-text-replace-result';
+import {
+  runReportedExport,
+  type DocumentExportArtifact,
+  type WasmDocumentExport,
+} from './export-content-loss';
+
+/** fresh WASM binding의 reported export 표면. 구버전 모듈은 런타임 가드에서 거부한다. */
+interface ReportedWasmDocument {
+  exportHwpWithReport(): WasmDocumentExport;
+  exportHwpWithPasswordAndReport(password: string): WasmDocumentExport;
+  exportHwpxWithReport(): WasmDocumentExport;
+  exportHwpxWithPasswordAndReport(password: string): WasmDocumentExport;
+}
 
 /**
  * 문단 병합으로 사라진 문단의 스코프 메타데이터 (Task #2342).
@@ -516,10 +529,40 @@ export class WasmBridge {
     return this.doc.exportHwp();
   }
 
+  /**
+   * 명시적 저장용 HWP artifact. 바이트와 content-loss 보고서는 같은 WASM 결과에 속한다.
+   * byte-only `exportHwp()`는 autosave/embed/history/compare/hwpctl/digest 호환 표면이며
+   * 보고서를 전달하지 않는다.
+   */
+  exportHwpWithReport(): DocumentExportArtifact {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.onBeforeExport?.();
+    const exportFn = (this.doc as unknown as Partial<ReportedWasmDocument>).exportHwpWithReport;
+    if (typeof exportFn !== 'function') {
+      throw new Error('현재 WASM 빌드는 HWP 내용 손실 보고를 지원하지 않습니다');
+    }
+    return runReportedExport(
+      () => exportFn.call(this.doc) as WasmDocumentExport,
+    );
+  }
+
   exportHwpWithPassword(password: string): Uint8Array {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     this.onBeforeExport?.();
     return this.doc.exportHwpWithPassword(password);
+  }
+
+  exportHwpWithPasswordAndReport(password: string): DocumentExportArtifact {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.onBeforeExport?.();
+    const exportFn = (this.doc as unknown as Partial<ReportedWasmDocument>)
+      .exportHwpWithPasswordAndReport;
+    if (typeof exportFn !== 'function') {
+      throw new Error('현재 WASM 빌드는 비밀번호 HWP 내용 손실 보고를 지원하지 않습니다');
+    }
+    return runReportedExport(
+      () => exportFn.call(this.doc, password) as WasmDocumentExport,
+    );
   }
 
   exportHwpx(): Uint8Array {
@@ -528,9 +571,35 @@ export class WasmBridge {
     return this.doc.exportHwpx();
   }
 
+  /** 명시적 저장용 HWPX artifact. byte-only 보조 소비자와 의도적으로 분리한다. */
+  exportHwpxWithReport(): DocumentExportArtifact {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.onBeforeExport?.();
+    const exportFn = (this.doc as unknown as Partial<ReportedWasmDocument>).exportHwpxWithReport;
+    if (typeof exportFn !== 'function') {
+      throw new Error('현재 WASM 빌드는 HWPX 내용 손실 보고를 지원하지 않습니다');
+    }
+    return runReportedExport(
+      () => exportFn.call(this.doc) as WasmDocumentExport,
+    );
+  }
+
   exportHwpxWithPassword(password: string): Uint8Array {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.exportHwpxWithPassword(password);
+  }
+
+  exportHwpxWithPasswordAndReport(password: string): DocumentExportArtifact {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.onBeforeExport?.();
+    const exportFn = (this.doc as unknown as Partial<ReportedWasmDocument>)
+      .exportHwpxWithPasswordAndReport;
+    if (typeof exportFn !== 'function') {
+      throw new Error('현재 WASM 빌드는 비밀번호 HWPX 내용 손실 보고를 지원하지 않습니다');
+    }
+    return runReportedExport(
+      () => exportFn.call(this.doc, password) as WasmDocumentExport,
+    );
   }
 
   /** HML로 저장 (보존 불가 요소가 있으면 던진다). 현재 WASM 빌드가 지원하지 않으면 던진다. */

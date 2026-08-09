@@ -31,6 +31,7 @@ use std::fmt::Write as _;
 
 use crate::model::bin_data::MAX_BIN_DATA_BYTES;
 use crate::model::document::{Document, HWP5_ORIGIN_HWPX_MARKER_PATH};
+use crate::serializer::content_loss::{ContentLoss, ContentLossReason, SerializedDocument};
 
 use super::SerializeError;
 use content::BinDataEntry as ContentBinDataEntry;
@@ -43,6 +44,13 @@ use writer::HwpxZipWriter;
 /// `SerializeContext`가 1-pass 스캔으로 ID 풀을 구성하고, 각 writer가 동일 컨텍스트를
 /// 참조한다. 직렬화 종료 시 `assert_all_refs_resolved()`가 미등록 참조를 단언한다.
 pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
+    let serialized = serialize_hwpx_with_report(doc)?;
+    serialized.content_loss().write_warnings_to_stderr();
+    Ok(serialized.into_bytes())
+}
+
+/// HWPX 직렬화 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
+pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, SerializeError> {
     use static_assets::*;
 
     // 1-pass: ID 풀 구성
@@ -150,15 +158,17 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
         // 재압축이 필수라 원본 통과 fallback 이 없다. 상한 초과는 [#1917] 이 정한
         // 로드 실패 의미(빈 엔트리 placeholder + pic 컨트롤 보존)를 그대로 따른다 —
         // 여기서 오류로 중단하면 폭탄 문서 하나가 저장 자체를 막는다.
-        let bytes = data.data.load_limited(MAX_BIN_DATA_BYTES).unwrap_or_else(|| {
-            eprintln!(
-                "경고: BinData {}({}) 로드 실패 또는 압축 해제 상한 {}MB 초과 — 빈 엔트리로 대체 (#2550)",
-                entry.bin_data_id,
-                entry.href,
-                MAX_BIN_DATA_BYTES / (1024 * 1024)
-            );
-            Vec::new()
-        });
+        let bytes = match data.data.load_limited(MAX_BIN_DATA_BYTES) {
+            Some(bytes) => bytes,
+            None => {
+                ctx.content_loss.record(ContentLoss::binary_content_emptied(
+                    entry.bin_data_id,
+                    entry.href.clone(),
+                    ContentLossReason::ResourceReadFailedOrLimitExceeded,
+                ));
+                Vec::new()
+            }
+        };
         const CFB_MAGIC: [u8; 8] = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
         let payload: Vec<u8> = if data.extension.eq_ignore_ascii_case("ole")
             && bytes.len() >= 8
@@ -179,6 +189,8 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     //      원본 content.hpf 가 Chart 파트를 나열하지 않으므로 manifest·3-way
     //      단언 대상 밖이며(collect_from_document 에서 분리), BinData 로 옮기면
     //      한컴이 차트 XML 을 OLE 복합문서로 해석한다.
+    // chart_entries 순회 중에는 ctx를 불변 대여하므로 손실 이벤트를 잠시 분리한다.
+    let mut chart_losses = Vec::new();
     for entry in &ctx.chart_entries {
         let data = doc
             .bin_data_content
@@ -192,19 +204,21 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
             })?;
         // [#2550] 차트 파트도 같은 상한 — bin_data_content 를 공유하므로 폭탄 표면이다.
         // 상한 초과·로드 실패는 위 BinData 엔트리와 같은 빈 파트 placeholder 다.
-        let chart_bytes = data
-            .data
-            .load_limited(MAX_BIN_DATA_BYTES)
-            .unwrap_or_else(|| {
-                eprintln!(
-                    "경고: 차트 BinData {}({}) 로드 실패 또는 압축 해제 상한 {}MB 초과 — 빈 파트로 대체 (#2550)",
+        let chart_bytes = match data.data.load_limited(MAX_BIN_DATA_BYTES) {
+            Some(bytes) => bytes,
+            None => {
+                chart_losses.push(ContentLoss::binary_content_emptied(
                     entry.bin_data_id,
-                    entry.href,
-                    MAX_BIN_DATA_BYTES / (1024 * 1024)
-                );
+                    entry.href.clone(),
+                    ContentLossReason::ResourceReadFailedOrLimitExceeded,
+                ));
                 Vec::new()
-            });
+            }
+        };
         z.write_deflated(&entry.href, &chart_bytes)?;
+    }
+    for loss in chart_losses {
+        ctx.content_loss.record(loss);
     }
 
     // 9. Contents/content.hpf — 항상 동적 경로 + BinData 매니페스트 엔트리
@@ -247,7 +261,8 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     // 세 집합이 동일해야 한컴이 바인딩 오류 없이 그림을 표시함.
     assert_bin_data_3way(&bin_entries, &zip_bin_entries)?;
 
-    z.finish()
+    let bytes = z.finish()?;
+    Ok(SerializedDocument::new(bytes, ctx.content_loss))
 }
 
 /// Document IR을 한컴 ODF AES-256-CBC 비밀번호 보호 HWPX로 직렬화한다.
@@ -258,8 +273,26 @@ pub fn serialize_hwpx_with_password(
     doc: &Document,
     password: &[u8],
 ) -> Result<Vec<u8>, SerializeError> {
-    let plain = serialize_hwpx(doc)?;
-    crate::password_crypto::encrypt_hwpx_package(&plain, password)
+    let serialized = serialize_hwpx_with_report(doc)?;
+    let (plain, content_loss) = serialized.into_parts();
+    let bytes = encrypt_hwpx_bytes(&plain, password)?;
+    content_loss.write_warnings_to_stderr();
+    Ok(bytes)
+}
+
+/// 비밀번호 HWPX 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
+pub fn serialize_hwpx_with_password_and_report(
+    doc: &Document,
+    password: &[u8],
+) -> Result<SerializedDocument, SerializeError> {
+    let serialized = serialize_hwpx_with_report(doc)?;
+    let (plain, content_loss) = serialized.into_parts();
+    let bytes = encrypt_hwpx_bytes(&plain, password)?;
+    Ok(SerializedDocument::new(bytes, content_loss))
+}
+
+fn encrypt_hwpx_bytes(plain: &[u8], password: &[u8]) -> Result<Vec<u8>, SerializeError> {
+    crate::password_crypto::encrypt_hwpx_package(plain, password)
         .map_err(|error| SerializeError::CryptoError(error.to_string()))
 }
 

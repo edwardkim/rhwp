@@ -14,9 +14,16 @@ import {
 } from '@/command/save-target';
 import { SAVE_FORMAT_DETAILS } from '@/command/save-format';
 import {
-  exportDocumentForFormat,
-  exportPasswordProtectedDocumentForFormat,
+  exportDocumentWithReportForFormat,
+  exportPasswordProtectedDocumentWithReportForFormat,
+  type SaveExportArtifact,
 } from '@/command/save-document-format';
+import {
+  buildContentLossNotice,
+  persistDownloadWithContentLoss,
+  persistWithContentLoss,
+  type ContentLossReport,
+} from '@/core/export-content-loss';
 import {
   readHmlSaveContext,
   resolveHmlSaveCapability,
@@ -121,17 +128,35 @@ async function chooseSaveAsFormat(services: CommandServices): Promise<SaveFormat
   );
 }
 
-function createSaveBlob(
+interface SavePayload {
+  blob: Blob;
+  contentLoss: ContentLossReport | null;
+}
+
+function createSavePayload(
   services: CommandServices,
   format: SaveFormat,
   password?: string,
-): Blob {
-  const bytes = password === undefined
-    ? exportDocumentForFormat(services.wasm, format)
-    : exportPasswordProtectedDocumentForFormat(services.wasm, requirePasswordSaveFormat(format), password);
-  return new Blob([bytes as unknown as BlobPart], {
-    type: SAVE_FORMAT_DETAILS[format].mimeType,
-  });
+): SavePayload {
+  const artifact: SaveExportArtifact = password === undefined
+    ? exportDocumentWithReportForFormat(services.wasm, format)
+    : exportPasswordProtectedDocumentWithReportForFormat(
+      services.wasm,
+      requirePasswordSaveFormat(format),
+      password,
+    );
+  return {
+    blob: new Blob([artifact.bytes as unknown as BlobPart], {
+      type: SAVE_FORMAT_DETAILS[format].mimeType,
+    }),
+    contentLoss: artifact.contentLoss,
+  };
+}
+
+function showExportContentLoss(report: ContentLossReport): void {
+  const message = buildContentLossNotice(report);
+  if (!message) return;
+  showToast({ message, durationMs: 0, confirmLabel: '확인' });
 }
 
 function requirePasswordSaveFormat(format: SaveFormat): Exclude<SaveFormat, 'hml'> {
@@ -199,8 +224,11 @@ function downloadBlob(blob: Blob, fileName: string): void {
   const anchor = document.createElement('a');
   anchor.href = url;
   anchor.download = fileName;
-  anchor.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  try {
+    anchor.click();
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
 }
 
 async function promptFallbackName(
@@ -247,15 +275,20 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
 
     flushDeferredPaginationBeforeExplicitOutput(services, 'save-as');
     const saveName = options.fileName;
-    const blob = createSaveBlob(services, format, password ?? undefined);
+    const payload = createSavePayload(services, format, password ?? undefined);
     const originalHandle = sourceFormat === 'hml' ? services.wasm.currentFileHandle : null;
-    const result = await tryFileSystemSave(
-      services,
-      format,
-      blob,
-      saveName,
-      true,
-      originalHandle,
+    const result = await persistWithContentLoss(
+      payload.contentLoss,
+      () => tryFileSystemSave(
+        services,
+        format,
+        payload.blob,
+        saveName,
+        true,
+        originalHandle,
+      ),
+      (saveResult) => saveResult !== 'cancelled' && saveResult.method !== 'fallback',
+      showExportContentLoss,
     );
     if (result === 'cancelled') return;
     if (result.method !== 'fallback') {
@@ -266,7 +299,11 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
     if (!downloadName) return;
     services.wasm.fileName = downloadName;
     services.wasm.requiresPasswordForSave = password !== null;
-    downloadBlob(blob, downloadName);
+    persistDownloadWithContentLoss(
+      payload.contentLoss,
+      () => downloadBlob(payload.blob, downloadName),
+      showExportContentLoss,
+    );
     services.documentState.markClean('save-as');
   } catch (error) {
     reportSaveError('file:save-as', error);
@@ -309,14 +346,19 @@ export async function saveCurrentDocument(services: CommandServices): Promise<Sa
       password = await showHwpSavePasswordDialog(fileNameForFormat(services.wasm.fileName, passwordFormat));
       if (password === null) return 'cancelled';
     }
-    const blob = createSaveBlob(services, target.format, password ?? undefined);
-    const result = await tryFileSystemSave(
-      services,
-      target.format,
-      blob,
-      target.suggestedName,
-      target.forceSaveAs,
-      services.wasm.currentFileHandle,
+    const payload = createSavePayload(services, target.format, password ?? undefined);
+    const result = await persistWithContentLoss(
+      payload.contentLoss,
+      () => tryFileSystemSave(
+        services,
+        target.format,
+        payload.blob,
+        target.suggestedName,
+        target.forceSaveAs,
+        services.wasm.currentFileHandle,
+      ),
+      (saveResult) => saveResult !== 'cancelled' && saveResult.method !== 'fallback',
+      showExportContentLoss,
     );
     if (result === 'cancelled') return 'cancelled';
     if (result.method !== 'fallback') {
@@ -325,7 +367,11 @@ export async function saveCurrentDocument(services: CommandServices): Promise<Sa
     }
     const downloadName = await fallbackNameForCurrentSave(services, target);
     if (!downloadName) return 'cancelled';
-    downloadBlob(blob, downloadName);
+    persistDownloadWithContentLoss(
+      payload.contentLoss,
+      () => downloadBlob(payload.blob, downloadName),
+      showExportContentLoss,
+    );
     services.wasm.requiresPasswordForSave = password !== null;
     services.documentState.markClean('save');
     return 'saved';
