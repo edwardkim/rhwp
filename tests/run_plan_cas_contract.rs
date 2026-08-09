@@ -197,6 +197,7 @@ fn present_preconditions_require_exactly_input_sha256() {
 }
 
 #[test]
+#[cfg(debug_assertions)]
 fn concurrent_in_place_plans_with_one_expected_hash_cannot_both_commit() {
     let nonce = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)

@@ -15061,8 +15061,9 @@ impl CasPathLock {
     }
 }
 
-/// 통합 회귀에서 두 별도 프로세스를 잠금 시도 직전까지 모은다. 환경변수가 없으면
-/// 완전한 no-op이며, 일반 CLI 계약에는 노출되지 않는다.
+/// debug 통합 회귀에서 두 별도 프로세스를 잠금 시도 직전까지 모은다. release
+/// binary에는 환경변수 기반 파일 쓰기·대기 경로 자체를 컴파일하지 않는다.
+#[cfg(debug_assertions)]
 fn cas_test_synchronize_before_lock() -> Result<(), String> {
     let Some(directory) = std::env::var_os("RHWP_INTERNAL_TEST_CAS_BARRIER") else {
         return Ok(());
@@ -15090,8 +15091,14 @@ fn cas_test_synchronize_before_lock() -> Result<(), String> {
     }
 }
 
+#[cfg(not(debug_assertions))]
+fn cas_test_synchronize_before_lock() -> Result<(), String> {
+    Ok(())
+}
+
 /// 최초 해시 검사를 통과한 프로세스를 표시한다. 잠금이 사라진 mutation에서는 두
 /// marker가 생기고, 정상 구현에서는 첫 writer만 이 경계에 도달한다.
+#[cfg(debug_assertions)]
 fn cas_test_mark_checked_and_wait() {
     let Some(directory) = std::env::var_os("RHWP_INTERNAL_TEST_CAS_BARRIER") else {
         return;
@@ -15116,6 +15123,9 @@ fn cas_test_mark_checked_and_wait() {
         std::thread::sleep(std::time::Duration::from_millis(10));
     }
 }
+
+#[cfg(not(debug_assertions))]
+fn cas_test_mark_checked_and_wait() {}
 
 /// 기대 해시가 주어졌을 때만 검사한다. 형식 오류는 exit 2, 불일치는 exit 3 을
 /// 돌려주고 봉투/진단을 직접 낸다. `None` 이면 통과.
