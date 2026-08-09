@@ -310,6 +310,11 @@ reproduced)하고, 깨지면 exit 3 + `brokenAt`.
   지정 `receipt.outputs[]` digest, 자식의 지정 `receipt.inputs[]` digest와 모두
   같아야 한다. 경로나 role만 같은 것은 계보가 아니다. 발급 시 부모 capsule과
   자식이 실제 읽은 입력 snapshot을 대조하고 하나라도 없거나 다르면 발급을 거절한다.
+- **root 외부 입력.** `parents:[]`인 root의 `receipt.inputs[]`는 계보 밖에서 들어온
+  source input이다. parent binding 대신 실제 snapshot digest를 영수증과 실행 키에
+  결속하고 `external`로 보고한다. 모든 비-root input slot은 정확히 한 parent
+  binding을 가져야 하며 누락·중복이면 발급을 거절한다. root의 외부 입력 digest는
+  내용 결속이지 제3자 provenance anchor는 아니며, 서명·투명성 로그는 후속 축이다.
 - **하위호환 정규화.** 읽기: v1.0 의 `parent`(객체) → `parents` 1원소
   (`role:"primary"`, `output`→`input`, 기존 두 receipt 해시로 binding 구성),
   `parent:null` → `parents:[]`. 쓰기: v1.1부터 `parents`와 slot digest를 쓴다.
@@ -524,7 +529,7 @@ lineage(head, deep):
 | T2 | 부모 바꿔치기 (다른 캡슐로 교체) | 동일 (파일 해시가 다르다) | `parentOk:false` |
 | T3 | 산출-입력 사슬 위조 (primary 또는 material 몰래 교체) | edge의 부모 output↔binding↔자식 input slot 3자 대조 | `lineageOk:false` |
 | T4 | 결과만 그럴듯한 캡슐 (재실행 불일치) | `--deep` 재현 | `reproduced:false` |
-| T5 | 재료 누락 신고 | 선언된 외부 input slot 전부에 parent binding을 요구 | 선언된 slot 누락은 발급 실패. 계획 밖 비밀 입력까지는 검출 못 함 |
+| T5 | 재료 누락 신고 | 모든 비-root input slot에 정확히 한 parent binding을 요구하고 root source input은 `external` digest로 명시 | 비-root slot의 binding 누락·중복은 발급 실패. root external digest는 실행 입력을 결속하지만 외부 provenance를 증명하지 않으며, 계획 밖 비밀 입력까지는 검출 못 함 |
 | T6 | 동일 bytes·hardlink capsule의 상대 경로 의미 혼동 | canonicalized access path + resolution base 방문 키 | 별도 access path는 같은 file-id여도 별도 node. 같은 논리 조상이라는 주장은 stable identity/앵커 없이는 증명 못 함 |
 | T7 | **역사 전체 재작성** (뿌리부터 전부 재발급) | **해시 체인만으로는 못 잡는다** | 외부 앵커 필요 — 타임스탬프·서명·투명성 로그는 **후속 축**으로 남긴다 (본 설계 범위 밖임을 명시) |
 
@@ -540,7 +545,7 @@ T7 을 숨기지 않는 것이 이 표의 요점이다. git 도 동일한 한계
 |---|---|---|
 | **M1** 스키마+edge 결속 | `parents[]`·role·binding, receipt `inputs[]`/`outputs[]`, v1.0 정규화 | 기존 v1.0 입력의 봉투 key/exit 판정 불변 + v1.1 발급·재독 + 누락·중복 slot/unknown role/self-parent/mismatch 거절 + 참고문헌 원문 검증 |
 | **M2** DAG 걷기 | access path+resolution base 방문, v1.1 `nodes[]`/`edges[]`/`broken[]`, 자원 상한 | 5노드·6-edge D→{A,B,C}→S 유효 + 모든 edge 판정 + 같은 base의 symlink 별칭 보조 식별 + hardlink alias를 서로 다른 계보로 방문 + 같은 bytes·다른 폴더 상대 parent 회귀 + 정확한 limit 경계 |
-| **M3** audit×lineage | 폴더 전수에서 체인/DAG 자동 발견·일괄 감사 + 외부 input slot 완전성 | 체인 1 + DAG 1 자동 식별·회계, 선언 slot의 parent 누락 거절, 계획 밖 입력은 비검출 한계로 보고 |
+| **M3** audit×lineage | 폴더 전수에서 체인/DAG 자동 발견·일괄 감사 + input slot 완전성 | 체인 1 + DAG 1 자동 식별·회계, root external input digest 보고, 비-root 선언 slot의 parent binding 누락·중복 거절, 계획 밖 입력은 비검출 한계로 보고 |
 | **M4** 모델 레시피 PoC | mergekit YAML·정확한 model digest·실행 프로필을 감싼 캡슐 | 실험 브랜치 한정. 같은 실행 키의 byte-identical 재현과 입력/프로필 하나 변경 시 cache 미재사용 |
 
 각 단계는 독립 PR 이고, M1 착수 조건은 문서 머리에 적었다. **완료 표기는 머지
