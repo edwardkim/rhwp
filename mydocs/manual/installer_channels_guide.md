@@ -7,8 +7,9 @@ last_verified: 2026-08-09
 
 # 설치 채널 가이드 2부 — binstall·deb·rpm·MSI·스크립트·AUR·server.json (#4375)
 
-[channel_manifests_guide.md](channel_manifests_guide.md)(scoop·homebrew·winget,
-#4338)의 후속 일괄이다. 채널마다 **활성 조건**과 **검증 상태**를 정직하게 갈라
+1부(scoop·homebrew·winget — `channel_manifests_guide.md`,
+[PR #4339](https://github.com/edwardkim/rhwp/pull/4339) 리뷰 중이라 상대 링크는
+착지 후 잇는다)의 후속 일괄이다. 채널마다 **활성 조건**과 **검증 상태**를 정직하게 갈라
 적는다 — "커밋됨"과 "동작 검증됨"은 다른 등급이다.
 
 ## 채널 매트릭스 (활성 조건·검증 상태)
