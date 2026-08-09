@@ -48,5 +48,6 @@ python tools/harness_proofs.py        # 6개 성질 실검증 — 하나라도 �
 2. C행이 devel 에 착지하면 가능한 것부터 러너(P행)로 승격한다.
 3. 러너는 CI 편입 후보다(R12 CI 상시화와 합류) — 편입 전까지는 로컬·PR 실측을
    문서에 남긴다.
-4. 신간·업계 대사는 [trend_harness_2026w32.md](trend_harness_2026w32.md) 계열이
-   담당하고, 이 문서는 **검증 가능한 성질의 대장**만 유지한다.
+4. 신간·업계 대사는 `trend_harness_2026w32.md` 계열([PR
+   #4385](https://github.com/edwardkim/rhwp/pull/4385) 리뷰 중 — 상대 링크는
+   착지 후)이 담당하고, 이 문서는 **검증 가능한 성질의 대장**만 유지한다.
