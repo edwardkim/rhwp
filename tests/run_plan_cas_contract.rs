@@ -60,6 +60,17 @@ fn plan_json(sha: Option<&str>, output: &std::path::Path, find: &str) -> String 
     plan.to_string()
 }
 
+fn in_place_plan_json(input: &std::path::Path, sha: &str, find: &str, replace: &str) -> String {
+    serde_json::json!({
+        "planVersion": "1.0",
+        "input": input.to_string_lossy(),
+        "output": input.to_string_lossy(),
+        "preconditions": { "inputSha256": sha },
+        "steps": [{ "action": "replace_text", "find": find, "replace": replace }],
+    })
+    .to_string()
+}
+
 fn tmp(name: &str) -> std::path::PathBuf {
     std::env::temp_dir().join(format!("cas_contract_{name}.hwp"))
 }
@@ -165,6 +176,63 @@ fn plan_with_non_object_preconditions_is_usage_error() {
         "{env}"
     );
     assert!(!out.exists());
+}
+
+#[test]
+fn present_preconditions_require_exactly_input_sha256() {
+    let out = tmp("plan_missing_key");
+    let find = existing_snippet();
+    for preconditions in [
+        serde_json::json!({}),
+        serde_json::json!({ "inputSha265": ZERO64 }),
+        serde_json::json!({ "inputSha256": ZERO64, "unexpected": true }),
+    ] {
+        let mut plan: serde_json::Value =
+            serde_json::from_str(&plan_json(None, &out, &find)).expect("계획 JSON");
+        plan["preconditions"] = preconditions;
+        let o = run(&["run", "--plan-json", &plan.to_string(), "--json"]);
+        assert_eq!(o.status.code(), Some(2), "누락·미지 키는 거절: {plan}");
+        assert!(!out.exists(), "잘못된 전제조건은 산출물을 쓰지 않는다");
+    }
+}
+
+#[test]
+fn concurrent_in_place_plans_with_one_expected_hash_cannot_both_commit() {
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("system time")
+        .as_nanos();
+    let input =
+        std::env::temp_dir().join(format!("rhwp_cas_race_{}_{nonce}.hwp", std::process::id()));
+    std::fs::copy(SAMPLE, &input).expect("경합용 입력 복사");
+    let original = std::fs::read(&input).expect("경합용 입력 읽기");
+    let expected = Sha256::digest(&original)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    let find = existing_snippet();
+    let plan_a = in_place_plan_json(&input, &expected, &find, "가");
+    let plan_b = in_place_plan_json(&input, &expected, &find, "나");
+
+    let mut first = Command::new(rhwp_bin())
+        .args(["run", "--plan-json", &plan_a, "--json"])
+        .spawn()
+        .expect("첫 CAS 실행");
+    let mut second = Command::new(rhwp_bin())
+        .args(["run", "--plan-json", &plan_b, "--json"])
+        .spawn()
+        .expect("둘째 CAS 실행");
+    let first_status = first.wait().expect("첫 CAS 종료").code();
+    let second_status = second.wait().expect("둘째 CAS 종료").code();
+    let mut codes = [first_status, second_status];
+    codes.sort();
+    assert_eq!(codes, [Some(0), Some(2)], "정확히 한 실행만 commit");
+    assert_ne!(
+        Sha256::digest(std::fs::read(&input).expect("최종 입력")),
+        Sha256::digest(original),
+        "성공한 한 편집은 실제 파일을 바꿔야 한다"
+    );
+    let _ = std::fs::remove_file(input);
 }
 
 // ── edit 단발 축 (R24, 기함: replace-text) ───────────────────────────────

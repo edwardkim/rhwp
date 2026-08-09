@@ -15036,6 +15036,31 @@ fn sha256_hex_of(bytes: &[u8]) -> String {
     hex
 }
 
+/// 같은 입력 경로를 다루는 rhwp writer 사이의 read-check-write 경계를 직렬화한다.
+/// 잠금 파일은 rename 뒤에도 같은 inode/handle을 유지해야 하므로 원본 파일이 아니라
+/// 정규화한 경로의 해시로 만든 안정적인 temp sidecar를 사용한다.
+struct CasPathLock {
+    _file: fs::File,
+}
+
+impl CasPathLock {
+    fn acquire(source: &Path) -> std::io::Result<Self> {
+        #[cfg(unix)]
+        use std::os::unix::fs::OpenOptionsExt;
+
+        let canonical = fs::canonicalize(source)?;
+        let key = sha256_hex_of(canonical.to_string_lossy().as_bytes());
+        let lock_path = std::env::temp_dir().join(format!("rhwp-cas-v1-{key}.lock"));
+        let mut options = fs::OpenOptions::new();
+        options.read(true).write(true).create(true);
+        #[cfg(unix)]
+        options.mode(0o600);
+        let file = options.open(lock_path)?;
+        file.lock()?;
+        Ok(Self { _file: file })
+    }
+}
+
 /// 기대 해시가 주어졌을 때만 검사한다. 형식 오류는 exit 2, 불일치는 exit 3 을
 /// 돌려주고 봉투/진단을 직접 낸다. `None` 이면 통과.
 fn check_expect_sha256(
@@ -15283,8 +15308,13 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     let expected_input_sha = match plan.get("preconditions") {
         None => None,
         Some(serde_json::Value::Object(preconditions)) => match preconditions.get("inputSha256") {
-            None => None,
+            None => {
+                return usage("preconditions 객체에는 inputSha256 하나가 반드시 필요합니다");
+            }
             Some(serde_json::Value::String(raw)) => {
+                if preconditions.len() != 1 {
+                    return usage("preconditions 에는 inputSha256 외 속성을 둘 수 없습니다");
+                }
                 let normalized = raw.trim().to_ascii_lowercase();
                 if normalized.len() != 64 || !normalized.bytes().all(|b| b.is_ascii_hexdigit()) {
                     return usage("preconditions.inputSha256 은 64자리 16진이어야 합니다");
@@ -15298,34 +15328,48 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
         Some(_) => return usage("preconditions 는 객체여야 합니다"),
     };
 
+    let _cas_lock = match expected_input_sha.as_ref() {
+        Some(_) => match CasPathLock::acquire(Path::new(input)) {
+            Ok(lock) => Some(lock),
+            Err(e) => {
+                return fail(format!(
+                    "입력 문서 CAS 잠금을 얻을 수 없습니다 - {input}: {e}"
+                ))
+            }
+        },
+        None => None,
+    };
     let bytes = match fs::read(input) {
         Ok(d) => d,
         Err(e) => return fail(format!("입력을 읽을 수 없습니다 - {}: {}", input, e)),
     };
     // [#4378 R22] CAS — 계획이 세워진 시점의 문서가 아니면 실행 0·저장 0 으로
     // 거절한다(#3905 M1: 두 exit 0 이 편집 하나를 지우는 경합의 차단기).
+    let precondition_failure = |expected: &str, actual: String| {
+        (
+            provenance::marked(
+                serde_json::json!({
+                    "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                    "planVersion": "1.0",
+                    "input": input,
+                    "invalid": [{
+                        "step": serde_json::Value::Null,
+                        "action": "preconditions",
+                        "code": "preconditionFailed",
+                        "reason": "입력 문서가 계획의 기대 해시와 다릅니다 — 계획 수립 후 문서가 바뀌었습니다. 실행 0·저장 0. 문서를 다시 읽고 재계획하세요 (#3905 CAS).",
+                        "expected": expected,
+                        "actual": actual,
+                    }],
+                }),
+                "run",
+            ),
+            EXIT_USAGE,
+        )
+    };
     if let Some(expected) = expected_input_sha.as_deref() {
         let actual = sha256_hex_of(&bytes);
         if actual != expected {
-            return (
-                provenance::marked(
-                    serde_json::json!({
-                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                        "planVersion": "1.0",
-                        "input": input,
-                        "invalid": [{
-                            "step": serde_json::Value::Null,
-                            "action": "preconditions",
-                            "code": "preconditionFailed",
-                            "reason": "입력 문서가 계획의 기대 해시와 다릅니다 — 계획 수립 후 문서가 바뀌었습니다. 실행 0·저장 0. 문서를 다시 읽고 재계획하세요 (#3905 CAS).",
-                            "expected": expected,
-                            "actual": actual,
-                        }],
-                    }),
-                    "run",
-                ),
-                EXIT_USAGE,
-            );
+            return precondition_failure(expected, actual);
         }
     }
     let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
@@ -15773,6 +15817,20 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
                 ),
                 3,
             );
+        }
+    }
+    if let Some(expected) = expected_input_sha.as_deref() {
+        let latest = match fs::read(input) {
+            Ok(bytes) => bytes,
+            Err(e) => {
+                return fail(format!(
+                    "저장 직전 입력을 다시 읽을 수 없습니다 - {input}: {e}"
+                ))
+            }
+        };
+        let actual = sha256_hex_of(&latest);
+        if actual != expected {
+            return precondition_failure(expected, actual);
         }
     }
     if let Err(e) = fs::write(output, &out_bytes) {
@@ -16360,6 +16418,16 @@ fn edit_replace_text(args: &[String]) -> i32 {
         return EXIT_USAGE;
     }
 
+    let _cas_lock = match expect_sha256.as_ref() {
+        Some(_) => match CasPathLock::acquire(Path::new(file_path)) {
+            Ok(lock) => Some(lock),
+            Err(e) => {
+                eprintln!("오류: 입력 문서 CAS 잠금을 얻을 수 없습니다 - {file_path}: {e}");
+                return EXIT_RUNTIME;
+            }
+        },
+        None => None,
+    };
     let bytes = match fs::read(file_path) {
         Ok(d) => d,
         Err(e) => {
@@ -16442,6 +16510,20 @@ fn edit_replace_text(args: &[String]) -> i32 {
                 return EXIT_RUNTIME;
             }
         };
+        if expect_sha256.is_some() {
+            let latest = match fs::read(file_path) {
+                Ok(bytes) => bytes,
+                Err(e) => {
+                    eprintln!("오류: 저장 직전 입력을 다시 읽을 수 없습니다 - {file_path}: {e}");
+                    return EXIT_RUNTIME;
+                }
+            };
+            if let Some(code) =
+                check_expect_sha256(expect_sha256.as_deref(), &latest, file_path, json_mode)
+            {
+                return code;
+            }
+        }
         if let Err(e) = fs::write(&output_path, &out_bytes) {
             eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
             return EXIT_RUNTIME;
