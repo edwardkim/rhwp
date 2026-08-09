@@ -250,3 +250,170 @@ line(122)부터** 재래핑한다는 쪽을 지지한다.
 HWPX/합성 LINE_SEG, table operation·formatting처럼 명시 edit offset이 없는 호출은 기존 full
 reflow를 그대로 사용한다. 구현 뒤 기존 `#2214/#2424/#3137`이 다섯 번째 줄을 일관되게 보는지와
 별도 prefix-preservation 회귀를 확인한다.
+
+### 첫 보정 실행과 HWPX 분리
+
+위 범위로 native HWP edit에 suffix reflow를 적용한 뒤 `issue2214`를 다시 실행했다. HWP case는
+56번째 input에서 flow signal이 true가 되어 transient/flush oracle까지 통과했다. test가 이어서
+검사한 HWPX case는 여전히 56번째에서 false였다. 즉 HWP의 원인은 확정·보정됐지만, HWPX를
+"합성 LINE_SEG이므로 full reflow 유지"로 둔 초기 범위는 gate 계약을 충족하지 못한다.
+
+`#2430`의 기존 근거는 HWP와 HWPX 모두 같은 56회 COM ladder였으므로, 다음에는 HWPX 원본도
+동일 edit 뒤 HWP adapter 저장본을 한컴 2020 PDF로 내보낸다. PDF에서도 56회가 다섯째 줄이면
+HWPX 저장 LINE_SEG도 유효한 prefix로 취급하되, HWPX에만 존재하는 adapter/합성 marker는
+제외하는 구조 조건을 좁힌다. PDF가 61회를 지지하면 HWPX expectation만 별도 재검토한다.
+이 외부 oracle 전에는 HWPX 범위를 넓히거나 test expectation을 바꾸지 않는다.
+
+### HWPX 한컴 2020 oracle 결과와 gate 정정 범위
+
+HWPX 원본의 56회·61회 edit도 HWP adapter 저장본으로 만들어 같은 한컴 2020 `PrintToPDFEx`
+경로로 비교했다.
+
+| HWPX 입력 | 한컴 2020 PDF 관측 | 판정 |
+| --- | --- | --- |
+| 56회 | `용한다.111…`가 넷째 줄에 남음 | 아직 4줄 |
+| 61회 | `다.111…`가 새 다섯째 줄로 전환 | **61회** boundary |
+
+두 PDF는 모두 A4 115쪽이고 SHA-256은 `09ff2091…010e46d4`(56회),
+`05cec394…ccb45f3a1`(61회)다. HWPX는 HWP와 실제 editable layout이 다르므로 56이라는
+공통 expectation이 stale이었다. 즉 HWPX full reflow를 HWP prefix-preservation 로직으로
+확장하는 것은 oracle과 반대이며 수행하지 않는다.
+
+따라서 정정은 test fixture가 source-format별 실제 boundary를 표현하도록 하는 데 한정한다.
+HWP는 56회, HWPX는 61회로 각각 입력·cursor offset·delete boundary를 계산한다. pagination
+state machine 자체의 pending/complete/fragment count 기대값은 공통으로 유지한다. 이 변경은
+회귀를 약화하는 것이 아니라, 기존 단일 56 값이 가렸던 실제 한컴 HWPX 61회 behavior를
+검증 계약으로 고정하는 것이다.
+
+## 구현 전 계약 — source-format별 boundary와 정리 범위
+
+이번 수정은 아래 세 가지를 동시에 수행한다.
+
+1. `issue2214`·`issue2424`·`issue3137`의 loop count, cursor offset, 삭제 기준을 `hwp=56`,
+   `hwpx=61`이라는 하나의 test helper에서 계산한다. HWPX를 56회에서 억지로 flow-change로
+   만들거나, HWP의 prefix 보존 경로를 HWPX까지 확장하지 않는다.
+2. native HWP 셀 편집만 `reflow_line_segs_after_cell_text_edit()`를 통해 저장 LINE_SEG
+   prefix를 보존한다. HWPX는 `source_format != Hwp` 조건에서 기존 full reflow를 유지한다.
+   현재 구현도 이 조건을 가지고 있으므로 동작 변경이 아니라 근거와 주석을 oracle에 맞춘다.
+3. HWP/HWPX 56/61 artifact를 만들기 위한 환경변수 기반 test I/O와 flow diagnostic은 이미
+   oracle 역할을 마쳤으므로 제거한다. 정답지 PDF와 SHA-256, 재현 fixture·offset은 이 문서와
+   `pdf/task_m100_3820_stage86_wasm_boundary_oracle/`에 남는다.
+
+수정 직후 첫 Cargo 실행은 작업 규약대로
+`issue_2430_cell_rewrap_threshold`이며, 성공 조건은 명시적 `2 passed; 0 failed`다. 그 다음
+다섯 failing WASM test를 개별 실행한다. 이 순서는 test 기대값을 먼저 통과시키는 것이 아니라,
+새 HWP suffix reflow가 기존 2430 경계를 훼손하지 않았음을 먼저 확인하는 안전장치다.
+
+## 1차 targeted gate 결과와 잔여 #3137 분리
+
+수정 뒤 첫 명령은 규약대로 다음이었다.
+
+```sh
+CARGO_TARGET_DIR=target/pr-review CARGO_INCREMENTAL=0 \
+  cargo test --profile release-test --test issue_2430_cell_rewrap_threshold -- --nocapture
+```
+
+결과는 명시적으로 `2 passed; 0 failed`였다. 이어서 이전 전체 gate의 다섯 실패를 각각
+실행한 결과는 다음과 같다.
+
+| test | 결과 | 확인 내용 |
+| --- | --- | --- |
+| `issue2214_scoped_cache_coherence_preserves_transient_pagination` | 통과 | HWP max=186, HWPX max=191; 두 형식 모두 transient/flush cut 115개와 downstream 113개 변경을 유지 |
+| `issue2424_resumable_pagination_commits_only_after_final_fragment` | 통과 | HWP/HWPX 모두 fragment 115개를 끝 step에서만 commit |
+| `issue2424_resumable_delete_commits_only_after_final_fragment` | 통과 | 형식별 마지막 boundary 문자 삭제 후 full-pagination oracle과 일치 |
+| `issue2424_new_edit_stales_old_job_and_sync_flush_restarts_latest_revision` | 통과 | HWP 56회 boundary 뒤 최신 revision restart 유지 |
+| `issue3137_focused_cell_geometry_matches_exact_rect` | 실패 | `focused page tree cache`가 없다는 assertion failure |
+
+따라서 `#2214/#2424`의 기존 다섯 실패 중 네 건은 HWP/HWPX 경계 contract 불일치에서
+해소됐고, `#3137`은 별개 cache 관찰 실패로 분리한다. 현재 assertion은
+`assert_cached_line_matches_fresh()`에서 무조건 cache slot 0을 읽는다. 반면 patch helper는
+실제 target page의 cache slot을 찾아 갱신한다. 먼저 HWP case에서 patch의 `page_index`와 cache의
+점유 slot을 관측하여, (a) cache slot 0이라는 test 가정만 틀린 것인지, (b) patch가 true를
+보고하고 실제 cache를 잃는 product 결함인지 판정한다. 이 관측은 제품 동작을 변경하지 않는
+test 진단이며, 결론 후 제거한다.
+
+### cache slot 관측 결과
+
+target patch가 `pageIndex=0`이라는 가정은 틀렸다. helper가 반환한 실제 patch page를 사용해
+cache와 fresh tree를 대조하면 HWP의 `insert-a`와 IME replace는 통과한다. 그러나 이어지는
+HWP `delete-backward`는 `focusedPagePatch` 자체를 반환하지 않는다. 이는 slot 선택 오류가 아니라
+same-line tail delete fast-path가 `None`으로 fallback한 결과다. 이 fallback이 geometry 보존을
+위해 필요한 것인지, suffix reflow 뒤에도 안전하게 patch할 수 있는데 helper predicate가 지나치게
+좁은 것인지는 아직 미확정이다. 다음은 mutation JSON을 포함한 failure로 predicate를 식별한다.
+
+`delete-backward`의 실제 반환은
+`{"cellFlowChanged":false,"charOffset":131,"focusedPageTreePatched":false}`다. 따라서
+pagination이나 output fidelity를 바꾸는 문제가 아니라, `focused_cursor_delta_x()`의 same-line
+signature gate 또는 cached tail-line candidate gate가 fast-path를 차단한 것이다. 다음 관측은
+`focused_cursor_delta_x()`에 환경변수 한정 debug를 넣어 line index/start/signature와 x만 기록한다.
+서명 불일치이면 full invalidation이 올바른 fallback이므로 test를 그 계약으로 고치고, 서명이 같은데
+candidate만 거절되면 cached tree patch predicate의 product 결함으로 다룬다.
+
+### same-line predicate 관측 결과
+
+HWP의 첫 입력은 stored LINE_SEG의 `column_start/tag`가 정규화되어 signature가 달라지므로 이미
+exact fallback 대상이다. 한 run의 delete에서는 마지막 줄 `text_start`도 `122 → 125`로 바뀌어
+fallback이 선택됐다. 이는 `cellFlowChanged=false`가 문단 높이만 불변이라는 뜻이지 line content
+boundary까지 같다는 뜻은 아님을 보여 준다.
+
+원인은 삭제 뒤 `char_offsets`에는 end-of-text caret 항목이 없다는 점이었다. 기존 prefix 선택은
+`char_offsets[edit_offset]`만 읽어 이 경우 `None`이 되고 full reflow를 선택했다. 저장 prefix의
+UTF-16 text end는 token boundary이므로, `edit_offset == text_len`에서는 그 end를 사용해 마지막
+stored LINE_SEG를 찾도록 보정한다. 이로써 HWP delete도 line start 122를 보존하고 cache patch가
+가능해진다. HWPX는 source-format 분기로 기존 full reflow/fallback을 유지한다.
+
+따라서 #3137은 HWP/HWPX append·IME replace에서 actual cache patch와 fresh-tree equality를
+강제한다. HWPX의 paragraph layout은 full reflow를 유지하지만, 그 결과가 같은 visual line이면
+cached page-tree tail patch 자체는 안전하며 실제로 반환된다. 따라서 HWPX의 61회 **layout
+boundary**와 focused cache patch policy를 혼동하지 않는다.
+
+end backspace는 prefix 재래핑 뒤 local line signature가 같은 경우 patch를, 달라진 경우 full
+invalidation을 선택할 수 있다. `#2424`의 5→4 deletion처럼 prefix start 선택이 꼭 달라져야 하는
+경우가 있으므로 특정 boolean은 수용 기준이 아니다. #3137은 patch가 있으면 fresh tree와 정확히
+같은지를, fallback이면 page-tree cache가 비어 있고 fresh cursor의 cell bounds가 유지되는지를
+각각 검사한다. 환경변수 diagnostic은 제거했다.
+
+## end deletion의 empty-final-line 경계
+
+위 end-of-text 보정 뒤 `issue2424_resumable_delete_commits_only_after_final_fragment`의 HWP case가
+실패했다. 56회 입력으로 생긴 fifth line의 `text_start`가 삭제 후 text UTF-16 end와 같을 때,
+`rposition(seg.text_start <= end)`는 이미 비어 버린 fifth line을 affected line으로 선택한다.
+그 결과 prefix에 그 line이 남고 suffix가 빈 줄을 다시 만들므로 `cellFlowChanged=false`가 되어
+실제 5→4 전환을 놓친다.
+
+이는 앞 절의 end caret 해석을 되돌릴 근거가 아니다. end deletion에는 서로 다른 두 경우가 있다.
+
+- 마지막 줄의 start가 `end`보다 작다: 그 줄은 실제 문자를 가지므로 계속 suffix reflow의 시작점이다
+  (`#3137` IME backspace).
+- 마지막 줄의 start가 정확히 삭제 후 `end`와 같다: 삭제된 문자만 있던 empty-final-line이므로
+  직전 `< end` 줄부터 다시 나눠야 한다 (`#2424` 5→4 boundary).
+
+수정은 `edit_offset == text_len`의 end deletion에만 strict `< end`를 사용한다. insertion과 중간
+edit은 기존 `<=`를 유지한다. 수정 뒤 첫 #2430 2/2 gate와 #2424 delete, #3137, #2214을 차례로
+다시 확인한다.
+
+### strict end 후보의 1차 반증
+
+strict `< end`를 적용한 뒤에도 #2424 HWP delete가 `cellFlowChanged=false`로 남았다. 따라서
+fifth line이 단순히 `text_start == end`인 empty line이라는 가설은 충분하지 않다. 다음 관측은
+56회 입력·flush 직후와 delete 직후의 실제 LINE_SEG start 배열을 test failure에 포함한다. 이 값으로
+마지막 line의 실제 source 범위와 suffix reflow 결과를 확인한 뒤, prefix 선택 또는 empty suffix
+처리 중 어느 쪽을 보정할지 결정한다.
+
+### 현재 결론 — end deletion과 cache fallback 분리
+
+실제 관측을 반영해 end deletion은 UTF-16 text end를 찾되, 마지막 실제 줄의 start가 end보다
+작으면 그 직전 줄부터 suffix를 다시 채우도록 보정했다. 이렇게 해야 boundary 문자를 지운 뒤
+마지막 줄이 직전 줄에 합쳐지는 `#2424`의 5→4 전환을 보존한다. 빈 마지막 줄의 start가 end와
+같을 때는 그 빈 줄을 prefix에 보존하지 않는다.
+
+이 변경 뒤 첫 규정 gate `issue_2430_cell_rewrap_threshold`는 명시적으로 `2 passed; 0 failed`를
+다시 확인했다. 이어서 `#2214`, `#2424` pagination/delete/new-edit, `#3137`을 현재 source로
+실행해 모두 통과했다. `#3137`의 end backspace는 같은 문단 높이라도 local line signature가
+달라질 수 있으므로 무조건 cache patch를 강제하지 않는다. patch가 선택된 경우에는 해당
+`pageIndex`의 cached tree와 fresh tree가 같음을, fallback이면 모든 cached page tree가 비워지고
+fresh cursor의 `cellBounds`가 보존됨을 검사한다.
+
+source-format별 한컴 PDF oracle, HWP prefix 재래핑 범위, HWPX full-reflow 경계, end deletion
+및 cache 안전성의 최종 분석·targeted 결과는 다음 stage 문서로 이어진다.
+[`task_m100_3820_stage89_hwpx_incremental_prefix_reflow.md`](task_m100_3820_stage89_hwpx_incremental_prefix_reflow.md)

@@ -1274,16 +1274,77 @@ fn reflow_line_segs_impl(
         english_break_unit,
         korean_break_unit,
     );
+    // native HWP incremental edit는 저장된 앞선 줄을 유지한다. LINE_SEG start가 현재
+    // char_offsets와 token 경계 모두에 정확히 대응할 때만 suffix reflow를 허용한다.
+    // 그렇지 않으면 (HWPX 합성 boundary, inline control, token 내부 boundary 등) full
+    // reflow가 보수적인 경로다.
+    let original_line_segs = para.line_segs.clone();
+    let token_start_idx = |token: &BreakToken| match token {
+        BreakToken::Text { start_idx, .. } => *start_idx,
+        BreakToken::Space { idx, .. }
+        | BreakToken::Tab { idx, .. }
+        | BreakToken::LineBreak { idx } => *idx,
+    };
+    let mut preserved_prefix = Vec::new();
+    let mut reflow_start_idx = 0usize;
+    let mut reflow_is_first_line = true;
+    let mut token_start = 0usize;
+    if para.controls.is_empty() {
+        if let Some(edit_char_offset) = preserve_prefix_for_edit {
+            // Delete-at-end는 삭제 뒤 `char_offsets`에 caret 위치가 없지만, 텍스트
+            // UTF-16 끝은 정확한 token boundary다. 삭제된 마지막 글자가 있던 줄의
+            // 앞줄부터 다시 채워야 5→4 shrink도 표현할 수 있다.
+            let edit_is_document_end = edit_char_offset == text_len;
+            let edit_utf16 = para.char_offsets.get(edit_char_offset).copied().or_else(|| {
+                edit_is_document_end
+                    .then(|| para.text.encode_utf16().count() as u32)
+            });
+            let affected_line = edit_utf16.and_then(|offset| {
+                let line = original_line_segs
+                    .iter()
+                    .rposition(|seg| seg.text_start <= offset)?;
+                if edit_is_document_end && original_line_segs[line].text_start < offset {
+                    // 삭제 대상이 들어 있던 마지막 줄도 다시 채워야 직전 줄에
+                    // 합쳐질 수 있다. line=0이면 prefix 없이 full reflow한다.
+                    line.checked_sub(1)
+                } else {
+                    Some(line)
+                }
+            });
+            if let Some(affected_line) = affected_line.filter(|line| *line > 0) {
+                let reflow_utf16 = original_line_segs[affected_line].text_start;
+                let reflow_char_idx = para
+                    .char_offsets
+                    .iter()
+                    .position(|offset| *offset == reflow_utf16);
+                let suffix_token_start = reflow_char_idx.and_then(|char_idx| {
+                    tokens
+                        .iter()
+                        .position(|token| token_start_idx(token) == char_idx)
+                        .map(|token_idx| (char_idx, token_idx))
+                });
+                if let Some((char_idx, token_idx)) = suffix_token_start {
+                    preserved_prefix = original_line_segs[..affected_line].to_vec();
+                    reflow_start_idx = char_idx;
+                    reflow_is_first_line = false;
+                    token_start = token_idx;
+                }
+            }
+        }
+    }
     let line_breaks = fill_lines(
-        &tokens,
+        &tokens[token_start..],
         &text_chars,
         available_width_px,
         indent_px,
         tab_width,
         korean_break_unit,
         condense_min_space,
+        reflow_start_idx,
+        reflow_is_first_line,
     );
-    let mut new_line_segs: Vec<LineSeg> = Vec::new();
+    let preserved_prefix_len = preserved_prefix.len();
+    let mut new_line_segs: Vec<LineSeg> = preserved_prefix;
     for lb in &line_breaks {
         let utf16_start = if new_line_segs.is_empty() {
             0 // 첫 번째 줄의 text_start는 항상 0 (문단 시작)
@@ -1326,9 +1387,13 @@ fn reflow_line_segs_impl(
     // vertical_pos 누적 계산 (각 줄의 문단 내 Y 오프셋)
     // 원본 첫 LineSeg의 vertical_pos를 보존하여 vpos 체계 연속성 유지
     // (layout.rs의 vpos 보정이 문단 간 vpos 연속성을 가정하므로)
-    let vpos_start = orig.as_ref().map(|ls| ls.vertical_pos).unwrap_or(0);
-    let mut vpos = vpos_start;
-    for i in 0..new_line_segs.len() {
+    let mut vpos = if preserved_prefix_len > 0 {
+        let last = &new_line_segs[preserved_prefix_len - 1];
+        last.vertical_pos + last.line_height + last.line_spacing
+    } else {
+        orig.as_ref().map(|ls| ls.vertical_pos).unwrap_or(0)
+    };
+    for i in preserved_prefix_len..new_line_segs.len() {
         new_line_segs[i].vertical_pos = vpos;
         vpos += new_line_segs[i].line_height + new_line_segs[i].line_spacing;
     }
