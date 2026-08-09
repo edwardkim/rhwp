@@ -645,11 +645,13 @@ fn fill_lines(
     default_tab_width: f64,
     korean_break_unit: u8,
     condense_min_space: u8,
+    initial_start_idx: usize,
+    initial_is_first_line: bool,
 ) -> Vec<LineBreakResult> {
     if tokens.is_empty() {
         return vec![LineBreakResult {
-            start_idx: 0,
-            end_idx: 0,
+            start_idx: initial_start_idx,
+            end_idx: initial_start_idx,
             max_font_size: 0.0,
             has_line_break: false,
         }];
@@ -666,11 +668,11 @@ fn fill_lines(
         48.0
     };
     let mut results = Vec::new();
-    let mut line_start_idx = 0usize;
+    let mut line_start_idx = initial_start_idx;
     let mut lw = 0i32; // HWPUNIT 정수 누적
     let mut line_space_savings = 0i32;
     let mut line_max_fs = 0.0f64;
-    let mut is_first_line = true;
+    let mut is_first_line = initial_is_first_line;
 
     let mut last_break_token_idx: Option<usize> = None;
     let mut last_break_char_idx: usize = 0;
@@ -918,7 +920,7 @@ fn fill_lines(
 
     if results.is_empty() {
         results.push(LineBreakResult {
-            start_idx: 0,
+            start_idx: initial_start_idx,
             end_idx: text_chars.len(),
             max_font_size: 0.0,
             has_line_break: false,
@@ -1092,6 +1094,38 @@ pub(crate) fn reflow_line_segs(
     available_width_px: f64,
     styles: &ResolvedStyleSet,
     dpi: f64,
+) {
+    reflow_line_segs_impl(para, available_width_px, styles, dpi, None);
+}
+
+/// native HWP 셀 텍스트 편집은 수정된 줄 이전의 저장 LINE_SEG를 그대로 둔다.
+///
+/// 한컴은 중간 줄의 짧은 edit에서 문단 전체를 다시 나누지 않는다. prefix 경계를 다시
+/// 계산하면 뒤 줄의 가용 폭이 인위적으로 커져 실제 HWP 저장본과 다른 다음 줄 전환을 만들 수
+/// 있다. 단, prefix가 유효한 token 경계일 때만 보존하며, 합성 문단·첫 줄 edit·inline control은
+/// 기존 full reflow로 안전하게 폴백한다.
+pub(crate) fn reflow_line_segs_after_cell_text_edit(
+    para: &mut Paragraph,
+    available_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    edit_char_offset: usize,
+) {
+    reflow_line_segs_impl(
+        para,
+        available_width_px,
+        styles,
+        dpi,
+        Some(edit_char_offset),
+    );
+}
+
+fn reflow_line_segs_impl(
+    para: &mut Paragraph,
+    available_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    preserve_prefix_for_edit: Option<usize>,
 ) {
     // [#4149] 셀 편집의 단일 관문(reflow_cell_paragraph[_by_path])과 서식 적용
     // (formatting.rs) 이 모두 여기로 수렴한다 — 단일줄 과밀 memo 무효화.

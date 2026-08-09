@@ -58,6 +58,11 @@ fn collect_visible_text_line_rights(node: &RenderNode, rights: &mut Vec<f64>) {
     }
 }
 
+fn contains_text(node: &RenderNode, needle: &str) -> bool {
+    matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text.contains(needle))
+        || node.children.iter().any(|child| contains_text(child, needle))
+}
+
 #[derive(Clone, Copy)]
 struct ClipRect {
     x: f64,
@@ -189,6 +194,10 @@ fn issue_2308_nested_fragment_cut_does_not_half_paint_boundary_line() {
         "p34 must not retain a half-painted residue of the p33-owned source line"
     );
     assert!(
+        !contains_text(&p34.root, "현황 추이"),
+        "p34 must not fully repaint the p33-owned final source line"
+    );
+    assert!(
         text_run_is_fully_painted(&p34.root, "자율안전확인신고한", p34_clip),
         "p34 must begin with the next fully painted source paragraph"
     );
@@ -242,5 +251,35 @@ fn issue_2308_empty_host_paragraph_keeps_block_nested_table_content() {
     assert!(
         text_run_is_fully_painted(nested, "분쇄기 등 회전기계", p34_clip),
         "p34 direct-benefit rationale must retain the block nested-table body"
+    );
+}
+
+/// Native HWP5의 마지막 short RowBreak child는 p34처럼 일반 저장 cell margin을
+/// 보존하는 구조가 아니다. 한컴 2024 PDF는 parent owner content box에서 첫 줄을
+/// `… 등의 사고`까지 그리고, p82는 동일 문장을 재paint하지 않고 `를 예방…`으로
+/// 이어 간다. p34의 우측 border 보호와 이 p81/p82 owner 계약을 함께 고정한다.
+#[test]
+fn issue_2308_short_rowbreak_child_uses_owner_content_box_only() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/76076_regulatory_analysis.hwp");
+    let bytes = fs::read(path).expect("read #2195 authority fixture");
+    let core = DocumentCore::from_bytes(&bytes).expect("parse #2195 authority fixture");
+
+    let p81 = core.build_page_render_tree(80).expect("render HWP PDF p81");
+    assert!(
+        contains_text(
+            &p81.root,
+            "구내운반차 안전조치를 통해 근로자와 부딪히는 등의 사고"
+        ),
+        "p81 must keep the PDF-owned short-child first line through `사고`"
+    );
+
+    let p82 = core.build_page_render_tree(81).expect("render HWP PDF p82");
+    assert!(
+        contains_text(&p82.root, "를 예방함으로써 산업재해 감소"),
+        "p82 must begin the continuation after the p81-owned `사고`"
+    );
+    assert!(
+        !contains_text(&p82.root, "고를 예방함으로써 산업재해 감소"),
+        "p82 must not split the PDF-owned word `사고` across pages"
     );
 }

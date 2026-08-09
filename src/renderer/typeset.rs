@@ -21,7 +21,10 @@ use crate::renderer::float_placement::{
     FloatPlacementContext,
 };
 use crate::renderer::height_cursor::HeightCursor;
-use crate::renderer::height_measurer::{fit_measured_table_to_declared_height, MeasuredTable};
+use crate::renderer::height_measurer::{
+    fit_measured_table_nested_tail_to_declared_height, fit_measured_table_to_declared_height,
+    MeasuredTable,
+};
 use crate::renderer::layout::{border_width_to_px, ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -15182,7 +15185,32 @@ impl TypesetEngine {
                 let shrunk = fitted.row_heights.iter().sum::<f64>()
                     < measured.row_heights.iter().sum::<f64>() - 0.01;
                 if shrunk && !para_has_non_whitespace_text(para) {
-                    measured.clone()
+                    // HWP5 빈 TopAndBottom host의 다행 RowBreak 표는 통상 콘텐츠가
+                    // 선언높이를 넘으면 축소하지 않는다. 다만 마지막 행 하나가 비-TAC
+                    // 1×1 자식 표이고, 그 parent viewport의 Center 정렬이 만든 작은
+                    // over-measure인 경우에는 한컴 PDF가 앞 행 경계는 보존한 채 마지막
+                    // 행만 선언 총높이에 맞춘다 (76076 p81→82). 전체 비율 축소는 정상
+                    // 헤더/짧은 행까지 줄이므로 금지하고, helper가 마지막 행만 줄일 수
+                    // 있는 구조·64px 이내 drift를 다시 확인한다.
+                    let native_empty_rowbreak_nested_tail = self.profile.get().native_hwp5_layout()
+                        && !table.common.treat_as_char
+                        && matches!(
+                            table.page_break,
+                            crate::model::table::TablePageBreak::RowBreak
+                        )
+                        && table.row_count > 1
+                        && table.cells.iter().all(|cell| cell.row_span == 1);
+                    if native_empty_rowbreak_nested_tail {
+                        if let Some(tail_fitted) =
+                            fit_measured_table_nested_tail_to_declared_height(measured, table, self.dpi)
+                        {
+                            tail_fitted
+                        } else {
+                            measured.clone()
+                        }
+                    } else {
+                        measured.clone()
+                    }
                 } else {
                     fitted
                 }
@@ -18175,7 +18203,15 @@ impl TypesetEngine {
             }
             // 행 r 이 예산 초과 — 인트라-분할 시도.
             // [Task #77] 분할 불가 행(이미지 셀 등)은 통째 배치 / 다음 페이지.
-            let splittable = can_intra_split && mt.is_row_splittable(r);
+            // `MeasuredTable`은 2행 이상 중첩 표만 `nested_split_row_count`로
+            // 기록한다. 그러나 native HWP5 short parent의 마지막 1×1 child는
+            // `cell_units`가 fragment를 만들더라도 그 값이 1이라 atomic으로 남는다.
+            // 동일 storage/physical-height gate와 실제 multi-unit 확인을 통해서만
+            // 해당 행을 `advance_row_cut`에 전달한다 (76076 p81→82).
+            let native_short_parent_child_splittable = layout_engine
+                .native_short_parent_child_row_is_fragmentable(table, r, styles);
+            let splittable = can_intra_split
+                && (mt.is_row_splittable(r) || native_short_parent_child_splittable);
             if !splittable {
                 // [#2236 진단] 분할 불가 정지 — 동작 불변.
                 if std::env::var("RHWP_DIAG_SCAN").is_ok() {
@@ -18265,11 +18301,15 @@ impl TypesetEngine {
                 && r > cursor_row
                 && row_start_cut.is_empty()
                 && layout_engine.row_block_has_internal_hard_break(table, r, r + 1, styles);
-            let row_split_min_keep_uses_painted_height =
-                strict_painted_bottom_fit || native_hwp5_internal_reset_row_tail;
+            let row_split_min_keep_uses_painted_height = strict_painted_bottom_fit
+                || native_hwp5_internal_reset_row_tail
+                || native_short_parent_child_splittable;
             // [Task #713] sliver(orphan) 회피 — 일반 표는 기존 content-only 기준을
-            // 유지한다. 패딩 포함 painted 기준은 좁은 #2439 strict 표와, saved
-            // internal reset으로 page tail이 확정된 native HWP5 RowBreak에만 적용한다.
+            // 유지한다. 패딩 포함 painted 기준은 좁은 #2439 strict 표, saved internal
+            // reset, 그리고 선언 높이보다 큰 1×1 child가 실제 multi-unit으로 검증된
+            // native short parent에만 적용한다. 마지막 경우는 PDF가 border·label과
+            // 함께 보이는 첫 child line을 현재 쪽 owner로 고정하지만 content-only
+            // 높이가 25px에 근소하게 못 미치는 76076 p81→82 구조다.
             if r > cursor_row
                 && !row_split_meets_min_top_keep(
                     res.consumed_height,

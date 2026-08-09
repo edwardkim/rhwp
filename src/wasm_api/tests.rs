@@ -25739,6 +25739,40 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
                 .insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
                 .expect("deferred sequential insert");
             let result: Value = serde_json::from_str(&raw).expect("edit result json");
+            // Stage 86 oracle 증적만 생성한다. 환경 변수가 없으면 CI와 일반 test 실행에는
+            // 파일 I/O를 추가하지 않는다. #2430의 56회 expectation과 현재 61회 reflow
+            // 경계를 한컴 2020 PDF로 직접 판정한 뒤 이 진단 경로는 제거한다.
+            if label == "hwp" && inserted == 55 {
+                if let Ok(out_dir) = std::env::var("RHWP_STAGE86_ORACLE_OUT") {
+                    let out_dir = std::path::Path::new(&out_dir);
+                    std::fs::create_dir_all(out_dir).expect("create Stage 86 oracle output dir");
+                    std::fs::write(
+                        out_dir.join("issue1949_cell_p5_append_56.hwp"),
+                        doc.export_hwp_native().expect("export 56-insert HWP oracle"),
+                    )
+                    .expect("write 56-insert HWP oracle");
+
+                    let mut at_61 = HwpDocument::from_bytes(&bytes).expect("reload 61-insert oracle");
+                    for extra in 0..61 {
+                        at_61
+                            .insert_text_in_cell_native_deferred_pagination(
+                                0,
+                                0,
+                                2,
+                                2,
+                                5,
+                                130 + extra,
+                                "1",
+                            )
+                            .expect("prepare 61-insert HWP oracle");
+                    }
+                    std::fs::write(
+                        out_dir.join("issue1949_cell_p5_append_61.hwp"),
+                        at_61.export_hwp_native().expect("export 61-insert HWP oracle"),
+                    )
+                    .expect("write 61-insert HWP oracle");
+                }
+            }
             assert_eq!(
                 result["cellFlowChanged"].as_bool(),
                 Some(inserted == 55),

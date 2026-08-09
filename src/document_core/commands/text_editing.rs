@@ -1503,6 +1503,12 @@ impl DocumentCore {
         )?;
         let old_text_len = cell_para.text.chars().count();
         let flow_advance_before = relative_paragraph_flow_advance(cell_para);
+        let line_seg_count_before = cell_para.line_segs.len();
+        let line_seg_starts_before = cell_para
+            .line_segs
+            .iter()
+            .map(|seg| seg.text_start)
+            .collect::<Vec<_>>();
         let local_contribution_before =
             crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                 cell_para,
@@ -1560,7 +1566,7 @@ impl DocumentCore {
             None,
         );
 
-        let (flow_advance_after, local_contribution_after) = {
+        let (flow_advance_after, local_contribution_after, line_seg_count_after) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -1577,6 +1583,7 @@ impl DocumentCore {
                 crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                     cell_para_after,
                 ),
+                cell_para_after.line_segs.len(),
             )
         };
         let units_fp_unchanged = self
@@ -1592,6 +1599,23 @@ impl DocumentCore {
                     == units_fp_before
             });
         let cell_flow_changed = flow_advance_before != flow_advance_after;
+        if std::env::var("RHWP_DIAG_DEFERRED_CELL_FLOW").is_ok()
+            && (section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)
+                == (0, 0, 2, 2, 5)
+        {
+            eprintln!(
+                "DIAG_DEFERRED_CELL_FLOW offset={} inserted={} len={}=>{} flow={:?}=>{:?} lines={}=>{} starts_before={line_seg_starts_before:?} changed={}",
+                char_offset,
+                new_chars_count,
+                old_text_len,
+                old_text_len + new_chars_count,
+                flow_advance_before,
+                flow_advance_after,
+                line_seg_count_before,
+                line_seg_count_after,
+                cell_flow_changed,
+            );
+        }
         let new_offset = char_offset + new_chars_count;
         let focused_after = if focused_target_is_table_cell {
             self.get_cell_paragraph_ref(
@@ -2245,6 +2269,22 @@ impl DocumentCore {
         let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let final_width = (available_width - margin_left - margin_right).max(0.0);
+        let diagnostic_target = std::env::var("RHWP_DIAG_DEFERRED_CELL_FLOW").is_ok()
+            && (section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx)
+                == (0, 0, 2, 2, 5);
+        if diagnostic_target {
+            eprintln!(
+                "DIAG_DEFERRED_CELL_FLOW_METRICS cell_width_hu={} padding_hu=({}, {}) cell_width_px={:.4} available_width_px={:.4} para_margin_px=({:.4}, {:.4}) final_width_px={:.4}",
+                cell_width,
+                pad_left,
+                pad_right,
+                cell_width_px,
+                available_width,
+                margin_left,
+                margin_right,
+                final_width,
+            );
+        }
 
         // 가변 참조로 리플로우 실행
         match self.document.sections[section_idx].paragraphs[parent_para_idx]
@@ -2265,6 +2305,62 @@ impl DocumentCore {
                 };
                 if let Some(cell_para) = cell_para {
                     reflow_line_segs(cell_para, final_width, &styles, self.dpi);
+                    if diagnostic_target {
+                        let starts = cell_para
+                            .line_segs
+                            .iter()
+                            .map(|seg| seg.text_start)
+                            .collect::<Vec<_>>();
+                        eprintln!(
+                            "DIAG_DEFERRED_CELL_FLOW_LINES count={} starts={starts:?}",
+                            cell_para.line_segs.len(),
+                        );
+                        if let Some(last_idx) = cell_para.text.chars().count().checked_sub(1) {
+                            let utf16_pos = cell_para
+                                .char_offsets
+                                .get(last_idx)
+                                .copied()
+                                .unwrap_or(last_idx as u32);
+                            let style_id = crate::renderer::composer::find_active_char_shape(
+                                &cell_para.char_shapes,
+                                utf16_pos,
+                            );
+                            let style = crate::renderer::layout::resolved_to_text_style(
+                                &styles, style_id, 1,
+                            );
+                            let digit_advance =
+                                crate::renderer::layout::estimate_text_width_unrounded("1", &style);
+                            eprintln!(
+                                "DIAG_DEFERRED_CELL_FLOW_STYLE char_style_id={} font={:?} size_px={:.4} ratio={:.4} letter_spacing_px={:.4} digit_advance_px={:.4} digit_advance_em={:.4}",
+                                style_id,
+                                style.font_family,
+                                style.font_size,
+                                style.ratio,
+                                style.letter_spacing,
+                                digit_advance,
+                                digit_advance / style.font_size.max(f64::MIN_POSITIVE),
+                            );
+                        }
+                        if cell_para.text.chars().count() >= 180 {
+                            let baseline_count = cell_para.line_segs.len();
+                            let mut probe = cell_para.clone();
+                            let mut extra_until_next_line = None;
+                            for extra in 1..=160 {
+                                let end = probe.text.chars().count();
+                                probe.insert_text_at(end, "1");
+                                reflow_line_segs(&mut probe, final_width, &styles, self.dpi);
+                                if probe.line_segs.len() > baseline_count {
+                                    extra_until_next_line = Some(extra);
+                                    break;
+                                }
+                            }
+                            eprintln!(
+                                "DIAG_DEFERRED_CELL_FLOW_THRESHOLD len={} baseline_lines={} extra_until_next_line={extra_until_next_line:?}",
+                                cell_para.text.chars().count(),
+                                baseline_count,
+                            );
+                        }
+                    }
                 }
             }
             Some(Control::Shape(shape)) => {

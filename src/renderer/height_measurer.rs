@@ -273,6 +273,78 @@ pub fn fit_measured_table_to_declared_height(
     fitted
 }
 
+/// 빈 host의 native HWP5 RowBreak 표에서 마지막 중첩 셀만 선언 높이를 초과해
+/// 과대 측정된 경우, 앞 행의 실제 경계는 보존하고 마지막 행만 선언 총높이에 맞춘다.
+///
+/// 일반 `fit_measured_table_to_declared_height`는 모든 행을 비율로 줄인다. 그러나
+/// 76076의 비용/편익 표는 앞의 짧은 행들이 한컴 PDF의 저장 `cellSz` 경계와 이미
+/// 일치하고, 마지막 `근거설명` 행의 1×1 비-TAC 자식 표만 parent viewport의
+/// Center 정렬 때문에 커진다. 그 상태에서 전체 비율 축소를 하면 정상 행 경계까지
+/// 바뀌므로, 정확히 마지막 중첩 행에만 부족분을 회수한다.
+///
+/// 호출자는 native HWP5의 빈 TopAndBottom host라는 저장 계약을 별도로 확인해야
+/// 한다. 이 helper는 문서 구조와 측정/선언 차이만 검증한다.
+pub fn fit_measured_table_nested_tail_to_declared_height(
+    measured: &MeasuredTable,
+    table: &Table,
+    dpi: f64,
+) -> Option<MeasuredTable> {
+    let row_count = measured.row_heights.len();
+    if row_count < 2 || table.row_count as usize != row_count || table.common.height == 0 {
+        return None;
+    }
+
+    let last_row = row_count - 1;
+    let last_row_has_single_block_child = table.cells.iter().any(|cell| {
+        cell.row as usize == last_row
+            && cell.row_span == 1
+            && cell.paragraphs.iter().any(|paragraph| {
+                paragraph.text.trim().is_empty()
+                    && paragraph.controls.iter().any(|control| {
+                        matches!(control, Control::Table(child)
+                            if !child.common.treat_as_char
+                                && child.row_count == 1
+                                && child.col_count == 1)
+                    })
+            })
+    });
+    if !last_row_has_single_block_child {
+        return None;
+    }
+
+    let spacing_total = measured.cell_spacing * row_count.saturating_sub(1) as f64;
+    let target_row_sum = (hwpunit_to_px(table.common.height as i32, dpi) - spacing_total).max(0.0);
+    let current_row_sum = measured.row_heights.iter().sum::<f64>();
+    let prefix_sum = measured.row_heights[..last_row].iter().sum::<f64>();
+    let current_tail = measured.row_heights[last_row];
+    let target_tail = target_row_sum - prefix_sum;
+
+    // 마지막 child가 실제로 공간을 필요로 하는 경우만, 그리고 대상 행만의
+    // 축소로 해결되는 작은 측정 drift만 허용한다. 큰 차이는 선언높이가 stale-min인
+    // 문서일 수 있으므로 기존 콘텐츠 기반 분할에 맡긴다.
+    let reduction = current_tail - target_tail;
+    if target_tail <= 0.0
+        || reduction <= 0.5
+        || reduction > 64.0
+        || target_tail < current_tail * 0.85
+        || current_row_sum <= target_row_sum
+    {
+        return None;
+    }
+
+    let mut fitted = measured.clone();
+    fitted.row_heights[last_row] = target_tail;
+    fitted.cumulative_heights = vec![0.0; row_count + 1];
+    for (idx, row_height) in fitted.row_heights.iter().enumerate() {
+        let spacing = if idx > 0 { fitted.cell_spacing } else { 0.0 };
+        fitted.cumulative_heights[idx + 1] = fitted.cumulative_heights[idx] + row_height + spacing;
+    }
+    let previous_body_height = current_row_sum + spacing_total;
+    let caption_and_spacing = (measured.total_height - previous_body_height).max(0.0);
+    fitted.total_height = target_row_sum + spacing_total + caption_and_spacing;
+    Some(fitted)
+}
+
 /// 셀의 줄 단위 측정 정보 (행 내부 분할용)
 #[derive(Debug, Clone)]
 pub struct MeasuredCell {
