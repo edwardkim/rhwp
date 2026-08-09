@@ -1,6 +1,9 @@
 target/
 pkg/
 mydocs/
+# [#4354] rhwp 바이너리가 include_str! 로 임베드하는 에이전트 문서(지식지도·트러블슈팅·레시피 6종)는
+# 빌드 컨텍스트에 있어야 한다 — 없으면 cargo build 가 couldn't read 로 실패한다.
+!mydocs/manual
 .git/
 *.wasm
 samples/
