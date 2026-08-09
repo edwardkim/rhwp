@@ -24,7 +24,7 @@ last_verified: 2026-08-10
 | 규모 | 6 files, +489 / -0, contributor commit 1개 |
 | 상태 | `MERGEABLE` / `CLEAN`, contributor head의 Full CI·CodeQL·Python binding 성공 |
 | 가시성 branch | `review/kevin9327-20260810-pr4337` |
-| 메인터너 code candidate | `13a41d380e3ad117e680872c3d5148df142cfaf6` |
+| 메인터너 code candidate | `5926828dcc0d5c9baf212aa8707d8ed033714f64` |
 
 접수 상태와 녹색 check는 contributor head 기준이다. 새 release workflow는 tag push와
 `workflow_dispatch`만 트리거하므로 그 head에서도 실제 게시 경로는 실행되지 않았다.
@@ -38,10 +38,12 @@ contributor commit은 수정하거나 재작성하지 않았다.
 
 ## 원래 차단점
 
-`workflow_dispatch.tag`는 버전 문자열에만 쓰이고 checkout은 workflow를 실행한 기본 ref를
-사용했다. 따라서 과거 태그를 지정한 수동 실행이 현재 branch 소스를 그 태그 버전으로 빌드·게시할
-수 있었다. 버전 문자열 검사는 Cargo와 일치해도 실제 checkout commit이 해당 태그라는 사실을
-보증하지 못했다.
+- `workflow_dispatch.tag`는 버전 문자열에만 쓰이고 checkout은 workflow를 실행한 기본 ref를
+  사용해, 과거 태그 이름으로 현재 branch source를 게시할 수 있었다.
+- prerelease npm publish에 non-latest dist-tag가 없어 prerelease가 `latest`를 점유하거나 npm에서
+  거절될 수 있었다.
+- x86_64와 arm64 macOS wheel smoke가 같은 Apple Silicon runner의 기본 Python을 사용해,
+  x86_64 wheel이 arm64 Python supported tags에서 설치 거절될 수 있었다.
 
 ## 메인터너 보정
 
@@ -53,24 +55,33 @@ contributor commit은 수정하거나 재작성하지 않았다.
 - `scripts/tests/test_release_packages_workflow.py`: dispatch와 downstream source 선택 계약을 고정한다.
 - `.github/workflows/ci.yml`: 새 workflow 계약 테스트를 lint job에 배선한다.
 
+독립 후속 검토 뒤 `5926828dcc0d5c9baf212aa8707d8ed033714f64`
+(`fix(maintainer): #4337 prerelease 게시와 wheel arch 보호`)을 추가했다.
+
+- `.github/workflows/release-packages.yml`: prerelease npm publish는 `--tag next`, stable은
+  명시적 `latest`를 사용한다. wheel matrix는 artifact target에 맞춰 x64 또는 arm64 Python을 설치한다.
+- `scripts/tests/test_release_packages_workflow.py`: dist-tag와 Python architecture 배선을 고정한다.
+
 ## 완료한 로컬 검증
 
 | 검증 | 결과 |
 | --- | --- |
-| `python -m unittest scripts.tests.test_release_packages_workflow scripts.tests.test_workflow_contract_wiring -v` | 5 / 5 통과 |
-| `git diff --check origin/pr/4337..13a41d380e3ad117e680872c3d5148df142cfaf6` | 통과 |
-| commit graph | correction commit의 유일한 parent가 contributor head와 일치 |
+| `python -m unittest scripts.tests.test_release_packages_workflow scripts.tests.test_workflow_contract_wiring -v` | 7 / 7 통과 |
+| `git diff --check origin/pr/4337..5926828dcc0d5c9baf212aa8707d8ed033714f64` | 통과 |
+| commit graph | contributor history를 rewrite하지 않고 maintainer code/docs/code를 single-parent로 연결 |
 
 Rust source나 renderer를 바꾸지 않아 Cargo·시각 회귀는 로컬 범위에서 생략했다. 로컬 환경에는
-`actionlint`가 없어 GitHub Actions parser와 실제 Linux/macOS/Windows wheel build는 최신 원격
-head의 Full CI에서 확인해야 한다.
+`actionlint`가 없다. 또한 이 release workflow에는 `pull_request` trigger가 없으므로 PR Full CI는
+focused static contract만 실행하며 실제 Linux/macOS/Windows wheel matrix와 npm/PyPI publish E2E를
+검증할 수 없다. x64 Python의 Rosetta 실행을 포함한 release E2E는 잔여 risk다.
 
 ## 최종 권고
 
 **메인터너 보정 포함 조건부 수용 권고.** code/test/workflow 보정이 있으므로 contributor head의
 기존 녹색 결과를 review-only fast-pass로 재사용할 수 없다. 작업지시자가 push를 승인한 뒤 correction
-commit과 이 trailing review 기록을 source branch에 fast-forward로 반영하고, 최신 head의 Full CI,
-required checks와 mergeability를 확인해야 한다. 그 뒤에도 별도의 merge 승인이 있어야 한다.
-현재 기록은 push·review 게시·merge 권한을 부여하지 않는다.
+commit들과 이 trailing review 기록을 source branch에 fast-forward로 반영하고, 최신 head의 Full CI
+static/focused contract, required checks와 mergeability를 확인해야 한다. release publish E2E 미검증
+risk를 명시적으로 수용한 뒤에도 별도의 merge 승인이 있어야 한다. 현재 기록은 push·review 게시·merge
+권한을 부여하지 않는다.
 
 실행 및 rollback 경계는 [PR #4337 구현·통합 계획](pr_4337_review_impl.md)을 따른다.
