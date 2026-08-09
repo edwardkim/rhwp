@@ -52,6 +52,10 @@ struct SessionDoc {
 struct Sessions {
     docs: HashMap<String, SessionDoc>,
     next_id: u64,
+    /// [#4357 W1] `--workspace <dir>` 로 기동했을 때의 코퍼스 인벤토리.
+    workspace: Option<Workspace>,
+    /// [#4357 W1] 변이 저널 — 변이 도구 호출마다 본문 SHA-256 전/후를 남긴다.
+    journal: Vec<JournalEntry>,
 }
 
 impl Sessions {
@@ -59,8 +63,291 @@ impl Sessions {
         Sessions {
             docs: HashMap::new(),
             next_id: 1,
+            workspace: None,
+            journal: Vec::new(),
         }
     }
+}
+
+// ── [#4357 W1] 워크스페이스 — 에이전트 전용 문서 런타임 v1 ──────────────────
+//
+// 원리(설계 문서 trend_agent_runtime_2026h2.md): 에이전트 소비자는 픽셀이 아니라
+// 구조와 결정론을 산다. v1 은 단일 클라이언트 전제(동시성 모델은 트랙 C R28
+// 판단 뒤)이고, 캐시 재설계(R76)와 겹치지 않게 **열린 핸들 위의 조회·저널**만
+// 더한다 — 재파싱 회피는 기존 세션이 이미 담당한다.
+
+/// 인벤토리 한 항목. id 는 경로 정렬 순서의 `w1..wN` — 같은 코퍼스면 같은 id 가
+/// 나오는 결정론이 계약이다(호출 순서·파일시스템 순회 순서에 의존하지 않는다).
+struct WorkspaceEntry {
+    id: String,
+    path: std::path::PathBuf,
+    ext: String,
+    size_bytes: u64,
+}
+
+struct Workspace {
+    root: std::path::PathBuf,
+    entries: Vec<WorkspaceEntry>,
+    truncated: bool,
+}
+
+/// 스캔 상한 — S7 정신: 상한 도달은 침묵이 아니라 봉투(truncated)로 드러난다.
+const WORKSPACE_SCAN_CAP: usize = 10_000;
+
+fn scan_workspace(root: &std::path::Path) -> Result<Workspace, String> {
+    if !root.is_dir() {
+        return Err(format!(
+            "워크스페이스 디렉터리가 아닙니다: {}",
+            root.display()
+        ));
+    }
+    let mut found: Vec<(std::path::PathBuf, String, u64)> = Vec::new();
+    let mut stack = vec![root.to_path_buf()];
+    let mut truncated = false;
+    while let Some(dir) = stack.pop() {
+        let entries = match std::fs::read_dir(&dir) {
+            Ok(e) => e,
+            Err(e) => return Err(format!("{} 읽기 실패: {e}", dir.display())),
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let name = entry.file_name().to_string_lossy().into_owned();
+            // 숨김 항목은 결정론·안전(.git 등) 양쪽 이유로 건너뛴다.
+            if name.starts_with('.') {
+                continue;
+            }
+            if path.is_dir() {
+                stack.push(path);
+                continue;
+            }
+            let Some(ext) = path
+                .extension()
+                .and_then(|e| e.to_str())
+                .map(|e| e.to_ascii_lowercase())
+            else {
+                continue;
+            };
+            if ext != "hwp" && ext != "hwpx" && ext != "hml" {
+                continue;
+            }
+            if found.len() >= WORKSPACE_SCAN_CAP {
+                truncated = true;
+                break;
+            }
+            let size_bytes = entry.metadata().map(|m| m.len()).unwrap_or(0);
+            found.push((path, ext, size_bytes));
+        }
+        if truncated {
+            break;
+        }
+    }
+    found.sort_by(|a, b| a.0.cmp(&b.0));
+    let entries = found
+        .into_iter()
+        .enumerate()
+        .map(|(i, (path, ext, size_bytes))| WorkspaceEntry {
+            id: format!("w{}", i + 1),
+            path,
+            ext,
+            size_bytes,
+        })
+        .collect();
+    Ok(Workspace {
+        root: root.to_path_buf(),
+        entries,
+        truncated,
+    })
+}
+
+/// 변이 저널 한 줄 — 자기검증 루프의 최소 실물. 판정은 본문 텍스트 SHA-256 이고,
+/// 렌더 픽셀 판정은 범위 밖(render-diff 위임 — 설계 문서 §2 ⑤).
+struct JournalEntry {
+    seq: u64,
+    tool: String,
+    doc_id: String,
+    digest_before: String,
+    digest_after: String,
+    changed: bool,
+    is_error: bool,
+}
+
+/// 열린 핸들의 본문 전체 SHA-256. 추출 실패 페이지는 오류 표지를 해시에 섞어
+/// "못 읽음"과 "빈 페이지"를 가른다.
+fn doc_text_digest(sd: &mut SessionDoc) -> String {
+    use sha2::{Digest, Sha256};
+    let mut hasher = Sha256::new();
+    let pages = sd.doc.page_count();
+    for p in 0..pages {
+        match sd.doc.extract_page_text_native(p) {
+            Ok(text) => hasher.update(text.as_bytes()),
+            Err(e) => hasher.update(format!("<extract-error p{p} {e:?}>").as_bytes()),
+        }
+        hasher.update([0u8]);
+    }
+    let out = hasher.finalize();
+    let mut hex = String::with_capacity(out.len() * 2);
+    for byte in out {
+        use std::fmt::Write as _;
+        let _ = write!(hex, "{byte:02x}");
+    }
+    hex
+}
+
+/// 변이 도구를 감싸 전/후 digest 를 저널에 남긴다. 핸들이 없던 호출(오타 등)은
+/// 저널 대상이 아니다 — 실패 자체는 도구 봉투(isError)가 이미 보고한다.
+fn journal_wrap(
+    tool: &str,
+    args: &serde_json::Value,
+    sessions: &mut Sessions,
+    f: fn(&serde_json::Value, &mut Sessions) -> serde_json::Value,
+) -> serde_json::Value {
+    let doc_id = args
+        .get("docId")
+        .and_then(|d| d.as_str())
+        .unwrap_or_default()
+        .to_string();
+    let before = sessions.docs.get_mut(&doc_id).map(doc_text_digest);
+    let result = f(args, sessions);
+    if let Some(digest_before) = before {
+        let digest_after = sessions
+            .docs
+            .get_mut(&doc_id)
+            .map(doc_text_digest)
+            .unwrap_or_else(|| digest_before.clone());
+        let is_error = result
+            .get("isError")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let seq = sessions.journal.len() as u64 + 1;
+        sessions.journal.push(JournalEntry {
+            seq,
+            tool: tool.to_string(),
+            doc_id,
+            changed: digest_before != digest_after,
+            digest_before,
+            digest_after,
+            is_error,
+        });
+    }
+    result
+}
+
+fn workspace_missing_error() -> serde_json::Value {
+    tool_error(
+        "워크스페이스 없이 기동됨 — `rhwp mcp-serve --workspace <디렉터리>` 로 열어야 \
+         hwp_ws_* 도구가 동작합니다"
+            .into(),
+    )
+}
+
+fn session_ws_list(sessions: &mut Sessions) -> serde_json::Value {
+    let Some(ws) = sessions.workspace.as_ref() else {
+        return workspace_missing_error();
+    };
+    let entries: Vec<serde_json::Value> = ws
+        .entries
+        .iter()
+        .map(|e| {
+            serde_json::json!({
+                "id": e.id,
+                "path": e.path.display().to_string(),
+                "format": e.ext,
+                "sizeBytes": e.size_bytes,
+            })
+        })
+        .collect();
+    tool_ok_text(
+        serde_json::json!({
+            "root": ws.root.display().to_string(),
+            "count": entries.len(),
+            "truncated": ws.truncated,
+            "entries": entries,
+        })
+        .to_string(),
+    )
+}
+
+fn session_ws_open(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let Some(id) = args.get("id").and_then(|v| v.as_str()) else {
+        return tool_error("id 가 필요합니다 (hwp_ws_list 의 entries[].id)".into());
+    };
+    if sessions.workspace.is_none() {
+        return workspace_missing_error();
+    }
+    let Some(path) = sessions.workspace.as_ref().and_then(|ws| {
+        ws.entries
+            .iter()
+            .find(|e| e.id == id)
+            .map(|e| e.path.display().to_string())
+    }) else {
+        return tool_error_with_next(
+            format!("워크스페이스에 없는 id: {id}"),
+            "hwp_ws_list",
+            serde_json::json!({}),
+            "실존 id 를 hwp_ws_list 로 확인한 뒤 재시도",
+        );
+    };
+    let mut open_args = serde_json::json!({ "path": path });
+    if let Some(pw) = args.get("password") {
+        open_args["password"] = pw.clone();
+    }
+    session_open(&open_args, sessions)
+}
+
+fn session_doc_tree(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    let page_count = sd.doc.page_count();
+    let tables = rhwp::document_core::queries::table_extract::extract_tables(sd.doc.document());
+    let tables_env = crate::tables_json_value(&id, &tables);
+    let mut table_nodes: Vec<serde_json::Value> = Vec::new();
+    if let Some(arr) = tables_env.get("tables").and_then(|t| t.as_array()) {
+        for (i, t) in arr.iter().enumerate() {
+            let mut node = t.clone();
+            node["nodeId"] = serde_json::json!(format!("t{i}"));
+            table_nodes.push(node);
+        }
+    }
+    let pages: Vec<String> = (0..page_count).map(|p| format!("p{p}")).collect();
+    tool_ok_text(
+        serde_json::json!({
+            "docId": id,
+            "pageCount": page_count,
+            "nodes": { "pages": pages, "tables": table_nodes },
+            "idContract": "안정 ID: 페이지 p0.. / 표 t0.. — 같은 문서·같은 빌드에서 결정론. \
+                           표 순서는 hwp_doc_tables 와 동일하며, 셀 편집은 t{i} 순서의 표에 \
+                           hwp_doc_set_cell(table=i, row, col) 로 잇는다.",
+        })
+        .to_string(),
+    )
+}
+
+fn session_ws_journal(sessions: &mut Sessions) -> serde_json::Value {
+    let entries: Vec<serde_json::Value> = sessions
+        .journal
+        .iter()
+        .map(|e| {
+            serde_json::json!({
+                "seq": e.seq,
+                "tool": e.tool,
+                "docId": e.doc_id,
+                "digestBefore": e.digest_before,
+                "digestAfter": e.digest_after,
+                "changed": e.changed,
+                "isError": e.is_error,
+            })
+        })
+        .collect();
+    tool_ok_text(
+        serde_json::json!({
+            "algo": "sha256(전 페이지 본문 텍스트, 페이지 경계 0x00)",
+            "count": entries.len(),
+            "entries": entries,
+        })
+        .to_string(),
+    )
 }
 
 pub fn run(args: &[String]) -> i32 {
@@ -71,6 +358,8 @@ pub fn run(args: &[String]) -> i32 {
     // 절대 수집하지 않는다(mydocs/tech/agent_architecture/observability_contract.md
     // §3). 도구명별 호출 수·오류 수만 센다.
     let mut stats = false;
+    // [#4357 W1] 워크스페이스 디렉터리 — 기동 시 1회 스캔해 인벤토리를 만든다.
+    let mut workspace_dir: Option<String> = None;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
@@ -91,6 +380,14 @@ pub fn run(args: &[String]) -> i32 {
                 }
             }
             "--stats" => stats = true,
+            "--workspace" => {
+                i += 1;
+                let Some(dir) = args.get(i) else {
+                    eprintln!("오류: --workspace 뒤에 디렉터리가 필요합니다.");
+                    return crate::EXIT_USAGE;
+                };
+                workspace_dir = Some(dir.clone());
+            }
             other => {
                 eprintln!("알 수 없는 옵션: {other}");
                 return crate::EXIT_USAGE;
@@ -117,6 +414,23 @@ pub fn run(args: &[String]) -> i32 {
         Some(p) => crate::agent_profiles::allows_session_tool(p, name),
     };
     let mut sessions = Sessions::new();
+    if let Some(dir) = workspace_dir {
+        match scan_workspace(std::path::Path::new(&dir)) {
+            Ok(ws) => {
+                eprintln!(
+                    "워크스페이스: {} — 문서 {}건{}",
+                    ws.root.display(),
+                    ws.entries.len(),
+                    if ws.truncated { " (상한 절단)" } else { "" }
+                );
+                sessions.workspace = Some(ws);
+            }
+            Err(e) => {
+                eprintln!("오류: {e}");
+                return crate::EXIT_USAGE;
+            }
+        }
+    }
     // 도구명 → (호출 수, 오류 수). 키는 서버가 정의한 유한 집합(도구명) 또는
     // 고정된 미지 버킷뿐이고 값은 정수 계수뿐이다. 호출자가 보낸 임의 문자열을
     // 키로 쓰면 --stats가 고유한 가짜 도구명으로 메모리를 소진할 수 있다.
@@ -640,6 +954,34 @@ fn served_tools(
             "required": ["path"]
         }
     }));
+    // [#4357 W1] 워크스페이스 4종 — 코퍼스 인벤토리·id 열기·안정 ID 트리·변이 저널.
+    session.push(serde_json::json!({
+        "name": "hwp_ws_list",
+        "description": "[#4357] 워크스페이스(--workspace 로 기동) 코퍼스 인벤토리 — 결정론 id(w1..)·경로·형식·크기. 상한 도달은 truncated 로 드러난다.",
+        "inputSchema": { "type": "object", "properties": {}, "required": [] }
+    }));
+    session.push(serde_json::json!({
+        "name": "hwp_ws_open",
+        "description": "[#4357] 워크스페이스 id(w1..)로 문서를 열어 세션 핸들(docId)을 받는다 — 경로 대신 인벤토리 id 로 여는 hwp_open.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "id": { "type": "string", "description": "hwp_ws_list 의 entries[].id" },
+                "password": { "type": "string", "writeOnly": true, "description": "암호 문서 비밀번호. 응답·세션 상태에 보존하지 않는다." }
+            },
+            "required": ["id"]
+        }
+    }));
+    session.push(serde_json::json!({
+        "name": "hwp_doc_tree",
+        "description": "[#4357] 열린 핸들의 안정 노드 ID 구조 트리(페이지 p0..·표 t0.. — 같은 문서·같은 빌드에서 결정론). 픽셀 없이 구조로 문서를 본다.",
+        "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
+    }));
+    session.push(serde_json::json!({
+        "name": "hwp_ws_journal",
+        "description": "[#4357] 변이 저널 — 변이 도구(replace_text/set_cell/fill_fields/save) 호출마다 본문 SHA-256 전/후·changed 가 자동 기록된다. 자기검증 루프의 조회 축.",
+        "inputSchema": { "type": "object", "properties": {}, "required": [] }
+    }));
     session.push(serde_json::json!({
         "name": "hwp_doc_text",
         "description": "hwp_open 으로 연 핸들에서 페이지 텍스트를 재파싱 없이 읽는다.",
@@ -804,11 +1146,32 @@ fn handle_tool_call(
         "hwp_doc_tables" => Ok(session_tables(&args, sessions)),
         "hwp_doc_render_page" => Ok(session_render_page(&args, sessions)),
         "hwp_doc_search" => Ok(session_search(&args, sessions)),
-        "hwp_doc_replace_text" => Ok(session_replace_text(&args, sessions)),
-        "hwp_doc_set_cell" => Ok(session_set_cell(&args, sessions)),
-        "hwp_doc_fill_fields" => Ok(session_fill_fields(&args, sessions)),
-        "hwp_doc_save" => Ok(session_save(&args, sessions)),
+        // [#4357 W1] 변이 4종은 저널로 감싼다 — 매 변이의 전/후 본문 digest 가
+        // 자동으로 남아 hwp_ws_journal 로 자기검증한다.
+        "hwp_doc_replace_text" => Ok(journal_wrap(
+            "hwp_doc_replace_text",
+            &args,
+            sessions,
+            session_replace_text,
+        )),
+        "hwp_doc_set_cell" => Ok(journal_wrap(
+            "hwp_doc_set_cell",
+            &args,
+            sessions,
+            session_set_cell,
+        )),
+        "hwp_doc_fill_fields" => Ok(journal_wrap(
+            "hwp_doc_fill_fields",
+            &args,
+            sessions,
+            session_fill_fields,
+        )),
+        "hwp_doc_save" => Ok(journal_wrap("hwp_doc_save", &args, sessions, session_save)),
         "hwp_close" => Ok(session_close(&args, sessions)),
+        "hwp_ws_list" => Ok(session_ws_list(sessions)),
+        "hwp_ws_open" => Ok(session_ws_open(&args, sessions)),
+        "hwp_doc_tree" => Ok(session_doc_tree(&args, sessions)),
+        "hwp_ws_journal" => Ok(session_ws_journal(sessions)),
         _ => {
             let Some(def) = tool_defs.iter().find(|t| t["name"] == name) else {
                 // [#3694] didYouMean — error 필드가 기존 원문을 담아 하위호환.

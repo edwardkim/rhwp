@@ -23,6 +23,11 @@ pub const ALL_SESSION_TOOLS: &[&str] = &[
     "hwp_doc_fill_fields",
     "hwp_doc_save",
     "hwp_close",
+    // [#4357 W1] 워크스페이스 축 — 코퍼스 인벤토리·id 열기·안정 ID 트리·변이 저널.
+    "hwp_ws_list",
+    "hwp_ws_open",
+    "hwp_doc_tree",
+    "hwp_ws_journal",
 ];
 
 /// 세션 도구 중 **문서를 바꾸지 않는** 것들 — 조회 전용 직무가 여는 집합.
@@ -39,6 +44,12 @@ pub const SESSION_READ_TOOLS: &[&str] = &[
     "hwp_doc_search",
     "hwp_doc_render_page",
     "hwp_close",
+    // [#4357 W1] 워크스페이스 4종은 전부 조회 축 — 저널·인벤토리·트리는 읽기,
+    // ws_open 은 hwp_open 과 동일한 핸들 발급이다.
+    "hwp_ws_list",
+    "hwp_ws_open",
+    "hwp_doc_tree",
+    "hwp_ws_journal",
 ];
 
 /// 역할 프로필 하나. `tools` 는 무상태 MCP 도구 이름, `session_tools` 는 세션 도구 이름.
