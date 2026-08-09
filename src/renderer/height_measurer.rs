@@ -304,16 +304,12 @@ pub fn fit_measured_table_nested_tail_to_declared_height(
         if cell.row as usize != last_row || cell.row_span != 1 {
             return None;
         }
-        let Some(host) = cell.paragraphs.first() else {
-            return None;
-        };
+        let host = cell.paragraphs.first()?;
         let mut children = host.controls.iter().filter_map(|control| match control {
             Control::Table(child) => Some(child.as_ref()),
             _ => None,
         });
-        let Some(child) = children.next() else {
-            return None;
-        };
+        let child = children.next()?;
         (host.text.trim().is_empty()
             && children.next().is_none()
             && cell.paragraphs.iter().skip(1).all(|paragraph| {
@@ -327,9 +323,7 @@ pub fn fit_measured_table_nested_tail_to_declared_height(
             && child.cells.len() == 1)
             .then_some(child)
     });
-    let Some(last_row_owned_block_child) = last_row_owned_block_child else {
-        return None;
-    };
+    let last_row_owned_block_child = last_row_owned_block_child?;
 
     let spacing_total = measured.cell_spacing * row_count.saturating_sub(1) as f64;
     let target_row_sum = (hwpunit_to_px(table.common.height as i32, dpi) - spacing_total).max(0.0);

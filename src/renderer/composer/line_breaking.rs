@@ -1176,13 +1176,28 @@ fn inline_control_requires_own_line(
 }
 
 fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
+    if let Some(offset) = para.char_offsets.get(char_index) {
+        return *offset;
+    }
+
+    // char_offsets에는 visible text 앞의 control stream gap도 반영된다. 따라서
+    // 끝의 빈 physical line(예: trailing Shift+Enter)을 단순 text 길이로 매핑하면
+    // SectionDef/ColumnDef가 앞선 문단에서 21이어야 할 start가 5로 되돌아간다.
+    // 마지막 visible char의 실제 stream offset을 기준으로 종단을 계산한다.
     para.char_offsets
-        .get(char_index)
-        .copied()
-        .or_else(|| {
-            (char_index >= para.char_offsets.len()).then(|| para.text.encode_utf16().count() as u32)
+        .last()
+        .zip(para.text.chars().last())
+        .map(|(offset, ch)| *offset + ch.len_utf16() as u32)
+        .unwrap_or_else(|| {
+            // 합성 문단처럼 char_offsets가 비어 있으면 char_index(Unicode scalar
+            // index)를 UTF-16 code-unit 위치로 직접 환산한다. 단순 `as u32`는
+            // 보충 평면 문자를 1 unit으로 세어 후행 줄의 start를 당긴다.
+            para.text
+                .chars()
+                .take(char_index)
+                .map(|ch| ch.len_utf16() as u32)
+                .sum()
         })
-        .unwrap_or(char_index as u32)
 }
 
 fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
@@ -1811,5 +1826,35 @@ fn compute_line_spacing_hwp(
             let min_hwp = px_to_hwpunit(ls_value, dpi);
             (min_hwp - line_height_hwp).max(0)
         }
+    }
+}
+
+#[cfg(test)]
+mod utf16_offset_tests {
+    use super::*;
+
+    #[test]
+    fn trailing_physical_line_preserves_control_stream_end_offset() {
+        let mut para = Paragraph {
+            text: "가\n".to_string(),
+            // visible text 앞에 16 UTF-16 unit의 control stream gap이 있다.
+            char_offsets: vec![16, 17],
+            ..Default::default()
+        };
+
+        reflow_line_segs(&mut para, 500.0, &ResolvedStyleSet::default(), 96.0);
+
+        assert_eq!(para.line_segs.len(), 2);
+        assert_eq!(para.line_segs[1].text_start, 18);
+    }
+
+    #[test]
+    fn missing_char_offsets_count_supplementary_unicode_as_utf16_units() {
+        let para = Paragraph {
+            text: "😀\n".to_string(),
+            ..Default::default()
+        };
+
+        assert_eq!(char_index_to_utf16_offset(&para, 2), 3);
     }
 }

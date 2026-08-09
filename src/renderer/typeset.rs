@@ -715,6 +715,144 @@ fn row_split_meets_min_top_keep(
     keep_height >= MIN_TOP_KEEP_PX
 }
 
+/// Native HWP로 저장·재파싱한 뒤에도 남는 "1열 셀을 1×2로 분할"한 표 구조.
+///
+/// [`crate::model::table::Table::split_cell_into`]는 기존 1열의 다른 셀을 새 2열
+/// 전체 span으로 확장하고, 분할 대상 행에는 원문 셀과 템플릿에서 만든 빈 셀을
+/// 나란히 둔다. `dirty_flag`는 저장 경계를 넘지 못하므로 이 구조만 #4138의
+/// continuation strict-cut 근거로 쓴다. 병합 제목행과 일반 2열 데이터행이 섞인
+/// 흔한 표(#2097)는 현재 행의 두 셀이 모두 본문을 가지므로 제외된다.
+fn is_reparsed_single_column_cell_split_row(
+    table: &crate::model::table::Table,
+    row: usize,
+) -> bool {
+    if table.col_count != 2 || row >= table.row_count as usize {
+        return false;
+    }
+
+    let mut row_cells = table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row)
+        .collect::<Vec<_>>();
+    row_cells.sort_by_key(|cell| cell.col);
+    let matching_padding = row_cells.len() == 2
+        && row_cells[0].padding.left == row_cells[1].padding.left
+        && row_cells[0].padding.right == row_cells[1].padding.right
+        && row_cells[0].padding.top == row_cells[1].padding.top
+        && row_cells[0].padding.bottom == row_cells[1].padding.bottom;
+    if row_cells.len() != 2
+        || row_cells[0].col != 0
+        || row_cells[1].col != 1
+        || row_cells
+            .iter()
+            .any(|cell| cell.col_span != 1 || cell.row_span != 1)
+        || row_cells[0].width.abs_diff(row_cells[1].width) > 1
+        || row_cells[0].height != row_cells[1].height
+        || row_cells[0].border_fill_id != row_cells[1].border_fill_id
+        || !matching_padding
+    {
+        return false;
+    }
+
+    let cell_has_content = |cell: &&crate::model::table::Cell| {
+        cell.paragraphs
+            .iter()
+            .any(|para| !para.text.is_empty() || !para.controls.is_empty())
+    };
+    let cell_is_template_empty = |cell: &&crate::model::table::Cell| {
+        cell.paragraphs.len() == 1
+            && cell.paragraphs[0].text.is_empty()
+            && cell.paragraphs[0].controls.is_empty()
+            && !cell.paragraphs[0].has_para_text
+            && cell.paragraphs[0].char_count <= 1
+    };
+    let content_cells = row_cells
+        .iter()
+        .filter(|cell| cell_has_content(cell))
+        .copied()
+        .collect::<Vec<_>>();
+    let template_cells = row_cells
+        .iter()
+        .filter(|cell| cell_is_template_empty(cell))
+        .copied()
+        .collect::<Vec<_>>();
+    if content_cells.len() != 1 || template_cells.len() != 1 {
+        return false;
+    }
+
+    let content_cell = content_cells[0];
+    let template_cell = template_cells[0];
+    let Some(source_para) = content_cell.paragraphs.first() else {
+        return false;
+    };
+    let template_para = &template_cell.paragraphs[0];
+
+    // `new_from_template`는 문단 header를 그대로 복제하되 instanceId
+    // (`raw_header_extra[6..10]`)만 0으로 만든다. 이 차이는 native HWP
+    // 저장·재파싱 뒤에도 남는다. 단순 `has_para_text=false`는 자연 작성 빈
+    // 셀에도 가능하므로, 나머지 raw header와 셀/문단 서식이 실제 clone인 경우만
+    // split provenance로 인정한다.
+    let zeroed_instance_clone = source_para.raw_header_extra.len() >= 10
+        && source_para.raw_header_extra.len() == template_para.raw_header_extra.len()
+        && source_para.raw_header_extra[6..10]
+            .iter()
+            .any(|byte| *byte != 0)
+        && template_para.raw_header_extra[6..10]
+            .iter()
+            .all(|byte| *byte == 0)
+        && source_para.raw_header_extra[..6] == template_para.raw_header_extra[..6]
+        && source_para.raw_header_extra[10..] == template_para.raw_header_extra[10..];
+    let cloned_first_char_shape = template_para.char_shapes.len()
+        == source_para.char_shapes.len().min(1)
+        && template_para
+            .char_shapes
+            .iter()
+            .zip(source_para.char_shapes.iter())
+            .all(|(template, source)| {
+                template.start_pos == source.start_pos
+                    && template.char_shape_id == source.char_shape_id
+            });
+    let cloned_first_line = template_para.line_segs.len() == 1
+        && source_para
+            .line_segs
+            .first()
+            .zip(template_para.line_segs.first())
+            .is_some_and(|(source, template)| {
+                source.text_start == template.text_start
+                    && source.vertical_pos == template.vertical_pos
+                    && source.line_height == template.line_height
+                    && source.text_height == template.text_height
+                    && source.baseline_distance == template.baseline_distance
+                    && source.line_spacing == template.line_spacing
+                    && source.column_start == template.column_start
+                    && source.segment_width == template.segment_width
+                    && source.tag == template.tag
+            });
+    if !zeroed_instance_clone
+        || content_cell.raw_list_extra != template_cell.raw_list_extra
+        || content_cell.list_header_width_ref != template_cell.list_header_width_ref
+        || content_cell.text_direction != template_cell.text_direction
+        || content_cell.vertical_align != template_cell.vertical_align
+        || content_cell.apply_inner_margin != template_cell.apply_inner_margin
+        || content_cell.is_header != template_cell.is_header
+        || source_para.para_shape_id != template_para.para_shape_id
+        || source_para.style_id != template_para.style_id
+        || !cloned_first_char_shape
+        || !cloned_first_line
+    {
+        return false;
+    }
+
+    let mut other_cells = table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize != row)
+        .peekable();
+    other_cells.peek().is_some()
+        && other_cells.all(|cell| cell.col == 0 && cell.col_span == table.col_count)
+}
+
 /// Flow spacing repeated around a proven non-TAC RowBreak table fragment.
 ///
 /// The first fragment keeps the formatted host-before value (paragraph spacing + outer top),
@@ -2900,6 +3038,47 @@ fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
     ls.tag & 0x80000000 != 0
 }
 
+/// Visible host text that is structurally a numbered table caption.
+///
+/// A positive table offset alone does not make the host a caption: ordinary
+/// section headings such as `1. 편성기준` can share that geometry (#2097).
+/// Restrict the native pre-emit path to the explicit `표 N`/`Table N` form
+/// observed in Hancom's visible-host captions (policy tables 26--28).
+fn visible_host_is_numbered_table_caption(para: &Paragraph) -> bool {
+    let has_table_number_control = para.controls.iter().any(|control| {
+        matches!(
+            control,
+            Control::AutoNumber(number)
+                if number.number_type == crate::model::control::AutoNumberType::Table
+        ) || matches!(
+            control,
+            Control::NewNumber(number)
+                if number.number_type == crate::model::control::AutoNumberType::Table
+        )
+    });
+    if has_table_number_control {
+        return true;
+    }
+
+    let text = para.text.trim_start();
+    let suffix = if let Some(rest) = text.strip_prefix('표') {
+        rest
+    } else if text
+        .get(.."Table".len())
+        .is_some_and(|prefix| prefix.eq_ignore_ascii_case("Table"))
+    {
+        &text["Table".len()..]
+    } else {
+        return false;
+    };
+
+    suffix
+        .trim_start()
+        .chars()
+        .next()
+        .is_some_and(char::is_numeric)
+}
+
 /// Native HWP5 can encode a table title as visible text in the table's host
 /// paragraph instead of as `Table::caption`.  When the stored host line fits
 /// wholly inside the table's positive paragraph-relative offset, Hancom paints
@@ -2917,6 +3096,7 @@ fn native_hwp5_rowbreak_host_precedes_first_fragment(
     table: &crate::model::table::Table,
 ) -> bool {
     if !para_has_non_whitespace_text(para)
+        || !visible_host_is_numbered_table_caption(para)
         || !is_para_topbottom_float(&table.common)
         || !matches!(
             table.page_break,
@@ -2944,7 +3124,7 @@ fn native_hwp5_rowbreak_host_precedes_first_fragment(
     let Some(first) = stored.next() else {
         return false;
     };
-    let last = stored.last().unwrap_or(first);
+    let last = stored.next_back().unwrap_or(first);
     let stored_host_span = last
         .vertical_pos
         .saturating_sub(first.vertical_pos)
@@ -18631,14 +18811,15 @@ impl TypesetEngine {
                 });
                 let continuation_nested_owner_boundary =
                     r == cursor_row && is_continuation && !row_start_cut.is_empty();
-                // `r == cursor_row`라도 이미 잘린 native HWP 행의 continuation이면
-                // fresh page의 첫 행이 아니다. 이 tail은 `advance_row_cut`의 논리
-                // height보다 실제 paint footprint가 클 수 있어, HWPX 저장 layout과
-                // 달리 실제 body 경계로 재-cut해야 한다 (#4138).
-                let native_continuation_row_tail = !st.profile.hwpx_stored_layout()
+                // 일반 native continuation에 strict cut을 넓히면 원본 giant-cell이
+                // 한컴 115쪽보다 1쪽 더 생긴다. 저장 뒤에도 남는 1열→2열 split
+                // topology에만 실제 paint tail 재-cut을 허용한다 (#4138).
+                let native_split_continuation_row_tail = st.profile.native_hwp5_layout()
+                    && mt.allows_row_break_split()
                     && r == cursor_row
                     && is_continuation
-                    && !row_start_cut.is_empty();
+                    && !row_start_cut.is_empty()
+                    && is_reparsed_single_column_cell_split_row(table, r);
                 // 새 표의 앞선 행들이 현재 쪽에 먼저 놓인 뒤 마지막 1×1 child 행이
                 // 시작될 때는 logical cut tail이 0px로 보고될 수 있다. 그러나 실제
                 // child viewport·frame은 다음 쪽 source unit을 가리므로, 이 역시
@@ -18652,19 +18833,17 @@ impl TypesetEngine {
                         || (fresh_late_nested_row && !nested_physical_tail))
                     && split_candidate_rows_height - avail_for_rows
                         > MIXED_NESTED_OWNER_DRIFT_MIN_PX;
-                // Native continuation의 paint tail은 logical row cut보다 실제로 더
-                // 내려갈 수 있다. 이 경우만 sub-pixel 경계로 다시 cut한다. 일반
-                // native HWP(no stored LineSeg 포함)에 이 엄격값을 넓게 적용하면,
-                // 한컴이 허용하는 저장/측정 drift까지 page break로 바뀐다.
                 let split_row_overflow_tolerance =
-                    if native_continuation_row_tail || mixed_nested_owner_guard {
+                    if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
                     } else if mt.allows_row_break_split() {
                         rowbreak_split_row_overflow_tolerance
                     } else {
                         0.1
                     };
-                if (r > cursor_row || mixed_nested_owner_guard || native_continuation_row_tail)
+                if (r > cursor_row
+                    || mixed_nested_owner_guard
+                    || native_split_continuation_row_tail)
                     && split_candidate_rows_height > avail_for_rows + split_row_overflow_tolerance
                 {
                     // 보이는 조각은 orphan 기준을 통과해도 row-area 예산은 넘을 수 있다.
@@ -18681,7 +18860,7 @@ impl TypesetEngine {
                     // first omitted source unit rather than one line late.
                     let painted_tail = (split_total - res.consumed_height - padding).max(0.0);
                     let retry_uses_painted_tail =
-                        mixed_nested_owner_guard || native_continuation_row_tail;
+                        mixed_nested_owner_guard || native_split_continuation_row_tail;
                     let retry_budget = if retry_uses_painted_tail {
                         (budget - over - painted_tail - 0.5).max(0.0)
                     } else {
@@ -22554,6 +22733,141 @@ mod tests {
             }],
             ..Default::default()
         }
+    }
+
+    fn single_column_split_topology() -> Table {
+        let mut heading = Cell::new_empty(0, 0, 20_000, 1_000, 1);
+        heading.col_span = 2;
+        heading.paragraphs[0].text = "머리".to_string();
+        heading.paragraphs[0].char_count = 3;
+
+        let mut body = Cell::new_empty(0, 1, 10_000, 2_000, 2);
+        body.paragraphs[0].text = "긴 본문".to_string();
+        body.paragraphs[0].char_count = 5;
+        body.paragraphs[0].raw_header_extra = vec![0; 12];
+        body.paragraphs[0].raw_header_extra[6..10].copy_from_slice(&42_u32.to_le_bytes());
+        let peer = Cell::new_from_template(1, 1, 10_000, 2_000, &body);
+
+        Table {
+            row_count: 2,
+            col_count: 2,
+            cells: vec![heading, body, peer],
+            page_break: TablePageBreak::RowBreak,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn visible_host_caption_classifier_excludes_section_headings() {
+        use crate::model::control::{AutoNumber, AutoNumberType, NewNumber};
+
+        let mut para = Paragraph {
+            text: "표 27. EU 미성년자 생존 장기기증 허용 국가 규정".to_string(),
+            ..Default::default()
+        };
+        assert!(visible_host_is_numbered_table_caption(&para));
+
+        para.text = "Table 27. Minor living donation rules".to_string();
+        assert!(visible_host_is_numbered_table_caption(&para));
+
+        para.text = "1. 편성기준".to_string();
+        assert!(
+            !visible_host_is_numbered_table_caption(&para),
+            "#2097 section heading must not be pre-emitted as a table caption"
+        );
+
+        para.text = "표 작성 기준".to_string();
+        assert!(
+            !visible_host_is_numbered_table_caption(&para),
+            "a word beginning with 표 is not a numbered caption"
+        );
+
+        para.text = "표  ".to_string();
+        para.controls = vec![Control::AutoNumber(AutoNumber {
+            number_type: AutoNumberType::Table,
+            ..Default::default()
+        })];
+        assert!(
+            visible_host_is_numbered_table_caption(&para),
+            "literal이 아닌 표 AutoNumber도 visible-host 캡션이다"
+        );
+
+        para.text = "번호를 다시 시작하는 표".to_string();
+        para.controls = vec![Control::NewNumber(NewNumber {
+            number_type: AutoNumberType::Table,
+            number: 27,
+        })];
+        assert!(visible_host_is_numbered_table_caption(&para));
+
+        para.text = "표 작성 기준".to_string();
+        para.controls = vec![Control::AutoNumber(AutoNumber {
+            number_type: AutoNumberType::Picture,
+            ..Default::default()
+        })];
+        assert!(!visible_host_is_numbered_table_caption(&para));
+
+        para.text = "1. 편성기준".to_string();
+        para.controls = vec![Control::NewNumber(NewNumber {
+            number_type: AutoNumberType::Page,
+            number: 1,
+        })];
+        assert!(!visible_host_is_numbered_table_caption(&para));
+    }
+
+    #[test]
+    fn reparsed_single_column_split_topology_is_narrow() {
+        let split = single_column_split_topology();
+        assert!(
+            is_reparsed_single_column_cell_split_row(&split, 1),
+            "1열 표의 본문 셀을 1×2로 분할한 저장 구조는 식별한다"
+        );
+        assert!(
+            !is_reparsed_single_column_cell_split_row(&split, 0),
+            "전폭 행 자체는 분할 행이 아니다"
+        );
+
+        let mut original = split.clone();
+        original.col_count = 1;
+        original.cells.truncate(2);
+        original.cells[0].col_span = 1;
+        original.cells[1].width = 20_000;
+        assert!(
+            !is_reparsed_single_column_cell_split_row(&original, 1),
+            "원본 1열 giant-cell에는 strict cut을 적용하지 않는다"
+        );
+
+        let mut ordinary_two_column = split.clone();
+        ordinary_two_column.cells[2].paragraphs[0].text = "일반 우측 본문".to_string();
+        ordinary_two_column.cells[2].paragraphs[0].char_count = 8;
+        assert!(
+            !is_reparsed_single_column_cell_split_row(&ordinary_two_column, 1),
+            "병합 제목행과 일반 2열 데이터행 조합은 #2097 bottom squeeze를 보존한다"
+        );
+
+        let mut authored_blank = split.clone();
+        authored_blank.cells[2].paragraphs[0].has_para_text = true;
+        assert!(
+            !is_reparsed_single_column_cell_split_row(&authored_blank, 1),
+            "빈 문자열이어도 PARA_TEXT를 가진 자연 작성 셀은 분할 템플릿 빈 셀이 아니다"
+        );
+
+        let mut natural_blank = split.clone();
+        natural_blank.cells[2].paragraphs[0].raw_header_extra[6..10]
+            .copy_from_slice(&7_u32.to_le_bytes());
+        assert!(
+            !is_reparsed_single_column_cell_split_row(&natural_blank, 1),
+            "독립 instanceId를 가진 자연 작성 빈 셀은 zeroed template clone이 아니다"
+        );
+
+        let mut mixed_grid = split;
+        mixed_grid
+            .cells
+            .push(Cell::new_empty(1, 0, 10_000, 1_000, 1));
+        mixed_grid.cells[0].col_span = 1;
+        assert!(
+            !is_reparsed_single_column_cell_split_row(&mixed_grid, 1),
+            "다른 행이 원래부터 다열이면 1열→2열 분할 저장 구조가 아니다"
+        );
     }
 
     #[test]
