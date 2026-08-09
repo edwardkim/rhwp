@@ -107,8 +107,9 @@ fn empty_paragraph_fallback_line_metrics(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+    hwp3_legacy_caps: bool,
 ) -> Option<(f64, f64)> {
-    if !para.text.is_empty()
+    if !para.text.trim().is_empty()
         || !para.controls.is_empty()
         || !para.line_segs.is_empty()
         || para.char_count == 0
@@ -123,13 +124,17 @@ fn empty_paragraph_fallback_line_metrics(
     if font_size <= 0.0 {
         return None;
     }
-    let small_empty_para_max_font = hwpunit_to_px(1000, DEFAULT_DPI);
-    if font_size > small_empty_para_max_font + 0.1 {
-        return None;
-    }
-    let meaningful_empty_para_min_font = hwpunit_to_px(800, DEFAULT_DPI);
-    if !char_style.bold && font_size < meaningful_empty_para_min_font - 0.1 {
-        return None;
+    // HWP5 원본은 저장 LINE_SEG 없는 빈 문단도 글자 모양과 문단 줄간격으로
+    // 조판한다. 크기 cap은 HWP3 변환본에서만 page-count 회귀를 막기 위해 유지한다.
+    if hwp3_legacy_caps {
+        let small_empty_para_max_font = hwpunit_to_px(1000, DEFAULT_DPI);
+        if font_size > small_empty_para_max_font + 0.1 {
+            return None;
+        }
+        let meaningful_empty_para_min_font = hwpunit_to_px(800, DEFAULT_DPI);
+        if !char_style.bold && font_size < meaningful_empty_para_min_font - 0.1 {
+            return None;
+        }
     }
     let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
     let ls_type = para_style
@@ -588,7 +593,9 @@ impl HeightMeasurer {
             .map(|s| s.line_spacing_type)
             .unwrap_or(crate::model::style::LineSpacingType::Percent);
 
-        let (line_heights, line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) = composed {
+        let (mut line_heights, mut line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) =
+            composed
+        {
             let tac_offsets_px: Vec<(usize, f64, usize)> = comp
                 .tac_controls
                 .iter()
@@ -672,9 +679,12 @@ impl HeightMeasurer {
                 })
                 .collect();
             if pairs.is_empty() {
-                if let Some(metric) =
-                    empty_paragraph_fallback_line_metrics(para, styles, para_style)
-                {
+                if let Some(metric) = empty_paragraph_fallback_line_metrics(
+                    para,
+                    styles,
+                    para_style,
+                    self.is_hwp3_variant,
+                ) {
                     pairs.push(metric);
                 }
             }
@@ -739,7 +749,7 @@ impl HeightMeasurer {
                     .unzip()
             }
         } else if let Some((lh, ls)) =
-            empty_paragraph_fallback_line_metrics(para, styles, para_style)
+            empty_paragraph_fallback_line_metrics(para, styles, para_style, self.is_hwp3_variant)
         {
             (vec![lh], vec![ls])
         } else {
@@ -753,6 +763,21 @@ impl HeightMeasurer {
                 .zip(line_spacings.iter())
                 .map(|(h, s)| h + s)
                 .sum();
+            // `compose_paragraph()` 는 LINE_SEG 없는 빈 문단에도 400HU 안내 줄을
+            // 만든다. 그 합성 줄을 그대로 쓰면 HWP5의 실제 글자모양/줄간격이
+            // 소실된다(p81 20pt 빈 줄은 5.3px로, 1pt spacer는 5.3px로 오판).
+            // render의 같은 보정과 맞춰 실제 빈 문단일 때는 fallback metrics가
+            // compose 결과보다 우선한다.
+            if let Some((lh, ls)) = empty_paragraph_fallback_line_metrics(
+                para,
+                styles,
+                para_style,
+                self.is_hwp3_variant,
+            ) {
+                line_heights = vec![lh];
+                line_spacings = vec![ls];
+            }
+
             // TAC 표 문단에서 첫 LINE_SEG의 lh가 표 높이로 확장되고
             // 마지막 SEG도 동일한 lh를 가질 때, 합산이 이중 계산됨.
             // (표 앞 텍스트가 있어 LINE_SEG가 2개인 경우 발생)

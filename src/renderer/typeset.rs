@@ -412,7 +412,7 @@ fn empty_paragraph_fallback_line_metrics(
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
     hwp3_legacy_caps: bool,
 ) -> Option<(f64, f64)> {
-    if !para.text.is_empty()
+    if !para.text.trim().is_empty()
         || !para.controls.is_empty()
         || !para.line_segs.is_empty()
         || para.char_count == 0
@@ -14040,6 +14040,20 @@ impl TypesetEngine {
                 ) {
                     pairs.extend(metrics);
                 }
+            }
+            // 저장 LINE_SEG가 전혀 없는 빈 문단도 composer는 placeholder line 하나를
+            // 남길 수 있다. 그 경우 `pairs.is_empty()`만으로는 fallback에 들어가지 않아
+            // 400HU(약 5.3px)로 축소된다. 한글은 이 문단을 저장 글자모양과 줄간격의
+            // 완전한 줄박스로 취급하므로, placeholder 유무와 관계없이 같은 메트릭을
+            // 적용해야 pagination과 SVG 렌더가 일치한다 (#3820 p81–82).
+            if let Some(metric) = empty_paragraph_fallback_line_metrics(
+                para,
+                styles,
+                para_style,
+                self.profile.get().hwp3_layout(),
+            ) {
+                pairs.clear();
+                pairs.push(metric);
             }
             pairs.into_iter().unzip()
         } else if !para.line_segs.is_empty() {

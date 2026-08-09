@@ -296,6 +296,26 @@ class TextLayerComparisonTests(unittest.TestCase):
         self.assertIn("52\t53\trhwp_later_than_reference", report)
         self.assertIn(moved, report)
 
+    def test_page_boundary_ledger_keeps_short_reciprocal_owner_shift(self) -> None:
+        moved = Counter("②구내운반차사용의")
+        with tempfile.TemporaryDirectory() as directory:
+            FIDELITY.write_page_boundary_fidelity_ledger(
+                Path(directory),
+                {
+                    69: (Counter(), moved),
+                    70: (moved, Counter()),
+                },
+                {},
+            )
+            report = (Path(directory) / "page-boundary-fidelity-candidates.tsv").read_text(
+                encoding="utf-8"
+            )
+
+        self.assertIn(
+            "70\t71\ttext_owner_shift\trhwp_earlier_than_reference\t9\t0",
+            report,
+        )
+
     def test_successor_top_float_refines_early_owner_shift(self) -> None:
         moved = Counter("그림앞문단이기준PDF에서는다음쪽으로이어짐")
         tree = {
@@ -748,6 +768,43 @@ class LayoutCandidateTests(unittest.TestCase):
         self.assertIn("same_pi_ci_adjacent_fragment", report)
         self.assertIn("page_bottom_near_material_text_delta", report)
         self.assertIn("does not assert PDF table row owner", report)
+
+    def test_page_boundary_ledger_promotes_table_fragment_with_owner_drift(self) -> None:
+        moved = "일시적반복적근거설명구내운반차안전조치"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tree_dir = root / "render_tree"
+            tree_dir.mkdir()
+            (tree_dir / "render_tree_081.json").write_text(
+                json.dumps(self.body_table_tree(pi=842, y=760.0, height=160.0)),
+                encoding="utf-8",
+            )
+            (tree_dir / "render_tree_082.json").write_text(
+                json.dumps(self.body_table_tree(pi=842, y=80.0, height=220.0)),
+                encoding="utf-8",
+            )
+            FIDELITY.write_page_boundary_fidelity_ledger(
+                root,
+                {
+                    80: (Counter(moved), Counter()),
+                    81: (Counter(), Counter(moved)),
+                },
+                {
+                    80: (f"p81 {moved}", "p81"),
+                    81: ("p82", f"p82 {moved}"),
+                },
+                tree_dir=tree_dir,
+                requested_pages=[80, 81],
+            )
+            report = (root / "page-boundary-fidelity-candidates.tsv").read_text(
+                encoding="utf-8"
+            )
+
+        self.assertIn(
+            "81\t82\ttable_fragment_text_owner_drift\trhwp_later_than_reference",
+            report,
+        )
+        self.assertIn("pi=842,ci=0,rows=5,cols=3", report)
 
     def test_table_fragment_candidates_include_footer_and_frame_geometry_signals(self) -> None:
         tree = self.body_table_tree(

@@ -81,6 +81,58 @@ fn paragraph_active_text_style(
     }
 }
 
+/// 저장 LINE_SEG 없는 실제 빈 문단의 한컴 줄 metrics를 복원한다.
+///
+/// `compose_paragraph()` 는 렌더러 내부 안내용 400HU 줄을 남기지만, HWP5 원본의
+/// 빈 문단 높이는 그 값이 아니라 글자 모양과 ParaShape 줄간격에서 결정된다.
+/// HWP3 변환본만 기존 page-count 계약을 위해 작은 글꼴 cap을 유지한다.
+fn empty_no_lineseg_paragraph_metrics(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+    hwp3_legacy_caps: bool,
+    dpi: f64,
+) -> Option<(f64, f64, f64)> {
+    if !para.text.trim().is_empty()
+        || !para.controls.is_empty()
+        || !para.line_segs.is_empty()
+        || para.char_count == 0
+    {
+        return None;
+    }
+    let char_shape_id = para
+        .char_shape_id_at(0)
+        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))?
+        as usize;
+    let char_style = styles.char_styles.get(char_shape_id)?;
+    let font_size = char_style.font_size;
+    if font_size <= 0.0 {
+        return None;
+    }
+    if hwp3_legacy_caps {
+        let small_empty_para_max_font = hwpunit_to_px(1000, dpi);
+        if font_size > small_empty_para_max_font + 0.1 {
+            return None;
+        }
+        let meaningful_empty_para_min_font = hwpunit_to_px(800, dpi);
+        if !char_style.bold && font_size < meaningful_empty_para_min_font - 0.1 {
+            return None;
+        }
+    }
+    let line_spacing = para_style.map(|style| style.line_spacing).unwrap_or(160.0);
+    let line_spacing_type = para_style
+        .map(|style| style.line_spacing_type)
+        .unwrap_or(LineSpacingType::Percent);
+    let (line_height, line_spacing_px) = crate::renderer::corrected_line_metrics(
+        0.0,
+        0.0,
+        font_size,
+        line_spacing_type,
+        line_spacing,
+    );
+    Some((line_height, line_spacing_px, font_size))
+}
+
 fn numbering_marker_text_style(
     styles: &ResolvedStyleSet,
     para: Option<&Paragraph>,
@@ -2951,8 +3003,25 @@ impl LayoutEngine {
                 }
             }
 
+            // 저장 LINE_SEG 없는 실제 빈 문단은 compose의 400HU 안내 줄이 아니라
+            // 원래 글자 모양과 줄간격을 사용한다. HeightMeasurer의 동일 보정과
+            // 맞춰 pagination과 render의 y advance가 갈라지지 않게 한다.
+            let empty_no_lineseg_metrics = if line_idx == 0 {
+                para.and_then(|p| {
+                    empty_no_lineseg_paragraph_metrics(
+                        p,
+                        styles,
+                        para_style,
+                        self.profile.get().hwp3_layout(),
+                        self.dpi,
+                    )
+                })
+            } else {
+                None
+            };
+
             // 최대 폰트 크기 계산 (line_height 최솟값 보정에도 사용)
-            let max_fs = comp_line
+            let mut max_fs = comp_line
                 .runs
                 .iter()
                 .map(|r| {
@@ -2964,6 +3033,9 @@ impl LayoutEngine {
                     }
                 })
                 .fold(0.0f64, f64::max);
+            if let Some((_, _, font_size)) = empty_no_lineseg_metrics {
+                max_fs = font_size;
+            }
             let mut line_tac_offsets = tac_offsets_for_line(composed, &tac_offsets_px, line_idx);
             if let Some(offsets) =
                 repeated_empty_tac_line_offset(composed, &tac_offsets_px, line_idx)
@@ -3011,16 +3083,20 @@ impl LayoutEngine {
                 ls_val,
                 source_metrics_reflow_eligible,
             );
-            let (line_height, line_spacing_px) = crate::renderer::corrected_line_metrics_for_source(
-                raw_lh,
-                raw_text_height,
-                hwpunit_to_px(comp_line.line_spacing, self.dpi),
-                max_fs,
-                ls_type,
-                ls_val,
-                use_stored_text_height,
-                source_metrics_reflow_eligible,
-            );
+            let (line_height, line_spacing_px) = empty_no_lineseg_metrics
+                .map(|(line_height, line_spacing_px, _)| (line_height, line_spacing_px))
+                .unwrap_or_else(|| {
+                    crate::renderer::corrected_line_metrics_for_source(
+                        raw_lh,
+                        raw_text_height,
+                        hwpunit_to_px(comp_line.line_spacing, self.dpi),
+                        max_fs,
+                        ls_type,
+                        ls_val,
+                        use_stored_text_height,
+                        source_metrics_reflow_eligible,
+                    )
+                });
             // [#2279 진단] 줄별 pitch 분해 — 동작 불변.
             if let Ok(pat) = std::env::var("RHWP_DIAG_PITCH") {
                 if para.map(|p| p.text.contains(&pat)).unwrap_or(false) {
@@ -4257,14 +4333,23 @@ impl LayoutEngine {
             }
         }
 
-        // 문단 뒤 간격 (spacing_after)
-        if spacing_after > 0.0 && end == composed.lines.len() {
-            y += spacing_after;
-        }
-
-        // ComposedLine이 없으면 기본 높이 + 빈 TextRun 생성 (편집용)
+        // ComposedLine이 없으면 빈 TextRun 생성 (편집용). `compose_paragraph()`는
+        // 빈 문단에 줄을 만들지 않을 수 있는데, 종전 400HU 고정 advance는
+        // pagination의 NO_LS 빈 문단 메트릭과 달라 다음 표/문단을 위로 끌어올렸다.
+        // 이 경로도 원래 글자모양·줄간격을 사용해 두 경로를 일치시킨다 (#3820 p81–82).
         if composed.lines.is_empty() && start_line == 0 {
-            let default_height = hwpunit_to_px(400, self.dpi);
+            let (default_height, default_spacing) = para
+                .and_then(|p| {
+                    empty_no_lineseg_paragraph_metrics(
+                        p,
+                        styles,
+                        para_style,
+                        self.profile.get().hwp3_layout(),
+                        self.dpi,
+                    )
+                })
+                .map(|(line_height, line_spacing, _)| (line_height, line_spacing))
+                .unwrap_or((hwpunit_to_px(400, self.dpi), 0.0));
             let line_id = tree.next_id();
             let mut line_node = RenderNode::new(
                 line_id,
@@ -4307,7 +4392,13 @@ impl LayoutEngine {
             line_node.children.push(run_node);
 
             col_node.children.push(line_node);
-            y += default_height;
+            y += default_height + default_spacing;
+        }
+
+        // 문단 뒤 간격 (spacing_after). 빈 composed 문단도 실제 한 줄 advance 뒤에
+        // 적용해야 일반 composed 문단과 동일한 순서를 따른다.
+        if spacing_after > 0.0 && end == composed.lines.len() {
+            y += spacing_after;
         }
 
         y

@@ -1058,6 +1058,24 @@ fn hanyang_junggothic_pdf_space_width(primary_name: &str) -> Option<u16> {
     (primary_name == "한양중고딕").then_some(HANYANG_JUNGGOTHIC_PDF_SPACE_UNITS)
 }
 
+/// #3820 `76076_regulatory_analysis` 한컴 PDF p81의 한양신명조 공백 advance.
+///
+/// HWP 원본은 `한양신명조`를 지정하지만 기준 PDF의 실제 word gap은
+/// 411/1024em(14pt에서 약 5.64pt)이다. 임베드 HFT의 U+0020 hmtx(518/1024em)를
+/// 그대로 쓰면 p81의 중첩 표에서 여덟 공백마다 차이가 누적되어 `좌석안전`의
+/// `전`이 다음 줄로 밀리고, 뒤의 간접편익 표가 p82로 넘어간다. 글리프·셀 폭·
+/// 저장 510HU margin은 PDF와 일치하므로 이 원명 U+0020 line-decision만 보정한다.
+const HANYANG_SHINMYEONGJO_PDF_SPACE_UNITS: u16 = 411;
+
+fn hanyang_shinmyeongjo_pdf_space_width(primary_name: &str) -> Option<u16> {
+    (primary_name == "한양신명조").then_some(HANYANG_SHINMYEONGJO_PDF_SPACE_UNITS)
+}
+
+fn hancom_pdf_space_width(primary_name: &str) -> Option<u16> {
+    hanyang_junggothic_pdf_space_width(primary_name)
+        .or_else(|| hanyang_shinmyeongjo_pdf_space_width(primary_name))
+}
+
 /// [#2070] ㆍ(U+318D) 폭은 SYMBOL 폰트별: 한양신명조 = 전각(사다리 v3 실측),
 /// 명조(HY견명조 치환) 등 여타 = 반각 (80168 개정안{{7}} p9/p13 '시ㆍ도조례'
 /// 1줄 오라클, 개정안{{1}} P21 마크와 반각 양립 검증). embedded 메트릭
@@ -1098,9 +1116,9 @@ fn measure_char_width_embedded(
     }
     let mm = font_metrics_data::find_metric(primary_name, bold, italic)?;
     // HWP 반각 처리: space 및 한컴이 반각으로 처리하는 구두점/기호.
-    // #3820 한양중고딕 원명은 Hancom PDF의 별도 word gap을 따른다.
+    // #3820에서 PDF로 계측한 한양 원명은 font hmtx와 다른 word gap을 따른다.
     let w = if c == ' ' {
-        hanyang_junggothic_pdf_space_width(primary_name).unwrap_or(mm.metric.em_size / 2)
+        hancom_pdf_space_width(primary_name).unwrap_or(mm.metric.em_size / 2)
     } else {
         let glyph_w = mm.metric.get_width(c)?;
         // 한컴은 스마트 따옴표 등을 반각으로 처리.

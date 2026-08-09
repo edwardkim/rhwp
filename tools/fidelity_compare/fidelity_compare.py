@@ -1458,6 +1458,117 @@ def table_fragment_candidates(
     return sorted(candidates, key=candidate_sort_key)
 
 
+def page_boundary_fidelity_candidates(
+    page_differences: Mapping[int, tuple[Counter[str], Counter[str]]],
+    page_text_layers: Mapping[int, tuple[str, str]],
+    *,
+    tree_dir: Path | None = None,
+    requested_pages: Sequence[int] = (),
+) -> list[dict[str, object]]:
+    """Join adjacent-page owner signals into one review-priority ledger.
+
+    The individual text, sequence, and table-fragment ledgers deliberately stay
+    conservative and independent.  That made a real boundary failure easy to
+    overlook during a broad sweep: an operator had to notice that three files
+    described the same pN→pN+1 event.  This helper preserves those raw ledgers
+    while producing one candidate per physical boundary.  A source table that
+    also has reciprocal PDF/SVG text movement is promoted to the explicit
+    ``table_fragment_text_owner_drift`` kind; an ordinary small owner move is
+    still retained as ``text_owner_shift`` so short captions and labels are not
+    hidden by a 16-character sequence threshold.
+
+    The result remains a candidate: only the reference PDF determines whether
+    the physical page owner is actually wrong.
+    """
+    by_boundary: dict[tuple[int, int, str], dict[str, object]] = {}
+
+    def candidate_for(
+        page_index: int, next_page: int, direction: str
+    ) -> dict[str, object]:
+        key = (page_index, next_page, direction)
+        return by_boundary.setdefault(
+            key,
+            {
+                "page": page_index,
+                "next_page": next_page,
+                "direction": direction,
+                "counter_chars": 0,
+                "sequence_chars": 0,
+                "sequence": "",
+                "table_fragments": [],
+            },
+        )
+
+    for owner_shift in adjacent_text_owner_shift_candidates(page_differences):
+        candidate = candidate_for(
+            int(owner_shift["page"]),
+            int(owner_shift["next_page"]),
+            str(owner_shift["direction"]),
+        )
+        candidate["counter_chars"] = max(
+            int(candidate["counter_chars"]), int(owner_shift["shared_count"])
+        )
+
+    for owner_shift in adjacent_text_owner_sequence_candidates(page_text_layers):
+        candidate = candidate_for(
+            int(owner_shift["page"]),
+            int(owner_shift["next_page"]),
+            str(owner_shift["direction"]),
+        )
+        sequence = str(owner_shift["sequence"])
+        if len(sequence) > int(candidate["sequence_chars"]):
+            candidate["sequence_chars"] = len(sequence)
+            candidate["sequence"] = sequence
+
+    if tree_dir is not None:
+        requested = list(requested_pages)
+        for table_candidate in table_fragment_candidates(
+            tree_dir, requested, page_differences
+        ):
+            page_table = table_candidate["page_table"]
+            next_page_table = table_candidate.get("next_page_table")
+            if not isinstance(page_table, Mapping) or not isinstance(next_page_table, Mapping):
+                continue
+            page_index = int(page_table["page"])
+            next_page = int(next_page_table["page"])
+            for direction in ("rhwp_earlier_than_reference", "rhwp_later_than_reference"):
+                candidate = by_boundary.get((page_index, next_page, direction))
+                if candidate is None:
+                    continue
+                fragments = candidate["table_fragments"]
+                assert isinstance(fragments, list)
+                fragments.append(
+                    {
+                        "pi": page_table.get("pi"),
+                        "ci": page_table.get("ci"),
+                        "rows": page_table.get("rows"),
+                        "cols": page_table.get("cols"),
+                        "signals": list(table_candidate["signals"]),
+                    }
+                )
+
+    candidates: list[dict[str, object]] = []
+    for candidate in by_boundary.values():
+        fragments = candidate["table_fragments"]
+        assert isinstance(fragments, list)
+        candidate["kind"] = (
+            "table_fragment_text_owner_drift" if fragments else "text_owner_shift"
+        )
+        candidate["priority_chars"] = max(
+            int(candidate["counter_chars"]), int(candidate["sequence_chars"])
+        )
+        candidates.append(candidate)
+
+    return sorted(
+        candidates,
+        key=lambda candidate: (
+            int(candidate["page"]),
+            int(candidate["next_page"]),
+            str(candidate["direction"]),
+        ),
+    )
+
+
 def format_bbox(box: object) -> str:
     if not isinstance(box, (tuple, list)) or len(box) != 4:
         return "-"
@@ -2382,6 +2493,50 @@ def write_text_owner_sequence_ledger(
             )
 
 
+def write_page_boundary_fidelity_ledger(
+    work_dir: Path,
+    page_differences: Mapping[int, tuple[Counter[str], Counter[str]]],
+    page_text_layers: Mapping[int, tuple[str, str]],
+    *,
+    tree_dir: Path | None = None,
+    requested_pages: Sequence[int] = (),
+) -> Path:
+    """Write one actionable review row per adjacent-page owner boundary."""
+    report_path = work_dir / "page-boundary-fidelity-candidates.tsv"
+    with report_path.open("w", encoding="utf-8") as report:
+        report.write(
+            "page\tnext_page\tkind\tdirection\tcounter_chars\tsequence_chars\t"
+            "sequence\ttable_fragments\tnote\n"
+        )
+        for candidate in page_boundary_fidelity_candidates(
+            page_differences,
+            page_text_layers,
+            tree_dir=tree_dir,
+            requested_pages=requested_pages,
+        ):
+            fragments = candidate["table_fragments"]
+            assert isinstance(fragments, list)
+            fragment_summary = ";".join(
+                "pi={pi},ci={ci},rows={rows},cols={cols},signals={signals}".format(
+                    pi=format_number(fragment.get("pi")),
+                    ci=format_number(fragment.get("ci")),
+                    rows=format_number(fragment.get("rows")),
+                    cols=format_number(fragment.get("cols")),
+                    signals="|".join(str(signal) for signal in fragment["signals"]),
+                )
+                for fragment in fragments
+            ) or "-"
+            sequence = str(candidate["sequence"]).replace("\t", " ").replace("\n", " ")
+            report.write(
+                f"{int(candidate['page']) + 1}\t{int(candidate['next_page']) + 1}\t"
+                f"{candidate['kind']}\t{candidate['direction']}\t"
+                f"{candidate['counter_chars']}\t{candidate['sequence_chars']}\t"
+                f"{sequence or '-'}\t{fragment_summary}\t"
+                "candidate only; PDF visual owner review required\n"
+            )
+    return report_path
+
+
 def write_visible_text_excess_ledger(
     work_dir: Path,
     page_differences: Mapping[int, tuple[Counter[str], Counter[str]]],
@@ -2712,6 +2867,13 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     write_text_owner_shift_ledger(work_dir, text_differences)
     write_text_owner_sequence_ledger(work_dir, text_layers)
+    boundary_fidelity_report_path = write_page_boundary_fidelity_ledger(
+        work_dir,
+        text_differences,
+        text_layers,
+        tree_dir=tree_dir if args.layout_ledger else None,
+        requested_pages=requested_pages,
+    )
     write_visible_text_excess_ledger(
         work_dir, visible_text_differences, clip_excluded_text_chars
     )
@@ -2779,6 +2941,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print("SVG glyph-risk candidates:", glyph_risk_report_path)
     print("text owner-shift candidates:", work_dir / "text-owner-shift-candidates.tsv")
     print("text owner-sequence candidates:", work_dir / "text-owner-sequence-candidates.tsv")
+    print("page-boundary fidelity candidates:", boundary_fidelity_report_path)
     print("visible text-excess candidates:", work_dir / "visible-text-excess-candidates.tsv")
     print("page-count ledger:", work_dir / "page-count-ledger.tsv")
     if args.layout_ledger:
