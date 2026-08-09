@@ -27,6 +27,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLE = ROOT / "samples" / "basic" / "issue2007_nested_cell_pagination_42065.hwp"
 EXPECTED_COMMAND_COUNT = 68
+REQUIRED_EXIT_CODES = ("0", "1", "2")
+REQUIRED_JSON_CONTRACT_FIELDS = ("stdout", "schemaPolicy")
 
 
 def find_binary() -> str:
@@ -57,17 +59,65 @@ def command_surface_contract(caps: object) -> tuple[bool, str]:
         return False, f"capabilities JSON 형식 오류: object가 아님 ({type(caps).__name__})"
 
     commands = caps.get("commands")
-    n_cmd = len(commands) if isinstance(commands, list) else None
-    has_exit_codes = "exitCodes" in caps
-    has_json_contract = "jsonContract" in caps
-    ok = (
-        n_cmd == EXPECTED_COMMAND_COUNT
-        and has_exit_codes
-        and has_json_contract
+    if not isinstance(commands, list):
+        return False, f"commands 형식 오류: array가 아님 ({type(commands).__name__})"
+    if len(commands) != EXPECTED_COMMAND_COUNT:
+        return (
+            False,
+            f"commands={len(commands)} (expected={EXPECTED_COMMAND_COUNT})",
+        )
+
+    names = []
+    for index, command in enumerate(commands):
+        if not isinstance(command, dict):
+            return False, f"commands[{index}] 형식 오류: object가 아님"
+        name = command.get("name")
+        if not isinstance(name, str) or not name.strip():
+            return False, f"commands[{index}].name 형식 오류: 비어 있거나 문자열이 아님"
+        names.append(name)
+    if len(set(names)) != len(names):
+        duplicate = next(name for name in names if names.count(name) > 1)
+        return False, f"commands[].name 중복: {duplicate!r}"
+
+    exit_codes = caps.get("exitCodes")
+    if not isinstance(exit_codes, dict):
+        return False, f"exitCodes 형식 오류: object가 아님 ({type(exit_codes).__name__})"
+    for code in REQUIRED_EXIT_CODES:
+        meaning = exit_codes.get(code)
+        if not isinstance(meaning, str) or not meaning.strip():
+            return False, f"exitCodes[{code!r}] 의미가 비어 있거나 문자열이 아님"
+
+    json_contract = caps.get("jsonContract")
+    if not isinstance(json_contract, dict):
+        return False, f"jsonContract 형식 오류: object가 아님 ({type(json_contract).__name__})"
+    for field in REQUIRED_JSON_CONTRACT_FIELDS:
+        meaning = json_contract.get(field)
+        if not isinstance(meaning, str) or not meaning.strip():
+            return False, f"jsonContract[{field!r}] 의미가 비어 있거나 문자열이 아님"
+
+    return (
+        True,
+        f"commands={len(commands)} (expected={EXPECTED_COMMAND_COUNT}, unique names), "
+        f"exitCodes={list(REQUIRED_EXIT_CODES)}, "
+        f"jsonContract={list(REQUIRED_JSON_CONTRACT_FIELDS)}",
     )
+
+
+def provenance_marker_contract(envelope: object) -> tuple[bool, str]:
+    if not isinstance(envelope, dict):
+        return False, f"info JSON 형식 오류: object가 아님 ({type(envelope).__name__})"
+
+    untrusted_content = envelope.get("untrustedContent")
+    untrusted_fields = envelope.get("untrustedFields")
+    fields_ok = (
+        isinstance(untrusted_fields, list)
+        and len(untrusted_fields) > 0
+        and all(isinstance(field, str) and field.strip() for field in untrusted_fields)
+    )
+    ok = untrusted_content is True and fields_ok
     detail = (
-        f"commands={n_cmd!r} (expected={EXPECTED_COMMAND_COUNT}), "
-        f"exitCodes={has_exit_codes}, jsonContract={has_json_contract}"
+        f"untrustedContent={untrusted_content!r}, "
+        f"untrustedFields={untrusted_fields!r}"
     )
     return ok, detail
 
@@ -129,8 +179,7 @@ def proofs(bin_path: str) -> list:
     e = run(bin_path, ["info", str(SAMPLE), "--json"])
     try:
         env = json.loads(e.stdout)
-        ok = "untrustedContent" in env and "untrustedFields" in env
-        detail = f"untrustedContent={env.get('untrustedContent')!r}"
+        ok, detail = provenance_marker_contract(env)
     except Exception as ex:  # noqa: BLE001
         ok, detail = False, f"JSON 파싱 실패: {ex}"
     record(
