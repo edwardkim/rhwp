@@ -11,8 +11,12 @@ use std::process::{Command, Output};
 
 const SAMPLE: &str = "samples/basic/issue2007_nested_cell_pagination_42065.hwp";
 
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
+
 fn run(args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    Command::new(rhwp_bin())
         .args(args)
         .output()
         .expect("rhwp 실행")
@@ -54,8 +58,9 @@ fn issue_capsule(dir: &std::path::Path, name: &str, find: &str) {
     assert_eq!(
         o.status.code(),
         Some(0),
-        "캡슐 발급 실패: {}",
-        String::from_utf8_lossy(&o.stdout)
+        "캡슐 발급 실패\nstdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&o.stdout),
+        String::from_utf8_lossy(&o.stderr)
     );
     assert!(capsule.exists(), "캡슐 파일이 만들어져야 한다");
 }
@@ -97,6 +102,26 @@ fn issued_capsules_reproduce_and_tampered_one_is_caught() {
     assert_eq!(failed.len(), 1);
     assert_eq!(failed[0]["capsule"], "b.capsule.json");
     assert_eq!(failed[0]["actual"].as_str().map(str::len), Some(64));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn tampered_input_receipt_is_caught_before_output_credit() {
+    let dir = make_dir("input_tamper");
+    issue_capsule(&dir, "input.capsule.json", &existing_snippet());
+    let path = dir.join("input.capsule.json");
+    let mut capsule: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+    capsule["receipt"]["inputSha256"] =
+        serde_json::json!("0000000000000000000000000000000000000000000000000000000000000000");
+    std::fs::write(&path, serde_json::to_string_pretty(&capsule).unwrap()).unwrap();
+
+    let (code, env) = audit(&dir);
+    assert_eq!(code, Some(3), "입력 영수증 변조는 감사 실패: {env}");
+    assert_eq!(env["reproduced"], 0);
+    let failure = &env["failed"][0];
+    assert_eq!(failure["kind"], "inputSha256");
+    assert_eq!(failure["actual"].as_str().map(str::len), Some(64));
     let _ = std::fs::remove_dir_all(&dir);
 }
 

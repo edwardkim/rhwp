@@ -15104,13 +15104,72 @@ fn replay_sha256_hex(bytes: &[u8]) -> String {
         .collect()
 }
 
+/// 해시한 입력 바이트를 임시 파일에 고정하고, 엔진에는 그 스냅샷만 넘긴다.
+fn with_replay_input_snapshot<T>(
+    plan: &mut serde_json::Value,
+    input_bytes: &[u8],
+    tag: &str,
+    execute: impl FnOnce(&serde_json::Value) -> T,
+) -> Result<T, String> {
+    use std::io::Write;
+
+    let input = plan["input"]
+        .as_str()
+        .ok_or_else(|| "계획에 input 이 필요합니다".to_string())?;
+    let ext = std::path::Path::new(input)
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("hwp");
+    let mut snapshot = None;
+    for attempt in 0..128_u16 {
+        let candidate = std::env::temp_dir().join(format!(
+            "rhwp-replay-input-{}-{tag}-{attempt}.{ext}",
+            std::process::id()
+        ));
+        match fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&candidate)
+        {
+            Ok(mut file) => {
+                if let Err(e) = file.write_all(input_bytes) {
+                    let _ = fs::remove_file(&candidate);
+                    return Err(e.to_string());
+                }
+                snapshot = Some(candidate);
+                break;
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(e) => return Err(e.to_string()),
+        }
+    }
+    let snapshot = snapshot.ok_or_else(|| "사용 가능한 임시 파일 이름이 없습니다".to_string())?;
+    let original_input = plan["input"].clone();
+    plan["input"] = serde_json::json!(snapshot.to_string_lossy());
+    let result = execute(plan);
+    plan["input"] = original_input;
+    let _ = fs::remove_file(snapshot);
+    Ok(result)
+}
+
 /// [#4393] replay·audit 공용 실행 코어 — 계획을 **임시 산출**로 실행해 (산출
-/// SHA-256, step 수)를 얻는다. 임시 파일은 성공·실패 모두 정리한다. 계획의
-/// output 은 이 함수가 임시 경로로 덮어쓴다(호출자는 필요 시 사전 clone).
+/// SHA-256, step 수, 입력 SHA-256)를 얻는다. 임시 파일은 성공·실패 모두
+/// 정리한다. 계획의 output 은 이 함수가 임시 경로로 덮어쓴다(호출자는 필요 시
+/// 사전 clone).
 fn replay_execute_to_temp(
     plan: &mut serde_json::Value,
     tag: &str,
-) -> Result<(String, usize), (String, i32)> {
+) -> Result<(String, usize, String), (String, i32)> {
+    let Some(input) = plan["input"].as_str() else {
+        return Err(("계획에 input 이 필요합니다".to_string(), EXIT_USAGE));
+    };
+    let input_bytes = fs::read(input).map_err(|e| {
+        (
+            format!("입력을 읽을 수 없습니다 - {input}: {e}"),
+            EXIT_RUNTIME,
+        )
+    })?;
+    let input_sha = replay_sha256_hex(&input_bytes);
     let ext = plan["output"]
         .as_str()
         .and_then(|o| std::path::Path::new(o).extension().and_then(|e| e.to_str()))
@@ -15119,7 +15178,13 @@ fn replay_execute_to_temp(
     let temp_out =
         std::env::temp_dir().join(format!("rhwp-replay-{}-{tag}.{ext}", std::process::id()));
     plan["output"] = serde_json::json!(temp_out.to_string_lossy());
-    let (engine_env, engine_code) = run_plan_engine(plan);
+    let (engine_env, engine_code) =
+        with_replay_input_snapshot(plan, &input_bytes, tag, run_plan_engine).map_err(|e| {
+            (
+                format!("재실행 입력 스냅샷을 만들 수 없습니다 - {e}"),
+                EXIT_RUNTIME,
+            )
+        })?;
     if engine_code != 0 {
         let _ = fs::remove_file(&temp_out);
         return Err((
@@ -15139,7 +15204,7 @@ fn replay_execute_to_temp(
     };
     let _ = fs::remove_file(&temp_out);
     let steps = engine_env["steps"].as_array().map(|s| s.len()).unwrap_or(0);
-    Ok((replay_sha256_hex(&bytes), steps))
+    Ok((replay_sha256_hex(&bytes), steps, input_sha))
 }
 
 fn cmd_replay(args: &[String]) -> i32 {
@@ -15224,15 +15289,8 @@ fn cmd_replay(args: &[String]) -> i32 {
         eprintln!("오류: 계획에 input 이 필요합니다.");
         return EXIT_USAGE;
     };
-    let input_sha = match fs::read(&input) {
-        Ok(b) => replay_sha256_hex(&b),
-        Err(e) => {
-            eprintln!("오류: 입력을 읽을 수 없습니다 - {input}: {e}");
-            return EXIT_RUNTIME;
-        }
-    };
     let plan_original = plan.clone();
-    let (output_sha, steps) = match replay_execute_to_temp(&mut plan, &plan_sha[..12]) {
+    let (output_sha, steps, input_sha) = match replay_execute_to_temp(&mut plan, &plan_sha[..12]) {
         Ok(v) => v,
         Err((msg, code)) => {
             if json_mode {
@@ -15375,14 +15433,25 @@ fn cmd_audit(args: &[String]) -> i32 {
             failed.push(fail("receipt.outputSha256 없음".into()));
             continue;
         };
+        let Some(expected_input) = capsule["receipt"]["inputSha256"].as_str() else {
+            failed.push(fail("receipt.inputSha256 없음".into()));
+            continue;
+        };
         let mut plan = capsule["plan"].clone();
         if !plan.is_object() {
             failed.push(fail("plan 없음".into()));
             continue;
         }
         match replay_execute_to_temp(&mut plan, &format!("audit{idx}")) {
-            Ok((actual, _steps)) => {
-                if actual == expected {
+            Ok((actual, _steps, actual_input)) => {
+                if actual_input != expected_input {
+                    failed.push(serde_json::json!({
+                        "capsule": name,
+                        "kind": "inputSha256",
+                        "expected": expected_input,
+                        "actual": actual_input,
+                    }));
+                } else if actual == expected {
                     reproduced_count += 1;
                 } else {
                     failed.push(serde_json::json!({
@@ -19644,7 +19713,7 @@ mod tests {
     use super::{
         allows_implicit_sibling_resources, cli_output_password, cli_password,
         set_cli_output_password, set_cli_password, strip_global_auth_options,
-        tab_ext_semantic_differs, EXIT_USAGE,
+        tab_ext_semantic_differs, with_replay_input_snapshot, EXIT_USAGE,
     };
     use rhwp::parser::FileFormat;
 
@@ -19653,6 +19722,24 @@ mod tests {
         assert!(!allows_implicit_sibling_resources(FileFormat::Hml));
         assert!(allows_implicit_sibling_resources(FileFormat::Hwp));
         assert!(allows_implicit_sibling_resources(FileFormat::Hwpx));
+    }
+
+    #[test]
+    fn replay_engine_receives_the_hashed_input_snapshot() {
+        let original =
+            std::env::temp_dir().join(format!("rhwp-replay-original-{}.hwp", std::process::id()));
+        std::fs::write(&original, b"original bytes").expect("원본 작성");
+        let mut plan = serde_json::json!({ "input": original.to_string_lossy() });
+        let seen =
+            with_replay_input_snapshot(&mut plan, b"hashed snapshot", "unit", |snapshot_plan| {
+                std::fs::write(&original, b"changed after hashing").expect("원본 교체");
+                std::fs::read(snapshot_plan["input"].as_str().expect("스냅샷 경로"))
+                    .expect("스냅샷 읽기")
+            })
+            .expect("스냅샷 실행");
+        assert_eq!(seen, b"hashed snapshot");
+        assert_eq!(plan["input"], original.to_string_lossy().as_ref());
+        let _ = std::fs::remove_file(original);
     }
 
     #[test]
