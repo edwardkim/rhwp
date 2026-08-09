@@ -42,6 +42,9 @@
 //! `Debug` 문자열화는 [`DEBUG_CAP`] 바이트에서 잘린다([`CappedWriter`] 가 `Err` 를
 //! 돌려 파생 `Debug` 를 조기 중단시킨다). 초과분은 비교되지 않으며 이는 명시된 한계다
 //! (문단 텍스트/`char_offsets` 가 큰 문단에서 발생 가능).
+//! 정규화 경로별 건수는 끝까지 집계하되 상세 값 payload만
+//! [`MAX_DIVERGENCE_EXAMPLES`] 개까지 보관한다. 서로 다른 정규화 경로가
+//! [`MAX_DIVERGENCE_PATHS`] 종을 넘으면 일부를 숨기지 않고 스윕 자체가 실패한다.
 //!
 //! ## 범위 밖 (의도)
 //!
@@ -49,6 +52,7 @@
 //! 보존 버퍼라 왕복 후 달라지는 것이 **정상**이다(재직렬화 결과이므로). 바이트 보존은
 //! `hwp5_roundtrip_batch` 의 C2 BinData 지문이 이미 담당한다.
 
+use std::collections::BTreeMap;
 use std::fmt::{Debug, Write as _};
 
 use crate::model::control::Control;
@@ -66,8 +70,17 @@ const MAX_DEPTH: usize = 14;
 /// 발산 보고 시 값 문자열 절단 길이.
 const VALUE_CAP: usize = 160;
 
-/// 문서 1건당 수집 상한 — 심하게 깨진 문서에서 메모리 폭주 방지.
-pub const MAX_DIVERGENCES: usize = 2000;
+/// 문서 1건당 보관할 상세 예시 상한.
+///
+/// 정규화 경로별 건수는 이 상한과 무관하게 끝까지 집계한다. 예시만 제한해야 앞쪽
+/// 발산의 해소가 뒤쪽 경로의 baseline 건수를 흔들지 않는다.
+pub const MAX_DIVERGENCE_EXAMPLES: usize = 2000;
+
+/// 문서 1건에서 허용할 서로 다른 정규화 경로 상한.
+///
+/// 건수 맵 자체의 메모리를 제한한다. 이 상한에 닿으면 일부 경로를 버린 불완전한
+/// 결과를 반환하지 않고 [`IrFieldSweepError::DistinctPathLimitExceeded`] 로 실패한다.
+pub const MAX_DIVERGENCE_PATHS: usize = 2000;
 
 /// 왕복 전후 IR 의 단일 필드 발산.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -90,23 +103,143 @@ impl FieldDivergence {
     /// baseline 을 인덱스가 아니라 이 모양으로 고정해야 문서가 조금 바뀌어도
     /// 래칫이 오작동하지 않는다.
     pub fn normalized_path(&self) -> String {
-        let mut out = String::with_capacity(self.path.len());
-        let mut in_index = false;
-        for ch in self.path.chars() {
-            match ch {
-                '[' => {
-                    in_index = true;
-                    out.push('[');
-                }
-                ']' => {
-                    in_index = false;
-                    out.push(']');
-                }
-                _ if in_index => {}
-                _ => out.push(ch),
+        normalize_path(&self.path)
+    }
+}
+
+fn normalize_path(path: &str) -> String {
+    let mut out = String::with_capacity(path.len());
+    let mut in_index = false;
+    for ch in path.chars() {
+        match ch {
+            '[' => {
+                in_index = true;
+                out.push('[');
             }
+            ']' => {
+                in_index = false;
+                out.push(']');
+            }
+            _ if in_index => {}
+            _ => out.push(ch),
         }
-        out
+    }
+    out
+}
+
+/// 한 문서의 IR 필드 발산 집계.
+///
+/// `counts` 는 정규화 경로별 **완전한** 건수이고, `examples` 는 진단 출력용으로만
+/// [`MAX_DIVERGENCE_EXAMPLES`] 개까지 보관한다. baseline 판정은 반드시
+/// [`Self::counts`] 를 사용해야 한다.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DivergenceReport {
+    counts: BTreeMap<String, usize>,
+    examples: Vec<FieldDivergence>,
+}
+
+impl DivergenceReport {
+    /// 정규화 경로별 완전한 발산 건수.
+    pub fn counts(&self) -> &BTreeMap<String, usize> {
+        &self.counts
+    }
+
+    /// 상세 진단용 예시. 전체 건수가 아니라 제한된 payload다.
+    pub fn examples(&self) -> &[FieldDivergence] {
+        &self.examples
+    }
+
+    /// 모든 정규화 경로의 발산 건수 합계.
+    pub fn total(&self) -> usize {
+        self.counts.values().sum()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.counts.is_empty()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IrFieldSweepError {
+    Roundtrip(String),
+    DistinctPathLimitExceeded { limit: usize },
+}
+
+impl IrFieldSweepError {
+    pub fn is_capacity_error(&self) -> bool {
+        matches!(self, Self::DistinctPathLimitExceeded { .. })
+    }
+}
+
+impl std::fmt::Display for IrFieldSweepError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Roundtrip(message) => f.write_str(message),
+            Self::DistinctPathLimitExceeded { limit } => write!(
+                f,
+                "IR 필드 스윕 정규화 경로가 문서당 상한 {limit}종을 초과함"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for IrFieldSweepError {}
+
+#[derive(Debug)]
+struct DivergenceCollector {
+    counts: BTreeMap<String, usize>,
+    examples: Vec<FieldDivergence>,
+    path_limit_exceeded: bool,
+}
+
+impl DivergenceCollector {
+    fn new() -> Self {
+        Self {
+            counts: BTreeMap::new(),
+            examples: Vec::new(),
+            path_limit_exceeded: false,
+        }
+    }
+
+    fn record(&mut self, path: &str, left: &str, right: &str) {
+        if self.path_limit_exceeded {
+            return;
+        }
+
+        let normalized = normalize_path(path);
+        if let Some(count) = self.counts.get_mut(&normalized) {
+            *count += 1;
+        } else {
+            if self.counts.len() >= MAX_DIVERGENCE_PATHS {
+                self.path_limit_exceeded = true;
+                return;
+            }
+            self.counts.insert(normalized, 1);
+        }
+
+        if self.examples.len() < MAX_DIVERGENCE_EXAMPLES {
+            self.examples.push(FieldDivergence {
+                path: path.to_string(),
+                left: truncate(left),
+                right: truncate(right),
+            });
+        }
+    }
+
+    fn is_failed(&self) -> bool {
+        self.path_limit_exceeded
+    }
+
+    fn finish(self) -> Result<DivergenceReport, IrFieldSweepError> {
+        if self.path_limit_exceeded {
+            return Err(IrFieldSweepError::DistinctPathLimitExceeded {
+                limit: MAX_DIVERGENCE_PATHS,
+            });
+        }
+        Ok(DivergenceReport {
+            counts: self.counts,
+            examples: self.examples,
+        })
     }
 }
 
@@ -303,20 +436,13 @@ fn truncate(s: &str) -> String {
     format!("{cut}…")
 }
 
-fn push_leaf(path: &str, a: &str, b: &str, out: &mut Vec<FieldDivergence>) {
-    if out.len() >= MAX_DIVERGENCES {
-        return;
-    }
-    out.push(FieldDivergence {
-        path: path.to_string(),
-        left: truncate(a),
-        right: truncate(b),
-    });
+fn push_leaf(path: &str, a: &str, b: &str, out: &mut DivergenceCollector) {
+    out.record(path, a, b);
 }
 
 /// 두 `Debug` 문자열을 구조적으로 비교해 발산 잎을 수집한다.
-fn compare_node(path: &str, a: &str, b: &str, depth: usize, out: &mut Vec<FieldDivergence>) {
-    if a == b || out.len() >= MAX_DIVERGENCES {
+fn compare_node(path: &str, a: &str, b: &str, depth: usize, out: &mut DivergenceCollector) {
+    if a == b || out.is_failed() {
         return;
     }
     if depth >= MAX_DEPTH {
@@ -360,8 +486,8 @@ fn compare_node(path: &str, a: &str, b: &str, depth: usize, out: &mut Vec<FieldD
 }
 
 /// 값 2개를 `Debug` 로 문자열화해 구조 비교한다.
-fn cmp_debug<T: Debug + ?Sized>(path: &str, a: &T, b: &T, out: &mut Vec<FieldDivergence>) {
-    if out.len() >= MAX_DIVERGENCES {
+fn cmp_debug<T: Debug + ?Sized>(path: &str, a: &T, b: &T, out: &mut DivergenceCollector) {
+    if out.is_failed() {
         return;
     }
     let (sa, _) = debug_capped(a);
@@ -370,7 +496,7 @@ fn cmp_debug<T: Debug + ?Sized>(path: &str, a: &T, b: &T, out: &mut Vec<FieldDiv
 }
 
 /// 개수 비교 — 시퀀스는 개수를 먼저 보고해야 zip 이 뒤를 가리지 않는다.
-fn cmp_count(path: &str, a: usize, b: usize, out: &mut Vec<FieldDivergence>) {
+fn cmp_count(path: &str, a: usize, b: usize, out: &mut DivergenceCollector) {
     if a != b {
         push_leaf(&format!("{path}.len"), &a.to_string(), &b.to_string(), out);
     }
@@ -381,12 +507,12 @@ fn cmp_count(path: &str, a: usize, b: usize, out: &mut Vec<FieldDivergence>) {
 // ---------------------------------------------------------------------------
 
 /// 왕복 전후 두 `Document` 의 IR 필드를 전수 비교한다.
-pub fn sweep_documents(a: &Document, b: &Document) -> Vec<FieldDivergence> {
-    let mut out = Vec::new();
+pub fn sweep_documents(a: &Document, b: &Document) -> Result<DivergenceReport, IrFieldSweepError> {
+    let mut out = DivergenceCollector::new();
     sweep_doc_info(&a.doc_info, &b.doc_info, &mut out);
     cmp_count("sections", a.sections.len(), b.sections.len(), &mut out);
     for (i, (sa, sb)) in a.sections.iter().zip(b.sections.iter()).enumerate() {
-        if out.len() >= MAX_DIVERGENCES {
+        if out.is_failed() {
             break;
         }
         let base = format!("sections[{i}]");
@@ -398,10 +524,10 @@ pub fn sweep_documents(a: &Document, b: &Document) -> Vec<FieldDivergence> {
             &mut out,
         );
     }
-    out
+    out.finish()
 }
 
-fn sweep_doc_info(a: &DocInfo, b: &DocInfo, out: &mut Vec<FieldDivergence>) {
+fn sweep_doc_info(a: &DocInfo, b: &DocInfo, out: &mut DivergenceCollector) {
     macro_rules! table {
         ($f:ident) => {{
             let base = concat!("doc_info.", stringify!($f));
@@ -462,7 +588,7 @@ fn sweep_doc_info(a: &DocInfo, b: &DocInfo, out: &mut Vec<FieldDivergence>) {
     );
 }
 
-fn sweep_section_def(base: &str, a: &SectionDef, b: &SectionDef, out: &mut Vec<FieldDivergence>) {
+fn sweep_section_def(base: &str, a: &SectionDef, b: &SectionDef, out: &mut DivergenceCollector) {
     // 원본 보존 버퍼/렌더 파생물은 개수만 (내용 비교는 왕복 의미가 없다).
     cmp_count(
         &format!("{base}.section_def.extra_child_records"),
@@ -485,10 +611,10 @@ fn sweep_section_def(base: &str, a: &SectionDef, b: &SectionDef, out: &mut Vec<F
     cmp_debug(&format!("{base}.section_def"), &sa, &sb, out);
 }
 
-fn sweep_paragraphs(base: &str, a: &[Paragraph], b: &[Paragraph], out: &mut Vec<FieldDivergence>) {
+fn sweep_paragraphs(base: &str, a: &[Paragraph], b: &[Paragraph], out: &mut DivergenceCollector) {
     cmp_count(base, a.len(), b.len(), out);
     for (i, (pa, pb)) in a.iter().zip(b.iter()).enumerate() {
-        if out.len() >= MAX_DIVERGENCES {
+        if out.is_failed() {
             return;
         }
         sweep_paragraph(&format!("{base}[{i}]"), pa, pb, out);
@@ -497,7 +623,7 @@ fn sweep_paragraphs(base: &str, a: &[Paragraph], b: &[Paragraph], out: &mut Vec<
 
 /// 문단 1건 — `..` 없는 철저 구조 분해로 필드 누락을 컴파일 타임에 막는다.
 /// (`Paragraph` 에 필드를 추가하면 여기서 컴파일이 깨진다.)
-fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Vec<FieldDivergence>) {
+fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut DivergenceCollector) {
     let Paragraph {
         char_count,
         control_mask,
@@ -551,10 +677,10 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Vec<Field
     sweep_controls(&format!("{base}.controls"), controls, &b.controls, out);
 }
 
-fn sweep_controls(base: &str, a: &[Control], b: &[Control], out: &mut Vec<FieldDivergence>) {
+fn sweep_controls(base: &str, a: &[Control], b: &[Control], out: &mut DivergenceCollector) {
     cmp_count(base, a.len(), b.len(), out);
     for (i, (ca, cb)) in a.iter().zip(b.iter()).enumerate() {
-        if out.len() >= MAX_DIVERGENCES {
+        if out.is_failed() {
             return;
         }
         sweep_control(&format!("{base}[{i}]"), ca, cb, out);
@@ -565,7 +691,7 @@ fn sweep_controls(base: &str, a: &[Control], b: &[Control], out: &mut Vec<FieldD
 ///
 /// 표는 셀 문단까지 복제하면 비용이 커지므로 철저 구조 분해로 처리하고,
 /// 나머지는 하위 문단만 비워낸 사본을 `Debug` 로 전수 비교한다.
-fn sweep_control(base: &str, a: &Control, b: &Control, out: &mut Vec<FieldDivergence>) {
+fn sweep_control(base: &str, a: &Control, b: &Control, out: &mut DivergenceCollector) {
     use Control::*;
     match (a, b) {
         (Table(ta), Table(tb)) => sweep_table(base, ta, tb, out),
@@ -702,7 +828,7 @@ fn sweep_form(
     base: &str,
     a: &crate::model::control::FormObject,
     b: &crate::model::control::FormObject,
-    out: &mut Vec<FieldDivergence>,
+    out: &mut DivergenceCollector,
 ) {
     let crate::model::control::FormObject {
         form_type,
@@ -751,7 +877,7 @@ fn sweep_caption_paragraphs(
     base: &str,
     a: &Option<crate::model::shape::Caption>,
     b: &Option<crate::model::shape::Caption>,
-    out: &mut Vec<FieldDivergence>,
+    out: &mut DivergenceCollector,
 ) {
     if let (Some(x), Some(y)) = (a, b) {
         sweep_paragraphs(
@@ -764,7 +890,7 @@ fn sweep_caption_paragraphs(
 }
 
 /// 표 — `..` 없는 철저 구조 분해. 필드가 추가되면 컴파일이 깨진다.
-fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut Vec<FieldDivergence>) {
+fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut DivergenceCollector) {
     let Table {
         attr,
         row_count,
@@ -844,7 +970,7 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut Vec<FieldDivergence>)
     let cells_path = format!("{base}.cells");
     cmp_count(&cells_path, cells.len(), b.cells.len(), out);
     for (i, (ca, cb)) in cells.iter().zip(b.cells.iter()).enumerate() {
-        if out.len() >= MAX_DIVERGENCES {
+        if out.is_failed() {
             return;
         }
         sweep_cell(&format!("{cells_path}[{i}]"), ca, cb, out);
@@ -852,7 +978,7 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut Vec<FieldDivergence>)
 }
 
 /// 셀 — `..` 없는 철저 구조 분해.
-fn sweep_cell(base: &str, a: &Cell, b: &Cell, out: &mut Vec<FieldDivergence>) {
+fn sweep_cell(base: &str, a: &Cell, b: &Cell, out: &mut DivergenceCollector) {
     let Cell {
         col,
         row,
@@ -904,7 +1030,7 @@ fn sweep_cell(base: &str, a: &Cell, b: &Cell, out: &mut Vec<FieldDivergence>) {
 }
 
 /// 도형 — 하위 문단(글상자·캡션)을 비운 사본으로 속성 전수 비교 후 문단 재귀.
-fn sweep_shape(base: &str, a: &ShapeObject, b: &ShapeObject, out: &mut Vec<FieldDivergence>) {
+fn sweep_shape(base: &str, a: &ShapeObject, b: &ShapeObject, out: &mut DivergenceCollector) {
     let mut x = a.clone();
     let mut y = b.clone();
     strip_shape(&mut x);
@@ -927,7 +1053,7 @@ fn sweep_shape(base: &str, a: &ShapeObject, b: &ShapeObject, out: &mut Vec<Field
         let path = format!("{base}.children");
         cmp_count(&path, ga.children.len(), gb.children.len(), out);
         for (i, (ca, cb)) in ga.children.iter().zip(gb.children.iter()).enumerate() {
-            if out.len() >= MAX_DIVERGENCES {
+            if out.is_failed() {
                 return;
             }
             sweep_shape(&format!("{path}[{i}]"), ca, cb, out);
@@ -1018,13 +1144,16 @@ fn shape_caption(s: &ShapeObject) -> &Option<crate::model::shape::Caption> {
 // ---------------------------------------------------------------------------
 
 /// HWP5 왕복(`parse → serialize → reparse`) 후 IR 필드 전수 스윕.
-pub fn sweep_hwp5_roundtrip(bytes: &[u8]) -> Result<Vec<FieldDivergence>, String> {
+pub fn sweep_hwp5_roundtrip(bytes: &[u8]) -> Result<DivergenceReport, IrFieldSweepError> {
     use crate::parser::parse_document;
     use crate::serializer::serialize_document;
-    let doc1 = parse_document(bytes).map_err(|e| format!("파싱 실패: {e}"))?;
-    let out = serialize_document(&doc1).map_err(|e| format!("직렬화 실패: {e}"))?;
-    let doc2 = parse_document(&out).map_err(|e| format!("재파싱 실패: {e}"))?;
-    Ok(sweep_documents(&doc1, &doc2))
+    let doc1 = parse_document(bytes)
+        .map_err(|e| IrFieldSweepError::Roundtrip(format!("파싱 실패: {e}")))?;
+    let out = serialize_document(&doc1)
+        .map_err(|e| IrFieldSweepError::Roundtrip(format!("직렬화 실패: {e}")))?;
+    let doc2 = parse_document(&out)
+        .map_err(|e| IrFieldSweepError::Roundtrip(format!("재파싱 실패: {e}")))?;
+    sweep_documents(&doc1, &doc2)
 }
 
 /// HWP5 **레코드 재생성** 경로 왕복 후 IR 필드 전수 스윕.
@@ -1038,10 +1167,11 @@ pub fn sweep_hwp5_roundtrip(bytes: &[u8]) -> Result<Vec<FieldDivergence>, String
 /// `section.raw_stream = None` / `doc_info.raw_stream_dirty = true` 로 무효화하고
 /// **레코드를 다시 만드는 경로**로 저장한다. 반복돼 온 1속성 소실은 전부 이 경로에서
 /// 난다. 이 함수는 그 무효화를 그대로 재현해 진짜 저장 경로를 측정한다.
-pub fn sweep_hwp5_rebuild_roundtrip(bytes: &[u8]) -> Result<Vec<FieldDivergence>, String> {
+pub fn sweep_hwp5_rebuild_roundtrip(bytes: &[u8]) -> Result<DivergenceReport, IrFieldSweepError> {
     use crate::parser::parse_document;
     use crate::serializer::serialize_document;
-    let doc1 = parse_document(bytes).map_err(|e| format!("파싱 실패: {e}"))?;
+    let doc1 = parse_document(bytes)
+        .map_err(|e| IrFieldSweepError::Roundtrip(format!("파싱 실패: {e}")))?;
 
     // 편집이 일어난 문서와 동일한 무효화 (document_core/commands 관례).
     let mut edited = doc1.clone();
@@ -1050,28 +1180,29 @@ pub fn sweep_hwp5_rebuild_roundtrip(bytes: &[u8]) -> Result<Vec<FieldDivergence>
         s.raw_stream = None;
     }
 
-    let out = serialize_document(&edited).map_err(|e| format!("직렬화 실패: {e}"))?;
-    let doc2 = parse_document(&out).map_err(|e| format!("재파싱 실패: {e}"))?;
-    Ok(sweep_documents(&doc1, &doc2))
+    let out = serialize_document(&edited)
+        .map_err(|e| IrFieldSweepError::Roundtrip(format!("직렬화 실패: {e}")))?;
+    let doc2 = parse_document(&out)
+        .map_err(|e| IrFieldSweepError::Roundtrip(format!("재파싱 실패: {e}")))?;
+    sweep_documents(&doc1, &doc2)
 }
 
 /// HWPX 왕복(`parse → serialize → reparse`) 후 IR 필드 전수 스윕.
-pub fn sweep_hwpx_roundtrip(bytes: &[u8]) -> Result<Vec<FieldDivergence>, String> {
+pub fn sweep_hwpx_roundtrip(bytes: &[u8]) -> Result<DivergenceReport, IrFieldSweepError> {
     use crate::parser::hwpx::parse_hwpx;
     use crate::serializer::hwpx::serialize_hwpx;
-    let doc1 = parse_hwpx(bytes).map_err(|e| format!("파싱 실패: {e}"))?;
-    let out = serialize_hwpx(&doc1).map_err(|e| format!("직렬화 실패: {e}"))?;
-    let doc2 = parse_hwpx(&out).map_err(|e| format!("재파싱 실패: {e}"))?;
-    Ok(sweep_documents(&doc1, &doc2))
+    let doc1 =
+        parse_hwpx(bytes).map_err(|e| IrFieldSweepError::Roundtrip(format!("파싱 실패: {e}")))?;
+    let out = serialize_hwpx(&doc1)
+        .map_err(|e| IrFieldSweepError::Roundtrip(format!("직렬화 실패: {e}")))?;
+    let doc2 =
+        parse_hwpx(&out).map_err(|e| IrFieldSweepError::Roundtrip(format!("재파싱 실패: {e}")))?;
+    sweep_documents(&doc1, &doc2)
 }
 
-/// 발산 목록을 정규화 경로별 건수로 집계 (baseline 키 단위).
-pub fn tally(divs: &[FieldDivergence]) -> std::collections::BTreeMap<String, usize> {
-    let mut map = std::collections::BTreeMap::new();
-    for d in divs {
-        *map.entry(d.normalized_path()).or_insert(0) += 1;
-    }
-    map
+/// baseline 키 단위의 완전한 발산 건수.
+pub fn tally(report: &DivergenceReport) -> &BTreeMap<String, usize> {
+    report.counts()
 }
 
 #[cfg(test)]
@@ -1114,7 +1245,7 @@ mod tests {
 
     #[test]
     fn compare_node_reports_leaf_path() {
-        let mut out = Vec::new();
+        let mut out = DivergenceCollector::new();
         compare_node(
             "t",
             "T { a: 1, b: S { c: 2 } }",
@@ -1122,52 +1253,61 @@ mod tests {
             0,
             &mut out,
         );
-        assert_eq!(out.len(), 1);
-        assert_eq!(out[0].path, "t.b.c");
-        assert_eq!(out[0].left, "2");
-        assert_eq!(out[0].right, "9");
+        let report = out.finish().unwrap();
+        assert_eq!(report.total(), 1);
+        assert_eq!(report.examples()[0].path, "t.b.c");
+        assert_eq!(report.examples()[0].left, "2");
+        assert_eq!(report.examples()[0].right, "9");
     }
 
     #[test]
     fn compare_node_reports_seq_length_and_common_prefix() {
-        let mut out = Vec::new();
+        let mut out = DivergenceCollector::new();
         compare_node("v", "[1, 2, 3]", "[1, 9]", 0, &mut out);
+        let report = out.finish().unwrap();
         // 길이 발산 1건 + 인덱스 1 값 발산 1건
-        let paths: Vec<&str> = out.iter().map(|d| d.path.as_str()).collect();
+        let paths: Vec<&str> = report.examples().iter().map(|d| d.path.as_str()).collect();
         assert!(paths.contains(&"v.len"), "길이 발산 누락: {paths:?}");
         assert!(paths.contains(&"v[1]"), "값 발산 누락: {paths:?}");
     }
 
     #[test]
     fn compare_node_unwraps_matching_some() {
-        let mut out = Vec::new();
+        let mut out = DivergenceCollector::new();
         compare_node("c", "Some(S { x: 1 })", "Some(S { x: 2 })", 0, &mut out);
-        assert_eq!(out.len(), 1);
-        assert_eq!(out[0].path, "c.x", "Some 은 경로에 투명해야 함");
+        let report = out.finish().unwrap();
+        assert_eq!(report.total(), 1);
+        assert_eq!(
+            report.examples()[0].path,
+            "c.x",
+            "Some 은 경로에 투명해야 함"
+        );
     }
 
     #[test]
     fn compare_node_some_vs_none_is_leaf() {
-        let mut out = Vec::new();
+        let mut out = DivergenceCollector::new();
         compare_node("c", "Some(S { x: 1 })", "None", 0, &mut out);
-        assert_eq!(out.len(), 1);
-        assert_eq!(out[0].path, "c");
-        assert_eq!(out[0].right, "None");
+        let report = out.finish().unwrap();
+        assert_eq!(report.total(), 1);
+        assert_eq!(report.examples()[0].path, "c");
+        assert_eq!(report.examples()[0].right, "None");
     }
 
     #[test]
     fn compare_node_different_variant_is_leaf() {
-        let mut out = Vec::new();
+        let mut out = DivergenceCollector::new();
         compare_node("s", "Line { a: 1 }", "Rectangle { a: 1 }", 0, &mut out);
-        assert_eq!(out.len(), 1);
-        assert_eq!(out[0].path, "s");
+        let report = out.finish().unwrap();
+        assert_eq!(report.total(), 1);
+        assert_eq!(report.examples()[0].path, "s");
     }
 
     #[test]
     fn identical_values_produce_nothing() {
-        let mut out = Vec::new();
+        let mut out = DivergenceCollector::new();
         compare_node("x", "T { a: 1 }", "T { a: 1 }", 0, &mut out);
-        assert!(out.is_empty());
+        assert!(out.finish().unwrap().is_empty());
     }
 
     #[test]
@@ -1200,20 +1340,28 @@ mod tests {
 
     #[test]
     fn tally_groups_by_normalized_path() {
-        let divs = vec![
-            FieldDivergence {
-                path: "sections[0].paragraphs[1].text".into(),
-                left: "a".into(),
-                right: "b".into(),
-            },
-            FieldDivergence {
-                path: "sections[0].paragraphs[9].text".into(),
-                left: "a".into(),
-                right: "b".into(),
-            },
-        ];
-        let t = tally(&divs);
+        let mut collector = DivergenceCollector::new();
+        collector.record("sections[0].paragraphs[1].text", "a", "b");
+        collector.record("sections[0].paragraphs[9].text", "a", "b");
+        let report = collector.finish().unwrap();
+        let t = tally(&report);
         assert_eq!(t.get("sections[].paragraphs[].text"), Some(&2));
+    }
+
+    #[test]
+    fn distinct_path_limit_fails_closed() {
+        let mut collector = DivergenceCollector::new();
+        for index in 0..MAX_DIVERGENCE_PATHS {
+            collector.record(&format!("field_{index}"), "left", "right");
+        }
+        collector.record("one_path_too_many", "left", "right");
+
+        assert_eq!(
+            collector.finish(),
+            Err(IrFieldSweepError::DistinctPathLimitExceeded {
+                limit: MAX_DIVERGENCE_PATHS
+            })
+        );
     }
 
     /// 실제 IR 타입 위에서 동작하는지 — 표 속성 1개만 바꾸면 그 경로만 나와야 한다.
@@ -1239,8 +1387,9 @@ mod tests {
             t.row_count = 3;
         }
 
-        let divs = sweep_documents(&doc_a, &doc_b);
-        assert_eq!(divs.len(), 1, "예상 밖 발산: {divs:?}");
+        let report = sweep_documents(&doc_a, &doc_b).unwrap();
+        let divs = report.examples();
+        assert_eq!(report.total(), 1, "예상 밖 발산: {report:?}");
         assert_eq!(
             divs[0].path,
             "sections[0].paragraphs[0].controls[0].row_count"
@@ -1264,6 +1413,6 @@ mod tests {
             ..Default::default()
         });
         let copy = doc.clone();
-        assert!(sweep_documents(&doc, &copy).is_empty());
+        assert!(sweep_documents(&doc, &copy).unwrap().is_empty());
     }
 }
