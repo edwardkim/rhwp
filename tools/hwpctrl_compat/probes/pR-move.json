@@ -1,0 +1,72 @@
+{
+  "id": "pR-move",
+  "title": "앵커 재배치 판별 — move",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "a": {
+      "win": "{out}/pR-move-a.hwp",
+      "posix": "{out}/pR-move-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pR-move-b.hwp",
+      "posix": "{out}/pR-move-b.hwp"
+    },
+    "c": {
+      "win": "{out}/pR-move-c.hwp",
+      "posix": "{out}/pR-move-c.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjMoveRight"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "c"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

@@ -336,6 +336,7 @@ fn main() {
         Some("test-field") => exit_with(test_field_roundtrip(&args[2..])),
         Some("ir-diff") => exit_with(ir_diff(&args[2..])),
         Some("ir-sweep") => exit_with(ir_sweep(&args[2..])),
+        Some("dump-anchors") => exit_with(dump_anchors(&args[2..])),
         Some("verify") => exit_with(cmd_verify(&args[2..])),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
@@ -14211,6 +14212,63 @@ fn cmd_verify(args: &[String]) -> i32 {
 /// 쓰임새는 **편집 액션의 자취를 재는 것**이다. 어떤 API 도 결과를 안 비추는 액션이라도
 /// 저장본은 적으므로, 같은 문서의 앞뒤 저장본을 이걸로 대조하면 관측창이 생긴다
 /// (`tools/hwpctrl_compat` 의 L3).
+/// 문단의 **스트림 좌표**를 찍는다 — 컨트롤 종류·`char_offsets`·컨트롤의 글자 위치.
+///
+/// 편집 액션이 개체 앵커를 옮기는지 볼 때 쓴다(계획서 §4.24 가 이걸로 나왔다). `ir-sweep`
+/// 은 필드 나열이라 "컨트롤과 공백의 순서가 바뀌었다" 같은 **구조** 변화를 읽기 어렵다 —
+/// 이 보기는 문단 하나를 스트림 순서 그대로 편다. 여태 임시 테스트 파일로 하던 일이다.
+fn dump_anchors(args: &[String]) -> i32 {
+    if args.is_empty() {
+        eprintln!("사용법: rhwp dump-anchors <파일…> [--all]");
+        return EXIT_USAGE;
+    }
+    let all = args.iter().any(|a| a == "--all");
+    for path in args.iter().filter(|a| !a.starts_with('-')) {
+        let doc = match std::fs::read(path)
+            .map_err(|e| e.to_string())
+            .and_then(|b| rhwp::parser::parse_document(&b).map_err(|e| e.to_string()))
+        {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("{path}: {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+        println!("== {path}");
+        for (si, sec) in doc.sections.iter().enumerate() {
+            for (pi, para) in sec.paragraphs.iter().enumerate() {
+                if !all && para.controls.is_empty() {
+                    continue;
+                }
+                let kinds: Vec<String> = para
+                    .controls
+                    .iter()
+                    .map(|c| match c {
+                        rhwp::model::control::Control::SectionDef(_) => "secd".to_string(),
+                        rhwp::model::control::Control::ColumnDef(_) => "cold".to_string(),
+                        rhwp::model::control::Control::Table(_) => "표".to_string(),
+                        rhwp::model::control::Control::Picture(_) => "그림".to_string(),
+                        rhwp::model::control::Control::Shape(s) => s.shape_name().to_string(),
+                        other => format!("{other:?}")
+                            .split(['(', ' '])
+                            .next()
+                            .unwrap_or("?")
+                            .to_string(),
+                    })
+                    .collect();
+                println!(
+                    "s{si} p{pi}: chars={} text={:?}",
+                    para.char_count, para.text
+                );
+                println!("   char_offsets={:?}", para.char_offsets);
+                println!("   controls={kinds:?}");
+                println!("   ctrl_positions={:?}", para.control_text_positions());
+            }
+        }
+    }
+    EXIT_OK
+}
+
 fn ir_sweep(args: &[String]) -> i32 {
     use rhwp::diagnostics::ir_field_sweep::{sweep_documents, tally};
 
