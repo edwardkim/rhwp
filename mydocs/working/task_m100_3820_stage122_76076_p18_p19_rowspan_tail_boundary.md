@@ -1,6 +1,6 @@
 ---
 kind: implementation
-status: in_progress
+status: completed
 canonical: mydocs/working/task_m100_3820_stage1.md
 last_verified: 2026-08-10
 ---
@@ -78,18 +78,78 @@ HWPX·inline·중첩 control·다중줄·intra-row cut·일반 rowspan은 기존
   `cargo test --profile release-test --tests`, fmt/diff/clippy를 실행한다.
 - 최신 binary로 p18--p20을 다시 PDF direct pair 비교해 p19 상단 row sequence를 판정한다.
 
-## 중간 검증 결과
+## 구현·최종 검증 결과
 
 - `issue_2430_cell_rewrap_threshold`: 2/2 통과.
 - `issue_3820_rowbreak_rowspan_band`: 3/3 통과. 새 regression은 p18 row 14 결과칸
   미소유, p19 `해당 없음` 3개, cell `(13,1)`의 `11.영향평가` / `여부` 문단 owner를
   각각 직접 단언한다.
 - `issue_1921_59043_pagination_pin`: p8 Square picture 회귀를 포함해 5/5 통과.
+- HWP5-origin HWPX에도 같은 stored owner를 적용했으므로, `issue_1939` exact 회귀도
+  통과했다. 순수 HWPX의 일반 rowspan 분할은 기존 높이 기반 경로를 유지한다.
+- 전체 `CARGO_TARGET_DIR=target/task-3820-production-fidelity CARGO_INCREMENTAL=0
+  cargo test --profile release-test --tests`는 502 test binary, 5,536 passed로 exit 0을
+  확인했다. `cargo fmt --check`, `git diff --check`,
+  `cargo clippy --all-targets -- -D warnings`도 exit 0이다.
+- native-Skia는 lib 58/58, issue #2225 2/2, p37 관련 4/4를 통과했고,
+  `wasm-pack build --target web --out-dir pkg`도 성공했다.
 - 최신 release-test binary로 physical p18--p20을 Hancom 2024 PDF와 다시 대조했다.
   p18 table tail은 `11.영향평가`에서 끝나고 p19는 `여부`와 `해당 없음` 3칸 뒤
-  `대분류`/`소분류`로 재개한다. text owner/sequence/page-boundary/visible-excess
-  후보는 모두 0건이다. p19 raster diff는 row owner 수정 전 17.96%에서 12.02%로
-  낮아졌다. 남은 raster 차이는 이 stage의 p18--p19 row owner 결함과 별개인 표
-  폭·글꼴/ink 차이이므로 같은 수정의 성공 지표로 과대해석하지 않는다.
+  `대분류`/`소분류`로 재개한다. 최신 direct pair의 text owner/sequence/page-boundary/
+  visible-excess 후보는 모두 0건이며, p19 raster diff는 row owner 수정 전 17.96%에서
+  12.02%로 낮아졌다. p18/p19 전체가 pixel-identical하다는 주장은 하지 않는다. 남은
+  표 폭·글꼴/ink raster 차이는 이 stage의 row owner 결함과 별개다.
 
-전체 release-test·fmt·diff·clippy 결과는 source 안정화 뒤 최종 검증에 기록한다.
+## 최종 시각 증적
+
+- 입력 HWP SHA-256:
+  `3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5`
+- Hancom 2024 PDF SHA-256:
+  `06a389455d6b96e5f6580c9930fd8555256f9c712be85fb3cdaf31fc601a090d`
+- 최종 sweep commit: `575da2a5dece0a7cedeebfd4579c58c734b6ffaf`; release-test
+  binary SHA-256:
+  `8718165b233567a8d411168e0d5c6681e9548c89c0a072b8e04dd85fad48a4b8`.
+- direct pair(physical p18--p20):
+  `output/task-3820-stage122-76076-p018-p020-575da2a-final/`. 요청 3/3 완료,
+  p18/p19/p20의 owner·sequence·boundary·visible-excess 후보는 모두 0건이다.
+- 3-way/OVL sweep(physical p18--p19):
+  `output/task-3820-stage122-76076-p018-p019-575da2a-final/`. 82/82 SVG와 render
+  tree를 export하고 요청 2/2를 raster·compare·review·overlay로 완료했다. 자동 flagged
+  page는 0건이고, pixel match는 p18 89.74629%, p19 93.50343% (평균 91.62486%)다.
+  visual accuracy proxy는 p18 18.92541%, p19 40.29382%로, 글꼴/ink 차이를 포함하므로
+  범용 합격 점수가 아니라 보조 지표로만 기록한다.
+- 직접 3-way 판독에서는 PDF와 동일하게 p18에 결과 행을 그리지 않고, p19 상단에
+  `여부`와 세 `해당 없음` 칸이 먼저 나온 뒤 `대분류`/`소분류`가 재개함을 확인했다.
+  이는 이 stage가 약속한 표 행·문단 owner 경계의 해결 근거다. 문서 전체의 최종
+  사용자 시각 승인과는 별개다.
+
+재현 명령:
+
+```sh
+RHWP_BIN=target/task-3820-production-fidelity/release-test/rhwp \
+  venv/bin/python tools/fidelity_compare/fidelity_compare.py 17 19 \
+  --source samples/76076_regulatory_analysis.hwp \
+  --reference-pdf samples/issue1891/76076_regulatory_analysis-2024.pdf \
+  --label task3820-stage122-76076-p018-p020-575da2a-final \
+  --reference-grade '한컴 2024 기준 PDF' --layout-ledger \
+  --out-dir output/task-3820-stage122-76076-p018-p020-575da2a-final
+
+venv/bin/python scripts/visual_sweep.py \
+  --key task3820-stage122-76076-p018-p019-575da2a-final \
+  --hwp samples/76076_regulatory_analysis.hwp \
+  --pdf samples/issue1891/76076_regulatory_analysis-2024.pdf \
+  --pages 18-19 --dpi 144 \
+  --rhwp-bin target/task-3820-production-fidelity/release-test/rhwp \
+  --out output/task-3820-stage122-76076-p018-p019-575da2a-final
+```
+
+대표 최종 증적:
+
+- [p18 3-way review](../pr/assets/task_m100_3820_stage122_76076_p018_p019_rowspan_boundary/review_p018_final.png),
+  [p18 overlay](../pr/assets/task_m100_3820_stage122_76076_p018_p019_rowspan_boundary/overlay_p018_final.png)
+- [p19 3-way review](../pr/assets/task_m100_3820_stage122_76076_p018_p019_rowspan_boundary/review_p019_final.png),
+  [p19 overlay](../pr/assets/task_m100_3820_stage122_76076_p018_p019_rowspan_boundary/overlay_p019_final.png)
+- [sweep provenance](../pr/assets/task_m100_3820_stage122_76076_p018_p019_rowspan_boundary/visual_sweep_manifest.json),
+  [summary](../pr/assets/task_m100_3820_stage122_76076_p018_p019_rowspan_boundary/visual_sweep_summary.json),
+  [overlay metrics](../pr/assets/task_m100_3820_stage122_76076_p018_p019_rowspan_boundary/overlay_metrics.json),
+  [flagged pages](../pr/assets/task_m100_3820_stage122_76076_p018_p019_rowspan_boundary/flagged_pages.json)
