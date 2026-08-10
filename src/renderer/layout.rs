@@ -7993,9 +7993,8 @@ impl LayoutEngine {
                             } else {
                                 tac_table_y_before
                             };
-                            let anchor_line_end = base
-                                + hwpunit_to_px(seg.line_height, self.dpi)
-                                - om_px.max(0.0);
+                            let anchor_line_end =
+                                base + hwpunit_to_px(seg.line_height, self.dpi) - om_px.max(0.0);
                             if anchor_line_end > y_offset {
                                 y_offset = anchor_line_end;
                             }
