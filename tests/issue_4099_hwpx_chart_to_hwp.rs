@@ -805,6 +805,71 @@ fn issue4099_judgment_variants_carry_their_mutations() {
 }
 
 // ---------------------------------------------------------------------------
+// T7 — HWP 저장이 live IR 을 파괴하지 않는다
+// ---------------------------------------------------------------------------
+
+/// fold 는 IR 에서 `chart_id_ref` 와 `ooxml_chart` 를 **없앤다.** 그래서 어댑터가 살아
+/// 있는 IR 을 직접 정규화하면, HWP 로 한 번 저장한 뒤 같은 핸들로 HWPX 를 내보낼 때
+/// `write_ole_or_chart` 가 `hp:switch/case/default` 대신 `hp:ole` 단독을 방출하고
+/// `Chart/chart1.xml` 파트가 패키지에서 빠진다 — **#3546 이 세운 "차트 원형 보존"
+/// 계약이 저장 한 번으로 깨진다.**
+///
+/// CLI 는 저장 직후 종료하니 관측되지 않지만 브라우저 핸들은 저장 뒤에도 살아 있다.
+/// `export_hwp_with_adapter_snapshot` 이 바로 이 부류를 위해 이미 존재했고
+/// (누름틀 `field_ranges` 어긋남이 같은 원인의 다른 증상이다), CLI edit 경로만 이관돼
+/// 있었다. `wasm_api::exportHwp` 를 그쪽으로 옮겨 원인을 없앴다.
+///
+/// 바이트 동일과 구조를 모두 단언한다 — 훗날 zip 타임스탬프 같은 것이 들어와 바이트
+/// 비교가 무뎌져도 구조 단언은 진짜 회귀를 계속 잡는다.
+#[test]
+fn issue4099_hwp_save_keeps_live_ir_intact_for_hwpx_reexport() {
+    let bytes = base_hwpx();
+    let mut doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("HWPX 로드");
+
+    let before = doc.export_hwpx().expect("HWPX 저장(HWP 저장 전)");
+    let hwp = doc.export_hwp().expect("HWP 저장");
+    let after = doc.export_hwpx().expect("HWPX 저장(HWP 저장 후)");
+
+    let shape = |hwpx: &[u8]| -> (usize, usize, usize) {
+        let names = zip_entry_names(hwpx);
+        let sec = read_zip_entry(hwpx, "Contents/section0.xml");
+        (
+            names.iter().filter(|n| n.starts_with("Chart/")).count(),
+            sec.matches("<hp:chart").count(),
+            sec.matches("<hp:switch").count(),
+        )
+    };
+    assert_eq!(
+        shape(&before),
+        (1, 1, 1),
+        "대조군 전제 — 원본은 Chart 파트와 switch/chart 구조를 갖는다"
+    );
+    assert_eq!(
+        shape(&after),
+        shape(&before),
+        "HWP 저장이 live IR 의 차트 원형을 지웠다 (#3546 계약 위반)"
+    );
+    assert_eq!(
+        before, after,
+        "HWP 저장 전후의 HWPX 재방출은 바이트까지 같아야 한다 — 저장은 읽기 연산이다"
+    );
+
+    // 산출 HWP 는 여전히 fold 결과여야 한다 — 복제본에서 어댑터가 돌았을 뿐이다.
+    let hdoc = rhwp::parse_document(&hwp).expect("HWP 재파싱");
+    assert_eq!(first_ole(&hdoc).expect("OLE").bin_data_id, 1);
+    assert!(!all_streams(&hwp)
+        .iter()
+        .any(|(n, _)| n.to_ascii_lowercase().ends_with(".ooxml_chart")));
+}
+
+fn zip_entry_names(hwpx: &[u8]) -> Vec<String> {
+    let mut z = zip::ZipArchive::new(Cursor::new(hwpx.to_vec())).expect("HWPX zip 열기");
+    (0..z.len())
+        .map(|i| z.by_index(i).expect("zip 엔트리").name().to_string())
+        .collect()
+}
+
+// ---------------------------------------------------------------------------
 // T6 — 멱등성
 // ---------------------------------------------------------------------------
 
