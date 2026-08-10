@@ -1436,6 +1436,38 @@ fn para_has_visible_textless_float_shape_item(
         })
 }
 
+/// 빈 float-host 문단의 줄 예약 여부를 **저장 사다리**로 판별한다 — 한글이 그 문서에서
+/// 실제로 어떻게 했는지가 다음 문단과의 vpos 델타에 남는다(30213 9쪽 실측: 도식 앵커
+/// 2560 = lh1600+gap960 전체 예약 — vert_rel_to 휴리스틱으로는 못 가르는 케이스).
+/// 쪽 경계 리셋(음수 델타)·다중 lineseg·값 부재는 None 으로 물러나 휴리스틱에 맡긴다.
+fn textless_host_ladder_line_advance(paragraphs: &[Paragraph], para_index: usize) -> Option<bool> {
+    let cur = paragraphs.get(para_index)?;
+    let next = paragraphs.get(para_index + 1)?;
+    let (seg, next_seg) = match (cur.line_segs.as_slice(), next.line_segs.first()) {
+        ([seg], Some(next_seg)) => (seg, next_seg),
+        _ => return None,
+    };
+    let expected = seg.line_height + seg.line_spacing;
+    if expected <= 0 {
+        return None;
+    }
+    // 합성 lineseg(HWPX 등 vpos 전부 0) 는 사다리가 아니다 — 실값일 때만 믿는다.
+    if seg.vertical_pos == 0 && next_seg.vertical_pos == 0 {
+        return None;
+    }
+    let delta = next_seg.vertical_pos - seg.vertical_pos;
+    if delta < 0 {
+        return None; // 쪽/단 경계 리셋 — 사다리로 판별 불가
+    }
+    if delta * 4 >= expected * 3 {
+        return Some(true);
+    }
+    if delta * 4 <= expected {
+        return Some(false);
+    }
+    None
+}
+
 fn textless_infront_para_host_requires_line_advance(para: &Paragraph) -> bool {
     if para_has_visible_text(para) {
         return false;
@@ -6580,10 +6612,33 @@ impl LayoutEngine {
                         // 개체를 렌더한다. 여기서 layout_paragraph 를 태우면 보이지 않는
                         // 빈 줄이 저장 vpos 기준으로 페이지 밖에 기록되어 overflow 오탐이 난다.
                         para_start_y.entry(*para_index).or_insert(y_offset);
-                        if textless_infront_para_host_requires_line_advance(para) {
-                            // HWPX 글앞으로 도장처럼 문단 기준으로 붙는 host 는 빈
-                            // 텍스트를 그리지 않더라도 한컴처럼 줄 진행량은 예약한다.
-                            // BehindText 배경 그림은 기존 비예약 경로를 유지한다.
+                        // 저장 사다리가 그 문서의 진실이다 — 한글이 이 앵커 줄을 예약했는지
+                        // 다음 문단 vpos 델타로 먼저 묻고, 판별 불가일 때만 vert_rel_to
+                        // 휴리스틱(글앞 도장류 예약·BehindText 비예약)으로 물러난다.
+                        // 단 **overlay(글앞/글뒤) 호스트에만** 묻는다 — Square 등 흐름
+                        // 상호작용 wrap 은 편집 후 stale 사다리가 계약을 뒤집는다
+                        // (issue_2069 OLE enter/backspace 4건 실측 회귀로 반증).
+                        let has_overlay_float = para.controls.iter().any(|c| {
+                            let cm = match c {
+                                Control::Picture(pic) => &pic.common,
+                                Control::Shape(shape) => shape.common(),
+                                _ => return false,
+                            };
+                            !cm.treat_as_char
+                                && matches!(
+                                    cm.text_wrap,
+                                    TextWrap::InFrontOfText | TextWrap::BehindText
+                                )
+                        });
+                        let advance_line = if has_overlay_float {
+                            textless_host_ladder_line_advance(paragraphs, *para_index)
+                                .unwrap_or_else(|| {
+                                    textless_infront_para_host_requires_line_advance(para)
+                                })
+                        } else {
+                            textless_infront_para_host_requires_line_advance(para)
+                        };
+                        if advance_line {
                             let advance = paragraph_line_advance_px(
                                 para,
                                 composed.get(*para_index),
@@ -7909,10 +7964,31 @@ impl LayoutEngine {
                     if let Some(seg) = para.line_segs.get(seg_idx) {
                         let line_end = para_y_for_table
                             + hwpunit_to_px(seg.vertical_pos + seg.line_height, self.dpi);
-                        let clamped = line_end.min(table_y_end);
-                        let max_correction = hwpunit_to_px(seg.line_spacing * 2 + 1000, self.dpi);
-                        if clamped > y_offset && (clamped - y_offset) <= max_correction {
-                            y_offset = clamped;
+                        // 글앞/글뒤(overlay) + tac 표: 표 시각은 종이층 절대 배치라
+                        // table_y_end 가 흐름을 따라오지 않는다. tac 는 앵커 줄에 통합되고
+                        // (#539) 한글도 그 줄 높이만큼 전진한다(148720174 2쪽 사다리:
+                        // 표 43940 + th 7348 + gap 400 = 다음 문단 51688 실측). clamp 와
+                        // max_correction 이 이 전진을 막아 후속 문단이 표 위로 91px
+                        // 겹치던 결함 — overlay tac 는 앵커 줄 top + 저장 줄 높이로 전진한다
+                        // (line_end 의 seg.vertical_pos 는 누적 vpos 라 여기선 못 쓴다).
+                        let overlay_tac = matches!(
+                            t.common.text_wrap,
+                            crate::model::shape::TextWrap::InFrontOfText
+                                | crate::model::shape::TextWrap::BehindText
+                        );
+                        if overlay_tac {
+                            let anchor_line_end =
+                                tac_table_y_before + hwpunit_to_px(seg.line_height, self.dpi);
+                            if anchor_line_end > y_offset {
+                                y_offset = anchor_line_end;
+                            }
+                        } else {
+                            let clamped = line_end.min(table_y_end);
+                            let max_correction =
+                                hwpunit_to_px(seg.line_spacing * 2 + 1000, self.dpi);
+                            if clamped > y_offset && (clamped - y_offset) <= max_correction {
+                                y_offset = clamped;
+                            }
                         }
                     }
                 }
