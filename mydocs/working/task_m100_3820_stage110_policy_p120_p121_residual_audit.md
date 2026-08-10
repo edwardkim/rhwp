@@ -102,6 +102,19 @@ flow 규칙을 사용하지 않는다. 그러므로 이 결함은 broad margin �
 저장된 단일 empty-host 표 계약을 좁게 식별해 **flow 좌표는 유지하고 표 subtree의
 paint origin만 이동**하는 후속 단계로 넘긴다.
 
+### p120·p121 각주 구분선 sentinel의 별도 실결함
+
+두 페이지의 각주 구분선도 owner와 무관한 별도 차이가 있다. source의
+`separatorLength=-1`은 OWPML sentinel 계약상 5cm인데, 현재
+`layout_endnote_separator_item`은 모든 0 이하 값을 단 너비의 1/3로 처리한다.
+
+- 현재 구분선은 약 `70.87..222.05pt`, 길이 `151.18pt`다.
+- 한컴 PDF는 p120과 p121 모두 약 `71..214pt`, 즉 5cm 계열이다.
+- 각주 158·159·160의 페이지 소유와 본문 위치는 정상이다.
+
+따라서 이 항목은 표 보정과 섞지 않고 sentinel `-1/-2/-3/-4` 해석을 각각 고정하는
+별도 후속 단계로 넘긴다.
+
 ### 회귀
 
 다음 exact 실물 회귀를 최신 코드와 `target/pr-review`에서 재실행했다.
@@ -123,6 +136,6 @@ cargo test --profile release-test \
 
 p120→p121의 Stage 98 page-owner 후보는 재현되는 결함이 아니며 `bf2e59c73` 이후
 stale 원장으로 폐기한다. 그러나 같은 확대 review에서 p120 `pi=1283` 표의
-1mm 좌·상 paint-origin 결함을 새로 확정했다. Stage 110은 두 판정을 혼합하지 않고
-원장·현재 review·좌표를 증적으로 보존하며, renderer 수정은 다음 stage에서
-분석 문서를 먼저 만든 뒤 수행한다.
+1mm 좌·상 paint-origin 결함과 p120·p121 각주 구분선 `-1` sentinel 오해석을 새로
+확정했다. Stage 110은 세 판정을 혼합하지 않고 원장·현재 review·좌표를 증적으로
+보존하며, renderer 수정은 다음 stage에서 분석 문서를 먼저 만든 뒤 수행한다.
