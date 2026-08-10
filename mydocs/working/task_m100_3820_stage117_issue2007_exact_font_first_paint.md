@@ -1,6 +1,6 @@
 ---
 kind: investigation
-status: in_progress
+status: completed
 canonical: mydocs/working/task_m100_3820_stage1.md
 last_verified: 2026-08-10
 ---
@@ -67,10 +67,36 @@ CanvasKit은 같은 HMKMM bytes를 `MakeFreeTypeFaceFromData` 및
 - portable SVG Style fallback 순서 불변 및 Full mode의 HMKMM bytes 임베드
 - Studio focused unit/e2e와 lint/typecheck
 
-## 현재 증적
+## 구현
+
+- Studio의 `prepareCanvasKitDocument()`가 첫 replay 전에 저장된 local-font
+  snapshot을 로드하고 `report.requiredFontFamilies`의 exact local face 준비를
+  `await`한다.
+- local 권한 만료·바이트 읽기·Typeface 등록 실패는 catch하여 bundled fallback을
+  계속 준비한다. 따라서 exact face가 없는 환경의 문서 열기를 막지 않는다.
+- 첫 replay 뒤의 `prepareCanvasKitLocalFonts()`는 문서 전체 face와 사용자가 새로
+  승인한 face를 보충하고 현재 view만 다시 그리는 역할로 한정했다.
+- SVG Style alias 순서와 Rust SVG 코드는 변경하지 않았다. portable SVG의 두부 방지
+  fallback과 exact Full embed 경로를 계속 분리한다.
+
+## 검증
+
+- `rhwp-studio` 전체 Node test: `825 tests`, `824 passed`, `1 skipped`, `0 failed`
+- `npm run e2e:renderer-contract`: 통과
+- `npm run build` (`tsc && vite build`): 통과
+- 새 회귀는 다음을 고정한다.
+  - 저장 snapshot → exact local face → 실패 격리 → bundled fallback 순서
+  - local face가 bundled alias보다 우선되는 기존 renderer 계약
+  - family/full/PostScript 이름이 모두 `휴먼명조`인 SFNT의 원본 bytes 조회
+- build의 Vite native-config·chunk-size 메시지는 기존 경고이며 이번 변경의 실패가
+  아니다.
+
+## 증적
 
 - [PDF와 full-embed p10 비교](../pr/assets/task_m100_3820_stage117_issue2007_exact_font_first_paint/p10_ref_vs_full_embed.png)
 - [font별 확대 비교](../pr/assets/task_m100_3820_stage117_issue2007_exact_font_first_paint/p10_font_crops.png)
 - [CanvasKit HMKMM raw-face 검증](../pr/assets/task_m100_3820_stage117_issue2007_exact_font_first_paint/canvaskit_hmkmm.png)
 
-구현 및 focused 검증 진행 중이다.
+이 단계는 CanvasKit first-paint의 exact local-face 준비 순서와 두부 방지 fallback을
+수정했다. 실제 browser에서 저장된 Local Font Access 권한을 사용하는 첫 화면의 최종
+수동 확인은 사용자 WASM/Studio 빌드 후 수행할 수 있으며, 전체 #3820 완료와는 별개다.

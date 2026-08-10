@@ -522,13 +522,18 @@ assert.doesNotMatch(
 );
 requireSnippet(
   mainSource,
-  /new RendererSession\([\s\S]*?async \(mode, surface\) => \{[\s\S]*?import\('\@\/view\/canvaskit-renderer'\)[\s\S]*?CanvasKitLayerRenderer\.create\(mode, surface,[\s\S]*?requirePreparedFontFamilies:[\s\S]*?transformCanvasKitPreflight[\s\S]*?prepareBundledFonts/,
-  'Studio should load CanvasKit only after the renderer session selects it',
+  /new RendererSession\([\s\S]*?async \(mode, surface\) => \{[\s\S]*?import\('\@\/view\/canvaskit-renderer'\)[\s\S]*?CanvasKitLayerRenderer\.create\(mode, surface,[\s\S]*?requirePreparedFontFamilies:[\s\S]*?transformCanvasKitPreflight[\s\S]*?prepareCanvasKitDocument[\s\S]*?loadStoredLocalFonts\(\)[\s\S]*?prepareLocalFonts\(report\.requiredFontFamilies\)[\s\S]*?prepareBundledFonts/,
+  'Studio should prepare stored local faces and bundled fallback before first CanvasKit replay',
 );
 requireSnippet(
   canvaskitSource,
   /prepareBundledFonts\([\s\S]*?MAX_BUNDLED_FONT_BYTES[\s\S]*?bundledTypefaceAliases\.set[\s\S]*?CanvasKit font family가 준비되지 않았습니다/,
   'CanvasKit should bound bundled font parsing and reject unprepared explicit families',
+);
+requireSnippet(
+  canvaskitSource,
+  /private findPreparedTypeface\([\s\S]*?const local =[\s\S]*?const bundled =[\s\S]*?if \(local\) return local;[\s\S]*?if \(bundled\) return bundled;/,
+  'CanvasKit should prefer an exact prepared local face over its bundled fallback alias',
 );
 requireSnippet(
   canvaskitSource,

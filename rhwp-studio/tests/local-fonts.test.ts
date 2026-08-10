@@ -509,6 +509,59 @@ test('SFNT 지역화 이름을 보존해 HWP 한글 full name을 영문 family�
   }
 });
 
+test('CanvasKit용 휴먼명조 조회는 대체 family가 아니라 정확한 local face bytes를 반환한다', async () => {
+  const g = globalThis as TestGlobals;
+  const originals = {
+    browser: g.browser,
+    chrome: g.chrome,
+    document: g.document,
+    localStorage: g.localStorage,
+    queryLocalFonts: g.queryLocalFonts,
+  };
+  const storage = createStorage();
+  const fontBytes = createSfntWithNameRecords([
+    { nameId: 1, value: '휴먼명조' },
+    { nameId: 2, value: 'Regular' },
+    { nameId: 4, value: '휴먼명조' },
+    { nameId: 6, value: '휴먼명조' },
+  ]);
+  const queryCalls: Array<string[] | undefined> = [];
+
+  resetLocalFontsForTests();
+  g.browser = undefined;
+  g.chrome = undefined;
+  g.localStorage = storage;
+  g.queryLocalFonts = async (options?: { postscriptNames?: string[] }) => {
+    queryCalls.push(options?.postscriptNames);
+    return [{
+      family: '휴먼명조',
+      fullName: '휴먼명조',
+      postscriptName: '휴먼명조',
+      style: 'Regular',
+      blob: async () => new Blob([fontBytes]),
+    }];
+  };
+
+  try {
+    await detectLocalFonts({ force: true, includeRegistered: true });
+    const record = resolveLocalFont('휴먼명조');
+    assert.equal(record?.family, '휴먼명조');
+    assert.equal(record?.fullName, '휴먼명조');
+    assert.equal(record?.postscriptName, '휴먼명조');
+
+    const bytesByFace = await loadLocalFontBytesFor(['휴먼명조']);
+    assert.deepEqual(
+      new Uint8Array(bytesByFace.get(localFontFaceKey(record!)) ?? new ArrayBuffer(0)),
+      fontBytes,
+    );
+    assert.deepEqual(queryCalls, [undefined, ['휴먼명조']]);
+  } finally {
+    await clearStoredLocalFonts();
+    resetLocalFontsForTests();
+    restoreGlobals(originals);
+  }
+});
+
 test('legacy Macintosh name record는 표시 이름에 섞지 않는다', async () => {
   const g = globalThis as TestGlobals;
   const originals = {

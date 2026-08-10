@@ -45,6 +45,26 @@ test('CanvasKit local face 등록은 문서 초기화 대신 현재 뷰 재그�
   assert.doesNotMatch(prepareLocalFonts, /canvasView\?\.loadDocument\(\);/);
 });
 
+test('CanvasKit 첫 replay는 저장된 local face를 bundled fallback보다 먼저 준비한다', () => {
+  const main = source('src/main.ts');
+  const start = main.indexOf('async prepareCanvasKitDocument(renderer, report)');
+  const end = main.indexOf('\n        },\n      },', start);
+  assert.ok(start >= 0 && end > start, 'CanvasKit 문서 준비 콜백을 찾을 수 있어야 한다');
+  const prepareDocument = main.slice(start, end);
+
+  const storedIndex = prepareDocument.indexOf('await loadStoredLocalFonts();');
+  const localIndex = prepareDocument.indexOf(
+    'await renderer.prepareLocalFonts(report.requiredFontFamilies);',
+  );
+  const catchIndex = prepareDocument.indexOf('} catch (error) {');
+  const bundledIndex = prepareDocument.indexOf('await renderer.prepareBundledFonts(plan.sources);');
+
+  assert.ok(storedIndex >= 0, '저장된 local font snapshot을 첫 replay 전에 로드해야 한다');
+  assert.ok(localIndex > storedIndex, 'snapshot 로드 뒤 정확한 local face를 준비해야 한다');
+  assert.ok(catchIndex > localIndex, 'local face 실패는 bundled fallback으로 격리해야 한다');
+  assert.ok(bundledIndex > catchIndex, 'local face 준비 뒤 bundled fallback도 항상 준비해야 한다');
+});
+
 test('로컬 글꼴 감지는 Canvas2D 문서를 전체 재로딩하지 않는다', () => {
   const main = source('src/main.ts');
   assert.doesNotMatch(main, /eventBus\.on\('local-fonts-changed',[\s\S]*?canvasView\?\.loadDocument\(\);/);
