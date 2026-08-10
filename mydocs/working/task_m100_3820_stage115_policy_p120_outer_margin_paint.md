@@ -119,19 +119,36 @@ inset 여부만 전달하며, 표 bbox와 모든 자식에 left/top을 더한다
   `cargo clippy --profile release-test --all-targets -- -D warnings`: 통과
 - 최신 release-test CLI로 동일-binary 최종 p120~p121 sweep을 완료했다.
 
-최종 candidate sweep은 전체 SVG/render-tree 215/215, 요청 120~121 2/2,
+코드 commit `dd58ddcc3`의 동일-binary 최종 sweep은 전체 SVG/render-tree 215/215,
+요청 120~121 2/2,
 automatic flag 0을 기록했다. p120 표 bbox는
 `(98.3, 86.9, 559.4, 317.2)px`로 이동했고 다음 본문 `pi=1286`은
 `(94.5, 461.2, …)px`로 유지됐다. p120/p121 body·footnote owner shift,
 cell overlap, border clip 후보는 모두 0이다. p120의 text delta 1자는
 `Organizacio + combining acute + n`과 `Organización`의 정규화 표현 차이로 가시
 내용 손실이 아니다. 최종 실행 바이너리 SHA-256은
-`1b871d82a1f9ec7e98941288ae91205526168a3d9f7cb910ce8fbbfc1e11123e`다.
+`2924b9fdf27f7c9f0403e7f2b570a5153d719de89e4b6884d8a48a5a71be8df2`다.
+p120 pixel match는 선행 92.21622%에서 92.79628%로 상승했고, 변경 대상이 아닌
+p121은 90.59494%로 유지됐다. 자동 flag만으로 종결하지 않고 최종 review PNG를
+PDF와 직접 확대 판독해 표 외곽·행 경계와 후속 본문이 정답 위치임을 확인했다.
+
+- 임시 final output:
+  `output/task-3820-stage115-policy-p120-outer-margin-final/`
+- provenance HEAD: `dd58ddcc33d936b7514a28971d517211d746d44b`
+- 작업지시자의 최종 시각 확인은 아직 대기 중이며, 이 문서의 `completed`는
+  Stage 115 구현·자동회귀·증적 산출 완료를 뜻한다.
 
 최종 증적:
 
 - [p120 PDF/rhwp 비교](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/compare_p120.png)
 - [p121 PDF/rhwp 비교](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/compare_p121.png)
+- [p120 최종 3-way review](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/review_p120_final.png)
+- [p121 최종 3-way review](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/review_p121_final.png)
+- [p120 최종 OVL](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/overlay_p120_final.png)
+- [p121 최종 OVL](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/overlay_p121_final.png)
+- [visual sweep provenance](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/visual_sweep_manifest.json)
+- [overlay 지표](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/overlay_metrics.json)
+- [최종 geometry](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/geometry.tsv)
 - [픽셀 보고서](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/report.tsv)
 - [텍스트 보고서](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/text-report.tsv)
 - [페이지 수 원장](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/page-count-ledger.tsv)
@@ -141,5 +158,5 @@ cell overlap, border clip 후보는 모두 0이다. p120의 text delta 1자는
 후보와 issue2007 exact-font paint fidelity는 후속 단계에서 계속 추적한다.
 
 각주 구분선 `separatorLength=-1` 오해는 이 표 paint 보정과 독립된 결함이다.
-Stage 116은 이미 p199 extraction 감사를 사용했으므로 Stage 117 이후에서
+Stage 116은 이미 p199 extraction 감사를 사용했으므로 Stage 117에서
 footnote/endnote 공통 sentinel resolver로 별도 처리한다.

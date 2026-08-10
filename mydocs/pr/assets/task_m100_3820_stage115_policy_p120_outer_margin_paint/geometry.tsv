@@ -1,0 +1,5 @@
+page	owner	measure	before_px	final_px	oracle_or_contract	verdict
+120	pi1283/ci0	table_bbox	94.5,83.2,559.4,317.2	98.3,86.9,559.4,317.2	body origin + 283HU left/top; width/height unchanged	pass
+120	pi1286	textline_bbox	94.5,461.2,604.7,14.7	94.5,461.2,604.7,14.7	PDF baseline about 355pt; flow must not move	pass
+120-121	document	page_count	215	215	reference PDF 215	pass
+120-121	footnotes	owner_shift_candidates	0	0	reference owner order retained	pass
