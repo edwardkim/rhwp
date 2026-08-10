@@ -24,8 +24,11 @@ use super::{CellContext, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::{LineSeg, Paragraph};
-use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertRelTo};
+use crate::model::shape::{
+    CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertRelTo,
+};
 use crate::model::style::{Alignment, HeadType, LineSpacingType, Numbering, UnderlineType};
+use crate::model::table::Table;
 
 const CAPTION_CELL_SENTINEL: usize = 65534;
 
@@ -63,6 +66,90 @@ fn should_wrap_middle_anchored_table(
     control_position.is_some_and(|position| position > 0 && position < text_len)
         && occupied_width > 1.0
         && occupied_width + table_footprint > line_width + 0.5
+}
+
+/// 선행 inline TAC 표의 Bottom caption이 첫 저장 줄을 소유하고, 표 뒤의 첫 visible
+/// 문자가 두 번째 저장 줄에서 시작하는 좁은 HWP5 계약인지 판정한다.
+///
+/// `LINE_SEG.text_start`는 extended control의 8 UTF-16 unit을 포함한다. 따라서 선행
+/// 표 하나 뒤의 첫 글자 offset과 `line_segs[1].text_start`가 모두 8이면, visible text
+/// 관점의 break index는 0이다. 일반 문단에서 index 0을 허용하면 저장 정보가 불충분한
+/// control 문단까지 강제 개행할 수 있으므로 아래 구조가 모두 입증될 때만 보존한다.
+fn preserves_stored_first_visible_break_after_bottom_caption_table(para: &Paragraph) -> bool {
+    let Some(&first_visible_offset) = para.char_offsets.first() else {
+        return false;
+    };
+    if first_visible_offset != 8
+        || para.text.is_empty()
+        || para.line_segs.first().map(|ls| ls.text_start) != Some(0)
+        || para.line_segs.get(1).map(|ls| ls.text_start) != Some(first_visible_offset)
+    {
+        return false;
+    }
+
+    let control_positions = para.control_text_positions();
+    let mut leading_controls = para
+        .controls
+        .iter()
+        .enumerate()
+        .filter(|(control_index, _)| control_positions.get(*control_index) == Some(&0));
+    let Some((_, Control::Table(table))) = leading_controls.next() else {
+        return false;
+    };
+    // first_visible_offset == 8은 저장 stream의 선행 extended control이 정확히 하나라는
+    // 뜻이다. IR에서도 owner를 하나로 확정해 다른 co-anchored control에는 확장하지 않는다.
+    if leading_controls.next().is_some() {
+        return false;
+    }
+
+    let has_bottom_caption = table.caption.as_ref().is_some_and(|caption| {
+        caption.direction == CaptionDirection::Bottom && !caption.paragraphs.is_empty()
+    });
+    let segment_width = para
+        .line_segs
+        .first()
+        .map(|ls| ls.segment_width)
+        .unwrap_or_default();
+
+    table.common.treat_as_char
+        && has_bottom_caption
+        && segment_width > 0
+        && crate::renderer::height_measurer::is_tac_table_inline_in_para(table, segment_width, para)
+}
+
+/// inline TAC 문단의 저장 `LINE_SEG` 시작점을 visible character index로 변환한다.
+///
+/// 보통 index 0은 실질적인 개행이 아니므로 제외한다. 단,
+/// [`preserves_stored_first_visible_break_after_bottom_caption_table`]가 소유권을 증명하면
+/// 두 번째 저장 줄의 index 0만 보존한다.
+pub(super) fn inline_table_stored_line_break_char_indices(para: &Paragraph) -> Vec<usize> {
+    if para.line_segs.len() <= 1 || para.char_offsets.is_empty() {
+        return Vec::new();
+    }
+
+    let text_len = para.text.chars().count();
+    let preserves_first_visible_break =
+        preserves_stored_first_visible_break_after_bottom_caption_table(para);
+    let mut indices = Vec::new();
+    for (line_index, line_seg) in para.line_segs.iter().enumerate().skip(1) {
+        let char_idx = para
+            .char_offsets
+            .iter()
+            .position(|&offset| offset >= line_seg.text_start)
+            .unwrap_or(text_len);
+        let is_owned_first_visible_break =
+            line_index == 1 && char_idx == 0 && preserves_first_visible_break;
+        if (char_idx > 0 || is_owned_first_visible_break)
+            && char_idx <= text_len
+            && indices
+                .last()
+                .map(|&previous| char_idx > previous)
+                .unwrap_or(true)
+        {
+            indices.push(char_idx);
+        }
+    }
+    indices
 }
 
 fn paragraph_active_text_style(
@@ -1586,28 +1673,7 @@ impl LayoutEngine {
         // 이전: ctrl_gap 을 paragraph 전체 controls 합으로 over-subtract → controls 가 있는
         // paragraph 에서 saturating 0 으로 항상 break 미감지 (#496 케이스).
         // 이전: ls[1] 만 사용. 다중 줄 paragraph 에서 ls[2..] 무시 → dynamic reflow.
-        let line_break_char_indices: Vec<usize> =
-            if para.line_segs.len() > 1 && !para.char_offsets.is_empty() {
-                let mut indices: Vec<usize> = Vec::new();
-                for ls in para.line_segs.iter().skip(1) {
-                    let ts = ls.text_start as u32;
-                    // char_offsets[i] >= ts 인 첫 i (= text_chars 의 break 위치)
-                    let char_idx = para
-                        .char_offsets
-                        .iter()
-                        .position(|&off| off >= ts)
-                        .unwrap_or(text_chars.len());
-                    if char_idx > 0 && char_idx <= text_chars.len() {
-                        // 단조 증가 보장 (이전 break 보다 큰 경우에만 추가)
-                        if indices.last().map(|&prev| char_idx > prev).unwrap_or(true) {
-                            indices.push(char_idx);
-                        }
-                    }
-                }
-                indices
-            } else {
-                Vec::new()
-            };
+        let line_break_char_indices = inline_table_stored_line_break_char_indices(para);
         if layout_debug_enabled() {
             eprintln!(
                 "  LAYOUT_BREAK_INDICES: pi={} indices={:?} (from ls[1..])",

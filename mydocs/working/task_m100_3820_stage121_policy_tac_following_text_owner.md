@@ -1,6 +1,6 @@
 ---
 kind: investigation
-status: in_progress
+status: completed
 canonical: mydocs/working/task_m100_3820_stage1.md
 last_verified: 2026-08-10
 ---
@@ -69,4 +69,14 @@ same-line fallback을 유지한다.
 - [보정 전 픽셀 보고서](../pr/assets/task_m100_3820_stage121_policy_tac_following_text_owner/report-before.tsv)
 - [보정 전 provenance](../pr/assets/task_m100_3820_stage121_policy_tac_following_text_owner/provenance-before.tsv)
 
-구현과 focused/실물 회귀, 최신 CLI의 한컴 PDF 직접 비교를 이어서 수행한다.
+## 구현·검증 결과
+
+- `inline_table_stored_line_break_char_indices()`가 기본적으로는 `char_idx=0`을 계속
+  제외하되, 위의 HWP5 저장 계약을 모두 만족하는 leading inline TAC + Bottom caption에만
+  두 번째 `LINE_SEG`의 첫 visible break를 보존한다. 일반 control 문단으로의 확대는 없다.
+- `tests/issue_3820_tac_caption_first_text_owner.rs`가 p33 `pi=428`의 URL 전체가 한 줄로
+  표 아래 line-start에서 시작하고, 표 오른쪽 잔여 폭으로 분할되지 않으며, 215쪽을 유지함을
+  고정한다.
+- 동작 변경 직후 `issue_2430_cell_rewrap_threshold` 2/2, 새 p33 직접 회귀 1/1을 통과했다.
+- 전체 `cargo test --profile release-test --tests`는 이 호출 경로와 새 직접 회귀를 포함해
+  exit 0으로 완료했다(라이브러리 3407 passed, `svg_snapshot` 8/8 포함).
