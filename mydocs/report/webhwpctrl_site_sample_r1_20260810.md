@@ -43,7 +43,9 @@ GitHub code search 로 지문 10종을 전수 스윕했다(2026-08-10, `gh api s
 
 ## 3. 호출 프로파일 — 표본 1 (실 스크립팅 코드)
 
-`HwpCtrl.vue` + `HwpCtrlPopup.vue` 의 호출 집계:
+`HwpCtrl.vue` + `HwpCtrlPopup.vue` 의 호출 집계. **원장 상태는 캠페인 head(PR #4274, 원장
+308/484) 기준**이다 — devel 의 원장은 아직 그 앞이라 `GetTextFile`·`InsertPicture` 등이
+`unimplemented` 로 남아 있다. #4274 가 merge 되면 아래 표기가 devel 에서도 그대로 성립한다.
 
 | API | 호출 수 | 원장 상태 |
 |---|---:|---|
