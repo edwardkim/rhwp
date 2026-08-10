@@ -328,7 +328,9 @@ fn issue4099_folded_ole_matches_hancom_oracle() {
 /// (`chart_id_ref.is_some() && chart_switch_fallback.is_none()`)에 수렴한다.
 fn synth_chart_without_fallback(hwpx: &[u8]) -> Vec<u8> {
     let xml = read_zip_entry(hwpx, "Contents/section0.xml");
-    let sw_start = xml.find("<hp:switch>").expect("샘플에 <hp:switch> 가 있어야 한다");
+    let sw_start = xml
+        .find("<hp:switch>")
+        .expect("샘플에 <hp:switch> 가 있어야 한다");
     let sw_end = xml.find("</hp:switch>").expect("</hp:switch>") + "</hp:switch>".len();
     let seg = &xml[sw_start..sw_end];
     let c_start = seg.find("<hp:chart").expect("<hp:chart");
@@ -467,8 +469,12 @@ fn synth_chart_plus_picture(chart_hwpx: &[u8]) -> Vec<u8> {
     //    되게 한다. 파서는 이 순번을 그대로 storage_id 로 쓴다.
     let hpf = read_zip_entry(chart_hwpx, "Contents/content.hpf");
     let ole_item = r#"<opf:item id="ole1" href="BinData/ole1.ole" media-type="application/ole" isEmbeded="0"/>"#;
-    assert!(hpf.contains(ole_item), "manifest 의 ole1 항목을 찾지 못했다");
-    let image_item = r#"<opf:item id="image1" href="BinData/image1.png" media-type="image/png" isEmbeded="1"/>"#;
+    assert!(
+        hpf.contains(ole_item),
+        "manifest 의 ole1 항목을 찾지 못했다"
+    );
+    let image_item =
+        r#"<opf:item id="image1" href="BinData/image1.png" media-type="image/png" isEmbeded="1"/>"#;
     let hpf = hpf.replacen(ole_item, &format!("{image_item}{ole_item}"), 1);
 
     // ② 그림 문단 — XML 을 손으로 쓰지 않고 실 코퍼스에서 떼어온다. 파서가 요구하는
