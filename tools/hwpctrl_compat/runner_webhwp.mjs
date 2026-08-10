@@ -65,6 +65,11 @@ function resolveChromePath(explicit) {
   const system = [
     '/usr/bin/google-chrome-stable', '/usr/bin/google-chrome',
     '/usr/bin/chromium-browser', '/usr/bin/chromium', '/snap/bin/chromium',
+    // Windows 표준 설치 경로 — COM 정답지를 만드는 그 기계에서 3자를 한 번에 닫기 위해.
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    join(os.homedir(), 'AppData', 'Local', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
   ].find((c) => existsSync(c));
   if (system) return system;
   const cacheRoot = join(os.homedir(), '.cache', 'puppeteer');

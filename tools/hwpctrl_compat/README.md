@@ -174,6 +174,16 @@ python tools/hwpctrl_compat/run_3way.py --url https://hwp.example.go.kr/webhwpct
 오류는 종류 무관하게 "죽었다"로만 묶는다 — 문구는 러너·플랫폼마다 달라 러너 차이가 판정을
 오염시킨다.
 
+**Windows 에서 3자를 한 번에 닫는 순서** — COM 정답지를 만드는 그 기계에서:
+
+```bash
+npm --prefix npm/hwpctrl-ocx run gate        # ① live COM 정답지(ocx/) + rhwp 산출물
+python tools/hwpctrl_compat/run_3way.py      # ② 기안기 측정(webhwp/) + 3자 판정(verdict3/)
+```
+
+Chrome 은 표준 설치 경로를 자동으로 찾는다(Edge 폴백 포함). 다른 곳에 있으면 `CHROME_PATH` 로
+지정한다.
+
 규율 셋. (1) **저빈도 수동 전용** — 기본 URL 이 한컴 공개 데모라 반복 폭주로 몰지 않는다.
 (2) **버전 스탬프 강제** — 러너가 URL·측정 시각·`HwpCtrl.Version` 을 남기고 `compare3.py` 는
 스탬프 없는 산출물을 거부한다. 데모의 버전이 곧 현장 버전이 아니기 때문이다. (3) `SaveAs` 는
