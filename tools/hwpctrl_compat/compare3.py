@@ -60,6 +60,24 @@ def outcome(record: dict):
     return ("value", json.dumps(record.get("value"), ensure_ascii=False, sort_keys=True))
 
 
+# 기안기 반환 중 **업로드 채널 부산물**은 계약 공통분모 밖이다. `Open` 은
+# `{result, fileName, orgName, size}` 봉투를 주는데 `fileName` 은 서버가 매 업로드마다
+# 새로 붙이는 난수라 값 비교가 원리적으로 성립하지 않는다. 성공 신호(`result`)만 세 구현의
+# 공통분모로 비교하고, 봉투 전체는 returns.json 에 그대로 남는다 — 지운 것이 아니라 판정
+# 잣대에서만 벗긴 것이다.
+WEB_ENVELOPE_PROJECTIONS = {"Open": "result"}
+
+
+def project_web(record: dict) -> dict:
+    key = WEB_ENVELOPE_PROJECTIONS.get(record.get("call"))
+    if key is None or record.get("error") is not None:
+        return record
+    value = record.get("value")
+    if isinstance(value, dict) and key in value:
+        return {**record, "value": value[key]}
+    return record
+
+
 def classify3(ocx: dict, web: dict, rhwp: dict) -> tuple[str, str]:
     """세 관측을 한 판정으로. 오류는 **종류 무관하게 '죽었다'**로만 묶는다 — 오류 문구는
     러너·플랫폼마다 달라 완전 일치를 요구하면 러너 차이가 판정을 오염시킨다."""
@@ -100,7 +118,7 @@ def compare_scenario(name: str, ocx: dict, web: dict, rhwp: dict) -> dict:
             rows.append({"index": i, "call": "≠".join(sorted(str(x) for x in names)),
                          "code": ALL_DIFFER, "detail": "호출 순서가 어긋났다 — 러너 버그를 의심하라"})
             continue
-        code, detail = classify3(o, w, r)
+        code, detail = classify3(o, project_web(w), r)
         rows.append({"index": i, "call": o.get("call"), "code": code, "detail": detail})
     counts: dict[str, int] = {}
     for row in rows:

@@ -256,6 +256,26 @@ class HarnessContractTests(unittest.TestCase):
         self.assertEqual(classify3(e("com_error: A"), e("TypeError: B"), v(1))[0], IMPL_GAP)
         self.assertEqual(classify3(v(1), e("TypeError: B"), v(1))[0], WEB_DIVERGES)
 
+    def test_web_open_envelope_compares_only_the_contract_common_denominator(self) -> None:
+        """기안기 `Open` 봉투의 `fileName` 은 서버 부여 난수 — `result` 만 판정 잣대다."""
+        from compare3 import ALL_AGREE, WEB_DIVERGES, classify3, project_web
+
+        web = {
+            "call": "Open",
+            "value": {"result": True, "fileName": "216e9d77.hwp", "orgName": "a.hwp", "size": 84992},
+        }
+        local = {"call": "Open", "value": True}
+        self.assertEqual(classify3(local, project_web(web), local)[0], ALL_AGREE)
+        # 성공 신호가 갈리면 봉투를 벗겨도 갈린 것으로 남는다.
+        failed = {**web, "value": {**web["value"], "result": False}}
+        self.assertEqual(classify3(local, project_web(failed), local)[0], WEB_DIVERGES)
+        # 투영은 Open 봉투에만 닿는다 — 다른 호출·오류·비봉투 값은 그대로 지난다.
+        other = {"call": "GetPos", "value": {"list": 0, "para": 0, "pos": 16}}
+        self.assertEqual(project_web(other), other)
+        self.assertEqual(project_web({"call": "Open", "value": True}), {"call": "Open", "value": True})
+        died = {"call": "Open", "error": "TypeError: x"}
+        self.assertEqual(project_web(died), died)
+
     def test_web_results_without_a_version_stamp_are_rejected(self) -> None:
         """스탬프(URL·측정 시각) 없는 기안기 산출물은 정답지 자격이 없다(계획서 §6.3.3)."""
         from compare3 import require_stamp

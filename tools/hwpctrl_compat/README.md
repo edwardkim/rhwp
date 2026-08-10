@@ -184,11 +184,18 @@ python tools/hwpctrl_compat/run_3way.py      # ② 기안기 측정(webhwp/) + 3
 Chrome 은 표준 설치 경로를 자동으로 찾는다(Edge 폴백 포함). 다른 곳에 있으면 `CHROME_PATH` 로
 지정한다.
 
-규율 셋. (1) **저빈도 수동 전용** — 기본 URL 이 한컴 공개 데모라 반복 폭주로 몰지 않는다.
+규율 넷. (1) **저빈도 수동 전용** — 기본 URL 이 한컴 공개 데모라 반복 폭주로 몰지 않는다.
 (2) **버전 스탬프 강제** — 러너가 URL·측정 시각·`HwpCtrl.Version` 을 남기고 `compare3.py` 는
 스탬프 없는 산출물을 거부한다. 데모의 버전이 곧 현장 버전이 아니기 때문이다. (3) `SaveAs` 는
 브라우저 다운로드 경로라 이 축에서 태우지 않는다(L3 제외). `$path` 인자는 posix 갈래로 푼다 —
-실물에 로컬 파일계가 없으니 그 호출이 어떻게 답하는지 자체가 관측이다.
+실물에 로컬 파일계가 없으니 그 호출이 어떻게 답하는지 자체가 관측이다. (4) **업로드 채널
+부산물은 판정 잣대 밖** — 기안기 `Open` 봉투의 `fileName` 은 서버 부여 난수라 `result` 만
+비교한다(`compare3.WEB_ENVELOPE_PROJECTIONS`). 봉투 전체는 returns.json 에 남는다.
+
+첫 3자 실측(2026-08-10)이 드러낸 것: **웹 계약 형태가 곧 기준**이라 COM 반환의 정규화 구멍
+넷이 함께 드러났다 — `GetText` 는 `{result, text}` 객체, `GetSelectedPos` 는 `result` 없는
+여섯 키, `SetTextFile` 은 bool, `GetTextFile` 은 `&#N;` escape 없는 원문이 실물 계약이다.
+`runner_ocx.py` 의 `ADAPTERS` 와 impl 이 같이 그 형태를 따른다.
 
 러너 자체 검증은 목으로 한다(네트워크·데모 불필요):
 

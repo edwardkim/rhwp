@@ -1103,23 +1103,24 @@ export class HwpCtrl {
   }
 
   /**
-   * 규격 §8.3 — 훑기의 다음 조각. `[상태, 글]` 두 칸을 준다.
+   * 규격 §8.3 — 훑기의 다음 조각. `{result, text}` 객체를 준다(기안기 실측 2026-08-10,
+   * 10.80.0.2862 — COM 은 out 파라미터 튜플이지만 웹 계약은 객체다).
    *
-   * 상태는 **앞 조각과의 관계**다(§4.54 실측): 2 이어짐/리스트 바뀜 · 3 다음 문단 ·
-   * 4 개체로 들어감 · 5 개체에서 나옴. 스캔이 안 열려 있으면 `[101, ""]` 다.
+   * `result` 는 **앞 조각과의 관계**다(§4.54 실측): 2 이어짐/리스트 바뀜 · 3 다음 문단 ·
+   * 4 개체로 들어감 · 5 개체에서 나옴. 스캔이 안 열려 있으면 `{result: 101}` 이다.
    */
   GetText() {
-    if (!this.#scan) return [101, ''];
+    if (!this.#scan) return { result: 101, text: '' };
     // 범위를 준 스캔은 아직 못 재서 한 조각만 주고 마른다(실측과 같은 꼴).
     if (this.#scan.scoped) {
-      if (this.#scan.at > 0) return [0, ''];
+      if (this.#scan.at > 0) return { result: 0, text: '' };
       this.#scan.at = 1;
-      return [2, '\r\n'];
+      return { result: 2, text: '\r\n' };
     }
     const item = this.#scan.items[this.#scan.at];
-    if (!item) return [0, ''];
+    if (!item) return { result: 0, text: '' };
     this.#scan.at += 1;
-    return [item.state, item.text];
+    return { result: item.state, text: item.text };
   }
 
   /** 규격 §8.3 — 훑기를 닫는다. */
@@ -1139,7 +1140,9 @@ export class HwpCtrl {
    * 가지는 **검증 범위 밖**이다. 주석이 실측보다 넓게 읽히지 않도록 여기 못박아 둔다.
    */
   /**
-   * 규격 §8.3.55 — 글을 문서에 **밀어 넣는다**. 반환은 **1** 이다(성공 여부가 아니라 1).
+   * 규격 §8.3.45 — 글을 문서에 **밀어 넣는다**. 반환은 `true` 다(기안기 실측 2026-08-10 —
+   * COM 은 1 을 주지만 웹 계약은 bool. 단 기안기의 삽입 **의미**는 아직 미검증이다:
+   * 데모에서 true 뒤에도 본문이 안 변했다 — 서버 콜백 경로일 수 있어 재측정 대상).
    *
    * 이름과 달리 캐럿 자리에 넣지 않는다 — **문서 맨 앞**에 붙인다(실측: 캐럿을 20 에 두고
    * `가나다` 를 넣으면 본문이 `가나다오호라…` 가 되고, 다시 30 에서 `라마` 를 넣으면
@@ -1148,14 +1151,14 @@ export class HwpCtrl {
    */
   SetTextFile(text, format, option) {
     const body = String(text ?? '');
-    if (!body) return 1;
+    if (!body) return true;
     try {
       // `insertText` 의 셋째 인자는 **글자 번호**다(스트림 자리가 아니다) — 맨 앞은 0 이다.
       // 앞머리 자리차지 뒤 자리(16)를 넘기면 글 한가운데에 꽂힌다.
       this.#doc.insertText(0, 0, 0, body);
     } catch (e) {
       console.warn('[hwpctrl] SetTextFile 실패:', e);
-      return 1;
+      return true;
     }
     this.#listModel = null;
     this.#ctrls = null;
@@ -1165,7 +1168,7 @@ export class HwpCtrl {
     if (this.#cursor.list === 0 && this.#cursor.para === 0) {
       this.#cursor = { ...this.#cursor, pos: this.#cursor.pos + grew };
     }
-    return 1;
+    return true;
   }
 
   /**
@@ -1182,9 +1185,14 @@ export class HwpCtrl {
     if (String(format ?? '').trim().toUpperCase() === 'UNICODE') {
       return parseJson(this.#doc?.getTextFileUnicode?.() ?? '""', '');
     }
-    // 이어 붙이기와 CP949 밖 글자 escape 는 코어가 한다 — 인코딩 판정을 여기서 흉내 내면
-    // 반드시 틀린다(CP949 는 EUC-KR + 마이크로소프트 확장이다).
-    return parseJson(this.#doc?.getTextFileText?.() ?? '""', '');
+    // 이어 붙이기는 코어가 한다. 코어는 COM 실측대로 CP949 밖 글자를 `&#N;` 로 escape
+    // 하지만 **기안기 실물은 원문 유니코드를 그대로 준다**(2026-08-10, `◦`·`ḁǄↀ⿰` 실측)
+    // — 웹 계약이 이기므로 여기서 기계적으로 되돌린다. 문서에 날 `&#숫자;` 글이 있으면
+    // 함께 풀리는 모호함이 있으나 COM 산출물에도 같은 모호함이 있어 대조는 공평하다.
+    const text = parseJson(this.#doc?.getTextFileText?.() ?? '""', '');
+    return typeof text === 'string'
+      ? text.replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+      : text;
   }
 
   /** 규격 §8.3.22 — 문서 끼워넣기. 아직 구현하지 않았다. */
@@ -2188,16 +2196,16 @@ export class HwpCtrl {
   /**
    * 규격 §8.3.14 — 블록의 시작·끝 위치.
    *
-   * 규격의 속성 목록에는 `result` 가 없지만 컨트롤은 그것을 함께 준다(오라클 실측). 셀 블록은
-   * **글자 범위가 아니라서** `result:false` 에 전부 0 이다 — 그 구분이 실제 정보다.
+   * 규격의 속성 목록대로 **`result` 는 없다** — COM 은 그것을 함께 주지만 기안기 실물은
+   * 여섯 키만 준다(2026-08-10 실측, 10.80.0.2862). 블록이 없거나 셀 블록(글자 범위가
+   * 아님)이면 전부 0 이다.
    */
   GetSelectedPos() {
     const sel = this.#selection;
     if (!sel) {
-      return { result: false, slist: 0, spara: 0, spos: 0, elist: 0, epara: 0, epos: 0 };
+      return { slist: 0, spara: 0, spos: 0, elist: 0, epara: 0, epos: 0 };
     }
     return {
-      result: true,
       slist: sel.start.list,
       spara: sel.start.para,
       spos: sel.start.pos,
@@ -2226,7 +2234,7 @@ export class HwpCtrl {
       eset.SetItem('Para', pos.epara);
       eset.SetItem('Pos', pos.epos);
     }
-    return pos.result;
+    return this.#selection != null;
   }
 
   /**
