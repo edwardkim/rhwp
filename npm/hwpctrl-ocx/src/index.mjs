@@ -867,10 +867,13 @@ export class ParameterArray {
     throw new Error('ParameterArray.Clone: 서버에서 예외 오류가 발생했습니다');
   }
 
-  /** 다른 배열의 내용을 그대로 받는다. */
-  Copy(other) {
-    if (!other || typeof other.Count !== 'number') return;
-    this.#items = new Array(other.Count).fill(undefined).map((_, i) => other.Item(i));
+  /**
+   * 규격 §9 에는 있으나 실물 양쪽이 다 죽는다(3자 실측 2026-08-10): 데스크톱 한글2022 는
+   * RPC 붕괴(한글 프로세스가 무너진다), 기안기는 API 자체가 없다. 멀쩡히 받아 주던 첫
+   * 구현이 3자 대조의 유일한 IMPL_GAP 이었다 — `Clone` 과 같은 이유로 죽는 것까지 옮긴다.
+   */
+  Copy() {
+    throw new Error('ParameterArray.Copy: 실물이 받지 않는 호출입니다');
   }
 }
 
