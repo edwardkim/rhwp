@@ -1205,3 +1205,52 @@ fn char_overlap_256_char_shape_ids_no_wraparound() {
         "u8 카운트 wraparound 로 charshape ID 전량 소실"
     );
 }
+
+/// [#4400] `document_core/converters/common_obj_attr_writer.rs`의 `sync_anchor_bits_tests`에서
+/// `sync_anchor_bits` 본체와 함께 이 파일로 이동했다.
+mod sync_anchor_bits_tests {
+    use super::*;
+    use crate::model::shape::{CommonObjAttr, HorzRelTo, VertRelTo};
+
+    /// Issue #3781 실측 회귀: insert 가 seed 한 floating attr
+    /// ((4<<15)|(2<<18) — tac=0·rel=Paper) 위에서 inline 마이그레이션(enum 갱신) 후
+    /// sync 하면 tac/rel 비트만 Para 로 바뀌고 criterion 비트는 보존된다.
+    #[test]
+    fn sync_anchor_bits_updates_stale_floating_seed() {
+        let mut common = CommonObjAttr {
+            attr: (4 << 15) | (2 << 18),
+            treat_as_char: false,
+            vert_rel_to: VertRelTo::Paper,
+            horz_rel_to: HorzRelTo::Paper,
+            ..Default::default()
+        };
+        // 마이그레이션이 하는 일 (enum 갱신).
+        common.treat_as_char = true;
+        common.vert_rel_to = VertRelTo::Para;
+        common.horz_rel_to = HorzRelTo::Para;
+        sync_anchor_bits(&mut common);
+        assert_eq!(common.attr & 0x01, 0x01, "tac bit");
+        assert_eq!((common.attr >> 3) & 0x03, 2, "vert_rel_to = Para");
+        assert_eq!(
+            (common.attr >> 8) & 0x03,
+            3,
+            "horz_rel_to = Para (Paper0/Page1/Column2/Para3)"
+        );
+        assert_eq!((common.attr >> 15) & 0x07, 4, "width criterion 보존");
+        assert_eq!((common.attr >> 18) & 0x03, 2, "height criterion 보존");
+    }
+
+    /// attr=0(합성 경로) 은 무접촉 — 직렬화가 전량 재패킹한다.
+    #[test]
+    fn sync_anchor_bits_leaves_zero_attr_untouched() {
+        let mut common = CommonObjAttr {
+            attr: 0,
+            treat_as_char: true,
+            vert_rel_to: VertRelTo::Para,
+            horz_rel_to: HorzRelTo::Para,
+            ..Default::default()
+        };
+        sync_anchor_bits(&mut common);
+        assert_eq!(common.attr, 0);
+    }
+}

@@ -2039,13 +2039,13 @@ fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
 
 /// `CommonObjAttr` 의 enum 필드들로부터 attr u32 비트를 합성한다.
 ///
-/// [#4400] `document_core/converters/common_obj_attr_writer.rs` 에서 이 파일로 이동했다.
-/// CTRL_HEADER attr 비트 레이아웃을 아는 것은 본질적으로 직렬화 로직이고, 이 파일의
-/// `serialize_common_obj_attr`(및 `document_core::converters::common_obj_attr_writer::
-/// serialize_common_obj_attr` 어댑터)가 유일한 소비 목적이다 — 직렬화기가 도리어
-/// `document_core` 를 참조하는 역방향 의존을 없앤다. `document_core` 쪽에서 필요한
-/// 호출(패스스루 무효화에 준하는 attr 동기화, `sync_anchor_bits`)은 이 pub(crate)
-/// 함수를 그대로 가져다 쓴다.
+/// [#4400] `document_core/converters/common_obj_attr_writer.rs` 에서 이 파일로 이동했다
+/// (`sync_anchor_bits`도 같은 이유로 함께 옮겼다 — 아래 참고). CTRL_HEADER attr 비트
+/// 레이아웃을 아는 것은 본질적으로 직렬화 로직이고, 이 파일의 `serialize_common_obj_attr`
+/// (및 `document_core::converters::common_obj_attr_writer::serialize_common_obj_attr`
+/// 어댑터)가 유일한 소비 목적이다 — 직렬화기가 도리어 `document_core` 를 참조하는
+/// 역방향 의존을 없앤다. `document_core` 쪽에서 필요한 호출(패스스루 무효화에 준하는
+/// attr 동기화)은 이 pub(crate) 함수와 `sync_anchor_bits`를 그대로 가져다 쓴다.
 ///
 /// 비트 레이아웃 (parser/control/shape.rs 의 역방향):
 /// - bit 0: treat_as_char
@@ -2098,9 +2098,38 @@ pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
     a
 }
 
-/// [#4400] `document_core::converters::common_obj_attr_writer::sync_anchor_bits` 가
-/// 앵커 비트(tac/vert_rel/horz_rel)만 재기입할 때도 이 두 헬퍼가 필요해 `pub(crate)`.
-pub(crate) fn vert_rel_to_to_bits(v: VertRelTo) -> u32 {
+/// tac/rel_to 마이그레이션 후 stale packed `attr` 동기화.
+///
+/// [#4400] `document_core/converters/common_obj_attr_writer.rs` 에서 `pack_common_attr_bits`와
+/// 함께 이 파일로 이동했다 — 같은 CTRL_HEADER attr 비트 지식(같은 마스크 상수, 같은
+/// `vert_rel_to_to_bits`/`horz_rel_to_to_bits`)을 다루는 동종 로직을 한쪽만 옮기면
+/// `document_core`에 직렬화 지식이 남고, 그걸 지탱하려고 헬퍼를 `pub(crate)`로 넓혀야
+/// 했다(gestell 자기검증에서 지적된 "총체적 독립성 미달"). 이 함수까지 옮기면 그 넓힘이
+/// 필요 없어진다 — 아래 두 헬퍼를 다시 private으로 좁힌 이유다.
+///
+/// 배경 (Issue #3781 실측): `insert_picture_native` 가 `attr` 비트를 seed 하고
+/// `migrate_picture_floating_to_inline` 은 **enum 필드만** 갱신한다. 직렬화는
+/// `attr != 0` 이면 packed 값을 우선하므로(라운드트립 보존 계약), 마이그레이션된
+/// 그림이 HWP 바이너리 왕복에서 floating(Paper) 앵커로 되살아나
+/// `treatAsChar=1 + vertRelTo=PAPER` 모순 산출물이 된다 (한글 렌더 깨짐).
+/// 앵커 관련 비트(tac bit0 · vert_rel 3-4 · horz_rel 8-9)만 enum 에서 재기입하고,
+/// criterion/wrap/flow 등 나머지 비트는 보존한다 (전체 재패킹은 enum 미동기
+/// 필드의 정보 손실 위험).
+pub(crate) fn sync_anchor_bits(common: &mut CommonObjAttr) {
+    if common.attr == 0 {
+        return; // 직렬화가 pack_common_attr_bits 로 전량 재패킹 — 손댈 것 없음.
+    }
+    let mut a = common.attr;
+    a &= !(0x01 | (0x03 << 3) | (0x03 << 8));
+    if common.treat_as_char {
+        a |= 0x01;
+    }
+    a |= (vert_rel_to_to_bits(common.vert_rel_to) & 0x03) << 3;
+    a |= (horz_rel_to_to_bits(common.horz_rel_to) & 0x03) << 8;
+    common.attr = a;
+}
+
+fn vert_rel_to_to_bits(v: VertRelTo) -> u32 {
     match v {
         VertRelTo::Paper => 0,
         VertRelTo::Page => 1,
@@ -2118,7 +2147,7 @@ fn vert_align_to_bits(v: VertAlign) -> u32 {
     }
 }
 
-pub(crate) fn horz_rel_to_to_bits(v: HorzRelTo) -> u32 {
+fn horz_rel_to_to_bits(v: HorzRelTo) -> u32 {
     match v {
         HorzRelTo::Paper => 0,
         HorzRelTo::Page => 1,
