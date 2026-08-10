@@ -135,6 +135,7 @@ def main() -> int:
     ap.add_argument("--exe", default=str(REPO / "target" / "debug" / "rhwp.exe"))
     ap.add_argument("--threshold", type=float, default=15.0)
     ap.add_argument("-o", "--out", help="TSV 출력 경로(--list 모드)")
+    ap.add_argument("--jobs", type=int, default=1, help="병렬 프로세스 수(--list 모드)")
     args = ap.parse_args()
 
     exe = Path(args.exe)
@@ -144,22 +145,28 @@ def main() -> int:
         return 0
     if not args.list:
         ap.error("target 또는 --list 필요")
+    import concurrent.futures as cf
+
+    paths = [l.strip() for l in Path(args.list).read_text(encoding="utf-8").splitlines() if l.strip()]
+
+    def one(p: str):
+        try:
+            return p, analyze(exe, Path(p), args.threshold)
+        except subprocess.TimeoutExpired:
+            return p, ("ERR", 0, 0.0, 0, "timeout")
+        except Exception as e:  # noqa: BLE001 — 한 파일이 스윕을 못 죽이게
+            return p, ("ERR", 0, 0.0, 0, str(e)[:120])
+
     out = open(args.out, "w", encoding="utf-8", newline="\n") if args.out else sys.stdout
     out.write("sample\tverdict\tpages_checked\tworst_px\tflagged_lines\tdetail\n")
     n = 0
-    for line in Path(args.list).read_text(encoding="utf-8").splitlines():
-        p = line.strip()
-        if not p:
-            continue
-        try:
-            v = analyze(exe, Path(p), args.threshold)
-        except subprocess.TimeoutExpired:
-            v = ("ERR", 0, 0.0, 0, "timeout")
-        out.write(f"{p}\t{v[0]}\t{v[1]}\t{v[2]:.1f}\t{v[3]}\t{v[4]}\n")
-        n += 1
-        if n % 100 == 0:
-            out.flush()
-            print(f"# 진행 {n}", file=sys.stderr)
+    with cf.ThreadPoolExecutor(max_workers=max(1, args.jobs)) as ex:
+        for p, v in ex.map(one, paths):
+            out.write(f"{p}\t{v[0]}\t{v[1]}\t{v[2]:.1f}\t{v[3]}\t{v[4]}\n")
+            n += 1
+            if n % 100 == 0:
+                out.flush()
+                print(f"# 진행 {n}/{len(paths)}", file=sys.stderr)
     if args.out:
         out.close()
     return 0
