@@ -1,6 +1,6 @@
 ---
 kind: investigation
-status: in_progress
+status: completed
 canonical: mydocs/working/task_m100_3820_stage1.md
 last_verified: 2026-08-10
 ---
@@ -124,5 +124,36 @@ candidate output:
 
 ## 최종 판정
 
-범위를 좁힌 source에서 focused gate를 다시 실행하고, commit 뒤 동일 binary로
-p120/p121 144dpi sweep을 재생성한 후 완료 판정을 기록한다.
+구현 commit은 `6d04001ff`다. 그 뒤 병렬 Stage119 코드가 `5a7b57c19`로 별도
+커밋된 clean tracked source에서 release-test binary를 다시 만들었다.
+
+- final Git HEAD: `5a7b57c19e780feb212305decc3fdc4b6260c741`
+- final binary SHA-256:
+  `fe2c4d17afb507f21ed620ce716ce4e0f4f9bc92cb081ebc09c937d52fccb38b`
+- final output:
+  `output/task-3820-stage118-policy-note-separator-final/`
+- stable assets:
+  `mydocs/pr/assets/task_m100_3820_stage118_policy_note_separator_length_sentinel/`
+
+최종 sweep은 전체 SVG/render-tree `215/215`, 요청 p120/p121 `2/2`, missing 0,
+automatic flag 0이다. SVG direct Line은 다음과 같다.
+
+- p120: `x=94.4933`, `y=1019.2867`, `width=188.9764`, `stroke=0.5px`
+- p121: `x=94.4933`, `y=1003.5133`, `width=188.9764`, `stroke=0.5px`
+
+시작 x와 y는 Stage115에서 변하지 않았고 폭만 기존 `201.5733px`에서 정확한
+5cm로 줄었다. p120/p121 FootnoteArea, note 158/159/160 owner, p120 표와 다음
+본문, footer 비겹침도 유지됐다. 확대 review에서는 기존 PDF 끝을 약 8.05pt 넘던
+tail이 제거됐다. 한컴 PDF vector 143pt와 스키마 5cm 141.732pt 사이 약 1.27pt,
+선 굵기·농도 차이는 위 잔여 이슈로 남긴다.
+
+global pixel/ink 지표는 이 작은 선 수정의 합격 기준이 아니다. 참고값은 p120
+pixel 92.79802% / ink 11.68353%, p121 pixel 90.59574% / ink 11.89627%다.
+권위 gate는 source semantic, direct Line geometry, PDF 확대 판독이다.
+
+최종 전체 회귀도 현재 변경 전체를 포함해 성공했다.
+
+- `CARGO_TARGET_DIR=target/task-3820-production-fidelity CARGO_INCREMENTAL=0`
+  `cargo test --profile release-test --tests`: exit `0`
+- library `3394 passed; 0 failed; 13 ignored`
+- integration 전체와 `svg_snapshot` `8/8` 통과

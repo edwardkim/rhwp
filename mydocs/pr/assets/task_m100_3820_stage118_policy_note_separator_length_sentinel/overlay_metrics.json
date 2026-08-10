@@ -1,0 +1,70 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 91.69688,
+    "worst_pixel_match_percent": 90.59574,
+    "average_ink_match_percent": 11.7899,
+    "worst_ink_match_percent": 11.68353,
+    "average_visual_accuracy_proxy_percent": 11.7899,
+    "worst_visual_accuracy_proxy_percent": 11.68353,
+    "worst_pages": [
+      120,
+      121
+    ]
+  },
+  "pages": [
+    {
+      "page": 120,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-stage118-policy-note-separator-final/task3820-stage118-policy-note-separator-final/rhwp_png/rhwp_120.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-stage118-policy-note-separator-final/task3820-stage118-policy-note-separator-final/pdf_png/pdf-120.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-stage118-policy-note-separator-final/task3820-stage118-policy-note-separator-final/overlay/overlay_120.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 144446,
+      "diff_ratio": 0.07201976,
+      "pixel_match_percent": 92.79802,
+      "ink_union_pixels": 163555,
+      "ink_diff_pixels": 144446,
+      "ink_diff_ratio": 0.88316468,
+      "ink_match_percent": 11.68353,
+      "visual_accuracy_proxy_percent": 11.68353,
+      "mean_abs_channel_delta": 10.181,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        142,
+        129,
+        1050,
+        1621
+      ]
+    },
+    {
+      "page": 121,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-stage118-policy-note-separator-final/task3820-stage118-policy-note-separator-final/rhwp_png/rhwp_121.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-stage118-policy-note-separator-final/task3820-stage118-policy-note-separator-final/pdf_png/pdf-121.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-stage118-policy-note-separator-final/task3820-stage118-policy-note-separator-final/overlay/overlay_121.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 188616,
+      "diff_ratio": 0.09404261,
+      "pixel_match_percent": 90.59574,
+      "ink_union_pixels": 214084,
+      "ink_diff_pixels": 188616,
+      "ink_diff_ratio": 0.88103735,
+      "ink_match_percent": 11.89627,
+      "visual_accuracy_proxy_percent": 11.89627,
+      "mean_abs_channel_delta": 12.854,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        141,
+        125,
+        1048,
+        1620
+      ]
+    }
+  ]
+}
