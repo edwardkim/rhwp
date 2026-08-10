@@ -68,6 +68,34 @@ fn test_build_empty_page() {
     assert!(tree.root.children.len() >= 4);
 }
 
+#[test]
+fn physical_outer_box_paint_inset_layout_gate_requires_single_active_zone_column_and_height_match()
+{
+    use super::physical_outer_box_paint_inset_layout_gate;
+
+    assert!(physical_outer_box_paint_inset_layout_gate(
+        1,
+        Some(317.2),
+        317.2,
+    ));
+    assert!(physical_outer_box_paint_inset_layout_gate(
+        1,
+        Some(317.7),
+        317.2,
+    ));
+    assert!(!physical_outer_box_paint_inset_layout_gate(
+        2,
+        Some(317.2),
+        317.2,
+    ));
+    assert!(!physical_outer_box_paint_inset_layout_gate(1, None, 317.2,));
+    assert!(!physical_outer_box_paint_inset_layout_gate(
+        1,
+        Some(317.71),
+        317.2,
+    ));
+}
+
 /// Task #3216: AutoNumber(Page)와 명시 쪽번호 필드가 같은 문단에 있어도 각각은
 /// 모델 한 글자를 유지하고 표시값만 확장해야 한다.
 #[test]

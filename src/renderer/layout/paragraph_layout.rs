@@ -1937,6 +1937,7 @@ impl LayoutEngine {
                     None,
                     false,
                     false,
+                    false,
                 );
                 if table_bottom > max_table_bottom {
                     max_table_bottom = table_bottom;
@@ -1988,6 +1989,7 @@ impl LayoutEngine {
                 None,
                 table_para_y,
                 None,
+                false,
                 false,
                 false,
             );
@@ -5419,6 +5421,7 @@ impl LayoutEngine {
                                     None,
                                     None,
                                     None,
+                                    false,
                                     false,
                                     false,
                                 );

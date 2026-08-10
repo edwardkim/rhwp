@@ -9,6 +9,7 @@ use std::fs;
 use std::path::Path;
 
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
+use rhwp::renderer::{hwpunit_to_px, DEFAULT_DPI};
 use rhwp::wasm_api::HwpDocument;
 
 const SAMPLE: &str =
@@ -104,6 +105,16 @@ fn footnote_and_footer(
     }
     for child in &node.children {
         footnote_and_footer(child, footnote_bottom, footer_top);
+    }
+}
+
+fn body_bbox(node: &RenderNode, bbox: &mut Option<BoundingBox>) {
+    if matches!(node.node_type, RenderNodeType::Body { .. }) {
+        *bbox = Some(node.bbox);
+        return;
+    }
+    for child in &node.children {
+        body_bbox(child, bbox);
     }
 }
 
@@ -1040,38 +1051,70 @@ fn native_hwp5_earlier_marker_projects_the_p120_footnote_before_body_reset() {
         "p121은 PDF처럼 para 1293 reset 줄부터 시작해야 함: {p121}"
     );
 
-    let p120_tree = doc
-        .build_page_render_tree(PAGE_120)
-        .expect("render physical page 120");
-    let p121_tree = doc
-        .build_page_render_tree(PAGE_121)
-        .expect("render physical page 121");
-    let mut p120_lines = Vec::new();
-    let mut p121_lines = Vec::new();
-    paragraph_line_indices(&p120_tree.root, 1293, &mut p120_lines);
-    paragraph_line_indices(&p121_tree.root, 1293, &mut p121_lines);
-    p120_lines.sort_unstable();
-    p120_lines.dedup();
-    p121_lines.sort_unstable();
-    p121_lines.dedup();
-    assert_eq!(p120_lines, vec![0, 1, 2, 3], "p120 para 1293 owner");
-    assert_eq!(
-        p121_lines,
-        (4..14).collect::<Vec<_>>(),
-        "p121 para 1293 owner"
+    let pages = [PAGE_120, PAGE_121, PAGE_121 + 1];
+    let trees = pages.map(|page| {
+        doc.build_page_render_tree(page)
+            .unwrap_or_else(|e| panic!("render physical page {}: {e}", page + 1))
+    });
+    let expected_lines = [vec![0, 1, 2, 3], (4..14).collect::<Vec<_>>(), Vec::new()];
+    for (index, tree) in trees.iter().enumerate() {
+        let mut lines = Vec::new();
+        paragraph_line_indices(&tree.root, 1293, &mut lines);
+        lines.sort_unstable();
+        assert_eq!(
+            lines,
+            expected_lines[index],
+            "p{} para 1293 owner 또는 중복 line",
+            pages[index] + 1
+        );
+    }
+
+    let notes = trees.each_ref().map(|tree| {
+        let mut text = String::new();
+        footnote_text(&tree.root, false, &mut text);
+        text
+    });
+    assert_footnote_owner(&notes, &pages, "158", 0, &["BOE-A-1979-26445"]);
+    assert_footnote_owner(&notes, &pages, "159", 1, &["BOE-A-1980-5627"]);
+    assert_footnote_owner(&notes, &pages, "160", 1, &["BOE-A-2000-79"]);
+    assert!(
+        notes[1].find("159)") < notes[1].find("160)"),
+        "p121 각주 159가 160보다 먼저 와야 함: {}",
+        notes[1]
     );
 
-    let mut p120_notes = String::new();
-    let mut p121_notes = String::new();
-    footnote_text(&p120_tree.root, false, &mut p120_notes);
-    footnote_text(&p121_tree.root, false, &mut p121_notes);
+    let p120_tree = &trees[0];
+    let p121_tree = &trees[1];
+    let mut p120_body = None;
+    body_bbox(&p120_tree.root, &mut p120_body);
+    let p120_body = p120_body.expect("p120 body bbox");
+    let mut p120_table = Vec::new();
+    table_boxes_for_paragraph(&p120_tree.root, 1283, &mut p120_table);
+    assert_eq!(p120_table.len(), 1, "p120 pi1283 whole table owner");
+    let p120_table = p120_table[0];
+    let outer_margin = hwpunit_to_px(283, DEFAULT_DPI);
+    let expected_width = hwpunit_to_px(41_954, DEFAULT_DPI);
+    let expected_height = hwpunit_to_px(23_790, DEFAULT_DPI);
     assert!(
-        p120_notes.contains("158)"),
-        "p120이 marker 이전 각주 158을 소유해야 함: {p120_notes}"
+        (p120_table.x - p120_body.x - outer_margin).abs() <= 0.2,
+        "p120 pi1283 left는 body origin + outer-left 283HU여야 함: body={p120_body:?}, table={p120_table:?}"
     );
     assert!(
-        !p121_notes.contains("158)"),
-        "p121은 각주 158을 중복 소유하면 안 됨: {p121_notes}"
+        (p120_table.y - p120_body.y - outer_margin).abs() <= 0.2,
+        "p120 pi1283 top은 body origin + outer-top 283HU여야 함: body={p120_body:?}, table={p120_table:?}"
+    );
+    assert!(
+        (p120_table.width - expected_width).abs() <= 0.2
+            && (p120_table.height - expected_height).abs() <= 0.2,
+        "p120 pi1283 declared size는 이동 뒤에도 불변이어야 함: {p120_table:?}"
+    );
+    let mut p1286_lines = Vec::new();
+    paragraph_line_boxes(&p120_tree.root, 1286, &mut p1286_lines);
+    assert_eq!(p1286_lines.len(), 1, "p120 pi1286 title line owner");
+    assert!(
+        (p1286_lines[0].y - 461.2).abs() <= 0.2,
+        "표 paint inset이 다음 본문 flow를 이동시키면 안 됨: {:?}",
+        p1286_lines[0]
     );
 
     let mut p120_body_bottom = None;
@@ -1083,6 +1126,24 @@ fn native_hwp5_earlier_marker_projects_the_p120_footnote_before_body_reset() {
             <= p120_separator_top.expect("p120 footnote separator") + 0.5,
         "p120 para 1293은 projected FootnoteArea를 침범하면 안 됨"
     );
+    let mut p121_body_bottom = None;
+    let mut p121_separator_top = None;
+    paragraph_bottom(&p121_tree.root, 1297, &mut p121_body_bottom);
+    footnote_separator_top(&p121_tree.root, &mut p121_separator_top);
+    assert!(
+        p121_body_bottom.expect("p121 para 1297 body")
+            <= p121_separator_top.expect("p121 footnote separator") + 0.5,
+        "p121 para 1297은 FootnoteArea를 침범하면 안 됨"
+    );
+    for (physical_page, tree) in [(120, p120_tree), (121, p121_tree)] {
+        let mut footnote_bottom = None;
+        let mut footer_top = None;
+        footnote_and_footer(&tree.root, &mut footnote_bottom, &mut footer_top);
+        assert!(
+            footnote_bottom.expect("footnote bottom") <= footer_top.expect("footer top") + 1.0,
+            "p{physical_page} FootnoteArea가 footer를 침범하면 안 됨"
+        );
+    }
 }
 
 #[test]

@@ -2046,6 +2046,7 @@ impl LayoutEngine {
         outer_host_stored_vpos_hu: Option<i32>,
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
+        physical_outer_box_paint_inset: bool,
     ) -> f64 {
         if table.cells.is_empty() {
             if depth == 0 {
@@ -2210,6 +2211,7 @@ impl LayoutEngine {
                             None,
                             allow_para_top_bleed,
                             clamp_header_negative_para_offset,
+                            false,
                         );
 
                         if let Some(bs_borders) = outer_border_meta {
@@ -2502,6 +2504,9 @@ impl LayoutEngine {
                 }
             }
         }
+        if physical_outer_box_paint_inset {
+            table_x += hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
+        }
 
         let table_text_wrap = if depth == 0 {
             table.common.text_wrap
@@ -2516,7 +2521,7 @@ impl LayoutEngine {
 
         // inline_x_override가 있으면 외부에서 inline 위치를 계산했으므로 x/y 기준은 유지한다.
         // 단, Top 캡션은 표 본문 위의 별도 영역이므로 표 본문 y 에 캡션 높이만큼 반영한다.
-        let table_y = if inline_x_override.is_some() {
+        let flow_table_y = if inline_x_override.is_some() {
             y_start + inline_top_caption_offset
         } else {
             let computed_y = self.compute_table_y_position(
@@ -2536,9 +2541,15 @@ impl LayoutEngine {
                 computed_y
             }
         };
+        let table_y = flow_table_y
+            + if physical_outer_box_paint_inset {
+                hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+            } else {
+                0.0
+            };
         let inline_table_flow_y_shift = if inline_x_override.is_some() {
             para_y
-                .map(|anchor_y| (table_y - anchor_y).max(0.0))
+                .map(|anchor_y| (flow_table_y - anchor_y).max(0.0))
                 .unwrap_or(0.0)
         } else {
             0.0
@@ -5406,6 +5417,7 @@ impl LayoutEngine {
                                     None,
                                     false,
                                     clamp_header_negative_para_offset,
+                                    false,
                                 );
                                 inline_x += tac_om_l + tac_w + tac_om_r;
                                 // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
@@ -5561,6 +5573,7 @@ impl LayoutEngine {
                                 None,
                                 false,
                                 clamp_header_negative_para_offset,
+                                false,
                             );
                             if !hwpx_nested_behind_text_overlay {
                                 para_y = nested_y

@@ -5,8 +5,9 @@
 
 use super::composer::{compose_paragraph, effective_text_for_metrics, ComposedParagraph};
 use super::float_placement::{
-    horizontal_range, is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu,
-    signed_hwpunit, FloatLaneSet, FloatPlacementContext,
+    horizontal_range, is_para_topbottom_float, native_empty_host_physical_outer_box_paint_inset,
+    native_empty_host_rowbreak_line_advance_hu, signed_hwpunit, FloatLaneSet,
+    FloatPlacementContext,
 };
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
@@ -46,6 +47,12 @@ struct ColumnItemCtx<'a> {
     measured_tables: &'a [MeasuredTable],
     layout: &'a PageLayoutInfo,
     col_area: &'a LayoutRect,
+    /// 현재 PageItem이 속한 활성 구역의 실제 단 수.
+    ///
+    /// `PageContent::column_contents`는 비어 있는 단을 flush하지 않으므로 다단
+    /// 구역에서도 길이가 1일 수 있다. 단일 단 전용 보정은 구역 레이아웃의
+    /// 권위값을 사용해야 한다.
+    zone_column_count: usize,
     outline_numbering_id: u16,
     multi_col_width: Option<i32>,
     prev_tac_seg_applied: bool,
@@ -56,6 +63,19 @@ struct ColumnItemCtx<'a> {
 
 const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
 const SINGLE_ROW_DECLARED_TRUST_MAX_RATIO: f64 = 1.5;
+
+/// 저장 outer-box paint origin 보정의 layout 단계 안전문이다.
+///
+/// pagination 결과에 실제로 채워진 단 수가 아니라 활성 구역의 권위 단 수를
+/// 사용하고, 측정 높이가 선언 높이와 일치하는 whole-table만 허용한다.
+fn physical_outer_box_paint_inset_layout_gate(
+    zone_column_count: usize,
+    measured_total_height: Option<f64>,
+    declared_height: f64,
+) -> bool {
+    zone_column_count == 1
+        && measured_total_height.is_some_and(|measured| (measured - declared_height).abs() <= 0.5)
+}
 
 #[derive(Debug, Clone, Copy)]
 struct TacReceiptSealLine {
@@ -2875,6 +2895,7 @@ impl LayoutEngine {
                             None,
                             false,
                             is_header,
+                            false,
                         );
                     }
                 }
@@ -3761,6 +3782,7 @@ impl LayoutEngine {
                                         None,
                                         None,
                                         None,
+                                        false,
                                         false,
                                         false,
                                     );
@@ -5211,6 +5233,7 @@ impl LayoutEngine {
         } else {
             None
         };
+        let zone_column_count = zone_layout.column_areas.len();
 
         let col_width_hu = (col_area.width / self.dpi * 7200.0).round() as i32;
         let mut prev_tac_seg_applied = false;
@@ -5313,6 +5336,7 @@ impl LayoutEngine {
                         measured_tables,
                         layout,
                         col_area,
+                        zone_column_count,
                         outline_numbering_id,
                         multi_col_width,
                         y_offset,
@@ -6143,6 +6167,7 @@ impl LayoutEngine {
                 measured_tables,
                 layout,
                 col_area,
+                zone_column_count,
                 outline_numbering_id,
                 multi_col_width,
                 y_offset,
@@ -6441,6 +6466,7 @@ impl LayoutEngine {
         measured_tables: &[MeasuredTable],
         layout: &PageLayoutInfo,
         col_area: &LayoutRect,
+        zone_column_count: usize,
         outline_numbering_id: u16,
         multi_col_width: Option<i32>,
         mut y_offset: f64,
@@ -6457,6 +6483,7 @@ impl LayoutEngine {
             measured_tables,
             layout,
             col_area,
+            zone_column_count,
             outline_numbering_id,
             multi_col_width,
             prev_tac_seg_applied,
@@ -7004,6 +7031,7 @@ impl LayoutEngine {
             measured_tables,
             layout,
             col_area,
+            zone_column_count,
             outline_numbering_id,
             multi_col_width,
             prev_tac_seg_applied,
@@ -7035,6 +7063,23 @@ impl LayoutEngine {
                 None
             };
             let mt = fitted_visible_mt.as_ref().or(raw_mt);
+            let declared_height = hwpunit_to_px(signed_hwpunit(t.common.height), self.dpi);
+            let physical_outer_box_paint_inset = physical_outer_box_paint_inset_layout_gate(
+                *zone_column_count,
+                mt.map(|measured| measured.total_height),
+                declared_height,
+            ) && is_current_empty_para_float
+                && native_empty_host_physical_outer_box_paint_inset(
+                    self.profile.get().native_hwp5_layout(),
+                    para,
+                    t,
+                    paragraphs.get(para_index + 1),
+                );
+            let physical_outer_box_paint_inset_y = if physical_outer_box_paint_inset {
+                hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+            } else {
+                0.0
+            };
             let para_style = styles.para_styles.get(para.para_shape_id as usize);
             let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Left);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -7379,6 +7424,7 @@ impl LayoutEngine {
                     None,
                     false,
                     false,
+                    false,
                 );
                 let layer = Self::render_layer_from_common(&t.common, para_index, control_index);
                 Self::push_layered_paper_children(paper_images, &mut tmp_node, layer);
@@ -7598,8 +7644,10 @@ impl LayoutEngine {
                         outer_host_stored_vpos_hu,
                         allow_para_top_bleed,
                         false,
+                        physical_outer_box_paint_inset,
                     )
                 };
+                let table_flow_end = table_visual_end - physical_outer_box_paint_inset_y;
                 if is_tac {
                     let marker_x = tbl_inline_x.unwrap_or(col_area.x + effective_margin);
                     tree.set_inline_shape_position(
@@ -7710,7 +7758,7 @@ impl LayoutEngine {
                 } else if table_visual_shift > 0.0 {
                     (table_visual_end - table_visual_shift).max(table_y_before)
                 } else {
-                    empty_rowbreak_flow_end.unwrap_or(table_visual_end)
+                    empty_rowbreak_flow_end.unwrap_or(table_flow_end)
                 };
                 let signed_vertical_offset = signed_hwpunit(t.common.vertical_offset);
                 let zero_offset_has_following_coanchored_float = signed_vertical_offset == 0
@@ -8418,6 +8466,7 @@ impl LayoutEngine {
                                 None,
                                 None,
                                 None,
+                                false,
                                 false,
                                 false,
                             );
@@ -10131,6 +10180,7 @@ impl LayoutEngine {
                         None,
                         None,
                         None,
+                        false,
                         false,
                         false,
                     );
