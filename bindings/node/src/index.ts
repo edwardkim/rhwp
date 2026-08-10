@@ -142,6 +142,9 @@ export {
 // ── 1층: 무상태 명령 ────────────────────────────────────────────────────────
 
 export {
+  anchorAdd,
+  anchorCheckpoint,
+  anchorVerify,
   audit,
   batch,
   buildFromIngest,
@@ -188,6 +191,9 @@ export {
   verify,
   verifySignature,
   type AgentManifestOptions,
+  type AnchorAddOptions,
+  type AnchorCheckpointOptions,
+  type AnchorVerifyOptions,
   type AuditOptions,
   type BatchOptions,
   type BuildFromIngestOptions,

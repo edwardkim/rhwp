@@ -340,6 +340,12 @@ pub const MAP: &[CommandProvenance] = &[
                캡슐·키링은 호출자 산출물이고, 문서 문자열은 wrap 실행 내부에 머문다.",
     },
     CommandProvenance {
+        command: "anchor",
+        untrusted: NONE,
+        note: "앵커 봉투는 경로 에코·해시·연번·머클 루트/경로·판정뿐이다 — 로그와 \
+               캡슐은 호출자 산출물이고 문서를 열지 않는다.",
+    },
+    CommandProvenance {
         command: "ir-diff",
         untrusted: &[f(
             "categories",

@@ -5,6 +5,7 @@ use std::path::Path;
 use std::process;
 
 mod agent_profiles;
+mod anchor_log;
 mod atomic_file;
 mod capsule_sign;
 mod mcp_serve;
@@ -354,6 +355,7 @@ fn main() {
         Some("keygen") => exit_with(cmd_keygen(&args[2..])),
         Some("verify-signature") => exit_with(cmd_verify_signature(&args[2..])),
         Some("harness") => exit_with(cmd_harness(&args[2..])),
+        Some("anchor") => exit_with(cmd_anchor(&args[2..])),
         // [#3719 §6-4] 계획을 *만드는* 쪽의 정답지 — `run` 바로 옆에 둔다.
         Some("export-plan-schema") => exit_with(cmd_export_plan_schema(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
@@ -1670,6 +1672,38 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "dir", "capsules", "chainValid", "brokenAt", "signed", "reproduced", "verdict"],
         ),
         tool(
+            "hwp_anchor_add",
+            "[#4543] 앵커 등재 — 캡슐 해시를 append-only 투명성 로그 끝에 더한다. 등재 전 로그 자기 무결을 검사하며, 깨진 로그에는 등재를 거부한다(exit 3). T7(역사 전체 재작성) 방어의 시작점.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "capsule": { "type": "string", "description": "등재할 캡슐 경로" },
+                    "log": { "type": "string", "description": "anchor.ndjson 로그 경로 (없으면 생성)" }
+                },
+                "required": ["capsule", "log"],
+            }),
+            "anchor",
+            serde_json::json!(["anchor", "add", "{capsule}", "--log", "{log}", "--json"]),
+            &["schemaVersion", "log", "capsuleSha256", "seq"],
+        ),
+        tool_with_optional_args(
+            "hwp_anchor_verify",
+            "[#4543] 앵커 검증 — 캡슐이 로그에 등재됐고 로그가 무결하며 (checkpoint 지정 시) 머클 경로가 루트에 닿는지 판정한다. 아니면 exit 3. 체크포인트 공표는 도구 밖 운영 절차임을 봉투가 주장하지 않는다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "capsule": { "type": "string", "description": "검증할 캡슐 경로" },
+                    "log": { "type": "string", "description": "anchor.ndjson 로그 경로" },
+                    "checkpoint": { "type": "string", "description": "체크포인트 파일 (선택)" }
+                },
+                "required": ["capsule", "log"],
+            }),
+            "anchor",
+            serde_json::json!(["anchor", "verify", "{capsule}", "--log", "{log}", "--json"]),
+            serde_json::json!([{ "when": "checkpoint", "args": ["--checkpoint", "{checkpoint}"] }]),
+            &["schemaVersion", "capsule", "log", "capsuleSha256", "logChainOk", "logged", "seq", "inCheckpoint", "merklePath"],
+        ),
+        tool(
             "hwp_audit",
             "[#4393] 에이전트 노동 감사 — 작업 캡슐(*.capsule.json) 폴더를 전수 재실행해 재현율을 회계한다. 개별 검증은 hwp_replay, 조직 규모 일괄은 이 도구. 불일치 1건 = exit 3, failed[] 에 캡슐별 기대/실제 해시.",
             serde_json::json!({
@@ -2054,7 +2088,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             "query",
             "작업 캡슐 해시 체인을 거슬러 연대기를 검증 — 부모 파일 무결·계보 불변식(부모 산출=자식 입력)·(--deep) 링크별 재현·(--keyring) 링크별 서명 귀속. 깨진 체인은 exit 3, brokenAt 명세 (#4401·#4509)",
             false,
-            &["--json", "--deep", "--keyring"],
+            &["--json", "--deep", "--keyring", "--anchor-log"],
             &[
                 "schemaVersion",
                 "head",
@@ -2108,6 +2142,26 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "chainValid",
                 "brokenAt",
                 "verdict",
+            ],
+        ),
+        cmd_json(
+            "anchor",
+            "query",
+            "투명성 로그(T7 방어) — add(append-only 등재, 깨진 로그 거부)·checkpoint(머클 루트)·verify(등재·자기 무결·머클 경로 판정, 아님 exit 3). 공표는 운영 절차 (#4543)",
+            false,
+            &["--json", "--log", "--checkpoint", "-o"],
+            &[
+                "schemaVersion",
+                "log",
+                "capsuleSha256",
+                "seq",
+                "upToSeq",
+                "merkleRoot",
+                "entries",
+                "logChainOk",
+                "logged",
+                "inCheckpoint",
+                "merklePath",
             ],
         ),
         cmd_json(
@@ -3660,12 +3714,15 @@ fn print_help() {
     println!("  run <계획.json> [--json]              선언적 편집 계획 실행 (#3703)");
     println!("  replay <계획.json> [--expect-output-sha256 <hex>] [--sign-key <키.json>] [--json]  작업 영수증 발급·재현 검증 (#4391)");
     println!("  audit <캡슐 폴더> [--json]            작업 캡슐 전수 재검증 — 재현율 회계 (#4393)");
-    println!("  lineage <캡슐.json> [--deep] [--keyring <키링.json>] [--json]  작업 계보(해시 체인) 연대기 검증 (#4401)");
+    println!("  lineage <캡슐.json> [--deep] [--keyring <키링.json>] [--anchor-log <로그>] [--json]  작업 계보(해시 체인) 연대기 검증 (#4401)");
     println!("  keygen --key-id <id> --out <키.json>   Ed25519 서명키 발급 (#4509)");
     println!("  verify-signature <캡슐> --keyring <키링.json> [--sig <서명.json>] [--json]  캡슐 서명 검증 (#4509)");
     println!("  harness init <폴더> [--key-id <id>]     검증 작업장 생성 (#4537)");
     println!("  harness wrap --plan <JSON|@파일> --dir <작업장> [--sign-key <키>]  실행+영수증+캡슐+체인+서명 한 방 (#4537)");
     println!("  harness status <작업장> [--keyring <키링>] [--deep] [--json]  체인·서명·재현 통합 판정 (#4537)");
+    println!("  anchor add <캡슐> --log <anchor.ndjson>   투명성 로그 등재 (#4543)");
+    println!("  anchor checkpoint --log <로그> [-o <파일>]  머클 체크포인트 산출 (#4543)");
+    println!("  anchor verify <캡슐> --log <로그> [--checkpoint <파일>] [--json]  등재·무결·머클 경로 판정 (#4543)");
     println!("      전 step 을 정적 선검증(불가 시 실행 0·exit 2)하고 인메모리로 원자");
     println!("      실행해 단언(verify) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경.");
     println!("      steps: fill_fields{{data}} · replace_text{{find,replace[,occurrence]}}");
@@ -15857,6 +15914,279 @@ fn collect_audit_capsules(
     Ok(capsules)
 }
 
+/// [#4543] 앵커 등재 — 캡슐 해시를 append-only 로그 끝에 더한다.
+///
+/// 등재 전에 로그 전체의 자기 무결(줄 해시 체인)을 검사한다 — 깨진 로그에
+/// append 하는 것은 변조 위에 도장을 찍는 일이라 거부한다(exit 3).
+fn cmd_anchor_add(args: &[String]) -> i32 {
+    let mut capsule: Option<&str> = None;
+    let mut log_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--log" => {
+                i += 1;
+                log_path = args.get(i).map(String::as_str);
+            }
+            other if !other.starts_with("--") && capsule.is_none() => capsule = Some(other),
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let (Some(capsule), Some(log_path)) = (capsule, log_path) else {
+        eprintln!("사용법: rhwp anchor add <캡슐.json> --log <anchor.ndjson> [--json]");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(capsule) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: 캡슐을 읽을 수 없습니다 - {capsule}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let capsule_sha = replay_sha256_hex(&bytes);
+    let log = match anchor_log::load(log_path) {
+        Ok(l) => l,
+        Err(e) => {
+            eprintln!("오류(로그 무결): {e}");
+            return 3; // #2707: 깨진 로그에는 등재하지 않는다.
+        }
+    };
+    let line = anchor_log::make_entry_line(&log, &capsule_sha, &capsule_sign::rfc3339_utc_now());
+    let mut data = String::new();
+    if !log.entries.is_empty() {
+        data.push('\n');
+    }
+    data.push_str(&line);
+    use std::io::Write as _;
+    let appended = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(log_path)
+        .and_then(|mut f| f.write_all(data.as_bytes()));
+    if let Err(e) = appended {
+        eprintln!("오류: 로그 append 실패 - {log_path}: {e}");
+        return EXIT_RUNTIME;
+    }
+    let envelope = provenance::marked(
+        serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "log": log_path,
+            "capsuleSha256": capsule_sha,
+            "seq": log.entries.len(),
+        }),
+        "anchor",
+    );
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!("앵커 등재 — seq {} ← {capsule}", log.entries.len());
+    }
+    EXIT_OK
+}
+
+/// [#4543] 머클 체크포인트 — 로그 전체의 루트를 산출한다.
+///
+/// 공표는 도구 밖 운영 절차다 — 봉투는 루트 산출까지만 책임진다.
+fn cmd_anchor_checkpoint(args: &[String]) -> i32 {
+    let mut log_path: Option<&str> = None;
+    let mut out: Option<&str> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--log" => {
+                i += 1;
+                log_path = args.get(i).map(String::as_str);
+            }
+            "-o" => {
+                i += 1;
+                out = args.get(i).map(String::as_str);
+            }
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let Some(log_path) = log_path else {
+        eprintln!(
+            "사용법: rhwp anchor checkpoint --log <anchor.ndjson> [-o <체크포인트.json>] [--json]"
+        );
+        return EXIT_USAGE;
+    };
+    let log = match anchor_log::load(log_path) {
+        Ok(l) => l,
+        Err(e) => {
+            eprintln!("오류(로그 무결): {e}");
+            return 3;
+        }
+    };
+    let Some(root) = anchor_log::merkle_root(&log.line_hashes) else {
+        eprintln!("오류: 빈 로그에는 체크포인트가 없습니다 - {log_path}");
+        return EXIT_USAGE;
+    };
+    let checkpoint = serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "kind": anchor_log::CHECKPOINT_KIND,
+        "upToSeq": log.entries.len() - 1,
+        "merkleRoot": root,
+    });
+    if let Some(out) = out {
+        if let Err(e) = fs::write(
+            out,
+            serde_json::to_string_pretty(&checkpoint).unwrap_or_default(),
+        ) {
+            eprintln!("오류: 체크포인트 저장 실패 - {out}: {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    let envelope = provenance::marked(
+        serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "log": log_path,
+            "upToSeq": log.entries.len() - 1,
+            "merkleRoot": root,
+            "entries": log.entries.len(),
+        }),
+        "anchor",
+    );
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!("체크포인트 — upToSeq {} root {root}", log.entries.len() - 1);
+    }
+    EXIT_OK
+}
+
+/// [#4543] 앵커 검증 — 캡슐이 로그에 있고, 체크포인트에 포함되는가.
+fn cmd_anchor_verify(args: &[String]) -> i32 {
+    let mut capsule: Option<&str> = None;
+    let mut log_path: Option<&str> = None;
+    let mut checkpoint_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--log" => {
+                i += 1;
+                log_path = args.get(i).map(String::as_str);
+            }
+            "--checkpoint" => {
+                i += 1;
+                checkpoint_path = args.get(i).map(String::as_str);
+            }
+            other if !other.starts_with("--") && capsule.is_none() => capsule = Some(other),
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let (Some(capsule), Some(log_path)) = (capsule, log_path) else {
+        eprintln!("사용법: rhwp anchor verify <캡슐.json> --log <anchor.ndjson> [--checkpoint <cp.json>] [--json]");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(capsule) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: 캡슐을 읽을 수 없습니다 - {capsule}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let capsule_sha = replay_sha256_hex(&bytes);
+    let (log, chain_ok, chain_err) = match anchor_log::load(log_path) {
+        Ok(l) => (Some(l), true, serde_json::Value::Null),
+        Err(e) => (None, false, serde_json::json!(e)),
+    };
+    let seq = log.as_ref().and_then(|l| {
+        l.entries
+            .iter()
+            .position(|e| e["capsuleSha256"].as_str() == Some(capsule_sha.as_str()))
+    });
+    let mut in_checkpoint = serde_json::Value::Null;
+    let mut merkle_path_json = serde_json::Value::Null;
+    if let (Some(log), Some(seq), Some(cp_path)) = (log.as_ref(), seq, checkpoint_path) {
+        match fs::read_to_string(cp_path)
+            .map_err(|e| e.to_string())
+            .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).map_err(|e| e.to_string()))
+        {
+            Ok(cp) => {
+                let up_to = cp["upToSeq"].as_u64().map(|v| v as usize);
+                let root = cp["merkleRoot"].as_str().unwrap_or("");
+                match up_to {
+                    Some(up_to) if seq <= up_to && up_to < log.line_hashes.len() => {
+                        let leaves = &log.line_hashes[..=up_to];
+                        let path = anchor_log::merkle_path(leaves, seq);
+                        let ok = anchor_log::merkle_verify(&log.line_hashes[seq], &path, root);
+                        in_checkpoint = serde_json::json!(ok);
+                        merkle_path_json = serde_json::json!(path
+                            .iter()
+                            .map(|(h, left)| serde_json::json!({ "sibling": h, "siblingIsLeft": left }))
+                            .collect::<Vec<_>>());
+                    }
+                    _ => in_checkpoint = serde_json::json!(false),
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 체크포인트를 읽을 수 없습니다 - {cp_path}: {e}");
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+    let logged = seq.is_some();
+    let ok = chain_ok && logged && in_checkpoint != serde_json::json!(false);
+    let envelope = provenance::marked(
+        serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "capsule": capsule,
+            "log": log_path,
+            "capsuleSha256": capsule_sha,
+            "logChainOk": chain_ok,
+            "logChainError": chain_err,
+            "logged": logged,
+            "seq": seq,
+            "inCheckpoint": in_checkpoint,
+            "merklePath": merkle_path_json,
+        }),
+        "anchor",
+    );
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!(
+            "앵커 검증 — {capsule}: logged {logged} · chain {chain_ok} · checkpoint {in_checkpoint}"
+        );
+    }
+    if ok {
+        EXIT_OK
+    } else {
+        3 // #2707: 검증 단언 실패 — 앵커가 시점을 증명하지 못한다.
+    }
+}
+
+/// [#4543] anchor 디스패치 — add·checkpoint·verify.
+fn cmd_anchor(args: &[String]) -> i32 {
+    match args.first().map(String::as_str) {
+        Some("add") => cmd_anchor_add(&args[1..]),
+        Some("checkpoint") => cmd_anchor_checkpoint(&args[1..]),
+        Some("verify") => cmd_anchor_verify(&args[1..]),
+        _ => {
+            eprintln!("사용법: rhwp anchor <add|checkpoint|verify> …");
+            EXIT_USAGE
+        }
+    }
+}
+
 /// [#4537] 하네스 작업장 규약 — capsules/ 하위와 키링 골격을 만든다.
 fn cmd_harness_init(args: &[String]) -> i32 {
     let mut dir: Option<&str> = None;
@@ -16561,6 +16891,7 @@ fn cmd_lineage(args: &[String]) -> i32 {
     let mut head: Option<&str> = None;
     let mut deep = false;
     let mut keyring_path: Option<String> = None;
+    let mut anchor_log_path: Option<String> = None;
     let mut json_mode = false;
     let mut i = 0;
     while i < args.len() {
@@ -16577,6 +16908,16 @@ fn cmd_lineage(args: &[String]) -> i32 {
                     }
                 }
             }
+            "--anchor-log" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => anchor_log_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --anchor-log 뒤에 로그 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
             other if !other.starts_with("--") && head.is_none() => head = Some(other),
             other => {
                 eprintln!("알 수 없는 옵션: {other}");
@@ -16586,7 +16927,7 @@ fn cmd_lineage(args: &[String]) -> i32 {
         i += 1;
     }
     let Some(head) = head else {
-        eprintln!("사용법: rhwp lineage <캡슐.json> [--deep] [--keyring <키링.json>] [--json]");
+        eprintln!("사용법: rhwp lineage <캡슐.json> [--deep] [--keyring <키링.json>] [--anchor-log <로그>] [--json]");
         return EXIT_USAGE;
     };
     // [#4509] 서명 판정은 opt-in — --keyring 없으면 signerOk 축 자체가 봉투에
@@ -16596,6 +16937,23 @@ fn cmd_lineage(args: &[String]) -> i32 {
             Ok(map) => Some(map),
             Err(e) => {
                 eprintln!("오류: {e}");
+                return EXIT_RUNTIME;
+            }
+        },
+        None => None,
+    };
+    // [#4543] 앵커 판정도 opt-in — 로그의 등재 해시 집합을 한 번만 만든다.
+    let anchored_set: Option<std::collections::BTreeSet<String>> = match anchor_log_path.as_deref()
+    {
+        Some(path) => match anchor_log::load(path) {
+            Ok(log) => Some(
+                log.entries
+                    .iter()
+                    .filter_map(|e| e["capsuleSha256"].as_str().map(str::to_string))
+                    .collect(),
+            ),
+            Err(e) => {
+                eprintln!("오류(로그 무결): {e}");
                 return EXIT_RUNTIME;
             }
         },
@@ -16767,6 +17125,11 @@ fn cmd_lineage(args: &[String]) -> i32 {
             };
             link["signerOk"] = signer_ok;
             link["keyId"] = key_id;
+        }
+        if let Some(set) = anchored_set.as_ref() {
+            // 미등재 = false 이되 체인을 깨지 않는다 — 등재 강제는 게이트(6년
+            // 축)의 직무다. 판정 데이터만 싣는다.
+            link["anchoredOk"] = serde_json::json!(set.contains(&file_sha));
         }
         links.push(link);
         if parent_ok == Some(false)

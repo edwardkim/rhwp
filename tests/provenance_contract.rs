@@ -409,6 +409,10 @@ fn recipes() -> Vec<Recipe> {
         br#"{"schemaVersion":"1.0","kind":"keyring","keys":[]}"#,
     )
     .expect("빈 keyring 픽스처");
+    // anchor verify 픽스처 — 빈 로그 + 아무 캡슐 = 미등재(logged:false, exit 3).
+    let anchor_log = dir.join("prov-anchor.ndjson");
+    std::fs::write(&anchor_log, b"").expect("빈 앵커 로그");
+
     // harness status 픽스처 — 깨진 캡슐 폴더 규약(capsules/ 하위).
     let harness_dir = dir.join("prov-harness");
     std::fs::create_dir_all(harness_dir.join("capsules")).expect("하네스 작업장");
@@ -892,6 +896,22 @@ fn recipes() -> Vec<Recipe> {
             command: "harness",
             doc: None,
             args: vec![s("harness"), s("status"), p(&harness_dir), s("--json")],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // anchor 미등재 판정 — 판정은 봉투 데이터(exit 3), 문서 오라클 없음.
+            command: "anchor",
+            doc: None,
+            args: vec![
+                s("anchor"),
+                s("verify"),
+                p(&sig_capsule),
+                s("--log"),
+                p(&anchor_log),
+                s("--json"),
+            ],
             stdin: None,
             exit: 3,
             ndjson: false,

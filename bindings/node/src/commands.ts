@@ -843,6 +843,8 @@ export interface LineageOptions extends CommandOptions {
   readonly deep?: boolean | undefined;
   /** [#4509] 키 등록부 경로 — 주면 링크마다 signerOk/keyId 판정 축이 붙는다(opt-in). */
   readonly keyring?: PathLike | undefined;
+  /** [#4543] 투명성 로그 경로 — 주면 링크마다 anchoredOk 판정 축이 붙는다(opt-in). */
+  readonly anchorLog?: PathLike | undefined;
   /**
    * 깨진 계보(exit 3)를 예외로 올릴지.
    *
@@ -863,6 +865,7 @@ export async function lineage(head: PathLike, options: LineageOptions = {}): Pro
   const args: Argument[] = ['lineage', head, '--json'];
   if (options.deep) args.push('--deep');
   if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.anchorLog !== undefined) args.push('--anchor-log', options.anchorLog);
   return call(args, options);
 }
 
@@ -977,6 +980,58 @@ export async function harnessStatus(
   const args: Argument[] = ['harness', 'status', dir];
   if (options.keyring !== undefined) args.push('--keyring', options.keyring);
   if (options.deep) args.push('--deep');
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link anchorAdd} 옵션. */
+export interface AnchorAddOptions extends CommandOptions {}
+
+/** [#4543] 앵커 등재 — 캡슐 해시를 append-only 투명성 로그에 더한다(깨진 로그 거부). */
+export async function anchorAdd(
+  capsule: PathLike,
+  log: PathLike,
+  options: AnchorAddOptions = {},
+): Promise<Envelope> {
+  return call(['anchor', 'add', capsule, '--log', log, '--json'], options);
+}
+
+/** {@link anchorCheckpoint} 옵션. */
+export interface AnchorCheckpointOptions extends CommandOptions {
+  /** 체크포인트 파일 저장 경로. */
+  readonly out?: PathLike | undefined;
+}
+
+/** [#4543] 머클 체크포인트 — 루트 산출까지가 도구의 몫(공표는 운영 절차). */
+export async function anchorCheckpoint(
+  log: PathLike,
+  options: AnchorCheckpointOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['anchor', 'checkpoint', '--log', log];
+  if (options.out !== undefined) args.push('-o', options.out);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link anchorVerify} 옵션. */
+export interface AnchorVerifyOptions extends CommandOptions {
+  readonly checkpoint?: PathLike | undefined;
+  /**
+   * 미등재·무결 실패(exit 3)를 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(`logged`·`logChainOk`·`inCheckpoint`)로 읽는다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/** [#4543] 앵커 검증 — 등재·로그 무결·(checkpoint) 머클 경로 판정. */
+export async function anchorVerify(
+  capsule: PathLike,
+  log: PathLike,
+  options: AnchorVerifyOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['anchor', 'verify', capsule, '--log', log];
+  if (options.checkpoint !== undefined) args.push('--checkpoint', options.checkpoint);
   args.push('--json');
   return call(args, options);
 }

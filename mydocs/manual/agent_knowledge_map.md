@@ -304,7 +304,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 203개 필드
+### 2-2. 전수 사전 — 212개 필드
 
 `capabilities` 의 `recordFields` 고유 **185개**와 그 밖의 실측-only 필드
 `assertions`·`docId`·`preview` **3개**를 합친 188개다. `등장 명령` 은 자기서술
@@ -500,6 +500,21 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `signed` | bool\|object\|null | wrap 은 서명 여부(bool), status 는 집계 `{valid, invalid, unsigned}` — keyring 미지정이면 `null` | `harness` |
 | `capsules` | number | 작업장의 캡슐 수 | `harness` |
 | `chainValid` | bool | 연번 체인 무결(부모 파일명·해시 연쇄) — `false` 면 exit 3, `brokenAt` 이 원인 명세 | `harness` |
+
+#### 앵커 (`anchor`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `log` | string | 투명성 로그 경로(호출자 에코) | `anchor` |
+| `seq` | number\|null | 등재 연번. verify 에서 미등재면 `null` | `anchor` |
+| `logged` | bool | 캡슐 해시가 로그에 등재돼 있는가 — `false` 면 exit 3 | `anchor` |
+| `logChainOk` | bool | 로그 자기 무결(줄 해시 체인·seq 연번) — 중간 변조는 여기서 폭로 | `anchor` |
+| `entries` | number | 로그 항목 수 | `anchor` |
+| `upToSeq` | number | 체크포인트가 덮는 마지막 연번 | `anchor` |
+| `merkleRoot` | string | 로그 줄 해시들의 머클 루트 — 외부 공표 대상(공표 자체는 운영) | `anchor` |
+| `inCheckpoint` | bool\|null | 머클 경로가 체크포인트 루트에 닿는가. 체크포인트 미지정이면 `null` | `anchor` |
+| `merklePath` | array\|null | 잎→루트 형제 해시 경로(`{sibling, siblingIsLeft}`) — 제3자가 재계산으로 검증 | `anchor` |
+
 
 
 #### 판정·비교
