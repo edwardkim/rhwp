@@ -6,12 +6,13 @@
 //! 파일로 박제하지 않고 바이너리 자기서술에서 매번 재구성하므로, CLI 가
 //! 진화하면 가드의 기준도 함께 진화한다.
 //!
-//! v1 범위: 참조의 **머리 토큰**(`rhwp <토큰>`)까지다. `edit replace-text`
-//! 같은 그룹 하위명령의 2단 검증은 후속(#4508 논의).
+//! 검증 깊이: 머리 토큰(`rhwp <토큰>`) + **그룹 하위명령 2단**(`rhwp edit
+//! replace-text`). 하위명령의 실명 출처는 `--help` 다 — capabilities 는
+//! edit·inspect 를 우산 이름 하나로만 싣는다(실측: 2단 이름 0개).
 
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
@@ -62,6 +63,56 @@ fn known_commands() -> BTreeSet<String> {
     set
 }
 
+fn is_token(s: &str) -> bool {
+    !s.is_empty()
+        && !s.starts_with('-')
+        && s.chars()
+            .all(|ch| ch.is_ascii_lowercase() || ch.is_ascii_digit() || ch == '-')
+}
+
+/// 그룹 명령의 하위명령 실명 — `--help` 의 "  <머리> <하위> …" 줄에서 수확한다.
+///
+/// `batch <export-text|…>` 처럼 하위가 플레이스홀더인 줄은 토큰 규칙(`<` 시작
+/// 불가)에 걸러져 그룹으로 등록되지 않는다 — `rhwp batch info` 같은 참조가
+/// 오탐되지 않는 이유다. 하위명령 목록이 도움말에 실리는 그룹(edit·inspect)만
+/// 2단 검증 대상이 된다.
+fn group_subcommands() -> BTreeMap<String, BTreeSet<String>> {
+    let mut map: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    for line in rhwp(&["--help"]).lines() {
+        let Some(rest) = line.strip_prefix("  ") else {
+            continue;
+        };
+        let mut it = rest.split_whitespace();
+        let (Some(head), Some(sub)) = (it.next(), it.next()) else {
+            continue;
+        };
+        if !is_token(head) {
+            continue;
+        }
+        if is_token(sub) {
+            map.entry(head.to_string())
+                .or_default()
+                .insert(sub.to_string());
+        } else if sub.starts_with('<') && sub.contains('|') {
+            // `batch <export-text|info|…>` — 대안 나열 플레이스홀더도 하위명령
+            // 실명이다. 이것을 안 거두면 batch 가 {fill}만 가진 그룹이 되어
+            // 정당한 `rhwp batch info` 참조가 오탐된다(실측).
+            for alt in sub.trim_matches(|c| c == '<' || c == '>').split('|') {
+                if is_token(alt) {
+                    map.entry(head.to_string())
+                        .or_default()
+                        .insert(alt.to_string());
+                }
+            }
+        }
+    }
+    assert!(
+        map.get("edit").is_some_and(|s| s.len() >= 4),
+        "edit 하위명령 수확 회귀 의심: {map:?}"
+    );
+    map
+}
+
 /// (스킬 이름, SKILL.md 본문) 전수.
 fn skill_files() -> Vec<(String, String)> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -87,11 +138,12 @@ fn skill_files() -> Vec<(String, String)> {
     out
 }
 
-/// 본문에서 `rhwp <토큰>` 참조를 추출한다.
+/// 본문에서 `rhwp <토큰> [하위토큰]` 참조를 추출한다.
 ///
 /// 토큰은 소문자 ASCII 로 시작하는 `[a-z0-9-]+` 만 — 한글 조사("rhwp 를"),
 /// 플레이스홀더("rhwp <명령>"), 대문자 산문("rhwp CLI")은 참조가 아니다.
-fn referenced_commands(body: &str) -> Vec<String> {
+/// 하위토큰은 공백 하나 뒤 같은 규칙(단, `-` 시작 플래그 제외)으로만 잡는다.
+fn referenced_commands(body: &str) -> Vec<(String, Option<String>)> {
     let pat = "rhwp ";
     let mut refs = Vec::new();
     let mut idx = 0usize;
@@ -102,7 +154,15 @@ fn referenced_commands(body: &str) -> Vec<String> {
             .take_while(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || *c == '-')
             .collect();
         if tok.chars().next().is_some_and(|c| c.is_ascii_lowercase()) {
-            refs.push(tok);
+            let after = start + tok.len();
+            let sub = body[after..].strip_prefix(' ').and_then(|tail| {
+                let s: String = tail
+                    .chars()
+                    .take_while(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || *c == '-')
+                    .collect();
+                (is_token(&s)).then_some(s)
+            });
+            refs.push((tok, sub));
         }
         idx = start;
     }
@@ -112,11 +172,23 @@ fn referenced_commands(body: &str) -> Vec<String> {
 #[test]
 fn skills_reference_only_real_commands() {
     let known = known_commands();
+    let groups = group_subcommands();
     let mut dead: Vec<String> = Vec::new();
     for (name, body) in skill_files() {
-        for tok in referenced_commands(&body) {
+        for (tok, sub) in referenced_commands(&body) {
             if !known.contains(&tok) {
                 dead.push(format!("  {name}: `rhwp {tok}`"));
+                continue;
+            }
+            // 2단: 도움말이 하위명령을 선언한 그룹(edit·inspect)에서 하위
+            // 토큰이 잡혔다면 그 하위도 실재해야 한다 — `rhwp edit replace`
+            // 같은 오기가 여기서 잡힌다.
+            if let (Some(subs), Some(sub)) = (groups.get(&tok), sub) {
+                if !subs.contains(&sub) {
+                    dead.push(format!(
+                        "  {name}: `rhwp {tok} {sub}` (실재 하위: {subs:?})"
+                    ));
+                }
             }
         }
     }

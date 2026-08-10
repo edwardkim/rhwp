@@ -19,3 +19,13 @@
   "--json 은 --search 전용") — 단독 `capabilities` 가 곧 JSON 자기서술.
   가드 주석에 기록.
 - v1 범위: 참조 머리 토큰까지(edit/inspect 그룹 하위 2단 검증은 후속).
+
+## stage2 — 그룹 하위명령 2단 검증 (후속 이행)
+
+- 하위명령 실명 출처 = --help (capabilities 는 edit·inspect 우산 이름만, 2단 0개 실측).
+- 수확 2경로: 실토큰 줄("edit replace-text …")과 **대안 플레이스홀더**("batch
+  <export-text|info|…>" — 안 거두면 batch 가 {fill}만 가진 그룹이 되어 정당한
+  `rhwp batch info` 가 오탐됨을 실측으로 확인 후 보강).
+- 검출 UX: 실패 메시지가 스킬·참조·실재 하위 목록까지 명세 (`rhwp edit replace`
+  같은 오기가 정확히 짚힌다).
+- 11개 스킬 2단 참조 전건 실재 확인 (2/2 green).
