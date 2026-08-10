@@ -264,8 +264,9 @@ async function updateLoadProgress(percent: number, label: string): Promise<void>
 }
 
 /**
- * CanvasKit은 browser CSS font fallback을 사용하지 않는다. 초기 페이지를 먼저 표시한 뒤,
- * 저장된 권한 범위 안에서 필요한 local face를 준비하고 등록된 경우에만 다시 그린다.
+ * CanvasKit은 browser CSS font fallback을 사용하지 않는다. 첫 replay의 preflight가 요구한
+ * face는 prepareCanvasKitDocument에서 먼저 준비하고, 여기서는 문서 전체 face 및 사용자가
+ * 새로 승인한 local face를 보충한 뒤 현재 뷰만 다시 그린다.
  */
 function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined): void {
   const renderer = canvasView?.getRenderBackend() === 'canvaskit'
@@ -362,6 +363,18 @@ async function initialize(): Promise<void> {
           );
           if (plan.unavailableFonts.length > 0) {
             throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${plan.unavailableFonts.join(', ')}`);
+          }
+          try {
+            // 저장된 Local Font Access 권한이 있으면 첫 replay부터 원 face의 SFNT bytes를
+            // CanvasKit에 전달한다. CSS local()에서 EBDT face가 두부로 바뀌는 경로를 타지 않는다.
+            await loadStoredLocalFonts();
+            await renderer.prepareLocalFonts(report.requiredFontFamilies);
+          } catch (error) {
+            // 로컬 권한이 만료됐거나 face 읽기에 실패해도 portable bundled face로 계속 연다.
+            console.warn(
+              '[CanvasKit] 저장된 로컬 Typeface 사전 준비 실패, bundled fallback으로 계속합니다:',
+              error,
+            );
           }
           await renderer.prepareBundledFonts(plan.sources);
         },

@@ -167,10 +167,15 @@ jobs:
                 return { state: 'missing', reason: `missing-codeql-workflow:${candidateSha}` };
               }
               const runCreatedAt = Date.parse(workflowRun.created_at);
+              const runAttemptStartedAt = Date.parse(
+                workflowRun.run_started_at || workflowRun.created_at,
+              );
               const pullCreatedAt = Date.parse(pr.created_at);
               if (!Number.isFinite(runCreatedAt)
+                || !Number.isFinite(runAttemptStartedAt)
                 || !Number.isFinite(pullCreatedAt)
-                || runCreatedAt < pullCreatedAt) {
+                || runCreatedAt < pullCreatedAt
+                || runAttemptStartedAt < runCreatedAt) {
                 return { state: 'failed', reason: 'codeql-workflow-pr-identity-mismatch' };
               }
               if (workflowRun.status !== 'completed') {
@@ -204,6 +209,49 @@ jobs:
                     reason: `check-not-green:${checkName}:${checkRun.conclusion}`,
                   };
                 }
+              }
+
+              // Each Analyze job must succeed independently. The repository currently
+              // emits one GHAS CodeQL policy check when the first language analysis
+              // arrives; bind that observed check to this candidate and run attempt.
+              // Do not infer later-language policy coverage from this single check.
+              const securityChecks = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref: candidateSha,
+                filter: 'latest',
+                per_page: 100,
+              });
+              const securityCheck = latestRun(securityChecks.filter((check) => (
+                check.app?.slug === 'github-advanced-security'
+                  && check.name === 'CodeQL'
+                  && check.head_sha === candidateSha
+              )));
+              if (!securityCheck) {
+                return {
+                  state: 'missing',
+                  reason: `missing-security-check:CodeQL:${candidateSha}`,
+                };
+              }
+              const securityCheckStartedAt = Date.parse(securityCheck.started_at);
+              if (!Number.isFinite(securityCheckStartedAt)
+                || securityCheckStartedAt < runAttemptStartedAt) {
+                return {
+                  state: 'missing',
+                  reason: `missing-security-check:CodeQL:${candidateSha}`,
+                };
+              }
+              if (securityCheck.status !== 'completed') {
+                return {
+                  state: 'pending',
+                  reason: `security-check-not-completed:CodeQL:${securityCheck.status}`,
+                };
+              }
+              if (securityCheck.conclusion !== 'success') {
+                return {
+                  state: 'failed',
+                  reason: `security-check-not-green:CodeQL:${securityCheck.conclusion}`,
+                };
               }
               return { state: 'green' };
             }
@@ -469,35 +517,7 @@ jobs:
         if: matrix.language == 'rust'
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
 
-      # [Task #1192 B] CodeQL rust analyze 는 cargo 캐시가 없어 매번 cold build 였다.
-      # ci.yml 과 동일 path, 별도 key namespace(codeql-rust)로 warm build 화.
-      # [Task #1667] PR run 은 restore-only, trusted branch push 에서만 save 한다.
-      - name: Restore cargo registry & build cache (rust)
-        id: codeql_rust_cache_restore
-        if: matrix.language == 'rust'
-        uses: actions/cache/restore@v6
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-codeql-rust-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-codeql-rust-
-
-      - name: Build Rust (for CodeQL)
-        if: matrix.language == 'rust'
-        run: cargo build
-
-      - name: Save cargo registry & build cache (rust)
-        if: ${{ matrix.language == 'rust' && github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.codeql_rust_cache_restore.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v6
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-codeql-rust-${{ hashFiles('**/Cargo.lock') }}
-
+      # [#3790 Stage 5A] 기본 build mode의 내부 autobuild가 같은 source alert와
+      # fingerprint를 생성함을 canary로 확인했다. 중복 cache·수동 prebuild는 실행하지 않는다.
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4

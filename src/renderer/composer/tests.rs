@@ -887,6 +887,49 @@ fn test_reflow_english_word_wrap() {
     assert_eq!(para.line_segs[1].text_start, 6); // "World" 시작
 }
 
+#[test]
+fn issue_4442_corrected_noto_ascii_advances_change_threshold_wrap_with_kerning_off() {
+    use crate::renderer::layout::{estimate_text_width_unrounded, resolved_to_text_style};
+    use crate::renderer::style_resolver::ResolvedCharStyle;
+
+    let mut styles = make_styles_with_font_size(1000.0);
+    styles.char_styles[0] = ResolvedCharStyle {
+        font_family: "Noto Sans KR".to_string(),
+        font_size: 1000.0,
+        kerning: false,
+        ..Default::default()
+    };
+    let text_style = resolved_to_text_style(&styles, 0, 1);
+    let corrected_width = estimate_text_width_unrounded("AVATAR", &text_style);
+    let prior_table_width = 3416.0;
+    assert_eq!(corrected_width, 3633.0);
+    let threshold = (prior_table_width + corrected_width) / 2.0;
+
+    let mut para = Paragraph {
+        text: "AVATAR".to_string(),
+        char_offsets: (0..6).collect(),
+        char_count: 7,
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    reflow_line_segs(&mut para, threshold, &styles, 96.0);
+
+    assert_eq!(
+        para.line_segs
+            .iter()
+            .map(|line| line.text_start)
+            .collect::<Vec<_>>(),
+        vec![0, 5]
+    );
+}
+
 fn reflow_after_prior_break_line_starts(text: &str, indent_px: f64) -> Vec<u32> {
     let mut styles = make_styles_with_font_size(16.0);
     styles.para_styles[0].indent = indent_px;

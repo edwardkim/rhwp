@@ -1470,6 +1470,7 @@ fn collect_fields_from_paragraph(
                                 memo_paragraphs: Vec::new(),
                                 memo_text_direction: None,
                                 raw_parameters_xml: None,
+                                parameters: Default::default(),
                                 guide_residue: None,
                             },
                             location: loc,
@@ -2223,6 +2224,7 @@ fn insert_click_here_field_in_para(
         memo_paragraphs: Vec::new(),
         memo_text_direction: None,
         raw_parameters_xml: None,
+        parameters: Default::default(),
         guide_residue: None,
     };
 
@@ -2437,6 +2439,7 @@ mod tests {
             memo_paragraphs: Vec::new(),
             memo_text_direction: None,
             raw_parameters_xml: None,
+            parameters: Default::default(),
             guide_residue: None,
         })
     }

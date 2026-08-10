@@ -20,7 +20,9 @@ use std::collections::BTreeSet;
 
 use crate::model::bin_data::{BinDataContent, BinDataStatus, BinDataType};
 use crate::model::control::Control;
-use crate::model::document::{Document, HwpVersion, Section, SectionDef};
+use crate::model::document::{
+    Document, HwpVersion, Section, SectionDef, HWP3_ORIGIN_STREAM_PATH, HWPX_ORIGIN_STREAM_PATH,
+};
 use crate::model::image::Picture;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{common_obj_offsets, ShapeObject, TextBox};
@@ -28,8 +30,11 @@ use crate::model::style::{BorderFill, BorderLineType, Fill, FillType};
 use crate::model::table::{Cell, Table, TablePageBreak};
 use crate::parser::FileFormat;
 
-use super::common_obj_attr_writer::{pack_common_attr_bits, serialize_common_obj_attr};
+use super::common_obj_attr_writer::serialize_common_obj_attr;
 use super::hwpx_master_page_slots::materialize_hwp5_master_page_slots;
+// [#4400] bit packing 은 serializer 소유 — document_core::converters 는 더 이상 이 로직을
+// 직접 갖지 않는다.
+use crate::serializer::control::pack_common_attr_bits;
 
 /// 어댑터 실행 보고서.
 ///
@@ -1803,12 +1808,28 @@ fn table_requires_layout_ctrl_data(table: &Table) -> bool {
         && matches!(table.page_break, TablePageBreak::RowBreak)
 }
 
-fn build_table_layout_ctrl_data() -> Vec<u8> {
-    // 한컴 HWPX→HWP 변환본에서 3x2 선택지 표 뒤에 붙는 Table CTRL_DATA.
-    // 공식 5.0 문서에는 의미가 정리되어 있지 않지만, #1064/#1099 정답지 모두
-    // 같은 104바이트 ParameterSet(0x021b → 0x0242)을 사용한다.
-    const VALUES: [u32; 11] = [3826, 1048, 28346, 8475, 708, 0, 2, 9, 0, 59528, 84188];
+// #1064/#1099에서 같은 104바이트 payload가 관찰됐다. #4438: 이 11쌍은 하나의
+// opaque table-layout payload에서 관찰된 정확한 계약이지, 개별 item의 의미 표가 아니다.
+// 외부 소비자가 각 item을 해석하는지는 확인되지 않았으므로 호환 의미를 추정하지 않는다.
+// 0x4000부터의 연속값을 일반 item-id 할당 범위로 해석하거나 다음 ID를 발명하지 않는다.
+// 새 의미를 추가하려면 이 배열을 연장하지 말고 독립된 바이너리 근거와 소비자를 먼저 확정한다.
+const TABLE_LAYOUT_CTRL_DATA_I4_ITEMS: [(u16, u32); 11] = [
+    (0x4000, 3826),
+    (0x4001, 1048),
+    (0x4002, 28346),
+    (0x4003, 8475),
+    (0x4004, 708),
+    (0x4005, 0),
+    (0x4006, 2),
+    (0x4007, 9),
+    (0x4008, 0),
+    (0x4009, 59528),
+    (0x400a, 84188),
+];
 
+fn build_table_layout_ctrl_data() -> Vec<u8> {
+    // HWPX→HWP adapter가 특정 3x2 선택지 표 뒤에 materialize하는 104바이트 raw 계약.
+    // serializer는 이 payload를 해석하거나 재번호화하지 않고 ctrl_data_records에서 복사한다.
     let mut data = Vec::with_capacity(104);
     data.extend_from_slice(&0x021b_u16.to_le_bytes());
     data.extend_from_slice(&1_u16.to_le_bytes());
@@ -1816,10 +1837,10 @@ fn build_table_layout_ctrl_data() -> Vec<u8> {
     data.extend_from_slice(&0x0242_u16.to_le_bytes());
     data.extend_from_slice(&0x8000_u16.to_le_bytes());
     data.extend_from_slice(&0x0242_u16.to_le_bytes());
-    data.extend_from_slice(&(VALUES.len() as u16).to_le_bytes());
+    data.extend_from_slice(&(TABLE_LAYOUT_CTRL_DATA_I4_ITEMS.len() as u16).to_le_bytes());
     data.extend_from_slice(&0_u16.to_le_bytes());
-    for (idx, value) in VALUES.iter().enumerate() {
-        data.extend_from_slice(&(0x4000_u16 + idx as u16).to_le_bytes());
+    for &(item_id, value) in &TABLE_LAYOUT_CTRL_DATA_I4_ITEMS {
+        data.extend_from_slice(&item_id.to_le_bytes());
         data.extend_from_slice(&0x0004_u16.to_le_bytes());
         data.extend_from_slice(&value.to_le_bytes());
     }
@@ -2059,32 +2080,6 @@ fn adapt_cell_list_attr(cell: &mut Cell, report: &mut AdapterReport) {
         report.cells_list_attr_bit16_set += 1;
     }
 }
-
-/// [Issue #1770] HWPX-origin 마커 스트림 경로.
-///
-/// rhwp 의 HWPX→HWP 변환은 LINE_SEG 를 verbatim 직렬화하므로 산출 HWP5 의 IR 은
-/// HWPX 시멘틱 그대로다. 재파스 시 이 마커로 `Document::is_hwpx_variant` 를 세워
-/// pagination/렌더의 `is_hwpx_source` 분기(RowBreak 분할 tolerance 등)를 HWPX 로
-/// 해석한다 — 같은 IR 이 같은 쪽수(roundtrip 자기정합, 2953495 4→5쪽 divergence 해소).
-/// 한컴은 미지의 루트 스트림을 무시하고(열림 계약 게이트로 검증), 한컴에서 재저장하면
-/// 마커가 사라지며 그 문서는 진짜 native HWP5 가 되므로 시멘틱이 자기일관적이다.
-pub const HWPX_ORIGIN_STREAM_PATH: &str = "/RhwpHwpxOrigin";
-
-/// [#3707] HWP3 출처 마커. `RhwpHwpxOrigin` 과 같은 방식이다.
-///
-/// HWP3 파싱은 `apply_hwp3_origin_fixup` 으로 `margin_bottom` 에서 1600 HU(21.3px)를
-/// 빼 한글97 의 마지막 줄 tolerance 를 모방한다. 그 보정은 IR 에만 있고 저장 파일의
-/// 여백은 원본 그대로다(그래야 한컴이 보는 기하가 원본과 같다). 그런데 재파싱 때
-/// 보정을 다시 걸지 판단하는 조건이 **문단 대비 모양 비율**이라, 저장하며 문단마다
-/// 모양이 생성돼 비율이 임계를 넘으면 보정이 사라진다(실측: ps 0.707 · cs 1.115 vs
-/// 임계 0.05 / 0.15).
-///
-/// 그 21.3px 만큼 미주 단 가용이 줄어 단 전환이 일찍 걸리고, 2단 미주의 왼쪽 단이
-/// 조기에 닫혀 미주가 다음 쪽으로 밀린다(SO-SUEOP 44쪽). 한컴은 원본·왕복본 모두
-/// 두 단을 고르게 채우므로 보정이 유지되는 쪽이 정답지와 맞는다.
-///
-/// 저장 여백을 줄이는 대신 **출처만 기록**해 재파싱이 보정을 결정론적으로 되건다.
-pub const HWP3_ORIGIN_STREAM_PATH: &str = "/RhwpHwp3Origin";
 
 /// `source_format` 검사 후 어댑터를 호출하는 보조 함수.
 ///
@@ -3285,6 +3280,89 @@ mod tests {
         let mut second = AdapterReport::new();
         adapt_paragraph(&mut para, &mut second);
         assert_eq!(second.table_layout_ctrl_data_materialized, 0);
+    }
+
+    #[test]
+    fn table_layout_ctrl_data_item_ids_are_an_explicit_observed_contract() {
+        assert_eq!(
+            TABLE_LAYOUT_CTRL_DATA_I4_ITEMS,
+            [
+                (0x4000, 3826),
+                (0x4001, 1048),
+                (0x4002, 28346),
+                (0x4003, 8475),
+                (0x4004, 708),
+                (0x4005, 0),
+                (0x4006, 2),
+                (0x4007, 9),
+                (0x4008, 0),
+                (0x4009, 59528),
+                (0x400a, 84188),
+            ]
+        );
+
+        let payload = build_table_layout_ctrl_data();
+        assert_eq!(payload.len(), 104);
+        for (index, &(item_id, value)) in TABLE_LAYOUT_CTRL_DATA_I4_ITEMS.iter().enumerate() {
+            let offset = 16 + index * 8;
+            assert_eq!(
+                &payload[offset..offset + 2],
+                &item_id.to_le_bytes(),
+                "item[{index}] id"
+            );
+            assert_eq!(
+                &payload[offset + 2..offset + 4],
+                &0x0004_u16.to_le_bytes(),
+                "item[{index}] type"
+            );
+            assert_eq!(
+                &payload[offset + 4..offset + 8],
+                &value.to_le_bytes(),
+                "item[{index}] value"
+            );
+        }
+    }
+
+    #[test]
+    fn table_layout_ctrl_data_materializes_for_nested_cell_owner() {
+        let mut nested_paragraph = Paragraph::default();
+        nested_paragraph
+            .controls
+            .push(Control::Table(Box::new(Table {
+                row_count: 3,
+                col_count: 2,
+                page_break: TablePageBreak::RowBreak,
+                repeat_header: true,
+                ..Default::default()
+            })));
+
+        let mut paragraph = Paragraph::default();
+        paragraph.controls.push(Control::Table(Box::new(Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                col_span: 1,
+                row_span: 1,
+                paragraphs: vec![nested_paragraph],
+                ..Default::default()
+            }],
+            ..Default::default()
+        })));
+
+        let mut report = AdapterReport::new();
+        adapt_paragraph(&mut paragraph, &mut report);
+
+        assert_eq!(report.table_layout_ctrl_data_materialized, 1);
+        assert!(paragraph.ctrl_data_records[0].is_none());
+        let Control::Table(outer) = &paragraph.controls[0] else {
+            panic!("expected outer table");
+        };
+        let nested_owner = &outer.cells[0].paragraphs[0];
+        assert_eq!(nested_owner.ctrl_data_records.len(), 1);
+        assert_eq!(
+            nested_owner.ctrl_data_records[0].as_deref(),
+            Some(build_table_layout_ctrl_data().as_slice())
+        );
     }
 
     #[test]

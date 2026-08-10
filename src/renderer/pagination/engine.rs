@@ -2745,6 +2745,8 @@ impl Paginator {
                         end_cut: Vec::new(),
                         is_block_split: false,
                         row_cursor_is_nested,
+                        end_row_height_override: None,
+                        start_row_height_override: None,
                     });
                     // 마지막 부분 표: spacing_after도 포함 (레이아웃과 일치)
                     let mp = measured.get_measured_paragraph(para_idx);
@@ -2765,6 +2767,8 @@ impl Paginator {
                 end_cut: Vec::new(),
                 is_block_split: false,
                 row_cursor_is_nested,
+                end_row_height_override: None,
+                start_row_height_override: None,
             });
             st.advance_column_or_new_page();
 

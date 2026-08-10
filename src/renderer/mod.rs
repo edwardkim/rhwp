@@ -1189,14 +1189,14 @@ pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
 
 /// 현재 설치된 글꼴로 보완 가능한 legacy face 의 대체명.
 ///
-/// HWPX 는 `한양중고딕`(또는 `HY중고딕`)을 계속 요청하지만, macOS 개발 환경에
-/// 원본 `HYGothic-Medium`은 없다. 함께 설치된 `HY견고딕`은 유니코드는 그리지만
-/// 기준 PDF보다 지나치게 굵고 넓다. 반면 `MALGUN.TTF`의 `Malgun Gothic`은 유니코드
-/// 한글과 중간 굵기/폭을 안정적으로 제공해 HWP 2024 PDF와 가장 가깝다.
-/// 원 face 는 첫 번째로 보존하므로 원본이 설치된 환경의 출력은 바뀌지 않는다.
+/// HWPX 는 `한양중고딕`이라는 legacy name을 보존하지만 실제 한양 face의 family는
+/// `HY중고딕`(fontconfig full name: `HYGothic-Medium`)이다. 두 이름을 모두
+/// 체인에 넣어 원 font가 설치된 호스트에서는 해당 glyph를 먼저 선택한다.
+/// 원 font가 없는 호스트에서는 `Malgun Gothic`이 종전과 같은 마지막 대체다.
 fn installed_render_font_alias(font_family: &str) -> Option<&'static str> {
     match font_family {
-        "한양중고딕" | "HY중고딕" => Some("Malgun Gothic"),
+        "한양중고딕" => Some("HY중고딕"),
+        "HY중고딕" => Some("Malgun Gothic"),
         _ => None,
     }
 }
@@ -2130,10 +2130,7 @@ mod tests {
 
         assert_eq!(
             render_font_family_chain("한양중고딕"),
-            format!(
-                "'한양중고딕','Malgun Gothic',{}",
-                generic_fallback("한양중고딕")
-            )
+            format!("'한양중고딕','HY중고딕',{}", generic_fallback("한양중고딕"))
         );
 
         assert_eq!(

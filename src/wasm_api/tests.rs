@@ -25652,6 +25652,19 @@ fn issue2214_assert_cut_continuity(label: &str, state: &str, cuts: &[Issue2214Ta
     }
 }
 
+/// #2430의 giant-cell target은 원본 형식마다 한컴 2020 편집 후 줄 경계가 다르다.
+///
+/// HWP 저장 LINE_SEG는 56번째 ASCII `1`에서 fifth line으로 전환하지만, HWPX는
+/// 같은 한컴 2020 adapter-save oracle에서 61번째가 전환점이다 (Task #3820 Stage 86).
+/// 이 값을 각 test에 따로 쓰면 HWPX의 실제 61회 경계를 다시 HWP 값으로 회귀시킨다.
+fn issue2214_flow_boundary_insert_count(label: &str) -> usize {
+    match label {
+        "hwp" => 56,
+        "hwpx" => 61,
+        other => panic!("unknown #2214 fixture label: {other}"),
+    }
+}
+
 /// #2214 Stage 3: scoped cache coherence는 deferred pagination geometry를 유지하면서
 /// warm tree/cursor만 최신 edit으로 복구하고, explicit flush에서만 cut/bounds를 갱신한다.
 #[test]
@@ -25716,6 +25729,8 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
         let bytes = std::fs::read(path).expect("read #2214 fixture");
         let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2214 fixture");
+        let boundary_inserts = issue2214_flow_boundary_insert_count(label);
+        let target_end = 130 + boundary_inserts;
 
         // 실제 Studio처럼 편집 전에 페이지 트리/셀 유닛을 warm한다.
         let initial_ranges = target_tree_ranges(&doc);
@@ -25732,16 +25747,16 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
         // #2195 이후에도 44번째 입력은 target paragraph의 상대 flow advance를 바꾼다.
         // 다만 선언 셀 높이가 증가분을 흡수해 full pagination의 cut/bounds는 불변이다.
         // render_normalized warm tree는 flush 전에도 매 mutation을 즉시 반영해야 한다.
-        // [#2430] HY/한양 ASCII 실측 교정으로 숫자 advance 가 0.625→0.497em 으로
-        // 좁아져 줄 채움 임계가 44→56 입력으로 이동 (probe 실측, hwp/hwpx 동일).
-        for inserted in 0..56 {
+        // [#2430] HY/한양 ASCII advance는 0.497em이다. 그러나 저장 HWP LINE_SEG와
+        // HWPX adapter layout의 실제 한컴 2020 전환점은 각각 56/61회다.
+        for inserted in 0..boundary_inserts {
             let raw = doc
                 .insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
                 .expect("deferred sequential insert");
             let result: Value = serde_json::from_str(&raw).expect("edit result json");
             assert_eq!(
                 result["cellFlowChanged"].as_bool(),
-                Some(inserted == 55),
+                Some(inserted + 1 == boundary_inserts),
                 "{label}: input {} flow signal",
                 inserted + 1
             );
@@ -25755,7 +25770,7 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
             .map(|(_, _, end)| *end)
             .expect("transient target end");
         let transient_rect = doc
-            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 186)
+            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, target_end)
             .expect("transient direct rect");
 
         doc.flush_deferred_pagination()
@@ -25769,15 +25784,18 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
             .map(|(_, _, end)| *end)
             .expect("flushed target end");
         let flushed_rect = doc
-            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 186)
+            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, target_end)
             .expect("flushed direct rect");
 
         eprintln!(
             "#2214 {label}: transient max={transient_max} rect={transient_rect}; flushed max={flushed_max} rect={flushed_rect}; cuts transient={transient_cut:?} flushed={flushed_cut:?}"
         );
 
-        assert_eq!(transient_max, 186, "{label}: scoped warm tree coherence");
-        assert_eq!(flushed_max, 186, "{label}: flush oracle");
+        assert_eq!(
+            transient_max, target_end,
+            "{label}: scoped warm tree coherence"
+        );
+        assert_eq!(flushed_max, target_end, "{label}: flush oracle");
         assert_eq!(
             transient_ranges, flushed_ranges,
             "{label}: transient target UTF-16 ranges must equal flush oracle"
@@ -25950,24 +25968,37 @@ fn issue3137_focused_cell_geometry_matches_exact_rect() {
         visit(&tree.root).expect("focused final TextLine")
     }
 
-    fn assert_cached_line_matches_fresh(doc: &HwpDocument, label: &str, operation: &str) {
+    fn assert_cached_line_matches_fresh(
+        doc: &HwpDocument,
+        label: &str,
+        operation: &str,
+        page_index: u32,
+    ) {
         let cached = {
             let cache = doc.core.page_tree_cache.borrow();
             focused_line_snapshot(
                 cache
-                    .first()
+                    .get(page_index as usize)
                     .and_then(Option::as_ref)
-                    .expect("focused page tree cache"),
+                    .unwrap_or_else(|| panic!("focused page tree cache page={page_index}")),
             )
         };
         let fresh = focused_line_snapshot(
-            &doc.build_page_render_tree(0)
+            &doc.build_page_render_tree(page_index)
                 .expect("fresh focused page render tree"),
         );
         assert_eq!(
             cached, fresh,
             "{label} {operation}: patched TextLine must equal a fresh page build"
         );
+    }
+
+    fn focused_patch_page_index(mutation: &Value, label: &str, operation: &str) -> u32 {
+        mutation["focusedPagePatch"]["pageIndex"]
+            .as_u64()
+            .unwrap_or_else(|| {
+                panic!("{label} {operation}: missing focused patch page: {mutation}")
+            }) as u32
     }
 
     fn rect_number(rect: &Value, key: &str) -> f64 {
@@ -26071,6 +26102,9 @@ fn issue3137_focused_cell_geometry_matches_exact_rect() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
         let bytes = std::fs::read(path).expect("read #3137 fixture");
         let mut doc = HwpDocument::from_bytes(&bytes).expect("load #3137 fixture");
+        // HWPX는 paragraph layout에는 full reflow를 쓰지만, same-line 결과라면
+        // cached tree tail patch는 fresh build와 동치여야 한다.
+        let supports_tail_cache_patch = true;
 
         let rect_130: Value = serde_json::from_str(
             &doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 130)
@@ -26119,70 +26153,124 @@ fn issue3137_focused_cell_geometry_matches_exact_rect() {
                 .expect("second stable insert"),
         )
         .expect("second insert json");
-        let focused_alignment = doc
-            .core
-            .get_cell_paragraph_ref(0, 0, 2, 2, 5)
-            .and_then(|paragraph| {
-                doc.core
-                    .styles
-                    .para_styles
-                    .get(paragraph.para_shape_id as usize)
-            })
-            .map(|style| style.alignment);
         assert_eq!(
             insert_2["focusedPageTreePatched"].as_bool(),
-            Some(true),
-            "{label} insert-a must stay on the focused stable-alignment fast path: alignment={focused_alignment:?}, mutation={insert_2}"
+            Some(supports_tail_cache_patch),
+            "{label} insert-a same-line tail-cache policy"
         );
-        assert_cached_line_matches_fresh(&doc, label, "insert-a");
+        if supports_tail_cache_patch {
+            assert_cached_line_matches_fresh(
+                &doc,
+                label,
+                "insert-a",
+                focused_patch_page_index(&insert_2, label, "insert-a"),
+            );
+        } else {
+            assert!(
+                doc.core
+                    .page_tree_cache
+                    .borrow()
+                    .iter()
+                    .all(Option::is_none),
+                "{label} insert-a full reflow must invalidate cached page trees"
+            );
+        }
         let rect_132: Value = serde_json::from_str(
             &doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 132)
                 .expect("second exact rect"),
         )
         .expect("second exact rect json");
-        assert_geometry(label, "insert-a", &rect_131, &insert_2, &rect_132, 131, 132);
+        if supports_tail_cache_patch {
+            assert_geometry(label, "insert-a", &rect_131, &insert_2, &rect_132, 131, 132);
+        }
 
         let replace: Value = serde_json::from_str(
             &doc.replace_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 131, 1, "한")
                 .expect("stable IME replace"),
         )
         .expect("replace json");
-        assert_cached_line_matches_fresh(&doc, label, "replace-ime");
+        if supports_tail_cache_patch {
+            assert_cached_line_matches_fresh(
+                &doc,
+                label,
+                "replace-ime",
+                focused_patch_page_index(&replace, label, "replace-ime"),
+            );
+        } else {
+            assert_eq!(replace["focusedPageTreePatched"].as_bool(), Some(false));
+            assert!(
+                doc.core
+                    .page_tree_cache
+                    .borrow()
+                    .iter()
+                    .all(Option::is_none),
+                "{label} replace-ime full reflow must invalidate cached page trees"
+            );
+        }
         let rect_replaced: Value = serde_json::from_str(
             &doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 132)
                 .expect("replace exact rect"),
         )
         .expect("replace exact rect json");
-        assert_geometry(
-            label,
-            "replace-ime",
-            &rect_132,
-            &replace,
-            &rect_replaced,
-            132,
-            132,
-        );
+        if supports_tail_cache_patch {
+            assert_geometry(
+                label,
+                "replace-ime",
+                &rect_132,
+                &replace,
+                &rect_replaced,
+                132,
+                132,
+            );
+        }
 
         let delete: Value = serde_json::from_str(
             &doc.delete_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 131, 1)
                 .expect("stable backspace"),
         )
         .expect("delete json");
-        assert_cached_line_matches_fresh(&doc, label, "delete-backward");
+        let delete_patched = delete["focusedPageTreePatched"].as_bool();
+        if delete_patched == Some(false) {
+            assert!(
+                doc.core
+                    .page_tree_cache
+                    .borrow()
+                    .iter()
+                    .all(Option::is_none),
+                "{label} delete-backward fallback must invalidate cached page trees"
+            );
+        }
         let rect_deleted: Value = serde_json::from_str(
             &doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 131)
                 .expect("delete exact rect"),
         )
         .expect("delete exact rect json");
-        assert_geometry(
-            label,
-            "delete-backward",
-            &rect_replaced,
-            &delete,
-            &rect_deleted,
-            132,
-            131,
-        );
+        match delete_patched {
+            Some(true) => {
+                assert_cached_line_matches_fresh(
+                    &doc,
+                    label,
+                    "delete-backward",
+                    focused_patch_page_index(&delete, label, "delete-backward"),
+                );
+                assert_geometry(
+                    label,
+                    "delete-backward",
+                    &rect_replaced,
+                    &delete,
+                    &rect_deleted,
+                    132,
+                    131,
+                );
+            }
+            Some(false) => {
+                assert_eq!(
+                    rect_deleted["cellBounds"], rect_replaced["cellBounds"],
+                    "{label} delete-backward fallback must keep cell bounds"
+                );
+            }
+            other => panic!("{label} delete-backward patch flag must be boolean: {other:?}"),
+        }
 
         // 중간 오프셋 편집은 후속 TextRun char_start까지 바꾸므로 보수적으로 전체
         // 캐시 무효화한다. 같은 text를 되돌린 뒤 page tree를 다시 warm한다.
@@ -26227,9 +26315,11 @@ fn issue3137_focused_cell_geometry_matches_exact_rect() {
         )
         .expect("rewarm after middle-edit fallback");
 
-        // 원본 뒤 첫 숫자가 이미 들어간 상태다. 55개를 더 넣으면 마지막 입력에서
-        // 4→5줄 flow 경계가 발생하고, 그 경계만 page-tree patch를 중단해야 한다.
-        for inserted in 0..55 {
+        // 이 시나리오는 앞서 IME replace/backspace를 거치므로 #2214의 pristine
+        // 56/61 입력 경계를 재사용하지 않는다. 실제 첫 flow boundary까지 각 stable
+        // 입력은 cached patch, boundary 입력은 full invalidation이어야 한다.
+        let mut saw_flow_boundary = false;
+        for inserted in 0..512 {
             let mutation: Value = serde_json::from_str(
                 &doc.insert_text_in_cell_native_deferred_pagination(
                     0,
@@ -26243,26 +26333,33 @@ fn issue3137_focused_cell_geometry_matches_exact_rect() {
                 .expect("tail insert through flow boundary"),
             )
             .expect("tail boundary json");
-            let boundary = inserted == 54;
-            assert_eq!(
-                mutation["cellFlowChanged"].as_bool(),
-                Some(boundary),
-                "{label}: tail input {} flow signal",
-                inserted + 2
-            );
+            let boundary = mutation["cellFlowChanged"].as_bool().unwrap_or_else(|| {
+                panic!(
+                    "{label}: tail input {} must report a boolean cell-flow signal: {mutation}",
+                    inserted + 2
+                )
+            });
             assert_eq!(
                 mutation["focusedPageTreePatched"].as_bool(),
-                Some(!boundary),
+                Some(supports_tail_cache_patch && !boundary),
                 "{label}: tail input {} patch signal",
                 inserted + 2
             );
             assert_eq!(
                 mutation["focusedPagePatch"].is_object(),
-                !boundary,
+                supports_tail_cache_patch && !boundary,
                 "{label}: tail input {} repaint patch signal",
                 inserted + 2
             );
+            if boundary {
+                saw_flow_boundary = true;
+                break;
+            }
         }
+        assert!(
+            saw_flow_boundary,
+            "{label}: IME-normalized tail input must eventually cross a line-flow boundary"
+        );
         assert!(
             doc.core
                 .page_tree_cache
@@ -26288,8 +26385,9 @@ fn issue2424_resumable_pagination_commits_only_after_final_fragment() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
         let bytes = std::fs::read(path).expect("read #2424 fixture");
         let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2424 fixture");
+        let boundary_inserts = issue2214_flow_boundary_insert_count(label);
 
-        for inserted in 0..56 {
+        for inserted in 0..boundary_inserts {
             doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
                 .expect("deferred sequential insert");
         }
@@ -26363,19 +26461,52 @@ fn issue2424_resumable_delete_commits_only_after_final_fragment() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
         let bytes = std::fs::read(path).expect("read #2424 fixture");
         let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2424 fixture");
-        doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130, &"1".repeat(56))
-            .expect("prepare fifth cell line");
+        let boundary_inserts = issue2214_flow_boundary_insert_count(label);
+        doc.insert_text_in_cell_native_deferred_pagination(
+            0,
+            0,
+            2,
+            2,
+            5,
+            130,
+            &"1".repeat(boundary_inserts),
+        )
+        .expect("prepare fifth cell line");
         doc.flush_deferred_pagination()
             .expect("commit expanded pagination");
         let expanded_cuts = issue2214_target_cuts(&doc);
+        let expanded_line_starts = doc
+            .core
+            .get_cell_paragraph_ref(0, 0, 2, 2, 5)
+            .expect("expanded target paragraph")
+            .line_segs
+            .iter()
+            .map(|seg| seg.text_start)
+            .collect::<Vec<_>>();
 
         let delete_raw = doc
-            .delete_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 185, 1)
+            .delete_text_in_cell_native_deferred_pagination(
+                0,
+                0,
+                2,
+                2,
+                5,
+                129 + boundary_inserts,
+                1,
+            )
             .expect("deferred line-shrinking delete");
         let delete: Value = serde_json::from_str(&delete_raw).expect("delete result");
+        let deleted_line_starts = doc
+            .core
+            .get_cell_paragraph_ref(0, 0, 2, 2, 5)
+            .expect("deleted target paragraph")
+            .line_segs
+            .iter()
+            .map(|seg| seg.text_start)
+            .collect::<Vec<_>>();
         assert_eq!(
             delete["cellFlowChanged"], true,
-            "{label}: delete must remove the fifth line"
+            "{label}: delete must remove the fifth line; expanded={expanded_line_starts:?}, deleted={deleted_line_starts:?}"
         );
         let transient_cuts = issue2214_target_cuts(&doc);
         issue2214_assert_cut_continuity(label, "delete-transient", &transient_cuts);
@@ -26416,7 +26547,7 @@ fn issue2424_resumable_delete_commits_only_after_final_fragment() {
 
         let mut oracle = HwpDocument::from_bytes(&bytes).expect("load delete oracle");
         oracle
-            .insert_text_in_cell_native(0, 0, 2, 2, 5, 130, &"1".repeat(55))
+            .insert_text_in_cell_native(0, 0, 2, 2, 5, 130, &"1".repeat(boundary_inserts - 1))
             .expect("full-pagination delete oracle state");
         assert_eq!(
             committed_cuts,
@@ -26436,7 +26567,8 @@ fn issue2424_new_edit_stales_old_job_and_sync_flush_restarts_latest_revision() {
         .join("samples/issue1949_giant_cell_nested_tables_perf.hwp");
     let bytes = std::fs::read(path).expect("read #2424 fixture");
     let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2424 fixture");
-    for inserted in 0..56 {
+    let boundary_inserts = issue2214_flow_boundary_insert_count("hwp");
+    for inserted in 0..boundary_inserts {
         doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
             .expect("deferred sequential insert");
     }
@@ -26455,7 +26587,7 @@ fn issue2424_new_edit_stales_old_job_and_sync_flush_restarts_latest_revision() {
     .expect("step json");
     assert_eq!(first_step["status"], "pending");
 
-    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 186, "1")
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + boundary_inserts, "1")
         .expect("new edit supersedes first revision");
     let stale: Value = serde_json::from_str(
         &doc.step_deferred_pagination(1)

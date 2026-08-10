@@ -12,6 +12,10 @@
 //! 걸고, 그 결과를 baseline 파일로 **동결**한다. 목적은 "지금 전부 무손실"이 아니라
 //! **"오늘보다 나빠지면 즉시 실패"** 다.
 //!
+//! baseline v2는 정규화 경로별 **완전한 건수**만 받는다. 상세 예시 payload 상한과
+//! 건수 집계를 분리하므로, 앞 경로의 개선이 뒤 경로의 기존 발산을 새 회귀처럼
+//! 재배치하지 않는다. schema marker가 없는 예전 전역-cap baseline은 거부한다.
+//!
 //! ## 왜 baseline(래칫) 인가
 //!
 //! 스윕은 첫날부터 빨갛다(실측 결과는 이슈 #2740 §4). 첫날 빨간 게이트는 결국
@@ -41,19 +45,21 @@
 //!
 //! ## 진단
 //!
-//! `RHWP_IR_SWEEP_DETAIL="샘플명조각;다른조각"` 을 주면 해당 샘플의 발산을
-//! 경로·값까지 전부 출력한다 — 잔여 항목 분류용.
+//! `RHWP_IR_SWEEP_DETAIL="샘플명조각;다른조각"` 을 주면 해당 샘플의 완전한
+//! 경로별 건수와 상한 이내의 경로·값 예시를 출력한다 — 잔여 항목 분류용.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use rhwp::diagnostics::ir_field_sweep::{
     sweep_hwp5_rebuild_roundtrip, sweep_hwp5_roundtrip, sweep_hwpx_roundtrip, tally,
-    FieldDivergence,
+    DivergenceReport,
 };
 use rhwp::parser::{detect_format, parse_document, FileFormat};
 
 const BASELINE: &str = "tests/fixtures/ir_field_sweep_baseline.tsv";
+const BASELINE_SCHEMA: &str = "# rhwp-ir-field-sweep-baseline-v2 complete-normalized-path-counts";
+const BASELINE_HEADER: &str = "lane\tsample\tpath\tcount";
 const HWP5_ROOT: &str = "samples";
 const HWPX_ROOT: &str = "samples/hwpx";
 
@@ -135,16 +141,25 @@ fn detail_filter() -> Option<Vec<String>> {
     (!parts.is_empty()).then_some(parts)
 }
 
-fn print_detail(lane: &str, rel: &str, divs: &[FieldDivergence]) {
+fn print_detail(lane: &str, rel: &str, report: &DivergenceReport) {
     let Some(filters) = detail_filter() else {
         return;
     };
     if !filters.iter().any(|f| rel.contains(f.as_str())) {
         return;
     }
-    println!("--- [{lane}] {rel} — 발산 {}건 ---", divs.len());
-    for d in divs {
+    println!("--- [{lane}] {rel} — 발산 {}건 ---", report.total());
+    println!("  [정규화 경로별 완전한 건수]");
+    for (path, count) in report.counts() {
+        println!("  {count}\t{path}");
+    }
+    println!("  [상세 예시]");
+    for d in report.examples() {
         println!("  {d}");
+    }
+    let omitted = report.total().saturating_sub(report.examples().len());
+    if omitted > 0 {
+        println!("  ... 상세 예시 상한 이후 {omitted}건 생략");
     }
 }
 
@@ -160,10 +175,10 @@ fn sweep_corpus(size_filter: &dyn Fn(u64) -> bool) -> (Baseline, usize, usize) {
     let mut swept = 0usize;
     let mut skipped = 0usize;
 
-    let mut record = |lane: &str, rel: &str, divs: &[FieldDivergence]| {
-        print_detail(lane, rel, divs);
-        for (p, n) in tally(divs) {
-            acc.insert((lane.to_string(), rel.to_string(), p), n);
+    let mut record = |lane: &str, rel: &str, report: &DivergenceReport| {
+        print_detail(lane, rel, report);
+        for (p, n) in tally(report) {
+            acc.insert((lane.to_string(), rel.to_string(), p.clone()), *n);
         }
     };
 
@@ -179,16 +194,22 @@ fn sweep_corpus(size_filter: &dyn Fn(u64) -> bool) -> (Baseline, usize, usize) {
             continue;
         }
         match sweep_hwp5_roundtrip(&bytes) {
-            Ok(divs) => {
+            Ok(report) => {
                 swept += 1;
-                record("hwp5", &rel, &divs);
+                record("hwp5", &rel, &report);
+            }
+            Err(error) if error.is_capacity_error() => {
+                panic!("[hwp5] {rel}: {error}")
             }
             Err(_) => skipped += 1,
         }
         match sweep_hwp5_rebuild_roundtrip(&bytes) {
-            Ok(divs) => {
+            Ok(report) => {
                 swept += 1;
-                record("hwp5rb", &rel, &divs);
+                record("hwp5rb", &rel, &report);
+            }
+            Err(error) if error.is_capacity_error() => {
+                panic!("[hwp5rb] {rel}: {error}")
             }
             Err(_) => skipped += 1,
         }
@@ -203,9 +224,12 @@ fn sweep_corpus(size_filter: &dyn Fn(u64) -> bool) -> (Baseline, usize, usize) {
             continue;
         };
         match sweep_hwpx_roundtrip(&bytes) {
-            Ok(divs) => {
+            Ok(report) => {
                 swept += 1;
-                record("hwpx", &rel, &divs);
+                record("hwpx", &rel, &report);
+            }
+            Err(error) if error.is_capacity_error() => {
+                panic!("[hwpx] {rel}: {error}")
             }
             Err(_) => skipped += 1,
         }
@@ -214,38 +238,59 @@ fn sweep_corpus(size_filter: &dyn Fn(u64) -> bool) -> (Baseline, usize, usize) {
     (acc, swept, skipped)
 }
 
-fn load_baseline() -> Baseline {
-    let text = std::fs::read_to_string(BASELINE)
-        .unwrap_or_else(|e| panic!("baseline 읽기 실패 {BASELINE}: {e}"));
+fn parse_baseline(text: &str, source: &str) -> Result<Baseline, String> {
+    let mut lines = text.lines();
+    let schema = lines
+        .next()
+        .ok_or_else(|| format!("baseline 이 비어 있음: {source}"))?;
+    if schema != BASELINE_SCHEMA {
+        return Err(format!(
+            "baseline schema 불일치: {source}: {schema:?} (기대: {BASELINE_SCHEMA:?})"
+        ));
+    }
+    let header = lines
+        .next()
+        .ok_or_else(|| format!("baseline 헤더 없음: {source}"))?;
+    if header != BASELINE_HEADER {
+        return Err(format!(
+            "baseline 헤더 불일치: {source}: {header:?} (기대: {BASELINE_HEADER:?})"
+        ));
+    }
+
     let mut map = Baseline::new();
-    for (i, line) in text.lines().enumerate() {
-        if i == 0 || line.trim().is_empty() {
-            continue; // 헤더/빈 줄
+    for (i, line) in lines.enumerate() {
+        let line_no = i + 3;
+        if line.trim().is_empty() {
+            continue;
         }
         let cols: Vec<&str> = line.split('\t').collect();
-        assert!(
-            cols.len() == 4,
-            "baseline {BASELINE} {}행 열 수 이상: {line}",
-            i + 1
-        );
+        if cols.len() != 4 {
+            return Err(format!("baseline {source} {line_no}행 열 수 이상: {line}"));
+        }
         let count: usize = cols[3]
             .trim()
             .parse()
-            .unwrap_or_else(|_| panic!("baseline {BASELINE} {}행 건수 파싱 실패", i + 1));
-        map.insert(
-            (
-                cols[0].to_string(),
-                cols[1].to_string(),
-                cols[2].to_string(),
-            ),
-            count,
+            .map_err(|_| format!("baseline {source} {line_no}행 건수 파싱 실패"))?;
+        let key = (
+            cols[0].to_string(),
+            cols[1].to_string(),
+            cols[2].to_string(),
         );
+        if map.insert(key, count).is_some() {
+            return Err(format!("baseline {source} {line_no}행 키 중복: {line}"));
+        }
     }
-    map
+    Ok(map)
+}
+
+fn load_baseline() -> Baseline {
+    let text = std::fs::read_to_string(BASELINE)
+        .unwrap_or_else(|e| panic!("baseline 읽기 실패 {BASELINE}: {e}"));
+    parse_baseline(&text, BASELINE).unwrap_or_else(|e| panic!("{e}"))
 }
 
 fn write_dump(path: &str, rows: &Baseline) {
-    let mut s = String::from("lane\tsample\tpath\tcount\n");
+    let mut s = format!("{BASELINE_SCHEMA}\n{BASELINE_HEADER}\n");
     for ((lane, sample, p), n) in rows {
         s.push_str(&format!("{lane}\t{sample}\t{p}\t{n}\n"));
     }
@@ -253,6 +298,43 @@ fn write_dump(path: &str, rows: &Baseline) {
         let _ = std::fs::create_dir_all(parent);
     }
     std::fs::write(path, s).unwrap_or_else(|e| panic!("덤프 쓰기 실패 {path}: {e}"));
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct BaselineDelta {
+    regressions: Vec<String>,
+    improvements: usize,
+}
+
+fn compare_baseline(current: &Baseline, baseline: &Baseline, full: bool) -> BaselineDelta {
+    let mut regressions = Vec::new();
+    let mut improvements = 0usize;
+
+    for (key, &now) in current {
+        let was = baseline.get(key).copied().unwrap_or(0);
+        if now > was {
+            regressions.push(format!(
+                "  [{}] {} — {} : {was} → {now}",
+                key.0, key.1, key.2
+            ));
+        } else if now < was {
+            improvements += 1;
+        }
+    }
+    // baseline 에 있었는데 이번에 사라진 경로도 개선이다 (빠른 부분집합에서는
+    // 대상 밖 샘플이 많으므로 전체 모드에서만 센다).
+    if full {
+        for key in baseline.keys() {
+            if !current.contains_key(key) {
+                improvements += 1;
+            }
+        }
+    }
+
+    BaselineDelta {
+        regressions,
+        improvements,
+    }
 }
 
 /// 회귀 관문 — baseline 대비 **증가분**만 실패시킨다.
@@ -289,40 +371,21 @@ fn ir_field_sweep_does_not_regress() {
     assert!(swept > 0, "스윕 대상 샘플이 없음");
 
     let baseline = load_baseline();
-    let mut regressions = Vec::new();
-    let mut improvements = 0usize;
+    let delta = compare_baseline(&current, &baseline, full);
 
-    for (key, &now) in &current {
-        let was = baseline.get(key).copied().unwrap_or(0);
-        if now > was {
-            regressions.push(format!(
-                "  [{}] {} — {} : {was} → {now}",
-                key.0, key.1, key.2
-            ));
-        } else if now < was {
-            improvements += 1;
-        }
-    }
-    // baseline 에 있었는데 이번에 사라진 경로도 개선이다 (빠른 부분집합에서는
-    // 대상 밖 샘플이 많으므로 전체 모드에서만 센다).
-    if full {
-        for key in baseline.keys() {
-            if !current.contains_key(key) {
-                improvements += 1;
-            }
-        }
-    }
-
-    if improvements > 0 {
-        println!("개선 {improvements}건 — baseline 재생성 권장 (RHWP_IR_SWEEP_DUMP={BASELINE})");
+    if delta.improvements > 0 {
+        println!(
+            "개선 {}건 — baseline 재생성 권장 (RHWP_IR_SWEEP_DUMP={BASELINE})",
+            delta.improvements
+        );
     }
 
     assert!(
-        regressions.is_empty(),
+        delta.regressions.is_empty(),
         "IR 필드 왕복 발산이 baseline 보다 늘었다 ({}건). 직렬화기가 필드를 잃고 있다는 뜻이므로 \
          원인을 고치거나, 의도된 정규화라면 baseline 을 갱신하고 사유를 PR 에 남겨라:\n{}",
-        regressions.len(),
-        regressions.join("\n")
+        delta.regressions.len(),
+        delta.regressions.join("\n")
     );
 }
 
@@ -345,4 +408,35 @@ fn baseline_samples_exist() {
         missing.len(),
         missing.join("\n")
     );
+}
+
+#[test]
+fn legacy_capped_baseline_schema_is_rejected() {
+    let legacy = "lane\tsample\tpath\tcount\nhwpx\tfixture.hwpx\tpath\t1\n";
+    let error = parse_baseline(legacy, "legacy.tsv").unwrap_err();
+    assert!(
+        error.contains("schema 불일치"),
+        "old capped counts must not be read as complete: {error}"
+    );
+}
+
+#[test]
+fn later_path_regression_is_not_offset_by_earlier_improvement() {
+    let early = (
+        "hwpx".to_string(),
+        "fixture.hwpx".to_string(),
+        "early.path".to_string(),
+    );
+    let later = (
+        "hwpx".to_string(),
+        "fixture.hwpx".to_string(),
+        "later.path".to_string(),
+    );
+    let baseline = Baseline::from([(early.clone(), 1), (later.clone(), 2000)]);
+    let current = Baseline::from([(later, 2001)]);
+
+    let delta = compare_baseline(&current, &baseline, true);
+    assert_eq!(delta.improvements, 1);
+    assert_eq!(delta.regressions.len(), 1);
+    assert!(delta.regressions[0].contains("later.path : 2000 → 2001"));
 }

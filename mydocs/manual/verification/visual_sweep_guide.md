@@ -23,6 +23,9 @@ last_verified: 2026-08-08
 - 줄 band/order drift 후보
 - **그림·float 주변의 본문이 좁은 세로 열로 재흐름한 단별 text-flow collapse 후보**
 - **Square/Tight/Through 그림의 물리 box를 본문 TextLine이 3행 이상 가로지르거나 edge에 맞닿는 후보**
+- **우측 Body 표의 좌측 strip은 PDF에 본문 잉크가 있지만 rhwp에서 거의 비는 non-inline table wrap 후보**
+- **표 셀의 visible line 경계 침범 또는 visible-ending 자연 text 폭 위험 후보**
+- **명시적 SVG clip이 glyph 근사 band의 상·하단을 2px 이상 부분 절단하는 후보**
 - **구조 heuristic에 걸리지 않는 glyph·PUA·제품명 표시 차이**의 review 후보
 
 이 도구의 절차상 지위는 [시각 검증 거버넌스의 라우팅 표](visual_verification_governance.md)를
@@ -36,6 +39,13 @@ PR에서는 이 가이드를 직접 시작점으로 쓴다.
 직접 재사용하여 `square_wrap_text_overlap` flag와 annotation으로 남긴다. 반면 PDF↔SVG text owner,
 그림 앞 문단의 `float-owner-shift`, 표 fragment, page-count ledger는 sweep이 다시 계산하지 않으므로
 fidelity 원장을 함께 보존해야 한다.
+표 우측선 밖으로 문단이 돌출되는 경우에는 `table-cell-text-boundary-candidates.tsv`, 페이지 경계나
+셀 clip에서 글자 윗부분·아랫부분이 잘리는 경우에는 `svg-text-band-clip-candidates.tsv`를 먼저 본다.
+전자는 중첩 셀을 자기 소유 Cell에만 귀속하고, overflowing edge가 선행/후행 공백뿐인 TextRun은
+제외한다. visible 문자로 끝나는 자연 폭은 `natural_visible_width_risk`로 올리지만 저장 자간/justify
+뒤에는 실제 glyph가 안쪽에 들어올 수 있다.
+후자는 완전히 clip 밖인 stale text를 제외한다. 글꼴 bbox와 근사 glyph band 때문에 false positive가
+가능하므로 physical page의 PDF/rhwp raster로 반드시 확정한다.
 이 bridge의 render tree가 없거나 JSON이 손상되면 sweep은 `flagged=0`을 보고하지 않고 실패해야 한다.
 `fidelity_compare`의 Python 환경과 실행 명령은
 [도구 README](../../../tools/fidelity_compare/README.md)를 따른다. 저장소 로컬 `venv/`의 공통
@@ -107,9 +117,12 @@ rhwp export-svg samples/exam_kor.hwp \
 우선한다. 자세한 폰트 fallback 동작은 [export-png 명령 가이드](../export_png_command.md)의
 폰트 섹션을 참고한다.
 
-현재 `scripts/visual_sweep.py`는 `export-svg` 호출에 `--font-path`를 전달하지
-않는다. 자동 sweep은 시스템 fontconfig와 기본 탐색 경로 기준으로 실행되므로,
-폰트 민감 문서는 다음 중 하나로 판정한다.
+현재 `scripts/visual_sweep.py`는 `export-svg --font-style`을 사용한다. 이는 SVG에
+`@font-face src: local(...)` 별칭을 넣어 원 문서의 legacy face와 실제 설치 family/full name
+차이(예: `한양중고딕` → `HY중고딕`/`HYGothic-Medium`) 때문에 SVG raster가 두부(□)로
+떨어지는 것을 줄인다. 이 옵션은 SVG 좌표를 바꾸거나 글꼴 바이너리를 embed하지 않으며,
+`--font-path`를 전달하는 것은 아니다. 자동 sweep은 여전히 시스템 fontconfig와 기본 탐색 경로
+기준으로 실행되므로, 폰트 민감 문서는 다음 중 하나로 판정한다.
 
 - 컨트리뷰터와 메인테이너가 동일한 공개 한글 폰트 환경을 맞춘 뒤 sweep 실행
 - `rhwp export-svg --font-path ...`로 수동 SVG를 내보내고 별도 시각 판정
@@ -419,6 +432,7 @@ summary: /path/to/rhwp/output/task1274/summary.json
 | `question` | PDF/rhwp 문항 marker y drift 후보 |
 | `glyph` | 옛자모·PUA TextRun의 국소 raster 불일치 후보 |
 | `wrap` | fidelity와 같은 Square/Tight/Through 그림↔본문 physical-overlap 또는 edge-clearance-loss 후보 |
+| `tablewrap` | 우측 Body table 좌측 strip의 PDF 본문 잉크가 rhwp에서 소실된 non-inline wrap 후보 |
 
 권장 판정 기준:
 
@@ -441,6 +455,11 @@ summary: /path/to/rhwp/output/task1274/summary.json
   render-tree source 정보의 한계가 있으므로 자동 불합격이나 PDF 정답 판정으로 승격하지 않는다.
 - `wrap` 판정에 필요한 render tree가 빠지거나 손상된 run은 clean 결과가 아니라 **infrastructure
   failure**다. tree export를 복구한 뒤 다시 실행한다.
+- `tablewrap`은 `Table`이 Body의 오른쪽에 있고, 해당 table의 세로 범위에서 Body 좌측 strip의 PDF
+  content ink density가 `0.025` 이상인데 rhwp ink가 그 15% 이하일 때만 후보가 된다. 따라서 단순
+  우측 정렬 standalone table(양쪽 strip이 비어 있음)과 소폭 font raster 차이는 제외한다. HWPX
+  non-inline Square table이 다음 문단 prefix를 소실하는 형상을 빠르게 찾는 용도이며, PDF review로
+  wrap 의도를 확인하기 전에는 자동 결함 확정이 아니다.
 - `flowcollapse`은 본문이 그림 옆의 비정상적인 세로 열로 분해되는 회귀를 우선 올리는 강한 후보다.
   자동 불합격은 아니지만 `review`와 PDF를 즉시 대조한다.
 - `flowcollapse` 계산은 render tree의 **Body bbox**를 우선 frame으로 쓰고, Body table 영역을 양쪽
@@ -448,12 +467,18 @@ summary: /path/to/rhwp/output/task1274/summary.json
   오인되는 false positive를 막기 위한 것이며, 표 row fragment·owner가 같다는 뜻은 아니다. 표가 관련된
   페이지는 `fidelity_compare` text ledger, table/footer/frame 후보와 3-way review를 별도로 확인한다.
 - `line`, `column`, `order` 후보는 실제 시각 차이인지 false positive인지 비교 이미지를 열어 확인한다.
+- `table-cell-text-boundary`의 `line_boundary_overflow`는 line bbox 자체의 침범이고,
+  `natural_visible_width_risk`는 visible 문자로 끝나는 run의 자연 폭 위험이다. 후자는 PDF와
+  최종 SVG glyph 위치에서 실제 선을 넘는지로 확정한다. 중첩 표 text는 외부 셀 후보로 합산하지 않는다.
+- `svg-text-band-clip` 후보는 glyph 상·하단의 partial clip만 뜻한다. 같은 줄의 연속 glyph가 여러 행으로
+  기록될 수 있으므로 `(page, clip_ids, baseline_y, edges)` 단위로 묶어 review한다. 근사 ink band는
+  baseline `-0.8em..+0.2em`이므로 exact font outline이나 raster 판정을 대신하지 않는다.
 - 후보가 남아도 메인테이너 SVG/웹/한컴 시각 판정이 통과하면 blocker가 아닐 수 있다.
 
 요약만 빠르게 보기:
 
 ```bash
-jq -r '.[] | [.key, .svg_pages, .pdf_pages, (.visual_metrics.flagged_page_count // 0), (.visual_metrics.frame_overflow_pages|join(",")), (.visual_metrics.line_band_drift_pages|join(",")), (.visual_metrics.column_line_band_drift_pages|join(",")), (.visual_metrics.column_text_flow_collapse_pages|join(",")), (.visual_metrics.square_wrap_text_overlap_pages|join(",")), (.visual_metrics.line_order_overlap_pages|join(",")), (.visual_metrics.question_marker_drift_pages|join(",")), (.visual_metrics.legacy_glyph_visual_pages|join(","))] | @tsv' output/task1274/summary.json
+jq -r '.[] | [.key, .svg_pages, .pdf_pages, (.visual_metrics.flagged_page_count // 0), (.visual_metrics.frame_overflow_pages|join(",")), (.visual_metrics.line_band_drift_pages|join(",")), (.visual_metrics.column_line_band_drift_pages|join(",")), (.visual_metrics.column_text_flow_collapse_pages|join(",")), (.visual_metrics.square_wrap_text_overlap_pages|join(",")), (.visual_metrics.right_table_left_strip_text_deficit_pages|join(",")), (.visual_metrics.line_order_overlap_pages|join(",")), (.visual_metrics.question_marker_drift_pages|join(",")), (.visual_metrics.legacy_glyph_visual_pages|join(","))] | @tsv' output/task1274/summary.json
 ```
 
 ## PR에 기록할 때
@@ -467,9 +492,9 @@ PR 리뷰/보고서에는 다음을 분리해 적는다.
 예:
 
 ```markdown
-| target | SVG/PDF pages | flagged | frame | line | column | wrap | order | question | glyph |
-|---|---:|---:|---|---|---|---|---|---|---|
-| `2024-09-between20` | 24/24 | 1 | `[]` | `[11]` | `[11]` | `[]` | `[11]` | `[]` | `[]` |
+| target | SVG/PDF pages | flagged | frame | line | column | wrap | tablewrap | order | question | glyph |
+|---|---:|---:|---|---|---|---|---|---|---|---|
+| `2024-09-between20` | 24/24 | 1 | `[]` | `[11]` | `[11]` | `[]` | `[]` | `[11]` | `[]` | `[]` |
 ```
 
 ## 한계
@@ -482,6 +507,9 @@ PR 리뷰/보고서에는 다음을 분리해 적는다.
   3행 이상(`physical_overlap`), 또는 image 왼쪽/오른쪽 edge에서 `≤1px`로 맞닿거나 얕게 침범하는 3행
   이상(`edge_clearance_loss`)을 후보화한다. 1–2행·Body 밖 text·PDF와 위치만 다른 경우는 놓칠 수 있어,
   fidelity text/table 원장 및 PDF review의 대체물이 아니다.
+- `tablewrap`은 PDF/rhwp raster와 render-tree Table bbox를 함께 요구하므로 PDF가 없는 자체 회귀
+  검증에는 적용할 수 없다. 우측 표의 left strip에 의도적인 빈 여백이 있더라도 PDF도 비어 있으면
+  후보가 되지 않지만, PDF의 그림·색면처럼 본문 이외 잉크가 strip을 채운 경우는 review에서 제외한다.
 - 반대로 glyph·글자폭·PUA/제품명 convention 차이는 구조 후보가 0건이어도 실제 fidelity 결함일 수
   있다. 옛자모·PUA는 `legacy_glyph_visual_mismatch`로 우선 후보화하지만, 낮은 잉크 일치율과
   review의 반복 차이는 raw/IR/paint 경로로 분리한다.

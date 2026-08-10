@@ -1261,6 +1261,33 @@ impl DocumentCore {
             .map_err(|e| HwpError::RenderError(e.to_string()))
     }
 
+    /// 스냅숏 HWP 저장 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
+    ///
+    /// 명시적 WASM 저장은 이 경로를 사용한다. 어댑터와 직렬화가 복제본에서 실행되므로
+    /// 성공/실패와 무관하게 live Document IR은 바뀌지 않는다. MCP 등 byte-only 보조
+    /// 소비자는 이 이슈의 보고서 전달 범위 밖이다.
+    pub fn export_hwp_with_adapter_snapshot_with_report(
+        &self,
+    ) -> Result<crate::serializer::SerializedDocument, HwpError> {
+        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
+        let mut snapshot = self.document.clone();
+        let _adapter_report = convert_if_hwpx_source(&mut snapshot, self.source_format);
+        crate::serializer::serialize_document_with_report(&snapshot)
+            .map_err(|error| HwpError::RenderError(error.to_string()))
+    }
+
+    /// 비밀번호 HWP 스냅숏 저장 + 내용 손실 보고 (#4430).
+    pub fn export_hwp_with_adapter_snapshot_with_password_and_report(
+        &self,
+        password: &[u8],
+    ) -> Result<crate::serializer::SerializedDocument, HwpError> {
+        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
+        let mut snapshot = self.document.clone();
+        let _adapter_report = convert_if_hwpx_source(&mut snapshot, self.source_format);
+        crate::serializer::serialize_hwp_with_password_and_report(&snapshot, password)
+            .map_err(|error| HwpError::RenderError(error.to_string()))
+    }
+
     /// HWPX 출처 어댑터를 적용한 뒤 HWP5 EncryptVersion 4 비밀번호 문서로 저장한다.
     ///
     /// 일반 HWP 저장과 마찬가지로 HWPX 출처는 반드시 adapter를 먼저 통과한다. 암호화만
@@ -1315,10 +1342,27 @@ impl DocumentCore {
         self.hwpx_document_for_export(|document| crate::serializer::serialize_hwpx(document))
     }
 
+    /// HWPX 저장 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
+    pub fn export_hwpx_native_with_report(
+        &self,
+    ) -> Result<crate::serializer::SerializedDocument, HwpError> {
+        self.hwpx_document_for_export(crate::serializer::serialize_hwpx_with_report)
+    }
+
     /// Document IR을 ODF AES-256-CBC 비밀번호 보호 HWPX로 직렬화한다.
     pub fn export_hwpx_native_with_password(&self, password: &[u8]) -> Result<Vec<u8>, HwpError> {
         self.hwpx_document_for_export(|document| {
             crate::serializer::serialize_hwpx_with_password(document, password)
+        })
+    }
+
+    /// 비밀번호 HWPX 저장 바이트 + 내용 손실 보고 (#4430).
+    pub fn export_hwpx_native_with_password_and_report(
+        &self,
+        password: &[u8],
+    ) -> Result<crate::serializer::SerializedDocument, HwpError> {
+        self.hwpx_document_for_export(|document| {
+            crate::serializer::serialize_hwpx_with_password_and_report(document, password)
         })
     }
 

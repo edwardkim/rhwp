@@ -24,8 +24,11 @@ use super::{CellContext, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::{LineSeg, Paragraph};
-use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertRelTo};
+use crate::model::shape::{
+    CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertRelTo,
+};
 use crate::model::style::{Alignment, HeadType, LineSpacingType, Numbering, UnderlineType};
+use crate::model::table::Table;
 
 const CAPTION_CELL_SENTINEL: usize = 65534;
 
@@ -65,6 +68,90 @@ fn should_wrap_middle_anchored_table(
         && occupied_width + table_footprint > line_width + 0.5
 }
 
+/// 선행 inline TAC 표의 Bottom caption이 첫 저장 줄을 소유하고, 표 뒤의 첫 visible
+/// 문자가 두 번째 저장 줄에서 시작하는 좁은 HWP5 계약인지 판정한다.
+///
+/// `LINE_SEG.text_start`는 extended control의 8 UTF-16 unit을 포함한다. 따라서 선행
+/// 표 하나 뒤의 첫 글자 offset과 `line_segs[1].text_start`가 모두 8이면, visible text
+/// 관점의 break index는 0이다. 일반 문단에서 index 0을 허용하면 저장 정보가 불충분한
+/// control 문단까지 강제 개행할 수 있으므로 아래 구조가 모두 입증될 때만 보존한다.
+fn preserves_stored_first_visible_break_after_bottom_caption_table(para: &Paragraph) -> bool {
+    let Some(&first_visible_offset) = para.char_offsets.first() else {
+        return false;
+    };
+    if first_visible_offset != 8
+        || para.text.is_empty()
+        || para.line_segs.first().map(|ls| ls.text_start) != Some(0)
+        || para.line_segs.get(1).map(|ls| ls.text_start) != Some(first_visible_offset)
+    {
+        return false;
+    }
+
+    let control_positions = para.control_text_positions();
+    let mut leading_controls = para
+        .controls
+        .iter()
+        .enumerate()
+        .filter(|(control_index, _)| control_positions.get(*control_index) == Some(&0));
+    let Some((_, Control::Table(table))) = leading_controls.next() else {
+        return false;
+    };
+    // first_visible_offset == 8은 저장 stream의 선행 extended control이 정확히 하나라는
+    // 뜻이다. IR에서도 owner를 하나로 확정해 다른 co-anchored control에는 확장하지 않는다.
+    if leading_controls.next().is_some() {
+        return false;
+    }
+
+    let has_bottom_caption = table.caption.as_ref().is_some_and(|caption| {
+        caption.direction == CaptionDirection::Bottom && !caption.paragraphs.is_empty()
+    });
+    let segment_width = para
+        .line_segs
+        .first()
+        .map(|ls| ls.segment_width)
+        .unwrap_or_default();
+
+    table.common.treat_as_char
+        && has_bottom_caption
+        && segment_width > 0
+        && crate::renderer::height_measurer::is_tac_table_inline_in_para(table, segment_width, para)
+}
+
+/// inline TAC 문단의 저장 `LINE_SEG` 시작점을 visible character index로 변환한다.
+///
+/// 보통 index 0은 실질적인 개행이 아니므로 제외한다. 단,
+/// [`preserves_stored_first_visible_break_after_bottom_caption_table`]가 소유권을 증명하면
+/// 두 번째 저장 줄의 index 0만 보존한다.
+pub(super) fn inline_table_stored_line_break_char_indices(para: &Paragraph) -> Vec<usize> {
+    if para.line_segs.len() <= 1 || para.char_offsets.is_empty() {
+        return Vec::new();
+    }
+
+    let text_len = para.text.chars().count();
+    let preserves_first_visible_break =
+        preserves_stored_first_visible_break_after_bottom_caption_table(para);
+    let mut indices = Vec::new();
+    for (line_index, line_seg) in para.line_segs.iter().enumerate().skip(1) {
+        let char_idx = para
+            .char_offsets
+            .iter()
+            .position(|&offset| offset >= line_seg.text_start)
+            .unwrap_or(text_len);
+        let is_owned_first_visible_break =
+            line_index == 1 && char_idx == 0 && preserves_first_visible_break;
+        if (char_idx > 0 || is_owned_first_visible_break)
+            && char_idx <= text_len
+            && indices
+                .last()
+                .map(|&previous| char_idx > previous)
+                .unwrap_or(true)
+        {
+            indices.push(char_idx);
+        }
+    }
+    indices
+}
+
 fn paragraph_active_text_style(
     styles: &ResolvedStyleSet,
     para: Option<&Paragraph>,
@@ -79,6 +166,58 @@ fn paragraph_active_text_style(
     } else {
         (resolved_to_text_style(styles, 0, 0), None)
     }
+}
+
+/// 저장 LINE_SEG 없는 실제 빈 문단의 한컴 줄 metrics를 복원한다.
+///
+/// `compose_paragraph()` 는 렌더러 내부 안내용 400HU 줄을 남기지만, HWP5 원본의
+/// 빈 문단 높이는 그 값이 아니라 글자 모양과 ParaShape 줄간격에서 결정된다.
+/// HWP3 변환본만 기존 page-count 계약을 위해 작은 글꼴 cap을 유지한다.
+fn empty_no_lineseg_paragraph_metrics(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+    hwp3_legacy_caps: bool,
+    dpi: f64,
+) -> Option<(f64, f64, f64)> {
+    if !para.text.trim().is_empty()
+        || !para.controls.is_empty()
+        || !para.line_segs.is_empty()
+        || para.char_count == 0
+    {
+        return None;
+    }
+    let char_shape_id = para
+        .char_shape_id_at(0)
+        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))?
+        as usize;
+    let char_style = styles.char_styles.get(char_shape_id)?;
+    let font_size = char_style.font_size;
+    if font_size <= 0.0 {
+        return None;
+    }
+    if hwp3_legacy_caps {
+        let small_empty_para_max_font = hwpunit_to_px(1000, dpi);
+        if font_size > small_empty_para_max_font + 0.1 {
+            return None;
+        }
+        let meaningful_empty_para_min_font = hwpunit_to_px(800, dpi);
+        if !char_style.bold && font_size < meaningful_empty_para_min_font - 0.1 {
+            return None;
+        }
+    }
+    let line_spacing = para_style.map(|style| style.line_spacing).unwrap_or(160.0);
+    let line_spacing_type = para_style
+        .map(|style| style.line_spacing_type)
+        .unwrap_or(LineSpacingType::Percent);
+    let (line_height, line_spacing_px) = crate::renderer::corrected_line_metrics(
+        0.0,
+        0.0,
+        font_size,
+        line_spacing_type,
+        line_spacing,
+    );
+    Some((line_height, line_spacing_px, font_size))
 }
 
 fn numbering_marker_text_style(
@@ -220,7 +359,7 @@ fn authoritative_stored_line_start_px(
 fn uses_hwp5_stored_line_start_profile(
     profile: crate::model::provenance::LayoutCompatibilityProfile,
 ) -> bool {
-    profile.native_hwp5_layout() || profile.hwp5_origin_hwpx()
+    profile.hwp5_stored_pagination_layout()
 }
 
 fn composed_line_char_end(comp: &ComposedParagraph, line_idx: usize) -> usize {
@@ -1534,28 +1673,7 @@ impl LayoutEngine {
         // 이전: ctrl_gap 을 paragraph 전체 controls 합으로 over-subtract → controls 가 있는
         // paragraph 에서 saturating 0 으로 항상 break 미감지 (#496 케이스).
         // 이전: ls[1] 만 사용. 다중 줄 paragraph 에서 ls[2..] 무시 → dynamic reflow.
-        let line_break_char_indices: Vec<usize> =
-            if para.line_segs.len() > 1 && !para.char_offsets.is_empty() {
-                let mut indices: Vec<usize> = Vec::new();
-                for ls in para.line_segs.iter().skip(1) {
-                    let ts = ls.text_start as u32;
-                    // char_offsets[i] >= ts 인 첫 i (= text_chars 의 break 위치)
-                    let char_idx = para
-                        .char_offsets
-                        .iter()
-                        .position(|&off| off >= ts)
-                        .unwrap_or(text_chars.len());
-                    if char_idx > 0 && char_idx <= text_chars.len() {
-                        // 단조 증가 보장 (이전 break 보다 큰 경우에만 추가)
-                        if indices.last().map(|&prev| char_idx > prev).unwrap_or(true) {
-                            indices.push(char_idx);
-                        }
-                    }
-                }
-                indices
-            } else {
-                Vec::new()
-            };
+        let line_break_char_indices = inline_table_stored_line_break_char_indices(para);
         if layout_debug_enabled() {
             eprintln!(
                 "  LAYOUT_BREAK_INDICES: pi={} indices={:?} (from ls[1..])",
@@ -1885,6 +2003,7 @@ impl LayoutEngine {
                     None,
                     false,
                     false,
+                    false,
                 );
                 if table_bottom > max_table_bottom {
                     max_table_bottom = table_bottom;
@@ -1936,6 +2055,7 @@ impl LayoutEngine {
                 None,
                 table_para_y,
                 None,
+                false,
                 false,
                 false,
             );
@@ -2951,8 +3071,25 @@ impl LayoutEngine {
                 }
             }
 
+            // 저장 LINE_SEG 없는 실제 빈 문단은 compose의 400HU 안내 줄이 아니라
+            // 원래 글자 모양과 줄간격을 사용한다. HeightMeasurer의 동일 보정과
+            // 맞춰 pagination과 render의 y advance가 갈라지지 않게 한다.
+            let empty_no_lineseg_metrics = if line_idx == 0 {
+                para.and_then(|p| {
+                    empty_no_lineseg_paragraph_metrics(
+                        p,
+                        styles,
+                        para_style,
+                        self.profile.get().hwp3_layout(),
+                        self.dpi,
+                    )
+                })
+            } else {
+                None
+            };
+
             // 최대 폰트 크기 계산 (line_height 최솟값 보정에도 사용)
-            let max_fs = comp_line
+            let mut max_fs = comp_line
                 .runs
                 .iter()
                 .map(|r| {
@@ -2964,6 +3101,9 @@ impl LayoutEngine {
                     }
                 })
                 .fold(0.0f64, f64::max);
+            if let Some((_, _, font_size)) = empty_no_lineseg_metrics {
+                max_fs = font_size;
+            }
             let mut line_tac_offsets = tac_offsets_for_line(composed, &tac_offsets_px, line_idx);
             if let Some(offsets) =
                 repeated_empty_tac_line_offset(composed, &tac_offsets_px, line_idx)
@@ -3011,16 +3151,20 @@ impl LayoutEngine {
                 ls_val,
                 source_metrics_reflow_eligible,
             );
-            let (line_height, line_spacing_px) = crate::renderer::corrected_line_metrics_for_source(
-                raw_lh,
-                raw_text_height,
-                hwpunit_to_px(comp_line.line_spacing, self.dpi),
-                max_fs,
-                ls_type,
-                ls_val,
-                use_stored_text_height,
-                source_metrics_reflow_eligible,
-            );
+            let (line_height, line_spacing_px) = empty_no_lineseg_metrics
+                .map(|(line_height, line_spacing_px, _)| (line_height, line_spacing_px))
+                .unwrap_or_else(|| {
+                    crate::renderer::corrected_line_metrics_for_source(
+                        raw_lh,
+                        raw_text_height,
+                        hwpunit_to_px(comp_line.line_spacing, self.dpi),
+                        max_fs,
+                        ls_type,
+                        ls_val,
+                        use_stored_text_height,
+                        source_metrics_reflow_eligible,
+                    )
+                });
             // [#2279 진단] 줄별 pitch 분해 — 동작 불변.
             if let Ok(pat) = std::env::var("RHWP_DIAG_PITCH") {
                 if para.map(|p| p.text.contains(&pat)).unwrap_or(false) {
@@ -4257,14 +4401,23 @@ impl LayoutEngine {
             }
         }
 
-        // 문단 뒤 간격 (spacing_after)
-        if spacing_after > 0.0 && end == composed.lines.len() {
-            y += spacing_after;
-        }
-
-        // ComposedLine이 없으면 기본 높이 + 빈 TextRun 생성 (편집용)
+        // ComposedLine이 없으면 빈 TextRun 생성 (편집용). `compose_paragraph()`는
+        // 빈 문단에 줄을 만들지 않을 수 있는데, 종전 400HU 고정 advance는
+        // pagination의 NO_LS 빈 문단 메트릭과 달라 다음 표/문단을 위로 끌어올렸다.
+        // 이 경로도 원래 글자모양·줄간격을 사용해 두 경로를 일치시킨다 (#3820 p81–82).
         if composed.lines.is_empty() && start_line == 0 {
-            let default_height = hwpunit_to_px(400, self.dpi);
+            let (default_height, default_spacing) = para
+                .and_then(|p| {
+                    empty_no_lineseg_paragraph_metrics(
+                        p,
+                        styles,
+                        para_style,
+                        self.profile.get().hwp3_layout(),
+                        self.dpi,
+                    )
+                })
+                .map(|(line_height, line_spacing, _)| (line_height, line_spacing))
+                .unwrap_or((hwpunit_to_px(400, self.dpi), 0.0));
             let line_id = tree.next_id();
             let mut line_node = RenderNode::new(
                 line_id,
@@ -4307,7 +4460,13 @@ impl LayoutEngine {
             line_node.children.push(run_node);
 
             col_node.children.push(line_node);
-            y += default_height;
+            y += default_height + default_spacing;
+        }
+
+        // 문단 뒤 간격 (spacing_after). 빈 composed 문단도 실제 한 줄 advance 뒤에
+        // 적용해야 일반 composed 문단과 동일한 순서를 따른다.
+        if spacing_after > 0.0 && end == composed.lines.len() {
+            y += spacing_after;
         }
 
         y
@@ -5328,6 +5487,7 @@ impl LayoutEngine {
                                     None,
                                     None,
                                     None,
+                                    false,
                                     false,
                                     false,
                                 );

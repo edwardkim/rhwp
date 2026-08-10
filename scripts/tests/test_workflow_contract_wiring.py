@@ -46,6 +46,7 @@ class WorkflowContractWiringTests(unittest.TestCase):
             "test_ci_impact_workflow.py",
             "test_render_diff_workflow.py",
             "test_cache_sweep_workflow.py",
+            "test_codeql_workflow.py",
             "test_review_only_fast_pass_workflows.py",
             "test_workflow_contract_wiring.py",
         ]:

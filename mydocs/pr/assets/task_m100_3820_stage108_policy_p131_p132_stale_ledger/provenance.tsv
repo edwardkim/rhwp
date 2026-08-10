@@ -1,0 +1,4 @@
+role	path	sha256	grade
+source	samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113	원본 입력
+reference_pdf	pdf/pr3740/hwp/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-2020.pdf	7879ffee6313575132187c44c0090cd2e62c32c12c29b7eabd989181acf27b3a	한컴 2020 기준 PDF
+rhwp_binary	target/pr-review/release-test/rhwp	c88b9d91254920dad1ff28805219b4540c76770110e33bcc8422eec7202e72dd	e9253d21d811 committed source

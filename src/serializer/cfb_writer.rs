@@ -16,14 +16,29 @@ use crate::model::document::{Document, Preview};
 use crate::password_crypto::{encrypt_hwp5_stream, HWP5_ENCRYPT_VERSION};
 
 use super::body_text::serialize_section;
+use super::content_loss::{
+    ContentLoss, ContentLossReason, ContentLossReport, SerializedDocument, SerializedFormat,
+};
 use super::doc_info::serialize_doc_info;
 use super::header::serialize_file_header;
 use super::mini_cfb;
 use super::SerializeError;
 
+#[derive(Clone, Copy)]
+enum ContentLossWarningMode {
+    ReportOnly,
+    LegacyStderr,
+}
+
 /// Document IR을 HWP 5.0 CFB 바이너리로 직렬화
 pub fn serialize_hwp(doc: &Document) -> Result<Vec<u8>, SerializeError> {
-    serialize_hwp_inner(doc, None)
+    let serialized = serialize_hwp_inner(doc, None, ContentLossWarningMode::LegacyStderr)?;
+    Ok(serialized.into_bytes())
+}
+
+/// HWP 직렬화 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
+pub fn serialize_hwp_with_report(doc: &Document) -> Result<SerializedDocument, SerializeError> {
+    serialize_hwp_inner(doc, None, ContentLossWarningMode::ReportOnly)
 }
 
 /// Document IR을 HWP5 EncryptVersion 4 비밀번호 문서로 직렬화한다.
@@ -34,10 +49,24 @@ pub fn serialize_hwp_with_password(
     doc: &Document,
     password: &[u8],
 ) -> Result<Vec<u8>, SerializeError> {
-    serialize_hwp_inner(doc, Some(password))
+    let serialized =
+        serialize_hwp_inner(doc, Some(password), ContentLossWarningMode::LegacyStderr)?;
+    Ok(serialized.into_bytes())
 }
 
-fn serialize_hwp_inner(doc: &Document, password: Option<&[u8]>) -> Result<Vec<u8>, SerializeError> {
+/// 비밀번호 HWP 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
+pub fn serialize_hwp_with_password_and_report(
+    doc: &Document,
+    password: &[u8],
+) -> Result<SerializedDocument, SerializeError> {
+    serialize_hwp_inner(doc, Some(password), ContentLossWarningMode::ReportOnly)
+}
+
+fn serialize_hwp_inner(
+    doc: &Document,
+    password: Option<&[u8]>,
+    warning_mode: ContentLossWarningMode,
+) -> Result<SerializedDocument, SerializeError> {
     // 1. FileHeader 직렬화
     // [Task #1768] 배포용/암호화 문서 강하: IR 은 이미 복호화된 평문이고 본 직렬화는
     // ViewText/DISTRIBUTE_DOC_DATA 를 생성하지 않으므로, 플래그를 유지하면 산출물
@@ -100,7 +129,8 @@ fn serialize_hwp_inner(doc: &Document, password: Option<&[u8]>) -> Result<Vec<u8
     let preview = supplement_preview(doc);
 
     // 6. CFB 컨테이너 조립
-    write_hwp_cfb(
+    let mut content_loss = ContentLossReport::new(SerializedFormat::Hwp);
+    let bytes = write_hwp_cfb(
         &header_bytes,
         &doc_info_bytes,
         &section_bytes_list,
@@ -110,7 +140,12 @@ fn serialize_hwp_inner(doc: &Document, password: Option<&[u8]>) -> Result<Vec<u8
         &doc.extra_streams,
         compressed,
         password,
-    )
+        &mut content_loss,
+    )?;
+    if matches!(warning_mode, ContentLossWarningMode::LegacyStderr) {
+        content_loss.write_warnings_to_stderr();
+    }
+    Ok(SerializedDocument::new(bytes, content_loss))
 }
 
 /// PrvText 가 비었거나 placeholder 면 본문 텍스트로 채운다.
@@ -188,6 +223,7 @@ fn write_hwp_cfb(
     extra_streams: &[(String, Vec<u8>)],
     compressed: bool,
     password: Option<&[u8]>,
+    content_loss: &mut ContentLossReport,
 ) -> Result<Vec<u8>, SerializeError> {
     // 스트림 목록 수집
     let mut streams: Vec<(String, Vec<u8>)> = Vec::new();
@@ -247,12 +283,11 @@ fn write_hwp_cfb(
                 Some(_) => {
                     // 상한 초과 + 압축 상태 불일치 — 해제(OOM 위험)도, 그대로 쓰기
                     // (오독)도 안 된다. 렌더·클립보드와 같은 placeholder 로 접는다.
-                    eprintln!(
-                        "경고: BinData {} 압축 해제 상한 {}MB 초과이고 저장 압축 상태가 달라 \
-                         빈 스트림으로 대체합니다 (#2550)",
-                        storage_name,
-                        MAX_BIN_DATA_BYTES / (1024 * 1024)
-                    );
+                    content_loss.record(ContentLoss::binary_content_emptied(
+                        storage_id,
+                        path.clone(),
+                        ContentLossReason::StoredCompressionMismatch,
+                    ));
                     streams.push((path, encrypt_if_password(Vec::new(), password)));
                     continue;
                 }
@@ -262,12 +297,11 @@ fn write_hwp_cfb(
                 // 접는다. 이미 메모리에 있는 `Loaded` 값도 `load_limited()`에서
                 // 길이를 확인했으므로 같은 경로를 탄다.
                 None => {
-                    eprintln!(
-                        "경고: BinData {} 압축 해제 상한 {}MB 초과이고 원본 저장 형태가 없어 \
-                         빈 스트림으로 대체합니다 (#2550)",
-                        storage_name,
-                        MAX_BIN_DATA_BYTES / (1024 * 1024)
-                    );
+                    content_loss.record(ContentLoss::binary_content_emptied(
+                        storage_id,
+                        path.clone(),
+                        ContentLossReason::RawPassthroughUnavailable,
+                    ));
                     streams.push((path, encrypt_if_password(Vec::new(), password)));
                     continue;
                 }

@@ -3054,6 +3054,8 @@ impl DocumentCore {
             end_cut,
             is_block_split,
             row_cursor_is_nested,
+            end_row_height_override,
+            start_row_height_override,
         }) = col.items.first()
         else {
             return Ok(Unsupported);
@@ -3294,6 +3296,8 @@ impl DocumentCore {
             end_cut,
             *is_block_split,
             *row_cursor_is_nested,
+            *end_row_height_override,
+            *start_row_height_override,
             pt_margin_left,
             pt_margin_right,
             pt_mt,

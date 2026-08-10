@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "key": "task3820-stage122-76076-p018-p019-575da2a-final",
+  "provenance": {
+    "hwp": {
+      "path": "samples/76076_regulatory_analysis.hwp",
+      "sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5"
+    },
+    "pdf": {
+      "path": "samples/issue1891/76076_regulatory_analysis-2024.pdf",
+      "sha256": "06a389455d6b96e5f6580c9930fd8555256f9c712be85fb3cdaf31fc601a090d"
+    },
+    "git_head": "575da2a5dece0a7cedeebfd4579c58c734b6ffaf",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "a5e5b449c3ac0b891562ec6448ccccb5d43392ebe49774af0e49e350005bc271"
+    },
+    "rhwp_binary": {
+      "configured": "target/task-3820-production-fidelity/release-test/rhwp",
+      "path": "target/task-3820-production-fidelity/release-test/rhwp",
+      "sha256": "8718165b233567a8d411168e0d5c6681e9548c89c0a072b8e04dd85fad48a4b8"
+    }
+  },
+  "dpi": 144,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    18,
+    19
+  ],
+  "requested_page_shards": [
+    [
+      18,
+      19
+    ]
+  ],
+  "run_state": "complete"
+}

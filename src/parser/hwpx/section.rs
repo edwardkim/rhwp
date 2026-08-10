@@ -8,8 +8,8 @@ use quick_xml::Reader;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, Bookmark, CharOverlap, Control, Equation, Field, FieldType,
-    FormObject, FormType, HiddenComment, NewNumber, PageHide, PageNumberPos, Ruby,
-    EQUATION_LINE_MODE_BIT,
+    FormObject, FormType, HiddenComment, NewNumber, PageHide, PageNumberPos, Parameter,
+    ParameterList, Ruby, EQUATION_LINE_MODE_BIT,
 };
 use crate::model::document::{Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
@@ -1836,7 +1836,7 @@ fn parse_table(
                         table.cells.push(cell);
                     }
                     b"caption" => {
-                        let caption = parse_table_caption(ce, reader)?;
+                        let caption = parse_caption(ce, reader)?;
                         table.caption = Some(caption);
                     }
                     _ => {}
@@ -2137,8 +2137,27 @@ fn pack_hwpx_common_obj_attr(common: &CommonObjAttr) -> u32 {
     attr
 }
 
+fn parse_caption_sub_list_attrs(
+    e: &quick_xml::events::BytesStart,
+    caption: &mut crate::model::shape::Caption,
+) {
+    use crate::model::shape::CaptionVertAlign;
+
+    for attr in e.attributes().flatten() {
+        if attr.key.as_ref() == b"vertAlign" {
+            caption.vert_align = match attr_str(&attr).as_str() {
+                "CENTER" => CaptionVertAlign::Center,
+                "BOTTOM" => CaptionVertAlign::Bottom,
+                // 누락·미지·미래 lexical 값은 모델 기본값을 쓴다. 다른 HWPX subList
+                // enum 파서가 알 수 없는 값을 기본값으로 관용 처리하는 정책과 같다.
+                _ => CaptionVertAlign::Top,
+            };
+        }
+    }
+}
+
 /// `<hp:caption>` 파싱 — 표(#1387)·그림/도형/묶음(#1403) 공유.
-fn parse_table_caption(
+fn parse_caption(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
 ) -> Result<crate::model::shape::Caption, HwpxError> {
@@ -2171,10 +2190,17 @@ fn parse_table_caption(
             Ok(Event::Start(ref ce)) => {
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
-                if local == b"p" {
-                    let (para, _) = parse_paragraph(ce, reader)?;
-                    caption.paragraphs.push(para);
+                match local {
+                    b"subList" => parse_caption_sub_list_attrs(ce, &mut caption),
+                    b"p" => {
+                        let (para, _) = parse_paragraph(ce, reader)?;
+                        caption.paragraphs.push(para);
+                    }
+                    _ => {}
                 }
+            }
+            Ok(Event::Empty(ref ce)) if local_name(ce.name().as_ref()) == b"subList" => {
+                parse_caption_sub_list_attrs(ce, &mut caption);
             }
             Ok(Event::End(ref end)) => {
                 if local_name(end.name().as_ref()) == b"caption" {
@@ -2509,7 +2535,7 @@ fn parse_picture(
             }
             // 그림 캡션 (#1403) — 미적재 시 roundtrip 에서 캡션 subList 소실
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"caption" => {
-                caption = Some(parse_table_caption(ce, reader)?);
+                caption = Some(parse_caption(ce, reader)?);
             }
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
@@ -3995,7 +4021,7 @@ fn parse_shape_object(
             }
             // 도형 캡션 (#1403) — 미적재 시 roundtrip 에서 캡션 subList 소실
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"caption" => {
-                caption = Some(parse_table_caption(ce, reader)?);
+                caption = Some(parse_caption(ce, reader)?);
             }
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
@@ -4299,7 +4325,7 @@ fn parse_container(
         match reader.read_event_into(&mut buf) {
             // 묶음 개체 캡션 (#1403) — 미적재 시 roundtrip 에서 캡션 subList 소실
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"caption" => {
-                caption = Some(parse_table_caption(ce, reader)?);
+                caption = Some(parse_caption(ce, reader)?);
             }
             // 묶음 개체 설명 (#1392) — 미적재 시 roundtrip 에서 소실
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"shapeComment" => {
@@ -5135,6 +5161,114 @@ fn escape_xml_text(s: &str) -> String {
     out
 }
 
+/// `parse_field_parameters` 트리 빌더의 스택 프레임 — 열린 파라미터 요소 하나.
+/// `listParam`/루트 `parameters` 는 `List`, 나머지 4종은 스칼라 텍스트를 누적한다.
+enum ParamFrame {
+    List {
+        name: Option<String>,
+        items: Vec<Parameter>,
+    },
+    Boolean {
+        name: Option<String>,
+        text: String,
+    },
+    Integer {
+        name: Option<String>,
+        text: String,
+    },
+    Float {
+        name: Option<String>,
+        text: String,
+    },
+    String {
+        name: Option<String>,
+        text: String,
+        preserve_space: bool,
+    },
+}
+
+impl ParamFrame {
+    fn push_text(&mut self, s: &str) {
+        match self {
+            ParamFrame::Boolean { text, .. }
+            | ParamFrame::Integer { text, .. }
+            | ParamFrame::Float { text, .. }
+            | ParamFrame::String { text, .. } => text.push_str(s),
+            ParamFrame::List { .. } => {}
+        }
+    }
+
+    /// 프레임을 닫아 `Parameter` 로 만든다. 루트 프레임(List)은 호출부가 별도로
+    /// `ParameterList` 로 직접 소비하므로 이 경로를 타지 않는다.
+    fn finish(self) -> Parameter {
+        match self {
+            ParamFrame::List { name, items } => Parameter::List(ParameterList { name, items }),
+            ParamFrame::Boolean { name, text } => Parameter::Boolean {
+                name,
+                value: matches!(text.trim(), "1" | "true"),
+            },
+            ParamFrame::Integer { name, text } => Parameter::Integer {
+                name,
+                value: text.trim().parse::<i64>().unwrap_or(0),
+            },
+            ParamFrame::Float { name, text } => Parameter::Float {
+                name,
+                value: text.trim().parse::<f32>().unwrap_or(0.0),
+            },
+            ParamFrame::String {
+                name,
+                text,
+                preserve_space,
+            } => Parameter::String {
+                name,
+                value: text,
+                preserve_space,
+            },
+        }
+    }
+}
+
+/// 파라미터 요소(local name)를 여는 프레임으로 변환한다. 5종 외에는 `None`
+/// (스키마 밖 요소 — 원문 보존에는 영향 없이 트리에서만 건너뛴다).
+fn open_param_frame<'a>(
+    local: &[u8],
+    attrs: impl Iterator<Item = quick_xml::events::attributes::Attribute<'a>>,
+) -> Option<ParamFrame> {
+    let mut name: Option<String> = None;
+    let mut preserve_space = false;
+    for attr in attrs {
+        match attr.key.as_ref() {
+            b"name" => name = Some(attr_str(&attr)),
+            b"xml:space" if attr_str(&attr) == "preserve" => preserve_space = true,
+            _ => {}
+        }
+    }
+    match local {
+        b"booleanParam" => Some(ParamFrame::Boolean {
+            name,
+            text: String::new(),
+        }),
+        b"integerParam" => Some(ParamFrame::Integer {
+            name,
+            text: String::new(),
+        }),
+        b"floatParam" => Some(ParamFrame::Float {
+            name,
+            text: String::new(),
+        }),
+        b"stringParam" => Some(ParamFrame::String {
+            name,
+            text: String::new(),
+            preserve_space,
+        }),
+        b"listParam" => Some(ParamFrame::List {
+            name,
+            items: Vec::new(),
+        }),
+        _ => None,
+    }
+}
+
 fn parse_field_parameters(
     start: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
@@ -5144,8 +5278,8 @@ fn parse_field_parameters(
     let mut in_command = false;
     let mut in_memo_number = false;
 
-    // [#1391] parameters 요소 원문 verbatim 재조립 — IR 이 Command/Number 만
-    // 추출하므로 무손실 roundtrip 을 위해 자식 시퀀스를 그대로 보존한다.
+    // [#1391] parameters 요소 원문 verbatim 재조립 — 순수 HWPX 왕복(포맷을 안 벗어남)
+    // 은 이 문자열을 그대로 재사용해 바이트 정확성을 보장한다(diff_documents 계약).
     // parameters 자식은 stringParam/integerParam(name 속성 + 텍스트)만으로
     // 단순하므로 이벤트 재방출이 안전하다.
     let mut raw = String::from("<hp:parameters");
@@ -5157,6 +5291,19 @@ fn parse_field_parameters(
         raw.push('"');
     }
     raw.push('>');
+
+    // [#4396] 병행해서 트리도 만든다 — HWP5 왕복(포맷을 벗어남)에서 `raw_parameters_xml`
+    // 이 무효화된 뒤에도 Prop/Direction/Path/Category 등이 Command 하나로 축소되지
+    // 않도록. 루트(parameters) 프레임을 스택 바닥에 미리 얹어둔다.
+    let root_name = start
+        .attributes()
+        .flatten()
+        .find(|a| a.key.as_ref() == b"name")
+        .map(|a| attr_str(&a));
+    let mut stack: Vec<ParamFrame> = vec![ParamFrame::List {
+        name: root_name,
+        items: Vec::new(),
+    }];
 
     // 현재 열린 파라미터 요소 태그(닫을 때 사용).
     loop {
@@ -5189,6 +5336,9 @@ fn parse_field_parameters(
                         }
                     }
                 }
+                if let Some(frame) = open_param_frame(local, ce.attributes().flatten()) {
+                    stack.push(frame);
+                }
             }
             Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
@@ -5210,6 +5360,12 @@ fn parse_field_parameters(
                         }
                     }
                 }
+                // 자기닫힘(빈 값) — 여닫 없이 즉시 부모에 붙인다.
+                if let Some(frame) = open_param_frame(local, ce.attributes().flatten()) {
+                    if let Some(ParamFrame::List { items, .. }) = stack.last_mut() {
+                        items.push(frame.finish());
+                    }
+                }
             }
             Ok(Event::Text(ref t)) => {
                 let decoded = t.decode().unwrap_or_default();
@@ -5221,12 +5377,18 @@ fn parse_field_parameters(
                         field.memo_index = value;
                     }
                 }
+                if let Some(frame) = stack.last_mut() {
+                    frame.push_text(&decoded);
+                }
             }
             Ok(Event::GeneralRef(ref r)) => {
                 let decoded = decode_xml_general_ref(r);
                 raw.push_str(&escape_xml_text(&decoded));
                 if in_command {
                     field.command.push_str(&decoded);
+                }
+                if let Some(frame) = stack.last_mut() {
+                    frame.push_text(&decoded);
                 }
             }
             // [CDATA] stringParam(Command)이 CDATA로 인코딩된 경우(예: 하이퍼링크 URL의
@@ -5238,12 +5400,19 @@ fn parse_field_parameters(
                 if in_command {
                     field.command.push_str(&decoded);
                 }
+                if let Some(frame) = stack.last_mut() {
+                    frame.push_text(&decoded);
+                }
             }
             Ok(Event::End(ref ee)) => {
                 let eename = ee.name();
                 let local = local_name(eename.as_ref());
                 if local == b"parameters" {
                     raw.push_str("</hp:parameters>");
+                    // 루트 프레임을 팝해 최종 트리로 확정한다.
+                    if let Some(ParamFrame::List { name, items }) = stack.pop() {
+                        field.parameters = ParameterList { name, items };
+                    }
                     break;
                 }
                 // 임의 깊이 중첩(listParam 안의 stringParam 등)에서도 균형 잡힌 XML 을
@@ -5257,6 +5426,23 @@ fn parse_field_parameters(
                     in_command = false;
                 } else if local == b"integerParam" {
                     in_memo_number = false;
+                }
+                // 스키마 5종 중 하나를 닫는 End 라면 스택에서 팝해 부모 List 에 붙인다.
+                // (스키마 밖 요소는 애초에 push 되지 않았으므로 이 조건이 걸리지 않는다.)
+                if matches!(
+                    local,
+                    b"booleanParam"
+                        | b"integerParam"
+                        | b"floatParam"
+                        | b"stringParam"
+                        | b"listParam"
+                ) {
+                    if let Some(frame) = stack.pop() {
+                        let param = frame.finish();
+                        if let Some(ParamFrame::List { items, .. }) = stack.last_mut() {
+                            items.push(param);
+                        }
+                    }
                 }
             }
             Ok(Event::Eof) => break,
@@ -6553,7 +6739,7 @@ fn parse_common_shape_children(
                     // [#4319] 캡션 — 미적재 시 라운드트립에서 캡션 subList 소실(다른
                     // 도형 변형과 동형, parse_shape_object/parse_container 참고).
                     b"caption" => {
-                        *caption_out = Some(parse_table_caption(ce, reader)?);
+                        *caption_out = Some(parse_caption(ce, reader)?);
                     }
                     _ => {}
                 }

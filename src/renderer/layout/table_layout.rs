@@ -1,7 +1,9 @@
 //! 표 레이아웃 (layout_table + 셀 높이/줄범위 계산)
 
 use super::super::composer::{compose_paragraph, ComposedLine, ComposedParagraph};
-use super::super::height_measurer::MeasuredTable;
+use super::super::height_measurer::{
+    fit_measured_table_nested_tail_to_declared_height, MeasuredTable,
+};
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
 use super::super::style_resolver::{ResolvedBorderStyle, ResolvedStyleSet};
@@ -194,9 +196,10 @@ fn caption_has_topbottom_picture(caption: &Caption) -> bool {
 /// layout emitted it (issue2007 p2-p4, p9).
 ///
 /// Do not expand to every descendant: a RowBreak continuation deliberately
-/// keeps future-page text below its physical cell clip.  This is restricted to
-/// direct nested `Table` outer vertical `Line`s. The horizontal correction
-/// remains unrestricted because it never reveals a future-page text tail.
+/// keeps future-page text below its physical cell clip. This is restricted to
+/// direct nested `Table` outer vertical `Line`s. When the outer clip expands,
+/// direct nested `TableCell` content remains bounded by the host's original
+/// horizontal viewport so the border exception cannot reveal a text tail.
 /// The vertical correction is separately bounded to a terminal border that
 /// misses the clip by at most six pixels.
 fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(cell_node: &mut RenderNode) {
@@ -207,10 +210,12 @@ fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(cell_node: &mut R
         return;
     }
 
-    let mut clip_left = cell_node.bbox.x;
-    let mut clip_right = cell_node.bbox.x + cell_node.bbox.width;
+    let host_clip_left = cell_node.bbox.x;
+    let host_clip_right = cell_node.bbox.x + cell_node.bbox.width;
+    let mut clip_left = host_clip_left;
+    let mut clip_right = host_clip_right;
 
-    for table_node in &cell_node.children {
+    for table_node in &mut cell_node.children {
         if !matches!(table_node.node_type, RenderNodeType::Table(_)) {
             continue;
         }
@@ -250,6 +255,28 @@ fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(cell_node: &mut R
             const FALLBACK_BORDER_HALF_STROKE_PX: f64 = 1.0;
             clip_left = clip_left.min(table_left - FALLBACK_BORDER_HALF_STROKE_PX);
             clip_right = clip_right.max(table_right + FALLBACK_BORDER_HALF_STROKE_PX);
+        }
+
+        if table_left < host_clip_left - NESTED_FRAGMENT_EDGE_EPSILON_PX
+            || table_right > host_clip_right + NESTED_FRAGMENT_EDGE_EPSILON_PX
+        {
+            // Keep the direct child table's frame visible through the expanded
+            // host clip, but never let its cell content paint past the parent
+            // grid edge. The table's `Line` children stay outside this clamp.
+            for nested_cell in &mut table_node.children {
+                let RenderNodeType::TableCell(nested_meta) = &nested_cell.node_type else {
+                    continue;
+                };
+                if !nested_meta.clip {
+                    continue;
+                }
+                let content_left = nested_cell.bbox.x.max(host_clip_left);
+                let content_right = (nested_cell.bbox.x + nested_cell.bbox.width)
+                    .min(host_clip_right)
+                    .max(content_left);
+                nested_cell.bbox.x = content_left;
+                nested_cell.bbox.width = content_right - content_left;
+            }
         }
     }
 
@@ -1493,6 +1520,9 @@ pub(super) struct CellUnit {
     /// 새 block은 이전 viewport의 예약 줄이 아니므로 continuation origin에서
     /// 건너뛰지 않는다(42065 p9).
     mixed_nested_starts_after_table: bool,
+    /// `mixed_nested_fragment`를 만든 immediate child cell의 source paragraph.
+    /// 상위 host의 `para_idx`와 분리해 중첩 표 control의 정확한 원본 경계를 보존한다.
+    mixed_nested_source_para_idx: Option<usize>,
     /// 자식 source 문단의 재귀 block prelude 역할. 재귀 투영 단계에서도 보존한다.
     recursive_block_prelude_role: RecursiveBlockPreludeRole,
     top_and_bottom_flow: bool,
@@ -1567,6 +1597,10 @@ struct NestedFlowFragment {
     content_height: f64,
     recursive: bool,
     starts_after_table: bool,
+    /// Immediate child cell의 source paragraph. 1×1 host를 outer cell unit으로
+    /// 평탄화할 때 table-control 경계(p20 등)를 잃지 않기 위한 provenance다.
+    /// `None`은 기존 synthetic/row aggregate fragment이며 layout 값은 바꾸지 않는다.
+    source_para_idx: Option<usize>,
     recursive_block_prelude_role: RecursiveBlockPreludeRole,
 }
 
@@ -1601,6 +1635,15 @@ pub(crate) struct NestedTableSplit {
     /// 물리 y 보정 때문에 `offset_within_start`에 첫 가시 유닛을 더할 수 있으므로,
     /// 다음 깊이의 동일한 유닛 컷을 재구성할 때는 이 원본 값을 사용한다.
     pub content_offset: f64,
+    /// 부모 native short-parent-child fragment가 이미 소비한 source unit을 terminal
+    /// child viewport에서도 다시 그리지 않도록 한다. 일반 terminal tail은 종전처럼
+    /// source cut을 끈다; native short-parent-child와 p33→34류 terminal rowbreak
+    /// source cursor를 함께 OR한 값이므로 두 형상 모두 unit 컷 자체는 켠다.
+    pub force_source_start_cut: bool,
+    /// native short-parent-child(76076 p81→82)에서만 true. `force_source_start_cut`이
+    /// p33→34류 terminal rowbreak source cursor만으로 true인 경우에는 false를 유지해
+    /// 이미 소유가 끝난 마지막 unit을 다음 조각에서 중복 페인트하지 않는다.
+    pub replay_terminal_boundary_unit: bool,
     /// [#3658] 이 조각이 해당 셀 콘텐츠의 **마지막** 조각인가 (컷이 마지막 유닛까지
     /// 포함 — end_cut 종료). true 면 이어받을 continuation 이 없으므로 셀 하단 초과
     /// 줄 드롭(다음 쪽 소속 줄 제외용)을 적용하지 않는다 — 꼬리 문단 유실 방지.
@@ -1627,6 +1670,8 @@ pub(crate) fn calc_nested_split_rows(
             flow_height: 0.0,
             offset_within_start: 0.0,
             content_offset: 0.0,
+            force_source_start_cut: false,
+            replay_terminal_boundary_unit: false,
             terminal: false,
             recursive_cut: None,
         };
@@ -1697,6 +1742,8 @@ pub(crate) fn calc_nested_split_rows(
         flow_height: visible_height,
         offset_within_start: 0.0,
         content_offset: offset.max(0.0),
+        force_source_start_cut: false,
+        replay_terminal_boundary_unit: false,
         terminal: false,
         recursive_cut: None,
     }
@@ -1743,6 +1790,11 @@ struct HorizontalCellVars {
     /// 같은 조각의 원본 unit 소비 위치. 물리 y 보정과 분리해 다음 중첩 표의
     /// unit 경계를 계산한다.
     single_row_fragment_content_offset: Option<f64>,
+    /// native short-parent child의 terminal continuation도 이미 소비한 source
+    /// prefix를 건너뛰게 하는 명시 신호. 일반 terminal tail에는 false다.
+    force_source_start_cut: bool,
+    /// true면 마지막 source unit을 다음 조각에서 재생한다 (76076 p81→82 형상만 해당).
+    replay_terminal_boundary_unit: bool,
     /// [#3658] 분할 렌더(row_filter)가 이 셀 콘텐츠의 마지막 조각인가.
     /// true 면 셀 하단 초과 줄 드롭(다음 쪽 소속 줄 제외)을 적용하지 않는다 —
     /// 이어받을 continuation 이 없어 드롭된 꼬리 줄은 영구 유실되기 때문.
@@ -2028,6 +2080,7 @@ impl LayoutEngine {
         outer_host_stored_vpos_hu: Option<i32>,
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
+        physical_outer_box_paint_inset: bool,
     ) -> f64 {
         if table.cells.is_empty() {
             if depth == 0 {
@@ -2192,6 +2245,7 @@ impl LayoutEngine {
                             None,
                             allow_para_top_bleed,
                             clamp_header_negative_para_offset,
+                            false,
                         );
 
                         if let Some(bs_borders) = outer_border_meta {
@@ -2357,6 +2411,10 @@ impl LayoutEngine {
         let scalar_single_row_fragment_content_offset = nested_split
             .filter(|_| scalar_single_row_fragment)
             .map(|split| split.content_offset);
+        let scalar_force_source_start_cut = nested_split
+            .is_some_and(|split| scalar_single_row_fragment && split.force_source_start_cut);
+        let scalar_replay_terminal_boundary_unit = nested_split
+            .is_some_and(|split| scalar_single_row_fragment && split.replay_terminal_boundary_unit);
         let scalar_single_row_continuation = scalar_single_row_continuation_offset.is_some();
         let mut row_col_x = build_row_col_x(
             table,
@@ -2482,6 +2540,9 @@ impl LayoutEngine {
                 }
             }
         }
+        if physical_outer_box_paint_inset {
+            table_x += hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
+        }
 
         let table_text_wrap = if depth == 0 {
             table.common.text_wrap
@@ -2496,7 +2557,7 @@ impl LayoutEngine {
 
         // inline_x_override가 있으면 외부에서 inline 위치를 계산했으므로 x/y 기준은 유지한다.
         // 단, Top 캡션은 표 본문 위의 별도 영역이므로 표 본문 y 에 캡션 높이만큼 반영한다.
-        let table_y = if inline_x_override.is_some() {
+        let flow_table_y = if inline_x_override.is_some() {
             y_start + inline_top_caption_offset
         } else {
             let computed_y = self.compute_table_y_position(
@@ -2516,9 +2577,15 @@ impl LayoutEngine {
                 computed_y
             }
         };
+        let table_y = flow_table_y
+            + if physical_outer_box_paint_inset {
+                hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+            } else {
+                0.0
+            };
         let inline_table_flow_y_shift = if inline_x_override.is_some() {
             para_y
-                .map(|anchor_y| (table_y - anchor_y).max(0.0))
+                .map(|anchor_y| (flow_table_y - anchor_y).max(0.0))
                 .unwrap_or(0.0)
         } else {
             0.0
@@ -2683,6 +2750,8 @@ impl LayoutEngine {
             scalar_single_row_continuation_offset,
             scalar_single_row_fragment,
             scalar_single_row_fragment_content_offset,
+            scalar_force_source_start_cut,
+            scalar_replay_terminal_boundary_unit,
             split_terminal,
             clamp_header_negative_para_offset,
             inline_table_flow_y_shift,
@@ -2694,6 +2763,13 @@ impl LayoutEngine {
             // (exam_social p2 footer 번호 회귀).
             depth > 0
                 && !table.common.treat_as_char
+                // p34의 일반 non-TAC nested table은 saved 510HU margin을 유지해
+                // 우측 테두리 침범을 막는다. 반면 RenderNormalizationOverlay가
+                // 표시한 native short RowBreak child는 parent owner content box를
+                // 그대로 써야 한컴 PDF의 p81 `… 등의 사고` wrap이 재현된다.
+                && !self
+                    .render_normalization_overlay()
+                    .uses_owner_content_box(table)
                 && !matches!(
                     col_node.node_type,
                     RenderNodeType::Header | RenderNodeType::Footer | RenderNodeType::MasterPage
@@ -2785,8 +2861,19 @@ impl LayoutEngine {
 
         // ── 6. 테두리 렌더링 ──
         if independent_col_row_y.is_none() {
+            let body_top_clip = (depth == 0
+                && self.is_body_flow_col_area(col_area)
+                && (table_y - col_area.y).abs() <= 0.5)
+                .then_some(col_area.y);
             table_node.children.extend(render_edge_borders(
-                tree, &h_edges, &v_edges, &row_col_x, &row_y, table_x, table_y,
+                tree,
+                &h_edges,
+                &v_edges,
+                &row_col_x,
+                &row_y,
+                table_x,
+                table_y,
+                body_top_clip,
             ));
             if self.show_transparent_borders.get() {
                 table_node.children.extend(render_transparent_borders(
@@ -3151,7 +3238,25 @@ impl LayoutEngine {
         relaxed_pad: bool,
     ) -> Vec<f64> {
         if let Some(mt) = measured_table {
-            let mut rh = mt.row_heights.clone();
+            // `TypesetEngine::format_table` uses this same narrow replacement for
+            // native HWP5 empty RowBreak hosts.  Layout must consume the identical
+            // row geometry: otherwise pagination reserves the declared tail height
+            // but the SVG layout paints the old over-measured table and moves every
+            // following table back down (76076 p81→82).  The helper verifies the
+            // actual last-row 1×1 block-child shape and the bounded drift; this
+            // outer gate confines it to the native TopAndBottom RowBreak contract.
+            let native_rowbreak_nested_tail = self.profile.get().hwp5_stored_pagination_layout()
+                && !table.common.treat_as_char
+                && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+                && matches!(table.common.vert_rel_to, VertRelTo::Para)
+                && matches!(table.page_break, TablePageBreak::RowBreak)
+                && table.row_count > 1
+                && table.cells.iter().all(|cell| cell.row_span == 1);
+            let tail_fitted = native_rowbreak_nested_tail
+                .then(|| fit_measured_table_nested_tail_to_declared_height(mt, table, self.dpi))
+                .flatten();
+            let measured = tail_fitted.as_ref().unwrap_or(mt);
+            let mut rh = measured.row_heights.clone();
             rh.resize(row_count, hwpunit_to_px(400, self.dpi));
             // [#3386] 행별 저장-선언 신뢰(렌더 전용): 전 셀이 rowspan 없이 저장
             // LINE_SEG 를 보유하고 행별 선언(cellSz)이 모두 존재하며, 선언 합이
@@ -3900,11 +4005,10 @@ impl LayoutEngine {
             let om_left = hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
             let area_x = col_area.x + om_left;
             let area_w = (col_area.width - om_left).max(0.0);
-            // [#3308] 스트레치 하한(0.9) 미만으로 진짜 좁은 비-TAC 중첩 표는 한컴이
-            // 저장된 h_offset(편집기 대화상자 표시값)과 무관하게 셀 안 가운데에
-            // 배치한다 — 정답지 픽셀 실측 0.6px 정합, 선언 offset 모델은 15~21px
-            // 불일치(작업지시자 "표 속성 값으로 조판되지 않음" 판정). 발동을
-            // 비-TAC·셀 내부·비율<0.9 로 좁게 가드한다(한컴 호환 케이스별 원칙).
+            // [#3308/#3820] 비-TAC 중첩 표는 저장 폭을 유지하고, 부모 셀보다 좁으면
+            // 저장 h_offset(편집기 대화상자 표시값)과 무관하게 셀 안 가운데에 배치한다.
+            // 76076 p34의 near-fit 1×1 표도 이 계약을 따른다. 부모 폭으로의 확장은
+            // PDF 줄바꿈·조각 높이를 바꾸므로 적용하지 않는다.
             if !table.common.treat_as_char
                 && table_width
                     < area_w * crate::renderer::render_normalization::NESTED_STRETCH_MIN_RATIO
@@ -4123,6 +4227,8 @@ impl LayoutEngine {
             single_row_continuation_offset,
             single_row_fragment,
             single_row_fragment_content_offset,
+            force_source_start_cut,
+            replay_terminal_boundary_unit,
             split_terminal,
         } = v;
         let inner_area = LayoutRect {
@@ -4143,7 +4249,10 @@ impl LayoutEngine {
         // native HWP5 RowBreak fragments as to stored HWPX fragments.  The
         // selected overflow fixtures and issue2007 ownership tests determine
         // the final, narrower eligibility predicate.
-        let fragment_cut_units = if single_row_fragment && row_filter.is_some() && !split_terminal {
+        let fragment_cut_units = if single_row_fragment
+            && row_filter.is_some()
+            && (!split_terminal || force_source_start_cut)
+        {
             let offset = single_row_fragment_content_offset
                 .unwrap_or_else(|| single_row_continuation_offset.unwrap_or(0.0))
                 .max(0.0);
@@ -4151,10 +4260,29 @@ impl LayoutEngine {
             // 물리 Cell clip이 위쪽을 제거한다. 여기서 start까지 다시 버리면 현
             // 페이지 상단에 이어져야 할 줄이 사라진다. 따라서 현재 페이지 **하단**
             // 까지만 정확히 자르고, 앞부분은 같은 논리 원점에서 배치시킨다.
+            let start = if force_source_start_cut {
+                let units = self.cell_units_fitting_height(cell, table, styles, offset);
+                if replay_terminal_boundary_unit {
+                    // Native HWP5 short-parent child fragments can end the preceding
+                    // viewport inside the final source unit.  That unit is physically
+                    // clipped on the preceding page, so treating it as fully consumed
+                    // loses its first visible line on the terminal continuation
+                    // (76076 p81 -> p82).  Keep the outer fragment geometry intact and
+                    // replay exactly that boundary unit on the next page.
+                    units.saturating_sub(1)
+                } else {
+                    // terminal_rowbreak_source_cursor-only (76076 p33 -> p34) already
+                    // owns every unit through `units`; replaying one back here would
+                    // repaint its last source line again.
+                    units
+                }
+            } else {
+                0
+            };
             let end = self
                 .cell_units_fitting_height(cell, table, styles, offset + cell_h.max(0.0))
-                .max(0);
-            Some((0, end))
+                .max(start);
+            Some((start, end))
         } else {
             None
         };
@@ -4257,7 +4385,10 @@ impl LayoutEngine {
             let use_saved_cell_para_vpos = use_top_vpos_anchor
                 || trust_stored_cell_flow
                 || has_initial_tac_shape_host(&cell.paragraphs);
-            if use_saved_cell_para_vpos && !has_nested_table && has_stored_para_anchor {
+            if use_saved_cell_para_vpos
+                && (!has_nested_table || trust_stored_cell_flow)
+                && has_stored_para_anchor
+            {
                 if let Some(first_seg) = para.line_segs.first() {
                     if first_seg.vertical_pos >= 0 {
                         let spacing_before = styles
@@ -5181,6 +5312,25 @@ impl LayoutEngine {
                     }
                     Control::Table(nested_table) => {
                         let is_tac_table = nested_table.common.treat_as_char;
+                        // HWPX의 같은 빈 host 문단 안에 있는 `글 뒤로` 1×1 표는
+                        // 문단 흐름을 차지하지 않는 overlay control이다. 특히 자동날인
+                        // 안내처럼 세 control이 같은 `vpos`에 있고 horzOffset만 다른
+                        // 경우, 일반 nested-table 경로처럼 table_h만큼 para_y를 전진하면
+                        // PDF의 가로 3개 상자가 세로로 쌓인다 (#3820 p144).
+                        //
+                        // HWP5의 legacy non-TAC 정렬이나 HWPX TopAndBottom 표까지
+                        // horizontal offset을 강제하면 기존 셀 레이아웃을 바꾼다. stored
+                        // HWPX의 paragraph-relative BehindText + Column anchor에만
+                        // 한정해 parent cell x를 explicit anchor로 넘긴다. 기존
+                        // compute_table_x_position은 이 override에 non-TAC horzOffset을
+                        // 더하므로 offset의 부호/단위 규칙은 한 곳에 유지된다.
+                        let hwpx_nested_behind_text_overlay =
+                            self.profile.get().hwpx_stored_layout()
+                                && !is_tac_table
+                                && matches!(nested_table.common.text_wrap, TextWrap::BehindText)
+                                && nested_table.common.flow_with_text
+                                && matches!(nested_table.common.vert_rel_to, VertRelTo::Para)
+                                && matches!(nested_table.common.horz_rel_to, HorzRelTo::Column);
                         let nested_y = if has_preceding_text {
                             para_y
                         } else {
@@ -5330,6 +5480,7 @@ impl LayoutEngine {
                                     None,
                                     false,
                                     clamp_header_negative_para_offset,
+                                    false,
                                 );
                                 inline_x += tac_om_l + tac_w + tac_om_r;
                                 // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
@@ -5437,15 +5588,29 @@ impl LayoutEngine {
                             // 이 셀 조각의 unit cut이 만든 중첩 표 slice를 다음 깊이에도
                             // 그대로 넘긴다. 픽셀 높이만으로 다시 행을 추정하면 첫 조각과
                             // continuation이 같은 행을 각각 재렌더해 쪽 소유가 깨진다.
-                            // Source-unit viewport ownership is encoded in HWPX wrapper
-                            // layouts. Native HWP5 RowBreak wrappers already carry the
-                            // equivalent physical cell clip and cumulative vpos; forwarding
-                            // the HWPX split there advances the child by one unit and paints
-                            // the next page heading early (42065 p16 -> p17).
-                            let nested_split = self
+                            // Source-unit viewport ownership is normally encoded in HWPX
+                            // wrapper layouts. Native HWP5 RowBreak wrappers normally carry
+                            // the equivalent physical cell clip and cumulative vpos;
+                            // forwarding a general mixed split there advances the child early
+                            // (42065 p16 -> p17).  The narrow short-parent child contract is
+                            // different: its child was expanded to CellUnits specifically for
+                            // this parent fragment, so omitting the cursor paints the first
+                            // source line again on the continuation (76076 p81 -> p82).
+                            let native_short_parent_child_split = self
                                 .profile
                                 .get()
-                                .hwpx_stored_layout()
+                                .hwp5_stored_pagination_layout()
+                                && self.native_short_parent_child_fragment_eligible(
+                                    table,
+                                    cell,
+                                    nested_table,
+                                    self.nested_table_mixed_fragment_heights(nested_table, styles)
+                                        .iter()
+                                        .map(|fragment| fragment.height)
+                                        .sum(),
+                                );
+                            let nested_split = (self.profile.get().hwpx_stored_layout()
+                                || native_short_parent_child_split)
                                 .then_some(mixed_nested_split.as_ref())
                                 .flatten();
                             let table_h = self.layout_table(
@@ -5465,17 +5630,20 @@ impl LayoutEngine {
                                 nested_ctx,
                                 0.0,
                                 0.0,
-                                None,
+                                hwpx_nested_behind_text_overlay.then_some(inner_area.x),
                                 nested_split,
                                 None,
                                 None,
                                 false,
                                 clamp_header_negative_para_offset,
+                                false,
                             );
-                            para_y = nested_y
-                                + nested_split
-                                    .map(|split| split.flow_height)
-                                    .unwrap_or(table_h);
+                            if !hwpx_nested_behind_text_overlay {
+                                para_y = nested_y
+                                    + nested_split
+                                        .map(|split| split.flow_height)
+                                        .unwrap_or(table_h);
+                            }
                         }
                         has_preceding_text = true;
                     }
@@ -5657,6 +5825,8 @@ impl LayoutEngine {
         single_row_continuation_offset: Option<f64>,
         single_row_fragment: bool,
         single_row_fragment_content_offset: Option<f64>,
+        force_source_start_cut: bool,
+        replay_terminal_boundary_unit: bool,
         split_terminal: bool,
         clamp_header_negative_para_offset: bool,
         inline_table_flow_y_shift: f64,
@@ -6028,6 +6198,17 @@ impl LayoutEngine {
                 .paragraphs
                 .iter()
                 .any(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))));
+            // HWPX block-TAC 셀의 nested table은 예외다. 이 형상은 모든 문단의
+            // 연속된 LineSeg.vpos가 셀 기준 좌표를 보존하며, 이를 무시하면
+            // Center 정렬의 순차 flow가 누적되어 실제로 fit하는 하위 표가 다음
+            // 쪽으로 clip된다 (#3820 production HWPX p144). 아래의 stored-flow
+            // 신뢰 조건(연속 anchor, extent, 비-flow 객체)을 통과한 경우에만 허용해
+            // Task #362의 일반 nested-table 누적-vpos 차단은 유지한다.
+            let hwpx_noninline_tac_nested_stored_flow = self.profile.get().hwpx_stored_layout()
+                && table.common.treat_as_char
+                && !table.common.flow_with_text
+                && matches!(table.page_break, TablePageBreak::None)
+                && has_nested_table;
             let first_line_vpos = cell
                 .paragraphs
                 .first()
@@ -6039,7 +6220,8 @@ impl LayoutEngine {
             // 지오메트리를 신뢰한다: 정렬 기준 콘텐츠 높이를 저장 extent 로
             // 바꾸고, 문단 배치도 저장 vpos 스냅을 강제한다 (한컴 실측:
             // 가사 top = 셀 top + pad + 센터 오프셋(저장 extent 기준) + vpos).
-            let (stored_flow_extent, stored_flow_line_sum) = if !has_nested_table
+            let (stored_flow_extent, stored_flow_line_sum) = if (!has_nested_table
+                || hwpx_noninline_tac_nested_stored_flow)
                 && !cell.paragraphs.is_empty()
                 && cell.paragraphs.iter().all(|p| !p.line_segs.is_empty())
             {
@@ -6083,12 +6265,20 @@ impl LayoutEngine {
                 .iter()
                 .enumerate()
                 .all(|(idx, para)| crate::renderer::first_seg_vpos_is_anchor(para, idx));
-            let trust_stored_cell_flow = (depth > 0 || table.common.treat_as_char)
+            let stored_flow_shape_is_trusted = (depth > 0 || table.common.treat_as_char)
                 && stored_flow_extent > 0.0
-                && stored_flow_extent + 0.5 < total_content_height
                 && non_flow_object_extent <= stored_flow_extent + 0.5
                 && stored_flow_extent + 0.5 >= 0.5 * stored_flow_line_sum
                 && stored_flow_has_para_anchors;
+            // 일반 셀은 저장 extent가 자체 측정값보다 실제로 압축된 경우에만
+            // anchor를 신뢰한다. 다만 위의 좁은 HWPX block-TAC nested-table 형상은
+            // extent와 자체 측정값이 같아도 문단별 vpos가 하위 표의 실제 위치를
+            // 담고 있다. 이 경우에는 total height는 변하지 않지만 순차 배치만
+            // 저장 anchor로 복원해야 한다 (#3820 p144).
+            let trust_stored_cell_flow = stored_flow_shape_is_trusted
+                && (stored_flow_extent + 0.5 < total_content_height
+                    || (hwpx_noninline_tac_nested_stored_flow
+                        && (stored_flow_extent - total_content_height).abs() <= 0.5));
             let total_content_height = if trust_stored_cell_flow {
                 stored_flow_extent
             } else {
@@ -6177,6 +6367,8 @@ impl LayoutEngine {
                         single_row_continuation_offset,
                         single_row_fragment,
                         single_row_fragment_content_offset,
+                        force_source_start_cut,
+                        replay_terminal_boundary_unit,
                         split_terminal,
                     },
                 );
@@ -6794,6 +6986,21 @@ impl LayoutEngine {
                         nested_table_height,
                         page_height,
                     );
+                    for (unit_idx, unit) in units.iter().enumerate() {
+                        eprintln!(
+                            "  unit[{unit_idx}] h={:.2} para={} lines={}..{} mixed={} trailing={} content_h={:.2} hard={} stored={} spacer={}",
+                            unit.height,
+                            unit.para_idx,
+                            unit.vis_start,
+                            unit.vis_end,
+                            unit.mixed_nested_fragment,
+                            unit.mixed_nested_trailing,
+                            unit.mixed_nested_content_height,
+                            unit.hard_break_before,
+                            unit.stored_frame_break_before,
+                            unit.empty_spacer,
+                        );
+                    }
                 }
             }
             // [#4069 Stage 2/Task #3820 Stage 48] 저장 프레임 경계는 문단 내부인지
@@ -6830,6 +7037,7 @@ impl LayoutEngine {
                             },
                             recursive: true,
                             starts_after_table: unit.mixed_nested_starts_after_table,
+                            source_para_idx: Some(unit.para_idx),
                             recursive_block_prelude_role: unit.recursive_block_prelude_role,
                         }
                     })
@@ -6870,6 +7078,7 @@ impl LayoutEngine {
                             },
                             recursive: false,
                             starts_after_table: unit.mixed_nested_starts_after_table,
+                            source_para_idx: Some(unit.para_idx),
                             recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
                         }
                     })
@@ -6877,7 +7086,7 @@ impl LayoutEngine {
             }
         }
 
-        let mut row_units: Vec<(f64, bool, f64, bool)> = Vec::new();
+        let mut row_units: Vec<(f64, bool, f64, bool, Option<usize>)> = Vec::new();
         for cell in table.cells.iter().filter(|cell| cell.row == 0) {
             // 이 helper는 부모 셀의 Control::Table, 즉 중첩 표의 조각 유닛을
             // 산출한다. 비글자 중첩 표는 실제 배치에서 보존된 작은 cellMargin을
@@ -6885,8 +7094,12 @@ impl LayoutEngine {
             // 규칙(aim=false → table inMargin)으로 재조판하면 더 넓은 폭에서 줄이
             // 하나 덜 생겨, 유닛 컷은 마지막 줄을 포함했다고 판단해도 실제 SVG
             // glyph가 다음 페이지 clip에 걸린다 (76076 p33→34).
+            let preserve_saved_small_margin = !table.common.treat_as_char
+                && !self
+                    .render_normalization_overlay()
+                    .uses_owner_content_box(table);
             let (pad_left, pad_right, pad_top, pad_bottom) =
-                self.resolve_cell_padding_for_context(cell, table, !table.common.treat_as_char);
+                self.resolve_cell_padding_for_context(cell, table, preserve_saved_small_margin);
             let cell_w = if cell.width < 0x8000_0000 {
                 hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table)
             } else {
@@ -6949,12 +7162,12 @@ impl LayoutEngine {
 
                 let para_style = styles.para_styles.get(para.para_shape_id as usize);
                 if pi == 0 && pad_top > 0.5 {
-                    cell_units.push((pad_top, false, 0.0, false));
+                    cell_units.push((pad_top, false, 0.0, false, None));
                 }
                 if pi > 0 {
                     let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
                     if spacing_before > 0.5 {
-                        cell_units.push((spacing_before, false, 0.0, false));
+                        cell_units.push((spacing_before, false, 0.0, false, None));
                     }
                 }
                 for (li, line) in comp.lines.iter().enumerate() {
@@ -7003,6 +7216,7 @@ impl LayoutEngine {
                         false,
                         corrected_h,
                         starts_after_completed_multiline_table && li == 0,
+                        Some(pi),
                     ));
                 }
                 if nested_h > 0.5 {
@@ -7011,6 +7225,7 @@ impl LayoutEngine {
                         false,
                         nested_h,
                         starts_after_completed_multiline_table,
+                        Some(pi),
                     ));
                 }
                 if empty_line_box > 0.5 {
@@ -7019,12 +7234,13 @@ impl LayoutEngine {
                         false,
                         empty_line_box,
                         starts_after_completed_multiline_table,
+                        Some(pi),
                     ));
                 }
                 if pi + 1 < cell.paragraphs.len() {
                     let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
                     if spacing_after > 0.5 {
-                        cell_units.push((spacing_after, true, 0.0, false));
+                        cell_units.push((spacing_after, true, 0.0, false, None));
                     }
                 }
                 let completed_multiline_table = para
@@ -7038,12 +7254,12 @@ impl LayoutEngine {
                 }
             }
             if pad_bottom > 0.5 {
-                cell_units.push((pad_bottom, true, 0.0, false));
+                cell_units.push((pad_bottom, true, 0.0, false, None));
             }
             // [#2279 진단] 1×1 중첩 셀 프래그먼트 분해 — 동작 불변.
             if let Ok(pat) = std::env::var("RHWP_DIAG_MIXFRAG") {
                 if cell.paragraphs.iter().any(|p| p.text.contains(&pat)) {
-                    let total: f64 = cell_units.iter().map(|(h, _, _, _)| *h).sum();
+                    let total: f64 = cell_units.iter().map(|(h, _, _, _, _)| *h).sum();
                     eprintln!(
                         "DIAG_MIXFRAG cell paras={} units={} total={:.1} inner_w={:.2}",
                         cell.paragraphs.len(),
@@ -7072,32 +7288,38 @@ impl LayoutEngine {
                 }
             }
             if cell_units.len() > row_units.len() {
-                row_units.resize(cell_units.len(), (0.0, true, 0.0, false));
+                row_units.resize(cell_units.len(), (0.0, true, 0.0, false, None));
             }
-            for (idx, (h, trailing, content_h, starts_after_table)) in
+            for (idx, (h, trailing, content_h, starts_after_table, source_para_idx)) in
                 cell_units.into_iter().enumerate()
             {
                 if h > row_units[idx].0 {
-                    row_units[idx] = (h, trailing, content_h, starts_after_table);
+                    row_units[idx] = (h, trailing, content_h, starts_after_table, source_para_idx);
                 } else if (h - row_units[idx].0).abs() <= 0.5 {
                     row_units[idx].1 = row_units[idx].1 && trailing;
                     row_units[idx].2 = row_units[idx].2.max(content_h);
                     row_units[idx].3 = row_units[idx].3 || starts_after_table;
+                    if row_units[idx].4 != source_para_idx {
+                        row_units[idx].4 = None;
+                    }
                 }
             }
         }
         row_units
             .into_iter()
             .map(
-                |(height, trailing, content_height, starts_after_table)| NestedFlowFragment {
-                    height,
-                    hard_break_before: false,
-                    stored_frame_break_before: false,
-                    trailing,
-                    content_height,
-                    recursive: false,
-                    starts_after_table,
-                    recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
+                |(height, trailing, content_height, starts_after_table, source_para_idx)| {
+                    NestedFlowFragment {
+                        height,
+                        hard_break_before: false,
+                        stored_frame_break_before: false,
+                        trailing,
+                        content_height,
+                        recursive: false,
+                        starts_after_table,
+                        source_para_idx,
+                        recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
+                    }
                 },
             )
             .collect()
@@ -7308,6 +7530,174 @@ impl LayoutEngine {
             .or_else(|| units.iter().position(|u| hit(u)))
     }
 
+    /// 빈 native HWP5 RowBreak parent의 마지막 1×1 block child가, parent의 선언
+    /// 높이보다 content flow가 커서 페이지 tail에서 child unit을 나눠야 하는 구조인지 판별한다.
+    ///
+    /// 이 조건은 `cell_units()`가 단일행 child를 mixed fragment로 전개하는 경로와
+    /// paginator의 split-eligibility가 반드시 공유해야 한다. 한 쪽만 열면 unit은
+    /// 생성돼도 `MeasuredTable`이 row를 atomic으로 보고 `advance_row_cut()`까지
+    /// 도달하지 않는다 (76076 p81→82).
+    fn native_short_parent_child_fragment_eligible(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        child: &crate::model::table::Table,
+        child_flow_height: f64,
+    ) -> bool {
+        let parent_declared_height = hwpunit_to_px(table.common.height as i32, self.dpi);
+        let eligible = self.profile.get().hwp5_stored_pagination_layout()
+            && !table.common.treat_as_char
+            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+            && matches!(table.common.vert_rel_to, VertRelTo::Para)
+            && matches!(table.page_break, TablePageBreak::RowBreak)
+            && table.row_count > 1
+            && cell.row_span == 1
+            && cell.row as usize + 1 == table.row_count as usize
+            // HWP5 저장기는 block child 뒤에 vpos=0의 빈 reset 문단을 남길 수
+            // 있다. 그것은 별 content host가 아니므로 허용하되, field/표/텍스트를
+            // 가진 후속 문단이 있으면 일반 원자 경로를 유지한다.
+            && cell.paragraphs.first().is_some_and(|host| {
+                host.text.trim().is_empty()
+                    && host
+                        .controls
+                        .iter()
+                        .filter(|control| matches!(control, Control::Table(_)))
+                        .count()
+                        == 1
+            })
+            && cell.paragraphs.iter().skip(1).all(|paragraph| {
+                paragraph.text.trim().is_empty()
+                    && paragraph.controls.is_empty()
+                    && paragraph.line_segs.len() <= 1
+            })
+            && child.col_count == 1
+            && !child.common.treat_as_char
+            // p831의 7문단 `산식 설명` child처럼 일반적인 큰 tail은 여기서
+            // 분해하지 않는다. 이 경로는 page-tail에 한두 줄만 배치되는 short
+            // child의 source owner를 보존하기 위한 것이다.
+            && child.cells.len() == 1
+            && child.cells[0].paragraphs.len() <= 3
+            && parent_declared_height > 0.0
+            && child_flow_height > parent_declared_height + 0.5;
+        if std::env::var("RHWP_DIAG_SHORT_CHILD").is_ok()
+            && child.row_count == 1
+            && child.col_count == 1
+            && child.cells.len() == 1
+        {
+            eprintln!(
+                "DIAG_SHORT_CHILD eligible={} native={} parent=(rows={},h={:.1},wrap={:?},vert={:?},break={:?}) cell=(row={},span={},paras={}) child=(cols={},tac={},cells={},paras={},flow={:.1})",
+                eligible,
+                self.profile.get().hwp5_stored_pagination_layout(),
+                table.row_count,
+                parent_declared_height,
+                table.common.text_wrap,
+                table.common.vert_rel_to,
+                table.page_break,
+                cell.row,
+                cell.row_span,
+                cell.paragraphs.len(),
+                child.col_count,
+                child.common.treat_as_char,
+                child.cells.len(),
+                child.cells.first().map(|c| c.paragraphs.len()).unwrap_or(0),
+                child_flow_height,
+            );
+        }
+        eligible
+    }
+
+    /// Native HWP5 `RowBreak`의 마지막 행에서 이미 outer `CellUnit` cut으로
+    /// 분할된 1×1 block child인지 판별한다.
+    ///
+    /// 짧은 child는 `native_short_parent_child_fragment_eligible`가 paginator의
+    /// 분할 가능 여부까지 함께 결정한다. 이 helper는 그보다 좁은 후속 단계다:
+    /// mixed split이 이미 child의 source height를 소비한 **terminal** tail에서
+    /// 시작 cursor만 전달한다. 따라서 큰 child를 새로 fragment 단위로 승격하거나
+    /// HWPCTRL/WASM API 계약을 바꾸지 않는다.
+    fn native_terminal_rowbreak_child_source_cursor_eligible(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        child: &crate::model::table::Table,
+    ) -> bool {
+        self.profile.get().hwp5_stored_pagination_layout()
+            && !table.common.treat_as_char
+            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+            && matches!(table.common.vert_rel_to, VertRelTo::Para)
+            && matches!(table.page_break, TablePageBreak::RowBreak)
+            && table.row_count > 1
+            && cell.row_span == 1
+            && cell.row as usize + 1 == table.row_count as usize
+            && cell.paragraphs.first().is_some_and(|host| {
+                host.text.trim().is_empty()
+                    && host
+                        .controls
+                        .iter()
+                        .filter(|control| matches!(control, Control::Table(_)))
+                        .count()
+                        == 1
+            })
+            && cell.paragraphs.iter().skip(1).all(|paragraph| {
+                paragraph.text.trim().is_empty()
+                    && paragraph.controls.is_empty()
+                    && paragraph.line_segs.len() <= 1
+            })
+            && child.row_count == 1
+            && child.col_count == 1
+            && !child.common.treat_as_char
+            && child.cells.len() == 1
+    }
+
+    /// `RowBreak` scan에서 short parent의 마지막 child row를 분할할 수 있는지
+    /// 반환한다. 구조만 맞아도 child가 실제로 한 unit이면 분할할 것이 없으므로,
+    /// non-spacer unit이 둘 이상인 것을 함께 확인한다.
+    pub(crate) fn native_short_parent_child_row_is_fragmentable(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .any(|cell| {
+                let Some(host) = cell.paragraphs.first() else {
+                    return false;
+                };
+                let children: Vec<&crate::model::table::Table> = host
+                    .controls
+                    .iter()
+                    .filter_map(|control| match control {
+                        Control::Table(child) => Some(child.as_ref()),
+                        _ => None,
+                    })
+                    .collect();
+                let Some(child) = children.as_slice().first().copied() else {
+                    return false;
+                };
+                let eligible = self.native_short_parent_child_fragment_eligible(
+                    table,
+                    cell,
+                    child,
+                    self.nested_table_mixed_fragment_heights(child, styles)
+                        .iter()
+                        .map(|fragment| fragment.height)
+                        .sum::<f64>(),
+                );
+                if children.len() != 1 || !eligible {
+                    return false;
+                }
+                let units = self.cell_units(cell, table, styles);
+                units
+                    .iter()
+                    .filter(|unit| !unit.empty_spacer)
+                    .take(2)
+                    .count()
+                    == 2
+            })
+    }
+
     /// [#4128 테스트 전용] cell_units 요약: (para_idx, vis_start, vis_end,
     /// empty_spacer, nested_row).
     #[cfg(test)]
@@ -7471,6 +7861,7 @@ impl LayoutEngine {
                         mixed_nested_content_height: 0.0,
                         mixed_nested_recursive: false,
                         mixed_nested_starts_after_table: false,
+                        mixed_nested_source_para_idx: None,
                         recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
                         top_and_bottom_flow: false,
                         empty_spacer: false,
@@ -7498,6 +7889,7 @@ impl LayoutEngine {
                 mixed_nested_content_height: 0.0,
                 mixed_nested_recursive: false,
                 mixed_nested_starts_after_table: false,
+                mixed_nested_source_para_idx: None,
                 recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
                 top_and_bottom_flow: true,
                 empty_spacer: false,
@@ -8132,6 +8524,7 @@ impl LayoutEngine {
                                         mixed_nested_content_height: 0.0,
                                         mixed_nested_recursive: false,
                                         mixed_nested_starts_after_table: false,
+                                        mixed_nested_source_para_idx: None,
                                         recursive_block_prelude_role:
                                             RecursiveBlockPreludeRole::None,
                                         top_and_bottom_flow: false,
@@ -8181,6 +8574,7 @@ impl LayoutEngine {
                             mixed_nested_content_height: 0.0,
                             mixed_nested_recursive: false,
                             mixed_nested_starts_after_table: false,
+                            mixed_nested_source_para_idx: None,
                             recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
                             top_and_bottom_flow: false,
                             empty_spacer: false,
@@ -8209,6 +8603,40 @@ impl LayoutEngine {
                     // fragment 로 분해)를 빈-텍스트 문단에도 적용해 splittable 유닛으로 산출.
                     let nt = nested_tables[0];
                     let frags = self.nested_table_mixed_fragment_heights(nt, styles);
+                    if std::env::var("RHWP_DIAG_NESTED_OWNER").is_ok()
+                        && nt.cells.len() == 1
+                        && nt.cells[0].paragraphs.iter().any(|paragraph| {
+                            paragraph
+                                .controls
+                                .iter()
+                                .any(|control| matches!(control, Control::Table(_)))
+                        })
+                    {
+                        eprintln!(
+                            "DIAG_NESTED_OWNER parent_pi={pi} child_paras={} fragments={}",
+                            nt.cells[0].paragraphs.len(),
+                            frags.len(),
+                        );
+                        for (fragment_index, fragment) in frags.iter().enumerate() {
+                            let is_child_table = fragment
+                                .source_para_idx
+                                .and_then(|source_pi| nt.cells[0].paragraphs.get(source_pi))
+                                .is_some_and(|paragraph| {
+                                    paragraph
+                                        .controls
+                                        .iter()
+                                        .any(|control| matches!(control, Control::Table(_)))
+                                });
+                            eprintln!(
+                                "  unit={fragment_index} source={:?} table={} h={:.1} trailing={} after_table={}",
+                                fragment.source_para_idx,
+                                is_child_table,
+                                fragment.height,
+                                fragment.trailing,
+                                fragment.starts_after_table,
+                            );
+                        }
+                    }
                     // 게이트: 콘텐츠가 **명백히 여러 페이지가 필요**(≥ MULTI_PAGE_PX)할 때만
                     // fragment 분해한다. 임계를 넉넉히(≈2 페이지) 두는 이유:
                     // - 한 페이지에 맞는 1×1 중첩 표(서식): fragment 렌더 미세차로 회귀(form-002).
@@ -8230,6 +8658,18 @@ impl LayoutEngine {
                     // `cell_units_cache`가 page context에 의존하지 않게 한다.
                     let physical_nested_h = self.calc_nested_table_height(nt, styles);
                     let exceeds_physical_page = physical_nested_h > multi_page_px + 0.5;
+                    // child content flow가 parent 선언 높이보다 큰 native short-parent
+                    // 구조에서만 1×1 child를 fragment unit으로 전개한다. `common.height`
+                    // 자체는 stale viewport일 수 있으므로, 같은 mixed fragment 원장의
+                    // 합으로 판단한다. paginator도 같은 helper로 이 row만 split 가능으로
+                    // 올린다 (76076 p81→82).
+                    let native_short_parent_child_fragment = self
+                        .native_short_parent_child_fragment_eligible(
+                            table,
+                            cell,
+                            nt,
+                            total_frag_h.max(physical_nested_h),
+                        );
                     // [#4069 Stage 3] 한 페이지 이하 1×1 자식 표라도 host line이
                     // 저장 프레임 하단까지 차지하고 다음 문단이 새 프레임으로
                     // rewind하면 현재 쪽의 남은 공간에서 시작해야 한다. 원자 처리하면
@@ -8239,6 +8679,7 @@ impl LayoutEngine {
                     if frags.len() > 1
                         && (total_frag_h > multi_page_px
                             || exceeds_physical_page
+                            || native_short_parent_child_fragment
                             || stored_frame_tail_before_next_para)
                     {
                         let om_top = hwpunit_to_px(nt.outer_margin_top as i32, self.dpi);
@@ -8279,6 +8720,7 @@ impl LayoutEngine {
                                 mixed_nested_content_height: fragment.content_height,
                                 mixed_nested_recursive: fragment.recursive,
                                 mixed_nested_starts_after_table: fragment.starts_after_table,
+                                mixed_nested_source_para_idx: fragment.source_para_idx,
                                 recursive_block_prelude_role: fragment.recursive_block_prelude_role,
                                 top_and_bottom_flow: false,
                                 empty_spacer: false,
@@ -8379,6 +8821,7 @@ impl LayoutEngine {
                             mixed_nested_content_height: 0.0,
                             mixed_nested_recursive: false,
                             mixed_nested_starts_after_table: false,
+                            mixed_nested_source_para_idx: None,
                             recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
                             top_and_bottom_flow: false,
                             empty_spacer: false,
@@ -8422,6 +8865,7 @@ impl LayoutEngine {
                                     content_height: h,
                                     recursive: false,
                                     starts_after_table: false,
+                                    source_para_idx: None,
                                     recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
                                 });
                                 remaining -= h;
@@ -8485,6 +8929,7 @@ impl LayoutEngine {
                                 mixed_nested_content_height: fragment.content_height,
                                 mixed_nested_recursive: fragment.recursive,
                                 mixed_nested_starts_after_table: fragment.starts_after_table,
+                                mixed_nested_source_para_idx: fragment.source_para_idx,
                                 recursive_block_prelude_role: fragment.recursive_block_prelude_role,
                                 top_and_bottom_flow: false,
                                 empty_spacer: false,
@@ -8642,6 +9087,7 @@ impl LayoutEngine {
                     mixed_nested_content_height: 0.0,
                     mixed_nested_recursive: false,
                     mixed_nested_starts_after_table: false,
+                    mixed_nested_source_para_idx: None,
                     recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
                     top_and_bottom_flow: para_top_and_bottom_flow_unit,
                     empty_spacer: is_empty_spacer_para,
@@ -8735,6 +9181,7 @@ impl LayoutEngine {
                         mixed_nested_content_height: 0.0,
                         mixed_nested_recursive: false,
                         mixed_nested_starts_after_table: false,
+                        mixed_nested_source_para_idx: None,
                         recursive_block_prelude_role: if is_exact_recursive_prelude {
                             RecursiveBlockPreludeRole::OneLineHeadingBeforeSingleCellTable
                         } else {
@@ -9060,6 +9507,86 @@ impl LayoutEngine {
         true
     }
 
+    /// Mixed 1×1 nested-cell projection에서 완결 중첩 표와 뒤 tail을 fresh page로
+    /// 함께 이월한다.
+    ///
+    /// 상위 `CellUnit`에는 깊은 자식 문단 index가 남지 않는다. 대신 자식 표 뒤의
+    /// 첫 실제 unit만 `mixed_nested_starts_after_table` ownership marker를 보존한다.
+    /// 표 자체가 현재 쪽에 들어가더라도 출처·설명·뒤 표를 더는 담지 못하면, 표를
+    /// 현재 쪽 하단에 소비해 다음 쪽에서 순서가 뒤집힌다.
+    fn rewind_rowbreak_mixed_nested_table_tail_for_fresh_page(
+        table: &crate::model::table::Table,
+        units: &[CellUnit],
+        start: usize,
+        fresh_page_height: f64,
+        j: &mut usize,
+        h: &mut f64,
+    ) -> bool {
+        if !matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        ) || table.common.treat_as_char
+            // 이 rewind는 outer RowBreak 표가 아니라, 한 셀짜리 mixed nested
+            // projection 자체의 table atom/tail 경계만 다룬다. 다열 본문 표에도
+            // marker가 우연히 전파될 수 있는데(21217935: 17×4), 거기서 한 cell의
+            // tail을 이월하면 COM 기준 8쪽을 9쪽으로 늘린다.
+            || table.row_count != 1
+            || table.col_count != 1
+            || *j <= start + 1
+            || *j >= units.len()
+            || !fresh_page_height.is_finite()
+            || fresh_page_height <= 0.0
+        {
+            return false;
+        }
+
+        let Some(after_table) = units[start..*j]
+            .iter()
+            .rposition(|unit| unit.mixed_nested_fragment && unit.mixed_nested_starts_after_table)
+            .map(|index| start + index)
+        else {
+            return false;
+        };
+        let Some(after_source_para) = units[after_table].mixed_nested_source_para_idx else {
+            return false;
+        };
+        let Some(last_table_atom) = (start..after_table).rev().find(|&index| {
+            let unit = &units[index];
+            unit.mixed_nested_fragment
+                && !unit.mixed_nested_trailing
+                && unit.mixed_nested_content_height > 0.5
+                && unit
+                    .mixed_nested_source_para_idx
+                    .is_some_and(|source_para| source_para != after_source_para)
+        }) else {
+            return false;
+        };
+        let Some(table_source_para) = units[last_table_atom].mixed_nested_source_para_idx else {
+            return false;
+        };
+        let mut table_atom = last_table_atom;
+        while table_atom > start
+            && units[table_atom - 1].mixed_nested_fragment
+            && units[table_atom - 1].mixed_nested_source_para_idx == Some(table_source_para)
+        {
+            table_atom -= 1;
+        }
+        let Some(end_before_table) = table_atom.checked_sub(1).filter(|end| *end > start) else {
+            return false;
+        };
+        let tail = &units[table_atom..];
+        let tail_height: f64 = tail.iter().map(|unit| unit.height).sum();
+        if tail.iter().any(|unit| unit.hard_break_before) || tail_height > fresh_page_height + 0.5 {
+            return false;
+        }
+        *h = units[start..=end_before_table]
+            .iter()
+            .map(|unit| unit.height)
+            .sum();
+        *j = end_before_table;
+        true
+    }
+
     fn should_absorb_midpage_saved_vpos_reset(
         &self,
         table: &crate::model::table::Table,
@@ -9306,6 +9833,16 @@ impl LayoutEngine {
                         j += 1;
                         continue;
                     }
+                    if Self::rewind_rowbreak_mixed_nested_table_tail_for_fresh_page(
+                        table,
+                        &units,
+                        start,
+                        self.current_body_area.get().3.max(avail_height),
+                        &mut j,
+                        &mut h,
+                    ) {
+                        break;
+                    }
                     // [#1921] sliver 흡수는 with_row_offsets 경로에만 적용한다. 이 walk 는
                     // relaxed_hard_break(hard-break 조건부 무시) 의미론이라 다음 break 로의
                     // 흡수가 비정상 경계를 강제한다(86712 공식PDF 65→66 회귀 실증).
@@ -9495,6 +10032,16 @@ impl LayoutEngine {
                         j += 1;
                         continue;
                     }
+                    if Self::rewind_rowbreak_mixed_nested_table_tail_for_fresh_page(
+                        table,
+                        &units,
+                        start,
+                        self.current_body_area.get().3.max(avail_height),
+                        &mut j,
+                        &mut h,
+                    ) {
+                        break;
+                    }
                     // [#1921] sliver 흡수는 with_row_offsets 경로에만 적용한다. 이 walk 는
                     // relaxed_hard_break(hard-break 조건부 무시) 의미론이라 다음 break 로의
                     // 흡수가 비정상 경계를 강제한다(86712 공식PDF 65→66 회귀 실증).
@@ -9663,6 +10210,16 @@ impl LayoutEngine {
                     break;
                 }
                 if j > start && h + u.height > cell_budget {
+                    if Self::rewind_rowbreak_mixed_nested_table_tail_for_fresh_page(
+                        table,
+                        &units,
+                        start,
+                        self.current_body_area.get().3.max(cell_budget),
+                        &mut j,
+                        &mut h,
+                    ) {
+                        break;
+                    }
                     // [#1921] sliver 흡수 — advance_row_block_cut 의 예산 정지와 동일.
                     // 직후 tolerance 안의 저장 hard-break(한글 실제 페이지 경계)까지
                     // 흡수해, 다음 fragment 가 극소 잔여 sliver 페이지가 되는 것을 막는다.
@@ -10193,6 +10750,47 @@ impl LayoutEngine {
         n
     }
 
+    /// HWP5 저장 pagination 계약의 `RowBreak` 표에서 정확히 두 행을 덮는 병합 셀의
+    /// 두 저장 문단이 각각 한 줄 유닛이면, 행 경계의 문단 owner를 그대로 유지할 수
+    /// 있는지 판정한다.
+    ///
+    /// 일반 rowspan 분할은 물리 높이로 잘라야 한다. 다만 이 좁은 형상은 저장된 두
+    /// 문단이 두 물리 행에 정확히 대응한다. 첫 문단의 trailing line/문단 간격까지
+    /// 첫 행 예산에 포함하면, ink는 들어가는데 unit만 다음 fragment로 밀려 두 문단이
+    /// 재방출된다(76076 p18→p19 `11.영향평가` / `여부`).
+    pub(crate) fn native_two_row_rowspan_paragraph_owner_boundary(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        if !self.profile.get().hwp5_stored_pagination_layout()
+            || table.common.treat_as_char
+            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || cell.row_span != 2
+            || cell.paragraphs.len() != 2
+            || cell
+                .paragraphs
+                .iter()
+                .any(|paragraph| paragraph.text.trim().is_empty() || !paragraph.controls.is_empty())
+        {
+            return false;
+        }
+
+        let units = self.cell_units(cell, table, styles);
+        units.len() == 2
+            && units.iter().enumerate().all(|(para_idx, unit)| {
+                unit.para_idx == para_idx
+                    && unit.vis_start == 0
+                    && unit.vis_end == 1
+                    && !unit.empty_spacer
+                    && unit.nested_row.is_none()
+                    && unit.nested_table_fragment.is_none()
+                    && !unit.mixed_nested_fragment
+                    && unit.non_inline_control_range.is_none()
+            })
+    }
+
     /// [Task #993] 한 셀의 유닛 범위 `[start_unit, end_unit)`를 문단별 줄 범위로
     /// 변환한다. `layout_partial_table`이 `RowCut`으로 가시 범위를 렌더할 때
     /// 사용 — 결과는 종전 `compute_cell_line_ranges`와 같은
@@ -10474,12 +11072,12 @@ impl LayoutEngine {
         // 여기서는 종료 여부와 관계없이 content origin을 같은 기준으로 전진시킨다
         // (42065 p12–p17).
         let single_cell_nested_continuation = table.row_count == 1
-            && table.col_count == 1
-            && cell.paragraphs.get(para_idx).is_some_and(|paragraph| {
-                paragraph.controls.iter().any(|control| {
-                    matches!(control, Control::Table(nested) if nested.row_count == 1 && nested.col_count == 1)
-                })
-            });
+                && table.col_count == 1
+                && cell.paragraphs.get(para_idx).is_some_and(|paragraph| {
+                    paragraph.controls.iter().any(|control| {
+                        matches!(control, Control::Table(nested) if nested.row_count == 1 && nested.col_count == 1)
+                    })
+                });
         // PR #4122가 만든 재귀 child cursor가 있으면 그 cursor가 소유권의
         // 권위다. scalar offset 보정은 재귀 투영이 없는 기존 fallback에만 쓴다.
         let compensate_first_visible = recursive_cut.is_none()
@@ -10656,6 +11254,30 @@ impl LayoutEngine {
                 _ => None,
             })
         });
+        // `terminal` 자체는 마지막 tail의 source cut을 끄는 기존 안전장치다.
+        // 그러나 마지막 RowBreak 행의 1×1 block child는 앞 fragment가 child 첫
+        // source unit을 이미 소비했어도 terminal이 될 수 있다. 이 경우 물리 clip만
+        // 쓰면 p33의 마지막 줄을 p34 top에 다시 paint한다(76076 p33→p34).
+        // `native_short_parent_child_fragment_eligible`는 짧은 child를 paginator
+        // unit으로 승격하는 별도 계약이고, 여기서는 이미 mixed source cut으로
+        // 도달한 terminal child의 시작 cursor만 보존한다.
+        let native_short_terminal_child = nested.is_some_and(|child| {
+            self.native_short_parent_child_fragment_eligible(
+                table,
+                cell,
+                child,
+                self.nested_table_mixed_fragment_heights(child, styles)
+                    .iter()
+                    .map(|fragment| fragment.height)
+                    .sum(),
+            )
+        });
+        let terminal_rowbreak_source_cursor = nested.is_some_and(|child| {
+            self.native_terminal_rowbreak_child_source_cursor_eligible(table, cell, child)
+        });
+        let force_source_start_cut = offset > 0.5
+            && terminal
+            && (native_short_terminal_child || terminal_rowbreak_source_cursor);
         let (start_row, end_row, mut row_offset_within_start, visible_height) = match nested {
             Some(_) if recursive_cut.is_some() => (0, 1, 0.0, visible_height),
             Some(nt) if nt.row_count > 1 => {
@@ -10716,8 +11338,20 @@ impl LayoutEngine {
             // the host cell starts below it. This reservation is physical
             // space only; `offset_within_start` above remains the full
             // consumed content origin.
-            offset_within_start: row_offset_within_start,
+            // 긴 terminal child는 source cursor가 p33까지의 단위를 이미 버린다.
+            // 같은 offset으로 물리 원점까지 올리면 p34의 새 첫 줄도 clip 위로
+            // 이중 소비된다. short-parent 계약은 기존 물리 inset을 유지한다.
+            offset_within_start: if terminal_rowbreak_source_cursor && !native_short_terminal_child
+            {
+                0.0
+            } else {
+                row_offset_within_start
+            },
             content_offset: offset,
+            force_source_start_cut,
+            // p33→34류(terminal_rowbreak_source_cursor만 true)는 이미 소유가 끝난 마지막
+            // unit을 재생하면 안 되므로, native short-parent 형상에서만 켠다.
+            replay_terminal_boundary_unit: native_short_terminal_child,
             terminal,
             recursive_cut,
         })
@@ -10786,6 +11420,8 @@ impl LayoutEngine {
             flow_height: visible_height,
             offset_within_start: 0.0,
             content_offset: 0.0,
+            force_source_start_cut: false,
+            replay_terminal_boundary_unit: false,
             terminal,
             recursive_cut: Some(NestedTableCut {
                 start_row: first_row,
@@ -10984,7 +11620,27 @@ impl LayoutEngine {
                     paragraph.controls.iter().any(|control| {
                         matches!(control, Control::Table(nested) if nested.row_count == 1 && nested.col_count == 1)
                     })
-            });
+                });
+            let native_short_parent_child = cell
+                .paragraphs
+                .get(para_idx)
+                .and_then(|paragraph| {
+                    paragraph.controls.iter().find_map(|control| match control {
+                        Control::Table(child) => Some(child.as_ref()),
+                        _ => None,
+                    })
+                })
+                .is_some_and(|child| {
+                    self.native_short_parent_child_fragment_eligible(
+                        table,
+                        cell,
+                        child,
+                        self.nested_table_mixed_fragment_heights(child, styles)
+                            .iter()
+                            .map(|fragment| fragment.height)
+                            .sum(),
+                    )
+                });
             // 재귀 투영 run은 `mixed_nested_split_from_cut`의 child RowCut이
             // source cursor와 viewport를 이미 함께 소유한다. 여기에 scalar
             // continuation 보정을 다시 더하면 부모 행만 첫 가시 유닛만큼 커져
@@ -10992,7 +11648,14 @@ impl LayoutEngine {
             // mixed fallback의 42065 p17 terminal 보정과 HWPX 저장 viewport
             // 보정은 유지한다.
             if offset_within_start > 0.5 && !authoritative_recursive_run {
-                if terminal && single_cell_nested_continuation {
+                if terminal && native_short_parent_child {
+                    // The native short-parent continuation replays its boundary
+                    // source unit in the current fragment.  The generic parent
+                    // extra would reserve that whole unit a second time and leave
+                    // an empty row tail (76076 p82); retain only the mixed-flow
+                    // clip guard.
+                    extra += 4.0;
+                } else if terminal && single_cell_nested_continuation {
                     // Keep the parent RowBreak cell in lockstep with the
                     // terminal nested-cell viewport.  Reserving only one
                     // unit leaves the parent clip above the nested tail, so
@@ -11102,6 +11765,260 @@ impl LayoutEngine {
             }
         }
         max_h
+    }
+
+    /// 새 physical page에 온전히 들어갈 1×1 중첩 표 래퍼의 선행 문단 묶음을
+    /// 현재 쪽 끝에 고립시키지 않아야 하는지 판정한다.
+    ///
+    /// Native HWP5 `RowBreak` 표에는 비어 있는 outer host → 1×1 child table →
+    /// child 본문/내부 표라는 저장 형상이 있다. outer 행의 잔여 공간에 child 본문의
+    /// 앞 몇 줄만 소비하면, scalar child renderer는 그 줄을 현재 쪽에 칠하지만 한컴은
+    /// 그 다음 내부 표 앞의 묶음을 새 쪽에서 함께 시작한다. 86712의 r27이 그 사례다.
+    ///
+    /// 이 규칙은 일반 문단/중첩 표에 적용하지 않는다. 다음 내부 표 source paragraph
+    /// 직전의 mixed-unit 경계를 provenance로 식별하고, 그 전 묶음이 새 본문의 대부분을
+    /// 채울 때만 true다. 단순히 새 쪽에 들어간다는 이유로 중간 길이의 도입부까지
+    /// 이월하면 59043 p35처럼 PDF가 허용한 분할을 망가뜨린다. 따라서 실제로 한
+    /// 페이지보다 긴 child나 이미 continuation인 행, 새 본문의 일부만 쓰는 prefix는
+    /// 종전 CellUnit 분할을 유지한다.
+    pub(crate) fn should_defer_fresh_rowbreak_wrapper_prefix(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        fresh_body_height: f64,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        if !start_cut.is_empty()
+            || !self.profile.get().native_hwp5_layout()
+            || table.common.treat_as_char
+            || !matches!(table.page_break, TablePageBreak::RowBreak)
+        {
+            return false;
+        }
+
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|cell| cell.col);
+
+        for (wrapper_index, wrapper_cell) in row_cells.iter().enumerate() {
+            let Some(host) = wrapper_cell
+                .paragraphs
+                .iter()
+                .find(|paragraph| Self::paragraph_hosts_single_cell_nested_table(paragraph))
+            else {
+                continue;
+            };
+            let Some(child) = host.controls.iter().find_map(|control| match control {
+                Control::Table(table) if table.row_count == 1 && table.col_count == 1 => {
+                    Some(table.as_ref())
+                }
+                _ => None,
+            }) else {
+                continue;
+            };
+            let Some(child_cell) = child.cells.first() else {
+                continue;
+            };
+            let Some(first_inner_table_para) = child_cell.paragraphs.iter().position(|paragraph| {
+                paragraph
+                    .controls
+                    .iter()
+                    .any(|control| matches!(control, Control::Table(_)))
+            }) else {
+                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                    eprintln!(
+                        "DIAG_SCAN DEFER_WRAPPER_PREFIX? r={} c={} child_paras={} inner_table_para=none",
+                        row,
+                        wrapper_cell.col,
+                        child_cell.paragraphs.len(),
+                    );
+                }
+                continue;
+            };
+
+            let wrapper_units = self.cell_units(wrapper_cell, table, styles);
+            let Some(inner_table_start) = wrapper_units.iter().position(|unit| {
+                unit.mixed_nested_fragment
+                    && !unit.mixed_nested_trailing
+                    && unit.mixed_nested_source_para_idx == Some(first_inner_table_para)
+            }) else {
+                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                    eprintln!(
+                        "DIAG_SCAN DEFER_WRAPPER_PREFIX? r={} c={} child_inner_para={} units={} mixed_sources={:?}",
+                        row,
+                        wrapper_cell.col,
+                        first_inner_table_para,
+                        wrapper_units.len(),
+                        wrapper_units
+                            .iter()
+                            .filter(|unit| unit.mixed_nested_fragment && !unit.mixed_nested_trailing)
+                            .filter_map(|unit| unit.mixed_nested_source_para_idx)
+                            .collect::<Vec<_>>(),
+                    );
+                }
+                continue;
+            };
+            if inner_table_start == 0 {
+                continue;
+            }
+
+            let partial_end = end_cut
+                .get(wrapper_index)
+                .copied()
+                .unwrap_or(wrapper_units.len())
+                .min(wrapper_units.len());
+            if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                eprintln!(
+                    "DIAG_SCAN DEFER_WRAPPER_PREFIX? r={} c={} inner_start={} partial_end={} start_cut={:?} end_cut={:?}",
+                    row,
+                    wrapper_cell.col,
+                    inner_table_start,
+                    partial_end,
+                    start_cut,
+                    end_cut,
+                );
+            }
+            if partial_end == 0 || partial_end >= inner_table_start {
+                continue;
+            }
+
+            // 형제 라벨 셀도 선행 묶음에 포함돼야 한다. 현재 조각에서 아직 남은
+            // 형제 content가 있으면 이월이 행 구조를 바꾸므로 적용하지 않는다.
+            if row_cells.iter().enumerate().any(|(index, cell)| {
+                if index == wrapper_index {
+                    return false;
+                }
+                let units = self.cell_units(cell, table, styles);
+                end_cut.get(index).copied().unwrap_or(units.len()) < units.len()
+            }) {
+                continue;
+            }
+
+            let mut prefix_end = Vec::with_capacity(row_cells.len());
+            for (index, cell) in row_cells.iter().enumerate() {
+                if index == wrapper_index {
+                    prefix_end.push(inner_table_start);
+                } else {
+                    prefix_end.push(self.cell_units(cell, table, styles).len());
+                }
+            }
+            let prefix_height = self.row_cut_content_height(table, row, &[], &prefix_end, styles);
+            // 이 helper는 scan 중 호출돼 `LayoutEngine::current_body_area`가 아직
+            // 갱신되지 않은 경로가 있다. 현재 `TypesetState`가 보유한 fresh 본문
+            // 높이를 호출자가 넘겨야 실제 다음 페이지 수용성을 판정할 수 있다.
+            let body_height = fresh_body_height;
+            if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                eprintln!(
+                    "DIAG_SCAN DEFER_WRAPPER_PREFIX_FIT r={} prefix={:.1} body={:.1} prefix_end={:?}",
+                    row, prefix_height, body_height, prefix_end,
+                );
+            }
+            // 86712 r27의 926.2 / 971.3px처럼 사실상 한 page를 이루는 prefix만
+            // atomic start로 다룬다. 59043 r5의 569.1 / 971.3px 도입부는 PDF에서
+            // 앞 page에 남아야 하므로 이 임계값 아래에서는 기존 분할을 보존한다.
+            const NEAR_FULL_FRESH_BODY_RATIO: f64 = 0.80;
+            if body_height > 0.0
+                && prefix_height <= body_height + 0.5
+                && prefix_height >= body_height * NEAR_FULL_FRESH_BODY_RATIO
+            {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    /// Fresh 1×1 wrapper fragment가 첫 내부 표를 paint하지 않는 마지막 RowCut을
+    /// 반환한다.
+    ///
+    /// mixed projection에서 `end_cut`은 scalar child renderer에 inclusive owner로
+    /// 전달된다. 따라서 첫 inner-table atom(예: unit 59) 바로 전 spacer(unit 58)를
+    /// end로 넘겨도 표가 현재 fragment에 그려질 수 있다. 표 source와 그 선행 spacer
+    /// 둘 다 다음 page로 넘기는 `table_atom - 2`가 안전한 경계다. 이 값은 source
+    /// paragraph provenance로만 구하며 native HWP5 non-TAC RowBreak wrapper에만 적용한다.
+    pub(crate) fn fresh_rowbreak_wrapper_safe_prefix_end_cut(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<RowCut> {
+        if !start_cut.is_empty()
+            || !self.profile.get().native_hwp5_layout()
+            || table.common.treat_as_char
+            || !matches!(table.page_break, TablePageBreak::RowBreak)
+        {
+            return None;
+        }
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|cell| cell.col);
+
+        for (wrapper_index, wrapper_cell) in row_cells.iter().enumerate() {
+            let Some(child) = wrapper_cell.paragraphs.iter().find_map(|paragraph| {
+                if !Self::paragraph_hosts_single_cell_nested_table(paragraph) {
+                    return None;
+                }
+                paragraph.controls.iter().find_map(|control| match control {
+                    Control::Table(table) if table.row_count == 1 && table.col_count == 1 => {
+                        Some(table.as_ref())
+                    }
+                    _ => None,
+                })
+            }) else {
+                continue;
+            };
+            let Some(first_inner_table_para) = child.cells.first().and_then(|cell| {
+                cell.paragraphs.iter().position(|paragraph| {
+                    paragraph
+                        .controls
+                        .iter()
+                        .any(|control| matches!(control, Control::Table(_)))
+                })
+            }) else {
+                continue;
+            };
+            let units = self.cell_units(wrapper_cell, table, styles);
+            let Some(first_table_atom) = units.iter().position(|unit| {
+                unit.mixed_nested_fragment
+                    && !unit.mixed_nested_trailing
+                    && unit.mixed_nested_source_para_idx == Some(first_inner_table_para)
+            }) else {
+                continue;
+            };
+            let current_end = end_cut
+                .get(wrapper_index)
+                .copied()
+                .unwrap_or(units.len())
+                .min(units.len());
+            if current_end != first_table_atom || first_table_atom < 2 {
+                continue;
+            }
+            if row_cells.iter().enumerate().any(|(index, cell)| {
+                index != wrapper_index
+                    && end_cut
+                        .get(index)
+                        .copied()
+                        .unwrap_or_else(|| self.cell_units(cell, table, styles).len())
+                        < self.cell_units(cell, table, styles).len()
+            }) {
+                continue;
+            }
+
+            let mut safe_end_cut = end_cut.to_vec();
+            safe_end_cut[wrapper_index] = first_table_atom - 2;
+            return Some(safe_end_cut);
+        }
+        None
     }
 
     /// RowBreak 분할 예산에서 실제 남은 가시 내용이 있는 셀의 패딩만 예약한다.
@@ -11454,6 +12371,7 @@ mod row_cut_tests {
             mixed_nested_content_height: height,
             mixed_nested_recursive: true,
             mixed_nested_starts_after_table: false,
+            mixed_nested_source_para_idx: None,
             recursive_block_prelude_role: role,
             top_and_bottom_flow: false,
             empty_spacer: false,

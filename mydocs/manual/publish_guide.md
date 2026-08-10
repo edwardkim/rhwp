@@ -247,7 +247,8 @@ docker compose --env-file .env.docker run --rm wasm   # WASM 빌드
 ```
 
 macOS 로컬에서 release 검증이 필요한 경우 `cargo test --release --tests` 대신
-`cargo test --profile release-test --tests` 를 사용한다. 이유와 실측치는
+고정 `target/pr-review`의 `cargo nextest run --cargo-profile release-test`를 사용한다.
+thread 수의 선택 기준과 이유·실측치는
 [개발환경 가이드](dev_environment_guide.md)의 "macOS 로컬 빌드/테스트 검증"을
 참조한다.
 
@@ -306,7 +307,10 @@ git fetch upstream
 git switch devel
 git merge --ff-only upstream/devel
 cargo build
-cargo test --profile release-test --tests
+cargo nextest run \
+  --cargo-profile release-test \
+  --target-dir target/pr-review \
+  --tests --test-threads 12 --no-fail-fast
 wasm-pack build --target web --out-dir pkg
 
 # release 시 devel → main PR 생성

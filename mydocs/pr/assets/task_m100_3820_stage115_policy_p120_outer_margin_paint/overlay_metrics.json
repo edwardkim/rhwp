@@ -1,0 +1,70 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 91.69561,
+    "worst_pixel_match_percent": 90.59494,
+    "average_ink_match_percent": 11.79211,
+    "worst_ink_match_percent": 11.68103,
+    "average_visual_accuracy_proxy_percent": 11.79211,
+    "worst_visual_accuracy_proxy_percent": 11.68103,
+    "worst_pages": [
+      120,
+      121
+    ]
+  },
+  "pages": [
+    {
+      "page": 120,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-stage115-policy-p120-outer-margin-final/task3820-stage115-policy-p120-outer-margin-final/rhwp_png/rhwp_120.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-stage115-policy-p120-outer-margin-final/task3820-stage115-policy-p120-outer-margin-final/pdf_png/pdf-120.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-stage115-policy-p120-outer-margin-final/task3820-stage115-policy-p120-outer-margin-final/overlay/overlay_120.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 144481,
+      "diff_ratio": 0.07203721,
+      "pixel_match_percent": 92.79628,
+      "ink_union_pixels": 163590,
+      "ink_diff_pixels": 144481,
+      "ink_diff_ratio": 0.88318968,
+      "ink_match_percent": 11.68103,
+      "visual_accuracy_proxy_percent": 11.68103,
+      "mean_abs_channel_delta": 10.183,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        142,
+        129,
+        1050,
+        1621
+      ]
+    },
+    {
+      "page": 121,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-stage115-policy-p120-outer-margin-final/task3820-stage115-policy-p120-outer-margin-final/rhwp_png/rhwp_121.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-stage115-policy-p120-outer-margin-final/task3820-stage115-policy-p120-outer-margin-final/pdf_png/pdf-121.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-stage115-policy-p120-outer-margin-final/task3820-stage115-policy-p120-outer-margin-final/overlay/overlay_121.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 188632,
+      "diff_ratio": 0.09405059,
+      "pixel_match_percent": 90.59494,
+      "ink_union_pixels": 214119,
+      "ink_diff_pixels": 188632,
+      "ink_diff_ratio": 0.88096806,
+      "ink_match_percent": 11.90319,
+      "visual_accuracy_proxy_percent": 11.90319,
+      "mean_abs_channel_delta": 12.855,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        141,
+        125,
+        1048,
+        1620
+      ]
+    }
+  ]
+}

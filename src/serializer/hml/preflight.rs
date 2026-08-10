@@ -356,8 +356,8 @@ fn validate_equation(
         blockers,
     );
     let common = &equation.common;
-    let packed_attr =
-        crate::document_core::converters::common_obj_attr_writer::pack_common_attr_bits(common);
+    // [#4400] pack_common_attr_bits 는 serializer 소유로 이동했다.
+    let packed_attr = crate::serializer::control::pack_common_attr_bits(common);
     let omitted = !matches!(common.attr, 0) && common.attr != packed_attr
         || common.vertical_offset != 0
         || common.horizontal_offset != 0

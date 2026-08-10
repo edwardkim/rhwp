@@ -345,6 +345,50 @@ pub struct HwpDocument {
     core: DocumentCore,
 }
 
+/// 한 번의 문서 내보내기 결과.
+///
+/// 바이트와 content-loss 보고서가 같은 객체에 있어 다른 저장의 상태와 섞이지 않는다.
+/// `takeBytes()`는 Rust 결과의 바이트 소유권을 한 번만 소비하며, 보고서는 그 전후 어느
+/// 순서로든 읽을 수 있다. 바이트를 두 번 꺼내는 것은 명시적 오류다.
+#[wasm_bindgen]
+pub struct DocumentExport {
+    bytes: Option<Vec<u8>>,
+    content_loss_json: String,
+}
+
+impl From<crate::serializer::SerializedDocument> for DocumentExport {
+    fn from(serialized: crate::serializer::SerializedDocument) -> Self {
+        let (bytes, content_loss) = serialized.into_parts();
+        Self {
+            bytes: Some(bytes),
+            content_loss_json: content_loss.to_json(),
+        }
+    }
+}
+
+#[wasm_bindgen]
+impl DocumentExport {
+    /// 이번 산출물의 content-loss 보고서(JSON). `takeBytes()` 뒤에도 읽을 수 있다.
+    #[wasm_bindgen(js_name = contentLoss)]
+    pub fn content_loss(&self) -> String {
+        self.content_loss_json.clone()
+    }
+
+    /// 아직 JS로 옮기지 않은 바이트를 소유하는지 반환한다.
+    #[wasm_bindgen(js_name = hasBytes)]
+    pub fn has_bytes(&self) -> bool {
+        self.bytes.is_some()
+    }
+
+    /// 산출 바이트 소유권을 한 번 꺼낸다.
+    #[wasm_bindgen(js_name = takeBytes)]
+    pub fn take_bytes(&mut self) -> Result<Vec<u8>, JsValue> {
+        self.bytes
+            .take()
+            .ok_or_else(|| JsValue::from_str("이 내보내기 결과의 바이트를 이미 가져갔습니다"))
+    }
+}
+
 impl std::ops::Deref for HwpDocument {
     type Target = DocumentCore;
     fn deref(&self) -> &DocumentCore {
@@ -6191,6 +6235,18 @@ impl HwpDocument {
         self.export_hwp_with_adapter().map_err(|e| e.into())
     }
 
+    /// HWP 바이트와 이번 산출물의 내용 손실을 같은 결과로 반환한다 (#4430).
+    ///
+    /// 명시적 Studio 저장은 이 API를 사용한다. 기존 `exportHwp()`는 호환성을 위해
+    /// byte-only로 유지되며, autosave/embed/history/compare/hwpctl/digest 등 별도
+    /// 소비자는 아직 보고서를 받지 않는다.
+    #[wasm_bindgen(js_name = exportHwpWithReport)]
+    pub fn export_hwp_with_report(&self) -> Result<DocumentExport, JsValue> {
+        self.export_hwp_with_adapter_snapshot_with_report()
+            .map(DocumentExport::from)
+            .map_err(JsValue::from)
+    }
+
     /// 문서를 HWP5 EncryptVersion 4 비밀번호 문서로 내보낸다.
     ///
     /// browser UI는 암호를 저장하지 않고 저장 시점에만 전달한다. HWPX 출처 문서는 일반
@@ -6201,10 +6257,29 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 비밀번호 HWP 바이트 + 내용 손실 보고 (#4430).
+    #[wasm_bindgen(js_name = exportHwpWithPasswordAndReport)]
+    pub fn export_hwp_with_password_and_report_wasm(
+        &self,
+        password: &str,
+    ) -> Result<DocumentExport, JsValue> {
+        self.export_hwp_with_adapter_snapshot_with_password_and_report(password.as_bytes())
+            .map(DocumentExport::from)
+            .map_err(JsValue::from)
+    }
+
     /// Document IR을 HWPX(ZIP+XML)로 직렬화하여 반환한다.
     #[wasm_bindgen(js_name = exportHwpx)]
     pub fn export_hwpx(&self) -> Result<Vec<u8>, JsValue> {
         self.export_hwpx_native().map_err(|e| e.into())
+    }
+
+    /// HWPX 바이트와 이번 산출물의 내용 손실을 같은 결과로 반환한다 (#4430).
+    #[wasm_bindgen(js_name = exportHwpxWithReport)]
+    pub fn export_hwpx_with_report(&self) -> Result<DocumentExport, JsValue> {
+        self.export_hwpx_native_with_report()
+            .map(DocumentExport::from)
+            .map_err(JsValue::from)
     }
 
     /// 문서를 ODF AES-256-CBC/PBKDF2 비밀번호 보호 HWPX로 내보낸다.
@@ -6212,6 +6287,17 @@ impl HwpDocument {
     pub fn export_hwpx_with_password_wasm(&self, password: &str) -> Result<Vec<u8>, JsValue> {
         self.export_hwpx_native_with_password(password.as_bytes())
             .map_err(|e| e.into())
+    }
+
+    /// 비밀번호 HWPX 바이트 + 내용 손실 보고 (#4430).
+    #[wasm_bindgen(js_name = exportHwpxWithPasswordAndReport)]
+    pub fn export_hwpx_with_password_and_report_wasm(
+        &self,
+        password: &str,
+    ) -> Result<DocumentExport, JsValue> {
+        self.export_hwpx_native_with_password_and_report(password.as_bytes())
+            .map(DocumentExport::from)
+            .map_err(JsValue::from)
     }
 
     /// HML 원본의 공통 IR을 HWPML 2.91 XML로 직렬화하여 반환한다.

@@ -359,7 +359,7 @@ fn parse_hwp_with_cfb(
     // is_hwpx_source 분기를 HWPX 로 해석해야 roundtrip 쪽수가 자기정합한다.
     let is_hwpx_variant = extra_streams
         .iter()
-        .any(|(p, _)| p == crate::document_core::converters::hwpx_to_hwp::HWPX_ORIGIN_STREAM_PATH);
+        .any(|(p, _)| p == crate::model::document::HWPX_ORIGIN_STREAM_PATH);
 
     let mut doc = Document {
         header: model_header,
@@ -544,7 +544,7 @@ fn apply_hwp3_origin_fixup(doc: &mut Document) {
     if doc
         .extra_streams
         .iter()
-        .any(|(p, _)| p == crate::document_core::converters::hwpx_to_hwp::HWP3_ORIGIN_STREAM_PATH)
+        .any(|(p, _)| p == crate::model::document::HWP3_ORIGIN_STREAM_PATH)
     {
         for section in doc.sections.iter_mut() {
             let pd = &mut section.section_def.page_def;

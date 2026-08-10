@@ -107,8 +107,9 @@ fn empty_paragraph_fallback_line_metrics(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+    hwp3_legacy_caps: bool,
 ) -> Option<(f64, f64)> {
-    if !para.text.is_empty()
+    if !para.text.trim().is_empty()
         || !para.controls.is_empty()
         || !para.line_segs.is_empty()
         || para.char_count == 0
@@ -123,13 +124,17 @@ fn empty_paragraph_fallback_line_metrics(
     if font_size <= 0.0 {
         return None;
     }
-    let small_empty_para_max_font = hwpunit_to_px(1000, DEFAULT_DPI);
-    if font_size > small_empty_para_max_font + 0.1 {
-        return None;
-    }
-    let meaningful_empty_para_min_font = hwpunit_to_px(800, DEFAULT_DPI);
-    if !char_style.bold && font_size < meaningful_empty_para_min_font - 0.1 {
-        return None;
+    // HWP5 원본은 저장 LINE_SEG 없는 빈 문단도 글자 모양과 문단 줄간격으로
+    // 조판한다. 크기 cap은 HWP3 변환본에서만 page-count 회귀를 막기 위해 유지한다.
+    if hwp3_legacy_caps {
+        let small_empty_para_max_font = hwpunit_to_px(1000, DEFAULT_DPI);
+        if font_size > small_empty_para_max_font + 0.1 {
+            return None;
+        }
+        let meaningful_empty_para_min_font = hwpunit_to_px(800, DEFAULT_DPI);
+        if !char_style.bold && font_size < meaningful_empty_para_min_font - 0.1 {
+            return None;
+        }
     }
     let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
     let ls_type = para_style
@@ -266,6 +271,100 @@ pub fn fit_measured_table_to_declared_height(
     let caption_and_spacing = (measured.total_height - previous_body_height).max(0.0);
     fitted.total_height = target_body_height + caption_and_spacing;
     fitted
+}
+
+/// 빈 host의 native HWP5 RowBreak 표에서 마지막 중첩 셀만 선언 높이를 초과해
+/// 과대 측정된 경우, 앞 행의 실제 경계는 보존하고 마지막 행만 선언 총높이에 맞춘다.
+///
+/// 일반 `fit_measured_table_to_declared_height`는 모든 행을 비율로 줄인다. 그러나
+/// 76076의 비용/편익 표는 앞의 짧은 행들이 한컴 PDF의 저장 `cellSz` 경계와 이미
+/// 일치하고, 마지막 `근거설명` 행의 1×1 비-TAC 자식 표만 parent viewport의
+/// Center 정렬 때문에 커진다. 그 상태에서 전체 비율 축소를 하면 정상 행 경계까지
+/// 바뀌므로, 정확히 마지막 중첩 행에만 부족분을 회수한다.
+///
+/// 호출자는 native HWP5의 빈 TopAndBottom host라는 저장 계약을 별도로 확인해야
+/// 한다. 이 helper는 문서 구조와 측정/선언 차이만 검증한다.
+pub fn fit_measured_table_nested_tail_to_declared_height(
+    measured: &MeasuredTable,
+    table: &Table,
+    dpi: f64,
+) -> Option<MeasuredTable> {
+    let row_count = measured.row_heights.len();
+    if row_count < 2 || table.row_count as usize != row_count || table.common.height == 0 {
+        return None;
+    }
+
+    let last_row = row_count - 1;
+    // 이 fit은 일반 "마지막 행에 1×1 표가 있는" 표를 위한 것이 아니다. HWP5
+    // RowBreak 저장 계약의 짧은 tail은 첫 문단이 text 없는 단일 child owner이고,
+    // 뒤에는 vpos=0의 빈 reset만 남는다. marker HWPX까지 profile 범위를 넓길 때
+    // 느슨한 기존 조건을 그대로 쓰면 일반 nested table의 declared height도 회수해
+    // 원본/재파스 수직 기준선이 달라진다 (#1939 p23/p39/p70).
+    let last_row_owned_block_child = table.cells.iter().find_map(|cell| {
+        if cell.row as usize != last_row || cell.row_span != 1 {
+            return None;
+        }
+        let host = cell.paragraphs.first()?;
+        let mut children = host.controls.iter().filter_map(|control| match control {
+            Control::Table(child) => Some(child.as_ref()),
+            _ => None,
+        });
+        let child = children.next()?;
+        (host.text.trim().is_empty()
+            && children.next().is_none()
+            && cell.paragraphs.iter().skip(1).all(|paragraph| {
+                paragraph.text.trim().is_empty()
+                    && paragraph.controls.is_empty()
+                    && paragraph.line_segs.len() <= 1
+            })
+            && !child.common.treat_as_char
+            && child.row_count == 1
+            && child.col_count == 1
+            && child.cells.len() == 1)
+            .then_some(child)
+    });
+    let last_row_owned_block_child = last_row_owned_block_child?;
+
+    let spacing_total = measured.cell_spacing * row_count.saturating_sub(1) as f64;
+    let target_row_sum = (hwpunit_to_px(table.common.height as i32, dpi) - spacing_total).max(0.0);
+    let current_row_sum = measured.row_heights.iter().sum::<f64>();
+    let prefix_sum = measured.row_heights[..last_row].iter().sum::<f64>();
+    let current_tail = measured.row_heights[last_row];
+    let target_tail = target_row_sum - prefix_sum;
+
+    // 마지막 child가 실제로 공간을 필요로 하는 경우만, 그리고 대상 행만의
+    // 축소로 해결되는 작은 측정 drift만 허용한다. 큰 차이는 선언높이가 stale-min인
+    // 문서일 수 있으므로 기존 콘텐츠 기반 분할에 맡긴다.
+    let reduction = current_tail - target_tail;
+    // 일반 nested tail은 큰 선언/실측 차이를 stale height로 간주해 fit하지 않는다.
+    // 단, native RowBreak의 마지막 empty-host 1×1 short child는 기준 PDF가 parent
+    // 선언 viewport에서 첫 visual line을 먼저 소유하고 다음 fragment로 이어 그린다.
+    // 이 구조만 child table의 stored height가 parent보다 큰 것으로 식별된다. p33/p34의
+    // 일반 nested-table 반례는 child <= parent라 여기로 들어오지 않는다.
+    let owner_short_child_overflow = last_row_owned_block_child
+        .cells
+        .first()
+        .is_some_and(|cell| cell.paragraphs.len() <= 3)
+        && last_row_owned_block_child.common.height > table.common.height;
+    if target_tail <= 0.0
+        || reduction <= 0.5
+        || current_row_sum <= target_row_sum
+        || (!owner_short_child_overflow && (reduction > 64.0 || target_tail < current_tail * 0.85))
+    {
+        return None;
+    }
+
+    let mut fitted = measured.clone();
+    fitted.row_heights[last_row] = target_tail;
+    fitted.cumulative_heights = vec![0.0; row_count + 1];
+    for (idx, row_height) in fitted.row_heights.iter().enumerate() {
+        let spacing = if idx > 0 { fitted.cell_spacing } else { 0.0 };
+        fitted.cumulative_heights[idx + 1] = fitted.cumulative_heights[idx] + row_height + spacing;
+    }
+    let previous_body_height = current_row_sum + spacing_total;
+    let caption_and_spacing = (measured.total_height - previous_body_height).max(0.0);
+    fitted.total_height = target_row_sum + spacing_total + caption_and_spacing;
+    Some(fitted)
 }
 
 /// 셀의 줄 단위 측정 정보 (행 내부 분할용)
@@ -588,7 +687,9 @@ impl HeightMeasurer {
             .map(|s| s.line_spacing_type)
             .unwrap_or(crate::model::style::LineSpacingType::Percent);
 
-        let (line_heights, line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) = composed {
+        let (mut line_heights, mut line_spacings): (Vec<f64>, Vec<f64>) = if let Some(comp) =
+            composed
+        {
             let tac_offsets_px: Vec<(usize, f64, usize)> = comp
                 .tac_controls
                 .iter()
@@ -672,9 +773,12 @@ impl HeightMeasurer {
                 })
                 .collect();
             if pairs.is_empty() {
-                if let Some(metric) =
-                    empty_paragraph_fallback_line_metrics(para, styles, para_style)
-                {
+                if let Some(metric) = empty_paragraph_fallback_line_metrics(
+                    para,
+                    styles,
+                    para_style,
+                    self.is_hwp3_variant,
+                ) {
                     pairs.push(metric);
                 }
             }
@@ -739,7 +843,7 @@ impl HeightMeasurer {
                     .unzip()
             }
         } else if let Some((lh, ls)) =
-            empty_paragraph_fallback_line_metrics(para, styles, para_style)
+            empty_paragraph_fallback_line_metrics(para, styles, para_style, self.is_hwp3_variant)
         {
             (vec![lh], vec![ls])
         } else {
@@ -753,6 +857,21 @@ impl HeightMeasurer {
                 .zip(line_spacings.iter())
                 .map(|(h, s)| h + s)
                 .sum();
+            // `compose_paragraph()` 는 LINE_SEG 없는 빈 문단에도 400HU 안내 줄을
+            // 만든다. 그 합성 줄을 그대로 쓰면 HWP5의 실제 글자모양/줄간격이
+            // 소실된다(p81 20pt 빈 줄은 5.3px로, 1pt spacer는 5.3px로 오판).
+            // render의 같은 보정과 맞춰 실제 빈 문단일 때는 fallback metrics가
+            // compose 결과보다 우선한다.
+            if let Some((lh, ls)) = empty_paragraph_fallback_line_metrics(
+                para,
+                styles,
+                para_style,
+                self.is_hwp3_variant,
+            ) {
+                line_heights = vec![lh];
+                line_spacings = vec![ls];
+            }
+
             // TAC 표 문단에서 첫 LINE_SEG의 lh가 표 높이로 확장되고
             // 마지막 SEG도 동일한 lh를 가질 때, 합산이 이중 계산됨.
             // (표 앞 텍스트가 있어 LINE_SEG가 2개인 경우 발생)
@@ -1018,9 +1137,10 @@ impl HeightMeasurer {
         control_index: usize,
         styles: &ResolvedStyleSet,
         depth: usize,
-        // [#2195] 중첩 표 스트레치 배율: 부모 셀 inner / 중첩 표 저장 폭 (>=1.0).
-        // 한글은 내부 표를 부모 셀 inner 폭으로 확장 배치한다 (76076 표325 r6:
-        // 저장 487.6px vs 실효 ~506px, 근거설명 셀 41줄 오라클 + 휴먼명조 사다리).
+        // [#2195] 중첩 표 render-only 폭 보정의 호환 매개변수. 비-TAC 중첩 표는
+        // 저장 폭으로 측정한다(76076 표325 r6: 487.6px). 부모 셀 폭으로의 근소
+        // 확장은 PDF 줄바꿈·조각 높이를 바꾸므로 RenderNormalizationOverlay가
+        // 1.0을 반환한다.
         width_scale: f64,
     ) -> MeasuredTable {
         let width_scale =

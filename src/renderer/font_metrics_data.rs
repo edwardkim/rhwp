@@ -1613,12 +1613,15 @@ static FONT_11_HANGUL: HangulMetric = HangulMetric {
     widths: &FONT_11_HANGUL_WIDTHS,
 };
 
+// Regenerated with `font-metric-gen` from
+// ttfs/opensource/NotoSansKR-Regular.ttf
+// (SHA-256 6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74).
 static FONT_12_LATIN_0: [u16; 95] = [
-    220, 275, 374, 521, 521, 880, 621, 231, 299, 299, 427, 521, 231, 324, 231, 396, 521, 521, 521,
-    521, 521, 521, 521, 521, 521, 521, 231, 231, 521, 521, 521, 435, 885, 574, 632, 619, 661, 562,
-    518, 661, 698, 257, 503, 607, 508, 770, 696, 714, 598, 714, 589, 569, 573, 694, 532, 842, 519,
-    482, 592, 299, 396, 299, 521, 550, 586, 536, 593, 492, 595, 527, 279, 530, 575, 245, 245, 499,
-    254, 889, 580, 586, 595, 595, 339, 441, 334, 577, 466, 742, 434, 468, 438, 299, 243, 299, 521,
+    224, 323, 474, 555, 555, 921, 680, 278, 338, 338, 467, 555, 278, 347, 278, 392, 555, 555, 555,
+    555, 555, 555, 555, 555, 555, 555, 278, 278, 555, 555, 555, 474, 946, 608, 657, 638, 688, 589,
+    552, 689, 728, 293, 535, 646, 543, 812, 723, 742, 633, 742, 635, 596, 599, 721, 575, 878, 573,
+    531, 603, 338, 392, 338, 555, 559, 606, 563, 618, 510, 620, 554, 325, 564, 607, 275, 275, 552,
+    284, 926, 610, 606, 620, 620, 388, 468, 377, 607, 521, 802, 498, 521, 475, 338, 270, 338, 555,
 ];
 static FONT_12_LATIN_1: [u16; 96] = [
     220, 275, 521, 521, 521, 521, 243, 1000, 586, 815, 368, 429, 521, 324, 433, 586, 336, 1000,
@@ -46184,6 +46187,39 @@ static FONT_METRICS: [FontMetric; 600] = [
 #[cfg(test)]
 mod tests {
     use super::*;
+    use sha2::{Digest, Sha256};
+
+    const NOTO_SANS_KR_REGULAR: &[u8] =
+        include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
+
+    #[test]
+    fn issue_4442_noto_sans_kr_ascii_advances_match_tracked_font() {
+        let digest = Sha256::digest(NOTO_SANS_KR_REGULAR);
+        assert_eq!(
+            &digest[..],
+            &[
+                0x6e, 0x06, 0xa7, 0xfe, 0x5d, 0x69, 0x6c, 0xa7, 0x19, 0x89, 0x4a, 0x23, 0xf3, 0x6b,
+                0xb2, 0xb1, 0xbe, 0x8c, 0x81, 0x6a, 0x59, 0x37, 0xcd, 0x4a, 0xd0, 0xf2, 0x3c, 0xa6,
+                0x77, 0x80, 0xdd, 0x74,
+            ]
+        );
+
+        let face = ttf_parser::Face::parse(NOTO_SANS_KR_REGULAR, 0)
+            .expect("tracked bundled font must parse");
+        let metric = find_metric("Noto Sans KR", false, false).expect("shared regular metric");
+        assert_eq!(metric.metric.em_size, face.units_per_em());
+        for ch in ' '..='~' {
+            let glyph = face.glyph_index(ch).expect("printable ASCII glyph");
+            let advance = face
+                .glyph_hor_advance(glyph)
+                .expect("printable ASCII horizontal advance");
+            assert_eq!(
+                metric.metric.get_width(ch),
+                Some(advance),
+                "shared advance for {ch:?}"
+            );
+        }
+    }
 
     #[test]
     fn hy_gothic_medium_maps_correctly() {

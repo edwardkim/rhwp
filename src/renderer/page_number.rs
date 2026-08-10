@@ -227,6 +227,8 @@ mod tests {
             end_cut: Vec::new(),
             is_block_split: false,
             row_cursor_is_nested: false,
+            end_row_height_override: None,
+            start_row_height_override: None,
         }]);
         assert_eq!(a.assign(&p1), 1);
 
@@ -241,6 +243,8 @@ mod tests {
             end_cut: Vec::new(),
             is_block_split: false,
             row_cursor_is_nested: false,
+            end_row_height_override: None,
+            start_row_height_override: None,
         }]);
         assert_eq!(a.assign(&p2), 2);
     }

@@ -1,0 +1,70 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 91.62486,
+    "worst_pixel_match_percent": 89.74629,
+    "average_ink_match_percent": 29.60961,
+    "worst_ink_match_percent": 18.92541,
+    "average_visual_accuracy_proxy_percent": 29.60961,
+    "worst_visual_accuracy_proxy_percent": 18.92541,
+    "worst_pages": [
+      18,
+      19
+    ]
+  },
+  "pages": [
+    {
+      "page": 18,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-stage122-76076-p018-p019-575da2a-final/task3820-stage122-76076-p018-p019-575da2a-final/rhwp_png/rhwp_018.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-stage122-76076-p018-p019-575da2a-final/task3820-stage122-76076-p018-p019-575da2a-final/pdf_png/pdf-18.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-stage122-76076-p018-p019-575da2a-final/task3820-stage122-76076-p018-p019-575da2a-final/overlay/overlay_018.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 205653,
+      "diff_ratio": 0.10253714,
+      "pixel_match_percent": 89.74629,
+      "ink_union_pixels": 253659,
+      "ink_diff_pixels": 205653,
+      "ink_diff_ratio": 0.81074592,
+      "ink_match_percent": 18.92541,
+      "visual_accuracy_proxy_percent": 18.92541,
+      "mean_abs_channel_delta": 17.969,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        113,
+        113,
+        1099,
+        1625
+      ]
+    },
+    {
+      "page": 19,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-stage122-76076-p018-p019-575da2a-final/task3820-stage122-76076-p018-p019-575da2a-final/rhwp_png/rhwp_019.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-stage122-76076-p018-p019-575da2a-final/task3820-stage122-76076-p018-p019-575da2a-final/pdf_png/pdf-19.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-stage122-76076-p018-p019-575da2a-final/task3820-stage122-76076-p018-p019-575da2a-final/overlay/overlay_019.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 130298,
+      "diff_ratio": 0.06496567,
+      "pixel_match_percent": 93.50343,
+      "ink_union_pixels": 218232,
+      "ink_diff_pixels": 130298,
+      "ink_diff_ratio": 0.59706184,
+      "ink_match_percent": 40.29382,
+      "visual_accuracy_proxy_percent": 40.29382,
+      "mean_abs_channel_delta": 10.733,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        113,
+        113,
+        1099,
+        1625
+      ]
+    }
+  ]
+}

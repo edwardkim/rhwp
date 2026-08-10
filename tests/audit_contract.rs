@@ -201,7 +201,9 @@ fn output_neutral_plan_and_receipt_step_tampering_are_caught() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
-#[cfg(unix)]
+// APFS rejects invalid UTF-8 path components with EILSEQ, so macOS cannot
+// construct the fixture required to exercise this Unix-byte contract.
+#[cfg(all(unix, not(target_os = "macos")))]
 #[test]
 fn non_utf8_capsule_name_is_included_and_reported() {
     use std::os::unix::ffi::OsStringExt;

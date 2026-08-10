@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "key": "stage96-issue2279-r27-final-current",
+  "provenance": {
+    "hwp": {
+      "path": "samples/86712_regulatory_analysis.hwp",
+      "sha256": "32e2ed30e5d744ad747f04f090c022eca8270f9dd2d55e0613e2ad61058099e9"
+    },
+    "pdf": {
+      "path": "pdf/issue1921/86712_regulatory_analysis-2024.pdf",
+      "sha256": "b612638c849d967cf3005d0a7c82df18f47ac66f3b2777632ffe0912135b4a81"
+    },
+    "git_head": "1ea5f02100a9b00c67b13951bcc96ac1be430201",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "a5e5b449c3ac0b891562ec6448ccccb5d43392ebe49774af0e49e350005bc271"
+    },
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "08af108390e3e10ed0a108f634fdba386c5ed398bbd6088e8974710d7c339146"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    27,
+    28,
+    29
+  ],
+  "requested_page_shards": [
+    [
+      27,
+      28,
+      29
+    ]
+  ],
+  "run_state": "complete"
+}

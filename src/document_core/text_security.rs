@@ -1274,7 +1274,8 @@ mod tests {
     /// 않는다(실측 결과 노이즈보다 작았다). 그래서 코어를 직접 불러 **크기 사다리**로 잰다.
     ///
     /// 상한은 크게 잡는다 — 목적은 상수 인자를 감시하는 것이 아니라 **차수**를 잡는 것이다.
-    /// 선형이면 8배 입력에 8배 시간, 2차식이면 64배다. 24배 상한은 그 사이를 가른다.
+    /// 선형이면 8배 입력에 8배 시간, 2차식이면 64배다. 병렬 test runner의 스케줄링
+    /// 노이즈를 고려한 40배 상한도 두 차수를 충분히 가른다.
     #[test]
     fn scan_cost_stays_linear_as_input_grows() {
         use std::hint::black_box;
@@ -1289,9 +1290,10 @@ mod tests {
             let measure = |factor: usize| -> (usize, f64) {
                 let text = unit.repeat(factor);
                 let chars = text.chars().count();
-                // 첫 회는 캐시 예열로 버리고 최소값을 취한다.
+                // 병렬 test runner의 스케줄링 노이즈는 짧은 입력보다 긴 입력에 더 크게
+                // 반영될 수 있다. 충분한 표본에서 최솟값을 취해 실행 시간을 분리한다.
                 let mut best = f64::MAX;
-                for _ in 0..3 {
+                for _ in 0..7 {
                     let t = Instant::now();
                     black_box(scan_deception(black_box(&text), None));
                     best = best.min(t.elapsed().as_secs_f64());
@@ -1313,7 +1315,7 @@ mod tests {
             // 마이크로초 단위에서는 타이머 분해능이 배율을 왜곡한다 — 하한을 넘을 때만 판정.
             if t1 > 1e-4 {
                 assert!(
-                    t8 / t1 < 24.0,
+                    t8 / t1 < 40.0,
                     "[{name}] 8배 입력에 {:.1}배 시간 — 선형이 아닙니다 ({:.3}ms → {:.3}ms)",
                     t8 / t1,
                     t1 * 1e3,

@@ -825,6 +825,7 @@ jobs:
       - name: Validate workflow contracts
         run: |
           python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
+          python3 -m unittest scripts/tests/test_codeql_workflow.py
           python3 -m unittest scripts/tests/test_docker_publish_workflow.py
           python3 -m unittest scripts/tests/test_release_installers_workflow.py
           python3 -m unittest scripts/tests/test_release_packages_workflow.py

@@ -4,9 +4,13 @@
 - **수행계획서**: `mydocs/plans/task_m100_3790.md`
 - **브랜치**: Stage 1 `codex/issue-3790-ci-impact-shadow`, Stage 2·2.5
   `codex/issue-3790-shadow-observation`, Stage 3 `codex/issue-3790-stage3-frontend`, Stage 4
-  `issue-3790-stage4-rust-native`
-- **절차 상태**: Stage 3 merge·canary 완료, Stage 4 draft PR #4032 review F1–F6 보정·current-base
-  full CI 통과
+  `issue-3790-stage4-rust-native`, Stage 5A `issue-3790-stage5a-codeql-safety`
+- **절차 상태**: Stage 3·4 merge·canary 완료. `upstream/devel` `e48fe86947fb`에서 Stage 5A의
+  보안 check 재사용과 Rust no-build shadow를 구현하고 focused 검증을 통과했다. Draft PR #4341의
+  1차 원격 canary 분석 뒤 raw blocking SARIF·동일 권한·기본 build mode의 no-prebuild shadow로
+  보정하고 원격 동등성 gate를 통과했다. 수동 cache·prebuild와 측정 요소를 제거한 최종 구성도 focused
+  검증과 최종 PR CI·GHAS를 통과했다. Ready 전환 뒤 self-review F1–F6을 수용해 최신
+  `upstream/devel` `0664e6568e9b`을 병합하고 보정 head의 full CI·CodeQL 재검증 단계로 전환했다.
 
 ## Stage 1 — shadow classifier
 
@@ -117,12 +121,116 @@ Stage 3 merge 직후 frontend-only canary PR #3951에서 unit/package/render 진
 10. `tests/issue_2293_chart_png_text.rs`가 어떤 CI job에서도 실행되지 않던 기존 누락은
     #4040으로 분리하고 Stage 4 영향축 활성화의 blocker로 취급하지 않는다.
 
-## Stage 5 이후
+## Stage 5A — 보안 check 재사용과 Rust no-build shadow
 
-- CodeQL 언어별 matrix를 활성화한다. cache 총량은 #4080의 새 기준선을 따르고 더는 유효하지 않은
-  4.73GB를 게이트로 쓰지 않는다.
-- Stage 3 merge 직후 첫 canary, Stage 5 merge 뒤 두 번째 canary에서 동일 SHA의 수동 full/selective를
-  대조한다.
+1. `codeqlResult`가 고른 PR CodeQL workflow run은 기존처럼 event, base branch, head repository,
+   head branch와 candidate SHA를 모두 검증한다.
+2. 그 candidate SHA에 대해 check-runs를 조회하고 app slug `github-advanced-security`, name `CodeQL`,
+   동일 `head_sha`인 단일 policy check를 식별한다. `started_at`이 없거나 현재 workflow run attempt보다
+   이르면 현재 check가 없는 것으로 취급해 이전 attempt 결과를 재사용하지 않는다.
+3. 세 `Analyze (...)` job은 언어별로 모두 성공해야 한다. 별도 GHAS check가 없으면 `missing`, 완료 전이면
+   `pending`, conclusion이 `success`가 아니면 `failed`로 닫는다. 이 check는 실측상 첫 언어 분석에서
+   종결되므로 뒤에 도착한 언어의 policy 결과까지 보증한다고 해석하지 않는다.
+4. 기존 세 언어 blocking matrix와 Rust stable toolchain·cache·`cargo build`는 비교 기준선으로 유지한다.
+5. PR non-fast-pass 전용 `Rust no-build shadow`를 추가한다. 같은 Rust toolchain을 설치하되 cache와
+   `cargo build`는 생략하고 CodeQL init에 `languages: rust`, `build-mode: none`을 지정한다.
+6. shadow analyze는 `upload: never`, 고유 output directory를 쓰며 SARIF는 pinned
+   `actions/upload-artifact`로만 보존한다. 따라서 code scanning 결과와 required check identity를
+   오염시키지 않는다.
+7. 정적 workflow 계약 테스트로 보안 check가 실패한 경우와 blocking Rust lane 보존, shadow 격리를
+   고정한 뒤 YAML·classifier 인접 회귀를 focused 검증한다.
+
+### Stage 5A 1차 canary 판정
+
+- PR #4341의 CodeQL run `31311707469`에서 blocking Rust 704초, no-build shadow 658초로 shadow가
+  46초(6.5%) 빨랐다. 그러나 실제 analyze 단계는 576초와 585초로 shadow가 9초 느렸고, 차이는 주로
+  blocking의 cargo cache 복원 13초와 사전 build 49초에서 나왔다.
+- 두 lane의 성공 추출 파일은 1,097개로 같았지만 오류 파일은 blocking 7개, shadow 3개로 달랐다.
+  동일 CLI 2.26.2와 raw diagnostic 2건을 사용했어도 database가 완전히 동등하다고 판정할 수 없다.
+- shadow raw SARIF artifact에는 32개 결과와 fingerprint가 있었지만 blocking raw SARIF는 artifact로
+  남기지 않았다. Code Scanning analysis API의 server-processed 결과는 PR baseline 반영 뒤 0건이라
+  raw result·fingerprint 비교를 대신할 수 없다.
+- shadow job은 `security-events` 권한이 없어 CodeQL Action feature API를 읽지 못했다는 annotation을
+  남겼다. 따라서 blocking과 동일 권한이라는 A/B 전제가 충족되지 않았다.
+- 결론은 `build-mode: none` 활성화 보류다. 다음 canary는 blocking raw Rust SARIF를 artifact로 남기고,
+  shadow 권한을 blocking과 같게 맞춘 뒤, 가능하면 기본 build mode에서 cargo prebuild만 제거해 변수를
+  하나로 제한한다.
+
+### Stage 5A 보정 canary
+
+- blocking matrix의 기본 build mode, Rust cache·수동 `cargo build`, Code Scanning upload는 그대로 두고
+  CodeQL CLI SARIF 출력 `rust-blocking-results`를 7일 artifact로 추가한다.
+- shadow도 기본 build mode와 `security-events: write`, `contents: read`를 사용한다. cache·수동
+  `cargo build`만 생략하고 `upload: never`를 유지해 Code Scanning 결과를 만들지 않는다.
+- shadow check·artifact 이름을 `Rust no-prebuild shadow`와 `rust-no-prebuild-sarif-*`로 바꿔 첫
+  `build-mode: none` 측정과 구별한다.
+- 원격에서는 두 raw SARIF의 result fingerprint·artifact URI와 추출 성공·오류 수가 같고 feature API
+  권한 annotation이 사라지는지 확인한 뒤 활성화 여부를 판정한다.
+
+### Stage 5A 보정 canary 판정
+
+- candidate `484f6a3286dfd71b61809b95374a0fce31f8d8e9`, CodeQL run `31313096097`의 모든
+  workflow job과 GHAS `CodeQL` check가 성공했다. blocking·shadow check annotation은 모두 0건이다.
+- blocking Rust는 701초, no-prebuild shadow는 642초로 59초(8.4%) 단축됐다. analyze는 각각
+  582초와 579초여서 차이 3초이고, 절감분은 cache 복원 10초와 수동 `cargo build` 50초에 대응한다.
+- 두 raw SARIF의 CodeQL CLI 2.26.2, tool metadata, config, 32개 전체 result object와 partial
+  fingerprint가 완전히 같다. 규칙별 결과도 hard-coded cryptographic value 31건, weak cryptographic
+  algorithm 1건으로 같다.
+- 성공 추출은 1,097파일, unresolved macro는 63건으로 같다. blocking에만
+  `target/debug/build/serde*` 생성 파일 4개가 추가됐고 네 파일 모두 semantic analyzer unavailable
+  warning이라 유효한 소스 coverage나 alert를 늘리지 않았다.
+- 따라서 기본 build mode와 내부 `autobuild.sh`를 유지한 채 수동 cargo cache·prebuild를 제거하는 gate는
+  통과다. `build-mode: none`은 1차 canary가 동등성을 증명하지 못했으므로 활성화하지 않는다.
+- PR #4341의 최종 형태에서는 blocking `Analyze (rust)` check identity를 유지하면서 cache restore/save와
+  수동 `cargo build`, 측정용 shadow·raw artifact를 제거하고 최종 CI를 다시 확인한다.
+
+### Stage 5A 최종 전환
+
+- 기존 `analyze` matrix와 `Analyze (rust)` check identity, `security-events: write`, 기본 build mode,
+  stable Rust toolchain, 정상 Code Scanning upload를 유지한다.
+- Rust 전용 cargo cache restore/save와 수동 `cargo build`를 제거한다. CodeQL 내부 `autobuild.sh`는
+  기본 analyze 동작으로 유지된다.
+- canary 측정용 `rust-no-prebuild-shadow` job과 blocking·shadow raw SARIF output·artifact를 제거한다.
+- 최종 계약은 수동 cache·build와 측정 요소가 다시 들어오면 실패하도록 고정했다. TDD RED 2건을 확인한
+  뒤 Stage 5A 6/6, 연관 Python workflow 계약 74/74, classifier 28/28, `actionlint`,
+  `git diff --check`가 통과했다.
+
+### Stage 5A 최종 CI 판정
+
+- candidate `c2674bd336a26448d1673f7f70389cb8fc2a0ce8`의 CodeQL run `31314188222`와 CI run
+  `31314188326`이 모두 성공했다. PR은 `MERGEABLE / CLEAN`이고 실패 check는 0건이다.
+- 최종 `Analyze (rust)` job은 542초, analyze 단계는 480초다. 보정 blocking 701초보다 159초,
+  같은 기본 build mode의 보정 shadow 642초보다 100초 짧지만 analyze 자체도 99초 변동했으므로 전부를
+  구현 효과로 귀속하지 않는다. 같은 run A/B에서 확인한 보수적 절감은 59초(8.4%)다.
+- CodeQL CLI 2.26.2, `database trace-command --index-traceless-dbs`, Rust 내부 `autobuild.sh`가 유지됐다.
+  `Analyze (rust)`와 GHAS `CodeQL` annotation은 0건이고 임시 Actions artifact도 0개다.
+- Rust Code Scanning analysis `1591906480`은 25개 규칙, 결과 0건으로 최종 처리됐다. 세 Analyze job과
+  별도 GHAS `CodeQL` check가 모두 성공했으므로 Stage 5A 코드·CI gate는 통과다.
+- PR #4341 제목·본문을 최종 no-prebuild 동작과 canary 근거로 보정했다. 2026-08-09 당시에는 Draft
+  상태를 유지하고 이후 review 요청을 작업지시자 gate로 남겼다.
+
+### PR #4341 self-review 보정
+
+- 최신 `upstream/devel` `0664e6568e9b`을 병합하고 `.github/workflows/ci.yml`의 단일 충돌에서
+  CodeQL 계약 테스트와 devel의 Docker·release·setup 계약 테스트를 모두 보존했다.
+- GHAS `CodeQL` check는 실측상 첫 언어 분석에서 종결되고 뒤에 도착한 언어 분석으로 갱신되지 않는다는
+  범위를 코드 주석·계획·작업 기록에 명시했다. 세 Analyze job 성공은 계속 독립적으로 요구한다.
+- check-run에 없는 `created_at` fallback과 유한값처럼 보이는 `Date.parse(0)`, 앞선 filter 때문에 도달할
+  수 없던 identity mismatch 분기를 제거했다. `started_at` 누락·이전 attempt는 현재 check 부재로 처리해
+  기존 fail-closed 결과를 유지한다.
+- 작업 단계명이던 `test_codeql_stage5a_workflow.py`는 장기 계약 이름인 `test_codeql_workflow.py`로
+  바꾸고 CI·wiring 참조를 함께 갱신했다. 실제 GHAS check가 Python 뒤, JavaScript/TypeScript·Rust보다
+  먼저 끝난 순서를 mock에 반영했다.
+- `python3 -m unittest` 연관 workflow 계약 10개 파일은 86/86, classifier는 28/28 통과했다.
+  `actionlint .github/workflows/ci.yml .github/workflows/codeql.yml`과 `git diff --check`도 통과했다.
+- workflow 실행 경로와 최신 devel merge가 포함되므로 보정 head는 fast-pass하지 않고 full CI·CodeQL을
+  새로 통과해야 한다.
+
+## Stage 5B 이후
+
+- Stage 5A 원격 canary에서 blocking/shadow SARIF와 duration을 대조하고 required status check 구성을
+  repository admin에게 확인한 뒤 CodeQL 언어별 matrix를 활성화한다.
+- Stage 3 merge 직후 첫 canary와 Stage 5 canary의 selective/full 결과를 비교한다.
 - default-branch controller는 Stage 3~5 진리표가 확정된 뒤 축소 구현하고 정상 릴리즈로 main에 등록한다.
 - artifact 재시도는 #3892의 논리 label `slow/1/2/3`별 test archive, archive expected count와 worker run
   count를 함께 다루고, draft 경량화와 별도 PR로 진행한다.

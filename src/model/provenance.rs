@@ -132,6 +132,15 @@ impl LayoutCompatibilityProfile {
     pub fn native_hwp5_layout(&self) -> bool {
         self.native_hwp5_layout
     }
+
+    /// 원 HWP5와 rhwp가 HWP5에서 내보낸 marker HWPX가 공유하는 저장 pagination
+    /// 계약인지 여부.
+    ///
+    /// marker HWPX는 컨테이너는 XML이지만 원 HWP5의 저장 LINE_SEG·RowBreak
+    /// source-owner를 보존한다. 순수 HWPX는 이 계약에 포함하지 않는다.
+    pub fn hwp5_stored_pagination_layout(&self) -> bool {
+        self.native_hwp5_layout || self.hwp5_origin_hwpx
+    }
 }
 
 impl Default for LayoutCompatibilityProfile {
@@ -139,5 +148,25 @@ impl Default for LayoutCompatibilityProfile {
         // 렌더러 단위 테스트와 생성기 경로가 역사적으로 all-false 프로필을
         // HWP5 기본값으로 사용했다. 새 출처 신호도 같은 기본 의미를 보존한다.
         Self::new(false, false, false, false, false, true)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::LayoutCompatibilityProfile;
+
+    #[test]
+    fn hwp5_stored_pagination_excludes_original_hwpx() {
+        let native_hwp5 = LayoutCompatibilityProfile::new(false, false, false, false, false, true);
+        let hwp5_origin_hwpx =
+            LayoutCompatibilityProfile::new(false, false, false, true, true, false);
+        let original_hwpx = LayoutCompatibilityProfile::new(false, false, true, true, false, false);
+
+        assert!(native_hwp5.hwp5_stored_pagination_layout());
+        assert!(hwp5_origin_hwpx.hwp5_stored_pagination_layout());
+        assert!(
+            !original_hwpx.hwp5_stored_pagination_layout(),
+            "원본 HWPX의 별도 저장 line-seg 계약까지 HWP5 pagination으로 넓히면 안 된다"
+        );
     }
 }

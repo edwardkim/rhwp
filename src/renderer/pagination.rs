@@ -512,6 +512,16 @@ pub enum PageItem {
         /// 표 자신의 행 도메인 기준이다. 렌더러가 값(`end_row <= table.row_count`)으로
         /// 되추론하던 것을 페이지네이션 결정 시점에 데이터로 고정한다.
         row_cursor_is_nested: bool,
+        /// RowBreak 표에서 이전 rowspan이 닿는 마지막 행을 현재 조각의 남은
+        /// 물리 높이에 맞춰 배치해야 할 때의 마지막 행 높이 상한(px).
+        ///
+        /// 내용은 이미 이 조각에 모두 소비됐지만 선언 행 높이만 남은 공간보다
+        /// 큰 경우에만 사용한다. 다음 조각은 끝행의 full cut으로 재진입해 남은
+        /// 빈 밴드만 소비하므로, 이 값은 cursor/cut 계약과 짝을 이룬다.
+        end_row_height_override: Option<f64>,
+        /// 직전 조각에서 내용이 모두 소비된 시작 행의 남은 빈 물리 밴드 높이(px).
+        /// `start_cut`은 해당 셀 내용을 숨기고 이 값은 테두리/셀 기하만 보존한다.
+        start_row_height_override: Option<f64>,
     },
     /// 그리기 개체
     Shape {
@@ -644,6 +654,8 @@ impl PageItem {
                 end_cut,
                 is_block_split,
                 row_cursor_is_nested,
+                end_row_height_override,
+                start_row_height_override,
             } => PageItem::PartialTable {
                 para_index: adjust(*para_index),
                 control_index: *control_index,
@@ -654,6 +666,8 @@ impl PageItem {
                 end_cut: end_cut.clone(),
                 is_block_split: *is_block_split,
                 row_cursor_is_nested: *row_cursor_is_nested,
+                end_row_height_override: *end_row_height_override,
+                start_row_height_override: *start_row_height_override,
             },
             PageItem::Shape {
                 para_index,

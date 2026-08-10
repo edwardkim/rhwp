@@ -9,6 +9,7 @@ use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::style::LineSpacingType;
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, is_cjk_char, resolved_to_text_style,
+    stale_split_hanyang_shinmyeongjo_space_width,
 };
 use crate::renderer::px_to_hwpunit;
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
@@ -157,6 +158,28 @@ pub(crate) fn tokenize_paragraph(
     english_break_unit: u8,
     korean_break_unit: u8,
 ) -> Vec<BreakToken> {
+    tokenize_paragraph_with_split_cell_space_metric(
+        text_chars,
+        char_offsets,
+        char_shapes,
+        styles,
+        english_break_unit,
+        korean_break_unit,
+        false,
+    )
+}
+
+/// `split_stale_cell_reflow`는 한컴이 폭 변경 뒤 다시 저장하는 12pt 한양신명조
+/// 공백 규칙을 쓴다. 일반 HWP/HWPX tokenization은 저장 LineSeg 호환성을 위해 끈다.
+fn tokenize_paragraph_with_split_cell_space_metric(
+    text_chars: &[char],
+    char_offsets: &[u32],
+    char_shapes: &[CharShapeRef],
+    styles: &ResolvedStyleSet,
+    english_break_unit: u8,
+    korean_break_unit: u8,
+    split_stale_cell_reflow: bool,
+) -> Vec<BreakToken> {
     let text_len = text_chars.len();
     if text_len == 0 {
         return Vec::new();
@@ -212,7 +235,12 @@ pub(crate) fn tokenize_paragraph(
             } else {
                 12.0
             };
-            let w = estimate_text_width_unrounded(" ", &ts);
+            let w = if split_stale_cell_reflow {
+                stale_split_hanyang_shinmyeongjo_space_width(&ts)
+                    .unwrap_or_else(|| estimate_text_width_unrounded(" ", &ts))
+            } else {
+                estimate_text_width_unrounded(" ", &ts)
+            };
             tokens.push(BreakToken::Space {
                 idx: i,
                 width: w,
@@ -645,11 +673,13 @@ fn fill_lines(
     default_tab_width: f64,
     korean_break_unit: u8,
     condense_min_space: u8,
+    initial_start_idx: usize,
+    initial_is_first_line: bool,
 ) -> Vec<LineBreakResult> {
     if tokens.is_empty() {
         return vec![LineBreakResult {
-            start_idx: 0,
-            end_idx: 0,
+            start_idx: initial_start_idx,
+            end_idx: initial_start_idx,
             max_font_size: 0.0,
             has_line_break: false,
         }];
@@ -666,11 +696,11 @@ fn fill_lines(
         48.0
     };
     let mut results = Vec::new();
-    let mut line_start_idx = 0usize;
+    let mut line_start_idx = initial_start_idx;
     let mut lw = 0i32; // HWPUNIT 정수 누적
     let mut line_space_savings = 0i32;
     let mut line_max_fs = 0.0f64;
-    let mut is_first_line = true;
+    let mut is_first_line = initial_is_first_line;
 
     let mut last_break_token_idx: Option<usize> = None;
     let mut last_break_char_idx: usize = 0;
@@ -918,7 +948,7 @@ fn fill_lines(
 
     if results.is_empty() {
         results.push(LineBreakResult {
-            start_idx: 0,
+            start_idx: initial_start_idx,
             end_idx: text_chars.len(),
             max_font_size: 0.0,
             has_line_break: false,
@@ -1075,6 +1105,101 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
     }
 }
 
+/// 본문 뒤 남은 폭에 놓이지 않는 inline control은 별도 physical line을 가진다.
+///
+/// 종전 cell reflow는 text token만 줄바꿈한 뒤 첫 LineSeg를 표 높이만큼 키웠다.
+/// 그 결과 분할로 폭이 좁아진 셀에서 `text + inline object`가 한 줄로 합쳐졌다.
+/// 한컴은 control 위치부터 object 전용 LineSeg를 만들어 다음 physical line으로 보낸다
+/// (#4138: 1×2 split 뒤 nested table/picture host). control 자체가 셀 폭을 넘거나,
+/// control 앞의 실제 text 폭과 합쳐 현재 줄의 폭을 넘는 경우만 대상으로 한다.
+/// 같은 줄에 들어가는 작은 object와 복수 control 문단의 기존 reflow는 건드리지 않는다.
+fn inline_control_requires_own_line(
+    para: &Paragraph,
+    text_chars: &[char],
+    line_breaks: &[LineBreakResult],
+    available_width_px: f64,
+    indent_px: f64,
+    reflow_is_first_line: bool,
+    styles: &ResolvedStyleSet,
+) -> Option<(usize, i32)> {
+    let text_len = para.text.chars().count();
+    let positions = para.control_text_positions();
+    let mut candidates = para
+        .controls
+        .iter()
+        .zip(positions)
+        .filter_map(|(control, position)| {
+            let (width, height) = inline_control_size_hwp(control)?;
+            (position > 0 && position <= text_len).then_some((position, width, height))
+        });
+    let (position, control_width, height) = candidates.next()?;
+    // 여러 inline control은 일반 placement가 순서를 보존해야 하므로 이 좁은
+    // single-control 계약 밖이다.
+    if candidates.next().is_some() {
+        return None;
+    }
+
+    // 같은 text offset에서 새 줄이 시작되면 control은 그 줄의 선두에 놓인다.
+    // 그렇지 않으면 control 직전 text가 실제로 속한 줄을 선택한다. 마지막 글자
+    // 뒤의 control은 마지막 text line에 속한다.
+    let (line_idx, line) = line_breaks
+        .iter()
+        .enumerate()
+        .find(|(_, line)| line.start_idx == position)
+        .or_else(|| {
+            line_breaks
+                .iter()
+                .enumerate()
+                .rfind(|(_, line)| line.start_idx < position && position <= line.end_idx)
+        })?;
+    let is_first_line = reflow_is_first_line && line_idx == 0;
+    let available_hwp = if indent_px > 0.0 && is_first_line {
+        to_hwp((available_width_px - indent_px).max(1.0))
+    } else if indent_px < 0.0 && !is_first_line {
+        to_hwp((available_width_px + indent_px).max(1.0))
+    } else {
+        to_hwp(available_width_px)
+    };
+    let prefix: String = text_chars[line.start_idx..position].iter().collect();
+    let prefix_width = to_hwp(measure_token_width(
+        &prefix,
+        line.start_idx,
+        &para.char_offsets,
+        &para.char_shapes,
+        styles,
+        0,
+    ));
+
+    (control_width > available_hwp + LINE_BREAK_TOLERANCE
+        || prefix_width + control_width > available_hwp + LINE_BREAK_TOLERANCE)
+        .then_some((position, height))
+}
+
+fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
+    if let Some(offset) = para.char_offsets.get(char_index) {
+        return *offset;
+    }
+
+    // char_offsets에는 visible text 앞의 control stream gap도 반영된다. 따라서
+    // 끝의 빈 physical line(예: trailing Shift+Enter)을 단순 text 길이로 매핑하면
+    // SectionDef/ColumnDef가 앞선 문단에서 21이어야 할 start가 5로 되돌아간다.
+    // 마지막 visible char의 실제 stream offset을 기준으로 종단을 계산한다.
+    para.char_offsets
+        .last()
+        .zip(para.text.chars().last())
+        .map(|(offset, ch)| *offset + ch.len_utf16() as u32)
+        .unwrap_or_else(|| {
+            // 합성 문단처럼 char_offsets가 비어 있으면 char_index(Unicode scalar
+            // index)를 UTF-16 code-unit 위치로 직접 환산한다. 단순 `as u32`는
+            // 보충 평면 문자를 1 unit으로 세어 후행 줄의 start를 당긴다.
+            para.text
+                .chars()
+                .take(char_index)
+                .map(|ch| ch.len_utf16() as u32)
+                .sum()
+        })
+}
+
 fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
     if height_hwp > seg.line_height {
         seg.line_height = height_hwp;
@@ -1093,6 +1218,55 @@ pub(crate) fn reflow_line_segs(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
+    let _ = reflow_line_segs_impl(para, available_width_px, styles, dpi, None, false);
+}
+
+/// 셀 분할로 저장 폭이 stale해진 문단을 다시 조판한다.
+///
+/// 한컴은 좁아진 셀에서만 본문 뒤의 inline control을 별도 source line으로 저장한다.
+/// 이 규칙을 일반 reflow에 적용하면 원본 문서의 이미 권위적인 control host line까지
+/// 분리되어 pagination이 달라진다 (#4138/#2424). 호출자는 split 직후 stale-cell
+/// 복구 경로로 한정한다.
+pub(crate) fn reflow_line_segs_after_cell_split(
+    para: &mut Paragraph,
+    available_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) {
+    let _ = reflow_line_segs_impl(para, available_width_px, styles, dpi, None, true);
+}
+
+/// 저장 LINE_SEG가 유효한 셀 텍스트 편집은 수정된 줄 이전의 경계를 그대로 둔다.
+///
+/// 한컴은 중간 줄의 짧은 edit에서 문단 전체를 다시 나누지 않는다. prefix 경계를 다시
+/// 계산하면 뒤 줄의 가용 폭이 인위적으로 커져 실제 HWP 저장본과 다른 다음 줄 전환을 만들 수
+/// 있다. 단, prefix가 유효한 token 경계일 때만 보존하며, 합성 문단·첫 줄 edit·inline control은
+/// 기존 full reflow로 안전하게 폴백한다.
+pub(crate) fn reflow_line_segs_after_cell_text_edit(
+    para: &mut Paragraph,
+    available_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    edit_char_offset: usize,
+) -> bool {
+    reflow_line_segs_impl(
+        para,
+        available_width_px,
+        styles,
+        dpi,
+        Some(edit_char_offset),
+        false,
+    )
+}
+
+fn reflow_line_segs_impl(
+    para: &mut Paragraph,
+    available_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    preserve_prefix_for_edit: Option<usize>,
+    split_stale_cell_reflow: bool,
+) -> bool {
     // [#4149] 셀 편집의 단일 관문(reflow_cell_paragraph[_by_path])과 서식 적용
     // (formatting.rs) 이 모두 여기로 수렴한다 — 단일줄 과밀 memo 무효화.
     para.invalidate_single_line_overflow_memo();
@@ -1217,7 +1391,7 @@ pub(crate) fn reflow_line_segs(
             }
             para.line_segs = vec![seg];
         }
-        return;
+        return false;
     }
 
     let text_chars: Vec<char> = para.text.chars().collect();
@@ -1232,57 +1406,156 @@ pub(crate) fn reflow_line_segs(
     let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
 
     // 토큰화 → 줄 채움 → LineSeg 생성
-    let tokens = tokenize_paragraph(
+    let tokens = tokenize_paragraph_with_split_cell_space_metric(
         &text_chars,
         &para.char_offsets,
         &para.char_shapes,
         styles,
         english_break_unit,
         korean_break_unit,
+        split_stale_cell_reflow,
     );
+    // 저장 LINE_SEG 기반 incremental edit는 앞선 줄을 유지한다. LINE_SEG start가 현재
+    // char_offsets와 token 경계 모두에 정확히 대응할 때만 suffix reflow를 허용한다.
+    // 그렇지 않으면 (HWPX 합성 boundary, inline control, token 내부 boundary 등) full
+    // reflow가 보수적인 경로다.
+    let original_line_segs = para.line_segs.clone();
+    let token_start_idx = |token: &BreakToken| match token {
+        BreakToken::Text { start_idx, .. } => *start_idx,
+        BreakToken::Space { idx, .. }
+        | BreakToken::Tab { idx, .. }
+        | BreakToken::LineBreak { idx } => *idx,
+    };
+    let mut preserved_prefix = Vec::new();
+    let mut reflow_start_idx = 0usize;
+    let mut reflow_is_first_line = true;
+    let mut token_start = 0usize;
+    // `DocumentCore::new_empty()`의 기본 source_format도 Hwp이므로 형식만으로는
+    // 합성 test/new-document LineSeg를 native 저장 경계로 오인할 수 없다. 실제 HWP
+    // LINE_SEG가 가진 line-height와, 0에서 시작해 엄격히 증가하는 start가 모두
+    // 있어야 prefix를 권위 경계로 채택한다. 범위 삭제는 삭제된 여러 줄을 같은
+    // start로 접을 수 있으므로 duplicate/역행 경계는 full reflow가 안전하다.
+    let has_valid_orig = original_line_segs
+        .iter()
+        .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+    let authoritative_line_seg_prefix = has_valid_orig
+        && original_line_segs
+            .first()
+            .is_some_and(|seg| seg.text_start == 0)
+        && original_line_segs
+            .windows(2)
+            .all(|pair| pair[0].text_start < pair[1].text_start);
+    if para.controls.is_empty() && authoritative_line_seg_prefix {
+        if let Some(edit_char_offset) = preserve_prefix_for_edit {
+            // Delete-at-end는 삭제 뒤 `char_offsets`에 caret 위치가 없지만, 텍스트
+            // UTF-16 끝은 정확한 token boundary다. 삭제된 마지막 글자가 있던 줄의
+            // 앞줄부터 다시 채워야 5→4 shrink도 표현할 수 있다.
+            let edit_is_document_end = edit_char_offset == text_len;
+            let edit_utf16 = para
+                .char_offsets
+                .get(edit_char_offset)
+                .copied()
+                .or_else(|| edit_is_document_end.then(|| para.text.encode_utf16().count() as u32));
+            let affected_line = edit_utf16.and_then(|offset| {
+                let line = original_line_segs
+                    .iter()
+                    .rposition(|seg| seg.text_start <= offset)?;
+                if edit_is_document_end && original_line_segs[line].text_start < offset {
+                    // 삭제 대상이 들어 있던 마지막 줄도 다시 채워야 직전 줄에
+                    // 합쳐질 수 있다. line=0이면 prefix 없이 full reflow한다.
+                    line.checked_sub(1)
+                } else {
+                    Some(line)
+                }
+            });
+            if let Some(affected_line) = affected_line.filter(|line| *line > 0) {
+                let reflow_utf16 = original_line_segs[affected_line].text_start;
+                let reflow_char_idx = para
+                    .char_offsets
+                    .iter()
+                    .position(|offset| *offset == reflow_utf16);
+                let suffix_token_start = reflow_char_idx.and_then(|char_idx| {
+                    tokens
+                        .iter()
+                        .position(|token| token_start_idx(token) == char_idx)
+                        .map(|token_idx| (char_idx, token_idx))
+                });
+                if let Some((char_idx, token_idx)) = suffix_token_start {
+                    preserved_prefix = original_line_segs[..affected_line].to_vec();
+                    reflow_start_idx = char_idx;
+                    reflow_is_first_line = false;
+                    token_start = token_idx;
+                }
+            }
+        }
+    }
     let line_breaks = fill_lines(
-        &tokens,
+        &tokens[token_start..],
         &text_chars,
         available_width_px,
         indent_px,
         tab_width,
         korean_break_unit,
         condense_min_space,
+        reflow_start_idx,
+        reflow_is_first_line,
     );
-    let mut new_line_segs: Vec<LineSeg> = Vec::new();
-    for lb in &line_breaks {
+    let forced_inline_line = split_stale_cell_reflow
+        .then(|| {
+            inline_control_requires_own_line(
+                para,
+                &text_chars,
+                &line_breaks,
+                available_width_px,
+                indent_px,
+                reflow_is_first_line,
+                styles,
+            )
+        })
+        .flatten();
+    let preserved_prefix_len = preserved_prefix.len();
+    let mut new_line_segs: Vec<LineSeg> = preserved_prefix;
+    for (line_idx, lb) in line_breaks.iter().enumerate() {
         let utf16_start = if new_line_segs.is_empty() {
             0 // 첫 번째 줄의 text_start는 항상 0 (문단 시작)
-        } else if lb.start_idx < para.char_offsets.len() {
-            para.char_offsets[lb.start_idx]
-        } else if !para.char_offsets.is_empty() {
-            // start_idx가 텍스트 끝을 넘을 때: 마지막 문자 다음 UTF-16 위치
-            let last_idx = para.char_offsets.len() - 1;
-            let last_char_utf16_len = para
-                .text
-                .chars()
-                .nth(last_idx)
-                .map(|c| c.len_utf16() as u32)
-                .unwrap_or(1);
-            para.char_offsets[last_idx] + last_char_utf16_len
         } else {
-            lb.start_idx as u32
+            char_index_to_utf16_offset(para, lb.start_idx)
         };
         let fs = if lb.max_font_size > 0.0 {
             lb.max_font_size
         } else {
             12.0
         };
-        new_line_segs.push(make_line_seg(utf16_start as u32, fs));
+        let mut text_seg = make_line_seg(utf16_start, fs);
+        if forced_inline_line.is_some_and(|(position, _)| position == lb.start_idx) {
+            let (_, height_hwp) = forced_inline_line.expect("checked inline control");
+            apply_inline_control_line_height(&mut text_seg, height_hwp);
+        }
+        new_line_segs.push(text_seg);
+
+        // control이 text line 한가운데/끝에 있으면 먼저 text prefix를 확정하고,
+        // control offset에서 다음 LineSeg를 삽입한다. 단순히 vector 끝에 붙이면
+        // 중간 nested table 뒤의 text가 control보다 앞에서 그려진다.
+        let control_after_text = forced_inline_line.is_some_and(|(position, _)| {
+            position > lb.start_idx
+                && (position < lb.end_idx
+                    || (position == lb.end_idx && line_idx + 1 == line_breaks.len()))
+        });
+        if control_after_text {
+            let (position, height_hwp) = forced_inline_line.expect("checked inline control");
+            let mut control_seg = make_line_seg(char_index_to_utf16_offset(para, position), fs);
+            apply_inline_control_line_height(&mut control_seg, height_hwp);
+            new_line_segs.push(control_seg);
+        }
     }
 
     if new_line_segs.is_empty() {
         new_line_segs.push(make_line_seg(0, 12.0));
     }
 
-    // 인라인 TAC 개체의 높이 반영: 개체가 포함된 줄의 line_height를 개체 높이 이상으로 보정
-    {
+    if forced_inline_line.is_none() {
         if let Some(height_hwp) = inline_control_line_height_hwp(para) {
+            // 기존 인라인 TAC 개체는 해당 문단의 최초 line box에 남긴다.
             if let Some(seg) = new_line_segs.first_mut() {
                 apply_inline_control_line_height(seg, height_hwp);
             }
@@ -1292,14 +1565,19 @@ pub(crate) fn reflow_line_segs(
     // vertical_pos 누적 계산 (각 줄의 문단 내 Y 오프셋)
     // 원본 첫 LineSeg의 vertical_pos를 보존하여 vpos 체계 연속성 유지
     // (layout.rs의 vpos 보정이 문단 간 vpos 연속성을 가정하므로)
-    let vpos_start = orig.as_ref().map(|ls| ls.vertical_pos).unwrap_or(0);
-    let mut vpos = vpos_start;
-    for i in 0..new_line_segs.len() {
+    let mut vpos = if preserved_prefix_len > 0 {
+        let last = &new_line_segs[preserved_prefix_len - 1];
+        last.vertical_pos + last.line_height + last.line_spacing
+    } else {
+        orig.as_ref().map(|ls| ls.vertical_pos).unwrap_or(0)
+    };
+    for i in preserved_prefix_len..new_line_segs.len() {
         new_line_segs[i].vertical_pos = vpos;
         vpos += new_line_segs[i].line_height + new_line_segs[i].line_spacing;
     }
 
     para.line_segs = new_line_segs;
+    preserved_prefix_len > 0
 }
 
 /// 구역 내 문단들의 vertical_pos를 순차적으로 재계산한다.
@@ -1551,5 +1829,35 @@ fn compute_line_spacing_hwp(
             let min_hwp = px_to_hwpunit(ls_value, dpi);
             (min_hwp - line_height_hwp).max(0)
         }
+    }
+}
+
+#[cfg(test)]
+mod utf16_offset_tests {
+    use super::*;
+
+    #[test]
+    fn trailing_physical_line_preserves_control_stream_end_offset() {
+        let mut para = Paragraph {
+            text: "가\n".to_string(),
+            // visible text 앞에 16 UTF-16 unit의 control stream gap이 있다.
+            char_offsets: vec![16, 17],
+            ..Default::default()
+        };
+
+        reflow_line_segs(&mut para, 500.0, &ResolvedStyleSet::default(), 96.0);
+
+        assert_eq!(para.line_segs.len(), 2);
+        assert_eq!(para.line_segs[1].text_start, 18);
+    }
+
+    #[test]
+    fn missing_char_offsets_count_supplementary_unicode_as_utf16_units() {
+        let para = Paragraph {
+            text: "😀\n".to_string(),
+            ..Default::default()
+        };
+
+        assert_eq!(char_index_to_utf16_offset(&para, 2), 3);
     }
 }

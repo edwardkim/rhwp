@@ -11,7 +11,7 @@ use crate::model::control::{Control, FieldType};
 use crate::model::document::Document;
 use crate::model::event::DocumentEvent;
 use crate::model::page::ColumnDef;
-use crate::model::paragraph::{ParaMeta, Paragraph};
+use crate::model::paragraph::{LineSeg, ParaMeta, Paragraph};
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::model::style::Alignment;
 use crate::renderer::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
@@ -156,6 +156,23 @@ fn relative_paragraph_flow_advance(paragraph: &Paragraph) -> Option<i64> {
         i64::from(last.vertical_pos) + i64::from(last.line_height) + i64::from(last.line_spacing)
             - i64::from(first.vertical_pos),
     )
+}
+
+/// focused page-tree patch가 사용하는 LineSeg identity가 동일한지 확인한다.
+///
+/// HWPX suffix edit은 저장 prefix를 보존할 수 있어도 마지막 줄의 `text_start`만 이동할
+/// 수 있다. 줄 수·높이는 그대로라 `cellFlowChanged=false`가 맞지만 cache patch에는 같은
+/// line signature가 필요하다 (#3137). 첫 HWPX edit의 metric/tag 정규화는 full reflow
+/// fallback이므로 이 helper에서는 start 외의 identity만 비교한다.
+fn line_seg_metrics_match_ignoring_text_start(left: &LineSeg, right: &LineSeg) -> bool {
+    left.vertical_pos == right.vertical_pos
+        && left.line_height == right.line_height
+        && left.text_height == right.text_height
+        && left.baseline_distance == right.baseline_distance
+        && left.line_spacing == right.line_spacing
+        && left.column_start == right.column_start
+        && left.segment_width == right.segment_width
+        && left.tag == right.tag
 }
 
 /// [#3137] focused geometry/page patch가 허용되는 실제 flat table cell인지 확인한다.
@@ -1544,12 +1561,13 @@ impl DocumentCore {
         self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
 
         // 셀 폭 기반 리플로우
-        self.reflow_cell_paragraph(
+        self.reflow_cell_paragraph_after_text_edit(
             section_idx,
             parent_para_idx,
             control_idx,
             cell_idx,
             cell_para_idx,
+            char_offset,
         );
         self.recalculate_cell_paragraph_vpos_native(
             section_idx,
@@ -1866,13 +1884,16 @@ impl DocumentCore {
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
         self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
 
-        // 셀 폭 기반 리플로우
-        self.reflow_cell_paragraph(
+        // End-of-text backspace의 exact caret을 넘긴다. 저장 LineSeg prefix가 유효한
+        // HWP/HWPX는 이 sentinel을 보고 비어 버린 마지막 저장 줄을 제외한 앞 실제
+        // 줄부터 다시 나눠 5→4 shrink를 허용하고, 유효하지 않으면 helper가 full reflow한다.
+        self.reflow_cell_paragraph_after_text_edit(
             section_idx,
             parent_para_idx,
             control_idx,
             cell_idx,
             cell_para_idx,
+            char_offset,
         );
         self.recalculate_cell_paragraph_vpos_native(
             section_idx,
@@ -2186,14 +2207,28 @@ impl DocumentCore {
         parent_para_idx: usize,
         control_idx: usize,
     ) {
+        fn mark_table_tree_dirty(table: &mut crate::model::table::Table) {
+            table.dirty = true;
+            // 중첩 표 셀의 서식/텍스트 변경은 최외곽 표만 dirty로 두면 이미 완료된
+            // 앞쪽 page fragment가 이전 TextRun을 재사용할 수 있다. 하위 표도 함께
+            // 무효화해야 p81과 p82 같은 분할 셀이 하나의 새 문자 모양으로 다시 조판된다.
+            for cell in &mut table.cells {
+                for paragraph in &mut cell.paragraphs {
+                    for control in &mut paragraph.controls {
+                        if let Control::Table(child) = control {
+                            mark_table_tree_dirty(child);
+                        }
+                    }
+                }
+            }
+        }
+
         if let Some(ctrl) = self.document.sections[section_idx].paragraphs[parent_para_idx]
             .controls
             .get_mut(control_idx)
         {
             match ctrl {
-                Control::Table(t) => {
-                    t.dirty = true;
-                }
+                Control::Table(table) => mark_table_tree_dirty(table),
                 // Shape는 별도 dirty 필드가 없으므로 section dirty만으로 충분
                 _ => {}
             }
@@ -2207,6 +2242,71 @@ impl DocumentCore {
         control_idx: usize,
         cell_idx: usize,
         cell_para_idx: usize,
+    ) {
+        self.reflow_cell_paragraph_with_edit(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            None,
+            false,
+        );
+    }
+
+    /// 셀 분할로 폭이 바뀌어 저장 LINE_SEG가 stale해진 문단만 재조판한다.
+    ///
+    /// 일반 편집 reflow는 원래 control host line을 보존해야 한다. split 경로만 한컴의
+    /// 좁아진 셀 규칙(본문 뒤 inline control을 별도 line으로 저장)을 opt-in한다.
+    pub(crate) fn reflow_cell_paragraph_after_split(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+    ) {
+        self.reflow_cell_paragraph_with_edit(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            None,
+            true,
+        );
+    }
+
+    /// 저장 LineSeg가 유효한 셀 텍스트 edit의 영향 줄부터만 재래핑한다.
+    fn reflow_cell_paragraph_after_text_edit(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        edit_char_offset: usize,
+    ) {
+        self.reflow_cell_paragraph_with_edit(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            Some(edit_char_offset),
+            false,
+        );
+    }
+
+    fn reflow_cell_paragraph_with_edit(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        edit_char_offset: Option<usize>,
+        split_stale_cell_reflow: bool,
     ) {
         use crate::renderer::hwpunit_to_px;
 
@@ -2264,7 +2364,75 @@ impl DocumentCore {
                         .and_then(|cell| cell.paragraphs.get_mut(cell_para_idx))
                 };
                 if let Some(cell_para) = cell_para {
-                    reflow_line_segs(cell_para, final_width, &styles, self.dpi);
+                    if let Some(edit_char_offset) = edit_char_offset {
+                        // 저장 LINE_SEG와 token boundary가 맞는 HWP/HWPX 문단은 한컴의
+                        // 증분 편집처럼 앞선 줄을 그대로 둔다. helper가 prefix가 유효하지
+                        // 않으면 전체 reflow로 폴백하므로 source format만으로 HWPX의
+                        // 권위 LineSeg를 버리면 안 된다 (#2185, #2214).
+                        let stored_line_count = cell_para.line_segs.len();
+                        let stored_line_segs = cell_para.line_segs.clone();
+                        // 실제 paragraph를 먼저 full reflow하면 flow가 그대로인 tail edit도
+                        // line-start/signature가 바뀌어 focused page-tree patch가 불가능해진다
+                        // (#3137). 편집된 text와 기존 LineSeg를 함께 복제해 후보만 계산한다.
+                        let mut hwpx_full_reflow_candidate =
+                            matches!(self.source_format, crate::parser::FileFormat::Hwpx)
+                                .then(|| cell_para.clone());
+                        let preserved_prefix =
+                            crate::renderer::composer::reflow_line_segs_after_cell_text_edit(
+                                cell_para,
+                                final_width,
+                                &styles,
+                                self.dpi,
+                                edit_char_offset,
+                            );
+                        // HWPX adapter 문서는 유효한 저장 prefix를 유지한다. 다만 suffix
+                        // helper가 줄 수를 바꾸지 않고 *마지막 focused line*의 start만
+                        // 이동시킬 수 있다. metric/tag도 달라진 첫 edit는 helper 결과를
+                        // 유지해 cache patch가 exact fallback하도록 둔다 (#2185/#3137).
+                        // 마지막 start만 달라지거나 helper의 줄 수가 달라진 경우에만
+                        // full-reflow 후보로 한컴 boundary를 판정한다. 후보 줄 수가
+                        // 불변이면 저장 LineSeg를 복원하고, 줄 수가 달라질 때만 후보
+                        // 전체를 적용한다 (#3137/#2214/#2424).
+                        let hwpx_line_count_changed =
+                            cell_para.line_segs.len() != stored_line_count;
+                        let hwpx_tail_text_start_only_changed =
+                            matches!(self.source_format, crate::parser::FileFormat::Hwpx)
+                                && preserved_prefix
+                                && stored_line_segs
+                                    .last()
+                                    .as_ref()
+                                    .zip(cell_para.line_segs.last())
+                                    .is_some_and(|(stored, current)| {
+                                        stored.text_start != current.text_start
+                                            && line_seg_metrics_match_ignoring_text_start(
+                                                stored, current,
+                                            )
+                                    });
+                        if matches!(self.source_format, crate::parser::FileFormat::Hwpx)
+                            && preserved_prefix
+                            && (hwpx_line_count_changed || hwpx_tail_text_start_only_changed)
+                        {
+                            if let Some(mut candidate) = hwpx_full_reflow_candidate.take() {
+                                reflow_line_segs(&mut candidate, final_width, &styles, self.dpi);
+                                if candidate.line_segs.len() != stored_line_count {
+                                    cell_para.line_segs = candidate.line_segs;
+                                } else {
+                                    cell_para.line_segs = stored_line_segs;
+                                }
+                            }
+                        }
+                    } else {
+                        if split_stale_cell_reflow {
+                            crate::renderer::composer::reflow_line_segs_after_cell_split(
+                                cell_para,
+                                final_width,
+                                &styles,
+                                self.dpi,
+                            );
+                        } else {
+                            reflow_line_segs(cell_para, final_width, &styles, self.dpi);
+                        }
+                    }
                 }
             }
             Some(Control::Shape(shape)) => {
@@ -5744,6 +5912,13 @@ mod tests {
                 .iter()
                 .map(|&text_start| LineSeg {
                     text_start,
+                    // 실제 native HWP의 유효 LINE_SEG처럼 양의 dimension을 둔다.
+                    // 대량 삭제가 `[0, 20]`을 `[0, 0]`으로 접은 경우에도 prefix
+                    // guard가 full reflow를 선택하는지를 검증한다.
+                    line_height: 1000,
+                    text_height: 900,
+                    baseline_distance: 750,
+                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                     ..Default::default()
                 })
                 .collect(),

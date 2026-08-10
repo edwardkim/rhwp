@@ -7,6 +7,7 @@ pub mod body_text;
 pub mod byte_writer;
 pub mod cfb_writer;
 pub(crate) mod char_shape;
+pub mod content_loss;
 pub mod control;
 pub mod doc_info;
 pub mod header;
@@ -15,9 +16,19 @@ pub mod hwpx;
 pub mod mini_cfb;
 pub mod record_writer;
 
-pub use cfb_writer::{serialize_hwp, serialize_hwp_with_password};
+pub use cfb_writer::{
+    serialize_hwp, serialize_hwp_with_password, serialize_hwp_with_password_and_report,
+    serialize_hwp_with_report,
+};
+pub use content_loss::{
+    ContentLoss, ContentLossCode, ContentLossReason, ContentLossReport, ContentLossSubject,
+    SerializedDocument, SerializedFormat,
+};
 pub use hml::serialize_hml;
-pub use hwpx::{serialize_hwpx, serialize_hwpx_with_password};
+pub use hwpx::{
+    serialize_hwpx, serialize_hwpx_with_password, serialize_hwpx_with_password_and_report,
+    serialize_hwpx_with_report,
+};
 
 /// 직렬화 에러 (HWP + HWPX 공용)
 #[derive(Debug)]
@@ -83,6 +94,13 @@ impl DocumentSerializer for HwpxSerializer {
 /// 현재 지원 포맷(HWP)으로 직렬화
 pub fn serialize_document(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     HwpSerializer.serialize(doc)
+}
+
+/// 현재 지원 HWP 형식으로 직렬화하고, 성공한 산출물의 내용 손실을 값으로 돌려준다.
+pub fn serialize_document_with_report(
+    doc: &Document,
+) -> Result<SerializedDocument, SerializeError> {
+    serialize_hwp_with_report(doc)
 }
 
 #[cfg(test)]

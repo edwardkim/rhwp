@@ -1205,3 +1205,169 @@ fn char_overlap_256_char_shape_ids_no_wraparound() {
         "u8 카운트 wraparound 로 charshape ID 전량 소실"
     );
 }
+
+/// [#4400] `document_core/converters/common_obj_attr_writer.rs`의 `sync_anchor_bits_tests`에서
+/// `sync_anchor_bits` 본체와 함께 이 파일로 이동했다.
+mod sync_anchor_bits_tests {
+    use super::*;
+    use crate::model::shape::{CommonObjAttr, HorzRelTo, VertRelTo};
+
+    /// Issue #3781 실측 회귀: insert 가 seed 한 floating attr
+    /// ((4<<15)|(2<<18) — tac=0·rel=Paper) 위에서 inline 마이그레이션(enum 갱신) 후
+    /// sync 하면 tac/rel 비트만 Para 로 바뀌고 criterion 비트는 보존된다.
+    #[test]
+    fn sync_anchor_bits_updates_stale_floating_seed() {
+        let mut common = CommonObjAttr {
+            attr: (4 << 15) | (2 << 18),
+            treat_as_char: false,
+            vert_rel_to: VertRelTo::Paper,
+            horz_rel_to: HorzRelTo::Paper,
+            ..Default::default()
+        };
+        // 마이그레이션이 하는 일 (enum 갱신).
+        common.treat_as_char = true;
+        common.vert_rel_to = VertRelTo::Para;
+        common.horz_rel_to = HorzRelTo::Para;
+        sync_anchor_bits(&mut common);
+        assert_eq!(common.attr & 0x01, 0x01, "tac bit");
+        assert_eq!((common.attr >> 3) & 0x03, 2, "vert_rel_to = Para");
+        assert_eq!(
+            (common.attr >> 8) & 0x03,
+            3,
+            "horz_rel_to = Para (Paper0/Page1/Column2/Para3)"
+        );
+        assert_eq!((common.attr >> 15) & 0x07, 4, "width criterion 보존");
+        assert_eq!((common.attr >> 18) & 0x03, 2, "height criterion 보존");
+    }
+
+    /// attr=0(합성 경로) 은 무접촉 — 직렬화가 전량 재패킹한다.
+    #[test]
+    fn sync_anchor_bits_leaves_zero_attr_untouched() {
+        let mut common = CommonObjAttr {
+            attr: 0,
+            treat_as_char: true,
+            vert_rel_to: VertRelTo::Para,
+            horz_rel_to: HorzRelTo::Para,
+            ..Default::default()
+        };
+        sync_anchor_bits(&mut common);
+        assert_eq!(common.attr, 0);
+    }
+}
+// ---------- #4396: 필드 파라미터 HWP5 손실 경고 ----------
+//
+// HWP5 CTRL_DATA 의 ParameterSet 에는 필드 이름(item_id=0x4000) 외의 항목을 담을
+// 스펙 규정 슬롯이 없다(`pdf/hwpspec-2024.pdf` §4.2.8/§4.2.10.11/§4.2.10.15 확인 —
+// `field_parameter_loss_warning` 문서 주석 참고). 그래서 `Prop`/`Direction` 등은
+// HWP5 로 옮길 수 없고, 조용히 버리지 않도록 이 판정 함수가 경고 문구를 만든다.
+// 실제 `eprintln!` 출력을 가로채는 대신, 판정 로직 자체를 직접 검증한다.
+
+fn integer_param(name: &str, value: i64) -> Parameter {
+    Parameter::Integer {
+        name: Some(name.to_string()),
+        value,
+    }
+}
+
+fn string_param(name: &str, value: &str) -> Parameter {
+    Parameter::String {
+        name: Some(name.to_string()),
+        value: value.to_string(),
+        preserve_space: false,
+    }
+}
+
+#[test]
+fn field_parameter_loss_warning_fires_for_prop_and_direction() {
+    // 이슈에 실린 샘플(누름틀-2024.hwpx) 그대로: Prop(integerParam)/Command(stringParam)/
+    // Direction(stringParam) 3개.
+    let mut field = Field {
+        field_type: FieldType::ClickHere,
+        command: "Clickhere:set:...".to_string(),
+        ..Default::default()
+    };
+    field.parameters = ParameterList {
+        name: Some(String::new()),
+        items: vec![
+            integer_param("Prop", 9),
+            string_param("Command", "Clickhere:set:..."),
+            string_param("Direction", "이곳을 마우스로 누르고 내용을 입력하세요."),
+        ],
+    };
+
+    let warning = field_parameter_loss_warning(&field).expect("Prop/Direction 손실 경고 없음");
+    assert!(warning.contains("Prop"), "경고에 Prop 이 없음: {warning}");
+    assert!(
+        warning.contains("Direction"),
+        "경고에 Direction 이 없음: {warning}"
+    );
+    // Command 는 CTRL_HEADER 에 이미 슬롯이 있으므로 "손실"로 세면 안 된다.
+    assert!(
+        !warning.contains("Command"),
+        "Command 는 손실이 아닌데 경고에 포함됨: {warning}"
+    );
+}
+
+#[test]
+fn field_parameter_loss_warning_silent_when_only_command_present() {
+    // Command 하나뿐이면(=CTRL_HEADER 만으로 완전 보존) 경고를 내면 안 된다 — 오탐 방지.
+    let mut field = Field::default();
+    field.parameters = ParameterList {
+        name: Some(String::new()),
+        items: vec![string_param("Command", "Clickhere:set:...")],
+    };
+    assert_eq!(
+        field_parameter_loss_warning(&field),
+        None,
+        "Command 하나만 있는데 경고가 발생함(오탐)"
+    );
+}
+
+#[test]
+fn field_parameter_loss_warning_silent_when_no_parameters() {
+    // 파싱 이력이 없는 필드(트리 빈 상태)는 새로 잃을 것도 없다.
+    let field = Field::default();
+    assert_eq!(field_parameter_loss_warning(&field), None);
+}
+
+#[test]
+fn field_serialization_no_longer_writes_unverified_ctrl_data_extension() {
+    // [#4396 리뷰] item_id=0x4010 확장은 되돌렸다 — HWP5 CTRL_DATA 에는 필드 이름
+    // (item_id=0x4000, ClickHere 전용) 외의 아이템을 다시는 쓰지 않는다.
+    let mut field = Field {
+        field_type: FieldType::ClickHere,
+        command: "Clickhere:set:...".to_string(),
+        ctrl_data_name: Some("myField".to_string()),
+        ..Default::default()
+    };
+    field.parameters = ParameterList {
+        name: Some(String::new()),
+        items: vec![
+            integer_param("Prop", 9),
+            string_param("Command", "Clickhere:set:..."),
+            string_param("Direction", "안내문"),
+        ],
+    };
+
+    let mut records = Vec::new();
+    serialize_control(&Control::Field(field), 1, None, &mut records);
+
+    let ctrl_data = records
+        .iter()
+        .find(|r| r.tag_id == tags::HWPTAG_CTRL_DATA)
+        .expect("이름이 있으므로 CTRL_DATA 자체는 여전히 생성돼야 함");
+    // ps_id(2)+count(2)+dummy(2) 헤더 뒤 count 는 여전히 1(이름 하나) — 파라미터 트리용
+    // 두 번째 아이템(item_id=0x4010)을 추가로 쓰지 않는다.
+    let count = u16::from_le_bytes([ctrl_data.data[2], ctrl_data.data[3]]);
+    assert_eq!(
+        count, 1,
+        "CTRL_DATA 에 이름 외 아이템이 추가됨 — #4396 리뷰에서 되돌린 확장이 되살아났음"
+    );
+    // 두 번째 아이템의 item_id 자리(offset 6..8, 이름 아이템의 item_id)가 여전히
+    // 0x4000(이름)이어야 하며, 그 뒤에 0x4010 아이템이 이어붙지 않아야 한다.
+    let name_item_id = u16::from_le_bytes([ctrl_data.data[6], ctrl_data.data[7]]);
+    assert_eq!(
+        name_item_id, 0x4000,
+        "이름 아이템 item_id 가 바뀜(기존 계약 위반)"
+    );
+}

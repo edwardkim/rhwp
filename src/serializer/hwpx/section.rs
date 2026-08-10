@@ -1700,8 +1700,21 @@ fn render_dutmal(r: &Ruby) -> String {
     )
 }
 
+/// `raw_parameters_xml` 이 없을 때(HWPX 원문 밖 경로 — HWP5 왕복 또는 API 로 새로
+/// 만든 필드) `<hp:parameters>` 를 다시 조립한다.
+///
+/// [#4396] `field.parameters` 트리(HWPX 파서 또는 HWP5 CTRL_DATA 확장 아이템에서 채워짐)
+/// 가 있으면 그 트리를 그대로 재조립 — `Prop`/`Direction`/`Path`/`Category` 등이
+/// `Command` 하나로 축소되던 손실을 여기서 막는다. 트리가 없으면(순수 API 생성 필드
+/// 등, 파싱 이력이 전혀 없는 경우) 예전처럼 `Command` 하나만 담은 최소 형태로 합성한다.
 fn generated_field_parameters(field: &Field) -> Option<String> {
-    if field.command.is_empty() || field.raw_parameters_xml.is_some() {
+    if field.raw_parameters_xml.is_some() {
+        return None;
+    }
+    if !field.parameters.is_empty() {
+        return Some(field.parameters.render_xml("parameters"));
+    }
+    if field.command.is_empty() {
         return None;
     }
     Some(format!(

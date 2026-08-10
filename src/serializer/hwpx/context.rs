@@ -19,6 +19,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::model::control::Control;
 use crate::model::document::Document;
+use crate::serializer::content_loss::{ContentLossReport, SerializedFormat};
 use crate::serializer::SerializeError;
 
 /// 양방향 ID 풀 — 등록된 ID와 참조된 ID를 추적한다.
@@ -91,7 +92,7 @@ pub struct ChartPartEntry {
 }
 
 /// 1-pass 스캔으로 구축되는 직렬화 컨텍스트.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct SerializeContext {
     pub char_shape_ids: IdPool<u32>,
     pub para_shape_ids: IdPool<u16>,
@@ -121,6 +122,30 @@ pub struct SerializeContext {
     /// 방출했으므로 중복 방지를 위해 건너뛴다. `write_section` 이 첫 문단 렌더 직전
     /// true 로 설정하고, 첫 본문 ColumnDef 방출 시 `render_control_slot` 이 소거한다.
     pub body_coldef_template_pending: bool,
+    /// 이번 HWPX 산출물에서 발생한 사용자 내용 손실 (#4430).
+    ///
+    /// ID 풀과 마찬가지로 한 번의 직렬화 생명주기에만 속하며, 완료 시 바이트와 함께
+    /// `SerializedDocument`로 이동한다.
+    pub content_loss: ContentLossReport,
+}
+
+impl Default for SerializeContext {
+    fn default() -> Self {
+        Self {
+            char_shape_ids: IdPool::default(),
+            para_shape_ids: IdPool::default(),
+            border_fill_ids: IdPool::default(),
+            tab_pr_ids: IdPool::default(),
+            numbering_ids: IdPool::default(),
+            style_ids: IdPool::default(),
+            bin_data_map: HashMap::new(),
+            chart_entries: Vec::new(),
+            para_id_counter: 0,
+            sub_list_depth: 0,
+            body_coldef_template_pending: false,
+            content_loss: ContentLossReport::new(SerializedFormat::Hwpx),
+        }
+    }
 }
 
 impl SerializeContext {

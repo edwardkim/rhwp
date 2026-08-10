@@ -1,0 +1,4 @@
+measure	pages	delta_from_reference	scope	note
+reference_pdf	215	0	full PDF	Hancom Office 2020 reference
+rhwp_svg	215	0	full export	5a7b57c19 / binary fe2c4d17 final sweep
+rhwp_render_tree	215	0	full render tree	5a7b57c19 / binary fe2c4d17 final sweep

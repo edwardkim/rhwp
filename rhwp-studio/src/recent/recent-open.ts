@@ -63,7 +63,12 @@ export async function openRecentEntry(
     return 'opened';
   } catch (err) {
     // 파일 이동/삭제 — 재열기 영구 불가 항목은 목록에서 제거한다.
-    console.warn('[file:open-recent] 파일 접근 실패(이동/삭제 추정):', err);
+    // File System Access API의 NotFoundError는 사용자가 파일을 옮기거나 지운 정상
+    // 복구 경로다. 경고 스택을 남기지 않아 최근 파일을 여는 동작과 테스트 출력을
+    // 모두 불필요하게 오류처럼 보이게 하지 않는다.
+    if (!(err instanceof DOMException && err.name === 'NotFoundError')) {
+      console.warn('[file:open-recent] 파일 접근 실패:', err);
+    }
     await deps.remove(entry.id);
     deps.toast(`"${entry.fileName}" 파일을 찾을 수 없어 목록에서 제거했습니다.`, 3500);
     return 'removed';

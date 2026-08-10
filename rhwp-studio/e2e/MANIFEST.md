@@ -21,6 +21,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `canvaskit-font-coverage.test.mjs` | 상시 | active | CanvasKit 번들 폰트와 exact TTC GlyphRun 등록/픽셀 replay 검증 | — | npm+CI |  |
 | `cell-enter-pagination-issue4031.test.mjs` | 상시 | active | Issue #4031 — pending 중 셀 Enter의 pre-navigation full flush 0회·split 1회·barrier 대조군 계약 | issue1949_giant_cell_nested_tables_perf.hwp/.hwpx | npm e2e:issue-4031-cell-enter |  |
 | `command-palette.test.mjs` | 상시 | active | /커맨드 팔레트 | — | 수동 |  |
+| `content-loss-save-issue4430.test.mjs` | 상시 | active | Issue #4430 — serializer 내용 손실 보고의 명시 저장·fallback·암호 저장 및 실패·취소 무알림 계약 | test-image.hwpx | npm e2e:issue-4430-content-loss | fresh WASM 필수 · synthetic 보고서 주입 없음 |
 | `copy-paste.test.mjs` | 상시 | active | 텍스트 블럭 복사/붙여넣기 버그 (Task 227) | — | 수동 |  |
 | `debug-pagination.mjs` | 진단 | active | E2E 디버그: 50줄 입력 후 페이지네이션 확인 | — | 수동 | 수동 디버그 |
 | `debug-table-pos.mjs` | 진단 | active | E2E 디버그: 표 삽입 후 텍스트 위치 확인 | — | 수동 | 수동 디버그 |

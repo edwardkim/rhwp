@@ -1,0 +1,7 @@
+page	measure	current	oracle	verdict
+120	separator_start_pt	70.87	71.00	left origin matches
+120	separator_end_pt	222.05	214.00	separator is too long
+120	separator_length_pt	151.18	143.00	-1 sentinel incorrectly treated as column width divided by three
+121	separator_start_pt	70.87	71.00	left origin matches
+121	separator_end_pt	222.05	214.00	separator is too long
+121	separator_length_pt	151.18	143.00	-1 sentinel incorrectly treated as column width divided by three

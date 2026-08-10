@@ -87,11 +87,15 @@ macOS에서 통합 테스트 바이너리별 release LTO 링크가 오래 걸릴
 
 ```bash
 cargo test --release --lib
-cargo test --profile release-test --tests
+cargo nextest run \
+  --cargo-profile release-test \
+  --target-dir target/pr-review \
+  --tests --test-threads 12 --no-fail-fast
 ```
 
 `release-test`는 통합 테스트 시간을 줄이기 위한 프로필이며 실제 release 산출물은 계속
 `cargo build --release`로 만든다.
+`--test-threads 12`는 CPU·메모리가 충분한 host의 기본값이며, 작은 host에서는 논리 CPU 이하로 낮춘다.
 
 ## WASM 빌드
 

@@ -1044,6 +1044,47 @@ fn haansoft_latin_override(primary_name: &str, c: char) -> Option<f64> {
     None
 }
 
+/// #3820 `76076_regulatory_analysis` 한컴 PDF p35의 한양중고딕 공백 advance.
+///
+/// HWP의 일반적인 U+0020 반각 규약(`em/2`)과 달리, 원명 `한양중고딕`으로
+/// 작성된 표 본문은 한컴 PDF의 p35 line decision에 맞춘 550/1024em advance가 필요하다. p35의
+/// 107자 무-`LINE_SEG` 셀에서 한글 advance와 cell 폭은 RHWP와 일치하지만, 이
+/// 공백 차이(약 2.17px/space)가 누적되어 `…반죽된` 뒤 `용` 한 글자가 잘못
+/// 앞줄에 남는다. 자동 생성 TTF hmtx 테이블은 바꾸지 않고 PDF의 line-decision
+/// 보정만 이 원명에 국한한다. `HY중고딕`은 별 face이므로 반각 규약을 유지한다.
+const HANYANG_JUNGGOTHIC_PDF_SPACE_UNITS: u16 = 550;
+
+fn hanyang_junggothic_pdf_space_width(primary_name: &str) -> Option<u16> {
+    (primary_name == "한양중고딕").then_some(HANYANG_JUNGGOTHIC_PDF_SPACE_UNITS)
+}
+
+/// #3820 `76076_regulatory_analysis` 한컴 PDF p81의 한양신명조 공백 advance.
+///
+/// HWP 원본은 `한양신명조`를 지정하지만 기준 PDF의 실제 word gap은
+/// 411/1024em(14pt에서 약 5.64pt)이다. 임베드 HFT의 U+0020 hmtx(518/1024em)를
+/// 그대로 쓰면 p81의 중첩 표에서 여덟 공백마다 차이가 누적되어 `좌석안전`의
+/// `전`이 다음 줄로 밀리고, 뒤의 간접편익 표가 p82로 넘어간다. 글리프·셀 폭·
+/// 저장 510HU margin은 PDF와 일치하므로 이 standard-body 원명 U+0020 line-decision만
+/// 보정한다.
+///
+/// 같은 원명이라도 10pt 접수증은 기준 PDF에서 일반 반각을 쓴다. face 이름만으로
+/// 411/1024em을 적용하면 날짜의 누적 공백이 줄어 `㊞`이 도장 원 밖으로 밀린다.
+const HANYANG_SHINMYEONGJO_PDF_SPACE_UNITS: u16 = 411;
+/// `issue1949` HWPX standard-body는 12pt, #3820 p81 표는 14pt다. 두 문서 모두
+/// 411/1024em line-decision을 쓰지만, 10pt 접수증은 일반 반각이다.
+const HANYANG_SHINMYEONGJO_PDF_SPACE_MIN_FONT_SIZE_PX: f64 = 16.0; // 12pt
+
+fn hanyang_shinmyeongjo_pdf_space_width(primary_name: &str, font_size: f64) -> Option<u16> {
+    (primary_name == "한양신명조"
+        && font_size + 0.01 >= HANYANG_SHINMYEONGJO_PDF_SPACE_MIN_FONT_SIZE_PX)
+        .then_some(HANYANG_SHINMYEONGJO_PDF_SPACE_UNITS)
+}
+
+fn hancom_pdf_space_width(primary_name: &str, font_size: f64) -> Option<u16> {
+    hanyang_junggothic_pdf_space_width(primary_name)
+        .or_else(|| hanyang_shinmyeongjo_pdf_space_width(primary_name, font_size))
+}
+
 /// [#2070] ㆍ(U+318D) 폭은 SYMBOL 폰트별: 한양신명조 = 전각(사다리 v3 실측),
 /// 명조(HY견명조 치환) 등 여타 = 반각 (80168 개정안{{7}} p9/p13 '시ㆍ도조례'
 /// 1줄 오라클, 개정안{{1}} P21 마크와 반각 양립 검증). embedded 메트릭
@@ -1083,9 +1124,10 @@ fn measure_char_width_embedded(
         return Some(w);
     }
     let mm = font_metrics_data::find_metric(primary_name, bold, italic)?;
-    // HWP 반각 처리: space 및 한컴이 반각으로 처리하는 구두점/기호
+    // HWP 반각 처리: space 및 한컴이 반각으로 처리하는 구두점/기호.
+    // #3820에서 PDF로 계측한 한양 원명은 font hmtx와 다른 word gap을 따른다.
     let w = if c == ' ' {
-        mm.metric.em_size / 2
+        hancom_pdf_space_width(primary_name, font_size).unwrap_or(mm.metric.em_size / 2)
     } else {
         let glyph_w = mm.metric.get_width(c)?;
         // 한컴은 스마트 따옴표 등을 반각으로 처리.
@@ -1231,6 +1273,30 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         total += char_width(i);
     }
     total // round 없이 반환
+}
+
+/// 셀 분할 뒤 stale LineSeg를 다시 만들 때만 쓰는 한컴 12pt 공백 폭.
+///
+/// 원본 HWP의 저장 LineSeg 재현에는 `한양신명조` 411/1024em 보정이 맞지만, 한컴 2020은
+/// 폭이 줄어든 셀을 다시 저장하면서 같은 12pt 공백을 일반 반각(512/1024em)으로 계산한다.
+/// 이 규칙을 전역 측정에 넣으면 원본 issue1949의 외부 PDF 115쪽이 116쪽으로 바뀐다.
+/// 따라서 `reflow_line_segs_after_cell_split`의 토큰화만 opt-in한다.
+pub(crate) fn stale_split_hanyang_shinmyeongjo_space_width(style: &TextStyle) -> Option<f64> {
+    let primary_name = style.font_family.split(',').next().unwrap_or("").trim();
+    let (font_size, ratio, _) = style_params(style);
+    if primary_name != "한양신명조" || (font_size - 16.0).abs() > 0.01 {
+        return None;
+    }
+
+    let base_w = font_size * 0.5;
+    let mut width = base_w * ratio
+        + glyph_letter_spacing(style.letter_spacing, base_w * ratio, font_size)
+        + style.extra_char_spacing
+        + style.extra_word_spacing;
+    if style.letter_spacing + style.extra_char_spacing < 0.0 {
+        width = width.max(base_w * ratio * 0.5);
+    }
+    Some(width)
 }
 
 /// 글자별 X 위치 경계값 계산
@@ -1475,6 +1541,21 @@ pub(crate) fn vertical_substitute_char(c: char) -> Option<char> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn issue_4442_noto_sans_kr_regular_ascii_shared_width_uses_tracked_advances() {
+        let style = TextStyle {
+            font_family: "Noto Sans KR".to_string(),
+            font_size: 1000.0,
+            ..Default::default()
+        };
+
+        assert_eq!(estimate_text_width_unrounded("AVATAR", &style), 3633.0);
+        assert_eq!(
+            compute_char_positions("AVATAR", &style),
+            vec![0.0, 608.0, 1183.0, 1791.0, 2390.0, 2998.0, 3633.0]
+        );
+    }
+
     /// 테스트용 고정 폭 텍스트 측정기
     ///
     /// 모든 문자를 동일한 폭으로 측정한다.
@@ -1694,6 +1775,79 @@ mod tests {
             (w("한양견고딕", '0') - fs * 0.565).abs() < 0.05,
             "견고딕 '0' {}",
             w("한양견고딕", '0')
+        );
+    }
+
+    /// #3820 — 한양중고딕 원명 space만 한컴 PDF p35의 word gap으로 보정한다.
+    /// 실제 TTF hmtx 생성 테이블을 변경하지 않아 HY중고딕과 다른 Hanyang face의
+    /// 일반 반각 space 계약은 그대로다.
+    #[test]
+    fn issue_3820_hanyang_junggothic_space_uses_pdf_advance_only() {
+        let fs = 40.0 / 3.0; // 10pt = 13.333px
+        let hanyang = measure_char_width_embedded("한양중고딕", false, false, ' ', fs)
+            .expect("한양중고딕 space metric");
+        let hy = measure_char_width_embedded("HY중고딕", false, false, ' ', fs)
+            .expect("HY중고딕 space metric");
+        let other = measure_char_width_embedded("한양견고딕", false, false, ' ', fs)
+            .expect("한양견고딕 space metric");
+
+        assert!(
+            (hanyang - quantize_hwp_px(fs * 550.0 / 1024.0)).abs() < f64::EPSILON,
+            "한양중고딕 PDF space advance={hanyang:.3}"
+        );
+        assert!(
+            (hy - quantize_hwp_px(fs * 0.5)).abs() < f64::EPSILON,
+            "HY중고딕 일반 반각 space={hy:.3}"
+        );
+        assert!(
+            (other - quantize_hwp_px(fs * 0.5)).abs() < f64::EPSILON,
+            "다른 한양 face 일반 반각 space={other:.3}"
+        );
+    }
+
+    /// #3820 — 12/14pt standard body의 한양신명조 411/1024em 보정이 접수증 10pt 날짜
+    /// run까지 넓어지면 공백 누적으로 `㊞` anchor가 도장 원 밖으로 이동한다. 크기 하한을
+    /// 고정해 issue1949 원본 HWP line boundary·p81의 line decision·복학원서 일반 반각을 함께
+    /// 보존한다. 분할 stale-cell의 한컴 재조판 규칙은 별도 helper로만 적용한다.
+    #[test]
+    fn issue_3820_hanyang_shinmyeongjo_space_is_standard_body_only() {
+        let standard_body_fs = 16.0; // 12pt
+        let p81_fs = 56.0 / 3.0; // 14pt = 18.666px
+        let receipt_fs = 40.0 / 3.0; // 10pt = 13.333px
+        let standard_body =
+            measure_char_width_embedded("한양신명조", false, false, ' ', standard_body_fs)
+                .expect("한양신명조 12pt space metric");
+        let p81 = measure_char_width_embedded("한양신명조", false, false, ' ', p81_fs)
+            .expect("한양신명조 14pt space metric");
+        let receipt = measure_char_width_embedded("한양신명조", false, false, ' ', receipt_fs)
+            .expect("한양신명조 10pt space metric");
+
+        assert!(
+            (standard_body - quantize_hwp_px(standard_body_fs * 411.0 / 1024.0)).abs()
+                < f64::EPSILON,
+            "issue1949 원본 한양신명조 12pt PDF space advance={standard_body:.3}"
+        );
+        assert!(
+            (p81 - quantize_hwp_px(p81_fs * 411.0 / 1024.0)).abs() < f64::EPSILON,
+            "p81 한양신명조 14pt PDF space advance={p81:.3}"
+        );
+        assert!(
+            (receipt - quantize_hwp_px(receipt_fs * 0.5)).abs() < f64::EPSILON,
+            "접수증 한양신명조 10pt 일반 반각 space={receipt:.3}"
+        );
+
+        let stale_split_style = TextStyle {
+            font_family: "한양신명조".to_string(),
+            font_size: standard_body_fs,
+            ..Default::default()
+        };
+        assert!(
+            (stale_split_hanyang_shinmyeongjo_space_width(&stale_split_style)
+                .expect("split 12pt space")
+                - standard_body_fs * 0.5)
+                .abs()
+                < f64::EPSILON,
+            "#4138 split stale-cell 12pt space must be half-em"
         );
     }
 

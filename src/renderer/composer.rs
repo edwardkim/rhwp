@@ -2044,13 +2044,52 @@ pub fn recompose_for_cell_width(
     if let Ok(pat) = std::env::var("RHWP_DIAG_RECOMP") {
         if para.text.contains(&pat) {
             eprintln!(
-                "DIAG_RECOMP width={:.2} first={:.2} cont={:.2} lines={} text={:?}",
+                "DIAG_RECOMP width={:.2} first={:.2} cont={:.2} lines={} align={:?} kbu={} condense={} char_break={} text={:?}",
                 cell_inner_width_px,
                 first_width_px,
                 cont_width_px,
                 composed.lines.len(),
+                styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map(|ps| ps.alignment)
+                    .unwrap_or_default(),
+                styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map(|ps| ps.korean_break_unit)
+                    .unwrap_or(0),
+                styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map(|ps| ps.condense_min_space)
+                    .unwrap_or(0),
+                char_break,
                 para.text.chars().take(20).collect::<String>(),
             );
+            for (line_idx, line) in composed.lines.iter().enumerate() {
+                let text: String = line.runs.iter().map(|run| run.text.as_str()).collect();
+                eprintln!(
+                    "  line[{line_idx}] advance={:.2} text={text:?}",
+                    estimate_composed_line_width(line, styles),
+                );
+            }
+            for (run_idx, run) in composed
+                .lines
+                .iter()
+                .flat_map(|line| line.runs.iter())
+                .enumerate()
+            {
+                let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                eprintln!(
+                    "  run[{run_idx}] font={:?} fs={:.2} lsp={:.2} ratio={:.3} text={:?}",
+                    style.font_family.split(',').next().unwrap_or(""),
+                    style.font_size,
+                    style.letter_spacing,
+                    style.ratio,
+                    run.text,
+                );
+            }
         }
     }
 }
@@ -2839,7 +2878,8 @@ pub mod lineseg_compare;
 
 pub(crate) use line_breaking::{
     is_line_end_forbidden, is_line_start_forbidden, paragraph_flow_end, recalculate_section_vpos,
-    reflow_line_segs, tokenize_paragraph, BreakToken,
+    reflow_line_segs, reflow_line_segs_after_cell_split, reflow_line_segs_after_cell_text_edit,
+    tokenize_paragraph, BreakToken,
 };
 
 #[cfg(test)]

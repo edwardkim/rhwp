@@ -8,7 +8,7 @@ import { SelectionRenderer } from './selection-renderer';
 import { CommandHistory } from './history';
 import { DeleteSelectionCommand, ApplyCharFormatCommand, ApplyParaFormatCommand, SnapshotCommand, SubmodeSnapshotCommand, SetFormValueCommand, TextMutationEffectAccumulator, IMMEDIATE_TEXT_MUTATION_EFFECTS, applyCharShapeModsToRange, cellAxisPath, cellParaIndexOf } from './command';
 import type { OperationDescriptor, ParaFormatTarget, RefreshPolicy, TextMutationEffects, EditCommand, EditContext, FormValueTarget } from './command';
-import { selectCellIndicesInRange, paraFormatTargetsForCellBlock } from './cell-block-format';
+import { selectCellIndicesInRange, paraFormatTargetsForCellBlock, withCellPathTarget } from './cell-block-format';
 import type { SelectedCellBlock } from './cell-block-format';
 import { VirtualScroll } from '@/view/virtual-scroll';
 import { ViewportManager } from '@/view/viewport-manager';
@@ -1970,6 +1970,17 @@ export class InputHandler {
       operationType: 'applyCharFormatCellBlock',
       operation: (wasm) => {
         for (const cellIdx of block.cellIndices) {
+          if (block.cellPath) {
+            const path = block.cellPath;
+            const paraCount = wasm.getCellParagraphCountByPath(block.sec, block.ppi, JSON.stringify(withCellPathTarget(path, cellIdx)));
+            for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
+              const pathJson = JSON.stringify(withCellPathTarget(path, cellIdx, cellParaIdx));
+              const len = wasm.getCellParagraphLengthByPath(block.sec, block.ppi, pathJson);
+              if (len <= 0) continue;
+              wasm.applyCharFormatInCellByPath(block.sec, block.ppi, pathJson, 0, len, propsJson);
+            }
+            continue;
+          }
           const paraCount = wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx);
           for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
             const len = wasm.getCellParagraphLength(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx);
@@ -1991,6 +2002,10 @@ export class InputHandler {
 
   /** [#4151] 셀 블록 서식의 토글 방향·툴바 상태 기준: 블록 첫 셀의 첫 글자 서식. */
   private getCharPropertiesAtCellBlockAnchor(block: SelectedCellBlock): CharProperties {
+    if (block.cellPath) {
+      const pathJson = JSON.stringify(withCellPathTarget(block.cellPath, block.cellIndices[0], 0));
+      return this.wasm.getCellCharPropertiesAtByPath(block.sec, block.ppi, pathJson, 0);
+    }
     return this.wasm.getCellCharPropertiesAt(block.sec, block.ppi, block.ci, block.cellIndices[0], 0, 0);
   }
 
@@ -2189,16 +2204,26 @@ export class InputHandler {
     const ctx = this.cursor.getCellTableContext();
     const range = this.cursor.getSelectedCellRange();
     if (!ctx || !range) return null;
-    // 중첩 표는 getParaFormatTargetsForRange 도 cellPath.length > 1 을 대상에서 빼므로
-    // 여기서 빠져도 동작이 달라지지 않는다. 지원하려면 ...ByPath 축으로 별도 배선이 필요하다.
-    if (ctx.cellPath && ctx.cellPath.length > 1) return null;
+    const excluded = this.cursor.getExcludedCells();
+
+    if (ctx.cellPath && ctx.cellPath.length > 1) {
+      const path = ctx.cellPath;
+      const dims = this.wasm.getTableDimensionsByPath(ctx.sec, ctx.ppi, JSON.stringify(path));
+      const cellIndices = selectCellIndicesInRange(
+        dims.cellCount,
+        (cellIdx) => this.wasm.getCellInfoByPath(ctx.sec, ctx.ppi, JSON.stringify(withCellPathTarget(path, cellIdx))),
+        range,
+        excluded,
+      );
+      return { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci, cellIndices, cellPath: path };
+    }
 
     const dims = this.wasm.getTableDimensions(ctx.sec, ctx.ppi, ctx.ci);
     const cellIndices = selectCellIndicesInRange(
       dims.cellCount,
       (cellIdx) => this.wasm.getCellInfo(ctx.sec, ctx.ppi, ctx.ci, cellIdx),
       range,
-      this.cursor.getExcludedCells(),
+      excluded,
     );
     return { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci, cellIndices };
   }
@@ -2214,6 +2239,8 @@ export class InputHandler {
 
   /** 셀 블록 안 모든 셀의 모든 문단을 문단 서식 대상으로 만든다 */
   private getParaFormatTargetsForCellBlock(block: SelectedCellBlock): ParaFormatTarget[] {
+    // 중첩 표 문단 서식은 목표 밖(getParaFormatTargetsForRange 도 동일 하계)이다.
+    if (block.cellPath) return [];
     return paraFormatTargetsForCellBlock(
       block,
       (cellIdx) => this.wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx),

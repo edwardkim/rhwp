@@ -182,7 +182,7 @@ source·test·fixture·workflow 보정을 추가하지 않았다면 같은 전�
 4. renderer/layout 계열이면 focused Rust test와 실제 WASM/브라우저 또는 동등한 시각 검증을 별도로
    실행해, GitHub 전체 회귀가 놓칠 수 있는 이번 검토의 핵심 경로를 확인한다.
 
-이 조건에서는 `cargo test --profile release-test --tests`와 Native Skia 전체 묶음처럼 이미 같은 code
+이 조건에서는 [로컬 검증의 `release-test` 전체 nextest 회귀](pr_review/local_validation.md)와 Native Skia 전체 묶음처럼 이미 같은 code
 candidate에서 성공한 광범위 로컬 회귀를 중복 실행하지 않는다. 이미 시작한 명령을 중지했다면 결과를
 `PASS`로 기록하지 말고 중지 사실과 이유를 적는다. review 문서에는 candidate SHA, 재사용한 GitHub
 run URL 또는 run 번호, 실행한 focused 검증, 생략한 전체 검증과 사유를 모두 남긴다. 최신 head의
@@ -231,7 +231,7 @@ PR review 문서는 merge 후에도 모순되지 않아야 한다. draft, mergea
 review 문서에는 계획형이나 미래형으로 쓰지 않는다. 실행한 명령, 대상 head, 결과를 과거형 사실로
 기록한다.
 
-- 올바른 예: "`cargo test --profile release-test --tests`를 실행해 통과했다."
+- 올바른 예: "로컬 검증의 `release-test` 전체 nextest 회귀를 실행해 통과했다."
 - 잘못된 예: "PR 전에 전체 테스트를 실행할 예정이다."
 
 아직 실행하지 않은 GitHub Actions, contributor의 새 push, 작업지시자 승인 뒤의 ready 전환·merge·

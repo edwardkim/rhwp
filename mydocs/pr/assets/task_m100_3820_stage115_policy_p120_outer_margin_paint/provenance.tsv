@@ -1,0 +1,5 @@
+role	path	grade	sha256
+source	/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	원본 입력	50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113
+reference_pdf	/Users/tsjang/rhwp/pdf/pr3740/hwp/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-2020.pdf	한컴오피스 2020 기준 PDF	7879ffee6313575132187c44c0090cd2e62c32c12c29b7eabd989181acf27b3a
+rhwp_binary	/Users/tsjang/rhwp/target/pr-review/release-test/rhwp	commit dd58ddcc3 동일 binary	2924b9fdf27f7c9f0403e7f2b570a5153d719de89e4b6884d8a48a5a71be8df2
+visual_sweep	/Users/tsjang/rhwp/scripts/visual_sweep.py	144dpi pages 120-121	a5e5b449c3ac0b891562ec6448ccccb5d43392ebe49774af0e49e350005bc271

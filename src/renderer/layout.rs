@@ -7,8 +7,9 @@ use super::composer::{
     compose_paragraph, effective_text_for_metrics, first_text_line, ComposedParagraph,
 };
 use super::float_placement::{
-    horizontal_range, is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu,
-    signed_hwpunit, FloatLaneSet, FloatPlacementContext,
+    horizontal_range, is_para_topbottom_float, native_empty_host_physical_outer_box_paint_inset,
+    native_empty_host_rowbreak_line_advance_hu, signed_hwpunit, FloatLaneSet,
+    FloatPlacementContext,
 };
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
@@ -48,6 +49,12 @@ struct ColumnItemCtx<'a> {
     measured_tables: &'a [MeasuredTable],
     layout: &'a PageLayoutInfo,
     col_area: &'a LayoutRect,
+    /// 현재 PageItem이 속한 활성 구역의 실제 단 수.
+    ///
+    /// `PageContent::column_contents`는 비어 있는 단을 flush하지 않으므로 다단
+    /// 구역에서도 길이가 1일 수 있다. 단일 단 전용 보정은 구역 레이아웃의
+    /// 권위값을 사용해야 한다.
+    zone_column_count: usize,
     outline_numbering_id: u16,
     multi_col_width: Option<i32>,
     prev_tac_seg_applied: bool,
@@ -58,6 +65,49 @@ struct ColumnItemCtx<'a> {
 
 const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
 const SINGLE_ROW_DECLARED_TRUST_MAX_RATIO: f64 = 1.5;
+
+/// 저장 outer-box paint origin 보정의 layout 단계 안전문이다.
+///
+/// pagination 결과에 실제로 채워진 단 수가 아니라 활성 구역의 권위 단 수를
+/// 사용하고, 측정 높이가 선언 높이와 일치하는 whole-table만 허용한다.
+fn physical_outer_box_paint_inset_layout_gate(
+    zone_column_count: usize,
+    measured_total_height: Option<f64>,
+    declared_height: f64,
+) -> bool {
+    zone_column_count == 1
+        && measured_total_height.is_some_and(|measured| (measured - declared_height).abs() <= 0.5)
+}
+
+/// OWPML `NoteShapeType.noteLine.length`의 수평 길이 계약을 px로 해석한다.
+///
+/// 알 수 없는 음수만 손상 문서 호환을 위해 기존 1/3 폭 fallback으로 남긴다.
+/// `0`의 수직 예약까지 없애는 일은 paint 길이와 별개의 pagination 계약이다.
+fn note_separator_length_px(raw: i32, available_width: f64, dpi: f64) -> f64 {
+    let available_width = available_width.max(0.0);
+    let resolved = match raw {
+        0 => 0.0,
+        -1 => dpi * 5.0 / 2.54,
+        -2 => dpi * 2.0 / 2.54,
+        -3 => available_width / 3.0,
+        -4 => available_width,
+        value if value > 0 => hwpunit_to_px(value, dpi),
+        _ => available_width / 3.0,
+    };
+    resolved.clamp(0.0, available_width)
+}
+
+/// 현재 FootnoteArea는 다단 각주도 body 전체 폭으로 합쳐 그린다.
+///
+/// 고정 길이(-1/-2)와 양수 HWPUNIT은 그 구조와 무관하게 해석할 수 있지만,
+/// 상대 길이(-3/-4)는 실제 소유 단의 폭/시작점을 알아야 한다. 다단 placement를
+/// 함께 고치기 전까지 상대 sentinel은 기존 1/3 폭을 보존해 범위를 넓히지 않는다.
+fn footnote_separator_length_px(raw: i32, area_width: f64, dpi: f64) -> f64 {
+    match raw {
+        -3 | -4 => area_width.max(0.0) / 3.0,
+        _ => note_separator_length_px(raw, area_width, dpi),
+    }
+}
 
 #[derive(Debug, Clone, Copy)]
 struct TacReceiptSealLine {
@@ -2007,7 +2057,7 @@ pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
     extract_tab_leaders_with_extended, find_next_tab_stop, is_cjk_char, is_halfwidth_cjk_quote,
-    resolved_to_text_style, split_into_clusters,
+    resolved_to_text_style, split_into_clusters, stale_split_hanyang_shinmyeongjo_space_width,
 };
 // [Task #826] map_pua_bullet_char 는 통합 테스트 (tests/issue_826.rs) 에서 직접 검증
 // (PUA substitution 매핑 정합) — pub 노출.
@@ -2888,6 +2938,7 @@ impl LayoutEngine {
                             None,
                             false,
                             is_header,
+                            false,
                         );
                     }
                 }
@@ -3788,6 +3839,7 @@ impl LayoutEngine {
                                         None,
                                         None,
                                         None,
+                                        false,
                                         false,
                                         false,
                                     );
@@ -5146,6 +5198,16 @@ impl LayoutEngine {
             RenderNodeType::Column(col_content.column_index),
             layout_rect_to_bbox(col_area),
         );
+        // [#3820 Stage 72] typeset은 wrap 문단을 실제 anchor 표가 있는 column에
+        // 기록한다. PaginationResult의 전역 목록은 이전 호환 필드라 현재 경로에서는
+        // 비어 있다. 전역 목록만 넘기면 기록된 prefix가 layout까지 전달되지 않아
+        // right-side Square 표 옆 본문이 소실된다(issue4090 p5/p7/p15/p17).
+        // 전역 목록은 기존 synthetic/legacy caller의 fallback으로만 보존한다.
+        let column_wrap_around_paras = if col_content.wrap_around_paras.is_empty() {
+            wrap_around_paras
+        } else {
+            &col_content.wrap_around_paras
+        };
 
         self.prime_column_layout_env(layout);
 
@@ -5229,6 +5291,7 @@ impl LayoutEngine {
         } else {
             None
         };
+        let zone_column_count = zone_layout.column_areas.len();
 
         let col_width_hu = (col_area.width / self.dpi * 7200.0).round() as i32;
         let mut prev_tac_seg_applied = false;
@@ -5331,11 +5394,12 @@ impl LayoutEngine {
                         measured_tables,
                         layout,
                         col_area,
+                        zone_column_count,
                         outline_numbering_id,
                         multi_col_width,
                         y_offset,
                         prev_tac_seg_applied,
-                        wrap_around_paras,
+                        column_wrap_around_paras,
                         &col_content.wrap_anchors,
                     );
                     y_offset = new_y;
@@ -6161,11 +6225,12 @@ impl LayoutEngine {
                 measured_tables,
                 layout,
                 col_area,
+                zone_column_count,
                 outline_numbering_id,
                 multi_col_width,
                 y_offset,
                 prev_tac_seg_applied,
-                wrap_around_paras,
+                column_wrap_around_paras,
                 &col_content.wrap_anchors,
             );
             if zero_between_shape_tail_margin_px > 0.0 {
@@ -6459,6 +6524,7 @@ impl LayoutEngine {
         measured_tables: &[MeasuredTable],
         layout: &PageLayoutInfo,
         col_area: &LayoutRect,
+        zone_column_count: usize,
         outline_numbering_id: u16,
         multi_col_width: Option<i32>,
         mut y_offset: f64,
@@ -6475,6 +6541,7 @@ impl LayoutEngine {
             measured_tables,
             layout,
             col_area,
+            zone_column_count,
             outline_numbering_id,
             multi_col_width,
             prev_tac_seg_applied,
@@ -6880,6 +6947,8 @@ impl LayoutEngine {
                 end_cut,
                 is_block_split,
                 row_cursor_is_nested,
+                end_row_height_override,
+                start_row_height_override,
             } => {
                 y_offset = self.layout_partial_table_item(
                     tree,
@@ -6894,6 +6963,8 @@ impl LayoutEngine {
                     end_cut,
                     *is_block_split,
                     *row_cursor_is_nested,
+                    *end_row_height_override,
+                    *start_row_height_override,
                     &ctx,
                     y_offset,
                 );
@@ -6957,11 +7028,7 @@ impl LayoutEngine {
         let has_separator = line_type != 0 && line_width_raw != 0;
         let line_width = if has_separator {
             let line_width = border_width_to_px(line_width_raw).max(0.5);
-            let sep_length = if separator_length > 0 {
-                hwpunit_to_px(separator_length as i32, self.dpi).min(col_area.width)
-            } else {
-                col_area.width / 3.0
-            };
+            let sep_length = note_separator_length_px(separator_length, col_area.width, self.dpi);
             let line_id = tree.next_id();
             let line_node = RenderNode::new(
                 line_id,
@@ -7016,6 +7083,7 @@ impl LayoutEngine {
             measured_tables,
             layout,
             col_area,
+            zone_column_count,
             outline_numbering_id,
             multi_col_width,
             prev_tac_seg_applied,
@@ -7047,6 +7115,23 @@ impl LayoutEngine {
                 None
             };
             let mt = fitted_visible_mt.as_ref().or(raw_mt);
+            let declared_height = hwpunit_to_px(signed_hwpunit(t.common.height), self.dpi);
+            let physical_outer_box_paint_inset = physical_outer_box_paint_inset_layout_gate(
+                *zone_column_count,
+                mt.map(|measured| measured.total_height),
+                declared_height,
+            ) && is_current_empty_para_float
+                && native_empty_host_physical_outer_box_paint_inset(
+                    self.profile.get().native_hwp5_layout(),
+                    para,
+                    t,
+                    paragraphs.get(para_index + 1),
+                );
+            let physical_outer_box_paint_inset_y = if physical_outer_box_paint_inset {
+                hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+            } else {
+                0.0
+            };
             let para_style = styles.para_styles.get(para.para_shape_id as usize);
             let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Left);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -7316,7 +7401,7 @@ impl LayoutEngine {
                     let v_offset_px =
                         hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi);
                     let fragment_outer_top_px = native_empty_host_rowbreak_line_advance_hu(
-                        self.profile.get().native_hwp5_layout(),
+                        self.profile.get().hwp5_stored_pagination_layout(),
                         para,
                         t,
                         paragraphs.get(para_index + 1),
@@ -7336,7 +7421,7 @@ impl LayoutEngine {
                                 )
                             })
                     } else if let Some(stored_top) = native_empty_single_topbottom_table_saved_top(
-                        self.profile.get().native_hwp5_layout(),
+                        self.profile.get().hwp5_stored_pagination_layout(),
                         para,
                         paragraphs.get(para_index + 1),
                         t,
@@ -7389,6 +7474,7 @@ impl LayoutEngine {
                     None,
                     Some(para_y_for_table),
                     None,
+                    false,
                     false,
                     false,
                 );
@@ -7610,8 +7696,10 @@ impl LayoutEngine {
                         outer_host_stored_vpos_hu,
                         allow_para_top_bleed,
                         false,
+                        physical_outer_box_paint_inset,
                     )
                 };
+                let table_flow_end = table_visual_end - physical_outer_box_paint_inset_y;
                 if is_tac {
                     let marker_x = tbl_inline_x.unwrap_or(col_area.x + effective_margin);
                     tree.set_inline_shape_position(
@@ -7664,6 +7752,34 @@ impl LayoutEngine {
                 } else {
                     0.0
                 };
+                // Native HWP5's empty 1×1 RowBreak host has a separate flow
+                // box from its minimum painted cell box.  The former layout
+                // branch advanced only to `table_visual_end`; a run of 1300HU
+                // anchors therefore used the 21.1px padded paint height and
+                // discarded the 566HU outer margins, instead of consuming the
+                // declared 17.3px height plus both margins (76076 p33). Keep
+                // this source contract deliberately narrower than generic
+                // empty floats: Square sibling lanes and stored HWPX layout
+                // have separate coordinate contracts.
+                let empty_rowbreak_flow_end = if self.profile.get().hwp5_stored_pagination_layout()
+                    && is_current_empty_para_float
+                    && !is_current_empty_square_sibling_float
+                    && is_para_topbottom_float(&t.common)
+                    && matches!(t.page_break, TablePageBreak::RowBreak)
+                    && t.row_count == 1
+                    && t.col_count == 1
+                    && t.cells.len() == 1
+                {
+                    let declared_height_px = hwpunit_to_px(t.common.height as i32, self.dpi);
+                    let outer_top_px = hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                    let outer_bottom_px = hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
+                    Some(
+                        (table_y_start + declared_height_px + outer_top_px + outer_bottom_px)
+                            .max(table_visual_end + outer_bottom_px),
+                    )
+                } else {
+                    None
+                };
                 y_offset = if is_current_visible_para_float {
                     if signed_hwpunit(t.common.vertical_offset) > 0 {
                         if issue2439_visible_host_stack {
@@ -7694,7 +7810,7 @@ impl LayoutEngine {
                 } else if table_visual_shift > 0.0 {
                     (table_visual_end - table_visual_shift).max(table_y_before)
                 } else {
-                    table_visual_end
+                    empty_rowbreak_flow_end.unwrap_or(table_flow_end)
                 };
                 let signed_vertical_offset = signed_hwpunit(t.common.vertical_offset);
                 let zero_offset_has_following_coanchored_float = signed_vertical_offset == 0
@@ -7813,7 +7929,19 @@ impl LayoutEngine {
                 let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
                 let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
                 // [Task #1745] 텍스트 혼합 anchor: 후속 어울림 문단 띠는 표 geometry 로.
-                let (strip_x, strip_width) = crate::renderer::text_anchor_square_table_strip(para)
+                //
+                // [#3820 Stage 72] 빈 host의 우측 Square 표는 host LINE_SEG가 전폭인
+                // 반면 다음 문단이 표 왼쪽 띠를 저장한다. typeset은 이미 같은 helper로
+                // 해당 문단을 WrapAroundPara로 흡수하므로, layout도 동일한 strip을 써야
+                // 한다. 여기서 host의 전폭을 fallback으로 쓰면 prefix가 표 옆이 아닌
+                // 전폭 compose 경로에 남아 paint되지 않는다(issue4090 p5/p7/p15/p17).
+                let strip = crate::renderer::text_anchor_square_table_strip(para).or_else(|| {
+                    crate::renderer::empty_host_square_table_left_strip(
+                        para,
+                        px_to_hwpunit(col_area.width, self.dpi),
+                    )
+                });
+                let (strip_x, strip_width) = strip
                     .map(|(cs, sw)| {
                         (
                             col_area.x + hwpunit_to_px(cs, self.dpi),
@@ -8191,7 +8319,7 @@ impl LayoutEngine {
                     .get(control_index)
                     .and_then(|control| match control {
                         Control::Table(table) => native_empty_host_rowbreak_line_advance_hu(
-                            self.profile.get().native_hwp5_layout(),
+                            self.profile.get().hwp5_stored_pagination_layout(),
                             para,
                             table,
                             paragraphs.get(para_index + 1),
@@ -8392,6 +8520,7 @@ impl LayoutEngine {
                                 None,
                                 false,
                                 false,
+                                false,
                             );
                             y_offset = y_offset.max(tac_new_y);
                         }
@@ -8431,6 +8560,8 @@ impl LayoutEngine {
         end_cut: &[usize],
         is_block_split: bool,
         row_cursor_is_nested: bool,
+        end_row_height_override: Option<f64>,
+        start_row_height_override: Option<f64>,
         ctx: &ColumnItemCtx,
         mut y_offset: f64,
     ) -> f64 {
@@ -8613,6 +8744,8 @@ impl LayoutEngine {
             end_cut,
             is_block_split,
             row_cursor_is_nested,
+            end_row_height_override,
+            start_row_height_override,
             pt_margin_left,
             pt_margin_right,
             pt_mt,
@@ -8719,7 +8852,13 @@ impl LayoutEngine {
                     let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
                     // [Task #1745] 텍스트 혼합 anchor: 후속 어울림 문단 띠는 표 geometry 로,
                     // 호스트 텍스트는 이미 "분할 표 첫 부분" 경로에서 렌더됨 → 이중 렌더 방지.
-                    let strip = crate::renderer::text_anchor_square_table_strip(para);
+                    let strip =
+                        crate::renderer::text_anchor_square_table_strip(para).or_else(|| {
+                            crate::renderer::empty_host_square_table_left_strip(
+                                para,
+                                px_to_hwpunit(col_area.width, self.dpi),
+                            )
+                        });
                     let (strip_x, strip_width) = strip
                         .map(|(cs, sw)| {
                             (
@@ -10095,6 +10234,7 @@ impl LayoutEngine {
                         None,
                         None,
                         None,
+                        false,
                         false,
                         false,
                     );

@@ -36,7 +36,7 @@ x-icon), SVG 경로는 `SVG_EMBED_OK`(png·jpeg·gif·webp·svg+xml). BMP 가 SV
 release 로 빌드해야 10k 규모가 실용 시간에 끝난다(12갈래 병렬로 수 분).
 
 ~~~bash
-CARGO_INCREMENTAL=0 cargo build --release --example audit_studio_image_parity --example audit_image_magic
+cargo build --release --example audit_studio_image_parity --example audit_image_magic
 
 find <코퍼스> -type f \( -name "*.hwp" -o -name "*.hwpx" \) | sort > /tmp/corpus_list.txt
 RHWP_FONT_PATH=ttfs/hwp:ttfs/windows \
