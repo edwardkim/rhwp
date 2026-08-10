@@ -147,6 +147,46 @@ node tools/hwpctrl_compat/python_runner.mjs build_ledger.py --check   # CI 게�
   계획서 §4.5.1(관리자 권한 `/regserver` + `gen_py` 캐시 삭제 + 정답지 재수집).
   2024 로 수집했던 산출물은 `output/poc/hwpctrl/ocx-2024-quarantine/` 에 격리해 두었다.
 
+## 3자 차등 대조 — 오라클 이원화 (계획서 §6.3.3·§9-6 — PR #4470)
+
+기준은 **웹한글 기안기**(실물)이고 COM 한글2022 는 대량·회귀 프록시다. `runner_webhwp.mjs` 가
+헤드리스 브라우저로 기안기(기본: 한컴 공개 데모)를 몰아 같은 시나리오를 실행하고, `compare3.py`
+가 COM·기안기·rhwp 세 산출물을 한 표에 놓는다.
+
+```bash
+# 소수 시나리오 권장 — 저빈도 수동 전용, CI 에 물리지 않는다
+python tools/hwpctrl_compat/run_3way.py --only doc-basic --only field-read
+
+# 자가 호스팅 웹한글 서버가 있으면
+python tools/hwpctrl_compat/run_3way.py --url https://hwp.example.go.kr/webhwpctrl/
+```
+
+3자 판정 코드 — **어느 둘이 같은지가 곧 판정이다**:
+
+| 코드 | 뜻 |
+|---|---|
+| `ALL_AGREE` | 셋이 같다 — COM 이 유효한 프록시라는 증명. 기존 `verified` 가 그대로 선다 |
+| `COM_DRIFT` | 기안기 = rhwp ≠ COM — 프록시의 한계. rhwp 는 이미 제품과 맞다 |
+| `IMPL_GAP` | 기안기 = COM ≠ rhwp — 두 오라클이 함께 확인한 실 결함 |
+| `WEB_DIVERGES` | COM = rhwp ≠ 기안기 — 웹 계약이 갈리는 지점. **기안기가 이긴다** — 재검증 대상 |
+| `ALL_DIFFER` | 셋 다 다르다 |
+
+오류는 종류 무관하게 "죽었다"로만 묶는다 — 문구는 러너·플랫폼마다 달라 러너 차이가 판정을
+오염시킨다.
+
+규율 셋. (1) **저빈도 수동 전용** — 기본 URL 이 한컴 공개 데모라 반복 폭주로 몰지 않는다.
+(2) **버전 스탬프 강제** — 러너가 URL·측정 시각·`HwpCtrl.Version` 을 남기고 `compare3.py` 는
+스탬프 없는 산출물을 거부한다. 데모의 버전이 곧 현장 버전이 아니기 때문이다. (3) `SaveAs` 는
+브라우저 다운로드 경로라 이 축에서 태우지 않는다(L3 제외). `$path` 인자는 posix 갈래로 푼다 —
+실물에 로컬 파일계가 없으니 그 호출이 어떻게 답하는지 자체가 관측이다.
+
+러너 자체 검증은 목으로 한다(네트워크·데모 불필요):
+
+```bash
+node tools/hwpctrl_compat/runner_webhwp.mjs <시나리오> --out <출력> \
+  --url "file://$PWD/tools/hwpctrl_compat/fixtures/webhwp_mock/mock.html"
+```
+
 ## 판정 코드
 
 `MATCH` / `MISSING_API`(rhwp 에 그 API 없음) / `VALUE_DIFF` / `ERROR_DIFF` / `OCX_ERROR`.

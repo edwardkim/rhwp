@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>webhwp mock</title></head>
+<body>
+<!--
+  runner_webhwp.mjs 자체 검증용 가짜 컨트롤 — 한컴 코드가 아니라 이 저장소가 만든 목이다.
+  러너가 만지는 표면만 흉내 낸다: Open(File, format, arg, callback) · 동기 메서드/속성 ·
+  점 표기 사슬 · 없는 API. 실물 계약의 근거로 쓰면 안 된다.
+-->
+<script>
+(() => {
+  let opened = null;
+  const paraSet = { SetID: 'Pos', Item: (k) => ({ List: 0, Para: 1, Pos: 2 })[k] ?? null };
+  window.HwpCtrl = {
+    Version: 'mock-1.0',
+    EditMode: 1,
+    Open(file, format, arg, callback) {
+      opened = file;
+      setTimeout(() => callback({ result: true, name: file.name, size: file.size }), 10);
+    },
+    PageCount: 3,
+    GetPos() { return { list: 0, para: 1, pos: 2 }; },
+    PutFieldText(name, value) { return undefined; },
+    GetFieldText(name) { return name === 'pt_nm' ? '홍길동' : ''; },
+    GetPosBySet() { return paraSet; },
+    Throws() { throw new Error('mock 이 일부러 죽었다'); },
+  };
+})();
+</script>
+</body>
+</html>
