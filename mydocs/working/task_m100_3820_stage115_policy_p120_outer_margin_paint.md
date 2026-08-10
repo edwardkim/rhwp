@@ -1,6 +1,6 @@
 ---
 kind: investigation
-status: in_progress
+status: completed
 canonical: mydocs/working/task_m100_3820_stage1.md
 last_verified: 2026-08-10
 ---
@@ -117,14 +117,29 @@ inset 여부만 전달하며, 표 bbox와 모든 자식에 left/top을 더한다
 - KTX/exam_kor/복학원서 SVG snapshot: 각 1/1
 - `cargo fmt --all`, `git diff --check`,
   `cargo clippy --profile release-test --all-targets -- -D warnings`: 통과
-- commit 이후 동일-binary 최종 p120~p121 sweep은 아래 최종 판정 전에 완료한다.
+- 최신 release-test CLI로 동일-binary 최종 p120~p121 sweep을 완료했다.
 
-dirty candidate sweep은 전체 SVG/render-tree 215/215, 요청 120~121 2/2,
+최종 candidate sweep은 전체 SVG/render-tree 215/215, 요청 120~121 2/2,
 automatic flag 0을 기록했다. p120 표 bbox는
 `(98.3, 86.9, 559.4, 317.2)px`로 이동했고 다음 본문 `pi=1286`은
-`(94.5, 461.2, …)px`로 유지됐다. p120 pixel match는 선행 92.21622%에서
-92.79628%로 상승했고 p121은 90.59494%로 불변이다. 이 candidate는 최종 provenance로
-사용하지 않으며, 코드 commit 뒤 동일 binary로 다시 산출한다.
+`(94.5, 461.2, …)px`로 유지됐다. p120/p121 body·footnote owner shift,
+cell overlap, border clip 후보는 모두 0이다. p120의 text delta 1자는
+`Organizacio + combining acute + n`과 `Organización`의 정규화 표현 차이로 가시
+내용 손실이 아니다. 최종 실행 바이너리 SHA-256은
+`1b871d82a1f9ec7e98941288ae91205526168a3d9f7cb910ce8fbbfc1e11123e`다.
+
+최종 증적:
+
+- [p120 PDF/rhwp 비교](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/compare_p120.png)
+- [p121 PDF/rhwp 비교](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/compare_p121.png)
+- [픽셀 보고서](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/report.tsv)
+- [텍스트 보고서](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/text-report.tsv)
+- [페이지 수 원장](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/page-count-ledger.tsv)
+- [실행 provenance](../pr/assets/task_m100_3820_stage115_policy_p120_outer_margin_paint/provenance.tsv)
+
+이 단계의 p120 outer-margin paint origin 결함은 해결됐다. 정책연구 문서의 다른
+후보와 issue2007 exact-font paint fidelity는 후속 단계에서 계속 추적한다.
 
 각주 구분선 `separatorLength=-1` 오해는 이 표 paint 보정과 독립된 결함이다.
-Stage 116에서 footnote/endnote 공통 sentinel resolver로 별도 처리한다.
+Stage 116은 이미 p199 extraction 감사를 사용했으므로 Stage 117 이후에서
+footnote/endnote 공통 sentinel resolver로 별도 처리한다.
