@@ -3172,6 +3172,9 @@ UI 면은 COM 오라클로 판정할 수 없다. 판정 없이 구현부터 하�
   `substituted` 1 · `unimplemented` **4**(`Show*` 3종 + `TableResizeCellLeft`)다. UI 면의
   실수요가 표본으로 확인됐고, 실물 컨트롤의 임베드가 **same-origin iframe + 동기 Impl 참조**
   라는 것도 실측됐다 — 채널 ② 에 srcdoc same-origin iframe 격리라는 선택지를 더한다.
+  **실물 확보 타진도 답을 얻었다**: 한컴 공식 클라우드 데모
+  (`webhwpctrl.cloud.hancom.com/webhwpctrl/`)가 공개로 살아 있어(HTTP 200 실측) 헤드리스
+  브라우저로 UI 면을 차등 측정할 수 있다. 약관 확인 뒤 저빈도 수집 + 버전 스탬프로 쓴다.
 
 #### 6.3.4 U1 — 패키지 안 최소 뷰
 
