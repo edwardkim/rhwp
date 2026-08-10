@@ -395,6 +395,23 @@ fn recipes() -> Vec<Recipe> {
     })
     .to_string();
 
+    // [#4509] 서명 검증 픽스처 — 순수 fs 로 기형(malformed) 경로를 고정한다.
+    // 암호학적 전 경로(valid·invalid·unknownKey·revoked)는 signing_contract 가
+    // 실키로 덮고, 스윕의 관심은 봉투 표지뿐이라 기형 서명 + 빈 keyring 이면
+    // 족하다 (exit 3 = 판정 데이터).
+    let sig_capsule = dir.join("prov-sign.capsule.json");
+    std::fs::write(&sig_capsule, br#"{"kind":"workCapsule"}"#).expect("서명 캡슐 픽스처");
+    let sig_sidecar = dir.join("prov-sign.capsule.json.sig.json");
+    std::fs::write(&sig_sidecar, br#"{"kind":"notASignature"}"#).expect("기형 서명 픽스처");
+    let sig_keyring = dir.join("prov-keyring.json");
+    std::fs::write(
+        &sig_keyring,
+        br#"{"schemaVersion":"1.0","kind":"keyring","keys":[]}"#,
+    )
+    .expect("빈 keyring 픽스처");
+    let keygen_out = dir.join("prov-keygen.key.json");
+    let _ = std::fs::remove_file(&keygen_out);
+
     // audit 캡슐 폴더 — 고의로 깨진 캡슐 1개. 실패 회계 봉투(failed[])가 문서
     // 문자열 없이 캡슐 이름·사유만 실음을 실측으로 고정한다 (실패 존재 → exit 3).
     let audit_dir = dir.join("prov-audit-capsules");
@@ -824,6 +841,37 @@ fn recipes() -> Vec<Recipe> {
             command: "audit",
             doc: None,
             args: vec![s("audit"), p(&audit_dir), s("--json")],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // keygen — 문서를 열지 않는 발급 명령. 봉투는 키 메타·경로 에코뿐.
+            command: "keygen",
+            doc: None,
+            args: vec![
+                s("keygen"),
+                s("--key-id"),
+                s("prov.example/sweep#1"),
+                s("--out"),
+                p(&keygen_out),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // verify-signature 기형 경로 — 판정(malformed)은 봉투 데이터(exit 3).
+            command: "verify-signature",
+            doc: None,
+            args: vec![
+                s("verify-signature"),
+                p(&sig_capsule),
+                s("--keyring"),
+                p(&sig_keyring),
+                s("--json"),
+            ],
             stdin: None,
             exit: 3,
             ndjson: false,

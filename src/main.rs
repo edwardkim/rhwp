@@ -6,6 +6,7 @@ use std::process;
 
 mod agent_profiles;
 mod atomic_file;
+mod capsule_sign;
 mod mcp_serve;
 use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
@@ -350,6 +351,8 @@ fn main() {
         Some("replay") => exit_with(cmd_replay(&args[2..])),
         Some("audit") => exit_with(cmd_audit(&args[2..])),
         Some("lineage") => exit_with(cmd_lineage(&args[2..])),
+        Some("keygen") => exit_with(cmd_keygen(&args[2..])),
+        Some("verify-signature") => exit_with(cmd_verify_signature(&args[2..])),
         // [#3719 §6-4] 계획을 *만드는* 쪽의 정답지 — `run` 바로 옆에 둔다.
         Some("export-plan-schema") => exit_with(cmd_export_plan_schema(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
@@ -1597,6 +1600,38 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "head", "depth", "valid", "brokenAt", "links"],
         ),
         tool(
+            "hwp_keygen",
+            "[#4509] Ed25519 서명키 파일 발급 — 캡슐 귀속의 시작점. 비밀키가 파일에 담기므로 덮어쓰기 금지·보관 책임은 소유자. keyId 관례는 '소유 주체/용도#세대'.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "keyId": { "type": "string", "description": "키 식별자 — 예: org.example/agent-7#2026" },
+                    "out": { "type": "string", "description": "키 파일 저장 경로 (기존 파일이면 거부)" }
+                },
+                "required": ["keyId", "out"],
+            }),
+            "keygen",
+            serde_json::json!(["keygen", "--key-id", "{keyId}", "--out", "{out}", "--json"]),
+            &["schemaVersion", "keyId", "publicKey", "keyFile"],
+        ),
+        tool_with_optional_args(
+            "hwp_verify_signature",
+            "[#4509] 캡슐 분리 서명 검증 — <캡슐>.sig.json 을 캡슐 파일 바이트·키 등록부와 대조한다. verdict(valid|invalid|unknownKey|revoked|malformed)는 봉투 데이터이고 유효하지 않으면 exit 3. 서명 시점 증명은 이 축 밖(5년 축).",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "capsule": { "type": "string", "description": "검증할 캡슐 경로" },
+                    "keyring": { "type": "string", "description": "키 등록부(keyring.json) 경로" },
+                    "sig": { "type": "string", "description": "서명 파일 경로 (기본: <캡슐>.sig.json)" }
+                },
+                "required": ["capsule", "keyring"],
+            }),
+            "verify-signature",
+            serde_json::json!(["verify-signature", "{capsule}", "--keyring", "{keyring}", "--json"]),
+            serde_json::json!([{ "when": "sig", "args": ["--sig", "{sig}"] }]),
+            &["schemaVersion", "capsule", "sigPath", "capsuleSha256", "capsuleShaMatches", "signatureOk", "keyId", "keyKnown", "revoked", "verdict"],
+        ),
+        tool(
             "hwp_audit",
             "[#4393] 에이전트 노동 감사 — 작업 캡슐(*.capsule.json) 폴더를 전수 재실행해 재현율을 회계한다. 개별 검증은 hwp_replay, 조직 규모 일괄은 이 도구. 불일치 1건 = exit 3, failed[] 에 캡슐별 기대/실제 해시.",
             serde_json::json!({
@@ -1962,7 +1997,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             "query",
             "계획을 임시 산출로 재실행해 작업 영수증(입력·계획·산출 SHA-256)을 발급하고, --expect-output-sha256 로 타인의 작업 주장을 재현 검증한다 — 불일치는 exit 3 (#4391)",
             false,
-            &["--json", "--plan-json", "--expect-output-sha256", "--capsule", "--parent"],
+            &["--json", "--plan-json", "--expect-output-sha256", "--capsule", "--parent", "--sign-key"],
             &[
                 "schemaVersion",
                 "mode",
@@ -1979,9 +2014,9 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "lineage",
             "query",
-            "작업 캡슐 해시 체인을 거슬러 연대기를 검증 — 부모 파일 무결·계보 불변식(부모 산출=자식 입력)·(--deep) 링크별 재현. 깨진 체인은 exit 3, brokenAt 명세 (#4401)",
+            "작업 캡슐 해시 체인을 거슬러 연대기를 검증 — 부모 파일 무결·계보 불변식(부모 산출=자식 입력)·(--deep) 링크별 재현·(--keyring) 링크별 서명 귀속. 깨진 체인은 exit 3, brokenAt 명세 (#4401·#4509)",
             false,
-            &["--json", "--deep"],
+            &["--json", "--deep", "--keyring"],
             &[
                 "schemaVersion",
                 "head",
@@ -1989,6 +2024,33 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "valid",
                 "brokenAt",
                 "links",
+            ],
+        ),
+        cmd_json(
+            "keygen",
+            "export",
+            "Ed25519 서명키 파일 발급 — 캡슐 귀속(4년 축)의 시작점. 비밀키가 담기므로 기존 파일 덮어쓰기 금지, 보관 책임은 소유자 (#4509)",
+            false,
+            &["--json", "--key-id", "--out"],
+            &["schemaVersion", "keyId", "publicKey", "keyFile"],
+        ),
+        cmd_json(
+            "verify-signature",
+            "query",
+            "캡슐 분리 서명(<캡슐>.sig.json)을 파일 바이트·키 등록부와 대조 — verdict(valid|invalid|unknownKey|revoked|malformed)는 봉투 데이터, 유효 아님 = exit 3 (#4509)",
+            false,
+            &["--json", "--sig", "--keyring"],
+            &[
+                "schemaVersion",
+                "capsule",
+                "sigPath",
+                "capsuleSha256",
+                "capsuleShaMatches",
+                "signatureOk",
+                "keyId",
+                "keyKnown",
+                "revoked",
+                "verdict",
             ],
         ),
         cmd_json(
@@ -3539,9 +3601,11 @@ fn print_help() {
     println!("      공개 IR 의 JSON Schema — 외부 바인딩 코드 생성의 단일 출처");
     println!("      --bare 는 봉투 없이 스키마 본문만 (JSON Schema 도구 입력용)");
     println!("  run <계획.json> [--json]              선언적 편집 계획 실행 (#3703)");
-    println!("  replay <계획.json> [--expect-output-sha256 <hex>] [--json]  작업 영수증 발급·재현 검증 (#4391)");
+    println!("  replay <계획.json> [--expect-output-sha256 <hex>] [--sign-key <키.json>] [--json]  작업 영수증 발급·재현 검증 (#4391)");
     println!("  audit <캡슐 폴더> [--json]            작업 캡슐 전수 재검증 — 재현율 회계 (#4393)");
-    println!("  lineage <캡슐.json> [--deep] [--json]  작업 계보(해시 체인) 연대기 검증 (#4401)");
+    println!("  lineage <캡슐.json> [--deep] [--keyring <키링.json>] [--json]  작업 계보(해시 체인) 연대기 검증 (#4401)");
+    println!("  keygen --key-id <id> --out <키.json>   Ed25519 서명키 발급 (#4509)");
+    println!("  verify-signature <캡슐> --keyring <키링.json> [--sig <서명.json>] [--json]  캡슐 서명 검증 (#4509)");
     println!("      전 step 을 정적 선검증(불가 시 실행 0·exit 2)하고 인메모리로 원자");
     println!("      실행해 단언(verify) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경.");
     println!("      steps: fill_fields{{data}} · replace_text{{find,replace[,occurrence]}}");
@@ -15462,6 +15526,7 @@ fn cmd_replay(args: &[String]) -> i32 {
     let mut expected: Option<String> = None;
     let mut capsule_path: Option<String> = None;
     let mut parent_path: Option<String> = None;
+    let mut sign_key_path: Option<String> = None;
     let mut json_mode = false;
     let mut i = 0;
     while i < args.len() {
@@ -15499,6 +15564,16 @@ fn cmd_replay(args: &[String]) -> i32 {
                     }
                 }
             }
+            "--sign-key" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => sign_key_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --sign-key 뒤에 키 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
             "--capsule" => {
                 i += 1;
                 match args.get(i) {
@@ -15522,6 +15597,11 @@ fn cmd_replay(args: &[String]) -> i32 {
             eprintln!("오류: --expect-output-sha256 값은 64자리 16진이어야 합니다: {e}");
             return EXIT_USAGE;
         }
+    }
+    if sign_key_path.is_some() && capsule_path.is_none() {
+        // [#4509] 서명 대상은 캡슐 파일 바이트다 — 캡슐 없이 서명할 것이 없다.
+        eprintln!("오류: --sign-key 는 --capsule 과 함께 사용합니다 (서명 대상 = 캡슐 파일).");
+        return EXIT_USAGE;
     }
     let plan_text: String = match (plan_inline, plan_path) {
         (Some(inline), _) => inline.to_string(),
@@ -15649,6 +15729,35 @@ fn cmd_replay(args: &[String]) -> i32 {
             eprintln!("오류: 캡슐 저장 실패 - {cp}: {e}");
             return EXIT_RUNTIME;
         }
+        if let Some(kp) = sign_key_path.as_deref() {
+            // [#4509] 분리 서명 — 방금 쓴 캡슐 "파일 바이트"를 봉인한다. 캡슐
+            // 안에 서명을 넣으면 정규화 문제가 생기므로 사이드카가 규약이다.
+            let (signing, key_id, _) = match capsule_sign::load_signing_key(kp) {
+                Ok(v) => v,
+                Err(e) => {
+                    eprintln!("오류: {e}");
+                    return EXIT_RUNTIME;
+                }
+            };
+            let capsule_bytes = match fs::read(cp) {
+                Ok(b) => b,
+                Err(e) => {
+                    eprintln!("오류: 서명 대상 캡슐 재독 실패 - {cp}: {e}");
+                    return EXIT_RUNTIME;
+                }
+            };
+            let capsule_sha = replay_sha256_hex(&capsule_bytes);
+            let sidecar =
+                capsule_sign::make_sidecar_json(&signing, &key_id, &capsule_sha, &capsule_bytes);
+            let sc_path = capsule_sign::sidecar_path(cp);
+            if let Err(e) = fs::write(
+                &sc_path,
+                serde_json::to_string_pretty(&sidecar).unwrap_or_default(),
+            ) {
+                eprintln!("오류: 서명 저장 실패 - {sc_path}: {e}");
+                return EXIT_RUNTIME;
+            }
+        }
     }
     if json_mode {
         println!("{envelope}");
@@ -15688,6 +15797,184 @@ fn collect_audit_capsules(
     Ok(capsules)
 }
 
+/// [#4509] 서명키 발급 — Ed25519 키 파일. 비밀키가 담기므로 기존 파일을
+/// 덮어쓰지 않는다(잃어버린 키는 재발급하면 되지만, 덮어쓴 키는 복구 불능).
+fn cmd_keygen(args: &[String]) -> i32 {
+    let mut key_id: Option<&str> = None;
+    let mut out: Option<&str> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--key-id" => {
+                i += 1;
+                key_id = args.get(i).map(String::as_str);
+            }
+            "--out" => {
+                i += 1;
+                out = args.get(i).map(String::as_str);
+            }
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let (Some(key_id), Some(out)) = (key_id, out) else {
+        eprintln!("사용법: rhwp keygen --key-id <소유/용도#세대> --out <키.json> [--json]");
+        return EXIT_USAGE;
+    };
+    if std::path::Path::new(out).exists() {
+        eprintln!("오류: 키 파일이 이미 있습니다 - {out} (덮어쓰기 금지 — 새 경로를 쓰세요).");
+        return EXIT_USAGE;
+    }
+    let key = match capsule_sign::generate_key_json(key_id) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    if let Err(e) = fs::write(out, serde_json::to_string_pretty(&key).unwrap_or_default()) {
+        eprintln!("오류: 키 저장 실패 - {out}: {e}");
+        return EXIT_RUNTIME;
+    }
+    let envelope = provenance::marked(
+        serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "keyId": key_id,
+            "publicKey": key["publicKey"],
+            "keyFile": out,
+        }),
+        "keygen",
+    );
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!("서명키 발급 — {key_id}");
+        println!("  keyFile:   {out}  (비밀키 포함 — 보관 책임은 소유자에게)");
+        println!(
+            "  publicKey: {}",
+            envelope["publicKey"].as_str().unwrap_or("")
+        );
+    }
+    EXIT_OK
+}
+
+/// [#4509] 캡슐 서명 단건 검증 — 분리 서명을 캡슐 파일 바이트·키 등록부와
+/// 대조한다. 판정은 봉투 데이터(verdict)이고 유효하지 않으면 exit 3 이다.
+fn cmd_verify_signature(args: &[String]) -> i32 {
+    let mut capsule: Option<&str> = None;
+    let mut sig: Option<String> = None;
+    let mut keyring_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--sig" => {
+                i += 1;
+                sig = args.get(i).cloned();
+            }
+            "--keyring" => {
+                i += 1;
+                keyring_path = args.get(i).map(String::as_str);
+            }
+            other if !other.starts_with("--") && capsule.is_none() => capsule = Some(other),
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let (Some(capsule), Some(keyring_path)) = (capsule, keyring_path) else {
+        eprintln!(
+            "사용법: rhwp verify-signature <캡슐.json> --keyring <키링.json> [--sig <서명.json>] [--json]"
+        );
+        return EXIT_USAGE;
+    };
+    let capsule_bytes = match fs::read(capsule) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: 캡슐을 읽을 수 없습니다 - {capsule}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let sig_path = sig.unwrap_or_else(|| capsule_sign::sidecar_path(capsule));
+    let sig_text = match fs::read_to_string(&sig_path) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("오류: 서명 파일을 읽을 수 없습니다 - {sig_path}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let keyring = match capsule_sign::load_keyring(keyring_path) {
+        Ok(map) => map,
+        Err(e) => {
+            eprintln!("오류: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let capsule_sha = replay_sha256_hex(&capsule_bytes);
+    // 서명 파일 파싱 실패는 IO 가 아니라 판정 데이터다 — 위조·손상 서명을
+    // 오류로 숨기지 않고 verdict:malformed 로 폭로한다.
+    let (verdict_json, exit_valid) = match serde_json::from_str::<serde_json::Value>(&sig_text) {
+        Ok(sidecar) => {
+            let sha_matches = sidecar["capsuleSha256"] == serde_json::json!(capsule_sha);
+            let v = capsule_sign::verify_sidecar(&sidecar, &capsule_bytes, &keyring);
+            let ok = v.verdict == "valid" && sha_matches;
+            (
+                serde_json::json!({
+                    "capsuleShaMatches": sha_matches,
+                    "signatureOk": v.signature_ok,
+                    "keyId": v.key_id,
+                    "keyKnown": v.key_known,
+                    "revoked": v.revoked,
+                    "verdict": v.verdict,
+                }),
+                ok,
+            )
+        }
+        Err(_) => (
+            serde_json::json!({
+                "capsuleShaMatches": false,
+                "signatureOk": serde_json::Value::Null,
+                "keyId": serde_json::Value::Null,
+                "keyKnown": false,
+                "revoked": serde_json::Value::Null,
+                "verdict": "malformed",
+            }),
+            false,
+        ),
+    };
+    let mut body = serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "capsule": capsule,
+        "sigPath": sig_path,
+        "capsuleSha256": capsule_sha,
+    });
+    for (k, v) in verdict_json.as_object().unwrap() {
+        body[k] = v.clone();
+    }
+    let envelope = provenance::marked(body, "verify-signature");
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!(
+            "캡슐 서명 — {capsule}: {}",
+            envelope["verdict"].as_str().unwrap_or("?")
+        );
+    }
+    if exit_valid {
+        EXIT_OK
+    } else {
+        3 // #2707: 검증 단언 실패 — 서명이 귀속을 증명하지 못한다.
+    }
+}
+
 /// [#4401] 작업 계보 — 캡슐 해시 체인을 머리부터 거슬러 검증한다.
 ///
 /// 3중 판정: ① 부모 파일 무결(자식이 기록한 부모 파일 SHA-256 과 실물 대조 —
@@ -15698,12 +15985,23 @@ fn collect_audit_capsules(
 fn cmd_lineage(args: &[String]) -> i32 {
     let mut head: Option<&str> = None;
     let mut deep = false;
+    let mut keyring_path: Option<String> = None;
     let mut json_mode = false;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--json" => json_mode = true,
             "--deep" => deep = true,
+            "--keyring" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => keyring_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --keyring 뒤에 키 등록부 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
             other if !other.starts_with("--") && head.is_none() => head = Some(other),
             other => {
                 eprintln!("알 수 없는 옵션: {other}");
@@ -15713,8 +16011,20 @@ fn cmd_lineage(args: &[String]) -> i32 {
         i += 1;
     }
     let Some(head) = head else {
-        eprintln!("사용법: rhwp lineage <캡슐.json> [--deep] [--json]");
+        eprintln!("사용법: rhwp lineage <캡슐.json> [--deep] [--keyring <키링.json>] [--json]");
         return EXIT_USAGE;
+    };
+    // [#4509] 서명 판정은 opt-in — --keyring 없으면 signerOk 축 자체가 봉투에
+    // 실리지 않아 기존 소비자가 깨지지 않는다.
+    let keyring = match keyring_path.as_deref() {
+        Some(path) => match capsule_sign::load_keyring(path) {
+            Ok(map) => Some(map),
+            Err(e) => {
+                eprintln!("오류: {e}");
+                return EXIT_RUNTIME;
+            }
+        },
+        None => None,
     };
     let mut links: Vec<serde_json::Value> = Vec::new();
     let mut valid = true;
@@ -15848,15 +16158,47 @@ fn cmd_lineage(args: &[String]) -> i32 {
         } else {
             None
         };
-        links.push(serde_json::json!({
+        let mut link = serde_json::json!({
             "capsule": name,
             "inputSha256": input_sha,
             "outputSha256": output_sha,
             "parentOk": parent_ok,
             "lineageOk": lineage_ok,
             "reproduced": reproduced,
-        }));
-        if parent_ok == Some(false) || lineage_ok == Some(false) || reproduced == Some(false) {
+        });
+        let mut signer_broken = false;
+        if let Some(ring) = keyring.as_ref() {
+            // 사이드카 없음 = null(미서명 — 강제는 게이트의 몫), 있는데 무효·
+            // 미등록·폐기·기형 = false(깨진 계보). 읽기 실패는 없음으로 본다.
+            let sc_path = format!("{}.sig.json", current.display());
+            let (signer_ok, key_id) = match fs::read_to_string(&sc_path) {
+                Ok(text) => match serde_json::from_str::<serde_json::Value>(&text) {
+                    Ok(sc) => {
+                        let v = capsule_sign::verify_sidecar(&sc, &bytes, ring);
+                        if v.verdict != "valid" {
+                            signer_broken = true;
+                        }
+                        (
+                            serde_json::json!(v.verdict == "valid"),
+                            serde_json::json!(v.key_id),
+                        )
+                    }
+                    Err(_) => {
+                        signer_broken = true;
+                        (serde_json::json!(false), serde_json::Value::Null)
+                    }
+                },
+                Err(_) => (serde_json::Value::Null, serde_json::Value::Null),
+            };
+            link["signerOk"] = signer_ok;
+            link["keyId"] = key_id;
+        }
+        links.push(link);
+        if parent_ok == Some(false)
+            || lineage_ok == Some(false)
+            || reproduced == Some(false)
+            || signer_broken
+        {
             valid = false;
             broken_at = Some(name);
             break;

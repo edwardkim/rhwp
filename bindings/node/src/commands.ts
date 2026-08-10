@@ -841,6 +841,8 @@ export async function audit(root: PathLike, options: AuditOptions = {}): Promise
 export interface LineageOptions extends CommandOptions {
   /** 링크마다 재실행 재현(`reproduced`)까지 판정할지 — 링크 수만큼 재실행 비용이 든다. */
   readonly deep?: boolean | undefined;
+  /** [#4509] 키 등록부 경로 — 주면 링크마다 signerOk/keyId 판정 축이 붙는다(opt-in). */
+  readonly keyring?: PathLike | undefined;
   /**
    * 깨진 계보(exit 3)를 예외로 올릴지.
    *
@@ -860,6 +862,58 @@ export interface LineageOptions extends CommandOptions {
 export async function lineage(head: PathLike, options: LineageOptions = {}): Promise<Envelope> {
   const args: Argument[] = ['lineage', head, '--json'];
   if (options.deep) args.push('--deep');
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  return call(args, options);
+}
+
+/** {@link keygen} 옵션. */
+export interface KeygenOptions extends CommandOptions {}
+
+/**
+ * [#4509] Ed25519 서명키 파일 발급 — 캡슐 귀속의 시작점. 비밀키가 파일에
+ * 담기므로 기존 파일은 덮어쓰지 않으며(CLI 가 exit 2 로 거부), 보관 책임은
+ * 소유자에게 있다.
+ *
+ * @param keyId - 키 식별자. 관례는 `소유 주체/용도#세대` (예: org.example/agent-7#2026).
+ * @param out - 키 파일 저장 경로.
+ */
+export async function keygen(
+  keyId: string,
+  out: PathLike,
+  options: KeygenOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['keygen', '--key-id', keyId, '--out', out, '--json'];
+  return call(args, options);
+}
+
+/** {@link verifySignature} 옵션. */
+export interface VerifySignatureOptions extends CommandOptions {
+  /** 분리 서명 경로. 기본은 `<캡슐>.sig.json`. */
+  readonly sig?: PathLike | undefined;
+  /**
+   * 유효하지 않은 서명(exit 3)을 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(`verdict`·`signatureOk`·`keyKnown`·`revoked`)로
+   * 읽는 것이 이 바인딩의 규약이다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * [#4509] 캡슐 분리 서명 검증 — 서명을 캡슐 파일 바이트·키 등록부와 대조한다.
+ * `verdict` 는 valid·invalid·unknownKey·revoked·malformed 중 하나이고, valid
+ * 가 아니면 exit 3 이다. 서명 시점 증명은 이 축의 범위 밖(5년 축 앵커)이다.
+ *
+ * @param capsule - 검증할 캡슐 경로.
+ * @param keyring - 키 등록부(keyring.json) 경로.
+ */
+export async function verifySignature(
+  capsule: PathLike,
+  keyring: PathLike,
+  options: VerifySignatureOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['verify-signature', capsule, '--keyring', keyring, '--json'];
+  if (options.sig !== undefined) args.push('--sig', options.sig);
   return call(args, options);
 }
 

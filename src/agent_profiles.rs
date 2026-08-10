@@ -203,6 +203,8 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_replay",
             "hwp_audit",
             "hwp_lineage",
+            "hwp_keygen",
+            "hwp_verify_signature",
             "hwp_convert_hwpx",
             "hwp_convert_hwp5",
             "hwp_export_hml",

@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 40개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 42개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -604,10 +604,26 @@ export interface IrDiffEnvelope {
 }
 
 /**
+ * `rhwp keygen --json` 봉투.
+ *
+ * Ed25519 서명키 파일 발급 — 캡슐 귀속(4년 축)의 시작점. 비밀키가 담기므로 기존 파일 덮어쓰기
+ * 금지, 보관 책임은 소유자 (#4509)
+ */
+export interface KeygenEnvelope {
+  readonly keyFile?: unknown;
+  readonly keyId?: unknown;
+  readonly publicKey?: unknown;
+  readonly schemaVersion?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp lineage --json` 봉투.
  *
  * 작업 캡슐 해시 체인을 거슬러 연대기를 검증 — 부모 파일 무결·계보 불변식(부모 산출=자식
- * 입력)·(--deep) 링크별 재현. 깨진 체인은 exit 3, brokenAt 명세 (#4401)
+ * 입력)·(--deep) 링크별 재현·(--keyring) 링크별 서명 귀속. 깨진 체인은 exit 3, brokenAt 명세
+ * (#4401·#4509)
  */
 export interface LineageEnvelope {
   readonly brokenAt?: unknown;
@@ -775,6 +791,27 @@ export interface VerifyEnvelope {
 }
 
 /**
+ * `rhwp verify-signature --json` 봉투.
+ *
+ * 캡슐 분리 서명(<캡슐>.sig.json)을 파일 바이트·키 등록부와 대조 —
+ * verdict(valid|invalid|unknownKey|revoked|malformed)는 봉투 데이터, 유효 아님 = exit 3 (#4509)
+ */
+export interface VerifySignatureEnvelope {
+  readonly capsule?: unknown;
+  readonly capsuleSha256?: unknown;
+  readonly capsuleShaMatches?: unknown;
+  readonly keyId?: unknown;
+  readonly keyKnown?: unknown;
+  readonly revoked?: unknown;
+  readonly schemaVersion?: string;
+  readonly sigPath?: unknown;
+  readonly signatureOk?: unknown;
+  readonly verdict?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * 명령 이름 → 봉투 타입.
  *
  * `recordFields` 를 선언한 명령만 들어 있습니다 — 나머지는 `--json` 봉투를 내지 않습니다.
@@ -811,6 +848,7 @@ export interface EnvelopeByCommand {
   info: InfoEnvelope;
   inspect: InspectEnvelope;
   "ir-diff": IrDiffEnvelope;
+  keygen: KeygenEnvelope;
   lineage: LineageEnvelope;
   "render-diff": RenderDiffEnvelope;
   replay: ReplayEnvelope;
@@ -820,6 +858,7 @@ export interface EnvelopeByCommand {
   "table-to-csv": TableToCsvEnvelope;
   thumbnail: ThumbnailEnvelope;
   verify: VerifyEnvelope;
+  "verify-signature": VerifySignatureEnvelope;
 }
 
 /** `--json` 봉투를 내는 명령 이름. */

@@ -322,6 +322,18 @@ pub const MAP: &[CommandProvenance] = &[
                호출자 산출물이고, 문서 문자열은 --deep 재실행 내부에 머문다.",
     },
     CommandProvenance {
+        command: "keygen",
+        untrusted: NONE,
+        note: "키 발급 봉투는 keyId(호출자 에코)·publicKey(엔진 생성)·keyFile(호출자 \
+               에코)뿐이다 — 문서를 열지 않는다.",
+    },
+    CommandProvenance {
+        command: "verify-signature",
+        untrusted: NONE,
+        note: "서명 검증 봉투는 경로 에코·해시·판정(signatureOk·keyKnown·revoked· \
+               verdict)뿐이다 — 캡슐·서명·키링은 호출자 산출물이고 문서를 열지 않는다.",
+    },
+    CommandProvenance {
         command: "ir-diff",
         untrusted: &[f(
             "categories",

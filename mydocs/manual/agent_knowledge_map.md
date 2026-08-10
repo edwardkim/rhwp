@@ -304,7 +304,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 188개 필드
+### 2-2. 전수 사전 — 198개 필드
 
 `capabilities` 의 `recordFields` 고유 **185개**와 그 밖의 실측-only 필드
 `assertions`·`docId`·`preview` **3개**를 합친 188개다. `등장 명령` 은 자기서술
@@ -472,7 +472,23 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `depth` | number | 걸은 링크 수 — 뿌리(부모 없음)까지 가면 체인 전체 길이 | `lineage` |
 | `valid` | bool | 계보 판정 — `false` 면 exit 3. **깨짐은 오류가 아니라 데이터** | `lineage` |
 | `brokenAt` | string\|null | 처음 깨진 링크의 캡슐 경로. 유효한 체인은 `null` | `lineage` |
-| `links` | array | 링크별 판정 — `parentOk`(부모 파일 무결)·`lineageOk`(부모 산출=자식 입력)·`reproduced`(`--deep`). 머리 링크는 대조할 자식 기록이 없어 앞 둘이 `null` | `lineage` |
+| `links` | array | 링크별 판정 — `parentOk`(부모 파일 무결)·`lineageOk`(부모 산출=자식 입력)·`reproduced`(`--deep`)·`signerOk`/`keyId`(`--keyring` 를 준 때만 실림, #4509). 머리 링크는 대조할 자식 기록이 없어 앞 둘이 `null` | `lineage` |
+
+#### 서명 (`keygen`·`verify-signature`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `keyId` | string\|null | 키 식별자(소유/용도#세대 관례). 사이드카가 keyId 를 안 담으면 `null` | `keygen`·`verify-signature` |
+| `publicKey` | string | Ed25519 공개키 base64 — 키 등록부(keyring)에 실을 값 | `keygen` |
+| `keyFile` | string | 발급한 키 파일 경로(호출자 에코) — **비밀키 포함, 보관 책임은 소유자** | `keygen` |
+| `capsule` | string | 검증 대상 캡슐 경로(호출자 에코) | `verify-signature` |
+| `sigPath` | string | 대조한 분리 서명 경로 (기본 `<캡슐>.sig.json`) | `verify-signature` |
+| `capsuleSha256` | string | 캡슐 파일 바이트의 SHA-256 — 서명이 봉인한 대상 | `verify-signature` |
+| `capsuleShaMatches` | bool | 사이드카 기록 해시 == 실물 해시 — 다르면 다른 파일의 서명이다 | `verify-signature` |
+| `signatureOk` | bool\|null | 암호학적 검증 결과. 키를 몰라 검증 자체가 불가면 `null` | `verify-signature` |
+| `keyKnown` | bool | keyId 가 키 등록부에 있는가 | `verify-signature` |
+| `revoked` | object\|null | 폐기 기록(`{at, reason}`). 미폐기는 `null` — 폐기 판정이 서명 유효보다 우선한다 | `verify-signature` |
+| `verdict` | string | valid·invalid·unknownKey·revoked·malformed — **valid 아님 = exit 3** | `verify-signature` |
 
 #### 판정·비교
 
