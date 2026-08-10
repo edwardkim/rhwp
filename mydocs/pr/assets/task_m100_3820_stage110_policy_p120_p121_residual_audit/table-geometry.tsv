@@ -1,0 +1,6 @@
+page	paragraph	measure	current	oracle	delta	verdict
+120	1283	left_pt	70.87	74.00	-3.13	outer-left 283HU missing from paint origin
+120	1283	top_pt	62.37	65.00	-2.63	outer-top 283HU missing from paint origin
+120	1283	width_pt	419.54	419.00	0.54	stored width preserved
+120	1283	height_pt	237.90	238.00	-0.10	stored height preserved
+120	following_body	baseline_pt	355.28	355.00	0.28	flow position already matches; must not shift
