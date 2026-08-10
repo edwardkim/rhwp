@@ -83,6 +83,14 @@ Stage 119는 공통 상단선 paint만 처리한다. frame height와 outer paint
 - `issue_2430_cell_rewrap_threshold`: `2/2`
 - `issue_2007_nested_cell_pagination`: `15/15`
 - `cargo clippy --profile release-test --all-targets -- -D warnings`: 통과
+- 전체 `cargo test --profile release-test --tests` 1차 실행에서
+  `svg_snapshot::form_002_page_0`만 실패했다. expected/actual 955행 중 차이는
+  Stage 119가 의도적으로 옮긴 body-top 상단선 중심 `94.48 → 94.78px` 한 곳뿐이었다.
+  한컴 2022 PDF(`pdf/hwpx/form-002-2022.pdf`)의 같은 선은 384dpi에서 전체
+  `2~3px` 두께로 보이고, 구 golden은 Body clip 경계에서 `1px`만 남기므로
+  코드 회귀가 아닌 stale golden으로 판정해 해당 한 줄만 갱신했다. 갱신 후 focused
+  `form_002_page_0`은 `1/1`로 통과했고, 현재 변경 전체를 포함한
+  `cargo test --profile release-test --tests`도 exit `0`으로 완료됐다.
 - 최신 CLI SHA-256:
   `fe2c4d17afb507f21ed620ce716ce4e0f4f9bc92cb081ebc09c937d52fccb38b`
 - p33, p168, p214의 horizontal-border clip candidate는 모두 0으로 줄었다.
