@@ -10696,6 +10696,47 @@ impl LayoutEngine {
         n
     }
 
+    /// HWP5 저장 pagination 계약의 `RowBreak` 표에서 정확히 두 행을 덮는 병합 셀의
+    /// 두 저장 문단이 각각 한 줄 유닛이면, 행 경계의 문단 owner를 그대로 유지할 수
+    /// 있는지 판정한다.
+    ///
+    /// 일반 rowspan 분할은 물리 높이로 잘라야 한다. 다만 이 좁은 형상은 저장된 두
+    /// 문단이 두 물리 행에 정확히 대응한다. 첫 문단의 trailing line/문단 간격까지
+    /// 첫 행 예산에 포함하면, ink는 들어가는데 unit만 다음 fragment로 밀려 두 문단이
+    /// 재방출된다(76076 p18→p19 `11.영향평가` / `여부`).
+    pub(crate) fn native_two_row_rowspan_paragraph_owner_boundary(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        if !self.profile.get().hwp5_stored_pagination_layout()
+            || table.common.treat_as_char
+            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || cell.row_span != 2
+            || cell.paragraphs.len() != 2
+            || cell
+                .paragraphs
+                .iter()
+                .any(|paragraph| paragraph.text.trim().is_empty() || !paragraph.controls.is_empty())
+        {
+            return false;
+        }
+
+        let units = self.cell_units(cell, table, styles);
+        units.len() == 2
+            && units.iter().enumerate().all(|(para_idx, unit)| {
+                unit.para_idx == para_idx
+                    && unit.vis_start == 0
+                    && unit.vis_end == 1
+                    && !unit.empty_spacer
+                    && unit.nested_row.is_none()
+                    && unit.nested_table_fragment.is_none()
+                    && !unit.mixed_nested_fragment
+                    && unit.non_inline_control_range.is_none()
+            })
+    }
+
     /// [Task #993] 한 셀의 유닛 범위 `[start_unit, end_unit)`를 문단별 줄 범위로
     /// 변환한다. `layout_partial_table`이 `RowCut`으로 가시 범위를 렌더할 때
     /// 사용 — 결과는 종전 `compute_cell_line_ranges`와 같은

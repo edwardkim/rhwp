@@ -865,6 +865,17 @@ impl LayoutEngine {
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && (straddles_fragment_start || straddles_fragment_end);
+            // HWP5 저장 pagination 계약의 정확한 2행 rowspan/2문단 형상은 문단 하나가
+            // 행 하나의 저장 owner다. 여기서 일반 높이 컷을 적용하면 첫 문단의 trailing
+            // line/문단 간격이 첫 행보다 커져 양쪽 문단이 continuation에 재방출될 수
+            // 있다(76076 p18→p19). HWP5-origin HWPX에도 같은 source owner를 보존하고,
+            // 순수 HWPX·컷·중첩·다중줄 일반 rowspan에는 적용하지 않는다.
+            let native_two_row_paragraph_owner_boundary = is_rowbreak_straddle
+                && start_cut.is_empty()
+                && end_cut.is_empty()
+                && ((straddles_fragment_start && start_row == cell_row + 1)
+                    || (straddles_fragment_end && render_range_end == cell_row + 1))
+                && self.native_two_row_rowspan_paragraph_owner_boundary(cell, table, styles);
 
             let cell_id = tree.next_id();
             let mut cell_node = RenderNode::new(
@@ -980,6 +991,14 @@ impl LayoutEngine {
                     end_cut,
                     None,
                 ))
+            } else if native_two_row_paragraph_owner_boundary {
+                let su = usize::from(straddles_fragment_start);
+                let eu = if straddles_fragment_end {
+                    1
+                } else {
+                    usize::MAX
+                };
+                Some((su, eu))
             } else if is_rowbreak_straddle {
                 // [Task #1748] 높이 기반 유닛 컷. 이전 프래그먼트 소비 높이(prior_h)는
                 // 2b 오버라이드와 동일한 식으로 재계산 — 온전 행은 컷 측정

@@ -18619,7 +18619,17 @@ impl TypesetEngine {
                             r, h, rest, visible_height, probe.fully_consumed, row_has_nested
                         );
                     }
-                    if probe.fully_consumed && visible_height <= rest + 0.5 {
+                    // Stage 76의 긴 declared-row tail은 내용 뒤에 충분한 물리 blank
+                    // band가 남을 때만 현재 fragment에 보존한다. content가 남은
+                    // 공간을 거의 전부 쓰는 경우까지 이 경로를 열면 76076 p18의
+                    // `해당 없음`처럼 한 행의 텍스트만 먼저 잘려 p19의 source owner가
+                    // 앞당겨진다. 한컴은 그 근소한 pseudo-tail은 보존하지 않고 행 전체를
+                    // 다음 쪽으로 넘긴다.
+                    let retained_blank_tail = (rest - visible_height).max(0.0);
+                    if probe.fully_consumed
+                        && visible_height <= rest + 0.5
+                        && retained_blank_tail >= MIN_TOP_KEEP_PX
+                    {
                         consumed += cs_before + rest;
                         r += 1;
                         end_row = r;

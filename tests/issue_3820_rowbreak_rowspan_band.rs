@@ -49,6 +49,60 @@ fn owned_table_bottom(node: &RenderNode, para_index: usize, control_index: usize
         .find_map(|child| owned_table_bottom(child, para_index, control_index))
 }
 
+fn owned_table<'a>(
+    node: &'a RenderNode,
+    para_index: usize,
+    control_index: usize,
+) -> Option<&'a RenderNode> {
+    if matches!(
+        &node.node_type,
+        RenderNodeType::Table(table)
+            if table.para_index == Some(para_index) && table.control_index == Some(control_index)
+    ) {
+        return Some(node);
+    }
+    node.children
+        .iter()
+        .find_map(|child| owned_table(child, para_index, control_index))
+}
+
+fn all_text(node: &RenderNode) -> String {
+    let own = if let RenderNodeType::TextRun(run) = &node.node_type {
+        run.text.as_str()
+    } else {
+        ""
+    };
+    let mut text = String::from(own);
+    for child in &node.children {
+        text.push_str(&all_text(child));
+    }
+    text
+}
+
+fn row_cell_texts(table: &RenderNode, row: u16) -> Vec<String> {
+    table
+        .children
+        .iter()
+        .filter_map(|child| match &child.node_type {
+            RenderNodeType::TableCell(cell) if cell.row == row => Some(all_text(child)),
+            _ => None,
+        })
+        .collect()
+}
+
+fn row_col_cell_text(table: &RenderNode, row: u16, col: u16) -> String {
+    table
+        .children
+        .iter()
+        .find_map(|child| match &child.node_type {
+            RenderNodeType::TableCell(cell) if cell.row == row && cell.col == col => {
+                Some(all_text(child))
+            }
+            _ => None,
+        })
+        .unwrap_or_else(|| panic!("missing table cell row={row}, col={col}"))
+}
+
 #[test]
 fn issue_3820_rowbreak_rowspan_band_keeps_pdf_page_35_36_boundary() {
     let core = core();
@@ -97,6 +151,46 @@ fn issue_3820_rowbreak_rowspan_band_keeps_pdf_page_35_36_boundary() {
     assert!(
         (103.0..=113.0).contains(&impact_y),
         "p36 `11.영향평가` y={impact_y:.1}px; blank rowspan tail was lost or overgrown"
+    );
+}
+
+#[test]
+fn issue_3820_p18_p19_keeps_short_rowspan_result_with_its_pdf_owner() {
+    let core = core();
+
+    // Hancom 2024 PDF keeps row 14 (`해당 없음` ×3) and the second line of the
+    // row-spanning label (`여부`) at physical p19.  Stage 76's blank-tail repair
+    // must not split this 32px row merely because 21.8px remain at p18.
+    let p18 = core.build_page_render_tree(17).expect("render HWP PDF p18");
+    let p18_table = owned_table(&p18.root, 173, 0).expect("p18 outer RowBreak table");
+    assert!(
+        row_cell_texts(p18_table, 14)
+            .iter()
+            .all(|text| !text.contains("해당 없음")),
+        "p18 must defer row 14 results instead of keeping a short pseudo-tail: {:?}",
+        row_cell_texts(p18_table, 14),
+    );
+    let p18_label = row_col_cell_text(p18_table, 13, 1);
+    assert!(
+        p18_label.contains("11.영향평가") && !p18_label.contains("여부"),
+        "p18 must own only the first stored rowspan paragraph: {p18_label:?}",
+    );
+
+    let p19 = core.build_page_render_tree(18).expect("render HWP PDF p19");
+    let p19_table = owned_table(&p19.root, 173, 0).expect("p19 outer RowBreak table");
+    let result_cells = row_cell_texts(p19_table, 14);
+    assert_eq!(
+        result_cells
+            .iter()
+            .filter(|text| text.contains("해당 없음"))
+            .count(),
+        3,
+        "p19 must own all three row 14 results: {result_cells:?}",
+    );
+    let p19_label = row_col_cell_text(p19_table, 13, 1);
+    assert!(
+        p19_label.contains("여부") && !p19_label.contains("11.영향평가"),
+        "p19 must own only the rowspan label tail that Hancom places above the results: {p19_label:?}",
     );
 }
 
