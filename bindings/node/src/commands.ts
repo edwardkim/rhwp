@@ -1036,6 +1036,43 @@ export async function anchorVerify(
   return call(args, options);
 }
 
+/** {@link gate} 옵션. */
+export interface GateOptions extends CommandOptions {
+  /** 서명 판정용 키 등록부 (signer* 규칙 시 필수 재료). */
+  readonly keyring?: PathLike | undefined;
+  /** 앵커 로그 (anchoredOk 규칙 시 필수 재료). */
+  readonly anchorLog?: PathLike | undefined;
+  /** 정책 파일 서명 검증용 키 등록부. */
+  readonly policyKeyring?: PathLike | undefined;
+  /** reproduced 규칙의 재실행 재계산 — 없으면 그 규칙은 unavailable 위반. */
+  readonly deep?: boolean | undefined;
+  /**
+   * 반입 거부(exit 3)를 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(`verdict`·`violations`)로 읽는다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * [#4545] 반입 정책 기계 판정 — admissionPolicy(연산자 4종 고정·deny 기본·
+ * 미지 키 로드 거부)를 캡슐에 적용한다. 판정 재료는 자기 신고가 아니라
+ * 재계산이며, 규칙이 참조하는 판정만 지연 계산한다.
+ */
+export async function gate(
+  capsule: PathLike,
+  policy: PathLike,
+  options: GateOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['gate', capsule, '--policy', policy];
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.anchorLog !== undefined) args.push('--anchor-log', options.anchorLog);
+  if (options.policyKeyring !== undefined) args.push('--policy-keyring', options.policyKeyring);
+  if (options.deep) args.push('--deep');
+  args.push('--json');
+  return call(args, options);
+}
+
 // ── 편집 ──────────────────────────────────────────────────────────────────
 
 /**

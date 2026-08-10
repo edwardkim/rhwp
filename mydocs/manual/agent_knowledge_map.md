@@ -304,7 +304,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 212개 필드
+### 2-2. 전수 사전 — 218개 필드
 
 `capabilities` 의 `recordFields` 고유 **185개**와 그 밖의 실측-only 필드
 `assertions`·`docId`·`preview` **3개**를 합친 188개다. `등장 명령` 은 자기서술
@@ -514,6 +514,19 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `merkleRoot` | string | 로그 줄 해시들의 머클 루트 — 외부 공표 대상(공표 자체는 운영) | `anchor` |
 | `inCheckpoint` | bool\|null | 머클 경로가 체크포인트 루트에 닿는가. 체크포인트 미지정이면 `null` | `anchor` |
 | `merklePath` | array\|null | 잎→루트 형제 해시 경로(`{sibling, siblingIsLeft}`) — 제3자가 재계산으로 검증 | `anchor` |
+
+#### 게이트 (`gate`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `policy` | string | 정책 이름(정책 파일의 name 에코) | `gate` |
+| `policyPath` | string | 정책 파일 경로(호출자 에코) | `gate` |
+| `policySigned` | bool\|null | 정책 파일 서명 판정(4년 축 재사용). `--policy-keyring` 미지정이면 `null` | `gate` |
+| `target` | string | 판정 대상 캡슐 경로(호출자 에코) | `gate` |
+| `targetSha256` | string | 판정 시점 대상 해시 — 소비 직전 재대조로 TOCTOU 방어 | `gate` |
+| `evaluated` | number | 평가한 (키, 연산자) 조건 수 | `gate` |
+| `violations` | array | 위반 명세 `{rule, key, op, expected, actual}` — actual 의 unavailable 은 판정 재료 미지정 | `gate` |
+
 
 
 

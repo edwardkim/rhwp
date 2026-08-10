@@ -9,6 +9,7 @@ mod anchor_log;
 mod atomic_file;
 mod capsule_sign;
 mod mcp_serve;
+mod policy_gate;
 use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
@@ -356,6 +357,7 @@ fn main() {
         Some("verify-signature") => exit_with(cmd_verify_signature(&args[2..])),
         Some("harness") => exit_with(cmd_harness(&args[2..])),
         Some("anchor") => exit_with(cmd_anchor(&args[2..])),
+        Some("gate") => exit_with(cmd_gate(&args[2..])),
         // [#3719 §6-4] 계획을 *만드는* 쪽의 정답지 — `run` 바로 옆에 둔다.
         Some("export-plan-schema") => exit_with(cmd_export_plan_schema(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
@@ -1703,6 +1705,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             serde_json::json!([{ "when": "checkpoint", "args": ["--checkpoint", "{checkpoint}"] }]),
             &["schemaVersion", "capsule", "log", "capsuleSha256", "logChainOk", "logged", "seq", "inCheckpoint", "merklePath"],
         ),
+        tool_with_optional_args(
+            "hwp_gate",
+            "[#4545] 반입 정책 기계 판정 — admissionPolicy 를 캡슐에 적용한다. 판정 재료는 자기 신고가 아니라 재계산(계보 걷기·서명 검증·앵커 조회·deep 재실행)이며, 규칙이 참조하는 판정만 지연 계산한다. 거부 = exit 3, violations[] 가 규칙·기대·실측을 명세.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "capsule": { "type": "string", "description": "판정 대상 캡슐" },
+                    "policy": { "type": "string", "description": "admissionPolicy JSON 경로" },
+                    "keyring": { "type": "string", "description": "서명 판정용 키 등록부 (signer* 규칙 시)" },
+                    "anchorLog": { "type": "string", "description": "앵커 로그 (anchoredOk 규칙 시)" },
+                    "deep": { "type": "boolean", "description": "reproduced 규칙의 재실행 재계산" }
+                },
+                "required": ["capsule", "policy"],
+            }),
+            "gate",
+            serde_json::json!(["gate", "{capsule}", "--policy", "{policy}", "--json"]),
+            serde_json::json!([
+                { "when": "keyring", "args": ["--keyring", "{keyring}"] },
+                { "when": "anchorLog", "args": ["--anchor-log", "{anchorLog}"] },
+                { "when": "deep", "args": ["--deep"] }
+            ]),
+            &["schemaVersion", "policy", "policySigned", "target", "targetSha256", "verdict", "evaluated", "violations"],
+        ),
         tool(
             "hwp_audit",
             "[#4393] 에이전트 노동 감사 — 작업 캡슐(*.capsule.json) 폴더를 전수 재실행해 재현율을 회계한다. 개별 검증은 hwp_replay, 조직 규모 일괄은 이 도구. 불일치 1건 = exit 3, failed[] 에 캡슐별 기대/실제 해시.",
@@ -2162,6 +2187,24 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "logged",
                 "inCheckpoint",
                 "merklePath",
+            ],
+        ),
+        cmd_json(
+            "gate",
+            "query",
+            "반입 정책 기계 판정 — admissionPolicy(연산자 eq·in·gte·lte 4종 고정, deny 기본, 미지 키 로드 거부)를 캡슐에 적용. 재료는 자기 신고가 아니라 재계산(계보·서명·앵커·--deep 재실행), 거부는 exit 3 + violations[] (#4545)",
+            false,
+            &["--json", "--policy", "--keyring", "--anchor-log", "--policy-keyring", "--deep"],
+            &[
+                "schemaVersion",
+                "policy",
+                "policyPath",
+                "policySigned",
+                "target",
+                "targetSha256",
+                "verdict",
+                "evaluated",
+                "violations",
             ],
         ),
         cmd_json(
@@ -3723,6 +3766,7 @@ fn print_help() {
     println!("  anchor add <캡슐> --log <anchor.ndjson>   투명성 로그 등재 (#4543)");
     println!("  anchor checkpoint --log <로그> [-o <파일>]  머클 체크포인트 산출 (#4543)");
     println!("  anchor verify <캡슐> --log <로그> [--checkpoint <파일>] [--json]  등재·무결·머클 경로 판정 (#4543)");
+    println!("  gate <캡슐> --policy <policy.json> [--keyring][--anchor-log][--deep]  반입 정책 기계 판정 (#4545)");
     println!("      전 step 을 정적 선검증(불가 시 실행 0·exit 2)하고 인메모리로 원자");
     println!("      실행해 단언(verify) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경.");
     println!("      steps: fill_fields{{data}} · replace_text{{find,replace[,occurrence]}}");
@@ -16184,6 +16228,274 @@ fn cmd_anchor(args: &[String]) -> i32 {
             eprintln!("사용법: rhwp anchor <add|checkpoint|verify> …");
             EXIT_USAGE
         }
+    }
+}
+
+/// [#4545] 정책 게이트 — 반입 판정의 기계화. 판정 재료는 자기 신고가
+/// 아니라 재계산이며, 규칙이 참조하는 판정만 지연 계산한다(비용 회계).
+fn cmd_gate(args: &[String]) -> i32 {
+    let mut target: Option<&str> = None;
+    let mut policy_path: Option<&str> = None;
+    let mut keyring_path: Option<&str> = None;
+    let mut anchor_log_path: Option<&str> = None;
+    let mut policy_keyring: Option<&str> = None;
+    let mut deep = false;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--deep" => deep = true,
+            "--policy" => {
+                i += 1;
+                policy_path = args.get(i).map(String::as_str);
+            }
+            "--keyring" => {
+                i += 1;
+                keyring_path = args.get(i).map(String::as_str);
+            }
+            "--anchor-log" => {
+                i += 1;
+                anchor_log_path = args.get(i).map(String::as_str);
+            }
+            "--policy-keyring" => {
+                i += 1;
+                policy_keyring = args.get(i).map(String::as_str);
+            }
+            other if !other.starts_with("--") && target.is_none() => target = Some(other),
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let (Some(target), Some(policy_path)) = (target, policy_path) else {
+        eprintln!("사용법: rhwp gate <캡슐.json> --policy <policy.json> [--keyring <키링>] [--anchor-log <로그>] [--policy-keyring <키링>] [--deep] [--json]");
+        return EXIT_USAGE;
+    };
+    let policy_text = match fs::read_to_string(policy_path) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("오류: 정책을 읽을 수 없습니다 - {policy_path}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let policy = match policy_gate::parse(&policy_text) {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("오류(정책): {e}");
+            return EXIT_USAGE;
+        }
+    };
+    // 정책 자체의 서명 (M3, 4년 축 재사용) — 보고 필드.
+    let policy_signed = match policy_keyring {
+        Some(kr) => {
+            let ring = match capsule_sign::load_keyring(kr) {
+                Ok(m) => m,
+                Err(e) => {
+                    eprintln!("오류: {e}");
+                    return EXIT_RUNTIME;
+                }
+            };
+            let sc_path = capsule_sign::sidecar_path(policy_path);
+            match fs::read_to_string(&sc_path)
+                .ok()
+                .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok())
+            {
+                Some(sc) => {
+                    let v = capsule_sign::verify_sidecar(&sc, policy_text.as_bytes(), &ring);
+                    serde_json::json!(v.verdict == "valid")
+                }
+                None => serde_json::json!(false),
+            }
+        }
+        None => serde_json::Value::Null,
+    };
+    let target_bytes = match fs::read(target) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: 대상을 읽을 수 없습니다 - {target}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let target_sha = replay_sha256_hex(&target_bytes);
+    let capsule: serde_json::Value = match serde_json::from_slice(&target_bytes) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 캡슐 파싱 실패 - {target}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let needed = policy_gate::referenced_keys(&policy);
+    let mut judgments: std::collections::BTreeMap<String, Option<serde_json::Value>> =
+        std::collections::BTreeMap::new();
+    // ── 계보 재계산 (lineageValid·lineageDepth) — 머리부터 뿌리까지 걷는다.
+    if needed.contains("lineageValid") || needed.contains("lineageDepth") {
+        let mut ok = true;
+        let mut depth = 0u64;
+        let mut current = std::path::PathBuf::from(target);
+        let mut recorded: Option<String> = None;
+        let mut child_input: Option<String> = None;
+        for _ in 0..1000 {
+            let Ok(bytes) = fs::read(&current) else {
+                ok = false;
+                break;
+            };
+            let file_sha = replay_sha256_hex(&bytes);
+            let Ok(cap) = serde_json::from_slice::<serde_json::Value>(&bytes) else {
+                ok = false;
+                break;
+            };
+            if cap["kind"] != "workCapsule" {
+                ok = false;
+                break;
+            }
+            if let Some(r) = recorded.as_deref() {
+                if r != file_sha {
+                    ok = false;
+                    break;
+                }
+            }
+            let out_sha = cap["receipt"]["outputSha256"].as_str().unwrap_or("");
+            if let Some(ci) = child_input.as_deref() {
+                if !out_sha.is_empty() && out_sha != ci {
+                    ok = false;
+                    break;
+                }
+            }
+            depth += 1;
+            let parent = &cap["parent"];
+            if parent.is_null() {
+                break;
+            }
+            let (Some(pp), Some(psha)) = (parent["capsule"].as_str(), parent["sha256"].as_str())
+            else {
+                ok = false;
+                break;
+            };
+            recorded = Some(psha.to_string());
+            child_input = cap["receipt"]["inputSha256"].as_str().map(str::to_string);
+            let pp_path = std::path::PathBuf::from(pp);
+            current = if pp_path.is_absolute() {
+                pp_path
+            } else {
+                current
+                    .parent()
+                    .unwrap_or(std::path::Path::new("."))
+                    .join(pp_path)
+            };
+        }
+        judgments.insert("lineageValid".into(), Some(serde_json::json!(ok)));
+        judgments.insert("lineageDepth".into(), Some(serde_json::json!(depth)));
+    }
+    // ── 서명 재계산 (signerVerdict·signerKeyId).
+    if needed.contains("signerVerdict") || needed.contains("signerKeyId") {
+        match keyring_path {
+            Some(kr) => match capsule_sign::load_keyring(kr) {
+                Ok(ring) => {
+                    let sc_path = capsule_sign::sidecar_path(target);
+                    match fs::read_to_string(&sc_path)
+                        .ok()
+                        .and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok())
+                    {
+                        Some(sc) => {
+                            let v = capsule_sign::verify_sidecar(&sc, &target_bytes, &ring);
+                            judgments
+                                .insert("signerVerdict".into(), Some(serde_json::json!(v.verdict)));
+                            judgments
+                                .insert("signerKeyId".into(), Some(serde_json::json!(v.key_id)));
+                        }
+                        None => {
+                            judgments.insert(
+                                "signerVerdict".into(),
+                                Some(serde_json::json!("unsigned")),
+                            );
+                            judgments.insert("signerKeyId".into(), Some(serde_json::Value::Null));
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("오류: {e}");
+                    return EXIT_RUNTIME;
+                }
+            },
+            None => {
+                judgments.insert("signerVerdict".into(), None);
+                judgments.insert("signerKeyId".into(), None);
+            }
+        }
+    }
+    // ── 앵커 재계산 (anchoredOk).
+    if needed.contains("anchoredOk") {
+        match anchor_log_path {
+            Some(path) => match anchor_log::load(path) {
+                Ok(log) => {
+                    let hit = log
+                        .entries
+                        .iter()
+                        .any(|e| e["capsuleSha256"].as_str() == Some(target_sha.as_str()));
+                    judgments.insert("anchoredOk".into(), Some(serde_json::json!(hit)));
+                }
+                Err(e) => {
+                    eprintln!("오류(로그 무결): {e}");
+                    return 3;
+                }
+            },
+            None => {
+                judgments.insert("anchoredOk".into(), None);
+            }
+        }
+    }
+    // ── 재현 재계산 (reproduced) — deep 요구.
+    if needed.contains("reproduced") {
+        if deep {
+            let value = match validated_capsule_plan(&capsule) {
+                Ok((validated_plan, _)) => {
+                    let mut plan = validated_plan;
+                    match replay_execute_to_temp(&mut plan, "gate") {
+                        Ok((actual, _, _)) => Some(serde_json::json!(
+                            capsule["receipt"]["outputSha256"].as_str() == Some(actual.as_str())
+                        )),
+                        Err(_) => Some(serde_json::json!(false)),
+                    }
+                }
+                Err(_) => Some(serde_json::json!(false)),
+            };
+            judgments.insert("reproduced".into(), value);
+        } else {
+            // 재현 판정은 재실행 없이는 말할 수 없다 — 신고를 읽지 않는다.
+            judgments.insert("reproduced".into(), None);
+        }
+    }
+    let (allow, violations) = policy_gate::evaluate(&policy, &judgments);
+    let evaluated: usize = policy.rules.iter().map(|r| r.require.len()).sum();
+    let envelope = provenance::marked(
+        serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "policy": policy.name,
+            "policyPath": policy_path,
+            "policySigned": policy_signed,
+            "target": target,
+            "targetSha256": target_sha,
+            "verdict": if allow { "allow" } else { "deny" },
+            "evaluated": evaluated,
+            "violations": violations,
+        }),
+        "gate",
+    );
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!(
+            "게이트 — {target}: {} (평가 {evaluated}건)",
+            envelope["verdict"].as_str().unwrap_or("?")
+        );
+    }
+    if allow {
+        EXIT_OK
+    } else {
+        3 // #2707: 반입 거부는 오류가 아니라 판정 데이터다.
     }
 }
 

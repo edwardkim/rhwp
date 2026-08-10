@@ -409,6 +409,34 @@ fn recipes() -> Vec<Recipe> {
         br#"{"schemaVersion":"1.0","kind":"keyring","keys":[]}"#,
     )
     .expect("빈 keyring 픽스처");
+    // harness wrap 픽스처 — 작업장(capsules/)과, anchor checkpoint 픽스처 —
+    // 유효한 1줄 로그(수기 체인: 첫 줄은 prevEntryHash null 이라 해시 계산 불요).
+    let harness_ws = dir.join("prov-harness-ws");
+    std::fs::create_dir_all(harness_ws.join("capsules")).expect("wrap 작업장");
+    let anchor_ok_log = dir.join("prov-anchor-ok.ndjson");
+    std::fs::write(
+        &anchor_ok_log,
+        format!(
+            "{}",
+            serde_json::json!({
+                "seq": 0,
+                "kind": "anchorLog",
+                "capsuleSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+                "prevEntryHash": null,
+                "loggedAt": "2026-08-11T00:00:00Z",
+            })
+        ),
+    )
+    .expect("유효 앵커 로그");
+
+    // gate 픽스처 — 빈 규칙 + deny 기본 = 거부(exit 3) 순수 fs 경로.
+    let gate_policy = dir.join("prov-gate-policy.json");
+    std::fs::write(
+        &gate_policy,
+        br#"{"kind":"admissionPolicy","name":"prov","defaultVerdict":"deny","rules":[]}"#,
+    )
+    .expect("게이트 정책 픽스처");
+
     // anchor verify 픽스처 — 빈 로그 + 아무 캡슐 = 미등재(logged:false, exit 3).
     let anchor_log = dir.join("prov-anchor.ndjson");
     std::fs::write(&anchor_log, b"").expect("빈 앵커 로그");
@@ -914,6 +942,53 @@ fn recipes() -> Vec<Recipe> {
             ],
             stdin: None,
             exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // gate deny 기본 — 빈 규칙은 통과가 아니다(exit 3), 문서 오라클 없음.
+            command: "gate",
+            doc: None,
+            args: vec![
+                s("gate"),
+                p(&sig_capsule),
+                s("--policy"),
+                p(&gate_policy),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // harness wrap 성공 경로 — capsule/output/parent 필드가 실물로 나온다.
+            command: "harness",
+            doc: Some(table.clone()),
+            args: vec![
+                s("harness"),
+                s("wrap"),
+                s("--plan"),
+                plan.clone(),
+                s("--dir"),
+                p(&harness_ws),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // anchor checkpoint 성공 경로 — upToSeq/merkleRoot/entries 실물.
+            command: "anchor",
+            doc: None,
+            args: vec![
+                s("anchor"),
+                s("checkpoint"),
+                s("--log"),
+                p(&anchor_ok_log),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
             ndjson: false,
         },
         Recipe {

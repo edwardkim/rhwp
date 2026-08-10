@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 44개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 45개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -558,6 +558,27 @@ export interface FieldsEnvelope {
 }
 
 /**
+ * `rhwp gate --json` 봉투.
+ *
+ * 반입 정책 기계 판정 — admissionPolicy(연산자 eq·in·gte·lte 4종 고정, deny 기본, 미지 키 로드
+ * 거부)를 캡슐에 적용. 재료는 자기 신고가 아니라 재계산(계보·서명·앵커·--deep 재실행), 거부는
+ * exit 3 + violations[] (#4545)
+ */
+export interface GateEnvelope {
+  readonly evaluated?: unknown;
+  readonly policy?: unknown;
+  readonly policyPath?: unknown;
+  readonly policySigned?: unknown;
+  readonly schemaVersion?: string;
+  readonly target?: unknown;
+  readonly targetSha256?: unknown;
+  readonly verdict?: unknown;
+  readonly violations?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp harness --json` 봉투.
  *
  * 검증 루프 단일 명령 — init(작업장 규약)·wrap(실산출+영수증+캡슐+자동 부모 연결+서명 한
@@ -889,6 +910,7 @@ export interface EnvelopeByCommand {
   "extract-data": ExtractDataEnvelope;
   "extract-pages": ExtractPagesEnvelope;
   fields: FieldsEnvelope;
+  gate: GateEnvelope;
   harness: HarnessEnvelope;
   info: InfoEnvelope;
   inspect: InspectEnvelope;

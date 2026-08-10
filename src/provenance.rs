@@ -346,6 +346,12 @@ pub const MAP: &[CommandProvenance] = &[
                캡슐은 호출자 산출물이고 문서를 열지 않는다.",
     },
     CommandProvenance {
+        command: "gate",
+        untrusted: NONE,
+        note: "게이트 봉투는 정책 이름·경로 에코·해시·판정(verdict·violations)뿐이다 — \
+               캡슐·정책·키링은 호출자 산출물이고 문서를 열지 않는다.",
+    },
+    CommandProvenance {
         command: "ir-diff",
         untrusted: &[f(
             "categories",
