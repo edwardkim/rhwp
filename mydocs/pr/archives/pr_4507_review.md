@@ -8,14 +8,15 @@
 | 작성자 / base | `jangster77` / `devel` |
 | 작업 브랜치 | `task/3820-production-fidelity` |
 | source commit | `2d403b182` |
-| 현재 head commit | `2d403b182` |
-| 변경 규모 | additions `71993`, deletions `819`, files `100`, commits `75` |
+| 현재 head commit | `2299c8bd4` |
+| 변경 규모 | additions `72027`, deletions `819`, files `462`, commits `76` |
 | mergeable 상태 | `MERGEABLE` (mergeStateStatus: `BLOCKED`, 작성 시점 참고값) |
+| reviewer 지정 | `edwardkim` |
 
 ## 라우팅과 범위
 
 - 기본 경로: [collaborator self-merge](../pr_review/collaborator_self_merge.md)
-- 보조 경로: [intake_and_review](../pr_review/intake_and_review.md), [local_validation](../pr_review/local_validation.md)
+- 보조 경로: [intake_and_review](../pr_review/intake_and_review.md)
 
 ## 변경 요약
 
@@ -25,10 +26,9 @@
 
 ## 검증 상태
 
-- PR 생성 시점 기준: `upstream/devel` 기준 리베이스 완료 및 강제 push(`git push --force-with-lease upstream HEAD:task/3820-production-fidelity`).
-- 현재는 review 문서/리뷰 구현 계획서는 PR 생성 전 점검 단계로, 로컬 전체 회귀 검증은 아직 별도 실행하지 않음.
-- 로컬 실행 이력은 필요 시 review 단계에서 `review.md`에 과거형으로 정리 예정.
+- PR 생성 후 `upstream/devel` 기준 리베이스 완료 내역을 반영해 브랜치 강제 push(`git push --force-with-lease` + `git push`).
+- 로컬 전체 회귀 검증은 PR 준비 단계에서는 별도 실행하지 않았고, CI 상태는 PR 페이지의 latest required check 기준으로 최신화 필요.
 
 ## 권고
 
-- PR 번호가 확정된 상태이므로 reviewer assign 후, required check 통과 및 작업지시자 승인 뒤에 merge 판단.
+- reviewer assign 완료 상태로 작업지시자 승인 및 required check 통과 후 merge 판단.
