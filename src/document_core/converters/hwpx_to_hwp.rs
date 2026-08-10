@@ -20,7 +20,9 @@ use std::collections::BTreeSet;
 
 use crate::model::bin_data::{BinDataContent, BinDataStatus, BinDataType};
 use crate::model::control::Control;
-use crate::model::document::{Document, HwpVersion, Section, SectionDef};
+use crate::model::document::{
+    Document, HwpVersion, Section, SectionDef, HWP3_ORIGIN_STREAM_PATH, HWPX_ORIGIN_STREAM_PATH,
+};
 use crate::model::image::Picture;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{common_obj_offsets, ShapeObject, TextBox};
@@ -2059,32 +2061,6 @@ fn adapt_cell_list_attr(cell: &mut Cell, report: &mut AdapterReport) {
         report.cells_list_attr_bit16_set += 1;
     }
 }
-
-/// [Issue #1770] HWPX-origin 마커 스트림 경로.
-///
-/// rhwp 의 HWPX→HWP 변환은 LINE_SEG 를 verbatim 직렬화하므로 산출 HWP5 의 IR 은
-/// HWPX 시멘틱 그대로다. 재파스 시 이 마커로 `Document::is_hwpx_variant` 를 세워
-/// pagination/렌더의 `is_hwpx_source` 분기(RowBreak 분할 tolerance 등)를 HWPX 로
-/// 해석한다 — 같은 IR 이 같은 쪽수(roundtrip 자기정합, 2953495 4→5쪽 divergence 해소).
-/// 한컴은 미지의 루트 스트림을 무시하고(열림 계약 게이트로 검증), 한컴에서 재저장하면
-/// 마커가 사라지며 그 문서는 진짜 native HWP5 가 되므로 시멘틱이 자기일관적이다.
-pub const HWPX_ORIGIN_STREAM_PATH: &str = "/RhwpHwpxOrigin";
-
-/// [#3707] HWP3 출처 마커. `RhwpHwpxOrigin` 과 같은 방식이다.
-///
-/// HWP3 파싱은 `apply_hwp3_origin_fixup` 으로 `margin_bottom` 에서 1600 HU(21.3px)를
-/// 빼 한글97 의 마지막 줄 tolerance 를 모방한다. 그 보정은 IR 에만 있고 저장 파일의
-/// 여백은 원본 그대로다(그래야 한컴이 보는 기하가 원본과 같다). 그런데 재파싱 때
-/// 보정을 다시 걸지 판단하는 조건이 **문단 대비 모양 비율**이라, 저장하며 문단마다
-/// 모양이 생성돼 비율이 임계를 넘으면 보정이 사라진다(실측: ps 0.707 · cs 1.115 vs
-/// 임계 0.05 / 0.15).
-///
-/// 그 21.3px 만큼 미주 단 가용이 줄어 단 전환이 일찍 걸리고, 2단 미주의 왼쪽 단이
-/// 조기에 닫혀 미주가 다음 쪽으로 밀린다(SO-SUEOP 44쪽). 한컴은 원본·왕복본 모두
-/// 두 단을 고르게 채우므로 보정이 유지되는 쪽이 정답지와 맞는다.
-///
-/// 저장 여백을 줄이는 대신 **출처만 기록**해 재파싱이 보정을 결정론적으로 되건다.
-pub const HWP3_ORIGIN_STREAM_PATH: &str = "/RhwpHwp3Origin";
 
 /// `source_format` 검사 후 어댑터를 호출하는 보조 함수.
 ///

@@ -44,7 +44,7 @@ fn convert_hwp_pagination_matches_hwpx_source() {
 /// 중복 없이 유지된다.
 #[test]
 fn convert_hwp_carries_origin_marker_idempotently() {
-    use rhwp::document_core::converters::hwpx_to_hwp::HWPX_ORIGIN_STREAM_PATH;
+    use rhwp::model::document::HWPX_ORIGIN_STREAM_PATH;
 
     let mut hwpx = load(SAMPLE);
     let round1 = hwpx.export_hwp_with_adapter().expect("convert r1");
