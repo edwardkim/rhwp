@@ -646,6 +646,165 @@ fn first_picture_bin_data_id(doc: &Document) -> Option<u16> {
 }
 
 // ---------------------------------------------------------------------------
+// 수용 기준 7 — 한컴 판정 번들 (작업지시자 육안 확인용)
+// ---------------------------------------------------------------------------
+
+/// 변환본을 한컴에서 열어 차트가 보이는지 판정할 파일 묶음을 만든다.
+///
+/// ## 왜 변종을 함께 내는가
+///
+/// fold 산출본과 한컴 정답지의 `BodyText/Section0` 레코드를 전수 대조하면 차트 개체와
+/// 관련된 차이가 **정확히 둘**이다(나머지 셋은 SectionDef·PAGE_BORDER_FILL 축이라 이
+/// 이슈와 무관하다). GenShape CTRL_HEADER 46B 는 **바이트까지 같다.**
+///
+/// ```text
+/// [13] SHAPE_COMPONENT  196B  @38: 오라클 0b, 산출본 00   → flip 워드 0x000B_0000
+/// [14] SHAPE_COMPONENT_OLE   오라클 30B, 산출본 26B      → 앞 26B 는 동일, 꼬리 u32 부재
+/// ```
+///
+/// 둘 다 fold 이전부터 있던 축이고 이 PR 이 만든 것이 아니다. 26B 는
+/// `issue_1251_ole_chart_contents` 가 이미 고정하고 있어 여기서 바꾸면 그 계약이 깨진다.
+/// 그래서 **고치는 대신 변종으로 함께 내서**, 기준 7 이 실패했을 때 원인이 fold 인지
+/// 이 두 축인지 한 번에 갈리게 한다.
+///
+/// 판정이 A 에서 통과하면 B·C·D 는 볼 필요가 없다. A 만 실패하고 B 나 D 가 통과하면
+/// 레코드 길이가 원인이므로 별도 PR 로 26→30 을 다룬다.
+#[test]
+#[ignore = "output/ 에 파일을 쓴다 — 한컴 판정 직전에만 실행"]
+fn generate_hancom_judgment_bundle() {
+    use std::io::Write as _;
+
+    let out_dir = manifest("output/issue_4099");
+    std::fs::create_dir_all(&out_dir).expect("출력 디렉터리");
+
+    let hwpx = base_hwpx();
+    let oracle = std::fs::read(manifest(&format!("{BASE_SAMPLE}.hwp"))).expect("오라클");
+
+    let variants: Vec<(&str, Vec<u8>)> = vec![
+        ("00-oracle-한컴원본.hwp", oracle),
+        ("A-fold.hwp", variant(&hwpx, false, false)),
+        ("B-fold+ole30.hwp", variant(&hwpx, true, false)),
+        ("C-fold+flip.hwp", variant(&hwpx, false, true)),
+        ("D-fold+ole30+flip.hwp", variant(&hwpx, true, true)),
+    ];
+
+    let mut rows = String::new();
+    for (name, bytes) in &variants {
+        let path = out_dir.join(name);
+        std::fs::write(&path, bytes).unwrap_or_else(|e| panic!("{name} 쓰기: {e}"));
+        rows.push_str(&format!("| `{name}` | {} B | | |\n", bytes.len()));
+    }
+
+    let mut md = std::fs::File::create(out_dir.join("PANJEONG.md")).expect("판정표");
+    write!(
+        md,
+        "# #4099 한컴 판정 — HWPX→HWP5 변환본에서 차트가 보이는가\n\n\
+         원본: `{BASE_SAMPLE}.hwpx`\n\n\
+         ## 보는 법\n\n\
+         각 파일을 한글에서 연다. 확인할 것은 두 가지다.\n\n\
+         1. **오류·복구 대화상자 없이 열리는가**\n\
+         2. **막대 차트가 그려지는가** (빈 틀·선택 핸들만 보이면 실패)\n\n\
+         `00-oracle` 은 한컴이 직접 저장한 원본이다 — 이것이 목표 화면이다.\n\
+         `A` 가 통과하면 B·C·D 는 볼 필요가 없다.\n\n\
+         ## 변종\n\n\
+         | 파일 | 크기 | 열림 | 차트 보임 |\n|---|---|---|---|\n{rows}\n\
+         ## 변종이 무엇을 가르는가\n\n\
+         fold 산출본과 오라클의 Section0 레코드를 전수 대조하면 차트 개체 관련 차이가\n\
+         둘 남는다. 둘 다 fold 이전부터 있던 축이다.\n\n\
+         - **ole30** — `SHAPE_COMPONENT_OLE` 레코드가 오라클은 30B, rhwp 는 26B.\n\
+           앞 26B 는 바이트가 같고 꼬리 reserved `u32` 하나가 없다.\n\
+           `issue_1251_ole_chart_contents` 가 26B 를 고정하고 있어 이 PR 에서는 바꾸지\n\
+           않았다.\n\
+         - **flip** — `SHAPE_COMPONENT` 의 flip 워드가 오라클은 `0x000B_0000`, rhwp 는 0.\n\n\
+         A 만 실패하고 B 또는 D 가 통과하면 원인이 레코드 길이이므로 별도 PR 로 다룬다.\n\
+         전부 실패하면 fold 방향 자체를 재검토한다.\n"
+    )
+    .expect("판정표 쓰기");
+
+    println!("판정 번들: {}", out_dir.display());
+}
+
+/// fold 산출본에 진단용 변이를 얹는다.
+///
+/// 어댑터는 live IR 을 in-place 로 바꾸므로 한 번 export 해서 fold 를 적용시킨 뒤 IR 을
+/// 만지고 다시 export 한다. 두 번째 호출의 fold 는 멱등이라 no-op 이다.
+fn variant(hwpx: &[u8], ole30: bool, flip: bool) -> Vec<u8> {
+    let mut core = DocumentCore::from_bytes(hwpx).expect("HWPX 로드");
+    let _ = core.export_hwp_with_adapter().expect("fold 적용");
+    if ole30 || flip {
+        let doc = core.document_mut();
+        let ole = first_ole_mut(doc).expect("fold 후 OLE");
+        if flip {
+            // 오라클 실측값 — bit 16·17·19.
+            ole.drawing.shape_attr.flip = 0x000B_0000;
+        }
+        if ole30 {
+            // `serialize_ole_data` 는 `raw_tag_data` 가 있으면 그대로 쓴다.
+            // 26B 인코딩 + 꼬리 reserved u32 = 오라클과 같은 30B.
+            let mut raw = Vec::with_capacity(30);
+            raw.extend_from_slice(&1u32.to_le_bytes());
+            raw.extend_from_slice(&ole.extent_x.to_le_bytes());
+            raw.extend_from_slice(&ole.extent_y.to_le_bytes());
+            raw.extend_from_slice(&ole.bin_data_id.to_le_bytes());
+            raw.extend_from_slice(&[0u8; 14]);
+            debug_assert_eq!(raw.len(), 30);
+            ole.raw_tag_data = raw;
+        }
+    }
+    core.export_hwp_with_adapter().expect("변종 저장")
+}
+
+fn first_ole_mut(doc: &mut Document) -> Option<&mut OleShape> {
+    for section in &mut doc.sections {
+        for para in &mut section.paragraphs {
+            for ctrl in &mut para.controls {
+                if let Control::Shape(shape) = ctrl {
+                    if let ShapeObject::Ole(ole) = shape.as_mut() {
+                        return Some(ole);
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
+/// 판정 번들이 의도한 변이를 실제로 담는지 확인한다 — `#[ignore]` 생성기는 CI 에서
+/// 돌지 않으므로, 변이 로직만 따로 붙잡아 둔다.
+#[test]
+fn issue4099_judgment_variants_carry_their_mutations() {
+    let hwpx = base_hwpx();
+
+    let plain = variant(&hwpx, false, false);
+    let ole30 = variant(&hwpx, true, false);
+    let flip = variant(&hwpx, false, true);
+
+    let plain_doc = rhwp::parse_document(&plain).expect("A 재파싱");
+    let plain_ole = first_ole(&plain_doc).expect("A OLE");
+    assert_eq!(plain_ole.raw_tag_data.len(), 26, "현행 인코딩은 26B 다");
+    assert_eq!(plain_ole.drawing.shape_attr.flip, 0);
+
+    let ole30_doc = rhwp::parse_document(&ole30).expect("B 재파싱");
+    let ole30_ole = first_ole(&ole30_doc).expect("B OLE");
+    assert_eq!(
+        ole30_ole.raw_tag_data.len(),
+        30,
+        "B 변종은 오라클과 같은 30B 여야 한다"
+    );
+    assert_eq!(
+        ole30_ole.bin_data_id, 1,
+        "레코드를 늘려도 참조는 그대로여야 한다"
+    );
+
+    let flip_doc = rhwp::parse_document(&flip).expect("C 재파싱");
+    let flip_ole = first_ole(&flip_doc).expect("C OLE");
+    assert_eq!(
+        flip_ole.drawing.shape_attr.flip, 0x000B_0000,
+        "C 변종은 오라클 flip 워드를 실어야 한다"
+    );
+}
+
+// ---------------------------------------------------------------------------
 // T6 — 멱등성
 // ---------------------------------------------------------------------------
 
