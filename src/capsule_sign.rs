@@ -34,6 +34,8 @@ use base64::engine::general_purpose::STANDARD as B64;
 use base64::Engine as _;
 use ed25519_dalek::{Signature, Signer as _, SigningKey, Verifier as _, VerifyingKey};
 
+use rhwp::schema_registry::SIGNING_SCHEMA_VERSION;
+
 /// 키 파일의 `kind` — 비밀키를 담으므로 절대 캡슐·봉투에 인라인하지 않는다.
 pub const KEY_KIND: &str = "ed25519Key";
 /// 분리 서명 파일의 `kind`.
@@ -58,7 +60,7 @@ pub fn generate_key_json(key_id: &str) -> Result<serde_json::Value, String> {
     let signing = SigningKey::from_bytes(&secret);
     let public = signing.verifying_key();
     Ok(serde_json::json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": SIGNING_SCHEMA_VERSION,
         "kind": KEY_KIND,
         "keyId": key_id,
         "alg": ALG,
@@ -104,7 +106,7 @@ pub fn make_sidecar_json(
 ) -> serde_json::Value {
     let sig: Signature = signing.sign(capsule_bytes);
     serde_json::json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": SIGNING_SCHEMA_VERSION,
         "kind": SIG_KIND,
         "capsuleSha256": capsule_sha256,
         "alg": ALG,
