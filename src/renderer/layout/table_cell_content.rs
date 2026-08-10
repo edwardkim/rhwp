@@ -842,7 +842,7 @@ impl LayoutEngine {
 
         // 엣지 기반 테두리 렌더링
         table_node.children.extend(render_edge_borders(
-            tree, &h_edges, &v_edges, &row_col_x, &row_y, table_x, table_y,
+            tree, &h_edges, &v_edges, &row_col_x, &row_y, table_x, table_y, None,
         ));
         if self.show_transparent_borders.get() {
             table_node.children.extend(render_transparent_borders(

@@ -2824,8 +2824,19 @@ impl LayoutEngine {
 
         // ── 6. 테두리 렌더링 ──
         if independent_col_row_y.is_none() {
+            let body_top_clip = (depth == 0
+                && self.is_body_flow_col_area(col_area)
+                && (table_y - col_area.y).abs() <= 0.5)
+                .then_some(col_area.y);
             table_node.children.extend(render_edge_borders(
-                tree, &h_edges, &v_edges, &row_col_x, &row_y, table_x, table_y,
+                tree,
+                &h_edges,
+                &v_edges,
+                &row_col_x,
+                &row_y,
+                table_x,
+                table_y,
+                body_top_clip,
             ));
             if self.show_transparent_borders.get() {
                 table_node.children.extend(render_transparent_borders(

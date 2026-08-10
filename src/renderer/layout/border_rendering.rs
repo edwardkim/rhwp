@@ -275,12 +275,14 @@ pub(crate) fn render_edge_borders(
     row_y: &[f64],
     table_x: f64,
     table_y: f64,
+    top_clip_y: Option<f64>,
 ) -> Vec<RenderNode> {
     let mut nodes = Vec::new();
     let row_count = if row_y.len() > 1 { row_y.len() - 1 } else { 0 };
 
     // 수평 엣지 렌더링
     for (ri, h_row) in h_edges.iter().enumerate() {
+        let row_node_start = nodes.len();
         let y = table_y + row_y.get(ri).copied().unwrap_or(0.0);
         // 행 경계의 열 위치: 경계 아래 행 (또는 마지막 행) 기준
         let ref_row = ri.min(row_count.saturating_sub(1));
@@ -324,6 +326,11 @@ pub(crate) fn render_edge_borders(
             let x1 = table_x + ref_cx[start];
             let x2 = table_x + ref_cx.get(h_row.len()).copied().unwrap_or(ref_cx[start]);
             nodes.extend(create_border_line_nodes(tree, &sb, x1, y, x2, y));
+        }
+        if ri == 0 {
+            if let Some(clip_y) = top_clip_y {
+                inset_horizontal_border_group_at_top_clip(&mut nodes[row_node_start..], clip_y);
+            }
         }
     }
 
@@ -380,6 +387,44 @@ pub(crate) fn render_edge_borders(
     }
 
     nodes
+}
+
+/// Keep only a table's physical top-frame paint inside an owning Body clip.
+///
+/// SVG, Web Canvas, and native Canvas all clip a stroke by its painted extent.
+/// A horizontal centreline exactly on the Body top therefore loses half of its
+/// stroke.  Move the complete top-border group by one common delta so compound
+/// borders retain their internal spacing.  The caller passes only the nodes
+/// emitted for row boundary 0; table/cell boxes and every non-table line remain
+/// unchanged.
+fn inset_horizontal_border_group_at_top_clip(nodes: &mut [RenderNode], clip_y: f64) {
+    const PAINT_INSET_EPSILON_PX: f64 = 0.05;
+
+    let painted_top = nodes
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::Line(line) if (line.y1 - line.y2).abs() <= 0.01 => {
+                Some(line.y1.min(line.y2) - line.style.width.max(0.0) / 2.0)
+            }
+            _ => None,
+        })
+        .fold(f64::INFINITY, f64::min);
+    if !painted_top.is_finite() || painted_top >= clip_y + PAINT_INSET_EPSILON_PX {
+        return;
+    }
+
+    let delta_y = clip_y + PAINT_INSET_EPSILON_PX - painted_top;
+    for node in nodes {
+        let RenderNodeType::Line(line) = &mut node.node_type else {
+            continue;
+        };
+        if (line.y1 - line.y2).abs() > 0.01 {
+            continue;
+        }
+        line.y1 += delta_y;
+        line.y2 += delta_y;
+        node.bbox.y += delta_y;
+    }
 }
 
 /// 투명 테두리를 빨간색 점선 Line 노드로 생성한다.
@@ -1305,5 +1350,129 @@ mod tests {
         assert!(thick.style.width > thin.style.width);
         assert_ne!((thick.x1, thick.y1), (thin.x1, thin.y1));
         assert_ne!((thick.x2, thick.y2), (thin.x2, thin.y2));
+    }
+
+    fn table_border_grid(
+        border: BorderLine,
+    ) -> (
+        Vec<Vec<Option<BorderLine>>>,
+        Vec<Vec<Option<BorderLine>>>,
+        Vec<Vec<f64>>,
+        Vec<f64>,
+    ) {
+        (
+            vec![vec![Some(border)], vec![Some(border)]],
+            vec![vec![None], vec![None]],
+            vec![vec![0.0, 100.0]],
+            vec![0.0, 20.0],
+        )
+    }
+
+    #[test]
+    fn body_top_table_frame_keeps_compound_strokes_inside_clip_with_one_delta() {
+        let border = BorderLine {
+            line_type: BorderLineType::Double,
+            width: 6,
+            color: 0,
+        };
+        let (h_edges, v_edges, row_col_x, row_y) = table_border_grid(border);
+        let mut baseline_tree = PageRenderTree::new(0, 200.0, 100.0);
+        let baseline = render_edge_borders(
+            &mut baseline_tree,
+            &h_edges,
+            &v_edges,
+            &row_col_x,
+            &row_y,
+            10.0,
+            30.0,
+            None,
+        );
+        let mut clipped_tree = PageRenderTree::new(0, 200.0, 100.0);
+        let clipped = render_edge_borders(
+            &mut clipped_tree,
+            &h_edges,
+            &v_edges,
+            &row_col_x,
+            &row_y,
+            10.0,
+            30.0,
+            Some(30.0),
+        );
+
+        assert_eq!(baseline.len(), clipped.len());
+        let mut top_deltas = Vec::new();
+        for (before, after) in baseline.iter().zip(&clipped) {
+            let (RenderNodeType::Line(before_line), RenderNodeType::Line(after_line)) =
+                (&before.node_type, &after.node_type)
+            else {
+                panic!("table border output must contain only Line nodes");
+            };
+            if before_line.y1 < 40.0 {
+                top_deltas.push(after_line.y1 - before_line.y1);
+                assert!(
+                    after_line.y1 - after_line.style.width / 2.0 >= 30.0,
+                    "top border paint must stay inside Body clip: {:?}",
+                    after_line,
+                );
+            } else {
+                assert_eq!(after_line.y1, before_line.y1, "bottom frame must not move");
+                assert_eq!(after.bbox.y, before.bbox.y, "bottom bbox must not move");
+            }
+        }
+        assert!(!top_deltas.is_empty());
+        let common_delta = top_deltas[0];
+        assert!(common_delta > 0.0);
+        assert!(
+            top_deltas
+                .iter()
+                .all(|delta| (*delta - common_delta).abs() <= f64::EPSILON),
+            "compound top-border lines must retain spacing with one common delta: {top_deltas:?}",
+        );
+    }
+
+    #[test]
+    fn body_top_table_frame_inset_changes_only_emitted_lines_not_owner_boxes() {
+        let border = BorderLine {
+            line_type: BorderLineType::Solid,
+            width: 6,
+            color: 0,
+        };
+        let (h_edges, v_edges, row_col_x, row_y) = table_border_grid(border);
+        let mut tree = PageRenderTree::new(0, 200.0, 100.0);
+        let table_bbox = BoundingBox::new(10.0, 30.0, 100.0, 20.0);
+        let cell_bbox = BoundingBox::new(10.0, 30.0, 100.0, 20.0);
+        let table_bbox_before = table_bbox;
+        let cell_bbox_before = cell_bbox;
+
+        let nodes = render_edge_borders(
+            &mut tree,
+            &h_edges,
+            &v_edges,
+            &row_col_x,
+            &row_y,
+            table_bbox.x,
+            table_bbox.y,
+            Some(table_bbox.y),
+        );
+        let top = nodes
+            .iter()
+            .find_map(|node| match &node.node_type {
+                RenderNodeType::Line(line) if line.y1 < 40.0 => Some(line),
+                _ => None,
+            })
+            .expect("top border line");
+
+        assert!(
+            top.y1 > table_bbox.y,
+            "only the paint centreline moves inward"
+        );
+        assert_eq!(table_bbox.x, table_bbox_before.x);
+        assert_eq!(table_bbox.y, table_bbox_before.y);
+        assert_eq!(table_bbox.width, table_bbox_before.width);
+        assert_eq!(table_bbox.height, table_bbox_before.height);
+        assert_eq!(cell_bbox.x, cell_bbox_before.x);
+        assert_eq!(cell_bbox.y, cell_bbox_before.y);
+        assert_eq!(cell_bbox.width, cell_bbox_before.width);
+        assert_eq!(cell_bbox.height, cell_bbox_before.height);
     }
 }

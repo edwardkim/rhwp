@@ -3266,6 +3266,10 @@ impl LayoutEngine {
         );
 
         // 엣지 기반 테두리 렌더링
+        let body_top_clip = (enclosing_cell_ctx.is_none()
+            && self.is_body_flow_col_area(col_area)
+            && (table_y - col_area.y).abs() <= 0.5)
+            .then_some(col_area.y);
         table_node.children.extend(render_edge_borders(
             tree,
             &h_edges,
@@ -3274,6 +3278,7 @@ impl LayoutEngine {
             &grid_row_y,
             table_x,
             table_y,
+            body_top_clip,
         ));
         if self.show_transparent_borders.get() {
             table_node.children.extend(render_transparent_borders(

@@ -1,6 +1,6 @@
 ---
 kind: investigation
-status: in_progress
+status: completed
 canonical: mydocs/working/task_m100_3820_stage1.md
 last_verified: 2026-08-10
 ---
@@ -65,6 +65,38 @@ Stage 119는 공통 상단선 paint만 처리한다. frame height와 outer paint
 - 숨은 text-band가 있던 issue2007 p14는 새 glyph를 노출하지 않음
 - SVG/Canvas border paint 계약 focused test 및 기존 renderer snapshot
 
+## 구현
+
+- 공통 `render_edge_borders`가 row boundary 0에서 생성한 table top-border Line
+  묶음만 검사한다.
+- 실제 painted top(`center_y - stroke_width/2`)이 전달된 Body clip top보다 위면
+  compound/double 선 전체를 동일 delta로 clip 안쪽 `0.05px`에 옮긴다.
+- whole table은 depth 0, body-flow col area, `table_y≈body_top`일 때만 활성화한다.
+- partial table은 top-level successor fragment가 같은 조건일 때만 활성화한다.
+- nested/cell table, Body clip, Table/Cell bbox, 일반 Line, vertical·bottom border는
+  기존 경로를 유지한다.
+
+## 검증 결과
+
+- border group 단위 회귀: `2/2`
+- 정책연구 p33 및 successor p168·p214 실물 회귀: `2/2`
+- `issue_2430_cell_rewrap_threshold`: `2/2`
+- `issue_2007_nested_cell_pagination`: `15/15`
+- `cargo clippy --profile release-test --all-targets -- -D warnings`: 통과
+- 최신 CLI SHA-256:
+  `fe2c4d17afb507f21ed620ce716ce4e0f4f9bc92cb081ebc09c937d52fccb38b`
+- p33, p168, p214의 horizontal-border clip candidate는 모두 0으로 줄었다.
+- text delta와 page owner는 모두 0/0 및 불변이다.
+
+p33 전체 pixel diff는 `9.97% → 10.04%`로 소폭 변했다. 이는 clip 밖 반쪽을 숨긴
+기존 결과보다 full stroke가 기준 PDF의 1pt 선과 기하학적으로 맞더라도 portable
+font·다른 잔여 geometry의 raw pixel 합계가 단조 개선을 보장하지 않기 때문이다.
+직접 raster와 candidate ledger에서는 상단선 전체가 보이고 하단선·bbox는 불변이다.
+
+최신 p33 직접 비교에서 표 캡션의 `statistics.eurotransplant.org`가 기준 PDF처럼
+두 줄로 감기지 않고 첫 줄 우측으로 돌출하는 별도 결함도 확인했다. Stage 119는 이
+caption rewrap을 해결한 것으로 간주하지 않으며 후속 단계에 명시적으로 이월한다.
+
 ## 증적
 
 - [p33 PDF/rhwp 비교](../pr/assets/task_m100_3820_stage119_policy_body_top_table_border_clip/compare_p033.png)
@@ -72,5 +104,11 @@ Stage 119는 공통 상단선 paint만 처리한다. frame height와 outer paint
 - [픽셀 보고서](../pr/assets/task_m100_3820_stage119_policy_body_top_table_border_clip/report.tsv)
 - [horizontal-border candidate](../pr/assets/task_m100_3820_stage119_policy_body_top_table_border_clip/horizontal-border-candidates.tsv)
 - [실행 provenance](../pr/assets/task_m100_3820_stage119_policy_body_top_table_border_clip/provenance.tsv)
+- [보정 후 p33 비교](../pr/assets/task_m100_3820_stage119_policy_body_top_table_border_clip/compare_p033_after.png)
+- [보정 후 p168 비교](../pr/assets/task_m100_3820_stage119_policy_body_top_table_border_clip/compare_p168_after.png)
+- [보정 후 p214 비교](../pr/assets/task_m100_3820_stage119_policy_body_top_table_border_clip/compare_p214_after.png)
+- [보정 후 candidate 원장](../pr/assets/task_m100_3820_stage119_policy_body_top_table_border_clip/horizontal-border-candidates-after.tsv)
+- [보정 후 provenance](../pr/assets/task_m100_3820_stage119_policy_body_top_table_border_clip/provenance-after.tsv)
 
-구현 및 회귀 검증 진행 중이다.
+이 단계의 공통 Body-top table top-stroke half clip 결함은 해결했다. p167/p213 첫
+fragment 높이와 successor paint origin, p33 caption wrap은 후속 단계에서 계속한다.
