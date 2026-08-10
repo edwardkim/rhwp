@@ -1,0 +1,96 @@
+{
+  "id": "pM8-path",
+  "title": "같은 크기, 다른 이력 — tx 가 이력을 따라가나",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pM8-path-w.hwp",
+      "posix": "{out}/pM8-path-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pM8-path-a.hwp",
+      "posix": "{out}/pM8-path-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pM8-path-b.hwp",
+      "posix": "{out}/pM8-path-b.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeRight"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeRight"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeRight"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeLeft"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "id": "pM2-hh",
+  "title": "ShapeObjHorzFlip → ShapeObjHorzFlipOrgState",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pM2-hh-w.hwp",
+      "posix": "{out}/pM2-hh-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pM2-hh-a.hwp",
+      "posix": "{out}/pM2-hh-a.hwp"
+    },
+    "s0": {
+      "win": "{out}/pM2-hh-s0.hwp",
+      "posix": "{out}/pM2-hh-s0.hwp"
+    },
+    "s1": {
+      "win": "{out}/pM2-hh-s1.hwp",
+      "posix": "{out}/pM2-hh-s1.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "s0"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "s1"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

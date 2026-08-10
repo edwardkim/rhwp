@@ -335,6 +335,9 @@ fn main() {
         Some("gen-pua") => exit_with(gen_pua_test(&args[2..])),
         Some("test-field") => exit_with(test_field_roundtrip(&args[2..])),
         Some("ir-diff") => exit_with(ir_diff(&args[2..])),
+        Some("ir-sweep") => exit_with(ir_sweep(&args[2..])),
+        Some("dump-anchors") => exit_with(dump_anchors(&args[2..])),
+        Some("dump-carets") => exit_with(dump_carets(&args[2..])),
         Some("verify") => exit_with(cmd_verify(&args[2..])),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
@@ -14198,6 +14201,259 @@ fn cmd_verify(args: &[String]) -> i32 {
     } else {
         3 // 판정 불일치 — #2707 의 판정 코드. 봉투는 이미 냈다.
     }
+}
+
+/// 두 문서의 IR 을 **전수** 대조한다 — `diagnostics::ir_field_sweep` 을 CLI 로 낸 것.
+///
+/// `ir-diff` 와 갈리는 점은 **비교 대상이 손으로 나열되지 않는다**는 것이다. `ir-diff` 는
+/// 사건 대응으로 쌓인 화이트리스트라 `z_order`·도형 변환 행렬·표 속성 같은 것을 아예 보지
+/// 않는다. 실제로 한글이 `ShapeObjBringToFront` 를 저장본에 적어 두었는데 `ir-diff` 는
+/// "동일" 이라 답했고, 이 스윕은 `common.z_order` 가 1↔2 로 뒤바뀐 것을 그대로 짚었다.
+///
+/// 쓰임새는 **편집 액션의 자취를 재는 것**이다. 어떤 API 도 결과를 안 비추는 액션이라도
+/// 저장본은 적으므로, 같은 문서의 앞뒤 저장본을 이걸로 대조하면 관측창이 생긴다
+/// (`tools/hwpctrl_compat` 의 L3).
+/// 문단의 **스트림 좌표**를 찍는다 — 컨트롤 종류·`char_offsets`·컨트롤의 글자 위치.
+///
+/// 편집 액션이 개체 앵커를 옮기는지 볼 때 쓴다(계획서 §4.24 가 이걸로 나왔다). `ir-sweep`
+/// 은 필드 나열이라 "컨트롤과 공백의 순서가 바뀌었다" 같은 **구조** 변화를 읽기 어렵다 —
+/// 이 보기는 문단 하나를 스트림 순서 그대로 편다. 여태 임시 테스트 파일로 하던 일이다.
+fn dump_anchors(args: &[String]) -> i32 {
+    if args.is_empty() {
+        eprintln!("사용법: rhwp dump-anchors <파일…> [--all]");
+        return EXIT_USAGE;
+    }
+    let all = args.iter().any(|a| a == "--all");
+    for path in args.iter().filter(|a| !a.starts_with('-')) {
+        let doc = match std::fs::read(path)
+            .map_err(|e| e.to_string())
+            .and_then(|b| rhwp::parser::parse_document(&b).map_err(|e| e.to_string()))
+        {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("{path}: {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+        println!("== {path}");
+        for (si, sec) in doc.sections.iter().enumerate() {
+            for (pi, para) in sec.paragraphs.iter().enumerate() {
+                if !all && para.controls.is_empty() {
+                    continue;
+                }
+                let kinds: Vec<String> = para
+                    .controls
+                    .iter()
+                    .map(|c| match c {
+                        rhwp::model::control::Control::SectionDef(_) => "secd".to_string(),
+                        rhwp::model::control::Control::ColumnDef(_) => "cold".to_string(),
+                        rhwp::model::control::Control::Table(_) => "표".to_string(),
+                        rhwp::model::control::Control::Picture(_) => "그림".to_string(),
+                        rhwp::model::control::Control::Shape(s) => s.shape_name().to_string(),
+                        other => format!("{other:?}")
+                            .split(['(', ' '])
+                            .next()
+                            .unwrap_or("?")
+                            .to_string(),
+                    })
+                    .collect();
+                println!(
+                    "s{si} p{pi}: chars={} text={:?}",
+                    para.char_count, para.text
+                );
+                println!("   char_offsets={:?}", para.char_offsets);
+                println!("   controls={kinds:?}");
+                println!("   ctrl_positions={:?}", para.control_text_positions());
+            }
+        }
+    }
+    EXIT_OK
+}
+
+/// 문단 전 오프셋의 **캐럿 사각형**(x·y·height)을 찍는다 — studio 가 딛는 `getCursorRect`.
+///
+/// 줌·DPI 무관한 **문서 좌표**의 캐럿 기하다(한글의 화면 캐럿과 달리 안정적이다). 캐럿 높이는
+/// 폰트에 달리므로 폰트별 표본으로 돌려 크기를 견준다. `--json` 은 한 줄 계약 봉투.
+fn dump_carets(args: &[String]) -> i32 {
+    if args.is_empty() {
+        eprintln!("사용법: rhwp dump-carets <파일> [--json] [-s <구역>] [-p <문단>]");
+        return EXIT_USAGE;
+    }
+    let path = &args[0];
+    let json_mode = args.iter().any(|a| a == "--json");
+    let mut sec_filter: Option<usize> = None;
+    let mut para_filter: Option<usize> = None;
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "-s" | "--section" if i + 1 < args.len() => {
+                sec_filter = args[i + 1].parse().ok();
+                i += 2;
+            }
+            "-p" | "--para" if i + 1 < args.len() => {
+                para_filter = args[i + 1].parse().ok();
+                i += 2;
+            }
+            _ => i += 1,
+        }
+    }
+
+    let data = match std::fs::read(path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("읽기 실패: {path} — {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let structure = match rhwp::parser::parse_document(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("파싱 실패: {path} — {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            let _ = &e;
+            eprintln!("문서 로드 실패: {path}");
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let mut rows: Vec<serde_json::Value> = Vec::new();
+    for (si, sec) in structure.sections.iter().enumerate() {
+        if sec_filter.is_some_and(|f| f != si) {
+            continue;
+        }
+        for (pi, para) in sec.paragraphs.iter().enumerate() {
+            if para_filter.is_some_and(|f| f != pi) {
+                continue;
+            }
+            // 문단 끝까지(포함) 캐럿을 둔다 — 마지막은 문단 부호 앞자리다.
+            let last = para.char_count as usize;
+            for off in 0..=last {
+                let Ok(raw) = doc.get_cursor_rect_native(si, pi, off) else {
+                    continue;
+                };
+                let Ok(v) = serde_json::from_str::<serde_json::Value>(&raw) else {
+                    continue;
+                };
+                rows.push(serde_json::json!({
+                    "section": si,
+                    "para": pi,
+                    "offset": off,
+                    "pageIndex": v.get("pageIndex"),
+                    "x": v.get("x"),
+                    "y": v.get("y"),
+                    "height": v.get("height"),
+                }));
+            }
+        }
+    }
+
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "file": path,
+            "count": rows.len(),
+            "carets": rows,
+        });
+        println!("{}", provenance::marked(envelope, "dump-carets"));
+        return EXIT_OK;
+    }
+    for r in &rows {
+        println!(
+            "s{}p{} off{:>3}: page {} x={:>7} y={:>7} h={}",
+            r["section"], r["para"], r["offset"], r["pageIndex"], r["x"], r["y"], r["height"]
+        );
+    }
+    println!("\n=== 캐럿 {} 개 ===", rows.len());
+    EXIT_OK
+}
+
+fn ir_sweep(args: &[String]) -> i32 {
+    use rhwp::diagnostics::ir_field_sweep::{sweep_documents, tally};
+
+    if args.len() < 2 {
+        eprintln!("사용법: rhwp ir-sweep <파일A> <파일B> [--json] [--max-lines <N>]");
+        return EXIT_USAGE;
+    }
+    let (file_a, file_b) = (&args[0], &args[1]);
+    let mut json_mode = false;
+    let mut max_lines: Option<usize> = None;
+    let is_value = |idx: usize| idx < args.len() && !args[idx].starts_with('-');
+    let mut i = 2;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => {
+                json_mode = true;
+                i += 1;
+            }
+            "--max-lines" if is_value(i + 1) => {
+                max_lines = args[i + 1].parse().ok();
+                i += 2;
+            }
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+    }
+
+    let mut load = |path: &String| match std::fs::read(path) {
+        Ok(bytes) => match rhwp::parser::parse_document(&bytes) {
+            Ok(doc) => Some(doc),
+            Err(e) => {
+                eprintln!("파싱 실패: {path} — {e}");
+                None
+            }
+        },
+        Err(e) => {
+            eprintln!("읽기 실패: {path} — {e}");
+            None
+        }
+    };
+    let (Some(doc_a), Some(doc_b)) = (load(file_a), load(file_b)) else {
+        return EXIT_RUNTIME;
+    };
+
+    let report = match sweep_documents(&doc_a, &doc_b) {
+        Ok(r) => r,
+        Err(e) => {
+            eprintln!("전수 비교 실패: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    // `examples()` 는 진단용 표본이라 상한이 있다 — 건수는 반드시 `total()` 을 쓴다.
+    let total = report.total();
+    let examples = report.examples();
+    if json_mode {
+        let rows: Vec<serde_json::Value> = examples
+            .iter()
+            .take(max_lines.unwrap_or(usize::MAX))
+            .map(|d| serde_json::json!({ "path": d.path, "left": d.left, "right": d.right }))
+            .collect();
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "a": file_a,
+            "b": file_b,
+            "identical": report.is_empty(),
+            "diffCount": total,
+            "truncated": rows.len() < total,
+            "categories": tally(&report),
+            "divergences": rows,
+        });
+        println!("{}", provenance::marked(envelope, "ir-sweep"));
+        // `ir-diff` 와 같은 규약 — 차이가 있으면 3.
+        return if report.is_empty() { EXIT_OK } else { 3 };
+    }
+
+    for d in examples.iter().take(max_lines.unwrap_or(200)) {
+        println!("{} : {} → {}", d.path, d.left, d.right);
+    }
+    println!("\n=== 전수 비교 완료: 차이 {total} 건 ===");
+    EXIT_OK
 }
 
 fn ir_diff(args: &[String]) -> i32 {

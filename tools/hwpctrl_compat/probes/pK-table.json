@@ -1,0 +1,98 @@
+{
+  "id": "pK-table",
+  "title": "표 칸 조절·지우기가 저장본에 적히는가",
+  "ledger": [],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "paths": {
+    "t0": {
+      "win": "{out}/pK-t0.hwp",
+      "posix": "{out}/pK-t0.hwp"
+    },
+    "t1": {
+      "win": "{out}/pK-t1.hwp",
+      "posix": "{out}/pK-t1.hwp"
+    },
+    "t2": {
+      "win": "{out}/pK-t2.hwp",
+      "posix": "{out}/pK-t2.hwp"
+    },
+    "t3": {
+      "win": "{out}/pK-t3.hwp",
+      "posix": "{out}/pK-t3.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "t0"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        2,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlock"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableResizeCellRight"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "t1"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableResizeCellDown"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "t2"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableDeleteCell"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "t3"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "id": "pK-savewindow",
+  "title": "저장본이 '관측창 없음' 을 비추는가",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "before": {
+      "win": "{out}/pK-before.hwp",
+      "posix": "{out}/pK-before.hwp"
+    },
+    "afterZ": {
+      "win": "{out}/pK-afterZ.hwp",
+      "posix": "{out}/pK-afterZ.hwp"
+    },
+    "afterFlip": {
+      "win": "{out}/pK-afterFlip.hwp",
+      "posix": "{out}/pK-afterFlip.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "before"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjBringToFront"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "afterZ"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "afterFlip"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

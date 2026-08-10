@@ -2174,6 +2174,22 @@ pub(crate) fn sync_anchor_bits(common: &mut CommonObjAttr) {
     common.attr = a;
 }
 
+/// 배치(`text_wrap`)를 packed `attr` 에 되쓴다 — `sync_anchor_bits` 와 같은 이유다.
+///
+/// 배치를 바꾸는 편집(`ShapeObjCtrlSendBehindText` 계열)이 enum 만 갱신하면 저장에서
+/// **묻힌다** — `attr != 0` 이면 직렬화가 packed 값을 우선하기 때문이다. 한글 저장본과
+/// 견줘 보고서야 드러났다(오라클은 `attr` 과 `text_wrap` 이 함께 움직이는데 이쪽은 둘 다
+/// 그대로였다). 건드리는 것은 **비트 21‥23 뿐**이다.
+pub(crate) fn sync_text_wrap_bits(common: &mut CommonObjAttr) {
+    if common.attr == 0 {
+        return; // 직렬화가 전량 재패킹한다.
+    }
+    let mut a = common.attr;
+    a &= !(0x07 << 21);
+    a |= (text_wrap_to_bits(common.text_wrap) & 0x07) << 21;
+    common.attr = a;
+}
+
 fn vert_rel_to_to_bits(v: VertRelTo) -> u32 {
     match v {
         VertRelTo::Paper => 0,

@@ -1,0 +1,102 @@
+{
+  "id": "pM4-ellipse",
+  "title": "타원 뒤집기 — tx 가 어디서 오나",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pM4-w.hwp",
+      "posix": "{out}/pM4-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pM4-a.hwp",
+      "posix": "{out}/pM4-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pM4-b.hwp",
+      "posix": "{out}/pM4-b.hwp"
+    },
+    "c": {
+      "win": "{out}/pM4-c.hwp",
+      "posix": "{out}/pM4-c.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjVertFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "c"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

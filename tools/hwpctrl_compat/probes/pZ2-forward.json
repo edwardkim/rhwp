@@ -1,0 +1,84 @@
+{
+  "id": "pZ2-forward",
+  "title": "맨 뒤로 보낸 뒤 ShapeObjBringForward",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "a": {
+      "win": "{out}/pZ2-forward-a.hwp",
+      "posix": "{out}/pZ2-forward-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pZ2-forward-b.hwp",
+      "posix": "{out}/pZ2-forward-b.hwp"
+    },
+    "c": {
+      "win": "{out}/pZ2-forward-c.hwp",
+      "posix": "{out}/pZ2-forward-c.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjSendToBack"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjBringForward"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "c"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

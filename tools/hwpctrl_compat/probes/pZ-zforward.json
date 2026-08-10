@@ -1,0 +1,62 @@
+{
+  "id": "pZ-zforward",
+  "title": "ShapeObjBringForward — 1번째 개체",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "a": {
+      "win": "{out}/pZ-zforward-a.hwp",
+      "posix": "{out}/pZ-zforward-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pZ-zforward-b.hwp",
+      "posix": "{out}/pZ-zforward-b.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjBringForward"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

@@ -86,14 +86,31 @@ LAYOUT = {
 # **관측창이 없는** 것들 — 맥락은 섰는데 어느 API 도 결과를 안 비춘다(계획서 §4.58).
 #
 # 무동작으로 뭉뚱그리지 않고 따로 세는 이유: 무동작은 "맥락을 더 찾으면 될지 모른다"이고
-# 이것은 "찾아도 볼 창이 없다"라 성격이 다르다. 파일에는 적히지만 이 게이트가 대조하는 것은
-# API 반환이라, 양쪽이 나란히 아무 일도 안 해 생기는 초록은 뜻이 없다.
-NO_WINDOW = {
-    # 앞뒤 순서 — 사슬도 안 바뀌고 ShapeObject 35항목에도 이름이 없다.
+# 이것은 "찾아도 볼 창이 없다"라 성격이 다르다.
+#
+# **이 갈래의 전제가 절반쯤 무너졌다.** "파일에는 적히지만 이 게이트가 대조하는 것은 API
+# 반환이라"고 적어 두고는 그 파일을 열어 보지 않았다. 열어 보니 **적혀 있고 읽을 수도
+# 있다** — 액션 앞뒤로 저장한 두 벌을 `rhwp ir-sweep` 으로 견주면 `common.z_order` 가 1↔2 로
+# 뒤바뀐 것, `render_sx` 가 1.0 → −1.0 이 된 것, 표의 `col_count` 가 3 → 4 가 된 것,
+# 지워진 칸의 글이 사라진 것이 그대로 나온다. 액션 없이 두 번 저장하면 차이는 **0** 이라
+# 잡음 바닥도 없다.
+#
+# 그래서 아래 `SAVE_OBSERVABLE` 로 옮긴 것들은 **막힌 것이 아니라 아직 구현이 없는 것**이다.
+# 상한에서 빼지 않는다. 남은 `NO_WINDOW` 는 저장본으로도 안 보이거나(한글이 조용히 아무 일도
+# 안 하는 것) 오라클을 죽여 정답지를 못 만드는 것들이다.
+#
+# `ir-diff` 가 아니라 `ir-sweep` 인 이유: `ir-diff` 의 비교 목록은 손으로 쌓은 것이라
+# `z_order` 도 변환 행렬도 아예 안 본다. 같은 파일 쌍에 "동일" 이라 답했다.
+SAVE_OBSERVABLE = {
+    # z-순서 — `CTRL_HEADER` 에 적히고 앞뒤 저장본에서 1↔2 교환이 보인다.
     "Action.ShapeObjBringToFront", "Action.ShapeObjSendToBack",
     "Action.ShapeObjBringForward", "Action.ShapeObjSendBack",
     "Action.ShapeObjBringInFrontOfText", "Action.ShapeObjCtrlSendBehindText",
-    # 표 칸 조절 — 칸 블록을 풀고 다시 들어가 읽어도 `CellShape` 가 그대로다.
+    # 뒤집기 — `SHAPE_COMPONENT` 의 변환 행렬(`render_sx` 1.0 → −1.0)과 `horz_flip`.
+    "Action.ShapeObjHorzFlip", "Action.ShapeObjVertFlip",
+    "Action.ShapeObjHorzFlipOrgState", "Action.ShapeObjVertFlipOrgState",
+    # 표 칸 조절 — `CellShape` 는 안 움직여도 저장본은 움직인다(`col_count` 3 → 4,
+    # `cell_grid` 재구성, `segment_width`, 표 레코드 attr).
     "Action.TableResizeCellDown", "Action.TableResizeCellLeft",
     "Action.TableResizeCellRight", "Action.TableResizeCellUp",
     "Action.TableResizeDown", "Action.TableResizeLeft",
@@ -102,12 +119,12 @@ NO_WINDOW = {
     "Action.TableResizeExRight", "Action.TableResizeExUp",
     "Action.TableResizeLineDown", "Action.TableResizeLineLeft",
     "Action.TableResizeLineRight", "Action.TableResizeLineUp",
-    # 뒤집기 — 개체 속성 36항목에 `HorzFlip`·`VertFlip`·`Flip` 어느 이름으로도 값이 없고
-    # 폭·높이·자리도 안 변한다(뒤집기는 크기를 안 바꾸니 당연하다).
-    "Action.ShapeObjHorzFlip", "Action.ShapeObjVertFlip",
-    "Action.ShapeObjHorzFlipOrgState", "Action.ShapeObjVertFlipOrgState",
-    # 칸 블록(모드 3)을 잡고 걸어도 리스트가 그대로다 — 지워진 자취가 어디에도 안 남는다.
+    # 칸 지우기 — "지워진 자취가 어디에도 안 남는다"고 적었는데 **틀렸다**. 칸의 글이
+    # 지워진 것이 저장본에 그대로 있다("부 서 명" → "").
     "Action.TableDeleteCell",
+}
+
+NO_WINDOW = {
     # 걸면 **한글이 죽는다**(COM 서버가 사라져 그 뒤 호출이 전부 RPC 오류). 정답지를 못 만든다.
     "Action.TableStringToTable", "Action.CellBorder", "Action.CellBorderFill",
     # 칸 나눔 — 유일한 창인 표 셋(`CellShape` 은 이름과 달리 **표**의 셋이다)이 한 박자 늦게
@@ -262,6 +279,8 @@ def main() -> int:
             key = "UI 전용(관측 불가)"
         elif ident in MACHINE:
             key = "머신 의존"
+        elif ident in SAVE_OBSERVABLE:
+            key = "저장본으로 관측 가능(막힌 것 아님)"
         elif ident in NO_WINDOW:
             key = "관측창 없음"
         elif ident in UNBUILDABLE_CONTEXT:

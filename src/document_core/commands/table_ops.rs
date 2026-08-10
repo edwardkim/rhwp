@@ -3461,6 +3461,237 @@ impl DocumentCore {
             json_escape(formula)
         ))
     }
+
+    /// 표의 칸 크기를 한 걸음 바꾼다 — 웹한글컨트롤 `Run("TableResize*")` 계열 열둘.
+    ///
+    /// 한글 저장본의 앞뒤 두 벌을 견줘 실측했다(`probes/pT-*.json`, 계획서 §4.21). 어느 API 도
+    /// 결과를 안 비추지만 파일에는 그대로 적힌다.
+    ///
+    /// | 갈래 | 잰 규칙 |
+    /// |---|---|
+    /// | 평범 (`TableResizeRight` 따위) | 캐럿 칸의 **열/행 전체**가 ±283. 표의 선언 크기는 그대로다 |
+    /// | `Line` | **경계를 옮긴다** — 캐럿 칸의 오른쪽·아래 이웃과 짝으로 ∓283 |
+    /// | `Ex` | 평범한 것과 자취가 **완전히 같다**(네 방향 중 셋은 집합이 일치) |
+    ///
+    /// 걸음은 **283 HWPUNIT** 으로 개체 크기 조절과 같다(개체 이동의 56 과 다르다).
+    ///
+    /// **`raw_list_extra` 를 함께 고쳐야 한다.** 그 앞머리 u16 이 셀 폭 그 자체인데
+    /// (7384 → `[216,28]`) LIST_HEADER 뒤의 보존 바이트라 `cell.width` 만 고치면 저장에서
+    /// 묻힌다. `attr`·`raw_rendering`·배치 비트에 이은 네 번째 같은 덫이다. 세로 조절에서는
+    /// 안 건드린다 — 폭 필드이기 때문이다(실측: 높이가 바뀌어도 0건).
+    ///
+    /// 안 다루는 것: 병합된 칸(`col_span`/`row_span` > 1)이 걸린 표는 잰 적이 없다. 마지막
+    /// 열·행에서 `Line` 을 걸면 옮길 경계가 없어 아무 일도 하지 않는다(이것도 안 쟀다).
+    pub fn resize_table_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        row: u16,
+        col: u16,
+        vertical: bool,
+        forward: bool,
+        line_mode: bool,
+    ) -> Result<String, HwpError> {
+        /// 한 걸음. 개체 크기 조절과 같은 값이다(실측).
+        const STEP: i64 = 283;
+        /// LIST_HEADER 속성 상위 절반의 bit 8 — "이 칸의 크기를 방금 바꿨다"(실측 §4.21).
+        const CELL_FLAG_JUST_RESIZED: u16 = 0x0100;
+
+        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+        if table.cells.iter().any(|c| c.col_span > 1 || c.row_span > 1) {
+            return Ok(r#"{"ok":false,"reason":"병합된 칸이 있는 표는 아직 안 쟀다"}"#.to_string());
+        }
+        let primary = if vertical { row } else { col };
+        let neighbour = primary + 1;
+        let last = if vertical {
+            table.row_count.saturating_sub(1)
+        } else {
+            table.col_count.saturating_sub(1)
+        };
+        if line_mode && primary >= last {
+            // 옮길 경계가 없다. 한글이 무엇을 하는지 안 쟀으므로 아무 일도 하지 않는다.
+            return Ok(r#"{"ok":true,"moved":false}"#.to_string());
+        }
+        let delta = if forward { STEP } else { -STEP };
+
+        let mut moved = false;
+        for cell in table.cells.iter_mut() {
+            let at = if vertical { cell.row } else { cell.col };
+            let step = if at == primary {
+                delta
+            } else if line_mode && at == neighbour {
+                -delta
+            } else {
+                cell.set_list_header_flag_pub(CELL_FLAG_JUST_RESIZED, false);
+                continue;
+            };
+            moved = true;
+            cell.set_list_header_flag_pub(CELL_FLAG_JUST_RESIZED, true);
+            if vertical {
+                cell.height = (cell.height as i64 + step).max(0) as u32;
+            } else {
+                cell.width = (cell.width as i64 + step).max(0) as u32;
+                // 보존 바이트(텍스트 영역 폭)도 **같은 델타**로 옮긴다 — 폭과 다른 셀이 있어
+                // 절대값으로 덮으면 오프셋을 지운다(§4.21).
+                cell.shift_text_area_width(step);
+            }
+        }
+        table.dirty = true;
+        self.document.sections[section_idx].raw_stream = None;
+        Ok(format!(r#"{{"ok":true,"moved":{}}}"#, moved))
+    }
+
+    /// **한 칸만** 크기를 바꾼다 — 웹한글컨트롤 `Run("TableResizeCell*")` 넷.
+    ///
+    /// 한글 저장본 실측(`probes/pT-TableResizeCell*.json`, 계획서 §4.21): 캐럿 칸의
+    /// **오른쪽/아래 경계**를 그 행·열에서만 ±283 옮긴다 — 캐럿 칸이 ±283, 같은 행의 오른쪽
+    /// (세로면 같은 열의 아래) 이웃이 ∓283. 다른 행·열은 그대로라 **경계가 어긋나 격자가
+    /// 갈라진다**: 147행 3열에서 (0,0) 폭을 늘리면 열이 넷이 되고 (0,0)은 `col_span` 2,
+    /// 다른 행의 1열 칸들이 `col_span` 2 가 된다(전부 실측 그대로).
+    ///
+    /// 격자 재유도는 좌표로 한다 — 행마다 폭을 누적해 **경계 집합의 합집합**을 새 격자 열로
+    /// 삼고, 각 칸의 `col`/`col_span` 을 제 구간이 덮는 경계 수로 다시 매긴다(세로는 대칭).
+    ///
+    /// 안 다루는 것(전부 잰 적이 없어서다): 병합 칸이 이미 있는 표는 거부하고, 마지막
+    /// 열·행(옮길 경계가 없다)과 이웃이 한 걸음(283)보다 얇은 자리는 무동작이다.
+    #[allow(clippy::too_many_arguments)]
+    pub fn resize_table_cell_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        row: u16,
+        col: u16,
+        vertical: bool,
+        forward: bool,
+    ) -> Result<String, HwpError> {
+        use std::collections::BTreeSet;
+
+        const STEP: i64 = 283;
+        const CELL_FLAG_JUST_RESIZED: u16 = 0x0100;
+
+        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+        if table.cells.iter().any(|c| c.col_span > 1 || c.row_span > 1) {
+            return Ok(r#"{"ok":false,"reason":"병합된 칸이 있는 표는 아직 안 쟀다"}"#.to_string());
+        }
+        let (primary, last) = if vertical {
+            (row, table.row_count.saturating_sub(1))
+        } else {
+            (col, table.col_count.saturating_sub(1))
+        };
+        if primary >= last {
+            return Ok(r#"{"ok":true,"moved":false}"#.to_string());
+        }
+        let delta = if forward { STEP } else { -STEP };
+
+        // 캐럿 칸과 그 이웃의 크기를 바꾼다. 이웃이 한 걸음보다 얇으면 무동작.
+        let mut hit = 0usize;
+        for pass in 0..2 {
+            for cell in table.cells.iter_mut() {
+                let (a, b) = if vertical {
+                    (cell.row, cell.col)
+                } else {
+                    (cell.col, cell.row)
+                };
+                let cross = if vertical { col } else { row };
+                if b != cross {
+                    continue;
+                }
+                let step = if a == primary {
+                    delta
+                } else if a == primary + 1 {
+                    -delta
+                } else {
+                    continue;
+                };
+                let size = if vertical { cell.height } else { cell.width };
+                if pass == 0 {
+                    if (size as i64 + step) <= 0 {
+                        return Ok(r#"{"ok":true,"moved":false}"#.to_string());
+                    }
+                    continue;
+                }
+                hit += 1;
+                cell.set_list_header_flag_pub(CELL_FLAG_JUST_RESIZED, true);
+                if vertical {
+                    cell.height = (cell.height as i64 + step) as u32;
+                } else {
+                    cell.width = (cell.width as i64 + step) as u32;
+                    cell.shift_text_area_width(step);
+                }
+            }
+        }
+        if hit == 0 {
+            return Ok(r#"{"ok":true,"moved":false}"#.to_string());
+        }
+
+        // 격자 재유도 — 경계 집합의 합집합으로 열(행)을 다시 매긴다.
+        if vertical {
+            let mut bounds: BTreeSet<u64> = BTreeSet::from([0]);
+            let cols: BTreeSet<u16> = table.cells.iter().map(|c| c.col).collect();
+            for &c in &cols {
+                let mut acc = 0u64;
+                let mut in_col: Vec<&crate::model::table::Cell> =
+                    table.cells.iter().filter(|x| x.col == c).collect();
+                in_col.sort_by_key(|x| x.row);
+                for cell in in_col {
+                    acc += u64::from(cell.height);
+                    bounds.insert(acc);
+                }
+            }
+            let xs: Vec<u64> = bounds.into_iter().collect();
+            // 각 열을 위에서부터 다시 매긴다.
+            let mut order: Vec<usize> = (0..table.cells.len()).collect();
+            order.sort_by_key(|&i| (table.cells[i].col, table.cells[i].row));
+            let mut acc_by_col: std::collections::BTreeMap<u16, u64> = Default::default();
+            for i in order {
+                let cell = &mut table.cells[i];
+                let start = *acc_by_col.entry(cell.col).or_insert(0);
+                let end = start + u64::from(cell.height);
+                let s = xs.partition_point(|&x| x < start);
+                let e = xs.partition_point(|&x| x < end);
+                cell.row = s as u16;
+                cell.row_span = (e - s).max(1) as u16;
+                acc_by_col.insert(cell.col, end);
+            }
+            table.row_count = (xs.len() - 1) as u16;
+        } else {
+            let mut bounds: BTreeSet<u64> = BTreeSet::from([0]);
+            let rows: BTreeSet<u16> = table.cells.iter().map(|c| c.row).collect();
+            for &r in &rows {
+                let mut acc = 0u64;
+                let mut in_row: Vec<&crate::model::table::Cell> =
+                    table.cells.iter().filter(|x| x.row == r).collect();
+                in_row.sort_by_key(|x| x.col);
+                for cell in in_row {
+                    acc += u64::from(cell.width);
+                    bounds.insert(acc);
+                }
+            }
+            let xs: Vec<u64> = bounds.into_iter().collect();
+            let mut order: Vec<usize> = (0..table.cells.len()).collect();
+            order.sort_by_key(|&i| (table.cells[i].row, table.cells[i].col));
+            let mut acc_by_row: std::collections::BTreeMap<u16, u64> = Default::default();
+            for i in order {
+                let cell = &mut table.cells[i];
+                let start = *acc_by_row.entry(cell.row).or_insert(0);
+                let end = start + u64::from(cell.width);
+                let s = xs.partition_point(|&x| x < start);
+                let e = xs.partition_point(|&x| x < end);
+                cell.col = s as u16;
+                cell.col_span = (e - s).max(1) as u16;
+                acc_by_row.insert(cell.row, end);
+            }
+            table.col_count = (xs.len() - 1) as u16;
+        }
+        table.cells.sort_by_key(|c| (c.row, c.col));
+        table.rebuild_grid();
+        table.rebuild_row_sizes();
+        table.dirty = true;
+        self.document.sections[section_idx].raw_stream = None;
+        Ok(r#"{"ok":true,"moved":true}"#.to_string())
+    }
 }
 
 /// 셀 텍스트에서 숫자를 추출한다 (콤마 제거, 공백 무시).
@@ -3816,5 +4047,115 @@ mod neighbor_border_raw_data_tests {
             "DocInfo 패스스루가 무효화되지 않으면 push 한 BORDER_FILL 이 저장되지 않아 \
              본문의 border_fill_id 가 dangling 이 된다"
         );
+    }
+    /// §4.21 실측 — 한 칸만 크기를 바꾸면 경계가 어긋나 격자가 갈라진다.
+    mod resize_cell {
+        use super::super::super::super::DocumentCore;
+        use crate::model::control::Control;
+        use crate::model::document::Section;
+        use crate::model::paragraph::Paragraph;
+        use crate::model::table::{Cell, Table};
+
+        /// 2행 2열 균일 격자(폭 1000·높이 500).
+        fn core_with_grid() -> DocumentCore {
+            let mut table = Table {
+                row_count: 2,
+                col_count: 2,
+                ..Default::default()
+            };
+            for r in 0..2u16 {
+                for c in 0..2u16 {
+                    table.cells.push(Cell {
+                        row: r,
+                        col: c,
+                        col_span: 1,
+                        row_span: 1,
+                        width: 1000,
+                        height: 500,
+                        ..Default::default()
+                    });
+                }
+            }
+            table.rebuild_grid();
+            table.rebuild_row_sizes();
+            let mut para = Paragraph::default();
+            para.controls.push(Control::Table(Box::new(table)));
+            let mut section = Section::default();
+            section.paragraphs.push(para);
+            let mut core = DocumentCore::new_empty();
+            core.document.sections.push(section);
+            core
+        }
+
+        fn table(core: &DocumentCore) -> &Table {
+            match &core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Table(t) => t,
+                _ => unreachable!(),
+            }
+        }
+
+        /// (0,0) 폭을 늘리면 그 행만 경계가 옮아 열이 셋으로 갈라진다 — 오라클 관측 그대로다.
+        #[test]
+        fn widening_one_cell_splits_the_columns() {
+            let mut core = core_with_grid();
+            core.resize_table_cell_native(0, 0, 0, 0, 0, false, true)
+                .unwrap();
+            let t = table(&core);
+            assert_eq!(t.col_count, 3, "경계 0·1000·1283·2000 → 열 셋");
+            let cell = |r: u16, c: u16| t.cells.iter().find(|x| x.row == r && x.col == c).unwrap();
+            assert_eq!((cell(0, 0).width, cell(0, 0).col_span), (1283, 2));
+            assert_eq!((cell(0, 2).width, cell(0, 2).col_span), (717, 1));
+            assert_eq!((cell(1, 0).width, cell(1, 0).col_span), (1000, 1));
+            assert_eq!((cell(1, 1).width, cell(1, 1).col_span), (1000, 2));
+        }
+
+        /// (0,0) 높이를 늘리면 행이 갈라진다 — 세로 대칭.
+        #[test]
+        fn growing_one_cell_splits_the_rows() {
+            let mut core = core_with_grid();
+            core.resize_table_cell_native(0, 0, 0, 0, 0, true, true)
+                .unwrap();
+            let t = table(&core);
+            assert_eq!(t.row_count, 3);
+            let cell = |r: u16, c: u16| t.cells.iter().find(|x| x.row == r && x.col == c).unwrap();
+            assert_eq!((cell(0, 0).height, cell(0, 0).row_span), (783, 2));
+            assert_eq!((cell(2, 0).height, cell(2, 0).row_span), (217, 1));
+            assert_eq!((cell(0, 1).height, cell(0, 1).row_span), (500, 1));
+            assert_eq!((cell(1, 1).height, cell(1, 1).row_span), (500, 2));
+        }
+
+        /// 폭과 다른 텍스트 영역 폭(폭+30 셀)은 리사이즈 뒤에도 그 오프셋을 지킨다.
+        /// 절대값으로 덮던 옛 코드는 이 +30 을 지웠다(전수 스캔에서 414셀 발견).
+        #[test]
+        fn text_area_width_keeps_its_offset() {
+            let mut core = core_with_grid();
+            match &mut core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Table(t) => {
+                    for cell in &mut t.cells {
+                        // 폭 1000, 보존 바이트엔 1030 — 상수 +30.
+                        cell.raw_list_extra = 1030u16.to_le_bytes().to_vec();
+                    }
+                }
+                _ => unreachable!(),
+            }
+            core.resize_table_cell_native(0, 0, 0, 0, 0, false, true)
+                .unwrap();
+            let t = table(&core);
+            let c00 = t.cells.iter().find(|x| x.row == 0 && x.col == 0).unwrap();
+            let field = u16::from_le_bytes([c00.raw_list_extra[0], c00.raw_list_extra[1]]);
+            // 폭이 1000→1283(+283)이면 보존 바이트도 1030→1313 — 오프셋 30 유지.
+            assert_eq!(field, 1313, "폭+283 이면 텍스트폭도 +283");
+        }
+
+        /// 마지막 열에는 옮길 경계가 없다 — 무동작(안 잰 자리라 지어내지 않는다).
+        #[test]
+        fn last_column_is_a_noop() {
+            let mut core = core_with_grid();
+            let out = core
+                .resize_table_cell_native(0, 0, 0, 0, 1, false, true)
+                .unwrap();
+            assert!(out.contains("\"moved\":false"), "{out}");
+            assert_eq!(table(&core).col_count, 2);
+        }
     }
 }

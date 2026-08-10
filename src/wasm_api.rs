@@ -5590,6 +5590,38 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 개체의 앞뒤 순서를 바꾼다 — 웹한글컨트롤 `Run("ShapeObjBringToFront")` 계열.
+    ///
+    /// `mode` 는 `front`·`back`·`forward`·`backward`·`inFrontOfText`·`behindText`.
+    #[wasm_bindgen(js_name = setControlZOrderAt)]
+    pub fn set_control_z_order_at_api(
+        &mut self,
+        para_in_list: u32,
+        control_index: u32,
+        mode: &str,
+    ) -> Result<String, JsValue> {
+        self.set_control_z_order_at(para_in_list as usize, control_index as usize, mode)
+            .map_err(|e| e.into())
+    }
+
+    /// 개체를 뒤집는다 — 웹한글컨트롤 `Run("ShapeObjHorzFlip")` 계열.
+    #[wasm_bindgen(js_name = setControlFlipAt)]
+    pub fn set_control_flip_at_api(
+        &mut self,
+        para_in_list: u32,
+        control_index: u32,
+        vertical: bool,
+        org_state: bool,
+    ) -> Result<String, JsValue> {
+        self.set_control_flip_at(
+            para_in_list as usize,
+            control_index as usize,
+            vertical,
+            org_state,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 쪽 하나의 글 — 웹한글컨트롤 `GetPageText`.
     #[wasm_bindgen(js_name = getPageText)]
     pub fn page_text_api(&self, page_index: u32) -> Result<String, JsValue> {
@@ -5739,6 +5771,18 @@ impl HwpDocument {
         end_col: u32,
     ) -> Result<String, JsValue> {
         self.table_merge_at_cursor(list_id, end_row as u16, end_col as u16)
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 블록이 덮은 칸들의 글을 비운다 — `Run("TableDeleteCell")`. 규약은 merge 와 같다.
+    #[wasm_bindgen(js_name = clearTableCellsAtCursor)]
+    pub fn clear_table_cells_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        end_row: u32,
+        end_col: u32,
+    ) -> Result<String, JsValue> {
+        self.clear_table_cells_at_cursor(list_id, end_row as u16, end_col as u16)
             .map_err(|e| e.into())
     }
 
