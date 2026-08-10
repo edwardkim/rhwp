@@ -317,6 +317,38 @@ pub(super) fn rewrite_hwpx(original: &[u8], replacements: &[(String, Vec<u8>)]) 
     out.finish().expect("zip finish").into_inner()
 }
 
+/// HWPX zip 에 **없던** 엔트리를 뒤에 덧붙인다. 기존 엔트리는 `raw_copy_file` 로
+/// 그대로 옮긴다.
+///
+/// `rewrite_hwpx` 는 이름이 이미 있는 엔트리만 갈아끼우므로 새 `BinData/*` 를 넣을 수
+/// 없다. 차트 문서에 그림을 얹어 `bin_count > 1` 을 만들려면(#4099 수용 기준 5) 둘 다
+/// 필요하다 — 코퍼스 28종이 전부 BinData 1개라 합성 외에는 그 경로를 밟을 방법이 없다.
+pub(super) fn append_hwpx_entries(original: &[u8], additions: &[(String, Vec<u8>)]) -> Vec<u8> {
+    let mut src =
+        zip::ZipArchive::new(std::io::Cursor::new(original.to_vec())).expect("원본 HWPX 열기");
+    let existing: Vec<String> = (0..src.len())
+        .map(|i| src.by_index(i).expect("zip 엔트리").name().to_string())
+        .collect();
+    for (name, _) in additions {
+        assert!(
+            !existing.contains(name),
+            "{name} 은 이미 있다 — 교체는 rewrite_hwpx 를 쓴다"
+        );
+    }
+
+    let mut out = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
+    for i in 0..src.len() {
+        let entry = src.by_index(i).expect("zip 엔트리");
+        out.raw_copy_file(entry).expect("raw copy");
+    }
+    for (name, bytes) in additions {
+        out.start_file(name, zip::write::SimpleFileOptions::default())
+            .expect("start_file");
+        out.write_all(bytes).expect("엔트리 쓰기");
+    }
+    out.finish().expect("zip finish").into_inner()
+}
+
 /// HWP5 바깥 CFB 를 다시 쓴다. 지정한 스트림만 갈고 나머지는 바이트 그대로 옮긴다.
 pub(super) fn rewrite_hwp(original: &[u8], replacements: &[(String, Vec<u8>)]) -> Vec<u8> {
     let mut streams = all_streams(original);

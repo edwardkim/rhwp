@@ -37,6 +37,7 @@ use chart_probe_support::{all_streams, corpus, manifest, rewrite_hwpx};
 
 use std::io::{Cursor, Read};
 
+use rhwp::document_core::converters::hwpx_to_hwp::convert_hwpx_to_hwp_ir;
 use rhwp::document_core::DocumentCore;
 use rhwp::model::bin_data::BinDataType;
 use rhwp::model::control::Control;
@@ -438,6 +439,210 @@ fn issue4099_fold_carries_over_chart_only_caption() {
         caption.paragraphs[0].text, "차트 1. 분기 매출",
         "캡션 내용이 보존돼야 한다"
     );
+}
+
+// ---------------------------------------------------------------------------
+// T5 — 수용 기준 5: bin_count > 1 에서 BinData 순서 remap 과 맞물린다
+// ---------------------------------------------------------------------------
+
+/// 1×1 투명 PNG. 저장소에 바이너리를 커밋하지 않으려고 상수로 둔다
+/// (`insert_image_contract.rs` 가 이미 쓰는 방식).
+const TINY_PNG: &[u8] = &[
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4,
+    0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+    0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
+    0x42, 0x60, 0x82,
+];
+
+/// 코퍼스 28종은 **전부 BinData 가 `ole1.ole` 하나**다. 그래서
+/// `materialize_hwp5_bin_data_order` 의 `bin_count <= 1` 조기 반환에 걸려 **remap 이
+/// 한 번도 실제로 돌아본 적이 없다.** 차트와 그림이 함께 있는 문서를 합성해 그 경로를
+/// 덮는다.
+///
+/// `samples/chart/` 에 파일을 커밋하면 `issue_4055_b1_chart_edit_probe.rs` 의
+/// `checked == 56` 하드코딩이 깨지므로 런타임에 조립한다.
+fn synth_chart_plus_picture(chart_hwpx: &[u8]) -> Vec<u8> {
+    // ① manifest — image1 을 ole1 **앞에** 넣어 매니페스트 순번이 1(그림)/2(OLE)가
+    //    되게 한다. 파서는 이 순번을 그대로 storage_id 로 쓴다.
+    let hpf = read_zip_entry(chart_hwpx, "Contents/content.hpf");
+    let ole_item = r#"<opf:item id="ole1" href="BinData/ole1.ole" media-type="application/ole" isEmbeded="0"/>"#;
+    assert!(hpf.contains(ole_item), "manifest 의 ole1 항목을 찾지 못했다");
+    let image_item = r#"<opf:item id="image1" href="BinData/image1.png" media-type="image/png" isEmbeded="1"/>"#;
+    let hpf = hpf.replacen(ole_item, &format!("{image_item}{ole_item}"), 1);
+
+    // ② 그림 문단 — XML 을 손으로 쓰지 않고 실 코퍼스에서 떼어온다. 파서가 요구하는
+    //    hc:imgRect / hp:imgClip / hp:imgDim 을 빠뜨릴 위험을 없앤다. 스타일 참조만
+    //    0 번으로 낮춰 차트 문서의 header.xml 에 없는 id 를 가리키지 않게 한다.
+    let donor = std::fs::read(manifest("samples/hwpx/exam-kor-1p.hwpx")).expect("그림 원본 읽기");
+    let donor_xml = read_zip_entry(&donor, "Contents/section0.xml");
+    let pic_para = extract_shortest_picture_paragraph(&donor_xml)
+        .replace("paraPrIDRef=\"42\"", "paraPrIDRef=\"0\"")
+        .replace("charPrIDRef=\"45\"", "charPrIDRef=\"0\"");
+    assert!(
+        pic_para.contains(r#"binaryItemIDRef="image1""#),
+        "떼어온 그림 문단이 image1 을 참조해야 한다"
+    );
+
+    // ③ 차트 문단이 먼저, 그림 문단이 나중이어야 한다. 반대면 수집 순서가
+    //    identity([1,2])가 되어 remap 이 조기 반환하고 이 테스트가 아무것도 재지 않는다.
+    let xml = read_zip_entry(chart_hwpx, "Contents/section0.xml");
+    let close = "</hs:sec>";
+    let at = xml.rfind(close).expect("</hs:sec>");
+    let xml = format!("{}{}{}", &xml[..at], pic_para, &xml[at..]);
+
+    // ④ section XML 의 `binaryItemIDRef="ole1"` 은 손대지 않는다 —
+    //    `canonicalize_bin_item_refs` 가 숫자 1 ≠ 정규 위치 2 를 보고 `image2` 로
+    //    바꿔 준다. 손으로 바꾸면 그 정규화가 검증에서 빠진다.
+    let patched = rewrite_hwpx(
+        chart_hwpx,
+        &[
+            ("Contents/content.hpf".to_string(), hpf.into_bytes()),
+            ("Contents/section0.xml".to_string(), xml.into_bytes()),
+        ],
+    );
+    chart_probe_support::append_hwpx_entries(
+        &patched,
+        &[("BinData/image1.png".to_string(), TINY_PNG.to_vec())],
+    )
+}
+
+fn extract_shortest_picture_paragraph(section_xml: &str) -> String {
+    let mut best: Option<&str> = None;
+    let mut cursor = 0usize;
+    while let Some(rel) = section_xml[cursor..].find("<hp:p ") {
+        let start = cursor + rel;
+        let Some(rel_end) = section_xml[start..].find("</hp:p>") else {
+            break;
+        };
+        let end = start + rel_end + "</hp:p>".len();
+        let para = &section_xml[start..end];
+        if para.contains("<hp:pic ") && best.is_none_or(|b| para.len() < b.len()) {
+            best = Some(para);
+        }
+        cursor = end;
+    }
+    best.expect("그림 문단을 찾지 못했다").to_string()
+}
+
+#[test]
+fn issue4099_chart_with_picture_survives_bin_data_order_remap() {
+    let synth = synth_chart_plus_picture(&base_hwpx());
+
+    // ── 조립 검증. 이 전제가 깨지면 아래 단언이 다른 것을 재게 된다.
+    let src = rhwp::parse_document(&synth).expect("합성본 파싱");
+    assert_eq!(
+        src.doc_info.bin_data_list.len(),
+        2,
+        "합성이 BinData 2개(그림·OLE)를 만들어야 remap 이 돈다"
+    );
+    let src_ole = first_ole(&src).expect("합성본 OLE");
+    assert_eq!(src_ole.bin_data_id, 60001, "차트는 가상 id 를 갖는다");
+    assert_eq!(
+        src_ole
+            .chart_switch_fallback
+            .as_deref()
+            .expect("fallback")
+            .bin_data_id,
+        2,
+        "fallback 은 매니페스트 2번(ole1)을 가리켜야 한다 — canonicalize_bin_item_refs 결과"
+    );
+    assert_eq!(
+        first_picture_bin_data_id(&src),
+        Some(1),
+        "그림은 매니페스트 1번이다"
+    );
+
+    // ── 어댑터 카운터로 "새 경로가 실제로 열렸는지" 를 직접 못박는다.
+    //    코퍼스 28종은 BinData 가 1개라 `bin_count <= 1` 조기 반환에 걸려 remap 이
+    //    돌지 않는다. 이 합성만이 그 코드를 통과시킨다.
+    let mut ir = rhwp::parse_document(&synth).expect("합성본 IR");
+    let report = convert_hwpx_to_hwp_ir(&mut ir);
+    assert_eq!(report.chart_ole_folded_to_fallback, 1);
+    assert_eq!(report.chart_bin_data_contents_removed, 1);
+    assert_eq!(report.chart_ole_without_fallback, 0);
+    assert_eq!(
+        report.bin_data_order_materialized, 1,
+        "BinData 순서 remap 이 실제로 돌아야 한다 — 이 축은 코퍼스로는 잴 수 없다"
+    );
+
+    let mut base_ir = rhwp::parse_document(&base_hwpx()).expect("base IR");
+    assert_eq!(
+        convert_hwpx_to_hwp_ir(&mut base_ir).bin_data_order_materialized,
+        0,
+        "대조: BinData 1개인 코퍼스 문서는 조기 반환한다 (합성이 새 경로를 연다는 증거)"
+    );
+
+    // ── 변환
+    let mut core = DocumentCore::from_bytes(&synth).expect("합성본 로드");
+    let hwp = core.export_hwp_with_adapter().expect("HWP 변환");
+
+    let doc = rhwp::parse_document(&hwp).expect("변환본 재파싱");
+    let ole = first_ole(&doc).expect("변환본 OLE");
+
+    // 본문 순서(차트→그림) 대로 1,2 가 다시 매겨진다.
+    assert_eq!(
+        ole.bin_data_id, 1,
+        "본문에 먼저 나오는 차트가 BinData 1번을 받아야 한다"
+    );
+    assert_eq!(first_picture_bin_data_id(&doc), Some(2));
+
+    let list: Vec<_> = doc
+        .doc_info
+        .bin_data_list
+        .iter()
+        .map(|b| (b.storage_id, b.data_type, b.extension.clone()))
+        .collect();
+    assert_eq!(
+        list,
+        vec![
+            (1, BinDataType::Storage, Some("OLE".to_string())),
+            (2, BinDataType::Embedding, Some("png".to_string())),
+        ],
+        "DocInfo BinData 가 본문 순서로 재배열돼야 한다"
+    );
+
+    let streams = all_streams(&hwp);
+    let names: Vec<&String> = streams.iter().map(|(n, _)| n).collect();
+    assert!(
+        names.iter().any(|n| *n == "/BinData/BIN0001.OLE"),
+        "스트림 {names:?}"
+    );
+    assert!(
+        names.iter().any(|n| *n == "/BinData/BIN0002.png"),
+        "스트림 {names:?}"
+    );
+    assert!(
+        !names
+            .iter()
+            .any(|n| n.to_ascii_lowercase().ends_with(".ooxml_chart")),
+        "정크 스트림 {names:?}"
+    );
+
+    assert!(
+        verify_diff(&synth).is_empty(),
+        "bin_count>1 경로도 --verify 를 통과해야 한다: {:?}",
+        verify_diff(&synth).differences
+    );
+}
+
+fn first_picture_bin_data_id(doc: &Document) -> Option<u16> {
+    for section in &doc.sections {
+        for para in &section.paragraphs {
+            for ctrl in &para.controls {
+                match ctrl {
+                    Control::Picture(pic) => return Some(pic.image_attr.bin_data_id),
+                    Control::Shape(shape) => {
+                        if let ShapeObject::Picture(pic) = shape.as_ref() {
+                            return Some(pic.image_attr.bin_data_id);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    None
 }
 
 // ---------------------------------------------------------------------------
