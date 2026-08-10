@@ -16329,7 +16329,7 @@ fn cmd_harness_wrap(args: &[String]) -> i32 {
     } else {
         plan_arg.to_string()
     };
-    let mut plan: serde_json::Value = match serde_json::from_str(&plan_text) {
+    let plan: serde_json::Value = match serde_json::from_str(&plan_text) {
         Ok(v) => v,
         Err(e) => {
             eprintln!("오류: 계획 JSON 파싱 실패 - {e}");
@@ -16374,7 +16374,7 @@ fn cmd_harness_wrap(args: &[String]) -> i32 {
     let plan_sha = replay_sha256_hex(plan_text.as_bytes());
     let plan_original = plan.clone();
     // 실산출 실행 — replay 와 달리 계획의 output 경로에 진짜로 쓴다.
-    let (engine_env, engine_code) = run_plan_engine(&mut plan);
+    let (engine_env, engine_code) = run_plan_engine(&plan);
     if engine_code != 0 {
         if json_mode {
             println!(
