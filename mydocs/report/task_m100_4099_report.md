@@ -16,7 +16,8 @@ last_verified: 2026-08-10
 
 **차트 OleShape 를 `<hp:default>` fallback OLE 로 접는다.** 그것이 한컴 자신이 하는 일임을
 정답지 바이트로 확인했고, **변환본의 한컴 렌더가 정답지와 픽셀 단위로 같음**을 확인했다.
-프로덕션 변경은 파일 하나, 함수 둘이다.
+프로덕션 변경은 어댑터 한 파일에 함수 둘, 그리고 그 fold 가 드러낸 저장 의미론 문제를
+막는 `wasm_api` 1줄이다.
 
 ## 1. 무엇이 문제였나
 
@@ -73,7 +74,8 @@ HWPX fallback      bin_data_id=1      instance_id=0           attr=0x140A2210  r
 
 ## 3. 무엇을 고쳤나
 
-프로덕션 변경은 [`hwpx_to_hwp.rs`](../../src/document_core/converters/hwpx_to_hwp.rs) **한 파일**이다.
+결함 자체의 수정은 [`hwpx_to_hwp.rs`](../../src/document_core/converters/hwpx_to_hwp.rs)
+**한 파일**이다(§3-1·3-2·3-4). §3-3 은 그 fold 가 드러낸 별도 축으로, `wasm_api.rs` 1줄이다.
 
 ### 3-1. `fold_hwpx_chart_ole_for_hwp`
 
@@ -108,7 +110,33 @@ normalize_bin_data_for_hwp
 `normalize_picture_geometry_for_hwp` 보다도 앞인 이유는, 그 패스가 바깥 차트 OleShape 에 가한
 변경이 fold 로 통째로 버려지기 때문이다(오늘은 무해하나 조용히 깨질 자리다).
 
-### 3-3. 순회 — 네 번째 복제 워커를 만들지 않았다
+### 3-3. `wasm_api::exportHwp` 를 스냅숏 저장으로 옮겼다
+
+fold 는 IR 에서 `chart_id_ref` 와 `ooxml_chart` 를 **없앤다.** 어댑터가 살아 있는 IR 을
+직접 정규화하므로, HWP 로 한 번 저장한 뒤 같은 핸들로 HWPX 를 내보내면
+`write_ole_or_chart` 가 `hp:switch/case/default` 대신 `hp:ole` 단독을 방출하고
+`Chart/chart1.xml` 파트가 빠진다 — **#3546 계약이 저장 한 번으로 깨진다.** 실측했다.
+
+```text
+[HWP 저장 전]  Chart 파트=1  hp:chart=1  hp:switch=1
+[HWP 저장 후]  Chart 파트=0  hp:chart=0  hp:switch=0   ← 수정 전
+```
+
+**이건 새 종류의 문제가 아니다.** `export_hwp_with_adapter_snapshot` 이 정확히 이 부류를
+위해 이미 있었고(주석: *"저장은 스냅숏이어야 하므로"*), 같은 원인의 다른 증상인 누름틀
+`field_ranges` 어긋남도 거기 적혀 있다. CLI edit 경로만 이관돼 있고 wasm 은 남아 있었다.
+#4099 가 그 미완 이관의 증상을 하나 더 늘렸으므로 여기서 마무리했다.
+
+우회가 아니라 **원인 제거**다 — 저장이라는 읽기 연산이 IR 을 바꾸지 않게 한다. fold 는
+복제본에서 그대로 돌아 HWP 산출물은 동일하다(정크 0, `bin_data_id=1` 확인).
+
+| 측정 | 결과 |
+|---|---|
+| 전체 스위트 회귀 | **0건** — 503 blocks / 5572 passed, 기준선과 완전 동일 |
+| 되돌렸을 때 | T7 red: `(1,1,1) → (0,0,0)` |
+| 비용 | 브라우저 HWP 저장 시 `Document` clone 1회 |
+
+### 3-4. 순회 — 네 번째 복제 워커를 만들지 않았다
 
 이 파일에는 거의 같은 재귀 워커가 이미 넷 있다. 좁은 타입 `for_each_ole_mut` 를 두고 골격만
 `normalize_picture_geometry_for_hwp` 쪽에서 가져왔다 — 넷 중 커버리지가 가장 넓어
@@ -180,7 +208,7 @@ fold 를 임시로 끄면 `ole.bin_data_id` 가 `60001` 로 남아 red 임을 �
 | `issue_4055_b1_chart_edit_probe` | 9/9 green + 1 ignored, 무수정 |
 | `hwpx_to_hwp_adapter` | 50/50 green, 무수정 |
 | `convert_verify_corpus_ratchet` | 4/4 green (코퍼스 확장) |
-| `issue_4099_hwpx_chart_to_hwp` (신규) | 9/9 green + 1 ignored |
+| `issue_4099_hwpx_chart_to_hwp` (신규) | 10/10 green + 1 ignored |
 
 `issue_4055::editing_only_the_zip_part_is_lost_when_converting_to_hwp` 가 green 인 것은
 **호출 순서 덕분이다** — `export_hwpx_native()` 를 `export_hwp_with_adapter()` 보다 먼저
@@ -251,30 +279,38 @@ A 는 **26B OLE 레코드**와 **flip = 0** 을 가진 채로 정답지와 픽�
 
 `Document::next_bin_data_storage_id` 는 `max(bin_data_content.id, bin_data_list.storage_id) + 1`
 을 채번한다. 차트 문서는 `bin_data_content` 에 **60001** 이 있으므로, 그림을 삽입하면
-`storage_id = 60002` 가 배정된다. 그런데 `materialize_hwp5_bin_data_order` 의 `bin_count` 는
-`bin_data_list.len()`(=2)이고 `push_bin_order` 는 `id > bin_count` 를 버리므로 **그 항목이
-순서 수집에서 조용히 탈락한다.**
+`storage_id = 60002` 가 배정된다.
+
+**추론이 아니라 재현했다.** 차트 hwpx 를 열고 `insert_picture_native` 로 그림 하나를 넣었다.
+
+```text
+삽입 후    bin_data_content=[(1,"OLE"), (60001,"ooxml_chart"), (60002,"png")]
+           bin_data_list   =[(1,Storage), (60002,Embedding)]
+HWP  저장  /BinData/BINEA62.png          ← #4099 가 고친 것과 같은 계열의 규격 밖 이름
+HWPX 저장  실패: <hp:pic> binaryItemIDRef 미등록 bin_data_id=3 (BinDataContent 누락)
+           BinData/image1.OLE, BinData/image60002.png
+```
+
+**차트 문서에 그림을 넣으면 HWPX 저장이 아예 깨진다.** HWP 저장은 열리지만 스트림 이름이
+`BINEA62.png`(0xEA62 = 60002)라 규격 밖이다. 덧붙여 `materialize_hwp5_bin_data_order` 의
+`bin_count` 는 `bin_data_list.len()`(=2)이고 `push_bin_order` 는 `id > bin_count` 를 버리므로
+**그 항목이 순서 수집에서도 조용히 탈락한다.**
 
 #4099 의 fold 로는 안 고쳐진다 — 오염은 **live HWPX IR**(편집 시점)에서 일어나고 fold 는
 HWP 저장 시점이다. 재현은 **저장 전에** 해야 한다.
 
-### 7-2. 어댑터가 live IR 을 파괴해 HWPX 재방출이 깨진다 (R1)
+닫힌 [#2038](https://github.com/edwardkim/rhwp/issues/2038)("신규 그림 BinData storage id
+순번 채번 — 기존 id 충돌 시 저장에서 이미지 뒤바뀜/소실")이 이 채번 함수를 만들었고, 그때는
+차트 sentinel 이라는 변수가 없었다. 그 후속이다.
 
-`wasm_api::exportHwp` 는 in-place 어댑터를 쓴다. #4099 의 fold 이후, 브라우저 핸들로 곧바로
-`exportHwpx` 를 누르면 `chart_id_ref == None` 이라 `write_ole_or_chart` 가
-`hp:switch/case/default` 대신 **`hp:ole` 단독**을 방출하고, `bin_data_content` 에서 차트가
-빠져 **`Chart/chart1.xml` 파트가 패키지에서 누락**된다. **#3546 이 세운 "차트 원형 보존"
-계약이 HWP 저장 한 번으로 깨진다.** #4319 로 `write_chart_element` 에 캡션 방출이 붙어 캡션
-경로도 함께 영향받는다.
+> **R1(어댑터 live-IR 파괴)은 spin-off 에서 빠졌다** — 실측 결과 1줄 · 회귀 0 으로
+> 해소돼 §3-3 에서 이 PR 에 담았다. 이 PR 이 만든 증상이므로 이 PR 에서 치우는 것이 맞다.
+>
+> `issue_4055::editing_only_the_zip_part_is_lost_when_converting_to_hwp` 가 계속 green 인
+> 것은 `export_hwpx_native()` 를 `export_hwp_with_adapter()` 보다 먼저 부르는 **호출 순서
+> 덕분**이었다. 순서가 반대였으면 깨졌다. 이제 그 우연에 기대지 않는다.
 
-렌더는 중첩 `OOXMLChartContents` 로 살아남으므로 치명적이지는 않으나, 어댑터의 다른 in-place
-변형과 달리 **이것은 페이로드 삭제**라 종류가 다르다. 후보 수정은
-`export_hwp_with_adapter_snapshot()` 사용(1줄, `Document` clone 1회 비용).
-
-`issue_4055::editing_only_the_zip_part_is_lost_when_converting_to_hwp` 가 지금 green 인 것은
-호출 순서 덕분이며, 그 사실이 이 결함의 축소판이다.
-
-### 7-3. `hwpx_to_hwp.rs` 의 IR 워커 다섯을 하나로 통합
+### 7-2. `hwpx_to_hwp.rs` 의 IR 워커 다섯을 하나로 통합
 
 거의 같은 재귀 워커가 다섯이고 커버리지가 제각각이다. 이 표가 근거다.
 
@@ -301,7 +337,8 @@ HWP 저장 시점이다. 재현은 **저장 전에** 해야 한다.
 | 경로 | 내용 |
 |---|---|
 | `src/document_core/converters/hwpx_to_hwp.rs` | `fold_hwpx_chart_ole_for_hwp` · `for_each_ole_mut` · `AdapterReport` 3필드 |
-| `tests/issue_4099_hwpx_chart_to_hwp.rs` | 게이트 9건 + 판정 번들 생성기 1건(ignore) |
+| `src/wasm_api.rs` | `exportHwp` → `export_hwp_with_adapter_snapshot` (1줄) |
+| `tests/issue_4099_hwpx_chart_to_hwp.rs` | 게이트 10건 + 판정 번들 생성기 1건(ignore) |
 | `tests/support/issue_4055_chart_probe.rs` | `append_hwpx_entries` 추가 |
 | `tests/convert_verify_corpus_ratchet.rs` | `samples/chart` 재귀 병합 |
 | `output/issue_4099/` | 한컴 판정 5파일 + `PANJEONG.md` + 작업지시자가 한컴 2022 로 변환한 PDF 2건 + 144DPI PNG 2건 (gitignored) |
