@@ -44,7 +44,7 @@
     "e2e:manifest-check": "python3 ../scripts/check_e2e_manifest.py"
   },
   "devDependencies": {
-    "@types/chrome": "^0.2.2",
+    "@types/chrome": "^0.2.5",
     "puppeteer-core": "^25.4.0",
     "typescript": "^7.0.2",
     "vite": "^8.2.0",
