@@ -348,6 +348,11 @@ fn serialize_paragraph_with_msb(
 fn compute_control_mask(para: &Paragraph) -> u32 {
     let mut mask: u32 = 0;
     for ctrl in &para.controls {
+        // [#4424] CTRL_HEADER 를 만들지 않는 컨트롤은 PARA_TEXT 에도 문자를 내지
+        // 않으므로 control_mask 비트도 세우지 않는다 — 셋이 항상 함께 움직여야 한다.
+        if !emits_ctrl_header(ctrl) {
+            continue;
+        }
         let (char_code, _) = control_char_code_and_id(ctrl);
         mask |= 1u32 << char_code;
     }
@@ -689,10 +694,12 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 .get(&ctrl_idx)
                 .is_none_or(|&start| start <= i)
         {
-            let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
-            push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+            if emits_ctrl_header(&para.controls[ctrl_idx]) {
+                let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
+                push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+                prev_end += 8;
+            }
             ctrl_idx += 1;
-            prev_end += 8;
         }
 
         // ③ 이 자리에서 시작하는 필드의 FIELD_BEGIN 은 **갭 예산과 무관하게 강제 방출**한다.
@@ -703,10 +710,12 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 .get(&ctrl_idx)
                 .is_some_and(|&start| start == i)
         {
-            let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
-            push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+            if emits_ctrl_header(&para.controls[ctrl_idx]) {
+                let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
+                push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+                prev_end += 8;
+            }
             ctrl_idx += 1;
-            prev_end += 8;
         }
 
         // ④ 빈 필드(시작==끝)의 FIELD_END — 자기 BEGIN 직후.
@@ -778,9 +787,11 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
     // `char_shapes` 시프트 계산은 절대 위치가 필요하다 — `prev_end` 를 그대로 이어 써서
     // (메인 루프가 끝난 시점 값에서 시작) 8 code unit 씩 전진시킨다.
     while ctrl_idx < para.controls.len() {
-        let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
-        push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
-        prev_end += 8;
+        if emits_ctrl_header(&para.controls[ctrl_idx]) {
+            let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
+            push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+            prev_end += 8;
+        }
 
         // 이 컨트롤(FIELD_BEGIN)에 대응하는 안내문 잔재 — 자기 FIELD_END 바로 앞.
         if let Some(residues) = trailing_residues.get(&ctrl_idx) {
@@ -1023,6 +1034,32 @@ fn should_serialize_figure_space_as_hwp_fixed_blank(para: &Paragraph) -> bool {
 ///   0x0012: 자동번호 (atno)
 ///   0x0015: 페이지 컨트롤/새 번호 (pgnp, pghi, nwno)
 ///   0x0016: 책갈피 (bokm)
+/// 이 컨트롤이 CTRL_HEADER 레코드를 만드는가.
+///
+/// [#4424] `serialize_control` 의 catch-all arm(`Hyperlink | Ruby | Unknown`)은
+/// `ctrl_id == 0` 이면 CTRL_HEADER 를 아예 만들지 않는다. 그런데 PARA_TEXT 쪽은
+/// 그것과 무관하게 확장 컨트롤 문자(0x000B)를 방출해 왔다.
+///
+/// HWP5 파서는 확장 컨트롤 문자를 셀 때마다 `controls[]` 인덱스를 하나 올리므로
+/// (`parser/body_text.rs` 의 `is_extended_only_ctrl_char` 가 11 을 포함한다),
+/// 짝 없는 문자 하나가 **뒤따르는 필드의 `field_ranges[].control_idx` 를 한 칸
+/// 밀어 존재하지 않는 인덱스를 가리키게 만든다.**
+///
+/// 그래서 텍스트 쪽 방출 조건을 레코드 쪽과 정확히 같게 맞춘다. 문자를 내지 않으면
+/// 컨트롤 자체는 잃지만(하이퍼링크는 HWP5 에 규정된 슬롯이 없다 — HWP5 파서는
+/// `Control::Hyperlink` 를 만들지 않고 생성 지점이 HWP3 하나뿐이다), 짝짓기는
+/// 깨지지 않는다. 슬롯을 발명하는 것보다 낫다.
+///
+/// `Control::Ruby` 는 같은 arm 이지만 규정된 ctrl_id(`tdut`)가 있어 방출을 막는 것이
+/// 답이 아니다 — #4397 에서 따로 다룬다. 여기서는 건드리지 않는다.
+fn emits_ctrl_header(ctrl: &Control) -> bool {
+    match ctrl {
+        Control::Hyperlink(_) => false,
+        Control::Unknown(u) => u.ctrl_id != 0,
+        _ => true,
+    }
+}
+
 fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
     match ctrl {
         Control::SectionDef(_) => (0x0002, tags::CTRL_SECTION_DEF),
@@ -1056,9 +1093,9 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::control::{AutoNumber, Field, FieldType, NewNumber};
+    use crate::model::control::{AutoNumber, Bookmark, Field, FieldType, Hyperlink, NewNumber};
     use crate::model::document::{Section, SectionDef};
-    use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph, RangeTag};
+    use crate::model::paragraph::{CharShapeRef, FieldRange, LineSeg, Paragraph, RangeTag};
     use crate::parser::body_text::parse_body_text_section;
 
     /// 간단한 텍스트 문단 라운드트립
@@ -1623,6 +1660,90 @@ mod tests {
         assert_eq!(parsed.paragraphs[0].text, "AB");
         // SectionDef 컨트롤이 파싱되어 section_def에 반영
         assert_eq!(parsed.section_def.default_tab_spacing, 800);
+    }
+
+    /// #4424: `Control::Hyperlink` 는 `control_char_code_and_id` 에서 `(0x000B, 0)` 이라
+    /// PARA_TEXT 에 확장 컨트롤 문자 0x000B 만 남기고 CTRL_HEADER 레코드는 만들지 않는다.
+    ///
+    /// 파서(`parse_para_text`)는 확장 컨트롤 문자를 만날 때마다 `ctrl_idx` 를 올려
+    /// `controls[]` 와 위치를 1:1로 맞춘다(`is_extended_only_ctrl_char` 가 11 을 포함).
+    /// 짝 없는 0x000B 하나가 그 카운터를 한 칸 올려버리므로, **뒤따르는 필드의
+    /// `field_ranges[].control_idx` 가 실제 `controls[]` 인덱스보다 하나 크게 잡힌다.**
+    ///
+    /// `controls` 벡터 자체는 CTRL_HEADER 레코드 순서로 따로 만들어지므로 멀쩡하다 —
+    /// 어긋나는 것은 위치↔인덱스 매핑이고, 그 매핑을 `wasm_api` 의 필드 조회들이 쓴다.
+    #[test]
+    fn test_hyperlink_does_not_shift_following_field_control_idx() {
+        let para = Paragraph {
+            // 'A'(1) + Hyperlink(1) + FIELD_BEGIN(1) + 'B'(1) + FIELD_END(1) + 문단끝(1)
+            char_count: 6,
+            text: "AB".to_string(),
+            char_offsets: vec![0, 10],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                ..Default::default()
+            }],
+            controls: vec![
+                Control::Hyperlink(Hyperlink {
+                    url: String::new(),
+                    text: String::new(),
+                }),
+                Control::Field(Field {
+                    field_type: FieldType::ClickHere,
+                    ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+                    ..Default::default()
+                }),
+            ],
+            field_ranges: vec![FieldRange {
+                start_char_idx: 1,
+                end_char_idx: 2,
+                control_idx: 1,
+                end_field_id: 0,
+            }],
+            ..Default::default()
+        };
+
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+        let p = &parsed.paragraphs[0];
+
+        // 하이퍼링크는 레코드가 없으니 controls 에는 필드 하나만 남는다 (손실은 이 테스트의
+        // 관심사가 아니다 — 소실 자체는 #4397/#4424 본문에서 따로 다룬다).
+
+        assert_eq!(
+            p.controls.len(),
+            1,
+            "하이퍼링크는 레코드가 없으니 controls 에는 필드 하나만 남는다"
+        );
+        assert!(
+            matches!(p.controls[0], Control::Field(_)),
+            "controls[0] 이 필드여야 한다: {:?}",
+            p.controls[0]
+        );
+
+        // 핵심 단언: 필드를 가리키는 인덱스가 실제 위치(0)여야 한다.
+        assert_eq!(
+            p.field_ranges.len(),
+            1,
+            "필드 범위가 하나 잡혀야 한다: {:?}",
+            p.field_ranges
+        );
+        assert_eq!(
+            p.field_ranges[0].control_idx, 0,
+            "짝 없는 0x000B 가 ctrl_idx 를 밀어 필드 인덱스가 어긋났다 \
+             (controls[{}] 는 존재하지 않는다)",
+            p.field_ranges[0].control_idx
+        );
     }
 
     /// 단 나누기 종류 라운드트립
