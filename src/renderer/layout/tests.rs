@@ -96,6 +96,121 @@ fn physical_outer_box_paint_inset_layout_gate_requires_single_active_zone_column
     ));
 }
 
+#[test]
+fn note_separator_length_resolves_schema_sentinels_and_absolute_hwpunit() {
+    use super::{footnote_separator_length_px, note_separator_length_px};
+
+    let width = 600.0;
+    let dpi = 96.0;
+    assert!((note_separator_length_px(-1, width, dpi) - 188.976_377_95).abs() < 1e-6);
+    assert!((note_separator_length_px(-2, width, dpi) - 75.590_551_18).abs() < 1e-6);
+    assert!((note_separator_length_px(-3, width, dpi) - 200.0).abs() < 1e-9);
+    assert!((note_separator_length_px(-4, width, dpi) - width).abs() < 1e-9);
+    assert!((note_separator_length_px(7_200, width, dpi) - 96.0).abs() < 1e-9);
+    assert!((note_separator_length_px(72_000, width, dpi) - width).abs() < 1e-9);
+    assert_eq!(note_separator_length_px(0, width, dpi), 0.0);
+
+    // FootnoteArea가 실제 단 폭/시작점을 갖기 전에는 상대 sentinel을 넓히지 않는다.
+    assert!((footnote_separator_length_px(-3, width, dpi) - 200.0).abs() < 1e-9);
+    assert!((footnote_separator_length_px(-4, width, dpi) - 200.0).abs() < 1e-9);
+}
+
+#[test]
+fn endnote_separator_caller_uses_schema_sentinel_widths() {
+    fn rendered_width(separator_length: i32) -> f64 {
+        let engine = LayoutEngine::with_default_dpi();
+        let mut tree = PageRenderTree::new(0, 800.0, 1_100.0);
+        let area = LayoutRect {
+            x: 100.0,
+            y: 100.0,
+            width: 600.0,
+            height: 900.0,
+        };
+        let mut column = RenderNode::new(
+            tree.next_id(),
+            RenderNodeType::Column(0),
+            BoundingBox::new(area.x, area.y, area.width, area.height),
+        );
+        engine.layout_endnote_separator_item(
+            &mut tree,
+            &mut column,
+            &area,
+            area.y,
+            separator_length,
+            0,
+            0,
+            1,
+            1,
+            0,
+        );
+        let line = column.children.first().expect("endnote separator line");
+        match &line.node_type {
+            RenderNodeType::Line(line) => (line.x2 - line.x1).abs(),
+            other => panic!("expected separator Line, got {other:?}"),
+        }
+    }
+
+    assert!((rendered_width(-2) - 96.0 * 2.0 / 2.54).abs() < 1e-6);
+    assert!((rendered_width(-4) - 600.0).abs() < 1e-9);
+}
+
+#[test]
+fn footnote_separator_caller_uses_absolute_hwpunit_width() {
+    let engine = LayoutEngine::with_default_dpi();
+    let mut tree = PageRenderTree::new(0, 800.0, 1_100.0);
+    let area = LayoutRect {
+        x: 100.0,
+        y: 900.0,
+        width: 600.0,
+        height: 100.0,
+    };
+    let mut footnote_area = RenderNode::new(
+        tree.next_id(),
+        RenderNodeType::FootnoteArea,
+        BoundingBox::new(area.x, area.y, area.width, area.height),
+    );
+    let paragraphs = vec![Paragraph {
+        controls: vec![Control::Footnote(Box::new(
+            crate::model::footnote::Footnote {
+                number: 1,
+                ..Default::default()
+            },
+        ))],
+        ..Default::default()
+    }];
+    let footnotes = vec![FootnoteRef {
+        number: 1,
+        source: FootnoteSource::Body {
+            para_index: 0,
+            control_index: 0,
+        },
+        fragment: None,
+    }];
+    let shape = FootnoteShape {
+        separator_length: 7_200,
+        separator_line_type: 1,
+        separator_line_width: 1,
+        ..Default::default()
+    };
+
+    engine.layout_footnote_area(
+        &mut tree,
+        &mut footnote_area,
+        &footnotes,
+        &paragraphs,
+        &ResolvedStyleSet::default(),
+        &area,
+        &shape,
+    );
+
+    let line = footnote_area
+        .children
+        .iter()
+        .find(|child| matches!(child.node_type, RenderNodeType::Line(_)))
+        .expect("footnote separator line");
+    assert!((line.bbox.width - 96.0).abs() < 1e-9);
+}
+
 /// Task #3216: AutoNumber(Page)와 명시 쪽번호 필드가 같은 문단에 있어도 각각은
 /// 모델 한 글자를 유지하고 표시값만 확장해야 한다.
 #[test]

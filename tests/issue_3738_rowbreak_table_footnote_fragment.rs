@@ -144,6 +144,22 @@ fn footnote_separator_top(node: &RenderNode, top: &mut Option<f64>) {
     }
 }
 
+fn footnote_separator_bbox(node: &RenderNode, bbox: &mut Option<BoundingBox>) {
+    if matches!(node.node_type, RenderNodeType::FootnoteArea) {
+        if let Some(line) = node
+            .children
+            .iter()
+            .find(|child| matches!(child.node_type, RenderNodeType::Line(_)))
+        {
+            *bbox = Some(line.bbox);
+            return;
+        }
+    }
+    for child in &node.children {
+        footnote_separator_bbox(child, bbox);
+    }
+}
+
 fn table_bottom(node: &RenderNode, para_index: usize, bottom: &mut Option<f64>) {
     if let RenderNodeType::Table(table) = &node.node_type {
         if table.para_index == Some(para_index) {
@@ -1136,6 +1152,21 @@ fn native_hwp5_earlier_marker_projects_the_p120_footnote_before_body_reset() {
         "p121 para 1297은 FootnoteArea를 침범하면 안 됨"
     );
     for (physical_page, tree) in [(120, p120_tree), (121, p121_tree)] {
+        let mut body = None;
+        body_bbox(&tree.root, &mut body);
+        let body = body.expect("body bbox");
+        let mut separator = None;
+        footnote_separator_bbox(&tree.root, &mut separator);
+        let separator = separator.expect("footnote separator bbox");
+        let expected_five_cm = DEFAULT_DPI * 5.0 / 2.54;
+        assert!(
+            (separator.x - body.x).abs() <= 0.05,
+            "p{physical_page} footnote separator start x는 body와 같아야 함: body={body:?}, separator={separator:?}"
+        );
+        assert!(
+            (separator.width - expected_five_cm).abs() <= 0.05,
+            "p{physical_page} separatorLength=-1은 5cm여야 함: separator={separator:?}, expected={expected_five_cm}"
+        );
         let mut footnote_bottom = None;
         let mut footer_top = None;
         footnote_and_footer(&tree.root, &mut footnote_bottom, &mut footer_top);

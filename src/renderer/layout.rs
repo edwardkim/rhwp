@@ -77,6 +77,36 @@ fn physical_outer_box_paint_inset_layout_gate(
         && measured_total_height.is_some_and(|measured| (measured - declared_height).abs() <= 0.5)
 }
 
+/// OWPML `NoteShapeType.noteLine.length`의 수평 길이 계약을 px로 해석한다.
+///
+/// 알 수 없는 음수만 손상 문서 호환을 위해 기존 1/3 폭 fallback으로 남긴다.
+/// `0`의 수직 예약까지 없애는 일은 paint 길이와 별개의 pagination 계약이다.
+fn note_separator_length_px(raw: i32, available_width: f64, dpi: f64) -> f64 {
+    let available_width = available_width.max(0.0);
+    let resolved = match raw {
+        0 => 0.0,
+        -1 => dpi * 5.0 / 2.54,
+        -2 => dpi * 2.0 / 2.54,
+        -3 => available_width / 3.0,
+        -4 => available_width,
+        value if value > 0 => hwpunit_to_px(value, dpi),
+        _ => available_width / 3.0,
+    };
+    resolved.clamp(0.0, available_width)
+}
+
+/// 현재 FootnoteArea는 다단 각주도 body 전체 폭으로 합쳐 그린다.
+///
+/// 고정 길이(-1/-2)와 양수 HWPUNIT은 그 구조와 무관하게 해석할 수 있지만,
+/// 상대 길이(-3/-4)는 실제 소유 단의 폭/시작점을 알아야 한다. 다단 placement를
+/// 함께 고치기 전까지 상대 sentinel은 기존 1/3 폭을 보존해 범위를 넓히지 않는다.
+fn footnote_separator_length_px(raw: i32, area_width: f64, dpi: f64) -> f64 {
+    match raw {
+        -3 | -4 => area_width.max(0.0) / 3.0,
+        _ => note_separator_length_px(raw, area_width, dpi),
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 struct TacReceiptSealLine {
     shift_px: f64,
@@ -6972,11 +7002,7 @@ impl LayoutEngine {
         let has_separator = line_type != 0 && line_width_raw != 0;
         let line_width = if has_separator {
             let line_width = border_width_to_px(line_width_raw).max(0.5);
-            let sep_length = if separator_length > 0 {
-                hwpunit_to_px(separator_length as i32, self.dpi).min(col_area.width)
-            } else {
-                col_area.width / 3.0
-            };
+            let sep_length = note_separator_length_px(separator_length, col_area.width, self.dpi);
             let line_id = tree.next_id();
             let line_node = RenderNode::new(
                 line_id,

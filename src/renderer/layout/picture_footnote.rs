@@ -12,7 +12,7 @@ use super::super::{
 use super::border_rendering::border_width_to_px;
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::{extract_shape_transform, find_bin_data_bytes, picture_display_size_hu};
-use super::LayoutEngine;
+use super::{footnote_separator_length_px, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::footnote::{FootnoteShape, NumberFormat};
@@ -911,13 +911,8 @@ impl LayoutEngine {
             y += hwpunit_to_px(shape.separator_above_margin_hu() as i32, self.dpi);
 
             // (2) 구분선
-            let sep_length = if shape.separator_length > 0 {
-                // separator_length는 HWP 단위로 페이지 폭의 비율
-                let fraction = shape.separator_length as f64 / 50000.0;
-                fn_area.width * fraction.min(1.0)
-            } else {
-                fn_area.width / 3.0 // 기본값: 1/3 폭
-            };
+            let sep_length =
+                footnote_separator_length_px(shape.separator_length, fn_area.width, self.dpi);
             let line_width = border_width_to_px(shape.separator_line_width).max(0.5);
 
             let sep_id = tree.next_id();
