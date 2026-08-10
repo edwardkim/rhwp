@@ -3825,14 +3825,30 @@ impl LayoutEngine {
             } else {
                 effective_col_x + effective_margin_left
             };
-            // 한글은 셀 밖 오른쪽 정렬 폭에서 말미 공백을 제외한다
+            // 한글은 셀 밖 오른쪽/가운데 정렬 폭에서 말미 공백을 제외한다
             // (needs_justify 의 후행 공백 제외와 동일 규칙). 포함하면
             // [그림+말미공백72] 꼬리말이 공백 폭(447px)만큼 왼쪽으로 이탈 —
-            // 식약처 보도자료 OPEN 로고 실측(한글 x=607.3). 반례: 셀 내부는
-            // 한글이 말미 공백을 포함해 정렬(issue_1285 수험번호 TAC 우단
-            // = 셀 inner 우단 오라클 앵커) — cell_ctx 부재로 한정. Center 도
-            // 근거 부재로 기존 동작 유지.
-            let right_trailing_ws_width = if alignment == Alignment::Right && cell_ctx.is_none() {
+            // 식약처 보도자료 OPEN 로고 실측(한글 x=607.3). Center 는 30213
+            // 의결서 위원 서명 줄 실측(말미 공백 8칸 포함 줄만 한글 대비 43px
+            // 좌측 이탈, 한글 PDF x=229.56pt 는 공백 제외 중심). 반례 셋으로
+            // 한정한다: ① 셀 내부는 한글이 말미 공백을 포함해 정렬(issue_1285
+            // 수험번호 TAC 우단 = 셀 inner 우단 오라클 앵커) — cell_ctx 부재.
+            // ② soft-wrap 지점의 줄끝 공백은 포함 — 문단 마지막 줄 한정.
+            // ③ TAC 컨트롤이 있는 줄은 공백이 시각적 말미가 아니다 —
+            // line_tac_offsets_for_width 비어 있을 때 한정. ④ 전부 공백인
+            // 줄(밑줄 친 서명란)과 밑줄 스타일 말미 공백은 보이는 콘텐츠라
+            // 유지(issue_157 직선 골든 — 제외하면 우측 클립까지 이탈).
+            let center_excludes_trailing_ws = alignment == Alignment::Center
+                && cell_ctx.is_none()
+                && is_last_line_of_para
+                && line_tac_offsets_for_width.is_empty()
+                && comp_line
+                    .runs
+                    .iter()
+                    .any(|r| r.text.chars().any(|c| c != ' '));
+            let trailing_ws_width = if (alignment == Alignment::Right && cell_ctx.is_none())
+                || center_excludes_trailing_ws
+            {
                 // 말미 공백이 서로 다른 글꼴/글자 크기의 run 경계를 넘을 수 있다.
                 // 전체 공백을 마지막 run의 style로 재측정하면 그만큼 오른쪽 앵커를
                 // 틀리게 복원하므로, 뒤에서부터 각 run의 실제 style 폭을 더한다.
@@ -3843,6 +3859,13 @@ impl LayoutEngine {
                         break;
                     }
                     let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    // ④ 밑줄 친 말미 공백은 보이는 콘텐츠 — Center 는 제외 대상에서
+                    // 뺀다(Right 는 기존 검증 동작 유지).
+                    if center_excludes_trailing_ws
+                        && ts.underline != crate::renderer::UnderlineType::None
+                    {
+                        break;
+                    }
                     width += estimate_text_width(&" ".repeat(trailing_spaces), &ts);
                     if trailing_spaces != run.text.chars().count() {
                         break;
@@ -3859,7 +3882,8 @@ impl LayoutEngine {
                     } else if non_cell_tac_only_line {
                         0.0
                     } else {
-                        (available_width - effective_text_width).max(0.0) / 2.0
+                        (available_width - (effective_text_width - trailing_ws_width)).max(0.0)
+                            / 2.0
                     };
                     x_base + inline_offset + num_x_offset + align_offset
                 }
@@ -3875,8 +3899,7 @@ impl LayoutEngine {
                     x_base
                         + inline_offset
                         + num_x_offset
-                        + (available_width - (effective_text_width - right_trailing_ws_width))
-                            .max(0.0)
+                        + (available_width - (effective_text_width - trailing_ws_width)).max(0.0)
                 }
                 _ => x_base + inline_offset + num_x_offset, // Left, Justify, Split, Distribute(분배중)
             };
