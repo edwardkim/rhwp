@@ -72,10 +72,10 @@ fn is_token(s: &str) -> bool {
 
 /// 그룹 명령의 하위명령 실명 — `--help` 의 "  <머리> <하위> …" 줄에서 수확한다.
 ///
-/// `batch <export-text|…>` 처럼 하위가 플레이스홀더인 줄은 토큰 규칙(`<` 시작
-/// 불가)에 걸러져 그룹으로 등록되지 않는다 — `rhwp batch info` 같은 참조가
-/// 오탐되지 않는 이유다. 하위명령 목록이 도움말에 실리는 그룹(edit·inspect)만
-/// 2단 검증 대상이 된다.
+/// 두 표기 모두 거둔다: 실토큰 줄("edit replace-text …")과 대안 나열
+/// 플레이스홀더("batch <export-text|info|…>"). 후자를 안 거두면 batch 가
+/// `batch fill` 줄 하나 때문에 {fill}만 가진 그룹으로 등록되어, 정당한
+/// `rhwp batch info` 참조가 오탐된다(개발 중 실측).
 fn group_subcommands() -> BTreeMap<String, BTreeSet<String>> {
     let mut map: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     for line in rhwp(&["--help"]).lines() {
