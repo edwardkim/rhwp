@@ -56,6 +56,7 @@ const NOT_WRAPPED = new Set(['diagnostic', 'internal', 'serve']);
  */
 const SUBCOMMAND_WRAPPERS: Readonly<Record<string, readonly string[]>> = {
   edit: ['fillFields', 'replaceText', 'setCell'],
+  harness: ['harnessInit', 'harnessWrap', 'harnessStatus'],
 };
 
 /**

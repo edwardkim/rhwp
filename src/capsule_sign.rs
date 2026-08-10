@@ -36,6 +36,9 @@ use ed25519_dalek::{Signature, Signer as _, SigningKey, Verifier as _, Verifying
 
 use rhwp::schema_registry::SIGNING_SCHEMA_VERSION;
 
+/// 재수출 — 하네스 init 이 키링 골격에 쓴다 (레지스트리 단일 출처 유지).
+pub const SIGNING_SCHEMA_VERSION_STR: &str = SIGNING_SCHEMA_VERSION;
+
 /// 키 파일의 `kind` — 비밀키를 담으므로 절대 캡슐·봉투에 인라인하지 않는다.
 pub const KEY_KIND: &str = "ed25519Key";
 /// 분리 서명 파일의 `kind`.

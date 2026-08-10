@@ -409,6 +409,17 @@ fn recipes() -> Vec<Recipe> {
         br#"{"schemaVersion":"1.0","kind":"keyring","keys":[]}"#,
     )
     .expect("빈 keyring 픽스처");
+    // harness status 픽스처 — 깨진 캡슐 폴더 규약(capsules/ 하위).
+    let harness_dir = dir.join("prov-harness");
+    std::fs::create_dir_all(harness_dir.join("capsules")).expect("하네스 작업장");
+    std::fs::write(
+        harness_dir
+            .join("capsules")
+            .join("0001_broken.capsule.json"),
+        br#"{"kind":"notACapsule"}"#,
+    )
+    .expect("깨진 하네스 캡슐");
+
     let keygen_out = dir.join("prov-keygen.key.json");
     let _ = std::fs::remove_file(&keygen_out);
 
@@ -872,6 +883,15 @@ fn recipes() -> Vec<Recipe> {
                 p(&sig_keyring),
                 s("--json"),
             ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // harness status — 깨진 캡슐 하나로 verdict:broken(exit 3) 경로 고정.
+            command: "harness",
+            doc: None,
+            args: vec![s("harness"), s("status"), p(&harness_dir), s("--json")],
             stdin: None,
             exit: 3,
             ndjson: false,

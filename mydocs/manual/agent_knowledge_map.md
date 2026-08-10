@@ -304,7 +304,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 198개 필드
+### 2-2. 전수 사전 — 203개 필드
 
 `capabilities` 의 `recordFields` 고유 **185개**와 그 밖의 실측-only 필드
 `assertions`·`docId`·`preview` **3개**를 합친 188개다. `등장 명령` 은 자기서술
@@ -489,6 +489,18 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `keyKnown` | bool | keyId 가 키 등록부에 있는가 | `verify-signature` |
 | `revoked` | object\|null | 폐기 기록(`{at, reason}`). 미폐기는 `null` — 폐기 판정이 서명 유효보다 우선한다 | `verify-signature` |
 | `verdict` | string | valid·invalid·unknownKey·revoked·malformed — **valid 아님 = exit 3** | `verify-signature` |
+
+#### 하네스 (`harness`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `dir` | string | 작업장 폴더 경로(호출자 에코) | `harness` |
+| `capsule` 재사용 | — | wrap 이 만든 캡슐 **파일명**(연번_계획해시8) — verify-signature 의 경로 에코와 동명 재사용 | `harness` |
+| `parent` | string\|null | 자동 연결된 직전 캡슐 파일명. 첫 캡슐(뿌리)은 `null` | `harness` |
+| `signed` | bool\|object\|null | wrap 은 서명 여부(bool), status 는 집계 `{valid, invalid, unsigned}` — keyring 미지정이면 `null` | `harness` |
+| `capsules` | number | 작업장의 캡슐 수 | `harness` |
+| `chainValid` | bool | 연번 체인 무결(부모 파일명·해시 연쇄) — `false` 면 exit 3, `brokenAt` 이 원인 명세 | `harness` |
+
 
 #### 판정·비교
 

@@ -917,6 +917,70 @@ export async function verifySignature(
   return call(args, options);
 }
 
+/** {@link harnessInit} 옵션. */
+export interface HarnessInitOptions extends CommandOptions {
+  /** 키를 함께 발급할 때의 keyId (소유/용도#세대). */
+  readonly keyId?: string | undefined;
+}
+
+/** [#4537] 하네스 작업장 생성 — capsules/ 규약(+선택: 키·키링 발급). */
+export async function harnessInit(
+  dir: PathLike,
+  options: HarnessInitOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['harness', 'init', dir];
+  if (options.keyId !== undefined) args.push('--key-id', options.keyId);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link harnessWrap} 옵션. */
+export interface HarnessWrapOptions extends CommandOptions {
+  /** 캡슐 서명키 파일 경로. */
+  readonly signKey?: PathLike | undefined;
+}
+
+/**
+ * [#4537] 한 방 루프 — 계획 실행(실산출) + 영수증 + 캡슐(연번) + **직전 캡슐
+ * 자동 부모 연결** + 서명. 매 작업을 이 함수로 돌리면 작업장의 해시 체인이
+ * 스스로 자란다.
+ */
+export async function harnessWrap(
+  plan: string,
+  dir: PathLike,
+  options: HarnessWrapOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['harness', 'wrap', '--plan', plan, '--dir', dir];
+  if (options.signKey !== undefined) args.push('--sign-key', options.signKey);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link harnessStatus} 옵션. */
+export interface HarnessStatusOptions extends CommandOptions {
+  readonly keyring?: PathLike | undefined;
+  /** 캡슐마다 재실행 재현까지 — 비용은 캡슐 수에 비례. */
+  readonly deep?: boolean | undefined;
+  /**
+   * 깨진 작업장(exit 3)을 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(`verdict`·`chainValid`·`brokenAt`)로 읽는다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/** [#4537] 작업장 통합 판정 — 체인·서명 집계·(deep) 재현을 한 봉투로. */
+export async function harnessStatus(
+  dir: PathLike,
+  options: HarnessStatusOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['harness', 'status', dir];
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.deep) args.push('--deep');
+  args.push('--json');
+  return call(args, options);
+}
+
 // ── 편집 ──────────────────────────────────────────────────────────────────
 
 /**

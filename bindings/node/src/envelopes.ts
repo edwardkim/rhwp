@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 42개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 43개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -536,6 +536,27 @@ export interface FieldsEnvelope {
 }
 
 /**
+ * `rhwp harness --json` 봉투.
+ *
+ * 검증 루프 단일 명령 — init(작업장 규약)·wrap(실산출+영수증+캡슐+자동 부모 연결+서명 한
+ * 방)·status(체인·서명·[--deep] 재현 통합 판정, 깨짐 exit 3) (#4537)
+ */
+export interface HarnessEnvelope {
+  readonly brokenAt?: unknown;
+  readonly capsule?: unknown;
+  readonly capsules?: unknown;
+  readonly chainValid?: unknown;
+  readonly dir?: unknown;
+  readonly output?: string;
+  readonly parent?: unknown;
+  readonly schemaVersion?: string;
+  readonly signed?: unknown;
+  readonly verdict?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp info --json` 봉투.
  *
  * 문서 메타(포맷·버전·페이지/문단 수·폰트·제목) 표시
@@ -845,6 +866,7 @@ export interface EnvelopeByCommand {
   "extract-data": ExtractDataEnvelope;
   "extract-pages": ExtractPagesEnvelope;
   fields: FieldsEnvelope;
+  harness: HarnessEnvelope;
   info: InfoEnvelope;
   inspect: InspectEnvelope;
   "ir-diff": IrDiffEnvelope;
