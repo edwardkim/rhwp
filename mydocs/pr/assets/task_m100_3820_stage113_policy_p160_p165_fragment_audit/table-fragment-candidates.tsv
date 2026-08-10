@@ -1,0 +1,5 @@
+page	next_page	pi	ci	rows	cols	next_rows	next_cols	bbox	next_bbox	signals	page_text_delta_chars	next_page_text_delta_chars	page_bottom_gap_px	next_page_bottom_gap_px	note
+160	161	1737	0	1	1	1	1	94.5,109.8,559.4,910.9	94.5,83.2,559.4,937.6	same_pi_ci_adjacent_fragment	0	0	101.8	101.7	candidate only; does not assert PDF table row owner or fragment correctness
+161	162	1737	0	1	1	1	1	94.5,83.2,559.4,937.6	94.5,83.2,559.4,97.6	same_pi_ci_adjacent_fragment	0	0	101.7	941.7	candidate only; does not assert PDF table row owner or fragment correctness
+163	164	1758	0	1	1	1	1	94.5,946.8,559.4,84.3	94.5,83.2,559.4,937.6	same_pi_ci_adjacent_fragment	0	0	91.4	101.7	candidate only; does not assert PDF table row owner or fragment correctness
+164	165	1758	0	1	1	1	1	94.5,83.2,559.4,937.6	94.5,83.2,559.4,844.3	same_pi_ci_adjacent_fragment	0	0	101.7	195.0	candidate only; does not assert PDF table row owner or fragment correctness
