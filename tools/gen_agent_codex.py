@@ -100,6 +100,11 @@ CONTRACT_ONLY_REASON = {
     "batch": "NDJSON 스트림(stdin 목록) 명령 — 단일 봉투 표본 형식과 달라 계약만 싣는다. 실행 규약은 rhwp-bulk-pipeline 스킬 참조.",
     "mcp-serve": "상주 서버 — 표본 실행이 세션을 남긴다. 통합 규약은 rhwp-mcp-session 스킬과 mcp_integration_guide 참조.",
     "keygen": "비밀키 파일을 만드는 명령 — 표본이라도 키 재료를 저장소 문서에 싣지 않는다.",
+    "verify-signature": "표본에 실키 체인 픽스처가 필요하고 키 생성이 무작위라 표본 결정론이 깨진다 — 전 경로 실측은 tests/signing_contract.rs 가 정본.",
+    "harness": "키 생성 무작위(공개키·서명)로 표본 결정론이 깨진다 — 루프 절차와 실측은 tests/harness_contract.rs 와 mydocs/tech/agent_harness_no1.md 가 정본.",
+    "harness init": "harness 공통 사유와 같다 — 키 무작위.",
+    "harness wrap": "harness 공통 사유와 같다 — 서명 무작위.",
+    "harness status": "판정 표본은 작업장 픽스처가 필요하다 — 계약 테스트가 정본.",
 }
 COMMON_REASON = "입력 합성 비용 또는 산출 부피 때문에 표본 실행을 싣지 않는다 — 계약(플래그·봉투 필드·출처)은 아래가 전부이며 자기서술에서 생성됐다."
 
@@ -114,7 +119,9 @@ FAMILIES = [
     ("40_변환과_렌더", "변환·렌더 — 형식을 넘나든다",
      ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "thumbnail", "render-diff", "build-from-ingest", "split-document"]),
     ("50_검증_사다리", "검증 사다리 — 판정은 데이터다",
-     ["verify", "ir-diff", "replay", "audit", "lineage", "hwpx-roundtrip"]),
+     ["verify", "ir-diff", "replay", "audit", "lineage", "hwpx-roundtrip",
+      "keygen", "verify-signature", "harness",
+      "harness init", "harness wrap", "harness status"]),
     ("60_보안", "보안 — 받은 문서를 의심한다",
      ["inspect", "inspect injection", "inspect hidden-text", "inspect unicode"]),
     ("70_자기서술", "자기서술 — 도구가 도구를 설명한다",
