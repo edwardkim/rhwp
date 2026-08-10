@@ -109,7 +109,7 @@
     "package": "vsce package"
   },
   "dependencies": {
-    "@noble/hashes": "^2.2.0",
+    "@noble/hashes": "^2.3.0",
     "canvaskit-wasm": "^0.41.1"
   },
   "devDependencies": {
