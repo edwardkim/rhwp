@@ -6001,8 +6001,6 @@ impl DocumentCore {
                 return None;
             }
             line_node.children = replacement_nodes;
-            line_node.invalidate();
-            tree.root.invalidate();
         }
 
         if let Some(variants) = self

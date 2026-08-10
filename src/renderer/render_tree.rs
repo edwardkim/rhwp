@@ -111,8 +111,6 @@ pub struct RenderNode {
     pub layer: Option<RenderLayerInfo>,
     /// 자식 노드 목록
     pub children: Vec<RenderNode>,
-    /// 변경 여부 플래그 (dirty flag for observer pattern)
-    pub dirty: bool,
     /// 가시성
     pub visible: bool,
     /// 문단 부호·투명 테두리처럼 편집 화면에서만 보여야 하는 보조 표시.
@@ -128,7 +126,6 @@ impl RenderNode {
             bbox,
             layer: None,
             children: Vec::new(),
-            dirty: true,
             visible: true,
             editor_only: false,
         }
@@ -149,32 +146,6 @@ impl RenderNode {
     pub fn with_editor_only(mut self) -> Self {
         self.editor_only = true;
         self
-    }
-
-    /// dirty 플래그 설정 (변경된 노드만 재렌더링)
-    pub fn invalidate(&mut self) {
-        self.dirty = true;
-    }
-
-    /// 렌더링 완료 후 dirty 플래그 초기화
-    pub fn mark_clean(&mut self) {
-        self.dirty = false;
-    }
-
-    /// 이 노드와 모든 자식의 dirty 플래그 초기화
-    pub fn mark_clean_recursive(&mut self) {
-        self.dirty = false;
-        for child in &mut self.children {
-            child.mark_clean_recursive();
-        }
-    }
-
-    /// dirty 노드가 있는지 확인
-    pub fn has_dirty_nodes(&self) -> bool {
-        if self.dirty {
-            return true;
-        }
-        self.children.iter().any(|c| c.has_dirty_nodes())
     }
 
     /// 렌더 트리를 JSON 문자열로 직렬화한다.
@@ -1543,16 +1514,6 @@ impl PageRenderTree {
         self.frame.next_id()
     }
 
-    /// dirty 노드 존재 여부
-    pub fn needs_render(&self) -> bool {
-        self.root.has_dirty_nodes()
-    }
-
-    /// 전체 트리를 clean으로 마킹
-    pub fn mark_all_clean(&mut self) {
-        self.root.mark_clean_recursive();
-    }
-
     /// 한컴 PDF가 현대 글리프로 인쇄하는 닫힌 레거시 제품명 어휘를 최종 화면
     /// 문자열에만 투영한다.
     ///
@@ -1747,11 +1708,8 @@ mod tests {
     #[test]
     fn test_page_render_tree() {
         let mut tree = PageRenderTree::new(0, 793.7, 1122.5);
-        assert!(tree.needs_render());
         assert_eq!(tree.next_id(), 1);
         assert_eq!(tree.next_id(), 2);
-        tree.mark_all_clean();
-        assert!(!tree.needs_render());
     }
 
     #[test]
@@ -1839,20 +1797,6 @@ mod tests {
         };
         assert_eq!(pua_old_hangul.text, "\u{f53a}글");
         assert_eq!(pua_old_hangul.display_text.as_deref(), Some("ᄒᆞᆫ글"));
-    }
-
-    #[test]
-    fn test_render_node_dirty_flag() {
-        let mut node = RenderNode::new(
-            0,
-            RenderNodeType::Body { clip_rect: None },
-            BoundingBox::new(0.0, 0.0, 100.0, 100.0),
-        );
-        assert!(node.dirty);
-        node.mark_clean();
-        assert!(!node.dirty);
-        node.invalidate();
-        assert!(node.dirty);
     }
 
     #[test]

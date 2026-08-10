@@ -469,7 +469,6 @@ fn test_build_page_with_paragraph() {
         0,
         &[],
     );
-    assert!(tree.needs_render());
 
     // Body 노드 찾기
     let body = tree
