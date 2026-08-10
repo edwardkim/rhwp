@@ -71,10 +71,12 @@ venv/bin/python tools/fidelity_compare/fidelity_compare.py 0 16 \
 - p16–p17: 상단 문단의 첫 glyph가 잘리지 않고 기준 PDF와 같은 쪽에서 시작한다.
 
 픽셀 diff 상위는 p11 `24.93%`, p10 `24.25%`, p14 `23.00%`, p15 `22.67%`다.
-비교 이미지에서 이 차이는 휴먼명조 EBDT local face를 Chrome에서 직접 선택하지
-않고 정상 outline 명조로 raster하는 fidelity 하네스의 획·antialiasing 차이가 주로
-차지한다. 줄 소유권, 줄 수, 표 fragment, block 시작·끝은 위 구조 원장과 직접
-판독에서 PDF와 일치한다. 따라서 픽셀 diff만으로 renderer 회귀로 승격하지 않는다.
+줄 소유권, 줄 수, 표 fragment, block 시작·끝은 위 구조 원장과 직접 판독에서 PDF와
+일치한다. 다만 후속 Stage 117 독립 폰트 감사에서 이 차이를 단순 antialiasing으로
+종결한 판정은 부정확한 것으로 정정했다. 기준 PDF의 주 글꼴은 로컬 `HMKMM.TTF`와
+outline·metric이 동일한 휴먼명조인데, 이 stage의 portable `--font-style` SVG는
+실제로 `AppleMyungjo`를 선택했다. 따라서 이 결과는 구조·페이지 경계 합격 증거로만
+사용하고 exact font paint fidelity는 Stage 117에서 계속 해결한다.
 
 ## 자동 후보의 직접 폐기
 
@@ -92,8 +94,9 @@ PDF와 같은 줄에 놓이므로 오탐으로 폐기한다.
 ## 결론과 다음 범위
 
 최신 renderer에서 issue2007 17쪽의 기존 구조·페이지 경계 결함은 재현되지 않았다.
-이 stage는 별도 코드 변경 없이 현재 상태를 전수 증적으로 고정한다. 전체 #3820 완료를
-의미하지 않으며, 다음 stage는 기존 문서에 명시적으로 잔여로 남은 정책연구 p23–p24
+이 stage는 별도 코드 변경 없이 구조 상태를 전수 증적으로 고정한다. exact font paint
+fidelity는 합격으로 보지 않으며 Stage 117에서 수정한다. 전체 #3820 완료를 의미하지
+않으며, 다음 stage는 기존 문서에 명시적으로 잔여로 남은 정책연구 p23–p24
 그림·caption flow부터 직접 재감사한다.
 
 ## 증적
