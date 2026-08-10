@@ -7977,24 +7977,8 @@ impl LayoutEngine {
                                 | crate::model::shape::TextWrap::BehindText
                         );
                         if overlay_tac {
-                            // 저장 lh(th)는 **외곽여백 상·하를 이미 포함**한다(#521 정의
-                            // lh = om_top + cell_h + om_bottom; 민간위탁 실측 13045 =
-                            // 285 + 12480 + 280). 그런데 흐름에는 om_top 이 이미
-                            // 선가산됐고(tac_table_y_before = para_y + om_top) 뒤에서
-                            // #521 이 om_bottom 을 후가산하므로, 그대로 두면 표당
-                            // om 상하합만큼 밀린다(#4531 코호트 ① +7.6px/표 실측).
-                            // 기준을 선가산 전(para_y)으로 되돌리고 om_bottom 을
-                            // 선공제해 순전진 = th + ls 로 사다리와 정확히 맞춘다.
-                            // 다중 seg 호스트(표 앞 자기 줄 보유)는 para_y 가 앵커 줄
-                            // top 이 아니므로 기존 기준을 유지한다.
-                            let om_px = hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
-                            let base = if para.line_segs.len() == 1 {
-                                para_y_for_table
-                            } else {
-                                tac_table_y_before
-                            };
                             let anchor_line_end =
-                                base + hwpunit_to_px(seg.line_height, self.dpi) - om_px.max(0.0);
+                                tac_table_y_before + hwpunit_to_px(seg.line_height, self.dpi);
                             if anchor_line_end > y_offset {
                                 y_offset = anchor_line_end;
                             }
