@@ -1,0 +1,27 @@
+{
+  "id": "T06",
+  "tier": 2,
+  "title": "문구 치환",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력 문서에서 실제로 존재하는 문구 하나를 스스로 찾아(힌트: export-text) 그 문구를 '검증완료' 로 바꾼 산출물을 out.hwp 로 제출하라. 원본을 덮어쓰지 말 것(-o). 힌트: rhwp edit replace-text.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "신문구 존재",
+      "op": "len_ge",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out.hwp}",
+        "검증완료",
+        "--json"
+      ],
+      "path": "matches"
+    }
+  ]
+}
