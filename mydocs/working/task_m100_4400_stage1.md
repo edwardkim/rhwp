@@ -145,3 +145,29 @@ cargo test --test issue_3552_table_common_attr_save --test hwpx_to_hwp_adapter \
   --test issue_2724_passthrough_invalidation_guard --test issue_1061_equation_serialize
 CARGO_INCREMENTAL=0 cargo test --profile release-test --tests
 ```
+
+
+## 후속 — gestell 리뷰가 이동을 미완으로 판정했다 (2026-08-10)
+
+`pack_common_attr_bits` 만 옮긴 첫 커밋은 gestell 의 total-independence 기준
+(양방향 import 0)에 미달이었다.
+
+같은 CTRL_HEADER attr 비트 마스크(`0x01 | (0x03 << 3) | (0x03 << 8)`)를 직접 들고 있는
+`sync_anchor_bits` 가 `document_core/converters/common_obj_attr_writer.rs` 에 남았고,
+그것을 먹이려고 `vert_rel_to_to_bits`/`horz_rel_to_to_bits` 를 `pub(crate)` 로 넓혀야
+했다. **그 넓힘 자체가 잔여물이다.**
+
+두 번째 커밋에서 `sync_anchor_bits` 를 `serializer/control.rs:2118` 로 함께 옮기고 두
+헬퍼를 private 으로 되돌렸다. 이제 `common_obj_attr_writer.rs` 의 `serializer::control`
+import 는 `pack_common_attr_bits` 하나뿐이다(`:15`).
+
+`pack_common_attr_bits` 가 `pub(crate)` 인 것은 별개로 정당하다 — 모듈 밖 호출자가
+넷이다(`hwpx_to_hwp.rs` 3곳, `object_ops/common.rs`, 그리고 `serialize_common_obj_attr`
+자신의 `attr==0` 폴백).
+
+## 게이트 (새 `upstream/devel` `9f5911e86` 위에서 재실행)
+
+- `cargo fmt --all -- --check` exit 0
+- `cargo clippy --all-targets -- -D warnings` exit 0
+- `CARGO_INCREMENTAL=0 cargo test --profile release-test --tests` exit 0 —
+  `test result: ok` 블록 **502개, FAILED 0건**
