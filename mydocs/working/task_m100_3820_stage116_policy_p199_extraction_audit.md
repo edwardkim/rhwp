@@ -5,7 +5,7 @@ canonical: mydocs/working/task_m100_3820_stage1.md
 last_verified: 2026-08-10
 ---
 
-# Task #3820 Stage 115 — 정책연구 p199 visible-text-excess 감사
+# Task #3820 Stage 116 — 정책연구 p199 visible-text-excess 감사
 
 ## 목적
 
@@ -57,7 +57,7 @@ p199의 visible-text-excess 99자 신호를 폐기한다. Stage 98에서 순위�
 
 ## 증적
 
-- [p199 비교](../pr/assets/task_m100_3820_stage115_policy_p199_extraction_audit/compare_p199.png)
-- [pypdf 문자 원장](../pr/assets/task_m100_3820_stage115_policy_p199_extraction_audit/text-report.tsv)
-- [visible excess 원장](../pr/assets/task_m100_3820_stage115_policy_p199_extraction_audit/visible-text-excess-candidates.tsv)
-- [layout 원장](../pr/assets/task_m100_3820_stage115_policy_p199_extraction_audit/layout-candidates.tsv)
+- [p199 비교](../pr/assets/task_m100_3820_stage116_policy_p199_extraction_audit/compare_p199.png)
+- [pypdf 문자 원장](../pr/assets/task_m100_3820_stage116_policy_p199_extraction_audit/text-report.tsv)
+- [visible excess 원장](../pr/assets/task_m100_3820_stage116_policy_p199_extraction_audit/visible-text-excess-candidates.tsv)
+- [layout 원장](../pr/assets/task_m100_3820_stage116_policy_p199_extraction_audit/layout-candidates.tsv)
