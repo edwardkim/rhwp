@@ -1,6 +1,7 @@
 //! 페이지 분할 표 레이아웃 (layout_partial_table)
 
 use super::super::composer::{compose_paragraph, ComposedParagraph};
+use super::super::float_placement::native_hwp5_stored_reset_fragment_paint_geometry;
 use super::super::height_measurer::MeasuredTable;
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
@@ -2728,6 +2729,26 @@ impl LayoutEngine {
             return y_start;
         }
 
+        // [#3820 Stage 120] A native-HWP5 empty-host 1x1 RowBreak table can store the
+        // physical first-fragment height in `common.height`, then restart its cell LINE_SEG
+        // ladder at zero for the successor page.  Keep this paint-only witness separate from
+        // pagination: the PageItem cuts and logical consumed height remain authoritative.
+        let stored_reset_paint_geometry =
+            if enclosing_cell_ctx.is_none() && std::ptr::eq(table, outer_table) {
+                paragraphs.get(para_index).and_then(|host_para| {
+                    native_hwp5_stored_reset_fragment_paint_geometry(
+                        self.profile.get().native_hwp5_layout(),
+                        host_para,
+                        table,
+                        is_continuation,
+                        start_cut,
+                        end_cut,
+                    )
+                })
+            } else {
+                None
+            };
+
         // 분할 표 첫 부분: vert_offset 적용 (자리차지 표의 세로 오프셋).
         // [Task #712] HwpUnit=u32 이라 `vertical_offset > 0` 는 음수 비트표현
         // (예: -1796 HU = 0xFFFFF8FC = 4294965500u32) 도 양수로 통과시켜
@@ -3063,6 +3084,22 @@ impl LayoutEngine {
             }
         }
 
+        // The first stored-reset fragment's composed cut includes the reset-preceding line's
+        // trailing spacing.  That value remains the logical flow consumption, while the physical
+        // row/cell clip and borders stop at the independently stored head height.  This is a
+        // single-row predicate, so the delta can be restored exactly in the function return.
+        let mut stored_reset_logical_height_delta = 0.0;
+        if let Some(stored_height_hu) =
+            stored_reset_paint_geometry.and_then(|geometry| geometry.first_fragment_height_hu)
+        {
+            if let Some(row_height) = row_heights.first_mut() {
+                let stored_height = hwpunit_to_px(stored_height_hu, self.dpi);
+                let paint_height = (*row_height).min(stored_height);
+                stored_reset_logical_height_delta = (*row_height - paint_height).max(0.0);
+                *row_height = paint_height;
+            }
+        }
+
         // ── 3. 누적 위치 계산 ──
         let mut col_x = vec![0.0f64; col_count + 1];
         for i in 0..col_count {
@@ -3179,11 +3216,20 @@ impl LayoutEngine {
             table_x
         };
 
+        // Outer margins are already present in the fragment's logical reservation.  Restore them
+        // only on the table/cell/frame paint subtree, for both the first and successor fragment.
+        let table_x = table_x
+            + stored_reset_paint_geometry
+                .map(|geometry| hwpunit_to_px(geometry.outer_left_hu, self.dpi))
+                .unwrap_or(0.0);
+
         let table_y = if render_top_caption {
             y_start + caption_height + caption_spacing
         } else {
             y_start
-        };
+        } + stored_reset_paint_geometry
+            .map(|geometry| hwpunit_to_px(geometry.outer_top_hu, self.dpi))
+            .unwrap_or(0.0);
 
         // ── 5. 표 노드 생성 ──
         // 재귀 부분 표는 합성 `(para=0, control=0)`으로 table 데이터를 조회하지만,
@@ -3478,7 +3524,7 @@ impl LayoutEngine {
         // TABLE_SPLIT_RESULT 의 consumed 와 짝지어 보면 두 공간의 발산이 보인다.
         if std::env::var("RHWP_DIAG_FRAG").is_ok() {
             eprintln!(
-                "DIAG_FRAG pi={} ci={} rows={}..{} cont={} blk={} start_cut={:?} end_cut={:?} y_start={:.1} tbl_h={:.1} cap={:.1}",
+                "DIAG_FRAG pi={} ci={} rows={}..{} cont={} blk={} start_cut={:?} end_cut={:?} y_start={:.1} tbl_h={:.1} logical_delta={:.1} cap={:.1}",
                 para_index,
                 control_index,
                 start_row,
@@ -3489,10 +3535,13 @@ impl LayoutEngine {
                 end_cut,
                 y_start,
                 partial_table_height,
+                stored_reset_logical_height_delta,
                 caption_total,
             );
         }
-        y_start + partial_table_height + caption_total
+        // Do not move subsequent flow or change PageItem ownership: Stage 120 changes only the
+        // painted frame/clip.  The paginator consumed the original composed cut height.
+        y_start + partial_table_height + stored_reset_logical_height_delta + caption_total
     }
 }
 

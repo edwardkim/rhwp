@@ -10,6 +10,7 @@ use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{BoundingBox, LineNode, RenderNode, RenderNodeType};
+use rhwp::renderer::{hwpunit_to_px, DEFAULT_DPI};
 
 const SAMPLE: &str =
     "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp";
@@ -30,17 +31,16 @@ fn body_clip(node: &RenderNode) -> Option<BoundingBox> {
     node.children.iter().find_map(body_clip)
 }
 
-fn table_at_body_top(node: &RenderNode, para_index: usize, body_top: f64) -> Option<&RenderNode> {
+fn table_for_paragraph(node: &RenderNode, para_index: usize) -> Option<&RenderNode> {
     if matches!(
         &node.node_type,
         RenderNodeType::Table(table) if table.para_index == Some(para_index)
-    ) && (node.bbox.y - body_top).abs() <= 0.5
-    {
+    ) {
         return Some(node);
     }
     node.children
         .iter()
-        .find_map(|child| table_at_body_top(child, para_index, body_top))
+        .find_map(|child| table_for_paragraph(child, para_index))
 }
 
 fn horizontal_lines(table: &RenderNode) -> Vec<&LineNode> {
@@ -56,20 +56,27 @@ fn horizontal_lines(table: &RenderNode) -> Vec<&LineNode> {
         .collect()
 }
 
-fn assert_body_top_frame_contract(core: &DocumentCore, page_index: u32, para_index: usize) {
+fn assert_body_top_frame_contract(
+    core: &DocumentCore,
+    page_index: u32,
+    para_index: usize,
+    expected_paint_top_inset_hu: i32,
+) {
     let human_page = page_index + 1;
     let tree = core
         .build_page_render_tree(page_index)
         .unwrap_or_else(|err| panic!("#3820 p{human_page} render failed: {err}"));
     let clip =
         body_clip(&tree.root).unwrap_or_else(|| panic!("#3820 p{human_page} Body clip missing"));
-    let table = table_at_body_top(&tree.root, para_index, clip.y)
-        .unwrap_or_else(|| panic!("#3820 p{human_page} pi={para_index} table at Body top missing"));
+    let table = table_for_paragraph(&tree.root, para_index)
+        .unwrap_or_else(|| panic!("#3820 p{human_page} pi={para_index} table missing"));
 
+    let expected_paint_top = clip.y + hwpunit_to_px(expected_paint_top_inset_hu, DEFAULT_DPI);
     assert!(
-        (table.bbox.y - clip.y).abs() <= 0.5,
-        "table owner bbox moved: p{human_page} table_y={} clip_y={}",
+        (table.bbox.y - expected_paint_top).abs() <= 0.5,
+        "table paint bbox mismatch: p{human_page} table_y={} expected={} clip_y={}",
         table.bbox.y,
+        expected_paint_top,
         clip.y,
     );
     let top_cells: Vec<_> = table
@@ -116,7 +123,7 @@ fn issue_3820_p33_table_frame_is_paint_only_inset() {
         .build_page_render_tree(32)
         .expect("render policy PDF p33");
     let clip = body_clip(&tree.root).expect("p33 Body clip");
-    let table = table_at_body_top(&tree.root, 428, clip.y).expect("p33 pi=428 table");
+    let table = table_for_paragraph(&tree.root, 428).expect("p33 pi=428 table");
     let table_bottom = table.bbox.y + table.bbox.height;
     let bottom_line_y = horizontal_lines(table)
         .into_iter()
@@ -132,13 +139,15 @@ fn issue_3820_p33_table_frame_is_paint_only_inset() {
         (bottom_line_y - table_bottom).abs() <= 0.5,
         "p33 bottom frame must remain on source geometry: line={bottom_line_y} table={table_bottom}",
     );
-    assert_body_top_frame_contract(&core, 32, 428);
+    assert_body_top_frame_contract(&core, 32, 428, 0);
 }
 
 #[test]
 fn issue_3820_successor_body_top_fragments_keep_full_top_stroke() {
     let core = core();
     // Render-page indices are 0-based: Hancom physical p168 and p214.
-    assert_body_top_frame_contract(&core, 167, 1775);
-    assert_body_top_frame_contract(&core, 213, 2548);
+    // Stage 120 restores the stored-reset table's already-reserved physical outer-top margin on
+    // the paint subtree.  The stroke must still remain wholly inside the Body clip.
+    assert_body_top_frame_contract(&core, 167, 1775, 283);
+    assert_body_top_frame_contract(&core, 213, 2548, 283);
 }
