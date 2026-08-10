@@ -2,8 +2,8 @@
   "kind": "gymScorecard",
   "schemaVersion": "1.0",
   "agent": "claude-fable-5",
-  "score": 26,
-  "max": 26,
+  "score": 29,
+  "max": 29,
   "tasks": [
     {
       "id": "T01",
@@ -189,6 +189,28 @@
           "ok": true,
           "expected": true,
           "actual": true
+        }
+      ]
+    },
+    {
+      "id": "T13",
+      "tier": 3,
+      "title": "하네스 루프",
+      "pass": true,
+      "checks": [
+        {
+          "name": "체인·서명·재현 통합 판정",
+          "op": "value_eq",
+          "ok": true,
+          "expected": "ok",
+          "actual": "ok"
+        },
+        {
+          "name": "체인 길이 2",
+          "op": "value_eq",
+          "ok": true,
+          "expected": 2,
+          "actual": 2
         }
       ]
     }
