@@ -14,7 +14,7 @@ rayon = "1.8"
 anyhow = "1.0"
 walkdir = "2.4"
 regex = "1.10"
-which = "6.0"
+which = "8.0"
 
 [[bin]]
 name = "batch-convert"
