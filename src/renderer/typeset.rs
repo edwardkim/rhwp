@@ -6995,7 +6995,19 @@ impl TypesetEngine {
             } else {
                 Vec::new()
             };
-            let is_multi_fullpage_img_para = fullpage_img_ctrls.len() >= 2;
+            // [#4654] 낱장 배치는 **전면 크기가 과반**인 문단에만 — 디자인
+            // 보드형 pile(체육대회 4510000-202300010: 한 문단 그림 210장 중
+            // 전면 ~15장, 한글은 쪽당 60여 장 통 적재에 전면 그림도 포함)에서
+            // 소수 전면 그림이 낱장으로 탈출해 +12쪽이 됐다. #1995 원 취지
+            // (임베드 매뉴얼: 전량 전면 96장, 오라클 268 vs 174 과소)는 과반
+            // 조건으로 그대로 보존된다.
+            let noninline_pic_count = para
+                .controls
+                .iter()
+                .filter(|c| matches!(c, Control::Picture(pic) if !pic.common.treat_as_char))
+                .count();
+            let is_multi_fullpage_img_para = fullpage_img_ctrls.len() >= 2
+                && fullpage_img_ctrls.len() * 2 >= noninline_pic_count;
 
             // [#2097] 이 문단의 TopAndBottom 자리차지 float pushdown 가로 컬럼
             // (h_left, h_right, 스택_높이) px — 가로 겹침으로 스택/나란히 판별.
