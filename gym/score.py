@@ -125,9 +125,27 @@ def resolve_args(cmd, task, sub_dir):
             out.append(task["input"])
         elif a.startswith("{file:") and a.endswith("}"):
             out.append(os.path.join(sub_dir, a[6:-1]))
+        elif a.startswith("{sha256:") and a.endswith("}"):
+            # [#4600] 제출물의 해시를 채점 시점에 계산해 인자로 넘긴다 — 기대값을
+            # 과제 파일에 박제하지 않고 rhwp 자신에게 재현 판정을 시키기 위한 통로.
+            out.append(sha256_of(os.path.join(sub_dir, a[8:-1])))
         else:
             out.append(a)
     return out
+
+
+def find_cell(tables, table_index, row, col):
+    """[#4600] 표 좌표로 셀을 지목한다.
+
+    `cells[0]` 같은 순서 가정 대신 (row, col) 로 찾는다 — 순서 가정은 내보내기
+    구현이 바뀌면 조용히 엉뚱한 셀을 검사하게 되고, 그것이 이 이슈가 잡은
+    오검출과 같은 부류의 결함이다.
+    """
+    table = tables[table_index]
+    for cell in table["cells"]:
+        if cell.get("row") == row and cell.get("col") == col:
+            return cell
+    return None
 
 
 def eval_check(check, task, sub_dir, answer, bin_path):
@@ -140,6 +158,16 @@ def eval_check(check, task, sub_dir, answer, bin_path):
             detail["expected"] = hashes[0][:16]
             detail["actual"] = hashes[1][:16]
             detail["ok"] = len(set(hashes)) == 1
+            return detail
+        if op == "differs_from_input":
+            # [#4600] 무편집 복사본 거부 — 산출물이 과제 입력과 바이트가 같으면
+            # 아무 작업도 하지 않은 것이다. 동일성만 보는 검사(same_hash)는
+            # 입력을 두 번 복사한 제출을 통과시켰다.
+            submitted = sha256_of(os.path.join(sub_dir, check["file"]))
+            source = sha256_of(os.path.join(ROOT, task["input"]))
+            detail["expected"] = f"!= {source[:16]} (과제 입력)"
+            detail["actual"] = submitted[:16]
+            detail["ok"] = submitted != source
             return detail
         args = resolve_args(check["cmd"], task, sub_dir)
         code, env, head = run_cli(bin_path, args)
@@ -177,6 +205,14 @@ def eval_check(check, task, sub_dir, answer, bin_path):
             detail["expected"] = f"contains {check['value']!r}"
             detail["actual"] = deep_contains(got, check["value"])
             detail["ok"] = detail["actual"] is True
+        elif op == "cell_text_eq":
+            # [#4600] 표 좌표 지목 대조 — 봉투 전체 deep_contains 는 "아무 셀에나
+            # 있으면 통과"라 잘못된 셀을 고친 제출을 걸러내지 못했다.
+            cell = find_cell(got, check["table"], check["row"], check["col"])
+            detail["expected"] = (f"tables[{check['table']}] "
+                                  f"({check['row']},{check['col']}) == {check['value']!r}")
+            detail["actual"] = None if cell is None else cell.get("text")
+            detail["ok"] = cell is not None and norm(cell.get("text")) == norm(check["value"])
         else:
             detail["error"] = f"미지 op: {op}"
     except FileNotFoundError as e:

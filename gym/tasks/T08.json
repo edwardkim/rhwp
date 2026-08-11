@@ -3,7 +3,7 @@
   "tier": 3,
   "title": "표 셀 교정",
   "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
-  "instructions": "첫 번째 표의 (0행, 0열) 셀 값을 '짐검증' 으로 바꾼 산출물을 cell.hwp 로 제출하라. 힌트: rhwp edit set-cell.",
+  "instructions": "첫 번째 표의 (0행, 0열) 셀 값을 '짐검증' 으로 바꾼 산출물을 cell.hwp 로 제출하라. 채점은 그 좌표의 셀만 대조한다 — 다른 셀을 고치면 통과하지 못한다. 힌트: rhwp edit set-cell.",
   "submit": {
     "kind": "artifact",
     "files": [
@@ -12,15 +12,18 @@
   },
   "checks": [
     {
-      "name": "셀 값 반영",
-      "op": "deep_contains",
+      "name": "첫 표 (0,0) 셀이 정확히 짐검증",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 0,
       "value": "짐검증",
       "cmd": [
         "export-tables",
         "{file:cell.hwp}",
         "--json"
       ],
-      "path": ""
+      "path": "tables"
     }
   ]
 }
