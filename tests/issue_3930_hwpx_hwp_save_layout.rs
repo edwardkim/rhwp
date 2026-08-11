@@ -86,8 +86,8 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     // p145로 이월되어 이후 page owner가 연쇄적으로 한 쪽씩 밀린다 (#3820).
     assert_eq!(
         source.page_count(),
-        386,
-        "p144 조기 이월 보정 뒤 원본 편람 쪽수"
+        383,
+        "HWPX Q&A PageHide/목차 tail 보정 뒤 Hancom PDF 쪽수"
     );
     let source_p30_tree = page_tree(&source, PAGE_30);
     let source_p144_tree = page_tree(&source, PAGE_144);
@@ -252,10 +252,14 @@ fn issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count() {
     let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
     let source = HwpDocument::from_bytes(&bytes).expect("HWP fixture parse");
 
+    assert!(
+        page_tree(&source, 284).contains("홈페이지상의 질의에 대하여"),
+        "Hancom PDF physical p285와 같이 Q8 표제는 Q7 tail 뒤 같은 쪽에서 시작해야 한다"
+    );
     assert_eq!(
         source.page_count(),
         383,
-        "native HWP Q&A RowBreak terminal spacer 보정 뒤 Stage 131 쪽수"
+        "native HWP Q&A PageHide/RowBreak owner 보정 뒤 Hancom PDF 쪽수"
     );
 }
 

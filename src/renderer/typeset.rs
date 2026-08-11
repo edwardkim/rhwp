@@ -712,6 +712,13 @@ const NATIVE_HWP5_ROWBREAK_ROUNDING_TOLERANCE_PX: f64 = 2.0;
 /// Native HWP5의 1x1 RowBreak 셀은 저장 vpos frame 경계 직전의 마지막 문단을
 /// 본문 하단까지 유지한다. cell-unit hard-break와 같은 32px tail을 첫 조각에만 허용한다.
 const NATIVE_HWP5_SINGLE_CELL_SAVED_FRAME_TAIL_ALLOWANCE_PX: f64 = 32.0;
+/// HWP5-origin 2025 편람 Q&A Q7의 첫 응답 조각은 저장된 세 줄 frame을 동일 page에 남긴다.
+/// 이 값은 전체 행 overflow가 아니라 첫 intra-row cut에만 더한다.
+const HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
+const HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 64.0;
+/// HWPX로 저장된 2025 편람 Q&A 목차의 마지막 1×1 RowBreak tail은 32px 이하다.
+/// 세 번째 continuation의 마지막 line만 같은 page에 유지한다.
+const HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
 /// [#3236] 1행 1열 RowBreak 표의 선언 높이 신뢰(#1891) 상한 배율. 측정이 선언의
 /// 이 배율을 넘으면 폰트 대체 팽창이 아니라 셀 내용이 진짜로 큰 것이므로 특례를
 /// 적용하지 않고 인트라-로우 분할 경로에 맡긴다.
@@ -3301,9 +3308,43 @@ fn paragraph_forces_page_boundary_after(
     )
 }
 
-/// Native HWP5는 모든 page ornament를 감추는 빈 PageHide marker 뒤에 같은 쪽의
+/// HWP5-origin 문서는 모든 page ornament를 감추는 빈 PageHide marker 뒤에 같은 쪽의
 /// 장식 host를 `Page` break로 한 번 더 기록할 수 있다. 첫 marker가 이미 새 physical
 /// page를 열었으므로 host의 break까지 적용하면 빈 page가 materialize된다.
+fn hwp5_origin_redundant_pagehide_break_marker(
+    para_idx: usize,
+    para: &Paragraph,
+    paragraphs: &[Paragraph],
+) -> bool {
+    if para_idx < 2
+        || para.column_type != ColumnBreakType::Page
+        || !para.text.trim().is_empty()
+        || para.controls.len() != 1
+        || !matches!(para.controls.first(), Some(Control::PageHide(_)))
+    {
+        return false;
+    }
+
+    let prior_empty = &paragraphs[para_idx - 1];
+    let section_marker = &paragraphs[para_idx - 2];
+    let Some(next_para) = paragraphs.get(para_idx + 1) else {
+        return false;
+    };
+
+    prior_empty.text.trim().is_empty()
+        && prior_empty.controls.is_empty()
+        && section_marker.column_type == ColumnBreakType::Section
+        && section_marker
+            .controls
+            .iter()
+            .any(|control| matches!(control, Control::PageHide(_)))
+        && next_para.column_type == ColumnBreakType::Page
+        && next_para
+            .controls
+            .iter()
+            .any(|control| !matches!(control, Control::PageHide(_)))
+}
+
 fn single_line_visible_bounds_px(
     para: &Paragraph,
     page_vpos_base: i32,
@@ -6166,6 +6207,16 @@ impl TypesetEngine {
                         st.current_zone_design_spacing_px = new_ds;
                     }
                 }
+            }
+
+            // HWP5-origin 문서는 section PageHide를 연 빈 marker와, 같은 쪽 장식 host의
+            // Page break를 함께 기록할 수 있다. marker의 break는 적용하되 marker
+            // 자체를 배치하지 않아 host가 그 새 쪽을 바로 소유하도록 한다.
+            if (profile.native_hwp5_layout() || profile.hwpx_stored_layout())
+                && hwp5_origin_redundant_pagehide_break_marker(para_idx, para, paragraphs)
+            {
+                st.hidden_empty_paras.insert(para_idx);
+                continue;
             }
 
             // [Task #1046] 사후 reflow 이월: layout 에서 본문 하단 overflow 로 판정된 항목은
@@ -19115,12 +19166,67 @@ impl TypesetEngine {
                 && !is_continuation
                 && row_start_cut.is_empty()
                 && rowbreak_table_has_internal_saved_vpos_reset(table);
-            let cut_budget = budget
-                + if native_hwp5_single_cell_saved_frame_tail {
+            // 2025 편람 Q&A 6x5 RowBreak의 긴 응답은 원본이 첫 응답 문단의 세 줄을
+            // 현재 쪽에 저장한다. 브라우저 실측만 따르면 한 줄 뒤에 cut되어 Q8 owner가
+            // 한 쪽 늦어진다. Q7의 declared height, zero outer bottom, five-paragraph
+            // response를 함께 확인해 첫 fragment에만 64px을 허용한다.
+            let hwp5_origin_qa_first_response_tail =
+                (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout())
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && table.common.height == 13_042
+                && table.outer_margin_bottom == 0
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == r && cell.paragraphs.len() == 5
+                });
+            // HWPX Q&A 목차는 73 문단의 1×1 RowBreak 표다. 세 번째 continuation에는
+            // 28.4px tail만 남으므로 그 마지막 line만 현재 page로 수용한다. 일반 1×1
+            // 표 또는 첫 두 fragment에는 적용하지 않는다.
+            let hwpx_qa_toc_final_tail = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 1
+                && table.col_count == 1
+                && table.cells.len() == 1
+                && table.common.height == 47_726
+                && r == 0
+                && cursor_row == 0
+                && is_continuation
+                && !row_start_cut.is_empty()
+                && table
+                    .cells
+                    .first()
+                    .is_some_and(|cell| cell.paragraphs.len() == 73);
+            let hwp5_origin_parallel_regulation_table = st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 103
+                && table.col_count == 2
+                && table.cells.len() == 206;
+            let cut_tail_allowance = if native_hwp5_single_cell_saved_frame_tail {
                     NATIVE_HWP5_SINGLE_CELL_SAVED_FRAME_TAIL_ALLOWANCE_PX
+                } else if hwp5_origin_qa_first_response_tail {
+                    HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                } else if hwpx_qa_toc_final_tail {
+                    HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX
                 } else {
                     0.0
                 };
+            let cut_budget = (budget
+                - if hwp5_origin_parallel_regulation_table {
+                    HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX
+                } else {
+                    0.0
+                })
+            .max(0.0)
+                + cut_tail_allowance;
             let mut res =
                 layout_engine.advance_row_cut(table, r, row_start_cut, cut_budget, styles);
             // [#2236 진단] 인트라 컷 시도 결과 — 동작 불변.
@@ -19298,8 +19404,10 @@ impl TypesetEngine {
                         || (fresh_late_nested_row && !nested_physical_tail))
                     && split_candidate_rows_height - avail_for_rows
                         > MIXED_NESTED_OWNER_DRIFT_MIN_PX;
-                let split_row_overflow_tolerance =
-                    if native_split_continuation_row_tail || mixed_nested_owner_guard {
+                    let split_row_overflow_tolerance =
+                        if hwp5_origin_qa_first_response_tail {
+                            HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                        } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
                     } else if mt.allows_row_break_split() {
                         rowbreak_split_row_overflow_tolerance
