@@ -8378,6 +8378,56 @@ impl LayoutEngine {
                             if clamped > y_offset && (clamped - y_offset) <= max_correction {
                                 y_offset = clamped;
                             }
+                            // [#4533 HWP3] 서식 코호트(영월군 20099369·채권조서
+                            // 20117321 등 5+건): 저장 앵커 lh(1000u)가 표(397px)를
+                            // 안 품는 tac 표에서 typeset 은 저장 스텝(#2373)을
+                            // 따르는데 layout 만 렌더 표높이로 전진해 조판·렌더가
+                            // 갈라진다 — 영월군 실측 typeset diff 0.0 vs layout
+                            // +388, 후속 38줄이 typeset 예산 밖(쪽 밖)으로. 저장
+                            // 델타가 정상이고 발산 >2px 면 사다리 스텝으로 맞춘다.
+                            // HWP5 는 같은 식이 2중 반증(여가부·규제영향분석서
+                            // 코호트 — 한글이 문서별 반대 진실)이라 HWP3 계보
+                            // (직파싱 + 변환본 — 왕복 등식 유지) 한정. ls 는 이후 TAC seg handling 이 후가산하므로
+                            // 선공제한다.
+                            // 변환본(HWP3→HWPX/HWP5, /RhwpHwp3Origin 마커 =
+                            // hwp3_layout)도 같은 스텝을 밟아야 render-diff 왕복
+                            // 등식이 성립한다(hwp3-sample p7 14.9px OVER 실측).
+                            // 자기일관 변환본(1892 계열)은 발산 0 이라 무동작.
+                            if self.profile.get().hwp3_native_layout()
+                                || self.profile.get().hwp3_layout()
+                            {
+                                if let Some((np, ns)) = paragraphs
+                                    .get(para_index + 1)
+                                    .and_then(|np| np.line_segs.first().map(|ns| (np, ns)))
+                                    .filter(|(_, ns)| {
+                                        ns.vertical_pos > seg.vertical_pos
+                                            && ns.vertical_pos - seg.vertical_pos
+                                                < seg.line_height.saturating_mul(4).max(160_000)
+                                    })
+                                {
+                                    let ls_px =
+                                        hwpunit_to_px(seg.line_spacing.max(0), self.dpi);
+                                    // 다음 문단이 스스로 더할 style-sb 는 사다리
+                                    // 델타에 이미 들어 있으므로 선공제한다(채택된
+                                    // ③식과 동일 구성 — 누락 시 서식27 계열이
+                                    // +15~19px 잔여로 신규 2건 발생 실측).
+                                    let next_sb = styles
+                                        .para_styles
+                                        .get(np.para_shape_id as usize)
+                                        .map(|ps| ps.spacing_before.max(0.0))
+                                        .unwrap_or(0.0);
+                                    let target = tac_table_y_before
+                                        + hwpunit_to_px(
+                                            ns.vertical_pos - seg.vertical_pos,
+                                            self.dpi,
+                                        )
+                                        - ls_px
+                                        - next_sb;
+                                    if (y_offset - target).abs() > 2.0 {
+                                        y_offset = target;
+                                    }
+                                }
+                            }
                         }
                     }
                 }

@@ -250,6 +250,10 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     if let Some(marker) = doc.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH) {
         z.write_deflated(HWP5_ORIGIN_HWPX_MARKER_PATH, marker)?;
     }
+    // HWP3-origin 마커 — 재열람 시 hwp3_lineage 복원(왕복 레이아웃 등식).
+    if let Some(marker) = doc.hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH) {
+        z.write_deflated(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH, marker)?;
+    }
 
     // 참조 정합성 단언 (Stage 1+)
     ctx.assert_all_refs_resolved()?;

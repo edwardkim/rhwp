@@ -1372,6 +1372,8 @@ impl DocumentCore {
             &crate::model::document::Document,
         ) -> Result<T, crate::serializer::SerializeError>,
     ) -> Result<T, HwpError> {
+        let hwp3_origin = matches!(self.source_format, crate::parser::FileFormat::Hwp3)
+            || self.document.provenance.hwp3_lineage;
         let serialized = if matches!(self.source_format, crate::parser::FileFormat::Hwp) {
             let mut doc = self.document.clone();
             if !doc
@@ -1384,12 +1386,34 @@ impl DocumentCore {
                     b"1".to_vec(),
                 ));
             }
+            // HWP3→HWP5 변환본의 HWPX export 도 hwp3 계보를 이어 준다.
+            if hwp3_origin {
+                Self::push_hwp3_origin_marker(&mut doc);
+            }
             Self::materialize_hwp5_missing_linesegs_for_hwpx_export(&mut doc);
+            serialize(&doc)
+        } else if hwp3_origin {
+            let mut doc = self.document.clone();
+            Self::push_hwp3_origin_marker(&mut doc);
             serialize(&doc)
         } else {
             serialize(&self.document)
         };
         serialized.map_err(|e| HwpError::RenderError(e.to_string()))
+    }
+
+    /// HWP3 계보 마커를 export 사본에 심는다(중복 방지).
+    fn push_hwp3_origin_marker(doc: &mut crate::model::document::Document) {
+        if !doc
+            .hwpx_aux_entries
+            .iter()
+            .any(|(path, _)| path == crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH)
+        {
+            doc.hwpx_aux_entries.push((
+                crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH.to_string(),
+                b"1".to_vec(),
+            ));
+        }
     }
 
     /// HML 원본의 공통 IR을 HWPML 2.91 UTF-8 XML로 직렬화한다.
