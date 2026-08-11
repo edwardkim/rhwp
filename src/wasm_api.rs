@@ -920,11 +920,13 @@ impl HwpDocument {
     ///
     /// 경계 목록(`subsecond_boundary`)에서 바로 나오므로 경계를 더할 때 여기를 같이 고칠
     /// 일이 없다 — 리비전이 경계 하나를 놓쳐 재도색이 안 도는 구멍이 생기지 않는다.
+    ///
+    /// 아래 무효화와 **한 쌍이다.** 리비전이 바뀐 것을 보고 무효화를 부르는 것이 TS 계약
+    /// (`rhwp-studio/src/core/subsecond-runtime.ts`)이므로 한쪽만 있는 빌드는 그 계약을 반만
+    /// 만족한다. 그래서 게이트도 둘이 같아야 한다 — 이 함수의 몸통이 wasm32 전용 경계를
+    /// 가리키므로 `wasm32` 가 조건에 들어가고, 짝인 무효화도 같은 조건을 쓴다 (#4580).
     #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
-    #[cfg_attr(
-        feature = "subsecond-dev",
-        wasm_bindgen(js_name = getSubsecondPatchRevision)
-    )]
+    #[wasm_bindgen(js_name = getSubsecondPatchRevision)]
     pub fn get_subsecond_patch_revision(&self) -> String {
         subsecond_boundary::patch_revision()
     }
@@ -935,11 +937,11 @@ impl HwpDocument {
     /// 그 값을 앉히는 페이지 박스와 문단 조합은 `pagination`·`composed`·측정 캐시에 남은
     /// 패치 이전 코드의 결과라, 소스의 어느 버전에도 대응하지 않는 화면이 나온다 (#4576).
     /// 그 셋은 모두 `&mut self` 를 요구하므로 `&self` 로는 계약 자체를 표현할 수 없다.
-    #[cfg(feature = "subsecond-dev")]
-    #[cfg_attr(
-        feature = "subsecond-dev",
-        wasm_bindgen(js_name = invalidateSubsecondRenderCaches)
-    )]
+    ///
+    /// 위 리비전 조회와 짝이라 게이트도 같다. 네이티브에는 호출부가 하나도 없다 — 몸통은
+    /// 타깃과 무관하지만, 이 export 를 부르는 계약 자체가 브라우저의 것이다 (#4580).
+    #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
+    #[wasm_bindgen(js_name = invalidateSubsecondRenderCaches)]
     pub fn invalidate_subsecond_render_caches(&mut self) {
         self.core.rebuild_derived_state();
     }
