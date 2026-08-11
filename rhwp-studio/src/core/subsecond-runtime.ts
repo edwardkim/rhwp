@@ -189,6 +189,16 @@ const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
   },
 };
 
+/**
+ * 위 표가 아는 결과 코드 전부. 엔진의 `DevtoolsMessageOutcome::code()` 와 **같은 집합**이어야 한다.
+ *
+ * [#4589] 같은 계약이 두 언어에 따로 적혀 있고, 어긋나도 양쪽 다 컴파일된다 — 드리프트는
+ * {@link describeSubsecondSignal} 의 "읽지 못한 결과 값" 경고로만, 그것도 개발자가 그 순간 콘솔을
+ * 보고 있을 때만 드러난다. 표를 밖에서 셀 수 있게 해 두면 `tests/subsecond-runtime.test.ts` 가
+ * 엔진 소스에서 읽은 목록과 맞대 볼 수 있고, 어긋남이 테스트 실패가 된다.
+ */
+export const SUBSECOND_OUTCOME_CODES: readonly string[] = Object.keys(SUBSECOND_OUTCOMES);
+
 /** 신호 하나를 개발자가 읽을 한 줄로 만든다. */
 export function describeSubsecondSignal(signal: SubsecondSignal): SubsecondDiagnostic {
   if (signal.kind === 'global-failure') {

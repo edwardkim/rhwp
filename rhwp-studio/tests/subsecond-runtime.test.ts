@@ -405,28 +405,64 @@ async function connectWithSignals(outcomeFor: (message: string) => string): Prom
   return { socket, signals, errorEvents, disconnect: disconnect as () => void };
 }
 
-const REJECTION_CODES = [
-  'not-json',
-  'foreign-build-id',
-  'missing-jump-table',
-  'undeserializable-jump-table',
-  'patch-rejected',
-];
+/**
+ * 엔진이 선언한 결과 코드 전부 — `DevtoolsMessageOutcome::code()`(`src/subsecond_dev.rs`)에서 읽는다.
+ *
+ * [#4589] 계약의 단일 출처는 그 `match` 하나다. 여기 목록을 적으면 저장소에 세 번째 사본이
+ * 생기고(실제로 그랬다), 어긋나도 컴파일은 통과해 런타임 경고로만 드러난다.
+ */
+function engineOutcomeCodes(): string[] {
+  const source = readFileSync(new URL('../../src/subsecond_dev.rs', import.meta.url), 'utf8');
+  const start = source.indexOf('pub fn code(');
+  assert.notEqual(
+    start,
+    -1,
+    'src/subsecond_dev.rs 에서 DevtoolsMessageOutcome::code() 를 찾지 못했다 — 계약의 출처가 옮겨졌다',
+  );
+  // `impl` 안의 메서드이므로 4칸 들여쓴 닫는 중괄호가 함수의 끝이다.
+  const end = source.indexOf('\n    }', start);
+  assert.notEqual(end, -1, 'code() 의 끝을 찾지 못했다');
+  const codes = [...source.slice(start, end).matchAll(/=>\s*"([^"]+)"/g)].map(match => match[1]);
+  assert.ok(codes.length > 0, 'code() 본문에서 결과 코드를 한 건도 읽지 못했다');
+  return codes;
+}
+
+const ENGINE_OUTCOME_CODES = engineOutcomeCodes();
+
+/**
+ * 성공값(`patch-dispatched`)과 데브서버 정상 트래픽(`not-hot-reload`)을 뺀 나머지.
+ *
+ * 이 둘의 이름을 적어도 사본이 되지 않는다 — 바로 아래 테스트가 각각의 진단 등급을 이름으로
+ * 확인하므로, 엔진에서 이름이 바뀌면 이 필터가 아니라 그 단언이 먼저 빨개진다.
+ */
+const REJECTION_CODES = ENGINE_OUTCOME_CODES.filter(
+  code => code !== 'patch-dispatched' && code !== 'not-hot-reload',
+);
+
+test('the studio describes exactly the outcome codes the engine declares', async () => {
+  const { SUBSECOND_OUTCOME_CODES } = await loadRuntime();
+
+  assert.deepEqual(
+    ENGINE_OUTCOME_CODES.filter(code => !SUBSECOND_OUTCOME_CODES.includes(code)),
+    [],
+    '엔진이 선언한 결과 코드를 스튜디오 표가 모른다 — 런타임에는 "읽지 못한 결과 값" 경고로만 드러난다',
+  );
+  assert.deepEqual(
+    SUBSECOND_OUTCOME_CODES.filter(code => !ENGINE_OUTCOME_CODES.includes(code)),
+    [],
+    '스튜디오 표에 엔진이 더는 선언하지 않는 결과 코드가 남아 있다 — 도달하지 않는 진단 문구다',
+  );
+});
 
 test('every devserver outcome reaches a reporter instead of being discarded', async () => {
   const { socket, signals, disconnect } = await connectWithSignals(message => message);
 
-  [...REJECTION_CODES, 'not-hot-reload', 'patch-dispatched'].forEach(code =>
-    socket.onmessage?.({ data: code } as MessageEvent),
-  );
+  ENGINE_OUTCOME_CODES.forEach(code => socket.onmessage?.({ data: code } as MessageEvent));
   socket.onmessage?.({ data: new Uint8Array([1]) } as unknown as MessageEvent);
 
   assert.deepEqual(
     signals,
-    [...REJECTION_CODES, 'not-hot-reload', 'patch-dispatched'].map(code => ({
-      kind: 'outcome',
-      code,
-    })),
+    ENGINE_OUTCOME_CODES.map(code => ({ kind: 'outcome', code })),
     '결과는 한 건도 삼켜지지 않고, 이진 프레임은 결과를 만들지 않는다',
   );
 
@@ -447,7 +483,7 @@ test('each outcome is rendered as its own line that names where to look next', a
   assert.equal(
     new Set(messages).size,
     REJECTION_CODES.length,
-    `다섯 사유는 서로 다른 문구로 구별돼야 한다: ${JSON.stringify(messages)}`,
+    `거절 사유는 서로 다른 문구로 구별돼야 한다: ${JSON.stringify(messages)}`,
   );
   messages.forEach(message =>
     assert.ok(message.length > 40, `다음에 볼 곳까지 말해야 한다: ${message}`),
