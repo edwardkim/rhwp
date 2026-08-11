@@ -104,7 +104,7 @@ CONTRACT_ONLY_REASON = {
     "harness": "키 생성 무작위(공개키·서명)로 표본 결정론이 깨진다 — 루프 절차와 실측은 tests/harness_contract.rs 와 mydocs/tech/agent_harness_no1.md 가 정본.",
     "harness init": "harness 공통 사유와 같다 — 키 무작위.",
     "harness wrap": "harness 공통 사유와 같다 — 서명 무작위.",
-    "harness status": "판정 표본은 작업장 픽스처가 필요하다 — 계약 테스트가 정본.",
+    "harness-status": "판정 표본은 작업장 픽스처가 필요하다 — 계약 테스트가 정본.",
 }
 COMMON_REASON = "입력 합성 비용 또는 산출 부피 때문에 표본 실행을 싣지 않는다 — 계약(플래그·봉투 필드·출처)은 아래가 전부이며 자기서술에서 생성됐다."
 
@@ -121,7 +121,7 @@ FAMILIES = [
     ("50_검증_사다리", "검증 사다리 — 판정은 데이터다",
      ["verify", "ir-diff", "replay", "audit", "lineage", "hwpx-roundtrip",
       "keygen", "verify-signature", "harness",
-      "harness init", "harness wrap", "harness status"]),
+      "harness init", "harness wrap", "harness-status"]),
     ("60_보안", "보안 — 받은 문서를 의심한다",
      ["inspect", "inspect injection", "inspect hidden-text", "inspect unicode"]),
     ("70_자기서술", "자기서술 — 도구가 도구를 설명한다",
@@ -137,6 +137,20 @@ def run_bin(args, stdin=None):
     return proc.returncode, proc.stdout.decode("utf-8", errors="replace")
 
 
+def redact(text):
+    """실측 표본에서 이 기계의 절대 경로를 지운다.
+
+    대전은 어느 기계에서 재생성해도 같아야 --check(멱등)가 성립하고,
+    공개 저장소에 생성자의 홈 경로가 남아서도 안 된다. Windows 는 한
+    문자열 안에서 구분자를 섞어 쓰므로 두 형태를 모두 지우고, TMP 가
+    ROOT 하위라 **긴 접두사(TMP)를 먼저** 지운다 — 순서가 뒤집히면
+    TMP 경로가 <repo>/… 로 바뀌어 <tmp> 표지를 영영 못 얻는다.
+    """
+    for base, mark in ((TMP, "<tmp>"), (ROOT, "<repo>")):
+        text = text.replace(base.replace("\\", "/"), mark).replace(base, mark)
+    return text
+
+
 def truncate(value, depth=0):
     """표본 절단 — 배열은 2원소+표지, 긴 문자열은 160자."""
     if isinstance(value, dict):
@@ -147,8 +161,8 @@ def truncate(value, depth=0):
                     f"… ({len(value)}개 중 2개 표시)"]
         return [truncate(v, depth + 1) for v in value]
     if isinstance(value, str):
-        norm = value.replace(ROOT.replace("\\", "/"), "<repo>").replace(ROOT, "<repo>")
-        norm = norm.replace(TMP.replace("\\", "/"), "<tmp>").replace(TMP, "<tmp>")
+        # 절단은 반드시 지운 뒤에 — 먼저 자르면 절대 경로가 잘린 채 남는다.
+        norm = redact(value)
         if len(norm) > 160:
             return norm[:160] + f"… ({len(norm)}자 중 160자)"
         return norm
@@ -176,9 +190,10 @@ def live_sample(name):
         env = json.loads(out)
     except ValueError:
         return {"caption": caption, "cmd": args, "exit": code,
-                "sample": f"(비 JSON 출력 — 앞 160자)\n{out[:160]}"}
+                "sample": f"(비 JSON 출력 — 앞 160자)\n{redact(out)[:160]}"}
     pretty = json.dumps(truncate(env), ensure_ascii=False, indent=2)
-    shown = [a if not a.startswith(TMP.replace("\\", "/")) else "<tmp>/" + os.path.basename(a) for a in resolved]
+    # os.path.join 이 만든 인자는 역슬래시라 정슬래시 TMP 로는 못 걸러진다.
+    shown = [redact(a.replace("\\", "/")) for a in resolved]
     shown = [s if len(s) <= 80 else "'<계획 JSON 인라인>'" for s in shown]
     return {"caption": caption, "cmd": shown, "exit": code, "sample": pretty}
 
