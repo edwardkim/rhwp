@@ -244,7 +244,7 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
 }
 
 /// native HWP 원본의 6x5 Q&A RowBreak 표에서 짧은 마지막 응답 tail은 저장
-/// frame owner를 유지한다. Stage 129의 안전 범위는 391쪽을 390쪽으로 낮추며,
+/// frame owner를 유지한다. Stage 130의 RowBreak fragment scan은 391쪽을 386쪽으로 낮추며,
 /// HWPX fixture의 저장/roundtrip page-count 계약과는 별도로 고정한다 (#3820).
 #[test]
 fn issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count() {
@@ -254,8 +254,8 @@ fn issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count() {
 
     assert_eq!(
         source.page_count(),
-        390,
-        "native HWP Q&A RowBreak 짧은 tail 보정 뒤 Stage 129 쪽수"
+        386,
+        "native HWP Q&A RowBreak fragment scan 뒤 Stage 130 쪽수"
     );
 }
 

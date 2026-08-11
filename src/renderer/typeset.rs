@@ -20240,6 +20240,21 @@ impl TypesetEngine {
                     && declared_object_total > 0.0
                     && table_total
                         > declared_object_total * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO;
+            // 2025 편람의 native HWP Q&A 표는 빈 host에 6x5 RowBreak grid를
+            // 저장한다. declared/saved object bottom만으로 이 표를 통째 이월하면
+            // row 4의 fragmentable 응답 prefix까지 사라지고 suffix 전용 page가
+            // 누적된다. 일반 표와 1x1 그림 래퍼는 기존 declared defer를 유지하며,
+            // 이 template만 뒤의 row-cut scanner로 넘긴다.
+            let native_hwp5_qa_rowbreak_needs_fragment_scan = st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && !para_has_visible_text(para);
             if !st.current_items.is_empty()
                 && !ft.strict_following_plain_text_fit
                 && declared_overflows_current
@@ -20251,6 +20266,7 @@ impl TypesetEngine {
                 && !saved_host_line_after_stack_fits
                 && !single_row_object_declared_fits_current
                 && !native_hwp5_large_single_cell_rowbreak_needs_fragment_scan
+                && !native_hwp5_qa_rowbreak_needs_fragment_scan
                 && (saved_span.is_some() || measured_fits_current)
                 && declared_total <= available
             {
