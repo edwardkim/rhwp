@@ -1,7 +1,7 @@
 {
   "planVersion": "1.0",
   "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
-  "output": "C:\\Users\\swsz9\\Downloads\\moneyflow\\rhwp\\gym\\submissions\\claude-fable-5\\T10\\o1.hwp",
+  "output": "o1.hwp",
   "steps": [
     {
       "action": "replace_text",

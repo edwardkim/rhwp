@@ -3,7 +3,7 @@
   "tier": 3,
   "title": "서식 채움",
   "input": "samples/field-01.hwp",
-  "instructions": "입력 서식의 필드 이름을 스스로 조사해(fields) 첫 번째 필드에 '홍길동' 을 채운 산출물을 filled.hwp 로 제출하라. 힌트: rhwp edit fill-fields <문서> --data '{\"<필드이름>\": \"홍길동\"}' -o filled.hwp.",
+  "instructions": "입력 서식의 필드 이름을 스스로 조사해(fields) 첫 번째 필드에 '홍길동' 을 채운 산출물을 filled.hwp 로 제출하라. 채점은 '첫 번째 필드의 값' 을 정확히 대조한다 — 다른 필드를 채우면 통과하지 못한다. 힌트: rhwp edit fill-fields <문서> --data '{\"<필드이름>\": \"홍길동\"}' -o filled.hwp.",
   "submit": {
     "kind": "artifact",
     "files": [
@@ -12,15 +12,15 @@
   },
   "checks": [
     {
-      "name": "채운 값이 필드에 실재",
-      "op": "deep_contains",
+      "name": "첫 필드 값이 정확히 홍길동",
+      "op": "value_eq",
       "value": "홍길동",
       "cmd": [
         "fields",
         "{file:filled.hwp}",
         "--json"
       ],
-      "path": ""
+      "path": "fields[0].value"
     }
   ]
 }
