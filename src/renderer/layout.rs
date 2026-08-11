@@ -6832,6 +6832,53 @@ impl LayoutEngine {
             let delta = target - y;
             if delta > 2.0 {
                 Self::translate_subtree_y(&mut col_node.children[child_idx], delta);
+                // [#4533 ⑤-a 잔여] hwpx 는 한글이 앵커 줄 공간을 밴드 위에서
+                // 소비하지 않는다 — 밴드 상단 = 문단 상단(원 앵커 줄 y) +
+                // vertOffset + outMargin_top. 한글 2022 PDF 테두리 실측 3표본:
+                // 영월군 +0.2 · 81240 +0.1(문단 프레임 보정 후) · 가족센터
+                // +0.6px. native HWP5 는 앵커 줄 소비가 실물과 일치(상주시
+                // 실측: 공통 −4.4px 바이어스뿐)하므로 제외. 단일 자리차지 표
+                // 한정, 상향 이동만(멱등).
+                if profile.hwpx_stored_layout() {
+                    let bands: Vec<(f64, f64)> = para
+                        .controls
+                        .iter()
+                        .filter_map(|c| match c {
+                            Control::Table(t)
+                                if !t.common.treat_as_char
+                                    && matches!(
+                                        t.common.text_wrap,
+                                        crate::model::shape::TextWrap::TopAndBottom
+                                    ) =>
+                            {
+                                Some((
+                                    hwpunit_to_px(t.common.vertical_offset as i32, self.dpi),
+                                    hwpunit_to_px(t.common.margin.top as i32, self.dpi),
+                                ))
+                            }
+                            _ => None,
+                        })
+                        .collect();
+                    let table_nodes: Vec<usize> = col_node
+                        .children
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(i, n)| match &n.node_type {
+                            RenderNodeType::Table(t) if t.para_index == Some(pi) => Some(i),
+                            _ => None,
+                        })
+                        .collect();
+                    if let ([(off_px, margin_px)], [tbl_idx]) = (&bands[..], &table_nodes[..]) {
+                        let band_shift =
+                            (y + off_px + margin_px) - col_node.children[*tbl_idx].bbox.y;
+                        if (-200.0..=-2.0).contains(&band_shift) {
+                            Self::translate_subtree_y(
+                                &mut col_node.children[*tbl_idx],
+                                band_shift,
+                            );
+                        }
+                    }
+                }
             }
         }
     }
