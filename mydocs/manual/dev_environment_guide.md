@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/dev_environment_guide.md
-last_verified: 2026-08-08
+last_verified: 2026-08-11
 ---
 
 # 개발 환경 가이드
@@ -124,6 +124,55 @@ npx vite --host 0.0.0.0 --port 7700
 
 해당 포트가 이미 사용 중이면 기존 서버를 확인하거나 다른 포트를 지정한다. 브라우저 검증 절차는
 [시각 검증 문서 지도](verification/README.md)와 각 E2E 가이드를 따른다.
+
+## Subsecond 핫패치 (개발 전용, unix 호스트 전용)
+
+Rust 를 고쳐도 WASM 재빌드 없이 실행 중인 브라우저에 반영하는 개발 전용 경로다. 기본 빌드에는
+들어가지 않는다 — 루트 `Cargo.toml` 의 `subsecond-dev` feature 뒤에 있고, 그 feature 로 빌드해야
+`applySubsecondDevtoolsMessage` 같은 export 가 생긴다.
+
+```bash
+cd rhwp-studio
+npm run subsecond:install   # dioxus-cli 0.7.10 을 target/dioxus-cli 에 고정 설치
+npm run subsecond:serve     # 별도 터미널: dx serve --hot-patch (127.0.0.1:7711)
+npm run dev:subsecond       # RHWP_SUBSECOND=1 vite
+```
+
+### 지원 플랫폼 — unix 호스트에서만 동작한다
+
+`tools/rhwp-subsecond/build.rs` 는 `dx` 가 찾는 `deps/librhwp-dioxus.rlib` 별칭을 **심링크**로
+만든다. 이 별칭의 대상(`librhwp.rlib`)은 이 빌드 스크립트가 끝난 뒤에야 생기므로 복사로 대체할 수
+없고, 심링크 생성은 `#[cfg(unix)]` 뒤에 있다. 따라서 **Windows 호스트에서는 핫패치가 동작하지
+않는다.** WSL 안에서 빌드하면 unix 경로이므로 동작한다.
+
+이때 겉으로 드러나는 증상은 "아무 일도 일어나지 않음"이다 — `subsecond:install` 성공,
+`dx serve` 정상 출력, Vite 기동, `/_dioxus` 소켓 연결, 데브서버의 `HotReload` 수신까지 모두 정상이고
+화면만 바뀌지 않는다. 그래서 unix 가 아닌 호스트에서 wasm32 대상으로 빌드하면 빌드 스크립트가
+`cargo:warning` 한 줄을 남긴다.
+
+### 실패를 어디서 읽는가
+
+핫패치는 층이 여럿이라 "안 바뀐다"는 증상만으로는 어느 층이 멈췄는지 알 수 없다. 층별 신호는 다음과
+같다.
+
+| 층 | 실패 신호 | 보는 곳 |
+|---|---|---|
+| 별칭 심링크 (`build.rs`) | `cargo:warning=rhwp-subsecond: …` | `subsecond:serve` 터미널 |
+| `dx` 패치 링크 | dx 오류 출력 | `subsecond:serve` 터미널 |
+| 메시지 판정 (`src/subsecond_dev.rs`) | `[subsecond] …` 진단 | 브라우저 콘솔 |
+| wasm 패치 적용 (subsecond 크레이트 내부) | Rust panic + 전역 오류 경고 | 브라우저 콘솔 |
+
+마지막 층에는 구조적인 한계가 있다. wasm32 에서 `subsecond::apply_patch` 는 patch wasm 의
+fetch/compile/instantiate future 를 띄우고 **즉시** `Ok(())` 를 돌려주므로(subsecond 0.7.10
+`src/lib.rs:551`, `:690`), 적용 성공 여부는 `applySubsecondDevtoolsMessage` 의 반환값이 될 수 없다.
+그래서 그 반환값은 `patch-dispatched`("넘겼다")까지만 말하고 "적용됐다"고 말하지 않는다. future
+안의 실패는 전부 `.unwrap()`/`panic!`(`lib.rs:578-582`)이라 다음 두 곳으로만 나온다.
+
+- `console_error_panic_hook`(기본 feature)이 남기는 `console.error` 의 Rust panic 메시지
+- panic 이 wasm trap 이 되어 microtask 경계를 넘은 전역 `error`/`unhandledrejection` 이벤트 —
+  `rhwp-studio/src/core/subsecond-runtime.ts` 가 이를 듣고 "패치를 넘긴 뒤 오류가 도달했다"로 보고한다
+
+브라우저 콘솔의 `[subsecond]` 진단은 개발 빌드에서만 나온다(`import.meta.env.DEV`).
 
 ## OS별 참고
 
