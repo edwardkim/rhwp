@@ -468,6 +468,29 @@ fn recipes() -> Vec<Recipe> {
     let disclose_opening = dir.join("prov-disclose.opening.json");
     let disclose_restored = dir.join("prov-disclose.restored.json");
 
+    // [#4553] settle 픽스처 — 명세서·allow 게이트 봉투 (캡슐은 disclose 픽스처 재사용).
+    let settle_wo = dir.join("prov-settle.wo.json");
+    std::fs::write(
+        &settle_wo,
+        serde_json::json!({
+            "schemaVersion": "1.0", "kind": "workorder", "workorderId": "prov-wo-1",
+            "acceptancePolicy": { "schemaVersion": "1.0", "kind": "admissionPolicy",
+                                   "default": "deny", "rules": [] },
+            "unitPrice": { "amount": "1", "currency": "KRW", "per": "capsule" },
+        })
+        .to_string(),
+    )
+    .expect("명세서 픽스처");
+    let settle_gate = dir.join("prov-settle.gate.json");
+    std::fs::write(
+        &settle_gate,
+        serde_json::json!({ "schemaVersion": "1.0", "verdict": "allow", "violations": [] })
+            .to_string(),
+    )
+    .expect("게이트 봉투 픽스처");
+    let settle_claim = dir.join("prov-settle.claim.json");
+    let settle_ledger = dir.join("prov-settle.ledger.ndjson");
+
     // gate 픽스처 — 빈 규칙 + deny 기본 = 거부(exit 3) 순수 fs 경로.
     let gate_policy = dir.join("prov-gate-policy.json");
     std::fs::write(
@@ -1081,6 +1104,83 @@ fn recipes() -> Vec<Recipe> {
             ],
             stdin: None,
             exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // [#4553] settle propose — 3해시 고정 (미서명: signed false 실측).
+            command: "settle",
+            doc: None,
+            args: vec![
+                s("settle"),
+                s("propose"),
+                s("--workorder"),
+                p(&settle_wo),
+                s("--capsule"),
+                p(&disclose_capsule),
+                s("--gate-envelope"),
+                p(&settle_gate),
+                s("-o"),
+                p(&settle_claim),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // settle verify 전 축 — 미서명 청구라 signerOk false = exit 3 (판정 데이터).
+            command: "settle",
+            doc: None,
+            args: vec![
+                s("settle"),
+                s("verify"),
+                p(&settle_claim),
+                s("--workorder"),
+                p(&settle_wo),
+                s("--capsule"),
+                p(&disclose_capsule),
+                s("--gate-envelope"),
+                p(&settle_gate),
+                s("--keyring"),
+                p(&sig_keyring),
+                s("--ledger"),
+                p(&settle_ledger),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // settle record — 원장 기입 (seq 0, 동형 체인).
+            command: "settle",
+            doc: None,
+            args: vec![
+                s("settle"),
+                s("record"),
+                p(&settle_claim),
+                s("--ledger"),
+                p(&settle_ledger),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // settle record 재시도 — P3 이중 청구 (duplicate·existingSeq 실물).
+            command: "settle",
+            doc: None,
+            args: vec![
+                s("settle"),
+                s("record"),
+                p(&settle_claim),
+                s("--ledger"),
+                p(&settle_ledger),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
             ndjson: false,
         },
         Recipe {

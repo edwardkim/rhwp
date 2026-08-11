@@ -1159,6 +1159,86 @@ export async function discloseRestore(
   );
 }
 
+/** {@link settlePropose} 옵션. */
+export interface SettleProposeOptions extends CommandOptions {
+  /** 청구자 서명 키 — 주면 청구 사이드카(`<claim>.sig.json`)를 함께 발급한다. */
+  readonly signKey?: PathLike | undefined;
+}
+
+/** [#4553] 정산 청구 발급 — 명세서·캡슐·게이트 봉투를 3해시로 고정한다. 돈은 움직이지 않는다. */
+export async function settlePropose(
+  workorder: PathLike,
+  capsule: PathLike,
+  gateEnvelope: PathLike,
+  out: PathLike,
+  options: SettleProposeOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = [
+    'settle', 'propose',
+    '--workorder', workorder,
+    '--capsule', capsule,
+    '--gate-envelope', gateEnvelope,
+    '-o', out,
+  ];
+  if (options.signKey !== undefined) args.push('--sign-key', options.signKey);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link settleVerify} 옵션. */
+export interface SettleVerifyOptions extends CommandOptions {
+  /** 서명 판정 axis (opt-in) — 청구·명세서 사이드카를 이 keyring 으로 판정한다. */
+  readonly keyring?: PathLike | undefined;
+  /** 이중 청구 검사 axis (opt-in) — 원장 전역에서 같은 캡슐의 accepted 를 찾는다. */
+  readonly ledger?: PathLike | undefined;
+  /** 청구 사이드카 경로 명시 (기본 `<claim>.sig.json`). */
+  readonly sig?: PathLike | undefined;
+}
+
+/**
+ * [#4553] 정산 청구 검증 — 3해시 대조 + 게이트 verdict 재확인.
+ *
+ * 실패는 exit 3 이지만 예외로 올리지 않는다 — 어떤 축이 무너졌는지는 봉투
+ * (workorderOk·capsuleOk·gateOk·gateVerdict·signerOk·duplicate)가 말한다.
+ */
+export async function settleVerify(
+  claim: PathLike,
+  workorder: PathLike,
+  capsule: PathLike,
+  gateEnvelope: PathLike,
+  options: SettleVerifyOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = [
+    'settle', 'verify', claim,
+    '--workorder', workorder,
+    '--capsule', capsule,
+    '--gate-envelope', gateEnvelope,
+  ];
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.ledger !== undefined) args.push('--ledger', options.ledger);
+  if (options.sig !== undefined) args.push('--sig', options.sig);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link settleRecord} 옵션. */
+export interface SettleRecordOptions extends CommandOptions {
+  /** 기입 판정 (기본 accepted). rejected 기입은 이중 청구 검사를 받지 않는다. */
+  readonly verdict?: 'accepted' | 'rejected' | undefined;
+}
+
+/** [#4553] 원장 기입 — 5년 로그 동형 체인에 등재. 같은 캡슐의 accepted 재청구는 exit 3. */
+export async function settleRecord(
+  claim: PathLike,
+  ledger: PathLike,
+  options: SettleRecordOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['settle', 'record', claim, '--ledger', ledger];
+  if (options.verdict !== undefined) args.push('--verdict', options.verdict);
+  args.push('--json');
+  return call(args, options);
+}
+
 // ── 편집 ──────────────────────────────────────────────────────────────────
 
 /**

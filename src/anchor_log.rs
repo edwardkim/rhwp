@@ -54,6 +54,12 @@ pub struct AnchorLog {
 ///
 /// 빈 파일(또는 부재)은 항목 0개의 유효한 로그다 — 첫 등재 전 상태.
 pub fn load(path: &str) -> Result<AnchorLog, String> {
+    load_kind(path, LOG_KIND)
+}
+
+/// [#4553] kind 매개변수판 — 9년 정산 원장이 같은 체인 검증 경로를 동형
+/// 재사용한다(신규 형식 발명 0, 설계서 §2.3).
+pub fn load_kind(path: &str, kind: &str) -> Result<AnchorLog, String> {
     let text = match std::fs::read_to_string(path) {
         Ok(t) => t,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => String::new(),
@@ -67,8 +73,8 @@ pub fn load(path: &str) -> Result<AnchorLog, String> {
         }
         let entry: serde_json::Value = serde_json::from_str(line)
             .map_err(|e| format!("{path}:{}: 로그 줄 파싱 실패 - {e}", i + 1))?;
-        if entry["kind"] != LOG_KIND {
-            return Err(format!("{path}:{}: kind 가 {LOG_KIND} 가 아님", i + 1));
+        if entry["kind"] != kind {
+            return Err(format!("{path}:{}: kind 가 {kind} 가 아님", i + 1));
         }
         if entry["seq"].as_u64() != Some(entries.len() as u64) {
             return Err(format!(

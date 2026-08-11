@@ -304,7 +304,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 236개 필드
+### 2-2. 전수 사전 — 250개 필드
 
 `capabilities` 의 `recordFields` 고유 **185개**와 그 밖의 실측-only 필드
 `assertions`·`docId`·`preview` **3개**를 합친 188개다. `등장 명령` 은 자기서술
@@ -552,6 +552,26 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `restored` | string | 복원 캡슐 경로 (restore) | `disclose` |
 | `restoredSha256` | string | 복원 캡슐의 파일 sha256 | `disclose` |
 | `byteIdentical` | bool | 복원 == 원본 바이트 — 참이면 **원본 분리 서명이 복원본에서 그대로 valid** | `disclose` |
+
+#### 정산 증빙 (`settle`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `claim` | string | 청구 파일 경로(호출자 에코) | `settle` |
+| `workorderSha256` | string | 명세서 파일 바이트 sha256 — P4(사후 변경) 고정 | `settle` |
+| `gateEnvelopeSha256` | string | 게이트 판정 봉투 sha256 — P2(판정 위조) 고정 | `settle` |
+| `claimSha256` | string | 청구 파일 sha256 — 원장 기입의 대상 | `settle` |
+| `workorderOk` | bool | 명세서 재해시 == 청구 고정값 | `settle` |
+| `capsuleOk` | bool | 캡슐 재해시 == 청구 고정값 — P1(바꿔치기) 검출 | `settle` |
+| `gateOk` | bool | 게이트 봉투 재해시 == 청구 고정값 | `settle` |
+| `gateVerdict` | string\|null | 게이트 봉투의 verdict 재확인 — 해시가 맞아도 allow 아니면 rejected. 파싱 불가면 `null` | `settle` |
+| `signerOk` | bool | 청구 사이드카 서명 판정 — **사이드카 부재도 false**(청구 귀속은 본질). `--keyring` opt-in | `settle` |
+| `workorderSignerOk` | bool\|null | 명세서 서명 판정 — 사이드카 부재는 `null`(미서명 보고, 실패 아님) | `settle` |
+| `ledgerOk` | bool | 원장 자기 무결(동형 체인) 판정. `--ledger` opt-in | `settle` |
+| `duplicate` | bool\|null | 이중 청구 — 원장 전역에서 같은 capsuleSha256 의 accepted 존재. 원장이 깨졌으면 `null` | `settle` |
+| `existingSeq` | number | 이중 청구 시 기존 accepted 기입의 seq (record 거부 봉투) | `settle` |
+| `ledger` | string | 원장 경로(호출자 에코) | `settle` |
+
 
 | `closureOk` | bool | 조상 폐쇄집합 완전성 — 부모 참조가 번들 안에서 전부 해소 | `bundle` |
 | `anchored` | object\|null | 머클 증명 집계 `{ok, bad, checkpointTrusted}` — 증명 미동봉이면 `null` | `bundle` |

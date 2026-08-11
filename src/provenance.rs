@@ -364,6 +364,13 @@ pub const MAP: &[CommandProvenance] = &[
                비밀 개봉 파일에만 있고 봉투에 싣지 않는다(그것이 이 축의 존재 이유).",
     },
     CommandProvenance {
+        command: "settle",
+        untrusted: NONE,
+        note: "봉투는 경로 에코·해시·판정·seq 뿐이다 — 명세서 제목·금액 같은 문서 유래 \
+               문자열은 봉투에 싣지 않는다(금액은 운반만 하는 문자열이고 도구는 계산하지 \
+               않는다, 범위 경계).",
+    },
+    CommandProvenance {
         command: "ir-diff",
         untrusted: &[f(
             "categories",
