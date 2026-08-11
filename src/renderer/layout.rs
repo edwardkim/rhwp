@@ -6216,11 +6216,20 @@ impl LayoutEngine {
                 // paragraph 가 TAC 표 위에 침범하지 않도록 보호) 는 그대로 유지하고,
                 // 빈 paragraph 는 push 대상에서 제외한다. fix_overlay_active 는 유지하여
                 // 후속 비-empty paragraph 가 push 대상이 될 수 있게 한다.
+                // [#4599 ⑨] 공백(스페이스류)만 있는 문단도 #716 의 취지("시각적으로
+                // invisible — push 가 보이는 차이 없이 y_offset 드리프트만 누적")와
+                // 동일하다. 36392662 p1: was_tac 아이템마다 seg0(lh 1300) 기반의
+                // 과소 '표 하단'(621.0/638.3)이 재활성화되며 공백 host 줄과 공백
+                // 문단을 +17.3px 씩 두 번 밀어 '나' 절이 사다리·한글 2022 PDF(627.7)
+                // 보다 34.5px 아래로 밀렸다 — 공백 문단을 push 대상에서 제외하면
+                // 후속 잉크 문단('나')이 627.9 로 정렬된다(실측).
                 let is_empty_para = paragraphs
                     .get(item_para)
                     .map(|p| {
                         p.text.is_empty()
-                            || p.text.chars().all(|c| c <= '\u{001F}' || c == '\u{FFFC}')
+                            || p.text
+                                .chars()
+                                .all(|c| c <= '\u{001F}' || c == '\u{FFFC}' || c.is_whitespace())
                     })
                     .unwrap_or(false);
                 if !is_fixed && !is_empty_para {
