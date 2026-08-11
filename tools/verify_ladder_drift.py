@@ -35,11 +35,15 @@ LINE_RE = re.compile(
     r"^(\s*)TextLine\s+y=\s*([0-9.]+)\.\.\s*[0-9.]+\s+h=\s*([0-9.]+)\s.*?pi=(\d+)\s+line=(\d+)\s+vpos=(-?\d+)"
 )
 PAGE_RE = re.compile(r"^Page\s")
-NODE_RE = re.compile(r"^(\s*)([A-Za-z]\w*)\s")
+NODE_RE = re.compile(r"^(\s*)(\S+)\s")
 # 이 컨테이너 아래 줄은 본문 흐름 좌표계가 아니다 — 셀·글상자·도형·머리/꼬리말·각주.
 FOREIGN = {
     "Table", "TableCell", "Header", "Footer", "FootnoteArea", "TextBox",
     "Shape", "Group", "Rect", "Ellipse", "Path", "Equation", "MasterPage", "Image",
+    # dump-extents 는 무명 컨테이너(도형·캡션 등)를 "기타" 로 찍는다 — 옛 NODE_RE
+    # ([A-Za-z]만)가 이를 스택에서 투명하게 만들어 글상자 내부 줄이 본문으로
+    # 샜다(누리과정 7240000 FP 실측). 노드 토큰을 \S+ 로 넓히고 여기서 거른다.
+    "기타",
 }
 HU_PER_PX = 75.0
 
@@ -97,7 +101,12 @@ def analyze(exe: Path, path: Path, threshold: float):
             if line == 0 and pi not in cols.setdefault(col, {}):
                 cols[col][pi] = (y, vpos)
         for col, first in cols.items():
-            ordered = [(pi, y, v) for pi, (y, v) in sorted(first.items()) if v > 0]
+            # 조우(렌더 트리) 순서를 유지한다 — pi 로 정렬하면 컬럼 직속으로 샌
+            # 지역-사다리 줄(글상자 pi0, vpos 500대)이 맨 앞으로 끌려와 되돌아감
+            # 분할이 무력화되고 본문 중앙값을 오염시킨다(환경위성 156489219 FP).
+            # 조우순이면 그런 줄은 vpos 되돌아감으로 갈라져 4줄 미만 분절 스킵에
+            # 걸린다.
+            ordered = [(pi, y, v) for pi, (y, v) in first.items() if v > 0]
             # vpos 되돌아감 = 쪽 중간 리베이스(구역/리스트 재시작) 신호 — 분절을 갈라
             # 각자의 중앙값으로 판정한다. 리베이스된 블록은 자기 기준으로 자기일관이라
             # 조용해지고, 같은 분절 안의 상대 이동(진짜 결함)만 남는다.
@@ -115,6 +124,14 @@ def analyze(exe: Path, path: Path, threshold: float):
                 if len(seg) < 4:
                     continue
                 med = statistics.median(y - v / HU_PER_PX for _, y, v in seg)
+                # 귀속 교정: 결함이 분절 중후반의 다수 줄을 밀면 중앙값이 밀린
+                # 편에 붙어 **정위치 줄이 편차로 오지목**된다(기장군·아세안·
+                # 2135039 등 5사례). 분절 머리(첫 3줄)는 결함 지점 위에서 쪽
+                # 원점을 세우므로, 머리 기준과 중앙값이 갈리면 머리를 기준으로
+                # 삼는다 — 판정(DRIFT 여부)은 불변, 어느 줄을 짚는지만 바뀐다.
+                head = statistics.median(y - v / HU_PER_PX for _, y, v in seg[:3])
+                if abs(head - med) > threshold:
+                    med = head
                 checked += 1
                 for pi, y, v in seg:
                     dev = (y - v / HU_PER_PX) - med
