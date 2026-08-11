@@ -816,11 +816,7 @@ impl DocumentCore {
     fn tac_control_height_for_empty_picture_para(ctrl: &Control) -> Option<i32> {
         match ctrl {
             Control::Picture(pic) if pic.common.treat_as_char => Some(pic.common.height as i32),
-            Control::Shape(shape) if shape.common().treat_as_char => {
-                let common_h = shape.common().height as i32;
-                let current_h = shape.shape_attr().current_height as i32;
-                Some(common_h.max(current_h))
-            }
+            Control::Shape(shape) if shape.common().treat_as_char => Some(shape.flow_height_hu()),
             Control::Table(table) if table.common.treat_as_char => Some(table.common.height as i32),
             Control::Equation(eq) if eq.common.treat_as_char => Some(eq.common.height as i32),
             _ => None,

@@ -1060,11 +1060,7 @@ fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
         .iter()
         .filter_map(|ctrl| match ctrl {
             Control::Picture(pic) if pic.common.treat_as_char => Some(pic.common.height as i32),
-            Control::Shape(shape) if shape.common().treat_as_char => {
-                let common_h = shape.common().height as i32;
-                let current_h = shape.shape_attr().current_height as i32;
-                Some(common_h.max(current_h))
-            }
+            Control::Shape(shape) if shape.common().treat_as_char => Some(shape.flow_height_hu()),
             Control::Table(table) if table.common.treat_as_char => Some(table.common.height as i32),
             Control::Equation(eq) if eq.common.treat_as_char => Some(eq.common.height as i32),
             Control::Form(form) => Some(form.height as i32),
@@ -1079,14 +1075,10 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
         Control::Picture(pic) if pic.common.treat_as_char => {
             (pic.common.width as i32, pic.common.height as i32)
         }
-        Control::Shape(shape) if shape.common().treat_as_char => {
-            let common = shape.common();
-            let shape_attr = shape.shape_attr();
-            (
-                (common.width as i32).max(shape_attr.current_width as i32),
-                (common.height as i32).max(shape_attr.current_height as i32),
-            )
-        }
+        Control::Shape(shape) if shape.common().treat_as_char => (
+            (shape.common().width as i32).max(shape.shape_attr().current_width as i32),
+            shape.flow_height_hu(),
+        ),
         Control::Table(table) if table.common.treat_as_char => {
             let width = table.get_column_widths().iter().sum::<u32>() as i32;
             (width, table.common.height as i32)

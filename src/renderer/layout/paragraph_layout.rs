@@ -296,11 +296,7 @@ fn tac_picture_or_shape_height_for_line(
     para.controls.iter().find_map(|ctrl| {
         let height_hu = match ctrl {
             Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
-            Control::Shape(shape) if shape.common().treat_as_char => {
-                let common_h = shape.common().height as i32;
-                let current_h = shape.shape_attr().current_height as i32;
-                common_h.max(current_h)
-            }
+            Control::Shape(shape) if shape.common().treat_as_char => shape.flow_height_hu(),
             _ => return None,
         };
         let height = hwpunit_to_px(height_hu, dpi);
@@ -691,11 +687,7 @@ fn repeated_empty_tac_line_offset(
 fn tac_picture_or_shape_height_px(ctrl: &Control, dpi: f64) -> Option<f64> {
     let height_hu = match ctrl {
         Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
-        Control::Shape(shape) if shape.common().treat_as_char => {
-            let common_h = shape.common().height as i32;
-            let current_h = shape.shape_attr().current_height as i32;
-            common_h.max(current_h)
-        }
+        Control::Shape(shape) if shape.common().treat_as_char => shape.flow_height_hu(),
         _ => return None,
     };
     Some(hwpunit_to_px(height_hu, dpi))
@@ -3208,7 +3200,7 @@ impl LayoutEngine {
                         line_tac_offsets.iter().any(|(_, _, ci)| {
                             p.controls.get(*ci).is_some_and(|ctrl| match ctrl {
                                 Control::Shape(shape) if shape.common().treat_as_char => {
-                                    shape.shape_attr().current_height > shape.common().height
+                                    shape.flow_height_hu() > shape.common().height as i32
                                 }
                                 _ => false,
                             })
@@ -5316,9 +5308,7 @@ impl LayoutEngine {
                     if let Some(p) = para {
                         if let Some(Control::Shape(shape)) = p.controls.get(tac_ci) {
                             let common = shape.common();
-                            let shape_h_hu = (common.height as i32)
-                                .max(shape.shape_attr().current_height as i32);
-                            let shape_h = hwpunit_to_px(shape_h_hu, self.dpi);
+                            let shape_h = hwpunit_to_px(shape.flow_height_hu(), self.dpi);
                             if raw_lh + 4.0 >= shape_h {
                                 current_line_reserved_tac_picture_height = Some(shape_h);
                             }
@@ -6369,9 +6359,7 @@ impl LayoutEngine {
                         // #476 의 fallback 차단 분기로 박스가 누락된다.
                         if let Control::Shape(shape) = ctrl {
                             let common = shape.common();
-                            let shape_h_hu = (common.height as i32)
-                                .max(shape.shape_attr().current_height as i32);
-                            let shape_h = hwpunit_to_px(shape_h_hu, self.dpi);
+                            let shape_h = hwpunit_to_px(shape.flow_height_hu(), self.dpi);
                             let shape_y = (vars.y + vars.baseline - shape_h).max(vars.y);
                             tree.set_inline_shape_position(
                                 vars.section_index,
