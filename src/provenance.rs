@@ -336,8 +336,15 @@ pub const MAP: &[CommandProvenance] = &[
     CommandProvenance {
         command: "harness",
         untrusted: NONE,
-        note: "하네스 봉투는 경로 에코(dir·capsule·output)·해시·판정 집계뿐이다 — \
+        note: "하네스 봉투는 경로 에코(dir·capsule·output)·해시·연번뿐이다 — \
                캡슐·키링은 호출자 산출물이고, 문서 문자열은 wrap 실행 내부에 머문다.",
+    },
+    CommandProvenance {
+        command: "harness-status",
+        untrusted: NONE,
+        note: "판정 봉투는 경로 에코(dir)·개수 회계(capsules)·판정 불리언 \
+               (chainValid·verdict)·서명/재현 집계·깨진 캡슐 파일 이름(brokenAt)뿐이다 — \
+               캡슐은 호출자 산출물이고, 문서 문자열은 --deep 재실행 내부에 머문다.",
     },
     CommandProvenance {
         command: "ir-diff",

@@ -40,7 +40,8 @@ last_verified: 2026-08-11
 축 7이 이 PR 의 기여다: 축 1~6이 있어도 **에이전트가 매 작업마다 도는
 루프**가 명령 5개 조합이면 하네스가 아니라 부품함이다. `harness wrap` 은
 그 조합을 한 호출로 접고(직전 캡슐 자동 부모 연결 — 체인이 스스로 자란다),
-`harness status` 는 작업장 전체를 한 봉투로 판정한다.
+`harness-status` 는 작업장 전체를 한 봉투로 판정한다 — 쓰기가 없어
+쓰기 명령(harness)과 표면을 나눈 읽기 전용 명령이다.
 
 ## 3. 30초 사용 (하네스의 전부)
 
@@ -48,7 +49,7 @@ last_verified: 2026-08-11
 rhwp harness init 작업장 --key-id org.example/agent-7#2026
 rhwp harness wrap --plan @계획1.json --dir 작업장 --sign-key 작업장/harness.key.json
 rhwp harness wrap --plan @계획2.json --dir 작업장 --sign-key 작업장/harness.key.json
-rhwp harness status 작업장 --keyring 작업장/keyring.json --deep --json
+rhwp harness-status 작업장 --keyring 작업장/keyring.json --deep --json
 # → { capsules: 2, chainValid: true, signed: {valid:2}, reproduced: {ok:2}, verdict: "ok" }
 ```
 

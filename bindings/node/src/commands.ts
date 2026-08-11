@@ -969,12 +969,17 @@ export interface HarnessStatusOptions extends CommandOptions {
   readonly throwOnVerdict?: boolean | undefined;
 }
 
-/** [#4537] 작업장 통합 판정 — 체인·서명 집계·(deep) 재현을 한 봉투로. */
+/**
+ * [#4537] 작업장 통합 판정 — 체인·서명 집계·(deep) 재현을 한 봉투로.
+ *
+ * 쓰기가 없어 CLI 에서도 쓰기 명령(`harness`)과 표면이 갈린 최상위
+ * `harness-status` 다 — 읽기 전용 도구의 주석이 category 와 어긋나지 않게 한다.
+ */
 export async function harnessStatus(
   dir: PathLike,
   options: HarnessStatusOptions = {},
 ): Promise<Envelope> {
-  const args: Argument[] = ['harness', 'status', dir];
+  const args: Argument[] = ['harness-status', dir];
   if (options.keyring !== undefined) args.push('--keyring', options.keyring);
   if (options.deep) args.push('--deep');
   args.push('--json');
