@@ -20183,11 +20183,13 @@ impl TypesetEngine {
 
         let para_has_stored_line_seg = para.line_segs.iter().any(|ls| !is_synthetic_line_seg(ls));
         let single_row_object_height_fits_current = single_row_object_declared_fits_current;
-        // 저장 object 높이 기준으로는 현재 쪽에 들어가지만, cell 내용 측정치는 더 큰
-        // 1행 자리차지 표는 렌더러에서 쪽 하단까지 차지한다. 이 경우 표 자체는 현재
-        // 쪽에 두되 후속 flow 는 남은 영역을 모두 소비한 것으로 보아 같은 쪽 overflow 를
-        // 막는다.
-        let single_row_object_height_advance = single_row_object_height_fits_current.then(|| {
+        // HWP5-origin HWPX는 저장 object 높이 기준으로는 현재 쪽에 들어가지만,
+        // cell 내용 측정치는 더 큰 1행 자리차지 표를 쪽 하단까지 차지한 것으로
+        // 기록한다. native HWP는 RowBreak fragment의 실제 소비량을 따라야 하므로
+        // 이 HWPX 호환 보정을 적용하지 않는다.
+        let single_row_object_height_advance = (st.profile.hwp5_origin_hwpx()
+            && single_row_object_height_fits_current)
+            .then(|| {
             if st.current_height + table_total > available {
                 (available - st.current_height).max(0.0)
             } else {
