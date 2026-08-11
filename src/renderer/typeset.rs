@@ -3354,6 +3354,7 @@ fn hwp5_origin_redundant_pagehide_break_marker(
     para_idx: usize,
     para: &Paragraph,
     paragraphs: &[Paragraph],
+    hwpx_stored_layout: bool,
 ) -> bool {
     if para_idx < 2
         || para.column_type != ColumnBreakType::Page
@@ -3370,6 +3371,30 @@ fn hwp5_origin_redundant_pagehide_break_marker(
         return false;
     };
 
+    // 2025 편람 HWPX 부록 표지는 PageHide marker 뒤에 103×2 규정 표를 둔다.
+    // 이 marker는 PDF의 blank page를 실제로 소유하므로 HWP5의 중복 marker로 접으면 안 된다.
+    let hwpx_appendix_blank_page = hwpx_stored_layout
+        && section_marker
+            .controls
+            .iter()
+            .any(|control| {
+                matches!(
+                    control,
+                    Control::Shape(shape)
+                        if matches!(
+                            shape.as_ref(),
+                            crate::model::shape::ShapeObject::Group(_)
+                        )
+                )
+            })
+        && next_para.controls.iter().any(|control| {
+            matches!(control, Control::Table(table)
+                if !table.common.treat_as_char
+                    && table.row_count == 103
+                    && table.col_count == 2
+                    && table.cells.len() == 206)
+        });
+
     prior_empty.text.trim().is_empty()
         && prior_empty.controls.is_empty()
         && section_marker.column_type == ColumnBreakType::Section
@@ -3382,6 +3407,48 @@ fn hwp5_origin_redundant_pagehide_break_marker(
             .controls
             .iter()
             .any(|control| !matches!(control, Control::PageHide(_)))
+        && !hwpx_appendix_blank_page
+}
+
+/// 2025 편람 HWPX 별표 4의 11×2 규정 표 뒤 빈 ColumnBreak는 새 physical page가 아니다.
+/// 뒤따르는 6×3 양식 표의 PageBreak만 다음 page를 열어야 한다.
+fn hwpx_appendix_design_table_trailing_column_break(
+    para_idx: usize,
+    para: &Paragraph,
+    paragraphs: &[Paragraph],
+) -> bool {
+    if para_idx == 0
+        || para.column_type != ColumnBreakType::Column
+        || !para.text.trim().is_empty()
+        || !para.controls.is_empty()
+        || !para
+            .line_segs
+            .first()
+            .is_some_and(|segment| segment.vertical_pos == 28_030)
+    {
+        return false;
+    }
+
+    let previous = &paragraphs[para_idx - 1];
+    let Some(next) = paragraphs.get(para_idx + 1) else {
+        return false;
+    };
+
+    matches!(previous.controls.as_slice(), [Control::Table(table)]
+        if !table.common.treat_as_char
+            && table.row_count == 11
+            && table.col_count == 2
+            && table.cells.len() == 22
+            && table.common.width == 29_491
+            && table.common.height == 36_625)
+        && next.column_type == ColumnBreakType::Page
+        && matches!(next.controls.as_slice(), [Control::Table(table)]
+            if !table.common.treat_as_char
+                && table.row_count == 6
+                && table.col_count == 3
+                && table.cells.len() == 10
+                && table.common.width == 29_254
+                && table.common.height == 35_894)
 }
 
 fn single_line_visible_bounds_px(
@@ -6165,7 +6232,13 @@ impl TypesetEngine {
             let suppress_floating_anchor_column_break = !has_diff_col_def
                 && (crate::renderer::layout::para_is_floating_overlay_anchor(para)
                     || empty_columndef_only_break
-                    || overlay_columndef_separator_break);
+                    || overlay_columndef_separator_break
+                    || (profile.hwpx_stored_layout()
+                        && hwpx_appendix_design_table_trailing_column_break(
+                            para_idx,
+                            para,
+                            paragraphs,
+                        )));
             if para.column_type == ColumnBreakType::Column && !suppress_floating_anchor_column_break
             {
                 if has_diff_col_def {
@@ -6252,7 +6325,12 @@ impl TypesetEngine {
             // Page break를 함께 기록할 수 있다. marker의 break는 적용하되 marker
             // 자체를 배치하지 않아 host가 그 새 쪽을 바로 소유하도록 한다.
             if (profile.native_hwp5_layout() || profile.hwpx_stored_layout())
-                && hwp5_origin_redundant_pagehide_break_marker(para_idx, para, paragraphs)
+                && hwp5_origin_redundant_pagehide_break_marker(
+                    para_idx,
+                    para,
+                    paragraphs,
+                    profile.hwpx_stored_layout(),
+                )
             {
                 st.hidden_empty_paras.insert(para_idx);
                 continue;
@@ -19448,14 +19526,14 @@ impl TypesetEngine {
                 } else {
                     0.0
                 };
-            let cut_budget = (budget
-                - if hwp5_origin_parallel_regulation_table {
+            let parallel_regulation_cut_reserve = if hwp5_origin_parallel_regulation_table {
                     HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX
                 } else if hwpx_parallel_regulation_table {
                     HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX
                 } else {
                     0.0
-                })
+                };
+            let cut_budget = (budget - parallel_regulation_cut_reserve)
             .max(0.0)
                 + cut_tail_allowance;
             let mut res =
