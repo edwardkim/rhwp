@@ -3677,6 +3677,15 @@ fn korean_gothic_substitute(font_name: &str) -> Option<&'static str> {
     }
 }
 
+/// Whether a generated font candidate is a single, relative file name.
+#[cfg(not(target_arch = "wasm32"))]
+fn is_plain_font_file_name(name: &str) -> bool {
+    use std::path::Component;
+
+    let mut components = std::path::Path::new(name).components();
+    matches!(components.next(), Some(Component::Normal(_))) && components.next().is_none()
+}
+
 /// 폰트명으로 TTF/OTF 파일을 탐색한다.
 #[cfg(not(target_arch = "wasm32"))]
 fn find_font_file_with_weight(
@@ -3723,6 +3732,9 @@ fn find_font_file_with_weight(
                 files.push(sub.to_string());
             }
         }
+        // Candidate names originate in document font metadata. Keep the filesystem
+        // lookup boundary to one file name before joining it to a configured root.
+        files.retain(|candidate| is_plain_font_file_name(candidate));
         files
     };
 

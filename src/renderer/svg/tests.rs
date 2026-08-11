@@ -129,6 +129,44 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
 
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
+fn font_file_candidates_are_single_path_components() {
+    assert!(is_plain_font_file_name("NotoSansKR-Regular.ttf"));
+    assert!(is_plain_font_file_name("Noto Sans KR.otf"));
+
+    let nested = std::path::Path::new("fonts").join("NotoSansKR-Regular.ttf");
+    assert!(!is_plain_font_file_name(
+        nested.to_str().expect("UTF-8 test path")
+    ));
+
+    let parent = std::path::Path::new("..").join("NotoSansKR-Regular.ttf");
+    assert!(!is_plain_font_file_name(
+        parent.to_str().expect("UTF-8 test path")
+    ));
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn font_lookup_does_not_descend_below_search_roots() {
+    let root = std::env::temp_dir().join(format!("rhwp-svg-font-candidate-{}", std::process::id()));
+    let nested = root.join("nested");
+    std::fs::create_dir_all(&nested).expect("temporary nested font directory");
+    std::fs::write(nested.join("DocumentFont.ttf"), b"font").expect("nested test font");
+
+    let font_name = std::path::Path::new("nested").join("DocumentFont");
+    assert!(
+        find_font_file(
+            font_name.to_str().expect("UTF-8 test path"),
+            std::slice::from_ref(&root),
+        )
+        .is_none(),
+        "font lookup must consider direct file names only"
+    );
+
+    std::fs::remove_dir_all(root).expect("remove temporary font directory");
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
 fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
     let mut renderer = SvgRenderer::new();
     renderer.font_embed_mode = FontEmbedMode::Style;
