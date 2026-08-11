@@ -8405,8 +8405,7 @@ impl LayoutEngine {
                                                 < seg.line_height.saturating_mul(4).max(160_000)
                                     })
                                 {
-                                    let ls_px =
-                                        hwpunit_to_px(seg.line_spacing.max(0), self.dpi);
+                                    let ls_px = hwpunit_to_px(seg.line_spacing.max(0), self.dpi);
                                     // 다음 문단이 스스로 더할 style-sb 는 사다리
                                     // 델타에 이미 들어 있으므로 선공제한다(채택된
                                     // ③식과 동일 구성 — 누락 시 서식27 계열이
