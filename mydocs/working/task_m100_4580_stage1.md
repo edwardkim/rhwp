@@ -160,3 +160,36 @@ npm 스크립트의 `ln -sf` 로 옮기는 것도 dx 세션 없이는 확인이 
   `dioxus-cli-version.mjs` 의 main 판별, dist 테스트의 표지 목록.
 - **버림**: 옛 브랜치가 테스트에 더한 `assert.match(runtime, /…/)` 세 줄 — #4593 이 없애기로 한
   바로 그 형태다.
+
+
+## 후속 이슈 (2026-08-12)
+
+작업 중 발견했지만 배정된 일곱 이슈 밖이라 **고치지 않고** 이슈로 분리했다.
+
+- **[#4630](https://github.com/edwardkim/rhwp/issues/4630)** — wasm32 타깃 clippy 가
+  기존 상태에서 **16건** 실패한다(`web_canvas.rs:2677` `identity_op` 등). CI 가 네이티브만
+  lint 해서 wasm32 전용 lint 부채가 안 보인다. feature 와 무관하다.
+- **[#4631](https://github.com/edwardkim/rhwp/issues/4631)** — CLI 바이너리가 wasm32 로
+  컴파일되지 않는다. #4588 은 게이트 명령을 `--lib` 로 고정하는 것으로 처리했고, 구조적 제외
+  여부는 미결이다.
+- **[#4632](https://github.com/edwardkim/rhwp/issues/4632)** — 소스 텍스트 정규식 단언이
+  `rhwp-studio/tests/` **164개 중 110개 파일**에 퍼져 있다. #4593 은 subsecond 파일의 코드
+  대상 10건만 없앴다.
+- **[#4633](https://github.com/edwardkim/rhwp/issues/4633)** — `async` EventBus 구독자
+  7개가 배달 계약 밖에 있다. `emit` 이 동기라 거부가 도달하지 못한다 — #4591 전후 모두.
+  `compare-dialog.ts:297-307` 의 90초 타임아웃이 같은 부류다.
+- **[#4634](https://github.com/edwardkim/rhwp/issues/4634)** — CI 영향 분류기의 fail-closed
+  목록이 손 유지다. #4589 의 드리프트 검사가 **정작 드리프트가 나는 방향에서 안 돌 뻔했다**.
+- **[#4635](https://github.com/edwardkim/rhwp/issues/4635)** — 잔여물 3건(낡은 문서 인용,
+  주석 처리된 구독, 번들 마커 오탐 가능성).
+- **[#4636](https://github.com/edwardkim/rhwp/issues/4636)** — `wasm-bridge.ts` 가 아직
+  devtools 소켓을 소유해 벤더 언급 11개가 프로덕션 모듈에 남는다.
+
+## 강제된 의존 (범위 밖이지만 게이트가 막혀 최소 변경)
+
+`scripts/frontend-wasm-bindings.test.mjs` 가 tautological `cfg_attr` 을 평범한
+`#[wasm_bindgen]` 으로 바꾸는 순간 깨졌다 — 모든 `js_name` 이 `pkg/rhwp.d.ts` 에 있어야
+하는데, 그 산출물은 optional feature 없이 빌드된다. 여러 줄 `cfg_attr` 이 그 정규식에서
+**우연히 이름을 숨기고 있었다.** feature 게이트된 이름을 건너뛰고 역방향을 확인하며
+비공허성 바닥을 두는 최소 수정을 했다. 단독 이슈였다면 *"wasm-bindings 게이트가 feature
+게이트된 export 에서 거짓 실패한다"* 였을 것이다.
