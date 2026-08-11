@@ -1870,9 +1870,7 @@ pub(crate) fn control_line_seg_index(para: &Paragraph, control_index: usize) -> 
     let p = *positions.get(control_index)?;
     let mut idx = 0usize;
     for (k, seg) in para.line_segs.iter().enumerate().skip(1) {
-        let start_txt = para
-            .char_offsets
-            .partition_point(|&o| o < seg.text_start);
+        let start_txt = para.char_offsets.partition_point(|&o| o < seg.text_start);
         if p >= start_txt {
             idx = k;
         } else {
@@ -6825,10 +6823,7 @@ impl LayoutEngine {
                                         let delta = ns.vertical_pos - seg.vertical_pos;
                                         if delta <= 0
                                             || delta
-                                                >= seg
-                                                    .line_height
-                                                    .saturating_mul(4)
-                                                    .max(160_000)
+                                                >= seg.line_height.saturating_mul(4).max(160_000)
                                         {
                                             return None;
                                         }
@@ -6840,7 +6835,8 @@ impl LayoutEngine {
                                                 .unwrap_or(0.0)
                                         };
                                         Some(
-                                            para_flow_start + sb(para.para_shape_id)
+                                            para_flow_start
+                                                + sb(para.para_shape_id)
                                                 + hwpunit_to_px(delta, self.dpi)
                                                 - sb(np.para_shape_id),
                                         )
@@ -8088,30 +8084,30 @@ impl LayoutEngine {
                                 None
                             } else {
                                 paragraphs
-                                .get(para_index + 1)
-                                .and_then(|np| np.line_segs.first().map(|ns| (np, ns)))
-                                .filter(|(_, ns)| {
-                                    ns.vertical_pos > seg.vertical_pos
-                                        && ns.vertical_pos - seg.vertical_pos
-                                            < seg.line_height.saturating_mul(4).max(160_000)
-                                })
-                                .map(|(np, ns)| {
-                                    let next_sb = styles
-                                        .para_styles
-                                        .get(np.para_shape_id as usize)
-                                        .map(|ps| ps.spacing_before.max(0.0))
-                                        .unwrap_or(0.0);
-                                    let om_top_px =
-                                        hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
-                                    tac_table_y_before - om_top_px.max(0.0)
-                                        + hwpunit_to_px(
-                                            ns.vertical_pos - seg.vertical_pos,
-                                            self.dpi,
-                                        )
-                                        - next_sb
-                                        - ls_px
-                                        - om_px.max(0.0)
-                                })
+                                    .get(para_index + 1)
+                                    .and_then(|np| np.line_segs.first().map(|ns| (np, ns)))
+                                    .filter(|(_, ns)| {
+                                        ns.vertical_pos > seg.vertical_pos
+                                            && ns.vertical_pos - seg.vertical_pos
+                                                < seg.line_height.saturating_mul(4).max(160_000)
+                                    })
+                                    .map(|(np, ns)| {
+                                        let next_sb = styles
+                                            .para_styles
+                                            .get(np.para_shape_id as usize)
+                                            .map(|ps| ps.spacing_before.max(0.0))
+                                            .unwrap_or(0.0);
+                                        let om_top_px =
+                                            hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                                        tac_table_y_before - om_top_px.max(0.0)
+                                            + hwpunit_to_px(
+                                                ns.vertical_pos - seg.vertical_pos,
+                                                self.dpi,
+                                            )
+                                            - next_sb
+                                            - ls_px
+                                            - om_px.max(0.0)
+                                    })
                             };
                             if let Some(target) = ladder_target {
                                 // 사다리 신뢰 시 방향 무관 직접 설정 — 표 시각 전진이
