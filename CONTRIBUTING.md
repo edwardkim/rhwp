@@ -421,3 +421,24 @@ python3 scripts/check_markdown_links.py      # 상대 링크 검사
 ## License
 
 이 프로젝트는 [MIT License](LICENSE)로 배포됩니다. 기여하신 코드도 동일한 라이선스가 적용됩니다.
+
+## LLM/에이전트 보조 기여
+
+이 저장소는 AI 에이전트가 1급 소비자이자 1급 기여자다. Claude Code·Copilot·
+Cursor·Codex·Gemini CLI·Windsurf·Cline 이 **자동으로 읽는 지침 파일**이 전부
+준비돼 있다 — 어떤 도구를 쓰든 같은 규약([AGENTS.md](AGENTS.md))에 도착한다.
+
+| 도구 | 자동 로딩 파일 |
+|---|---|
+| Claude Code | `CLAUDE.md` → `AGENTS.md` (+ `.claude/skills/` 자동 발견 — 기여 절차는 `rhwp-contributor`) |
+| Codex | `AGENTS.md` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Cursor | `.cursor/rules/rhwp.mdc` |
+| Gemini CLI | `GEMINI.md` |
+| Windsurf / Cline | `.windsurfrules` / `.clinerules` |
+| llms.txt 소비 도구 | `llms.txt` |
+
+에이전트 보조로 문서를 실제 편집·생성했다면 **작업 증빙**을 권장한다:
+`rhwp replay --plan-json <계획> --capsule work.capsule.json` 이 만든 캡슐(3해시
+영수증)이나 관련 `--json` 봉투 원문을 PR 에 붙이면, 리뷰어가 주장 대신
+재계산으로 검증할 수 있다. 상세는 AGENTS.md 의 "작업 증빙" 절.
