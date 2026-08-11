@@ -86,12 +86,16 @@ impl CfbReader {
 
     /// DocInfo 스트림 읽기 (압축 가능)
     pub fn read_doc_info(&mut self, compressed: bool) -> Result<Vec<u8>, CfbError> {
-        let raw = self.read_stream_raw("/DocInfo")?;
-        if compressed {
-            decompress_stream(&raw)
-        } else {
-            Ok(raw)
-        }
+        self.read_doc_info_limited(compressed, super::MAX_OPEN_DECOMPRESSED_STREAM_BYTES)
+    }
+
+    /// DocInfo 스트림을 압축 해제 결과 기준 `max_bytes` 바이트까지만 읽는다.
+    pub fn read_doc_info_limited(
+        &mut self,
+        compressed: bool,
+        max_bytes: usize,
+    ) -> Result<Vec<u8>, CfbError> {
+        decode_stream_limited(self.read_stream_raw("/DocInfo")?, compressed, max_bytes)
     }
 
     /// 본문 섹션 스트림 읽기
@@ -116,29 +120,34 @@ impl CfbReader {
             }
         }
 
-        // 일반 문서: BodyText 스트림
+        self.read_body_text_section_limited(
+            index,
+            compressed,
+            super::MAX_OPEN_DECOMPRESSED_STREAM_BYTES,
+        )
+    }
+
+    /// 일반 BodyText 섹션을 압축 해제 결과 기준 `max_bytes` 바이트까지만 읽는다.
+    ///
+    /// 배포용 ViewText는 암호화된 raw 스트림이므로 이 메서드의 대상이 아니다.
+    pub fn read_body_text_section_limited(
+        &mut self,
+        index: u32,
+        compressed: bool,
+        max_bytes: usize,
+    ) -> Result<Vec<u8>, CfbError> {
         let bodytext_path = format!("/BodyText/Section{}", index);
-        if self.has_stream(&bodytext_path) {
-            let raw = self.read_stream_raw(&bodytext_path)?;
-            return if compressed {
-                decompress_stream(&raw)
-            } else {
-                Ok(raw)
-            };
-        }
+        let raw = if self.has_stream(&bodytext_path) {
+            self.read_stream_raw(&bodytext_path)?
+        } else {
+            let section_path = format!("/Section{}", index);
+            if !self.has_stream(&section_path) {
+                return Err(CfbError::StreamNotFound(format!("Section{}", index)));
+            }
+            self.read_stream_raw(&section_path)?
+        };
 
-        // 루트 레벨 Section (구버전 호환)
-        let section_path = format!("/Section{}", index);
-        if self.has_stream(&section_path) {
-            let raw = self.read_stream_raw(&section_path)?;
-            return if compressed {
-                decompress_stream(&raw)
-            } else {
-                Ok(raw)
-            };
-        }
-
-        Err(CfbError::StreamNotFound(format!("Section{}", index)))
+        decode_stream_limited(raw, compressed, max_bytes)
     }
 
     /// BinData 스트림 읽기 (BinData/BIN{XXXX}.{ext})
@@ -637,12 +646,15 @@ impl LenientCfbReader {
     }
 
     pub fn read_doc_info(&self, compressed: bool) -> Result<Vec<u8>, CfbError> {
-        let raw = self.read_stream("DocInfo")?;
-        if compressed {
-            decompress_stream(&raw)
-        } else {
-            Ok(raw)
-        }
+        self.read_doc_info_limited(compressed, super::MAX_OPEN_DECOMPRESSED_STREAM_BYTES)
+    }
+
+    pub fn read_doc_info_limited(
+        &self,
+        compressed: bool,
+        max_bytes: usize,
+    ) -> Result<Vec<u8>, CfbError> {
+        decode_stream_limited(self.read_stream("DocInfo")?, compressed, max_bytes)
     }
 
     pub fn read_body_text_section(
@@ -650,13 +662,11 @@ impl LenientCfbReader {
         index: u32,
         compressed: bool,
     ) -> Result<Vec<u8>, CfbError> {
-        let name = format!("Section{}", index);
-        let raw = self.read_stream(&name)?;
-        if compressed {
-            decompress_stream(&raw)
-        } else {
-            Ok(raw)
-        }
+        self.read_body_text_section_limited(
+            index,
+            compressed,
+            super::MAX_OPEN_DECOMPRESSED_STREAM_BYTES,
+        )
     }
 
     pub fn list_entries(&self) -> &[(String, u32, u64, u8)] {
@@ -683,13 +693,21 @@ impl LenientCfbReader {
             }
         }
 
+        self.read_body_text_section_limited(
+            index,
+            compressed,
+            super::MAX_OPEN_DECOMPRESSED_STREAM_BYTES,
+        )
+    }
+
+    pub fn read_body_text_section_limited(
+        &self,
+        index: u32,
+        compressed: bool,
+        max_bytes: usize,
+    ) -> Result<Vec<u8>, CfbError> {
         let name = format!("Section{}", index);
-        let raw = self.read_stream(&name)?;
-        if compressed {
-            decompress_stream(&raw)
-        } else {
-            Ok(raw)
-        }
+        decode_stream_limited(self.read_stream(&name)?, compressed, max_bytes)
     }
 
     /// 본문 섹션 수 계산
@@ -750,6 +768,7 @@ pub fn root_clsid(cfb: &[u8]) -> Option<[u8; 16]> {
 /// zlib/deflate 압축 해제
 ///
 /// HWP는 raw deflate (wbits=-15) 사용. 실패 시 표준 zlib도 시도.
+/// 문서 입력을 여는 경로는 이 함수 대신 [`decompress_stream_limited`]를 사용한다.
 pub fn decompress_stream(data: &[u8]) -> Result<Vec<u8>, CfbError> {
     // raw deflate (wbits=-15) 시도
     use flate2::read::DeflateDecoder;
@@ -795,6 +814,20 @@ pub fn decompress_stream_limited(data: &[u8], max_bytes: usize) -> Result<Vec<u8
         Err(CfbError::LimitExceeded(_)) => Err(CfbError::LimitExceeded(max_bytes)),
         Err(_) if raw_exceeded => Err(CfbError::LimitExceeded(max_bytes)),
         Err(error) => Err(error),
+    }
+}
+
+fn decode_stream_limited(
+    raw: Vec<u8>,
+    compressed: bool,
+    max_bytes: usize,
+) -> Result<Vec<u8>, CfbError> {
+    if compressed {
+        decompress_stream_limited(&raw, max_bytes)
+    } else if raw.len() > max_bytes {
+        Err(CfbError::LimitExceeded(max_bytes))
+    } else {
+        Ok(raw)
     }
 }
 
@@ -1067,6 +1100,53 @@ mod tests {
         assert_eq!(
             decompress_stream_limited(&compressed, original.len()).unwrap(),
             original
+        );
+    }
+
+    #[test]
+    fn open_decompression_stream_readers_enforce_limit() {
+        use flate2::write::DeflateEncoder;
+        use flate2::Compression;
+        use std::io::Write;
+
+        let plain = vec![b'A'; 4096];
+        let mut encoder = DeflateEncoder::new(Vec::new(), Compression::best());
+        encoder.write_all(&plain).unwrap();
+        let compressed = encoder.finish().unwrap();
+        let cfb = crate::serializer::mini_cfb::build_cfb(&[
+            ("/DocInfo", compressed.as_slice()),
+            ("/BodyText/Section0", compressed.as_slice()),
+        ])
+        .unwrap();
+
+        let mut strict = CfbReader::open(&cfb).unwrap();
+        assert!(matches!(
+            strict.read_doc_info_limited(true, 1024),
+            Err(CfbError::LimitExceeded(1024))
+        ));
+        assert!(matches!(
+            strict.read_body_text_section_limited(0, true, 1024),
+            Err(CfbError::LimitExceeded(1024))
+        ));
+        assert_eq!(
+            strict.read_doc_info_limited(true, plain.len()).unwrap(),
+            plain
+        );
+
+        let lenient = LenientCfbReader::open(&cfb).unwrap();
+        assert!(matches!(
+            lenient.read_doc_info_limited(true, 1024),
+            Err(CfbError::LimitExceeded(1024))
+        ));
+        assert!(matches!(
+            lenient.read_body_text_section_limited(0, true, 1024),
+            Err(CfbError::LimitExceeded(1024))
+        ));
+        assert_eq!(
+            lenient
+                .read_body_text_section_limited(0, true, plain.len())
+                .unwrap(),
+            plain
         );
     }
 

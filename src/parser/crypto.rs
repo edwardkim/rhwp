@@ -6,7 +6,7 @@
 use aes::cipher::{Block, BlockCipherDecrypt, KeyInit};
 use aes::Aes128;
 
-use super::cfb_reader::{decompress_stream, decompress_stream_limited, CfbError};
+use super::cfb_reader::{decompress_stream_limited, CfbError};
 use super::record::Record;
 use super::tags;
 
@@ -42,7 +42,7 @@ impl std::fmt::Display for CryptoError {
             Self::DecompressError(error) => write!(f, "압축 해제 실패: {error}"),
             Self::DecompressedStreamLimitExceeded { max_bytes } => write!(
                 f,
-                "비밀번호 암호 스트림의 압축 해제 결과가 {max_bytes} 바이트 상한을 초과했습니다"
+                "문서 암호 스트림의 압축 해제 결과가 {max_bytes} 바이트 상한을 초과했습니다"
             ),
             Self::WrongPassword => {
                 write!(f, "비밀번호가 일치하지 않거나 암호화 데이터가 손상되었습니다")
@@ -167,6 +167,18 @@ pub fn decrypt_viewtext_section(
     section_data: &[u8],
     compressed: bool,
 ) -> Result<Vec<u8>, CryptoError> {
+    decrypt_viewtext_section_limited(
+        section_data,
+        compressed,
+        MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES,
+    )
+}
+
+pub fn decrypt_viewtext_section_limited(
+    section_data: &[u8],
+    compressed: bool,
+    max_bytes: usize,
+) -> Result<Vec<u8>, CryptoError> {
     let first = read_first_record(section_data).map_err(CryptoError::RecordError)?;
     if first.tag_id != tags::HWPTAG_DISTRIBUTE_DOC_DATA {
         return Err(CryptoError::NoDistributeData);
@@ -178,8 +190,14 @@ pub fn decrypt_viewtext_section(
         .ok_or_else(|| CryptoError::DecryptionFailed("암호화된 본문 데이터 없음".to_string()))?;
     let decrypted = decrypt_aes_ecb(encrypted, &key);
     if compressed {
-        decompress_stream(&decrypted)
-            .map_err(|error| CryptoError::DecompressError(error.to_string()))
+        decompress_stream_limited(&decrypted, max_bytes).map_err(|error| match error {
+            CfbError::LimitExceeded(_) => {
+                CryptoError::DecompressedStreamLimitExceeded { max_bytes }
+            }
+            _ => CryptoError::DecompressError(error.to_string()),
+        })
+    } else if decrypted.len() > max_bytes {
+        Err(CryptoError::DecompressedStreamLimitExceeded { max_bytes })
     } else {
         Ok(decrypted)
     }

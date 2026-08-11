@@ -66,6 +66,23 @@ impl From<crypto::Hwp3CryptoError> for Hwp3Error {
 /// 로 간주하여 graceful Err 반환.
 pub(crate) const HWP3_MAX_RECORD_SIZE: usize = 256 * 1024 * 1024;
 
+fn decompress_hwp3_body_limited(data: &[u8], max_bytes: usize) -> Result<Vec<u8>, Hwp3Error> {
+    let mut output = Vec::new();
+    flate2::read::DeflateDecoder::new(data)
+        .take((max_bytes as u64).saturating_add(1))
+        .read_to_end(&mut output)
+        .map_err(|source| Hwp3Error::IoError { source })?;
+    if output.len() > max_bytes {
+        return Err(Hwp3Error::ParseError {
+            message: format!(
+                "HWP3 본문 압축 해제 결과가 {} 바이트 상한을 초과했습니다",
+                max_bytes
+            ),
+        });
+    }
+    Ok(output)
+}
+
 /// length 가 cap 안에 있는지 검증 후 zero-filled `Vec<u8>` 할당.
 /// length > cap 일 때 `vec![]` panic 대신 `InvalidData` Err 반환 (#877).
 pub(crate) fn alloc_record_buf(length: usize) -> Result<Vec<u8>, io::Error> {
@@ -3535,13 +3552,12 @@ fn parse_hwp3_inner(
         }
     };
 
-    let mut decompressed_data = Vec::new();
+    let decompressed_data;
     let body_data = if doc_info.compressed != 0 {
-        use flate2::read::DeflateDecoder;
-        let mut decoder = DeflateDecoder::new(remaining_data);
-        decoder
-            .read_to_end(&mut decompressed_data)
-            .map_err(|e| Hwp3Error::IoError { source: e })?;
+        decompressed_data = decompress_hwp3_body_limited(
+            remaining_data,
+            super::MAX_OPEN_DECOMPRESSED_STREAM_BYTES,
+        )?;
         &decompressed_data[..]
     } else {
         remaining_data
@@ -4751,6 +4767,27 @@ mod tests {
     use crate::model::paragraph::Paragraph;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn open_decompression_hwp3_body_rejects_output_past_limit() {
+        use std::io::Write;
+
+        let plain = vec![0_u8; 4096];
+        let mut encoder =
+            flate2::write::DeflateEncoder::new(Vec::new(), flate2::Compression::best());
+        encoder.write_all(&plain).unwrap();
+        let compressed = encoder.finish().unwrap();
+        assert!(compressed.len() < 1024);
+
+        assert!(matches!(
+            decompress_hwp3_body_limited(&compressed, 1024),
+            Err(Hwp3Error::ParseError { .. })
+        ));
+        assert_eq!(
+            decompress_hwp3_body_limited(&compressed, plain.len()).unwrap(),
+            plain
+        );
+    }
 
     /// [#3676] `cold`는 미주 fixup의 부수 효과가 아니라 구역 본문 계약이다.
     /// 미주가 전혀 없는 HWP3에서도 한글 저장본처럼 첫 문단에 단 정의가 하나 있어야 한다.

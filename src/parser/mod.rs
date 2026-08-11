@@ -66,6 +66,38 @@ const DRM_PROTECTED_HINT: &str =
 const EMPTY_FILE_CODE: &str = "EMPTY_FILE";
 const EMPTY_FILE_HINT: &str = "빈 파일(0 바이트)입니다.";
 
+/// 문서 열기 중 단일 DocInfo/BodyText 압축 해제 결과 상한.
+/// HWPX XML 엔트리와 HWP3 레코드가 사용하는 256 MiB 계약에 맞춘다.
+pub(crate) const MAX_OPEN_DECOMPRESSED_STREAM_BYTES: usize = 256 * 1024 * 1024;
+/// 문서 열기 중 DocInfo와 BodyText 압축 해제 결과의 누적 상한.
+/// 여러 정상 섹션을 허용하되 단일 문서가 상한을 무한히 반복하지 못하게 한다.
+const MAX_HWP5_OPEN_DECOMPRESSED_BYTES: usize = 512 * 1024 * 1024;
+
+#[derive(Debug)]
+struct OpenDecompressionBudget {
+    remaining: usize,
+}
+
+impl OpenDecompressionBudget {
+    fn new(max_bytes: usize) -> Self {
+        Self {
+            remaining: max_bytes,
+        }
+    }
+
+    fn stream_limit(&self) -> usize {
+        self.remaining.min(MAX_OPEN_DECOMPRESSED_STREAM_BYTES)
+    }
+
+    fn consume(&mut self, bytes: usize) -> Result<(), cfb_reader::CfbError> {
+        if bytes > self.stream_limit() {
+            return Err(cfb_reader::CfbError::LimitExceeded(self.stream_limit()));
+        }
+        self.remaining -= bytes;
+        Ok(())
+    }
+}
+
 // DRM/보안 컨테이너 시그니처 (Issue #1982 — 10k 서베이 검출).
 // Fasoo: `\x9b DRMONE  This Document is encrypted and protected by Fasoo`.
 const FASOO_DRM_SIG: &[u8] = b"\x9b DRMONE";
@@ -280,6 +312,7 @@ fn parse_hwp_with_cfb(
 
     let compressed = file_header.flags.compressed;
     let distribution = file_header.flags.distribution;
+    let mut decompression_budget = OpenDecompressionBudget::new(MAX_HWP5_OPEN_DECOMPRESSED_BYTES);
 
     // 3. DocInfo 파싱 (비밀번호 암호 문서: raw 읽기 → 복호화)
     //
@@ -293,13 +326,16 @@ fn parse_hwp_with_cfb(
             &raw,
             password.unwrap(),
             compressed,
-            crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES,
+            decompression_budget.stream_limit(),
         )
         .map_err(ParseError::CryptoError)?
     } else {
-        cfb.read_doc_info(compressed)
+        cfb.read_doc_info_limited(compressed, decompression_budget.stream_limit())
             .map_err(ParseError::CfbError)?
     };
+    decompression_budget
+        .consume(doc_info_data.len())
+        .map_err(ParseError::CfbError)?;
     let (mut doc_info, doc_properties) = parse_doc_info_stream(&doc_info_data, encrypted)?;
     doc_info.raw_stream = Some(doc_info_data);
 
@@ -312,6 +348,7 @@ fn parse_hwp_with_cfb(
         distribution,
         encrypted,
         password,
+        &mut decompression_budget,
     )?;
 
     // 5-7. 미리보기, BinData, 추가 스트림
@@ -590,6 +627,7 @@ fn parse_sections_strict(
     distribution: bool,
     encrypted: bool,
     password: Option<&[u8]>,
+    decompression_budget: &mut OpenDecompressionBudget,
 ) -> Result<Vec<crate::model::document::Section>, ParseError> {
     let mut sections = Vec::new();
 
@@ -599,7 +637,12 @@ fn parse_sections_strict(
             let raw = cfb
                 .read_body_text_section(i, compressed, true)
                 .map_err(ParseError::CfbError)?;
-            crypto::decrypt_viewtext_section(&raw, compressed).map_err(ParseError::CryptoError)?
+            crypto::decrypt_viewtext_section_limited(
+                &raw,
+                compressed,
+                decompression_budget.stream_limit(),
+            )
+            .map_err(ParseError::CryptoError)?
         } else if encrypted {
             // 비밀번호 암호 문서: BodyText raw → 비밀번호 복호화.
             // read_body_text_section(compressed=false) 가 스트림 경로 탐색
@@ -612,13 +655,16 @@ fn parse_sections_strict(
                 &raw,
                 password.unwrap(),
                 compressed,
-                crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES,
+                decompression_budget.stream_limit(),
             )
             .map_err(ParseError::CryptoError)?
         } else {
-            cfb.read_body_text_section(i, compressed, false)
+            cfb.read_body_text_section_limited(i, compressed, decompression_budget.stream_limit())
                 .map_err(ParseError::CfbError)?
         };
+        decompression_budget
+            .consume(section_data.len())
+            .map_err(ParseError::CfbError)?;
 
         match body_text::parse_body_text_section(&section_data) {
             Ok(mut section) => {
@@ -655,6 +701,7 @@ fn parse_hwp_with_lenient(
 
     let compressed = file_header.flags.compressed;
     let distribution = file_header.flags.distribution;
+    let mut decompression_budget = OpenDecompressionBudget::new(MAX_HWP5_OPEN_DECOMPRESSED_BYTES);
 
     // DocInfo 파싱 (비밀번호 암호 문서: lenient read_stream raw → 복호화)
     let doc_info_data = if encrypted {
@@ -665,14 +712,17 @@ fn parse_hwp_with_lenient(
             &raw,
             password.unwrap(),
             compressed,
-            crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES,
+            decompression_budget.stream_limit(),
         )
         .map_err(ParseError::CryptoError)?
     } else {
         lenient
-            .read_doc_info(compressed)
+            .read_doc_info_limited(compressed, decompression_budget.stream_limit())
             .map_err(ParseError::CfbError)?
     };
+    decompression_budget
+        .consume(doc_info_data.len())
+        .map_err(ParseError::CfbError)?;
     let (mut doc_info, doc_properties) = parse_doc_info_stream(&doc_info_data, encrypted)?;
     doc_info.raw_stream = Some(doc_info_data);
 
@@ -685,7 +735,12 @@ fn parse_hwp_with_lenient(
             let raw = lenient
                 .read_body_text_section_full(i, compressed, true)
                 .map_err(ParseError::CfbError)?;
-            crypto::decrypt_viewtext_section(&raw, compressed).map_err(ParseError::CryptoError)?
+            crypto::decrypt_viewtext_section_limited(
+                &raw,
+                compressed,
+                decompression_budget.stream_limit(),
+            )
+            .map_err(ParseError::CryptoError)?
         } else if encrypted {
             // 비밀번호 암호 문서: lenient reader 로 raw 섹션 바이트를 얻어 복호화.
             // read_body_text_section_full(compressed=false, distribution=false) 가
@@ -697,14 +752,17 @@ fn parse_hwp_with_lenient(
                 &raw,
                 password.unwrap(),
                 compressed,
-                crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES,
+                decompression_budget.stream_limit(),
             )
             .map_err(ParseError::CryptoError)?
         } else {
             lenient
-                .read_body_text_section_full(i, compressed, false)
+                .read_body_text_section_limited(i, compressed, decompression_budget.stream_limit())
                 .map_err(ParseError::CfbError)?
         };
+        decompression_budget
+            .consume(section_data.len())
+            .map_err(ParseError::CfbError)?;
 
         match body_text::parse_body_text_section(&section_data) {
             Ok(mut section) => {
@@ -1978,6 +2036,19 @@ fn load_bin_data_content(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn open_decompression_budget_rejects_cumulative_overflow() {
+        let mut budget = OpenDecompressionBudget::new(1024);
+        budget.consume(700).unwrap();
+        assert_eq!(budget.stream_limit(), 324);
+        assert!(matches!(
+            budget.consume(325),
+            Err(cfb_reader::CfbError::LimitExceeded(324))
+        ));
+        budget.consume(324).unwrap();
+        assert_eq!(budget.stream_limit(), 0);
+    }
 
     fn document_with_number_controls(controls: Vec<crate::model::control::Control>) -> Document {
         let mut paragraph = crate::model::paragraph::Paragraph::default();
