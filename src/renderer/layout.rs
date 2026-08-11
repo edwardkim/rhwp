@@ -1685,6 +1685,101 @@ impl std::fmt::Display for LayoutOverflow {
     }
 }
 
+/// [#4515] 같은 페이지의 최상위 표끼리 y 구간이 겹치는 레이아웃 결함 경고.
+///
+/// `LAYOUT_OVERFLOW` 는 본문 하단(col_bottom) **초과**만 잡는다 — 표 하단이 본문
+/// 하단으로 clamp 되는 겹침(#4514)은 초과량이 0 이라 침묵한다. 겹침은 하단 초과가
+/// 아니라 형제 요소의 y 구간 **중첩**이므로 별도 축으로 검출한다. 셀 안에 중첩된
+/// 표는 부모 표 영역 안에 있는 것이 정상이라 비교 대상이 아니다 — 최상위(Page
+/// 직계 overlay 표 + Body→Column 직계 흐름 표)만 모아 비교한다.
+#[derive(Debug, Clone)]
+pub struct LayoutTableOverlap {
+    /// 페이지 번호 (0-based, `LayoutOverflow.page_index` 와 같은 축)
+    pub page_index: u32,
+    /// 구역 인덱스 (0-based)
+    pub section_index: usize,
+    /// 위쪽 표(y 시작이 빠른 쪽)를 소유한 문단 인덱스
+    pub para_a: usize,
+    /// 아래쪽 표를 소유한 문단 인덱스
+    pub para_b: usize,
+    /// 위쪽 표의 y 구간 (px)
+    pub a_y0: f64,
+    pub a_y1: f64,
+    /// 아래쪽 표의 y 구간 (px)
+    pub b_y0: f64,
+    pub b_y1: f64,
+    /// 겹침량 (px) = a_y1 - b_y0
+    pub overlap_px: f64,
+}
+
+impl std::fmt::Display for LayoutTableOverlap {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "LAYOUT_TABLE_OVERLAP: page={}, sec={}, para_a={}, para_b={}, a={:.1}~{:.1}, b={:.1}~{:.1}, overlap={:.1}px",
+            self.page_index, self.section_index, self.para_a, self.para_b,
+            self.a_y0, self.a_y1, self.b_y0, self.b_y1, self.overlap_px)
+    }
+}
+
+/// [#4515] 테두리 접합 오차 허용 임계 (px). 이슈 실측: 46문서/491표에서 2pt 이하는
+/// 전부 인접 표의 정상 접합이었다 (예: sample1 20쪽 1.7px).
+const TABLE_OVERLAP_THRESHOLD_PX: f64 = 2.0;
+
+/// [#4515] 페이지 루트에서 최상위 표의 (para_index, y0, y1) 을 모은다.
+///
+/// - Page 직계 `Table` = paper/overlay z-layer 로 배치된 표 (글앞/글뒤, 용지 기준)
+/// - Body → Column 직계 `Table` = 본문 흐름 표
+///
+/// 둘은 render tree 상 부모가 다르지만 시각적으로 같은 본문 평면을 공유하므로 한
+/// 집합으로 비교한다. Cell 하위로는 내려가지 않아 중첩 표는 자연히 제외된다.
+fn collect_top_level_table_spans(page_root: &RenderNode) -> Vec<(usize, f64, f64)> {
+    fn push_if_table(node: &RenderNode, out: &mut Vec<(usize, f64, f64)>) {
+        if !node.visible {
+            return;
+        }
+        if let RenderNodeType::Table(tn) = &node.node_type {
+            out.push((
+                tn.para_index.unwrap_or(usize::MAX),
+                node.bbox.y,
+                node.bbox.y + node.bbox.height,
+            ));
+        }
+    }
+    let mut out = Vec::new();
+    for child in &page_root.children {
+        push_if_table(child, &mut out);
+        if matches!(child.node_type, RenderNodeType::Body { .. }) {
+            for col in &child.children {
+                if !matches!(col.node_type, RenderNodeType::Column(_)) {
+                    continue;
+                }
+                for item in &col.children {
+                    push_if_table(item, &mut out);
+                }
+            }
+        }
+    }
+    out
+}
+
+/// [#4515] 최상위 표 y 구간 중첩 검출. y 시작 순으로 정렬해 인접 쌍의
+/// `위쪽 표 하단 - 아래쪽 표 상단 > threshold` 를 겹침으로 판정한다.
+fn detect_table_overlaps(
+    mut spans: Vec<(usize, f64, f64)>,
+    threshold_px: f64,
+) -> Vec<(usize, usize, f64, f64, f64, f64, f64)> {
+    spans.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
+    let mut out = Vec::new();
+    for w in spans.windows(2) {
+        let (pa, a0, a1) = w[0];
+        let (pb, b0, b1) = w[1];
+        let overlap = a1 - b0;
+        if overlap > threshold_px {
+            out.push((pa, pb, a0, a1, b0, b1, overlap));
+        }
+    }
+    out
+}
+
 /// 어울림 문단의 마지막 TextRun에 is_para_end를 강제 설정 (↵ 표시용)
 fn force_para_end_on_last_run(col_node: &mut RenderNode) {
     if let Some(line_node) = col_node.children.last_mut() {
@@ -1948,6 +2043,8 @@ pub struct LayoutEngine {
     border_box_override: std::cell::Cell<Option<(f64, f64)>>,
     /// 레이아웃 검증 결과: 경계 초과 목록
     layout_overflows: std::cell::RefCell<Vec<LayoutOverflow>>,
+    /// [#4515] 레이아웃 검증 결과: 최상위 표 y 겹침 목록
+    layout_table_overlaps: std::cell::RefCell<Vec<LayoutTableOverlap>>,
     /// [Task #1046 Stage 3 Class B/C/D] 직전 렌더한 항목(표/문단)의 실제 콘텐츠 하단(y).
     /// 표 뒤/문단 끝에 더해지는 trailing 간격(줄간격/spacing_after/outer_margin)이
     /// 포함된 y_offset 과 달리, 콘텐츠(표 행/마지막 텍스트 줄)가 실제로 점유한 마지막
@@ -2092,6 +2189,7 @@ impl LayoutEngine {
             para_border_ranges: std::cell::RefCell::new(Vec::new()),
             border_box_override: std::cell::Cell::new(None),
             layout_overflows: std::cell::RefCell::new(Vec::new()),
+            layout_table_overlaps: std::cell::RefCell::new(Vec::new()),
             last_item_content_bottom: std::cell::Cell::new(f64::NAN),
             last_item_endnote_equation_tail_line_box: std::cell::Cell::new(false),
             hidden_empty_paras: std::cell::RefCell::new(std::collections::HashSet::new()),
@@ -2171,6 +2269,17 @@ impl LayoutEngine {
     fn record_overflow(&self, overflow: LayoutOverflow) {
         eprintln!("{}", overflow);
         self.layout_overflows.borrow_mut().push(overflow);
+    }
+
+    /// [#4515] 최상위 표 y 겹침 검증 결과 조회 및 리셋
+    pub fn take_table_overlaps(&self) -> Vec<LayoutTableOverlap> {
+        self.layout_table_overlaps.borrow_mut().drain(..).collect()
+    }
+
+    /// [#4515] 최상위 표 y 겹침 기록
+    fn record_table_overlap(&self, overlap: LayoutTableOverlap) {
+        eprintln!("{}", overlap);
+        self.layout_table_overlaps.borrow_mut().push(overlap);
     }
 
     pub(crate) fn is_body_flow_col_area(&self, col_area: &LayoutRect) -> bool {
@@ -2847,6 +2956,25 @@ impl LayoutEngine {
         // composer를 거치지 않고 직접 만들어진 표 셀/머리말 TextRun까지 같은
         // 한컴 PDF 표시 계약을 적용한다. 원문 IR과 char offset은 변경하지 않는다.
         tree.apply_legacy_hancom_product_display_projection();
+
+        // [#4515] 최상위 표 y 겹침 자가 검증. paper/overlay 표가 root 에 모두 붙은
+        // 페이지 조립 완료 시점에 검사해야 글앞/글뒤 표까지 대상에 들어간다.
+        for (pa, pb, a0, a1, b0, b1, overlap) in detect_table_overlaps(
+            collect_top_level_table_spans(&tree.root),
+            TABLE_OVERLAP_THRESHOLD_PX,
+        ) {
+            self.record_table_overlap(LayoutTableOverlap {
+                page_index: page_content.page_index,
+                section_index: page_content.section_index,
+                para_a: pa,
+                para_b: pb,
+                a_y0: a0,
+                a_y1: a1,
+                b_y0: b0,
+                b_y1: b1,
+                overlap_px: overlap,
+            });
+        }
 
         tree
     }

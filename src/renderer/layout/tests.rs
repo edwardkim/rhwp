@@ -2710,3 +2710,115 @@ fn tac_picture_effective_margin_left_matches_paragraph_layout_single_margin_rule
         "indent>0 이면 margin_left + indent 만 반영해야 함 (inner_pad 이중 가산 없이)"
     );
 }
+
+/// [#4515] 최상위 표 y 겹침 검출 — 검출기 단위 동작.
+///
+/// `LAYOUT_OVERFLOW` 는 본문 하단 초과만 잡아 하단 clamp 겹침(#4514)에 침묵했다.
+/// 검출기는 y 시작 정렬 후 인접 쌍의 `위 표 하단 - 아래 표 상단 > 임계` 를 겹침으로
+/// 판정한다. 임계 2px 이하는 테두리 접합 오차다 (sample1 20쪽 1.7px 실측).
+#[test]
+fn detect_table_overlaps_flags_only_above_threshold() {
+    // 겹침 없음 (접합 오차 1.7px 포함) → 0건
+    let spans = vec![(10, 75.6, 312.7), (20, 311.0, 577.1)];
+    assert!(detect_table_overlaps(spans, TABLE_OVERLAP_THRESHOLD_PX).is_empty());
+
+    // #4514 8쪽 실측 좌표: 102(182.3~676.3) / 118(202.5~710.8) / 119(430.1~1046.9)
+    // / 139(491.4~1046.9) → 인접 3쌍 전부 겹침. 입력 순서는 뒤섞여도 정렬로 복원된다.
+    let spans = vec![
+        (139, 491.4, 555.5 + 491.4),
+        (119, 430.1, 616.8 + 430.1),
+        (102, 182.3, 494.0 + 182.3),
+        (118, 202.5, 508.3 + 202.5),
+    ];
+    let found = detect_table_overlaps(spans, TABLE_OVERLAP_THRESHOLD_PX);
+    assert_eq!(found.len(), 3, "인접 3쌍 모두 겹침으로 검출돼야 한다");
+    let pairs: Vec<(usize, usize)> = found.iter().map(|f| (f.0, f.1)).collect();
+    assert_eq!(pairs, vec![(102, 118), (118, 119), (119, 139)]);
+    let max_overlap = found.iter().map(|f| f.6).fold(0.0f64, f64::max);
+    assert!(
+        (max_overlap - 555.5).abs() < 0.1,
+        "최대 겹침은 119~139 쌍의 555.5px 이어야 한다 (실측: {max_overlap})"
+    );
+
+    // 정확히 임계값(2.0px)은 접합 오차로 보고 무시한다
+    let spans = vec![(1, 0.0, 100.0), (2, 98.0, 200.0)];
+    assert!(detect_table_overlaps(spans, TABLE_OVERLAP_THRESHOLD_PX).is_empty());
+}
+
+/// [#4515] 최상위 표 수집 도메인 — Page 직계(overlay z-layer)와 Body→Column 직계
+/// (흐름 표)는 포함하고, 셀 안 중첩 표와 비가시 노드는 제외한다.
+#[test]
+fn collect_top_level_table_spans_domain() {
+    fn table_node(id: u32, pi: usize, y: f64, h: f64) -> RenderNode {
+        RenderNode::new(
+            id,
+            RenderNodeType::Table(crate::renderer::render_tree::TableNode {
+                row_count: 4,
+                col_count: 5,
+                border_fill_id: 0,
+                section_index: Some(0),
+                para_index: Some(pi),
+                control_index: Some(0),
+            }),
+            BoundingBox::new(75.6, y, 642.5, h),
+        )
+    }
+
+    let mut root = RenderNode::new(
+        0,
+        RenderNodeType::Page(crate::renderer::render_tree::PageNode {
+            page_index: 7,
+            width: 793.7,
+            height: 1122.5,
+            section_index: 0,
+        }),
+        BoundingBox::new(0.0, 0.0, 793.7, 1122.5),
+    );
+
+    // Body → Column → 흐름 표 (+ 그 셀 안의 중첩 표는 제외 대상)
+    let mut flow_table = table_node(4, 118, 202.5, 508.3);
+    let mut cell = RenderNode::new(
+        5,
+        RenderNodeType::TableCell(crate::renderer::render_tree::TableCellNode {
+            col: 0,
+            row: 0,
+            col_span: 1,
+            row_span: 1,
+            border_fill_id: 0,
+            text_direction: 0,
+            clip: false,
+            model_cell_index: None,
+        }),
+        BoundingBox::new(75.6, 202.5, 100.0, 100.0),
+    );
+    cell.children.push(table_node(6, 999, 210.0, 50.0)); // 중첩 표 — 수집 금지
+    flow_table.children.push(cell);
+    let mut column = RenderNode::new(
+        3,
+        RenderNodeType::Column(0),
+        BoundingBox::new(75.6, 75.6, 642.5, 971.3),
+    );
+    column.children.push(flow_table);
+    let mut body = RenderNode::new(
+        2,
+        RenderNodeType::Body { clip_rect: None },
+        BoundingBox::new(75.6, 75.6, 642.5, 971.3),
+    );
+    body.children.push(column);
+    root.children.push(body);
+
+    // Page 직계 overlay 표 2개 (하나는 비가시 — 제외)
+    root.children.push(table_node(7, 102, 182.3, 494.0));
+    let mut hidden = table_node(8, 555, 300.0, 100.0);
+    hidden.visible = false;
+    root.children.push(hidden);
+
+    let mut spans = collect_top_level_table_spans(&root);
+    spans.sort_by_key(|s| s.0);
+    assert_eq!(
+        spans.iter().map(|s| s.0).collect::<Vec<_>>(),
+        vec![102, 118],
+        "Page 직계 overlay 표와 Column 직계 흐름 표만 수집한다 \
+         (중첩 표 999·비가시 표 555 는 제외)"
+    );
+}
