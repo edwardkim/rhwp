@@ -174,8 +174,10 @@ export class SubsecondRevisionWatcher {
     }
     if (revision === this.lastRevision) return;
     // 재도색보다 먼저 올린다. 던지는 패치를 매 프레임 다시 그리면 초당 60번 실패하므로,
-    // 실패한 리비전은 다음 패치가 올 때까지 다시 시도하지 않는다 — 세션은 살아 있고,
-    // 다음 저장이 만드는 새 리비전부터 정상으로 돌아온다.
+    // 실패한 리비전은 다음 패치가 올 때까지 다시 시도하지 않는다 — 세션은 살아 있고, 재도색이
+    // 던지는 패치 버그는 다음 저장이 만드는 새 리비전에서 정상으로 돌아온다.
+    // 아래 무효화 자체가 계속 트랩하면 어느 리비전도 그리지 못하지만, 그건 핫패치 경계 밖의
+    // 고장이라 새 패치로도 안 고쳐진다 — 보고는 #4578, 경계는 #4577 의 몫이다.
     this.lastRevision = revision;
     if (this.capabilities.invalidateSubsecondRenderCaches()) {
       this.onPatched(revision);
