@@ -207,6 +207,10 @@ import {
   type SubsecondWasmExports,
 } from './subsecond-runtime';
 
+/**
+ * devtools 소켓의 해제 함수 — realm 하나에 소켓 하나이므로 중복 연결 guard 로도 쓴다.
+ * 스튜디오에는 realm 종료 이전의 해제 시점이 없어 실제로 호출되지는 않는다.
+ */
 let disconnectSubsecondDevtools: (() => void) | null = null;
 
 /**

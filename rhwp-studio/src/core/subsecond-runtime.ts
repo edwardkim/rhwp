@@ -16,6 +16,7 @@ type AnimationFrameScheduler = {
 type WebSocketConnection = {
   onmessage: ((event: MessageEvent) => void) | null;
   onclose: ((event: CloseEvent) => void) | null;
+  onopen: ((event: Event) => void) | null;
   close(): void;
 };
 
@@ -105,6 +106,13 @@ export class SubsecondRevisionWatcher {
   }
 }
 
+/**
+ * dx devserver 소켓에 붙어 도착한 패치를 wasm 에 넘긴다.
+ *
+ * 돌려주는 해제 함수는 소켓과 재연결 타이머를 함께 내린다. 스튜디오에서는 realm 이 끝날 때까지
+ * 부를 시점이 없고(문서 닫기·뷰 폐기가 없다) 호출부는 `wasm-bridge.ts` 의 중복 연결 guard 하나뿐이지만,
+ * 소켓을 연 곳이 내리는 방법을 함께 돌려주는 형태는 유지한다 — 테스트와 이후 종료 경로의 유일한 해제선이다.
+ */
 export function connectSubsecondDevtools(
   wasm: SubsecondWasmExports,
   options: SubsecondDevtoolsOptions = {},
@@ -131,6 +139,11 @@ export function connectSubsecondDevtools(
       if (typeof event.data === 'string') {
         applyMessage(event.data);
       }
+    };
+    // 연결이 살아난 순간 백오프를 되돌린다. 되돌리지 않으면 dx serve 를 껐다 켠 뒤에도
+    // 다음 끊김마다 최대 4초를 기다려, 남은 세션 내내 첫 패치가 그만큼 늦는다.
+    socket.onopen = () => {
+      reconnectDelay = RECONNECT_MIN_MS;
     };
     socket.onclose = event => {
       if (!active || event.code === 1001) return;

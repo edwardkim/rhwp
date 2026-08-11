@@ -206,27 +206,28 @@ test('revision watcher keeps watching after a repaint throws', async () => {
   assert.equal(frames.pendingCount, 0);
 });
 
+class FakeWebSocket {
+  onmessage: ((event: MessageEvent) => void) | null = null;
+  onclose: ((event: CloseEvent) => void) | null = null;
+  onopen: ((event: Event) => void) | null = null;
+  readonly url: string;
+  closed = false;
+
+  constructor(url: string, sockets: FakeWebSocket[]) {
+    this.url = url;
+    sockets.push(this);
+  }
+
+  close(): void {
+    this.closed = true;
+  }
+}
+
 test('devtools websocket forwards patch messages and reconnects without reloading', async () => {
   const { connectSubsecondDevtools } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
   const applied: string[] = [];
   const scheduled: Array<() => void> = [];
-
-  class FakeWebSocket {
-    onmessage: ((event: MessageEvent) => void) | null = null;
-    onclose: ((event: CloseEvent) => void) | null = null;
-    readonly url: string;
-    closed = false;
-
-    constructor(url: string) {
-      this.url = url;
-      sockets.push(this);
-    }
-
-    close(): void {
-      this.closed = true;
-    }
-  }
 
   const disconnect = connectSubsecondDevtools(
     {
@@ -237,7 +238,7 @@ test('devtools websocket forwards patch messages and reconnects without reloadin
     },
     {
       location: { protocol: 'http:', host: 'localhost:7701' },
-      createWebSocket: url => new FakeWebSocket(url),
+      createWebSocket: url => new FakeWebSocket(url, sockets),
       setTimeout: callback => {
         scheduled.push(callback);
         return scheduled.length;
@@ -259,6 +260,48 @@ test('devtools websocket forwards patch messages and reconnects without reloadin
 
   disconnect?.();
   assert.equal(sockets[1]?.closed, true);
+});
+
+test('devtools websocket resets its reconnect backoff once the socket reopens', async () => {
+  const { connectSubsecondDevtools } = await loadRuntime();
+  const sockets: FakeWebSocket[] = [];
+  const scheduled: Array<() => void> = [];
+  const delays: number[] = [];
+
+  const disconnect = connectSubsecondDevtools(
+    {
+      applySubsecondDevtoolsMessage: () => true,
+    },
+    {
+      location: { protocol: 'http:', host: 'localhost:7701' },
+      createWebSocket: url => new FakeWebSocket(url, sockets),
+      setTimeout: (callback, delay) => {
+        scheduled.push(callback);
+        delays.push(delay);
+        return scheduled.length;
+      },
+      clearTimeout: () => {},
+    },
+  );
+
+  // dx serve 가 꺼져 재연결이 이어지는 동안에는 대기가 두 배씩 늘어난다.
+  sockets[0]?.onclose?.({ code: 1006 } as CloseEvent);
+  scheduled.shift()?.();
+  sockets[1]?.onclose?.({ code: 1006 } as CloseEvent);
+  scheduled.shift()?.();
+  assert.deepEqual(delays, [250, 500]);
+  assert.equal(sockets.length, 3);
+
+  // dx serve 가 돌아오면 다음 끊김은 다시 최소 대기에서 시작해야 한다.
+  sockets[2]?.onopen?.({} as Event);
+  sockets[2]?.onclose?.({ code: 1006 } as CloseEvent);
+  assert.deepEqual(
+    delays,
+    [250, 500, 250],
+    '연결이 성공하면 백오프가 최소값으로 돌아가야 한다',
+  );
+
+  disconnect?.();
 });
 
 test('repository exposes a feature-gated dx adapter without changing normal WASM builds', () => {
