@@ -2,8 +2,8 @@
   "kind": "gymScorecard",
   "schemaVersion": "1.0",
   "agent": "claude-fable-5",
-  "score": 29,
-  "max": 29,
+  "score": 32,
+  "max": 32,
   "tasks": [
     {
       "id": "T01",
@@ -211,6 +211,21 @@
           "ok": true,
           "expected": 2,
           "actual": 2
+        }
+      ]
+    },
+    {
+      "id": "T14",
+      "tier": 3,
+      "title": "관문 통과",
+      "pass": true,
+      "checks": [
+        {
+          "name": "관문 verdict:allow (재현·계보·서명·앵커 전축)",
+          "op": "value_eq",
+          "ok": true,
+          "expected": "allow",
+          "actual": "allow"
         }
       ]
     }
