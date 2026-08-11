@@ -8,6 +8,7 @@ mod agent_profiles;
 mod anchor_log;
 mod atomic_file;
 mod capsule_sign;
+mod disclose;
 mod lineage_bundle;
 mod mcp_serve;
 mod policy_gate;
@@ -360,6 +361,7 @@ fn main() {
         Some("anchor") => exit_with(cmd_anchor(&args[2..])),
         Some("gate") => exit_with(cmd_gate(&args[2..])),
         Some("bundle") => exit_with(cmd_bundle(&args[2..])),
+        Some("disclose") => exit_with(cmd_disclose(&args[2..])),
         // [#3719 §6-4] 계획을 *만드는* 쪽의 정답지 — `run` 바로 옆에 둔다.
         Some("export-plan-schema") => exit_with(cmd_export_plan_schema(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
@@ -1769,6 +1771,37 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "bundle", "trustDomain", "containerOk", "closureOk", "lineageValid", "capsules", "signed", "anchored", "brokenAt", "verdict"],
         ),
         tool(
+            "hwp_disclose_redact",
+            "[#4551] 가림 캡슐 발급 — plan 의 문자열 잎 전부를 salt 커밋으로 치환하고(구조 골격은 공개), 값·salt·원본 planText 는 비밀 개봉 파일로 분리한다. 해시 축 검증(체인·앵커)은 가림본에도 그대로 돈다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "capsule": { "type": "string", "description": "원본 캡슐 경로" },
+                    "out": { "type": "string", "description": "가림 캡슐 저장 경로" },
+                    "openingOut": { "type": "string", "description": "비밀 개봉 파일 저장 경로" }
+                },
+                "required": ["capsule", "out", "openingOut"],
+            }),
+            "disclose",
+            serde_json::json!(["disclose", "redact", "{capsule}", "-o", "{out}", "--opening-out", "{openingOut}", "--json"]),
+            &["schemaVersion", "capsule", "redacted", "opening", "committedFields", "originalCapsuleSha256"],
+        ),
+        tool(
+            "hwp_disclose_verify",
+            "[#4551] 부분 개봉 검증 — 개봉된 필드만 커밋과 대조한다. verifiedFields/mismatched/unopened 가 협상의 단위이고, 불일치는 exit 3(위조 또는 값 변경).",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "redacted": { "type": "string", "description": "가림 캡슐 경로" },
+                    "opening": { "type": "string", "description": "(부분) 개봉 파일 경로" }
+                },
+                "required": ["redacted", "opening"],
+            }),
+            "disclose",
+            serde_json::json!(["disclose", "verify", "{redacted}", "--opening", "{opening}", "--json"]),
+            &["schemaVersion", "redacted", "verifiedFields", "mismatched", "unopened", "verdict"],
+        ),
+        tool(
             "hwp_audit",
             "[#4393] 에이전트 노동 감사 — 작업 캡슐(*.capsule.json) 폴더를 전수 재실행해 재현율을 회계한다. 개별 검증은 hwp_replay, 조직 규모 일괄은 이 도구. 불일치 1건 = exit 3, failed[] 에 캡슐별 기대/실제 해시.",
             serde_json::json!({
@@ -2267,6 +2300,28 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "signed",
                 "anchored",
                 "brokenAt",
+                "verdict",
+            ],
+        ),
+        cmd_json(
+            "disclose",
+            "query",
+            "선택적 공개 — redact(plan 문자열 잎을 salt 커밋으로 치환한 가림 캡슐+비밀 개봉 파일)·verify(부분 개봉 필드 대조, 불일치 exit 3)·restore(전체 개봉으로 바이트 완전 복원 — 원본 서명 그대로 valid) (#4551)",
+            false,
+            &["--json", "-o", "--opening-out", "--opening"],
+            &[
+                "schemaVersion",
+                "capsule",
+                "redacted",
+                "opening",
+                "committedFields",
+                "originalCapsuleSha256",
+                "verifiedFields",
+                "mismatched",
+                "unopened",
+                "restored",
+                "restoredSha256",
+                "byteIdentical",
                 "verdict",
             ],
         ),
@@ -3834,6 +3889,13 @@ fn print_help() {
     println!(
         "  bundle verify <번들> --trust-domain <domain.json> [--json]  5단 오프라인 검증 (#4549)"
     );
+    println!(
+        "  disclose redact <캡슐> -o <가림> --opening-out <개봉>  salt 커밋 가림 발급 (#4551)"
+    );
+    println!(
+        "  disclose verify <가림> --opening <부분개봉> [--json]   필드 단위 커밋 대조 (#4551)"
+    );
+    println!("  disclose restore <가림> --opening <전체개봉> -o <복원>  바이트 완전 복원 (#4551)");
     println!("      전 step 을 정적 선검증(불가 시 실행 0·exit 2)하고 인메모리로 원자");
     println!("      실행해 단언(verify) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경.");
     println!("      steps: fill_fields{{data}} · replace_text{{find,replace[,occurrence]}}");
@@ -16293,6 +16355,333 @@ fn cmd_anchor(args: &[String]) -> i32 {
         Some("verify") => cmd_anchor_verify(&args[1..]),
         _ => {
             eprintln!("사용법: rhwp anchor <add|checkpoint|verify> …");
+            EXIT_USAGE
+        }
+    }
+}
+
+/// [#4551] 가림 발급 — plan 문자열 잎 전부를 salt 커밋으로 치환한다.
+fn cmd_disclose_redact(args: &[String]) -> i32 {
+    let mut capsule: Option<&str> = None;
+    let mut out: Option<&str> = None;
+    let mut opening_out: Option<&str> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "-o" => {
+                i += 1;
+                out = args.get(i).map(String::as_str);
+            }
+            "--opening-out" => {
+                i += 1;
+                opening_out = args.get(i).map(String::as_str);
+            }
+            other if !other.starts_with("--") && capsule.is_none() => capsule = Some(other),
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let (Some(capsule), Some(out), Some(opening_out)) = (capsule, out, opening_out) else {
+        eprintln!("사용법: rhwp disclose redact <캡슐.json> -o <가림.json> --opening-out <opening.json> [--json]");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(capsule) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: 캡슐을 읽을 수 없습니다 - {capsule}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let original_sha = replay_sha256_hex(&bytes);
+    let mut cap: serde_json::Value = match serde_json::from_slice(&bytes) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 캡슐 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    if cap["kind"] != "workCapsule" {
+        eprintln!("오류: kind 가 workCapsule 이 아닙니다.");
+        return EXIT_USAGE;
+    }
+    let plan_text = cap["planText"].as_str().unwrap_or_default().to_string();
+    let mut plan = cap["plan"].clone();
+    let mut openings: Vec<(String, String, String)> = Vec::new();
+    if let Err(e) = disclose::redact_plan(&mut plan, "", "", &mut openings) {
+        eprintln!("오류: {e}");
+        return EXIT_RUNTIME;
+    }
+    cap["plan"] = plan;
+    // planText 원문은 개봉 파일로 이사한다 — 가림본에 남기면 전부 샌다.
+    cap["planText"] = serde_json::json!("(redacted — 개봉 파일 보유자만 복원 가능)");
+    cap["planRedacted"] = serde_json::json!(true);
+    cap["originalCapsuleSha256"] = serde_json::json!(original_sha);
+    if let Err(e) = fs::write(out, serde_json::to_string_pretty(&cap).unwrap_or_default()) {
+        eprintln!("오류: 가림 캡슐 저장 실패 - {out}: {e}");
+        return EXIT_RUNTIME;
+    }
+    let opening_map: serde_json::Map<String, serde_json::Value> = openings
+        .iter()
+        .map(|(p, v, salt)| (p.clone(), serde_json::json!({ "value": v, "salt": salt })))
+        .collect();
+    let opening = serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "kind": disclose::OPENING_KIND,
+        "originalCapsuleSha256": original_sha,
+        "planText": plan_text,
+        "openings": opening_map,
+    });
+    if let Err(e) = fs::write(
+        opening_out,
+        serde_json::to_string_pretty(&opening).unwrap_or_default(),
+    ) {
+        eprintln!("오류: 개봉 파일 저장 실패 - {opening_out}: {e}");
+        return EXIT_RUNTIME;
+    }
+    let envelope = provenance::marked(
+        serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "capsule": capsule,
+            "redacted": out,
+            "opening": opening_out,
+            "committedFields": openings.len(),
+            "originalCapsuleSha256": original_sha,
+        }),
+        "disclose",
+    );
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!(
+            "가림 발급 — {out}: 커밋 {}개 (개봉은 비밀 보관: {opening_out})",
+            openings.len()
+        );
+    }
+    EXIT_OK
+}
+
+/// [#4551] 부분 개봉 검증 — 필드 단위 커밋 대조.
+fn cmd_disclose_verify(args: &[String]) -> i32 {
+    let mut redacted: Option<&str> = None;
+    let mut opening_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--opening" => {
+                i += 1;
+                opening_path = args.get(i).map(String::as_str);
+            }
+            other if !other.starts_with("--") && redacted.is_none() => redacted = Some(other),
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let (Some(redacted), Some(opening_path)) = (redacted, opening_path) else {
+        eprintln!("사용법: rhwp disclose verify <가림.json> --opening <opening.json> [--json]");
+        return EXIT_USAGE;
+    };
+    let cap: serde_json::Value = match fs::read(redacted)
+        .map_err(|e| e.to_string())
+        .and_then(|b| serde_json::from_slice(&b).map_err(|e| e.to_string()))
+    {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 가림 캡슐을 읽을 수 없습니다 - {redacted}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let opening: serde_json::Value = match fs::read(opening_path)
+        .map_err(|e| e.to_string())
+        .and_then(|b| serde_json::from_slice(&b).map_err(|e| e.to_string()))
+    {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 개봉 파일을 읽을 수 없습니다 - {opening_path}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    if opening["kind"] != disclose::OPENING_KIND {
+        eprintln!("오류: 개봉 kind 가 {} 가 아닙니다.", disclose::OPENING_KIND);
+        return EXIT_USAGE;
+    }
+    let plan = &cap["plan"];
+    let mut verified: Vec<String> = Vec::new();
+    let mut mismatched: Vec<String> = Vec::new();
+    if let Some(map) = opening["openings"].as_object() {
+        for (pointer, entry) in map {
+            let (Some(value), Some(salt)) = (entry["value"].as_str(), entry["salt"].as_str())
+            else {
+                mismatched.push(format!("{pointer} (개봉 형식 오류)"));
+                continue;
+            };
+            match disclose::committed_at(plan, pointer) {
+                Some(committed) if disclose::commit(value, salt) == committed => {
+                    verified.push(pointer.clone())
+                }
+                Some(_) => mismatched.push(pointer.clone()),
+                None => mismatched.push(format!("{pointer} (커밋 잎 없음)")),
+            }
+        }
+    }
+    let total = disclose::committed_count(plan);
+    let unopened = total.saturating_sub(verified.len() + mismatched.len());
+    let ok = mismatched.is_empty();
+    let envelope = provenance::marked(
+        serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "redacted": redacted,
+            "verifiedFields": verified,
+            "mismatched": mismatched,
+            "unopened": unopened,
+            "verdict": if ok { "ok" } else { "mismatch" },
+        }),
+        "disclose",
+    );
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!(
+            "부분 개봉 — 검증 {} · 불일치 {} · 미개봉 {unopened}",
+            verified.len(),
+            mismatched.len()
+        );
+    }
+    if ok {
+        EXIT_OK
+    } else {
+        3 // #2707: 개봉이 커밋과 다르다 — 위조 또는 값 변경.
+    }
+}
+
+/// [#4551] 전체 복원 — 바이트 단위 원본 재현 (원본 서명이 그대로 valid).
+fn cmd_disclose_restore(args: &[String]) -> i32 {
+    let mut redacted: Option<&str> = None;
+    let mut opening_path: Option<&str> = None;
+    let mut out: Option<&str> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--opening" => {
+                i += 1;
+                opening_path = args.get(i).map(String::as_str);
+            }
+            "-o" => {
+                i += 1;
+                out = args.get(i).map(String::as_str);
+            }
+            other if !other.starts_with("--") && redacted.is_none() => redacted = Some(other),
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let (Some(redacted), Some(opening_path), Some(out)) = (redacted, opening_path, out) else {
+        eprintln!("사용법: rhwp disclose restore <가림.json> --opening <전체개봉.json> -o <복원.json> [--json]");
+        return EXIT_USAGE;
+    };
+    let mut cap: serde_json::Value = match fs::read(redacted)
+        .map_err(|e| e.to_string())
+        .and_then(|b| serde_json::from_slice(&b).map_err(|e| e.to_string()))
+    {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 가림 캡슐을 읽을 수 없습니다 - {redacted}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let opening: serde_json::Value = match fs::read(opening_path)
+        .map_err(|e| e.to_string())
+        .and_then(|b| serde_json::from_slice(&b).map_err(|e| e.to_string()))
+    {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 개봉 파일을 읽을 수 없습니다 - {opening_path}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let expected_sha = cap["originalCapsuleSha256"]
+        .as_str()
+        .unwrap_or_default()
+        .to_string();
+    let Some(plan_text) = opening["planText"].as_str() else {
+        eprintln!("오류: 전체 개봉에 planText 가 필요합니다 (부분 개봉으로는 복원 불가).");
+        return EXIT_USAGE;
+    };
+    // 전체 커버리지 검사 — 커밋 잎마다 개봉이 있어야 한다.
+    let total = disclose::committed_count(&cap["plan"]);
+    let provided = opening["openings"]
+        .as_object()
+        .map(|m| m.len())
+        .unwrap_or(0);
+    if provided < total {
+        eprintln!("오류: 개봉 {provided}/{total} — 전체 개봉이 아니면 복원할 수 없습니다.");
+        return 3;
+    }
+    let plan: serde_json::Value = match serde_json::from_str(plan_text) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 개봉 planText 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    cap["plan"] = plan;
+    cap["planText"] = serde_json::json!(plan_text);
+    if let Some(map) = cap.as_object_mut() {
+        map.remove("planRedacted");
+        map.remove("originalCapsuleSha256");
+    }
+    let restored = serde_json::to_string_pretty(&cap).unwrap_or_default();
+    if let Err(e) = fs::write(out, &restored) {
+        eprintln!("오류: 복원 저장 실패 - {out}: {e}");
+        return EXIT_RUNTIME;
+    }
+    let restored_sha = replay_sha256_hex(restored.as_bytes());
+    let byte_identical = !expected_sha.is_empty() && restored_sha == expected_sha;
+    let envelope = provenance::marked(
+        serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "redacted": redacted,
+            "restored": out,
+            "restoredSha256": restored_sha,
+            "originalCapsuleSha256": expected_sha,
+            "byteIdentical": byte_identical,
+        }),
+        "disclose",
+    );
+    if json_mode {
+        println!("{envelope}");
+    } else {
+        println!("복원 — {out}: 바이트 동일 {byte_identical}");
+    }
+    if byte_identical {
+        EXIT_OK
+    } else {
+        3 // #2707: 복원이 원본 바이트를 재현하지 못했다 — 개봉이 원본과 다르다.
+    }
+}
+
+/// [#4551] disclose 디스패치 — redact·verify·restore.
+fn cmd_disclose(args: &[String]) -> i32 {
+    match args.first().map(String::as_str) {
+        Some("redact") => cmd_disclose_redact(&args[1..]),
+        Some("verify") => cmd_disclose_verify(&args[1..]),
+        Some("restore") => cmd_disclose_restore(&args[1..]),
+        _ => {
+            eprintln!("사용법: rhwp disclose <redact|verify|restore> …");
             EXIT_USAGE
         }
     }

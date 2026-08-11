@@ -455,6 +455,19 @@ fn recipes() -> Vec<Recipe> {
     )
     .expect("도메인 픽스처");
 
+    // [#4551] disclose 픽스처 — 진짜 replay 캡슐이어야 restore 바이트 복원이 성립.
+    let disclose_plan = serde_json::json!({
+        "planVersion": "1.0",
+        "input": p(&table),
+        "output": out("prov-disclose.out.hwp"),
+        "steps": [ { "action": "set_cell", "table": 0, "row": 0, "col": 0, "text": "DP" } ],
+    })
+    .to_string();
+    let disclose_capsule = dir.join("prov-disclose.capsule.json");
+    let disclose_redacted = dir.join("prov-disclose.redacted.json");
+    let disclose_opening = dir.join("prov-disclose.opening.json");
+    let disclose_restored = dir.join("prov-disclose.restored.json");
+
     // gate 픽스처 — 빈 규칙 + deny 기본 = 거부(exit 3) 순수 fs 경로.
     let gate_policy = dir.join("prov-gate-policy.json");
     std::fs::write(
@@ -996,6 +1009,74 @@ fn recipes() -> Vec<Recipe> {
                 plan.clone(),
                 s("--dir"),
                 p(&harness_ws),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // [#4551] disclose 픽스처 발급 — 아래 3개 레시피가 이 캡슐을 쓴다.
+            command: "replay",
+            doc: Some(table.clone()),
+            args: vec![
+                s("replay"),
+                s("--plan-json"),
+                disclose_plan.clone(),
+                s("--capsule"),
+                p(&disclose_capsule),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // disclose redact — 커밋 치환·개봉 분리 (capsule/redacted/opening 실물).
+            command: "disclose",
+            doc: None,
+            args: vec![
+                s("disclose"),
+                s("redact"),
+                p(&disclose_capsule),
+                s("-o"),
+                p(&disclose_redacted),
+                s("--opening-out"),
+                p(&disclose_opening),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // disclose verify — 전체 개봉 대조 ok (verifiedFields/unopened 실물).
+            command: "disclose",
+            doc: None,
+            args: vec![
+                s("disclose"),
+                s("verify"),
+                p(&disclose_redacted),
+                s("--opening"),
+                p(&disclose_opening),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // disclose restore — 바이트 복원 (restoredSha256/byteIdentical 실물).
+            command: "disclose",
+            doc: None,
+            args: vec![
+                s("disclose"),
+                s("restore"),
+                p(&disclose_redacted),
+                s("--opening"),
+                p(&disclose_opening),
+                s("-o"),
+                p(&disclose_restored),
                 s("--json"),
             ],
             stdin: None,

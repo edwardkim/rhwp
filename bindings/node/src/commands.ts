@@ -1119,6 +1119,46 @@ export async function bundleVerify(
   );
 }
 
+/** [#4551] 가림 발급 — plan 문자열 잎을 salt 커밋으로 치환하고 비밀 개봉을 분리한다. */
+export async function discloseRedact(
+  capsule: PathLike,
+  out: PathLike,
+  openingOut: PathLike,
+  options: CommandOptions = {},
+): Promise<Envelope> {
+  return call(
+    ['disclose', 'redact', capsule, '-o', out, '--opening-out', openingOut, '--json'],
+    options,
+  );
+}
+
+/**
+ * [#4551] 부분 개봉 검증 — 개봉된 필드만 커밋 대조.
+ *
+ * 판정은 봉투(verdict·verifiedFields·mismatched·unopened)로 읽는다 — 불일치는
+ * exit 3 이지만 여기서는 예외로 올리지 않는다(다른 verify 계열과 같은 결).
+ */
+export async function discloseVerify(
+  redacted: PathLike,
+  opening: PathLike,
+  options: CommandOptions = {},
+): Promise<Envelope> {
+  return call(['disclose', 'verify', redacted, '--opening', opening, '--json'], options);
+}
+
+/** [#4551] 전체 복원 — 바이트 완전 복원(byteIdentical). 원본 사이드카가 그대로 valid. */
+export async function discloseRestore(
+  redacted: PathLike,
+  opening: PathLike,
+  out: PathLike,
+  options: CommandOptions = {},
+): Promise<Envelope> {
+  return call(
+    ['disclose', 'restore', redacted, '--opening', opening, '-o', out, '--json'],
+    options,
+  );
+}
+
 // ── 편집 ──────────────────────────────────────────────────────────────────
 
 /**

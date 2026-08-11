@@ -358,6 +358,12 @@ pub const MAP: &[CommandProvenance] = &[
                — 번들·도메인 파일은 호출자 산출물이고 문서를 열지 않는다.",
     },
     CommandProvenance {
+        command: "disclose",
+        untrusted: NONE,
+        note: "공개 봉투는 경로 에코·커밋 수·포인터 목록·해시·판정뿐이다 — 값 원문은 \
+               비밀 개봉 파일에만 있고 봉투에 싣지 않는다(그것이 이 축의 존재 이유).",
+    },
+    CommandProvenance {
         command: "ir-diff",
         untrusted: &[f(
             "categories",

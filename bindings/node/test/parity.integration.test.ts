@@ -59,6 +59,7 @@ const SUBCOMMAND_WRAPPERS: Readonly<Record<string, readonly string[]>> = {
   harness: ['harnessInit', 'harnessWrap', 'harnessStatus'],
   anchor: ['anchorAdd', 'anchorCheckpoint', 'anchorVerify'],
   bundle: ['bundleExport', 'bundleVerify'],
+  disclose: ['discloseRedact', 'discloseVerify', 'discloseRestore'],
 };
 
 /**
