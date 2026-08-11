@@ -29,6 +29,13 @@ type SubsecondDevtoolsOptions = {
 const RECONNECT_MIN_MS = 250;
 const RECONNECT_MAX_MS = 4_000;
 
+/**
+ * 핫패치가 렌더 함수를 바꿨는지 애니메이션 프레임마다 확인하고, 바뀌었으면 재도색을 알린다.
+ *
+ * 수명은 realm 과 같다. 스튜디오에는 문서 닫기도 뷰 폐기도 없어서 `stop()` 을 부를 시점이
+ * `CanvasView.dispose()` 밖에 없고, 그 시점 자체가 오지 않는다. 그래서 이 루프는 스스로 멎지
+ * 않는 것이 정상 동작이며, 특히 재도색이 던져도 다음 프레임 예약을 건너뛰어서는 안 된다.
+ */
 export class SubsecondRevisionWatcher {
   private frameId: number | null = null;
   private running = false;
@@ -70,8 +77,15 @@ export class SubsecondRevisionWatcher {
   private schedule(): void {
     this.frameId = this.scheduler.requestAnimationFrame(() => {
       this.frameId = null;
-      this.checkRevision();
-      if (this.running) this.schedule();
+      // 재도색은 패치된 코드를 실행하므로 던질 수 있다 — 패치에 버그를 넣는 것이 정상 상황이다.
+      // 예외는 그대로 흘려보내(rAF 콜백 밖에서 브라우저가 보고한다) 다음 프레임만 되살린다.
+      // 여기서 재무장을 건너뛰면 running=true, frameId=null 로 남아 start()·stop() 둘 다
+      // 손댈 것을 못 찾고, 세션이 끝날 때까지 감시가 영구히 멎는다.
+      try {
+        this.checkRevision();
+      } finally {
+        if (this.running) this.schedule();
+      }
     });
   }
 

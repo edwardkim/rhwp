@@ -163,6 +163,49 @@ test('revision watcher coalesces revisions while animation frames are paused', a
   watcher.stop();
 });
 
+test('revision watcher keeps watching after a repaint throws', async () => {
+  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const frames = new FakeAnimationFrames();
+  let revision = 'baseline';
+  let repaintThrows = true;
+  const repaints: string[] = [];
+  const watcher = new SubsecondRevisionWatcher(
+    {
+      isSubsecondHotpatchEnabled: () => true,
+      getSubsecondPatchRevision: () => revision,
+      invalidateSubsecondRenderCaches: () => true,
+    },
+    nextRevision => {
+      repaints.push(nextRevision);
+      if (repaintThrows) throw new Error('refreshPages failed');
+    },
+    {
+      requestAnimationFrame: frames.request,
+      cancelAnimationFrame: frames.cancel,
+    },
+  );
+
+  watcher.start();
+  frames.flush();
+
+  revision = 'patch-one';
+  assert.throws(() => frames.flush(), /refreshPages failed/);
+  assert.deepEqual(repaints, ['patch-one']);
+  assert.equal(
+    frames.pendingCount,
+    1,
+    '재도색이 던져도 감시 루프는 다음 프레임을 다시 예약해야 한다',
+  );
+
+  repaintThrows = false;
+  revision = 'patch-two';
+  frames.flush();
+  assert.deepEqual(repaints, ['patch-one', 'patch-two'], '패치 버그를 고치면 재도색이 살아나야 한다');
+
+  watcher.stop();
+  assert.equal(frames.pendingCount, 0);
+});
+
 test('devtools websocket forwards patch messages and reconnects without reloading', async () => {
   const { connectSubsecondDevtools } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
