@@ -133,6 +133,7 @@ def analyze(exe: Path, path: Path, threshold: float):
             segments = []
             cur = []
             prev_v = None
+            saw_rewind = False
             for pi, y, v in ordered:
                 # 되돌아감 = 리베이스 신호(기존). **큰 전방 점프**(>30000u=400px)
                 # 도 분절을 끊는다 — 컬럼 직속으로 샌 글상자 줄(로컬 vpos)이
@@ -140,7 +141,14 @@ def analyze(exe: Path, path: Path, threshold: float):
                 # 오검출되는 샌드위치 형상(세종 5690000-202000006 p20 실측).
                 # 정상 문서의 거대 개체 줄 뒤 갭도 같은 기준으로 갈라지지만,
                 # 각 분절이 자기 중앙값으로 판정되므로 위양성이 늘지 않는다.
-                if prev_v is not None and (v < prev_v - 100 or v > prev_v + 30_000):
+                # 전방-분할은 **되돌아감을 본 뒤에만** — 샌드위치(외래 줄 뒤
+                # 본문 복귀) 격리용이지, 성긴 서식 문서의 정상 큰 갭을 쪼개
+                # 커버리지를 죽이는 용도가 아니다(물품검수조서 20590905:
+                # 무조건 분할 시 9줄이 전부 4줄 미만 분절로 SKIP 실측).
+                is_rewind = prev_v is not None and v < prev_v - 100
+                if is_rewind:
+                    saw_rewind = True
+                if prev_v is not None and (is_rewind or (saw_rewind and v > prev_v + 30_000)):
                     segments.append(cur)
                     cur = []
                 cur.append((pi, y, v))
