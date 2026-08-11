@@ -134,3 +134,18 @@ test result: ok. 2 passed; 0 failed
 `Some(vec![false; n])` 그대로라, 이어지는 `measure_section_selective` 가 **옛 단 폭에서 잰 문단
 측정값을 전부 재사용**한다. 단 폭이 바뀌는 `set_section_def_native` 에서는 그 재사용이 틀리다.
 지금은 프로덕션 페이지네이션이 문단 측정값을 읽지 않아(#4605) 증상이 폴백·진단에 갇혀 있다.
+
+
+## 후속 이슈 (2026-08-12)
+
+- **[#4615](https://github.com/edwardkim/rhwp/issues/4615)** — `recompose_and_paginate`
+  (`rendering.rs:2465`)와 `set_section_def_native`(`:2818`)의 인라인 사본이
+  `dirty_paragraphs` 를 안 비운다. `paginate_pass` 가 패스 끝마다 전부 clean 으로 되돌리므로
+  (`:4619`) 다음 진입에서 **옛 단 폭 측정값**을 재사용한다. #4582 의 제자리 편집 버전이다.
+- **[#4616](https://github.com/edwardkim/rhwp/issues/4616)** — TAC-Shape 높이 바닥값이
+  `FullParagraph` arm(`layout.rs:7037`)에만 있고 `PartialParagraph`(`:7092`)에는 없다.
+- **[#4617](https://github.com/edwardkim/rhwp/issues/4617)** — 도형만 있는 줄의 `TextLine`
+  노드 높이가 0.0 이라 캐럿·히트테스트 소비자가 영향받을 수 있다.
+
+#4333 은 이 브랜치에서 손대지 않았다 — 진단이 뒤집혀 이슈에 코멘트로 남겼다.
+`tac_picture_or_shape_height_px` 중복은 PR #4607 이 처리 중이고 아직 devel 에 없다.
