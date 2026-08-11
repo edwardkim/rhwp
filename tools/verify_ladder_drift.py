@@ -35,11 +35,16 @@ LINE_RE = re.compile(
     r"^(\s*)TextLine\s+y=\s*([0-9.]+)\.\.\s*[0-9.]+\s+h=\s*([0-9.]+)\s.*?pi=(\d+)\s+line=(\d+)\s+vpos=(-?\d+)"
 )
 PAGE_RE = re.compile(r"^Page\s")
-NODE_RE = re.compile(r"^(\s*)([A-Za-z]\w*)\s")
+# dump-extents 는 미분류 노드를 전부 "기타"로 인쇄한다 — `[A-Za-z]` 앵커는 이 라벨을
+# 스택에 못 올려 글상자·도형류 FOREIGN 가드가 사문화됐다(#4533 ④-c: 통계청 156667809
+# ·근무성적 113424·누리과정 위양성의 실체). 모든 노드 행은 ` y=` 를 가지므로 그걸 앵커로 쓴다.
+NODE_RE = re.compile(r"^(\s*)(\S+)\s+y=")
 # 이 컨테이너 아래 줄은 본문 흐름 좌표계가 아니다 — 셀·글상자·도형·머리/꼬리말·각주.
+# "기타" = dump-extents 의 미분류 컨테이너(글상자·도형·이미지 등 전부).
 FOREIGN = {
     "Table", "TableCell", "Header", "Footer", "FootnoteArea", "TextBox",
     "Shape", "Group", "Rect", "Ellipse", "Path", "Equation", "MasterPage", "Image",
+    "기타",
 }
 HU_PER_PX = 75.0
 
@@ -97,7 +102,22 @@ def analyze(exe: Path, path: Path, threshold: float):
             if line == 0 and pi not in cols.setdefault(col, {}):
                 cols[col][pi] = (y, vpos)
         for col, first in cols.items():
-            ordered = [(pi, y, v) for pi, (y, v) in sorted(first.items()) if v > 0]
+            # 렌더 y 순서에서 pi 가 역행하는 줄 = 본문 흐름이 아니라 개체에 붙어
+            # 로컬 vpos 를 단 채 Column 직속으로 노출된 누수(그림 캡션 등 — #4533
+            # ④-c 환경위성 156489219 p5: pi43 줄 뒤 y 527 에 pi0 vpos=500). 조상
+            # 가드로는 못 거른다(렌더 트리가 실제로 Column 직속) — pi 역행으로 거른다.
+            max_pi = -1
+            leaked = set()
+            for pi, (y, v) in sorted(first.items(), key=lambda kv: kv[1][0]):
+                if pi < max_pi:
+                    leaked.add(pi)
+                else:
+                    max_pi = pi
+            ordered = [
+                (pi, y, v)
+                for pi, (y, v) in sorted(first.items())
+                if v > 0 and pi not in leaked
+            ]
             # vpos 되돌아감 = 쪽 중간 리베이스(구역/리스트 재시작) 신호 — 분절을 갈라
             # 각자의 중앙값으로 판정한다. 리베이스된 블록은 자기 기준으로 자기일관이라
             # 조용해지고, 같은 분절 안의 상대 이동(진짜 결함)만 남는다.
