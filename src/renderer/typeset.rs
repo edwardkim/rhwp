@@ -925,6 +925,10 @@ const BOTTOM_SQUEEZE_MAX_REST_PX: f64 = 100.0;
 /// 1741000 여유 30~58px 압축 실측).
 const BOTTOM_SQUEEZE_MIN_HEADROOM_PX: f64 = 12.0;
 const ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX: f64 = 40.0;
+/// native HWP5 6x5 Q&A 표는 2mm outer-bottom을 가진 마지막 빈 행을 한컴이
+/// 직전 fragment의 물리 tail로 보존한다. 일반 RowBreak 표의 40px 정책을 넓히지
+/// 않고, 이 저장 template에만 관측된 최대 60.4px 초과를 수용한다.
+const NATIVE_HWP5_QA_TERMINAL_SPACER_OVERFLOW_TOLERANCE_PX: f64 = 64.0;
 /// [Task #1733] 저장 LINE_SEG 좌표가 현재 쪽 하단 안에 tail 을 두었다는 증거가 있을 때
 /// 제한된 tail 경로에만 허용하는 누적 높이 drift 완화값.
 const SAVED_TAIL_VPOS_OVERFLOW_TOLERANCE_PX: f64 = 128.0;
@@ -1377,6 +1381,58 @@ fn native_hwp5_figure_table_overlay_guide_empty(
         return guide_vpos >= anchor_vpos && guide_vpos < table_bottom;
     }
     false
+}
+
+/// native HWP5 Q&A RowBreak 표 뒤의 같은 style 연속 빈 줄 중 둘째 줄은 별도 본문
+/// 간격이 아니라 저장된 tail guide 이다. 첫 빈 줄은 표 아래의 물리 간격으로 보존하고,
+/// 정확히 한 line-height 뒤의 둘째 줄만 0-height item으로 남긴다.
+fn native_hwp5_qa_duplicate_empty_tail_guide(
+    para_idx: usize,
+    para: &Paragraph,
+    paragraphs: &[Paragraph],
+) -> bool {
+    if !para.controls.is_empty()
+        || para_has_visible_text(para)
+        || para.column_type != ColumnBreakType::None
+        || para.line_segs.len() != 1
+    {
+        return false;
+    }
+    let Some(previous) = para_idx.checked_sub(1).and_then(|idx| paragraphs.get(idx)) else {
+        return false;
+    };
+    let Some(host) = para_idx.checked_sub(2).and_then(|idx| paragraphs.get(idx)) else {
+        return false;
+    };
+    if !previous.controls.is_empty()
+        || para_has_visible_text(previous)
+        || previous.column_type != ColumnBreakType::None
+        || previous.line_segs.len() != 1
+        || previous.para_shape_id != para.para_shape_id
+    {
+        return false;
+    }
+    let previous_line = &previous.line_segs[0];
+    let guide_line = &para.line_segs[0];
+    if guide_line.vertical_pos
+        != previous_line.vertical_pos + previous_line.line_height + previous_line.line_spacing
+    {
+        return false;
+    }
+    host.controls.iter().any(|control| {
+        matches!(
+            control,
+            Control::Table(table)
+                if !table.common.treat_as_char
+                    && table.row_count == 6
+                    && table.col_count == 5
+                    && table.cells.len() == 15
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+        )
+    })
 }
 
 /// [Task #1863] 텍스트 없이 TAC 표만 담은 문단 — 시각적으로 단독 표 줄.
@@ -6040,13 +6096,13 @@ impl TypesetEngine {
                 continue;
             }
 
-            let is_native_hwp5_figure_table_overlay_guide_empty = profile.native_hwp5_layout()
-                && native_hwp5_figure_table_overlay_guide_empty(para_idx, para, paragraphs);
-            if is_native_hwp5_figure_table_overlay_guide_empty {
-                // `그림 67` 같은 2×1 그림 표는 선언한 표 높이로 이미 flow를 예약한다.
-                // 표 paint span 내부의 빈 HWP line은 다시 높이를 소비하면 안 되지만,
-                // PI↔page 진단에서 문단 자체는 계속 추적 가능해야 하므로 0-height item으로
-                // 남긴다.
+            let is_native_hwp5_hidden_empty_guide = profile.native_hwp5_layout()
+                && (native_hwp5_figure_table_overlay_guide_empty(para_idx, para, paragraphs)
+                    || native_hwp5_qa_duplicate_empty_tail_guide(para_idx, para, paragraphs));
+            if is_native_hwp5_hidden_empty_guide {
+                // 그림 표의 paint-span guide와 Q&A 표 뒤의 중복 tail guide는 이미
+                // 선행 표/빈 줄이 flow를 예약했다. PI↔page 진단을 위해 문단 item은
+                // 남기되 높이는 다시 소비하지 않는다.
                 st.hidden_empty_paras.insert(para_idx);
                 st.current_items.push(PageItem::FullParagraph {
                     para_index: para_idx,
@@ -18973,12 +19029,23 @@ impl TypesetEngine {
             // RowBreak 표의 마지막 빈 spacer 행은 한컴이 직전 조각 하단에 붙여
             // 그리는 경우가 많다. 이 행 하나만 몇 px 넘친다고 별도 빈 꼬리
             // 페이지를 만들면 Q&A 표처럼 작은 잔여 조각 페이지가 반복된다.
+            let trailing_empty_row_overflow_tolerance = if st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && table.outer_margin_bottom > 0
+            {
+                NATIVE_HWP5_QA_TERMINAL_SPACER_OVERFLOW_TOLERANCE_PX
+            } else {
+                ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX
+            };
             if mt.allows_row_break_split()
                 && r + 1 == row_count
                 && Self::row_is_empty_trailing_spacer(table, r)
                 && consumed > 0.0
                 && consumed + cs_before + row_total
-                    <= avail_for_rows + ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX
+                    <= avail_for_rows + trailing_empty_row_overflow_tolerance
             {
                 consumed += cs_before + row_total;
                 r += 1;
