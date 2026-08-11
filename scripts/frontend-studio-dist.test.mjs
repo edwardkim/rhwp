@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -41,14 +42,20 @@ const VENDOR_NAMES = ['subsecond', 'Subsecond', 'dioxus', 'Dioxus'];
 
 /** 번들을 실제로 읽었다는 증거. 이게 없으면 "부재" 단언이 빈 문자열에서 공짜로 통과한다. */
 const BUNDLE_SENTINEL = 'document-view-changed';
+const BUILD_INSTRUCTION = '먼저 `npm --prefix rhwp-studio run build`';
 
-function readStudioBundle() {
-  const files = readdirSync(STUDIO_ASSETS).filter((file) => file.endsWith('.js'));
+function readStudioBundle(studioAssets = STUDIO_ASSETS) {
+  assert.ok(
+    existsSync(studioAssets),
+    `${studioAssets} 가 없다 — ${BUILD_INSTRUCTION}`,
+  );
+
+  const files = readdirSync(studioAssets).filter((file) => file.endsWith('.js'));
   assert.ok(
     files.length > 0,
-    `${STUDIO_ASSETS} 에 자바스크립트 번들이 없다 — 먼저 \`npm --prefix rhwp-studio run build\``,
+    `${studioAssets} 에 자바스크립트 번들이 없다 — ${BUILD_INSTRUCTION}`,
   );
-  return files.map((file) => readFileSync(path.join(STUDIO_ASSETS, file), 'utf8')).join('\n');
+  return files.map((file) => readFileSync(path.join(studioAssets, file), 'utf8')).join('\n');
 }
 
 function countOccurrences(haystack, needle) {
@@ -70,6 +77,22 @@ test('hot-patch markers still name something in the development-only runtime', (
     [],
     '이 표지들은 개발 전용 런타임에 더는 없다 — 번들 감시가 헛돌고 있으므로 목록을 고쳐라',
   );
+});
+
+test('studio bundle test gives build guidance when the assets directory is absent', () => {
+  const temporaryRoot = mkdtempSync(path.join(tmpdir(), 'rhwp-studio-dist-test-'));
+  const missingAssets = path.join(temporaryRoot, 'assets');
+
+  try {
+    assert.throws(
+      () => readStudioBundle(missingAssets),
+      (error) =>
+        error instanceof assert.AssertionError &&
+        error.message === `${missingAssets} 가 없다 — ${BUILD_INSTRUCTION}`,
+    );
+  } finally {
+    rmSync(temporaryRoot, { recursive: true, force: true });
+  }
 });
 
 test('studio production bundle carries no hot-patch development runtime', () => {
