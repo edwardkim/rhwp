@@ -645,11 +645,11 @@ fn parse_sections_strict(
             .map_err(ParseError::CryptoError)?
         } else if encrypted {
             // 비밀번호 암호 문서: BodyText raw → 비밀번호 복호화.
-            // read_body_text_section(compressed=false) 가 스트림 경로 탐색
+            // read_body_text_section_raw() 가 스트림 경로 탐색
             // (BodyText/Section{i} → /Section{i}) 을 담당하므로 raw 만 얻어
             // 복호화+압축해제는 crypto 로 위임한다.
             let raw = cfb
-                .read_body_text_section(i, false, false)
+                .read_body_text_section_raw(i)
                 .map_err(ParseError::CfbError)?;
             crypto::decrypt_password_protected_limited(
                 &raw,

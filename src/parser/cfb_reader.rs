@@ -136,18 +136,26 @@ impl CfbReader {
         compressed: bool,
         max_bytes: usize,
     ) -> Result<Vec<u8>, CfbError> {
-        let bodytext_path = format!("/BodyText/Section{}", index);
-        let raw = if self.has_stream(&bodytext_path) {
-            self.read_stream_raw(&bodytext_path)?
-        } else {
-            let section_path = format!("/Section{}", index);
-            if !self.has_stream(&section_path) {
-                return Err(CfbError::StreamNotFound(format!("Section{}", index)));
-            }
-            self.read_stream_raw(&section_path)?
-        };
+        let raw = self.read_body_text_section_raw(index)?;
 
         decode_stream_limited(raw, compressed, max_bytes)
+    }
+
+    /// 일반 BodyText 섹션의 원본 바이트를 반환한다.
+    ///
+    /// 비밀번호 암호 문서는 이 경로로 암호문을 가져온 뒤, 호출자가 복호화 결과에
+    /// 열린 문서의 예산을 적용한다.
+    pub(crate) fn read_body_text_section_raw(&mut self, index: u32) -> Result<Vec<u8>, CfbError> {
+        let bodytext_path = format!("/BodyText/Section{}", index);
+        if self.has_stream(&bodytext_path) {
+            return self.read_stream_raw(&bodytext_path);
+        }
+
+        let section_path = format!("/Section{}", index);
+        if !self.has_stream(&section_path) {
+            return Err(CfbError::StreamNotFound(format!("Section{}", index)));
+        }
+        self.read_stream_raw(&section_path)
     }
 
     /// BinData 스트림 읽기 (BinData/BIN{XXXX}.{ext})
@@ -1120,6 +1128,11 @@ mod tests {
         .unwrap();
 
         let mut strict = CfbReader::open(&cfb).unwrap();
+        assert_eq!(
+            strict.read_body_text_section_raw(0).unwrap(),
+            compressed,
+            "암호 경로는 raw ciphertext를 먼저 가져와 복호화 결과에만 별도 상한을 적용한다"
+        );
         assert!(matches!(
             strict.read_doc_info_limited(true, 1024),
             Err(CfbError::LimitExceeded(1024))
