@@ -12,6 +12,8 @@ issue1921/59043_regulatory_analysis.hwp	41
 issue1937_rowbreak_footnote_overpagination.hwp	36
 issue2006/1790387_prep_final_report.hwpx	2
 issue3637/regulatory_impact_nested_table_escape.hwpx	19
+# #4514 클램프 해제로 쪽 하단 bleed 하는 overlay 표의 하단 행 62줄 — #4568(분할 페인트)이 0 으로 조인다
+issue4514/sample1-repro.hwp	62
 rowbreak-problem-pages.hwp	33
 rowbreak-problem-pages.hwpx	33
 table_giant_cell_overfill.hwpx	569

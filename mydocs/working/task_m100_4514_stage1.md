@@ -51,4 +51,13 @@ escape). 표가 흐름을 소비하면서 흡수 해제가 페이지 전진과 �
   ECR 구간 3연속쪽 + 총 48쪽 고정 — 통과.
 - `issue_4515_table_overlap_diag`(자기일관) · `issue_703` · `issue_775` ·
   `issue_1271_hwpx_behind_text_table` — 통과.
-- release-test 전체·Native Skia 3종: 커밋 후 실행 (아래 기록 갱신 예정).
+- release-test 전체 (2026-08-11, Windows x86_64): 522개 스위트 중 실패 1건 —
+  `overflow_cell_baseline`(#3668 samples 전수 래칫)의 `신규 발생:
+  issue4514/sample1-repro.hwp — 62줄`. 클램프 해제로 쪽 하단을 bleed 하는 overlay
+  표의 하단 행이 쪽 밖에 그려져 집계된 것으로, #4568(분할 페인트)로 추적하는 알려진
+  한계의 정량값이다. 래칫 규약대로 baseline 에 주석과 함께 등재(62)하고 단독 재실행
+  통과 확인 — #4568 구현 시 0 으로 조인다. 나머지 521개 스위트 전부 통과(2회 실행
+  교차 확인).
+- Native Skia 3종 (`--features native-skia` lib skia / issue_2225 / render_p37): 통과.
+- 참고: 게이트 실행이 4회 연속 외부 중단됐던 것은 디스크 여유 부족(12GB)과 겹친
+  현상으로, debug incremental 11GB 정리 후 재발하지 않았다.
