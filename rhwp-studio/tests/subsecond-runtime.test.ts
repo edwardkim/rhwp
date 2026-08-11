@@ -206,6 +206,41 @@ test('revision watcher keeps watching after a repaint throws', async () => {
   assert.equal(frames.pendingCount, 0);
 });
 
+test('a stopped revision watcher releases its frame and starts again', async () => {
+  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const frames = new FakeAnimationFrames();
+  let revision = 'baseline';
+  const repaints: string[] = [];
+  const watcher = new SubsecondRevisionWatcher(
+    {
+      isSubsecondHotpatchEnabled: () => true,
+      getSubsecondPatchRevision: () => revision,
+      invalidateSubsecondRenderCaches: () => true,
+    },
+    nextRevision => repaints.push(nextRevision),
+    {
+      requestAnimationFrame: frames.request,
+      cancelAnimationFrame: frames.cancel,
+    },
+  );
+
+  watcher.start();
+  frames.flush();
+  watcher.stop();
+  assert.equal(frames.pendingCount, 0, 'stop() 이 예약된 프레임을 해제해야 한다');
+
+  revision = 'patch-one';
+  frames.flush();
+  assert.deepEqual(repaints, [], '멈춘 감시자는 패치를 그리지 않는다');
+
+  assert.equal(watcher.start(), true, '멈춘 감시자는 다시 시작할 수 있어야 한다');
+  assert.equal(frames.pendingCount, 1);
+  frames.flush();
+  assert.deepEqual(repaints, ['patch-one']);
+
+  watcher.stop();
+});
+
 class FakeWebSocket {
   onmessage: ((event: MessageEvent) => void) | null = null;
   onclose: ((event: CloseEvent) => void) | null = null;
@@ -396,7 +431,6 @@ test('repository exposes a feature-gated dx adapter without changing normal WASM
   assert.match(bridge, /invalidateSubsecondRenderCaches/);
   assert.match(canvasView, /new SubsecondRevisionWatcher/);
   assert.match(canvasView, /document-view-changed[\s\S]*subsecond-renderer[\s\S]*this\.refreshPages\(\)/);
-  assert.match(canvasView, /subsecondRevisionWatcher\.stop\(\)/);
   assert.match(vite, /['"]\/_dioxus['"]/);
   assert.match(vite, /['"]\/wasm['"][\s\S]*127\.0\.0\.1:7711/);
   assert.match(vite, /librhwp-subsecond-patch-\*\.wasm/);
