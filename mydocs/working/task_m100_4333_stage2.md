@@ -407,3 +407,36 @@ $ git diff upstream/devel..HEAD -- '*.rs' | grep -E "^[+-]" \
 3. **#4620 캐럿 실측(4절)** — `examples/` 스크래치에서 `parse_document` 로 문단을 훑어
    텍스트 없는 TAC 문단만 골라 `HwpDocument::get_cursor_rect_native(sec, pi, 0)` 의
    `height` 를 집계한다.
+
+
+## 후속 이슈 (2026-08-12)
+
+작업 중 발견했지만 배정된 다섯 이슈 밖이라 **고치지 않고** 이슈로 분리했다.
+
+- **[#4625](https://github.com/edwardkim/rhwp/issues/4625)** — TAC-Shape 바닥값
+  (`layout.rs:7058`)만 `common().height` 를 쓴다. **문단 진행을 실제로 지배하는 쪽**이
+  나머지 셋(`max(common.height, current_height)`)과 다른 식이고, PR #4607 의 통일 대상에서
+  빠져 있다.
+- **[#4626](https://github.com/edwardkim/rhwp/issues/4626)** —
+  `para_is_treat_as_char_picture_only` 두 정의가 도형만 있는 문단(`text == "\u{FFFC}"`)에
+  **반대 답**을 낸다. 이 술어가 `stacked_tac_picture_heights` 를 게이트하므로 **#4333 의
+  남은 작업을 시작하려면 이것이 선행 조건**이다.
+- **[#4627](https://github.com/edwardkim/rhwp/issues/4627)** — 표 바닥값
+  `effective_h = seg_lh.max(mt_h)` 가 `typeset.rs` 와 `pagination/engine.rs` 두 곳에 있다.
+- **[#4628](https://github.com/edwardkim/rhwp/issues/4628)** — 진단 출력이 프로덕션과 다른
+  높이를 말한다. `total_height` 가 자기 구성요소 합과 불일치하고, `dump-pages` 가 폴백 경로
+  값을 표시 없이 보고한다. **이 값이 이 사슬에서 조사를 두 번 오도했다.**
+- **[#4629](https://github.com/edwardkim/rhwp/issues/4629)** — 인라인 개체 캐럿 높이가
+  개체 크기와 무관한 상수 12.0. #4620 이 주장한 0 을 검증하다 나온 **진짜** 문제다.
+
+## 배정 이슈 넷을 닫은 근거
+
+- **#4620** — 소비자가 아무도 `TextLine.h` 를 안 읽는다(1,120건 전수, 캐럿 최솟값 12.0,
+  0 은 0건). 게다가 채우면 미주 진행·각주 마커 배치가 움직여 **해롭다**.
+- **#4619** — TAC-Shape 문단이 `PartialParagraph` 에 닿는 것은 문서 2개/조각 5개뿐이고
+  전부 실제 진행이 이미 바닥값을 넘어 이식이 no-op 이다. 게다가 `para_start_y` 미등록으로
+  순진한 이식은 확실한 회귀다. **#4333 의 한 단면으로 접었다.**
+- **#4604** — 문단 축에 살아 있는 소비자가 둘이 아니다. 통일은 프로덕션을 진단용에 맞추거나
+  두 번째 정의를 지우는 것뿐이고, 후자는 #4605(PR #4621)의 방향이다.
+- **#4606** — 5.6% 중 97.1% 가 `spacing_before` 이고, 렌더의 단 최상단 trim 은 한컴 정합을
+  위한 **설계**다. 단 중간 대조 실험에서 5.4% → **0.2%**.
