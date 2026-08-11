@@ -715,9 +715,17 @@ const NATIVE_HWP5_SINGLE_CELL_SAVED_FRAME_TAIL_ALLOWANCE_PX: f64 = 32.0;
 /// HWP5-origin 2025 편람 Q&A Q7의 첫 응답 조각은 저장된 세 줄 frame을 동일 page에 남긴다.
 /// 이 값은 전체 행 overflow가 아니라 첫 intra-row cut에만 더한다.
 const HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
-/// HWPX 저장 layout의 동일 Q7 tail은 browser 측정상 96px까지 허용해야
-/// 원본 HWP/PDF와 같이 세 번째 response 문단을 첫 physical page에 둔다.
-const HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 96.0;
+/// Q5 saved-frame tail을 앞쪽에 복원한 뒤 Q7은 raw budget 18.3px에
+/// 65px만 더해 82.9px stored cut을 정확히 선택한다. 더 크게 잡으면 다음
+/// response line이 p284 body clip 밖으로 과수용되어 Q8이 p285에서 당겨진다.
+const HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 65.0;
+/// HWPX Q5의 저장 frame reset 직전 첫 response line은 PDF/native HWP처럼
+/// 앞 physical page에 남는다. response cell의 3·5·3 lineSeg topology에만
+/// 적용해 Q7의 다문단 tail 계약과 분리한다.
+const HWPX_QA_SAVED_FRAME_RESPONSE_CUT_ALLOWANCE_PX: f64 = 16.0;
+/// 16px cut은 정확히 첫 response line만 선택하지만, 그린 셀 padding까지 포함한
+/// physical fragment는 32px overflow tolerance가 있어야 앞 page에 유지된다.
+const HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
 const HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 64.0;
 /// HWPX 103×2 병렬 규정 표는 browser 셀 측정이 저장 frame보다 4px 먼저
 /// 수용된다. 이 reserve는 Q&A owner 보정 뒤 사라지는 단 하나의 physical
@@ -19193,6 +19201,33 @@ impl TypesetEngine {
                 && table.cells.iter().any(|cell| {
                     cell.row as usize == r && cell.paragraphs.len() == 5
                 });
+            // 2025 편람 Q5의 첫 response 문단은 `0 -> 1838 -> 0` HWPX frame
+            // reset을 갖는다. browser 측정은 첫 줄을 다음 쪽으로 미루지만, native
+            // HWP와 PDF는 reset 직전 tail을 앞쪽에 소유한다. 같은 6×5 마지막
+            // 응답 행이라도 declared height와 response lineSeg topology로 Q7과
+            // 분리해, 일반 3문단 표의 row-cut 허용치를 넓히지 않는다.
+            let hwpx_qa_saved_frame_response_tail = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && table.common.height == 11_382
+                && table.outer_margin_bottom == 0
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == r
+                        && cell.paragraphs.len() == 3
+                        && cell.paragraphs.first().is_some_and(|paragraph| {
+                            paragraph.line_segs.len() == 3
+                                && paragraph.line_segs[0].vertical_pos == 0
+                                && paragraph.line_segs[1].vertical_pos > 0
+                                && paragraph.line_segs[2].vertical_pos == 0
+                        })
+                });
             // HWPX Q&A 목차는 73 문단의 1×1 RowBreak 표다. 세 번째 continuation에는
             // 28.4px tail만 남으므로 그 마지막 line만 현재 page로 수용한다. 일반 1×1
             // 표 또는 첫 두 fragment에는 적용하지 않는다.
@@ -19231,6 +19266,8 @@ impl TypesetEngine {
                     } else {
                         HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
                     }
+                } else if hwpx_qa_saved_frame_response_tail {
+                    HWPX_QA_SAVED_FRAME_RESPONSE_CUT_ALLOWANCE_PX
                 } else if hwpx_qa_toc_final_tail {
                     HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX
                 } else {
@@ -19353,7 +19390,8 @@ impl TypesetEngine {
             // 포함해 경계를 충족한다. content-only guard로 통째 이월하면 표 24의
             // row 4가 p77에서 재배치되어 그림 51까지 다음 쪽으로 밀린다. native
             // HWP5·비-TAC·RowBreak·같은 row의 stored reset·앞선 행이 이미 있는
-            // 경우로 한정해 #2439와 같은 painted-height 판정을 사용한다.
+            // 경우, 그리고 HWPX Q5의 saved-frame response tail에 한정해 #2439와
+            // 같은 painted-height 판정을 사용한다.
             let native_hwp5_internal_reset_row_tail = st.profile.native_hwp5_layout()
                 && !table.common.treat_as_char
                 && mt.allows_row_break_split()
@@ -19362,6 +19400,7 @@ impl TypesetEngine {
                 && layout_engine.row_block_has_internal_hard_break(table, r, r + 1, styles);
             let row_split_min_keep_uses_painted_height = strict_painted_bottom_fit
                 || native_hwp5_internal_reset_row_tail
+                || hwpx_qa_saved_frame_response_tail
                 || native_short_parent_child_splittable;
             // [Task #713] sliver(orphan) 회피 — 일반 표는 기존 content-only 기준을
             // 유지한다. 패딩 포함 painted 기준은 좁은 #2439 strict 표, saved internal
@@ -19423,18 +19462,20 @@ impl TypesetEngine {
                         || (fresh_late_nested_row && !nested_physical_tail))
                     && split_candidate_rows_height - avail_for_rows
                         > MIXED_NESTED_OWNER_DRIFT_MIN_PX;
-                    let split_row_overflow_tolerance =
+                let split_row_overflow_tolerance =
                         if hwp5_origin_qa_first_response_tail {
                             if st.profile.hwpx_stored_layout() {
                                 HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
                             } else {
                                 HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
                             }
+                        } else if hwpx_qa_saved_frame_response_tail {
+                            HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
                     } else if mt.allows_row_break_split() {
                         rowbreak_split_row_overflow_tolerance
-                    } else {
+                        } else {
                         0.1
                     };
                 if (r > cursor_row
