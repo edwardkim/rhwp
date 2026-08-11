@@ -28398,3 +28398,103 @@ fn issue4167_units_fingerprint_doc_contract() {
         "스페이서 → 텍스트 전이는 지문이 변해 evict 되어야 한다"
     );
 }
+
+/// [#4576] 핫패치 무효화 계약 — 원본 IR 이 그대로여도 파생본을 못 믿게 된 상황을
+/// 표현할 수 있어야 한다.
+///
+/// 렌더러 코드가 교체되면 `pagination`·`composed`·측정 캐시에 남은 값은 패치 이전
+/// 코드의 산출물이다. 원본 IR 은 한 글자도 안 바뀌었으므로 `dirty_sections` 도
+/// `section_revisions` 도 오르지 않고, 그래서 억지로 `paginate()` 를 불러도 깨끗한
+/// 구역을 건너뛴다 — 새 코드가 낸 숫자를 옛 코드가 잡은 페이지 박스에 그리는 혼합물이
+/// 남는다.
+///
+/// 이 테스트는 "패치 이전 코드가 만든 파생본"을 원본을 건드리지 않고 흉내 낸다:
+/// 메모된 조합·페이지네이션·측정 결과만 지금 코드가 같은 원본에서 절대 만들지 않을
+/// 값으로 바꾼다. 그 상태에서 `paginate()` 는 아무것도 되돌리지 못해야 하고(게이트가
+/// 살아 있다는 확인), `rebuild_derived_state()` 는 셋 다 원본에서 다시 만들어야 한다.
+#[test]
+fn issue_4576_rebuild_derived_state_recomputes_composition_and_pagination() {
+    let mut doc = HwpDocument::create_empty();
+    // 여러 쪽·여러 줄이 나오도록 본문을 채운다 (한 문단이 여러 페이지에 걸친다).
+    let body = "가나다라마바사아자차카타파하".repeat(400);
+    doc.insert_text_native(0, 0, 0, &body).expect("본문 삽입");
+
+    let baseline_pages = doc.page_count();
+    assert!(
+        baseline_pages >= 2,
+        "여러 쪽 문서를 전제로 한다 (실측 {baseline_pages}쪽)"
+    );
+    let baseline_tree = doc
+        .build_page_tree(0)
+        .expect("기준 페이지 트리")
+        .root
+        .to_json();
+    let baseline_height = doc.measured_sections[0].paragraphs[0].total_height;
+    let baseline_lines = doc.composed[0][0].lines.len();
+
+    // --- 패치 이전 코드의 파생본을 흉내 낸다 (원본 IR 은 손대지 않는다) ---
+    doc.composed[0][0].lines[0].runs[0].text = "옛 조합 규칙".to_string();
+    doc.pagination[0].pages.pop().expect("마지막 쪽 제거");
+    doc.measured_sections[0].paragraphs[0].total_height = 1.0;
+
+    doc.invalidate_page_tree_cache();
+    assert_ne!(
+        doc.build_page_tree(0)
+            .expect("오염된 페이지 트리")
+            .root
+            .to_json(),
+        baseline_tree,
+        "조합 오염이 페이지 트리에 실제로 보여야 테스트가 의미를 갖는다"
+    );
+    assert_eq!(
+        doc.page_count(),
+        baseline_pages - 1,
+        "페이지네이션 오염이 쪽 수에 보여야 한다"
+    );
+
+    // 문서가 안 바뀌었으므로 강제 재조판은 아무것도 되돌리지 못한다 (#4576 의 전제).
+    doc.paginate();
+    assert_eq!(
+        doc.page_count(),
+        baseline_pages - 1,
+        "깨끗한 구역을 건너뛰므로 paginate() 만으로는 페이지네이션이 복구되지 않는다"
+    );
+    assert_eq!(
+        doc.composed[0][0].lines[0].runs[0].text, "옛 조합 규칙",
+        "paginate() 는 조합을 다시 만들지 않는다"
+    );
+    assert_eq!(
+        doc.measured_sections[0].paragraphs[0].total_height, 1.0,
+        "paginate() 는 깨끗한 구역의 측정 캐시를 다시 만들지 않는다"
+    );
+
+    // --- 무효화 계약: 원본에서 파생 상태를 전부 다시 만든다 ---
+    doc.core.rebuild_derived_state();
+
+    assert_eq!(
+        doc.page_count(),
+        baseline_pages,
+        "페이지네이션이 원본에서 다시 만들어져야 한다"
+    );
+    assert_ne!(
+        doc.composed[0][0].lines[0].runs[0].text, "옛 조합 규칙",
+        "조합이 원본에서 다시 만들어져야 한다"
+    );
+    assert_eq!(
+        doc.composed[0][0].lines.len(),
+        baseline_lines,
+        "조합 결과의 줄 수가 원본 기준으로 돌아와야 한다"
+    );
+    assert_eq!(
+        doc.measured_sections[0].paragraphs[0].total_height, baseline_height,
+        "측정 캐시가 원본에서 다시 만들어져야 한다"
+    );
+    assert_eq!(
+        doc.build_page_tree(0)
+            .expect("복구 후 페이지 트리")
+            .root
+            .to_json(),
+        baseline_tree,
+        "페이지 트리가 기준선과 같아야 한다 (옛 코드 잔재 없음)"
+    );
+}

@@ -901,13 +901,19 @@ impl HwpDocument {
         format!("{canvas:016x}:{layers:016x}")
     }
 
+    /// 핫패치로 렌더러 코드가 교체됐을 때 문서의 파생 상태를 새 코드로 다시 만든다.
+    ///
+    /// `&mut self` 여야 한다. 페이지 트리 캐시만 비우면 다시 그리는 값은 새 코드가 내지만
+    /// 그 값을 앉히는 페이지 박스와 문단 조합은 `pagination`·`composed`·측정 캐시에 남은
+    /// 패치 이전 코드의 결과라, 소스의 어느 버전에도 대응하지 않는 화면이 나온다 (#4576).
+    /// 그 셋은 모두 `&mut self` 를 요구하므로 `&self` 로는 계약 자체를 표현할 수 없다.
     #[cfg(feature = "subsecond-dev")]
     #[cfg_attr(
         feature = "subsecond-dev",
         wasm_bindgen(js_name = invalidateSubsecondRenderCaches)
     )]
-    pub fn invalidate_subsecond_render_caches(&self) {
-        self.core.invalidate_page_tree_cache();
+    pub fn invalidate_subsecond_render_caches(&mut self) {
+        self.core.rebuild_derived_state();
     }
 
     /// CanvasKit direct replay 정책 진단을 JSON 문자열로 반환한다.
