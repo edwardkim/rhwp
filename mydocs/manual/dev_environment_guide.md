@@ -131,6 +131,13 @@ Rust 를 고쳐도 WASM 재빌드 없이 실행 중인 브라우저에 반영하
 들어가지 않는다 — 루트 `Cargo.toml` 의 `subsecond-dev` feature 뒤에 있고, 그 feature 로 빌드해야
 `applySubsecondDevtoolsMessage` 같은 export 가 생긴다.
 
+**feature 를 켜는 것과 디버그 프로파일로 빌드하는 것은 별개의 두 조건이고, 둘 다 필요하다.**
+`subsecond::HotFn::try_call`(`subsecond-0.7.10/src/lib.rs:411-414`)이 `if !cfg!(debug_assertions)`
+로 점프 테이블을 아예 보지 않고 원본 함수를 부른다. 그래서 릴리스 프로파일로 빌드하면 경계를
+아무리 잘 배치해도 모든 호출이 패치 이전 코드로 간다. `npm run subsecond:serve` 가 쓰는
+`dx serve --web` 은 디버그가 기본이라 지금은 맞게 동작하지만 **그 의존은 우연이다** — `--release`
+를 얹은 dx 나 직접 만든 릴리스 wasm 에서는 모든 층이 성공을 보고하는데 화면만 안 바뀐다. (#4596)
+
 ### 사전 조건과 최초 설치
 
 - Linux, macOS 또는 WSL에서만 사용한다. Windows 네이티브에서는 `build.rs`가 필요한 심링크를 만들지 않아
@@ -251,6 +258,7 @@ curl -fsS -o /dev/null -w 'vite-wasm=%{http_code}\n' http://127.0.0.1:7700/wasm/
 
 | 층 | 실패 신호 | 보는 곳 |
 |---|---|---|
+| 빌드 프로파일 | **신호 없음** — 릴리스 프로파일이면 `HotFn::try_call` 이 조용히 원본을 부른다 (#4596) | 위 절의 두 조건 |
 | 별칭 심링크 (`build.rs`) | `cargo:warning=rhwp-subsecond: …` | `subsecond:serve` 터미널 |
 | `dx` 패치 링크 | dx 오류 출력 | `subsecond:serve` 터미널 |
 | 메시지 판정 (`src/subsecond_dev.rs`) | `[subsecond] …` 진단 | 브라우저 콘솔 |
