@@ -755,6 +755,11 @@ const HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 96.0;
 const HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 64.0;
 /// HWPX 103×2 병렬 규정 표의 fragment 임계값을 PDF 57조각 계약과 대조한다.
 const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 160.0;
+/// PDF p314에서 제3조가 끝난 뒤 제4조를 시작시키는 r5 경계다.
+const HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX: f64 = 56.0;
+/// r5에서 제거한 조각은 PDF 후반에서 실제로 긴 정책연구 심의위원회 행(r71)의
+/// 다음 fragment owner로 복원한다.
+const HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX: f64 = 200.0;
 /// HWPX로 저장된 2025 편람 Q&A 목차의 마지막 1×1 RowBreak tail은 32px 이하다.
 /// 세 번째 continuation의 마지막 line만 같은 page에 유지한다.
 const HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
@@ -19529,7 +19534,11 @@ impl TypesetEngine {
             let parallel_regulation_cut_reserve = if hwp5_origin_parallel_regulation_table {
                     HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX
                 } else if hwpx_parallel_regulation_table {
-                    HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX
+                    match r {
+                        5 => HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX,
+                        71 => HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX,
+                        _ => HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX,
+                    }
                 } else {
                     0.0
                 };
