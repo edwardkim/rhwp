@@ -304,6 +304,65 @@ test('devtools websocket resets its reconnect backoff once the socket reopens', 
   disconnect?.();
 });
 
+test('patch budget warns that applied patches are never reclaimed', async () => {
+  const { SubsecondPatchBudget } = await loadRuntime();
+  const warnings: string[] = [];
+  const budget = new SubsecondPatchBudget({
+    warn: message => warnings.push(message),
+    warnEveryPatches: 3,
+    measureHeapBytes: () => 512 * 1024 * 1024,
+  });
+
+  budget.recordApplied();
+  budget.recordApplied();
+  assert.deepEqual(warnings, [], '임계값 아래에서는 경고하지 않는다');
+
+  budget.recordApplied();
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /3/, '경고는 누적 패치 수를 담는다');
+  assert.match(warnings[0], /512/, '경고는 측정한 선형 메모리 크기를 담는다');
+
+  budget.recordApplied();
+  budget.recordApplied();
+  assert.equal(warnings.length, 1);
+  budget.recordApplied();
+  assert.equal(warnings.length, 2, '임계값을 넘길 때마다 다시 경고한다');
+  assert.match(warnings[1], /6/);
+});
+
+test('devtools websocket counts only applied patches toward the budget', async () => {
+  const { connectSubsecondDevtools, SubsecondPatchBudget } = await loadRuntime();
+  const sockets: FakeWebSocket[] = [];
+  const warnings: string[] = [];
+  const patchBudget = new SubsecondPatchBudget({
+    warn: message => warnings.push(message),
+    warnEveryPatches: 2,
+  });
+
+  const disconnect = connectSubsecondDevtools(
+    {
+      applySubsecondDevtoolsMessage: (message: string) => message.includes('HotReload'),
+    },
+    {
+      location: { protocol: 'http:', host: 'localhost:7701' },
+      createWebSocket: url => new FakeWebSocket(url, sockets),
+      setTimeout: () => 0,
+      clearTimeout: () => {},
+      patchBudget,
+    },
+  );
+
+  sockets[0]?.onmessage?.({ data: '{"HotPatchStart":null}' } as MessageEvent);
+  sockets[0]?.onmessage?.({ data: new Uint8Array([1]) } as MessageEvent);
+  sockets[0]?.onmessage?.({ data: '{"HotReload":{}}' } as MessageEvent);
+  assert.deepEqual(warnings, [], '적용되지 않은 메시지는 누적으로 세지 않는다');
+
+  sockets[0]?.onmessage?.({ data: '{"HotReload":{}}' } as MessageEvent);
+  assert.equal(warnings.length, 1);
+
+  disconnect?.();
+});
+
 test('repository exposes a feature-gated dx adapter without changing normal WASM builds', () => {
   const cargo = readFileSync(new URL('../../Cargo.toml', import.meta.url), 'utf8');
   const adapterCargo = readFileSync(

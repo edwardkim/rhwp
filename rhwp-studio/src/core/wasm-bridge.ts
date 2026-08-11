@@ -204,6 +204,7 @@ import { fontFamilyChainForDisplay } from './font-substitution';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
 import {
   connectSubsecondDevtools,
+  SubsecondPatchBudget,
   type SubsecondWasmExports,
 } from './subsecond-runtime';
 
@@ -275,10 +276,15 @@ export class WasmBridge {
     if (this.initialized) return;
     installCanvasFontSubstitution();
     this.installMeasureTextWidth();
-    await init();
+    const wasmModule = await init();
     if (!disconnectSubsecondDevtools) {
       disconnectSubsecondDevtools = connectSubsecondDevtools(
         wasmExports as unknown as SubsecondWasmExports,
+        {
+          patchBudget: new SubsecondPatchBudget({
+            measureHeapBytes: () => wasmModule.memory?.buffer.byteLength ?? null,
+          }),
+        },
       );
     }
     this.initialized = true;

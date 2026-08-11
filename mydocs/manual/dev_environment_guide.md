@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/dev_environment_guide.md
-last_verified: 2026-08-08
+last_verified: 2026-08-11
 ---
 
 # 개발 환경 가이드
@@ -124,6 +124,19 @@ npx vite --host 0.0.0.0 --port 7700
 
 해당 포트가 이미 사용 중이면 기존 서버를 확인하거나 다른 포트를 지정한다. 브라우저 검증 절차는
 [시각 검증 문서 지도](verification/README.md)와 각 E2E 가이드를 따른다.
+
+### subsecond 핫패치 세션은 길이를 관리한다
+
+`npm run dev:subsecond`(dx devserver + Vite)는 Rust 변경을 새로고침 없이 적용한다. 대신 **적용한
+패치는 세션이 끝날 때까지 회수되지 않는다.** subsecond 는 이전 점프 테이블을 그대로 버리고, wasm 의
+선형 메모리와 간접 함수 테이블은 `memory.grow`/`funcs.grow` 로 늘기만 할 뿐 줄어들 수 없다. 디버그
+베이스 모듈이 약 123MB 라 패치 한 건이 8MB 이상을 영구히 더한다.
+
+- 핫패치 32건마다 브라우저 콘솔에 누적 경고(`[subsecond] 이 세션에 핫패치 …건이 쌓였다`)가 나온다.
+  경고를 보면 탭을 새로고침해 세션을 끊는다.
+- 새로고침 없이 오래 끌면 편집 도중 `RangeError: WebAssembly.Memory.grow(): Unable to grow instance
+  memory` 로 탭이 죽는다. 이 실패는 핫패치가 원인이라는 표시를 남기지 않는다.
+- 회수는 플랫폼 제약이라 코드로 고칠 수 없다. 세션 길이로만 관리한다.
 
 ## OS별 참고
 
