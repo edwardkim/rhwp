@@ -130,13 +130,6 @@ function failClosedPathReason(filename) {
   if (filename === 'src/wasm_api.rs' || filename.startsWith('src/wasm_api/')) {
     return 'wasm-contract';
   }
-  // [#4589] 이 파일의 `DevtoolsMessageOutcome::code()` 가 핫패치 결과 코드 계약의 단일 출처이고,
-  // 그것을 스튜디오 표와 맞대 보는 검사는 frontend 잡에 있다. 이 파일만 고친 변경은
-  // `isRustPath()` 에서 rust 로만 분류되어 frontend 잡이 아예 돌지 않으므로, 검사가 가장 필요한
-  // 방향(엔진에 코드를 더하거나 이름을 바꾸는 쪽)에서 그냥 지나간다.
-  if (filename === 'src/subsecond_dev.rs') {
-    return 'subsecond-outcome-contract';
-  }
   if (
     filename === 'scripts/ci-impact-classifier.cjs'
     || filename === 'scripts/tests/test_ci_impact_workflow.py'

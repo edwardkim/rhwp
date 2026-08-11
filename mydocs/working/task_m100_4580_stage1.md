@@ -193,3 +193,22 @@ npm 스크립트의 `ln -sf` 로 옮기는 것도 dx 세션 없이는 확인이 
 **우연히 이름을 숨기고 있었다.** feature 게이트된 이름을 건너뛰고 역방향을 확인하며
 비공허성 바닥을 두는 최소 수정을 했다. 단독 이슈였다면 *"wasm-bindings 게이트가 feature
 게이트된 export 에서 거짓 실패한다"* 였을 것이다.
+
+
+## CI 는 건드리지 않는다 (2026-08-12, 작업지시자 지시)
+
+CI 변경 셋을 되돌렸다 — `.github/workflows/ci.yml`, `scripts/ci-impact-classifier.cjs`,
+`scripts/tests/ci-impact-classifier.test.cjs`.
+
+**되돌린 결과 두 가지가 배선되지 않은 채 남는다.** 코드는 있고 로컬에서 통과하지만
+(`node --test` 4/4) CI 가 부르지 않는다.
+
+1. **번들 격리 테스트가 안 돈다.** `scripts/frontend-studio-dist.test.mjs` 는 빌드된
+   `dist/assets/*.js` 를 세어 벤더 이름이 0인지 확인한다. `Build Studio` 다음에 와야 하므로
+   워크플로 한 줄이 필요했다. 없으면 **이 PR 이 없앤 22건이 다시 새도 아무도 모른다.**
+2. **#4589 드리프트 검사가 가장 필요한 방향에서 안 돈다.** 검사는 frontend 잡에 있는데
+   `src/subsecond_dev.rs` 만 고치는 변경은 분류기가 rust 로만 분류해 frontend 잡을 건너뛴다.
+   즉 엔진에 결과 코드를 더하거나 이름을 바꾸는 쪽에서 그냥 지나간다.
+
+둘 다 **관리자가 배선할 몫**으로 [#4638](https://github.com/edwardkim/rhwp/issues/4638) 에
+남겼다. 이 PR 은 검사를 제공하고 배선은 요청만 한다.

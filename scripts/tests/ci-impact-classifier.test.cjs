@@ -203,7 +203,6 @@ for (const [filename, expectedReason] of [
   ['.github/workflows/ci.yml', 'fail-closed:workflow-contract'],
   ['src/main.rs', 'fail-closed:main-render-boundary'],
   ['src/wasm_api.rs', 'fail-closed:wasm-contract'],
-  ['src/subsecond_dev.rs', 'fail-closed:subsecond-outcome-contract'],
   ['scripts/ci-impact-classifier.cjs', 'fail-closed:classifier-contract'],
   ['rhwp-studio/tsconfig.ci-unit.json', 'fail-closed:frontend-unit-contract'],
   ['rhwp-studio/types/wasm-ci-unit-stub.d.ts', 'fail-closed:frontend-unit-contract'],

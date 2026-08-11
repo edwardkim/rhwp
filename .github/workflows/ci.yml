@@ -1141,11 +1141,6 @@ jobs:
       - name: Build Studio
         run: npm --prefix rhwp-studio run build
 
-      # [#4580] 개발 전용 핫패치 런타임이 프로덕션 번들에 실리지 않는지 산출물에서 확인한다.
-      # 소스 텍스트가 아니라 빌드된 번들을 세므로 `Build Studio` 다음에 와야 한다.
-      - name: Verify Studio production bundle isolation
-        run: node --test scripts/frontend-studio-dist.test.mjs
-
       - name: Build browser extensions
         run: |
           npm --prefix rhwp-chrome run build
