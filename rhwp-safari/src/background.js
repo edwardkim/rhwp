@@ -326,6 +326,10 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 const THUMBNAIL_CACHE = new Map();
 const CACHE_MAX_SIZE = 100;
+const {
+  MAX_THUMBNAIL_BYTES,
+  readThumbnailStreamLimited,
+} = globalThis.rhwpThumbnailDecompression;
 
 async function extractThumbnailFromUrl(url) {
   if (THUMBNAIL_CACHE.has(url)) return THUMBNAIL_CACHE.get(url);
@@ -371,7 +375,7 @@ function extractPrvImageFromCFB(data) {
     if (name !== 'PrvImage') continue;
     const startSector = _u32(data, eo + 116);
     const streamSize = _u32(data, eo + 120);
-    if (streamSize === 0 || streamSize > 10 * 1024 * 1024) continue;
+    if (streamSize === 0 || streamSize > MAX_THUMBNAIL_BYTES) continue;
     const fatSectors = [];
     for (let j = 0; j < 109; j++) {
       const fs = _u32(data, 76 + j * 4);
@@ -422,23 +426,24 @@ async function extractPrvImageFromZip(data) {
     const locOff = _u32(data, off + 42);
     const name = new TextDecoder().decode(data.subarray(off + 46, off + 46 + nLen));
     if (name.startsWith('Preview/PrvImage')) {
+      if (uncSz === 0 || uncSz > MAX_THUMBNAIL_BYTES) return null;
+      if (locOff + 30 >= data.length) return null;
       const lnLen = _u16(data, locOff + 26);
       const leLen = _u16(data, locOff + 28);
       const ds = locOff + 30 + lnLen + leLen;
-      if (comp === 0) return _parseImage(data.subarray(ds, ds + uncSz));
+      if (ds > data.length || compSz > data.length - ds) return null;
+      if (comp === 0) {
+        if (uncSz > data.length - ds) return null;
+        return _parseImage(data.subarray(ds, ds + uncSz));
+      }
       if (comp === 8) {
         try {
           const dec = new DecompressionStream('raw');
           const w = dec.writable.getWriter();
-          w.write(data.slice(ds, ds + compSz));
-          w.close();
-          const r = dec.readable.getReader();
-          const chunks = [];
-          while (true) { const { done, value } = await r.read(); if (done) break; chunks.push(value); }
-          const total = chunks.reduce((s, c) => s + c.length, 0);
-          const buf = new Uint8Array(total);
-          let o = 0;
-          for (const c of chunks) { buf.set(c, o); o += c.length; }
+          const write = w.write(data.slice(ds, ds + compSz)).then(() => w.close());
+          const buf = await readThumbnailStreamLimited(dec.readable, uncSz);
+          const writeSucceeded = await write.then(() => true, () => false);
+          if (!buf || !writeSucceeded) return null;
           return _parseImage(buf);
         } catch { return null; }
       }

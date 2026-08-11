@@ -1458,9 +1458,20 @@ pub fn extract_thumbnail_only(data: &[u8]) -> Option<ThumbnailResult> {
     })
 }
 
+/// 미리보기 이미지 하나의 최대 압축 해제 크기.
+///
+/// 브라우저 확장의 CFB/HWPX 썸네일 정책과 같은 10 MiB를 사용한다.
+pub const MAX_THUMBNAIL_BYTES: usize = 10 * 1024 * 1024;
+
+fn read_thumbnail_limited<R: std::io::Read>(reader: &mut R, max_bytes: usize) -> Option<Vec<u8>> {
+    let mut buf = Vec::new();
+    let mut limited = std::io::Read::take(&mut *reader, (max_bytes as u64).saturating_add(1));
+    std::io::Read::read_to_end(&mut limited, &mut buf).ok()?;
+    (buf.len() <= max_bytes).then_some(buf)
+}
+
 /// HWPX(ZIP)에서 Preview/PrvImage.png 추출
 fn extract_thumbnail_from_hwpx(data: &[u8]) -> Option<Vec<u8>> {
-    use std::io::Read;
     let cursor = std::io::Cursor::new(data);
     let mut archive = zip::ZipArchive::new(cursor).ok()?;
 
@@ -1476,8 +1487,10 @@ fn extract_thumbnail_from_hwpx(data: &[u8]) -> Option<Vec<u8>> {
     })?;
 
     let mut file = archive.by_name(&entry_name).ok()?;
-    let mut buf = Vec::new();
-    file.read_to_end(&mut buf).ok()?;
+    if file.size() > MAX_THUMBNAIL_BYTES as u64 {
+        return None;
+    }
+    let buf = read_thumbnail_limited(&mut file, MAX_THUMBNAIL_BYTES)?;
 
     if buf.is_empty() {
         None
@@ -1978,6 +1991,35 @@ fn load_bin_data_content(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn thumbnail_limited_read_rejects_streamed_overflow() {
+        let mut input = std::io::Cursor::new(vec![0u8; 9]);
+        assert!(read_thumbnail_limited(&mut input, 8).is_none());
+    }
+
+    #[test]
+    fn hwpx_thumbnail_rejects_declared_output_above_limit() {
+        use std::io::Write;
+
+        let mut archive = std::io::Cursor::new(Vec::new());
+        {
+            let mut writer = zip::ZipWriter::new(&mut archive);
+            writer
+                .start_file(
+                    "Preview/PrvImage.png",
+                    zip::write::SimpleFileOptions::default()
+                        .compression_method(zip::CompressionMethod::Deflated),
+                )
+                .unwrap();
+            writer
+                .write_all(&vec![0u8; MAX_THUMBNAIL_BYTES + 1])
+                .unwrap();
+            writer.finish().unwrap();
+        }
+
+        assert!(extract_thumbnail_only(&archive.into_inner()).is_none());
+    }
 
     fn document_with_number_controls(controls: Vec<crate::model::control::Control>) -> Document {
         let mut paragraph = crate::model::paragraph::Paragraph::default();

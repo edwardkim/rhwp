@@ -4,6 +4,12 @@
 // 전체 HWP 파싱 없이 썸네일만 빠르게 얻을 수 있다.
 
 import { fetchDocumentWithPolicy, validateDocumentFetchUrl } from './fetch-security.js';
+import './thumbnail-decompression.js';
+
+const {
+  MAX_THUMBNAIL_BYTES,
+  readThumbnailStreamLimited,
+} = globalThis.rhwpThumbnailDecompression;
 
 const THUMBNAIL_CACHE = new Map();
 const CACHE_MAX_SIZE = 100;
@@ -109,7 +115,7 @@ function extractPrvImage(data) {
       const startSector = readU32LE(data, entryOffset + 116);
       const streamSize  = readU32LE(data, entryOffset + 120);
 
-      if (streamSize === 0 || streamSize > 10 * 1024 * 1024) continue;
+      if (streamSize === 0 || streamSize > MAX_THUMBNAIL_BYTES) continue;
 
       let streamData;
       if (streamSize < miniStreamCutoff && miniStreamData) {
@@ -321,14 +327,18 @@ async function extractPrvImageFromZipAsync(data) {
 
     // Preview/PrvImage 확인
     if (name.startsWith('Preview/PrvImage')) {
+      if (uncompSize === 0 || uncompSize > MAX_THUMBNAIL_BYTES) return null;
+
       // 로컬 파일 헤더에서 실제 데이터 위치 계산
       if (localHeaderOffset + 30 >= data.length) break;
       const localNameLen = readU16LE(data, localHeaderOffset + 26);
       const localExtraLen = readU16LE(data, localHeaderOffset + 28);
       const dataStart = localHeaderOffset + 30 + localNameLen + localExtraLen;
+      if (dataStart > data.length || compSize > data.length - dataStart) return null;
 
       if (compMethod === 0) {
         // 비압축 (stored)
+        if (uncompSize > data.length - dataStart) return null;
         const imageData = data.subarray(dataStart, dataStart + uncompSize);
         return parseImageData(imageData);
       } else if (compMethod === 8) {
@@ -337,22 +347,10 @@ async function extractPrvImageFromZipAsync(data) {
           const compressed = data.slice(dataStart, dataStart + compSize);
           const ds = new DecompressionStream('raw');
           const writer = ds.writable.getWriter();
-          writer.write(compressed);
-          writer.close();
-          const reader = ds.readable.getReader();
-          const chunks = [];
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            chunks.push(value);
-          }
-          const totalLen = chunks.reduce((s, c) => s + c.length, 0);
-          const decompressed = new Uint8Array(totalLen);
-          let offset = 0;
-          for (const chunk of chunks) {
-            decompressed.set(chunk, offset);
-            offset += chunk.length;
-          }
+          const write = writer.write(compressed).then(() => writer.close());
+          const decompressed = await readThumbnailStreamLimited(ds.readable, uncompSize);
+          const writeSucceeded = await write.then(() => true, () => false);
+          if (!decompressed || !writeSucceeded) return null;
           return parseImageData(decompressed);
         } catch {
           return null;
