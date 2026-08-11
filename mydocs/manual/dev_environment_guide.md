@@ -158,6 +158,22 @@ npm run subsecond:install
 `subsecond:serve`가 개발용 WASM을 `target/dx/`에 만들고, `dev:subsecond`가 필요한 JS/WASM 두 파일을
 `target/rhwp-subsecond-vite/`로 동기화한다.
 
+### feature 를 켠 채로 도는 검증 명령
+
+평소 CI 는 `subsecond-dev` 를 켜지 않는다. 핫패치 경계나 어댑터를 고쳤으면 다음 둘을 직접 돌린다.
+
+```bash
+cargo clippy -p rhwp --all-targets --features subsecond-dev -- -D warnings
+cargo check --lib --features subsecond-dev --target wasm32-unknown-unknown
+```
+
+wasm32 검사에는 **`--lib` 이 필수다.** 빼면 CLI 바이너리(`src/main.rs`)까지 wasm32 로 컴파일하려
+들고 `populate_external_images_from_dir`·`render_page_svg_with_fonts` 처럼 네이티브에만 있는
+메서드에서 7개 오류로 죽는다. 이것은 `subsecond-dev` 와 무관하다 — feature 없이
+`cargo check --target wasm32-unknown-unknown` 만 돌려도 같은 7개가 난다. CLI 는 wasm32 대상이 아니고
+브라우저에 실리는 것은 `[lib]` 뿐이므로, 라이브러리만 검사하는 쪽이 맞다. CI 의 Lint 잡도 같은
+형태를 쓴다(`.github/workflows/ci.yml`). (#4588)
+
 ### 기동과 접속
 
 두 터미널을 유지한다. `subsecond:serve`를 먼저 기동해 WASM/devtools endpoint가 준비된 뒤 Vite를
