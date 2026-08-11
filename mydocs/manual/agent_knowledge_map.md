@@ -304,7 +304,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 188개 필드
+### 2-2. 전수 사전 — 264개 필드
 
 `capabilities` 의 `recordFields` 고유 **185개**와 그 밖의 실측-only 필드
 `assertions`·`docId`·`preview` **3개**를 합친 188개다. `등장 명령` 은 자기서술
@@ -472,7 +472,133 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `depth` | number | 걸은 링크 수 — 뿌리(부모 없음)까지 가면 체인 전체 길이 | `lineage` |
 | `valid` | bool | 계보 판정 — `false` 면 exit 3. **깨짐은 오류가 아니라 데이터** | `lineage` |
 | `brokenAt` | string\|null | 처음 깨진 링크의 캡슐 경로. 유효한 체인은 `null` | `lineage` |
-| `links` | array | 링크별 판정 — `parentOk`(부모 파일 무결)·`lineageOk`(부모 산출=자식 입력)·`reproduced`(`--deep`). 머리 링크는 대조할 자식 기록이 없어 앞 둘이 `null` | `lineage` |
+| `links` | array | 링크별 판정 — `parentOk`(부모 파일 무결)·`lineageOk`(부모 산출=자식 입력)·`reproduced`(`--deep`)·`signerOk`/`keyId`(`--keyring` 를 준 때만 실림, #4509). 머리 링크는 대조할 자식 기록이 없어 앞 둘이 `null` | `lineage` |
+
+#### 서명 (`keygen`·`verify-signature`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `keyId` | string\|null | 키 식별자(소유/용도#세대 관례). 사이드카가 keyId 를 안 담으면 `null` | `keygen`·`verify-signature` |
+| `publicKey` | string | Ed25519 공개키 base64 — 키 등록부(keyring)에 실을 값 | `keygen` |
+| `keyFile` | string | 발급한 키 파일 경로(호출자 에코) — **비밀키 포함, 보관 책임은 소유자** | `keygen` |
+| `capsule` | string | 검증 대상 캡슐 경로(호출자 에코) | `verify-signature` |
+| `sigPath` | string | 대조한 분리 서명 경로 (기본 `<캡슐>.sig.json`) | `verify-signature` |
+| `capsuleSha256` | string | 캡슐 파일 바이트의 SHA-256 — 서명이 봉인한 대상 | `verify-signature` |
+| `capsuleShaMatches` | bool | 사이드카 기록 해시 == 실물 해시 — 다르면 다른 파일의 서명이다 | `verify-signature` |
+| `signatureOk` | bool\|null | 암호학적 검증 결과. 키를 몰라 검증 자체가 불가면 `null` | `verify-signature` |
+| `keyKnown` | bool | keyId 가 키 등록부에 있는가 | `verify-signature` |
+| `revoked` | object\|null | 폐기 기록(`{at, reason}`). 미폐기는 `null` — 폐기 판정이 서명 유효보다 우선한다 | `verify-signature` |
+| `verdict` | string | valid·invalid·unknownKey·revoked·malformed — **valid 아님 = exit 3** | `verify-signature` |
+
+#### 하네스 (`harness`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `dir` | string | 작업장 폴더 경로(호출자 에코) | `harness` |
+| `capsule` 재사용 | — | wrap 이 만든 캡슐 **파일명**(연번_계획해시8) — verify-signature 의 경로 에코와 동명 재사용 | `harness` |
+| `parent` | string\|null | 자동 연결된 직전 캡슐 파일명. 첫 캡슐(뿌리)은 `null` | `harness` |
+| `signed` | bool\|object\|null | wrap 은 서명 여부(bool), status 는 집계 `{valid, invalid, unsigned}` — keyring 미지정이면 `null` | `harness` |
+| `capsules` | number | 작업장의 캡슐 수 | `harness` |
+| `chainValid` | bool | 연번 체인 무결(부모 파일명·해시 연쇄) — `false` 면 exit 3, `brokenAt` 이 원인 명세 | `harness` |
+
+#### 앵커 (`anchor`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `log` | string | 투명성 로그 경로(호출자 에코) | `anchor` |
+| `seq` | number\|null | 등재 연번. verify 에서 미등재면 `null` | `anchor` |
+| `logged` | bool | 캡슐 해시가 로그에 등재돼 있는가 — `false` 면 exit 3 | `anchor` |
+| `logChainOk` | bool | 로그 자기 무결(줄 해시 체인·seq 연번) — 중간 변조는 여기서 폭로 | `anchor` |
+| `entries` | number | 로그 항목 수 | `anchor` |
+| `upToSeq` | number | 체크포인트가 덮는 마지막 연번 | `anchor` |
+| `merkleRoot` | string | 로그 줄 해시들의 머클 루트 — 외부 공표 대상(공표 자체는 운영) | `anchor` |
+| `inCheckpoint` | bool\|null | 머클 경로가 체크포인트 루트에 닿는가. 체크포인트 미지정이면 `null` | `anchor` |
+| `merklePath` | array\|null | 잎→루트 형제 해시 경로(`{sibling, siblingIsLeft}`) — 제3자가 재계산으로 검증 | `anchor` |
+
+#### 게이트 (`gate`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `policy` | string | 정책 이름(정책 파일의 name 에코) | `gate` |
+| `policyPath` | string | 정책 파일 경로(호출자 에코) | `gate` |
+| `policySigned` | bool\|null | 정책 파일 서명 판정(4년 축 재사용). `--policy-keyring` 미지정이면 `null` | `gate` |
+| `target` | string | 판정 대상 캡슐 경로(호출자 에코) | `gate` |
+| `targetSha256` | string | 판정 시점 대상 해시 — 소비 직전 재대조로 TOCTOU 방어 | `gate` |
+| `evaluated` | number | 평가한 (키, 연산자) 조건 수 | `gate` |
+| `violations` | array | 위반 명세 `{rule, key, op, expected, actual}` — actual 의 unavailable 은 판정 재료 미지정 | `gate` |
+
+#### 연합 번들 (`bundle`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `bundle` | string | 번들 파일 경로(호출자 에코) | `bundle` |
+| `signatures` | number | 동봉한 분리 서명 수 (export) | `bundle` |
+| `proofs` | number | 동봉한 머클 증명 수 (export) | `bundle` |
+| `trustDomain` | string | 판정 기준 도메인 이름 — **동봉 keyring 은 불신**, 수신자 보유 파일 기준 | `bundle` |
+| `containerOk` | bool | 매니페스트의 전 파일 해시 대조(운송 변조 검출) | `bundle` |
+| `lineageValid` | bool | 번들 내부 계보 걷기 판정(부모 해시·산출=입력) — gate 판정 키와 동명 동의 | `bundle` |
+
+#### 선택적 공개 (`disclose`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `redacted` | string | 가림 캡슐 경로 — plan 문자열 잎이 전부 `{committed}` 로 치환된 판 | `disclose` |
+| `opening` | string | 비밀 개봉 파일 경로 — 값·salt·원본 planText 보관(**공개 금지 산출물**) | `disclose` |
+| `committedFields` | number | 커밋으로 치환된 잎 수(구조 골격 planVersion·action 은 평문 유지) | `disclose` |
+| `originalCapsuleSha256` | string | 가림 전 원본 캡슐의 파일 sha256 — restore 의 성공 기준점 | `disclose` |
+| `verifiedFields` | array | 부분 개봉에서 커밋 대조가 일치한 JSON 포인터 목록 | `disclose` |
+| `mismatched` | array | 커밋 불일치 포인터 목록 — 비어 있지 않으면 verdict mismatch·exit 3 | `disclose` |
+| `unopened` | number | 개봉되지 않은 커밋 잎 수 — 부분 공개 협상의 잔여 수량 | `disclose` |
+| `restored` | string | 복원 캡슐 경로 (restore) | `disclose` |
+| `restoredSha256` | string | 복원 캡슐의 파일 sha256 | `disclose` |
+| `byteIdentical` | bool | 복원 == 원본 바이트 — 참이면 **원본 분리 서명이 복원본에서 그대로 valid** | `disclose` |
+
+#### 정산 증빙 (`settle`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `claim` | string | 청구 파일 경로(호출자 에코) | `settle` |
+| `workorderSha256` | string | 명세서 파일 바이트 sha256 — P4(사후 변경) 고정 | `settle` |
+| `gateEnvelopeSha256` | string | 게이트 판정 봉투 sha256 — P2(판정 위조) 고정 | `settle` |
+| `claimSha256` | string | 청구 파일 sha256 — 원장 기입의 대상 | `settle` |
+| `workorderOk` | bool | 명세서 재해시 == 청구 고정값 | `settle` |
+| `capsuleOk` | bool | 캡슐 재해시 == 청구 고정값 — P1(바꿔치기) 검출 | `settle` |
+| `gateOk` | bool | 게이트 봉투 재해시 == 청구 고정값 | `settle` |
+| `gateVerdict` | string\|null | 게이트 봉투의 verdict 재확인 — 해시가 맞아도 allow 아니면 rejected. 파싱 불가면 `null` | `settle` |
+| `signerOk` | bool | 청구 사이드카 서명 판정 — **사이드카 부재도 false**(청구 귀속은 본질). `--keyring` opt-in | `settle` |
+| `workorderSignerOk` | bool\|null | 명세서 서명 판정 — 사이드카 부재는 `null`(미서명 보고, 실패 아님) | `settle` |
+| `ledgerOk` | bool | 원장 자기 무결(동형 체인) 판정. `--ledger` opt-in | `settle` |
+| `duplicate` | bool\|null | 이중 청구 — 원장 전역에서 같은 capsuleSha256 의 accepted 존재. 원장이 깨졌으면 `null` | `settle` |
+| `existingSeq` | number | 이중 청구 시 기존 accepted 기입의 seq (record 거부 봉투) | `settle` |
+| `ledger` | string | 원장 경로(호출자 에코) | `settle` |
+
+#### 감사 표준 (`audit-report`·`recall-scope`·`conformance`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `report` | string | 보고서 저장 경로(kind `agentLaborAuditReport`) — 보고서 자체가 4년 서명 대상 | `audit-report` |
+| `reproduction` | object\|null | 재현 절 `{attempted, reproduced, rate, failures[]}` — `--deep` 미지정이면 `null`(재현은 비싸다) | `audit-report` |
+| `lineage` | object | 계보 절 `{graphs(뿌리), heads(머리), valid, broken[{head, brokenAt}]}` | `audit-report` |
+| `attribution` | object\|null | 귀속 절 `{signed, unsigned, validSignatures, revokedKeyUses}` — `--keyring` opt-in | `audit-report` |
+| `anchoring` | object\|null | 앵커 절 `{anchored, unanchored}` — `--anchor-log` opt-in | `audit-report` |
+| `gate` | object\|null | 게이트 절 `{policySha256, passed, denied}` — `--policy` opt-in, 판정 재료는 타 절 재사용 | `audit-report` |
+| `toolVersions` | object | `{rhwp[], mixed}` — 캡슐 영수증의 기록 합산, 미기록은 "미기록"으로 정직 보고 | `audit-report` |
+| `contaminated` | string | 오염 노드의 파일 sha256 (경로 입력도 해시로 정규화 — 해시가 정체성) | `recall-scope` |
+| `affected` | array | 영향 캡슐 `{capsule, path[]}` — path 는 오염 노드부터 자신까지, 자기 자신도 회수 1호 | `recall-scope` |
+| `unaffected` | number | 미영향 캡슐 수 — 리콜 범위의 여집합 명시 | `recall-scope` |
+| `claims` | array | 영향 캡슐의 정산 청구 좌표 `{seq, claimSha256, verdict}` — `--ledger` opt-in(리콜의 회계 연결) | `recall-scope` |
+| `level` | string | 목표 등급 L1~L5 (누적 요건) | `conformance` |
+| `checks` | array | 항목별 판정 `{id, ok, detail}` — ok `null` 은 기계 판정 밖(수동 확인) 명시 | `conformance` |
+| `achieved` | bool | 전 검사 통과 여부 — 거짓이면 verdict nonconformant·exit 3 | `conformance` |
+
+
+
+| `closureOk` | bool | 조상 폐쇄집합 완전성 — 부모 참조가 번들 안에서 전부 해소 | `bundle` |
+| `anchored` | object\|null | 머클 증명 집계 `{ok, bad, checkpointTrusted}` — 증명 미동봉이면 `null` | `bundle` |
+
+
+
+
 
 #### 판정·비교
 

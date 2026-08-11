@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 40개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 52개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -24,6 +24,28 @@ import type { RawVerifyReport } from './envelope.js';
 export const CAPABILITIES_SNAPSHOT_VERSION = '0.8.2';
 
 /**
+ * `rhwp anchor --json` 봉투.
+ *
+ * 투명성 로그(T7 방어) — add(append-only 등재, 깨진 로그 거부)·checkpoint(머클
+ * 루트)·verify(등재·자기 무결·머클 경로 판정, 아님 exit 3). 공표는 운영 절차 (#4543)
+ */
+export interface AnchorEnvelope {
+  readonly capsuleSha256?: unknown;
+  readonly entries?: unknown;
+  readonly inCheckpoint?: unknown;
+  readonly log?: unknown;
+  readonly logChainOk?: unknown;
+  readonly logged?: unknown;
+  readonly merklePath?: unknown;
+  readonly merkleRoot?: unknown;
+  readonly schemaVersion?: string;
+  readonly seq?: unknown;
+  readonly upToSeq?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp audit --json` 봉투.
  *
  * 작업 캡슐(*.capsule.json) 폴더 전수 재실행·대조 — 에이전트 노동의 재현율 회계. 불일치
@@ -36,6 +58,29 @@ export interface AuditEnvelope {
   readonly root?: unknown;
   readonly schemaVersion?: string;
   readonly total?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp audit-report --json` 봉투.
+ *
+ * 감사 보고 표준 — 캡슐 폴더의
+ * 재현(--deep)·계보·귀속(--keyring)·앵커(--anchor-log)·게이트(--policy) 수치를 기존 축 검증의
+ * 기계 합산으로 산출하고(kind agentLaborAuditReport) 보고서 자체를 4년 사이드카로
+ * 서명(--sign-key)한다 — "감사 보고서를 감사할 수 있다"가 표준의 요건 (#4558)
+ */
+export interface AuditReportEnvelope {
+  readonly anchoring?: unknown;
+  readonly attribution?: unknown;
+  readonly capsules?: unknown;
+  readonly gate?: unknown;
+  readonly lineage?: unknown;
+  readonly report?: unknown;
+  readonly reproduction?: unknown;
+  readonly schemaVersion?: string;
+  readonly signed?: unknown;
+  readonly toolVersions?: unknown;
 
   readonly [key: string]: unknown;
 }
@@ -77,6 +122,32 @@ export interface BuildFromIngestEnvelope {
 }
 
 /**
+ * `rhwp bundle --json` 봉투.
+ *
+ * 연합 교환 — export(계보 폐쇄집합+서명+머클 증명을 zip
+ * 하나로)·verify(컨테이너·폐쇄집합·계보·서명[도메인 키링만, 동봉 불신]·앵커 5단 오프라인 판정,
+ * 깨짐 exit 3) (#4549)
+ */
+export interface BundleEnvelope {
+  readonly anchored?: unknown;
+  readonly brokenAt?: unknown;
+  readonly bundle?: unknown;
+  readonly capsules?: unknown;
+  readonly closureOk?: unknown;
+  readonly containerOk?: unknown;
+  readonly head?: unknown;
+  readonly lineageValid?: unknown;
+  readonly proofs?: unknown;
+  readonly schemaVersion?: string;
+  readonly signatures?: unknown;
+  readonly signed?: unknown;
+  readonly trustDomain?: unknown;
+  readonly verdict?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp capabilities` 봉투.
  *
  * 본 자기서술 JSON 출력
@@ -89,6 +160,25 @@ export interface CapabilitiesEnvelope {
   readonly schemaVersion?: string;
   readonly tool?: string;
   readonly version?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp conformance --json` 봉투.
+ *
+ * 적합성 자가진단 L1~L5 —
+ * 영수증(1년)→감사가능+계보(2·3년)→귀속+앵커(4·5년)→게이트(6년)→원장(9년) 누적 요건을 기존
+ * 판정기 재사용으로 검사(신규 판정기 발명 0), 미달은 exit 3 이고 항목별 판정은 checks 가 말한다
+ * (#4558)
+ */
+export interface ConformanceEnvelope {
+  readonly achieved?: unknown;
+  readonly capsules?: unknown;
+  readonly checks?: unknown;
+  readonly level?: unknown;
+  readonly schemaVersion?: string;
+  readonly verdict?: unknown;
 
   readonly [key: string]: unknown;
 }
@@ -151,6 +241,31 @@ export interface DigestEnvelope {
   readonly sections?: unknown;
   readonly source?: string;
   readonly truncated?: boolean;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp disclose --json` 봉투.
+ *
+ * 선택적 공개 — redact(plan 문자열 잎을 salt 커밋으로 치환한 가림 캡슐+비밀 개봉
+ * 파일)·verify(부분 개봉 필드 대조, 불일치 exit 3)·restore(전체 개봉으로 바이트 완전 복원 —
+ * 원본 서명 그대로 valid) (#4551)
+ */
+export interface DiscloseEnvelope {
+  readonly byteIdentical?: unknown;
+  readonly capsule?: unknown;
+  readonly committedFields?: unknown;
+  readonly mismatched?: unknown;
+  readonly opening?: unknown;
+  readonly originalCapsuleSha256?: unknown;
+  readonly redacted?: unknown;
+  readonly restored?: unknown;
+  readonly restoredSha256?: unknown;
+  readonly schemaVersion?: string;
+  readonly unopened?: unknown;
+  readonly verdict?: unknown;
+  readonly verifiedFields?: unknown;
 
   readonly [key: string]: unknown;
 }
@@ -536,6 +651,63 @@ export interface FieldsEnvelope {
 }
 
 /**
+ * `rhwp gate --json` 봉투.
+ *
+ * 반입 정책 기계 판정 — admissionPolicy(연산자 eq·in·gte·lte 4종 고정, deny 기본, 미지 키 로드
+ * 거부)를 캡슐에 적용. 재료는 자기 신고가 아니라 재계산(계보·서명·앵커·--deep 재실행), 거부는
+ * exit 3 + violations[] (#4545)
+ */
+export interface GateEnvelope {
+  readonly evaluated?: unknown;
+  readonly policy?: unknown;
+  readonly policyPath?: unknown;
+  readonly policySigned?: unknown;
+  readonly schemaVersion?: string;
+  readonly target?: unknown;
+  readonly targetSha256?: unknown;
+  readonly verdict?: unknown;
+  readonly violations?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp harness --json` 봉투.
+ *
+ * 검증 루프의 쓰는 쪽 — init(작업장 규약)·wrap(실산출+영수증+캡슐+자동 부모 연결+서명 한 방).
+ * 판정은 harness-status (#4537)
+ */
+export interface HarnessEnvelope {
+  readonly capsule?: unknown;
+  readonly dir?: unknown;
+  readonly output?: string;
+  readonly parent?: unknown;
+  readonly schemaVersion?: string;
+  readonly signed?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp harness-status --json` 봉투.
+ *
+ * 작업장 통합 판정 — 캡슐 체인 무결·(--keyring) 서명 집계·(--deep) 전수 재현을 한 봉투로. 깨짐
+ * exit 3, brokenAt 이 원인 캡슐 (#4537)
+ */
+export interface HarnessStatusEnvelope {
+  readonly brokenAt?: unknown;
+  readonly capsules?: unknown;
+  readonly chainValid?: unknown;
+  readonly dir?: unknown;
+  readonly reproduced?: unknown;
+  readonly schemaVersion?: string;
+  readonly signed?: unknown;
+  readonly verdict?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp info --json` 봉투.
  *
  * 문서 메타(포맷·버전·페이지/문단 수·폰트·제목) 표시
@@ -604,10 +776,26 @@ export interface IrDiffEnvelope {
 }
 
 /**
+ * `rhwp keygen --json` 봉투.
+ *
+ * Ed25519 서명키 파일 발급 — 캡슐 귀속(4년 축)의 시작점. 비밀키가 담기므로 기존 파일 덮어쓰기
+ * 금지, 보관 책임은 소유자 (#4509)
+ */
+export interface KeygenEnvelope {
+  readonly keyFile?: unknown;
+  readonly keyId?: unknown;
+  readonly publicKey?: unknown;
+  readonly schemaVersion?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp lineage --json` 봉투.
  *
  * 작업 캡슐 해시 체인을 거슬러 연대기를 검증 — 부모 파일 무결·계보 불변식(부모 산출=자식
- * 입력)·(--deep) 링크별 재현. 깨진 체인은 exit 3, brokenAt 명세 (#4401)
+ * 입력)·(--deep) 링크별 재현·(--keyring) 링크별 서명 귀속. 깨진 체인은 exit 3, brokenAt 명세
+ * (#4401·#4509)
  */
 export interface LineageEnvelope {
   readonly brokenAt?: unknown;
@@ -616,6 +804,23 @@ export interface LineageEnvelope {
   readonly links?: unknown;
   readonly schemaVersion?: string;
   readonly valid?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp recall-scope --json` 봉투.
+ *
+ * 오염 리콜 범위 — 오염 캡슐(경로 또는 sha256)의 후손 폐쇄집합을 계보 걷기로 계산해
+ * 영향/미영향을 가르고, --ledger 를 주면 영향 캡슐의 정산 청구 좌표까지 짚는다(리콜의 회계
+ * 연결) (#4558)
+ */
+export interface RecallScopeEnvelope {
+  readonly affected?: unknown;
+  readonly claims?: unknown;
+  readonly contaminated?: unknown;
+  readonly schemaVersion?: string;
+  readonly unaffected?: unknown;
 
   readonly [key: string]: unknown;
 }
@@ -722,6 +927,38 @@ export interface SearchEnvelope {
 }
 
 /**
+ * `rhwp settle --json` 봉투.
+ *
+ * 정산 증빙 — propose(명세서·캡슐·게이트 봉투 3해시 고정 청구 발급, 4년 서명 선택)·verify(3해시
+ * 대조+게이트 verdict 재확인+서명·이중청구 opt-in 축, 실패 exit 3)·record(원장 append-only
+ * 기입, 이중 청구 전역 검사 exit 3) — 돈은 움직이지 않는다, 산출물은 제3자 검증 가능한 지불
+ * 근거뿐 (#4553)
+ */
+export interface SettleEnvelope {
+  readonly capsuleOk?: unknown;
+  readonly capsuleSha256?: unknown;
+  readonly claim?: unknown;
+  readonly claimSha256?: unknown;
+  readonly duplicate?: unknown;
+  readonly existingSeq?: unknown;
+  readonly gateEnvelopeSha256?: unknown;
+  readonly gateOk?: unknown;
+  readonly gateVerdict?: unknown;
+  readonly ledger?: unknown;
+  readonly ledgerOk?: unknown;
+  readonly schemaVersion?: string;
+  readonly seq?: unknown;
+  readonly signed?: unknown;
+  readonly signerOk?: unknown;
+  readonly verdict?: unknown;
+  readonly workorderOk?: unknown;
+  readonly workorderSha256?: unknown;
+  readonly workorderSignerOk?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp table-to-csv --json` 봉투.
  *
  * 본문 최상위 표를 병합 격자를 채운 RFC 4180 CSV 로 내보내기
@@ -775,18 +1012,44 @@ export interface VerifyEnvelope {
 }
 
 /**
+ * `rhwp verify-signature --json` 봉투.
+ *
+ * 캡슐 분리 서명(<캡슐>.sig.json)을 파일 바이트·키 등록부와 대조 —
+ * verdict(valid|invalid|unknownKey|revoked|malformed)는 봉투 데이터, 유효 아님 = exit 3 (#4509)
+ */
+export interface VerifySignatureEnvelope {
+  readonly capsule?: unknown;
+  readonly capsuleSha256?: unknown;
+  readonly capsuleShaMatches?: unknown;
+  readonly keyId?: unknown;
+  readonly keyKnown?: unknown;
+  readonly revoked?: unknown;
+  readonly schemaVersion?: string;
+  readonly sigPath?: unknown;
+  readonly signatureOk?: unknown;
+  readonly verdict?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * 명령 이름 → 봉투 타입.
  *
  * `recordFields` 를 선언한 명령만 들어 있습니다 — 나머지는 `--json` 봉투를 내지 않습니다.
  */
 export interface EnvelopeByCommand {
+  anchor: AnchorEnvelope;
   audit: AuditEnvelope;
+  "audit-report": AuditReportEnvelope;
   batch: BatchEnvelope;
   "build-from-ingest": BuildFromIngestEnvelope;
+  bundle: BundleEnvelope;
   capabilities: CapabilitiesEnvelope;
+  conformance: ConformanceEnvelope;
   convert: ConvertEnvelope;
   "csv-to-table": CsvToTableEnvelope;
   digest: DigestEnvelope;
+  disclose: DiscloseEnvelope;
   "dump-pages": DumpPagesEnvelope;
   edit: EditEnvelope;
   explain: ExplainEnvelope;
@@ -808,18 +1071,25 @@ export interface EnvelopeByCommand {
   "extract-data": ExtractDataEnvelope;
   "extract-pages": ExtractPagesEnvelope;
   fields: FieldsEnvelope;
+  gate: GateEnvelope;
+  harness: HarnessEnvelope;
+  "harness-status": HarnessStatusEnvelope;
   info: InfoEnvelope;
   inspect: InspectEnvelope;
   "ir-diff": IrDiffEnvelope;
+  keygen: KeygenEnvelope;
   lineage: LineageEnvelope;
+  "recall-scope": RecallScopeEnvelope;
   "render-diff": RenderDiffEnvelope;
   replay: ReplayEnvelope;
   run: RunEnvelope;
   scan: ScanEnvelope;
   search: SearchEnvelope;
+  settle: SettleEnvelope;
   "table-to-csv": TableToCsvEnvelope;
   thumbnail: ThumbnailEnvelope;
   verify: VerifyEnvelope;
+  "verify-signature": VerifySignatureEnvelope;
 }
 
 /** `--json` 봉투를 내는 명령 이름. */

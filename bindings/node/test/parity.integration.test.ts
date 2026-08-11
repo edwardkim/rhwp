@@ -56,6 +56,13 @@ const NOT_WRAPPED = new Set(['diagnostic', 'internal', 'serve']);
  */
 const SUBCOMMAND_WRAPPERS: Readonly<Record<string, readonly string[]>> = {
   edit: ['fillFields', 'replaceText', 'setCell'],
+  // 판정(harnessStatus)은 여기 없다 — CLI 에서 최상위 `harness-status`
+  // (category=diagnostic)로 갈라져 NOT_WRAPPED 로 건너뛰기 때문이다.
+  harness: ['harnessInit', 'harnessWrap'],
+  anchor: ['anchorAdd', 'anchorCheckpoint', 'anchorVerify'],
+  bundle: ['bundleExport', 'bundleVerify'],
+  disclose: ['discloseRedact', 'discloseVerify', 'discloseRestore'],
+  settle: ['settlePropose', 'settleVerify', 'settleRecord'],
 };
 
 /**

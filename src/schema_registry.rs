@@ -52,6 +52,12 @@ pub const CAPABILITIES_SCHEMA_VERSION: &str = "1.3";
 ///   전제, #4378 R22) 추가 (minor).
 pub const PLAN_SCHEMA_VERSION: &str = "1.1";
 
+/// [#4509] 서명 축 — 키 파일(ed25519Key)·분리 서명(capsuleSignature)·키
+/// 등록부(keyring) **파일 형식**의 판. 봉투 축과 별개로 도는 교환 파일
+/// 버전이라 capabilities 의 schemaRegistry 축 집합에는 싣지 않는다(그 집합은
+/// 봉투 계약 축으로 고정 — 해당 가드 참조).
+pub const SIGNING_SCHEMA_VERSION: &str = "1.0";
+
 /// 릴리스 semver — Cargo.toml 의 단일 출처를 컴파일 시점에 읽는다.
 /// `rhwp::version()` 과 같은 원천이므로 두 값은 구조적으로 같다.
 pub fn crate_version() -> &'static str {

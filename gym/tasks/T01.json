@@ -1,0 +1,23 @@
+{
+  "id": "T01",
+  "tier": 1,
+  "title": "문서 신상 파악",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력 문서의 총 쪽수를 알아내 answer.json 에 {\"pages\": <수>} 로 제출하라. 힌트: rhwp info <문서> --json.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "쪽수 일치",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

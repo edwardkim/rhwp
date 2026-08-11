@@ -841,6 +841,10 @@ export async function audit(root: PathLike, options: AuditOptions = {}): Promise
 export interface LineageOptions extends CommandOptions {
   /** 링크마다 재실행 재현(`reproduced`)까지 판정할지 — 링크 수만큼 재실행 비용이 든다. */
   readonly deep?: boolean | undefined;
+  /** [#4509] 키 등록부 경로 — 주면 링크마다 signerOk/keyId 판정 축이 붙는다(opt-in). */
+  readonly keyring?: PathLike | undefined;
+  /** [#4543] 투명성 로그 경로 — 주면 링크마다 anchoredOk 판정 축이 붙는다(opt-in). */
+  readonly anchorLog?: PathLike | undefined;
   /**
    * 깨진 계보(exit 3)를 예외로 올릴지.
    *
@@ -860,6 +864,462 @@ export interface LineageOptions extends CommandOptions {
 export async function lineage(head: PathLike, options: LineageOptions = {}): Promise<Envelope> {
   const args: Argument[] = ['lineage', head, '--json'];
   if (options.deep) args.push('--deep');
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.anchorLog !== undefined) args.push('--anchor-log', options.anchorLog);
+  return call(args, options);
+}
+
+/** {@link keygen} 옵션. */
+export interface KeygenOptions extends CommandOptions {}
+
+/**
+ * [#4509] Ed25519 서명키 파일 발급 — 캡슐 귀속의 시작점. 비밀키가 파일에
+ * 담기므로 기존 파일은 덮어쓰지 않으며(CLI 가 exit 2 로 거부), 보관 책임은
+ * 소유자에게 있다.
+ *
+ * @param keyId - 키 식별자. 관례는 `소유 주체/용도#세대` (예: org.example/agent-7#2026).
+ * @param out - 키 파일 저장 경로.
+ */
+export async function keygen(
+  keyId: string,
+  out: PathLike,
+  options: KeygenOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['keygen', '--key-id', keyId, '--out', out, '--json'];
+  return call(args, options);
+}
+
+/** {@link verifySignature} 옵션. */
+export interface VerifySignatureOptions extends CommandOptions {
+  /** 분리 서명 경로. 기본은 `<캡슐>.sig.json`. */
+  readonly sig?: PathLike | undefined;
+  /**
+   * 유효하지 않은 서명(exit 3)을 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(`verdict`·`signatureOk`·`keyKnown`·`revoked`)로
+   * 읽는 것이 이 바인딩의 규약이다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * [#4509] 캡슐 분리 서명 검증 — 서명을 캡슐 파일 바이트·키 등록부와 대조한다.
+ * `verdict` 는 valid·invalid·unknownKey·revoked·malformed 중 하나이고, valid
+ * 가 아니면 exit 3 이다. 서명 시점 증명은 이 축의 범위 밖(5년 축 앵커)이다.
+ *
+ * @param capsule - 검증할 캡슐 경로.
+ * @param keyring - 키 등록부(keyring.json) 경로.
+ */
+export async function verifySignature(
+  capsule: PathLike,
+  keyring: PathLike,
+  options: VerifySignatureOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['verify-signature', capsule, '--keyring', keyring, '--json'];
+  if (options.sig !== undefined) args.push('--sig', options.sig);
+  return call(args, options);
+}
+
+/** {@link harnessInit} 옵션. */
+export interface HarnessInitOptions extends CommandOptions {
+  /** 키를 함께 발급할 때의 keyId (소유/용도#세대). */
+  readonly keyId?: string | undefined;
+}
+
+/** [#4537] 하네스 작업장 생성 — capsules/ 규약(+선택: 키·키링 발급). */
+export async function harnessInit(
+  dir: PathLike,
+  options: HarnessInitOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['harness', 'init', dir];
+  if (options.keyId !== undefined) args.push('--key-id', options.keyId);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link harnessWrap} 옵션. */
+export interface HarnessWrapOptions extends CommandOptions {
+  /** 캡슐 서명키 파일 경로. */
+  readonly signKey?: PathLike | undefined;
+}
+
+/**
+ * [#4537] 한 방 루프 — 계획 실행(실산출) + 영수증 + 캡슐(연번) + **직전 캡슐
+ * 자동 부모 연결** + 서명. 매 작업을 이 함수로 돌리면 작업장의 해시 체인이
+ * 스스로 자란다.
+ */
+export async function harnessWrap(
+  plan: string,
+  dir: PathLike,
+  options: HarnessWrapOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['harness', 'wrap', '--plan', plan, '--dir', dir];
+  if (options.signKey !== undefined) args.push('--sign-key', options.signKey);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link harnessStatus} 옵션. */
+export interface HarnessStatusOptions extends CommandOptions {
+  readonly keyring?: PathLike | undefined;
+  /** 캡슐마다 재실행 재현까지 — 비용은 캡슐 수에 비례. */
+  readonly deep?: boolean | undefined;
+  /**
+   * 깨진 작업장(exit 3)을 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(`verdict`·`chainValid`·`brokenAt`)로 읽는다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * [#4537] 작업장 통합 판정 — 체인·서명 집계·(deep) 재현을 한 봉투로.
+ *
+ * 쓰기가 없어 CLI 에서도 쓰기 명령(`harness`)과 표면이 갈린 최상위
+ * `harness-status` 다 — 읽기 전용 도구의 주석이 category 와 어긋나지 않게 한다.
+ */
+export async function harnessStatus(
+  dir: PathLike,
+  options: HarnessStatusOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['harness-status', dir];
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.deep) args.push('--deep');
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link anchorAdd} 옵션. */
+export interface AnchorAddOptions extends CommandOptions {}
+
+/** [#4543] 앵커 등재 — 캡슐 해시를 append-only 투명성 로그에 더한다(깨진 로그 거부). */
+export async function anchorAdd(
+  capsule: PathLike,
+  log: PathLike,
+  options: AnchorAddOptions = {},
+): Promise<Envelope> {
+  return call(['anchor', 'add', capsule, '--log', log, '--json'], options);
+}
+
+/** {@link anchorCheckpoint} 옵션. */
+export interface AnchorCheckpointOptions extends CommandOptions {
+  /** 체크포인트 파일 저장 경로. */
+  readonly out?: PathLike | undefined;
+}
+
+/** [#4543] 머클 체크포인트 — 루트 산출까지가 도구의 몫(공표는 운영 절차). */
+export async function anchorCheckpoint(
+  log: PathLike,
+  options: AnchorCheckpointOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['anchor', 'checkpoint', '--log', log];
+  if (options.out !== undefined) args.push('-o', options.out);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link anchorVerify} 옵션. */
+export interface AnchorVerifyOptions extends CommandOptions {
+  readonly checkpoint?: PathLike | undefined;
+  /**
+   * 미등재·무결 실패(exit 3)를 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(`logged`·`logChainOk`·`inCheckpoint`)로 읽는다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/** [#4543] 앵커 검증 — 등재·로그 무결·(checkpoint) 머클 경로 판정. */
+export async function anchorVerify(
+  capsule: PathLike,
+  log: PathLike,
+  options: AnchorVerifyOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['anchor', 'verify', capsule, '--log', log];
+  if (options.checkpoint !== undefined) args.push('--checkpoint', options.checkpoint);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link gate} 옵션. */
+export interface GateOptions extends CommandOptions {
+  /** 서명 판정용 키 등록부 (signer* 규칙 시 필수 재료). */
+  readonly keyring?: PathLike | undefined;
+  /** 앵커 로그 (anchoredOk 규칙 시 필수 재료). */
+  readonly anchorLog?: PathLike | undefined;
+  /** 정책 파일 서명 검증용 키 등록부. */
+  readonly policyKeyring?: PathLike | undefined;
+  /** reproduced 규칙의 재실행 재계산 — 없으면 그 규칙은 unavailable 위반. */
+  readonly deep?: boolean | undefined;
+  /**
+   * 반입 거부(exit 3)를 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(`verdict`·`violations`)로 읽는다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * [#4545] 반입 정책 기계 판정 — admissionPolicy(연산자 4종 고정·deny 기본·
+ * 미지 키 로드 거부)를 캡슐에 적용한다. 판정 재료는 자기 신고가 아니라
+ * 재계산이며, 규칙이 참조하는 판정만 지연 계산한다.
+ */
+export async function gate(
+  capsule: PathLike,
+  policy: PathLike,
+  options: GateOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['gate', capsule, '--policy', policy];
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.anchorLog !== undefined) args.push('--anchor-log', options.anchorLog);
+  if (options.policyKeyring !== undefined) args.push('--policy-keyring', options.policyKeyring);
+  if (options.deep) args.push('--deep');
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link bundleExport} 옵션. */
+export interface BundleExportOptions extends CommandOptions {
+  readonly anchorLog?: PathLike | undefined;
+  readonly checkpoint?: PathLike | undefined;
+  readonly domain?: PathLike | undefined;
+}
+
+/** [#4549] 연합 번들 내보내기 — 계보 폐쇄집합+서명+머클 증명을 zip 하나로. */
+export async function bundleExport(
+  head: PathLike,
+  out: PathLike,
+  options: BundleExportOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['bundle', 'export', head, '-o', out];
+  if (options.anchorLog !== undefined) args.push('--anchor-log', options.anchorLog);
+  if (options.checkpoint !== undefined) args.push('--checkpoint', options.checkpoint);
+  if (options.domain !== undefined) args.push('--domain', options.domain);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link bundleVerify} 옵션. */
+export interface BundleVerifyOptions extends CommandOptions {
+  /**
+   * 깨진 번들(exit 3)을 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(verdict·containerOk·closureOk 등)로 읽는다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * [#4549] 연합 번들 검증 — 5단 오프라인 판정. 서명 기준은 수신자가 자기
+ * 경로로 받은 trust-domain 의 keyring 뿐이다(동봉 keyring 불신 — F2 방어).
+ */
+export async function bundleVerify(
+  bundle: PathLike,
+  trustDomain: PathLike,
+  options: BundleVerifyOptions = {},
+): Promise<Envelope> {
+  return call(
+    ['bundle', 'verify', bundle, '--trust-domain', trustDomain, '--json'],
+    options,
+  );
+}
+
+/** [#4551] 가림 발급 — plan 문자열 잎을 salt 커밋으로 치환하고 비밀 개봉을 분리한다. */
+export async function discloseRedact(
+  capsule: PathLike,
+  out: PathLike,
+  openingOut: PathLike,
+  options: CommandOptions = {},
+): Promise<Envelope> {
+  return call(
+    ['disclose', 'redact', capsule, '-o', out, '--opening-out', openingOut, '--json'],
+    options,
+  );
+}
+
+/**
+ * [#4551] 부분 개봉 검증 — 개봉된 필드만 커밋 대조.
+ *
+ * 판정은 봉투(verdict·verifiedFields·mismatched·unopened)로 읽는다 — 불일치는
+ * exit 3 이지만 여기서는 예외로 올리지 않는다(다른 verify 계열과 같은 결).
+ */
+export async function discloseVerify(
+  redacted: PathLike,
+  opening: PathLike,
+  options: CommandOptions = {},
+): Promise<Envelope> {
+  return call(['disclose', 'verify', redacted, '--opening', opening, '--json'], options);
+}
+
+/** [#4551] 전체 복원 — 바이트 완전 복원(byteIdentical). 원본 사이드카가 그대로 valid. */
+export async function discloseRestore(
+  redacted: PathLike,
+  opening: PathLike,
+  out: PathLike,
+  options: CommandOptions = {},
+): Promise<Envelope> {
+  return call(
+    ['disclose', 'restore', redacted, '--opening', opening, '-o', out, '--json'],
+    options,
+  );
+}
+
+/** {@link settlePropose} 옵션. */
+export interface SettleProposeOptions extends CommandOptions {
+  /** 청구자 서명 키 — 주면 청구 사이드카(`<claim>.sig.json`)를 함께 발급한다. */
+  readonly signKey?: PathLike | undefined;
+}
+
+/** [#4553] 정산 청구 발급 — 명세서·캡슐·게이트 봉투를 3해시로 고정한다. 돈은 움직이지 않는다. */
+export async function settlePropose(
+  workorder: PathLike,
+  capsule: PathLike,
+  gateEnvelope: PathLike,
+  out: PathLike,
+  options: SettleProposeOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = [
+    'settle', 'propose',
+    '--workorder', workorder,
+    '--capsule', capsule,
+    '--gate-envelope', gateEnvelope,
+    '-o', out,
+  ];
+  if (options.signKey !== undefined) args.push('--sign-key', options.signKey);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link settleVerify} 옵션. */
+export interface SettleVerifyOptions extends CommandOptions {
+  /** 서명 판정 axis (opt-in) — 청구·명세서 사이드카를 이 keyring 으로 판정한다. */
+  readonly keyring?: PathLike | undefined;
+  /** 이중 청구 검사 axis (opt-in) — 원장 전역에서 같은 캡슐의 accepted 를 찾는다. */
+  readonly ledger?: PathLike | undefined;
+  /** 청구 사이드카 경로 명시 (기본 `<claim>.sig.json`). */
+  readonly sig?: PathLike | undefined;
+}
+
+/**
+ * [#4553] 정산 청구 검증 — 3해시 대조 + 게이트 verdict 재확인.
+ *
+ * 실패는 exit 3 이지만 예외로 올리지 않는다 — 어떤 축이 무너졌는지는 봉투
+ * (workorderOk·capsuleOk·gateOk·gateVerdict·signerOk·duplicate)가 말한다.
+ */
+export async function settleVerify(
+  claim: PathLike,
+  workorder: PathLike,
+  capsule: PathLike,
+  gateEnvelope: PathLike,
+  options: SettleVerifyOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = [
+    'settle', 'verify', claim,
+    '--workorder', workorder,
+    '--capsule', capsule,
+    '--gate-envelope', gateEnvelope,
+  ];
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.ledger !== undefined) args.push('--ledger', options.ledger);
+  if (options.sig !== undefined) args.push('--sig', options.sig);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link settleRecord} 옵션. */
+export interface SettleRecordOptions extends CommandOptions {
+  /** 기입 판정 (기본 accepted). rejected 기입은 이중 청구 검사를 받지 않는다. */
+  readonly verdict?: 'accepted' | 'rejected' | undefined;
+}
+
+/** [#4553] 원장 기입 — 5년 로그 동형 체인에 등재. 같은 캡슐의 accepted 재청구는 exit 3. */
+export async function settleRecord(
+  claim: PathLike,
+  ledger: PathLike,
+  options: SettleRecordOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['settle', 'record', claim, '--ledger', ledger];
+  if (options.verdict !== undefined) args.push('--verdict', options.verdict);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link auditReport} 옵션. */
+export interface AuditReportOptions extends CommandOptions {
+  /** 재현 절 opt-in — 전 캡슐 deep 재현(비용 큼). */
+  readonly deep?: boolean | undefined;
+  readonly keyring?: PathLike | undefined;
+  readonly anchorLog?: PathLike | undefined;
+  readonly policy?: PathLike | undefined;
+  /** 보고서 자체를 서명한다 — "감사 보고서를 감사할 수 있다". */
+  readonly signKey?: PathLike | undefined;
+}
+
+/** [#4558] 감사 보고 표준 — 전 수치가 기존 축 검증의 기계 합산인 보고서 생성. */
+export async function auditReport(
+  dir: PathLike,
+  out: PathLike,
+  options: AuditReportOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['audit-report', dir, '-o', out];
+  if (options.deep === true) args.push('--deep');
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.anchorLog !== undefined) args.push('--anchor-log', options.anchorLog);
+  if (options.policy !== undefined) args.push('--policy', options.policy);
+  if (options.signKey !== undefined) args.push('--sign-key', options.signKey);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link recallScope} 옵션. */
+export interface RecallScopeOptions extends CommandOptions {
+  /** 정산 원장 opt-in — 영향 캡슐의 청구 좌표까지 보고(리콜의 회계 연결). */
+  readonly ledger?: PathLike | undefined;
+}
+
+/** [#4558] 오염 리콜 범위 — 후손 폐쇄집합. contaminated 는 캡슐 경로 또는 파일 sha256. */
+export async function recallScope(
+  contaminated: PathLike,
+  among: PathLike,
+  options: RecallScopeOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['recall-scope', '--contaminated', contaminated, '--among', among];
+  if (options.ledger !== undefined) args.push('--ledger', options.ledger);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link conformance} 옵션. */
+export interface ConformanceOptions extends CommandOptions {
+  readonly deep?: boolean | undefined;
+  /** L3+ 필수. */
+  readonly keyring?: PathLike | undefined;
+  /** L3+ 필수. */
+  readonly anchorLog?: PathLike | undefined;
+  /** L4+ 필수. */
+  readonly policy?: PathLike | undefined;
+  /** L5 필수. */
+  readonly ledger?: PathLike | undefined;
+}
+
+/**
+ * [#4558] 적합성 자가진단 L1~L5 — 누적 요건, 기존 판정기 재사용(발명 0).
+ *
+ * 미달은 exit 3 이지만 예외로 올리지 않는다 — 항목별 판정은 봉투 checks 가 말한다.
+ * 등급이 요구하는 재료 미지정은 판정이 아니라 사용법 오류(exit 2)로 던져진다.
+ */
+export async function conformance(
+  dir: PathLike,
+  level: 'L1' | 'L2' | 'L3' | 'L4' | 'L5',
+  options: ConformanceOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['conformance', dir, '--level', level];
+  if (options.deep === true) args.push('--deep');
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.anchorLog !== undefined) args.push('--anchor-log', options.anchorLog);
+  if (options.policy !== undefined) args.push('--policy', options.policy);
+  if (options.ledger !== undefined) args.push('--ledger', options.ledger);
+  args.push('--json');
   return call(args, options);
 }
 

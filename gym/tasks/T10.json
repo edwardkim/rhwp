@@ -1,0 +1,24 @@
+{
+  "id": "T10",
+  "tier": 3,
+  "title": "결정론 실증",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "같은 run 계획서를 두 번 실행해(산출 파일명만 다르게) 두 산출물 o1.hwp, o2.hwp 를 제출하라. 같은 계획은 같은 바이트를 낸다 — 이 저장소 검증 사다리의 토대다.",
+  "submit": {
+    "kind": "pair",
+    "files": [
+      "o1.hwp",
+      "o2.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "바이트 동일",
+      "op": "same_hash",
+      "files": [
+        "o1.hwp",
+        "o2.hwp"
+      ]
+    }
+  ]
+}

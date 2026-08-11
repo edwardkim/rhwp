@@ -67,6 +67,9 @@ des = "0.9"
 flate2 = "1.0"
 byteorder = "1.5"
 base64 = "0.23"
+# [#4509] 캡슐 서명(4년 축) — 결정론 서명이라 replay/lineage 의 결정론 문화와
+# 정합. 순수 Rust 라 wasm 타깃도 그대로 컴파일된다.
+ed25519-dalek = "2"
 aes = "0.9"
 cbc = "0.2"
 cipher = "0.5"
