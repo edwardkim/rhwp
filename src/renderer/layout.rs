@@ -1855,6 +1855,33 @@ pub(crate) fn vpos_corrected_end_y(
 /// 비-TAC Shape/Picture 는 vpos 에 개체 높이가 포함되어 과대하므로, 다음 항목의 vpos
 /// 보정 base 산출에서 이 문단을 제외(bypass)한다. tac=true 는 LINE_SEG 에 통합되므로
 /// 제외 대상 아님(#539). 렌더러·페이지네이터 공유.
+/// 컨트롤이 실제로 놓인 줄 seg 인덱스 해석기 (#4531).
+///
+/// `control_index` 는 controls 배열 인덱스지 줄 인덱스가 아니다 — 비가시 컨트롤이
+/// 끼면 어긋난다. `control_text_positions()`(텍스트-문자 좌표)와 `seg.text_start`
+/// (UTF-16 유닛 좌표)를 `char_offsets` 로 같은 좌표계에 놓고 사영한다.
+pub(crate) fn control_line_seg_index(para: &Paragraph, control_index: usize) -> Option<usize> {
+    match para.line_segs.len() {
+        0 => return None,
+        1 => return Some(0),
+        _ => {}
+    }
+    let positions = para.control_text_positions();
+    let p = *positions.get(control_index)?;
+    let mut idx = 0usize;
+    for (k, seg) in para.line_segs.iter().enumerate().skip(1) {
+        let start_txt = para
+            .char_offsets
+            .partition_point(|&o| o < seg.text_start);
+        if p >= start_txt {
+            idx = k;
+        } else {
+            break;
+        }
+    }
+    Some(idx)
+}
+
 pub(crate) fn para_has_overlay_shape(para: &Paragraph) -> bool {
     use crate::model::shape::{TextWrap, VertRelTo};
     para.controls.iter().any(|c| match c {
@@ -7923,7 +7950,18 @@ impl LayoutEngine {
             // ── TAC 표: 줄간격 처리 ──
             // layout_table 반환값(표 하단)에 line_spacing을 더하여 다음 표 시작 y 결정
             if is_tac {
-                let seg_idx = control_index;
+                // [#4531] control_index 를 seg 인덱스로 그대로 쓰면 비가시 컨트롤
+                // (secd/cold/책갈피)이 낀 문단에서 어긋난다('hwpdf cycle#3' 폴백이
+                // 알던 그 함정 — 규제영향분석서 코호트의 근인). 컨트롤의 텍스트 위치를
+                // seg.text_start 경계(char_offsets 로 같은 좌표계 환산)에 사영해 실제
+                // 줄 seg 를 찾는다. 해석 불가 시 기존 값 유지.
+                // HWPX 계산-lineseg 는 저장 사다리가 아니라 이 사영이 성립하지 않는다
+                // — hwp5 네이티브 프로파일에서만 교정한다(56734607.hwpx 신규 회귀 실측).
+                let seg_idx = if self.profile.get().native_hwp5_layout() {
+                    control_line_seg_index(para, control_index).unwrap_or(control_index)
+                } else {
+                    control_index
+                };
                 let tac_count_total = para
                     .controls
                     .iter()
@@ -7977,10 +8015,73 @@ impl LayoutEngine {
                                 | crate::model::shape::TextWrap::BehindText
                         );
                         if overlay_tac {
-                            let anchor_line_end =
-                                tac_table_y_before + hwpunit_to_px(seg.line_height, self.dpi);
-                            if anchor_line_end > y_offset {
-                                y_offset = anchor_line_end;
+                            // 저장 lh(th)는 **외곽여백 상·하를 이미 포함**한다(#521 정의
+                            // lh = om_top + cell_h + om_bottom; 민간위탁 실측 13045 =
+                            // 285 + 12480 + 280). 흐름에는 om_top 이 선가산되고 #521 이
+                            // om_bottom 을 후가산하므로 그대로 두면 표당 om 상하합만큼
+                            // 밀린다(#4531 코호트 ① +7.6px/표 실측). 기준을 선가산 전
+                            // (para_y)으로 되돌리고 om_bottom 을 선공제해 순전진을
+                            // **sb + th + ls** 로 맞춘다 — 사다리 vpos 는 다음 문단의
+                            // sb 까지 포함하므로 호스트 문단의 sb 는 살려야 한다
+                            // (1차 시도에서 base 롤백이 sb 까지 지워 규제영향분석서
+                            // 코호트가 반증: 심의소위 실측 33210 = th 30250 + gap 960
+                            // + host sb 2000). 다중 seg 호스트(표 앞 자기 줄 보유)는
+                            // para_y 가 앵커 줄 top 이 아니므로 기존 기준을 유지한다.
+                            let om_px = hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
+                            let ls_px = hwpunit_to_px(seg.line_spacing.max(0), self.dpi);
+                            // **사다리-국소 판별자**: sb 를 사다리가 품는지(심의소위) 안
+                            // 품는지(민간위탁 p6)는 같은 문서 안에서도 갈린다 — 스타일로
+                            // 추정하지 않고, 다음 문단 저장 vpos 와의 델타에서 "다음
+                            // 문단이 스스로 더할 style-sb"와 이 분기 뒤의 사후가산
+                            // (ls·om_bottom)만 빼서 목표를 구성한다. 구성상 다음 줄
+                            // top == 호스트 줄 top + 사다리 델타가 되어 관습과 무관하게
+                            // 정확하다. 되돌아감·값 부재는 th 기반 기본식으로 폴백.
+                            let ladder_target = if !self.profile.get().native_hwp5_layout() {
+                                None
+                            } else {
+                                paragraphs
+                                .get(para_index + 1)
+                                .and_then(|np| np.line_segs.first().map(|ns| (np, ns)))
+                                .filter(|(_, ns)| {
+                                    ns.vertical_pos > seg.vertical_pos
+                                        && ns.vertical_pos - seg.vertical_pos
+                                            < seg.line_height.saturating_mul(4).max(160_000)
+                                })
+                                .map(|(np, ns)| {
+                                    let next_sb = styles
+                                        .para_styles
+                                        .get(np.para_shape_id as usize)
+                                        .map(|ps| ps.spacing_before.max(0.0))
+                                        .unwrap_or(0.0);
+                                    let om_top_px =
+                                        hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                                    tac_table_y_before - om_top_px.max(0.0)
+                                        + hwpunit_to_px(
+                                            ns.vertical_pos - seg.vertical_pos,
+                                            self.dpi,
+                                        )
+                                        - next_sb
+                                        - ls_px
+                                        - om_px.max(0.0)
+                                })
+                            };
+                            if let Some(target) = ladder_target {
+                                // 사다리 신뢰 시 방향 무관 직접 설정 — 표 시각 전진이
+                                // 사다리보다 컸던 것이 바로 결함이므로 상향 가드를 두면
+                                // 교정이 무력화된다(민간위탁 실측).
+                                y_offset = target;
+                            } else {
+                                let base = if para.line_segs.len() == 1 {
+                                    para_y_for_table
+                                } else {
+                                    tac_table_y_before
+                                };
+                                let anchor_line_end = base
+                                    + hwpunit_to_px(seg.line_height, self.dpi)
+                                    - om_px.max(0.0);
+                                if anchor_line_end > y_offset {
+                                    y_offset = anchor_line_end;
+                                }
                             }
                         } else {
                             let clamped = line_end.min(table_y_end);
