@@ -302,6 +302,44 @@ class FakeWebSocket {
   }
 }
 
+test('render capabilities stay silent on a plain WASM build and follow the current document', async () => {
+  const { createSubsecondRenderCapabilities } = await loadRuntime();
+
+  // 일반 wasm-pack 빌드 — 세 export 중 어느 것도 없다.
+  const plain = createSubsecondRenderCapabilities({}, () => ({}));
+  assert.equal(plain.isSubsecondHotpatchEnabled(), false);
+  assert.equal(plain.getSubsecondPatchRevision(), null);
+  assert.equal(
+    plain.invalidateSubsecondRenderCaches(),
+    false,
+    '무효화하지 못했으면 감시자가 재도색을 부르지 않도록 false 여야 한다',
+  );
+
+  // dx 핫패치 빌드 — 문서는 열고 닫을 때마다 바뀌므로 게터로 따라가야 한다.
+  let invalidated = 0;
+  let openDocument: object | null = null;
+  const hotpatch = createSubsecondRenderCapabilities(
+    { subsecondProbe: () => 41 },
+    () => openDocument,
+  );
+  assert.equal(hotpatch.isSubsecondHotpatchEnabled(), true);
+  assert.equal(hotpatch.getSubsecondPatchRevision(), null, '문서가 없으면 리비전도 없다');
+  assert.equal(hotpatch.invalidateSubsecondRenderCaches(), false);
+
+  openDocument = {
+    getSubsecondPatchRevision: () => 'aaaa:bbbb',
+    invalidateSubsecondRenderCaches: () => {
+      invalidated += 1;
+    },
+  };
+  assert.equal(hotpatch.getSubsecondPatchRevision(), 'aaaa:bbbb');
+  assert.equal(hotpatch.invalidateSubsecondRenderCaches(), true);
+  assert.equal(invalidated, 1);
+
+  openDocument = null;
+  assert.equal(hotpatch.getSubsecondPatchRevision(), null, '문서를 닫으면 다시 리비전이 없다');
+});
+
 test('devtools websocket forwards patch messages and reconnects without reloading', async () => {
   const { connectSubsecondDevtools } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];

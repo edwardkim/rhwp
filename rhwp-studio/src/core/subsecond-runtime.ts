@@ -4,6 +4,46 @@ export interface SubsecondRenderCapabilities {
   invalidateSubsecondRenderCaches(): boolean;
 }
 
+/**
+ * 핫패치 전용 wasm export 셋을 감싸 능력으로 만든다.
+ *
+ * [#4580] 이 구현이 `WasmBridge` 의 메서드가 아니라 여기 있어야 하는 이유: **클래스 메서드는
+ * 호출부가 없어도 트리셰이킹되지 않는다.** `WasmBridge` 에 두면 `subsecondProbe`
+ * `getSubsecondPatchRevision` `invalidateSubsecondRenderCaches` 라는 외부 객체 속성 이름이
+ * 프로덕션 번들에 그대로 실린다(실측: 각각 2·4·4회). 개발 전용 모듈 안에 두면 모듈째 빠진다.
+ *
+ * 세 export 는 `subsecond-dev` feature 로 빌드한 wasm 에만 있다. 일반 빌드에서는 전부
+ * `undefined` 라 `false`/`null` 을 돌려주고, 감시자는 시작하지 않는다.
+ *
+ * @param exports wasm 모듈의 export 네임스페이스.
+ * @param currentDocument 지금 열려 있는 `HwpDocument` 핸들 — 문서를 열고 닫을 때마다 바뀌므로
+ *   값이 아니라 게터로 받는다.
+ */
+export function createSubsecondRenderCapabilities(
+  exports: object,
+  currentDocument: () => object | null,
+): SubsecondRenderCapabilities {
+  return {
+    isSubsecondHotpatchEnabled(): boolean {
+      return typeof Reflect.get(exports, 'subsecondProbe') === 'function';
+    },
+
+    getSubsecondPatchRevision(): string | null {
+      const doc = currentDocument() as { getSubsecondPatchRevision?: () => string } | null;
+      return typeof doc?.getSubsecondPatchRevision === 'function'
+        ? doc.getSubsecondPatchRevision()
+        : null;
+    },
+
+    invalidateSubsecondRenderCaches(): boolean {
+      const doc = currentDocument() as { invalidateSubsecondRenderCaches?: () => void } | null;
+      if (typeof doc?.invalidateSubsecondRenderCaches !== 'function') return false;
+      doc.invalidateSubsecondRenderCaches();
+      return true;
+    },
+  };
+}
+
 export interface SubsecondWasmExports {
   /**
    * 데브서버 메시지 한 건을 처리하고 `src/subsecond_dev.rs` 의

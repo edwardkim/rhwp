@@ -22,7 +22,9 @@ import {
   type ZoomAnchor,
   type ZoomPageBox,
 } from './zoom-anchor.ts';
-import { SubsecondRevisionWatcher } from '@/core/subsecond-runtime';
+// [#4580] **값 import 는 금지다** — 개발 전용 벤더 런타임이라 정적으로 엮이면 프로덕션 번들에
+// 그대로 실린다. 실물은 `startSubsecondRevisionWatch()` 의 DEV 분기에서 동적으로 부른다.
+import type { SubsecondRevisionWatcher } from '@/core/subsecond-runtime';
 
 const TEXT_EDIT_STATIC_LAYER_VERIFY_DELAY_MS = 800;
 const AUTO_RENDERER_RESELECTION_DELAY_MS = 300;
@@ -42,7 +44,7 @@ export class CanvasView {
   private pageRenderer: PageRenderer;
   private viewportManager: ViewportManager;
   private coordinateSystem: CoordinateSystem;
-  private subsecondRevisionWatcher: SubsecondRevisionWatcher;
+  private subsecondRevisionWatcher: SubsecondRevisionWatcher | null = null;
 
   private scrollContent: HTMLElement;
   private pages: PageInfo[] = [];
@@ -72,11 +74,7 @@ export class CanvasView {
     this.pageRenderer = new PageRenderer(wasm);
     this.viewportManager = new ViewportManager(eventBus);
     this.coordinateSystem = new CoordinateSystem(this.virtualScroll);
-    this.subsecondRevisionWatcher = new SubsecondRevisionWatcher(
-      wasm,
-      () => eventBus.emit('document-view-changed', 'subsecond-renderer'),
-    );
-    this.subsecondRevisionWatcher.start();
+    this.startSubsecondRevisionWatch();
 
     this.scrollContent = container.querySelector('#scroll-content')!;
     this.viewportManager.attachTo(container);
@@ -107,6 +105,32 @@ export class CanvasView {
       }),
       eventBus.on('grid-view-changed', () => this.refreshGridOverlays()),
     );
+  }
+
+  /**
+   * 핫패치 리비전 감시자를 개발 빌드에서만 시작한다 (#4580).
+   *
+   * `import.meta.env.DEV` 는 빌드 시점 리터럴이라 프로덕션 번들에서는 이 본문이 통째로 지워지고,
+   * 그때만 참조되는 `subsecond-runtime` 모듈도 모듈 그래프에서 빠진다. 생성자는 동기라 동적
+   * import 를 기다릴 수 없으므로 모듈이 도착한 뒤에 배선하고, 그 사이에 뷰가 정리됐으면 시작하지
+   * 않는다.
+   */
+  private startSubsecondRevisionWatch(): void {
+    if (!import.meta.env.DEV) return;
+    const capabilities = this.wasm.getSubsecondRenderCapabilities();
+    if (!capabilities) return;
+    void import('@/core/subsecond-runtime')
+      .then(({ SubsecondRevisionWatcher }) => {
+        if (this.disposed) return;
+        this.subsecondRevisionWatcher = new SubsecondRevisionWatcher(
+          capabilities,
+          () => this.eventBus.emit('document-view-changed', 'subsecond-renderer'),
+        );
+        this.subsecondRevisionWatcher.start();
+      })
+      .catch((error) => {
+        console.error('[CanvasView] 핫패치 감시자를 불러오지 못했습니다:', error);
+      });
   }
 
   /** 문서 로드 후 호출 — 페이지 정보 수집 및 가상 스크롤 초기화 */
@@ -950,7 +974,7 @@ export class CanvasView {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
-    this.subsecondRevisionWatcher.stop();
+    this.subsecondRevisionWatcher?.stop();
     this.rendererSelectionEpoch += 1;
     this.documentLoadPrepared = false;
     this.cancelAutoRendererReselection();
