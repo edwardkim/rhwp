@@ -287,27 +287,6 @@ fn has_para_topbottom_float_affecting_column(
     .unwrap_or(false)
 }
 
-fn tac_picture_or_shape_height_for_line(
-    para: Option<&Paragraph>,
-    raw_line_height: f64,
-    dpi: f64,
-) -> Option<f64> {
-    let para = para?;
-    para.controls.iter().find_map(|ctrl| {
-        let height_hu = match ctrl {
-            Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
-            Control::Shape(shape) if shape.common().treat_as_char => shape.flow_height_hu(),
-            _ => return None,
-        };
-        let height = hwpunit_to_px(height_hu, dpi);
-        if height > 8.0 && raw_line_height + 4.0 >= height && raw_line_height <= height + 8.0 {
-            Some(height)
-        } else {
-            None
-        }
-    })
-}
-
 fn is_treat_as_char_equation_control(ctrl: Option<&Control>) -> bool {
     matches!(ctrl, Some(Control::Equation(eq)) if eq.common.treat_as_char)
 }
@@ -684,15 +663,6 @@ fn repeated_empty_tac_line_offset(
     }
 }
 
-fn tac_picture_or_shape_height_px(ctrl: &Control, dpi: f64) -> Option<f64> {
-    let height_hu = match ctrl {
-        Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
-        Control::Shape(shape) if shape.common().treat_as_char => shape.flow_height_hu(),
-        _ => return None,
-    };
-    Some(hwpunit_to_px(height_hu, dpi))
-}
-
 fn note_number_format_from_hwp_code(code: u8) -> NumFmt {
     match code {
         0 => NumFmt::Digit,
@@ -780,7 +750,7 @@ fn line_tac_picture_or_shape_height(
         .find_map(|(_, _, ci)| {
             para.controls
                 .get(*ci)
-                .and_then(|ctrl| tac_picture_or_shape_height_px(ctrl, dpi))
+                .and_then(|ctrl| crate::renderer::tac_object_flow_height_px(ctrl, dpi))
         })
 }
 
@@ -3194,19 +3164,19 @@ impl LayoutEngine {
                         })
                     })
                     .unwrap_or(false);
+            // 도형의 흐름 높이가 저장 프레임이 아니라 `current_height` 에서 오는 줄은
+            // 저장 줄 높이를 그대로 둔다 (아래 baseline 정렬 축소 제외).
             let empty_tac_guide_has_explicit_shape_height = empty_tac_guide_line
-                && para
-                    .map(|p| {
-                        line_tac_offsets.iter().any(|(_, _, ci)| {
-                            p.controls.get(*ci).is_some_and(|ctrl| match ctrl {
-                                Control::Shape(shape) if shape.common().treat_as_char => {
-                                    shape.flow_height_hu() > shape.common().height as i32
-                                }
-                                _ => false,
-                            })
+                && para.is_some_and(|p| {
+                    line_tac_offsets.iter().any(|(_, _, ci)| {
+                        p.controls.get(*ci).is_some_and(|ctrl| match ctrl {
+                            Control::Shape(shape) if shape.common().treat_as_char => {
+                                shape.flow_height_hu() > shape.common().height as i32
+                            }
+                            _ => false,
                         })
                     })
-                    .unwrap_or(false);
+                });
             let (line_height, baseline) = if text_before_picture_line {
                 let font_lh = max_fs.max(1.0);
                 let font_bl = max_fs * 0.85;
@@ -4270,8 +4240,9 @@ impl LayoutEngine {
                 && !text_before_picture_line
                 && current_line_reserved_tac_picture_height.is_none()
             {
-                current_line_reserved_tac_picture_height =
-                    tac_picture_or_shape_height_for_line(para, raw_lh, self.dpi);
+                current_line_reserved_tac_picture_height = para.and_then(|p| {
+                    crate::renderer::line_owning_tac_object_height_px(p, raw_lh, self.dpi)
+                });
                 if current_line_reserved_tac_picture_height.is_none()
                     && has_treat_as_char_picture_or_shape(para)
                     && max_fs > 0.0
