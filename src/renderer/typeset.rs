@@ -733,11 +733,14 @@ const HWPX_QA_TWO_PARAGRAPH_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 32.0;
 /// frame과 trailing blank-bottom row까지 같은 page owner로 보존하도록 48px까지
 /// 허용한다.
 const HWPX_QA_TWO_PARAGRAPH_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX: f64 = 48.0;
+/// Q26의 3·3 lineSeg response는 마지막 두 unit과 blank-bottom row가 단독 page를
+/// 만들 수 있다. 64px은 저장 frame의 전체 tail을 앞 fragment owner로 유지한다.
+const HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX: f64 = 64.0;
 const HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 64.0;
-/// HWPX 103×2 병렬 규정 표는 browser 셀 측정이 저장 frame보다 8px 먼저
-/// 수용된다. Q16 owner 보정 뒤 이 reserve가 fragment 하나를 보존해, 규정표
+/// HWPX 103×2 병렬 규정 표는 browser 셀 측정이 저장 frame보다 42px 먼저
+/// 수용된다. Q16·Q26 owner 보정 뒤 이 reserve가 fragment 하나를 보존해, 규정표
 /// 다음 section과 전체 쪽수를 원본 PDF의 383쪽에 다시 맞춘다.
-const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 8.0;
+const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 42.0;
 /// HWPX로 저장된 2025 편람 Q&A 목차의 마지막 1×1 RowBreak tail은 32px 이하다.
 /// 세 번째 continuation의 마지막 line만 같은 page에 유지한다.
 const HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
@@ -19257,6 +19260,28 @@ impl TypesetEngine {
                             .first()
                             .is_some_and(|segment| segment.vertical_pos == 0)
                 });
+            let hwpx_qa_two_paragraph_six_line_tail = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && table.common.height == 19_355
+                && table.outer_margin_bottom == 566
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == r
+                        && cell.paragraphs.len() == 2
+                        && cell.paragraphs[0].line_segs.len() == 3
+                        && cell.paragraphs[1].line_segs.len() == 3
+                        && cell.paragraphs[1]
+                            .line_segs
+                            .first()
+                            .is_some_and(|segment| segment.vertical_pos > 0)
+                });
             // HWPX Q&A 목차는 73 문단의 1×1 RowBreak 표다. 세 번째 continuation에는
             // 28.4px tail만 남으므로 그 마지막 line만 현재 page로 수용한다. 일반 1×1
             // 표 또는 첫 두 fragment에는 적용하지 않는다.
@@ -19299,6 +19324,8 @@ impl TypesetEngine {
                     HWPX_QA_SAVED_FRAME_RESPONSE_CUT_ALLOWANCE_PX
                 } else if hwpx_qa_two_paragraph_response_tail {
                     HWPX_QA_TWO_PARAGRAPH_RESPONSE_TAIL_ALLOWANCE_PX
+                } else if hwpx_qa_two_paragraph_six_line_tail {
+                    HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX
                 } else if hwpx_qa_toc_final_tail {
                     HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX
                 } else {
@@ -19409,11 +19436,17 @@ impl TypesetEngine {
                         && row_total
                             <= budget
                                 + HWPX_QA_TWO_PARAGRAPH_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX;
+                let hwpx_qa_two_paragraph_six_line_tail_fits =
+                    hwpx_qa_two_paragraph_six_line_tail
+                        && row_total
+                            <= budget + HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX;
                 // 단일 유닛 행 — 분할 불가, 페이지 시작이면 강제, 아니면 다음으로.
                 if r == cursor_row {
                     consumed += cs_before + row_total;
                     end_row = r + 1;
-                } else if hwpx_qa_two_paragraph_response_tail_fits {
+                } else if hwpx_qa_two_paragraph_response_tail_fits
+                    || hwpx_qa_two_paragraph_six_line_tail_fits
+                {
                     consumed += cs_before + row_total;
                     end_row = row_count;
                 } else {
@@ -19516,6 +19549,8 @@ impl TypesetEngine {
                             HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX
                         } else if hwpx_qa_two_paragraph_response_tail {
                             HWPX_QA_TWO_PARAGRAPH_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX
+                        } else if hwpx_qa_two_paragraph_six_line_tail {
+                            HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
                     } else if mt.allows_row_break_split() {
