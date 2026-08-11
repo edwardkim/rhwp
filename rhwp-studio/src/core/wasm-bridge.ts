@@ -3152,10 +3152,4 @@ export class WasmBridge {
     } catch (e) { return { ok: false, error: String(e) }; }
   }
 
-  dispose(): void {
-    if (this.doc) {
-      this.doc.free();
-      this.doc = null;
-    }
-  }
 }

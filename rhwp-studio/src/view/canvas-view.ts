@@ -983,7 +983,22 @@ export class CanvasView {
       .forEach((el) => el.remove());
   }
 
-  /** 전체 정리 */
+  /**
+   * 뷰가 쥔 것을 전부 놓는다 — 감시자, 렌더러 세션, 뷰포트 청취, 이벤트 구독.
+   *
+   * **호출부가 없는 것이 지금의 계약이다** (#4592). `canvasView` 는 `main.ts` 모듈 바인딩이고
+   * 한 번 만들어진 뒤 교체되지 않는다. 스튜디오에는 문서 닫기도 뷰 교체도 없으므로 이 뷰의
+   * 수명은 realm 과 같고, 탭이 닫히면 감시자·구독·wasm 핸들이 함께 사라진다. 그래서 지금
+   * 누수는 없다 — 없는 것은 해체 **경로**이지 해체 **구현**이 아니다.
+   *
+   * `pagehide`/`beforeunload` 에 걸지 않는다. **적극적으로 해롭다** — bfcache 로 복원되는
+   * 페이지에서 폐기된 뷰가 되살아나고, 어차피 realm 이 사라지는 시점의 해제는 의식일 뿐이다.
+   * #4579 가 같은 이유로 배선을 거절했다.
+   *
+   * 이 메서드와 `disposed` 가드들이 살아나는 시점은 하나뿐이다: 문서 닫기나 뷰 교체 기능이
+   * 생길 때. 그때 이것이 유일한 해제선이고, `wasm-bridge.ts` 의 `disconnectSubsecondDevtools`
+   * 도 같은 자리에서 불려야 한다. 그 전까지 호출부를 지어내지 않는다.
+   */
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
