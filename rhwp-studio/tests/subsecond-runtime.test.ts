@@ -684,20 +684,29 @@ test('devtools websocket counts only applied patches toward the accumulation', a
   disconnect?.();
 });
 
-test('repository exposes a feature-gated dx adapter without changing normal WASM builds', () => {
+/**
+ * 핫패치 개발 배선이 **매니페스트·설정에 선언되어 있는지** 본다.
+ *
+ * [#4593] 여기 정규식이 겨눠도 되는 것은 실행되지 않는 파일뿐이다 — `Cargo.toml`,
+ * `vite.config.ts`, `package.json` 에서는 "이 문자열이 이 자리에 있다"가 곧 계약이고, 다른
+ * 확인 방법도 없다(cargo·vite·npm 이 그 문자열을 읽는다).
+ *
+ * **코드 파일을 겨누는 단언은 여기 두지 않는다.** 소스에 문자열이 있다는 것은 그 코드가
+ * 실행된다는 증거가 아니라서, 실제로 거짓 초록을 만들었다 — `tools/rhwp-subsecond/build.rs` 의
+ * `librhwp-dioxus.rlib` 를 찾던 단언은 그 이름을 쓰는 심링크 생성이 `#[cfg(unix)]` 뒤에 있어
+ * Windows 에서는 아예 컴파일되지 않는데도 초록이었다. 같은 부류로 #4579 가 `CanvasView.dispose()`
+ * 안의 `stop()` 을 찾던 단언 하나를 이미 행동 단언으로 바꿨다 — 호출부가 0개라 그 `stop()` 은
+ * 절대 실행되지 않았다.
+ *
+ * 새 계약이 생기면 물어야 할 것은 하나다: 이 문자열이 있다는 것과 이 동작이 일어난다는 것이
+ * 같은가. 다르면 행동으로 확인하거나, 확인할 수 없다는 사실을 남긴다.
+ */
+test('hot-patch dev wiring is declared in the manifests and the vite config', () => {
   const cargo = readFileSync(new URL('../../Cargo.toml', import.meta.url), 'utf8');
   const adapterCargo = readFileSync(
     new URL('../../tools/rhwp-subsecond/Cargo.toml', import.meta.url),
     'utf8',
   );
-  const adapterBuild = readFileSync(
-    new URL('../../tools/rhwp-subsecond/build.rs', import.meta.url),
-    'utf8',
-  );
-  const wasmApi = readFileSync(new URL('../../src/wasm_api.rs', import.meta.url), 'utf8');
-  const lib = readFileSync(new URL('../../src/lib.rs', import.meta.url), 'utf8');
-  const bridge = readFileSync(new URL('../src/core/wasm-bridge.ts', import.meta.url), 'utf8');
-  const canvasView = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
   const vite = readFileSync(new URL('../vite.config.ts', import.meta.url), 'utf8');
   const studioPackage = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
 
@@ -707,16 +716,6 @@ test('repository exposes a feature-gated dx adapter without changing normal WASM
   assert.match(adapterCargo, /name\s*=\s*"rhwp-subsecond"/);
   assert.match(adapterCargo, /build\s*=\s*"build\.rs"/);
   assert.match(adapterCargo, /subsecond-dev\s*=\s*\["rhwp\/subsecond-dev"\]/);
-  assert.match(adapterBuild, /librhwp-dioxus\.rlib/);
-  assert.match(lib, /cfg\(feature = "subsecond-dev"\)[\s\S]*mod subsecond_dev/);
-  assert.match(wasmApi, /getSubsecondPatchRevision/);
-  assert.match(wasmApi, /invalidateSubsecondRenderCaches/);
-  assert.match(bridge, /connectSubsecondDevtools/);
-  assert.match(bridge, /isSubsecondHotpatchEnabled/);
-  assert.match(bridge, /getSubsecondPatchRevision/);
-  assert.match(bridge, /invalidateSubsecondRenderCaches/);
-  assert.match(canvasView, /new SubsecondRevisionWatcher/);
-  assert.match(canvasView, /document-view-changed[\s\S]*subsecond-renderer[\s\S]*this\.refreshPages\(\)/);
   assert.match(vite, /['"]\/_dioxus['"]/);
   assert.match(vite, /['"]\/wasm['"][\s\S]*127\.0\.0\.1:7711/);
   assert.match(vite, /librhwp-subsecond-patch-\*\.wasm/);
