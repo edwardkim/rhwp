@@ -132,32 +132,40 @@ pub fn load_keyring(path: &str) -> Result<BTreeMap<String, KeyEntry>, String> {
         .map_err(|e| format!("키 등록부를 읽을 수 없습니다 - {path}: {e}"))?;
     let v: serde_json::Value = serde_json::from_str(&text)
         .map_err(|e| format!("키 등록부 JSON 파싱 실패 - {path}: {e}"))?;
+    keyring_from_value(&v, path)
+}
+
+/// 값으로 받은 keyring — 연합(trust-domain 인라인 keyring, #4549)이 쓴다.
+pub fn keyring_from_value(
+    v: &serde_json::Value,
+    origin: &str,
+) -> Result<BTreeMap<String, KeyEntry>, String> {
     if v["kind"] != KEYRING_KIND {
         return Err(format!(
-            "키 등록부 kind 가 {KEYRING_KIND} 가 아닙니다 - {path}"
+            "키 등록부 kind 가 {KEYRING_KIND} 가 아닙니다 - {origin}"
         ));
     }
     let mut map = BTreeMap::new();
     for (idx, key) in v["keys"]
         .as_array()
-        .ok_or_else(|| format!("키 등록부에 keys 배열이 없습니다 - {path}"))?
+        .ok_or_else(|| format!("키 등록부에 keys 배열이 없습니다 - {origin}"))?
         .iter()
         .enumerate()
     {
         let key_id = key["keyId"]
             .as_str()
             .filter(|s| !s.is_empty())
-            .ok_or_else(|| format!("keys[{idx}].keyId 가 없습니다 - {path}"))?;
+            .ok_or_else(|| format!("keys[{idx}].keyId 가 없습니다 - {origin}"))?;
         let public_b64 = key["publicKey"]
             .as_str()
-            .ok_or_else(|| format!("keys[{idx}].publicKey 가 없습니다 - {path}"))?;
+            .ok_or_else(|| format!("keys[{idx}].publicKey 가 없습니다 - {origin}"))?;
         let public = B64
             .decode(public_b64)
             .ok()
             .and_then(|b| <[u8; 32]>::try_from(b).ok())
             .and_then(|b| VerifyingKey::from_bytes(&b).ok())
             .ok_or_else(|| {
-                format!("keys[{idx}].publicKey 가 유효한 Ed25519 공개키가 아닙니다 - {path}")
+                format!("keys[{idx}].publicKey 가 유효한 Ed25519 공개키가 아닙니다 - {origin}")
             })?;
         let revoked = match key.get("revoked") {
             None | Some(serde_json::Value::Null) => None,

@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 45개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 46개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -94,6 +94,32 @@ export interface BuildFromIngestEnvelope {
   readonly questionCount?: number;
   readonly schemaVersion?: string;
   readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp bundle --json` 봉투.
+ *
+ * 연합 교환 — export(계보 폐쇄집합+서명+머클 증명을 zip
+ * 하나로)·verify(컨테이너·폐쇄집합·계보·서명[도메인 키링만, 동봉 불신]·앵커 5단 오프라인 판정,
+ * 깨짐 exit 3) (#4549)
+ */
+export interface BundleEnvelope {
+  readonly anchored?: unknown;
+  readonly brokenAt?: unknown;
+  readonly bundle?: unknown;
+  readonly capsules?: unknown;
+  readonly closureOk?: unknown;
+  readonly containerOk?: unknown;
+  readonly head?: unknown;
+  readonly lineageValid?: unknown;
+  readonly proofs?: unknown;
+  readonly schemaVersion?: string;
+  readonly signatures?: unknown;
+  readonly signed?: unknown;
+  readonly trustDomain?: unknown;
+  readonly verdict?: unknown;
 
   readonly [key: string]: unknown;
 }
@@ -885,6 +911,7 @@ export interface EnvelopeByCommand {
   audit: AuditEnvelope;
   batch: BatchEnvelope;
   "build-from-ingest": BuildFromIngestEnvelope;
+  bundle: BundleEnvelope;
   capabilities: CapabilitiesEnvelope;
   convert: ConvertEnvelope;
   "csv-to-table": CsvToTableEnvelope;

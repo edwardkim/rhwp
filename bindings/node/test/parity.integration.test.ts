@@ -58,6 +58,7 @@ const SUBCOMMAND_WRAPPERS: Readonly<Record<string, readonly string[]>> = {
   edit: ['fillFields', 'replaceText', 'setCell'],
   harness: ['harnessInit', 'harnessWrap', 'harnessStatus'],
   anchor: ['anchorAdd', 'anchorCheckpoint', 'anchorVerify'],
+  bundle: ['bundleExport', 'bundleVerify'],
 };
 
 /**

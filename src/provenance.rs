@@ -352,6 +352,12 @@ pub const MAP: &[CommandProvenance] = &[
                캡슐·정책·키링은 호출자 산출물이고 문서를 열지 않는다.",
     },
     CommandProvenance {
+        command: "bundle",
+        untrusted: NONE,
+        note: "번들 봉투는 경로 에코·개수 집계·판정(containerOk 등)·brokenAt 사유뿐이다 \
+               — 번들·도메인 파일은 호출자 산출물이고 문서를 열지 않는다.",
+    },
+    CommandProvenance {
         command: "ir-diff",
         untrusted: &[f(
             "categories",

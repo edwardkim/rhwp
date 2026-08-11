@@ -210,6 +210,8 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_anchor_add",
             "hwp_anchor_verify",
             "hwp_gate",
+            "hwp_bundle_export",
+            "hwp_bundle_verify",
             "hwp_convert_hwpx",
             "hwp_convert_hwp5",
             "hwp_export_hml",

@@ -304,7 +304,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 218개 필드
+### 2-2. 전수 사전 — 226개 필드
 
 `capabilities` 의 `recordFields` 고유 **185개**와 그 밖의 실측-only 필드
 `assertions`·`docId`·`preview` **3개**를 합친 188개다. `등장 명령` 은 자기서술
@@ -526,6 +526,20 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `targetSha256` | string | 판정 시점 대상 해시 — 소비 직전 재대조로 TOCTOU 방어 | `gate` |
 | `evaluated` | number | 평가한 (키, 연산자) 조건 수 | `gate` |
 | `violations` | array | 위반 명세 `{rule, key, op, expected, actual}` — actual 의 unavailable 은 판정 재료 미지정 | `gate` |
+
+#### 연합 번들 (`bundle`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `bundle` | string | 번들 파일 경로(호출자 에코) | `bundle` |
+| `signatures` | number | 동봉한 분리 서명 수 (export) | `bundle` |
+| `proofs` | number | 동봉한 머클 증명 수 (export) | `bundle` |
+| `trustDomain` | string | 판정 기준 도메인 이름 — **동봉 keyring 은 불신**, 수신자 보유 파일 기준 | `bundle` |
+| `containerOk` | bool | 매니페스트의 전 파일 해시 대조(운송 변조 검출) | `bundle` |
+| `lineageValid` | bool | 번들 내부 계보 걷기 판정(부모 해시·산출=입력) — gate 판정 키와 동명 동의 | `bundle` |
+| `closureOk` | bool | 조상 폐쇄집합 완전성 — 부모 참조가 번들 안에서 전부 해소 | `bundle` |
+| `anchored` | object\|null | 머클 증명 집계 `{ok, bad, checkpointTrusted}` — 증명 미동봉이면 `null` | `bundle` |
+
 
 
 

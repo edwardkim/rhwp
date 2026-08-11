@@ -1073,6 +1073,52 @@ export async function gate(
   return call(args, options);
 }
 
+/** {@link bundleExport} 옵션. */
+export interface BundleExportOptions extends CommandOptions {
+  readonly anchorLog?: PathLike | undefined;
+  readonly checkpoint?: PathLike | undefined;
+  readonly domain?: PathLike | undefined;
+}
+
+/** [#4549] 연합 번들 내보내기 — 계보 폐쇄집합+서명+머클 증명을 zip 하나로. */
+export async function bundleExport(
+  head: PathLike,
+  out: PathLike,
+  options: BundleExportOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['bundle', 'export', head, '-o', out];
+  if (options.anchorLog !== undefined) args.push('--anchor-log', options.anchorLog);
+  if (options.checkpoint !== undefined) args.push('--checkpoint', options.checkpoint);
+  if (options.domain !== undefined) args.push('--domain', options.domain);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link bundleVerify} 옵션. */
+export interface BundleVerifyOptions extends CommandOptions {
+  /**
+   * 깨진 번들(exit 3)을 예외로 올릴지.
+   *
+   * 기본은 거짓 — 판정은 봉투(verdict·containerOk·closureOk 등)로 읽는다.
+   */
+  readonly throwOnVerdict?: boolean | undefined;
+}
+
+/**
+ * [#4549] 연합 번들 검증 — 5단 오프라인 판정. 서명 기준은 수신자가 자기
+ * 경로로 받은 trust-domain 의 keyring 뿐이다(동봉 keyring 불신 — F2 방어).
+ */
+export async function bundleVerify(
+  bundle: PathLike,
+  trustDomain: PathLike,
+  options: BundleVerifyOptions = {},
+): Promise<Envelope> {
+  return call(
+    ['bundle', 'verify', bundle, '--trust-domain', trustDomain, '--json'],
+    options,
+  );
+}
+
 // ── 편집 ──────────────────────────────────────────────────────────────────
 
 /**

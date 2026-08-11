@@ -429,6 +429,32 @@ fn recipes() -> Vec<Recipe> {
     )
     .expect("유효 앵커 로그");
 
+    // bundle 픽스처 — 뿌리 캡슐 1개(부모 없음)와 빈 keyring 도메인.
+    let bundle_capsule = dir.join("prov-root.capsule.json");
+    std::fs::write(
+        &bundle_capsule,
+        serde_json::json!({
+            "schemaVersion": "1.0", "kind": "workCapsule", "parent": null,
+            "plan": { "planVersion": "1.0", "input": "x", "output": "y", "steps": [] },
+            "planText": "{}",
+            "receipt": { "inputSha256": "00", "outputSha256": "00" },
+        })
+        .to_string(),
+    )
+    .expect("번들 캡슐 픽스처");
+    let bundle_out = dir.join("prov.lineage-bundle");
+    let bundle_domain = dir.join("prov-domain.json");
+    std::fs::write(
+        &bundle_domain,
+        serde_json::json!({
+            "schemaVersion": "1.0", "kind": "trustDomain", "domain": "prov",
+            "keyring": { "schemaVersion": "1.0", "kind": "keyring", "keys": [] },
+            "checkpoints": [],
+        })
+        .to_string(),
+    )
+    .expect("도메인 픽스처");
+
     // gate 픽스처 — 빈 규칙 + deny 기본 = 거부(exit 3) 순수 fs 경로.
     let gate_policy = dir.join("prov-gate-policy.json");
     std::fs::write(
@@ -985,6 +1011,38 @@ fn recipes() -> Vec<Recipe> {
                 s("checkpoint"),
                 s("--log"),
                 p(&anchor_ok_log),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // bundle export — 뿌리 1개 폐쇄집합 (아래 verify 가 이 산출을 쓴다).
+            command: "bundle",
+            doc: None,
+            args: vec![
+                s("bundle"),
+                s("export"),
+                p(&bundle_capsule),
+                s("-o"),
+                p(&bundle_out),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // bundle verify — 미서명 뿌리 번들은 빈 keyring 도메인 기준 ok.
+            command: "bundle",
+            doc: None,
+            args: vec![
+                s("bundle"),
+                s("verify"),
+                p(&bundle_out),
+                s("--trust-domain"),
+                p(&bundle_domain),
                 s("--json"),
             ],
             stdin: None,
