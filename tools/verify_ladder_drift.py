@@ -107,6 +107,26 @@ def analyze(exe: Path, path: Path, threshold: float):
             # 조우순이면 그런 줄은 vpos 되돌아감으로 갈라져 4줄 미만 분절 스킵에
             # 걸린다.
             ordered = [(pi, y, v) for pi, (y, v) in first.items() if v > 0]
+            # 샌드위치 외래 줄 드롭: pi 가 역행했는데 **나중에 원 수열이 재개**
+            # 되면(같은 쪽에서 running-max 이상 pi 재등장) 그 역행 줄은 본문이
+            # 아니라 컬럼 직속으로 샌 글상자/도형 줄이다(세종 p20: ..pi382,
+            # pi0(글상자), pi383.. 실측). 구역 재시작은 복귀가 없어 보존된다.
+            if ordered:
+                runmax = []
+                m = -1
+                for pi, _, _ in ordered:
+                    runmax.append(m)
+                    m = max(m, pi)
+                later_max = [0] * len(ordered)
+                m = -1
+                for i in range(len(ordered) - 1, -1, -1):
+                    later_max[i] = m
+                    m = max(m, ordered[i][0])
+                ordered = [
+                    row
+                    for i, row in enumerate(ordered)
+                    if not (row[0] < runmax[i] and later_max[i] >= runmax[i])
+                ]
             # vpos 되돌아감 = 쪽 중간 리베이스(구역/리스트 재시작) 신호 — 분절을 갈라
             # 각자의 중앙값으로 판정한다. 리베이스된 블록은 자기 기준으로 자기일관이라
             # 조용해지고, 같은 분절 안의 상대 이동(진짜 결함)만 남는다.
@@ -114,7 +134,13 @@ def analyze(exe: Path, path: Path, threshold: float):
             cur = []
             prev_v = None
             for pi, y, v in ordered:
-                if prev_v is not None and v < prev_v - 100:
+                # 되돌아감 = 리베이스 신호(기존). **큰 전방 점프**(>30000u=400px)
+                # 도 분절을 끊는다 — 컬럼 직속으로 샌 글상자 줄(로컬 vpos)이
+                # 되돌아감으로 갈라진 뒤 다음 본문 세그먼트에 합류해 +741px 로
+                # 오검출되는 샌드위치 형상(세종 5690000-202000006 p20 실측).
+                # 정상 문서의 거대 개체 줄 뒤 갭도 같은 기준으로 갈라지지만,
+                # 각 분절이 자기 중앙값으로 판정되므로 위양성이 늘지 않는다.
+                if prev_v is not None and (v < prev_v - 100 or v > prev_v + 30_000):
                     segments.append(cur)
                     cur = []
                 cur.append((pi, y, v))
