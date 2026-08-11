@@ -706,6 +706,9 @@ pub struct TypesetEngine {
 /// over-fill 한 경우에도 tail 을 현재 페이지에 유지해 near-empty 페이지 over-pagination 을 막는다.
 const TAIL_BREAK_OVERFLOW_TOLERANCE_PX: f64 = 20.0;
 const HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX: f64 = 64.0;
+/// Native HWP5의 저장 행 높이 HU 반올림에서만 허용하는 미세 RowBreak 초과값.
+/// HWPX stored-layout의 측정 drift 허용(64px)과 의도적으로 분리한다.
+const NATIVE_HWP5_ROWBREAK_ROUNDING_TOLERANCE_PX: f64 = 2.0;
 /// [#3236] 1행 1열 RowBreak 표의 선언 높이 신뢰(#1891) 상한 배율. 측정이 선언의
 /// 이 배율을 넘으면 폰트 대체 팽창이 아니라 셀 내용이 진짜로 큰 것이므로 특례를
 /// 적용하지 않고 인트라-로우 분할 경로에 맡긴다.
@@ -18884,7 +18887,20 @@ impl TypesetEngine {
             let strict_nonterminal_rounding_fit = strict_painted_bottom_fit
                 && r + 1 < row_count
                 && consumed + cs_before + row_total <= avail_for_rows + 0.5;
-            if consumed + cs_before + row_total <= avail_for_rows || strict_nonterminal_rounding_fit
+            // native HWP5 RowBreak의 저장 행 높이는 HU 반올림 때문에 한 행을
+            // 1~2px 초과로 기록할 수 있다. 이 경우 한컴은 행을 다음 쪽으로
+            // 이월하지 않고 현재 fragment 하단에 유지한다. HWPX의 넓은 drift
+            // 허용과 달리 native 저장 행의 미세 반올림에만 적용한다.
+            let native_hwp5_rowbreak_rounding_fit = st.profile.native_hwp5_layout()
+                && mt.allows_row_break_split()
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !strict_painted_bottom_fit
+                && consumed + cs_before + row_total
+                    <= avail_for_rows + NATIVE_HWP5_ROWBREAK_ROUNDING_TOLERANCE_PX;
+            if consumed + cs_before + row_total <= avail_for_rows
+                || strict_nonterminal_rounding_fit
+                || native_hwp5_rowbreak_rounding_fit
             {
                 // 행 전체가 예산 안에 들어감.
                 consumed += cs_before + row_total;
