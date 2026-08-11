@@ -61,6 +61,14 @@ push하고 `devel` 대상 PR을 만들었다. 이 권한 제약은 code candidat
 제품 출력이나 조판은 바뀌지 않는다. 허용 범위 안의 정상 썸네일은 종전과 같은 이미지
 파싱 경로로 전달되고, 상한 밖 또는 크기 불일치 입력만 썸네일 없음으로 처리한다.
 
+## merge simulation
+
+후속 review commit을 push한 뒤 `upstream/devel`을 다시 fetch했으며 기준선은 계속
+`193e26b7ffb05adf5bb2c9e4cb752a9a707310dc`였다. `git merge-tree --write-tree
+upstream/devel HEAD` 결과 `ab6902fa84bee30b3ccd39a7eca0936b631b5b3b`는 같은 시점의
+`HEAD^{tree}`와 일치했다. current base 기준 conflict와 추가 conflict resolution은 없고,
+`git diff --check upstream/devel...HEAD`도 통과했다.
+
 ## 완료한 검증
 
 | 게이트 | 결과 |
