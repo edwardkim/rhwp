@@ -1,0 +1,19 @@
+{
+  "id": "TE09",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "보험료"
+          ],
+          "path": "matchCount"
+        }
+      }
+    }
+  ]
+}

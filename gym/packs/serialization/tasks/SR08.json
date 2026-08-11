@@ -1,0 +1,29 @@
+{
+  "id": "SR08",
+  "tier": 3,
+  "title": "HWPX 원본 마크다운 왕복",
+  "input": "samples/hwpx/143E433F503322BD33.hwpx",
+  "instructions": "HWPX 원본을 마크다운으로 내보내 md/ 폴더에 두고, 렌더된 쪽 수를 answer.json 에 {\"pages\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "렌더 쪽 수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "path": "pageCount",
+      "cmd": [
+        "export-markdown",
+        "{input}",
+        "-o",
+        "{file:md}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "변환"
+}

@@ -1,0 +1,19 @@
+{
+  "id": "OM07",
+  "steps": [
+    {
+      "answer": {
+        "images": {
+          "cmd": [
+            "export-markdown",
+            "{input}",
+            "-o",
+            "{sub:md}",
+            "--json"
+          ],
+          "path": "imageCount"
+        }
+      }
+    }
+  ]
+}

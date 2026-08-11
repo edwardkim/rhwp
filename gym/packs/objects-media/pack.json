@@ -14,7 +14,7 @@
   },
   "runner": {
     "rhwpVersion": "0.8.2",
-    "rhwpCommit": "94e4790e5a6bc766b75c3c9695b290f87e3793d4",
+    "rhwpCommit": "1e8667aa86aeb979119aa9152112b42e4f16a76c",
     "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
   }
 }

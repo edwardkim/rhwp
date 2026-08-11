@@ -5,6 +5,7 @@
   "title": "입문",
   "description": "처음 온 에이전트가 도구의 결을 익히는 최소 코스.",
   "packs": [
-    "core-cli"
+    "core-cli",
+    "self-description"
   ]
 }

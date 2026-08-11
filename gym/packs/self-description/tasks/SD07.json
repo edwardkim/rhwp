@@ -1,0 +1,21 @@
+{
+  "id": "SD07",
+  "tier": 2,
+  "title": "IR 스키마 확보",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 의 IR 스키마를 ir.json 으로 받아 제출하라. 에이전트가 문서 구조를 이해하려면 먼저 이 스키마를 읽는다. 힌트: rhwp export-ir-schema.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "ir.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "스키마 산출",
+      "op": "file_exists",
+      "file": "ir.json",
+      "minBytes": 256
+    }
+  ]
+}

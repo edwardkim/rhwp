@@ -1,0 +1,18 @@
+{
+  "id": "CD02",
+  "steps": [
+    {
+      "answer": {
+        "mismatch": {
+          "cmd": [
+            "scan",
+            "samples/hml",
+            "--probe",
+            "--json"
+          ],
+          "path": "files[0].extMismatch"
+        }
+      }
+    }
+  ]
+}

@@ -4,13 +4,13 @@
   "profile": null,
   "runner": {
     "rhwpVersion": "0.8.2",
-    "rhwpCommit": "94e4790e5a6bc766b75c3c9695b290f87e3793d4",
+    "rhwpCommit": "1e8667aa86aeb979119aa9152112b42e4f16a76c",
     "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
   },
   "total": {
-    "score": 140,
-    "max": 140,
-    "packsScored": 8,
+    "score": 194,
+    "max": 194,
+    "packsScored": 10,
     "packsUnavailable": 0
   },
   "packs": [
@@ -18,11 +18,11 @@
       "id": "automation",
       "title": "자동화·검증 사다리",
       "axis": "자동화 (계획·캡슐·서명·앵커·정산·감사)",
-      "max": 30,
-      "taskCount": 11,
+      "max": 35,
+      "taskCount": 13,
       "status": "scored",
-      "score": 30,
-      "passed": 11,
+      "score": 35,
+      "passed": 13,
       "tasks": [
         {
           "id": "AU01",
@@ -221,6 +221,43 @@
               "ok": true,
               "expected": true,
               "actual": true
+            }
+          ]
+        },
+        {
+          "id": "AU12",
+          "tier": 3,
+          "title": "계보 체인 검증",
+          "pass": true,
+          "checks": [
+            {
+              "name": "계보 유효",
+              "op": "value_eq",
+              "ok": true,
+              "expected": true,
+              "actual": true
+            },
+            {
+              "name": "체인 깊이 2",
+              "op": "value_eq",
+              "ok": true,
+              "expected": 2,
+              "actual": 2
+            }
+          ]
+        },
+        {
+          "id": "AU13",
+          "tier": 2,
+          "title": "적합성 L2 자가진단",
+          "pass": true,
+          "checks": [
+            {
+              "name": "L2 적합",
+              "op": "value_eq",
+              "ok": true,
+              "expected": "conformant",
+              "actual": "conformant"
             }
           ]
         }
@@ -491,14 +528,159 @@
       ]
     },
     {
+      "id": "corpus-diagnostics",
+      "title": "코퍼스·진단",
+      "axis": "진단 (폴더 스윕·쪽 덤프·비교 판정)",
+      "max": 14,
+      "taskCount": 7,
+      "status": "scored",
+      "score": 14,
+      "passed": 7,
+      "tasks": [
+        {
+          "id": "CD01",
+          "tier": 1,
+          "title": "폴더 스윕 계수",
+          "pass": true,
+          "checks": [
+            {
+              "name": "발견 문서 수",
+              "op": "len_answer_eq",
+              "ok": true,
+              "expected": 2,
+              "actual": 2
+            }
+          ]
+        },
+        {
+          "id": "CD02",
+          "tier": 2,
+          "title": "탐침 스윕",
+          "pass": true,
+          "checks": [
+            {
+              "name": "확장자 불일치",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": false,
+              "actual": false
+            }
+          ]
+        },
+        {
+          "id": "CD03",
+          "tier": 2,
+          "title": "쪽 덤프 계수",
+          "pass": true,
+          "checks": [
+            {
+              "name": "덤프 쪽 수",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": 17,
+              "actual": 17
+            }
+          ]
+        },
+        {
+          "id": "CD04",
+          "tier": 3,
+          "title": "같은 문서 두 형식 대조",
+          "pass": true,
+          "checks": [
+            {
+              "name": "IR 동일 판정",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": false,
+              "actual": false
+            }
+          ]
+        },
+        {
+          "id": "CD05",
+          "tier": 2,
+          "title": "자기 자신과의 렌더 비교",
+          "pass": true,
+          "checks": [
+            {
+              "name": "회귀 판정",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": "PASS",
+              "actual": "PASS"
+            },
+            {
+              "name": "최대 변위 0",
+              "op": "value_eq",
+              "ok": true,
+              "expected": 0,
+              "actual": 0.0
+            }
+          ]
+        },
+        {
+          "id": "CD06",
+          "tier": 2,
+          "title": "쪽 추출",
+          "pass": true,
+          "checks": [
+            {
+              "name": "추출물 실재",
+              "op": "file_exists",
+              "ok": true,
+              "expected": "존재 · >= 1024 바이트",
+              "actual": 14336
+            },
+            {
+              "name": "한 쪽 문서",
+              "op": "value_eq",
+              "ok": true,
+              "expected": 1,
+              "actual": 1
+            },
+            {
+              "name": "원본과 다름",
+              "op": "differs_from_input",
+              "ok": true,
+              "expected": "!= bebd4ce3691246b0 (과제 입력)",
+              "actual": "d9c16011af24d5c3"
+            }
+          ]
+        },
+        {
+          "id": "CD07",
+          "tier": 2,
+          "title": "형식 변환 계약",
+          "pass": true,
+          "checks": [
+            {
+              "name": "변환물 실재",
+              "op": "file_exists",
+              "ok": true,
+              "expected": "존재 · >= 1024 바이트",
+              "actual": 10752
+            },
+            {
+              "name": "형식 표기",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": "hwp5",
+              "actual": "hwp5"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "layout-rendering",
       "title": "조판·렌더링",
       "axis": "검증 (조판 판정·렌더 산출)",
-      "max": 11,
-      "taskCount": 6,
+      "max": 15,
+      "taskCount": 8,
       "status": "scored",
-      "score": 11,
-      "passed": 6,
+      "score": 15,
+      "passed": 8,
       "tasks": [
         {
           "id": "LR01",
@@ -589,6 +771,43 @@
               "actual": "fail"
             }
           ]
+        },
+        {
+          "id": "LR07",
+          "tier": 2,
+          "title": "실문서 쪽 렌더",
+          "pass": true,
+          "checks": [
+            {
+              "name": "SVG 산출",
+              "op": "file_exists",
+              "ok": true,
+              "expected": "존재 · >= 512 바이트",
+              "actual": 646990
+            }
+          ]
+        },
+        {
+          "id": "LR08",
+          "tier": 2,
+          "title": "다중 기대 자기검증",
+          "pass": true,
+          "checks": [
+            {
+              "name": "판정",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": "pass",
+              "actual": "pass"
+            },
+            {
+              "name": "통과 기대 수",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": 2,
+              "actual": 2
+            }
+          ]
         }
       ]
     },
@@ -596,11 +815,11 @@
       "id": "objects-media",
       "title": "개체·미디어",
       "axis": "발견 (필드·개체·렌더 산출물)",
-      "max": 13,
-      "taskCount": 6,
+      "max": 15,
+      "taskCount": 7,
       "status": "scored",
-      "score": 13,
-      "passed": 6,
+      "score": 15,
+      "passed": 7,
       "tasks": [
         {
           "id": "OM01",
@@ -719,6 +938,21 @@
               "actual": ""
             }
           ]
+        },
+        {
+          "id": "OM07",
+          "tier": 2,
+          "title": "실문서 개체 조사",
+          "pass": true,
+          "checks": [
+            {
+              "name": "이미지 수",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": 1,
+              "actual": 1
+            }
+          ]
         }
       ]
     },
@@ -726,11 +960,11 @@
       "id": "security",
       "title": "보안 스윕",
       "axis": "보안 (은닉·주입·유니코드·PII)",
-      "max": 13,
-      "taskCount": 7,
+      "max": 18,
+      "taskCount": 9,
       "status": "scored",
-      "score": 13,
-      "passed": 7,
+      "score": 18,
+      "passed": 9,
       "tasks": [
         {
           "id": "SE01",
@@ -843,6 +1077,167 @@
               "actual": 2
             }
           ]
+        },
+        {
+          "id": "SE08",
+          "tier": 2,
+          "title": "실문서 배포 전 점검",
+          "pass": true,
+          "checks": [
+            {
+              "name": "은닉 판정",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": true,
+              "actual": true
+            }
+          ]
+        },
+        {
+          "id": "SE09",
+          "tier": 3,
+          "title": "PII 종류 조사",
+          "pass": true,
+          "checks": [
+            {
+              "name": "종류 수",
+              "op": "len_answer_eq",
+              "ok": true,
+              "expected": 4,
+              "actual": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "self-description",
+      "title": "자기서술 표면",
+      "axis": "자기서술 (도구가 스스로를 설명하는 계약)",
+      "max": 12,
+      "taskCount": 7,
+      "status": "scored",
+      "score": 12,
+      "passed": 7,
+      "tasks": [
+        {
+          "id": "SD01",
+          "tier": 1,
+          "title": "명령 표면 계수",
+          "pass": true,
+          "checks": [
+            {
+              "name": "명령 수",
+              "op": "len_answer_eq",
+              "ok": true,
+              "expected": 82,
+              "actual": 82
+            }
+          ]
+        },
+        {
+          "id": "SD02",
+          "tier": 1,
+          "title": "읽기·쓰기 형식 계약",
+          "pass": true,
+          "checks": [
+            {
+              "name": "읽기 형식 수",
+              "op": "len_answer_eq",
+              "ok": true,
+              "expected": 4,
+              "actual": 4
+            },
+            {
+              "name": "쓰기 형식 수",
+              "op": "len_answer_eq",
+              "ok": true,
+              "expected": 9,
+              "actual": 9
+            }
+          ]
+        },
+        {
+          "id": "SD03",
+          "tier": 2,
+          "title": "에이전트 매니페스트",
+          "pass": true,
+          "checks": [
+            {
+              "name": "미충족 축 수",
+              "op": "len_answer_eq",
+              "ok": true,
+              "expected": 0,
+              "actual": 0
+            }
+          ]
+        },
+        {
+          "id": "SD04",
+          "tier": 2,
+          "title": "출처 표지 지도",
+          "pass": true,
+          "checks": [
+            {
+              "name": "지도 수록 명령 수",
+              "op": "len_answer_eq",
+              "ok": true,
+              "expected": 51,
+              "actual": 51
+            }
+          ]
+        },
+        {
+          "id": "SD05",
+          "tier": 2,
+          "title": "문서 온톨로지",
+          "pass": true,
+          "checks": [
+            {
+              "name": "클래스 수",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": 41,
+              "actual": 41
+            },
+            {
+              "name": "속성 수",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": 191,
+              "actual": 191
+            }
+          ]
+        },
+        {
+          "id": "SD06",
+          "tier": 2,
+          "title": "계획서 스키마",
+          "pass": true,
+          "checks": [
+            {
+              "name": "정의 수",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": 11,
+              "actual": 11
+            }
+          ]
+        },
+        {
+          "id": "SD07",
+          "tier": 2,
+          "title": "IR 스키마 확보",
+          "pass": true,
+          "checks": [
+            {
+              "name": "스키마 산출",
+              "op": "file_exists",
+              "ok": true,
+              "expected": "존재 · >= 256 바이트",
+              "actual": 44172
+            }
+          ]
         }
       ]
     },
@@ -850,11 +1245,11 @@
       "id": "serialization",
       "title": "저장·변환",
       "axis": "변환 (형식 왕복·IR 대조)",
-      "max": 14,
-      "taskCount": 6,
+      "max": 19,
+      "taskCount": 8,
       "status": "scored",
-      "score": 14,
-      "passed": 6,
+      "score": 19,
+      "passed": 8,
       "tasks": [
         {
           "id": "SR01",
@@ -966,6 +1361,43 @@
               "actual": 80
             }
           ]
+        },
+        {
+          "id": "SR07",
+          "tier": 2,
+          "title": "HWPX 원본 조사",
+          "pass": true,
+          "checks": [
+            {
+              "name": "쪽수",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": 1,
+              "actual": 1
+            },
+            {
+              "name": "형식 표기",
+              "op": "value_eq",
+              "ok": true,
+              "expected": "hwpx",
+              "actual": "hwpx"
+            }
+          ]
+        },
+        {
+          "id": "SR08",
+          "tier": 3,
+          "title": "HWPX 원본 마크다운 왕복",
+          "pass": true,
+          "checks": [
+            {
+              "name": "렌더 쪽 수",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": 1,
+              "actual": 1
+            }
+          ]
         }
       ]
     },
@@ -973,11 +1405,11 @@
       "id": "table-editing",
       "title": "표 편집",
       "axis": "편집 (표 좌표 지정)",
-      "max": 14,
-      "taskCount": 7,
+      "max": 16,
+      "taskCount": 8,
       "status": "scored",
-      "score": 14,
-      "passed": 7,
+      "score": 16,
+      "passed": 8,
       "tasks": [
         {
           "id": "TB01",
@@ -1104,6 +1536,28 @@
               "actual": 485
             }
           ]
+        },
+        {
+          "id": "TB08",
+          "tier": 2,
+          "title": "실문서 표 수확",
+          "pass": true,
+          "checks": [
+            {
+              "name": "표 개수",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": 1,
+              "actual": 1
+            },
+            {
+              "name": "첫 표 행 수",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": 6,
+              "actual": 6
+            }
+          ]
         }
       ]
     },
@@ -1111,11 +1565,11 @@
       "id": "text-editing",
       "title": "본문 편집",
       "axis": "편집 (탐색→치환→재검증)",
-      "max": 13,
-      "taskCount": 8,
+      "max": 18,
+      "taskCount": 10,
       "status": "scored",
-      "score": 13,
-      "passed": 8,
+      "score": 18,
+      "passed": 10,
       "tasks": [
         {
           "id": "TE01",
@@ -1269,6 +1723,50 @@
               "ok": true,
               "expected": 7,
               "actual": 7
+            }
+          ]
+        },
+        {
+          "id": "TE09",
+          "tier": 2,
+          "title": "실문서 본문 검색",
+          "pass": true,
+          "checks": [
+            {
+              "name": "일치 건수",
+              "op": "answer_eq",
+              "ok": true,
+              "expected": 8,
+              "actual": 8
+            }
+          ]
+        },
+        {
+          "id": "TE10",
+          "tier": 3,
+          "title": "실문서 치환 왕복",
+          "pass": true,
+          "checks": [
+            {
+              "name": "옛 문구 소거",
+              "op": "value_eq",
+              "ok": true,
+              "expected": 0,
+              "actual": 0
+            },
+            {
+              "name": "새 문구 실재",
+              "op": "value_ge",
+              "ok": true,
+              "expected": ">=1",
+              "actual": 8
+            },
+            {
+              "name": "원본과 다름",
+              "op": "differs_from_input",
+              "ok": true,
+              "expected": "!= 1bcdc7a2de38680c (과제 입력)",
+              "actual": "9b6e7004887e07bd"
             }
           ]
         }

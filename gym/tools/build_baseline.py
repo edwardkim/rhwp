@@ -169,7 +169,7 @@ def main():
             try:
                 build_task(bin_path, pack_id, task, reference, sub_root)
                 built += 1
-            except (RuntimeError, OSError) as e:
+            except (RuntimeError, OSError, KeyError, IndexError, TypeError) as e:
                 failed += 1
                 print(f"  X {pack_id}/{task['id']}: {e}")
     print(f"기준 풀이 실행: 성공 {built} · 실패 {failed} · 기준 풀이 없음 {skipped}")

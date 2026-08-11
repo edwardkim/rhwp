@@ -1,0 +1,25 @@
+{
+  "id": "CD07",
+  "steps": [
+    {
+      "run": [
+        "convert",
+        "{input}",
+        "{sub:conv.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "format": {
+          "cmd": [
+            "info",
+            "{sub:conv.hwp}",
+            "--json"
+          ],
+          "path": "format"
+        }
+      }
+    }
+  ]
+}

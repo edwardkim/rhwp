@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "corpus-diagnostics",
+  "title": "코퍼스·진단",
+  "axis": "진단 (폴더 스윕·쪽 덤프·비교 판정)",
+  "description": "문서 한 건이 아니라 무더기를 다루고, 이상을 좁힌다. 판정은 눈이 아니라 봉투다.",
+  "requires": {
+    "commands": [
+      "dump-pages",
+      "info",
+      "ir-diff",
+      "render-diff",
+      "scan"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.2",
+    "rhwpCommit": "1e8667aa86aeb979119aa9152112b42e4f16a76c",
+    "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "self-description",
+  "title": "자기서술 표면",
+  "axis": "자기서술 (도구가 스스로를 설명하는 계약)",
+  "description": "에이전트가 rhwp 를 처음 만났을 때 읽는 것들 — capabilities·매니페스트·출처 지도·온톨로지·스키마. 문서가 아니라 도구 자신이 대상이다.",
+  "requires": {
+    "commands": [
+      "capabilities",
+      "export-agent-manifest",
+      "export-ontology",
+      "export-plan-schema",
+      "export-provenance-map"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.2",
+    "rhwpCommit": "1e8667aa86aeb979119aa9152112b42e4f16a76c",
+    "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
+  }
+}

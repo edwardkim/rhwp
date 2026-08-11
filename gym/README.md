@@ -32,7 +32,7 @@ python gym/score.py --agent <너의이름>   # 4) 자가 채점 — 스코어카
    채점 시점에 rhwp 로 기대값을 재계산하고, 산출물은 rhwp 로 재검증한다
    (검색·재조회·해시). 픽스처가 진화하면 정답도 따라 진화한다.
 
-## 과제판 — pack 8개 · 과제 65건 · 만점 140
+## 과제판 — pack 10개 · 과제 91건 · 만점 194
 
 능력 영역을 **pack** 으로 나눈다. 점수는 pack 별로 보존되며 총점은 편의값이다 —
 어느 능력이 모자란지는 pack 별 점수가 말한다.
@@ -40,13 +40,15 @@ python gym/score.py --agent <너의이름>   # 4) 자가 채점 — 스코어카
 | pack | 이름 | 능력 축 | 과제 | 만점 |
 |---|---|---|---|---|
 | `core-cli` | 코어 CLI | 조사·추출·편집·검증 (운동장 최소 코어) | 14 | 32 |
-| `automation` | 자동화·검증 사다리 | 자동화 (계획·캡슐·서명·앵커·정산·감사) | 11 | 30 |
-| `layout-rendering` | 조판·렌더링 | 검증 (조판 판정·렌더 산출) | 6 | 11 |
-| `objects-media` | 개체·미디어 | 발견 (필드·개체·렌더 산출물) | 6 | 13 |
-| `security` | 보안 스윕 | 보안 (은닉·주입·유니코드·PII) | 7 | 13 |
-| `serialization` | 저장·변환 | 변환 (형식 왕복·IR 대조) | 6 | 14 |
-| `table-editing` | 표 편집 | 편집 (표 좌표 지정) | 7 | 14 |
-| `text-editing` | 본문 편집 | 편집 (탐색→치환→재검증) | 8 | 13 |
+| `automation` | 자동화·검증 사다리 | 자동화 (계획·캡슐·서명·앵커·정산·감사) | 13 | 35 |
+| `corpus-diagnostics` | 코퍼스·진단 | 진단 (폴더 스윕·쪽 덤프·비교 판정) | 7 | 14 |
+| `layout-rendering` | 조판·렌더링 | 검증 (조판 판정·렌더 산출) | 8 | 15 |
+| `objects-media` | 개체·미디어 | 발견 (필드·개체·렌더 산출물) | 7 | 15 |
+| `security` | 보안 스윕 | 보안 (은닉·주입·유니코드·PII) | 9 | 18 |
+| `self-description` | 자기서술 표면 | 자기서술 (도구가 스스로를 설명하는 계약) | 7 | 12 |
+| `serialization` | 저장·변환 | 변환 (형식 왕복·IR 대조) | 8 | 19 |
+| `table-editing` | 표 편집 | 편집 (표 좌표 지정) | 8 | 16 |
+| `text-editing` | 본문 편집 | 편집 (탐색→치환→재검증) | 10 | 18 |
 
 각 pack 은 `packs/<id>/` 아래에 있다.
 
@@ -78,10 +80,10 @@ packs/<id>/
 
 | profile | 묶음 |
 |---|---|
-| `starter` (입문) | `core-cli` |
+| `starter` (입문) | `core-cli`, `self-description` |
 | `editor` (편집자) | `core-cli`, `text-editing`, `table-editing`, `objects-media` |
 | `publisher` (배포자) | `serialization`, `layout-rendering`, `security` |
-| `maintainer` (메인테이너) | `core-cli`, `text-editing`, `table-editing`, `objects-media`, `layout-rendering`, `serialization`, `security`, `automation` |
+| `maintainer` (메인테이너) | `automation`, `core-cli`, `corpus-diagnostics`, `layout-rendering`, `objects-media`, `security`, `self-description`, `serialization`, `table-editing`, `text-editing` |
 
 ```bash
 python gym/score.py --agent <이름>                 # 전 pack
@@ -131,6 +133,8 @@ python gym/score.py --agent <이름> --pack <id>                 # 즉시 채점
 폐루프의 첫 실증이다.
 
 **3부(T14)도 열렸다**: 채점기가 곧 반입 관문이다 — 과제 고정 정책(assets/T14_policy.json)에 대해 `rhwp gate --deep` 의 verdict:allow 가 통과 조건. 재계산 원칙이라 골든 부패가 없고, 떨어지면 violations 가 어느 축이 모자란지 말해준다. 남은 후속은 리더보드다.
+
+**4부 — 대확장(#4653)**: 운동장이 pack 으로 쪼개졌다. core-cli 1개였던 판이 **10개 pack · 과제 91건 · 만점 194** 이 됐고, 판정 논리는 `gym/core/`(runner·schema·check registry)로 모여 pack 이 늘어도 판정 어휘는 한 곳에서만 자란다. 신규 과제 전건이 기준 풀이 왕복으로 실측 등재됐다.
 
 **4부 — 대확장(#4653)**: 운동장이 pack 으로 쪼개졌다. core-cli 1개였던 판이 **8개 pack · 과제 65건 · 만점 140** 이 됐고, 판정 논리는 `gym/core/`(runner·schema·check registry)로 모여 pack 이 늘어도 판정 어휘는 한 곳에서만 자란다. 신규 과제 전건이 기준 풀이 왕복으로 실측 등재됐다.
 
