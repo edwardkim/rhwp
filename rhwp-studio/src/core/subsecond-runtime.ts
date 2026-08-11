@@ -25,48 +25,59 @@ type SubsecondDevtoolsOptions = {
   createWebSocket?: (url: string) => WebSocketConnection;
   setTimeout?: (callback: () => void, delay: number) => number;
   clearTimeout?: (id: number) => void;
-  patchBudget?: SubsecondPatchBudget;
+  now?: () => number;
+  patchAccumulation?: SubsecondPatchAccumulation;
 };
 
-export type SubsecondPatchBudgetOptions = {
+export type SubsecondPatchAccumulationOptions = {
   warn?: (message: string) => void;
   warnEveryPatches?: number;
-  /** wasm 선형 메모리 크기(byte). 측정할 수 없으면 null. */
+  /** wasm 선형 메모리 크기(byte). 측정할 수 없으면 null. 경고에 실측값을 얹는 용도다. */
   measureHeapBytes?: () => number | null;
 };
 
 const RECONNECT_MIN_MS = 250;
 const RECONNECT_MAX_MS = 4_000;
+/** 이 시간보다 오래 붙어 있었던 연결만 "살아 있었다"고 보고 백오프를 되돌린다. */
+const STABLE_CONNECTION_MS = RECONNECT_MAX_MS;
 const PATCH_WARNING_INTERVAL = 32;
-const BYTES_PER_MIB = 1024 * 1024;
+const BYTES_PER_MB = 1024 * 1024;
 
 /**
- * 적용한 핫패치가 세션 안에 얼마나 쌓였는지 세고, 임계값마다 경고한다.
+ * 세션에 쌓인 핫패치 수를 세고, 셀 때마다가 아니라 임계값마다 경고한다.
  *
  * subsecond 는 적용한 패치를 회수하지 못한다. `commit_patch` 는 이전 `JumpTable` 을 그대로 버리고
  * (`subsecond-0.7.10/src/lib.rs:308-312`, 상류가 문서화한 의도적 누수), wasm 의 선형 메모리와
  * 간접 함수 테이블은 `memory.grow`/`funcs.grow` 로 늘기만 하며 줄어들 수 없다(`:628-632`).
- * 즉 패치 하나가 더한 코드·데이터는 세션이 끝날 때까지 남는다 — 회수는 플랫폼 제약상 불가능하다.
+ * 즉 패치 하나가 더한 코드·데이터는 세션이 끝날 때까지 남는다 — 회수는 플랫폼 제약상 불가능하고,
+ * 유일한 회수 지점은 새로고침이다.
  *
  * 그래서 이 클래스는 고치지 못하는 것을 보이게만 한다. 경고 없이 쌓이면 편집 도중
  * `RangeError: WebAssembly.Memory.grow(): Unable to grow instance memory` 로 탭이 죽고,
- * 핫패치가 원인이라는 표시가 어디에도 남지 않는다. 유일한 회수 지점은 새로고침이다.
+ * 핫패치가 원인이라는 표시가 어디에도 남지 않는다.
+ *
+ * 경고 기준은 패치 수다. 선형 메모리 크기는 경고에 실측 근거로 얹기만 하고 기준으로 쓰지 않는다 —
+ * 큰 문서를 열어도 같이 커지는 값이라, 그것으로 임계를 잡으면 핫패치가 아닌 사용을 핫패치 탓으로 돌린다.
  */
-export class SubsecondPatchBudget {
+export class SubsecondPatchAccumulation {
   private applied = 0;
   private readonly warn: (message: string) => void;
   private readonly warnEveryPatches: number;
   private readonly measureHeapBytes: () => number | null;
 
-  constructor(options: SubsecondPatchBudgetOptions = {}) {
+  constructor(options: SubsecondPatchAccumulationOptions = {}) {
     this.warn = options.warn ?? (message => console.warn(message));
     this.warnEveryPatches = Math.max(1, options.warnEveryPatches ?? PATCH_WARNING_INTERVAL);
     this.measureHeapBytes = options.measureHeapBytes ?? (() => null);
   }
 
   /**
-   * 패치 하나가 적용에 들어갔음을 기록한다. wasm 에서 적용은 비동기라 이 수는 "적용을 시작한
-   * 패치 수"이며, 메모리가 실제로 늘어난 시점보다 조금 앞선다.
+   * 패치 하나가 적용에 들어갔음을 기록한다.
+   *
+   * 정확히는 "이 build 를 위한 `HotReload` 중 점프 테이블 역직렬화까지 성공한 메시지 수"다.
+   * wasm 에서 `apply_patch` 는 fetch·instantiate future 를 띄우고 바로 `Ok(())` 를 돌려주며
+   * (`subsecond-0.7.10/src/lib.rs:551`), 그 future 는 `.wasm` 이 아닌 경로에서 조용히 빠져나갈 수도
+   * 있다(`:565-567`). 그래서 이 수는 실제 메모리 증가 횟수의 상한이다.
    */
   recordApplied(): void {
     this.applied += 1;
@@ -79,9 +90,14 @@ export class SubsecondPatchBudget {
   }
 
   private heapSuffix(): string {
-    const bytes = this.measureHeapBytes();
-    if (bytes === null || !Number.isFinite(bytes)) return '';
-    return ` — wasm 선형 메모리 ${Math.round(bytes / BYTES_PER_MIB)}MB`;
+    // 경고는 패치 배달 경로 안에서 만들어진다. 측정이 던져 그 경로로 예외가 새어 나가면 안 된다.
+    try {
+      const bytes = this.measureHeapBytes();
+      if (bytes === null || !Number.isFinite(bytes)) return '';
+      return ` — wasm 선형 메모리 ${Math.round(bytes / BYTES_PER_MB)}MB`;
+    } catch {
+      return '';
+    }
   }
 }
 
@@ -131,6 +147,9 @@ export class SubsecondRevisionWatcher {
   }
 
   private schedule(): void {
+    // 예약은 언제나 한 개다. 재도색 안에서 stop()·start() 가 불리면 그 start() 가 이미 예약한
+    // 프레임을 아래 finally 가 덮어써, 취소할 수 없는 두 번째 루프가 남는다.
+    if (this.frameId !== null) return;
     this.frameId = this.scheduler.requestAnimationFrame(() => {
       this.frameId = null;
       // 재도색은 패치된 코드를 실행하므로 던질 수 있다 — 패치에 버그를 넣는 것이 정상 상황이다.
@@ -154,6 +173,9 @@ export class SubsecondRevisionWatcher {
       return;
     }
     if (revision === this.lastRevision) return;
+    // 재도색보다 먼저 올린다. 던지는 패치를 매 프레임 다시 그리면 초당 60번 실패하므로,
+    // 실패한 리비전은 다음 패치가 올 때까지 다시 시도하지 않는다 — 세션은 살아 있고,
+    // 다음 저장이 만드는 새 리비전부터 정상으로 돌아온다.
     this.lastRevision = revision;
     if (this.capabilities.invalidateSubsecondRenderCaches()) {
       this.onPatched(revision);
@@ -179,7 +201,8 @@ export function connectSubsecondDevtools(
   const createWebSocket = options.createWebSocket ?? (url => new WebSocket(url));
   const scheduleTimeout = options.setTimeout ?? ((callback, delay) => window.setTimeout(callback, delay));
   const cancelTimeout = options.clearTimeout ?? (id => window.clearTimeout(id));
-  const patchBudget = options.patchBudget ?? new SubsecondPatchBudget();
+  const now = options.now ?? (() => Date.now());
+  const patchAccumulation = options.patchAccumulation ?? new SubsecondPatchAccumulation();
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const url = `${protocol}//${location.host}/_dioxus?build_id=0`;
 
@@ -187,22 +210,28 @@ export function connectSubsecondDevtools(
   let socket: WebSocketConnection | null = null;
   let reconnectTimer: number | null = null;
   let reconnectDelay = RECONNECT_MIN_MS;
+  let openedAt: number | null = null;
 
   const connect = (): void => {
     if (!active) return;
     socket = createWebSocket(url);
     socket.onmessage = event => {
       if (typeof event.data === 'string' && applyMessage(event.data)) {
-        patchBudget.recordApplied();
+        patchAccumulation.recordApplied();
       }
     };
-    // 연결이 살아난 순간 백오프를 되돌린다. 되돌리지 않으면 dx serve 를 껐다 켠 뒤에도
-    // 다음 끊김마다 최대 4초를 기다려, 남은 세션 내내 첫 패치가 그만큼 늦는다.
     socket.onopen = () => {
-      reconnectDelay = RECONNECT_MIN_MS;
+      openedAt = now();
     };
     socket.onclose = event => {
       if (!active || event.code === 1001) return;
+      // 살아 있었던 연결이 끊긴 것이면 백오프를 되돌린다. 되돌리지 않으면 dx serve 를 껐다 켠
+      // 뒤에도 끊김마다 최대 4초를 기다려, 남은 세션 내내 첫 패치가 그만큼 늦는다.
+      // 반대로 핸드셰이크만으로 되돌려서도 안 된다 — dx serve 가 꺼져 Vite 프록시가 열자마자
+      // 끊는 상황에서 250ms 재연결을 영원히 돌게 된다. 버틴 시간으로 둘을 가른다.
+      const lasted = openedAt === null ? 0 : now() - openedAt;
+      openedAt = null;
+      if (lasted >= STABLE_CONNECTION_MS) reconnectDelay = RECONNECT_MIN_MS;
       reconnectTimer = scheduleTimeout(() => {
         reconnectTimer = null;
         connect();

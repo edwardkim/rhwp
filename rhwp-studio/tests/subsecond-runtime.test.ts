@@ -198,12 +198,56 @@ test('revision watcher keeps watching after a repaint throws', async () => {
   );
 
   repaintThrows = false;
+  frames.flush();
+  assert.deepEqual(
+    repaints,
+    ['patch-one'],
+    '실패한 리비전은 다시 시도하지 않는다 — 매 프레임 초당 60번 실패하지 않기 위한 대가다',
+  );
+
   revision = 'patch-two';
   frames.flush();
-  assert.deepEqual(repaints, ['patch-one', 'patch-two'], '패치 버그를 고치면 재도색이 살아나야 한다');
+  assert.deepEqual(
+    repaints,
+    ['patch-one', 'patch-two'],
+    '패치 버그를 고쳐 새 리비전이 오면 재도색이 살아나야 한다',
+  );
 
   watcher.stop();
   assert.equal(frames.pendingCount, 0);
+});
+
+test('a repaint that restarts the watcher leaves exactly one scheduled frame', async () => {
+  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const frames = new FakeAnimationFrames();
+  let revision = 'baseline';
+  const watcher = new SubsecondRevisionWatcher(
+    {
+      isSubsecondHotpatchEnabled: () => true,
+      getSubsecondPatchRevision: () => revision,
+      invalidateSubsecondRenderCaches: () => true,
+    },
+    () => {
+      // 재도색이 감시자를 다시 세우는 경우 — 예약이 두 개로 갈라지면 그중 하나는
+      // frameId 로 추적되지 않아 stop() 이 영원히 취소할 수 없는 루프가 된다.
+      watcher.stop();
+      watcher.start();
+    },
+    {
+      requestAnimationFrame: frames.request,
+      cancelAnimationFrame: frames.cancel,
+    },
+  );
+
+  watcher.start();
+  frames.flush();
+
+  revision = 'patch-one';
+  frames.flush();
+  assert.equal(frames.pendingCount, 1, '예약된 프레임은 언제나 한 개여야 한다');
+
+  watcher.stop();
+  assert.equal(frames.pendingCount, 0, 'stop() 뒤에는 취소되지 않은 루프가 남으면 안 된다');
 });
 
 test('a stopped revision watcher releases its frame and starts again', async () => {
@@ -297,11 +341,12 @@ test('devtools websocket forwards patch messages and reconnects without reloadin
   assert.equal(sockets[1]?.closed, true);
 });
 
-test('devtools websocket resets its reconnect backoff once the socket reopens', async () => {
+test('devtools websocket resets its reconnect backoff only after a connection that lasted', async () => {
   const { connectSubsecondDevtools } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
   const scheduled: Array<() => void> = [];
   const delays: number[] = [];
+  let clock = 0;
 
   const disconnect = connectSubsecondDevtools(
     {
@@ -316,60 +361,86 @@ test('devtools websocket resets its reconnect backoff once the socket reopens', 
         return scheduled.length;
       },
       clearTimeout: () => {},
+      now: () => clock,
     },
   );
 
-  // dx serve 가 꺼져 재연결이 이어지는 동안에는 대기가 두 배씩 늘어난다.
+  // dx serve 가 꺼져 연결조차 되지 않는 동안에는 대기가 두 배씩 늘어난다.
   sockets[0]?.onclose?.({ code: 1006 } as CloseEvent);
   scheduled.shift()?.();
+  assert.deepEqual(delays, [250]);
+
+  // 열리자마자 끊기는 연결(프록시는 살아 있고 dx serve 는 죽은 상태)은 되돌리지 않는다.
+  sockets[1]?.onopen?.({} as Event);
+  clock += 10;
   sockets[1]?.onclose?.({ code: 1006 } as CloseEvent);
   scheduled.shift()?.();
-  assert.deepEqual(delays, [250, 500]);
-  assert.equal(sockets.length, 3);
+  assert.deepEqual(
+    delays,
+    [250, 500],
+    '핸드셰이크만 성공한 연결로 백오프를 되돌리면 250ms 재연결이 영원히 돈다',
+  );
 
-  // dx serve 가 돌아오면 다음 끊김은 다시 최소 대기에서 시작해야 한다.
+  // dx serve 가 돌아와 실제로 붙어 있던 연결이 끊기면 다시 최소 대기에서 시작한다.
   sockets[2]?.onopen?.({} as Event);
+  clock += 5_000;
   sockets[2]?.onclose?.({ code: 1006 } as CloseEvent);
   assert.deepEqual(
     delays,
     [250, 500, 250],
-    '연결이 성공하면 백오프가 최소값으로 돌아가야 한다',
+    '살아 있던 연결이 끊기면 백오프가 최소값으로 돌아가야 한다',
   );
 
   disconnect?.();
 });
 
-test('patch budget warns that applied patches are never reclaimed', async () => {
-  const { SubsecondPatchBudget } = await loadRuntime();
+test('patch accumulation warns that applied patches are never reclaimed', async () => {
+  const { SubsecondPatchAccumulation } = await loadRuntime();
   const warnings: string[] = [];
-  const budget = new SubsecondPatchBudget({
+  const accumulation = new SubsecondPatchAccumulation({
     warn: message => warnings.push(message),
     warnEveryPatches: 3,
     measureHeapBytes: () => 512 * 1024 * 1024,
   });
 
-  budget.recordApplied();
-  budget.recordApplied();
+  accumulation.recordApplied();
+  accumulation.recordApplied();
   assert.deepEqual(warnings, [], '임계값 아래에서는 경고하지 않는다');
 
-  budget.recordApplied();
+  accumulation.recordApplied();
   assert.equal(warnings.length, 1);
-  assert.match(warnings[0], /3/, '경고는 누적 패치 수를 담는다');
-  assert.match(warnings[0], /512/, '경고는 측정한 선형 메모리 크기를 담는다');
+  assert.match(warnings[0], /핫패치 3건/, '경고는 누적 패치 수를 담는다');
+  assert.match(warnings[0], /512MB/, '경고는 측정한 선형 메모리 크기를 담는다');
 
-  budget.recordApplied();
-  budget.recordApplied();
+  accumulation.recordApplied();
+  accumulation.recordApplied();
   assert.equal(warnings.length, 1);
-  budget.recordApplied();
+  accumulation.recordApplied();
   assert.equal(warnings.length, 2, '임계값을 넘길 때마다 다시 경고한다');
-  assert.match(warnings[1], /6/);
+  assert.match(warnings[1], /핫패치 6건/);
 });
 
-test('devtools websocket counts only applied patches toward the budget', async () => {
-  const { connectSubsecondDevtools, SubsecondPatchBudget } = await loadRuntime();
+test('patch accumulation keeps warning when the heap cannot be measured', async () => {
+  const { SubsecondPatchAccumulation } = await loadRuntime();
+  const warnings: string[] = [];
+  const accumulation = new SubsecondPatchAccumulation({
+    warn: message => warnings.push(message),
+    warnEveryPatches: 1,
+    measureHeapBytes: () => {
+      throw new Error('memory is detached');
+    },
+  });
+
+  accumulation.recordApplied();
+  assert.equal(warnings.length, 1, '측정 실패가 경고 자체를 삼키면 안 된다');
+  assert.doesNotMatch(warnings[0], /선형 메모리 \d+MB/, '측정하지 못한 값을 지어내지 않는다');
+});
+
+test('devtools websocket counts only applied patches toward the accumulation', async () => {
+  const { connectSubsecondDevtools, SubsecondPatchAccumulation } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
   const warnings: string[] = [];
-  const patchBudget = new SubsecondPatchBudget({
+  const patchAccumulation = new SubsecondPatchAccumulation({
     warn: message => warnings.push(message),
     warnEveryPatches: 2,
   });
@@ -383,7 +454,7 @@ test('devtools websocket counts only applied patches toward the budget', async (
       createWebSocket: url => new FakeWebSocket(url, sockets),
       setTimeout: () => 0,
       clearTimeout: () => {},
-      patchBudget,
+      patchAccumulation,
     },
   );
 

@@ -204,7 +204,7 @@ import { fontFamilyChainForDisplay } from './font-substitution';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
 import {
   connectSubsecondDevtools,
-  SubsecondPatchBudget,
+  SubsecondPatchAccumulation,
   type SubsecondWasmExports,
 } from './subsecond-runtime';
 
@@ -281,7 +281,9 @@ export class WasmBridge {
       disconnectSubsecondDevtools = connectSubsecondDevtools(
         wasmExports as unknown as SubsecondWasmExports,
         {
-          patchBudget: new SubsecondPatchBudget({
+          patchAccumulation: new SubsecondPatchAccumulation({
+            // subsecond 세션에서는 이 모듈이 dx 가 만든 glue(`target/rhwp-subsecond-vite/`)로
+            // 바뀐다. 타입은 언제나 `pkg/rhwp.d.ts` 를 보므로 memory 부재는 타입으로 못 걸러진다.
             measureHeapBytes: () => wasmModule.memory?.buffer.byteLength ?? null,
           }),
         },
