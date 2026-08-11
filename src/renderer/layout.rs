@@ -5771,7 +5771,43 @@ impl LayoutEngine {
                 None
             };
             hcursor.prev_item_content_bottom_y = prev_item_content_bottom_y;
-            if !shape_jumped && (!prev_tac_seg_applied || current_is_endnote_question_title) {
+            // [#4639 · #4599 ⑧] TAC-직후 보정 스킵의 예외 — 직전 TAC host 문단이 비-TAC
+            // TopAndBottom Shape/Picture float 를 함께 앵커한 경우, TAC 전진은 표
+            // 줄만 소비하고 그림 밴드는 흐름에 남는다(36442008 p1: 그림
+            // 706.7..911.3 위로 '붙임' 절이 220.8px 겹침 — 한글 2022 캐시 PDF·저장
+            // 사다리 모두 955.2 실측). 이때는 저장 사다리 보정을 허용해 후속
+            // 문단이 그림 밴드 아래로 스냅되게 한다. hwpx stored layout 한정.
+            let prev_tac_host_sibling_float = prev_tac_seg_applied
+                && self.profile.get().hwpx_stored_layout()
+                && tac_seg_applied_para
+                    .or(hcursor.prev_layout_para)
+                    .and_then(|pi| paragraphs.get(pi))
+                    .is_some_and(|p| {
+                        p.controls
+                            .iter()
+                            .any(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
+                            && p.controls.iter().any(|c| {
+                                let cm = match c {
+                                    Control::Shape(sh) => sh.common(),
+                                    Control::Picture(pic) => &pic.common,
+                                    _ => return false,
+                                };
+                                !cm.treat_as_char
+                                    && matches!(
+                                        cm.text_wrap,
+                                        TextWrap::TopAndBottom | TextWrap::Square
+                                    )
+                                    && matches!(
+                                        cm.vert_rel_to,
+                                        crate::model::shape::VertRelTo::Para
+                                    )
+                            })
+                    });
+            if !shape_jumped
+                && (!prev_tac_seg_applied
+                    || current_is_endnote_question_title
+                    || prev_tac_host_sibling_float)
+            {
                 // [Task #1027 Stage C] inter-item VPOS_CORR 보정을 HeightCursor 에 위임 (동작 동일).
                 // 이전 문단 overlay-shape/분할표 bypass, page/lazy base 산출, sb 차감,
                 // ≤8px 백워드 클램프를 모두 캡슐화 (Stage A/B 함수 결합). 렌더러·페이지네이터 공유.
