@@ -5771,6 +5771,8 @@ impl LayoutEngine {
                 None
             };
             hcursor.prev_item_content_bottom_y = prev_item_content_bottom_y;
+            // [#4613 · #4599 밴드-플로우] 전방 스냅 기각 판정용 — vpos_adjust 이전의 순차 흐름 위치.
+            let y_before_vpos_adjust = y_offset;
             if !shape_jumped && (!prev_tac_seg_applied || current_is_endnote_question_title) {
                 // [Task #1027 Stage C] inter-item VPOS_CORR 보정을 HeightCursor 에 위임 (동작 동일).
                 // 이전 문단 overlay-shape/분할표 bypass, page/lazy base 산출, sb 차감,
@@ -6233,6 +6235,60 @@ impl LayoutEngine {
             }
 
             if item_is_paragraph && !visible_float_exclusions.is_empty() {
+                // [#4613 · #4599 밴드-플로우] 낡은 사다리 전방 스냅 기각 — 한글 2022 는
+                // TopAndBottom 자리차지 표 위 틈에 들어가는 줄을 틈에 배치하는데,
+                // 구세대 한글이 저장한 사다리는 그 줄을 표 아래에 둔 채였다
+                // (36477266 p2: pi5 'ㅇ 사업명' 저장 Δv=259px = 표 아래, 한글 2022
+                // PDF 실측 y=369 = 표 위 틈). 순차 흐름 위치에서 줄 전체가 활성
+                // exclusion 밴드 위에 들어가는 단일 줄 문단을 저장 사다리가 밴드
+                // 안/아래로 보내면, 그 전방 스냅을 기각하고 사다리 base 를 역보정해
+                // 후속 문단의 상대 간격을 유지한다. 서명-한정: hwpx stored layout,
+                // 선행 문단 소유 zone, 단일 저장 seg, 8px 초과 전방 스냅만.
+                if self.profile.get().hwpx_stored_layout() && y_offset > y_before_vpos_adjust + 8.0
+                {
+                    // 잉크 있는(비공백 텍스트) 단일 줄만 — 공백 줄의 밴드 배치는
+                    // PDF 로 관측 불가한 데다, 전화친절도 6460000-202600001 p58 실측
+                    // 에서 공백 줄 기각이 후속 흐름을 −25px 어긋내는 반증이 나왔다.
+                    let single_line_probe = paragraphs.get(item_para).and_then(|p| {
+                        (p.line_segs.len() == 1 && para_has_non_whitespace_text(p))
+                            .then(|| {
+                                p.line_segs
+                                    .first()
+                                    .map(|seg| hwpunit_to_px(seg.line_height, self.dpi))
+                            })
+                            .flatten()
+                    });
+                    // 틈이 실제로 비어 있다는 증거 — 직전 렌더 아이템이 zone 소유
+                    // 문단의 줄(호스트 제목/줄)이어야 한다. 페이지/단 상단처럼 틈을
+                    // 이미 다른 항목(호스트 줄 미방출 상태의 표 상단 영역)이 차지한
+                    // 형상에서 기각하면 줄이 그 위에 겹친다(36425171 p4 pi17 실측:
+                    // 정당한 96→297 스냅을 기각해 +24.9px 악화 — 귀책 격리로 좁힘).
+                    let prev_item_is_owner_line = |owner: usize| {
+                        item_ordinal
+                            .checked_sub(1)
+                            .and_then(|idx| col_content.items.get(idx))
+                            .is_some_and(|prev_item| {
+                                matches!(prev_item,
+                                    PageItem::FullParagraph { para_index }
+                                    | PageItem::PartialParagraph { para_index, .. }
+                                        if *para_index == owner)
+                            })
+                    };
+                    if let Some(probe) = single_line_probe {
+                        if probe > 0.0
+                            && visible_float_exclusions.iter().any(|zone| {
+                                zone.owner_para < item_para
+                                    && prev_item_is_owner_line(zone.owner_para)
+                                    && y_before_vpos_adjust + probe <= zone.top + 0.5
+                                    && y_offset + 0.5 >= zone.top
+                            })
+                        {
+                            let delta = y_offset - y_before_vpos_adjust;
+                            y_offset = y_before_vpos_adjust;
+                            hcursor.shift_vpos_base_for_rendered_backtrack(delta);
+                        }
+                    }
+                }
                 visible_float_exclusions.retain(|zone| y_offset < zone.bottom - 0.5);
                 // [Task #1794] 잉크-겹침 프로브를 HWP5 소스에도 적용 — 자리차지 표의
                 // exclusion zone 과 문단 첫 줄 잉크가 겹치면 소스 포맷과 무관하게 표
@@ -6313,6 +6369,15 @@ impl LayoutEngine {
                                 | PageItem::PartialTable { para_index, .. }
                                 if *para_index == item_para)
                     });
+                // [#4613 · #4599 밴드-플로우] 잉크 없는(공백 전용·컨트롤 없음) 문단은 밴드와
+                // 충돌할 잉크가 없다 — 한글 2022 는 이런 빈 줄을 자리차지 표 밴드에
+                // 겹친 채 그대로 두고, 다음 잉크 줄부터 표 아래에서 재개한다
+                // (36477266 p2 pi7 ' ': 한글 유지 y 425..439, 표 하단 583.2 직후
+                // 4.3px 에서 pi8 재개 — PDF 실측). hwpx stored layout 한정.
+                let item_para_inkless = self.profile.get().hwpx_stored_layout()
+                    && paragraphs
+                        .get(item_para)
+                        .is_some_and(|p| p.controls.is_empty() && !para_has_non_whitespace_text(p));
                 for zone in &visible_float_exclusions {
                     // [Issue #1549] 자기 문단에 앵커된 float 표는 그 문단의 텍스트(제목)를
                     // 밀어내지 않는다 — 제목은 앵커(표 위)에 남아야 한다. owner 가 다른 후속
@@ -6320,6 +6385,9 @@ impl LayoutEngine {
                     // [#2439] 단, 같은 문단의 표 항목 뒤에 emit 된 post-text(서명란)는
                     // 이미 표 뒤 순서로 확정된 것이므로 자기 exclusion 도 소비해야 한다.
                     if zone.owner_para == item_para && !same_owner_table_precedes {
+                        continue;
+                    }
+                    if item_para_inkless {
                         continue;
                     }
                     let starts_in_zone = jump_to + 0.5 >= zone.top && jump_to < zone.bottom;
