@@ -409,7 +409,7 @@ fn recipes() -> Vec<Recipe> {
         br#"{"schemaVersion":"1.0","kind":"keyring","keys":[]}"#,
     )
     .expect("빈 keyring 픽스처");
-    // harness status 픽스처 — 깨진 캡슐 폴더 규약(capsules/ 하위).
+    // harness-status 픽스처 — 깨진 캡슐 폴더 규약(capsules/ 하위).
     let harness_dir = dir.join("prov-harness");
     std::fs::create_dir_all(harness_dir.join("capsules")).expect("하네스 작업장");
     std::fs::write(
@@ -419,6 +419,17 @@ fn recipes() -> Vec<Recipe> {
         br#"{"kind":"notACapsule"}"#,
     )
     .expect("깨진 하네스 캡슐");
+    // harness wrap 픽스처 — capsule·output·parent 는 실산출 경로에서만 나오므로
+    // 허용목록 대신 레시피가 그 필드를 실제로 내게 한다(빈 작업장 = 첫 캡슐).
+    let harness_wrap_dir = dir.join("prov-harness-wrap");
+    std::fs::create_dir_all(harness_wrap_dir.join("capsules")).expect("wrap 작업장");
+    let harness_plan = serde_json::json!({
+        "planVersion": "1.0",
+        "input": p(&table),
+        "output": p(&harness_wrap_dir.join("wrapped.hwp")),
+        "steps": [ { "action": "set_cell", "table": 0, "row": 0, "col": 0, "text": "ZZ" } ],
+    })
+    .to_string();
 
     let keygen_out = dir.join("prov-keygen.key.json");
     let _ = std::fs::remove_file(&keygen_out);
@@ -888,12 +899,30 @@ fn recipes() -> Vec<Recipe> {
             ndjson: false,
         },
         Recipe {
-            // harness status — 깨진 캡슐 하나로 verdict:broken(exit 3) 경로 고정.
-            command: "harness",
+            // harness-status — 깨진 캡슐 하나로 verdict:broken(exit 3) 경로 고정.
+            command: "harness-status",
             doc: None,
-            args: vec![s("harness"), s("status"), p(&harness_dir), s("--json")],
+            args: vec![s("harness-status"), p(&harness_dir), s("--json")],
             stdin: None,
             exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // harness wrap — 실산출 경로. 봉투는 경로·해시·연번뿐이라 문서
+            // 오라클이 없다(doc: None); steps 는 개수라 문서 문자열이 아니다.
+            command: "harness",
+            doc: None,
+            args: vec![
+                s("harness"),
+                s("wrap"),
+                s("--plan"),
+                harness_plan,
+                s("--dir"),
+                p(&harness_wrap_dir),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
             ndjson: false,
         },
         Recipe {

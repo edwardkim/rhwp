@@ -354,6 +354,10 @@ fn main() {
         Some("keygen") => exit_with(cmd_keygen(&args[2..])),
         Some("verify-signature") => exit_with(cmd_verify_signature(&args[2..])),
         Some("harness") => exit_with(cmd_harness(&args[2..])),
+        // [#4537] 통합 판정은 **읽기 전용**이라 쓰기 명령(harness)과 표면을 나눈다 —
+        // capabilities 의 category 가 도구 주석(readOnlyHint)의 교차 검증 원천이므로,
+        // 한 명령이 쓰기·읽기를 겸하면 MCP 주석 계약이 성립하지 않는다.
+        Some("harness-status") => exit_with(cmd_harness_status(&args[2..])),
         // [#3719 §6-4] 계획을 *만드는* 쪽의 정답지 — `run` 바로 옆에 둔다.
         Some("export-plan-schema") => exit_with(cmd_export_plan_schema(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
@@ -1661,8 +1665,8 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 },
                 "required": ["dir"],
             }),
-            "harness",
-            serde_json::json!(["harness", "status", "{dir}", "--json"]),
+            "harness-status",
+            serde_json::json!(["harness-status", "{dir}", "--json"]),
             serde_json::json!([
                 { "when": "keyring", "args": ["--keyring", "{keyring}"] },
                 { "when": "deep", "args": ["--deep"] }
@@ -2094,9 +2098,9 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "harness",
             "edit",
-            "검증 루프 단일 명령 — init(작업장 규약)·wrap(실산출+영수증+캡슐+자동 부모 연결+서명 한 방)·status(체인·서명·[--deep] 재현 통합 판정, 깨짐 exit 3) (#4537)",
+            "검증 루프의 쓰는 쪽 — init(작업장 규약)·wrap(실산출+영수증+캡슐+자동 부모 연결+서명 한 방). 판정은 harness-status (#4537)",
             false,
-            &["--json", "--plan", "--dir", "--sign-key", "--key-id", "--keyring", "--deep"],
+            &["--json", "--plan", "--dir", "--sign-key", "--key-id"],
             &[
                 "schemaVersion",
                 "dir",
@@ -2104,9 +2108,22 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "output",
                 "parent",
                 "signed",
+            ],
+        ),
+        cmd_json(
+            "harness-status",
+            "diagnostic",
+            "작업장 통합 판정 — 캡슐 체인 무결·(--keyring) 서명 집계·(--deep) 전수 재현을 한 봉투로. 깨짐 exit 3, brokenAt 이 원인 캡슐 (#4537)",
+            false,
+            &["--json", "--keyring", "--deep"],
+            &[
+                "schemaVersion",
+                "dir",
                 "capsules",
                 "chainValid",
                 "brokenAt",
+                "signed",
+                "reproduced",
                 "verdict",
             ],
         ),
@@ -3665,7 +3682,7 @@ fn print_help() {
     println!("  verify-signature <캡슐> --keyring <키링.json> [--sig <서명.json>] [--json]  캡슐 서명 검증 (#4509)");
     println!("  harness init <폴더> [--key-id <id>]     검증 작업장 생성 (#4537)");
     println!("  harness wrap --plan <JSON|@파일> --dir <작업장> [--sign-key <키>]  실행+영수증+캡슐+체인+서명 한 방 (#4537)");
-    println!("  harness status <작업장> [--keyring <키링>] [--deep] [--json]  체인·서명·재현 통합 판정 (#4537)");
+    println!("  harness-status <작업장> [--keyring <키링>] [--deep] [--json]  체인·서명·재현 통합 판정 (읽기 전용) (#4537)");
     println!("      전 step 을 정적 선검증(불가 시 실행 0·exit 2)하고 인메모리로 원자");
     println!("      실행해 단언(verify) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경.");
     println!("      steps: fill_fields{{data}} · replace_text{{find,replace[,occurrence]}}");
@@ -16196,7 +16213,7 @@ fn cmd_harness_status(args: &[String]) -> i32 {
         i += 1;
     }
     let Some(dir) = dir else {
-        eprintln!("사용법: rhwp harness status <작업장> [--keyring <키링.json>] [--deep] [--json]");
+        eprintln!("사용법: rhwp harness-status <작업장> [--keyring <키링.json>] [--deep] [--json]");
         return EXIT_USAGE;
     };
     let caps_dir = std::path::Path::new(dir).join("capsules");
@@ -16341,7 +16358,7 @@ fn cmd_harness_status(args: &[String]) -> i32 {
             },
             "verdict": if verdict_ok { "ok" } else { "broken" },
         }),
-        "harness",
+        "harness-status",
     );
     if json_mode {
         println!("{envelope}");
@@ -16359,14 +16376,14 @@ fn cmd_harness_status(args: &[String]) -> i32 {
     }
 }
 
-/// [#4537] harness 디스패치 — init·wrap·status.
+/// [#4537] harness 디스패치 — init·wrap. 판정(status)은 읽기 전용이라
+/// 최상위 `harness-status` 로 나가 있다.
 fn cmd_harness(args: &[String]) -> i32 {
     match args.first().map(String::as_str) {
         Some("init") => cmd_harness_init(&args[1..]),
         Some("wrap") => cmd_harness_wrap(&args[1..]),
-        Some("status") => cmd_harness_status(&args[1..]),
         _ => {
-            eprintln!("사용법: rhwp harness <init|wrap|status> …");
+            eprintln!("사용법: rhwp harness <init|wrap> …  (판정: rhwp harness-status)");
             EXIT_USAGE
         }
     }
