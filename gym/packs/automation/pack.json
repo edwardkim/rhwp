@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "automation",
+  "title": "자동화·검증 사다리",
+  "axis": "자동화 (계획·캡슐·서명·앵커·정산·감사)",
+  "description": "검증 사다리 1~10년 축을 과제로 만든 pack. 제출이 곧 증명이고, 채점은 사다리의 판정 명령 한 번이다.",
+  "requires": {
+    "commands": [
+      "anchor",
+      "audit",
+      "audit-report",
+      "bundle",
+      "conformance",
+      "disclose",
+      "export-tables",
+      "gate",
+      "recall-scope",
+      "settle",
+      "verify-signature"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.2",
+    "rhwpCommit": "94e4790e5a6bc766b75c3c9695b290f87e3793d4",
+    "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
+  }
+}

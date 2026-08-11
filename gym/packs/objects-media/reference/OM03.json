@@ -1,0 +1,28 @@
+{
+  "id": "OM03",
+  "steps": [
+    {
+      "run": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{sub:thumb.png}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "width": {
+          "cmd": [
+            "thumbnail",
+            "{input}",
+            "-o",
+            "{sub:thumb.png}",
+            "--json"
+          ],
+          "path": "width"
+        }
+      }
+    }
+  ]
+}

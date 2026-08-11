@@ -1,0 +1,43 @@
+{
+  "id": "SR01",
+  "tier": 3,
+  "title": "HWPX 변환 자기검증",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력을 HWPX 로 변환해 conv.hwpx 로 제출하고, 변환물의 IR 동일 여부를 answer.json 에 {\"identical\": true|false} 로 적어라. 힌트: rhwp export-hwpx --verify.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwpx",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "진짜 HWPX 형식",
+      "op": "value_eq",
+      "value": "hwpx",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:conv.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "name": "IR 동일 판정",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "{file:conv.hwpx}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

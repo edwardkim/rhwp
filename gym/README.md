@@ -32,54 +32,77 @@ python gym/score.py --agent <너의이름>   # 4) 자가 채점 — 스코어카
    채점 시점에 rhwp 로 기대값을 재계산하고, 산출물은 rhwp 로 재검증한다
    (검색·재조회·해시). 픽스처가 진화하면 정답도 따라 진화한다.
 
-## 과제판 (14과제 · 만점 32)
+## 과제판 — pack 8개 · 과제 65건 · 만점 140
 
-| ID | 티어 | 과제 | 능력 축 |
-|---|---|---|---|
-| T01 | 1 | 문서 신상 파악 | 조사 |
-| T02 | 1 | 전수 검색 | 조사 |
-| T03 | 2 | 서식 조사 | 발견 |
-| T04 | 2 | 데이터 추출 | 추출 |
-| T05 | 2 | 표 수확 | 추출 |
-| T06 | 2 | 문구 치환 | 편집 (탐색+실행) |
-| T07 | 3 | 서식 채움 | 편집 (발견→채움) |
-| T08 | 3 | 표 셀 교정 | 편집 (좌표 지정) |
-| T09 | 3 | 원자 계획 실행 | 계획 (run 계획서) |
-| T10 | 3 | 결정론 실증 | 검증 (같은 계획=같은 바이트 + 계획 재현 증명) |
-| T11 | 2 | 보안 스윕 | 방어 (주입 신호) |
-| T12 | 2 | 변환 자기검증 | 변환 (verify 봉투 판독) |
-| T13 | 3 | 하네스 루프 (2부) | 하네스 (wrap 체인 → status 한 호출 판정) |
-| T14 | 3 | 관문 통과 (3부) | 게이트 (서명·앵커 캡슐 → gate verdict:allow) |
+능력 영역을 **pack** 으로 나눈다. 점수는 pack 별로 보존되며 총점은 편의값이다 —
+어느 능력이 모자란지는 pack 별 점수가 말한다.
 
-티어 = 배점(1·2·3). 통과 기준은 과제 파일의 `checks` 가 전부 참이 되는 것이고,
-채점 세부는 스코어카드(`scorecard.json`·`report.md`)에 있는 그대로 남는다 —
-실패도 데이터다.
+| pack | 이름 | 능력 축 | 과제 | 만점 |
+|---|---|---|---|---|
+| `core-cli` | 코어 CLI | 조사·추출·편집·검증 (운동장 최소 코어) | 14 | 32 |
+| `automation` | 자동화·검증 사다리 | 자동화 (계획·캡슐·서명·앵커·정산·감사) | 11 | 30 |
+| `layout-rendering` | 조판·렌더링 | 검증 (조판 판정·렌더 산출) | 6 | 11 |
+| `objects-media` | 개체·미디어 | 발견 (필드·개체·렌더 산출물) | 6 | 13 |
+| `security` | 보안 스윕 | 보안 (은닉·주입·유니코드·PII) | 7 | 13 |
+| `serialization` | 저장·변환 | 변환 (형식 왕복·IR 대조) | 6 | 14 |
+| `table-editing` | 표 편집 | 편집 (표 좌표 지정) | 7 | 14 |
+| `text-editing` | 본문 편집 | 편집 (탐색→치환→재검증) | 8 | 13 |
 
-검사의 `expect_exit`은 단일 정상 종료 코드를 뜻한다. `ir-diff`처럼 동일(exit 0)과 차이 검출(exit 3)이
-모두 유효한 판정인 명령은 `expect_exits:[0,3]`으로 선언한다. 채점기는 허용된 종료 코드의 JSON 봉투를
-계속 읽어 `identical` 같은 판정 값을 답안과 비교한다. 허용 목록에 없는 IO·사용법 오류는 판정 전에
-실패한다.
+각 pack 은 `packs/<id>/` 아래에 있다.
 
-### 검사 연산자
+```text
+packs/<id>/
+├── pack.json      # manifest — id·요구 capability·기준 실행 신원
+├── tasks/*.json   # 과제
+├── reference/*.json  # 기준 풀이(정답 노출 — 채점 재현용, 푸는 쪽은 보지 않는다)
+└── assets/        # 과제 고정 자산(정책 등)
+```
 
-| `op` | 판정 | 비고 |
-|---|---|---|
-| `answer_eq` | 라이브 재계산값 == 제출 답안 | 조사·추출 과제의 기본 |
-| `len_answer_eq` | 재계산 배열 길이 == 제출 답안 | 개수 문제 |
-| `len_ge` | 재계산 배열 길이 >= 값 | 하한 |
-| `value_eq` | 봉투의 `path` 값 == 값 | **좌표를 지목하는** 정확 대조 |
-| `cell_text_eq` | `tables[table]` 의 (row, col) 셀 텍스트 == 값 | 표 좌표 지목 |
-| `deep_contains` | `path` 아래 어딘가에 값이 존재 | **전역 검사** — 대상을 지목하지 못하므로 편집 과제에는 쓰지 않는다 |
-| `same_hash` | 제출 파일 2개의 바이트 동일 | 결정론 |
-| `differs_from_input` | 제출 파일 != 과제 입력(바이트) | 무편집 복사 거부 |
+### pack manifest 가 선언하는 것
 
-인자 자리표: `{input}`(과제 입력), `{file:이름}`(제출 파일 경로),
-`{sha256:이름}`(제출 파일의 채점 시점 해시 — rhwp 에게 재현 판정을 시키는 통로).
+```json
+{
+  "id": "table-editing",
+  "requires": { "commands": ["export-tables", "edit", "table-to-csv"] },
+  "runner": { "rhwpVersion": "…", "rhwpCommit": "…", "capabilitiesSha256": "…" }
+}
+```
 
-> **왜 `deep_contains` 를 편집 과제에서 뺐나** — 봉투 전체를 훑는 검사는 "값이
-> 어딘가 있으면 통과"라, 지시한 대상이 아니라 **엉뚱한 필드·셀을 고친 제출도
-> 통과**시켰다([#4600](https://github.com/edwardkim/rhwp/issues/4600) 실측:
-> 잘못된 제출 묶음이 9/32). 편집 과제의 검사는 좌표를 지목해야 한다.
+- `requires.commands` — 이 pack 을 채점하려면 바이너리에 있어야 하는 명령.
+  없으면 **0점이 아니라 `unavailable`** 로 보고한다. 부재를 실패로 위장하지
+  않는 것이 이 저장소의 결이다 — 오래된 바이너리에게 "너는 0점"은 거짓말이다.
+- `runner` — **기준 실행의 신원**. 점수는 바이너리마다 달라질 수 있으므로
+  "이 점수가 어느 바이너리에서 났는가"를 pack 과 스코어카드 양쪽에 남긴다.
+
+## 프로파일 — pack 을 고르는 도구
+
+| profile | 묶음 |
+|---|---|
+| `starter` (입문) | `core-cli` |
+| `editor` (편집자) | `core-cli`, `text-editing`, `table-editing`, `objects-media` |
+| `publisher` (배포자) | `serialization`, `layout-rendering`, `security` |
+| `maintainer` (메인테이너) | `core-cli`, `text-editing`, `table-editing`, `objects-media`, `layout-rendering`, `serialization`, `security`, `automation` |
+
+```bash
+python gym/score.py --agent <이름>                 # 전 pack
+python gym/score.py --agent <이름> --profile editor  # 프로파일
+python gym/score.py --agent <이름> --pack security   # pack 지목
+```
+
+프로파일은 pack 을 **고르는** 도구이지 점수를 뭉치는 도구가 아니다.
+
+## 새 과제를 등재하는 법 — 기준 풀이 왕복
+
+과제를 손으로 늘리면 "돌아가지 않는 과제" 가 섞인다. pack 이 8개면 그 위험도
+8배다. 그래서 신규 과제는 **기준 풀이 왕복을 통과해야만** 등재된다.
+
+```bash
+python gym/tools/build_baseline.py --agent <이름> --pack <id>  # 기준 풀이 실행 → 제출물 생성
+python gym/score.py --agent <이름> --pack <id>                 # 즉시 채점
+```
+
+즉 **저장소에 들어간 모든 과제는 풀 수 있음이 실측된 과제**다. 기준 풀이 형식은
+`gym/tools/build_baseline.py` 의 문서 문자열에 있다.
 
 ## 제출 형식
 
@@ -108,6 +131,8 @@ python gym/score.py --agent <너의이름>   # 4) 자가 채점 — 스코어카
 폐루프의 첫 실증이다.
 
 **3부(T14)도 열렸다**: 채점기가 곧 반입 관문이다 — 과제 고정 정책(assets/T14_policy.json)에 대해 `rhwp gate --deep` 의 verdict:allow 가 통과 조건. 재계산 원칙이라 골든 부패가 없고, 떨어지면 violations 가 어느 축이 모자란지 말해준다. 남은 후속은 리더보드다.
+
+**4부 — 대확장(#4653)**: 운동장이 pack 으로 쪼개졌다. core-cli 1개였던 판이 **8개 pack · 과제 65건 · 만점 140** 이 됐고, 판정 논리는 `gym/core/`(runner·schema·check registry)로 모여 pack 이 늘어도 판정 어휘는 한 곳에서만 자란다. 신규 과제 전건이 기준 풀이 왕복으로 실측 등재됐다.
 
 ## 설계 원칙 (채점기가 지키는 것)
 

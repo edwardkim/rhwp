@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
 import tempfile
@@ -12,18 +11,25 @@ from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SCORE_PATH = REPO_ROOT / "gym" / "score.py"
-T12_PATH = REPO_ROOT / "gym" / "tasks" / "T12.json"
+# [#4653] 과제는 pack 으로 이관됐고 판정 논리는 gym/core 로 옮겨졌다.
+CORE_CLI_TASKS = REPO_ROOT / "gym" / "packs" / "core-cli" / "tasks"
+T12_PATH = CORE_CLI_TASKS / "T12.json"
 T12_BASELINE = REPO_ROOT / "gym" / "baselines" / "claude-fable-5" / "T12"
 
 
 def load_score_module():
-    spec = importlib.util.spec_from_file_location("gym_score_issue_4586_test", SCORE_PATH)
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    """판정 엔진 모듈 — 목(mock) 지점은 이제 gym.core.runner 다.
+
+    `gym/score.py` 는 진입점이라 `run_cli` 를 재수출만 하므로, 거기에 패치를
+    걸면 엔진 안쪽 호출은 잡히지 않는다. 실제 이음매를 겨눈다.
+    """
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    from gym.core import checks as check_registry
+    from gym.core import runner
+
+    runner.sha256_of = check_registry.sha256_of  # 테스트 편의 재수출
+    return runner
 
 
 class ExitVerdictContractTests(unittest.TestCase):
@@ -270,8 +276,7 @@ class WeakCheckLockTests(unittest.TestCase):
     """[#4600] 경로 없는 전역 검사로 되돌아가는 것을 막는 과제 계약 잠금."""
 
     def _task(self, task_id):
-        path = REPO_ROOT / "gym" / "tasks" / f"{task_id}.json"
-        return json.loads(path.read_text(encoding="utf-8"))
+        return json.loads((CORE_CLI_TASKS / f"{task_id}.json").read_text(encoding="utf-8"))
 
     def test_t07_pins_the_first_field_instead_of_scanning_the_envelope(self):
         checks = self._task("T07")["checks"]
@@ -304,9 +309,8 @@ class TaskCommandExistenceTests(unittest.TestCase):
     `harness-status` 를 불러 영구 실패하던 것을 잡은 가드."""
 
     def test_every_task_command_is_a_known_cli_command(self):
-        tasks_dir = REPO_ROOT / "gym" / "tasks"
         called = set()
-        for path in sorted(tasks_dir.glob("*.json")):
+        for path in sorted((REPO_ROOT / "gym" / "packs").glob("*/tasks/*.json")):
             task = json.loads(path.read_text(encoding="utf-8"))
             for check in task.get("checks", []):
                 cmd = check.get("cmd")

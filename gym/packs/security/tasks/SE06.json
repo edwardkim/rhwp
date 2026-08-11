@@ -1,0 +1,30 @@
+{
+  "id": "SE06",
+  "tier": 2,
+  "title": "메타데이터 제거 목록",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력을 제출용으로 정리하고 **제거된 항목 수**를 answer.json 에 {\"removed\": N} 으로 제출하라. 힌트: rhwp edit sanitize 의 removedCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "제거 항목 수",
+      "op": "answer_eq",
+      "answer": "removed",
+      "path": "removedCount",
+      "cmd": [
+        "edit",
+        "sanitize",
+        "{input}",
+        "-o",
+        "{file:s.hwp}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

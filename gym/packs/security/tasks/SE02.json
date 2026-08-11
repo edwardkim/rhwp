@@ -1,0 +1,33 @@
+{
+  "id": "SE02",
+  "tier": 3,
+  "title": "PII 마스킹 후 재스윕",
+  "input": "samples/task2097/75544_pii_bunseok.hwpx",
+  "instructions": "입력의 개인정보를 마스킹한 masked.hwpx 를 제출하라. 채점기는 **산출물을 다시 스윕해** 남은 후보가 0건인지 확인한다 — '지웠다' 는 주장이 아니라 재검사가 판정한다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "masked.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "재스윕 잔여 0건",
+      "op": "value_eq",
+      "value": 0,
+      "path": "findingCount",
+      "cmd": [
+        "edit",
+        "redact",
+        "{file:masked.hwpx}",
+        "--dry-run",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "masked.hwpx"
+    }
+  ]
+}

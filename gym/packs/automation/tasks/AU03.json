@@ -1,0 +1,34 @@
+{
+  "id": "AU03",
+  "tier": 3,
+  "title": "서명 귀속",
+  "input": "samples/table-001.hwp",
+  "instructions": "키를 발급해 작업 캡슐에 **분리 서명**을 붙여 제출하라(capsules/work.capsule.json + .sig.json + keyring.json). 채점기는 키링으로 서명을 검증한다. 힌트: rhwp keygen → replay --sign-key → verify-signature.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "capsules/work.capsule.json",
+      "keyring.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "서명 판정 valid",
+      "op": "value_eq",
+      "value": "valid",
+      "path": "verdict",
+      "cmd": [
+        "verify-signature",
+        "{file:capsules/work.capsule.json}",
+        "--keyring",
+        "{file:keyring.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

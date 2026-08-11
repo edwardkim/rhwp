@@ -1,0 +1,17 @@
+{
+  "id": "TE07",
+  "steps": [
+    {
+      "answer": {
+        "nodes": {
+          "cmd": [
+            "export-structure",
+            "{input}",
+            "--json"
+          ],
+          "path": "nodeCount"
+        }
+      }
+    }
+  ]
+}

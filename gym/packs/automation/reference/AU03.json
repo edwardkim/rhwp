@@ -1,0 +1,34 @@
+{
+  "id": "AU03",
+  "steps": [
+    {
+      "run": [
+        "keygen",
+        "--key-id",
+        "gym-agent",
+        "--out",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"out.hwp\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"서명\"}]}",
+        "--capsule",
+        "{sub:capsules/work.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "keyring_from": {
+        "key": "{sub:agent.key.json}",
+        "out": "{sub:keyring.json}",
+        "keyId": "gym-agent"
+      }
+    }
+  ]
+}

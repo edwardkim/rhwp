@@ -1,0 +1,32 @@
+{
+  "id": "SE03",
+  "tier": 2,
+  "title": "조판 은닉 탐지",
+  "input": "samples/issue1892_hwp3_tab_roundtrip.hwp",
+  "instructions": "입력에 조판으로 숨겨진 글자가 몇 자인지 answer.json 에 {\"hidden\": N} 으로 제출하라. 힌트: rhwp inspect hidden-text.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "은닉 글자 수",
+      "op": "answer_eq",
+      "answer": "hidden",
+      "path": "hiddenCharCount",
+      "cmd": [
+        "inspect",
+        "hidden-text",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "조사"
+}

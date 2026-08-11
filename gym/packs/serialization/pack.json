@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "serialization",
+  "title": "저장·변환",
+  "axis": "변환 (형식 왕복·IR 대조)",
+  "description": "형식을 넘나드는 왕복. 변환물이 진짜 그 형식인지, 내용이 보존됐는지를 각각 본다.",
+  "requires": {
+    "commands": [
+      "export-doclang",
+      "export-markdown",
+      "info",
+      "ir-diff"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.2",
+    "rhwpCommit": "94e4790e5a6bc766b75c3c9695b290f87e3793d4",
+    "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
+  }
+}

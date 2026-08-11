@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymProfile",
+  "id": "maintainer",
+  "title": "메인테이너",
+  "description": "전 표면 — 검증 사다리까지 포함한 완주 코스.",
+  "packs": [
+    "core-cli",
+    "text-editing",
+    "table-editing",
+    "objects-media",
+    "layout-rendering",
+    "serialization",
+    "security",
+    "automation"
+  ]
+}

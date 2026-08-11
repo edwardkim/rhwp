@@ -1,0 +1,32 @@
+{
+  "id": "LR04",
+  "tier": 3,
+  "title": "라운드트립 레이아웃 회귀",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력을 자기 라운드트립으로 렌더 비교해 회귀 판정(status)을 answer.json 에 {\"status\": \"...\"} 으로 제출하라. 힌트: rhwp render-diff.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "회귀 판정",
+      "op": "answer_eq",
+      "answer": "status",
+      "path": "status",
+      "cmd": [
+        "render-diff",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3,
+        4
+      ]
+    }
+  ],
+  "axis": "검증"
+}

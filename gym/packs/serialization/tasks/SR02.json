@@ -1,0 +1,32 @@
+{
+  "id": "SR02",
+  "tier": 2,
+  "title": "HML 왕복",
+  "input": "samples/hml/formatting_table.hml",
+  "instructions": "입력(HML 원본)을 다시 HML 로 내보내 out.hml 을 제출하라. export-hml 은 HML 원본 문서에만 허용된다 — 계약을 읽고 대상을 고르는 것도 과제다. 힌트: rhwp export-hml.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hml"
+    ]
+  },
+  "checks": [
+    {
+      "name": "HML 산출",
+      "op": "file_exists",
+      "file": "out.hml",
+      "minBytes": 256
+    },
+    {
+      "name": "여전히 열리는 문서",
+      "op": "value_ge",
+      "value": 1,
+      "path": "pageCount",
+      "cmd": [
+        "info",
+        "{file:out.hml}",
+        "--json"
+      ]
+    }
+  ]
+}

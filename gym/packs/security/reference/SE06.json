@@ -1,0 +1,20 @@
+{
+  "id": "SE06",
+  "steps": [
+    {
+      "answer": {
+        "removed": {
+          "cmd": [
+            "edit",
+            "sanitize",
+            "{input}",
+            "-o",
+            "{sub:s.hwp}",
+            "--json"
+          ],
+          "path": "removedCount"
+        }
+      }
+    }
+  ]
+}

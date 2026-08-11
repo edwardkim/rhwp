@@ -1,0 +1,22 @@
+{
+  "id": "SE04",
+  "steps": [
+    {
+      "answer": {
+        "signals": {
+          "cmd": [
+            "inspect",
+            "injection",
+            "{input}",
+            "--json"
+          ],
+          "path": "signalCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

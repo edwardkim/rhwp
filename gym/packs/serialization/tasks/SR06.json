@@ -1,0 +1,43 @@
+{
+  "id": "SR06",
+  "tier": 3,
+  "title": "HWPX 왕복 IR 대조",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력을 HWPX 로 변환한 conv.hwpx 를 제출하고, 원본과의 IR 차이 건수를 answer.json 에 {\"diffs\": N} 으로 적어라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwpx",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "진짜 HWPX",
+      "op": "value_eq",
+      "value": "hwpx",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:conv.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "name": "IR 차이 건수",
+      "op": "answer_eq",
+      "answer": "diffs",
+      "path": "diffCount",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "{file:conv.hwpx}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

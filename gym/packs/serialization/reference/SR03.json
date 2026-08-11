@@ -1,0 +1,19 @@
+{
+  "id": "SR03",
+  "steps": [
+    {
+      "answer": {
+        "loss": {
+          "cmd": [
+            "export-doclang",
+            "{input}",
+            "-o",
+            "{sub:out.doclang}",
+            "--json"
+          ],
+          "path": "lossCount"
+        }
+      }
+    }
+  ]
+}

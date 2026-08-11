@@ -1,0 +1,27 @@
+{
+  "id": "TB06",
+  "tier": 2,
+  "title": "두 번째 표 지목",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 **두 번째** 표(index 1)의 셀 개수를 answer.json 에 {\"cells\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "두 번째 표 셀 수",
+      "op": "answer_eq",
+      "answer": "cells",
+      "path": "tables[1].cellCount",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

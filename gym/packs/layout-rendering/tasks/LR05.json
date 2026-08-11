@@ -1,0 +1,29 @@
+{
+  "id": "LR05",
+  "tier": 1,
+  "title": "썸네일 세로 픽셀",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력 썸네일의 세로 픽셀 수를 answer.json 에 {\"height\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "세로 픽셀",
+      "op": "answer_eq",
+      "answer": "height",
+      "path": "height",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,34 @@
+{
+  "id": "SR06",
+  "steps": [
+    {
+      "run": [
+        "export-hwpx",
+        "{input}",
+        "{sub:conv.hwpx}",
+        "--json"
+      ],
+      "allowExits": [
+        0,
+        3
+      ]
+    },
+    {
+      "answer": {
+        "diffs": {
+          "cmd": [
+            "ir-diff",
+            "{input}",
+            "{sub:conv.hwpx}",
+            "--json"
+          ],
+          "path": "diffCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}
