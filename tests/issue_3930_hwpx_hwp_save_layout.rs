@@ -21,9 +21,12 @@ const PAGE_284: u32 = 283;
 const PAGE_285: u32 = 284;
 const PAGE_286: u32 = 285;
 const PAGE_287: u32 = 286;
+const PAGE_290: u32 = 289;
+const PAGE_291: u32 = 290;
 const Q5_RESPONSE_FIRST_LINE: &str = "문서는 결재권자의 결재가 완료된 시점에";
 const Q9_TITLE: &str = "보조기관, 보좌기관, 합의제행정기관의 의미";
 const Q10_TITLE: &str = "공문서 작성시 연·월·일의 정확한 표기방법";
+const Q16_TITLE: &str = "문서의 결재과정에서 협조자는 문서 수정이나 반려가 가능한지요?";
 const ATTACHMENT_GUIDANCE: &str = "기안문에 작성한 붙임 문서를 첨부";
 
 fn page_tree(document: &HwpDocument, page: u32) -> String {
@@ -100,6 +103,8 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     let source_p285_tree = page_tree(&source, PAGE_285);
     let source_p286_tree = page_tree(&source, PAGE_286);
     let source_p287_tree = page_tree(&source, PAGE_287);
+    let source_p290_tree = page_tree(&source, PAGE_290);
+    let source_p291_tree = page_tree(&source, PAGE_291);
     assert!(
         source_p30_tree.contains("\"text\":\"2025 \"")
             && source_p30_tree.contains("\"text\":\"행정업무운영 편람\""),
@@ -136,6 +141,14 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         source_p287_tree.contains(Q10_TITLE),
         "HWPX Q10 표제는 PDF/native HWP와 같이 p287에서 시작해야 한다"
+    );
+    assert!(
+        source_p290_tree.contains(Q16_TITLE),
+        "HWPX Q16 표와 trailing blank-bottom row는 PDF/native HWP와 같이 p290에서 끝나야 한다"
+    );
+    assert!(
+        !source_p291_tree.contains(Q16_TITLE),
+        "HWPX Q16 표는 p291로 분할되어 반복되면 안 된다"
     );
     assert_eq!(
         source.page_count(),
@@ -207,6 +220,8 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         (PAGE_285, source_p285_tree),
         (PAGE_286, source_p286_tree),
         (PAGE_287, source_p287_tree),
+        (PAGE_290, source_p290_tree),
+        (PAGE_291, source_p291_tree),
     ] {
         assert_eq!(
             page_tree(&reloaded, page),

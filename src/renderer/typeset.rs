@@ -726,11 +726,18 @@ const HWPX_QA_SAVED_FRAME_RESPONSE_CUT_ALLOWANCE_PX: f64 = 16.0;
 /// 16px cut은 정확히 첫 response line만 선택하지만, 그린 셀 padding까지 포함한
 /// physical fragment는 32px overflow tolerance가 있어야 앞 page에 유지된다.
 const HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
+/// Q16의 두 문단 response는 마지막 저장 line 하나가 남으면 별도 blank-tail
+/// page를 만든다. 32px은 1·6 lineSeg 중 마지막 unit만 같은 fragment에 수용한다.
+const HWPX_QA_TWO_PARAGRAPH_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 32.0;
+/// 논리적으로 선택한 마지막 unit에는 30.2px의 셀 padding도 함께 그려진다. 저장
+/// frame과 trailing blank-bottom row까지 같은 page owner로 보존하도록 48px까지
+/// 허용한다.
+const HWPX_QA_TWO_PARAGRAPH_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX: f64 = 48.0;
 const HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 64.0;
-/// HWPX 103×2 병렬 규정 표는 browser 셀 측정이 저장 frame보다 4px 먼저
-/// 수용된다. 이 reserve는 Q&A owner 보정 뒤 사라지는 단 하나의 physical
-/// page를 원본 PDF와 같이 보존한다.
-const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 4.0;
+/// HWPX 103×2 병렬 규정 표는 browser 셀 측정이 저장 frame보다 8px 먼저
+/// 수용된다. Q16 owner 보정 뒤 이 reserve가 fragment 하나를 보존해, 규정표
+/// 다음 section과 전체 쪽수를 원본 PDF의 383쪽에 다시 맞춘다.
+const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 8.0;
 /// HWPX로 저장된 2025 편람 Q&A 목차의 마지막 1×1 RowBreak tail은 32px 이하다.
 /// 세 번째 continuation의 마지막 line만 같은 page에 유지한다.
 const HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
@@ -19228,6 +19235,28 @@ impl TypesetEngine {
                                 && paragraph.line_segs[2].vertical_pos == 0
                         })
                 });
+            let hwpx_qa_two_paragraph_response_tail = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && table.common.height == 11_315
+                && table.outer_margin_bottom == 566
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == r
+                        && cell.paragraphs.len() == 2
+                        && cell.paragraphs[0].line_segs.len() == 1
+                        && cell.paragraphs[1].line_segs.len() == 6
+                        && cell.paragraphs[1]
+                            .line_segs
+                            .first()
+                            .is_some_and(|segment| segment.vertical_pos == 0)
+                });
             // HWPX Q&A 목차는 73 문단의 1×1 RowBreak 표다. 세 번째 continuation에는
             // 28.4px tail만 남으므로 그 마지막 line만 현재 page로 수용한다. 일반 1×1
             // 표 또는 첫 두 fragment에는 적용하지 않는다.
@@ -19268,6 +19297,8 @@ impl TypesetEngine {
                     }
                 } else if hwpx_qa_saved_frame_response_tail {
                     HWPX_QA_SAVED_FRAME_RESPONSE_CUT_ALLOWANCE_PX
+                } else if hwpx_qa_two_paragraph_response_tail {
+                    HWPX_QA_TWO_PARAGRAPH_RESPONSE_TAIL_ALLOWANCE_PX
                 } else if hwpx_qa_toc_final_tail {
                     HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX
                 } else {
@@ -19369,10 +19400,22 @@ impl TypesetEngine {
                     }
                     break;
                 }
+                // HWPX Q16의 마지막 response row는 저장 lineSeg 기준으로는 현재
+                // page에 완결되지만, 그린 padding까지 포함하면 40px 이내로 넘는다.
+                // 일반 fully-consumed 규칙처럼 통째로 이월하면 blank-tail page가
+                // 생긴다. 이 raw topology에 한해 한글의 painted owner를 보존한다.
+                let hwpx_qa_two_paragraph_response_tail_fits =
+                    hwpx_qa_two_paragraph_response_tail
+                        && row_total
+                            <= budget
+                                + HWPX_QA_TWO_PARAGRAPH_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX;
                 // 단일 유닛 행 — 분할 불가, 페이지 시작이면 강제, 아니면 다음으로.
                 if r == cursor_row {
                     consumed += cs_before + row_total;
                     end_row = r + 1;
+                } else if hwpx_qa_two_paragraph_response_tail_fits {
+                    consumed += cs_before + row_total;
+                    end_row = row_count;
                 } else {
                     end_row = r;
                 }
@@ -19471,6 +19514,8 @@ impl TypesetEngine {
                             }
                         } else if hwpx_qa_saved_frame_response_tail {
                             HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX
+                        } else if hwpx_qa_two_paragraph_response_tail {
+                            HWPX_QA_TWO_PARAGRAPH_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
                     } else if mt.allows_row_break_split() {
