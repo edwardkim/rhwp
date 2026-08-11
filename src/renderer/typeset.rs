@@ -5625,15 +5625,18 @@ impl TypesetEngine {
                                 && seg.segment_width as i32 == st.wrap_around_sw
                         })
                         .count();
-                    let suffix_is_full_width = para
-                        .line_segs
-                        .get(wrap_prefix_len)
-                        .map(|seg| {
+                    // [#4650 · #4599 ⑩] 종전에는 전폭 꼬리 '정확히 한 줄'만 분리했으나, 반폭
+                    // Square 표 옆 문단이 여러 전폭 꼬리 줄을 갖는 형상(156714641 p1
+                    // pi13: 표 옆 prefix 4줄 + 전폭 꼬리 5줄)이 일반 배치로 떨어져
+                    // prefix 가 표 하단 아래(952.9)로 밀렸다 — 한글 2022 캐시 PDF 는
+                    // 표 옆 747.9. 꼬리 전 줄이 전폭이고 저장 seg 와 조판 줄이 1:1 인
+                    // 경우로 확장한다(#4090 의 안정 형상 판별은 유지).
+                    let suffix_is_full_width =
+                        para.line_segs[wrap_prefix_len..].iter().all(|seg| {
                             seg.column_start == 0
                                 && (seg.segment_width as i32 - st.layout.column_width_hu()).abs()
                                     <= 3_000
-                        })
-                        .unwrap_or(false);
+                        }) && wrap_prefix_len < para.line_segs.len();
                     let col_width = st
                         .layout
                         .column_areas
@@ -5643,7 +5646,7 @@ impl TypesetEngine {
                     let formatted = self.format_paragraph(para, composed, styles, Some(col_width));
                     let can_split_prefix = !is_empty_para
                         && wrap_prefix_len > 0
-                        && wrap_prefix_len + 1 == para.line_segs.len()
+                        && wrap_prefix_len < para.line_segs.len()
                         && suffix_is_full_width
                         && formatted.line_count() == para.line_segs.len();
                     if can_split_prefix {
