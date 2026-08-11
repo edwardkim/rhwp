@@ -607,17 +607,32 @@ export interface GateEnvelope {
 /**
  * `rhwp harness --json` 봉투.
  *
- * 검증 루프 단일 명령 — init(작업장 규약)·wrap(실산출+영수증+캡슐+자동 부모 연결+서명 한
- * 방)·status(체인·서명·[--deep] 재현 통합 판정, 깨짐 exit 3) (#4537)
+ * 검증 루프의 쓰는 쪽 — init(작업장 규약)·wrap(실산출+영수증+캡슐+자동 부모 연결+서명 한 방).
+ * 판정은 harness-status (#4537)
  */
 export interface HarnessEnvelope {
-  readonly brokenAt?: unknown;
   readonly capsule?: unknown;
-  readonly capsules?: unknown;
-  readonly chainValid?: unknown;
   readonly dir?: unknown;
   readonly output?: string;
   readonly parent?: unknown;
+  readonly schemaVersion?: string;
+  readonly signed?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp harness-status --json` 봉투.
+ *
+ * 작업장 통합 판정 — 캡슐 체인 무결·(--keyring) 서명 집계·(--deep) 전수 재현을 한 봉투로. 깨짐
+ * exit 3, brokenAt 이 원인 캡슐 (#4537)
+ */
+export interface HarnessStatusEnvelope {
+  readonly brokenAt?: unknown;
+  readonly capsules?: unknown;
+  readonly chainValid?: unknown;
+  readonly dir?: unknown;
+  readonly reproduced?: unknown;
   readonly schemaVersion?: string;
   readonly signed?: unknown;
   readonly verdict?: unknown;
@@ -939,6 +954,7 @@ export interface EnvelopeByCommand {
   fields: FieldsEnvelope;
   gate: GateEnvelope;
   harness: HarnessEnvelope;
+  "harness-status": HarnessStatusEnvelope;
   info: InfoEnvelope;
   inspect: InspectEnvelope;
   "ir-diff": IrDiffEnvelope;

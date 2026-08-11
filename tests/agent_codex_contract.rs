@@ -36,8 +36,7 @@ fn every_capability_command_has_a_codex_chapter() {
         .arg("capabilities")
         .output()
         .expect("rhwp 실행");
-    let caps: serde_json::Value =
-        serde_json::from_slice(&out.stdout).expect("capabilities 봉투");
+    let caps: serde_json::Value = serde_json::from_slice(&out.stdout).expect("capabilities 봉투");
     let text = codex_text();
     let mut missing = Vec::new();
     for c in caps["commands"].as_array().expect("commands") {
@@ -64,7 +63,9 @@ fn codex_has_handwritten_canon_and_generation_markers() {
     for entry in fs::read_dir(&dir).expect("폴더") {
         let path = entry.expect("항목").path();
         let name = path.file_name().unwrap().to_string_lossy().into_owned();
-        if !name.ends_with(".md") || ["README.md", "00_서문.md", "01_판단트리.md"].contains(&name.as_str()) {
+        if !name.ends_with(".md")
+            || ["README.md", "00_서문.md", "01_판단트리.md"].contains(&name.as_str())
+        {
             continue;
         }
         let text = fs::read_to_string(&path).expect("장");
@@ -74,5 +75,8 @@ fn codex_has_handwritten_canon_and_generation_markers() {
         );
         generated += 1;
     }
-    assert!(generated >= 8, "생성 장이 너무 적다({generated}) — 생성기 회귀 의심");
+    assert!(
+        generated >= 8,
+        "생성 장이 너무 적다({generated}) — 생성기 회귀 의심"
+    );
 }

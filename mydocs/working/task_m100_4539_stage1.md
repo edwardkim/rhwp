@@ -7,7 +7,7 @@
 ## 폐루프 실증
 
 - 제출 = harness 작업장(wrap 체인: 가시 치환 2건, 서명 포함) / 채점 =
-  `harness status --keyring --deep` **한 호출**의 verdict:ok + capsules:2.
+  `harness-status --keyring --deep` **한 호출**의 verdict:ok + capsules:2.
 - 1호 실주행: init→wrap×2(0001_/0002_ 자동 체인)→status(서명 2·재현 2) →
   채점 29/29. 완비도 10축 중 7(루프)·8(운동장)이 서로를 소비함을 실측.
 - 증빙: 원본 vs 체인 산출 o2(규제→하네스검증→하네스검증완료) 전/후 렌더 커밋.
