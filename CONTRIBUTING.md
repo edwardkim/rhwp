@@ -436,7 +436,9 @@ Cursor·Codex·Gemini CLI·Windsurf·Cline 이 **자동으로 읽는 지침 파�
 | Cursor | `.cursor/rules/rhwp.mdc` |
 | Gemini CLI | `GEMINI.md` |
 | Windsurf / Cline | `.windsurfrules` / `.clinerules` |
-| AGENTS.md 표준 진영 — Codex·OpenCode·Jules·Amp·Zed·Devin·Antigravity 등 | `AGENTS.md` (도구 공통 표준) |
+| AGENTS.md 표준 진영 — Codex·OpenCode·Jules·Amp·Zed·Devin·Antigravity·Grok Build·Kimi CLI·Pi 등 | `AGENTS.md` (도구 공통 표준) |
+| 오케스트레이터(ADE) — Orca 등 워크트리 병렬 진영 | 자체 파일 없음 — 부리는 각 에이전트(Claude Code·Codex·OpenCode 등)의 파일이 그대로 적용 |
+| AWS Kiro (Amazon Q 후계) | `.kiro/steering/` |
 | Qwen Code | `QWEN.md` |
 | Aider 계열(컨벤션 파일) | `CONVENTIONS.md` |
 | Zed 계열(.rules) | `.rules` |
@@ -444,7 +446,7 @@ Cursor·Codex·Gemini CLI·Windsurf·Cline 이 **자동으로 읽는 지침 파�
 | Replit Agent | `replit.md` |
 | RooCode / Kilo Code | `.roo/rules/` / `.kilocode/rules/` |
 | JetBrains Junie | `.junie/guidelines.md` |
-| Trae / Amazon Q / Augment / Continue | `.trae/rules/` · `.amazonq/rules/` · `.augment/rules/` · `.continue/rules/` |
+| Trae / Amazon Q(일몰 예정·Kiro 승계) / Augment / Continue | `.trae/rules/` · `.amazonq/rules/` · `.augment/rules/` · `.continue/rules/` |
 | llms.txt 소비 도구 | `llms.txt` |
 
 **모델이 무엇이든 같은 길** — DeepSeek·GLM·Llama·Qwen·MiMo·MiniMax 등 어떤 모델(무료 모델 포함)을
