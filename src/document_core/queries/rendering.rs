@@ -3561,6 +3561,38 @@ impl DocumentCore {
         self.render_normalization.path_revisions.clear();
     }
 
+    /// 원본 IR 은 그대로 두고, 거기서 파생된 렌더 상태를 전부 원본에서 다시 만든다.
+    ///
+    /// `document` 는 읽기만 한다 — 편집이 아니라 **메모된 파생본이 더는 원본과 대응하지
+    /// 않게 된 순간**에 부르는 연산이다. 스냅샷을 되돌려 문서를 통째로 갈아끼운 직후,
+    /// 그리고 파생본을 만든 코드 자체가 교체된 직후(핫패치)가 그 순간이다.
+    ///
+    /// 증분 게이트(`dirty_sections`·`section_revisions`·`measured_sections`·`table.dirty`)는
+    /// 모두 "원본이 그대로면 파생본을 재사용한다"는 한 가지 규칙이라, 원본이 그대로인 채
+    /// 파생본만 못 믿게 된 상황을 스스로 판별할 수 없다. 그래서 이 메서드가 게이트가 읽는
+    /// 상태를 전부 비우고 재조판까지 한 번에 끝낸다 — 돌아온 뒤 "나중에 다시 계산해야
+    /// 한다"고 남겨 두는 표식은 없다.
+    ///
+    /// 파생 순서는 소비 순서와 같다: 스타일 → 문단 구성 → (정규화·측정) → 페이지네이션 →
+    /// 페이지 트리. 앞 단계를 뒤 단계보다 늦게 만들면 같은 패스 안에서 옛 값이 섞인다.
+    pub(crate) fn rebuild_derived_state(&mut self) {
+        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
+        self.composed = self
+            .document
+            .sections
+            .iter()
+            .map(|s| compose_section(s))
+            .collect();
+        self.mark_all_sections_dirty();
+        self.measured_tables.clear();
+        self.measured_sections.clear();
+        self.dirty_paragraphs.clear();
+        self.para_column_map.clear();
+        self.invalidate_page_tree_cache();
+        self.overflow_links_cache.borrow_mut().clear();
+        self.paginate();
+    }
+
     /// Batch 모드가 아닐 때만 paginate를 실행한다.
     /// Command 메서드에서 self.paginate() 대신 호출한다.
     /// [#2424] 최신 deferred descriptor를 shadow pagination job으로 승격한다.
