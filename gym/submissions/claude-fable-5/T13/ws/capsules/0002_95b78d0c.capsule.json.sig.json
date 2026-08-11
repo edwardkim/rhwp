@@ -1,9 +1,0 @@
-{
-  "alg": "ed25519",
-  "capsuleSha256": "ec191679be25b7efa5959b631bf8193fb60bd1c1098dae9441bc5d6d5c15d88b",
-  "keyId": "gym.baseline/claude#1",
-  "kind": "capsuleSignature",
-  "schemaVersion": "1.0",
-  "signature": "upDJeXdupKKsfbiAclzXjp6Opv8PpaVGjcJ5p/58QMsGg39DJcJwN4nwp4g8GVac1uG4qjn8HxBtt1lm19QdCA==",
-  "signedAt": "2026-08-10T23:13:23Z"
-}
