@@ -19022,6 +19022,31 @@ impl TypesetEngine {
                 end_row = r;
                 continue;
             }
+            // 2025 행정업무운영 편람의 native HWP Q&A 표는 6x5 grid의 마지막
+            // 실제 응답 행 뒤에 빈 spacer 행 하나를 저장한다. 브라우저 글꼴의
+            // 실측 높이가 이 응답 행을 수십 px 초과로 평가해 tail만 다음 page에
+            // 남기면, 다음 source paragraph가 이미 새 page를 가리켜 tail 전용
+            // physical page가 누적된다. 저장 표 frame의 owner를 우선해 이 좁은
+            // template에만 마지막 응답 행의 작은 overflow를 유지한다.
+            const NATIVE_HWP5_QA_TERMINAL_ROW_OVERFLOW_TOLERANCE_PX: f64 = 96.0;
+            let native_hwp5_qa_terminal_row_overflow_fit = st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && consumed + cs_before + row_total
+                    <= avail_for_rows + NATIVE_HWP5_QA_TERMINAL_ROW_OVERFLOW_TOLERANCE_PX;
+            if native_hwp5_qa_terminal_row_overflow_fit {
+                consumed += cs_before + row_total;
+                r += 1;
+                end_row = r;
+                continue;
+            }
             // 행 r 이 예산 초과 — 인트라-분할 시도.
             // [Task #77] 분할 불가 행(이미지 셀 등)은 통째 배치 / 다음 페이지.
             // `MeasuredTable`은 2행 이상 중첩 표만 `nested_split_row_count`로

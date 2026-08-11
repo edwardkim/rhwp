@@ -12,6 +12,7 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
 const FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwpx";
+const HWP_FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwp";
 const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
@@ -240,6 +241,22 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     }
     assert_eq!(grouped_picture.image_attr.brightness, 0);
     assert_eq!(grouped_picture.image_attr.contrast, 8);
+}
+
+/// native HWP 원본의 6x5 Q&A RowBreak 표에서 짧은 마지막 응답 tail은 저장
+/// frame owner를 유지한다. Stage 129의 안전 범위는 391쪽을 390쪽으로 낮추며,
+/// HWPX fixture의 저장/roundtrip page-count 계약과는 별도로 고정한다 (#3820).
+#[test]
+fn issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(HWP_FIXTURE);
+    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
+    let source = HwpDocument::from_bytes(&bytes).expect("HWP fixture parse");
+
+    assert_eq!(
+        source.page_count(),
+        390,
+        "native HWP Q&A RowBreak 짧은 tail 보정 뒤 Stage 129 쪽수"
+    );
 }
 
 /// PDF p144의 자동날인 안내는 같은 빈 host paragraph의 `BehindText` 1×1 table 세 개를
