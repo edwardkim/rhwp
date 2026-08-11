@@ -2921,3 +2921,115 @@ fn collect_top_level_table_spans_domain() {
          (중첩 표 999·비가시 표 555 는 제외)"
     );
 }
+
+// ── [#4610 · #4599 ④] 공백-전용 TAC 캐리어 문단 페인트 변위 게이트 ──
+
+/// 야간방호일지 36374873 p1 pi4 형상: 공백 텍스트 + TAC 표 1개 + 저장 세그 2개가
+/// 문단 안에서 개체 밴드만큼(>100px) 벌어진 캐리어.
+fn whitespace_tac_carrier_para() -> Paragraph {
+    Paragraph {
+        text: " \u{FFFC} ".repeat(4),
+        controls: vec![Control::Table(Box::new(Table {
+            common: CommonObjAttr {
+                treat_as_char: true,
+                width: 19_000,
+                height: 1_800,
+                ..Default::default()
+            },
+            ..Default::default()
+        }))],
+        line_segs: vec![
+            LineSeg {
+                vertical_pos: 13_575,
+                line_height: 2_414,
+                text_start: 0,
+                ..Default::default()
+            },
+            LineSeg {
+                vertical_pos: 67_877,
+                line_height: 1_000,
+                text_start: 6,
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    }
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rewinds_to_stored_vpos() {
+    let para = whitespace_tac_carrier_para();
+    // 흐름 커서가 선행 자리차지 표 하단(1064px)까지 밀린 상태 — 저장 위치로 되돌린다.
+    let got = whitespace_tac_carrier_stored_paint_y(true, &para, None, 75.6, 1064.0, 96.0);
+    let expected = 75.6 + 13_575.0 / 75.0;
+    assert!((got.unwrap() - expected).abs() < 0.1, "got {got:?}");
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_requires_hwpx_stored_profile() {
+    let para = whitespace_tac_carrier_para();
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(false, &para, None, 75.6, 1064.0, 96.0),
+        None
+    );
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rejects_substantive_text_host() {
+    let mut para = whitespace_tac_carrier_para();
+    para.text = "본문 텍스트".into();
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(true, &para, None, 75.6, 1064.0, 96.0),
+        None
+    );
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rejects_float_host_para() {
+    // 자리차지(비-TAC) 표를 함께 앵커한 host 문단은 기존 float 계약 소관 — 제외.
+    let mut para = whitespace_tac_carrier_para();
+    para.controls.push(Control::Table(Box::new(Table {
+        common: CommonObjAttr {
+            treat_as_char: false,
+            text_wrap: TextWrap::TopAndBottom,
+            ..Default::default()
+        },
+        ..Default::default()
+    })));
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(true, &para, None, 75.6, 1064.0, 96.0),
+        None
+    );
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rejects_small_intra_gap() {
+    // 낡은 세대 사다리(문단 간격 누락류)는 문단-내 거대 간격을 만들지 않는다 —
+    // 세그 간 간격이 100px(7500HU) 미만이면 무동작.
+    let mut para = whitespace_tac_carrier_para();
+    para.line_segs[1].vertical_pos = 13_575 + 2_414 + 7_000;
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(true, &para, None, 75.6, 1064.0, 96.0),
+        None
+    );
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rejects_forward_displacement() {
+    // 방향-한정: 흐름이 저장 위치보다 아래로 충분히 밀렸을 때만 되돌린다.
+    let para = whitespace_tac_carrier_para();
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(true, &para, None, 75.6, 200.0, 96.0),
+        None
+    );
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rejects_synthetic_segs() {
+    let mut para = whitespace_tac_carrier_para();
+    para.line_segs[0].tag |= crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(true, &para, None, 75.6, 1064.0, 96.0),
+        None
+    );
+}
