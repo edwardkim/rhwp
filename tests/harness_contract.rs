@@ -5,6 +5,10 @@
 //! 차이) 영수증·캡슐을 연번으로 쌓으며 **직전 캡슐을 자동 부모 연결**한다
 //! — 체인이 스스로 자란다, ③ status 가 체인·서명·(--deep) 재현을 한 봉투로
 //! 판정하고 캡슐 사후 변조를 brokenAt 으로 폭로한다(exit 3), ④ 사용법 규약.
+//!
+//! 판정(status)은 쓰기가 없어 최상위 `harness-status`(category=diagnostic)로
+//! 분리돼 있다 — 쓰기 명령(harness)과 한 표면을 쓰면 MCP readOnlyHint 주석이
+//! category 와 모순된다(mcp_tool_annotations_contract ②).
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -136,8 +140,7 @@ fn init_wrap_chain_status_roundtrip_and_tamper() {
 
     // ── status: 체인 + 서명 + deep 재현 전부 green.
     let o = run(&[
-        "harness",
-        "status",
+        "harness-status",
         &ws_s,
         "--keyring",
         keyring.to_str().unwrap(),
@@ -164,7 +167,7 @@ fn init_wrap_chain_status_roundtrip_and_tamper() {
     let mut bytes = std::fs::read(&cap1_path).unwrap();
     bytes.push(b' ');
     std::fs::write(&cap1_path, &bytes).unwrap();
-    let o = run(&["harness", "status", &ws_s, "--json"]);
+    let o = run(&["harness-status", &ws_s, "--json"]);
     assert_eq!(o.status.code(), Some(3), "변조 = 검증 단언 실패");
     let env = env_of(&o);
     assert_eq!(env["chainValid"], false);
@@ -179,6 +182,9 @@ fn init_wrap_chain_status_roundtrip_and_tamper() {
 fn usage_conventions() {
     let o = run(&["harness"]);
     assert_eq!(o.status.code(), Some(2));
+    // 판정은 harness 하위가 아니다 — 옛 표면은 사용법 오류로 남는다.
+    let o = run(&["harness", "status", "nope"]);
+    assert_eq!(o.status.code(), Some(2), "판정은 harness-status 로 나갔다");
     let o = run(&["harness", "wrap", "--dir", "nope", "--json"]);
     assert_eq!(o.status.code(), Some(2), "--plan 없는 wrap 은 사용법 오류");
     let ws = make_ws("usage");
