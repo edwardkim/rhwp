@@ -162,10 +162,6 @@ pub struct MeasuredParagraph {
     pub spacing_after: f64,
     /// 표 컨트롤 포함 여부
     pub has_table: bool,
-    /// 그림 컨트롤 포함 여부
-    pub has_picture: bool,
-    /// 그림 총 높이 (px)
-    pub picture_height: f64,
 }
 
 impl MeasuredParagraph {
@@ -394,12 +390,28 @@ pub struct MeasuredCell {
     pub nested_split_row_count: usize,
 }
 
-/// 구역 전체의 측정 결과
+/// 구역 전체의 측정 결과.
+///
+/// 두 필드의 소비자가 다르다. 프로덕션 페이지네이션은 `tables` 만 읽는다 —
+/// `DocumentCore::paginate_pass` 가 `TypesetEngine::typeset_section_with_variant` 에
+/// 넘기는 것이 `measured.tables` 뿐이고, 문단 높이는 `TypesetEngine::format_paragraph`
+/// 가 자기 안에서 다시 만든다.
 #[derive(Debug, Clone)]
 pub struct MeasuredSection {
-    /// 문단별 측정 정보
-    pub paragraphs: Vec<MeasuredParagraph>,
-    /// 표별 측정 정보 (문단 내 인라인 표)
+    /// 문단별 측정 정보 — **프로덕션 페이지네이션은 읽지 않는다**(#4605).
+    ///
+    /// 읽는 곳은 셋뿐이다.
+    /// - `Paginator::paginate_with_measured_opts` — `RHWP_USE_PAGINATOR=1` 폴백과
+    ///   구역 0개 문서의 빈 결과 생성에서만 돈다.
+    /// - `dump-pages` 계열 진단 출력.
+    /// - `measure_section_selective`/`measure_section_incremental` 의 자기 캐시.
+    ///
+    /// 이 필드를 프로덕션 경로로 착각해 수정 위치를 잘못 잡은 일이 #4333 계열에서
+    /// 두 번 있었다(그때마다 "고쳤는데 아무 일도 안 일어남"으로 끝났다). 본문 문단
+    /// 높이를 바꾸려면 `TypesetEngine::format_paragraph` 와
+    /// `LayoutEngine::layout_partial_paragraph` 를 고쳐야 한다.
+    pub fallback_paragraphs: Vec<MeasuredParagraph>,
+    /// 표별 측정 정보 (문단 내 인라인 표). 프로덕션 페이지네이션이 읽는 유일한 필드다.
     pub tables: Vec<MeasuredTable>,
 }
 
@@ -580,24 +592,9 @@ impl HeightMeasurer {
                     || (t.common.treat_as_char && !is_tac_table_inline_in_para(t, seg_width, para)))
             });
 
-            // 그림 컨트롤 감지 및 높이 측정
-            let has_picture = para
-                .controls
-                .iter()
-                .any(|c| matches!(c, Control::Picture(_) | Control::Equation(_)));
-            let picture_height = self.measure_pictures_in_paragraph(para);
-
             // 문단 높이 측정
-            let measured = self.measure_paragraph(
-                para,
-                comp,
-                styles,
-                para_idx,
-                has_table,
-                has_picture,
-                picture_height,
-                column_width_px,
-            );
+            let measured =
+                self.measure_paragraph(para, comp, styles, para_idx, has_table, column_width_px);
             measured_paras.push(measured);
 
             // 표 높이 측정
@@ -610,7 +607,7 @@ impl HeightMeasurer {
         }
 
         MeasuredSection {
-            paragraphs: measured_paras,
+            fallback_paragraphs: measured_paras,
             tables: measured_tables,
         }
     }
@@ -623,8 +620,6 @@ impl HeightMeasurer {
         styles: &ResolvedStyleSet,
         para_index: usize,
         has_table: bool,
-        has_picture: bool,
-        picture_height: f64,
         column_width_px: Option<f64>,
     ) -> MeasuredParagraph {
         // 문단 스타일에서 spacing 조회
@@ -950,8 +945,6 @@ impl HeightMeasurer {
             spacing_before,
             spacing_after,
             has_table,
-            has_picture,
-            picture_height,
         }
     }
 
@@ -970,23 +963,6 @@ impl HeightMeasurer {
                     }
                     _ => {}
                 }
-            }
-        }
-        total
-    }
-
-    /// 문단 내 모든 그림/수식의 높이 합계를 측정한다.
-    fn measure_pictures_in_paragraph(&self, para: &Paragraph) -> f64 {
-        let mut total = 0.0;
-        for ctrl in &para.controls {
-            match ctrl {
-                Control::Picture(pic) => {
-                    total += hwpunit_to_px(pic.common.height as i32, self.dpi);
-                }
-                Control::Equation(eq) => {
-                    total += hwpunit_to_px(eq.common.height as i32, self.dpi);
-                }
-                _ => {}
             }
         }
         total
@@ -2480,22 +2456,8 @@ impl HeightMeasurer {
                 matches!(c, Control::Table(t) if !t.common.treat_as_char
                     || (t.common.treat_as_char && !is_tac_table_inline_in_para(t, seg_width_r, para)))
             });
-            let has_picture = para
-                .controls
-                .iter()
-                .any(|c| matches!(c, Control::Picture(_) | Control::Equation(_)));
-            let picture_height = self.measure_pictures_in_paragraph(para);
-
-            let measured = self.measure_paragraph(
-                para,
-                comp,
-                styles,
-                para_idx,
-                has_table,
-                has_picture,
-                picture_height,
-                column_width_px,
-            );
+            let measured =
+                self.measure_paragraph(para, comp, styles, para_idx, has_table, column_width_px);
             measured_paras.push(measured);
 
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
@@ -2513,7 +2475,7 @@ impl HeightMeasurer {
         }
 
         MeasuredSection {
-            paragraphs: measured_paras,
+            fallback_paragraphs: measured_paras,
             tables: measured_tables,
         }
     }
@@ -2552,7 +2514,7 @@ impl HeightMeasurer {
 
             if !is_dirty {
                 // 문단 측정 캐시 재사용
-                if let Some(prev_para) = prev_measured.paragraphs.get(para_idx) {
+                if let Some(prev_para) = prev_measured.fallback_paragraphs.get(para_idx) {
                     measured_paras.push(prev_para.clone());
                     // 표 dirty 체크는 항상 수행 (셀 편집 시 문단 non-dirty지만 표 dirty)
                     for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
@@ -2581,22 +2543,8 @@ impl HeightMeasurer {
                 matches!(c, Control::Table(t) if !t.common.treat_as_char
                     || (t.common.treat_as_char && !is_tac_table_inline_in_para(t, seg_width_r, para)))
             });
-            let has_picture = para
-                .controls
-                .iter()
-                .any(|c| matches!(c, Control::Picture(_) | Control::Equation(_)));
-            let picture_height = self.measure_pictures_in_paragraph(para);
-
-            let measured = self.measure_paragraph(
-                para,
-                comp,
-                styles,
-                para_idx,
-                has_table,
-                has_picture,
-                picture_height,
-                column_width_px,
-            );
+            let measured =
+                self.measure_paragraph(para, comp, styles, para_idx, has_table, column_width_px);
             measured_paras.push(measured);
 
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
@@ -2614,7 +2562,7 @@ impl HeightMeasurer {
         }
 
         MeasuredSection {
-            paragraphs: measured_paras,
+            fallback_paragraphs: measured_paras,
             tables: measured_tables,
         }
     }
@@ -2951,8 +2899,11 @@ fn compute_row_blocks(
 
 impl MeasuredSection {
     /// 문단 인덱스로 측정된 문단 높이를 조회한다.
+    /// [`MeasuredSection::fallback_paragraphs`] 를 읽는다 — 프로덕션 페이지네이션 경로가 아니다.
     pub fn get_paragraph_height(&self, para_index: usize) -> Option<f64> {
-        self.paragraphs.get(para_index).map(|p| p.total_height)
+        self.fallback_paragraphs
+            .get(para_index)
+            .map(|p| p.total_height)
     }
 
     /// 문단 내 표의 측정된 높이를 조회한다.
@@ -2975,13 +2926,15 @@ impl MeasuredSection {
     }
 
     /// 문단 인덱스로 측정된 문단 정보 전체를 조회한다.
+    /// [`MeasuredSection::fallback_paragraphs`] 를 읽는다 — 프로덕션 페이지네이션 경로가 아니다.
     pub fn get_measured_paragraph(&self, para_index: usize) -> Option<&MeasuredParagraph> {
-        self.paragraphs.get(para_index)
+        self.fallback_paragraphs.get(para_index)
     }
 
     /// 문단이 표를 포함하는지 확인한다.
+    /// [`MeasuredSection::fallback_paragraphs`] 를 읽는다 — 프로덕션 페이지네이션 경로가 아니다.
     pub fn paragraph_has_table(&self, para_index: usize) -> bool {
-        self.paragraphs
+        self.fallback_paragraphs
             .get(para_index)
             .map(|p| p.has_table)
             .unwrap_or(false)
@@ -3005,14 +2958,12 @@ impl MeasuredSection {
             spacing_before: 0.0,
             spacing_after: 0.0,
             has_table: false,
-            has_picture: false,
-            picture_height: 0.0,
         };
-        if insert_at <= self.paragraphs.len() {
-            self.paragraphs.insert(insert_at, dummy);
+        if insert_at <= self.fallback_paragraphs.len() {
+            self.fallback_paragraphs.insert(insert_at, dummy);
         }
         // para_index 재정렬
-        for (i, p) in self.paragraphs.iter_mut().enumerate() {
+        for (i, p) in self.fallback_paragraphs.iter_mut().enumerate() {
             p.para_index = i;
         }
     }
@@ -3029,11 +2980,11 @@ impl MeasuredSection {
             }
         }
         // 문단 측정값 제거
-        if remove_at < self.paragraphs.len() {
-            self.paragraphs.remove(remove_at);
+        if remove_at < self.fallback_paragraphs.len() {
+            self.fallback_paragraphs.remove(remove_at);
         }
         // para_index 재정렬
-        for (i, p) in self.paragraphs.iter_mut().enumerate() {
+        for (i, p) in self.fallback_paragraphs.iter_mut().enumerate() {
             p.para_index = i;
         }
     }
@@ -3199,7 +3150,7 @@ mod tests {
         let styles = ResolvedStyleSet::default();
 
         let result = measurer.measure_section(&paragraphs, &composed, &styles, None);
-        assert!(result.paragraphs.is_empty());
+        assert!(result.fallback_paragraphs.is_empty());
         assert!(result.tables.is_empty());
     }
 
@@ -3217,8 +3168,8 @@ mod tests {
         let styles = ResolvedStyleSet::default();
 
         let result = measurer.measure_section(&paragraphs, &composed, &styles, None);
-        assert_eq!(result.paragraphs.len(), 1);
-        assert!(result.paragraphs[0].total_height > 0.0);
+        assert_eq!(result.fallback_paragraphs.len(), 1);
+        assert!(result.fallback_paragraphs[0].total_height > 0.0);
     }
 
     #[test]
