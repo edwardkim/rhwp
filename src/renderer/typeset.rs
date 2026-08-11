@@ -1096,6 +1096,12 @@ struct TypesetState {
     /// 되므로 흡수 시점에는 anchor 첫 fragment 단을 찾을 수 없다 — 페이지 확정 후
     /// (최종 flush 뒤) 첫 fragment 단에 일괄 부착한다.
     behind_pending_absorbs: Vec<crate::renderer::pagination::WrapAroundPara>,
+    /// [#4514] 이 문단의 overlay 표가 #703 Shape 단축(흐름 소비 0)으로 배치되었음.
+    /// 이 앵커는 #1955 흡수를 arming 하지 않는다 — 흡수의 전제("표가 fragment 로
+    /// 플로우를 이미 소비")가 성립하지 않아, 후행 빈 문단이 유일한 흐름 공간이다
+    /// (sample1-repro 저장 사다리: 필러가 각자 줄 높이만큼 전진해 표 높이를 채움.
+    /// 흡수하면 갭이 어느 쪽에도 계상되지 않아 후속 표가 겹침 — 8쪽 555.5px).
+    overlay_shape_shortcut_para: Option<usize>,
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
@@ -3540,6 +3546,7 @@ impl TypesetState {
             wrap_around_any_seg: false,
             behind_float_table_para: None,
             behind_pending_absorbs: Vec::new(),
+            overlay_shape_shortcut_para: None,
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
             current_zone_column_type: column_type,
@@ -6942,7 +6949,15 @@ impl TypesetEngine {
                                 crate::model::shape::TextWrap::BehindText
                                     | crate::model::shape::TextWrap::InFrontOfText))
                 });
-                if has_behind_float_table {
+                // [#4514] 흡수는 표가 fragment 로 흐름을 이미 소비한 앵커(#1955 원
+                // 사례 — oversized [별표] 표)에만 정당하다. #703 Shape 단축(흐름 0)
+                // 앵커에서 후행 빈 문단까지 흡수하면 저장 사다리의 갭(≈표 높이)이
+                // 어느 쪽에도 계상되지 않아 후속 표가 위로 붕괴한다 (sample1-repro
+                // 8쪽: 표 4개 최대 555.5px 겹침). shortcut 앵커는 arming 을 생략해
+                // 필러가 자기 줄 높이만큼 정상 흐름으로 전진하게 둔다. 한 문단에
+                // shortcut 표와 fragment 표가 공존하는 극단 케이스도 생략 쪽을
+                // 택한다(공간 이중 계상보다 유실이 드묾).
+                if has_behind_float_table && st.overlay_shape_shortcut_para != Some(para_idx) {
                     st.behind_float_table_para = Some(para_idx);
                 }
             }
@@ -16597,6 +16612,8 @@ impl TypesetEngine {
                             para_index: para_idx,
                             control_index: ctrl_idx,
                         });
+                        // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
+                        st.overlay_shape_shortcut_para = Some(para_idx);
                         continue;
                     }
                     let is_column_top = st.current_height < 1.0;

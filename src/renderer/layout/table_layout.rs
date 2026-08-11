@@ -4151,7 +4151,19 @@ impl LayoutEngine {
                 } else {
                     body_top
                 };
-                if allow_rowbreak_object_bottom_bleed {
+                // [#4514] 문단 기준 다행 RowBreak overlay(글앞/글뒤) 표는 상향 클램프를
+                // 걸지 않는다. 앵커가 쪽 하단 부근이면 body_bottom 클램프가 표를 수백
+                // px 위로 끌어올려 선행 표 위에 겹쳐 그렸다(8쪽: 880→491.4, 555.5px
+                // 겹침 — 판독 불가). 한컴은 이 표를 쪽 경계에서 행 분할한다. 분할
+                // 페인트 전 단계로, 앵커 위치를 보존하고 하단 bleed 는 쪽에서 잘리게
+                // 둔다(겹침 해소가 우선). 1×1 장식 래퍼는 종전 클램프 유지.
+                let overlay_multirow_rowbreak = matches!(
+                    table_text_wrap,
+                    crate::model::shape::TextWrap::InFrontOfText
+                        | crate::model::shape::TextWrap::BehindText
+                ) && table.row_count > 1
+                    && matches!(table.page_break, TablePageBreak::RowBreak);
+                if allow_rowbreak_object_bottom_bleed || overlay_multirow_rowbreak {
                     pushed.max(min_y)
                 } else {
                     pushed.clamp(min_y, body_bottom.max(min_y))
