@@ -1092,6 +1092,9 @@ struct TypesetState {
     /// 남음), 직후의 빈 후행 문단들을 anchor 첫 fragment 단에 소급 흡수한다.
     /// 비어있지 않은 문단/새 표/쪽나누기를 만나면 해제.
     behind_float_table_para: Option<usize>,
+    /// [#4533 HWP3] 현재 문단 다음 문단의 첫 저장 lineseg vpos — 자리차지
+    /// 밴드 비예약(사다리 증거) 판별용. 문단 루프 머리에서 세팅.
+    next_para_first_stored_vpos: Option<i32>,
     /// [#1955] 글뒤로 표 후행 빈 문단의 보류 흡수 목록. 표 fragment 는 지연 flush
     /// 되므로 흡수 시점에는 anchor 첫 fragment 단을 찾을 수 없다 — 페이지 확정 후
     /// (최종 flush 뒤) 첫 fragment 단에 일괄 부착한다.
@@ -3539,6 +3542,7 @@ impl TypesetState {
             wrap_around_table_para: 0,
             wrap_around_any_seg: false,
             behind_float_table_para: None,
+            next_para_first_stored_vpos: None,
             behind_pending_absorbs: Vec::new(),
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
@@ -5886,6 +5890,11 @@ impl TypesetEngine {
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
+            // [#4533 HWP3] 자리차지 밴드 비예약 판별용 — 표 경로 포함 전 문단 공통.
+            st.next_para_first_stored_vpos = paragraphs
+                .get(para_idx + 1)
+                .and_then(|p| p.line_segs.first())
+                .map(|seg| seg.vertical_pos);
             if std::env::var("RHWP_FLOW_DBG").is_ok() {
                 eprintln!(
                     "FLOW_DBG pi={} page={} cur_h={:.1}",
@@ -17788,7 +17797,34 @@ impl TypesetEngine {
             let hangul_flowed_beside_table = is_wrap_around_table
                 && table_total_height > 1.0
                 && stored_host_line_px.is_some_and(|lh| lh < table_total_height * 0.25);
-            if hangul_flowed_beside_table {
+            // [#4533 HWP3] 비-tac TopAndBottom float 인데 저장 사다리가 표를
+            // 예약하지 않은 서식 문서(하동군 21918361: host lh 13.3px·다음 문단
+            // 델타 21.3px vs 표 730px — 표·텍스트 겹침이 한글의 정본인데
+            // typeset/layout 이 +709 과소비). host lh 와 다음 문단 저장 델타가
+            // 둘 다 표 높이의 1/4 미만이면 흐름은 host 줄만 전진한다. HWP5 는
+            // 같은 서명이 2중 반증된 환원불가 계열이라 HWP3 계보 한정.
+            let next_gap_px = st
+                .next_para_first_stored_vpos
+                .zip(para.line_segs.first().map(|seg| seg.vertical_pos))
+                .filter(|(nv, hv)| nv > hv)
+                .map(|(nv, hv)| crate::renderer::hwpunit_to_px(nv - hv, self.dpi));
+            // 게이트: 직파싱 HWP3 + rhwp 자신의 HWPX 산출물(마커 계보)만.
+            // HWP5 컨테이너 변환본은 한글이 재저장하며 재조판한 것이라 저장
+            // lineseg 가 HWP5 계약이다 — 환경정책기본법 1480000-201600147 실측:
+            // hwp3_lineage 휴리스틱 HWP5 에 발화하면 52.7→369.8 악화.
+            let hwp3_topbottom_no_reserve = (st.profile.hwp3_native_layout()
+                || (st.profile.hwp3_layout() && st.profile.hwpx_container()))
+                && !table.common.treat_as_char
+                && matches!(
+                    table.common.text_wrap,
+                    crate::model::shape::TextWrap::TopAndBottom
+                )
+                && table_total_height > 1.0
+                && stored_host_line_px.is_some_and(|lh| lh < table_total_height * 0.25)
+                && next_gap_px.is_some_and(|g| g < table_total_height * 0.25);
+            if hwp3_topbottom_no_reserve {
+                st.current_height += pre_height + stored_host_line_px.unwrap_or(0.0);
+            } else if hangul_flowed_beside_table {
                 let band_top = st.current_height + pre_height;
                 st.current_height = band_top + stored_host_line_px.unwrap_or(0.0);
                 st.square_band_bottom = st.square_band_bottom.max(band_top + table_total_height);

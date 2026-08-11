@@ -5702,8 +5702,46 @@ impl LayoutEngine {
                         };
                         pending_topbottom_post_jump = Some((bottom_y, base_for_post));
                     } else {
-                        y_offset = bottom_y;
-                        shape_jumped = true;
+                        // [#4533 HWP3] 비-tac TopAndBottom float 표인데 저장
+                        // 사다리가 표를 예약하지 않은 서식 문서(하동군 21918361:
+                        // host lh 13.3px·다음 문단 델타 21.3px vs 표 730px)는
+                        // 점프를 생략한다 — typeset 의 hwp3_topbottom_no_reserve
+                        // 와 짝. 표는 그 자리에 그려지고 후속 텍스트가 겹치는
+                        // 것이 한글의 정본이며, typeset 예산과 일치해야 후속
+                        // 줄이 쪽 밖으로 밀리지 않는다.
+                        let tot = picture_top_y_opt.map(|top| bottom_y - top).unwrap_or(0.0);
+                        let host_lh_px = anchor_para
+                            .line_segs
+                            .iter()
+                            .find(|s| s.tag & 0x8000_0000 == 0)
+                            .map(|s| hwpunit_to_px(s.line_height, self.dpi));
+                        let next_gap_px = paragraphs
+                            .get(anchor_pi + 1)
+                            .and_then(|np| np.line_segs.first())
+                            .zip(anchor_para.line_segs.first())
+                            .filter(|(ns, hs)| ns.vertical_pos > hs.vertical_pos)
+                            .map(|(ns, hs)| {
+                                hwpunit_to_px(ns.vertical_pos - hs.vertical_pos, self.dpi)
+                            });
+                        let is_float_table_anchor = anchor_para.controls.iter().any(|c| {
+                            matches!(c, Control::Table(t)
+                            if !t.common.treat_as_char
+                                && matches!(
+                                    t.common.text_wrap,
+                                    crate::model::shape::TextWrap::TopAndBottom
+                                ))
+                        });
+                        let hwp3_no_reserve = (self.profile.get().hwp3_native_layout()
+                            || (self.profile.get().hwp3_layout()
+                                && self.profile.get().hwpx_container()))
+                            && is_float_table_anchor
+                            && tot > 1.0
+                            && host_lh_px.is_some_and(|lh| lh < tot * 0.25)
+                            && next_gap_px.is_some_and(|g| g < tot * 0.25);
+                        if !hwp3_no_reserve {
+                            y_offset = bottom_y;
+                            shape_jumped = true;
+                        }
                     }
                 }
             }
@@ -8185,6 +8223,38 @@ impl LayoutEngine {
                     table_y_before
                 } else if table_visual_shift > 0.0 {
                     (table_visual_end - table_visual_shift).max(table_y_before)
+                } else if {
+                    // [#4533 HWP3] 비-tac TopAndBottom float 인데 저장 사다리가
+                    // 표를 예약하지 않은 서식 문서(하동군 21918361: host lh
+                    // 13.3px·다음 문단 델타 21.3px vs 표 730px) — typeset 의
+                    // 동일 판별자(hwp3_topbottom_no_reserve)와 짝을 이뤄 흐름을
+                    // 전진시키지 않는다. 표는 그 자리에 그려지고 후속 텍스트가
+                    // 겹치는 것이 한글의 정본.
+                    let host_lh_px = para
+                        .line_segs
+                        .iter()
+                        .find(|s| s.tag & 0x8000_0000 == 0)
+                        .map(|s| hwpunit_to_px(s.line_height, self.dpi));
+                    let next_gap_px = paragraphs
+                        .get(para_index + 1)
+                        .and_then(|np| np.line_segs.first())
+                        .zip(para.line_segs.first())
+                        .filter(|(ns, hs)| ns.vertical_pos > hs.vertical_pos)
+                        .map(|(ns, hs)| hwpunit_to_px(ns.vertical_pos - hs.vertical_pos, self.dpi));
+                    let tot = table_visual_end - table_y_before;
+                    (self.profile.get().hwp3_native_layout()
+                        || (self.profile.get().hwp3_layout()
+                            && self.profile.get().hwpx_container()))
+                        && !t.common.treat_as_char
+                        && matches!(
+                            t.common.text_wrap,
+                            crate::model::shape::TextWrap::TopAndBottom
+                        )
+                        && tot > 1.0
+                        && host_lh_px.is_some_and(|lh| lh < tot * 0.25)
+                        && next_gap_px.is_some_and(|g| g < tot * 0.25)
+                } {
+                    table_y_before
                 } else {
                     empty_rowbreak_flow_end.unwrap_or(table_flow_end)
                 };
