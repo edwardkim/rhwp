@@ -63,7 +63,9 @@ fn should_wrap_middle_anchored_table(
     table_footprint: f64,
     line_width: f64,
 ) -> bool {
-    control_position.is_some_and(|position| position > 0 && position < text_len)
+    // [#4370] 끝 앵커(position == text_len)도 포함한다 — 본문 텍스트 뒤에 붙은
+    // tac 표가 남은 줄 폭에 안 들어가면 페이지 우측 밖으로 방출되던 결함.
+    control_position.is_some_and(|position| position > 0 && position <= text_len)
         && occupied_width > 1.0
         && occupied_width + table_footprint > line_width + 0.5
 }
@@ -6859,6 +6861,57 @@ pub(crate) struct ParaInlineState {
     pub line_top_y: f64,
     /// 현재 line 의 최대 picture height (line wrap 임계 + 다음 line advance 용)
     pub line_height: f64,
+}
+
+#[cfg(test)]
+mod issue_4370_tac_table_wrap_tests {
+    use super::should_wrap_middle_anchored_table;
+
+    /// [#4370] 끝 앵커(텍스트 마지막 문자 뒤) tac 표도 남은 폭 초과 시 wrap 된다.
+    #[test]
+    fn end_anchored_table_wraps_when_exceeding_line_width() {
+        assert!(should_wrap_middle_anchored_table(
+            Some(25),
+            25,
+            300.0,
+            480.0,
+            567.0
+        ));
+    }
+
+    #[test]
+    fn end_anchored_table_stays_inline_when_it_fits() {
+        assert!(!should_wrap_middle_anchored_table(
+            Some(25),
+            25,
+            300.0,
+            200.0,
+            567.0
+        ));
+    }
+
+    /// 문단 선두 앵커(position == 0)는 점유 폭이 없으므로 wrap 하지 않는다.
+    #[test]
+    fn leading_anchor_never_wraps() {
+        assert!(!should_wrap_middle_anchored_table(
+            Some(0),
+            25,
+            0.0,
+            480.0,
+            567.0
+        ));
+    }
+
+    #[test]
+    fn middle_anchor_wrap_preserved() {
+        assert!(should_wrap_middle_anchored_table(
+            Some(10),
+            20,
+            120.0,
+            480.0,
+            567.0
+        ));
+    }
 }
 
 #[cfg(test)]
