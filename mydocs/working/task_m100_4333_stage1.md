@@ -168,7 +168,7 @@ src/model/shape.rs:476:        (self.common().height as i32).max(self.shape_attr
 
 ## 후속 이슈 (2026-08-11)
 
-- **[#4604](https://github.com/edwardkim/rhwp/issues/4604)** — 문단 높이가
+- **[#4604(닫힘)](https://github.com/edwardkim/rhwp/issues/4604)** — 문단 높이가
   `measure_paragraph`(`height_measurer.rs:619`)와 `format_paragraph`(`typeset.rs:14318`)
   두 정의로 남아 있다. 이번에 인라인 도형 축만 통일했고, `treat_as_char == false` 인
   Picture 는 여전히 25/102 대 7/102 로 갈린다.
@@ -176,8 +176,15 @@ src/model/shape.rs:476:        (self.common().height as i32).max(self.shape_attr
   `MeasuredSection.paragraphs` 가 프로덕션 페이지네이션에서 죽어 있다. 이 계열에서 수정 위치를
   **두 번** 오도했다(`has_picture` 술어, 분해안 2). `has_picture`/`picture_height` 도
   읽는 곳이 0건이다.
-- **[#4606](https://github.com/edwardkim/rhwp/issues/4606)** — 도형과 무관한 PlainText
+- **[#4606(닫힘)](https://github.com/edwardkim/rhwp/issues/4606)** — 도형과 무관한 PlainText
   문단에도 발산이 288/5128(5.6%, 최대 18.88px) 남아 있다. 도형 발산에 가려 있던 기저선.
 
 `textbox-under-image.hwp` 구역0 문단0 의 float 측 1건(21.33px)은 #4333 본문이 이미 별개
 기제로 적어 두어 새로 열지 않았다.
+
+
+## 정정 (2026-08-12)
+
+Stage 2 실측으로 #4604·#4606 은 **"고치지 않는다"로 닫혔다.** 근거는
+`task_m100_4333_stage2.md` 와 각 이슈 코멘트에 있다.
+#4605 는 PR #4621 이 처리한다.
