@@ -6510,28 +6510,28 @@ impl LayoutEngine {
                         .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
                         .unwrap_or(0.0);
                     let candidate = para_top + nested_h;
-                    // 흐름형(호스트 아래로 표가 실제로 흐르는) 셀은 사다리 갭이
-                    // 표 높이만큼 벌어진다(49308 실측: 캡을 물리면 쪽수 70->68 로
-                    // 한글 71쪽에서 멀어짐). 갭이 표 높이의 절반도 안 되면 표가
-                    // 아래로 흐를 공간이 사다리에 없다 = 절대배치 증명 -> 캡.
-                    let next_gap = paragraphs
+                    // 절대배치의 직접 증거는 "표의 공간이 호스트 줄 **위**에 이미
+                    // 예약됨"이다 — 직전 저장 줄 끝→호스트 vpos 갭이 표 높이만큼
+                    // 벌어진다(기장군 612 vs 표 598 · 수면 작성례 563 vs 536.5 —
+                    // 호스트가 셀 마지막 문단인 변형도 같은 식으로 갈린다). 흐름형
+                    // (lh 미흡수 포함)은 직전 갭이 평범한 줄간격이라 배제되고,
+                    // 호스트가 셀 첫 문단이면(49308 조각 셀) 직전 줄이 없어 배제된다.
+                    let prev_end = paragraphs
                         .iter()
-                        .skip(pidx + 1)
-                        .filter_map(|later| {
-                            later
-                                .line_segs
-                                .first()
-                                .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
-                        })
-                        .find(|&v| v >= para_top)
-                        .map(|v| v - para_top);
+                        .take(pidx)
+                        .flat_map(|prev| prev.line_segs.iter())
+                        .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height, self.dpi))
+                        .filter(|&e| e <= para_top + 0.5)
+                        .fold(f64::NEG_INFINITY, f64::max);
+                    let gap_before = para_top - prev_end;
                     // 쪽을 넘는 거대 중첩 표는 셀 사다리가 조각-국소라 표를
                     // 기술하지 못한다(49308: nested_h 2664 vs ladder_end 122 —
                     // 캡하면 쪽수 70->69 로 한글 71쪽에서 멀어짐). 표가 사다리
                     // 안에 들어갈 때만 절대배치 캡을 허용한다.
                     let anchored_not_flowing = ladder_end > 0.0
                         && nested_h <= ladder_end
-                        && next_gap.map(|g| g < nested_h * 0.5).unwrap_or(false);
+                        && prev_end.is_finite()
+                        && gap_before >= nested_h * 0.85;
                     if anchored_not_flowing {
                         candidate.min(ladder_end)
                     } else {
