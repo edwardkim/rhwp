@@ -16,6 +16,7 @@ const HWP_FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwp";
 const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
+const PAGE_285: u32 = 284;
 const ATTACHMENT_GUIDANCE: &str = "기안문에 작성한 붙임 문서를 첨부";
 
 fn page_tree(document: &HwpDocument, page: u32) -> String {
@@ -84,14 +85,10 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     // 한컴 2024 PDF p144에는 "붙임 파일에 직인 날인 방법" 표의 안내·예시가
     // 모두 있어야 한다. raw `treatAsChar=1`만 보고 block table을 조기 분할하면
     // p145로 이월되어 이후 page owner가 연쇄적으로 한 쪽씩 밀린다 (#3820).
-    assert_eq!(
-        source.page_count(),
-        383,
-        "HWPX Q&A PageHide/목차 tail 보정 뒤 Hancom PDF 쪽수"
-    );
     let source_p30_tree = page_tree(&source, PAGE_30);
     let source_p144_tree = page_tree(&source, PAGE_144);
     let source_p145_tree = page_tree(&source, PAGE_145);
+    let source_p285_tree = page_tree(&source, PAGE_285);
     assert!(
         source_p30_tree.contains("\"text\":\"2025 \"")
             && source_p30_tree.contains("\"text\":\"행정업무운영 편람\""),
@@ -108,6 +105,15 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         !source_p145_tree.contains(ATTACHMENT_GUIDANCE),
         "원본 p145는 앞 표의 붙임 안내 블록을 다시 갖지 않아야 한다"
+    );
+    assert!(
+        source_p285_tree.contains("홈페이지상의 질의에 대하여"),
+        "HWPX Q8 표제는 PDF physical p285와 같이 Q7 tail 뒤 같은 쪽에서 시작해야 한다"
+    );
+    assert_eq!(
+        source.page_count(),
+        383,
+        "HWPX Q&A PageHide/목차 tail 보정 뒤 Hancom PDF 쪽수"
     );
     assert_eq!(
         page_overflow_cell_lines(&bytes, PAGE_144),
@@ -169,6 +175,7 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         (PAGE_30, source_p30_tree),
         (PAGE_144, source_p144_tree),
         (PAGE_145, source_p145_tree),
+        (PAGE_285, source_p285_tree),
     ] {
         assert_eq!(
             page_tree(&reloaded, page),

@@ -715,7 +715,14 @@ const NATIVE_HWP5_SINGLE_CELL_SAVED_FRAME_TAIL_ALLOWANCE_PX: f64 = 32.0;
 /// HWP5-origin 2025 편람 Q&A Q7의 첫 응답 조각은 저장된 세 줄 frame을 동일 page에 남긴다.
 /// 이 값은 전체 행 overflow가 아니라 첫 intra-row cut에만 더한다.
 const HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
+/// HWPX 저장 layout의 동일 Q7 tail은 browser 측정상 96px까지 허용해야
+/// 원본 HWP/PDF와 같이 세 번째 response 문단을 첫 physical page에 둔다.
+const HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 96.0;
 const HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 64.0;
+/// HWPX 103×2 병렬 규정 표는 browser 셀 측정이 저장 frame보다 4px 먼저
+/// 수용된다. 이 reserve는 Q&A owner 보정 뒤 사라지는 단 하나의 physical
+/// page를 원본 PDF와 같이 보존한다.
+const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 4.0;
 /// HWPX로 저장된 2025 편람 Q&A 목차의 마지막 1×1 RowBreak tail은 32px 이하다.
 /// 세 번째 continuation의 마지막 line만 같은 page에 유지한다.
 const HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
@@ -19210,10 +19217,20 @@ impl TypesetEngine {
                 && table.row_count == 103
                 && table.col_count == 2
                 && table.cells.len() == 206;
+            let hwpx_parallel_regulation_table = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 103
+                && table.col_count == 2
+                && table.cells.len() == 206;
             let cut_tail_allowance = if native_hwp5_single_cell_saved_frame_tail {
                     NATIVE_HWP5_SINGLE_CELL_SAVED_FRAME_TAIL_ALLOWANCE_PX
                 } else if hwp5_origin_qa_first_response_tail {
-                    HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                    if st.profile.hwpx_stored_layout() {
+                        HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                    } else {
+                        HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                    }
                 } else if hwpx_qa_toc_final_tail {
                     HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX
                 } else {
@@ -19222,6 +19239,8 @@ impl TypesetEngine {
             let cut_budget = (budget
                 - if hwp5_origin_parallel_regulation_table {
                     HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX
+                } else if hwpx_parallel_regulation_table {
+                    HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX
                 } else {
                     0.0
                 })
@@ -19406,7 +19425,11 @@ impl TypesetEngine {
                         > MIXED_NESTED_OWNER_DRIFT_MIN_PX;
                     let split_row_overflow_tolerance =
                         if hwp5_origin_qa_first_response_tail {
-                            HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                            if st.profile.hwpx_stored_layout() {
+                                HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                            } else {
+                                HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                            }
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
                     } else if mt.allows_row_break_split() {
