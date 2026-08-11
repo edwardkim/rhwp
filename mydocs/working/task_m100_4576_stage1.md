@@ -185,3 +185,20 @@ test 로 두었다. 파생본을 "패치 이전 코드의 값" 으로 바꾸려�
 - `rebuild_derived_state` 는 `batch_mode` 와 무관하게 `paginate()` 를 부른다. 기존 두 전면
   재구성 지점(`set_document`, `restore_snapshot_native`)과 같은 규약이라 새 불일치는 아니지만,
   batch 중 핫패치가 오면 그 batch 의 pagination 지연이 끝난다.
+
+
+## 후속 이슈 (2026-08-11)
+
+작업 중 발견했지만 범위 밖이라 손대지 않은 것을 이슈로 분리했다.
+
+- **[#4582](https://github.com/edwardkim/rhwp/issues/4582)** — `set_document`
+  (`commands/document.rs:1646`)이 전면 재구성 순서의 **세 번째 사본**이면서 측정 캐시
+  정리가 빠져 있다. `!table.dirty` 인 표에 대해 이전 문서의 `MeasuredTable` 을 재사용할
+  수 있다. `pub` API 동작 변경이라 호출부 전수 확인이 필요하다.
+- **[#4583](https://github.com/edwardkim/rhwp/issues/4583)** — `document_epoch`
+  (`mod.rs:111`)이 쓰기 전용이고, `set_respect_vpos_reset`(`wasm_api.rs:660`)이
+  `mark_all_sections_dirty()` 와 같은 일을 다른 철자로 한다.
+
+`invalidate_subsecond_render_caches`(`wasm_api.rs:909`)의 이름이 이제 하는 일보다
+좁다 — 무효화가 아니라 재구성이고 `pagination` 은 캐시가 아니다. 벤더 이름 경계 자체가
+#4580 의 범위라 그쪽에서 함께 정리한다.
