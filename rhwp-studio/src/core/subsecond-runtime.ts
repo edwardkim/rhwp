@@ -201,7 +201,8 @@ export function connectSubsecondDevtools(
   const createWebSocket = options.createWebSocket ?? (url => new WebSocket(url));
   const scheduleTimeout = options.setTimeout ?? ((callback, delay) => window.setTimeout(callback, delay));
   const cancelTimeout = options.clearTimeout ?? (id => window.clearTimeout(id));
-  const now = options.now ?? (() => Date.now());
+  // 연결이 버틴 시간만 재므로 단조 시계를 쓴다. Date.now() 는 시스템 시각 변경에 흔들린다.
+  const now = options.now ?? (() => performance.now());
   const patchAccumulation = options.patchAccumulation ?? new SubsecondPatchAccumulation();
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const url = `${protocol}//${location.host}/_dioxus?build_id=0`;
@@ -224,13 +225,14 @@ export function connectSubsecondDevtools(
       openedAt = now();
     };
     socket.onclose = event => {
+      // openedAt 은 언제나 "지금 열려 있는 소켓"만 가리킨다 — 재연결하지 않는 경로에서도 지운다.
+      const lasted = openedAt === null ? 0 : now() - openedAt;
+      openedAt = null;
       if (!active || event.code === 1001) return;
       // 살아 있었던 연결이 끊긴 것이면 백오프를 되돌린다. 되돌리지 않으면 dx serve 를 껐다 켠
       // 뒤에도 끊김마다 최대 4초를 기다려, 남은 세션 내내 첫 패치가 그만큼 늦는다.
       // 반대로 핸드셰이크만으로 되돌려서도 안 된다 — dx serve 가 꺼져 Vite 프록시가 열자마자
       // 끊는 상황에서 250ms 재연결을 영원히 돌게 된다. 버틴 시간으로 둘을 가른다.
-      const lasted = openedAt === null ? 0 : now() - openedAt;
-      openedAt = null;
       if (lasted >= STABLE_CONNECTION_MS) reconnectDelay = RECONNECT_MIN_MS;
       reconnectTimer = scheduleTimeout(() => {
         reconnectTimer = null;
