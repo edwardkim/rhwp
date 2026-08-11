@@ -1383,58 +1383,6 @@ fn native_hwp5_figure_table_overlay_guide_empty(
     false
 }
 
-/// native HWP5 Q&A RowBreak 표 뒤의 같은 style 연속 빈 줄 중 둘째 줄은 별도 본문
-/// 간격이 아니라 저장된 tail guide 이다. 첫 빈 줄은 표 아래의 물리 간격으로 보존하고,
-/// 정확히 한 line-height 뒤의 둘째 줄만 0-height item으로 남긴다.
-fn native_hwp5_qa_duplicate_empty_tail_guide(
-    para_idx: usize,
-    para: &Paragraph,
-    paragraphs: &[Paragraph],
-) -> bool {
-    if !para.controls.is_empty()
-        || para_has_visible_text(para)
-        || para.column_type != ColumnBreakType::None
-        || para.line_segs.len() != 1
-    {
-        return false;
-    }
-    let Some(previous) = para_idx.checked_sub(1).and_then(|idx| paragraphs.get(idx)) else {
-        return false;
-    };
-    let Some(host) = para_idx.checked_sub(2).and_then(|idx| paragraphs.get(idx)) else {
-        return false;
-    };
-    if !previous.controls.is_empty()
-        || para_has_visible_text(previous)
-        || previous.column_type != ColumnBreakType::None
-        || previous.line_segs.len() != 1
-        || previous.para_shape_id != para.para_shape_id
-    {
-        return false;
-    }
-    let previous_line = &previous.line_segs[0];
-    let guide_line = &para.line_segs[0];
-    if guide_line.vertical_pos
-        != previous_line.vertical_pos + previous_line.line_height + previous_line.line_spacing
-    {
-        return false;
-    }
-    host.controls.iter().any(|control| {
-        matches!(
-            control,
-            Control::Table(table)
-                if !table.common.treat_as_char
-                    && table.row_count == 6
-                    && table.col_count == 5
-                    && table.cells.len() == 15
-                    && matches!(
-                        table.page_break,
-                        crate::model::table::TablePageBreak::RowBreak
-                    )
-        )
-    })
-}
-
 /// [Task #1863] 텍스트 없이 TAC 표만 담은 문단 — 시각적으로 단독 표 줄.
 /// 빈 앵커 TopAndBottom 표 뒤에 이런 문단이 오면 표-표 스택이므로 앵커의
 /// host_line_spacing 이 표 사이 시각 간격이다 (#1133 과 동일 본질).
@@ -6096,13 +6044,13 @@ impl TypesetEngine {
                 continue;
             }
 
-            let is_native_hwp5_hidden_empty_guide = profile.native_hwp5_layout()
-                && (native_hwp5_figure_table_overlay_guide_empty(para_idx, para, paragraphs)
-                    || native_hwp5_qa_duplicate_empty_tail_guide(para_idx, para, paragraphs));
-            if is_native_hwp5_hidden_empty_guide {
-                // 그림 표의 paint-span guide와 Q&A 표 뒤의 중복 tail guide는 이미
-                // 선행 표/빈 줄이 flow를 예약했다. PI↔page 진단을 위해 문단 item은
-                // 남기되 높이는 다시 소비하지 않는다.
+            let is_native_hwp5_figure_table_overlay_guide_empty = profile.native_hwp5_layout()
+                && native_hwp5_figure_table_overlay_guide_empty(para_idx, para, paragraphs);
+            if is_native_hwp5_figure_table_overlay_guide_empty {
+                // `그림 67` 같은 2×1 그림 표는 선언한 표 높이로 이미 flow를 예약한다.
+                // 표 paint span 내부의 빈 HWP line은 다시 높이를 소비하면 안 되지만,
+                // PI↔page 진단에서 문단 자체는 계속 추적 가능해야 하므로 0-height item으로
+                // 남긴다.
                 st.hidden_empty_paras.insert(para_idx);
                 st.current_items.push(PageItem::FullParagraph {
                     para_index: para_idx,
