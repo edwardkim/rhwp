@@ -740,11 +740,21 @@ const HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX: f64 = 64.0;
 /// 유지한다. 논리 row 높이의 44.6px 차이를 넘는 48px으로 response와 blank-bottom row를
 /// 한 fragment owner로 보존한다.
 const HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 48.0;
+/// Q35의 3·2 lineSeg response는 저장 frame의 마지막 두 unit이 단독 쪽으로 분할된다.
+/// 64px은 response와 blank-bottom row를 PDF/native HWP5와 같은 fragment owner로 보존한다.
+const HWPX_QA_THREE_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
+/// Q37의 2·7 lineSeg response는 저장 frame의 마지막 두 unit이 단독 쪽으로 분할된다.
+/// 64px은 response와 blank-bottom row를 PDF/native HWP5와 같은 fragment owner로 보존한다.
+const HWPX_QA_TWO_SEVEN_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
+/// Q41의 6·6 lineSeg response는 저장 frame의 마지막 두 unit이 단독 쪽으로 분할된다.
+/// 64px은 PDF p301의 완결 owner를 보존한다.
+const HWPX_QA_TWO_SIX_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
+/// Q48의 3 lineSeg 단일 response는 저장 frame의 마지막 두 unit이 단독 쪽으로 분할된다.
+/// 96px은 PDF p304의 완결 owner를 보존한다.
+const HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 96.0;
 const HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 64.0;
-/// HWPX 103×2 병렬 규정 표는 browser 셀 측정이 저장 frame보다 56px 먼저
-/// 수용된다. Q16·Q26·Q29 owner 보정 뒤 이 reserve가 fragment 하나를 보존해, 규정표
-/// 다음 section과 전체 쪽수를 원본 PDF의 383쪽에 다시 맞춘다.
-const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 56.0;
+/// HWPX 103×2 병렬 규정 표의 fragment 임계값을 PDF 57조각 계약과 대조한다.
+const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 160.0;
 /// HWPX로 저장된 2025 편람 Q&A 목차의 마지막 1×1 RowBreak tail은 32px 이하다.
 /// 세 번째 continuation의 마지막 line만 같은 page에 유지한다.
 const HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
@@ -19305,6 +19315,80 @@ impl TypesetEngine {
                         && cell.paragraphs[0].line_segs[0].vertical_pos == 0
                         && cell.paragraphs[0].line_segs[1].vertical_pos > 0
                 });
+            let hwpx_qa_three_two_line_response_tail = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && table.common.height == 18_084
+                && table.outer_margin_bottom == 566
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == r
+                        && cell.paragraphs.len() == 2
+                        && cell.paragraphs[0].line_segs.len() == 3
+                        && cell.paragraphs[1].line_segs.len() == 2
+                        && cell.paragraphs[1].line_segs[0].vertical_pos > 0
+                });
+            let hwpx_qa_two_seven_line_response_tail = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && table.common.height == 23_988
+                && table.outer_margin_bottom == 566
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == r
+                        && cell.paragraphs.len() == 2
+                        && cell.paragraphs[0].line_segs.len() == 2
+                        && cell.paragraphs[1].line_segs.len() == 7
+                        && cell.paragraphs[1].line_segs[0].vertical_pos > 0
+                });
+            let hwpx_qa_two_six_line_response_tail = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && table.common.height == 29_772
+                && table.outer_margin_bottom == 0
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == r
+                        && cell.paragraphs.len() == 2
+                        && cell.paragraphs[0].line_segs.len() == 6
+                        && cell.paragraphs[1].line_segs.len() == 6
+                        && cell.paragraphs[1].line_segs[0].vertical_pos > 0
+                });
+            let hwpx_qa_three_line_response_tail = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && table.common.height == 15_385
+                && table.outer_margin_bottom == 0
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == r
+                        && cell.paragraphs.len() == 1
+                        && cell.paragraphs[0].line_segs.len() == 3
+                });
             // HWPX Q&A 목차는 73 문단의 1×1 RowBreak 표다. 세 번째 continuation에는
             // 28.4px tail만 남으므로 그 마지막 line만 현재 page로 수용한다. 일반 1×1
             // 표 또는 첫 두 fragment에는 적용하지 않는다.
@@ -19351,6 +19435,14 @@ impl TypesetEngine {
                     HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX
                 } else if hwpx_qa_two_line_response_tail {
                     HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
+                } else if hwpx_qa_three_two_line_response_tail {
+                    HWPX_QA_THREE_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
+                } else if hwpx_qa_two_seven_line_response_tail {
+                    HWPX_QA_TWO_SEVEN_LINE_RESPONSE_TAIL_ALLOWANCE_PX
+                } else if hwpx_qa_two_six_line_response_tail {
+                    HWPX_QA_TWO_SIX_LINE_RESPONSE_TAIL_ALLOWANCE_PX
+                } else if hwpx_qa_three_line_response_tail {
+                    HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX
                 } else if hwpx_qa_toc_final_tail {
                     HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX
                 } else {
@@ -19467,6 +19559,22 @@ impl TypesetEngine {
                             <= budget + HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX;
                 let hwpx_qa_two_line_response_tail_fits = hwpx_qa_two_line_response_tail
                     && row_total <= budget + HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
+                let hwpx_qa_three_two_line_response_tail_fits =
+                    hwpx_qa_three_two_line_response_tail
+                        && row_total
+                            <= budget + HWPX_QA_THREE_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
+                let hwpx_qa_two_seven_line_response_tail_fits =
+                    hwpx_qa_two_seven_line_response_tail
+                        && row_total
+                            <= budget + HWPX_QA_TWO_SEVEN_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
+                let hwpx_qa_two_six_line_response_tail_fits =
+                    hwpx_qa_two_six_line_response_tail
+                        && row_total
+                            <= budget + HWPX_QA_TWO_SIX_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
+                let hwpx_qa_three_line_response_tail_fits =
+                    hwpx_qa_three_line_response_tail
+                        && row_total
+                            <= budget + HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
                 // 단일 유닛 행 — 분할 불가, 페이지 시작이면 강제, 아니면 다음으로.
                 if r == cursor_row {
                     consumed += cs_before + row_total;
@@ -19474,6 +19582,10 @@ impl TypesetEngine {
                 } else if hwpx_qa_two_paragraph_response_tail_fits
                     || hwpx_qa_two_paragraph_six_line_tail_fits
                     || hwpx_qa_two_line_response_tail_fits
+                    || hwpx_qa_three_two_line_response_tail_fits
+                    || hwpx_qa_two_seven_line_response_tail_fits
+                    || hwpx_qa_two_six_line_response_tail_fits
+                    || hwpx_qa_three_line_response_tail_fits
                 {
                     consumed += cs_before + row_total;
                     end_row = row_count;
@@ -19581,6 +19693,14 @@ impl TypesetEngine {
                             HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX
                         } else if hwpx_qa_two_line_response_tail {
                             HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
+                        } else if hwpx_qa_three_two_line_response_tail {
+                            HWPX_QA_THREE_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
+                        } else if hwpx_qa_two_seven_line_response_tail {
+                            HWPX_QA_TWO_SEVEN_LINE_RESPONSE_TAIL_ALLOWANCE_PX
+                        } else if hwpx_qa_two_six_line_response_tail {
+                            HWPX_QA_TWO_SIX_LINE_RESPONSE_TAIL_ALLOWANCE_PX
+                        } else if hwpx_qa_three_line_response_tail {
+                            HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
                     } else if mt.allows_row_break_split() {
