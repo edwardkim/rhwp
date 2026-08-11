@@ -54,6 +54,8 @@
   future 를 띄우고 바로 `Ok(())` 를 돌려주고(`lib.rs:551`) 그 future 는 `.wasm` 이 아닌 경로에서 조용히
   빠져나갈 수 있으므로(`:565-567`), 이 수는 실제 메모리 증가 횟수의 **상한**이다.
 - 세션 길이 제약은 [개발 환경 가이드](../manual/dev_environment_guide.md#subsecond-핫패치-세션은-길이를-관리한다)에 적었다.
+- 세는 자리가 `onmessage` 라서 #4578(메시지 처리 경로 소유)과 **같은 hunk 를 건드린다.** 셈이 정확하려면
+  반환값을 봐야 해서 피할 수 없었다. #4578 이 그 반환값의 의미를 다시 정의하면 이 한 줄도 같이 바뀐다.
 
 패치 1건당 증가량은 **실측하지 못했다**. 이 장비에는 dx 가 만든 패치 산출물이 없고(`target/dx/` 에
 베이스 모듈만 있다), 새로 만들려면 워크트리에서 wasm 디버그 전체 빌드부터 필요하다. 대신 확실한 값만
@@ -85,7 +87,7 @@
 | 게이트 | 결과 |
 | --- | --- |
 | `npx tsc --noEmit` (rhwp-studio) | 통과(출력 없음) |
-| `npm test` (rhwp-studio) | 841개 중 840 통과, 0 실패, 1 skip(환경: pkg-node 빌드 없음, 기존) |
+| `npm test` (rhwp-studio) | 843개 중 842 통과, 0 실패, 1 skip(환경: pkg-node 빌드 없음, 기존) |
 | `python3 scripts/check_document_metadata.py` | 557개 문서, 이상 없음 |
 | `python3 scripts/check_markdown_links.py` | 562개 문서, 이상 없음 |
 
