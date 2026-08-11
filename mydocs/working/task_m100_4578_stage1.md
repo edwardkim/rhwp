@@ -125,3 +125,27 @@ RED 를 먼저 확인했다.
   프로덕션 번들 격리는 위 grep 으로 실측했다.
 - build.rs: 끊긴 별칭 상태에서 `cargo check --target wasm32` 출력에 경고 0건, 별칭을 지우고
   다시 빌드해도 재생성 안 됨 → 수정 후 경고가 뜨고 별칭이 재생성된다.
+
+
+## 후속 이슈 (2026-08-11)
+
+- **[#4588](https://github.com/edwardkim/rhwp/issues/4588)** — `subsecond-dev` 를 켜면
+  clippy(`wasm_api.rs:886` `needless_return`)와 `--lib` 없는 wasm32 check(CLI 바이너리
+  7개 오류)가 깨진다. **둘 다 깨끗한 `upstream/devel` 에서 동일하게 재현**되는 기존 상태다.
+- **[#4589](https://github.com/edwardkim/rhwp/issues/4589)** — 결과 코드 계약이
+  `DevtoolsMessageOutcome::code()`(Rust)와 `SUBSECOND_OUTCOMES`(TS) 양쪽에 따로 적혀
+  있고 빌드 시점 동기화 검사가 없다. 결합이 문자열 데이터뿐이라 경계 자체는 옳은 모양이라,
+  "값싼 드리프트 검사가 있는가"가 질문이다.
+
+## 새 베이스 재검증 (2026-08-11)
+
+작업 중 `upstream/devel` 이 전진해(#4525 머지) 브랜치를 `d30e5d4af` 위로 다시 올렸다.
+cherry-pick 4건 깨끗, 0 behind, diff 는 7파일로 이 이슈 범위 그대로다.
+
+- `cargo fmt --all -- --check` exit 0
+- `cargo clippy --all-targets -- -D warnings` exit 0
+- `cargo test -p rhwp --features subsecond-dev --lib subsecond_dev` exit 0
+- `cargo check --lib --features subsecond-dev --target wasm32-unknown-unknown` exit 0
+- `CARGO_INCREMENTAL=0 cargo test --profile release-test --tests` exit 0 —
+  `test result: ok` 블록 **536개, FAILED 0건**
+- studio `npx tsc --noEmit` exit 0, `npm test` **840 tests / 839 pass / 0 fail / 1 skip**
