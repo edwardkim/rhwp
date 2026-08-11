@@ -1009,6 +1009,7 @@ fn compute_line_extra_spacing(
     alignment: Alignment,
     in_cell: bool,
     needs_justify: bool,
+    justify_spaces_only: bool,
     needs_distribute: bool,
     has_tabs: bool,
     suppress_cell_overflow_spacing: bool,
@@ -1172,7 +1173,12 @@ fn compute_line_extra_spacing(
         } else if total_char_count > 1 {
             // 양쪽 정렬이지만 공백 없음 (일본어/숫자 등):
             let slack = available_width - total_text_width;
-            if leader_dashes > 0 && slack > 0.0 {
+            if justify_spaces_only && slack > 0.0 {
+                // [#4516] 머리말/꼬리말 예외로만 justify 된 마지막 줄은 한컴처럼
+                // **공백만** 벌린다. 공백 없는 줄(영문 문서번호 등)에 양수 slack 을
+                // 자간으로 살포하면 글자가 전체 폭으로 흩어지므로 자연 폭 유지.
+                (0.0, 0.0, 0.0)
+            } else if leader_dashes > 0 && slack > 0.0 {
                 (0.0, 0.0, slack / leader_dashes as f64)
             } else if suppress_cell_overflow_spacing && slack < 0.0 {
                 // 셀의 좁은 내부 폭은 줄바꿈 기준일 뿐, 숫자/문자를 수평 압축하지 않는다.
@@ -3697,6 +3703,12 @@ impl LayoutEngine {
                 has_forced_break,
             );
             let needs_distribute = alignment == Alignment::Distribute;
+            // [#4516] 머리말/꼬리말 마지막 줄 예외로만 성립한 justify 는 공백에만
+            // 배분한다 (공백 없는 줄은 자연 폭 유지).
+            let justify_spaces_only = needs_justify
+                && alignment == Alignment::Justify
+                && is_last_line_of_para
+                && is_header_footer_para;
 
             let has_tabs = comp_line.runs.iter().any(|r| r.text.contains('\t'));
             // 자간은 **그려지는 글자**에 나눠 붙으므로 폭(`total_text_width`)과 같은
@@ -3729,6 +3741,7 @@ impl LayoutEngine {
                     alignment,
                     cell_ctx.is_some(),
                     needs_justify,
+                    justify_spaces_only,
                     needs_distribute,
                     has_tabs,
                     suppress_cell_overflow_spacing,
@@ -6925,6 +6938,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             5,
             30.0,
             90.0,
@@ -6958,6 +6972,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             5,
             total_text_width,
             90.0,
@@ -6975,6 +6990,62 @@ mod issue_2809_split_alignment_tests {
         assert!((advance + trailing_ink_overhang - 90.0).abs() < 0.001);
         assert_eq!(extra_char, 0.0);
         assert_eq!(extra_dash, 0.0);
+    }
+
+    /// [#4516] 머리말/꼬리말 예외로만 justify 된 마지막 줄: 공백 없는 영문
+    /// 문서번호에 양수 slack 을 자간으로 살포하지 않는다 (자연 폭 유지).
+    #[test]
+    fn footer_last_line_justify_without_spaces_keeps_natural_width() {
+        let line = ComposedLine {
+            runs: vec![ComposedTextRun {
+                text: "RVT-QI-02-03".to_string(),
+                ..Default::default()
+            }],
+            line_height: 1120,
+            baseline_distance: 952,
+            segment_width: 48188,
+            column_start: 0,
+            line_spacing: 560,
+            has_line_break: false,
+            char_start: 0,
+        };
+        // 꼬리말 마지막 줄 예외 (justify_spaces_only = true): 분배 없음
+        let (extra_word, extra_char, extra_dash) = compute_line_extra_spacing(
+            &line,
+            &ResolvedStyleSet::default(),
+            Alignment::Justify,
+            false,
+            true,
+            true,
+            false,
+            false,
+            false,
+            12,
+            62.5,
+            481.8,
+            40.0,
+        );
+        assert_eq!(extra_word, 0.0);
+        assert_eq!(extra_char, 0.0);
+        assert_eq!(extra_dash, 0.0);
+
+        // 본문 중간 줄 justify (justify_spaces_only = false): 기존 자간 분배 유지
+        let (_, extra_char_mid, _) = compute_line_extra_spacing(
+            &line,
+            &ResolvedStyleSet::default(),
+            Alignment::Justify,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            12,
+            62.5,
+            481.8,
+            40.0,
+        );
+        assert!(extra_char_mid > 0.0);
     }
 }
 
