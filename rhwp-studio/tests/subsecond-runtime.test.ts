@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 type RuntimeModule = typeof import('../src/core/subsecond-runtime.ts');
 
@@ -722,6 +725,59 @@ test('devtools websocket counts only applied patches toward the accumulation', a
   disconnect?.();
 });
 
+/** 매니페스트·잠금 파일 한 쌍을 담은 임시 저장소 뿌리를 만든다. */
+function fakeRepository(pin: string, locked: string): string {
+  const root = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-version-'));
+  writeFileSync(
+    path.join(root, 'Cargo.toml'),
+    `[dependencies]\nsubsecond = { version = "${pin}", optional = true }\n`,
+  );
+  writeFileSync(
+    path.join(root, 'Cargo.lock'),
+    `[[package]]\nname = "subsecond"\nversion = "${locked}"\n`,
+  );
+  return root;
+}
+
+test('the dioxus-cli version is derived from the crate, so it cannot drift', async () => {
+  const { dioxusCliVersion } = await import('../../scripts/dioxus-cli-version.mjs');
+  const repoRoot = new URL('../../', import.meta.url);
+  const derived = dioxusCliVersion(fileURLToPath(repoRoot));
+
+  // 유도값은 실제로 컴파일되는 버전이어야 한다 — 잠금 파일이 해결한 값.
+  assert.ok(
+    readFileSync(new URL('Cargo.lock', repoRoot), 'utf8')
+      .includes(`\nname = "subsecond"\nversion = "${derived}"\n`),
+    `Cargo.lock 이 해결한 subsecond 버전과 유도값(${derived})이 다르다`,
+  );
+
+  // dependabot 이 `Cargo.toml` 만 올려도 설치 버전이 따라간다 — 사본이 없기 때문이다.
+  const installScript = JSON.parse(
+    readFileSync(new URL('rhwp-studio/package.json', repoRoot), 'utf8'),
+  ).scripts['subsecond:install'];
+  assert.doesNotMatch(
+    installScript,
+    /\d+\.\d+\.\d+/,
+    `subsecond:install 에 버전 사본이 다시 생겼다: ${installScript}`,
+  );
+  assert.ok(installScript.includes('scripts/dioxus-cli-version.mjs'), installScript);
+});
+
+test('a drifted or loose pin stops the install instead of fetching the wrong dx', async () => {
+  const { dioxusCliVersion } = await import('../../scripts/dioxus-cli-version.mjs');
+
+  assert.equal(dioxusCliVersion(fakeRepository('=1.2.3', '1.2.3')), '1.2.3');
+
+  // 핀과 잠금이 갈라진 상태. 그대로 설치하면 어느 쪽과도 맞지 않는 dx 가 깔린다.
+  assert.throws(
+    () => dioxusCliVersion(fakeRepository('=1.2.3', '1.2.4')),
+    /Cargo\.toml: 1\.2\.3[\s\S]*Cargo\.lock: 1\.2\.4/,
+  );
+
+  // 느슨한 핀이면 잠금이 언제든 앞서 나갈 수 있어 유도 자체가 성립하지 않는다.
+  assert.throws(() => dioxusCliVersion(fakeRepository('1.2', '1.2.9')), /정확 핀이 아니다/);
+});
+
 /**
  * 핫패치 개발 배선이 **매니페스트·설정에 선언되어 있는지** 본다.
  *
@@ -749,7 +805,9 @@ test('hot-patch dev wiring is declared in the manifests and the vite config', ()
   const studioPackage = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
 
   assert.match(cargo, /subsecond-dev\s*=\s*\["dep:subsecond"\]/);
-  assert.match(cargo, /subsecond\s*=\s*\{\s*version\s*=\s*"=0\.7\.10",\s*optional\s*=\s*true\s*\}/);
+  // 버전 숫자는 여기 적지 않는다 — 사본이 하나 더 생기면 그것이 #4580 이 없앤 드리프트다.
+  // 정확 핀이라는 사실만 본다. 그 핀에서 유도한 값의 정합은 아래 전용 테스트가 확인한다.
+  assert.match(cargo, /subsecond\s*=\s*\{\s*version\s*=\s*"=\d+\.\d+\.\d+",\s*optional\s*=\s*true\s*\}/);
   assert.match(cargo, /members\s*=\s*\[[\s\S]*"tools\/rhwp-subsecond"/);
   assert.match(adapterCargo, /name\s*=\s*"rhwp-subsecond"/);
   assert.match(adapterCargo, /build\s*=\s*"build\.rs"/);
@@ -762,7 +820,7 @@ test('hot-patch dev wiring is declared in the manifests and the vite config', ()
   assert.match(vite, /rhwp-subsecond-vite/);
   assert.match(vite, /rhwp-subsecond\.js/);
   assert.match(studioPackage, /"subsecond:sync"[\s\S]*rhwp-subsecond-vite/);
-  assert.match(studioPackage, /"subsecond:install"[\s\S]*dioxus-cli --version 0\.7\.10 --locked/);
+  assert.match(studioPackage, /"subsecond:install"[\s\S]*cargo install dioxus-cli[\s\S]*--locked/);
   assert.match(studioPackage, /"subsecond:serve"[\s\S]*--package rhwp-subsecond[\s\S]*--hot-patch/);
   assert.match(studioPackage, /"dev:subsecond"\s*:\s*"npm run subsecond:sync && RHWP_SUBSECOND=1 vite"/);
 });

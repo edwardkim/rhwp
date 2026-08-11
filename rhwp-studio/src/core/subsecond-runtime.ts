@@ -201,7 +201,7 @@ const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
     level: 'warn',
     message:
       '데브서버가 JSON 이 아닌 텍스트 프레임을 보냈다. `npm run subsecond:install` 이 고정한 ' +
-      'dioxus-cli 0.7.10 이 아닌 dx 가 떠 있는지 `npm run subsecond:serve` 터미널에서 확인한다.',
+      'dioxus-cli 가 아닌 dx 가 떠 있는지 `npm run subsecond:serve` 터미널에서 확인한다.',
   },
   'foreign-build-id': {
     level: 'warn',
@@ -218,8 +218,8 @@ const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
   'undeserializable-jump-table': {
     level: 'warn',
     message:
-      'jump_table 을 subsecond 0.7.10 의 JumpTable 로 읽지 못했다. dx 와 크레이트 버전이 어긋났는지 ' +
-      '루트 `Cargo.toml` 의 `subsecond = "=0.7.10"` 과 dx 버전을 대조한다.',
+      'jump_table 을 이 빌드의 subsecond JumpTable 로 읽지 못했다. dx 와 크레이트 버전이 ' +
+      '어긋났는지 `node scripts/dioxus-cli-version.mjs` 의 값과 `dx --version` 을 대조한다.',
   },
   'patch-rejected': {
     level: 'warn',

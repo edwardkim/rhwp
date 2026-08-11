@@ -156,7 +156,8 @@ npm ci
 npm run subsecond:install
 ```
 
-`subsecond:install`은 `dioxus-cli 0.7.10`을 `../target/dioxus-cli/bin/dx`에 설치한다. 첫
+`subsecond:install`은 루트 `Cargo.toml` 의 `subsecond` 정확 핀에서 버전을 유도해(#4580,
+`scripts/dioxus-cli-version.mjs`) 그 버전의 `dioxus-cli`를 `../target/dioxus-cli/bin/dx`에 설치한다. 첫
 `subsecond:serve`는 Dioxus가 맞는 `wasm-bindgen-cli`와 `esbuild`도 자동 설치하고 개발용 WASM을
 처음 빌드하므로 수 분이 걸릴 수 있다. `target/dioxus-cli/`, `target/dx/`,
 `target/rhwp-subsecond-vite/`는 로컬 생성물이며 커밋하지 않는다.
@@ -189,7 +190,7 @@ wasm32 검사에는 **`--lib` 이 필수다.** 빼면 CLI 바이너리(`src/main
 ```bash
 # 터미널 1: Dioxus hot-patch endpoint는 로컬 loopback으로만 연다.
 cd rhwp-studio
-npm run subsecond:install   # dioxus-cli 0.7.10 을 target/dioxus-cli 에 고정 설치
+npm run subsecond:install   # Cargo.toml 이 핀한 버전의 dioxus-cli 를 target/dioxus-cli 에 설치
 npm run subsecond:serve     # dx serve --hot-patch (127.0.0.1:7711)
 
 # 터미널 2: Studio 화면은 Vite가 제공하고, Dioxus endpoint를 프록시한다.
