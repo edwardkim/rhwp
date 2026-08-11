@@ -25,9 +25,19 @@ const HOTPATCH_MARKERS = [
   '_dioxus',
   'subsecondProbe',
   'applySubsecondDevtoolsMessage',
-  'getSubsecondPatchRevision',
-  'invalidateSubsecondRenderCaches',
+  'getRenderCodeRevision',
+  'rebuildDerivedState',
 ];
+
+/**
+ * 벤더 이름 자체. 프로덕션 번들 어디에도 나오면 안 된다.
+ *
+ * [#4580] 위 표지 목록이 하나씩 놓칠 수 있는 것을 이쪽이 통째로 막는다 — 개발 전용 런타임이
+ * 빠졌더라도 프로덕션 코드의 필드·메서드 이름이 벤더를 부르고 있으면 여기서 걸린다(최소화는
+ * 클래스 멤버 이름을 건드리지 않는다). 실제로 모듈만 뺐을 때 `subsecondRevisionWatcher`
+ * `startSubsecondHotpatchSupport` 같은 이름 10건이 남아 있었다.
+ */
+const VENDOR_NAMES = ['subsecond', 'Subsecond', 'dioxus', 'Dioxus'];
 
 /** 번들을 실제로 읽었다는 증거. 이게 없으면 "부재" 단언이 빈 문자열에서 공짜로 통과한다. */
 const BUNDLE_SENTINEL = 'document-view-changed';
@@ -76,5 +86,19 @@ test('studio production bundle carries no hot-patch development runtime', () => 
     leaked,
     [],
     '개발 전용 핫패치 런타임이 프로덕션 번들에 실렸다 (표지, 등장 횟수)',
+  );
+});
+
+test('studio production bundle never names the hot-patch vendor', () => {
+  const bundle = readStudioBundle();
+  assert.ok(bundle.includes(BUNDLE_SENTINEL), `번들에서 ${BUNDLE_SENTINEL} 를 못 찾았다`);
+
+  const named = VENDOR_NAMES
+    .map((name) => [name, countOccurrences(bundle, name)])
+    .filter(([, count]) => count > 0);
+  assert.deepEqual(
+    named,
+    [],
+    '프로덕션 번들이 핫패치 벤더의 이름을 부른다 — 도메인 어휘로 바꿔라 (이름, 등장 횟수)',
   );
 });

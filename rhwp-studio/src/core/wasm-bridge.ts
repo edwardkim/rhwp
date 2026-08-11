@@ -204,9 +204,9 @@ import { fontFamilyChainForDisplay } from './font-substitution';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
 // [#4580] **값 import 는 금지다.** `subsecond-runtime` 은 개발 전용 벤더 런타임이고, 정적으로
 // 엮이는 순간 `import.meta.env.DEV` 로 감싸도 프로덕션 번들에서 빠지지 않는다. 타입만 가져오고
-// 실물은 아래 `startSubsecondHotpatchSupport()` 의 DEV 분기에서 동적으로 부른다.
+// 실물은 아래 `startRenderCodeReload()` 의 DEV 분기에서 동적으로 부른다.
 import type {
-  SubsecondRenderCapabilities,
+  RenderCodeReload,
   SubsecondWasmExports,
 } from './subsecond-runtime';
 
@@ -269,8 +269,8 @@ export class WasmBridge {
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
   private _documentGeneration = 0;
-  /** 개발 빌드에서만 채워지는 핫패치 능력 — 아래 `startSubsecondHotpatchSupport()` 참고. */
-  private subsecondCapabilities: SubsecondRenderCapabilities | null = null;
+  /** 개발 빌드에서만 채워지는 렌더 코드 교체 능력 — 아래 `startRenderCodeReload()` 참고. */
+  private renderCodeReload: RenderCodeReload | null = null;
   /** [#3313] 외부 연결 그림 비동기 주입 완료 훅 — 주입 성공(>0)시에만 호출된다.
    * 첫 렌더 이후에 fetch 가 끝나면 뷰가 재갱신 없이는 이미지를 표시하지 못하므로,
    * main 쪽에서 뷰 갱신을 배선한다 (dirty 마킹 없는 뷰 전용 경로여야 함). */
@@ -281,28 +281,25 @@ export class WasmBridge {
     installCanvasFontSubstitution();
     this.installMeasureTextWidth();
     const wasmModule = await init();
-    await this.startSubsecondHotpatchSupport(wasmModule);
+    await this.startRenderCodeReload(wasmModule);
     this.initialized = true;
     console.log(`[WasmBridge] WASM 초기화 완료 (rhwp ${version()})`);
   }
 
   /**
-   * 핫패치 개발 런타임을 개발 빌드에서만 배선한다 (#4580).
+   * 렌더 코드 교체(핫패치) 지원을 개발 빌드에서만 배선한다 (#4580).
    *
    * `import.meta.env.DEV` 는 빌드 시점에 리터럴로 접히므로 프로덕션 번들에서는 이 본문 전체가
    * 죽은 코드로 지워지고, 그 안에서만 참조되는 `subsecond-runtime` 모듈은 아예 모듈 그래프에
    * 들어오지 않는다. 능력 구현도 그 모듈이 갖고 있어야 한다 — 여기 메서드로 두면 호출부가
    * 없어도 트리셰이킹되지 않아 벤더 export 이름이 그대로 실려 나간다.
    */
-  private async startSubsecondHotpatchSupport(
+  private async startRenderCodeReload(
     wasmModule: Awaited<ReturnType<typeof init>>,
   ): Promise<void> {
     if (!import.meta.env.DEV) return;
     const runtime = await import('./subsecond-runtime');
-    this.subsecondCapabilities = runtime.createSubsecondRenderCapabilities(
-      wasmExports,
-      () => this.doc,
-    );
+    this.renderCodeReload = runtime.createRenderCodeReload(wasmExports, () => this.doc);
     if (!disconnectSubsecondDevtools) {
       disconnectSubsecondDevtools = runtime.connectSubsecondDevtools(
         wasmExports as unknown as SubsecondWasmExports,
@@ -318,12 +315,12 @@ export class WasmBridge {
   }
 
   /**
-   * 핫패치 감시자가 쓸 능력. 개발 빌드가 아니면 언제나 `null` 이다 — 프로덕션 번들에서는 위
-   * 배선이 통째로 지워지기 때문이다. 개발 콘솔에서는
-   * `__wasm.getSubsecondRenderCapabilities()?.isSubsecondHotpatchEnabled()` 로 확인한다.
+   * 렌더 코드 교체 능력. 개발 빌드가 아니거나 교체를 지원하지 않는 wasm 이면 `null` 이다 —
+   * 프로덕션 번들에서는 위 배선이 통째로 지워지므로 언제나 `null` 이다. 개발 콘솔에서는
+   * `__wasm.getRenderCodeReload()?.isAvailable()` 로 확인한다.
    */
-  getSubsecondRenderCapabilities(): SubsecondRenderCapabilities | null {
-    return this.subsecondCapabilities;
+  getRenderCodeReload(): RenderCodeReload | null {
+    return this.renderCodeReload;
   }
 
   /** WASM 렌더러가 호출하는 텍스트 폭 측정 함수를 등록한다 */

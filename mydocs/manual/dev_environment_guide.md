@@ -227,13 +227,13 @@ curl -fsS -o /dev/null -w 'vite-wasm=%{http_code}\n' http://127.0.0.1:7700/wasm/
 
 1. 브라우저에서 `http://<host-ip>:7700/`을 열고 `WASM 로딩 중...` 화면이 끝난 뒤에 검증한다. 개발
    모드의 `window.__wasm` 객체는 초기화 전에 먼저 만들어질 수 있으므로, 객체 존재 여부나
-   `getSubsecondRenderCapabilities()?.isSubsecondHotpatchEnabled()`만으로 준비 완료를 판별하지
+   `getRenderCodeReload()?.isAvailable()`만으로 준비 완료를 판별하지
    않는다. (능력 객체는 개발 빌드에서만 채워진다 — 프로덕션 번들에서는 언제나 `null` 이다. #4580)
 2. `src/wasm_api/subsecond_boundary.rs`의 `hot_render_boundaries!` 목록에 배선된 렌더 경계 안의 Rust
    변경을 저장하고 터미널 1의 rebuild/patch 메시지를 확인한다. 목록 밖의 export, 타입 레이아웃 또는
    초기화 경로 변경은 hot-patch 대상이 아니며 전체 rebuild/새로고침이 필요할 수 있다.
 3. 브라우저 콘솔에서 `[subsecond]` 진단과 Rust panic, 전역 오류를 확인한다. 화면 재도색은
-   `SubsecondRevisionWatcher`가 revision 변경을 감지한 뒤 일어난다.
+   `RenderCodeReloadWatcher`가 렌더 코드 리비전 변경을 감지한 뒤 일어난다.
 4. `patch-dispatched`는 패치 wasm을 runtime에 넘겼다는 뜻일 뿐, 비동기 fetch/instantiate까지 성공했다는
    뜻은 아니다. 실제 실패는 브라우저 콘솔의 panic 또는 `error`/`unhandledrejection`으로 판별한다.
 

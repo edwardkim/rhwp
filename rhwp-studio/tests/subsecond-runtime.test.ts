@@ -41,16 +41,16 @@ class FakeAnimationFrames {
 }
 
 test('revision watcher invalidates and repaints exactly once per changed HotFn revision', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let revision: string | null = null;
   let invalidations = 0;
   const repaints: string[] = [];
-  const watcher = new SubsecondRevisionWatcher(
+  const watcher = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => {
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => {
         invalidations += 1;
         return true;
       },
@@ -85,14 +85,14 @@ test('revision watcher invalidates and repaints exactly once per changed HotFn r
 });
 
 test('revision watcher does not repaint after disposal or without a Subsecond bundle', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let repaintCount = 0;
-  const disabled = new SubsecondRevisionWatcher(
+  const disabled = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => false,
-      getSubsecondPatchRevision: () => 'disabled',
-      invalidateSubsecondRenderCaches: () => true,
+      isAvailable: () => false,
+      getRenderCodeRevision: () => 'disabled',
+      rebuildDerivedState: () => true,
     },
     () => {
       repaintCount += 1;
@@ -106,11 +106,11 @@ test('revision watcher does not repaint after disposal or without a Subsecond bu
   assert.equal(frames.pendingCount, 0);
 
   let revision = 'one';
-  const active = new SubsecondRevisionWatcher(
+  const active = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => true,
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => true,
     },
     () => {
       repaintCount += 1;
@@ -129,16 +129,16 @@ test('revision watcher does not repaint after disposal or without a Subsecond bu
 });
 
 test('revision watcher coalesces revisions while animation frames are paused', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let revision = 'baseline';
   let invalidations = 0;
   const repaints: string[] = [];
-  const watcher = new SubsecondRevisionWatcher(
+  const watcher = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => {
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => {
         invalidations += 1;
         return true;
       },
@@ -167,16 +167,16 @@ test('revision watcher coalesces revisions while animation frames are paused', a
 });
 
 test('revision watcher keeps watching after a repaint throws', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let revision = 'baseline';
   let repaintThrows = true;
   const repaints: string[] = [];
-  const watcher = new SubsecondRevisionWatcher(
+  const watcher = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => true,
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => true,
     },
     nextRevision => {
       repaints.push(nextRevision);
@@ -221,14 +221,14 @@ test('revision watcher keeps watching after a repaint throws', async () => {
 });
 
 test('a repaint that restarts the watcher leaves exactly one scheduled frame', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let revision = 'baseline';
-  const watcher = new SubsecondRevisionWatcher(
+  const watcher = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => true,
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => true,
     },
     () => {
       // 재도색이 감시자를 다시 세우는 경우 — 예약이 두 개로 갈라지면 그중 하나는
@@ -254,15 +254,15 @@ test('a repaint that restarts the watcher leaves exactly one scheduled frame', a
 });
 
 test('a stopped revision watcher releases its frame and starts again', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let revision = 'baseline';
   const repaints: string[] = [];
-  const watcher = new SubsecondRevisionWatcher(
+  const watcher = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => true,
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => true,
     },
     nextRevision => repaints.push(nextRevision),
     {
@@ -306,14 +306,14 @@ class FakeWebSocket {
 }
 
 test('render capabilities stay silent on a plain WASM build and follow the current document', async () => {
-  const { createSubsecondRenderCapabilities } = await loadRuntime();
+  const { createRenderCodeReload } = await loadRuntime();
 
   // 일반 wasm-pack 빌드 — 세 export 중 어느 것도 없다.
-  const plain = createSubsecondRenderCapabilities({}, () => ({}));
-  assert.equal(plain.isSubsecondHotpatchEnabled(), false);
-  assert.equal(plain.getSubsecondPatchRevision(), null);
+  const plain = createRenderCodeReload({}, () => ({}));
+  assert.equal(plain.isAvailable(), false);
+  assert.equal(plain.getRenderCodeRevision(), null);
   assert.equal(
-    plain.invalidateSubsecondRenderCaches(),
+    plain.rebuildDerivedState(),
     false,
     '무효화하지 못했으면 감시자가 재도색을 부르지 않도록 false 여야 한다',
   );
@@ -321,26 +321,26 @@ test('render capabilities stay silent on a plain WASM build and follow the curre
   // dx 핫패치 빌드 — 문서는 열고 닫을 때마다 바뀌므로 게터로 따라가야 한다.
   let invalidated = 0;
   let openDocument: object | null = null;
-  const hotpatch = createSubsecondRenderCapabilities(
+  const hotpatch = createRenderCodeReload(
     { subsecondProbe: () => 41 },
     () => openDocument,
   );
-  assert.equal(hotpatch.isSubsecondHotpatchEnabled(), true);
-  assert.equal(hotpatch.getSubsecondPatchRevision(), null, '문서가 없으면 리비전도 없다');
-  assert.equal(hotpatch.invalidateSubsecondRenderCaches(), false);
+  assert.equal(hotpatch.isAvailable(), true);
+  assert.equal(hotpatch.getRenderCodeRevision(), null, '문서가 없으면 리비전도 없다');
+  assert.equal(hotpatch.rebuildDerivedState(), false);
 
   openDocument = {
-    getSubsecondPatchRevision: () => 'aaaa:bbbb',
-    invalidateSubsecondRenderCaches: () => {
+    getRenderCodeRevision: () => 'aaaa:bbbb',
+    rebuildDerivedState: () => {
       invalidated += 1;
     },
   };
-  assert.equal(hotpatch.getSubsecondPatchRevision(), 'aaaa:bbbb');
-  assert.equal(hotpatch.invalidateSubsecondRenderCaches(), true);
+  assert.equal(hotpatch.getRenderCodeRevision(), 'aaaa:bbbb');
+  assert.equal(hotpatch.rebuildDerivedState(), true);
   assert.equal(invalidated, 1);
 
   openDocument = null;
-  assert.equal(hotpatch.getSubsecondPatchRevision(), null, '문서를 닫으면 다시 리비전이 없다');
+  assert.equal(hotpatch.getRenderCodeRevision(), null, '문서를 닫으면 다시 리비전이 없다');
 });
 
 test('devtools websocket forwards patch messages and reconnects without reloading', async () => {
