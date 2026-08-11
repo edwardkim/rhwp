@@ -3192,9 +3192,26 @@ impl LayoutEngine {
                 // raw_lh > 0*1.5 가 항상 참이라 font_lh=0 으로 퇴화해, 셀 내부
                 // tac 묶음 전용 문단의 저장 lh(예: 3401HU)가 소실되고 후속 블록이
                 // 통째로 당겨졌다 (3114781 p2 −33pt, 한글 2022 오라클 정합 확인).
-                // 본문(cell_ctx 없음)은 reserved/skip-advance 보상 기계가 이 축소값을
-                // 전제로 한컴 정합을 이미 이루고 있어(sample16 issue_1116 한컴 핀)
-                // 종전 동작을 유지한다.
+                // 본문(cell_ctx 없음)에서 max_fs=0 인 도형-전용 줄이 lh=0 으로 접히는 것은
+                // **의도된 짝**이다. 짝의 나머지 반쪽은 `layout_column_item` 의 TAC-Shape
+                // 높이 바닥값(`renderer/layout.rs:7037-7076`,
+                // `para_start + max(seg_lh, shape_max_h)`)이다 — 접힘이 줄 루프의 진행을
+                // 바닥값 아래로 눌러, 문단 진행을 바닥값이 지배하게 만든다. 한컴에 맞춰진
+                // 숫자는 그 바닥값(꼬리 줄간격을 포함하지 않는 값)이지 이 줄의 lh 가 아니다.
+                //
+                // 실측 (`samples/hwp3-sample16-hwp5.hwp` 구역0 문단71,
+                // `RHWP_DEBUG_PARA_TAC` + `RHWP_DEBUG_TAC_CURSOR`):
+                //   TAC_ADV    pi=71 raw_lh=130.2 lh=0.0 ls=10.4   ← 루프 내 진행은 10.4
+                //   TAC_CURSOR FullPara pi=71 dy=130.2            ← 바닥값이 문 결과
+                // 접힘만 없애면 루프 진행이 raw_lh+ls=140.6 으로 바닥값 130.2 를 넘어
+                // 문단이 정확히 `LineSeg.line_spacing`(10.4px) 만큼 밀리고,
+                // `tests/issue_1116.rs` 의 한컴 PDF 대조 핀 둘이 그만큼 깨진다.
+                //
+                // 보상자는 `HeightCursor::vpos_adjust` 가 **아니다** — 그 함수는 이 문단
+                // 다음 항목(pi=72)에서 `lazy_base < 0` 으로 조기 반환한다
+                // (`RHWP_VPOS_DEBUG` → `VPOS_CORR_SKIP: pi=72 ... lazy_base=-72`).
+                // 이 자리의 옛 주석이 "reserved/skip-advance 보상 기계"를 지목해 앞선
+                // 조사를 `vpos_adjust` 로 잘못 보냈다 (#4333).
                 let font_lh = max_fs * 1.2; // 폰트 크기의 120%
                 let font_bl = max_fs * 0.85;
                 (font_lh, ensure_min_baseline(font_bl, max_fs))
