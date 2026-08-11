@@ -28,6 +28,10 @@ const safariBackground = fs.readFileSync(
   new URL('rhwp-safari/src/background.js', repositoryRoot),
   'utf8',
 );
+const safariThumbnailDecompression = fs.readFileSync(
+  new URL('rhwp-shared/sw/thumbnail-decompression.js', repositoryRoot),
+  'utf8',
+);
 const safariBuildScript = fs.readFileSync(
   new URL('rhwp-safari/build.sh', repositoryRoot),
   'utf8',
@@ -99,9 +103,14 @@ test('HTML, JSON, 빈 Version HWPML은 HML로 허용하지 않는다', () => {
   }
 });
 
-test('Safari가 공용 문서 판별기를 background보다 먼저 적재하고 dist로 복사한다', () => {
-  assert.deepEqual(safariManifest.background.scripts, ['file-signature.js', 'background.js']);
+test('Safari가 공용 helper를 background보다 먼저 적재하고 dist로 복사한다', () => {
+  assert.deepEqual(safariManifest.background.scripts, [
+    'file-signature.js',
+    'thumbnail-decompression.js',
+    'background.js',
+  ]);
   assert.match(safariBuildScript, /cp "\$ROOT\/rhwp-shared\/security\/file-signature\.js" "\$DIST\/file-signature\.js"/);
+  assert.match(safariBuildScript, /cp "\$ROOT\/rhwp-shared\/sw\/thumbnail-decompression\.js" "\$DIST\/thumbnail-decompression\.js"/);
   assert.match(safariBackground, /verifyDocumentSignature\(buf\)/);
 
   const listeners = {};
@@ -122,6 +131,9 @@ test('Safari가 공용 문서 판별기를 background보다 먼저 적재하고 
   };
   vm.createContext(safariContext);
   vm.runInContext(source, safariContext, { filename: 'file-signature.js' });
+  vm.runInContext(safariThumbnailDecompression, safariContext, {
+    filename: 'thumbnail-decompression.js',
+  });
   vm.runInContext(safariBackground, safariContext, { filename: 'background.js' });
 
   assert.equal(typeof listeners.message, 'function');

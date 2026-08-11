@@ -72,12 +72,17 @@ test('all thumbnail consumers use the shared output policy', async () => {
     const source = await readFile(sourceUrl, 'utf8');
     assert.match(source, /MAX_THUMBNAIL_BYTES/);
     assert.match(source, /readThumbnailStreamLimited/);
+    assert.match(source, /compSize !== uncompSize|compSz !== uncSz/);
   }
 
   const rustSource = await readFile(new URL('../../src/parser/mod.rs', import.meta.url), 'utf8');
   assert.match(
     rustSource,
     /pub const MAX_THUMBNAIL_BYTES: usize = 10 \* 1024 \* 1024;/,
+  );
+  assert.match(
+    rustSource,
+    /read_preview_image_limited\(MAX_THUMBNAIL_BYTES\)/,
   );
 
   const safariManifest = JSON.parse(

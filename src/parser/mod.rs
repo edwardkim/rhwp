@@ -1397,7 +1397,7 @@ pub fn extract_thumbnail_only(data: &[u8]) -> Option<ThumbnailResult> {
     } else {
         // HWP: CFB 컨테이너에서 /PrvImage 스트림 읽기
         let mut cfb = cfb_reader::CfbReader::open(data).ok()?;
-        cfb.read_preview_image()?
+        cfb.read_preview_image_limited(MAX_THUMBNAIL_BYTES)?
     };
     let format = detect_image_format(&image_data);
 
@@ -1463,11 +1463,14 @@ pub fn extract_thumbnail_only(data: &[u8]) -> Option<ThumbnailResult> {
 /// 브라우저 확장의 CFB/HWPX 썸네일 정책과 같은 10 MiB를 사용한다.
 pub const MAX_THUMBNAIL_BYTES: usize = 10 * 1024 * 1024;
 
-fn read_thumbnail_limited<R: std::io::Read>(reader: &mut R, max_bytes: usize) -> Option<Vec<u8>> {
+fn read_thumbnail_limited<R: std::io::Read>(
+    reader: &mut R,
+    expected_bytes: usize,
+) -> Option<Vec<u8>> {
     let mut buf = Vec::new();
-    let mut limited = std::io::Read::take(&mut *reader, (max_bytes as u64).saturating_add(1));
+    let mut limited = std::io::Read::take(&mut *reader, (expected_bytes as u64).saturating_add(1));
     std::io::Read::read_to_end(&mut limited, &mut buf).ok()?;
-    (buf.len() <= max_bytes).then_some(buf)
+    (buf.len() == expected_bytes).then_some(buf)
 }
 
 /// HWPX(ZIP)에서 Preview/PrvImage.png 추출
@@ -1487,16 +1490,11 @@ fn extract_thumbnail_from_hwpx(data: &[u8]) -> Option<Vec<u8>> {
     })?;
 
     let mut file = archive.by_name(&entry_name).ok()?;
-    if file.size() > MAX_THUMBNAIL_BYTES as u64 {
+    let declared_size = usize::try_from(file.size()).ok()?;
+    if declared_size == 0 || declared_size > MAX_THUMBNAIL_BYTES {
         return None;
     }
-    let buf = read_thumbnail_limited(&mut file, MAX_THUMBNAIL_BYTES)?;
-
-    if buf.is_empty() {
-        None
-    } else {
-        Some(buf)
-    }
+    read_thumbnail_limited(&mut file, declared_size)
 }
 
 /// 썸네일 추출 결과
@@ -1999,6 +1997,27 @@ mod tests {
     }
 
     #[test]
+    fn thumbnail_limited_read_rejects_truncated_stream() {
+        let mut input = std::io::Cursor::new(vec![0u8; 7]);
+        assert!(read_thumbnail_limited(&mut input, 8).is_none());
+    }
+
+    #[test]
+    fn cfb_thumbnail_rejects_declared_output_above_limit() {
+        use std::io::Write;
+
+        let mut compound = cfb::CompoundFile::create(std::io::Cursor::new(Vec::new())).unwrap();
+        {
+            let mut image = compound.create_stream("/PrvImage").unwrap();
+            image
+                .write_all(&vec![0u8; MAX_THUMBNAIL_BYTES + 1])
+                .unwrap();
+        }
+
+        assert!(extract_thumbnail_only(&compound.into_inner().into_inner()).is_none());
+    }
+
+    #[test]
     fn hwpx_thumbnail_rejects_declared_output_above_limit() {
         use std::io::Write;
 
@@ -2019,6 +2038,40 @@ mod tests {
         }
 
         assert!(extract_thumbnail_only(&archive.into_inner()).is_none());
+    }
+
+    #[test]
+    fn hwpx_thumbnail_rejects_declared_actual_size_mismatch() {
+        use std::io::Write;
+
+        let mut archive = std::io::Cursor::new(Vec::new());
+        {
+            let mut writer = zip::ZipWriter::new(&mut archive);
+            writer
+                .start_file(
+                    "Preview/PrvImage.png",
+                    zip::write::SimpleFileOptions::default()
+                        .compression_method(zip::CompressionMethod::Stored),
+                )
+                .unwrap();
+            writer.write_all(&[1, 2, 3]).unwrap();
+            writer.finish().unwrap();
+        }
+
+        let mut bytes = archive.into_inner();
+        for (signature, size_offset) in [
+            ([0x50, 0x4B, 0x03, 0x04], 22),
+            ([0x50, 0x4B, 0x01, 0x02], 24),
+        ] {
+            let header = bytes
+                .windows(signature.len())
+                .position(|window| window == signature)
+                .unwrap();
+            bytes[header + size_offset..header + size_offset + 4]
+                .copy_from_slice(&4u32.to_le_bytes());
+        }
+
+        assert!(extract_thumbnail_only(&bytes).is_none());
     }
 
     fn document_with_number_controls(controls: Vec<crate::model::control::Control>) -> Document {

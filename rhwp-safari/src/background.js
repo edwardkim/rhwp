@@ -433,7 +433,7 @@ async function extractPrvImageFromZip(data) {
       const ds = locOff + 30 + lnLen + leLen;
       if (ds > data.length || compSz > data.length - ds) return null;
       if (comp === 0) {
-        if (uncSz > data.length - ds) return null;
+        if (compSz !== uncSz || uncSz > data.length - ds) return null;
         return _parseImage(data.subarray(ds, ds + uncSz));
       }
       if (comp === 8) {

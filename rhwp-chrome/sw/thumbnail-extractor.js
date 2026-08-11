@@ -338,7 +338,7 @@ async function extractPrvImageFromZipAsync(data) {
 
       if (compMethod === 0) {
         // 비압축 (stored)
-        if (uncompSize > data.length - dataStart) return null;
+        if (compSize !== uncompSize || uncompSize > data.length - dataStart) return null;
         const imageData = data.subarray(dataStart, dataStart + uncompSize);
         return parseImageData(imageData);
       } else if (compMethod === 8) {

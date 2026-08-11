@@ -244,6 +244,26 @@ impl CfbReader {
         }
     }
 
+    /// 미리보기 이미지 스트림을 `max_bytes` 바이트까지만 읽는다.
+    ///
+    /// 썸네일 전용 소비자는 전체 문서를 파싱하지 않으므로, 디렉터리의 선언 크기와 실제
+    /// stream read 양쪽에서 상한을 확인한다.
+    pub fn read_preview_image_limited(&mut self, max_bytes: usize) -> Option<Vec<u8>> {
+        let declared_size = usize::try_from(self.compound.entry("/PrvImage").ok()?.len()).ok()?;
+        if declared_size == 0 || declared_size > max_bytes {
+            return None;
+        }
+
+        let mut stream = self.compound.open_stream("/PrvImage").ok()?;
+        let mut data = Vec::new();
+        stream
+            .by_ref()
+            .take((max_bytes as u64).saturating_add(1))
+            .read_to_end(&mut data)
+            .ok()?;
+        (data.len() == declared_size).then_some(data)
+    }
+
     /// 미리보기 텍스트 스트림 읽기 (PrvText)
     ///
     /// UTF-16LE 인코딩된 미리보기 텍스트를 반환한다.
