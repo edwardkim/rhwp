@@ -371,6 +371,24 @@ pub const MAP: &[CommandProvenance] = &[
                않는다, 범위 경계).",
     },
     CommandProvenance {
+        command: "audit-report",
+        untrusted: NONE,
+        note: "봉투는 수치 합산·경로 에코·판정뿐 — 문서 유래 문자열은 실리지 않는다. \
+               보고서 파일의 각 절도 같은 원칙(수치와 해시만)이다.",
+    },
+    CommandProvenance {
+        command: "recall-scope",
+        untrusted: NONE,
+        note: "봉투는 캡슐 파일명·해시·경로 배열·계수뿐 — 문서 본문 유래 문자열이 \
+               지나는 길이 없다.",
+    },
+    CommandProvenance {
+        command: "conformance",
+        untrusted: NONE,
+        note: "봉투는 등급·판정·검사 항목(고정 문자열+계수)뿐 — 문서 유래 문자열이 \
+               지나는 길이 없다.",
+    },
+    CommandProvenance {
         command: "ir-diff",
         untrusted: &[f(
             "categories",

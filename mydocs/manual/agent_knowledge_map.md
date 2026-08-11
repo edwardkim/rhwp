@@ -304,7 +304,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 250개 필드
+### 2-2. 전수 사전 — 264개 필드
 
 `capabilities` 의 `recordFields` 고유 **185개**와 그 밖의 실측-only 필드
 `assertions`·`docId`·`preview` **3개**를 합친 188개다. `등장 명령` 은 자기서술
@@ -571,6 +571,26 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `duplicate` | bool\|null | 이중 청구 — 원장 전역에서 같은 capsuleSha256 의 accepted 존재. 원장이 깨졌으면 `null` | `settle` |
 | `existingSeq` | number | 이중 청구 시 기존 accepted 기입의 seq (record 거부 봉투) | `settle` |
 | `ledger` | string | 원장 경로(호출자 에코) | `settle` |
+
+#### 감사 표준 (`audit-report`·`recall-scope`·`conformance`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `report` | string | 보고서 저장 경로(kind `agentLaborAuditReport`) — 보고서 자체가 4년 서명 대상 | `audit-report` |
+| `reproduction` | object\|null | 재현 절 `{attempted, reproduced, rate, failures[]}` — `--deep` 미지정이면 `null`(재현은 비싸다) | `audit-report` |
+| `lineage` | object | 계보 절 `{graphs(뿌리), heads(머리), valid, broken[{head, brokenAt}]}` | `audit-report` |
+| `attribution` | object\|null | 귀속 절 `{signed, unsigned, validSignatures, revokedKeyUses}` — `--keyring` opt-in | `audit-report` |
+| `anchoring` | object\|null | 앵커 절 `{anchored, unanchored}` — `--anchor-log` opt-in | `audit-report` |
+| `gate` | object\|null | 게이트 절 `{policySha256, passed, denied}` — `--policy` opt-in, 판정 재료는 타 절 재사용 | `audit-report` |
+| `toolVersions` | object | `{rhwp[], mixed}` — 캡슐 영수증의 기록 합산, 미기록은 "미기록"으로 정직 보고 | `audit-report` |
+| `contaminated` | string | 오염 노드의 파일 sha256 (경로 입력도 해시로 정규화 — 해시가 정체성) | `recall-scope` |
+| `affected` | array | 영향 캡슐 `{capsule, path[]}` — path 는 오염 노드부터 자신까지, 자기 자신도 회수 1호 | `recall-scope` |
+| `unaffected` | number | 미영향 캡슐 수 — 리콜 범위의 여집합 명시 | `recall-scope` |
+| `claims` | array | 영향 캡슐의 정산 청구 좌표 `{seq, claimSha256, verdict}` — `--ledger` opt-in(리콜의 회계 연결) | `recall-scope` |
+| `level` | string | 목표 등급 L1~L5 (누적 요건) | `conformance` |
+| `checks` | array | 항목별 판정 `{id, ok, detail}` — ok `null` 은 기계 판정 밖(수동 확인) 명시 | `conformance` |
+| `achieved` | bool | 전 검사 통과 여부 — 거짓이면 verdict nonconformant·exit 3 | `conformance` |
+
 
 
 | `closureOk` | bool | 조상 폐쇄집합 완전성 — 부모 참조가 번들 안에서 전부 해소 | `bundle` |

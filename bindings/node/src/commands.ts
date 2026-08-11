@@ -1239,6 +1239,85 @@ export async function settleRecord(
   return call(args, options);
 }
 
+/** {@link auditReport} 옵션. */
+export interface AuditReportOptions extends CommandOptions {
+  /** 재현 절 opt-in — 전 캡슐 deep 재현(비용 큼). */
+  readonly deep?: boolean | undefined;
+  readonly keyring?: PathLike | undefined;
+  readonly anchorLog?: PathLike | undefined;
+  readonly policy?: PathLike | undefined;
+  /** 보고서 자체를 서명한다 — "감사 보고서를 감사할 수 있다". */
+  readonly signKey?: PathLike | undefined;
+}
+
+/** [#4558] 감사 보고 표준 — 전 수치가 기존 축 검증의 기계 합산인 보고서 생성. */
+export async function auditReport(
+  dir: PathLike,
+  out: PathLike,
+  options: AuditReportOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['audit-report', dir, '-o', out];
+  if (options.deep === true) args.push('--deep');
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.anchorLog !== undefined) args.push('--anchor-log', options.anchorLog);
+  if (options.policy !== undefined) args.push('--policy', options.policy);
+  if (options.signKey !== undefined) args.push('--sign-key', options.signKey);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link recallScope} 옵션. */
+export interface RecallScopeOptions extends CommandOptions {
+  /** 정산 원장 opt-in — 영향 캡슐의 청구 좌표까지 보고(리콜의 회계 연결). */
+  readonly ledger?: PathLike | undefined;
+}
+
+/** [#4558] 오염 리콜 범위 — 후손 폐쇄집합. contaminated 는 캡슐 경로 또는 파일 sha256. */
+export async function recallScope(
+  contaminated: PathLike,
+  among: PathLike,
+  options: RecallScopeOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['recall-scope', '--contaminated', contaminated, '--among', among];
+  if (options.ledger !== undefined) args.push('--ledger', options.ledger);
+  args.push('--json');
+  return call(args, options);
+}
+
+/** {@link conformance} 옵션. */
+export interface ConformanceOptions extends CommandOptions {
+  readonly deep?: boolean | undefined;
+  /** L3+ 필수. */
+  readonly keyring?: PathLike | undefined;
+  /** L3+ 필수. */
+  readonly anchorLog?: PathLike | undefined;
+  /** L4+ 필수. */
+  readonly policy?: PathLike | undefined;
+  /** L5 필수. */
+  readonly ledger?: PathLike | undefined;
+}
+
+/**
+ * [#4558] 적합성 자가진단 L1~L5 — 누적 요건, 기존 판정기 재사용(발명 0).
+ *
+ * 미달은 exit 3 이지만 예외로 올리지 않는다 — 항목별 판정은 봉투 checks 가 말한다.
+ * 등급이 요구하는 재료 미지정은 판정이 아니라 사용법 오류(exit 2)로 던져진다.
+ */
+export async function conformance(
+  dir: PathLike,
+  level: 'L1' | 'L2' | 'L3' | 'L4' | 'L5',
+  options: ConformanceOptions = {},
+): Promise<Envelope> {
+  const args: Argument[] = ['conformance', dir, '--level', level];
+  if (options.deep === true) args.push('--deep');
+  if (options.keyring !== undefined) args.push('--keyring', options.keyring);
+  if (options.anchorLog !== undefined) args.push('--anchor-log', options.anchorLog);
+  if (options.policy !== undefined) args.push('--policy', options.policy);
+  if (options.ledger !== undefined) args.push('--ledger', options.ledger);
+  args.push('--json');
+  return call(args, options);
+}
+
 // ── 편집 ──────────────────────────────────────────────────────────────────
 
 /**

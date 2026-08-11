@@ -491,6 +491,9 @@ fn recipes() -> Vec<Recipe> {
     let settle_claim = dir.join("prov-settle.claim.json");
     let settle_ledger = dir.join("prov-settle.ledger.ndjson");
 
+    // [#4558] y10 픽스처 — 감사 보고 산출 경로 (대상 폴더는 wrap 작업장 재사용).
+    let y10_report = dir.join("prov-y10.report.json");
+
     // gate 픽스처 — 빈 규칙 + deny 기본 = 거부(exit 3) 순수 fs 경로.
     let gate_policy = dir.join("prov-gate-policy.json");
     std::fs::write(
@@ -1177,6 +1180,57 @@ fn recipes() -> Vec<Recipe> {
                 p(&settle_claim),
                 s("--ledger"),
                 p(&settle_ledger),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // [#4558] audit-report — 픽스처 루트 전 캡슐 대상, opt-in 미지정 절은
+            // null 로 실린다(전 필드 실측).
+            command: "audit-report",
+            doc: None,
+            args: vec![
+                s("audit-report"),
+                s(dir.to_str().expect("경로")),
+                s("-o"),
+                p(&y10_report),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // recall-scope — disclose 픽스처 캡슐을 오염 지목(자기 자신 = 회수 1호).
+            // settle 원장의 청구 대상이 바로 이 캡슐이라 claims 1건이 실측된다.
+            command: "recall-scope",
+            doc: None,
+            args: vec![
+                s("recall-scope"),
+                s("--contaminated"),
+                p(&disclose_capsule),
+                s("--among"),
+                s(dir.to_str().expect("경로")),
+                s("--ledger"),
+                p(&settle_ledger),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // conformance L1 — 픽스처 루트에는 영수증 없는 수제 캡슐이 섞여 있어
+            // nonconformant(exit 3)가 결정론 — checks/achieved/verdict 전 필드 실측.
+            command: "conformance",
+            doc: None,
+            args: vec![
+                s("conformance"),
+                s(dir.to_str().expect("경로")),
+                s("--level"),
+                s("L1"),
                 s("--json"),
             ],
             stdin: None,
