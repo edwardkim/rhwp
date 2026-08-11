@@ -114,3 +114,26 @@ test result: FAILED. 2 passed; 1 failed
 `src/document_core/queries/rendering.rs` 는 **읽기만 했다** — #4576 이 같은 두 파일을 고치므로
 충돌 면적을 줄이려고 렌더 본체(`*_native`)는 그대로 두고 wasm_api 층에서만 경계를 붙였다.
 무효화 계약(#4576)·진단(#4578)·수명(#4579)·번들링(#4580)은 손대지 않았다.
+
+
+## 후속 이슈 (2026-08-11)
+
+- **[#4595](https://github.com/edwardkim/rhwp/issues/4595)** — `FlowImageUrlCache`
+  (`flow-image-url-cache.ts:39`)가 digest+generation 으로 키를 잡아, 패치가 그 값을 바꾸지
+  않으므로 `getSourceImageBytes` 아래 코드(워터마크 굽기 등)에 **어떤 경계 배치로도 닿지
+  않는다.** 이 export 를 일부러 감싸지 않은 이유가 이것이다. 캐시 수명 문제이지 경계 문제가
+  아니다.
+- **[#4596](https://github.com/edwardkim/rhwp/issues/4596)** — `HotFn::try_call` 이
+  `!cfg!(debug_assertions)` 에서 조기 반환하므로(`subsecond lib.rs:411-414`) 핫패치는
+  디버그 빌드에서만 작동한다. `subsecond-dev` feature 와 디버그 프로파일은 별개의 두 조건인데
+  어디에도 적혀 있지 않다.
+
+## 감싸지 않기로 한 것의 파생 결과
+
+`getPageInfo` 를 감싸지 않은 결과로, `body_page_border_outset`
+(`src/renderer/layout/border_rendering.rs:963`)을 고치면 **그려지는 쪽 테두리**(`layout.rs:3735`,
+경계 뒤)와 **여백 안내선**(`rendering.rs:2261` 의 `pageBorder*`, 경계 밖)이 갈린다.
+
+이는 감수한 결과다 — `getPageInfo` 를 감싸면 `self.pagination` 이 낡은 채로 새 여백 산술만
+적용되어 더 나쁜 혼합물이 된다(#4576 이 다루는 축). 두 값이 갈리는 것보다 한쪽만 낡는 것이
+진단하기 쉽다.
