@@ -709,6 +709,9 @@ const HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX: f64 = 64.0;
 /// Native HWP5의 저장 행 높이 HU 반올림에서만 허용하는 미세 RowBreak 초과값.
 /// HWPX stored-layout의 측정 drift 허용(64px)과 의도적으로 분리한다.
 const NATIVE_HWP5_ROWBREAK_ROUNDING_TOLERANCE_PX: f64 = 2.0;
+/// Native HWP5의 1x1 RowBreak 셀은 저장 vpos frame 경계 직전의 마지막 문단을
+/// 본문 하단까지 유지한다. cell-unit hard-break와 같은 32px tail을 첫 조각에만 허용한다.
+const NATIVE_HWP5_SINGLE_CELL_SAVED_FRAME_TAIL_ALLOWANCE_PX: f64 = 32.0;
 /// [#3236] 1행 1열 RowBreak 표의 선언 높이 신뢰(#1891) 상한 배율. 측정이 선언의
 /// 이 배율을 넘으면 폰트 대체 팽창이 아니라 셀 내용이 진짜로 큰 것이므로 특례를
 /// 적용하지 않고 인트라-로우 분할 경로에 맡긴다.
@@ -3294,6 +3297,9 @@ fn paragraph_forces_page_boundary_after(
     )
 }
 
+/// Native HWP5는 모든 page ornament를 감추는 빈 PageHide marker 뒤에 같은 쪽의
+/// 장식 host를 `Page` break로 한 번 더 기록할 수 있다. 첫 marker가 이미 새 physical
+/// page를 열었으므로 host의 break까지 적용하면 빈 page가 materialize된다.
 fn single_line_visible_bounds_px(
     para: &Paragraph,
     page_vpos_base: i32,
@@ -19053,7 +19059,30 @@ impl TypesetEngine {
                 mt.max_padding_for_row(r)
             };
             let budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
-            let mut res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
+            // HWP5는 하나의 giant cell 안에 여러 physical page의 저장 vpos frame을
+            // 기록할 수 있다. 첫 frame의 마지막 문단은 renderer의 visible padding을
+            // 더한 예산보다 조금 커도 한컴이 같은 physical page 하단에 유지한다.
+            // continuation까지 넓히면 실제 다음 frame owner를 앞 page로 끌어오므로,
+            // native HWP5의 첫 1x1 RowBreak fragment에만 적용한다.
+            let native_hwp5_single_cell_saved_frame_tail = st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 1
+                && table.col_count == 1
+                && table.cells.len() == 1
+                && r == 0
+                && cursor_row == 0
+                && !is_continuation
+                && row_start_cut.is_empty()
+                && rowbreak_table_has_internal_saved_vpos_reset(table);
+            let cut_budget = budget
+                + if native_hwp5_single_cell_saved_frame_tail {
+                    NATIVE_HWP5_SINGLE_CELL_SAVED_FRAME_TAIL_ALLOWANCE_PX
+                } else {
+                    0.0
+                };
+            let mut res =
+                layout_engine.advance_row_cut(table, r, row_start_cut, cut_budget, styles);
             // [#2236 진단] 인트라 컷 시도 결과 — 동작 불변.
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(
@@ -20168,6 +20197,24 @@ impl TypesetEngine {
             // — 한글은 이 형상(86712 pi=30: 4×3 RowBreak, saved=None, 측정 비적합
             // 980.8>971.3)을 행 분할해 현재 쪽에 머리 행들을 남긴다(p10/p11).
             // 위 주석의 원 의도("LS 없는 계열은 측정 fit 일 때만 선언 이월")와 정합.
+            // native HWP의 1x1 RowBreak 표에서 실제 셀 본문이 declared object
+            // height의 신뢰 상한을 넘으면, declared height로 통째 이월할 수 없다.
+            // 이 형상은 현재 쪽에서 cell-unit fragment scan을 시작해야 하며, 그렇지
+            // 않으면 p4처럼 첫 fragment 전체가 불필요하게 다음 쪽으로 밀린다.
+            let native_hwp5_large_single_cell_rowbreak_needs_fragment_scan =
+                st.profile.native_hwp5_layout()
+                    && !table.common.treat_as_char
+                    && table.row_count == 1
+                    && table.col_count == 1
+                    && table.cells.len() == 1
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+                    && !para_has_visible_text(para)
+                    && declared_object_total > 0.0
+                    && table_total
+                        > declared_object_total * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO;
             if !st.current_items.is_empty()
                 && !ft.strict_following_plain_text_fit
                 && declared_overflows_current
@@ -20178,6 +20225,7 @@ impl TypesetEngine {
                 && !native_hwp5_own_footnote_fragment_can_start_before_reservation
                 && !saved_host_line_after_stack_fits
                 && !single_row_object_declared_fits_current
+                && !native_hwp5_large_single_cell_rowbreak_needs_fragment_scan
                 && (saved_span.is_some() || measured_fits_current)
                 && declared_total <= available
             {
