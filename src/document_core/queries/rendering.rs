@@ -3624,6 +3624,7 @@ impl DocumentCore {
         let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
+            .with_native_hwp5(profile.native_hwp5_layout())
             .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before);
         let column_def = Self::find_initial_column_def(paragraphs);
         let layout =
@@ -3953,6 +3954,7 @@ impl DocumentCore {
         let profile = self.document.layout_profile();
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
+            .with_native_hwp5(profile.native_hwp5_layout())
             .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before)
             .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
 

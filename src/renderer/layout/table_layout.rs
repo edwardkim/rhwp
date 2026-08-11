@@ -6431,6 +6431,7 @@ impl LayoutEngine {
     ) -> f64 {
         let measurer = super::super::height_measurer::HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(self.profile.get().hwp3_layout())
+            .with_native_hwp5(self.profile.get().native_hwp5_layout())
             .with_render_normalization(self.render_normalization_overlay());
         measurer.cell_controls_height(&cell.paragraphs, styles, 0, 0.0)
     }
@@ -6464,9 +6465,31 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        // [#4533] `para_top + nested_h` 는 "중첩 표가 앵커 문단 아래로 흐른다"는
+        // 가정이다. 앵커 줄이 셀 하단에 있고 표가 셀 상단에 절대배치되는 서식
+        // 문서(기장군 20420347: para_top 740.9 + 601.8 = 1342.6 vs 선언 794.1)
+        // 에서는 이 가정이 셀을 548px 부풀려 후속 문단을 쪽 밖으로 민다.
+        // 호스트 **뒤에** 저장 사다리가 이어지면(뒤 문단 저장 vpos 존재) 그
+        // 사다리가 흐름-표 높이까지 이미 증명하므로 사다리 끝점으로 캡한다.
+        // 호스트가 마지막 문단이면 기존 휴리스틱 유지(lh 미반영 문서의 원 목적).
+        let native_hwp5 = self.profile.get().native_hwp5_layout();
+        let ladder_end: f64 = if native_hwp5
+            && paragraphs
+                .iter()
+                .all(|p| !crate::renderer::para_has_no_stored_line_segs(p))
+        {
+            paragraphs
+                .iter()
+                .flat_map(|p| p.line_segs.iter())
+                .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height, self.dpi))
+                .fold(0.0f64, f64::max)
+        } else {
+            0.0
+        };
         paragraphs
             .iter()
-            .map(|p| {
+            .enumerate()
+            .map(|(pidx, p)| {
                 let nested_h: f64 = p
                     .controls
                     .iter()
@@ -6486,7 +6509,34 @@ impl LayoutEngine {
                         .first()
                         .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
                         .unwrap_or(0.0);
-                    para_top + nested_h
+                    let candidate = para_top + nested_h;
+                    // 흐름형(호스트 아래로 표가 실제로 흐르는) 셀은 사다리 갭이
+                    // 표 높이만큼 벌어진다(49308 실측: 캡을 물리면 쪽수 70->68 로
+                    // 한글 71쪽에서 멀어짐). 갭이 표 높이의 절반도 안 되면 표가
+                    // 아래로 흐를 공간이 사다리에 없다 = 절대배치 증명 -> 캡.
+                    let next_gap = paragraphs
+                        .iter()
+                        .skip(pidx + 1)
+                        .filter_map(|later| {
+                            later
+                                .line_segs
+                                .first()
+                                .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
+                        })
+                        .find(|&v| v >= para_top)
+                        .map(|v| v - para_top);
+                    // 쪽을 넘는 거대 중첩 표는 셀 사다리가 조각-국소라 표를
+                    // 기술하지 못한다(49308: nested_h 2664 vs ladder_end 122 —
+                    // 캡하면 쪽수 70->69 로 한글 71쪽에서 멀어짐). 표가 사다리
+                    // 안에 들어갈 때만 절대배치 캡을 허용한다.
+                    let anchored_not_flowing = ladder_end > 0.0
+                        && nested_h <= ladder_end
+                        && next_gap.map(|g| g < nested_h * 0.5).unwrap_or(false);
+                    if anchored_not_flowing {
+                        candidate.min(ladder_end)
+                    } else {
+                        candidate
+                    }
                 }
             })
             .fold(0.0f64, f64::max)
