@@ -6719,7 +6719,13 @@ impl LayoutEngine {
         col_node: &mut RenderNode,
         paragraphs: &[Paragraph],
     ) {
-        if !self.profile.get().native_hwp5_layout() {
+        // HWPX 도 한글이 저장한 `<hp:linesegarray>` 사다리를 갖는 문서는 같은
+        // 서명이 성립한다(영월군 21296471: 앵커 pi5 렌더 237.7 vs 사다리 562.2,
+        // 사이에 표 316px — dev −324.5, 한글 2022 PDF 실측으로 방향 확정).
+        // lineseg 부재·전부 0 문서는 파서가 line_segs 를 비워 아래 len==1
+        // 게이트가 자연 배제한다.
+        let profile = self.profile.get();
+        if !(profile.native_hwp5_layout() || profile.hwpx_stored_layout()) {
             return;
         }
         let lines: Vec<(usize, usize, i32, f64, f64)> = col_node
