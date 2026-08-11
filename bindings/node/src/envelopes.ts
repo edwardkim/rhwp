@@ -2,7 +2,7 @@
  * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
  *
  * 재생성: `npm run gen:types` (tools/gen-types.ts)
- * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 48개
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 49개
  *
  * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
  * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
@@ -868,6 +868,38 @@ export interface SearchEnvelope {
 }
 
 /**
+ * `rhwp settle --json` 봉투.
+ *
+ * 정산 증빙 — propose(명세서·캡슐·게이트 봉투 3해시 고정 청구 발급, 4년 서명 선택)·verify(3해시
+ * 대조+게이트 verdict 재확인+서명·이중청구 opt-in 축, 실패 exit 3)·record(원장 append-only
+ * 기입, 이중 청구 전역 검사 exit 3) — 돈은 움직이지 않는다, 산출물은 제3자 검증 가능한 지불
+ * 근거뿐 (#4553)
+ */
+export interface SettleEnvelope {
+  readonly capsuleOk?: unknown;
+  readonly capsuleSha256?: unknown;
+  readonly claim?: unknown;
+  readonly claimSha256?: unknown;
+  readonly duplicate?: unknown;
+  readonly existingSeq?: unknown;
+  readonly gateEnvelopeSha256?: unknown;
+  readonly gateOk?: unknown;
+  readonly gateVerdict?: unknown;
+  readonly ledger?: unknown;
+  readonly ledgerOk?: unknown;
+  readonly schemaVersion?: string;
+  readonly seq?: unknown;
+  readonly signed?: unknown;
+  readonly signerOk?: unknown;
+  readonly verdict?: unknown;
+  readonly workorderOk?: unknown;
+  readonly workorderSha256?: unknown;
+  readonly workorderSignerOk?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
  * `rhwp table-to-csv --json` 봉투.
  *
  * 본문 최상위 표를 병합 격자를 채운 RFC 4180 CSV 로 내보내기
@@ -991,6 +1023,7 @@ export interface EnvelopeByCommand {
   run: RunEnvelope;
   scan: ScanEnvelope;
   search: SearchEnvelope;
+  settle: SettleEnvelope;
   "table-to-csv": TableToCsvEnvelope;
   thumbnail: ThumbnailEnvelope;
   verify: VerifyEnvelope;
