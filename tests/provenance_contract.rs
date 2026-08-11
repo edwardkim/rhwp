@@ -480,7 +480,7 @@ fn recipes() -> Vec<Recipe> {
     let anchor_log = dir.join("prov-anchor.ndjson");
     std::fs::write(&anchor_log, b"").expect("빈 앵커 로그");
 
-    // harness status 픽스처 — 깨진 캡슐 폴더 규약(capsules/ 하위).
+    // harness-status 픽스처 — 깨진 캡슐 폴더 규약(capsules/ 하위).
     let harness_dir = dir.join("prov-harness");
     std::fs::create_dir_all(harness_dir.join("capsules")).expect("하네스 작업장");
     std::fs::write(
@@ -959,10 +959,10 @@ fn recipes() -> Vec<Recipe> {
             ndjson: false,
         },
         Recipe {
-            // harness status — 깨진 캡슐 하나로 verdict:broken(exit 3) 경로 고정.
-            command: "harness",
+            // harness-status — 깨진 캡슐 하나로 verdict:broken(exit 3) 경로 고정.
+            command: "harness-status",
             doc: None,
-            args: vec![s("harness"), s("status"), p(&harness_dir), s("--json")],
+            args: vec![s("harness-status"), p(&harness_dir), s("--json")],
             stdin: None,
             exit: 3,
             ndjson: false,

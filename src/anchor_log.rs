@@ -134,12 +134,13 @@ pub fn merkle_path(leaves: &[String], seq: usize) -> Vec<(String, bool)> {
     let mut level: Vec<String> = leaves.to_vec();
     let mut idx = seq;
     while level.len() > 1 {
-        let sibling = if idx % 2 == 0 {
+        let left_child = idx.is_multiple_of(2);
+        let sibling = if left_child {
             level.get(idx + 1).unwrap_or(&level[idx]).clone()
         } else {
             level[idx - 1].clone()
         };
-        path.push((sibling, idx % 2 == 1));
+        path.push((sibling, !left_child));
         let mut next = Vec::with_capacity(level.len().div_ceil(2));
         for pair in level.chunks(2) {
             let right = pair.get(1).unwrap_or(&pair[0]);
