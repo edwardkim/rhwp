@@ -412,6 +412,12 @@ fn recipes() -> Vec<Recipe> {
     // anchor verify 픽스처 — 빈 로그 + 아무 캡슐 = 미등재(logged:false, exit 3).
     let anchor_log = dir.join("prov-anchor.ndjson");
     std::fs::write(&anchor_log, b"").expect("빈 앵커 로그");
+    // entries·merkleRoot·upToSeq 는 checkpoint 봉투에만 있고, checkpoint 는 빈
+    // 로그를 거부한다(exit 2). 그래서 전용 로그를 비운 뒤 add→checkpoint 를
+    // 이 순서로 태운다 — 스윕은 선언 순서대로 순차 실행하므로 항목 수가 1로
+    // 고정된다(허용목록 대신 레시피가 필드를 실제로 내게 하는 쪽).
+    let anchor_seq_log = dir.join("prov-anchor-seq.ndjson");
+    std::fs::write(&anchor_seq_log, b"").expect("연번 앵커 로그");
 
     // harness-status 픽스처 — 깨진 캡슐 폴더 규약(capsules/ 하위).
     let harness_dir = dir.join("prov-harness");
@@ -943,6 +949,38 @@ fn recipes() -> Vec<Recipe> {
             ],
             stdin: None,
             exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // anchor add — 등재 성공 경로(seq·capsuleSha256). checkpoint 보다
+            // 먼저 선언해야 아래 체크포인트가 항목 1을 본다.
+            command: "anchor",
+            doc: None,
+            args: vec![
+                s("anchor"),
+                s("add"),
+                p(&sig_capsule),
+                s("--log"),
+                p(&anchor_seq_log),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // anchor checkpoint — entries·merkleRoot·upToSeq 는 여기서만 나온다.
+            command: "anchor",
+            doc: None,
+            args: vec![
+                s("anchor"),
+                s("checkpoint"),
+                s("--log"),
+                p(&anchor_seq_log),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
             ndjson: false,
         },
         Recipe {
