@@ -1343,6 +1343,13 @@ impl HeightCursor {
         result
     }
 
+    /// 활성 base 로 사영한 저장-사다리 기대 y. 렌더 점프가 사다리에 이미
+    /// 인코딩된 공간인지(기준점 이동 불필요) 가리는 데 쓴다 (#4533 2135039).
+    pub(crate) fn ladder_expected_y(&self, col_y: f64, first_vpos: i32) -> Option<f64> {
+        let base = self.vpos_page_base.or(self.vpos_lazy_base)?;
+        Some(col_y + hwpunit_to_px(first_vpos - base, self.dpi))
+    }
+
     /// 이미 계산된 vpos 기준 y보다 실제 렌더 y를 아래로 밀었을 때, 후속 항목도
     /// 같은 시각 기준을 따르도록 활성 vpos base를 반대로 이동한다.
     pub(crate) fn shift_vpos_base_for_rendered_delta(&mut self, delta_px: f64) {

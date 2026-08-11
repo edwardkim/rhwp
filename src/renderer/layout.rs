@@ -6303,7 +6303,21 @@ impl LayoutEngine {
                 if jump_to > y_offset + 0.5 {
                     let delta = jump_to - y_offset;
                     y_offset = jump_to;
-                    hcursor.shift_vpos_base_for_rendered_delta(delta);
+                    // [#4533] 자리차지 밴드의 공간이 저장 사다리에 이미 인코딩된
+                    // 문서(2135039: pi7 vpos 11535 = 밴드 포함 위치, 기대 229.4 ==
+                    // 점프 결과)에서 base 를 이동하면 후속 전 문단이 밴드 높이만큼
+                    // 이중 전진한다(+123.9px). 점프 결과가 사다리 기대와 일치하면
+                    // 이동을 생략한다 — 사다리가 밴드를 모르는 문서(점프가 진짜
+                    // 렌더-외 변위)만 종전대로 이동.
+                    let ladder_encodes_jump = paragraphs
+                        .get(item_para)
+                        .and_then(|p| p.line_segs.first())
+                        .and_then(|s| hcursor.ladder_expected_y(col_area.y, s.vertical_pos))
+                        .map(|exp| (exp - jump_to).abs() <= 6.0)
+                        .unwrap_or(false);
+                    if !ladder_encodes_jump {
+                        hcursor.shift_vpos_base_for_rendered_delta(delta);
+                    }
                 }
             }
 
