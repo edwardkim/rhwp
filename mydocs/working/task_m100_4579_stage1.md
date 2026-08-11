@@ -118,3 +118,27 @@
 
 브라우저 실동작은 확인하지 못했다. `dx serve --hot-patch` 로 핫패치 세션을 띄우려면 이 워크트리에서
 wasm 디버그 전체 빌드가 선행되어야 한다.
+
+
+## 후속 이슈 (2026-08-11)
+
+작업 중 발견했지만 저장소 전역 계약이라 범위 밖으로 남긴 것을 이슈로 분리했다.
+
+- **[#4591](https://github.com/edwardkim/rhwp/issues/4591)** — `EventBus.emit`
+  (`event-bus.ts:16`)이 핸들러를 격리하지 않아 모든 `emit` 자리가 암묵적 rethrow 지점이다.
+  이번 감시 루프 결함의 원인이 여기였고, 루프 쪽에서 `try`/`finally` 로 막았다. 다만
+  구독자가 약 30곳이라 그냥 `try`/`catch` 로 감싸면 무관한 실패가 조용해진다 — 실측이 먼저다.
+- **[#4592](https://github.com/edwardkim/rhwp/issues/4592)** — `CanvasView.dispose()`
+  (`canvas-view.ts:950`)와 `WasmBridge.dispose()`(`wasm-bridge.ts:3157`) 둘 다 호출부가
+  0개다. 스튜디오에 뷰 해체 경로 자체가 없다. `pagehide` 배선은 bfcache 복원과 충돌하므로
+  답이 아니라는 것까지 적었다.
+- **[#4593](https://github.com/edwardkim/rhwp/issues/4593)** — 이 파일에 남은 소스 텍스트
+  정규식 단언 27건. `:495` 는 `#[cfg(unix)]` 안의 문자열을 찾으므로 Windows 에서 코드가
+  아예 없어도 초록색이다. 매니페스트 대상 17건과 코드 파일 대상 10건은 성격이 달라 갈라야
+  한다.
+
+## 인용 정정
+
+이슈 본문이 상류의 "8MB" 문장을 `lib.rs:659-663` 으로 적었으나 그 줄은 Chrome 의 동기
+instantiate 상한이다. 패치 크기 문장은 **`lib.rs:604`**, 영구 증가 식은 `lib.rs:623` 이다.
+이슈에 코멘트로 정정했다.
