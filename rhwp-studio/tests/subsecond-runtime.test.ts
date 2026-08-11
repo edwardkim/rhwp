@@ -409,7 +409,7 @@ test('patch accumulation warns that applied patches are never reclaimed', async 
 
   accumulation.recordApplied();
   assert.equal(warnings.length, 1);
-  assert.match(warnings[0], /핫패치 3건/, '경고는 누적 패치 수를 담는다');
+  assert.match(warnings[0], /핫패치 3건\(적용 요청 기준\)/, '경고는 누적 수와 그 수의 의미를 담는다');
   assert.match(warnings[0], /512MB/, '경고는 측정한 선형 메모리 크기를 담는다');
 
   accumulation.recordApplied();
@@ -417,7 +417,7 @@ test('patch accumulation warns that applied patches are never reclaimed', async 
   assert.equal(warnings.length, 1);
   accumulation.recordApplied();
   assert.equal(warnings.length, 2, '임계값을 넘길 때마다 다시 경고한다');
-  assert.match(warnings[1], /핫패치 6건/);
+  assert.match(warnings[1], /핫패치 6건\(적용 요청 기준\)/);
 });
 
 test('patch accumulation keeps warning when the heap cannot be measured', async () => {

@@ -38,8 +38,11 @@ export type SubsecondPatchAccumulationOptions = {
 
 const RECONNECT_MIN_MS = 250;
 const RECONNECT_MAX_MS = 4_000;
-/** 이 시간보다 오래 붙어 있었던 연결만 "살아 있었다"고 보고 백오프를 되돌린다. */
-const STABLE_CONNECTION_MS = RECONNECT_MAX_MS;
+/**
+ * 이 시간보다 오래 붙어 있었던 연결만 "살아 있었다"고 보고 백오프를 되돌린다.
+ * 재연결 상한과 우연히 같은 값이지만 다른 개념이다 — 상한을 바꾼다고 같이 바뀌면 안 된다.
+ */
+const STABLE_CONNECTION_MS = 4_000;
 const PATCH_WARNING_INTERVAL = 32;
 const BYTES_PER_MB = 1024 * 1024;
 
@@ -83,7 +86,7 @@ export class SubsecondPatchAccumulation {
     this.applied += 1;
     if (this.applied % this.warnEveryPatches !== 0) return;
     this.warn(
-      `[subsecond] 이 세션에 핫패치 ${this.applied}건이 쌓였다${this.heapSuffix()}. `
+      `[subsecond] 이 세션에 핫패치 ${this.applied}건(적용 요청 기준)이 쌓였다${this.heapSuffix()}. `
       + '적용한 패치는 회수되지 않는다(wasm 선형 메모리·간접 함수 테이블은 축소 불가). '
       + '세션이 길어지면 WebAssembly.Memory.grow() 실패로 탭이 죽으므로 새로고침으로 세션을 끊어라.',
     );
