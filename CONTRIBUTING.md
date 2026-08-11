@@ -436,7 +436,20 @@ Cursor·Codex·Gemini CLI·Windsurf·Cline 이 **자동으로 읽는 지침 파�
 | Cursor | `.cursor/rules/rhwp.mdc` |
 | Gemini CLI | `GEMINI.md` |
 | Windsurf / Cline | `.windsurfrules` / `.clinerules` |
+| AGENTS.md 표준 진영 — Codex·OpenCode·Jules·Amp·Zed·Devin·Antigravity 등 | `AGENTS.md` (도구 공통 표준) |
+| Qwen Code | `QWEN.md` |
+| Aider 계열(컨벤션 파일) | `CONVENTIONS.md` |
+| Zed 계열(.rules) | `.rules` |
+| Goose | `.goosehints` |
+| Replit Agent | `replit.md` |
+| RooCode / Kilo Code | `.roo/rules/` / `.kilocode/rules/` |
+| JetBrains Junie | `.junie/guidelines.md` |
+| Trae / Amazon Q / Augment / Continue | `.trae/rules/` · `.amazonq/rules/` · `.augment/rules/` · `.continue/rules/` |
 | llms.txt 소비 도구 | `llms.txt` |
+
+**모델이 무엇이든 같은 길** — DeepSeek·GLM·Llama·Qwen·MiMo·MiniMax 등 어떤 모델(무료 모델 포함)을
+쓰든, 그 모델을 부리는 위 CLI/IDE 가 이 파일들을 자동으로 읽으므로 결국 같은 규약에 도착한다.
+저장소 파일을 읽지 않는 도구(영상·미디어 생성형 등)는 이 표의 범위 밖이다.
 
 에이전트 보조로 문서를 실제 편집·생성했다면 **작업 증빙**을 권장한다:
 `rhwp replay --plan-json <계획> --capsule work.capsule.json` 이 만든 캡슐(3해시

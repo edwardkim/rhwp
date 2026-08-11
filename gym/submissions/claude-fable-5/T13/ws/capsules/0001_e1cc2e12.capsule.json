@@ -1,0 +1,30 @@
+{
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "C:\\Users\\swsz9\\Downloads\\moneyflow\\rhwp\\gym\\submissions\\claude-fable-5\\T13\\ws\\o1.hwp",
+    "planVersion": "1.0",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "규제",
+        "replace": "하네스검증"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\": \"1.0\", \"input\": \"samples/basic/issue2007_nested_cell_pagination_42065.hwp\", \"output\": \"C:\\\\Users\\\\swsz9\\\\Downloads\\\\moneyflow\\\\rhwp\\\\gym\\\\submissions\\\\claude-fable-5\\\\T13\\\\ws\\\\o1.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"규제\", \"replace\": \"하네스검증\"}]}",
+  "receipt": {
+    "expectedOutputSha256": null,
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+    "mode": "wrap",
+    "outputSha256": "dc2e5dfceba397efa1eb16722496f8e9a1516314572c4826aa58c03ae78f46a3",
+    "planSha256": "e1cc2e1241182088295ecf58fd392410a2d7479263f46389a7b18b6d7168c308",
+    "reproduced": null,
+    "schemaVersion": "1.0",
+    "steps": 1,
+    "toolVersion": "0.8.2"
+  },
+  "schemaVersion": "1.0"
+}
