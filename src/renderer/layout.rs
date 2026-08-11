@@ -6872,10 +6872,7 @@ impl LayoutEngine {
                         let band_shift =
                             (y + off_px + margin_px) - col_node.children[*tbl_idx].bbox.y;
                         if (-200.0..=-2.0).contains(&band_shift) {
-                            Self::translate_subtree_y(
-                                &mut col_node.children[*tbl_idx],
-                                band_shift,
-                            );
+                            Self::translate_subtree_y(&mut col_node.children[*tbl_idx], band_shift);
                         }
                     }
                 }
