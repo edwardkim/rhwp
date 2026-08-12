@@ -17,6 +17,7 @@ const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
 const PAGE_314: u32 = 313;
+const PAGE_364: u32 = 363;
 const PAGE_365: u32 = 364;
 const PAGE_366: u32 = 365;
 const PAGE_367: u32 = 366;
@@ -114,6 +115,7 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     let source_p144_tree = page_tree(&source, PAGE_144);
     let source_p145_tree = page_tree(&source, PAGE_145);
     let source_p314_tree = page_tree(&source, PAGE_314);
+    let source_p364_tree = page_tree(&source, PAGE_364);
     let source_p365_tree = page_tree(&source, PAGE_365);
     let source_p366_tree = page_tree(&source, PAGE_366);
     let source_p367_tree = page_tree(&source, PAGE_367);
@@ -151,6 +153,11 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         !source_p314_tree.contains("정책실명제"),
         "HWPX 병렬 규정 표 제3조 r5 tail은 PDF p314로 넘어가면 안 된다"
+    );
+    assert!(
+        source_p364_tree.contains("관리하여야 한다")
+            && !source_p364_tree.contains("정책실명제 중점관리 대상 선정)"),
+        "HWPX 병렬 규정 표의 PDF p364는 제63조의3 heading이 아니라 본문 tail부터 시작해야 한다"
     );
     let source_p365_has_education = source_p365_tree.contains("행정업무 운영에 관한 교육");
     let source_p365_has_nis_special_case =
