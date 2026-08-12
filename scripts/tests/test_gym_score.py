@@ -305,43 +305,42 @@ class WeakCheckLockTests(unittest.TestCase):
 
 
 class TaskCommandExistenceTests(unittest.TestCase):
-    """[#4600 부수] 과제가 부르는 명령이 CLI 에 실재하는지 검사한다.
+    """[#4600 부수] 과제 체크가 부르는 명령이 그 pack 의 requires.commands 에
+    선언돼 있는지 검사한다.
 
     [#4689] 이 가드는 원래 `harness-status` 를 이름으로 금지했지만, 이는 옛 명령
     표면 기준이었다. v0.8.4 에서 `harness status`(두 단어)는 존재하지 않고
-    `harness-status`(하이픈)가 capabilities 에 실재하는 정식 판정 명령이다 —
-    devel 의 T13 이 오히려 없는 `harness status` 를 불러 깨져 있었다. 그래서
-    금지 목록을 하드코딩하는 대신 **실제 capabilities 와 대조**한다: 어떤 명령이
-    실재하는지는 바이너리가 단일 출처다.
+    `harness-status`(하이픈)가 정식 판정 명령이다 — devel 의 T13 이 오히려 없는
+    `harness status` 를 불러 깨져 있었다.
+
+    바이너리를 부르는 대신 **pack 의 requires.commands 와 대조**한다: 이 계약
+    레인은 바이너리 빌드 없이 도는 것이 설계이므로(CI Lint 레인), 실재성 판정을
+    바이너리에 의존하면 CI 에서 항상 건너뛰게 된다. requires.commands 는 커밋된
+    단일 출처이고, 체크 명령이 거기 없으면 채점 가용성(unavailable) 판정이 조용히
+    왜곡된다 — 명령의 실재 여부는 기준 풀이 왕복이 최종 보증한다.
     """
 
-    def test_every_task_command_is_a_known_cli_command(self):
-        called = set()
+    def test_every_task_command_is_declared_in_pack_requires(self):
+        requires = {}
+        for pk in (REPO_ROOT / "gym" / "packs").glob("*/pack.json"):
+            requires[pk.parent.name] = set(
+                json.loads(pk.read_text(encoding="utf-8"))["requires"]["commands"])
+
+        called = []  # (pack_id, task_id, cmd[0])
         for path in sorted((REPO_ROOT / "gym" / "packs").glob("*/tasks/*.json")):
             task = json.loads(path.read_text(encoding="utf-8"))
+            pack_id = path.parent.parent.name
             for check in task.get("checks", []):
                 cmd = check.get("cmd")
                 if cmd:
-                    called.add((task["id"], cmd[0]))
+                    called.append((pack_id, task["id"], cmd[0]))
 
-        # 이름 꼴은 바이너리 없이도 검사한다.
-        for task_id, name in sorted(called):
-            self.assertRegex(name, r"^[a-z][a-z0-9-]*$", f"{task_id}: {name}")
-
-        # 바이너리가 있으면 실재성까지 대조한다(우산 명령의 하위는 cmd[1] 이므로
-        # 머리 토큰만 본다). 없으면 이름 꼴 검사까지만 하고 건너뛴다.
-        if str(REPO_ROOT) not in sys.path:
-            sys.path.insert(0, str(REPO_ROOT))
-        from gym.core import runner, schema
-        try:
-            bin_path = runner.find_bin(None)
-        except SystemExit:
-            self.skipTest("rhwp 바이너리 없음 — 명령 실재성 대조 생략")
-        known = schema.known_commands(bin_path)
-        if not known:
-            self.skipTest("capabilities 파싱 실패 — 명령 실재성 대조 생략")
-        for task_id, name in sorted(called):
-            self.assertIn(name, known, f"{task_id}: CLI 에 없는 명령 {name}")
+        for pack_id, task_id, name in called:
+            # 이름 꼴 — 우산 명령의 하위는 cmd[1] 이므로 머리 토큰만 본다.
+            self.assertRegex(name, r"^[a-z][a-z0-9-]*$", f"{pack_id}/{task_id}: {name}")
+            self.assertIn(name, requires.get(pack_id, set()),
+                          f"{pack_id}/{task_id}: 체크 명령 {name!r} 이 pack "
+                          "requires.commands 에 선언되지 않았다")
 
 
 if __name__ == "__main__":
