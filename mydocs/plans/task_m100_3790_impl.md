@@ -13,8 +13,9 @@
   검증했다. PR #4519는 최신 head의 full CI·CodeQL을 통과해 merge commit `c64b5c70a700`으로 완료했다.
   Stage 5B와 #4029의 test profile 정책은 `main@496333b27` 및 v0.8.4 태그 CI까지 반영·검증됐다.
   frontend-only canary PR #4573은 옛 base에서 selective를 통과한 뒤 `devel` 전진으로 충돌했으며,
-  2026-08-12 `upstream/devel@525cf8e8e`을 merge commit `cec04e66a`로 동기화했다. 현재는 새 같은 head
-  SHA의 selective/full 실행과 최종 절감량을 다시 실측하는 단계다.
+  2026-08-12 `upstream/devel@525cf8e8e`을 merge commit `cec04e66a`로 동기화했다. head `7e5216f70`의
+  같은-head selective/full 실행이 모두 성공해 runner 94.8%, wall 85.2% 감소를 확정했다. Stage 5B
+  canary는 완료했고 측정 전용 PR을 merge 없이 close한 뒤 Stage 2.6 enforcement로 전환한다.
 
 ## Stage 1 — shadow classifier
 
@@ -268,6 +269,17 @@ Stage 3 merge 직후 frontend-only canary PR #3951에서 unit/package/render 진
 - artifact 재시도는 #3892의 논리 label `slow/1/2/3`별 test archive, archive expected count와 worker run
   count를 함께 다루고, draft 경량화와 별도 PR로 진행한다.
 - #3789가 완료되기 전에는 `src/main.rs`의 Render Diff trigger를 좁히지 않는다.
+
+### Stage 5B canary 완료 결과
+
+- selective: CI `31582691020`, CodeQL `31582690810`, Render Diff `31582690807` 성공.
+- full: CI `31583545091`, CodeQL `31583557284`, Render Diff `31583566849` 성공.
+- 같은 head `7e5216f70`에서 job elapsed 합계 4,820초→249초(94.8%), 병렬 완료시간
+  1,068초→158초(85.2%), CodeQL job elapsed 889초→164초(81.6%) 감소.
+- selective는 JavaScript/TypeScript만 실제 분석하고 Python·Rust를 no-op success로 유지했으며,
+  full은 세 언어와 CI·Canvas 전체 경로를 실제 실행했다.
+- canary 결과는 `mydocs/working/task_m100_3790_stage5b_canary.md`에 보존한다. 다음 구현 단계는 보존 중인
+  Stage 2.6 controller를 현재 진리표에 맞춰 축소·재검증하는 후속 enforcement다.
 
 ## 집중 검증
 

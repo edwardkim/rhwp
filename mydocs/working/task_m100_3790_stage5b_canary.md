@@ -5,7 +5,7 @@
 - **worktree**: `tmp/issue-3790-stage5b-canary`
 - **최초 기준**: `upstream/devel` `c64b5c70a700` (#4519 merge)
 - **재개 기준**: `upstream/devel` `525cf8e8ed9f` (#4565 merge), 동기화 merge `cec04e66a`
-- **상태**: 첫 재개 push의 fast-pass 표본 배제, 실제 selective 강제 보정·focused 검증 완료, push 대기
+- **상태**: Stage 5B selective/full canary 실측 완료, 측정 전용 PR #4573 close 준비
 
 ## 목적과 종료 조건
 
@@ -40,7 +40,8 @@ canary PR에 기록한 뒤 merge하지 않고 close한다.
 일반 PR run에서는 Frontend unit과 JavaScript/TypeScript CodeQL만 실제 실행한다. Frontend package,
 Canvas visual diff, Rust lint·세 builder·네 worker와 Native Skia는 skip되어야 한다. Python·Rust
 `Analyze (...)` job은 check identity를 유지하되 실제 checkout·init·analysis 없이 no-op success여야 하며,
-`Build & Test`와 GHAS `CodeQL`은 success여야 한다.
+`Build & Test`는 success여야 한다. GHAS `CodeQL`은 선택되지 않은 configuration을 찾지 못했다는
+`neutral` summary를 낼 수 있으므로 세 `Analyze (...)` job과 분리해 해석하고, failure는 허용하지 않는다.
 
 같은 head SHA에서 CI·CodeQL·Render Diff를 `workflow_dispatch`하면 full 경로가 되어 package·Canvas·Rust·
 Native Skia와 세 CodeQL 언어를 실제 실행해야 한다. 두 실행의 job duration 합계와 workflow wall time을
@@ -118,5 +119,56 @@ trusted classifier의 `frontend_mode=unit`, `codeql_languages=javascript-typescr
   `codeql_languages=javascript-typescript`, Rust·render·Native Skia false가 모두 일치했다.
 - `git diff --check` — 통과.
 
-이 보정 commit을 push한 뒤에는 후행 docs-only commit을 만들지 않는다. 최신 head에 Studio test 변경을
-유지한 채 PR selective가 실제 Frontend unit과 JavaScript/TypeScript CodeQL을 시작하는지 확인한다.
+이 보정 commit을 push한 뒤 canary 측정이 끝날 때까지 후행 docs-only commit을 만들지 않았다. 따라서
+Studio test 변경이 최신 head에 포함된 상태에서 PR selective가 실제 Frontend unit과
+JavaScript/TypeScript CodeQL을 실행했다.
+
+## 최종 canary 실측 — head `7e5216f70`
+
+첫 재개 push의 fast-pass 표본을 제외하고, non-review-only test 변경이 포함된 같은 head
+`7e5216f709bd3b8ca037cf5c5f3f60f7dbf21810`에서 PR selective와 수동 full을 대조했다. 여섯 workflow는
+모두 성공했다.
+
+| workflow | selective run | selective wall / runner | full run | full wall / runner |
+| --- | --- | ---: | --- | ---: |
+| CI | [31582691020](https://github.com/edwardkim/rhwp/actions/runs/31582691020) | 95초 / 76초 | [31583545091](https://github.com/edwardkim/rhwp/actions/runs/31583545091) | 1,068초 / 3,562초 |
+| CodeQL | [31582690810](https://github.com/edwardkim/rhwp/actions/runs/31582690810) | 158초 / 164초 | [31583557284](https://github.com/edwardkim/rhwp/actions/runs/31583557284) | 644초 / 889초 |
+| Render Diff | [31582690807](https://github.com/edwardkim/rhwp/actions/runs/31582690807) | 13초 / 9초 | [31583566849](https://github.com/edwardkim/rhwp/actions/runs/31583566849) | 377초 / 369초 |
+
+세 workflow job elapsed 합계는 full 4,820초에서 selective 249초로 **4,571초(94.8%) 감소**했다. workflow가
+병렬로 실행된 실제 완료시간은 1,068초에서 158초로 **910초(85.2%) 감소**했다. Stage 5B가 직접 줄인
+CodeQL job elapsed는 889초에서 164초로 **725초(81.6%) 감소**했고 CodeQL wall time은 644초에서
+158초로 **486초(75.5%) 감소**했다.
+
+Stage 4 canary의 서로 다른 당시 head·runner 표본 939초 runner / 575초 wall과 비교하면 최종 selective는
+249초 / 158초지만, 이 값은 테스트 수와 runner 시점이 다르므로 참고값이다. Stage 5B의 권위 절감률은 위의
+같은-head selective/full 대조다.
+
+### 선택 실행 진리표
+
+- CI preflight는 `fast_pass=false`, `classified:studio-unit`, `frontend_mode=unit`, Rust·render·Native
+  Skia false를 냈다. Frontend unit은 860건 중 859 pass·정책 skip 1로 성공했고 package·Rust·Native
+  Skia·Canvas는 기대대로 skipped, `Build & Test`는 success였다.
+- CodeQL은 JavaScript/TypeScript만 실제 checkout·init·analysis를 수행해 144초에 성공했다. Python과
+  Rust는 check identity를 유지한 6초 no-op success였다.
+- GHAS `CodeQL`은 selective 직후 Python·Rust configuration 부재를 알리는 `neutral` summary였고,
+  같은 SHA의 수동 세 언어 full 분석 뒤 `success`와 `No new alerts`로 갱신됐다.
+
+### 수동 full 검증
+
+- CI는 `release_grade=false`의 `release-test/30` 정책으로 WASM, lint, frontend package, Native Skia,
+  세 archive builder와 slow/1/2/3 worker를 모두 실행했다. shard 합계는
+  `3966 + 909 + 906 + 1 = 5782`로 expected 5,782와 일치했고 `Build & Test`가 성공했다.
+- CodeQL은 JavaScript/TypeScript 150초, Python 104초, Rust 629초로 세 언어 모두 실제 분석에 성공했다.
+- Render Diff는 Canvas 3/3, direct PDF compatibility 3/3, CanvasKit readiness 8/8에 성공했다. 기준 이미지와
+  PDF raster의 크기·픽셀 차이 4쪽은 비차단 warning이며 error와 direct compatibility failure는 0건이다.
+
+## 판정과 후속
+
+Stage 5B의 trusted-base 언어 선택, 고정 세 Analyze check identity, 선택되지 않은 lane의 no-op success와
+비-PR full fallback이 원격에서 모두 확인됐다. 추가 workflow 보정 없이 canary gate를 통과했다.
+
+PR #4573은 제품 반영 대상이 아닌 measurement-only canary이므로 이 기록을 trailing review-only commit으로
+보존한 뒤 **merge하지 않고 close**한다. #3790은 계속 열어 두고 다음 단계로 보존 중인 Stage 2.6 controller를
+현재 Stage 3~5 진리표에 맞게 축소·재검증하는 후속 enforcement를 진행한다. controller 유일본은 대체
+controller의 main 등록·live audit 또는 maintainer의 policy 미채택 결정 전까지 정리하지 않는다.
