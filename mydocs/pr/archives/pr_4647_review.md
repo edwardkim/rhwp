@@ -9,13 +9,13 @@ last_verified: 2026-08-12
 ## 라우팅
 
 ```text
-base route: collaborator_self_merge.md
-modifiers: intake_and_review.md, local_validation.md
-loaded documents: pr_review_workflow.md, pr_review/README.md,
-  pr_review/collaborator_self_merge.md, pr_review/intake_and_review.md,
-  pr_review/local_validation.md
+base route: CONTRIBUTING.md의 contributor Fork & PR 경로
+modifiers: Draft 재작업, 1,000줄 초과 대형 변경
+loaded documents: AGENTS.md, CONTRIBUTING.md, pr_review_workflow.md,
+  pr_review/README.md, pr_review/local_validation.md,
+  pr_review/rework_and_exceptions.md
 previous reviewed code head: 8ea821936cababd70f92ef5e297ada97157f089f
-current code head: this correction commit (commit hash recorded after local verification)
+current code candidate: 8e1ddbb83be4ef8f0d4d6e7e7b9f13818e53b157
 ```
 
 ## Metadata
@@ -28,7 +28,7 @@ current code head: this correction commit (commit hash recorded after local veri
 | base / head | `devel` / `humdrum00001010:fix/bound-open-decompression-m34` |
 | 관련 보고 | 비공개 보고 |
 | 규모 | 수정 중 (source·E2E 회귀·경계 문서) |
-| 상태 | Open, Draft; independent Gestell 재검토와 CONTRIBUTING 게이트 대기 |
+| 상태 | Open, Draft; code candidate의 Gestell 및 로컬 게이트 통과, 최신 GitHub required checks 대기 |
 
 ## 변경 범위
 
@@ -123,13 +123,23 @@ HWP5 성공 문서의 decompressed/raw 핵심 스트림 분포는 다음과 같�
 - `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/Users/phihu/Desktop/rhwp_core/target/pr4647-e2e cargo check
   --profile release-test --bin rhwp`: 통과. `dump-records` consumer 배선을 포함해 바이너리 크레이트를
   컴파일했다.
-- correction source head에 대한 전체 `release-test`, Clippy, 최신 GitHub required checks는 아직 이
-  기록으로 통과를 주장하지 않는다. CONTRIBUTING.md의 직렬화된 게이트와 independent Gestell 재검토가
-  남아 있다.
+- CI 실패 원인은 `src/parser/mod.rs`의 test-only 정책 조회에 있던 `return`을
+  `clippy::needless_return`이 거부한 것이었다. `8e1ddbb83be4ef8f0d4d6e7e7b9f13818e53b157`에서
+  같은 표현을 cfg 블록의 tail expression으로 바꿨으며, test·release cfg의 선택 결과는 변하지 않는다.
+- exact code candidate `8e1ddbb83be4ef8f0d4d6e7e7b9f13818e53b157`에 대한 독립 Gestell 재검토:
+  PASS. 완전 문서 열기 정책 소유, CFB/crypto의 explicit-limit mechanism 경계, strict·lenient·password·
+  distribution·HWP3 경로 및 test-only seam에서 blocking abstraction defect가 없음을 확인했다.
+- `cargo fmt --all -- --check`: 통과.
+- `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/Users/phihu/Desktop/rhwp_core/target/pr4647-contributing cargo test
+  --profile release-test --tests`: 통과(exit 0).
+- `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/Users/phihu/Desktop/rhwp_core/target/pr4647-contributing cargo clippy
+  -- -D warnings`: 통과.
+- GitHub 실패 job과 같은 범위의 `cargo build --workspace` 및
+  `cargo clippy --workspace --all-targets -- -D warnings`: 통과.
+- `git diff --check`: 통과.
 - 이전 code head의 10k open/stream-size audit: 10,000건 완료, limit 초과 0, panic 0.
 
 ## 현재 권고
 
-이 보정은 Draft 상태를 유지한다. 독립 Gestell PASS, correction source head에서의 CONTRIBUTING.md
-게이트, 최신 PR head의 required checks, repository 권한 보유자의 검토 및 작업지시자 승인이 모두
-확인되기 전에는 merge 후보로 권고하지 않는다.
+로컬 correction은 게시 가능한 상태다. PR은 Draft 상태를 유지하며, correction을 push한 최신 PR head의
+required checks와 repository 권한 보유자의 검토 및 작업지시자 승인이 확인된 뒤 merge 후보로 판단한다.
