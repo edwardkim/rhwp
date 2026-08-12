@@ -141,5 +141,26 @@ class CommittedBoardTests(unittest.TestCase):
                           f"seq {e['seq']} 의 claim 파일이 원장 해시와 일치하지 않는다")
 
 
+class InviteTests(unittest.TestCase):
+    """[#4664] 친구 초대 — 판 지문으로 신참이 위조본이 아님을 확인한다."""
+
+    def setUp(self):
+        self.lb = load_lb()
+
+    def test_board_fingerprint_reports_committed_state(self):
+        import os
+        if not os.path.exists(self.lb.LEDGER):
+            self.skipTest("커밋된 리더보드 없음")
+        fp = self.lb.board_fingerprint()
+        for key in ("members", "ledgerEntries", "ledgerChain", "anchorChain",
+                    "merkleRoot", "workorderSha256", "ledgerSnapshotSha256"):
+            self.assertIn(key, fp, f"지문에 {key} 가 없다")
+        # 지문의 원장 항목 수는 실제 체인 길이와 같아야 한다(자기신고 아님).
+        entries, _ = self.lb.chain_walk(self.lb.LEDGER, "settlementLedger")
+        self.assertEqual(fp["ledgerEntries"], len(entries))
+        # 스냅샷 해시는 커밋된 원장 파일 바이트에서 재계산 가능해야 한다.
+        self.assertEqual(fp["ledgerSnapshotSha256"], self.lb.sha256_of(self.lb.LEDGER))
+
+
 if __name__ == "__main__":
     unittest.main()

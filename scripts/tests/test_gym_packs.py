@@ -101,6 +101,55 @@ class TaskContractTests(unittest.TestCase):
                     self.assertTrue(check.get("name"), f"{pid}/{task['id']}: 이름 없는 검사")
 
 
+class TierRangeTests(unittest.TestCase):
+    """[#4664] 난도 티어 1~5 — 입문(부모님)부터 보스까지. 놀이공원의 키 제한."""
+
+    def _pack(self, axis="자동화"):
+        return {"id": "p", "axis": axis}
+
+    def test_tier_five_is_valid_and_six_is_not(self):
+        _checks, _runner, schema = load_core()
+        base = {"id": "X", "title": "t", "input": "samples/table-001.hwp",
+                "instructions": "i", "submit": {"kind": "artifact"},
+                "checks": [{"name": "c", "op": "file_exists", "file": "x"}]}
+        for tier in (1, 5):
+            errors = []
+            schema.validate_task({**base, "tier": tier}, self._pack(), None, errors)
+            self.assertEqual(errors, [], f"tier {tier} 는 유효해야 한다: {errors}")
+        for tier in (0, 6):
+            errors = []
+            schema.validate_task({**base, "tier": tier}, self._pack(), None, errors)
+            self.assertTrue(any("tier" in e for e in errors), f"tier {tier} 는 거부돼야 한다")
+
+    def test_park_has_both_a_kiddie_ride_and_a_boss(self):
+        """테마파크는 양쪽 극단을 모두 가진다 — 부모님용 tier1 과 보스 tier5."""
+        tiers = set()
+        for pid in pack_ids():
+            for path in sorted((PACKS / pid / "tasks").glob("*.json")):
+                tiers.add(read_json(path)["tier"])
+        self.assertIn(1, tiers, "입문(tier 1) 놀이기구가 없다 — 부모님이 탈 것이 없다")
+        self.assertIn(5, tiers, "보스(tier 5) 어트랙션이 없다 — 고난도 챌린지가 없다")
+
+
+class BaselineResolveTests(unittest.TestCase):
+    """[#4664] 기준 풀이의 자리표 치환 — 한 문자열의 여러 {sub:} 를 모두 바꾼다.
+
+    다세대 계획서는 input·output 을 모두 {sub:} 로 가리킨다. 첫 하나만 바꾸면
+    나머지가 리터럴로 남아 엉뚱한 이름의 파일이 생기고 다음 세대가 입력을 잃는다.
+    """
+
+    def test_multiple_sub_placeholders_all_resolve(self):
+        build_baseline = load_module(
+            "gym_build_baseline", REPO_ROOT / "gym" / "tools" / "build_baseline.py")
+        import tempfile
+        with tempfile.TemporaryDirectory() as sub_dir:
+            token = '{"input": "{sub:o1.hwp}", "output": "{sub:o2.hwp}"}'
+            out = build_baseline.resolve(token, {"input": "in.hwp"}, sub_dir)
+            self.assertNotIn("{sub:", out, "치환되지 않은 자리표가 남았다")
+            self.assertIn("o1.hwp", out)
+            self.assertIn("o2.hwp", out)
+
+
 class ProfileTests(unittest.TestCase):
     def test_profiles_reference_existing_packs(self):
         _checks, _runner, schema = load_core()

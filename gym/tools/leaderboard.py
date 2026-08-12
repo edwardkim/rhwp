@@ -321,6 +321,70 @@ def cmd_verify(a, bin_path):
     return 0 if (err is None and aerr is None and snapshot_ok and ok == len(results)) else 3
 
 
+def board_fingerprint():
+    """지금 이 점수판의 지문 — 신참이 '진짜 판'에 합류하는지 확인할 값.
+
+    초대장을 받은 친구는 이 지문을 커밋된 원장·앵커에서 스스로 재계산해,
+    자기 키를 걸기 전에 판이 위조본이 아님을 확인한다. 새 비밀 0 — 전부
+    커밋된 파일에서 나온다.
+    """
+    ledger_entries, lerr = chain_walk(LEDGER, "settlementLedger")
+    anchor_entries, aerr = chain_walk(ANCHOR, "anchorLog")
+    ring = read_json(KEYRING) if os.path.exists(KEYRING) else {"keys": []}
+    checkpoint = read_json(CHECKPOINT) if os.path.exists(CHECKPOINT) else {}
+    return {
+        "members": len(ring.get("keys", [])),
+        "ledgerEntries": len(ledger_entries),
+        "ledgerChain": lerr or "ok",
+        "anchorChain": aerr or "ok",
+        "merkleRoot": checkpoint.get("merkleRoot"),
+        "workorderSha256": sha256_of(WORKORDER) if os.path.exists(WORKORDER) else None,
+        "ledgerSnapshotSha256": sha256_of(LEDGER) if os.path.exists(LEDGER) else None,
+    }
+
+
+def cmd_invite(a, bin_path):
+    """친구 초대장 발급 — 외부 에이전트를 이름으로 점수판에 부른다.
+
+    리더보드는 처음부터 문이 열려 있다(attest 는 --agent 하나만 받는다). 이
+    명령은 그 열린 문에 **초대장**을 붙일 뿐이다: 지금 판의 지문과, 신참이
+    자기 신원으로 합류하는 3줄 절차를 한 봉투로 묶는다. 초대는 권한이 아니라
+    안내다 — 아무나 스스로 등재할 수 있고, 초대장은 '어디로 오면 되는지'를
+    가리킨다.
+    """
+    ensure_board()
+    guest = a.agent or "친구-에이전트"
+    fp = board_fingerprint()
+    invite = {
+        "schemaVersion": "1.0", "kind": "gymLeaderboardInvite",
+        "guest": guest,
+        "board": {"repo": "edwardkim/rhwp", "path": "gym/leaderboard"},
+        "fingerprint": fp,
+        "join": [
+            f"python gym/score.py --agent {guest}",
+            f"python gym/tools/leaderboard.py attest --agent {guest}",
+            "python gym/tools/leaderboard.py verify",
+        ],
+        "promise": (
+            "너의 비밀키는 gym/leaderboard/keys/ 에만 남고 커밋되지 않는다"
+            "(.gitignore). 점수판에 오르는 것은 공개키·서명·스코어카드뿐이다."),
+        "note": (
+            "이 초대는 권한이 아니라 안내다. 문은 이미 열려 있다 — attest 는 "
+            "누구의 이름이든 받는다. 초대장은 네가 합류하는 판이 위조본이 "
+            "아님을 fingerprint 로 확인하라는 뜻이다."),
+    }
+    out = os.path.join(BOARD, "invite.json")
+    write_json(out, invite)
+    print(f"초대장 발급 → {os.path.relpath(out, ROOT)}")
+    print(f"  손님: {guest}")
+    print(f"  판 지문: 멤버 {fp['members']} · 원장 {fp['ledgerEntries']}항목 "
+          f"· 사슬 {fp['ledgerChain']}/{fp['anchorChain']}")
+    print("  합류 3줄:")
+    for step in invite["join"]:
+        print(f"    $ {step}")
+    return 0
+
+
 def cmd_render(a, bin_path):
     entries, err = chain_walk(LEDGER, "settlementLedger")
     results = [verify_entry(bin_path, e, entries) for e in entries]
@@ -380,7 +444,7 @@ def cmd_render(a, bin_path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("mode", choices=["attest", "verify", "render"])
+    ap.add_argument("mode", choices=["attest", "verify", "render", "invite"])
     ap.add_argument("--agent", default=None)
     ap.add_argument("--bin", default=None)
     a = ap.parse_args()
@@ -391,6 +455,8 @@ def main():
         return cmd_attest(a, bin_path)
     if a.mode == "verify":
         return cmd_verify(a, bin_path)
+    if a.mode == "invite":
+        return cmd_invite(a, bin_path)
     return cmd_render(a, bin_path)
 
 

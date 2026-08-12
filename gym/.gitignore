@@ -3,6 +3,7 @@ submissions/
 *.hwpx
 differential-report.json
 leaderboard/keys/
+leaderboard/invite.json
 release-diff.json
 release-diff-*.json
 release-gate-diff.json
