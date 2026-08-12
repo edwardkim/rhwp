@@ -39,6 +39,18 @@ npx vite --port 7700
 - 문서 오타/개선
 - [Discussions](https://github.com/edwardkim/rhwp/discussions)에서 질문/아이디어 제안
 
+### 4. 업스트림에 기여할지 먼저 판단하기
+
+rhwp는 모든 파생 제품을 한 저장소에서 직접 만들지 않습니다. 공통 엔진, 공용 Web/WASM API,
+CLI·MCP 계약과 현재 공식 배포 대상의 개선은 rhwp 업스트림에 기여합니다. 특정 운영체제의 데스크톱·
+모바일 앱, 사내 뷰어, Google Docs 연계, 조직별 인증·배포·업무 화면은 별도 다운스트림 프로젝트에서
+구현하는 것을 기본으로 합니다.
+
+두 범위가 섞여 있다면 제품 구현은 다운스트림에 두고, 여러 프로젝트가 재사용할 결함 수정이나 공용
+확장점만 작은 이슈와 PR로 분리해 주세요. 자세한 판단 기준과 공식 배포 범위는
+[프로젝트 로드맵의 업스트림과 다운스트림 경계](ROADMAP.md#업스트림과-다운스트림의-경계)를
+참고하세요.
+
 ## 기여 방법
 
 ### 버그 리포트
@@ -421,3 +433,39 @@ python3 scripts/check_markdown_links.py      # 상대 링크 검사
 ## License
 
 이 프로젝트는 [MIT License](LICENSE)로 배포됩니다. 기여하신 코드도 동일한 라이선스가 적용됩니다.
+
+## LLM/에이전트 보조 기여
+
+이 저장소는 AI 에이전트가 1급 소비자이자 1급 기여자다. Claude Code·Copilot·
+Cursor·Codex·Gemini CLI·Windsurf·Cline 이 **자동으로 읽는 지침 파일**이 전부
+준비돼 있다 — 어떤 도구를 쓰든 같은 규약([AGENTS.md](AGENTS.md))에 도착한다.
+
+| 도구 | 자동 로딩 파일 |
+|---|---|
+| Claude Code | `CLAUDE.md` → `AGENTS.md` (+ `.claude/skills/` 자동 발견 — 기여 절차는 `rhwp-contributor`) |
+| Codex | `AGENTS.md` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Cursor | `.cursor/rules/rhwp.mdc` |
+| Gemini CLI | `GEMINI.md` |
+| Windsurf / Cline | `.windsurfrules` / `.clinerules` |
+| AGENTS.md 표준 진영 — Codex·OpenCode·Jules·Amp·Zed·Devin·Antigravity·Grok Build·Kimi CLI·Pi 등 | `AGENTS.md` (도구 공통 표준) |
+| 오케스트레이터(ADE) — Orca 등 워크트리 병렬 진영 | 자체 파일 없음 — 부리는 각 에이전트(Claude Code·Codex·OpenCode 등)의 파일이 그대로 적용 |
+| AWS Kiro (Amazon Q 후계) | `.kiro/steering/` |
+| Qwen Code | `QWEN.md` |
+| Aider 계열(컨벤션 파일) | `CONVENTIONS.md` |
+| Zed 계열(.rules) | `.rules` |
+| Goose | `.goosehints` |
+| Replit Agent | `replit.md` |
+| RooCode / Kilo Code | `.roo/rules/` / `.kilocode/rules/` |
+| JetBrains Junie | `.junie/guidelines.md` |
+| Trae / Amazon Q(일몰 예정·Kiro 승계) / Augment / Continue | `.trae/rules/` · `.amazonq/rules/` · `.augment/rules/` · `.continue/rules/` |
+| llms.txt 소비 도구 | `llms.txt` |
+
+**모델이 무엇이든 같은 길** — DeepSeek·GLM·Llama·Qwen·MiMo·MiniMax 등 어떤 모델(무료 모델 포함)을
+쓰든, 그 모델을 부리는 위 CLI/IDE 가 이 파일들을 자동으로 읽으므로 결국 같은 규약에 도착한다.
+저장소 파일을 읽지 않는 도구(영상·미디어 생성형 등)는 이 표의 범위 밖이다.
+
+에이전트 보조로 문서를 실제 편집·생성했다면 **작업 증빙**을 권장한다:
+`rhwp replay --plan-json <계획> --capsule work.capsule.json` 이 만든 캡슐(3해시
+영수증)이나 관련 `--json` 봉투 원문을 PR 에 붙이면, 리뷰어가 주장 대신
+재계산으로 검증할 수 있다. 상세는 AGENTS.md 의 "작업 증빙" 절.

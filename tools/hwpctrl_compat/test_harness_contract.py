@@ -232,6 +232,60 @@ class HarnessContractTests(unittest.TestCase):
             for name, variants in (definition.get("paths") or {}).items():
                 self.assertEqual(set(variants), {"win", "posix"}, f"{path.name}:{name}")
 
+    def test_three_way_verdicts_partition_the_disagreement_space(self) -> None:
+        """3자 판정 — 어느 둘이 같은지가 곧 판정이다(compare3.classify3)."""
+        from compare3 import classify3, ALL_AGREE, COM_DRIFT, IMPL_GAP, WEB_DIVERGES, ALL_DIFFER
+
+        v = lambda x: {"call": "Foo", "value": x}  # noqa: E731
+        self.assertEqual(classify3(v(1), v(1), v(1))[0], ALL_AGREE)
+        # 기안기·rhwp 일치, COM 만 다름 — 프록시의 한계. rhwp 는 이미 제품과 맞다.
+        self.assertEqual(classify3(v(2), v(1), v(1))[0], COM_DRIFT)
+        # 두 오라클 일치, rhwp 만 다름 — 실 결함.
+        self.assertEqual(classify3(v(1), v(1), v(2))[0], IMPL_GAP)
+        # COM·rhwp 일치, 기안기만 다름 — 웹 계약이 갈리는 지점. 기안기가 이긴다.
+        self.assertEqual(classify3(v(1), v(2), v(1))[0], WEB_DIVERGES)
+        self.assertEqual(classify3(v(1), v(2), v(3))[0], ALL_DIFFER)
+
+    def test_three_way_errors_compare_by_kind_not_by_message(self) -> None:
+        """오류는 '죽었다'로만 묶는다 — 문구는 러너·플랫폼마다 달라 러너 차이가 판정을 오염시킨다."""
+        from compare3 import classify3, ALL_AGREE, IMPL_GAP, WEB_DIVERGES
+
+        v = lambda x: {"call": "Foo", "value": x}  # noqa: E731
+        e = lambda m: {"call": "Foo", "error": m}  # noqa: E731
+        self.assertEqual(classify3(e("com_error: A"), e("TypeError: B"), e("Error: C"))[0], ALL_AGREE)
+        self.assertEqual(classify3(e("com_error: A"), e("TypeError: B"), v(1))[0], IMPL_GAP)
+        self.assertEqual(classify3(v(1), e("TypeError: B"), v(1))[0], WEB_DIVERGES)
+
+    def test_web_open_envelope_compares_only_the_contract_common_denominator(self) -> None:
+        """기안기 `Open` 봉투의 `fileName` 은 서버 부여 난수 — `result` 만 판정 잣대다."""
+        from compare3 import ALL_AGREE, WEB_DIVERGES, classify3, project_web
+
+        web = {
+            "call": "Open",
+            "value": {"result": True, "fileName": "216e9d77.hwp", "orgName": "a.hwp", "size": 84992},
+        }
+        local = {"call": "Open", "value": True}
+        self.assertEqual(classify3(local, project_web(web), local)[0], ALL_AGREE)
+        # 성공 신호가 갈리면 봉투를 벗겨도 갈린 것으로 남는다.
+        failed = {**web, "value": {**web["value"], "result": False}}
+        self.assertEqual(classify3(local, project_web(failed), local)[0], WEB_DIVERGES)
+        # 투영은 Open 봉투에만 닿는다 — 다른 호출·오류·비봉투 값은 그대로 지난다.
+        other = {"call": "GetPos", "value": {"list": 0, "para": 0, "pos": 16}}
+        self.assertEqual(project_web(other), other)
+        self.assertEqual(project_web({"call": "Open", "value": True}), {"call": "Open", "value": True})
+        died = {"call": "Open", "error": "TypeError: x"}
+        self.assertEqual(project_web(died), died)
+
+    def test_web_results_without_a_version_stamp_are_rejected(self) -> None:
+        """스탬프(URL·측정 시각) 없는 기안기 산출물은 정답지 자격이 없다(계획서 §6.3.3)."""
+        from compare3 import require_stamp
+
+        good = {"oracle": {"url": "https://demo/", "measuredAt": "2026-08-10T00:00:00Z"}}
+        require_stamp(good, Path("x"))
+        for bad in ({}, {"oracle": {}}, {"oracle": {"url": "https://demo/"}}):
+            with self.assertRaises(SystemExit):
+                require_stamp(bad, Path("x"))
+
     def test_compare_only_reads_explicitly_eligible_oracles(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             out_dir = Path(directory)

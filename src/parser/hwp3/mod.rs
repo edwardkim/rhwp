@@ -387,6 +387,32 @@ fn hwp3_table_cell_shade_color(cell_color: u16, shade: u8) -> crate::model::Colo
     red | (green << 8) | (blue << 16)
 }
 
+/// HWP3 글자 음영을 공통 ColorRef 로 합성한다. 음영이 없으면 `None`.
+///
+/// 글자 모양 레코드의 음영은 팔레트 인덱스(offset 23, 0~7)와 음영 비율(offset 25, 0~100%)
+/// **조합**이다(`mydocs/tech/한글문서파일구조3.0.md` 표 "글자 모양"). 비율 0 은 음영 없음이고
+/// 실문서에서 압도적 다수다 — `samples/SO-SUEOP.hwp` 는 2,511건 전건이 0 이다.
+///
+/// 합성은 흰 바탕에 팔레트 색을 비율만큼 섞는 채널별 lerp 이고, **정수 절하**가 한컴
+/// 저장본과 맞는다(#4155 실측: 0×15%=`0xd8d8d8`, 0×6%=`0xefefef`, 0×40%=`0x999999`).
+///
+/// 표 셀용 [`hwp3_table_cell_shade_color`] 와 식을 공유하지 않는 이유: 그쪽은 같은 lerp 를
+/// `255-(255-c)*r/100` 으로 써서 뺄셈이 정수 나눗셈 바깥에 있어 절상 쪽으로 구르고, 15%/6%
+/// 에서 1씩 어긋난다(`0xd9`/`0xf0`). 셀 축은 대응하는 한컴 실측이 없어 여기서 건드리지 않는다.
+fn hwp3_char_shade_color(palette_index: u8, shade_ratio: u8) -> Option<crate::model::ColorRef> {
+    if shade_ratio == 0 {
+        return None;
+    }
+    let base = hwp3_color_index_to_color_ref(palette_index);
+    let ratio = u32::from(shade_ratio.min(100));
+    let lerp = |component: u32| (component * ratio + 255 * (100 - ratio)) / 100;
+
+    let red = lerp(base & 0xFF);
+    let green = lerp((base >> 8) & 0xFF);
+    let blue = lerp((base >> 16) & 0xFF);
+    Some(red | (green << 8) | (blue << 16))
+}
+
 /// [#2984] HWP3 그림 정보 레코드(348바이트) offset 339~341 의 밝기/명암/그림효과를
 /// 읽는다. (`mydocs/tech/한글문서파일구조3.0.md` 10.7절, 표 43 "그림 식별 정보")
 fn hwp3_picture_image_effect(info_buf: &[u8]) -> (i8, i8, crate::model::image::ImageEffect) {
@@ -540,11 +566,11 @@ pub(crate) fn convert_char_shape(
     cs.ratios = hwp3_cs.ratios;
     cs.spacings = hwp3_cs.spacings;
     cs.text_color = hwp3_color_index_to_color_ref(hwp3_cs.text_color);
-    // [#2958] 글자 음영색(offset 23)도 text_color와 같은 8색 팔레트를 쓰지만
-    // 변환부에서 누락되어 CharShape 기본값(0=검정)이 그대로 남아 있었다.
-    // 렌더러는 0x00FFFFFF(흰색)를 "음영 없음" sentinel로 쓰므로, 여기서
-    // 매핑하지 않으면 음영 없는 문서도 검정 형광펜으로 오판될 수 있다.
-    cs.shade_color = hwp3_color_index_to_color_ref(hwp3_cs.shade_color);
+    // [#2958 → #4155] 글자 음영은 팔레트 인덱스(offset 23) 단독이 아니라 음영 비율
+    // (offset 25)과의 조합이다. #2958 은 인덱스만 복사해 비율 0(=음영 없음)인 글자까지
+    // 검정 음영으로 만들었고, 그 HWP5 저장본을 연 한컴이 본문을 검정 막대로 덮었다.
+    cs.shade_color = hwp3_char_shade_color(hwp3_cs.shade_color, hwp3_cs.shade_ratio)
+        .unwrap_or(crate::model::color::NONE);
     cs.attr = hwp3_cs.attr as u32;
     cs.italic = hwp3_cs.is_italic();
     cs.bold = hwp3_cs.is_bold();
@@ -5402,6 +5428,62 @@ mod tests {
         assert_eq!(hwp3_table_cell_shade_color(6, 10), 0x00E6_FFFF);
     }
 
+    /// [#4155] HWP3 글자 음영 = 팔레트 인덱스(offset 23) × 음영 비율(offset 25).
+    ///
+    /// 기대값은 추정이 아니라 **같은 원본을 한컴이 HWP5 로 저장한 값**이다
+    /// (hwp3-sample16 15%, hwp3-sample5 6%, hwp3-sample11 40%).
+    #[test]
+    fn hwp3_char_shade_composes_palette_with_ratio() {
+        // 비율 0 = 음영 없음. samples/SO-SUEOP.hwp 는 2,511건 전건이 이 경우다.
+        assert_eq!(hwp3_char_shade_color(0, 0), None);
+        assert_eq!(hwp3_char_shade_color(4, 0), None);
+
+        // 검정 팔레트 × 비율 — 한컴 저장본 실측
+        assert_eq!(hwp3_char_shade_color(0, 15), Some(0x00D8_D8D8));
+        assert_eq!(hwp3_char_shade_color(0, 6), Some(0x00EF_EFEF));
+        assert_eq!(hwp3_char_shade_color(0, 40), Some(0x0099_9999));
+
+        // 경계: 100% 는 팔레트 색 그대로, 흰색(7)은 어느 비율이든 흰색
+        assert_eq!(hwp3_char_shade_color(0, 100), Some(0x0000_0000));
+        assert_eq!(hwp3_char_shade_color(7, 100), Some(0x00FF_FFFF));
+        assert_eq!(hwp3_char_shade_color(7, 50), Some(0x00FF_FFFF));
+
+        // 스펙 범위는 0~100% 다. 범위 밖 값은 100 으로 잠근다.
+        assert_eq!(hwp3_char_shade_color(0, 200), Some(0x0000_0000));
+    }
+
+    /// [#4155] 비율 0 이면 IR 에 "음영 없음" sentinel 이 남아야 한다 — 검정이 아니다.
+    #[test]
+    fn convert_char_shape_maps_zero_ratio_to_no_shade_sentinel() {
+        let no_shade = crate::parser::hwp3::records::Hwp3CharShape {
+            shade_color: 0,
+            shade_ratio: 0,
+            ..Default::default()
+        };
+        assert_eq!(
+            convert_char_shape(&no_shade).shade_color,
+            crate::model::color::NONE,
+            "비율 0 은 음영 없음이다. 검정(0)을 쓰면 한컴이 본문을 검정 막대로 덮는다"
+        );
+
+        let shaded = crate::parser::hwp3::records::Hwp3CharShape {
+            shade_color: 0,
+            shade_ratio: 15,
+            ..Default::default()
+        };
+        assert_eq!(convert_char_shape(&shaded).shade_color, 0x00D8_D8D8);
+    }
+
+    /// [#4155] `CharShape::default()` 의 음영 sentinel 은 한컴/HWPX/HML 과 같아야 한다.
+    #[test]
+    fn char_shape_default_shade_is_the_no_color_sentinel() {
+        assert_eq!(
+            crate::model::style::CharShape::default().shade_color,
+            0xFFFF_FFFF,
+            "HWPX \"none\"·한/글 HML 4294967295·한컴 HWP5 가 모두 쓰는 값이다"
+        );
+    }
+
     #[test]
     fn task2984_hwp3_picture_image_effect_reads_brightness_contrast_effect() {
         // [#2984] offset 339=밝기, 340=명암, 341=그림효과(1=그레이스케일).
@@ -5492,15 +5574,35 @@ mod tests {
         assert!(cs.use_font_space);
     }
 
+    /// [#2958] 글자 음영색의 8색 팔레트 매핑이 살아 있는지 본다.
+    ///
+    /// [#4155] 로 계약이 좁아졌다 — 팔레트 인덱스는 **음영 비율이 0 이 아닐 때만** 색이
+    /// 된다. 종전 이 테스트는 비율 0(`Default`)으로 인덱스 1 을 넣고 파랑을 기대했는데,
+    /// 그 계약이 곧 결함이었다: 비율 0 은 음영 없음이고, 실문서 다수인 인덱스 0/비율 0 이
+    /// 검정 음영으로 저장돼 한컴이 본문을 검정 막대로 덮었다.
     #[test]
     fn task2958_convert_char_shape_preserves_shade_color() {
         let hwp3_cs = crate::parser::hwp3::records::Hwp3CharShape {
             shade_color: 1,
+            shade_ratio: 100,
             ..Default::default()
         };
         let cs = convert_char_shape(&hwp3_cs);
+        assert_eq!(
+            cs.shade_color, 0x00FF0000,
+            "비율 100% 면 팔레트 색(1=파랑) 그대로여야 한다"
+        );
 
-        assert_eq!(cs.shade_color, 0x00FF0000);
+        // 같은 팔레트라도 비율 0 이면 음영이 아니다 (#4155)
+        let unshaded = crate::parser::hwp3::records::Hwp3CharShape {
+            shade_color: 1,
+            shade_ratio: 0,
+            ..Default::default()
+        };
+        assert_eq!(
+            convert_char_shape(&unshaded).shade_color,
+            crate::model::color::NONE
+        );
     }
 
     #[test]

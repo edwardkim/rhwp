@@ -4,13 +4,14 @@
 - **수행계획서**: `mydocs/plans/task_m100_3790.md`
 - **브랜치**: Stage 1 `codex/issue-3790-ci-impact-shadow`, Stage 2·2.5
   `codex/issue-3790-shadow-observation`, Stage 3 `codex/issue-3790-stage3-frontend`, Stage 4
-  `issue-3790-stage4-rust-native`, Stage 5A `issue-3790-stage5a-codeql-safety`
-- **절차 상태**: Stage 3·4 merge·canary 완료. `upstream/devel` `e48fe86947fb`에서 Stage 5A의
-  보안 check 재사용과 Rust no-build shadow를 구현하고 focused 검증을 통과했다. Draft PR #4341의
-  1차 원격 canary 분석 뒤 raw blocking SARIF·동일 권한·기본 build mode의 no-prebuild shadow로
-  보정하고 원격 동등성 gate를 통과했다. 수동 cache·prebuild와 측정 요소를 제거한 최종 구성도 focused
-  검증과 최종 PR CI·GHAS를 통과했다. Ready 전환 뒤 self-review F1–F6을 수용해 최신
-  `upstream/devel` `0664e6568e9b`을 병합하고 보정 head의 full CI·CodeQL 재검증 단계로 전환했다.
+  `issue-3790-stage4-rust-native`, Stage 5A `issue-3790-stage5a-codeql-safety`, Stage 5B
+  `issue-3790-stage5b-codeql-languages`
+- **절차 상태**: Stage 3·4 merge·canary 완료. Stage 5A는 원격 SARIF·시간 비교, 최종 CI·GHAS와 리뷰
+  보정을 통과해 PR #4341 merge commit `8ea92cdad120`으로 완료했다. Stage 5A 전용 worktree와 브랜치는
+  정리했고 Stage 2.6 controller 유일본은 보존했다. 2026-08-11 `devel` required context가 `Build & Test`
+  하나임을 직접 확인한 뒤 Stage 5B의 trusted-base 언어 선택과 고정 check identity를 구현·focused
+  검증했다. Draft PR #4519에는 최신 devel `32ecfd113690`을 반영하고 reviewer `edwardkim` 지정과
+  archive 검토 기록을 완료했으며, 최종 head의 수동 full CI·CodeQL 확인을 남겼다.
 
 ## Stage 1 — shadow classifier
 
@@ -226,10 +227,28 @@ Stage 3 merge 직후 frontend-only canary PR #3951에서 unit/package/render 진
 - workflow 실행 경로와 최신 devel merge가 포함되므로 보정 head는 fast-pass하지 않고 full CI·CodeQL을
   새로 통과해야 한다.
 
+## Stage 5B — CodeQL 언어별 선택 실행
+
+1. `CodeQL preflight`는 PR에서 `pull_request.base.sha`의 classifier만 sparse checkout한다. PR 파일
+   목록을 classifier에 전달하고 `codeql_languages`를 output으로 확정한다.
+2. push·schedule·workflow_dispatch는 의도적으로 세 언어 full을 선택한다. checkout·API·classifier
+   실패, 허용 집합 밖 언어 또는 잘못된 classification status도 세 언어 full로 닫는다.
+3. `Analyze (javascript-typescript|python|rust)` matrix job은 항상 세 개를 생성한다. 선택되지 않은 job은
+   명시적 no-op success로 끝내 현재·향후 required check에서 check 부재로 인한 pending을 만들지 않는다.
+   preflight output이 비면 consumer의 `SELECTED_LANGUAGES`가 세 언어 full로 복구되어 0건 분석 green을
+   만들지 않는다.
+4. checkout·CodeQL init·Rust toolchain·analysis는 선택된 언어 job에서만 실행한다. 동적 matrix로 job
+   자체를 제거하지 않아 Stage 5A의 candidate-bound Analyze job 재사용 계약도 유지한다.
+5. `devel` branch metadata의 2026-08-11 live 값은 protected, required context `Build & Test` 하나다.
+   세 Analyze job과 GHAS `CodeQL`은 required가 아니다. 상세 protection endpoint는 WRITE collaborator에게
+   404지만 branch metadata는 required context를 노출하므로 PR 생성 전 같은 API로 다시 확인한다.
+6. `codeql_languages=none`이면 세 job이 no-op success이고 새 GHAS `CodeQL` check가 생기지 않는다.
+   후속 review-only run의 candidate 재사용은 GHAS check 부재를 허용하지 않고 기존처럼 fail-closed한다.
+7. fast-pass Job Summary는 언어 판정값 대신 `n/a (fast-pass)`를 표시해 실제 분석 실행과 구분한다.
+8. 작업 기록은 `mydocs/working/task_m100_3790_stage5b.md`에 구현·검증 결과와 권한 확인 근거를 남긴다.
+
 ## Stage 5B 이후
 
-- Stage 5A 원격 canary에서 blocking/shadow SARIF와 duration을 대조하고 required status check 구성을
-  repository admin에게 확인한 뒤 CodeQL 언어별 matrix를 활성화한다.
 - Stage 3 merge 직후 첫 canary와 Stage 5 canary의 selective/full 결과를 비교한다.
 - default-branch controller는 Stage 3~5 진리표가 확정된 뒤 축소 구현하고 정상 릴리즈로 main에 등록한다.
 - artifact 재시도는 #3892의 논리 label `slow/1/2/3`별 test archive, archive expected count와 worker run

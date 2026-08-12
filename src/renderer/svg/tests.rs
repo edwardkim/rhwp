@@ -55,16 +55,24 @@ fn test_svg_draw_text_medium_weight() {
 
 #[test]
 fn legacy_hanyang_faces_have_portable_local_aliases() {
-    // HWPX가 저장한 legacy face와 실제 설치 font의 family/full name이 다르다.
-    // `--font-style` SVG가 이 순서를 잃으면 검증 host에서 무관한 폴백 또는
+    // HWPX가 저장한 legacy face와 한컴 2020 PDF가 실제로 대체해 출력한 family가
+    // 다르다. `--font-style` SVG가 이 순서를 잃으면 검증 host에서 무관한 폴백 또는
     // 두부(□)로 rasterize되어 PDF 대조 증적이 무효해진다.
     assert_eq!(
         font_local_aliases("한양중고딕"),
-        vec!["한양중고딕", "HY중고딕", "HYGothic-Medium"]
+        vec![
+            "HCR Dotum",
+            "함초롬돋움",
+            "한양중고딕",
+            "HY중고딕",
+            "HYGothic-Medium",
+        ]
     );
     assert_eq!(
         font_local_aliases("휴먼명조"),
         vec![
+            "HCR Batang",
+            "함초롬바탕",
             "Batang",
             "바탕",
             "AppleMyungjo",
@@ -92,16 +100,30 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
         vec!["한양신명조", "HY신명조", "HYSinMyeongJo-Medium"],
         "정상 outline인 HY신명조는 원 face를 먼저 유지해야 함"
     );
-    assert_eq!(known_font_filenames("한양중고딕"), vec!["H2GTRM.TTF"]);
+    assert_eq!(
+        known_font_filenames("한양중고딕").first(),
+        Some(&"HANDotum.ttf"),
+        "한컴 2020 PDF와 같은 HCR Dotum을 full embed에서 먼저 찾아야 함"
+    );
     assert_eq!(
         known_font_filenames("휴먼명조").first(),
-        Some(&"HMKMM.TTF"),
-        "휴먼명조에는 HY견명조(HYMJRE)가 아니라 HMKMM을 우선 사용해야 함"
+        Some(&"HANBatang.ttf"),
+        "한컴 2020 PDF와 같은 HCR Batang을 휴먼명조보다 먼저 찾아야 함"
     );
     assert_eq!(
         known_font_filenames("한양신명조").first(),
         Some(&"H2MJSM.TTF"),
         "Windows 설치본의 실제 한양신명조 파일을 먼저 찾아야 함"
+    );
+    assert_eq!(
+        font_local_bold_aliases("휴먼명조").first(),
+        Some(&"HCR Batang Bold"),
+        "휴먼명조의 Bold는 browser synthetic bold가 아니라 한컴 HCR Bold face여야 함"
+    );
+    assert_eq!(
+        known_bold_font_filenames("한양중고딕").first(),
+        Some(&"HANDotumB.ttf"),
+        "한양중고딕의 Bold full embed는 한컴 HCR Dotum Bold 파일을 먼저 찾아야 함"
     );
 }
 
@@ -110,13 +132,15 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
 fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
     let mut renderer = SvgRenderer::new();
     renderer.font_embed_mode = FontEmbedMode::Style;
-    for family in ["휴먼명조", "휴먼고딕", "한양신명조"] {
+    for family in ["휴먼명조", "휴먼고딕", "한양중고딕", "한양신명조"] {
         renderer
             .font_codepoints
             .entry(family.to_string())
             .or_default()
             .extend("한글".chars());
     }
+    renderer.font_bold_families.insert("휴먼명조".to_string());
+    renderer.font_bold_families.insert("한양중고딕".to_string());
 
     let css = generate_font_style(
         &renderer,
@@ -129,12 +153,20 @@ fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
         .expect("휴먼명조 style rule");
     assert!(
         human_myeongjo
-            .find("local(\"Batang\")")
-            .expect("Batang local")
+            .find("local(\"HCR Batang\")")
+            .expect("HCR Batang local")
             < human_myeongjo
                 .find("local(\"휴먼명조\")")
                 .expect("휴먼명조 local"),
-        "실제 CSS에서도 outline 명조가 깨진 HMKMM local보다 앞서야 함"
+        "실제 CSS에서도 한컴 PDF 대체 명조가 깨진 HMKMM local보다 앞서야 함"
+    );
+    let hanyang_jung = css
+        .lines()
+        .find(|line| line.contains("font-family: \"한양중고딕\""))
+        .expect("한양중고딕 style rule");
+    assert!(
+        hanyang_jung.contains("local(\"HCR Dotum\"), local(\"함초롬돋움\"), local(\"한양중고딕\")"),
+        "한컴 PDF 대체 고딕이 legacy local face보다 앞서야 함"
     );
     let human_gothic = css
         .lines()
@@ -158,6 +190,56 @@ fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
             "local(\"한양신명조\"), local(\"HY신명조\"), local(\"HYSinMyeongJo-Medium\")"
         ),
         "정상 outline 한양신명조의 local 우선순위를 보존해야 함"
+    );
+    let human_myeongjo_bold = css
+        .lines()
+        .find(|line| {
+            line.contains("font-family: \"휴먼명조\"") && line.contains("font-weight: bold")
+        })
+        .expect("휴먼명조 bold style rule");
+    assert!(
+        human_myeongjo_bold.contains("local(\"HCR Batang Bold\")"),
+        "휴먼명조 bold는 HCR Batang Bold를 명시해 synthetic bold를 피해야 함"
+    );
+    let hanyang_jung_bold = css
+        .lines()
+        .find(|line| {
+            line.contains("font-family: \"한양중고딕\"") && line.contains("font-weight: bold")
+        })
+        .expect("한양중고딕 bold style rule");
+    assert!(
+        hanyang_jung_bold.contains("local(\"HCR Dotum Bold\")"),
+        "한양중고딕 bold는 HCR Dotum Bold를 명시해 synthetic bold를 피해야 함"
+    );
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn full_font_embed_uses_real_bold_face_when_document_uses_bold() {
+    let dir = std::env::temp_dir().join(format!("rhwp-svg-bold-font-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).expect("temporary font directory");
+    std::fs::write(dir.join("HANBatang.ttf"), b"regular").expect("regular test font");
+    std::fs::write(dir.join("HANBatangB.ttf"), b"bold").expect("bold test font");
+
+    let mut renderer = SvgRenderer::new();
+    renderer.font_embed_mode = FontEmbedMode::Full;
+    renderer
+        .font_codepoints
+        .entry("휴먼명조".to_string())
+        .or_default()
+        .extend("한글".chars());
+    renderer.font_bold_families.insert("휴먼명조".to_string());
+
+    let css = generate_font_style(
+        &renderer,
+        std::slice::from_ref(&dir),
+        &std::collections::HashMap::<String, Vec<u8>>::new(),
+    );
+    std::fs::remove_dir_all(&dir).expect("temporary font directory cleanup");
+
+    assert!(
+        css.contains("font-family: \"휴먼명조\"; src: url(\"data:font/opentype;base64,Ym9sZA==\") format(\"opentype\"); font-weight: bold;"),
+        "full embed는 별도 Bold TTF를 font-weight: bold face로 선언해야 함"
     );
 }
 

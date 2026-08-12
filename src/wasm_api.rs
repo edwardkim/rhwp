@@ -42,6 +42,9 @@ use crate::renderer::style_resolver::{
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::DEFAULT_DPI;
 
+/// 어떤 렌더 export 가 Subsecond 핫패치 경계 뒤에 있는지 선언하는 곳 (#4577).
+mod subsecond_boundary;
+
 impl From<HwpError> for JsValue {
     fn from(err: HwpError) -> Self {
         JsValue::from_str(&err.to_string())
@@ -191,8 +194,12 @@ fn render_page_to_canvas_filtered_with_profile_impl(
     Ok(())
 }
 
+/// 부분 재도색 본체.
+///
+/// `patch` 는 page-space 요청 사각형이다 — `x/y/width/height` 를 편 인자로 받으면 이 함수의
+/// 인자가 10개가 되어 `subsecond::HotFn` 이 붙지 못한다(`HotFunction` 은 9개까지). 경계를
+/// 유지하려면 사각형을 한 값으로 접어야 한다.
 #[cfg(target_arch = "wasm32")]
-#[allow(clippy::too_many_arguments)]
 fn render_page_patch_to_canvas_filtered_with_profile_impl(
     document: &HwpDocument,
     page_num: u32,
@@ -200,16 +207,19 @@ fn render_page_patch_to_canvas_filtered_with_profile_impl(
     scale: f64,
     layer_kind: &str,
     profile: &str,
-    x: f64,
-    y: f64,
-    width: f64,
-    height: f64,
+    patch: crate::renderer::render_tree::BoundingBox,
 ) -> Result<(), JsValue> {
     use crate::paint::RenderProfile;
     use crate::renderer::layer_renderer::LayerRenderer;
     use crate::renderer::render_tree::BoundingBox;
     use crate::renderer::web_canvas::WebCanvasRenderer;
 
+    let BoundingBox {
+        x,
+        y,
+        width,
+        height,
+    } = patch;
     if ![x, y, width, height].into_iter().all(f64::is_finite) || width <= 0.0 || height <= 0.0 {
         return Err(JsValue::from_str("invalid page patch rectangle"));
     }
@@ -265,6 +275,21 @@ fn get_page_layer_tree_with_profile_impl(
             profile,
             crate::paint::LayerJsonOptions { omit_image_bytes },
         )
+        .map_err(|error| error.into())
+}
+
+/// 레이어 평면 요약 본체. 합성 판정(`getLayerPlaneSummary`)이 이 결과로 정해지므로 페인트와
+/// 같은 패치 세대를 봐야 한다.
+fn get_page_overlay_images_impl(document: &HwpDocument, page_num: u32) -> Result<String, JsValue> {
+    document
+        .get_page_overlay_images_native(page_num)
+        .map_err(|error| error.into())
+}
+
+/// 본문 그림 배치 본체. 경계 뒤에서 그린 캔버스 위에 DOM `<img>` 로 합성되는 값이다.
+fn get_page_flow_image_ops_impl(document: &HwpDocument, page_num: u32) -> Result<String, JsValue> {
+    document
+        .get_page_flow_image_ops_native(page_num)
         .map_err(|error| error.into())
 }
 
@@ -783,14 +808,7 @@ impl HwpDocument {
         layer_kind: &str,
         profile: &str,
     ) -> Result<(), JsValue> {
-        #[cfg(feature = "subsecond-dev")]
-        {
-            let mut hot =
-                subsecond::HotFn::current(render_page_to_canvas_filtered_with_profile_impl);
-            return hot.call((self, page_num, canvas, scale, layer_kind, profile));
-        }
-        #[cfg(not(feature = "subsecond-dev"))]
-        render_page_to_canvas_filtered_with_profile_impl(
+        subsecond_boundary::render_page_to_canvas_filtered_with_profile(
             self, page_num, canvas, scale, layer_kind, profile,
         )
     }
@@ -814,8 +832,16 @@ impl HwpDocument {
         width: f64,
         height: f64,
     ) -> Result<(), JsValue> {
-        render_page_patch_to_canvas_filtered_with_profile_impl(
-            self, page_num, canvas, scale, layer_kind, profile, x, y, width, height,
+        use crate::renderer::render_tree::BoundingBox;
+
+        subsecond_boundary::render_page_patch_to_canvas_filtered_with_profile(
+            self,
+            page_num,
+            canvas,
+            scale,
+            layer_kind,
+            profile,
+            BoundingBox::new(x, y, width, height),
         )
     }
 
@@ -859,10 +885,12 @@ impl HwpDocument {
     }
 
     /// 페이지 레이어 트리를 JSON 문자열로 반환한다.
+    ///
+    /// screen profile 기본값이므로 `getPageLayerTreeWithProfile` 로 위임한다 — 같은 핫패치
+    /// 경계를 지나야 한다. PageRenderer 가 좁은 질의를 못 쓸 때 되돌아오는 경로다.
     #[wasm_bindgen(js_name = getPageLayerTree)]
     pub fn get_page_layer_tree(&self, page_num: u32) -> Result<String, JsValue> {
-        self.get_page_layer_tree_native(page_num)
-            .map_err(|e| e.into())
+        self.get_page_layer_tree_with_profile(page_num, "screen", Some(false))
     }
 
     /// 페이지 레이어 트리를 profile 별로 반환한다.
@@ -880,34 +908,40 @@ impl HwpDocument {
         omit_image_bytes: Option<bool>,
     ) -> Result<String, JsValue> {
         let omit_image_bytes = omit_image_bytes.unwrap_or(false);
-        #[cfg(feature = "subsecond-dev")]
-        {
-            let mut hot = subsecond::HotFn::current(get_page_layer_tree_with_profile_impl);
-            return hot.call((self, page_num, profile, omit_image_bytes));
-        }
-        #[cfg(not(feature = "subsecond-dev"))]
-        get_page_layer_tree_with_profile_impl(self, page_num, profile, omit_image_bytes)
+        subsecond_boundary::get_page_layer_tree_with_profile(
+            self,
+            page_num,
+            profile,
+            omit_image_bytes,
+        )
     }
 
+    /// 선언된 모든 렌더 경계의 현재 함수 주소.
+    ///
+    /// 경계 목록(`subsecond_boundary`)에서 바로 나오므로 경계를 더할 때 여기를 같이 고칠
+    /// 일이 없다 — 리비전이 경계 하나를 놓쳐 재도색이 안 도는 구멍이 생기지 않는다.
     #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
     #[cfg_attr(
         feature = "subsecond-dev",
         wasm_bindgen(js_name = getSubsecondPatchRevision)
     )]
     pub fn get_subsecond_patch_revision(&self) -> String {
-        let canvas =
-            crate::subsecond_dev::hot_fn_ptr(render_page_to_canvas_filtered_with_profile_impl);
-        let layers = crate::subsecond_dev::hot_fn_ptr(get_page_layer_tree_with_profile_impl);
-        format!("{canvas:016x}:{layers:016x}")
+        subsecond_boundary::patch_revision()
     }
 
+    /// 핫패치로 렌더러 코드가 교체됐을 때 문서의 파생 상태를 새 코드로 다시 만든다.
+    ///
+    /// `&mut self` 여야 한다. 페이지 트리 캐시만 비우면 다시 그리는 값은 새 코드가 내지만
+    /// 그 값을 앉히는 페이지 박스와 문단 조합은 `pagination`·`composed`·측정 캐시에 남은
+    /// 패치 이전 코드의 결과라, 소스의 어느 버전에도 대응하지 않는 화면이 나온다 (#4576).
+    /// 그 셋은 모두 `&mut self` 를 요구하므로 `&self` 로는 계약 자체를 표현할 수 없다.
     #[cfg(feature = "subsecond-dev")]
     #[cfg_attr(
         feature = "subsecond-dev",
         wasm_bindgen(js_name = invalidateSubsecondRenderCaches)
     )]
-    pub fn invalidate_subsecond_render_caches(&self) {
-        self.core.invalidate_page_tree_cache();
+    pub fn invalidate_subsecond_render_caches(&mut self) {
+        self.core.rebuild_derived_state();
     }
 
     /// CanvasKit direct replay 정책 진단을 JSON 문자열로 반환한다.
@@ -950,8 +984,7 @@ impl HwpDocument {
     /// 페이지 overlay 이미지 정보만 JSON 문자열로 반환한다.
     #[wasm_bindgen(js_name = getPageOverlayImages)]
     pub fn get_page_overlay_images(&self, page_num: u32) -> Result<String, JsValue> {
-        self.get_page_overlay_images_native(page_num)
-            .map_err(|e| e.into())
+        subsecond_boundary::get_page_overlay_images(self, page_num)
     }
 
     /// 페이지가 그리는 그림들의 신원 키만 작은 JSON 으로 반환한다 (Task #3315).
@@ -967,8 +1000,7 @@ impl HwpDocument {
     /// 있고 `sourceImageKey` 로 `getSourceImageBytes` 를 부르면 된다.
     #[wasm_bindgen(js_name = getPageFlowImageOps)]
     pub fn get_page_flow_image_ops(&self, page_num: u32) -> Result<String, JsValue> {
-        self.get_page_flow_image_ops_native(page_num)
-            .map_err(|e| e.into())
+        subsecond_boundary::get_page_flow_image_ops(self, page_num)
     }
 
     /// 그림 신원 키로 바이트를 Uint8Array 로 반환한다 (Task #3315).
@@ -5590,6 +5622,38 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 개체의 앞뒤 순서를 바꾼다 — 웹한글컨트롤 `Run("ShapeObjBringToFront")` 계열.
+    ///
+    /// `mode` 는 `front`·`back`·`forward`·`backward`·`inFrontOfText`·`behindText`.
+    #[wasm_bindgen(js_name = setControlZOrderAt)]
+    pub fn set_control_z_order_at_api(
+        &mut self,
+        para_in_list: u32,
+        control_index: u32,
+        mode: &str,
+    ) -> Result<String, JsValue> {
+        self.set_control_z_order_at(para_in_list as usize, control_index as usize, mode)
+            .map_err(|e| e.into())
+    }
+
+    /// 개체를 뒤집는다 — 웹한글컨트롤 `Run("ShapeObjHorzFlip")` 계열.
+    #[wasm_bindgen(js_name = setControlFlipAt)]
+    pub fn set_control_flip_at_api(
+        &mut self,
+        para_in_list: u32,
+        control_index: u32,
+        vertical: bool,
+        org_state: bool,
+    ) -> Result<String, JsValue> {
+        self.set_control_flip_at(
+            para_in_list as usize,
+            control_index as usize,
+            vertical,
+            org_state,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 쪽 하나의 글 — 웹한글컨트롤 `GetPageText`.
     #[wasm_bindgen(js_name = getPageText)]
     pub fn page_text_api(&self, page_index: u32) -> Result<String, JsValue> {
@@ -5739,6 +5803,18 @@ impl HwpDocument {
         end_col: u32,
     ) -> Result<String, JsValue> {
         self.table_merge_at_cursor(list_id, end_row as u16, end_col as u16)
+            .map_err(|e| e.into())
+    }
+
+    /// 셀 블록이 덮은 칸들의 글을 비운다 — `Run("TableDeleteCell")`. 규약은 merge 와 같다.
+    #[wasm_bindgen(js_name = clearTableCellsAtCursor)]
+    pub fn clear_table_cells_at_cursor_api(
+        &mut self,
+        list_id: u32,
+        end_row: u32,
+        end_col: u32,
+    ) -> Result<String, JsValue> {
+        self.clear_table_cells_at_cursor(list_id, end_row as u16, end_col as u16)
             .map_err(|e| e.into())
     }
 
@@ -6232,7 +6308,8 @@ impl HwpDocument {
     /// HWP 출처는 어댑터가 no-op 이므로 기존 동작과 동일.
     #[wasm_bindgen(js_name = exportHwp)]
     pub fn export_hwp(&mut self) -> Result<Vec<u8>, JsValue> {
-        self.export_hwp_with_adapter().map_err(|e| e.into())
+        self.export_hwp_with_adapter_snapshot()
+            .map_err(|e| e.into())
     }
 
     /// HWP 바이트와 이번 산출물의 내용 손실을 같은 결과로 반환한다 (#4430).

@@ -45,20 +45,13 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 
 혼자 뼈대를 세우고, 함께 살을 붙이고, 모두의 것으로 완성한다.
 
-```
-0.5 ──── 1.0 ──── 2.0 ──── 3.0
-뼈대      조판      협업      완성
-```
+현재는 **v0.8.4 — v1.0 조판 엔진 체계화**를 중심으로 작업하면서, 40명이 넘는 외부 기여자와
+두 명의 공동 유지보수자(콜레보레이터)가 참여하는 **v2.0 협업 기반**도 함께 발전시키고 있습니다.
+버전별 목표와 완료 기준, 함께 진행되는 작업, AI 활용 세부 로드맵의 위치는
+[프로젝트 로드맵](ROADMAP.md)에서 설명합니다. rhwp 업스트림에 기여할 기능과 별도 다운스트림
+프로젝트에서 구현할 제품의 경계도 같은 문서에서 확인할 수 있습니다.
 
-| 단계 | 방향 | 전략 |
-|------|------|------|
-| **0.5 → 1.0** | 읽기/쓰기 기반 위에 조판 엔진 체계화 | 핵심 아키텍처를 혼자 견고하게 |
-| **1.0 → 2.0** | AI 조판 파이프라인 위에 커뮤니티 참여 개방 | 기여 진입 장벽을 낮추는 구조 |
-| **2.0 → 3.0** | 커뮤니티가 채운 기능 위에 공공 자산화 | 한컴 대등 수준 달성 |
-
-> 0.5.0까지 혼자 뼈대를 완성하고 공개하는 이유 — 커뮤니티가 붙었을 때 방향이 흔들리지 않으려면 핵심 아키텍처가 먼저 견고해야 합니다.
-
-## 이정표
+## 현재 이정표
 
 ### v0.5.0 ~ v0.8.x — 뼈대 (현재)
 
@@ -187,41 +180,6 @@ document.getElementById('viewer').innerHTML = doc.renderPageSvg(0);
 | [@rhwp/editor](https://www.npmjs.com/package/@rhwp/editor) | 완전한 에디터 UI (iframe) | `npm i @rhwp/editor` |
 | [@rhwp/core](https://www.npmjs.com/package/@rhwp/core) | WASM 파서/렌더러 (API) | `npm i @rhwp/core` |
 
-## 파이썬에서 쓰기
-
-`bindings/python` 이 CLI `--json` 봉투와 `mcp-serve` 세션 계약을 그대로 재포장한다
-(런타임 의존성 0 — 표준 라이브러리만).
-
-```bash
-pip install -e bindings/python      # PyPI 배포 전
-export RHWP_BIN=$(pwd)/target/release/rhwp   # 또는 릴리스 바이너리 경로 (아래 "설치" 절 — 소스 빌드 불필요)
-```
-
-```python
-import rhwp
-
-# 1층 — 무상태
-meta = rhwp.info("보고서.hwp")
-print(meta.page_count, meta.format)
-
-# 2층 — 세션 (같은 문서를 반복해서 만질 때)
-with rhwp.open("서식.hwp") as doc:
-    doc.fill_fields({"성명": "홍길동"})
-    saved = doc.save("제출본.hwp", verify=True)
-    assert saved.verify.identical
-
-# 3층 — 계획 (하나라도 불가능하면 아무것도 저장하지 않는다)
-plan = rhwp.Plan("서식.hwp", "제출본.hwp").fill_fields({"성명": "홍길동"}).verify()
-if plan.check().ok:
-    plan.run()
-```
-
-문서: [README](bindings/python/README.md) ·
-[API](bindings/python/docs/API.md) ·
-[요리책](bindings/python/docs/COOKBOOK.md) ·
-[문제 해결](bindings/python/docs/TROUBLESHOOTING.md) ·
-[이주 가이드](bindings/python/docs/MIGRATION.md)
-
 ## 설치 — 빌드 없이 CLI·MCP 쓰기
 
 빌드 도구 없이 CLI(그리고 아래 MCP 서버)를 바로 쓰려면
@@ -235,8 +193,7 @@ sha256sum -c SHA256SUMS.txt --ignore-missing # 무결성 확인 (선택)
 ./rhwp/rhwp capabilities                     # 첫 확인 — 전 명령 기계 계약 자기서술
 ```
 
-PATH 에 두면 아래 MCP 절의 `"command": "rhwp"` 와 파이썬 절의 `RHWP_BIN` 이
-그대로 동작합니다. 설치 관리자 등재(winget·scoop·brew)는 로드맵에서 추적합니다.
+PATH 에 두면 아래 MCP 절의 `"command": "rhwp"` 가 그대로 동작합니다.
 
 ## Quick Start (소스 빌드)
 

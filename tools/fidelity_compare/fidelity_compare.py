@@ -172,6 +172,82 @@ def find_chrome(
     )
 
 
+def configured_font_paths(env: Mapping[str, str] = os.environ) -> list[Path]:
+    """Return valid font directories from the portable path-list environment.
+
+    ``RHWP_FONT_PATH_DIR`` historically accepted one directory.  Supporting the
+    platform path separator keeps that form valid while allowing a fidelity run
+    to expose both the Hancom Install and All directories to Chrome.
+    """
+    raw = env.get("RHWP_FONT_PATH_DIR", "")
+    return [
+        Path(value).expanduser().resolve()
+        for value in raw.split(os.pathsep)
+        if value and Path(value).expanduser().is_dir()
+    ]
+
+
+def svg_font_export_option(env: Mapping[str, str] = os.environ) -> str:
+    """Return the SVG font mode requested for a fidelity capture.
+
+    The default preserves compact, portable local() SVG.  ``full`` is intended
+    for an evidence run with proprietary font directories supplied: it embeds
+    the selected Hancom-compatible face so sandboxed Chrome cannot silently
+    replace it with a system font.
+    """
+    mode = env.get("RHWP_SVG_FONT_MODE", "style").lower()
+    options = {
+        "style": "--font-style",
+        "subset": "--embed-fonts",
+        "full": "--embed-fonts=full",
+    }
+    try:
+        return options[mode]
+    except KeyError as error:
+        raise ValueError(
+            "RHWP_SVG_FONT_MODE은 style, subset, full 중 하나여야 합니다."
+        ) from error
+
+
+def chrome_fontconfig_environment(
+    work_dir: Path,
+    env: Mapping[str, str] = os.environ,
+    *,
+    os_name: str = os.name,
+    platform: str = sys.platform,
+) -> dict[str, str] | None:
+    """Create a per-run Linux fontconfig setup for Chrome local() fonts.
+
+    ``rhwp export-svg --font-style`` emits local() aliases and does not embed
+    proprietary fonts.  ``--font-path`` is enough for rhwp's own loaders but
+    Chrome uses fontconfig independently.  On Linux, register the same supplied
+    directories only for this capture process; macOS and Windows keep their
+    native installed-font behavior unchanged.
+    """
+    font_dirs = configured_font_paths(env)
+    if os_name == "nt" or platform == "darwin" or not font_dirs:
+        return None
+
+    config_dir = work_dir / "_fontconfig"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    entries = "\n".join(
+        f"  <dir>{html.escape(str(path), quote=True)}</dir>" for path in font_dirs
+    )
+    (config_dir / "fonts.conf").write_text(
+        "<?xml version=\"1.0\"?>\n"
+        "<!DOCTYPE fontconfig SYSTEM \"fonts.dtd\">\n"
+        "<fontconfig>\n"
+        "  <include ignore_missing=\"yes\">/etc/fonts/fonts.conf</include>\n"
+        f"{entries}\n"
+        "</fontconfig>\n",
+        encoding="utf-8",
+    )
+    configured = dict(env)
+    configured["FONTCONFIG_PATH"] = str(config_dir)
+    configured["FONTCONFIG_FILE"] = "fonts.conf"
+    return configured
+
+
 def capture_with_chrome(
     chrome: str,
     source: Path,
@@ -180,6 +256,7 @@ def capture_with_chrome(
     height: int,
     *,
     attempts: int = 2,
+    env: Mapping[str, str] | None = None,
     run: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
 ) -> bool:
     if out_png.is_file() and out_png.stat().st_size > 0:
@@ -202,6 +279,7 @@ def capture_with_chrome(
             encoding="utf-8",
             errors="replace",
             check=False,
+            env=env,
         )
         if result.returncode == 0 and out_png.is_file() and out_png.stat().st_size > 0:
             return True
@@ -217,7 +295,12 @@ def capture_with_chrome(
     return False
 
 
-def svg_to_png(svg_path: Path, out_png: Path, chrome: str) -> bool:
+def svg_to_png(
+    svg_path: Path,
+    out_png: Path,
+    chrome: str,
+    chrome_env: Mapping[str, str] | None = None,
+) -> bool:
     if out_png.is_file() and out_png.stat().st_size > 0:
         return True
     head = svg_path.read_text(encoding="utf-8", errors="ignore")[:600]
@@ -225,7 +308,7 @@ def svg_to_png(svg_path: Path, out_png: Path, chrome: str) -> bool:
     height_match = re.search(r'height="([0-9.]+)"', head)
     width = math.ceil(float(width_match.group(1))) + 2 if width_match else 810
     height = math.ceil(float(height_match.group(1))) + 2 if height_match else 1140
-    return capture_with_chrome(chrome, svg_path, out_png, width, height)
+    return capture_with_chrome(chrome, svg_path, out_png, width, height, env=chrome_env)
 
 
 def pdf_to_png(page: object, out_png: Path) -> None:
@@ -252,7 +335,13 @@ def diff_score(a_png: Path, b_png: Path) -> float:
 
 
 def sheet(
-    title: str, left: Path, right: Path, out_png: Path, work_dir: Path, chrome: str
+    title: str,
+    left: Path,
+    right: Path,
+    out_png: Path,
+    work_dir: Path,
+    chrome: str,
+    chrome_env: Mapping[str, str] | None = None,
 ) -> bool:
     def image_data(path: Path) -> str:
         return base64.b64encode(path.read_bytes()).decode()
@@ -271,7 +360,9 @@ def sheet(
     )
     html_path = work_dir / "_s.html"
     html_path.write_text(markup, encoding="utf-8")
-    return capture_with_chrome(chrome, html_path, out_png, 1440, 1040)
+    return capture_with_chrome(
+        chrome, html_path, out_png, 1440, 1040, env=chrome_env
+    )
 
 
 def normalized_characters(text: str) -> Counter[str]:
@@ -730,15 +821,14 @@ def render_svg(rhwp: str, source: Path, svg_dir: Path, page_index: int) -> bool:
         rhwp,
         "export-svg",
         str(source),
-        "--font-style",
+        svg_font_export_option(),
         "-p",
         str(page_index),
         "-o",
         str(svg_dir),
     ]
-    font_path = os.environ.get("RHWP_FONT_PATH_DIR")
-    if font_path:
-        command.extend(["--font-path", font_path])
+    for font_path in configured_font_paths():
+        command.extend(["--font-path", str(font_path)])
     result = subprocess.run(
         command,
         capture_output=True,
@@ -763,14 +853,13 @@ def render_all_svg(rhwp: str, source: Path, svg_dir: Path) -> bool:
         rhwp,
         "export-svg",
         str(source),
-        "--font-style",
+        svg_font_export_option(),
         "--json",
         "-o",
         str(svg_dir),
     ]
-    font_path = os.environ.get("RHWP_FONT_PATH_DIR")
-    if font_path:
-        command.extend(["--font-path", font_path])
+    for font_path in configured_font_paths():
+        command.extend(["--font-path", str(font_path)])
     result = subprocess.run(
         command,
         capture_output=True,
@@ -792,9 +881,6 @@ def render_all_svg(rhwp: str, source: Path, svg_dir: Path) -> bool:
 
 def render_all_render_tree(rhwp: str, source: Path, tree_dir: Path) -> bool:
     command = [rhwp, "export-render-tree", str(source), "-o", str(tree_dir)]
-    font_path = os.environ.get("RHWP_FONT_PATH_DIR")
-    if font_path:
-        command.extend(["--font-path", font_path])
     result = subprocess.run(
         command,
         capture_output=True,
@@ -3163,6 +3249,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     svg_dir = work_dir / "svg"
     work_dir.mkdir(parents=True, exist_ok=True)
     svg_dir.mkdir(parents=True, exist_ok=True)
+    chrome_env = chrome_fontconfig_environment(work_dir)
     (work_dir / "provenance.tsv").write_text(
         "role\tpath\tgrade\n"
         f"source\t{source}\t원본 입력\n"
@@ -3304,7 +3391,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         assert chrome is not None
         assert pdf is not None
         page = pdf[page_index]
-        svg_ok = svg_to_png(svg_path, rendered_png, chrome)
+        svg_ok = svg_to_png(svg_path, rendered_png, chrome, chrome_env)
         pdf_to_png(page, reference_png)
         if not svg_ok or not (rendered_png.is_file() and reference_png.is_file()):
             rows.append((page_index, -1.0, "PNG 실패"))
@@ -3319,6 +3406,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             comparison_png,
             work_dir,
             chrome,
+            chrome_env,
         ):
             note = "비교 시트 PNG 실패"
         rows.append((page_index, score, note))

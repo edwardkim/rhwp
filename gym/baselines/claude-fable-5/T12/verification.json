@@ -1,0 +1,37 @@
+{
+  "kind": "gymTaskBaseline",
+  "schemaVersion": "1.0",
+  "task": "T12",
+  "source": "samples/field-01.hwp",
+  "sourceSha256": "518cb939079e6e0640a5f813597f744e2528a17ca52ee418929f1c8f4b5380c0",
+  "artifact": "conv.hwpx (gitignored, export-hwpx로 재생성)",
+  "artifactSha256": "41c07ba1a1f00b356b0ca6ccbef986747ae177cfee10f243a6905d82ad698617",
+  "artifactFormat": "hwpx",
+  "answer": {
+    "identical": false
+  },
+  "runner": {
+    "rhwpVersion": "rhwp v0.8.2",
+    "rhwpCommit": "1ac75c0aad1056195c34cac2cc036d2943c5f99d",
+    "capabilitiesSha256": "62aea3df8bc40dd679247c044093e41fc54d1d80396c2b4b5b445ec843ffe27c"
+  },
+  "result": {
+    "pass": true,
+    "checks": [
+      {
+        "name": "HWPX 형식 확인",
+        "op": "value_eq",
+        "ok": true,
+        "expected": "hwpx",
+        "actual": "hwpx"
+      },
+      {
+        "name": "변환물 IR 대조",
+        "op": "answer_eq",
+        "ok": true,
+        "expected": false,
+        "actual": false
+      }
+    ]
+  }
+}

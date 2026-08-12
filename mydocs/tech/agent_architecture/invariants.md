@@ -7,6 +7,9 @@ last_verified: 2026-08-03
 
 # 에이전트 표면 불변식 전수
 
+> **v0.8.4 현행성 주의:** Python·Node 바인딩을 예로 든 항목은 철회 전 설계 이력이다.
+> 두 공식 바인딩은 #4655에서 제거됐으며 현재 지원 표면이 아니다.
+
 > 이 표면이 **지키기로 한 규칙**을 한 곳에 모은다. 지금까지 이 규칙들은 이슈 본문
 > ([#3719](https://github.com/edwardkim/rhwp/issues/3719) §4)·PR 본문 수십 건·코드 주석·
 > [`detection_policy.md`](../agent_security/detection_policy.md)·

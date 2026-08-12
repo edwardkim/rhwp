@@ -15,17 +15,41 @@ on:
         description: Unique artifact suffix for this builder's expected runnable counts.
         required: true
         type: string
+      cargo_profile:
+        description: Cargo profile selected by the caller's event policy.
+        required: true
+        type: string
+      timeout_minutes:
+        description: Job timeout paired with the selected Cargo profile.
+        required: true
+        type: number
 
 jobs:
   build:
     name: Build test archive (${{ inputs.archive_labels }})
     runs-on: ubuntu-latest
-    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
-    timeout-minutes: 30
+    # [#4029] 빠른 release-test는 30분, cold release-grade는 60분을 caller가 전달한다.
+    # 정상 소요시간 목표가 아니라 hang을 실패로 드러내는 상한이다.
+    timeout-minutes: ${{ inputs.timeout_minutes }}
     permissions:
       contents: read
 
     steps:
+      - name: Validate test archive policy
+        shell: bash
+        env:
+          CARGO_PROFILE: ${{ inputs.cargo_profile }}
+          TIMEOUT_MINUTES: ${{ inputs.timeout_minutes }}
+        run: |
+          case "${CARGO_PROFILE}:${TIMEOUT_MINUTES}" in
+            release-test:30|release:60)
+              ;;
+            *)
+              echo "::error::invalid test archive policy: profile=${CARGO_PROFILE} timeout=${TIMEOUT_MINUTES}"
+              exit 1
+              ;;
+          esac
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
@@ -49,20 +73,33 @@ jobs:
       # [#2393] 수동 restore/save 캐시 → rust-cache (적중률·정리 자동화).
       # 저장 정책은 종전과 동일하게 devel/main push 로 한정.
       - name: Rust build cache
+        id: rust-cache
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.9.1
         with:
           shared-key: test-archive
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
-      # [Task #1849] PR/devel push 는 release-test 전체 회귀, main/tag/manual 은 release.
-      - name: Select cargo profile
-        id: profile
+      # build가 timeout으로 취소돼도 그 전에 선택 정책과 restore 결과가 Job Summary에 남는다.
+      - name: Summarize test archive policy
+        if: ${{ always() }}
+        env:
+          CARGO_PROFILE: ${{ inputs.cargo_profile }}
+          TIMEOUT_MINUTES: ${{ inputs.timeout_minutes }}
+          CACHE_EXACT_HIT: ${{ steps.rust-cache.outputs.cache-hit || 'false' }}
+          CACHE_SAVE_ELIGIBLE: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
         run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
-            echo "cargo_profile=release-test" >> "$GITHUB_OUTPUT"
-          else
-            echo "cargo_profile=release" >> "$GITHUB_OUTPUT"
-          fi
+          {
+            echo '### Nextest archive policy'
+            echo
+            echo '| Field | Value |'
+            echo '| --- | --- |'
+            printf "| event | \`%s\` |\n" "${GITHUB_EVENT_NAME}"
+            printf "| ref | \`%s\` |\n" "${GITHUB_REF}"
+            printf "| cargo_profile | \`%s\` |\n" "${CARGO_PROFILE}"
+            printf "| timeout_minutes | \`%s\` |\n" "${TIMEOUT_MINUTES}"
+            printf "| cache_exact_hit | \`%s\` |\n" "${CACHE_EXACT_HIT}"
+            printf "| cache_save_eligible | \`%s\` |\n" "${CACHE_SAVE_ELIGIBLE}"
+          } >> "${GITHUB_STEP_SUMMARY}"
 
       # [#3888] Cargo metadata의 test target을 slow + regular 세 archive에 독점 배정한다.
       # --test/--lib/--bin selector가 archive 생성과 동시에 해당 target만 compile한다.
@@ -71,7 +108,7 @@ jobs:
           BUILDER: ${{ inputs.builder }}
           ARCHIVE_LABELS: ${{ inputs.archive_labels }}
         run: |
-          echo "profile=${{ steps.profile.outputs.cargo_profile }} event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+          echo "profile=${{ inputs.cargo_profile }} event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
           cargo metadata --format-version 1 --no-deps > cargo-metadata.json
           node .github/scripts/plan_nextest_target_archives.mjs \
             --input cargo-metadata.json \
@@ -93,14 +130,14 @@ jobs:
             archive="tests-${label}.tar.zst"
             cargo nextest archive \
               --package rhwp \
-              --cargo-profile "${{ steps.profile.outputs.cargo_profile }}" \
+              --cargo-profile "${{ inputs.cargo_profile }}" \
               "${target_args[@]}" \
               --archive-file "$archive"
             stat --printf='archive=%n bytes=%s\n' "$archive"
 
             cargo nextest list \
               --package rhwp \
-              --cargo-profile "${{ steps.profile.outputs.cargo_profile }}" \
+              --cargo-profile "${{ inputs.cargo_profile }}" \
               "${target_args[@]}" \
               --message-format json > "nextest-list-${label}.json"
             runnable=$(node .github/scripts/count_nextest_runnable.mjs --input "nextest-list-${label}.json")

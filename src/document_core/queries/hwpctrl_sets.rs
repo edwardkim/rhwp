@@ -28,6 +28,25 @@ fn bit(value: bool) -> u8 {
     u8::from(value)
 }
 
+/// 자리·크기·순서를 가진 개체의 공통 속성. 없는 갈래(누름틀·구역 정의 따위)는 `None` 이다.
+fn control_common(ctrl: &Control) -> Option<&crate::model::shape::CommonObjAttr> {
+    match ctrl {
+        Control::Table(t) => Some(&t.common),
+        Control::Shape(s) => Some(s.common()),
+        Control::Picture(p) => Some(&p.common),
+        _ => None,
+    }
+}
+
+fn control_common_mut(ctrl: &mut Control) -> Option<&mut crate::model::shape::CommonObjAttr> {
+    match ctrl {
+        Control::Table(t) => Some(&mut t.common),
+        Control::Shape(s) => Some(s.common_mut()),
+        Control::Picture(p) => Some(&mut p.common),
+        _ => None,
+    }
+}
+
 /// 문단 켜고끄기 비트 — 원본은 `attr1`, 5.0.1.7 이후 문서는 `attr2` 에 같은 뜻을 싣는다.
 fn para_flag(shape: &crate::model::style::ParaShape, attr1_bit: u32, attr2_bit: u32) -> bool {
     (shape.attr1 >> attr1_bit) & 1 != 0 || (shape.attr2 >> attr2_bit) & 1 != 0
@@ -1014,6 +1033,36 @@ impl DocumentCore {
         };
         c.width = (c.width as i64 + d_width as i64).max(0) as u32;
         c.height = (c.height as i64 + d_height as i64).max(0) as u32;
+        let (w, h) = (c.width, c.height);
+        // **`SHAPE_COMPONENT` 도 함께 정착시킨다** — 한글은 두 단계다(리사이즈 직후 저장엔
+        // `common` 만, 다음 저장에서 `current_*`·배율 행렬 `sx=cur/org`·`rotation_center
+        // = cur/2 가 따라온다 — `probes/pQ-settle.json` 실측). rhwp 가 `common` 만 바꾸면
+        // 그 정착이 영원히 안 와 저장본의 행렬이 옛 크기로 남는다(계획서 §4.23).
+        let sa = match para
+            .controls
+            .get_mut(control_index)
+            .expect("바로 위에서 확인했다")
+        {
+            Control::Shape(s) => Some(s.shape_attr_mut()),
+            Control::Picture(p) => Some(&mut p.shape_attr),
+            _ => None,
+        };
+        if let Some(sa) = sa {
+            sa.current_width = w;
+            sa.current_height = h;
+            if sa.original_width > 0 {
+                let sx = f64::from(w) / f64::from(sa.original_width);
+                sa.render_sx = if sa.render_sx < 0.0 { -sx } else { sx };
+            }
+            if sa.original_height > 0 {
+                let sy = f64::from(h) / f64::from(sa.original_height);
+                sa.render_sy = if sa.render_sy < 0.0 { -sy } else { sy };
+            }
+            sa.rotation_center.x = (w / 2) as i32;
+            sa.rotation_center.y = (h / 2) as i32;
+            // 원본 바이트를 비워야 직렬화가 행렬을 새 크기로 다시 만든다.
+            sa.raw_rendering = Vec::new();
+        }
         section.raw_stream = None;
         Ok(r#"{"ok":true}"#.to_string())
     }
@@ -1062,6 +1111,233 @@ impl DocumentCore {
         }
         c.horizontal_offset = (c.horizontal_offset as i64 + dx as i64).max(0) as u32;
         c.vertical_offset = (c.vertical_offset as i64 + dy as i64).max(0) as u32;
+        section.raw_stream = None;
+        Ok(r#"{"ok":true,"moved":true}"#.to_string())
+    }
+
+    /// 개체의 **앞뒤 순서**를 바꾼다 — 웹한글컨트롤 `Run("ShapeObj{BringToFront,SendToBack,
+    /// BringForward,SendBack,BringInFrontOfText,CtrlSendBehindText}")`.
+    ///
+    /// 규칙은 한글 저장본의 앞뒤 두 벌을 견줘 실측했다(`probes/pZ2-*.json`). 어느 API 도
+    /// 결과를 안 비추지만 파일에는 `CTRL_HEADER` 의 `z_order` 로 적힌다.
+    ///
+    /// | 갈래 | 잰 것 |
+    /// |---|---|
+    /// | `front` | 고른 개체가 맨 위로, **그 위에 있던 것들은 한 칸씩 내려온다**(0,1,2 에서 z=0 을 올리면 1,2,0 이 아니라 → 2 이고 나머지가 0,1) |
+    /// | `back` | 맨 아래로, 그 아래 있던 것들이 한 칸씩 올라간다 |
+    /// | `forward` | 바로 위의 것과 **자리를 맞바꾼다**(한 칸) |
+    /// | `backward` | 바로 아래의 것과 맞바꾼다 |
+    /// | `behindText`·`inFrontOfText` | `z_order` 가 아니라 **`text_wrap`** 이다 |
+    ///
+    /// 마지막 둘이 순서가 아니라 배치라는 것은 이름만 보면 안 갈린다 — 실측으로 갈렸다.
+    ///
+    /// 겨루는 무리는 **같은 구역의 모든 개체**로 잡는다. 실측은 한 문단 안의 셋으로만 했으니
+    /// 문단을 넘는 무리 짓기는 아직 안 잰 자리다.
+    pub fn set_control_z_order_at(
+        &mut self,
+        para_in_list: usize,
+        control_index: usize,
+        mode: &str,
+    ) -> Result<String, HwpError> {
+        use crate::model::shape::TextWrap;
+
+        let (sec, para_idx) = root_para_location(self, para_in_list)
+            .ok_or_else(|| HwpError::InvalidField(format!("본문 문단 {} 없음", para_in_list)))?;
+        let section = self
+            .document
+            .sections
+            .get_mut(sec)
+            .ok_or_else(|| HwpError::InvalidField(format!("구역 {} 없음", sec)))?;
+
+        // 배치(글 앞/뒤)는 순서와 다른 축이다 — 고른 개체 하나만 건드린다.
+        if let Some(wrap) = match mode {
+            "behindText" => Some(TextWrap::BehindText),
+            "inFrontOfText" => Some(TextWrap::InFrontOfText),
+            _ => None,
+        } {
+            let para = section
+                .paragraphs
+                .get_mut(para_idx)
+                .ok_or_else(|| HwpError::InvalidField(format!("문단 {} 없음", para_idx)))?;
+            let ctrl = para
+                .controls
+                .get_mut(control_index)
+                .ok_or_else(|| HwpError::InvalidField(format!("컨트롤 {} 없음", control_index)))?;
+            let Some(c) = control_common_mut(ctrl) else {
+                return Ok(r#"{"ok":false,"reason":"배치를 가진 개체가 아니다"}"#.to_string());
+            };
+            c.text_wrap = wrap;
+            // packed `attr` 을 함께 고쳐야 저장에 실린다 — enum 만 바꾸면 묻힌다.
+            crate::serializer::control::sync_text_wrap_bits(c);
+            section.raw_stream = None;
+            return Ok(r#"{"ok":true}"#.to_string());
+        }
+
+        // 구역의 개체를 전부 모아 순서를 다시 매긴다.
+        let mut slots: Vec<(usize, usize, i32)> = Vec::new();
+        for (pi, para) in section.paragraphs.iter().enumerate() {
+            for (ci, ctrl) in para.controls.iter().enumerate() {
+                if let Some(c) = control_common(ctrl) {
+                    slots.push((pi, ci, c.z_order));
+                }
+            }
+        }
+        let Some(&(_, _, target_z)) = slots
+            .iter()
+            .find(|&&(pi, ci, _)| pi == para_idx && ci == control_index)
+        else {
+            return Ok(r#"{"ok":false,"reason":"순서를 가진 개체가 아니다"}"#.to_string());
+        };
+        let top = slots.iter().map(|&(_, _, z)| z).max().unwrap_or(target_z);
+        let bottom = slots.iter().map(|&(_, _, z)| z).min().unwrap_or(target_z);
+
+        // 새 순서를 계산한다. 바뀌는 것이 없으면(이미 맨 위에서 더 올리기 따위) 그대로 둔다.
+        let renumber = |z: i32| -> i32 {
+            match mode {
+                "front" => {
+                    if z == target_z {
+                        top
+                    } else if z > target_z {
+                        z - 1
+                    } else {
+                        z
+                    }
+                }
+                "back" => {
+                    if z == target_z {
+                        bottom
+                    } else if z < target_z {
+                        z + 1
+                    } else {
+                        z
+                    }
+                }
+                // 한 칸은 **맞바꾸기**다 — 위/아래 하나와만 자리를 바꾼다.
+                "forward" => {
+                    if z == target_z && target_z < top {
+                        z + 1
+                    } else if z == target_z + 1 && target_z < top {
+                        z - 1
+                    } else {
+                        z
+                    }
+                }
+                "backward" => {
+                    if z == target_z && target_z > bottom {
+                        z - 1
+                    } else if z == target_z - 1 && target_z > bottom {
+                        z + 1
+                    } else {
+                        z
+                    }
+                }
+                _ => z,
+            }
+        };
+        if !matches!(mode, "front" | "back" | "forward" | "backward") {
+            return Ok(format!(
+                r#"{{"ok":false,"reason":"모르는 갈래: {}"}}"#,
+                mode
+            ));
+        }
+
+        let mut moved = false;
+        for (pi, ci, z) in slots {
+            let new_z = renumber(z);
+            if new_z == z {
+                continue;
+            }
+            moved = true;
+            if let Some(c) = section
+                .paragraphs
+                .get_mut(pi)
+                .and_then(|p| p.controls.get_mut(ci))
+                .and_then(control_common_mut)
+            {
+                c.z_order = new_z;
+            }
+        }
+        if moved {
+            section.raw_stream = None;
+        }
+        Ok(format!(r#"{{"ok":true,"moved":{}}}"#, moved))
+    }
+
+    /// 개체를 뒤집는다 — 웹한글컨트롤 `Run("ShapeObj{Horz,Vert}Flip[OrgState]")`.
+    ///
+    /// 저장본 앞뒤 대조로 실측했다(`probes/pM*.json`, 계획서 §4.20·§4.22). 파일에는
+    /// `SHAPE_COMPONENT` 의 뒤집기 비트와 **변환 행렬**로 적힌다.
+    ///
+    /// - 뒤집기는 그 축 비트(0x01/0x02)를 토글한다. `OrgState` 는 켜져 있으면 끄고 아니면
+    ///   무동작이다.
+    /// - 행렬: 켜면 그 축의 배율이 **−(cur/org)** 가 되고 이동량이 붙는다. 이동량은
+    ///   `even_ceil(cur) − 2·(org % 2)` 다 — 여덟 관측(배율 0~3걸음 × 두 축 × 홀짝 org)이
+    ///   전부 맞고, 같은 크기를 다른 이력으로 만들어도 같은 값이라 **상태의 함수**다
+    ///   (`probes/pM8-path.json`).
+    /// - 한글이 함께 세우는 `0x0003_0000` 두 비트는 **흉내 내지 않는다.** 같은 파일 상태에서
+    ///   이력에 따라 지워지기도 남기도 하는 세션 부산물이고(§4.20), 한글이 저장한 HWPX 의
+    ///   `<hp:flip>` 에는 horizontal·vertical 두 속성뿐이라 담을 자리도 없다. 대조도 그
+    ///   비트를 거른다(`shape_attr.flip` 은 축이 `horz_flip`/`vert_flip` 제 줄로 따로 보인다).
+    pub fn set_control_flip_at(
+        &mut self,
+        para_in_list: usize,
+        control_index: usize,
+        vertical: bool,
+        org_state: bool,
+    ) -> Result<String, HwpError> {
+        let (sec, para_idx) = root_para_location(self, para_in_list)
+            .ok_or_else(|| HwpError::InvalidField(format!("본문 문단 {} 없음", para_in_list)))?;
+        let section = self
+            .document
+            .sections
+            .get_mut(sec)
+            .ok_or_else(|| HwpError::InvalidField(format!("구역 {} 없음", sec)))?;
+        let para = section
+            .paragraphs
+            .get_mut(para_idx)
+            .ok_or_else(|| HwpError::InvalidField(format!("문단 {} 없음", para_idx)))?;
+        let Some(Control::Shape(shape)) = para.controls.get_mut(control_index) else {
+            return Ok(r#"{"ok":false,"reason":"뒤집을 수 있는 개체가 아니다"}"#.to_string());
+        };
+        let sa = shape.shape_attr_mut();
+
+        let axis_bit: u32 = if vertical { 0x02 } else { 0x01 };
+        if org_state && sa.flip & axis_bit == 0 {
+            // 이미 원래 상태다. 한글은 이때 세션 부산물 비트를 지우기도 하지만 그 비트는
+            // 흉내 내지 않으므로 여기서는 정말 아무 일도 없다.
+            return Ok(r#"{"ok":true,"moved":false}"#.to_string());
+        }
+        sa.flip ^= axis_bit;
+        let on = sa.flip & axis_bit != 0;
+
+        let (cur, org) = if vertical {
+            (sa.current_height, sa.original_height)
+        } else {
+            (sa.current_width, sa.original_width)
+        };
+        let scale = if org > 0 {
+            f64::from(cur) / f64::from(org)
+        } else {
+            1.0
+        };
+        // 이동량 — `even_ceil(cur) − 2·(org % 2)`(실측 §4.22).
+        let shift = if on {
+            f64::from(cur + (cur & 1) - 2 * (org & 1))
+        } else {
+            0.0
+        };
+        let sign = if on { -1.0 } else { 1.0 };
+        if vertical {
+            sa.vert_flip = on;
+            sa.render_sy = sign * scale;
+            sa.render_ty = shift;
+        } else {
+            sa.horz_flip = on;
+            sa.render_sx = sign * scale;
+            sa.render_tx = shift;
+        }
+        // 원본 바이트를 비워야 직렬화가 행렬을 다시 만든다 — `attr` 과 같은 덫이다.
+        sa.raw_rendering = Vec::new();
         section.raw_stream = None;
         Ok(r#"{"ok":true,"moved":true}"#.to_string())
     }
@@ -1882,6 +2158,41 @@ impl DocumentCore {
                 true,
                 false,
             ),
+            // 한 칸만 크기 조절 — 경계가 어긋나며 격자가 갈라진다(§4.21).
+            "resizeCellRight" | "resizeCellLeft" | "resizeCellDown" | "resizeCellUp" => {
+                let dir = op.trim_start_matches("resizeCell");
+                let vertical = matches!(dir, "Down" | "Up");
+                let forward = matches!(dir, "Right" | "Down");
+                self.resize_table_cell_native(
+                    section,
+                    host_para,
+                    control_index,
+                    row,
+                    col,
+                    vertical,
+                    forward,
+                )
+            }
+            // 칸 크기 조절 열둘 — `Ex` 는 평범한 것과 자취가 같아 같은 갈래로 보낸다(§4.21).
+            "resizeRight" | "resizeLeft" | "resizeDown" | "resizeUp" | "resizeLineRight"
+            | "resizeLineLeft" | "resizeLineDown" | "resizeLineUp" => {
+                let line_mode = op.starts_with("resizeLine");
+                let dir = op
+                    .trim_start_matches("resizeLine")
+                    .trim_start_matches("resize");
+                let vertical = matches!(dir, "Down" | "Up");
+                let forward = matches!(dir, "Right" | "Down");
+                self.resize_table_native(
+                    section,
+                    host_para,
+                    control_index,
+                    row,
+                    col,
+                    vertical,
+                    forward,
+                    line_mode,
+                )
+            }
             _ => Err(HwpError::InvalidField(format!("모르는 표 편집 '{}'", op))),
         }
     }
@@ -1925,6 +2236,78 @@ impl DocumentCore {
             row.max(end_row),
             col.max(end_col),
         )
+    }
+
+    /// 셀 블록이 덮은 칸들의 **글을 비운다** — 웹한글컨트롤 `Run("TableDeleteCell")`.
+    ///
+    /// 이름과 달리 칸을 지우는 것이 아니다(실측, 계획서 §4.21). 블록 직사각형 안 모든 칸의
+    /// 내용이 **빈 문단 하나**가 되고 격자·캐럿은 그대로다. 원래 빈 칸은 자취를 안 남긴다.
+    /// 블록이 없으면 무동작이다(저장본 차이 0).
+    ///
+    /// 규약은 `table_merge_at_cursor` 와 같다 — 블록 첫 칸의 리스트와 끝 칸의 (행, 열).
+    pub fn clear_table_cells_at_cursor(
+        &mut self,
+        list_id: u32,
+        end_row: u16,
+        end_col: u16,
+    ) -> Result<String, HwpError> {
+        let (section, host_para, control_index, row, col) = {
+            let (_, lists) = self.collect_fields_and_lists();
+            let entry = lists
+                .iter()
+                .find(|l| l.list_id == list_id)
+                .ok_or_else(|| HwpError::InvalidField(format!("리스트 {} 없음", list_id)))?;
+            let grid = entry
+                .grid
+                .ok_or_else(|| HwpError::InvalidField("표 셀이 아니다".into()))?;
+            if entry.host_list_id != ROOT_LIST_ID {
+                return Ok(r#"{"ok":false,"reason":"중첩 표는 아직 다루지 않는다"}"#.to_string());
+            }
+            (
+                entry.section_index,
+                entry.host_para_index,
+                entry.control_index,
+                grid.row,
+                grid.col,
+            )
+        };
+        let (r1, r2) = (row.min(end_row), row.max(end_row));
+        let (c1, c2) = (col.min(end_col), col.max(end_col));
+        let table = self.get_table_mut(section, host_para, control_index)?;
+        let mut cleared = false;
+        for cell in table.cells.iter_mut() {
+            if cell.row < r1 || cell.row > r2 || cell.col < c1 || cell.col > c2 {
+                continue;
+            }
+            // 실측한 자취 그대로다: 글·좌표·줄만 비고 문단 객체(서식·보존 바이트)는 남는다.
+            // 문단 여럿·컨트롤 든 칸은 잰 적이 없다 — "빈 문단 하나"가 빈 칸의 정의라
+            // (`Cell::new_empty` 도 그렇다) 그 꼴로 줄인다.
+            cell.paragraphs.truncate(1);
+            let Some(para) = cell.paragraphs.first_mut() else {
+                continue;
+            };
+            if para.text.is_empty() && para.controls.is_empty() {
+                continue; // 원래 빈 칸 — 자취를 안 남긴다(실측).
+            }
+            cleared = true;
+            para.text.clear();
+            para.char_count = 1;
+            para.char_offsets.clear();
+            para.char_shapes.truncate(1);
+            if let Some(first) = para.char_shapes.first_mut() {
+                first.start_pos = 0;
+            }
+            para.range_tags.clear();
+            para.line_segs.clear();
+            para.tab_extended.clear();
+            para.controls.clear();
+            para.has_para_text = false;
+        }
+        if cleared {
+            table.dirty = true;
+            self.document.sections[section].raw_stream = None;
+        }
+        Ok(format!(r#"{{"ok":true,"cleared":{}}}"#, cleared))
     }
 
     /// 문단 하나의 캐럿 경계 — 웹한글컨트롤 `MoveParaBegin`·`MoveParaEnd` 가 가는 자리.
@@ -2093,5 +2476,183 @@ mod tests {
         assert_eq!(escape_outside_cp949(source), "가&#9702;€");
         assert_eq!(json_escape(source), "\"가◦€\"");
         assert_eq!(json_escape(&escape_outside_cp949(source)), "\"가&#9702;€\"");
+    }
+
+    /// 앞뒤 순서 — 한글 저장본으로 잰 규칙(`scenarios/pL-zorder.json`)을 코어 단위로 굳힌다.
+    mod z_order {
+        use super::*;
+        use crate::model::shape::{RectangleShape, TextWrap};
+
+        /// 순서만 다른 개체 셋을 한 문단에 세운다.
+        fn core_with_three() -> DocumentCore {
+            let mut core = DocumentCore::new_empty();
+            let controls = (0..3)
+                .map(|z| {
+                    let mut r = RectangleShape::default();
+                    r.common.z_order = z;
+                    Control::Shape(Box::new(ShapeObject::Rectangle(r)))
+                })
+                .collect();
+            core.document.sections.push(Section {
+                paragraphs: vec![Paragraph {
+                    controls,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            });
+            core
+        }
+
+        fn orders(core: &DocumentCore) -> Vec<i32> {
+            core.document.sections[0].paragraphs[0]
+                .controls
+                .iter()
+                .filter_map(control_common)
+                .map(|c| c.z_order)
+                .collect()
+        }
+
+        /// 맨 위로 보내면 **위에 있던 것들이 한 칸씩 내려온다** — 자리만 맞바꾸는 것이 아니다.
+        #[test]
+        fn bring_to_front_pushes_the_rest_down() {
+            let mut core = core_with_three();
+            core.set_control_z_order_at(0, 0, "front").unwrap();
+            assert_eq!(orders(&core), vec![2, 0, 1]);
+        }
+
+        /// 맨 아래로 보내면 아래 있던 것들이 한 칸씩 올라온다.
+        #[test]
+        fn send_to_back_pulls_the_rest_up() {
+            let mut core = core_with_three();
+            core.set_control_z_order_at(0, 2, "back").unwrap();
+            assert_eq!(orders(&core), vec![1, 2, 0]);
+        }
+
+        /// 한 칸은 **이웃과 맞바꾸기**다. 맨 위에서 더 올리면 아무 일도 없다.
+        #[test]
+        fn one_step_swaps_with_the_neighbour() {
+            let mut core = core_with_three();
+            core.set_control_z_order_at(0, 0, "forward").unwrap();
+            assert_eq!(orders(&core), vec![1, 0, 2]);
+
+            let mut core = core_with_three();
+            core.set_control_z_order_at(0, 2, "backward").unwrap();
+            assert_eq!(orders(&core), vec![0, 2, 1]);
+
+            let mut core = core_with_three();
+            let out = core.set_control_z_order_at(0, 2, "forward").unwrap();
+            assert_eq!(orders(&core), vec![0, 1, 2]);
+            assert!(out.contains("\"moved\":false"), "{out}");
+        }
+
+        /// 리사이즈는 `SHAPE_COMPONENT` 까지 정착시켜야 한다 — 한글의 두 번째 저장이
+        /// 만드는 상태가 정답지다(§4.23). `common` 만 바꾸면 행렬이 옛 크기로 남는다.
+        #[test]
+        fn resize_settles_the_shape_component_too() {
+            let mut core = core_with_three();
+            match &mut core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => {
+                    let c = s.common_mut();
+                    c.width = 8475;
+                    c.height = 6750;
+                    let a = s.shape_attr_mut();
+                    a.original_width = 8475;
+                    a.current_width = 8475;
+                    a.original_height = 6750;
+                    a.current_height = 6750;
+                    a.raw_rendering = vec![1, 2, 3];
+                }
+                _ => unreachable!(),
+            }
+            core.resize_control_at(0, 0, 283, 0).unwrap();
+            match &core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => {
+                    let a = s.shape_attr();
+                    assert_eq!(a.current_width, 8758);
+                    assert!(
+                        (a.render_sx - 8758.0 / 8475.0).abs() < 1e-12,
+                        "{}",
+                        a.render_sx
+                    );
+                    assert_eq!(a.rotation_center.x, 4379, "cur/2 — 실측 4237→4379");
+                    assert!(a.raw_rendering.is_empty(), "행렬 원본을 비워야 재생성된다");
+                }
+                _ => unreachable!(),
+            }
+        }
+
+        /// 뒤집기 — 축 토글·OrgState 복원·행렬. 이동량 식은 여덟 관측의 요약이다(§4.22).
+        #[test]
+        fn flip_matrix_follows_the_measured_formula() {
+            let mut core = core_with_three();
+            let sa = |c: &DocumentCore| match &c.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => {
+                    let a = s.shape_attr();
+                    (a.flip, a.horz_flip, a.render_sx, a.render_tx)
+                }
+                _ => unreachable!(),
+            };
+            match &mut core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => {
+                    let a = s.shape_attr_mut();
+                    a.original_width = 8475;
+                    a.current_width = 8475;
+                }
+                _ => unreachable!(),
+            }
+
+            // 배율 없음·홀수 폭: even_ceil(8475) − 2 = 8474.
+            core.set_control_flip_at(0, 0, false, false).unwrap();
+            assert_eq!(sa(&core), (0x01, true, -1.0, 8474.0));
+
+            // OrgState — 켜져 있으면 끈다. 표시 비트는 흉내 내지 않으므로 축만 진다.
+            core.set_control_flip_at(0, 0, false, true).unwrap();
+            assert_eq!(sa(&core), (0x00, false, 1.0, 0.0));
+
+            // 이미 원래 상태면 무동작이다.
+            let out = core.set_control_flip_at(0, 0, false, true).unwrap();
+            assert!(out.contains("\"moved\":false"), "{out}");
+
+            // 배율 걸림·짝수 cur: even_ceil(8758) − 2 = 8756, sx = −8758/8475 (실측 r1).
+            match &mut core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => s.shape_attr_mut().current_width = 8758,
+                _ => unreachable!(),
+            }
+            core.set_control_flip_at(0, 0, false, false).unwrap();
+            let (_, on, sx, tx) = sa(&core);
+            assert!(on);
+            assert_eq!(tx, 8756.0);
+            assert!((sx - (-(8758.0 / 8475.0))).abs() < 1e-12, "{sx}");
+
+            // 홀수 cur·짝수 org: even_ceil(7033) − 0 = 7034 (실측 v1).
+            match &mut core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => {
+                    let a = s.shape_attr_mut();
+                    a.original_height = 6750;
+                    a.current_height = 7033;
+                }
+                _ => unreachable!(),
+            }
+            core.set_control_flip_at(0, 0, true, false).unwrap();
+            let ty = match &core.document.sections[0].paragraphs[0].controls[0] {
+                Control::Shape(s) => s.shape_attr().render_ty,
+                _ => unreachable!(),
+            };
+            assert_eq!(ty, 7034.0);
+        }
+
+        /// 글 앞/뒤는 이름과 달리 **순서가 아니라 배치**다 — `z_order` 를 건드리면 안 된다.
+        #[test]
+        fn text_wrap_modes_do_not_touch_the_order() {
+            let mut core = core_with_three();
+            core.set_control_z_order_at(0, 1, "behindText").unwrap();
+            assert_eq!(orders(&core), vec![0, 1, 2]);
+            let common = control_common(&core.document.sections[0].paragraphs[0].controls[1]);
+            assert_eq!(common.map(|c| c.text_wrap), Some(TextWrap::BehindText));
+
+            core.set_control_z_order_at(0, 1, "inFrontOfText").unwrap();
+            let common = control_common(&core.document.sections[0].paragraphs[0].controls[1]);
+            assert_eq!(common.map(|c| c.text_wrap), Some(TextWrap::InFrontOfText));
+        }
     }
 }

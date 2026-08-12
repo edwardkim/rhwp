@@ -514,6 +514,27 @@ impl LayoutEngine {
         let mut v_edges: Vec<Vec<Option<BorderLine>>> = vec![vec![None; row_count]; col_count + 1];
 
         // 표 노드 생성
+        // [#4334] TAC(text-as-char) 중첩 표는 자기 자신의 (section, para, control) 을
+        // `enclosing_ctx`(호스트 글상자/셀의 경로 + 이 표 컨트롤의 호스트 문단 내
+        // 인덱스)에서 그대로 옮겨 담는다 — 이전에는 전부 None 이라 stableIndex 가
+        // next_id() 카운터 폴백에 전적으로 의존했다(#4334 stage3 실측).
+        let (table_section_index, table_para_index, table_control_index, table_cell_context) =
+            match enclosing_ctx {
+                Some((sec_idx, para_idx, parent_path, table_ci)) => (
+                    Some(sec_idx),
+                    Some(para_idx),
+                    Some(table_ci),
+                    if parent_path.is_empty() {
+                        None
+                    } else {
+                        Some(CellContext {
+                            parent_para_index: para_idx,
+                            path: parent_path.to_vec(),
+                        })
+                    },
+                ),
+                None => (None, None, None, None),
+            };
         let table_id = tree.next_id();
         let mut table_node = RenderNode::new(
             table_id,
@@ -521,9 +542,10 @@ impl LayoutEngine {
                 row_count: table.row_count,
                 col_count: table.col_count,
                 border_fill_id: table.border_fill_id,
-                section_index: None,
-                para_index: None,
-                control_index: None,
+                section_index: table_section_index,
+                para_index: table_para_index,
+                control_index: table_control_index,
+                cell_context: table_cell_context,
             }),
             BoundingBox::new(table_x, table_y, table_width, table_height),
         );

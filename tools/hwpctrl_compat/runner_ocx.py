@@ -55,14 +55,31 @@ def normalize(value):
     return {"__type": type(value).__name__}
 
 
+def _unescape_numeric_refs(text):
+    """COM `GetTextFile` 은 CP949 밖 글자를 `&#N;` 로 escape 하지만 **기안기 실물은 원문
+    유니코드를 그대로 준다**(2026-08-10 실측, 10.80.0.2862) — 웹 계약으로 되돌린다.
+    문서에 날 `&#숫자;` 글이 있으면 함께 풀리는 모호함이 있으나, impl 쪽도 같은 규칙을
+    쓰므로 대조는 공평하다."""
+    if not isinstance(text, str):
+        return text
+    return re.sub(r"&#(\d+);", lambda m: chr(int(m.group(1))), text)
+
+
 # 웹 규약으로 되돌리는 변환. `com` 은 raw COM 객체다.
 ADAPTERS = {
     # v2.4 §8.3.12 — 웹은 {list, para, pos} 객체를 리턴한다.
     "GetPos": lambda com, args: dict(zip(("list", "para", "pos"), com.GetPos())),
     # v2.4 §8.3.14 — 웹은 {slist, spara, spos, elist, epara, epos} 객체를 리턴한다.
+    # COM 튜플의 첫 값 `result` 는 규격에 없고 기안기 실물도 안 준다(2026-08-10 실측) — 버린다.
     "GetSelectedPos": lambda com, args: dict(
-        zip(("result", "slist", "spara", "spos", "elist", "epara", "epos"), com.GetSelectedPos())
+        zip(("slist", "spara", "spos", "elist", "epara", "epos"), com.GetSelectedPos()[1:])
     ),
+    # v2.4 §8.3.17 — 웹은 {result, text} 객체를 리턴한다(2026-08-10 실측). COM 은 튜플이다.
+    "GetText": lambda com, args: dict(zip(("result", "text"), com.GetText())),
+    # v2.4 §8.3.19 — 웹은 escape 없는 원문을 준다. COM 의 `&#N;` 을 되돌린다.
+    "GetTextFile": lambda com, args: _unescape_numeric_refs(com.GetTextFile(*args)),
+    # v2.4 §8.3.45 — 웹은 bool 을 리턴한다(2026-08-10 실측 true). COM 은 1 이다.
+    "SetTextFile": lambda com, args: bool(com.SetTextFile(*args)),
     # v2.4 §8.3.27 — 값 **아홉**이다: `result` 다음에 `seccnt`(구역 수)가 하나 더 온다.
     # 그것을 빼먹어 `secno` 부터 이름이 한 칸씩 밀려 있었다(실측으로 바로잡음 — 마지막 값은
     # 숫자가 아니라 "(A43): 문자 입력" 같은 **문자열**이라 밀림이 눈에 띄었다).
@@ -323,7 +340,11 @@ def main() -> int:
     with io.open(args.scenario, encoding="utf-8") as fh:
         scenario = json.load(fh)
 
-    out_dir = Path(args.out)
+    # **절대경로로 못박는다.** `$path` 로 넓힌 상대 경로를 한글에 넘기면 답도 오류도 없이
+    # 멈춘다 — `SaveAs("output/…/x.hwp")` 하나로 오라클이 십 분을 넘겨 죽었다. 시나리오 끝
+    # 저장은 `output_paths` 가 `.resolve()` 를 거쳐 무사했던 탓에 이 갈래만 조용히 달랐다.
+    # (Node 러너는 이미 `resolve(args.out)` 를 한다.)
+    out_dir = Path(args.out).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     returns_path, rejected_path, _ = clear_previous_outputs(scenario, out_dir)
     result = run(scenario, out_dir, args.expect_version)

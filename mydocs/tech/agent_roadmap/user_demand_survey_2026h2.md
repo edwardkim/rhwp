@@ -1,11 +1,14 @@
 ---
 kind: investigation
-status: active
+status: historical
 canonical: mydocs/tech/agent_roadmap/user_demand_survey_2026h2.md
-last_verified: 2026-08-09
+last_verified: 2026-08-12
 ---
 
 # 사용자·생태계 수요 실조사 2026H2 — 도달·배포 축 게이트 근거 (#4327)
+
+> 이 조사는 당시의 수요와 제안을 보존하는 historical 근거다. 여기서 제안한 Python·Node
+> 패키지와 신규 설치 채널은 공식 채널로 채택되지 않았고 v0.8.4에서 철회됐다(#4655).
 
 **질문 두 개**: ① R1~R100 중 도달·배포 축 `[가설]` 단계(R38·R39·R63·R86·R87)의
 착수 게이트가 요구하는 수요·도달 근거가 실재하는가. ② 트랙 문서의 "지금" 서술이
@@ -171,8 +174,8 @@ k-skill 문서의 원문(기준 버전 v0.7.3, 2026-04-19):
 | 다운로드 (v0.8.2, gh API 재검증) | linux 819 · windows 346 · macOS 137+15 · SHA256SUMS 219 |
 | 설치 관리자 채널 | winget · scoop · brew **등재 0** |
 | 루트 README 설치 절 | npm 패키지 · 소스 빌드 · docker 안내. **릴리스 바이너리 경로 부재** — MCP 절의 `"command": "rhwp"` 가 전제하는 PATH 도달 1줄이 문서에 없다 |
-| 파이썬 배포 | `bindings/python` 은 hatchling 순수 파이썬 패키지로 실재하나 **PyPI 미배포**(루트 README 스스로 "PyPI 배포 전")·실행 바이너리를 `RHWP_BIN` 으로 요구 |
-| npm 배포 | `@rhwp/core`·`@rhwp/editor`·VSCode 확장은 `npm-publish.yml` 로 배포 중(웹 축). `@rhwp/node`(CLI 바인딩)는 **미배포** |
+| 파이썬 배포 | 조사 당시 `bindings/python`은 hatchling 순수 파이썬 패키지로 실재했으나 **PyPI 미배포**였고 실행 바이너리를 `RHWP_BIN`으로 요구했다. 공식 바인딩은 #4655에서 철회 |
+| npm 배포 | `@rhwp/core`·`@rhwp/editor`·VSCode 확장은 `npm-publish.yml`로 배포 중(웹 축). 조사 당시 미배포였던 `@rhwp/node`는 #4655에서 공식 바인딩과 함께 철회 |
 
 정리하면 웹 축은 배포가 완비됐고(npm 2종 + 스토어 2곳 + 온라인 데모), **에이전트
 축은 바이너리가 존재하는데 도달 경로(채널 등재·README 1줄·PyPI/npm 휠)가 없다.**

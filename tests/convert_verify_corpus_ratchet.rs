@@ -57,6 +57,27 @@ fn samples_dir() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples")
 }
 
+/// 디렉터리 아래 `.hwp`/`.hwpx` 를 재귀로 모은다 (#4099).
+///
+/// 파일명이 조각 분배와 등재 목록의 키다. `samples/chart/**` 56건은 최상위 355건과
+/// 이름이 겹치지 않고 자기들끼리도 유일함을 확인했다.
+fn collect_recursive(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.filter_map(|e| e.ok()) {
+        let path = entry.path();
+        if path.is_dir() {
+            collect_recursive(&path, out);
+        } else if matches!(
+            path.extension().and_then(|s| s.to_str()),
+            Some("hwp") | Some("hwpx")
+        ) {
+            out.push(path);
+        }
+    }
+}
+
 /// `convert --verify` 와 같은 판정: 변환 → 재파싱 → IR 비교.
 ///
 /// 비교 강도는 CLI 와 같다 — 포맷을 넘으면 대상 포맷에 자리가 없는 항목을 걷어낸다.
@@ -102,6 +123,17 @@ fn run_partition(part: usize) {
             )
         })
         .collect();
+    // [#4099] 차트 코퍼스를 재귀로 합친다.
+    //
+    // 위 수집은 비재귀라 하위 디렉터리가 통째로 빠진다(디렉터리는 확장자가 없어
+    // 필터에서 탈락한다). 그래서 `samples/chart/**` 28종 × 2포맷이 이 게이트 밖에
+    // 있었고, HWPX→HWP5 변환이 차트 참조를 끊는 결함(#4099)이 `--verify` 로 처음부터
+    // exit 3 를 내고 있었는데도 아무도 보지 못했다.
+    //
+    // `samples/` 전체를 재귀로 열지 않고 `chart` 만 합치는 이유는 범위 통제다 —
+    // 나머지 하위 디렉터리 68개는 이 이슈가 다루는 축이 아니고, 한꺼번에 넣으면
+    // 무관한 신규 실패를 이 PR 에서 등재해야 한다. 필요하면 별도 이슈로 넓힌다.
+    collect_recursive(&samples_dir().join("chart"), &mut entries);
     // 크기 내림차순으로 정렬한 뒤 인덱스로 나눈다 — 큰 문서가 한 조각에 몰리면 그 조각이
     // 전체 벽시계를 지배한다(실측: 이름순 분배 시 42/50/134/191초로 4.5배 편차).
     // 이름을 2차 키로 둬서 크기가 같아도 순서가 결정적이다.

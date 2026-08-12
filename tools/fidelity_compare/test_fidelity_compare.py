@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from collections import Counter
 from pathlib import Path
+from unittest.mock import patch
 
 
 MODULE_PATH = Path(__file__).with_name("fidelity_compare.py")
@@ -77,6 +79,38 @@ class SvgExportFontFallbackTests(unittest.TestCase):
         self.assertEqual(len(calls), 1)
         self.assertIn("--font-style", calls[0])
 
+    def test_full_font_mode_embeds_selected_face(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+            calls.append(command)
+            (svg_dir / "sample_001.svg").write_text("<svg/>", encoding="utf-8")
+            return subprocess.CompletedProcess(command, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as directory:
+            svg_dir = Path(directory)
+            original_run = fidelity_compare.subprocess.run
+            fidelity_compare.subprocess.run = fake_run
+            try:
+                with patch.dict(
+                    fidelity_compare.os.environ,
+                    {"RHWP_SVG_FONT_MODE": "full"},
+                    clear=False,
+                ):
+                    rendered = fidelity_compare.render_svg(
+                        "rhwp", Path("sample.hwp"), svg_dir, 0
+                    )
+            finally:
+                fidelity_compare.subprocess.run = original_run
+
+        self.assertTrue(rendered)
+        self.assertIn("--embed-fonts=full", calls[0])
+        self.assertNotIn("--font-style", calls[0])
+
+    def test_invalid_font_mode_is_rejected(self) -> None:
+        with self.assertRaisesRegex(ValueError, "RHWP_SVG_FONT_MODE"):
+            fidelity_compare.svg_font_export_option({"RHWP_SVG_FONT_MODE": "invalid"})
+
     def test_full_export_enables_local_font_fallback_aliases(self) -> None:
         calls: list[list[str]] = []
 
@@ -102,6 +136,96 @@ class SvgExportFontFallbackTests(unittest.TestCase):
         self.assertEqual(manifest, '{"pageCount":1}')
         self.assertEqual(len(calls), 1)
         self.assertIn("--font-style", calls[0])
+
+    def test_render_tree_does_not_receive_svg_only_font_path_option(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+            calls.append(command)
+            return subprocess.CompletedProcess(command, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as directory:
+            tree_dir = Path(directory)
+            original_run = fidelity_compare.subprocess.run
+            fidelity_compare.subprocess.run = fake_run
+            try:
+                with patch.dict(
+                    fidelity_compare.os.environ,
+                    {"RHWP_FONT_PATH_DIR": "/fonts"},
+                    clear=False,
+                ):
+                    rendered = fidelity_compare.render_all_render_tree(
+                        "rhwp", Path("sample.hwp"), tree_dir
+                    )
+            finally:
+                fidelity_compare.subprocess.run = original_run
+
+        self.assertTrue(rendered)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][:2], ["rhwp", "export-render-tree"])
+        self.assertNotIn("--font-path", calls[0])
+
+    def test_font_path_list_is_split_for_svg_export(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+            calls.append(command)
+            (svg_dir / "sample_001.svg").write_text("<svg/>", encoding="utf-8")
+            return subprocess.CompletedProcess(command, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as directory:
+            svg_dir = Path(directory)
+            fonts_a = svg_dir / "fonts-a"
+            fonts_b = svg_dir / "fonts-b"
+            fonts_a.mkdir()
+            fonts_b.mkdir()
+            original_run = fidelity_compare.subprocess.run
+            fidelity_compare.subprocess.run = fake_run
+            try:
+                with patch.dict(
+                    fidelity_compare.os.environ,
+                    {
+                        "RHWP_FONT_PATH_DIR": os.pathsep.join(
+                            [str(fonts_a), str(fonts_b)]
+                        )
+                    },
+                    clear=False,
+                ):
+                    rendered = fidelity_compare.render_svg(
+                        "rhwp", Path("sample.hwp"), svg_dir, 0
+                    )
+            finally:
+                fidelity_compare.subprocess.run = original_run
+
+        self.assertTrue(rendered)
+        self.assertEqual(
+            [calls[0][index + 1] for index, value in enumerate(calls[0]) if value == "--font-path"],
+            [str(fonts_a.resolve()), str(fonts_b.resolve())],
+        )
+
+    def test_linux_chrome_fontconfig_uses_same_font_path_list(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fonts_a = root / "fonts-a"
+            fonts_b = root / "fonts-b"
+            fonts_a.mkdir()
+            fonts_b.mkdir()
+            env = {
+                "RHWP_FONT_PATH_DIR": os.pathsep.join([str(fonts_a), str(fonts_b)]),
+                "PATH": os.environ.get("PATH", ""),
+            }
+            configured = fidelity_compare.chrome_fontconfig_environment(
+                root / "work", env, os_name="posix", platform="linux"
+            )
+
+            self.assertIsNotNone(configured)
+            assert configured is not None
+            config_path = Path(configured["FONTCONFIG_PATH"]) / configured["FONTCONFIG_FILE"]
+            config = config_path.read_text(encoding="utf-8")
+
+        self.assertEqual(configured["FONTCONFIG_FILE"], "fonts.conf")
+        self.assertIn(f"<dir>{fonts_a.resolve()}</dir>", config)
+        self.assertIn(f"<dir>{fonts_b.resolve()}</dir>", config)
 
 
 if __name__ == "__main__":

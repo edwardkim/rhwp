@@ -162,7 +162,6 @@ fn init_exam_doc_info(doc: &mut Document, default_font: &str) -> ExamStyleIds {
         relative_sizes: [100; 7],
         base_size: 1000,
         text_color: 0x000000,
-        shade_color: 0,
         underline_color: 0x000000,
         shadow_color: 0x000000,
         strike_color: 0x000000,

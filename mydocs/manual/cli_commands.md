@@ -941,6 +941,8 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 
 ### `convert <입력.hwp|.hwpx> <출력.hwp> [--verify] [--verify-pages] [--output-password-stdin]`
 배포용(읽기전용) HWP → 편집 가능 HWP 변환. 출력은 항상 `.hwp`.
+- 출력 확장자는 대소문자 무시 `.hwp`만 허용한다. 확장자가 없거나 `.hwpx` 등 다른 확장자면 입력을
+  읽거나 파일을 쓰기 전에 사용법 오류(exit 2)로 거부하고, HWPX 변환에는 `export-hwpx`를 안내한다.
 - `--verify` — 저장 후 산출물을 재파싱하여 어댑터 적용 후 IR과 재로딩 IR 차이를 검출한다.
   차이가 있으면 산출물은 남기고 종료 코드 3으로 실패한다.
 - `--verify-pages` — 저장 전 문서 페이지 수와 저장 후 재로딩 페이지 수를 비교한다.

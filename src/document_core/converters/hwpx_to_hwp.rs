@@ -25,7 +25,7 @@ use crate::model::document::{
 };
 use crate::model::image::Picture;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{common_obj_offsets, ShapeObject, TextBox};
+use crate::model::shape::{common_obj_offsets, OleShape, ShapeObject, TextBox};
 use crate::model::style::{BorderFill, BorderLineType, Fill, FillType};
 use crate::model::table::{Cell, Table, TablePageBreak};
 use crate::parser::FileFormat;
@@ -117,6 +117,12 @@ pub struct AdapterReport {
     /// 보강되지만 그림은 빠져 있었다(전 코퍼스 실측 80/80 이 개체 종류와 무관하게
     /// 이 비트를 요구).
     pub picture_caption_common_attr_materialized: u32,
+    /// [#4099] HWPX `<hp:chart>` OleShape 를 `<hp:default>` fallback OLE 로 접은 횟수.
+    pub chart_ole_folded_to_fallback: u32,
+    /// [#4099] fallback 이 없어 접지 못하고 참조만 비운 차트 OleShape 수.
+    pub chart_ole_without_fallback: u32,
+    /// [#4099] HWP5 산출에서 제거한 `ooxml_chart` BinDataContent 수.
+    pub chart_bin_data_contents_removed: u32,
 }
 
 impl AdapterReport {
@@ -166,7 +172,10 @@ impl AdapterReport {
                 + self.master_page_autonum_placeholder_removed
                 + self.master_page_line_rendering_size_ratio_materialized
                 + self.master_page_apply_slots_materialized
-                + self.picture_caption_common_attr_materialized)
+                + self.picture_caption_common_attr_materialized
+                + self.chart_ole_folded_to_fallback
+                + self.chart_ole_without_fallback
+                + self.chart_bin_data_contents_removed)
                 > 0
     }
 }
@@ -207,6 +216,10 @@ fn convert_to_hwp_ir(doc: &mut Document, source_is_hwpx: bool) -> AdapterReport 
 
     normalize_file_header_for_hwp(doc, &mut report);
     normalize_page_border_fills_for_hwp(doc);
+    // [#4099] 도형을 건드리는 첫 패스여야 한다 — 뒤 패스가 바깥 차트 OleShape 에 가한
+    // 변경은 fold 로 통째로 버려지고, BinData 순서 materialize 는 fold 가 올려놓은
+    // 진짜 `bin_data_id` 를 봐야 remap 이 맞는다.
+    fold_hwpx_chart_ole_for_hwp(doc, &mut report);
     normalize_picture_geometry_for_hwp(doc, source_is_hwpx);
     normalize_doc_properties_for_hwp(doc, &mut report);
     materialize_hwp5_bin_data_order(doc, &mut report);
@@ -234,6 +247,231 @@ fn convert_to_hwp_ir(doc: &mut Document, source_is_hwpx: bool) -> AdapterReport 
     }
 
     report
+}
+
+/// HWPX 파서가 `Chart/chartN.xml` 파트에 붙이는 확장자 표식
+/// (`parser/hwpx/mod.rs`, Task #195 규약).
+const OOXML_CHART_EXTENSION: &str = "ooxml_chart";
+
+/// 모든 `OleShape` 를 가변으로 방문한다.
+///
+/// 순회 골격은 `normalize_picture_geometry_for_hwp` 에서 가져왔다 — 이 파일의 네 워커
+/// 중 컨테이너 커버리지가 가장 넓은 쪽이다.
+///
+/// | 컨테이너 | bin order(`collect_bin_order_*`) | bin ref remap(`remap_bin_refs_*`) | 이 워커 |
+/// |---|---|---|---|
+/// | 표 셀 · 그룹 자식 · 머리말/꼬리말/각주/미주/숨은설명 | ✓ | ✓ | ✓ |
+/// | `drawing.text_box` · `drawing.caption` | ✓ | ✓ | ✓ |
+/// | `pic`/`group`/`chart`/`ole` own caption | 일부 | 일부 | ✓ |
+/// | `Control::Field.memo_paragraphs` | ✗ | ✗ | ✓ |
+/// | `Control::SectionDef.master_pages` | ✗ | ✗ | ✓ |
+///
+/// 네 워커를 하나의 visitor 로 통합하는 것은 커버리지가 서로 달라 동작이 바뀔 수 있는
+/// 별개 리팩터다 — 여기서는 좁은 타입으로만 골격을 재사용한다.
+///
+/// `chart_switch_fallback` 안쪽은 방문하지 않는다. HWPX 파서는 fallback 안에 또 다른
+/// 차트를 만들지 않고, `fold_hwpx_chart_ole_for_hwp` 가 그 상자를 곧 없앤다.
+fn for_each_ole_mut(doc: &mut Document, f: &mut dyn FnMut(&mut OleShape)) {
+    fn walk_paragraphs(paragraphs: &mut [Paragraph], f: &mut dyn FnMut(&mut OleShape)) {
+        for para in paragraphs {
+            walk_controls(&mut para.controls, f);
+        }
+    }
+
+    fn walk_caption(caption: &mut crate::model::shape::Caption, f: &mut dyn FnMut(&mut OleShape)) {
+        walk_paragraphs(&mut caption.paragraphs, f);
+    }
+
+    fn walk_master_pages(
+        master_pages: &mut [crate::model::header_footer::MasterPage],
+        f: &mut dyn FnMut(&mut OleShape),
+    ) {
+        for master_page in master_pages {
+            walk_paragraphs(&mut master_page.paragraphs, f);
+        }
+    }
+
+    fn walk_drawing(
+        drawing: &mut crate::model::shape::DrawingObjAttr,
+        f: &mut dyn FnMut(&mut OleShape),
+    ) {
+        if let Some(text_box) = &mut drawing.text_box {
+            walk_paragraphs(&mut text_box.paragraphs, f);
+        }
+        if let Some(caption) = &mut drawing.caption {
+            walk_caption(caption, f);
+        }
+    }
+
+    fn walk_shape(shape: &mut ShapeObject, f: &mut dyn FnMut(&mut OleShape)) {
+        match shape {
+            ShapeObject::Picture(pic) => {
+                if let Some(caption) = &mut pic.caption {
+                    walk_caption(caption, f);
+                }
+            }
+            ShapeObject::Group(group) => {
+                for child in &mut group.children {
+                    walk_shape(child, f);
+                }
+                if let Some(caption) = &mut group.caption {
+                    walk_caption(caption, f);
+                }
+            }
+            ShapeObject::Chart(chart) => {
+                walk_drawing(&mut chart.drawing, f);
+                if let Some(caption) = &mut chart.caption {
+                    walk_caption(caption, f);
+                }
+            }
+            ShapeObject::Ole(ole) => {
+                // 캡션·글상자를 먼저 훑는다. `f` 가 fold 로 OleShape 를 통째로
+                // 갈아끼우므로, 뒤에 방문하면 교체된 쪽을 다시 보게 된다.
+                walk_drawing(&mut ole.drawing, f);
+                if let Some(caption) = &mut ole.caption {
+                    walk_caption(caption, f);
+                }
+                f(ole);
+            }
+            _ => {
+                if let Some(drawing) = shape.drawing_mut() {
+                    walk_drawing(drawing, f);
+                }
+            }
+        }
+    }
+
+    fn walk_controls(controls: &mut [Control], f: &mut dyn FnMut(&mut OleShape)) {
+        for control in controls {
+            match control {
+                Control::Picture(pic) => {
+                    if let Some(caption) = &mut pic.caption {
+                        walk_caption(caption, f);
+                    }
+                }
+                Control::Shape(shape) => walk_shape(shape, f),
+                Control::Table(table) => {
+                    for cell in &mut table.cells {
+                        walk_paragraphs(&mut cell.paragraphs, f);
+                    }
+                    if let Some(caption) = &mut table.caption {
+                        walk_caption(caption, f);
+                    }
+                }
+                Control::Header(header) => walk_paragraphs(&mut header.paragraphs, f),
+                Control::Footer(footer) => walk_paragraphs(&mut footer.paragraphs, f),
+                Control::Footnote(footnote) => walk_paragraphs(&mut footnote.paragraphs, f),
+                Control::Endnote(endnote) => walk_paragraphs(&mut endnote.paragraphs, f),
+                Control::HiddenComment(comment) => walk_paragraphs(&mut comment.paragraphs, f),
+                Control::Field(field) => walk_paragraphs(&mut field.memo_paragraphs, f),
+                Control::SectionDef(section_def) => {
+                    walk_master_pages(&mut section_def.master_pages, f)
+                }
+                _ => {}
+            }
+        }
+    }
+
+    for section in doc.sections.iter_mut() {
+        walk_paragraphs(&mut section.paragraphs, f);
+        walk_master_pages(&mut section.section_def.master_pages, f);
+    }
+}
+
+/// [#4099] HWPX 차트를 HWP5 가 참조할 수 있는 OLE 하나로 접는다.
+///
+/// HWPX 파서는 `<hp:switch>` 의 `<hp:case>` 브랜치를 채택해 **가상 id**
+/// `bin_data_id = 60000+N` 을 세우고, `<hp:default>` 의 진짜 OLE 를
+/// `chart_switch_fallback` 에 매달아 둔다(#3546 — HWPX 저장 시 원형 재방출의 재료).
+/// 그 가상 id 는 zip 파트 `Chart/chartN.xml` 을 가리키므로 **HWP5 에는 대응물이 없다.**
+/// 손대지 않으면 세 가지가 한꺼번에 깨진다.
+///
+/// - `serialize_ole_data` 가 `60001` 을 그대로 기록 → HWP5 DocInfo 에 없는 storage 참조
+/// - `find_bin_data_info_with_compress` 폴백이 `/BinData/BINEA61.ooxml_chart` 라는
+///   **DocInfo 미등록 정크 스트림**을 만든다
+/// - 재파싱이 그 스트림을 읽지 않아 `--verify` 가 `bin_data_content count` 로 실패
+///
+/// ## 왜 fallback 을 통째로 채택하는가
+///
+/// 한컴이 저장한 같은 문서의 `.hwp` 를 대조하면 답이 나온다. GenShape CTRL_HEADER 의
+/// `instance_id` 가 **0** 인데, 이는 `<hp:default><hp:ole instid="0">` 의 값이지
+/// `<hp:chart id="1117817146">` 의 값이 아니다 — **한컴 자신의 HWPX→HWP5 변환도
+/// fallback 브랜치를 쓴다.** 그 OLE 가 가리키는 `BinData/ole1.ole` 안에는 한컴이 실제로
+/// 읽는 중첩 `OOXMLChartContents` 가 들어 있다(#4055 실측: 그 사본만 고쳐도 렌더에
+/// 반영된다).
+///
+/// 두 브랜치는 `sz`/`pos`/`outMargin`/`zOrder`/`textWrap` 이 전부 같고, 모델에 남는
+/// 차이는 `bin_data_id`·`instance_id`·`rotate_image`·`drawing_aspect`·`caption` 뿐이다
+/// (`parse_common_shape_children` 이 `orgSz`/`curSz`/`flip`/`lineShape` 를 IR 에 싣지
+/// 않는다). 그중 HWP5 로 나가는 것은 앞의 둘이고 둘 다 fallback 쪽이 정답이다.
+///
+/// ## fallback 이 없으면
+///
+/// `<hp:switch>` 없이 `<hp:chart>` 만 있거나 `<hp:default>` 가 빠진 case-only switch 는
+/// 접을 대상이 없다(코퍼스 0건, 파서 주석도 "아직 보지 못한 변형"). 참조를 비워
+/// 정크 스트림과 dangling 을 둘 다 막고 placeholder 로 남긴다.
+///
+/// 차트 XML 을 `mini_cfb` 로 OLE CFB 에 싸는 길도 있다 — #4097 이
+/// `build_cfb_with_root_clsid` 를 넣어 도구는 갖춰졌다. 다만 참조할 원본 CLSID 가 없어
+/// `{4C3DA137-DC90-47B9-9BED-59DAE352A280}` 를 하드코딩해야 하고, `OOXMLChartContents`
+/// 하나만 든 CFB 를 한컴이 받아들이는지는 미검증이다(#4055 는 기존 CFB 를 수정했을 뿐
+/// 새로 만들지 않았다). 실물 변종이 관측되면 그때 채운다.
+fn fold_hwpx_chart_ole_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
+    let mut folded = 0u32;
+    let mut orphaned = 0u32;
+
+    for_each_ole_mut(doc, &mut |ole: &mut OleShape| {
+        if ole.chart_id_ref.is_none() {
+            return;
+        }
+        match ole.chart_switch_fallback.take() {
+            Some(fallback) => {
+                // [#4319] 파서가 `<hp:chart>` 와 `<hp:default><hp:ole>` 양쪽의
+                // `<hp:caption>` 을 읽는다. 실물은 두 브랜치가 같은 캡션을 중복
+                // 기록하지만, chart 쪽에만 있는 경우 fallback 채택으로 조용히
+                // 사라지지 않게 이월한다.
+                let chart_caption = ole.caption.take();
+                *ole = *fallback;
+                if ole.caption.is_none() {
+                    ole.caption = chart_caption;
+                }
+                debug_assert!(
+                    ole.chart_id_ref.is_none() && ole.chart_switch_fallback.is_none(),
+                    "fallback 브랜치에는 HWPX 차트 표식이 없어야 한다 — 멱등성 계약"
+                );
+                debug_assert!(
+                    ole.raw_tag_data.is_empty(),
+                    "HWPX 출신 OleShape 는 raw_tag_data 가 비어 있어야 한다 \
+                     (비면 serialize_ole_data 가 bin_data_id 필드를 무시한다)"
+                );
+                folded += 1;
+            }
+            None => {
+                ole.bin_data_id = 0;
+                ole.chart_id_ref = None;
+                orphaned += 1;
+            }
+        }
+    });
+
+    // 차트 XML 은 HWP5 에 담을 자리가 없다. 남기면 `cfb_writer` 폴백이 DocInfo 미등록
+    // 정크 스트림을 만들고 `--verify` 가 개수 불일치로 실패한다. 한컴이 읽는 표현은
+    // 중첩 CFB 안의 `OOXMLChartContents` 사본이므로 내용 손실도 없다.
+    let before = doc.bin_data_content.len();
+    doc.bin_data_content
+        .retain(|content| content.extension != OOXML_CHART_EXTENSION);
+    let removed = (before - doc.bin_data_content.len()) as u32;
+
+    if orphaned > 0 {
+        eprintln!(
+            "경고: fallback OLE 가 없는 HWPX 차트 {orphaned}개는 HWP5 로 옮기지 못해 \
+             빈 개체로 남깁니다 (#4099)"
+        );
+    }
+
+    report.chart_ole_folded_to_fallback += folded;
+    report.chart_ole_without_fallback += orphaned;
+    report.chart_bin_data_contents_removed += removed;
 }
 
 /// HWPX embedded BinData를 한컴 HWP 저장 관례에 맞춰 materialize한다.

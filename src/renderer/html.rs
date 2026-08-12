@@ -368,8 +368,7 @@ impl Renderer for HtmlRenderer {
         }
 
         // 형광펜 배경 (CharShape.shade_color 기반 — 편집기에서 적용한 형광펜)
-        let shade_rgb = style.shade_color & 0x00FFFFFF;
-        if shade_rgb != 0x00FFFFFF && shade_rgb != 0 {
+        if crate::model::color::char_shade(style.shade_color).is_some() {
             css.push_str(&format!(
                 "background-color:{};",
                 color_to_css(style.shade_color)

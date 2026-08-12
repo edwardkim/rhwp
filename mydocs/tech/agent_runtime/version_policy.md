@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/agent_runtime/version_policy.md
-last_verified: 2026-08-09
+last_verified: 2026-08-11
 ---
 
 # 버전 정책 — 릴리스 semver × 스키마 4축 (R67, #4329)
@@ -24,11 +24,11 @@ PR 로 함께 착지한다(두 트랙 문서의 착수 게이트가 서로를 �
 
 | 축 | 상수 (schema_registry) | 노출 표면 | 1차 소비자 |
 |---|---|---|---|
-| **봉투** | `ENVELOPE_SCHEMA_VERSION` = 1.0 | 모든 `--json` 봉투 최상위 `schemaVersion` | python·node 바인딩(`SUPPORTED_SCHEMA_VERSION` 대조), 봉투 파싱 스크립트 |
-| **IR** | `IR_SCHEMA_VERSION` = 1.0 | `export-ir-schema` 봉투의 `irSchemaVersion` | 타입 생성기(python `gen_models.py`), IR 소비 코드 |
-| **capabilities** | `CAPABILITIES_SCHEMA_VERSION` = 1.3 | `export-capabilities-schema` 봉투의 `capabilitiesSchemaVersion` | 명령 래퍼 생성기(node `gen-types.ts`), MCP 클라이언트 |
-| **계획(plan)** | `PLAN_SCHEMA_VERSION` = 1.0 | `export-plan-schema` 봉투의 `planSchemaVersion` | `run` 계획서 작성기·검증기 |
-| **릴리스 semver** | `crate_version()` (= `CARGO_PKG_VERSION`) | `rhwp --version`, 모든 봉투의 `version`, 릴리스 태그 `v*` | 설치 채널(R38)·패키지 레지스트리(R63) |
+| **봉투** | `ENVELOPE_SCHEMA_VERSION` = 1.0 | 모든 `--json` 봉투 최상위 `schemaVersion` | 봉투 파싱 스크립트·외부 소비자 |
+| **IR** | `IR_SCHEMA_VERSION` = 1.0 | `export-ir-schema` 봉투의 `irSchemaVersion` | IR 소비 코드·외부 코드 생성기 |
+| **capabilities** | `CAPABILITIES_SCHEMA_VERSION` = 1.3 | `export-capabilities-schema` 봉투의 `capabilitiesSchemaVersion` | MCP 클라이언트·외부 명령 래퍼 |
+| **계획(plan)** | `PLAN_SCHEMA_VERSION` = 1.1 | `export-plan-schema` 봉투의 `planSchemaVersion` | `run` 계획서 작성기·검증기 |
+| **릴리스 semver** | `crate_version()` (= `CARGO_PKG_VERSION`) | `rhwp --version`, 모든 봉투의 `version`, 릴리스 태그 `v*` | GitHub Release·기존 npm/확장 배포 |
 
 값의 유일한 정의처는 `src/schema_registry.rs` 다. `ir_schema`·
 `capabilities_schema`·`plan_schema` 모듈의 동명 상수는 **재수출**이고(호출부
@@ -41,10 +41,6 @@ PR 로 함께 착지한다(두 트랙 문서의 착수 게이트가 서로를 �
 - `REQUIRED_PLAN_VERSION`(src/plan_schema.rs) — 계획 **파일**이 선언해야 하는
   `planVersion` 문법 수용 게이트. 계획 스키마(`planSchemaVersion`)와
   **의도적으로 독립**이다(모듈 doc 이 명시). 레지스트리에 편입하지 않는다.
-- `CAPABILITIES_SNAPSHOT_VERSION`(bindings/node/src/envelopes.ts) — 타입 생성
-  당시의 **crate 버전 스냅샷**. 축이 아니라 생성물 표지이며, `npm run gen:check`
-  가 드리프트를 잡는다.
-
 ## 2. 판올림 규약 — 언제 어느 숫자가 오르는가
 
 네 스키마 축 공통(종전 각 모듈 머리말의 규약을 단일 서술로 승계):
@@ -74,22 +70,17 @@ crate 는 현재 0.x 다. semver 관례상 0.x 에서는 **minor 가 파괴적 �
 | 어느 축이든 major ↑ | **minor ↑ + 마이그레이션 노트 필수** (0.x 의 minor 가 breaking 신호) | **major ↑** |
 | 스키마 무변화 | patch 자유 | patch 자유 |
 
-이유: 소비자(특히 R63 이후의 pip/npm 설치자)는 버전 범위로 업데이트를 받는다.
+이유: 외부 소비자와 기존 npm 패키지 사용자는 버전 범위로 업데이트를 받는다.
 스키마 변화가 patch 에 섞이면 "안전한 업데이트" 신호가 거짓이 된다. 이 표는
 제안이며, 채택 시 릴리스 절차 문서에 편입한다 — 그 전까지 구속력은 없다.
 
-## 4. 바인딩 추종 규칙
+## 4. 외부 소비자 추종 규칙
 
-- python(`bindings/python/src/rhwp/__init__.py`)·node(`bindings/node/src/envelope.ts`
-  계열)의 `SUPPORTED_SCHEMA_VERSION` 은 **봉투 축과 정확 일치**로 대조한다.
-  `ENVELOPE_SCHEMA_VERSION` 을 올리는 PR 은 **같은 변경 안에서** 두 바인딩
-  상수(와 호환 계층)를 함께 올린다 — 갈라진 채 출하하면 바인딩이 실행 시점에
-  전 봉투를 거부하는 최악의 형태로 깨진다.
-- node 타입(`envelopes.ts`)은 `rhwp capabilities` 출력에서 기계 생성된다.
-  capabilities 표면이 바뀌는 PR 은 `npm run gen:types` 재생성을 동반하고,
-  `npm run gen:check` 가 CI 드리프트 게이트다.
-- 바인딩이 지원 범위를 넓히려면(예: 1.0·1.1 동시 수용) 정확 일치 대신 범위
-  대조로 바꿀 수 있으나, 그 결정 자체가 이 문서의 개정 사항이다.
+공식 Python·Node 바인딩은 v0.8.4에서 철회됐다(#4655). 외부 소비자는
+`rhwp capabilities`의 `schemaRegistry`와 각 `export-*-schema` 결과를 기계 대조한다.
+상위 호환 minor는 모르는 필드를 무시하고, major 차이는 실행을 중단한 뒤 마이그레이션
+노트를 확인한다. 특정 언어 래퍼의 지원 범위와 생성물 드리프트는 해당 다운스트림이
+책임진다.
 
 ## 5. 외부 소비자 대사 절차 (#4327 U2)
 
@@ -119,11 +110,8 @@ rhwp capabilities | jq '.schemaRegistry'
   유지하는 이유.
 - 제안: 진본성은 태그 시점 아티팩트 서명으로 얹는다(도구 선택 — minisign 류
   경량 서명 또는 Sigstore 계열 — 은 메인테이너 결정 사항; 어느 쪽이든
-  SHA256SUMS 와 병행). R63(PyPI/npm)의 배포 서명도 **같은 뿌리를 재사용**한다
-  (R63 트랙 문서: "별도 서명 체계를 새로 세우면 신뢰 뿌리가 갈린다").
-- 버전 정합: 태그 `vX.Y.Z` = `CARGO_PKG_VERSION` = 봉투 `version` = 바인딩
-  패키지 버전. 셋이 갈리면 설치자가 "무엇을 깔았는가"를 알 수 없다 — R63 착수
-  시 이 정합을 가드로 고정한다.
+  SHA256SUMS 와 병행).
+- 버전 정합: 태그 `vX.Y.Z` = `CARGO_PKG_VERSION` = 봉투 `version`이어야 한다.
 
 ## 7. 가드 지도 — 이 정책은 어디서 기계로 지켜지는가
 
@@ -134,13 +122,10 @@ rhwp capabilities | jq '.schemaRegistry'
 | 〃 · `export_schema_envelopes_derive_from_registry` | 각 `export-*-schema` 봉투·`$id` 의 축 버전 파생 |
 | 〃 · `capabilities_schema_declares_schema_registry` | 자기서술 스키마에 새 표면 등재(코드 생성기 시야) |
 | `src/schema_registry.rs` 단위 2본 | 조립 자체의 축 집합·경로 실물성 |
-| `bindings/node` `npm run gen:check` | capabilities → 타입 생성물 드리프트 0 |
-| python `test_every_envelope_carries_schema_version` | 봉투 축 대조의 바인딩 쪽 절반 |
 
 ## 8. 미결정 사항 (메인테이너 판단 대기)
 
 1. §3 semver 연동표의 채택 여부(채택 시 릴리스 절차 문서에 편입).
 2. §6 서명 도구 선택과 도입 시점(R38·R63 착수의 선행 판단).
-3. 바인딩 지원 범위 정책(정확 일치 유지 vs 범위 수용, §4).
-4. 축 추가 시 이 문서·레지스트리·capabilities 스키마 3곳 동반 갱신을 묶는
+3. 축 추가 시 이 문서·레지스트리·capabilities 스키마 3곳 동반 갱신을 묶는
    추가 가드의 필요 여부(현재는 계약 테스트의 축 집합 고정이 그 역할).

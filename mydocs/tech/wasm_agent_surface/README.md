@@ -146,8 +146,9 @@ du -sh assets/fonts
   [소비 에이전트 가이드](../agent_security/consumer_guide.md).
   브라우저는 **새 경계**를 추가한다(origin). 위협 모델의 `#3787` 축과 어긋나지 않게 쓴다 —
   [browser_bridge.md §5](browser_bridge.md).
-- **외부 바인딩** — [IR 스키마 버저닝·표면 판단](../bindings_foundation.md)(M18~M20).
-  WASM 표면은 그 판단표에 **네 번째 열**로 들어간다.
+- **외부 소비자 계약** — [CLI 명령 레퍼런스](../../manual/cli_commands.md)와
+  `export-ir-schema`·`export-capabilities-schema`를 권위로 삼는다. 공식 Python·Node
+  바인딩은 v0.8.4에서 철회됐다(#4655).
 - **툴체인** — [wasm-pack 버전 고정 정책](../wasm_pack_version_policy.md).
 - **경계 계약** — [에이전트 경계 무결성 계약](../agent_boundary_contract.md).
 

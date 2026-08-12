@@ -2,13 +2,15 @@
 kind: guide
 status: active
 canonical: mydocs/tech/README.md
-last_verified: 2026-07-19
+last_verified: 2026-08-10
 ---
 
 # tech 문서 지도
 
 `mydocs/tech/`은 rhwp의 **기술 사실, 설계, 결정, 조사 근거**를 보존하는 문서 공간이다.
 반복 작업 절차와 도구 사용법은 [manual 문서 지도](../manual/README.md)에서 찾는다.
+제품 전체의 버전 방향과 우선순위는 루트 [프로젝트 로드맵](../../ROADMAP.md)이 맡고, 이 지도는
+그 단계에서 참조하는 기술 계약과 하위 로드맵을 맡는다.
 
 ## 권위 문서와 진입점
 
@@ -34,11 +36,9 @@ last_verified: 2026-07-19
 | 자율 유지보수 — 병렬 세션·드리프트·엔드게임 | [자율 유지보수 지도](autonomous_maintenance/README.md) | [병렬 세션 규약](autonomous_maintenance/parallel_session_protocol.md), [선등재 패턴](autonomous_maintenance/pre_registration_pattern.md), [드리프트 감지](autonomous_maintenance/drift_detection.md), [엔드게임 판정](autonomous_maintenance/endgame_criteria.md) — 로드맵 #3907 J그룹 |
 | 에이전트 보안 — 문서가 에이전트를 조종하는 경로 | [에이전트 보안 문서 지도](agent_security/README.md) | [위협 모델](agent_security/threat_model.md), [공격 표면](agent_security/attack_surface.md), [소비 에이전트 가이드](agent_security/consumer_guide.md), 로드맵 #3793·구현 #3787 |
 | 신뢰할 수 없는 문서에 대한 경계 | [에이전트 경계 무결성 계약 — 경로·교정단서·자원한계·핸들](agent_boundary_contract.md) | 회귀 `tests/boundary_integrity_contract.rs`, 처리 결과 [task_sec_boundary](../report/task_sec_boundary/README.md) |
-| 에이전트-네이티브 로드맵 R1~R100 (전체 조망의 상세) | [에이전트 로드맵 문서 지도](agent_roadmap/README.md) | 트랙 [A 봉투무결](agent_roadmap/track_a_envelope.md)·[B 가드보안](agent_roadmap/track_b_guards_security.md)·[C 동시성](agent_roadmap/track_c_concurrency.md)·[D 발견](agent_roadmap/track_d_discovery.md)·[E 능력](agent_roadmap/track_e_capabilities.md)·[F 규모](agent_roadmap/track_f_scale_perf.md)·[G 바인딩](agent_roadmap/track_g_bindings.md)·[H MCP](agent_roadmap/track_h_mcp_server.md)·[I 표준](agent_roadmap/track_i_standards.md)·[J 자율](agent_roadmap/track_j_autonomy.md), 조망 이슈 #3907·층 모델 #3880 |
-| 외부 바인딩 공통 기반(M18~M20) | [IR 스키마 버저닝·표면 판단·파이썬 1호 명세](bindings_foundation.md) | 로드맵 #3608 M18~M20, [에이전트 표면 플레이북](../manual/agent_surface_playbook.md) |
+| 프로젝트 로드맵 “AI 활용과 자동화”의 세부 단계 R1~R100 | [에이전트 로드맵 문서 지도](agent_roadmap/README.md) | 트랙 [A 봉투무결](agent_roadmap/track_a_envelope.md)·[B 가드보안](agent_roadmap/track_b_guards_security.md)·[C 동시성](agent_roadmap/track_c_concurrency.md)·[D 발견](agent_roadmap/track_d_discovery.md)·[E 능력](agent_roadmap/track_e_capabilities.md)·[F 규모](agent_roadmap/track_f_scale_perf.md)·[G 바인딩·플랫폼 이력](agent_roadmap/track_g_bindings.md)·[H MCP](agent_roadmap/track_h_mcp_server.md)·[I 표준](agent_roadmap/track_i_standards.md)·[J 자율](agent_roadmap/track_j_autonomy.md), 상위 [프로젝트 로드맵](../../ROADMAP.md)·조망 이슈 #3907·층 모델 #3880 |
 | WASM/브라우저 에이전트 표면(M24) | [WASM 에이전트 표면 문서 지도](wasm_agent_surface/README.md) | [WASM capabilities 자기서술](wasm_agent_surface/self_description.md), [브라우저 MCP-유사 브리지](wasm_agent_surface/browser_bridge.md), [설치 0 온보딩](wasm_agent_surface/zero_install_onboarding.md), 로드맵 #3608 M24·#3869 |
 | 문서 지능 서버(M25) — 파일 감시·워크스페이스·참조 조회 | [문서 지능 서버 문서 지도](document_intelligence/README.md) | [파일 감시와 증분 재파싱](document_intelligence/incremental_reparse.md), [다문서 워크스페이스 핸들](document_intelligence/workspace_handles.md), [참조 조회](document_intelligence/reference_queries.md), 로드맵 #3608 M25 |
-| 바인딩들 사이의 동등성 계약 | [바인딩 동등성 계약](bindings/parity_contract.md) | [바인딩 문서 지도](bindings/README.md), [새 언어 바인딩 추가 절차](bindings/new_binding_guide.md), [파이썬·Node 실측 대조](bindings/python_node_comparison.md) |
 | 이슈별 기술 조사 | [이슈별 기술 조사 지도](investigations/README.md) | [Issue #511 IR wrap 조사](investigations/issue-511/README.md), [Issue #1151 picture TAC 조사](investigations/issue-1151/README.md), [Issue #1584 이후 HWPX 잔여 IR 차이 조사](investigations/issue-1584/README.md), [Issue #1658 페이지네이션 조사](investigations/issue-1658/README.md), [Issue #1772 잔여 OVER 조사](investigations/issue-1772/README.md), [Issue #2125 font ownership 조사](investigations/issue-2125/README.md) |
 
 ## 현재 구조를 읽는 법

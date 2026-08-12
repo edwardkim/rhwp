@@ -602,7 +602,9 @@ impl<'a> ReadState<'a> {
             base_size: parse_attribute(element, b"Height")?.unwrap_or(1000),
             border_fill_id: parse_attribute(element, b"BorderFillId")?.unwrap_or(0),
             text_color: parse_attribute(element, b"TextColor")?.unwrap_or(0),
-            shade_color: parse_attribute(element, b"ShadeColor")?.unwrap_or(0),
+            // 속성 부재 = 음영 없음. 한/글 산출 HML 은 4294967295 를 명시한다 (#4155)
+            shade_color: parse_attribute(element, b"ShadeColor")?
+                .unwrap_or(crate::model::color::NONE),
             ..Default::default()
         };
         if !set_indexed(

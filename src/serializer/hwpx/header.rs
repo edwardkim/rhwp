@@ -609,11 +609,9 @@ fn write_char_pr<W: Write>(
 ) -> Result<(), SerializeError> {
     // 속성 순서 (CharShapeType.cpp:79-86): id, height, textColor, shadeColor,
     // useFontSpace, useKerning, symMark, borderFillIDRef
-    let shade = if cs.shade_color == 0 {
-        "none".to_string()
-    } else {
-        color_hex(cs.shade_color)
-    };
+    // `0xFFFF_FFFF`만 "음영 없음" sentinel 이다. `0x00000000`은 HWP3 팔레트
+    // 검정색을 100% 적용한 실제 음영이므로 #000000으로 보존해야 한다 (#4155).
+    let shade = color_hex(cs.shade_color);
     start_tag_attrs(
         w,
         "hh:charPr",
@@ -2192,6 +2190,24 @@ mod tests {
         assert!(
             xml.contains(r#"<hh:shadow type="NONE""#),
             "shadow NONE 항상 출력: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_char_pr_preserves_opaque_black_shade() {
+        let cs = CharShape {
+            shade_color: 0x0000_0000,
+            ..Default::default()
+        };
+        let xml = write_single_char_pr(&cs);
+
+        assert!(
+            xml.contains(r##"shadeColor="#000000""##),
+            "실제 검정 음영은 none 으로 소거하면 안 된다: {xml}"
+        );
+        assert!(
+            !xml.contains(r#"shadeColor="none""#),
+            "0x00000000은 음영 없음 sentinel 이 아니다: {xml}"
         );
     }
 

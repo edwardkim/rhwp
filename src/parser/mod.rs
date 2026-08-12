@@ -546,6 +546,12 @@ fn apply_hwp3_origin_fixup(doc: &mut Document) {
         .iter()
         .any(|(p, _)| p == crate::model::document::HWP3_ORIGIN_STREAM_PATH)
     {
+        // 마커의 존재 이유가 출처 복원이다 — lineage 를 함께 세워야
+        // `native_hwp5_layout` 이 변환본을 원본 HWP5 로 오판하지 않는다.
+        // (종전에는 휴리스틱(문단>50·shape 비율)만 lineage 를 세워, 마커가
+        // 있는 소형 서식 변환본이 native 로 새어 저장-lineseg 전용 분기가
+        // 발화했다 — issue_1892 자기일관 실측.)
+        doc.provenance.hwp3_lineage = true;
         for section in doc.sections.iter_mut() {
             let pd = &mut section.section_def.page_def;
             if pd.pagination_bottom_tolerance == 0 {

@@ -27,7 +27,8 @@ test('GetTextFile이 TEXT와 UNICODE 코어 경로를 구분한다', () => {
     },
   });
 
-  assert.equal(ctrl.GetTextFile('TEXT', ''), '가&#9702;€');
+  // TEXT 경로도 코어의 `&#N;` escape 를 웹 계약대로 원문으로 되돌려 준다(기안기 실측).
+  assert.equal(ctrl.GetTextFile('TEXT', ''), '가◦€');
   assert.equal(ctrl.GetTextFile('unicode', ''), '가◦€');
   assert.deepEqual(calls, ['TEXT', 'UNICODE']);
 });

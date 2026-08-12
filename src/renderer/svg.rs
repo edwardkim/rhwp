@@ -119,6 +119,12 @@ pub struct SvgRenderer {
     pub font_paths: Vec<std::path::PathBuf>,
     /// 사용된 폰트별 codepoint 수집 (font_family → codepoints)
     font_codepoints: std::collections::HashMap<String, std::collections::HashSet<char>>,
+    /// 실제 Bold face가 필요한 폰트 family.
+    ///
+    /// 한컴 PDF는 `HCRBatang-Bold`처럼 regular와 별도 outline face를 사용한다.
+    /// 일반 face 하나만 `@font-face`로 임베드하면 브라우저가 synthetic bold를
+    /// 적용해 획 두께와 글리프 폭이 기준 PDF와 달라진다.
+    font_bold_families: std::collections::HashSet<String>,
 }
 
 /// 디버그 오버레이용 문단 경계 정보
@@ -192,6 +198,7 @@ impl SvgRenderer {
             font_embed_mode: FontEmbedMode::None,
             font_paths: Vec::new(),
             font_codepoints: std::collections::HashMap::new(),
+            font_bold_families: std::collections::HashSet::new(),
         }
     }
 
@@ -205,6 +212,11 @@ impl SvgRenderer {
         &self,
     ) -> &std::collections::HashMap<String, std::collections::HashSet<char>> {
         &self.font_codepoints
+    }
+
+    /// 문서 CharShape가 bold로 지정한 사용 폰트 family.
+    pub fn font_bold_families(&self) -> &std::collections::HashSet<String> {
+        &self.font_bold_families
     }
 
     /// 렌더 트리를 SVG로 렌더링
@@ -306,6 +318,13 @@ impl SvgRenderer {
                 // 폰트 임베딩: 사용된 폰트/글자 수집
                 if self.font_embed_mode != FontEmbedMode::None && !run.style.font_family.is_empty()
                 {
+                    // SVG 본문에서 `font-weight="bold"`를 내보내는 것과 같은
+                    // 조건을 쓴다. CharShape.bold 외에 family 이름에 명시된 Bold
+                    // face도 실제 Bold outline을 선택해야 synthetic bold가 되지 않는다.
+                    if run.style.is_visually_bold() {
+                        self.font_bold_families
+                            .insert(run.style.font_family.clone());
+                    }
                     let codepoints = self
                         .font_codepoints
                         .entry(run.style.font_family.clone())
@@ -2764,8 +2783,7 @@ impl Renderer for SvgRenderer {
         let clusters = split_into_clusters(text);
 
         // 형광펜 배경 (CharShape.shade_color 기반 — web_canvas.rs와 동일 로직)
-        let shade_rgb = style.shade_color & 0x00FFFFFF;
-        if shade_rgb != 0x00FFFFFF && shade_rgb != 0 {
+        if crate::model::color::char_shade(style.shade_color).is_some() {
             let text_width = *char_positions.last().unwrap_or(&0.0);
             if text_width > 0.0 {
                 self.output.push_str(&format!(
@@ -3497,17 +3515,27 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
         "바탕체" => vec!["바탕체", "BatangChe"],
         "궁서" => vec!["궁서", "Gungsuh"],
         "궁서체" => vec!["궁서체", "GungsuhChe"],
-        // HWPX는 legacy face `한양중고딕`을 보존하지만, 설치된 한양 글꼴의
-        // family/full name은 각각 `HY중고딕`/`HYGothic-Medium`이다. 이 별칭을
-        // `--font-style`과 portable SVG의 local() 해석에 모두 남겨야 글꼴이
-        // 설치된 검증 host에서 Verdana 같은 무관한 폴백이나 두부로 떨어지지 않는다.
-        "한양중고딕" => vec!["한양중고딕", "HY중고딕", "HYGothic-Medium"],
+        // 한컴 2020 PDF 출력은 legacy `한양중고딕`을 HCR Dotum으로 대체한다.
+        // HWPX의 원 face를 먼저 local()로 찾으면 host에 따라 HYGothic 또는 Noto
+        // 로 달라져 기준 PDF와 획·폭이 크게 어긋난다. 한컴 대체 face를 먼저 고정한
+        // 뒤에 원 family/full name을 보조 후보로 남긴다.
+        "한양중고딕" => vec![
+            "HCR Dotum",
+            "함초롬돋움",
+            "한양중고딕",
+            "HY중고딕",
+            "HYGothic-Medium",
+        ],
         "HY중고딕" => vec!["HY중고딕", "HYGothic-Medium"],
         // HMKMM.TTF 같은 legacy 휴먼명조 배포본은 EBDT bitmap strike를 포함하며,
         // Blink/Chrome이 local face를 선택하고도 표준 한글을 .notdef(□)로 그릴 수 있다.
         // SVG 좌표는 이미 조판 결과로 고정되어 있으므로 portable outline serif를 먼저
         // 선택하고, native face는 해당 환경에서 대체글꼴이 없을 때만 마지막에 시도한다.
         "휴먼명조" => vec![
+            // 한컴 2020 PDF가 이 legacy face를 HCR Batang으로 출력한다. HMKMM을
+            // 선택하면 EBDT와 한컴 출력 폭 차이가 함께 발생하므로 HCR을 첫 후보로 둔다.
+            "HCR Batang",
+            "함초롬바탕",
             "Batang",
             "바탕",
             "AppleMyungjo",
@@ -3535,6 +3563,25 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
     }
 }
 
+/// 폰트명 → 실제 Bold face의 local() 별칭.
+///
+/// `@font-face`를 원 family명으로 다시 선언하는 SVG 경로에서는 CSS의
+/// `font-weight="bold"`만으로 시스템의 sibling bold face를 자동 선택하지 못한다.
+/// 한컴 2020 PDF가 쓴 full name을 명시해 synthetic bold를 피한다.
+fn font_local_bold_aliases(font_family: &str) -> Vec<&'static str> {
+    match font_family {
+        "함초롬바탕" | "함초롱바탕" | "한컴바탕" | "휴먼명조" => {
+            vec!["HCR Batang Bold", "함초롬바탕 Bold"]
+        }
+        "함초롬돋움" | "함초롱돋움" | "한컴돋움" | "한양중고딕" | "HY중고딕" =>
+        {
+            vec!["HCR Dotum Bold", "함초롬돋움 Bold"]
+        }
+        "맑은 고딕" | "Malgun Gothic" => vec!["Malgun Gothic Bold", "맑은 고딕 Bold"],
+        _ => vec![],
+    }
+}
+
 /// 폰트명 → 알려진 파일명 매핑 (HWP/한컴/MS 폰트)
 fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
     match font_name {
@@ -3545,7 +3592,11 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
             vec!["hamchod-r.ttf", "HDOTUM.TTF"]
         }
         "HY헤드라인M" | "HYHeadLine M" => vec!["H2HDRM.TTF"],
-        "HY중고딕" | "HYGothic-Medium" | "한양중고딕" => vec!["H2GTRM.TTF"],
+        "HY중고딕" | "HYGothic-Medium" => vec!["H2GTRM.TTF"],
+        // 한컴 2020 PDF는 legacy 한양중고딕을 HCR Dotum으로 출력한다. portable
+        // SVG의 full embed도 같은 대체 face를 넣어야 local() 미설치/Snap sandbox
+        // 환경에서 기준 PDF와 다른 HYGothic·Noto 폭으로 재조판하지 않는다.
+        "한양중고딕" => vec!["HANDotum.ttf", "HDOTUM.TTF", "H2GTRM.TTF"],
         "HY견고딕" | "HYGothic-Extra" | "한양견고딕" => vec!["HYGTRE.TTF"],
         "HY그래픽" | "HYGraphic-Medium" => vec!["HYGPRM.TTF"],
         "HY견명조" | "HYMyeongJo-Extra" | "한양견명조" => vec!["HYMJRE.TTF"],
@@ -3566,12 +3617,32 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         "궁서" | "Gungsuh" => vec!["gungsuh.ttc", "GUNGSUH.TTC", "hamchob-r.ttf"],
         "굴림체" | "GulimChe" => vec!["gulim.ttc", "hamchod-r.ttf"],
         "바탕체" | "BatangChe" => vec!["batang.ttc", "hamchob-r.ttf"],
-        // Human Myeongjo의 실제 배포 파일은 HMKMM.TTF다. HYMJRE은 HY견명조라
-        // `휴먼명조` SVG를 임베드/스타일로 내보낼 때 우선 후보가 될 수 없다.
-        "휴먼명조" => vec!["HMKMM.TTF", "HYMJRE.TTF", "hamchob-r.ttf"],
+        // 한컴 2020 PDF는 legacy 휴먼명조를 HCR Batang으로 출력한다. HMKMM은
+        // EBDT bitmap strike를 포함해 Chrome에서 두부 또는 폭 차이를 만들므로,
+        // full embed도 기준 출력과 같은 HCR Batang을 우선한다.
+        "휴먼명조" => vec!["HANBatang.ttf", "HBATANG.TTF", "HMKMM.TTF", "hamchob-r.ttf"],
         "새바탕" | "새돋움" | "새굴림" | "새궁서" => {
             vec!["hamchob-r.ttf", "hamchod-r.ttf"]
         }
+        _ => vec![],
+    }
+}
+
+/// 폰트명 → 한컴 2020 출력과 대응되는 Bold TTF 후보.
+///
+/// regular 파일에 CSS `font-weight: bold`를 적용하면 Blink가 합성 굵기를 만든다.
+/// HWP 2020 PDF는 HCR의 실제 Bold face를 내장하므로, portable SVG도 같은 face를
+/// 별도 선언해야 글리프 폭과 획 두께가 유지된다.
+fn known_bold_font_filenames(font_name: &str) -> Vec<&'static str> {
+    match font_name {
+        "함초롬바탕" | "함초롱바탕" | "한컴바탕" | "휴먼명조" => {
+            vec!["HANBatangB.ttf", "HBATANGB.TTF"]
+        }
+        "함초롬돋움" | "함초롱돋움" | "한컴돋움" | "한양중고딕" | "HY중고딕" =>
+        {
+            vec!["HANDotumB.ttf", "HDOTUMB.TTF", "H2GTRB.TTF"]
+        }
+        "맑은 고딕" | "Malgun Gothic" => vec!["malgunbd.ttf", "MalgunGothicBold.ttf"],
         _ => vec![],
     }
 }
@@ -3608,19 +3679,26 @@ fn korean_gothic_substitute(font_name: &str) -> Option<&'static str> {
 
 /// 폰트명으로 TTF/OTF 파일을 탐색한다.
 #[cfg(not(target_arch = "wasm32"))]
-fn find_font_file(
+fn find_font_file_with_weight(
     font_name: &str,
     extra_paths: &[std::path::PathBuf],
+    bold: bool,
 ) -> Option<std::path::PathBuf> {
     use std::path::Path;
 
     // 폰트명 → 파일명 후보 생성
     let candidates: Vec<String> = {
-        let mut files: Vec<String> = known_font_filenames(font_name)
-            .iter()
-            .map(|s| s.to_string())
-            .collect();
-        let aliases = font_local_aliases(font_name);
+        let known_files = if bold {
+            known_bold_font_filenames(font_name)
+        } else {
+            known_font_filenames(font_name)
+        };
+        let mut files: Vec<String> = known_files.iter().map(|s| s.to_string()).collect();
+        let aliases = if bold {
+            font_local_bold_aliases(font_name)
+        } else {
+            font_local_aliases(font_name)
+        };
         let mut names = vec![font_name.to_string()];
         for a in &aliases {
             names.push(a.to_string());
@@ -3640,8 +3718,10 @@ fn find_font_file(
         // Task #1224: 고딕 계열은 오픈소스 대체(Noto Sans KR ExtraLight)를 최후 후보로 추가.
         // 실제 저작권 폰트가 앞선 탐색 경로에 있으면 그쪽이 우선하므로, 대체는
         // 탐색 경로 말단(ttfs/opensource)에서만 매칭된다.
-        if let Some(sub) = korean_gothic_substitute(font_name) {
-            files.push(sub.to_string());
+        if !bold {
+            if let Some(sub) = korean_gothic_substitute(font_name) {
+                files.push(sub.to_string());
+            }
         }
         files
     };
@@ -3665,6 +3745,24 @@ fn find_font_file(
         }
     }
     None
+}
+
+/// regular face 파일을 찾는다.
+#[cfg(not(target_arch = "wasm32"))]
+fn find_font_file(
+    font_name: &str,
+    extra_paths: &[std::path::PathBuf],
+) -> Option<std::path::PathBuf> {
+    find_font_file_with_weight(font_name, extra_paths, false)
+}
+
+/// 실제 Bold face 파일을 찾는다.
+#[cfg(not(target_arch = "wasm32"))]
+fn find_bold_font_file(
+    font_name: &str,
+    extra_paths: &[std::path::PathBuf],
+) -> Option<std::path::PathBuf> {
+    find_font_file_with_weight(font_name, extra_paths, true)
 }
 
 /// [#2524] 문서 임베디드(BinData) 폰트를 @font-face 로 직접 임베딩한다.
@@ -3698,6 +3796,52 @@ fn font_data_uri_format(bytes: &[u8]) -> (&'static str, &'static str) {
         // 0x00010000 (TrueType) · "true" · "ttcf"(TTC) 등은 truetype 으로 취급
         _ => ("font/ttf", "truetype"),
     }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn append_local_bold_font_face_css(css: &mut String, font_name: &str) {
+    let aliases = font_local_bold_aliases(font_name);
+    if aliases.is_empty() {
+        return;
+    }
+    let src = aliases
+        .iter()
+        .map(|alias| format!("local(\"{}\")", alias))
+        .collect::<Vec<_>>()
+        .join(", ");
+    css.push_str(&format!(
+        "@font-face {{ font-family: \"{}\"; src: {}; font-weight: bold; }}\n",
+        font_name, src,
+    ));
+}
+
+/// 실제 Bold face를 data-URI로 추가한다.
+///
+/// 서브셋 경로도 Bold는 전체 파일을 사용한다. 현재 subsetter 산출물은 browser
+/// `<text>`에서 필요한 cmap를 보존하지 않는 경우가 있어, real Bold 대신
+/// synthetic bold로 되돌아가는 것보다 원본 face를 보존하는 편이 정확하다.
+#[cfg(not(target_arch = "wasm32"))]
+fn append_embedded_bold_font_face_css(
+    css: &mut String,
+    font_name: &str,
+    font_paths: &[std::path::PathBuf],
+) {
+    if let Some(font_path) = find_bold_font_file(font_name, font_paths) {
+        if let Ok(font_data) = std::fs::read(&font_path) {
+            let b64 = base64::engine::general_purpose::STANDARD.encode(&font_data);
+            css.push_str(&format!(
+                "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); font-weight: bold; }}\n",
+                font_name, b64,
+            ));
+            eprintln!(
+                "  [font-embed] {} Bold → 전체 {:.1}KB",
+                font_name,
+                font_data.len() as f64 / 1024.0
+            );
+            return;
+        }
+    }
+    append_local_bold_font_face_css(css, font_name);
 }
 
 /// 렌더 결과에서 실제 사용된 문서 내장 폰트만 data-URI `@font-face`로 만든다.
@@ -3755,6 +3899,9 @@ pub fn generate_font_style(
                     "@font-face {{ font-family: \"{}\"; src: {}; }}\n",
                     font_name, src,
                 ));
+                if renderer.font_bold_families().contains(font_name) {
+                    append_local_bold_font_face_css(&mut css, font_name);
+                }
             }
         }
         FontEmbedMode::Subset => {
@@ -3785,6 +3932,11 @@ pub fn generate_font_style(
                                     "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); }}\n",
                                     font_name, b64,
                                 ));
+                                if renderer.font_bold_families().contains(font_name) {
+                                    append_embedded_bold_font_face_css(
+                                        &mut css, font_name, font_paths,
+                                    );
+                                }
                                 eprintln!(
                                     "  [font-embed] {} → 서브셋 {:.1}KB ({}글자, 원본 {:.1}KB)",
                                     font_name,
@@ -3818,6 +3970,9 @@ pub fn generate_font_style(
                     "@font-face {{ font-family: \"{}\"; src: {}; }}\n",
                     font_name, src,
                 ));
+                if renderer.font_bold_families().contains(font_name) {
+                    append_local_bold_font_face_css(&mut css, font_name);
+                }
             }
         }
         FontEmbedMode::Full => {
@@ -3833,6 +3988,9 @@ pub fn generate_font_style(
                             "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); }}\n",
                             font_name, b64,
                         ));
+                        if renderer.font_bold_families().contains(font_name) {
+                            append_embedded_bold_font_face_css(&mut css, font_name, font_paths);
+                        }
                         eprintln!(
                             "  [font-embed] {} → 전체 {:.1}KB",
                             font_name,
@@ -3856,6 +4014,9 @@ pub fn generate_font_style(
                     "@font-face {{ font-family: \"{}\"; src: {}; }}\n",
                     font_name, src,
                 ));
+                if renderer.font_bold_families().contains(font_name) {
+                    append_local_bold_font_face_css(&mut css, font_name);
+                }
             }
         }
         FontEmbedMode::None => {}

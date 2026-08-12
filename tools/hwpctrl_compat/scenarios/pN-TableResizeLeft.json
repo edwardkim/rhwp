@@ -1,0 +1,90 @@
+{
+  "id": "pN-TableResizeLeft",
+  "title": "TableResizeLeft — 저장본 자취로 잰다",
+  "note": "어느 API 도 결과를 안 비추는 계열이라 **저장본 앞뒤 차분**으로 잰다(계획서 §4.21). 첫 저장(`w`)은 재지 않고 버려 문서를 연 뒤 첫 저장에만 붙는 비결정 비트를 재는 자리 밖으로 뺀다.\n\n**액션 하나에 문서 하나다.** 이어 걸면 한글이 다음 저장에서 셀 안을 다시 조판해 `line_segs.segment_width` 가 새어 들어온다 — 그 액션이 한 일이 아닌 것이 자취에 섞인다.\n\n`ignorePaths` 는 모두 **잰 부산물**이다. `list_header_width_ref` 는 이름과 달리 폭이 아니라 속성 상위 16비트이고 그 bit 8 은 '방금 크기를 바꾼 칸' 표시인데, 한글이 저장한 HWPX 에 대응물이 아예 없다(441칸 전부 같은 속성) — 변환에서 버려지는 값이라 문서 뜻이 아니다. `raw_table_record_attr`·`attr` 의 비트도 같은 '고쳤음' 부류다. **진짜 폭은 `raw_list_extra` 앞머리에 있고 그것은 견준다.**\n\n`list_header_width_ref` 를 가리는 이유는 한 가지 더 있다. **한글은 저장할 때 이 필드를 정규화한다** — 원본 표본의 값(4 · 1024 …)을 한글이 저장하면 1028 · 0 이 되고 441칸 중 398칸이 0 이 된다. rhwp 는 원본을 그대로 보존하므로 두 저장본의 **바탕값이 원래 다르다.** 그래도 이 액션이 만든 **변화량은 양쪽이 +256 으로 똑같다**(bit 8). 절대값을 견주면 영원히 안 맞고, 견줘야 할 것은 이미 다른 줄들이 대신 본다.",
+  "ledger": [
+    "Action.TableResizeLeft"
+  ],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pN-TableResizeLeft-w.hwp",
+      "posix": "{out}/pN-TableResizeLeft-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pN-TableResizeLeft-a.hwp",
+      "posix": "{out}/pN-TableResizeLeft-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pN-TableResizeLeft-b.hwp",
+      "posix": "{out}/pN-TableResizeLeft-b.hwp"
+    }
+  },
+  "ignorePaths": [
+    "list_header_width_ref",
+    "raw_table_record_attr",
+    "common.attr",
+    "common.hwp5_gen_shape_attr_bit28",
+    "controls[0].attr",
+    "raw_ctrl_data[3]"
+  ],
+  "deltas": [
+    {
+      "from": "a",
+      "to": "b",
+      "label": "TableResizeLeft"
+    }
+  ],
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        2,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlock"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableResizeLeft"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

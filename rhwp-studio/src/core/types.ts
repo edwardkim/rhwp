@@ -567,8 +567,15 @@ export interface ControlLayoutItem {
   plane?: number;
   /** [Task #1280 v2] 개체 z-order (작을수록 먼저 그림 = 아래). */
   zOrder?: number;
-  /** [Task #1280 v2] 같은 plane/zOrder 내 안정 정렬 tie-breaker. */
-  stableIndex?: number;
+  /**
+   * [Task #1280 v2] 같은 plane/zOrder 내 안정 정렬 tie-breaker.
+   * [#4334] 더 이상 스칼라가 아니다 — 문서 경로 배열
+   * `[secIdx, paraIdx, ...셀 경로(controlIdx,cellIdx,cellParaIdx)*, controlIdx]`
+   * (`doc_path_for_node`, render_tree.rs). `next_id()` 카운터에도, layer 유무에 따라
+   * 서로 다른 자릿수 공간을 쓰던 예전 패킹된 u32 에도 의존하지 않는다. 사전식 비교
+   * (`compareLexArrays`, input-handler-picture.ts) 로 정렬한다.
+   */
+  stableIndex?: number[];
   /** [Task #1280 v2] 텍스트 어울림 모드(이미지뿐 아니라 shape/line/group에도 노출). */
   wrap?: string;
   /**

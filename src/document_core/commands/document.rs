@@ -1715,22 +1715,8 @@ impl DocumentCore {
         let (_, doc) = self.snapshot_store[idx].clone();
         self.document = doc;
         self.bump_bin_data_epoch();
-        // 캐시 전체 재구성
-        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
-        self.composed = self
-            .document
-            .sections
-            .iter()
-            .map(|s| compose_section(s))
-            .collect();
-        self.mark_all_sections_dirty();
-        self.measured_tables.clear();
-        self.measured_sections.clear();
-        self.dirty_paragraphs.clear();
-        self.para_column_map.clear();
-        self.page_tree_cache.borrow_mut().clear();
-        self.overflow_links_cache.borrow_mut().clear();
-        self.paginate();
+        // 문서를 통째로 갈아끼웠으므로 파생 상태는 전부 새 원본에서 다시 만든다.
+        self.rebuild_derived_state();
         Ok(super::super::helpers::json_ok())
     }
 

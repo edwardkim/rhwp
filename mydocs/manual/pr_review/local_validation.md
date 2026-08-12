@@ -263,8 +263,8 @@ npm/editor의 public API, transport, index.d.ts, README 또는 package manifest 
 ~~~bash
 npm --prefix npm/editor test
 node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
-(cd rhwp-studio && npx tsc --noEmit --skipLibCheck ../npm/editor/index.d.ts)
-npm --prefix npm/editor pack --dry-run --json
+(cd rhwp-studio && npx tsc --ignoreConfig --noEmit --skipLibCheck ../npm/editor/index.d.ts)
+(cd npm/editor && npm pack --dry-run --json)
 ~~~
 
 iframe RPC 완료 시점이나 기본 옵션이 바뀌면 fresh WASM build와 실행 중인 Vite 또는 새 Vite를 사용해

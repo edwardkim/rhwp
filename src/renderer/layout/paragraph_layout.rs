@@ -63,7 +63,9 @@ fn should_wrap_middle_anchored_table(
     table_footprint: f64,
     line_width: f64,
 ) -> bool {
-    control_position.is_some_and(|position| position > 0 && position < text_len)
+    // [#4370] 끝 앵커(position == text_len)도 포함한다 — 본문 텍스트 뒤에 붙은
+    // tac 표가 남은 줄 폭에 안 들어가면 페이지 우측 밖으로 방출되던 결함.
+    control_position.is_some_and(|position| position > 0 && position <= text_len)
         && occupied_width > 1.0
         && occupied_width + table_footprint > line_width + 0.5
 }
@@ -1009,6 +1011,7 @@ fn compute_line_extra_spacing(
     alignment: Alignment,
     in_cell: bool,
     needs_justify: bool,
+    justify_spaces_only: bool,
     needs_distribute: bool,
     has_tabs: bool,
     suppress_cell_overflow_spacing: bool,
@@ -1172,7 +1175,12 @@ fn compute_line_extra_spacing(
         } else if total_char_count > 1 {
             // 양쪽 정렬이지만 공백 없음 (일본어/숫자 등):
             let slack = available_width - total_text_width;
-            if leader_dashes > 0 && slack > 0.0 {
+            if justify_spaces_only && slack > 0.0 {
+                // [#4516] 머리말/꼬리말 예외로만 justify 된 마지막 줄은 한컴처럼
+                // **공백만** 벌린다. 공백 없는 줄(영문 문서번호 등)에 양수 slack 을
+                // 자간으로 살포하면 글자가 전체 폭으로 흩어지므로 자연 폭 유지.
+                (0.0, 0.0, 0.0)
+            } else if leader_dashes > 0 && slack > 0.0 {
                 (0.0, 0.0, slack / leader_dashes as f64)
             } else if suppress_cell_overflow_spacing && slack < 0.0 {
                 // 셀의 좁은 내부 폭은 줄바꿈 기준일 뿐, 숫자/문자를 수평 압축하지 않는다.
@@ -3697,6 +3705,12 @@ impl LayoutEngine {
                 has_forced_break,
             );
             let needs_distribute = alignment == Alignment::Distribute;
+            // [#4516] 머리말/꼬리말 마지막 줄 예외로만 성립한 justify 는 공백에만
+            // 배분한다 (공백 없는 줄은 자연 폭 유지).
+            let justify_spaces_only = needs_justify
+                && alignment == Alignment::Justify
+                && is_last_line_of_para
+                && is_header_footer_para;
 
             let has_tabs = comp_line.runs.iter().any(|r| r.text.contains('\t'));
             // 자간은 **그려지는 글자**에 나눠 붙으므로 폭(`total_text_width`)과 같은
@@ -3729,6 +3743,7 @@ impl LayoutEngine {
                     alignment,
                     cell_ctx.is_some(),
                     needs_justify,
+                    justify_spaces_only,
                     needs_distribute,
                     has_tabs,
                     suppress_cell_overflow_spacing,
@@ -3825,14 +3840,30 @@ impl LayoutEngine {
             } else {
                 effective_col_x + effective_margin_left
             };
-            // 한글은 셀 밖 오른쪽 정렬 폭에서 말미 공백을 제외한다
+            // 한글은 셀 밖 오른쪽/가운데 정렬 폭에서 말미 공백을 제외한다
             // (needs_justify 의 후행 공백 제외와 동일 규칙). 포함하면
             // [그림+말미공백72] 꼬리말이 공백 폭(447px)만큼 왼쪽으로 이탈 —
-            // 식약처 보도자료 OPEN 로고 실측(한글 x=607.3). 반례: 셀 내부는
-            // 한글이 말미 공백을 포함해 정렬(issue_1285 수험번호 TAC 우단
-            // = 셀 inner 우단 오라클 앵커) — cell_ctx 부재로 한정. Center 도
-            // 근거 부재로 기존 동작 유지.
-            let right_trailing_ws_width = if alignment == Alignment::Right && cell_ctx.is_none() {
+            // 식약처 보도자료 OPEN 로고 실측(한글 x=607.3). Center 는 30213
+            // 의결서 위원 서명 줄 실측(말미 공백 8칸 포함 줄만 한글 대비 43px
+            // 좌측 이탈, 한글 PDF x=229.56pt 는 공백 제외 중심). 반례 셋으로
+            // 한정한다: ① 셀 내부는 한글이 말미 공백을 포함해 정렬(issue_1285
+            // 수험번호 TAC 우단 = 셀 inner 우단 오라클 앵커) — cell_ctx 부재.
+            // ② soft-wrap 지점의 줄끝 공백은 포함 — 문단 마지막 줄 한정.
+            // ③ TAC 컨트롤이 있는 줄은 공백이 시각적 말미가 아니다 —
+            // line_tac_offsets_for_width 비어 있을 때 한정. ④ 전부 공백인
+            // 줄(밑줄 친 서명란)과 밑줄 스타일 말미 공백은 보이는 콘텐츠라
+            // 유지(issue_157 직선 골든 — 제외하면 우측 클립까지 이탈).
+            let center_excludes_trailing_ws = alignment == Alignment::Center
+                && cell_ctx.is_none()
+                && is_last_line_of_para
+                && line_tac_offsets_for_width.is_empty()
+                && comp_line
+                    .runs
+                    .iter()
+                    .any(|r| r.text.chars().any(|c| c != ' '));
+            let trailing_ws_width = if (alignment == Alignment::Right && cell_ctx.is_none())
+                || center_excludes_trailing_ws
+            {
                 // 말미 공백이 서로 다른 글꼴/글자 크기의 run 경계를 넘을 수 있다.
                 // 전체 공백을 마지막 run의 style로 재측정하면 그만큼 오른쪽 앵커를
                 // 틀리게 복원하므로, 뒤에서부터 각 run의 실제 style 폭을 더한다.
@@ -3843,6 +3874,13 @@ impl LayoutEngine {
                         break;
                     }
                     let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    // ④ 밑줄 친 말미 공백은 보이는 콘텐츠 — Center 는 제외 대상에서
+                    // 뺀다(Right 는 기존 검증 동작 유지).
+                    if center_excludes_trailing_ws
+                        && ts.underline != crate::renderer::UnderlineType::None
+                    {
+                        break;
+                    }
                     width += estimate_text_width(&" ".repeat(trailing_spaces), &ts);
                     if trailing_spaces != run.text.chars().count() {
                         break;
@@ -3859,7 +3897,8 @@ impl LayoutEngine {
                     } else if non_cell_tac_only_line {
                         0.0
                     } else {
-                        (available_width - effective_text_width).max(0.0) / 2.0
+                        (available_width - (effective_text_width - trailing_ws_width)).max(0.0)
+                            / 2.0
                     };
                     x_base + inline_offset + num_x_offset + align_offset
                 }
@@ -3875,8 +3914,7 @@ impl LayoutEngine {
                     x_base
                         + inline_offset
                         + num_x_offset
-                        + (available_width - (effective_text_width - right_trailing_ws_width))
-                            .max(0.0)
+                        + (available_width - (effective_text_width - trailing_ws_width)).max(0.0)
                 }
                 _ => x_base + inline_offset + num_x_offset, // Left, Justify, Split, Distribute(분배중)
             };
@@ -6862,6 +6900,57 @@ pub(crate) struct ParaInlineState {
 }
 
 #[cfg(test)]
+mod issue_4370_tac_table_wrap_tests {
+    use super::should_wrap_middle_anchored_table;
+
+    /// [#4370] 끝 앵커(텍스트 마지막 문자 뒤) tac 표도 남은 폭 초과 시 wrap 된다.
+    #[test]
+    fn end_anchored_table_wraps_when_exceeding_line_width() {
+        assert!(should_wrap_middle_anchored_table(
+            Some(25),
+            25,
+            300.0,
+            480.0,
+            567.0
+        ));
+    }
+
+    #[test]
+    fn end_anchored_table_stays_inline_when_it_fits() {
+        assert!(!should_wrap_middle_anchored_table(
+            Some(25),
+            25,
+            300.0,
+            200.0,
+            567.0
+        ));
+    }
+
+    /// 문단 선두 앵커(position == 0)는 점유 폭이 없으므로 wrap 하지 않는다.
+    #[test]
+    fn leading_anchor_never_wraps() {
+        assert!(!should_wrap_middle_anchored_table(
+            Some(0),
+            25,
+            0.0,
+            480.0,
+            567.0
+        ));
+    }
+
+    #[test]
+    fn middle_anchor_wrap_preserved() {
+        assert!(should_wrap_middle_anchored_table(
+            Some(10),
+            20,
+            120.0,
+            480.0,
+            567.0
+        ));
+    }
+}
+
+#[cfg(test)]
 mod issue_2809_split_alignment_tests {
     use super::{compute_line_extra_spacing, needs_word_distribution};
     use crate::model::style::Alignment;
@@ -6925,6 +7014,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             5,
             30.0,
             90.0,
@@ -6958,6 +7048,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             5,
             total_text_width,
             90.0,
@@ -6975,6 +7066,62 @@ mod issue_2809_split_alignment_tests {
         assert!((advance + trailing_ink_overhang - 90.0).abs() < 0.001);
         assert_eq!(extra_char, 0.0);
         assert_eq!(extra_dash, 0.0);
+    }
+
+    /// [#4516] 머리말/꼬리말 예외로만 justify 된 마지막 줄: 공백 없는 영문
+    /// 문서번호에 양수 slack 을 자간으로 살포하지 않는다 (자연 폭 유지).
+    #[test]
+    fn footer_last_line_justify_without_spaces_keeps_natural_width() {
+        let line = ComposedLine {
+            runs: vec![ComposedTextRun {
+                text: "RVT-QI-02-03".to_string(),
+                ..Default::default()
+            }],
+            line_height: 1120,
+            baseline_distance: 952,
+            segment_width: 48188,
+            column_start: 0,
+            line_spacing: 560,
+            has_line_break: false,
+            char_start: 0,
+        };
+        // 꼬리말 마지막 줄 예외 (justify_spaces_only = true): 분배 없음
+        let (extra_word, extra_char, extra_dash) = compute_line_extra_spacing(
+            &line,
+            &ResolvedStyleSet::default(),
+            Alignment::Justify,
+            false,
+            true,
+            true,
+            false,
+            false,
+            false,
+            12,
+            62.5,
+            481.8,
+            40.0,
+        );
+        assert_eq!(extra_word, 0.0);
+        assert_eq!(extra_char, 0.0);
+        assert_eq!(extra_dash, 0.0);
+
+        // 본문 중간 줄 justify (justify_spaces_only = false): 기존 자간 분배 유지
+        let (_, extra_char_mid, _) = compute_line_extra_spacing(
+            &line,
+            &ResolvedStyleSet::default(),
+            Alignment::Justify,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            12,
+            62.5,
+            481.8,
+            40.0,
+        );
+        assert!(extra_char_mid > 0.0);
     }
 }
 

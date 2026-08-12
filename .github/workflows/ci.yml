@@ -41,6 +41,12 @@ on:
       - '.github/dependabot.yml'
       - 'rhwp-logo.*'
   workflow_dispatch:
+    inputs:
+      release_grade:
+        description: Run cold-cache-tolerant release-profile test archives.
+        required: true
+        default: false
+        type: boolean
 
 env:
   CARGO_TERM_COLOR: always
@@ -66,9 +72,9 @@ jobs:
       fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
       reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
       candidate_sha: ${{ steps.finalize.outputs.candidate_sha || '' }}
-      # [#3790 Stage 4] frontend_mode·render_required에 더해 rust_required와
-      # native_skia_required를 실제 worker 조건에 사용한다. CodeQL은 Stage 5까지 유지한다.
-      # 모든 기본값은 full lane이다.
+      # [#3790 Stage 4·5B] frontend_mode·render_required·rust_required·
+      # native_skia_required는 이 workflow의 worker 조건에 사용한다. codeql_languages는
+      # codeql.yml이 같은 trusted-base 판정으로 소비한다. 모든 기본값은 full lane이다.
       rust_required: ${{ steps.impact.outputs.rust_required || 'true' }}
       frontend_mode: ${{ steps.impact.outputs.frontend_mode || 'package' }}
       render_required: ${{ steps.impact.outputs.render_required || 'true' }}
@@ -78,8 +84,70 @@ jobs:
       classifier_version: ${{ steps.impact.outputs.classifier_version || 'unavailable' }}
       impact_reason: ${{ steps.impact.outputs.reason || 'fail-closed:impact-unavailable' }}
       impact_authority: ${{ steps.collect-impact.outputs.authority || 'unavailable' }}
+      # [#4029] CI test profile과 archive timeout은 한 step에서 함께 결정한다. output 부재는
+      # 검증 강도를 낮추지 않도록 release/60으로 닫는다.
+      test_profile: ${{ steps.test-policy.outputs.cargo_profile || 'release' }}
+      test_archive_timeout_minutes: ${{ steps.test-policy.outputs.timeout_minutes || '60' }}
 
     steps:
+      - name: Select test profile policy
+        id: test-policy
+        shell: bash
+        env:
+          RELEASE_GRADE: ${{ github.event.inputs.release_grade || 'false' }}
+        run: |
+          set -euo pipefail
+
+          cargo_profile='release'
+          timeout_minutes='60'
+          reason='fail-closed:unexpected-event'
+
+          case "${GITHUB_EVENT_NAME}:${GITHUB_REF}" in
+            pull_request:*)
+              cargo_profile='release-test'
+              timeout_minutes='30'
+              reason='pull-request-regression'
+              ;;
+            push:refs/heads/devel)
+              cargo_profile='release-test'
+              timeout_minutes='30'
+              reason='devel-regression'
+              ;;
+            push:refs/heads/main)
+              reason='main-release-grade'
+              ;;
+            push:refs/tags/v*)
+              reason='tag-release-grade'
+              ;;
+            workflow_dispatch:*)
+              case "${RELEASE_GRADE}" in
+                true)
+                  reason='manual-release-grade'
+                  ;;
+                false|'')
+                  cargo_profile='release-test'
+                  timeout_minutes='30'
+                  reason='manual-regression'
+                  ;;
+                *)
+                  reason='fail-closed:invalid-release-grade-input'
+                  ;;
+              esac
+              ;;
+          esac
+
+          printf 'cargo_profile=%s\ntimeout_minutes=%s\n' \
+            "${cargo_profile}" "${timeout_minutes}" >> "${GITHUB_OUTPUT}"
+          {
+            echo '### CI test profile policy'
+            echo
+            echo '| event | ref | release_grade | cargo_profile | timeout_minutes | reason |'
+            echo '| --- | --- | --- | --- | ---: | --- |'
+            printf "| \`%s\` | \`%s\` | \`%s\` | \`%s\` | \`%s\` | \`%s\` |\n" \
+              "${GITHUB_EVENT_NAME}" "${GITHUB_REF}" "${RELEASE_GRADE}" \
+              "${cargo_profile}" "${timeout_minutes}" "${reason}"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
       - name: Detect review-only fast pass
         id: detect
         continue-on-error: true
@@ -599,7 +667,7 @@ jobs:
           {
             echo '### CI impact classification'
             echo
-            echo '> Stage 4 activates frontend_mode, render_required, rust_required, and native_skia_required. CodeQL remains unchanged.'
+            echo '> Stage 4 activates frontend_mode, render_required, rust_required, and native_skia_required. Stage 5B consumes codeql_languages in codeql.yml.'
             echo '> Pull requests classify with the base SHA classifier; workflow_dispatch and all failures select the full lane.'
             echo
             echo '| Axis | Value |'
@@ -648,6 +716,8 @@ jobs:
       builder: slow
       archive_labels: "slow 2"
       expected_count_suffix: slow
+      cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
+      timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
 
   build-test-archive-a:
     uses: ./.github/workflows/build-nextest-archives.yml
@@ -677,6 +747,8 @@ jobs:
       builder: a
       archive_labels: "1"
       expected_count_suffix: a
+      cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
+      timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
 
   build-test-archive-b:
     uses: ./.github/workflows/build-nextest-archives.yml
@@ -706,6 +778,8 @@ jobs:
       builder: b
       archive_labels: "3"
       expected_count_suffix: b
+      cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
+      timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
 
   test-slow-shard:
     uses: ./.github/workflows/run-nextest-archives.yml
@@ -825,13 +899,15 @@ jobs:
       - name: Validate workflow contracts
         run: |
           python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
+          python3 -m unittest scripts/tests/test_cancel_stale_pr_runs_workflow.py
           python3 -m unittest scripts/tests/test_codeql_workflow.py
-          python3 -m unittest scripts/tests/test_docker_publish_workflow.py
-          python3 -m unittest scripts/tests/test_release_installers_workflow.py
-          python3 -m unittest scripts/tests/test_release_packages_workflow.py
+          python3 -m unittest scripts/tests/test_nextest_archive_workflow.py
+          python3 -m unittest scripts/tests/test_release_channel_policy_workflow.py
           python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
-          python3 -m unittest scripts/tests/test_setup_action.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
+
+      - name: Validate gym scorer contracts
+        run: python3 -m unittest scripts/tests/test_gym_score.py
 
       - name: Clippy
         run: cargo clippy -- -D warnings
@@ -923,28 +999,38 @@ jobs:
             libfreetype6-dev
 
       - name: Native Skia tests
+        env:
+          TEST_PROFILE: ${{ needs.preflight.outputs.test_profile || 'release' }}
         run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
-            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
-            cargo test --profile release-test --features native-skia skia --lib --verbose
-            cargo test --profile release-test --features native-skia --test cli_exit_codes_native --verbose
-            cargo test --profile release-test --features native-skia --test issue_1144_native --verbose
-            cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder --verbose
-            cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export --verbose
-            cargo test --profile release-test --features native-skia --test issue_2083_hide_fill_page_background --verbose
-            cargo test --profile release-test --features native-skia --test issue_2292_chart_png_clip --verbose
-            cargo test --profile release-test --features native-skia --test issue_2293_chart_png_text --verbose
-          else
-            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
-            cargo test --release --features native-skia skia --lib --verbose
-            cargo test --release --features native-skia --test cli_exit_codes_native --verbose
-            cargo test --release --features native-skia --test issue_1144_native --verbose
-            cargo test --release --features native-skia --test issue_2225_missing_picture_placeholder --verbose
-            cargo test --release --features native-skia --test render_p37_direct_pdf_export --verbose
-            cargo test --release --features native-skia --test issue_2083_hide_fill_page_background --verbose
-            cargo test --release --features native-skia --test issue_2292_chart_png_clip --verbose
-            cargo test --release --features native-skia --test issue_2293_chart_png_text --verbose
-          fi
+          set -euo pipefail
+          case "${TEST_PROFILE}" in
+            release-test)
+              echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+              cargo test --profile release-test --features native-skia skia --lib --verbose
+              cargo test --profile release-test --features native-skia --test cli_exit_codes_native --verbose
+              cargo test --profile release-test --features native-skia --test issue_1144_native --verbose
+              cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder --verbose
+              cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export --verbose
+              cargo test --profile release-test --features native-skia --test issue_2083_hide_fill_page_background --verbose
+              cargo test --profile release-test --features native-skia --test issue_2292_chart_png_clip --verbose
+              cargo test --profile release-test --features native-skia --test issue_2293_chart_png_text --verbose
+              ;;
+            release)
+              echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+              cargo test --release --features native-skia skia --lib --verbose
+              cargo test --release --features native-skia --test cli_exit_codes_native --verbose
+              cargo test --release --features native-skia --test issue_1144_native --verbose
+              cargo test --release --features native-skia --test issue_2225_missing_picture_placeholder --verbose
+              cargo test --release --features native-skia --test render_p37_direct_pdf_export --verbose
+              cargo test --release --features native-skia --test issue_2083_hide_fill_page_background --verbose
+              cargo test --release --features native-skia --test issue_2292_chart_png_clip --verbose
+              cargo test --release --features native-skia --test issue_2293_chart_png_text --verbose
+              ;;
+            *)
+              echo "::error::Unknown test profile: ${TEST_PROFILE}"
+              exit 1
+              ;;
+          esac
 
   frontend-unit-gates:
     name: Frontend unit gates

@@ -407,6 +407,7 @@ pub struct MeasuredSection {
 pub struct HeightMeasurer {
     dpi: f64,
     is_hwp3_variant: bool,
+    is_native_hwp5: bool,
     use_hwp3_origin_flow_spacing_before: bool,
     render_normalization:
         std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
@@ -417,6 +418,7 @@ impl HeightMeasurer {
         Self {
             dpi,
             is_hwp3_variant: false,
+            is_native_hwp5: false,
             use_hwp3_origin_flow_spacing_before: false,
             render_normalization: std::sync::Arc::new(
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
@@ -427,6 +429,13 @@ impl HeightMeasurer {
     pub fn with_hwp3_variant(mut self, enabled: bool) -> Self {
         self.is_hwp3_variant = enabled;
         self.use_hwp3_origin_flow_spacing_before = enabled;
+        self
+    }
+
+    /// [#4533] hwp5 네이티브 프로파일 — 저장 vpos 사다리를 셀 콘텐츠 끝점의
+    /// 정본으로 신뢰할 수 있는 문서에서만 켠다 (HWPX 계산-lineseg 제외).
+    pub fn with_native_hwp5(mut self, enabled: bool) -> Self {
+        self.is_native_hwp5 = enabled;
         self
     }
 
@@ -1092,9 +1101,31 @@ impl HeightMeasurer {
         if depth >= Self::MAX_NESTED_DEPTH {
             return 0.0;
         }
+        // [#4533] `para_top + nested_h` 는 "중첩 표가 앵커 문단 아래로 흐른다"는
+        // 가정이다. 앵커 줄이 셀 하단에 있고 표가 셀 상단에 절대배치되는 서식
+        // 문서(기장군 20420347: para_top 740.9 + 601.8 = 1342.6 vs 선언 794.1)
+        // 에서는 이 가정이 셀을 548px 부풀려 후속 문단을 쪽 밖으로 민다.
+        // 호스트 **뒤에** 저장 사다리가 이어지면(뒤 문단 저장 vpos ≥ para_top)
+        // 그 사다리가 흐름-표 공간까지 이미 증명하므로 사다리 끝점으로 캡한다.
+        // 호스트가 마지막 문단이면 기존 휴리스틱 유지(lh 미반영 문서의 원 목적).
+        // HWPX 계산-lineseg 는 사다리 의미가 달라 hwp5 네이티브에서만 발동한다.
+        let ladder_end: f64 = if self.is_native_hwp5
+            && paragraphs
+                .iter()
+                .all(|p| !crate::renderer::para_has_no_stored_line_segs(p))
+        {
+            paragraphs
+                .iter()
+                .flat_map(|p| p.line_segs.iter())
+                .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height, self.dpi))
+                .fold(0.0f64, f64::max)
+        } else {
+            0.0
+        };
         paragraphs
             .iter()
-            .map(|p| {
+            .enumerate()
+            .map(|(pidx, p)| {
                 let nested_h: f64 = p
                     .controls
                     .iter()
@@ -1123,7 +1154,34 @@ impl HeightMeasurer {
                         .first()
                         .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
                         .unwrap_or(0.0);
-                    para_top + nested_h
+                    let candidate = para_top + nested_h;
+                    // 절대배치의 직접 증거는 "표의 공간이 호스트 줄 **위**에 이미
+                    // 예약됨"이다 — 직전 저장 줄 끝→호스트 vpos 갭이 표 높이만큼
+                    // 벌어진다(기장군 612 vs 표 598 · 수면 작성례 563 vs 536.5 —
+                    // 호스트가 셀 마지막 문단인 변형도 같은 식으로 갈린다). 흐름형
+                    // (lh 미흡수 포함)은 직전 갭이 평범한 줄간격이라 배제되고,
+                    // 호스트가 셀 첫 문단이면(49308 조각 셀) 직전 줄이 없어 배제된다.
+                    let prev_end = paragraphs
+                        .iter()
+                        .take(pidx)
+                        .flat_map(|prev| prev.line_segs.iter())
+                        .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height, self.dpi))
+                        .filter(|&e| e <= para_top + 0.5)
+                        .fold(f64::NEG_INFINITY, f64::max);
+                    let gap_before = para_top - prev_end;
+                    // 쪽을 넘는 거대 중첩 표는 셀 사다리가 조각-국소라 표를
+                    // 기술하지 못한다(49308: nested_h 2664 vs ladder_end 122 —
+                    // 캡하면 쪽수 70->69 로 한글 71쪽에서 멀어짐). 표가 사다리
+                    // 안에 들어갈 때만 절대배치 캡을 허용한다.
+                    let anchored_not_flowing = ladder_end > 0.0
+                        && nested_h <= ladder_end
+                        && prev_end.is_finite()
+                        && gap_before >= nested_h * 0.85;
+                    if anchored_not_flowing {
+                        candidate.min(ladder_end)
+                    } else {
+                        candidate
+                    }
                 }
             })
             .fold(0.0f64, f64::max)

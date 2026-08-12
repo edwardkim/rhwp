@@ -35,7 +35,11 @@
     ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Item", [0]],
     ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Item", [2]],
     ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).SetItem", [0, {"$obj": "CreateSet(\"CharShape\")"}]],
-    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Copy", [{"$obj": "CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3)"}]],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Copy", [{"$obj": "CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3)"}], {"expectError": {
+      "rhwp": "실물이 받지 않는 호출입니다",
+      "ocx": "원격 프로시저를 호출하지 못했습니다",
+      "why": "실물 양쪽이 다 죽는다(3자 실측 2026-08-10) — 데스크톱은 RPC 붕괴(이 문구는 그 붕괴 메시지다), 기안기는 MissingApi. 받아 주던 구현이 유일한 IMPL_GAP 이었다"
+    }}],
     ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Clone", [], {"expectError": {
       "rhwp": "서버에서 예외 오류가 발생했습니다",
       "ocx": null,

@@ -2187,15 +2187,113 @@ fn task296_inline_tab_type_decimal() {
     assert_eq!(super::text_measurement::inline_tab_type(&ext), 4);
 }
 
+/// [#4334 stableIndex 서수화] `paper_node_sort_key`가 더 이상 `node.id`(next_id 카운터)
+/// 를 참조하지 않음을 고정한다. **폐기된 이전 pin**(2026-08-09 이전 커밋)은 정확히
+/// 반대를 검증했다 — layer 없는(inline) 노드는 `(plane=2, z=0, stable=node.id)` 폴백,
+/// layer 있는(task1197) 노드는 `object_stable_index(para,ctrl)` 패킹 — 두 갈래가
+/// 서로 다른 수 공간(para_index=1 layered 노드가 벌써 65536, 카운터인 inline 은
+/// 보통 수십~수백)이라 하나의 수로 비교할 수 없었다. 이제 둘 다
+/// `doc_path_for_node`(render_tree.rs, #4334)가 유도하는 같은 `DocPath` 좌표계를
+/// 쓴다 — `RenderLayerInfo.stable_index` 는 더 이상 세 번째 정렬키가 아니다.
 #[test]
-fn task1197_paper_nodes_sort_by_plane_z_order_and_stable_index() {
-    fn node(id: u32, text_wrap: TextWrap, z_order: i32, stable_index: u32) -> RenderNode {
+fn issue_4334_paper_node_sort_key_no_longer_depends_on_node_id() {
+    use crate::renderer::render_tree::ImageNode;
+
+    fn image_at(id: u32, para: usize, control: usize) -> RenderNode {
+        let mut image = ImageNode::new(0, None);
+        image.section_index = Some(0);
+        image.para_index = Some(para);
+        image.control_index = Some(control);
+        RenderNode::new(
+            id,
+            RenderNodeType::Image(image),
+            BoundingBox::new(0.0, 0.0, 1.0, 1.0),
+        )
+    }
+
+    // 같은 문서 위치(para=3, control=1), 다른 node.id(5 vs 999) → 같은 정렬키.
+    // 카운터 기반이었다면 달랐을 것 — #4334 목표(node.id 로부터 독립)의 직접 증거.
+    assert_eq!(
+        LayoutEngine::paper_node_sort_key(&image_at(5, 3, 1)),
+        LayoutEngine::paper_node_sort_key(&image_at(999, 3, 1)),
+        "node.id 가 달라도 문서 위치(para,control)가 같으면 정렬키가 같아야 한다"
+    );
+
+    // node.id 는 "이르지만"(1) 문서 위치는 더 늦은(para=5) 노드가, node.id 는
+    // "늦지만"(9000) 문서 위치는 더 이른(para=1) 노드보다 위(뒤)여야 한다 — 카운터
+    // 순서였다면 반대로 나왔을 상황.
+    let later_para_low_id = image_at(1, 5, 0);
+    let earlier_para_high_id = image_at(9000, 1, 0);
+    assert!(
+        LayoutEngine::paper_node_sort_key(&later_para_low_id)
+            > LayoutEngine::paper_node_sort_key(&earlier_para_high_id),
+        "정렬은 node.id 가 아니라 문서 위치(para)를 따라야 한다"
+    );
+
+    // layer=Some(레이어 있음, task1197 케이스)과 layer=None(인라인)이 이제 같은
+    // 좌표계를 공유한다 — `RenderLayerInfo.stable_index`(예전엔 65536 같은 패킹값)를
+    // 더 이상 세 번째 원소로 읽지 않으므로, 그 값을 아무리 크게 채워도 무시된다.
+    let mut layered_para1 = image_at(50, 1, 0);
+    layered_para1.set_layer(RenderLayerInfo::new(None, 0, 999_999));
+    let inline_para300 = image_at(1, 300, 0);
+    assert!(
+        LayoutEngine::paper_node_sort_key(&inline_para300)
+            > LayoutEngine::paper_node_sort_key(&layered_para1),
+        "para_index=300 인라인이 para_index=1 layered 보다 위여야 한다 — 예전엔 \
+         layered 의 패킹된 stable_index 가 자릿수만으로 항상 이겼다(#4334 결함)"
+    );
+
+    // 문서 위치를 유도할 수 없는 노드(#4334 stage3 실측 잔여 — 대부분 구조 노드나
+    // 아직 doc_path_for_node 가 다루지 않는 타입) → 빈 경로로 결정적으로 폴백한다.
+    // node.id 를 전혀 참조하지 않으므로 서로 다른 id 라도 완전히 동일한 정렬키다.
+    fn positionless(id: u32) -> RenderNode {
         RenderNode::new(
             id,
             RenderNodeType::Column(0),
             BoundingBox::new(0.0, 0.0, 1.0, 1.0),
         )
-        .with_layer(RenderLayerInfo::new(Some(text_wrap), z_order, stable_index))
+    }
+    assert_eq!(
+        LayoutEngine::paper_node_sort_key(&positionless(5)).2,
+        Vec::<u32>::new(),
+        "문서 위치를 못 만드는 노드는 빈 DocPath 로 폴백한다(node.id 아님)"
+    );
+    assert_eq!(
+        LayoutEngine::paper_node_sort_key(&positionless(5)),
+        LayoutEngine::paper_node_sort_key(&positionless(999)),
+        "빈 경로 폴백은 node.id 값과 무관하게 항상 동일해야 한다"
+    );
+}
+
+/// [#4334 갱신] 세 번째 정렬키가 `RenderLayerInfo.stable_index`(패킹된 u32) 에서
+/// `doc_path_for_node`(문서 위치 — 이 테스트에서는 `GroupNode` 의 section/para/control)
+/// 로 바뀌었다. 원래 이 테스트는 `RenderNodeType::Column` 을 자리표시자로 썼는데,
+/// Column 은 out-of-flow 개체로 실제 존재하지 않고(`paper_images` 에 절대 들어가지
+/// 않는 순수 레이아웃 구조 노드) `doc_path_for_node` 도 다루지 않으므로 이제 항상
+/// 빈 경로를 반환해 정렬이 깨진다 — 실제로 `paper_images` 에 들어가는 타입(Group)
+/// 으로 바꾸고, 원래 stable_index 값(0,2,3,0,1)과 같은 상대 순서가 나오도록
+/// control_index 를 그대로 재사용한다. 정렬 결과(BehindText → flow → InFrontOfText,
+/// 각 안에서 z_order/문서위치 오름차순)는 바뀌지 않는다 — 정렬 알고리즘이 아니라
+/// 세 번째 키의 유도 방식만 바뀌었다는 근거.
+#[test]
+fn task1197_paper_nodes_sort_by_plane_z_order_and_stable_index() {
+    use crate::renderer::render_tree::GroupNode;
+
+    fn node(id: u32, text_wrap: TextWrap, z_order: i32, control_index: usize) -> RenderNode {
+        RenderNode::new(
+            id,
+            RenderNodeType::Group(GroupNode {
+                section_index: Some(0),
+                para_index: Some(0),
+                control_index: Some(control_index),
+            }),
+            BoundingBox::new(0.0, 0.0, 1.0, 1.0),
+        )
+        .with_layer(RenderLayerInfo::new(
+            Some(text_wrap),
+            z_order,
+            control_index as u32,
+        ))
     }
 
     let mut nodes = vec![
@@ -2759,6 +2857,7 @@ fn collect_top_level_table_spans_domain() {
                 section_index: Some(0),
                 para_index: Some(pi),
                 control_index: Some(0),
+                cell_context: None,
             }),
             BoundingBox::new(75.6, y, 642.5, h),
         )

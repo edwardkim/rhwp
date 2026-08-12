@@ -1,0 +1,39 @@
+{
+  "id": "T09",
+  "tier": 3,
+  "title": "원자 계획 실행",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "문서에서 서로 다른 실제 문구 2개를 찾아, 하나는 '계획완료' 로 하나는 '원자실행' 으로 바꾸는 2단계 run 계획서(JSON)를 작성해 한 번에 실행하고 산출물을 plan_out.hwp 로 제출하라. 힌트: rhwp run <계획.json> --json (전 단계 선검증 후 단 한 번 저장).",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "plan_out.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "1단계 반영",
+      "op": "len_ge",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:plan_out.hwp}",
+        "계획완료",
+        "--json"
+      ],
+      "path": "matches"
+    },
+    {
+      "name": "2단계 반영",
+      "op": "len_ge",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:plan_out.hwp}",
+        "원자실행",
+        "--json"
+      ],
+      "path": "matches"
+    }
+  ]
+}

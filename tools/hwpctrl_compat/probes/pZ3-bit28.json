@@ -1,0 +1,92 @@
+{
+  "id": "pZ3-bit28",
+  "title": "bit28 이 고르기 상태인가",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "a": {
+      "win": "{out}/pZ3-a.hwp",
+      "posix": "{out}/pZ3-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pZ3-b.hwp",
+      "posix": "{out}/pZ3-b.hwp"
+    },
+    "c": {
+      "win": "{out}/pZ3-c.hwp",
+      "posix": "{out}/pZ3-c.hwp"
+    },
+    "d": {
+      "win": "{out}/pZ3-d.hwp",
+      "posix": "{out}/pZ3-d.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "c"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "Cancel"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "d"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

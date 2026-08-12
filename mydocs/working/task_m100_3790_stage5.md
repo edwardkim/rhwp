@@ -4,8 +4,8 @@
 - **브랜치**: `issue-3790-stage5a-codeql-safety`
 - **worktree**: `tmp/issue-3790-stage5a-codeql`
 - **최초 기준**: `upstream/devel` `e48fe86947fb` (#4310·#4317 merge 포함)
-- **최신 동기화 기준**: `upstream/devel` `0664e6568e9b` (#4513 merge 포함)
-- **상태**: Ready PR #4341 self-review F1–F6 보정·최신 devel 병합 완료, 새 full CI·CodeQL 대기
+- **최신 동기화 기준**: `upstream/devel` `8ea92cdad120` (#4341 merge)
+- **상태**: PR #4341 merge·후처리 완료
 
 ## 재개와 보존 경계
 
@@ -268,4 +268,15 @@ Stage 5A 코드·CI gate는 통과다. PR #4341 제목·본문도 최종 no-preb
   `scripts/tests/test_codeql_workflow.py`로 바꾸고 단계명이 merge 후 파일 계약에 남지 않게 했다.
 - **focused 검증**: CodeQL 계약 7/7, 연관 Python workflow 계약 86/86, classifier 28/28,
   `actionlint .github/workflows/ci.yml .github/workflows/codeql.yml`, `git diff --check`가 통과했다.
-- **남은 gate**: 보정 head의 full CI·CodeQL 통과와 실제 reviewer·작업지시자 승인이다.
+- **당시 남은 gate**: 보정 head의 full CI·CodeQL과 실제 reviewer·작업지시자 승인이었으며, 이후 모두
+  통과해 아래 merge 후처리를 수행했다.
+
+## PR #4341 merge와 후처리
+
+- 보정 head의 full CI·CodeQL과 리뷰 gate를 통과한 뒤 2026-08-11 merge commit
+  `8ea92cdad120d2db2c9097dc2ffd2df804939f74`로 `devel`에 반영됐다.
+- merge 뒤 전용 worktree `tmp/issue-3790-stage5a-codeql`, 로컬 브랜치와 fork 원격 브랜치
+  `issue-3790-stage5a-codeql-safety`를 정확한 대상 확인 후 정리했다. merge commit과 PR 기록에서 복구할
+  수 있다.
+- 어느 원격에도 없는 Stage 2.6 controller prototype `tmp/issue-3790-stage26`과 로컬 브랜치
+  `codex/issue-3790-stage26-trusted-policy`는 건드리지 않고 계속 보존한다.

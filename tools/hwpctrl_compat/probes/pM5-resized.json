@@ -1,0 +1,90 @@
+{
+  "id": "pM5-resized",
+  "title": "크기를 바꾼 뒤 뒤집기 — 이동량이 폭에서 어떻게 나오나",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "a": {
+      "win": "{out}/pM5-a.hwp",
+      "posix": "{out}/pM5-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pM5-b.hwp",
+      "posix": "{out}/pM5-b.hwp"
+    },
+    "c": {
+      "win": "{out}/pM5-c.hwp",
+      "posix": "{out}/pM5-c.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeRight"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeDown"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjVertFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "c"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

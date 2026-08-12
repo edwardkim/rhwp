@@ -7,6 +7,9 @@ last_verified: 2026-08-03
 
 # 에이전트 런타임 문서 지도
 
+> **v0.8.4 현행성 주의:** 이 축의 Python·Node 바인딩 비교는 철회 전 설계 이력이다.
+> #4655 이후 현재 공식 진입로는 CLI·MCP·WASM이며 바인딩 경로를 실행 지침으로 쓰지 않는다.
+
 `mydocs/tech/agent_runtime/` 는 **에이전트가 rhwp 를 어떤 길로 부르는가**를 다룬다.
 로드맵 [#3869](https://github.com/edwardkim/rhwp/issues/3869) "설치 없는 실행"의 축이며,
 두 갈래로 나뉜다.
@@ -22,24 +25,21 @@ last_verified: 2026-08-03
 
 ## 왜 이 축이 생겼는가
 
-rhwp 를 **배포 형태**로 세면 진입로는 넷이고, **넷 다 같은 관문을 공유한다.**
-([entrypoint_decision.md](entrypoint_decision.md) 는 같은 것을 **사용 형태**로 세어
-여섯으로 나눈다 — `CLI 단건`·`CLI batch`·`MCP 무상태`·`MCP 세션`·`run`·바인딩.
-아래 표는 그 여섯이 무엇 위에 올라타 있는지의 층이다.)
+rhwp의 공식 실행 진입로인 CLI와 MCP는 같은 실행 파일 관문을 공유한다.
+([entrypoint_decision.md](entrypoint_decision.md)는 이를 `CLI 단건`·`CLI batch`·
+`MCP 무상태`·`MCP 세션`·`run`으로 나눈다.)
 
 | 진입로 | 전제 | 근거 |
 | --- | --- | --- |
 | CLI | `rhwp` 실행 파일이 `PATH` 에 있다 | `Cargo.toml:17-19` `[[bin]] name = "rhwp"` |
 | MCP | 호스트가 `rhwp mcp-serve` 를 자식으로 띄운다 | `src/mcp_serve.rs` 가 stdio JSON-RPC 서버 |
-| Python 바인딩 | CLI 서브프로세스를 감싼다 | `bindings/README.md` |
-| Node 바인딩 | 같음 | `bindings/node/docs/DESIGN.md:11` D1 |
 
-넷 다 **바이너리를 구한 뒤에야** 시작된다. 임의 실행 파일 반입이 막힌 샌드박스나
+둘 다 **바이너리를 구한 뒤에야** 시작된다. 임의 실행 파일 반입이 막힌 샌드박스나
 프로세스 생성 자체가 없는 런타임에서 도는 에이전트에게 이 관문은 곧 벽이다.
 
 ```
         ┌───────────────────────────────────────────┐
-문서 ──▶ │  rhwp 실행 파일을 먼저 구한다  ← 공통 관문 │ ──▶ CLI / MCP / py / node
+문서 ──▶ │  rhwp 실행 파일을 먼저 구한다  ← 공통 관문 │ ──▶ CLI / MCP
         └───────────────────────────────────────────┘
                          ✕ 샌드박스 안 에이전트
 
@@ -86,8 +86,7 @@ exit code·파일 산출)은 **규칙으로 매핑**하고 그 규칙에 번호�
 
 **③ 판정은 반환값, 실패는 예외.**
 CLI exit 3/4(검증 단언 실패)는 **도구가 정상 동작한 결과**이므로 봉투 필드로
-반환한다. exit 1/2 만 던진다. 이것은 새 규약이 아니라 Node 바인딩이 이미 내린 결정
-(`bindings/node/docs/DESIGN.md:44` D2)의 세 번째 구현이다.
+반환한다. exit 1/2만 실패로 다룬다. WASM도 같은 판정 의미를 유지한다.
 
 **④ 근거 없는 주장을 적지 않는다.**
 모든 기술 주장에 `파일:줄` 또는 실제 명령 출력이 붙는다. 대지 못하면
@@ -99,11 +98,9 @@ WASM 성능을 한 번도 재지 않았고, 그래서 재지 않았다고 적혀
 여기가 이 문서에서 가장 중요한 절이다.
 
 **① 기존 진입로의 대체가 아니다.**
-CLI·`mcp-serve`·Python/Node 바인딩은 그대로 남는다. 이 축은 **다섯 번째 진입로**
-이지 앞선 넷의 후계자가 아니다. 표면에서 뺀 13개 명령(`export-pdf`·`batch`·
-`build-from-ingest` 등)을 쓰려면 그 넷 중 하나를 쓴다. `bindings_foundation.md` 와
-Node DESIGN.md D1 이 "서브프로세스 래퍼"를 고른 결정은 **뒤집지 않는다** — 이 축은
-그 결정이 성립하지 않는 환경만 덮는다.
+CLI와 `mcp-serve`는 그대로 남는다. 이 축은 기존 진입로의 후계자가 아니다.
+표면에서 뺀 13개 명령(`export-pdf`·`batch`·`build-from-ingest` 등)을 쓰려면
+CLI 또는 MCP의 해당 표면을 쓴다.
 
 **② 렌더링 WASM 표면의 개편이 아니다.**
 `renderPageToCanvas` 계열 364개 export 는 rhwp-studio 의 계약이다. 이 축은 그것을
@@ -153,11 +150,8 @@ Node DESIGN.md D1 이 "서브프로세스 래퍼"를 고른 결정은 **뒤집�
 규칙). 아직 없는 것은 각 문서에서 **"설계된 것"으로 명시**했다. 현재 동작은 언제나
 `rhwp capabilities`·`rhwp --help`·바이너리 실행으로 재확인한다.
 
-> **분기는 이미 시작됐다.** `bindings/node/src/browser.ts` 가 WASM 위에서 봉투를
-> 손으로 조립하고 있고(`:143-150`, `source: '(bytes)'`), 그 결과 `info` 봉투가 CLI 의
-> 12필드 대 3필드다. Node DESIGN.md 자신이 이 공백을 적어 두었다(`:366`: "WASM 경로가
-> 같은 인터페이스를 계속 만족하는지는 아직 타입 수준에서만 보장된다"). **이 축은 새
-> 위험을 만드는 것이 아니라 이미 벌어진 분기를 닫는다.**
+> v0.8.4에서 공식 Python·Node 바인딩은 철회됐다(#4655). 아래 명세의 현재 지원
+> 진입로는 CLI·MCP·WASM이며, 바인딩을 근거로 든 본문은 철회 전 설계 이력이다.
 
 ## 인접 문서
 
@@ -165,7 +159,6 @@ Node DESIGN.md D1 이 "서브프로세스 래퍼"를 고른 결정은 **뒤집�
 - [agent_boundary_contract.md](../agent_boundary_contract.md) — S5 경로·S7 자원 한계·S8 핸들
 - [envelope_provenance.md](../envelope_provenance.md) — `untrustedContent`/`untrustedFields` 계약의 단일 출처
 - [weak_agent_proofing.md](../weak_agent_proofing.md) — 경량 에이전트 내성. 이 축이 옮겨 쓰는 계약의 출처
-- [bindings_foundation.md](../bindings_foundation.md) — 바인딩이 서브프로세스를 고른 근거
 - [mydocs/manual/cli_commands.md](../../manual/cli_commands.md) — 31개 `--json` 명령의 사람용 계약. **정확한 인자는 언제나 여기와 `--help` 가 기준**
 - [mydocs/manual/dev_environment_guide.md](../../manual/dev_environment_guide.md) — `wasm-pack build --target web` 절차
 - 이슈 [#3869](https://github.com/edwardkim/rhwp/issues/3869) — 로드맵 "설치 없는 실행"

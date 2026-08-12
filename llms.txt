@@ -6,7 +6,8 @@
 
 ## 시작하기
 
-- [README](README.md): 프로젝트 개요·로드맵·온라인 데모.
+- [README](README.md): 프로젝트 개요·현재 단계·온라인 데모.
+- [프로젝트 로드맵](ROADMAP.md): v0.5→v3.0 제품 방향, 현재 위치와 완료 기준을 설명하는 기준 문서.
 - [AGENTS.md](AGENTS.md): 저장소 작업 규약과 문서 로딩 순서.
 - [에이전트 지식 지도](mydocs/manual/agent_knowledge_map.md): 단일 진입점 — 3문 진입(작업/실패/추가)·봉투 필드 사전·주소 어휘·표본/계약 테스트 지도.
 - [manual 문서 지도](mydocs/manual/README.md): 상황별 권위 문서 선택표.
@@ -39,6 +40,8 @@
 
 ## 기여·로드맵
 
-- [기여 가이드](CONTRIBUTING.md): 기여 절차와 규약.
+- [기여 가이드](CONTRIBUTING.md): 기여 절차와 규약 — LLM/에이전트 보조 기여 절 포함.
+- [작업 증빙 규약](AGENTS.md): `replay --capsule` 영수증·`lineage` 계보·`audit` 재현율 회계 — 에이전트 작업의 기본 경로. 확장 축 좌표는 [검증 사다리 #4463](https://github.com/edwardkim/rhwp/issues/4463).
+- [프로젝트 로드맵](ROADMAP.md): 제품 전체의 버전 단계와 계속 다듬는 일곱 분야. 세부 기술 로드맵의 우선순위를 자동 승인하지 않는다.
 - [에이전트 표면 플레이북](mydocs/manual/agent_surface_playbook.md): CLI `--json`·MCP 도구를 추가하는 공식 절차와 수용 기준.
-- [에이전트 표면 로드맵 #3608](https://github.com/edwardkim/rhwp/issues/3608): 실측 커버리지 매트릭스·마일스톤(M1~M17)·도구 백로그의 권위.
+- [에이전트 로드맵 문서 지도](mydocs/tech/agent_roadmap/README.md): 프로젝트 로드맵 “AI 활용과 자동화” 분야의 R1~R100 상세 기준 문서. 조망 이슈 #3907·상세 원천 #3608을 연결한다.

@@ -1,0 +1,116 @@
+{
+  "id": "pT-blockbit",
+  "title": "비트8 이 셀 블록 표시인가",
+  "ledger": [],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pT-blockbit-w.hwp",
+      "posix": "{out}/pT-blockbit-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pT-blockbit-a.hwp",
+      "posix": "{out}/pT-blockbit-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pT-blockbit-b.hwp",
+      "posix": "{out}/pT-blockbit-b.hwp"
+    },
+    "c": {
+      "win": "{out}/pT-blockbit-c.hwp",
+      "posix": "{out}/pT-blockbit-c.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        2,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlock"
+      ]
+    ],
+    [
+      "SelectionMode",
+      []
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "Cancel"
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        8,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlock"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlockExtend"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableRightCell"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "c"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

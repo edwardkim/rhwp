@@ -1,0 +1,11 @@
+{
+  "kind": "admissionPolicy",
+  "name": "운동장 T14 관문",
+  "defaultVerdict": "deny",
+  "rules": [
+    { "id": "R1-재현", "require": { "reproduced": { "eq": true } } },
+    { "id": "R2-계보", "require": { "lineageValid": { "eq": true } } },
+    { "id": "R3-서명", "require": { "signerVerdict": { "eq": "valid" } } },
+    { "id": "R4-앵커", "require": { "anchoredOk": { "eq": true } } }
+  ]
+}

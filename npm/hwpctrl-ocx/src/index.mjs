@@ -422,8 +422,30 @@ const ACTIONS = {
   ShapeObjDetachTextBox: { kind: 'objectTextBox', attach: false },
 
   // 묶음 풀기 — 사슬이 통째로 달라져서 보인다. `그리기` 하나가 자식 개체 여럿으로 풀린다
-  // (실측: 그리기 → 그림·그림·그림). 앞뒤 순서·뒤집기와 달리 이 계열은 관측창이 있다.
+  // (실측: 그리기 → 그림·그림·그림). 뒤집기와 달리 이 계열은 반환값 쪽에도 관측창이 있다.
   ShapeObjUngroup: { kind: 'objectUngroup' },
+
+  // ── 앞뒤 순서 ──
+  //
+  // 어느 API 도 결과를 안 비춘다. **저장본에는 적힌다** — 앞뒤 두 벌을 견줘 규칙을 실측했다
+  // (`probes/pZ2-*.json`, 계획서 §4.19). 맨 앞/뒤는 나머지가 한 칸씩 밀리고, 한 칸은
+  // 이웃과 맞바꾼다. 마지막 둘은 이름과 달리 **순서가 아니라 배치**(`text_wrap`)다.
+  // ── 뒤집기 ──
+  //
+  // 순서와 마찬가지로 반환값에는 안 비치고 저장본에만 남는다. `OrgState` 는 토글이 아니라
+  // **원래대로 되돌리기**다(켜져 있을 때만 끈다). 한글이 함께 세우는 표시 비트(0x30000)는
+  // 세션 부산물이라 흉내 내지 않는다 — 근거는 계획서 §4.20·§4.22.
+  ShapeObjHorzFlip: { kind: 'objectFlip', vertical: false, orgState: false },
+  ShapeObjVertFlip: { kind: 'objectFlip', vertical: true, orgState: false },
+  ShapeObjHorzFlipOrgState: { kind: 'objectFlip', vertical: false, orgState: true },
+  ShapeObjVertFlipOrgState: { kind: 'objectFlip', vertical: true, orgState: true },
+
+  ShapeObjBringToFront: { kind: 'objectZOrder', mode: 'front' },
+  ShapeObjSendToBack: { kind: 'objectZOrder', mode: 'back' },
+  ShapeObjBringForward: { kind: 'objectZOrder', mode: 'forward' },
+  ShapeObjSendBack: { kind: 'objectZOrder', mode: 'backward' },
+  ShapeObjBringInFrontOfText: { kind: 'objectZOrder', mode: 'inFrontOfText' },
+  ShapeObjCtrlSendBehindText: { kind: 'objectZOrder', mode: 'behindText' },
 
   ShapeObjResizeRight: { kind: 'objectResize', dw: 283, dh: 0 },
   ShapeObjResizeLeft: { kind: 'objectResize', dw: -283, dh: 0 },
@@ -504,11 +526,39 @@ const ACTIONS = {
   TableSplitCellRow2: { kind: 'tableEdit', op: 'splitRow2' },
   TableSplitCellCol2: { kind: 'tableEdit', op: 'splitCol2' },
   TableMergeCell: { kind: 'tableMerge' },
+  // 이름과 달리 칸을 지우지 않는다 — **블록이 덮은 칸들의 글을 비운다**(실측, 계획서 §4.21).
+  // 격자·캐럿은 그대로고, 블록이 없으면 무동작이다(저장본 차이 0).
+  TableDeleteCell: { kind: 'tableClear' },
 
   TableInsertUpperRow: { kind: 'tableEdit', op: 'insertRowAbove' },
   TableInsertLowerRow: { kind: 'tableEdit', op: 'insertRowBelow' },
   TableInsertLeftColumn: { kind: 'tableEdit', op: 'insertColLeft' },
   TableInsertRightColumn: { kind: 'tableEdit', op: 'insertColRight' },
+  // ── 칸 크기 조절 열둘 ──
+  //
+  // 어느 API 도 결과를 안 비춘다. 저장본 앞뒤 차분으로 규칙을 실측했다(계획서 §4.21).
+  // 평범한 것은 캐럿 칸의 **열/행 전체**가 ±283, `Line` 은 오른쪽·아래 이웃과 짝으로
+  // **경계를 옮긴다**. `Ex` 는 평범한 것과 자취가 **완전히 같아** 같은 갈래로 보낸다 —
+  // 이름만 보면 다른 일을 할 것 같은데 아니다.
+  // `Cell` 갈래는 **그 칸 하나만** 경계를 옮긴다 — 다른 행·열은 그대로라 격자가 갈라진다
+  // (147행 3열에서 한 칸 폭을 늘리면 열이 넷이 된다, 실측 §4.21).
+  TableResizeCellRight: { kind: 'tableEdit', op: 'resizeCellRight' },
+  TableResizeCellLeft: { kind: 'tableEdit', op: 'resizeCellLeft' },
+  TableResizeCellDown: { kind: 'tableEdit', op: 'resizeCellDown' },
+  TableResizeCellUp: { kind: 'tableEdit', op: 'resizeCellUp' },
+  TableResizeRight: { kind: 'tableEdit', op: 'resizeRight' },
+  TableResizeLeft: { kind: 'tableEdit', op: 'resizeLeft' },
+  TableResizeDown: { kind: 'tableEdit', op: 'resizeDown' },
+  TableResizeUp: { kind: 'tableEdit', op: 'resizeUp' },
+  TableResizeExRight: { kind: 'tableEdit', op: 'resizeRight' },
+  TableResizeExLeft: { kind: 'tableEdit', op: 'resizeLeft' },
+  TableResizeExDown: { kind: 'tableEdit', op: 'resizeDown' },
+  TableResizeExUp: { kind: 'tableEdit', op: 'resizeUp' },
+  TableResizeLineRight: { kind: 'tableEdit', op: 'resizeLineRight' },
+  TableResizeLineLeft: { kind: 'tableEdit', op: 'resizeLineLeft' },
+  TableResizeLineDown: { kind: 'tableEdit', op: 'resizeLineDown' },
+  TableResizeLineUp: { kind: 'tableEdit', op: 'resizeLineUp' },
+
   TableDeleteRow: { kind: 'tableEdit', op: 'deleteRow' },
   TableDeleteColumn: { kind: 'tableEdit', op: 'deleteCol' },
 
@@ -867,10 +917,13 @@ export class ParameterArray {
     throw new Error('ParameterArray.Clone: 서버에서 예외 오류가 발생했습니다');
   }
 
-  /** 다른 배열의 내용을 그대로 받는다. */
-  Copy(other) {
-    if (!other || typeof other.Count !== 'number') return;
-    this.#items = new Array(other.Count).fill(undefined).map((_, i) => other.Item(i));
+  /**
+   * 규격 §9 에는 있으나 실물 양쪽이 다 죽는다(3자 실측 2026-08-10): 데스크톱 한글2022 는
+   * RPC 붕괴(한글 프로세스가 무너진다), 기안기는 API 자체가 없다. 멀쩡히 받아 주던 첫
+   * 구현이 3자 대조의 유일한 IMPL_GAP 이었다 — `Clone` 과 같은 이유로 죽는 것까지 옮긴다.
+   */
+  Copy() {
+    throw new Error('ParameterArray.Copy: 실물이 받지 않는 호출입니다');
   }
 }
 
@@ -1103,23 +1156,24 @@ export class HwpCtrl {
   }
 
   /**
-   * 규격 §8.3 — 훑기의 다음 조각. `[상태, 글]` 두 칸을 준다.
+   * 규격 §8.3 — 훑기의 다음 조각. `{result, text}` 객체를 준다(기안기 실측 2026-08-10,
+   * 10.80.0.2862 — COM 은 out 파라미터 튜플이지만 웹 계약은 객체다).
    *
-   * 상태는 **앞 조각과의 관계**다(§4.54 실측): 2 이어짐/리스트 바뀜 · 3 다음 문단 ·
-   * 4 개체로 들어감 · 5 개체에서 나옴. 스캔이 안 열려 있으면 `[101, ""]` 다.
+   * `result` 는 **앞 조각과의 관계**다(§4.54 실측): 2 이어짐/리스트 바뀜 · 3 다음 문단 ·
+   * 4 개체로 들어감 · 5 개체에서 나옴. 스캔이 안 열려 있으면 `{result: 101}` 이다.
    */
   GetText() {
-    if (!this.#scan) return [101, ''];
+    if (!this.#scan) return { result: 101, text: '' };
     // 범위를 준 스캔은 아직 못 재서 한 조각만 주고 마른다(실측과 같은 꼴).
     if (this.#scan.scoped) {
-      if (this.#scan.at > 0) return [0, ''];
+      if (this.#scan.at > 0) return { result: 0, text: '' };
       this.#scan.at = 1;
-      return [2, '\r\n'];
+      return { result: 2, text: '\r\n' };
     }
     const item = this.#scan.items[this.#scan.at];
-    if (!item) return [0, ''];
+    if (!item) return { result: 0, text: '' };
     this.#scan.at += 1;
-    return [item.state, item.text];
+    return { result: item.state, text: item.text };
   }
 
   /** 규격 §8.3 — 훑기를 닫는다. */
@@ -1139,7 +1193,9 @@ export class HwpCtrl {
    * 가지는 **검증 범위 밖**이다. 주석이 실측보다 넓게 읽히지 않도록 여기 못박아 둔다.
    */
   /**
-   * 규격 §8.3.55 — 글을 문서에 **밀어 넣는다**. 반환은 **1** 이다(성공 여부가 아니라 1).
+   * 규격 §8.3.45 — 글을 문서에 **밀어 넣는다**. 반환은 `true` 다(기안기 실측 2026-08-10 —
+   * COM 은 1 을 주지만 웹 계약은 bool. 단 기안기의 삽입 **의미**는 아직 미검증이다:
+   * 데모에서 true 뒤에도 본문이 안 변했다 — 서버 콜백 경로일 수 있어 재측정 대상).
    *
    * 이름과 달리 캐럿 자리에 넣지 않는다 — **문서 맨 앞**에 붙인다(실측: 캐럿을 20 에 두고
    * `가나다` 를 넣으면 본문이 `가나다오호라…` 가 되고, 다시 30 에서 `라마` 를 넣으면
@@ -1148,14 +1204,14 @@ export class HwpCtrl {
    */
   SetTextFile(text, format, option) {
     const body = String(text ?? '');
-    if (!body) return 1;
+    if (!body) return true;
     try {
       // `insertText` 의 셋째 인자는 **글자 번호**다(스트림 자리가 아니다) — 맨 앞은 0 이다.
       // 앞머리 자리차지 뒤 자리(16)를 넘기면 글 한가운데에 꽂힌다.
       this.#doc.insertText(0, 0, 0, body);
     } catch (e) {
       console.warn('[hwpctrl] SetTextFile 실패:', e);
-      return 1;
+      return true;
     }
     this.#listModel = null;
     this.#ctrls = null;
@@ -1165,7 +1221,7 @@ export class HwpCtrl {
     if (this.#cursor.list === 0 && this.#cursor.para === 0) {
       this.#cursor = { ...this.#cursor, pos: this.#cursor.pos + grew };
     }
-    return 1;
+    return true;
   }
 
   /**
@@ -1182,9 +1238,14 @@ export class HwpCtrl {
     if (String(format ?? '').trim().toUpperCase() === 'UNICODE') {
       return parseJson(this.#doc?.getTextFileUnicode?.() ?? '""', '');
     }
-    // 이어 붙이기와 CP949 밖 글자 escape 는 코어가 한다 — 인코딩 판정을 여기서 흉내 내면
-    // 반드시 틀린다(CP949 는 EUC-KR + 마이크로소프트 확장이다).
-    return parseJson(this.#doc?.getTextFileText?.() ?? '""', '');
+    // 이어 붙이기는 코어가 한다. 코어는 COM 실측대로 CP949 밖 글자를 `&#N;` 로 escape
+    // 하지만 **기안기 실물은 원문 유니코드를 그대로 준다**(2026-08-10, `◦`·`ḁǄↀ⿰` 실측)
+    // — 웹 계약이 이기므로 여기서 기계적으로 되돌린다. 문서에 날 `&#숫자;` 글이 있으면
+    // 함께 풀리는 모호함이 있으나 COM 산출물에도 같은 모호함이 있어 대조는 공평하다.
+    const text = parseJson(this.#doc?.getTextFileText?.() ?? '""', '');
+    return typeof text === 'string'
+      ? text.replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+      : text;
   }
 
   /** 규격 §8.3.22 — 문서 끼워넣기. 아직 구현하지 않았다. */
@@ -2188,16 +2249,16 @@ export class HwpCtrl {
   /**
    * 규격 §8.3.14 — 블록의 시작·끝 위치.
    *
-   * 규격의 속성 목록에는 `result` 가 없지만 컨트롤은 그것을 함께 준다(오라클 실측). 셀 블록은
-   * **글자 범위가 아니라서** `result:false` 에 전부 0 이다 — 그 구분이 실제 정보다.
+   * 규격의 속성 목록대로 **`result` 는 없다** — COM 은 그것을 함께 주지만 기안기 실물은
+   * 여섯 키만 준다(2026-08-10 실측, 10.80.0.2862). 블록이 없거나 셀 블록(글자 범위가
+   * 아님)이면 전부 0 이다.
    */
   GetSelectedPos() {
     const sel = this.#selection;
     if (!sel) {
-      return { result: false, slist: 0, spara: 0, spos: 0, elist: 0, epara: 0, epos: 0 };
+      return { slist: 0, spara: 0, spos: 0, elist: 0, epara: 0, epos: 0 };
     }
     return {
-      result: true,
       slist: sel.start.list,
       spara: sel.start.para,
       spos: sel.start.pos,
@@ -2226,7 +2287,7 @@ export class HwpCtrl {
       eset.SetItem('Para', pos.epara);
       eset.SetItem('Pos', pos.epos);
     }
-    return pos.result;
+    return this.#selection != null;
   }
 
   /**
@@ -2290,11 +2351,17 @@ export class HwpCtrl {
       callback?.(null, done, callbackUserData);
       return;
     }
-    if (action.kind === 'tableEdit' || action.kind === 'tableMerge') {
+    if (
+      action.kind === 'tableEdit' ||
+      action.kind === 'tableMerge' ||
+      action.kind === 'tableClear'
+    ) {
       const done =
         action.kind === 'tableMerge'
           ? this.#runTableMerge(actionID)
-          : this.#runTableEdit(actionID, action);
+          : action.kind === 'tableClear'
+            ? this.#runTableClear(actionID)
+            : this.#runTableEdit(actionID, action);
       if (done) this.#modified = true;
       callback?.(null, done, callbackUserData);
       return;
@@ -2421,6 +2488,44 @@ export class HwpCtrl {
       if (ok) {
         // 사슬이 통째로 달라진다 — 묶음 하나가 자식 여럿으로 풀린다.
         this.#ctrls = null;
+        this.#modified = true;
+      }
+      callback?.(null, ok, callbackUserData);
+      return;
+    }
+    if (action.kind === 'objectFlip') {
+      const here = this.#selectedObject;
+      let ok = false;
+      if (here) {
+        try {
+          const raw = this.#doc.setControlFlipAt(
+            here.para,
+            here.controlIndex,
+            action.vertical,
+            action.orgState,
+          );
+          ok = parseJson(raw, { ok: false }).ok !== false;
+        } catch (e) {
+          console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+        }
+      }
+      if (ok) this.#modified = true;
+      callback?.(null, ok, callbackUserData);
+      return;
+    }
+    if (action.kind === 'objectZOrder') {
+      const here = this.#selectedObject;
+      let ok = false;
+      if (here) {
+        try {
+          const raw = this.#doc.setControlZOrderAt(here.para, here.controlIndex, action.mode);
+          ok = parseJson(raw, { ok: false }).ok !== false;
+        } catch (e) {
+          console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+        }
+      }
+      if (ok) {
+        this.#ctrls = null; // 순서가 바뀌었다 — 사슬의 Properties 를 다시 읽는다
         this.#modified = true;
       }
       callback?.(null, ok, callbackUserData);
@@ -2961,6 +3066,14 @@ export class HwpCtrl {
       }
       const target = this.#tableMoveTarget(action.to, here, siblings, at);
       if (!target || target === here) return true; // 표 가장자리 — 제자리
+      // 셀 블록을 **넓히는 중**이면 이동이 블록 끝을 끌고 간다(실측: Extend → 오른쪽 →
+      // 아래로 가면 `SelectionMode` 가 19 로 남고 그 뒤 `TableDeleteCell` 이 (0,0)~(1,1)
+      // 네 칸을 비운다). 캐럿 규칙은 보통 이동과 같다 — 간 칸의 처음.
+      if (this.#selectionMode === SELECTION_TABLE_EXTEND && this.#tableBlock) {
+        this.#tableBlock = { from: this.#tableBlock.from, to: target };
+        this.#cursor = { list: target.listId, para: 0, pos: 0 };
+        return true;
+      }
       this.#clearSelection();
       // **앞으로 가면 그 칸의 처음, 뒤로 가면 그 칸의 끝**이다(Tab·Shift+Tab 과 같다).
       // 실측: 9 → 오른쪽 10/0/0(끝은 24), 9 → 왼쪽 8/0/0·7/0/19, 9 → 위 6/0/2(끝이 2).
@@ -3023,6 +3136,34 @@ export class HwpCtrl {
       (l) => this.#sameTable(l, table) && l.row === first.row && l.col === first.col,
     );
     if (target) this.#cursor = { list: target.listId, para: 0, pos: 0 };
+    return true;
+  }
+
+  /**
+   * 셀 블록이 덮은 칸들의 글을 비운다 — `TableDeleteCell` 의 실제 동작이다(실측).
+   *
+   * 한 칸 블록도 된다(merge 와 달리 `from === to` 를 막지 않는다). 캐럿과 블록은 그대로
+   * 둔다 — 오라클의 `GetPos` 가 블록 끝 칸을 그대로 가리켰다. 블록이 없으면 무동작이다.
+   */
+  #runTableClear(actionID) {
+    const block = this.#tableBlock;
+    if (!block) return false;
+    let ok = false;
+    try {
+      const raw = this.#doc.clearTableCellsAtCursor(
+        block.from.listId,
+        block.to.row,
+        block.to.col,
+      );
+      ok = parseJson(raw, { ok: false }).ok !== false;
+    } catch (e) {
+      console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+      return false;
+    }
+    if (!ok) return false;
+    // 리스트 번호는 안 변하지만 문단 수·내용이 변했다 — 모델을 다시 읽는다.
+    this.#listModel = null;
+    this.#sections = null;
     return true;
   }
 

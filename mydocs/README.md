@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/README.md
-last_verified: 2026-08-08
+last_verified: 2026-08-10
 ---
 
 # rhwp 문서 지도와 canonical manifest
@@ -50,6 +50,7 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 
 | 경로 | kind | status | canonical | last_verified |
 | --- | --- | --- | --- | --- |
+| [프로젝트 로드맵](../ROADMAP.md) | canonical | active | `ROADMAP.md` | 2026-08-10 |
 | [문서·Git 워크플로](manual/codex/docs_and_git_workflow.md) | canonical | active | `manual/codex/docs_and_git_workflow.md` | 2026-08-07 |
 | [Codex 문서 지도](manual/codex/README.md) | guide | active | `manual/codex/README.md` | 2026-07-17 |
 | [Codex 프로젝트 메모리 덤프](manual/codex/MEMORY.md) | memory | active | `manual/codex/MEMORY.md` | 2026-08-07 |
@@ -57,7 +58,7 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 | [PR 리뷰·통합 워크플로](manual/pr_review_workflow.md) | canonical | active | `manual/pr_review_workflow.md` | 2026-08-07 |
 | [PR review 조건별 가이드](manual/pr_review/README.md) | guide | active | `manual/pr_review_workflow.md` | 2026-07-25 |
 | [에이전트 capability 카탈로그](manual/agent_capability_registry.md) | canonical | active | `manual/agent_capability_registry.md` | 2026-07-26 |
-| [개발 환경 가이드](manual/dev_environment_guide.md) | guide | active | `manual/dev_environment_guide.md` | 2026-08-08 |
+| [개발 환경 가이드](manual/dev_environment_guide.md) | guide | active | `manual/dev_environment_guide.md` | 2026-08-11 |
 | [온보딩 가이드](manual/onboarding_guide.md) | guide | active | `manual/README.md` | 2026-07-17 |
 | [배포 가이드](manual/publish_guide.md) | guide | active | `manual/publish_guide.md` | 2026-07-17 |
 | [Hyper-Waterfall 문서 체계](manual/hyper_waterfall_docs_guide.md) | guide | active | `manual/codex/docs_and_git_workflow.md` | 2026-07-17 |
@@ -75,8 +76,6 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 | [폰트 fallback 전략](tech/font_fallback_strategy.md) | canonical | active | `tech/font_fallback_strategy.md` | 2026-07-16 |
 | [편집 action undo/redo 아키텍처](tech/edit_action_undo_redo_architecture.md) | canonical | active | `tech/edit_action_undo_redo_architecture.md` | 2026-07-16 |
 | [포맷 파서와 공통 Document IR 경계](tech/parser_architecture.md) | canonical | active | `tech/parser_architecture.md` | 2026-07-17 |
-| [바인딩 동등성 계약](tech/bindings/parity_contract.md) | canonical | active | `tech/bindings/parity_contract.md` | 2026-08-03 |
-| [바인딩 문서 지도](tech/bindings/README.md) | guide | active | `tech/bindings/README.md` | 2026-08-03 |
 | [ThorVG 결정 기록](tech/thorvg_decision.md) | decision | active | `tech/thorvg_decision.md` | 2026-07-16 |
 | [이전 개발 로드맵](tech/archive/dev_roadmap_v1_backup.md) | snapshot | historical | `tech/archive/README.md` | 2026-07-16 |
 | [이슈별 기술 조사 지도](tech/investigations/README.md) | guide | active | `tech/investigations/README.md` | 2026-07-17 |
