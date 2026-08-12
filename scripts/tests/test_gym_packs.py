@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -81,12 +82,11 @@ class TaskContractTests(unittest.TestCase):
     def test_every_new_task_ships_a_reference_solution(self):
         """기준 풀이 없는 과제는 '풀 수 있음' 이 실측되지 않은 과제다.
 
-        core-cli 는 1부 유산이라 예외다(제출물이 이미 baselines 에 있다).
+        [#4689] core-cli 도 이제 예외가 아니다 — 14과제 전건에 reference/ 를 채워
+        저장소 단독으로 scorecard 가 재현된다. 12 pack 전체가 같은 완결성 기준을 지킨다.
         """
         missing = []
         for pid in pack_ids():
-            if pid == "core-cli":
-                continue
             for path in sorted((PACKS / pid / "tasks").glob("*.json")):
                 tid = read_json(path)["id"]
                 if not (PACKS / pid / "reference" / f"{tid}.json").is_file():
@@ -160,7 +160,9 @@ class BaselineResolveTests(unittest.TestCase):
             failure = build_baseline.verify_built_task("/tmp/rhwp", "pack-a", task, "/tmp/sub")
 
         self.assertIsNone(failure)
-        score.assert_called_once_with(task, "/tmp/sub/pack-a", "/tmp/rhwp")
+        # 기대 경로는 구현과 같은 os.path.join 으로 — 리터럴 "/" 는 Windows 에서
+        # 백슬래시 결합과 어긋나 크로스플랫폼으로 깨진다(#4689).
+        score.assert_called_once_with(task, os.path.join("/tmp/sub", "pack-a"), "/tmp/rhwp")
 
     def test_failed_built_submission_reports_the_task(self):
         from unittest import mock

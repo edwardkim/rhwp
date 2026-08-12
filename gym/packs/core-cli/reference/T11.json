@@ -1,0 +1,19 @@
+{
+  "id": "T11",
+  "steps": [
+    {
+      "answer": {
+        "signalCount": {
+          "cmd": [
+            "inspect",
+            "injection",
+            "{input}",
+            "--json"
+          ],
+          "path": "injectionSignals",
+          "len": true
+        }
+      }
+    }
+  ]
+}

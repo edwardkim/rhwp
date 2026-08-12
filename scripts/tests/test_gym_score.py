@@ -305,8 +305,15 @@ class WeakCheckLockTests(unittest.TestCase):
 
 
 class TaskCommandExistenceTests(unittest.TestCase):
-    """[#4600 부수] 과제가 부르는 명령이 CLI 에 실재하는지 — T13 이 없는
-    `harness-status` 를 불러 영구 실패하던 것을 잡은 가드."""
+    """[#4600 부수] 과제가 부르는 명령이 CLI 에 실재하는지 검사한다.
+
+    [#4689] 이 가드는 원래 `harness-status` 를 이름으로 금지했지만, 이는 옛 명령
+    표면 기준이었다. v0.8.4 에서 `harness status`(두 단어)는 존재하지 않고
+    `harness-status`(하이픈)가 capabilities 에 실재하는 정식 판정 명령이다 —
+    devel 의 T13 이 오히려 없는 `harness status` 를 불러 깨져 있었다. 그래서
+    금지 목록을 하드코딩하는 대신 **실제 capabilities 와 대조**한다: 어떤 명령이
+    실재하는지는 바이너리가 단일 출처다.
+    """
 
     def test_every_task_command_is_a_known_cli_command(self):
         called = set()
@@ -317,11 +324,24 @@ class TaskCommandExistenceTests(unittest.TestCase):
                 if cmd:
                     called.add((task["id"], cmd[0]))
 
-        # 우산 명령의 하위는 cmd[1] 로 오므로 머리 토큰만 대조한다.
-        head_tokens = {name for _, name in called}
-        self.assertNotIn("harness-status", head_tokens)
+        # 이름 꼴은 바이너리 없이도 검사한다.
         for task_id, name in sorted(called):
             self.assertRegex(name, r"^[a-z][a-z0-9-]*$", f"{task_id}: {name}")
+
+        # 바이너리가 있으면 실재성까지 대조한다(우산 명령의 하위는 cmd[1] 이므로
+        # 머리 토큰만 본다). 없으면 이름 꼴 검사까지만 하고 건너뛴다.
+        if str(REPO_ROOT) not in sys.path:
+            sys.path.insert(0, str(REPO_ROOT))
+        from gym.core import runner, schema
+        try:
+            bin_path = runner.find_bin(None)
+        except SystemExit:
+            self.skipTest("rhwp 바이너리 없음 — 명령 실재성 대조 생략")
+        known = schema.known_commands(bin_path)
+        if not known:
+            self.skipTest("capabilities 파싱 실패 — 명령 실재성 대조 생략")
+        for task_id, name in sorted(called):
+            self.assertIn(name, known, f"{task_id}: CLI 에 없는 명령 {name}")
 
 
 if __name__ == "__main__":

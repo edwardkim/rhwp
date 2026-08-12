@@ -1,0 +1,44 @@
+{
+  "id": "T14",
+  "steps": [
+    {
+      "run": [
+        "keygen",
+        "--key-id",
+        "gym/core-t14",
+        "--out",
+        "{sub:key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/basic/issue2007_nested_cell_pagination_42065.hwp\", \"output\": \"{sub:_o.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"관문\"}]}",
+        "--capsule",
+        "{sub:work.capsule.json}",
+        "--sign-key",
+        "{sub:key.json}",
+        "--json"
+      ]
+    },
+    {
+      "keyring_from": {
+        "key": "{sub:key.json}",
+        "out": "{sub:keyring.json}",
+        "keyId": "gym/core-t14"
+      }
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:work.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    }
+  ]
+}
