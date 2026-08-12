@@ -11,8 +11,10 @@
   정리했고 Stage 2.6 controller 유일본은 보존했다. 2026-08-11 `devel` required context가 `Build & Test`
   하나임을 직접 확인한 뒤 Stage 5B의 trusted-base 언어 선택과 고정 check identity를 구현·focused
   검증했다. PR #4519는 최신 head의 full CI·CodeQL을 통과해 merge commit `c64b5c70a700`으로 완료했다.
-  현재는 그 merge 직후 frontend-only canary에서 같은 SHA의 selective/full 실행과 최종 절감량을
-  실측하는 단계다.
+  Stage 5B와 #4029의 test profile 정책은 `main@496333b27` 및 v0.8.4 태그 CI까지 반영·검증됐다.
+  frontend-only canary PR #4573은 옛 base에서 selective를 통과한 뒤 `devel` 전진으로 충돌했으며,
+  2026-08-12 `upstream/devel@525cf8e8e`을 merge commit `cec04e66a`로 동기화했다. 현재는 새 같은 head
+  SHA의 selective/full 실행과 최종 절감량을 다시 실측하는 단계다.
 
 ## Stage 1 — shadow classifier
 
@@ -256,8 +258,13 @@ Stage 3 merge 직후 frontend-only canary PR #3951에서 unit/package/render 진
 - 일반 PR selective에서 frontend unit과 JavaScript/TypeScript CodeQL만 실제 실행하고, Rust·Native Skia·
   package·Canvas 및 Python/Rust CodeQL은 기대한 skip/no-op 상태여야 한다. 같은 head SHA를 수동 CI·CodeQL·
   Render Diff로 실행해 full 기준선을 만들고 Stage 3·4 canary와 최종 runner-minute·wall time을 비교한다.
+- #4029 반영으로 일반 수동 CI는 `release-test/30`을 사용하므로 옛 canary에서 취소된 full CI도 같은
+  head SHA에서 다시 완주를 확인한다. main/tag의 `release/60` release-grade 경로는 v0.8.4 태그 CI에서
+  별도로 통과했으므로 canary 측정 범위에 섞지 않는다.
 - 결과를 #3790과 canary PR에 기록한 뒤 measurement-only PR은 merge하지 않고 close한다.
-- default-branch controller는 Stage 3~5 진리표가 확정된 뒤 축소 구현하고 정상 릴리즈로 main에 등록한다.
+- v0.8.4에서 Stage 3~5 최종 workflow가 main에 반영됐다. canary 종료 뒤 보존한 Stage 2.6
+  프로토타입을 현재 진리표에 맞게 축소·재검증해 devel에 통합하고, 다음 정상 릴리즈로 main에 등록한다.
+  collaborator의 protection endpoint는 404이므로 required `CI Impact Policy` 채택은 admin 확인이 필요하다.
 - artifact 재시도는 #3892의 논리 label `slow/1/2/3`별 test archive, archive expected count와 worker run
   count를 함께 다루고, draft 경량화와 별도 PR로 진행한다.
 - #3789가 완료되기 전에는 `src/main.rs`의 Render Diff trigger를 좁히지 않는다.

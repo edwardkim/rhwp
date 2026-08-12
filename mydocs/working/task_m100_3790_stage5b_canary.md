@@ -3,8 +3,9 @@
 - **이슈**: [#3790](https://github.com/edwardkim/rhwp/issues/3790)
 - **브랜치**: `issue-3790-stage5b-codeql-canary`
 - **worktree**: `tmp/issue-3790-stage5b-canary`
-- **기준**: `upstream/devel` `c64b5c70a700` (#4519 merge)
-- **상태**: canary 변경·focused 검증 완료, 원격 PR 생성 승인 대기
+- **최초 기준**: `upstream/devel` `c64b5c70a700` (#4519 merge)
+- **재개 기준**: `upstream/devel` `525cf8e8ed9f` (#4565 merge), 동기화 merge `cec04e66a`
+- **상태**: PR #4573 최신 devel 동기화·계획 보정·focused 재검증 완료, push 승인 대기
 
 ## 목적과 종료 조건
 
@@ -45,7 +46,20 @@ Canvas visual diff, Rust lint·세 builder·네 worker와 Native Skia는 skip되
 Native Skia와 세 CodeQL 언어를 실제 실행해야 한다. 두 실행의 job duration 합계와 workflow wall time을
 비교해 Stage 5B CodeQL 절감량과 Stage 3~5 전체 최종 절감량을 분리해 기록한다.
 
-## focused 검증 결과
+## 기존 head 결과와 재개 이유
+
+최초 head `6fb1bd77b`의 PR selective는 CI run `31474292794`, CodeQL run `31474292480`, Render Diff
+run `31474292528`에서 모두 통과했다. 같은 SHA의 수동 full은 CodeQL run `31474845857`과 Render Diff
+run `31474848038`이 통과했지만, CI run `31474843602`는 #4029의 기존 cold `release/30` 제한으로
+archive builder가 완료되기 전에 취소됐다.
+
+#4029는 PR #4581과 v0.8.4 태그 CI로 해결됐다. 일반 수동 CI는 이제 `release-test/30`, main/tag는
+`release/60`을 선택한다. 또한 PR #4573의 base가 `c64b5c70a700`에 머문 사이 `devel`이 전진해 PR이
+`CONFLICTING / DIRTY`가 됐다. 기존 측정 SHA를 재작성하지 않도록 최신 `upstream/devel@525cf8e8e`을
+merge하고, 유일한 충돌 `mydocs/orders/20260811.md`는 canary 행과 upstream 운영 기록을 모두 보존해
+해소했다. 새 head에서는 focused 검증과 PR selective, 같은 SHA의 수동 full을 다시 수행한다.
+
+## 최초 head focused 검증 결과
 
 - `node --test rhwp-studio/tests/shortcut-map.test.ts` — 7/7 통과.
 - `npx --prefix rhwp-studio tsc --project rhwp-studio/tsconfig.ci-unit.json --noEmit` — 통과.
@@ -58,4 +72,21 @@ Native Skia와 세 CodeQL 언어를 실제 실행해야 한다. 두 실행의 jo
 low 1건·high 3건을 보고했다. manifest·lockfile 변경은 없고 측정 canary 범위가 아니므로 자동 수정하지
 않는다.
 
-Rust·WASM·renderer·fixture를 바꾸지 않으므로 Cargo, wasm-pack과 시각 검증은 적용하지 않는다.
+## 재개 head focused 검증 결과
+
+- `npm --prefix rhwp-studio ci` — 최신 lockfile 기준 389 packages 설치 완료.
+- `node --test rhwp-studio/tests/shortcut-map.test.ts` — 7/7 통과.
+- `npx --prefix rhwp-studio tsc --project rhwp-studio/tsconfig.ci-unit.json --noEmit` — 통과.
+- `npm --prefix rhwp-studio test` — 860건 중 859 pass, 정책 skip 1, fail 0.
+- 실제 변경 7개 파일 목록으로 classifier를 실행해
+  `classified:studio-unit`, `frontend_mode=unit`, `codeql_languages=javascript-typescript`,
+  Rust·render·Native Skia false가 모두 일치했다.
+- `node --test scripts/tests/ci-impact-classifier.test.cjs` — 28/28 통과.
+- CI·CodeQL·Render Diff workflow 계약 unittest — 45/45 통과.
+- `actionlint` (`ci.yml`, `codeql.yml`, `render-diff.yml`) — 통과.
+- `git diff --check` — 통과.
+
+제품 소스 변경은 `ShortcutDef`와 shortcut entry를 readonly 타입으로 좁히는 정적 계약이며 런타임 매핑을
+바꾸지 않는다. 새 테스트도 기존 개체 속성 `P` 매핑의 영문·한글·IME 경계를 고정한다. 실제 브라우저
+동작·Cargo·WASM·renderer·fixture는 바꾸지 않으므로 브라우저 E2E, Cargo, wasm-pack과 시각 검증은
+focused 범위에서 생략한다.
