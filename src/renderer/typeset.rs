@@ -701,10 +701,6 @@ pub struct TypesetEngine {
 }
 
 /// 조판 중 현재 페이지/단 상태
-/// [Task #1725 v2] tail-before-vpos-reset 문단에 1회 허용하는 소량 오버플로(px).
-/// 한글은 하드 페이지 경계 직전 tail 을 본문 하단(여백 침범 무시)에 배치하므로, rhwp 가 수 px
-/// over-fill 한 경우에도 tail 을 현재 페이지에 유지해 near-empty 페이지 over-pagination 을 막는다.
-const TAIL_BREAK_OVERFLOW_TOLERANCE_PX: f64 = 20.0;
 const HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX: f64 = 64.0;
 /// Native HWP5의 저장 행 높이 HU 반올림에서만 허용하는 미세 RowBreak 초과값.
 /// HWPX stored-layout의 측정 drift 허용(64px)과 의도적으로 분리한다.
@@ -922,10 +918,6 @@ const BOTTOM_SQUEEZE_MAX_REST_PX: f64 = 100.0;
 /// 1741000 여유 30~58px 압축 실측).
 const BOTTOM_SQUEEZE_MIN_HEADROOM_PX: f64 = 12.0;
 const ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX: f64 = 40.0;
-/// [Task #1733] 저장 LINE_SEG 좌표가 현재 쪽 하단 안에 tail 을 두었다는 증거가 있을 때
-/// 제한된 tail 경로에만 허용하는 누적 높이 drift 완화값.
-const SAVED_TAIL_VPOS_OVERFLOW_TOLERANCE_PX: f64 = 128.0;
-
 struct TypesetState {
     /// 완성된 페이지 목록
     pages: Vec<PageContent>,
@@ -1051,10 +1043,9 @@ struct TypesetState {
     /// 각주 있는 페이지에서 한글 LINESEG 는 tail 문단을 본문에 배치(각주는 아래)하는데,
     /// rhwp 각주 예약(+40px 버퍼)이 tail 을 수 px 초과로 밀어 near-empty 페이지 over-pagination.
     skip_footnote_margin_once: bool,
-    /// [Task #1725 v2] tail-before-vpos-reset 문단 1회 소량 오버플로 허용(px). 각주 없이도
-    /// 페이지가 수 px over-fill 되어 tail 이 밀리는 케이스(국제고속선기준 pi=718/995/1789/2128).
-    /// 한글은 tail 을 본문 하단(여백 침범 무시)에 배치하므로 tail 에 한해 소량 초과를 허용한다.
-    tail_overflow_tolerance_once: f64,
+    /// 다음 저장 vpos-reset 직전 tail의 실제 저장 line bounds. 현재 flow와 저장 bottom의
+    /// 차이만 다음 문단의 fit allowance로 쓴다.
+    tail_saved_bounds_once: Option<(f64, f64)>,
     /// #2439: 단일 양수-offset 빈 호스트 RowBreak 표 뒤 일반 문단의 1회 엄격 fit.
     /// 이 문단은 표의 실제 painted bottom 뒤에서 시작하므로 저장 page-tail 예외와
     /// trailing line-spacing 트림을 적용하지 않는다.
@@ -3433,6 +3424,12 @@ fn saved_tail_fit_chain_decision(
     }
 }
 
+fn saved_bounds_overlap_current_flow(bounds: (f64, f64), current_height: f64) -> bool {
+    let (top, bottom) = bounds;
+    let line_height = (bottom - top).max(0.0);
+    line_height > 0.0 && top <= current_height + line_height && current_height <= bottom
+}
+
 fn saved_line_clears_footnote_area(
     current_footnote_height: f64,
     is_single_column: bool,
@@ -3450,22 +3447,48 @@ fn saved_line_clears_footnote_area(
             top >= 0.0
                 && top <= base_available_height
                 && bottom <= text_limit
-                && current_height <= top + 16.0
+                && saved_bounds_overlap_current_flow((top, bottom), current_height)
         })
 }
 
-fn saved_bounds_fit_at_flow_tail(bounds: (f64, f64), current_height: f64, available: f64) -> bool {
-    saved_bounds_fit_at_flow_tail_with_tolerance(bounds, current_height, available, 16.0)
-}
-
-fn saved_bounds_fit_at_flow_tail_with_tolerance(
+fn saved_bounds_fit_at_flow_tail(
     bounds: (f64, f64),
     current_height: f64,
     available: f64,
-    tolerance_px: f64,
+    bottom_spill: f64,
 ) -> bool {
+    saved_bounds_overlap_current_flow(bounds, current_height) && bounds.1 <= available + bottom_spill
+}
+
+fn paragraph_saved_visible_bounds(
+    para: &Paragraph,
+    page_vpos_base: i32,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    let mut bounds: Option<(f64, f64)> = None;
+    for seg in para.line_segs.iter().filter(|seg| !is_synthetic_line_seg(seg)) {
+        let (top, bottom) = line_seg_visible_bounds_px(seg, page_vpos_base, dpi)?;
+        bounds = Some(match bounds {
+            Some((min_top, max_bottom)) => (min_top.min(top), max_bottom.max(bottom)),
+            None => (top, bottom),
+        });
+    }
+    bounds
+}
+
+/// 저장 tail의 하단이 본문 안에 있다는 source 증거가 있을 때, 현재 조판 흐름이 그
+/// 하단에 닿는 데 필요한 정확한 차이만 반환한다. 임의 px allowance를 쓰지 않는다.
+fn saved_tail_overflow_to_fit(
+    bounds: (f64, f64),
+    current_height: f64,
+    fit_height: f64,
+    body_height: f64,
+) -> Option<f64> {
     let (top, bottom) = bounds;
-    top + tolerance_px >= current_height && bottom <= available + 0.5
+    (top >= 0.0
+        && bottom <= body_height
+        && saved_bounds_overlap_current_flow(bounds, current_height))
+    .then(|| (current_height + fit_height - bottom).max(0.0))
 }
 
 fn saved_line_range_fits_body_tail(
@@ -3644,7 +3667,7 @@ impl TypesetState {
             pre_emitted_host_heights: std::collections::HashMap::new(),
             skip_safety_margin_once: false,
             skip_footnote_margin_once: false,
-            tail_overflow_tolerance_once: 0.0,
+            tail_saved_bounds_once: None,
             strict_plain_text_fit_after_empty_host_float_once: false,
             profile: Default::default(),
             has_stored_line_segs: false,
@@ -6493,7 +6516,7 @@ impl TypesetEngine {
             if tail_before_break_through_empty {
                 st.skip_safety_margin_once = true;
                 st.skip_footnote_margin_once = true;
-                st.tail_overflow_tolerance_once = TAIL_BREAK_OVERFLOW_TOLERANCE_PX;
+                st.tail_saved_bounds_once = paragraph_saved_visible_bounds(para, 0, self.dpi);
             }
 
             // [Task #1733] 페이지 하단 빈 줄이 다음 vpos-reset 흐름 앞에 1개 이상 끼는 경우.
@@ -6681,8 +6704,9 @@ impl TypesetEngine {
                     // 밀어 near-empty 페이지 over-pagination(국제고속선기준 258 vs 242) 을 만든다.
                     st.skip_footnote_margin_once = true;
                     // [Task #1725 v2] 각주 없이 페이지가 수 px over-fill 되어 tail 이 밀리는 경우도
-                    // 한글은 tail 을 본문 하단에 배치하므로 소량 오버플로를 1회 허용.
-                    st.tail_overflow_tolerance_once = TAIL_BREAK_OVERFLOW_TOLERANCE_PX;
+                    // 한글은 저장 tail의 본문 하단 좌표를 유지한다. 다음 fit에서 실제
+                    // 저장 bottom까지의 차이만 허용하도록 bounds를 전달한다.
+                    st.tail_saved_bounds_once = paragraph_saved_visible_bounds(para, 0, self.dpi);
                 }
             } else if !st.current_items.is_empty() && para_idx + 1 < paragraphs.len() {
                 // [Task #967] 빈 paragraph 직후 force page break (쪽나누기) case 가드:
@@ -15045,18 +15069,23 @@ impl TypesetEngine {
         } else {
             0.0
         };
-        // [Task #1725 v2] tail-before-vpos-reset 문단은 소량 오버플로를 1회 허용(각주 무관 page-full
-        // over-fill 로 tail 이 밀리는 케이스). 다음 문단이 새 페이지를 시작하므로 tail 을 현재
-        // 페이지 하단에 유지하는 것이 한글 정합.
+        // vpos-reset 직전 tail은 저장 line의 실제 bottom이 body 안에 있을 때만, 현재
+        // flow가 그 bottom까지 닿는 정확한 차이를 1회 반영한다.
         let tail_overflow = if strict_after_empty_host_float {
-            st.tail_overflow_tolerance_once = 0.0;
+            st.tail_saved_bounds_once = None;
             0.0
-        } else if st.tail_overflow_tolerance_once > 0.0 {
-            let t = st.tail_overflow_tolerance_once;
-            st.tail_overflow_tolerance_once = 0.0;
-            t
         } else {
-            0.0
+            st.tail_saved_bounds_once
+                .take()
+                .and_then(|bounds| {
+                    saved_tail_overflow_to_fit(
+                        bounds,
+                        st.current_height,
+                        fmt.height_for_fit,
+                        st.base_available_height(),
+                    )
+                })
+                .unwrap_or(0.0)
         };
         let available =
             (st.available_height() - safety + footnote_margin_addback + tail_overflow).max(0.0);
@@ -15299,8 +15328,12 @@ impl TypesetEngine {
                         0.0
                     };
                     let (top, bottom) = bounds;
-                    top + 16.0 >= st.current_height
-                        && bottom <= st.available_height() + 0.5 + spill
+                    saved_bounds_fit_at_flow_tail(
+                        (top, bottom),
+                        st.current_height,
+                        st.available_height(),
+                        spill,
+                    )
                 });
         let saved_list_tail_body_vpos_fits = !strict_after_empty_host_float
             && forced_page_break_line.is_none()
@@ -15317,11 +15350,11 @@ impl TypesetEngine {
                 .first()
                 .and_then(|seg| line_seg_visible_bounds_px(seg, 0, self.dpi))
                 .is_some_and(|bounds| {
-                    saved_bounds_fit_at_flow_tail_with_tolerance(
+                    saved_bounds_fit_at_flow_tail(
                         bounds,
                         st.current_height,
                         st.base_available_height(),
-                        SAVED_TAIL_VPOS_OVERFLOW_TOLERANCE_PX,
+                        0.0,
                     )
                 });
 
@@ -15757,7 +15790,6 @@ impl TypesetEngine {
                         && para.controls.is_empty()
                         && !st.current_items.is_empty()
                         && !para_near_rowbreak_table(paragraphs, para_idx)
-                        && overflow <= SAVED_TAIL_VPOS_OVERFLOW_TOLERANCE_PX
                         && saved_line_range_fits_body_tail(
                             para,
                             li,
@@ -15790,8 +15822,8 @@ impl TypesetEngine {
                                     self.dpi,
                                 )
                             })
-                            .is_some_and(|(top, _)| {
-                                top + 16.0 >= st.current_height && top <= st.current_height + 16.0
+                            .is_some_and(|bounds| {
+                                saved_bounds_overlap_current_flow(bounds, st.current_height)
                             })
                         && saved_line_range_fits_body_tail(
                             para,
