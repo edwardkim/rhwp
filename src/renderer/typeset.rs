@@ -21337,7 +21337,7 @@ impl TypesetEngine {
         // 첫 행이 남은 공간보다 크면 다음 페이지로 (인트라-로우 분할 가능성 확인).
         // Task #398: rowspan>1 셀이 행 0의 시작점이면 블록 전체 높이로 판정.
         // [Task #1046 Stage 2] 첫(비연속) fragment 의 렌더러 y_start 점프 — host_spacing.before
-        // 와 (TopAndBottom+vert=Para+v_off>0 표의) vertical_offset — 를 잔여공간에서 차감한다.
+        // 와 문단 기준 양수 vertical_offset — 를 잔여공간에서 차감한다.
         // 종전엔 미차감해 잔여를 과대평가 → 첫 행이 실제 안 들어가는데도 가드를 통과시켜
         // 일반 행 강제 배치 경로가 통째로 밀어넣어 본문 초과(예: pi=242 vert_off 38px,
         // 잔여 65.4px 로 보였으나 실가용 23.4px < 행0 34.9px). 루프 내 page_avail
@@ -21351,12 +21351,11 @@ impl TypesetEngine {
                 self.dpi,
             );
             let vert_off = {
-                use crate::model::shape::{TextWrap as TW, VertRelTo as VR};
-                let is_para_topbottom = !table.common.treat_as_char
-                    && matches!(table.common.text_wrap, TW::TopAndBottom)
+                use crate::model::shape::VertRelTo as VR;
+                let is_para_relative_table = !table.common.treat_as_char
                     && matches!(table.common.vert_rel_to, VR::Para);
                 let v = table.common.vertical_offset as i32;
-                if is_para_topbottom && v > 0 {
+                if is_para_relative_table && v > 0 {
                     hwpunit_to_px(v, self.dpi)
                 } else {
                     0.0
@@ -22077,7 +22076,7 @@ impl TypesetEngine {
                     0.0
                 };
             // [Task #874 #9] 첫 fragment 의 page_avail 은 host_spacing.before 와
-            // (TopAndBottom + vert=Para + v_offset>0 표의) vertical_offset 를 제외해야 한다.
+            // 문단 기준 양수 vertical_offset 를 제외해야 한다.
             // layout 은 표를 cur_h + host_spacing.before + v_offset 위치에 배치하지만,
             // typeset 의 page_avail = (table_available - cur_h) 은 두 overhead 를
             // 포함하지 않아 split 결정 시 actual 가용보다 과대 평가됨 → partial 오버플로우.
@@ -22093,13 +22092,12 @@ impl TypesetEngine {
             let vert_offset_overhead = if is_continuation {
                 0.0
             } else {
-                use crate::model::shape::{TextWrap as TW3, VertRelTo as VR3};
-                let is_para_topbottom = !table.common.treat_as_char
-                    && matches!(table.common.text_wrap, TW3::TopAndBottom)
+                use crate::model::shape::VertRelTo as VR3;
+                let is_para_relative_table = !table.common.treat_as_char
                     && matches!(table.common.vert_rel_to, VR3::Para);
                 // HwpUnit=u32 이므로 음수 (u32 wrap) 는 i32 로 캐스트 후 확인.
                 let v_off_i32 = table.common.vertical_offset as i32;
-                if is_para_topbottom && v_off_i32 > 0 {
+                if is_para_relative_table && v_off_i32 > 0 {
                     let raw = hwpunit_to_px(v_off_i32, self.dpi);
                     // [#2015] host 텍스트가 pre-emit(pre_emit_visible_rowbreak_host_text)
                     // 되어 current_height 를 para_start → para_start+host_h 로 전진시킨 경우,
