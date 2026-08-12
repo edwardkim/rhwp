@@ -46,7 +46,7 @@ HWPX segment가 `LineTo` 둘과 Bezier 하나로 바뀌어 실제 경로가 달�
 | 범위 | 명령 또는 근거 | 결과 |
 | --- | --- | --- |
 | parser 회귀 | `cargo test --profile release-test --target-dir target/pr-review --lib curve_seg -- --nocapture` | `test_parse_curve_seg_populates_points_without_hwp5_bezier_types` 통과 |
-| serializer 회귀 | `cargo test --profile release-test --target-dir target/pr-review --lib issue4676_curve_emits_seg_chain_not_pts -- --nocapture` | `issue4676_curve_emits_seg_chain_not_pts` 통과 |
+| serializer 회귀 | `cargo test --profile release-test --target-dir target/pr-review --lib issue4676 -- --nocapture` | `hp:seg` 출력 회귀와 HWPX `CURVE` XML→IR→XML 경계 회귀 2건 통과 |
 | 전체 Rust | `cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast` | 5,910 passed, 37 skipped, 7 slow, 418.930초 |
 | 품질 | `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `git diff --check` | 통과 |
 | 실제 HWPX 재저장 | 비공개 코퍼스의 `156550355` HWPX를 `rhwp export-hwpx --verify --json`으로 재저장 | 1,710,915 bytes, `diffCount: 0`, `identical: true` |
@@ -57,6 +57,10 @@ HWPX segment가 `LineTo` 둘과 Bezier 하나로 바뀌어 실제 경로가 달�
 `1ec49710ac9c9eae2b822227e4ad5b0f901a1efe08d89deade8c0d1c2943a122`로 동일했다. 따라서
 보정은 #4676의 한글 호환 writer 바이트를 바꾸지 않고 parser와 renderer 사이의 잘못된 의미
 전달만 제거한다.
+
+추가한 XML→IR→XML 회귀는 HWPX `CURVE` 세 구간을 재저장한 뒤에도 segment 세 개와 네 점을
+유지하고 HWP5 `segment_types`가 비어 있음을 확인한다. 즉 parser가 다시 `1`을 넣거나 serializer가
+curve를 `hc:pt`로 되돌리는 두 회귀를 함께 차단한다.
 
 renderer 소스나 조판 규칙은 바뀌지 않았다. parser/serializer 구조 보존 변경이므로 PDF pixel
 sweep은 적용하지 않았고, 실제 HWPX 구조와 자기 재파싱으로 판단했다. 독립 한글 2022 COM 재개방은

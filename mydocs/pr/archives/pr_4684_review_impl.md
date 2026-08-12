@@ -40,9 +40,11 @@ HWPX `hp:seg`는 각 구간의 시작점과 끝점만 제공한다. 반면 rende
 
 1. 원 source와 최신 `devel`의 충돌을 가시성 branch에서 해소했다.
 2. HWPX CURVE와 LINE segment가 섞인 parser fixture에 빈 `segment_types` 회귀를 추가했다.
-3. parser 집중 테스트, serializer 집중 테스트, 전체 release-test nextest, fmt, clippy를 순차로
-   실행해 통과했다.
-4. 실제 비공개 `156550355` HWPX를 재저장하고 `--verify --json`, ZIP 무결성, curve XML 구조를
+3. HWPX CURVE 점 체인의 XML→IR→XML 경계 회귀를 추가해, 재저장 후에도 HWP5 Bezier 타입이
+   비어 있고 `hp:seg`만 방출됨을 고정했다.
+4. parser 집중 테스트, serializer 집중 테스트, 전체 release-test nextest, fmt, clippy를 순차로
+   실행해 통과했다. 마지막 경계 회귀 추가 뒤에는 #4676 집중 테스트와 fmt·diff 검사를 다시 통과했다.
+5. 실제 비공개 `156550355` HWPX를 재저장하고 `--verify --json`, ZIP 무결성, curve XML 구조를
    확인했다. 보정 전후 산출물 SHA-256은 동일했다.
 
 ## 다음 단계

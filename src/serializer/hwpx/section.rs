@@ -3477,6 +3477,70 @@ mod tests {
         assert_eq!(xml.matches("<hp:seg ").count(), 2, "{xml}");
     }
 
+    /// [#4676] HWPX `hp:seg type="CURVE"`는 HWP5의 cubic Bezier 구간 타입이 아니다.
+    /// XML → IR → XML 경계에서 `segment_types=1`로 오매핑하면 renderer가 제어점 둘과
+    /// 끝점을 한 구간으로 소비한다. HWPX 점 체인은 빈 HWP5 구간 타입으로 유지하면서
+    /// 한글 호환 `hp:seg` 출력만 보존해야 한다.
+    #[test]
+    fn issue4676_hwpx_curve_chain_never_becomes_hwp5_bezier_segments() {
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let source = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:curve id="0" zOrder="0" numberingType="NONE" textWrap="TOP_AND_BOTTOM"
+                textFlow="BOTH_SIDES" lock="0" href="" groupLevel="0" instid="1">
+        <hp:offset x="0" y="0"/>
+        <hp:orgSz width="100" height="100"/>
+        <hp:curSz width="100" height="100"/>
+        <hp:lineShape color="#000000" width="113" style="SOLID"/>
+        <hp:seg type="CURVE" x1="0" y1="0" x2="10" y2="20"/>
+        <hp:seg type="CURVE" x1="10" y1="20" x2="40" y2="30"/>
+        <hp:seg type="CURVE" x1="40" y1="30" x2="90" y2="80"/>
+      </hp:curve>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+
+        let section = parse_hwpx_section(source).expect("HWPX curve 파싱");
+        let mut doc = Document::default();
+        doc.sections.push(section.clone());
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap())
+            .expect("section XML");
+
+        assert_eq!(
+            xml.matches("<hp:seg ").count(),
+            3,
+            "점 체인 길이 보존: {xml}"
+        );
+        assert!(
+            !xml.contains("<hc:pt "),
+            "curve에는 hc:pt를 다시 쓰면 안 됨: {xml}"
+        );
+
+        let reparsed = parse_hwpx_section(&xml).expect("재파싱");
+        let curve = reparsed.paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|control| match control {
+                Control::Shape(shape) => match shape.as_ref() {
+                    ShapeObject::Curve(curve) => Some(curve),
+                    _ => None,
+                },
+                _ => None,
+            })
+            .expect("curve shape");
+        assert_eq!(curve.points.len(), 4, "첫 점과 세 segment 끝점이 남아야 함");
+        assert!(
+            curve.segment_types.is_empty(),
+            "HWPX CURVE를 HWP5 Bezier 타입으로 재도입하면 안 됨: {:?}",
+            curve.segment_types
+        );
+    }
+
     /// [#2779] 각주 코드 2(가장 오른쪽 단)는 각주 전용 토큰이 있으나, 미주에는 스키마상
     /// 대응 토큰이 없어 기본값 END_OF_DOCUMENT 로 강등한다(주석 참조).
     #[test]
