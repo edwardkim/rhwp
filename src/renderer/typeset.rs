@@ -18945,15 +18945,15 @@ impl TypesetEngine {
                 // 강제 없음).
                 layout_engine.row_cut_content_height(table, r, row_start_cut, &[], styles)
             };
-            // The final visible response is followed by a source-empty spacer.
-            // Its stored row height is authoritative for whole-row ownership;
+            // The final visible response is followed by a row without text or
+            // controls. Its stored row height is authoritative for whole-row ownership;
             // browser-composed height may be larger solely because of font
             // metrics and must not create a tail-only physical page.
             let terminal_response_before_empty_spacer = mt.allows_row_break_split()
                 && r + 2 == row_count
                 && row_start_cut.is_empty()
                 && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && Self::row_is_empty_trailing_spacer(table, r + 1);
+                && Self::row_has_no_text_or_controls(table, r + 1);
             let strict_nonterminal_rounding_fit = strict_painted_bottom_fit
                 && r + 1 < row_count
                 && consumed + cs_before + row_total <= avail_for_rows + 0.5;
@@ -19038,7 +19038,7 @@ impl TypesetEngine {
                 mt.max_padding_for_row(r)
             };
             let mut budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
-            // A visible terminal response followed by a source-empty spacer is
+            // A visible terminal response followed by a no-text/no-control row is
             // a two-part physical row: the spacer owns no ink, while the
             // response carries the stored page frame.  This is structural
             // source evidence and deliberately does not depend on a document
@@ -19161,7 +19161,7 @@ impl TypesetEngine {
                     }
                     break;
                 }
-                // A terminal response immediately followed by a source-empty spacer can
+                // A terminal response immediately followed by a no-text/no-control row can
                 // exceed the composed row metric only by the measured-versus-stored
                 // row drift.  Use that exact drift rather than a template allowance.
                 let stored_terminal_response_tail_fits = r > cursor_row
@@ -22814,7 +22814,10 @@ impl TypesetEngine {
         })
     }
 
-    fn row_is_empty_trailing_spacer(table: &crate::model::table::Table, row: usize) -> bool {
+    /// Text-flow predicate only. A matching row can still paint a declared cell
+    /// height, border, fill, or table-level fallback, so it must not by itself
+    /// authorize a fragment-height overflow.
+    fn row_has_no_text_or_controls(table: &crate::model::table::Table, row: usize) -> bool {
         let mut row_cells = table
             .cells
             .iter()
