@@ -709,52 +709,6 @@ const HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX: f64 = 64.0;
 /// Native HWP5의 저장 행 높이 HU 반올림에서만 허용하는 미세 RowBreak 초과값.
 /// HWPX stored-layout의 측정 drift 허용(64px)과 의도적으로 분리한다.
 const NATIVE_HWP5_ROWBREAK_ROUNDING_TOLERANCE_PX: f64 = 2.0;
-/// Native HWP5의 1x1 RowBreak 셀은 저장 vpos frame 경계 직전의 마지막 문단을
-/// 본문 하단까지 유지한다. cell-unit hard-break와 같은 32px tail을 첫 조각에만 허용한다.
-const NATIVE_HWP5_SINGLE_CELL_SAVED_FRAME_TAIL_ALLOWANCE_PX: f64 = 32.0;
-/// HWP5-origin 2025 편람 Q&A Q7의 첫 응답 조각은 저장된 세 줄 frame을 동일 page에 남긴다.
-/// 이 값은 전체 행 overflow가 아니라 첫 intra-row cut에만 더한다.
-const HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
-/// Q5 saved-frame tail을 앞쪽에 복원한 뒤 Q7은 raw budget 18.3px에
-/// 65px만 더해 82.9px stored cut을 정확히 선택한다. 더 크게 잡으면 다음
-/// response line이 p284 body clip 밖으로 과수용되어 Q8이 p285에서 당겨진다.
-const HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 65.0;
-/// HWPX Q5의 저장 frame reset 직전 첫 response line은 PDF/native HWP처럼
-/// 앞 physical page에 남는다. response cell의 3·5·3 lineSeg topology에만
-/// 적용해 Q7의 다문단 tail 계약과 분리한다.
-const HWPX_QA_SAVED_FRAME_RESPONSE_CUT_ALLOWANCE_PX: f64 = 16.0;
-/// 16px cut은 정확히 첫 response line만 선택하지만, 그린 셀 padding까지 포함한
-/// physical fragment는 32px overflow tolerance가 있어야 앞 page에 유지된다.
-const HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
-/// Q16의 두 문단 response는 마지막 저장 line 하나가 남으면 별도 blank-tail
-/// page를 만든다. 32px은 1·6 lineSeg 중 마지막 unit만 같은 fragment에 수용한다.
-const HWPX_QA_TWO_PARAGRAPH_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 32.0;
-/// 논리적으로 선택한 마지막 unit에는 30.2px의 셀 padding도 함께 그려진다. 저장
-/// frame과 trailing blank-bottom row까지 같은 page owner로 보존하도록 48px까지
-/// 허용한다.
-const HWPX_QA_TWO_PARAGRAPH_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX: f64 = 48.0;
-/// Q26의 3·3 lineSeg response는 마지막 두 unit과 blank-bottom row가 단독 page를
-/// 만들 수 있다. 64px은 저장 frame의 전체 tail을 앞 fragment owner로 유지한다.
-const HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX: f64 = 64.0;
-/// Q29의 두 줄 단일 response는 native HWP5가 body 하한을 23.5px 넘겨 같은 쪽에
-/// 유지한다. 논리 row 높이의 44.6px 차이를 넘는 48px으로 response와 blank-bottom row를
-/// 한 fragment owner로 보존한다.
-const HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 48.0;
-/// Q35의 3·2 lineSeg response는 저장 frame의 마지막 두 unit이 단독 쪽으로 분할된다.
-/// 64px은 response와 blank-bottom row를 PDF/native HWP5와 같은 fragment owner로 보존한다.
-const HWPX_QA_THREE_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
-/// Q37의 2·7 lineSeg response는 저장 frame의 마지막 두 unit이 단독 쪽으로 분할된다.
-/// 64px은 response와 blank-bottom row를 PDF/native HWP5와 같은 fragment owner로 보존한다.
-const HWPX_QA_TWO_SEVEN_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
-/// Q41의 6·6 lineSeg response는 저장 frame의 마지막 두 unit이 단독 쪽으로 분할된다.
-/// 64px은 PDF p301의 완결 owner를 보존한다.
-const HWPX_QA_TWO_SIX_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
-/// Q48의 3 lineSeg 단일 response는 저장 frame의 마지막 두 unit이 단독 쪽으로 분할된다.
-/// 96px은 PDF p304의 완결 owner를 보존한다.
-const HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 96.0;
-/// HWPX로 저장된 2025 편람 Q&A 목차의 마지막 1×1 RowBreak tail은 32px 이하다.
-/// 세 번째 continuation의 마지막 line만 같은 page에 유지한다.
-const HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
 /// [#3236] 1행 1열 RowBreak 표의 선언 높이 신뢰(#1891) 상한 배율. 측정이 선언의
 /// 이 배율을 넘으면 폰트 대체 팽창이 아니라 셀 내용이 진짜로 큰 것이므로 특례를
 /// 적용하지 않고 인트라-로우 분할 경로에 맡긴다.
@@ -968,10 +922,6 @@ const BOTTOM_SQUEEZE_MAX_REST_PX: f64 = 100.0;
 /// 1741000 여유 30~58px 압축 실측).
 const BOTTOM_SQUEEZE_MIN_HEADROOM_PX: f64 = 12.0;
 const ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX: f64 = 40.0;
-/// native HWP5 6x5 Q&A 표는 2mm outer-bottom을 가진 마지막 빈 행을 한컴이
-/// 직전 fragment의 물리 tail로 보존한다. 일반 RowBreak 표의 40px 정책을 넓히지
-/// 않고, 이 저장 template에만 관측된 최대 60.4px 초과를 수용한다.
-const NATIVE_HWP5_QA_TERMINAL_SPACER_OVERFLOW_TOLERANCE_PX: f64 = 64.0;
 /// [Task #1733] 저장 LINE_SEG 좌표가 현재 쪽 하단 안에 tail 을 두었다는 증거가 있을 때
 /// 제한된 tail 경로에만 허용하는 누적 높이 drift 완화값.
 const SAVED_TAIL_VPOS_OVERFLOW_TOLERANCE_PX: f64 = 128.0;
@@ -19071,6 +19021,15 @@ impl TypesetEngine {
                 // 강제 없음).
                 layout_engine.row_cut_content_height(table, r, row_start_cut, &[], styles)
             };
+            // The final visible response is followed by a source-empty spacer.
+            // Its stored row height is authoritative for whole-row ownership;
+            // browser-composed height may be larger solely because of font
+            // metrics and must not create a tail-only physical page.
+            let terminal_response_before_empty_spacer = mt.allows_row_break_split()
+                && r + 2 == row_count
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && Self::row_is_empty_trailing_spacer(table, r + 1);
             let strict_nonterminal_rounding_fit = strict_painted_bottom_fit
                 && r + 1 < row_count
                 && consumed + cs_before + row_total <= avail_for_rows + 0.5;
@@ -19090,6 +19049,17 @@ impl TypesetEngine {
                 || native_hwp5_rowbreak_rounding_fit
             {
                 // 행 전체가 예산 안에 들어감.
+                consumed += cs_before + row_total;
+                r += 1;
+                end_row = r;
+                continue;
+            }
+            if r > cursor_row
+                && terminal_response_before_empty_spacer
+                && mt.row_heights.get(r).is_some_and(|stored_height| {
+                    consumed + cs_before + *stored_height <= avail_for_rows + 0.5
+                })
+            {
                 consumed += cs_before + row_total;
                 r += 1;
                 end_row = r;
@@ -19154,23 +19124,12 @@ impl TypesetEngine {
             // RowBreak 표의 마지막 빈 spacer 행은 한컴이 직전 조각 하단에 붙여
             // 그리는 경우가 많다. 이 행 하나만 몇 px 넘친다고 별도 빈 꼬리
             // 페이지를 만들면 Q&A 표처럼 작은 잔여 조각 페이지가 반복된다.
-            let trailing_empty_row_overflow_tolerance = if st.profile.native_hwp5_layout()
-                && !table.common.treat_as_char
-                && row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.outer_margin_bottom > 0
-            {
-                NATIVE_HWP5_QA_TERMINAL_SPACER_OVERFLOW_TOLERANCE_PX
-            } else {
-                ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX
-            };
             if mt.allows_row_break_split()
                 && r + 1 == row_count
                 && Self::row_is_empty_trailing_spacer(table, r)
                 && consumed > 0.0
                 && consumed + cs_before + row_total
-                    <= avail_for_rows + trailing_empty_row_overflow_tolerance
+                    <= avail_for_rows + ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX
             {
                 consumed += cs_before + row_total;
                 r += 1;
@@ -19218,31 +19177,6 @@ impl TypesetEngine {
                 end_row = r;
                 continue;
             }
-            // 2025 행정업무운영 편람의 native HWP Q&A 표는 6x5 grid의 마지막
-            // 실제 응답 행 뒤에 빈 spacer 행 하나를 저장한다. 브라우저 글꼴의
-            // 실측 높이가 이 응답 행을 수십 px 초과로 평가해 tail만 다음 page에
-            // 남기면, 다음 source paragraph가 이미 새 page를 가리켜 tail 전용
-            // physical page가 누적된다. 저장 표 frame의 owner를 우선해 이 좁은
-            // template에만 마지막 응답 행의 작은 overflow를 유지한다.
-            const NATIVE_HWP5_QA_TERMINAL_ROW_OVERFLOW_TOLERANCE_PX: f64 = 96.0;
-            let native_hwp5_qa_terminal_row_overflow_fit = st.profile.native_hwp5_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && r + 2 == row_count
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && consumed + cs_before + row_total
-                    <= avail_for_rows + NATIVE_HWP5_QA_TERMINAL_ROW_OVERFLOW_TOLERANCE_PX;
-            if native_hwp5_qa_terminal_row_overflow_fit {
-                consumed += cs_before + row_total;
-                r += 1;
-                end_row = r;
-                continue;
-            }
             // 행 r 이 예산 초과 — 인트라-분할 시도.
             // [Task #77] 분할 불가 행(이미지 셀 등)은 통째 배치 / 다음 페이지.
             // `MeasuredTable`은 2행 이상 중첩 표만 `nested_split_row_count`로
@@ -19279,257 +19213,46 @@ impl TypesetEngine {
             } else {
                 mt.max_padding_for_row(r)
             };
-            let budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
-            // HWP5는 하나의 giant cell 안에 여러 physical page의 저장 vpos frame을
-            // 기록할 수 있다. 첫 frame의 마지막 문단은 renderer의 visible padding을
-            // 더한 예산보다 조금 커도 한컴이 같은 physical page 하단에 유지한다.
-            // continuation까지 넓히면 실제 다음 frame owner를 앞 page로 끌어오므로,
-            // native HWP5의 첫 1x1 RowBreak fragment에만 적용한다.
-            let native_hwp5_single_cell_saved_frame_tail = st.profile.native_hwp5_layout()
+            let mut budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
+            // A visible terminal response followed by a source-empty spacer is
+            // a two-part physical row: the spacer owns no ink, while the
+            // response carries the stored page frame.  This is structural
+            // source evidence and deliberately does not depend on a document
+            // shape, stored table size, or line count.
+            // Stored vpos-frame resets are source-owned physical fragment boundaries.
+            // First take the ordinary budget cut, then extend only to the end of
+            // the terminal response frame when that exact CellUnit boundary is known.
+            let mut res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
+            let mut uses_source_terminal_tail = false;
+            if (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout())
                 && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 1
-                && table.col_count == 1
-                && table.cells.len() == 1
-                && r == 0
-                && cursor_row == 0
-                && !is_continuation
-                && row_start_cut.is_empty()
-                && rowbreak_table_has_internal_saved_vpos_reset(table);
-            // 2025 편람 Q&A 6x5 RowBreak의 긴 응답은 원본이 첫 응답 문단의 세 줄을
-            // 현재 쪽에 저장한다. 브라우저 실측만 따르면 한 줄 뒤에 cut되어 Q8 owner가
-            // 한 쪽 늦어진다. Q7의 declared height, zero outer bottom, five-paragraph
-            // response를 함께 확인해 첫 fragment에만 64px을 허용한다.
-            let hwp5_origin_qa_first_response_tail =
-                (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout())
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.common.height == 13_042
-                && table.outer_margin_bottom == 0
-                && r + 2 == row_count
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && table.cells.iter().any(|cell| {
-                    cell.row as usize == r && cell.paragraphs.len() == 5
-                });
-            // 2025 편람 Q5의 첫 response 문단은 `0 -> 1838 -> 0` HWPX frame
-            // reset을 갖는다. browser 측정은 첫 줄을 다음 쪽으로 미루지만, native
-            // HWP와 PDF는 reset 직전 tail을 앞쪽에 소유한다. 같은 6×5 마지막
-            // 응답 행이라도 declared height와 response lineSeg topology로 Q7과
-            // 분리해, 일반 3문단 표의 row-cut 허용치를 넓히지 않는다.
-            let hwpx_qa_saved_frame_response_tail = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.common.height == 11_382
-                && table.outer_margin_bottom == 0
-                && r + 2 == row_count
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && table.cells.iter().any(|cell| {
-                    cell.row as usize == r
-                        && cell.paragraphs.len() == 3
-                        && cell.paragraphs.first().is_some_and(|paragraph| {
-                            paragraph.line_segs.len() == 3
-                                && paragraph.line_segs[0].vertical_pos == 0
-                                && paragraph.line_segs[1].vertical_pos > 0
-                                && paragraph.line_segs[2].vertical_pos == 0
-                        })
-                });
-            let hwpx_qa_two_paragraph_response_tail = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.common.height == 11_315
-                && table.outer_margin_bottom == 566
-                && r + 2 == row_count
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && table.cells.iter().any(|cell| {
-                    cell.row as usize == r
-                        && cell.paragraphs.len() == 2
-                        && cell.paragraphs[0].line_segs.len() == 1
-                        && cell.paragraphs[1].line_segs.len() == 6
-                        && cell.paragraphs[1]
-                            .line_segs
-                            .first()
-                            .is_some_and(|segment| segment.vertical_pos == 0)
-                });
-            let hwpx_qa_two_paragraph_six_line_tail = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.common.height == 19_355
-                && table.outer_margin_bottom == 566
-                && r + 2 == row_count
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && table.cells.iter().any(|cell| {
-                    cell.row as usize == r
-                        && cell.paragraphs.len() == 2
-                        && cell.paragraphs[0].line_segs.len() == 3
-                        && cell.paragraphs[1].line_segs.len() == 3
-                        && cell.paragraphs[1]
-                            .line_segs
-                            .first()
-                            .is_some_and(|segment| segment.vertical_pos > 0)
-                });
-            let hwpx_qa_two_line_response_tail = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.common.height == 15_224
-                && table.outer_margin_bottom == 566
-                && r + 2 == row_count
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && table.cells.iter().any(|cell| {
-                    cell.row as usize == r
-                        && cell.paragraphs.len() == 1
-                        && cell.paragraphs[0].line_segs.len() == 2
-                        && cell.paragraphs[0].line_segs[0].vertical_pos == 0
-                        && cell.paragraphs[0].line_segs[1].vertical_pos > 0
-                });
-            let hwpx_qa_three_two_line_response_tail = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.common.height == 18_084
-                && table.outer_margin_bottom == 566
-                && r + 2 == row_count
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && table.cells.iter().any(|cell| {
-                    cell.row as usize == r
-                        && cell.paragraphs.len() == 2
-                        && cell.paragraphs[0].line_segs.len() == 3
-                        && cell.paragraphs[1].line_segs.len() == 2
-                        && cell.paragraphs[1].line_segs[0].vertical_pos > 0
-                });
-            let hwpx_qa_two_seven_line_response_tail = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.common.height == 23_988
-                && table.outer_margin_bottom == 566
-                && r + 2 == row_count
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && table.cells.iter().any(|cell| {
-                    cell.row as usize == r
-                        && cell.paragraphs.len() == 2
-                        && cell.paragraphs[0].line_segs.len() == 2
-                        && cell.paragraphs[1].line_segs.len() == 7
-                        && cell.paragraphs[1].line_segs[0].vertical_pos > 0
-                });
-            let hwpx_qa_two_six_line_response_tail = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.common.height == 29_772
-                && table.outer_margin_bottom == 0
-                && r + 2 == row_count
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && table.cells.iter().any(|cell| {
-                    cell.row as usize == r
-                        && cell.paragraphs.len() == 2
-                        && cell.paragraphs[0].line_segs.len() == 6
-                        && cell.paragraphs[1].line_segs.len() == 6
-                        && cell.paragraphs[1].line_segs[0].vertical_pos > 0
-                });
-            let hwpx_qa_three_line_response_tail = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.common.height == 15_385
-                && table.outer_margin_bottom == 0
-                && r + 2 == row_count
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && table.cells.iter().any(|cell| {
-                    cell.row as usize == r
-                        && cell.paragraphs.len() == 1
-                        && cell.paragraphs[0].line_segs.len() == 3
-                });
-            // HWPX Q&A 목차는 73 문단의 1×1 RowBreak 표다. 세 번째 continuation에는
-            // 28.4px tail만 남으므로 그 마지막 line만 현재 page로 수용한다. 일반 1×1
-            // 표 또는 첫 두 fragment에는 적용하지 않는다.
-            let hwpx_qa_toc_final_tail = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 1
-                && table.col_count == 1
-                && table.cells.len() == 1
-                && table.common.height == 47_726
-                && r == 0
-                && cursor_row == 0
-                && is_continuation
-                && !row_start_cut.is_empty()
-                && table
-                    .cells
-                    .first()
-                    .is_some_and(|cell| cell.paragraphs.len() == 73);
-            let cut_tail_allowance = if native_hwp5_single_cell_saved_frame_tail {
-                    NATIVE_HWP5_SINGLE_CELL_SAVED_FRAME_TAIL_ALLOWANCE_PX
-                } else if hwp5_origin_qa_first_response_tail {
-                    if st.profile.hwpx_stored_layout() {
-                        HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
-                    } else {
-                        HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                && terminal_response_before_empty_spacer
+                && res.consumed_height > 0.5
+            {
+                let source_tail_cut = layout_engine
+                    .stored_frame_cut_for_row(table, r, row_start_cut, styles)
+                    .or_else(|| {
+                        layout_engine.paragraph_tail_cut_for_row(
+                            table,
+                            r,
+                            row_start_cut,
+                            &res.end_cut,
+                            styles,
+                        )
+                    });
+                if let Some(source_tail_cut) = source_tail_cut
+                {
+                    if source_tail_cut.consumed_height > res.consumed_height + 0.5 {
+                        // Downstream fit/retry decisions must reason in the
+                        // same frame-sized budget as the cut.  The precise
+                        // physical overfill is measured from the painted
+                        // candidate below.
+                        budget = source_tail_cut.consumed_height;
+                        res = source_tail_cut;
+                        uses_source_terminal_tail = true;
                     }
-                } else if hwpx_qa_saved_frame_response_tail {
-                    HWPX_QA_SAVED_FRAME_RESPONSE_CUT_ALLOWANCE_PX
-                } else if hwpx_qa_two_paragraph_response_tail {
-                    HWPX_QA_TWO_PARAGRAPH_RESPONSE_TAIL_ALLOWANCE_PX
-                } else if hwpx_qa_two_paragraph_six_line_tail {
-                    HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX
-                } else if hwpx_qa_two_line_response_tail {
-                    HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
-                } else if hwpx_qa_three_two_line_response_tail {
-                    HWPX_QA_THREE_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
-                } else if hwpx_qa_two_seven_line_response_tail {
-                    HWPX_QA_TWO_SEVEN_LINE_RESPONSE_TAIL_ALLOWANCE_PX
-                } else if hwpx_qa_two_six_line_response_tail {
-                    HWPX_QA_TWO_SIX_LINE_RESPONSE_TAIL_ALLOWANCE_PX
-                } else if hwpx_qa_three_line_response_tail {
-                    HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX
-                } else if hwpx_qa_toc_final_tail {
-                    HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX
-                } else {
-                    0.0
-                };
-            let cut_budget = budget + cut_tail_allowance;
-            let mut res =
-                layout_engine.advance_row_cut(table, r, row_start_cut, cut_budget, styles);
+                }
+            }
             // [#2236 진단] 인트라 컷 시도 결과 — 동작 불변.
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(
@@ -19614,49 +19337,21 @@ impl TypesetEngine {
                     }
                     break;
                 }
-                // HWPX Q16의 마지막 response row는 저장 lineSeg 기준으로는 현재
-                // page에 완결되지만, 그린 padding까지 포함하면 40px 이내로 넘는다.
-                // 일반 fully-consumed 규칙처럼 통째로 이월하면 blank-tail page가
-                // 생긴다. 이 raw topology에 한해 한글의 painted owner를 보존한다.
-                let hwpx_qa_two_paragraph_response_tail_fits =
-                    hwpx_qa_two_paragraph_response_tail
-                        && row_total
-                            <= budget
-                                + HWPX_QA_TWO_PARAGRAPH_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX;
-                let hwpx_qa_two_paragraph_six_line_tail_fits =
-                    hwpx_qa_two_paragraph_six_line_tail
-                        && row_total
-                            <= budget + HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX;
-                let hwpx_qa_two_line_response_tail_fits = hwpx_qa_two_line_response_tail
-                    && row_total <= budget + HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
-                let hwpx_qa_three_two_line_response_tail_fits =
-                    hwpx_qa_three_two_line_response_tail
-                        && row_total
-                            <= budget + HWPX_QA_THREE_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
-                let hwpx_qa_two_seven_line_response_tail_fits =
-                    hwpx_qa_two_seven_line_response_tail
-                        && row_total
-                            <= budget + HWPX_QA_TWO_SEVEN_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
-                let hwpx_qa_two_six_line_response_tail_fits =
-                    hwpx_qa_two_six_line_response_tail
-                        && row_total
-                            <= budget + HWPX_QA_TWO_SIX_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
-                let hwpx_qa_three_line_response_tail_fits =
-                    hwpx_qa_three_line_response_tail
-                        && row_total
-                            <= budget + HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
+                // A terminal response immediately followed by a source-empty spacer can
+                // exceed the composed row metric only by the measured-versus-stored
+                // row drift.  Use that exact drift rather than a template allowance.
+                let stored_terminal_response_tail_fits = r > cursor_row
+                    && terminal_response_before_empty_spacer
+                    && (uses_source_terminal_tail
+                        || mt.row_heights.get(r).is_some_and(|stored_height| {
+                            row_total
+                                <= budget + (row_total - *stored_height).max(0.0) + 0.5
+                        }));
                 // 단일 유닛 행 — 분할 불가, 페이지 시작이면 강제, 아니면 다음으로.
                 if r == cursor_row {
                     consumed += cs_before + row_total;
                     end_row = r + 1;
-                } else if hwpx_qa_two_paragraph_response_tail_fits
-                    || hwpx_qa_two_paragraph_six_line_tail_fits
-                    || hwpx_qa_two_line_response_tail_fits
-                    || hwpx_qa_three_two_line_response_tail_fits
-                    || hwpx_qa_two_seven_line_response_tail_fits
-                    || hwpx_qa_two_six_line_response_tail_fits
-                    || hwpx_qa_three_line_response_tail_fits
-                {
+                } else if stored_terminal_response_tail_fits {
                     consumed += cs_before + row_total;
                     end_row = row_count;
                 } else {
@@ -19686,7 +19381,7 @@ impl TypesetEngine {
                 && layout_engine.row_block_has_internal_hard_break(table, r, r + 1, styles);
             let row_split_min_keep_uses_painted_height = strict_painted_bottom_fit
                 || native_hwp5_internal_reset_row_tail
-                || hwpx_qa_saved_frame_response_tail
+                || uses_source_terminal_tail
                 || native_short_parent_child_splittable;
             // [Task #713] sliver(orphan) 회피 — 일반 표는 기존 content-only 기준을
             // 유지한다. 패딩 포함 painted 기준은 좁은 #2439 strict 표, saved internal
@@ -19748,29 +19443,18 @@ impl TypesetEngine {
                         || (fresh_late_nested_row && !nested_physical_tail))
                     && split_candidate_rows_height - avail_for_rows
                         > MIXED_NESTED_OWNER_DRIFT_MIN_PX;
+                let stored_frame_tail_overflow = if uses_source_terminal_tail {
+                    // `split_total` is the painted row footprint, whereas
+                    // the source frame is selected in CellUnit content
+                    // space.  Admit exactly that selected frame's paint
+                    // overfill, never an unrelated fixed allowance.
+                    (split_candidate_rows_height - avail_for_rows).max(0.0)
+                } else {
+                    0.0
+                };
                 let split_row_overflow_tolerance =
-                        if hwp5_origin_qa_first_response_tail {
-                            if st.profile.hwpx_stored_layout() {
-                                HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
-                            } else {
-                                HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
-                            }
-                        } else if hwpx_qa_saved_frame_response_tail {
-                            HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX
-                        } else if hwpx_qa_two_paragraph_response_tail {
-                            HWPX_QA_TWO_PARAGRAPH_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX
-                        } else if hwpx_qa_two_paragraph_six_line_tail {
-                            HWPX_QA_TWO_PARAGRAPH_SIX_LINE_TAIL_ALLOWANCE_PX
-                        } else if hwpx_qa_two_line_response_tail {
-                            HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
-                        } else if hwpx_qa_three_two_line_response_tail {
-                            HWPX_QA_THREE_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
-                        } else if hwpx_qa_two_seven_line_response_tail {
-                            HWPX_QA_TWO_SEVEN_LINE_RESPONSE_TAIL_ALLOWANCE_PX
-                        } else if hwpx_qa_two_six_line_response_tail {
-                            HWPX_QA_TWO_SIX_LINE_RESPONSE_TAIL_ALLOWANCE_PX
-                        } else if hwpx_qa_three_line_response_tail {
-                            HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX
+                        if uses_source_terminal_tail {
+                            stored_frame_tail_overflow
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
                     } else if mt.allows_row_break_split() {
@@ -20727,21 +20411,17 @@ impl TypesetEngine {
                     && declared_object_total > 0.0
                     && table_total
                         > declared_object_total * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO;
-            // 2025 편람의 native HWP Q&A 표는 빈 host에 6x5 RowBreak grid를
-            // 저장한다. declared/saved object bottom만으로 이 표를 통째 이월하면
-            // row 4의 fragmentable 응답 prefix까지 사라지고 suffix 전용 page가
-            // 누적된다. 일반 표와 1x1 그림 래퍼는 기존 declared defer를 유지하며,
-            // 이 template만 뒤의 row-cut scanner로 넘긴다.
-            let native_hwp5_qa_rowbreak_needs_fragment_scan = st.profile.native_hwp5_layout()
+            // 빈 host의 native HWP5 RowBreak 표가 셀 안에 명시적 저장 frame
+            // reset을 가지면, declared object bottom만으로 통째 이월할 수 없다.
+            // row-cut scanner가 source-owned frame prefix를 확정해야 한다.
+            let native_hwp5_stored_rowbreak_needs_fragment_scan = st.profile.native_hwp5_layout()
                 && !table.common.treat_as_char
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
                 && matches!(
                     table.page_break,
                     crate::model::table::TablePageBreak::RowBreak
                 )
-                && !para_has_visible_text(para);
+                && !para_has_visible_text(para)
+                && rowbreak_table_has_internal_saved_vpos_reset(table);
             if !st.current_items.is_empty()
                 && !ft.strict_following_plain_text_fit
                 && declared_overflows_current
@@ -20753,7 +20433,7 @@ impl TypesetEngine {
                 && !saved_host_line_after_stack_fits
                 && !single_row_object_declared_fits_current
                 && !native_hwp5_large_single_cell_rowbreak_needs_fragment_scan
-                && !native_hwp5_qa_rowbreak_needs_fragment_scan
+                && !native_hwp5_stored_rowbreak_needs_fragment_scan
                 && (saved_span.is_some() || measured_fits_current)
                 && declared_total <= available
             {

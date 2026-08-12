@@ -9618,6 +9618,30 @@ impl LayoutEngine {
         None
     }
 
+    /// `absorb_tail_before_stored_hard_break`의 더 좁은 변형이다. 일반
+    /// hard-break가 아니라 원본 LINE_SEG가 기록한 frame 경계에만 도달한다.
+    /// RowBreak의 일반 capacity cut에서 이 tail을 남기면 그 tail만 든 물리
+    /// 페이지가 생기므로, 동일한 sliver 정책을 direct row-cut에도 쓴다.
+    fn absorb_tail_before_stored_frame_break(
+        units: &[CellUnit],
+        j: usize,
+        h: f64,
+        avail_height: f64,
+    ) -> Option<(f64, usize)> {
+        const SLIVER_ABSORB_OVERFLOW_TOLERANCE_PX: f64 = 48.0;
+        let mut extra = 0.0f64;
+        for (k, unit) in units.iter().enumerate().skip(j) {
+            if k > j && unit.stored_frame_break_before {
+                return Some((h + extra, k));
+            }
+            extra += unit.height;
+            if h + extra > avail_height + SLIVER_ABSORB_OVERFLOW_TOLERANCE_PX {
+                return None;
+            }
+        }
+        None
+    }
+
     fn is_non_inline_control_flow_unit(unit: &CellUnit) -> bool {
         unit.vis_start == unit.vis_end
             && !unit.empty_spacer
@@ -9868,6 +9892,140 @@ impl LayoutEngine {
         result
     }
 
+    /// Return the complete source-owned frame beginning at `start_cut` when it
+    /// ends at an explicit stored vpos-frame reset.  Unlike a numeric overflow
+    /// allowance, this exposes the exact CellUnit boundary that the source
+    /// recorded for the current physical fragment.
+    pub(crate) fn stored_frame_cut_for_row(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<RowCutResult> {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|cell| cell.col);
+        if row_cells.is_empty() {
+            return None;
+        }
+
+        // Do not use `advance_row_cut(f64::MAX)` here.  Its normal orphan
+        // protection may intentionally rewind a unit *before* the stored
+        // boundary, which is correct for a capacity cut but not when asking
+        // for the source frame itself.
+        let frame_height = row_cells
+            .iter()
+            .enumerate()
+            .filter_map(|(cell_idx, cell)| {
+                let units = self.cell_units(cell, table, styles);
+                let start = start_cut.get(cell_idx).copied().unwrap_or(0).min(units.len());
+                units
+                    .iter()
+                    .enumerate()
+                    .skip(start + 1)
+                    .find(|(_, unit)| unit.stored_frame_break_before)
+                    .map(|(end, _)| units[start..end].iter().map(|unit| unit.height).sum::<f64>())
+            })
+            .filter(|height| *height > 0.5)
+            .reduce(f64::min)?;
+
+        let mut end_cut = Vec::with_capacity(row_cells.len());
+        let mut consumed_height = 0.0f64;
+        let mut fully_consumed = true;
+        for (cell_idx, cell) in row_cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut.get(cell_idx).copied().unwrap_or(0).min(units.len());
+            let mut end = start;
+            let mut height = 0.0f64;
+            while end < units.len()
+                && !units[end].stored_frame_break_before
+                && (height <= 0.5 || height + units[end].height <= frame_height + 0.5)
+            {
+                height += units[end].height;
+                end += 1;
+            }
+            fully_consumed &= end == units.len();
+            consumed_height = consumed_height.max(height);
+            end_cut.push(end);
+        }
+
+        (!fully_consumed && consumed_height > 0.5).then_some(RowCutResult {
+            end_cut,
+            hit_hard_break: true,
+            fully_consumed,
+            consumed_height,
+        })
+    }
+
+    /// Extend an existing row cut to the end of the omitted source paragraph.
+    ///
+    /// This is deliberately narrower than a row-height allowance: it only
+    /// consumes the visible paragraph already selected by the normal cut and
+    /// never crosses a stored frame reset.  Callers use it for a terminal
+    /// response followed by a source-empty spacer, where moving a short
+    /// paragraph suffix alone would otherwise create a tail-only fragment.
+    pub(crate) fn paragraph_tail_cut_for_row(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        base_end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<RowCutResult> {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|cell| cell.col);
+        if row_cells.is_empty() {
+            return None;
+        }
+
+        let mut end_cut = Vec::with_capacity(row_cells.len());
+        let mut consumed_height = 0.0f64;
+        let mut fully_consumed = true;
+        let mut extended = false;
+        for (cell_idx, cell) in row_cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut.get(cell_idx).copied().unwrap_or(0).min(units.len());
+            let mut end = base_end_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(start)
+                .clamp(start, units.len());
+            if let Some(first_omitted) = units.get(end) {
+                if !first_omitted.empty_spacer
+                    && first_omitted.vis_start < first_omitted.vis_end
+                    && !first_omitted.stored_frame_break_before
+                {
+                    let para_idx = first_omitted.para_idx;
+                    while let Some(unit) = units.get(end) {
+                        if unit.para_idx != para_idx || unit.stored_frame_break_before {
+                            break;
+                        }
+                        end += 1;
+                    }
+                    extended |= end > base_end_cut.get(cell_idx).copied().unwrap_or(start);
+                }
+            }
+            fully_consumed &= end == units.len();
+            consumed_height = consumed_height.max(units[start..end].iter().map(|unit| unit.height).sum());
+            end_cut.push(end);
+        }
+
+        extended.then_some(RowCutResult {
+            end_cut,
+            hit_hard_break: false,
+            fully_consumed,
+            consumed_height,
+        })
+    }
+
     fn advance_row_cut_inner(
         &self,
         table: &crate::model::table::Table,
@@ -10047,6 +10205,20 @@ impl LayoutEngine {
                     break;
                 }
                 if j > start && h + u.height > avail_height {
+                    if self.profile.get().native_hwp5_layout() {
+                        if let Some((absorbed_h, absorbed_j)) = Self::absorb_tail_before_stored_frame_break(
+                            &units,
+                            j,
+                            h,
+                            avail_height,
+                        )
+                        {
+                            h = absorbed_h;
+                            j = absorbed_j;
+                            hit_hard_break = true;
+                            break;
+                        }
+                    }
                     let visible_tail_before_spacer = relaxed_hard_break
                         && !u.empty_spacer
                         && u.vis_start < u.vis_end
