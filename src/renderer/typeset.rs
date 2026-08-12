@@ -899,7 +899,6 @@ fn partial_rowbreak_fragment_spacing_px(
     };
     (before, bottom)
 }
-const ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX: f64 = 40.0;
 struct TypesetState {
     /// 완성된 페이지 목록
     pages: Vec<PageContent>,
@@ -18972,21 +18971,6 @@ impl TypesetEngine {
                 && mt.row_heights.get(r).is_some_and(|stored_height| {
                     consumed + cs_before + *stored_height <= avail_for_rows + 0.5
                 })
-            {
-                consumed += cs_before + row_total;
-                r += 1;
-                end_row = r;
-                continue;
-            }
-            // RowBreak 표의 마지막 빈 spacer 행은 한컴이 직전 조각 하단에 붙여
-            // 그리는 경우가 많다. 이 행 하나만 몇 px 넘친다고 별도 빈 꼬리
-            // 페이지를 만들면 Q&A 표처럼 작은 잔여 조각 페이지가 반복된다.
-            if mt.allows_row_break_split()
-                && r + 1 == row_count
-                && Self::row_is_empty_trailing_spacer(table, r)
-                && consumed > 0.0
-                && consumed + cs_before + row_total
-                    <= avail_for_rows + ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX
             {
                 consumed += cs_before + row_total;
                 r += 1;
