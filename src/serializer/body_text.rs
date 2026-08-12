@@ -61,6 +61,21 @@ pub fn serialize_section(section: &Section) -> Vec<u8> {
                 0,
                 Control::SectionDef(Box::new(section.section_def.clone())),
             );
+            // [#4680] 정의 제어문자가 글자보다 앞에 놓이도록 자리를 비운다 —
+            // 간격이 없으면 `serialize_para_text` 가 텍스트 뒤에 몰아 쓰고, 그런 문서는
+            // 한글이 열다 멎는다. 어댑터의 `make_room_for_leading_defs` 와 같은 계약.
+            let leading_defs = clone
+                .controls
+                .iter()
+                .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+                .count();
+            let shift = ((leading_defs as u32) * 8)
+                .saturating_sub(clone.char_offsets.first().copied().unwrap_or(0));
+            if shift > 0 {
+                for off in &mut clone.char_offsets {
+                    *off += shift;
+                }
+            }
             Some(clone)
         }
     });

@@ -1201,7 +1201,35 @@ fn insert_section_def_control(section: &mut Section, report: &mut AdapterReport)
         0,
         Control::SectionDef(Box::new(section.section_def.clone())),
     );
+    make_room_for_leading_defs(first_para);
     report.section_def_controls_inserted += 1;
+}
+
+/// [#4680] 구역·단 정의 제어문자가 첫 문단 **맨 앞**에 놓이도록 글자 오프셋을 민다.
+///
+/// `serializer::body_text::serialize_para_text` 는 `char_offsets` 의 빈 간격에 제어문자를
+/// 채우고, 간격이 없으면 텍스트를 다 쓴 뒤에 몰아 쓴다. HWP3 파서는 오프셋을 글자 수만으로
+/// 만들어 간격이 하나도 없다 — 그래서 `(별표 2)` 뒤에 secd·cold 가 붙은 문서가 나왔고,
+/// 한글은 그런 문서를 여는 도중 응답이 끊기거나 죽었다(한글 2022 실측). 한컴 산출물은
+/// 언제나 정의 제어문자가 글자보다 앞이다.
+///
+/// 이미 자리가 있는 IR(HWPX 출신 등)은 건드리지 않는다 — 모자란 만큼만 민다.
+fn make_room_for_leading_defs(para: &mut crate::model::paragraph::Paragraph) {
+    let leading_defs = para
+        .controls
+        .iter()
+        .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+        .count();
+    // 확장 제어문자 하나가 8 코드유닛을 차지한다.
+    let needed = (leading_defs as u32) * 8;
+    let existing_room = para.char_offsets.first().copied().unwrap_or(0);
+    let shift = needed.saturating_sub(existing_room);
+    if shift == 0 {
+        return;
+    }
+    for off in &mut para.char_offsets {
+        *off += shift;
+    }
 }
 
 fn materialize_following_section_break_type(
@@ -2363,6 +2391,88 @@ pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> 
 mod tests {
     use super::*;
     use crate::model::paragraph::CharShapeRef;
+
+    /// [#4680] 구역 정의 컨트롤을 첫 문단에 삽입할 때 글자 오프셋 자리를 함께 비워야 한다.
+    ///
+    /// `serialize_para_text` 는 `char_offsets` 의 빈 간격에만 제어문자를 넣고, 간격이 없으면
+    /// 글자를 다 쓴 뒤에 몰아 쓴다. HWP3 파서는 오프셋을 글자 수만으로 만들어 간격이 없어
+    /// 종전에는 `secd`·`cold` 가 본문 글자 **뒤**로 밀렸고, 그 저장본을 한글 2022 로 열면
+    /// 응답이 끊기거나 죽었다(실측 10건 중 5건이 이 수정으로 열린다). 한컴 산출물은 언제나
+    /// 정의 제어문자가 글자보다 앞이다.
+    #[test]
+    fn issue4680_section_def_insert_makes_room_in_char_offsets() {
+        use crate::model::document::{Section, SectionDef};
+        use crate::model::page::PageDef;
+        use crate::model::paragraph::Paragraph;
+
+        // HWP3 파서 산출 모양: 글자 수만큼의 연속 오프셋, 정의 컨트롤은 cold 하나뿐.
+        let mut para = Paragraph {
+            text: "(별표 2)".to_string(),
+            char_offsets: (0..6).collect(),
+            ..Default::default()
+        };
+        para.controls.push(Control::ColumnDef(Default::default()));
+        let mut section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![para],
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::default();
+        insert_section_def_control(&mut section, &mut report);
+
+        assert_eq!(report.section_def_controls_inserted, 1);
+        // secd + cold = 확장 제어문자 2개 × 8 코드유닛만큼 앞자리가 비어야 한다.
+        assert_eq!(
+            section.paragraphs[0].char_offsets,
+            vec![16, 17, 18, 19, 20, 21],
+            "정의 컨트롤 2개분(16 코드유닛) 만큼 밀려야 함"
+        );
+    }
+
+    /// [#4680] 자리가 이미 있는 IR(HWPX 출신 등)은 밀지 않는다 — 두 번 밀면 컨트롤과
+    /// 글자 사이에 빈 슬롯이 생겨 오히려 위치가 어긋난다.
+    #[test]
+    fn issue4680_existing_room_is_not_shifted_again() {
+        use crate::model::document::{Section, SectionDef};
+        use crate::model::page::PageDef;
+        use crate::model::paragraph::Paragraph;
+
+        let para = Paragraph {
+            text: "가나".to_string(),
+            // 이미 정의 컨트롤 하나(8 코드유닛)분 자리가 있는 오프셋
+            char_offsets: vec![8, 9],
+            ..Default::default()
+        };
+        let mut section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![para],
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::default();
+        insert_section_def_control(&mut section, &mut report);
+
+        assert_eq!(
+            section.paragraphs[0].char_offsets,
+            vec![8, 9],
+            "secd 한 개분 자리가 이미 있으므로 추가 이동 없음"
+        );
+    }
 
     /// [#3676] HWP3 parser가 실제로 만드는 그림/도형/표 캡션과 HiddenComment, 그리고
     /// 공통 adapter가 다루는 바탕쪽 글상자를 모두 건너 문단 직속 그림만 보정하면,
