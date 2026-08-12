@@ -5,13 +5,14 @@
 - **브랜치**: Stage 1 `codex/issue-3790-ci-impact-shadow`, Stage 2·2.5
   `codex/issue-3790-shadow-observation`, Stage 3 `codex/issue-3790-stage3-frontend`, Stage 4
   `issue-3790-stage4-rust-native`, Stage 5A `issue-3790-stage5a-codeql-safety`, Stage 5B
-  `issue-3790-stage5b-codeql-languages`
+  `issue-3790-stage5b-codeql-languages`, Stage 2.6 enforcement
+  `issue-3790-stage26-enforcement`
 - **절차 상태**: Stage 3·4 merge·canary 완료. Stage 5A는 원격 SARIF·시간 비교, 최종 CI·GHAS와 리뷰
   보정을 통과해 PR #4341 merge commit `8ea92cdad120`으로 완료했다. Stage 5A 전용 worktree와 브랜치는
-  정리했고 Stage 2.6 controller 유일본은 보존했다. 2026-08-11 `devel` required context가 `Build & Test`
-  하나임을 직접 확인한 뒤 Stage 5B의 trusted-base 언어 선택과 고정 check identity를 구현·focused
-  검증했다. Draft PR #4519에는 최신 devel `32ecfd113690`을 반영하고 reviewer `edwardkim` 지정과
-  archive 검토 기록을 완료했으며, 최종 head의 수동 full CI·CodeQL 확인을 남겼다.
+  정리했고 Stage 2.6 controller 유일본은 보존했다. Stage 5B는 PR #4519로 merge했고, canary PR
+  #4573의 같은 head selective/full 대조로 최종 성능·진리표 gate를 통과했다. Stage 3~5가 main에
+  포함된 현재, 최신 devel에서 Stage 2.6 controller를 현재 계약에 맞게 다시 구현했다. privileged 실행은
+  단일 base-only job으로 합치고, #4573 selective/full/fast-pass jobs API의 실제 명칭까지 대조했다.
 
 ## Stage 1 — shadow classifier
 
@@ -72,6 +73,30 @@ ref의 제어를 받는다. 따라서 `pr-base-trusted-shadow`는 classifier-sou
 controller 프로토타입은 대체 controller가 main에서 live audit까지 통과하거나 maintainer가 required
 policy를 미채택하기로 결정할 때까지 보존한다. 이후 재사용할 설계·테스트 근거를 계획·보고서에 옮긴 뒤
 사용자 승인으로 local branch/worktree를 정리한다.
+
+### Stage 2.6 enforcement 재개 설계
+
+1. `pull_request_target(opened|reopened|synchronize)`에서 live head를 재확인하고 PR base SHA의
+   classifier·policy 두 파일만 credential 없이 sparse checkout한다.
+2. PR files API 입력을 base classifier로 판정하고 exact head에 `CI Impact Policy` pending을 발행한다.
+   CI·CodeQL·Render Diff가 모두 trigger 대상이 아닌 변경은 즉시 success, 외부 fork의 enforcement
+   surface 변경은 failure로 닫는다.
+3. `workflow_run`은 `CI`, `CodeQL`, `Render Diff`를 모두 구독한다. 완료 이벤트 하나만 신뢰하지 않고
+   같은 PR head SHA의 세 workflow run을 API에서 다시 조회해 aggregate 상태를 만든다.
+4. CI에서는 preflight·`Build & Test`와 Rust 8개 job, Native Skia, frontend unit/package의 정확한
+   `success|skipped`를 classifier 축과 대조한다. workflow·action·classifier·fast-pass verifier가
+   바뀌지 않은 trailing review-only fast-pass만 전 worker skipped를 허용한다.
+5. CodeQL은 preflight와 고정 세 `Analyze (...)` check identity를 확인한다. 선택 언어는
+   `Perform CodeQL Analysis` success, 비선택 언어는 `Skip unselected language` success와 analysis step
+   skipped를 요구한다. fast-pass는 enforcement surface가 바뀌지 않은 경우에만 허용한다.
+6. Render Diff는 trigger 경로와 `render_required`에 따라 preflight success 및 Canvas visual diff의
+   success 또는 skipped를 요구한다. trigger 비대상 workflow는 감사 집합에서 제외한다.
+7. expected workflow가 미완료면 status는 pending을 유지한다. 실패·예상 밖 job/step은 failure,
+   세 workflow가 모두 완료·일치할 때만 success다. privileged job은 PR head/merge ref checkout,
+   artifact download, PR 제공 script 실행을 금지한다.
+8. devel PR과 로컬 검증은 controller 활성화가 아니다. 정상 release로 workflow가 main에 등록된 뒤
+   live pending→success/failure 표본을 확인하고, repository admin이 required context를 채택해야
+   enforcement 완료로 판정한다.
 
 ## Stage 3 — frontend unit/package/render 활성화
 
