@@ -1201,35 +1201,13 @@ fn insert_section_def_control(section: &mut Section, report: &mut AdapterReport)
         0,
         Control::SectionDef(Box::new(section.section_def.clone())),
     );
-    make_room_for_leading_defs(first_para);
-    report.section_def_controls_inserted += 1;
-}
-
-/// [#4680] 구역·단 정의 제어문자가 첫 문단 **맨 앞**에 놓이도록 글자 오프셋을 민다.
-///
-/// `serializer::body_text::serialize_para_text` 는 `char_offsets` 의 빈 간격에 제어문자를
-/// 채우고, 간격이 없으면 텍스트를 다 쓴 뒤에 몰아 쓴다. HWP3 파서는 오프셋을 글자 수만으로
-/// 만들어 간격이 하나도 없다 — 그래서 `(별표 2)` 뒤에 secd·cold 가 붙은 문서가 나왔고,
-/// 한글은 그런 문서를 여는 도중 응답이 끊기거나 죽었다(한글 2022 실측). 한컴 산출물은
-/// 언제나 정의 제어문자가 글자보다 앞이다.
-///
-/// 이미 자리가 있는 IR(HWPX 출신 등)은 건드리지 않는다 — 모자란 만큼만 민다.
-fn make_room_for_leading_defs(para: &mut crate::model::paragraph::Paragraph) {
-    let leading_defs = para
+    let leading_defs = first_para
         .controls
         .iter()
-        .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+        .take_while(|control| matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)))
         .count();
-    // 확장 제어문자 하나가 8 코드유닛을 차지한다.
-    let needed = (leading_defs as u32) * 8;
-    let existing_room = para.char_offsets.first().copied().unwrap_or(0);
-    let shift = needed.saturating_sub(existing_room);
-    if shift == 0 {
-        return;
-    }
-    for off in &mut para.char_offsets {
-        *off += shift;
-    }
+    first_para.reserve_leading_extended_control_slots(leading_defs);
+    report.section_def_controls_inserted += 1;
 }
 
 fn materialize_following_section_break_type(
@@ -2390,7 +2368,7 @@ pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::paragraph::CharShapeRef;
+    use crate::model::paragraph::{CharShapeRef, LineSeg, RangeTag};
 
     /// [#4680] 구역 정의 컨트롤을 첫 문단에 삽입할 때 글자 오프셋 자리를 함께 비워야 한다.
     ///
@@ -2409,6 +2387,31 @@ mod tests {
         let mut para = Paragraph {
             text: "(별표 2)".to_string(),
             char_offsets: (0..6).collect(),
+            char_shapes: vec![
+                CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 1,
+                },
+                CharShapeRef {
+                    start_pos: 3,
+                    char_shape_id: 2,
+                },
+            ],
+            range_tags: vec![RangeTag {
+                start: 0,
+                end: 4,
+                tag: 0x0100_0003,
+            }],
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    ..Default::default()
+                },
+                LineSeg {
+                    text_start: 3,
+                    ..Default::default()
+                },
+            ],
             ..Default::default()
         };
         para.controls.push(Control::ColumnDef(Default::default()));
@@ -2435,6 +2438,12 @@ mod tests {
             vec![16, 17, 18, 19, 20, 21],
             "정의 컨트롤 2개분(16 코드유닛) 만큼 밀려야 함"
         );
+        assert_eq!(section.paragraphs[0].char_shapes[0].start_pos, 0);
+        assert_eq!(section.paragraphs[0].char_shapes[1].start_pos, 19);
+        assert_eq!(section.paragraphs[0].range_tags[0].start, 16);
+        assert_eq!(section.paragraphs[0].range_tags[0].end, 20);
+        assert_eq!(section.paragraphs[0].line_segs[0].text_start, 0);
+        assert_eq!(section.paragraphs[0].line_segs[1].text_start, 19);
     }
 
     /// [#4680] 자리가 이미 있는 IR(HWPX 출신 등)은 밀지 않는다 — 두 번 밀면 컨트롤과
