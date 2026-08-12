@@ -13,6 +13,8 @@
 //!   - `section.paragraphs` 여러 개 = 하드 문단 경계 (`<hp:p>` 여러 개)
 //!   - `paragraph.text` 내 `\n` = 소프트 라인브레이크 (`<hp:lineBreak/>`, 같은 문단 내)
 //!   - `paragraph.text` 내 `\t` = 탭 (`<hp:tab width=... leader="0" type="1"/>`)
+//!   - `paragraph.text` 내 `U+2007` = 고정폭 빈칸 (`<hp:fwSpace/>`, #4675)
+//!   - `paragraph.text` 내 `U+00A0` = 묶음 빈칸 (`<hp:nbSpace/>`)
 //!   - `paragraph.para_shape_id` → `<hp:p paraPrIDRef>`
 //!   - `paragraph.style_id` → `<hp:p styleIDRef>`
 //!   - `paragraph.column_type` → `<hp:p pageBreak/columnBreak>`
@@ -688,6 +690,18 @@ pub(crate) fn render_hp_t_content(
             '\n' => {
                 flush_buf(&mut t_xml, &mut buf);
                 t_xml.push_str("<hp:lineBreak/>");
+            }
+            // 고정폭/묶음 빈칸은 요소로 복원한다(#4675). 파서가 <hp:fwSpace/>→U+2007,
+            // <hp:nbSpace/>→U+00A0 으로 읽으므로 리터럴 방출은 표현 강등이다 — 한글은
+            // 요소를 텍스트 추출에 싣지 않지만 리터럴은 문자로 실어, 저장본의 추출
+            // 텍스트·재조판이 원본과 달라진다(10k 스윕 figure-space-only 1,970건).
+            '\u{2007}' => {
+                flush_buf(&mut t_xml, &mut buf);
+                t_xml.push_str("<hp:fwSpace/>");
+            }
+            '\u{00A0}' => {
+                flush_buf(&mut t_xml, &mut buf);
+                t_xml.push_str("<hp:nbSpace/>");
             }
             c if (c as u32) < 0x20 => { /* 기타 제어문자 무시 */ }
             c => buf.push(c),
@@ -3346,6 +3360,40 @@ mod tests {
             reparsed_para.tab_extended.is_empty(),
             "width=0 마커 재파싱 후 tab_extended 는 비어 있어야 함(원본과 동일): {:?}",
             reparsed_para.tab_extended
+        );
+    }
+
+    /// #4675: 고정폭 빈칸(U+2007)·묶음 빈칸(U+00A0)은 리터럴 문자가 아니라
+    /// `<hp:fwSpace/>`/`<hp:nbSpace/>` 요소로 직렬화돼야 한다. 리터럴 방출은 한글의
+    /// 텍스트 추출·재조판 결과를 원본과 다르게 만든다(10k 스윕 1,970건의 지배 원인).
+    /// 왕복(직렬화→재파싱) 후 IR 텍스트는 동일해야 한다 — 파서가 두 요소를 같은
+    /// 코드포인트로 되돌린다.
+    #[test]
+    fn issue4675_fixed_width_and_nb_space_serialize_as_elements() {
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let mut para = Paragraph::default();
+        para.text = "보\u{2007}도\u{2007}자\u{2007}료\u{00A0}끝".to_string();
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert_eq!(
+            xml.matches("<hp:fwSpace/>").count(),
+            3,
+            "U+2007 은 전부 fwSpace 요소로 방출돼야 함: {}",
+            &xml[..800.min(xml.len())]
+        );
+        assert_eq!(xml.matches("<hp:nbSpace/>").count(), 1);
+        assert!(
+            !xml.contains('\u{2007}') && !xml.contains('\u{00A0}'),
+            "리터럴 U+2007/U+00A0 이 XML 에 남으면 안 됨"
+        );
+
+        let reparsed = parse_hwpx_section(&xml).unwrap();
+        assert_eq!(
+            reparsed.paragraphs[0].text, "보\u{2007}도\u{2007}자\u{2007}료\u{00A0}끝",
+            "요소 왕복 후 IR 텍스트 불변"
         );
     }
 
