@@ -3369,9 +3369,10 @@ fn hwp5_origin_redundant_pagehide_break_marker(
         && !hwpx_appendix_blank_page
 }
 
-/// 2025 편람 HWPX 별표 4의 11×2 규정 표 뒤 빈 ColumnBreak는 새 physical page가 아니다.
-/// 뒤따르는 6×3 양식 표의 PageBreak만 다음 page를 열어야 한다.
-fn hwpx_appendix_design_table_trailing_column_break(
+/// 빈 ColumnBreak가 두 non-inline 표 사이에 있고 다음 표가 이미 PageBreak를
+/// 소유하면, ColumnBreak는 별도 physical page가 아니라 다음 표의 carrier다.
+/// 표의 shape, 크기, 저장 vpos가 아니라 형제 paragraph의 break 소유권만 쓴다.
+fn empty_table_carrier_column_break_before_page_table(
     para_idx: usize,
     para: &Paragraph,
     paragraphs: &[Paragraph],
@@ -3380,10 +3381,6 @@ fn hwpx_appendix_design_table_trailing_column_break(
         || para.column_type != ColumnBreakType::Column
         || !para.text.trim().is_empty()
         || !para.controls.is_empty()
-        || !para
-            .line_segs
-            .first()
-            .is_some_and(|segment| segment.vertical_pos == 28_030)
     {
         return false;
     }
@@ -3394,20 +3391,10 @@ fn hwpx_appendix_design_table_trailing_column_break(
     };
 
     matches!(previous.controls.as_slice(), [Control::Table(table)]
-        if !table.common.treat_as_char
-            && table.row_count == 11
-            && table.col_count == 2
-            && table.cells.len() == 22
-            && table.common.width == 29_491
-            && table.common.height == 36_625)
+        if !table.common.treat_as_char)
         && next.column_type == ColumnBreakType::Page
         && matches!(next.controls.as_slice(), [Control::Table(table)]
-            if !table.common.treat_as_char
-                && table.row_count == 6
-                && table.col_count == 3
-                && table.cells.len() == 10
-                && table.common.width == 29_254
-                && table.common.height == 35_894)
+            if !table.common.treat_as_char)
 }
 
 fn single_line_visible_bounds_px(
@@ -6193,7 +6180,7 @@ impl TypesetEngine {
                     || empty_columndef_only_break
                     || overlay_columndef_separator_break
                     || (profile.hwpx_stored_layout()
-                        && hwpx_appendix_design_table_trailing_column_break(
+                        && empty_table_carrier_column_break_before_page_table(
                             para_idx,
                             para,
                             paragraphs,
