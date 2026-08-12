@@ -31,6 +31,17 @@ class CancelStalePrRunsWorkflowTests(unittest.TestCase):
         self.assertLess(reread, active_failure)
         self.assertLess(active_failure, completed_notice)
 
+    def test_github_script_uses_system_ca_without_disabling_tls_verification(self):
+        """runner/프록시 CA를 신뢰하되 인증서 검증 자체를 끄지 않는다."""
+        body = self.workflow
+        action = body.index("uses: actions/github-script@")
+        system_ca = body.index("NODE_OPTIONS: --use-system-ca", action)
+        script = body.index("script: |", system_ca)
+
+        self.assertLess(action, system_ca)
+        self.assertLess(system_ca, script)
+        self.assertNotIn("NODE_TLS_REJECT_UNAUTHORIZED", body)
+
 
 if __name__ == "__main__":
     unittest.main()
