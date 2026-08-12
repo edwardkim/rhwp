@@ -9,15 +9,15 @@ last_verified: 2026-08-12
 
 ## 결론
 
-**현재는 Draft 유지 및 CI 확인 전 수용 보류.** 최초 변경은 문서 유래 후보의 경로 성분
+**현재는 Draft 유지 및 최신 GitHub check 확인 전 수용 보류.** 최초 변경은 문서 유래 후보의 경로 성분
 검사를 파일 탐색 leaf 안에 두고 private helper만 시험했다. Gestell 재검토에서 그 위치와
 검증 범위가 부적절하다는 지적을 받아, 후보 계획을 SVG 렌더러의 해석 단계로 올리고 public
 문서 렌더 경로의 회귀 테스트를 추가했다.
 
-수정 뒤 독립 Gestell 재검토는 `PASS`다. 다만 코드와 테스트가 새 head에 추가되었으므로
-`CONTRIBUTING.md`의 전체 `release-test` 및 Clippy와 최신 GitHub required check는 아직 이
-문서의 PASS 근거가 아니다. 해당 gate가 현재 head에서 끝나기 전에는 Ready 전환이나 merge를
-권고하지 않는다.
+수정 뒤 독립 Gestell 재검토는 `PASS`다. `CONTRIBUTING.md`의 로컬 Rust gate도 code/test와
+review 기록이 들어간 `4bb2f0a48`에서 끝까지 성공했다. 아직 완료되지 않은 최종 조건은 최신
+GitHub required check와 작업지시자의 별도 상태 변경 승인뿐이다. 그 전에는 Ready 전환이나
+merge를 권고하지 않는다.
 
 ## 검토 경로
 
@@ -31,9 +31,10 @@ loaded documents: pr_review_workflow.md, pr_review/README.md,
                   rework_and_exceptions.md, CONTRIBUTING.md
 source head before correction: 8b26078163021dcb9ecb0d93c2aa4b00fe100ab6
 corrected code head: ca97299c36c9185df75e97c08b6bdfc2140cca7c
+local full-gate head: 4bb2f0a48e1042dd0c031d3d33cf543b6e938de1
 current upstream/devel checked: 525cf8e8ed9fa030d1db417fda5070668b2df240
 merge simulation: clean (`git merge-tree --write-tree upstream/devel HEAD`)
-trailing review head: 이 review 기록을 포함하는 docs-only commit
+trailing review head: 이 완료 기록을 포함하는 docs-only commit
 ```
 
 `upstream/devel`은 source branch의 조상이 아니지만 merge tree가 충돌 없이 생성됐다. 이
@@ -98,9 +99,9 @@ force-push하지 않았다.
 | existing bold control | `cargo test --profile release-test --lib renderer::svg::tests::full_font_embed_uses_real_bold_face_when_document_uses_bold -- --nocapture`: 1 passed |
 | formatting | `cargo fmt --all -- --check`: 통과 |
 | whitespace | `git diff --check`: 통과 |
+| 전체 Rust tests | `cargo test --profile release-test --tests`: 통과 (exit 0) |
+| Clippy | `cargo clippy -- -D warnings`: 통과 (exit 0) |
 | Gestell | 독립 adversarial 재검토: `PASS` |
-| `release-test` 전체 | 이 코드 head 기준 결과 대기 — 성공으로 기록하지 않음 |
-| Clippy | 이 코드 head 기준 결과 대기 — 성공으로 기록하지 않음 |
 
 ## 렌더·시각 영향
 
@@ -112,7 +113,5 @@ force-push하지 않았다.
 
 ## 최종 조건
 
-1. 이 review 문서까지 포함한 최신 PR head에서 `CONTRIBUTING.md`의 전체 `release-test`와
-   Clippy가 성공한다.
-2. 최신 GitHub required check가 성공한다.
-3. Draft 해제 및 merge는 작업지시자의 별도 승인 뒤에만 진행한다.
+1. 최신 GitHub required check가 성공한다.
+2. Draft 해제 및 merge는 작업지시자의 별도 승인 뒤에만 진행한다.
