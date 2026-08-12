@@ -3018,6 +3018,48 @@ fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Tab
         .any(|row| rowbreak_row_has_internal_saved_vpos_reset(table, row))
 }
 
+/// Whether every text-bearing cell proves, through its stored line segments,
+/// that its content belongs inside the declared cell box. This distinguishes a
+/// renderer metric expansion from a source-owned row growth without a table
+/// size ratio or a pixel cap. Rowspans and controls have independent physical
+/// ownership, so they stay on the measured-row path.
+fn table_declared_height_has_stored_cell_content_frame(
+    table: &crate::model::table::Table,
+    dpi: f64,
+) -> bool {
+    !table.cells.is_empty()
+        && table.cells.iter().all(|cell| {
+            if cell.row_span != 1 || cell.height >= 0x8000_0000 {
+                return false;
+            }
+            let mut has_text = false;
+            let mut stored_bottom = None;
+            for para in &cell.paragraphs {
+                if !para.controls.is_empty() {
+                    return false;
+                }
+                let text = para.text.replace(|c: char| c.is_control(), "");
+                if text.trim().is_empty() {
+                    continue;
+                }
+                has_text = true;
+                for seg in para
+                    .line_segs
+                    .iter()
+                    .filter(|seg| !is_synthetic_line_seg(seg))
+                    .filter(|seg| seg.vertical_pos >= 0 && seg.line_height > 0)
+                {
+                    let bottom = hwpunit_to_px(seg.vertical_pos + seg.line_height, dpi);
+                    stored_bottom = Some(stored_bottom.map_or(bottom, |current: f64| current.max(bottom)));
+                }
+            }
+            !has_text
+                || stored_bottom.is_some_and(|bottom| {
+                    bottom <= hwpunit_to_px(cell.height as i32, dpi)
+                })
+        })
+}
+
 fn missing_lineseg_trailing_line_break(
     para: &Paragraph,
     line_count: usize,
@@ -20343,13 +20385,12 @@ impl TypesetEngine {
             }
             crate::model::table::TablePageBreak::CellBreak => false,
         };
-        // 실측 초과가 드리프트 수준일 때만 선언을 신뢰한다 — 셀 저장 높이는 최소값
-        // 의미라 내용이 진짜로 크면 한글도 행을 팽창·분할한다 (17712219 남극서식:
-        // 선언 882.7px vs 실측 1758.6px, 한글 2쪽). #2097/#2105 대상 계열의 실측
-        // 초과는 +17~48px(≤5%) 수준.
-        let measured_excess = table_total - declared_object_total;
-        let declared_excess_within_drift =
-            measured_excess <= (declared_object_total * 0.10).min(64.0);
+        // Declared cell boxes are trustworthy only when every text-bearing cell
+        // has a stored lineSeg frame that fits inside its own declaration. A
+        // percentage/cap cannot tell browser metric expansion from a genuinely
+        // taller source row.
+        let declared_excess_has_source_frame =
+            table_declared_height_has_stored_cell_content_frame(table, self.dpi);
         // HWPX에서는 `treatAsChar` bit만으로 inline 표가 되지 않는다. stored-layout
         // 문서의 `flowWithText=0` 표는 block table인데, raw bit를 그대로 사용하면
         // declared whole-fit에서 제외되어 generic row cut이 저장 row height를 다시
@@ -20369,7 +20410,7 @@ impl TypesetEngine {
         };
         let declared_table_whole_fits = !uses_painted_row_footprint_for_whole_fit
             && declared_fit_scope_ok
-            && declared_excess_within_drift
+            && declared_excess_has_source_frame
             && !ft.strict_following_plain_text_fit
             && (!table.common.treat_as_char || hwpx_noninline_tac_measured_fit)
             && declared_object_total > host_spacing_total
