@@ -5,88 +5,86 @@ canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-12
 ---
 
-# PR #4646 리뷰 - 썸네일 출력 상한 정렬
+# PR #4646 리뷰 - 썸네일 출력 상한을 소비자 경계에 배치
 
 ## 결론
 
-**CI 대기 후 수용 권고.** [PR #4646](https://github.com/edwardkim/rhwp/pull/4646)은
-HWPX 썸네일 추출의 출력 상한을 기존 브라우저 미리보기 정책과 같은 10 MiB로 정렬한다.
-core와 세 브라우저 확장 경로가 선언 크기와 실제 stream 출력을 모두 확인하며, 브라우저
-구현은 하나의 공통 collector를 사용한다.
+**Draft 유지, 최신 head의 전체 Contributor 게이트 대기.**
+[PR #4646](https://github.com/edwardkim/rhwp/pull/4646)는 HWP/HWPX 문서 열기와
+브라우저 썸네일 소비자에서 10 MiB 상한을 선택하고, 그 아래 CFB·ZIP·stream
+도우미에는 호출자가 정한 상한만 전달하도록 보정했다.
 
-renderer, layout, paint, sample과 fixture는 바꾸지 않으므로 시각 검증 대상이 아니다. 최신
-head의 Full CI와 CodeQL이 성공하고 review 조건을 충족한 뒤 수용한다. merge는 이 기록의
-범위가 아니다.
+상한을 넘는 `PrvImage`는 선택적 미리보기로 취급한다. 따라서 본문 파싱은 계속
+성공하고, HWP 미리보기 이미지는 생략되며 HWPX contract 스트림은 기존 blank
+fallback을 사용한다. 10 MiB 이하의 정상 미리보기 바이트는 종전처럼 보존한다.
+
+renderer, layout, paint, fixture는 바꾸지 않았으므로 시각 검증 대상이 아니다.
+독립 Gestell 검토는 정책 소유 경계와 정상 문서 호환성에 blocking finding 없음을
+확인했다. 다만 이번 코드 head에 대한 `CONTRIBUTING.md` 전체 게이트는 아직
+순차 실행 대기 상태이므로, 성공 전에는 수용·ready·merge를 권고하지 않는다.
 
 ## 검토 경로
 
 ```text
-base route: collaborator_self_merge.md
-modifiers: intake_and_review.md, local_validation.md
+base route: collaborator_external_pr.md
+modifiers: intake_and_review.md, rework_and_exceptions.md, local_validation.md
 loaded documents: pr_review_workflow.md, pr_review/README.md,
-                  collaborator_self_merge.md, intake_and_review.md,
-                  local_validation.md
-devel base: 193e26b7ffb05adf5bb2c9e4cb752a9a707310dc
-code candidate: da8930952420b9a4b2de15ad78b98431af9e85ab
-trailing review head: 이 문서와 오늘할일을 포함할 후속 docs-only commit
+                  collaborator_external_pr.md, intake_and_review.md,
+                  rework_and_exceptions.md, local_validation.md
+upstream/devel at review: 525cf8e8ed9fa030d1db417fda5070668b2df240
+original remote head: 7bed2bed4f173fded30d80279935617b13c7c84e
+corrected code candidate: b9cd4953f0bc7f6ccd971193b15d542c19a37754
+trailing review head: this docs-only commit
 ```
 
-## 메타데이터
-
-| 항목 | 문서 작성 시점 참고값 |
-| --- | --- |
-| PR | [#4646](https://github.com/edwardkim/rhwp/pull/4646) |
-| 공개 issue 참조 | 없음 |
-| 작성자 | `humdrum00001010` |
-| base / head | `devel` / `humdrum00001010:parser/thumbnail-output-limit-20260812` |
-| code candidate | `da8930952420b9a4b2de15ad78b98431af9e85ab` |
-| 규모 | 10 files, +242 / -50 |
-| 상태 | Open, non-draft, MERGEABLE / BLOCKED; checks 미보고 |
-| reviewer request | `edwardkim` 요청은 현재 계정 권한 부족으로 반영되지 않음 |
-
-원본 저장소 작업 branch push도 현재 계정 권한으로 403이어서 같은 commit을 fork branch에
-push하고 `devel` 대상 PR을 만들었다. 이 권한 제약은 code candidate 내용과 base 정합에는
-영향이 없다.
+`git merge-tree --write-tree upstream/devel b9cd4953`는 clean tree
+`d1852472aa9f0730aa9218831e2cd36c921d08e0`를 만들었고,
+`git diff --check upstream/devel...b9cd4953`도 통과했다. 이 기록은
+collaborator source branch의 정정이며 contributor history를 재작성하지 않는다.
 
 ## 변경 판단
 
-- Rust 경로는 ZIP central-directory의 비압축 크기를 먼저 확인하고, `Read::take(max + 1)`로
-  실제 read 결과도 다시 제한한다.
-- Chrome과 Firefox는 같은 shared script를 symlink로 소비한다. Safari는 background보다 먼저
-  같은 script를 로드하고 build 산출물에도 복사한다.
-- shared collector는 선언 크기가 상한 밖이면 reader를 열지 않고, stream이 선언 크기를
-  초과하면 즉시 취소한다. 크기가 일치할 때만 최종 `Uint8Array`를 만든다.
-- 기존 CFB 썸네일 경로의 10 MiB 정책도 같은 상수를 사용해 경로별 숫자 드리프트를 막는다.
+### 정책을 선택하는 end-to-end 소비자
 
-제품 출력이나 조판은 바뀌지 않는다. 허용 범위 안의 정상 썸네일은 종전과 같은 이미지
-파싱 경로로 전달되고, 상한 밖 또는 크기 불일치 입력만 썸네일 없음으로 처리한다.
+- Rust HWP 문서 열기: `parse_hwp_with_cfb`가 `extract_preview`에 10 MiB를 전달한다.
+- Rust HWPX 문서 열기: `parse_hwpx`가 `Preview/PrvImage.png` 보존과 HWP contract
+  변환에 같은 상한을 전달한다.
+- Rust 썸네일 전용 공개 API: `extract_thumbnail_only`가 HWP/HWPX 양쪽에 상한을
+  전달한다.
+- Chrome·Firefox·Safari: 각 `extractThumbnailFromUrl`이 10 MiB를 선택하여 CFB/ZIP
+  추출기에 전달한다. Safari의 content-script 메시지는 이 공개 소비자로만 진입한다.
 
-## merge simulation
+### 정책을 선택하지 않는 기계적 도우미
 
-후속 review commit을 push한 뒤 `upstream/devel`을 다시 fetch했으며 기준선은 계속
-`193e26b7ffb05adf5bb2c9e4cb752a9a707310dc`였다. `git merge-tree --write-tree
-upstream/devel HEAD` 결과 `ab6902fa84bee30b3ccd39a7eca0936b631b5b3b`는 같은 시점의
-`HEAD^{tree}`와 일치했다. current base 기준 conflict와 추가 conflict resolution은 없고,
-`git diff --check upstream/devel...HEAD`도 통과했다.
+- `CfbReader::read_preview_image_limited(max_bytes)`, Rust ZIP thumbnail reader,
+  HWPX contract 추출, `HwpxReader::read_file_bytes_limited` 호출은 모두 전달받은
+  상한만 검사한다.
+- Chrome·Firefox·Safari 공용 `readExactStreamLimited(readable, declaredSize,
+  maxBytes)`는 썸네일 숫자를 보유하지 않는다. 선언 크기, 실제 stream 길이, 그리고
+  호출자 상한의 일치만 검사한다.
 
-## 완료한 검증
+따라서 generic HWPX 바이트 reader의 기존 BinData 기본 정책을 이 PR 범위에서
+바꾸지 않으면서도, 모든 `Preview/PrvImage.png` 소비 경로는 명시적인 10 MiB
+경로를 사용한다.
 
-| 게이트 | 결과 |
-| --- | --- |
-| `cargo fmt --check` | 통과 |
-| `cargo test --lib thumbnail_ -- --nocapture` | 4 passed, 3,509 filtered |
-| `cargo clippy --all-targets -- -D warnings` | 통과 |
-| service-worker 공식 test 명령 | 118 passed |
-| JS 구문 검사 / `bash -n rhwp-safari/build.sh` | 통과 |
-| `git diff --check` | 통과 |
+## 회귀 근거
 
-디스크 제약과 다중 작업의 Cargo 순차 게이트에 따라 로컬 release-test 전체와 확장 package build는
-중복 실행하지 않았다. 최신 PR head의 Full CI가 Rust 전체 회귀와 frontend package lane을 담당한다.
-Safari Xcode 산출물은 변경하지 않았으며, shared script의 manifest 순서와 build 복사는 결정적
-contract test와 구문 검사로 확인했다.
+| 범위 | 명령 / 확인 | 결과 |
+| --- | --- | --- |
+| Rust 문서 열기 | `cargo test --lib document_open_` | 4 passed — HWP/HWPX의 정상 미리보기 보존 및 초과 미리보기에서 문서 열기 지속 |
+| Rust 썸네일 경로 | `cargo test --lib thumbnail_` | 7 passed — 선언 크기 초과·실제 길이 불일치 거부 포함 |
+| 브라우저 공개 소비자 | `node --test rhwp-shared/sw/thumbnail-decompression.test.js` | 6 passed — Chrome `extractThumbnailFromUrl`로 정상 HWPX thumbnail과 초과 선언 크기 확인 |
+| 정적/형식 검사 | `node --check` (Chrome, Firefox, Safari, shared), `cargo fmt --all -- --check`, `git diff --check` | 통과 |
+| 독립 설계 검토 | terra-max Gestell adversarial review | PASS — 정책 선택은 소비자 경계, 하위 도우미는 명시 상한만 적용 |
 
-## 최종 권고
+전체 `cargo test --profile release-test --tests`와 `cargo clippy -- -D warnings`는
+코드 정정 후 최신 head에서 별도로 순차 실행해야 한다. 이전 head의 성공 기록을
+이 code candidate의 통과 근거로 재사용하지 않는다.
 
-blocking code finding은 없다. 이 review 문서와 오늘할일만 추가한 trailing commit을 fork의 같은
-PR branch에 push한 뒤, 최신 head의 required checks와 mergeability를 다시 확인한다. reviewer 지정은
-권한 있는 maintainer가 수행해야 하며, 별도 승인 전에는 merge하지 않는다.
+## 다음 확인
+
+1. 최신 head에서 `CONTRIBUTING.md`의 전체 Rust gate를 순차 실행한다.
+2. GitHub가 새 head의 required check를 게시한 뒤 Draft 상태와 mergeability를 다시
+   확인한다.
+3. 별도 승인 전에는 Draft 해제, reviewer 지정, merge, advisory 상태 변경을 하지
+   않는다.
