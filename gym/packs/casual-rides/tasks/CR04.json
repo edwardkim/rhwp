@@ -1,0 +1,26 @@
+{
+  "id": "CR04",
+  "tier": 1,
+  "title": "'표' 글자가 몇 번?",
+  "input": "samples/table-001.hwp",
+  "axis": "입문",
+  "instructions": "🎯 링 던지기 — 문서를 찾아서 그 수를 answer.json 에 {\"hits\": 숫자} 로 적어 내면 된다. 딱 한 번 실행하면 답이 보인다.\n힌트: rhwp search {입력} --json 의 matchCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "'표' 글자가 몇 번?",
+      "op": "answer_eq",
+      "answer": "hits",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "표"
+      ],
+      "path": "matchCount"
+    }
+  ]
+}

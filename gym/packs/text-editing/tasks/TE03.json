@@ -1,0 +1,37 @@
+{
+  "id": "TE03",
+  "tier": 2,
+  "title": "제출용 정리",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력 문서의 메타데이터를 제거한 cleaned.hwp 를 제출하라. 힌트: rhwp edit sanitize.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "cleaned.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 실재",
+      "op": "file_exists",
+      "file": "cleaned.hwp",
+      "minBytes": 1024
+    },
+    {
+      "name": "여전히 열리는 문서",
+      "op": "value_eq",
+      "value": "hwp5",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:cleaned.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "cleaned.hwp"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "TB04",
+  "tier": 3,
+  "title": "표 CSV 왕복",
+  "input": "samples/table-001.hwp",
+  "instructions": "첫 번째 표를 CSV 로 뽑아 (0행,0열) 값을 '왕복검증' 으로 고친 뒤 문서에 되돌려 넣은 roundtrip.hwp 를 제출하라. 힌트: table-to-csv → CSV 편집 → csv-to-table.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "roundtrip.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "(0,0) == 왕복검증",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": "왕복검증",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:roundtrip.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "roundtrip.hwp"
+    }
+  ]
+}

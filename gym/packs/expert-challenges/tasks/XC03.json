@@ -1,0 +1,116 @@
+{
+  "id": "XC03",
+  "tier": 4,
+  "title": "정산 완주 — 원장 4관문",
+  "input": "samples/table-001.hwp",
+  "axis": "자동화",
+  "instructions": "작업 캡슐에 대한 정산을 원장에 남기고, 그 정산이 **캡슐·게이트·원장·워크오더 네 관문을 모두 통과**하도록 제출하라. caps/work.capsule.json·wo.json·gate.json·claim.json·ledger.ndjson 을 두어라.\n힌트: settle propose 로 청구를 만들고 settle record 로 원장에 남긴 뒤 settle verify 로 스스로 점검한다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "caps/work.capsule.json",
+      "wo.json",
+      "gate.json",
+      "claim.json",
+      "ledger.ndjson"
+    ]
+  },
+  "checks": [
+    {
+      "name": "캡슐 무결",
+      "op": "value_eq",
+      "value": true,
+      "path": "capsuleOk",
+      "cmd": [
+        "settle",
+        "verify",
+        "{file:claim.json}",
+        "--workorder",
+        "{file:wo.json}",
+        "--capsule",
+        "{file:caps/work.capsule.json}",
+        "--gate-envelope",
+        "{file:gate.json}",
+        "--ledger",
+        "{file:ledger.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "게이트 무결",
+      "op": "value_eq",
+      "value": true,
+      "path": "gateOk",
+      "cmd": [
+        "settle",
+        "verify",
+        "{file:claim.json}",
+        "--workorder",
+        "{file:wo.json}",
+        "--capsule",
+        "{file:caps/work.capsule.json}",
+        "--gate-envelope",
+        "{file:gate.json}",
+        "--ledger",
+        "{file:ledger.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "원장 무결",
+      "op": "value_eq",
+      "value": true,
+      "path": "ledgerOk",
+      "cmd": [
+        "settle",
+        "verify",
+        "{file:claim.json}",
+        "--workorder",
+        "{file:wo.json}",
+        "--capsule",
+        "{file:caps/work.capsule.json}",
+        "--gate-envelope",
+        "{file:gate.json}",
+        "--ledger",
+        "{file:ledger.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "워크오더 무결",
+      "op": "value_eq",
+      "value": true,
+      "path": "workorderOk",
+      "cmd": [
+        "settle",
+        "verify",
+        "{file:claim.json}",
+        "--workorder",
+        "{file:wo.json}",
+        "--capsule",
+        "{file:caps/work.capsule.json}",
+        "--gate-envelope",
+        "{file:gate.json}",
+        "--ledger",
+        "{file:ledger.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

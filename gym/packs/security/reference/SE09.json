@@ -1,0 +1,20 @@
+{
+  "id": "SE09",
+  "steps": [
+    {
+      "answer": {
+        "kinds": {
+          "cmd": [
+            "edit",
+            "redact",
+            "{input}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "kinds",
+          "len": true
+        }
+      }
+    }
+  ]
+}

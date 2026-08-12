@@ -1,0 +1,41 @@
+{
+  "id": "AU08",
+  "tier": 3,
+  "title": "정산 증빙 왕복",
+  "input": "samples/table-001.hwp",
+  "instructions": "작업 캡슐·발주 명세서·게이트 판정 봉투를 3해시로 고정한 **청구**를 발급해 제출하라 (claim.json + 근거 파일들). 채점기는 청구를 재검증한다. 힌트: rhwp settle propose/verify.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "claim.json",
+      "work.capsule.json",
+      "wo.json",
+      "gate.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "청구 검증 ok",
+      "op": "value_eq",
+      "value": "ok",
+      "path": "verdict",
+      "cmd": [
+        "settle",
+        "verify",
+        "{file:claim.json}",
+        "--workorder",
+        "{file:wo.json}",
+        "--capsule",
+        "{file:work.capsule.json}",
+        "--gate-envelope",
+        "{file:gate.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

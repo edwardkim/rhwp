@@ -1,0 +1,21 @@
+{
+  "id": "LR03",
+  "tier": 2,
+  "title": "쪽 렌더 산출",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력의 **첫 쪽**을 SVG 로 렌더해 svg/ 폴더에 내보내라(파일명은 도구가 정한다). 힌트: rhwp export-svg -p 0 -o <폴더>.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "svg/table-001.svg"
+    ]
+  },
+  "checks": [
+    {
+      "name": "SVG 산출",
+      "op": "file_exists",
+      "file": "svg/table-001.svg",
+      "minBytes": 512
+    }
+  ]
+}

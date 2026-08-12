@@ -2602,6 +2602,8 @@ impl LayoutEngine {
                 section_index: Some(section_index),
                 para_index: table_meta.map(|(pi, _)| pi),
                 control_index: table_meta.map(|(_, ci)| ci),
+                // [#4334] 셀 안에 중첩된 표(nested table)의 문서 경로 — 최외곽 표는 None.
+                cell_context: enclosing_cell_ctx.clone(),
             }),
             BoundingBox::new(table_x, table_y, table_width, table_height),
         );
@@ -4151,7 +4153,19 @@ impl LayoutEngine {
                 } else {
                     body_top
                 };
-                if allow_rowbreak_object_bottom_bleed {
+                // [#4514] 문단 기준 다행 RowBreak overlay(글앞/글뒤) 표는 상향 클램프를
+                // 걸지 않는다. 앵커가 쪽 하단 부근이면 body_bottom 클램프가 표를 수백
+                // px 위로 끌어올려 선행 표 위에 겹쳐 그렸다(8쪽: 880→491.4, 555.5px
+                // 겹침 — 판독 불가). 한컴은 이 표를 쪽 경계에서 행 분할한다. 분할
+                // 페인트 전 단계로, 앵커 위치를 보존하고 하단 bleed 는 쪽에서 잘리게
+                // 둔다(겹침 해소가 우선). 1×1 장식 래퍼는 종전 클램프 유지.
+                let overlay_multirow_rowbreak = matches!(
+                    table_text_wrap,
+                    crate::model::shape::TextWrap::InFrontOfText
+                        | crate::model::shape::TextWrap::BehindText
+                ) && table.row_count > 1
+                    && matches!(table.page_break, TablePageBreak::RowBreak);
+                if allow_rowbreak_object_bottom_bleed || overlay_multirow_rowbreak {
                     pushed.max(min_y)
                 } else {
                     pushed.clamp(min_y, body_bottom.max(min_y))
@@ -5377,6 +5391,11 @@ impl LayoutEngine {
                             });
                             new_ctx
                         });
+                        // [#4334] 아래 재귀 `layout_table` 호출 두 곳이 `table_meta: None`
+                        // 을 넘겨 TableNode.para_index/control_index 가 항상 비었다 —
+                        // 방금 확장한 `nested_ctx` 에서 이 중첩 표 자신의 좌표를 읽는다.
+                        let derived_table_meta =
+                            nested_ctx.as_ref().and_then(CellContext::nested_table_meta);
                         if is_tac_table {
                             // TAC 표: inline_x를 사용하여 수평 배치
                             // [Task #573] layout_composed_paragraph 의 run_tacs 가
@@ -5469,7 +5488,7 @@ impl LayoutEngine {
                                     bin_data_content,
                                     None,
                                     depth + 1,
-                                    None,
+                                    derived_table_meta,
                                     para_alignment,
                                     nested_ctx,
                                     0.0,
@@ -5625,7 +5644,7 @@ impl LayoutEngine {
                                 bin_data_content,
                                 None,
                                 depth + 1,
-                                None,
+                                derived_table_meta,
                                 para_alignment,
                                 nested_ctx,
                                 0.0,

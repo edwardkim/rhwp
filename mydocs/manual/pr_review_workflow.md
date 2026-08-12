@@ -146,6 +146,14 @@ base 반영을 강제하지 않는 정책이면, 같은 PR·같은 source reposi
 재사용해 trailing review-only commit을 fast-pass할 수 있다. contributor가 source·test를 새로 push한 경우에는
 그 새 code head의 CI를 먼저 통과시킨 뒤 review 기록을 한 번만 이어 붙인다.
 
+단, GitHub의 `MERGEABLE` 표시는 텍스트 충돌이 없다는 참고값일 뿐 최신 `devel`과의 컴파일·테스트 호환을
+보장하지 않는다. source가 공용 struct·trait·API를 바꾼 뒤 최신 `devel`이 그 API의 초기화·호출부를
+추가했다면 current-base merge tree의 CI가 실패할 수 있다. 이 사실이 `git merge-tree` 또는 최신 PR head의
+GitHub CI로 확인된 경우에는 문서 기록 경로가 아니라 코드 호환 보정 경로로 전환한다. 외부 contributor commit은
+재작성하지 않고, 필요한 경우에만 현재 contributor source branch에 정확한 최신 `upstream/devel`을 merge한 뒤
+호환 보정 code/test commit을 분리한다. 이 경로는 [collaborator 매개 외부 PR의 최신 `devel` 호환 보정](pr_review/collaborator_external_pr.md#9314-최신-devel-호환-보정)을
+따르며, 새 code head는 반드시 Full CI를 다시 통과해야 한다.
+
 #### 3.2.1 최신 `devel` 오늘할일을 보존하는 trailing 기록
 
 contributor source branch의 `mydocs/orders/YYYYMMDD.md`가 최신 `upstream/devel`보다 오래될 수 있다.

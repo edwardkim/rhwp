@@ -1,0 +1,9 @@
+{
+  "alg": "ed25519",
+  "capsuleSha256": "457de373c6123ac3c29087f2791141603c4797e8432bb0c545811345ae926990",
+  "keyId": "gym/scribe-editor",
+  "kind": "capsuleSignature",
+  "schemaVersion": "1.0",
+  "signature": "r6Yr9hvtBOyN9ZSqYBvJT/yJ/28Prt05lxzDmEDfcFWFOAjdOsHFHpzslYISOLlKBi3quRr3/mbY5pTWgczXCA==",
+  "signedAt": "2026-08-12T00:46:11Z"
+}

@@ -322,6 +322,80 @@ pub const MAP: &[CommandProvenance] = &[
                호출자 산출물이고, 문서 문자열은 --deep 재실행 내부에 머문다.",
     },
     CommandProvenance {
+        command: "keygen",
+        untrusted: NONE,
+        note: "키 발급 봉투는 keyId(호출자 에코)·publicKey(엔진 생성)·keyFile(호출자 \
+               에코)뿐이다 — 문서를 열지 않는다.",
+    },
+    CommandProvenance {
+        command: "verify-signature",
+        untrusted: NONE,
+        note: "서명 검증 봉투는 경로 에코·해시·판정(signatureOk·keyKnown·revoked· \
+               verdict)뿐이다 — 캡슐·서명·키링은 호출자 산출물이고 문서를 열지 않는다.",
+    },
+    CommandProvenance {
+        command: "harness",
+        untrusted: NONE,
+        note: "하네스 봉투는 경로 에코(dir·capsule·output)·해시·연번뿐이다 — \
+               캡슐·키링은 호출자 산출물이고, 문서 문자열은 wrap 실행 내부에 머문다.",
+    },
+    CommandProvenance {
+        command: "harness-status",
+        untrusted: NONE,
+        note: "판정 봉투는 경로 에코(dir)·개수 회계(capsules)·판정 불리언 \
+               (chainValid·verdict)·서명/재현 집계·깨진 캡슐 파일 이름(brokenAt)뿐이다 — \
+               캡슐은 호출자 산출물이고, 문서 문자열은 --deep 재실행 내부에 머문다.",
+    },
+    CommandProvenance {
+        command: "anchor",
+        untrusted: NONE,
+        note: "앵커 봉투는 경로 에코·해시·연번·머클 루트/경로·판정뿐이다 — 로그와 \
+               캡슐은 호출자 산출물이고 문서를 열지 않는다.",
+    },
+    CommandProvenance {
+        command: "gate",
+        untrusted: NONE,
+        note: "게이트 봉투는 정책 이름·경로 에코·해시·판정(verdict·violations)뿐이다 — \
+               캡슐·정책·키링은 호출자 산출물이고 문서를 열지 않는다.",
+    },
+    CommandProvenance {
+        command: "bundle",
+        untrusted: NONE,
+        note: "번들 봉투는 경로 에코·개수 집계·판정(containerOk 등)·brokenAt 사유뿐이다 \
+               — 번들·도메인 파일은 호출자 산출물이고 문서를 열지 않는다.",
+    },
+    CommandProvenance {
+        command: "disclose",
+        untrusted: NONE,
+        note: "공개 봉투는 경로 에코·커밋 수·포인터 목록·해시·판정뿐이다 — 값 원문은 \
+               비밀 개봉 파일에만 있고 봉투에 싣지 않는다(그것이 이 축의 존재 이유).",
+    },
+    CommandProvenance {
+        command: "settle",
+        untrusted: NONE,
+        note: "봉투는 경로 에코·해시·판정·seq 뿐이다 — 명세서 제목·금액 같은 문서 유래 \
+               문자열은 봉투에 싣지 않는다(금액은 운반만 하는 문자열이고 도구는 계산하지 \
+               않는다, 범위 경계).",
+    },
+    CommandProvenance {
+        command: "audit-report",
+        untrusted: NONE,
+        note: "봉투는 수치 합산·경로 에코·판정뿐 — 문서 유래 문자열은 실리지 않는다. \
+               보고서 파일의 각 절도 같은 원칙(수치와 해시만)이다.",
+    },
+    CommandProvenance {
+        command: "recall-scope",
+        untrusted: NONE,
+        note: "봉투는 캡슐 파일명·해시·경로 배열·계수뿐 — 문서 본문 유래 문자열이 \
+               지나는 길이 없다.",
+    },
+    CommandProvenance {
+        command: "conformance",
+        untrusted: NONE,
+        note: "봉투는 등급·판정·검사 항목(고정 문자열+계수)뿐 — 문서 유래 문자열이 \
+               지나는 길이 없다.",
+    },
+    CommandProvenance {
         command: "ir-diff",
         untrusted: &[f(
             "categories",

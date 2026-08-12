@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "keyring",
+  "keys": [
+    {
+      "keyId": "gym/claude-fable-5",
+      "publicKey": "zx6U8fbqqrEbsYZhOdTkkPCONJtO0IYYbarZAXI1XJA=",
+      "revoked": null
+    },
+    {
+      "keyId": "gym/atlas-generalist",
+      "publicKey": "DMu/mMVdAM9Hfj4VEPON8z43vsZUf2MQsssxcLQPRrM=",
+      "revoked": null
+    },
+    {
+      "keyId": "gym/probe-diagnostician",
+      "publicKey": "Ac/1ucorueTb8/MJlOhZlGulp+r1qnZzswWuT2h7OQc=",
+      "revoked": null
+    },
+    {
+      "keyId": "gym/scribe-editor",
+      "publicKey": "VeRYczzPRdsS63LkoGqnRXjvaneJgj5ugwbyf4VsBz0=",
+      "revoked": null
+    },
+    {
+      "keyId": "gym/novice-starter",
+      "publicKey": "9FsjPRERGLsqZpgo+4vAMC7ATgawgFy+GnBOblPR/wk=",
+      "revoked": null
+    }
+  ]
+}

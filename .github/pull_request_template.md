@@ -15,6 +15,7 @@ closes #
 - [ ] `cargo clippy -- -D warnings` 통과
 - [ ] 관련 샘플 파일로 SVG 내보내기 확인
 - [ ] 웹(WASM) 렌더링 확인 (해당하는 경우)
+- [ ] (에이전트 보조 작업 권장) 작업 증빙 첨부 — `rhwp replay --capsule` 영수증 캡슐 또는 관련 `--json` 봉투 원문 ([AGENTS.md 작업 증빙 절](../AGENTS.md#작업-증빙--에이전트-기본-경로-권장))
 - [ ] `.claude/agents/`, `.claude/skills/`, `.agents/skills/` 변경 시: [capability 카탈로그](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/agent_capability_registry.md)의 등록·검증 규칙을 반영
 
 ## 성능 영향 및 측정 결과 (해당하는 경우)

@@ -1,0 +1,12 @@
+{
+  "capsuleSha256": "c0eaf69645705efde78acc5ef49aac2326a96f6d88c98812f02bfcadd538d88e",
+  "claimant": {
+    "keyId": "gym/atlas-generalist"
+  },
+  "claimedAt": "2026-08-12T00:46:10Z",
+  "gateEnvelopeSha256": "9123d728dc0cdaf7e799bdcf002fd8e808e0fb474779a0fa6ce5f2cc3cf0fa73",
+  "kind": "settlementClaim",
+  "schemaVersion": "1.0",
+  "workorderId": "gym-leaderboard-standing",
+  "workorderSha256": "050734f9bbb1e995bf7088d56a8280b46ccdc6c009aa6ce9f3add2a85c4c9849"
+}

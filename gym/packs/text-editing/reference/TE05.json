@@ -1,0 +1,17 @@
+{
+  "id": "TE05",
+  "steps": [
+    {
+      "answer": {
+        "paras": {
+          "cmd": [
+            "digest",
+            "{input}",
+            "--json"
+          ],
+          "path": "paraCount"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "security",
+  "title": "보안 스윕",
+  "axis": "보안 (은닉·주입·유니코드·PII)",
+  "description": "받은 문서를 의심하고, 보낼 문서를 정리한다. 지웠다는 주장이 아니라 재스윕이 판정한다.",
+  "requires": {
+    "commands": [
+      "edit",
+      "inspect",
+      "scan"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.2",
+    "rhwpCommit": "1e8667aa86aeb979119aa9152112b42e4f16a76c",
+    "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
+  }
+}

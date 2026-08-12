@@ -7,7 +7,10 @@ last_verified: 2026-08-03
 
 # 에이전트 런타임 표면 명세 — 실행 파일 없이 부르는 rhwp
 
-> rhwp 의 모든 진입로(CLI·MCP·Python/Node 바인딩)는 **rhwp 실행 파일을 먼저 구해야
+> **v0.8.4 현행성 주의:** Python·Node 바인딩을 근거로 든 비교와 코드 인용은
+> 철회 전 설계 이력이다. 두 공식 바인딩은 #4655에서 제거됐으며 현재 지원 표면이 아니다.
+
+> rhwp의 CLI·MCP 진입로는 **rhwp 실행 파일을 먼저 구해야
 > 한다**는 관문을 공유한다. 이 문서는 그 관문 없이 부를 수 있는 **에이전트 전용
 > WASM 표면**의 설계를 확정한다. 로드맵 [#3869](https://github.com/edwardkim/rhwp/issues/3869).
 > 봉투 동등성은 [envelope_parity.md](envelope_parity.md), 축 지도는 [README.md](README.md).
@@ -29,24 +32,22 @@ last_verified: 2026-08-03
 무엇이 위험해지는가.
 
 **정하지 않는다**: 코드를 짜지 않는다(아래 시그니처는 계약의 *모양*을 보이기 위한
-의사 표기다) / 기존 표면을 대체하지 않는다 — CLI·`mcp-serve`·Python/Node 바인딩은
-그대로 남고 이 축은 **다섯 번째 진입로**다 / 렌더링 WASM 표면(`renderPageToCanvas`
+의사 표기다) / 기존 표면을 대체하지 않는다 — CLI·`mcp-serve`는
+그대로 남는다 / 렌더링 WASM 표면(`renderPageToCanvas`
 계열, rhwp-studio 의 계약)을 건드리지 않는다 / 성능을 약속하지 않는다(§7).
 
 ---
 
 ## 1. 문제 — 관문은 언제나 실행 파일이다
 
-### 1.1 네 진입로의 공통 전제
+### 1.1 두 진입로의 공통 전제
 
 | 진입로 | 전제 | 근거 |
 | --- | --- | --- |
 | CLI | `rhwp` 실행 파일이 `PATH` 에 있다 | `Cargo.toml:17-19` `[[bin]] name = "rhwp"` |
 | MCP | 호스트가 `rhwp mcp-serve` 를 자식으로 띄운다 | `src/mcp_serve.rs` 전체가 stdio JSON-RPC 서버 |
-| Python 바인딩 | CLI 서브프로세스를 감싼다 | `bindings/README.md` "CLI subprocess bindings" |
-| Node 바인딩 | 같음 | `bindings/node/docs/DESIGN.md:11` D1 "서브프로세스 래퍼" |
 
-넷 다 **바이너리를 구한 뒤에야** 시작된다. 샌드박스 안 에이전트 — 임의 실행 파일
+둘 다 **바이너리를 구한 뒤에야** 시작된다. 샌드박스 안 에이전트 — 임의 실행 파일
 반입이 막혀 있거나 프로세스 생성 자체가 없는 런타임 — 에게는 이 관문이 곧 벽이다.
 
 ### 1.2 WASM 표면은 이미 있다. 그런데 에이전트용이 아니다
@@ -97,9 +98,9 @@ pub fn get_structure_native(&self, mode: &str) -> Result<String, HwpError> {
 함수이고(`src/provenance.rs:468`) `src/lib.rs:20` 으로 라이브러리에 있다 — **WASM 에서
 부를 수 있다.** 옮겨야 하는 것은 봉투의 *모양*뿐이다.
 
-### 1.4 분기는 이미 일어났다 — TypeScript 로
+### 1.4 철회 전 TypeScript 분기 실측
 
-가장 강한 근거는 저장소 안에 있다. Node 바인딩의 브라우저 어댑터
+이 절은 #4655 이전 Node 바인딩의 historical evidence다. 당시 브라우저 어댑터
 (`bindings/node/src/browser.ts`, 249줄)가 WASM 위에서 봉투를 **손으로 조립한다.**
 
 ```ts
@@ -226,7 +227,7 @@ WASM 경계를 넘는 값은 **복사된다.** 그보다 중요한 것은 **그 
 **`capabilities` 재정의.** CLI 판은 CLI 명령 61개를 서술한다. 그대로 내면 **없는
 동사를 광고**하게 된다 — `browser.ts` 옵셔널 메서드와 같은 실패다. 그렇다고 뺄 수도
 없다: 이름 환각(F1)을 막는 단일 출처이고([weak_agent_proofing.md](../weak_agent_proofing.md)
-§4 P1), Node 바인딩의 패리티 가드가 실제 결함 7건을 잡은 근거가 그 자기서술이었다
+§4 P1), 철회 전 Node 바인딩의 패리티 가드가 실제 결함 7건을 잡은 근거가 그 자기서술이었다
 (`bindings/node/docs/DESIGN.md:224` D11). 따라서 **`surface: "wasm"` 로 표시된, 이
 빌드가 실제로 가진 동사만 담은** capabilities 를 낸다. 생성 출처는 CLI 와 같은
 표여야 한다([envelope_parity.md](envelope_parity.md) §6).
@@ -384,7 +385,8 @@ rhwp 에서 가장 무거운 조합이고 그 비용을 **WASM 에서 측정한 
 **빠진 13개**: `export-provenance-map` `export-pdf` `export-markdown`
 `export-doclang` `export-hml` `export-ir-schema` `export-capabilities-schema`
 `table-to-csv` `csv-to-table` `build-from-ingest` `batch` `dump-pages`
-`render-diff`. 이것들을 쓰려면 CLI·MCP·Python/Node 바인딩을 쓴다.
+`render-diff`. 현재 이것들을 쓰려면 CLI·내장 MCP 표면을 쓴다. 이 조사 당시 함께
+비교했던 공식 Python·Node 바인딩은 #4655에서 철회됐다.
 
 ---
 
@@ -712,6 +714,5 @@ CLI 는 실패하면 파일을 안 써서 원본이 온전하다("실패 시 원
 - [agent_boundary_contract.md](../agent_boundary_contract.md) — S5 경로·S7 자원 한계·S8 핸들. 이 축이 S5/S8 위협을 구조적으로 없애는 이유
 - [agent_security/threat_model.md](../agent_security/threat_model.md) — `inspect` 축의 존재 이유
 - [weak_agent_proofing.md](../weak_agent_proofing.md) — F1 이름 환각. `capabilities()` 를 표면에 두는 이유
-- [bindings_foundation.md](../bindings_foundation.md) — 바인딩이 서브프로세스를 고른 근거. 이 축은 그 결정을 뒤집지 않고 못 하는 환경을 덮는다
 - [mydocs/manual/cli_commands.md](../../manual/cli_commands.md) — 31개 명령의 사람용 계약. 정확한 인자는 언제나 여기와 `--help` 가 기준
 - 이슈 [#3869](https://github.com/edwardkim/rhwp/issues/3869) — 로드맵 "설치 없는 실행"

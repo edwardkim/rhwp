@@ -1,0 +1,31 @@
+{
+  "id": "AU10",
+  "tier": 3,
+  "title": "오염 리콜 범위",
+  "input": "samples/table-001.hwp",
+  "instructions": "캡슐 2링크 체인을 만들어 capsules/ 로 제출하라. 채점기는 **뿌리를 오염으로 지목**해 후손 폐쇄집합이 2건인지 확인한다. 힌트: replay --parent 로 체인, rhwp recall-scope.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "capsules/a.capsule.json",
+      "capsules/b.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "영향 캡슐 2건",
+      "op": "len_ge",
+      "value": 2,
+      "path": "affected",
+      "cmd": [
+        "recall-scope",
+        "--contaminated",
+        "{file:capsules/a.capsule.json}",
+        "--among",
+        "{file:capsules}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

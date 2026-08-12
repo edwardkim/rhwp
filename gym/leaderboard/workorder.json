@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workorder",
+  "workorderId": "gym-leaderboard-standing",
+  "title": "운동장 상설 발주 — 전 pack 채점 결과의 등재",
+  "acceptancePolicy": {
+    "schemaVersion": "1.0",
+    "kind": "admissionPolicy",
+    "default": "deny",
+    "rules": [],
+    "note": "입장 판정은 채점기의 gymAdmission 봉투가 담당한다"
+  },
+  "unitPrice": {
+    "amount": "0",
+    "currency": "KRW",
+    "per": "scorecard"
+  }
+}

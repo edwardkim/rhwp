@@ -1,11 +1,14 @@
 ---
 kind: investigation
-status: active
+status: historical
 canonical: mydocs/tech/agent_roadmap/atlas_r1_r200.md
-last_verified: 2026-08-09
+last_verified: 2026-08-12
 ---
 
 # 전도(全圖) R1~R200 — 에이전트-네이티브 로드맵 한 화면 상세
+
+> 이 문서는 2026-08-09 로드맵 스냅샷이다. Python·Node 바인딩과 v0.8.2 이후 신규
+> 배포 채널에 관한 항목은 #4655에서 철회됐으며 현재 지원 범위가 아니다.
 
 **지위**: R1~R100 의 canonical 은 트랙 문서 세트(`track_*.md`)이고 R101~R200 의
 제안 원천은 `horizon_r101_r200.md` 다. 이 전도는 그 둘을 **한 화면에서 단계별

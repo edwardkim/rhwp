@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/agent_knowledge_map.md
-last_verified: 2026-08-10
+last_verified: 2026-08-11
 ---
 
 # 에이전트 지식 지도 — rhwp 참조 문서의 단일 진입점
@@ -20,22 +20,22 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 
 | 항목 | 값 |
 |---|---|
-| 바이너리 | `rhwp v0.8.2` (release 빌드, `native-skia` 미포함) |
-| 측정일 | 2026-08-10 |
+| 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
+| 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **71개**(그중 `--json` 계약 **40개**, batch 축 **9개**) · MCP 도구 **65개**(무상태 49 + 세션 전용 16) |
-| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **185개** · §2 전수 사전 **188개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
+| 표면 규모 | CLI 명령 **83개**(그중 `--json` 계약 **52개**, batch 축 **9개**) · MCP 도구 **82개**(무상태 66 + 세션 전용 16) |
+| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **261개** · §2 전수 사전 **264개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
 **재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.
 
 ```
 rhwp capabilities                 # 명령·플래그·recordFields·종료 코드
-rhwp capabilities --mcp           # MCP 무상태 도구 선언(49)
+rhwp capabilities --mcp           # MCP 무상태 도구 선언(66)
 rhwp capabilities --mcp --profile <프로필>   # 역할별로 좁힌 도구 목록
 printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"x","version":"0"}}}' \
   '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
-  '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' | rhwp mcp-serve   # 세션 포함 65
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' | rhwp mcp-serve   # 세션 포함 82
 ```
 
 버전이 다르면 **바이너리가 이긴다**. 이 문서와 어긋나면 이 문서를 고친다.
@@ -144,7 +144,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 두 문서 IR 차이 | `ir-diff --json` (`hwp_ir_diff`) | `identical`·`diffCount`·`categories` | [ir-diff 매뉴얼](ir_diff_command.md) |
 | 라운드트립 시각 회귀 | `render-diff --json` (`hwp_render_diff`) | `status`·`maxDisp`·`regression` | [CLI 매뉴얼](cli_commands.md) §render-diff |
 | 조판 결과 덤프 | `dump-pages --json` | `pages[].columns[].items[]` | [dump 매뉴얼](dump_command.md) |
-| IR 모양 코드 생성 | `export-ir-schema --json` | `schema`·`definitionCount` | [바인딩 기초](../tech/bindings_foundation.md) |
+| IR 모양 코드 생성 | `export-ir-schema --json` | `schema`·`definitionCount` | [CLI 매뉴얼](cli_commands.md) |
 | 명령 표면 코드 생성 | `export-capabilities-schema --json` | `schema`·`mcpSchema` | 같은 문서 |
 
 #### (아) 대량 — 아카이브를 훑는다
@@ -223,31 +223,22 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | [9 — 폴더 문서 대량 추출·변환](recipes/09_bulk_extract_convert.md) | 폴더 단위 메타·본문·표 데이터 추출과 일괄 변환 | `batch info`·`batch export-text`·`batch extract-data`·`batch convert` |
 | [10 — 배포 전 보안 점검 스윕](recipes/10_security_sweep_before_share.md) | 송신 전 은닉·주입·유니코드 기만·개인정보 재검사 | `inspect hidden-text`·`inspect injection`·`inspect unicode`·`edit redact`·`edit sanitize` |
 
-### 1-4. 다른 언어에서 쓰려는가 — 바인딩 가이드
+### 1-4. 다른 언어에서 쓰려는가 — 기계 스키마 사용
 
-바인딩은 **새 표면이 아니라 기존 계약의 재포장**이다. 판정·좌표·파싱은 전부 rhwp
-본체가 하고, 바인딩은 인자 조립·봉투 파싱·종료 코드 매핑 셋만 한다. 그래서 §1-1 의
-명령 표와 §2 의 봉투 필드 사전이 언어를 바꿔도 그대로 권위다.
+공식 Python·Node 바인딩과 해당 패키지 배포는 v0.8.4에서 철회됐다
+([#4655](https://github.com/edwardkim/rhwp/issues/4655)). 다른 언어의 다운스트림 래퍼는
+§1-1 명령 표와 §2 봉투 필드 사전을 그대로 권위로 삼는다. IR 모양은
+`rhwp export-ir-schema`, 명령 표면은 `rhwp export-capabilities-schema`를 코드 생성의
+단일 출처로 쓴다. 별도 래퍼가 이 계약과 어긋나면 다운스트림에서 보정한다.
 
-| 언어 | 패키지 | 가이드 | 상태 |
-|---|---|---|---|
-| Node/TypeScript | `@rhwp/node` | [node_binding_guide.md](node_binding_guide.md) | M19 [#3776](https://github.com/edwardkim/rhwp/issues/3776) — 통합 검토 중 |
-| Python | `rhwp` | [python_binding_guide.md](python_binding_guide.md) | M18 [#3762](https://github.com/edwardkim/rhwp/issues/3762) — 통합 검토 중 |
-
-노출 기준은 손으로 고른 목록이 아니라 `capabilities` 의 `json` 선언이다 — 진단
-계열처럼 `--json` 이 없는 명령은 바인딩에 함수로 없고, 필요하면 저수준 실행기로
-직접 부른다. IR 모양은 `rhwp export-ir-schema`, 명령 표면은
-`rhwp export-capabilities-schema`를 코드 생성의 단일 출처로 쓴다. 두 가이드가 서로
-어긋나면 계약이 언어마다 갈린 것이므로 어긋난 쪽을 고친다.
-
-실측 규모(2026-08-10): `export-ir-schema` → `definitionCount:41`,
+실측 규모(2026-08-11): `export-ir-schema` → `definitionCount:41`,
 `irSchemaVersion:"1.0"`. `export-capabilities-schema` → `definitionCount:21`,
 `capabilitiesSchemaVersion:"1.3"`, 그리고 MCP 선언용 `mcpSchema` 를 함께 낸다.
 `export-plan-schema` → `definitionCount:11`, `planSchemaVersion:"1.1"` 이다.
 
 ### 1-5. 역할이 정해져 있는가 — 프로필 라우터
 
-65개를 전부 물리면 작은 모델은 도구 선택에서 진다. `--profile` 은 **역할별로 도구를
+82개를 전부 물리면 작은 모델은 도구 선택에서 진다. `--profile` 은 **역할별로 도구를
 좁히고 레시피를 함께 주는** 라우터다(실측: `capabilities --mcp --profile <이름>`,
 `mcp-serve --profile <이름>`).
 
@@ -258,8 +249,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `데이터분석` | 9 | 9 | 표 수확·아카이브 일괄 추출 |
 | `콘텐츠제작` | 9 | 9 | 명세로 새 문서를 만들고 배포 형식으로 |
 | `아카이브검색` | 11 | 23 (세션 전용 12 포함) | 수백 건 스윕과 근거 쪽 번호 인용 |
-| `품질검증` | 11 | 11 | 변환·편집 무손실 게이트 |
-| `개발통합` | 49 | 65 | 필터 없음 — rhwp 를 통합하는 개발 에이전트 |
+| `품질검증` | 28 | 28 | 변환·편집 무손실 게이트와 작업 계보·서명·감사 판정 |
+| `개발통합` | 66 | 82 | 필터 없음 — rhwp 를 통합하는 개발 에이전트 |
 
 각 프로필 봉투에는 `profile.recipe[]`(권장 호출 순서)와 `profile.session`·
 `profile.sessionTools[]` 가 함께 실린다. 예를 들어 `행정서식` 의 레시피는
@@ -304,10 +295,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 188개 필드
+### 2-2. 전수 사전 — 264개 필드
 
-`capabilities` 의 `recordFields` 고유 **185개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 188개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **261개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 264개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -472,7 +463,133 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `depth` | number | 걸은 링크 수 — 뿌리(부모 없음)까지 가면 체인 전체 길이 | `lineage` |
 | `valid` | bool | 계보 판정 — `false` 면 exit 3. **깨짐은 오류가 아니라 데이터** | `lineage` |
 | `brokenAt` | string\|null | 처음 깨진 링크의 캡슐 경로. 유효한 체인은 `null` | `lineage` |
-| `links` | array | 링크별 판정 — `parentOk`(부모 파일 무결)·`lineageOk`(부모 산출=자식 입력)·`reproduced`(`--deep`). 머리 링크는 대조할 자식 기록이 없어 앞 둘이 `null` | `lineage` |
+| `links` | array | 링크별 판정 — `parentOk`(부모 파일 무결)·`lineageOk`(부모 산출=자식 입력)·`reproduced`(`--deep`)·`signerOk`/`keyId`(`--keyring` 를 준 때만 실림, #4509). 머리 링크는 대조할 자식 기록이 없어 앞 둘이 `null` | `lineage` |
+
+#### 서명 (`keygen`·`verify-signature`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `keyId` | string\|null | 키 식별자(소유/용도#세대 관례). 사이드카가 keyId 를 안 담으면 `null` | `keygen`·`verify-signature` |
+| `publicKey` | string | Ed25519 공개키 base64 — 키 등록부(keyring)에 실을 값 | `keygen` |
+| `keyFile` | string | 발급한 키 파일 경로(호출자 에코) — **비밀키 포함, 보관 책임은 소유자** | `keygen` |
+| `capsule` | string | 검증 대상 캡슐 경로(호출자 에코) | `verify-signature` |
+| `sigPath` | string | 대조한 분리 서명 경로 (기본 `<캡슐>.sig.json`) | `verify-signature` |
+| `capsuleSha256` | string | 캡슐 파일 바이트의 SHA-256 — 서명이 봉인한 대상 | `verify-signature` |
+| `capsuleShaMatches` | bool | 사이드카 기록 해시 == 실물 해시 — 다르면 다른 파일의 서명이다 | `verify-signature` |
+| `signatureOk` | bool\|null | 암호학적 검증 결과. 키를 몰라 검증 자체가 불가면 `null` | `verify-signature` |
+| `keyKnown` | bool | keyId 가 키 등록부에 있는가 | `verify-signature` |
+| `revoked` | object\|null | 폐기 기록(`{at, reason}`). 미폐기는 `null` — 폐기 판정이 서명 유효보다 우선한다 | `verify-signature` |
+| `verdict` | string | valid·invalid·unknownKey·revoked·malformed — **valid 아님 = exit 3** | `verify-signature` |
+
+#### 하네스 (`harness`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `dir` | string | 작업장 폴더 경로(호출자 에코) | `harness` |
+| `capsule` 재사용 | — | wrap 이 만든 캡슐 **파일명**(연번_계획해시8) — verify-signature 의 경로 에코와 동명 재사용 | `harness` |
+| `parent` | string\|null | 자동 연결된 직전 캡슐 파일명. 첫 캡슐(뿌리)은 `null` | `harness` |
+| `signed` | bool\|object\|null | wrap 은 서명 여부(bool), status 는 집계 `{valid, invalid, unsigned}` — keyring 미지정이면 `null` | `harness` |
+| `capsules` | number | 작업장의 캡슐 수 | `harness` |
+| `chainValid` | bool | 연번 체인 무결(부모 파일명·해시 연쇄) — `false` 면 exit 3, `brokenAt` 이 원인 명세 | `harness` |
+
+#### 앵커 (`anchor`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `log` | string | 투명성 로그 경로(호출자 에코) | `anchor` |
+| `seq` | number\|null | 등재 연번. verify 에서 미등재면 `null` | `anchor` |
+| `logged` | bool | 캡슐 해시가 로그에 등재돼 있는가 — `false` 면 exit 3 | `anchor` |
+| `logChainOk` | bool | 로그 자기 무결(줄 해시 체인·seq 연번) — 중간 변조는 여기서 폭로 | `anchor` |
+| `entries` | number | 로그 항목 수 | `anchor` |
+| `upToSeq` | number | 체크포인트가 덮는 마지막 연번 | `anchor` |
+| `merkleRoot` | string | 로그 줄 해시들의 머클 루트 — 외부 공표 대상(공표 자체는 운영) | `anchor` |
+| `inCheckpoint` | bool\|null | 머클 경로가 체크포인트 루트에 닿는가. 체크포인트 미지정이면 `null` | `anchor` |
+| `merklePath` | array\|null | 잎→루트 형제 해시 경로(`{sibling, siblingIsLeft}`) — 제3자가 재계산으로 검증 | `anchor` |
+
+#### 게이트 (`gate`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `policy` | string | 정책 이름(정책 파일의 name 에코) | `gate` |
+| `policyPath` | string | 정책 파일 경로(호출자 에코) | `gate` |
+| `policySigned` | bool\|null | 정책 파일 서명 판정(4년 축 재사용). `--policy-keyring` 미지정이면 `null` | `gate` |
+| `target` | string | 판정 대상 캡슐 경로(호출자 에코) | `gate` |
+| `targetSha256` | string | 판정 시점 대상 해시 — 소비 직전 재대조로 TOCTOU 방어 | `gate` |
+| `evaluated` | number | 평가한 (키, 연산자) 조건 수 | `gate` |
+| `violations` | array | 위반 명세 `{rule, key, op, expected, actual}` — actual 의 unavailable 은 판정 재료 미지정 | `gate` |
+
+#### 연합 번들 (`bundle`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `bundle` | string | 번들 파일 경로(호출자 에코) | `bundle` |
+| `signatures` | number | 동봉한 분리 서명 수 (export) | `bundle` |
+| `proofs` | number | 동봉한 머클 증명 수 (export) | `bundle` |
+| `trustDomain` | string | 판정 기준 도메인 이름 — **동봉 keyring 은 불신**, 수신자 보유 파일 기준 | `bundle` |
+| `containerOk` | bool | 매니페스트의 전 파일 해시 대조(운송 변조 검출) | `bundle` |
+| `lineageValid` | bool | 번들 내부 계보 걷기 판정(부모 해시·산출=입력) — gate 판정 키와 동명 동의 | `bundle` |
+
+#### 선택적 공개 (`disclose`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `redacted` | string | 가림 캡슐 경로 — plan 문자열 잎이 전부 `{committed}` 로 치환된 판 | `disclose` |
+| `opening` | string | 비밀 개봉 파일 경로 — 값·salt·원본 planText 보관(**공개 금지 산출물**) | `disclose` |
+| `committedFields` | number | 커밋으로 치환된 잎 수(구조 골격 planVersion·action 은 평문 유지) | `disclose` |
+| `originalCapsuleSha256` | string | 가림 전 원본 캡슐의 파일 sha256 — restore 의 성공 기준점 | `disclose` |
+| `verifiedFields` | array | 부분 개봉에서 커밋 대조가 일치한 JSON 포인터 목록 | `disclose` |
+| `mismatched` | array | 커밋 불일치 포인터 목록 — 비어 있지 않으면 verdict mismatch·exit 3 | `disclose` |
+| `unopened` | number | 개봉되지 않은 커밋 잎 수 — 부분 공개 협상의 잔여 수량 | `disclose` |
+| `restored` | string | 복원 캡슐 경로 (restore) | `disclose` |
+| `restoredSha256` | string | 복원 캡슐의 파일 sha256 | `disclose` |
+| `byteIdentical` | bool | 복원 == 원본 바이트 — 참이면 **원본 분리 서명이 복원본에서 그대로 valid** | `disclose` |
+
+#### 정산 증빙 (`settle`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `claim` | string | 청구 파일 경로(호출자 에코) | `settle` |
+| `workorderSha256` | string | 명세서 파일 바이트 sha256 — P4(사후 변경) 고정 | `settle` |
+| `gateEnvelopeSha256` | string | 게이트 판정 봉투 sha256 — P2(판정 위조) 고정 | `settle` |
+| `claimSha256` | string | 청구 파일 sha256 — 원장 기입의 대상 | `settle` |
+| `workorderOk` | bool | 명세서 재해시 == 청구 고정값 | `settle` |
+| `capsuleOk` | bool | 캡슐 재해시 == 청구 고정값 — P1(바꿔치기) 검출 | `settle` |
+| `gateOk` | bool | 게이트 봉투 재해시 == 청구 고정값 | `settle` |
+| `gateVerdict` | string\|null | 게이트 봉투의 verdict 재확인 — 해시가 맞아도 allow 아니면 rejected. 파싱 불가면 `null` | `settle` |
+| `signerOk` | bool | 청구 사이드카 서명 판정 — **사이드카 부재도 false**(청구 귀속은 본질). `--keyring` opt-in | `settle` |
+| `workorderSignerOk` | bool\|null | 명세서 서명 판정 — 사이드카 부재는 `null`(미서명 보고, 실패 아님) | `settle` |
+| `ledgerOk` | bool | 원장 자기 무결(동형 체인) 판정. `--ledger` opt-in | `settle` |
+| `duplicate` | bool\|null | 이중 청구 — 원장 전역에서 같은 capsuleSha256 의 accepted 존재. 원장이 깨졌으면 `null` | `settle` |
+| `existingSeq` | number | 이중 청구 시 기존 accepted 기입의 seq (record 거부 봉투) | `settle` |
+| `ledger` | string | 원장 경로(호출자 에코) | `settle` |
+
+#### 감사 표준 (`audit-report`·`recall-scope`·`conformance`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `report` | string | 보고서 저장 경로(kind `agentLaborAuditReport`) — 보고서 자체가 4년 서명 대상 | `audit-report` |
+| `reproduction` | object\|null | 재현 절 `{attempted, reproduced, rate, failures[]}` — `--deep` 미지정이면 `null`(재현은 비싸다) | `audit-report` |
+| `lineage` | object | 계보 절 `{graphs(뿌리), heads(머리), valid, broken[{head, brokenAt}]}` | `audit-report` |
+| `attribution` | object\|null | 귀속 절 `{signed, unsigned, validSignatures, revokedKeyUses}` — `--keyring` opt-in | `audit-report` |
+| `anchoring` | object\|null | 앵커 절 `{anchored, unanchored}` — `--anchor-log` opt-in | `audit-report` |
+| `gate` | object\|null | 게이트 절 `{policySha256, passed, denied}` — `--policy` opt-in, 판정 재료는 타 절 재사용 | `audit-report` |
+| `toolVersions` | object | `{rhwp[], mixed}` — 캡슐 영수증의 기록 합산, 미기록은 "미기록"으로 정직 보고 | `audit-report` |
+| `contaminated` | string | 오염 노드의 파일 sha256 (경로 입력도 해시로 정규화 — 해시가 정체성) | `recall-scope` |
+| `affected` | array | 영향 캡슐 `{capsule, path[]}` — path 는 오염 노드부터 자신까지, 자기 자신도 회수 1호 | `recall-scope` |
+| `unaffected` | number | 미영향 캡슐 수 — 리콜 범위의 여집합 명시 | `recall-scope` |
+| `claims` | array | 영향 캡슐의 정산 청구 좌표 `{seq, claimSha256, verdict}` — `--ledger` opt-in(리콜의 회계 연결) | `recall-scope` |
+| `level` | string | 목표 등급 L1~L5 (누적 요건) | `conformance` |
+| `checks` | array | 항목별 판정 `{id, ok, detail}` — ok `null` 은 기계 판정 밖(수동 확인) 명시 | `conformance` |
+| `achieved` | bool | 전 검사 통과 여부 — 거짓이면 verdict nonconformant·exit 3 | `conformance` |
+
+
+
+| `closureOk` | bool | 조상 폐쇄집합 완전성 — 부모 참조가 번들 안에서 전부 해소 | `bundle` |
+| `anchored` | object\|null | 머클 증명 집계 `{ok, bad, checkpointTrusted}` — 증명 미동봉이면 `null` | `bundle` |
+
+
+
+
 
 #### 판정·비교
 
@@ -900,9 +1017,9 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 65개
+## 6. MCP 도구 전수 지도 — 82개
 
-### 6-1. 무상태 49개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 66개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
@@ -947,6 +1064,23 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_run_plan` | `run --plan-json --json` | `plan` |
 | `hwp_replay` | `replay --plan-json --json` | `plan` |
 | `hwp_lineage` | `lineage --json` | `capsule` |
+| `hwp_keygen` | `keygen --json` | `keyId`,`out` |
+| `hwp_verify_signature` | `verify-signature --json` | `capsule`,`keyring` |
+| `hwp_harness_wrap` | `harness wrap --json` | `plan`,`dir` |
+| `hwp_harness_status` | `harness-status --json` | `dir` |
+| `hwp_anchor_add` | `anchor add --json` | `capsule`,`log` |
+| `hwp_anchor_verify` | `anchor verify --json` | `capsule`,`log` |
+| `hwp_gate` | `gate --json` | `capsule`,`policy` |
+| `hwp_bundle_export` | `bundle export --json` | `head`,`out` |
+| `hwp_bundle_verify` | `bundle verify --json` | `bundle`,`trustDomain` |
+| `hwp_disclose_redact` | `disclose redact --json` | `capsule`,`out`,`openingOut` |
+| `hwp_disclose_verify` | `disclose verify --json` | `redacted`,`opening` |
+| `hwp_settle_propose` | `settle propose --json` | `workorder`,`capsule`,`gateEnvelope`,`out` |
+| `hwp_settle_verify` | `settle verify --json` | `claim`,`workorder`,`capsule`,`gateEnvelope` |
+| `hwp_settle_record` | `settle record --json` | `claim`,`ledger` |
+| `hwp_audit_report` | `audit-report --json` | `dir`,`out` |
+| `hwp_recall_scope` | `recall-scope --json` | `contaminated`,`among` |
+| `hwp_conformance` | `conformance --json` | `dir`,`level` |
 | `hwp_audit` | `audit --json` | `dir` |
 | `hwp_export_plan_schema` | `export-plan-schema --json` | (없음) |
 | `hwp_render_diff` | `render-diff --json` | `path` |
@@ -1149,7 +1283,6 @@ tracked `tests/**/*_contract.rs` **85개**가 있다. 표면을 고칠 때 **어
 | 봉투 출처 표지 | [tech/envelope_provenance.md](../tech/envelope_provenance.md) | `untrusted*` 의 설계 |
 | 에이전트 경계 계약 | [tech/agent_boundary_contract.md](../tech/agent_boundary_contract.md) | 도구가 넘지 않는 선 |
 | 초소형 모델 매크로 | [tech/tiny_model_macro_tools.md](../tech/tiny_model_macro_tools.md) | `digest`·프로필의 설계 근거 |
-| 바인딩 기초 | [tech/bindings_foundation.md](../tech/bindings_foundation.md) | 다른 언어에서 부를 때 |
 
 ## 유지 규약
 

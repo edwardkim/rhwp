@@ -1,0 +1,48 @@
+{
+  "id": "OM06",
+  "tier": 3,
+  "title": "복수 필드 동시 채움",
+  "input": "samples/field-01.hwp",
+  "instructions": "첫 번째와 세 번째 필드에 각각 '첫값', '셋값' 을 넣은 multi.hwp 를 제출하라. 채점은 두 자리를 각각 대조하고, **두 번째 필드가 비어 있는지**까지 본다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "multi.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 필드 == 첫값",
+      "op": "value_eq",
+      "value": "첫값",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:multi.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "세 번째 필드 == 셋값",
+      "op": "value_eq",
+      "value": "셋값",
+      "path": "fields[2].value",
+      "cmd": [
+        "fields",
+        "{file:multi.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "두 번째 필드는 비어 있음",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:multi.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

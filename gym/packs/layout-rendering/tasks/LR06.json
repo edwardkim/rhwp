@@ -1,0 +1,33 @@
+{
+  "id": "LR06",
+  "tier": 2,
+  "title": "쪽수 기대 위반 판정",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력이 **100쪽 이상**이라는 (틀린) 기대를 검증했을 때의 판정을 answer.json 에 {\"verdict\": \"...\"} 으로 제출하라. 실패도 데이터다 — 판정을 그대로 읽어라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "위반 판정",
+      "op": "answer_eq",
+      "answer": "verdict",
+      "path": "verdict",
+      "cmd": [
+        "verify",
+        "{input}",
+        "--expect-min-pages",
+        "100",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "검증"
+}

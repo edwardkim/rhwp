@@ -1,0 +1,21 @@
+{
+  "id": "TB02",
+  "tier": 2,
+  "title": "표 CSV 추출",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력의 첫 번째 표를 CSV 로 추출해 table.csv 로 제출하라. 힌트: rhwp table-to-csv --table 0.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "table.csv"
+    ]
+  },
+  "checks": [
+    {
+      "name": "CSV 산출",
+      "op": "file_exists",
+      "file": "table.csv",
+      "minBytes": 8
+    }
+  ]
+}

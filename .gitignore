@@ -84,6 +84,9 @@ mydocs/privacy/*
 rhwp-vscode/media/rhwp.js
 rhwp-vscode/media/rhwp_bg.wasm
 
+# 폐기된 Node 바인딩 로컬 설치·빌드 잔여물
+/bindings/node/
+
 # rhwp-chrome 빌드 산출물
 rhwp-chrome/dist/
 rhwp-chrome/*.zip
@@ -103,3 +106,6 @@ samples/issue836/
 __pycache__/
 *.pyc
 tmp/
+
+# node 바인딩 의존성 — 커밋 대상 아님(#4656 실수 커밋 정리)
+bindings/node/node_modules/

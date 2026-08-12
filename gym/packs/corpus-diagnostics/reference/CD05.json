@@ -1,0 +1,23 @@
+{
+  "id": "CD05",
+  "steps": [
+    {
+      "answer": {
+        "status": {
+          "cmd": [
+            "render-diff",
+            "{input}",
+            "{input}",
+            "--json"
+          ],
+          "path": "status",
+          "allowExits": [
+            0,
+            3,
+            4
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "alg": "ed25519",
+  "capsuleSha256": "90154f7a1f2319562cbd894bd249b0611b3f43bcbd4a95d62caf86e857fee53e",
+  "keyId": "gym/atlas-generalist",
+  "kind": "capsuleSignature",
+  "schemaVersion": "1.0",
+  "signature": "JFBfidpGWyp0P1+bHEaW0z7TcsvN5WuAukDWU5Zd0EUALHYetGRvKjdzdpx8szdob4PvCRiROokbOKf+2d3ICQ==",
+  "signedAt": "2026-08-12T00:46:10Z"
+}

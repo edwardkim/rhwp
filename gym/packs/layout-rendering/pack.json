@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "layout-rendering",
+  "title": "조판·렌더링",
+  "axis": "검증 (조판 판정·렌더 산출)",
+  "description": "쪽수와 렌더 산출을 숫자로 판정한다. 눈이 아니라 봉투가 말한다.",
+  "requires": {
+    "commands": [
+      "info",
+      "render-diff",
+      "thumbnail",
+      "verify"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.2",
+    "rhwpCommit": "1e8667aa86aeb979119aa9152112b42e4f16a76c",
+    "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
+  }
+}

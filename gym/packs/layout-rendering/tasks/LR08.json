@@ -1,0 +1,54 @@
+{
+  "id": "LR08",
+  "tier": 2,
+  "title": "다중 기대 자기검증",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력이 **10쪽 이상이고 표가 1개 이상**임을 한 번에 검증한 판정을 answer.json 에 {\"verdict\": \"...\", \"passed\": N} 으로 제출하라. 힌트: rhwp verify --expect-min-pages --expect-min-tables.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "판정",
+      "op": "answer_eq",
+      "answer": "verdict",
+      "path": "verdict",
+      "cmd": [
+        "verify",
+        "{input}",
+        "--expect-min-pages",
+        "10",
+        "--expect-min-tables",
+        "1",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "통과 기대 수",
+      "op": "answer_eq",
+      "answer": "passed",
+      "path": "passCount",
+      "cmd": [
+        "verify",
+        "{input}",
+        "--expect-min-pages",
+        "10",
+        "--expect-min-tables",
+        "1",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "검증"
+}

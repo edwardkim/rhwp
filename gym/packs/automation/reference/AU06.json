@@ -1,0 +1,39 @@
+{
+  "id": "AU06",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"out.hwp\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"비밀\"}]}",
+        "--capsule",
+        "{sub:work.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "disclose",
+        "redact",
+        "{sub:work.capsule.json}",
+        "-o",
+        "{sub:redacted.json}",
+        "--opening-out",
+        "{sub:opening.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "disclose",
+        "restore",
+        "{sub:redacted.json}",
+        "--opening",
+        "{sub:opening.json}",
+        "-o",
+        "{sub:restored.json}",
+        "--json"
+      ]
+    }
+  ]
+}

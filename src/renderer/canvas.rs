@@ -625,6 +625,7 @@ mod tests {
                 section_index: Some(0),
                 para_index: Some(0),
                 control_index: Some(0),
+                cell_context: None,
             }),
             BoundingBox::new(80.0, 100.0, 160.0, 60.0),
         );

@@ -833,6 +833,10 @@ pub struct TableNode {
     pub para_index: Option<usize>,
     /// 문단 내 컨트롤 인덱스
     pub control_index: Option<usize>,
+    /// [#4334] 표 셀/글상자 안에 중첩된 표(TAC 포함)의 **전체 다단계 경로**.
+    /// `ImageNode.cell_context`(Task #1161)와 동일 메커니즘. 최외곽 표는 `None`.
+    #[serde(default)]
+    pub cell_context: Option<CellContext>,
 }
 
 /// 표 셀 노드
@@ -1289,6 +1293,154 @@ pub struct EquationNode {
 /// `cell_path` 는 외→내 nesting 순서로 `(control_index, cell_index, cell_para_index)`
 /// 튜플 목록. 섹션 단위(셀 외부)는 빈 Vec.
 pub type InlineShapeKey = (usize, usize, usize, Vec<(usize, usize, usize)>);
+
+/// [Issue #4334 stableIndex 서수화] 노드의 **문서 위치** — `next_id()` 카운터가
+/// 아니라 `(section, para, cell 경로…, control)` 에서 유도한 정수 배열. 사전식
+/// (lexicographic) 비교로 정렬한다 — `Vec<u32>` 의 `Ord` 구현이 그대로 이 의미다
+/// (공통 접두사까지 원소별 비교, 그 다음 길이).
+///
+/// [`InlineShapeKey`]/[`CellContext::path`](crate::renderer::layout::CellContext) 와
+/// 같은 좌표계를 재사용한다 — 새 이름공간을 만들지 않는다. `paper_node_sort_key` 가
+/// 이 값을 `RenderLayerInfo.stable_index`(레이어 있는 노드) 와 `node.id` 폴백(레이어
+/// 없는 inline 노드) 을 모두 대신해 쓴다.
+///
+/// # 사전식 비교가 뜻하는 것 — 조상은 자손보다 작다
+///
+/// 경로 길이는 항상 `3k+3`(`[section, para]` + 셀 3원소 × k + `control`)이라, 어떤
+/// 경로가 다른 경로의 진접두사(strict prefix)가 되는 경우는 **한쪽이 다른 쪽을 담고
+/// 있을 때**뿐이다: 표 자체가 `[0,0,2]`, 그 셀 안 개체가 `[0,0,2,5,1,0]`. 사전식
+/// 비교는 짧은 쪽(조상)을 작다고 본다 — 정렬키에서 "작다"는 "먼저 그린다 = 아래"이고,
+/// 담는 표가 담긴 개체보다 아래인 것이 렌더 순서상 옳으므로 의도한 관계다.
+///
+/// # 동률(tie)
+///
+/// `Vec<u32>` 의 순서 자체는 전순서지만 **서로 다른 노드가 같은 경로를 받을 수는
+/// 있다**. 두 경우다.
+///
+/// 1. 문서 위치를 못 만드는 노드([`doc_path_for_node`] 가 `None`) — 호출부가 빈
+///    경로로 폴백하면 서로 전부 동률이고, 빈 배열은 사전식 최솟값이라 같은
+///    plane/zOrder 안에서 항상 맨 아래다.
+/// 2. [`doc_path_single_cell_level`] 을 쓰는 타입(Rectangle/Line/Ellipse/Path/
+///    Equation)의 2중 이상 중첩 — 그 필드들이 애초에 단일 레벨 근사라 바깥 레벨이
+///    구분되지 않는다.
+///
+/// 두 경우 모두 `sort_paper_render_nodes` 의 `sort_by_key`(std 안정 정렬)가 동률
+/// 노드의 삽입 순서를 보존한다.
+pub(crate) type DocPath = Vec<u32>;
+
+fn push_cell_path(path: &mut DocPath, cell_path: &[crate::renderer::layout::CellPathEntry]) {
+    for entry in cell_path {
+        path.push(entry.control_index as u32);
+        path.push(entry.cell_index as u32);
+        path.push(entry.cell_para_index as u32);
+    }
+}
+
+/// 전체 다단계 셀 경로(`CellContext`, Task #1161)를 갖는 노드(Table/Image)용.
+fn doc_path_full(
+    section_index: Option<usize>,
+    para_index: Option<usize>,
+    cell_context: Option<&CellContext>,
+    control_index: Option<usize>,
+) -> Option<DocPath> {
+    let (si, pi, ci) = (section_index?, para_index?, control_index?);
+    let mut path: DocPath = vec![si as u32, pi as u32];
+    if let Some(ctx) = cell_context {
+        push_cell_path(&mut path, &ctx.path);
+    }
+    path.push(ci as u32);
+    Some(path)
+}
+
+/// 단일 레벨 셀 스칼라(`cell_index`/`cell_para_index`/`outer_table_control_index`,
+/// Task #1138/#1151)만 갖는 노드(Rectangle/Line/Ellipse/Path/Equation)용. 2중 이상
+/// 중첩은 가장 안쪽 한 단계만 반영하는 근사다 — 해당 필드들 자체가 이미 이 근사를
+/// 전제로 설계되어 있다(다단계 `cell_context` 가 없음).
+#[allow(clippy::too_many_arguments)]
+fn doc_path_single_cell_level(
+    section_index: Option<usize>,
+    para_index: Option<usize>,
+    outer_table_control_index: Option<usize>,
+    cell_index: Option<usize>,
+    cell_para_index: Option<usize>,
+    control_index: Option<usize>,
+) -> Option<DocPath> {
+    let (si, pi, ci) = (section_index?, para_index?, control_index?);
+    let mut path: DocPath = vec![si as u32, pi as u32];
+    if let Some(cell_idx) = cell_index {
+        path.push(outer_table_control_index.unwrap_or(0) as u32);
+        path.push(cell_idx as u32);
+        path.push(cell_para_index.unwrap_or(0) as u32);
+    }
+    path.push(ci as u32);
+    Some(path)
+}
+
+/// 노드가 이미 갖고 있는 필드에서 [`DocPath`] 를 유도한다 — `next_id()`/`node.id`
+/// 를 전혀 참조하지 않는다. 해당 타입이 문서 위치 필드를 아예 갖지 않거나(예:
+/// `TextLine`/`Body` 같은 구조 노드), 필드는 있지만 값이 없으면(#4334 stage3 가 실측한
+/// 42개 노드류) `None` — 호출부가 무엇으로 대체할지 결정한다(`node.id` 로 되돌아가지
+/// 않는 것이 이 이슈의 목적이다).
+pub(crate) fn doc_path_for_node(node: &RenderNode) -> Option<DocPath> {
+    match &node.node_type {
+        RenderNodeType::Table(t) => doc_path_full(
+            t.section_index,
+            t.para_index,
+            t.cell_context.as_ref(),
+            t.control_index,
+        ),
+        RenderNodeType::Image(i) => doc_path_full(
+            i.section_index,
+            i.para_index,
+            i.cell_context.as_ref(),
+            i.control_index,
+        ),
+        RenderNodeType::Equation(e) => doc_path_single_cell_level(
+            e.section_index,
+            e.para_index,
+            None,
+            e.cell_index,
+            e.cell_para_index,
+            e.control_index,
+        ),
+        RenderNodeType::Rectangle(r) => doc_path_single_cell_level(
+            r.section_index,
+            r.para_index,
+            r.outer_table_control_index,
+            r.cell_index,
+            r.cell_para_index,
+            r.control_index,
+        ),
+        RenderNodeType::Line(l) => doc_path_single_cell_level(
+            l.section_index,
+            l.para_index,
+            l.outer_table_control_index,
+            l.cell_index,
+            l.cell_para_index,
+            l.control_index,
+        ),
+        RenderNodeType::Ellipse(el) => doc_path_single_cell_level(
+            el.section_index,
+            el.para_index,
+            el.outer_table_control_index,
+            el.cell_index,
+            el.cell_para_index,
+            el.control_index,
+        ),
+        RenderNodeType::Path(p) => doc_path_single_cell_level(
+            p.section_index,
+            p.para_index,
+            p.outer_table_control_index,
+            p.cell_index,
+            p.cell_para_index,
+            p.control_index,
+        ),
+        RenderNodeType::Group(g) => {
+            doc_path_full(g.section_index, g.para_index, None, g.control_index)
+        }
+        _ => None,
+    }
+}
 
 /// 레이아웃 재귀가 들고 다니는 흐름 상태 (paint 출력 아님).
 ///

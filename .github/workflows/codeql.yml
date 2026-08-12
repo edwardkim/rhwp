@@ -77,6 +77,11 @@ jobs:
               'Analyze (rust)',
             ];
             const allowedConclusions = new Set(['success', 'skipped', 'neutral']);
+            // GitHub Advanced Security can complete the aggregate CodeQL check as
+            // neutral after every language-specific Analyze job has succeeded.
+            // That aggregate is evidence of the same candidate run, not the
+            // language-level verdict; skipped remains fail-closed here.
+            const allowedSecurityConclusions = new Set(['success', 'neutral']);
             const { owner, repo } = context.repo;
 
             function setResult(fastPass, reason, candidateSha = '') {
@@ -252,7 +257,7 @@ jobs:
                   reason: `security-check-not-completed:CodeQL:${securityCheck.status}`,
                 };
               }
-              if (securityCheck.conclusion !== 'success') {
+              if (!allowedSecurityConclusions.has(securityCheck.conclusion)) {
                 return {
                   state: 'failed',
                   reason: `security-check-not-green:CodeQL:${securityCheck.conclusion}`,

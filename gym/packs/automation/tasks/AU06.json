@@ -1,0 +1,38 @@
+{
+  "id": "AU06",
+  "tier": 3,
+  "title": "선택적 공개 왕복",
+  "input": "samples/table-001.hwp",
+  "instructions": "작업 캡슐을 **가림**(salt 커밋)한 뒤 개봉으로 **바이트 완전 복원**해 복원본 restored.json 과 가림본 redacted.json, 개봉 opening.json 을 제출하라. 힌트: rhwp disclose redact → disclose restore.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "redacted.json",
+      "opening.json",
+      "restored.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "바이트 완전 복원",
+      "op": "value_eq",
+      "value": true,
+      "path": "byteIdentical",
+      "cmd": [
+        "disclose",
+        "restore",
+        "{file:redacted.json}",
+        "--opening",
+        "{file:opening.json}",
+        "-o",
+        "{file:restored.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

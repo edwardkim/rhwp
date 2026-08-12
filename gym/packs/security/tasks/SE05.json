@@ -1,0 +1,32 @@
+{
+  "id": "SE05",
+  "tier": 1,
+  "title": "유니코드 기만 스윕",
+  "input": "samples/unicode/각 항목에 명시되어 있는_유니코드.hwp",
+  "instructions": "입력에 화면과 바이트가 어긋나는 유니코드 소견이 몇 건인지 answer.json 에 {\"findings\": N} 으로 제출하라. 힌트: rhwp inspect unicode.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "소견 건수",
+      "op": "answer_eq",
+      "answer": "findings",
+      "path": "findingCount",
+      "cmd": [
+        "inspect",
+        "unicode",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "조사"
+}

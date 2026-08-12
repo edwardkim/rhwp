@@ -49,6 +49,9 @@ jobs:
     steps:
       - name: Force-cancel older pull-request runs for this PR
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          # GitHub-hosted runner의 프록시 CA도 신뢰하되 TLS 검증은 유지한다. #4673
+          NODE_OPTIONS: --use-system-ca
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -123,9 +126,9 @@ jobs:
                   },
                 );
               } catch (error) {
-                // 목록을 읽은 뒤 API를 호출하는 사이 대상이 스스로 끝나면 GitHub가 409을
-                // 돌려준다. 다시 조회해 completed임을 확인한 경우만 정상 경과로 취급한다.
-                if (error.status !== 409) throw error;
+                // 대상이 취소되거나 스스로 끝난 뒤 GitHub API가 409뿐 아니라 5xx를
+                // 반환할 수 있다. 응답 코드를 성공으로 간주하지 말고, 대상 run을 다시
+                // 읽어 실제로 completed인 경우만 정상 경과로 취급한다.
                 const { data: currentRun } = await github.rest.actions.getWorkflowRun({
                   owner,
                   repo,
@@ -133,7 +136,7 @@ jobs:
                 });
                 if (currentRun.status !== 'completed') throw error;
                 core.info(
-                  `Skip stale run ${run.id} (${run.name}): already completed (${currentRun.conclusion ?? 'unknown'}).`,
+                  `Skip stale run ${run.id} (${run.name}): already completed after force-cancel error ${error.status ?? 'unknown'} (${currentRun.conclusion ?? 'unknown'}).`,
                 );
                 continue;
               }

@@ -2783,4 +2783,324 @@ mod tests {
             );
         }
     }
+
+    // === Issue #4334 분해 1단계: 히트테스트 tie-break 회귀 pin (서수화 전 안전망) ===
+    //
+    // 한컴 권위 샘플 `samples/textbox-under-image.hwp` — 글상자(InFrontOfText,
+    // plane 3) 가 이미지(Square, plane 2) 앞에 있다(task1280_v2 로 이미 검증된
+    // 사실, `task1280_v2_control_layout_exposes_plane_z_order_stable_index` 참고).
+    // 겹침 클릭 시 "위에 보이는 개체(글상자) 선택" 이 한컴 편집기 육안 대조로 확정된
+    // 기대값이다(`mydocs/report/task_m100_1280_v2_report.md`). 이 테스트는
+    // `get_page_control_layout_native` 가 노출하는 `(plane, zOrder, stableIndex)` 를
+    // TS `controlTopKey`(input-handler-picture.ts:104-105) 와 동일하게 사전식
+    // 최댓값으로 비교해 실제로 글상자가 이기는지 Rust 쪽에서 고정한다.
+    //
+    // 이 케이스는 plane 차이(3 > 2)로 이미 결정되어 stableIndex 자체는 tie-break에
+    // 관여하지 않는다 — 여러 실제 fixture(issue1921/59043, task2093/1192000,
+    // aift.hwp, 21_언어_기출_편집가능본.hwp 등, 수십~수백 페이지)를 뒤졌지만 stableIndex
+    // 로만 갈리는 **공간적으로 실제 겹치는** 실제 문서 사례를 찾지 못했다 — layer=None
+    // 폴백을 쓰는 인라인 컨트롤끼리는 흐름(flow) 특성상 서로 겹치지 않고, topAndBottom
+    // 류 float 도 서로 겹치지 않게 배치되는 경향이 있다. 그래서 stableIndex 갈래(양쪽
+    // 공식 각각의 현재 값)는 `layout/tests.rs`의
+    // `issue_4334_paper_node_sort_key_no_longer_depends_on_node_id`(신규)와
+    // `task1197_paper_nodes_sort_by_plane_z_order_and_stable_index`(기존)가 Rust
+    // 내부 정렬 단위에서 고정한다.
+    //
+    // [#4334 갱신] `stableIndex` 는 이제 스칼라가 아니라 문서 경로 배열이다
+    // (`[secIdx, paraIdx, ...cell 경로, controlIdx]`) — 이 fixture 는 셀 중첩이 없어
+    // `[secIdx, paraIdx, controlIdx]` 3원소. 값 자체가 `next_id()` 카운터가 아니라
+    // `secIdx/paraIdx/controlIdx` 를 그대로 반영하므로, 아래 JSON 의 `controlIdx`
+    // 필드와 정확히 일치해야 한다(우연이 아니라 `doc_path_for_node` 의 정의).
+    #[test]
+    fn issue_4334_stage1_textbox_under_image_top_object_pin() {
+        fn parse_controls(json: &str) -> Vec<(String, i64, i64, Vec<i64>)> {
+            fn extract_i64(slice: &str, key: &str) -> i64 {
+                let needle = format!("\"{}\":", key);
+                let start = slice
+                    .find(&needle)
+                    .unwrap_or_else(|| panic!("{key} 필드 없음: {slice}"))
+                    + needle.len();
+                let tail = &slice[start..];
+                let end = tail
+                    .find(|c: char| c == ',' || c == '}')
+                    .unwrap_or(tail.len());
+                tail[..end]
+                    .trim()
+                    .parse()
+                    .unwrap_or_else(|_| panic!("{key} 파싱 실패: {slice}"))
+            }
+            fn extract_i64_array(slice: &str, key: &str) -> Vec<i64> {
+                let needle = format!("\"{}\":[", key);
+                let start = slice
+                    .find(&needle)
+                    .unwrap_or_else(|| panic!("{key} 배열 필드 없음: {slice}"))
+                    + needle.len();
+                let tail = &slice[start..];
+                let end = tail
+                    .find(']')
+                    .unwrap_or_else(|| panic!("{key} 배열 종료 없음: {slice}"));
+                let body = tail[..end].trim();
+                if body.is_empty() {
+                    return Vec::new();
+                }
+                body.split(',')
+                    .map(|s| {
+                        s.trim()
+                            .parse()
+                            .unwrap_or_else(|_| panic!("{key} 원소 파싱 실패: {slice}"))
+                    })
+                    .collect()
+            }
+            let marker = "\"type\":\"";
+            let positions: Vec<usize> = json.match_indices(marker).map(|(i, _)| i).collect();
+            positions
+                .iter()
+                .enumerate()
+                .map(|(n, &start)| {
+                    let end = positions.get(n + 1).copied().unwrap_or(json.len());
+                    let slice = &json[start..end];
+                    let type_start = start + marker.len();
+                    let type_end = json[type_start..].find('"').unwrap() + type_start;
+                    let type_name = json[type_start..type_end].to_string();
+                    (
+                        type_name,
+                        extract_i64(slice, "plane"),
+                        extract_i64(slice, "zOrder"),
+                        extract_i64_array(slice, "stableIndex"),
+                    )
+                })
+                .collect()
+        }
+
+        let data = std::fs::read("samples/textbox-under-image.hwp");
+        let Ok(data) = data else {
+            eprintln!("테스트 파일 없음: samples/textbox-under-image.hwp — 건너뜀");
+            return;
+        };
+        let mut core = crate::document_core::DocumentCore::from_bytes(&data).expect("load");
+        core.paginate();
+        let json = core
+            .get_page_control_layout_native(0)
+            .expect("control layout for page 0");
+
+        let controls = parse_controls(&json);
+        assert_eq!(controls.len(), 2, "글상자+이미지 2개 컨트롤 기대: {json}");
+
+        // TS `controlTopKey`/`isAboveControl` 재현: (plane, zOrder, stableIndex) 사전식
+        // 최댓값이 최상단. `Vec<i64>` 의 `Ord` 는 원소별 비교 후 길이로, TS 쪽 새
+        // `compareLexArrays` 와 동일 의미.
+        let winner = controls
+            .iter()
+            .max_by_key(|(_, plane, z, stable)| (*plane, *z, stable.clone()))
+            .expect("빈 목록 아님");
+
+        assert_eq!(
+            winner.0, "shape",
+            "겹침 클릭 시 글상자(위)가 이미지(아래)를 이겨야 한다(한컴 권위 샘플 실측). \
+             controls={controls:?}"
+        );
+        // 원본 값도 그대로 pin — 바뀌면 이 테스트가 즉시 알려준다.
+        let shape = controls.iter().find(|c| c.0 == "shape").unwrap();
+        let image = controls.iter().find(|c| c.0 == "image").unwrap();
+        assert_eq!(
+            (shape.1, shape.2),
+            (3, 0),
+            "shape plane/zOrder: {controls:?}"
+        );
+        assert_eq!(
+            (image.1, image.2),
+            (2, 1),
+            "image plane/zOrder: {controls:?}"
+        );
+        // [#4334] stableIndex = [secIdx, paraIdx, controlIdx] — 글상자 controlIdx=2,
+        // 이미지 controlIdx=3(둘 다 secIdx=0, paraIdx=0, 셀 중첩 없음). doc_path_for_node
+        // 정의를 그대로 반영하는 값이라 controlIdx 가 바뀌면 이 값도 같이 바뀐다.
+        assert_eq!(shape.3, vec![0, 0, 2], "shape stableIndex: {controls:?}");
+        assert_eq!(image.3, vec![0, 0, 3], "image stableIndex: {controls:?}");
+    }
+
+    // === Issue #4334 "문서 경로 배열" 구현 후 잔여 확인 — collect_controls/
+    // sort_paper_render_nodes 두 집합에서 문서 위치를 못 만드는 노드가 남아있는지 실측 ===
+    //
+    // 1단계 실측(42/1680, 폐기된 pin)에서 원인 셋을 찾아 고쳤다 — 전부 "host 는 있지만
+    // 안 이어져 있던" 플러밍 결손:
+    //   - TAC(text-as-char) 중첩 표 — `table_cell_content.rs`(`layout_embedded_table`)가
+    //     `enclosing_ctx`(호스트 경로) 를 갖고 있으면서도 `TableNode.section_index/
+    //     para_index/control_index/cell_context` 를 전부 `None` 으로 버렸다. 이제
+    //     `enclosing_ctx` 를 그대로 옮겨 담는다.
+    //   - 바탕쪽(master page) `Control::Picture` — `layout.rs`의 `build_master_page` 가
+    //     `Control::Table`/`Shape` 분기는 이미 바탕쪽 로컬 `(pi, ci)` 를 넘기면서
+    //     `Control::Picture` 분기만 `None, None` 을 넘겼다. 이제 `Some(pi), Some(ci)`.
+    //   - 재귀 중첩 표(recursive nested table) 3곳(`table_layout.rs` 2곳,
+    //     `table_partial.rs` 1곳) — `enclosing_cell_ctx`(`nested_ctx`) 는 넘기면서
+    //     `table_meta` 는 `None` 이라 para/control 이 항상 비었다. 이제 `nested_ctx`
+    //     경로의 마지막 두 항목에서 유도한다(기존에 이미 있던
+    //     `layout_partial_table_item` 패턴과 동일).
+    //
+    // 실측: Table/Equation/Image 1,680개 중 **42 → 24개**로 줄었다. 남은 24개는 전부
+    // Image 이고 **하나의 원인**으로 수렴한다 — `render_cell_background`
+    // (`table_layout.rs:3773`, 표 셀 배경 무늬/이미지 채우기) 가 `fill_color`/
+    // `gradient`/`pattern` 배경과 같은 자리에서 만드는 **이미지 채우기 장식**은
+    // `ImageNode::new(..)` 기본값(`section_index`/`para_index`/`control_index`
+    // 전부 `None`)을 그대로 쓴다. 이 함수는 애초에 section/para/control/cell_context
+    // 를 매개변수로 받지 않는다 — 셀 지오메트리(`cell_x/y/w/h`)와 테두리 스타일만
+    // 받는 순수 장식 렌더러. 이 이미지 장식은 **독립된 문서 Control 이 아니다** — 자기가
+    // 채우는 셀의 border-fill 스타일에서 파생된 값이라 "이 이미지의 문서 위치"라는
+    // 질문 자체가 그 셀과 별개로는 의미가 없다(#4334 코디네이터 질문 1번 — host 조차
+    // 없는 카테고리, 스칼라든 배열이든 자기 자신의 문서 위치는 없다). `render_cell_background`
+    // 에 문서 경로 매개변수를 추가로 뚫는 건(호출부 전부 갱신) 이번 1단계 범위 밖이라
+    // 하지 않았다 — `doc_path_for_node` 는 이 경우 빈 경로로 결정적으로 폴백한다
+    // (`paper_node_sort_key` 참고, node.id 는 안 읽는다).
+    //
+    // `sort_paper_render_nodes` 가 정렬하는 집합(`paper_images`, 정렬 후
+    // `tree.root.children` 에 그대로 붙는다) 은 이번 라운드에서 손대지 않은 축이라
+    // 여전히 `layer=None` 비중이 크다(56%, PageBg/Header/Footer/Body/MasterPage/
+    // FootnoteArea 제외) — `layer` 유무와 `doc_path_for_node` 성공 여부는 서로 다른
+    // 축이라(레이어 없어도 para/control 은 있을 수 있음) 이 값 자체는 "문서 위치를
+    // 못 구한다"는 뜻이 아니다. 참고용으로 계속 측정한다.
+    //
+    // 셀 중첩(코디네이터 질문 4번, 유지): Equation/Image 1,680개 중 391개(23%)가
+    // `cell_index`/`cell_context` 를 갖는다 — 드문 예외가 아니다. `doc_path_for_node`
+    // 는 Table/Image 는 전체 `cell_context`(다단계 경로)를, Rectangle/Line/Ellipse/
+    // Path/Equation 은 단일 레벨(`cell_index`/`cell_para_index`/
+    // `outer_table_control_index`, Task #1138/#1151 패턴)을 반영한다.
+    #[test]
+    fn issue_4334_stage3_document_position_coverage_precheck() {
+        let candidates = [
+            "samples/textbox-under-image.hwp",
+            "samples/aift.hwp",
+            "samples/21_언어_기출_편집가능본.hwp",
+            "samples/exam_science.hwp",
+            "samples/exam_kor.hwp",
+            "samples/exam_math.hwp",
+            "samples/hwpspec.hwp",
+            "samples/issue2006/1790387_prep_final_report.hwpx",
+            "samples/issue1921/59043_regulatory_analysis.hwp",
+            "samples/task2093/1192000_hydrogen_policy_research.hwp",
+        ];
+        const MAX_PAGES_PER_DOC: u32 = 40;
+
+        // `sort_paper_render_nodes`가 실제로 정렬하는 집합의 근사 —
+        // `push_layered_paper_children`/`paper_images.append` 로 채워진 뒤 정렬되어
+        // `tree.root.children`에 그대로 남는다(`layout.rs:2730-2738`). 고정 구조
+        // 자식(PageBg/Header/Footer/Body/MasterPage/FootnoteArea)은 제외한다.
+        fn is_paper_candidate(n: &RenderNode) -> bool {
+            !matches!(
+                n.node_type,
+                RenderNodeType::PageBackground(_)
+                    | RenderNodeType::Header
+                    | RenderNodeType::Footer
+                    | RenderNodeType::Body { .. }
+                    | RenderNodeType::MasterPage
+                    | RenderNodeType::FootnoteArea
+            )
+        }
+
+        // `collect_controls`(rendering.rs)가 TS로 내보내는 집합 중, 좌표 유무와 무관하게
+        // 무조건 push되는 세 타입(Table/Equation/Image)만 추적한다 — Rectangle/Line/
+        // Ellipse/Path/Group은 좌표가 없으면 애초에 push되지 않아 이 정합 문제와 무관.
+        fn walk_controls(
+            node: &RenderNode,
+            missing_doc_pos: &mut usize,
+            with_cell: &mut usize,
+            total: &mut usize,
+        ) {
+            match &node.node_type {
+                RenderNodeType::Table(t) => {
+                    *total += 1;
+                    if t.para_index.is_none() || t.control_index.is_none() {
+                        *missing_doc_pos += 1;
+                    }
+                }
+                RenderNodeType::Equation(e) => {
+                    *total += 1;
+                    if e.para_index.is_none() || e.control_index.is_none() {
+                        *missing_doc_pos += 1;
+                    }
+                    if e.cell_index.is_some() {
+                        *with_cell += 1;
+                    }
+                }
+                RenderNodeType::Image(i) => {
+                    *total += 1;
+                    if i.para_index.is_none() || i.control_index.is_none() {
+                        *missing_doc_pos += 1;
+                    }
+                    if i.cell_context.is_some() {
+                        *with_cell += 1;
+                    }
+                }
+                _ => {}
+            }
+            for child in &node.children {
+                walk_controls(child, missing_doc_pos, with_cell, total);
+            }
+        }
+
+        let mut paper_layer_none = 0usize;
+        let mut paper_layer_some = 0usize;
+        let mut controls_missing_doc_pos = 0usize;
+        let mut controls_with_cell_context = 0usize;
+        let mut controls_total = 0usize;
+        let mut total_pages = 0usize;
+
+        for path in candidates {
+            let Some(core) = load_document(path) else {
+                continue;
+            };
+            let page_count = core.page_count().min(MAX_PAGES_PER_DOC);
+            for page_idx in 0..page_count {
+                let Ok(tree) = core.build_page_render_tree(page_idx) else {
+                    continue;
+                };
+                total_pages += 1;
+                for child in &tree.root.children {
+                    if is_paper_candidate(child) {
+                        if child.layer.is_some() {
+                            paper_layer_some += 1;
+                        } else {
+                            paper_layer_none += 1;
+                        }
+                    }
+                }
+                walk_controls(
+                    &tree.root,
+                    &mut controls_missing_doc_pos,
+                    &mut controls_with_cell_context,
+                    &mut controls_total,
+                );
+            }
+        }
+
+        if total_pages == 0 {
+            eprintln!("issue_4334_stage3: 대상 fixture 없음(로컬 서브셋 checkout) — 건너뜀");
+            return;
+        }
+
+        eprintln!(
+            "issue_4334_stage3: pages={total_pages} paper(layer=Some/None)={paper_layer_some}/{paper_layer_none} \
+             controls(total/missing_doc_pos/with_cell)={controls_total}/{controls_missing_doc_pos}/{controls_with_cell_context}"
+        );
+
+        // 관찰된 사실을 그대로 pin. `controls_missing_doc_pos` 는 이제 정확히 24 로
+        // 고정한다 — 원인이 `render_cell_background`(셀 배경/무늬 이미지 채우기) 하나로
+        // 수렴했음을 확인했기 때문이다(위 doc 코멘트). 숫자만 고쳐 통과시키지 말 것:
+        // 늘어나면 새 회귀(#4334 fix 가 깨짐)고, 줄어들면(특히 0) `render_cell_background`
+        // 에 문서 경로를 추가로 뚫었다는 뜻이니 왜 그게 안전한지 새로 근거를 대야 한다.
+        assert_eq!(
+            controls_missing_doc_pos, 24,
+            "문서 위치를 못 매기는 control 개수가 실측(24, render_cell_background 장식 \
+             이미지)과 다르다 — #4334 fix 회귀이거나 새 카테고리 발생. 원인을 문서화할 것"
+        );
+        assert!(
+            paper_layer_none > 0,
+            "sort_paper_render_nodes 대상 중 layer=None 이 사라졌다 — 이번 라운드가 손대지 \
+             않은 축인데 값이 바뀌면 다른 변경의 부작용일 수 있음, 재검토할 것"
+        );
+        assert!(
+            controls_with_cell_context > 0,
+            "셀 중첩 control 이 실측에서 사라졌다 — cell_path 축이 더 이상 필요 없어졌을 \
+             수 있음, 재검토할 것"
+        );
+    }
 }

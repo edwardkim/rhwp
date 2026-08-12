@@ -249,7 +249,7 @@ $ printf '%s\n' \
 `docId` 는 **서버 프로세스 수명과 같다.** 재시작하면 사라지고, 저장하지 않은 편집도
 함께 사라진다.
 
-### 6-4. 바인딩(Node/Python) — 스키마를 먼저 뽑는다
+### 6-4. 외부 소비자 코드 생성 — 스키마를 먼저 뽑는다
 
 바인딩은 계약을 새로 만들지 않는다. 코드 생성의 단일 출처가 둘이다.
 
@@ -264,8 +264,9 @@ print(d['capabilitiesSchemaVersion'], d['definitionCount'], list(d.keys()))"
 ```
 
 `--bare` 를 주면 봉투 없이 스키마 본문만 나와 JSON Schema 도구에 바로 먹일 수 있다.
-함수로 노출할 명령의 기준은 손으로 고른 목록이 아니라 `capabilities` 의 `json:true`
-선언이다. 상세는 [노드](node_binding_guide.md)·[파이썬](python_binding_guide.md) 가이드.
+공식 Python·Node 바인딩은 v0.8.4에서 철회됐다([#4655](https://github.com/edwardkim/rhwp/issues/4655)).
+외부 소비자는 `capabilities`의 `json:true` 선언과 위 스키마를 권위로 삼고, 자체 래퍼를
+다운스트림에서 유지한다.
 
 ## 7. 판정 3층 — 실제 응답으로 읽는다
 

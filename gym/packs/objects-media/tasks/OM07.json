@@ -1,0 +1,29 @@
+{
+  "id": "OM07",
+  "tier": 2,
+  "title": "실문서 개체 조사",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "실문서를 마크다운으로 내보낼 때 추출되는 이미지 개수를 answer.json 에 {\"images\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "이미지 수",
+      "op": "answer_eq",
+      "answer": "images",
+      "path": "imageCount",
+      "cmd": [
+        "export-markdown",
+        "{input}",
+        "-o",
+        "{file:md}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

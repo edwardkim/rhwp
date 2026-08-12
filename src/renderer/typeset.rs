@@ -41,6 +41,14 @@ use super::pagination::{
     PaginationResult,
 };
 
+/// [#4654] 전면 크기 그림 낱장 배치는 문단의 비인라인 그림 중 엄격한 과반일 때만 쓴다.
+///
+/// 정확히 절반인 문단까지 낱장 정책을 적용하면 기존 pile 문서의 다수 그림 흐름을
+/// 불필요하게 페이지 단위로 분리한다. 두 장 이상이라는 #1995의 하한은 유지한다.
+fn has_majority_fullpage_images(fullpage_count: usize, noninline_picture_count: usize) -> bool {
+    fullpage_count >= 2 && fullpage_count.saturating_mul(2) > noninline_picture_count
+}
+
 /// [#2085] 표 행-스캔 분할점 캐리 (값 왕복). split_end_cut 은 move.
 struct BlockTableRowScan {
     consumed: f64,
@@ -1092,10 +1100,19 @@ struct TypesetState {
     /// 남음), 직후의 빈 후행 문단들을 anchor 첫 fragment 단에 소급 흡수한다.
     /// 비어있지 않은 문단/새 표/쪽나누기를 만나면 해제.
     behind_float_table_para: Option<usize>,
+    /// [#4533 HWP3] 현재 문단 다음 문단의 첫 저장 lineseg vpos — 자리차지
+    /// 밴드 비예약(사다리 증거) 판별용. 문단 루프 머리에서 세팅.
+    next_para_first_stored_vpos: Option<i32>,
     /// [#1955] 글뒤로 표 후행 빈 문단의 보류 흡수 목록. 표 fragment 는 지연 flush
     /// 되므로 흡수 시점에는 anchor 첫 fragment 단을 찾을 수 없다 — 페이지 확정 후
     /// (최종 flush 뒤) 첫 fragment 단에 일괄 부착한다.
     behind_pending_absorbs: Vec<crate::renderer::pagination::WrapAroundPara>,
+    /// [#4514] 이 문단의 overlay 표가 #703 Shape 단축(흐름 소비 0)으로 배치되었음.
+    /// 이 앵커는 #1955 흡수를 arming 하지 않는다 — 흡수의 전제("표가 fragment 로
+    /// 플로우를 이미 소비")가 성립하지 않아, 후행 빈 문단이 유일한 흐름 공간이다
+    /// (sample1-repro 저장 사다리: 필러가 각자 줄 높이만큼 전진해 표 높이를 채움.
+    /// 흡수하면 갭이 어느 쪽에도 계상되지 않아 후속 표가 겹침 — 8쪽 555.5px).
+    overlay_shape_shortcut_para: Option<usize>,
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
@@ -3539,7 +3556,9 @@ impl TypesetState {
             wrap_around_table_para: 0,
             wrap_around_any_seg: false,
             behind_float_table_para: None,
+            next_para_first_stored_vpos: None,
             behind_pending_absorbs: Vec::new(),
+            overlay_shape_shortcut_para: None,
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
             current_zone_column_type: column_type,
@@ -5625,15 +5644,18 @@ impl TypesetEngine {
                                 && seg.segment_width as i32 == st.wrap_around_sw
                         })
                         .count();
-                    let suffix_is_full_width = para
-                        .line_segs
-                        .get(wrap_prefix_len)
-                        .map(|seg| {
+                    // [#4650 · #4599 ⑩] 종전에는 전폭 꼬리 '정확히 한 줄'만 분리했으나, 반폭
+                    // Square 표 옆 문단이 여러 전폭 꼬리 줄을 갖는 형상(156714641 p1
+                    // pi13: 표 옆 prefix 4줄 + 전폭 꼬리 5줄)이 일반 배치로 떨어져
+                    // prefix 가 표 하단 아래(952.9)로 밀렸다 — 한글 2022 캐시 PDF 는
+                    // 표 옆 747.9. 꼬리 전 줄이 전폭이고 저장 seg 와 조판 줄이 1:1 인
+                    // 경우로 확장한다(#4090 의 안정 형상 판별은 유지).
+                    let suffix_is_full_width =
+                        para.line_segs[wrap_prefix_len..].iter().all(|seg| {
                             seg.column_start == 0
                                 && (seg.segment_width as i32 - st.layout.column_width_hu()).abs()
                                     <= 3_000
-                        })
-                        .unwrap_or(false);
+                        }) && wrap_prefix_len < para.line_segs.len();
                     let col_width = st
                         .layout
                         .column_areas
@@ -5643,7 +5665,7 @@ impl TypesetEngine {
                     let formatted = self.format_paragraph(para, composed, styles, Some(col_width));
                     let can_split_prefix = !is_empty_para
                         && wrap_prefix_len > 0
-                        && wrap_prefix_len + 1 == para.line_segs.len()
+                        && wrap_prefix_len < para.line_segs.len()
                         && suffix_is_full_width
                         && formatted.line_count() == para.line_segs.len();
                     if can_split_prefix {
@@ -5886,6 +5908,11 @@ impl TypesetEngine {
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
+            // [#4533 HWP3] 자리차지 밴드 비예약 판별용 — 표 경로 포함 전 문단 공통.
+            st.next_para_first_stored_vpos = paragraphs
+                .get(para_idx + 1)
+                .and_then(|p| p.line_segs.first())
+                .map(|seg| seg.vertical_pos);
             if std::env::var("RHWP_FLOW_DBG").is_ok() {
                 eprintln!(
                     "FLOW_DBG pi={} page={} cur_h={:.1}",
@@ -6942,7 +6969,15 @@ impl TypesetEngine {
                                 crate::model::shape::TextWrap::BehindText
                                     | crate::model::shape::TextWrap::InFrontOfText))
                 });
-                if has_behind_float_table {
+                // [#4514] 흡수는 표가 fragment 로 흐름을 이미 소비한 앵커(#1955 원
+                // 사례 — oversized [별표] 표)에만 정당하다. #703 Shape 단축(흐름 0)
+                // 앵커에서 후행 빈 문단까지 흡수하면 저장 사다리의 갭(≈표 높이)이
+                // 어느 쪽에도 계상되지 않아 후속 표가 위로 붕괴한다 (sample1-repro
+                // 8쪽: 표 4개 최대 555.5px 겹침). shortcut 앵커는 arming 을 생략해
+                // 필러가 자기 줄 높이만큼 정상 흐름으로 전진하게 둔다. 한 문단에
+                // shortcut 표와 fragment 표가 공존하는 극단 케이스도 생략 쪽을
+                // 택한다(공간 이중 계상보다 유실이 드묾).
+                if has_behind_float_table && st.overlay_shape_shortcut_para != Some(para_idx) {
                     st.behind_float_table_para = Some(para_idx);
                 }
             }
@@ -6986,7 +7021,19 @@ impl TypesetEngine {
             } else {
                 Vec::new()
             };
-            let is_multi_fullpage_img_para = fullpage_img_ctrls.len() >= 2;
+            // [#4654] 낱장 배치는 **전면 크기가 과반**인 문단에만 — 디자인
+            // 보드형 pile(체육대회 4510000-202300010: 한 문단 그림 210장 중
+            // 전면 ~15장, 한글은 쪽당 60여 장 통 적재에 전면 그림도 포함)에서
+            // 소수 전면 그림이 낱장으로 탈출해 +12쪽이 됐다. #1995 원 취지
+            // (임베드 매뉴얼: 전량 전면 96장, 오라클 268 vs 174 과소)는 과반
+            // 조건으로 그대로 보존된다.
+            let noninline_pic_count = para
+                .controls
+                .iter()
+                .filter(|c| matches!(c, Control::Picture(pic) if !pic.common.treat_as_char))
+                .count();
+            let is_multi_fullpage_img_para =
+                has_majority_fullpage_images(fullpage_img_ctrls.len(), noninline_pic_count);
 
             // [#2097] 이 문단의 TopAndBottom 자리차지 float pushdown 가로 컬럼
             // (h_left, h_right, 스택_높이) px — 가로 겹침으로 스택/나란히 판별.
@@ -16597,6 +16644,8 @@ impl TypesetEngine {
                             para_index: para_idx,
                             control_index: ctrl_idx,
                         });
+                        // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
+                        st.overlay_shape_shortcut_para = Some(para_idx);
                         continue;
                     }
                     let is_column_top = st.current_height < 1.0;
@@ -17788,7 +17837,34 @@ impl TypesetEngine {
             let hangul_flowed_beside_table = is_wrap_around_table
                 && table_total_height > 1.0
                 && stored_host_line_px.is_some_and(|lh| lh < table_total_height * 0.25);
-            if hangul_flowed_beside_table {
+            // [#4533 HWP3] 비-tac TopAndBottom float 인데 저장 사다리가 표를
+            // 예약하지 않은 서식 문서(하동군 21918361: host lh 13.3px·다음 문단
+            // 델타 21.3px vs 표 730px — 표·텍스트 겹침이 한글의 정본인데
+            // typeset/layout 이 +709 과소비). host lh 와 다음 문단 저장 델타가
+            // 둘 다 표 높이의 1/4 미만이면 흐름은 host 줄만 전진한다. HWP5 는
+            // 같은 서명이 2중 반증된 환원불가 계열이라 HWP3 계보 한정.
+            let next_gap_px = st
+                .next_para_first_stored_vpos
+                .zip(para.line_segs.first().map(|seg| seg.vertical_pos))
+                .filter(|(nv, hv)| nv > hv)
+                .map(|(nv, hv)| crate::renderer::hwpunit_to_px(nv - hv, self.dpi));
+            // 게이트: 직파싱 HWP3 + rhwp 자신의 HWPX 산출물(마커 계보)만.
+            // HWP5 컨테이너 변환본은 한글이 재저장하며 재조판한 것이라 저장
+            // lineseg 가 HWP5 계약이다 — 환경정책기본법 1480000-201600147 실측:
+            // hwp3_lineage 휴리스틱 HWP5 에 발화하면 52.7→369.8 악화.
+            let hwp3_topbottom_no_reserve = (st.profile.hwp3_native_layout()
+                || (st.profile.hwp3_layout() && st.profile.hwpx_container()))
+                && !table.common.treat_as_char
+                && matches!(
+                    table.common.text_wrap,
+                    crate::model::shape::TextWrap::TopAndBottom
+                )
+                && table_total_height > 1.0
+                && stored_host_line_px.is_some_and(|lh| lh < table_total_height * 0.25)
+                && next_gap_px.is_some_and(|g| g < table_total_height * 0.25);
+            if hwp3_topbottom_no_reserve {
+                st.current_height += pre_height + stored_host_line_px.unwrap_or(0.0);
+            } else if hangul_flowed_beside_table {
                 let band_top = st.current_height + pre_height;
                 st.current_height = band_top + stored_host_line_px.unwrap_or(0.0);
                 st.square_band_bottom = st.square_band_bottom.max(band_top + table_total_height);
@@ -22877,6 +22953,15 @@ mod issue_3780_line_advance_oob {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn fullpage_image_single_page_policy_requires_strict_majority() {
+        assert!(!super::has_majority_fullpage_images(0, 0));
+        assert!(!super::has_majority_fullpage_images(1, 1));
+        assert!(!super::has_majority_fullpage_images(2, 4));
+        assert!(super::has_majority_fullpage_images(2, 3));
+        assert!(super::has_majority_fullpage_images(3, 5));
+    }
+
     use super::*;
     use crate::model::page::{ColumnDef, PageDef};
     use crate::model::paragraph::{LineSeg, Paragraph};

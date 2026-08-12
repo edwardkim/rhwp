@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "core-cli",
+  "title": "코어 CLI",
+  "axis": "조사·추출·편집·검증 (운동장 최소 코어)",
+  "description": "1부 개장분 — 문서 신상·검색·서식·표·계획·결정론·보안·변환과 검증 사다리 결합(T13·T14).",
+  "requires": {
+    "commands": [
+      "export-tables",
+      "extract-data",
+      "fields",
+      "gate",
+      "harness",
+      "info",
+      "inspect",
+      "ir-diff",
+      "replay",
+      "search"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.2",
+    "rhwpCommit": "94e4790e5a6bc766b75c3c9695b290f87e3793d4",
+    "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
+  }
+}

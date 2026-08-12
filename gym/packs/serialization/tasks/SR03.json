@@ -1,0 +1,29 @@
+{
+  "id": "SR03",
+  "tier": 2,
+  "title": "DocLang 손실 계수",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력을 DocLang 으로 내보내고 **손실 건수**를 answer.json 에 {\"loss\": N} 으로 제출하라. 힌트: rhwp export-doclang 의 lossCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "손실 건수",
+      "op": "answer_eq",
+      "answer": "loss",
+      "path": "lossCount",
+      "cmd": [
+        "export-doclang",
+        "{input}",
+        "-o",
+        "{file:out.doclang}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "변환"
+}

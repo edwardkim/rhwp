@@ -204,9 +204,14 @@ import { fontFamilyChainForDisplay } from './font-substitution';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
 import {
   connectSubsecondDevtools,
+  SubsecondPatchAccumulation,
   type SubsecondWasmExports,
 } from './subsecond-runtime';
 
+/**
+ * devtools 소켓의 해제 함수 — realm 하나에 소켓 하나이므로 중복 연결 guard 로도 쓴다.
+ * 스튜디오에는 realm 종료 이전의 해제 시점이 없어 실제로 호출되지는 않는다.
+ */
 let disconnectSubsecondDevtools: (() => void) | null = null;
 
 /**
@@ -271,10 +276,19 @@ export class WasmBridge {
     if (this.initialized) return;
     installCanvasFontSubstitution();
     this.installMeasureTextWidth();
-    await init();
+    // @wasm path alias는 개발 glue를 가리킬 수 있어 init 반환값을 unknown으로 추론한다.
+    // wasm-bindgen의 InitOutput memory만 선택적으로 읽고, subsecond glue의 memory 부재는 허용한다.
+    const wasmModule = await init() as { memory?: WebAssembly.Memory };
     if (!disconnectSubsecondDevtools) {
       disconnectSubsecondDevtools = connectSubsecondDevtools(
         wasmExports as unknown as SubsecondWasmExports,
+        {
+          patchAccumulation: new SubsecondPatchAccumulation({
+            // subsecond 세션에서는 이 모듈이 dx 가 만든 glue(`target/rhwp-subsecond-vite/`)로
+            // 바뀐다. 타입은 언제나 `pkg/rhwp.d.ts` 를 보므로 memory 부재는 타입으로 못 걸러진다.
+            measureHeapBytes: () => wasmModule.memory?.buffer.byteLength ?? null,
+          }),
+        },
       );
     }
     this.initialized = true;

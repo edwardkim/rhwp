@@ -1,0 +1,26 @@
+{
+  "id": "SD06",
+  "tier": 2,
+  "title": "계획서 스키마",
+  "input": "samples/table-001.hwp",
+  "instructions": "run 계획서 스키마의 정의(definition) 개수를 answer.json 에 {\"defs\": N} 으로 제출하라. 힌트: rhwp export-plan-schema.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "정의 수",
+      "op": "answer_eq",
+      "answer": "defs",
+      "path": "definitionCount",
+      "cmd": [
+        "export-plan-schema",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

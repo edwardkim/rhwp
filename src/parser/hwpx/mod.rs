@@ -352,6 +352,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         "Preview/PrvText.txt",
         "Preview/PrvImage.png",
         crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH,
+        crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
     ];
     let mut hwpx_aux_entries: Vec<(String, Vec<u8>)> = Vec::new();
     for path in HWPX_AUX_PATHS {
@@ -572,6 +573,14 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
             hwpx_lineage: false,
         },
     };
+    // HWP3-origin 마커가 있으면 계보를 복원한다 — 직파싱 HWP3 와 같은
+    // 레이아웃 계약(저장-스텝)을 밟아 왕복 등식이 성립한다.
+    if doc
+        .hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH)
+        .is_some()
+    {
+        doc.provenance.hwp3_lineage = true;
+    }
 
     // [Task #873] BinData Link 타입 의 외부 file path 영역 영역 Picture.external_path 영역
     // 전달. 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은

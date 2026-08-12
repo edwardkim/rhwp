@@ -118,8 +118,12 @@ fn unreadable_input_reports_runtime_failure() {
     let missing = missing.to_str().expect("utf-8 경로").to_string();
     let out_dir = unique_temp_path("runtime-out");
     let out_dir = out_dir.to_str().expect("utf-8 경로").to_string();
-    let out_file = unique_temp_path("runtime-out.hwpx");
-    let out_file = out_file.to_str().expect("utf-8 경로").to_string();
+    let mut hwp_out_file = unique_temp_path("runtime-out");
+    hwp_out_file.set_extension("hwp");
+    let hwp_out_file = hwp_out_file.to_str().expect("utf-8 경로").to_string();
+    let mut hwpx_out_file = unique_temp_path("runtime-out");
+    hwpx_out_file.set_extension("hwpx");
+    let hwpx_out_file = hwpx_out_file.to_str().expect("utf-8 경로").to_string();
 
     for args in [
         vec!["export-svg", &missing, "-o", &out_dir],
@@ -127,8 +131,8 @@ fn unreadable_input_reports_runtime_failure() {
         vec!["export-text", &missing, "-o", &out_dir],
         vec!["export-markdown", &missing, "-o", &out_dir],
         vec!["export-structure", &missing],
-        vec!["convert", &missing, &out_file],
-        vec!["export-hwpx", &missing, &out_file],
+        vec!["convert", &missing, &hwp_out_file],
+        vec!["export-hwpx", &missing, &hwpx_out_file],
     ] {
         assert_code(&args, 1);
     }

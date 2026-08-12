@@ -1,0 +1,23 @@
+{
+  "id": "TE08",
+  "steps": [
+    {
+      "answer": {
+        "planned": {
+          "cmd": [
+            "edit",
+            "replace-text",
+            "{input}",
+            "--find",
+            "규제",
+            "--replace",
+            "점검",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "replacedCount"
+        }
+      }
+    }
+  ]
+}

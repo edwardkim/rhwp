@@ -1343,6 +1343,13 @@ impl HeightCursor {
         result
     }
 
+    /// 활성 base 로 사영한 저장-사다리 기대 y. 렌더 점프가 사다리에 이미
+    /// 인코딩된 공간인지(기준점 이동 불필요) 가리는 데 쓴다 (#4533 2135039).
+    pub(crate) fn ladder_expected_y(&self, col_y: f64, first_vpos: i32) -> Option<f64> {
+        let base = self.vpos_page_base.or(self.vpos_lazy_base)?;
+        Some(col_y + hwpunit_to_px(first_vpos - base, self.dpi))
+    }
+
     /// 이미 계산된 vpos 기준 y보다 실제 렌더 y를 아래로 밀었을 때, 후속 항목도
     /// 같은 시각 기준을 따르도록 활성 vpos base를 반대로 이동한다.
     pub(crate) fn shift_vpos_base_for_rendered_delta(&mut self, delta_px: f64) {
@@ -1357,6 +1364,25 @@ impl HeightCursor {
             self.vpos_page_base = Some(base - delta_hu);
         } else if let Some(base) = self.vpos_lazy_base {
             self.vpos_lazy_base = Some(base - delta_hu);
+        }
+    }
+
+    /// [#4613 · #4599 밴드-플로우] 렌더가 저장 사다리보다 `delta_px` 만큼 **뒤로**(위로) 배치된
+    /// 경우의 역보정 — 낡은 사다리 전방 스냅을 기각해 줄을 자리차지 표 위 틈에 남길 때,
+    /// 후속 문단의 사다리 목표가 함께 위로 이동해야 상대 간격이 유지된다.
+    /// `shift_vpos_base_for_rendered_delta`(전방 밀림, base 감소)의 대칭이다.
+    pub(crate) fn shift_vpos_base_for_rendered_backtrack(&mut self, delta_px: f64) {
+        if delta_px <= 0.0 {
+            return;
+        }
+        let delta_hu = (delta_px / self.dpi * 7200.0).round() as i32;
+        if delta_hu <= 0 {
+            return;
+        }
+        if let Some(base) = self.vpos_page_base {
+            self.vpos_page_base = Some(base + delta_hu);
+        } else if let Some(base) = self.vpos_lazy_base {
+            self.vpos_lazy_base = Some(base + delta_hu);
         }
     }
 }
@@ -2366,5 +2392,20 @@ mod tests {
         assert_eq!(c.vpos_page_base, base_before, "base 무이동");
         // 보정 분기를 타지 않으므로 y_offset 유지(cram 아님) 또는 backtrack — 핵심은 base 무이동.
         let _ = got;
+    }
+
+    /// [#4613 · #4599 밴드-플로우] 후방 배치 역보정은 base 를 delta 만큼 늘려(전방 밀림 보정의
+    /// 대칭) 후속 문단의 사다리 목표를 함께 위로 이동시킨다.
+    #[test]
+    fn backtrack_shift_raises_vpos_base_symmetrically() {
+        let mut c = cursor(Some(6000));
+        c.shift_vpos_base_for_rendered_delta(10.0); // 전방 10px → base -750
+        assert_eq!(c.vpos_page_base, Some(5250));
+        c.shift_vpos_base_for_rendered_backtrack(10.0); // 후방 10px → base +750 복원
+        assert_eq!(c.vpos_page_base, Some(6000));
+        // 0 이하 무동작
+        c.shift_vpos_base_for_rendered_backtrack(0.0);
+        c.shift_vpos_base_for_rendered_backtrack(-3.0);
+        assert_eq!(c.vpos_page_base, Some(6000));
     }
 }

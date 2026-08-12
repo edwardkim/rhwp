@@ -1,0 +1,29 @@
+{
+  "id": "OM04",
+  "tier": 2,
+  "title": "마크다운 이미지 계수",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력을 마크다운으로 내보낼 때 추출되는 이미지 개수를 answer.json 에 {\"images\": N} 으로 제출하라. 힌트: rhwp export-markdown 의 imageCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "이미지 수",
+      "op": "answer_eq",
+      "answer": "images",
+      "path": "imageCount",
+      "cmd": [
+        "export-markdown",
+        "{input}",
+        "-o",
+        "{file:md}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

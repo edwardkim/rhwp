@@ -4,7 +4,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 기준 파일:
 
-- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.8.2)
+- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.8.4)
 - `rhwp-studio/package.json` / `rhwp-studio/package-lock.json`
 - `rhwp-chrome/package.json` / `rhwp-chrome/package-lock.json`
 - `rhwp-firefox/package.json` / `rhwp-firefox/package-lock.json`
@@ -19,30 +19,45 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 | 크레이트 | 버전 | 라이선스 | 저장소 | 비고 |
 |---------|------|---------|--------|------|
-| base64 | 0.23.0 | MIT OR Apache-2.0 | marshallpierce/rust-base64 | Base64 인코딩 |
-| blake3 | 1.8.5 | CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception | BLAKE3-team/BLAKE3 | 해시/진단 |
+| aes | 0.9.2 | MIT OR Apache-2.0 | RustCrypto/block-ciphers | HWPX 암호화 |
+| base64 | 0.23.1 | MIT OR Apache-2.0 | marshallpierce/rust-base64 | Base64 인코딩 |
+| blake3 | 1.8.6 | CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception | BLAKE3-team/BLAKE3 | 해시/진단 |
 | byteorder | 1.5.0 | Unlicense OR MIT | BurntSushi/byteorder | 바이너리 endian 처리 |
+| cbc | 0.2.1 | MIT OR Apache-2.0 | RustCrypto/block-modes | HWPX 암호화 모드 |
 | cfb | 0.14.0 | MIT | mdsteele/rust-cfb | OLE Compound File |
+| cipher | 0.5.2 | MIT OR Apache-2.0 | RustCrypto/traits | 암호 trait |
 | codepage | 0.1.2 | Apache-2.0 OR MIT | hsivonen/codepage | 코드페이지 처리 |
 | console_error_panic_hook | 0.1.7 | Apache-2.0/MIT | rustwasm/console_error_panic_hook | WASM panic hook |
+| crc32fast | 1.5.0 | MIT OR Apache-2.0 | srijs/rust-crc32fast | HWP3 암호 키 검증 |
+| des | 0.9.0 | MIT OR Apache-2.0 | RustCrypto/block-ciphers | HWP3 암호화 |
+| ed25519-dalek | 2.2.0 | BSD-3-Clause | dalek-cryptography/curve25519-dalek | capsule 서명 |
 | embedded-io | 0.7.1 | MIT OR Apache-2.0 | rust-embedded/embedded-hal | IO trait |
 | encoding_rs | 0.8.35 | (Apache-2.0 OR MIT) AND BSD-3-Clause | hsivonen/encoding_rs | 문자 인코딩 |
 | flate2 | 1.1.9 | MIT OR Apache-2.0 | rust-lang/flate2-rs | 압축/해제 |
+| getrandom | 0.4.3 | MIT OR Apache-2.0 | rust-random/getrandom | 서명 키 난수 생성 |
+| hmac | 0.13.0 | MIT OR Apache-2.0 | RustCrypto/MACs | HWPX 무결성 |
 | image | 0.25.10 | MIT OR Apache-2.0 | image-rs/image | BMP/JPEG/PNG 디코딩 |
 | js-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM JS interop |
 | paste | 1.0.15 | MIT OR Apache-2.0 | dtolnay/paste | 매크로 보조 |
+| pbkdf2 | 0.13.0 | MIT OR Apache-2.0 | RustCrypto/password-hashes | HWPX 키 파생 |
 | pcx | 0.2.5 | MIT OR Apache-2.0 OR WTFPL | kryptan/pcx | PCX 이미지 디코딩 |
 | pdf-writer | 0.12.1 | MIT OR Apache-2.0 | typst/pdf-writer | PDF 출력 |
-| quick-xml | 0.40.1 | MIT | tafia/quick-xml | HWPX XML 파싱 |
-| resvg | 0.45.1 | Apache-2.0 OR MIT | linebender/resvg | native-skia SVG raster (optional) |
-| serde | 1.0.228 | MIT OR Apache-2.0 | serde-rs/serde | 직렬화 |
-| serde_json | 1.0.150 | MIT OR Apache-2.0 | serde-rs/json | JSON 직렬화 |
-| skia-safe | 0.99.0 | BSD-3-Clause | rust-skia/rust-skia | native-skia PNG/PDF backend (optional) |
+| quick-xml | 0.41.0 | MIT | tafia/quick-xml | HWPX XML 파싱 |
+| resvg | 0.47.0 | Apache-2.0 OR MIT | linebender/resvg | native-skia SVG raster (optional) |
+| roxmltree | 0.21.1 | MIT OR Apache-2.0 | RazrFalcon/roxmltree | XML 검증·정규화 |
+| serde | 1.0.229 | MIT OR Apache-2.0 | serde-rs/serde | 직렬화 |
+| serde_json | 1.0.151 | MIT OR Apache-2.0 | serde-rs/json | JSON 직렬화 |
+| sha1 | 0.11.0 | MIT OR Apache-2.0 | RustCrypto/hashes | HWPX 암호 키 파생 |
+| sha2 | 0.11.0 | MIT OR Apache-2.0 | RustCrypto/hashes | 서명·CAS 해시 |
+| skia-safe | 0.99.0 | MIT | rust-skia/rust-skia | native-skia PNG/PDF backend (optional) |
 | snafu | 0.9.2 | MIT OR Apache-2.0 | shepmaster/snafu | 에러 처리 |
 | strum | 0.28.0 | MIT | Peternator7/strum | enum derive |
+| subsecond | 0.7.10 | MIT OR Apache-2.0 | DioxusLabs/dioxus | 개발 핫패치 (optional) |
 | subsetter | 0.2.6 | MIT OR Apache-2.0 | typst/subsetter | 폰트 subset |
 | svg2pdf | 0.13.0 | MIT OR Apache-2.0 | typst/svg2pdf | SVG → PDF |
+| svgtypes | 0.16.1 | Apache-2.0 OR MIT | linebender/svgtypes | SVG 값 파싱 |
 | ttf-parser | 0.25.1 | MIT OR Apache-2.0 | harfbuzz/ttf-parser | 폰트 파싱 |
+| unicode-properties | 0.1.4 | MIT OR Apache-2.0 | unicode-rs/unicode-properties | 유니코드 문자 분류 |
 | unicode-segmentation | 1.13.3 | MIT OR Apache-2.0 | unicode-rs/unicode-segmentation | grapheme/word segmentation |
 | unicode-width | 0.2.2 | MIT OR Apache-2.0 | unicode-rs/unicode-width | 문자 폭 계산 |
 | usvg | 0.45.1 | Apache-2.0 OR MIT | linebender/resvg | SVG 파싱 |
@@ -53,7 +68,8 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 ### 전체 Rust 의존성 요약
 
-`Cargo.lock` 기준 package entry는 190개이며, 이 중 root package `rhwp`를 제외한 외부 Rust 크레이트는 189개다.
+`cargo metadata --locked` 기준 package entry는 247개이며, 그중 registry 또는 Git
+source를 가진 외부 Rust 크레이트는 243개다. 나머지 4개는 현재 workspace 패키지다.
 
 주요 라이선스군:
 
@@ -80,19 +96,21 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 | 패키지 | 버전 | 라이선스 | 용도 |
 |--------|------|---------|------|
-| @rhwp/core | 0.7.13 | MIT | WASM parser/renderer API |
-| @rhwp/editor | 0.7.13 | MIT | iframe 기반 웹 에디터 wrapper |
+| @rhwp/core | 0.8.4 | MIT | WASM parser/renderer API |
+| @rhwp/editor | 0.8.4 | MIT | iframe 기반 웹 에디터 wrapper |
 
 ### rhwp-studio
 
 | 패키지 | Lock 버전 | 라이선스 | 용도 |
 |--------|-----------|---------|------|
 | canvaskit-wasm | 0.41.1 | BSD-3-Clause | CanvasKit 렌더링 backend |
-| @noble/hashes | 2.2.0 | MIT | 렌더 리소스 키와 문서 digest |
-| @types/chrome | 0.1.42 | MIT | Chrome API 타입 |
-| puppeteer-core | 25.0.4 | Apache-2.0 | E2E 테스트 / CDP 연결 |
-| typescript | 6.0.3 | Apache-2.0 | TypeScript 컴파일 |
-| vite | 8.0.14 | MIT | 개발 서버 + 빌드 |
+| @noble/hashes | 2.3.0 | MIT | 렌더 리소스 키와 문서 digest |
+| @types/chrome | 0.2.5 | MIT | Chrome API 타입 |
+| pixelmatch | 7.2.0 | ISC | 시각 diff 픽셀 비교 |
+| pngjs | 7.0.0 | MIT | 시각 diff PNG 처리 |
+| puppeteer-core | 25.5.0 | Apache-2.0 | E2E 테스트 / CDP 연결 |
+| typescript | 7.0.2 | Apache-2.0 | TypeScript 컴파일 |
+| vite | 8.2.1 | MIT | 개발 서버 + 빌드 |
 | vite-plugin-pwa | 1.3.0 | MIT | PWA 빌드 보조 |
 | workbox-window | 7.4.1 | MIT | Service worker runtime 보조 |
 
@@ -100,22 +118,23 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 | 패키지 | Lock 버전 | 라이선스 | 용도 |
 |--------|-----------|---------|------|
-| typescript | 5.9.3 | Apache-2.0 | TypeScript 컴파일 |
-| vite | 6.4.2 | MIT | 확장 번들 빌드 |
+| typescript | 7.0.2 | Apache-2.0 | TypeScript 컴파일 |
+| vite | 8.2.1 | MIT | 확장 번들 빌드 |
 
 ### rhwp-vscode
 
 | 패키지 | Lock 버전 | 라이선스 | 용도 |
 |--------|-----------|---------|------|
-| @types/node | 20.19.37 | MIT | Node.js 타입 |
-| @types/vscode | 1.110.0 | MIT | VS Code API 타입 |
+| @types/node | 18.15.13 | MIT | Node.js 타입 |
+| @types/vscode | 1.82.0 | MIT | VS Code API 타입 |
+| @typescript/native | 7.0.2 | Apache-2.0 | TypeScript native preview 컴파일러 |
 | copy-webpack-plugin | 14.0.0 | MIT | Webpack 파일 복사 |
 | null-loader | 4.0.1 | MIT | Webpack 로더 |
-| ts-loader | 9.5.4 | MIT | Webpack TypeScript 로더 |
-| typescript | 5.9.3 | Apache-2.0 | TypeScript 컴파일 |
-| webpack | 5.105.4 | MIT | 번들러 |
-| webpack-cli | 6.0.1 | MIT | Webpack CLI |
-| @noble/hashes | 2.2.0 | MIT | 문서 digest |
+| ts-loader | 9.6.2 | MIT | Webpack TypeScript 로더 |
+| typescript | 6.0.2 | Apache-2.0 | TypeScript 컴파일 |
+| webpack | 5.109.2 | MIT | 번들러 |
+| webpack-cli | 7.2.2 | MIT | Webpack CLI |
+| @noble/hashes | 2.3.0 | MIT | 문서 digest |
 | canvaskit-wasm | 0.41.1 | BSD-3-Clause | 자동 선택 CanvasKit backend |
 
 ### rhwp-shared

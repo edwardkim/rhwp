@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "table-editing",
+  "title": "표 편집",
+  "axis": "편집 (표 좌표 지정)",
+  "description": "표를 좌표로 다룬다 — 셀 지목 교정과 CSV 왕복. 판정은 언제나 (표, 행, 열).",
+  "requires": {
+    "commands": [
+      "export-tables"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.2",
+    "rhwpCommit": "1e8667aa86aeb979119aa9152112b42e4f16a76c",
+    "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
+  }
+}

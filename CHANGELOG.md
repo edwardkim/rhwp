@@ -4,6 +4,90 @@
 
 ## [Unreleased]
 
+## [0.8.4] — 2026-08-12
+
+### 배포 채널 복원
+
+- 공식 배포 범위를 v0.8.2와 동일하게 복원했다. GitHub Pages, GitHub Release
+  네이티브 CLI, npm `@rhwp/core`·`@rhwp/editor`, VS Code Marketplace/Open VSX와
+  Chrome·Edge·Firefox 확장 배포는 유지한다 (#4655).
+- 명시적인 메인테이너 채택과 안전 검증 없이 추가됐던 PyPI, `@rhwp/node`, GHCR
+  CLI 이미지, deb/rpm/MSI, 설치 스크립트·패키지 관리자 매니페스트·설치용 GitHub
+  Action의 코드와 게시 workflow를 제거했다 (#4655).
+- 공식 배포에서 철회한 Python·Node 바인딩의 전용 개발 코드, 테스트와 현재형 안내도
+  함께 제거했다. 신규 배포 채널은 빌드·설치·업데이트·롤백 검증과 유지 책임을 합의한
+  뒤 별도로 채택한다.
+
+## [0.8.3] — 2026-08-11
+
+> 누적 PATCH 릴리즈 — v0.8.2 이후 190개 PR을 통합했다. 암호 문서 열기·저장,
+> 중첩 표 조판과 편집, MCP/에이전트 실행 계약, 공식 Node·Python 바인딩과 다중 플랫폼
+> 배포 경로를 함께 확장한다. 기존 JSON 봉투 major는 1.0을 유지한다.
+
+### 암호 문서와 저장 호환성
+
+- HWP5 EncryptVersion 4 암호 문서를 열고, Studio에서 비밀번호를 입력할 수 있다
+  (#3405, #3477).
+- HWP3 암호 해제와 암호화 HWPX 열기를 지원하고, HWP3의 옛한글 문자열 보존을 보강했다
+  (#3483, #3516).
+- HWP3/HWP5/HWPX 암호화 저장·재열기 계약을 추가했다 (#3690).
+- HWP5 손상 저장 경로와 HWPX namespace·OLE·탭·차트 등 저장 왕복 보존 범위를 넓혔다.
+
+### 조판·렌더링 정합
+
+- 중첩 표의 페이지 분할, RowBreak, 셀 내부 빈 문단, 자식 표 흐름과 마지막 하단 테두리를
+  연속 보정했다 (#4094, #4122, #4174, #4517, #4525, #4567).
+- PUA 글자 겹침으로 기록된 사각 번호와 작은 오른쪽 삼각형을 실제 글리프로 복원했다
+  (#4139, #4227, #4228).
+- CanvasKit이 정확한 glyph run을 재생하도록 하고 페이지 번호 metric과 렌더 replay
+  결정성을 개선했다 (#3741).
+
+### 편집·Studio·VS Code
+
+- 중첩 표 안의 텍스트·표 선택과 복사 경로를 보정하고, 다중 셀 서식 적용을 확장했다
+  (#4119, #4267, #4276).
+- F5 표 셀 크기 조절 3모드, 표 분할·결합, 폰트 스타일 no-op 보정이 추가됐다
+  (#3771, #3831, #4271).
+- VS Code 문서 outline 탐색을 추가했다 (#4093).
+- HwpCtrl 호환 표면과 호환성 ledger를 단계적으로 확장했다 (#4187, #4274, #4486).
+
+### CLI·MCP·에이전트 계약
+
+- `mcp-serve`가 stdio JSON-RPC 서버와 문서 세션 핸들을 제공한다 (#3571).
+- IR·capabilities·plan schema, ontology, provenance, replay/lineage/audit, 서명·anchor·gate,
+  보안 진단과 검증 사다리를 추가했다. `capabilities`의 schema registry가 봉투 1.0,
+  IR 1.0, capabilities 1.3, plan 1.1을 자기서술한다 (#4574).
+- `run` 계획과 capsule은 입력·계획·산출 해시를 고정하며, CAS 전제조건으로 실행 전 입력
+  변경을 거부할 수 있다.
+- 공식 Node·Python 바인딩과 생성 타입 드리프트 검사를 추가했다.
+
+### 보안·성능
+
+- 압축 해제 크기에 상한을 둬 deflate bomb 입력의 메모리 고갈을 차단했다 (#4263).
+- 대형 표의 커서 이동·선택·국소 repaint, 중복 렌더와 편집 후 재렌더 비용을 줄였다
+  (#3672, #3745, #4156, #4265).
+- Subsecond 핫패치의 무효화·진단·수명주기·repaint 경계를 통합했다 (#4602).
+
+### 패키지·배포
+
+- Linux x86_64, macOS x86_64/arm64, Windows x86_64 CLI archive와
+  `SHA256SUMS.txt`를 GitHub Release에 첨부하는 경로를 추가했다.
+- Python wheel/sdist, `@rhwp/node`, Debian/RPM/MSI 설치 프로그램, GHCR container
+  배포 workflow를 추가했다. 게시 시크릿이나 패키징 선행조건이 없는 채널은 검증 후
+  명시적으로 건너뛴다.
+- cargo-binstall 자산 매핑과 install.sh/install.ps1, Scoop·Homebrew·Winget·AUR
+  채널 초안을 추가했다. 해시 기반 채널 매니페스트는 릴리즈 자산 생성 후 갱신한다.
+- CI workflow action SHA 고정, stale run 취소, cache generation 청소와 경로별
+  선택 실행을 보강했다.
+
+### 기여자
+
+이번 사이클에 참여한 16명(GitHub 핸들, 알파벳순):
+
+- @edwardkim, @enigma-jerry72, @humdrum00001010, @JamesPsh, @jangster77, @jeong-sik,
+  @johndoekim, @kevin9327, @lpaiu-cs, @NacreousCloud, @planet6897, @postmelee,
+  @scari, @seo-rii, @walnutkim, @yuyu04
+
 ## [0.8.2] — 2026-07-27
 
 > 핫픽스 — 브라우저 확장의 인쇄 기능이 동작하지 않던 문제를 복구한다. v0.8.0 부터

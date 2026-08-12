@@ -1,0 +1,38 @@
+{
+  "id": "TB01",
+  "tier": 1,
+  "title": "표 좌표 조사",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 **첫 번째 표**의 행 수와 열 수를 answer.json 에 {\"rows\": N, \"cols\": M} 으로 제출하라. 힌트: rhwp export-tables.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "행 수",
+      "op": "answer_eq",
+      "answer": "rows",
+      "path": "tables[0].rows",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ]
+    },
+    {
+      "name": "열 수",
+      "op": "answer_eq",
+      "answer": "cols",
+      "path": "tables[0].cols",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

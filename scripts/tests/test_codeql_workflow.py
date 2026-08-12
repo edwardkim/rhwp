@@ -63,9 +63,16 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self.assertIn("missing-security-check:CodeQL:${candidateSha}", workflow)
         self.assertIn("security-check-not-completed:CodeQL:${securityCheck.status}", workflow)
         self.assertIn("security-check-not-green:CodeQL:${securityCheck.conclusion}", workflow)
-        self.assertIn("securityCheck.conclusion !== 'success'", workflow)
+        self.assertIn(
+            "const allowedSecurityConclusions = new Set(['success', 'neutral']);",
+            workflow,
+        )
+        self.assertIn(
+            "!allowedSecurityConclusions.has(securityCheck.conclusion)", workflow
+        )
+        self.assertNotIn("securityCheck.conclusion !== 'success'", workflow)
         self.assertLess(
-            workflow.index("securityCheck.conclusion !== 'success'"),
+            workflow.index("!allowedSecurityConclusions.has(securityCheck.conclusion)"),
             workflow.index("return { state: 'green' };"),
         )
 
@@ -83,6 +90,21 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self.assertEqual(outputs["fast_pass"], "true")
         self.assertEqual(outputs["candidate_sha"], "code-candidate")
         self.assertEqual(outputs["reason"], "codeql-checks-green")
+
+    def test_green_analyze_jobs_and_neutral_security_summary_remain_reusable(self) -> None:
+        outputs = self._run_preflight("neutral")
+        self.assertEqual(outputs["fast_pass"], "true")
+        self.assertEqual(outputs["candidate_sha"], "code-candidate")
+        self.assertEqual(outputs["reason"], "codeql-checks-green")
+
+    def test_green_analyze_jobs_cannot_reuse_a_skipped_security_summary(self) -> None:
+        outputs = self._run_preflight("skipped")
+        self.assertEqual(outputs["fast_pass"], "false")
+        self.assertEqual(outputs["candidate_sha"], "code-candidate")
+        self.assertEqual(
+            outputs["reason"],
+            "security-check-not-green:CodeQL:skipped",
+        )
 
     def test_security_check_from_an_earlier_run_attempt_is_not_reused(self) -> None:
         outputs = self._run_preflight(

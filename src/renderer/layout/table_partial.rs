@@ -2391,6 +2391,15 @@ impl LayoutEngine {
                                         });
                                         new_ctx
                                     });
+                                    // [#4334] 이 재귀 중첩 표는 `table_meta: None` 이라
+                                    // TableNode.para_index/control_index 가 항상 비었다 —
+                                    // 방금 확장한 `nested_ctx` 에서 이 중첩 표 자신의
+                                    // 좌표를 읽는다. `section_index` 는 이미 항상 채워지는데
+                                    // para/control 만 비는 게 #4334 stage3 가 실측한 42개 중
+                                    // 다수의 원인이었다.
+                                    let derived_table_meta = nested_ctx
+                                        .as_ref()
+                                        .and_then(CellContext::nested_table_meta);
                                     let first_new_child = cell_node.children.len();
                                     let table_h_rendered = if let Some(recursive_cut) = split_info
                                         .as_ref()
@@ -2469,7 +2478,7 @@ impl LayoutEngine {
                                             bin_data_content,
                                             None,
                                             1,
-                                            None,
+                                            derived_table_meta,
                                             para_alignment,
                                             nested_ctx,
                                             0.0,
@@ -3272,6 +3281,9 @@ impl LayoutEngine {
                 section_index: Some(section_index),
                 para_index: Some(node_para_index),
                 control_index: Some(node_control_index),
+                // [#4334] 표 분할 조각(partial table)도 원본 부모 셀 경로를 그대로
+                // 옮겨 담는다 — provenance para/control 과 같은 근거(#4252).
+                cell_context: enclosing_cell_ctx.cloned(),
             }),
             BoundingBox::new(table_x, table_y, table_width, partial_table_height),
         );
@@ -3634,6 +3646,7 @@ mod tests {
                 section_index: None,
                 para_index: None,
                 control_index: None,
+                cell_context: None,
             }),
             BoundingBox::new(15.0, 25.0, 90.0, 80.0),
         );
@@ -3673,6 +3686,7 @@ mod tests {
                 section_index: None,
                 para_index: None,
                 control_index: None,
+                cell_context: None,
             }),
             BoundingBox::new(15.0, 25.0, 90.0, 78.0),
         ));

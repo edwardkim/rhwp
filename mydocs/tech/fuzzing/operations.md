@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/tech/fuzzing/agent_surface_robustness.md
-last_verified: 2026-08-03
+last_verified: 2026-08-12
 ---
 
 # 퍼징 운영 — 어떻게 돌리고 무엇을 보나
@@ -436,8 +436,8 @@ $ grep -ril "fuzz" .github/
 
 `.github/workflows/` 의 워크플로 12개 — `ci.yml` · `codeql.yml` · `cache-generation-sweep.yml` ·
 `cancel-stale-pr-runs.yml` · `close-issues-on-devel-push.yml` · `deploy-pages.yml` ·
-`full-renderer-sweep.yml` · `node-binding.yml` · `npm-publish.yml` · `python-binding.yml` ·
-`release-binary.yml` · `render-diff.yml` — **어디에도 `fuzz` 문자열이 없다.**
+`full-renderer-sweep.yml` · `npm-publish.yml` · `release-binary.yml` · `render-diff.yml` ·
+`build-nextest-archives.yml` · `run-nextest-archives.yml` — **어디에도 `fuzz` 문자열이 없다.**
 
 `ci.yml` 의 잡 8종도 마찬가지다: `preflight` · `build-test-archive` · `test-shard`(8샤드) ·
 `lint`(fmt/clippy/WASM check) · `native-skia-tests` · `frontend-package-gates` ·

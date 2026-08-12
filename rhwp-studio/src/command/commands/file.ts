@@ -397,17 +397,31 @@ async function fallbackNameForCurrentSave(
 
 export async function confirmSaveBeforeReplacingDocument(
   services: CommandServices,
+  options: {
+    /**
+     * embed 프로파일용: false면 다이얼로그의 '저장' 선택지를 막는다. 이 경로의
+     * 저장은 registry를 우회한 직접 호출이라 커맨드 미등록으로는 닫히지 않는다.
+     * 자동 discard는 데이터 손실 위험이 있으므로 선택은 사용자에게 남긴다.
+     */
+    allowLocalSave?: boolean;
+  } = {},
 ): Promise<boolean> {
   const ctx = services.getContext();
   if (!ctx.hasDocument || !ctx.isDirty) return true;
 
+  const allowLocalSave = options.allowLocalSave !== false;
   const choice = await showUnsavedChangesDialog({
     fileName: services.wasm.fileName,
-    canSave: true, // HWPX 직접 저장 활성화로 모든 출처 저장 가능
+    canSave: allowLocalSave, // full: HWPX 직접 저장 활성화로 모든 출처 저장 가능
+    ...(allowLocalSave ? {} : {
+      saveUnavailableReason: '저장은 호스트 애플리케이션이 담당합니다.',
+    }),
   });
 
   if (choice === 'cancel') return false;
   if (choice === 'discard') return true;
+  // canSave=false면 다이얼로그가 'save'를 낼 수 없다 — 방어적으로 취소와 동일 취급.
+  if (!allowLocalSave) return false;
 
   const result = await saveCurrentDocument(services);
   return result === 'saved';

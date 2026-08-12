@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/autonomous_maintenance/nightly_cycle.md
-last_verified: 2026-08-04
+last_verified: 2026-08-12
 ---
 
 # 야간 자율 정비 사이클 — 무엇을 하려면 무엇이 필요한가
@@ -60,12 +60,12 @@ R96 의 등급은 **[가설]** 이고, 이 문서는 그 등급을 올리지 않
 > **정의**: 야간 자율 정비 사이클이란, *답이 정해진 유지 작업만을*, *되돌릴 수 있는
 > 단위로*, *캡 안에서*, *실패하면 멈추면서* 반복하는 무인 루프다.
 
-## 2. 지금 있는 것 — 워크플로 14개 실측
+## 2. 지금 있는 것 — 워크플로 12개 실측
 
 설계를 쓰기 전에 **이미 도는 것**을 세야 한다. 겹치는 사이클은 부하만 늘린다.
 
-**[실측]** `ls .github/workflows/` — 파일 **14개**다.
-(로드맵 인계 메모에는 12개로 적혀 있었다. 실측이 14다. 이 문서는 실측을 따른다.)
+**[실측]** `ls .github/workflows/` — 파일 **12개**다. #4655에서 v0.8.2 이후 도입된
+배포·바인딩 workflow를 철회한 뒤의 상태다.
 
 **[실측]** 각 파일의 `on:` 블록을 파싱해 트리거를 뽑았다.
 
@@ -79,17 +79,15 @@ R96 의 등급은 **[가설]** 이고, 이 문서는 그 등급을 올리지 않
 | 6 | `codeql.yml` | `push` · `pull_request` · `schedule` · `workflow_dispatch` | 코드 스캐닝 |
 | 7 | `deploy-pages.yml` | `push`(main) · `workflow_dispatch` | GitHub Pages 배포 |
 | 8 | `full-renderer-sweep.yml` | `workflow_dispatch` **만** | 렌더러 기준선 전수 스윕(코퍼스 tier 선택) |
-| 9 | `node-binding.yml` | `push` · `pull_request` (경로 한정) | Node 바인딩 4잡 — 단위·통합·패키지·생성 타입 최신 |
-| 10 | `npm-publish.yml` | `release`(published) · `workflow_dispatch` | 패키지 배포 |
-| 11 | `python-binding.yml` | `push` · `pull_request` (경로 한정) | 파이썬 바인딩 패리티 가드 |
-| 12 | `release-binary.yml` | `push`(태그 `v*`) · `workflow_dispatch` | 4플랫폼 릴리스 바이너리 |
-| 13 | `render-diff.yml` | `pull_request`(경로 한정) · `workflow_dispatch` | 렌더 diff |
-| 14 | `run-nextest-archives.yml` | `workflow_call` | 아카이브 실행(재사용 워크플로) |
+| 9 | `npm-publish.yml` | `release`(published) · `workflow_dispatch` | 기존 npm·확장 채널 배포 |
+| 10 | `release-binary.yml` | `push`(태그 `v*`) · `workflow_dispatch` | 4플랫폼 릴리스 바이너리 |
+| 11 | `render-diff.yml` | `pull_request`(경로 한정) · `workflow_dispatch` | 렌더 diff |
+| 12 | `run-nextest-archives.yml` | `workflow_call` | 아카이브 실행(재사용 워크플로) |
 
 ### 2.1 이 표에서 나오는 한 가지 결론
 
 **[실측]** 시간으로 도는 워크플로는 **2개**다 — `cache-generation-sweep`(cron `23 18 * * *`)
-과 `codeql`(schedule). 나머지 12개는 전부 **이벤트 구동**이다: push, PR, 태그, release,
+과 `codeql`(schedule). 나머지 10개는 전부 **이벤트 구동**이다: push, PR, 태그, release,
 수동 실행, 또는 다른 워크플로의 호출.
 
 그리고 시간으로 도는 그 2개도 정비가 아니다. 하나는 **자원 청소**(캐시 용량),

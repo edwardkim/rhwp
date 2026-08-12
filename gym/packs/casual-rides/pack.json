@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "casual-rides",
+  "title": "입문 놀이기구 (누구나)",
+  "axis": "입문 (읽고 세기)",
+  "description": "키 제한 없는 유아용 놀이기구. 문서를 열어 숫자 하나를 읽어 답하면 통과한다 — 처음 온 부모님·친구도 성공한다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 되는, 놀이공원의 회전목마다.",
+  "requires": {
+    "commands": [
+      "info",
+      "explain",
+      "export-tables",
+      "search"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.4",
+    "rhwpCommit": "34ba36fa3c48f37867fbedd16614fdb7e8f44709",
+    "capabilitiesSha256": "6e2b231fad617b618fda19663752fc1a57d56086ade31abade84d8e8e000de4c"
+  }
+}

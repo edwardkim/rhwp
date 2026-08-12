@@ -1,0 +1,19 @@
+{
+  "id": "TE10",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "보험료",
+        "--replace",
+        "납입금",
+        "-o",
+        "{sub:real.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

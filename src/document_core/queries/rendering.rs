@@ -2943,10 +2943,21 @@ impl DocumentCore {
         fn collect_controls(node: &RenderNode, controls: &mut Vec<String>) {
             // [Task #1280 v2] 컨트롤별 plane/zOrder/stableIndex 노출 — 렌더 정렬키
             // `paper_node_sort_key`(layout.rs)를 그대로 재사용해 프런트 히트테스트가
-            // 겹침 시 "최상단 개체"를 선택할 수 있게 한다. inline(layer=None) 노드는
-            // (plane=2, z=0, stable=node.id) 폴백으로 렌더 정렬과 동일.
-            let (plane, z_order, stable_index) =
+            // 겹침 시 "최상단 개체"를 선택할 수 있게 한다.
+            // [#4334] stableIndex 는 더 이상 스칼라가 아니다 — next_id() 카운터/패킹된
+            // u32 대신 문서 경로(정수 배열, `DocPath`)를 그대로 JSON 배열로 내보낸다.
+            // TS `controlTopKey`/`isAboveControl`(input-handler-picture.ts)가 사전식
+            // 배열 비교로 이미 갱신되어 있다.
+            let (plane, z_order, doc_path) =
                 crate::renderer::layout::LayoutEngine::paper_node_sort_key(node);
+            let stable_index = format!(
+                "[{}]",
+                doc_path
+                    .iter()
+                    .map(u32::to_string)
+                    .collect::<Vec<_>>()
+                    .join(",")
+            );
             // wrap 은 이미지뿐 아니라 shape/line/group/path 에도 노출(히트테스트 plane/wrap 일관성).
             // 이미지는 자체 wrap_str(image_node.text_wrap)을 방출하므로 중복 방지로 제외한다.
             let wrap_extra = if matches!(node.node_type, RenderNodeType::Image(_)) {
@@ -3559,6 +3570,38 @@ impl DocumentCore {
         self.render_normalization.document_epoch =
             self.render_normalization.document_epoch.wrapping_add(1);
         self.render_normalization.path_revisions.clear();
+    }
+
+    /// 원본 IR 은 그대로 두고, 거기서 파생된 렌더 상태를 전부 원본에서 다시 만든다.
+    ///
+    /// `document` 는 읽기만 한다 — 편집이 아니라 **메모된 파생본이 더는 원본과 대응하지
+    /// 않게 된 순간**에 부르는 연산이다. 스냅샷을 되돌려 문서를 통째로 갈아끼운 직후,
+    /// 그리고 파생본을 만든 코드 자체가 교체된 직후(핫패치)가 그 순간이다.
+    ///
+    /// 증분 게이트(`dirty_sections`·`section_revisions`·`measured_sections`·`table.dirty`)는
+    /// 모두 "원본이 그대로면 파생본을 재사용한다"는 한 가지 규칙이라, 원본이 그대로인 채
+    /// 파생본만 못 믿게 된 상황을 스스로 판별할 수 없다. 그래서 이 메서드가 게이트가 읽는
+    /// 상태를 전부 비우고 재조판까지 한 번에 끝낸다 — 돌아온 뒤 "나중에 다시 계산해야
+    /// 한다"고 남겨 두는 표식은 없다.
+    ///
+    /// 파생 순서는 소비 순서와 같다: 스타일 → 문단 구성 → (정규화·측정) → 페이지네이션 →
+    /// 페이지 트리. 앞 단계를 뒤 단계보다 늦게 만들면 같은 패스 안에서 옛 값이 섞인다.
+    pub(crate) fn rebuild_derived_state(&mut self) {
+        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
+        self.composed = self
+            .document
+            .sections
+            .iter()
+            .map(|s| compose_section(s))
+            .collect();
+        self.mark_all_sections_dirty();
+        self.measured_tables.clear();
+        self.measured_sections.clear();
+        self.dirty_paragraphs.clear();
+        self.para_column_map.clear();
+        self.invalidate_page_tree_cache();
+        self.overflow_links_cache.borrow_mut().clear();
+        self.paginate();
     }
 
     /// Batch 모드가 아닐 때만 paginate를 실행한다.
