@@ -230,6 +230,7 @@ function applyTableDeleteRowColumn(
 
 export const tableCommands: CommandDef[] = [
   { id: 'table:create', label: '표 만들기', icon: 'icon-table',
+    opensDialog: true,
     canExecute: (ctx) => ctx.hasDocument && !ctx.inTable,
     execute(services, params) {
       const ih = services.getInputHandler();
@@ -277,6 +278,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:cell-props',
+    opensDialog: true,
     label: '표/셀 속성',
     canExecute: (ctx) => ctx.inTable || ctx.inCellSelectionMode || ctx.inTableObjectSelection,
     execute(services) {
@@ -300,6 +302,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:border-each',
+    opensDialog: true,
     label: '각 셀마다 적용(E)...',
     canExecute: inTable,
     execute(services) {
@@ -323,6 +326,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:border-one',
+    opensDialog: true,
     label: '하나의 셀처럼 적용(Z)...',
     canExecute: hasMultiCellSelection,
     execute(services) {
@@ -346,6 +350,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:insert-row-col',
+    opensDialog: true,
     label: '줄/칸 추가하기(I)...',
     shortcutLabel: 'Alt+Enter',
     canExecute: inTable,
@@ -360,6 +365,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:delete-row-col',
+    opensDialog: true,
     label: '줄/칸 지우기(E)...',
     shortcutLabel: 'Alt+Delete',
     canExecute: inTable,
@@ -494,6 +500,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:cell-split',
+    opensDialog: true,
     label: '셀 나누기',
     shortcutLabel: 'S',
     canExecute: inTable,

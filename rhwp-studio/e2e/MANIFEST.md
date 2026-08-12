@@ -14,9 +14,12 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 
 | 파일 | 분류 | 상태 | 용도 | 샘플 | 배선 | 비고 |
 |------|------|------|------|------|------|------|
+| `automation-commands.test.mjs` | 상시 | active | studio 자동화 표면 — 커맨드 질의·실행·메뉴 모델·드리프트 가드·다이얼로그 정책 | — | npm e2e:automation |  |
 | `autosave-recovery.test.mjs` | 상시 | active | Task #1448 — 미저장 문서 자동 백업 복구 E2E | — | 수동 |  |
 | `blogform.test.mjs` | 상시 | active | BlogForm_BookReview.hwp 누름틀 안내문 | BlogForm_BookReview.hwp | 수동 |  |
 | `body-outside-click-fallback.test.mjs` | 진단 | hold | 보류 ② 본문 외곽 클릭 fallback 결함 — 가설 (b) master page 글상자 hit 확정 e2e | hwpctl_Action_Table__v1.1.hwp | 수동 | legacy-name · 보류② 이슈 종속 |
+| `bridge-lifecycle.test.mjs` | 상시 | active | Studio Bridge — 부모 페이지에서 createStudio 로 chrome·커맨드·hwpctrl 제어와 destroy 회수 | table-001.hwp | npm e2e:bridge |  |
+| `bridge-perf.test.mjs` | 상시 | active | 브리지 성능 게이트 — 배치 RPC 1왕복·배치 이득·undo 1스텝·수명 잔여 (계획서 §6) | table-001.hwp | npm e2e:bridge-perf |  |
 | `canvas-render-diff.test.mjs` | 상시 | active | Browser canvas visual diff between the legacy PageRenderTree path  | — | npm+CI |  |
 | `canvaskit-font-coverage.test.mjs` | 상시 | active | CanvasKit 번들 폰트와 exact TTC GlyphRun 등록/픽셀 replay 검증 | — | npm+CI |  |
 | `cell-enter-pagination-issue4031.test.mjs` | 상시 | active | Issue #4031 — pending 중 셀 Enter의 pre-navigation full flush 0회·split 1회·barrier 대조군 계약 | issue1949_giant_cell_nested_tables_perf.hwp/.hwpx | npm e2e:issue-4031-cell-enter |  |
@@ -46,6 +49,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `hml-open.check.mjs` | 상시 | active | Standalone HML browser regression. | — | 수동 | legacy-name |
 | `hwpctl-basic.test.mjs` | 상시 | active | hwpctl 호환 레이어 기본 동작 | — | 수동 |  |
 | `hwp-password-open.test.mjs` | 상시 | active | #3474/#3481 HWP3·HWP5 암호 문서: 대화상자·오답·취소·Enter·저장소 비보존, HWP3 A4 144dpi Canvas 경계 | HWP3-password-123456.hwp, hwp3-sample16-hwp5-2024-password-123456.hwp | npm e2e:hwp-password-open | 실제 암호 fixture; 비밀번호와 로컬 E2E 보고서는 비커밋 |
+| `hwpctrl-plugin.test.mjs` | 상시 | active | hwpctrl 플러그인 — studio 문서 공유·배치 편집·좌표 변환·unload 생존 | — | npm e2e:hwpctrl-plugin |  |
 | `hwpx-direct-save.test.mjs` | 상시 | active | HWPX 직접 저장 (file:save) E2E — #1532 | — | 수동 |  |
 | `issue-1280-textbox-text-input.test.mjs` | 상시 | active | E2E 회귀: #1280 — rhwp-studio가 삽입한 글상자가 text_box 없는 Rectangle로 생성되어  | — | 수동 |  |
 | `issue-1456-chart-rerender.test.mjs` | 상시 | active | E2E 회귀 — #1456: rhwp-studio 캔버스 차트/OLE(rawSvg) 비동기 디코드 재렌더 안전망 | — | 수동 |  |
@@ -73,6 +77,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `page-break.test.mjs` | 상시 | active | biz_plan.hwp 강제 쪽 나누기 / "5. 사업추진조직" 문단 앞에 쪽 나누기 삽입 후 페이지 재배치 확인 | biz_plan.hwp | 수동 |  |
 | `page-setup-orientation-icon.test.mjs` | 상시 | active | 편집 용지 대화창의 용지 방향 아이콘 식별성 | — | 수동 |  |
 | `pdf-render-diff-report.mjs` | 상시 | active | Report-only visual diff between browser Canvas output and SVG-deri | — | npm+CI | legacy-name |
+| `plugin-lifecycle.test.mjs` | 상시 | active | 플러그인 호스트 — allowlist·트랜잭션 1스냅샷·롤백·unload 회수 | — | npm e2e:plugin-lifecycle |  |
 | `print-pdf-issue3126.test.mjs` | 상시 | active | #3126 same-origin iframe 인쇄/PDF UX, 상태 불변, #2524/#2525 browser PDF 회귀 | render-p35-font-native-bitmap.hwpx, hwpx/hwpx-02.hwpx | 수동 | native dialog는 Chrome/Edge 수동 절차 병행 |
 | `probe-input-perf-issue3137.mjs` | 진단 | active | Issue #3137 거대 표 셀 입력의 mutation·cursor update·focused repaint·operation·2-rAF·long task 성능 매트릭스 | issue1949_giant_cell_nested_tables_perf.hwp/.hwpx | npm e2e:issue-3137-perf | 시간 수치는 비-CI, 문서·cursor·focused repaint·flush 계약만 hard assertion |
 | `pr2260-vscode-zoom-menu.test.mjs` | 상시 | active | [PR #2260 검증] rhwp-vscode 배율 메뉴 — 호스트 Chrome CDP 로 webview 하네스 구동. | — | 수동 |  |

@@ -125,6 +125,26 @@ npx vite --host 0.0.0.0 --port 7700
 해당 포트가 이미 사용 중이면 기존 서버를 확인하거나 다른 포트를 지정한다. 브라우저 검증 절차는
 [시각 검증 문서 지도](verification/README.md)와 각 E2E 가이드를 따른다.
 
+### hwpctrl 없이 빌드하기 (studio 단독 배포)
+
+studio 는 `dist/` 하나로 배포된다(`.github/workflows/deploy-pages.yml` 이 그것만 올린다). 기본
+빌드에는 hwpctrl 플러그인이 **별도 청크**(약 54 kB)로 들어가고, 올리지 않으면 로드되지 않는다.
+
+산출물에서 아예 빼려면:
+
+```bash
+cd rhwp-studio
+npm run build:no-hwpctrl      # RHWP_WITHOUT_HWPCTRL=1
+npm run dev:no-hwpctrl        # 개발 서버도 같은 구성으로
+```
+
+이 플래그는 `main.ts` 의 동적 import 를 상수 분기(`__RHWP_HWPCTRL__`) 안에 두어 **빌드 시점에
+통째로 tree-shake** 한다. 그래서 `studio-plugin` 청크가 사라질 뿐 아니라 `npm/hwpctrl-ocx`
+디렉터리 자체가 없어도 빌드가 성공한다(실측 확인). 그 구성에서 `plugins.load('hwpctrl')` 은
+`PLUGIN_NOT_ALLOWED` 로 거절되고, 자동화·편집·다른 플러그인은 그대로 동작한다.
+
+`pkg/`(Rust → WASM) 는 두 구성 모두에서 필요하다 — studio 의 엔진이다.
+
 ## Subsecond 핫패치 (개발 전용, Linux·macOS·WSL 전용)
 
 Rust 를 고쳐도 WASM 재빌드 없이 실행 중인 브라우저에 반영하는 개발 전용 경로다. 기본 빌드에는

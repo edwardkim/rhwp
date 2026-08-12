@@ -108,6 +108,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:find',
+    opensDialog: true,
     label: '찾기(F)',
     icon: 'icon-find',
     shortcutLabel: 'Ctrl+F',
@@ -123,6 +124,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:find-replace',
+    opensDialog: true,
     label: '찾아 바꾸기(E)',
     icon: 'icon-find-replace',
     shortcutLabel: 'Ctrl+F2',
@@ -164,6 +166,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:compare-documents',
+    opensDialog: true,
     label: '문서 비교',
     shortcutLabel: 'Alt+Shift+V',
     canExecute: () => true,
@@ -179,6 +182,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:document-history',
+    opensDialog: true,
     label: '문서 이력 관리',
     shortcutLabel: 'Ctrl+Shift+H',
     canExecute: () => true,
@@ -196,6 +200,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:goto',
+    opensDialog: true,
     label: '찾아가기(G)',
     shortcutLabel: 'Alt+G',
     canExecute: (ctx) => ctx.hasDocument,
@@ -206,6 +211,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'field:edit',
+    opensDialog: true,
     label: '누름틀 고치기(E)...',
     shortcutLabel: 'Ctrl+M,K',
     canExecute: (ctx) => ctx.hasDocument && !ctx.isFormMode && ctx.inField,

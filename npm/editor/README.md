@@ -46,6 +46,58 @@ npm install @rhwp/editor
 
 이것만으로 메뉴바, 툴바, 편집 영역, 상태 표시줄이 포함된 완전한 HWP 에디터가 표시됩니다.
 
+## 웹페이지에서 JavaScript 로 제어하기 — `createStudio`
+
+`createEditor` 의 상위 집합입니다. 같은 것을 만들고, **studio 의 메뉴·커맨드를 조종하고
+문서를 HwpCtrl API 로 편집**할 수 있습니다.
+
+```javascript
+import { createStudio } from '@rhwp/editor';
+
+const studio = await createStudio('#app', {
+  plugins: ['hwpctrl'],            // HwpCtrl API 사용
+  chrome: { statusbar: false },    // 메뉴·툴바·상태표시줄 표시
+});
+
+await studio.loadFile(buffer, 'doc.hwp');
+
+// studio 커맨드 — 메뉴·툴바·키보드와 같은 경로를 탑니다
+await studio.commands.execute('edit:copy');
+const commands = await studio.commands.list();   // {id, label, enabled, opensDialog}
+
+// 문서 편집 — 여러 호출을 한 메시지·한 트랜잭션으로
+await studio.hwpctrl.batch(h => {
+  h.PutFieldText('기안자', '홍길동');
+  h.PutFieldText('기안일', '2026-08-12');
+});
+const bytes = await studio.hwpctrl.exportBytes();
+
+await studio.hwpctrl.undo();       // 위 배치 전체가 undo 1스텝
+studio.destroy();
+```
+
+**알아 둘 것 셋.**
+
+- **배치를 쓰세요.** 실측상 100회 호출이 배치면 postMessage 1회·11ms, 개별이면 100회·583ms 입니다
+  (약 45배). 배치 하나가 트랜잭션 하나이고 undo 도 1스텝입니다.
+- **대화상자를 여는 커맨드는 기본 거절됩니다**(`{ok:false, reason:'needs-dialog'}`). 자동화가 그것을
+  열면 사람이 누를 때까지 응답이 멈춥니다. 사용자가 앞에 있는 통합에서는
+  `studio.commands.execute(id, params, { allowDialog: true })` 로 풉니다.
+- **컨테이너 이동은 지원하지 않습니다.** iframe 을 다른 요소로 옮기면 브라우저가 문서를 재로드해
+  편집 상태가 사라집니다. 화면상의 이동·숨김은 컨테이너 CSS 로 하고(`display:none` 은 상태를
+  보존합니다), 정말 옮겨야 하면 `destroy()` 후 다시 만듭니다.
+
+`chrome:{ menu:false }` 로 메뉴를 숨겨도 커맨드 레지스트리는 살아 있어 `commands.execute` 가 계속
+동작합니다 — "UI 없는 편집기" 구성이 이것으로 섭니다.
+
+### 검증
+
+브리지 전 계약(자동화·플러그인·hwpctrl·성능)을 한 번에 확인하려면 저장소에서:
+
+```bash
+cd rhwp-studio && npm run gate:bridge
+```
+
 ## HWP 파일 로드
 
 ```javascript

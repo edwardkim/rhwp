@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/webhwpctrl_compat_development.md
-last_verified: 2026-08-09
+last_verified: 2026-08-12
 ---
 
 # 웹한글컨트롤 호환 개발 가이드
@@ -23,6 +23,20 @@ last_verified: 2026-08-09
 전역 `HwpCtrl` 이름을 사용하면 앱 bootstrap에서 생성한 객체를
 `globalThis.HwpCtrl`에 명시적으로 연결한다. 자동 전역·기존 `<script>` 교체가 구현된 것으로
 가정하면 안 된다.
+
+## rhwp-studio 안에서 쓰기 (plugin 모드)
+
+패키지는 studio 없이도 동작하지만(standalone), studio 안에서는 **플러그인**으로 얹는다 —
+`@rhwp/hwpctrl/studio-plugin`. 두 모드의 차이와 계약은
+[`npm/hwpctrl-ocx/README.md`](../../npm/hwpctrl-ocx/README.md)의 "두 실행 모드" 절이 권위다.
+
+부모 웹페이지에서 JavaScript 로 조종하는 방법은
+[`npm/editor/README.md`](../../npm/editor/README.md)의 `createStudio` 절을 따른다.
+설계 근거와 실측 수치는
+[`rhwp_studio_hwpctrl_plugin.md`](../plans/rhwp_studio_hwpctrl_plugin.md)에 있다.
+
+**모드를 갈라 구현하지 않는다.** 두 모드가 같은 구현을 공유해야 원장(312/484)이 한 벌로 유지된다.
+`npm/hwpctrl-ocx/test/adapter_parity.test.mjs` 가 같은 시나리오의 산출 바이트 동일성을 검사한다.
 
 ## 공통 준비
 
@@ -82,7 +96,8 @@ Windows live 모드에서는 새 패키지 구현을 대상으로 시나리오�
 
 새 API 또는 시나리오를 추가할 때는 다음 세 층을 함께 갱신한다.
 
-1. 소비자 계약: `npm/hwpctrl-ocx/README.md`의 지원 상태·초기화·저장 예시
+1. 소비자 계약: `npm/hwpctrl-ocx/README.md`의 지원 상태·초기화·저장 예시,
+   plugin 모드를 건드렸다면 `npm/editor/README.md`의 `createStudio` 절도 함께
 2. Oracle 운영: `tools/hwpctrl_compat/README.md`와 시나리오·원장 근거
 3. 진행 계획: `mydocs/plans/hwpctrl_ocx_full_compat.md`의 현재 단계와 완료 수치
 

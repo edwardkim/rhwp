@@ -1403,8 +1403,12 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       if (this.dispatcher) {
         const cmdId = matchShortcut(e, defaultShortcuts);
         if (cmdId) {
-          e.preventDefault();
-          this.dispatcher.dispatch(cmdId);
+          // 실행된 키만 삼킨다. modifier 없는 글자 단축키('P' 개체 속성, #3682)는 개체 선택
+          // 상태에서만 실행되는데, 무조건 preventDefault 하면 **본문 타이핑의 'p'/'ㅔ' 가
+          // 문서에 들어가지 못한다** — canExecute 는 실행을 막을 뿐 키 소비를 막지 못한다.
+          // 비활성·차단으로 실행되지 않았으면 키를 그대로 흘려보내 글자로 입력되게 한다.
+          const result = this.dispatcher.dispatchWithResult(cmdId);
+          if (result.ok || result.reason === 'threw') e.preventDefault();
         }
       }
       break;

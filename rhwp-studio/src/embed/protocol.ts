@@ -4,6 +4,12 @@ export const EMBED_CAPABILITIES = [
   'hml-export',
   'renderer-diagnostics-v1',
   'notify-saved-v1',
+  // 아래 넷은 브리지 확장(P4). 프로토콜 세대는 1 을 유지하고 capability 로만 넓힌다 —
+  // 구버전 studio 에 붙은 신버전 SDK 는 기능만 비활성되고 기존 임베드는 그대로 돈다.
+  'automation-v1',
+  'plugin-loader-v1',
+  'hwpctrl-v1',
+  'chrome-v1',
 ] as const;
 
 export interface EmbedConnectAttempt {
