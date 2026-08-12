@@ -2247,8 +2247,9 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
 /// <hp:seg type="LINE"  x1="10440" y1="0" x2="20940" y2="1800"/>
 /// ```
 ///
-/// `segment_types[i]` 는 HWP5 의 구간 종류(0: 직선, 1: 곡선)다. HWPX 입력은 파서가
-/// 종류를 채우므로 왕복에서 보존되고, 비어 있으면 곡선으로 본다(HWP5 곡선 개체의 통상값).
+/// `segment_types[i]` 는 HWP5의 구간 종류(0: 직선, 1: 곡선)다. HWPX의 `hp:seg type`은
+/// HWP5 `1`이 기대하는 베지어 제어점 두 개를 담지 않으므로 파서는 이 필드에 옮기지 않는다.
+/// 비어 있으면 한글 호환을 위해 CURVE로 방출한다.
 fn curve_segs_xml(points: &[crate::model::Point], segment_types: &[u8]) -> String {
     points
         .windows(2)
@@ -3441,7 +3442,7 @@ mod tests {
     /// #4676: `<hp:curve>` 의 점은 `<hc:pt>` 나열이 아니라 `<hp:seg>` 체인으로 나가야 한다.
     /// `<hc:pt>` 로 저장하면 한글이 파일을 여는 도중 프로세스째 죽는다(COM RPC 0x800706BE).
     /// 한컴 원본 실측: `hp:curve` 는 seg 만 쓰고 `hc:pt` 는 한 번도 쓰지 않는다.
-    /// 구간 종류(LINE/CURVE)는 IR 의 `segment_types` 에서 오고, 왕복에서 보존돼야 한다.
+    /// HWP5 유래 구간 종류(LINE/CURVE)는 IR의 `segment_types`에서 나온다.
     #[test]
     fn issue4676_curve_emits_seg_chain_not_pts() {
         use crate::model::shape::{CommonObjAttr, CurveShape, DrawingObjAttr};

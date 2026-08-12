@@ -3986,8 +3986,6 @@ fn parse_shape_object(
     // [Task #1067] polygon / curve 의 가변 꼭짓점 `<hc:pt x=... y=.../>` 누적.
     // 기존 pt0/pt1/pt2/pt3 (rect 의 4 꼭짓점) 와 별개.
     let mut polygon_points: Vec<crate::model::Point> = Vec::new();
-    // [#4676] curve 의 구간 종류(0: 직선, 1: 곡선) — `<hp:seg type>` 에서 채운다.
-    let mut curve_segment_types: Vec<u8> = Vec::new();
     // [Task #1598] ellipse / arc 전용 지오메트리 (`<hc:center>`/`<hc:ax1>`/...).
     // 미적재 시 한글이 타원/호를 다르게 렌더 → 누적 레이아웃 변동 → 페이지 붕괴(#1589 잔여).
     let mut e_center = crate::model::Point::default();
@@ -4107,20 +4105,12 @@ fn parse_shape_object(
                         let mut y1: i32 = 0;
                         let mut x2: i32 = 0;
                         let mut y2: i32 = 0;
-                        // [#4676] 구간 종류(LINE/CURVE)를 보존한다 — 저장기가 seg 를 다시
-                        // 쓸 때 이 값이 없으면 직선 구간이 곡선으로 바뀐다. 기본은 곡선.
-                        let mut seg_kind: u8 = 1;
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"x1" => x1 = parse_i32(&attr),
                                 b"y1" => y1 = parse_i32(&attr),
                                 b"x2" => x2 = parse_i32(&attr),
                                 b"y2" => y2 = parse_i32(&attr),
-                                b"type" => {
-                                    if attr.value.as_ref() == b"LINE" {
-                                        seg_kind = 0;
-                                    }
-                                }
                                 _ => {}
                             }
                         }
@@ -4128,7 +4118,6 @@ fn parse_shape_object(
                             polygon_points.push(crate::model::Point { x: x1, y: y1 });
                         }
                         polygon_points.push(crate::model::Point { x: x2, y: y2 });
-                        curve_segment_types.push(seg_kind);
                     }
                     b"startPt" => {
                         for attr in ce.attributes().flatten() {
@@ -4302,8 +4291,10 @@ fn parse_shape_object(
             drawing,
             // CurveShape 도 동일 패턴 — 누락 시 곡선 미표시.
             points: polygon_points,
-            // [#4676] `<hp:seg type>` 에서 채운 구간 종류. 저장기가 seg 를 되돌릴 때 쓴다.
-            segment_types: curve_segment_types,
+            // HWPX `hp:seg type="CURVE"`는 점-대-점 체인의 표기일 뿐 HWP5 `1`이 요구하는
+            // 베지어 제어점 2개를 담지 않는다. 그대로 옮기면 renderer가 세 점씩 소비하므로
+            // 비워서 기존의 LineTo 체인 렌더 계약을 유지한다(#1200, #4676).
+            segment_types: Vec::new(),
         }),
         _ => ShapeObject::Rectangle(RectangleShape {
             common,
@@ -7351,10 +7342,11 @@ mod tests {
         assert_eq!(endnote.after_decoration_letter, 41); // ')'
     }
 
-    /// [#1200] curve 도형의 geometry 가 `<hp:seg x1 y1 x2 y2>` (점-대-점 chain)
-    /// 으로 인코딩된 경우 CurveShape.points 가 채워져야 한다. 누락 시 외곽선 미렌더.
+    /// [#1200, #4676] curve 도형의 geometry 가 `<hp:seg x1 y1 x2 y2>` (점-대-점 chain)
+    /// 으로 인코딩된 경우 CurveShape.points 가 채워져야 한다. HWPX CURVE 타입은 HWP5
+    /// 베지어 제어점 규약과 다르므로 segment_types를 비워 LineTo 체인으로 렌더한다.
     #[test]
-    fn test_parse_curve_seg_populates_points() {
+    fn test_parse_curve_seg_populates_points_without_hwp5_bezier_types() {
         // seg chain: (10,10)->(90,10)->(90,90)->(10,10) (폐곡선)
         let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
 <hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
@@ -7366,9 +7358,9 @@ mod tests {
         <hp:orgSz width="100" height="100"/>
         <hp:curSz width="100" height="100"/>
         <hp:lineShape color="#000000" width="113" style="SOLID"/>
-        <hp:seg type="LINE" x1="10" y1="10" x2="90" y2="10"/>
+        <hp:seg type="CURVE" x1="10" y1="10" x2="90" y2="10"/>
         <hp:seg type="LINE" x1="90" y1="10" x2="90" y2="90"/>
-        <hp:seg type="LINE" x1="90" y1="90" x2="10" y2="10"/>
+        <hp:seg type="CURVE" x1="90" y1="90" x2="10" y2="10"/>
       </hp:curve>
     </hp:run>
   </hp:p>
@@ -7391,6 +7383,11 @@ mod tests {
         // 첫 seg 시작점 + 각 seg 끝점 = 4점 chain
         let pts: Vec<(i32, i32)> = curve.points.iter().map(|p| (p.x, p.y)).collect();
         assert_eq!(pts, vec![(10, 10), (90, 10), (90, 90), (10, 10)]);
+        assert!(
+            curve.segment_types.is_empty(),
+            "HWPX CURVE 타입은 HWP5 베지어 제어점 규약으로 매핑하면 안 됨: {:?}",
+            curve.segment_types
+        );
     }
 
     #[test]
