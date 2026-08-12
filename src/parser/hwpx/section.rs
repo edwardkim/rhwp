@@ -3986,6 +3986,8 @@ fn parse_shape_object(
     // [Task #1067] polygon / curve 의 가변 꼭짓점 `<hc:pt x=... y=.../>` 누적.
     // 기존 pt0/pt1/pt2/pt3 (rect 의 4 꼭짓점) 와 별개.
     let mut polygon_points: Vec<crate::model::Point> = Vec::new();
+    // [#4676] curve 의 구간 종류(0: 직선, 1: 곡선) — `<hp:seg type>` 에서 채운다.
+    let mut curve_segment_types: Vec<u8> = Vec::new();
     // [Task #1598] ellipse / arc 전용 지오메트리 (`<hc:center>`/`<hc:ax1>`/...).
     // 미적재 시 한글이 타원/호를 다르게 렌더 → 누적 레이아웃 변동 → 페이지 붕괴(#1589 잔여).
     let mut e_center = crate::model::Point::default();
@@ -4105,12 +4107,20 @@ fn parse_shape_object(
                         let mut y1: i32 = 0;
                         let mut x2: i32 = 0;
                         let mut y2: i32 = 0;
+                        // [#4676] 구간 종류(LINE/CURVE)를 보존한다 — 저장기가 seg 를 다시
+                        // 쓸 때 이 값이 없으면 직선 구간이 곡선으로 바뀐다. 기본은 곡선.
+                        let mut seg_kind: u8 = 1;
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"x1" => x1 = parse_i32(&attr),
                                 b"y1" => y1 = parse_i32(&attr),
                                 b"x2" => x2 = parse_i32(&attr),
                                 b"y2" => y2 = parse_i32(&attr),
+                                b"type" => {
+                                    if attr.value.as_ref() == b"LINE" {
+                                        seg_kind = 0;
+                                    }
+                                }
                                 _ => {}
                             }
                         }
@@ -4118,6 +4128,7 @@ fn parse_shape_object(
                             polygon_points.push(crate::model::Point { x: x1, y: y1 });
                         }
                         polygon_points.push(crate::model::Point { x: x2, y: y2 });
+                        curve_segment_types.push(seg_kind);
                     }
                     b"startPt" => {
                         for attr in ce.attributes().flatten() {
@@ -4289,9 +4300,10 @@ fn parse_shape_object(
         b"curve" => ShapeObject::Curve(CurveShape {
             common,
             drawing,
-            // CurveShape 도 동일 패턴 — 누락 시 곡선 미표시. segment_types 는 별개로 추후 task.
+            // CurveShape 도 동일 패턴 — 누락 시 곡선 미표시.
             points: polygon_points,
-            ..Default::default()
+            // [#4676] `<hp:seg type>` 에서 채운 구간 종류. 저장기가 seg 를 되돌릴 때 쓴다.
+            segment_types: curve_segment_types,
         }),
         _ => ShapeObject::Rectangle(RectangleShape {
             common,
