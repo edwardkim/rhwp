@@ -197,19 +197,27 @@ def cmd_attest(a, bin_path):
                        "--gate-envelope", admission,
                        "--sign-key", key, "-o", claim, "--json"])
 
-    # 등재 사슬은 커밋본을 참조해야 하므로 스코어카드·입장 봉투를 보존한다.
+    # 3) 원장 기입 — 같은 스코어카드는 두 번 못 들어온다 (P3).
+    #
+    # 기입을 **먼저** 시도한다. 거부되면 이번 attest 의 부산물(claim·보존본)을
+    # 남기지 않는다 — 원장이 유일한 진실이지만, 미등재 파일이 굴러다니면 사람이
+    # 헷갈린다(첫 실증에서 실제로 0001 잔여물이 생겼다).
+    code, env = run_cli(bin_path, ["settle", "record", claim, "--ledger", LEDGER, "--json"],
+                        ok=(0, 3))
+    if code == 3:
+        os.remove(claim)
+        sidecar = claim + ".sig.json"
+        if os.path.exists(sidecar):
+            os.remove(sidecar)
+        raise SystemExit(f"원장 거부(이중 등재): {json.dumps(env, ensure_ascii=False)[:200]}")
+
+    # 등재 확정 후에만 스코어카드·입장 봉투를 보존한다(검증이 커밋본을 참조).
     keep_dir = os.path.join(BOARD, "scorecards", f"{a.agent}-{epoch:04d}")
     os.makedirs(keep_dir, exist_ok=True)
     for src in (scorecard, admission):
         dst = os.path.join(keep_dir, os.path.basename(src))
         with open(src, "rb") as fi, open(dst, "wb") as fo:
             fo.write(fi.read())
-
-    # 3) 원장 기입 — 같은 스코어카드는 두 번 못 들어온다 (P3)
-    code, env = run_cli(bin_path, ["settle", "record", claim, "--ledger", LEDGER, "--json"],
-                        ok=(0, 3))
-    if code == 3:
-        raise SystemExit(f"원장 거부(이중 등재): {json.dumps(env, ensure_ascii=False)[:200]}")
 
     # 4) 투명성 로그 + 머클 에폭.
     #
