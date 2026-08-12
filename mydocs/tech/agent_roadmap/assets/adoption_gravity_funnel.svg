@@ -29,8 +29,8 @@
 <rect x="60" y="354" width="320" height="78" rx="14" fill="#fff" stroke="#E0574F" stroke-width="2.5"/>
 <rect x="60" y="354" width="7" height="78" rx="3" fill="#E0574F"/>
 <text x="82" y="386" font-size="19" font-weight="700" fill="#20233A">MCP 서버</text>
-<text x="82" y="410" font-size="13" fill="#8b8fa6" font-family="monospace">tools 66 · prompts 0 · resources 0</text>
-<text x="366" y="376" font-size="12" font-weight="700" fill="#E0574F" text-anchor="end">미개척 L3·L4</text>
+<text x="82" y="410" font-size="13" fill="#8b8fa6" font-family="monospace">tools 66 · resources 13 · prompts 0</text>
+<text x="366" y="376" font-size="12" font-weight="700" fill="#E0574F" text-anchor="end">prompts 미개척 L3</text>
 <path d="M 380 393.0 C 490 393.0, 710 295.0, 820 295.0" fill="none" stroke="#E0574F" stroke-width="2" stroke-dasharray="7 5" opacity="0.75"/>
 <path d="M 380 393.0 C 490 393.0, 710 505.0, 820 505.0" fill="none" stroke="#E0574F" stroke-width="2" stroke-dasharray="7 5" opacity="0.75"/>
 <rect x="60" y="456" width="320" height="78" rx="14" fill="#fff" stroke="#20A05E" stroke-width="2.5"/>
