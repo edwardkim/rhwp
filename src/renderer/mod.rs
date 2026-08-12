@@ -973,6 +973,42 @@ pub(crate) fn first_seg_vpos_is_anchor(
         .is_some_and(|seg| cell_para_index == 0 || seg.vertical_pos > 0)
 }
 
+/// 글자처럼 취급되는(`treat_as_char`) 그림·도형이 줄 흐름에서 차지하는 높이(px).
+///
+/// 조판(`typeset`)과 렌더(`layout`)가 각자 이 식을 들고 있었고, 도형 쪽 정의가
+/// 서로 달랐다 — 렌더는 [`ShapeObject::flow_height_hu`], 조판은 저장 프레임만.
+/// 같은 속성의 정의는 하나여야 하므로(#4333) 두 경로가 이 함수를 공유한다.
+#[inline]
+pub(crate) fn tac_object_flow_height_px(
+    ctrl: &crate::model::control::Control,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::control::Control;
+    let height_hu = match ctrl {
+        Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
+        Control::Shape(shape) if shape.common().treat_as_char => shape.flow_height_hu(),
+        _ => return None,
+    };
+    Some(hwpunit_to_px(height_hu, dpi))
+}
+
+/// 저장 줄 높이가 문단의 인라인 개체 하나로 설명될 때, 그 개체의 흐름 높이(px).
+///
+/// "이 줄은 인라인 개체가 소유한 줄인가" 를 묻는 술어다. 조판과 렌더가 같은 줄에
+/// 같은 답을 내지 않으면 그 줄의 예약 높이가 갈리므로(#4333) 정의는 하나다.
+pub(crate) fn line_owning_tac_object_height_px(
+    para: &crate::model::paragraph::Paragraph,
+    raw_line_height: f64,
+    dpi: f64,
+) -> Option<f64> {
+    para.controls
+        .iter()
+        .filter_map(|ctrl| tac_object_flow_height_px(ctrl, dpi))
+        .find(|height| {
+            *height > 8.0 && raw_line_height + 4.0 >= *height && raw_line_height <= *height + 8.0
+        })
+}
+
 /// 셀의 저장 vpos 흐름이 문단 위치를 구분해 담고 있는지 ("사다리" 온전성).
 ///
 /// 셀 안 문단이 전부 `vpos == 0` 으로 저장된 문서(중첩 표 안쪽 셀에서 흔하다)에서는

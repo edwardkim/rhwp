@@ -326,6 +326,8 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 const THUMBNAIL_CACHE = new Map();
 const CACHE_MAX_SIZE = 100;
+const { readExactStreamLimited } = globalThis.rhwpBoundedStream;
+const THUMBNAIL_OUTPUT_LIMIT_BYTES = 10 * 1024 * 1024;
 
 async function extractThumbnailFromUrl(url) {
   if (THUMBNAIL_CACHE.has(url)) return THUMBNAIL_CACHE.get(url);
@@ -341,7 +343,9 @@ async function extractThumbnailFromUrl(url) {
     const data = new Uint8Array(buffer);
 
     const isZip = data.length >= 4 && data[0] === 0x50 && data[1] === 0x4B;
-    const result = isZip ? await extractPrvImageFromZip(data) : extractPrvImageFromCFB(data);
+    const result = isZip
+      ? await extractPrvImageFromZip(data, THUMBNAIL_OUTPUT_LIMIT_BYTES)
+      : extractPrvImageFromCFB(data, THUMBNAIL_OUTPUT_LIMIT_BYTES);
     if (result) {
       if (THUMBNAIL_CACHE.size >= CACHE_MAX_SIZE) {
         THUMBNAIL_CACHE.delete(THUMBNAIL_CACHE.keys().next().value);
@@ -352,7 +356,7 @@ async function extractThumbnailFromUrl(url) {
   } catch { return null; }
 }
 
-function extractPrvImageFromCFB(data) {
+function extractPrvImageFromCFB(data, maxBytes) {
   if (data.length < 512 || data[0] !== 0xD0 || data[1] !== 0xCF || data[2] !== 0x11 || data[3] !== 0xE0) return null;
   const sectorSize = 1 << (data[30] | (data[31] << 8));
   const dirStartSector = _u32(data, 48);
@@ -371,7 +375,7 @@ function extractPrvImageFromCFB(data) {
     if (name !== 'PrvImage') continue;
     const startSector = _u32(data, eo + 116);
     const streamSize = _u32(data, eo + 120);
-    if (streamSize === 0 || streamSize > 10 * 1024 * 1024) continue;
+    if (streamSize === 0 || streamSize > maxBytes) continue;
     const fatSectors = [];
     for (let j = 0; j < 109; j++) {
       const fs = _u32(data, 76 + j * 4);
@@ -402,7 +406,7 @@ function extractPrvImageFromCFB(data) {
   return null;
 }
 
-async function extractPrvImageFromZip(data) {
+async function extractPrvImageFromZip(data, maxBytes) {
   let eocd = -1;
   for (let i = data.length - 22; i >= 0 && i >= data.length - 65558; i--) {
     if (data[i] === 0x50 && data[i+1] === 0x4B && data[i+2] === 0x05 && data[i+3] === 0x06) { eocd = i; break; }
@@ -422,23 +426,24 @@ async function extractPrvImageFromZip(data) {
     const locOff = _u32(data, off + 42);
     const name = new TextDecoder().decode(data.subarray(off + 46, off + 46 + nLen));
     if (name.startsWith('Preview/PrvImage')) {
+      if (uncSz === 0 || uncSz > maxBytes) return null;
+      if (locOff + 30 >= data.length) return null;
       const lnLen = _u16(data, locOff + 26);
       const leLen = _u16(data, locOff + 28);
       const ds = locOff + 30 + lnLen + leLen;
-      if (comp === 0) return _parseImage(data.subarray(ds, ds + uncSz));
+      if (ds > data.length || compSz > data.length - ds) return null;
+      if (comp === 0) {
+        if (compSz !== uncSz || uncSz > data.length - ds) return null;
+        return _parseImage(data.subarray(ds, ds + uncSz));
+      }
       if (comp === 8) {
         try {
           const dec = new DecompressionStream('raw');
           const w = dec.writable.getWriter();
-          w.write(data.slice(ds, ds + compSz));
-          w.close();
-          const r = dec.readable.getReader();
-          const chunks = [];
-          while (true) { const { done, value } = await r.read(); if (done) break; chunks.push(value); }
-          const total = chunks.reduce((s, c) => s + c.length, 0);
-          const buf = new Uint8Array(total);
-          let o = 0;
-          for (const c of chunks) { buf.set(c, o); o += c.length; }
+          const write = w.write(data.slice(ds, ds + compSz)).then(() => w.close());
+          const buf = await readExactStreamLimited(dec.readable, uncSz, maxBytes);
+          const writeSucceeded = await write.then(() => true, () => false);
+          if (!buf || !writeSucceeded) return null;
           return _parseImage(buf);
         } catch { return null; }
       }

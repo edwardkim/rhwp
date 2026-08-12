@@ -66,6 +66,26 @@ impl From<crypto::Hwp3CryptoError> for Hwp3Error {
 /// 로 간주하여 graceful Err 반환.
 pub(crate) const HWP3_MAX_RECORD_SIZE: usize = 256 * 1024 * 1024;
 
+/// `parse_hwp3*` 완전 문서 열기가 선택하는 기본 압축 본문 출력 상한.
+pub(crate) const DEFAULT_HWP3_DOCUMENT_OPEN_BODY_OUTPUT_BYTES: usize = 256 * 1024 * 1024;
+
+fn decompress_hwp3_body_limited(data: &[u8], max_bytes: usize) -> Result<Vec<u8>, Hwp3Error> {
+    let mut output = Vec::new();
+    flate2::read::DeflateDecoder::new(data)
+        .take((max_bytes as u64).saturating_add(1))
+        .read_to_end(&mut output)
+        .map_err(|source| Hwp3Error::IoError { source })?;
+    if output.len() > max_bytes {
+        return Err(Hwp3Error::ParseError {
+            message: format!(
+                "HWP3 본문 압축 해제 결과가 {} 바이트 상한을 초과했습니다",
+                max_bytes
+            ),
+        });
+    }
+    Ok(output)
+}
+
 /// length 가 cap 안에 있는지 검증 후 zero-filled `Vec<u8>` 할당.
 /// length > cap 일 때 `vec![]` panic 대신 `InvalidData` Err 반환 (#877).
 pub(crate) fn alloc_record_buf(length: usize) -> Result<Vec<u8>, io::Error> {
@@ -3438,12 +3458,24 @@ pub(crate) fn parse_paragraph_list(
 /// 비밀번호 암호 문서는 비밀번호 없이 열 수 없으므로 `Hwp3Error::PasswordRequired`를
 /// 반환한다. 비밀번호가 있는 호출자는 `parse_hwp3_with_password`를 사용한다.
 pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
-    parse_hwp3_inner(data, false)
+    parse_hwp3_with_open_body_limit(data, DEFAULT_HWP3_DOCUMENT_OPEN_BODY_OUTPUT_BYTES)
+}
+
+/// 자동 포맷 감지 진입점이 선택한 HWP3 본문 출력 상한을 적용한다.
+///
+/// 이 함수는 완전 문서 열기 계층 사이의 내부 계약이며, HWP3의 바이트 해제 helper는
+/// 전달받은 상한을 기계적으로만 강제한다.
+pub(crate) fn parse_hwp3_with_open_body_limit(
+    data: &[u8],
+    max_body_output_bytes: usize,
+) -> Result<Document, Hwp3Error> {
+    parse_hwp3_inner(data, false, max_body_output_bytes)
 }
 
 fn parse_hwp3_inner(
     data: &[u8],
     use_password_layout_contract: bool,
+    max_body_output_bytes: usize,
 ) -> Result<Document, Hwp3Error> {
     if data.len() < 30 {
         return Err(Hwp3Error::FileTooSmall);
@@ -3535,13 +3567,9 @@ fn parse_hwp3_inner(
         }
     };
 
-    let mut decompressed_data = Vec::new();
+    let decompressed_data;
     let body_data = if doc_info.compressed != 0 {
-        use flate2::read::DeflateDecoder;
-        let mut decoder = DeflateDecoder::new(remaining_data);
-        decoder
-            .read_to_end(&mut decompressed_data)
-            .map_err(|e| Hwp3Error::IoError { source: e })?;
+        decompressed_data = decompress_hwp3_body_limited(remaining_data, max_body_output_bytes)?;
         &decompressed_data[..]
     } else {
         remaining_data
@@ -3991,12 +4019,25 @@ fn parse_hwp3_inner(
 /// 압축 HWP3 암호 본문은 이 모듈 경계에서만 복호화한 뒤 기존 HWP3 파서로 넘긴다.
 /// 일반 HWP3 문서에 비밀번호를 전달하면 기존 파서와 같은 결과를 반환한다.
 pub fn parse_hwp3_with_password(data: &[u8], password: &[u8]) -> Result<Document, Hwp3Error> {
+    parse_hwp3_with_open_body_limit_and_password(
+        data,
+        password,
+        DEFAULT_HWP3_DOCUMENT_OPEN_BODY_OUTPUT_BYTES,
+    )
+}
+
+/// 자동 포맷 감지 진입점이 선택한 HWP3 본문 출력 상한을 비밀번호 경로에도 적용한다.
+pub(crate) fn parse_hwp3_with_open_body_limit_and_password(
+    data: &[u8],
+    password: &[u8],
+    max_body_output_bytes: usize,
+) -> Result<Document, Hwp3Error> {
     if !crypto::is_hwp3_password_protected(data)? {
-        return parse_hwp3(data);
+        return parse_hwp3_with_open_body_limit(data, max_body_output_bytes);
     }
 
     let decrypted = crypto::decrypt_hwp3_password_document(data, password)?;
-    let mut document = parse_hwp3_inner(&decrypted, true)?;
+    let mut document = parse_hwp3_inner(&decrypted, true, max_body_output_bytes)?;
     // 원본이 암호 문서였다는 메타데이터는 IR에 남긴다. HWP 저장기는 이 플래그를
     // 감지해 평문 HWP로 저장하므로 복호화 비밀번호나 암호문은 출력에 보존하지 않는다.
     apply_hwp3_encrypted_flag(1, &mut document.header);
@@ -4751,6 +4792,27 @@ mod tests {
     use crate::model::paragraph::Paragraph;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn open_decompression_hwp3_body_rejects_output_past_limit() {
+        use std::io::Write;
+
+        let plain = vec![0_u8; 4096];
+        let mut encoder =
+            flate2::write::DeflateEncoder::new(Vec::new(), flate2::Compression::best());
+        encoder.write_all(&plain).unwrap();
+        let compressed = encoder.finish().unwrap();
+        assert!(compressed.len() < 1024);
+
+        assert!(matches!(
+            decompress_hwp3_body_limited(&compressed, 1024),
+            Err(Hwp3Error::ParseError { .. })
+        ));
+        assert_eq!(
+            decompress_hwp3_body_limited(&compressed, plain.len()).unwrap(),
+            plain
+        );
+    }
 
     /// [#3676] `cold`는 미주 fixup의 부수 효과가 아니라 구역 본문 계약이다.
     /// 미주가 전혀 없는 HWP3에서도 한글 저장본처럼 첫 문단에 단 정의가 하나 있어야 한다.

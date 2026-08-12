@@ -287,31 +287,6 @@ fn has_para_topbottom_float_affecting_column(
     .unwrap_or(false)
 }
 
-fn tac_picture_or_shape_height_for_line(
-    para: Option<&Paragraph>,
-    raw_line_height: f64,
-    dpi: f64,
-) -> Option<f64> {
-    let para = para?;
-    para.controls.iter().find_map(|ctrl| {
-        let height_hu = match ctrl {
-            Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
-            Control::Shape(shape) if shape.common().treat_as_char => {
-                let common_h = shape.common().height as i32;
-                let current_h = shape.shape_attr().current_height as i32;
-                common_h.max(current_h)
-            }
-            _ => return None,
-        };
-        let height = hwpunit_to_px(height_hu, dpi);
-        if height > 8.0 && raw_line_height + 4.0 >= height && raw_line_height <= height + 8.0 {
-            Some(height)
-        } else {
-            None
-        }
-    })
-}
-
 fn is_treat_as_char_equation_control(ctrl: Option<&Control>) -> bool {
     matches!(ctrl, Some(Control::Equation(eq)) if eq.common.treat_as_char)
 }
@@ -688,19 +663,6 @@ fn repeated_empty_tac_line_offset(
     }
 }
 
-fn tac_picture_or_shape_height_px(ctrl: &Control, dpi: f64) -> Option<f64> {
-    let height_hu = match ctrl {
-        Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
-        Control::Shape(shape) if shape.common().treat_as_char => {
-            let common_h = shape.common().height as i32;
-            let current_h = shape.shape_attr().current_height as i32;
-            common_h.max(current_h)
-        }
-        _ => return None,
-    };
-    Some(hwpunit_to_px(height_hu, dpi))
-}
-
 fn note_number_format_from_hwp_code(code: u8) -> NumFmt {
     match code {
         0 => NumFmt::Digit,
@@ -788,7 +750,7 @@ fn line_tac_picture_or_shape_height(
         .find_map(|(_, _, ci)| {
             para.controls
                 .get(*ci)
-                .and_then(|ctrl| tac_picture_or_shape_height_px(ctrl, dpi))
+                .and_then(|ctrl| crate::renderer::tac_object_flow_height_px(ctrl, dpi))
         })
 }
 
@@ -3232,19 +3194,19 @@ impl LayoutEngine {
                         })
                     })
                     .unwrap_or(false);
+            // 도형의 흐름 높이가 저장 프레임이 아니라 `current_height` 에서 오는 줄은
+            // 저장 줄 높이를 그대로 둔다 (아래 baseline 정렬 축소 제외).
             let empty_tac_guide_has_explicit_shape_height = empty_tac_guide_line
-                && para
-                    .map(|p| {
-                        line_tac_offsets.iter().any(|(_, _, ci)| {
-                            p.controls.get(*ci).is_some_and(|ctrl| match ctrl {
-                                Control::Shape(shape) if shape.common().treat_as_char => {
-                                    shape.shape_attr().current_height > shape.common().height
-                                }
-                                _ => false,
-                            })
+                && para.is_some_and(|p| {
+                    line_tac_offsets.iter().any(|(_, _, ci)| {
+                        p.controls.get(*ci).is_some_and(|ctrl| match ctrl {
+                            Control::Shape(shape) if shape.common().treat_as_char => {
+                                shape.flow_height_hu() > shape.common().height as i32
+                            }
+                            _ => false,
                         })
                     })
-                    .unwrap_or(false);
+                });
             let (line_height, baseline) = if text_before_picture_line {
                 let font_lh = max_fs.max(1.0);
                 let font_bl = max_fs * 0.85;
@@ -3260,9 +3222,26 @@ impl LayoutEngine {
                 // raw_lh > 0*1.5 가 항상 참이라 font_lh=0 으로 퇴화해, 셀 내부
                 // tac 묶음 전용 문단의 저장 lh(예: 3401HU)가 소실되고 후속 블록이
                 // 통째로 당겨졌다 (3114781 p2 −33pt, 한글 2022 오라클 정합 확인).
-                // 본문(cell_ctx 없음)은 reserved/skip-advance 보상 기계가 이 축소값을
-                // 전제로 한컴 정합을 이미 이루고 있어(sample16 issue_1116 한컴 핀)
-                // 종전 동작을 유지한다.
+                // 본문(cell_ctx 없음)에서 max_fs=0 인 도형-전용 줄이 lh=0 으로 접히는 것은
+                // **의도된 짝**이다. 짝의 나머지 반쪽은 `layout_column_item` 의 TAC-Shape
+                // 높이 바닥값(`renderer/layout.rs:7037-7076`,
+                // `para_start + max(seg_lh, shape_max_h)`)이다 — 접힘이 줄 루프의 진행을
+                // 바닥값 아래로 눌러, 문단 진행을 바닥값이 지배하게 만든다. 한컴에 맞춰진
+                // 숫자는 그 바닥값(꼬리 줄간격을 포함하지 않는 값)이지 이 줄의 lh 가 아니다.
+                //
+                // 실측 (`samples/hwp3-sample16-hwp5.hwp` 구역0 문단71,
+                // `RHWP_DEBUG_PARA_TAC` + `RHWP_DEBUG_TAC_CURSOR`):
+                //   TAC_ADV    pi=71 raw_lh=130.2 lh=0.0 ls=10.4   ← 루프 내 진행은 10.4
+                //   TAC_CURSOR FullPara pi=71 dy=130.2            ← 바닥값이 문 결과
+                // 접힘만 없애면 루프 진행이 raw_lh+ls=140.6 으로 바닥값 130.2 를 넘어
+                // 문단이 정확히 `LineSeg.line_spacing`(10.4px) 만큼 밀리고,
+                // `tests/issue_1116.rs` 의 한컴 PDF 대조 핀 둘이 그만큼 깨진다.
+                //
+                // 보상자는 `HeightCursor::vpos_adjust` 가 **아니다** — 그 함수는 이 문단
+                // 다음 항목(pi=72)에서 `lazy_base < 0` 으로 조기 반환한다
+                // (`RHWP_VPOS_DEBUG` → `VPOS_CORR_SKIP: pi=72 ... lazy_base=-72`).
+                // 이 자리의 옛 주석이 "reserved/skip-advance 보상 기계"를 지목해 앞선
+                // 조사를 `vpos_adjust` 로 잘못 보냈다 (#4333).
                 let font_lh = max_fs * 1.2; // 폰트 크기의 120%
                 let font_bl = max_fs * 0.85;
                 (font_lh, ensure_min_baseline(font_bl, max_fs))
@@ -4308,8 +4287,9 @@ impl LayoutEngine {
                 && !text_before_picture_line
                 && current_line_reserved_tac_picture_height.is_none()
             {
-                current_line_reserved_tac_picture_height =
-                    tac_picture_or_shape_height_for_line(para, raw_lh, self.dpi);
+                current_line_reserved_tac_picture_height = para.and_then(|p| {
+                    crate::renderer::line_owning_tac_object_height_px(p, raw_lh, self.dpi)
+                });
                 if current_line_reserved_tac_picture_height.is_none()
                     && has_treat_as_char_picture_or_shape(para)
                     && max_fs > 0.0
@@ -5346,9 +5326,7 @@ impl LayoutEngine {
                     if let Some(p) = para {
                         if let Some(Control::Shape(shape)) = p.controls.get(tac_ci) {
                             let common = shape.common();
-                            let shape_h_hu = (common.height as i32)
-                                .max(shape.shape_attr().current_height as i32);
-                            let shape_h = hwpunit_to_px(shape_h_hu, self.dpi);
+                            let shape_h = hwpunit_to_px(shape.flow_height_hu(), self.dpi);
                             if raw_lh + 4.0 >= shape_h {
                                 current_line_reserved_tac_picture_height = Some(shape_h);
                             }
@@ -6399,9 +6377,7 @@ impl LayoutEngine {
                         // #476 의 fallback 차단 분기로 박스가 누락된다.
                         if let Control::Shape(shape) = ctrl {
                             let common = shape.common();
-                            let shape_h_hu = (common.height as i32)
-                                .max(shape.shape_attr().current_height as i32);
-                            let shape_h = hwpunit_to_px(shape_h_hu, self.dpi);
+                            let shape_h = hwpunit_to_px(shape.flow_height_hu(), self.dpi);
                             let shape_y = (vars.y + vars.baseline - shape_h).max(vars.y);
                             tree.set_inline_shape_position(
                                 vars.section_index,

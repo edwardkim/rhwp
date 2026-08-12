@@ -28429,13 +28429,13 @@ fn issue_4576_rebuild_derived_state_recomputes_composition_and_pagination() {
         .expect("기준 페이지 트리")
         .root
         .to_json();
-    let baseline_height = doc.measured_sections[0].paragraphs[0].total_height;
+    let baseline_height = doc.measured_sections[0].fallback_paragraphs[0].total_height;
     let baseline_lines = doc.composed[0][0].lines.len();
 
     // --- 패치 이전 코드의 파생본을 흉내 낸다 (원본 IR 은 손대지 않는다) ---
     doc.composed[0][0].lines[0].runs[0].text = "옛 조합 규칙".to_string();
     doc.pagination[0].pages.pop().expect("마지막 쪽 제거");
-    doc.measured_sections[0].paragraphs[0].total_height = 1.0;
+    doc.measured_sections[0].fallback_paragraphs[0].total_height = 1.0;
 
     doc.invalidate_page_tree_cache();
     assert_ne!(
@@ -28464,7 +28464,7 @@ fn issue_4576_rebuild_derived_state_recomputes_composition_and_pagination() {
         "paginate() 는 조합을 다시 만들지 않는다"
     );
     assert_eq!(
-        doc.measured_sections[0].paragraphs[0].total_height, 1.0,
+        doc.measured_sections[0].fallback_paragraphs[0].total_height, 1.0,
         "paginate() 는 깨끗한 구역의 측정 캐시를 다시 만들지 않는다"
     );
 
@@ -28486,7 +28486,7 @@ fn issue_4576_rebuild_derived_state_recomputes_composition_and_pagination() {
         "조합 결과의 줄 수가 원본 기준으로 돌아와야 한다"
     );
     assert_eq!(
-        doc.measured_sections[0].paragraphs[0].total_height, baseline_height,
+        doc.measured_sections[0].fallback_paragraphs[0].total_height, baseline_height,
         "측정 캐시가 원본에서 다시 만들어져야 한다"
     );
     assert_eq!(

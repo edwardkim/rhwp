@@ -1,7 +1,55 @@
-export interface SubsecondRenderCapabilities {
-  isSubsecondHotpatchEnabled(): boolean;
-  getSubsecondPatchRevision(): string | null;
-  invalidateSubsecondRenderCaches(): boolean;
+/**
+ * 문서를 연 채로 렌더 코드를 갈아 끼우는 능력.
+ *
+ * [#4580] 이름은 벤더가 아니라 소비자가 알아야 하는 것을 말한다 — 감시자가 묻는 것은 "렌더
+ * 코드가 바뀌었나, 그러면 파생본을 다시 만들어도 되나"이지 "Subsecond 가 뭘 했나"가 아니다.
+ * 벤더를 아는 곳은 아래 구현이 부르는 wasm export 이름 세 개뿐이다.
+ */
+export interface RenderCodeReload {
+  /** 이 wasm 이 렌더 코드 교체를 지원하는 빌드인가. */
+  isAvailable(): boolean;
+  /** 지금 컴파일된 렌더 코드의 식별자. 해석하지 않고 이전 값과 비교만 한다. */
+  getRenderCodeRevision(): string | null;
+  /** 화면용으로 파생해 둔 것을 새 코드로 다시 만든다. 못 했으면 `false` — 재도색해도 소용없다. */
+  rebuildDerivedState(): boolean;
+}
+
+/**
+ * 핫패치 전용 wasm export 셋을 감싸 [`RenderCodeReload`] 로 만든다.
+ *
+ * [#4580] 이 구현이 `WasmBridge` 의 메서드가 아니라 여기 있어야 하는 이유: **클래스 메서드는
+ * 호출부가 없어도 트리셰이킹되지 않는다.** `WasmBridge` 에 두면 `subsecondProbe`
+ * `getRenderCodeRevision` `rebuildDerivedState` 라는 외부 객체 속성 이름이 프로덕션 번들에
+ * 그대로 실린다(실측: 이전 이름으로 각각 2·4·4회). 개발 전용 모듈 안에 두면 모듈째 빠진다.
+ *
+ * 세 export 는 `subsecond-dev` feature 로 빌드한 wasm 에만 있다. 일반 빌드에서는 전부
+ * `undefined` 라 `false`/`null` 을 돌려주고, 감시자는 시작하지 않는다.
+ *
+ * @param exports wasm 모듈의 export 네임스페이스.
+ * @param currentDocument 지금 열려 있는 `HwpDocument` 핸들 — 문서를 열고 닫을 때마다 바뀌므로
+ *   값이 아니라 게터로 받는다.
+ */
+export function createRenderCodeReload(
+  exports: object,
+  currentDocument: () => object | null,
+): RenderCodeReload {
+  return {
+    isAvailable(): boolean {
+      return typeof Reflect.get(exports, 'subsecondProbe') === 'function';
+    },
+
+    getRenderCodeRevision(): string | null {
+      const doc = currentDocument() as { getRenderCodeRevision?: () => string } | null;
+      return typeof doc?.getRenderCodeRevision === 'function' ? doc.getRenderCodeRevision() : null;
+    },
+
+    rebuildDerivedState(): boolean {
+      const doc = currentDocument() as { rebuildDerivedState?: () => void } | null;
+      if (typeof doc?.rebuildDerivedState !== 'function') return false;
+      doc.rebuildDerivedState();
+      return true;
+    },
+  };
 }
 
 export interface SubsecondWasmExports {
@@ -161,7 +209,7 @@ const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
     level: 'warn',
     message:
       '데브서버가 JSON 이 아닌 텍스트 프레임을 보냈다. `npm run subsecond:install` 이 고정한 ' +
-      'dioxus-cli 0.7.10 이 아닌 dx 가 떠 있는지 `npm run subsecond:serve` 터미널에서 확인한다.',
+      'dioxus-cli 가 아닌 dx 가 떠 있는지 `npm run subsecond:serve` 터미널에서 확인한다.',
   },
   'foreign-build-id': {
     level: 'warn',
@@ -178,8 +226,8 @@ const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
   'undeserializable-jump-table': {
     level: 'warn',
     message:
-      'jump_table 을 subsecond 0.7.10 의 JumpTable 로 읽지 못했다. dx 와 크레이트 버전이 어긋났는지 ' +
-      '루트 `Cargo.toml` 의 `subsecond = "=0.7.10"` 과 dx 버전을 대조한다.',
+      'jump_table 을 이 빌드의 subsecond JumpTable 로 읽지 못했다. dx 와 크레이트 버전이 ' +
+      '어긋났는지 `node scripts/dioxus-cli-version.mjs` 의 값과 `dx --version` 을 대조한다.',
   },
   'patch-rejected': {
     level: 'warn',
@@ -188,6 +236,16 @@ const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
       '이 번들이 정말 wasm32 용인지(`src/subsecond_dev.rs` 의 DevtoolsMessageOutcome 문서) 확인한다.',
   },
 };
+
+/**
+ * 위 표가 아는 결과 코드 전부. 엔진의 `DevtoolsMessageOutcome::code()` 와 **같은 집합**이어야 한다.
+ *
+ * [#4589] 같은 계약이 두 언어에 따로 적혀 있고, 어긋나도 양쪽 다 컴파일된다 — 드리프트는
+ * {@link describeSubsecondSignal} 의 "읽지 못한 결과 값" 경고로만, 그것도 개발자가 그 순간 콘솔을
+ * 보고 있을 때만 드러난다. 표를 밖에서 셀 수 있게 해 두면 `tests/subsecond-runtime.test.ts` 가
+ * 엔진 소스에서 읽은 목록과 맞대 볼 수 있고, 어긋남이 테스트 실패가 된다.
+ */
+export const SUBSECOND_OUTCOME_CODES: readonly string[] = Object.keys(SUBSECOND_OUTCOMES);
 
 /** 신호 하나를 개발자가 읽을 한 줄로 만든다. */
 export function describeSubsecondSignal(signal: SubsecondSignal): SubsecondDiagnostic {
@@ -238,23 +296,26 @@ function reportToDevConsole(signal: SubsecondSignal): void {
 }
 
 /**
- * 핫패치가 렌더 함수를 바꿨는지 애니메이션 프레임마다 확인하고, 바뀌었으면 재도색을 알린다.
+ * 렌더 코드 리비전이 바뀌는지 프레임마다 지켜보다가, 바뀌면 파생본을 다시 만들고 알린다.
+ *
+ * 오늘 리비전을 바꾸는 것은 Subsecond 핫패치뿐이라 이 파일에 산다. 하는 일 자체에는 벤더가
+ * 없으므로 이름에는 두지 않는다 (#4580).
  *
  * 수명은 realm 과 같다. 스튜디오에는 문서 닫기도 뷰 폐기도 없어서 `stop()` 을 부를 시점이
  * `CanvasView.dispose()` 밖에 없고, 그 시점 자체가 오지 않는다. 그래서 이 루프는 스스로 멎지
  * 않는 것이 정상 동작이며, 특히 재도색이 던져도 다음 프레임 예약을 건너뛰어서는 안 된다.
  */
-export class SubsecondRevisionWatcher {
+export class RenderCodeReloadWatcher {
   private frameId: number | null = null;
   private running = false;
   private hasBaseline = false;
   private lastRevision: string | null = null;
-  private capabilities: SubsecondRenderCapabilities;
+  private capabilities: RenderCodeReload;
   private onPatched: (revision: string) => void;
   private scheduler: AnimationFrameScheduler;
 
   constructor(
-    capabilities: SubsecondRenderCapabilities,
+    capabilities: RenderCodeReload,
     onPatched: (revision: string) => void,
     scheduler: AnimationFrameScheduler = {
       requestAnimationFrame: callback => requestAnimationFrame(callback),
@@ -268,7 +329,7 @@ export class SubsecondRevisionWatcher {
 
   start(): boolean {
     if (this.running) return true;
-    if (!this.capabilities.isSubsecondHotpatchEnabled()) return false;
+    if (!this.capabilities.isAvailable()) return false;
     this.running = true;
     this.schedule();
     return true;
@@ -301,7 +362,7 @@ export class SubsecondRevisionWatcher {
   }
 
   private checkRevision(): void {
-    const revision = this.capabilities.getSubsecondPatchRevision();
+    const revision = this.capabilities.getRenderCodeRevision();
     if (revision === null) return;
     if (!this.hasBaseline) {
       this.hasBaseline = true;
@@ -312,10 +373,10 @@ export class SubsecondRevisionWatcher {
     // 재도색보다 먼저 올린다. 던지는 패치를 매 프레임 다시 그리면 초당 60번 실패하므로,
     // 실패한 리비전은 다음 패치가 올 때까지 다시 시도하지 않는다 — 세션은 살아 있고, 재도색이
     // 던지는 패치 버그는 다음 저장이 만드는 새 리비전에서 정상으로 돌아온다.
-    // 아래 무효화 자체가 계속 트랩하면 어느 리비전도 그리지 못하지만, 그건 핫패치 경계 밖의
+    // 아래 재구성 자체가 계속 트랩하면 어느 리비전도 그리지 못하지만, 그건 핫패치 경계 밖의
     // 고장이라 새 패치로도 안 고쳐진다 — 보고는 #4578, 경계는 #4577 의 몫이다.
     this.lastRevision = revision;
-    if (this.capabilities.invalidateSubsecondRenderCaches()) {
+    if (this.capabilities.rebuildDerivedState()) {
       this.onPatched(revision);
     }
   }

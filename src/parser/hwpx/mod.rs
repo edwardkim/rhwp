@@ -356,7 +356,12 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     ];
     let mut hwpx_aux_entries: Vec<(String, Vec<u8>)> = Vec::new();
     for path in HWPX_AUX_PATHS {
-        if let Ok(bytes) = reader.read_file_bytes(path) {
+        let entry = if *path == "Preview/PrvImage.png" {
+            reader.read_file_bytes_limited(path, super::MAX_THUMBNAIL_BYTES)
+        } else {
+            reader.read_file_bytes(path)
+        };
+        if let Ok(bytes) = entry {
             hwpx_aux_entries.push((path.to_string(), bytes));
         }
     }
@@ -554,7 +559,8 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // _LinkDoc, Scripts/JScriptVersion) 은 Stage 2.2 의 blank2010.hwp
     // fallback 으로 보강. cfb_writer (`src/serializer/cfb_writer.rs:155`)
     // 가 Document::extra_streams 를 그대로 OLE 스트림으로 작성.
-    let contract = contract_streams::extract_contract_streams(&mut reader);
+    let contract =
+        contract_streams::extract_contract_streams(&mut reader, super::MAX_THUMBNAIL_BYTES);
 
     let mut doc = Document {
         header: model_header,

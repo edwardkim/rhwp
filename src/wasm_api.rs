@@ -916,31 +916,43 @@ impl HwpDocument {
         )
     }
 
-    /// 선언된 모든 렌더 경계의 현재 함수 주소.
+    /// 지금 컴파일되어 있는 렌더 코드의 식별자. 값이 바뀌면 코드가 교체된 것이다.
     ///
-    /// 경계 목록(`subsecond_boundary`)에서 바로 나오므로 경계를 더할 때 여기를 같이 고칠
+    /// 소비자는 이 문자열을 해석하지 않고 이전 값과 비교만 한다. 오늘 그 값을 바꾸는 것은
+    /// Subsecond 핫패치뿐이지만, 이름은 그 사실이 아니라 소비자가 알아야 하는 것을 말한다 —
+    /// 벤더가 바뀌어도 "렌더 코드의 리비전"이라는 질문은 그대로다 (#4580). 벤더를 아는 곳은
+    /// 몸통이 부르는 `subsecond_boundary` 하나다.
+    ///
+    /// 값은 경계 목록(`subsecond_boundary`)에서 바로 나오므로 경계를 더할 때 여기를 같이 고칠
     /// 일이 없다 — 리비전이 경계 하나를 놓쳐 재도색이 안 도는 구멍이 생기지 않는다.
+    ///
+    /// 아래 재구성과 **한 쌍이다.** 리비전이 바뀐 것을 보고 재구성을 부르는 것이 TS 계약
+    /// (`rhwp-studio/src/core/subsecond-runtime.ts`)이므로 한쪽만 있는 빌드는 그 계약을 반만
+    /// 만족한다. 그래서 게이트도 둘이 같아야 한다 — 이 함수의 몸통이 wasm32 전용 경계를
+    /// 가리키므로 `wasm32` 가 조건에 들어가고, 짝인 재구성도 같은 조건을 쓴다.
     #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
-    #[cfg_attr(
-        feature = "subsecond-dev",
-        wasm_bindgen(js_name = getSubsecondPatchRevision)
-    )]
-    pub fn get_subsecond_patch_revision(&self) -> String {
+    #[wasm_bindgen(js_name = getRenderCodeRevision)]
+    pub fn get_render_code_revision(&self) -> String {
         subsecond_boundary::patch_revision()
     }
 
-    /// 핫패치로 렌더러 코드가 교체됐을 때 문서의 파생 상태를 새 코드로 다시 만든다.
+    /// 바이트는 그대로인데 화면용으로 파생해 둔 것이 더는 원본과 대응하지 않을 때 다시 만든다.
+    ///
+    /// 몸통에 벤더는 없다 — `DocumentCore::rebuild_derived_state` 를 그대로 위임하고, 그 연산
+    /// 자체는 렌더 코드 교체 말고도 쓰일 수 있는 것이다. studio 가 같은 사건을 부르는 말도
+    /// `document-view-changed`("바이트는 안 바뀌었고 화면용으로 파생한 것이 바뀌었다")다.
+    /// 그래서 이름을 벤더가 아니라 그 어휘에 맞춘다 (#4580).
     ///
     /// `&mut self` 여야 한다. 페이지 트리 캐시만 비우면 다시 그리는 값은 새 코드가 내지만
     /// 그 값을 앉히는 페이지 박스와 문단 조합은 `pagination`·`composed`·측정 캐시에 남은
     /// 패치 이전 코드의 결과라, 소스의 어느 버전에도 대응하지 않는 화면이 나온다 (#4576).
     /// 그 셋은 모두 `&mut self` 를 요구하므로 `&self` 로는 계약 자체를 표현할 수 없다.
-    #[cfg(feature = "subsecond-dev")]
-    #[cfg_attr(
-        feature = "subsecond-dev",
-        wasm_bindgen(js_name = invalidateSubsecondRenderCaches)
-    )]
-    pub fn invalidate_subsecond_render_caches(&mut self) {
+    ///
+    /// 위 리비전 조회와 짝이라 게이트도 같다. 네이티브에는 호출부가 하나도 없다 — 몸통은
+    /// 타깃과 무관하지만, 이 export 를 부르는 계약 자체가 브라우저의 것이다 (#4580).
+    #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
+    #[wasm_bindgen(js_name = rebuildDerivedState)]
+    pub fn rebuild_derived_state(&mut self) {
         self.core.rebuild_derived_state();
     }
 

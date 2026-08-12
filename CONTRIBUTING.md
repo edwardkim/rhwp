@@ -106,6 +106,21 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 - **`mydocs/orders/YYYYMMDD.md`는 PR에 포함하지 마세요.** 이 파일은 병합 결과와 후속 작업을 관리하는
   메인터너 전용 일일 운영 기록입니다. 필요한 기록은 PR 병합 뒤 메인터너가 작성합니다.
 
+### 메인터너 검토 기록과의 구분
+
+외부 기여자의 제출 절차는 이 문서의 **코드 기여**, **PR 전 체크리스트**, **회귀 테스트 가이드**가
+전부입니다. 저장소에 함께 있는 다음 문서는 메인터너가 접수·보정·병합 후속 처리를 할 때 쓰는 내부
+운영 기록이므로, 외부 기여 PR에 해석하거나 첨부하지 마세요.
+
+- `AGENTS.md` 및 AI 도구별 부트스트랩 파일
+- `mydocs/manual/pr_review_workflow.md`와 `mydocs/manual/pr_review/` 하위 문서
+- `mydocs/pr/`, `mydocs/pr/archives/`, `mydocs/pr/assets/`, `mydocs/orders/` 하위 파일
+
+특히 `pr_N_review.md`, `pr_N_review_impl.md`, 오늘할일, 메인터너 검토용 비교 이미지와 병합·후속처리
+기록은 **메인터너만** 작성합니다. 기여자는 재현 명령, 테스트 결과, 공개 가능한 fixture와 필요한
+스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. 메인터너가 특정 기록 파일의 추가를 명시적으로
+요청한 경우에만 그 요청 범위에서 예외로 합니다.
+
 ### Claude·Codex capability 기여
 
 재사용할 Claude 에이전트·Claude Skill·Codex Skill을 추가하거나 변경하기 전에는
@@ -146,6 +161,51 @@ cargo build --profile release-test --target-dir target/pr-review
 이 명령은 `rhwp` 바이너리를 만들어 시각 대조를 준비할 뿐, 테스트를 실행하지 않습니다. **PR 전 검증을
 대체하지 않으므로**, 코드 변경 뒤에는 위의 전체 `cargo nextest run ... --tests --no-fail-fast`를 반드시
 완료하세요. 상세 절차는 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따릅니다.
+
+### 프런트엔드 변경 검증
+
+`rhwp-studio/`, `npm/editor/`, WASM과 Studio의 연결 코드 또는 브라우저 UI를 바꾸는 PR은 Rust 검증과 별도로
+아래 범위에서 검증합니다. 메인터너용 PR review 문서를 읽거나 저장소에 검토 기록을 추가할 필요는 없습니다.
+PR 본문에 실제로 실행한 명령, 통과 결과, 수동 확인한 동작과 사용한 공개 sample만 적어주세요.
+
+먼저 의존성을 설치한 뒤 Studio의 타입·단위·번들을 확인합니다.
+
+```bash
+npm --prefix rhwp-studio ci
+(cd rhwp-studio && npx tsc --noEmit)
+npm --prefix rhwp-studio test
+npm --prefix rhwp-studio run build
+```
+
+사용자 상호작용, Canvas, 선택·입력·저장, bridge, plugin 등 브라우저 동작을 바꿨다면
+[`rhwp-studio/e2e/MANIFEST.md`](rhwp-studio/e2e/MANIFEST.md)에서 변경 기능에 대응하는 E2E를 골라 함께
+실행합니다. 예를 들어 `e2e/`에 새 회귀를 추가했다면 manifest와 package script도 함께 갱신하고,
+해당 script를 PR 본문에 기록합니다.
+
+```bash
+# 예: 수정한 기능에 맞는 한 가지 이상의 E2E를 선택한다.
+npm --prefix rhwp-studio run e2e:undo
+
+# 실제 브라우저 수동 확인이 필요한 UI 변경은 개발 서버를 외부 인터페이스에도 열어 실행한다.
+npm --prefix rhwp-studio run dev -- --host 0.0.0.0 --port 7700
+# 브라우저에서 http://localhost:7700 을 열어 수정한 흐름을 확인한 뒤 서버를 종료한다.
+```
+
+`npm/editor`의 public API, transport, 선언 파일 또는 package manifest를 바꿨다면 Studio test만으로 끝내지
+말고 package 계약도 확인합니다. iframe RPC·기본 옵션·WASM 초기화가 바뀌면 fresh WASM build 뒤 관련 embed
+E2E까지 실행합니다.
+
+```bash
+npm --prefix npm/editor test
+node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
+(cd rhwp-studio && npx tsc --ignoreConfig --noEmit --skipLibCheck ../npm/editor/index.d.ts)
+(cd npm/editor && npm pack --dry-run --json)
+wasm-pack build --target web --out-dir pkg
+VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
+```
+
+브라우저 화면·영상·개인정보가 포함된 sample은 저장소에 커밋하지 않고 PR 본문에 공개 가능한 범위로 첨부합니다.
+렌더링 또는 페이지네이션을 바꿨다면 이 절차에 더해 아래의 시각 검증 안내를 따릅니다.
 
 ### 성능 검증 책임
 
@@ -341,9 +401,10 @@ rhwp는 코드뿐 아니라 **작업 과정의 기록**도 프로젝트의 일�
 > [`mydocs/README.md`](mydocs/README.md)(문서 지도·manifest)이고, 이 문서의 표는 요약입니다.
 > 충돌 시 canonical 문서가 우선합니다.
 >
-> **AI 도구를 쓰신다면**: 저장소 루트의 [`AGENTS.md`](AGENTS.md)가 에이전트 부트스트랩
-> 파일입니다 (CLAUDE.md는 이를 가리키는 부트로더). 에이전트가 AGENTS.md 의 로딩 순서를
-> 따르면 이 저장소의 절차와 검증 규칙을 그대로 파악합니다.
+> **AI 도구를 쓰신다면**: 일부 도구는 저장소 루트의 [`AGENTS.md`](AGENTS.md)를 자동으로
+> 읽을 수 있습니다. 그러나 외부 기여 PR의 제출 범위와 절차는 이 `CONTRIBUTING.md`가 우선합니다.
+> `AGENTS.md`에 있는 메인터너 운영 절차를 따라 review 문서·오늘할일·병합 기록을 PR에 추가하지
+> 마세요. 위 **메인터너 검토 기록과의 구분**을 따릅니다.
 
 ### 폴더 구조 (`mydocs/` 하위)
 
@@ -436,9 +497,10 @@ python3 scripts/check_markdown_links.py      # 상대 링크 검사
 
 ## LLM/에이전트 보조 기여
 
-이 저장소는 AI 에이전트가 1급 소비자이자 1급 기여자다. Claude Code·Copilot·
-Cursor·Codex·Gemini CLI·Windsurf·Cline 이 **자동으로 읽는 지침 파일**이 전부
-준비돼 있다 — 어떤 도구를 쓰든 같은 규약([AGENTS.md](AGENTS.md))에 도착한다.
+이 저장소는 AI 에이전트도 기여 도구로 사용할 수 있다. Claude Code·Copilot·Cursor·Codex·
+Gemini CLI·Windsurf·Cline은 도구별 지침 파일을 자동으로 읽을 수 있다. 다만 외부 기여자가
+PR에 포함할 파일과 검증 범위는 이 문서가 정하며, 자동 로딩된 내부 지침은 메인터너의 접수·검토·
+병합 운영을 외부 PR에 복제하라는 의미가 아니다.
 
 | 도구 | 자동 로딩 파일 |
 |---|---|
@@ -465,7 +527,5 @@ Cursor·Codex·Gemini CLI·Windsurf·Cline 이 **자동으로 읽는 지침 파�
 쓰든, 그 모델을 부리는 위 CLI/IDE 가 이 파일들을 자동으로 읽으므로 결국 같은 규약에 도착한다.
 저장소 파일을 읽지 않는 도구(영상·미디어 생성형 등)는 이 표의 범위 밖이다.
 
-에이전트 보조로 문서를 실제 편집·생성했다면 **작업 증빙**을 권장한다:
-`rhwp replay --plan-json <계획> --capsule work.capsule.json` 이 만든 캡슐(3해시
-영수증)이나 관련 `--json` 봉투 원문을 PR 에 붙이면, 리뷰어가 주장 대신
-재계산으로 검증할 수 있다. 상세는 AGENTS.md 의 "작업 증빙" 절.
+에이전트 보조로 작업했다면 사용한 도구, 재현 명령, 테스트 결과를 PR 본문에 간단히 적어주세요.
+메인터너 운영용 capsule·review archive·오늘할일 파일은 첨부 대상이 아닙니다.

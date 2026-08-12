@@ -23,6 +23,13 @@ pub mod provenance;
 pub mod renderer;
 pub mod schema_registry;
 pub mod serializer;
+/// 핫패치 벤더(Dioxus subsecond) 어댑터. **rhwp 의 API 가 아니다** (#4580).
+///
+/// `pub` 인 이유는 `tools/rhwp-subsecond` 가 `link_wasm_exports()` 를 불러 wasm export 를 살려
+/// 둬야 하기 때문이지, 이 안의 함수들을 밖에서 쓰라는 뜻이 아니다. 격리 자체는 feature 가 이미
+/// 지킨다 — `subsecond-dev` 없이는 모듈이 존재하지 않으므로 릴리스 표면에는 처음부터 나오지
+/// 않는다. `#[doc(hidden)]` 은 그 사실을 문서에도 적는 것이다.
+#[doc(hidden)]
 #[cfg(feature = "subsecond-dev")]
 pub mod subsecond_dev;
 pub mod wasm_api;

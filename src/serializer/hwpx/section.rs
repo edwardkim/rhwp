@@ -2161,12 +2161,13 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
             Some(&p.drawing),
             &p.points,
         ),
+        // [#4676] curve 의 점은 `<hc:pt>` 가 아니라 `<hp:seg>` 체인으로 나간다(geom_tail).
         ShapeObject::Curve(cv) => (
             "curve",
             &cv.common,
             &cv.drawing.caption,
             Some(&cv.drawing),
-            &cv.points,
+            NO_PTS,
         ),
         ShapeObject::Group(_) => unreachable!(),
         ShapeObject::Picture(pic) => {
@@ -2212,6 +2213,10 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
             hc("ax1", &a.axis1),
             hc("ax2", &a.axis2),
         ),
+        // [#4676] curve 는 점을 `<hp:seg>` 체인으로 방출한다 — `<hc:pt>` 나열은 한글이
+        // 열다 죽는다(RPC 0x800706BE). 한컴 원본 실측: hp:curve 는 seg 만 쓰고 hc:pt 는
+        // 한 번도 쓰지 않는다. seg 는 이웃한 두 점을 잇는 구간이므로 점 N 개 → seg N-1 개.
+        ShapeObject::Curve(cv) => curve_segs_xml(&cv.points, &cv.segment_types),
         _ => String::new(),
     };
     // [#4388] `<hp:arc>` 전용 `type` 속성(NORMAL/PIE/CHORD) — OWPML `CArcType` 계약.
@@ -2230,6 +2235,36 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
         &extra_attrs,
         ctx,
     )
+}
+
+/// [#4676] `CurveShape` 의 점 목록을 OWPML `<hp:seg>` 체인으로 방출한다.
+///
+/// 한글은 `<hp:curve>` 안의 `<hc:pt>` 나열을 만나면 여는 도중 죽는다(COM RPC 0x800706BE,
+/// 10k 오라클 스윕에서 크래시 산출물 다수의 공통 원인). 한컴 원본은 언제나 seg 를 쓴다:
+///
+/// ```xml
+/// <hp:seg type="CURVE" x1="0" y1="1680" x2="10440" y2="0"/>
+/// <hp:seg type="LINE"  x1="10440" y1="0" x2="20940" y2="1800"/>
+/// ```
+///
+/// `segment_types[i]` 는 HWP5의 구간 종류(0: 직선, 1: 곡선)다. HWPX의 `hp:seg type`은
+/// HWP5 `1`이 기대하는 베지어 제어점 두 개를 담지 않으므로 파서는 이 필드에 옮기지 않는다.
+/// 비어 있으면 한글 호환을 위해 CURVE로 방출한다.
+fn curve_segs_xml(points: &[crate::model::Point], segment_types: &[u8]) -> String {
+    points
+        .windows(2)
+        .enumerate()
+        .map(|(i, w)| {
+            let kind = match segment_types.get(i) {
+                Some(0) => "LINE",
+                _ => "CURVE",
+            };
+            format!(
+                r#"<hp:seg type="{}" x1="{}" y1="{}" x2="{}" y2="{}"/>"#,
+                kind, w[0].x, w[0].y, w[1].x, w[1].y
+            )
+        })
+        .collect()
 }
 
 /// [#4388] `ArcShape.arc_type` (0: Arc, 1: CircularSector, 2: Bow) →
@@ -3401,6 +3436,108 @@ mod tests {
         assert_eq!(
             reparsed.paragraphs[0].text, "보\u{2007}도\u{2007}자\u{2007}료\u{00A0}끝",
             "요소 왕복 후 IR 텍스트 불변"
+        );
+    }
+
+    /// #4676: `<hp:curve>` 의 점은 `<hc:pt>` 나열이 아니라 `<hp:seg>` 체인으로 나가야 한다.
+    /// `<hc:pt>` 로 저장하면 한글이 파일을 여는 도중 프로세스째 죽는다(COM RPC 0x800706BE).
+    /// 한컴 원본 실측: `hp:curve` 는 seg 만 쓰고 `hc:pt` 는 한 번도 쓰지 않는다.
+    /// HWP5 유래 구간 종류(LINE/CURVE)는 IR의 `segment_types`에서 나온다.
+    #[test]
+    fn issue4676_curve_emits_seg_chain_not_pts() {
+        use crate::model::shape::{CommonObjAttr, CurveShape, DrawingObjAttr};
+        use crate::model::Point;
+
+        let curve = CurveShape {
+            common: CommonObjAttr::default(),
+            drawing: DrawingObjAttr::default(),
+            points: vec![
+                Point { x: 0, y: 100 },
+                Point { x: 500, y: 0 },
+                Point { x: 900, y: 250 },
+            ],
+            segment_types: vec![1, 0],
+        };
+        let mut ctx = SerializeContext::default();
+        let xml = render_shape(&ShapeObject::Curve(curve), &mut ctx);
+
+        assert!(
+            !xml.contains("<hc:pt "),
+            "curve 는 hc:pt 를 방출하면 안 된다(한글 크래시): {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:seg type="CURVE" x1="0" y1="100" x2="500" y2="0"/>"#),
+            "첫 구간은 곡선: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:seg type="LINE" x1="500" y1="0" x2="900" y2="250"/>"#),
+            "둘째 구간은 직선(segment_types 보존): {xml}"
+        );
+        // 점 N 개 → 구간 N-1 개
+        assert_eq!(xml.matches("<hp:seg ").count(), 2, "{xml}");
+    }
+
+    /// [#4676] HWPX `hp:seg type="CURVE"`는 HWP5의 cubic Bezier 구간 타입이 아니다.
+    /// XML → IR → XML 경계에서 `segment_types=1`로 오매핑하면 renderer가 제어점 둘과
+    /// 끝점을 한 구간으로 소비한다. HWPX 점 체인은 빈 HWP5 구간 타입으로 유지하면서
+    /// 한글 호환 `hp:seg` 출력만 보존해야 한다.
+    #[test]
+    fn issue4676_hwpx_curve_chain_never_becomes_hwp5_bezier_segments() {
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let source = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:curve id="0" zOrder="0" numberingType="NONE" textWrap="TOP_AND_BOTTOM"
+                textFlow="BOTH_SIDES" lock="0" href="" groupLevel="0" instid="1">
+        <hp:offset x="0" y="0"/>
+        <hp:orgSz width="100" height="100"/>
+        <hp:curSz width="100" height="100"/>
+        <hp:lineShape color="#000000" width="113" style="SOLID"/>
+        <hp:seg type="CURVE" x1="0" y1="0" x2="10" y2="20"/>
+        <hp:seg type="CURVE" x1="10" y1="20" x2="40" y2="30"/>
+        <hp:seg type="CURVE" x1="40" y1="30" x2="90" y2="80"/>
+      </hp:curve>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+
+        let section = parse_hwpx_section(source).expect("HWPX curve 파싱");
+        let mut doc = Document::default();
+        doc.sections.push(section.clone());
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap())
+            .expect("section XML");
+
+        assert_eq!(
+            xml.matches("<hp:seg ").count(),
+            3,
+            "점 체인 길이 보존: {xml}"
+        );
+        assert!(
+            !xml.contains("<hc:pt "),
+            "curve에는 hc:pt를 다시 쓰면 안 됨: {xml}"
+        );
+
+        let reparsed = parse_hwpx_section(&xml).expect("재파싱");
+        let curve = reparsed.paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|control| match control {
+                Control::Shape(shape) => match shape.as_ref() {
+                    ShapeObject::Curve(curve) => Some(curve),
+                    _ => None,
+                },
+                _ => None,
+            })
+            .expect("curve shape");
+        assert_eq!(curve.points.len(), 4, "첫 점과 세 segment 끝점이 남아야 함");
+        assert!(
+            curve.segment_types.is_empty(),
+            "HWPX CURVE를 HWP5 Bezier 타입으로 재도입하면 안 됨: {:?}",
+            curve.segment_types
         );
     }
 

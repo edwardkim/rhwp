@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-06
+last_verified: 2026-08-12
 ---
 
 # 다수 PR과 update branch 처리
@@ -180,6 +180,9 @@ collaborator가 외부 contributor PR의 source branch에 archive review·오늘
 - PR 안의 Merge branch devel commit은 검토 체리픽에서 제외한다.
 - 누적 branch는 충돌·테스트·시각 검증용 임시 branch다. review 문서는 원 PR 번호별로 작성한다.
 - 각 review 문서에 체리픽 순서, 적용 SHA, conflict, 선행 PR 의존성을 그 PR 기준으로 적는다.
+- 원 PR별 archive 검토 기록과 필요한 오늘할일은 통합 branch의 같은 PR diff에 둔다. 통합 PR 번호를 위한
+  별도 review 문서를 만들거나, 체리픽 통합 결과의 검토 기록만 담은 별도 docs-only PR을 만들지 않는다.
+  문서 보완은 동일 통합 PR의 code candidate CI 성공 뒤 trailing docs-only commit으로 처리한다.
 - 여러 PR을 한꺼번에 검증했어도 merge 전에는 각 PR의 최신 head, mergeable, required check를 개별 재확인한다.
 
 fetch·visibility branch·Cargo 검증은 [로컬 검증](local_validation.md)을, 렌더 영향 증적은

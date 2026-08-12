@@ -11255,9 +11255,7 @@ impl LayoutEngine {
                         self.compute_tac_pic_x(para, comp, styles, col_area, control_index);
                     let inline_x =
                         base_x + hwpunit_to_px(signed_hwpunit(common.horizontal_offset), self.dpi);
-                    let shape_attr = shape.shape_attr();
-                    let shape_h = hwpunit_to_px(common.height as i32, self.dpi)
-                        .max(hwpunit_to_px(shape_attr.current_height as i32, self.dpi));
+                    let shape_h = hwpunit_to_px(shape.flow_height_hu(), self.dpi);
                     let inline_y = self
                         .compute_tac_picture_shape_y(para, comp, styles, para_y, shape_h)
                         + hwpunit_to_px(signed_hwpunit(common.vertical_offset), self.dpi);

@@ -466,6 +466,16 @@ impl ShapeObject {
         }
     }
 
+    /// 도형이 줄 흐름에서 차지하는 세로 범위 (HWPUNIT).
+    ///
+    /// 저장 프레임(`common.height`)과 개체 요소의 실제 표시 높이
+    /// (`shape_attr.current_height`)는 어긋날 수 있다 — 한글은 둘 중 큰 값을
+    /// 조판 높이로 쓴다. 조판·측정·렌더가 각자 이 식을 다시 쓰면 같은 속성에
+    /// 정의가 여러 벌 생기므로(#4333) 이 메서드가 유일한 정의다.
+    pub fn flow_height_hu(&self) -> i32 {
+        (self.common().height as i32).max(self.shape_attr().current_height as i32)
+    }
+
     /// 개체 요소 속성 가변 참조 반환
     pub fn shape_attr_mut(&mut self) -> &mut ShapeComponentAttr {
         match self {

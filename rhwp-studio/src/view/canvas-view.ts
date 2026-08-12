@@ -22,10 +22,24 @@ import {
   type ZoomAnchor,
   type ZoomPageBox,
 } from './zoom-anchor.ts';
-import { SubsecondRevisionWatcher } from '@/core/subsecond-runtime';
+// [#4580] **값 import 는 금지다** — 개발 전용 벤더 런타임이라 정적으로 엮이면 프로덕션 번들에
+// 그대로 실린다. 실물은 `startRenderCodeReloadWatch()` 의 DEV 분기에서 동적으로 부른다.
+import type { RenderCodeReloadWatcher } from '@/core/subsecond-runtime';
 
 const TEXT_EDIT_STATIC_LAYER_VERIFY_DELAY_MS = 800;
 const AUTO_RENDERER_RESELECTION_DELAY_MS = 300;
+
+/**
+ * `document-view-changed` 의 발생원 — 문서 리비전은 그대로고 **화면용 파생물을 만드는 코드**가
+ * 교체됐다는 뜻이다.
+ *
+ * [#4580] 발생원과 그것을 보는 쪽이 같은 이름을 쓰게 하는 유일한 장치다. 예전에는 아래 두 자리가
+ * `'subsecond-renderer'` 라는 리터럴을 각자 적고 있어 컴파일 타임 연결이 0이었다 — 한쪽만 고치면
+ * 컴파일은 통과한 채 재도색이 조용히 `refreshPagesForRevision()` 으로 격하됐다. 이름에서 벤더도
+ * 뺐다: 이 사건의 내용은 "렌더 코드가 다시 로드됐다"이지 어느 도구가 그랬는지가 아니다.
+ * 다른 모듈이 이 발생원을 쏘게 되면 리터럴을 새로 적지 말고 이 상수를 export 한다.
+ */
+const RENDER_CODE_RELOADED = 'render-code-reloaded';
 
 type DeferredPrefetchTask =
   | { kind: 'idle'; id: number }
@@ -42,7 +56,7 @@ export class CanvasView {
   private pageRenderer: PageRenderer;
   private viewportManager: ViewportManager;
   private coordinateSystem: CoordinateSystem;
-  private subsecondRevisionWatcher: SubsecondRevisionWatcher;
+  private renderCodeReloadWatcher: RenderCodeReloadWatcher | null = null;
 
   private scrollContent: HTMLElement;
   private pages: PageInfo[] = [];
@@ -72,11 +86,7 @@ export class CanvasView {
     this.pageRenderer = new PageRenderer(wasm);
     this.viewportManager = new ViewportManager(eventBus);
     this.coordinateSystem = new CoordinateSystem(this.virtualScroll);
-    this.subsecondRevisionWatcher = new SubsecondRevisionWatcher(
-      wasm,
-      () => eventBus.emit('document-view-changed', 'subsecond-renderer'),
-    );
-    this.subsecondRevisionWatcher.start();
+    this.startRenderCodeReloadWatch();
 
     this.scrollContent = container.querySelector('#scroll-content')!;
     this.viewportManager.attachTo(container);
@@ -99,7 +109,8 @@ export class CanvasView {
         void this.refreshPagesForMutation();
       }),
       eventBus.on('document-view-changed', (source) => {
-        if (source === 'subsecond-renderer') {
+        if (source === RENDER_CODE_RELOADED) {
+          // 문서 리비전은 그대로다 — 렌더러 재선택 없이 곧바로 다시 그린다.
           this.refreshPages();
           return;
         }
@@ -107,6 +118,32 @@ export class CanvasView {
       }),
       eventBus.on('grid-view-changed', () => this.refreshGridOverlays()),
     );
+  }
+
+  /**
+   * 렌더 코드 교체 감시자를 개발 빌드에서만 시작한다 (#4580).
+   *
+   * `import.meta.env.DEV` 는 빌드 시점 리터럴이라 프로덕션 번들에서는 이 본문이 통째로 지워지고,
+   * 그때만 참조되는 `subsecond-runtime` 모듈도 모듈 그래프에서 빠진다. 생성자는 동기라 동적
+   * import 를 기다릴 수 없으므로 모듈이 도착한 뒤에 배선하고, 그 사이에 뷰가 정리됐으면 시작하지
+   * 않는다.
+   */
+  private startRenderCodeReloadWatch(): void {
+    if (!import.meta.env.DEV) return;
+    const renderCodeReload = this.wasm.getRenderCodeReload();
+    if (!renderCodeReload) return;
+    void import('@/core/subsecond-runtime')
+      .then(({ RenderCodeReloadWatcher }) => {
+        if (this.disposed) return;
+        this.renderCodeReloadWatcher = new RenderCodeReloadWatcher(
+          renderCodeReload,
+          () => this.eventBus.emit('document-view-changed', RENDER_CODE_RELOADED),
+        );
+        this.renderCodeReloadWatcher.start();
+      })
+      .catch((error) => {
+        console.error('[CanvasView] 렌더 코드 교체 감시자를 불러오지 못했습니다:', error);
+      });
   }
 
   /** 문서 로드 후 호출 — 페이지 정보 수집 및 가상 스크롤 초기화 */
@@ -946,11 +983,26 @@ export class CanvasView {
       .forEach((el) => el.remove());
   }
 
-  /** 전체 정리 */
+  /**
+   * 뷰가 쥔 것을 전부 놓는다 — 감시자, 렌더러 세션, 뷰포트 청취, 이벤트 구독.
+   *
+   * **호출부가 없는 것이 지금의 계약이다** (#4592). `canvasView` 는 `main.ts` 모듈 바인딩이고
+   * 한 번 만들어진 뒤 교체되지 않는다. 스튜디오에는 문서 닫기도 뷰 교체도 없으므로 이 뷰의
+   * 수명은 realm 과 같고, 탭이 닫히면 감시자·구독·wasm 핸들이 함께 사라진다. 그래서 지금
+   * 누수는 없다 — 없는 것은 해체 **경로**이지 해체 **구현**이 아니다.
+   *
+   * `pagehide`/`beforeunload` 에 걸지 않는다. **적극적으로 해롭다** — bfcache 로 복원되는
+   * 페이지에서 폐기된 뷰가 되살아나고, 어차피 realm 이 사라지는 시점의 해제는 의식일 뿐이다.
+   * #4579 가 같은 이유로 배선을 거절했다.
+   *
+   * 이 메서드와 `disposed` 가드들이 살아나는 시점은 하나뿐이다: 문서 닫기나 뷰 교체 기능이
+   * 생길 때. 그때 이것이 유일한 해제선이고, `wasm-bridge.ts` 의 `disconnectSubsecondDevtools`
+   * 도 같은 자리에서 불려야 한다. 그 전까지 호출부를 지어내지 않는다.
+   */
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
-    this.subsecondRevisionWatcher.stop();
+    this.renderCodeReloadWatcher?.stop();
     this.rendererSelectionEpoch += 1;
     this.documentLoadPrepared = false;
     this.cancelAutoRendererReselection();

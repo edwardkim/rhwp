@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 type RuntimeModule = typeof import('../src/core/subsecond-runtime.ts');
 
@@ -38,16 +41,16 @@ class FakeAnimationFrames {
 }
 
 test('revision watcher invalidates and repaints exactly once per changed HotFn revision', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let revision: string | null = null;
   let invalidations = 0;
   const repaints: string[] = [];
-  const watcher = new SubsecondRevisionWatcher(
+  const watcher = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => {
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => {
         invalidations += 1;
         return true;
       },
@@ -82,14 +85,14 @@ test('revision watcher invalidates and repaints exactly once per changed HotFn r
 });
 
 test('revision watcher does not repaint after disposal or without a Subsecond bundle', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let repaintCount = 0;
-  const disabled = new SubsecondRevisionWatcher(
+  const disabled = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => false,
-      getSubsecondPatchRevision: () => 'disabled',
-      invalidateSubsecondRenderCaches: () => true,
+      isAvailable: () => false,
+      getRenderCodeRevision: () => 'disabled',
+      rebuildDerivedState: () => true,
     },
     () => {
       repaintCount += 1;
@@ -103,11 +106,11 @@ test('revision watcher does not repaint after disposal or without a Subsecond bu
   assert.equal(frames.pendingCount, 0);
 
   let revision = 'one';
-  const active = new SubsecondRevisionWatcher(
+  const active = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => true,
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => true,
     },
     () => {
       repaintCount += 1;
@@ -126,16 +129,16 @@ test('revision watcher does not repaint after disposal or without a Subsecond bu
 });
 
 test('revision watcher coalesces revisions while animation frames are paused', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let revision = 'baseline';
   let invalidations = 0;
   const repaints: string[] = [];
-  const watcher = new SubsecondRevisionWatcher(
+  const watcher = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => {
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => {
         invalidations += 1;
         return true;
       },
@@ -164,16 +167,16 @@ test('revision watcher coalesces revisions while animation frames are paused', a
 });
 
 test('revision watcher keeps watching after a repaint throws', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let revision = 'baseline';
   let repaintThrows = true;
   const repaints: string[] = [];
-  const watcher = new SubsecondRevisionWatcher(
+  const watcher = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => true,
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => true,
     },
     nextRevision => {
       repaints.push(nextRevision);
@@ -218,14 +221,14 @@ test('revision watcher keeps watching after a repaint throws', async () => {
 });
 
 test('a repaint that restarts the watcher leaves exactly one scheduled frame', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let revision = 'baseline';
-  const watcher = new SubsecondRevisionWatcher(
+  const watcher = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => true,
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => true,
     },
     () => {
       // 재도색이 감시자를 다시 세우는 경우 — 예약이 두 개로 갈라지면 그중 하나는
@@ -251,15 +254,15 @@ test('a repaint that restarts the watcher leaves exactly one scheduled frame', a
 });
 
 test('a stopped revision watcher releases its frame and starts again', async () => {
-  const { SubsecondRevisionWatcher } = await loadRuntime();
+  const { RenderCodeReloadWatcher } = await loadRuntime();
   const frames = new FakeAnimationFrames();
   let revision = 'baseline';
   const repaints: string[] = [];
-  const watcher = new SubsecondRevisionWatcher(
+  const watcher = new RenderCodeReloadWatcher(
     {
-      isSubsecondHotpatchEnabled: () => true,
-      getSubsecondPatchRevision: () => revision,
-      invalidateSubsecondRenderCaches: () => true,
+      isAvailable: () => true,
+      getRenderCodeRevision: () => revision,
+      rebuildDerivedState: () => true,
     },
     nextRevision => repaints.push(nextRevision),
     {
@@ -301,6 +304,44 @@ class FakeWebSocket {
     this.closed = true;
   }
 }
+
+test('render capabilities stay silent on a plain WASM build and follow the current document', async () => {
+  const { createRenderCodeReload } = await loadRuntime();
+
+  // 일반 wasm-pack 빌드 — 세 export 중 어느 것도 없다.
+  const plain = createRenderCodeReload({}, () => ({}));
+  assert.equal(plain.isAvailable(), false);
+  assert.equal(plain.getRenderCodeRevision(), null);
+  assert.equal(
+    plain.rebuildDerivedState(),
+    false,
+    '무효화하지 못했으면 감시자가 재도색을 부르지 않도록 false 여야 한다',
+  );
+
+  // dx 핫패치 빌드 — 문서는 열고 닫을 때마다 바뀌므로 게터로 따라가야 한다.
+  let invalidated = 0;
+  let openDocument: object | null = null;
+  const hotpatch = createRenderCodeReload(
+    { subsecondProbe: () => 41 },
+    () => openDocument,
+  );
+  assert.equal(hotpatch.isAvailable(), true);
+  assert.equal(hotpatch.getRenderCodeRevision(), null, '문서가 없으면 리비전도 없다');
+  assert.equal(hotpatch.rebuildDerivedState(), false);
+
+  openDocument = {
+    getRenderCodeRevision: () => 'aaaa:bbbb',
+    rebuildDerivedState: () => {
+      invalidated += 1;
+    },
+  };
+  assert.equal(hotpatch.getRenderCodeRevision(), 'aaaa:bbbb');
+  assert.equal(hotpatch.rebuildDerivedState(), true);
+  assert.equal(invalidated, 1);
+
+  openDocument = null;
+  assert.equal(hotpatch.getRenderCodeRevision(), null, '문서를 닫으면 다시 리비전이 없다');
+});
 
 test('devtools websocket forwards patch messages and reconnects without reloading', async () => {
   const { connectSubsecondDevtools } = await loadRuntime();
@@ -405,28 +446,64 @@ async function connectWithSignals(outcomeFor: (message: string) => string): Prom
   return { socket, signals, errorEvents, disconnect: disconnect as () => void };
 }
 
-const REJECTION_CODES = [
-  'not-json',
-  'foreign-build-id',
-  'missing-jump-table',
-  'undeserializable-jump-table',
-  'patch-rejected',
-];
+/**
+ * 엔진이 선언한 결과 코드 전부 — `DevtoolsMessageOutcome::code()`(`src/subsecond_dev.rs`)에서 읽는다.
+ *
+ * [#4589] 계약의 단일 출처는 그 `match` 하나다. 여기 목록을 적으면 저장소에 세 번째 사본이
+ * 생기고(실제로 그랬다), 어긋나도 컴파일은 통과해 런타임 경고로만 드러난다.
+ */
+function engineOutcomeCodes(): string[] {
+  const source = readFileSync(new URL('../../src/subsecond_dev.rs', import.meta.url), 'utf8');
+  const start = source.indexOf('pub fn code(');
+  assert.notEqual(
+    start,
+    -1,
+    'src/subsecond_dev.rs 에서 DevtoolsMessageOutcome::code() 를 찾지 못했다 — 계약의 출처가 옮겨졌다',
+  );
+  // `impl` 안의 메서드이므로 4칸 들여쓴 닫는 중괄호가 함수의 끝이다.
+  const end = source.indexOf('\n    }', start);
+  assert.notEqual(end, -1, 'code() 의 끝을 찾지 못했다');
+  const codes = [...source.slice(start, end).matchAll(/=>\s*"([^"]+)"/g)].map(match => match[1]);
+  assert.ok(codes.length > 0, 'code() 본문에서 결과 코드를 한 건도 읽지 못했다');
+  return codes;
+}
+
+const ENGINE_OUTCOME_CODES = engineOutcomeCodes();
+
+/**
+ * 성공값(`patch-dispatched`)과 데브서버 정상 트래픽(`not-hot-reload`)을 뺀 나머지.
+ *
+ * 이 둘의 이름을 적어도 사본이 되지 않는다 — 바로 아래 테스트가 각각의 진단 등급을 이름으로
+ * 확인하므로, 엔진에서 이름이 바뀌면 이 필터가 아니라 그 단언이 먼저 빨개진다.
+ */
+const REJECTION_CODES = ENGINE_OUTCOME_CODES.filter(
+  code => code !== 'patch-dispatched' && code !== 'not-hot-reload',
+);
+
+test('the studio describes exactly the outcome codes the engine declares', async () => {
+  const { SUBSECOND_OUTCOME_CODES } = await loadRuntime();
+
+  assert.deepEqual(
+    ENGINE_OUTCOME_CODES.filter(code => !SUBSECOND_OUTCOME_CODES.includes(code)),
+    [],
+    '엔진이 선언한 결과 코드를 스튜디오 표가 모른다 — 런타임에는 "읽지 못한 결과 값" 경고로만 드러난다',
+  );
+  assert.deepEqual(
+    SUBSECOND_OUTCOME_CODES.filter(code => !ENGINE_OUTCOME_CODES.includes(code)),
+    [],
+    '스튜디오 표에 엔진이 더는 선언하지 않는 결과 코드가 남아 있다 — 도달하지 않는 진단 문구다',
+  );
+});
 
 test('every devserver outcome reaches a reporter instead of being discarded', async () => {
   const { socket, signals, disconnect } = await connectWithSignals(message => message);
 
-  [...REJECTION_CODES, 'not-hot-reload', 'patch-dispatched'].forEach(code =>
-    socket.onmessage?.({ data: code } as MessageEvent),
-  );
+  ENGINE_OUTCOME_CODES.forEach(code => socket.onmessage?.({ data: code } as MessageEvent));
   socket.onmessage?.({ data: new Uint8Array([1]) } as unknown as MessageEvent);
 
   assert.deepEqual(
     signals,
-    [...REJECTION_CODES, 'not-hot-reload', 'patch-dispatched'].map(code => ({
-      kind: 'outcome',
-      code,
-    })),
+    ENGINE_OUTCOME_CODES.map(code => ({ kind: 'outcome', code })),
     '결과는 한 건도 삼켜지지 않고, 이진 프레임은 결과를 만들지 않는다',
   );
 
@@ -447,7 +524,7 @@ test('each outcome is rendered as its own line that names where to look next', a
   assert.equal(
     new Set(messages).size,
     REJECTION_CODES.length,
-    `다섯 사유는 서로 다른 문구로 구별돼야 한다: ${JSON.stringify(messages)}`,
+    `거절 사유는 서로 다른 문구로 구별돼야 한다: ${JSON.stringify(messages)}`,
   );
   messages.forEach(message =>
     assert.ok(message.length > 40, `다음에 볼 곳까지 말해야 한다: ${message}`),
@@ -648,39 +725,93 @@ test('devtools websocket counts only applied patches toward the accumulation', a
   disconnect?.();
 });
 
-test('repository exposes a feature-gated dx adapter without changing normal WASM builds', () => {
+/** 매니페스트·잠금 파일 한 쌍을 담은 임시 저장소 뿌리를 만든다. */
+function fakeRepository(pin: string, locked: string): string {
+  const root = mkdtempSync(path.join(tmpdir(), 'rhwp-dx-version-'));
+  writeFileSync(
+    path.join(root, 'Cargo.toml'),
+    `[dependencies]\nsubsecond = { version = "${pin}", optional = true }\n`,
+  );
+  writeFileSync(
+    path.join(root, 'Cargo.lock'),
+    `[[package]]\nname = "subsecond"\nversion = "${locked}"\n`,
+  );
+  return root;
+}
+
+test('the dioxus-cli version is derived from the crate, so it cannot drift', async () => {
+  const { dioxusCliVersion } = await import('../../scripts/dioxus-cli-version.mjs');
+  const repoRoot = new URL('../../', import.meta.url);
+  const derived = dioxusCliVersion(fileURLToPath(repoRoot));
+
+  // 유도값은 실제로 컴파일되는 버전이어야 한다 — 잠금 파일이 해결한 값.
+  assert.ok(
+    readFileSync(new URL('Cargo.lock', repoRoot), 'utf8')
+      .includes(`\nname = "subsecond"\nversion = "${derived}"\n`),
+    `Cargo.lock 이 해결한 subsecond 버전과 유도값(${derived})이 다르다`,
+  );
+
+  // dependabot 이 `Cargo.toml` 만 올려도 설치 버전이 따라간다 — 사본이 없기 때문이다.
+  const installScript = JSON.parse(
+    readFileSync(new URL('rhwp-studio/package.json', repoRoot), 'utf8'),
+  ).scripts['subsecond:install'];
+  assert.doesNotMatch(
+    installScript,
+    /\d+\.\d+\.\d+/,
+    `subsecond:install 에 버전 사본이 다시 생겼다: ${installScript}`,
+  );
+  assert.ok(installScript.includes('scripts/dioxus-cli-version.mjs'), installScript);
+});
+
+test('a drifted or loose pin stops the install instead of fetching the wrong dx', async () => {
+  const { dioxusCliVersion } = await import('../../scripts/dioxus-cli-version.mjs');
+
+  assert.equal(dioxusCliVersion(fakeRepository('=1.2.3', '1.2.3')), '1.2.3');
+
+  // 핀과 잠금이 갈라진 상태. 그대로 설치하면 어느 쪽과도 맞지 않는 dx 가 깔린다.
+  assert.throws(
+    () => dioxusCliVersion(fakeRepository('=1.2.3', '1.2.4')),
+    /Cargo\.toml: 1\.2\.3[\s\S]*Cargo\.lock: 1\.2\.4/,
+  );
+
+  // 느슨한 핀이면 잠금이 언제든 앞서 나갈 수 있어 유도 자체가 성립하지 않는다.
+  assert.throws(() => dioxusCliVersion(fakeRepository('1.2', '1.2.9')), /정확 핀이 아니다/);
+});
+
+/**
+ * 핫패치 개발 배선이 **매니페스트·설정에 선언되어 있는지** 본다.
+ *
+ * [#4593] 여기 정규식이 겨눠도 되는 것은 실행되지 않는 파일뿐이다 — `Cargo.toml`,
+ * `vite.config.ts`, `package.json` 에서는 "이 문자열이 이 자리에 있다"가 곧 계약이고, 다른
+ * 확인 방법도 없다(cargo·vite·npm 이 그 문자열을 읽는다).
+ *
+ * **코드 파일을 겨누는 단언은 여기 두지 않는다.** 소스에 문자열이 있다는 것은 그 코드가
+ * 실행된다는 증거가 아니라서, 실제로 거짓 초록을 만들었다 — `tools/rhwp-subsecond/build.rs` 의
+ * `librhwp-dioxus.rlib` 를 찾던 단언은 그 이름을 쓰는 심링크 생성이 `#[cfg(unix)]` 뒤에 있어
+ * Windows 에서는 아예 컴파일되지 않는데도 초록이었다. 같은 부류로 #4579 가 `CanvasView.dispose()`
+ * 안의 `stop()` 을 찾던 단언 하나를 이미 행동 단언으로 바꿨다 — 호출부가 0개라 그 `stop()` 은
+ * 절대 실행되지 않았다.
+ *
+ * 새 계약이 생기면 물어야 할 것은 하나다: 이 문자열이 있다는 것과 이 동작이 일어난다는 것이
+ * 같은가. 다르면 행동으로 확인하거나, 확인할 수 없다는 사실을 남긴다.
+ */
+test('hot-patch dev wiring is declared in the manifests and the vite config', () => {
   const cargo = readFileSync(new URL('../../Cargo.toml', import.meta.url), 'utf8');
   const adapterCargo = readFileSync(
     new URL('../../tools/rhwp-subsecond/Cargo.toml', import.meta.url),
     'utf8',
   );
-  const adapterBuild = readFileSync(
-    new URL('../../tools/rhwp-subsecond/build.rs', import.meta.url),
-    'utf8',
-  );
-  const wasmApi = readFileSync(new URL('../../src/wasm_api.rs', import.meta.url), 'utf8');
-  const lib = readFileSync(new URL('../../src/lib.rs', import.meta.url), 'utf8');
-  const bridge = readFileSync(new URL('../src/core/wasm-bridge.ts', import.meta.url), 'utf8');
-  const canvasView = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
   const vite = readFileSync(new URL('../vite.config.ts', import.meta.url), 'utf8');
   const studioPackage = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
 
   assert.match(cargo, /subsecond-dev\s*=\s*\["dep:subsecond"\]/);
-  assert.match(cargo, /subsecond\s*=\s*\{\s*version\s*=\s*"=0\.7\.10",\s*optional\s*=\s*true\s*\}/);
+  // 버전 숫자는 여기 적지 않는다 — 사본이 하나 더 생기면 그것이 #4580 이 없앤 드리프트다.
+  // 정확 핀이라는 사실만 본다. 그 핀에서 유도한 값의 정합은 아래 전용 테스트가 확인한다.
+  assert.match(cargo, /subsecond\s*=\s*\{\s*version\s*=\s*"=\d+\.\d+\.\d+",\s*optional\s*=\s*true\s*\}/);
   assert.match(cargo, /members\s*=\s*\[[\s\S]*"tools\/rhwp-subsecond"/);
   assert.match(adapterCargo, /name\s*=\s*"rhwp-subsecond"/);
   assert.match(adapterCargo, /build\s*=\s*"build\.rs"/);
   assert.match(adapterCargo, /subsecond-dev\s*=\s*\["rhwp\/subsecond-dev"\]/);
-  assert.match(adapterBuild, /librhwp-dioxus\.rlib/);
-  assert.match(lib, /cfg\(feature = "subsecond-dev"\)[\s\S]*mod subsecond_dev/);
-  assert.match(wasmApi, /getSubsecondPatchRevision/);
-  assert.match(wasmApi, /invalidateSubsecondRenderCaches/);
-  assert.match(bridge, /connectSubsecondDevtools/);
-  assert.match(bridge, /isSubsecondHotpatchEnabled/);
-  assert.match(bridge, /getSubsecondPatchRevision/);
-  assert.match(bridge, /invalidateSubsecondRenderCaches/);
-  assert.match(canvasView, /new SubsecondRevisionWatcher/);
-  assert.match(canvasView, /document-view-changed[\s\S]*subsecond-renderer[\s\S]*this\.refreshPages\(\)/);
   assert.match(vite, /['"]\/_dioxus['"]/);
   assert.match(vite, /['"]\/wasm['"][\s\S]*127\.0\.0\.1:7711/);
   assert.match(vite, /librhwp-subsecond-patch-\*\.wasm/);
@@ -689,7 +820,7 @@ test('repository exposes a feature-gated dx adapter without changing normal WASM
   assert.match(vite, /rhwp-subsecond-vite/);
   assert.match(vite, /rhwp-subsecond\.js/);
   assert.match(studioPackage, /"subsecond:sync"[\s\S]*rhwp-subsecond-vite/);
-  assert.match(studioPackage, /"subsecond:install"[\s\S]*dioxus-cli --version 0\.7\.10 --locked/);
+  assert.match(studioPackage, /"subsecond:install"[\s\S]*cargo install dioxus-cli[\s\S]*--locked/);
   assert.match(studioPackage, /"subsecond:serve"[\s\S]*--package rhwp-subsecond[\s\S]*--hot-patch/);
   assert.match(studioPackage, /"dev:subsecond"\s*:\s*"npm run subsecond:sync && RHWP_SUBSECOND=1 vite"/);
 });

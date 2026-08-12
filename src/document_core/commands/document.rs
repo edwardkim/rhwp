@@ -1667,18 +1667,15 @@ impl DocumentCore {
     }
 
     /// 문서 IR을 직접 설정한다 (테스트/네이티브 전용).
+    ///
+    /// [#4582] 이미 문서가 들어 있던 core 에도 쓸 수 있으므로 파생 상태는 손으로 고르지 않고
+    /// [`DocumentCore::rebuild_derived_state`] 에 통째로 맡긴다. 종전에는 스타일·문단 구성·
+    /// dirty 표시만 다시 만들고 측정 캐시를 그대로 뒀다 — 그러면 새 문서의 `!table.dirty` 인 표와
+    /// clean 으로 남은 문단이 **이전 문서의 측정값**을 재사용했다.
     pub fn set_document(&mut self, doc: Document) {
         self.document = doc;
         self.bump_bin_data_epoch();
-        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
-        self.composed = self
-            .document
-            .sections
-            .iter()
-            .map(|s| compose_section(s))
-            .collect();
-        self.mark_all_sections_dirty();
-        self.paginate();
+        self.rebuild_derived_state();
     }
 
     /// Batch 모드를 시작한다. 이후 Command 호출 시 paginate()를 건너뛴다.
@@ -2388,5 +2385,121 @@ mod validate_linesegs_tests {
         seg.line_height = 1000;
         para.line_segs.push(seg);
         assert!(!DocumentCore::needs_reflow_broadly(&para));
+    }
+}
+
+#[cfg(test)]
+mod set_document_tests {
+    use super::*;
+    use crate::model::document::Section;
+    use crate::model::table::{Cell, Table};
+
+    /// 지정한 행 수만큼 세로로 쌓인 1열 표 하나를 가진 1구역 문서.
+    fn doc_with_table_rows(row_count: u16) -> Document {
+        let cells = (0..row_count)
+            .map(|row| Cell {
+                row,
+                col: 0,
+                row_span: 1,
+                col_span: 1,
+                height: 2000,
+                width: 30000,
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            })
+            .collect();
+        let table = Table {
+            row_count,
+            col_count: 1,
+            cells,
+            ..Default::default()
+        };
+        Document {
+            sections: vec![Section {
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Table(Box::new(table))],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    fn first_table_height(core: &DocumentCore) -> f64 {
+        core.measured_tables[0][0].total_height
+    }
+
+    /// [#4582] 이미 문서가 들어 있던 core 에 새 문서를 넣으면, 증분 측정이 `!table.dirty`
+    /// 인 표에 대해 **이전 문서의 `MeasuredTable`** 을 재사용한다. `set_document` 가
+    /// 측정 캐시를 비우지 않기 때문이다.
+    ///
+    /// 판정 기준은 "빈 core 에 같은 문서를 넣었을 때의 측정값" 이다 — 문서가 같으면
+    /// core 이력과 무관하게 같은 높이가 나와야 한다.
+    #[test]
+    fn set_document_does_not_reuse_previous_documents_measured_table() {
+        let mut reused = DocumentCore::new_empty();
+        reused.set_document(doc_with_table_rows(6));
+        let six_row_height = first_table_height(&reused);
+        reused.set_document(doc_with_table_rows(2));
+        let after_swap = first_table_height(&reused);
+
+        let mut fresh = DocumentCore::new_empty();
+        fresh.set_document(doc_with_table_rows(2));
+        let expected = first_table_height(&fresh);
+
+        assert!(
+            six_row_height > expected,
+            "표본 전제: 6행 표가 2행 표보다 높아야 한다 (6행={six_row_height}, 2행={expected})"
+        );
+        assert_eq!(
+            after_swap, expected,
+            "set_document 뒤 표 높이가 이전 문서의 측정값({six_row_height})을 재사용했다"
+        );
+    }
+
+    /// 표뿐 아니라 문단 측정값도 이전 문서 것이 남는다 — 같은 누락의 다른 얼굴이다.
+    #[test]
+    fn set_document_does_not_reuse_previous_documents_measured_paragraph() {
+        let long_text = "이 문단은 여러 줄로 접히도록 충분히 길게 만든 한국어 문장이다. \
+                         줄 수가 달라지면 측정 높이도 달라진다."
+            .repeat(4);
+        fn doc_with_text(text: &str) -> Document {
+            Document {
+                sections: vec![Section {
+                    paragraphs: vec![Paragraph {
+                        text: text.to_string(),
+                        ..Default::default()
+                    }],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }
+        }
+
+        let mut reused = DocumentCore::new_empty();
+        reused.set_document(doc_with_text(&long_text));
+        let long_height = reused.measured_sections[0]
+            .get_paragraph_height(0)
+            .expect("문단 측정값");
+        reused.set_document(doc_with_text(""));
+        let after_swap = reused.measured_sections[0]
+            .get_paragraph_height(0)
+            .expect("문단 측정값");
+
+        let mut fresh = DocumentCore::new_empty();
+        fresh.set_document(doc_with_text(""));
+        let expected = fresh.measured_sections[0]
+            .get_paragraph_height(0)
+            .expect("문단 측정값");
+
+        assert!(
+            long_height > expected,
+            "표본 전제: 긴 문단이 빈 문단보다 높아야 한다 (긴={long_height}, 빈={expected})"
+        );
+        assert_eq!(
+            after_swap, expected,
+            "set_document 뒤 문단 높이가 이전 문서의 측정값({long_height})을 재사용했다"
+        );
     }
 }

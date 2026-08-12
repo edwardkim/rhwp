@@ -2016,15 +2016,6 @@ fn line_has_tac_control(para: &Paragraph, comp: &ComposedParagraph, line_idx: us
     !tac_control_indices_for_line(para, comp, line_idx).is_empty()
 }
 
-fn tac_picture_or_shape_height_px(ctrl: &Control, dpi: f64) -> Option<f64> {
-    let height_hu = match ctrl {
-        Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
-        Control::Shape(shape) if shape.common().treat_as_char => shape.common().height as i32,
-        _ => return None,
-    };
-    Some(hwpunit_to_px(height_hu, dpi))
-}
-
 fn line_tac_picture_or_shape_height(
     para: &Paragraph,
     comp: &ComposedParagraph,
@@ -2036,7 +2027,7 @@ fn line_tac_picture_or_shape_height(
         .find_map(|ci| {
             para.controls
                 .get(*ci)
-                .and_then(|ctrl| tac_picture_or_shape_height_px(ctrl, dpi))
+                .and_then(|ctrl| crate::renderer::tac_object_flow_height_px(ctrl, dpi))
         })
 }
 
@@ -9248,7 +9239,7 @@ impl TypesetEngine {
                 en_para
                     .controls
                     .iter()
-                    .filter_map(|ctrl| tac_picture_or_shape_height_px(ctrl, dpi))
+                    .filter_map(|ctrl| crate::renderer::tac_object_flow_height_px(ctrl, dpi))
                     .reduce(f64::max)
             } else {
                 None
@@ -10746,7 +10737,7 @@ impl TypesetEngine {
                                         .controls
                                         .iter()
                                         .filter_map(|ctrl| {
-                                            tac_picture_or_shape_height_px(ctrl, dpi)
+                                            crate::renderer::tac_object_flow_height_px(ctrl, dpi)
                                         })
                                         .reduce(f64::max)
                                 })
@@ -14528,7 +14519,9 @@ impl TypesetEngine {
                         .map(|(_, _, ci)| {
                             para.controls
                                 .get(*ci)
-                                .and_then(|c| tac_picture_or_shape_height_px(c, self.dpi))
+                                .and_then(|c| {
+                                    crate::renderer::tac_object_flow_height_px(c, self.dpi)
+                                })
                                 .unwrap_or(0.0)
                         })
                         .collect();
@@ -14579,23 +14572,8 @@ impl TypesetEngine {
                 let max_fs = crate::renderer::composed_line_max_font_size(line, para, styles);
                 let text_before_picture_line =
                     text_line_is_picture_lead_in(para, comp, line_idx, raw_lh, max_fs, self.dpi);
-                let tac_picture_height = para.controls.iter().find_map(|ctrl| {
-                    let height_hu = match ctrl {
-                        Control::Picture(pic) if pic.common.treat_as_char => {
-                            pic.common.height as i32
-                        }
-                        Control::Shape(shape) if shape.common().treat_as_char => {
-                            shape.common().height as i32
-                        }
-                        _ => return None,
-                    };
-                    let height = hwpunit_to_px(height_hu, self.dpi);
-                    if height > 8.0 && raw_lh + 4.0 >= height && raw_lh <= height + 8.0 {
-                        Some(height)
-                    } else {
-                        None
-                    }
-                });
+                let tac_picture_height =
+                    crate::renderer::line_owning_tac_object_height_px(para, raw_lh, self.dpi);
                 let tac_picture_height = if text_before_picture_line {
                     None
                 } else {
@@ -22988,6 +22966,71 @@ mod tests {
             margin_gutter: 0,
             ..Default::default()
         }
+    }
+
+    /// [#4333] 인라인(글자처럼) 도형의 흐름 높이는 조판과 렌더가 같은 정의를 써야 한다.
+    ///
+    /// 조판은 저장 프레임(`common.height`)만, 렌더는 프레임과 개체 표시 높이
+    /// (`shape_attr.current_height`) 중 큰 값을 썼다. samples/ 의 인라인 도형 868개
+    /// 가운데 354개(38개 문서)가 둘이 다르므로, 두 정의가 갈리면 그 줄의 예약 높이가
+    /// 조판과 렌더에서 달라진다. 두 경로가 `ShapeObject::flow_height_hu` 하나를 보는지
+    /// 확인한다 — 매직 넘버가 아니라 **두 정의가 같다**를 단언한다.
+    #[test]
+    fn typeset_and_render_agree_on_inline_shape_flow_height() {
+        use crate::model::shape::{RectangleShape, ShapeObject};
+
+        let dpi = 96.0;
+        let shape = ShapeObject::Rectangle(RectangleShape {
+            common: CommonObjAttr {
+                width: 20000,
+                height: 2400,
+                treat_as_char: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        });
+        let mut shape = shape;
+        shape.shape_attr_mut().current_height = 4066;
+        let expected = crate::renderer::hwpunit_to_px(shape.flow_height_hu(), dpi);
+        assert!(
+            expected > crate::renderer::hwpunit_to_px(shape.common().height as i32, dpi),
+            "표본 전제: 개체 표시 높이가 저장 프레임보다 크다"
+        );
+
+        let para = Paragraph {
+            text: "\u{FFFC}".to_string(),
+            char_count: 1,
+            controls: vec![Control::Shape(Box::new(shape))],
+            ..Default::default()
+        };
+        let comp = ComposedParagraph {
+            lines: vec![crate::renderer::composer::ComposedLine {
+                runs: Vec::new(),
+                line_height: 4066,
+                baseline_distance: 0,
+                segment_width: 20000,
+                column_start: 0,
+                line_spacing: 0,
+                has_line_break: false,
+                char_start: 0,
+            }],
+            para_style_id: 0,
+            inline_controls: Vec::new(),
+            numbering_text: None,
+            tac_controls: vec![(0, 20000, 0)],
+            footnote_positions: Vec::new(),
+            tab_extended: Vec::new(),
+        };
+
+        // 조판(페이지네이션)이 이 줄에 예약하는 인라인 개체 높이.
+        let typeset_reserved = line_tac_picture_or_shape_height(&para, &comp, 0, dpi)
+            .expect("조판이 인라인 도형 줄을 인식해야 한다");
+        // 렌더가 인라인 도형을 배치할 때 쓰는 높이(같은 단일 정의).
+        let render_reserved = crate::renderer::tac_object_flow_height_px(&para.controls[0], dpi)
+            .expect("렌더가 인라인 도형 높이를 산출해야 한다");
+
+        assert_eq!(typeset_reserved, render_reserved);
+        assert_eq!(typeset_reserved, expected);
     }
 
     fn make_paragraph_with_height(line_height: i32) -> Paragraph {

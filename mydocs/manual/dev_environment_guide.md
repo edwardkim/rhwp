@@ -151,6 +151,13 @@ Rust 를 고쳐도 WASM 재빌드 없이 실행 중인 브라우저에 반영하
 들어가지 않는다 — 루트 `Cargo.toml` 의 `subsecond-dev` feature 뒤에 있고, 그 feature 로 빌드해야
 `applySubsecondDevtoolsMessage` 같은 export 가 생긴다.
 
+**feature 를 켜는 것과 디버그 프로파일로 빌드하는 것은 별개의 두 조건이고, 둘 다 필요하다.**
+`subsecond::HotFn::try_call`(`subsecond-0.7.10/src/lib.rs:411-414`)이 `if !cfg!(debug_assertions)`
+로 점프 테이블을 아예 보지 않고 원본 함수를 부른다. 그래서 릴리스 프로파일로 빌드하면 경계를
+아무리 잘 배치해도 모든 호출이 패치 이전 코드로 간다. `npm run subsecond:serve` 가 쓰는
+`dx serve --web` 은 디버그가 기본이라 지금은 맞게 동작하지만 **그 의존은 우연이다** — `--release`
+를 얹은 dx 나 직접 만든 릴리스 wasm 에서는 모든 층이 성공을 보고하는데 화면만 안 바뀐다. (#4596)
+
 ### 사전 조건과 최초 설치
 
 - Linux, macOS 또는 WSL에서만 사용한다. Windows 네이티브에서는 `build.rs`가 필요한 심링크를 만들지 않아
@@ -169,7 +176,8 @@ npm ci
 npm run subsecond:install
 ```
 
-`subsecond:install`은 `dioxus-cli 0.7.10`을 `../target/dioxus-cli/bin/dx`에 설치한다. 첫
+`subsecond:install`은 루트 `Cargo.toml` 의 `subsecond` 정확 핀에서 버전을 유도해(#4580,
+`scripts/dioxus-cli-version.mjs`) 그 버전의 `dioxus-cli`를 `../target/dioxus-cli/bin/dx`에 설치한다. 첫
 `subsecond:serve`는 Dioxus가 맞는 `wasm-bindgen-cli`와 `esbuild`도 자동 설치하고 개발용 WASM을
 처음 빌드하므로 수 분이 걸릴 수 있다. `target/dioxus-cli/`, `target/dx/`,
 `target/rhwp-subsecond-vite/`는 로컬 생성물이며 커밋하지 않는다.
@@ -177,6 +185,22 @@ npm run subsecond:install
 이 경로에서는 일반 배포용 `wasm-pack build --target web --out-dir pkg`를 먼저 실행할 필요가 없다.
 `subsecond:serve`가 개발용 WASM을 `target/dx/`에 만들고, `dev:subsecond`가 필요한 JS/WASM 두 파일을
 `target/rhwp-subsecond-vite/`로 동기화한다.
+
+### feature 를 켠 채로 도는 검증 명령
+
+평소 CI 는 `subsecond-dev` 를 켜지 않는다. 핫패치 경계나 어댑터를 고쳤으면 다음 둘을 직접 돌린다.
+
+```bash
+cargo clippy -p rhwp --all-targets --features subsecond-dev -- -D warnings
+cargo check --lib --features subsecond-dev --target wasm32-unknown-unknown
+```
+
+wasm32 검사에는 **`--lib` 이 필수다.** 빼면 CLI 바이너리(`src/main.rs`)까지 wasm32 로 컴파일하려
+들고 `populate_external_images_from_dir`·`render_page_svg_with_fonts` 처럼 네이티브에만 있는
+메서드에서 7개 오류로 죽는다. 이것은 `subsecond-dev` 와 무관하다 — feature 없이
+`cargo check --target wasm32-unknown-unknown` 만 돌려도 같은 7개가 난다. CLI 는 wasm32 대상이 아니고
+브라우저에 실리는 것은 `[lib]` 뿐이므로, 라이브러리만 검사하는 쪽이 맞다. CI 의 Lint 잡도 같은
+형태를 쓴다(`.github/workflows/ci.yml`). (#4588)
 
 ### 기동과 접속
 
@@ -186,7 +210,7 @@ npm run subsecond:install
 ```bash
 # 터미널 1: Dioxus hot-patch endpoint는 로컬 loopback으로만 연다.
 cd rhwp-studio
-npm run subsecond:install   # dioxus-cli 0.7.10 을 target/dioxus-cli 에 고정 설치
+npm run subsecond:install   # Cargo.toml 이 핀한 버전의 dioxus-cli 를 target/dioxus-cli 에 설치
 npm run subsecond:serve     # dx serve --hot-patch (127.0.0.1:7711)
 
 # 터미널 2: Studio 화면은 Vite가 제공하고, Dioxus endpoint를 프록시한다.
@@ -223,12 +247,13 @@ curl -fsS -o /dev/null -w 'vite-wasm=%{http_code}\n' http://127.0.0.1:7700/wasm/
 
 1. 브라우저에서 `http://<host-ip>:7700/`을 열고 `WASM 로딩 중...` 화면이 끝난 뒤에 검증한다. 개발
    모드의 `window.__wasm` 객체는 초기화 전에 먼저 만들어질 수 있으므로, 객체 존재 여부나
-   `isSubsecondHotpatchEnabled()`만으로 준비 완료를 판별하지 않는다.
+   `getRenderCodeReload()?.isAvailable()`만으로 준비 완료를 판별하지
+   않는다. (능력 객체는 개발 빌드에서만 채워진다 — 프로덕션 번들에서는 언제나 `null` 이다. #4580)
 2. `src/wasm_api/subsecond_boundary.rs`의 `hot_render_boundaries!` 목록에 배선된 렌더 경계 안의 Rust
    변경을 저장하고 터미널 1의 rebuild/patch 메시지를 확인한다. 목록 밖의 export, 타입 레이아웃 또는
    초기화 경로 변경은 hot-patch 대상이 아니며 전체 rebuild/새로고침이 필요할 수 있다.
 3. 브라우저 콘솔에서 `[subsecond]` 진단과 Rust panic, 전역 오류를 확인한다. 화면 재도색은
-   `SubsecondRevisionWatcher`가 revision 변경을 감지한 뒤 일어난다.
+   `RenderCodeReloadWatcher`가 렌더 코드 리비전 변경을 감지한 뒤 일어난다.
 4. `patch-dispatched`는 패치 wasm을 runtime에 넘겼다는 뜻일 뿐, 비동기 fetch/instantiate까지 성공했다는
    뜻은 아니다. 실제 실패는 브라우저 콘솔의 panic 또는 `error`/`unhandledrejection`으로 판별한다.
 
@@ -255,6 +280,7 @@ curl -fsS -o /dev/null -w 'vite-wasm=%{http_code}\n' http://127.0.0.1:7700/wasm/
 
 | 층 | 실패 신호 | 보는 곳 |
 |---|---|---|
+| 빌드 프로파일 | **신호 없음** — 릴리스 프로파일이면 `HotFn::try_call` 이 조용히 원본을 부른다 (#4596) | 위 절의 두 조건 |
 | 별칭 심링크 (`build.rs`) | `cargo:warning=rhwp-subsecond: …` | `subsecond:serve` 터미널 |
 | `dx` 패치 링크 | dx 오류 출력 | `subsecond:serve` 터미널 |
 | 메시지 판정 (`src/subsecond_dev.rs`) | `[subsecond] …` 진단 | 브라우저 콘솔 |

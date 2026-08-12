@@ -18,7 +18,7 @@
     "default_title": "__MSG_actionTitle__"
   },
   "background": {
-    "scripts": ["file-signature.js", "background.js"],
+    "scripts": ["file-signature.js", "thumbnail-decompression.js", "background.js"],
     "persistent": false
   },
   "content_scripts": [

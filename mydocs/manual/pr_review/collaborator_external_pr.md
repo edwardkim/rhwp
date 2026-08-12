@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-11
+last_verified: 2026-08-12
 ---
 
 # Collaborator 매개 외부 PR 처리
@@ -47,6 +47,10 @@ git diff --check upstream/devel...HEAD
 - 통합 branch의 code·test 보정은 contributor source를 rewrite하지 않는다. 완료하면 원본 저장소의 임시
   head branch로 push해 `devel` 대상 통합 PR을 만들고, 그 PR이 merge된 뒤 원 PR은 merge된 통합 PR을
   링크한 comment와 함께 close한다.
+- 체리픽 통합 PR은 원 PR 번호별 archive 검토 기록과 필요한 오늘할일을 **같은 통합 branch/PR**에 포함한다.
+  통합 PR 번호만을 위한 별도 `pr_N_review.md`·`pr_N_review_impl.md`는 만들지 않으며, 검토 기록을
+  옮기거나 보완하기 위한 별도 docs-only PR도 만들지 않는다. 문서 보완이 남으면 동일 통합 PR의 code
+  candidate CI가 녹색인 뒤 trailing docs-only commit으로만 이어 붙인다.
 - PR head가 최신 `devel`과 이미 같은 history를 공유하더라도, integration branch의 기준은 항상
   `upstream/devel`이다. merge commit은 cherry-pick하지 않고 기능·test·문서 commit만 적용한다.
 - 주 작업공간이 dirty이면 checkout·cherry-pick을 시작하지 않는다. 사용자 변경의 소유와 상태를 먼저

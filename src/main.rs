@@ -13769,6 +13769,11 @@ fn build_from_ingest(args: &[String]) -> i32 {
     }
 }
 
+/// `dump-records`가 독립적으로 소비하는 단일 본문 스트림 상한.
+///
+/// 완전 Document 열기 정책을 재사용하지 않고 이 CLI consumer가 명시적으로 선택한다.
+const MAX_DUMP_RECORDS_STREAM_OUTPUT_BYTES: usize = 256 * 1024 * 1024;
+
 fn dump_raw_records(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("사용법: rhwp dump-records <파일.hwp>");
@@ -13823,14 +13828,20 @@ fn dump_raw_records(args: &[String]) -> i32 {
             eprintln!("오류: 비밀번호가 필요한 암호 문서입니다 (--password <pw> 로 전달).");
             return EXIT_USAGE;
         };
-        let raw = match cfb.read_body_text_section(0, false, false) {
-            Ok(s) => s,
-            Err(e) => {
-                eprintln!("오류: {:?}", e);
-                return EXIT_RUNTIME;
-            }
-        };
-        match rhwp::parser::crypto::decrypt_password_protected(&raw, pwd.as_bytes(), compressed) {
+        let raw =
+            match cfb.read_body_text_section_raw_limited(0, MAX_DUMP_RECORDS_STREAM_OUTPUT_BYTES) {
+                Ok(s) => s,
+                Err(e) => {
+                    eprintln!("오류: {:?}", e);
+                    return EXIT_RUNTIME;
+                }
+            };
+        match rhwp::parser::crypto::decrypt_password_protected_limited(
+            &raw,
+            pwd.as_bytes(),
+            compressed,
+            MAX_DUMP_RECORDS_STREAM_OUTPUT_BYTES,
+        ) {
             Ok(d) => d,
             Err(e) => {
                 eprintln!("오류: 비밀번호 불일치 또는 복호화 실패 - {}", e);
@@ -13838,7 +13849,11 @@ fn dump_raw_records(args: &[String]) -> i32 {
             }
         }
     } else {
-        match cfb.read_body_text_section(0, compressed, false) {
+        match cfb.read_body_text_section_limited(
+            0,
+            compressed,
+            MAX_DUMP_RECORDS_STREAM_OUTPUT_BYTES,
+        ) {
             Ok(s) => s,
             Err(e) => {
                 eprintln!("오류: {:?}", e);

@@ -3575,8 +3575,8 @@ impl DocumentCore {
     /// 원본 IR 은 그대로 두고, 거기서 파생된 렌더 상태를 전부 원본에서 다시 만든다.
     ///
     /// `document` 는 읽기만 한다 — 편집이 아니라 **메모된 파생본이 더는 원본과 대응하지
-    /// 않게 된 순간**에 부르는 연산이다. 스냅샷을 되돌려 문서를 통째로 갈아끼운 직후,
-    /// 그리고 파생본을 만든 코드 자체가 교체된 직후(핫패치)가 그 순간이다.
+    /// 않게 된 순간**에 부르는 연산이다. 문서를 통째로 갈아끼운 직후(`set_document`,
+    /// 스냅샷 복원), 그리고 파생본을 만든 코드 자체가 교체된 직후(핫패치)가 그 순간이다.
     ///
     /// 증분 게이트(`dirty_sections`·`section_revisions`·`measured_sections`·`table.dirty`)는
     /// 모두 "원본이 그대로면 파생본을 재사용한다"는 한 가지 규칙이라, 원본이 그대로인 채
@@ -3686,7 +3686,7 @@ impl DocumentCore {
         let measured = if self
             .measured_sections
             .get(section_index)
-            .is_some_and(|cached| !cached.paragraphs.is_empty())
+            .is_some_and(|cached| !cached.fallback_paragraphs.is_empty())
         {
             measurer.measure_section_selective(
                 paragraphs,
@@ -3864,7 +3864,7 @@ impl DocumentCore {
         if self.measured_sections.len() <= section_index {
             self.measured_sections
                 .resize_with(section_index + 1, || MeasuredSection {
-                    paragraphs: Vec::new(),
+                    fallback_paragraphs: Vec::new(),
                     tables: Vec::new(),
                 });
         }
@@ -3976,7 +3976,7 @@ impl DocumentCore {
         let issue2424_warm_sections = self
             .measured_sections
             .iter()
-            .filter(|section| !section.paragraphs.is_empty())
+            .filter(|section| !section.fallback_paragraphs.is_empty())
             .count();
         let issue2424_dirty_sections = self
             .dirty_sections
@@ -4063,7 +4063,7 @@ impl DocumentCore {
         self.dirty_sections.truncate(sec_count);
         while self.measured_sections.len() < sec_count {
             self.measured_sections.push(MeasuredSection {
-                paragraphs: Vec::new(),
+                fallback_paragraphs: Vec::new(),
                 tables: Vec::new(),
             });
         }
@@ -4162,7 +4162,7 @@ impl DocumentCore {
 
             // 증분 측정: 이전 측정 데이터가 있으면 문단/표 수준 선택적 캐싱
             let issue2424_measure_started = issue2424_profile_enabled.then(std::time::Instant::now);
-            let measured = if !self.measured_sections[idx].paragraphs.is_empty() {
+            let measured = if !self.measured_sections[idx].fallback_paragraphs.is_empty() {
                 let dirty_paras = self
                     .dirty_paragraphs
                     .get(idx)

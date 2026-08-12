@@ -11,7 +11,10 @@ members = [".", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert"
 resolver = "2"
 
 [lib]
-# Dioxus CLI 0.7.10 classifies the first crate type when capturing hot-patch args.
+# rhwp 는 Rust 라이브러리가 먼저다 — CLI 두 개, `bindings/Native`, `tools/*` 가 전부 rlib 으로
+# 링크한다. 브라우저용 cdylib 이 그 다음이다. 이 순서는 Dioxus CLI 가 핫패치 인자를 잡을 때 첫
+# crate type 으로 분류하는 규칙과도 맞아떨어진다 — 뒤집으면 `--hot-patch` 가 조용히 안 먹는다.
+# (버전은 여기 적지 않는다. 유일한 사본은 아래 `subsecond` 의 정확 핀이다 — #4580.)
 crate-type = ["rlib", "cdylib"]
 
 [[bin]]
@@ -62,6 +65,9 @@ serde_json = "1"
 ttf-parser = "0.25"
 
 console_error_panic_hook = { version = "0.1", optional = true }
+# [#4580] 핫패치 버전의 **유일한** 사본. `dx` 가 만든 점프 테이블을 이 크레이트가 역직렬화하므로
+# 설치할 dioxus-cli 도 같은 버전이어야 한다 — `scripts/dioxus-cli-version.mjs` 가 여기서 유도한다.
+# 정확 핀(`=`)이 아니면 그 유도가 성립하지 않는다.
 subsecond = { version = "=0.7.10", optional = true }
 
 [features]
