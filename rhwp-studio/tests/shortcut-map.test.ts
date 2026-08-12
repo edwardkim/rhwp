@@ -54,6 +54,7 @@ test('개체 속성 P 단축키를 영문·한글·IME pending 입력에서 동�
   assert.equal(command({ key: 'ㅔ', code: 'KeyP' }), 'format:object-properties');
   assert.equal(command({ key: 'Process', code: 'KeyP' }), 'format:object-properties');
   assert.equal(command({ key: 'p', code: 'KeyP', ctrlKey: true }), 'file:print');
+  assert.equal(command({ key: 'p', code: 'KeyP', metaKey: true }, 'mac'), 'file:print');
   assert.equal(command({ key: 'p', code: 'KeyP', shiftKey: true }), null);
   assert.equal(command({ key: 'Process', code: 'KeyO' }), null);
 });

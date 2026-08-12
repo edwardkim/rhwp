@@ -5,7 +5,7 @@
 - **worktree**: `tmp/issue-3790-stage5b-canary`
 - **최초 기준**: `upstream/devel` `c64b5c70a700` (#4519 merge)
 - **재개 기준**: `upstream/devel` `525cf8e8ed9f` (#4565 merge), 동기화 merge `cec04e66a`
-- **상태**: PR #4573 최신 devel 동기화·계획 보정·focused 재검증 완료, push 승인 대기
+- **상태**: 첫 재개 push의 fast-pass 표본 배제, 실제 selective 강제 보정·focused 검증 완료, push 대기
 
 ## 목적과 종료 조건
 
@@ -90,3 +90,33 @@ low 1건·high 3건을 보고했다. manifest·lockfile 변경은 없고 측정 
 바꾸지 않는다. 새 테스트도 기존 개체 속성 `P` 매핑의 영문·한글·IME 경계를 고정한다. 실제 브라우저
 동작·Cargo·WASM·renderer·fixture는 바꾸지 않으므로 브라우저 E2E, Cargo, wasm-pack과 시각 검증은
 focused 범위에서 생략한다.
+
+## 첫 재개 push 판정 — fast-pass 표본 배제
+
+head `a5e45e571`의 CI run `31581207834`와 CodeQL run `31581207609`는 성공했지만 새 selective를
+실행하지 않았다. 두 preflight 모두 최신 devel 동기화 merge `cec04e66a`를 current-base update bridge로
+인식하고, 그 conflict resolution이 `mydocs`에만 있음을 검증한 뒤 이전 code candidate `6fb1bd77b`의
+green 결과를 재사용했다.
+
+- CI: `fast_pass=pending-base-merge-tree`, candidate `6fb1bd77b`, merge-tree reason
+  `current-base-merge-resolution-mydocs-only`; Frontend unit을 포함한 worker 전부 skipped.
+- CodeQL: 같은 candidate의 `codeql-checks-green`을 재사용해 세 Analyze lane 전부 skipped.
+- Render Diff run `31581207582`: 이전 candidate의 Canvas가 skipped라 재사용하지 않고 현재 diff를
+  분류했으며 `render_required=false`, Canvas skipped로 성공.
+
+따라서 이 head의 약 2분 wall time은 Stage 5B 절감량 표본에서 제외한다. 새 head를 genuine Studio unit
+candidate로 만들기 위해 기존 `P` 회귀에 macOS `Meta+P`가 `file:print`로 유지되는 경계를 추가한다.
+최신 commit에 non-review-only test 파일이 포함되므로 다음 PR run은 이전 candidate를 fast-pass할 수 없고,
+trusted classifier의 `frontend_mode=unit`, `codeql_languages=javascript-typescript`를 실제 실행해야 한다.
+
+### selective 강제 보정 focused 검증
+
+- `node --test rhwp-studio/tests/shortcut-map.test.ts` — 7/7 통과.
+- `npx --prefix rhwp-studio tsc --project rhwp-studio/tsconfig.ci-unit.json --noEmit` — 통과.
+- `npm --prefix rhwp-studio test` — 860건 중 859 pass, 정책 skip 1, fail 0.
+- 실제 PR 변경 7개 파일 목록으로 classifier를 실행해 `frontend_mode=unit`,
+  `codeql_languages=javascript-typescript`, Rust·render·Native Skia false가 모두 일치했다.
+- `git diff --check` — 통과.
+
+이 보정 commit을 push한 뒤에는 후행 docs-only commit을 만들지 않는다. 최신 head에 Studio test 변경을
+유지한 채 PR selective가 실제 Frontend unit과 JavaScript/TypeScript CodeQL을 시작하는지 확인한다.
