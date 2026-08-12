@@ -28,9 +28,9 @@ last_verified: 2026-08-12
 ## Stage 2 — 최신 devel 통합
 
 - [x] `upstream/devel@9b9cbf3c80b6`을 fetch하고 merge simulation에서 충돌이 없음을 확인한다.
-- [ ] self-review 보정 commit 뒤 최신 devel을 실제 merge한다.
-- [ ] 최종 diff가 PR 목적 밖 제품·배포 변경을 포함하지 않는지 다시 확인한다.
-- [ ] 동기화 head에서 focused 검증과 `git diff --check`를 다시 실행한다.
+- [x] self-review 보정 commit `4ba5e431d` 뒤 최신 devel을 `30bbcf9fe`로 실제 merge한다.
+- [x] 최종 diff가 PR 목적 밖 제품·배포 변경을 포함하지 않는지 다시 확인한다.
+- [x] 동기화 head에서 focused 검증과 `git diff --check`를 다시 실행한다.
 
 ## Stage 3 — 원격 보정과 새 head CI
 
@@ -59,4 +59,3 @@ last_verified: 2026-08-12
 - [ ] repository admin의 required context 채택 또는 미채택 결정을 기록한다.
 - [ ] 위 live audit 또는 미채택 결정 뒤에만 작업지시자 승인으로
   `tmp/issue-3790-stage26` prototype과 새 worktree 정리를 검토한다.
-

@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: needs-rework
+status: pending-ci
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-12
 ---
@@ -15,9 +15,10 @@ controller가 독립 검증하는 변경이다. 제품 기능이나 선택 실�
 PR-controlled workflow가 필수 검사를 잘못 건너뛰면 `CI Impact Policy`를 실패시키는 안전망을 추가한다.
 
 원격 head `f69856f4d`의 첫 전체 CI는 통과했다. 다만 maintainer 요청 전 self-review에서 외부 fork run
-조회, 최신 run 선택, enforcement 변경 PR의 trailing fast-pass 정합 문제를 발견해 로컬에서 보정했다.
-따라서 첫 CI는 최종 merge 근거로 재사용하지 않는다. 보정 commit, 최신 devel 동기화, 새 head의 전체
-CI와 `edwardkim`의 명시적 승인 뒤에만 merge를 권고한다.
+조회, 최신 run 선택, enforcement 변경 PR의 trailing fast-pass 정합 문제를 발견해 commit
+`4ba5e431d`로 보정했다. 최신 `upstream/devel@9b9cbf3c8`도 merge head `30bbcf9fe`에 반영하고 로컬
+focused 검증을 다시 통과했다. 첫 CI는 최종 merge 근거로 재사용하지 않으며, 새 head의 전체 CI와
+`edwardkim`의 명시적 승인 뒤에만 merge를 권고한다.
 
 ## 검토 경로
 
@@ -29,7 +30,8 @@ loaded documents: pr_review_workflow.md, pr_review/README.md,
                   collaborator_self_merge.md, intake_and_review.md,
                   local_validation.md, rework_and_exceptions.md
 remote head at intake: f69856f4d5101eec4d9a454f7db91e3bb8a18a22
-local correction head: 아직 commit하지 않음
+local correction commit: 4ba5e431dd13500e4321d4e1eb0082c98b6004bf
+latest devel merge head: 30bbcf9fe1d0b5a55c4635d3f0bca56ba79b26b9
 ```
 
 1,000줄이 넘고 default-branch privileged controller와 향후 required status 채택 판단을 포함하므로,
@@ -108,12 +110,11 @@ renderer, layout, paint, sample과 제품 UI를 바꾸지 않으므로 시각·f
 
 ## 최종 권고
 
-현재는 **needs-rework**다. 로컬 finding 보정 자체는 검증됐지만 아직 commit·push되지 않았고 branch가
-최신 devel보다 11 commits 뒤에 있다. 다음 순서를 모두 만족한 뒤에만 수용 권고로 전환한다.
+현재는 **pending-ci**다. 로컬 finding 보정, 최신 devel merge와 focused 검증은 완료됐다. 다음 순서를
+모두 만족한 뒤에만 수용 권고로 전환한다.
 
-1. self-review 보정과 기록을 commit한다.
-2. 최신 `upstream/devel`을 merge하고 충돌·최종 diff를 재확인한다.
-3. 같은 head에서 focused 검증과 GitHub 전체 CI를 다시 통과시킨다.
-4. Draft를 해제하고 `edwardkim`에게 controller의 privileged 경계와 main 등록 뒤 required status 채택
+1. review 상태 갱신을 commit하고 같은 PR branch에 push한다.
+2. 같은 head에서 GitHub 전체 CI를 다시 통과시킨다.
+3. Draft를 해제하고 `edwardkim`에게 controller의 privileged 경계와 main 등록 뒤 required status 채택
    판단을 포함한 review를 요청한다.
-5. maintainer의 명시적 승인과 merge 직전 최신 head·checks·mergeability 재확인 뒤 merge한다.
+4. maintainer의 명시적 승인과 merge 직전 최신 head·checks·mergeability 재확인 뒤 merge한다.

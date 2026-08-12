@@ -6,7 +6,7 @@
 - **분기 기준**: `upstream/devel` `88012c7e09a6`
 - **최신 확인 기준**: `upstream/devel` `9b9cbf3c80b6`
 - **원형**: `tmp/issue-3790-stage26` / `060998dc863a` (읽기 전용 보존)
-- **상태**: Draft PR #4682의 1차 CI 통과, maintainer 요청 전 self-review 보정·focused 검증 완료
+- **상태**: Draft PR #4682 self-review 보정·최신 devel 동기화·focused 검증 완료, push·새 CI 대기
 
 ## 재개 근거
 
@@ -93,7 +93,8 @@ Draft PR #4682의 첫 전체 CI가 통과한 뒤 최신 devel과 실제 Actions 
 
 최신 `upstream/devel@9b9cbf3c80b6`은 PR의 분기 기준보다 11 commits 앞서 있지만
 `git merge-tree --write-tree HEAD upstream/devel`은 충돌 없이 tree
-`dd3946fac35487b859bbaab81d71f01184eaff2e`를 만들었다. 보정 commit과 최신 devel 동기화 뒤 새 head의
+`dd3946fac35487b859bbaab81d71f01184eaff2e`를 만들었다. 보정 commit `4ba5e431d` 뒤 최신 devel을
+`30bbcf9fe`로 실제 병합했고 같은 로컬 head에서 focused 검증을 다시 통과했다. 이 head를 push한 뒤
 전체 CI를 다시 통과시켜야 하며, 첫 CI 성공은 최종 merge 근거로 재사용하지 않는다.
 
 ## 실제 API 대조
