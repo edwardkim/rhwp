@@ -3677,26 +3677,52 @@ fn korean_gothic_substitute(font_name: &str) -> Option<&'static str> {
     }
 }
 
-/// Whether a generated font candidate is a single, relative file name.
+/// 파일시스템 탐색에 넘기는 하나의 폰트 파일명.
+///
+/// 문서 메타데이터에서 유래한 후보는 SVG 폰트 해석 단계에서만
+/// 이 형식으로 바뀐다. 파일시스템 루프는 이 타입의 후보만
+/// 설정된 검색 루트에 결합한다.
 #[cfg(not(target_arch = "wasm32"))]
-fn is_plain_font_file_name(name: &str) -> bool {
-    use std::path::Component;
+#[derive(Clone, Debug)]
+struct FontFileName(String);
 
-    let mut components = std::path::Path::new(name).components();
-    matches!(components.next(), Some(Component::Normal(_))) && components.next().is_none()
+#[cfg(not(target_arch = "wasm32"))]
+impl FontFileName {
+    fn from_document_candidate(candidate: String) -> Option<Self> {
+        use std::path::Component;
+
+        if candidate.contains(['/', '\\', '\0']) {
+            return None;
+        }
+        let mut components = std::path::Path::new(&candidate).components();
+        (matches!(components.next(), Some(Component::Normal(_))) && components.next().is_none())
+            .then_some(Self(candidate))
+    }
+
+    fn as_path(&self) -> &std::path::Path {
+        std::path::Path::new(&self.0)
+    }
 }
 
-/// 폰트명으로 TTF/OTF 파일을 탐색한다.
+/// SVG 폰트 해석이 선택한 파일명과 탐색 루트.
 #[cfg(not(target_arch = "wasm32"))]
-fn find_font_file_with_weight(
+struct FontFileLookupPlan {
+    candidates: Vec<FontFileName>,
+    search_dirs: Vec<std::path::PathBuf>,
+}
+
+/// 문서 폰트명을 SVG 폰트 해석용 파일 후보로 계획한다.
+///
+/// 별칭·대체 폰트·후보 우선순위는 렌더러 정책이므로 여기서
+/// 선택한다. 이후의 파일시스템 조회는 타입으로 검증된 후보를 읽는 기계적 단계다.
+#[cfg(not(target_arch = "wasm32"))]
+fn plan_svg_font_file_lookup(
     font_name: &str,
     extra_paths: &[std::path::PathBuf],
     bold: bool,
-) -> Option<std::path::PathBuf> {
-    use std::path::Path;
-
-    // 폰트명 → 파일명 후보 생성
-    let candidates: Vec<String> = {
+) -> FontFileLookupPlan {
+    let candidates = {
+        // 폰트명 → 파일명 후보 생성
         let known_files = if bold {
             known_bold_font_filenames(font_name)
         } else {
@@ -3732,10 +3758,10 @@ fn find_font_file_with_weight(
                 files.push(sub.to_string());
             }
         }
-        // Candidate names originate in document font metadata. Keep the filesystem
-        // lookup boundary to one file name before joining it to a configured root.
-        files.retain(|candidate| is_plain_font_file_name(candidate));
         files
+            .into_iter()
+            .filter_map(FontFileName::from_document_candidate)
+            .collect()
     };
 
     // [#2864] 탐색 경로(우선순위 순)는 renderer::font_paths 가 단일 정의한다.
@@ -3743,38 +3769,27 @@ fn find_font_file_with_weight(
     // 종전의 ttfs/hwp·ttfs/windows(로컬 전용)와 /mnt/c/Windows/Fonts(WSL2 전용)는
     // 제거했다. Task #1224 의 고딕 대체(Noto Sans KR ExtraLight)는 최후 탐색인
     // ttfs/opensource 에서 그대로 매칭된다.
-    let search_dirs = crate::renderer::font_paths::search_dirs(extra_paths);
+    FontFileLookupPlan {
+        candidates,
+        search_dirs: crate::renderer::font_paths::search_dirs(extra_paths),
+    }
+}
 
-    for dir in &search_dirs {
+/// 계획된 폰트 파일을 설정된 루트에서 읽는다.
+#[cfg(not(target_arch = "wasm32"))]
+fn find_font_file(plan: &FontFileLookupPlan) -> Option<std::path::PathBuf> {
+    for dir in &plan.search_dirs {
         if !dir.exists() {
             continue;
         }
-        for candidate in &candidates {
-            let path = dir.join(candidate);
+        for candidate in &plan.candidates {
+            let path = dir.join(candidate.as_path());
             if path.exists() {
                 return Some(path);
             }
         }
     }
     None
-}
-
-/// regular face 파일을 찾는다.
-#[cfg(not(target_arch = "wasm32"))]
-fn find_font_file(
-    font_name: &str,
-    extra_paths: &[std::path::PathBuf],
-) -> Option<std::path::PathBuf> {
-    find_font_file_with_weight(font_name, extra_paths, false)
-}
-
-/// 실제 Bold face 파일을 찾는다.
-#[cfg(not(target_arch = "wasm32"))]
-fn find_bold_font_file(
-    font_name: &str,
-    extra_paths: &[std::path::PathBuf],
-) -> Option<std::path::PathBuf> {
-    find_font_file_with_weight(font_name, extra_paths, true)
 }
 
 /// [#2524] 문서 임베디드(BinData) 폰트를 @font-face 로 직접 임베딩한다.
@@ -3836,9 +3851,9 @@ fn append_local_bold_font_face_css(css: &mut String, font_name: &str) {
 fn append_embedded_bold_font_face_css(
     css: &mut String,
     font_name: &str,
-    font_paths: &[std::path::PathBuf],
+    bold_lookup: &FontFileLookupPlan,
 ) {
-    if let Some(font_path) = find_bold_font_file(font_name, font_paths) {
+    if let Some(font_path) = find_font_file(bold_lookup) {
         if let Ok(font_data) = std::fs::read(&font_path) {
             let b64 = base64::engine::general_purpose::STANDARD.encode(&font_data);
             css.push_str(&format!(
@@ -3922,7 +3937,8 @@ pub fn generate_font_style(
                     css.push_str(&line);
                     continue;
                 }
-                if let Some(font_path) = find_font_file(font_name, font_paths) {
+                let regular_lookup = plan_svg_font_file_lookup(font_name, font_paths, false);
+                if let Some(font_path) = find_font_file(&regular_lookup) {
                     if let Ok(font_data) = std::fs::read(&font_path) {
                         // codepoint → glyph ID 변환 (ttf-parser cmap 사용)
                         let mut remapper = subsetter::GlyphRemapper::new();
@@ -3945,8 +3961,12 @@ pub fn generate_font_style(
                                     font_name, b64,
                                 ));
                                 if renderer.font_bold_families().contains(font_name) {
+                                    let bold_lookup =
+                                        plan_svg_font_file_lookup(font_name, font_paths, true);
                                     append_embedded_bold_font_face_css(
-                                        &mut css, font_name, font_paths,
+                                        &mut css,
+                                        font_name,
+                                        &bold_lookup,
                                     );
                                 }
                                 eprintln!(
@@ -3993,7 +4013,8 @@ pub fn generate_font_style(
                     css.push_str(&line);
                     continue;
                 }
-                if let Some(font_path) = find_font_file(font_name, font_paths) {
+                let regular_lookup = plan_svg_font_file_lookup(font_name, font_paths, false);
+                if let Some(font_path) = find_font_file(&regular_lookup) {
                     if let Ok(font_data) = std::fs::read(&font_path) {
                         let b64 = base64::engine::general_purpose::STANDARD.encode(&font_data);
                         css.push_str(&format!(
@@ -4001,7 +4022,9 @@ pub fn generate_font_style(
                             font_name, b64,
                         ));
                         if renderer.font_bold_families().contains(font_name) {
-                            append_embedded_bold_font_face_css(&mut css, font_name, font_paths);
+                            let bold_lookup =
+                                plan_svg_font_file_lookup(font_name, font_paths, true);
+                            append_embedded_bold_font_face_css(&mut css, font_name, &bold_lookup);
                         }
                         eprintln!(
                             "  [font-embed] {} → 전체 {:.1}KB",
