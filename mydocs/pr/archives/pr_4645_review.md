@@ -5,35 +5,40 @@ canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-12
 ---
 
-# PR #4645 self-review — SVG 폰트 파일 탐색 후보 경계
+# PR #4645 review — SVG 폰트 파일 탐색 후보 경계
 
 ## 결론
 
-**CI 확인 전 수용 보류.** [PR #4645](https://github.com/edwardkim/rhwp/pull/4645)는
-SVG 폰트 파일 탐색 후보를 단일 일반 파일명으로 제한하고, 정상 파일명과 기존 별칭의
-탐색 순서는 유지한다. 변경은 두 함수와 두 회귀 테스트에 한정됐으며 self-review에서
-별도 blocking finding은 발견하지 않았다.
+**현재는 Draft 유지 및 CI 확인 전 수용 보류.** 최초 변경은 문서 유래 후보의 경로 성분
+검사를 파일 탐색 leaf 안에 두고 private helper만 시험했다. Gestell 재검토에서 그 위치와
+검증 범위가 부적절하다는 지적을 받아, 후보 계획을 SVG 렌더러의 해석 단계로 올리고 public
+문서 렌더 경로의 회귀 테스트를 추가했다.
 
-focused test는 통과했지만 로컬 release-test 전체 검증은 host 디스크 공간 부족으로
-compile 단계에서 중단됐다. 최신 PR head의 GitHub Actions 성공, reviewer 확인과
-작업지시자의 명시적 merge 승인을 최종 조건으로 둔다.
+수정 뒤 독립 Gestell 재검토는 `PASS`다. 다만 코드와 테스트가 새 head에 추가되었으므로
+`CONTRIBUTING.md`의 전체 `release-test` 및 Clippy와 최신 GitHub required check는 아직 이
+문서의 PASS 근거가 아니다. 해당 gate가 현재 head에서 끝나기 전에는 Ready 전환이나 merge를
+권고하지 않는다.
 
 ## 검토 경로
 
 ```text
-base route: collaborator_self_merge.md
+base route: collaborator_external_pr.md
 modifiers: intake_and_review.md, local_validation.md,
-           visual_fixture_evidence.md
+           visual_fixture_evidence.md, rework_and_exceptions.md
 loaded documents: pr_review_workflow.md, pr_review/README.md,
-                  collaborator_self_merge.md, intake_and_review.md,
-                  local_validation.md, visual_fixture_evidence.md
-devel base: 193e26b7ffb05adf5bb2c9e4cb752a9a707310dc
-code candidate: 3d74dfd98d61f53a0e4390c6785d5bddef635ad0
-trailing review head: 이 문서와 오늘할일을 포함할 후속 docs-only commit
+                  collaborator_external_pr.md, intake_and_review.md,
+                  local_validation.md, visual_fixture_evidence.md,
+                  rework_and_exceptions.md, CONTRIBUTING.md
+source head before correction: 8b26078163021dcb9ecb0d93c2aa4b00fe100ab6
+corrected code head: ca97299c36c9185df75e97c08b6bdfc2140cca7c
+current upstream/devel checked: 525cf8e8ed9fa030d1db417fda5070668b2df240
+merge simulation: clean (`git merge-tree --write-tree upstream/devel HEAD`)
+trailing review head: 이 review 기록을 포함하는 docs-only commit
 ```
 
-변경이 작고 conflict 해결이나 보정 단계가 없으므로 `pr_4645_review_impl.md`는 추가하지
-않는다.
+`upstream/devel`은 source branch의 조상이 아니지만 merge tree가 충돌 없이 생성됐다. 이
+사실은 current-base의 전체 CI를 생략하는 근거가 아니며, source branch를 임의 rebase 또는
+force-push하지 않았다.
 
 ## 메타데이터
 
@@ -42,51 +47,72 @@ trailing review head: 이 문서와 오늘할일을 포함할 후속 docs-only c
 | PR | [#4645](https://github.com/edwardkim/rhwp/pull/4645) |
 | 관련 이슈 | 별도 공개 이슈 없음 |
 | 작성자 | `humdrum00001010` |
-| reviewer | `edwardkim` 요청을 시도했으나 fork 계정 권한 부족으로 미지정 |
 | base / head | `devel` / `humdrum00001010:renderer/font-lookup-candidate-boundary-33` |
-| code candidate | `3d74dfd98d61f53a0e4390c6785d5bddef635ad0` |
-| 규모 | 2 files, +50 / -0 |
-| 상태 | Open, non-draft, MERGEABLE / BLOCKED; checks 생성 대기 |
-
-원본 저장소 작업 branch push도 권한 부족으로 거부돼 같은 branch를 fork에 push하고
-`devel` 대상 PR을 만들었다. reviewer request도 같은 권한 경계에서 거부됐으며, 이를
-우회하는 GitHub 상태 변경은 수행하지 않았다.
+| source head (보정 전) | `8b26078163021dcb9ecb0d93c2aa4b00fe100ab6` |
+| 보정 code head | `ca97299c36c9185df75e97c08b6bdfc2140cca7c` |
+| 원격 상태 | Open Draft, `MERGEABLE` / `BLOCKED`; 완료된 check는 `cancel-stale-runs`뿐 |
+| maintainer 수정 권한 | `maintainerCanModify: true` |
 
 ## 변경 범위와 소유권
 
-`src/renderer/svg.rs::find_font_file_with_weight`가 글꼴 별칭과 확장자로 만든 후보를
-설정된 탐색 디렉터리에 결합한다. 따라서 후보가 파일명 하나인지 판정하는 책임도 이
-결합 직전의 SVG 폰트 파일 탐색 경계에 둔다.
+문서의 `Font.name`은 parser와 style resolver를 거쳐 SVG의 `font_family`가 된다. `Full`과
+`Subset` 임베딩은 그 family에서 별칭과 확장자 후보를 만들고, 설정된 font root에 결합한 뒤
+바이트를 읽어 data URI에 넣는다.
 
-`is_plain_font_file_name`은 상대 `Component::Normal` 하나만 허용한다. 정상 파일명과
-공백이 있는 파일명은 유지하고, 다중 경로 성분은 후보에서 제외한다. parser, document
-model, 공통 폰트 조달 순서와 다른 renderer backend는 변경하지 않는다.
+따라서 다음 두 책임을 분리했다.
+
+1. `plan_svg_font_file_lookup`은 renderer 정책이다. 문서 유래 family, 별칭, known filename,
+   extension, bold 여부와 검색 root를 모아 `FontFileLookupPlan`을 만든다. 여기서만
+   `FontFileName::from_document_candidate`가 하나의 `Component::Normal`인 파일명으로
+   검증한다.
+2. `find_font_file`은 기계적 filesystem loop다. 이미 검증된 `FontFileName`만 받아 root와
+   결합해 존재하는 직접 자식 파일을 찾는다. 문서 문자열을 다시 해석하거나 후보 정책을
+   선택하지 않는다.
+
+따라서 `nested/Face`나 `../Face` 같은 문서 이름은 계획 단계에서 후보가 되지 않으며, 정상
+직접 자식 filename 및 기존 alias 우선순위는 유지한다. parser, document model, 공통
+`font_paths` 조달 순서와 다른 renderer backend는 변경하지 않았다.
+
+## 회귀 테스트
+
+새 [`tests/issue_4645_font_lookup_boundary.rs`](../../../tests/issue_4645_font_lookup_boundary.rs)는
+실제 HML fixture를 face 이름만 바꿔 `DocumentCore::from_bytes`로 연 뒤 public
+`render_page_svg_with_fonts(0, FontEmbedMode::Full, &[root])`를 호출한다.
+
+- root의 `nested/<stem>.ttf` sentinel은 document face가 `nested/<stem>`일 때 SVG data URI에
+  나타나지 않아야 한다.
+- 같은 root의 `<stem>.ttf` direct-child sentinel은 document face가 `<stem>`일 때 SVG data URI에
+  나타나야 한다.
+
+이렇게 parser → style resolver → SVG candidate planning → filesystem read → SVG data URI를 한
+테스트에서 확인한다. private helper를 직접 호출하는 단위 테스트는 mechanism 보조 검증으로만
+남겼다.
 
 ## 완료한 로컬 검증
 
 | 게이트 | 결과 |
 | --- | --- |
-| focused Rust unit | `cargo test --lib renderer::svg::tests::font_ -- --nocapture`: 2 passed |
-| formatting | `rustfmt --edition 2021 --check src/renderer/svg.rs src/renderer/svg/tests.rs`: 통과 |
+| public E2E | `cargo test --profile release-test --test issue_4645_font_lookup_boundary -- --nocapture`: 1 passed |
+| candidate plan unit | `cargo test --profile release-test --lib renderer::svg::tests::font_file_candidates_are_single_path_components -- --nocapture`: 1 passed |
+| planned lookup unit | `cargo test --profile release-test --lib renderer::svg::tests::planned_font_lookup_does_not_descend_below_search_roots -- --nocapture`: 1 passed |
+| existing bold control | `cargo test --profile release-test --lib renderer::svg::tests::full_font_embed_uses_real_bold_face_when_document_uses_bold -- --nocapture`: 1 passed |
+| formatting | `cargo fmt --all -- --check`: 통과 |
 | whitespace | `git diff --check`: 통과 |
-| release-test 전체 | compile 중 host disk `No space left on device`로 중단, PASS로 기록하지 않음 |
-
-검증은 다른 작업과 겹치지 않는 Cargo slot에서 task 전용 target을 사용했다. 실패 뒤 실행
-중인 Cargo가 없음을 확인하고 task 전용 target만 정리해 약 1.4 GiB를 회수했으며, shared
-target과 다른 작업 산출물은 삭제하지 않았다. 이후 Cargo는 재실행하지 않았다.
+| Gestell | 독립 adversarial 재검토: `PASS` |
+| `release-test` 전체 | 이 코드 head 기준 결과 대기 — 성공으로 기록하지 않음 |
+| Clippy | 이 코드 head 기준 결과 대기 — 성공으로 기록하지 않음 |
 
 ## 렌더·시각 영향
 
-변경 파일은 `src/renderer` 아래지만 geometry, layout, paint, SVG 요소·속성 또는 정상
-글꼴 파일의 출력 바이트를 바꾸지 않는다. 새 sample, golden, 기준 PDF도 없다. 따라서
-별도 visual sweep과 review asset은 만들지 않았고, 정상 파일명 허용과 탐색 루트 직접
-자식 조회를 focused test로 고정했다.
+레이아웃, geometry, paint, sample, golden은 변경하지 않는다. 보안 경계의 사용자-visible 결과는
+`@font-face` data URI의 유무이므로, 위 public SVG 경로 테스트가 이 PR의 결정적 출력 증적이다.
+정상 direct-child font의 data URI와 nested sentinel 부재를 함께 확인해 기존 정상 임베딩을
+막지 않았음을 고정했다. 별도 한컴 PDF/overlay asset은 이 변경 주장과 직접 관련이 없어 만들지
+않았다.
 
-## 최종 권고
+## 최종 조건
 
-다음 조건이 모두 충족될 때 수용 후보로 다시 판정한다.
-
-1. 이 review 문서와 오늘할일을 포함한 trailing docs-only commit을 같은 PR branch에 push한다.
-2. 최신 PR head의 GitHub Actions와 required check가 성공한다.
-3. 권한 있는 reviewer가 변경을 확인한다.
-4. 작업지시자의 별도 merge 승인을 받는다.
+1. 이 review 문서까지 포함한 최신 PR head에서 `CONTRIBUTING.md`의 전체 `release-test`와
+   Clippy가 성공한다.
+2. 최신 GitHub required check가 성공한다.
+3. Draft 해제 및 merge는 작업지시자의 별도 승인 뒤에만 진행한다.
