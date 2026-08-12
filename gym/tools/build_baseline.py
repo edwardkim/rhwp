@@ -69,12 +69,19 @@ def resolve(token, task, sub_dir):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         return path
     if "{sub:" in token:
-        # 계획서 JSON 처럼 자리표가 문자열 안에 박힌 경우.
-        head, rest = token.split("{sub:", 1)
-        name, tail = rest.split("}", 1)
-        path = os.path.join(sub_dir, name)
-        os.makedirs(os.path.dirname(path) or sub_dir, exist_ok=True)
-        return head + path.replace("\\", "\\\\") + tail
+        # 계획서 JSON 처럼 자리표가 문자열 안에 박힌 경우 — 한 문자열에 여러 개가
+        # 있을 수 있다(다세대 계획서는 input·output 을 모두 {sub:} 로 가리킨다).
+        # 첫 하나만 바꾸면 나머지가 리터럴로 남아 엉뚱한 이름의 파일이 생긴다(#4664).
+        out = []
+        rest = token
+        while "{sub:" in rest:
+            head, rest = rest.split("{sub:", 1)
+            name, rest = rest.split("}", 1)
+            path = os.path.join(sub_dir, name)
+            os.makedirs(os.path.dirname(path) or sub_dir, exist_ok=True)
+            out.append(head + path.replace("\\", "\\\\"))
+        out.append(rest)
+        return "".join(out)
     return token
 
 

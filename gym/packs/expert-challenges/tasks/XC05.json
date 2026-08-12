@@ -1,0 +1,47 @@
+{
+  "id": "XC05",
+  "tier": 5,
+  "title": "감사 표준 발급 — 서명 귀속 L3",
+  "input": "samples/table-001.hwp",
+  "axis": "자동화",
+  "instructions": "제3자가 검증할 수 있는 **감사 표준 문서**를 발급하라. 서명한 캡슐을 앵커에 올리고, 감사 리포트(report.json)를 생성한 뒤, 적합성 **L3**(감사+계보+서명 귀속+앵커) conformant 판정을 받아라. caps/·keyring.json·anchor.ndjson·report.json 을 제출하라.\n힌트: keygen → replay --sign-key → anchor add → audit-report --deep → conformance --level L3 --deep.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "caps/work.capsule.json",
+      "keyring.json",
+      "anchor.ndjson",
+      "report.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "감사 표준 발급됨",
+      "op": "file_exists",
+      "file": "report.json",
+      "minBytes": 100
+    },
+    {
+      "name": "L3 서명 귀속 conformant",
+      "op": "value_eq",
+      "value": "conformant",
+      "path": "verdict",
+      "cmd": [
+        "conformance",
+        "{file:caps}",
+        "--level",
+        "L3",
+        "--deep",
+        "--keyring",
+        "{file:keyring.json}",
+        "--anchor-log",
+        "{file:anchor.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

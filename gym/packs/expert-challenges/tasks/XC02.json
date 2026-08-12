@@ -1,0 +1,53 @@
+{
+  "id": "XC02",
+  "tier": 5,
+  "title": "오염 리콜 드릴 — 계보 전파",
+  "input": "samples/table-001.hwp",
+  "axis": "자동화",
+  "instructions": "한 캡슐이 오염됐을 때 그 **후손까지 전부** 리콜 범위에 들도록 2세대 계보 캡슐을 caps/ 에 제출하라(a → b). a 를 오염원으로 지목하면 a 와 그 자식 b 가 모두 영향권이어야 한다. 서로 무관한 두 캡슐을 내면 a 만 잡혀 드릴에 실패한다.\n힌트: replay 로 a 를 만들고, replay --parent a 로 b 를 잇는다. 채점은 recall-scope --contaminated a --among caps.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "caps/a.capsule.json",
+      "caps/b.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "오염원 밖 무영향 없음(전파)",
+      "op": "value_eq",
+      "value": 0,
+      "path": "unaffected",
+      "cmd": [
+        "recall-scope",
+        "--contaminated",
+        "{file:caps/a.capsule.json}",
+        "--among",
+        "{file:caps}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "영향권 2건 이상(a+후손)",
+      "op": "len_ge",
+      "value": 2,
+      "path": "affected",
+      "cmd": [
+        "recall-scope",
+        "--contaminated",
+        "{file:caps/a.capsule.json}",
+        "--among",
+        "{file:caps}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

@@ -38,6 +38,13 @@ TASK_REQUIRED = ("id", "tier", "title", "input", "instructions", "submit", "chec
 #: 편집 과제 — 전역 훑기 연산자를 금지한다(#4600 재발 방지).
 EDITING_AXES = ("편집", "보안")
 
+#: 난도 티어 1~5. 놀이공원 은유에서 어트랙션의 키 제한과 같다 —
+#: 1=입문(누구나·부모님도), 2=초급, 3=중급, 4=고급, 5=보스(사다리 완주 급).
+#: 상한을 3→5 로 넓힌 이유: 한쪽에는 비전문가도 성공하는 유아용 놀이기구를,
+#: 다른 쪽에는 한 단계만 틀려도 최종 판정이 막히는 보스 어트랙션을 둔다(#4664).
+TIER_MIN, TIER_MAX = 1, 5
+TIER_NAMES = {1: "입문", 2: "초급", 3: "중급", 4: "고급", 5: "보스"}
+
 
 def _fail(errors, where, message):
     errors.append(f"{where}: {message}")
@@ -68,8 +75,8 @@ def validate_task(task, pack, known_commands, errors):
     for key in TASK_REQUIRED:
         if key not in task:
             _fail(errors, where, f"필수 키 없음: {key}")
-    if not isinstance(task.get("tier"), int) or not 1 <= task.get("tier", 0) <= 3:
-        _fail(errors, where, "tier 는 1~3 정수")
+    if not isinstance(task.get("tier"), int) or not TIER_MIN <= task.get("tier", 0) <= TIER_MAX:
+        _fail(errors, where, f"tier 는 {TIER_MIN}~{TIER_MAX} 정수 (1=입문 … 5=보스)")
     if not task.get("checks"):
         _fail(errors, where, "checks 가 비었다")
 
