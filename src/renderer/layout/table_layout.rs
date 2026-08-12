@@ -9592,6 +9592,25 @@ impl LayoutEngine {
         }
     }
 
+    /// RowBreak fragment의 마지막 가시 unit을, 뒤의 구조적 spacer와 함께 현재 조각에
+    /// 남길 수 있는지 판정한다. 고정 px 상한 대신 해당 unit의 실제 높이만큼만 overfill을
+    /// 허용하므로, 이미 넘친 fragment나 다중 본문 line을 추가로 끌어올리지 않는다.
+    fn visible_tail_fits_before_spacer(
+        units: &[CellUnit],
+        j: usize,
+        consumed_height: f64,
+        avail_height: f64,
+    ) -> bool {
+        let Some(tail) = units.get(j) else {
+            return false;
+        };
+        if tail.empty_spacer || tail.vis_start >= tail.vis_end || consumed_height > avail_height {
+            return false;
+        }
+        let overflow = (consumed_height + tail.height - avail_height).max(0.0);
+        overflow <= tail.height && Self::grace_visible_tail_before_spacer(units, j)
+    }
+
     /// [#1921] 예산 정지 유닛 `j` 부터 다음 저장 hard-break 유닛까지의 잔여 높이가
     /// 소량(오버플로 한도 48px)이면 `(흡수 후 높이, hard-break 유닛 인덱스)` 를 반환한다.
     ///
@@ -10046,7 +10065,6 @@ impl LayoutEngine {
         let mut fully_consumed = true;
         let mut consumed_height = 0.0f64;
         const HARD_BREAK_REMAINING_TOLERANCE_PX: f64 = 32.0;
-        const ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX: f64 = 120.0;
         let row_has_top_and_bottom_flow = row_cells
             .iter()
             .any(|cell| self.cell_has_top_and_bottom_non_inline_flow(cell));
@@ -10220,11 +10238,7 @@ impl LayoutEngine {
                         }
                     }
                     let visible_tail_before_spacer = relaxed_hard_break
-                        && !u.empty_spacer
-                        && u.vis_start < u.vis_end
-                        && h + u.height
-                            <= avail_height + ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX
-                        && Self::grace_visible_tail_before_spacer(&units, j);
+                        && Self::visible_tail_fits_before_spacer(&units, j, h, avail_height);
                     if visible_tail_before_spacer {
                         h += u.height;
                         j += 1;
@@ -10339,7 +10353,6 @@ impl LayoutEngine {
         let mut fully_consumed = true;
         let mut consumed_height = 0.0f64;
         const HARD_BREAK_REMAINING_TOLERANCE_PX: f64 = 32.0;
-        const ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX: f64 = 120.0;
         let block_has_top_and_bottom_flow = cells
             .iter()
             .any(|cell| self.cell_has_top_and_bottom_non_inline_flow(cell));
@@ -10413,11 +10426,7 @@ impl LayoutEngine {
                 }
                 if j > start && h + u.height > avail_height {
                     let visible_tail_before_spacer = relaxed_hard_break
-                        && !u.empty_spacer
-                        && u.vis_start < u.vis_end
-                        && h + u.height
-                            <= avail_height + ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX
-                        && Self::grace_visible_tail_before_spacer(&units, j);
+                        && Self::visible_tail_fits_before_spacer(&units, j, h, avail_height);
                     if visible_tail_before_spacer {
                         h += u.height;
                         j += 1;
