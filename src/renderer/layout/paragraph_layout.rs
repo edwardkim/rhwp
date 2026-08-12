@@ -1195,14 +1195,44 @@ fn compute_line_extra_spacing(
             (0.0, 0.0, 0.0)
         }
     } else if needs_distribute && total_char_count > 1 {
-        // 배분/나눔 정렬: 모든 글자에 균등 분배
-        let raw = (available_width - total_text_width) / total_char_count as f64;
-        if suppress_cell_overflow_spacing && raw < 0.0 {
+        // [#4657] 배분 정렬: 남는 폭을 글자 **사이**(N-1곳)에 균등 분배.
+        // extra_char_spacing 은 각 글자 advance 뒤에 붙으므로 마지막 glyph 의
+        // 잉크 오른쪽 끝은 `W + (N-1)·extra` — N 으로 나누면 짧은 줄일수록
+        // 마지막 글자가 slack/N 만큼 안쪽으로 밀려 문단마다 오른쪽 끝이
+        // 어긋난다(한컴은 줄 길이와 무관하게 오른쪽 끝을 문단 폭에 맞춘다).
+        // 말미 공백은 보이는 글자가 아니므로 분배 대상과 기준 폭에서 제외한다.
+        let trailing_spaces = comp_line
+            .runs
+            .iter()
+            .rev()
+            .flat_map(|r| r.text.chars().rev())
+            .take_while(|c| *c == ' ')
+            .count();
+        let visible_count = total_char_count.saturating_sub(trailing_spaces);
+        if visible_count <= 1 {
             (0.0, 0.0, 0.0)
         } else {
-            let avg_char_w = total_text_width / total_char_count as f64;
-            let min_sp = -avg_char_w * 0.5;
-            (0.0, raw.max(min_sp), 0.0)
+            let trailing_width = if trailing_spaces > 0 {
+                if let Some(last_run) = comp_line.runs.last() {
+                    let mut ts =
+                        resolved_to_text_style(styles, last_run.char_style_id, last_run.lang_index);
+                    ts.default_tab_width = tab_width;
+                    estimate_text_width(&" ".repeat(trailing_spaces), &ts)
+                } else {
+                    0.0
+                }
+            } else {
+                0.0
+            };
+            let visible_width = total_text_width - trailing_width;
+            let raw = (available_width - visible_width) / (visible_count - 1) as f64;
+            if suppress_cell_overflow_spacing && raw < 0.0 {
+                (0.0, 0.0, 0.0)
+            } else {
+                let avg_char_w = visible_width / visible_count as f64;
+                let min_sp = -avg_char_w * 0.5;
+                (0.0, raw.max(min_sp), 0.0)
+            }
         }
     } else if total_text_width > available_width && total_char_count > 1 && !has_tabs {
         // 비정렬(왼쪽/오른쪽/가운데) 텍스트가 오버플로우할 때 글자 간격 압축
@@ -7122,6 +7152,91 @@ mod issue_2809_split_alignment_tests {
             40.0,
         );
         assert!(extra_char_mid > 0.0);
+    }
+}
+
+#[cfg(test)]
+mod issue_4657_distribute_alignment_tests {
+    use super::compute_line_extra_spacing;
+    use crate::model::style::Alignment;
+    use crate::renderer::composer::{ComposedLine, ComposedTextRun};
+    use crate::renderer::layout::text_measurement::{estimate_text_width, resolved_to_text_style};
+    use crate::renderer::style_resolver::ResolvedStyleSet;
+
+    fn line(text: &str) -> ComposedLine {
+        ComposedLine {
+            runs: vec![ComposedTextRun {
+                text: text.to_string(),
+                ..Default::default()
+            }],
+            line_height: 1120,
+            baseline_distance: 952,
+            segment_width: 6972,
+            column_start: 0,
+            line_spacing: 560,
+            has_line_break: false,
+            char_start: 0,
+        }
+    }
+
+    fn distribute_extra(text: &str, char_count: usize, text_width: f64, avail: f64) -> f64 {
+        let (extra_word, extra_char, extra_dash) = compute_line_extra_spacing(
+            &line(text),
+            &ResolvedStyleSet::default(),
+            Alignment::Distribute,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            char_count,
+            text_width,
+            avail,
+            40.0,
+        );
+        assert_eq!(extra_word, 0.0);
+        assert_eq!(extra_dash, 0.0);
+        extra_char
+    }
+
+    /// 배분 정렬은 남는 폭을 글자 사이(N-1곳)에 나눠, 마지막 glyph 잉크의
+    /// 오른쪽 끝(`W + (N-1)·extra`)이 줄 길이와 무관하게 문단 폭에 닿는다.
+    #[test]
+    fn distribute_fills_full_width_regardless_of_line_length() {
+        let avail = 368.0;
+        for (text, n, w) in [("문서관리번호 :", 8usize, 92.9), ("기관명 :", 5, 52.5)] {
+            let extra = distribute_extra(text, n, w, avail);
+            let last_ink_right = w + (n - 1) as f64 * extra;
+            assert!(
+                (last_ink_right - avail).abs() < 0.001,
+                "{text}: 오른쪽 끝 {last_ink_right} != 문단 폭 {avail}"
+            );
+        }
+    }
+
+    /// 말미 공백은 배분 대상이 아니다 — 마지막 보이는 글자가 오른쪽 끝에 닿는다.
+    #[test]
+    fn distribute_excludes_trailing_spaces() {
+        let styles = ResolvedStyleSet::default();
+        let mut ts = resolved_to_text_style(&styles, 0, 0);
+        ts.default_tab_width = 40.0;
+        let space_w = estimate_text_width(" ", &ts);
+        let avail = 368.0;
+        let visible_w = 52.5;
+        let extra = distribute_extra("기관명 : ", 6, visible_w + space_w, avail);
+        let last_visible_ink_right = visible_w + 4.0 * extra;
+        assert!(
+            (last_visible_ink_right - avail).abs() < 0.001,
+            "말미 공백 제외 후 오른쪽 끝 {last_visible_ink_right} != {avail}"
+        );
+    }
+
+    /// 한 글자 + 말미 공백뿐인 줄은 분배하지 않는다 (0-division 가드).
+    #[test]
+    fn distribute_single_visible_char_keeps_natural_width() {
+        let extra = distribute_extra("가  ", 3, 30.0, 368.0);
+        assert_eq!(extra, 0.0);
     }
 }
 
