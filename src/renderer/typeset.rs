@@ -3330,9 +3330,11 @@ fn hwp5_origin_redundant_pagehide_break_marker(
         return false;
     };
 
-    // 2025 편람 HWPX 부록 표지는 PageHide marker 뒤에 103×2 규정 표를 둔다.
-    // 이 marker는 PDF의 blank page를 실제로 소유하므로 HWP5의 중복 marker로 접으면 안 된다.
-    let hwpx_appendix_blank_page = hwpx_stored_layout
+    // Stored-layout HWPX section markers that combine a decorative group and
+    // PageHide own the blank PageHide page immediately before a page-starting
+    // non-inline table. That marker is not the redundant HWP5-origin marker
+    // handled here.
+    let hwpx_pagehide_blank_page_owner = hwpx_stored_layout
         && section_marker
             .controls
             .iter()
@@ -3347,11 +3349,7 @@ fn hwp5_origin_redundant_pagehide_break_marker(
                 )
             })
         && next_para.controls.iter().any(|control| {
-            matches!(control, Control::Table(table)
-                if !table.common.treat_as_char
-                    && table.row_count == 103
-                    && table.col_count == 2
-                    && table.cells.len() == 206)
+            matches!(control, Control::Table(table) if !table.common.treat_as_char)
         });
 
     prior_empty.text.trim().is_empty()
@@ -3366,7 +3364,7 @@ fn hwp5_origin_redundant_pagehide_break_marker(
             .controls
             .iter()
             .any(|control| !matches!(control, Control::PageHide(_)))
-        && !hwpx_appendix_blank_page
+        && !hwpx_pagehide_blank_page_owner
 }
 
 /// 빈 ColumnBreak가 두 non-inline 표 사이에 있고 다음 표가 이미 PageBreak를
