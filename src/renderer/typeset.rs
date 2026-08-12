@@ -899,16 +899,6 @@ fn partial_rowbreak_fragment_spacing_px(
     };
     (before, bottom)
 }
-/// [#2097] 쪽 하단 압축 수용치 — 한글은 쪽 경계에서 행/블록이 잔여를 이 이내로
-/// 초과하면 압축해 끼워 넣는다 (1741000 실측 초과 10.4px 수용).
-const BOTTOM_SQUEEZE_TOLERANCE_PX: f64 = 13.0;
-/// [#2097] 압축 수용은 쪽 끝자락(잔여 ≤ 이 값)에서만 — 한글의 압축은 쪽 마무리
-/// 동작이다 (1741000 잔여 87.8/73.5px 압축 vs kps-ai 잔여 237.3px 이월 실측).
-const BOTTOM_SQUEEZE_MAX_REST_PX: f64 = 100.0;
-/// [#2097] 압축 수용에 필요한 콘텐츠 여유(잔여-콘텐츠) 하한 — 콘텐츠가 눌릴
-/// 공간이 없으면 한글도 이월한다 (scattered_header r139 여유 1.3px 이월 vs
-/// 1741000 여유 30~58px 압축 실측).
-const BOTTOM_SQUEEZE_MIN_HEADROOM_PX: f64 = 12.0;
 const ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX: f64 = 40.0;
 struct TypesetState {
     /// 완성된 페이지 목록
@@ -18825,59 +18815,6 @@ impl TypesetEngine {
                     end_row = r;
                     continue;
                 }
-                // [#2097] 쪽 하단 압축 수용: 한글은 쪽 경계에서 행/블록이 잔여를
-                // 소폭 초과하면 압축해 끼워 넣는다 (1741000 블록 rows 10-11: 잔여
-                // 87.8px 에 선언 98.2px 블록을 85.9px 로 압축 배치 — COM·PDF 실측).
-                // 초과분 ≤ 허용치 && **블록 콘텐츠가 잔여에 실제 수용**될 때 한정
-                // (행 경로의 콘텐츠 프로브와 동일 근거).
-                if !strict_painted_bottom_fit
-                    && mt.allows_row_break_split()
-                    && consumed + cs_before + block_h
-                        <= avail_for_rows + BOTTOM_SQUEEZE_TOLERANCE_PX
-                {
-                    let block_content = layout_engine.row_block_content_height(
-                        table,
-                        b_start,
-                        b_end,
-                        &[],
-                        &[],
-                        styles,
-                    );
-                    let rest = (avail_for_rows - consumed - cs_before).max(0.0);
-                    // 중첩 표 보유 블록 제외 — 중첩 분할 지점(kps-ai r8..11)은
-                    // 한글도 이월한다 (issue_1073 골든).
-                    let block_has_nested = table.cells.iter().any(|c| {
-                        let cr = c.row as usize;
-                        cr >= b_start
-                            && cr < b_end
-                            && c.paragraphs.iter().any(|p| {
-                                p.controls
-                                    .iter()
-                                    .any(|ctrl| matches!(ctrl, Control::Table(_)))
-                            })
-                    });
-                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-                        eprintln!(
-                            "DIAG_SCAN SQUEEZE_BLOCK? r={}..{} block_h={:.1} content={:.1} rest={:.1} nested={}",
-                            r, b_end, block_h, block_content, rest, block_has_nested
-                        );
-                    }
-                    // [#2097 프로브 기록] 쪽 끝자락 한정(rest ≤ MAX_REST) 완화는 반증됨:
-                    // 3144149 p3(잔여 333.6px 에 342.4px 블록, 초과 8.8px, 콘텐츠
-                    // 123.8px)는 한글이 압축 수용(hc=6)하지만, 국소 수치가 동형인
-                    // kps-ai r=8..11(잔여 237.3px 에 243.3px, 초과 6.0px, 콘텐츠
-                    // 59.8px)은 한글이 이월(issue_1073 골든) — 잔여/초과/콘텐츠
-                    // 여유로는 분리 불가. 한글의 판별 신호는 별도 규명 필요.
-                    if rest - block_content >= BOTTOM_SQUEEZE_MIN_HEADROOM_PX
-                        && !block_has_nested
-                        && rest <= BOTTOM_SQUEEZE_MAX_REST_PX
-                    {
-                        consumed += cs_before + block_h;
-                        r = b_end;
-                        end_row = r;
-                        continue;
-                    }
-                }
                 end_row = r;
                 break;
             }
@@ -19040,62 +18977,6 @@ impl TypesetEngine {
                 r += 1;
                 end_row = r;
                 continue;
-            }
-            // [#2097] 쪽 하단 압축 수용 (블록 경로와 동일 근거): 잔여를 소폭
-            // 초과하는 행을 한글은 압축해 끼워 넣는다 — 표 마지막 행 sliver
-            // 계열의 직접 원인 (1741000 r14: 초과 6.9px 인데 이월되어 3쪽).
-            // 단 **콘텐츠가 잔여에 실제로 들어가는 행 한정** — 선언(행높이)만
-            // 초과하고 내용은 여유인 형상이 압축 대상이다. 콘텐츠 자체가 잔여를
-            // 넘는 행은 한글도 컷/이월 (86712 r26 초과 0.9px 케이스: 압축하면
-            // 65→66 회귀).
-            if !strict_painted_bottom_fit
-                && mt.allows_row_break_split()
-                && r > cursor_row
-                && consumed + cs_before + row_total
-                    <= avail_for_rows + BOTTOM_SQUEEZE_TOLERANCE_PX
-                // 측정-선언 정합 행 한정 — 측정이 선언을 크게 웃도는 행은 산식
-                // 과대(#2237, 86712 pi=172 r26: 선언 31.2px 가 106.5 로 측정)
-                // 가능성이 있어 미검증 압축을 배제한다.
-                && {
-                    let row_decl_max = table
-                        .cells
-                        .iter()
-                        .filter(|c| {
-                            c.row as usize == r && c.row_span == 1 && c.height < 0x8000_0000
-                        })
-                        .map(|c| hwpunit_to_px(c.height as i32, self.dpi))
-                        .fold(0.0f64, f64::max);
-                    row_decl_max > 0.0 && row_total <= row_decl_max * 1.2 + 2.0
-                }
-            {
-                let rest = (avail_for_rows - consumed - cs_before).max(0.0);
-                let probe = layout_engine.advance_row_cut(table, r, row_start_cut, rest, styles);
-                // 중첩 표 보유 행 제외 (블록 경로와 동일 근거 — issue_1073 골든).
-                let row_has_nested = table.cells.iter().any(|c| {
-                    c.row as usize == r
-                        && c.row_span == 1
-                        && c.paragraphs.iter().any(|p| {
-                            p.controls
-                                .iter()
-                                .any(|ctrl| matches!(ctrl, Control::Table(_)))
-                        })
-                });
-                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-                    eprintln!(
-                        "DIAG_SCAN SQUEEZE_ROW? r={} row_total={:.1} content={:.1} rest={:.1} fully={} nested={}",
-                        r, row_total, probe.consumed_height, rest, probe.fully_consumed, row_has_nested
-                    );
-                }
-                if probe.fully_consumed
-                    && !row_has_nested
-                    && rest <= BOTTOM_SQUEEZE_MAX_REST_PX
-                    && rest - probe.consumed_height >= BOTTOM_SQUEEZE_MIN_HEADROOM_PX
-                {
-                    consumed += cs_before + row_total;
-                    r += 1;
-                    end_row = r;
-                    continue;
-                }
             }
             // RowBreak 표의 마지막 빈 spacer 행은 한컴이 직전 조각 하단에 붙여
             // 그리는 경우가 많다. 이 행 하나만 몇 px 넘친다고 별도 빈 꼬리
@@ -19480,35 +19361,6 @@ impl TypesetEngine {
                             consumed += cs_before + split_total2;
                             retried = true;
                         }
-                    }
-                    // [#2097] 쪽 하단 압축 컷 수용: 재시도까지 실패해도 초과분이
-                    // 압축 허용치 이내면 한글은 첫 유닛을 압축해 컷한다
-                    // (21298295 p1: 잔여 32.5px 에 첫 줄 36.8px 를 압축 배치 —
-                    // 재저장 사다리 실측 p2 시작 831.8 = row13 부분 컷 후 잔여).
-                    // 행/블록 squeeze 와 동일한 쪽 끝자락 한정.
-                    if !retried
-                        && !strict_painted_bottom_fit
-                        && mt.allows_row_break_split()
-                        && split_candidate_rows_height
-                            <= avail_for_rows + BOTTOM_SQUEEZE_TOLERANCE_PX
-                        && (avail_for_rows - consumed) <= BOTTOM_SQUEEZE_MAX_REST_PX
-                        && row_split_meets_min_top_keep(
-                            res.consumed_height,
-                            split_total,
-                            row_split_min_keep_uses_painted_height,
-                        )
-                    {
-                        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-                            eprintln!(
-                                "DIAG_SCAN SQUEEZE_CUT r={} cand={:.1} avail={:.1} cut_h={:.1}",
-                                r, split_candidate_rows_height, avail_for_rows, res.consumed_height
-                            );
-                        }
-                        end_row = r + 1;
-                        split_end_cut = res.end_cut.clone();
-                        split_end_limit = res.consumed_height;
-                        consumed += cs_before + split_total;
-                        retried = true;
                     }
                     if !retried {
                         end_row = r;
