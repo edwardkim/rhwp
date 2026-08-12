@@ -297,7 +297,6 @@ struct BlockRowScanVars {
     landscape_whole_row_tolerance: f64,
     landscape_short_row_tolerance: f64,
     landscape_short_row_max_height: f64,
-    rowbreak_split_row_overflow_tolerance: f64,
     strict_painted_bottom_fit: bool,
     start_row_height_override: Option<f64>,
 }
@@ -701,10 +700,6 @@ pub struct TypesetEngine {
 }
 
 /// 조판 중 현재 페이지/단 상태
-const HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX: f64 = 64.0;
-/// Native HWP5의 저장 행 높이 HU 반올림에서만 허용하는 미세 RowBreak 초과값.
-/// HWPX stored-layout의 측정 drift 허용(64px)과 의도적으로 분리한다.
-const NATIVE_HWP5_ROWBREAK_ROUNDING_TOLERANCE_PX: f64 = 2.0;
 /// [#3236] 1행 1열 RowBreak 표의 선언 높이 신뢰(#1891) 상한 배율. 측정이 선언의
 /// 이 배율을 넘으면 폰트 대체 팽창이 아니라 셀 내용이 진짜로 큰 것이므로 특례를
 /// 적용하지 않고 인트라-로우 분할 경로에 맡긴다.
@@ -18509,7 +18504,6 @@ impl TypesetEngine {
             landscape_whole_row_tolerance,
             landscape_short_row_tolerance,
             landscape_short_row_max_height,
-            rowbreak_split_row_overflow_tolerance,
             strict_painted_bottom_fit,
             start_row_height_override,
         } = v;
@@ -19033,20 +19027,8 @@ impl TypesetEngine {
             let strict_nonterminal_rounding_fit = strict_painted_bottom_fit
                 && r + 1 < row_count
                 && consumed + cs_before + row_total <= avail_for_rows + 0.5;
-            // native HWP5 RowBreak의 저장 행 높이는 HU 반올림 때문에 한 행을
-            // 1~2px 초과로 기록할 수 있다. 이 경우 한컴은 행을 다음 쪽으로
-            // 이월하지 않고 현재 fragment 하단에 유지한다. HWPX의 넓은 drift
-            // 허용과 달리 native 저장 행의 미세 반올림에만 적용한다.
-            let native_hwp5_rowbreak_rounding_fit = st.profile.native_hwp5_layout()
-                && mt.allows_row_break_split()
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !strict_painted_bottom_fit
-                && consumed + cs_before + row_total
-                    <= avail_for_rows + NATIVE_HWP5_ROWBREAK_ROUNDING_TOLERANCE_PX;
             if consumed + cs_before + row_total <= avail_for_rows
                 || strict_nonterminal_rounding_fit
-                || native_hwp5_rowbreak_rounding_fit
             {
                 // 행 전체가 예산 안에 들어감.
                 consumed += cs_before + row_total;
@@ -19457,8 +19439,6 @@ impl TypesetEngine {
                             stored_frame_tail_overflow
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
-                    } else if mt.allows_row_break_split() {
-                        rowbreak_split_row_overflow_tolerance
                         } else {
                         0.1
                     };
@@ -19504,11 +19484,18 @@ impl TypesetEngine {
                             styles,
                         );
                         let cand2 = consumed + cs_before + split_total2;
+                        let retry_split_row_overflow_tolerance = if uses_source_terminal_tail {
+                            stored_frame_tail_overflow
+                        } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
+                            0.1
+                        } else {
+                            0.1
+                        };
                         if row_split_meets_min_top_keep(
                             res2.consumed_height,
                             split_total2,
                             row_split_min_keep_uses_painted_height,
-                        ) && cand2 <= avail_for_rows + split_row_overflow_tolerance
+                        ) && cand2 <= avail_for_rows + retry_split_row_overflow_tolerance
                         {
                             end_row = r + 1;
                             split_end_cut = res2.end_cut.clone();
@@ -20205,7 +20192,7 @@ impl TypesetEngine {
             && !para.line_segs.is_empty()
             && !para_has_visible_text(para)
             && declared_object_total > 0.0
-            && table_total > declared_object_total + HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
+            && table_total > declared_object_total
             // [#3236] 선언 신뢰는 측정 초과가 폰트 대체 팽창으로 설명되는 범위까지만.
             // 실측 팽창은 인접 가드들 기준 10~20% 수준이라 1.5배를 넘는 초과는 셀
             // 내용이 진짜로 큰 것이다 — 한컴도 이 경우 쪽 경계에서 셀을 분할한다
@@ -20213,9 +20200,7 @@ impl TypesetEngine {
             // p2 로 셀 내용을 이어 배치). 상한 없이는 통짜 배치 후 쪽 밖 clip 으로
             // 내용이 소실된다.
             && table_total <= declared_object_total * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO
-            && table_total <= available + HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
-            && st.current_height + declared_object_total
-                <= available + HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX;
+            && st.current_height + declared_object_total <= available;
 
         if let Some(declared_total) = declared_empty_para_float_total {
             // 빈 host 문단의 자리차지 RowBreak 표는 렌더러가 문서에 저장된 표 선언
@@ -20823,8 +20808,8 @@ impl TypesetEngine {
         // 로 측정해 렌더러와 단일 측정 공간을 공유한다.
         //
         // rowspan 행은 기본적으로 저장 행 높이(MeasuredTable)를 기준으로 삼는다. 다만
-        // 같은 행의 row_span==1 셀 내용이 저장 행 높이를 RowBreak 허용 오차보다 크게
-        // 초과하면, 저장 높이가 실제 셀 내용보다 작게 기록된 경우이므로 컷 높이를 쓴다.
+        // 같은 행의 row_span==1 셀 내용이 저장 행 높이를 초과하면, 저장 높이가 실제
+        // 셀 내용보다 작게 기록된 경우이므로 컷 높이를 쓴다.
         // 이 판정은 파일명/페이지가 아니라 표 셀 내용 높이와 저장 행 높이의 차이에 근거한다.
         let cut_row_h: Vec<f64> = (0..row_count)
             .map(|r| {
@@ -20837,10 +20822,9 @@ impl TypesetEngine {
                 } else {
                     0.0
                 };
-                let row_content_significantly_exceeds_stored = has_single_row_cells
-                    && row_cut_h
-                        > mt.row_heights[r] + HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX;
-                let allow_rowspan_content_height = row_content_significantly_exceeds_stored;
+                let row_content_exceeds_stored =
+                    has_single_row_cells && row_cut_h > mt.row_heights[r];
+                let allow_rowspan_content_height = row_content_exceeds_stored;
                 if rowspan_touched[r] && (!has_single_row_cells || !allow_rowspan_content_height) {
                     mt.row_heights[r]
                 } else if has_single_row_cells {
@@ -21933,7 +21917,6 @@ impl TypesetEngine {
             // 된다. rowspan 보호 블록(#398/#474)은 블록 전체를 한 단위로 다룬다.
             // 측정 공간이 advance_row_cut/cell_units 로 단일화되어 렌더러와
             // 정의상 일치한다(px content_offset·MeasuredTable 누적 제거).
-            const ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX: f64 = 2.0;
             const LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX: f64 = 36.0;
             const LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX: f64 = 260.0;
             const LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX: f64 = 260.0;
@@ -21956,17 +21939,6 @@ impl TypesetEngine {
             } else {
                 LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX
             };
-            // 64px 여유는 한컴 저장 layout 및 stored LineSeg가 없는 재조판 source의
-            // 측정 drift를 위한 기존 정책이다. 실제 native continuation paint tail은
-            // scan loop에서만 strict cut으로 별도 처리한다.
-            let rowbreak_split_row_overflow_tolerance = if st.profile.hwpx_stored_layout()
-                || !st.has_stored_line_segs
-            {
-                HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
-            } else {
-                ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
-            };
-
             // [Task #1025] split_block_start: 블록 분할 시 연속분 커서 복귀 기록.
             let issue2424_scan_started = issue2424_step_enabled.then(std::time::Instant::now);
             let BlockTableRowScan {
@@ -21998,7 +21970,6 @@ impl TypesetEngine {
                     landscape_whole_row_tolerance,
                     landscape_short_row_tolerance,
                     landscape_short_row_max_height,
-                    rowbreak_split_row_overflow_tolerance,
                     strict_painted_bottom_fit: strict_following_plain_text_fit,
                     start_row_height_override,
                 },
@@ -22113,7 +22084,6 @@ impl TypesetEngine {
                                 landscape_whole_row_tolerance,
                                 landscape_short_row_tolerance,
                                 landscape_short_row_max_height,
-                                rowbreak_split_row_overflow_tolerance,
                                 strict_painted_bottom_fit: strict_following_plain_text_fit,
                                 start_row_height_override,
                             },
