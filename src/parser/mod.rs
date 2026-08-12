@@ -66,27 +66,108 @@ const DRM_PROTECTED_HINT: &str =
 const EMPTY_FILE_CODE: &str = "EMPTY_FILE";
 const EMPTY_FILE_HINT: &str = "빈 파일(0 바이트)입니다.";
 
-/// 문서 열기 중 단일 DocInfo/BodyText 압축 해제 결과 상한.
-/// HWPX XML 엔트리와 HWP3 레코드가 사용하는 256 MiB 계약에 맞춘다.
-pub(crate) const MAX_OPEN_DECOMPRESSED_STREAM_BYTES: usize = 256 * 1024 * 1024;
-/// 문서 열기 중 DocInfo와 BodyText 압축 해제 결과의 누적 상한.
-/// 여러 정상 섹션을 허용하되 단일 문서가 상한을 무한히 반복하지 못하게 한다.
-const MAX_HWP5_OPEN_DECOMPRESSED_BYTES: usize = 512 * 1024 * 1024;
-
-#[derive(Debug)]
-struct OpenDecompressionBudget {
-    remaining: usize,
+/// HWP5 완전 문서 열기가 선택하는 핵심 스트림 출력 예산.
+///
+/// 이 정책은 `parse_hwp*`와 자동 포맷 감지 진입점에서만 만들고, CFB/암호 계층에는
+/// 남은 바이트 상한만 명시적으로 전달한다.
+#[derive(Clone, Copy, Debug)]
+struct Hwp5DocumentOpenDecompressionLimits {
+    max_stream_output_bytes: usize,
+    max_total_output_bytes: usize,
 }
 
-impl OpenDecompressionBudget {
-    fn new(max_bytes: usize) -> Self {
+impl Hwp5DocumentOpenDecompressionLimits {
+    const DEFAULT: Self = Self {
+        // 단일 DocInfo/BodyText 압축 해제 결과 상한. HWPX XML 엔트리와 HWP3 본문에
+        // 적용된 256 MiB 문서 열기 계약과 맞춘다.
+        max_stream_output_bytes: 256 * 1024 * 1024,
+        // 여러 정상 섹션을 허용하되 단일 문서가 상한을 반복하지 못하게 하는 누적 상한.
+        max_total_output_bytes: 512 * 1024 * 1024,
+    };
+}
+
+/// 자동 포맷 감지를 포함한 완전 문서 열기의 자원 정책.
+///
+/// HWP3은 그 자체로 완전 문서 진입점인 `hwp3::parse_hwp3`에도 같은 기본 정책을
+/// 적용하지만, 자동 감지 경로에서는 이 객체가 명시적으로 전달한다.
+#[derive(Clone, Copy, Debug)]
+struct DocumentOpenDecompressionPolicy {
+    hwp5: Hwp5DocumentOpenDecompressionLimits,
+    hwp3_max_body_output_bytes: usize,
+}
+
+impl DocumentOpenDecompressionPolicy {
+    const DEFAULT: Self = Self {
+        hwp5: Hwp5DocumentOpenDecompressionLimits::DEFAULT,
+        hwp3_max_body_output_bytes: hwp3::DEFAULT_HWP3_DOCUMENT_OPEN_BODY_OUTPUT_BYTES,
+    };
+}
+
+/// 비밀번호 보호 HWP5의 BinData를 parser가 materialize할 때 적용하는 별도 출력 상한.
+///
+/// BinData는 DocInfo/BodyText 문서 열기 누적 예산에는 포함하지 않지만, 해당 소비 경로가
+/// crypto helper에 명시적으로 전달하는 parser 소유 정책이다.
+const MAX_PASSWORD_PROTECTED_BIN_DATA_OUTPUT_BYTES: usize = 512 * 1024 * 1024;
+
+#[cfg(test)]
+thread_local! {
+    /// E2E 회귀에서 공개 문서 열기 API를 작은 예산으로 실행하는 scoped test seam.
+    /// 릴리스 빌드에는 존재하지 않는다.
+    static TEST_DOCUMENT_OPEN_DECOMPRESSION_POLICY:
+        std::cell::Cell<Option<DocumentOpenDecompressionPolicy>> = const { std::cell::Cell::new(None) };
+}
+
+fn document_open_decompression_policy() -> DocumentOpenDecompressionPolicy {
+    #[cfg(test)]
+    {
+        return TEST_DOCUMENT_OPEN_DECOMPRESSION_POLICY.with(|slot| {
+            slot.get()
+                .unwrap_or(DocumentOpenDecompressionPolicy::DEFAULT)
+        });
+    }
+
+    #[cfg(not(test))]
+    {
+        DocumentOpenDecompressionPolicy::DEFAULT
+    }
+}
+
+#[cfg(test)]
+struct TestDocumentOpenDecompressionPolicyGuard(Option<DocumentOpenDecompressionPolicy>);
+
+#[cfg(test)]
+impl Drop for TestDocumentOpenDecompressionPolicyGuard {
+    fn drop(&mut self) {
+        TEST_DOCUMENT_OPEN_DECOMPRESSION_POLICY.with(|slot| slot.set(self.0));
+    }
+}
+
+#[cfg(test)]
+fn with_document_open_decompression_policy_for_test<T>(
+    policy: DocumentOpenDecompressionPolicy,
+    operation: impl FnOnce() -> T,
+) -> T {
+    let previous = TEST_DOCUMENT_OPEN_DECOMPRESSION_POLICY.with(|slot| slot.replace(Some(policy)));
+    let _restore = TestDocumentOpenDecompressionPolicyGuard(previous);
+    operation()
+}
+
+#[derive(Debug)]
+struct Hwp5DocumentOpenDecompressionBudget {
+    remaining: usize,
+    max_stream_output_bytes: usize,
+}
+
+impl Hwp5DocumentOpenDecompressionBudget {
+    fn new(limits: Hwp5DocumentOpenDecompressionLimits) -> Self {
         Self {
-            remaining: max_bytes,
+            remaining: limits.max_total_output_bytes,
+            max_stream_output_bytes: limits.max_stream_output_bytes,
         }
     }
 
     fn stream_limit(&self) -> usize {
-        self.remaining.min(MAX_OPEN_DECOMPRESSED_STREAM_BYTES)
+        self.remaining.min(self.max_stream_output_bytes)
     }
 
     fn consume(&mut self, bytes: usize) -> Result<(), cfb_reader::CfbError> {
@@ -276,9 +357,17 @@ fn parse_doc_info_stream(
 }
 
 fn parse_hwp_inner(data: &[u8], password: Option<&[u8]>) -> Result<Document, ParseError> {
+    parse_hwp_inner_with_limits(data, password, document_open_decompression_policy().hwp5)
+}
+
+fn parse_hwp_inner_with_limits(
+    data: &[u8],
+    password: Option<&[u8]>,
+    limits: Hwp5DocumentOpenDecompressionLimits,
+) -> Result<Document, ParseError> {
     // 1. CFB 컨테이너 열기 (strict → lenient 폴백)
     match cfb_reader::CfbReader::open(data) {
-        Ok(cfb) => parse_hwp_with_cfb(cfb, data, password),
+        Ok(cfb) => parse_hwp_with_cfb(cfb, data, password, limits),
         Err(strict_err) => {
             eprintln!(
                 "표준 CFB 파서 실패: {}, lenient 파서로 재시도...",
@@ -286,7 +375,7 @@ fn parse_hwp_inner(data: &[u8], password: Option<&[u8]>) -> Result<Document, Par
             );
             let lenient = cfb_reader::LenientCfbReader::open(data)
                 .map_err(|_| ParseError::CfbError(strict_err))?;
-            parse_hwp_with_lenient(lenient, data, password)
+            parse_hwp_with_lenient(lenient, data, password, limits)
         }
     }
 }
@@ -296,6 +385,7 @@ fn parse_hwp_with_cfb(
     mut cfb: cfb_reader::CfbReader,
     raw_data: &[u8],
     password: Option<&[u8]>,
+    limits: Hwp5DocumentOpenDecompressionLimits,
 ) -> Result<Document, ParseError> {
     // 2. FileHeader 파싱
     let header_data = cfb.read_file_header().map_err(ParseError::CfbError)?;
@@ -312,7 +402,7 @@ fn parse_hwp_with_cfb(
 
     let compressed = file_header.flags.compressed;
     let distribution = file_header.flags.distribution;
-    let mut decompression_budget = OpenDecompressionBudget::new(MAX_HWP5_OPEN_DECOMPRESSED_BYTES);
+    let mut decompression_budget = Hwp5DocumentOpenDecompressionBudget::new(limits);
 
     // 3. DocInfo 파싱 (비밀번호 암호 문서: raw 읽기 → 복호화)
     //
@@ -627,7 +717,7 @@ fn parse_sections_strict(
     distribution: bool,
     encrypted: bool,
     password: Option<&[u8]>,
-    decompression_budget: &mut OpenDecompressionBudget,
+    decompression_budget: &mut Hwp5DocumentOpenDecompressionBudget,
 ) -> Result<Vec<crate::model::document::Section>, ParseError> {
     let mut sections = Vec::new();
 
@@ -635,7 +725,7 @@ fn parse_sections_strict(
         let section_data = if distribution {
             // 배포용 문서: ViewText 복호화
             let raw = cfb
-                .read_body_text_section(i, compressed, true)
+                .read_viewtext_section_raw(i)
                 .map_err(ParseError::CfbError)?;
             crypto::decrypt_viewtext_section_limited(
                 &raw,
@@ -688,6 +778,7 @@ fn parse_hwp_with_lenient(
     lenient: cfb_reader::LenientCfbReader,
     _raw_data: &[u8],
     password: Option<&[u8]>,
+    limits: Hwp5DocumentOpenDecompressionLimits,
 ) -> Result<Document, ParseError> {
     // FileHeader 파싱
     let header_data = lenient.read_file_header().map_err(ParseError::CfbError)?;
@@ -701,7 +792,7 @@ fn parse_hwp_with_lenient(
 
     let compressed = file_header.flags.compressed;
     let distribution = file_header.flags.distribution;
-    let mut decompression_budget = OpenDecompressionBudget::new(MAX_HWP5_OPEN_DECOMPRESSED_BYTES);
+    let mut decompression_budget = Hwp5DocumentOpenDecompressionBudget::new(limits);
 
     // DocInfo 파싱 (비밀번호 암호 문서: lenient read_stream raw → 복호화)
     let doc_info_data = if encrypted {
@@ -733,7 +824,7 @@ fn parse_hwp_with_lenient(
     for i in 0..section_count {
         let section_data = if distribution {
             let raw = lenient
-                .read_body_text_section_full(i, compressed, true)
+                .read_viewtext_section_raw(i)
                 .map_err(ParseError::CfbError)?;
             crypto::decrypt_viewtext_section_limited(
                 &raw,
@@ -916,7 +1007,7 @@ fn load_bin_data_content_lenient(
                         &data,
                         pwd,
                         stream_compressed,
-                        crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES,
+                        MAX_PASSWORD_PROTECTED_BIN_DATA_OUTPUT_BYTES,
                     ) {
                         Ok(d) => d,
                         Err(e) => {
@@ -1347,8 +1438,11 @@ fn parse_document_inner(
     data: &[u8],
     password: Option<&[u8]>,
 ) -> Result<ParsedDocument, ParseError> {
+    let open_policy = document_open_decompression_policy();
     match detect_format(data) {
-        FileFormat::Hwp => parse_hwp_inner(data, password).map(without_hml_metadata),
+        FileFormat::Hwp => {
+            parse_hwp_inner_with_limits(data, password, open_policy.hwp5).map(without_hml_metadata)
+        }
         FileFormat::Hwpx => match password {
             Some(password) => hwpx::parse_hwpx_with_password(data, password),
             None => hwpx::parse_hwpx(data),
@@ -1356,8 +1450,14 @@ fn parse_document_inner(
         .map_err(ParseError::from)
         .map(without_hml_metadata),
         FileFormat::Hwp3 => match password {
-            Some(password) => hwp3::parse_hwp3_with_password(data, password),
-            None => hwp3::parse_hwp3(data),
+            Some(password) => hwp3::parse_hwp3_with_open_body_limit_and_password(
+                data,
+                password,
+                open_policy.hwp3_max_body_output_bytes,
+            ),
+            None => {
+                hwp3::parse_hwp3_with_open_body_limit(data, open_policy.hwp3_max_body_output_bytes)
+            }
         }
         .map_err(ParseError::from)
         .map(without_hml_metadata),
@@ -1692,7 +1792,7 @@ impl Hwp5BinResolver {
                 raw,
                 pwd,
                 compressed,
-                crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES,
+                MAX_PASSWORD_PROTECTED_BIN_DATA_OUTPUT_BYTES,
             )
             .ok()
         } else {
@@ -1820,7 +1920,7 @@ impl crate::model::bin_data::BinDataResolver for Hwp5BinResolver {
     /// [#2550] `resolve().len()` 의 bounded 미러 — 출력을 materialize 하지 않는다.
     ///
     /// 상한(비암호 [`MAX_BIN_DATA_BYTES`](crate::model::bin_data::MAX_BIN_DATA_BYTES),
-    /// 암호 `MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES`) 초과 항목은 bounded 로드 경로가
+    /// 암호 `MAX_PASSWORD_PROTECTED_BIN_DATA_OUTPUT_BYTES`) 초과 항목은 bounded 로드 경로가
     /// placeholder 로 접으므로 길이도 0 으로 보고한다.
     fn resolved_len(&self, key: &str) -> usize {
         let raw = {
@@ -1843,12 +1943,12 @@ impl crate::model::bin_data::BinDataResolver for Hwp5BinResolver {
             let len = if stream_compressed {
                 match cfb_reader::decompressed_len_capped(
                     &plain,
-                    crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES,
+                    MAX_PASSWORD_PROTECTED_BIN_DATA_OUTPUT_BYTES,
                 ) {
                     Ok(len) => len,
                     Err(_) => return 0,
                 }
-            } else if plain.len() > crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES {
+            } else if plain.len() > MAX_PASSWORD_PROTECTED_BIN_DATA_OUTPUT_BYTES {
                 return 0;
             } else {
                 plain.len()
@@ -1990,7 +2090,7 @@ fn load_bin_data_content(
                         &data,
                         pwd,
                         stream_compressed,
-                        crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES,
+                        MAX_PASSWORD_PROTECTED_BIN_DATA_OUTPUT_BYTES,
                     ) {
                         Ok(d) => d,
                         Err(e) => {
@@ -2039,7 +2139,11 @@ mod tests {
 
     #[test]
     fn open_decompression_budget_rejects_cumulative_overflow() {
-        let mut budget = OpenDecompressionBudget::new(1024);
+        let mut budget =
+            Hwp5DocumentOpenDecompressionBudget::new(Hwp5DocumentOpenDecompressionLimits {
+                max_stream_output_bytes: 1024,
+                max_total_output_bytes: 1024,
+            });
         budget.consume(700).unwrap();
         assert_eq!(budget.stream_limit(), 324);
         assert!(matches!(
@@ -2440,6 +2544,30 @@ mod tests {
         compound.into_inner().into_inner()
     }
 
+    fn set_distribution_header(data: &[u8]) -> Vec<u8> {
+        use std::io::{Read, Seek, SeekFrom, Write};
+
+        let mut compound =
+            cfb::CompoundFile::open(std::io::Cursor::new(data.to_vec())).expect("cfb open");
+        let mut header = Vec::new();
+        {
+            let mut stream = compound
+                .open_stream("/FileHeader")
+                .expect("FileHeader 스트림");
+            stream.read_to_end(&mut header).unwrap();
+        }
+        let flags = u32::from_le_bytes(header[36..40].try_into().unwrap()) | 0x04;
+        header[36..40].copy_from_slice(&flags.to_le_bytes());
+        {
+            let mut stream = compound
+                .create_stream("/FileHeader")
+                .expect("FileHeader 갱신");
+            stream.seek(SeekFrom::Start(0)).unwrap();
+            stream.write_all(&header).unwrap();
+        }
+        compound.into_inner().into_inner()
+    }
+
     fn add_raw_streams(data: &[u8], streams: &[(&str, &[u8])]) -> Vec<u8> {
         use std::io::Write;
 
@@ -2463,6 +2591,324 @@ mod tests {
         let mut encoder = DeflateEncoder::new(Vec::new(), Compression::default());
         encoder.write_all(data).unwrap();
         encoder.finish().unwrap()
+    }
+
+    fn hwp5_document_open_policy_for_test(
+        max_stream_output_bytes: usize,
+        max_total_output_bytes: usize,
+    ) -> DocumentOpenDecompressionPolicy {
+        DocumentOpenDecompressionPolicy {
+            hwp5: Hwp5DocumentOpenDecompressionLimits {
+                max_stream_output_bytes,
+                max_total_output_bytes,
+            },
+            ..DocumentOpenDecompressionPolicy::DEFAULT
+        }
+    }
+
+    fn hwp3_document_open_policy_for_test(
+        max_body_output_bytes: usize,
+    ) -> DocumentOpenDecompressionPolicy {
+        DocumentOpenDecompressionPolicy {
+            hwp3_max_body_output_bytes: max_body_output_bytes,
+            ..DocumentOpenDecompressionPolicy::DEFAULT
+        }
+    }
+
+    fn hwp5_doc_info_and_first_section(data: &[u8]) -> (Vec<u8>, Vec<u8>) {
+        let mut cfb = cfb_reader::CfbReader::open(data).expect("HWP5 CFB fixture");
+        let header = header::parse_file_header(&cfb.read_file_header().unwrap())
+            .expect("HWP5 FileHeader fixture");
+        assert!(
+            header.flags.compressed,
+            "fixture must exercise decompression"
+        );
+        let doc_info = cfb.read_doc_info(true).expect("compressed DocInfo");
+        let section = cfb
+            .read_body_text_section(0, true, false)
+            .expect("compressed BodyText/Section0");
+        (doc_info, section)
+    }
+
+    fn replace_raw_stream(data: &[u8], path: &str, payload: &[u8]) -> Vec<u8> {
+        use std::io::Write;
+
+        let mut compound =
+            cfb::CompoundFile::open(std::io::Cursor::new(data.to_vec())).expect("cfb open");
+        let mut stream = compound.create_stream(path).expect("테스트 스트림 교체");
+        stream.write_all(payload).unwrap();
+        compound.into_inner().into_inner()
+    }
+
+    /// 기본 CFB reader가 열기 단계에서 거부하지만 LenientCfbReader는 계속 읽을 수 있는
+    /// FAT 메타데이터 불일치를 만든다. 실제 디렉터리/스트림 chain은 건드리지 않으므로
+    /// 아래 공개 parse 경로가 strict → lenient fallback을 실제로 지난다.
+    fn force_lenient_cfb_fallback(data: &[u8]) -> Vec<u8> {
+        const CFB_HEADER_BYTES: usize = 512;
+
+        let mut corrupted = data.to_vec();
+        assert!(
+            corrupted.len() >= CFB_HEADER_BYTES,
+            "CFB fixture must include its header"
+        );
+        let sector_shift =
+            u16::from_le_bytes(corrupted[30..32].try_into().expect("sector shift bytes"));
+        assert!(
+            (9..=12).contains(&sector_shift),
+            "fixture must use a supported CFB sector size"
+        );
+        let sector_size = 1usize << sector_shift;
+        let fat_sectors_count =
+            u32::from_le_bytes(corrupted[44..48].try_into().expect("FAT count bytes")) as usize;
+        assert!(
+            (1..=109).contains(&fat_sectors_count),
+            "fixture must keep its FAT sector ids in the CFB header"
+        );
+        let fat_sector_ids: Vec<u32> = (0..fat_sectors_count)
+            .map(|index| {
+                let offset = 76 + index * 4;
+                u32::from_le_bytes(
+                    corrupted[offset..offset + 4]
+                        .try_into()
+                        .expect("FAT sector id bytes"),
+                )
+            })
+            .collect();
+        let entries_per_fat_sector = sector_size / 4;
+        let physical_sector_count = (corrupted.len() - CFB_HEADER_BYTES) / sector_size;
+        let fat_entry_offset = |sector_id: usize| {
+            let owner_index = sector_id / entries_per_fat_sector;
+            let owner_sector_id = *fat_sector_ids
+                .get(owner_index)
+                .expect("fixture FAT must cover each physical sector")
+                as usize;
+            CFB_HEADER_BYTES
+                + owner_sector_id * sector_size
+                + (sector_id % entries_per_fat_sector) * 4
+        };
+        let target = (0..physical_sector_count)
+            .filter_map(|sector_id| {
+                let offset = fat_entry_offset(sector_id);
+                let value = u32::from_le_bytes(
+                    corrupted[offset..offset + 4]
+                        .try_into()
+                        .expect("FAT entry bytes"),
+                );
+                (value < physical_sector_count as u32).then_some(value)
+            })
+            .next()
+            .expect("fixture must contain a live FAT pointee");
+        let padding_offset = fat_entry_offset(physical_sector_count);
+        assert!(
+            padding_offset + 4 <= corrupted.len(),
+            "fixture FAT padding entry must be in range"
+        );
+        // The padding slot is beyond the file's physical sectors and hence cannot
+        // be reached by the intact document. Reusing a live target makes the
+        // permissive cfb allocator reject duplicate pointees; LenientCfbReader
+        // ignores this unused tail entry and retains the real chains.
+        corrupted[padding_offset..padding_offset + 4].copy_from_slice(&target.to_le_bytes());
+
+        assert!(
+            cfb_reader::CfbReader::open(&corrupted).is_err(),
+            "mutation must make the standard CFB reader fail"
+        );
+        assert!(
+            cfb_reader::LenientCfbReader::open(&corrupted).is_ok(),
+            "mutation must retain a usable lenient CFB path"
+        );
+        corrupted
+    }
+
+    /// 공개 `parse_hwp` 진입점이 low-level CFB 기본값이 아니라 문서 열기 정책을
+    /// 선택하고, DocInfo의 압축 해제 출력을 그 정책으로 차단하는지 검증한다.
+    #[test]
+    fn hwp5_open_decompression_rejects_doc_info_past_e2e_limit() {
+        const LIMIT: usize = 1024;
+
+        let source = std::fs::read("samples/2010-01-06.hwp").expect("sample 존재");
+        let _ = hwp5_doc_info_and_first_section(&source);
+        let oversized_doc_info = raw_deflate(&vec![0; LIMIT + 1]);
+        let mutated = replace_raw_stream(&source, "/DocInfo", &oversized_doc_info);
+
+        let result = with_document_open_decompression_policy_for_test(
+            hwp5_document_open_policy_for_test(LIMIT, LIMIT * 2),
+            || parse_hwp(&mutated),
+        );
+
+        assert!(matches!(
+            result,
+            Err(ParseError::CfbError(cfb_reader::CfbError::LimitExceeded(
+                LIMIT
+            )))
+        ));
+    }
+
+    /// 배포 플래그가 있지만 ViewText가 없는 손상 HWP5는 BodyText로 fallback해
+    /// 무제한 해제하지 않고, 공개 문서 열기 경계에서 missing ViewText 오류로 끝나야 한다.
+    #[test]
+    fn hwp5_open_decompression_rejects_missing_viewtext_without_bodytext_fallback() {
+        let source = std::fs::read("samples/2010-01-06.hwp").expect("sample 존재");
+        let (doc_info, _) = hwp5_doc_info_and_first_section(&source);
+        let limit = doc_info.len().max(1024);
+        let oversized_body_text = raw_deflate(&vec![0; limit + 1]);
+        let mutated = set_distribution_header(&replace_raw_stream(
+            &source,
+            "/BodyText/Section0",
+            &oversized_body_text,
+        ));
+
+        let result = with_document_open_decompression_policy_for_test(
+            hwp5_document_open_policy_for_test(limit, limit * 2),
+            || parse_document(&mutated),
+        );
+
+        assert!(matches!(
+            result,
+            Err(ParseError::CfbError(cfb_reader::CfbError::StreamNotFound(path)))
+                if path == "/ViewText/Section0"
+        ));
+    }
+
+    /// strict CFB 검증을 통과하지 못해 lenient fallback으로 연 문서도 공개 자동 감지
+    /// 경로에서 같은 DocInfo 출력 상한을 적용해야 한다.
+    #[test]
+    fn hwp5_open_decompression_lenient_path_rejects_doc_info_past_e2e_limit() {
+        const LIMIT: usize = 1024;
+
+        let source = std::fs::read("samples/2010-01-06.hwp").expect("sample 존재");
+        let oversized_doc_info = raw_deflate(&vec![0; LIMIT + 1]);
+        let strict_rejected = replace_raw_stream(&source, "/DocInfo", &oversized_doc_info);
+        let mutated = force_lenient_cfb_fallback(&strict_rejected);
+
+        let result = with_document_open_decompression_policy_for_test(
+            hwp5_document_open_policy_for_test(LIMIT, LIMIT * 2),
+            || parse_document(&mutated),
+        );
+
+        assert!(matches!(
+            result,
+            Err(ParseError::CfbError(cfb_reader::CfbError::LimitExceeded(
+                LIMIT
+            )))
+        ));
+    }
+
+    /// Lenient fallback에서도 배포 플래그가 켜졌다면 정확한 ViewText hierarchy만
+    /// 읽어야 한다. 손상된 BodyText를 fallback으로 해제하면 안 된다.
+    #[test]
+    fn hwp5_open_decompression_lenient_distribution_rejects_missing_viewtext() {
+        let source = std::fs::read("samples/2010-01-06.hwp").expect("sample 존재");
+        let (doc_info, _) = hwp5_doc_info_and_first_section(&source);
+        let limit = doc_info.len().max(1024);
+        let oversized_body_text = raw_deflate(&vec![0; limit + 1]);
+        let strict_rejected = set_distribution_header(&replace_raw_stream(
+            &source,
+            "/BodyText/Section0",
+            &oversized_body_text,
+        ));
+        let mutated = force_lenient_cfb_fallback(&strict_rejected);
+
+        let result = with_document_open_decompression_policy_for_test(
+            hwp5_document_open_policy_for_test(limit, limit * 2),
+            || parse_document(&mutated),
+        );
+
+        match &result {
+            Err(ParseError::CfbError(cfb_reader::CfbError::StreamNotFound(path)))
+                if path == "ViewText/Section0" => {}
+            other => panic!("expected missing exact lenient ViewText path, got {other:?}"),
+        }
+    }
+
+    /// 자동 감지 공개 진입점에서 DocInfo와 첫 BodyText가 각각의 단일 스트림 상한은
+    /// 넘지 않아도 같은 문서 열기 누적 예산을 공유하는지 검증한다.
+    #[test]
+    fn hwp5_open_decompression_rejects_cumulative_output_through_parse_document() {
+        let source = std::fs::read("samples/2010-01-06.hwp").expect("sample 존재");
+        let (doc_info, section) = hwp5_doc_info_and_first_section(&source);
+        assert!(!doc_info.is_empty(), "DocInfo fixture must have output");
+        assert!(
+            section.len() > 1,
+            "BodyText fixture must have enough output for a one-byte deficit"
+        );
+
+        let max_total_output_bytes = doc_info
+            .len()
+            .checked_add(section.len())
+            .expect("fixture output length fits usize")
+            - 1;
+        let expected_remaining_limit = section.len() - 1;
+        let result = with_document_open_decompression_policy_for_test(
+            hwp5_document_open_policy_for_test(
+                doc_info.len().max(section.len()),
+                max_total_output_bytes,
+            ),
+            || parse_document(&source),
+        );
+
+        assert!(matches!(
+            result,
+            Err(ParseError::CfbError(cfb_reader::CfbError::LimitExceeded(limit)))
+                if limit == expected_remaining_limit
+        ));
+    }
+
+    /// 비밀번호 보호 HWP5도 공개 `parse_document_with_password` 경로에서 같은
+    /// 문서 열기 정책의 명시적 상한을 crypto helper에 전달하는지 검증한다.
+    #[test]
+    fn hwp5_open_decompression_encrypted_doc_info_uses_e2e_limit() {
+        const PASSWORD: &[u8] = b"e2e-open-budget";
+
+        let source = std::fs::read("samples/2010-01-06.hwp").expect("sample 존재");
+        let (doc_info, _) = hwp5_doc_info_and_first_section(&source);
+        assert!(doc_info.len() > 1, "DocInfo fixture must have output");
+        let encrypted = encrypt_hwp_streams_for_test(&source, PASSWORD);
+        assert!(
+            parse_document_with_password(&encrypted, PASSWORD).is_ok(),
+            "encrypted fixture must be valid before constraining its public open path"
+        );
+
+        let limit = doc_info.len() - 1;
+        let result = with_document_open_decompression_policy_for_test(
+            hwp5_document_open_policy_for_test(limit, doc_info.len()),
+            || parse_document_with_password(&encrypted, PASSWORD),
+        );
+
+        assert!(matches!(
+            result,
+            Err(ParseError::CryptoError(
+                crypto::CryptoError::DecompressedStreamLimitExceeded { max_bytes }
+            )) if max_bytes == limit
+        ));
+    }
+
+    /// HWP3도 public `parse_document` 자동 감지 경로에서 작은 문서 열기 상한을
+    /// HWP3 본문 압축 해제 helper로 전달하는지 실제 압축 fixture로 검증한다.
+    #[test]
+    fn hwp3_open_decompression_rejects_compressed_body_through_parse_document() {
+        let source = std::fs::read("samples/issue_265.hwp").expect("HWP3 sample 존재");
+        assert_eq!(detect_format(&source), FileFormat::Hwp3);
+        assert_eq!(
+            source.get(154),
+            Some(&1),
+            "fixture must mark its HWP3 body as compressed"
+        );
+        assert!(
+            parse_document(&source).is_ok(),
+            "HWP3 fixture must be valid before constraining its public open path"
+        );
+
+        let result = with_document_open_decompression_policy_for_test(
+            hwp3_document_open_policy_for_test(1),
+            || parse_document(&source),
+        );
+
+        assert!(matches!(
+            result,
+            Err(ParseError::Hwp3Error(hwp3::Hwp3Error::ParseError { message }))
+                if message.contains("1 바이트 상한")
+        ));
     }
 
     fn encrypt_hwp_streams_for_test(data: &[u8], password: &[u8]) -> Vec<u8> {

@@ -13,6 +13,10 @@ use std::path::PathBuf;
 use quick_xml::events::Event;
 use quick_xml::Reader;
 
+use crate::diagnostics::{
+    read_hwp5_body_text_section_limited, read_hwp5_doc_info_limited,
+    MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+};
 use crate::parser::cfb_reader::CfbReader;
 use crate::parser::header;
 use crate::parser::record::Record;
@@ -369,9 +373,12 @@ fn read_char_shapes(path: &PathBuf) -> Result<Vec<CharShapeRecord>, String> {
             path.display()
         ));
     }
-    let doc_info = cfb
-        .read_doc_info(file_header.flags.compressed)
-        .map_err(|error| format!("DocInfo 읽기 실패: {error}"))?;
+    let doc_info = read_hwp5_doc_info_limited(
+        &mut cfb,
+        file_header.flags.compressed,
+        MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+    )
+    .map_err(|error| format!("DocInfo 읽기 실패: {error}"))?;
     extract_char_shapes(&doc_info)
 }
 
@@ -393,21 +400,25 @@ fn read_generated_audit(
         ));
     }
 
-    let doc_info = cfb
-        .read_doc_info(file_header.flags.compressed)
-        .map_err(|error| format!("DocInfo 읽기 실패: {error}"))?;
+    let doc_info = read_hwp5_doc_info_limited(
+        &mut cfb,
+        file_header.flags.compressed,
+        MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+    )
+    .map_err(|error| format!("DocInfo 읽기 실패: {error}"))?;
     let shapes = extract_char_shapes(&doc_info)?;
     let mut usages = BTreeMap::new();
     let mut stored_page_count = 0;
 
     for section in 0..cfb.section_count() {
-        let data = cfb
-            .read_body_text_section(
-                section,
-                file_header.flags.compressed,
-                file_header.flags.distribution,
-            )
-            .map_err(|error| format!("BodyText Section{section} 읽기 실패: {error}"))?;
+        let data = read_hwp5_body_text_section_limited(
+            &mut cfb,
+            section,
+            file_header.flags.compressed,
+            file_header.flags.distribution,
+            MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+        )
+        .map_err(|error| format!("BodyText Section{section} 읽기 실패: {error}"))?;
         let records = Record::read_all(&data)
             .map_err(|error| format!("BodyText Section{section} record 파싱 실패: {error}"))?;
         let paragraphs = collect_section_paragraphs(section, &records, &mut stored_page_count);

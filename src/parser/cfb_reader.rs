@@ -79,6 +79,37 @@ impl CfbReader {
         Ok(data)
     }
 
+    /// 스트림 원본을 `max_bytes` 바이트까지만 읽는다.
+    ///
+    /// 상한을 선택하지 않는 CFB 기계 API다. 원본 스트림을 직접 소비하는 caller는
+    /// 자신의 자원 정책을 명시적으로 전달해야 한다.
+    pub fn read_stream_raw_limited(
+        &mut self,
+        path: &str,
+        max_bytes: usize,
+    ) -> Result<Vec<u8>, CfbError> {
+        if !self.compound.is_stream(path) {
+            return Err(CfbError::StreamNotFound(path.to_string()));
+        }
+
+        let mut stream = self
+            .compound
+            .open_stream(path)
+            .map_err(|e| CfbError::StreamError(format!("{}: {}", path, e)))?;
+
+        let mut data = Vec::new();
+        stream
+            .by_ref()
+            .take((max_bytes as u64).saturating_add(1))
+            .read_to_end(&mut data)
+            .map_err(|e| CfbError::StreamError(format!("{}: {}", path, e)))?;
+        if data.len() > max_bytes {
+            return Err(CfbError::LimitExceeded(max_bytes));
+        }
+
+        Ok(data)
+    }
+
     /// FileHeader 스트림 읽기 (256바이트, 항상 비압축)
     pub fn read_file_header(&mut self) -> Result<Vec<u8>, CfbError> {
         self.read_stream_raw("/FileHeader")
@@ -86,7 +117,7 @@ impl CfbReader {
 
     /// DocInfo 스트림 읽기 (압축 가능)
     pub fn read_doc_info(&mut self, compressed: bool) -> Result<Vec<u8>, CfbError> {
-        self.read_doc_info_limited(compressed, super::MAX_OPEN_DECOMPRESSED_STREAM_BYTES)
+        decode_stream(self.read_stream_raw("/DocInfo")?, compressed)
     }
 
     /// DocInfo 스트림을 압축 해제 결과 기준 `max_bytes` 바이트까지만 읽는다.
@@ -120,11 +151,7 @@ impl CfbReader {
             }
         }
 
-        self.read_body_text_section_limited(
-            index,
-            compressed,
-            super::MAX_OPEN_DECOMPRESSED_STREAM_BYTES,
-        )
+        decode_stream(self.read_body_text_section_raw(index)?, compressed)
     }
 
     /// 일반 BodyText 섹션을 압축 해제 결과 기준 `max_bytes` 바이트까지만 읽는다.
@@ -156,6 +183,47 @@ impl CfbReader {
             return Err(CfbError::StreamNotFound(format!("Section{}", index)));
         }
         self.read_stream_raw(&section_path)
+    }
+
+    /// 일반 BodyText 섹션의 원본을 caller 제공 상한까지 읽는다.
+    ///
+    /// 이 API는 압축 해제를 하지 않는다. raw 암호문을 직접 소비하는 CLI 같은 caller는
+    /// 이 명시적 bound를 사용한 뒤 자신의 crypto `_limited` 호출에 별도 출력 상한을 준다.
+    pub fn read_body_text_section_raw_limited(
+        &mut self,
+        index: u32,
+        max_bytes: usize,
+    ) -> Result<Vec<u8>, CfbError> {
+        let bodytext_path = format!("/BodyText/Section{}", index);
+        if self.has_stream(&bodytext_path) {
+            return self.read_stream_raw_limited(&bodytext_path, max_bytes);
+        }
+
+        let section_path = format!("/Section{}", index);
+        if !self.has_stream(&section_path) {
+            return Err(CfbError::StreamNotFound(format!("Section{}", index)));
+        }
+        self.read_stream_raw_limited(&section_path, max_bytes)
+    }
+
+    /// 배포용 ViewText 섹션의 암호문 원본을 반환한다.
+    ///
+    /// 배포용 문서 열기 경계는 이 바이트를 crypto의 명시적 상한 경로로 전달한다.
+    /// ViewText가 없을 때 BodyText로 대체하지 않는다. 그 대체는 배포 플래그가 켜진
+    /// 손상 입력에서 일반 본문을 무제한 압축 해제할 수 있기 때문이다.
+    pub(crate) fn read_viewtext_section_raw(&mut self, index: u32) -> Result<Vec<u8>, CfbError> {
+        let path = format!("/ViewText/Section{}", index);
+        self.read_stream_raw(&path)
+    }
+
+    /// 배포용 ViewText 암호문 원본을 caller 제공 상한까지 읽는다.
+    pub(crate) fn read_viewtext_section_raw_limited(
+        &mut self,
+        index: u32,
+        max_bytes: usize,
+    ) -> Result<Vec<u8>, CfbError> {
+        let path = format!("/ViewText/Section{}", index);
+        self.read_stream_raw_limited(&path, max_bytes)
     }
 
     /// BinData 스트림 읽기 (BinData/BIN{XXXX}.{ext})
@@ -341,6 +409,9 @@ pub struct LenientCfbReader {
     sector_size: usize,
     /// Directory entries: (name, start_sector, size, obj_type)
     entries: Vec<(String, u32, u64, u8)>,
+    /// 원본 directory ID를 보존한 엔트리. 경로가 중요한 ViewText는 이 트리를 따라
+    /// 찾아야 `BodyText/SectionN`과 이름만 같은 스트림을 혼동하지 않는다.
+    directory_entries: Vec<LenientDirectoryEntry>,
     /// FAT table
     fat: Vec<u32>,
     /// Mini-stream data
@@ -349,6 +420,17 @@ pub struct LenientCfbReader {
     mini_fat: Vec<u32>,
     /// Mini-stream cutoff size
     mini_stream_cutoff: u32,
+}
+
+#[derive(Debug)]
+struct LenientDirectoryEntry {
+    name: String,
+    left_sibling: u32,
+    right_sibling: u32,
+    child: u32,
+    start_sector: u32,
+    size: u64,
+    obj_type: u8,
 }
 
 impl LenientCfbReader {
@@ -483,6 +565,7 @@ impl LenientCfbReader {
         // Directory entries 읽기
         let dir_data = Self::read_chain_static(data, &fat, first_dir_sector, sector_size);
         let mut entries = Vec::new();
+        let mut directory_entries = Vec::new();
         let entry_size = 128;
         let n_entries = dir_data.len() / entry_size;
         for i in 0..n_entries {
@@ -505,6 +588,24 @@ impl LenientCfbReader {
                 String::new()
             };
             let obj_type = dir_data[eoff + 66];
+            let left_sibling = u32::from_le_bytes([
+                dir_data[eoff + 68],
+                dir_data[eoff + 69],
+                dir_data[eoff + 70],
+                dir_data[eoff + 71],
+            ]);
+            let right_sibling = u32::from_le_bytes([
+                dir_data[eoff + 72],
+                dir_data[eoff + 73],
+                dir_data[eoff + 74],
+                dir_data[eoff + 75],
+            ]);
+            let child = u32::from_le_bytes([
+                dir_data[eoff + 76],
+                dir_data[eoff + 77],
+                dir_data[eoff + 78],
+                dir_data[eoff + 79],
+            ]);
             let start_sector = u32::from_le_bytes([
                 dir_data[eoff + 116],
                 dir_data[eoff + 117],
@@ -521,6 +622,16 @@ impl LenientCfbReader {
                 dir_data[eoff + 126],
                 dir_data[eoff + 127],
             ]);
+
+            directory_entries.push(LenientDirectoryEntry {
+                name: name.clone(),
+                left_sibling,
+                right_sibling,
+                child,
+                start_sector,
+                size,
+                obj_type,
+            });
 
             if obj_type == 1 || obj_type == 2 || obj_type == 5 {
                 entries.push((name, start_sector, size, obj_type));
@@ -539,16 +650,17 @@ impl LenientCfbReader {
         }
 
         // Mini-stream: Root entry의 스트림 데이터
-        let mini_stream = if !entries.is_empty() && entries[0].3 == 5 {
-            Self::read_chain_static(data, &fat, entries[0].1, sector_size)
-        } else {
-            Vec::new()
-        };
+        let mini_stream = directory_entries
+            .iter()
+            .find(|entry| entry.obj_type == 5)
+            .map(|root| Self::read_chain_static(data, &fat, root.start_sector, sector_size))
+            .unwrap_or_default();
 
         Ok(LenientCfbReader {
             data: data.to_vec(),
             sector_size,
             entries,
+            directory_entries,
             fat,
             mini_stream,
             mini_fat,
@@ -628,6 +740,58 @@ impl LenientCfbReader {
             .position(|(name, _, _, _)| name == &target_name)
     }
 
+    fn find_child_entry_by_name(&self, parent_id: usize, name: &str) -> Option<usize> {
+        let first_child = self.directory_entries.get(parent_id)?.child;
+        let mut pending = vec![first_child];
+        let mut visited = std::collections::HashSet::new();
+
+        while let Some(entry_id) = pending.pop() {
+            if entry_id == Self::END_OF_CHAIN || entry_id == Self::FREE_SECT {
+                continue;
+            }
+            let entry_id = entry_id as usize;
+            if !visited.insert(entry_id) {
+                continue;
+            }
+            let Some(entry) = self.directory_entries.get(entry_id) else {
+                continue;
+            };
+            if entry.name == name {
+                return Some(entry_id);
+            }
+            pending.push(entry.left_sibling);
+            pending.push(entry.right_sibling);
+        }
+
+        None
+    }
+
+    fn read_directory_stream(&self, entry_id: usize, path: &str) -> Result<Vec<u8>, CfbError> {
+        let entry = self
+            .directory_entries
+            .get(entry_id)
+            .ok_or_else(|| CfbError::StreamNotFound(path.to_string()))?;
+        if entry.obj_type != 2 {
+            return Err(CfbError::StreamError(format!(
+                "{}: 스트림이 아님 (type={})",
+                path, entry.obj_type
+            )));
+        }
+
+        if entry.size < self.mini_stream_cutoff as u64 {
+            Ok(self.read_mini_stream(entry.start_sector, entry.size))
+        } else {
+            let mut data = Self::read_chain_static(
+                &self.data,
+                &self.fat,
+                entry.start_sector,
+                self.sector_size,
+            );
+            data.truncate(entry.size as usize);
+            Ok(data)
+        }
+    }
+
     pub fn read_stream(&self, path: &str) -> Result<Vec<u8>, CfbError> {
         let idx = self
             .find_entry_idx(path)
@@ -654,7 +818,7 @@ impl LenientCfbReader {
     }
 
     pub fn read_doc_info(&self, compressed: bool) -> Result<Vec<u8>, CfbError> {
-        self.read_doc_info_limited(compressed, super::MAX_OPEN_DECOMPRESSED_STREAM_BYTES)
+        decode_stream(self.read_stream("DocInfo")?, compressed)
     }
 
     pub fn read_doc_info_limited(
@@ -670,11 +834,8 @@ impl LenientCfbReader {
         index: u32,
         compressed: bool,
     ) -> Result<Vec<u8>, CfbError> {
-        self.read_body_text_section_limited(
-            index,
-            compressed,
-            super::MAX_OPEN_DECOMPRESSED_STREAM_BYTES,
-        )
+        let name = format!("Section{}", index);
+        decode_stream(self.read_stream(&name)?, compressed)
     }
 
     pub fn list_entries(&self) -> &[(String, u32, u64, u8)] {
@@ -701,11 +862,31 @@ impl LenientCfbReader {
             }
         }
 
-        self.read_body_text_section_limited(
-            index,
-            compressed,
-            super::MAX_OPEN_DECOMPRESSED_STREAM_BYTES,
-        )
+        let name = format!("Section{}", index);
+        decode_stream(self.read_stream(&name)?, compressed)
+    }
+
+    /// 배포용 ViewText 섹션의 암호문 원본을 반환한다.
+    ///
+    /// Lenient complete-open 경계는 이 값을 crypto의 명시적 상한 경로로 전달한다.
+    /// 손상된 배포 플래그에서 BodyText fallback을 하지 않는다.
+    pub(crate) fn read_viewtext_section_raw(&self, index: u32) -> Result<Vec<u8>, CfbError> {
+        let path = format!("ViewText/Section{}", index);
+        let root_id = self
+            .directory_entries
+            .iter()
+            .position(|entry| entry.obj_type == 5)
+            .ok_or_else(|| CfbError::StreamNotFound(path.clone()))?;
+        let viewtext_id = self
+            .find_child_entry_by_name(root_id, "ViewText")
+            .filter(|entry_id| self.directory_entries[*entry_id].obj_type == 1)
+            .ok_or_else(|| CfbError::StreamNotFound(path.clone()))?;
+        let section_name = format!("Section{}", index);
+        let section_id = self
+            .find_child_entry_by_name(viewtext_id, &section_name)
+            .filter(|entry_id| self.directory_entries[*entry_id].obj_type == 2)
+            .ok_or_else(|| CfbError::StreamNotFound(path.clone()))?;
+        self.read_directory_stream(section_id, &path)
     }
 
     pub fn read_body_text_section_limited(
@@ -822,6 +1003,14 @@ pub fn decompress_stream_limited(data: &[u8], max_bytes: usize) -> Result<Vec<u8
         Err(CfbError::LimitExceeded(_)) => Err(CfbError::LimitExceeded(max_bytes)),
         Err(_) if raw_exceeded => Err(CfbError::LimitExceeded(max_bytes)),
         Err(error) => Err(error),
+    }
+}
+
+fn decode_stream(raw: Vec<u8>, compressed: bool) -> Result<Vec<u8>, CfbError> {
+    if compressed {
+        decompress_stream(&raw)
+    } else {
+        Ok(raw)
     }
 }
 

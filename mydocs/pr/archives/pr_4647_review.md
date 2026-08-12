@@ -14,8 +14,8 @@ modifiers: intake_and_review.md, local_validation.md
 loaded documents: pr_review_workflow.md, pr_review/README.md,
   pr_review/collaborator_self_merge.md, pr_review/intake_and_review.md,
   pr_review/local_validation.md
-current code head: 8ea821936cababd70f92ef5e297ada97157f089f
-trailing head: 이 기록과 parser architecture를 갱신하는 docs-only commit
+previous reviewed code head: 8ea821936cababd70f92ef5e297ada97157f089f
+current code head: this correction commit (commit hash recorded after local verification)
 ```
 
 ## Metadata
@@ -27,39 +27,63 @@ trailing head: 이 기록과 parser architecture를 갱신하는 docs-only commi
 | reviewer | `edwardkim` 요청은 작성자 권한 부족으로 실패해 repository 측 지정 대기 |
 | base / head | `devel` / `humdrum00001010:fix/bound-open-decompression-m34` |
 | 관련 보고 | 비공개 보고 |
-| 규모 | 6개 파일, +416/-65 (후속 문서 포함) |
-| 상태 | Open, Draft, mergeable; required checks 대기 |
+| 규모 | 수정 중 (source·E2E 회귀·경계 문서) |
+| 상태 | Open, Draft; independent Gestell 재검토와 CONTRIBUTING 게이트 대기 |
 
 ## 변경 범위
 
-HWP5 DocInfo와 본문 섹션, HWP3 압축 본문을 문서 열기 과정에서 해제할 때 단일 스트림 상한을
-적용한다. HWP5 strict·lenient 리더와 일반·비밀번호·배포용 섹션은 같은 누적 문서 예산을 소비한다.
-상한 초과는 빈 레코드나 빈 섹션으로 대체하지 않고 명시적 오류로 반환한다.
+완전 문서 열기 진입점인 `parse_hwp*`, `parse_document*`, `hwp3::parse_hwp3*`가 HWP5
+DocInfo·본문 섹션 및 HWP3 압축 본문에 적용할 byte 예산을 선택한다. HWP5 strict·lenient,
+일반·비밀번호·배포용 분기는 그 선택된 같은 누적 문서 예산을 소비한다. 상한 초과는 빈 레코드나
+빈 섹션으로 대체하지 않고 명시적 오류로 반환한다.
 
 HWP5 비압축 DocInfo·본문도 같은 길이 검사를 받으므로 이 변경은 압축 해제 출력뿐 아니라 핵심
 스트림의 일반 크기 정책이기도 하다. 256/512 MiB는 HWP 규격의 유효성 상한이 아니라 rhwp의
 결정적 자원 예산이다. `BinData`, preview와 기타 보조 스트림은 이 예산에 포함하지 않는다.
 
-변경은 `src/parser/`의 포맷 소유 경계에 한정한다. renderer, layout, WASM API와 rhwp-studio 출력은
-바꾸지 않으므로 시각·fixture 증적 경로는 적용하지 않는다.
+CFB와 crypto 계층의 일반 API는 이 정책을 선택하거나 `MAX_*` 기본값을 import하지 않는다.
+호출자가 명시적으로 준 `max_bytes`를 기계적으로 적용하는 `_limited(..., max_bytes)` API만
+예산을 강제한다. 이미 공개된 `crypto::MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES`는 source
+compatibility를 위해 deprecated 값으로만 남기며, 어느 crypto helper도 이를 자동으로 선택하지
+않는다. 암호 BinData materialize는 문서 열기 누적 예산과 별도의 parser 소비 경계이며, 해당
+호출부가 별도 상한을 명시적으로 전달한다.
 
-## Review finding
+문서 열기 정책과 포맷 해석의 소유는 `src/parser/`에 둔다. 독립적으로 공격자 제어 CFB 스트림을
+여는 raw-record consumer도 자신의 명시적 상한을 선택한다. 이 보정은 `dump-records` CLI와 공통
+`diagnostics` 모듈 및 그 모듈을 쓰는 등록 진단 명령 9개를 그 경계로 배선한다. renderer, layout,
+WASM API와 rhwp-studio 출력은 바꾸지 않으므로 시각·fixture 증적 경로는 적용하지 않는다.
 
-blocking code finding은 없다.
+## Gestell correction finding
 
-- 단일 스트림은 HWPX XML 엔트리와 HWP3 레코드의 기존 계약에 맞춘 256 MiB로 제한한다.
-- HWP5 문서 전체의 DocInfo·본문 결과는 512 MiB 누적 예산을 사용해 섹션 반복으로 상한을 우회하지
-  못하게 한다.
-- 기존 `decompress_stream_limited`를 HWP5 strict·lenient 리더가 함께 사용하고, HWP3 전용 raw-deflate
-  해석은 HWP3 파서 안에 유지한다.
-- 회귀 테스트는 큰 fixture를 저장하지 않고 작은 결정적 입력과 축소한 테스트 상한으로 초과·경계 성공을
-  함께 확인한다.
+초기 검토의 “blocking code finding은 없다”는 결론은 철회한다. Gestell 검토는 다음을 blocking
+abstraction defect로 확인했다.
+
+- CFB와 crypto의 public 일반 API가 문서 열기 전용 `MAX_*` 정책을 직접 선택해, 다른 consumer도
+  보이지 않는 제품 정책을 강제로 적용받았다.
+- 초기 회귀는 low-level `_limited` 메커니즘을 직접 호출했으므로 공개 문서 열기 경로가 정책을 선택하고
+  누적 예산을 전달한다는 계약을 증명하지 못했다.
+
+수정 후의 책임은 다음과 같다.
+
+- 단일 스트림은 HWPX XML 엔트리와 HWP3 기존 문서 열기 계약에 맞춘 256 MiB, HWP5 DocInfo와
+  본문 전체는 512 MiB 누적 예산을 사용한다.
+- `src/parser/mod.rs`의 완전 HWP5 열기 경계가 strict·lenient·일반·비밀번호·배포용 경로 모두에
+  남은 바이트 상한을 전달한다. `hwp3::parse_hwp3*`도 완전 HWP3 열기 경계에서 본문 상한을 선택한다.
+- CFB/crypto의 일반 API는 기존의 일반 decode 의미를 유지하고, `_limited(..., max_bytes)`만 호출자
+  제공 상한을 적용한다.
+- `dump-records`와 등록 raw-record diagnostics는 문서 열기 정책을 재사용하지 않고 각 consumer의
+  이름 붙은 상한을 limited CFB/crypto 호출에 직접 전달한다.
+- test-only scoped policy seam으로 큰 fixture 없이 공개 `parse_hwp`, `parse_document`,
+  `parse_document_with_password`를 작은 예산으로 실행한다. 이는 release build의 API나 정책을 바꾸지
+  않는다.
 
 ## 10k 문서 호환성 실험
 
-2026-08-12 `~/hwpdocs_10k`의 HWP/HWPX 10,000건을 정확한 code head
+2026-08-12 `~/hwpdocs_10k`의 HWP/HWPX 10,000건을 이전 검토 code head
 `8ea821936cababd70f92ef5e297ada97157f089f`로 전건 열었다. 파일명과 문서 내용은 기록하지 않고
-포맷·오류·크기만 집계했다.
+포맷·오류·크기만 집계했다. 이번 보정은 같은 256/512 MiB 수치를 유지한 채 정책 선택 위치만
+완전 문서 열기 경계로 옮긴 것이므로 이 표는 수치 선택의 호환성 근거로 남긴다. 다만 이 표는
+현재 correction commit을 다시 전수 실행한 결과가 아니며, 그 commit의 전수 증거로 주장하지 않는다.
 
 | 항목 | 결과 |
 | --- | ---: |
@@ -89,22 +113,23 @@ HWP5 성공 문서의 decompressed/raw 핵심 스트림 분포는 다음과 같�
 
 ## 검증
 
-- `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/Users/phihu/Desktop/rhwp_core/target cargo test
-  --profile release-test --lib open_decompression_`: 3/3 통과
+- `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/Users/phihu/Desktop/rhwp_core/target/pr4647-e2e cargo test
+  --profile release-test --lib open_decompression`: 10/10 통과. low-level mechanism 3건과 공개
+  문서 열기 E2E 7건(HWP5 strict DocInfo, strict distribution의 ViewText-only 계약, 실제
+  strict→lenient fallback DocInfo 및 distribution, HWP5 누적 예산, HWP5 비밀번호 DocInfo,
+  HWP3 자동 감지 본문)을 실행했다.
 - `cargo fmt --all --check`: 통과
 - `git diff --check`: 통과
-- `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/Users/phihu/Desktop/rhwp_core/target cargo clippy
-  --all-targets -- -D warnings`: 통과
-- 정확한 최종 code head `8ea821936cababd70f92ef5e297ada97157f089f`에서
-  `cargo test --profile release-test --tests`: 통과
-- 10k open/stream-size audit: 10,000건 완료, limit 초과 0, panic 0
+- `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/Users/phihu/Desktop/rhwp_core/target/pr4647-e2e cargo check
+  --profile release-test --bin rhwp`: 통과. `dump-records` consumer 배선을 포함해 바이너리 크레이트를
+  컴파일했다.
+- correction source head에 대한 전체 `release-test`, Clippy, 최신 GitHub required checks는 아직 이
+  기록으로 통과를 주장하지 않는다. CONTRIBUTING.md의 직렬화된 게이트와 independent Gestell 재검토가
+  남아 있다.
+- 이전 code head의 10k open/stream-size audit: 10,000건 완료, limit 초과 0, panic 0.
 
-최종 code head에서 `fmt`, 전체 `release-test`, Clippy와 diff check를 순차 실행해 통과했다. 후속 문서는
-동작을 바꾸지 않는 docs-only 변경이다. 최신 PR head의 GitHub required checks 성공을 merge 조건으로
-남긴다.
+## 현재 권고
 
-## 최종 권고
-
-focused 회귀와 정적 검사가 통과했고 포맷별 파서 경계 밖 변경이 없어 merge 후보로 권고한다. repository
-권한 보유자의 reviewer 지정, 최신 PR head의 required checks 성공, 작업지시자 승인을 merge 전 조건으로
-남긴다.
+이 보정은 Draft 상태를 유지한다. 독립 Gestell PASS, correction source head에서의 CONTRIBUTING.md
+게이트, 최신 PR head의 required checks, repository 권한 보유자의 검토 및 작업지시자 승인이 모두
+확인되기 전에는 merge 후보로 권고하지 않는다.
