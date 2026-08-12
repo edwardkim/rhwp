@@ -3536,8 +3536,18 @@ impl LayoutEngine {
             0.0
         };
         if target_height > 0.0 {
+            // `common.height` is the stored outer table height: it already
+            // contains the gaps between adjacent rows.  `row_heights`, on the
+            // other hand, is consumed together with `cell_spacing` when row_y
+            // is built.  Giving the full common height to the row sum adds the
+            // same gaps a second time, making every multi-row stored table
+            // taller by `(row_count - 1) * cell_spacing` at paint time.
+            let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
+            let target_row_sum =
+                (target_height - cell_spacing * row_heights.len().saturating_sub(1) as f64)
+                    .max(0.0);
             let current: f64 = row_heights.iter().sum();
-            let residual = target_height - current;
+            let residual = target_row_sum - current;
             if residual > 0.5 {
                 if let Some(last) = row_heights.last_mut() {
                     *last += residual;
