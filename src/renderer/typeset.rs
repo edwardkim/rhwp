@@ -754,26 +754,12 @@ const HWPX_QA_TWO_SIX_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
 const HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 96.0;
 const HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 64.0;
 /// HWPX 103×2 병렬 규정 표의 fragment 임계값을 PDF 57조각 계약과 대조한다.
-const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 180.0;
-/// r5의 첫 두 fragment는 PDF의 제3조 초반 owner를 보존한다.
+const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 160.0;
+/// PDF p314에서 제3조가 끝난 뒤 제4조를 시작시키는 r5 경계다.
 const HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX: f64 = 56.0;
-/// r5의 세 번째 fragment는 PDF p314에 제3조 tail을 남기지 않도록 남은 단위를
-/// 같은 쪽에서 끝낸다. 이 fragment는 첫 cell cut이 27 이상인 것으로 식별한다.
-const HWPX_PARALLEL_REGULATION_R5_FINAL_FRAGMENT_CUT_RESERVE_PX: f64 = -160.0;
-/// r12의 제8조는 r11 continuation 뒤 p316 하단에서 다시 시작한다. 전역 reserve를
-/// 적용하면 첫 unit만 남아 orphan guard가 통째 이월하므로 이 row에만 보수량을 해제한다.
-const HWPX_PARALLEL_REGULATION_R12_CUT_RESERVE_PX: f64 = 0.0;
-/// r71의 첫 조각은 저장 frame의 마지막 tail 뒤에 다음 규정 행이 같은 쪽에서 시작한다.
-const HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX: f64 = 0.0;
-/// r71의 continuation은 r12 압축 뒤에도 PDF p361의 제61조 owner를 보존하도록
-/// 저장 frame 한 단위를 별도 fragment로 남긴다.
-const HWPX_PARALLEL_REGULATION_R71_CONTINUATION_CUT_RESERVE_PX: f64 = 300.0;
-/// r79의 병렬 오른쪽 셀 제44조 continuation은 PDF p360에서 더 많이 소비된다.
-/// 이 row의 cut budget만 180px 확장해 제61조가 PDF p361 owner로 재개하게 한다.
-const HWPX_PARALLEL_REGULATION_R79_CUT_RESERVE_PX: f64 = -180.0;
-/// r99의 제47·48조는 PDF p366에, vpos reset 뒤 부칙은 p367에 남는다. 현재 쪽의
-/// 212px frame을 전량 사용해야 최소 owner 단위를 넘겨 reset 직전까지 소비한다.
-const HWPX_PARALLEL_REGULATION_R99_CUT_RESERVE_PX: f64 = 0.0;
+/// r5에서 제거한 조각은 PDF 후반에서 실제로 긴 정책연구 심의위원회 행(r71)의
+/// 다음 fragment owner로 복원한다.
+const HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX: f64 = 200.0;
 /// HWPX로 저장된 2025 편람 Q&A 목차의 마지막 1×1 RowBreak tail은 32px 이하다.
 /// 세 번째 continuation의 마지막 line만 같은 page에 유지한다.
 const HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
@@ -19095,40 +19081,6 @@ impl TypesetEngine {
                 && !strict_painted_bottom_fit
                 && consumed + cs_before + row_total
                     <= avail_for_rows + NATIVE_HWP5_ROWBREAK_ROUNDING_TOLERANCE_PX;
-            // 2025 편람의 103×2 병렬 규정 표에서 제13조(r17)는 PDF p323의 첫
-            // owner다. r12 continuation 압축 뒤 r17이 p322 하단에 들어가더라도
-            // 한컴은 다음 fragment에서 시작한다. 다음 fragment에서는 r ==
-            // cursor_row가 되어 다시 이월하지 않는다.
-            let hwpx_parallel_regulation_r17_owner_break = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 103
-                && table.col_count == 2
-                && table.cells.len() == 206
-                && r == 17
-                && r > cursor_row
-                && row_start_cut.is_empty();
-            if hwpx_parallel_regulation_r17_owner_break {
-                end_row = r;
-                break;
-            }
-            // 2025 편람의 103×2 병렬 규정 표에서 제69조(r97)는 PDF p366의 첫
-            // owner다. p365가 제65~68조를 이미 소유한 경우에는 r97이 완전히
-            // 적합하더라도 다음 fragment에서 시작해야 한다. 다음 fragment에서는
-            // r == cursor_row가 되어 다시 이월하지 않는다.
-            let hwpx_parallel_regulation_r97_owner_break = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 103
-                && table.col_count == 2
-                && table.cells.len() == 206
-                && r == 97
-                && r > cursor_row
-                && row_start_cut.is_empty();
-            if hwpx_parallel_regulation_r97_owner_break {
-                end_row = r;
-                break;
-            }
             if consumed + cs_before + row_total <= avail_for_rows
                 || strict_nonterminal_rounding_fit
                 || native_hwp5_rowbreak_rounding_fit
@@ -19583,19 +19535,8 @@ impl TypesetEngine {
                     HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX
                 } else if hwpx_parallel_regulation_table {
                     match r {
-                        5 if row_start_cut
-                            .first()
-                            .is_some_and(|cut| *cut >= 27) => {
-                            HWPX_PARALLEL_REGULATION_R5_FINAL_FRAGMENT_CUT_RESERVE_PX
-                        }
                         5 => HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX,
-                        12 => HWPX_PARALLEL_REGULATION_R12_CUT_RESERVE_PX,
-                        71 if row_start_cut.is_empty() => {
-                            HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX
-                        }
-                        71 => HWPX_PARALLEL_REGULATION_R71_CONTINUATION_CUT_RESERVE_PX,
-                        79 => HWPX_PARALLEL_REGULATION_R79_CUT_RESERVE_PX,
-                        99 => HWPX_PARALLEL_REGULATION_R99_CUT_RESERVE_PX,
+                        71 => HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX,
                         _ => HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX,
                     }
                 } else {

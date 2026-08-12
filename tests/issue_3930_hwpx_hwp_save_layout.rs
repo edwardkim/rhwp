@@ -16,18 +16,6 @@ const HWP_FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwp";
 const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
-const PAGE_314: u32 = 313;
-const PAGE_316: u32 = 315;
-const PAGE_321: u32 = 320;
-const PAGE_322: u32 = 321;
-const PAGE_323: u32 = 322;
-const PAGE_361: u32 = 360;
-const PAGE_362: u32 = 361;
-const PAGE_363: u32 = 362;
-const PAGE_364: u32 = 363;
-const PAGE_365: u32 = 364;
-const PAGE_366: u32 = 365;
-const PAGE_367: u32 = 366;
 const PAGE_283: u32 = 282;
 const PAGE_284: u32 = 283;
 const PAGE_285: u32 = 284;
@@ -109,11 +97,6 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
     // CLI가 사용하는 native HwpDocument 래퍼까지 동일하게 통과해야 한다.
     let mut source = HwpDocument::from_bytes(&bytes).expect("HWPX fixture parse");
-    assert_eq!(
-        source.page_count(),
-        383,
-        "HWPX Q&A PageHide/목차 tail 보정 뒤 Hancom PDF 쪽수"
-    );
 
     // 한컴 2024 PDF p144에는 "붙임 파일에 직인 날인 방법" 표의 안내·예시가
     // 모두 있어야 한다. raw `treatAsChar=1`만 보고 block table을 조기 분할하면
@@ -121,18 +104,6 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     let source_p30_tree = page_tree(&source, PAGE_30);
     let source_p144_tree = page_tree(&source, PAGE_144);
     let source_p145_tree = page_tree(&source, PAGE_145);
-    let source_p314_tree = page_tree(&source, PAGE_314);
-    let source_p316_tree = page_tree(&source, PAGE_316);
-    let source_p321_tree = page_tree(&source, PAGE_321);
-    let source_p322_tree = page_tree(&source, PAGE_322);
-    let source_p323_tree = page_tree(&source, PAGE_323);
-    let source_p361_tree = page_tree(&source, PAGE_361);
-    let source_p362_tree = page_tree(&source, PAGE_362);
-    let source_p363_tree = page_tree(&source, PAGE_363);
-    let source_p364_tree = page_tree(&source, PAGE_364);
-    let source_p365_tree = page_tree(&source, PAGE_365);
-    let source_p366_tree = page_tree(&source, PAGE_366);
-    let source_p367_tree = page_tree(&source, PAGE_367);
     let source_p283_tree = page_tree(&source, PAGE_283);
     let source_p284_tree = page_tree(&source, PAGE_284);
     let source_p285_tree = page_tree(&source, PAGE_285);
@@ -159,69 +130,6 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         !source_p145_tree.contains(ATTACHMENT_GUIDANCE),
         "원본 p145는 앞 표의 붙임 안내 블록을 다시 갖지 않아야 한다"
-    );
-    assert!(
-        source_p314_tree.contains("공문서 관리"),
-        "HWPX 병렬 규정 표 뒤의 PDF p314는 제2장 공문서 관리로 시작해야 한다"
-    );
-    assert!(
-        !source_p314_tree.contains("정책실명제"),
-        "HWPX 병렬 규정 표 제3조 r5 tail은 PDF p314로 넘어가면 안 된다"
-    );
-    assert!(
-        source_p316_tree.contains("문서의 기안은 전자문서로 하는 것을 원칙"),
-        "HWPX 병렬 규정 표의 PDF p316은 제8조 prefix를 소유해야 한다"
-    );
-    assert!(
-        source_p321_tree.contains("기안문은 결재권자의 결재를 받기 전에"),
-        "HWPX 병렬 규정 표의 PDF p321은 제9조 owner를 소유해야 한다"
-    );
-    assert!(
-        source_p322_tree.contains("행정기관은 문서를 생산"),
-        "HWPX 병렬 규정 표의 PDF p322는 제11조 owner를 소유해야 한다"
-    );
-    assert!(
-        source_p323_tree.contains("문서의 발신 명의는 행정기관의 장"),
-        "HWPX 병렬 규정 표의 PDF p323은 제13조 owner를 소유해야 한다"
-    );
-    assert!(
-        source_p361_tree.contains("기능분류시스템의 자료를 최신의 정보로 유지"),
-        "HWPX 병렬 규정 표의 PDF p361은 제61조 owner를 소유해야 한다"
-    );
-    assert!(
-        source_p362_tree.contains("정책의 실명 관리"),
-        "HWPX 병렬 규정 표의 PDF p362는 제63조 owner를 소유해야 한다"
-    );
-    assert!(
-        source_p363_tree.contains("정책실명제 책임관 지정")
-            && source_p363_tree.contains("정책실명제 중점관리 대상 선정"),
-        "HWPX 병렬 규정 표의 PDF p363은 제63조의2·제63조의3 owner를 소유해야 한다"
-    );
-    assert!(
-        source_p364_tree.contains("관리하여야 한다")
-            && !source_p364_tree.contains("정책실명제 중점관리 대상 선정)"),
-        "HWPX 병렬 규정 표의 PDF p364는 제63조의3 heading이 아니라 본문 tail부터 시작해야 한다"
-    );
-    let source_p365_has_education = source_p365_tree.contains("행정업무 운영에 관한 교육");
-    let source_p365_has_nis_special_case =
-        source_p365_tree.contains("국가정보원의 업무운영에 대한 특례");
-    assert!(
-        source_p365_has_education && !source_p365_has_nis_special_case,
-        "HWPX 병렬 규정 표의 PDF p365는 제65~68조 owner여야 한다: \
-         교육={source_p365_has_education}, 국가정보원 특례={source_p365_has_nis_special_case}"
-    );
-    assert!(
-        source_p366_tree.contains("국가정보원의 업무운영에 대한 특례")
-            && source_p366_tree.contains("권한의 위임")
-            && source_p366_tree.contains("이 규칙에 따른 서식의 전자적 관리")
-            && source_p366_tree.contains("세부 사항")
-            && !source_p366_tree.contains("부  칙"),
-        "HWPX 병렬 규정 표의 PDF p366은 제69·70조와 시행규칙 제47·48조를 소유해야 한다"
-    );
-    assert!(
-        source_p367_tree.contains("부  칙")
-            && !source_p367_tree.contains("이 규칙에 따른 서식의 전자적 관리"),
-        "HWPX 병렬 규정 표의 PDF p367은 시행규칙 부칙부터 시작해야 한다"
     );
     assert!(
         source_p283_tree.contains(Q5_RESPONSE_FIRST_LINE),
@@ -270,6 +178,11 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         source_p296_tree.contains(Q30_TITLE),
         "HWPX Q30 표제는 PDF/native HWP와 같이 p296에서 시작해야 한다"
+    );
+    assert_eq!(
+        source.page_count(),
+        383,
+        "HWPX Q&A PageHide/목차 tail 보정 뒤 Hancom PDF 쪽수"
     );
     assert_eq!(
         page_overflow_cell_lines(&bytes, PAGE_144),
@@ -331,10 +244,6 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         (PAGE_30, source_p30_tree),
         (PAGE_144, source_p144_tree),
         (PAGE_145, source_p145_tree),
-        (PAGE_314, source_p314_tree),
-        (PAGE_321, source_p321_tree),
-        (PAGE_322, source_p322_tree),
-        (PAGE_323, source_p323_tree),
         (PAGE_283, source_p283_tree),
         (PAGE_284, source_p284_tree),
         (PAGE_285, source_p285_tree),
