@@ -17,14 +17,15 @@ last_verified: 2026-08-13
 | 기준 devel | `6f70cd1b6` |
 | 가시성 검토 branch | `review/planet6897-4684-20260812` |
 | 관련 이슈 | [#4676](https://github.com/edwardkim/rhwp/issues/4676) |
-| 원 PR 상태 참고값 | 작성 시점 `CONFLICTING` / `DIRTY`, merge 전 재확인 필요 |
+| 원 PR 상태 참고값 | 원 source `2c185af` 기준 `CONFLICTING` / `DIRTY`; local merge commit `87fab352a`로 해소, push 뒤 재확인 필요 |
 | reviewer | @jangster77 지정 완료 |
 
 원 PR은 `hp:curve` 내부의 점을 `hc:pt`로 저장하던 경로를 인접 점 쌍의 `hp:seg` 체인으로
 바꾼다. 한글 2022 오라클에서 `hc:pt`를 포함한 curve가 프로세스 종료를 유발했다는 #4676의
-원인 분석에 대응한다. 최신 `devel`과 원 PR은 충돌하므로, 최신 `devel` 위 가시성 branch에서
-기여자 변경을 적용하고 충돌을 해소했다. 원 PR을 직접 merge하지 않고 이 후보를 `devel` 대상
-통합 PR로 반영하는 경로가 필요하다.
+원인 분석에 대응한다. 최신 `devel`과 원 PR은 충돌했으나, 가시성 branch에서 원 source
+`2c185af`를 second parent로 보존하는 merge commit `87fab352a`를 만들고 #4675·#4676 테스트 및
+메인터너 보정을 함께 유지해 해소했다. 원 contributor commit을 재작성하거나 force-push하지 않으며,
+이 head를 기존 source branch `fix/4676-hwpx-curve-seg`에 fast-forward push한다.
 
 ## 메인터너 보정
 
@@ -75,6 +76,6 @@ HWPX segment 의미를 보존하려면 제어점 형식이 다른 별도 IR 모�
 잘못된 `1` 매핑을 유지할 수는 없다.
 
 **통합 수용 권고.** 최신 `devel` 위 후보에 code/test 보정이 포함됐으므로 review-only fast-pass를
-적용하지 않는다. 원격 통합 PR의 최신 code head에서 Full CI와 CodeQL을 확인하고 작업지시자 승인을
-받은 뒤 merge한다. merge 뒤 원 PR #4684에는 통합 반영 commit과 메인터너 보정 이유를 남기고 close하며,
+적용하지 않는다. 기존 PR #4684의 최신 code head에서 Full CI와 CodeQL을 확인하고 작업지시자 승인을
+받은 뒤 merge한다. merge 뒤 원 PR #4684에는 충돌 해소 commit과 메인터너 보정 이유를 남기고 close하며,
 #4676의 close 조건은 한글 2022 오라클 재개방 범위까지 재확인한다.

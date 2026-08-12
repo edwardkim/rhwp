@@ -17,15 +17,18 @@ last_verified: 2026-08-13
 | 가시성 branch | `review/planet6897-4684-20260812` |
 | 최종 local candidate | `3741441a28f5982bd167421cdbee0386a5596687` |
 
-원 PR은 최신 `devel`과 `src/serializer/hwpx/section.rs` 테스트 블록에서 충돌했다. 가시성
-branch에서 원 기능을 적용한 뒤, #4675의 기존 회귀와 #4676의 새 회귀를 모두 보존하도록 충돌을
-해소했다. 원 contributor commit은 재작성하지 않았다.
+원 PR은 최신 `devel`과 parser·serializer에서 충돌했다. `87fab352a`는 현재 후보를 first parent,
+원 source `2c185af`를 second parent로 보존한다. 충돌 해소에는 현재 후보를 선택해 #4675의 기존
+회귀, #4676의 `hp:seg` writer, HWPX→HWP5 Bezier 오매핑 차단 회귀를 모두 유지했다. 원 contributor
+commit은 재작성하거나 force-push하지 않는다.
 
 | 순서 | local commit | 역할 |
 | --- | --- | --- |
 | 1 | `6e1a4e629` | 원 #4684의 curve `hp:seg` writer 변경을 최신 `devel` 위에 적용 |
 | 2 | `278eee6ea` | #4675와 #4676 serializer 테스트 블록 충돌 해소 |
 | 3 | `3741441a2` | HWPX `hp:seg` type의 HWP5 Bezier 오매핑 제거와 parser 회귀 추가 |
+| 4 | `09ef374b8` | HWPX CURVE XML→IR→XML 경계 회귀 추가 |
+| 5 | `87fab352a` | 원 #4684 source를 second parent로 보존하며 최신 candidate와 충돌 해소 |
 
 ## 보정 이유
 
@@ -49,8 +52,7 @@ HWPX `hp:seg`는 각 구간의 시작점과 끝점만 제공한다. 반면 rende
 
 ## 다음 단계
 
-1. 작업지시자의 remote push 및 PR 생성 승인을 받는다.
-2. 원 PR과 충돌하는 후보를 `devel` 대상 통합 PR로 push한다. code/test commit이 있으므로 Full CI와
-   CodeQL을 최신 head에서 다시 확인한다.
-3. 승인 뒤 통합 PR을 merge하고 #4684에 통합 반영과 메인터너 보정 이유를 코멘트한 뒤 close한다.
+1. 작업지시자의 push 승인 뒤 `87fab352a`를 기존 #4684 source branch에 fast-forward push한다.
+2. code/test commit이 있으므로 최신 #4684 head의 Full CI와 CodeQL을 다시 확인한다.
+3. 승인 뒤 #4684를 merge하고 충돌 해소와 메인터너 보정 이유를 코멘트한 뒤 close한다.
 4. #4676은 한글 2022 오라클 재개방 범위가 실제 완료 조건을 만족하는지 확인한 뒤에만 close한다.
