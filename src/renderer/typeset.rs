@@ -293,10 +293,7 @@ struct BlockRowScanVars {
     is_continuation: bool,
     avail_for_rows: f64,
     header_overhead: f64,
-    landscape_rowbreak_bleed: bool,
-    landscape_whole_row_tolerance: f64,
-    landscape_short_row_tolerance: f64,
-    landscape_short_row_max_height: f64,
+    landscape_rowbreak_repeated_header_gap: bool,
     strict_painted_bottom_fit: bool,
     start_row_height_override: Option<f64>,
 }
@@ -18500,10 +18497,7 @@ impl TypesetEngine {
             is_continuation,
             avail_for_rows,
             header_overhead,
-            landscape_rowbreak_bleed,
-            landscape_whole_row_tolerance,
-            landscape_short_row_tolerance,
-            landscape_short_row_max_height,
+            landscape_rowbreak_repeated_header_gap,
             strict_painted_bottom_fit,
             start_row_height_override,
         } = v;
@@ -19118,41 +19112,24 @@ impl TypesetEngine {
                 end_row = r;
                 continue;
             }
-            // [#2291] landscape RowBreak 연속 페이지 bleed 는 순수 rs=1 행에만
-            // 적용한다. rowspan 걸침 행(세로 병합 라벨이 확정한 행 그리드)은
-            // 한글이 병합 셀 높이 배분으로 정한 행 경계를 지켜 예산을 넘겨
-            // 적재하지 않는다 — 교육과정 연결맵(244×10, rs=176 세로 라벨)에서
-            // 이 bleed 가 쪽당 ~260px(≈5행) 과다 적재를 누적해 s5 표를 24→19쪽
-            // 으로 과소분할(문서 전체 −30쪽)했다. task #1672 편람(순수 rs=1
-            // 행)의 과다분할 완화 대상은 rs_touched=false 라 그대로 보존된다.
-            if landscape_rowbreak_bleed
+            // Repeated headers and the following row share an actual table cell
+            // boundary. A landscape continuation may cross only that measured
+            // boundary; profile-specific reserves overpacked unrelated tables.
+            let candidate_row_end = consumed + cs_before + row_total;
+            let candidate_starts_in_fragment = consumed + cs_before <= avail_for_rows;
+            if landscape_rowbreak_repeated_header_gap
                 && mt.allows_row_break_split()
                 && is_continuation
-                && header_overhead > 0.5
-                && row_start_cut.is_empty()
-                && r > cursor_row
-                && consumed + cs_before + row_total
-                    <= avail_for_rows + landscape_whole_row_tolerance
-            {
-                consumed += cs_before + row_total;
-                r += 1;
-                end_row = r;
-                continue;
-            }
-            if landscape_rowbreak_bleed
-                && mt.allows_row_break_split()
-                && is_continuation
-                && header_overhead > 0.5
+                && header_overhead > 0.0
                 && row_start_cut.is_empty()
                 && r > cursor_row
                 && !rowspan_touched[r]
                 // 저장 frame이 행 내부에서 새 물리 페이지를 시작하면 normal row
-                // split이 owner를 정해야 한다. short-row bleed로 통째로 밀어 넣으면
+                // split이 owner를 정해야 한다. boundary reuse로 통째로 밀어 넣으면
                 // footer-safe body 밖에서 partial-table border가 잘린다.
                 && !rowbreak_row_has_internal_saved_vpos_reset(table, r)
-                && row_total <= landscape_short_row_max_height
-                && consumed + cs_before + row_total
-                    <= avail_for_rows + landscape_short_row_tolerance
+                && candidate_starts_in_fragment
+                && candidate_row_end <= avail_for_rows + cs_before
             {
                 consumed += cs_before + row_total;
                 r += 1;
@@ -21917,28 +21894,8 @@ impl TypesetEngine {
             // 된다. rowspan 보호 블록(#398/#474)은 블록 전체를 한 단위로 다룬다.
             // 측정 공간이 advance_row_cut/cell_units 로 단일화되어 렌더러와
             // 정의상 일치한다(px content_offset·MeasuredTable 누적 제거).
-            const LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX: f64 = 36.0;
-            const LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX: f64 = 260.0;
-            const LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX: f64 = 260.0;
-            const HWPX_LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX: f64 = 48.0;
-            const HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX: f64 = 320.0;
-            const HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX: f64 = 320.0;
-            let landscape_rowbreak_bleed = st.layout.body_area.height < 700.0;
-            let landscape_whole_row_tolerance = if st.profile.hwpx_stored_layout() {
-                HWPX_LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX
-            } else {
-                LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX
-            };
-            let landscape_short_row_tolerance = if st.profile.hwpx_stored_layout() {
-                HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX
-            } else {
-                LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX
-            };
-            let landscape_short_row_max_height = if st.profile.hwpx_stored_layout() {
-                HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX
-            } else {
-                LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX
-            };
+            let landscape_rowbreak_repeated_header_gap =
+                st.layout.body_area.width > st.layout.body_area.height;
             // [Task #1025] split_block_start: 블록 분할 시 연속분 커서 복귀 기록.
             let issue2424_scan_started = issue2424_step_enabled.then(std::time::Instant::now);
             let BlockTableRowScan {
@@ -21966,10 +21923,7 @@ impl TypesetEngine {
                     is_continuation,
                     avail_for_rows,
                     header_overhead,
-                    landscape_rowbreak_bleed,
-                    landscape_whole_row_tolerance,
-                    landscape_short_row_tolerance,
-                    landscape_short_row_max_height,
+                    landscape_rowbreak_repeated_header_gap,
                     strict_painted_bottom_fit: strict_following_plain_text_fit,
                     start_row_height_override,
                 },
@@ -22080,10 +22034,7 @@ impl TypesetEngine {
                                 is_continuation,
                                 avail_for_rows: avail_refit,
                                 header_overhead,
-                                landscape_rowbreak_bleed,
-                                landscape_whole_row_tolerance,
-                                landscape_short_row_tolerance,
-                                landscape_short_row_max_height,
+                                landscape_rowbreak_repeated_header_gap,
                                 strict_painted_bottom_fit: strict_following_plain_text_fit,
                                 start_row_height_override,
                             },
