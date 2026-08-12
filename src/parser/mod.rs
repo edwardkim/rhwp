@@ -315,7 +315,9 @@ fn parse_hwp_with_cfb(
     )?;
 
     // 5-7. 미리보기, BinData, 추가 스트림
-    let preview = extract_preview(&mut cfb);
+    // Preview is optional document metadata.  A malformed or disproportionately
+    // large thumbnail must not prevent the actual document from opening.
+    let preview = extract_preview(&mut cfb, MAX_THUMBNAIL_BYTES);
     let bin_data_content = load_bin_data_content(
         &mut cfb,
         raw_data,
@@ -1369,8 +1371,8 @@ fn drm_format_name(data: &[u8]) -> &'static str {
 }
 
 /// 미리보기 데이터 추출 (PrvImage, PrvText)
-fn extract_preview(cfb: &mut cfb_reader::CfbReader) -> Option<Preview> {
-    let image_data = cfb.read_preview_image();
+fn extract_preview(cfb: &mut cfb_reader::CfbReader, max_thumbnail_bytes: usize) -> Option<Preview> {
+    let image_data = cfb.read_preview_image_limited(max_thumbnail_bytes);
     let text = cfb.read_preview_text();
 
     // 둘 다 없으면 None 반환
@@ -1393,7 +1395,7 @@ fn extract_preview(cfb: &mut cfb_reader::CfbReader) -> Option<Preview> {
 pub fn extract_thumbnail_only(data: &[u8]) -> Option<ThumbnailResult> {
     let image_data = if detect_format(data) == FileFormat::Hwpx {
         // HWPX: ZIP 컨테이너에서 Preview/PrvImage.png 읽기
-        extract_thumbnail_from_hwpx(data)?
+        extract_thumbnail_from_hwpx(data, MAX_THUMBNAIL_BYTES)?
     } else {
         // HWP: CFB 컨테이너에서 /PrvImage 스트림 읽기
         let mut cfb = cfb_reader::CfbReader::open(data).ok()?;
@@ -1460,13 +1462,18 @@ pub fn extract_thumbnail_only(data: &[u8]) -> Option<ThumbnailResult> {
 
 /// 미리보기 이미지 하나의 최대 압축 해제 크기.
 ///
-/// 브라우저 확장의 CFB/HWPX 썸네일 정책과 같은 10 MiB를 사용한다.
+/// HWP/HWPX 문서 열기와 브라우저 썸네일 소비자가 선택하는 10 MiB 상한이다.
 pub const MAX_THUMBNAIL_BYTES: usize = 10 * 1024 * 1024;
 
 fn read_thumbnail_limited<R: std::io::Read>(
     reader: &mut R,
     expected_bytes: usize,
+    max_bytes: usize,
 ) -> Option<Vec<u8>> {
+    if expected_bytes == 0 || expected_bytes > max_bytes {
+        return None;
+    }
+
     let mut buf = Vec::new();
     let mut limited = std::io::Read::take(&mut *reader, (expected_bytes as u64).saturating_add(1));
     std::io::Read::read_to_end(&mut limited, &mut buf).ok()?;
@@ -1474,7 +1481,7 @@ fn read_thumbnail_limited<R: std::io::Read>(
 }
 
 /// HWPX(ZIP)에서 Preview/PrvImage.png 추출
-fn extract_thumbnail_from_hwpx(data: &[u8]) -> Option<Vec<u8>> {
+fn extract_thumbnail_from_hwpx(data: &[u8], max_bytes: usize) -> Option<Vec<u8>> {
     let cursor = std::io::Cursor::new(data);
     let mut archive = zip::ZipArchive::new(cursor).ok()?;
 
@@ -1491,10 +1498,7 @@ fn extract_thumbnail_from_hwpx(data: &[u8]) -> Option<Vec<u8>> {
 
     let mut file = archive.by_name(&entry_name).ok()?;
     let declared_size = usize::try_from(file.size()).ok()?;
-    if declared_size == 0 || declared_size > MAX_THUMBNAIL_BYTES {
-        return None;
-    }
-    read_thumbnail_limited(&mut file, declared_size)
+    read_thumbnail_limited(&mut file, declared_size, max_bytes)
 }
 
 /// 썸네일 추출 결과
@@ -1990,16 +1994,105 @@ fn load_bin_data_content(
 mod tests {
     use super::*;
 
+    fn png_preview() -> Vec<u8> {
+        let mut png = vec![0; 24];
+        png[..8].copy_from_slice(b"\x89PNG\r\n\x1a\n");
+        png[16..20].copy_from_slice(&1u32.to_be_bytes());
+        png[20..24].copy_from_slice(&1u32.to_be_bytes());
+        png
+    }
+
+    fn hwp_with_preview(image: Vec<u8>) -> Vec<u8> {
+        let mut document = Document::default();
+        document.preview = Some(Preview {
+            image: Some(PreviewImage {
+                format: PreviewImageFormat::Png,
+                data: image,
+            }),
+            text: None,
+        });
+        crate::serializer::serialize_document(&document).expect("serialize HWP preview fixture")
+    }
+
+    fn hwpx_with_preview(image: Vec<u8>) -> Vec<u8> {
+        let mut document = Document::default();
+        document
+            .hwpx_aux_entries
+            .push(("Preview/PrvImage.png".to_string(), image));
+        crate::serializer::hwpx::serialize_hwpx(&document).expect("serialize HWPX preview fixture")
+    }
+
     #[test]
     fn thumbnail_limited_read_rejects_streamed_overflow() {
         let mut input = std::io::Cursor::new(vec![0u8; 9]);
-        assert!(read_thumbnail_limited(&mut input, 8).is_none());
+        assert!(read_thumbnail_limited(&mut input, 8, 8).is_none());
     }
 
     #[test]
     fn thumbnail_limited_read_rejects_truncated_stream() {
         let mut input = std::io::Cursor::new(vec![0u8; 7]);
-        assert!(read_thumbnail_limited(&mut input, 8).is_none());
+        assert!(read_thumbnail_limited(&mut input, 8, 8).is_none());
+    }
+
+    #[test]
+    fn document_open_preserves_small_hwp_thumbnail() {
+        let image = png_preview();
+        let document = parse_document(&hwp_with_preview(image.clone()))
+            .expect("document opens with a valid thumbnail");
+
+        assert_eq!(
+            document
+                .preview
+                .as_ref()
+                .and_then(|preview| preview.image.as_ref())
+                .map(|preview| preview.data.as_slice()),
+            Some(image.as_slice())
+        );
+    }
+
+    #[test]
+    fn document_open_omits_oversized_hwp_thumbnail() {
+        let document = parse_document(&hwp_with_preview(vec![0; MAX_THUMBNAIL_BYTES + 1]))
+            .expect("document still opens when its optional thumbnail is oversized");
+
+        assert!(document
+            .preview
+            .as_ref()
+            .and_then(|preview| preview.image.as_ref())
+            .is_none());
+    }
+
+    #[test]
+    fn document_open_preserves_small_hwpx_thumbnail() {
+        let image = png_preview();
+        let document = parse_document(&hwpx_with_preview(image.clone()))
+            .expect("document opens with a valid HWPX thumbnail");
+
+        assert_eq!(
+            document.hwpx_aux_entry("Preview/PrvImage.png"),
+            Some(image.as_slice())
+        );
+        assert_eq!(
+            document
+                .extra_streams
+                .iter()
+                .find(|(path, _)| path == "/PrvImage")
+                .map(|(_, data)| data.as_slice()),
+            Some(image.as_slice())
+        );
+    }
+
+    #[test]
+    fn document_open_omits_oversized_hwpx_thumbnail() {
+        let document = parse_document(&hwpx_with_preview(vec![0; MAX_THUMBNAIL_BYTES + 1]))
+            .expect("document still opens when its optional HWPX thumbnail is oversized");
+
+        assert!(document.hwpx_aux_entry("Preview/PrvImage.png").is_none());
+        assert!(document
+            .extra_streams
+            .iter()
+            .find(|(path, _)| path == "/PrvImage")
+            .is_some_and(|(_, data)| data.len() < MAX_THUMBNAIL_BYTES));
     }
 
     #[test]

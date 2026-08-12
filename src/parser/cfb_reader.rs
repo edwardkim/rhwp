@@ -246,8 +246,8 @@ impl CfbReader {
 
     /// 미리보기 이미지 스트림을 `max_bytes` 바이트까지만 읽는다.
     ///
-    /// 썸네일 전용 소비자는 전체 문서를 파싱하지 않으므로, 디렉터리의 선언 크기와 실제
-    /// stream read 양쪽에서 상한을 확인한다.
+    /// 호출자가 정한 상한에 대해, 디렉터리의 선언 크기와 실제 stream read 양쪽을
+    /// 확인한다.
     pub fn read_preview_image_limited(&mut self, max_bytes: usize) -> Option<Vec<u8>> {
         let declared_size = usize::try_from(self.compound.entry("/PrvImage").ok()?.len()).ok()?;
         if declared_size == 0 || declared_size > max_bytes {

@@ -1,13 +1,13 @@
-// Browser extension thumbnail decompression policy shared by Chrome, Firefox, and Safari.
+// Bounded stream reader shared by Chrome, Firefox, and Safari thumbnail consumers.
 'use strict';
 
 (() => {
-  const MAX_THUMBNAIL_BYTES = 10 * 1024 * 1024;
-
-  async function readThumbnailStreamLimited(readable, declaredSize) {
+  async function readExactStreamLimited(readable, declaredSize, maxBytes) {
     if (!Number.isSafeInteger(declaredSize)
         || declaredSize <= 0
-        || declaredSize > MAX_THUMBNAIL_BYTES) {
+        || !Number.isSafeInteger(maxBytes)
+        || maxBytes <= 0
+        || declaredSize > maxBytes) {
       return null;
     }
 
@@ -43,8 +43,7 @@
     return output;
   }
 
-  globalThis.rhwpThumbnailDecompression = Object.freeze({
-    MAX_THUMBNAIL_BYTES,
-    readThumbnailStreamLimited,
+  globalThis.rhwpBoundedStream = Object.freeze({
+    readExactStreamLimited,
   });
 })();
