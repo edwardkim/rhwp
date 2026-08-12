@@ -17,6 +17,9 @@ const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
 const PAGE_314: u32 = 313;
+const PAGE_365: u32 = 364;
+const PAGE_366: u32 = 365;
+const PAGE_367: u32 = 366;
 const PAGE_283: u32 = 282;
 const PAGE_284: u32 = 283;
 const PAGE_285: u32 = 284;
@@ -98,6 +101,11 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
     // CLI가 사용하는 native HwpDocument 래퍼까지 동일하게 통과해야 한다.
     let mut source = HwpDocument::from_bytes(&bytes).expect("HWPX fixture parse");
+    assert_eq!(
+        source.page_count(),
+        383,
+        "HWPX Q&A PageHide/목차 tail 보정 뒤 Hancom PDF 쪽수"
+    );
 
     // 한컴 2024 PDF p144에는 "붙임 파일에 직인 날인 방법" 표의 안내·예시가
     // 모두 있어야 한다. raw `treatAsChar=1`만 보고 block table을 조기 분할하면
@@ -106,6 +114,9 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     let source_p144_tree = page_tree(&source, PAGE_144);
     let source_p145_tree = page_tree(&source, PAGE_145);
     let source_p314_tree = page_tree(&source, PAGE_314);
+    let source_p365_tree = page_tree(&source, PAGE_365);
+    let source_p366_tree = page_tree(&source, PAGE_366);
+    let source_p367_tree = page_tree(&source, PAGE_367);
     let source_p283_tree = page_tree(&source, PAGE_283);
     let source_p284_tree = page_tree(&source, PAGE_284);
     let source_p285_tree = page_tree(&source, PAGE_285);
@@ -140,6 +151,27 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         !source_p314_tree.contains("정책실명제"),
         "HWPX 병렬 규정 표 제3조 r5 tail은 PDF p314로 넘어가면 안 된다"
+    );
+    let source_p365_has_education = source_p365_tree.contains("행정업무 운영에 관한 교육");
+    let source_p365_has_nis_special_case =
+        source_p365_tree.contains("국가정보원의 업무운영에 대한 특례");
+    assert!(
+        source_p365_has_education && !source_p365_has_nis_special_case,
+        "HWPX 병렬 규정 표의 PDF p365는 제65~68조 owner여야 한다: \
+         교육={source_p365_has_education}, 국가정보원 특례={source_p365_has_nis_special_case}"
+    );
+    assert!(
+        source_p366_tree.contains("국가정보원의 업무운영에 대한 특례")
+            && source_p366_tree.contains("권한의 위임")
+            && source_p366_tree.contains("이 규칙에 따른 서식의 전자적 관리")
+            && source_p366_tree.contains("세부 사항")
+            && !source_p366_tree.contains("부  칙"),
+        "HWPX 병렬 규정 표의 PDF p366은 제69·70조와 시행규칙 제47·48조를 소유해야 한다"
+    );
+    assert!(
+        source_p367_tree.contains("부  칙")
+            && !source_p367_tree.contains("이 규칙에 따른 서식의 전자적 관리"),
+        "HWPX 병렬 규정 표의 PDF p367은 시행규칙 부칙부터 시작해야 한다"
     );
     assert!(
         source_p283_tree.contains(Q5_RESPONSE_FIRST_LINE),
@@ -188,11 +220,6 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         source_p296_tree.contains(Q30_TITLE),
         "HWPX Q30 표제는 PDF/native HWP와 같이 p296에서 시작해야 한다"
-    );
-    assert_eq!(
-        source.page_count(),
-        383,
-        "HWPX Q&A PageHide/목차 tail 보정 뒤 Hancom PDF 쪽수"
     );
     assert_eq!(
         page_overflow_cell_lines(&bytes, PAGE_144),
