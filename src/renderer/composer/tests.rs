@@ -1446,7 +1446,7 @@ fn test_kbu1_line_start_forbidden_retraction() {
     };
     // 한글 4자(64px)는 들어가고 '.'에서 초과하는 폭 → 수정 전엔 둘째 줄이
     // "."로 시작 ("적용한다 | .111111"), 수정 후엔 '다' 동반 이월.
-    let frags = split_composed_line_by_width(&line, 68.0, 68.0, &styles, true, 0.0);
+    let frags = split_composed_line_by_width(&line, 68.0, 68.0, &styles, true, 0.0, false);
     assert!(
         frags.len() >= 2,
         "두 줄 이상으로 분할되어야 함: {:?}",

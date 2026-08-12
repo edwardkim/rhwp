@@ -1865,7 +1865,7 @@ mod tests {
             ..Default::default()
         };
         assert!(
-            (stale_split_hanyang_shinmyeongjo_space_width(&stale_split_style)
+            (hancom_regenerated_space_width(&stale_split_style)
                 .expect("split 12pt space")
                 - standard_body_fs * 0.5)
                 .abs()

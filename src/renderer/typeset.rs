@@ -3084,35 +3084,29 @@ fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
 }
 
 /// Returns only the measured-paint slack that remains below a saved native
-/// RowBreak first-fragment frame. Both source and scanner bounds are absolute
-/// page coordinates; mixing a row-space budget with an object coordinate can
-/// otherwise admit an offset or host-spacing lane that does not belong to the
-/// fragment.
+/// RowBreak first-fragment frame. Both bounds are absolute page coordinates;
+/// host-before spacing is a flow consumption and is intentionally not part of
+/// the stored object frame.
 fn saved_rowbreak_first_fragment_overflow_allowance(
     declared_height: u32,
     outer_table_owns_row_geometry: bool,
-    source_painted_top: f64,
     source_painted_bottom: f64,
-    fragment_scan_top: f64,
-    fragment_scan_bottom: f64,
+    fragment_physical_bottom: f64,
 ) -> f64 {
     const SOURCE_FRAME_EPSILON_PX: f64 = 0.5;
     if declared_height == 0
         || declared_height > i32::MAX as u32
         || !outer_table_owns_row_geometry
-        || !source_painted_top.is_finite()
         || !source_painted_bottom.is_finite()
-        || !fragment_scan_top.is_finite()
-        || !fragment_scan_bottom.is_finite()
-        || source_painted_bottom <= source_painted_top
-        || fragment_scan_bottom < fragment_scan_top
-        || (source_painted_top - fragment_scan_top).abs() > SOURCE_FRAME_EPSILON_PX
-        || source_painted_bottom > fragment_scan_bottom + SOURCE_FRAME_EPSILON_PX
+        || !fragment_physical_bottom.is_finite()
+        || source_painted_bottom <= 0.0
+        || fragment_physical_bottom <= 0.0
+        || source_painted_bottom > fragment_physical_bottom + SOURCE_FRAME_EPSILON_PX
     {
         return 0.0;
     }
 
-    (fragment_scan_bottom - source_painted_bottom).max(0.0)
+    (fragment_physical_bottom - source_painted_bottom).max(0.0)
 }
 
 /// Visible host text that is structurally a numbered table caption.
@@ -3336,6 +3330,88 @@ fn paragraph_forces_page_boundary_after(
         col_count,
         is_hwp3_variant,
     )
+}
+
+/// Native HWP5 regulatory forms commonly encode a circled subheading, one empty
+/// carrier line, and its explanatory RowBreak table as three independent
+/// paragraphs.  The heading itself can fit in the remaining tail while the table
+/// cannot retain even its minimum visible first fragment.  Hancom keeps that
+/// heading with the table rather than leaving it alone at the physical page
+/// bottom (76076 p55/p70).
+///
+/// This is intentionally a structural, not a generic heading, rule: it accepts
+/// only a circled heading followed by exactly one empty line and a single
+/// non-TAC 1x1 TopAndBottom RowBreak table.  Native HWP5 can omit LINE_SEG from
+/// that carrier, so its semantic emptiness is the reliable source contract.
+/// Normal section titles, explicit keep-with-next styles, and multi-cell tables
+/// remain on their normal pagination paths.
+fn native_hwp5_circled_rowbreak_table_heading_requires_fresh_page(
+    st: &TypesetState,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    dpi: f64,
+) -> bool {
+    if st.col_count != 1
+        || st.current_items.is_empty()
+        || !para.controls.is_empty()
+        || fmt.line_heights.len() != 1
+        || !para_has_visible_text(para)
+        || !matches!(para.text.trim_start().chars().next(), Some('\u{2460}'..='\u{2473}'))
+    {
+        return false;
+    }
+
+    let Some(blank) = paragraphs.get(para_idx + 1) else {
+        return false;
+    };
+    let Some(table_host) = paragraphs.get(para_idx + 2) else {
+        return false;
+    };
+    if !blank.text.trim().is_empty()
+        || !blank.controls.is_empty()
+        || !table_host.text.trim().is_empty()
+    {
+        return false;
+    }
+
+    let Some(Control::Table(table)) = table_host.controls.first() else {
+        return false;
+    };
+    if table_host.controls.len() != 1
+        || table.common.treat_as_char
+        || !matches!(
+            table.common.text_wrap,
+            crate::model::shape::TextWrap::TopAndBottom
+        )
+        || !matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        )
+        || table.row_count != 1
+        || table.col_count != 1
+        || table.cells.len() != 1
+        || table.common.height == 0
+    {
+        return false;
+    }
+
+    let blank_advance = blank
+        .line_segs
+        .first()
+        .filter(|seg| !is_synthetic_line_seg(seg))
+        .map(|seg| hwpunit_to_px(seg.line_height + seg.line_spacing, dpi))
+        // A missing carrier LINE_SEG is a native HWP5 encoding variant.  Its
+        // actual advance is never smaller than the RowBreak orphan minimum, so
+        // use that lower bound only for this page-tail decision.
+        .unwrap_or(MIN_TOP_KEEP_PX);
+    let group_minimum = fmt.height_for_fit + blank_advance + MIN_TOP_KEEP_PX;
+    let remaining = (st.available_height() - st.current_height).max(0.0);
+
+    remaining + 0.5 >= fmt.height_for_fit
+        && remaining + 0.5 < group_minimum
+        && group_minimum <= st.base_available_height() + 0.5
 }
 
 /// HWP5-origin 문서는 모든 page ornament를 감추는 빈 PageHide marker 뒤에 같은 쪽의
@@ -6997,6 +7073,16 @@ impl TypesetEngine {
                 native_hwp5_footnote_break =
                     native_hwp5_first_footnote_overlap_break_line(&st, para, &formatted, self.dpi);
                 let is_last_in_section = para_idx + 1 == paragraphs.len();
+                if native_hwp5_circled_rowbreak_table_heading_requires_fresh_page(
+                    &st,
+                    para,
+                    &formatted,
+                    paragraphs,
+                    para_idx,
+                    self.dpi,
+                ) {
+                    st.advance_column_or_new_page();
+                }
                 // [Task #1027 Stage D] fit 직전 vpos 스냅으로 누적 drift 제거 (렌더러 정합).
                 self.vpos_snap_current_height(
                     &mut st,
@@ -21766,19 +21852,15 @@ impl TypesetEngine {
             // RowBreak table on its first fragment.  The unshifted saved anchor
             // must equal the active flow cursor; its painted top is allowed to
             // differ by a source vertical offset (#3820 p168 invariant).
-            // `page_avail` is the exact first-fragment row budget after the
-            // current zone, existing footnote reservation, caption, host offset,
-            // outer spacing, and painted footer guard. Convert that row budget
-            // back into the same absolute coordinate system as the saved object
-            // frame; a raw `current_height + page_avail` would omit the source
-            // object's positive vertical offset and the other scan-top overheads.
-            let source_first_fragment_scan_top = st.current_height
-                + caption_extra
-                + host_before_overhead
-                + vert_offset_overhead;
-            let source_first_fragment_scan_bottom = source_first_fragment_scan_top
-                + page_avail
-                + fragment_outer_bottom_overhead;
+            // The saved frame is an absolute object coordinate. Its matching
+            // bound is `table_available`, which already reserves the current
+            // page's footnote/zone lane. `host_before_overhead` and positive
+            // vertical offsets change flow consumption but not the object's
+            // source coordinate, so deriving a bound from row-space `page_avail`
+            // would mix coordinate systems. Retain the dedicated painted-footer
+            // guard as a physical limit for this narrow exception.
+            let source_first_fragment_physical_bottom =
+                (table_available - first_fragment_painted_row_footer_guard).max(0.0);
             let source_first_fragment_overflow_allowance = if !is_continuation
                 && cursor_row == 0
                 && start_cut.is_empty()
@@ -21804,19 +21886,13 @@ impl TypesetEngine {
                         let bottom_hu = anchor_hu
                             .saturating_add(vertical_offset)
                             .saturating_add(table.common.height.min(i32::MAX as u32) as i32);
-                        let top_px = hwpunit_to_px(
-                            anchor_hu.saturating_add(vertical_offset),
-                            self.dpi,
-                        );
                         let bottom_px = hwpunit_to_px(bottom_hu, self.dpi);
                         ((anchor_px - st.current_height).abs() <= 0.5).then(|| {
                             saved_rowbreak_first_fragment_overflow_allowance(
                                 table.common.height,
                                 std::ptr::eq(row_geometry_table, table),
-                                top_px,
                                 bottom_px,
-                                source_first_fragment_scan_top,
-                                source_first_fragment_scan_bottom,
+                                source_first_fragment_physical_bottom,
                             )
                         })
                     })
@@ -23246,17 +23322,15 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
     #[test]
     fn rejects_missing_or_unowned_saved_frames() {
         assert_eq!(
-            saved_rowbreak_first_fragment_overflow_allowance(0, true, 32.0, 959.0, 32.0, 970.0),
+            saved_rowbreak_first_fragment_overflow_allowance(0, true, 959.0, 970.0),
             0.0,
             "height=0 is not a saved first-fragment frame"
         );
         assert_eq!(
             saved_rowbreak_first_fragment_overflow_allowance(
-                70_000,
+                0x8000_0000,
                 true,
-                32.0,
                 959.0,
-                32.0,
                 970.0,
             ),
             0.0,
@@ -23266,9 +23340,7 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
             saved_rowbreak_first_fragment_overflow_allowance(
                 929,
                 false,
-                32.0,
                 959.0,
-                32.0,
                 970.0,
             ),
             0.0,
@@ -23277,26 +23349,12 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
     }
 
     #[test]
-    fn requires_absolute_scan_coordinate_alignment() {
+    fn uses_the_absolute_fragment_bottom_not_row_space() {
         assert_eq!(
             saved_rowbreak_first_fragment_overflow_allowance(
                 929,
                 true,
-                35.8,
-                959.0,
-                32.0,
-                970.0,
-            ),
-            0.0,
-            "a positive source offset must be present in the scanner's absolute top"
-        );
-        assert_eq!(
-            saved_rowbreak_first_fragment_overflow_allowance(
-                929,
-                true,
-                32.0,
                 972.0,
-                32.0,
                 970.0,
             ),
             0.0,
@@ -23306,14 +23364,12 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
             (saved_rowbreak_first_fragment_overflow_allowance(
                 929,
                 true,
-                32.0,
                 959.0,
-                32.0,
-                970.0,
-            ) - 11.0)
+                971.0,
+            ) - 12.0)
                 .abs()
                 < f64::EPSILON,
-            "only the physical slack below an aligned saved frame is admitted"
+            "host-before flow spacing does not shrink the saved object's physical slack"
         );
     }
 }
