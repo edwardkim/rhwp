@@ -755,8 +755,11 @@ const HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 96.0;
 const HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 64.0;
 /// HWPX 103×2 병렬 규정 표의 fragment 임계값을 PDF 57조각 계약과 대조한다.
 const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 160.0;
-/// PDF p314에서 제3조가 끝난 뒤 제4조를 시작시키는 r5 경계다.
+/// r5의 첫 두 fragment는 PDF의 제3조 초반 owner를 보존한다.
 const HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX: f64 = 56.0;
+/// r5의 세 번째 fragment는 PDF p314에 제3조 tail을 남기지 않도록 남은 단위를
+/// 같은 쪽에서 끝낸다. 이 fragment는 첫 cell cut이 27 이상인 것으로 식별한다.
+const HWPX_PARALLEL_REGULATION_R5_FINAL_FRAGMENT_CUT_RESERVE_PX: f64 = -160.0;
 /// r5에서 제거한 조각은 PDF 후반에서 실제로 긴 정책연구 심의위원회 행(r71)의
 /// 다음 fragment owner로 복원한다.
 const HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX: f64 = 200.0;
@@ -19535,6 +19538,11 @@ impl TypesetEngine {
                     HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX
                 } else if hwpx_parallel_regulation_table {
                     match r {
+                        5 if row_start_cut
+                            .first()
+                            .is_some_and(|cut| *cut >= 27) => {
+                            HWPX_PARALLEL_REGULATION_R5_FINAL_FRAGMENT_CUT_RESERVE_PX
+                        }
                         5 => HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX,
                         71 => HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX,
                         _ => HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX,

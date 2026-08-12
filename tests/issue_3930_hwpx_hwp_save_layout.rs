@@ -16,6 +16,7 @@ const HWP_FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwp";
 const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
+const PAGE_314: u32 = 313;
 const PAGE_283: u32 = 282;
 const PAGE_284: u32 = 283;
 const PAGE_285: u32 = 284;
@@ -104,6 +105,7 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     let source_p30_tree = page_tree(&source, PAGE_30);
     let source_p144_tree = page_tree(&source, PAGE_144);
     let source_p145_tree = page_tree(&source, PAGE_145);
+    let source_p314_tree = page_tree(&source, PAGE_314);
     let source_p283_tree = page_tree(&source, PAGE_283);
     let source_p284_tree = page_tree(&source, PAGE_284);
     let source_p285_tree = page_tree(&source, PAGE_285);
@@ -130,6 +132,14 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         !source_p145_tree.contains(ATTACHMENT_GUIDANCE),
         "원본 p145는 앞 표의 붙임 안내 블록을 다시 갖지 않아야 한다"
+    );
+    assert!(
+        source_p314_tree.contains("공문서 관리"),
+        "HWPX 병렬 규정 표 뒤의 PDF p314는 제2장 공문서 관리로 시작해야 한다"
+    );
+    assert!(
+        !source_p314_tree.contains("정책실명제"),
+        "HWPX 병렬 규정 표 제3조 r5 tail은 PDF p314로 넘어가면 안 된다"
     );
     assert!(
         source_p283_tree.contains(Q5_RESPONSE_FIRST_LINE),
@@ -244,6 +254,7 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         (PAGE_30, source_p30_tree),
         (PAGE_144, source_p144_tree),
         (PAGE_145, source_p145_tree),
+        (PAGE_314, source_p314_tree),
         (PAGE_283, source_p283_tree),
         (PAGE_284, source_p284_tree),
         (PAGE_285, source_p285_tree),
