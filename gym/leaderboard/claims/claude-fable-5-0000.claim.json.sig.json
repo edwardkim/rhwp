@@ -1,0 +1,9 @@
+{
+  "alg": "ed25519",
+  "capsuleSha256": "79679e879ab3570b6fa768378cff92985d789eb6718b1826fdc0c225424ce82d",
+  "keyId": "gym/claude-fable-5",
+  "kind": "capsuleSignature",
+  "schemaVersion": "1.0",
+  "signature": "WdtfX2Ml8y+6F2xXSxZupnl5mvcop2bJ/tYuemmJtwJ//9exc1XCVsCGCRgR3gsVjrJ/N4pgF+4W6lh11kOdDg==",
+  "signedAt": "2026-08-12T00:20:58Z"
+}

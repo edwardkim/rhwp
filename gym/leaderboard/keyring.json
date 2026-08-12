@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "keyring",
+  "keys": [
+    {
+      "keyId": "gym/claude-fable-5",
+      "publicKey": "zx6U8fbqqrEbsYZhOdTkkPCONJtO0IYYbarZAXI1XJA=",
+      "revoked": null
+    }
+  ]
+}

@@ -67,10 +67,25 @@ def main():
     card["agent"] = a.agent
 
     card_path = os.path.join(out_dir, "scorecard.json")
-    io.open(card_path, "w", encoding="utf-8", newline="\n").write(
-        json.dumps(card, ensure_ascii=False, indent=2))
-    io.open(os.path.join(out_dir, "report.md"), "w", encoding="utf-8", newline="\n").write(
-        runner.render_report(card, a.agent))
+    with io.open(card_path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(json.dumps(card, ensure_ascii=False, indent=2))
+    with io.open(os.path.join(out_dir, "report.md"), "w", encoding="utf-8",
+                 newline="\n") as fh:
+        fh.write(runner.render_report(card, a.agent))
+    # [#4659] 입장 판정 봉투 — 리더보드 등재 사슬의 게이트 슬롯. 판정 기준은
+    # "채점이 유효하게 완주했는가"(pack 1개 이상 채점)이지 만점 여부가 아니다 —
+    # 리더보드는 낮은 점수도 순위이지, 입장 거부 사유가 아니다.
+    admission = {
+        "schemaVersion": "1.0", "kind": "gymAdmission", "agent": a.agent,
+        "verdict": "allow" if card["total"]["packsScored"] >= 1 else "deny",
+        "packsScored": card["total"]["packsScored"],
+        "packsUnavailable": card["total"]["packsUnavailable"],
+        "score": card["total"]["score"], "max": card["total"]["max"],
+        "runner": card["runner"],
+    }
+    with io.open(os.path.join(out_dir, "admission.json"), "w", encoding="utf-8",
+                 newline="\n") as fh:
+        fh.write(json.dumps(admission, ensure_ascii=False, indent=2))
 
     total = card["total"]
     print(f"{a.agent}: {total['score']}/{total['max']}  "

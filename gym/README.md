@@ -138,6 +138,33 @@ python gym/score.py --agent <이름> --pack <id>                 # 즉시 채점
 
 **4부 — 대확장(#4653)**: 운동장이 pack 으로 쪼개졌다. core-cli 1개였던 판이 **8개 pack · 과제 65건 · 만점 140** 이 됐고, 판정 논리는 `gym/core/`(runner·schema·check registry)로 모여 pack 이 늘어도 판정 어휘는 한 곳에서만 자란다. 신규 과제 전건이 기준 풀이 왕복으로 실측 등재됐다.
 
+## 위조 불가능한 리더보드 — 점수판을 검증 사다리 위에 (#4659)
+
+AI 벤치마크 리더보드의 병폐는 점수의 신뢰다: 수치는 자기 신고이고, 소급 수정이
+가능하고, 같은 결과의 재등재를 막을 방법이 없다. 이 저장소에는 그 문제의 해답이
+이미 있다 — 검증 사다리. 그래서 **운동장이 자기 사다리 위에서 돈다.**
+
+```bash
+python gym/score.py --agent <이름>                    # 채점 → scorecard + admission
+python gym/tools/leaderboard.py attest --agent <이름>  # 등재 (keygen→settle→anchor)
+python gym/tools/leaderboard.py verify                # 전 사슬 재검증
+python gym/tools/leaderboard.py render                # 검증본에서 순위표
+```
+
+등재 사슬은 전부 기존 rhwp 명령이다(새 암호학 0줄):
+
+| 공격 | 막는 축 | 실측 |
+|---|---|---|
+| 점수 위조 | 청구 capsuleSha256 고정(P1) | 스코어카드 99999 부풀림 → `verify` exit 3 (`pin.scorecard`) |
+| 소급 조작 | 원장 스냅샷 봉인 + 교차 대조 | 원장 첫 줄 변조 → exit 3 (스냅샷 불일치 + `ledger.crossPin`) |
+| 이중 등재 | 원장 전역 유일성(P3) | 같은 스코어카드 재등재 → 원장 거부 `duplicate: true` |
+| 대리 제출 | 청구 Ed25519 서명(4년 축) | keyring 판정 `signerOk` |
+
+**봉인 범위(정직)**: 이 사슬이 봉인하는 것은 "이 스코어카드가 이 시점에 이
+신원으로 등재되어 이후 변조되지 않았다" 까지다. 채점 자체의 재현은 스코어카드에
+박힌 runner 신원과 커밋된 제출물로 제3자가 수행한다. render 는 검증 통과 항목만
+순위에 올리고, 검증 불가 항목은 숨기지 않고 unverified 로 표기한다.
+
 ## 차등 오라클 — 골든 파일 없는 회귀 사냥
 
 채점기가 정답을 박제하지 않는다는 성질에는 아직 덜 쓴 쓸모가 있다.
