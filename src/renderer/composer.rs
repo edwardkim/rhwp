@@ -709,7 +709,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     }
 
     let mut lines = Vec::new();
-    let line_seg_count = effective_line_seg_count(para);
+    let line_seg_count = para.line_segs.len();
 
     for line_idx in 0..line_seg_count {
         let line_seg = &para.line_segs[line_idx];
@@ -872,54 +872,6 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     }
 
     lines
-}
-
-fn effective_line_seg_count(para: &Paragraph) -> usize {
-    if is_sample16_2022_bcp_orphan_tail_lineseg(para) {
-        para.line_segs.len().saturating_sub(1)
-    } else {
-        para.line_segs.len()
-    }
-}
-
-/// [#4384 조사] 이 문단 텍스트 리터럴을 IR 속성 판정으로 일반화할 수 있는지 조사했으나
-/// 안전하게 일반화할 신호를 찾지 못했다 — 아래는 기각한 가설과 근거다.
-///
-/// 1. **LINE_SEG tag bit 17/18(첫/마지막 세그먼트)**: `hwp3-sample16-hwp5-2022.hwp`
-///    p83 실측 — 두 LINE_SEG 모두 `tag=0x00060000`/`0x00160000`으로 bit17+18
-///    (`LineSeg::TAG_SINGLE_SEGMENT_LINE`)을 함께 켜고 있다. 즉 한컴 인코더 자신도
-///    이 둘을 "한 줄이 세그먼트 2개로 쪼개진 것"이 아니라 "완결된 줄 2개"로
-///    표시했다 — 세그먼트 비트로는 이 문서조차 구분되지 않는다.
-/// 2. **bit 20(indentation 적용) 차이**: 유일하게 다른 비트가 bit20(ls[1]에만 설정)
-///    이다. 그러나 이 문단의 ParaShape는 `indent=-5000`(내어쓰기, 번호/글머리
-///    스타일)이고, bit20은 내어쓰기 문단의 "이어지는 줄"에 일반적으로 켜지는
-///    비트라 — 이 신호로 판정하면 내어쓰기 문단의 정상적인 2번째 줄 전부가
-///    (합쳐지면 안 되는데도) 접혀버린다. 오탐 범위가 이 문서 하나가 아니라
-///    "내어쓰기 문단 + 짧은 마지막 줄" 전체로 넓어진다.
-/// 3. **"마지막 줄이 짧다"는 기하 조건 단독**: 문단이 줄바꿈 후 마지막 줄에 단어
-///    1~2개만 남는 것은 지극히 흔한 정상 조판 결과다(orphan/widow 자체가 아니라
-///    그냥 마지막 줄). 이 조건만으로 접으면 정상적으로 2줄이어야 하는 문단들을
-///    광범위하게 회귀시킨다.
-///
-/// 즉 이 오프셋/피치 조건은 이미 `hwp3-sample16-hwp5-2022.hwp` 문서 안에서도
-/// "정상적인 마지막 짧은 줄"과 "한컴이 인코딩은 2줄로 했지만 실제로는 1줄로
-/// 그리는 이 특정 문단"을 IR 필드만으로 구분하지 못한다 — 텍스트 리터럴이 사실상
-/// 유일하게 안전한 좁힘 조건이다. 회귀 fixture: `tests/issue_1116.rs`
-/// (`sample16_hwp5_2022_page3_bcp_tail_paragraph_folds_orphan_lineseg` 등).
-fn is_sample16_2022_bcp_orphan_tail_lineseg(para: &Paragraph) -> bool {
-    if para.line_segs.len() != 2 {
-        return false;
-    }
-    if !para.text.contains("BCP:Business Continuity Planning) 수립") {
-        return false;
-    }
-
-    let first = &para.line_segs[0];
-    let last = &para.line_segs[1];
-    if last.text_start < para.char_count.saturating_sub(2) {
-        return false;
-    }
-    last.vertical_pos == first.vertical_pos + first.line_height + first.line_spacing
 }
 
 /// UTF-16 위치 범위를 텍스트 문자 인덱스 범위로 변환한다.
@@ -1762,13 +1714,14 @@ pub fn stored_lines_overflow(
     fired
 }
 
-/// [#2279 stale-과소] 마스킹 문단의 저장 분할이 fresh 재래핑보다 **많은 줄**
-/// 인 경우 — 마스킹 치환('*')으로 원문보다 좁아졌는데 저장 분할은 원문 기준
-/// 줄수를 남긴 부실 저장. 한글은 fresh 재계산으로 줄수를 줄인다(36341511
-/// pi61/62/68/70/71 재저장 실측: 저장 3~5줄 vs fresh −1줄씩, 문단당 +31px
-/// 잔존 누적 +1쪽). 과잉(#2360, 실폭>내폭×1.05)과 대칭 — 마스킹·저장 요건은
-/// 동일하고, fresh 프로브 재래핑의 줄수가 저장과 다르면 stale 로 본다.
-pub fn masked_stored_lines_stale(
+/// 저장 line segment가 현재 폭과 source profile에서 요구하는 재조판 줄수와 다르면
+/// 저장 분할을 stale로 판정한다.
+///
+/// 마스킹 문단은 `*` 치환으로 원문보다 폭이 좁아져 저장 줄수와 fresh 줄수가 어느
+/// 방향으로든 달라질 수 있다. HWP3-to-HWP5 변환본은 원 HWP3 한 줄이 변환 HWP5에
+/// terminal segment로 중복 저장될 수 있으므로, fresh 재조판이 더 적은 줄을 산출할 때만
+/// 저장 분할을 stale로 본다.
+pub fn stored_body_lines_stale(
     composed: &ComposedParagraph,
     para: &Paragraph,
     inner_width_px: f64,
@@ -1798,37 +1751,39 @@ pub fn masked_stored_lines_stale(
             others += 1;
         }
     }
-    if stars < 8 || stars < others {
+    let masked_replacement = stars >= 8 && stars >= others;
+    if !masked_replacement && !styles.hwp3_variant {
         return false;
     }
     let mut probe = composed.clone();
     let mut para_no_ls = para.clone();
     para_no_ls.line_segs.clear();
     recompose_for_body_width(&mut probe, &para_no_ls, inner_width_px, styles);
-    let stale = probe.lines.len() != composed.lines.len();
+    let fresh_line_count_differs = probe.lines.len() != composed.lines.len();
+    let hwp3_variant_overcounts_lines = styles.hwp3_variant
+        && probe.lines.len() < composed.lines.len();
+    let stale = (masked_replacement && fresh_line_count_differs) || hwp3_variant_overcounts_lines;
     if stale && std::env::var("RHWP_DIAG_REWRAP").is_ok() {
         eprintln!(
-            "DIAG_REWRAP stale-count inner={:.0} stored={} fresh={} text='{}'",
+            "DIAG_REWRAP stale-count inner={:.0} stored={} fresh={} hwp3_variant={} text='{}'",
             inner_width_px,
             composed.lines.len(),
             probe.lines.len(),
+            styles.hwp3_variant,
             para.text.chars().take(24).collect::<String>(),
         );
     }
     stale
 }
 
-/// [#2279] 본문(column) 판 부실-저장 예외 — 저장 분할이 실폭 모순(과잉)이거나
-/// 마스킹 문단의 저장 줄수가 fresh 와 다르면(과소 포함) 저장을 불신하고 본문
-/// 경로(`recompose_for_body_width` — 글자모양 재분할 포함)로 fresh 재래핑한다.
-/// 셀 판(#2291, 1줄 한정)과 같은 원리의 다중줄 일반화 + 마스킹 한정.
-pub fn recompose_stored_lines_if_overflowing_body(
+/// 본문(column)의 stale 저장 분할을 글자모양 재분할을 포함한 fresh 경로로 재조판한다.
+pub fn recompose_stale_body_lines(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
     column_inner_width_px: f64,
     styles: &ResolvedStyleSet,
 ) {
-    if !masked_stored_lines_stale(composed, para, column_inner_width_px, styles) {
+    if !stored_body_lines_stale(composed, para, column_inner_width_px, styles) {
         return;
     }
     let mut para_no_ls = para.clone();
