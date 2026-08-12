@@ -2091,24 +2091,12 @@ fn text_line_is_picture_lead_in(
         .unwrap_or(false)
 }
 
-fn is_sample16_integrated_db_cluster_tail_paragraph(para: &Paragraph) -> bool {
-    para.text.starts_with('\u{F03C5}')
-        && para
-            .text
-            .contains("계약상대자는 통합DB서버에서 운영될 주요업무에 대해 Active-Active")
-        && para.controls.iter().all(|c| matches!(c, Control::Field(_)))
-}
-
-/// 원본 HWP3의 저장 LINE_SEG 안쪽 vpos 되감김은 hyperlink marker가 있어도 본문 흐름을
-/// 바꾸지 않는다. hyperlink는 글자 위치의 인라인 메타데이터이므로, 표·그림·각주처럼
-/// 줄/쪽을 점유하는 컨트롤과 같은 이유로 reset 신호를 무시하면 안 된다.
-///
-/// 범위를 `Hyperlink` 하나로 제한한다. Field/Ruby/수식/form과 모든 객체 컨트롤은 각각
-/// 별도 줄높이·분할 계약을 가지므로 여기서 허용하지 않는다.
-fn hwp3_text_rewind_controls_are_inline_hyperlinks(para: &Paragraph) -> bool {
+/// Field와 hyperlink는 글자 위치의 인라인 metadata다. 저장 vpos reset의 본문 흐름을
+/// 해석할 때 표·그림·각주처럼 줄이나 쪽을 점유하는 control과 구별한다.
+fn controls_are_inline_text_metadata(para: &Paragraph) -> bool {
     para.controls
         .iter()
-        .all(|control| matches!(control, Control::Hyperlink(_)))
+        .all(|control| matches!(control, Control::Field(_) | Control::Hyperlink(_)))
 }
 
 fn internal_vpos_page_break_line(
@@ -2116,23 +2104,19 @@ fn internal_vpos_page_break_line(
     line_count: usize,
     body_height_px: f64,
     dpi: f64,
-    hwp3_lineseg_source: bool,
 ) -> Option<usize> {
     if line_count < 2 || para.line_segs.len() < line_count {
         return None;
     }
 
     let first = para.line_segs.first()?;
-    let sample16_tail = is_sample16_integrated_db_cluster_tail_paragraph(para);
-    let hwp3_text_rewind = hwp3_lineseg_source
-        && hwp3_text_rewind_controls_are_inline_hyperlinks(para)
-        && para_has_visible_text(para);
+    let text_vpos_rewind = controls_are_inline_text_metadata(para) && para_has_visible_text(para);
 
     // [Issue #2006] 빈-텍스트 문단에 전면(full-page) tac 이미지가 다수 스택된 경우
     // (예: 1790387 PrEP 보고서 pi=367, tac 그림 2장 각 lh≈900px, vpos=0..0), 한글은
     // 각 전면 이미지를 쪽당 1장으로 배치한다. rhwp 는 한 쪽에 겹쳐(2×본문 높이) 두어
     // 과소 페이지가 된다(−16). 연속한 두 라인이 모두 전면급 tac 이미지면 그 경계에서
-    // 강제 분할한다(캐스케이드는 잔여 재처리로). sample16/hwp3 vpos-reset 과 독립 —
+    // 강제 분할한다(캐스케이드는 잔여 재처리로). text vpos-reset 과 독립 —
     // 본 케이스는 vpos 가 0 이라 아래 first.vertical_pos>0 가드에 걸린다.
     if para_is_treat_as_char_picture_only(para) {
         let full_page_px = body_height_px * 0.8;
@@ -2153,7 +2137,7 @@ fn internal_vpos_page_break_line(
         }
     }
 
-    if !sample16_tail && !hwp3_text_rewind {
+    if !text_vpos_rewind {
         return None;
     }
 
@@ -2171,14 +2155,14 @@ fn internal_vpos_page_break_line(
                 return None;
             }
 
-            let sample16_reset = sample16_tail && cur.vertical_pos <= 0;
-            let hwp3_rewind_reset = hwp3_text_rewind
+            let stored_page_reset = cur.vertical_pos <= 0
+                || (cur.vertical_pos < prev.vertical_pos
                 && cur.vertical_pos < prev.vertical_pos
                 && hwpunit_to_px(prev.vertical_pos + prev.line_height, dpi)
                     >= body_height_px * 0.72
-                && hwpunit_to_px(cur.vertical_pos, dpi) <= body_height_px * 0.06;
+                && hwpunit_to_px(cur.vertical_pos, dpi) <= body_height_px * 0.06);
 
-            if sample16_reset || hwp3_rewind_reset {
+            if stored_page_reset {
                 Some(prev_idx + 1)
             } else {
                 None
@@ -3062,7 +3046,7 @@ fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Tab
         .any(|row| rowbreak_row_has_internal_saved_vpos_reset(table, row))
 }
 
-fn sample16_missing_lineseg_tail_break_line(
+fn missing_lineseg_trailing_line_break(
     para: &Paragraph,
     line_count: usize,
     current_height: f64,
@@ -3071,12 +3055,13 @@ fn sample16_missing_lineseg_tail_break_line(
     if !para.line_segs.is_empty()
         || line_count < 4
         || current_height < available * 0.75
-        || !is_sample16_integrated_db_cluster_tail_paragraph(para)
+        || !para_has_visible_text(para)
+        || !controls_are_inline_text_metadata(para)
     {
         return None;
     }
 
-    Some(3)
+    Some(line_count - 1)
 }
 
 fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
@@ -15208,7 +15193,6 @@ impl TypesetEngine {
             fmt.line_heights.len(),
             st.layout.body_area.height,
             self.dpi,
-            st.profile.hwp3_native_layout(),
         )
         .or_else(|| {
             st.profile.hwpx_stored_layout().then(|| {
@@ -15226,7 +15210,7 @@ impl TypesetEngine {
                 .map(|footnote_break| footnote_break.body_break_line)
         })
         .or_else(|| {
-            sample16_missing_lineseg_tail_break_line(
+            missing_lineseg_trailing_line_break(
                 para,
                 fmt.line_heights.len(),
                 st.current_height,

@@ -48,12 +48,10 @@ fn should_hide_page_bottom_empty_reset_bridge(
     curr_vpos_near_bottom && next_starts_new_page
 }
 
-fn is_sample16_integrated_db_cluster_tail_paragraph(para: &Paragraph) -> bool {
-    para.text.starts_with('\u{F03C5}')
-        && para
-            .text
-            .contains("계약상대자는 통합DB서버에서 운영될 주요업무에 대해 Active-Active")
-        && para.controls.iter().all(|c| matches!(c, Control::Field(_)))
+fn controls_are_inline_text_metadata(para: &Paragraph) -> bool {
+    para.controls
+        .iter()
+        .all(|control| matches!(control, Control::Field(_) | Control::Hyperlink(_)))
 }
 
 fn internal_vpos_page_break_line(
@@ -62,9 +60,10 @@ fn internal_vpos_page_break_line(
     body_height_px: f64,
     dpi: f64,
 ) -> Option<usize> {
-    if !is_sample16_integrated_db_cluster_tail_paragraph(para)
-        || line_count < 2
+    if line_count < 2
         || para.line_segs.len() < line_count
+        || !para_has_visible_text(para)
+        || !controls_are_inline_text_metadata(para)
     {
         return None;
     }
@@ -94,7 +93,7 @@ fn internal_vpos_page_break_line(
         })
 }
 
-fn sample16_missing_lineseg_tail_break_line(
+fn missing_lineseg_trailing_line_break(
     para: &Paragraph,
     line_count: usize,
     current_height: f64,
@@ -103,12 +102,13 @@ fn sample16_missing_lineseg_tail_break_line(
     if !para.line_segs.is_empty()
         || line_count < 4
         || current_height < available * 0.75
-        || !is_sample16_integrated_db_cluster_tail_paragraph(para)
+        || !para_has_visible_text(para)
+        || !controls_are_inline_text_metadata(para)
     {
         return None;
     }
 
-    Some(3)
+    Some(line_count - 1)
 }
 
 fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
@@ -1223,7 +1223,7 @@ impl Paginator {
                     breaks.push(line);
                 }
             }
-            if let Some(line) = sample16_missing_lineseg_tail_break_line(
+            if let Some(line) = missing_lineseg_trailing_line_break(
                 para,
                 line_count_for_break,
                 st.current_height,
