@@ -27,6 +27,17 @@ pub struct Paragraph {
     pub char_shapes: Vec<CharShapeRef>,
     /// 줄 레이아웃 정보
     pub line_segs: Vec<LineSeg>,
+    /// [#4677] `line_segs` **끝쪽** 몇 줄이 조판 전용 보강 줄인가.
+    ///
+    /// HWPX RowBreak 표 셀은 문단별 `<hp:linesegarray>` 를 생략하면서도 셀 높이는 남긴다.
+    /// 그 높이에 맞춰 줄을 보강해야 쪽 나눔이 한컴과 같아지지만
+    /// (`DocumentCore::fit_hwpx_rowbreak_synthetic_cell_lines`), 그 줄은 **본문에 없는 줄**
+    /// 이라 HWP5 로 저장하면 안 된다 — 한글 2022 는 그런 셀 문단을 만나면 본문 전체를
+    /// 버리고 빈 1쪽 문서로 연다(rhwp 재파싱은 통과하는 함정).
+    ///
+    /// 파일에 실리는 값이 아니라 IR 안에서만 의미가 있다. `line_segs` 를 통째로 다시
+    /// 계산하는 경로(reflow)는 이 값을 0 으로 되돌린다.
+    pub layout_only_fill_lines: usize,
     /// 영역 태그 정보
     pub range_tags: Vec<RangeTag>,
     /// 필드 텍스트 범위 (0x03~0x04 사이 텍스트 인덱스 + 컨트롤 인덱스)
@@ -1202,6 +1213,8 @@ impl Paragraph {
             char_offsets: new_char_offsets,
             char_shapes: new_char_shapes,
             line_segs: new_line_segs,
+            // 분리된 문단의 줄은 새로 계산된 것이라 조판 전용 보강 줄이 없다 (#4677).
+            layout_only_fill_lines: 0,
             range_tags: new_range_tags,
             field_ranges: new_field_ranges, // 새 문단으로 이관된 필드 범위
             orphan_field_ends: Vec::new(),

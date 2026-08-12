@@ -258,6 +258,16 @@ fn serialize_paragraph_with_msb(
         para.char_count
     };
 
+    // [#4677] 본문에 대응하지 않는 lineseg 는 파일에 내보내지 않는다 — 조판 전용 보강 줄과
+    // PARA_TEXT 밖을 가리키는 줄 두 갈래다(판정은 `line_segs_within_text` 주석 참조).
+    // 한글 2022 는 그런 문단을 만나면 본문 전체를 버리고 빈 1쪽 문서로 연다 — rhwp 재파싱만
+    // 통과하는 함정이라 `--verify` 로는 잡히지 않는다 (10k 전수 스윕 x2h 소실군).
+    let line_segs_in_range = line_segs_within_text(
+        &para.line_segs,
+        actual_char_count,
+        para.layout_only_fill_lines,
+    );
+
     // PARA_HEADER (effective_char_shapes 길이 반영)
     // MSB는 모델 값이 아닌 위치 기반으로 결정: 마지막 문단만 MSB=true
     records.push(Record {
@@ -270,6 +280,7 @@ fn serialize_paragraph_with_msb(
             is_last,
             actual_control_mask,
             actual_char_count,
+            line_segs_in_range.len(),
         ),
     });
 
@@ -303,8 +314,8 @@ fn serialize_paragraph_with_msb(
     }
 
     // PARA_LINE_SEG
-    if !para.line_segs.is_empty() {
-        let data = serialize_para_line_seg(&para.line_segs);
+    if !line_segs_in_range.is_empty() {
+        let data = serialize_para_line_seg(line_segs_in_range);
         records.push(Record {
             tag_id: tags::HWPTAG_PARA_LINE_SEG,
             level: base_level + 1,
@@ -391,6 +402,7 @@ fn serialize_para_header_with_mask(
     is_last: bool,
     control_mask: u32,
     char_count: u32,
+    num_line_segs: usize,
 ) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
@@ -417,7 +429,7 @@ fn serialize_para_header_with_mask(
     // count 필드는 실제 데이터 기반으로 항상 재생성 (편집 후 불일치 방지)
     w.write_u16(num_char_shapes as u16).unwrap();
     w.write_u16(para.range_tags.len() as u16).unwrap();
-    w.write_u16(para.line_segs.len() as u16).unwrap();
+    w.write_u16(num_line_segs as u16).unwrap();
 
     // instanceId + 추가 바이트: raw_header_extra에서 복원
     // raw_header_extra[0..6] = numCharShapes(2) + numRangeTags(2) + numLineSegs(2) → 건너뜀
@@ -972,6 +984,37 @@ fn push_field_end_ctrl(code_units: &mut Vec<u16>, marker: FieldEndMarker) {
     }
 }
 
+/// [#4677] 파일에 실을 수 있는 lineseg 만 남긴 슬라이스.
+///
+/// 두 가지를 잘라 낸다. 둘 다 한글 2022 가 본문을 통째로 버리게 만드는 값이다 — rhwp 는
+/// 자기가 쓴 파일을 그대로 다시 읽으므로 `--verify` 로는 잡히지 않는다.
+///
+/// 1. **조판 전용 보강 줄**(`Paragraph::layout_only_fill_lines`) — 셀 저장 높이를 채우려고
+///    끝에 덧붙인, 본문에 없는 줄. 한컴 정답지는 그 셀 문단에 줄을 하나만 쓴다.
+/// 2. **PARA_TEXT 밖을 가리키는 줄** — HWP5 가 규정하지 않는 컨트롤(색인 표시 `idxm` 등)을
+///    저장에서 떨구면 문단이 8 유닛씩 짧아지는데, 원본 HWPX 의 lineseg 는 그 컨트롤을 센
+///    `textpos` 를 그대로 들고 있다.
+///
+/// 첫 줄(`text_start == 0`)은 어떤 문단에도 있어야 하므로 전부 범위를 벗어나면 그대로 둔다
+/// (문단 자체가 비정상이라는 뜻이며, 줄을 0 개로 만들면 다른 손상이 된다). 유효한 줄이
+/// 하나라도 있으면 **접두부만** 남긴다 — 줄은 순서대로 이어져야 한다.
+fn line_segs_within_text(
+    line_segs: &[LineSeg],
+    char_count: u32,
+    layout_only_fill_lines: usize,
+) -> &[LineSeg] {
+    let real = line_segs.len().saturating_sub(layout_only_fill_lines);
+    let in_range = line_segs[..real]
+        .iter()
+        .position(|seg| seg.text_start >= char_count && seg.text_start > 0)
+        .unwrap_or(real);
+    if in_range == 0 {
+        line_segs
+    } else {
+        &line_segs[..in_range]
+    }
+}
+
 /// PARA_LINE_SEG 직렬화
 ///
 /// 각 항목: 36바이트 (u32 + i32×7 + u32)
@@ -1053,11 +1096,9 @@ fn should_serialize_figure_space_as_hwp_fixed_blank(para: &Paragraph) -> bool {
 /// `Control::Ruby` 는 같은 arm 이지만 규정된 ctrl_id(`tdut`)가 있어 방출을 막는 것이
 /// 답이 아니다 — #4397 에서 따로 다룬다. 여기서는 건드리지 않는다.
 fn emits_ctrl_header(ctrl: &Control) -> bool {
-    match ctrl {
-        Control::Hyperlink(_) => false,
-        Control::Unknown(u) => u.ctrl_id != 0,
-        _ => true,
-    }
+    // [#4677] 판정은 `Control::occupies_ctrl_char_slot` 하나에서만 나온다 — 합성 lineseg 의
+    // `text_start` 를 계산하는 renderer 쪽이 같은 규칙을 봐야 오프셋이 어긋나지 않는다.
+    ctrl.occupies_ctrl_char_slot()
 }
 
 fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
@@ -1377,6 +1418,101 @@ mod tests {
         assert_eq!(seg.line_height, 500);
         assert_eq!(seg.segment_width, 42000);
         assert!(seg.is_first_line_of_page());
+    }
+
+    /// [#4677] PARA_TEXT 밖을 가리키는 lineseg 는 파일에 나가지 않는다.
+    ///
+    /// 색인 표시(`idxm`)처럼 HWP5 저장에서 떨어지는 컨트롤이 있으면 문단이 8 유닛 짧아지는데,
+    /// 원본 HWPX 의 lineseg 는 그 컨트롤을 센 `textpos` 를 그대로 들고 있다. 그 값을 그대로
+    /// 쓰면 한글 2022 가 본문 전체를 버리고 빈 1쪽으로 연다.
+    #[test]
+    fn test_out_of_range_line_segs_are_not_serialized() {
+        let para = Paragraph {
+            char_count: 3,
+            text: "AB".to_string(),
+            char_offsets: vec![0, 1],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    line_height: 500,
+                    ..Default::default()
+                },
+                // 떨어져 나간 8 유닛 컨트롤을 센 잔재 — "AB" + 문단끝 = 3 유닛 밖이다.
+                LineSeg {
+                    text_start: 10,
+                    line_height: 500,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+
+        assert_eq!(
+            parsed.paragraphs[0].line_segs.len(),
+            1,
+            "범위 밖 lineseg 는 레코드에서 제외된다"
+        );
+        assert_eq!(parsed.paragraphs[0].line_segs[0].text_start, 0);
+    }
+
+    /// [#4677] 조판 전용 보강 줄은 파일에 나가지 않는다.
+    ///
+    /// HWPX RowBreak 표 셀의 저장 높이를 채우려고 덧붙인 줄은 본문에 없는 줄이다. 한컴은
+    /// 그 셀 문단에 줄을 하나만 쓰고, 두 줄짜리로 저장하면 본문 전체를 버린다.
+    #[test]
+    fn test_layout_only_fill_lines_are_not_serialized() {
+        let para = Paragraph {
+            char_count: 3,
+            text: "AB".to_string(),
+            char_offsets: vec![0, 1],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    line_height: 500,
+                    ..Default::default()
+                },
+                // 셀 높이를 채우려고 덧붙인 줄 — 위치는 범위 안이지만 본문에 없는 줄이다.
+                LineSeg {
+                    text_start: 1,
+                    line_height: 500,
+                    ..Default::default()
+                },
+            ],
+            layout_only_fill_lines: 1,
+            ..Default::default()
+        };
+
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+
+        assert_eq!(
+            parsed.paragraphs[0].line_segs.len(),
+            1,
+            "조판 전용 보강 줄은 레코드에서 제외된다"
+        );
     }
 
     /// PARA_RANGE_TAG 라운드트립
