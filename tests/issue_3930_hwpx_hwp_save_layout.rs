@@ -18,6 +18,9 @@ const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
 const PAGE_314: u32 = 313;
 const PAGE_316: u32 = 315;
+const PAGE_321: u32 = 320;
+const PAGE_322: u32 = 321;
+const PAGE_323: u32 = 322;
 const PAGE_361: u32 = 360;
 const PAGE_362: u32 = 361;
 const PAGE_363: u32 = 362;
@@ -120,6 +123,9 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     let source_p145_tree = page_tree(&source, PAGE_145);
     let source_p314_tree = page_tree(&source, PAGE_314);
     let source_p316_tree = page_tree(&source, PAGE_316);
+    let source_p321_tree = page_tree(&source, PAGE_321);
+    let source_p322_tree = page_tree(&source, PAGE_322);
+    let source_p323_tree = page_tree(&source, PAGE_323);
     let source_p361_tree = page_tree(&source, PAGE_361);
     let source_p362_tree = page_tree(&source, PAGE_362);
     let source_p363_tree = page_tree(&source, PAGE_363);
@@ -165,6 +171,18 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         source_p316_tree.contains("문서의 기안은 전자문서로 하는 것을 원칙"),
         "HWPX 병렬 규정 표의 PDF p316은 제8조 prefix를 소유해야 한다"
+    );
+    assert!(
+        source_p321_tree.contains("기안문은 결재권자의 결재를 받기 전에"),
+        "HWPX 병렬 규정 표의 PDF p321은 제9조 owner를 소유해야 한다"
+    );
+    assert!(
+        source_p322_tree.contains("행정기관은 문서를 생산"),
+        "HWPX 병렬 규정 표의 PDF p322는 제11조 owner를 소유해야 한다"
+    );
+    assert!(
+        source_p323_tree.contains("문서의 발신 명의는 행정기관의 장"),
+        "HWPX 병렬 규정 표의 PDF p323은 제13조 owner를 소유해야 한다"
     );
     assert!(
         source_p361_tree.contains("기능분류시스템의 자료를 최신의 정보로 유지"),
@@ -314,6 +332,9 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         (PAGE_144, source_p144_tree),
         (PAGE_145, source_p145_tree),
         (PAGE_314, source_p314_tree),
+        (PAGE_321, source_p321_tree),
+        (PAGE_322, source_p322_tree),
+        (PAGE_323, source_p323_tree),
         (PAGE_283, source_p283_tree),
         (PAGE_284, source_p284_tree),
         (PAGE_285, source_p285_tree),

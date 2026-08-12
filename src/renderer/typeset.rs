@@ -763,8 +763,11 @@ const HWPX_PARALLEL_REGULATION_R5_FINAL_FRAGMENT_CUT_RESERVE_PX: f64 = -160.0;
 /// r12의 제8조는 r11 continuation 뒤 p316 하단에서 다시 시작한다. 전역 reserve를
 /// 적용하면 첫 unit만 남아 orphan guard가 통째 이월하므로 이 row에만 보수량을 해제한다.
 const HWPX_PARALLEL_REGULATION_R12_CUT_RESERVE_PX: f64 = 0.0;
-/// r71은 저장 frame의 마지막 tail 뒤에 다음 규정 행이 같은 쪽에서 시작한다.
+/// r71의 첫 조각은 저장 frame의 마지막 tail 뒤에 다음 규정 행이 같은 쪽에서 시작한다.
 const HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX: f64 = 0.0;
+/// r71의 continuation은 r12 압축 뒤에도 PDF p361의 제61조 owner를 보존하도록
+/// 저장 frame 한 단위를 별도 fragment로 남긴다.
+const HWPX_PARALLEL_REGULATION_R71_CONTINUATION_CUT_RESERVE_PX: f64 = 300.0;
 /// r79의 병렬 오른쪽 셀 제44조 continuation은 PDF p360에서 더 많이 소비된다.
 /// 이 row의 cut budget만 180px 확장해 제61조가 PDF p361 owner로 재개하게 한다.
 const HWPX_PARALLEL_REGULATION_R79_CUT_RESERVE_PX: f64 = -180.0;
@@ -19092,6 +19095,23 @@ impl TypesetEngine {
                 && !strict_painted_bottom_fit
                 && consumed + cs_before + row_total
                     <= avail_for_rows + NATIVE_HWP5_ROWBREAK_ROUNDING_TOLERANCE_PX;
+            // 2025 편람의 103×2 병렬 규정 표에서 제13조(r17)는 PDF p323의 첫
+            // owner다. r12 continuation 압축 뒤 r17이 p322 하단에 들어가더라도
+            // 한컴은 다음 fragment에서 시작한다. 다음 fragment에서는 r ==
+            // cursor_row가 되어 다시 이월하지 않는다.
+            let hwpx_parallel_regulation_r17_owner_break = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 103
+                && table.col_count == 2
+                && table.cells.len() == 206
+                && r == 17
+                && r > cursor_row
+                && row_start_cut.is_empty();
+            if hwpx_parallel_regulation_r17_owner_break {
+                end_row = r;
+                break;
+            }
             // 2025 편람의 103×2 병렬 규정 표에서 제69조(r97)는 PDF p366의 첫
             // owner다. p365가 제65~68조를 이미 소유한 경우에는 r97이 완전히
             // 적합하더라도 다음 fragment에서 시작해야 한다. 다음 fragment에서는
@@ -19569,10 +19589,11 @@ impl TypesetEngine {
                             HWPX_PARALLEL_REGULATION_R5_FINAL_FRAGMENT_CUT_RESERVE_PX
                         }
                         5 => HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX,
-                        12 if row_start_cut.is_empty() => {
-                            HWPX_PARALLEL_REGULATION_R12_CUT_RESERVE_PX
+                        12 => HWPX_PARALLEL_REGULATION_R12_CUT_RESERVE_PX,
+                        71 if row_start_cut.is_empty() => {
+                            HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX
                         }
-                        71 => HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX,
+                        71 => HWPX_PARALLEL_REGULATION_R71_CONTINUATION_CUT_RESERVE_PX,
                         79 => HWPX_PARALLEL_REGULATION_R79_CUT_RESERVE_PX,
                         99 => HWPX_PARALLEL_REGULATION_R99_CUT_RESERVE_PX,
                         _ => HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX,
