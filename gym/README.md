@@ -169,6 +169,28 @@ python gym/tools/leaderboard.py render                # 검증본에서 순위�
 신원으로 등재되어 이후 변조되지 않았다" 까지다. 채점 자체의 재현은 스코어카드에
 박힌 runner 신원과 커밋된 제출물로 제3자가 수행한다.
 
+## CI 릴리스 게이트 — 도구를 파이프라인에 물린다 (#4662)
+
+아래 회귀 도구들이 도구로만 있으면 사람이 기억해서 돌려야 한다. 릴리스
+파이프라인에 물리면 잊어도 돈다. `gym/tools/release_gate.py` 가 셋을 하나의
+판정으로 묶는다:
+
+```bash
+python gym/tools/release_gate.py --old <직전 태그 바이너리> --new target/debug/rhwp
+```
+
+| 판정 | exit | 조건 |
+|---|---|---|
+| pass | 0 | 릴리스 차등 stable + 리더보드 체인 무결 |
+| review | 2 | surface-changed — 표면 변경, 사람 판정(차단 아님) |
+| block | 3 | regression 또는 리더보드 체인 파손 |
+
+**regression 만 차단한다** — 도구는 "무엇이 바뀌었나"를 가리키지 "어느 쪽이
+옳은가"를 판정하지 않으므로(#4661), 표면 변경은 리뷰 신호이지 자동 차단이 아니다.
+독립 워크플로 `.github/workflows/gym-release-gate.yml`(수동 실행 + 태그 관찰)로
+돌며, 릴리스 본체(`release-binary.yml`)는 건드리지 않는다. old 바이너리가 없으면
+차등을 생략한다(부재≠실패).
+
 ## 릴리스 간 차등 회귀 — 시간축 차등 오라클 (#4661)
 
 교차형식 차등(아래)이 형식축이라면, 이건 시간축이다. **같은 제출물을 구/신

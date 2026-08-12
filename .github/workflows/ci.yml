@@ -904,10 +904,16 @@ jobs:
           python3 -m unittest scripts/tests/test_nextest_archive_workflow.py
           python3 -m unittest scripts/tests/test_release_channel_policy_workflow.py
           python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
+          python3 -m unittest scripts/tests/test_setup_action.py
+          python3 -m unittest scripts/tests/test_gym_release_gate_workflow.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
 
       - name: Validate gym scorer contracts
-        run: python3 -m unittest scripts/tests/test_gym_score.py
+        run: |
+          python3 -m unittest scripts/tests/test_gym_score.py
+          python3 -m unittest scripts/tests/test_gym_packs.py
+          python3 -m unittest scripts/tests/test_gym_leaderboard.py
+          python3 -m unittest scripts/tests/test_gym_release_diff.py
 
       - name: Clippy
         run: cargo clippy -- -D warnings

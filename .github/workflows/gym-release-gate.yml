@@ -1,0 +1,72 @@
+name: Gym Release Gate
+
+# [#4662] 운동장 회귀 도구를 릴리스 판정으로 묶는다.
+#
+# 릴리스 워크플로 본체(release-binary.yml)는 건드리지 않는다 — 이 워크플로는
+# 독립 실행이며 workflow_dispatch(수동)와 태그 push 관찰만 한다. 하는 일:
+#   1) 현재 커밋에서 rhwp 를 빌드
+#   2) (직전 태그 입력 시) 그 태그 바이너리와 릴리스 차등(#4661) 실행
+#   3) 커밋된 리더보드 해시 체인(#4659) 검증
+#   4) 판정 — regression 만 차단(exit 3), surface-changed 는 리뷰 신호(exit 2)
+#
+# 정직 조항(#4661): 이 게이트는 "무엇이 바뀌었나"를 가리키지 "어느 쪽이 옳은가"를
+# 판정하지 않는다. 그래서 자동 차단은 regression 과 리더보드 체인 파손뿐이다.
+
+on:
+  workflow_dispatch:
+    inputs:
+      old_ref:
+        description: '차등 대상 직전 릴리스 ref(태그/커밋). 비우면 차등 생략.'
+        required: false
+        default: ''
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gym-release-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: Gym Release Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build current rhwp
+        run: cargo build --bin rhwp
+
+      - name: Build old rhwp (if ref given)
+        if: ${{ github.event.inputs.old_ref != '' }}
+        run: |
+          git worktree add --detach ../rhwp-old "${{ github.event.inputs.old_ref }}"
+          (cd ../rhwp-old && cargo build --bin rhwp)
+          cp ../rhwp-old/target/debug/rhwp ./rhwp-old-bin
+
+      - name: Run release gate
+        id: gate
+        run: |
+          if [ -f ./rhwp-old-bin ]; then
+            python3 gym/tools/release_gate.py \
+              --old ./rhwp-old-bin --new target/debug/rhwp \
+              --github-summary -o gate-verdict.json
+          else
+            python3 gym/tools/release_gate.py \
+              --new target/debug/rhwp \
+              --github-summary -o gate-verdict.json
+          fi
+
+      - name: Upload verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gym-release-gate-verdict
+          path: gate-verdict.json

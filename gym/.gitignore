@@ -5,3 +5,5 @@ differential-report.json
 leaderboard/keys/
 release-diff.json
 release-diff-*.json
+release-gate-diff.json
+release-gate-*.json
