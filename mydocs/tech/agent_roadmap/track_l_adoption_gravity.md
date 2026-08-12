@@ -116,9 +116,11 @@ flowchart LR
 
 - **한 줄** — rhwp를 MCP로 붙인 에이전트가 서버가 제공하는 **프롬프트**로 사다리를
   탄다("이 편집을 증명 가능하게 감싸라", "여기서 시작하라").
-- **지금** — **미개척.** `mcp-serve`는 tools 66개를 노출하지만 `prompts`가 **0개**
-  다(`capabilities --mcp` 봉투에 prompts 키 없음). MCP 프롬프트는 서버가 클라이언트
-  에이전트에게 워크플로를 제안하는 1급 수단인데 rhwp는 아직 안 쓴다.
+- **지금** — **미개척.** `mcp-serve`는 tools 66개·resources 13개를 노출하지만
+  `prompts`가 **0개**다 — `initialize`가 `capabilities: {tools, resources}` 만
+  광고하고(prompts 미선언), `prompts/list`·`prompts/get` 핸들러가 없다(실측).
+  MCP 프롬프트는 서버가 클라이언트 에이전트에게 워크플로를 제안하는 1급 수단인데
+  rhwp는 아직 안 쓴다 — 리소스·툴은 있는데 **프롬프트만 비어 있다.**
 - **설계** — MCP `prompts/list`·`prompts/get` 구현. 후보: `prove-work`(편집→
   harness wrap→캡슐→status 안내), `start-here`(온보딩), `benchmark-me`(gym 진입).
   전부 공개 선언·옵트인. 프롬프트 정의의 단일 출처는 capabilities(계약 승계).
@@ -129,19 +131,23 @@ flowchart LR
   `prompts/list`→`prompts/get` 왕복, 계약 테스트, 7+1 등재.
 - **의존** — 트랙 H(MCP 서버 성립), L1.
 
-### L4 — MCP 리소스 깔때기 `[가설]`
+### L4 — MCP 축 리소스 깔때기 `[실측]`(인프라)·`[가설]`(축 리소스)
 
 - **한 줄** — MCP 에이전트가 로드맵·gym·사다리 안내를 **리소스**로 읽는다(재파싱
   없이, 서버가 큐레이션).
-- **지금** — **미개척.** mcp-serve는 resources도 0개다. 에이전트는 저장소를 직접
-  뒤져야 축을 발견한다.
-- **설계** — MCP `resources/list`·`resources/read`로 큐레이션 리소스 노출:
-  `rhwp://roadmap`(아틀라스), `rhwp://gym`(과제판·리더보드), `rhwp://ladder`(작업
-  증빙 규약). 전부 커밋된 문서의 투영이라 새 진실 0.
-- **착수 게이트** — L3와 공유(MCP 프로토콜 리소스 능력, mcp-serve 구조). 리소스가
-  tools/프로필과 중복 노출 아닌지.
-- **DoD** — `resources/list`에 세 리소스, `resources/read` 왕복, 계약 테스트.
-- **의존** — 트랙 H, L3(같은 서버 확장).
+- **지금** — 리소스 인프라는 **실재**한다(정정): `mcp-serve`의 `resources/list`·
+  `resources/read`가 구현돼 있고 `initialize`가 `resources` 능력을 광고한다.
+  실측 **13개** — `rhwp://capabilities/mcp`·스키마 3(ir·plan·capabilities)·문서 3
+  (llms.txt·지식지도·문제해결)·레시피 6. **그러나 채택 축을 노출하는 리소스가
+  없다** — `rhwp://roadmap`·`rhwp://gym`·`rhwp://ladder`가 부재해, 에이전트가
+  "어디로 가는가·무엇으로 실력을 재는가"를 리소스로 못 읽는다.
+- **설계** — 기존 `DOC_RESOURCES` 체계에 **축 리소스 3종 추가**: `rhwp://roadmap`
+  (아틀라스), `rhwp://gym`(과제판·리더보드), `rhwp://ladder`(작업 증빙 규약). 전부
+  커밋된 문서의 투영이라 새 진실 0. from-zero 가 아니라 확장이다.
+- **착수 게이트** — 축 리소스가 tools/프로필/기존 doc 리소스와 중복 노출 아닌지.
+  리소스 본문 생성기가 커밋 문서와 기계 대사되는지(스윕 가드).
+- **DoD** — `resources/list`에 축 3리소스 추가, `resources/read` 왕복, 계약 테스트.
+- **의존** — 트랙 H(리소스 인프라 실재), L8(아틀라스 정본).
 
 ### L5 — 하네스 기본 흐름 깔때기 `[실측]`
 
