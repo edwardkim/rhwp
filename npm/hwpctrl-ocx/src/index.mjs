@@ -1029,11 +1029,18 @@ export class HwpCtrl {
   /** 잠긴 액션 이름들 — `LockCommand` 가 넣고 `Run` 이 본다. */
   #lockedCommands = new Set();
   #version = PACKAGE_VERSION;
+  /** 문서 교체 위임 훅(plugin 모드). null 이면 이 층이 직접 만든다. */
+  #adoptDocument = null;
   #listeners = new Map();
 
-  constructor({ wasm, doc, onSave, onReadFile, onCreatePageImage, version } = {}) {
+  constructor({ wasm, doc, onSave, onReadFile, onCreatePageImage, version, adoptDocument } = {}) {
     this.#wasm = wasm;
     this.#doc = doc ?? (wasm ? wasm.HwpDocument.createEmpty() : null);
+    // 문서를 **누가 만드는가**를 가르는 유일한 자리.
+    //  - standalone: 이 층이 직접 만든다(기본값 — 오늘 동작 그대로).
+    //  - plugin: 호스트에 위임한다. 그래야 studio 와 같은 문서를 보고, 원자 교체·세대 증가·
+    //    이전 문서 해제가 studio 계약대로 일어난다. 위임하지 않으면 두 문서가 조용히 갈라진다.
+    this.#adoptDocument = typeof adoptDocument === 'function' ? adoptDocument : null;
     this.#onSave = onSave;
     this.#onReadFile = onReadFile;
     this.#onCreatePageImage = onCreatePageImage;
@@ -1043,6 +1050,17 @@ export class HwpCtrl {
   /** 내부: 현재 문서. 하니스와 호스트가 쓴다. */
   getWasmDoc() {
     return this.#doc;
+  }
+
+  /**
+   * 내부: 문서를 갈아끼운다. **plugin 모드에서 호스트가 문서를 교체했을 때만** 쓴다.
+   *
+   * 이 층이 문서를 만들지 않고 받아 쓰는 모드에서는, studio 가 문서를 바꾸면 여기도 새 핸들을
+   * 받아야 한다. 안 받으면 이 층만 옛 문서를 계속 만진다.
+   */
+  setDocument(doc) {
+    this.#doc = doc;
+    this.#resetForNewDocument();
   }
 
   // ── 문서 관리 (규격 §8.3.1, 8.3.22, 8.3.33, 8.3.39, 8.3.50~52) ──
@@ -1064,13 +1082,31 @@ export class HwpCtrl {
         // File 은 비동기로만 읽을 수 있다 — 규격이 콜백을 둔 이유다.
         source
           .arrayBuffer()
-          .then((buf) => {
-            this.#doc = new this.#wasm.HwpDocument(new Uint8Array(buf));
+          .then(async (buf) => {
+            const next = new Uint8Array(buf);
+            this.#doc = this.#adoptDocument
+              ? await this.#adoptDocument({ bytes: next })
+              : new this.#wasm.HwpDocument(next);
             this.#resetForNewDocument();
             callback?.(true, callbackUserData);
           })
           .catch((e) => {
             console.warn('[hwpctrl] Open 실패:', e);
+            callback?.(false, callbackUserData);
+          });
+        return true;
+      }
+      if (this.#adoptDocument) {
+        // 위임 경로는 비동기다(studio 의 열기 흐름이 저장 확인·복구를 포함한다).
+        // 규격상 반환값은 "인자가 제대로 들어왔는가" 이고 성패는 콜백이 알린다(§8.3.33).
+        Promise.resolve(this.#adoptDocument({ bytes }))
+          .then((handle) => {
+            this.#doc = handle;
+            this.#resetForNewDocument();
+            callback?.(true, callbackUserData);
+          })
+          .catch((e) => {
+            console.warn('[hwpctrl] Open 위임 실패:', e);
             callback?.(false, callbackUserData);
           });
         return true;
@@ -1129,6 +1165,12 @@ export class HwpCtrl {
    */
   Clear(option) {
     try {
+      if (this.#adoptDocument) {
+        Promise.resolve(this.#adoptDocument({ blank: true }))
+          .then((handle) => { this.#doc = handle; this.#resetForNewDocument(); })
+          .catch((e) => console.warn('[hwpctrl] Clear 위임 실패:', e));
+        return true;
+      }
       const fresh = this.#wasm.HwpDocument.createEmpty();
       // 템플릿이 있으면 그것으로 채운다 — 실패하면 빈 문서라도 남긴다.
       try {

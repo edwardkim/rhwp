@@ -67,9 +67,38 @@ export interface CommandDef {
    * 생략 시 항상 활성.
    */
   canExecute?: (ctx: EditorContext) => boolean;
+  /**
+   * 실행하면 다이얼로그를 연다는 표기. 자동화(외부 JS 제어)는 이 커맨드를 기본적으로 거절해
+   * 응답 없는 대기를 막는다. **표기 누락을 강제하는 원장 가드는 아직 없다** — 현재는 선언용이고,
+   * 소스 가드는 다이얼로그 정책을 확정할 때 붙인다.
+   */
+  readonly opensDialog?: boolean;
   /** 커맨드 실행 */
   execute: (services: CommandServices, params?: Record<string, unknown>) => void;
 }
+
+/** 커맨드가 실행되지 못한 이유. `dispatch()` 의 `false` 하나를 갈래로 편 것이다. */
+export type CommandFailure =
+  /** 레지스트리에 없는 ID */
+  | 'unregistered'
+  /** `canExecute` 가 현재 컨텍스트에서 거절 */
+  | 'disabled'
+  /** 양식 모드에서 차단되는 커맨드 */
+  | 'blocked-in-form-mode'
+  /** 다이얼로그가 필요해 자동화가 거절 (`opensDialog`) */
+  | 'needs-dialog'
+  /** `execute` 가 예외를 던짐 */
+  | 'threw';
+
+/**
+ * 커맨드 실행 판정.
+ *
+ * 메뉴·툴바·키보드는 성패만 알면 되지만(`dispatch(): boolean`), 외부 JS 제어는 "왜 안 됐는지"를
+ * 알아야 다음 수를 정할 수 있다. 두 표면이 같은 경로를 타되 답의 해상도만 다르다.
+ */
+export type CommandResult =
+  | { ok: true }
+  | { ok: false; reason: CommandFailure; message?: string };
 
 /** 커맨드 execute()에 주입되는 서비스 */
 export interface CommandServices {

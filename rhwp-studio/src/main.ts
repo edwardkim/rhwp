@@ -10,6 +10,11 @@ import { loadWebFonts, resolveCanvasKitFontPlan } from '@/core/font-loader';
 import { withCanvasKitSurfaceBlockers } from '@/core/canvaskit-document-preflight';
 import { loadExtensionViewerSettings, type ExtensionViewerSettings } from '@/core/extension-settings';
 import { CommandRegistry } from '@/command/registry';
+import { AutomationHost } from '@/automation/host';
+import { getChromeVisibility, setChromeVisibility } from '@/automation/chrome';
+import type { ChromeVisibility } from '@/automation/types';
+import { PluginHostRegistry } from '@/plugin/host';
+import type { StudioPlugin } from '@/plugin/types';
 import { CommandDispatcher } from '@/command/dispatcher';
 import type { EditorContext, CommandServices, EditorEditMode } from '@/command/types';
 import { confirmSaveBeforeReplacingDocument, fileCommands } from '@/command/commands/file';
@@ -193,6 +198,47 @@ const commandServices: CommandServices = {
 };
 
 const dispatcher = new CommandDispatcher(registry, commandServices, eventBus);
+
+// 자동화 표면 — 외부 JavaScript 가 커맨드·메뉴를 다루는 자리. 실행은 메뉴·툴바·키보드와 같은
+// dispatcher 를 타므로 게이트가 갈리지 않는다. 메뉴 컨테이너는 이 시점에 아직 없을 수 있어
+// 함수로 넘긴다.
+const automation = new AutomationHost({
+  registry,
+  dispatcher,
+  getContext,
+  getMenuContainer: () => document.getElementById('menu-bar'),
+});
+(window as any).rhwpStudio.automation = automation;
+
+/**
+ * 플러그인 allowlist.
+ *
+ * **프로덕션에서는 비어 있다** — 임의 URL 로드 경로를 만들지 않는다는 계약이고, 여기서 거절하면
+ * 호스트가 `PLUGIN_NOT_ALLOWED` 로 답한다. 개발 빌드에만 계약 검증용 시험 플러그인이 있다.
+ */
+async function resolvePlugin(id: string): Promise<StudioPlugin> {
+  // `__RHWP_HWPCTRL__` 이 false 인 빌드에서는 이 분기가 통째로 사라진다 — 청크도, npm 패키지
+  // 의존도 남지 않는다. studio 만 떼어 배포하는 구성이다(`RHWP_WITHOUT_HWPCTRL=1`).
+  if (__RHWP_HWPCTRL__ && id === 'hwpctrl') {
+    // 번들에 있는 이름만 허용한다. 동적 import 라 올리지 않으면 코드도 로드되지 않는다.
+    return (await import('@rhwp/hwpctrl/studio-plugin')).hwpctrlStudioPlugin as StudioPlugin;
+  }
+  if (import.meta.env.DEV && id === 'dev-probe') {
+    return (await import('@/plugin/dev-probe-plugin')).devProbePlugin;
+  }
+  throw new Error(`허용되지 않은 플러그인: ${id}`);
+}
+
+const plugins = new PluginHostRegistry({
+  wasm,
+  automation,
+  eventBus,
+  getInputHandler: () => inputHandler,
+  loadDocument: (bytes, fileName) => loadBytes(bytes, fileName ?? 'document.hwp', null),
+  createBlankDocument: () => { void createNewDocument(); },
+  resolve: resolvePlugin,
+});
+(window as any).rhwpStudio.plugins = plugins;
 
 // 모든 내장 커맨드 등록. embed 프로파일에서는 문서 수명주기 커맨드를 등록하지 않는다 —
 // registerAll이 메뉴 클릭·단축키·전역 단축키·커맨드 팔레트가 모두 지나는 choke point라
@@ -1184,6 +1230,9 @@ async function loadBytes(
   await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
   const docInfo = await loadDocumentForOpen(data, fileName);
   prepareCanvasRendererDocument();
+  // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
+  // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
+  plugins.notifyDocumentSwap();
   await updateLoadProgress(45, '자동 저장 준비 중...');
   forgetConvertedHmlSaveHandle(fileHandle);
   wasm.currentFileHandle = fileHandle;
@@ -1330,6 +1379,7 @@ async function createNewDocument(): Promise<void> {
     msg.textContent = '새 문서 생성 중...';
     const docInfo = wasm.createNewDocument();
     prepareCanvasRendererDocument();
+    plugins.notifyDocumentSwap();
     await autosaveManager.beginDocument(
       { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
       { discardPreviousDraft: true },
@@ -1585,5 +1635,23 @@ installEmbedRuntime({
       await initPromise;
       return completeHostSave(fileName);
     },
+
+    // ── 브리지 확장 (P4) — 자동화·플러그인·창 제어 ─────────
+    // 부모가 보내는 것은 데이터뿐이다. 함수를 받는 표면(확장 커맨드 등록)은 iframe 안의
+    // 플러그인만 쓸 수 있고, 그래서 RPC 에 없다.
+    async automationList() { await initPromise; return automation.listCommands(); },
+    async automationMenuModel() { await initPromise; return automation.getMenuModel(); },
+    async automationIsEnabled(id) { await initPromise; return automation.isEnabled(id); },
+    async automationExecute(id, params, options) {
+      await initPromise;
+      return automation.execute(id, params, options);
+    },
+    async automationContext() { await initPromise; return automation.getContext(); },
+    async pluginList() { await initPromise; return plugins.list(); },
+    async pluginLoad(id) { await initPromise; return plugins.load(id); },
+    async pluginUnload(id) { await initPromise; await plugins.unload(id); return { ok: true }; },
+    async pluginInvoke(id, method, args) { await initPromise; return plugins.invoke(id, method, args); },
+    async chromeGet() { return getChromeVisibility(); },
+    async chromeSet(next) { return setChromeVisibility(next as Partial<ChromeVisibility>); },
   },
 });

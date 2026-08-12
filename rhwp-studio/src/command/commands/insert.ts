@@ -170,6 +170,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:equation',
+    opensDialog: true,
     label: '수식',
     shortcutLabel: 'Ctrl+M,M',
     canExecute: (ctx) => ctx.hasDocument && !ctx.inTable,
@@ -202,6 +203,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:field',
+    opensDialog: true,
     label: '필드 입력',
     shortcutLabel: 'Ctrl+K+E',
     canExecute: (ctx) => ctx.hasDocument && !ctx.isFormMode,
@@ -287,6 +289,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:endnote-shape',
+    opensDialog: true,
     label: '미주 모양',
     icon: 'icon-endnote',
     canExecute: (ctx) => ctx.hasDocument,
@@ -299,6 +302,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:symbols',
+    opensDialog: true,
     label: '문자표',
     icon: 'icon-symbols',
     shortcutLabel: 'Alt+F10',
@@ -313,6 +317,7 @@ export const insertCommands: CommandDef[] = [
   stub('insert:hyperlink', '하이퍼링크', 'icon-hyperlink', 'Ctrl+K+H'),
   {
     id: 'insert:bookmark',
+    opensDialog: true,
     label: '책갈피',
     shortcutLabel: 'Ctrl+K,B',
     canExecute: (ctx) => ctx.hasDocument,
@@ -325,6 +330,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:picture-props',
+    opensDialog: true,
     label: '개체 속성',
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
@@ -371,6 +377,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:equation-edit',
+    opensDialog: true,
     label: '수식 편집',
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {

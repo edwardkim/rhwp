@@ -23,3 +23,10 @@
 @import './styles/command-palette.css';
 @import './styles/compare-dialog.css';
 @import './styles/responsive.css';
+
+/* ── 브리지 창 제어 (chrome-v1) ──────────────────────────────
+   표시만 끈다. 커맨드 레지스트리와 단축키는 그대로 살아 있어 외부 JS 제어가 계속 동작한다. */
+.rhwp-chrome-no-menu #studio-header { display: none; }
+.rhwp-chrome-no-toolbar #icon-toolbar,
+.rhwp-chrome-no-toolbar #style-bar { display: none; }
+.rhwp-chrome-no-status #status-bar { display: none; }

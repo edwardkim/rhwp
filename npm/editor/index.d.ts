@@ -180,8 +180,87 @@ export declare class RhwpEditor {
   notifySaved(fileName?: string): Promise<{ ok: true; wasDirty: boolean }>;
   /** iframe 엘리먼트를 반환합니다 */
   readonly element: HTMLIFrameElement;
+  // ── 브리지 표면 ────────────────────────────────────────────────
+
+  /** studio 커맨드·메뉴. `list()` 는 레지스트리 전체, `menuModel()` 은 실제 메뉴 구조 */
+  readonly commands: {
+    list(): Promise<CommandInfo[]>;
+    menuModel(): Promise<MenuNode[]>;
+    isEnabled(id: string): Promise<boolean>;
+    execute(
+      id: string,
+      params?: Record<string, unknown>,
+      options?: { allowDialog?: boolean },
+    ): Promise<CommandResult>;
+    context(): Promise<Record<string, unknown>>;
+  };
+
+  /** 플러그인 수명. 올릴 수 있는 이름은 studio 의 allowlist 가 정한다 */
+  readonly plugins: {
+    list(): Promise<Array<{ id: string; apiVersion: number; active: boolean }>>;
+    load(id: string): Promise<{ id: string; methods: string[] }>;
+    unload(id: string): Promise<{ ok: true }>;
+    invoke(id: string, method: string, args?: unknown[]): Promise<unknown>;
+  };
+
+  /** HwpCtrl API — `plugins.load('hwpctrl')` 이후 사용 */
+  readonly hwpctrl: {
+    call(method: string, args?: unknown[]): Promise<unknown>;
+    /** 여러 호출을 한 메시지·한 트랜잭션으로. undo 도 1스텝 */
+    batch(build: ((h: Record<string, (...args: unknown[]) => unknown>) => void)
+      | Array<{ m: string; a?: unknown[] }>): Promise<unknown[]>;
+    exportBytes(format?: 'hwp' | 'hwpx' | 'hml'): Promise<Uint8Array>;
+    undo(): Promise<CommandResult>;
+    redo(): Promise<CommandResult>;
+  };
+
+  /** 메뉴·툴바·상태표시줄 표시. 숨겨도 커맨드는 실행된다 */
+  readonly chrome: {
+    get(): Promise<ChromeVisibility>;
+    set(visibility: Partial<ChromeVisibility>): Promise<ChromeVisibility>;
+  };
+
   /** 에디터를 제거합니다 */
   destroy(): void;
+}
+
+export interface CommandInfo {
+  id: string;
+  label: string;
+  shortcutLabel?: string;
+  icon?: string;
+  enabled: boolean;
+  opensDialog?: boolean;
+}
+
+export interface MenuItemNode {
+  commandId?: string;
+  label: string;
+  enabled: boolean;
+  submenu?: MenuItemNode[];
+}
+
+export interface MenuNode {
+  menuId: string;
+  label: string;
+  items: MenuItemNode[];
+}
+
+export type CommandResult =
+  | { ok: true }
+  | { ok: false; reason: string; message?: string };
+
+export interface ChromeVisibility {
+  menu: boolean;
+  toolbar: boolean;
+  statusbar: boolean;
+}
+
+export interface StudioOptions extends EditorOptions {
+  /** 부팅 직후 올릴 플러그인 id 목록 (예: `['hwpctrl']`) */
+  plugins?: string[];
+  /** 초기 chrome 표시 상태 */
+  chrome?: Partial<ChromeVisibility>;
 }
 
 /**
@@ -199,4 +278,15 @@ export declare class RhwpEditor {
 export declare function createEditor(
   container: string | HTMLElement,
   options?: EditorOptions,
+): Promise<RhwpEditor>;
+
+/**
+ * studio 인스턴스를 만들어 컨테이너에 심습니다.
+ *
+ * `createEditor` 의 상위 집합입니다. 컨테이너 이동은 지원하지 않습니다 — iframe 을 DOM
+ * 이동시키면 브라우저가 문서를 재로드하므로, 옮기려면 `destroy()` 후 다시 만듭니다.
+ */
+export declare function createStudio(
+  container: string | HTMLElement,
+  options?: StudioOptions,
 ): Promise<RhwpEditor>;

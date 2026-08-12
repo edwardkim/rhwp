@@ -13,6 +13,7 @@
 //!   - `section.paragraphs` 여러 개 = 하드 문단 경계 (`<hp:p>` 여러 개)
 //!   - `paragraph.text` 내 `\n` = 소프트 라인브레이크 (`<hp:lineBreak/>`, 같은 문단 내)
 //!   - `paragraph.text` 내 `\t` = 탭 (`<hp:tab width=... leader="0" type="1"/>`)
+//!   - `paragraph.text` 내 `U+2007` = 고정폭 빈칸 (`<hp:fwSpace/>`, #4675)
 //!   - `paragraph.para_shape_id` → `<hp:p paraPrIDRef>`
 //!   - `paragraph.style_id` → `<hp:p styleIDRef>`
 //!   - `paragraph.column_type` → `<hp:p pageBreak/columnBreak>`
@@ -688,6 +689,19 @@ pub(crate) fn render_hp_t_content(
             '\n' => {
                 flush_buf(&mut t_xml, &mut buf);
                 t_xml.push_str("<hp:lineBreak/>");
+            }
+            // 고정폭 빈칸은 `<hp:fwSpace/>` 요소로 복원한다(#4675). 파서가
+            // `<hp:fwSpace/>`→U+2007 로 읽으므로 리터럴 방출은 표현 강등이다 — 한글은
+            // 요소를 텍스트 추출에 싣지 않지만 리터럴은 문자로 실어, 저장본의 추출
+            // 텍스트·재조판이 원본과 달라진다(10k 스윕 figure-space-only 1,970건).
+            //
+            // 한컴 원본 실측(hwpx 300건): U+2007 은 fwSpace 요소 530회 · 리터럴 0회로
+            // **항상 요소**다. 반면 U+00A0 은 nbSpace 요소 15회 · 리터럴 9회로 섞여 있어
+            // 요소로 강제하면 리터럴이던 원본에서 한글 추출 텍스트가 사라진다(실측 23건).
+            // IR 이 두 표기를 구분하지 못하는 한 U+00A0 은 기존대로 리터럴로 둔다.
+            '\u{2007}' => {
+                flush_buf(&mut t_xml, &mut buf);
+                t_xml.push_str("<hp:fwSpace/>");
             }
             c if (c as u32) < 0x20 => { /* 기타 제어문자 무시 */ }
             c => buf.push(c),
@@ -3346,6 +3360,47 @@ mod tests {
             reparsed_para.tab_extended.is_empty(),
             "width=0 마커 재파싱 후 tab_extended 는 비어 있어야 함(원본과 동일): {:?}",
             reparsed_para.tab_extended
+        );
+    }
+
+    /// #4675: 고정폭 빈칸(U+2007)은 리터럴 문자가 아니라 `<hp:fwSpace/>` 요소로
+    /// 직렬화돼야 한다. 리터럴 방출은 한글의 텍스트 추출·재조판 결과를 원본과 다르게
+    /// 만든다(10k 스윕 TEXT_MISMATCH 의 76%). 왕복(직렬화→재파싱) 후 IR 텍스트는
+    /// 동일해야 한다 — 파서가 요소를 같은 코드포인트로 되돌린다.
+    ///
+    /// 묶음 빈칸(U+00A0)은 **리터럴로 남긴다**. 한컴 원본은 U+2007 을 항상 요소로
+    /// 쓰지만(실측 hwpx 300건: 요소 530 · 리터럴 0), U+00A0 은 요소 15 · 리터럴 9 로
+    /// 섞여 쓴다 — IR 이 두 표기를 구분하지 못하는데 요소로 강제하면 리터럴이던 원본의
+    /// 추출 텍스트에서 NBSP 가 사라진다(한글 2022 오라클 실측 23건).
+    #[test]
+    fn issue4675_fixed_width_space_serializes_as_element() {
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let mut para = Paragraph::default();
+        para.text = "보\u{2007}도\u{2007}자\u{2007}료\u{00A0}끝".to_string();
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert_eq!(
+            xml.matches("<hp:fwSpace/>").count(),
+            3,
+            "U+2007 은 전부 fwSpace 요소로 방출돼야 함: {}",
+            &xml[..800.min(xml.len())]
+        );
+        assert!(
+            !xml.contains('\u{2007}'),
+            "리터럴 U+2007 이 XML 에 남으면 안 됨"
+        );
+        assert!(
+            xml.contains('\u{00A0}') && !xml.contains("<hp:nbSpace/>"),
+            "U+00A0 은 리터럴 유지 — 요소로 바꾸면 한글 추출에서 사라진다"
+        );
+
+        let reparsed = parse_hwpx_section(&xml).unwrap();
+        assert_eq!(
+            reparsed.paragraphs[0].text, "보\u{2007}도\u{2007}자\u{2007}료\u{00A0}끝",
+            "요소 왕복 후 IR 텍스트 불변"
         );
     }
 

@@ -243,11 +243,113 @@ export class RhwpEditor {
     return this._iframe;
   }
 
+  // ── 브리지 표면 (studio 자동화·플러그인·창 제어) ─────────────────
+
+  /**
+   * studio 의 커맨드·메뉴를 다룹니다.
+   *
+   * `list()` 는 레지스트리 전체이고 `menuModel()` 은 실제 메뉴 구조입니다 — 같지 않습니다.
+   * 메뉴에 없는 커맨드(컨텍스트 메뉴·단축키 전용)도 실행할 수 있습니다.
+   */
+  get commands() {
+    return {
+      list: () => this._request('automation.list'),
+      menuModel: () => this._request('automation.menuModel'),
+      isEnabled: (id) => this._request('automation.isEnabled', { id }),
+      /**
+       * 커맨드 실행. 대화상자를 여는 커맨드는 기본 거절(`needs-dialog`)이다 —
+       * 자동화가 그것을 열면 사람이 누를 때까지 응답이 멈춘다.
+       * 사용자가 앞에 있는 통합에서는 `{ allowDialog: true }` 로 푼다.
+       */
+      execute: (id, params, options = {}) => this._request('automation.execute', {
+        id, params, allowDialog: options.allowDialog === true,
+      }),
+      context: () => this._request('automation.context'),
+    };
+  }
+
+  /** 플러그인을 올리고 내립니다. 올릴 수 있는 이름은 studio 가 정합니다(allowlist). */
+  get plugins() {
+    return {
+      list: () => this._request('plugin.list'),
+      load: (id) => this._request('plugin.load', { id }),
+      unload: (id) => this._request('plugin.unload', { id }),
+      invoke: (id, method, args = []) => this._request('plugin.invoke', { id, method, args }),
+    };
+  }
+
+  /**
+   * HwpCtrl API — studio 가 들고 있는 **그 문서**를 조작합니다.
+   *
+   * `hwpctrl` 플러그인이 올라와 있어야 합니다(`plugins.load('hwpctrl')`).
+   */
+  get hwpctrl() {
+    const invoke = (method, args) =>
+      this._request('plugin.invoke', { id: 'hwpctrl', method: 'invoke', args: [method, args] });
+    return {
+      call: invoke,
+      /**
+       * 여러 호출을 **한 메시지·한 트랜잭션**으로 보냅니다. undo 도 1스텝입니다.
+       *
+       * 콜백은 부모에서 실행되지 않습니다 — 호출을 기록해 배열로 직렬화한 뒤 한 번에 보냅니다.
+       * 함수 문자열을 iframe 에서 평가하는 경로는 만들지 않습니다.
+       */
+      batch: (build) => {
+        const ops = [];
+        const recorder = new Proxy({}, {
+          get: (_t, name) => (...args) => { ops.push({ m: String(name), a: args }); return recorder; },
+        });
+        if (typeof build === 'function') build(recorder);
+        else if (Array.isArray(build)) ops.push(...build);
+        return this._request('plugin.invoke', { id: 'hwpctrl', method: 'batch', args: [ops] });
+      },
+      exportBytes: (format) =>
+        this._request('plugin.invoke', { id: 'hwpctrl', method: 'exportBytes', args: [format] }),
+      undo: () => this._request('plugin.invoke', { id: 'hwpctrl', method: 'undo', args: [] }),
+      redo: () => this._request('plugin.invoke', { id: 'hwpctrl', method: 'redo', args: [] }),
+    };
+  }
+
+  /** 메뉴·툴바·상태표시줄 표시. 숨겨도 커맨드는 그대로 실행됩니다. */
+  get chrome() {
+    return {
+      get: () => this._request('chrome.get'),
+      set: (visibility) => this._request('chrome.set', { visibility }),
+    };
+  }
+
   /**
    * 에디터를 제거합니다.
+   *
+   * iframe 과 채널을 회수합니다. **다른 컨테이너로 옮기려면 destroy 후 다시 만들어야 합니다** —
+   * iframe 을 DOM 이동시키면 브라우저가 문서를 재로드해 편집 상태가 사라집니다.
    */
   destroy() {
     this._transport.destroy();
     this._iframe.remove();
   }
+}
+
+/**
+ * studio 인스턴스를 만들어 컨테이너에 심습니다.
+ *
+ * `createEditor` 의 상위 집합입니다 — 같은 것을 만들고, 플러그인 로드와 창 제어 초기값을
+ * 함께 처리합니다.
+ *
+ * @example
+ * ```javascript
+ * const studio = await createStudio('#app', { plugins: ['hwpctrl'], chrome: { menu: false } });
+ * await studio.hwpctrl.batch(h => { h.SetTextFile('안녕', 'TEXT', ''); });
+ * ```
+ */
+export async function createStudio(container, options = {}) {
+  const studio = await createEditor(container, options);
+  try {
+    if (options.chrome) await studio.chrome.set(options.chrome);
+    for (const id of options.plugins ?? []) await studio.plugins.load(id);
+  } catch (error) {
+    studio.destroy();
+    throw error;
+  }
+  return studio;
 }

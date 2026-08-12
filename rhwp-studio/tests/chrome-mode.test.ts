@@ -126,9 +126,9 @@ test('embed에서는 메뉴·도구막대·단축키·팔레트 어느 경로로
   // 걸러지지 않은 편집 커맨드는 남는다 — 필터가 과도하게 넓지 않다.
   assert.equal(registry.has('edit:find'), true);
 
-  // 단축키 매핑은 남지만(다른 커맨드로의 폴스루 방지) 미등록 dispatch는 무해하게
-  // false를 반환한다 — dispatcher는 Node 타입 스트리핑이 지원하지 않는 문법을 써서
-  // 계약을 소스로 잠근다.
+  // 단축키 매핑은 남지만(다른 커맨드로의 폴스루 방지) 미등록 dispatch는 UI 경로에
+  // false를 반환한다. 자동화 표면은 같은 경로의 상세 결과에서 unregistered 사유를 받는다.
+  // dispatcher는 Node 타입 스트리핑이 지원하지 않는 문법을 써서 계약을 소스로 잠근다.
   const shortcutEvent = {
     key: 'v',
     code: 'KeyV',
@@ -142,7 +142,11 @@ test('embed에서는 메뉴·도구막대·단축키·팔레트 어느 경로로
     new URL('../src/command/dispatcher.ts', import.meta.url),
     'utf8',
   );
-  assert.match(dispatcherSource, /if \(!def\) \{\n\s*console\.warn\([^)]*\);\n\s*return false;\n\s*\}/);
+  assert.match(dispatcherSource, /return this\.dispatchWithResult\(commandId, params\)\.ok;/);
+  assert.match(
+    dispatcherSource,
+    /if \(!def\) \{\n\s*console\.warn\([^)]*\);\n\s*return \{ ok: false, reason: 'unregistered' \};\n\s*\}/,
+  );
 });
 
 test('main은 embed에서 문서 비교 표면을 등록·노출하지 않는다', () => {

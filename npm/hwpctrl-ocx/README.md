@@ -89,10 +89,33 @@ Oracle 시나리오는 시스템 ANSI code page에 따라 `TEXT` 결과가 달�
 rhwp 조판기에 기대므로 조판 정밀도를 그대로 물려받는다. 조판이 한글과 갈리는 문서에서는 이
 값들도 갈린다.
 
+## 두 실행 모드 — studio 없이도, studio 와 함께도
+
+이 패키지는 **혼자서도 문서를 다룬다**. 브라우저·Node·워커 어디서든 위 예시 그대로 동작하고,
+studio 를 참조하지 않는다(`test/independence.test.mjs` 가 그 성질을 잠근다).
+
+rhwp-studio 안에서는 **플러그인**으로 얹힌다 — `@rhwp/hwpctrl/studio-plugin`.
+
+| | standalone | plugin |
+| --- | --- | --- |
+| 진입점 | `createHwpCtrl({ wasm, ... })` | `hwpctrlStudioPlugin` (studio 가 `plugins.load('hwpctrl')`) |
+| 문서 소유 | 이 층이 만든다 | studio 가 소유하고 **빌려준다**(복사 없음) |
+| 화면 | 없음 — 호스트가 그린다 | studio 가 그린다 |
+| undo | 자체 스냅샷 | studio 히스토리 (배치 1건 = undo 1스텝) |
+| `Open`/`Clear` | 자기 문서 교체 | studio 열기 경로에 위임 |
+
+두 모드는 **같은 구현을 공유**한다. 갈라 두면 원장 수치가 모드마다 달라지므로,
+`test/adapter_parity.test.mjs` 가 같은 시나리오의 산출 바이트가 동일함을 검사한다.
+
+플러그인 모드에서 `Undo`/`Redo` 는 studio 히스토리로 간다 — 사용자가 보는 undo 스택과 두 갈래가
+되면 안 되기 때문이다.
+
 ## 기존 studio 층과의 관계
 
-`rhwp-studio/src/hwpctl/`은 별개이고 P6까지 동결한다. 이 패키지가 원장 100%에 도달하면
-P7에서 그 층을 철거하고 studio를 이쪽으로 이관한다(계획서 §6.2).
+`rhwp-studio/src/hwpctl/`은 별개이고 아직 동결 상태다. 이 패키지가 원장 100%에 도달하면
+그 층을 철거하고 studio 를 이쪽으로 이관한다(계획서 §6.2). 그 이관에 필요한 배선(플러그인 호스트·
+트랜잭션·좌표 변환)은 이미 서 있다 —
+[`rhwp_studio_hwpctrl_plugin.md`](../../mydocs/plans/rhwp_studio_hwpctrl_plugin.md).
 
 ## 개발과 검증
 
@@ -104,6 +127,9 @@ Oracle 하니스의 Windows 전용 준비와 실행 규칙은
 ```bash
 # 공개 패키지 진입점과 TEXT/UNICODE dispatch 계약을 빠르게 검사한다.
 npm --prefix npm/hwpctrl-ocx run test:contract
+
+# 좌표 변환·모드 동등성·독립성 검사 (pkg/ WASM 이 있어야 한다)
+cd npm/hwpctrl-ocx && node --test test/*.test.mjs
 
 # Windows에서는 Hancom 2022 COM Oracle, macOS/Linux에서는 WASM 자체 시나리오를 검사한다.
 npm --prefix npm/hwpctrl-ocx run gate
@@ -122,6 +148,9 @@ npm --prefix npm/hwpctrl-ocx run gate
 | 파일 | 역할 |
 | --- | --- |
 | `src/index.mjs` | ESM 공개 진입점: `createHwpCtrl`, `HwpCtrl`, `ParameterSet` |
+| `src/studio-plugin.mjs` | rhwp-studio 플러그인 진입점 (`@rhwp/hwpctrl/studio-plugin`) |
+| `src/adapter.mjs` | 모드 어댑터 — 읽기/쓰기 분류와 문서 교체 위임 |
+| `src/cursor-map.mjs` | 한글 `{list,para,pos}` ↔ studio `{sectionIndex,cellPath}` 변환 |
 | `test/package_contract.test.mjs` | 패키지 self-reference와 생성자 계약 검사 |
 | `spec/webhwpctrl_api.json` | API 122항목 (속성 18, 메서드 67, 이벤트 3, 객체 34) |
 | `spec/actions.json` | Action 312개와 ParameterSet |

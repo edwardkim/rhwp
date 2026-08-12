@@ -767,6 +767,7 @@ export const fileCommands: CommandDef[] = [
   },
   {
     id: 'file:page-setup',
+    opensDialog: true,
     label: '편집 용지',
     icon: 'icon-page-setup',
     shortcutLabel: 'F7',
@@ -796,6 +797,7 @@ export const fileCommands: CommandDef[] = [
   },
   {
     id: 'file:about',
+    opensDialog: true,
     label: '제품 정보',
     icon: 'icon-help',
     execute() {

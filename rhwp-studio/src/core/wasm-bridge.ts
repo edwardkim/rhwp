@@ -504,6 +504,21 @@ export class WasmBridge {
     return this._documentGeneration;
   }
 
+  /**
+   * 플러그인 차용용 문서 핸들.
+   *
+   * **소유권을 넘기는 것이 아니다** — `free()` 는 이 클래스만 부른다. 빌린 쪽은 매 사용마다
+   * `documentGeneration` 과 함께 유효성을 확인해야 한다. 문서가 교체·해제되면 세대가 올라가고
+   * 이전에 빌린 핸들은 그 순간 무효다(해제된 핸들 호출은 방어적 코드를 거치면 예외가 아니라
+   * 조용한 오답이 된다).
+   *
+   * 이 접근자 외의 경로로 문서를 넘기지 않는다. 문서를 바꾸는 일은 `PluginHost.transaction`
+   * 경유여야 하고, 그래야 undo 계약이 선다.
+   */
+  borrowDocumentHandle(): HwpDocument | null {
+    return this.doc;
+  }
+
   set fileName(name: string) {
     this._fileName = name;
     this.doc?.setFileName(name);

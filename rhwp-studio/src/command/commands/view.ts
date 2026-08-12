@@ -292,6 +292,7 @@ export const viewCommands: CommandDef[] = [
   },
   {
     id: 'view:grid-settings',
+    opensDialog: true,
     label: '격자 설정',
     icon: 'icon-grid',
     canExecute: (ctx) => ctx.hasDocument,
