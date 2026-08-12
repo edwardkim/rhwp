@@ -1,0 +1,9 @@
+{
+  "alg": "ed25519",
+  "capsuleSha256": "a348795d082291bf925ef55038125c970d04730bed0371cad38b3be62e6b79c9",
+  "keyId": "gym/probe-diagnostician",
+  "kind": "capsuleSignature",
+  "schemaVersion": "1.0",
+  "signature": "Xhj2ovYnq62ziohSNRsXWGw5MuXvmrlDSwVA4hF3XHTIWhwQ7yUKH6jyQNN11j8OymJh9N/MsyWZZQy1zEoGCw==",
+  "signedAt": "2026-08-12T00:46:11Z"
+}

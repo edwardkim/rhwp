@@ -1,0 +1,12 @@
+{
+  "capsuleSha256": "82fd5d13fa0bf443e2e4640627cd8b8448ada06191513cdcf791d795dcd767d8",
+  "claimant": {
+    "keyId": "gym/probe-diagnostician"
+  },
+  "claimedAt": "2026-08-12T00:46:11Z",
+  "gateEnvelopeSha256": "585d02942206be9b6efbc5af45f22ad3dea26d7279a847bfc83db012e0b90afa",
+  "kind": "settlementClaim",
+  "schemaVersion": "1.0",
+  "workorderId": "gym-leaderboard-standing",
+  "workorderSha256": "050734f9bbb1e995bf7088d56a8280b46ccdc6c009aa6ce9f3add2a85c4c9849"
+}

@@ -284,6 +284,9 @@ def verify_entry(bin_path, entry, ledger_entries):
         result["score"] = card["total"]["score"]
         result["max"] = card["total"]["max"]
         result["runner"] = card["runner"]
+        # pack 별 점수 — 총점만으로는 어느 능력이 강한지 사라진다(리더보드의 결).
+        result["packs"] = {p["id"]: {"score": p.get("score"), "max": p["max"]}
+                           for p in card["packs"] if p.get("status") == "scored"}
     return result
 
 
@@ -325,18 +328,43 @@ def cmd_render(a, bin_path):
              "모든 순위는 검증 사슬(3해시 고정·Ed25519 서명·append-only 원장·머클 앵커)을",
              "**렌더 시점에 재검증**한 항목만 오른다. 재현 방법:",
              "`python gym/tools/leaderboard.py verify`", "",
-             "| 순위 | 에이전트 | 점수 | rhwp | commit | 등재 seq | 사슬 |",
+             "| 순위 | 에이전트 | 총점 | 최강 능력 | commit | seq | 사슬 |",
              "|---|---|---|---|---|---|---|"]
     ranked = sorted((r for r in results if r["ok"]),
                     key=lambda r: (-r["score"], r["seq"]))
     for i, r in enumerate(ranked, 1):
         run = r["runner"]
+        # 각 선수의 최강 능력 — 만점 비율이 가장 높은 pack.
+        best = max(r.get("packs", {}).items(),
+                   key=lambda kv: (kv[1]["score"] / kv[1]["max"] if kv[1]["max"] else 0, kv[1]["max"]),
+                   default=(None, None))
+        best_txt = f"{best[0]} {best[1]['score']}/{best[1]['max']}" if best[0] else "—"
         lines.append(f"| {i} | {r['agent']} | **{r['score']} / {r['max']}** "
-                     f"| {run['rhwpVersion']} | `{run['rhwpCommit'][:10]}` "
+                     f"| {best_txt} | `{run['rhwpCommit'][:10]}` "
                      f"| {r['seq']} | 검증됨 |")
     unverified = [r for r in results if not r["ok"]]
     for r in unverified:
         lines.append(f"| — | seq {r['seq']} | — | — | — | {r['seq']} | **unverified** |")
+
+    # pack 별 능력 격자 — 총점이 숨기는 강약을 드러낸다.
+    pack_ids = sorted({pid for r in ranked for pid in r.get("packs", {})})
+    if pack_ids and len(ranked) > 1:
+        lines += ["", "## 능력 격자 (pack 별 점수)", "",
+                  "| 에이전트 | " + " | ".join(pack_ids) + " |",
+                  "|---|" + "---|" * len(pack_ids)]
+        for r in ranked:
+            cells = []
+            for pid in pack_ids:
+                pk = r.get("packs", {}).get(pid)
+                if pk is None:
+                    cells.append("—")
+                elif pk["score"] == pk["max"]:
+                    cells.append(f"**{pk['score']}**")   # 만점 강조
+                else:
+                    cells.append(f"{pk['score']}/{pk['max']}")
+            lines.append(f"| {r['agent']} | " + " | ".join(cells) + " |")
+        lines.append("")
+        lines.append("`—` = 미제출(그 pack 을 아예 풀지 않음) · **굵게** = 만점")
     lines += ["",
               f"원장 체인: {'무결' if err is None else '파손'} · 항목 {len(results)} · "
               f"검증 {len(ranked)} · unverified {len(unverified)}", "",
