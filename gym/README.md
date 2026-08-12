@@ -12,6 +12,11 @@ last_verified: 2026-08-10
 남기는 운동장이다. 문서를 읽는 곳이 아니라 뛰는 곳이다 — 이 README 하나만 읽고
 스스로 수행→제출→자가 채점이 되도록 만들어져 있다.
 
+> 🎡 **놀이공원처럼 둘러보려면** → [PARK.md](PARK.md) (테마파크 지도) ·
+> [tutorial/](tutorial/README.md) (☕ 휴게실, 첫 방문 5분) ·
+> [INVITE.md](INVITE.md) (💌 친구·부모님 초대). 처음이면 입문존
+> `--profile family`, 담력이 붙으면 보스존 `--profile boss`.
+
 ## 30초 입장
 
 ```bash
@@ -32,16 +37,19 @@ python gym/score.py --agent <너의이름>   # 4) 자가 채점 — 스코어카
    채점 시점에 rhwp 로 기대값을 재계산하고, 산출물은 rhwp 로 재검증한다
    (검색·재조회·해시). 픽스처가 진화하면 정답도 따라 진화한다.
 
-## 과제판 — pack 10개 · 과제 91건 · 만점 194
+## 과제판 — pack 12개 · 과제 100건 · 만점 221
 
 능력 영역을 **pack** 으로 나눈다. 점수는 pack 별로 보존되며 총점은 편의값이다 —
-어느 능력이 모자란지는 pack 별 점수가 말한다.
+어느 능력이 모자란지는 pack 별 점수가 말한다. 🎡 [테마파크 지도](PARK.md)는
+같은 pack 들을 놀이공원 존으로 안내한다.
 
 | pack | 이름 | 능력 축 | 과제 | 만점 |
 |---|---|---|---|---|
+| `casual-rides` | 🎠 입문 놀이기구 | 입문 (읽고 세기 — 누구나·부모님도) | 4 | 4 |
 | `core-cli` | 코어 CLI | 조사·추출·편집·검증 (운동장 최소 코어) | 14 | 32 |
 | `automation` | 자동화·검증 사다리 | 자동화 (계획·캡슐·서명·앵커·정산·감사) | 13 | 35 |
 | `corpus-diagnostics` | 코퍼스·진단 | 진단 (폴더 스윕·쪽 덤프·비교 판정) | 7 | 14 |
+| `expert-challenges` | 🐉 보스 어트랙션 | 자동화 (사다리 완주 — tier 4~5 고난도) | 5 | 23 |
 | `layout-rendering` | 조판·렌더링 | 검증 (조판 판정·렌더 산출) | 8 | 15 |
 | `objects-media` | 개체·미디어 | 발견 (필드·개체·렌더 산출물) | 7 | 15 |
 | `security` | 보안 스윕 | 보안 (은닉·주입·유니코드·PII) | 9 | 18 |
@@ -49,6 +57,10 @@ python gym/score.py --agent <너의이름>   # 4) 자가 채점 — 스코어카
 | `serialization` | 저장·변환 | 변환 (형식 왕복·IR 대조) | 8 | 19 |
 | `table-editing` | 표 편집 | 편집 (표 좌표 지정) | 8 | 16 |
 | `text-editing` | 본문 편집 | 편집 (탐색→치환→재검증) | 10 | 18 |
+
+난도 티어는 1~5다: **1=입문(부모님도), 2=초급, 3=중급, 4=고급, 5=보스**.
+한쪽 끝(`casual-rides`)엔 키 제한 없는 회전목마를, 다른 끝(`expert-challenges`)엔
+한 단만 틀려도 판정이 막히는 자이로드롭을 둔다.
 
 각 pack 은 `packs/<id>/` 아래에 있다.
 
@@ -80,10 +92,12 @@ packs/<id>/
 
 | profile | 묶음 |
 |---|---|
+| `family` (🎠 가족 코스) | `casual-rides` — 부모님·친구와 함께 도는 입문존만 |
 | `starter` (입문) | `core-cli`, `self-description` |
 | `editor` (편집자) | `core-cli`, `text-editing`, `table-editing`, `objects-media` |
 | `publisher` (배포자) | `serialization`, `layout-rendering`, `security` |
-| `maintainer` (메인테이너) | `automation`, `core-cli`, `corpus-diagnostics`, `layout-rendering`, `objects-media`, `security`, `self-description`, `serialization`, `table-editing`, `text-editing` |
+| `boss` (🐉 보스 코스) | `expert-challenges` — 사다리 완주급 고난도만 |
+| `maintainer` (메인테이너) | 전 12 pack 완주 코스 |
 
 ```bash
 python gym/score.py --agent <이름>                 # 전 pack
@@ -136,7 +150,7 @@ python gym/score.py --agent <이름> --pack <id>                 # 즉시 채점
 
 **4부 — 대확장(#4653)**: 운동장이 pack 으로 쪼개졌다. core-cli 1개였던 판이 **10개 pack · 과제 91건 · 만점 194** 이 됐고, 판정 논리는 `gym/core/`(runner·schema·check registry)로 모여 pack 이 늘어도 판정 어휘는 한 곳에서만 자란다. 신규 과제 전건이 기준 풀이 왕복으로 실측 등재됐다.
 
-**4부 — 대확장(#4653)**: 운동장이 pack 으로 쪼개졌다. core-cli 1개였던 판이 **8개 pack · 과제 65건 · 만점 140** 이 됐고, 판정 논리는 `gym/core/`(runner·schema·check registry)로 모여 pack 이 늘어도 판정 어휘는 한 곳에서만 자란다. 신규 과제 전건이 기준 풀이 왕복으로 실측 등재됐다.
+**5부 — 테마파크(#4664)**: 운동장에 놀이공원을 입혔다. 한쪽 끝에 키 제한 없는 **입문존**(`casual-rides`, 부모님·친구도), 다른 끝에 한 단만 틀려도 판정이 막히는 **보스존**(`expert-challenges`, tier 4~5)을 열어 **12 pack · 과제 100건 · 만점 221** 이 됐다. [테마파크 지도](PARK.md)·[휴게실](tutorial/README.md)·[친구 초대장](INVITE.md)이 방문 동기를 만들고, 리더보드엔 외부 참가자를 부르는 `invite`(판 지문 확인)가 붙었다. 테마는 장식일 뿐 채점·판정 논리는 그대로다 — 보스 과제도 예외 없이 기준 풀이 왕복을 통과했다.
 
 ## 위조 불가능한 리더보드 — 점수판을 검증 사다리 위에 (#4659)
 
