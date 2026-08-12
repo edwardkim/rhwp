@@ -20114,11 +20114,9 @@ impl TypesetEngine {
             // document-wide 회귀가 생길 수 있다. native HWP5, non-TAC, paragraph
             // TopAndBottom, RowBreak, 다행 ordinary-row, table-footnote 없음, 다음
             // source paragraph의 vpos rewind라는 여섯 저장 계약을 모두 만족하고,
-            // saved object bottom이 이미 body 안에 드는 경우에만 declared defer를
-            // 건너뛰어 아래 fragment scan에 맡긴다. 24px은 1.8개의 HWP 기본 line
-            // 높이보다 작고, 이 fixture의 19.1px flow/anchor drift를 포괄하는
-            // fragment-local 허용치다.
-            const NATIVE_HWP5_NEAR_ANCHOR_ROWBREAK_FRAGMENT_TOLERANCE_PX: f64 = 24.0;
+            // the delayed flow anchor is fully explained by measured growth,
+            // and the saved object bottom is inside the body, skip declared
+            // defer and let the fragment scan select the source-owned prefix.
             let native_hwp5_near_anchor_rowbreak_needs_fragment_scan =
                 st.profile.native_hwp5_layout()
                     && !table.common.treat_as_char
@@ -20132,10 +20130,11 @@ impl TypesetEngine {
                     && table.cells.iter().all(|cell| cell.row_span == 1)
                     && next_rewinds_after_table
                     && saved_span.is_some_and(|(top_px, bottom_px)| {
+                        let flow_overrun = st.current_height - top_px;
+                        let measured_excess = (table_total - declared_total).max(0.0);
                         top_px <= st.current_height
-                            && st.current_height - top_px
-                                <= NATIVE_HWP5_NEAR_ANCHOR_ROWBREAK_FRAGMENT_TOLERANCE_PX
-                            && bottom_px <= available + DECLARED_FLOAT_FIT_TOLERANCE_PX
+                            && flow_overrun <= measured_excess
+                            && bottom_px <= available
                     });
             // [#3820 Stage 11] 1×1 빈-host RowBreak 표도 cell 안의 저장 vpos reset이
             // 있으면, 선언 common.height는 첫 physical fragment의 높이이고 실제 cell
@@ -20151,7 +20150,6 @@ impl TypesetEngine {
             // 실제 footnote boundary 안에 있고, 현재 flow의 초과분이 해당 표의
             // `measured - declared` 팽창으로 설명될 때만 anchor를 복원한다. 이 경우에만
             // 첫 fragment scan은 reset 전 cell tail을 현 페이지에 남길 수 있다.
-            const NATIVE_HWP5_INTERNAL_RESET_REWIND_RESYNC_TOLERANCE_PX: f64 = 16.0;
             native_hwp5_internal_reset_rewind_needs_anchor_resync = st.profile.native_hwp5_layout()
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
@@ -20172,11 +20170,8 @@ impl TypesetEngine {
                     let measured_excess = (table_total - declared_total).max(0.0);
                     top_px <= st.current_height
                         && top_px <= available
-                        && bottom_px <= available + DECLARED_FLOAT_FIT_TOLERANCE_PX
-                        && flow_overrun >= NATIVE_HWP5_INTERNAL_RESET_REWIND_RESYNC_TOLERANCE_PX
-                        && flow_overrun
-                            <= measured_excess
-                                + NATIVE_HWP5_INTERNAL_RESET_REWIND_RESYNC_TOLERANCE_PX
+                        && bottom_px <= available
+                        && flow_overrun <= measured_excess
                 });
             if native_hwp5_internal_reset_rewind_needs_anchor_resync {
                 let (top_px, _) = saved_span.expect("resync requires stored table anchor");
