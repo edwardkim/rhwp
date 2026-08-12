@@ -1,0 +1,1 @@
+{"version":3,"file":"encoder.d.ts","sourceRoot":"","sources":["../../../src/api/node/encoder.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAGR,IAAI,EAEJ,UAAU,EAEb,MAAM,oBAAoB,CAAC;AAyL5B;;GAEG;AACH,wBAAgB,gBAAgB,CAAC,UAAU,EAAE,UAAU,GAAG,UAAU,CAEnE;AAED;;;GAGG;AACH,wBAAgB,UAAU,CAAC,IAAI,EAAE,IAAI,GAAG,UAAU,CAuKjD;AAED;;GAEG;AACH,wBAAgB,kBAAkB,CAAC,IAAI,EAAE,UAAU,GAAG,MAAM,CAE3D"}

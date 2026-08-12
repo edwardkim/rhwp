@@ -17,3 +17,9 @@ output/poc/**/*.tsv -whitespace
 # 이 파일은 재현용 unified diff 자체다. 내부 hunk의 공백 문맥은 패치 문법이므로
 # Git의 일반 source-whitespace 검사를 적용하지 않는다.
 mydocs/report/task3798/trimcap_experiment.patch -whitespace
+
+# [#4659] 운동장 리더보드 — 해시 정합이 생명인 파일들. CRLF 변환은 원장에
+# 박힌 줄-바이트 해시를 깨뜨려 검증을 실패시킨다. LF 고정(-text).
+gym/leaderboard/**/*.json    -text
+gym/leaderboard/**/*.ndjson  -text
+gym/leaderboard/*.ndjson     -text

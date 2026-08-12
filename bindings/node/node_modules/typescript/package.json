@@ -1,0 +1,87 @@
+{
+    "name": "typescript",
+    "version": "7.0.2",
+    "license": "Apache-2.0",
+    "author": "Microsoft Corp.",
+    "homepage": "https://www.typescriptlang.org/",
+    "description": "TypeScript is a language for application scale JavaScript development",
+    "keywords": [
+        "TypeScript",
+        "Microsoft",
+        "compiler",
+        "language",
+        "javascript"
+    ],
+    "bugs": {
+        "url": "https://github.com/microsoft/TypeScript/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/TypeScript.git"
+    },
+    "type": "module",
+    "preferUnplugged": true,
+    "engines": {
+        "node": ">=16.20.0"
+    },
+    "files": [
+        "bin",
+        "lib",
+        "dist",
+        "vendor",
+        "NOTICE.txt"
+    ],
+    "bin": {
+        "tsc": "./bin/tsc"
+    },
+    "exports": {
+        "./package.json": "./package.json",
+        ".": "./lib/version.cjs",
+        "./unstable/sync": "./dist/api/sync/api.js",
+        "./unstable/async": "./dist/api/async/api.js",
+        "./unstable/fs": "./dist/api/fs.js",
+        "./unstable/proto": "./dist/api/proto.js",
+        "./unstable/ast": "./dist/ast/index.js",
+        "./unstable/ast/is": "./dist/ast/is.js",
+        "./unstable/ast/factory": "./dist/ast/factory.generated.js",
+        "./unstable/ast/utils": "./dist/ast/utils.js",
+        "./unstable/ast/scanner": "./dist/ast/scanner.js",
+        "./unstable/ast/visitor": "./dist/ast/visitor.js",
+        "./unstable/ast/clone": "./dist/ast/clone.js"
+    },
+    "imports": {
+        "#getExePath": "./lib/getExePath.js",
+        "#enums/*": {
+            "types": "./dist/enums/*.enum.d.ts",
+            "default": "./dist/enums/*.js"
+        },
+        "#vscode-jsonrpc/node": "./vendor/vscode-jsonrpc/lib/node/main.js"
+    },
+    "gitHead": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+    "publishConfig": {
+        "access": "public",
+        "tag": "latest"
+    },
+    "optionalDependencies": {
+        "@typescript/typescript-win32-x64": "7.0.2",
+        "@typescript/typescript-win32-arm64": "7.0.2",
+        "@typescript/typescript-linux-x64": "7.0.2",
+        "@typescript/typescript-linux-arm": "7.0.2",
+        "@typescript/typescript-linux-arm64": "7.0.2",
+        "@typescript/typescript-darwin-x64": "7.0.2",
+        "@typescript/typescript-darwin-arm64": "7.0.2",
+        "@typescript/typescript-aix-ppc64": "7.0.2",
+        "@typescript/typescript-freebsd-arm64": "7.0.2",
+        "@typescript/typescript-freebsd-x64": "7.0.2",
+        "@typescript/typescript-linux-loong64": "7.0.2",
+        "@typescript/typescript-linux-mips64el": "7.0.2",
+        "@typescript/typescript-linux-ppc64": "7.0.2",
+        "@typescript/typescript-linux-riscv64": "7.0.2",
+        "@typescript/typescript-linux-s390x": "7.0.2",
+        "@typescript/typescript-netbsd-arm64": "7.0.2",
+        "@typescript/typescript-netbsd-x64": "7.0.2",
+        "@typescript/typescript-openbsd-arm64": "7.0.2",
+        "@typescript/typescript-openbsd-x64": "7.0.2",
+        "@typescript/typescript-sunos-x64": "7.0.2"
+    }
+}

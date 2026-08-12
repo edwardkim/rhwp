@@ -1,0 +1,1 @@
+{"version":3,"file":"signatureFlags.enum.d.ts","sourceRoot":"","sources":["../../src/enums/signatureFlags.enum.ts"],"names":[],"mappings":"AAEA,oBAAY,cAAc;IACtB,IAAI,IAAI;IACR,gBAAgB,IAAS;IACzB,eAAe,IAAS;IACxB,SAAS,IAAS;IAClB,QAAQ,IAAS;IACjB,gBAAgB,KAAS;IACzB,gBAAgB,KAAS;IACzB,0BAA0B,KAAS;IACnC,eAAe,MAAS;IACxB,sCAAsC,MAAS;IAC/C,gBAAgB,MAAkI;IAClJ,cAAc,KAAsC;CACvD"}
