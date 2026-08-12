@@ -90,6 +90,30 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 )
                 self.assertIn("direct-source-", workflow)
 
+    def test_enforcement_surface_changes_force_current_head_full_validation(self) -> None:
+        for name, workflow_path in WORKFLOWS.items():
+            with self.subTest(workflow=name):
+                workflow = workflow_path.read_text(encoding="utf-8")
+                self.assertIn(
+                    "filename === 'scripts/ci-impact-policy.cjs'",
+                    workflow,
+                )
+                self.assertIn("const hasCiExecutionSurfaceChange", workflow)
+                self.assertIn("isCiExecutionPath(file.filename)", workflow)
+                self.assertIn(
+                    "isCiExecutionPath(file.previous_filename || '')",
+                    workflow,
+                )
+                guard = "if (hasCiExecutionSurfaceChange) {"
+                self.assertLess(
+                    workflow.index(guard),
+                    workflow.index("prFiles.length > 0 && prFiles.every"),
+                )
+                self.assertLess(
+                    workflow.index(guard),
+                    workflow.index("github.rest.pulls.listCommits"),
+                )
+
     def test_render_diff_allows_prior_base_only_for_direct_source_parent(self) -> None:
         workflow = WORKFLOWS["render-diff"].read_text(encoding="utf-8")
         self.assertIn(

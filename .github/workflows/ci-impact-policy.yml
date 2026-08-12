@@ -121,8 +121,10 @@ jobs:
             core.setOutput('active', 'true');
             core.setOutput('mode', mode);
             core.setOutput('pull_number', String(pull.number));
+            core.setOutput('base_ref', pull.base.ref);
             core.setOutput('base_sha', pull.base.sha);
             core.setOutput('head_sha', pull.head.sha);
+            core.setOutput('head_branch', pull.head.ref);
             core.setOutput('head_repository', pull.head.repo?.full_name || '');
             core.setOutput('author_permission', authorPermission);
 
@@ -150,7 +152,10 @@ jobs:
         env:
           MODE: ${{ steps.resolve.outputs.mode }}
           PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
           HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+          HEAD_BRANCH: ${{ steps.resolve.outputs.head_branch }}
           HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}
         with:
           retries: 3
@@ -158,6 +163,10 @@ jobs:
             const fs = require('node:fs');
             const path = require('node:path');
             const { owner, repo } = context.repo;
+            const { selectLatestWorkflowRun } = require(path.join(
+              process.env.GITHUB_WORKSPACE,
+              'trusted-base/scripts/ci-impact-policy.cjs',
+            ));
             let files = [];
             let forceFullReason = '';
             try {
@@ -192,26 +201,26 @@ jobs:
                   owner,
                   repo,
                   event: 'pull_request',
-                  head_sha: process.env.HEAD_SHA,
+                  // [#2183/#3508] head_sha server filtering can omit fork runs. The
+                  // branch filter finds them; trusted policy code then checks repo,
+                  // branch, exact SHA, and PR/base association when GitHub exposes it.
+                  branch: process.env.HEAD_BRANCH,
                   per_page: 100,
                 });
               } catch (error) {
                 core.warning(`Workflow run collection failed; audit will remain pending. ${error.message}`);
               }
               for (const [name, expectedPath] of Object.entries(workflowPaths)) {
-                const candidates = runs.filter((run) => (
-                  run.name === name
-                  && String(run.path || '').split('@')[0] === expectedPath
-                  && run.event === 'pull_request'
-                  && run.head_sha === process.env.HEAD_SHA
-                  && run.head_repository?.full_name === process.env.HEAD_REPOSITORY
-                )).sort((left, right) => {
-                  const attempt = Number(right.run_attempt || 0) - Number(left.run_attempt || 0);
-                  if (attempt !== 0) return attempt;
-                  return Date.parse(right.run_started_at || right.created_at || 0)
-                    - Date.parse(left.run_started_at || left.created_at || 0);
+                const run = selectLatestWorkflowRun(runs, {
+                  name,
+                  path: expectedPath,
+                  pullNumber: Number(process.env.PULL_NUMBER),
+                  baseRef: process.env.BASE_REF,
+                  baseSha: process.env.BASE_SHA,
+                  headSha: process.env.HEAD_SHA,
+                  headBranch: process.env.HEAD_BRANCH,
+                  headRepository: process.env.HEAD_REPOSITORY,
                 });
-                const run = candidates[0];
                 if (!run) continue;
                 let jobs = [];
                 try {
@@ -233,6 +242,10 @@ jobs:
                     status: run.status,
                     conclusion: run.conclusion || '',
                     headSha: run.head_sha,
+                    headBranch: run.head_branch,
+                    headRepository: run.head_repository?.full_name || '',
+                    pullNumbers: (run.pull_requests || []).map((pull) => pull.number),
+                    baseShas: (run.pull_requests || []).map((pull) => pull.base?.sha || ''),
                   },
                   jobs: jobs.map((job) => ({
                     name: job.name,
@@ -277,8 +290,10 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           MODE: ${{ steps.resolve.outputs.mode }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
           BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
           HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+          HEAD_BRANCH: ${{ steps.resolve.outputs.head_branch }}
           HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}
           AUTHOR_PERMISSION: ${{ steps.resolve.outputs.author_permission }}
           PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
@@ -326,8 +341,10 @@ jobs:
               repository: process.env.GITHUB_REPOSITORY,
               pullRequest: {
                 number: Number(process.env.PULL_NUMBER),
+                baseRef: process.env.BASE_REF,
                 baseSha: process.env.BASE_SHA,
                 headSha: process.env.HEAD_SHA,
+                headBranch: process.env.HEAD_BRANCH,
                 headRepository: process.env.HEAD_REPOSITORY,
                 authorPermission: process.env.AUTHOR_PERMISSION,
               },

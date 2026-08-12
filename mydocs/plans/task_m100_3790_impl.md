@@ -11,8 +11,11 @@
   보정을 통과해 PR #4341 merge commit `8ea92cdad120`으로 완료했다. Stage 5A 전용 worktree와 브랜치는
   정리했고 Stage 2.6 controller 유일본은 보존했다. Stage 5B는 PR #4519로 merge했고, canary PR
   #4573의 같은 head selective/full 대조로 최종 성능·진리표 gate를 통과했다. Stage 3~5가 main에
-  포함된 현재, 최신 devel에서 Stage 2.6 controller를 현재 계약에 맞게 다시 구현했다. privileged 실행은
-  단일 base-only job으로 합치고, #4573 selective/full/fast-pass jobs API의 실제 명칭까지 대조했다.
+  포함된 현재, 최신 devel에서 Stage 2.6 controller를 현재 계약에 맞게 다시 구현해 Draft PR #4682를
+  만들고 첫 CI를 통과했다. privileged 실행은 단일 base-only job으로 합치고, #4573
+  selective/full/fast-pass jobs API의 실제 명칭까지 대조했다. maintainer 요청 전 self-review에서 외부
+  fork run 조회, timestamp-first 최신 run 선택, enforcement 변경 PR의 current-head full gate를 보정했다.
+  이 보정과 최신 devel 동기화 뒤 새 head 전체 CI·maintainer 명시적 승인을 다시 받아야 한다.
 
 ## Stage 1 — shadow classifier
 
@@ -82,10 +85,13 @@ policy를 미채택하기로 결정할 때까지 보존한다. 이후 재사용�
    CI·CodeQL·Render Diff가 모두 trigger 대상이 아닌 변경은 즉시 success, 외부 fork의 enforcement
    surface 변경은 failure로 닫는다.
 3. `workflow_run`은 `CI`, `CodeQL`, `Render Diff`를 모두 구독한다. 완료 이벤트 하나만 신뢰하지 않고
-   같은 PR head SHA의 세 workflow run을 API에서 다시 조회해 aggregate 상태를 만든다.
+   source branch로 세 workflow run 후보를 조회한 뒤 head repository·branch·SHA와 가능한 PR/base
+   연결 정보를 base policy에서 다시 검증해 aggregate 상태를 만든다. 최신 run은 timestamp를 먼저
+   비교하고 동일 run의 재시도에서만 attempt를 사용한다.
 4. CI에서는 preflight·`Build & Test`와 Rust 8개 job, Native Skia, frontend unit/package의 정확한
-   `success|skipped`를 classifier 축과 대조한다. workflow·action·classifier·fast-pass verifier가
-   바뀌지 않은 trailing review-only fast-pass만 전 worker skipped를 허용한다.
+   `success|skipped`를 classifier 축과 대조한다. workflow·action·classifier·policy·fast-pass verifier가
+   바뀌지 않은 trailing review-only fast-pass만 전 worker skipped를 허용한다. 이 enforcement surface의
+   현재 또는 이전 경로가 바뀐 PR은 CI·CodeQL·Render Diff 모두 현재 head의 full validation을 실행한다.
 5. CodeQL은 preflight와 고정 세 `Analyze (...)` check identity를 확인한다. 선택 언어는
    `Perform CodeQL Analysis` success, 비선택 언어는 `Skip unselected language` success와 analysis step
    skipped를 요구한다. fast-pass는 enforcement surface가 바뀌지 않은 경우에만 허용한다.

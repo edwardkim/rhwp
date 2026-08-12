@@ -72,10 +72,13 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
 
     def test_audit_reloads_all_same_head_workflow_metadata(self) -> None:
         self.assertIn("github.rest.actions.listWorkflowRunsForRepo", self.workflow)
-        self.assertIn("head_sha: process.env.HEAD_SHA", self.workflow)
+        self.assertIn("branch: process.env.HEAD_BRANCH", self.workflow)
+        self.assertNotIn("head_sha: process.env.HEAD_SHA", self.workflow)
+        self.assertIn("selectLatestWorkflowRun(runs", self.workflow)
+        self.assertIn("headBranch: process.env.HEAD_BRANCH", self.workflow)
+        self.assertIn("headRepository: process.env.HEAD_REPOSITORY", self.workflow)
         self.assertIn("github.rest.actions.listJobsForWorkflowRun", self.workflow)
         self.assertIn("steps: (job.steps || []).map", self.workflow)
-        self.assertIn("run.head_repository?.full_name === process.env.HEAD_REPOSITORY", self.workflow)
         self.assertIn("CI: '.github/workflows/ci.yml'", self.workflow)
         self.assertIn("CodeQL: '.github/workflows/codeql.yml'", self.workflow)
         self.assertIn("'Render Diff': '.github/workflows/render-diff.yml'", self.workflow)

@@ -249,6 +249,41 @@ function expectedWorkflowMap(files, forceAll = false) {
   ]));
 }
 
+function workflowRunMatchesPull(run, identity) {
+  const pulls = Array.isArray(run?.pull_requests) ? run.pull_requests : [];
+  // GitHub can return an empty pull_requests array for fork runs. In that case the
+  // repository + branch + exact SHA guards in selectLatestWorkflowRun remain the
+  // authority. When association data exists, reject runs from another PR/base.
+  if (pulls.length === 0) return true;
+  return pulls.some((pull) => (
+    Number(pull?.number || 0) === Number(identity.pullNumber || 0)
+    && String(pull?.base?.ref || '') === String(identity.baseRef || '')
+    && String(pull?.base?.sha || '') === String(identity.baseSha || '')
+    && String(pull?.head?.ref || '') === String(identity.headBranch || '')
+    && String(pull?.head?.sha || '') === String(identity.headSha || '')
+  ));
+}
+
+function selectLatestWorkflowRun(runs, identity = {}) {
+  const candidates = (Array.isArray(runs) ? runs : []).filter((run) => (
+    String(run?.name || '') === String(identity.name || '')
+    && String(run?.path || '').split('@')[0] === String(identity.path || '')
+    && String(run?.event || '') === 'pull_request'
+    && String(run?.head_sha || '') === String(identity.headSha || '')
+    && String(run?.head_branch || '') === String(identity.headBranch || '')
+    && String(run?.head_repository?.full_name || '') === String(identity.headRepository || '')
+    && workflowRunMatchesPull(run, identity)
+  ));
+  return candidates.sort((left, right) => {
+    const rightStarted = Date.parse(right.run_started_at || right.created_at || 0) || 0;
+    const leftStarted = Date.parse(left.run_started_at || left.created_at || 0) || 0;
+    if (rightStarted !== leftStarted) return rightStarted - leftStarted;
+    const runId = Number(right.id || 0) - Number(left.id || 0);
+    if (runId !== 0) return runId;
+    return Number(right.run_attempt || 0) - Number(left.run_attempt || 0);
+  })[0] || null;
+}
+
 function determineHeadTrust(repository, pullRequest = {}) {
   const headRepository = String(pullRequest.headRepository || '');
   const authorPermission = String(pullRequest.authorPermission || '').toLowerCase();
@@ -578,6 +613,18 @@ function auditPolicyRuns(input = {}) {
       || String(run.path || '') !== WORKFLOW_PATHS[workflow]
       || String(run.event || '') !== 'pull_request'
       || String(run.headSha || '') !== currentHeadSha
+      || String(run.headBranch || '') !== String(input.pullRequest?.headBranch || '')
+      || String(run.headRepository || '') !== String(input.pullRequest?.headRepository || '')
+      || (
+        Array.isArray(run.pullNumbers)
+        && run.pullNumbers.length > 0
+        && !run.pullNumbers.map(Number).includes(Number(input.pullRequest?.number || 0))
+      )
+      || (
+        Array.isArray(run.baseShas)
+        && run.baseShas.length > 0
+        && !run.baseShas.map(String).includes(String(input.pullRequest?.baseSha || ''))
+      )
     ) {
       return { publish: 'true', conclusion: 'failure', reason: `workflow-identity-mismatch:${workflow}` };
     }
@@ -699,6 +746,7 @@ module.exports = {
   fullClassification,
   parseStatusDescription,
   runCli,
+  selectLatestWorkflowRun,
   statusDescription,
   workflowRunExpected,
 };

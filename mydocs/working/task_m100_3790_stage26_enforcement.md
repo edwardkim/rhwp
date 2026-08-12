@@ -3,9 +3,10 @@
 - **이슈**: [#3790](https://github.com/edwardkim/rhwp/issues/3790)
 - **브랜치**: `issue-3790-stage26-enforcement`
 - **worktree**: `tmp/issue-3790-stage26-enforcement`
-- **기준**: `upstream/devel` `88012c7e09a6`
+- **분기 기준**: `upstream/devel` `88012c7e09a6`
+- **최신 확인 기준**: `upstream/devel` `9b9cbf3c80b6`
 - **원형**: `tmp/issue-3790-stage26` / `060998dc863a` (읽기 전용 보존)
-- **상태**: 설계 보정·로컬 구현·focused 검증 완료, 원격 미게시
+- **상태**: Draft PR #4682의 1차 CI 통과, maintainer 요청 전 self-review 보정·focused 검증 완료
 
 ## 재개 근거
 
@@ -42,7 +43,8 @@ commit status, stale run 무시와 fail-closed 기본값을 재사용할 가치�
 - 실행 가능한 저장소 파일은 live PR의 base SHA에서 sparse checkout한 classifier·policy 두 파일뿐이다.
 - PR head·merge ref를 checkout하지 않고 artifact도 다운로드하지 않는다.
 - API로 읽는 PR files, workflow runs, jobs와 steps는 실행하지 않는 증거 데이터로만 취급한다.
-- 각 workflow 완료 이벤트에서 CI·CodeQL·Render Diff의 같은-head 최신 run을 다시 모은다. 순서와
+- 각 workflow 완료 이벤트에서 CI·CodeQL·Render Diff의 같은 head repository·branch·SHA 최신 run을
+  다시 모은다. `pull_requests` 연결 정보가 있으면 현재 PR과 base ref·SHA도 함께 검증한다. 순서와
   무관하게 미완료는 pending, 실패는 failure, 전체 진리표 일치만 success다.
 - fast-pass는 workflow·local action·classifier·merge verifier가 base와 동일한 PR에서만 허용한다.
   이 surface가 바뀐 PR은 classifier full 진리표를 실제 job/step으로 증명해야 한다.
@@ -72,6 +74,28 @@ commit status, stale run 무시와 fail-closed 기본값을 재사용할 가치�
 - Render Diff trigger 계약과 Canvas `success|skipped`를 감사한다. 세 workflow의 paths filter 상수는
   실제 YAML 목록과 단위 테스트에서 동일해야 한다.
 
+## maintainer 요청 전 self-review 보정
+
+Draft PR #4682의 첫 전체 CI가 통과한 뒤 최신 devel과 실제 Actions API 동작을 다시 대조해 다음 세
+문제를 발견하고 로컬에서 보정했다.
+
+1. 외부 fork run은 Actions API의 server-side `head_sha` filter에서 누락될 수 있다. controller가
+   source branch로 run 후보를 조회하고, policy가 head repository·branch·SHA를 로컬에서 모두
+   일치시키도록 바꿨다. `pull_requests`가 비어 있는 fork 응답은 이 exact identity로 허용하되,
+   연결 정보가 있으면 현재 PR number와 base ref·SHA까지 일치해야 한다.
+2. `run_attempt`는 서로 다른 run 사이의 최신성 기준이 아니다. 최신 workflow run은
+   `run_started_at|created_at`으로 먼저 고르고 같은 run의 재시도만 attempt·id로 판별한다. 오래된
+   attempt 2가 더 최신인 attempt 1을 가리는 회귀 fixture를 추가했다.
+3. enforcement surface를 바꾼 PR에 review-only trailing commit이 붙으면 policy는 fast-pass를
+   거부하지만 기존 세 workflow는 과거 green candidate를 재사용할 수 있었다. CI·CodeQL·Render Diff가
+   workflow·local action·classifier·policy·merge verifier의 현재/이전 경로 변경을 감지하면
+   fast-pass 대신 현재 head의 full validation을 실행하도록 계약을 정렬했다.
+
+최신 `upstream/devel@9b9cbf3c80b6`은 PR의 분기 기준보다 11 commits 앞서 있지만
+`git merge-tree --write-tree HEAD upstream/devel`은 충돌 없이 tree
+`dd3946fac35487b859bbaab81d71f01184eaff2e`를 만들었다. 보정 commit과 최신 devel 동기화 뒤 새 head의
+전체 CI를 다시 통과시켜야 하며, 첫 CI 성공은 최종 merge 근거로 재사용하지 않는다.
+
 ## 실제 API 대조
 
 PR #4573의 같은 head 표본을 GitHub jobs API로 다시 읽어 fixture와 대조했다.
@@ -100,7 +124,7 @@ actionlint \
 git diff --check
 ```
 
-- Node classifier+policy: 44/44 통과
+- Node classifier+policy: 47/47 통과
 - Python workflow 계약: 106/106 통과
 - actionlint: 진단 없음
 - whitespace: 통과

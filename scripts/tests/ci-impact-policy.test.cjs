@@ -22,10 +22,13 @@ const {
   determinePolicy,
   parseStatusDescription,
   runCli,
+  selectLatestWorkflowRun,
   workflowRunExpected,
 } = require('../ci-impact-policy.cjs');
 
 const HEAD_SHA = 'a'.repeat(40);
+const BASE_SHA = 'b'.repeat(40);
+const HEAD_BRANCH = 'topic';
 
 function classificationFor(files) {
   return classifyChanges({ eventName: 'pull_request', files });
@@ -39,7 +42,10 @@ function policyInput(overrides = {}) {
     repository: 'edwardkim/rhwp',
     pullRequest: {
       number: 123,
+      baseRef: 'devel',
+      baseSha: BASE_SHA,
       headSha: HEAD_SHA,
+      headBranch: HEAD_BRANCH,
       headRepository: 'edwardkim/rhwp',
       authorPermission: 'write',
     },
@@ -66,6 +72,40 @@ function workflowRun(name, status = 'completed', conclusion = 'success') {
     status,
     conclusion,
     headSha: HEAD_SHA,
+    headBranch: HEAD_BRANCH,
+    headRepository: 'edwardkim/rhwp',
+    pullNumbers: [123],
+    baseShas: [BASE_SHA],
+  };
+}
+
+function apiWorkflowRun(overrides = {}) {
+  return {
+    id: 1,
+    name: 'CI',
+    path: '.github/workflows/ci.yml',
+    event: 'pull_request',
+    head_sha: HEAD_SHA,
+    head_branch: HEAD_BRANCH,
+    head_repository: { full_name: 'external/rhwp' },
+    run_attempt: 1,
+    run_started_at: '2026-08-12T10:00:00Z',
+    pull_requests: [],
+    ...overrides,
+  };
+}
+
+function workflowRunIdentity(overrides = {}) {
+  return {
+    name: 'CI',
+    path: '.github/workflows/ci.yml',
+    pullNumber: 123,
+    baseRef: 'devel',
+    baseSha: BASE_SHA,
+    headSha: HEAD_SHA,
+    headBranch: HEAD_BRANCH,
+    headRepository: 'external/rhwp',
+    ...overrides,
   };
 }
 
@@ -276,6 +316,54 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
   assert.equal(workflowRunExpected('CI', [{ filename: 'README.md' }]), false);
   assert.equal(workflowRunExpected('CodeQL', [{ filename: 'assets/logo/icon.svg' }]), false);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'rhwp-studio/tests/a.ts' }]), true);
+});
+
+test('workflow selection accepts fork runs without PR associations but keeps exact head identity', () => {
+  const matching = apiWorkflowRun();
+  const wrongBranch = apiWorkflowRun({ id: 2, head_branch: 'other' });
+  const wrongRepository = apiWorkflowRun({
+    id: 3,
+    head_repository: { full_name: 'another/rhwp' },
+  });
+  assert.equal(
+    selectLatestWorkflowRun([wrongBranch, wrongRepository, matching], workflowRunIdentity()),
+    matching,
+  );
+});
+
+test('workflow selection prefers the newest run and rejects a mismatched PR association', () => {
+  const olderRerun = apiWorkflowRun({
+    id: 10,
+    run_attempt: 2,
+    run_started_at: '2026-08-12T10:00:00Z',
+  });
+  const newerRun = apiWorkflowRun({
+    id: 11,
+    run_attempt: 1,
+    run_started_at: '2026-08-12T11:00:00Z',
+  });
+  const wrongPull = apiWorkflowRun({
+    id: 12,
+    run_started_at: '2026-08-12T12:00:00Z',
+    pull_requests: [{
+      number: 999,
+      base: { ref: 'devel', sha: BASE_SHA },
+      head: { ref: HEAD_BRANCH, sha: HEAD_SHA },
+    }],
+  });
+  assert.equal(
+    selectLatestWorkflowRun([olderRerun, newerRun, wrongPull], workflowRunIdentity()),
+    newerRun,
+  );
+});
+
+test('workflow selection uses run id before attempt when timestamps tie', () => {
+  const olderRerun = apiWorkflowRun({ id: 10, run_attempt: 2 });
+  const newerRun = apiWorkflowRun({ id: 11, run_attempt: 1 });
+  assert.equal(
+    selectLatestWorkflowRun([olderRerun, newerRun], workflowRunIdentity()),
+    newerRun,
+  );
 });
 
 test('aggregate audit accepts Stage 3-5 selective truth table', () => {
