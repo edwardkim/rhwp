@@ -7168,7 +7168,7 @@ impl LayoutEngine {
             }
             // [#4069 Stage 2/Task #3820 Stage 48] 저장 프레임 경계는 문단 내부인지
             // 문단 사이인지와 무관하게 하나라도 부모 원장에 보존한다. 작은 로컬 reset은
-            // `is_hwp5_stored_frame_rewind`의 body-half 조건에서 이미 제외된다.
+            // `is_stored_frame_rewind`의 저장 frame 판정에서 이미 제외된다.
             // 42065 p10은 같은 문단 58620→0, p14는 item7→item8의 문단간
             // 32932→0 경계이며 둘 다 한컴 정본의 실제 쪽 경계다.
             if canonical_stored_frame_profile
@@ -7905,11 +7905,68 @@ impl LayoutEngine {
         let line_seg_is_synthetic = |seg: &crate::model::paragraph::LineSeg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         };
-        let is_hwp5_stored_frame_rewind = |prev: &crate::model::paragraph::LineSeg,
-                                           cur: &crate::model::paragraph::LineSeg|
+        let is_block_rowbreak_table = matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        ) && !table.common.treat_as_char;
+        // 원본 HWPX의 작은 nested cell은 자체 local 좌표계를 `0`에서 다시
+        // 시작할 수 있어 reset 하나만으로 물리 page frame이라고 볼 수 없다. 반면
+        // 직접 RowBreak cell이 reset 전후 저장 frame의 line end를 합쳐 선언 높이를
+        // 거의 채우면, 그 reset은 로컬 viewport가 아니라 저장된 물리 frame 경계다.
+        // 이 조건은 표 ID, 행 번호, 문구가 아니라 저장된 cell 기하와 lineSeg
+        // topology만 사용한다.
+        let direct_hwpx_stored_frame_cell = {
+            let profile = self.profile.get();
+            let declared_height = (cell.height < 0x8000_0000).then_some(cell.height as i32);
+            let has_nested_table = cell.paragraphs.iter().any(|paragraph| {
+                paragraph
+                    .controls
+                    .iter()
+                    .any(|control| matches!(control, Control::Table(_)))
+            });
+            let mut reset_count = 0usize;
+            let mut previous_frame_end = None;
+            let mut preceding_frame_end = 0i32;
+            let mut trailing_frame_end = 0i32;
+            for paragraph in &cell.paragraphs {
+                for seg in paragraph
+                    .line_segs
+                    .iter()
+                    .filter(|seg| !line_seg_is_synthetic(seg))
+                {
+                    let frame_end = seg.vertical_pos.saturating_add(seg.line_height);
+                    if previous_frame_end
+                        .is_some_and(|previous_end| previous_end > 0 && seg.vertical_pos <= 0)
+                    {
+                        reset_count += 1;
+                        preceding_frame_end = preceding_frame_end
+                            .max(previous_frame_end.unwrap_or_default());
+                        trailing_frame_end = 0;
+                    }
+                    if reset_count > 0 {
+                        trailing_frame_end = trailing_frame_end.max(frame_end);
+                    }
+                    previous_frame_end = Some(frame_end);
+                }
+            }
+            let single_reset_covers_declared_cell = reset_count == 1
+                && declared_height.is_some_and(|height| {
+                    preceding_frame_end.saturating_add(trailing_frame_end)
+                        >= height.saturating_mul(4) / 5
+                });
+            profile.hwpx_stored_layout()
+                && !profile.hwp5_origin_hwpx()
+                && is_block_rowbreak_table
+                && !has_nested_table
+                && (reset_count >= 2 || single_reset_covers_declared_cell)
+        };
+        let is_stored_frame_rewind = |prev: &crate::model::paragraph::LineSeg,
+                                      cur: &crate::model::paragraph::LineSeg|
          -> bool {
             let profile = self.profile.get();
-            if (!profile.native_hwp5_layout() && !profile.hwp5_origin_hwpx())
+            if (!profile.native_hwp5_layout()
+                && !profile.hwp5_origin_hwpx()
+                && !direct_hwpx_stored_frame_cell)
                 || line_seg_is_synthetic(prev)
                 || line_seg_is_synthetic(cur)
             {
@@ -7918,6 +7975,9 @@ impl LayoutEngine {
             let prev_end = prev.vertical_pos + prev.line_height;
             if cur.vertical_pos < 0 || prev_end <= 0 || cur.vertical_pos >= prev_end {
                 return false;
+            }
+            if direct_hwpx_stored_frame_cell {
+                return true;
             }
             // HWPX 저장 lineseg의 reset은 중첩 셀 로컬 좌표계일 수 있다
             // (#3637). HWP5 저장 계약 안에서도 작은 내부 표의 로컬 reset
@@ -7931,10 +7991,6 @@ impl LayoutEngine {
             };
             hwpunit_to_px(prev_end, self.dpi) >= frame_floor
         };
-        let is_block_rowbreak_table = matches!(
-            table.page_break,
-            crate::model::table::TablePageBreak::RowBreak
-        ) && !table.common.treat_as_char;
         let has_visible_text_with_nested_table =
             self.table_has_visible_text_with_nested_table(table);
         // [Task #700] vpos 동기화 가드와 동일 — 한컴 정상 인코딩(첫 문단 vpos=0) 한정.
@@ -8276,7 +8332,7 @@ impl LayoutEngine {
                     {
                         next.line_segs
                             .first()
-                            .is_some_and(|cur| is_hwp5_stored_frame_rewind(prev, cur))
+                            .is_some_and(|cur| is_stored_frame_rewind(prev, cur))
                     }
                     _ => false,
                 }
@@ -8286,7 +8342,7 @@ impl LayoutEngine {
             let stored_frame_break_before_para = if pi > 0 && cell_has_local_vpos_origin {
                 let prev_para = &cell.paragraphs[pi - 1];
                 match (prev_para.line_segs.last(), p.line_segs.first()) {
-                    (Some(prev), Some(cur)) => is_hwp5_stored_frame_rewind(prev, cur),
+                    (Some(prev), Some(cur)) => is_stored_frame_rewind(prev, cur),
                     _ => false,
                 }
             } else {
@@ -8352,7 +8408,7 @@ impl LayoutEngine {
                 };
                 // 42065 p10의 같은 문단 58620→0HU도 위의 HWP5 저장 프레임
                 // 판정과 같은 계약을 사용한다.
-                is_hwp5_stored_frame_rewind(prev, cur)
+                is_stored_frame_rewind(prev, cur)
             };
             // [Task #993] 줄 높이는 렌더러(layout_composed_paragraph)와 동일하게
             // corrected_line_height 를 적용한다 — raw line_height 가 폰트보다
@@ -9935,17 +9991,13 @@ impl LayoutEngine {
                     && !u.empty_spacer
                     && h + u.height <= avail_height
                     && avail_height - h > HARD_BREAK_REMAINING_TOLERANCE_PX;
-                // [#4069 Stage 2/3] 재귀 투영된 자식 표의 문단 내부 저장 프레임
-                // 경계(p10), 그리고 1×1 자식 표 host 직후의 저장 프레임 경계(p15)는
-                // relaxed/absorb 규칙으로 넘지 않는다. 그 밖의 문단 사이 hard break의
-                // orphan/sliver 완화와 직접 표 셀의 기존 적응은 유지한다.
-                let follows_single_cell_nested_host = u
-                    .para_idx
-                    .checked_sub(1)
-                    .and_then(|para_idx| cell.paragraphs.get(para_idx))
-                    .is_some_and(Self::paragraph_hosts_single_cell_nested_table);
-                let strict_saved_frame_break = u.stored_frame_break_before
-                    && (u.mixed_nested_recursive || follows_single_cell_nested_host);
+                // 문단 내부에서 저장 좌표가 되감긴 frame 경계는 부모 표의 조각도
+                // 반드시 같은 곳에서 끊어야 한다. 이를 mid-page reset 완화로
+                // 흡수하면 직접 표 셀과 재귀 투영 자식 표가 서로 다른 fragment
+                // owner를 만들고, footer-safe body 밖으로 paint될 수 있다. 문단
+                // 사이 hard break의 orphan/sliver 완화는 이 표식이 없는 경우에만
+                // 계속 적용한다.
+                let strict_saved_frame_break = u.stored_frame_break_before;
                 if j > start
                     && u.hard_break_before
                     && (strict_saved_frame_break
@@ -10142,13 +10194,7 @@ impl LayoutEngine {
                     j = units.len();
                     break;
                 }
-                let follows_single_cell_nested_host = u
-                    .para_idx
-                    .checked_sub(1)
-                    .and_then(|para_idx| cell.paragraphs.get(para_idx))
-                    .is_some_and(Self::paragraph_hosts_single_cell_nested_table);
-                let strict_saved_frame_break = u.stored_frame_break_before
-                    && (u.mixed_nested_recursive || follows_single_cell_nested_host);
+                let strict_saved_frame_break = u.stored_frame_break_before;
                 if j > start
                     && u.hard_break_before
                     && (strict_saved_frame_break

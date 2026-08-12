@@ -752,14 +752,6 @@ const HWPX_QA_TWO_SIX_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
 /// Q48의 3 lineSeg 단일 response는 저장 frame의 마지막 두 unit이 단독 쪽으로 분할된다.
 /// 96px은 PDF p304의 완결 owner를 보존한다.
 const HWPX_QA_THREE_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 96.0;
-const HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 64.0;
-/// HWPX 103×2 병렬 규정 표의 fragment 임계값을 PDF 57조각 계약과 대조한다.
-const HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX: f64 = 160.0;
-/// PDF p314에서 제3조가 끝난 뒤 제4조를 시작시키는 r5 경계다.
-const HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX: f64 = 56.0;
-/// r5에서 제거한 조각은 PDF 후반에서 실제로 긴 정책연구 심의위원회 행(r71)의
-/// 다음 fragment owner로 복원한다.
-const HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX: f64 = 200.0;
 /// HWPX로 저장된 2025 편람 Q&A 목차의 마지막 1×1 RowBreak tail은 32px 이하다.
 /// 세 번째 continuation의 마지막 line만 같은 page에 유지한다.
 const HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
@@ -3080,14 +3072,20 @@ fn is_single_rowbreak_table_with_trustworthy_declared_height(
         && effective_height <= declared_height * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO
 }
 
-/// native HWP5 RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
+/// RowBreak 표의 특정 행 셀 안에 저장된 vpos reset이 있는지 판별한다.
 ///
 /// 표 행 경계가 아니라 셀 내부 줄에서 `양수 vpos → 0 이하`로 되감긴 경우는 해당
-/// cell tail이 다음 물리 페이지에서 이어진다는 HWP 저장 신호다. 일반 row split과
-/// 달리 이 경계 직전에는 기존 FootnoteArea 바로 위까지 채워져야 하므로, caller가
-/// 안전 여백을 실제 각주 경계로 바꿀 수 있게 구조 신호만 제공한다.
-fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
-    table.cells.iter().any(|cell| {
+/// cell tail이 다음 물리 페이지에서 이어진다는 저장 frame 신호다. HWP와 HWPX의
+/// 원본 `lineSeg` 모두에 같은 방식으로 적용된다.
+fn rowbreak_row_has_internal_saved_vpos_reset(
+    table: &crate::model::table::Table,
+    row: usize,
+) -> bool {
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row)
+        .any(|cell| {
         // 저장된 물리 page reset은 cell paragraph 경계에서 시작할 수도 있다. 각
         // paragraph 안의 `windows(2)`만 보면 `<OPTN>` 다음 `간 특수 검사`처럼
         // p[n]의 마지막 LINE_SEG → p[n+1]의 첫 LINE_SEG reset을 놓친다.
@@ -3104,8 +3102,14 @@ fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Tab
                 previous_vpos = Some(seg.vertical_pos);
             }
         }
-        false
-    })
+            false
+        })
+}
+
+/// RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
+fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
+    (0..table.row_count as usize)
+        .any(|row| rowbreak_row_has_internal_saved_vpos_reset(table, row))
 }
 
 fn sample16_missing_lineseg_tail_break_line(
@@ -19201,6 +19205,10 @@ impl TypesetEngine {
                 && row_start_cut.is_empty()
                 && r > cursor_row
                 && !rowspan_touched[r]
+                // 저장 frame이 행 내부에서 새 물리 페이지를 시작하면 normal row
+                // split이 owner를 정해야 한다. short-row bleed로 통째로 밀어 넣으면
+                // footer-safe body 밖에서 partial-table border가 잘린다.
+                && !rowbreak_row_has_internal_saved_vpos_reset(table, r)
                 && row_total <= landscape_short_row_max_height
                 && consumed + cs_before + row_total
                     <= avail_for_rows + landscape_short_row_tolerance
@@ -19490,18 +19498,6 @@ impl TypesetEngine {
                     .cells
                     .first()
                     .is_some_and(|cell| cell.paragraphs.len() == 73);
-            let hwp5_origin_parallel_regulation_table = st.profile.native_hwp5_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 103
-                && table.col_count == 2
-                && table.cells.len() == 206;
-            let hwpx_parallel_regulation_table = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 103
-                && table.col_count == 2
-                && table.cells.len() == 206;
             let cut_tail_allowance = if native_hwp5_single_cell_saved_frame_tail {
                     NATIVE_HWP5_SINGLE_CELL_SAVED_FRAME_TAIL_ALLOWANCE_PX
                 } else if hwp5_origin_qa_first_response_tail {
@@ -19531,20 +19527,7 @@ impl TypesetEngine {
                 } else {
                     0.0
                 };
-            let parallel_regulation_cut_reserve = if hwp5_origin_parallel_regulation_table {
-                    HWP5_ORIGIN_PARALLEL_REGULATION_CUT_RESERVE_PX
-                } else if hwpx_parallel_regulation_table {
-                    match r {
-                        5 => HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX,
-                        71 => HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX,
-                        _ => HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX,
-                    }
-                } else {
-                    0.0
-                };
-            let cut_budget = (budget - parallel_regulation_cut_reserve)
-            .max(0.0)
-                + cut_tail_allowance;
+            let cut_budget = budget + cut_tail_allowance;
             let mut res =
                 layout_engine.advance_row_cut(table, r, row_start_cut, cut_budget, styles);
             // [#2236 진단] 인트라 컷 시도 결과 — 동작 불변.
