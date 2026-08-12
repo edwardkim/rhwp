@@ -990,6 +990,8 @@ impl DocumentCore {
         second.text_start = split_start;
         second.vertical_pos = first.vertical_pos + first.line_height + first.line_spacing;
         para.line_segs.push(second);
+        // [#4677] 조판 전용 보강 줄 — HWP5 저장에는 나가지 않는다.
+        para.layout_only_fill_lines += 1;
         true
     }
 

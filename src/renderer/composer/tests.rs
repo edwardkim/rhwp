@@ -537,6 +537,44 @@ fn test_reflow_empty_text() {
     assert_eq!(para.line_segs[0].text_start, 0);
 }
 
+/// [#4677] 인라인 개체만 있는 문단의 둘째 줄 `text_start` 는 **UTF-16 오프셋**이다.
+///
+/// HWP5 PARA_TEXT 에서 확장 제어문자 하나는 8 코드유닛을 차지한다. 컨트롤 인덱스(=1)를
+/// 그대로 쓰면 둘째 줄이 첫 제어문자 블록 한가운데를 가리키고, 그 저장본을 한글 2022 는
+/// 본문을 통째로 버린 빈 1쪽 문서로 연다 (rhwp 재파싱은 통과하는 함정).
+#[test]
+fn test_reflow_inline_only_paragraph_uses_utf16_text_start() {
+    use crate::model::image::Picture;
+    use crate::model::shape::CommonObjAttr;
+
+    let styles = make_styles_with_font_size(16.0);
+    let make_pic = |width: u32| {
+        Control::Picture(Box::new(Picture {
+            common: CommonObjAttr {
+                width,
+                height: 3000,
+                treat_as_char: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        }))
+    };
+    // 가용 폭 50px = 3750 HWPUNIT → 3000 짜리 개체 둘은 한 줄에 못 들어간다.
+    let mut para = Paragraph {
+        controls: vec![make_pic(3000), make_pic(3000)],
+        char_count: 17, // 8 + 8 + 문단 끝 1
+        ..Default::default()
+    };
+
+    reflow_line_segs(&mut para, 50.0, &styles, 96.0);
+    assert_eq!(para.line_segs.len(), 2, "개체마다 한 줄");
+    assert_eq!(para.line_segs[0].text_start, 0);
+    assert_eq!(
+        para.line_segs[1].text_start, 8,
+        "둘째 개체의 UTF-16 오프셋은 8 (컨트롤 인덱스 1 이 아니다)"
+    );
+}
+
 /// 라틴 문자 리플로우 (0.5 * font_size)
 #[test]
 fn test_reflow_latin_text() {

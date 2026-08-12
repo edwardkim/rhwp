@@ -81,7 +81,26 @@ impl Control {
     pub fn is_logical_inline(&self) -> bool {
         self.is_treat_as_char_object() || matches!(self, Control::Footnote(_) | Control::Endnote(_))
     }
+
+    /// HWP5 `PARA_TEXT` 에서 확장 제어문자 자리(`CTRL_CHAR_CODE_UNITS`)를 차지하는가.
+    ///
+    /// 직렬화기가 제어문자와 `CTRL_HEADER` 를 방출할지 가리는 규칙과 같은 원본이다
+    /// (`serializer/body_text.rs::emits_ctrl_header`). 문단의 UTF-16 오프셋을 **계산하는**
+    /// 쪽과 실제로 **쓰는** 쪽이 어긋나면 lineseg `text_start` 가 제어문자 블록 한가운데를
+    /// 가리키고, 한글은 그런 문서의 본문을 통째로 버린다 (#4677).
+    pub fn occupies_ctrl_char_slot(&self) -> bool {
+        match self {
+            Control::Hyperlink(_) => false,
+            Control::Unknown(u) => u.ctrl_id != 0,
+            _ => true,
+        }
+    }
 }
+
+/// HWP5 `PARA_TEXT` 에서 확장 제어문자 하나가 차지하는 UTF-16 코드유닛 수.
+///
+/// `[코드, ctrl_id 2유닛, 예약 4유닛, 코드]` = 8 유닛 (HWP5 스펙 표 58).
+pub const CTRL_CHAR_CODE_UNITS: u32 = 8;
 
 /// [#2727] `Equation::attr` 의 bit 0 — 수식이 차지하는 범위.
 ///
