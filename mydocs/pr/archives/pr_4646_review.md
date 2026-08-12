@@ -9,7 +9,7 @@ last_verified: 2026-08-12
 
 ## 결론
 
-**Draft 유지, 최신 head의 전체 Contributor 게이트 대기.**
+**Draft 유지, GitHub 원격 check 완료 대기.**
 [PR #4646](https://github.com/edwardkim/rhwp/pull/4646)는 HWP/HWPX 문서 열기와
 브라우저 썸네일 소비자에서 10 MiB 상한을 선택하고, 그 아래 CFB·ZIP·stream
 도우미에는 호출자가 정한 상한만 전달하도록 보정했다.
@@ -20,8 +20,9 @@ fallback을 사용한다. 10 MiB 이하의 정상 미리보기 바이트는 종�
 
 renderer, layout, paint, fixture는 바꾸지 않았으므로 시각 검증 대상이 아니다.
 독립 Gestell 검토는 정책 소유 경계와 정상 문서 호환성에 blocking finding 없음을
-확인했다. 다만 이번 코드 head에 대한 `CONTRIBUTING.md` 전체 게이트는 아직
-순차 실행 대기 상태이므로, 성공 전에는 수용·ready·merge를 권고하지 않는다.
+확인했다. `b7c501101`에서 `CONTRIBUTING.md`의 전체 Rust gate는 순차 실행하여
+통과했다. 다만 현재 GitHub CI·CodeQL workflow에는 아직 진행 중인 job이 있으므로,
+원격 check가 끝나기 전에는 수용·ready·merge를 권고하지 않는다.
 
 ## 검토 경로
 
@@ -34,6 +35,7 @@ loaded documents: pr_review_workflow.md, pr_review/README.md,
 upstream/devel at review: 525cf8e8ed9fa030d1db417fda5070668b2df240
 original remote head: 7bed2bed4f173fded30d80279935617b13c7c84e
 corrected code candidate: b9cd4953f0bc7f6ccd971193b15d542c19a37754
+full local gate head: b7c501101ea33aac2b2f17a975a79862f7ce3a85
 trailing review head: this docs-only commit
 ```
 
@@ -74,17 +76,20 @@ collaborator source branch의 정정이며 contributor history를 재작성하�
 | Rust 문서 열기 | `cargo test --lib document_open_` | 4 passed — HWP/HWPX의 정상 미리보기 보존 및 초과 미리보기에서 문서 열기 지속 |
 | Rust 썸네일 경로 | `cargo test --lib thumbnail_` | 7 passed — 선언 크기 초과·실제 길이 불일치 거부 포함 |
 | 브라우저 공개 소비자 | `node --test rhwp-shared/sw/thumbnail-decompression.test.js` | 6 passed — Chrome `extractThumbnailFromUrl`로 정상 HWPX thumbnail과 초과 선언 크기 확인 |
-| 정적/형식 검사 | `node --check` (Chrome, Firefox, Safari, shared), `cargo fmt --all -- --check`, `git diff --check` | 통과 |
+| 정적/형식 검사 | `node --check` (Chrome, Firefox, Safari, shared) | 통과 |
 | 독립 설계 검토 | terra-max Gestell adversarial review | PASS — 정책 선택은 소비자 경계, 하위 도우미는 명시 상한만 적용 |
+| Contributor 형식 gate | `cargo fmt --all -- --check` | `b7c501101`에서 통과 |
+| Contributor 전체 Rust 회귀 | `cargo test --profile release-test --tests` | `b7c501101`에서 exit 0으로 통과 |
+| Contributor lint gate | `cargo clippy -- -D warnings` | `b7c501101`에서 통과 |
+| 최종 diff 검사 | `git diff --check` | `b7c501101`에서 통과 |
 
-전체 `cargo test --profile release-test --tests`와 `cargo clippy -- -D warnings`는
-코드 정정 후 최신 head에서 별도로 순차 실행해야 한다. 이전 head의 성공 기록을
-이 code candidate의 통과 근거로 재사용하지 않는다.
+위 Contributor gate는 코드와 직전 review 기록을 포함한 정확한 `b7c501101` head에서
+순차 실행했다. 이전 head의 성공 기록을 이 code candidate의 통과 근거로 재사용하지
+않았다.
 
 ## 다음 확인
 
-1. 최신 head에서 `CONTRIBUTING.md`의 전체 Rust gate를 순차 실행한다.
-2. GitHub가 새 head의 required check를 게시한 뒤 Draft 상태와 mergeability를 다시
+1. 현재 GitHub CI·CodeQL의 진행 중 job과 새 head의 required check를 완료 뒤 다시
    확인한다.
-3. 별도 승인 전에는 Draft 해제, reviewer 지정, merge, advisory 상태 변경을 하지
+2. 별도 승인 전에는 Draft 해제, reviewer 지정, merge, advisory 상태 변경을 하지
    않는다.
