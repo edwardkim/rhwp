@@ -15,8 +15,10 @@
   만들고 첫 CI를 통과했다. privileged 실행은 단일 base-only job으로 합치고, #4573
   selective/full/fast-pass jobs API의 실제 명칭까지 대조했다. maintainer 요청 전 self-review에서 외부
   fork run 조회, timestamp-first 최신 run 선택, enforcement 변경 PR의 current-head full gate를 보정했다.
-  보정 commit `4ba5e431d`와 최신 devel merge `30bbcf9fe`의 로컬 focused 검증은 통과했으며, push 뒤 새
-  head 전체 CI·maintainer 명시적 승인을 다시 받아야 한다.
+  보정 commit `4ba5e431d`와 최신 devel merge `30bbcf9fe`의 로컬 focused 검증을 통과했다. 게시
+  self-review 후속으로 Node policy 테스트 CI 배선, 안전한 full 상위 집합 허용, 취소·stale status 차단,
+  감사 lane 완전성 계약을 추가하고 최신 devel `55eb2860b`을 merge head `d5b7ef831`에 반영했다. push
+  뒤 새 head 전체 CI·maintainer 명시적 승인을 다시 받아야 한다.
 
 ## Stage 1 — shadow classifier
 

@@ -8,6 +8,7 @@ const test = require('node:test');
 
 const { classifyChanges } = require('../ci-impact-classifier.cjs');
 const {
+  CI_AUDITED_JOB_IDS,
   CI_FRONTEND_JOBS,
   CI_JOB_ALIASES,
   CI_NATIVE_JOB,
@@ -25,6 +26,11 @@ const {
   selectLatestWorkflowRun,
   workflowRunExpected,
 } = require('../ci-impact-policy.cjs');
+
+const CI_WORKFLOW = fs.readFileSync(
+  path.join(__dirname, '../../.github/workflows/ci.yml'),
+  'utf8',
+);
 
 const HEAD_SHA = 'a'.repeat(40);
 const BASE_SHA = 'b'.repeat(40);
@@ -318,6 +324,26 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'rhwp-studio/tests/a.ts' }]), true);
 });
 
+test('every impact-conditioned CI job is covered by the audit allowlist', () => {
+  const conditioned = [...CI_WORKFLOW.matchAll(
+    /^  ([A-Za-z0-9_-]+):\n([\s\S]*?)(?=^  [A-Za-z0-9_-]+:\n|\Z)/gm,
+  )].filter(([, , body]) => (
+    /needs\.preflight\.outputs\.(?:rust_required|native_skia_required|frontend_mode)/.test(body)
+  )).map(([, jobId]) => jobId).sort();
+  assert.deepEqual(conditioned, Object.keys(CI_AUDITED_JOB_IDS).sort());
+
+  const auditedNames = new Set([
+    ...CI_RUST_JOBS,
+    CI_NATIVE_JOB,
+    ...CI_FRONTEND_JOBS,
+    'Build & Test',
+  ]);
+  assert.deepEqual(
+    [...new Set(Object.values(CI_AUDITED_JOB_IDS))].sort(),
+    [...auditedNames].sort(),
+  );
+});
+
 test('workflow selection accepts fork runs without PR associations but keeps exact head identity', () => {
   const matching = apiWorkflowRun();
   const wrongBranch = apiWorkflowRun({ id: 2, head_branch: 'other' });
@@ -429,15 +455,93 @@ test('aggregate audit rejects a skipped required Rust job despite green aggregat
   assert.match(audit.reason, /CI:job-not-success:Lint/);
 });
 
-test('CodeQL audit proves selected analysis and unselected no-op steps', () => {
+test('aggregate audit accepts safe full execution when worker classification degrades', () => {
+  const input = policyInput();
+  const policy = determinePolicy(input);
+  const workflows = workflowEvidence(policy);
+
+  for (const evidence of Object.values(workflows)) {
+    const preflight = evidence.jobs.find((entry) => entry.name.endsWith('preflight'));
+    preflight.steps.find((entry) => entry.name.startsWith('Check out trusted')).conclusion = 'failure';
+  }
+  for (const name of [...CI_RUST_JOBS, CI_NATIVE_JOB, ...CI_FRONTEND_JOBS]) {
+    const aliases = CI_JOB_ALIASES[name] || [name];
+    const lane = workflows.CI.jobs.find((entry) => aliases.includes(entry.name));
+    lane.conclusion = 'success';
+  }
+  for (const [language, name] of Object.entries(CODEQL_JOBS)) {
+    if (policy.classification.codeql_languages.split(',').includes(language)) continue;
+    const lane = workflows.CodeQL.jobs.find((entry) => entry.name === name);
+    lane.steps.find((entry) => entry.name === 'Skip unselected language').conclusion = 'skipped';
+    lane.steps.find((entry) => entry.name === 'Perform CodeQL Analysis').conclusion = 'success';
+  }
+  workflows['Render Diff'].jobs.find(
+    (entry) => entry.name === 'Canvas visual diff',
+  ).conclusion = 'success';
+
+  const audit = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
+  assert.equal(audit.conclusion, 'success');
+});
+
+test('safe supersets do not permit failed optional lanes or skipped required analysis', () => {
+  const input = policyInput();
+  const policy = determinePolicy(input);
+
+  const failedOptional = workflowEvidence(policy);
+  failedOptional.CI.jobs.find((entry) => entry.name === CI_RUST_JOBS[0]).conclusion = 'failure';
+  const failedCiAudit = auditPolicyRuns({
+    ...input,
+    policy,
+    currentHeadSha: HEAD_SHA,
+    workflows: failedOptional,
+  });
+  assert.equal(failedCiAudit.conclusion, 'failure');
+  assert.match(failedCiAudit.reason, /job-not-skipped-or-success:Lint/);
+
+  const skippedRequired = workflowEvidence(policy);
+  const javascript = skippedRequired.CodeQL.jobs.find(
+    (entry) => entry.name === CODEQL_JOBS['javascript-typescript'],
+  );
+  javascript.steps.find(
+    (entry) => entry.name === 'Perform CodeQL Analysis',
+  ).conclusion = 'skipped';
+  const failedCodeqlAudit = auditPolicyRuns({
+    ...input,
+    policy,
+    currentHeadSha: HEAD_SHA,
+    workflows: skippedRequired,
+  });
+  assert.equal(failedCodeqlAudit.conclusion, 'failure');
+  assert.match(failedCodeqlAudit.reason, /step-not-success:Perform CodeQL Analysis/);
+
+  const failedRender = workflowEvidence(policy);
+  failedRender['Render Diff'].jobs.find(
+    (entry) => entry.name === 'Canvas visual diff',
+  ).conclusion = 'failure';
+  const failedRenderAudit = auditPolicyRuns({
+    ...input,
+    policy,
+    currentHeadSha: HEAD_SHA,
+    workflows: failedRender,
+  });
+  assert.equal(failedRenderAudit.conclusion, 'failure');
+  assert.match(failedRenderAudit.reason, /job-not-skipped-or-success:Canvas visual diff/);
+});
+
+test('CodeQL audit accepts safe unselected analysis but rejects inconsistent step pairs', () => {
   const input = policyInput();
   const policy = determinePolicy(input);
   const workflows = workflowEvidence(policy);
   const rust = workflows.CodeQL.jobs.find((entry) => entry.name === CODEQL_JOBS.rust);
+  rust.steps.find((entry) => entry.name === 'Skip unselected language').conclusion = 'skipped';
   rust.steps.find((entry) => entry.name === 'Perform CodeQL Analysis').conclusion = 'success';
-  const audit = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
-  assert.equal(audit.conclusion, 'failure');
-  assert.match(audit.reason, /Analyze \(rust\).*step-not-skipped:Perform CodeQL Analysis/);
+  const safeFull = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
+  assert.equal(safeFull.conclusion, 'success');
+
+  rust.steps.find((entry) => entry.name === 'Skip unselected language').conclusion = 'success';
+  const inconsistent = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
+  assert.equal(inconsistent.conclusion, 'failure');
+  assert.match(inconsistent.reason, /Analyze \(rust\).*unsafe-unselected-execution/);
 });
 
 test('trailing review-only fast pass is accepted only on unchanged enforcement surface', () => {
@@ -501,6 +605,22 @@ test('stale workflow identity cannot overwrite the current policy status', () =>
   const audit = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
   assert.equal(audit.conclusion, 'failure');
   assert.equal(audit.reason, 'workflow-identity-mismatch:CI');
+});
+
+test('stale trigger head is not publishable even when workflow evidence matches the live PR', () => {
+  const input = policyInput();
+  const policy = determinePolicy(input);
+  const audit = auditPolicyRuns({
+    ...input,
+    policy,
+    currentHeadSha: 'c'.repeat(40),
+    workflows: workflowEvidence(policy),
+  });
+  assert.deepEqual(audit, {
+    publish: 'false',
+    conclusion: 'failure',
+    reason: 'stale-or-unresolved-head',
+  });
 });
 
 test('CLI writes policy and aggregate audit outputs', (t) => {

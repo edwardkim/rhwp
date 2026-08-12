@@ -55,10 +55,12 @@ jobs:
             const { owner, repo } = context.repo;
             let pull = null;
             let mode = '';
+            let triggerHeadSha = '';
 
             if (context.eventName === 'pull_request_target') {
               mode = 'publish';
               const eventPull = context.payload.pull_request;
+              triggerHeadSha = eventPull.head.sha;
               const response = await github.rest.pulls.get({
                 owner,
                 repo,
@@ -75,6 +77,7 @@ jobs:
             } else {
               mode = 'audit';
               const run = context.payload.workflow_run;
+              triggerHeadSha = run.head_sha;
               const headRepository = run.head_repository?.full_name || '';
               const headOwner = run.head_repository?.owner?.login || headRepository.split('/')[0];
               if (headOwner && run.head_branch && run.head_sha) {
@@ -124,6 +127,7 @@ jobs:
             core.setOutput('base_ref', pull.base.ref);
             core.setOutput('base_sha', pull.base.sha);
             core.setOutput('head_sha', pull.head.sha);
+            core.setOutput('trigger_head_sha', triggerHeadSha);
             core.setOutput('head_branch', pull.head.ref);
             core.setOutput('head_repository', pull.head.repo?.full_name || '');
             core.setOutput('author_permission', authorPermission);
@@ -277,7 +281,7 @@ jobs:
 
       - name: Classify with trusted base implementation
         id: classify
-        if: ${{ always() && steps.resolve.outputs.active == 'true' }}
+        if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
         continue-on-error: true
         run: >-
           node trusted-base/scripts/ci-impact-classifier.cjs
@@ -285,13 +289,14 @@ jobs:
           > .ci-impact-classification.json
 
       - name: Prepare trusted policy input
-        if: ${{ always() && steps.resolve.outputs.active == 'true' }}
+        if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
         continue-on-error: true
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           MODE: ${{ steps.resolve.outputs.mode }}
           BASE_REF: ${{ steps.resolve.outputs.base_ref }}
           BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
+          CURRENT_HEAD_SHA: ${{ steps.resolve.outputs.trigger_head_sha }}
           HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
           HEAD_BRANCH: ${{ steps.resolve.outputs.head_branch }}
           HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}
@@ -354,7 +359,9 @@ jobs:
               controllerAvailable: true,
             };
             if (process.env.MODE === 'audit') {
-              input.currentHeadSha = process.env.HEAD_SHA;
+              // Keep the triggering workflow's SHA independent from the live PR SHA.
+              // auditPolicyRuns rejects a stale event before any status can be published.
+              input.currentHeadSha = process.env.CURRENT_HEAD_SHA;
               input.workflows = workflows;
             }
             fs.writeFileSync(
@@ -364,7 +371,7 @@ jobs:
 
       - name: Evaluate trusted policy and aggregate audit
         id: policy
-        if: ${{ always() && steps.resolve.outputs.active == 'true' }}
+        if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
         continue-on-error: true
         run: >-
           node trusted-base/scripts/ci-impact-policy.cjs
@@ -373,7 +380,7 @@ jobs:
           --output .ci-impact-policy.json
 
       - name: Summarize trusted policy
-        if: ${{ always() && steps.resolve.outputs.active == 'true' }}
+        if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
         env:
           MODE: ${{ steps.resolve.outputs.mode }}
           DECISION: ${{ steps.policy.outputs.decision || 'full' }}
@@ -395,10 +402,11 @@ jobs:
           } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Publish exact-head policy status
-        if: ${{ always() && steps.resolve.outputs.active == 'true' }}
+        if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           MODE: ${{ steps.resolve.outputs.mode }}
+          PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
           HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
           DECISION: ${{ steps.policy.outputs.decision || 'full' }}
           CI_EXPECTED: ${{ steps.policy.outputs.ci_run_expected || 'true' }}
@@ -411,6 +419,19 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
+            const response = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: Number(process.env.PULL_NUMBER),
+            });
+            const livePull = response.data;
+            if (livePull.state !== 'open' || livePull.head.sha !== process.env.HEAD_SHA) {
+              core.info(
+                `Do not publish stale policy status for PR #${process.env.PULL_NUMBER}: `
+                + `resolved=${process.env.HEAD_SHA} live=${livePull.head.sha} state=${livePull.state}.`,
+              );
+              return;
+            }
             if (process.env.MODE === 'audit' && process.env.AUDIT_PUBLISH !== 'true') {
               core.info('Stale audit is not allowed to overwrite the current head status.');
               return;

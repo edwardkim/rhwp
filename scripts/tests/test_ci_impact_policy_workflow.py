@@ -96,7 +96,33 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
         self.assertIn("else if (noWorkflowExpected) state = 'success'", self.workflow)
         self.assertIn("new Set(['pending', 'success', 'failure'])", self.workflow)
         self.assertIn("candidate.head.sha === run.head_sha", self.workflow)
+        self.assertIn("core.setOutput('trigger_head_sha', triggerHeadSha)", self.workflow)
+        self.assertIn("input.currentHeadSha = process.env.CURRENT_HEAD_SHA", self.workflow)
+        self.assertIn("github.rest.pulls.get({", self.workflow)
+        self.assertIn("livePull.head.sha !== process.env.HEAD_SHA", self.workflow)
         self.assertIn("cancel-in-progress: true", self.workflow)
+
+    def test_cancelled_controller_cannot_summarize_or_publish(self) -> None:
+        guarded = "if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}"
+        self.assertEqual(self.workflow.count(guarded), 5)
+        for step_name in [
+            "Classify with trusted base implementation",
+            "Prepare trusted policy input",
+            "Evaluate trusted policy and aggregate audit",
+            "Summarize trusted policy",
+            "Publish exact-head policy status",
+        ]:
+            marker = f"      - name: {step_name}\n        {guarded}\n"
+            if step_name in {
+                "Classify with trusted base implementation",
+                "Evaluate trusted policy and aggregate audit",
+            }:
+                marker = f"      - name: {step_name}\n        id: "
+                start = self.workflow.index(marker)
+                block = self.workflow[start : start + 240]
+                self.assertIn(guarded, block)
+            else:
+                self.assertIn(marker, self.workflow)
 
     def test_existing_workers_do_not_consume_policy_status(self) -> None:
         for workflow in (self.ci_workflow, self.codeql_workflow, self.render_workflow):

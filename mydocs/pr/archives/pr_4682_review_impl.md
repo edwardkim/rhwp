@@ -2,7 +2,7 @@
 kind: pr-review-implementation
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-12
+last_verified: 2026-08-13
 ---
 
 # PR #4682 self-review 보정 및 수용 이행 기록
@@ -31,12 +31,24 @@ last_verified: 2026-08-12
 - [x] self-review 보정 commit `4ba5e431d` 뒤 최신 devel을 `30bbcf9fe`로 실제 merge한다.
 - [x] 최종 diff가 PR 목적 밖 제품·배포 변경을 포함하지 않는지 다시 확인한다.
 - [x] 동기화 head에서 focused 검증과 `git diff --check`를 다시 실행한다.
+- [x] 게시 self-review 뒤 전진한 `upstream/devel@55eb2860b7fa`도 merge head `d5b7ef831`에 반영한다.
+
+## Stage 2.5 — 게시 self-review 후속 보정
+
+- [x] `ci-impact-policy.test.cjs`를 Lint job에 배선하고 CJS 테스트 누락 가드를 추가한다.
+- [x] 필요한 검사 누락은 실패시키면서 안전한 full 상위 집합은 허용한다.
+- [x] 취소된 controller의 정책 계산·요약·status 게시를 차단한다.
+- [x] trigger/live head 독립 비교와 게시 직전 live PR 재조회로 stale status를 차단한다.
+- [x] 영향축을 소비하는 CI job과 감사 allowlist의 완전성 계약을 추가한다.
+- [x] 활성화 시 기존 PR과 base 이동은 required 채택 전 live audit 항목으로 기록한다.
+- [x] Node 51/51, focused Python 21/21, 전체 workflow 107/107, actionlint와 diff check를 통과한다.
 
 ## Stage 3 — 원격 보정과 새 head CI
 
-- [ ] 작업지시자 승인 뒤 보정·동기화 commit을 같은 PR branch에 push한다.
-- [ ] PR 본문의 검증 수치와 동작 설명을 최종 구현에 맞춰 갱신한다.
+- [x] 작업지시자 승인 뒤 보정·동기화 commit을 같은 PR branch에 push한다.
+- [x] PR 본문의 검증 수치와 동작 설명을 최종 구현에 맞춰 갱신한다.
 - [ ] CI·CodeQL·Render Diff와 `Build & Test`의 같은 head 결과를 분석한다.
+- [ ] 모든 CI 통과 뒤 보정 항목과 검증 결과를 기존 self-review 코멘트의 후속 코멘트로 게시한다.
 - [ ] 실패가 있으면 Draft를 유지하고 원인을 보정한 뒤 새 head에서 다시 검증한다.
 
 ## Stage 4 — maintainer review

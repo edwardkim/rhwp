@@ -121,6 +121,23 @@ const CI_JOB_ALIASES = {
 };
 const CI_NATIVE_JOB = 'Native Skia tests';
 const CI_FRONTEND_JOBS = ['Frontend unit gates', 'Frontend package gates'];
+// Job ids are the stable YAML-side identities. Values are the REST job names audited
+// below. Tests derive every impact-conditioned ci.yml job and require this map to stay
+// complete, so adding a new selectable lane cannot silently escape the controller.
+const CI_AUDITED_JOB_IDS = {
+  'build-test-archive-slow': 'build-test-archive-slow',
+  'build-test-archive-a': 'build-test-archive-a',
+  'build-test-archive-b': 'build-test-archive-b',
+  'test-slow-shard': 'test-slow-shard',
+  'test-regular-shard-1': 'test-regular-shard-1',
+  'test-regular-shard-2': 'test-regular-shard-2',
+  'test-regular-shard-3': 'test-regular-shard-3',
+  lint: 'Lint (fmt, clippy, WASM check)',
+  'native-skia-tests': CI_NATIVE_JOB,
+  'frontend-unit-gates': CI_FRONTEND_JOBS[0],
+  'frontend-package-gates': CI_FRONTEND_JOBS[1],
+  'build-and-test': 'Build & Test',
+};
 const CODEQL_JOBS = {
   'javascript-typescript': 'Analyze (javascript-typescript)',
   python: 'Analyze (python)',
@@ -424,7 +441,23 @@ function requireJobConclusion(byName, name, conclusion) {
   return '';
 }
 
-function requireAliasedJobConclusion(byName, logicalName, conclusion) {
+function safeConclusions(expected) {
+  return expected === 'skipped' ? new Set(['skipped', 'success']) : new Set([expected]);
+}
+
+function requireSafeJobConclusion(byName, name, expected) {
+  const resolved = exactJob(byName, name);
+  if (resolved.error) return resolved.error;
+  const job = resolved.job;
+  const allowed = safeConclusions(expected);
+  if (job.status !== 'completed' || !allowed.has(job.conclusion)) {
+    return `job-not-${[...allowed].join('-or-')}:${name}:`
+      + `${job.status || 'unknown'}:${job.conclusion || 'unknown'}`;
+  }
+  return '';
+}
+
+function requireSafeAliasedJobConclusion(byName, logicalName, expected) {
   const aliases = CI_JOB_ALIASES[logicalName] || [logicalName];
   const matches = aliases.flatMap((name) => (
     (byName.get(name) || []).map((job) => ({ name, job }))
@@ -435,10 +468,20 @@ function requireAliasedJobConclusion(byName, logicalName, conclusion) {
       : `duplicate-job:${logicalName}`;
   }
   const { name, job } = matches[0];
-  if (job.status !== 'completed' || job.conclusion !== conclusion) {
-    return `job-not-${conclusion}:${name}:${job.status || 'unknown'}:${job.conclusion || 'unknown'}`;
+  const allowed = safeConclusions(expected);
+  if (job.status !== 'completed' || !allowed.has(job.conclusion)) {
+    return `job-not-${[...allowed].join('-or-')}:${name}:`
+      + `${job.status || 'unknown'}:${job.conclusion || 'unknown'}`;
   }
   return '';
+}
+
+function exactStep(job, name) {
+  const entries = job.steps.filter((step) => step.name === name);
+  if (entries.length !== 1) {
+    return { error: entries.length === 0 ? `missing-step:${name}` : `duplicate-step:${name}` };
+  }
+  return { step: entries[0] };
 }
 
 function requireStepConclusion(job, name, conclusion) {
@@ -467,7 +510,7 @@ function preflightFastPass(byName, jobName, checkoutStepName) {
   if (checkout[0].status !== 'completed') {
     return { error: `step-not-completed:${checkoutStepName}:${checkout[0].status || 'unknown'}` };
   }
-  if (!new Set(['success', 'skipped']).has(checkout[0].conclusion)) {
+  if (!new Set(['success', 'failure', 'skipped']).has(checkout[0].conclusion)) {
     return { error: `step-invalid:${checkoutStepName}:${checkout[0].conclusion || 'unknown'}` };
   }
   return { fastPass: checkout[0].conclusion === 'skipped' };
@@ -488,7 +531,7 @@ function auditCi(policy, jobs) {
   if (preflight.fastPass) {
     if (policy.enforcement_surface_changed === 'true') return 'fast-pass-with-enforcement-change:CI';
     for (const name of laneJobs) {
-      const failure = requireAliasedJobConclusion(byName, name, 'skipped');
+      const failure = requireSafeAliasedJobConclusion(byName, name, 'skipped');
       if (failure) return failure;
     }
     return '';
@@ -496,11 +539,11 @@ function auditCi(policy, jobs) {
 
   const rustConclusion = policy.classification.rust_required === 'true' ? 'success' : 'skipped';
   for (const name of CI_RUST_JOBS) {
-    const failure = requireAliasedJobConclusion(byName, name, rustConclusion);
+    const failure = requireSafeAliasedJobConclusion(byName, name, rustConclusion);
     if (failure) return failure;
   }
   const nativeConclusion = policy.classification.native_skia_required === 'true' ? 'success' : 'skipped';
-  const nativeFailure = requireJobConclusion(byName, CI_NATIVE_JOB, nativeConclusion);
+  const nativeFailure = requireSafeJobConclusion(byName, CI_NATIVE_JOB, nativeConclusion);
   if (nativeFailure) return nativeFailure;
 
   const frontendExpected = {
@@ -509,7 +552,7 @@ function auditCi(policy, jobs) {
     package: ['skipped', 'success'],
   }[policy.classification.frontend_mode];
   for (let index = 0; index < CI_FRONTEND_JOBS.length; index += 1) {
-    const failure = requireJobConclusion(
+    const failure = requireSafeJobConclusion(
       byName,
       CI_FRONTEND_JOBS[index],
       frontendExpected[index],
@@ -563,10 +606,22 @@ function auditCodeql(policy, jobs) {
       const skipFailure = requireStepConclusion(job, 'Skip unselected language', 'skipped');
       if (skipFailure) return `${name}:${skipFailure}`;
     } else {
-      const skipFailure = requireStepConclusion(job, 'Skip unselected language', 'success');
-      if (skipFailure) return `${name}:${skipFailure}`;
-      const analyzeFailure = requireStepConclusion(job, 'Perform CodeQL Analysis', 'skipped');
-      if (analyzeFailure) return `${name}:${analyzeFailure}`;
+      const skipResolved = exactStep(job, 'Skip unselected language');
+      if (skipResolved.error) return `${name}:${skipResolved.error}`;
+      const analyzeResolved = exactStep(job, 'Perform CodeQL Analysis');
+      if (analyzeResolved.error) return `${name}:${analyzeResolved.error}`;
+      const skipStep = skipResolved.step;
+      const analyzeStep = analyzeResolved.step;
+      if (skipStep.status !== 'completed' || analyzeStep.status !== 'completed') {
+        return `${name}:unselected-steps-not-completed:`
+          + `${skipStep.status || 'unknown'}:${analyzeStep.status || 'unknown'}`;
+      }
+      const noOp = skipStep.conclusion === 'success' && analyzeStep.conclusion === 'skipped';
+      const safeFull = skipStep.conclusion === 'skipped' && analyzeStep.conclusion === 'success';
+      if (!noOp && !safeFull) {
+        return `${name}:unsafe-unselected-execution:`
+          + `${skipStep.conclusion || 'unknown'}:${analyzeStep.conclusion || 'unknown'}`;
+      }
     }
   }
   return '';
@@ -586,7 +641,7 @@ function auditRenderDiff(policy, jobs) {
   const conclusion = preflight.fastPass || policy.classification.render_required !== 'true'
     ? 'skipped'
     : 'success';
-  return requireJobConclusion(byName, 'Canvas visual diff', conclusion);
+  return requireSafeJobConclusion(byName, 'Canvas visual diff', conclusion);
 }
 
 function auditPolicyRuns(input = {}) {
@@ -727,6 +782,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  CI_AUDITED_JOB_IDS,
   CI_FRONTEND_JOBS,
   CI_JOB_ALIASES,
   CI_NATIVE_JOB,

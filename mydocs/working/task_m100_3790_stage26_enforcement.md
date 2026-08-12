@@ -4,9 +4,9 @@
 - **브랜치**: `issue-3790-stage26-enforcement`
 - **worktree**: `tmp/issue-3790-stage26-enforcement`
 - **분기 기준**: `upstream/devel` `88012c7e09a6`
-- **최신 확인 기준**: `upstream/devel` `9b9cbf3c80b6`
+- **최신 확인 기준**: `upstream/devel` `55eb2860b7fa`
 - **원형**: `tmp/issue-3790-stage26` / `060998dc863a` (읽기 전용 보존)
-- **상태**: Draft PR #4682 self-review 보정·최신 devel 동기화·focused 검증 완료, push·새 CI 대기
+- **상태**: Draft PR #4682 리뷰 2차 보정·최신 devel 동기화·focused 검증 완료, 새 head CI 대기
 
 ## 재개 근거
 
@@ -45,7 +45,8 @@ commit status, stale run 무시와 fail-closed 기본값을 재사용할 가치�
 - API로 읽는 PR files, workflow runs, jobs와 steps는 실행하지 않는 증거 데이터로만 취급한다.
 - 각 workflow 완료 이벤트에서 CI·CodeQL·Render Diff의 같은 head repository·branch·SHA 최신 run을
   다시 모은다. `pull_requests` 연결 정보가 있으면 현재 PR과 base ref·SHA도 함께 검증한다. 순서와
-  무관하게 미완료는 pending, 실패는 failure, 전체 진리표 일치만 success다.
+  무관하게 미완료는 pending, 실패는 failure다. 필요한 검사를 생략하면 실패시키되, worker 쪽
+  fail-open으로 필요보다 많은 검사가 성공한 안전한 상위 집합은 허용한다.
 - fast-pass는 workflow·local action·classifier·merge verifier가 base와 동일한 PR에서만 허용한다.
   이 surface가 바뀐 PR은 classifier full 진리표를 실제 job/step으로 증명해야 한다.
 
@@ -64,13 +65,14 @@ commit status, stale run 무시와 fail-closed 기본값을 재사용할 가치�
 - `pull_request_target` publish와 세 `workflow_run` audit를 단일 privileged job으로 합쳐 base policy
   checkout·classifier 실행을 한 번만 유지했다.
 - exact head SHA별 concurrency를 직렬화하고 새 완료 이벤트가 CI·CodeQL·Render Diff 전체 증거를 다시
-  모으게 했다. 일부 미완료는 pending, 실패·진리표 불일치는 failure, 전체 일치만 success다.
+  모으게 했다. 일부 미완료는 pending, 필요한 검사의 실패·누락은 failure, 기대 진리표 또는 안전한 full
+  상위 집합만 success다.
 - CI의 Rust 8개 논리 lane, Native Skia와 frontend unit/package를 classifier 축에 맞춰 감사한다.
   reusable workflow는 skipped caller id와 실행된 `caller / called job` 이름을 alias로 묶고 중복을
   거부한다.
-- CodeQL 선택 언어는 실제 analysis step success, 비선택 언어는 skip step success와 analysis step
-  skipped를 요구한다. 전체 matrix fast-pass의 literal job과 expanded job 표현을 각각 허용하되 혼합은
-  거부한다.
+- CodeQL 선택 언어는 실제 analysis step success를 요구한다. 비선택 언어는 no-op 또는 fail-open full
+  analysis success 두 형태만 허용하고 모순된 step 조합을 거부한다. 전체 matrix fast-pass의 literal
+  job과 expanded job 표현을 각각 허용하되 혼합은 거부한다.
 - Render Diff trigger 계약과 Canvas `success|skipped`를 감사한다. 세 workflow의 paths filter 상수는
   실제 YAML 목록과 단위 테스트에서 동일해야 한다.
 
@@ -96,6 +98,30 @@ Draft PR #4682의 첫 전체 CI가 통과한 뒤 최신 devel과 실제 Actions 
 `dd3946fac35487b859bbaab81d71f01184eaff2e`를 만들었다. 보정 commit `4ba5e431d` 뒤 최신 devel을
 `30bbcf9fe`로 실제 병합했고 같은 로컬 head에서 focused 검증을 다시 통과했다. 이 head를 push한 뒤
 전체 CI를 다시 통과시켜야 하며, 첫 CI 성공은 최종 merge 근거로 재사용하지 않는다.
+
+## 게시 self-review 코멘트 보정
+
+[PR 코멘트](https://github.com/edwardkim/rhwp/pull/4682#issuecomment-5267715311)는 이전 head
+`f69856f4d`를 기준으로 7개 항목을 제기했다. 현재 head에서 이미 해결된 review 문서 누락을 제외하고 다음을
+보정했다.
+
+1. `ci-impact-policy.test.cjs`를 Lint job에 실제 배선하고, `scripts/tests/*.test.cjs`가 빠지면
+   `test_workflow_contract_wiring.py`가 실패하게 했다.
+2. controller가 요구한 검사를 worker가 생략하면 계속 실패시키되, worker classifier·checkout 오류가
+   full로 열려 더 많은 CI·CodeQL·Render Diff가 성공한 경우는 안전한 상위 집합으로 허용했다.
+3. 취소된 동일-head controller가 fallback failure를 게시하지 못하도록 정책 계산·요약·status 게시에
+   `!cancelled()`를 적용했다.
+4. trigger head SHA와 live PR head SHA를 독립 입력으로 비교하고, status 게시 직전 PR을 다시 조회해
+   closed/stale head에는 아무 상태도 쓰지 않게 했다.
+5. `needs.preflight.outputs`의 영향축을 소비하는 CI job id 전체와 controller 감사 allowlist가 정확히
+   일치하는 정적 계약을 추가했다.
+
+활성화 시에는 main 등록 전에 열려 있던 PR도 base policy와 workflow evidence의 base SHA가 일치하는지
+표본으로 확인한다. devel 이동 때문에 둘이 다르면 임의 허용하지 않고 새 head 실행 또는 base 동기화로
+증거를 갱신한 뒤 required context 채택 여부를 판단한다.
+
+최신 `upstream/devel@55eb2860b7fa`는 merge simulation tree
+`f70884072c51f4248b4361f8aa5b3c56ee0f57dc`로 충돌이 없었고, 실제 merge head `d5b7ef831`에 반영했다.
 
 ## 실제 API 대조
 
@@ -125,8 +151,8 @@ actionlint \
 git diff --check
 ```
 
-- Node classifier+policy: 47/47 통과
-- Python workflow 계약: 106/106 통과
+- Node classifier+policy: 51/51 통과
+- Python workflow 계약: 107/107 통과
 - actionlint: 진단 없음
 - whitespace: 통과
 

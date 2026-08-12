@@ -2,7 +2,7 @@
 kind: pr-review
 status: pending-ci
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-12
+last_verified: 2026-08-13
 ---
 
 # PR #4682 self-review — 선택 실행 독립 정책 감사
@@ -20,6 +20,10 @@ PR-controlled workflow가 필수 검사를 잘못 건너뛰면 `CI Impact Policy
 focused 검증을 다시 통과했다. 첫 CI는 최종 merge 근거로 재사용하지 않으며, 새 head의 전체 CI와
 `edwardkim`의 명시적 승인 뒤에만 merge를 권고한다.
 
+2026-08-13 게시 self-review 코멘트의 유효한 후속 지적도 로컬에서 보정했다. Node policy 테스트를 실제
+CI에 배선하고, 필요한 검사 누락만 차단하면서 안전한 full 상위 집합은 허용했다. 취소·stale controller의
+status 게시를 막고 CI 감사 lane 완전성 계약을 추가했다. 최신 devel 동기화 head의 새 CI가 남아 있다.
+
 ## 검토 경로
 
 ```text
@@ -32,6 +36,7 @@ loaded documents: pr_review_workflow.md, pr_review/README.md,
 remote head at intake: f69856f4d5101eec4d9a454f7db91e3bb8a18a22
 local correction commit: 4ba5e431dd13500e4321d4e1eb0082c98b6004bf
 latest devel merge head: 30bbcf9fe1d0b5a55c4635d3f0bca56ba79b26b9
+review remediation base merge: d5b7ef8318a1ff790b9d4e55f02c1f126c980427
 ```
 
 1,000줄이 넘고 default-branch privileged controller와 향후 required status 채택 판단을 포함하므로,
@@ -95,26 +100,49 @@ CI·CodeQL·Render Diff가 workflow, local action, classifier, policy, merge ver
 `previous_filename`을 모두 검사하고, 하나라도 바뀐 PR은 fast-pass 대신 현재 head의 full validation을
 실행하도록 세 계약을 일치시켰다.
 
+### 4. CI에서 실행되지 않던 policy 단위 테스트
+
+`ci-impact-policy.test.cjs`를 Lint job에 직접 배선하고 Python 배선 가드가 모든
+`scripts/tests/*.test.cjs`도 확인하도록 넓혔다. 영향축을 소비하는 CI job id와 controller allowlist의
+완전성도 Node 계약으로 고정했다.
+
+### 5. 안전한 과다 실행 오탐
+
+worker classifier가 일시 실패해 full로 열렸을 때 controller selective 판정보다 많은 검사가 성공해도
+필수 검사는 누락되지 않는다. 예상 success는 계속 success만 요구하고, 예상 skip은 `skipped|success`만
+허용한다. CodeQL 비선택 언어도 no-op과 실제 full analysis 두 짝만 허용해 모순된 step 조합은 실패한다.
+
+### 6. 취소·stale status 게시
+
+동일 head concurrency로 취소된 controller는 정책 계산·요약·status 게시를 실행하지 않는다. audit에는
+workflow trigger SHA를 live PR SHA와 독립 입력으로 전달하고, 게시 직전 PR을 다시 조회해 closed PR이나
+새 head에는 이전 상태를 쓰지 않는다.
+
+### 7. 활성화 시 base 이동
+
+main 등록 뒤 기존 열린 PR도 base policy와 workflow evidence base SHA를 표본 감사한다. 서로 다르면
+오탐을 허용하지 않고 새 head 실행 또는 base 동기화로 증거를 갱신한다. 이 확인은 required context 채택
+전 live audit 게이트다.
+
 ## 검증
 
-- Node classifier+policy: 47/47 통과
-- focused Python 계약: 20/20 통과
-- 전체 workflow 계약: 106/106 통과
+- Node classifier+policy: 51/51 통과
+- focused Python 계약: 21/21 통과
+- 전체 workflow 계약: 107/107 통과
 - `actionlint` 대상 CI·CodeQL·Render Diff·CI Impact Policy: 진단 없음
 - `git diff --check`: 통과
 - 원격 `f69856f4d`의 CI와 CodeQL: 성공. 로컬 보정 전 head이므로 최종 판정에는 재사용하지 않음
-- 최신 `upstream/devel@9b9cbf3c80b6` merge simulation: 충돌 없음,
-  tree `dd3946fac35487b859bbaab81d71f01184eaff2e`
+- 최신 `upstream/devel@55eb2860b7fa` merge: 충돌 없음, merge head `d5b7ef831`
 
 renderer, layout, paint, sample과 제품 UI를 바꾸지 않으므로 시각·fixture sweep 대상은 아니다.
 
 ## 최종 권고
 
-현재는 **pending-ci**다. 로컬 finding 보정, 최신 devel merge와 focused 검증은 완료됐다. 다음 순서를
+현재는 **pending-ci**다. 리뷰 보정, 최신 devel merge와 focused 검증은 완료됐다. 다음 순서를
 모두 만족한 뒤에만 수용 권고로 전환한다.
 
-1. review 상태 갱신을 commit하고 같은 PR branch에 push한다.
-2. 같은 head에서 GitHub 전체 CI를 다시 통과시킨다.
+1. 같은 head에서 GitHub 전체 CI를 다시 통과시킨다.
+2. 통과 결과를 포함한 보정 반영 코멘트를 게시한다.
 3. Draft를 해제하고 `edwardkim`에게 controller의 privileged 경계와 main 등록 뒤 required status 채택
    판단을 포함한 review를 요청한다.
 4. maintainer의 명시적 승인과 merge 직전 최신 head·checks·mergeability 재확인 뒤 merge한다.

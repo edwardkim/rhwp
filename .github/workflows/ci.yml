@@ -897,6 +897,7 @@ jobs:
       - name: Validate CI impact classifier
         run: |
           node --test scripts/tests/ci-impact-classifier.test.cjs
+          node --test scripts/tests/ci-impact-policy.test.cjs
           python3 -m unittest scripts/tests/test_ci_impact_workflow.py
 
       - name: Validate Render Diff trigger policy
