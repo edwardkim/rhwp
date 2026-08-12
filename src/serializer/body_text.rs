@@ -998,6 +998,12 @@ fn push_field_end_ctrl(code_units: &mut Vec<u16>, marker: FieldEndMarker) {
 /// 첫 줄(`text_start == 0`)은 어떤 문단에도 있어야 하므로 전부 범위를 벗어나면 그대로 둔다
 /// (문단 자체가 비정상이라는 뜻이며, 줄을 0 개로 만들면 다른 손상이 된다). 유효한 줄이
 /// 하나라도 있으면 **접두부만** 남긴다 — 줄은 순서대로 이어져야 한다.
+///
+/// 경계는 `text_start == char_count` 를 **포함하지 않는다**. 한글이 직접 쓴 문서에 그 값이
+/// 흔하기 때문이다 — 빈 문단(`char_count=1`, 줄 `[0, 1]`)과 개체만 있는 셀 문단
+/// (`char_count=9`, 줄 `[0, 9]`)이 그렇고, 저장소 샘플 5건에서 40개 문단이 이 형태다.
+/// 한글은 그 문서를 정상 개방하므로 끝 위치를 가리키는 줄은 버릴 값이 아니다. 오라클로
+/// 본문 폐기를 확정한 값은 모두 끝을 **넘어선다**(`char_count=5` 에 `10`, `37` 에 `40`).
 fn line_segs_within_text(
     line_segs: &[LineSeg],
     char_count: u32,
@@ -1006,7 +1012,7 @@ fn line_segs_within_text(
     let real = line_segs.len().saturating_sub(layout_only_fill_lines);
     let in_range = line_segs[..real]
         .iter()
-        .position(|seg| seg.text_start >= char_count && seg.text_start > 0)
+        .position(|seg| seg.text_start > char_count)
         .unwrap_or(real);
     if in_range == 0 {
         line_segs
@@ -1466,6 +1472,47 @@ mod tests {
             "범위 밖 lineseg 는 레코드에서 제외된다"
         );
         assert_eq!(parsed.paragraphs[0].line_segs[0].text_start, 0);
+    }
+
+    /// [#4677] 끝 위치를 가리키는 lineseg 는 남는다 — 한글이 직접 쓰는 값이다.
+    ///
+    /// 빈 문단은 `char_count=1` 에 줄 `[0, 1]` 로 저장되는 일이 흔하다(저장소 샘플 5건에
+    /// 40개 문단). 경계를 `>=` 로 잡으면 그 둘째 줄까지 잘려 평범한 문서를 편집·저장할
+    /// 때마다 조판 정보가 사라진다 — 범위 밖 판정은 끝을 **넘어선** 값에만 걸어야 한다.
+    #[test]
+    fn test_line_seg_at_text_end_is_kept() {
+        let para = Paragraph {
+            char_count: 1,
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    line_height: 500,
+                    ..Default::default()
+                },
+                // 끝 위치(= char_count)를 가리키는 줄 — 한글 원본에 실재한다.
+                LineSeg {
+                    text_start: 1,
+                    line_height: 500,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+
+        assert_eq!(
+            parsed.paragraphs[0].line_segs.len(),
+            2,
+            "끝 위치를 가리키는 줄은 범위 밖이 아니다"
+        );
     }
 
     /// [#4677] 조판 전용 보강 줄은 파일에 나가지 않는다.
