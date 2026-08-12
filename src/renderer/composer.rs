@@ -4,7 +4,10 @@
 //! CharShapeRef 경계에 따라 다중 TextRun으로 분할한다.
 //! 인라인 컨트롤(표/도형) 삽입 위치를 식별한다.
 
-use super::layout::{control_line_seg_index, estimate_text_width, resolved_to_text_style};
+use super::layout::{
+    control_line_seg_index, estimate_text_width, estimate_text_width_unrounded,
+    hancom_regenerated_space_width, resolved_to_text_style,
+};
 use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use super::{hwpunit_to_px, px_to_hwpunit, TextStyle};
 use crate::model::control::Control;
@@ -1405,6 +1408,28 @@ pub fn estimate_composed_line_width(line: &ComposedLine, styles: &ResolvedStyleS
         .sum()
 }
 
+/// 새 LINE_SEG를 만들 때만 한컴 재조판 공백 metric을 반영한 텍스트 폭.
+///
+/// 저장본의 글꼴 고유 공백과 한컴이 새로 조판한 반각 공백은 다를 수 있다. 호출자는
+/// 저장 LINE_SEG가 없는 문단이나 폭 변경 뒤 재조판한 문단만 `true`를 전달한다.
+fn estimate_regenerated_line_text_width(
+    text: &str,
+    style: &TextStyle,
+    regenerated_line_space_metric: bool,
+) -> f64 {
+    let measured = estimate_text_width_unrounded(text, style);
+    if !regenerated_line_space_metric {
+        return measured;
+    }
+    let Some(regenerated_space_width) = hancom_regenerated_space_width(style) else {
+        return measured;
+    };
+    let stored_space_width = estimate_text_width_unrounded(" ", style);
+    measured
+        + text.chars().filter(|&ch| ch == ' ').count() as f64
+            * (regenerated_space_width - stored_space_width)
+}
+
 /// [#2146] 저장 LINE_SEG 이 전혀 없고(NO_LS) 모든 문단이 1줄이며 각 줄이 셀
 /// 폭을 여유 있게 쓰는 코너-라벨 셀 중, 선언 셀높이를 신뢰할 수 있는 두 경우:
 ///
@@ -1822,14 +1847,14 @@ pub fn recompose_for_cell_width(
     // 내어쓰기(intent<0)의 본질대로 **첫 줄 폭과 연속 줄 폭을 분리**한다.
     // 종전 전체 폭 단일 사용은 조문 문단(80168 pi=362, ps intent=-3120)에서
     // 연속 줄 폭 41.6px 과대 → 줄수 과소; 반대로 연속 폭 단일 사용은 첫 줄
-    // 과소로 +1줄 광역 팽창 (165쪽 회귀). HWP3-origin legacy bullet 은
-    // 종전대로 별도 1.04 tolerance 로 정합한다.
+    // 과소로 +1줄 광역 팽창 (165쪽 회귀). HWP3-origin legacy bullet은
+    // 저장 LINE_SEG가 없으므로 전체 폭과 한컴 재조판 공백 metric을 사용한다.
     // [#2070 정밀화] 이중 폭은 검증 영역(내어쓰기 intent<0, 80168 계열 사다리·오라클)
     // 에 한정한다. intent>=0 의 no-lineseg 폴백과 HWP3-origin legacy bullet
-    // (is_hwp3_hwp5_missing_lineseg_legacy_bullet, sample16-hwp5 = 64쪽 게이트)은
-    // 종전 Task #671 전체 폭 유지 (이중 폭 적용 시 65 over-split, git bisect 0e21ec08).
-    let hwp3_legacy_bullet =
-        styles.hwp3_variant || is_hwp3_hwp5_missing_lineseg_legacy_bullet(para, composed, styles);
+    // (LINE_SEG 부재의 legacy bullet)은 저장된 들여쓰기가 없으므로 전체 폭을 유지한다.
+    let regenerated_line_space_metric =
+        missing_lineseg_legacy_bullet_requires_regenerated_space_metric(para, composed, styles);
+    let hwp3_legacy_bullet = styles.hwp3_variant || regenerated_line_space_metric;
     let (first_width_px, cont_width_px) = styles
         .para_styles
         .get(para.para_shape_id as usize)
@@ -1850,16 +1875,6 @@ pub fn recompose_for_cell_width(
     if text_width_px <= 0.0 {
         return;
     }
-    // Some HWP3-origin HWP5 files omit PARA_LINE_SEG for legacy bullet paragraphs.
-    // HY신명조's embedded metrics are slightly wider than Hancom's converted reflow here,
-    // so use a small tolerance only for the tight leading-body style pattern.
-    let width_tolerance = if is_hwp3_hwp5_missing_lineseg_legacy_bullet(para, composed, styles) {
-        1.04
-    } else {
-        1.0
-    };
-    let eff_first_px = first_width_px * width_tolerance;
-    let eff_cont_px = cont_width_px * width_tolerance;
     // [Task #1042 Stage 6a] multi-line 지원 — compose_lines fallback 의 CHARS_PER_LINE=45
     // heuristic 결과가 cell width 와 일치 안 할 수 있음. lines 의 runs 를 합쳐서
     // cell width 기반 re-split.
@@ -1922,9 +1937,20 @@ pub fn recompose_for_cell_width(
     }
     for (gi, (combined_line, ends_with_break)) in groups.into_iter().enumerate() {
         // 내어쓰기 첫 줄 폭은 문단의 첫 줄에만 적용 — \n 이후 그룹은 전부 연속 폭.
-        let g_first = if gi == 0 { eff_first_px } else { eff_cont_px };
+        let g_first = if gi == 0 { first_width_px } else { cont_width_px };
         let start = composed.lines.len();
-        let total_width = estimate_composed_line_width(&combined_line, styles);
+        let total_width: f64 = combined_line
+            .runs
+            .iter()
+            .map(|run| {
+                let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                estimate_regenerated_line_text_width(
+                    effective_text_for_metrics(run),
+                    &style,
+                    regenerated_line_space_metric,
+                )
+            })
+            .sum();
         // [#2070] 행미 공백 hanging — 한글은 줄 끝 공백을 폭 판정에서 제외한다.
         // trailing 공백 포함 폭으로 분할하면 공백만의 유령 둘째 줄이 생겨
         // NO_LS 셀 행높이가 배가된다 (시장구조조사 "100.0␣␣" 22→50.4px,
@@ -1935,7 +1961,11 @@ pub fn recompose_for_cell_width(
                 let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
                 for ch in run.text.chars().rev() {
                     if ch == ' ' {
-                        w += estimate_text_width(" ", &ts);
+                        w += estimate_regenerated_line_text_width(
+                            " ",
+                            &ts,
+                            regenerated_line_space_metric,
+                        );
                     } else {
                         break 'outer;
                     }
@@ -1949,10 +1979,11 @@ pub fn recompose_for_cell_width(
             let mut frags = split_composed_line_by_width(
                 &combined_line,
                 g_first,
-                eff_cont_px,
+                cont_width_px,
                 styles,
                 char_break,
                 space_condense,
+                regenerated_line_space_metric,
             );
             // 분할 결과의 공백-단독 조각도 hanging — 직전 조각에 흡수한다.
             let mut folded: Vec<ComposedLine> = Vec::with_capacity(frags.len());
@@ -2162,7 +2193,7 @@ pub(crate) fn shrunk_cell_horizontal_padding(
     (new_left, new_right)
 }
 
-fn is_hwp3_hwp5_missing_lineseg_legacy_bullet(
+fn missing_lineseg_legacy_bullet_requires_regenerated_space_metric(
     para: &Paragraph,
     composed: &ComposedParagraph,
     styles: &ResolvedStyleSet,
@@ -2185,19 +2216,8 @@ fn is_hwp3_hwp5_missing_lineseg_legacy_bullet(
             .iter()
             .flat_map(|line| &line.runs)
             .any(|run| {
-                styles
-                    .char_styles
-                    .get(run.char_style_id as usize)
-                    .map(|cs| {
-                        matches!(
-                            cs.font_family.split(',').next().unwrap_or("").trim(),
-                            // [#2430] 한양신명조·휴먼명조는 종전 HY신명조 치환이
-                            // 풀려 원명으로 온다 — #2070 v3/v4 규칙(원 계보가
-                            // 한양신명조 사다리) 대상 유지.
-                            "HY신명조" | "한양신명조" | "휴먼명조"
-                        )
-                    })
-                    .unwrap_or(false)
+                let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                hancom_regenerated_space_width(&style).is_some()
             })
 }
 
@@ -2212,6 +2232,7 @@ fn split_composed_line_by_width(
     styles: &ResolvedStyleSet,
     char_break: bool,
     space_condense: f64,
+    regenerated_line_space_metric: bool,
 ) -> Vec<ComposedLine> {
     let mut result: Vec<ComposedLine> = Vec::new();
     // [#2070] 내어쓰기(intent<0) 이중 폭: 첫 출력 줄은 first_width, 이후 연속
@@ -2234,6 +2255,9 @@ fn split_composed_line_by_width(
     let mut chars_in_line = 0usize;
     let mut current_run_text = String::new();
     let mut current_run_template: Option<ComposedTextRun> = None;
+    let text_width = |text: &str, style: &TextStyle| {
+        estimate_regenerated_line_text_width(text, style, regenerated_line_space_metric)
+    };
 
     let flush_run =
         |runs: &mut Vec<ComposedTextRun>, text: &mut String, template: &Option<ComposedTextRun>| {
@@ -2296,7 +2320,7 @@ fn split_composed_line_by_width(
         if char_break {
             for ch in run.text.chars() {
                 let ch_str: String = std::iter::once(ch).collect();
-                let ch_width = crate::renderer::layout::estimate_text_width_unrounded(&ch_str, &ts);
+                let ch_width = text_width(&ch_str, &ts);
                 if std::env::var("RHWP_RAZOR").is_ok()
                     && src.runs.iter().any(|r| r.text.contains("도조례로 정하는"))
                 {
@@ -2331,9 +2355,7 @@ fn split_composed_line_by_width(
                     {
                         current_run_text.pop().map(|prev| {
                             let prev_str: String = std::iter::once(prev).collect();
-                            let prev_w = crate::renderer::layout::estimate_text_width_unrounded(
-                                &prev_str, &ts,
-                            );
+                            let prev_w = text_width(&prev_str, &ts);
                             current_width -= prev_w;
                             chars_in_line -= 1;
                             (prev, prev_w)
@@ -2376,7 +2398,7 @@ fn split_composed_line_by_width(
             word.push(ch);
             // 공백 또는 마지막 글자 직전이 단어 경계
             if ch == ' ' || ch == '\t' {
-                let word_width = crate::renderer::layout::estimate_text_width_unrounded(&word, &ts);
+                let word_width = text_width(&word, &ts);
                 // 현재 단어가 추가되면 max_width 초과하는지 검사
                 if current_width - space_w * space_condense + word_width > limit(&result)
                     && (chars_in_line > 0 || !current_run_text.is_empty())
@@ -2401,8 +2423,7 @@ fn split_composed_line_by_width(
                 if word_width > limit(&result) && current_width == 0.0 {
                     for wch in word.chars() {
                         let wch_str: String = std::iter::once(wch).collect();
-                        let wch_width =
-                            crate::renderer::layout::estimate_text_width_unrounded(&wch_str, &ts);
+                        let wch_width = text_width(&wch_str, &ts);
                         if current_width - space_w * space_condense + wch_width > limit(&result)
                             && chars_in_line > 0
                         {
@@ -2428,7 +2449,7 @@ fn split_composed_line_by_width(
                 } else {
                     current_run_text.push_str(&word);
                     current_width += word_width;
-                    space_w += crate::renderer::layout::estimate_text_width_unrounded(" ", &ts)
+                    space_w += text_width(" ", &ts)
                         * word.matches(' ').count() as f64;
                     chars_in_line += word.chars().count();
                 }
@@ -2437,7 +2458,7 @@ fn split_composed_line_by_width(
         }
         // run 끝에 남은 단어 처리
         if !word.is_empty() {
-            let word_width = crate::renderer::layout::estimate_text_width_unrounded(&word, &ts);
+            let word_width = text_width(&word, &ts);
             if current_width - space_w * space_condense + word_width > limit(&result)
                 && (chars_in_line > 0 || !current_run_text.is_empty())
             {
@@ -2460,8 +2481,7 @@ fn split_composed_line_by_width(
             if word_width > limit(&result) && current_width == 0.0 {
                 for wch in word.chars() {
                     let wch_str: String = std::iter::once(wch).collect();
-                    let wch_width =
-                        crate::renderer::layout::estimate_text_width_unrounded(&wch_str, &ts);
+                        let wch_width = text_width(&wch_str, &ts);
                     if current_width - space_w * space_condense + wch_width > limit(&result)
                         && chars_in_line > 0
                     {
