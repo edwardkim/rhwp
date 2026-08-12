@@ -295,6 +295,7 @@ struct BlockRowScanVars {
     header_overhead: f64,
     landscape_rowbreak_repeated_header_gap: bool,
     strict_painted_bottom_fit: bool,
+    source_first_fragment_overflow_allowance: f64,
     start_row_height_override: Option<f64>,
 }
 
@@ -3080,6 +3081,38 @@ fn missing_lineseg_trailing_line_break(
 
 fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
     ls.tag & 0x80000000 != 0
+}
+
+/// Returns only the measured-paint slack that remains below a saved native
+/// RowBreak first-fragment frame. Both source and scanner bounds are absolute
+/// page coordinates; mixing a row-space budget with an object coordinate can
+/// otherwise admit an offset or host-spacing lane that does not belong to the
+/// fragment.
+fn saved_rowbreak_first_fragment_overflow_allowance(
+    declared_height: u32,
+    outer_table_owns_row_geometry: bool,
+    source_painted_top: f64,
+    source_painted_bottom: f64,
+    fragment_scan_top: f64,
+    fragment_scan_bottom: f64,
+) -> f64 {
+    const SOURCE_FRAME_EPSILON_PX: f64 = 0.5;
+    if declared_height == 0
+        || declared_height > i32::MAX as u32
+        || !outer_table_owns_row_geometry
+        || !source_painted_top.is_finite()
+        || !source_painted_bottom.is_finite()
+        || !fragment_scan_top.is_finite()
+        || !fragment_scan_bottom.is_finite()
+        || source_painted_bottom <= source_painted_top
+        || fragment_scan_bottom < fragment_scan_top
+        || (source_painted_top - fragment_scan_top).abs() > SOURCE_FRAME_EPSILON_PX
+        || source_painted_bottom > fragment_scan_bottom + SOURCE_FRAME_EPSILON_PX
+    {
+        return 0.0;
+    }
+
+    (fragment_scan_bottom - source_painted_bottom).max(0.0)
 }
 
 /// Visible host text that is structurally a numbered table caption.
@@ -16614,7 +16647,12 @@ impl TypesetEngine {
                     line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
                 })
                 .is_some_and(|bounds| {
-                    saved_bounds_fit_at_flow_tail(bounds, st.current_height, st.available_height())
+                    saved_bounds_fit_at_flow_tail(
+                        bounds,
+                        st.current_height,
+                        st.available_height(),
+                        0.0,
+                    )
                 })
         } else {
             false
@@ -17768,7 +17806,7 @@ impl TypesetEngine {
                     .and_then(|seg| line_seg_visible_bounds_px(seg, base, self.dpi))
             })
             .is_some_and(|bounds| {
-                saved_bounds_fit_at_flow_tail(bounds, st.current_height, available)
+                saved_bounds_fit_at_flow_tail(bounds, st.current_height, available, 0.0)
             });
         // [#3837] 저장 vpos 되돌아감은 한글이 이 표를 다음 쪽 맨 위에 뒀다는 신호다
         // (21967401 응시원서: 직전 항목 vpos=41645 인데 이 표는 1000).
@@ -18530,6 +18568,7 @@ impl TypesetEngine {
             header_overhead,
             landscape_rowbreak_repeated_header_gap,
             strict_painted_bottom_fit,
+            source_first_fragment_overflow_allowance,
             start_row_height_override,
         } = v;
         let BlockTableRowScan {
@@ -19321,6 +19360,8 @@ impl TypesetEngine {
                 let split_row_overflow_tolerance =
                         if uses_source_terminal_tail {
                             stored_frame_tail_overflow
+                        } else if source_first_fragment_overflow_allowance > 0.0 {
+                            source_first_fragment_overflow_allowance
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
                         } else {
@@ -19370,6 +19411,8 @@ impl TypesetEngine {
                         let cand2 = consumed + cs_before + split_total2;
                         let retry_split_row_overflow_tolerance = if uses_source_terminal_tail {
                             stored_frame_tail_overflow
+                        } else if source_first_fragment_overflow_allowance > 0.0 {
+                            source_first_fragment_overflow_allowance
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                             0.1
                         } else {
@@ -19972,7 +20015,12 @@ impl TypesetEngine {
                     // 스택 뒤를 인코딩(선두-줄 host 의 vpos 0/흐름-일치 저장은 제외).
                     let line_h = (bounds.1 - bounds.0).max(0.0);
                     bounds.0 > st.current_height + line_h + 16.0
-                        && saved_bounds_fit_at_flow_tail(bounds, st.current_height, available)
+                        && saved_bounds_fit_at_flow_tail(
+                            bounds,
+                            st.current_height,
+                            available,
+                            0.0,
+                        )
                 });
         // 통째-배치 구제는 스택의 2번째 이후 표(선행 co-anchored 존재)이면서
         // 표 자체가 한 쪽에 들어갈 때만 — 첫 표는 정상 fit/분할 경로를 그대로
@@ -20066,12 +20114,12 @@ impl TypesetEngine {
             // 단, 1행 표의 저장 object height 는 현재 쪽 하단 tolerance 안에 맞고
             // cell 내용 측정치만 크게 나온 경우에는 한컴이 현재 쪽 하단까지 한 덩어리로
             // 배치하므로 아래 object-height fit 경로를 우선한다.
-            const DECLARED_FLOAT_FIT_TOLERANCE_PX: f64 = 1.0;
             let measured_fits_current = st.current_height + table_total <= available;
             let declared_overflows_current =
-                st.current_height + declared_total > available + DECLARED_FLOAT_FIT_TOLERANCE_PX;
-            // 저장된 LineSeg와 객체 높이가 현재 쪽 본문 하단 안에 들어간다고 말하면,
-            // host 줄 간격/선언 높이의 근소 초과만으로 먼저 이월하지 않는다.
+                st.current_height + declared_total > available;
+            let measured_declared_excess = (table_total - declared_total).max(0.0);
+            // 저장된 LineSeg와 객체 높이가 현재 쪽 본문 하단 안에 들어간다고 말하려면,
+            // anchor 지연이 실제 measured excess로 설명되어야 한다.
             let saved_span = para
                 .line_segs
                 .iter()
@@ -20079,30 +20127,38 @@ impl TypesetEngine {
                 .map(|seg| {
                     let base = st.vpos_page_base.unwrap_or(0);
                     let v_off = signed_hwpunit(table.common.vertical_offset);
-                    let top_hu = seg
-                        .vertical_pos
-                        .saturating_add(v_off.max(0))
-                        .saturating_sub(base);
+                    // The stored LineSeg is the flow anchor. A positive table
+                    // offset moves only the painted object top below that
+                    // anchor; using the painted top as the fit anchor rejects
+                    // source-owned body-top fragments by exactly that inset.
+                    let anchor_hu = seg.vertical_pos.saturating_sub(base);
+                    let top_hu = anchor_hu.saturating_add(v_off.max(0));
                     let bottom_hu =
                         top_hu.saturating_add(table.common.height.min(i32::MAX as u32) as i32);
                     (
+                        hwpunit_to_px(anchor_hu, self.dpi),
                         hwpunit_to_px(top_hu, self.dpi),
                         hwpunit_to_px(bottom_hu, self.dpi),
                     )
                 });
-            let saved_object_bottom_fits_current = saved_span.is_some_and(|(top_px, bottom_px)| {
-                top_px + 16.0 >= st.current_height
-                    && bottom_px <= available + DECLARED_FLOAT_FIT_TOLERANCE_PX
-            });
+            let saved_object_bottom_fits_current =
+                saved_span.is_some_and(|(anchor_px, _top_px, bottom_px)| {
+                    let anchor_delay = (st.current_height - anchor_px).max(0.0);
+                    anchor_px <= st.current_height
+                    && anchor_delay <= measured_declared_excess
+                    && bottom_px <= available
+                });
             // [#2097] 저장 앵커가 현재 흐름 위치와 정합하는데 저장 하단이 쪽 본문을
             // 넘으면, 원본 한글 레이아웃은 이월이 아니라 이 지점에서 표를 분할했다
             // (2572521 pi36: 앵커 11000HU=146.7px == cur_h, 선언 839.8px 로 하단
             // 986px 초과 — 저장 p3 만충 914.7px 실측, 이월 시 7쪽으로 +1). 이
             // 형상은 선언-기준 이월을 건너뛰고 분할 경로로 보낸다.
             let saved_anchor_splits_here = st.has_stored_line_segs
-                && saved_span.is_some_and(|(top_px, bottom_px)| {
-                    (top_px - st.current_height).abs() <= 16.0
-                        && bottom_px > available + DECLARED_FLOAT_FIT_TOLERANCE_PX
+                && saved_span.is_some_and(|(anchor_px, _top_px, bottom_px)| {
+                    let anchor_delay = (st.current_height - anchor_px).max(0.0);
+                    anchor_px <= st.current_height
+                        && anchor_delay <= measured_declared_excess
+                        && bottom_px > available
                 });
             // [#3820 Stage 7] 표 44(pi=1778)는 앞선 표의 row-internal tail 뒤에서
             // host anchor가 흐름보다 19.1px 앞선다. 저장된 object bottom 자체는
@@ -20129,7 +20185,7 @@ impl TypesetEngine {
                     && ft.table_footnotes.is_empty()
                     && table.cells.iter().all(|cell| cell.row_span == 1)
                     && next_rewinds_after_table
-                    && saved_span.is_some_and(|(top_px, bottom_px)| {
+                    && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
                         let flow_overrun = st.current_height - top_px;
                         let measured_excess = (table_total - declared_total).max(0.0);
                         top_px <= st.current_height
@@ -20165,16 +20221,16 @@ impl TypesetEngine {
                 && st.current_footnote_height > 0.0
                 && rowbreak_table_has_internal_saved_vpos_reset(table)
                 && next_rewinds_after_table
-                && saved_span.is_some_and(|(top_px, bottom_px)| {
+                && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
                     let flow_overrun = st.current_height - top_px;
                     let measured_excess = (table_total - declared_total).max(0.0);
                     top_px <= st.current_height
                         && top_px <= available
                         && bottom_px <= available
                         && flow_overrun <= measured_excess
-                });
+            });
             if native_hwp5_internal_reset_rewind_needs_anchor_resync {
-                let (top_px, _) = saved_span.expect("resync requires stored table anchor");
+                let (_, top_px, _) = saved_span.expect("resync requires stored table anchor");
                 st.current_height = top_px;
                 placement_para_start_height = top_px;
             }
@@ -20205,8 +20261,7 @@ impl TypesetEngine {
                     && st.current_height + declared_total
                         <= st.base_available_height()
                             - st.current_zone_y_offset
-                            - st.current_bottom_fixed_exclusion
-                            + DECLARED_FLOAT_FIT_TOLERANCE_PX;
+                            - st.current_bottom_fixed_exclusion;
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(
                     "DIAG_SCAN DECL_DEFER? pi={} cur_h={:.1} declared={:.1} avail={:.1} saved={:?} bottom_fits={} splits_here={} near_anchor_fragment={} internal_reset_resync={} own_fn_fragment={}",
@@ -20371,8 +20426,21 @@ impl TypesetEngine {
         // body frame. Measured overshoot buckets cannot distinguish a font-metric
         // drift from a real source-owned fragment boundary.
         let rowbreak_at_fragment_start = st.current_items.is_empty();
-        let midpage_rowbreak_has_saved_object_bottom = saved_span
-            .is_some_and(|(_, bottom_px)| bottom_px <= available);
+        let midpage_rowbreak_has_saved_object_bottom = para
+            .line_segs
+            .iter()
+            .find(|ls| !is_synthetic_line_seg(ls))
+            .is_some_and(|seg| {
+                let base = st.vpos_page_base.unwrap_or(0);
+                let v_off = signed_hwpunit(table.common.vertical_offset);
+                let top_hu = seg
+                    .vertical_pos
+                    .saturating_add(v_off.max(0))
+                    .saturating_sub(base);
+                let bottom_hu =
+                    top_hu.saturating_add(table.common.height.min(i32::MAX as u32) as i32);
+                hwpunit_to_px(bottom_hu, self.dpi) <= available
+            });
         let declared_fit_scope_ok = match table.page_break {
             crate::model::table::TablePageBreak::None => true,
             crate::model::table::TablePageBreak::RowBreak => {
@@ -21686,6 +21754,77 @@ impl TypesetEngine {
                 page_avail
             };
 
+            // [#3820 Stage 174] Native HWP5 can store the physical frame of a
+            // RowBreak table's *first fragment* in `common.height`, rather than
+            // the full multi-row table.  The row scanner measures the cell paint
+            // a few pixels taller than that frame and otherwise leaves a header-
+            // only fragment, shifting every later page.  Admit only the unused
+            // physical space below the source frame that remains inside this
+            // fragment's scan bound, never a generic drift cap.
+            //
+            // This is deliberately confined to an empty-host TopAndBottom
+            // RowBreak table on its first fragment.  The unshifted saved anchor
+            // must equal the active flow cursor; its painted top is allowed to
+            // differ by a source vertical offset (#3820 p168 invariant).
+            // `page_avail` is the exact first-fragment row budget after the
+            // current zone, existing footnote reservation, caption, host offset,
+            // outer spacing, and painted footer guard. Convert that row budget
+            // back into the same absolute coordinate system as the saved object
+            // frame; a raw `current_height + page_avail` would omit the source
+            // object's positive vertical offset and the other scan-top overheads.
+            let source_first_fragment_scan_top = st.current_height
+                + caption_extra
+                + host_before_overhead
+                + vert_offset_overhead;
+            let source_first_fragment_scan_bottom = source_first_fragment_scan_top
+                + page_avail
+                + fragment_outer_bottom_overhead;
+            let source_first_fragment_overflow_allowance = if !is_continuation
+                && cursor_row == 0
+                && start_cut.is_empty()
+                && st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && is_para_topbottom_float(&table.common)
+                && mt.allows_row_break_split()
+                && row_count > 1
+                && table_footnotes.is_empty()
+                && !para_has_non_whitespace_text(para)
+                && table.common.height > 0
+                && table.common.height <= i32::MAX as u32
+                && std::ptr::eq(row_geometry_table, table)
+            {
+                para.line_segs
+                    .iter()
+                    .find(|seg| !is_synthetic_line_seg(seg))
+                    .and_then(|seg| {
+                        let base = st.vpos_page_base.unwrap_or(0);
+                        let anchor_hu = seg.vertical_pos.saturating_sub(base);
+                        let anchor_px = hwpunit_to_px(anchor_hu, self.dpi);
+                        let vertical_offset = signed_hwpunit(table.common.vertical_offset).max(0);
+                        let bottom_hu = anchor_hu
+                            .saturating_add(vertical_offset)
+                            .saturating_add(table.common.height.min(i32::MAX as u32) as i32);
+                        let top_px = hwpunit_to_px(
+                            anchor_hu.saturating_add(vertical_offset),
+                            self.dpi,
+                        );
+                        let bottom_px = hwpunit_to_px(bottom_hu, self.dpi);
+                        ((anchor_px - st.current_height).abs() <= 0.5).then(|| {
+                            saved_rowbreak_first_fragment_overflow_allowance(
+                                table.common.height,
+                                std::ptr::eq(row_geometry_table, table),
+                                top_px,
+                                bottom_px,
+                                source_first_fragment_scan_top,
+                                source_first_fragment_scan_bottom,
+                            )
+                        })
+                    })
+                    .unwrap_or(0.0)
+            } else {
+                0.0
+            };
+
             // [Task #1022] 머리행 반복 overhead — 렌더러(layout_partial_table)는
             // start_row 이전의 반복 제목행을 다시 그리므로(다중 머리행: rs>=2 헤더 셀 등),
             // 페이지네이터도 동일 제목행 전체 높이 + 각 행 뒤 cs 를 계산한다.
@@ -21781,6 +21920,7 @@ impl TypesetEngine {
                     header_overhead,
                     landscape_rowbreak_repeated_header_gap,
                     strict_painted_bottom_fit: strict_following_plain_text_fit,
+                    source_first_fragment_overflow_allowance,
                     start_row_height_override,
                 },
                 BlockTableRowScan {
@@ -21892,6 +22032,7 @@ impl TypesetEngine {
                                 header_overhead,
                                 landscape_rowbreak_repeated_header_gap,
                                 strict_painted_bottom_fit: strict_following_plain_text_fit,
+                                source_first_fragment_overflow_allowance,
                                 start_row_height_override,
                             },
                             BlockTableRowScan {
@@ -23096,6 +23237,85 @@ fn endnote_separator_height_px(shape: &FootnoteShape, dpi: f64) -> f64 {
     hwpunit_to_px(shape.separator_above_margin_hu() as i32, dpi)
         + line_height
         + hwpunit_to_px(endnote_separator_below_margin(shape) as i32, dpi)
+}
+
+#[cfg(test)]
+mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
+    use super::saved_rowbreak_first_fragment_overflow_allowance;
+
+    #[test]
+    fn rejects_missing_or_unowned_saved_frames() {
+        assert_eq!(
+            saved_rowbreak_first_fragment_overflow_allowance(0, true, 32.0, 959.0, 32.0, 970.0),
+            0.0,
+            "height=0 is not a saved first-fragment frame"
+        );
+        assert_eq!(
+            saved_rowbreak_first_fragment_overflow_allowance(
+                70_000,
+                true,
+                32.0,
+                959.0,
+                32.0,
+                970.0,
+            ),
+            0.0,
+            "signed-wrap height is not a usable source frame"
+        );
+        assert_eq!(
+            saved_rowbreak_first_fragment_overflow_allowance(
+                929,
+                false,
+                32.0,
+                959.0,
+                32.0,
+                970.0,
+            ),
+            0.0,
+            "an outer wrapper frame cannot authorize an inner table row cut"
+        );
+    }
+
+    #[test]
+    fn requires_absolute_scan_coordinate_alignment() {
+        assert_eq!(
+            saved_rowbreak_first_fragment_overflow_allowance(
+                929,
+                true,
+                35.8,
+                959.0,
+                32.0,
+                970.0,
+            ),
+            0.0,
+            "a positive source offset must be present in the scanner's absolute top"
+        );
+        assert_eq!(
+            saved_rowbreak_first_fragment_overflow_allowance(
+                929,
+                true,
+                32.0,
+                972.0,
+                32.0,
+                970.0,
+            ),
+            0.0,
+            "the source frame may not enter the fragment-reserved bottom lane"
+        );
+        assert!(
+            (saved_rowbreak_first_fragment_overflow_allowance(
+                929,
+                true,
+                32.0,
+                959.0,
+                32.0,
+                970.0,
+            ) - 11.0)
+                .abs()
+                < f64::EPSILON,
+            "only the physical slack below an aligned saved frame is admitted"
+        );
+    }
 }
 
 #[cfg(test)]
