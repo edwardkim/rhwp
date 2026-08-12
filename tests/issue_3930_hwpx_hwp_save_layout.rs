@@ -17,6 +17,9 @@ const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
 const PAGE_314: u32 = 313;
+const PAGE_361: u32 = 360;
+const PAGE_362: u32 = 361;
+const PAGE_363: u32 = 362;
 const PAGE_364: u32 = 363;
 const PAGE_365: u32 = 364;
 const PAGE_366: u32 = 365;
@@ -115,6 +118,9 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     let source_p144_tree = page_tree(&source, PAGE_144);
     let source_p145_tree = page_tree(&source, PAGE_145);
     let source_p314_tree = page_tree(&source, PAGE_314);
+    let source_p361_tree = page_tree(&source, PAGE_361);
+    let source_p362_tree = page_tree(&source, PAGE_362);
+    let source_p363_tree = page_tree(&source, PAGE_363);
     let source_p364_tree = page_tree(&source, PAGE_364);
     let source_p365_tree = page_tree(&source, PAGE_365);
     let source_p366_tree = page_tree(&source, PAGE_366);
@@ -153,6 +159,19 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         !source_p314_tree.contains("정책실명제"),
         "HWPX 병렬 규정 표 제3조 r5 tail은 PDF p314로 넘어가면 안 된다"
+    );
+    assert!(
+        source_p361_tree.contains("기능분류시스템의 자료를 최신의 정보로 유지"),
+        "HWPX 병렬 규정 표의 PDF p361은 제61조 owner를 소유해야 한다"
+    );
+    assert!(
+        source_p362_tree.contains("정책의 실명 관리"),
+        "HWPX 병렬 규정 표의 PDF p362는 제63조 owner를 소유해야 한다"
+    );
+    assert!(
+        source_p363_tree.contains("정책실명제 책임관 지정")
+            && source_p363_tree.contains("정책실명제 중점관리 대상 선정"),
+        "HWPX 병렬 규정 표의 PDF p363은 제63조의2·제63조의3 owner를 소유해야 한다"
     );
     assert!(
         source_p364_tree.contains("관리하여야 한다")

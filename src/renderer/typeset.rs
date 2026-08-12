@@ -762,6 +762,9 @@ const HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX: f64 = 56.0;
 const HWPX_PARALLEL_REGULATION_R5_FINAL_FRAGMENT_CUT_RESERVE_PX: f64 = -160.0;
 /// r71은 저장 frame의 마지막 tail 뒤에 다음 규정 행이 같은 쪽에서 시작한다.
 const HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX: f64 = 0.0;
+/// r79의 병렬 오른쪽 셀 제44조 continuation은 PDF p360에서 더 많이 소비된다.
+/// 이 row의 cut budget만 180px 확장해 제61조가 PDF p361 owner로 재개하게 한다.
+const HWPX_PARALLEL_REGULATION_R79_CUT_RESERVE_PX: f64 = -180.0;
 /// r99의 제47·48조는 PDF p366에, vpos reset 뒤 부칙은 p367에 남는다. 현재 쪽의
 /// 212px frame을 전량 사용해야 최소 owner 단위를 넘겨 reset 직전까지 소비한다.
 const HWPX_PARALLEL_REGULATION_R99_CUT_RESERVE_PX: f64 = 0.0;
@@ -19564,6 +19567,7 @@ impl TypesetEngine {
                         }
                         5 => HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX,
                         71 => HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX,
+                        79 => HWPX_PARALLEL_REGULATION_R79_CUT_RESERVE_PX,
                         99 => HWPX_PARALLEL_REGULATION_R99_CUT_RESERVE_PX,
                         _ => HWPX_PARALLEL_REGULATION_CUT_RESERVE_PX,
                     }
