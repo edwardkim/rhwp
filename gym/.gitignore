@@ -3,3 +3,5 @@ submissions/
 *.hwpx
 differential-report.json
 leaderboard/keys/
+release-diff.json
+release-diff-*.json
