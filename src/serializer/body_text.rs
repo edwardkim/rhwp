@@ -260,11 +260,18 @@ fn serialize_paragraph_with_msb(
             (None, Vec::new())
         };
 
-    // char_count 재계산: PARA_TEXT가 있으면 code unit 수, 없으면 모델 값 사용
+    // char_count 재계산: PARA_TEXT가 있으면 code unit 수.
+    //
+    // [#4677] PARA_TEXT 를 내보내지 않는 문단은 **파일에 글자가 0 개**다. 모델 값을 그대로
+    // 쓰면 헤더만 N 을 주장하는 문단이 생긴다 — HWPX 파서는 다단락 필드의 고아
+    // `<hp:fieldEnd>`(8 유닛)를 `char_count` 에 세지만 HWP5 저장기에는 그 자리를 쓸 방법이
+    // 없어서, 텍스트 없는 문단이 `char_count=9` 로 나간다. 한글 2022 는 그 문단을 만나면
+    // 본문 전체를 버리고 빈 1쪽 문서로 연다(rhwp 재파싱은 통과 — `--verify` 로는 안 잡힌다).
+    // 빈 문단의 규정 값은 끝 마커 1 이다.
     let actual_char_count = if let Some(ref td) = text_data {
         (td.len() / 2) as u32
     } else {
-        para.char_count
+        para.char_count.min(1)
     };
 
     // [#4677] 본문에 대응하지 않는 lineseg 는 파일에 내보내지 않는다 — 조판 전용 보강 줄과
@@ -1004,6 +1011,11 @@ fn push_field_end_ctrl(code_units: &mut Vec<u16>, marker: FieldEndMarker) {
 ///    저장에서 떨구면 문단이 8 유닛씩 짧아지는데, 원본 HWPX 의 lineseg 는 그 컨트롤을 센
 ///    `textpos` 를 그대로 들고 있다.
 ///
+/// 경계값 `text_start == char_count` 는 **정상**이다 — 한컴 자신이 빈 문단(`char_count=1`)에
+/// 끝 마커를 가리키는 둘째 세그먼트(`text_start=1`, EMPTY_SEGMENT)를 쓴다(`hwpctl_API_v2.4.hwp`
+/// 14곳). 그래서 판정은 `>` 다. 실제로 문제가 된 값은 훨씬 멀리 나간다(문단 길이 5 에
+/// `text_start=10`, 37 에 40).
+///
 /// 첫 줄(`text_start == 0`)은 어떤 문단에도 있어야 하므로 전부 범위를 벗어나면 그대로 둔다
 /// (문단 자체가 비정상이라는 뜻이며, 줄을 0 개로 만들면 다른 손상이 된다). 유효한 줄이
 /// 하나라도 있으면 **접두부만** 남긴다 — 줄은 순서대로 이어져야 한다.
@@ -1456,7 +1468,8 @@ mod tests {
                     line_height: 500,
                     ..Default::default()
                 },
-                // 떨어져 나간 8 유닛 컨트롤을 센 잔재 — "AB" + 문단끝 = 3 유닛 밖이다.
+                // 떨어져 나간 8 유닛 컨트롤을 센 잔재 — "AB" + 문단끝 = 3 유닛보다 멀리 나간다.
+                // (경계값 `text_start == char_count` 는 한컴도 쓰는 정상 값이라 남긴다.)
                 LineSeg {
                     text_start: 10,
                     line_height: 500,
@@ -1521,6 +1534,40 @@ mod tests {
             parsed.paragraphs[0].line_segs.len(),
             2,
             "끝 위치를 가리키는 줄은 범위 밖이 아니다"
+        );
+    }
+
+    /// [#4677] PARA_TEXT 를 내보내지 않는 문단의 `char_count` 는 끝 마커 1 이다.
+    ///
+    /// HWPX 파서는 다단락 필드의 고아 `<hp:fieldEnd>` 를 8 유닛으로 세지만 HWP5 저장기에는
+    /// 그 자리를 쓸 방법이 없다. 헤더만 9 를 주장하고 글자는 하나도 없는 문단이 되면
+    /// 한글 2022 는 본문 전체를 버린다.
+    #[test]
+    fn test_char_count_without_para_text_is_normalized() {
+        let para = Paragraph {
+            char_count: 9, // 고아 fieldEnd 8 유닛 + 끝 마커
+            text: String::new(),
+            controls: Vec::new(),
+            has_para_text: false,
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            ..Default::default()
+        };
+
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+
+        assert_eq!(
+            parsed.paragraphs[0].char_count, 1,
+            "PARA_TEXT 없는 문단은 끝 마커 1 만 센다"
         );
     }
 
