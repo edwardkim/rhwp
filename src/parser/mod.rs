@@ -120,10 +120,10 @@ thread_local! {
 fn document_open_decompression_policy() -> DocumentOpenDecompressionPolicy {
     #[cfg(test)]
     {
-        return TEST_DOCUMENT_OPEN_DECOMPRESSION_POLICY.with(|slot| {
+        TEST_DOCUMENT_OPEN_DECOMPRESSION_POLICY.with(|slot| {
             slot.get()
                 .unwrap_or(DocumentOpenDecompressionPolicy::DEFAULT)
-        });
+        })
     }
 
     #[cfg(not(test))]
