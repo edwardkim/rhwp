@@ -1,1 +1,0 @@
-{"version":3,"file":"languageVariant.js","sourceRoot":"","sources":["../../src/enums/languageVariant.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,IAAI,eAAoB,CAAC;AAChC,CAAC,UAAU,eAAe;IACtB,eAAe,CAAC,eAAe,CAAC,UAAU,CAAC,GAAG,CAAC,CAAC,GAAG,UAAU,CAAC;IAC9D,eAAe,CAAC,eAAe,CAAC,KAAK,CAAC,GAAG,CAAC,CAAC,GAAG,KAAK,CAAC;AACxD,CAAC,CAAC,CAAC,eAAe,IAAI,CAAC,eAAe,GAAG,EAAE,CAAC,CAAC,CAAC"}

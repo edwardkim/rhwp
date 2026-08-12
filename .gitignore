@@ -103,3 +103,6 @@ samples/issue836/
 __pycache__/
 *.pyc
 tmp/
+
+# node 바인딩 의존성 — 커밋 대상 아님(#4656 실수 커밋 정리)
+bindings/node/node_modules/
