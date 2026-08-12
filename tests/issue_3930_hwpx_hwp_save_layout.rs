@@ -17,6 +17,7 @@ const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
 const PAGE_314: u32 = 313;
+const PAGE_316: u32 = 315;
 const PAGE_361: u32 = 360;
 const PAGE_362: u32 = 361;
 const PAGE_363: u32 = 362;
@@ -118,6 +119,7 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     let source_p144_tree = page_tree(&source, PAGE_144);
     let source_p145_tree = page_tree(&source, PAGE_145);
     let source_p314_tree = page_tree(&source, PAGE_314);
+    let source_p316_tree = page_tree(&source, PAGE_316);
     let source_p361_tree = page_tree(&source, PAGE_361);
     let source_p362_tree = page_tree(&source, PAGE_362);
     let source_p363_tree = page_tree(&source, PAGE_363);
@@ -159,6 +161,10 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         !source_p314_tree.contains("정책실명제"),
         "HWPX 병렬 규정 표 제3조 r5 tail은 PDF p314로 넘어가면 안 된다"
+    );
+    assert!(
+        source_p316_tree.contains("문서의 기안은 전자문서로 하는 것을 원칙"),
+        "HWPX 병렬 규정 표의 PDF p316은 제8조 prefix를 소유해야 한다"
     );
     assert!(
         source_p361_tree.contains("기능분류시스템의 자료를 최신의 정보로 유지"),

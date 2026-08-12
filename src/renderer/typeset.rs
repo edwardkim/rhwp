@@ -760,6 +760,9 @@ const HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX: f64 = 56.0;
 /// r5의 세 번째 fragment는 PDF p314에 제3조 tail을 남기지 않도록 남은 단위를
 /// 같은 쪽에서 끝낸다. 이 fragment는 첫 cell cut이 27 이상인 것으로 식별한다.
 const HWPX_PARALLEL_REGULATION_R5_FINAL_FRAGMENT_CUT_RESERVE_PX: f64 = -160.0;
+/// r12의 제8조는 r11 continuation 뒤 p316 하단에서 다시 시작한다. 전역 reserve를
+/// 적용하면 첫 unit만 남아 orphan guard가 통째 이월하므로 이 row에만 보수량을 해제한다.
+const HWPX_PARALLEL_REGULATION_R12_CUT_RESERVE_PX: f64 = 0.0;
 /// r71은 저장 frame의 마지막 tail 뒤에 다음 규정 행이 같은 쪽에서 시작한다.
 const HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX: f64 = 0.0;
 /// r79의 병렬 오른쪽 셀 제44조 continuation은 PDF p360에서 더 많이 소비된다.
@@ -19566,6 +19569,9 @@ impl TypesetEngine {
                             HWPX_PARALLEL_REGULATION_R5_FINAL_FRAGMENT_CUT_RESERVE_PX
                         }
                         5 => HWPX_PARALLEL_REGULATION_R5_CUT_RESERVE_PX,
+                        12 if row_start_cut.is_empty() => {
+                            HWPX_PARALLEL_REGULATION_R12_CUT_RESERVE_PX
+                        }
                         71 => HWPX_PARALLEL_REGULATION_R71_CUT_RESERVE_PX,
                         79 => HWPX_PARALLEL_REGULATION_R79_CUT_RESERVE_PX,
                         99 => HWPX_PARALLEL_REGULATION_R99_CUT_RESERVE_PX,
