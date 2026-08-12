@@ -1,0 +1,18 @@
+{
+  "id": "T03",
+  "steps": [
+    {
+      "answer": {
+        "fieldCount": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fields",
+          "len": true
+        }
+      }
+    }
+  ]
+}

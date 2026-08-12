@@ -1,0 +1,13 @@
+{
+  "id": "T06",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/basic/issue2007_nested_cell_pagination_42065.hwp\", \"output\": \"{sub:out.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"검증완료\"}]}",
+        "--json"
+      ]
+    }
+  ]
+}
