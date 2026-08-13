@@ -2078,6 +2078,45 @@ export class WasmBridge {
     );
   }
 
+  // ── 차트 데이터 API (#4694) ───────────────────────────
+  /** [#4694] 문서의 모든 차트를 문서 순서로 열거한다 — matchChartRef 의 입력. */
+  listCharts(): import('./chart-data-target').ChartRefJson[] {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).listCharts());
+  }
+
+  /** [#4694] 본문 직속 차트 데이터 조회 (3인자). 컨테이너 안 차트는 ByIndex 를 쓴다. */
+  getChartData(sec: number, para: number, ci: number): import('./chart-data-target').ChartDataResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getChartData(sec, para, ci));
+  }
+
+  /** [#4694] 문서 순번(0-based)으로 차트 데이터 조회 — 정본 주소. */
+  getChartDataByIndex(index: number): import('./chart-data-target').ChartDataResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getChartDataByIndex(index));
+  }
+
+  /** [#4694] 본문 직속 차트 데이터 변경 (3인자). */
+  setChartData(
+    sec: number,
+    para: number,
+    ci: number,
+    edits: import('./chart-data-target').ChartEditsInput,
+  ): import('./chart-data-target').SetChartDataResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).setChartData(sec, para, ci, JSON.stringify(edits)));
+  }
+
+  /** [#4694] 문서 순번(0-based)으로 차트 데이터 변경 — 정본 주소. */
+  setChartDataByIndex(
+    index: number,
+    edits: import('./chart-data-target').ChartEditsInput,
+  ): import('./chart-data-target').SetChartDataResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).setChartDataByIndex(index, JSON.stringify(edits)));
+  }
+
   // ── 수식 속성 API ─────────────────────────────────────
   getEquationProperties(sec: number, para: number, ci: number, cellIdx?: number, cellParaIdx?: number): import('./types').EquationProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
