@@ -51,6 +51,9 @@ download가 생성되지 않음을 확인했다.
    Frontend package gates, CodeQL, Canvas visual diff 성공을 확인했다.
 5. trailing review 문서를 추가하기 전 `git merge-tree --write-tree upstream/devel HEAD`와
    `git diff --check upstream/devel...HEAD`를 통과시켜 최신 기준선과의 병합 가능성을 고정했다.
+6. 그 직후 최신 `devel`이 같은 날짜의 오늘할일을 전진시켜 `mydocs/orders/20260813.md`만 충돌했다.
+   current-base docs bridge `2569d1733`에서 양쪽 기록을 모두 보존했고,
+   `git show --remerge-diff --name-only 2569d1733`은 해당 Markdown 파일만 보고한다.
 
-다음 단계는 이 기록과 오늘할일만 담은 trailing docs-only commit을 push하고, 동일 PR·동일 source의
-review-only fast-pass aggregate를 확인하는 것이다.
+다음 단계는 bridge 뒤의 trailing docs-only commit을 push하고, 동일 PR·동일 source의 review-only
+fast-pass aggregate를 확인하는 것이다.

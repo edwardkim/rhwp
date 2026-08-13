@@ -17,6 +17,7 @@ last_verified: 2026-08-13
 | 원 source head | `e58720af754d576bbef472093f2f72f5054a263a` |
 | 메인터너 보정 head | `199caf545bc8f86048c2a4b126145eb131967fad` |
 | 기준 devel | `3c7b89356eef4f69cc2101d8e07507ba2ecf2425` |
+| current-base docs bridge | `2569d1733` / 최신 `devel` `2c1125c36`의 오늘할일 충돌을 `mydocs/orders/20260813.md`에서만 해소 |
 | 가시성 검토 branch | `review/keepYaoung-4699-20260813` |
 | reviewer | @jangster77 지정 완료 |
 
@@ -67,8 +68,11 @@ HTML range 계약이다.
 ## 판단
 
 **통합 수용 권고.** code/test 보정이 포함됐으므로 `199caf545`에서 GitHub Actions를 새로 확인했고 모두
-통과했다. 이 검토 기록과 오늘할일은 같은 source branch의 단일 trailing docs-only commit으로만 추가한다.
-그 head의 review-only fast-pass aggregate, mergeable 상태와 작업지시자 승인을 재확인한 뒤 merge한다.
+통과했다. 검토 기록·오늘할일을 추가한 뒤 최신 `devel`이 같은 오늘할일 파일을 전진시켜 단일 current-base
+docs bridge `2569d1733`을 만들었다. `git show --remerge-diff`로 수동 해소 경로가
+`mydocs/orders/20260813.md`뿐임을 확인했고, source·test·workflow·fixture 해소는 포함하지 않았다.
+그 뒤의 trailing docs-only head에서 review-only fast-pass aggregate, mergeable 상태와 작업지시자 승인을
+재확인한 뒤 merge한다.
 
 첫 기여자 처리로 merge 후 원 PR에는 환영과 감사, HTML/Word 내보내기라는 기여의 구체적 가치, 실제 검증
 결과, 그리고 메인터너 보정이 contributor의 구현 방향을 바꾸지 않고 embed 경계·대형 문단·오류 원자성을
