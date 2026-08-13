@@ -7971,7 +7971,10 @@ impl LayoutEngine {
                 return false;
             }
             if direct_hwpx_stored_frame_cell {
-                return true;
+                // 선언 object frame이 없는 synthetic 표의 vpos reset은 물리 쪽
+                // 경계를 증명하지 못한다. 실제 저장 표는 선언 높이가 있으므로
+                // 기존 direct HWPX frame 계약을 그대로 따른다.
+                return table.common.height > 0;
             }
             // HWPX 저장 lineseg의 reset은 중첩 셀 로컬 좌표계일 수 있다
             // (#3637). HWP5 저장 계약 안에서도 작은 내부 표의 로컬 reset
@@ -10355,8 +10358,7 @@ impl LayoutEngine {
                     && start > 0
                     && cell.paragraphs.len() == 73;
                 let strict_saved_frame_break =
-                    u.stored_frame_break_before
-                        && !hwpx_qa_contents_final_tail;
+                    u.stored_frame_break_before && !hwpx_qa_contents_final_tail;
                 if j > start
                     && u.hard_break_before
                     && (strict_saved_frame_break
