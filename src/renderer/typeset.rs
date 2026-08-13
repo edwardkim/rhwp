@@ -1118,8 +1118,8 @@ struct TypesetState {
     /// overlay 표는 흐름 소비가 0 이라 앵커 쪽에서 다음 쪽 항목을 바로 push 할 수 없다
     /// (다음 쪽은 이후 문단이 흐름을 넘길 때 비로소 생긴다). 그래서 앵커 쪽에서
     /// "몇 번째 행부터 잘렸는지"만 적어 두고, 단/쪽이 열릴 때 그 시작에 방출한다.
-    /// `(para_index, control_index, start_row)`.
-    pending_overlay_continuations: Vec<(usize, usize, usize)>,
+    /// `(para_index, control_index, start_row, remaining_px)`.
+    pending_overlay_continuations: Vec<(usize, usize, usize, f64)>,
     /// [#4568] 현재 단에 이어 그릴 overlay 잔여 행 목록. `flush_column` 에서
     /// `ColumnContent::overlay_continuations` 로 옮긴다.
     current_column_overlay_continuations: Vec<crate::renderer::pagination::OverlayContinuation>,
@@ -4100,10 +4100,12 @@ impl TypesetState {
         // `current_items` 가 아니라 단 전용 목록으로 넘긴다 — 흐름 항목이 아니라
         // z-layer 장식이고, 항목으로 섞으면 이 조각이 단의 첫 항목이 되어
         // `items.first()` 를 보는 휴리스틱이 조각을 본문으로 읽는다.
+        let mut overlay_top_reserve = 0.0f64;
         self.current_column_overlay_continuations.extend(
             std::mem::take(&mut self.pending_overlay_continuations)
                 .into_iter()
-                .map(|(para_index, control_index, start_row)| {
+                .map(|(para_index, control_index, start_row, remaining_px)| {
+                    overlay_top_reserve = overlay_top_reserve.max(remaining_px);
                     crate::renderer::pagination::OverlayContinuation {
                         para_index,
                         control_index,
@@ -4111,6 +4113,11 @@ impl TypesetState {
                     }
                 }),
         );
+        // 잔여 높이를 새 쪽 흐름에 예약하면 안 된다 — #4514 기제에서 필러 문단들이
+        // 이미 표 높이만큼 흐름 공간을 만들므로 이중 계상이 된다(실측: 예약 시
+        // 48 → 56쪽, 한컴 46쪽에서 더 멀어짐). 잔여 행의 자리는 이어지는 필러
+        // 흐름이 만든다.
+        let _ = overlay_top_reserve;
     }
 
     fn reset_for_new_page(&mut self) {
@@ -16681,10 +16688,17 @@ impl TypesetEngine {
                                 .map(|i| i.saturating_sub(1))
                                 .unwrap_or(ft.row_heights.len());
                             if first_unfit > 0 && first_unfit < ft.row_heights.len() {
+                                let remaining_px = (ft.effective_height
+                                    - ft.cumulative_heights
+                                        .get(first_unfit)
+                                        .copied()
+                                        .unwrap_or(0.0))
+                                .max(0.0);
                                 st.pending_overlay_continuations.push((
                                     para_idx,
                                     ctrl_idx,
                                     first_unfit,
+                                    remaining_px,
                                 ));
                             }
                         }

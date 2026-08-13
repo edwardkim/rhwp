@@ -6942,6 +6942,106 @@ impl LayoutEngine {
             &para_start_y,
         );
 
+        // [#4568] 앞 쪽에서 쪽 하단에 잘린 overlay 표의 잔여 행을 이 단 최상단에
+        // 이어 그린다. 흐름 항목이 아니므로 1차 패스의 y_offset 에 관여하지 않고,
+        // shapes pass 와 같은 z-층위에서 그린다. `layout_partial_table_item` 의
+        // 연속 조각 경로(`is_continuation=true` → 제목행 반복 규약 포함)를 그대로
+        // 재사용하고, 반환 y 는 버린다 — 이 조각은 흐름을 소비하지 않는다.
+        if !col_content.overlay_continuations.is_empty() {
+            let overlay_ctx = ColumnItemCtx {
+                page_content,
+                paragraphs,
+                composed,
+                styles,
+                bin_data_content,
+                measured_tables,
+                layout,
+                col_area,
+                zone_column_count: zone_layout.column_areas.len(),
+                outline_numbering_id,
+                multi_col_width: None,
+                prev_tac_seg_applied: false,
+                wrap_around_paras: column_wrap_around_paras,
+                wrap_anchors: &col_content.wrap_anchors,
+            };
+            // 이 단에 이미 그려진 표들의 최상단 y — 잔여 행이 그 아래로 내려가면
+            // #4514 가 잡은 표 겹침이 재발한다(실측: pi=158 잔여 행 727px ↔ pi=186
+            // 앵커 429.7px, 겹침 375.5px). 잔여 행은 그 경계 위까지만, 행 단위로
+            // 잘라 그린다. 필러 흐름이 저장 사다리와 어긋난 문서에서만 발동하는
+            // 보수 가드다 — 사다리 정합 문서는 앵커가 잔여 행 아래에 온다.
+            // overlay 앵커 표는 shapes pass 가 `paper_images` z-층으로 옮기므로
+            // `col_node` 자식만 보면 놓친다. 이 단의 x 범위와 겹치는 것만 본다.
+            let existing_table_top = col_node
+                .children
+                .iter()
+                .chain(paper_images.iter())
+                .filter(|n| matches!(n.node_type, RenderNodeType::Table(_)))
+                .filter(|n| {
+                    n.bbox.x < col_area.x + col_area.width && n.bbox.x + n.bbox.width > col_area.x
+                })
+                .map(|n| n.bbox.y)
+                .filter(|y| *y > col_area.y + 1.0)
+                .fold(f64::INFINITY, f64::min);
+            let mut overlay_para_start_y = para_start_y.clone();
+            for cont in &col_content.overlay_continuations {
+                let table = paragraphs
+                    .get(cont.para_index)
+                    .and_then(|p| p.controls.get(cont.control_index))
+                    .and_then(|c| match c {
+                        Control::Table(t) => Some(t),
+                        _ => None,
+                    });
+                let Some(table) = table else {
+                    continue;
+                };
+                let row_count = table.row_count as usize;
+                if cont.start_row >= row_count {
+                    continue;
+                }
+                // 겹침 상한 안에 들어가는 행까지만 그린다.
+                let room = existing_table_top - col_area.y;
+                let mut end_row = cont.start_row;
+                if room > 1.0 {
+                    let mut cum = 0.0;
+                    let mt = measured_tables
+                        .iter()
+                        .find(|m| m.para_index == cont.para_index);
+                    for r in cont.start_row..row_count {
+                        let rh = mt
+                            .and_then(|m| m.row_heights.get(r))
+                            .copied()
+                            .unwrap_or(0.0);
+                        if cum + rh > room {
+                            break;
+                        }
+                        cum += rh;
+                        end_row = r + 1;
+                    }
+                }
+                if end_row <= cont.start_row {
+                    continue;
+                }
+                let _ = self.layout_partial_table_item(
+                    tree,
+                    &mut col_node,
+                    &mut overlay_para_start_y,
+                    cont.para_index,
+                    cont.control_index,
+                    cont.start_row,
+                    end_row,
+                    true,
+                    &[],
+                    &[],
+                    false,
+                    false,
+                    None,
+                    None,
+                    &overlay_ctx,
+                    col_area.y,
+                );
+            }
+        }
+
         // [#4533 ④-a] 자리차지 표 앵커 줄 재배치 — 테두리 병합 전에 수행해
         // 테두리가 이동된 줄 박스를 따라가게 한다.
         self.relocate_float_anchor_lines_below_band(&mut col_node, paragraphs);
