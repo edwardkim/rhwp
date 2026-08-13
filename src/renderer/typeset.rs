@@ -19821,9 +19821,27 @@ impl TypesetEngine {
                 } else {
                     0.0
                 };
+                // Native HWP5 can record `common.height` through the leading
+                // header row while the first physical fragment continues into
+                // the next body row.  The stored frame's unused physical space
+                // authorizes that next row only; admit the exact CellUnit
+                // capacity overfill selected there, rather than turning the
+                // entire frame slack into a general tolerance.
+                let saved_first_fragment_next_row_cut = !is_continuation
+                    && cursor_row == 0
+                    && r > cursor_row
+                    && row_start_cut.is_empty()
+                    && source_first_fragment_overflow_allowance > 0.0
+                    && source_first_fragment_row_end == Some(r);
+                let saved_first_fragment_next_row_cut_overflow =
+                    saved_first_fragment_next_row_cut
+                        .then(|| (res.consumed_height - budget).max(0.0))
+                        .unwrap_or(0.0);
                 let split_row_overflow_tolerance =
                         if uses_source_frame_tail {
                             stored_frame_tail_overflow
+                        } else if saved_first_fragment_next_row_cut {
+                            saved_first_fragment_next_row_cut_overflow
                         } else if source_first_fragment_overflow_allowance > 0.0
                             && source_first_fragment_row_end == Some(r + 1)
                         {
@@ -19879,6 +19897,8 @@ impl TypesetEngine {
                         let cand2 = consumed + cs_before + split_total2;
                         let retry_split_row_overflow_tolerance = if uses_source_frame_tail {
                             stored_frame_tail_overflow
+                        } else if saved_first_fragment_next_row_cut {
+                            (res2.consumed_height - retry_budget).max(0.0)
                         } else if source_first_fragment_overflow_allowance > 0.0
                             && source_first_fragment_row_end == Some(r + 1)
                         {
