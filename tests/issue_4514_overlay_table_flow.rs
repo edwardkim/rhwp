@@ -65,6 +65,7 @@ fn issue_4514_overlay_tables_do_not_overlap() {
     assert_eq!(total, 48, "총 페이지 수가 예기치 않게 변했다");
 
     let mut requirement_table_pages: Vec<u32> = Vec::new();
+    let mut ecr004_spans: Vec<(u32, f64)> = Vec::new();
     for page in 0..total {
         let tree = core
             .build_page_render_tree(page)
@@ -103,6 +104,12 @@ fn issue_4514_overlay_tables_do_not_overlap() {
                 requirement_table_pages.push(page);
             }
         }
+        ecr004_spans.extend(
+            spans
+                .iter()
+                .filter(|(pi, _, _)| *pi == 139)
+                .map(|(_, y, _)| (page, *y)),
+        );
     }
 
     // 한컴 구조: ECR-001~005 가 연속 3쪽 (N: 001+002시작 / N+1: 002계속+003+004시작 /
@@ -118,5 +125,26 @@ fn issue_4514_overlay_tables_do_not_overlap() {
         requirement_table_pages.windows(2).all(|w| w[1] == w[0] + 1),
         "ECR 구간 3쪽은 연속이어야 한다 (실제: {:?})",
         requirement_table_pages
+    );
+
+    // [#4568] ECR-004(pi=139)는 앵커 쪽 하단에서 잘린 뒤 다음 쪽 상단에 남은 행이
+    // 반드시 이어 그려져야 한다. 표가 3쪽 구간에 존재한다는 판정만으로는 앵커 쪽의
+    // 컷만 남기고 continuation을 잃는 회귀를 잡지 못한다.
+    assert_eq!(
+        ecr004_spans.len(),
+        2,
+        "ECR-004는 앵커와 다음 쪽 연속 조각으로 정확히 두 번 보여야 한다: {:?}",
+        ecr004_spans
+    );
+    assert_eq!(
+        ecr004_spans[1].0,
+        ecr004_spans[0].0 + 1,
+        "ECR-004 연속 조각은 바로 다음 쪽에 있어야 한다: {:?}",
+        ecr004_spans
+    );
+    assert!(
+        ecr004_spans[0].1 > 700.0 && ecr004_spans[1].1 < 100.0,
+        "ECR-004는 앞 쪽 하단에서 다음 쪽 상단으로 이어져야 한다: {:?}",
+        ecr004_spans
     );
 }

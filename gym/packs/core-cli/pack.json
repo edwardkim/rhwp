@@ -12,6 +12,7 @@
       "fields",
       "gate",
       "harness",
+      "harness-status",
       "info",
       "inspect",
       "ir-diff",

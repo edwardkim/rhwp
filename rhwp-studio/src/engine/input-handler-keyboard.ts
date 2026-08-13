@@ -179,6 +179,7 @@ function insertRowAfterLastTableCellByTab(this: any): boolean {
   }
 }
 
+/** ClipboardEvent cut 경로가 쓰는 개체 삭제 helper. keydown은 edit:delete로 라우팅한다. */
 type PictureDeleteRef = {
   sec: number;
   ppi: number;
@@ -806,73 +807,18 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     }
     if (e.key === 'Delete' || e.key === 'Backspace') {
       e.preventDefault();
-      const ref = this.cursor.getSelectedPictureRef();
-      if (ref) {
-        this.cursor.moveOutOfSelectedPicture();
-        this.pictureObjectRenderer?.clear();
-        this.eventBus.emit('picture-object-selection-changed', false);
-        this.executeOperation({ kind: 'snapshot', operationType: 'deleteObject', operation: (wasm: WasmBridge) => {
-          deleteSelectedObject(wasm, ref);
-          return this.cursor.getPosition();
-        }});
-      }
+      this.dispatcher?.dispatch('edit:delete');
       return;
     }
-    // Ctrl+C → 개체 복사 (clipboard 이벤트가 textarea에서 발생하지 않으므로 직접 처리)
+    // Ctrl+C/X는 메뉴·컨텍스트 메뉴와 같은 edit command로 실행한다.
     if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
       e.preventDefault();
-      const ref = this.cursor.getSelectedPictureRef();
-      if (ref) {
-        try {
-          const cellPathJson = pictureCellPathJson(ref);
-          this.wasm.copyControl(ref.sec, ref.ppi, ref.ci, cellPathJson);
-          const text = this.wasm.getClipboardText() || '[그림]';
-          let html = '';
-          try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci, cellPathJson) || ''; } catch { /* 무시 */ }
-          const markedHtml = prepareRhwpInternalClipboardHtml(this, html, text);
-          if (ref.type === 'image') {
-            writeImageToClipboard(this.wasm, ref.sec, ref.ppi, ref.ci, text, markedHtml, cellPathJson)
-              .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
-          } else {
-            writeTextHtmlToClipboard(text, markedHtml)
-              .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
-          }
-        } catch (err) {
-          console.warn('[InputHandler] 개체 복사 실패:', err);
-        }
-      }
+      this.dispatcher?.dispatch('edit:copy');
       return;
     }
-    // Ctrl+X → 개체 잘라내기
     if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
       e.preventDefault();
-      const ref = this.cursor.getSelectedPictureRef();
-      if (ref) {
-        try {
-          const cellPathJson = pictureCellPathJson(ref);
-          this.wasm.copyControl(ref.sec, ref.ppi, ref.ci, cellPathJson);
-          const text = this.wasm.getClipboardText() || '[그림]';
-          let html = '';
-          try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci, cellPathJson) || ''; } catch { /* 무시 */ }
-          const markedHtml = prepareRhwpInternalClipboardHtml(this, html, text);
-          if (ref.type === 'image') {
-            writeImageToClipboard(this.wasm, ref.sec, ref.ppi, ref.ci, text, markedHtml, cellPathJson)
-              .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
-          } else {
-            writeTextHtmlToClipboard(text, markedHtml)
-              .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
-          }
-        } catch (err) {
-          console.warn('[InputHandler] 개체 복사 실패:', err);
-        }
-        this.cursor.moveOutOfSelectedPicture();
-        this.pictureObjectRenderer?.clear();
-        this.eventBus.emit('picture-object-selection-changed', false);
-        this.executeOperation({ kind: 'snapshot', operationType: 'cutObject', operation: (wasm: WasmBridge) => {
-          deleteSelectedObject(wasm, ref);
-          return this.cursor.getPosition();
-        }});
-      }
+      this.dispatcher?.dispatch('edit:cut');
       return;
     }
     // Ctrl+V → 개체 선택 해제 후 붙여넣기 (paste 이벤트로 처리)
@@ -935,88 +881,18 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     }
     if (e.key === 'Delete' || e.key === 'Backspace') {
       e.preventDefault();
-      // 표 객체 선택 → 표 삭제
-      const ref = this.cursor.getSelectedTableRef();
-      if (ref) {
-        if (ref.cellPath && ref.cellPath.length > 1) {
-          // 중첩 표 삭제는 미지원 — 선택만 해제
-          this.cursor.moveOutOfSelectedTable();
-          this.eventBus.emit('table-object-selection-changed', false);
-          this.updateCaret();
-          // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
-          // this.checkTransparentBordersTransition();
-        } else {
-          this.cursor.moveOutOfSelectedTable();
-          this.eventBus.emit('table-object-selection-changed', false);
-          this.executeOperation({ kind: 'snapshot', operationType: 'deleteTable', operation: (wasm: WasmBridge) => {
-            wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
-            return this.cursor.getPosition();
-          }});
-          // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
-          // this.checkTransparentBordersTransition();
-        }
-      }
+      this.dispatcher?.dispatch('edit:delete');
       return;
     }
-    // Ctrl+C → 표 복사
+    // Ctrl+C/X는 그림 선택과 마찬가지로 canonical edit command를 사용한다.
     if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
       e.preventDefault();
-      const ref = this.cursor.getSelectedTableRef();
-      if (ref) {
-        try {
-          // #4272: 선택 경로의 마지막 엔트리는 표 안 셀이므로, 그 엔트리의
-          // controlIndex와 앞쪽 owner path를 분리해 선택된 표 자체를 복사한다.
-          const target = tableObjectClipboardTarget(ref);
-          this.wasm.copyControl(
-            ref.sec, ref.ppi, target.controlIndex, target.ownerCellPathJson,
-          );
-          const text = this.wasm.getClipboardText();
-          if (text) {
-            let html = '';
-            try {
-              html = this.wasm.exportControlHtml(
-                ref.sec, ref.ppi, target.controlIndex, target.ownerCellPathJson,
-              ) || '';
-            } catch { /* 무시 */ }
-            const markedHtml = prepareRhwpInternalClipboardHtml(this, html, text);
-            writeTextHtmlToClipboard(text, markedHtml)
-              .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
-          }
-        } catch (err) {
-          console.warn('[InputHandler] 표 복사 실패:', err);
-        }
-      }
+      this.dispatcher?.dispatch('edit:copy');
       return;
     }
-    // Ctrl+X → 표 잘라내기
     if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
       e.preventDefault();
-      const ref = this.cursor.getSelectedTableRef();
-      if (ref && !(ref.cellPath && ref.cellPath.length > 1)) {
-        try {
-          // [Task #2880] Ctrl+C 사이드와 동일하게 cellPath 를 copyControl/exportControlHtml 에 전달.
-          const cellPathJson = pictureCellPathJson(ref);
-          this.wasm.copyControl(ref.sec, ref.ppi, ref.ci, cellPathJson);
-          const text = this.wasm.getClipboardText();
-          if (text) {
-            let html = '';
-            try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci, cellPathJson) || ''; } catch { /* 무시 */ }
-            const markedHtml = prepareRhwpInternalClipboardHtml(this, html, text);
-            writeTextHtmlToClipboard(text, markedHtml)
-              .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
-          }
-        } catch (err) {
-          console.warn('[InputHandler] 표 복사 실패:', err);
-        }
-        this.cursor.moveOutOfSelectedTable();
-        this.eventBus.emit('table-object-selection-changed', false);
-        this.executeOperation({ kind: 'snapshot', operationType: 'cutTable', operation: (wasm: WasmBridge) => {
-          wasm.deleteTableControl(ref.sec, ref.ppi, ref.ci);
-          return this.cursor.getPosition();
-        }});
-        // [Task #394] 셀 진입 자동 ON 로직 비활성화 — input-handler.ts 의 코멘트 참고.
-        // this.checkTransparentBordersTransition();
-      }
+      this.dispatcher?.dispatch('edit:cut');
       return;
     }
     // Ctrl+V → 표 선택 해제 후 붙여넣기 (paste 이벤트로 위임)

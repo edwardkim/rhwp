@@ -4,7 +4,7 @@
 //! 한글 어절/글자, 영어 단어/하이픈, CJK 개별 분할을 지원한다.
 
 use super::{find_active_char_shape, is_lang_neutral};
-use crate::model::control::Control;
+use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::style::LineSpacingType;
 use crate::renderer::layout::{
@@ -1262,6 +1262,9 @@ fn reflow_line_segs_impl(
     // [#4149] 셀 편집의 단일 관문(reflow_cell_paragraph[_by_path])과 서식 적용
     // (formatting.rs) 이 모두 여기로 수렴한다 — 단일줄 과밀 memo 무효화.
     para.invalidate_single_line_overflow_memo();
+    // [#4677] 줄을 다시 계산하면 이전에 붙여 둔 조판 전용 보강 줄은 사라진다 — 표식을
+    // 남겨 두면 실제 줄을 저장에서 잘라 내게 된다.
+    para.layout_only_fill_lines = 0;
     // 기존 LineSeg에서 dimension 값 보존 (원본 HWP 호환성 유지)
     let seg_width_hwp = px_to_hwpunit(available_width_px, dpi);
     let orig = para.line_segs.first().cloned();
@@ -1309,22 +1312,34 @@ fn reflow_line_segs_impl(
     };
 
     if para.text.is_empty() {
+        // [#4677] 각 인라인 개체의 **UTF-16 오프셋**을 함께 들고 다닌다. lineseg 의
+        // `text_start` 는 PARA_TEXT 안의 코드유닛 위치이고 확장 제어문자 하나가 8 유닛을
+        // 차지하므로, 컨트롤 인덱스를 그대로 쓰면 둘째 줄이 첫 제어문자 블록 한가운데(=1)를
+        // 가리킨다. 한글 2022 는 그런 문서를 열 때 본문을 통째로 버리고 빈 1쪽으로 연다
+        // (10k 전수 스윕의 x2h 본문 소실군 — 저장본은 rhwp 재파싱만 통과하는 함정).
         let inline_sizes = para
             .controls
             .iter()
-            .filter_map(inline_control_size_hwp)
+            .scan(0u32, |utf16_pos, ctrl| {
+                let start = *utf16_pos;
+                if ctrl.occupies_ctrl_char_slot() {
+                    *utf16_pos += CTRL_CHAR_CODE_UNITS;
+                }
+                Some((start, ctrl))
+            })
+            .filter_map(|(start, ctrl)| inline_control_size_hwp(ctrl).map(|size| (start, size)))
             .collect::<Vec<_>>();
         if !inline_sizes.is_empty() {
             let max_line_width = seg_width_hwp.max(1);
-            let mut line_specs: Vec<(usize, i32, i32)> = Vec::new();
-            let mut line_start = 0usize;
+            let mut line_specs: Vec<(u32, i32, i32)> = Vec::new();
+            let mut line_start = 0u32;
             let mut line_width = 0i32;
             let mut line_height = 0i32;
 
-            for (idx, (ctrl_width, ctrl_height)) in inline_sizes.iter().copied().enumerate() {
+            for (utf16_start, (ctrl_width, ctrl_height)) in inline_sizes.iter().copied() {
                 if line_width > 0 && line_width + ctrl_width > max_line_width {
                     line_specs.push((line_start, line_width, line_height));
-                    line_start = idx;
+                    line_start = utf16_start;
                     line_width = 0;
                     line_height = 0;
                 }
@@ -1338,7 +1353,7 @@ fn reflow_line_segs_impl(
             for (line_idx, (start_pos, _line_width, height_hwp)) in
                 line_specs.into_iter().enumerate()
             {
-                let mut seg = make_line_seg(start_pos as u32, 0.0);
+                let mut seg = make_line_seg(start_pos, 0.0);
                 if let Some(template) = orig_line_segs
                     .get(line_idx)
                     .or_else(|| orig_line_segs.first())

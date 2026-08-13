@@ -1166,7 +1166,13 @@ mod tests {
         let mut section = crate::model::document::Section::default();
         let mut p = crate::model::paragraph::Paragraph::default();
         p.text = String::new();
-        p.char_count = 33; // [secd 0..8][cold 8..16][tbl 16..24][pageNum 24..32] + 1
+        // [secd 0..8][cold 8..16][tbl 16..24][pageNum 24..32][bokm 32..40] + 끝 1 = 41
+        //
+        // [#4677] 종전 값은 33 이었다 — 책갈피를 zero-width 로 보던 시절의 예산이다. 한컴
+        // 원본 HWP5 는 책갈피도 8 유닛 제어문자로 본문에 싣고(`16 00 6d 6b 6f 62 … 16 00`),
+        // rhwp 도 이제 두 축(HWP5 제어문자·HWPX 슬롯) 모두에서 자리를 잡는다. 이 테스트가
+        // 지키는 축(hidden 슬롯 정합 → char_shape 경계 24 보존)은 그대로다.
+        p.char_count = 41;
         p.char_shapes = vec![
             CharShapeRef {
                 start_pos: 0,
@@ -1234,17 +1240,23 @@ mod tests {
         doc.doc_info.char_shapes.push(CharShape::default()); // id 1
         let mut section = crate::model::document::Section::default();
         let mut p = crate::model::paragraph::Paragraph::default();
-        // [secd 0..8][cold 8..16][fieldBegin 16..24] A@24 [fieldEnd 25..33] B@33 → cc 35
+        // [secd 0..8][cold 8..16][fieldBegin 16..24][bokm 24..32] A@32 [fieldEnd 33..41] B@41
+        // → cc 43
+        //
+        // [#4677] 종전 예산은 책갈피에 자리를 주지 않아 `A@24 … B@33`, cc 35 였다. 한컴 원본은
+        // 책갈피도 확장 제어문자 8 유닛을 쓰므로(`16 00 6d 6b 6f 62 … 16 00`) 자리를 하나
+        // 넣고 뒤 위치를 8 씩 민다. 이 테스트가 지키는 축(same-para 균형 필드의 fieldEnd 가
+        // 자기 자리에 보존되고 **뒤 char_shape 경계가 밀리지 않는 것**)은 그대로다.
         p.text = "AB".to_string();
-        p.char_offsets = vec![24, 33];
-        p.char_count = 35;
+        p.char_offsets = vec![32, 41];
+        p.char_count = 43;
         p.char_shapes = vec![
             CharShapeRef {
                 start_pos: 0,
                 char_shape_id: 0,
             },
             CharShapeRef {
-                start_pos: 33,
+                start_pos: 41,
                 char_shape_id: 1,
             },
         ];
@@ -1272,11 +1284,14 @@ mod tests {
             1,
             "same-para 균형 필드(fieldBegin/End 1/1)가 보존돼야 한다 (종전: fieldEnd 드롭)"
         );
-        assert_eq!(p2.char_count, 35, "fieldEnd 8유닛 보존 → cc 불변");
+        assert_eq!(
+            p2.char_count, 43,
+            "fieldEnd 8유닛 + 책갈피 8유닛(#4677) 보존"
+        );
         let positions: Vec<u32> = p2.char_shapes.iter().map(|cs| cs.start_pos).collect();
         assert_eq!(
             positions,
-            vec![0, 33],
+            vec![0, 41],
             "후속 char_shape 경계 보존 (종전 −8)"
         );
     }

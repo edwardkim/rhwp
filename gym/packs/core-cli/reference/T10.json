@@ -1,0 +1,40 @@
+{
+  "id": "T10",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:plan.json}",
+        "body": {
+          "planVersion": "1.0",
+          "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+          "output": "o1.hwp",
+          "steps": [
+            {
+              "action": "set_cell",
+              "table": 0,
+              "row": 0,
+              "col": 0,
+              "text": "결정론"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/basic/issue2007_nested_cell_pagination_42065.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"결정론\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/basic/issue2007_nested_cell_pagination_42065.hwp\", \"output\": \"{sub:o2.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"결정론\"}]}",
+        "--json"
+      ]
+    }
+  ]
+}

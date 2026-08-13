@@ -86,6 +86,8 @@ pub struct AdapterReport {
     pub text_box_para_header_tail_materialized: u32,
     /// HWPX 출처 일반 paragraph PARA_HEADER tail materialize 횟수
     pub para_header_tail_materialized: u32,
+    /// [#4677] 캡션 달린 묶음 개체의 번호 범주 비트(bit28→bit29) 보정 횟수
+    pub captioned_group_numbering_bit_materialized: u32,
     /// HWPX 수식(Equation) CTRL_HEADER attr 중 한컴 저장 관례 비트 보강 횟수 (Task #1061)
     pub equation_ctrl_header_attr_materialized: u32,
     /// HWPX 수식(Equation) EQEDIT 의 font_name/version_info 정답지 정합 정정 횟수 (Task #1061 Stage 2)
@@ -1201,6 +1203,12 @@ fn insert_section_def_control(section: &mut Section, report: &mut AdapterReport)
         0,
         Control::SectionDef(Box::new(section.section_def.clone())),
     );
+    let leading_defs = first_para
+        .controls
+        .iter()
+        .take_while(|control| matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)))
+        .count();
+    first_para.reserve_leading_extended_control_slots(leading_defs);
     report.section_def_controls_inserted += 1;
 }
 
@@ -1639,6 +1647,38 @@ fn materialize_fixed_width_space_control(
     report.header_footer_fwspace_control_materialized += 1;
 }
 
+/// [#4677] 캡션 달린 묶음 개체(`<hp:container>`)의 번호 범주 비트를 한컴 값으로 맞춘다.
+///
+/// 파서는 `numberingType="PICTURE"` 개체에 attr **bit 28** 을 세운다
+/// (`parser/hwpx/section.rs` — 한컴 2020 저장본 근거). 그런데 한글 2022 는 **캡션이 달린
+/// 묶음**을 저장할 때 같은 자리에 **bit 29** 를 쓴다. 오라클 실측(12.0.0.535, 같은 문서를
+/// 한글로 열어 다시 저장):
+///
+/// | 개체 | 한컴 attr | rhwp attr |
+/// |---|---|---|
+/// | `<hp:pic numberingType="PICTURE">` (캡션 없음) | `0x040A2310` | `0x040A2310` |
+/// | `<hp:container numberingType="PICTURE">` + 캡션 | `0x242A4311` | `0x142A4311` |
+///
+/// 이 한 비트가 어긋나면 한글은 문서를 열되 **본문을 통째로 버린다**(0자·1쪽). 캡션을 빼거나
+/// 묶음을 빼면 정상 개방되는 것으로 트리거를 확정했고, 비트만 바꿔 다시 측정해 회복을 확인했다
+/// (00900·00911·01134·02315 네 문서가 글자수·쪽수까지 원본과 일치).
+fn materialize_captioned_group_numbering_bit(
+    common: &mut crate::model::shape::CommonObjAttr,
+    report: &mut AdapterReport,
+) {
+    const PICTURE_NUMBERING_BIT: u32 = 1 << 28;
+    const CAPTIONED_GROUP_NUMBERING_BIT: u32 = 1 << 29;
+
+    if common.attr & CAPTIONED_GROUP_NUMBERING_BIT != 0 {
+        return;
+    }
+
+    common.attr &= !PICTURE_NUMBERING_BIT;
+    common.attr |= CAPTIONED_GROUP_NUMBERING_BIT;
+    common.hwp5_gen_shape_attr_bit28 = false;
+    report.captioned_group_numbering_bit_materialized += 1;
+}
+
 fn materialize_para_header_tail(para: &mut Paragraph, report: &mut AdapterReport) {
     if para.raw_header_extra.len() >= 12 {
         return;
@@ -1861,10 +1901,29 @@ fn adapt_shape_with_context(
         }
     }
 
-    if let ShapeObject::Group(group) = shape {
-        for child in &mut group.children {
-            adapt_shape_with_context(child, report, context);
+    // [#4677] `drawing_mut()` 이 None 인 두 종류(묶음·그림)의 캡션 문단도 보강한다.
+    //
+    // #2736 이 그림·도형 캡션을 덮었지만 그 경로는 (a) `Control::Picture` 로 **문단에 직접**
+    // 달린 그림과 (b) `drawing.caption` 을 가진 도형뿐이다. 묶음(`<hp:container>`)은 캡션을
+    // `GroupShape` 자기 필드로 갖고, 묶음 **안의** 그림도 `ShapeObject::Picture` 라 둘 다
+    // 위 경로에 걸리지 않는다. 미방문 문단은 header tail 이 10바이트로 남아 PARA_HEADER 가
+    // 22 바이트로 나가고(한컴은 24), 한글 2022 는 그 문서의 본문을 통째로 버린다(0자·1쪽).
+    match shape {
+        ShapeObject::Group(group) => {
+            if let Some(caption) = &mut group.caption {
+                adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
+                materialize_captioned_group_numbering_bit(&mut group.common, report);
+            }
+            for child in &mut group.children {
+                adapt_shape_with_context(child, report, context);
+            }
         }
+        ShapeObject::Picture(pic) => {
+            if let Some(caption) = &mut pic.caption {
+                adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
+            }
+        }
+        _ => {}
     }
 }
 
@@ -2362,7 +2421,120 @@ pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::paragraph::CharShapeRef;
+    use crate::model::paragraph::{CharShapeRef, LineSeg, RangeTag};
+
+    /// [#4680] 구역 정의 컨트롤을 첫 문단에 삽입할 때 글자 오프셋 자리를 함께 비워야 한다.
+    ///
+    /// `serialize_para_text` 는 `char_offsets` 의 빈 간격에만 제어문자를 넣고, 간격이 없으면
+    /// 글자를 다 쓴 뒤에 몰아 쓴다. HWP3 파서는 오프셋을 글자 수만으로 만들어 간격이 없어
+    /// 종전에는 `secd`·`cold` 가 본문 글자 **뒤**로 밀렸고, 그 저장본을 한글 2022 로 열면
+    /// 응답이 끊기거나 죽었다(실측 10건 중 5건이 이 수정으로 열린다). 한컴 산출물은 언제나
+    /// 정의 제어문자가 글자보다 앞이다.
+    #[test]
+    fn issue4680_section_def_insert_makes_room_in_char_offsets() {
+        use crate::model::document::{Section, SectionDef};
+        use crate::model::page::PageDef;
+        use crate::model::paragraph::Paragraph;
+
+        // HWP3 파서 산출 모양: 글자 수만큼의 연속 오프셋, 정의 컨트롤은 cold 하나뿐.
+        let mut para = Paragraph {
+            text: "(별표 2)".to_string(),
+            char_offsets: (0..6).collect(),
+            char_shapes: vec![
+                CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 1,
+                },
+                CharShapeRef {
+                    start_pos: 3,
+                    char_shape_id: 2,
+                },
+            ],
+            range_tags: vec![RangeTag {
+                start: 0,
+                end: 4,
+                tag: 0x0100_0003,
+            }],
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    ..Default::default()
+                },
+                LineSeg {
+                    text_start: 3,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+        para.controls.push(Control::ColumnDef(Default::default()));
+        let mut section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![para],
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::default();
+        insert_section_def_control(&mut section, &mut report);
+
+        assert_eq!(report.section_def_controls_inserted, 1);
+        // secd + cold = 확장 제어문자 2개 × 8 코드유닛만큼 앞자리가 비어야 한다.
+        assert_eq!(
+            section.paragraphs[0].char_offsets,
+            vec![16, 17, 18, 19, 20, 21],
+            "정의 컨트롤 2개분(16 코드유닛) 만큼 밀려야 함"
+        );
+        assert_eq!(section.paragraphs[0].char_shapes[0].start_pos, 0);
+        assert_eq!(section.paragraphs[0].char_shapes[1].start_pos, 19);
+        assert_eq!(section.paragraphs[0].range_tags[0].start, 16);
+        assert_eq!(section.paragraphs[0].range_tags[0].end, 20);
+        assert_eq!(section.paragraphs[0].line_segs[0].text_start, 0);
+        assert_eq!(section.paragraphs[0].line_segs[1].text_start, 19);
+    }
+
+    /// [#4680] 자리가 이미 있는 IR(HWPX 출신 등)은 밀지 않는다 — 두 번 밀면 컨트롤과
+    /// 글자 사이에 빈 슬롯이 생겨 오히려 위치가 어긋난다.
+    #[test]
+    fn issue4680_existing_room_is_not_shifted_again() {
+        use crate::model::document::{Section, SectionDef};
+        use crate::model::page::PageDef;
+        use crate::model::paragraph::Paragraph;
+
+        let para = Paragraph {
+            text: "가나".to_string(),
+            // 이미 정의 컨트롤 하나(8 코드유닛)분 자리가 있는 오프셋
+            char_offsets: vec![8, 9],
+            ..Default::default()
+        };
+        let mut section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![para],
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::default();
+        insert_section_def_control(&mut section, &mut report);
+
+        assert_eq!(
+            section.paragraphs[0].char_offsets,
+            vec![8, 9],
+            "secd 한 개분 자리가 이미 있으므로 추가 이동 없음"
+        );
+    }
 
     /// [#3676] HWP3 parser가 실제로 만드는 그림/도형/표 캡션과 HiddenComment, 그리고
     /// 공통 adapter가 다루는 바탕쪽 글상자를 모두 건너 문단 직속 그림만 보정하면,
@@ -3186,6 +3358,73 @@ mod tests {
 
         assert_eq!(doc.sections[1].paragraphs[0].raw_break_type, 0x01);
         assert_eq!(report.following_section_break_type_materialized, 1);
+    }
+
+    /// [#4677] 캡션 달린 묶음 개체는 번호 범주 비트가 bit28 이 아니라 bit29 다.
+    ///
+    /// 파서는 `numberingType="PICTURE"` 개체에 bit28 을 세우는데, 한글 2022 는 캡션이 달린
+    /// 묶음을 저장할 때 bit29 를 쓴다(오라클 `0x242A4311` vs rhwp `0x142A4311`). 이 한 비트가
+    /// 어긋나면 한글이 문서를 열되 본문을 통째로 버린다. 캡션 문단 자체도 어댑터가 방문해야
+    /// PARA_HEADER tail 이 채워진다.
+    #[test]
+    fn captioned_group_gets_hancom_numbering_bit_and_visited_caption() {
+        use crate::model::shape::{Caption, GroupShape};
+
+        let caption_para = Paragraph::default();
+        let group = GroupShape {
+            common: crate::model::shape::CommonObjAttr {
+                attr: 1 << 28,
+                hwp5_gen_shape_attr_bit28: true,
+                ..Default::default()
+            },
+            caption: Some(Caption {
+                paragraphs: vec![caption_para],
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let mut doc = Document {
+            sections: vec![Section {
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Shape(Box::new(ShapeObject::Group(group)))],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        let report = convert_hwpx_to_hwp_ir(&mut doc);
+
+        let group = doc.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|ctrl| match ctrl {
+                Control::Shape(shape) => match shape.as_ref() {
+                    ShapeObject::Group(group) => Some(group),
+                    _ => None,
+                },
+                _ => None,
+            })
+            .expect("묶음 개체가 남아 있어야 한다");
+        assert_eq!(
+            group.common.attr & (1 << 28),
+            0,
+            "PICTURE 번호 비트(bit28)는 지운다"
+        );
+        assert_ne!(
+            group.common.attr & (1 << 29),
+            0,
+            "한컴은 캡션 달린 묶음에 bit29 를 쓴다"
+        );
+        assert_eq!(report.captioned_group_numbering_bit_materialized, 1);
+
+        let caption = group.caption.as_ref().expect("캡션 보존");
+        assert!(
+            caption.paragraphs[0].raw_header_extra.len() >= 12,
+            "캡션 문단도 방문해 PARA_HEADER tail 이 채워져야 한다"
+        );
     }
 
     #[test]
