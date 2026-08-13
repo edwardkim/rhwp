@@ -280,7 +280,7 @@ export class StyleEditDialog extends ModalDialog {
     }
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): boolean {
     const name = this.nameInput.value.trim();
     const englishName = this.enNameInput.value.trim();
     const styleType = this.typePara?.checked ? 0 : (this.styleInfo.type ?? 0);
@@ -288,11 +288,11 @@ export class StyleEditDialog extends ModalDialog {
 
     if (!name) {
       alert('스타일 이름을 입력하세요.');
-      return;
+      return false;
     }
     if (name.length > MAX_STYLE_NAME_LEN || englishName.length > MAX_STYLE_NAME_LEN) {
       alert(`스타일 이름/영문 이름은 ${MAX_STYLE_NAME_LEN}자를 넘을 수 없습니다.`);
-      return;
+      return false;
     }
 
     // [Task #3387] 스타일 정의와 글자/문단 모양은 **두 번의 뮤테이션**이다. 따로 기록하면
@@ -331,20 +331,28 @@ export class StyleEditDialog extends ModalDialog {
 
     try {
       const ih = this.services?.getInputHandler();
+      let saved = false;
       if (ih) {
         ih.executeOperation({
           kind: 'snapshot',
           operationType: this.addMode ? 'createStyle' : 'updateStyle',
-          operation: (wasm) => apply(wasm) ? ih.getPosition() : null,
+          operation: (wasm) => {
+            saved = apply(wasm);
+            return saved ? ih.getPosition() : null;
+          },
         });
       } else {
-        if (apply(this.wasm)) {
+        saved = apply(this.wasm);
+        if (saved) {
           this.eventBus.emit('document-changed');
         }
       }
+      if (!saved) return false;
       this.onSave?.();
+      return true;
     } catch (err) {
       console.warn('[StyleEditDialog] 저장 실패:', err);
+      return false;
     }
   }
 

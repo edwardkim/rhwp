@@ -38,23 +38,14 @@ test('스타일 삭제는 snapshot 으로 기록된다', () => {
   assert.match(handleDelete, /this\.eventBus\.emit\('document-changed'\)/, '미주입 fallback 유지');
 });
 
-test('스타일 다이얼로그는 services 를 받고 history-jumped 로 목록을 무효화한다', () => {
+test('스타일 다이얼로그는 모달 중 도달 불가한 history-jumped 를 구독하지 않는다', () => {
   const dialog = source('src/ui/style-dialog.ts');
 
   assert.match(dialog, /private services\?: CommandServices/, 'services 주입');
-  // undo/redo 는 스타일 목록을 되돌리므로 열려 있는 목록이 stale 이 된다 (#2341).
-  assert.match(
-    dialog,
-    /this\.eventBus\.on\('history-jumped', \(\) => this\.syncAfterHistoryJump\(\)\)/,
-    'history-jumped 구독으로 표시 갱신',
-  );
-  // 목록만 다시 읽으면 `현재 커서 위치 스타일` 라벨이 되돌아가기 전 값으로 남는다 —
-  // 히스토리 점프는 캐럿 문단의 style_id 자체가 바뀌는 자리다.
-  const sync = slice(dialog, 'private syncAfterHistoryJump', '\n  }');
-  assert.match(sync, /getInputHandler\(\)\?\.getCurrentStyleId\(\)/, '캐럿 기준으로 현재 스타일 재조회');
-  assert.match(sync, /this\.setCurrentStyleId\(currentId\)/, '라벨·선택·정보 패널까지 갱신');
-  // 닫힌 뒤 구독이 남으면 사라진 목록을 갱신하려 든다.
-  assert.match(slice(dialog, 'override hide', '\n  }'), /this\.historyJumpOff\?\.\(\)/, '닫을 때 구독 해제');
+  // 한컴 2022도 F6 스타일 대화상자 중 Ctrl+Z를 문서에 전달하지 않는다. rhwp의 모달
+  // capture 계약도 같으므로 이 다이얼로그가 소비할 history-jumped 자체가 없다 (#3438).
+  assert.doesNotMatch(dialog, /history-jumped|historyJumpOff|syncAfterHistoryJump/,
+    '도달 불가한 구독·동기화·해제 코드를 두지 않음');
 });
 
 test('스타일 생성·수정은 모양 적용까지 한 스냅샷으로 원자화되고 실제 실패 신호만 처리한다', () => {
@@ -85,9 +76,13 @@ test('스타일 생성·수정은 모양 적용까지 한 스냅샷으로 원자
   assert.match(applyFn, /if \(!wasm\.updateStyleShapes\(/, 'updateStyleShapes false를 확인');
   assert.match(
     save,
-    /operation: \(wasm\) => apply\(wasm\) \? ih\.getPosition\(\) : null/,
+    /operation: \(wasm\) => \{\s*saved = apply\(wasm\);\s*return saved \? ih\.getPosition\(\) : null;/,
     'updateStyle false는 snapshot no-op으로 전달',
   );
+  assert.match(save, /let saved = false/, '실제 저장 성공 여부를 확인');
+  assert.match(save, /if \(!saved\) return false/, 'false 반환은 모달을 닫지 않음');
+  assert.match(save, /catch \(err\) \{[\s\S]*?return false;/, '예외도 모달을 닫지 않음');
+  assert.match(save, /this\.onSave\?\.\(\);\s*return true;/, '성공한 저장 때만 후속 새로고침');
   assert.match(save, /this\.eventBus\.emit\('document-changed'\)/, '미주입 fallback 유지');
 });
 
