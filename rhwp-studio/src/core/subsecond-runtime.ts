@@ -117,6 +117,8 @@ export type SubsecondPatchAccumulationOptions = {
 
 const RECONNECT_MIN_MS = 250;
 const RECONNECT_MAX_MS = 4_000;
+/** 엔진이 점프 테이블 수신까지 수락했음을 뜻하는 결과 코드의 단일 소유자. */
+export const PATCH_DISPATCHED_OUTCOME = 'patch-dispatched';
 /**
  * 이 시간보다 오래 붙어 있었던 연결만 "살아 있었다"고 보고 백오프를 되돌린다.
  * 재연결 상한과 우연히 같은 값이지만 다른 개념이다 — 상한을 바꾼다고 같이 바뀌면 안 된다.
@@ -195,7 +197,7 @@ export class SubsecondPatchAccumulation {
  * 번들까지 따라온다.
  */
 const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
-  'patch-dispatched': {
+  [PATCH_DISPATCHED_OUTCOME]: {
     level: 'info',
     message:
       '점프 테이블을 subsecond 에 넘겼다. wasm 에서 적용은 비동기라 성공 여부는 여기서 알 수 없다 — ' +
@@ -246,6 +248,11 @@ const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
  * 엔진 소스에서 읽은 목록과 맞대 볼 수 있고, 어긋남이 테스트 실패가 된다.
  */
 export const SUBSECOND_OUTCOME_CODES: readonly string[] = Object.keys(SUBSECOND_OUTCOMES);
+
+/** 적용 요청 결과만 누적 계수와 전역 오류 귀속의 기준으로 삼는다. */
+export function isPatchDispatchedOutcome(outcome: string): boolean {
+  return outcome === PATCH_DISPATCHED_OUTCOME;
+}
 
 /** 신호 하나를 개발자가 읽을 한 줄로 만든다. */
 export function describeSubsecondSignal(signal: SubsecondSignal): SubsecondDiagnostic {
@@ -439,7 +446,7 @@ export function connectSubsecondDevtools(
     socket.onmessage = event => {
       if (typeof event.data !== 'string') return;
       const outcome = applyMessage(event.data);
-      if (outcome === 'patch-dispatched') {
+      if (isPatchDispatchedOutcome(outcome)) {
         dispatchedPatches += 1;
         patchAccumulation.recordApplied();
       }

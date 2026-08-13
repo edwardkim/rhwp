@@ -495,6 +495,25 @@ test('the studio describes exactly the outcome codes the engine declares', async
   );
 });
 
+test('applied patch outcome has one source shared by diagnostics and accumulation', async () => {
+  const {
+    PATCH_DISPATCHED_OUTCOME,
+    SUBSECOND_OUTCOME_CODES,
+    isPatchDispatchedOutcome,
+  } = await loadRuntime();
+
+  assert.ok(
+    ENGINE_OUTCOME_CODES.includes(PATCH_DISPATCHED_OUTCOME),
+    '누적 계수가 쓰는 적용 결과는 엔진의 DevtoolsMessageOutcome::code()에 있어야 한다',
+  );
+  assert.ok(
+    SUBSECOND_OUTCOME_CODES.includes(PATCH_DISPATCHED_OUTCOME),
+    '누적 계수가 쓰는 적용 결과는 Studio 진단 표에도 있어야 한다',
+  );
+  assert.equal(isPatchDispatchedOutcome(PATCH_DISPATCHED_OUTCOME), true);
+  assert.equal(isPatchDispatchedOutcome('not-hot-reload'), false);
+});
+
 test('every devserver outcome reaches a reporter instead of being discarded', async () => {
   const { socket, signals, disconnect } = await connectWithSignals(message => message);
 
