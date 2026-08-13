@@ -1007,47 +1007,6 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
     None
 }
 
-/// [#2156] Haansoft Batang(한컴바탕, HBATANG.TTF upm=1024) ASCII advance/em.
-/// 한글은 함초롬바탕(HCR Batang) 문서의 비한글 문자(라틴·숫자·구두점·U+00B7)를
-/// HCR hmtx 가 아닌 이 메트릭으로 렌더한다 — 문자폭 사다리 통제 프로브로
-/// 전 판별 클래스 확정 (괄호 0.32→0.50em 등, mydocs/working/task_m100_2156_*).
-/// 공백(0x20)은 useFontSpace=0 고정 0.5em 경로(기존 em/2) 유지를 위해 제외.
-// [§4.31] 한글 PDF 로 실측한 HCRBatang(함초롬바탕) ASCII advance/em.
-// 격리 표본(각 ASCII 를 '가' 로 감싸)에서 origin 델타를 재고 한국어 전각으로 정규화했다
-// (`tools/hwpctrl_compat/pdf_metric_oracle.py`). 옛 표는 Times 계열이라 라틴 ~절반이
-// 한글 렌더와 8% 넘게 어긋났다(구두점 30~70%, 둥근 소문자 +14~21%).
-const HAANSOFT_BATANG_ASCII: [f64; 95] = [
-    0.3330, 0.3317, 0.3440, 0.6389, 0.6389, 0.8600, 0.7494, 0.3317, // ` !"#$%&'`
-    0.3440, 0.3440, 0.5774, 0.5774, 0.3440, 0.5774, 0.3440, 0.5774, // `()*+,-./`
-    0.5774, 0.5651, 0.5651, 0.5774, 0.5774, 0.5774, 0.5774, 0.5651, // `01234567`
-    0.5651, 0.5774, 0.3317, 0.3317, 0.5651, 0.5774, 0.5651, 0.5774, // `89:;<=>?`
-    0.8600, 0.7371, 0.6266, 0.7003, 0.7494, 0.6511, 0.6389, 0.7126, // `@ABCDEFG`
-    0.7617, 0.3194, 0.3317, 0.6880, 0.6266, 0.8600, 0.7617, 0.7617, // `HIJKLMNO`
-    0.6266, 0.7371, 0.6757, 0.6511, 0.6880, 0.7494, 0.7371, 0.9337, // `PQRSTUVW`
-    0.7249, 0.7249, 0.6389, 0.3317, 0.5651, 0.3317, 0.5651, 0.5651, // `XYZ[\]^_`
-    0.3194, 0.5897, 0.6143, 0.5651, 0.6143, 0.5406, 0.3563, 0.5774, // '`abcdefg'
-    0.6511, 0.2949, 0.2949, 0.6020, 0.2949, 0.9337, 0.6511, 0.6020, // `hijklmno`
-    0.6143, 0.5897, 0.4914, 0.5037, 0.3686, 0.6511, 0.5774, 0.7371, // `pqrstuvw`
-    0.5529, 0.5651, 0.4914, 0.3317, 0.3317, 0.3194, 0.5651, // `xyz{|}~`
-];
-
-/// [#2156] 검증된 함초롬바탕 별칭의 비한글 문자 폭 오버라이드 (advance/em 비율).
-fn haansoft_latin_override(primary_name: &str, c: char) -> Option<f64> {
-    // 함초롬돋움/HCR Dotum은 Haansoft Dotum 등 별도 대체 가능성이 남아 있다.
-    // 바탕 문자폭 사다리로 검증된 정확한 별칭만 이 테이블을 사용한다.
-    if !matches!(primary_name, "함초롬바탕" | "HCR Batang") {
-        return None;
-    }
-    if c == '\u{00B7}' {
-        return Some(0.3330);
-    }
-    let cp = c as u32;
-    if (0x21..0x7F).contains(&cp) {
-        return Some(HAANSOFT_BATANG_ASCII[(cp - 0x20) as usize]);
-    }
-    None
-}
-
 /// #3820 `76076_regulatory_analysis` 한컴 PDF p35의 한양중고딕 공백 advance.
 ///
 /// HWP의 일반적인 U+0020 반각 규약(`em/2`)과 달리, 원명 `한양중고딕`으로
@@ -1120,10 +1079,6 @@ fn measure_char_width_embedded(
 ) -> Option<f64> {
     // CSS font-family 체인에서 첫 번째 폰트명으로 메트릭 조회
     let primary_name = font_family.split(',').next().unwrap_or(font_family).trim();
-    // [#2156] 함초롬바탕 비한글 문자 — Haansoft Batang 메트릭 대체 (한글 동작).
-    if let Some(r) = haansoft_latin_override(primary_name, c) {
-        return Some(quantize_hwp_px(r * font_size));
-    }
     if let Some(w) = kopub_char_width(primary_name, c, font_size) {
         return Some(w);
     }
@@ -1599,7 +1554,7 @@ mod tests {
         let mut have = 0;
         for f in fonts {
             let ok = font_family_has_metrics(f, false, false);
-            // 함초롬바탕/HCR 은 haansoft_latin_override 로 별도 per-glyph 표를 타므로
+            // 함초롬바탕/HCR 은 자동 생성 hmtx 표를 타므로
             // metric 유무와 무관하게 정확하다 — 표시해 둔다.
             // 함초롬(HCR)·KoPub 은 별도 per-glyph 경로가 있어 metric 유무와 무관하게 정확하다.
             let dedicated = f.contains("함초롬")
@@ -1683,15 +1638,27 @@ mod tests {
         }
     }
 
-    // ── #2156 함초롬바탕 라틴 메트릭 대체 ──
+    // ── #4701 함초롬바탕 라틴 = 폰트 hmtx ──
 
-    /// 한글은 함초롬바탕(HCR Batang) 문서의 비한글 문자(라틴·숫자·구두점·U+00B7)를
-    /// Haansoft Batang(한컴바탕) 메트릭으로 렌더한다 — 문자폭 사다리 통제
-    /// 프로브로 전 판별 클래스 확정 (mydocs/working/task_m100_2156_stage1/2).
-    /// 회귀 시 괄호가 HCR hmtx(0.32em)로 되돌아가 자격증 목록류 셀의 래핑
-    /// 줄수가 한글 대비 과소해진다 (21761835 r74 3줄 vs 한글 4줄).
+    /// 함초롬바탕(HCR Batang)의 비한글 문자는 **폰트 자신의 hmtx** 로 잰다.
+    ///
+    /// #2156 이 넣고 §4.31(`69bb0813d`)이 값을 갈아끼운 `HAANSOFT_BATANG_ASCII`
+    /// 오버라이드를 제거한 자리다. 그 표는 한글 PDF 의 `가`↔ASCII origin 델타를
+    /// **한국어 전각으로 정규화**해 만들었는데, 이 폰트의 한글 advance 가 0.970em
+    /// 이라 전 ASCII 가 `1/0.970 = 1.0309` 배 부풀었다. `HANBatang.ttf` hmtx 대비
+    /// 평균 +3.54% 였고, 표에 0.970 을 되곱하면 +1.11% 로 줄어 나머지가 origin
+    /// 델타 방식의 추출 잡음임이 드러났다(#4701).
+    ///
+    /// 잡음의 증거: 이 폰트가 같은 advance(0.5500)를 주는 숫자 0~9 에 옛 표는
+    /// 0.5651 과 0.5774 두 값을 배정했다. 폰트 메트릭이라면 있을 수 없는 차이다.
+    ///
+    /// 눈에 띄는 증상은 목차 점선 리더였다 — `·`(U+00B7)가 0.3330 으로 +4.1%
+    /// 넓어 줄당 85개가 누적되면 줄 끝에서 약 21px 벌어졌다.
+    ///
+    /// 자동 생성 표(`font_metrics_data`)는 TTF 에서 추출한 것이라 hmtx 와 불일치가
+    /// 0 이다. 그래서 고칠 것은 표가 아니라 그것을 가로채던 오버라이드였다.
     #[test]
-    fn issue_2156_hcr_batang_latin_uses_haansoft_metrics() {
+    fn issue_4701_hcr_batang_latin_uses_font_hmtx() {
         let fs = 40.0 / 3.0; // 10pt = 13.333px
         let w = |c: char| {
             measure_char_width_embedded("함초롬바탕", false, false, c, fs)
@@ -1701,47 +1668,33 @@ mod tests {
             measure_char_width_embedded("HCR Batang", false, false, c, fs)
                 .unwrap_or_else(|| panic!("HCR Batang 측정 실패: {c:?}"))
         };
-        // [§4.31] 값은 한글 PDF 실측(HCRBatang)으로 갱신했다 — 옛 값(Times 계열)은
-        // 라틴 절반이 한글 렌더와 8% 넘게 어긋났다. 여기 값은 새 표와 같아야 한다.
-        assert!(
-            (w('(') - fs * 0.3440).abs() < 0.05,
-            "'(' {} ≠ 0.344em",
-            w('(')
-        );
-        assert!(
-            (w(',') - fs * 0.3440).abs() < 0.05,
-            "',' {} ≠ 0.344em",
-            w(',')
-        );
-        assert!(
-            (w('0') - fs * 0.5774).abs() < 0.05,
-            "'0' {} ≠ 0.577em",
-            w('0')
-        );
-        assert!(
-            (w('A') - fs * 0.7371).abs() < 0.05,
-            "'A' {} ≠ 0.737em",
-            w('A')
-        );
-        assert!(
-            (w('·') - fs * 0.3330).abs() < 0.05,
-            "'·' {} ≠ 0.333em",
-            w('·')
-        );
-        assert_eq!(
-            w('('),
-            hcr_batang('('),
-            "HCR Batang 별칭도 함초롬바탕과 같은 Haansoft Batang 메트릭을 사용해야 함"
-        );
+        // HANBatang.ttf hmtx 실측 (upm=1000). 브라우저 measureText 실측과도 일치한다.
+        for (c, em) in [
+            ('(', 0.3200),
+            (',', 0.3200),
+            ('.', 0.3200),
+            ('·', 0.3200),
+            ('0', 0.5500),
+            ('9', 0.5500),
+            ('A', 0.7060),
+        ] {
+            assert!(
+                (w(c) - fs * em).abs() < 0.05,
+                "{c:?} {} ≠ {em}em (hmtx)",
+                w(c)
+            );
+        }
+        // 폰트가 같은 폭을 주는 글자에는 같은 값이 나와야 한다 — 옛 표의 잡음 재발 가드.
+        for pair in [('0', '9'), ('(', ')'), ('.', ',')] {
+            assert_eq!(w(pair.0), w(pair.1), "{pair:?} 는 hmtx 가 동일하다");
+        }
+        assert_eq!(w('('), hcr_batang('('), "별칭도 같은 경로를 타야 함");
         // 한글 음절·공백은 기존 경로(HCR hmtx / useFontSpace=0 em/2) 유지.
-        // 검증하지 않은 돋움/확장 계열과 비함초롬 폰트는 오버라이드하지 않는다.
-        assert!(haansoft_latin_override("함초롬바탕", '가').is_none());
-        assert!(haansoft_latin_override("함초롬바탕", ' ').is_none());
-        assert!(haansoft_latin_override("함초롬돋움", '(').is_none());
-        assert!(haansoft_latin_override("HCR Dotum", '(').is_none());
-        assert!(haansoft_latin_override("함초롬바탕 확장", '(').is_none());
-        assert!(haansoft_latin_override("HCR Batang Ext", '(').is_none());
-        assert!(haansoft_latin_override("바탕", '(').is_none());
+        assert!(
+            (w('가') - fs * 0.9700).abs() < 0.05,
+            "한글 {} ≠ 0.97em",
+            w('가')
+        );
     }
 
     // ── #2279 한컴돋움/한컴바탕 = Haansoft 실메트릭 ──
