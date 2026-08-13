@@ -1,0 +1,73 @@
+"""[#4728] 외부 검증 축 계약 — 정직 불변식.
+
+핵심 불변식: 현실 채점은 **프로젝트 견인(코어)**과 **메타-시스템 외부 채택**을
+절대 뭉뚱그리지 않는다. 뭉뚱그리는 순간 이 축은 self-graded 로 전락한다. 그래서
+메타 외부 채택은 프로젝트 ★·fork 를 포함하지 않고, 그 자체(준수자·참조·재현)로만
+집계돼야 한다.
+"""
+
+from __future__ import annotations
+
+import importlib.util
+import json
+import unittest
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+TOOL = REPO_ROOT / "tools" / "reality_check.py"
+SIGNALS = REPO_ROOT / "mydocs" / "tech" / "agent_frame" / "external_signals.json"
+
+
+def load_tool():
+    spec = importlib.util.spec_from_file_location("reality_check", TOOL)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+class RealityCheckTests(unittest.TestCase):
+    def test_signals_snapshot_is_well_formed(self):
+        sig = json.loads(SIGNALS.read_text(encoding="utf-8"))
+        self.assertIn("project", sig)
+        self.assertIn("metaSystem", sig)
+        self.assertTrue(sig.get("externalValidationCriteria"),
+                        "외부 검증 기준이 비었다 — 무엇을 외부 검증으로 칠지 없다")
+
+    def test_scorecard_separates_project_from_meta(self):
+        """정직 불변식 — 메타 외부 채택은 프로젝트 견인을 포함하지 않는다."""
+        tool = load_tool()
+        sig = json.loads(SIGNALS.read_text(encoding="utf-8"))
+        card = tool.scorecard(sig)
+        self.assertIn("projectTraction", card)
+        self.assertIn("metaSystemExternalAdoption", card)
+        meta = card["metaSystemExternalAdoption"]
+        proj = card["projectTraction"]
+        # 메타 총합은 준수자·참조·재현의 합이지 ★·fork 가 아니다.
+        self.assertEqual(meta["total"],
+                         meta["conformers"] + meta["referrers"] + meta["reproductions"])
+        stars = proj.get("stars") or 0
+        self.assertLess(meta["total"], stars if stars else 1,
+                        "메타 외부 채택이 프로젝트 견인과 뒤섞였다(정직 불변식 위반)")
+
+    def test_meta_adoption_is_reported_honestly_not_inflated(self):
+        """메타 외부 채택은 부풀리지 않는다 — 스냅샷이 0 이면 채점도 0."""
+        tool = load_tool()
+        sig = json.loads(SIGNALS.read_text(encoding="utf-8"))
+        m = sig["metaSystem"]
+        declared = (m.get("externalConformers", 0) + m.get("externalReferrers", 0)
+                    + m.get("thirdPartyReproductions", 0))
+        card = tool.scorecard(sig)
+        self.assertEqual(card["metaSystemExternalAdoption"]["total"], declared)
+
+    def test_verdict_names_self_graded_when_zero(self):
+        tool = load_tool()
+        sig = json.loads(SIGNALS.read_text(encoding="utf-8"))
+        # 메타 채택 0 인 스냅샷에서 판정이 self-graded 를 숨기지 않는다.
+        card = tool.scorecard(sig)
+        if card["metaSystemExternalAdoption"]["total"] == 0:
+            self.assertIn("self-graded", card["verdict"])
+
+
+if __name__ == "__main__":
+    unittest.main()
