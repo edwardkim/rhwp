@@ -13,7 +13,12 @@ param(
   [Parameter(Mandatory = $true)][string]$HwpVersion,
   [Parameter(Mandatory = $true)][string]$TaskPath,
   [Parameter(Mandatory = $true)][string]$OutDir,
+  # Stall allowance for a 0-byte document. The real allowance scales with file size (below) --
+  # a flat threshold kills big documents that Hangul is merely slow to open, and the resulting
+  # failure is indistinguishable from a real crash (#4751).
   [int]$StallSeconds = 300,
+  # Extra allowance per MB of the document being measured. 11MB -> 300 + 660 = 960s.
+  [int]$StallSecondsPerMB = 60,
   [int]$RecycleEvery = 200,
   [int]$WarmupDocs = 5,
   # Hangul 2018 deadlocks in Open() when hidden -- only pass this on 2022+.
@@ -81,13 +86,42 @@ if (-not (Test-Path $OutDir)) { New-Item -ItemType Directory -Force -Path $OutDi
 $all = Get-Content -LiteralPath $TaskPath -Encoding UTF8 | Where-Object { $_.Trim().Length -gt 0 }
 Write-Output "[sup] tasks: $($all.Count) opens (single worker -- concurrent Hangul instances corrupt measurements)"
 
+$taskPathByKey = @{}
+foreach ($ln in $all) {
+  $i = $ln.IndexOf("`t")
+  if ($i -gt 0) { $taskPathByKey[$ln.Substring(0, $i)] = $ln.Substring($i + 1) }
+}
+
 $state = @{
   Out = Join-Path $OutDir 'result.tsv'
   HB = Join-Path $OutDir 'hb.txt'
+  Kills = Join-Path $OutDir 'stall_kills.tsv'
   Texts = Join-Path $OutDir 'texts'
   Total = $all.Count
   Proc = $null
   Restarts = 0
+  Sizes = @{}
+}
+
+# 크기에 비례한 stall 허용치. 평평한 임계는 한글이 그저 느리게 여는 대형 문서를 죽이고,
+# 그 실패는 진짜 크래시와 같은 HRESULT 로 남아 구별되지 않는다 (#4751).
+function Get-StallAllowance([string]$key) {
+  if (-not $state.Sizes.ContainsKey($key)) {
+    $bytes = 0
+    $p = $taskPathByKey[$key]
+    if ($p) { try { $bytes = (Get-Item -LiteralPath $p -ErrorAction Stop).Length } catch { $bytes = 0 } }
+    $state.Sizes[$key] = $bytes
+  }
+  $mb = $state.Sizes[$key] / 1MB
+  return $StallSeconds + [int]($StallSecondsPerMB * $mb)
+}
+
+# 죽인 키를 남긴다. judge 가 이 목록으로 stall-kill 실패를 실제 크래시와 갈라낸다 (#4751).
+function Write-StallKill([string]$key, [double]$age, [int]$allow) {
+  $ms = [int64]([datetime]::UtcNow - [datetime]'1970-01-01').TotalMilliseconds
+  $size = if ($state.Sizes.ContainsKey($key)) { $state.Sizes[$key] } else { 0 }
+  $line = "{0}`t{1:N0}`t{2}`t{3}`t{4}" -f $key, $age, $allow, $size, $ms
+  try { [System.IO.File]::AppendAllText($state.Kills, $line + "`n", (New-Object System.Text.UTF8Encoding($false))) } catch { }
 }
 
 # 워커가 같은 파일을 쓰는 중에도 읽는다. 실패는 예외가 아니라 $null -- 감독은 절대 죽지 않는다.
@@ -156,11 +190,14 @@ while ($true) {
       $parts = if ($hbText) { $hbText -split '\|' } else { @() }
       if ($parts.Count -ge 3) {
         $age = ($nowMs - [int64]$parts[1]) / 1000.0
-        if ($age -gt $StallSeconds) {
+        $key = $parts[2]
+        $allow = Get-StallAllowance $key
+        if ($age -gt $allow) {
           $hp = [int]$parts[0]
-          Write-Output ("[sup] worker stalled {0:N0}s on '{1}' -> killing Hwp pid {2}" -f $age, $parts[2], $hp)
+          Write-Output ("[sup] worker stalled {0:N0}s (allow {1}s) on '{2}' -> killing Hwp pid {3}" -f $age, $allow, $key, $hp)
+          Write-StallKill $key $age $allow
           if ($hp -gt 0) { try { Stop-Process -Id $hp -Force -ErrorAction SilentlyContinue } catch { } }
-          if ($age -gt ($StallSeconds * 2)) {
+          if ($age -gt ($allow * 2)) {
             try { Stop-Process -Id $state.Proc.Id -Force -ErrorAction SilentlyContinue } catch { }
           }
         }

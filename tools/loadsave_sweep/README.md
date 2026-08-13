@@ -87,6 +87,10 @@ Phase A 산출물은 버전 무관이므로 재사용 — Phase B 만 `-HwpVersi
   `restore_com_default.ps1`.
 - 워커는 heartbeat 를 쓰고 supervisor 가 정지(stall)를 감지해 Hwp.exe 를 죽인다.
   강제종료 직후 첫 Open 은 수 분 블록될 수 있어 warmup 으로 흡수한다.
+- **stall 허용치는 문서 크기에 비례한다** — `StallSeconds + StallSecondsPerMB × MB`
+  (기본 300초 + 60초/MB). 평평한 임계는 한글이 그저 느리게 여는 대형 문서를 죽인다.
+  실측: 204쪽·10.9MB 산출물이 300초 임계에서는 두 번 죽어 `OPEN_FAIL` 로 오판됐고,
+  여유를 준 재측정에서는 정상 개방됐다.
 - **유령 성공 주의**: 대화상자 자동거부로 "빈 문서 열기 성공"이 나올 수 있다.
   judge 가 원본 텍스트 0자+1쪽을 `origSuspect` 로 표시한다 — 전수에서 이 비율이 높으면
   보안 모듈 등록 상태부터 의심할 것.
@@ -100,9 +104,16 @@ Phase A 산출물은 버전 무관이므로 재사용 — Phase B 만 `-HwpVersi
 <S>/s1/phase_a.ndjson          Phase A 저널 (exit 0/3/4/FAIL/TIMEOUT + rhwp 자기검증)
 <S>/s1/oracle_tasks.tsv        Phase B 작업 목록 (key \t path)
 <S>/s1/oracle_<ver>/result.tsv key, status, pages, textLen, textSha, ctrls, fileBytes, err
+<S>/s1/oracle_<ver>/stall_kills.tsv  감독이 강제 종료한 key (age, allowance, bytes, utcMs)
 <S>/s1/oracle_<ver>/texts/     한글이 추출한 본문 텍스트 (판정·삼각측량용)
 <S>/s1/oracle_<ver>/verdicts/  verdicts.tsv + summary.md
 ```
 
-판정 어휘: `CONVERT_FAIL` > `OPEN_FAIL` > `MEASURE_FAIL` > `TEXT_MISMATCH` > `CTRL_DIFF` >
-`PAGE_DIFF` > `OK`. 원본이 안 열리는 문서는 `ORACLE_ORIG_FAIL` 로 모수에서 제외.
+판정 어휘: `CONVERT_FAIL` > `OPEN_FAIL` > `MEASURE_FAIL` > `ORACLE_TIMEOUT` > `TEXT_MISMATCH` >
+`CTRL_DIFF` > `PAGE_DIFF` > `OK`. 원본이 안 열리는 문서는 `ORACLE_ORIG_FAIL`
+(stall-kill 이면 `ORACLE_ORIG_TIMEOUT`) 로 모수에서 제외.
+
+`ORACLE_TIMEOUT` 은 결함이 아니라 **측정 실패**다. 감독이 Hwp.exe 를 강제 종료하면 워커의
+`Open` 은 실제 한글 크래시와 같은 `HRESULT 0x800706BE` 로 실패하므로, 감독이 남긴
+`stall_kills.tsv` 없이는 둘을 구별할 수 없다. judge 는 이 목록의 키를 `OPEN_FAIL` 에서
+갈라내고 요약 끝에 재확인 명령과 대상 키를 출력한다 — **재확인 전에는 수치에 넣지 말 것.**
