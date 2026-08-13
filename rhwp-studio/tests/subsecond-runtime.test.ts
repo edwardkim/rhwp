@@ -343,6 +343,48 @@ test('render capabilities stay silent on a plain WASM build and follow the curre
   assert.equal(hotpatch.getRenderCodeRevision(), null, '문서를 닫으면 다시 리비전이 없다');
 });
 
+test('development render runtime owns one watcher and releases it for a later realm setup', async () => {
+  const { startDevelopmentRenderRuntime } = await loadRuntime();
+  const frames = new FakeAnimationFrames();
+  let revision = 'baseline';
+  let rebuilds = 0;
+  const repaints: string[] = [];
+  const document = {
+    getRenderCodeRevision: () => revision,
+    rebuildDerivedState: () => {
+      rebuilds += 1;
+    },
+  };
+  const exports = { subsecondProbe: () => 41 };
+  const options = {
+    scheduler: {
+      requestAnimationFrame: frames.request,
+      cancelAnimationFrame: frames.cancel,
+    },
+  };
+
+  const stop = startDevelopmentRenderRuntime(exports, () => document, next => repaints.push(next), options);
+  assert.ok(stop, '개발 빌드는 한 realm 수명 감시자를 시작해야 한다');
+  assert.equal(
+    startDevelopmentRenderRuntime(exports, () => document, () => {}, options),
+    stop,
+    '중복 시작은 같은 realm 소유자를 돌려줘야 한다',
+  );
+  frames.flush();
+  revision = 'patched';
+  frames.flush();
+  assert.equal(rebuilds, 1);
+  assert.deepEqual(repaints, ['patched']);
+
+  stop();
+  assert.equal(frames.pendingCount, 0, '해제선은 감시 프레임을 남기면 안 된다');
+
+  const nextStop = startDevelopmentRenderRuntime(exports, () => document, () => {}, options);
+  assert.ok(nextStop, '해제 뒤 다음 Studio realm은 새 감시자를 시작할 수 있어야 한다');
+  assert.notEqual(nextStop, stop);
+  nextStop();
+});
+
 test('devtools websocket forwards patch messages and reconnects without reloading', async () => {
   const { connectSubsecondDevtools } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];

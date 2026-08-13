@@ -1,5 +1,5 @@
 use serde_json::Value;
-use subsecond::{HotFn, HotFunction, JumpTable};
+use subsecond::{HotFn, JumpTable};
 use wasm_bindgen::prelude::*;
 
 fn probe_value() -> u32 {
@@ -105,13 +105,6 @@ pub fn apply_subsecond_devtools_message(message: &str) -> String {
 pub fn link_wasm_exports() {
     let _ = crate::version();
     let _ = subsecond_probe();
-}
-
-pub(crate) fn hot_fn_ptr<Args, Marker, Function>(function: Function) -> u64
-where
-    Function: HotFunction<Args, Marker>,
-{
-    HotFn::current(function).ptr_address().0
 }
 
 #[cfg(test)]

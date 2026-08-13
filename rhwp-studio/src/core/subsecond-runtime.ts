@@ -84,6 +84,11 @@ type AnimationFrameScheduler = {
   cancelAnimationFrame(id: number): void;
 };
 
+export type DevelopmentRenderRuntimeOptions = {
+  measureHeapBytes?: () => number | null;
+  scheduler?: AnimationFrameScheduler;
+};
+
 type WebSocketConnection = {
   onmessage: ((event: MessageEvent) => void) | null;
   onclose: ((event: CloseEvent) => void) | null;
@@ -390,10 +395,53 @@ export class RenderCodeReloadWatcher {
 }
 
 /**
+ * 개발용 렌더 교체 런타임을 한 realm에 하나만 연결한다.
+ *
+ * 소켓·패치 계수·리비전 감시는 모두 이 개발 전용 모듈에 둔다. `WasmBridge`나 `CanvasView`는
+ * 문서 편집과 화면 수명만 소유해야 하므로 클래스 멤버로 이 능력을 노출하지 않는다 (#4636, #4641).
+ * 호출자는 DEV 동적 import를 한 `main.ts`뿐이며, 반환된 해제 함수는 미래의 Studio 인스턴스 교체
+ * 경로를 위한 유일한 정리선이다.
+ */
+let stopDevelopmentRenderRuntime: (() => void) | null = null;
+
+export function startDevelopmentRenderRuntime(
+  exports: object,
+  currentDocument: () => object | null,
+  onPatched: (revision: string) => void,
+  options: DevelopmentRenderRuntimeOptions = {},
+): (() => void) | null {
+  if (stopDevelopmentRenderRuntime) return stopDevelopmentRenderRuntime;
+
+  const capabilities = createRenderCodeReload(exports, currentDocument);
+  if (!capabilities.isAvailable()) return null;
+
+  const disconnectDevtools = connectSubsecondDevtools(
+    exports as SubsecondWasmExports,
+    {
+      patchAccumulation: new SubsecondPatchAccumulation({
+        measureHeapBytes: options.measureHeapBytes,
+      }),
+    },
+  );
+  const watcher = new RenderCodeReloadWatcher(capabilities, onPatched, options.scheduler);
+  if (!watcher.start()) {
+    disconnectDevtools?.();
+    return null;
+  }
+
+  stopDevelopmentRenderRuntime = () => {
+    watcher.stop();
+    disconnectDevtools?.();
+    stopDevelopmentRenderRuntime = null;
+  };
+  return stopDevelopmentRenderRuntime;
+}
+
+/**
  * dx devserver 소켓에 붙어 도착한 패치를 wasm 에 넘긴다.
  *
  * 돌려주는 해제 함수는 소켓과 재연결 타이머를 함께 내린다. 스튜디오에서는 realm 이 끝날 때까지
- * 부를 시점이 없고(문서 닫기·뷰 폐기가 없다) 호출부는 `wasm-bridge.ts` 의 중복 연결 guard 하나뿐이지만,
+ * 부를 시점이 없고(문서 닫기·뷰 폐기가 없다) 호출부는 이 모듈의 realm 단위 소유자 하나뿐이지만,
  * 소켓을 연 곳이 내리는 방법을 함께 돌려주는 형태는 유지한다 — 테스트와 이후 종료 경로의 유일한 해제선이다.
  */
 export function connectSubsecondDevtools(

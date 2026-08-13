@@ -202,19 +202,6 @@ export interface DeferredPaginationResult {
 
 import { fontFamilyChainForDisplay } from './font-substitution';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
-// [#4580] **값 import 는 금지다.** `subsecond-runtime` 은 개발 전용 벤더 런타임이고, 정적으로
-// 엮이는 순간 `import.meta.env.DEV` 로 감싸도 프로덕션 번들에서 빠지지 않는다. 타입만 가져오고
-// 실물은 아래 `startRenderCodeReload()` 의 DEV 분기에서 동적으로 부른다.
-import type {
-  RenderCodeReload,
-  SubsecondWasmExports,
-} from './subsecond-runtime';
-
-/**
- * devtools 소켓의 해제 함수 — realm 하나에 소켓 하나이므로 중복 연결 guard 로도 쓴다.
- * 스튜디오에는 realm 종료 이전의 해제 시점이 없어 실제로 호출되지는 않는다.
- */
-let disconnectSubsecondDevtools: (() => void) | null = null;
 
 /**
  * CSS font 문자열에서 font-family를 추출하여 폰트 치환을 적용한다.
@@ -269,8 +256,8 @@ export class WasmBridge {
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
   private _documentGeneration = 0;
-  /** 개발 빌드에서만 채워지는 렌더 코드 교체 능력 — 아래 `startRenderCodeReload()` 참고. */
-  private renderCodeReload: RenderCodeReload | null = null;
+  /** 개발 진단에서만 읽는 wasm 선형 메모리. 일반 wasm-glue에는 없을 수 있다. */
+  private wasmLinearMemory: WebAssembly.Memory | null = null;
   /** [#3313] 외부 연결 그림 비동기 주입 완료 훅 — 주입 성공(>0)시에만 호출된다.
    * 첫 렌더 이후에 fetch 가 끝나면 뷰가 재갱신 없이는 이미지를 표시하지 못하므로,
    * main 쪽에서 뷰 갱신을 배선한다 (dirty 마킹 없는 뷰 전용 경로여야 함). */
@@ -281,55 +268,29 @@ export class WasmBridge {
     installCanvasFontSubstitution();
     this.installMeasureTextWidth();
     // @wasm path alias는 개발 glue를 가리킬 수 있어 init 반환값을 unknown으로 추론한다.
-    // wasm-bindgen의 InitOutput memory만 선택적으로 읽고, subsecond glue의 memory 부재는 허용한다.
+    // wasm-bindgen의 InitOutput memory만 선택적으로 읽고, 개발 glue의 memory 부재는 허용한다.
     const wasmModule = await init() as { memory?: WebAssembly.Memory };
-    await this.startRenderCodeReload(wasmModule);
+    this.wasmLinearMemory = wasmModule.memory ?? null;
     this.initialized = true;
     console.log(`[WasmBridge] WASM 초기화 완료 (rhwp ${version()})`);
   }
 
   /**
-   * 렌더 코드 교체(핫패치) 지원을 개발 빌드에서만 배선한다 (#4580).
+   * WASM 모듈 export namespace를 내부 런타임에 빌려준다.
    *
-   * `import.meta.env.DEV` 는 빌드 시점에 리터럴로 접히므로 프로덕션 번들에서는 이 본문 전체가
-   * 죽은 코드로 지워지고, 그 안에서만 참조되는 `subsecond-runtime` 모듈은 아예 모듈 그래프에
-   * 들어오지 않는다. 능력 구현도 그 모듈이 갖고 있어야 한다 — 여기 메서드로 두면 호출부가
-   * 없어도 트리셰이킹되지 않아 벤더 export 이름이 그대로 실려 나간다.
+   * 문서 핸들처럼 소유권을 넘기지 않는다. 개발 전용 렌더 런타임만 이 값을 받아 feature export
+   * 존재 여부를 확인하며, 소켓·감시자·재도색 수명은 `main.ts`가 소유한다 (#4636, #4641).
    */
-  private async startRenderCodeReload(
-    wasmModule: { memory?: WebAssembly.Memory },
-  ): Promise<void> {
-    if (!import.meta.env.DEV) return;
-    try {
-      const runtime = await import('./subsecond-runtime');
-      const renderCodeReload = runtime.createRenderCodeReload(wasmExports, () => this.doc);
-      const disconnect = disconnectSubsecondDevtools
-        ? null
-        : runtime.connectSubsecondDevtools(
-          wasmExports as unknown as SubsecondWasmExports,
-          {
-            patchAccumulation: new runtime.SubsecondPatchAccumulation({
-              // subsecond 세션에서는 이 모듈이 dx 가 만든 glue(`target/rhwp-subsecond-vite/`)로
-              // 바뀐다. 타입은 언제나 `pkg/rhwp.d.ts` 를 보므로 memory 부재는 타입으로 못 걸러진다.
-              measureHeapBytes: () => wasmModule.memory?.buffer.byteLength ?? null,
-            }),
-          },
-        );
-      this.renderCodeReload = renderCodeReload;
-      if (disconnect) disconnectSubsecondDevtools = disconnect;
-    } catch (error) {
-      // 개발 편의 기능의 준비 실패가 문서 편집기의 WASM 초기화 전체를 막으면 안 된다.
-      console.warn('[WasmBridge] 개발용 렌더 코드 교체를 시작하지 못했습니다:', error);
-    }
+  getWasmModuleExports(): object {
+    return wasmExports;
   }
 
   /**
-   * 렌더 코드 교체 능력. 개발 빌드가 아니거나 교체를 지원하지 않는 wasm 이면 `null` 이다 —
-   * 프로덕션 번들에서는 위 배선이 통째로 지워지므로 언제나 `null` 이다. 개발 콘솔에서는
-   * `__wasm.getRenderCodeReload()?.isAvailable()` 로 확인한다.
+   * 현재 wasm 선형 메모리 크기(byte). glue가 이를 노출하지 않으면 `null` 이다.
+   * 개발 전용 패치 세션 경고에만 쓰며, 수명/용량 판정의 기준으로 사용하지 않는다.
    */
-  getRenderCodeReload(): RenderCodeReload | null {
-    return this.renderCodeReload;
+  getWasmLinearMemoryBytes(): number | null {
+    return this.wasmLinearMemory?.buffer.byteLength ?? null;
   }
 
   /** WASM 렌더러가 호출하는 텍스트 폭 측정 함수를 등록한다 */
