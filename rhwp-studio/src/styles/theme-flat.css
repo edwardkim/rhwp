@@ -57,7 +57,7 @@
   --ruler-marker: #2b7de9;
 }
 
-/* 라운드/그림자: 색이 아닌 형태 값이므로 라이트·다크 공통 적용 */
+/* 라운드/그림자/UI 글꼴: 색이 아닌 형태 값이므로 라이트·다크 공통 적용 */
 :root[data-theme-skin="flat"] {
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -65,6 +65,10 @@
   --shadow-dropdown: 0 4px 16px rgba(15, 30, 60, 0.12);
   --shadow-dialog: 0 8px 28px rgba(15, 30, 60, 0.16);
   --shadow-light: 0 2px 8px rgba(15, 30, 60, 0.1);
+  /* UI 크롬 글꼴만 바꾼다 — 문서 본문 렌더링 글꼴과 무관한 토큰이다.
+     Pretendard 는 번들하지 않고, 사용자 시스템에 설치된 경우에만 우선 사용한다. */
+  --font-family-ui: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    '맑은 고딕', 'Malgun Gothic', 'Segoe UI', sans-serif;
 }
 
 /* ── 크롬 표면: 변수 참조라 다크 모드에서도 안전 ───────── */
