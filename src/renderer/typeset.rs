@@ -22031,10 +22031,11 @@ impl TypesetEngine {
             // physical space below the source frame that remains inside this
             // fragment's scan bound, never a generic drift cap.
             //
-            // This is a native source-frame rule, not a generic HWP5 table rule:
-            // first-frame ownership is valid only for the empty host line of a
-            // rowspan table, whose saved RowBreak frame starts at the flow
-            // cursor and ends within this fragment's scan bound.
+            // The contract is limited by the native RowBreak source frame
+            // itself: its unshifted saved anchor must equal the active flow
+            // cursor and its declared bottom must remain inside this fragment's
+            // scan bound. Host text and row spans describe document topology,
+            // not ownership of that physical source frame.
             // The saved frame is an absolute object coordinate. Its matching
             // bound is `table_available`, which already reserves the current
             // page's footnote/zone lane. `host_before_overhead` and positive
@@ -22055,8 +22056,6 @@ impl TypesetEngine {
                 )
                 && row_count > 1
                 && table_footnotes.is_empty()
-                && !para_has_non_whitespace_text(para)
-                && table.cells.iter().any(|cell| cell.row_span > 1)
                 && table.common.height > 0
                 && table.common.height <= i32::MAX as u32
                 && std::ptr::eq(row_geometry_table, table)
