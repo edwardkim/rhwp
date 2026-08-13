@@ -1897,6 +1897,13 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
+        if let Some(Control::Table(table)) = self.document.sections[section_idx].paragraphs
+            [parent_para_idx]
+            .controls
+            .get_mut(control_idx)
+        {
+            table.text_reflowed_after_edit = true;
+        }
 
         let (flow_advance_after, local_contribution_after) = {
             let cell_para_after = self
@@ -2223,6 +2230,13 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
+        if let Some(Control::Table(table)) = self.document.sections[section_idx].paragraphs
+            [parent_para_idx]
+            .controls
+            .get_mut(control_idx)
+        {
+            table.text_reflowed_after_edit = true;
+        }
 
         let (flow_advance_after, local_contribution_after) = {
             let cell_para_after = self

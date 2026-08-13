@@ -10403,7 +10403,13 @@ impl LayoutEngine {
                     break;
                 }
                 if j > start && h + u.height > avail_height {
-                    if self.profile.get().native_hwp5_layout() {
+                    // source frame tail은 원본 LINE_SEG가 직접 소유한다. 셀 텍스트
+                    // 편집 뒤에는 reflow suffix가 같은 tag/metrics를 계승할 수 있어
+                    // line segment만으로는 원본과 구별되지 않는다. 편집 관문이 남긴
+                    // provenance가 있을 때는 일반 capacity cut으로 새 줄을 분할한다.
+                    if self.profile.get().native_hwp5_layout()
+                        && !table.text_reflowed_after_edit
+                    {
                         if let Some((absorbed_h, absorbed_j)) = Self::absorb_tail_before_stored_frame_break(
                             &units,
                             j,
