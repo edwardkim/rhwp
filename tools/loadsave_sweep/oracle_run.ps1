@@ -90,6 +90,20 @@ $state = @{
   Restarts = 0
 }
 
+# 워커가 같은 파일을 쓰는 중에도 읽는다. 실패는 예외가 아니라 $null -- 감독은 절대 죽지 않는다.
+function Read-SharedText([string]$path) {
+  try {
+    $fs = [System.IO.File]::Open(
+      $path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+    try {
+      $sr = New-Object System.IO.StreamReader($fs, [System.Text.Encoding]::UTF8)
+      try { return $sr.ReadToEnd() } finally { $sr.Dispose() }
+    } finally { $fs.Dispose() }
+  } catch {
+    return $null
+  }
+}
+
 function Start-Worker {
   $wargs = @(
     '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $here 'oracle_worker.ps1'),
@@ -135,7 +149,11 @@ while ($true) {
   if ($running) {
     $alive = $true
     if (Test-Path -LiteralPath $state.HB) {
-      $parts = ([System.IO.File]::ReadAllText($state.HB, [System.Text.Encoding]::UTF8)) -split '\|'
+      # 워커가 쓰는 중이면 ReadAllText 는 공유 위반으로 던진다. ErrorActionPreference=Stop 아래에서
+      # 그 예외는 감독을 통째로 죽여 장시간 패스를 날린다 -- ReadWrite 공유로 열고, 그래도 실패하면
+      # 이번 tick 만 건너뛴다 (다음 10초 tick 에서 다시 읽으므로 stall 감지가 늦어지지 않는다).
+      $hbText = Read-SharedText $state.HB
+      $parts = if ($hbText) { $hbText -split '\|' } else { @() }
       if ($parts.Count -ge 3) {
         $age = ($nowMs - [int64]$parts[1]) / 1000.0
         if ($age -gt $StallSeconds) {
