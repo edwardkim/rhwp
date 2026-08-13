@@ -114,6 +114,7 @@ mod tests {
                 used_height: 0.0,
                 wrap_anchors: std::collections::HashMap::new(),
                 overlay_continuations: Vec::new(),
+                overlay_cuts: Vec::new(),
             }],
             active_header: None,
             active_footer: None,

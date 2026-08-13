@@ -432,6 +432,11 @@ pub struct ColumnContent {
     /// 넣으면 이 조각이 단의 **첫 항목**이 되어 `items.first()` 를 보는 휴리스틱들이
     /// 조각을 본문으로 읽는다(실측: `overflow_cell_baseline` 래칫 62 → 63줄).
     pub overlay_continuations: Vec<OverlayContinuation>,
+    /// [#4568] 이 단에서 잔여 행을 다음 쪽에 넘긴 overlay 표의 **앵커 쪽 컷**.
+    /// `(para_index, control_index, end_row)` — 앵커 그리기는 `0..end_row` 만 그린다.
+    /// 넘긴 행을 앵커 쪽에서도 전부 그리면(bleed) 시각적으로는 클립돼 안 보이지만
+    /// render tree 에 쪽 밖 줄이 남아 `overflow_cell_baseline` 래칫에 계상된다.
+    pub overlay_cuts: Vec<(usize, usize, usize)>,
 }
 
 /// [#4568] 쪽을 넘긴 overlay 표의 잔여 행 조각.
@@ -832,6 +837,7 @@ impl PaginationResult {
                         endnote_flow: cc.endnote_flow,
                         items: cc.items.iter().map(|it| it.with_offset(offset)).collect(),
                         overlay_continuations: cc.overlay_continuations.clone(),
+                        overlay_cuts: cc.overlay_cuts.clone(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,
                         wrap_around_paras: cc

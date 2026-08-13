@@ -1123,6 +1123,8 @@ struct TypesetState {
     /// [#4568] 현재 단에 이어 그릴 overlay 잔여 행 목록. `flush_column` 에서
     /// `ColumnContent::overlay_continuations` 로 옮긴다.
     current_column_overlay_continuations: Vec<crate::renderer::pagination::OverlayContinuation>,
+    /// [#4568] 현재 단의 overlay 표 앵커 컷 — `(para, ctrl, end_row)`.
+    current_column_overlay_cuts: Vec<(usize, usize, usize)>,
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
@@ -3562,6 +3564,7 @@ impl TypesetState {
             overlay_shape_shortcut_para: None,
             pending_overlay_continuations: Vec::new(),
             current_column_overlay_continuations: Vec::new(),
+            current_column_overlay_cuts: Vec::new(),
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
             current_zone_column_type: column_type,
@@ -3966,6 +3969,7 @@ impl TypesetState {
             used_height: self.current_height,
             wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
             overlay_continuations: std::mem::take(&mut self.current_column_overlay_continuations),
+            overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -4036,6 +4040,7 @@ impl TypesetState {
             used_height: self.current_height,
             wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
             overlay_continuations: std::mem::take(&mut self.current_column_overlay_continuations),
+            overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -16700,6 +16705,11 @@ impl TypesetEngine {
                                     first_unfit,
                                     remaining_px,
                                 ));
+                                st.current_column_overlay_cuts.push((
+                                    para_idx,
+                                    ctrl_idx,
+                                    first_unfit,
+                                ));
                             }
                         }
                         // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
@@ -24049,6 +24059,7 @@ mod tests {
                 used_height: 0.0,
                 wrap_anchors: std::collections::HashMap::new(),
                 overlay_continuations: Vec::new(),
+                overlay_cuts: Vec::new(),
             }],
             active_header: None,
             active_footer: None,

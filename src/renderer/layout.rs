@@ -5110,6 +5110,7 @@ impl LayoutEngine {
             used_height: 0.0,
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         };
         let page_content = PageContent {
             page_index: 0,
@@ -11312,6 +11313,30 @@ impl LayoutEngine {
                         RenderNodeType::Column(0),
                         BoundingBox::new(0.0, 0.0, layout.page_width, layout.page_height),
                     );
+                    // [#4568] 잔여 행을 다음 쪽에 넘긴 표는 앵커 쪽에서 그 행을 그리지
+                    // 않는다. 넘긴 행까지 전부 그리면(bleed) 시각적으로는 쪽 경계에서
+                    // 클립되지만 render tree 에 쪽 밖 줄이 남아
+                    // `overflow_cell_baseline` 래칫에 계상된다. 컷의 권위는 typeset 이다
+                    // — 여기서 재계산하면 다음 쪽 페인트와 어긋나 행이 소실되거나
+                    // 중복될 수 있다.
+                    let overlay_cut = col_content
+                        .overlay_cuts
+                        .iter()
+                        .find(|(pi, ci, _)| *pi == para_index && *ci == control_index)
+                        .map(
+                            |(_, _, end_row)| super::layout::table_layout::NestedTableSplit {
+                                start_row: 0,
+                                end_row: *end_row,
+                                visible_height: 0.0,
+                                flow_height: 0.0,
+                                offset_within_start: 0.0,
+                                content_offset: 0.0,
+                                force_source_start_cut: false,
+                                replay_terminal_boundary_unit: false,
+                                terminal: false,
+                                recursive_cut: None,
+                            },
+                        );
                     self.layout_table(
                         tree,
                         &mut temp_parent,
@@ -11330,7 +11355,7 @@ impl LayoutEngine {
                         0.0,
                         0.0,
                         None,
-                        None,
+                        overlay_cut.as_ref(),
                         None,
                         None,
                         false,
