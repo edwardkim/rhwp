@@ -299,6 +299,9 @@ struct BlockRowScanVars {
     landscape_short_row_max_height: f64,
     strict_painted_bottom_fit: bool,
     source_first_fragment_overflow_allowance: f64,
+    /// 저장된 첫 조각 프레임이 가장 가깝게 소유하는 행 끝. 프레임 여유로
+    /// whole-row를 수용할 때 이 끝을 넘지 않도록 제한한다.
+    source_first_fragment_row_end: Option<usize>,
     start_row_height_override: Option<f64>,
 }
 
@@ -3194,6 +3197,35 @@ fn saved_rowbreak_first_fragment_flow_overflow_allowance(
     }
 
     (fragment_flow_bottom - source_flow_bottom).max(0.0)
+}
+
+/// 저장된 첫 RowBreak 조각 높이에 가장 가까운 행 경계를 찾는다.
+///
+/// 저장 프레임의 남은 물리 공간은 글꼴 측정 drift를 흡수할 수 있지만, 다음 행까지
+/// 허용하는 일반 여유값은 아니다. 동률이면 앞 경계를 택해 다음 행을 앞당겨
+/// 소유하지 않는다.
+fn nearest_saved_rowbreak_frame_row_end(
+    frame_height: f64,
+    row_heights: &[f64],
+    cell_spacing: f64,
+) -> Option<usize> {
+    if !frame_height.is_finite() || frame_height <= 0.0 {
+        return None;
+    }
+
+    let mut bottom = 0.0;
+    let mut nearest: Option<(usize, f64)> = None;
+    for (row, height) in row_heights.iter().enumerate() {
+        if row > 0 {
+            bottom += cell_spacing;
+        }
+        bottom += height;
+        let distance = (bottom - frame_height).abs();
+        if nearest.is_none_or(|(_, best)| distance < best) {
+            nearest = Some((row + 1, distance));
+        }
+    }
+    nearest.map(|(end_row, _)| end_row)
 }
 
 /// Visible host text that is structurally a numbered table caption.
@@ -18829,6 +18861,7 @@ impl TypesetEngine {
             landscape_short_row_max_height,
             strict_painted_bottom_fit,
             source_first_fragment_overflow_allowance,
+            source_first_fragment_row_end,
             start_row_height_override,
         } = v;
         let BlockTableRowScan {
@@ -19331,6 +19364,7 @@ impl TypesetEngine {
                 && r + 1 < row_count
                 && consumed + cs_before + row_total <= avail_for_rows + 0.5;
             let source_frame_whole_row_fits = source_first_fragment_overflow_allowance > 0.0
+                && source_first_fragment_row_end == Some(r + 1)
                 && consumed + cs_before + row_total
                     <= avail_for_rows + source_first_fragment_overflow_allowance;
             // A direct HWPX row with one visible owner and a structural empty
@@ -19703,7 +19737,9 @@ impl TypesetEngine {
                 let split_row_overflow_tolerance =
                         if uses_source_frame_tail {
                             stored_frame_tail_overflow
-                        } else if source_first_fragment_overflow_allowance > 0.0 {
+                        } else if source_first_fragment_overflow_allowance > 0.0
+                            && source_first_fragment_row_end == Some(r + 1)
+                        {
                             source_first_fragment_overflow_allowance
                         } else if hwpx_stored_rowbreak_cut {
                             measured_rowbreak_paint_tail
@@ -19756,7 +19792,9 @@ impl TypesetEngine {
                         let cand2 = consumed + cs_before + split_total2;
                         let retry_split_row_overflow_tolerance = if uses_source_frame_tail {
                             stored_frame_tail_overflow
-                        } else if source_first_fragment_overflow_allowance > 0.0 {
+                        } else if source_first_fragment_overflow_allowance > 0.0
+                            && source_first_fragment_row_end == Some(r + 1)
+                        {
                             source_first_fragment_overflow_allowance
                         } else if hwpx_stored_rowbreak_cut {
                             (split_total2 - res2.consumed_height - padding).max(0.0)
@@ -22227,6 +22265,17 @@ impl TypesetEngine {
             } else {
                 0.0
             };
+            let source_first_fragment_row_end =
+                (source_first_fragment_overflow_allowance > 0.0).then(|| {
+                    nearest_saved_rowbreak_frame_row_end(
+                        hwpunit_to_px(
+                            table.common.height.min(i32::MAX as u32) as i32,
+                            self.dpi,
+                        ),
+                        cut_row_h,
+                        cs,
+                    )
+                }).flatten();
 
             // [Task #1022] 머리행 반복 overhead — 렌더러(layout_partial_table)는
             // start_row 이전의 반복 제목행을 다시 그리므로(다중 머리행: rs>=2 헤더 셀 등),
@@ -22347,6 +22396,7 @@ impl TypesetEngine {
                     landscape_short_row_max_height,
                     strict_painted_bottom_fit: strict_following_plain_text_fit,
                     source_first_fragment_overflow_allowance,
+                    source_first_fragment_row_end,
                     start_row_height_override,
                 },
                 BlockTableRowScan {
@@ -22462,6 +22512,7 @@ impl TypesetEngine {
                                 landscape_short_row_max_height,
                                 strict_painted_bottom_fit: strict_following_plain_text_fit,
                                 source_first_fragment_overflow_allowance,
+                                source_first_fragment_row_end,
                                 start_row_height_override,
                             },
                             BlockTableRowScan {
@@ -23670,7 +23721,10 @@ fn endnote_separator_height_px(shape: &FootnoteShape, dpi: f64) -> f64 {
 
 #[cfg(test)]
 mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
-    use super::saved_rowbreak_first_fragment_flow_overflow_allowance;
+    use super::{
+        nearest_saved_rowbreak_frame_row_end,
+        saved_rowbreak_first_fragment_flow_overflow_allowance,
+    };
 
     #[test]
     fn rejects_missing_or_unowned_saved_frames() {
@@ -23723,6 +23777,15 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
                 .abs()
                 < f64::EPSILON,
             "host-before flow spacing does not shrink the saved object's physical slack"
+        );
+    }
+
+    #[test]
+    fn frame_slack_stops_at_its_nearest_row_boundary() {
+        assert_eq!(
+            nearest_saved_rowbreak_frame_row_end(87.0, &[30.0, 55.0, 60.0], 0.0),
+            Some(2),
+            "saved-frame slack may absorb measurement drift at row 2, but not admit row 3"
         );
     }
 }
