@@ -19443,6 +19443,17 @@ impl TypesetEngine {
             let continued_source_frame = is_continuation
                 && !row_start_cut.is_empty()
                 && stored_source_frame.is_some();
+            // direct HWPX의 첫 RowBreak 조각도 저장 LINE_SEG frame이 물리 owner를
+            // 명시할 수 있다. 일반 capacity cut이 frame 끝 직전에서 멈추면 다음
+            // fragment가 그 짧은 tail만 소유해 쪽 하나가 늘어난다. 이 경우에는
+            // 기존 source-frame cut이 가진 정확한 CellUnit 끝을 첫 조각에도 쓴다.
+            // 편집 뒤 reflow된 텍스트는 저장 좌표를 그대로 신뢰할 수 없으므로
+            // continuation/terminal 경로와 달리 새 첫-fragment 경로에서는 제외한다.
+            let opening_source_frame = !is_continuation
+                && r == cursor_row
+                && row_start_cut.is_empty()
+                && !table.text_reflowed_after_edit
+                && stored_source_frame.is_some();
             let single_visible_source_frame = st.profile.hwpx_stored_layout()
                 && stored_source_frame.is_some()
                 && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
@@ -19554,15 +19565,17 @@ impl TypesetEngine {
             let mut budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
             // A visible terminal response followed by a no-text/no-control row is
             // a two-part physical row: the spacer owns no ink, while the
-            // response carries the stored page frame.  This is structural
-            // source evidence and deliberately does not depend on a document
-            // shape, stored table size, or line count.
+            // response carries the stored page frame. A direct HWPX opening
+            // frame with one visible source owner has the same exact boundary.
+            // This is structural source evidence and deliberately does not
+            // depend on a document shape, stored table size, or line count.
             // Stored vpos-frame resets are source-owned physical fragment boundaries.
             // First take the ordinary budget cut, then extend only to the end of
-            // the terminal response frame when that exact CellUnit boundary is known.
+            // the recorded source frame when that exact CellUnit boundary is known.
             let source_frame_tail_contract = terminal_response_before_empty_spacer
                 || terminal_source_frame
-                || continued_source_frame;
+                || continued_source_frame
+                || opening_source_frame;
             let mut res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
             let mut uses_source_frame_tail = false;
             if (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout())
