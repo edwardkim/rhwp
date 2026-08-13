@@ -561,16 +561,7 @@ pub fn find_inline_control_target_page(
     ctrl_idx: usize,
     para: &Paragraph,
 ) -> Option<(usize, usize)> {
-    let positions = para.control_text_positions();
-    let ctrl_text_pos = *positions.get(ctrl_idx)?;
-    let target_line = para
-        .line_segs
-        .iter()
-        .enumerate()
-        .rev()
-        .find(|(_, ls)| (ls.text_start as usize) <= ctrl_text_pos)
-        .map(|(i, _)| i)
-        .unwrap_or(0);
+    let target_line = crate::renderer::layout::control_line_seg_index(para, ctrl_idx)?;
 
     // 1) 현재(마지막) 페이지의 current_items 검사 — 박스 line 이 여기 있으면 None (= 현재)
     let in_current = current_items.iter().any(|item| match item {
@@ -606,6 +597,19 @@ pub fn find_inline_control_target_page(
         }
     }
     None
+}
+
+/// 페이지로 분할된 문단에서 해당 줄을 소유한 쪽으로 다시 배치해야 하는 인라인 개체인가.
+///
+/// `PageItem::Shape`는 개체 종류를 함께 담지만, 실제 그림/도형의 인라인 좌표는 문단의
+/// 일부 줄만 렌더한 쪽에 등록된다. 문단 끝에서 일괄 추가하면 모든 TAC 그림이 마지막
+/// 조각으로 몰린다. 표·수식은 별도 조판 경로와 소유 규칙을 가지므로 여기서 넓히지 않는다.
+pub(crate) fn is_routable_treat_as_char_picture_or_shape(control: &Control) -> bool {
+    match control {
+        Control::Picture(picture) => picture.common.treat_as_char,
+        Control::Shape(shape) => shape.common().treat_as_char,
+        _ => false,
+    }
 }
 
 impl PageItem {

@@ -521,14 +521,16 @@ fn scan_instruction_override(chars: &[char], out: &mut Vec<TextSignal>) {
         let mut from = 0;
         while let Some(i) = find_from(chars, &pat, from) {
             let win = i.saturating_sub(WINDOW)..i + pat.len();
-            if object_governs_verb(chars, win.start, i)
-                && window_has_any(chars, win.clone(), OVERRIDE_SCOPE_KO)
-            {
+            if let Some(object_at) = governing_object_start(chars, win.start, i) {
+                if !scope_governs_override(chars, win.start, object_at, i) {
+                    from = i + pat.len();
+                    continue;
+                }
                 out.push(TextSignal {
                     kind: SignalKind::InstructionOverride,
                     matched: clip(chars, win.start, win.end),
                     char_offset: win.start,
-                    why: "선행 지시를 무효화하라는 관용구입니다 — '이전/모든' 범위어 + '지시/지침' 목적어 + '무시/폐기' 서술어가 한 창 안에 모두 있습니다",
+                    why: "선행 지시를 무효화하라는 관용구입니다 — '이전/모든' 범위어 + '지시/지침' 목적어 + '무시/폐기' 서술어가 같은 절 안에 함께 있습니다",
                 });
             }
             from = i + pat.len();
@@ -548,7 +550,7 @@ const OBJECT_VERB_GAP: usize = 12;
 /// 2. **활용형 배제** — `지시하도록`·`지시했다` 처럼 목적어 토큰이 서술어의 어간으로 쓰인 경우는
 ///    목적어가 아니다. 토큰 바로 뒤 글자가 하/해/했/할/한/함/받 이면 뺀다.
 /// 3. **절 경계** — 사이에 문장부호나 연결어미(`~는 바`, `~며`, `~지만` 등)가 있으면 다른 절이다.
-fn object_governs_verb(chars: &[char], win_start: usize, verb_at: usize) -> bool {
+fn governing_object_start(chars: &[char], win_start: usize, verb_at: usize) -> Option<usize> {
     const VERB_STEM_TAIL: &[char] = &['하', '해', '했', '할', '한', '함', '받'];
     const CLAUSE_BREAK: &[char] = &['.', '?', '!', ',', ';', '·', '…'];
     const CLAUSE_ENDINGS: &[&str] = &[
@@ -573,16 +575,62 @@ fn object_governs_verb(chars: &[char], win_start: usize, verb_at: usize) -> bool
                 continue;
             }
             // 3. 목적어와 서술어 사이에 절이 끊기는가
-            let gap: String = chars[after..verb_at].iter().collect();
-            if gap.chars().any(|c| CLAUSE_BREAK.contains(&c))
-                || CLAUSE_ENDINGS.iter().any(|e| gap.contains(e))
-            {
+            if contains_clause_boundary(&chars[after..verb_at], CLAUSE_BREAK, CLAUSE_ENDINGS) {
                 continue;
             }
-            return true;
+            return Some(j);
+        }
+    }
+    None
+}
+
+/// 범위어도 선택된 목적어와 같은 절에 있는가.
+///
+/// 목적어와 서술어만 인접시켜도 `이전 … 하는 바, 별도 규칙을 무시`처럼 앞 절의 범위어가
+/// 뒤 절의 일반적인 "규칙을 무시"와 우연히 결합할 수 있다. 범위어가 목적어 앞에 있으면
+/// 두 토큰 사이에 절 경계가 없어야 하고, 목적어 뒤에 있으면 목적어-서술어 구간 안에 있어야
+/// 한다. 이때 목적어-서술어 구간은 `governing_object_start`가 이미 같은 절로 확인했다.
+fn scope_governs_override(
+    chars: &[char],
+    win_start: usize,
+    object_at: usize,
+    verb_at: usize,
+) -> bool {
+    const CLAUSE_BREAK: &[char] = &['.', '?', '!', ',', ';', '·', '…'];
+    const CLAUSE_ENDINGS: &[&str] = &[
+        "는 바 ", "으며 ", "하며 ", "지만 ", "는데 ", "면서 ", "거나 ",
+    ];
+
+    for scope in OVERRIDE_SCOPE_KO {
+        let pat: Vec<char> = scope.chars().collect();
+        let mut from = win_start;
+        while let Some(scope_at) = find_from(chars, &pat, from) {
+            if scope_at >= verb_at {
+                break;
+            }
+            let scope_end = scope_at + pat.len();
+            from = scope_end;
+
+            if scope_end <= object_at {
+                if !contains_clause_boundary(
+                    &chars[scope_end..object_at],
+                    CLAUSE_BREAK,
+                    CLAUSE_ENDINGS,
+                ) {
+                    return true;
+                }
+            } else if scope_at >= object_at && scope_end <= verb_at {
+                return true;
+            }
         }
     }
     false
+}
+
+fn contains_clause_boundary(chars: &[char], punctuation: &[char], endings: &[&str]) -> bool {
+    let gap: String = chars.iter().collect();
+    gap.chars().any(|c| punctuation.contains(&c))
+        || endings.iter().any(|ending| gap.contains(ending))
 }
 
 // ── ③ tool_directive (high) ───────────────────────────────────────────────
@@ -1376,6 +1424,15 @@ mod tests {
             )
             .contains(&"instruction_override"),
             "절 경계를 넘은 우연한 동시출현을 신호로 봤다"
+        );
+
+        // 범위어가 앞 절에만 있고 뒤 절의 "규칙을 무시"와 관계없으면 신호가 아니다.
+        // 기존 목적어-서술어 인접 가드만으로는 `이전`과 `규칙을 무시`가 같은 60자 창에
+        // 있다는 이유로 이 정상 문장을 오탐했다.
+        assert!(
+            !kinds("이전 운영 지침을 검토하는 바, 별도 운영 규칙을 무시하고 있다고 보았다.")
+                .contains(&"instruction_override"),
+            "다른 절의 범위어를 뒤 절의 목적어와 결합했다"
         );
     }
 

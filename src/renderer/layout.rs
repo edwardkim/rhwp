@@ -2036,6 +2036,10 @@ pub(crate) fn vpos_corrected_end_y(
 /// `control_index` 는 controls 배열 인덱스지 줄 인덱스가 아니다 — 비가시 컨트롤이
 /// 끼면 어긋난다. `control_text_positions()`(텍스트-문자 좌표)와 `seg.text_start`
 /// (UTF-16 유닛 좌표)를 `char_offsets` 로 같은 좌표계에 놓고 사영한다.
+///
+/// 텍스트와 `char_offsets`가 모두 없는 빈 TAC 캐리어는 예외다. 이 경우 컨트롤 위치는
+/// 논리 1칸씩 증가하지만 HWP `LINE_SEG.text_start`는 컨트롤당 8-unit 원시 스트림을
+/// 보존하므로, 그 단위로 환산해 소유 줄을 고른다.
 pub(crate) fn control_line_seg_index(para: &Paragraph, control_index: usize) -> Option<usize> {
     match para.line_segs.len() {
         0 => return None,
@@ -2044,6 +2048,17 @@ pub(crate) fn control_line_seg_index(para: &Paragraph, control_index: usize) -> 
     }
     let positions = para.control_text_positions();
     let p = *positions.get(control_index)?;
+    if para.text.is_empty() && para.char_offsets.is_empty() {
+        let stream_pos = p.saturating_mul(8);
+        return para
+            .line_segs
+            .iter()
+            .enumerate()
+            .rev()
+            .find(|(_, seg)| seg.text_start as usize <= stream_pos)
+            .map(|(idx, _)| idx)
+            .or(Some(0));
+    }
     let mut idx = 0usize;
     for (k, seg) in para.line_segs.iter().enumerate().skip(1) {
         let start_txt = para.char_offsets.partition_point(|&o| o < seg.text_start);

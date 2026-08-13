@@ -1393,6 +1393,21 @@ fn para_is_treat_as_char_picture_only(para: &Paragraph) -> bool {
         })
 }
 
+/// 문단의 가시 payload가 글자처럼 취급하는 그림/도형으로만 이뤄졌는가.
+///
+/// `para_is_treat_as_char_picture_only`는 기존 조판 경로를 위해 TAC 그림이 **하나라도** 있는
+/// 텍스트 없는 문단을 가리킨다. 단일 단 저장 vpos-reset을 강제 분리하는 경우에는 표·수식처럼
+/// 다른 컨트롤이 섞이면 안 되므로 더 좁은 판정이 필요하다.
+fn para_has_only_treat_as_char_picture_or_shape(para: &Paragraph) -> bool {
+    !para_has_visible_text(para)
+        && !para.controls.is_empty()
+        && para.controls.iter().all(|ctrl| match ctrl {
+            Control::Picture(pic) => pic.common.treat_as_char,
+            Control::Shape(shape) => shape.common().treat_as_char,
+            _ => false,
+        })
+}
+
 fn para_has_treat_as_char_picture_or_shape(para: &Paragraph) -> bool {
     para.controls.iter().any(|ctrl| match ctrl {
         Control::Picture(pic) => pic.common.treat_as_char,
@@ -7096,13 +7111,11 @@ impl TypesetEngine {
                                 );
                                 continue;
                             }
-                            // [Issue #476] treat_as_char Shape 는 박스가 속한 line 이 라우팅된
+                            // [Issue #476/#4092] treat_as_char 그림/도형은 박스가 속한 line 이 라우팅된
                             // 페이지/단에 등록. paragraph 가 페이지 분할되면 이 시점의
                             // st.current_items 는 마지막 페이지 상태이므로, 그대로 push 하면
                             // 박스가 잘못된 페이지에 떠 있게 된다.
-                            let is_tac_shape = matches!(ctrl,
-                                Control::Shape(s) if s.common().treat_as_char);
-                            let routed = if is_tac_shape {
+                            let routed = if crate::renderer::pagination::is_routable_treat_as_char_picture_or_shape(ctrl) {
                                 crate::renderer::pagination::find_inline_control_target_page(
                                     &st.pages,
                                     &st.current_items,
@@ -15540,10 +15553,9 @@ impl TypesetEngine {
                 //
                 // 조건은 문단이 아니라 **그 줄**에 건다 — 같은 문단이라도 첫 줄은
                 // 199.7px 라 `is_tac_picture_stack`(모든 줄이 절반 초과)은 거짓이다.
-                // #418 의 partial-table 회귀는 여기에 닿지 않는다:
-                // `para_is_treat_as_char_picture_only` 가 TAC 그림 외 콘텐츠를 배제하므로
-                // 표가 든 문단은 애초에 해당하지 않는다.
-                let tac_picture_full_page_line = tac_picture_only_para
+                // #418 의 partial-table 회귀는 여기에 닿지 않는다. 이 분기는 TAC 그림/도형만
+                // 남은 문단으로 한정하므로, 표·수식 등 다른 컨트롤이 섞인 문단은 배제한다.
+                let tac_picture_full_page_line = para_has_only_treat_as_char_picture_or_shape(para)
                     && fmt
                         .line_heights
                         .get(li)
@@ -22985,6 +22997,41 @@ mod tests {
             margin_gutter: 0,
             ..Default::default()
         }
+    }
+
+    #[test]
+    fn single_column_vpos_reset_gate_requires_exclusive_tac_picture_or_shape() {
+        let tac_picture = || {
+            let mut picture = crate::model::image::Picture::default();
+            picture.common.treat_as_char = true;
+            Control::Picture(Box::new(picture))
+        };
+
+        let picture_only = Paragraph {
+            controls: vec![tac_picture()],
+            ..Default::default()
+        };
+        assert!(para_has_only_treat_as_char_picture_or_shape(&picture_only));
+
+        let mut table = Table::default();
+        table.common.treat_as_char = true;
+        let mixed_controls = Paragraph {
+            controls: vec![tac_picture(), Control::Table(Box::new(table))],
+            ..Default::default()
+        };
+        assert!(
+            !para_has_only_treat_as_char_picture_or_shape(&mixed_controls),
+            "TAC 그림과 표가 섞인 문단은 단일 단 vpos-reset 강제 분리 대상이 아니다"
+        );
+
+        let picture_with_text = Paragraph {
+            text: "설명".to_string(),
+            controls: vec![tac_picture()],
+            ..Default::default()
+        };
+        assert!(!para_has_only_treat_as_char_picture_or_shape(
+            &picture_with_text
+        ));
     }
 
     /// [#4333] 인라인(글자처럼) 도형의 흐름 높이는 조판과 렌더가 같은 정의를 써야 한다.
