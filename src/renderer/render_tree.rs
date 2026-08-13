@@ -380,6 +380,12 @@ pub struct RawSvgNode {
     pub svg: String,
     /// 원본 개체 참조. OLE RawSvg 선택/속성 진입에 사용한다.
     pub control_ref: Option<ObjectControlRef>,
+    /// [#4694] 셀/글상자 안 ole 의 다단계 경로 — 컨트롤 레이아웃(hit-test 소스)의
+    /// cellPath 방출에 사용. 없으면 선택 ref 가 본문 직속과 구분되지 않아 같은 문단의
+    /// 다른 차트를 조용히 여는 오매칭이 성립한다(Image 노드의 #1151/#1161 과 동형).
+    /// 레이어 JSON 에는 불필요하므로 직렬화 제외.
+    #[serde(skip)]
+    pub cell_context: Option<crate::renderer::layout::CellContext>,
 }
 
 impl RawSvgNode {
@@ -387,10 +393,17 @@ impl RawSvgNode {
         Self {
             svg,
             control_ref: None,
+            cell_context: None,
         }
     }
 
-    pub fn ole(svg: String, section_index: usize, para_index: usize, control_index: usize) -> Self {
+    pub fn ole(
+        svg: String,
+        section_index: usize,
+        para_index: usize,
+        control_index: usize,
+        cell_context: Option<crate::renderer::layout::CellContext>,
+    ) -> Self {
         Self {
             svg,
             control_ref: Some(ObjectControlRef::ole(
@@ -398,6 +411,7 @@ impl RawSvgNode {
                 para_index,
                 control_index,
             )),
+            cell_context,
         }
     }
 
@@ -488,6 +502,7 @@ impl PlaceholderNode {
         section_index: usize,
         para_index: usize,
         control_index: usize,
+        cell_context: Option<crate::renderer::layout::CellContext>,
     ) -> Self {
         Self {
             fill_color,
@@ -499,7 +514,7 @@ impl PlaceholderNode {
                 control_index,
             )),
             kind: PlaceholderKind::default(),
-            cell_context: None,
+            cell_context,
         }
     }
 

@@ -139,6 +139,18 @@ fn push_placeholder_render_node(
     parent.children.push(node);
 }
 
+/// [#4694] 셀/글상자 안 ole 의 컨테이너 문맥. 비어 있으면(본문 직속) None —
+/// 방출도 비어 selection ref 가 3좌표로 유지된다(회귀 0).
+fn ole_cell_context(
+    parent_cell_path: &[CellPathEntry],
+    para_index: usize,
+) -> Option<crate::renderer::layout::CellContext> {
+    (!parent_cell_path.is_empty()).then(|| crate::renderer::layout::CellContext {
+        parent_para_index: para_index,
+        path: parent_cell_path.to_vec(),
+    })
+}
+
 fn push_ole_placeholder_render_node(
     tree: &mut LayoutFrame,
     parent: &mut RenderNode,
@@ -149,6 +161,7 @@ fn push_ole_placeholder_render_node(
     section_index: usize,
     para_index: usize,
     control_index: usize,
+    parent_cell_path: &[CellPathEntry],
 ) {
     let node_id = tree.next_id();
     let node = RenderNode::new(
@@ -160,6 +173,7 @@ fn push_ole_placeholder_render_node(
             section_index,
             para_index,
             control_index,
+            ole_cell_context(parent_cell_path, para_index),
         )),
         bbox,
     );
@@ -189,6 +203,7 @@ fn push_ole_raw_svg_render_node(
     section_index: usize,
     para_index: usize,
     control_index: usize,
+    parent_cell_path: &[CellPathEntry],
 ) {
     let node_id = tree.next_id();
     let node = RenderNode::new(
@@ -198,6 +213,7 @@ fn push_ole_raw_svg_render_node(
             section_index,
             para_index,
             control_index,
+            ole_cell_context(parent_cell_path, para_index),
         )),
         bbox,
     );
@@ -448,6 +464,7 @@ impl LayoutEngine {
         section_index: usize,
         para_index: usize,
         control_index: usize,
+        parent_cell_path: &[CellPathEntry],
     ) -> bool {
         if !self.profile.get().hwpx_stored_layout()
             || !crate::parser::ole_container::is_hmapsi_ole_container(cfb_data)
@@ -496,6 +513,7 @@ impl LayoutEngine {
                 section_index,
                 para_index,
                 control_index,
+                ole_cell_context(parent_cell_path, para_index),
             )),
             bbox,
         );
@@ -1939,6 +1957,20 @@ impl LayoutEngine {
             }
             ShapeObject::Ole(ole) => {
                 // Task #195 단계 8: BinData에서 OOXML 차트 시도 → 성공 시 네이티브 SVG 렌더
+                // [#4694] 표 셀은 parent_cell_path 가 아니라 table_cell_ref 로 온다(#1138).
+                // ole 노드의 컨테이너 문맥 방출용으로 한 경로에 합친다 — 상위 경로 뒤에 셀 항목.
+                let ole_container_path: Vec<CellPathEntry> = {
+                    let mut p = parent_cell_path.to_vec();
+                    if let Some((cell_idx, cell_para_idx, outer_ctrl)) = table_cell_ref {
+                        p.push(CellPathEntry {
+                            control_index: outer_ctrl,
+                            cell_index: cell_idx,
+                            cell_para_index: cell_para_idx,
+                            text_direction: 0,
+                        });
+                    }
+                    p
+                };
                 let mut rendered = false;
                 // [#2550] 상한 로드 1회 — 이하 분기가 같은 바이트를 공유한다 (기존 3중
                 // 해제 제거 겸). 상한 초과는 아래 placeholder 폴백으로 접힌다.
@@ -1963,6 +1995,7 @@ impl LayoutEngine {
                                 section_index,
                                 para_index,
                                 control_index,
+                                &ole_container_path,
                             );
                             rendered = true;
                         }
@@ -1985,6 +2018,7 @@ impl LayoutEngine {
                                         section_index,
                                         para_index,
                                         control_index,
+                                        &ole_container_path,
                                     );
                                     rendered = true;
                                 }
@@ -2014,6 +2048,7 @@ impl LayoutEngine {
                                                 section_index,
                                                 para_index,
                                                 control_index,
+                                                &ole_container_path,
                                             );
                                             rendered = true;
                                         }
@@ -2033,6 +2068,7 @@ impl LayoutEngine {
                                                 section_index,
                                                 para_index,
                                                 control_index,
+                                                &ole_container_path,
                                             );
                                             rendered = true;
                                         }
@@ -2062,6 +2098,7 @@ impl LayoutEngine {
                                             section_index,
                                             para_index,
                                             control_index,
+                                            &ole_container_path,
                                         );
                                         rendered = true;
                                     }
@@ -2094,6 +2131,7 @@ impl LayoutEngine {
                                             section_index,
                                             para_index,
                                             control_index,
+                                            &ole_container_path,
                                         );
                                         rendered = true;
                                     }
@@ -2136,6 +2174,7 @@ impl LayoutEngine {
                                         section_index,
                                         para_index,
                                         control_index,
+                                        &ole_container_path,
                                     );
                                     rendered = true;
                                 }
@@ -2150,6 +2189,7 @@ impl LayoutEngine {
                                 section_index,
                                 para_index,
                                 control_index,
+                                &ole_container_path,
                             )
                         {
                             rendered = true;
@@ -2170,6 +2210,7 @@ impl LayoutEngine {
                         section_index,
                         para_index,
                         control_index,
+                        &ole_container_path,
                     );
                 }
             }

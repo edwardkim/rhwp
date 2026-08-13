@@ -10,6 +10,8 @@ import { DeleteSelectionCommand, ApplyCharFormatCommand, ApplyParaFormatCommand,
 import type { OperationDescriptor, ParaFormatTarget, RefreshPolicy, TextMutationEffects, EditCommand, EditContext, FormValueTarget } from './command';
 import { selectCellIndicesInRange, paraFormatTargetsForCellBlock, withCellPathTarget } from './cell-block-format';
 import type { SelectedCellBlock } from './cell-block-format';
+import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
+import type { SelectedOleRefLike } from '@/core/chart-data-target';
 import { VirtualScroll } from '@/view/virtual-scroll';
 import { ViewportManager } from '@/view/viewport-manager';
 import type {
@@ -1714,6 +1716,16 @@ export class InputHandler {
     ];
   }
 
+  /** [#4694] 선택된 ole 이 데이터 편집 가능한 차트로 해석되는가 — 우클릭당 1회 열거. */
+  private isChartDataEditable(ref: SelectedOleRefLike): boolean {
+    try {
+      const target = chartTargetFromSelection(ref);
+      return target !== null && matchChartRef(this.wasm.listCharts(), target) !== null;
+    } catch {
+      return false;
+    }
+  }
+
   /** 그림 객체 선택 컨텍스트 메뉴 항목 */
   private getPictureObjectContextMenuItems(): ContextMenuItem[] {
     const ref = this.cursor.getSelectedPictureRef();
@@ -1737,6 +1749,13 @@ export class InputHandler {
     if (ref?.type === 'equation') {
       items.push(
         { type: 'command', commandId: 'insert:equation-edit', label: '수식 편집...' },
+        { type: 'separator' },
+      );
+    }
+    // [#4694] 차트(ole) 객체: 열거·대조가 성공하는 선택에만 데이터 편집 항목을 노출한다.
+    if (ref?.type === 'ole' && this.isChartDataEditable(ref)) {
+      items.push(
+        { type: 'command', commandId: 'insert:chart-data-edit', label: '차트 데이터 편집...' },
         { type: 'separator' },
       );
     }

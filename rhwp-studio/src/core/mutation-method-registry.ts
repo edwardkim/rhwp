@@ -44,6 +44,8 @@ export const MUTATING_METHODS: readonly string[] = [
   'createShapeControl', 'setShapeProperties', 'deleteShapeControl', 'changeShapeZOrder',
   'groupShapes', 'ungroupShape', 'moveLineEndpoint', 'updateConnectorsInSection',
   'insertEquation', 'setEquationProperties', 'setNoteEquationProperties', 'deleteEquationControl',
+  // 차트 데이터 (#4694) — bin_data_content 슬롯 바이트 변이 (IR 무변경이지만 직렬화 결과가 바뀐다)
+  'setChartData', 'setChartDataByIndex',
   // 각주/미주
   'insertFootnote', 'insertEndnote', 'deleteFootnote', 'applyEndnoteShape',
   'insertTextInFootnote', 'deleteTextInFootnote', 'splitParagraphInFootnote',
