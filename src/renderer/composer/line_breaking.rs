@@ -51,7 +51,7 @@ struct FlowInlineControl {
 }
 
 /// 줄 채움 결과
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 struct LineBreakResult {
     start_idx: usize,
     end_idx: usize, // exclusive
@@ -745,9 +745,417 @@ fn text_token_fits_line_hwp(
     condensed_candidate <= effective_width_hwp + LINE_BREAK_TOLERANCE && condense_pull_allowed
 }
 
-/// 토큰을 줄에 배치하는 Greedy 알고리즘
-/// 한컴과 동일한 결과를 위해 HWPUNIT 정수로 폭을 누적한다.
+/// Greedy line-fill continuation.
+///
+/// A visible-text boundary does not always identify the next token: a long
+/// `Text` token can continue after an emitted row. Keep the complete state so
+/// callers can fill one interval at a time without rediscovering a boundary.
+#[derive(Debug, Clone)]
+struct FillCursor {
+    token_index: usize,
+    fallback_char_idx: Option<usize>,
+    initial_start_idx: usize,
+    line_start_idx: usize,
+    lw: i32,
+    line_space_savings: i32,
+    line_max_fs: f64,
+    is_first_line: bool,
+    last_break_token_idx: Option<usize>,
+    last_break_char_idx: usize,
+    width_at_last_break: i32,
+    space_savings_at_last_break: i32,
+    fs_at_last_break: f64,
+    finished: bool,
+    emitted_any: bool,
+}
+
+impl FillCursor {
+    fn new(initial_start_idx: usize, initial_is_first_line: bool) -> Self {
+        Self {
+            token_index: 0,
+            fallback_char_idx: None,
+            initial_start_idx,
+            line_start_idx: initial_start_idx,
+            lw: 0,
+            line_space_savings: 0,
+            line_max_fs: 0.0,
+            is_first_line: initial_is_first_line,
+            last_break_token_idx: None,
+            last_break_char_idx: 0,
+            width_at_last_break: 0,
+            space_savings_at_last_break: 0,
+            fs_at_last_break: 0.0,
+            finished: false,
+            emitted_any: false,
+        }
+    }
+}
+
+/// Fill all scalar intervals through the resumable greedy continuation.
 fn fill_lines(
+    tokens: &[BreakToken],
+    text_chars: &[char],
+    available_width_px: f64,
+    indent_px: f64,
+    default_tab_width: f64,
+    korean_break_unit: u8,
+    condense_min_space: u8,
+    initial_start_idx: usize,
+    initial_is_first_line: bool,
+) -> Vec<LineBreakResult> {
+    let mut cursor = FillCursor::new(initial_start_idx, initial_is_first_line);
+    let mut results = Vec::new();
+
+    while let Some(line) = fill_one_interval(
+        tokens,
+        text_chars,
+        available_width_px,
+        indent_px,
+        default_tab_width,
+        korean_break_unit,
+        condense_min_space,
+        &mut cursor,
+    ) {
+        results.push(line);
+    }
+
+    results
+}
+
+/// Fill at most one logical row and retain the greedy continuation state.
+fn fill_one_interval(
+    tokens: &[BreakToken],
+    text_chars: &[char],
+    available_width_px: f64,
+    indent_px: f64,
+    default_tab_width: f64,
+    korean_break_unit: u8,
+    condense_min_space: u8,
+    cursor: &mut FillCursor,
+) -> Option<LineBreakResult> {
+    if cursor.finished {
+        return None;
+    }
+
+    if tokens.is_empty() {
+        cursor.finished = true;
+        cursor.emitted_any = true;
+        return Some(LineBreakResult {
+            start_idx: cursor.initial_start_idx,
+            end_idx: cursor.initial_start_idx,
+            max_font_size: 0.0,
+            has_line_break: false,
+        });
+    }
+
+    let tab_w_px = if default_tab_width > 0.0 {
+        default_tab_width
+    } else {
+        48.0
+    };
+    let eff_w = |first: bool| -> i32 {
+        if indent_px > 0.0 {
+            if first {
+                to_hwp((available_width_px - indent_px).max(1.0))
+            } else {
+                to_hwp(available_width_px)
+            }
+        } else if indent_px < 0.0 {
+            if first {
+                to_hwp(available_width_px)
+            } else {
+                to_hwp((available_width_px + indent_px).max(1.0))
+            }
+        } else {
+            to_hwp(available_width_px)
+        }
+    };
+
+    loop {
+        if cursor.token_index >= tokens.len() {
+            cursor.finished = true;
+            let last_end = tokens
+                .last()
+                .map(|token| match token {
+                    BreakToken::Text { end_idx, .. } => *end_idx,
+                    BreakToken::Space { idx, .. }
+                    | BreakToken::Tab { idx, .. }
+                    | BreakToken::LineBreak { idx } => *idx + 1,
+                })
+                .unwrap_or(text_chars.len());
+
+            if cursor.line_start_idx <= last_end {
+                cursor.emitted_any = true;
+                return Some(LineBreakResult {
+                    start_idx: cursor.line_start_idx,
+                    end_idx: last_end,
+                    max_font_size: cursor.line_max_fs,
+                    has_line_break: false,
+                });
+            }
+
+            if !cursor.emitted_any {
+                cursor.emitted_any = true;
+                return Some(LineBreakResult {
+                    start_idx: cursor.initial_start_idx,
+                    end_idx: text_chars.len(),
+                    max_font_size: 0.0,
+                    has_line_break: false,
+                });
+            }
+            return None;
+        }
+
+        let ti = cursor.token_index;
+        match &tokens[ti] {
+            BreakToken::LineBreak { idx } => {
+                let result = LineBreakResult {
+                    start_idx: cursor.line_start_idx,
+                    end_idx: *idx + 1,
+                    max_font_size: cursor.line_max_fs,
+                    has_line_break: true,
+                };
+                cursor.line_start_idx = *idx + 1;
+                cursor.lw = 0;
+                cursor.line_space_savings = 0;
+                cursor.line_max_fs = 0.0;
+                cursor.is_first_line = false;
+                cursor.last_break_token_idx = None;
+                cursor.token_index += 1;
+                cursor.emitted_any = true;
+                return Some(result);
+            }
+            BreakToken::Tab { idx, max_font_size } => {
+                // 탭 계산은 px로 수행 후 HWPUNIT 변환 (정밀도 유지)
+                let lw_px = cursor.lw as f64 / 75.0;
+                let next_tab_px = ((lw_px / tab_w_px).floor() + 1.0) * tab_w_px;
+                let next_tab_hwp = to_hwp(next_tab_px);
+                if *max_font_size > cursor.line_max_fs {
+                    cursor.line_max_fs = *max_font_size;
+                }
+
+                if next_tab_hwp > eff_w(cursor.is_first_line) && cursor.line_start_idx < *idx {
+                    let result = if cursor.last_break_token_idx.is_some() {
+                        let result = LineBreakResult {
+                            start_idx: cursor.line_start_idx,
+                            end_idx: cursor.last_break_char_idx,
+                            max_font_size: cursor.fs_at_last_break,
+                            has_line_break: false,
+                        };
+                        cursor.line_start_idx = cursor.last_break_char_idx;
+                        cursor.lw -= cursor.width_at_last_break;
+                        cursor.line_space_savings -= cursor.space_savings_at_last_break;
+                        result
+                    } else {
+                        let result = LineBreakResult {
+                            start_idx: cursor.line_start_idx,
+                            end_idx: *idx,
+                            max_font_size: cursor.line_max_fs,
+                            has_line_break: false,
+                        };
+                        cursor.line_start_idx = *idx;
+                        cursor.lw = 0;
+                        cursor.line_space_savings = 0;
+                        cursor.line_max_fs = *max_font_size;
+                        result
+                    };
+                    cursor.is_first_line = false;
+                    cursor.last_break_token_idx = None;
+                    let lw_px2 = cursor.lw as f64 / 75.0;
+                    let next_tab2 = ((lw_px2 / tab_w_px).floor() + 1.0) * tab_w_px;
+                    cursor.lw = to_hwp(next_tab2);
+                    cursor.token_index += 1;
+                    cursor.emitted_any = true;
+                    return Some(result);
+                }
+
+                cursor.last_break_token_idx = Some(ti);
+                cursor.last_break_char_idx = *idx;
+                cursor.width_at_last_break = cursor.lw;
+                cursor.space_savings_at_last_break = cursor.line_space_savings;
+                cursor.fs_at_last_break = cursor.line_max_fs;
+                cursor.lw = next_tab_hwp;
+                cursor.token_index += 1;
+            }
+            BreakToken::Space {
+                idx,
+                width,
+                max_font_size,
+            } => {
+                if *max_font_size > cursor.line_max_fs {
+                    cursor.line_max_fs = *max_font_size;
+                }
+                cursor.last_break_token_idx = Some(ti);
+                cursor.last_break_char_idx = *idx;
+                cursor.width_at_last_break = cursor.lw;
+                cursor.space_savings_at_last_break = cursor.line_space_savings;
+                cursor.fs_at_last_break = cursor.line_max_fs;
+                let space_hwp = to_hwp(*width);
+                cursor.lw += space_hwp;
+                cursor.line_space_savings +=
+                    condense_space_savings_hwp(space_hwp, condense_min_space);
+                cursor.token_index += 1;
+            }
+            BreakToken::Text {
+                start_idx,
+                end_idx,
+                width,
+                max_font_size,
+                char_widths,
+            } => {
+                if let Some(next_char_idx) = cursor.fallback_char_idx {
+                    debug_assert!(*start_idx <= next_char_idx && next_char_idx <= *end_idx);
+                    let mut ci = next_char_idx;
+                    while ci < *end_idx {
+                        let rel_idx = ci - *start_idx;
+                        let char_w = char_widths
+                            .get(rel_idx)
+                            .map(|width| to_hwp(*width))
+                            .unwrap_or_else(|| {
+                                let ch = text_chars[ci];
+                                let char_w_px = if is_cjk_char(ch) {
+                                    cursor.line_max_fs.max(12.0)
+                                } else {
+                                    cursor.line_max_fs.max(12.0) * 0.5
+                                };
+                                to_hwp(char_w_px)
+                            });
+                        let current_width = eff_w(cursor.is_first_line);
+                        if cursor.lw + char_w > current_width && ci > cursor.line_start_idx {
+                            let result = LineBreakResult {
+                                start_idx: cursor.line_start_idx,
+                                end_idx: ci,
+                                max_font_size: cursor.line_max_fs,
+                                has_line_break: false,
+                            };
+                            cursor.line_start_idx = ci;
+                            cursor.lw = char_w;
+                            cursor.is_first_line = false;
+                            cursor.fallback_char_idx = Some(ci + 1);
+                            cursor.emitted_any = true;
+                            return Some(result);
+                        }
+                        cursor.lw += char_w;
+                        ci += 1;
+                    }
+                    cursor.fallback_char_idx = None;
+                    cursor.token_index += 1;
+                    continue;
+                }
+
+                if *max_font_size > cursor.line_max_fs {
+                    cursor.line_max_fs = *max_font_size;
+                }
+
+                let w_hwp = to_hwp(*width);
+
+                // 단일 문자 CJK/한글 토큰의 줄바꿈 가능 지점 처리
+                // 이 글자를 포함한 후 break point 갱신 (end_idx 사용)
+                // → 초과 시 이 글자까지 L0에 포함하고 다음 토큰부터 다음 줄
+                if *end_idx - *start_idx == 1 && *start_idx > cursor.line_start_idx {
+                    let c = text_chars[*start_idx];
+                    let allow_break = if is_hangul(c) {
+                        // [#2185] bit7=1 = 글자 단위 break 허용 (위 주석 참조)
+                        korean_break_unit == 1
+                    } else {
+                        is_cjk_ideograph(c)
+                    };
+                    let candidate_w = cursor.lw + w_hwp;
+                    // 이 글자가 줄에 들어가는 경우에만 break point 갱신
+                    if allow_break
+                        && condensed_line_width_hwp(candidate_w, cursor.line_space_savings)
+                            <= eff_w(cursor.is_first_line) + LINE_BREAK_TOLERANCE
+                    {
+                        cursor.last_break_token_idx = Some(ti);
+                        cursor.last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
+                        cursor.width_at_last_break = candidate_w; // 이 글자 폭 포함
+                        cursor.space_savings_at_last_break = cursor.line_space_savings;
+                        cursor.fs_at_last_break = cursor.line_max_fs;
+                    }
+                }
+                let effective_width = eff_w(cursor.is_first_line);
+                if !text_token_fits_line_hwp(
+                    cursor.lw,
+                    w_hwp,
+                    cursor.line_space_savings,
+                    effective_width,
+                    *max_font_size,
+                ) {
+                    if *start_idx > cursor.line_start_idx {
+                        if let Some(break_token_idx) = cursor.last_break_token_idx {
+                            let result = LineBreakResult {
+                                start_idx: cursor.line_start_idx,
+                                end_idx: cursor.last_break_char_idx,
+                                max_font_size: cursor.fs_at_last_break,
+                                has_line_break: false,
+                            };
+                            let mut next_start = cursor.last_break_char_idx;
+                            while next_start < text_chars.len() && text_chars[next_start] == ' ' {
+                                next_start += 1;
+                            }
+                            cursor.line_start_idx = next_start;
+                            cursor.lw = recalc_width_hwp(tokens, ti, next_start);
+                            cursor.line_space_savings = recalc_space_savings_hwp(
+                                tokens,
+                                ti,
+                                next_start,
+                                condense_min_space,
+                            );
+                            cursor.line_max_fs = *max_font_size;
+                            cursor.is_first_line = false;
+                            cursor.last_break_token_idx = None;
+
+                            // 현재 단일 CJK/한글 토큰 자체가 break point였던 기존 경로는
+                            // 이미 위 결과에 포함됐으므로 동작을 바꾸지 않는다.
+                            if break_token_idx == ti {
+                                cursor.lw += w_hwp;
+                                cursor.token_index += 1;
+                                cursor.emitted_any = true;
+                                return Some(result);
+                            }
+
+                            // [#3822] 이전 break 뒤로 옮긴 현재 토큰이 새 줄에도
+                            // 들어가는지 다시 확인한다. 종전에는 토큰 전체 폭을 무조건
+                            // 더하고 continue하여, 긴 영문·숫자 토큰의 글자 단위 fallback을
+                            // 건너뛰었다.
+                            if text_token_fits_line_hwp(
+                                cursor.lw,
+                                w_hwp,
+                                cursor.line_space_savings,
+                                eff_w(false),
+                                *max_font_size,
+                            ) {
+                                cursor.lw += w_hwp;
+                                cursor.token_index += 1;
+                                cursor.emitted_any = true;
+                                return Some(result);
+                            }
+
+                            cursor.line_space_savings = 0;
+                            cursor.last_break_token_idx = None;
+                            cursor.fallback_char_idx = Some(*start_idx);
+                            cursor.emitted_any = true;
+                            return Some(result);
+                        }
+                    }
+
+                    // 토큰에 저장된 개별 글자 폭을 HWPUNIT로 변환
+                    cursor.line_space_savings = 0;
+                    cursor.last_break_token_idx = None;
+                    cursor.fallback_char_idx = Some(*start_idx);
+                    continue;
+                }
+
+                cursor.lw += w_hwp;
+                cursor.token_index += 1;
+            }
+        }
+    }
+}
+
+/// Frozen scalar implementation used only to prove cursor equivalence.
+#[cfg(test)]
+fn fill_lines_before_cursor(
     tokens: &[BreakToken],
     text_chars: &[char],
     available_width_px: f64,
@@ -1085,6 +1493,7 @@ fn recalc_space_savings_hwp(
 
 /// 긴 단어 폴백: 글자 단위 분할 (HWPUNIT)
 /// char_widths_hwp: 토큰 내 각 글자의 HWPUNIT 폭 (None이면 휴리스틱)
+#[cfg(test)]
 fn char_level_break_hwp(
     text_chars: &[char],
     token_start: usize,
@@ -1956,6 +2365,174 @@ fn compute_line_spacing_hwp(
             let min_hwp = px_to_hwpunit(ls_value, dpi);
             (min_hwp - line_height_hwp).max(0)
         }
+    }
+}
+
+#[cfg(test)]
+mod fill_cursor_tests {
+    use super::*;
+
+    fn collect_one_interval_at_a_time(
+        tokens: &[BreakToken],
+        text_chars: &[char],
+        available_width_px: f64,
+        indent_px: f64,
+        default_tab_width: f64,
+        korean_break_unit: u8,
+        condense_min_space: u8,
+        initial_start_idx: usize,
+        initial_is_first_line: bool,
+    ) -> Vec<LineBreakResult> {
+        let mut cursor = FillCursor::new(initial_start_idx, initial_is_first_line);
+        let mut results = Vec::new();
+        while let Some(result) = fill_one_interval(
+            tokens,
+            text_chars,
+            available_width_px,
+            indent_px,
+            default_tab_width,
+            korean_break_unit,
+            condense_min_space,
+            &mut cursor,
+        ) {
+            results.push(result);
+        }
+        results
+    }
+
+    fn assert_cursor_matches_frozen_scalar(
+        tokens: &[BreakToken],
+        text_chars: &[char],
+        available_width_px: f64,
+        indent_px: f64,
+        default_tab_width: f64,
+        korean_break_unit: u8,
+        condense_min_space: u8,
+        initial_start_idx: usize,
+        initial_is_first_line: bool,
+    ) -> Vec<LineBreakResult> {
+        let frozen = fill_lines_before_cursor(
+            tokens,
+            text_chars,
+            available_width_px,
+            indent_px,
+            default_tab_width,
+            korean_break_unit,
+            condense_min_space,
+            initial_start_idx,
+            initial_is_first_line,
+        );
+        let scalar = fill_lines(
+            tokens,
+            text_chars,
+            available_width_px,
+            indent_px,
+            default_tab_width,
+            korean_break_unit,
+            condense_min_space,
+            initial_start_idx,
+            initial_is_first_line,
+        );
+        let resumed = collect_one_interval_at_a_time(
+            tokens,
+            text_chars,
+            available_width_px,
+            indent_px,
+            default_tab_width,
+            korean_break_unit,
+            condense_min_space,
+            initial_start_idx,
+            initial_is_first_line,
+        );
+
+        assert_eq!(scalar, frozen);
+        assert_eq!(resumed, frozen);
+        frozen
+    }
+
+    #[test]
+    fn cursor_resumes_a_long_text_token_at_each_interval() {
+        let text_chars = "abcdefghij".chars().collect::<Vec<_>>();
+        let tokens = vec![BreakToken::Text {
+            start_idx: 0,
+            end_idx: text_chars.len(),
+            width: 100.0,
+            max_font_size: 12.0,
+            char_widths: vec![10.0; text_chars.len()],
+        }];
+
+        let results = assert_cursor_matches_frozen_scalar(
+            &tokens,
+            &text_chars,
+            25.0,
+            0.0,
+            48.0,
+            0,
+            0,
+            0,
+            true,
+        );
+
+        assert_eq!(
+            results
+                .iter()
+                .map(|result| (result.start_idx, result.end_idx, result.has_line_break))
+                .collect::<Vec<_>>(),
+            vec![
+                (0, 2, false),
+                (2, 4, false),
+                (4, 6, false),
+                (6, 8, false),
+                (8, 10, false),
+            ]
+        );
+    }
+
+    #[test]
+    fn cursor_preserves_scalar_space_tab_and_forced_break_results() {
+        let text_chars = "ab c\td\nxy".chars().collect::<Vec<_>>();
+        let tokens = vec![
+            BreakToken::Text {
+                start_idx: 0,
+                end_idx: 2,
+                width: 20.0,
+                max_font_size: 12.0,
+                char_widths: vec![10.0, 10.0],
+            },
+            BreakToken::Space {
+                idx: 2,
+                width: 5.0,
+                max_font_size: 12.0,
+            },
+            BreakToken::Text {
+                start_idx: 3,
+                end_idx: 4,
+                width: 10.0,
+                max_font_size: 12.0,
+                char_widths: vec![10.0],
+            },
+            BreakToken::Tab {
+                idx: 4,
+                max_font_size: 12.0,
+            },
+            BreakToken::Text {
+                start_idx: 5,
+                end_idx: 6,
+                width: 10.0,
+                max_font_size: 12.0,
+                char_widths: vec![10.0],
+            },
+            BreakToken::LineBreak { idx: 6 },
+            BreakToken::Text {
+                start_idx: 7,
+                end_idx: 9,
+                width: 20.0,
+                max_font_size: 12.0,
+                char_widths: vec![10.0, 10.0],
+            },
+        ];
+
+        assert_cursor_matches_frozen_scalar(&tokens, &text_chars, 24.0, 0.0, 48.0, 0, 0, 0, true);
     }
 }
 
