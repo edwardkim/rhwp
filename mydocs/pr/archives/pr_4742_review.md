@@ -84,6 +84,22 @@ LineSeg를 사용한다. 따라서 저장본 before/after OVL PNG를 새로 만�
 직접 rustfmt 검사를 대체 근거로 썼다. Hancom Office 2024는 HKCU override 뒤에도 COM major 12를
 반환해 오라클이 안전 중단했고, 2024 결과는 사용하지 않았다. 기본 COM 등록은 즉시 복원했다.
 
+## CI 보정
+
+초기 최신 head `bd852c93335374d0cba4331abde47c026634a2a5`의 GitHub Actions Lint는
+`clippy::obfuscated_if_else` 한 건으로 실패했다. `has_inline_control_in_range(...).then(...)
+.unwrap_or_default()`를 동등한 명시적 `if/else`로 바꾼
+`cfb631f48e265847cf9266eca54b31430f002f7b`은 동작·검증 하한을 바꾸지 않는다.
+
+Windows PowerShell의 동일 `target\\pr-review`에서 다음을 완료했다.
+
+- `cargo clippy -- -D warnings` — 통과.
+- `cargo test --lib issue3211_uncached_endnote_body_preserves_inline_control_flow -- --nocapture`
+  — 통과, 두 샘플 각각 160/165 line count 및 130/165 line break.
+- 직접 `rustfmt.exe --check`, `git diff --check` — 통과.
+
+이 보정 뒤의 새 GitHub Actions는 merge 전 조건으로 다시 확인한다.
+
 ## 결론과 merge 조건
 
 코드 검토와 로컬·Windows 검증에서 blocker는 발견하지 못했다. 단, 이 PR은 #3211 전체 정합성을
