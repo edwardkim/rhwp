@@ -131,7 +131,12 @@ export class CanvasView {
   private startRenderCodeReloadWatch(): void {
     if (!import.meta.env.DEV) return;
     const renderCodeReload = this.wasm.getRenderCodeReload();
-    if (!renderCodeReload) return;
+    if (!renderCodeReload) {
+      console.warn(
+        '[CanvasView] 개발용 렌더 코드 교체가 준비되지 않았습니다. CanvasView는 await wasm.initialize() 뒤에 생성해야 합니다.',
+      );
+      return;
+    }
     void import('@/core/subsecond-runtime')
       .then(({ RenderCodeReloadWatcher }) => {
         if (this.disposed) return;

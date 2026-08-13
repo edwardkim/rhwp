@@ -27,7 +27,6 @@ const HOTPATCH_MARKERS = [
   'subsecondProbe',
   'applySubsecondDevtoolsMessage',
   'getRenderCodeRevision',
-  'rebuildDerivedState',
 ];
 
 /**

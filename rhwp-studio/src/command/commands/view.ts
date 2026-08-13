@@ -276,7 +276,6 @@ export const viewCommands: CommandDef[] = [
       document.querySelectorAll('[data-cmd="view:border-transparent"]').forEach(el => {
         el.classList.toggle('active', next);
       });
-      services.eventBus.emit('transparent-borders-changed', next);
       services.eventBus.emit('document-view-changed');
     },
   },
