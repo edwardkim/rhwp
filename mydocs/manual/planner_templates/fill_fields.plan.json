@@ -1,0 +1,9 @@
+{
+  "planVersion": "1.0",
+  "input": "<서식.hwp>",
+  "output": "<채운.hwp>",
+  "steps": [
+    { "action": "fill_fields", "data": { "<필드이름>": "<채울 값>", "<동명필드[0]>": "<값>" } }
+  ],
+  "assertions": { "notFoundEmpty": true }
+}

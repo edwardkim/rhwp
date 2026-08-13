@@ -919,6 +919,10 @@ jobs:
       - name: Validate adoption spine contract
         run: python3 -m unittest scripts/tests/test_adoption_spine.py
 
+      # [#4718] 계획 템플릿 형식 계약 — 자가검증 계획 시작점이 스키마를 지키는지.
+      - name: Validate planner templates
+        run: python3 -m unittest scripts/tests/test_planner_templates.py
+
       - name: Clippy
         run: cargo clippy -- -D warnings
 
