@@ -10334,18 +10334,17 @@ impl LayoutEngine {
                     && !u.empty_spacer
                     && h + u.height <= avail_height
                     && avail_height - h > HARD_BREAK_REMAINING_TOLERANCE_PX;
-                // 문단 내부에서 저장 좌표가 되감긴 frame 경계는 부모 표의 조각도
-                // 반드시 같은 곳에서 끊어야 한다. 이를 mid-page reset 완화로
-                // 흡수하면 직접 표 셀과 재귀 투영 자식 표가 서로 다른 fragment
-                // owner를 만들고, footer-safe body 밖으로 paint될 수 있다. 문단
-                // 사이 hard break의 orphan/sliver 완화는 이 표식이 없는 경우에만
-                // 계속 적용한다.
-                // The 2025 HWPX Q&A contents is a single 73-paragraph
-                // RowBreak cell. Its final continuation stores a local reset
-                // before one source line that belongs to the preceding page;
-                // treating that reset as an unconditional boundary creates a
-                // tail-only physical page and shifts every following Q&A table.
-                let hwpx_qa_contents_final_tail = self.profile.get().hwpx_stored_layout()
+                // 한 셀에 저장 reset이 여러 개 있는 HWPX RowBreak continuation은
+                // writer-local cursor stream이다. 이 reset들은 물리 조각이 아니라
+                // 저장 좌표 범위를 나누므로, 아래 mid-page absorb 판정이 행·잔여
+                // 공간을 함께 검증한다. 단일 reset HWPX와 재귀 중첩 표의 frame은
+                // 여전히 물리 조각 경계다.
+                let follows_single_cell_nested_host = u
+                    .para_idx
+                    .checked_sub(1)
+                    .and_then(|para_idx| cell.paragraphs.get(para_idx))
+                    .is_some_and(Self::paragraph_hosts_single_cell_nested_table);
+                let hwpx_local_reset_stream = self.profile.get().hwpx_stored_layout()
                     && !table.common.treat_as_char
                     && matches!(
                         table.page_break,
@@ -10353,12 +10352,18 @@ impl LayoutEngine {
                     )
                     && table.row_count == 1
                     && table.col_count == 1
-                    && table.cells.len() == 1
-                    && table.common.height == 47_726
+                    && row_cells.len() == 1
                     && start > 0
-                    && cell.paragraphs.len() == 73;
-                let strict_saved_frame_break =
-                    u.stored_frame_break_before && !hwpx_qa_contents_final_tail;
+                    && units
+                        .iter()
+                        .filter(|unit| unit.stored_frame_break_before)
+                        .nth(1)
+                        .is_some();
+                let strict_saved_frame_break = u.stored_frame_break_before
+                    && (u.mixed_nested_recursive
+                        || follows_single_cell_nested_host
+                        || (self.profile.get().hwpx_stored_layout()
+                            && !hwpx_local_reset_stream));
                 if j > start
                     && u.hard_break_before
                     && (strict_saved_frame_break
