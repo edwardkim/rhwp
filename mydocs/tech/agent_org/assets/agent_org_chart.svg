@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1220" height="800" viewBox="0 0 1220 800" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">
+<defs><marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4E5AE8"/></marker></defs>
+<rect width="1220" height="800" fill="#FBF6EC"/>
+<text x="610.0" y="52" font-size="33" font-weight="800" fill="#20233A" text-anchor="middle">에이전트 노동 운영체제 — 시스템이 스스로 돌린다</text>
+<text x="610.0" y="84" font-size="17" fill="#8b8fa6" text-anchor="middle">접수 → 자동 배치 → 검증된 산출 → 자동 승진 · 사람 손 배정 없음</text>
+<rect x="60" y="150" width="200" height="72" rx="14" fill="#fff" stroke="#F5B942" stroke-width="2.5"/>
+<text x="160" y="182" font-size="19" font-weight="800" fill="#20233A" text-anchor="middle">🎫 접수처</text>
+<text x="160" y="206" font-size="12.5" fill="#8b8fa6" text-anchor="middle">intake_manifest</text>
+<rect x="330" y="146" width="220" height="80" rx="16" fill="#4E5AE8"/>
+<text x="440" y="180" font-size="20" font-weight="800" fill="#fff" text-anchor="middle">⚙ 자동 배치기</text>
+<text x="440" y="205" font-size="12.5" fill="#dfe3ff" text-anchor="middle">agent_dispatch.py</text>
+<path d="M260 186 L328 186" stroke="#4E5AE8" stroke-width="2.4" marker-end="url(#a)"/>
+<rect x="60" y="320" width="200" height="74" rx="13" fill="#fff" stroke="#20C6A6" stroke-width="2.2"/>
+<rect x="60" y="320" width="7" height="74" rx="3" fill="#20C6A6"/>
+<text x="160.0" y="351" font-size="18" font-weight="700" fill="#20233A" text-anchor="middle">편집부</text>
+<text x="160.0" y="374" font-size="11.5" fill="#8b8fa6" text-anchor="middle">text·table·objects</text>
+<path d="M440 226 C440 270, 160.0 280, 160.0 320" fill="none" stroke="#20C6A6" stroke-width="1.8" opacity="0.65" marker-end="url(#a)"/>
+<rect x="280" y="320" width="200" height="74" rx="13" fill="#fff" stroke="#20C6A6" stroke-width="2.2"/>
+<rect x="280" y="320" width="7" height="74" rx="3" fill="#20C6A6"/>
+<text x="380.0" y="351" font-size="18" font-weight="700" fill="#20233A" text-anchor="middle">판독부</text>
+<text x="380.0" y="374" font-size="11.5" fill="#8b8fa6" text-anchor="middle">serial·layout·corpus</text>
+<path d="M440 226 C440 270, 380.0 280, 380.0 320" fill="none" stroke="#20C6A6" stroke-width="1.8" opacity="0.65" marker-end="url(#a)"/>
+<rect x="500" y="320" width="200" height="74" rx="13" fill="#fff" stroke="#20C6A6" stroke-width="2.2"/>
+<rect x="500" y="320" width="7" height="74" rx="3" fill="#20C6A6"/>
+<text x="600.0" y="351" font-size="18" font-weight="700" fill="#20233A" text-anchor="middle">검증부</text>
+<text x="600.0" y="374" font-size="11.5" fill="#8b8fa6" text-anchor="middle">automation·expert</text>
+<path d="M440 226 C440 270, 600.0 280, 600.0 320" fill="none" stroke="#20C6A6" stroke-width="1.8" opacity="0.65" marker-end="url(#a)"/>
+<rect x="720" y="320" width="200" height="74" rx="13" fill="#fff" stroke="#20C6A6" stroke-width="2.2"/>
+<rect x="720" y="320" width="7" height="74" rx="3" fill="#20C6A6"/>
+<text x="820.0" y="351" font-size="18" font-weight="700" fill="#20233A" text-anchor="middle">보안부</text>
+<text x="820.0" y="374" font-size="11.5" fill="#8b8fa6" text-anchor="middle">security</text>
+<path d="M440 226 C440 270, 820.0 280, 820.0 320" fill="none" stroke="#20C6A6" stroke-width="1.8" opacity="0.65" marker-end="url(#a)"/>
+<rect x="940" y="320" width="200" height="74" rx="13" fill="#fff" stroke="#20C6A6" stroke-width="2.2"/>
+<rect x="940" y="320" width="7" height="74" rx="3" fill="#20C6A6"/>
+<text x="1040.0" y="351" font-size="18" font-weight="700" fill="#20233A" text-anchor="middle">표준부</text>
+<text x="1040.0" y="374" font-size="11.5" fill="#8b8fa6" text-anchor="middle">self-desc·AWS</text>
+<path d="M440 226 C440 270, 1040.0 280, 1040.0 320" fill="none" stroke="#20C6A6" stroke-width="1.8" opacity="0.65" marker-end="url(#a)"/>
+<rect x="60" y="452" width="300" height="66" rx="13" fill="#fff" stroke="#8b8fa6" stroke-width="2"/>
+<text x="210" y="480" font-size="16" font-weight="700" fill="#20233A" text-anchor="middle">입사 과제 수행 (gym)</text>
+<text x="210" y="503" font-size="12" fill="#8b8fa6" text-anchor="middle">작업 → AW-L1 영수증 replay --capsule</text>
+<path d="M160.0 394 C 160.0 430, 210 430, 210 452" fill="none" stroke="#8b8fa6" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="430" y="452" width="240" height="66" rx="13" fill="#fff" stroke="#F5B942" stroke-width="2.4"/>
+<text x="550" y="480" font-size="16" font-weight="800" fill="#20233A" text-anchor="middle">👤 인사부 — 자동 승진</text>
+<text x="550" y="503" font-size="12" fill="#8b8fa6" text-anchor="middle">검증된 산출로만 직급 인정</text>
+<path d="M360 485 L428 485" stroke="#F5B942" stroke-width="2.2" marker-end="url(#a)"/>
+<text x="740" y="572" font-size="14" font-weight="700" fill="#20233A">직급 — 검증 사다리로 자동 판정</text>
+<rect x="740" y="580" width="430" height="30" rx="8" fill="#fff" stroke="#4E5AE8" stroke-width="1.8"/>
+<rect x="740" y="580" width="76" height="30" rx="8" fill="#4E5AE8"/>
+<text x="778" y="600" font-size="14" font-weight="800" fill="#fff" text-anchor="middle">신입</text>
+<text x="830" y="600" font-size="13" fill="#20233A">AW-L1</text>
+<rect x="740" y="618" width="430" height="30" rx="8" fill="#fff" stroke="#4E5AE8" stroke-width="1.8"/>
+<rect x="740" y="618" width="76" height="30" rx="8" fill="#4E5AE8"/>
+<text x="778" y="638" font-size="14" font-weight="800" fill="#fff" text-anchor="middle">사원</text>
+<text x="830" y="638" font-size="13" fill="#20233A">AW-L2</text>
+<rect x="740" y="656" width="430" height="30" rx="8" fill="#fff" stroke="#F5B942" stroke-width="1.8"/>
+<rect x="740" y="656" width="76" height="30" rx="8" fill="#F5B942"/>
+<text x="778" y="676" font-size="14" font-weight="800" fill="#fff" text-anchor="middle">선임</text>
+<text x="830" y="676" font-size="13" fill="#20233A">AW-L3</text>
+<rect x="740" y="694" width="430" height="30" rx="8" fill="#fff" stroke="#F5B942" stroke-width="1.8"/>
+<rect x="740" y="694" width="76" height="30" rx="8" fill="#F5B942"/>
+<text x="778" y="714" font-size="14" font-weight="800" fill="#fff" text-anchor="middle">책임</text>
+<text x="830" y="714" font-size="13" fill="#20233A">AW-L4</text>
+<rect x="740" y="732" width="430" height="30" rx="8" fill="#fff" stroke="#FF5D73" stroke-width="1.8"/>
+<rect x="740" y="732" width="76" height="30" rx="8" fill="#FF5D73"/>
+<text x="778" y="752" font-size="14" font-weight="800" fill="#fff" text-anchor="middle">수석</text>
+<text x="830" y="752" font-size="13" fill="#20233A">AW-L5</text>
+<path d="M670 485 C 710 485, 720 560, 740 585" fill="none" stroke="#F5B942" stroke-width="1.8" opacity="0.6" marker-end="url(#a)"/>
+<text x="60" y="774" font-size="13" fill="#8b8fa6" font-style="italic">방법론 조직 · 준거는 검증 사다리이지 특정 기여자가 아니다 · 일감은 실재 · 조직을 안 거쳐도 rhwp 는 동작</text>
+</svg>
