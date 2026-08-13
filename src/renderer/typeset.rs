@@ -20735,6 +20735,7 @@ impl TypesetEngine {
                 crate::model::table::TablePageBreak::RowBreak
             )
             && ft.table_footnotes.is_empty()
+            && declared_excess_has_source_frame
             && declared_object_total > host_spacing_total
             && st.current_height + declared_object_total <= available
             && st.current_height + ft.effective_height
