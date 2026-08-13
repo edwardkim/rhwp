@@ -3613,13 +3613,13 @@ fn saved_tail_fit_chain_decision(
     }
 }
 
+const SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX: f64 = 16.0;
+
 fn saved_bounds_overlap_current_flow(bounds: (f64, f64), current_height: f64) -> bool {
     let (top, bottom) = bounds;
     let line_height = (bottom - top).max(0.0);
     line_height > 0.0 && top <= current_height + line_height && current_height <= bottom
 }
-
-const SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX: f64 = 16.0;
 
 fn saved_line_is_anchored_to_current_flow(bounds: (f64, f64), current_height: f64) -> bool {
     let (top, bottom) = bounds;
@@ -3655,7 +3655,16 @@ fn saved_bounds_fit_at_flow_tail(
     available: f64,
     bottom_spill: f64,
 ) -> bool {
-    saved_bounds_overlap_current_flow(bounds, current_height) && bounds.1 <= available + bottom_spill
+    saved_bounds_overlap_current_flow(bounds, current_height)
+        && bounds.1 <= available + bottom_spill
+}
+
+fn saved_table_bounds_fit_at_flow_tail(
+    bounds: (f64, f64),
+    current_height: f64,
+    available: f64,
+) -> bool {
+    saved_line_is_anchored_to_current_flow(bounds, current_height) && bounds.1 <= available
 }
 
 fn paragraph_saved_visible_bounds(
@@ -16801,12 +16810,22 @@ impl TypesetEngine {
                     line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
                 })
                 .is_some_and(|bounds| {
-                    saved_bounds_fit_at_flow_tail(
-                        bounds,
-                        st.current_height,
-                        st.available_height(),
-                        0.0,
-                    )
+                    if st.profile.native_hwp5_layout() {
+                        // native HWP의 표 LineSeg는 표 프레임 전체를 줄 높이로 저장할 수
+                        // 있으므로, 현재 흐름과 같은 앵커 줄일 때만 tail fit 증거로 쓴다.
+                        saved_table_bounds_fit_at_flow_tail(
+                            bounds,
+                            st.current_height,
+                            st.available_height(),
+                        )
+                    } else {
+                        saved_bounds_fit_at_flow_tail(
+                            bounds,
+                            st.current_height,
+                            st.available_height(),
+                            0.0,
+                        )
+                    }
                 })
         } else {
             false
@@ -17960,7 +17979,17 @@ impl TypesetEngine {
                     .and_then(|seg| line_seg_visible_bounds_px(seg, base, self.dpi))
             })
             .is_some_and(|bounds| {
-                saved_bounds_fit_at_flow_tail(bounds, st.current_height, available, 0.0)
+                if st.profile.native_hwp5_layout() {
+                    // HWPX 저장 좌표는 physical fragment owner이고, native HWP의
+                    // 확장 표 프레임은 별도 strict anchor 계약을 적용한다.
+                    saved_table_bounds_fit_at_flow_tail(
+                        bounds,
+                        st.current_height,
+                        available,
+                    )
+                } else {
+                    saved_bounds_fit_at_flow_tail(bounds, st.current_height, available, 0.0)
+                }
             });
         // [#3837] 저장 vpos 되돌아감은 한글이 이 표를 다음 쪽 맨 위에 뒀다는 신호다
         // (21967401 응시원서: 직전 항목 vpos=41645 인데 이 표는 1000).
