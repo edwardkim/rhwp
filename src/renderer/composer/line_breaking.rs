@@ -361,23 +361,23 @@ fn tokenize_paragraph_with_split_cell_space_metric(
                         current_lang,
                         inline_controls,
                     );
-                    let char_widths = has_inline_control_in_range(inline_controls, start, i)
-                        .then(|| {
-                            (start..i)
-                                .map(|ci| {
-                                    measure_char_width(
-                                        text_chars[ci],
-                                        ci,
-                                        char_offsets,
-                                        char_shapes,
-                                        styles,
-                                        current_lang,
-                                        inline_controls,
-                                    )
-                                })
-                                .collect()
-                        })
-                        .unwrap_or_default();
+                    let char_widths = if has_inline_control_in_range(inline_controls, start, i) {
+                        (start..i)
+                            .map(|ci| {
+                                measure_char_width(
+                                    text_chars[ci],
+                                    ci,
+                                    char_offsets,
+                                    char_shapes,
+                                    styles,
+                                    current_lang,
+                                    inline_controls,
+                                )
+                            })
+                            .collect()
+                    } else {
+                        Vec::new()
+                    };
                     tokens.push(BreakToken::Text {
                         start_idx: start,
                         end_idx: i,
