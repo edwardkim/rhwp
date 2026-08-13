@@ -9,14 +9,18 @@ last_verified: 2026-08-13
 
 ## 적용 기준
 
-`upstream/devel@e550a270f457691597da4e9cff76774297597bb5` 위의 사용자 가시성 branch
+`upstream/devel@b5c14346d0eba652764111764ae77cb959006af4` 위의 사용자 가시성 branch
 `review/planet6897-20260813`에서 오래된 #4734를 먼저, #4735를 다음으로 누적했다. 별도 worktree를
 만들지 않아 VS Code와 현재 Git graph에서 적용 순서를 그대로 확인할 수 있다.
 
+초기 검증 뒤 `upstream/devel`이 `e550a270f`에서 `b5c14346d`로 전진했으나, 사이 변경은 오늘 할 일,
+archive review, 로드맵 문서뿐이었다. 통합 branch의 여섯 자체 commit을 새 base 위로 충돌 없이 rebase했고,
+Rust source, test, fixture, workflow가 변하지 않아 완료한 전체 회귀 결과를 그대로 유지했다.
+
 | 원 PR | 최신 source head | 통합 branch 반영 | 충돌 |
 | --- | --- | --- | --- |
-| #4734 | `9fc612ec839d3d21ff59640b305c200cfe8fcf59` | `0235817a6`, `b6f12fed2` | 없음 |
-| #4735 | `3c995998e6dd1b759cc2364ddcb6e03457e26fe7` | `5ec4c6cac`, `40b523dd9`, `ed7d3a0a5` | 없음 |
+| #4734 | `9fc612ec839d3d21ff59640b305c200cfe8fcf59` | `4b11f7e0c`, `70087f9fb` | 없음 |
+| #4735 | `3c995998e6dd1b759cc2364ddcb6e03457e26fe7` | `75dce4697`, `e33e07061`, `7a345db90` | 없음 |
 
 검토 도중 #4735가 `3db39c931`에서 최신 세 commit head로 갱신됐다. 이미 수행 중이던 전체 nextest는
 종료 결과를 수집했고, 최신 source의 실제 추가분이 IR baseline 한 행과 stage 기록뿐임을 분리 확인했다.

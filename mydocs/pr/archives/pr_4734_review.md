@@ -15,9 +15,9 @@ last_verified: 2026-08-13
 | 관련 이슈 | [#4701](https://github.com/edwardkim/rhwp/issues/4701) |
 | 작성자 / source | @planet6897 / `fix/4701-hcr-latin-hmtx` |
 | 원 source head | `9fc612ec839d3d21ff59640b305c200cfe8fcf59` |
-| 기준 devel | `e550a270f457691597da4e9cff76774297597bb5` |
+| 기준 devel | `b5c14346d0eba652764111764ae77cb959006af4` |
 | 가시성 통합 branch | `review/planet6897-20260813` |
-| 적용 순서 | 첫 번째: `c47fa5c47` → `9fc612ec8`을 로컬 `0235817a6` → `b6f12fed2`로 cherry-pick |
+| 적용 순서 | 첫 번째: `c47fa5c47` → `9fc612ec8`을 로컬 `4b11f7e0c` → `70087f9fb`로 cherry-pick |
 | reviewer | @jangster77 지정 완료 |
 
 검토 경로는 `maintainer_general`이며, `intake_and_review`, `local_validation`,

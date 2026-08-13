@@ -15,9 +15,9 @@ last_verified: 2026-08-13
 | 관련 이슈 | [#4690](https://github.com/edwardkim/rhwp/issues/4690) |
 | 작성자 / source | @planet6897 / `test/4690-regression-guard` |
 | 원 source head | `3c995998e6dd1b759cc2364ddcb6e03457e26fe7` |
-| 기준 devel | `e550a270f457691597da4e9cff76774297597bb5` |
+| 기준 devel | `b5c14346d0eba652764111764ae77cb959006af4` |
 | 가시성 통합 branch | `review/planet6897-20260813` |
-| 적용 순서 | 두 번째: `3db39c931` → `92ddf99ee` → `3c995998e`를 로컬 `5ec4c6cac` → `40b523dd9` → `ed7d3a0a5`로 cherry-pick |
+| 적용 순서 | 두 번째: `3db39c931` → `92ddf99ee` → `3c995998e`를 로컬 `75dce4697` → `e33e07061` → `7a345db90`로 cherry-pick |
 | reviewer | @jangster77 지정 완료 |
 
 검토 경로는 `maintainer_general`이며, `intake_and_review`, `local_validation`,
