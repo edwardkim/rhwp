@@ -92,6 +92,11 @@ class DispatchTests(unittest.TestCase):
         self.assertEqual(a["department"]["id"], "reception")
         self.assertEqual(a["currentLevel"], "지원자")
 
+    def test_unknown_department_is_rejected(self):
+        dispatch = load_dispatch()
+        with self.assertRaisesRegex(ValueError, "알 수 없는 부서 id"):
+            dispatch.dispatch({"agent": "t", "targetDepartment": "unknown"})
+
     def test_promotion_path_advances_with_level(self):
         dispatch = load_dispatch()
         a = dispatch.dispatch({"agent": "t", "targetDepartment": "editing", "awsLevel": "AW-L1"})

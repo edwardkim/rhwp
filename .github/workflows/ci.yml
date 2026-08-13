@@ -933,6 +933,11 @@ jobs:
       - name: Validate agent frame contract
         run: python3 -m unittest scripts/tests/test_agent_frame.py
 
+      # [#4728] 외부 현실 채점 계약 — 코어 견인과 메타-시스템 외부 채택을
+      # 섞지 않고, self-graded 상태를 정직하게 보고하는지. 바이너리 불요.
+      - name: Validate external reality check contract
+        run: python3 -m unittest scripts/tests/test_reality_check.py
+
       - name: Clippy
         run: cargo clippy -- -D warnings
 

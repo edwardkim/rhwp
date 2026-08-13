@@ -84,6 +84,9 @@ echo '{"agent":"너의-이름","targetDepartment":"editing"}' | python tools/age
 # 2) 지망이 없으면 접수처(입문)로 — 누구나 여기서 시작
 echo '{"agent":"newbie"}' | python tools/agent_dispatch.py
 
+# 목록 밖 부서 id 는 접수처로 바꾸지 않고 오류로 거부한다
+echo '{"agent":"newbie","targetDepartment":"unknown"}' | python tools/agent_dispatch.py
+
 # 3) 배정된 입사 과제를 수행하고, 작업을 영수증으로 남긴다(AW-L1 → 신입)
 python gym/score.py --agent 너의-이름 --pack <배정 pack>
 rhwp replay <너의 계획> --capsule work.capsule.json --json

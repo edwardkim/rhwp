@@ -17,7 +17,7 @@
     },
     "targetDepartment": {
       "type": "string",
-      "description": "지망 부서 id. 'any' 또는 생략하면 접수처(온보딩)로 배정된다.",
+      "description": "유효한 지망 부서 id. 'any' 또는 생략하면 접수처(온보딩)로 배정되며, 목록 밖 id 는 오류로 거부된다.",
       "enum": ["any", "reception", "editing", "reading", "verification", "security", "standards", "hr", "operations"]
     },
     "awsLevel": {

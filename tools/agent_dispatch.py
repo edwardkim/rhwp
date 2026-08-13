@@ -51,10 +51,12 @@ def _first_task(pack_id: str) -> str | None:
 
 def pick_department(org: dict, target: str | None) -> dict:
     depts = {d["id"]: d for d in org["departments"]}
-    if target and target != "any" and target in depts:
-        return depts[target]
-    # 미지정/any → 접수처(온보딩). 접수처가 없으면 첫 부서.
-    return depts.get("reception", org["departments"][0])
+    if not target or target == "any":
+        # 미지정/any → 접수처(온보딩). 접수처가 없으면 첫 부서.
+        return depts.get("reception", org["departments"][0])
+    if target not in depts:
+        raise ValueError(f"알 수 없는 부서 id: {target}")
+    return depts[target]
 
 
 def entry_task(dept: dict) -> str | None:
@@ -158,7 +160,10 @@ def main() -> int:
     if a.aws_level:
         manifest["awsLevel"] = a.aws_level
 
-    assignment = dispatch(manifest)
+    try:
+        assignment = dispatch(manifest)
+    except ValueError as error:
+        ap.error(str(error))
     if a.json:
         sys.stdout.write(json.dumps(assignment, ensure_ascii=False, indent=2) + "\n")
     else:

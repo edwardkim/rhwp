@@ -35,7 +35,10 @@ import argparse
 import json
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
+from urllib.parse import quote
+from urllib.request import urlopen
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SIGNALS = REPO_ROOT / "mydocs" / "tech" / "agent_frame" / "external_signals.json"
@@ -78,26 +81,48 @@ def scorecard(sig: dict) -> dict:
     }
 
 
+def _gh_api(path: str, jq: str) -> object | None:
+    try:
+        out = subprocess.run(["gh", "api", path, "--jq", jq], capture_output=True, timeout=30)
+        return json.loads(out.stdout.decode("utf-8")) if out.returncode == 0 else None
+    except Exception:
+        return None
+
+
+def _npm_monthly_downloads(package: str) -> int | None:
+    url = f"https://api.npmjs.org/downloads/point/last-month/{quote(package, safe='')}"
+    try:
+        with urlopen(url, timeout=30) as response:  # noqa: S310 - 고정 npm API endpoint
+            payload = json.load(response)
+        downloads = payload.get("downloads")
+        return downloads if isinstance(downloads, int) else None
+    except Exception:
+        return None
+
+
 def refresh_live(sig: dict) -> dict:
     """gh·npm 으로 프로젝트 신호만 갱신한다(메타 채택은 손으로 실사한다 — 자동으로
     부풀리지 않는다)."""
-    def gh(path, jq):
-        try:
-            out = subprocess.run(["gh", "api", path, "--jq", jq],
-                                 capture_output=True, timeout=30)
-            return json.loads(out.stdout.decode("utf-8")) if out.returncode == 0 else None
-        except Exception:
-            return None
+    refreshed = False
     repo = sig["project"]["repo"]
-    meta = gh(f"repos/{repo}", "{stars:.stargazers_count,forks:.forks_count,"
-                               "watchers:.subscribers_count,openIssues:.open_issues_count}")
+    meta = _gh_api(f"repos/{repo}", "{stars:.stargazers_count,forks:.forks_count,"
+                                         "watchers:.subscribers_count,openIssues:.open_issues_count}")
     if meta:
         sig["project"].update({"stars": meta.get("stars"), "forks": meta.get("forks"),
-                               "watchers": meta.get("watchers"),
-                               "openIssues": meta.get("openIssues")})
-    n = gh(f"repos/{repo}/contributors?per_page=100", "length")
+                                "watchers": meta.get("watchers"),
+                                "openIssues": meta.get("openIssues")})
+        refreshed = True
+    n = _gh_api(f"repos/{repo}/contributors?per_page=100", "length")
     if isinstance(n, int):
         sig["project"]["contributors"] = n
+        refreshed = True
+    for package in sig["project"].get("npmMonthlyDownloads", {}):
+        downloads = _npm_monthly_downloads(package)
+        if downloads is not None:
+            sig["project"]["npmMonthlyDownloads"][package] = downloads
+            refreshed = True
+    if refreshed:
+        sig["measuredAt"] = date.today().isoformat()
     return sig
 
 

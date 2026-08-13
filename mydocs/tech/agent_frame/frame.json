@@ -27,7 +27,7 @@
       "slotRule": "새 표면은 같은 축(사다리·gym)으로 이어져야 한다."
     },
     {
-      "id": "standard", "name": "에이전트 작업 표준 AWS/1.0", "status": "in-flight", "pr": 4716,
+      "id": "standard", "name": "에이전트 작업 표준 AWS/1.0", "status": "merged",
       "keyFile": "mydocs/tech/standards/agent_work_standard.md",
       "guards": ["scripts/tests/test_adoption_spine.py"],
       "slotRule": "표면은 표준을 일관되게 가리켜야 한다(척추 가드)."
@@ -55,6 +55,12 @@
       "keyFile": "mydocs/manual/mcp_attach_kit.md",
       "guards": ["scripts/tests/test_check_markdown_links.py"],
       "slotRule": "호스트 설정은 stdio·옵트인이며 확신도를 정직하게 표기한다."
+    },
+    {
+      "id": "external-validation", "name": "외부 현실 채점", "status": "in-flight", "pr": 4729,
+      "keyFile": "mydocs/tech/agent_frame/RED_TEAM.md",
+      "guards": ["scripts/tests/test_reality_check.py"],
+      "slotRule": "프로젝트 견인과 메타-시스템의 외부 채택을 분리해 정직하게 계측한다."
     }
   ],
   "openSlots": [
@@ -64,7 +70,8 @@
     "부서 백로그·직급 승진(실재 자산 매핑)",
     "새 계획 템플릿(스키마 형식)",
     "새 MCP 리소스·프롬프트(계약 정합)",
-    "새 호스트 붙이기(킷 추가)"
+    "새 호스트 붙이기(킷 추가)",
+    "외부 준수자·참조·독립 재현(현실 채점)"
   ],
   "legitimacy": [
     "틀은 CI 가드로 강제되는 정합 계약이지 강제·잠금이 아니다 — 틀을 안 거쳐도 rhwp 는 동작한다.",

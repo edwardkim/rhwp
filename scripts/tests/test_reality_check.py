@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import copy
 import importlib.util
 import json
 import unittest
@@ -67,6 +68,26 @@ class RealityCheckTests(unittest.TestCase):
         card = tool.scorecard(sig)
         if card["metaSystemExternalAdoption"]["total"] == 0:
             self.assertIn("self-graded", card["verdict"])
+
+    def test_live_refresh_updates_github_npm_and_measurement_date(self):
+        tool = load_tool()
+        original_gh = tool._gh_api
+        original_npm = tool._npm_monthly_downloads
+        try:
+            tool._gh_api = lambda path, _jq: (
+                {"stars": 10, "forks": 2, "watchers": 3, "openIssues": 4}
+                if path.startswith("repos/") and "/contributors" not in path else 5
+            )
+            tool._npm_monthly_downloads = lambda package: 7 if package == "@rhwp/editor" else None
+            refreshed = tool.refresh_live(copy.deepcopy(json.loads(SIGNALS.read_text(encoding="utf-8"))))
+        finally:
+            tool._gh_api = original_gh
+            tool._npm_monthly_downloads = original_npm
+
+        self.assertEqual(refreshed["project"]["stars"], 10)
+        self.assertEqual(refreshed["project"]["contributors"], 5)
+        self.assertEqual(refreshed["project"]["npmMonthlyDownloads"]["@rhwp/editor"], 7)
+        self.assertRegex(refreshed["measuredAt"], r"^\d{4}-\d{2}-\d{2}$")
 
 
 if __name__ == "__main__":
