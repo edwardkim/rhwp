@@ -21044,6 +21044,38 @@ impl TypesetEngine {
                 && (!table.common.treat_as_char || hwpx_noninline_tac_measured_fit)
                 && declared_object_total > host_spacing_total
                 && st.current_height + declared_fit_height <= available);
+        // 빈 host의 단일 inline 표에서 저장 LineSeg 높이와 table common 높이가
+        // 정확히 같으면, 그 LineSeg는 표의 실제 physical frame이다. 누적 측정이
+        // source top을 지나쳤더라도 frame 전체가 현재 body 안에 있으면 source
+        // frame이 generic table_total보다 page owner를 우선한다.
+        let saved_single_inline_table_source_frame = (table.common.treat_as_char
+            && table.row_count == 1
+            && table.col_count == 1
+            && table.cells.len() == 1
+            && para.controls.len() == 1
+            && !para_has_visible_text(para)
+            && ft.table_footnotes.is_empty())
+        .then(|| {
+            let mut source_lines = para
+                .line_segs
+                .iter()
+                .filter(|seg| !is_synthetic_line_seg(seg));
+            let seg = source_lines.next()?;
+            if source_lines.next().is_some()
+                || seg.line_height != table.common.height.min(i32::MAX as u32) as i32
+            {
+                return None;
+            }
+            line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
+        })
+        .flatten()
+        .filter(|(source_top, source_bottom)| {
+            *source_top < st.current_height && *source_bottom <= available
+        });
+        if let Some((source_top, _)) = saved_single_inline_table_source_frame {
+            st.current_height = source_top;
+            placement_para_start_height = source_top;
+        }
         if host_line_trails_float_stack {
             // [#2813] 앵커 줄 아이템을 float 스택 뒤로 이연(한글 문서순) —
             // 스택 첫 표 배치 전에 걸려야 렌더 순서가 표→줄로 나온다.
@@ -21054,6 +21086,7 @@ impl TypesetEngine {
             || single_row_object_height_advance.is_some()
             || declared_table_whole_fits
             || saved_host_line_after_stack_fits
+            || saved_single_inline_table_source_frame.is_some()
         {
             // [#3674 진단] fit 분기 발동 사유 — 동작 불변.
             if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
@@ -21076,7 +21109,9 @@ impl TypesetEngine {
                 table,
                 fmt,
                 placement_para_start_height,
-                if let Some(advance) = single_row_object_height_advance {
+                if let Some((source_top, source_bottom)) = saved_single_inline_table_source_frame {
+                    source_bottom - source_top
+                } else if let Some(advance) = single_row_object_height_advance {
                     advance
                 } else if is_para_topbottom_float(&table.common)
                     && (para_has_non_whitespace_text(para) || hwpx_noninline_tac_measured_fit)
