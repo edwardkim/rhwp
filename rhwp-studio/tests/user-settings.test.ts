@@ -231,3 +231,43 @@ test('복구용 자동저장 설정은 rhwp-settings에 저장된다', () => {
     (globalThis as { localStorage?: Storage }).localStorage = originalStorage;
   }
 });
+
+test('스킨 설정은 rhwp-settings에 저장되고 잘못된 값은 default로 정규화된다', () => {
+  const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+  const store = new Map<string, string>();
+  const mockStorage = {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key: string) {
+      return store.get(key) ?? null;
+    },
+    key(index: number) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      store.delete(key);
+    },
+    setItem(key: string, value: string) {
+      store.set(key, value);
+    },
+  } as Storage;
+
+  (globalThis as { localStorage?: Storage }).localStorage = mockStorage;
+  try {
+    userSettings.setThemeSkin('flat');
+    assert.equal(userSettings.getThemeSettings().skin, 'flat');
+    const stored = JSON.parse(store.get('rhwp-settings') ?? '{}');
+    assert.equal(stored.theme.skin, 'flat');
+
+    // 저장소에 없던 잘못된 값은 setter 정규화로 default가 된다.
+    userSettings.setThemeSkin('neon' as never);
+    assert.equal(userSettings.getThemeSettings().skin, 'default');
+  } finally {
+    userSettings.setThemeSkin('default');
+    (globalThis as { localStorage?: Storage }).localStorage = originalStorage;
+  }
+});

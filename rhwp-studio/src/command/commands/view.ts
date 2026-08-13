@@ -1,6 +1,6 @@
 import type { CommandDef } from '../types';
-import { setThemeMode, syncThemeMenu, type EffectiveTheme } from '../../core/theme';
-import { userSettings, type ThemeMode } from '../../core/user-settings';
+import { setThemeMode, setThemeSkin, syncThemeMenu, type EffectiveTheme } from '../../core/theme';
+import { userSettings, type ThemeMode, type ThemeSkin } from '../../core/user-settings';
 import { GridSettingsDialog } from '../../ui/grid-settings-dialog';
 import {
   type GridOffsetMm,
@@ -34,6 +34,19 @@ function themeModeCommand(mode: ThemeMode, label: string): CommandDef {
       const effective: EffectiveTheme = setThemeMode(mode);
       syncThemeMenu(mode);
       services.eventBus.emit('theme-changed', { mode, effective });
+      services.eventBus.emit('document-view-changed');
+    },
+  };
+}
+
+function themeSkinCommand(skin: ThemeSkin, label: string): CommandDef {
+  return {
+    id: `view:skin-${skin}`,
+    label,
+    execute(services) {
+      const effective: EffectiveTheme = setThemeSkin(skin);
+      syncThemeMenu();
+      services.eventBus.emit('theme-changed', { mode: userSettings.getThemeSettings().mode, effective });
       services.eventBus.emit('document-view-changed');
     },
   };
@@ -204,6 +217,8 @@ export const viewCommands: CommandDef[] = [
   themeModeCommand('system', '시스템 설정'),
   themeModeCommand('light', '밝게'),
   themeModeCommand('dark', '어둡게'),
+  themeSkinCommand('default', '기본 스킨'),
+  themeSkinCommand('flat', '플랫 스킨'),
   // ─── 보기 메뉴: 표시/숨기기 ─────────────────────────
   {
     id: 'view:form-mode',
