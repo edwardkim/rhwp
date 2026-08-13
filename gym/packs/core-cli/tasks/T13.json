@@ -16,8 +16,7 @@
       "op": "value_eq",
       "value": "ok",
       "cmd": [
-        "harness",
-        "status",
+        "harness-status",
         "{file:ws}",
         "--keyring",
         "{file:ws/keyring.json}",
@@ -31,8 +30,7 @@
       "op": "value_eq",
       "value": 2,
       "cmd": [
-        "harness",
-        "status",
+        "harness-status",
         "{file:ws}",
         "--json"
       ],

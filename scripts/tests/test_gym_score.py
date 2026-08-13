@@ -305,23 +305,42 @@ class WeakCheckLockTests(unittest.TestCase):
 
 
 class TaskCommandExistenceTests(unittest.TestCase):
-    """[#4600 부수] 과제가 부르는 명령이 CLI 에 실재하는지 — T13 이 없는
-    `harness-status` 를 불러 영구 실패하던 것을 잡은 가드."""
+    """[#4600 부수] 과제 체크가 부르는 명령이 그 pack 의 requires.commands 에
+    선언돼 있는지 검사한다.
 
-    def test_every_task_command_is_a_known_cli_command(self):
-        called = set()
+    [#4689] 이 가드는 원래 `harness-status` 를 이름으로 금지했지만, 이는 옛 명령
+    표면 기준이었다. v0.8.4 에서 `harness status`(두 단어)는 존재하지 않고
+    `harness-status`(하이픈)가 정식 판정 명령이다 — devel 의 T13 이 오히려 없는
+    `harness status` 를 불러 깨져 있었다.
+
+    바이너리를 부르는 대신 **pack 의 requires.commands 와 대조**한다: 이 계약
+    레인은 바이너리 빌드 없이 도는 것이 설계이므로(CI Lint 레인), 실재성 판정을
+    바이너리에 의존하면 CI 에서 항상 건너뛰게 된다. requires.commands 는 커밋된
+    단일 출처이고, 체크 명령이 거기 없으면 채점 가용성(unavailable) 판정이 조용히
+    왜곡된다 — 명령의 실재 여부는 기준 풀이 왕복이 최종 보증한다.
+    """
+
+    def test_every_task_command_is_declared_in_pack_requires(self):
+        requires = {}
+        for pk in (REPO_ROOT / "gym" / "packs").glob("*/pack.json"):
+            requires[pk.parent.name] = set(
+                json.loads(pk.read_text(encoding="utf-8"))["requires"]["commands"])
+
+        called = []  # (pack_id, task_id, cmd[0])
         for path in sorted((REPO_ROOT / "gym" / "packs").glob("*/tasks/*.json")):
             task = json.loads(path.read_text(encoding="utf-8"))
+            pack_id = path.parent.parent.name
             for check in task.get("checks", []):
                 cmd = check.get("cmd")
                 if cmd:
-                    called.add((task["id"], cmd[0]))
+                    called.append((pack_id, task["id"], cmd[0]))
 
-        # 우산 명령의 하위는 cmd[1] 로 오므로 머리 토큰만 대조한다.
-        head_tokens = {name for _, name in called}
-        self.assertNotIn("harness-status", head_tokens)
-        for task_id, name in sorted(called):
-            self.assertRegex(name, r"^[a-z][a-z0-9-]*$", f"{task_id}: {name}")
+        for pack_id, task_id, name in called:
+            # 이름 꼴 — 우산 명령의 하위는 cmd[1] 이므로 머리 토큰만 본다.
+            self.assertRegex(name, r"^[a-z][a-z0-9-]*$", f"{pack_id}/{task_id}: {name}")
+            self.assertIn(name, requires.get(pack_id, set()),
+                          f"{pack_id}/{task_id}: 체크 명령 {name!r} 이 pack "
+                          "requires.commands 에 선언되지 않았다")
 
 
 if __name__ == "__main__":
