@@ -20623,7 +20623,12 @@ impl TypesetEngine {
                 && ft.table_footnotes.is_empty()
                 && st.current_height >= st.base_available_height() * 0.5
                 && table.cells.iter().all(|cell| cell.row_span == 1)
-                && next_rewinds_after_table;
+                // The physical fragment boundary may be stored inside the last
+                // cell's lineSeg sequence, not only at the following host
+                // paragraph. Both are source-owned rewinds; ignoring the former
+                // lets a declared whole-fit gate retain one painted row too many.
+                && (next_rewinds_after_table
+                    || rowbreak_table_has_internal_saved_vpos_reset(table));
         let measured_row_table_height = mt.as_ref().and_then(|measured| {
             (!measured.row_heights.is_empty()).then(|| {
                 measured.row_heights.iter().sum::<f64>()
