@@ -39,17 +39,23 @@ class RealityCheckTests(unittest.TestCase):
         """정직 불변식 — 메타 외부 채택은 프로젝트 견인을 포함하지 않는다."""
         tool = load_tool()
         sig = json.loads(SIGNALS.read_text(encoding="utf-8"))
+        sig["project"]["stars"] = 1
+        sig["metaSystem"].update({
+            "externalConformers": 2,
+            "externalReferrers": 3,
+            "thirdPartyReproductions": 5,
+        })
         card = tool.scorecard(sig)
         self.assertIn("projectTraction", card)
         self.assertIn("metaSystemExternalAdoption", card)
         meta = card["metaSystemExternalAdoption"]
         proj = card["projectTraction"]
-        # 메타 총합은 준수자·참조·재현의 합이지 ★·fork 가 아니다.
+        # 메타 총합은 준수자·참조·재현의 합이지 ★·fork 가 아니다. 외부 채택 수가
+        # 프로젝트 별 수보다 클 수도 있으므로 양쪽 크기를 비교하지 않는다.
+        self.assertEqual(meta["total"], 10)
         self.assertEqual(meta["total"],
                          meta["conformers"] + meta["referrers"] + meta["reproductions"])
-        stars = proj.get("stars") or 0
-        self.assertLess(meta["total"], stars if stars else 1,
-                        "메타 외부 채택이 프로젝트 견인과 뒤섞였다(정직 불변식 위반)")
+        self.assertEqual(proj["stars"], 1)
 
     def test_meta_adoption_is_reported_honestly_not_inflated(self):
         """메타 외부 채택은 부풀리지 않는다 — 스냅샷이 0 이면 채점도 0."""
