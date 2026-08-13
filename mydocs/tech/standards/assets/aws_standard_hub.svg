@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="820" viewBox="0 0 1180 820" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">
+<defs><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4E5AE8"/></marker></defs>
+<rect width="1180" height="820" fill="#FBF6EC"/>
+<text x="590.0" y="56" font-size="34" font-weight="800" fill="#20233A" text-anchor="middle">에이전트 작업 표준 (AWS) 1.0 — 축이 기준이 된다</text>
+<text x="590.0" y="90" font-size="18" fill="#8b8fa6" text-anchor="middle">증명 가능한 에이전트 노동의 이식 가능한 표준 · 여러 에이전트-언어 표면이 한 표준으로 수렴</text>
+<path d="M 311.1398199814107 239.98000000000002 L 472.2205450853163 316.24" stroke="#4E5AE8" stroke-width="2.2" opacity="0.6" marker-end="url(#ar)"/>
+<path d="M 311.13981998141077 504.02 L 472.22054508531636 427.76" stroke="#4E5AE8" stroke-width="2.2" opacity="0.6" marker-end="url(#ar)"/>
+<path d="M 868.8601800185892 504.0200000000001 L 707.7794549146836 427.76000000000005" stroke="#4E5AE8" stroke-width="2.2" opacity="0.6" marker-end="url(#ar)"/>
+<path d="M 868.8601800185893 239.98000000000002 L 707.7794549146837 316.24" stroke="#4E5AE8" stroke-width="2.2" opacity="0.6" marker-end="url(#ar)"/>
+<circle cx="590.0" cy="372" r="128" fill="#4E5AE8"/>
+<text x="590.0" y="320" font-size="26" font-weight="800" fill="#fff" text-anchor="middle">AWS / 1.0</text>
+<text x="590.0" y="344" font-size="13" fill="#dfe3ff" text-anchor="middle">판정 = 재계산</text>
+<text x="590.0" y="366" font-size="13.5" fill="#fff" text-anchor="middle"><tspan font-weight="700">AW-L1</tspan> 영수증</text>
+<text x="590.0" y="389" font-size="13.5" fill="#fff" text-anchor="middle"><tspan font-weight="700">AW-L2</tspan> 계보</text>
+<text x="590.0" y="412" font-size="13.5" fill="#fff" text-anchor="middle"><tspan font-weight="700">AW-L3</tspan> 서명</text>
+<text x="590.0" y="435" font-size="13.5" fill="#fff" text-anchor="middle"><tspan font-weight="700">AW-L4</tspan> 앵커</text>
+<text x="590.0" y="458" font-size="13.5" fill="#fff" text-anchor="middle"><tspan font-weight="700">AW-L5</tspan> 정산·감사</text>
+<rect x="186.1398199814107" y="208.98000000000002" width="250" height="62" rx="13" fill="#fff" stroke="#20A05E" stroke-width="2.2"/>
+<text x="311.1398199814107" y="233.98000000000002" font-size="17" font-weight="700" fill="#20233A" text-anchor="middle">AGENTS.md</text>
+<text x="311.1398199814107" y="255.98000000000002" font-size="12" fill="#8b8fa6" text-anchor="middle">규약 정본 · 22종 도구가 가리킴</text>
+<rect x="186.13981998141077" y="473.02" width="250" height="62" rx="13" fill="#fff" stroke="#20A05E" stroke-width="2.2"/>
+<text x="311.13981998141077" y="498.02" font-size="17" font-weight="700" fill="#20233A" text-anchor="middle">표준 정본 md+json</text>
+<text x="311.13981998141077" y="520.02" font-size="12" fill="#8b8fa6" text-anchor="middle">사람용·기계용(에이전트 언어)</text>
+<rect x="743.8601800185892" y="473.0200000000001" width="250" height="62" rx="13" fill="#fff" stroke="#20A05E" stroke-width="2.2"/>
+<text x="868.8601800185892" y="498.0200000000001" font-size="17" font-weight="700" fill="#20233A" text-anchor="middle">gym 운동장</text>
+<text x="868.8601800185892" y="520.0200000000001" font-size="12" fill="#8b8fa6" text-anchor="middle">보스존이 표준을 과제로 소비</text>
+<rect x="743.8601800185893" y="208.98000000000002" width="250" height="62" rx="13" fill="#fff" stroke="#20A05E" stroke-width="2.2"/>
+<text x="868.8601800185893" y="233.98000000000002" font-size="17" font-weight="700" fill="#20233A" text-anchor="middle">로드맵 트랙 L</text>
+<text x="868.8601800185893" y="255.98000000000002" font-size="12" fill="#8b8fa6" text-anchor="middle">표면별 채택 지도 L9·L10</text>
+<rect x="260.0" y="702" width="660" height="70" rx="16" fill="#fff" stroke="#D9902B" stroke-width="2.4"/>
+<text x="280.0" y="732" font-size="17" font-weight="800" fill="#D9902B">🛡 척추 가드 (L10)</text>
+<text x="280.0" y="756" font-size="14" fill="#20233A">tools/adoption_spine.py — 표면이 늘어도 표준을 일관되게 가리키는지 매 CI 검증(바이너리 불요)</text>
+<text x="590.0" y="792" font-size="14" fill="#8b8fa6" text-anchor="middle" font-style="italic">열린 표준 · 도구 무관 · 준수는 강요가 아니라 유용성 · 준거는 검증 사다리이지 특정 기여자가 아니다</text>
+</svg>
