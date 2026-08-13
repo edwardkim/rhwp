@@ -1617,9 +1617,12 @@ fn page_item_para_index(item: &PageItem) -> Option<usize> {
         | PageItem::PartialParagraph { para_index, .. }
         | PageItem::Table { para_index, .. }
         | PageItem::PartialTable { para_index, .. }
-        | PageItem::Shape { para_index, .. }
-        | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
-        PageItem::EndnoteSeparator { .. } => None,
+        | PageItem::Shape { para_index, .. } => Some(*para_index),
+        // [#4568] overlay 잔여 행 조각은 앞 쪽 앵커의 장식이 새 쪽에 이어 그려지는
+        // 것일 뿐, 이 쪽이 그 문단을 **소유**한다는 뜻이 아니다. 소유로 계상하면
+        // 조각이 새 쪽의 첫 항목이라 쪽↔문단 매핑과 vpos 기준을 가로챈다
+        // (실측: `overflow_cell_baseline` 래칫 62 → 63).
+        PageItem::PartialOverlayTable { .. } | PageItem::EndnoteSeparator { .. } => None,
     }
 }
 
@@ -1636,12 +1639,13 @@ fn page_item_vpos_base(item: &PageItem, paragraphs: &[Paragraph]) -> Option<i32>
         PageItem::FullParagraph { para_index }
         | PageItem::Table { para_index, .. }
         | PageItem::PartialTable { para_index, .. }
-        | PageItem::Shape { para_index, .. }
-        | PageItem::PartialOverlayTable { para_index, .. } => paragraphs
+        | PageItem::Shape { para_index, .. } => paragraphs
             .get(*para_index)
             .and_then(|para| para.line_segs.first())
             .map(|seg| seg.vertical_pos),
-        PageItem::EndnoteSeparator { .. } => None,
+        // [#4568] 같은 이유로 vpos 기준도 잡지 않는다 — 이 조각의 문단은 앞 쪽에서
+        // 이미 기준을 세웠다.
+        PageItem::PartialOverlayTable { .. } | PageItem::EndnoteSeparator { .. } => None,
     }
 }
 
@@ -16686,7 +16690,18 @@ impl TypesetEngine {
                                 .position(|cum| *cum > room)
                                 .map(|i| i.saturating_sub(1))
                                 .unwrap_or(ft.row_heights.len());
-                            if first_unfit > 0 && first_unfit < ft.row_heights.len() {
+                            // [#4568 3단계 대기] 방출은 기본 꺼짐이다. 이 조각을
+                            // `current_items` 에 섞으면 쪽의 **첫 항목**이 되어
+                            // `items.first()` 기반 휴리스틱(예:
+                            // `page_item_is_treat_as_char_picture_only`)이 조각을 보고
+                            // 판단한다 — 실측으로 `overflow_cell_baseline` 래칫이
+                            // 62 → 63 줄로 늘었다. 잔여 행은 흐름 항목이 아니라 z-layer
+                            // 장식이므로, 3단계에서 `ColumnContent` 의 별도 목록으로
+                            // 옮기고 렌더러가 그 목록만 읽도록 한다.
+                            if std::env::var("RHWP_4568_EMIT").is_ok()
+                                && first_unfit > 0
+                                && first_unfit < ft.row_heights.len()
+                            {
                                 st.pending_overlay_continuations.push((
                                     para_idx,
                                     ctrl_idx,
