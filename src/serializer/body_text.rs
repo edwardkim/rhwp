@@ -1140,7 +1140,11 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
         Control::PageHide(_) => (0x0015, tags::CTRL_PAGE_HIDE),
         Control::Bookmark(_) => (0x0016, tags::CTRL_BOOKMARK),
         Control::Hyperlink(_) => (0x000B, 0),
-        Control::Ruby(_) => (0x000B, 0),
+        // [#4677] 덧말은 한컴 원본에서 `17 00 74 75 64 74 …`(코드 0x0017 + 'tdut')로 나간다.
+        // 종전엔 `(0x000B, 0)` — 개체 제어문자 자리에 **id 0** 을 써 놓고 짝이 되는
+        // CTRL_HEADER 는 내지 않았다. 한글 2022 는 짝 없는 개체 제어문자를 만나면 본문을
+        // 통째로 버린다(0자·1쪽). `CTRL_CHAR_OVERLAP` 상수는 이름과 달리 'tdut'(덧말)이다.
+        Control::Ruby(_) => (0x0017, tags::CTRL_CHAR_OVERLAP),
         Control::CharOverlap(_) => (0x0017, tags::CTRL_TCPS),
         Control::Field(f) => (0x0003, f.ctrl_id),
         Control::Equation(_) => (0x000B, tags::CTRL_EQUATION),

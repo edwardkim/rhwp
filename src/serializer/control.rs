@@ -189,6 +189,11 @@ pub fn serialize_control(
         Control::Hyperlink(_) | Control::Ruby(_) | Control::Unknown(_) => {
             let ctrl_id = match ctrl {
                 Control::Unknown(u) => u.ctrl_id,
+                // [#4677] 덧말은 PARA_TEXT 에 `17 00 'tdut'` 제어문자가 나가므로 짝이 되는
+                // CTRL_HEADER 도 반드시 있어야 한다. 내용(mainText/subText/속성)까지 옮기는
+                // 것은 #4397 소관이고, 여기서는 **짝을 맞추는 것**이 목적이다 — 짝이 없으면
+                // 한글 2022 가 그 문서의 본문을 통째로 버린다.
+                Control::Ruby(_) => tags::CTRL_CHAR_OVERLAP,
                 _ => 0,
             };
             if ctrl_id != 0 {
