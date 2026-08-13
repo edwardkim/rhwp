@@ -1,6 +1,6 @@
 ---
 kind: review
-status: ci-pending
+status: self-review-ci-pending
 pr: 4708
 issue: 3414
 author: jangster77
@@ -20,7 +20,7 @@ base: devel
 | code candidate | `f90f1a30a4247438c3408ec0c85d2b62ab39c6c8` |
 | 변경 규모 | 14 files, +366 / -146 |
 | 문서 작성 시점 상태 | `MERGEABLE`, `BLOCKED` 참고값 — CI preflight·CodeQL preflight·Render Diff preflight 실행 중 |
-| reviewer | `edwardkim` 지정 완료 |
+| 검토 | `jangster77` collaborator 셀프 검토 코멘트 제출 완료 (`5717d14b7`) |
 
 ### 적용 절차
 
@@ -35,7 +35,8 @@ current code candidate: f90f1a30a4247438c3408ec0c85d2b62ab39c6c8
 
 최신 `upstream/devel` `8e81cbd996b66f873d21b74085a9dcee78ae3901` 위에서
 `task_m100_3414`를 만들고 `upstream`에 게시했다. 구현이 완료된 상태이므로 draft가 아닌
-PR로 열었으며, merge와 이슈 종료는 최신 head의 필수 CI·리뷰 및 작업지시자 승인을 다시
+PR로 열었다. 작업지시자 지시에 따라 외부 reviewer 요청은 제거하고 collaborator 셀프 검토
+코멘트를 제출했다. merge와 이슈 종료는 최신 head의 필수 CI와 작업지시자 승인 조건을 다시
 확인한 뒤에만 진행한다. 별도의 `review_impl`은 보정·복수 PR 누적·merge 작업이 없는 단일
 자체 PR이므로 만들지 않았다.
 
@@ -73,9 +74,13 @@ renderer visual sweep은 선택하지 않았고, 실제 Studio 브라우저에�
 실제 merge 전에는 이 문서를 포함한 최신 PR head의 GitHub Actions와 mergeability를 다시
 확인한다.
 
+PR #4708의 `5717d14b7` head에 collaborator `jangster77`가 `COMMENTED` 셀프 검토를
+제출했다. 이 문서의 후속 정정은 docs-only 변경이므로, 셀프 검토 범위인 code candidate와
+로컬 검증 결과는 바꾸지 않는다.
+
 ## 최종 조건과 권고
 
-코드 검토와 로컬 검증에서 blocker는 발견하지 못했다. 다만 문서 작성 시점에는 필수 CI 세 개가
-실행 중이므로 **현재는 merge 보류**다. 최신 PR head의 CI 성공, `edwardkim` 리뷰, 최신
+코드 검토와 로컬 검증에서 blocker는 발견하지 못했다. 다만 문서 작성 시점에는 필수 CI가
+실행 중이므로 **현재는 merge 보류**다. 최신 PR head의 CI 성공, 셀프 검토의 유효성, 최신
 mergeability와 작업지시자 승인이 모두 확인되면 수용·merge를 진행하고, merge 뒤 `Closes #3414`에
 따른 이슈 종료 상태와 후속 정리를 post-merge 절차로 확인한다.
