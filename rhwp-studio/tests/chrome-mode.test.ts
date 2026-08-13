@@ -64,6 +64,11 @@ test('embed 프로파일도 편집 용지와 제품 정보 표면은 유지한�
   assert.equal(EMBED_HIDDEN_FILE_COMMAND_IDS.includes('file:about'), false);
 });
 
+test('embed 프로파일은 호스트를 우회하는 HTML과 Word 다운로드도 숨긴다', () => {
+  assert.equal(EMBED_HIDDEN_FILE_COMMAND_IDS.includes('file:export-html'), true);
+  assert.equal(EMBED_HIDDEN_FILE_COMMAND_IDS.includes('file:export-doc'), true);
+});
+
 test('main은 embed에서 수명주기 커맨드 등록만 거르고 메뉴는 런타임에 정리한다', () => {
   const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
   assert.match(mainSource, /resolveChromeModeRequest\(window\.location\.search\)/);

@@ -1,4 +1,9 @@
 import type { CommandDef, CommandServices } from '../types';
+import {
+  buildHtmlExportFile,
+  HTML_EXPORT_DETAILS,
+  type HtmlExportFormat,
+} from '@/command/export-html';
 import { PageSetupDialog } from '@/ui/page-setup-dialog';
 import { AboutDialog } from '@/ui/about-dialog';
 import { showSaveAs } from '@/ui/save-as-dialog';
@@ -217,6 +222,17 @@ function completeHandleSave(
   services.wasm.fileName = result.fileName;
   services.wasm.requiresPasswordForSave = passwordProtected;
   services.documentState.markClean(reason);
+}
+
+function exportHtmlBasedFile(services: CommandServices, format: HtmlExportFormat): void {
+  const label = HTML_EXPORT_DETAILS[format].label;
+  try {
+    const file = buildHtmlExportFile(services.wasm, format, services.wasm.fileName);
+    downloadBlob(new Blob([file.content], { type: file.mimeType }), file.fileName);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    alert(`${label} 내보내기에 실패했습니다:\n${message}`);
+  }
 }
 
 function downloadBlob(blob: Blob, fileName: string): void {
@@ -783,6 +799,24 @@ export const fileCommands: CommandDef[] = [
     canExecute: (ctx) => ctx.hasDocument,
     async execute(services) {
       await runPdfPrint(services);
+    },
+  },
+  {
+    // 문서 전체를 selection HTML 조립 기반의 단일 HTML 파일로 내보낸다.
+    id: 'file:export-html',
+    label: 'HTML로 내보내기',
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      exportHtmlBasedFile(services, 'html');
+    },
+  },
+  {
+    // Word 가 여는 HTML 기반 .doc 문서로 내보낸다 (OOXML 아님).
+    id: 'file:export-doc',
+    label: 'Word 문서(.doc)로 내보내기',
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      exportHtmlBasedFile(services, 'doc');
     },
   },
   {
