@@ -19175,96 +19175,51 @@ impl TypesetEngine {
                 && r + 2 == row_count
                 && row_start_cut.is_empty()
                 && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && Self::row_has_no_text_or_controls(table, r + 1);
-            // The HWPX Q5 response has a stored 0 -> line -> 0 frame reset.
-            // Its first response line belongs to the preceding physical page;
-            // restrict this to the exact 6x5 source topology so ordinary HWPX
-            // RowBreak tables keep their measured cut behavior.
-            const HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
-            const HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 65.0;
-            const HWPX_QA_SAVED_FRAME_RESPONSE_CUT_ALLOWANCE_PX: f64 = 16.0;
-            const HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
-            const HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
-            const HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 48.0;
-            let hwp5_origin_qa_first_response_tail =
-                (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout())
-                    && !table.common.treat_as_char
-                    && mt.allows_row_break_split()
-                    && table.row_count == 6
-                    && table.col_count == 5
-                    && table.cells.len() == 15
-                    && table.common.height == 13_042
-                    && table.outer_margin_bottom == 0
-                    && r + 2 == row_count
+                && (Self::row_has_no_text_or_controls(table, r + 1)
+                    || layout_engine.row_has_only_empty_spacer_units(table, r + 1, styles));
+            let two_line_terminal_response_source_frame =
+                (st.profile.hwpx_container()
                     && r > cursor_row
-                    && row_start_cut.is_empty()
-                    && !rowspan_touched.get(r).copied().unwrap_or(true)
-                    && table.cells.iter().any(|cell| {
-                        cell.row as usize == r && cell.paragraphs.len() == 5
-                    });
-            let hwpx_qa_saved_frame_response_tail = st.profile.hwpx_stored_layout()
+                    && terminal_response_before_empty_spacer
+                    && table.outer_margin_bottom > 0)
+                    .then(|| layout_engine.row_two_line_source_frame_height(table, r, styles))
+                    .flatten();
+            // A stored vpos reset owns a physical fragment boundary.  The
+            // source may express it either at a terminal response row or in a
+            // continued single-cell row; neither case depends on a table's
+            // dimensions, declared height, or paragraph count.
+            let stored_source_frame = (st.profile.hwpx_container()
                 && !table.common.treat_as_char
                 && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.common.height == 11_382
-                && table.outer_margin_bottom == 0
+                && !rowspan_touched.get(r).copied().unwrap_or(true))
+                .then(|| {
+                    layout_engine.stored_frame_cut_for_row(table, r, row_start_cut, styles)
+                })
+                .flatten();
+            let terminal_source_frame = st.profile.hwpx_container()
                 && r + 2 == row_count
                 && r > cursor_row
                 && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && table.cells.iter().any(|cell| {
-                    cell.row as usize == r
-                        && cell.paragraphs.len() == 3
-                        && cell.paragraphs.first().is_some_and(|paragraph| {
-                            paragraph.line_segs.len() == 3
-                                && paragraph.line_segs[0].vertical_pos == 0
-                                && paragraph.line_segs[1].vertical_pos > 0
-                                && paragraph.line_segs[2].vertical_pos == 0
-                        })
-                });
-            let hwpx_qa_two_line_response_tail = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 6
-                && table.col_count == 5
-                && table.cells.len() == 15
-                && table.common.height == 15_224
-                && table.outer_margin_bottom == 566
-                && r + 2 == row_count
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && !rowspan_touched.get(r).copied().unwrap_or(true)
-                && table.cells.iter().any(|cell| {
-                    cell.row as usize == r
-                        && cell.paragraphs.len() == 1
-                        && cell.paragraphs[0].line_segs.len() == 2
-                        && cell.paragraphs[0].line_segs[0].vertical_pos == 0
-                        && cell.paragraphs[0].line_segs[1].vertical_pos > 0
-                });
-            let hwpx_qa_toc_final_tail = st.profile.hwpx_stored_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && table.row_count == 1
-                && table.col_count == 1
-                && table.cells.len() == 1
-                && table.common.height == 47_726
-                && r == 0
-                && cursor_row == 0
-                && is_continuation
+                && layout_engine.row_has_stored_vpos_frame_rewind(table, r);
+            let continued_source_frame = is_continuation
                 && !row_start_cut.is_empty()
-                && table
-                    .cells
-                    .first()
-                    .is_some_and(|cell| cell.paragraphs.len() == 73);
+                && stored_source_frame.is_some();
+            let single_visible_source_frame = st.profile.hwpx_container()
+                && stored_source_frame.is_some()
+                && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
+                && layout_engine.row_has_single_visible_source_cell(table, r, styles);
             let strict_nonterminal_rounding_fit = strict_painted_bottom_fit
                 && r + 1 < row_count
                 && consumed + cs_before + row_total <= avail_for_rows + 0.5;
             let source_frame_whole_row_fits = source_first_fragment_overflow_allowance > 0.0
                 && consumed + cs_before + row_total
                     <= avail_for_rows + source_first_fragment_overflow_allowance;
-            if consumed + cs_before + row_total <= avail_for_rows
+            // A direct HWPX row with one visible owner and a structural empty
+            // partner has an explicit source fragment boundary.  Let the
+            // row-cut walk retain it; ordinary and multi-owner rows keep the
+            // measured whole-row fast path.
+            if !single_visible_source_frame
+                && consumed + cs_before + row_total <= avail_for_rows
                 || strict_nonterminal_rounding_fit
                 || source_frame_whole_row_fits
             {
@@ -19357,22 +19312,6 @@ impl TypesetEngine {
                 mt.max_padding_for_row(r)
             };
             let mut budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
-            let qa_saved_frame_cut_allowance = if hwp5_origin_qa_first_response_tail {
-                if st.profile.hwpx_stored_layout() {
-                    HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
-                } else {
-                    HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
-                }
-            } else if hwpx_qa_saved_frame_response_tail {
-                HWPX_QA_SAVED_FRAME_RESPONSE_CUT_ALLOWANCE_PX
-            } else if hwpx_qa_two_line_response_tail {
-                HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
-            } else if hwpx_qa_toc_final_tail {
-                HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX
-            } else {
-                0.0
-            };
-            budget += qa_saved_frame_cut_allowance;
             // A visible terminal response followed by a no-text/no-control row is
             // a two-part physical row: the spacer owns no ink, while the
             // response carries the stored page frame.  This is structural
@@ -19381,16 +19320,29 @@ impl TypesetEngine {
             // Stored vpos-frame resets are source-owned physical fragment boundaries.
             // First take the ordinary budget cut, then extend only to the end of
             // the terminal response frame when that exact CellUnit boundary is known.
+            let source_frame_tail_contract = terminal_response_before_empty_spacer
+                || terminal_source_frame
+                || continued_source_frame;
             let mut res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
-            let mut uses_source_terminal_tail = false;
+            let mut uses_source_frame_tail = false;
             if (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout())
                 && !table.common.treat_as_char
-                && terminal_response_before_empty_spacer
-                && res.consumed_height > 0.5
+                && source_frame_tail_contract
             {
-                let source_tail_cut = layout_engine
-                    .stored_frame_cut_for_row(table, r, row_start_cut, styles)
-                    .or_else(|| {
+                let source_tail_cut = if continued_source_frame || res.consumed_height <= 0.5 {
+                    // A numeric tail allowance used to make this 0px case
+                    // reach the first saved response line.  Select that exact
+                    // source unit instead, so a page-tail frame can begin
+                    // without guessing its pixel height.
+                    layout_engine.next_visible_unit_cut_for_row(
+                        table,
+                        r,
+                        row_start_cut,
+                        &res.end_cut,
+                        styles,
+                    )
+                } else {
+                    stored_source_frame.or_else(|| {
                         layout_engine.paragraph_tail_cut_for_row(
                             table,
                             r,
@@ -19398,7 +19350,8 @@ impl TypesetEngine {
                             &res.end_cut,
                             styles,
                         )
-                    });
+                    })
+                };
                 if let Some(source_tail_cut) = source_tail_cut
                 {
                     if source_tail_cut.consumed_height > res.consumed_height + 0.5 {
@@ -19408,7 +19361,7 @@ impl TypesetEngine {
                         // candidate below.
                         budget = source_tail_cut.consumed_height;
                         res = source_tail_cut;
-                        uses_source_terminal_tail = true;
+                        uses_source_frame_tail = true;
                     }
                 }
             }
@@ -19501,19 +19454,21 @@ impl TypesetEngine {
                 // row drift.  Use that exact drift rather than a template allowance.
                 let stored_terminal_response_tail_fits = r > cursor_row
                     && terminal_response_before_empty_spacer
-                    && (uses_source_terminal_tail
+                    && (uses_source_frame_tail
                         || mt.row_heights.get(r).is_some_and(|stored_height| {
                             row_total
                                 <= budget + (row_total - *stored_height).max(0.0) + 0.5
                         }));
-                let hwpx_qa_two_line_response_tail_fits = hwpx_qa_two_line_response_tail
-                    && row_total <= budget + HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
+                let two_line_terminal_response_source_frame_fits =
+                    two_line_terminal_response_source_frame.is_some_and(|source_frame_height| {
+                        row_total <= budget + source_frame_height + 0.5
+                    });
                 // 단일 유닛 행 — 분할 불가, 페이지 시작이면 강제, 아니면 다음으로.
                 if r == cursor_row {
                     consumed += cs_before + row_total;
                     end_row = r + 1;
                 } else if stored_terminal_response_tail_fits
-                    || hwpx_qa_two_line_response_tail_fits
+                    || two_line_terminal_response_source_frame_fits
                 {
                     consumed += cs_before + row_total;
                     end_row = row_count;
@@ -19544,8 +19499,7 @@ impl TypesetEngine {
                 && layout_engine.row_block_has_internal_hard_break(table, r, r + 1, styles);
             let row_split_min_keep_uses_painted_height = strict_painted_bottom_fit
                 || native_hwp5_internal_reset_row_tail
-                || hwpx_qa_saved_frame_response_tail
-                || uses_source_terminal_tail
+                || uses_source_frame_tail
                 || native_short_parent_child_splittable;
             // [Task #713] sliver(orphan) 회피 — 일반 표는 기존 content-only 기준을
             // 유지한다. 패딩 포함 painted 기준은 좁은 #2439 strict 표, saved internal
@@ -19607,16 +19561,18 @@ impl TypesetEngine {
                         || (fresh_late_nested_row && !nested_physical_tail))
                     && split_candidate_rows_height - avail_for_rows
                         > MIXED_NESTED_OWNER_DRIFT_MIN_PX;
-                // 원본 HWPX의 RowBreak cell은 stored layout이 기록한 fragment cut을
-                // 좁은 측정 drift 안에서 그대로 소유한다. nested child가 있어도 실제
-                // physical tail을 보호해야 하는 `mixed_nested_owner_guard`가 발동하지
-                // 않으면 같은 stored cut 계약을 유지한다.
-                const HWPX_STORED_ROWBREAK_CUT_TOLERANCE_PX: f64 = 64.0;
+                // An ordinary stored HWPX RowBreak cut can differ from its
+                // painted footprint only by the cell padding that the logical
+                // CellUnit cut omits.  Preserve that measured difference; a
+                // document-independent pixel tolerance would otherwise let
+                // unrelated rows consume a physical page tail.
                 let hwpx_stored_rowbreak_cut = st.profile.hwpx_stored_layout()
                     && !table.common.treat_as_char
                     && mt.allows_row_break_split()
                     && !mixed_nested_owner_guard;
-                let stored_frame_tail_overflow = if uses_source_terminal_tail {
+                let measured_rowbreak_paint_tail =
+                    (split_total - res.consumed_height - padding).max(0.0);
+                let stored_frame_tail_overflow = if uses_source_frame_tail {
                     // `split_total` is the painted row footprint, whereas
                     // the source frame is selected in CellUnit content
                     // space.  Admit exactly that selected frame's paint
@@ -19626,22 +19582,12 @@ impl TypesetEngine {
                     0.0
                 };
                 let split_row_overflow_tolerance =
-                        if uses_source_terminal_tail {
+                        if uses_source_frame_tail {
                             stored_frame_tail_overflow
-                        } else if hwp5_origin_qa_first_response_tail {
-                            if st.profile.hwpx_stored_layout() {
-                                HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
-                            } else {
-                                HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
-                            }
-                        } else if hwpx_qa_saved_frame_response_tail {
-                            HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX
-                        } else if hwpx_qa_two_line_response_tail {
-                            HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
                         } else if source_first_fragment_overflow_allowance > 0.0 {
                             source_first_fragment_overflow_allowance
                         } else if hwpx_stored_rowbreak_cut {
-                            HWPX_STORED_ROWBREAK_CUT_TOLERANCE_PX
+                            measured_rowbreak_paint_tail
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
                         } else {
@@ -19689,22 +19635,12 @@ impl TypesetEngine {
                             styles,
                         );
                         let cand2 = consumed + cs_before + split_total2;
-                        let retry_split_row_overflow_tolerance = if uses_source_terminal_tail {
+                        let retry_split_row_overflow_tolerance = if uses_source_frame_tail {
                             stored_frame_tail_overflow
-                        } else if hwp5_origin_qa_first_response_tail {
-                            if st.profile.hwpx_stored_layout() {
-                                HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
-                            } else {
-                                HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
-                            }
-                        } else if hwpx_qa_saved_frame_response_tail {
-                            HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX
-                        } else if hwpx_qa_two_line_response_tail {
-                            HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
                         } else if source_first_fragment_overflow_allowance > 0.0 {
                             source_first_fragment_overflow_allowance
                         } else if hwpx_stored_rowbreak_cut {
-                            HWPX_STORED_ROWBREAK_CUT_TOLERANCE_PX
+                            (split_total2 - res2.consumed_height - padding).max(0.0)
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                             0.1
                         } else {
@@ -22095,12 +22031,10 @@ impl TypesetEngine {
             // physical space below the source frame that remains inside this
             // fragment's scan bound, never a generic drift cap.
             //
-            // This is deliberately confined to an empty-host native RowBreak
-            // table with a rowspan-owned first fragment. A visible host title
-            // and an ordinary row grid do not prove that the object frame owns
-            // one additional row. The unshifted saved anchor must equal the
-            // active flow cursor, while its painted top may differ by a source
-            // vertical offset (#3820 p168 invariant).
+            // This is a native source-frame rule, not a generic HWP5 table rule:
+            // first-frame ownership is valid only for the empty host line of a
+            // rowspan table, whose saved RowBreak frame starts at the flow
+            // cursor and ends within this fragment's scan bound.
             // The saved frame is an absolute object coordinate. Its matching
             // bound is `table_available`, which already reserves the current
             // page's footnote/zone lane. `host_before_overhead` and positive

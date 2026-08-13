@@ -7920,14 +7920,11 @@ impl LayoutEngine {
             crate::model::table::TablePageBreak::RowBreak
         ) && !table.common.treat_as_char;
         // 원본 HWPX의 작은 nested cell은 자체 local 좌표계를 `0`에서 다시
-        // 시작할 수 있어 reset 하나만으로 물리 page frame이라고 볼 수 없다. 반면
-        // 직접 RowBreak cell이 reset 전후 저장 frame의 line end를 합쳐 선언 높이를
-        // 거의 채우면, 그 reset은 로컬 viewport가 아니라 저장된 물리 frame 경계다.
-        // 이 조건은 표 ID, 행 번호, 문구가 아니라 저장된 cell 기하와 lineSeg
-        // topology만 사용한다.
+        // 시작할 수 있다. 반면 직접 RowBreak 셀의 저장 좌표 되감김은 원본이
+        // 기록한 물리 fragment 경계다. 선언 셀 높이의 비율을 추정하지 않고,
+        // 표 소유 관계와 lineSeg topology 자체를 사용한다.
         let direct_hwpx_stored_frame_cell = {
             let profile = self.profile.get();
-            let declared_height = (cell.height < 0x8000_0000).then_some(cell.height as i32);
             let has_nested_table = cell.paragraphs.iter().any(|paragraph| {
                 paragraph
                     .controls
@@ -7936,8 +7933,6 @@ impl LayoutEngine {
             });
             let mut reset_count = 0usize;
             let mut previous_frame_end = None;
-            let mut preceding_frame_end = 0i32;
-            let mut trailing_frame_end = 0i32;
             for paragraph in &cell.paragraphs {
                 for seg in paragraph
                     .line_segs
@@ -7949,26 +7944,15 @@ impl LayoutEngine {
                         .is_some_and(|previous_end| previous_end > 0 && seg.vertical_pos <= 0)
                     {
                         reset_count += 1;
-                        preceding_frame_end = preceding_frame_end
-                            .max(previous_frame_end.unwrap_or_default());
-                        trailing_frame_end = 0;
-                    }
-                    if reset_count > 0 {
-                        trailing_frame_end = trailing_frame_end.max(frame_end);
                     }
                     previous_frame_end = Some(frame_end);
                 }
             }
-            let single_reset_covers_declared_cell = reset_count == 1
-                && declared_height.is_some_and(|height| {
-                    preceding_frame_end.saturating_add(trailing_frame_end)
-                        >= height.saturating_mul(4) / 5
-                });
-            profile.hwpx_stored_layout()
+            profile.hwpx_container()
                 && !profile.hwp5_origin_hwpx()
                 && is_block_rowbreak_table
                 && !has_nested_table
-                && (reset_count >= 2 || single_reset_covers_declared_cell)
+                && reset_count > 0
         };
         let is_stored_frame_rewind = |prev: &crate::model::paragraph::LineSeg,
                                       cur: &crate::model::paragraph::LineSeg|
@@ -10043,6 +10027,176 @@ impl LayoutEngine {
             fully_consumed,
             consumed_height,
         })
+    }
+
+    /// Extend a row cut by exactly the next visible source unit in the cell
+    /// that owns a stored frame reset, or in a single-cell continuation.
+    ///
+    /// This is narrower than `paragraph_tail_cut_for_row`: a stored frame can
+    /// own one response line without owning the remainder of that paragraph.
+    /// The returned height is therefore the measured line unit, not a
+    /// fixture-specific pixel allowance.
+    pub(crate) fn next_visible_unit_cut_for_row(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        base_end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<RowCutResult> {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|cell| cell.col);
+        if row_cells.is_empty() {
+            return None;
+        }
+        let single_cell_row = row_cells.len() == 1;
+
+        let mut end_cut = Vec::with_capacity(row_cells.len());
+        let mut consumed_height = 0.0f64;
+        let mut fully_consumed = true;
+        let mut extended = false;
+        for (cell_idx, cell) in row_cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut.get(cell_idx).copied().unwrap_or(0).min(units.len());
+            let mut end = base_end_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(start)
+                .clamp(start, units.len());
+            let owns_stored_frame_reset = cell.paragraphs.iter().any(|paragraph| {
+                paragraph
+                    .line_segs
+                    .iter()
+                    .skip(1)
+                    .any(|segment| segment.vertical_pos == 0)
+            });
+            if let Some(first_omitted) = units.get(end) {
+                if (owns_stored_frame_reset || single_cell_row)
+                    && !first_omitted.empty_spacer
+                    && first_omitted.vis_start < first_omitted.vis_end
+                    && !first_omitted.stored_frame_break_before
+                {
+                    end += 1;
+                    extended = true;
+                }
+            }
+            fully_consumed &= end == units.len();
+            consumed_height =
+                consumed_height.max(units[start..end].iter().map(|unit| unit.height).sum());
+            end_cut.push(end);
+        }
+
+        extended.then_some(RowCutResult {
+            end_cut,
+            hit_hard_break: false,
+            fully_consumed,
+            consumed_height,
+        })
+    }
+
+    /// Return whether a physical table row contains only source-empty spacer
+    /// units.  Text/control inspection alone is insufficient here: imported
+    /// HWPX may retain structural controls in a row that has no line or atom
+    /// to paint.
+    pub(crate) fn row_has_only_empty_spacer_units(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let mut row_cells = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .peekable();
+        row_cells.peek().is_some()
+            && row_cells.all(|cell| {
+                self.cell_units(cell, table, styles)
+                    .iter()
+                    .all(|unit| unit.empty_spacer)
+            })
+    }
+
+    /// Return whether exactly one physical-row cell owns visible source
+    /// content.  Direct HWPX RowBreak tables use the opposite empty cell as a
+    /// structural band; a stored frame rewind in the sole visible cell must
+    /// therefore not be erased by the whole-row fast path.
+    pub(crate) fn row_has_single_visible_source_cell(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .filter(|cell| {
+                self.cell_units(cell, table, styles)
+                    .iter()
+                    .any(|unit| !unit.empty_spacer && unit.vis_start < unit.vis_end)
+            })
+            .count()
+            == 1
+    }
+
+    /// Return whether a row records an in-paragraph return from a positive
+    /// stored vertical position to the top of a new physical frame.  This is
+    /// source pagination data, not a measured-height heuristic.
+    pub(crate) fn row_has_stored_vpos_frame_rewind(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+    ) -> bool {
+        table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .flat_map(|cell| &cell.paragraphs)
+            .any(|paragraph| {
+                paragraph.line_segs.windows(2).any(|lines| {
+                    lines[0].vertical_pos > 0 && lines[1].vertical_pos == 0
+                })
+            })
+    }
+
+    /// Return the painted height of a response cell whose stored source frame
+    /// consists of exactly two lines.  This includes the cell's resolved
+    /// vertical padding, so callers can compare it directly with a row-cut
+    /// content budget without a document-specific pixel allowance.
+    pub(crate) fn row_two_line_source_frame_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .filter(|cell| {
+                cell.paragraphs.iter().any(|paragraph| {
+                    paragraph.line_segs.len() == 2
+                        && paragraph.line_segs[0].vertical_pos == 0
+                        && paragraph.line_segs[1].vertical_pos > 0
+                })
+            })
+            .map(|cell| {
+                let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
+                let visible_units_height: f64 = self
+                    .cell_units(cell, table, styles)
+                    .iter()
+                    .filter(|unit| !unit.empty_spacer && unit.vis_start < unit.vis_end)
+                    .map(|unit| unit.height)
+                    .sum();
+                visible_units_height + pad_top + pad_bottom
+            })
+            .filter(|height| *height > 0.5)
+            .reduce(f64::max)
     }
 
     fn advance_row_cut_inner(
