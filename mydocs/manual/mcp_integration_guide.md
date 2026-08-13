@@ -30,7 +30,12 @@ rhwp 를 MCP(Model Context Protocol) 도구로 소비하는 **두 경로**를 �
 ```
 
 `rhwp` 가 PATH 에 없으면 `command` 에 절대 경로를 쓴다. 전송은 stdio 뿐이므로
-네트워크 포트·인증 설정이 없다. 서버는 stdin EOF 에서 종료한다.
+네트워크 포트·인증 설정이 없다. 서버는 stdin EOF 에서 종료한다. 저장소 루트
+[`.mcp.json`](../../.mcp.json)이 Claude Code 용으로 이미 rhwp 를 붙여 둔다.
+
+**다른 호스트에 붙이려면** — Claude Desktop·Cursor·Cline·Continue·Windsurf·
+VS Code·Zed·Goose·Gemini CLI 등 18개 호스트별 설정은
+[`mcp_attach_kit.md`](mcp_attach_kit.md)에 모아 두었다.
 
 ### 프로토콜 표면
 
