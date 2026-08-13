@@ -529,6 +529,23 @@ pub enum PageItem {
         para_index: usize,
         control_index: usize,
     },
+    /// [#4568] 쪽 경계를 넘는 글앞으로/글뒤로(overlay) 표의 **잔여 행** 조각.
+    ///
+    /// overlay 표는 #703 이후 흐름 소비 0 으로 `Shape` z-layer 에 배치되므로, 앵커 쪽에
+    /// 한 번만 그려지고 쪽 하단을 넘는 행은 잘린다(bleed clip). 자리차지 표의
+    /// `PartialTable` 에 해당하는 이어 그리기 수단이 이 경로에는 없었다.
+    ///
+    /// `Shape` 와 분리한 이유는 소비 지점 때문이다 — `Shape` 는 앵커 좌표로 그리지만
+    /// 이 조각은 **쪽 최상단**에서 `start_row` 부터 그린다. 같은 변형에 플래그로 얹으면
+    /// 기존 73개 소비 지점이 전부 두 의미를 구분해야 한다.
+    PartialOverlayTable {
+        /// 원본 문단 인덱스
+        para_index: usize,
+        /// 컨트롤 인덱스
+        control_index: usize,
+        /// 이 조각이 그릴 첫 행 (inclusive). 앞 쪽이 이미 그린 행 수와 같다.
+        start_row: usize,
+    },
     /// 미주 영역 시작 구분선
     EndnoteSeparator {
         /// 구분선 길이 (HWP 단위). 한컴 전폭 sentinel(14692344)이 i16을 넘으므로 i32.
@@ -616,7 +633,8 @@ impl PageItem {
             PageItem::PartialParagraph { para_index, .. } => *para_index,
             PageItem::Table { para_index, .. } => *para_index,
             PageItem::PartialTable { para_index, .. } => *para_index,
-            PageItem::Shape { para_index, .. } => *para_index,
+            PageItem::Shape { para_index, .. }
+            | PageItem::PartialOverlayTable { para_index, .. } => *para_index,
             PageItem::EndnoteSeparator { .. } => usize::MAX,
         }
     }
@@ -675,6 +693,15 @@ impl PageItem {
             } => PageItem::Shape {
                 para_index: adjust(*para_index),
                 control_index: *control_index,
+            },
+            PageItem::PartialOverlayTable {
+                para_index,
+                control_index,
+                start_row,
+            } => PageItem::PartialOverlayTable {
+                para_index: adjust(*para_index),
+                control_index: *control_index,
+                start_row: *start_row,
             },
             PageItem::EndnoteSeparator {
                 separator_length,

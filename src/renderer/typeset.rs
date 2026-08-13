@@ -1113,6 +1113,13 @@ struct TypesetState {
     /// (sample1-repro 저장 사다리: 필러가 각자 줄 높이만큼 전진해 표 높이를 채움.
     /// 흡수하면 갭이 어느 쪽에도 계상되지 않아 후속 표가 겹침 — 8쪽 555.5px).
     overlay_shape_shortcut_para: Option<usize>,
+    /// [#4568] 쪽 하단을 넘는 overlay 표의 **다음 단/쪽으로 넘길 잔여 행** 대기열.
+    ///
+    /// overlay 표는 흐름 소비가 0 이라 앵커 쪽에서 다음 쪽 항목을 바로 push 할 수 없다
+    /// (다음 쪽은 이후 문단이 흐름을 넘길 때 비로소 생긴다). 그래서 앵커 쪽에서
+    /// "몇 번째 행부터 잘렸는지"만 적어 두고, 단/쪽이 열릴 때 그 시작에 방출한다.
+    /// `(para_index, control_index, start_row)`.
+    pending_overlay_continuations: Vec<(usize, usize, usize)>,
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
@@ -1610,7 +1617,8 @@ fn page_item_para_index(item: &PageItem) -> Option<usize> {
         | PageItem::PartialParagraph { para_index, .. }
         | PageItem::Table { para_index, .. }
         | PageItem::PartialTable { para_index, .. }
-        | PageItem::Shape { para_index, .. } => Some(*para_index),
+        | PageItem::Shape { para_index, .. }
+        | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
         PageItem::EndnoteSeparator { .. } => None,
     }
 }
@@ -1628,7 +1636,8 @@ fn page_item_vpos_base(item: &PageItem, paragraphs: &[Paragraph]) -> Option<i32>
         PageItem::FullParagraph { para_index }
         | PageItem::Table { para_index, .. }
         | PageItem::PartialTable { para_index, .. }
-        | PageItem::Shape { para_index, .. } => paragraphs
+        | PageItem::Shape { para_index, .. }
+        | PageItem::PartialOverlayTable { para_index, .. } => paragraphs
             .get(*para_index)
             .and_then(|para| para.line_segs.first())
             .map(|seg| seg.vertical_pos),
@@ -3550,6 +3559,7 @@ impl TypesetState {
             next_para_first_stored_vpos: None,
             behind_pending_absorbs: Vec::new(),
             overlay_shape_shortcut_para: None,
+            pending_overlay_continuations: Vec::new(),
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
             current_zone_column_type: column_type,
@@ -4082,6 +4092,18 @@ impl TypesetState {
         }
         // Task #321: 새 페이지에서는 body-wide top reserve 초기화
         self.pending_body_wide_top_reserve = 0.0;
+        // [#4568] 앞 쪽에서 잘린 overlay 표의 잔여 행을 이 쪽 최상단에 이어 그린다.
+        // 흐름은 소비하지 않으므로(`current_height` 불변) 본문 배치는 바뀌지 않는다.
+        for (para_index, control_index, start_row) in
+            std::mem::take(&mut self.pending_overlay_continuations)
+        {
+            self.current_items
+                .push(crate::renderer::pagination::PageItem::PartialOverlayTable {
+                    para_index,
+                    control_index,
+                    start_row,
+                });
+        }
     }
 
     fn reset_for_new_page(&mut self) {
@@ -6460,7 +6482,8 @@ impl TypesetEngine {
                             .and_then(|item| match item {
                                 PageItem::FullParagraph { para_index }
                                 | PageItem::Table { para_index, .. }
-                                | PageItem::Shape { para_index, .. } => paragraphs
+                                | PageItem::Shape { para_index, .. }
+                                | PageItem::PartialOverlayTable { para_index, .. } => paragraphs
                                     .get(*para_index)
                                     .and_then(|p| p.line_segs.first())
                                     .map(|s| s.vertical_pos),
@@ -6678,7 +6701,8 @@ impl TypesetEngine {
                     PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
                     PageItem::Table { para_index, .. } => Some(*para_index),
                     PageItem::PartialTable { para_index, .. } => Some(*para_index),
-                    PageItem::Shape { para_index, .. } => Some(*para_index),
+                    PageItem::Shape { para_index, .. }
+                    | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
                     PageItem::EndnoteSeparator { .. } => None,
                 });
                 let page_top_vpos_opt = page_first_para_idx
@@ -12832,6 +12856,17 @@ impl TypesetEngine {
                         para_index: l + 1,
                         control_index: *control_index,
                     }),
+                    // [#4568] overlay 표 잔여 행 조각 — Shape 와 같은 방식으로 지역
+                    // 인덱스로 옮긴다(행 오프셋은 원본 그대로).
+                    PageItem::PartialOverlayTable {
+                        para_index,
+                        control_index,
+                        start_row,
+                    } => lookup_local(*para_index).map(|l| PageItem::PartialOverlayTable {
+                        para_index: l + 1,
+                        control_index: *control_index,
+                        start_row: *start_row,
+                    }),
                     // 구분선은 측정에서 제외(현 per-para 시뮬과 동일 — start_height 가 단 콘텐츠
                     // 시작을 이미 반영).
                     PageItem::EndnoteSeparator { .. } => None,
@@ -16622,6 +16657,43 @@ impl TypesetEngine {
                             para_index: para_idx,
                             control_index: ctrl_idx,
                         });
+                        // [#4568] 이 표가 쪽 하단을 넘으면 잘린 행을 다음 쪽에 이어
+                        // 그리도록 대기열에 남긴다. 앵커 y 는 흐름 위치 + 개체 세로
+                        // 오프셋이고, 남은 쪽 공간에 들어가는 행 수를 누적 행 높이로
+                        // 센다. 행 하나도 넘치지 않으면(=표 전체가 쪽 안) 아무것도
+                        // 남기지 않는다.
+                        let ft = self.format_table(
+                            para,
+                            para_idx,
+                            ctrl_idx,
+                            table,
+                            measured_tables,
+                            styles,
+                            composed,
+                            next_para,
+                            st.current_height < 1.0,
+                        );
+                        let anchor_y = st.current_height
+                            + hwpunit_to_px(table.common.vertical_offset as i32, self.dpi);
+                        let room = st.base_available_height() - anchor_y;
+                        if room > 0.0 && ft.effective_height > room {
+                            // `cumulative_heights` 는 접두합(len = 행 수 + 1)이다 —
+                            // `cum[i]` 는 행 0..i 의 합이므로, 처음으로 room 을 넘는
+                            // 인덱스 i 는 "행 i-1 이 안 들어간다"는 뜻이다.
+                            let first_unfit = ft
+                                .cumulative_heights
+                                .iter()
+                                .position(|cum| *cum > room)
+                                .map(|i| i.saturating_sub(1))
+                                .unwrap_or(ft.row_heights.len());
+                            if first_unfit > 0 && first_unfit < ft.row_heights.len() {
+                                st.pending_overlay_continuations.push((
+                                    para_idx,
+                                    ctrl_idx,
+                                    first_unfit,
+                                ));
+                            }
+                        }
                         // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
                         st.overlay_shape_shortcut_para = Some(para_idx);
                         continue;
@@ -22341,7 +22413,8 @@ impl TypesetEngine {
                     | PageItem::PartialParagraph { para_index, .. }
                     | PageItem::Table { para_index, .. }
                     | PageItem::PartialTable { para_index, .. }
-                    | PageItem::Shape { para_index, .. } => Some(*para_index),
+                    | PageItem::Shape { para_index, .. }
+                    | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
                     PageItem::EndnoteSeparator { .. } => None,
                 });
                 if let Some(pi) = last_para_idx {
@@ -22575,7 +22648,8 @@ impl TypesetEngine {
                     PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
                     PageItem::Table { para_index, .. } => Some(*para_index),
                     PageItem::PartialTable { para_index, .. } => Some(*para_index),
-                    PageItem::Shape { para_index, .. } => Some(*para_index),
+                    PageItem::Shape { para_index, .. }
+                    | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
                     PageItem::EndnoteSeparator { .. } => None,
                 })
                 .max();
@@ -22609,7 +22683,10 @@ impl TypesetEngine {
                             is_continuation,
                             ..
                         } => *para_index == *ph_para && !*is_continuation,
-                        PageItem::Shape { para_index, .. } => *para_index == *ph_para,
+                        PageItem::Shape { para_index, .. }
+                        | PageItem::PartialOverlayTable { para_index, .. } => {
+                            *para_index == *ph_para
+                        }
                         PageItem::EndnoteSeparator { .. } => false,
                     })
                 });

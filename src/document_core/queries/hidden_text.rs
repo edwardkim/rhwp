@@ -506,7 +506,8 @@ impl DocumentCore {
                             | PageItem::PartialParagraph { para_index, .. }
                             | PageItem::Table { para_index, .. }
                             | PageItem::PartialTable { para_index, .. }
-                            | PageItem::Shape { para_index, .. } => Some(*para_index),
+                            | PageItem::Shape { para_index, .. }
+                            | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
                             _ => None,
                         };
                         if let Some(p) = para_index {
@@ -539,7 +540,8 @@ impl DocumentCore {
                             | PageItem::PartialParagraph { para_index, .. }
                             | PageItem::Table { para_index, .. }
                             | PageItem::PartialTable { para_index, .. }
-                            | PageItem::Shape { para_index, .. } => Some(*para_index),
+                            | PageItem::Shape { para_index, .. }
+                            | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
                             _ => None,
                         };
                         if let Some(p) = para_index {
