@@ -515,6 +515,16 @@ impl DocumentCore {
         Ok(self.chart_data_at(chart))
     }
 
+    /// 문서의 모든 차트를 문서 순서로 열거한 JSON 배열을 돌려준다.
+    ///
+    /// 항목은 `ChartRef` 직렬화 그대로다 — 가공 층을 두지 않아야 CLI(`--chart N`)·
+    /// 코어(by_index)·studio 가 같은 순번을 본다. studio 는 이 목록을 선택 컨트롤과
+    /// 대조해 순번 주소를 얻는다(#4694).
+    pub fn list_charts_native(&self) -> Result<String, HwpError> {
+        serde_json::to_string(&collect_charts(&self.document))
+            .map_err(|e| HwpError::RenderError(format!("차트 열거 직렬화 실패: {e}")))
+    }
+
     /// 차트의 숫자 데이터를 바꾼다 — **①②에 함께 쓴다**.
     ///
     /// ①만 고치면 HWP 변환에서 조용히 사라진다(#4055 한컴 실측, #4099 의 fold 로 계약
