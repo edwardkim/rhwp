@@ -60,12 +60,30 @@ render/fixture 시각 증적 보조 경로는 적용하지 않는다. Docker run
 진행 중이다. 최신 head의 CI 결과는 merge 직전에 다시 확인해야 하며, 후보 뒤 review-only commit의
 aggregate도 별도로 성공해야 한다.
 
+## 기준선 갱신과 최신 CI
+
+초기 review 기록 뒤 GitHub update branch가 `devel@be7dabdd1`을 source branch에 병합해 새 head
+`43117ad38414680549c6e0595fd1e8fd62e7eda6`을 만들었다. 이 merge는 #4745의 변경을 기준선으로
+가져온 것이며, #4089의 고유 diff는 최신 `upstream/devel...HEAD`에서 다시 분리해 확인했다. 이전
+`b1ce261a` head의 진행 중 CI는 최종 근거로 재사용하지 않았다.
+
+- 최신 head에서 `python scripts\\tests\\test_docker_wasm_compose.py`를 다시 실행해 4/4 통과했고,
+  `git diff --check upstream/devel...HEAD`도 통과했다.
+- [CI run 31736384129](https://github.com/edwardkim/rhwp/actions/runs/31736384129)의 Build & Test,
+  Lint, frontend package, Native Skia, 모든 default-feature shard가 성공했다. frontend unit과
+  WASM Build의 skip은 preflight 분류에 따른 정상 상태다.
+- [CodeQL run 31736383870](https://github.com/edwardkim/rhwp/actions/runs/31736383870)의 Rust,
+  JavaScript/TypeScript, Python 분석과 aggregate가 성공했다.
+
+이 commit은 review·오늘할일만 갱신한다. `43117ad3`의 녹색 code candidate 뒤에 단일 review-only
+commit으로 이어지므로, push 뒤에는 최신 head의 preflight/Build & Test aggregate를 다시 확인한다.
+
 ## 위험과 권고
 
 Compose 실행은 root로 named volume을 초기화하되 `pkg/`만 사용자 UID/GID로 반환한다. 실제 Docker
 Desktop Windows host에서 표준 명령을 두 번 순차 실행해 hard-link 회피와 cache 재사용을 확인하기 전에는
 runtime 보장을 주장하지 않는다.
 
-**권고: 보류.** 현재 변경 범위와 merge simulation에는 차단 문제가 없지만, 최신 code candidate와
-trailing review 기록의 GitHub Actions 성공, Docker Desktop Windows 실실행 확인, 그리고 작업지시자
-승인이 모두 갖춰진 뒤에만 merge 판단으로 전환한다. #4089은 merge 및 검증 완료 전까지 닫지 않는다.
+**권고: 보류.** 최신 code candidate의 GitHub CI는 성공했다. 다만 review-only trailing head의
+aggregate, Docker Desktop Windows 실실행 확인, 그리고 작업지시자 승인이 모두 갖춰진 뒤에만 merge
+판단으로 전환한다. #4089은 merge 및 검증 완료 전까지 닫지 않는다.
