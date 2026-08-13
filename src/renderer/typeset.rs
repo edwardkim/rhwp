@@ -23526,17 +23526,17 @@ fn endnote_separator_height_px(shape: &FootnoteShape, dpi: f64) -> f64 {
 
 #[cfg(test)]
 mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
-    use super::saved_rowbreak_first_fragment_overflow_allowance;
+    use super::saved_rowbreak_first_fragment_flow_overflow_allowance;
 
     #[test]
     fn rejects_missing_or_unowned_saved_frames() {
         assert_eq!(
-            saved_rowbreak_first_fragment_overflow_allowance(0, true, 959.0, 970.0),
+            saved_rowbreak_first_fragment_flow_overflow_allowance(0, true, 959.0, 970.0),
             0.0,
             "height=0 is not a saved first-fragment frame"
         );
         assert_eq!(
-            saved_rowbreak_first_fragment_overflow_allowance(
+            saved_rowbreak_first_fragment_flow_overflow_allowance(
                 0x8000_0000,
                 true,
                 959.0,
@@ -23546,7 +23546,7 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
             "signed-wrap height is not a usable source frame"
         );
         assert_eq!(
-            saved_rowbreak_first_fragment_overflow_allowance(
+            saved_rowbreak_first_fragment_flow_overflow_allowance(
                 929,
                 false,
                 959.0,
@@ -23560,7 +23560,7 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
     #[test]
     fn uses_the_absolute_fragment_bottom_not_row_space() {
         assert_eq!(
-            saved_rowbreak_first_fragment_overflow_allowance(
+            saved_rowbreak_first_fragment_flow_overflow_allowance(
                 929,
                 true,
                 972.0,
@@ -23570,7 +23570,7 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
             "the source frame may not enter the fragment-reserved bottom lane"
         );
         assert!(
-            (saved_rowbreak_first_fragment_overflow_allowance(
+            (saved_rowbreak_first_fragment_flow_overflow_allowance(
                 929,
                 true,
                 959.0,
