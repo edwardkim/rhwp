@@ -33,6 +33,7 @@ import {
 import { forgetConvertedHmlSaveHandle } from '@/command/save-target';
 import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
+import { MODAL_DIALOG_CLOSED_EVENT } from '@/ui/dialog';
 import { showHmlImportWarning } from '@/ui/hml-import-warning';
 import { showLocalFontsModalIfNeeded } from '@/ui/local-fonts-modal';
 import { showToast } from '@/ui/toast';
@@ -620,6 +621,7 @@ async function initialize(): Promise<void> {
     setupFileInput();
     setupZoomControls();
     setupEventListeners();
+    setupModalFocusRestore();
     setupGlobalShortcuts();
     void loadFromUrlParam();
     // embed 프로파일: 자동저장 복구 다이얼로그의 드래프트 복원도 호스트가 감지할 수
@@ -662,6 +664,13 @@ async function initialize(): Promise<void> {
     msg.textContent = `WASM 초기화 실패: ${error}`;
     console.error('[main] WASM 초기화 실패:', error);
   }
+}
+
+/** 마지막 모달 종료 뒤 활성 편집기의 키보드 진입점을 textarea로 되돌린다 (#3414). */
+function setupModalFocusRestore(): void {
+  document.addEventListener(MODAL_DIALOG_CLOSED_EVENT, () => {
+    if (inputHandler?.isActive()) inputHandler.focus();
+  });
 }
 
 /**
