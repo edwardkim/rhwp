@@ -2081,8 +2081,15 @@ fn internal_vpos_page_break_line(
     body_height_px: f64,
     dpi: f64,
     source_uses_inline_field_reset: bool,
+    hwp3_converted_requires_negative_reset: bool,
 ) -> Option<usize> {
     if line_count < 2 || para.line_segs.len() < line_count {
+        return None;
+    }
+    // HWP3 변환 HWP5의 두 줄 음수 cursor는 한컴이 문단의 물리 조각을 나눈
+    // 증거가 아니라 local cursor 보정으로도 사용한다(pi=140 유형). 세 줄 이상인
+    // multi-line fragment만 내부 페이지 경계로 승격한다.
+    if hwp3_converted_requires_negative_reset && line_count < 3 {
         return None;
     }
 
@@ -2134,12 +2141,18 @@ fn internal_vpos_page_break_line(
                 return None;
             }
 
-            let stored_page_reset = cur.vertical_pos <= 0
-                || (cur.vertical_pos < prev.vertical_pos
-                && cur.vertical_pos < prev.vertical_pos
-                && hwpunit_to_px(prev.vertical_pos + prev.line_height, dpi)
-                    >= body_height_px * 0.72
-                && hwpunit_to_px(cur.vertical_pos, dpi) <= body_height_px * 0.06);
+            let stored_page_reset = if hwp3_converted_requires_negative_reset {
+                // HWP3 변환 HWP5의 `vpos=0`은 문단 내부의 실제 쪽 reset이 아니라
+                // 변환기의 local cursor 초기화로도 쓰인다. 음수로 되감긴 조각만
+                // 저장된 다음 페이지 조각으로 해석한다.
+                cur.vertical_pos < 0
+            } else {
+                cur.vertical_pos <= 0
+                    || (cur.vertical_pos < prev.vertical_pos
+                        && hwpunit_to_px(prev.vertical_pos + prev.line_height, dpi)
+                            >= body_height_px * 0.72
+                        && hwpunit_to_px(cur.vertical_pos, dpi) <= body_height_px * 0.06)
+            };
 
             if stored_page_reset {
                 Some(prev_idx + 1)
@@ -3121,10 +3134,21 @@ fn missing_lineseg_trailing_line_break(
     current_height: f64,
     available: f64,
     source_uses_inline_field_reset: bool,
+    hwp3_converted_missing_lineseg: bool,
 ) -> Option<usize> {
+    // HWP3 변환 HWP5는 저장 lineSeg가 전부 생략된 경우만 formatter의 마지막
+    // 줄을 다음 물리 조각으로 추론한다. 고정 여유값 대신 "마지막 한 줄"의
+    // 비율로 최소 페이지 채움을 계산한다. 예를 들어 5줄 문단은 4/5 이상이
+    // 채워졌을 때만 4+1 조각을 추론하므로, 같은 5줄이라도 페이지 상단의
+    // 정상 RDBMS 문단은 분할하지 않는다.
+    let minimum_fill_ratio = if hwp3_converted_missing_lineseg {
+        1.0 - 1.0 / line_count as f64
+    } else {
+        0.75
+    };
     if !para.line_segs.is_empty()
         || line_count < 4
-        || current_height < available * 0.75
+        || current_height < available * minimum_fill_ratio
         || !para_has_visible_text(para)
         || !source_uses_inline_field_reset
         || !controls_are_inline_text_metadata(para)
@@ -3132,7 +3156,14 @@ fn missing_lineseg_trailing_line_break(
         return None;
     }
 
-    Some(line_count - 1)
+    if hwp3_converted_missing_lineseg {
+        // 저장 좌표가 전부 사라진 변환본은 기존 source fragment의 줄 수를 알 수 없다.
+        // 현재 formatter가 만든 줄을 두 조각으로 가능한 한 균등하게 나누면, 원래
+        // 3+3 저장 조각이 5줄로 재래핑된 경우에도 3+2 경계를 유지한다.
+        Some((line_count + 1) / 2)
+    } else {
+        Some(line_count - 1)
+    }
 }
 
 fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
@@ -15433,12 +15464,18 @@ impl TypesetEngine {
             native_hwp5_existing_footnote_reset_overlap_break_line(
                 st, para, fmt, paragraphs, self.dpi,
             );
+        let hwp3_converted_hwp5 = st.profile.hwp3_layout()
+            && !st.profile.hwp3_native_layout()
+            && !st.profile.hwpx_container();
         let forced_page_break_line = internal_vpos_page_break_line(
             para,
             fmt.line_heights.len(),
             st.layout.body_area.height,
             self.dpi,
-            st.profile.hwpx_stored_layout() || st.profile.hwp3_native_layout(),
+            st.profile.hwpx_stored_layout()
+                || st.profile.hwp3_native_layout()
+                || hwp3_converted_hwp5,
+            hwp3_converted_hwp5,
         )
         .or_else(|| {
             st.profile.hwpx_stored_layout().then(|| {
@@ -15461,7 +15498,8 @@ impl TypesetEngine {
                 fmt.line_heights.len(),
                 st.current_height,
                 available,
-                st.profile.hwpx_stored_layout() || st.profile.hwp3_native_layout(),
+                st.profile.hwpx_stored_layout() || hwp3_converted_hwp5,
+                hwp3_converted_hwp5,
             )
         })
         .or_else(|| {
@@ -15472,7 +15510,6 @@ impl TypesetEngine {
         // full-fit early return보다 앞의 같은 chain에 넣어야 reset tail을 통째로
         // 배치해 separator와 겹치는 우회가 없다.
         .or(native_hwp5_existing_footnote_reset_line);
-
         // fits: 문단 전체가 현재 공간에 들어가는가?
         // [Task #359] fit 판정은 height_for_fit (trailing_ls 제외) 으로,
         // 누적은 total_height (full) 로 분리. 각 항목별 trailing_ls 가
