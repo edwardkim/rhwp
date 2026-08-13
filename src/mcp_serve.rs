@@ -798,6 +798,26 @@ const DOC_RESOURCES: &[DocResource] = &[
         mime_type: "text/markdown",
         text: include_str!("../mydocs/manual/recipes/06_visual_regression_before_after.md"),
     },
+    // [트랙 L L4] 축 리소스 2종 — 프로젝트가 어디로 가는지(로드맵)와 실력을 어떻게
+    // 재는지(gym)를 MCP resources/read 로 직접 읽게 노출한다. 순수 DOC_RESOURCES
+    // 추가이므로 served_resources()/read_resource() 가 자동으로 목록·읽기한다.
+    DocResource {
+        uri: "rhwp://docs/roadmap",
+        name: "roadmap-atlas",
+        title: "rhwp 에이전트 로드맵 아틀라스 (R1~R200)",
+        description: "에이전트-네이티브 로드맵 전 단계의 한 화면 지도 — 무엇을·왜·다음.",
+        mime_type: "text/markdown",
+        text: include_str!("../mydocs/tech/agent_roadmap/atlas_r1_r200.md"),
+    },
+    DocResource {
+        uri: "rhwp://docs/gym",
+        name: "gym-readme",
+        title: "rhwp 에이전트 운동장 (gym)",
+        description:
+            "에이전트가 실문서로 실력을 겨루고 기록으로 남기는 벤치마크 — 과제판·채점·리더보드.",
+        mime_type: "text/markdown",
+        text: include_str!("../gym/README.md"),
+    },
 ];
 
 /// [#3627 잔여] 스키마 리소스 — 본문이 파일이 아니라 **생성기**다.

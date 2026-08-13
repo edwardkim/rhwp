@@ -930,6 +930,25 @@ jobs:
       - name: Validate adoption spine contract
         run: python3 -m unittest scripts/tests/test_adoption_spine.py
 
+      # [#4718] 계획 템플릿 형식 계약 — 자가검증 계획 시작점이 스키마를 지키는지.
+      - name: Validate planner templates
+        run: python3 -m unittest scripts/tests/test_planner_templates.py
+
+      # [#4720] 에이전트 노동 운영체제 — 부서가 실재 pack/트랙/과제에 매핑되고
+      # 자동 배치기가 유효한 배정을 내는지. 바이너리 불요.
+      - name: Validate agent org contract
+        run: python3 -m unittest scripts/tests/test_agent_org.py
+
+      # [#4726] 에이전트 프레임 메타 가드 — 등재된 모든 하위체계가 가드를 가지고
+      # 머지분은 실재하는지. 틀 밖 확장을 막는 상위 불변식. 바이너리 불요.
+      - name: Validate agent frame contract
+        run: python3 -m unittest scripts/tests/test_agent_frame.py
+
+      # [#4728] 외부 현실 채점 계약 — 코어 견인과 메타-시스템 외부 채택을
+      # 섞지 않고, self-graded 상태를 정직하게 보고하는지. 바이너리 불요.
+      - name: Validate external reality check contract
+        run: python3 -m unittest scripts/tests/test_reality_check.py
+
       - name: Clippy
         run: cargo clippy -- -D warnings
 
