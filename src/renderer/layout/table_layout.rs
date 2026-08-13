@@ -7948,7 +7948,7 @@ impl LayoutEngine {
                     previous_frame_end = Some(frame_end);
                 }
             }
-            profile.hwpx_container()
+            profile.hwpx_stored_layout()
                 && !profile.hwp5_origin_hwpx()
                 && is_block_rowbreak_table
                 && !has_nested_table

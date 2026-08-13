@@ -19178,7 +19178,7 @@ impl TypesetEngine {
                 && (Self::row_has_no_text_or_controls(table, r + 1)
                     || layout_engine.row_has_only_empty_spacer_units(table, r + 1, styles));
             let two_line_terminal_response_source_frame =
-                (st.profile.hwpx_container()
+                (st.profile.hwpx_stored_layout()
                     && r > cursor_row
                     && terminal_response_before_empty_spacer
                     && table.outer_margin_bottom > 0)
@@ -19188,7 +19188,7 @@ impl TypesetEngine {
             // source may express it either at a terminal response row or in a
             // continued single-cell row; neither case depends on a table's
             // dimensions, declared height, or paragraph count.
-            let stored_source_frame = (st.profile.hwpx_container()
+            let stored_source_frame = (st.profile.hwpx_stored_layout()
                 && !table.common.treat_as_char
                 && mt.allows_row_break_split()
                 && !rowspan_touched.get(r).copied().unwrap_or(true))
@@ -19196,7 +19196,7 @@ impl TypesetEngine {
                     layout_engine.stored_frame_cut_for_row(table, r, row_start_cut, styles)
                 })
                 .flatten();
-            let terminal_source_frame = st.profile.hwpx_container()
+            let terminal_source_frame = st.profile.hwpx_stored_layout()
                 && r + 2 == row_count
                 && r > cursor_row
                 && row_start_cut.is_empty()
@@ -19204,7 +19204,7 @@ impl TypesetEngine {
             let continued_source_frame = is_continuation
                 && !row_start_cut.is_empty()
                 && stored_source_frame.is_some();
-            let single_visible_source_frame = st.profile.hwpx_container()
+            let single_visible_source_frame = st.profile.hwpx_stored_layout()
                 && stored_source_frame.is_some()
                 && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
                 && layout_engine.row_has_single_visible_source_cell(table, r, styles);
