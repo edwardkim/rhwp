@@ -619,7 +619,8 @@ fn page_item_is_treat_as_char_picture_only(item: &PageItem, paragraphs: &[Paragr
         | PageItem::PartialParagraph { para_index, .. }
         | PageItem::Table { para_index, .. }
         | PageItem::PartialTable { para_index, .. }
-        | PageItem::Shape { para_index, .. } => *para_index,
+        | PageItem::Shape { para_index, .. }
+        | PageItem::PartialOverlayTable { para_index, .. } => *para_index,
         PageItem::EndnoteSeparator { .. } => return false,
     };
     paragraphs
@@ -4771,7 +4772,8 @@ impl LayoutEngine {
                     | PageItem::PartialParagraph { para_index, .. }
                     | PageItem::Table { para_index, .. }
                     | PageItem::PartialTable { para_index, .. }
-                    | PageItem::Shape { para_index, .. } => Some(*para_index),
+                    | PageItem::Shape { para_index, .. }
+                    | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
                     PageItem::EndnoteSeparator { .. } => None,
                 });
                 let new_zone_design = new_zone_first_para
@@ -5656,7 +5658,8 @@ impl LayoutEngine {
                 PageItem::PartialParagraph { para_index, .. } => *para_index,
                 PageItem::Table { para_index, .. } => *para_index,
                 PageItem::PartialTable { para_index, .. } => *para_index,
-                PageItem::Shape { para_index, .. } => *para_index,
+                PageItem::Shape { para_index, .. }
+                | PageItem::PartialOverlayTable { para_index, .. } => *para_index,
                 PageItem::EndnoteSeparator { .. } => {
                     // [미주 구분선 위치 — 한컴 정합] 직전 본문 문단 마지막 줄의 trailing
                     // 줄간격(line_spacing)은 한컴이 note 영역에 포함하지 않는다. rhwp 문단
@@ -6607,6 +6610,15 @@ impl LayoutEngine {
                         control_index,
                         ..
                     } => format!("Shape pi={} ci={}", para_index, control_index),
+                    // [#4568] overlay 표 잔여 행 조각.
+                    PageItem::PartialOverlayTable {
+                        para_index,
+                        control_index,
+                        start_row,
+                    } => format!(
+                        "PartialOverlayTable pi={} ci={} rows={}..",
+                        para_index, control_index, start_row
+                    ),
                     PageItem::EndnoteSeparator { .. } => "EndnoteSeparator".to_string(),
                 }
             } else {
@@ -6634,7 +6646,10 @@ impl LayoutEngine {
                                 | PageItem::PartialParagraph { para_index, .. }
                                 | PageItem::Table { para_index, .. }
                                 | PageItem::PartialTable { para_index, .. }
-                                | PageItem::Shape { para_index, .. } => Some(*para_index),
+                                | PageItem::Shape { para_index, .. }
+                                | PageItem::PartialOverlayTable { para_index, .. } => {
+                                    Some(*para_index)
+                                }
                                 PageItem::EndnoteSeparator { .. } => None,
                             });
                     let next_is_new_question = next_para_index
@@ -6923,7 +6938,8 @@ impl LayoutEngine {
                     }
                     PageItem::Table { para_index, .. } => ("Table", *para_index),
                     PageItem::PartialTable { para_index, .. } => ("PartialTable", *para_index),
-                    PageItem::Shape { para_index, .. } => ("Shape", *para_index),
+                    PageItem::Shape { para_index, .. }
+                    | PageItem::PartialOverlayTable { para_index, .. } => ("Shape", *para_index),
                     PageItem::EndnoteSeparator { .. } => ("EndnoteSeparator", usize::MAX),
                 };
                 self.record_overflow(LayoutOverflow {
@@ -7702,6 +7718,11 @@ impl LayoutEngine {
                     y_offset,
                 );
             }
+            // [#4568] overlay 표 잔여 행 조각의 페인트는 아직 없다. 이 항목은 지금
+            // 방출되지 않으므로(1단계는 항목 정의와 배선만) 여기 도달하지 않는다.
+            // 페인트 경로가 붙기 전까지 흐름을 바꾸지 않도록 무시한다 — 앵커 쪽의
+            // `Shape` 가 표 전체를 그리는 현행 동작이 그대로 유지된다.
+            PageItem::PartialOverlayTable { .. } => {}
             PageItem::EndnoteSeparator {
                 separator_length,
                 margin_above,
