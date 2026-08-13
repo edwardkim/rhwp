@@ -1072,7 +1072,13 @@ fn parse_arc_shape_data(data: &[u8], arc: &mut ArcShape) {
 fn parse_polygon_shape_data(data: &[u8], poly: &mut PolygonShape) {
     let mut r = ByteReader::new(data);
     let cnt_raw = r.read_i32().unwrap_or(0);
-    let cnt = if cnt_raw < 0 { 0 } else { cnt_raw as usize };
+    // 점 하나는 INT32 좌표 두 개(8 bytes)다. count field가 payload보다 큰 경우
+    // EOF 뒤의 0을 반복해서 push하지 않도록 실제 좌표 바이트 수로 제한한다. (#4290)
+    let cnt = if cnt_raw < 0 {
+        0
+    } else {
+        (cnt_raw as usize).min(r.remaining() / 8)
+    };
     poly.points.clear();
     for _ in 0..cnt {
         let x = r.read_i32().unwrap_or(0);
@@ -1095,7 +1101,14 @@ fn parse_curve_shape_data(data: &[u8], curve: &mut CurveShape) {
     // 값이 되어 아래 루프가 사실상 종료되지 않는(수십억 회) DoS 를 유발한다.
     // 캐스팅 전에 음수를 0(빈 곡선)으로 처리한다. (#3012 다각형과 동일 클래스)
     let cnt_raw = r.read_i32().unwrap_or(0);
-    let cnt = if cnt_raw < 0 { 0 } else { cnt_raw as usize };
+    // 점 하나는 INT32 좌표 두 개(8 bytes)다. segment/padding이 잘린 기존
+    // fallback semantics는 유지하되, fabricated positive count로 무한 loop나
+    // 과대 Vec allocation이 생기지 않게 좌표 바이트 수를 상한으로 쓴다. (#4290)
+    let cnt = if cnt_raw < 0 {
+        0
+    } else {
+        (cnt_raw as usize).min(r.remaining() / 8)
+    };
     curve.points.clear();
     for _ in 0..cnt {
         let x = r.read_i32().unwrap_or(0);
@@ -1204,6 +1217,32 @@ mod task195_tests {
             "음수 count는 빈 세그먼트 목록으로 처리되어야 함: {}",
             curve.segment_types.len()
         );
+    }
+
+    #[test]
+    fn oversized_positive_point_counts_are_bounded_by_payload_coordinates() {
+        let mut polygon_data = Vec::new();
+        polygon_data.extend_from_slice(&i32::MAX.to_le_bytes());
+        polygon_data.extend_from_slice(&10i32.to_le_bytes());
+        polygon_data.extend_from_slice(&20i32.to_le_bytes());
+
+        let mut polygon = PolygonShape::default();
+        parse_polygon_shape_data(&polygon_data, &mut polygon);
+        assert_eq!(polygon.points.len(), 1);
+        assert_eq!(polygon.points[0].x, 10);
+        assert_eq!(polygon.points[0].y, 20);
+
+        let mut curve_data = Vec::new();
+        curve_data.extend_from_slice(&i32::MAX.to_le_bytes());
+        curve_data.extend_from_slice(&30i32.to_le_bytes());
+        curve_data.extend_from_slice(&40i32.to_le_bytes());
+
+        let mut curve = CurveShape::default();
+        parse_curve_shape_data(&curve_data, &mut curve);
+        assert_eq!(curve.points.len(), 1);
+        assert_eq!(curve.points[0].x, 30);
+        assert_eq!(curve.points[0].y, 40);
+        assert!(curve.segment_types.is_empty());
     }
 
     #[test]

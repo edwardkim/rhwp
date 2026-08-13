@@ -156,7 +156,7 @@ pub(crate) fn expand_numbering_format(
         let counter_val = counters[idx];
         let start = start_numbers[idx];
         let num = if counter_val > 0 {
-            (start - 1) + counter_val
+            start.saturating_sub(1) + counter_val
         } else {
             start
         };
