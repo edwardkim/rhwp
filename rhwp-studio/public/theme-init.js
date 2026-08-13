@@ -8,13 +8,16 @@
   const root = document.documentElement;
   const isThemeMode = (value) => value === 'system' || value === 'light' || value === 'dark';
   let mode = 'system';
+  let skin = 'default';
   try {
     const settings = JSON.parse(localStorage.getItem('rhwp-settings') || '{}');
     const storedMode = settings && settings.theme && settings.theme.mode;
     if (isThemeMode(storedMode)) mode = storedMode;
+    if (settings && settings.theme && settings.theme.skin === 'flat') skin = 'flat';
   } catch {
     mode = 'system';
   }
+  if (skin !== 'default') root.dataset.themeSkin = skin;
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   const effective = mode === 'dark' || (mode === 'system' && prefersDark) ? 'dark' : 'light';
   const scheme = `only ${effective}`;

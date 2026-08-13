@@ -1,0 +1,120 @@
+/* 플랫 스킨 (옵트인) — 보기 > 테마 > "플랫 스킨"
+ *
+ * theme-init.js / core/theme.ts 가 설정(theme.skin)에 따라 root 에
+ * `data-theme-skin="flat"` 을 붙일 때만 적용된다. 기본 스킨은 속성이 없어
+ * 이 파일 전체가 비활성이다.
+ *
+ * - 변수 팔레트는 라이트 전용으로 재정의한다. 다크 모드에서는
+ *   `:not([data-theme-effective="dark"])` 가드로 비활성화되어 base.css 의
+ *   다크 팔레트가 그대로 유지된다 (동일 특이도 후행 로드로 다크를 덮는 사고 방지).
+ * - 표면/라운딩 규칙은 변수만 참조하므로 다크에서도 형태(플랫 보더·라운딩)만
+ *   적용되고 색은 다크 팔레트를 따른다.
+ * - 새 DOM/접두어 없이 기존 명칭(#menu-bar, #icon-toolbar, #style-bar,
+ *   #status-bar — rhwp_studio_ui_conventions.md)만 스타일링한다.
+ */
+
+:root[data-theme-skin="flat"]:not([data-theme-effective="dark"]) {
+  /* 표면: 회색 크롬 → 화이트 */
+  --ui-bg: #ffffff;
+  --ui-bg-light: #ffffff;
+  --ui-surface-raised: #ffffff;
+  --ui-surface-muted: #f1f3f6;
+  --ui-toolbar-bg-start: #ffffff;
+  --ui-toolbar-bg-end: #ffffff;
+
+  /* 경계선: 옅은 쿨그레이 */
+  --ui-border: #dde2e8;
+  --ui-border-light: #e3e7ec;
+  --ui-border-subtle: #e9ecf1;
+  --ui-border-strong: #ccd3db;
+
+  /* 상호작용: 옅은 블루 틴트 */
+  --ui-hover: #f1f4f8;
+  --ui-hover-strong: #e9f0fb;
+  --ui-active: #e0ebfa;
+  --ui-selected: #e8f1fe;
+  --ui-menu-open: #1b72e8;
+  --ui-menu-open-border: #1b72e8;
+
+  /* 액센트 블루 */
+  --accent-primary: #2b7de9;
+  --accent-strong: #1b66cf;
+  --accent-light: #4a94f0;
+  --accent-hover: #a8c8f5;
+  --accent-subtle: #5b90e0;
+  --focus-ring: #2b7de9;
+  --ui-link: #1b66cf;
+
+  /* 문서 작업 영역 */
+  --doc-workspace: #eef0f4;
+  --doc-shadow: rgba(20, 35, 60, 0.1);
+
+  /* 눈금자 */
+  --ruler-bg: #f7f8fa;
+  --ruler-body: #ffffff;
+  --ruler-tick: #8a93a0;
+  --ruler-text: #6b7480;
+  --ruler-marker: #2b7de9;
+}
+
+/* 라운드/그림자/UI 글꼴: 색이 아닌 형태 값이므로 라이트·다크 공통 적용 */
+:root[data-theme-skin="flat"] {
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --shadow-dropdown: 0 4px 16px rgba(15, 30, 60, 0.12);
+  --shadow-dialog: 0 8px 28px rgba(15, 30, 60, 0.16);
+  --shadow-light: 0 2px 8px rgba(15, 30, 60, 0.1);
+  /* UI 크롬 글꼴만 바꾼다 — 문서 본문 렌더링 글꼴과 무관한 토큰이다.
+     Pretendard 는 번들하지 않고, 사용자 시스템에 설치된 경우에만 우선 사용한다. */
+  --font-family-ui: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    '맑은 고딕', 'Malgun Gothic', 'Segoe UI', sans-serif;
+}
+
+/* ── 크롬 표면: 변수 참조라 다크 모드에서도 안전 ───────── */
+[data-theme-skin="flat"] #menu-bar {
+  background: var(--ui-surface);
+  border-bottom: 1px solid var(--ui-border-subtle);
+}
+
+[data-theme-skin="flat"] #icon-toolbar {
+  background: var(--ui-surface);
+  border-top: none;
+  border-bottom: 1px solid var(--ui-border-subtle);
+}
+
+[data-theme-skin="flat"] #icon-toolbar .tb-btn {
+  border-radius: var(--radius-md);
+}
+
+[data-theme-skin="flat"] #icon-toolbar .tb-btn:hover {
+  background: var(--ui-hover-strong);
+}
+
+[data-theme-skin="flat"] #icon-toolbar .tb-sep {
+  background: var(--ui-border-subtle);
+}
+
+[data-theme-skin="flat"] #style-bar {
+  background: var(--ui-surface);
+  border-bottom: 1px solid var(--ui-border-subtle);
+}
+
+[data-theme-skin="flat"] #status-bar {
+  background: var(--ui-surface);
+  border-top: 1px solid var(--ui-border-subtle);
+}
+
+/* ── 메뉴 드롭다운: 라운드 카드 ──────────────────────────
+ * 주의: .md-sub-panel 이 드롭다운 밖(left: 100%)에 absolute 로 뜨므로
+ * 여기에 overflow: hidden 을 걸면 서브메뉴가 잘려 보이지 않는다. */
+[data-theme-skin="flat"] #menu-bar .menu-dropdown,
+[data-theme-skin="flat"] #menu-bar .md-sub-panel {
+  border: 1px solid var(--ui-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+}
+
+[data-theme-skin="flat"] #menu-bar .md-item {
+  border-radius: var(--radius-md);
+}
