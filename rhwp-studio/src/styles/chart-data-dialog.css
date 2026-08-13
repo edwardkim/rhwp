@@ -1,0 +1,77 @@
+/* ── 차트 데이터 편집 대화상자 (#4694) ─── */
+.chart-data-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chart-data-grid-wrap {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid #d0d0d0;
+}
+
+.chart-data-grid {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.chart-data-grid th,
+.chart-data-grid td {
+  border: 1px solid #e0e0e0;
+  padding: 2px 4px;
+  text-align: left;
+}
+
+.chart-data-grid thead th {
+  background: #f5f5f5;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.chart-data-series-locked {
+  color: #888;
+  cursor: not-allowed;
+}
+
+.chart-data-grid tbody th {
+  background: #fafafa;
+  font-weight: normal;
+  color: #555;
+  white-space: nowrap;
+}
+
+.chart-data-input {
+  width: 84px;
+  border: 1px solid transparent;
+  padding: 2px 4px;
+  font: inherit;
+  text-align: right;
+}
+
+.chart-data-input:focus {
+  border-color: #4a90d9;
+  outline: none;
+}
+
+.chart-data-input:disabled {
+  background: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.chart-data-input.chart-data-invalid {
+  border-color: #c00;
+  background: #fff4f4;
+}
+
+.chart-data-error {
+  color: #c00;
+  font-size: 12px;
+  white-space: pre-line;
+}
+
+.chart-data-note {
+  color: #777;
+  font-size: 11px;
+}

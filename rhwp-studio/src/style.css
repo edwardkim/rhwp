@@ -22,6 +22,7 @@
 @import './styles/shape-picker.css';
 @import './styles/command-palette.css';
 @import './styles/compare-dialog.css';
+@import './styles/chart-data-dialog.css';
 @import './styles/responsive.css';
 
 /* ── 브리지 창 제어 (chrome-v1) ──────────────────────────────
