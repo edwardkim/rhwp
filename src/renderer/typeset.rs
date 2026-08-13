@@ -20729,6 +20729,14 @@ impl TypesetEngine {
         // tall table still takes the row scanner because its measured body
         // exceeds this narrow 2px conversion bound.
         const NEAR_MEASURED_ROWBREAK_FIT_PX: f64 = 2.0;
+        // A vertical merge beginning in the first logical row makes that row
+        // and its successor an atomic stored band. Splitting before that band
+        // would retain a border-only fragment even though the declared object
+        // fits in the current body.
+        let has_leading_rowspan_band = table
+            .cells
+            .iter()
+            .any(|cell| cell.row == 0 && cell.row_span > 1);
         let near_measured_rowbreak_fits = !table.common.treat_as_char
             && matches!(
                 table.page_break,
@@ -20739,7 +20747,9 @@ impl TypesetEngine {
             // the native HWP5 table declaration. Its near measured fit is a
             // converter provenance contract; native HWP5 must additionally
             // prove that its object frame owns all declared row geometry.
-            && (!st.profile.native_hwp5_layout() || declared_excess_has_source_frame)
+            && (!st.profile.native_hwp5_layout()
+                || declared_excess_has_source_frame
+                || has_leading_rowspan_band)
             && declared_object_total > host_spacing_total
             && st.current_height + declared_object_total <= available
             && st.current_height + ft.effective_height
