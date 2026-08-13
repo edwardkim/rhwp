@@ -3790,6 +3790,55 @@ fn saved_line_range_fits_body_tail(
     true
 }
 
+/// HWPX의 문단 내부 `vpos=0` reset은, reset 직전 fragment가 현재 flow 앵커에서
+/// 시작할 때에만 다음 물리 쪽의 시작을 뜻한다. 이 경우 reset 전 줄들은 저장된
+/// 현재 쪽 fragment의 owner이므로, 일반 줄 높이 예산만으로 중간 쪽으로 분리하지
+/// 않는다. 표·개체·다단·local cursor rewind는 이 계약 밖에 둔다.
+fn hwpx_saved_reset_fragment_matches_current_flow(
+    st: &TypesetState,
+    para: &Paragraph,
+    start_line: usize,
+    break_line: usize,
+    current_page_vpos_base: i32,
+    dpi: f64,
+) -> bool {
+    if !st.profile.hwpx_stored_layout()
+        || st.col_count != 1
+        || !para.controls.is_empty()
+        || start_line >= break_line
+        || break_line >= para.line_segs.len()
+    {
+        return false;
+    }
+
+    let Some(start_bounds) = para
+        .line_segs
+        .get(start_line)
+        .filter(|seg| !is_synthetic_line_seg(seg))
+        .and_then(|seg| line_seg_visible_bounds_px(seg, current_page_vpos_base, dpi))
+    else {
+        return false;
+    };
+    if !saved_line_is_anchored_to_current_flow(start_bounds, st.current_height) {
+        return false;
+    }
+
+    let mut previous_vpos = None;
+    for seg in &para.line_segs[start_line..break_line] {
+        if is_synthetic_line_seg(seg)
+            || seg.vertical_pos <= 0
+            || previous_vpos.is_some_and(|previous| seg.vertical_pos <= previous)
+        {
+            return false;
+        }
+        previous_vpos = Some(seg.vertical_pos);
+    }
+
+    para.line_segs
+        .get(break_line)
+        .is_some_and(|seg| !is_synthetic_line_seg(seg) && seg.vertical_pos == 0)
+}
+
 fn paragraph_text_looks_like_list_continuation_tail(para: &Paragraph) -> bool {
     let text = para.text.trim_start();
     text.starts_with('.') || text.starts_with('-') || text.starts_with('·') || text.starts_with('•')
@@ -15533,10 +15582,15 @@ impl TypesetEngine {
             native_hwp5_existing_footnote_reset_overlap_break_line(
                 st, para, fmt, paragraphs, self.dpi,
             );
+        let current_page_vpos_base = st.vpos_page_base.or_else(|| {
+            st.current_items
+                .first()
+                .and_then(|item| page_item_vpos_base(item, paragraphs))
+        });
         let hwp3_converted_hwp5 = st.profile.hwp3_layout()
             && !st.profile.hwp3_native_layout()
             && !st.profile.hwpx_container();
-        let forced_page_break_line = internal_vpos_page_break_line(
+        let internal_forced_page_break_line = internal_vpos_page_break_line(
             para,
             fmt.line_heights.len(),
             st.layout.body_area.height,
@@ -15546,6 +15600,21 @@ impl TypesetEngine {
                 || hwp3_converted_hwp5,
             hwp3_converted_hwp5,
         )
+        .filter(|break_line| {
+            // HWPX의 reset은 local writer cursor도 재사용한다. 현재 flow와
+            // anchor가 맞지 않는 reset은 physical page 경계로 승격하지 않는다.
+            !st.profile.hwpx_stored_layout()
+                || st.current_items.is_empty()
+                || hwpx_saved_reset_fragment_matches_current_flow(
+                    st,
+                    para,
+                    0,
+                    *break_line,
+                    current_page_vpos_base.unwrap_or(0),
+                    self.dpi,
+                )
+        });
+        let forced_page_break_line = internal_forced_page_break_line
         .or_else(|| {
             st.profile.hwpx_stored_layout().then(|| {
                 hwpx_explicit_page_break_tail_line(
@@ -15596,11 +15665,6 @@ impl TypesetEngine {
         let trim_spacing_before_for_flow =
             !st.profile.hwp3_layout() && !para_near_rowbreak_table(paragraphs, para_idx);
 
-        let current_page_vpos_base = st.vpos_page_base.or_else(|| {
-            st.current_items
-                .first()
-                .and_then(|item| page_item_vpos_base(item, paragraphs))
-        });
         // [#2279 OMIT-fit] spacing-누락 문서군에서 **저장 리셋 직전의 페이지말
         // 빈 문단**은 다음 쪽 상단 귀속이다 — 한글 fresh 는 누락 spacing 을
         // 재가산해 이 빈 문단을 다음 쪽으로 넘긴다(36392557 pi14: 저장 bottom
@@ -16122,6 +16186,25 @@ impl TypesetEngine {
                             st.base_available_height(),
                             self.dpi,
                         );
+                    // HWPX의 vpos=0 reset은 일반 writer-local cursor가 아니라
+                    // `internal_vpos_page_break_line`이 확인한 물리 fragment 경계일 수
+                    // 있다. 현재 fragment의 첫 줄이 flow 앵커와 일치하면 reset 전
+                    // 전체는 같은 쪽 owner다. 본문 bottom을 넘었다는 계산만으로
+                    // 중간 tail-only 쪽을 만들지 않는다.
+                    let hwpx_reset_fragment_owner = forced_page_break_line.is_some_and(
+                        |break_line| {
+                            cursor_line < break_line
+                                && li < break_line
+                                && hwpx_saved_reset_fragment_matches_current_flow(
+                                    st,
+                                    para,
+                                    cursor_line,
+                                    break_line,
+                                    current_page_vpos_base.unwrap_or(0),
+                                    self.dpi,
+                                )
+                        },
+                    );
                     // native HWP5가 문단 중간 reset 직전의 연속 줄들을 기존 각주
                     // 바로 위에 저장한 경우에는, 40px safety margin 때문에 그 줄을
                     // 조기 이월하지 않는다. 일반 body height가 아니라 실제
@@ -16197,13 +16280,16 @@ impl TypesetEngine {
                     }
                     if !hwp_authoritative
                         && !saved_tail_vpos_fit
+                        && !hwpx_reset_fragment_owner
                         && !native_hwp5_reset_tail_fits_actual_footnote_boundary
                         && !saved_line_clears_footnote_area
                     {
                         break;
                     }
                     used_saved_tail_vpos_fit |=
-                        saved_tail_vpos_fit || native_hwp5_reset_tail_fits_actual_footnote_boundary;
+                        saved_tail_vpos_fit
+                            || hwpx_reset_fragment_owner
+                            || native_hwp5_reset_tail_fits_actual_footnote_boundary;
                 }
                 cumulative += fmt.line_advance(li);
                 end_line = li + 1;
