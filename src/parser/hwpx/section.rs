@@ -4315,19 +4315,22 @@ fn parse_shape_object(
 /// 중첩한 section XML 하나로 네이티브 스택을 고갈시켜 프로세스를 죽일 수 있다
 /// (패닉과 달리 catch_unwind 로 못 잡는다). 여는 태그가 ~14바이트라 100,000 겹도
 /// ~1.4MB 로 어떤 입력 상한에도 걸리지 않는다. HWP3 `MAX_DRAWING_OBJECT_DEPTH`
-/// (#4285)·HML `HmlLimits::max_depth` 와 같은 취지로 256 상한을 둔다.
-const MAX_HWPX_CONTAINER_DEPTH: u32 = 256;
+/// (#4285)·HML `HmlLimits::max_depth` 와 같은 취지로 상한을 둔다. 다만 이 함수는
+/// 큰 지역 상태를 가진 재귀 함수이므로, 기본 스레드 스택에서도 가드가 먼저
+/// 동작하도록 HWP3/HML의 256보다 작은 64개 그룹으로 제한한다.
+const MAX_HWPX_CONTAINER_DEPTH: u32 = 64;
 
 /// `<hp:container>` 요소를 파싱하여 `Control::Shape(GroupShape)`를 반환한다.
 ///
-/// `depth` 는 중첩 그룹의 현재 깊이다(최상위 호출은 0). 상한을 넘으면 스택을
-/// 고갈시키기 전에 오류로 거부한다 — 위 `MAX_HWPX_CONTAINER_DEPTH` 참고.
+/// `depth` 는 중첩 그룹의 현재 깊이다(최상위 호출은 0). 최대 64개 그룹을
+/// 허용하며, 그 다음 그룹은 스택을 고갈시키기 전에 오류로 거부한다 — 위
+/// `MAX_HWPX_CONTAINER_DEPTH` 참고.
 fn parse_container(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
     depth: u32,
 ) -> Result<Control, HwpxError> {
-    if depth > MAX_HWPX_CONTAINER_DEPTH {
+    if depth >= MAX_HWPX_CONTAINER_DEPTH {
         return Err(HwpxError::XmlError(format!(
             "container nesting exceeds {} levels",
             MAX_HWPX_CONTAINER_DEPTH
@@ -6826,24 +6829,14 @@ mod tests {
     }
 
     #[test]
-    fn container_nesting_beyond_limit_is_rejected() {
+    fn container_nesting_beyond_limit_is_rejected_on_default_stack() {
         // 상한을 넘는 중첩 <hp:container> 는 스택을 고갈시키기 전에 오류로 거부돼야
         // 한다. 가드가 없으면 이 입력은 그대로 파싱돼(Ok) 이 단언이 실패하고, 실파일
         // 규모(수만 겹)에서는 catch_unwind 로도 못 잡는 SIGSEGV 가 난다.
-        //
-        // 디버그 빌드는 parse_container 프레임이 커(~8KB) 기본 2MB 테스트 스레드
-        // 스택으로는 상한(256)에 닿기 전에 프레임 할당만으로 넘칠 수 있다. 가드
-        // 경계를 빌드 프로파일과 무관하게 결정적으로 시험하도록 넉넉한 스택의 전용
-        // 스레드에서 파싱한다(릴리스·wasm 실배포는 프레임이 훨씬 작다).
-        let rejected = std::thread::Builder::new()
-            .stack_size(32 * 1024 * 1024)
-            .spawn(|| {
-                let xml = nested_container_section_xml(MAX_HWPX_CONTAINER_DEPTH as usize + 40);
-                parse_hwpx_section(&xml).is_err()
-            })
-            .expect("파서 스레드 생성 실패")
-            .join()
-            .expect("파서 스레드 패닉");
+        // 기본 테스트 스레드에서 실행해, 실제 호출자가 흔히 쓰는 스택에서도 가드가
+        // 재귀 프레임 고갈보다 먼저 동작함을 검증한다.
+        let xml = nested_container_section_xml(MAX_HWPX_CONTAINER_DEPTH as usize + 1);
+        let rejected = parse_hwpx_section(&xml).is_err();
         assert!(
             rejected,
             "상한 초과 container 중첩이 거부되지 않았다 — 재귀 깊이 가드 회귀"
@@ -6851,9 +6844,9 @@ mod tests {
     }
 
     #[test]
-    fn container_nesting_within_limit_still_parses() {
+    fn container_nesting_at_limit_still_parses() {
         // 상한 안쪽의 정상적인 중첩은 계속 성공해야 한다(가드가 과잉 차단하지 않음).
-        let xml = nested_container_section_xml(8);
+        let xml = nested_container_section_xml(MAX_HWPX_CONTAINER_DEPTH as usize);
         assert!(
             parse_hwpx_section(&xml).is_ok(),
             "정상 깊이 container 가 거부됐다 — 가드가 과잉 차단"
