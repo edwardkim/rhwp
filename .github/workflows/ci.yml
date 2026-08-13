@@ -919,6 +919,11 @@ jobs:
       - name: Validate adoption spine contract
         run: python3 -m unittest scripts/tests/test_adoption_spine.py
 
+      # [#4720] 에이전트 노동 운영체제 — 부서가 실재 pack/트랙/과제에 매핑되고
+      # 자동 배치기가 유효한 배정을 내는지. 바이너리 불요.
+      - name: Validate agent org contract
+        run: python3 -m unittest scripts/tests/test_agent_org.py
+
       - name: Clippy
         run: cargo clippy -- -D warnings
 
