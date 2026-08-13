@@ -61,6 +61,15 @@ pub fn serialize_section(section: &Section) -> Vec<u8> {
                 0,
                 Control::SectionDef(Box::new(section.section_def.clone())),
             );
+            // [#4680] 정의 제어문자가 글자보다 앞에 놓이도록 자리를 비운다 —
+            // 간격이 없으면 `serialize_para_text` 가 텍스트 뒤에 몰아 쓰고, 그런 문서는
+            // 한글이 열다 멎는다. 어댑터와 같은 문단 좌표 계약을 적용한다.
+            let leading_defs = clone
+                .controls
+                .iter()
+                .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+                .count();
+            clone.reserve_leading_extended_control_slots(leading_defs);
             Some(clone)
         }
     });
@@ -1660,6 +1669,71 @@ mod tests {
         assert_eq!(parsed.paragraphs[0].text, "AB");
         // SectionDef 컨트롤이 파싱되어 section_def에 반영
         assert_eq!(parsed.section_def.default_tab_spacing, 800);
+    }
+
+    #[test]
+    fn issue4680_serializer_fallback_shifts_all_leading_control_coordinates() {
+        use crate::model::page::PageDef;
+
+        let para = Paragraph {
+            text: "AB".to_string(),
+            char_offsets: vec![0, 1],
+            char_shapes: vec![
+                CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 1,
+                },
+                CharShapeRef {
+                    start_pos: 1,
+                    char_shape_id: 2,
+                },
+            ],
+            range_tags: vec![RangeTag {
+                start: 0,
+                end: 1,
+                tag: 0x0100_0003,
+            }],
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    line_height: 500,
+                    text_height: 400,
+                    ..Default::default()
+                },
+                LineSeg {
+                    text_start: 1,
+                    line_height: 500,
+                    text_height: 400,
+                    ..Default::default()
+                },
+            ],
+            controls: vec![Control::ColumnDef(Default::default())],
+            ..Default::default()
+        };
+        let section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![para],
+            raw_stream: None,
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+        let parsed_para = &parsed.paragraphs[0];
+
+        assert_eq!(parsed_para.char_offsets, vec![16, 17]);
+        assert_eq!(parsed_para.char_shapes[0].start_pos, 0);
+        assert_eq!(parsed_para.char_shapes[1].start_pos, 17);
+        assert_eq!(parsed_para.range_tags[0].start, 16);
+        assert_eq!(parsed_para.range_tags[0].end, 17);
+        assert_eq!(parsed_para.line_segs[0].text_start, 0);
+        assert_eq!(parsed_para.line_segs[1].text_start, 17);
     }
 
     /// #4424: `Control::Hyperlink` 는 `control_char_code_and_id` 에서 `(0x000B, 0)` 이라
