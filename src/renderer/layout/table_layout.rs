@@ -1653,6 +1653,46 @@ pub(crate) struct NestedTableSplit {
     pub recursive_cut: Option<NestedTableCut>,
 }
 
+/// [#4698] 셀 안 문단을 한컴이 저장한 **조각(fragment)** 단위로 묶는다.
+///
+/// 병합 셀이 쪽 경계에 걸리면 한컴은 그 셀의 문단을 쪽별로 나눠 놓고, 각 조각의
+/// 첫 문단 `LINE_SEG.vpos` 를 다시 0 부터 기록한다 (kps-ai 셀[39]:
+/// `[0, 1920, 3840, 0, 1920]` = 앞쪽 3 문단 + 다음 쪽 2 문단). 즉 두 번째 이후
+/// 문단의 `vpos == 0` 은 "조각이 여기서 시작한다"는 저장된 사실이다.
+///
+/// 모든 문단이 `vpos == 0` 인 셀(앵커 미기록 센티널)은 조각 정보가 아니므로
+/// 제외한다 — 각 조각의 저장 extent 가 0 인지로 가른다.
+fn stored_cell_fragment_groups(cell: &crate::model::table::Cell) -> Vec<(usize, usize)> {
+    let mut groups: Vec<(usize, usize)> = Vec::new();
+    let mut start = 0usize;
+    for (idx, para) in cell.paragraphs.iter().enumerate() {
+        let restarts = idx > 0
+            && para
+                .line_segs
+                .first()
+                .is_some_and(|seg| seg.vertical_pos == 0);
+        if restarts {
+            groups.push((start, idx));
+            start = idx;
+        }
+    }
+    if start < cell.paragraphs.len() {
+        groups.push((start, cell.paragraphs.len()));
+    }
+    groups
+}
+
+/// 조각의 저장 높이(HWPUNIT) — 조각 안 줄들의 `vpos + line_height` 최댓값.
+fn stored_fragment_extent_hu(cell: &crate::model::table::Cell, group: (usize, usize)) -> i32 {
+    cell.paragraphs[group.0..group.1]
+        .iter()
+        .flat_map(|para| para.line_segs.iter())
+        .filter(|seg| seg.vertical_pos >= 0)
+        .map(|seg| seg.vertical_pos + seg.line_height.max(0))
+        .max()
+        .unwrap_or(0)
+}
+
 /// 중첩 표에서 pixel offset/space를 행 범위로 변환한다.
 /// 공간이 부족한 마지막 행은 제외하여 다음 페이지에서 렌더링되도록 한다.
 pub(crate) fn calc_nested_split_rows(
@@ -5903,6 +5943,58 @@ impl LayoutEngine {
                 cell_y
             };
 
+            // [#4698] 쪽 경계에 걸친 병합(rowspan) 라벨 셀은 한컴이 이미 문단을
+            // 쪽별 조각으로 나눠 저장해 두었다(조각 첫 문단의 vpos 가 0 으로 재시작).
+            // 종전에는 앞 조각이 셀 문단 전부를 받아 조각 하단을 넘긴 줄이 Cell clip
+            // 으로 사라지고, 뒤 조각은 [#1073] 로 통째로 비워져 그 줄이 어느 쪽에도
+            // 남지 않았다(kps-ai p65 `시장침해` 4자 소실). 이 조각이 소유하는 문단
+            // 범위를 저장 조각 그대로 골라 셀을 잘라 넘긴다.
+            let fragment_para_range = row_filter.and_then(|(sr, er)| {
+                let straddles = cell.row_span > 1 && (r < sr || cell_end_row > er);
+                if !straddles {
+                    return None;
+                }
+                let groups = stored_cell_fragment_groups(cell);
+                if groups.len() < 2
+                    || groups
+                        .iter()
+                        .any(|&g| stored_fragment_extent_hu(cell, g) <= 0)
+                {
+                    return None;
+                }
+                // 이 조각 위쪽으로 이미 앞 쪽들이 소비한 셀 높이
+                let consumed = (cell_y - raw_cell_y).max(0.0);
+                let mut used = 0.0f64;
+                let mut selected: Option<(usize, usize)> = None;
+                for &g in &groups {
+                    let h = hwpunit_to_px(stored_fragment_extent_hu(cell, g), self.dpi);
+                    match selected {
+                        None => {
+                            if used + h <= consumed + 0.5 {
+                                used += h;
+                                continue;
+                            }
+                            selected = Some(g);
+                            used = h;
+                        }
+                        Some((start, _)) => {
+                            if used + h > cell_h + 0.5 {
+                                break;
+                            }
+                            used += h;
+                            selected = Some((start, g.1));
+                        }
+                    }
+                }
+                selected
+            });
+            let fragment_cell = fragment_para_range.map(|(start, end)| {
+                let mut fragment = cell.clone();
+                fragment.paragraphs = cell.paragraphs[start..end].to_vec();
+                fragment
+            });
+            let cell = fragment_cell.as_ref().unwrap_or(cell);
+
             let cell_id = tree.next_id();
             let mut cell_node = RenderNode::new(
                 cell_id,
@@ -5953,8 +6045,10 @@ impl LayoutEngine {
             // 먼저 시작한 rowspan 셀(r < sr)은 라벨이 이전 페이지에 이미 렌더됨 → 연속
             // 페이지에선 공란(영역/배경만, 텍스트 미렌더). 외부 표 advance_row_block_cut 의
             // rs>1 라벨 공란 정합. row_filter 는 중첩 표 분할 전용(외부 표는 별도 경로).
+            // 저장 조각을 골라 넘긴 셀(#4698)은 이 조각이 소유하는 문단만 담고 있으므로
+            // 비우지 않는다 — 비우면 그 문단이 어느 쪽에도 남지 않는다.
             if let Some((sr, _)) = row_filter {
-                if sr > 0 && r < sr {
+                if sr > 0 && r < sr && fragment_para_range.is_none() {
                     composed_paras.clear();
                 }
             }

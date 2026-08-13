@@ -647,6 +647,8 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         numbering_restart,
         // [#4149] 파생 캐시 — IR 비교 대상 아님 (직렬화·저장 경로에도 미포함).
         single_line_overflow_memo: _,
+        // [#4677] 조판 전용 보강 줄 표식 — 파일에 실리지 않으므로 IR 비교 대상 아님.
+        layout_only_fill_lines: _,
     } = a;
 
     macro_rules! f {

@@ -424,6 +424,30 @@ pub struct ColumnContent {
     /// layout 시점까지 보존. layout 이 본 메타데이터로 wrap zone 판정 + LineSeg cs/sw
     /// 정합 렌더 (PR #589 wrap_precomputed 메커니즘 대체).
     pub wrap_anchors: std::collections::HashMap<usize, WrapAnchorRef>,
+    /// [#4568] 앞 쪽에서 쪽 하단에 잘린 overlay 표의 **잔여 행**을 이 단 최상단에
+    /// 이어 그리기 위한 목록.
+    ///
+    /// `items` 에 섞지 않는 이유는 소유 의미가 다르기 때문이다 — 잔여 행은 흐름을
+    /// 소비하지 않는 z-layer 장식이고 이 단이 그 문단을 소유하지도 않는다. 항목으로
+    /// 넣으면 이 조각이 단의 **첫 항목**이 되어 `items.first()` 를 보는 휴리스틱들이
+    /// 조각을 본문으로 읽는다(실측: `overflow_cell_baseline` 래칫 62 → 63줄).
+    pub overlay_continuations: Vec<OverlayContinuation>,
+    /// [#4568] 이 단에서 잔여 행을 다음 쪽에 넘긴 overlay 표의 **앵커 쪽 컷**.
+    /// `(para_index, control_index, end_row)` — 앵커 그리기는 `0..end_row` 만 그린다.
+    /// 넘긴 행을 앵커 쪽에서도 전부 그리면(bleed) 시각적으로는 클립돼 안 보이지만
+    /// render tree 에 쪽 밖 줄이 남아 `overflow_cell_baseline` 래칫에 계상된다.
+    pub overlay_cuts: Vec<(usize, usize, usize)>,
+}
+
+/// [#4568] 쪽을 넘긴 overlay 표의 잔여 행 조각.
+#[derive(Debug, Clone)]
+pub struct OverlayContinuation {
+    /// 표 컨트롤이 있는 원본 문단 인덱스
+    pub para_index: usize,
+    /// 문단 내 컨트롤 인덱스
+    pub control_index: usize,
+    /// 이 단에서 그릴 첫 행 (inclusive). 앞 쪽이 이미 그린 행 수와 같다.
+    pub start_row: usize,
 }
 
 /// 어울림 배치 표 옆에 배치되는 빈 리턴 문단 정보
@@ -561,16 +585,7 @@ pub fn find_inline_control_target_page(
     ctrl_idx: usize,
     para: &Paragraph,
 ) -> Option<(usize, usize)> {
-    let positions = para.control_text_positions();
-    let ctrl_text_pos = *positions.get(ctrl_idx)?;
-    let target_line = para
-        .line_segs
-        .iter()
-        .enumerate()
-        .rev()
-        .find(|(_, ls)| (ls.text_start as usize) <= ctrl_text_pos)
-        .map(|(i, _)| i)
-        .unwrap_or(0);
+    let target_line = crate::renderer::layout::control_line_seg_index(para, ctrl_idx)?;
 
     // 1) 현재(마지막) 페이지의 current_items 검사 — 박스 line 이 여기 있으면 None (= 현재)
     let in_current = current_items.iter().any(|item| match item {
@@ -606,6 +621,19 @@ pub fn find_inline_control_target_page(
         }
     }
     None
+}
+
+/// 페이지로 분할된 문단에서 해당 줄을 소유한 쪽으로 다시 배치해야 하는 인라인 개체인가.
+///
+/// `PageItem::Shape`는 개체 종류를 함께 담지만, 실제 그림/도형의 인라인 좌표는 문단의
+/// 일부 줄만 렌더한 쪽에 등록된다. 문단 끝에서 일괄 추가하면 모든 TAC 그림이 마지막
+/// 조각으로 몰린다. 표·수식은 별도 조판 경로와 소유 규칙을 가지므로 여기서 넓히지 않는다.
+pub(crate) fn is_routable_treat_as_char_picture_or_shape(control: &Control) -> bool {
+    match control {
+        Control::Picture(picture) => picture.common.treat_as_char,
+        Control::Shape(shape) => shape.common().treat_as_char,
+        _ => false,
+    }
 }
 
 impl PageItem {
@@ -812,6 +840,8 @@ impl PaginationResult {
                         start_height: cc.start_height,
                         endnote_flow: cc.endnote_flow,
                         items: cc.items.iter().map(|it| it.with_offset(offset)).collect(),
+                        overlay_continuations: cc.overlay_continuations.clone(),
+                        overlay_cuts: cc.overlay_cuts.clone(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,
                         wrap_around_paras: cc

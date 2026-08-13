@@ -96,6 +96,10 @@ impl PaginationState {
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
             wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
+            // [#4568] Paginator 경로(RHWP_USE_PAGINATOR fallback)는 overlay 잔여 행을
+            // 아직 만들지 않는다 — TypesetEngine 경로만 채운다.
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -116,6 +120,10 @@ impl PaginationState {
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
             wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
+            // [#4568] Paginator 경로(RHWP_USE_PAGINATOR fallback)는 overlay 잔여 행을
+            // 아직 만들지 않는다 — TypesetEngine 경로만 채운다.
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
