@@ -17,6 +17,7 @@ import { PluginHostRegistry } from '@/plugin/host';
 import type { StudioPlugin } from '@/plugin/types';
 import { CommandDispatcher } from '@/command/dispatcher';
 import type { EditorContext, CommandServices, EditorEditMode } from '@/command/types';
+import { defaultShortcuts, matchShortcut } from '@/command/shortcut-map';
 import { confirmSaveBeforeReplacingDocument, fileCommands } from '@/command/commands/file';
 import { editCommands } from '@/command/commands/edit';
 import { syncClipMenu, syncTextMarkMenu, viewCommands } from '@/command/commands/view';
@@ -682,8 +683,17 @@ function setupGlobalShortcuts(): void {
     // input/textarea 등 편집 가능 요소 내부에서는 무시
     const target = e.target as HTMLElement;
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
-    // InputHandler가 활성 상태이면 자체 처리에 맡김
-    if (inputHandler?.isActive()) return;
+    // textarea가 아닌 곳에 포커스가 빠진 활성 편집기는 자체 keydown을 받지 못한다.
+    // 이때 undo/redo만 dispatcher로 보완한다. textarea가 target이면 위에서 이미 return하므로
+    // InputHandler와 이중 실행되지 않으며, 다른 단축키의 기존 전역 소유 범위도 넓히지 않는다.
+    if (inputHandler?.isActive()) {
+      const commandId = matchShortcut(e, defaultShortcuts);
+      if (commandId === 'edit:undo' || commandId === 'edit:redo') {
+        const result = dispatcher.dispatchWithResult(commandId);
+        if (result.ok || result.reason === 'threw') e.preventDefault();
+      }
+      return;
+    }
 
     const ctrlOrMeta = e.ctrlKey || e.metaKey;
 
