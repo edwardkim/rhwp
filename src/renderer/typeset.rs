@@ -19336,13 +19336,14 @@ impl TypesetEngine {
                     && table.outer_margin_bottom > 0)
                     .then(|| layout_engine.row_two_line_source_frame_height(table, r, styles))
                     .flatten();
-            // A stored vpos reset owns a physical fragment boundary.  The
-            // source may express it either at a terminal response row or in a
-            // continued single-cell row; neither case depends on a table's
-            // dimensions, declared height, or paragraph count.
+            // 저장 vpos reset은 같은 문단 안에서 양수 좌표가 0으로 되감긴 경우에만
+            // 물리 조각 경계를 소유한다. 문단 전환의 0은 HWPX writer-local cursor라
+            // 저장 프레임 컷으로 선택하지 않고 일반 행 용량 계산에 맡긴다.
             let stored_source_frame = (st.profile.hwpx_stored_layout()
                 && !table.common.treat_as_char
                 && mt.allows_row_break_split()
+                && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
+                && layout_engine.row_has_single_visible_source_cell(table, r, styles)
                 && !rowspan_touched.get(r).copied().unwrap_or(true))
                 .then(|| {
                     layout_engine.stored_frame_cut_for_row(table, r, row_start_cut, styles)

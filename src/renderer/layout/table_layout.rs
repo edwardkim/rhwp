@@ -10334,11 +10334,12 @@ impl LayoutEngine {
                     && !u.empty_spacer
                     && h + u.height <= avail_height
                     && avail_height - h > HARD_BREAK_REMAINING_TOLERANCE_PX;
-                // 한 셀에 저장 reset이 여러 개 있는 HWPX RowBreak continuation은
-                // writer-local cursor stream이다. 이 reset들은 물리 조각이 아니라
-                // 저장 좌표 범위를 나누므로, 아래 mid-page absorb 판정이 행·잔여
-                // 공간을 함께 검증한다. 단일 reset HWPX와 재귀 중첩 표의 frame은
-                // 여전히 물리 조각 경계다.
+                // HWPX 저장 reset은 문단 내부에서 양수 vpos가 0으로 되감기고,
+                // 그 행의 유일한 가시 source cell이 그 reset을 소유할 때만 물리
+                // 조각 경계 권한을 갖는다. 여러 가시 셀 중 하나의 reset은 셀 로컬
+                // cursor이므로 행 전체를 앞당겨 자르지 않고 일반 capacity cut에
+                // 맡긴다. 한 셀에 저장 reset이 여러 개인 continuation stream은
+                // 기존처럼 mid-page absorb 판정이 행과 잔여 공간을 함께 검증한다.
                 let follows_single_cell_nested_host = u
                     .para_idx
                     .checked_sub(1)
@@ -10363,6 +10364,8 @@ impl LayoutEngine {
                     && (u.mixed_nested_recursive
                         || follows_single_cell_nested_host
                         || (self.profile.get().hwpx_stored_layout()
+                            && self.row_has_stored_vpos_frame_rewind(table, row)
+                            && self.row_has_single_visible_source_cell(table, row, styles)
                             && !hwpx_local_reset_stream));
                 if j > start
                     && u.hard_break_before
