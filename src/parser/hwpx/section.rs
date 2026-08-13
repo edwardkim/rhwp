@@ -509,8 +509,8 @@ fn parse_paragraph(
                         para.controls.push(shape);
                     }
                     b"container" => {
-                        // 묶음(그룹) 객체 파싱
-                        let group = parse_container(ce, reader)?;
+                        // 묶음(그룹) 객체 파싱 (최상위 그룹 — 깊이 0)
+                        let group = parse_container(ce, reader, 0)?;
                         text_parts.push("\u{0002}".to_string());
                         para.controls.push(group);
                     }
@@ -4310,11 +4310,29 @@ fn parse_shape_object(
 
 // ─── 묶음(그룹) 객체 파싱 ───
 
+/// [#4730] HWPX 그룹(`<hp:container>`)은 자기 자신을 자식으로 가질 수 있고, 그
+/// 중첩 깊이는 파일에서 그대로 온다. 상한이 없으면 `<hp:container>` 를 수만 겹
+/// 중첩한 section XML 하나로 네이티브 스택을 고갈시켜 프로세스를 죽일 수 있다
+/// (패닉과 달리 catch_unwind 로 못 잡는다). 여는 태그가 ~14바이트라 100,000 겹도
+/// ~1.4MB 로 어떤 입력 상한에도 걸리지 않는다. HWP3 `MAX_DRAWING_OBJECT_DEPTH`
+/// (#4285)·HML `HmlLimits::max_depth` 와 같은 취지로 256 상한을 둔다.
+const MAX_HWPX_CONTAINER_DEPTH: u32 = 256;
+
 /// `<hp:container>` 요소를 파싱하여 `Control::Shape(GroupShape)`를 반환한다.
+///
+/// `depth` 는 중첩 그룹의 현재 깊이다(최상위 호출은 0). 상한을 넘으면 스택을
+/// 고갈시키기 전에 오류로 거부한다 — 위 `MAX_HWPX_CONTAINER_DEPTH` 참고.
 fn parse_container(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
+    depth: u32,
 ) -> Result<Control, HwpxError> {
+    if depth > MAX_HWPX_CONTAINER_DEPTH {
+        return Err(HwpxError::XmlError(format!(
+            "container nesting exceeds {} levels",
+            MAX_HWPX_CONTAINER_DEPTH
+        )));
+    }
     let mut common = CommonObjAttr::default();
     let mut shape_attr = ShapeComponentAttr::default();
     let mut has_pos = false;
@@ -4364,8 +4382,8 @@ fn parse_container(
                         }
                     }
                     b"container" => {
-                        // 중첩 그룹
-                        let child = parse_container(ce, reader)?;
+                        // 중첩 그룹 — 깊이 +1 (상한 초과 시 위에서 거부)
+                        let child = parse_container(ce, reader, depth + 1)?;
                         if let Control::Shape(shape) = child {
                             children.push(*shape);
                         }
@@ -6789,6 +6807,57 @@ mod tests {
         assert_eq!(section.paragraphs.len(), 1);
         assert_eq!(section.paragraphs[0].text, "Hello World");
         assert_eq!(section.paragraphs[0].para_shape_id, 0);
+    }
+
+    // ---------- [#4730] <hp:container> 무한 중첩 → 스택 오버플로 DoS 가드 ----------
+
+    fn nested_container_section_xml(depth: usize) -> String {
+        let mut xml = String::from(
+            r#"<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"><hp:p paraPrIDRef="0" styleIDRef="0">"#,
+        );
+        for _ in 0..depth {
+            xml.push_str("<hp:container>");
+        }
+        for _ in 0..depth {
+            xml.push_str("</hp:container>");
+        }
+        xml.push_str("</hp:p></hs:sec>");
+        xml
+    }
+
+    #[test]
+    fn container_nesting_beyond_limit_is_rejected() {
+        // 상한을 넘는 중첩 <hp:container> 는 스택을 고갈시키기 전에 오류로 거부돼야
+        // 한다. 가드가 없으면 이 입력은 그대로 파싱돼(Ok) 이 단언이 실패하고, 실파일
+        // 규모(수만 겹)에서는 catch_unwind 로도 못 잡는 SIGSEGV 가 난다.
+        //
+        // 디버그 빌드는 parse_container 프레임이 커(~8KB) 기본 2MB 테스트 스레드
+        // 스택으로는 상한(256)에 닿기 전에 프레임 할당만으로 넘칠 수 있다. 가드
+        // 경계를 빌드 프로파일과 무관하게 결정적으로 시험하도록 넉넉한 스택의 전용
+        // 스레드에서 파싱한다(릴리스·wasm 실배포는 프레임이 훨씬 작다).
+        let rejected = std::thread::Builder::new()
+            .stack_size(32 * 1024 * 1024)
+            .spawn(|| {
+                let xml = nested_container_section_xml(MAX_HWPX_CONTAINER_DEPTH as usize + 40);
+                parse_hwpx_section(&xml).is_err()
+            })
+            .expect("파서 스레드 생성 실패")
+            .join()
+            .expect("파서 스레드 패닉");
+        assert!(
+            rejected,
+            "상한 초과 container 중첩이 거부되지 않았다 — 재귀 깊이 가드 회귀"
+        );
+    }
+
+    #[test]
+    fn container_nesting_within_limit_still_parses() {
+        // 상한 안쪽의 정상적인 중첩은 계속 성공해야 한다(가드가 과잉 차단하지 않음).
+        let xml = nested_container_section_xml(8);
+        assert!(
+            parse_hwpx_section(&xml).is_ok(),
+            "정상 깊이 container 가 거부됐다 — 가드가 과잉 차단"
+        );
     }
 
     // ---------- #2957: autoNumFormat 원 문자(CIRCLED_DIGIT) 인식 ----------
