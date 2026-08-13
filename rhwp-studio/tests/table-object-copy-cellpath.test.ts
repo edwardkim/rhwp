@@ -33,25 +33,19 @@ test('#4272 본문 표 객체는 기존 ref.ci와 빈 owner path를 유지한다
   );
 });
 
-test('#4272 키보드와 command 복사는 같은 표 객체 주소 변환을 사용한다', () => {
+test('#4272 키보드 표 복사는 dispatcher를 거쳐 canonical 주소 변환을 사용한다', () => {
   const keyboard = source('src/engine/input-handler-keyboard.ts');
   const handler = source('src/engine/input-handler.ts');
 
-  const tableSelectionStart = keyboard.indexOf('// Ctrl+C → 표 복사');
+  const tableSelectionStart = keyboard.indexOf("if (this.cursor.isInTableObjectSelection()) {");
   const ctrlCStart = keyboard.indexOf("e.key === 'c'", tableSelectionStart);
   const ctrlXStart = keyboard.indexOf("e.key === 'x'", ctrlCStart);
   assert.notEqual(ctrlCStart, -1, '표 Ctrl+C 핸들러를 찾지 못함');
   assert.notEqual(ctrlXStart, -1, '표 Ctrl+X 경계를 찾지 못함');
   const ctrlCBlock = keyboard.slice(ctrlCStart, ctrlXStart);
-  assert.match(ctrlCBlock, /const target = tableObjectClipboardTarget\(ref\);/);
-  assert.match(
-    ctrlCBlock,
-    /wasm\.copyControl\([\s\S]*?target\.controlIndex, target\.ownerCellPathJson/,
-  );
-  assert.match(
-    ctrlCBlock,
-    /wasm\.exportControlHtml\([\s\S]*?target\.controlIndex, target\.ownerCellPathJson/,
-  );
+  assert.match(ctrlCBlock, /this\.dispatcher\?\.dispatch\('edit:copy'\);/);
+  assert.doesNotMatch(ctrlCBlock, /copyControl\(|exportControlHtml\(/,
+    '키보드는 주소 변환을 재구현하지 않는다');
 
   const performCopyStart = handler.indexOf('performCopy(): void');
   const performCopyEnd = handler.indexOf('\n  /**', performCopyStart + 1);
