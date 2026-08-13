@@ -3614,6 +3614,15 @@ fn saved_bounds_overlap_current_flow(bounds: (f64, f64), current_height: f64) ->
     line_height > 0.0 && top <= current_height + line_height && current_height <= bottom
 }
 
+const SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX: f64 = 16.0;
+
+fn saved_line_is_anchored_to_current_flow(bounds: (f64, f64), current_height: f64) -> bool {
+    let (top, bottom) = bounds;
+    bottom > top
+        && top <= current_height
+        && current_height <= top + SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX
+}
+
 fn saved_line_clears_footnote_area(
     current_footnote_height: f64,
     is_single_column: bool,
@@ -3631,7 +3640,7 @@ fn saved_line_clears_footnote_area(
             top >= 0.0
                 && top <= base_available_height
                 && bottom <= text_limit
-                && saved_bounds_overlap_current_flow((top, bottom), current_height)
+                && saved_line_is_anchored_to_current_flow((top, bottom), current_height)
         })
 }
 
