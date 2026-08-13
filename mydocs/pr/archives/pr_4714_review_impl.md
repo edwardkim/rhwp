@@ -35,9 +35,10 @@ last_verified: 2026-08-13
 3. lockfile 보정 commit을 만들고 `GIT_LFS_SKIP_PUSH=1` dry-run을 통과했다.
 4. 승인 뒤 contributor source branch에 `31d474e1d`를 push했다.
 5. 최신 code head의 Frontend package gates, CodeQL, Canvas visual diff와 aggregate 성공을 확인했다.
-6. 이 archive review·오늘할일을 trailing docs-only commit으로 추가한 뒤 fast-pass aggregate와
-   mergeable 상태를 다시 확인한다.
-7. 작업지시자 승인에 따라 merge한 뒤 PR comment, `devel` 동기화, review branch 정리를 수행한다.
+6. archive review를 trailing docs-only commit으로 추가한다. source branch의 오늘할일 파일은 최신
+   `devel`의 같은 날짜 기록과 충돌하므로, 문서만을 위해 최신 `devel` 병합을 강제하지 않는다.
+7. fast-pass aggregate와 mergeable 상태를 다시 확인한다.
+8. 작업지시자 승인에 따라 merge한 뒤 PR comment, `devel` 동기화, review branch 정리를 수행한다.
 
 ## 되돌리기 범위
 

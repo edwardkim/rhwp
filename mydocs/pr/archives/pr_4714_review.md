@@ -73,5 +73,7 @@ Rust source 변경이 없고 정확한 code candidate의 GitHub CI가 위 범위
 
 ## 최종 권고
 
-메인터너 lockfile 보정과 code candidate CI를 확인했다. 이 trailing review-only 기록의 fast-pass aggregate와
-merge 직전 최신 head 상태를 다시 확인한 뒤, 작업지시자 승인에 따라 merge한다.
+메인터너 lockfile 보정과 code candidate CI를 확인했다. source branch의 오래된 오늘할일 파일은 최신
+`devel`의 같은 날짜 기록과 충돌하므로, 최신 `devel` 병합을 문서만을 위해 강제하지 않고 archive review만
+trailing docs-only 기록으로 남긴다. 해당 head의 fast-pass aggregate와 merge 직전 최신 상태를 다시 확인한
+뒤, 작업지시자 승인에 따라 merge한다.
