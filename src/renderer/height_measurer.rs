@@ -659,7 +659,13 @@ impl HeightMeasurer {
                     );
                     Some(cloned)
                 } else if inner > 0.0
-                    && crate::renderer::composer::stored_body_lines_stale(c, para, inner, styles)
+                    && crate::renderer::composer::stored_body_lines_stale(
+                        c,
+                        para,
+                        inner,
+                        styles,
+                        styles.hwp3_variant,
+                    )
                 {
                     // stale 저장분할 본문 문단을 fresh 재래핑한다.
                     let mut cloned = c.clone();
@@ -668,6 +674,7 @@ impl HeightMeasurer {
                         para,
                         inner,
                         styles,
+                        styles.hwp3_variant,
                     );
                     Some(cloned)
                 } else {

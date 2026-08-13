@@ -2106,6 +2106,7 @@ impl LayoutEngine {
             para,
             composed,
             styles,
+            styles.hwp3_variant && self.endnote_para_source_for(para_index).is_none(),
             col_area,
             y_start,
             0,
@@ -2126,6 +2127,7 @@ impl LayoutEngine {
         para: &Paragraph,
         composed: Option<&ComposedParagraph>,
         styles: &ResolvedStyleSet,
+        hwp3_body_reflow: bool,
         col_area: &LayoutRect,
         y_start: f64,
         start_line: usize,
@@ -2163,6 +2165,7 @@ impl LayoutEngine {
                         para,
                         column_inner_width,
                         styles,
+                        hwp3_body_reflow,
                     )
                 {
                     // stale 저장분할 본문 문단을 fresh 재래핑한다.
@@ -2172,6 +2175,7 @@ impl LayoutEngine {
                         para,
                         column_inner_width,
                         styles,
+                        hwp3_body_reflow,
                     );
                     Some(cloned)
                 } else {

@@ -7409,6 +7409,8 @@ impl LayoutEngine {
                                         para,
                                         Some(comp),
                                         styles,
+                                        styles.hwp3_variant
+                                            && self.endnote_para_source_for(*para_index).is_none(),
                                         col_area,
                                         y_offset,
                                         start_line,
@@ -7724,6 +7726,8 @@ impl LayoutEngine {
                         para,
                         comp.as_ref(),
                         styles,
+                        styles.hwp3_variant
+                            && self.endnote_para_source_for(*para_index).is_none(),
                         col_area,
                         pp_y_in,
                         *start_line,
@@ -9229,6 +9233,8 @@ impl LayoutEngine {
                                     para,
                                     Some(comp),
                                     styles,
+                                    styles.hwp3_variant
+                                        && self.endnote_para_source_for(para_index).is_none(),
                                     col_area,
                                     y_offset,
                                     start_line,
@@ -9773,6 +9779,8 @@ impl LayoutEngine {
                                     para,
                                     Some(comp),
                                     styles,
+                                    styles.hwp3_variant
+                                        && self.endnote_para_source_for(para_index).is_none(),
                                     col_area,
                                     y_offset,
                                     start_line,
@@ -9912,6 +9920,8 @@ impl LayoutEngine {
                                 para,
                                 Some(comp),
                                 styles,
+                                styles.hwp3_variant
+                                    && self.endnote_para_source_for(para_index).is_none(),
                                 col_area,
                                 y_offset,
                                 start_line,
@@ -11052,6 +11062,8 @@ impl LayoutEngine {
                             table_para,
                             Some(comp),
                             styles,
+                            styles.hwp3_variant
+                                && self.endnote_para_source_for(table_para_index).is_none(),
                             &wrap_area,
                             table_y_start,
                             start_line,
@@ -11168,6 +11180,8 @@ impl LayoutEngine {
                     para,
                     comp,
                     styles,
+                    styles.hwp3_variant
+                        && self.endnote_para_source_for(wp.para_index).is_none(),
                     &strip_area,
                     para_y,
                     start_line,

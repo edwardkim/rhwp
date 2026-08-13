@@ -1751,6 +1751,7 @@ pub fn stored_body_lines_stale(
     para: &Paragraph,
     inner_width_px: f64,
     styles: &ResolvedStyleSet,
+    hwp3_body_reflow: bool,
 ) -> bool {
     if stored_lines_overflow(composed, para, inner_width_px, styles) {
         return true;
@@ -1785,16 +1786,19 @@ pub fn stored_body_lines_stale(
     para_no_ls.line_segs.clear();
     recompose_for_body_width(&mut probe, &para_no_ls, inner_width_px, styles);
     let fresh_line_count_differs = probe.lines.len() != composed.lines.len();
-    let hwp3_variant_overcounts_lines = styles.hwp3_variant
+    // HWP3 변환본의 stored-vs-fresh 비교는 본문 flow에만 적용한다. 미주는
+    // 저장 LineSeg가 물리 쪽/단 흐름을 보존하므로 fresh 폭 측정이 더 짧아도
+    // stale로 승격하지 않는다.
+    let hwp3_variant_overcounts_lines = hwp3_body_reflow
         && probe.lines.len() < composed.lines.len();
     let stale = (masked_replacement && fresh_line_count_differs) || hwp3_variant_overcounts_lines;
     if stale && std::env::var("RHWP_DIAG_REWRAP").is_ok() {
         eprintln!(
-            "DIAG_REWRAP stale-count inner={:.0} stored={} fresh={} hwp3_variant={} text='{}'",
+            "DIAG_REWRAP stale-count inner={:.0} stored={} fresh={} hwp3_body_reflow={} text='{}'",
             inner_width_px,
             composed.lines.len(),
             probe.lines.len(),
-            styles.hwp3_variant,
+            hwp3_body_reflow,
             para.text.chars().take(24).collect::<String>(),
         );
     }
@@ -1807,8 +1811,15 @@ pub fn recompose_stale_body_lines(
     para: &Paragraph,
     column_inner_width_px: f64,
     styles: &ResolvedStyleSet,
+    hwp3_body_reflow: bool,
 ) {
-    if !stored_body_lines_stale(composed, para, column_inner_width_px, styles) {
+    if !stored_body_lines_stale(
+        composed,
+        para,
+        column_inner_width_px,
+        styles,
+        hwp3_body_reflow,
+    ) {
         return;
     }
     let mut para_no_ls = para.clone();
