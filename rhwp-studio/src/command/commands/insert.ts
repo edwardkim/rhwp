@@ -402,6 +402,11 @@ export const insertCommands: CommandDef[] = [
       if (!chartDataDialog) {
         chartDataDialog = new ChartDataDialog(services.wasm, services.eventBus, services);
       }
+      // 닫힘 후 편집기 포커스 복구 — 없으면 이어지는 Ctrl+Z 가 문서에 닿지 않는다
+      // (field:edit 의 onClose 복원과 동형).
+      chartDataDialog.afterClose = () => {
+        requestAnimationFrame(() => ih.focus());
+      };
       chartDataDialog.open(matched);
     },
   },
