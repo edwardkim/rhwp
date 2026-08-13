@@ -928,6 +928,11 @@ jobs:
       - name: Validate agent org contract
         run: python3 -m unittest scripts/tests/test_agent_org.py
 
+      # [#4726] 에이전트 프레임 메타 가드 — 등재된 모든 하위체계가 가드를 가지고
+      # 머지분은 실재하는지. 틀 밖 확장을 막는 상위 불변식. 바이너리 불요.
+      - name: Validate agent frame contract
+        run: python3 -m unittest scripts/tests/test_agent_frame.py
+
       - name: Clippy
         run: cargo clippy -- -D warnings
 
