@@ -66,14 +66,27 @@ def hangul_row_heights(src: Path, table_index: int = 0) -> list[float] | None:
     return heights
 
 
-def rhwp_cut_rows(src: Path, exe: str) -> list[float] | None:
-    """RHWP_TABLE_DRIFT 의 cut_rows(px) 첫 표."""
+def rhwp_cut_rows(src: Path, exe: str, pi: int | None = None) -> list[float] | None:
+    """RHWP_TABLE_DRIFT 의 rhwp 행높이(px).
+
+    [#2148] 현행 진단은 `cut_rows=[...]` 가 아니라
+    `TABLE_DRIFT: pi=N ... mt_row_heights=[...]` 를 낸다(측정기 MeasuredTable 의
+    per-row 높이). 옛 표기도 fallback 으로 남긴다 — 구버전 바이너리 대조용.
+
+    `pi` 를 주면 그 문단의 표를 고르고, 없으면 첫 TABLE_DRIFT 줄을 쓴다.
+    같은 pi 가 여러 번 찍히면(조각 재측정) 첫 줄만 쓴다 — 전체 표 행높이는 동일하다.
+    """
     import os
 
     env = dict(os.environ, RHWP_TABLE_DRIFT="1")
     r = subprocess.run([exe, "dump-pages", str(src)], capture_output=True, text=True,
-                       encoding="utf-8", errors="replace", env=env, timeout=180)
-    m = re.search(r"cut_rows=\[([^\]]*)\]", r.stdout + r.stderr)
+                       encoding="utf-8", errors="replace", env=env, timeout=300)
+    text = r.stdout + r.stderr
+    for m in re.finditer(r"TABLE_DRIFT: pi=(\d+) .*?mt_row_heights=\[([^\]]*)\]", text):
+        if pi is not None and int(m.group(1)) != pi:
+            continue
+        return [float(x) for x in m.group(2).split(",") if x.strip()]
+    m = re.search(r"cut_rows=\[([^\]]*)\]", text)
     if not m:
         return None
     return [float(x) for x in m.group(1).split(",") if x.strip()]
@@ -85,6 +98,10 @@ def main() -> int:
     ap.add_argument("--exe", default="C:/Users/planet/rhwp/target/release/rhwp.exe"
                     if sys.platform == "win32" else "target/release/rhwp")
     ap.add_argument("--table-index", type=int, default=0)
+    # [#2148] rhwp 쪽 표 선택 — TABLE_DRIFT 줄의 pi(문단 인덱스). 생략 시 첫 표.
+    # 한글 쪽 --table-index 는 HeadCtrl 순회 순번이라 두 좌표계가 다르다:
+    # `rhwp info <file>` 의 "표N [구역S:문단P]" 로 순번↔pi 를 먼저 대응시킨다.
+    ap.add_argument("--pi", type=int, default=None)
     a = ap.parse_args()
 
     hg_mm = hangul_row_heights(a.src, a.table_index)
@@ -92,8 +109,8 @@ def main() -> int:
         print("한글 표 추출 실패", file=sys.stderr)
         return 2
     hg_px = [round(h * MM_TO_PX, 1) for h in hg_mm]
-    rh = rhwp_cut_rows(a.src, a.exe)
-    print(f"한글 행수={len(hg_px)}  rhwp cut_rows={len(rh) if rh else 'n/a'}")
+    rh = rhwp_cut_rows(a.src, a.exe, a.pi)
+    print(f"한글 행수={len(hg_px)}  rhwp 행수={len(rh) if rh else 'n/a'}")
     if rh is None:
         for i, h in enumerate(hg_px):
             print(f"  r{i}: 한글={h}px")
