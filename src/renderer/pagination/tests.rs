@@ -90,6 +90,8 @@ fn tac_picture_and_shape_require_partial_paragraph_page_routing() {
             wrap_around_paras: Vec::new(),
             used_height: 0.0,
             wrap_anchors: Default::default(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         }],
         active_header: None,
         active_footer: None,
