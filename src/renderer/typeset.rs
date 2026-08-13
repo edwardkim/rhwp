@@ -7290,6 +7290,51 @@ impl TypesetEngine {
                     styles,
                     is_last_in_section,
                 );
+                // HWPX가 수식 인라인 개체를 포함한 문단의 line_seg 높이를 실제
+                // 조판보다 작게 저장하는 경우, 다음 문단의 양수 VPOS가 같은 물리
+                // 쪽의 정확한 흐름 끝을 가리킨다. 일반 문단과 표에는 적용하지 않고,
+                // 수식 전용 host가 같은 본문 영역의 다음 앵커를 넘겨 소비했을
+                // 때에만 source flow 끝으로 되돌린다.
+                let saved_equation_host_next_anchor = st.profile.hwpx_stored_layout()
+                    && st.col_count == 1
+                    && !para.controls.is_empty()
+                    && para
+                        .controls
+                        .iter()
+                        .all(|ctrl| matches!(ctrl, Control::Equation(_)));
+                if saved_equation_host_next_anchor {
+                    let source_host = para
+                        .line_segs
+                        .iter()
+                        .rev()
+                        .find(|seg| !is_synthetic_line_seg(seg));
+                    let source_next = paragraphs.get(para_idx + 1).and_then(|next| {
+                        next.line_segs
+                            .iter()
+                            .find(|seg| !is_synthetic_line_seg(seg))
+                    });
+                    if let (Some(base), Some(source_host), Some(source_next)) =
+                        (st.vpos_page_base, source_host, source_next)
+                    {
+                        let source_host_y = st.vpos_col_anchor
+                            + hwpunit_to_px(
+                                (source_host.vertical_pos as i64 - base as i64) as i32,
+                                self.dpi,
+                            );
+                        let source_next_y = st.vpos_col_anchor
+                            + hwpunit_to_px(
+                                (source_next.vertical_pos as i64 - base as i64) as i32,
+                                self.dpi,
+                            );
+                        if source_next.vertical_pos > source_host.vertical_pos
+                            && source_host_y >= 0.0
+                            && source_next_y <= st.base_available_height() + 0.5
+                            && st.current_height > source_next_y
+                        {
+                            st.current_height = source_next_y;
+                        }
+                    }
+                }
             } else {
                 // 표 문단: Phase 2에서 전환 예정. 현재는 기존 방식 호환용 stub.
                 self.typeset_table_paragraph(
@@ -17789,6 +17834,7 @@ impl TypesetEngine {
                 st.current_height = snapped_base + cap;
             }
         }
+
     }
 
     #[allow(clippy::too_many_arguments)]
