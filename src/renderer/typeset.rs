@@ -21072,7 +21072,41 @@ impl TypesetEngine {
         .filter(|(source_top, source_bottom)| {
             *source_top < st.current_height && *source_bottom <= available
         });
-        if let Some((source_top, _)) = saved_single_inline_table_source_frame {
+        // 다행 RowBreak 표는 common.height가 첫 fragment만 뜻할 수도 있다. cell
+        // 내부 reset 없이 다음 host가 새 물리 page를 명시할 때만, object frame을
+        // 현 page 전체를 소유한 frame으로 쓴다.
+        let saved_rowbreak_object_frame = (!table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && table.row_count > 1
+            && para.controls.len() == 1
+            && !para_has_visible_text(para)
+            && ft.table_footnotes.is_empty()
+            && signed_hwpunit(table.common.vertical_offset) <= 0
+            && next_starts_new_page
+            && !rowbreak_table_has_internal_saved_vpos_reset(table)
+        )
+        .then(|| {
+            let mut source_lines = para
+                .line_segs
+                .iter()
+                .filter(|seg| !is_synthetic_line_seg(seg));
+            let seg = source_lines.next()?;
+            (source_lines.next().is_none())
+                .then(|| line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi))
+                .flatten()
+        })
+        .flatten()
+        .and_then(|(source_top, _)| {
+            let source_bottom = source_top + declared_object_total - host_spacing_total;
+            (source_top < st.current_height && source_bottom <= available)
+                .then_some((source_top, source_bottom))
+        });
+        let saved_table_source_frame = saved_single_inline_table_source_frame
+            .or(saved_rowbreak_object_frame);
+        if let Some((source_top, _)) = saved_table_source_frame {
             st.current_height = source_top;
             placement_para_start_height = source_top;
         }
@@ -21086,7 +21120,7 @@ impl TypesetEngine {
             || single_row_object_height_advance.is_some()
             || declared_table_whole_fits
             || saved_host_line_after_stack_fits
-            || saved_single_inline_table_source_frame.is_some()
+            || saved_table_source_frame.is_some()
         {
             // [#3674 진단] fit 분기 발동 사유 — 동작 불변.
             if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
@@ -21109,7 +21143,7 @@ impl TypesetEngine {
                 table,
                 fmt,
                 placement_para_start_height,
-                if let Some((source_top, source_bottom)) = saved_single_inline_table_source_frame {
+                if let Some((source_top, source_bottom)) = saved_table_source_frame {
                     source_bottom - source_top
                 } else if let Some(advance) = single_row_object_height_advance {
                     advance
