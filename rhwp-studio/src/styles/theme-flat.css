@@ -105,12 +105,14 @@
   border-top: 1px solid var(--ui-border-subtle);
 }
 
-/* ── 메뉴 드롭다운: 라운드 카드 ────────────────────────── */
-[data-theme-skin="flat"] #menu-bar .menu-dropdown {
+/* ── 메뉴 드롭다운: 라운드 카드 ──────────────────────────
+ * 주의: .md-sub-panel 이 드롭다운 밖(left: 100%)에 absolute 로 뜨므로
+ * 여기에 overflow: hidden 을 걸면 서브메뉴가 잘려 보이지 않는다. */
+[data-theme-skin="flat"] #menu-bar .menu-dropdown,
+[data-theme-skin="flat"] #menu-bar .md-sub-panel {
   border: 1px solid var(--ui-border-subtle);
   border-radius: var(--radius-lg);
   padding: 4px;
-  overflow: hidden;
 }
 
 [data-theme-skin="flat"] #menu-bar .md-item {
