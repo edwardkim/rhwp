@@ -22054,6 +22054,11 @@ impl TypesetEngine {
             let source_first_fragment_overflow_allowance = if !is_continuation
                 && cursor_row == 0
                 && start_cut.is_empty()
+                // The painted footer guard is the more specific native source
+                // contract: it records that the last whole row must start the
+                // next fragment. Generic object-frame slack must not restore
+                // the space that guard intentionally reserved.
+                && first_fragment_painted_row_footer_guard <= 0.0
                 && st.profile.native_hwp5_layout()
                 && !table.common.treat_as_char
                 && matches!(
