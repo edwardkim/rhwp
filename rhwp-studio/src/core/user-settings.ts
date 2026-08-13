@@ -30,10 +30,15 @@ export interface FontSettings {
 /** 앱 UI 테마 설정값 */
 export type ThemeMode = 'system' | 'light' | 'dark';
 
+/** 앱 UI 스킨 설정값 — 'flat' 은 옵트인 플랫 스킨(theme-flat.css) */
+export type ThemeSkin = 'default' | 'flat';
+
 /** 앱 UI 테마 설정 */
 export interface ThemeSettings {
   /** 사용자가 선택한 테마 모드 */
   mode: ThemeMode;
+  /** 사용자가 선택한 스킨 */
+  skin: ThemeSkin;
 }
 
 /** 대화상자 UI 설정 */
@@ -131,6 +136,7 @@ function defaultSettings(): AppSettings {
     },
     theme: {
       mode: 'system',
+      skin: 'default',
     },
     dialog: {
       picturePropsKeepRatio: true,
@@ -152,6 +158,10 @@ function defaultSettings(): AppSettings {
 
 function normalizeThemeMode(value: unknown): ThemeMode {
   return value === 'light' || value === 'dark' || value === 'system' ? value : 'system';
+}
+
+function normalizeThemeSkin(value: unknown): ThemeSkin {
+  return value === 'flat' ? value : 'default';
 }
 
 function normalizeBoolean(value: unknown, fallback: boolean): boolean {
@@ -192,6 +202,7 @@ class UserSettingsService {
           ...defaults.theme,
           ...(parsed.theme ?? {}),
           mode: normalizeThemeMode(parsed.theme?.mode),
+          skin: normalizeThemeSkin(parsed.theme?.skin),
         },
         dialog: {
           ...defaults.dialog,
@@ -279,6 +290,12 @@ class UserSettingsService {
   /** 테마 모드 설정 */
   setThemeMode(mode: ThemeMode): void {
     this.data.theme.mode = normalizeThemeMode(mode);
+    this.save();
+  }
+
+  /** 스킨 설정 */
+  setThemeSkin(skin: ThemeSkin): void {
+    this.data.theme.skin = normalizeThemeSkin(skin);
     this.save();
   }
 

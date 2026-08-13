@@ -1741,10 +1741,10 @@ impl Paginator {
                     );
                 }
                 Control::Shape(shape_obj) => {
-                    // [Issue #476] treat_as_char Shape 는 박스가 속한 line 이 라우팅된 페이지/단에 등록.
+                    // [Issue #476/#4092] treat_as_char 그림/도형은 박스가 속한 line 이 라우팅된 페이지/단에 등록.
                     // paragraph 가 페이지 분할되면 process_controls 시점에 st.current_items 는 마지막
                     // 페이지 상태이므로, 그대로 push 하면 박스가 잘못된 페이지에 떠 있게 된다.
-                    let routed = if shape_obj.common().treat_as_char {
+                    let routed = if super::is_routable_treat_as_char_picture_or_shape(ctrl) {
                         super::find_inline_control_target_page(
                             &st.pages,
                             &st.current_items,

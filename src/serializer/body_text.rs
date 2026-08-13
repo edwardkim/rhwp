@@ -61,6 +61,15 @@ pub fn serialize_section(section: &Section) -> Vec<u8> {
                 0,
                 Control::SectionDef(Box::new(section.section_def.clone())),
             );
+            // [#4680] 정의 제어문자가 글자보다 앞에 놓이도록 자리를 비운다 —
+            // 간격이 없으면 `serialize_para_text` 가 텍스트 뒤에 몰아 쓰고, 그런 문서는
+            // 한글이 열다 멎는다. 어댑터와 같은 문단 좌표 계약을 적용한다.
+            let leading_defs = clone
+                .controls
+                .iter()
+                .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+                .count();
+            clone.reserve_leading_extended_control_slots(leading_defs);
             Some(clone)
         }
     });
@@ -251,12 +260,29 @@ fn serialize_paragraph_with_msb(
             (None, Vec::new())
         };
 
-    // char_count 재계산: PARA_TEXT가 있으면 code unit 수, 없으면 모델 값 사용
+    // char_count 재계산: PARA_TEXT가 있으면 code unit 수.
+    //
+    // [#4677] PARA_TEXT 를 내보내지 않는 문단은 **파일에 글자가 0 개**다. 모델 값을 그대로
+    // 쓰면 헤더만 N 을 주장하는 문단이 생긴다 — HWPX 파서는 다단락 필드의 고아
+    // `<hp:fieldEnd>`(8 유닛)를 `char_count` 에 세지만 HWP5 저장기에는 그 자리를 쓸 방법이
+    // 없어서, 텍스트 없는 문단이 `char_count=9` 로 나간다. 한글 2022 는 그 문단을 만나면
+    // 본문 전체를 버리고 빈 1쪽 문서로 연다(rhwp 재파싱은 통과 — `--verify` 로는 안 잡힌다).
+    // 빈 문단의 규정 값은 끝 마커 1 이다.
     let actual_char_count = if let Some(ref td) = text_data {
         (td.len() / 2) as u32
     } else {
-        para.char_count
+        para.char_count.min(1)
     };
+
+    // [#4677] 본문에 대응하지 않는 lineseg 는 파일에 내보내지 않는다 — 조판 전용 보강 줄과
+    // PARA_TEXT 밖을 가리키는 줄 두 갈래다(판정은 `line_segs_within_text` 주석 참조).
+    // 한글 2022 는 그런 문단을 만나면 본문 전체를 버리고 빈 1쪽 문서로 연다 — rhwp 재파싱만
+    // 통과하는 함정이라 `--verify` 로는 잡히지 않는다 (10k 전수 스윕 x2h 소실군).
+    let line_segs_in_range = line_segs_within_text(
+        &para.line_segs,
+        actual_char_count,
+        para.layout_only_fill_lines,
+    );
 
     // PARA_HEADER (effective_char_shapes 길이 반영)
     // MSB는 모델 값이 아닌 위치 기반으로 결정: 마지막 문단만 MSB=true
@@ -270,6 +296,7 @@ fn serialize_paragraph_with_msb(
             is_last,
             actual_control_mask,
             actual_char_count,
+            line_segs_in_range.len(),
         ),
     });
 
@@ -303,8 +330,8 @@ fn serialize_paragraph_with_msb(
     }
 
     // PARA_LINE_SEG
-    if !para.line_segs.is_empty() {
-        let data = serialize_para_line_seg(&para.line_segs);
+    if !line_segs_in_range.is_empty() {
+        let data = serialize_para_line_seg(line_segs_in_range);
         records.push(Record {
             tag_id: tags::HWPTAG_PARA_LINE_SEG,
             level: base_level + 1,
@@ -391,6 +418,7 @@ fn serialize_para_header_with_mask(
     is_last: bool,
     control_mask: u32,
     char_count: u32,
+    num_line_segs: usize,
 ) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
@@ -417,7 +445,7 @@ fn serialize_para_header_with_mask(
     // count 필드는 실제 데이터 기반으로 항상 재생성 (편집 후 불일치 방지)
     w.write_u16(num_char_shapes as u16).unwrap();
     w.write_u16(para.range_tags.len() as u16).unwrap();
-    w.write_u16(para.line_segs.len() as u16).unwrap();
+    w.write_u16(num_line_segs as u16).unwrap();
 
     // instanceId + 추가 바이트: raw_header_extra에서 복원
     // raw_header_extra[0..6] = numCharShapes(2) + numRangeTags(2) + numLineSegs(2) → 건너뜀
@@ -972,6 +1000,48 @@ fn push_field_end_ctrl(code_units: &mut Vec<u16>, marker: FieldEndMarker) {
     }
 }
 
+/// [#4677] 파일에 실을 수 있는 lineseg 만 남긴 슬라이스.
+///
+/// 두 가지를 잘라 낸다. 둘 다 한글 2022 가 본문을 통째로 버리게 만드는 값이다 — rhwp 는
+/// 자기가 쓴 파일을 그대로 다시 읽으므로 `--verify` 로는 잡히지 않는다.
+///
+/// 1. **조판 전용 보강 줄**(`Paragraph::layout_only_fill_lines`) — 셀 저장 높이를 채우려고
+///    끝에 덧붙인, 본문에 없는 줄. 한컴 정답지는 그 셀 문단에 줄을 하나만 쓴다.
+/// 2. **PARA_TEXT 밖을 가리키는 줄** — HWP5 가 규정하지 않는 컨트롤(색인 표시 `idxm` 등)을
+///    저장에서 떨구면 문단이 8 유닛씩 짧아지는데, 원본 HWPX 의 lineseg 는 그 컨트롤을 센
+///    `textpos` 를 그대로 들고 있다.
+///
+/// 경계값 `text_start == char_count` 는 **정상**이다 — 한컴 자신이 빈 문단(`char_count=1`)에
+/// 끝 마커를 가리키는 둘째 세그먼트(`text_start=1`, EMPTY_SEGMENT)를 쓴다(`hwpctl_API_v2.4.hwp`
+/// 14곳). 그래서 판정은 `>` 다. 실제로 문제가 된 값은 훨씬 멀리 나간다(문단 길이 5 에
+/// `text_start=10`, 37 에 40).
+///
+/// 첫 줄(`text_start == 0`)은 어떤 문단에도 있어야 하므로 전부 범위를 벗어나면 그대로 둔다
+/// (문단 자체가 비정상이라는 뜻이며, 줄을 0 개로 만들면 다른 손상이 된다). 유효한 줄이
+/// 하나라도 있으면 **접두부만** 남긴다 — 줄은 순서대로 이어져야 한다.
+///
+/// 경계는 `text_start == char_count` 를 **포함하지 않는다**. 한글이 직접 쓴 문서에 그 값이
+/// 흔하기 때문이다 — 빈 문단(`char_count=1`, 줄 `[0, 1]`)과 개체만 있는 셀 문단
+/// (`char_count=9`, 줄 `[0, 9]`)이 그렇고, 저장소 샘플 5건에서 40개 문단이 이 형태다.
+/// 한글은 그 문서를 정상 개방하므로 끝 위치를 가리키는 줄은 버릴 값이 아니다. 오라클로
+/// 본문 폐기를 확정한 값은 모두 끝을 **넘어선다**(`char_count=5` 에 `10`, `37` 에 `40`).
+fn line_segs_within_text(
+    line_segs: &[LineSeg],
+    char_count: u32,
+    layout_only_fill_lines: usize,
+) -> &[LineSeg] {
+    let real = line_segs.len().saturating_sub(layout_only_fill_lines);
+    let in_range = line_segs[..real]
+        .iter()
+        .position(|seg| seg.text_start > char_count)
+        .unwrap_or(real);
+    if in_range == 0 {
+        line_segs
+    } else {
+        &line_segs[..in_range]
+    }
+}
+
 /// PARA_LINE_SEG 직렬화
 ///
 /// 각 항목: 36바이트 (u32 + i32×7 + u32)
@@ -1053,11 +1123,9 @@ fn should_serialize_figure_space_as_hwp_fixed_blank(para: &Paragraph) -> bool {
 /// `Control::Ruby` 는 같은 arm 이지만 규정된 ctrl_id(`tdut`)가 있어 방출을 막는 것이
 /// 답이 아니다 — #4397 에서 따로 다룬다. 여기서는 건드리지 않는다.
 fn emits_ctrl_header(ctrl: &Control) -> bool {
-    match ctrl {
-        Control::Hyperlink(_) => false,
-        Control::Unknown(u) => u.ctrl_id != 0,
-        _ => true,
-    }
+    // [#4677] 판정은 `Control::occupies_ctrl_char_slot` 하나에서만 나온다 — 합성 lineseg 의
+    // `text_start` 를 계산하는 renderer 쪽이 같은 규칙을 봐야 오프셋이 어긋나지 않는다.
+    ctrl.occupies_ctrl_char_slot()
 }
 
 fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
@@ -1081,7 +1149,11 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
         Control::PageHide(_) => (0x0015, tags::CTRL_PAGE_HIDE),
         Control::Bookmark(_) => (0x0016, tags::CTRL_BOOKMARK),
         Control::Hyperlink(_) => (0x000B, 0),
-        Control::Ruby(_) => (0x000B, 0),
+        // [#4677] 덧말은 한컴 원본에서 `17 00 74 75 64 74 …`(코드 0x0017 + 'tdut')로 나간다.
+        // 종전엔 `(0x000B, 0)` — 개체 제어문자 자리에 **id 0** 을 써 놓고 짝이 되는
+        // CTRL_HEADER 는 내지 않았다. 한글 2022 는 짝 없는 개체 제어문자를 만나면 본문을
+        // 통째로 버린다(0자·1쪽). `CTRL_CHAR_OVERLAP` 상수는 이름과 달리 'tdut'(덧말)이다.
+        Control::Ruby(_) => (0x0017, tags::CTRL_CHAR_OVERLAP),
         Control::CharOverlap(_) => (0x0017, tags::CTRL_TCPS),
         Control::Field(f) => (0x0003, f.ctrl_id),
         Control::Equation(_) => (0x000B, tags::CTRL_EQUATION),
@@ -1379,6 +1451,177 @@ mod tests {
         assert!(seg.is_first_line_of_page());
     }
 
+    /// [#4677] PARA_TEXT 밖을 가리키는 lineseg 는 파일에 나가지 않는다.
+    ///
+    /// 색인 표시(`idxm`)처럼 HWP5 저장에서 떨어지는 컨트롤이 있으면 문단이 8 유닛 짧아지는데,
+    /// 원본 HWPX 의 lineseg 는 그 컨트롤을 센 `textpos` 를 그대로 들고 있다. 그 값을 그대로
+    /// 쓰면 한글 2022 가 본문 전체를 버리고 빈 1쪽으로 연다.
+    #[test]
+    fn test_out_of_range_line_segs_are_not_serialized() {
+        let para = Paragraph {
+            char_count: 3,
+            text: "AB".to_string(),
+            char_offsets: vec![0, 1],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    line_height: 500,
+                    ..Default::default()
+                },
+                // 떨어져 나간 8 유닛 컨트롤을 센 잔재 — "AB" + 문단끝 = 3 유닛보다 멀리 나간다.
+                // (경계값 `text_start == char_count` 는 한컴도 쓰는 정상 값이라 남긴다.)
+                LineSeg {
+                    text_start: 10,
+                    line_height: 500,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+
+        assert_eq!(
+            parsed.paragraphs[0].line_segs.len(),
+            1,
+            "범위 밖 lineseg 는 레코드에서 제외된다"
+        );
+        assert_eq!(parsed.paragraphs[0].line_segs[0].text_start, 0);
+    }
+
+    /// [#4677] 끝 위치를 가리키는 lineseg 는 남는다 — 한글이 직접 쓰는 값이다.
+    ///
+    /// 빈 문단은 `char_count=1` 에 줄 `[0, 1]` 로 저장되는 일이 흔하다(저장소 샘플 5건에
+    /// 40개 문단). 경계를 `>=` 로 잡으면 그 둘째 줄까지 잘려 평범한 문서를 편집·저장할
+    /// 때마다 조판 정보가 사라진다 — 범위 밖 판정은 끝을 **넘어선** 값에만 걸어야 한다.
+    #[test]
+    fn test_line_seg_at_text_end_is_kept() {
+        let para = Paragraph {
+            char_count: 1,
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    line_height: 500,
+                    ..Default::default()
+                },
+                // 끝 위치(= char_count)를 가리키는 줄 — 한글 원본에 실재한다.
+                LineSeg {
+                    text_start: 1,
+                    line_height: 500,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+
+        assert_eq!(
+            parsed.paragraphs[0].line_segs.len(),
+            2,
+            "끝 위치를 가리키는 줄은 범위 밖이 아니다"
+        );
+    }
+
+    /// [#4677] PARA_TEXT 를 내보내지 않는 문단의 `char_count` 는 끝 마커 1 이다.
+    ///
+    /// HWPX 파서는 다단락 필드의 고아 `<hp:fieldEnd>` 를 8 유닛으로 세지만 HWP5 저장기에는
+    /// 그 자리를 쓸 방법이 없다. 헤더만 9 를 주장하고 글자는 하나도 없는 문단이 되면
+    /// 한글 2022 는 본문 전체를 버린다.
+    #[test]
+    fn test_char_count_without_para_text_is_normalized() {
+        let para = Paragraph {
+            char_count: 9, // 고아 fieldEnd 8 유닛 + 끝 마커
+            text: String::new(),
+            controls: Vec::new(),
+            has_para_text: false,
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            ..Default::default()
+        };
+
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+
+        assert_eq!(
+            parsed.paragraphs[0].char_count, 1,
+            "PARA_TEXT 없는 문단은 끝 마커 1 만 센다"
+        );
+    }
+
+    /// [#4677] 조판 전용 보강 줄은 파일에 나가지 않는다.
+    ///
+    /// HWPX RowBreak 표 셀의 저장 높이를 채우려고 덧붙인 줄은 본문에 없는 줄이다. 한컴은
+    /// 그 셀 문단에 줄을 하나만 쓰고, 두 줄짜리로 저장하면 본문 전체를 버린다.
+    #[test]
+    fn test_layout_only_fill_lines_are_not_serialized() {
+        let para = Paragraph {
+            char_count: 3,
+            text: "AB".to_string(),
+            char_offsets: vec![0, 1],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    line_height: 500,
+                    ..Default::default()
+                },
+                // 셀 높이를 채우려고 덧붙인 줄 — 위치는 범위 안이지만 본문에 없는 줄이다.
+                LineSeg {
+                    text_start: 1,
+                    line_height: 500,
+                    ..Default::default()
+                },
+            ],
+            layout_only_fill_lines: 1,
+            ..Default::default()
+        };
+
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+
+        assert_eq!(
+            parsed.paragraphs[0].line_segs.len(),
+            1,
+            "조판 전용 보강 줄은 레코드에서 제외된다"
+        );
+    }
+
     /// PARA_RANGE_TAG 라운드트립
     #[test]
     fn test_roundtrip_range_tags() {
@@ -1660,6 +1903,71 @@ mod tests {
         assert_eq!(parsed.paragraphs[0].text, "AB");
         // SectionDef 컨트롤이 파싱되어 section_def에 반영
         assert_eq!(parsed.section_def.default_tab_spacing, 800);
+    }
+
+    #[test]
+    fn issue4680_serializer_fallback_shifts_all_leading_control_coordinates() {
+        use crate::model::page::PageDef;
+
+        let para = Paragraph {
+            text: "AB".to_string(),
+            char_offsets: vec![0, 1],
+            char_shapes: vec![
+                CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 1,
+                },
+                CharShapeRef {
+                    start_pos: 1,
+                    char_shape_id: 2,
+                },
+            ],
+            range_tags: vec![RangeTag {
+                start: 0,
+                end: 1,
+                tag: 0x0100_0003,
+            }],
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    line_height: 500,
+                    text_height: 400,
+                    ..Default::default()
+                },
+                LineSeg {
+                    text_start: 1,
+                    line_height: 500,
+                    text_height: 400,
+                    ..Default::default()
+                },
+            ],
+            controls: vec![Control::ColumnDef(Default::default())],
+            ..Default::default()
+        };
+        let section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![para],
+            raw_stream: None,
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+        let parsed_para = &parsed.paragraphs[0];
+
+        assert_eq!(parsed_para.char_offsets, vec![16, 17]);
+        assert_eq!(parsed_para.char_shapes[0].start_pos, 0);
+        assert_eq!(parsed_para.char_shapes[1].start_pos, 17);
+        assert_eq!(parsed_para.range_tags[0].start, 16);
+        assert_eq!(parsed_para.range_tags[0].end, 17);
+        assert_eq!(parsed_para.line_segs[0].text_start, 0);
+        assert_eq!(parsed_para.line_segs[1].text_start, 17);
     }
 
     /// #4424: `Control::Hyperlink` 는 `control_char_code_and_id` 에서 `(0x000B, 0)` 이라

@@ -28,6 +28,103 @@ fn make_paragraph_with_height(line_height: i32) -> Paragraph {
 }
 
 #[test]
+fn tac_picture_and_shape_require_partial_paragraph_page_routing() {
+    use crate::model::control::Control;
+    use crate::model::image::Picture;
+    use crate::model::page::ColumnDef;
+    use crate::model::shape::ShapeObject;
+    use crate::renderer::page_layout::PageLayoutInfo;
+
+    let mut picture = Picture::default();
+    picture.common.treat_as_char = true;
+    assert!(is_routable_treat_as_char_picture_or_shape(
+        &Control::Picture(Box::new(picture))
+    ));
+
+    let shape = ShapeObject::Rectangle(Default::default());
+    let mut shape = shape;
+    shape.common_mut().treat_as_char = true;
+    assert!(is_routable_treat_as_char_picture_or_shape(&Control::Shape(
+        Box::new(shape)
+    )));
+
+    let mut floating_picture = Picture::default();
+    floating_picture.common.treat_as_char = false;
+    assert!(
+        !is_routable_treat_as_char_picture_or_shape(&Control::Picture(Box::new(floating_picture))),
+        "비-TAC 그림은 기존 floating 개체 경로를 유지해야 한다"
+    );
+
+    let tac_picture = || {
+        let mut picture = Picture::default();
+        picture.common.treat_as_char = true;
+        Control::Picture(Box::new(picture))
+    };
+    let para = Paragraph {
+        line_segs: (0..3)
+            .map(|line| LineSeg {
+                text_start: line * 8,
+                ..Default::default()
+            })
+            .collect(),
+        controls: vec![tac_picture(), tac_picture(), tac_picture()],
+        ..Default::default()
+    };
+    let layout = PageLayoutInfo::from_page_def(&a4_page_def(), &ColumnDef::default(), 96.0);
+    let page = |page_index, start_line, end_line| PageContent {
+        page_index,
+        page_number: page_index + 1,
+        section_index: 0,
+        layout: layout.clone(),
+        column_contents: vec![ColumnContent {
+            column_index: 0,
+            start_height: 0.0,
+            endnote_flow: false,
+            items: vec![PageItem::PartialParagraph {
+                para_index: 0,
+                start_line,
+                end_line,
+            }],
+            zone_layout: None,
+            zone_y_offset: 0.0,
+            wrap_around_paras: Vec::new(),
+            used_height: 0.0,
+            wrap_anchors: Default::default(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
+        }],
+        active_header: None,
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: Vec::new(),
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+    };
+    let pages = vec![page(0, 0, 1), page(1, 1, 2)];
+    let current_items = vec![PageItem::PartialParagraph {
+        para_index: 0,
+        start_line: 2,
+        end_line: 3,
+    }];
+    assert_eq!(
+        find_inline_control_target_page(&pages, &current_items, 0, 0, &para),
+        Some((0, 0)),
+        "첫 TAC 그림은 첫 번째 저장 줄의 쪽으로 라우팅해야 한다"
+    );
+    assert_eq!(
+        find_inline_control_target_page(&pages, &current_items, 0, 1, &para),
+        Some((1, 0)),
+        "두 번째 TAC 그림은 두 번째 저장 줄의 쪽으로 라우팅해야 한다"
+    );
+    assert_eq!(
+        find_inline_control_target_page(&pages, &current_items, 0, 2, &para),
+        None,
+        "마지막 TAC 그림은 현재 쪽에 남아야 한다"
+    );
+}
+
+#[test]
 fn page_bottom_text_box_fit_keeps_line_even_when_advance_overflows() {
     let paginator = Paginator::with_default_dpi();
     let styles = ResolvedStyleSet::default();

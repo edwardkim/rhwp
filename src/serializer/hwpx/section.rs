@@ -981,12 +981,12 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     hidden.push(i);
                     false
                 } else {
-                    let slot = is_hwpx_inline_slot(c);
+                    // [#4677] 위치 축은 책갈피까지 포함한다(`occupies_hwpx_slot_axis`).
+                    let slot = occupies_hwpx_slot_axis(c);
                     // [#4388] Hyperlink/Unknown 은 슬롯이 아니라 여기서 조용히
-                    // 제외된다(Bookmark 와 같은 취급) — is_hwpx_inline_slot 에
-                    // 등록하지 않기로 한 대가로, 이 실제 배제 지점에서 직접
-                    // 경고한다. Bookmark/HiddenComment 등 다른 non-slot 컨트롤은
-                    // 이 헬퍼가 내부적으로 무시한다.
+                    // 제외된다 — is_hwpx_inline_slot 에 등록하지 않기로 한 대가로,
+                    // 이 실제 배제 지점에서 직접 경고한다. HiddenComment 등 다른
+                    // non-slot 컨트롤은 이 헬퍼가 내부적으로 무시한다.
                     if !slot {
                         warn_if_unrepresentable_in_hwpx(c);
                     }
@@ -1032,26 +1032,9 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             }
         };
 
-    // Bookmark는 zero-width 라 slot char-position 축에 안 잡힌다.
-    // - [Task #1627] empty-text(객체-only) 문단: 문단 시작 강제는 원본 컨트롤 순서(예:
-    //   Table·PageNumberPos 뒤의 Bookmark)를 깨고 roundtrip char_shape 오프셋을 shift시킨다
-    //   → para.controls 순서대로 slot 사이에 in-order 방출.
-    // - [Task #1591 v2] 슬롯이 있는 비-empty 문단도 in-order 로 통일(1라운드 hoist 제거
-    //   편입 — 표/pageNum 뒤 북마크의 원본 순서 보존).
-    // - 비-empty·무슬롯 문단: 종전대로 문단 시작(첫 run)에 배치(순서 증거 없음, 종전 유지).
-    let bm_inorder = para.text.is_empty() || !slots.is_empty();
-    if !bm_inorder {
-        for ctrl in &para.controls {
-            if let Control::Bookmark(bm) = ctrl {
-                if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
-                    splitter.content.push_str("<hp:ctrl>");
-                    splitter.content.push_str(&xml);
-                    splitter.content.push_str("</hp:ctrl>");
-                }
-            }
-        }
-    }
-
+    // [#4677] 책갈피는 이제 위치 슬롯이라(`occupies_hwpx_slot_axis`) 슬롯 루프가 제자리에
+    // 방출한다. 종전의 별도 방출(문단 시작 hoist / slot 사이 in-order, Task #1591·#1627)은
+    // 슬롯 축이 책갈피를 잡지 못하던 시절의 우회였고, 그대로 두면 이중 방출이 된다.
     let mut tab_idx = 0usize;
 
     // fast path: 슬롯·필드·고아 fieldEnd·경계 없음 — 텍스트 전체를 단일 run 으로
@@ -1068,22 +1051,8 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     // mismatch 경로: 슬롯 위치 추정 불가 — 텍스트(경계 분할 포함) 후 슬롯 일괄 방출
     if slot_count != slots.len() {
         split_text_into(&mut splitter, para, &mut tab_idx);
-        let mut bm_done = vec![false; para.controls.len()];
-        for (si, slot) in slots.iter().enumerate() {
-            // [Task #1627] empty-text 문단: 이 slot 앞(controls 순서)의 bookmark 를 먼저 방출.
-            if bm_inorder {
-                emit_inorder_bookmarks(
-                    &mut splitter.content,
-                    para,
-                    &mut bm_done,
-                    slot_ctrl_indices[si],
-                );
-            }
+        for slot in slots.iter() {
             render_control_slot(&mut splitter.content, slot, ctx);
-        }
-        if bm_inorder {
-            // 마지막 slot 뒤에 오는 trailing bookmark.
-            emit_inorder_bookmarks(&mut splitter.content, para, &mut bm_done, usize::MAX);
         }
         // [Task #1591 v2] 균형 field_ranges 의 닫는 fieldEnd 도 말미 복원 — 이 경로는
         // fieldBegin(슬롯)만 방출하고 fieldEnd 방출 코드가 없어 same-para 균형 필드가
@@ -1108,24 +1077,11 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     let mut orphan_emitted = vec![false; para.orphan_field_ends.len()];
     let text_char_count = para.text.chars().count();
 
-    // [Task #1591 v2] 메인 경로 bookmark in-order 방출 추적 (mismatch 경로와 동일 기제).
-    // 메인 경로는 종전엔 hoist 전담이라 방출 지점이 없었다 — 첫 문단(hidden 슬롯 정합)이
-    // 메인 경로로 진입하면서 슬롯 사이 in-order 방출이 필요해졌다.
-    let mut bm_done = vec![false; para.controls.len()];
-
     // 빈 문단(text == "")의 0-length 필드: 메인 루프가 실행되지 않아
     // pre-char 검사를 통과하지 못하므로 루프 전에 slots → fieldEnd 순으로 방출한다.
     if para.text.is_empty() {
         while slot_idx < slots.len() {
             splitter.cut_before(expected_utf16_pos);
-            if bm_inorder {
-                emit_inorder_bookmarks(
-                    &mut splitter.content,
-                    para,
-                    &mut bm_done,
-                    slot_ctrl_indices[slot_idx],
-                );
-            }
             render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1190,14 +1146,6 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             );
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
             splitter.cut_before(expected_utf16_pos);
-            if bm_inorder {
-                emit_inorder_bookmarks(
-                    &mut splitter.content,
-                    para,
-                    &mut bm_done,
-                    slot_ctrl_indices[slot_idx],
-                );
-            }
             render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
@@ -1372,14 +1320,6 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
 
     while slot_idx < slots.len() {
         splitter.cut_before(expected_utf16_pos);
-        if bm_inorder {
-            emit_inorder_bookmarks(
-                &mut splitter.content,
-                para,
-                &mut bm_done,
-                slot_ctrl_indices[slot_idx],
-            );
-        }
         render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
         let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
         slot_idx += 1;
@@ -1405,11 +1345,6 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             field_end_emitted[i] = true;
         }
     }
-    if bm_inorder {
-        // 마지막 슬롯 뒤(컨트롤 순서 후미)의 trailing bookmark.
-        emit_inorder_bookmarks(&mut splitter.content, para, &mut bm_done, usize::MAX);
-    }
-
     splitter.finish()
 }
 
@@ -1472,6 +1407,20 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
 /// 두 곳에서 낸다. 회귀 가드: `roundtrip.rs` 의
 /// `issue4388_diff_documents_hyperlink_not_compared_as_control`/
 /// `issue4388_diff_documents_unknown_not_compared_as_control`.
+/// [#4677] `render_runs` 의 **위치 축** 전용 슬롯 판정 — 책갈피를 포함한다.
+///
+/// 책갈피는 HWP5 PARA_TEXT 에서 8 유닛 확장 제어문자 자리를 차지한다(한컴 원본 바이트
+/// `16 00 6d 6b 6f 62 … 16 00`). 종전엔 zero-width 로 보고 슬롯 축에서 빼는 대신
+/// `emit_inorder_bookmarks` 로 따로 끼워 넣었는데, 그러면 HWPX 파서가 자리를 잡는 순간
+/// 슬롯 수가 어긋나 위치 추정이 통째로 무너진다(x2x 산출물 6,995자 → 416자).
+///
+/// [`is_hwpx_inline_slot`] 자체를 넓히지 않는 이유는 그 헬퍼가 `roundtrip::diff_documents`
+/// 의 **비교 축**과 공유되기 때문이다 — 비교 축 변경은 #4388 처럼 무관한 회귀를 만든다.
+/// 여기서 필요한 것은 위치 축 하나뿐이다.
+fn occupies_hwpx_slot_axis(control: &Control) -> bool {
+    is_hwpx_inline_slot(control) || matches!(control, Control::Bookmark(_))
+}
+
 pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
     matches!(
         control,
@@ -1506,35 +1455,18 @@ fn flush_text_fragment(
     }
 }
 
-/// [Task #1627] empty-text 문단에서 bookmark 를 para.controls 순서대로 in-order 방출한다.
-/// `upto_ctrl_idx` 미만 인덱스의 미방출 bookmark 만 방출(usize::MAX = 나머지 전부).
-/// bookmark 는 zero-width 라 char-position 을 점유하지 않으므로 slot 사이에 끼워도 위치 불변.
-fn emit_inorder_bookmarks(
-    content: &mut String,
-    para: &Paragraph,
-    bm_done: &mut [bool],
-    upto_ctrl_idx: usize,
-) {
-    for (i, ctrl) in para.controls.iter().enumerate() {
-        if i >= upto_ctrl_idx {
-            break;
-        }
-        if bm_done[i] {
-            continue;
-        }
-        if let Control::Bookmark(bm) = ctrl {
-            if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
-                content.push_str("<hp:ctrl>");
-                content.push_str(&xml);
-                content.push_str("</hp:ctrl>");
-            }
-            bm_done[i] = true;
-        }
-    }
-}
-
 fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeContext) {
     match control {
+        // [#4677] 책갈피는 위치 슬롯이다 — 슬롯 축에 들어온 이상 여기서 제자리에 방출한다
+        // (종전 `emit_inorder_bookmarks` 의 역할을 대체).
+        Control::Bookmark(bm) => match writer_to_string(|w| write_bookmark(w, bm)) {
+            Ok(xml) => {
+                out.push_str("<hp:ctrl>");
+                out.push_str(&xml);
+                out.push_str("</hp:ctrl>");
+            }
+            Err(e) => eprintln!("[hwpx] Bookmark 직렬화 실패: {e}"),
+        },
         Control::Equation(eq) => {
             out.push_str(&render_equation(eq));
         }

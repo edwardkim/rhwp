@@ -3759,6 +3759,72 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// [#4694] 문서의 모든 차트를 문서 순서로 열거한다.
+    ///
+    /// 반환: JSON `[{ index, section, paragraph, control, container?, zipPart?, nestedCopy? }]`
+    /// studio 는 이 목록을 선택 컨트롤과 대조해 정본 주소(문서 순번)를 얻는다.
+    #[wasm_bindgen(js_name = listCharts)]
+    pub fn list_charts(&self) -> Result<String, JsValue> {
+        self.list_charts_native().map_err(|e| e.into())
+    }
+
+    /// [#4694] 본문 직속 차트의 숫자 데이터를 조회한다 (3인자 주소).
+    ///
+    /// 컨테이너(글상자·표 셀·머리말) 안 차트는 이 주소로 표현할 수 없다 —
+    /// `getChartDataByIndex` 를 쓴다.
+    #[wasm_bindgen(js_name = getChartData)]
+    pub fn get_chart_data(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.get_chart_data_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// [#4694] 문서 순번(0-based)으로 차트 데이터를 조회한다 — 정본 주소.
+    #[wasm_bindgen(js_name = getChartDataByIndex)]
+    pub fn get_chart_data_by_index(&self, index: u32) -> Result<String, JsValue> {
+        self.get_chart_data_by_index_native(index as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// [#4694] 본문 직속 차트의 숫자 데이터를 바꾼다 (3인자 주소).
+    ///
+    /// 반환: `{ok, chart, changedCount, changed[], wrote[]}` 또는 `{ok:false, invalid[]}`.
+    #[wasm_bindgen(js_name = setChartData)]
+    pub fn set_chart_data(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        edits_json: &str,
+    ) -> Result<String, JsValue> {
+        self.set_chart_data_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+            edits_json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// [#4694] 문서 순번(0-based)으로 차트 데이터를 바꾼다 — 정본 주소.
+    #[wasm_bindgen(js_name = setChartDataByIndex)]
+    pub fn set_chart_data_by_index(
+        &mut self,
+        index: u32,
+        edits_json: &str,
+    ) -> Result<String, JsValue> {
+        self.set_chart_data_by_index_native(index as usize, edits_json)
+            .map_err(|e| e.into())
+    }
+
     /// [Task #1138] 표 셀 내 Shape(글상자/사각형/도형) 속성 조회 (by_path).
     #[wasm_bindgen(js_name = getCellShapePropertiesByPath)]
     pub fn get_cell_shape_properties_by_path(

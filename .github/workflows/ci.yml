@@ -925,6 +925,11 @@ jobs:
           python3 -m unittest scripts/tests/test_gym_leaderboard.py
           python3 -m unittest scripts/tests/test_gym_release_diff.py
 
+      # [#4715] 채택 척추 — 에이전트 작업 표준(AWS)이 전 표면에서 정합한지.
+      # 바이너리 불요(커밋 문서만) — 표면이 늘어도 표준 링크가 끊기지 않게 한다.
+      - name: Validate adoption spine contract
+        run: python3 -m unittest scripts/tests/test_adoption_spine.py
+
       - name: Clippy
         run: cargo clippy -- -D warnings
 

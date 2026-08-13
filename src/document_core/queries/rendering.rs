@@ -2933,6 +2933,40 @@ impl DocumentCore {
         Ok(format!("{{\"runs\":[{}]}}", runs.join(",")))
     }
 
+    /// [#4694] 셀/글상자 안 ole 노드의 컨테이너 문맥 방출 — Image 방출(#1151/#1161)과
+    /// 동형. 이것이 비면 studio 선택 ref 가 본문 직속과 구분 불가한 3좌표로 떨어져,
+    /// 같은 문단에 앵커된 다른 차트를 조용히 여는 오매칭이 성립한다. 단일 레벨 스칼라
+    /// (`cellIdx`/`cellParaIdx`/`outerTableControlIdx`)는 studio 의 by_path 폴백 조립과의
+    /// 하위호환, `cellPath` 가 정본이다. 본문 직속(None)은 빈 문자열 — 기존 JSON 그대로.
+    fn ole_layout_context_json(ctx: Option<&crate::renderer::layout::CellContext>) -> String {
+        let Some(ctx) = ctx else {
+            return String::new();
+        };
+        let mut out = String::new();
+        if let [entry] = ctx.path.as_slice() {
+            out.push_str(&format!(
+                ",\"cellIdx\":{},\"cellParaIdx\":{},\"outerTableControlIdx\":{}",
+                entry.cell_index, entry.cell_para_index, entry.control_index
+            ));
+        }
+        let entries: Vec<String> = ctx
+            .path
+            .iter()
+            .map(|e| {
+                format!(
+                    "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                    e.control_index, e.cell_index, e.cell_para_index
+                )
+            })
+            .collect();
+        out.push_str(&format!(
+            ",\"parentParaIdx\":{},\"cellPath\":[{}]",
+            ctx.parent_para_index,
+            entries.join(",")
+        ));
+        out
+    }
+
     /// 컨트롤(표, 이미지 등) 레이아웃 정보 (네이티브 에러 타입)
     pub fn get_page_control_layout_native(&self, page_num: u32) -> Result<String, HwpError> {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -3156,7 +3190,7 @@ impl DocumentCore {
                         .filter(|control_ref| control_ref.kind == "ole")
                     {
                         controls.push(format!(
-                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
+                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
                             node.bbox.x,
                             node.bbox.y,
                             node.bbox.width,
@@ -3164,6 +3198,7 @@ impl DocumentCore {
                             control_ref.section_index,
                             control_ref.para_index,
                             control_ref.control_index,
+                            DocumentCore::ole_layout_context_json(raw_node.cell_context.as_ref()),
                             layer_str
                         ));
                         return;
@@ -3176,7 +3211,7 @@ impl DocumentCore {
                         .filter(|control_ref| control_ref.kind == "ole")
                     {
                         controls.push(format!(
-                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
+                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
                             node.bbox.x,
                             node.bbox.y,
                             node.bbox.width,
@@ -3184,6 +3219,7 @@ impl DocumentCore {
                             control_ref.section_index,
                             control_ref.para_index,
                             control_ref.control_index,
+                            DocumentCore::ole_layout_context_json(placeholder_node.cell_context.as_ref()),
                             layer_str
                         ));
                         return;
@@ -7595,6 +7631,8 @@ mod tests {
             wrap_around_paras: vec![],
             used_height: 0.0,
             wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         };
 
         let h = compute_hwp_used_height(&cc, &paragraphs, 96.0).expect("값이 있어야 함");

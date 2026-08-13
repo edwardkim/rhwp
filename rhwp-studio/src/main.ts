@@ -17,6 +17,7 @@ import { PluginHostRegistry } from '@/plugin/host';
 import type { StudioPlugin } from '@/plugin/types';
 import { CommandDispatcher } from '@/command/dispatcher';
 import type { EditorContext, CommandServices, EditorEditMode } from '@/command/types';
+import { defaultShortcuts, matchShortcut } from '@/command/shortcut-map';
 import { confirmSaveBeforeReplacingDocument, fileCommands } from '@/command/commands/file';
 import { editCommands } from '@/command/commands/edit';
 import { syncClipMenu, syncTextMarkMenu, viewCommands } from '@/command/commands/view';
@@ -33,6 +34,7 @@ import {
 import { forgetConvertedHmlSaveHandle } from '@/command/save-target';
 import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
+import { MODAL_DIALOG_CLOSED_EVENT } from '@/ui/dialog';
 import { showHmlImportWarning } from '@/ui/hml-import-warning';
 import { showLocalFontsModalIfNeeded } from '@/ui/local-fonts-modal';
 import { showToast } from '@/ui/toast';
@@ -620,6 +622,7 @@ async function initialize(): Promise<void> {
     setupFileInput();
     setupZoomControls();
     setupEventListeners();
+    setupModalFocusRestore();
     setupGlobalShortcuts();
     void loadFromUrlParam();
     // embed 프로파일: 자동저장 복구 다이얼로그의 드래프트 복원도 호스트가 감지할 수
@@ -664,6 +667,13 @@ async function initialize(): Promise<void> {
   }
 }
 
+/** 마지막 모달 종료 뒤 활성 편집기의 키보드 진입점을 textarea로 되돌린다 (#3414). */
+function setupModalFocusRestore(): void {
+  document.addEventListener(MODAL_DIALOG_CLOSED_EVENT, () => {
+    if (inputHandler?.isActive()) inputHandler.focus();
+  });
+}
+
 /**
  * 전역 단축키 핸들러 — InputHandler.active 여부와 무관하게 동작해야 하는 단축키.
  * 예: 문서 미로드 상태에서도 Alt+N(새 문서), Ctrl+O(열기) 등.
@@ -673,8 +683,17 @@ function setupGlobalShortcuts(): void {
     // input/textarea 등 편집 가능 요소 내부에서는 무시
     const target = e.target as HTMLElement;
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
-    // InputHandler가 활성 상태이면 자체 처리에 맡김
-    if (inputHandler?.isActive()) return;
+    // textarea가 아닌 곳에 포커스가 빠진 활성 편집기는 자체 keydown을 받지 못한다.
+    // 이때 undo/redo만 dispatcher로 보완한다. textarea가 target이면 위에서 이미 return하므로
+    // InputHandler와 이중 실행되지 않으며, 다른 단축키의 기존 전역 소유 범위도 넓히지 않는다.
+    if (inputHandler?.isActive()) {
+      const commandId = matchShortcut(e, defaultShortcuts);
+      if (commandId === 'edit:undo' || commandId === 'edit:redo') {
+        const result = dispatcher.dispatchWithResult(commandId);
+        if (result.ok || result.reason === 'threw') e.preventDefault();
+      }
+      return;
+    }
 
     const ctrlOrMeta = e.ctrlKey || e.metaKey;
 
@@ -1441,6 +1460,11 @@ eventBus.on('open-document-bytes', async (payload) => {
 // 수식 더블클릭 → 수식 편집 대화상자
 eventBus.on('equation-edit-request', () => {
   dispatcher.dispatch('insert:equation-edit');
+});
+
+// [#4694] 차트 더블클릭 → 차트 데이터 편집 대화상자
+eventBus.on('chart-data-edit-request', () => {
+  dispatcher.dispatch('insert:chart-data-edit');
 });
 
 /**

@@ -35,6 +35,8 @@ export const EMBED_HIDDEN_FILE_COMMAND_IDS: readonly string[] = [
   'file:save-as',
   'file:save-as-hwp',
   'file:save-as-hwpx',
+  'file:export-html',
+  'file:export-doc',
   'file:print-to-pdf',
   'file:print',
 ];

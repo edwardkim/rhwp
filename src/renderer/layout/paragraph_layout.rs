@@ -3370,8 +3370,31 @@ impl LayoutEngine {
             // 일반 HWP3/HWP5의 저장 segment 계약은 다르므로 기존 여백 처리를 유지한다.
             let hwp3_password_stored_segment_line_box =
                 uses_stored_segment_geometry && self.profile.get().hwp3_password_layout();
+            // [#4690] 저장 cs/sw 조각이 문단 여백을 담지 못하면 여백을 적용하지 않는다.
+            //
+            // 이 경로의 `effective_col_x/w` 는 이미 저장 `cs`/`sw` 가 정한 줄 상자다. 그
+            // 상자가 좁은데 `margin_left + line_indent + margin_right` 를 그대로 얹으면
+            // 줄이 상자 오른쪽 밖에서 시작하고 폭이 음수가 된다 — 그 줄의 글자는 정상적으로
+            // 그려질 수 없다(30098 p3 pi48 L1: x=721.2 폭 −1.6, 문서 전체 18줄. 저장
+            // 사다리 값은 x=679.7 폭 38.4). 여백이 담기지 않는다는 것 자체가 그 조각을
+            // 완성된 line box 로 읽어야 한다는 신호이므로, 암호 HWP3 경로와 같은 처리를
+            // 한다.
+            //
+            // 이 가드는 **여백이 상자를 넘칠 때만** 발동한다. 여백이 들어가는 정상 어울림
+            // 줄은 종전대로 둔다 — `line_indent` 를 이 경로에서 일괄로 빼면 wrap 텍스트가
+            // 그림 영역으로 침범한다(#1230 `exam_science` pi=21). 저장 cs 가 내어쓰기를
+            // 대체한다는 해석도 성립하지 않는다: 정답지 `pdf/exam_kor-2022.pdf`
+            // (Hwp 2022 12.0.0.4426) p5 에서 첫/마지막 lineseg 의 cs 가 둘 다 1130 으로
+            // 같은 문단인데도 한/글은 이어지는 줄을 `|indent|` 만큼 들여 그린다
+            // (99.12pt ↔ 110.4pt = 132.16px ↔ 147.20px @96dpi). 즉 cs 는 그 줄의 확정
+            // 시작점이 아니라 문단 왼쪽 여백이다.
+            let stored_segment_line_box_cannot_hold_margins = uses_stored_segment_geometry
+                && !hwp3_password_stored_segment_line_box
+                && styled_margin_left + margin_right >= effective_col_w;
             let (effective_margin_left, effective_margin_right) =
-                if hwp3_password_stored_segment_line_box {
+                if hwp3_password_stored_segment_line_box
+                    || stored_segment_line_box_cannot_hold_margins
+                {
                     (0.0, 0.0)
                 } else {
                     (

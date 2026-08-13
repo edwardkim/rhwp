@@ -27,6 +27,17 @@ pub struct Paragraph {
     pub char_shapes: Vec<CharShapeRef>,
     /// 줄 레이아웃 정보
     pub line_segs: Vec<LineSeg>,
+    /// [#4677] `line_segs` **끝쪽** 몇 줄이 조판 전용 보강 줄인가.
+    ///
+    /// HWPX RowBreak 표 셀은 문단별 `<hp:linesegarray>` 를 생략하면서도 셀 높이는 남긴다.
+    /// 그 높이에 맞춰 줄을 보강해야 쪽 나눔이 한컴과 같아지지만
+    /// (`DocumentCore::fit_hwpx_rowbreak_synthetic_cell_lines`), 그 줄은 **본문에 없는 줄**
+    /// 이라 HWP5 로 저장하면 안 된다 — 한글 2022 는 그런 셀 문단을 만나면 본문 전체를
+    /// 버리고 빈 1쪽 문서로 연다(rhwp 재파싱은 통과하는 함정).
+    ///
+    /// 파일에 실리는 값이 아니라 IR 안에서만 의미가 있다. `line_segs` 를 통째로 다시
+    /// 계산하는 경로(reflow)는 이 값을 0 으로 되돌린다.
+    pub layout_only_fill_lines: usize,
     /// 영역 태그 정보
     pub range_tags: Vec<RangeTag>,
     /// 필드 텍스트 범위 (0x03~0x04 사이 텍스트 인덱스 + 컨트롤 인덱스)
@@ -603,8 +614,6 @@ impl Paragraph {
         if self.char_offsets.is_empty() {
             return;
         }
-        // [#4149] 인라인 컨트롤 삽입은 char_shapes 경계를 옮긴다 — memo 무효화 (보수적).
-        self.invalidate_single_line_overflow_memo();
         let text_len = self.text.chars().count();
         let safe_offset = char_offset.min(text_len);
         // 컨트롤이 삽입되는 UTF-16 위치 — char_offsets 시프트 전에 계산한다.
@@ -623,18 +632,54 @@ impl Paragraph {
         for co in self.char_offsets[safe_offset..].iter_mut() {
             *co += 8;
         }
+        self.shift_position_metadata_for_stream_insertion(insert_pos, 8);
+    }
+
+    /// 선행 확장 제어문자가 들어갈 만큼 첫 텍스트 앞 스트림 좌표를 확보한다.
+    ///
+    /// `SectionDef`·`ColumnDef`처럼 문단 첫 글자보다 앞에 와야 하는 확장 제어문자는 각각
+    /// 8 UTF-16 code unit을 쓴다. 이미 확보된 선행 공간은 보존하고 부족한 만큼만 모든
+    /// 텍스트 좌표를 민다. `char_offsets`와 같은 좌표계를 쓰는 글자모양, range tag,
+    /// 줄 시작도 함께 갱신해야 한다.
+    ///
+    /// 호출 전에 제어문자를 `controls`의 선두에 넣고, 그 연속 개수를 넘긴다.
+    pub(crate) fn reserve_leading_extended_control_slots(&mut self, control_count: usize) {
+        const EXTENDED_CONTROL_CODE_UNITS: u32 = 8;
+
+        let required_room = u32::try_from(control_count)
+            .unwrap_or(u32::MAX)
+            .saturating_mul(EXTENDED_CONTROL_CODE_UNITS);
+        let existing_room = self.char_offsets.first().copied().unwrap_or(0);
+        let shift = required_room.saturating_sub(existing_room);
+        if shift == 0 {
+            return;
+        }
+
+        for offset in &mut self.char_offsets {
+            *offset += shift;
+        }
+        self.shift_position_metadata_for_stream_insertion(existing_room, shift);
+    }
+
+    /// 스트림 삽입으로 이동한 텍스트 좌표와 같은 기준을 쓰는 문단 메타데이터를 갱신한다.
+    fn shift_position_metadata_for_stream_insertion(&mut self, insert_pos: u32, shift: u32) {
+        if shift == 0 {
+            return;
+        }
+        // [#4149] 제어문자 삽입은 char_shapes 경계를 옮긴다 — memo 무효화 (보수적).
+        self.invalidate_single_line_overflow_memo();
         // 문단 시작(pos 0)에 고정된 첫 스타일은 유지(insert_text_at 과 동일).
         for cs in &mut self.char_shapes {
             if cs.start_pos > insert_pos || (cs.start_pos == insert_pos && cs.start_pos > 0) {
-                cs.start_pos += 8;
+                cs.start_pos += shift;
             }
         }
         for rt in &mut self.range_tags {
             if rt.start >= insert_pos {
-                rt.start += 8;
+                rt.start += shift;
             }
             if rt.end >= insert_pos {
-                rt.end += 8;
+                rt.end += shift;
             }
         }
         // [#4347] 줄 시작도 같은 좌표계(UTF-16 code unit)를 쓴다 — 함께 밀지 않으면 저장된
@@ -643,7 +688,7 @@ impl Paragraph {
         // 첫 줄은 문단 시작에 고정한다 — 넣은 컨트롤이 그 줄에 든다(char_shapes 와 같은 규약).
         for seg in &mut self.line_segs {
             if seg.text_start > insert_pos || (seg.text_start == insert_pos && seg.text_start > 0) {
-                seg.text_start += 8;
+                seg.text_start += shift;
             }
         }
     }
@@ -1202,6 +1247,8 @@ impl Paragraph {
             char_offsets: new_char_offsets,
             char_shapes: new_char_shapes,
             line_segs: new_line_segs,
+            // 분리된 문단의 줄은 새로 계산된 것이라 조판 전용 보강 줄이 없다 (#4677).
+            layout_only_fill_lines: 0,
             range_tags: new_range_tags,
             field_ranges: new_field_ranges, // 새 문단으로 이관된 필드 범위
             orphan_field_ends: Vec::new(),

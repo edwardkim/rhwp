@@ -146,7 +146,9 @@ hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].char_offsets.n	1248
 hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].char_offsets[]	7143
 hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].control_mask	290
 hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	91
+hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].line_segs.len	4
 hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].line_segs[].vertical_pos	54
+hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].raw_header_extra[]	4
 hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	163
 hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[].children[].children[].children[].children[].children[].children[].children[].children[].children[][].drawing.fill.solid	192
 hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[].children[].children[].children[].children[].children[].children[].children[].children[][].drawing.fill.solid	128

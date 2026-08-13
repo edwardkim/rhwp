@@ -1113,6 +1113,18 @@ struct TypesetState {
     /// (sample1-repro 저장 사다리: 필러가 각자 줄 높이만큼 전진해 표 높이를 채움.
     /// 흡수하면 갭이 어느 쪽에도 계상되지 않아 후속 표가 겹침 — 8쪽 555.5px).
     overlay_shape_shortcut_para: Option<usize>,
+    /// [#4568] 쪽 하단을 넘는 overlay 표의 **다음 단/쪽으로 넘길 잔여 행** 대기열.
+    ///
+    /// overlay 표는 흐름 소비가 0 이라 앵커 쪽에서 다음 쪽 항목을 바로 push 할 수 없다
+    /// (다음 쪽은 이후 문단이 흐름을 넘길 때 비로소 생긴다). 그래서 앵커 쪽에서
+    /// "몇 번째 행부터 잘렸는지"만 적어 두고, 단/쪽이 열릴 때 그 시작에 방출한다.
+    /// `(para_index, control_index, start_row, remaining_px)`.
+    pending_overlay_continuations: Vec<(usize, usize, usize, f64)>,
+    /// [#4568] 현재 단에 이어 그릴 overlay 잔여 행 목록. `flush_column` 에서
+    /// `ColumnContent::overlay_continuations` 로 옮긴다.
+    current_column_overlay_continuations: Vec<crate::renderer::pagination::OverlayContinuation>,
+    /// [#4568] 현재 단의 overlay 표 앵커 컷 — `(para, ctrl, end_row)`.
+    current_column_overlay_cuts: Vec<(usize, usize, usize)>,
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
@@ -1387,6 +1399,21 @@ fn is_treat_as_char_equation_control(ctrl: Option<&Control>) -> bool {
 fn para_is_treat_as_char_picture_only(para: &Paragraph) -> bool {
     !para_has_visible_text(para)
         && para.controls.iter().any(|ctrl| match ctrl {
+            Control::Picture(pic) => pic.common.treat_as_char,
+            Control::Shape(shape) => shape.common().treat_as_char,
+            _ => false,
+        })
+}
+
+/// 문단의 가시 payload가 글자처럼 취급하는 그림/도형으로만 이뤄졌는가.
+///
+/// `para_is_treat_as_char_picture_only`는 기존 조판 경로를 위해 TAC 그림이 **하나라도** 있는
+/// 텍스트 없는 문단을 가리킨다. 단일 단 저장 vpos-reset을 강제 분리하는 경우에는 표·수식처럼
+/// 다른 컨트롤이 섞이면 안 되므로 더 좁은 판정이 필요하다.
+fn para_has_only_treat_as_char_picture_or_shape(para: &Paragraph) -> bool {
+    !para_has_visible_text(para)
+        && !para.controls.is_empty()
+        && para.controls.iter().all(|ctrl| match ctrl {
             Control::Picture(pic) => pic.common.treat_as_char,
             Control::Shape(shape) => shape.common().treat_as_char,
             _ => false,
@@ -3550,6 +3577,9 @@ impl TypesetState {
             next_para_first_stored_vpos: None,
             behind_pending_absorbs: Vec::new(),
             overlay_shape_shortcut_para: None,
+            pending_overlay_continuations: Vec::new(),
+            current_column_overlay_continuations: Vec::new(),
+            current_column_overlay_cuts: Vec::new(),
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
             current_zone_column_type: column_type,
@@ -3953,6 +3983,8 @@ impl TypesetState {
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
             wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
+            overlay_continuations: std::mem::take(&mut self.current_column_overlay_continuations),
+            overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -4022,6 +4054,8 @@ impl TypesetState {
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
             wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
+            overlay_continuations: std::mem::take(&mut self.current_column_overlay_continuations),
+            overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -4082,6 +4116,28 @@ impl TypesetState {
         }
         // Task #321: 새 페이지에서는 body-wide top reserve 초기화
         self.pending_body_wide_top_reserve = 0.0;
+        // [#4568] 앞 쪽에서 잘린 overlay 표의 잔여 행을 이 쪽 최상단에 이어 그린다.
+        // `current_items` 가 아니라 단 전용 목록으로 넘긴다 — 흐름 항목이 아니라
+        // z-layer 장식이고, 항목으로 섞으면 이 조각이 단의 첫 항목이 되어
+        // `items.first()` 를 보는 휴리스틱이 조각을 본문으로 읽는다.
+        let mut overlay_top_reserve = 0.0f64;
+        self.current_column_overlay_continuations.extend(
+            std::mem::take(&mut self.pending_overlay_continuations)
+                .into_iter()
+                .map(|(para_index, control_index, start_row, remaining_px)| {
+                    overlay_top_reserve = overlay_top_reserve.max(remaining_px);
+                    crate::renderer::pagination::OverlayContinuation {
+                        para_index,
+                        control_index,
+                        start_row,
+                    }
+                }),
+        );
+        // 잔여 높이를 새 쪽 흐름에 예약하면 안 된다 — #4514 기제에서 필러 문단들이
+        // 이미 표 높이만큼 흐름 공간을 만들므로 이중 계상이 된다(실측: 예약 시
+        // 48 → 56쪽, 한컴 46쪽에서 더 멀어짐). 잔여 행의 자리는 이어지는 필러
+        // 흐름이 만든다.
+        let _ = overlay_top_reserve;
     }
 
     fn reset_for_new_page(&mut self) {
@@ -7096,13 +7152,11 @@ impl TypesetEngine {
                                 );
                                 continue;
                             }
-                            // [Issue #476] treat_as_char Shape 는 박스가 속한 line 이 라우팅된
+                            // [Issue #476/#4092] treat_as_char 그림/도형은 박스가 속한 line 이 라우팅된
                             // 페이지/단에 등록. paragraph 가 페이지 분할되면 이 시점의
                             // st.current_items 는 마지막 페이지 상태이므로, 그대로 push 하면
                             // 박스가 잘못된 페이지에 떠 있게 된다.
-                            let is_tac_shape = matches!(ctrl,
-                                Control::Shape(s) if s.common().treat_as_char);
-                            let routed = if is_tac_shape {
+                            let routed = if crate::renderer::pagination::is_routable_treat_as_char_picture_or_shape(ctrl) {
                                 crate::renderer::pagination::find_inline_control_target_page(
                                     &st.pages,
                                     &st.current_items,
@@ -15364,7 +15418,8 @@ impl TypesetEngine {
         // (다음 줄 vpos==0 이고 현재 줄 bottom 이 본문 안이면 현재 쪽 유지) 가 모든 줄을 한
         // 쪽에 쌓아 버린다. 이 문단만 hwp_authoritative 를 끄고 줄별 fit 분할(쪽당 1장)로
         // 되돌린다. 게이트는 formatter 의 stacked_tac_picture_heights 와 동일 의미.
-        let is_tac_picture_stack = para_is_treat_as_char_picture_only(para)
+        let tac_picture_only_para = para_is_treat_as_char_picture_only(para);
+        let is_tac_picture_stack = tac_picture_only_para
             && line_count >= 2
             && fmt
                 .line_heights
@@ -15530,7 +15585,24 @@ impl TypesetEngine {
                 // line_segs[li].vertical_pos == 0 (li>0) 은 HWP 가 해당 line 을
                 // 다음 단/페이지 최상단에 배치하도록 인코딩한 신호.
                 // 다단 한정 적용 — 단일 단은 partial-table split 회귀 (issue #418) 차단 위해 미적용.
-                if st.col_count > 1
+                //
+                // [#4092] 단일 단이라도 **전면 개체 줄**은 이 신호를 존중한다. 한 문단에
+                // 전면 그림이 여럿 든 형상에서, 한컴은 줄마다 reset 을 기록해 쪽마다
+                // 하나씩 두는데 rhwp 는 그 신호를 버리고 한 쪽에 쌓았다(HPV 코호트
+                // pi=970: 본문 895.8px 에 763~770px 짜리 줄 6개 = 4,654px, 문서 전체
+                // 246쪽 ↔ 한글 235쪽).
+                //
+                // 조건은 문단이 아니라 **그 줄**에 건다 — 같은 문단이라도 첫 줄은
+                // 199.7px 라 `is_tac_picture_stack`(모든 줄이 절반 초과)은 거짓이다.
+                // #418 의 partial-table 회귀는 여기에 닿지 않는다. 이 분기는 TAC 그림/도형만
+                // 남은 문단으로 한정하므로, 표·수식 등 다른 컨트롤이 섞인 문단은 배제한다.
+                let tac_picture_full_page_line = para_has_only_treat_as_char_picture_or_shape(para)
+                    && fmt
+                        .line_heights
+                        .get(li)
+                        .map(|h| *h > st.base_available_height() * 0.5)
+                        .unwrap_or(false);
+                if (st.col_count > 1 || tac_picture_full_page_line)
                     && li > cursor_line
                     && para
                         .line_segs
@@ -16622,6 +16694,55 @@ impl TypesetEngine {
                             para_index: para_idx,
                             control_index: ctrl_idx,
                         });
+                        // [#4568] 이 표가 쪽 하단을 넘으면 잘린 행을 다음 쪽에 이어
+                        // 그리도록 대기열에 남긴다. 앵커 y 는 흐름 위치 + 개체 세로
+                        // 오프셋이고, 남은 쪽 공간에 들어가는 행 수를 누적 행 높이로
+                        // 센다. 행 하나도 넘치지 않으면(=표 전체가 쪽 안) 아무것도
+                        // 남기지 않는다.
+                        let ft = self.format_table(
+                            para,
+                            para_idx,
+                            ctrl_idx,
+                            table,
+                            measured_tables,
+                            styles,
+                            composed,
+                            next_para,
+                            st.current_height < 1.0,
+                        );
+                        let anchor_y = st.current_height
+                            + hwpunit_to_px(table.common.vertical_offset as i32, self.dpi);
+                        let room = st.base_available_height() - anchor_y;
+                        if room > 0.0 && ft.effective_height > room {
+                            // `cumulative_heights` 는 접두합(len = 행 수 + 1)이다 —
+                            // `cum[i]` 는 행 0..i 의 합이므로, 처음으로 room 을 넘는
+                            // 인덱스 i 는 "행 i-1 이 안 들어간다"는 뜻이다.
+                            let first_unfit = ft
+                                .cumulative_heights
+                                .iter()
+                                .position(|cum| *cum > room)
+                                .map(|i| i.saturating_sub(1))
+                                .unwrap_or(ft.row_heights.len());
+                            if first_unfit > 0 && first_unfit < ft.row_heights.len() {
+                                let remaining_px = (ft.effective_height
+                                    - ft.cumulative_heights
+                                        .get(first_unfit)
+                                        .copied()
+                                        .unwrap_or(0.0))
+                                .max(0.0);
+                                st.pending_overlay_continuations.push((
+                                    para_idx,
+                                    ctrl_idx,
+                                    first_unfit,
+                                    remaining_px,
+                                ));
+                                st.current_column_overlay_cuts.push((
+                                    para_idx,
+                                    ctrl_idx,
+                                    first_unfit,
+                                ));
+                            }
+                        }
                         // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
                         st.overlay_shape_shortcut_para = Some(para_idx);
                         continue;
@@ -22968,6 +23089,41 @@ mod tests {
         }
     }
 
+    #[test]
+    fn single_column_vpos_reset_gate_requires_exclusive_tac_picture_or_shape() {
+        let tac_picture = || {
+            let mut picture = crate::model::image::Picture::default();
+            picture.common.treat_as_char = true;
+            Control::Picture(Box::new(picture))
+        };
+
+        let picture_only = Paragraph {
+            controls: vec![tac_picture()],
+            ..Default::default()
+        };
+        assert!(para_has_only_treat_as_char_picture_or_shape(&picture_only));
+
+        let mut table = Table::default();
+        table.common.treat_as_char = true;
+        let mixed_controls = Paragraph {
+            controls: vec![tac_picture(), Control::Table(Box::new(table))],
+            ..Default::default()
+        };
+        assert!(
+            !para_has_only_treat_as_char_picture_or_shape(&mixed_controls),
+            "TAC 그림과 표가 섞인 문단은 단일 단 vpos-reset 강제 분리 대상이 아니다"
+        );
+
+        let picture_with_text = Paragraph {
+            text: "설명".to_string(),
+            controls: vec![tac_picture()],
+            ..Default::default()
+        };
+        assert!(!para_has_only_treat_as_char_picture_or_shape(
+            &picture_with_text
+        ));
+    }
+
     /// [#4333] 인라인(글자처럼) 도형의 흐름 높이는 조판과 렌더가 같은 정의를 써야 한다.
     ///
     /// 조판은 저장 프레임(`common.height`)만, 렌더는 프레임과 개체 표시 높이
@@ -23968,6 +24124,8 @@ mod tests {
                 wrap_around_paras: Vec::new(),
                 used_height: 0.0,
                 wrap_anchors: std::collections::HashMap::new(),
+                overlay_continuations: Vec::new(),
+                overlay_cuts: Vec::new(),
             }],
             active_header: None,
             active_footer: None,
