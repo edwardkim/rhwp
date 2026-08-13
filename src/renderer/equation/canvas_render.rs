@@ -402,18 +402,8 @@ fn draw_stretch_bracket(
             ctx.begin_path();
             ctx.move_to(mid_x + w * 0.2, y);
             ctx.quadratic_curve_to(mid_x - w * 0.1, y, mid_x - w * 0.1, y + qh);
-            ctx.quadratic_curve_to(
-                mid_x - w * 0.1,
-                y + qh * 2.0,
-                mid_x - w * 0.3,
-                y + qh * 2.0,
-            );
-            ctx.quadratic_curve_to(
-                mid_x - w * 0.1,
-                y + qh * 2.0,
-                mid_x - w * 0.1,
-                y + qh * 3.0,
-            );
+            ctx.quadratic_curve_to(mid_x - w * 0.1, y + qh * 2.0, mid_x - w * 0.3, y + qh * 2.0);
+            ctx.quadratic_curve_to(mid_x - w * 0.1, y + qh * 2.0, mid_x - w * 0.1, y + qh * 3.0);
             ctx.quadratic_curve_to(mid_x - w * 0.1, y + h, mid_x + w * 0.2, y + h);
             ctx.stroke();
         }
@@ -422,18 +412,8 @@ fn draw_stretch_bracket(
             ctx.begin_path();
             ctx.move_to(mid_x - w * 0.2, y);
             ctx.quadratic_curve_to(mid_x + w * 0.1, y, mid_x + w * 0.1, y + qh);
-            ctx.quadratic_curve_to(
-                mid_x + w * 0.1,
-                y + qh * 2.0,
-                mid_x + w * 0.3,
-                y + qh * 2.0,
-            );
-            ctx.quadratic_curve_to(
-                mid_x + w * 0.1,
-                y + qh * 2.0,
-                mid_x + w * 0.1,
-                y + qh * 3.0,
-            );
+            ctx.quadratic_curve_to(mid_x + w * 0.1, y + qh * 2.0, mid_x + w * 0.3, y + qh * 2.0);
+            ctx.quadratic_curve_to(mid_x + w * 0.1, y + qh * 2.0, mid_x + w * 0.1, y + qh * 3.0);
             ctx.quadratic_curve_to(mid_x + w * 0.1, y + h, mid_x - w * 0.2, y + h);
             ctx.stroke();
         }
