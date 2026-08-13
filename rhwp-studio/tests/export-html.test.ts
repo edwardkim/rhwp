@@ -18,7 +18,7 @@ function engine(overrides: Partial<DocumentHtmlEngine> = {}): DocumentHtmlEngine
   return {
     getSectionCount: () => 0,
     getParagraphCount: () => 0,
-    getTextRange: () => '',
+    getParagraphLength: () => 0,
     exportSelectionHtml: () => '',
     ...overrides,
   };
@@ -40,7 +40,7 @@ test('collectDocumentHtml은 섹션별 selection HTML을 문서 전체 범위로
   const html = collectDocumentHtml(engine({
     getSectionCount: () => 2,
     getParagraphCount: (section) => (section === 0 ? 2 : 1),
-    getTextRange: () => 'abc',
+    getParagraphLength: () => 3,
     exportSelectionHtml: (section, sp, so, ep, eo) => {
       calls.push([section, sp, so, ep, eo]);
       return `<p>sec${section}</p>`;
@@ -52,17 +52,30 @@ test('collectDocumentHtml은 섹션별 selection HTML을 문서 전체 범위로
   assert.deepEqual(calls, [[0, 0, 0, 1, 3], [1, 0, 0, 0, 3]]);
 });
 
-test('collectDocumentHtml은 한 섹션의 실패를 건너뛰고 나머지를 유지한다', () => {
-  const html = collectDocumentHtml(engine({
+test('collectDocumentHtml은 한 구역 변환 실패를 전체 내보내기 실패로 전달한다', () => {
+  assert.throws(() => collectDocumentHtml(engine({
     getSectionCount: () => 2,
     getParagraphCount: () => 1,
-    getTextRange: () => 'x',
+    getParagraphLength: () => 1,
     exportSelectionHtml: (section) => {
       if (section === 0) throw new Error('section 0 failed');
       return '<p>sec1</p>';
     },
+  })), /구역 1 HTML 변환 실패: section 0 failed/);
+});
+
+test('collectDocumentHtml은 엔진의 char 단위 문단 길이를 끝 오프셋으로 쓴다', () => {
+  const calls: number[][] = [];
+  collectDocumentHtml(engine({
+    getSectionCount: () => 1,
+    getParagraphCount: () => 1,
+    getParagraphLength: () => 1_000_001,
+    exportSelectionHtml: (section, sp, so, ep, eo) => {
+      calls.push([section, sp, so, ep, eo]);
+      return '<p>긴 문단</p>';
+    },
   }));
-  assert.equal(html, '<p>sec1</p>');
+  assert.deepEqual(calls, [[0, 0, 0, 0, 1_000_001]]);
 });
 
 test('htmlExportBaseName은 문서 확장자를 제거하고 빈 이름에 기본값을 쓴다', () => {

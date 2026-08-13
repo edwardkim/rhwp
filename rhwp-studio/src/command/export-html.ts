@@ -13,7 +13,7 @@
 export interface DocumentHtmlEngine {
   getSectionCount(): number;
   getParagraphCount(sectionIdx: number): number;
-  getTextRange(sectionIdx: number, paraIdx: number, charOffset: number, count: number): string;
+  getParagraphLength(sectionIdx: number, paraIdx: number): number;
   exportSelectionHtml(
     sectionIdx: number,
     startPara: number,
@@ -39,9 +39,6 @@ export const HTML_EXPORT_DETAILS: Record<
   doc: { extension: 'doc', mimeType: 'application/msword', label: 'Word 문서(.doc)' },
 };
 
-/** 마지막 문단 끝 오프셋을 얻기 위한 충분히 큰 요청 길이 (엔진이 실제 길이로 클램프). */
-const TEXT_RANGE_PROBE_LENGTH = 1_000_000;
-
 /**
  * 엔진이 반환하는 조각의 클립보드용 래퍼(`<html><body><!--StartFragment-->…`)를
  * 벗겨 body 내부만 남긴다. 래퍼가 없으면 원문을 그대로 돌려준다.
@@ -63,18 +60,14 @@ export function collectDocumentHtml(engine: DocumentHtmlEngine): string {
     const paragraphCount = engine.getParagraphCount(section);
     if (paragraphCount <= 0) continue;
     const lastPara = paragraphCount - 1;
-    let endOffset = 0;
     try {
-      endOffset = (engine.getTextRange(section, lastPara, 0, TEXT_RANGE_PROBE_LENGTH) ?? '').length;
-    } catch {
-      endOffset = 0;
-    }
-    try {
+      const endOffset = engine.getParagraphLength(section, lastPara);
       const fragment = engine.exportSelectionHtml(section, 0, 0, lastPara, endOffset) ?? '';
       const inner = unwrapEngineHtmlFragment(fragment);
       if (inner) parts.push(inner);
-    } catch {
-      // 한 섹션의 실패가 문서 전체 내보내기를 막지 않는다.
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`구역 ${section + 1} HTML 변환 실패: ${message}`);
     }
   }
   return parts.join('\n');
