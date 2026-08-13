@@ -13,8 +13,14 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-/// 두 축이 함께 실패하는 표본 — 쪽수 35→36, IR 차이 3건.
-const BOTH_FAIL_SAMPLE: &str = "samples/synam-001.hwp";
+/// 두 축이 함께 실패하는 표본 — 쪽수 49→50, IR 차이 2건.
+///
+/// [#4677] 종전 표본 `synam-001.hwp` 는 IR 축이 **고쳐져** 더 이상 두 축이 함께 실패하지
+/// 않는다. 그 문서의 IR 차이 3건은 전부 char_shape 경계가 8 유닛 배수만큼 밀린 것이었고
+/// (예: `(9,146)` → `(1,146)`), 근인은 HWPX 저장기가 책갈피를 zero-width 로 다뤄 위치 축에서
+/// 뺀 것이었다. 책갈피를 8 유닛 슬롯으로 편입하면서 사라졌다. 이 테스트가 지키는 축은
+/// "쪽수 실패가 IR 보고를 가리지 않는다" 이므로 표본만 교체한다.
+const BOTH_FAIL_SAMPLE: &str = "samples/issue1937_rowbreak_footnote_overpagination.hwp";
 /// 두 축 모두 통과하는 표본 — 무회귀 기준선.
 const CLEAN_SAMPLE: &str = "samples/table-001.hwp";
 

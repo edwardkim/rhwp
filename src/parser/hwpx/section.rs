@@ -4489,6 +4489,12 @@ fn parse_ctrl(
                     b"bookmark" => {
                         let bm = parse_bookmark_attrs(ce);
                         controls.push(Control::Bookmark(bm));
+                        // [#4677] 책갈피도 HWP5 PARA_TEXT 에서 8 유닛 확장 제어문자 자리를
+                        // 차지한다(한컴 원본 바이트: `16 00 6d 6b 6f 62 … 16 00`). 이 표시가
+                        // 없으면 char_offsets 에 갭이 없어 HWP5 저장기가 제어문자를 제자리에
+                        // 넣지 못하고 문단 **끝에 몰아서** 쓴다. 그러면 글자 모양 경계가
+                        // 어긋나고(한컴 pos 77 → rhwp 53) 한글 2022 는 본문을 통째로 버린다.
+                        text_parts.push("\u{0002}".to_string());
                         skip_element(reader, b"bookmark")?;
                     }
                     b"newNum" => {
@@ -4530,6 +4536,8 @@ fn parse_ctrl(
                     b"bookmark" => {
                         let bm = parse_bookmark_attrs(ce);
                         controls.push(Control::Bookmark(bm));
+                        // 위 Start 분기와 같은 이유 — 8 유닛 자리를 반드시 잡아 둔다 (#4677).
+                        text_parts.push("\u{0002}".to_string());
                     }
                     b"newNum" => {
                         let nn = parse_new_num_attrs(ce);
