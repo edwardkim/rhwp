@@ -97,7 +97,7 @@ R61(바인딩 표류)·R76(문서 지능 서버)은 머지 실적이 아니라 �
 | 트랙 | 질문 | 문서 |
 |---|---|---|
 | A (R1~10) | 봉투를 믿을 수 있는가 — L1 무결 | [track_a_envelope.md](track_a_envelope.md) |
-| B (R11~21) | 가드와 보안이 구멍을 먼저 찾는가 — L2 | [track_b_guards_security.md](track_b_guards_security.md) |
+| B (R11~20) | 가드와 보안이 구멍을 먼저 찾는가 — L2 | [track_b_guards_security.md](track_b_guards_security.md) |
 | C (R21~30) | 에이전트 여럿이 안전한가 — L2 동시성 | [track_c_concurrency.md](track_c_concurrency.md) |
 | D (R31~40) | 처음 온 에이전트가 길을 찾는가 — L3 | [track_d_discovery.md](track_d_discovery.md) |
 | E (R41~50) | 실물 문서를 실제로 다루는가 | [track_e_capabilities.md](track_e_capabilities.md) |
