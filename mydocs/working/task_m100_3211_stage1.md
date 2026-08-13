@@ -58,3 +58,18 @@ COM major 12를 받아 안전하게 중단했다. 2024 결과는 측정하지 �
 
 Cargo의 `fmt` subcommand는 이 Windows 경로에서 OS error 206(파일명/확장명 길이)로 help를
 출력해 판정을 제공하지 못했다. 위 직접 rustfmt 검사를 대신 사용했다.
+
+## CI 후속 보정
+
+`devel` 최신 병합을 반영한 PR CI에서 HML fixture의 middle-anchored table 회귀가 발견됐다.
+이 fixture는 `abc + table + efg`의 control 경계를 renderer가 별도의 `TextRun`/`Table`로
+표현한다. 표 전체 폭을 control 뒤 visible character에 합산하면 그 경계가 사라져 trailing
+`efg` run을 찾지 못한다.
+
+`b7fbd8b02`는 `flow_inline_controls()`에서 `Control::Table`을 제외해 기존 table 배치 경로를
+보존했다. 표의 cell-split/empty-paragraph 크기 계산은 그대로 두며, Windows Hancom HWP 샘플에서
+검증한 수식·그림 control 폭·높이 보정에는 영향을 주지 않는다.
+
+- `pr_2219_hml_middle_anchor` 대상 회귀 — 1/1 통과.
+- #3211 대조 — 두 샘플 각각 160/165 line count, 130/165 line break 유지.
+- #1082 미주 드리프트 5/5, #1139 인라인 그림·미주 85/85, Clippy 통과.

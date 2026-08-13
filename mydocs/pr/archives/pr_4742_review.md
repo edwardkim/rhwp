@@ -100,6 +100,35 @@ Windows PowerShell의 동일 `target\\pr-review`에서 다음을 완료했다.
 
 이 보정 뒤의 새 GitHub Actions는 merge 전 조건으로 다시 확인한다.
 
+## 기준선 갱신 뒤 회귀 보정
+
+`devel`의 PR #4743 병합을 head에 반영한 `895508a7afece7f5de99dbcbfb16db7b27dc7eaa`에서
+새 CI가 실행됐다. 이 실행은 `pr_2219_hml_middle_anchor::
+formatting_table_middle_anchor_preserves_vertical_text_flow` 한 건만 실패했다. Windows의
+동일 재현도 `tests/pr_2219_hml_middle_anchor.rs:40`에서 `distinct trailing efg text run`을
+보고했다.
+
+원인은 HML fixture의 `abc + 글자처럼 취급되는 표 + efg` 문단이었다. 표의 폭(41,956 HU)을
+visible text에서 표가 빠진 위치의 다음 글자 폭에 더하면, renderer가 만드는 기존
+`TextRun`/`Table` 경계가 사라진다. `b7fbd8b0218d2cf3bdbb0a1618a3fb01c4b2ce90`
+(`fix(#3211): 인라인 표 재조판 경계 보존`)은 `flow_inline_controls()`에서 table만 제외했다.
+표의 기존 cell-split·empty-paragraph 제어문 배치와 크기 계산은 바꾸지 않았고, #3211에서
+Windows Hancom 저장 LineSeg와 대조한 수식·그림 계열의 폭·높이 보정은 유지한다.
+
+Windows PowerShell에서 `target\pr-review` 하나를 순차 재사용해 아래를 다시 확인했다.
+
+| 검증 | 결과 |
+| --- | --- |
+| `cargo test --target-dir target\pr-review --test pr_2219_hml_middle_anchor formatting_table_middle_anchor_preserves_vertical_text_flow -- --nocapture` | 1 passed |
+| `cargo test --target-dir target\pr-review --lib issue3211_uncached_endnote_body_preserves_inline_control_flow -- --nocapture` | 두 샘플 모두 160/165 line count, 130/165 line break |
+| `cargo test --target-dir target\pr-review --test issue_1082_endnote_multicolumn_drift` | 5 passed |
+| `cargo test --target-dir target\pr-review --test issue_1139_inline_picture_duplicate` | 85 passed |
+| `cargo clippy --target-dir target\pr-review -- -D warnings` | 통과 |
+| 직접 `rustfmt.exe --check`, `git diff --check` | 통과 |
+
+`CARGO_INCREMENTAL`은 이 검증에도 설정하지 않았다. 이 보정의 새 head CI가 통과하고
+mergeability를 재확인하기 전에는 merge하지 않는다.
+
 ## 결론과 merge 조건
 
 코드 검토와 로컬·Windows 검증에서 blocker는 발견하지 못했다. 단, 이 PR은 #3211 전체 정합성을
