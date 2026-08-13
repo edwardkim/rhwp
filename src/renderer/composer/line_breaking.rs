@@ -38,6 +38,18 @@ pub(crate) enum BreakToken {
     LineBreak { idx: usize },
 }
 
+/// 글자처럼 취급되는 인라인 제어문의 문단 내 위치와 물리 크기.
+///
+/// HWP `PARA_TEXT`에는 수식·그림 본문이 보이지 않는 8 UTF-16 단위 제어문자로
+/// 들어가므로, visible text만 토큰화하면 제어문이 차지한 폭이 사라진다. 재조판은
+/// 그 폭과 높이를 별도로 들고 줄나눔과 line box에 반영해야 한다 (#3211).
+#[derive(Debug, Clone, Copy)]
+struct FlowInlineControl {
+    char_position: usize,
+    width_hwp: i32,
+    height_hwp: i32,
+}
+
 /// 줄 채움 결과
 #[derive(Debug)]
 struct LineBreakResult {
@@ -166,6 +178,7 @@ pub(crate) fn tokenize_paragraph(
         english_break_unit,
         korean_break_unit,
         false,
+        &[],
     )
 }
 
@@ -179,6 +192,7 @@ fn tokenize_paragraph_with_split_cell_space_metric(
     english_break_unit: u8,
     korean_break_unit: u8,
     split_stale_cell_reflow: bool,
+    inline_controls: &[FlowInlineControl],
 ) -> Vec<BreakToken> {
     let text_len = text_chars.len();
     if text_len == 0 {
@@ -240,7 +254,7 @@ fn tokenize_paragraph_with_split_cell_space_metric(
                     .unwrap_or_else(|| estimate_text_width_unrounded(" ", &ts))
             } else {
                 estimate_text_width_unrounded(" ", &ts)
-            };
+            } + inline_width_px_at(inline_controls, i);
             tokens.push(BreakToken::Space {
                 idx: i,
                 width: w,
@@ -345,13 +359,31 @@ fn tokenize_paragraph_with_split_cell_space_metric(
                         char_shapes,
                         styles,
                         current_lang,
+                        inline_controls,
                     );
+                    let char_widths = if has_inline_control_in_range(inline_controls, start, i) {
+                        (start..i)
+                            .map(|ci| {
+                                measure_char_width(
+                                    text_chars[ci],
+                                    ci,
+                                    char_offsets,
+                                    char_shapes,
+                                    styles,
+                                    current_lang,
+                                    inline_controls,
+                                )
+                            })
+                            .collect()
+                    } else {
+                        Vec::new()
+                    };
                     tokens.push(BreakToken::Text {
                         start_idx: start,
                         end_idx: i,
                         width,
                         max_font_size: max_fs,
-                        char_widths: vec![],
+                        char_widths,
                     });
                 }
                 continue;
@@ -370,7 +402,8 @@ fn tokenize_paragraph_with_split_cell_space_metric(
                 } else {
                     12.0
                 };
-                let w = estimate_text_width_unrounded(&ch.to_string(), &ts);
+                let w = estimate_text_width_unrounded(&ch.to_string(), &ts)
+                    + inline_width_px_at(inline_controls, i);
                 tokens.push(BreakToken::Text {
                     start_idx: i,
                     end_idx: i + 1,
@@ -455,6 +488,7 @@ fn tokenize_paragraph_with_split_cell_space_metric(
                         char_shapes,
                         styles,
                         current_lang,
+                        inline_controls,
                     );
                     // 개별 글자 폭 수집 (char_level_break용)
                     let cw: Vec<f64> = (start..i)
@@ -469,6 +503,7 @@ fn tokenize_paragraph_with_split_cell_space_metric(
                             let lang = if is_lang_neutral(c) { current_lang } else { 1 };
                             let ts = resolved_to_text_style(styles, sid, lang);
                             estimate_text_width_unrounded(&c.to_string(), &ts)
+                                + inline_width_px_at(inline_controls, ci)
                         })
                         .collect();
                     tokens.push(BreakToken::Text {
@@ -495,7 +530,8 @@ fn tokenize_paragraph_with_split_cell_space_metric(
                 } else {
                     12.0
                 };
-                let w = estimate_text_width_unrounded(&ch.to_string(), &ts);
+                let w = estimate_text_width_unrounded(&ch.to_string(), &ts)
+                    + inline_width_px_at(inline_controls, i);
                 tokens.push(BreakToken::Text {
                     start_idx: i,
                     end_idx: i + 1,
@@ -523,7 +559,8 @@ fn tokenize_paragraph_with_split_cell_space_metric(
             } else {
                 12.0
             };
-            let w = estimate_text_width_unrounded(&ch.to_string(), &ts);
+            let w = estimate_text_width_unrounded(&ch.to_string(), &ts)
+                + inline_width_px_at(inline_controls, i);
             tokens.push(BreakToken::Text {
                 start_idx: i,
                 end_idx: i + 1,
@@ -556,7 +593,8 @@ fn tokenize_paragraph_with_split_cell_space_metric(
             } else {
                 12.0
             };
-            let w = estimate_text_width_unrounded(&ch.to_string(), &ts);
+            let w = estimate_text_width_unrounded(&ch.to_string(), &ts)
+                + inline_width_px_at(inline_controls, i);
             tokens.push(BreakToken::Text {
                 start_idx: i,
                 end_idx: i + 1,
@@ -579,6 +617,7 @@ fn measure_token_width(
     char_shapes: &[CharShapeRef],
     styles: &ResolvedStyleSet,
     default_lang: usize,
+    inline_controls: &[FlowInlineControl],
 ) -> f64 {
     let mut total = 0.0;
     let mut current_lang = default_lang;
@@ -598,9 +637,52 @@ fn measure_token_width(
             detected
         };
         let ts = resolved_to_text_style(styles, style_id, lang);
-        total += estimate_text_width_unrounded(&ch.to_string(), &ts);
+        total += estimate_text_width_unrounded(&ch.to_string(), &ts)
+            + inline_width_px_at(inline_controls, idx);
     }
     total
+}
+
+fn measure_char_width(
+    ch: char,
+    char_idx: usize,
+    char_offsets: &[u32],
+    char_shapes: &[CharShapeRef],
+    styles: &ResolvedStyleSet,
+    default_lang: usize,
+    inline_controls: &[FlowInlineControl],
+) -> f64 {
+    let utf16_pos = char_offsets
+        .get(char_idx)
+        .copied()
+        .unwrap_or(char_idx as u32);
+    let style_id = find_active_char_shape(char_shapes, utf16_pos);
+    let lang = if is_lang_neutral(ch) {
+        default_lang
+    } else {
+        detect_lang_category(ch)
+    };
+    let style = resolved_to_text_style(styles, style_id, lang);
+    estimate_text_width_unrounded(&ch.to_string(), &style)
+        + inline_width_px_at(inline_controls, char_idx)
+}
+
+fn inline_width_px_at(inline_controls: &[FlowInlineControl], char_idx: usize) -> f64 {
+    inline_controls
+        .iter()
+        .filter(|control| control.char_position == char_idx)
+        .map(|control| control.width_hwp as f64 / 75.0)
+        .sum()
+}
+
+fn has_inline_control_in_range(
+    inline_controls: &[FlowInlineControl],
+    start: usize,
+    end: usize,
+) -> bool {
+    inline_controls
+        .iter()
+        .any(|control| (start..end).contains(&control.char_position))
 }
 
 /// px를 HWPUNIT(i32)로 변환 (내림, DPI=96 기준: px * 75)
@@ -1097,6 +1179,30 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
     }
 }
 
+fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
+    let text_len = para.text.chars().count();
+    para.controls
+        .iter()
+        .zip(para.control_text_positions())
+        .filter_map(|(control, char_position)| {
+            // 글자처럼 취급되는 표는 renderer가 control 위치를 기준으로 별도
+            // TextRun/Table 경계를 만든다. 보이지 않는 PARA_TEXT 위치의 다음
+            // 글자 폭에 표 전체 폭을 더하면 HML의 `abc + table + efg`처럼
+            // 기존 경계를 잃는다. #3211의 HWP oracle은 수식·그림 계열의
+            // 재조판 폭을 대상으로 하므로 표는 기존 control 배치 경로에 둔다.
+            if matches!(control, Control::Table(_)) {
+                return None;
+            }
+            let (width_hwp, height_hwp) = inline_control_size_hwp(control)?;
+            (char_position < text_len).then_some(FlowInlineControl {
+                char_position,
+                width_hwp,
+                height_hwp,
+            })
+        })
+        .collect()
+}
+
 /// 본문 뒤 남은 폭에 놓이지 않는 inline control은 별도 physical line을 가진다.
 ///
 /// 종전 cell reflow는 text token만 줄바꿈한 뒤 첫 LineSeg를 표 높이만큼 키웠다.
@@ -1160,6 +1266,7 @@ fn inline_control_requires_own_line(
         &para.char_shapes,
         styles,
         0,
+        &[],
     ));
 
     (control_width > available_hwp + LINE_BREAK_TOLERANCE
@@ -1403,6 +1510,7 @@ fn reflow_line_segs_impl(
 
     let text_chars: Vec<char> = para.text.chars().collect();
     let text_len = text_chars.len();
+    let inline_controls = flow_inline_controls(para);
 
     // 문단 스타일에서 들여쓰기 및 줄 나눔 설정 조회
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
@@ -1421,6 +1529,7 @@ fn reflow_line_segs_impl(
         english_break_unit,
         korean_break_unit,
         split_stale_cell_reflow,
+        &inline_controls,
     );
     // 저장 LINE_SEG 기반 incremental edit는 앞선 줄을 유지한다. LINE_SEG start가 현재
     // char_offsets와 token 경계 모두에 정확히 대응할 때만 suffix reflow를 허용한다.
@@ -1538,6 +1647,17 @@ fn reflow_line_segs_impl(
             let (_, height_hwp) = forced_inline_line.expect("checked inline control");
             apply_inline_control_line_height(&mut text_seg, height_hwp);
         }
+        if let Some(height_hwp) = inline_controls
+            .iter()
+            .filter(|control| {
+                (lb.start_idx..lb.end_idx).contains(&control.char_position)
+                    || (lb.end_idx == text_len && control.char_position == text_len)
+            })
+            .map(|control| control.height_hwp)
+            .max()
+        {
+            apply_inline_control_line_height(&mut text_seg, height_hwp);
+        }
         new_line_segs.push(text_seg);
 
         // control이 text line 한가운데/끝에 있으면 먼저 text prefix를 확정하고,
@@ -1560,7 +1680,7 @@ fn reflow_line_segs_impl(
         new_line_segs.push(make_line_seg(0, 12.0));
     }
 
-    if forced_inline_line.is_none() {
+    if forced_inline_line.is_none() && inline_controls.is_empty() {
         if let Some(height_hwp) = inline_control_line_height_hwp(para) {
             // 기존 인라인 TAC 개체는 해당 문단의 최초 line box에 남긴다.
             if let Some(seg) = new_line_segs.first_mut() {
