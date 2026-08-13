@@ -30,8 +30,9 @@ last_verified: 2026-08-13
 3/3 통과했다. 모든 목록 리소스가 다시 읽히는 계약이 새 URI 두 개를 자동으로 포함한다.
 `cargo test --profile release-test --target-dir target/pr-review --test plan_schema_contract`도
 26/26 통과했고, 최신 기준선 merge tree와 공백 검사를 통과했다.
+통합 PR #4733의 code candidate `db96780a7`은 Full CI·CodeQL을 모두 통과했다.
 
 ## 판정
 
 **통합 수용 권고.** renderer 출력 변경이 없어 별도 시각 sweep은 적용하지 않는다. 통합 PR의
-최신 head CI와 작업지시자 승인을 다시 확인한 뒤에만 merge한다.
+trailing docs-only head의 fast-pass와 mergeability, 작업지시자 승인을 다시 확인한 뒤에만 merge한다.

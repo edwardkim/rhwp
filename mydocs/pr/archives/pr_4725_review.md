@@ -29,9 +29,10 @@ source의 후속 `394019981`은 아직 병합되지 않은 표준 문서 링크�
 ## 완료한 검증
 
 `.mcp.json` JSON 파싱, 붙이기 킷을 포함한 5개 Markdown 상대 링크 검사, 누적 Python 계약
-55건, 최신 기준선 merge tree와 공백 검사가 통과했다.
+55건, 최신 기준선 merge tree와 공백 검사가 통과했다. 통합 PR #4733의 code candidate
+`db96780a7`은 Full CI·CodeQL을 모두 통과했다.
 
 ## 판정
 
 **통합 수용 권고.** 문서·설정 표면만 변경하며 renderer 시각 검증 대상은 아니다. 통합 PR의
-최신 head CI와 작업지시자 승인을 다시 확인한 뒤에만 merge한다.
+trailing docs-only head의 fast-pass와 mergeability, 작업지시자 승인을 다시 확인한 뒤에만 merge한다.

@@ -32,8 +32,9 @@ last_verified: 2026-08-13
 
 `python3 -m unittest scripts/tests/test_planner_templates.py`를 포함한 누적 Python 계약
 55건이 통과했다. `git diff --check upstream/devel...HEAD`와 최신 기준선 merge tree도
-통과했다.
+통과했다. 통합 PR #4733의 code candidate `db96780a7`은 Full CI·CodeQL을 모두 통과했다.
 
 ## 판정
 
-**통합 수용 권고.** 통합 PR의 최신 head CI와 작업지시자 승인을 다시 확인한 뒤에만 merge한다.
+**통합 수용 권고.** trailing docs-only head의 fast-pass와 mergeability, 작업지시자 승인을
+다시 확인한 뒤에만 merge한다.

@@ -30,9 +30,10 @@ last_verified: 2026-08-13
 
 `test_agent_frame.py`와 `tools/frame_guard.py --json`은 9개 하위체계의 불변식 위반 0건을
 확인했다. 누적 Python 계약 55건, JSON 파싱, Markdown 링크, 최신 기준선 merge tree와 공백
-검사도 통과했다.
+검사도 통과했다. 통합 PR #4733의 code candidate `db96780a7`은 Full CI·CodeQL을 모두 통과했다.
 
 ## 판정
 
 **메인터너 보정 후 통합 수용 권고.** 프레임 assets는 설명용 그림이며 renderer 동작을 바꾸지
-않으므로 시각 sweep은 적용하지 않는다. 통합 PR의 최신 head CI와 작업지시자 승인을 다시 확인한 뒤에만 merge한다.
+않으므로 시각 sweep은 적용하지 않는다. trailing docs-only head의 fast-pass와 mergeability,
+작업지시자 승인을 다시 확인한 뒤에만 merge한다.
