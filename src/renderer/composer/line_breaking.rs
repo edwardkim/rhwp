@@ -1185,6 +1185,14 @@ fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
         .iter()
         .zip(para.control_text_positions())
         .filter_map(|(control, char_position)| {
+            // 글자처럼 취급되는 표는 renderer가 control 위치를 기준으로 별도
+            // TextRun/Table 경계를 만든다. 보이지 않는 PARA_TEXT 위치의 다음
+            // 글자 폭에 표 전체 폭을 더하면 HML의 `abc + table + efg`처럼
+            // 기존 경계를 잃는다. #3211의 HWP oracle은 수식·그림 계열의
+            // 재조판 폭을 대상으로 하므로 표는 기존 control 배치 경로에 둔다.
+            if matches!(control, Control::Table(_)) {
+                return None;
+            }
             let (width_hwp, height_hwp) = inline_control_size_hwp(control)?;
             (char_position < text_len).then_some(FlowInlineControl {
                 char_position,
