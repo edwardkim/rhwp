@@ -4658,6 +4658,8 @@ export class InputHandler {
     if (this.cursor.isInTableObjectSelection()) {
       const ref = this.cursor.getSelectedTableRef();
       if (ref) {
+        // 중첩 표 잘라내기는 지원하지 않는다. keydown 경로도 같은 선택 상태를 유지한다.
+        if (ref.cellPath && ref.cellPath.length > 1) return;
         this.performCopy();
         this.cursor.moveOutOfSelectedTable();
         this.eventBus.emit('table-object-selection-changed', false);
@@ -4695,6 +4697,7 @@ export class InputHandler {
       if (ref.cellPath && ref.cellPath.length > 1) {
         this.cursor.moveOutOfSelectedTable();
         this.eventBus.emit('table-object-selection-changed', false);
+        this.updateCaret();
         return;
       }
       this.cursor.moveOutOfSelectedTable();
