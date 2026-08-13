@@ -46,6 +46,11 @@ LLM 에이전트가 이 저장소에서 문서를 실제로 편집·생성하는
 `.windsurfrules`·`.clinerules`)은 전부 이 절을 가리키는 얇은 포인터다 — 실질
 내용은 여기 한 곳에서만 고친다.
 
+이 경로는 [에이전트 작업 표준(AWS) 1.0](mydocs/tech/standards/agent_work_standard.md)의
+**레퍼런스 구현**이다 — 아래 영수증·계보·서명·앵커·정산이 표준의 AW-L1~AW-L5 다.
+표준은 도구 무관하고 열려 있다(준수는 강요가 아니라 유용성 때문). 기계용 정본은
+[`agent_work_standard.json`](mydocs/tech/standards/agent_work_standard.json).
+
 - **영수증**: 편집 계획을 세우고 실행은 캡슐과 함께 남긴다 —
   `rhwp replay --plan-json <계획> --capsule work.capsule.json --json`.
   캡슐 하나가 "어떤 입력에서 어떤 계획으로 어떤 산출이 나왔나"를 3해시
