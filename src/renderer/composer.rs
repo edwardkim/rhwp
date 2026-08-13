@@ -4,7 +4,7 @@
 //! CharShapeRef 경계에 따라 다중 TextRun으로 분할한다.
 //! 인라인 컨트롤(표/도형) 삽입 위치를 식별한다.
 
-use super::layout::{estimate_text_width, resolved_to_text_style};
+use super::layout::{control_line_seg_index, estimate_text_width, resolved_to_text_style};
 use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use super::{hwpunit_to_px, px_to_hwpunit, TextStyle};
 use crate::model::control::Control;
@@ -354,6 +354,34 @@ pub(crate) fn first_text_line(composed: &ComposedParagraph) -> Option<usize> {
             .iter()
             .any(|r| r.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}'))
     })
+}
+
+/// Height of the physical LineSeg that owns a splittable TAC table.
+///
+/// A stored one-row table keeps the ordinary saved-ladder cap because its box
+/// may overlap the following saved row. A current reflow row, or a multi-row
+/// RowBreak table, uses the owning LineSeg as its vertical frame when that row
+/// covers the declared object.
+pub(crate) fn owned_rowbreak_tac_height(para: &Paragraph, control_index: usize) -> Option<i32> {
+    let Control::Table(table) = para.controls.get(control_index)? else {
+        return None;
+    };
+    if !table.common.treat_as_char
+        || !matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        )
+    {
+        return None;
+    }
+    let seg = para
+        .line_segs
+        .get(control_line_seg_index(para, control_index)?)?;
+    let is_current_row = seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
+    if table.row_count <= 1 && !is_current_row {
+        return None;
+    }
+    (i64::from(seg.line_height) >= i64::from(table.common.height)).then_some(seg.line_height)
 }
 
 /// 캡션(문단 목록)의 총 높이를 px 로 계산한다.

@@ -9522,7 +9522,23 @@ impl LayoutEngine {
                 let mut stored_lh_covers_om = false;
                 if let Some(seg) = host_seg {
                     if seg.line_spacing > 0 {
-                        y_offset += hwpunit_to_px(seg.line_spacing, self.dpi);
+                        let current_owned_row_covers_object =
+                            self.profile.get().hwpx_stored_layout()
+                                && para.line_segs.len() == 1
+                                && seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    != 0
+                                && crate::renderer::composer::owned_rowbreak_tac_height(
+                                    para,
+                                    control_index,
+                                )
+                                .is_some();
+                        let trailing_spacing = hwpunit_to_px(seg.line_spacing, self.dpi);
+                        y_offset += if current_owned_row_covers_object {
+                            trailing_spacing / 2.0
+                        } else {
+                            trailing_spacing
+                        };
                     } else if seg.line_spacing < 0 {
                         // 음수 ls (Fixed 줄간격 TAC 표): y를 문단 advance로 리셋 (Task #9)
                         // 표 렌더 높이가 아닌, 일반 문단과 동일한 lh+ls advance 사용

@@ -1664,3 +1664,44 @@ fn issue4149_memo_invalidated_by_mutation_paths() {
         "merge_from 후 미판정"
     );
 }
+
+#[test]
+fn owned_rowbreak_tac_height_selects_current_or_multirow_frames() {
+    use crate::model::control::Control;
+    use crate::model::table::{Table, TablePageBreak};
+
+    let para_with_rows = |row_count, line_height| Paragraph {
+        controls: vec![Control::Table(Box::new(Table {
+            row_count,
+            page_break: TablePageBreak::RowBreak,
+            common: crate::model::shape::CommonObjAttr {
+                treat_as_char: true,
+                height: 32_339,
+                ..Default::default()
+            },
+            ..Default::default()
+        }))],
+        line_segs: vec![LineSeg {
+            line_height,
+            segment_width: 49_324,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let multirow = para_with_rows(4, 32_339);
+    assert_eq!(owned_rowbreak_tac_height(&multirow, 0), Some(32_339));
+
+    let single_row = para_with_rows(1, 32_339);
+    assert_eq!(owned_rowbreak_tac_height(&single_row, 0), None);
+
+    let mut current_single_row = para_with_rows(1, 32_339);
+    current_single_row.line_segs[0].tag = LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    assert_eq!(
+        owned_rowbreak_tac_height(&current_single_row, 0),
+        Some(32_339)
+    );
+
+    let undersized = para_with_rows(4, 32_338);
+    assert_eq!(owned_rowbreak_tac_height(&undersized, 0), None);
+}
