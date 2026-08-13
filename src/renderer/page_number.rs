@@ -81,8 +81,7 @@ impl<'a> PageNumberAssigner<'a> {
                     is_continuation,
                     ..
                 } => *para_index == target_pi && !*is_continuation,
-                PageItem::Shape { para_index, .. }
-                | PageItem::PartialOverlayTable { para_index, .. } => *para_index == target_pi,
+                PageItem::Shape { para_index, .. } => *para_index == target_pi,
                 PageItem::EndnoteSeparator { .. } => false,
             })
         })
@@ -128,6 +127,7 @@ mod tests {
                 wrap_around_paras: Vec::new(),
                 used_height: 0.0,
                 wrap_anchors: std::collections::HashMap::new(),
+                overlay_continuations: Vec::new(),
             }],
             active_header: None,
             active_footer: None,

@@ -4617,8 +4617,7 @@ impl DocumentCore {
                             PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
                             PageItem::Table { para_index, .. } => Some(*para_index),
                             PageItem::PartialTable { para_index, .. } => Some(*para_index),
-                            PageItem::Shape { para_index, .. }
-                            | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
+                            PageItem::Shape { para_index, .. } => Some(*para_index),
                             PageItem::EndnoteSeparator { .. } => None,
                         })
                         .max();
@@ -4664,8 +4663,7 @@ impl DocumentCore {
                                 PageItem::PartialParagraph { para_index, .. } => *para_index,
                                 PageItem::Table { para_index, .. } => *para_index,
                                 PageItem::PartialTable { para_index, .. } => *para_index,
-                                PageItem::Shape { para_index, .. }
-                                | PageItem::PartialOverlayTable { para_index, .. } => *para_index,
+                                PageItem::Shape { para_index, .. } => *para_index,
                                 PageItem::EndnoteSeparator { .. } => usize::MAX,
                             };
                             if pi < col_map.len() {
@@ -5111,8 +5109,7 @@ impl DocumentCore {
                         | PageItem::PartialParagraph { para_index, .. }
                         | PageItem::Table { para_index, .. }
                         | PageItem::PartialTable { para_index, .. }
-                        | PageItem::Shape { para_index, .. }
-                        | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
+                        | PageItem::Shape { para_index, .. } => Some(*para_index),
                         _ => None,
                     };
                     if let Some(p) = pidx {
@@ -5384,27 +5381,6 @@ impl DocumentCore {
                                     "lineSegs": line_seg_brief_json(paragraphs.get(*para_index)),
                                 })
                             }
-                            // [#4568] overlay 표 잔여 행 조각 — 앵커 좌표가 아니라 쪽
-                            // 최상단에서 `startRow` 부터 그린다.
-                            PageItem::PartialOverlayTable {
-                                para_index,
-                                control_index,
-                                start_row,
-                            } => serde_json::json!({
-                                "kind": "partialOverlayTable",
-                                "paraIndex": para_index,
-                                "controlIndex": control_index,
-                                "startRow": start_row,
-                                "isEndnote": *para_index >= body_len,
-                                "endnoteSource": endnote_source_json(*para_index),
-                                "table": table_summary_json(
-                                    paragraphs,
-                                    *para_index,
-                                    *control_index,
-                                    dpi,
-                                    true,
-                                ),
-                            }),
                             PageItem::EndnoteSeparator {
                                 separator_length,
                                 margin_above,
@@ -5783,20 +5759,6 @@ impl DocumentCore {
                                     vpos_info,
                                     source_info,
                                     line_seg_info
-                                ));
-                            }
-                            // [#4568] overlay 표 잔여 행 조각.
-                            PageItem::PartialOverlayTable {
-                                para_index,
-                                control_index,
-                                start_row,
-                            } => {
-                                out.push_str(&format!(
-                                    "    PartialOverlayTable  pi={} ci={}  rows={}..  {}\n",
-                                    para_index,
-                                    control_index,
-                                    start_row,
-                                    format_vpos_range(paragraphs.get(*para_index), None, None),
                                 ));
                             }
                             PageItem::EndnoteSeparator {
@@ -7633,6 +7595,7 @@ mod tests {
             wrap_around_paras: vec![],
             used_height: 0.0,
             wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
         };
 
         let h = compute_hwp_used_height(&cc, &paragraphs, 96.0).expect("값이 있어야 함");
