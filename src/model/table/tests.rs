@@ -73,6 +73,32 @@ fn test_cell_new_empty() {
 }
 
 #[test]
+fn paragraph_frame_padding_keeps_all_zero_table_boundary() {
+    let cell = Cell {
+        padding: Padding {
+            left: 141,
+            right: 141,
+            top: 141,
+            bottom: 141,
+        },
+        apply_inner_margin: false,
+        ..Default::default()
+    };
+    let table_padding = Padding::default();
+
+    let frame = cell.paragraph_frame_padding(&table_padding);
+    assert_eq!(
+        (frame.left, frame.right, frame.top, frame.bottom),
+        (0, 0, 0, 0)
+    );
+    let paint = cell.effective_padding(&table_padding);
+    assert_eq!(
+        (paint.left, paint.right, paint.top, paint.bottom),
+        (141, 141, 141, 141)
+    );
+}
+
+#[test]
 fn test_get_column_widths() {
     let table = make_table(2, 3);
     let widths = table.get_column_widths();
@@ -1267,6 +1293,68 @@ fn inferred_local_resize_rows_keeps_serialized_shift_row_matching_common_width()
     table.common.width = 43_190;
 
     assert_eq!(table.inferred_local_resize_rows(), vec![1]);
+}
+
+#[test]
+fn paragraph_frame_owner_width_resolves_a_short_repeated_row_on_the_table_grid() {
+    let cell = |row, col, width| Cell {
+        row,
+        col,
+        row_span: 1,
+        col_span: 1,
+        width,
+        ..Default::default()
+    };
+    let mut table = Table {
+        row_count: 3,
+        col_count: 2,
+        cells: vec![
+            cell(0, 0, 22_393),
+            cell(0, 1, 22_396),
+            cell(1, 0, 22_393),
+            cell(1, 1, 22_393),
+            cell(2, 0, 22_393),
+            cell(2, 1, 22_393),
+        ],
+        ..Default::default()
+    };
+    table.common.width = 44_789;
+
+    assert_eq!(table.paragraph_frame_owner_widths()[2..4], [22_393, 22_396]);
+
+    table.local_resize_rows.push(1);
+    table.local_resize_cell_widths.push((3, 22_400));
+    assert_eq!(table.paragraph_frame_owner_widths()[3], 22_400);
+}
+
+#[test]
+fn paragraph_frame_owner_widths_handles_the_large_document_table_shape_in_one_pass() {
+    const ROWS: u16 = 5_277;
+    const COLS: u16 = 10;
+    let mut cells = Vec::with_capacity(usize::from(ROWS) * usize::from(COLS));
+    for row in 0..ROWS {
+        for col in 0..COLS {
+            cells.push(Cell {
+                row,
+                col,
+                row_span: 1,
+                col_span: 1,
+                width: 1_000,
+                ..Default::default()
+            });
+        }
+    }
+    let mut table = Table {
+        row_count: ROWS,
+        col_count: COLS,
+        cells,
+        ..Default::default()
+    };
+    table.common.width = 10_000;
+
+    let owners = table.paragraph_frame_owner_widths();
+    assert_eq!(owners.len(), 52_770);
+    assert!(owners.iter().all(|width| *width == 1_000));
 }
 
 /// 삽입 지점의 열(행)에 비병합 셀이 하나도 없으면 insert_row / insert_column 의
