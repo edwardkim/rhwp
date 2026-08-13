@@ -68,15 +68,15 @@ python tools/hangul_row_heights.py samples/issue1891/76076_regulatory_analysis.h
 
 ```
 python tools/hangul_row_heights.py samples/task2146/21761835_jeonjik_exemption_table.hwp ^
-    --exe target\release\rhwp.exe --pi 4
+    --exe target\release\rhwp.exe --pi 4 --max-total-diff-px 100
 ```
 
 - **정정**: `--pi 0` 이 아니라 **`--pi 4`**. 이 문서에는 표가 하나뿐이다
   (`표1 [구역0:문단4]` 78행×5열, 셀 296개).
 - 이슈 본문의 "한글 실측 ≈24.3px vs 재합성 37.76px" 를 이 도구로 재확인.
-- **결과: 측정 불가.** 78행 전부 값이 나오지만 복원 합이 rhwp 합과 −711.76px 어긋난다
-  (A·D 는 각각 −0.02/+8.68px). 병합이 심해 rowspan=1 셀이 없는 행에서 복원 휴리스틱이
-  깨진다 — 큰 diff 다수가 병합 잔재다. 이슈 본문 수치는 확인하지 못했다.
+- **결과: 측정 불가(종료 코드 3이 정상).** 78행 전부 값이 나오지만 복원 합이 rhwp 합과
+  −711.76px 어긋난다(A·D 는 각각 −0.02/+8.68px). `--max-total-diff-px 100` gate가 이
+  병합 잔재를 성공 측정으로 다루지 않게 한다. 이슈 본문 수치는 확인하지 못했다.
 
 ### D. sample1-repro — PDF 괘선 측정과 3중 대조 (교차 검증용)
 
@@ -104,8 +104,9 @@ python ... > output\task2148\36404953.txt 2>&1
 ```
 
 각 실행의 표 전문(`row 한글_px rhwp_px diff`)과 표 총합차를 남긴다.
-판정 게이트 — **복원 합 == rhwp 합** 인지 먼저 본다. 어긋나면 그 표의 행별 diff 는
-믿을 수 없다(병합 잔재). 방문 셀 수가 `rhwp info` 의 셀 개수와 같은지도 함께 본다.
+판정 게이트 — 행높이 차 자체는 비교 결과일 수 있으므로 기본 실행은 수치를 보고한다. 자동화에서
+복원 합 차를 실패로 다뤄야 하면 `--max-total-diff-px <허용 px>`를 명시한다. C는 100px를
+넘어 종료 코드 3이 정상이다. 방문 셀 수가 `rhwp info` 의 셀 개수와 같은지도 함께 본다.
 
 ## 4. 이 러너북의 배경
 
@@ -118,7 +119,8 @@ python ... > output\task2148\36404953.txt 2>&1
 
 - 한컴 COM 버전은 `HWPFrame.HwpObject` 의 CLSID `{2291CF00-…}` 를 **HKCU** 가 이긴다.
   버전별 ProgID 분기가 없으므로 버전을 바꾸려면 HKCU 등록을 갈아끼워야 한다.
-  실제 붙은 버전은 `hwp.Version` 으로 확인한다(2022 = `[12,0,0,535]`).
+  실제 붙은 버전은 `hwp.Version` 으로 확인한다. Office 2022라도 패치에 따라 값이 다르며,
+  이 기록의 원 실측은 `[12,0,0,535]`다.
 - 도구는 실행 시 `taskkill /F /IM Hwp.exe` 를 먼저 때린다 — 측정 중 한글을 열지 말 것.
 - 스윕 도중 `RPC 서버를 사용할 수 없습니다` 가 나면 직전 COM 서버 잔재다.
   `taskkill /F /IM Hwp.exe` 후 재시도하면 풀린다.

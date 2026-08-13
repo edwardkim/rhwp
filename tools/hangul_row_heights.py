@@ -79,6 +79,15 @@ def _colname(c: int) -> str:
     return s
 
 
+def total_diff_exceeds(diff: float, max_total_diff_px: float | None) -> bool:
+    """명시한 합계 허용치를 넘는지 판정한다.
+
+    행높이 차 자체는 비교 결과일 수 있으므로 기본 실행에서는 실패로 보지 않는다.
+    자동 gate가 필요한 호출자만 --max-total-diff-px 를 지정한다.
+    """
+    return max_total_diff_px is not None and abs(diff) > max_total_diff_px
+
+
 class Hangul:
     """한컴 COM 세션 — 문서 하나를 열고 표 여러 개를 훑는다."""
 
@@ -183,7 +192,11 @@ def main() -> int:
     ap.add_argument("--all", action="store_true",
                     help="TABLE_DRIFT 가 있는 최상위 표 전수 대조")
     ap.add_argument("--full", action="store_true", help="일치 행까지 전부 출력")
+    ap.add_argument("--max-total-diff-px", type=float, default=None, metavar="PX",
+                    help="합계 |차|가 PX 초과면 종료 코드 3으로 측정 무효 처리")
     a = ap.parse_args()
+    if a.max_total_diff_px is not None and a.max_total_diff_px < 0:
+        ap.error("--max-total-diff-px 는 0 이상이어야 합니다")
 
     cat = table_catalog(a.src, a.exe)
     drift = rhwp_row_heights(a.src, a.exe)
@@ -220,6 +233,7 @@ def main() -> int:
             targets = [pi]
 
         worst = []
+        invalid_totals = []
         for pi in targets:
             meta = cat.get(pi)
             rh = drift[pi]
@@ -245,7 +259,12 @@ def main() -> int:
                     h = hg.get(i)
                     print(f"{i:>4} {(f'{h:.2f}' if h else '-'):>9} {rh[i]:>9.2f} "
                           f"{(f'{rh[i] - h:+.2f}' if h else '-'):>8}")
-            worst.append((abs(report(pi, meta, hg, visits, rh)), pi))
+            diff = report(pi, meta, hg, visits, rh)
+            worst.append((abs(diff), pi))
+            if total_diff_exceeds(diff, a.max_total_diff_px):
+                invalid_totals.append((pi, diff))
+                print(f"  [무효] 합계 |차| {abs(diff):.2f}px가 지정한 "
+                      f"{a.max_total_diff_px:.2f}px를 초과했습니다.", file=sys.stderr)
 
         if a.all and worst:
             worst.sort(reverse=True)
@@ -254,6 +273,10 @@ def main() -> int:
                 print(f"  문단{pi}: {d:.2f}px")
             print(f"측정 표 {len(worst)}개, |차|>1px 인 표 "
                   f"{sum(1 for d, _ in worst if d > 1.0)}개")
+        if invalid_totals:
+            detail = ", ".join(f"문단{pi} {diff:+.2f}px" for pi, diff in invalid_totals)
+            print(f"에러: 합계 차 gate 초과 — {detail}", file=sys.stderr)
+            return 3
     finally:
         hg_session.close()
     return 0
