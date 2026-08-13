@@ -1744,8 +1744,9 @@ pub fn stored_lines_overflow(
 ///
 /// 마스킹 문단은 `*` 치환으로 원문보다 폭이 좁아져 저장 줄수와 fresh 줄수가 어느
 /// 방향으로든 달라질 수 있다. HWP3-to-HWP5 변환본은 원 HWP3 한 줄이 변환 HWP5에
-/// terminal segment로 중복 저장될 수 있으므로, fresh 재조판이 더 적은 줄을 산출할 때만
-/// 저장 분할을 stale로 본다.
+/// terminal segment로 중복 저장될 수 있다. 다만 fresh 재조판은 그림·표·수식 같은
+/// layout control의 줄 폭과 앵커를 보존하지 않으므로, 텍스트 메타데이터만 가진 문단에서
+/// fresh 줄 수가 더 적을 때만 저장 분할을 stale로 본다.
 pub fn stored_body_lines_stale(
     composed: &ComposedParagraph,
     para: &Paragraph,
@@ -1789,7 +1790,11 @@ pub fn stored_body_lines_stale(
     // HWP3 변환본의 stored-vs-fresh 비교는 본문 flow에만 적용한다. 미주는
     // 저장 LineSeg가 물리 쪽/단 흐름을 보존하므로 fresh 폭 측정이 더 짧아도
     // stale로 승격하지 않는다.
+    let hwp3_text_only_line_geometry = para.controls.iter().all(|control| {
+        matches!(control, Control::Field(_) | Control::Hyperlink(_))
+    });
     let hwp3_variant_overcounts_lines = hwp3_body_reflow
+        && hwp3_text_only_line_geometry
         && probe.lines.len() < composed.lines.len();
     let stale = (masked_replacement && fresh_line_count_differs) || hwp3_variant_overcounts_lines;
     if stale && std::env::var("RHWP_DIAG_REWRAP").is_ok() {
