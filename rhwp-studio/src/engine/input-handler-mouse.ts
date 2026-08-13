@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { ContextMenuItem } from '@/ui/context-menu';
+import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
 import * as _connector from './input-handler-connector';
 import { MoveLineEndpointCommand } from './command';
 import { computeLineEndpointRecord } from './object-drag-record';
@@ -1345,6 +1346,20 @@ export function onDblClick(this: any, e: MouseEvent): void {
       e.preventDefault();
       this.eventBus.emit('equation-edit-request', { sec: ref.sec, ppi: ref.ppi, ci: ref.ci });
       return;
+    }
+    // [#4694] 차트(ole) 객체 → 차트 데이터 편집 대화상자 (한컴 더블클릭 UX 동형).
+    // 대조 실패(차트 아님·미지원 컨테이너)면 기존처럼 아무 동작 없음.
+    if (ref && ref.type === 'ole') {
+      let editable = false;
+      try {
+        const target = chartTargetFromSelection(ref);
+        editable = target !== null && matchChartRef(this.wasm.listCharts(), target) !== null;
+      } catch { editable = false; }
+      if (editable) {
+        e.preventDefault();
+        this.eventBus.emit('chart-data-edit-request');
+        return;
+      }
     }
     // 글상자 객체 → 텍스트 편집 진입
     if (ref && ref.type === 'shape') {

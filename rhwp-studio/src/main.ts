@@ -1462,6 +1462,11 @@ eventBus.on('equation-edit-request', () => {
   dispatcher.dispatch('insert:equation-edit');
 });
 
+// [#4694] 차트 더블클릭 → 차트 데이터 편집 대화상자
+eventBus.on('chart-data-edit-request', () => {
+  dispatcher.dispatch('insert:chart-data-edit');
+});
+
 /**
  * URL 파라미터(?url=)로 전달된 HWP 파일을 자동 로드한다.
  * Chrome 확장 프로그램에서 뷰어 탭을 열 때 사용.

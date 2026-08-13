@@ -1,5 +1,7 @@
 import type { CommandDef } from '../types';
 import { PicturePropsDialog } from '@/ui/picture-props-dialog';
+import { ChartDataDialog } from '@/ui/chart-data-dialog';
+import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
 import { EquationEditorDialog } from '@/ui/equation-editor-dialog';
 import { EquationPropertiesDialog } from '@/ui/equation-props-dialog';
 import { SymbolsDialog } from '@/ui/symbols-dialog';
@@ -27,6 +29,7 @@ function stub(id: string, label: string, icon?: string, shortcut?: string): Comm
 }
 
 let picturePropsDialog: PicturePropsDialog | null = null;
+let chartDataDialog: ChartDataDialog | null = null;
 let equationEditorDialog: EquationEditorDialog | null = null;
 let equationPropsDialog: EquationPropertiesDialog | null = null;
 let symbolsDialog: SymbolsDialog | null = null;
@@ -373,6 +376,33 @@ export const insertCommands: CommandDef[] = [
         ref.sec, ref.ppi, ref.ci, ref.type, ref.headerFooter,
         cellPath, cellPath ? ref.ci : undefined,
       );
+    },
+  },
+  {
+    id: 'insert:chart-data-edit',
+    opensDialog: true,
+    label: '차트 데이터 편집',
+    canExecute: (ctx) => ctx.inPictureObjectSelection,
+    execute(services) {
+      const ih = services.getInputHandler();
+      if (!ih) return;
+      const ref = ih.getSelectedPictureRef();
+      if (!ref) return;
+      // [#4694] 선택 → 열거 대조 → 정본 주소(문서 순번). 대조 실패는 조용히 무시 —
+      // 메뉴 노출 판정(input-handler)과 같은 경로라 여기 도달하면 보통 성공한다.
+      const target = chartTargetFromSelection(ref);
+      if (!target) return;
+      let matched = null;
+      try {
+        matched = matchChartRef(services.wasm.listCharts(), target);
+      } catch {
+        return;
+      }
+      if (!matched) return;
+      if (!chartDataDialog) {
+        chartDataDialog = new ChartDataDialog(services.wasm, services.eventBus, services);
+      }
+      chartDataDialog.open(matched);
     },
   },
   {

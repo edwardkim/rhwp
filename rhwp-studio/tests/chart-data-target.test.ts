@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   buildChartEdits,
   cellInputIssue,
+  chartTargetFromSelection,
   hasAnyEdit,
   labelsEditable,
   matchChartRef,
@@ -137,6 +138,50 @@ test('cellPath 가 tableCell 아닌 컨테이너 단계와 겹치면 맞지 않�
     }),
     null,
   );
+});
+
+// ── 선택 ref → 매처 입력 정규화 (#4694 S4) ────────────────
+
+test('본문 직속 ole 선택은 3좌표만 남긴다', () => {
+  assert.deepEqual(
+    chartTargetFromSelection({ sec: 0, ppi: 4, ci: 2, type: 'ole' }),
+    { sec: 0, ppi: 4, ci: 2, cellPath: undefined, headerFooter: undefined },
+  );
+});
+
+test('명시 cellPath 는 그대로 통과한다', () => {
+  const cellPath = [{ controlIndex: 0, cellIndex: 1, cellParaIndex: 0 }];
+  const target = chartTargetFromSelection({ sec: 0, ppi: 7, ci: 0, type: 'ole', cellPath });
+  assert.deepEqual(target?.cellPath, cellPath);
+});
+
+test('셀 문맥 3종이 다 있으면 한 단계 cellPath 를 조립한다 — picture-props 선례', () => {
+  const target = chartTargetFromSelection({
+    sec: 0, ppi: 7, ci: 0, type: 'ole',
+    cellIdx: 1, cellParaIdx: 0, outerTableControlIdx: 0,
+  });
+  assert.deepEqual(target?.cellPath, [{ controlIdx: 0, cellIdx: 1, cellParaIdx: 0 }]);
+});
+
+test('셀 문맥이 불완전하면 cellPath 를 조립하지 않는다', () => {
+  const target = chartTargetFromSelection({
+    sec: 0, ppi: 7, ci: 0, type: 'ole', cellIdx: 1, cellParaIdx: 0,
+  });
+  assert.equal(target?.cellPath, undefined);
+});
+
+test('headerFooter 는 그대로 통과한다', () => {
+  const headerFooter = { kind: 'header' as const, outerParaIdx: 0, outerControlIdx: 1 };
+  const target = chartTargetFromSelection({ sec: 0, ppi: 0, ci: 0, type: 'ole', headerFooter });
+  assert.deepEqual(target?.headerFooter, headerFooter);
+});
+
+test('각주/미주 선택(noteRef)과 비-ole 타입은 대상이 아니다 — 안전 축소', () => {
+  assert.equal(
+    chartTargetFromSelection({ sec: 0, ppi: 1, ci: 0, type: 'ole', noteRef: { kind: 'footnote' } }),
+    null,
+  );
+  assert.equal(chartTargetFromSelection({ sec: 0, ppi: 4, ci: 2, type: 'image' }), null);
 });
 
 // ── 편집 페이로드 로직 (#4694 S3) ──────────────────────────

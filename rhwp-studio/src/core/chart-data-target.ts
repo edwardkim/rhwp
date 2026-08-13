@@ -88,6 +88,39 @@ export interface ChartTargetRef {
   headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
 }
 
+/** `getSelectedPictureRef()` 반환값 중 이 모듈이 읽는 부분. */
+export interface SelectedOleRefLike {
+  sec: number;
+  ppi: number;
+  ci: number;
+  type: string;
+  cellIdx?: number;
+  cellParaIdx?: number;
+  outerTableControlIdx?: number;
+  cellPath?: CellPathLike;
+  noteRef?: unknown;
+  headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
+}
+
+/**
+ * 선택 ref 를 매처 입력으로 정규화한다. 표현할 수 없는 선택(비-ole, 각주/미주)은
+ * null — 메뉴 미노출로 이어지는 안전 축소다.
+ *
+ * 셀 문맥 3종(cellIdx/cellParaIdx/outerTableControlIdx)에서의 한 단계 cellPath 조립은
+ * `insert:picture-props` 선례(command/commands/insert.ts)와 같은 규칙이다.
+ */
+export function chartTargetFromSelection(ref: SelectedOleRefLike): ChartTargetRef | null {
+  if (ref.type !== 'ole' || ref.noteRef) return null;
+  const cellPath: CellPathLike | undefined =
+    ref.cellPath ??
+    (ref.cellIdx !== undefined &&
+    ref.cellParaIdx !== undefined &&
+    ref.outerTableControlIdx !== undefined
+      ? [{ controlIdx: ref.outerTableControlIdx, cellIdx: ref.cellIdx, cellParaIdx: ref.cellParaIdx }]
+      : undefined);
+  return { sec: ref.sec, ppi: ref.ppi, ci: ref.ci, cellPath, headerFooter: ref.headerFooter };
+}
+
 // ── 편집 페이로드 로직 — DOM 없는 순수 함수 (다이얼로그가 사용) ──────────
 
 /**
