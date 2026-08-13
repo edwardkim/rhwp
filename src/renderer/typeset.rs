@@ -168,6 +168,9 @@ struct BlockTableContinuationPreparedState {
     /// 사용해도 되는 것으로 조판 전에 확인됐을 때의 첫 fragment 절대 경계.
     /// 일반 표에는 `None`으로 기존 보수 budget을 유지한다.
     first_fragment_actual_footnote_boundary: Option<f64>,
+    /// 다음 host의 양수 vpos rewind가 현재 RowBreak 표의 continuation source
+    /// page를 가리키는지 여부. page-top reset은 표 종료이므로 포함하지 않는다.
+    source_next_positive_rewind: bool,
     /// 고정 선언 높이보다 실측 내용이 크게 넘치는 native HWP5 RowBreak 표가 마지막
     /// continuation fragment에서 URL 각주를 붙일 때의 실제 경계 완화 여부.
     relax_terminal_table_footnote_fit: bool,
@@ -21931,6 +21934,7 @@ impl TypesetEngine {
                             - st.current_zone_y_offset
                             - st.current_bottom_fixed_exclusion
                     }),
+            source_next_positive_rewind: next_rewinds_after_table && !next_starts_new_page,
             // 표 25처럼 저장 table 높이 안에는 들어가지만 셀 원문은 그보다 훨씬 긴
             // HWP5 RowBreak 표는 PDF가 마지막 continuation 표와 URL 각주 사이에
             // 일반 40px safety margin을 두지 않는다. 이 예외는 셀 각주가 많은
@@ -22238,6 +22242,7 @@ impl TypesetEngine {
             let budget_para_start_height = prepared.budget_para_start_height;
             let first_fragment_actual_footnote_boundary =
                 prepared.first_fragment_actual_footnote_boundary;
+            let source_next_positive_rewind = prepared.source_next_positive_rewind;
             let relax_terminal_table_footnote_fit =
                 prepared.relax_terminal_table_footnote_fit;
             let cursor_row = continuation.row;
@@ -22389,37 +22394,15 @@ impl TypesetEngine {
                 page_avail
             };
 
-            // [#3820 Stage 174] Native HWP5 can store the physical frame of a
-            // RowBreak table's *first fragment* in `common.height`, rather than
-            // the full multi-row table.  The row scanner measures the cell paint
-            // a few pixels taller than that frame and otherwise leaves a header-
-            // only fragment, shifting every later page.  Admit only the unused
-            // physical space below the source frame that remains inside this
-            // fragment's scan bound, never a generic drift cap.
-            //
-            // The contract is limited by the native RowBreak source frame
-            // itself: its unshifted saved anchor must equal the active flow
-            // cursor and its declared bottom must remain inside this fragment's
-            // scan bound. Host text and row spans describe document topology,
-            // not ownership of that physical source frame.
-            // The saved frame is an absolute object coordinate. Its matching
-            // bound is `table_available`, which already reserves the current
-            // page's footnote/zone lane. `host_before_overhead` and positive
-            // vertical offsets change flow consumption but not the object's
-            // source coordinate, so deriving a bound from row-space `page_avail`
-            // would mix coordinate systems. The allowance compares the stored
-            // flow frame, not a paint-only vertical inset; the latter is handled
-            // separately by the renderer's physical footer guard.
+            // RowBreak 표의 common.height가 전체 표가 아니라 첫 physical fragment를
+            // 저장할 수 있다. 저장 anchor가 현재 flow와 같고 declared bottom이 이
+            // fragment bound 안에 있을 때만 source frame을 행 경계 후보로 쓴다.
+            // host spacing과 paint inset은 source object 좌표가 아니므로 섞지 않는다.
             let source_first_fragment_flow_bottom = table_available;
-            let source_first_fragment_overflow_allowance = if !is_continuation
+            let saved_first_fragment_source_frame = if !is_continuation
                 && cursor_row == 0
                 && start_cut.is_empty()
-                // The painted footer guard is the more specific native source
-                // contract: it records that the last whole row must start the
-                // next fragment. Generic object-frame slack must not restore
-                // the space that guard intentionally reserved.
                 && first_fragment_painted_row_footer_guard <= 0.0
-                && st.profile.native_hwp5_layout()
                 && !table.common.treat_as_char
                 && matches!(
                     table.page_break,
@@ -22441,30 +22424,34 @@ impl TypesetEngine {
                         let flow_bottom_hu = anchor_hu
                             .saturating_add(table.common.height.min(i32::MAX as u32) as i32);
                         let flow_bottom_px = hwpunit_to_px(flow_bottom_hu, self.dpi);
-                        ((anchor_px - st.current_height).abs() <= 0.5).then(|| {
-                            saved_rowbreak_first_fragment_flow_overflow_allowance(
-                                table.common.height,
-                                std::ptr::eq(row_geometry_table, table),
+                        ((anchor_px - st.current_height).abs() <= 0.5
+                            && flow_bottom_px <= source_first_fragment_flow_bottom + 0.5)
+                            .then_some((
+                                hwpunit_to_px(
+                                    table.common.height.min(i32::MAX as u32) as i32,
+                                    self.dpi,
+                                ),
                                 flow_bottom_px,
-                                source_first_fragment_flow_bottom,
-                            )
-                        })
+                            ))
                     })
-                    .unwrap_or(0.0)
             } else {
-                0.0
+                None
             };
-            let source_first_fragment_row_end =
-                (source_first_fragment_overflow_allowance > 0.0).then(|| {
-                    nearest_saved_rowbreak_frame_row_end(
-                        hwpunit_to_px(
-                            table.common.height.min(i32::MAX as u32) as i32,
-                            self.dpi,
-                        ),
-                        cut_row_h,
-                        cs,
+            let mut source_first_fragment_overflow_allowance = saved_first_fragment_source_frame
+                .filter(|_| st.profile.native_hwp5_layout())
+                .map(|(_, flow_bottom_px)| {
+                    saved_rowbreak_first_fragment_flow_overflow_allowance(
+                        table.common.height,
+                        std::ptr::eq(row_geometry_table, table),
+                        flow_bottom_px,
+                        source_first_fragment_flow_bottom,
                     )
-                }).flatten();
+                })
+                .unwrap_or(0.0);
+            let source_first_fragment_row_end = saved_first_fragment_source_frame
+                .and_then(|(frame_height, _)| {
+                    nearest_saved_rowbreak_frame_row_end(frame_height, cut_row_h, cs)
+                });
 
             // [Task #1022] 머리행 반복 overhead — 렌더러(layout_partial_table)는
             // start_row 이전의 반복 제목행을 다시 그리므로(다중 머리행: rs>=2 헤더 셀 등),
@@ -22511,6 +22498,23 @@ impl TypesetEngine {
                     base
                 }
             };
+            // 후속 host의 양수 vpos rewind는 표 continuation이 새 source page에서
+            // 이어짐을 뜻한다. object가 전체 row geometry를 덮지 않을 때만 common
+            // height를 첫 fragment frame으로 보고, 그 frame에 가장 가까운 행 끝에만
+            // 측정 행높이와 source row boundary의 차이를 적용한다.
+            if source_next_positive_rewind
+                && !table_declared_object_covers_cell_row_frames(table, self.dpi)
+            {
+                if let Some(row_end) = source_first_fragment_row_end {
+                    let source_row_end_height = cut_row_h
+                        .iter()
+                        .take(row_end)
+                        .sum::<f64>()
+                        + cs * row_end.saturating_sub(1) as f64;
+                    source_first_fragment_overflow_allowance = source_first_fragment_overflow_allowance
+                        .max((source_row_end_height - avail_for_rows).max(0.0));
+                }
+            }
 
             // [Task #1046 Stage 2 진단] 첫/연속 fragment 의 가용공간 분해 — 렌더러
             // y_start 점프(vert_offset)·host_before 와의 정합 확인용. 동작 불변(게이트).
@@ -22603,6 +22607,23 @@ impl TypesetEngine {
             }
             if end_row <= cursor_row {
                 end_row = cursor_row + 1;
+            }
+            // 첫 source fragment가 선택한 마지막 행은 scanner에서는 measured
+            // boundary까지 소비하지만, paint는 common object frame의 남은 물리 높이로
+            // 끝나야 한다. 이 값은 source frame과 그 직전 행들의 합으로 계산한다.
+            if source_next_positive_rewind
+                && !table_declared_object_covers_cell_row_frames(table, self.dpi)
+                && split_end_limit <= 0.0
+                && source_first_fragment_row_end == Some(end_row)
+            {
+                if let Some((frame_height, _)) = saved_first_fragment_source_frame {
+                    let before_last = cut_row_h
+                        .iter()
+                        .take(end_row.saturating_sub(1))
+                        .sum::<f64>()
+                        + cs * end_row.saturating_sub(2) as f64;
+                    end_row_height_override = Some((frame_height - before_last).max(0.0));
+                }
             }
             // [#3674 진단] 표 행 분할 스캔 입력/결과 — 동작 불변.
             if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
@@ -25006,6 +25027,7 @@ mod tests {
             strict_following_plain_text_fit: false,
             budget_para_start_height: 0.0,
             first_fragment_actual_footnote_boundary: None,
+            source_next_positive_rewind: false,
             relax_terminal_table_footnote_fit: false,
         };
         let flow_layout =
