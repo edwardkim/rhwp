@@ -1,0 +1,9 @@
+{
+  "planVersion": "1.0",
+  "input": "<원본.hwp>",
+  "output": "<산출.hwp>",
+  "steps": [
+    { "action": "set_cell", "table": 0, "row": 0, "col": 0, "text": "<칸에 넣을 값>" }
+  ],
+  "assertions": { "notFoundEmpty": true }
+}
