@@ -2080,13 +2080,16 @@ fn internal_vpos_page_break_line(
     line_count: usize,
     body_height_px: f64,
     dpi: f64,
+    source_uses_inline_field_reset: bool,
 ) -> Option<usize> {
     if line_count < 2 || para.line_segs.len() < line_count {
         return None;
     }
 
     let first = para.line_segs.first()?;
-    let text_vpos_rewind = controls_are_inline_text_metadata(para) && para_has_visible_text(para);
+    let text_vpos_rewind = source_uses_inline_field_reset
+        && para_has_visible_text(para)
+        && controls_are_inline_text_metadata(para);
 
     // [Issue #2006] 빈-텍스트 문단에 전면(full-page) tac 이미지가 다수 스택된 경우
     // (예: 1790387 PrEP 보고서 pi=367, tac 그림 2장 각 lh≈900px, vpos=0..0), 한글은
@@ -3117,11 +3120,13 @@ fn missing_lineseg_trailing_line_break(
     line_count: usize,
     current_height: f64,
     available: f64,
+    source_uses_inline_field_reset: bool,
 ) -> Option<usize> {
     if !para.line_segs.is_empty()
         || line_count < 4
         || current_height < available * 0.75
         || !para_has_visible_text(para)
+        || !source_uses_inline_field_reset
         || !controls_are_inline_text_metadata(para)
     {
         return None;
@@ -15424,6 +15429,7 @@ impl TypesetEngine {
             fmt.line_heights.len(),
             st.layout.body_area.height,
             self.dpi,
+            st.profile.hwpx_stored_layout() || st.profile.hwp3_native_layout(),
         )
         .or_else(|| {
             st.profile.hwpx_stored_layout().then(|| {
@@ -15446,6 +15452,7 @@ impl TypesetEngine {
                 fmt.line_heights.len(),
                 st.current_height,
                 available,
+                st.profile.hwpx_stored_layout() || st.profile.hwp3_native_layout(),
             )
         })
         .or_else(|| {
