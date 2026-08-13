@@ -268,7 +268,7 @@ pub(crate) fn collect_cell_borders(
 /// 이중선/삼중선의 교차점 렌더링을 깔끔하게 처리한다.
 /// row_col_x: 행별 열 누적 위치 (셀별 독립 너비 지원)
 pub(crate) fn render_edge_borders(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     h_edges: &[Vec<Option<BorderLine>>],
     v_edges: &[Vec<Option<BorderLine>>],
     row_col_x: &[Vec<f64>],
@@ -430,7 +430,7 @@ fn inset_horizontal_border_group_at_top_clip(nodes: &mut [RenderNode], clip_y: f
 /// 투명 테두리를 빨간색 점선 Line 노드로 생성한다.
 /// 엣지 그리드에서 None 슬롯(투명 테두리)을 찾아 연속 구간을 병합한다.
 pub(crate) fn render_transparent_borders(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     h_edges: &[Vec<Option<BorderLine>>],
     v_edges: &[Vec<Option<BorderLine>>],
     row_col_x: &[Vec<f64>],
@@ -523,7 +523,7 @@ pub(crate) fn render_transparent_borders(
 /// 테두리선 Line 노드 생성 (이중선/삼중선 지원)
 /// None 타입이면 빈 벡터 반환
 pub(crate) fn create_border_line_nodes(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     border: &BorderLine,
     x1: f64,
     y1: f64,
@@ -634,7 +634,7 @@ pub(crate) fn create_border_line_nodes(
 /// 평행선 노드 생성 (이중선/삼중선용)
 /// lines: &[(offset, width)] — offset은 선 중심의 수직 이동량
 fn create_parallel_lines(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     color: u32,
     x1: f64,
     y1: f64,
@@ -682,7 +682,7 @@ fn create_parallel_lines(
 
 /// 임의 방향 평행선 노드 생성 (대각선 이중선/삼중선용)
 fn create_parallel_lines_perpendicular(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     color: u32,
     x1: f64,
     y1: f64,
@@ -736,7 +736,7 @@ fn create_parallel_lines_perpendicular(
 
 /// 단일선 노드 생성
 fn create_single_line(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     color: u32,
     width: f64,
     dash: StrokeDash,
@@ -770,7 +770,7 @@ fn create_single_line(
 }
 
 fn create_editor_only_line(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     color: u32,
     width: f64,
     dash: StrokeDash,
@@ -810,7 +810,7 @@ fn border_line_type_from_code(code: u8) -> BorderLineType {
 }
 
 fn create_diagonal_line_nodes(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     line_type: BorderLineType,
     color: u32,
     width_index: u8,
@@ -910,7 +910,7 @@ fn create_diagonal_line_nodes(
 }
 
 fn create_crooked_diagonal_line_nodes(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     line_type: BorderLineType,
     color: u32,
     width_index: u8,
@@ -1023,7 +1023,7 @@ fn border_line_type_to_dash(lt: BorderLineType) -> Option<StrokeDash> {
 ///   bit 10: BackSlash 대각선 꺾은선
 ///   bit 13: 중심선
 pub(crate) fn render_cell_diagonal(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     border_style: &ResolvedBorderStyle,
     cell_x: f64,
     cell_y: f64,
@@ -1217,7 +1217,7 @@ mod tests {
 
     #[test]
     fn render_hwpx_vertical_center_line_as_horizontal_bar() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &center_line_style(CenterLine::Vertical),
@@ -1238,7 +1238,7 @@ mod tests {
 
     #[test]
     fn render_hwpx_horizontal_center_line_as_vertical_bar() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &center_line_style(CenterLine::Horizontal),
@@ -1258,7 +1258,7 @@ mod tests {
 
     #[test]
     fn render_cross_center_line_creates_vertical_and_horizontal_lines() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &center_line_style(CenterLine::Cross),
@@ -1283,7 +1283,7 @@ mod tests {
 
     #[test]
     fn render_nonzero_diagonal_shape_codes_as_basic_x() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &diagonal_style((0b111 << 2) | (0b111 << 5)),
@@ -1308,7 +1308,7 @@ mod tests {
 
     #[test]
     fn render_slash_crooked_with_backslash_as_bent_backslash() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &diagonal_style((2 << 8) | (0b010 << 5)),
@@ -1338,7 +1338,7 @@ mod tests {
 
     #[test]
     fn render_thick_slim_diagonal_as_parallel_lines() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let mut style = diagonal_style(0b010 << 2);
         style.diagonal.diagonal_type = 10;
         style.diagonal.width = 13;

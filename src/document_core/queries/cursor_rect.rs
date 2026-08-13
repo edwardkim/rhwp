@@ -3019,7 +3019,7 @@ impl DocumentCore {
         use crate::model::control::Control;
         use crate::renderer::layout::{layout_rect_to_bbox, PartialTableCellProbe, ProbeCutPlan};
         use crate::renderer::pagination::PageItem;
-        use crate::renderer::render_tree::{LayoutFrame, RenderNode, RenderNodeType};
+        use crate::renderer::render_tree::{PageLayoutContext, RenderNode, RenderNodeType};
         use FastCellRectOutcome::{Hit, NoHit, Unsupported};
 
         let Ok((page_content, paragraphs, _composed)) = self.find_page(page_num) else {
@@ -3251,7 +3251,7 @@ impl DocumentCore {
 
         // ── 대상 셀 하나만 방출하는 프로브 레이아웃 ──
         // [#4277] 캐럿 rect 프로브도 paint 트리가 아니라 흐름 상태만 만든다.
-        let mut scratch_frame = LayoutFrame::new(
+        let mut scratch_frame = PageLayoutContext::new(
             page_content.page_index,
             layout.page_width,
             layout.page_height,
