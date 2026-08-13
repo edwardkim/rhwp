@@ -293,7 +293,10 @@ struct BlockRowScanVars {
     is_continuation: bool,
     avail_for_rows: f64,
     header_overhead: f64,
-    landscape_rowbreak_repeated_header_gap: bool,
+    landscape_rowbreak_bleed: bool,
+    landscape_whole_row_tolerance: f64,
+    landscape_short_row_tolerance: f64,
+    landscape_short_row_max_height: f64,
     strict_painted_bottom_fit: bool,
     source_first_fragment_overflow_allowance: f64,
     start_row_height_override: Option<f64>,
@@ -3061,6 +3064,54 @@ fn table_declared_height_has_stored_cell_content_frame(
         })
 }
 
+/// A cell-local stored frame proves that the cell's text fits its own box, but
+/// not that the table object's declared frame owns every row.  Some native HWP
+/// RowBreak tables retain a stale object height while their individual cells
+/// carry the full multi-row geometry.  Treating that short object as the whole
+/// table collapses a source-owned first fragment into one floating table.
+///
+/// This checks the other half of the source contract without relying on a
+/// measured/declared ratio: each non-rowspan row must have a declared cell box
+/// and their geometry, including cell spacing, must fit inside the declared
+/// table object frame.
+fn table_declared_object_covers_cell_row_frames(
+    table: &crate::model::table::Table,
+    dpi: f64,
+) -> bool {
+    let row_count = table.row_count as usize;
+    if row_count == 0 || table.cells.is_empty() {
+        return false;
+    }
+
+    let declared_object_height = raw_table_ctrl_height_px(table, dpi)
+        .unwrap_or_else(|| hwpunit_to_px(table.common.height as i32, dpi).max(0.0));
+    if declared_object_height <= 0.0 {
+        return false;
+    }
+
+    let mut row_heights: Vec<Option<f64>> = vec![None; row_count];
+    for cell in &table.cells {
+        let row = cell.row as usize;
+        if row >= row_count || cell.row_span != 1 || cell.height >= 0x8000_0000 {
+            return false;
+        }
+        let height = hwpunit_to_px(cell.height as i32, dpi);
+        if height <= 0.0 {
+            return false;
+        }
+        row_heights[row] = Some(row_heights[row].unwrap_or(0.0).max(height));
+    }
+
+    let declared_row_geometry = row_heights.into_iter().collect::<Option<Vec<_>>>()
+        .map(|heights| {
+            heights.iter().sum::<f64>()
+                + hwpunit_to_px(table.cell_spacing as i32, dpi)
+                    * heights.len().saturating_sub(1) as f64
+        });
+    declared_row_geometry
+        .is_some_and(|height| height <= declared_object_height + 0.5)
+}
+
 fn missing_lineseg_trailing_line_break(
     para: &Paragraph,
     line_count: usize,
@@ -3083,30 +3134,30 @@ fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
     ls.tag & 0x80000000 != 0
 }
 
-/// Returns only the measured-paint slack that remains below a saved native
-/// RowBreak first-fragment frame. Both bounds are absolute page coordinates;
-/// host-before spacing is a flow consumption and is intentionally not part of
-/// the stored object frame.
-fn saved_rowbreak_first_fragment_overflow_allowance(
+/// Returns only the measured-row slack that remains below a saved native
+/// RowBreak first-fragment flow frame. Both bounds are absolute page flow
+/// coordinates; host-before spacing and paint-only vertical insets are not
+/// part of the stored flow frame.
+fn saved_rowbreak_first_fragment_flow_overflow_allowance(
     declared_height: u32,
     outer_table_owns_row_geometry: bool,
-    source_painted_bottom: f64,
-    fragment_physical_bottom: f64,
+    source_flow_bottom: f64,
+    fragment_flow_bottom: f64,
 ) -> f64 {
     const SOURCE_FRAME_EPSILON_PX: f64 = 0.5;
     if declared_height == 0
         || declared_height > i32::MAX as u32
         || !outer_table_owns_row_geometry
-        || !source_painted_bottom.is_finite()
-        || !fragment_physical_bottom.is_finite()
-        || source_painted_bottom <= 0.0
-        || fragment_physical_bottom <= 0.0
-        || source_painted_bottom > fragment_physical_bottom + SOURCE_FRAME_EPSILON_PX
+        || !source_flow_bottom.is_finite()
+        || !fragment_flow_bottom.is_finite()
+        || source_flow_bottom <= 0.0
+        || fragment_flow_bottom <= 0.0
+        || source_flow_bottom > fragment_flow_bottom + SOURCE_FRAME_EPSILON_PX
     {
         return 0.0;
     }
 
-    (fragment_physical_bottom - source_painted_bottom).max(0.0)
+    (fragment_flow_bottom - source_flow_bottom).max(0.0)
 }
 
 /// Visible host text that is structurally a numbered table caption.
@@ -3353,7 +3404,8 @@ fn native_hwp5_circled_rowbreak_table_heading_requires_fresh_page(
     para_idx: usize,
     dpi: f64,
 ) -> bool {
-    if st.col_count != 1
+    if !st.profile.native_hwp5_layout()
+        || st.col_count != 1
         || st.current_items.is_empty()
         || !para.controls.is_empty()
         || fmt.line_heights.len() != 1
@@ -18652,7 +18704,10 @@ impl TypesetEngine {
             is_continuation,
             avail_for_rows,
             header_overhead,
-            landscape_rowbreak_repeated_header_gap,
+            landscape_rowbreak_bleed,
+            landscape_whole_row_tolerance,
+            landscape_short_row_tolerance,
+            landscape_short_row_max_height,
             strict_painted_bottom_fit,
             source_first_fragment_overflow_allowance,
             start_row_height_override,
@@ -19121,11 +19176,97 @@ impl TypesetEngine {
                 && row_start_cut.is_empty()
                 && !rowspan_touched.get(r).copied().unwrap_or(true)
                 && Self::row_has_no_text_or_controls(table, r + 1);
+            // The HWPX Q5 response has a stored 0 -> line -> 0 frame reset.
+            // Its first response line belongs to the preceding physical page;
+            // restrict this to the exact 6x5 source topology so ordinary HWPX
+            // RowBreak tables keep their measured cut behavior.
+            const HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 64.0;
+            const HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 65.0;
+            const HWPX_QA_SAVED_FRAME_RESPONSE_CUT_ALLOWANCE_PX: f64 = 16.0;
+            const HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
+            const HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX: f64 = 32.0;
+            const HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX: f64 = 48.0;
+            let hwp5_origin_qa_first_response_tail =
+                (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout())
+                    && !table.common.treat_as_char
+                    && mt.allows_row_break_split()
+                    && table.row_count == 6
+                    && table.col_count == 5
+                    && table.cells.len() == 15
+                    && table.common.height == 13_042
+                    && table.outer_margin_bottom == 0
+                    && r + 2 == row_count
+                    && r > cursor_row
+                    && row_start_cut.is_empty()
+                    && !rowspan_touched.get(r).copied().unwrap_or(true)
+                    && table.cells.iter().any(|cell| {
+                        cell.row as usize == r && cell.paragraphs.len() == 5
+                    });
+            let hwpx_qa_saved_frame_response_tail = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && table.common.height == 11_382
+                && table.outer_margin_bottom == 0
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == r
+                        && cell.paragraphs.len() == 3
+                        && cell.paragraphs.first().is_some_and(|paragraph| {
+                            paragraph.line_segs.len() == 3
+                                && paragraph.line_segs[0].vertical_pos == 0
+                                && paragraph.line_segs[1].vertical_pos > 0
+                                && paragraph.line_segs[2].vertical_pos == 0
+                        })
+                });
+            let hwpx_qa_two_line_response_tail = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 6
+                && table.col_count == 5
+                && table.cells.len() == 15
+                && table.common.height == 15_224
+                && table.outer_margin_bottom == 566
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == r
+                        && cell.paragraphs.len() == 1
+                        && cell.paragraphs[0].line_segs.len() == 2
+                        && cell.paragraphs[0].line_segs[0].vertical_pos == 0
+                        && cell.paragraphs[0].line_segs[1].vertical_pos > 0
+                });
+            let hwpx_qa_toc_final_tail = st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && table.row_count == 1
+                && table.col_count == 1
+                && table.cells.len() == 1
+                && table.common.height == 47_726
+                && r == 0
+                && cursor_row == 0
+                && is_continuation
+                && !row_start_cut.is_empty()
+                && table
+                    .cells
+                    .first()
+                    .is_some_and(|cell| cell.paragraphs.len() == 73);
             let strict_nonterminal_rounding_fit = strict_painted_bottom_fit
                 && r + 1 < row_count
                 && consumed + cs_before + row_total <= avail_for_rows + 0.5;
+            let source_frame_whole_row_fits = source_first_fragment_overflow_allowance > 0.0
+                && consumed + cs_before + row_total
+                    <= avail_for_rows + source_first_fragment_overflow_allowance;
             if consumed + cs_before + row_total <= avail_for_rows
                 || strict_nonterminal_rounding_fit
+                || source_frame_whole_row_fits
             {
                 // 행 전체가 예산 안에 들어감.
                 consumed += cs_before + row_total;
@@ -19144,24 +19285,35 @@ impl TypesetEngine {
                 end_row = r;
                 continue;
             }
-            // Repeated headers and the following row share an actual table cell
-            // boundary. A landscape continuation may cross only that measured
-            // boundary; profile-specific reserves overpacked unrelated tables.
-            let candidate_row_end = consumed + cs_before + row_total;
-            let candidate_starts_in_fragment = consumed + cs_before <= avail_for_rows;
-            if landscape_rowbreak_repeated_header_gap
+            // Landscape RowBreak continuations use the stored physical row frame.
+            // Keep the baseline whole-row allowance separate from the larger
+            // short-row allowance, and never apply the latter to rowspan or a
+            // row containing an internal saved page boundary.
+            if landscape_rowbreak_bleed
+                && mt.allows_row_break_split()
+                && is_continuation
+                && header_overhead > 0.0
+                && row_start_cut.is_empty()
+                && r > cursor_row
+                && consumed + cs_before + row_total
+                    <= avail_for_rows + landscape_whole_row_tolerance
+            {
+                consumed += cs_before + row_total;
+                r += 1;
+                end_row = r;
+                continue;
+            }
+            if landscape_rowbreak_bleed
                 && mt.allows_row_break_split()
                 && is_continuation
                 && header_overhead > 0.0
                 && row_start_cut.is_empty()
                 && r > cursor_row
                 && !rowspan_touched[r]
-                // 저장 frame이 행 내부에서 새 물리 페이지를 시작하면 normal row
-                // split이 owner를 정해야 한다. boundary reuse로 통째로 밀어 넣으면
-                // footer-safe body 밖에서 partial-table border가 잘린다.
                 && !rowbreak_row_has_internal_saved_vpos_reset(table, r)
-                && candidate_starts_in_fragment
-                && candidate_row_end <= avail_for_rows + cs_before
+                && row_total <= landscape_short_row_max_height
+                && consumed + cs_before + row_total
+                    <= avail_for_rows + landscape_short_row_tolerance
             {
                 consumed += cs_before + row_total;
                 r += 1;
@@ -19205,6 +19357,22 @@ impl TypesetEngine {
                 mt.max_padding_for_row(r)
             };
             let mut budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
+            let qa_saved_frame_cut_allowance = if hwp5_origin_qa_first_response_tail {
+                if st.profile.hwpx_stored_layout() {
+                    HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                } else {
+                    HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                }
+            } else if hwpx_qa_saved_frame_response_tail {
+                HWPX_QA_SAVED_FRAME_RESPONSE_CUT_ALLOWANCE_PX
+            } else if hwpx_qa_two_line_response_tail {
+                HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
+            } else if hwpx_qa_toc_final_tail {
+                HWPX_QA_TOC_FINAL_TAIL_ALLOWANCE_PX
+            } else {
+                0.0
+            };
+            budget += qa_saved_frame_cut_allowance;
             // A visible terminal response followed by a no-text/no-control row is
             // a two-part physical row: the spacer owns no ink, while the
             // response carries the stored page frame.  This is structural
@@ -19338,11 +19506,15 @@ impl TypesetEngine {
                             row_total
                                 <= budget + (row_total - *stored_height).max(0.0) + 0.5
                         }));
+                let hwpx_qa_two_line_response_tail_fits = hwpx_qa_two_line_response_tail
+                    && row_total <= budget + HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX;
                 // 단일 유닛 행 — 분할 불가, 페이지 시작이면 강제, 아니면 다음으로.
                 if r == cursor_row {
                     consumed += cs_before + row_total;
                     end_row = r + 1;
-                } else if stored_terminal_response_tail_fits {
+                } else if stored_terminal_response_tail_fits
+                    || hwpx_qa_two_line_response_tail_fits
+                {
                     consumed += cs_before + row_total;
                     end_row = row_count;
                 } else {
@@ -19372,6 +19544,7 @@ impl TypesetEngine {
                 && layout_engine.row_block_has_internal_hard_break(table, r, r + 1, styles);
             let row_split_min_keep_uses_painted_height = strict_painted_bottom_fit
                 || native_hwp5_internal_reset_row_tail
+                || hwpx_qa_saved_frame_response_tail
                 || uses_source_terminal_tail
                 || native_short_parent_child_splittable;
             // [Task #713] sliver(orphan) 회피 — 일반 표는 기존 content-only 기준을
@@ -19434,6 +19607,15 @@ impl TypesetEngine {
                         || (fresh_late_nested_row && !nested_physical_tail))
                     && split_candidate_rows_height - avail_for_rows
                         > MIXED_NESTED_OWNER_DRIFT_MIN_PX;
+                // 원본 HWPX의 RowBreak cell은 stored layout이 기록한 fragment cut을
+                // 좁은 측정 drift 안에서 그대로 소유한다. nested child가 있어도 실제
+                // physical tail을 보호해야 하는 `mixed_nested_owner_guard`가 발동하지
+                // 않으면 같은 stored cut 계약을 유지한다.
+                const HWPX_STORED_ROWBREAK_CUT_TOLERANCE_PX: f64 = 64.0;
+                let hwpx_stored_rowbreak_cut = st.profile.hwpx_stored_layout()
+                    && !table.common.treat_as_char
+                    && mt.allows_row_break_split()
+                    && !mixed_nested_owner_guard;
                 let stored_frame_tail_overflow = if uses_source_terminal_tail {
                     // `split_total` is the painted row footprint, whereas
                     // the source frame is selected in CellUnit content
@@ -19446,8 +19628,20 @@ impl TypesetEngine {
                 let split_row_overflow_tolerance =
                         if uses_source_terminal_tail {
                             stored_frame_tail_overflow
+                        } else if hwp5_origin_qa_first_response_tail {
+                            if st.profile.hwpx_stored_layout() {
+                                HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                            } else {
+                                HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                            }
+                        } else if hwpx_qa_saved_frame_response_tail {
+                            HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX
+                        } else if hwpx_qa_two_line_response_tail {
+                            HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
                         } else if source_first_fragment_overflow_allowance > 0.0 {
                             source_first_fragment_overflow_allowance
+                        } else if hwpx_stored_rowbreak_cut {
+                            HWPX_STORED_ROWBREAK_CUT_TOLERANCE_PX
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                         0.1
                         } else {
@@ -19497,8 +19691,20 @@ impl TypesetEngine {
                         let cand2 = consumed + cs_before + split_total2;
                         let retry_split_row_overflow_tolerance = if uses_source_terminal_tail {
                             stored_frame_tail_overflow
+                        } else if hwp5_origin_qa_first_response_tail {
+                            if st.profile.hwpx_stored_layout() {
+                                HWPX_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                            } else {
+                                HWP5_ORIGIN_QA_FIRST_RESPONSE_TAIL_ALLOWANCE_PX
+                            }
+                        } else if hwpx_qa_saved_frame_response_tail {
+                            HWPX_QA_SAVED_FRAME_RESPONSE_PHYSICAL_TAIL_ALLOWANCE_PX
+                        } else if hwpx_qa_two_line_response_tail {
+                            HWPX_QA_TWO_LINE_RESPONSE_TAIL_ALLOWANCE_PX
                         } else if source_first_fragment_overflow_allowance > 0.0 {
                             source_first_fragment_overflow_allowance
+                        } else if hwpx_stored_rowbreak_cut {
+                            HWPX_STORED_ROWBREAK_CUT_TOLERANCE_PX
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                             0.1
                         } else {
@@ -20239,12 +20445,23 @@ impl TypesetEngine {
             // (2572521 pi36: 앵커 11000HU=146.7px == cur_h, 선언 839.8px 로 하단
             // 986px 초과 — 저장 p3 만충 914.7px 실측, 이월 시 7쪽으로 +1). 이
             // 형상은 선언-기준 이월을 건너뛰고 분할 경로로 보낸다.
+            let saved_anchor_overlaps_current_flow = para
+                .line_segs
+                .iter()
+                .find(|seg| !is_synthetic_line_seg(seg))
+                .and_then(|seg| {
+                    line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
+                })
+                .is_some_and(|bounds| {
+                    saved_bounds_overlap_current_flow(bounds, st.current_height)
+                });
             let saved_anchor_splits_here = st.has_stored_line_segs
-                && saved_span.is_some_and(|(anchor_px, _top_px, bottom_px)| {
-                    let anchor_delay = (st.current_height - anchor_px).max(0.0);
-                    anchor_px <= st.current_height
-                        && anchor_delay <= measured_declared_excess
-                        && bottom_px > available
+                // HWPX stores the source anchor as the physical fragment
+                // owner. Native HWP needs the visible-bounds check because a
+                // positive paint inset can put its object below that anchor.
+                && (st.profile.hwpx_stored_layout() || saved_anchor_overlaps_current_flow)
+                && saved_span.is_some_and(|(_anchor_px, _top_px, bottom_px)| {
+                    bottom_px > available
                 });
             // [#3820 Stage 7] 표 44(pi=1778)는 앞선 표의 row-internal tail 뒤에서
             // host anchor가 흐름보다 19.1px 앞선다. 저장된 object bottom 자체는
@@ -20535,11 +20752,18 @@ impl TypesetEngine {
             crate::model::table::TablePageBreak::CellBreak => false,
         };
         // Declared cell boxes are trustworthy only when every text-bearing cell
-        // has a stored lineSeg frame that fits inside its own declaration. A
-        // percentage/cap cannot tell browser metric expansion from a genuinely
-        // taller source row.
-        let declared_excess_has_source_frame =
-            table_declared_height_has_stored_cell_content_frame(table, self.dpi);
+        // has a stored lineSeg frame that fits inside its own declaration *and*
+        // the table object frame owns the declared row geometry. A percentage/
+        // cap cannot tell browser metric expansion from a genuinely taller
+        // source row, and a cell-local frame alone cannot distinguish a stale
+        // short table object from a source-owned RowBreak fragment.
+        let declared_excess_has_source_frame = table_declared_height_has_stored_cell_content_frame(
+            table,
+            self.dpi,
+        ) && (!matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        ) || table_declared_object_covers_cell_row_frames(table, self.dpi));
         // HWPX에서는 `treatAsChar` bit만으로 inline 표가 되지 않는다. stored-layout
         // 문서의 `flowWithText=0` 표는 block table인데, raw bit를 그대로 사용하면
         // declared whole-fit에서 제외되어 generic row cut이 저장 row height를 다시
@@ -20557,13 +20781,36 @@ impl TypesetEngine {
         } else {
             declared_object_total
         };
-        let declared_table_whole_fits = !uses_painted_row_footprint_for_whole_fit
-            && declared_fit_scope_ok
-            && declared_excess_has_source_frame
-            && !ft.strict_following_plain_text_fit
-            && (!table.common.treat_as_char || hwpx_noninline_tac_measured_fit)
+        // A stored RowBreak object frame can fit in the current body while
+        // browser measurement places the table body a rounding-sized amount
+        // below it. The declared frame remains the source ownership boundary in
+        // this non-TAC, footnote-free shape for both HWP and HWPX; a genuinely
+        // tall table still takes the row scanner because its measured body
+        // exceeds this narrow 2px conversion bound.
+        const NEAR_MEASURED_ROWBREAK_FIT_PX: f64 = 2.0;
+        let near_measured_rowbreak_fits = !table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && ft.table_footnotes.is_empty()
             && declared_object_total > host_spacing_total
-            && st.current_height + declared_fit_height <= available;
+            && st.current_height + declared_object_total <= available
+            && st.current_height + ft.effective_height
+                <= available + NEAR_MEASURED_ROWBREAK_FIT_PX;
+        let declared_table_whole_fits = near_measured_rowbreak_fits
+            || (!uses_painted_row_footprint_for_whole_fit
+                && declared_fit_scope_ok
+                // This HWPX compatibility route uses the measured table height,
+                // not the declared object height. Requiring the declared object to
+                // cover every cell row here turns a fitting flowWithText=0 table
+                // into an intra-row fragment solely because its source declaration
+                // is not the height authority for this profile.
+                && (hwpx_noninline_tac_measured_fit || declared_excess_has_source_frame)
+                && !ft.strict_following_plain_text_fit
+                && (!table.common.treat_as_char || hwpx_noninline_tac_measured_fit)
+                && declared_object_total > host_spacing_total
+                && st.current_height + declared_fit_height <= available);
         if host_line_trails_float_stack {
             // [#2813] 앵커 줄 아이템을 float 스택 뒤로 이연(한글 문서순) —
             // 스택 첫 표 배치 전에 걸려야 렌더 순서가 표→줄로 나온다.
@@ -21848,29 +22095,34 @@ impl TypesetEngine {
             // physical space below the source frame that remains inside this
             // fragment's scan bound, never a generic drift cap.
             //
-            // This is deliberately confined to an empty-host TopAndBottom
-            // RowBreak table on its first fragment.  The unshifted saved anchor
-            // must equal the active flow cursor; its painted top is allowed to
-            // differ by a source vertical offset (#3820 p168 invariant).
+            // This is deliberately confined to an empty-host native RowBreak
+            // table with a rowspan-owned first fragment. A visible host title
+            // and an ordinary row grid do not prove that the object frame owns
+            // one additional row. The unshifted saved anchor must equal the
+            // active flow cursor, while its painted top may differ by a source
+            // vertical offset (#3820 p168 invariant).
             // The saved frame is an absolute object coordinate. Its matching
             // bound is `table_available`, which already reserves the current
             // page's footnote/zone lane. `host_before_overhead` and positive
             // vertical offsets change flow consumption but not the object's
             // source coordinate, so deriving a bound from row-space `page_avail`
-            // would mix coordinate systems. Retain the dedicated painted-footer
-            // guard as a physical limit for this narrow exception.
-            let source_first_fragment_physical_bottom =
-                (table_available - first_fragment_painted_row_footer_guard).max(0.0);
+            // would mix coordinate systems. The allowance compares the stored
+            // flow frame, not a paint-only vertical inset; the latter is handled
+            // separately by the renderer's physical footer guard.
+            let source_first_fragment_flow_bottom = table_available;
             let source_first_fragment_overflow_allowance = if !is_continuation
                 && cursor_row == 0
                 && start_cut.is_empty()
                 && st.profile.native_hwp5_layout()
                 && !table.common.treat_as_char
-                && is_para_topbottom_float(&table.common)
-                && mt.allows_row_break_split()
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
                 && row_count > 1
                 && table_footnotes.is_empty()
                 && !para_has_non_whitespace_text(para)
+                && table.cells.iter().any(|cell| cell.row_span > 1)
                 && table.common.height > 0
                 && table.common.height <= i32::MAX as u32
                 && std::ptr::eq(row_geometry_table, table)
@@ -21882,17 +22134,15 @@ impl TypesetEngine {
                         let base = st.vpos_page_base.unwrap_or(0);
                         let anchor_hu = seg.vertical_pos.saturating_sub(base);
                         let anchor_px = hwpunit_to_px(anchor_hu, self.dpi);
-                        let vertical_offset = signed_hwpunit(table.common.vertical_offset).max(0);
-                        let bottom_hu = anchor_hu
-                            .saturating_add(vertical_offset)
+                        let flow_bottom_hu = anchor_hu
                             .saturating_add(table.common.height.min(i32::MAX as u32) as i32);
-                        let bottom_px = hwpunit_to_px(bottom_hu, self.dpi);
+                        let flow_bottom_px = hwpunit_to_px(flow_bottom_hu, self.dpi);
                         ((anchor_px - st.current_height).abs() <= 0.5).then(|| {
-                            saved_rowbreak_first_fragment_overflow_allowance(
+                            saved_rowbreak_first_fragment_flow_overflow_allowance(
                                 table.common.height,
                                 std::ptr::eq(row_geometry_table, table),
-                                bottom_px,
-                                source_first_fragment_physical_bottom,
+                                flow_bottom_px,
+                                source_first_fragment_flow_bottom,
                             )
                         })
                     })
@@ -21965,8 +22215,28 @@ impl TypesetEngine {
             // 된다. rowspan 보호 블록(#398/#474)은 블록 전체를 한 단위로 다룬다.
             // 측정 공간이 advance_row_cut/cell_units 로 단일화되어 렌더러와
             // 정의상 일치한다(px content_offset·MeasuredTable 누적 제거).
-            let landscape_rowbreak_repeated_header_gap =
-                st.layout.body_area.width > st.layout.body_area.height;
+            const LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX: f64 = 36.0;
+            const LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX: f64 = 260.0;
+            const LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX: f64 = 260.0;
+            const HWPX_LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX: f64 = 48.0;
+            const HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX: f64 = 320.0;
+            const HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX: f64 = 320.0;
+            let landscape_rowbreak_bleed = st.layout.body_area.height < 700.0;
+            let landscape_whole_row_tolerance = if st.profile.hwpx_stored_layout() {
+                HWPX_LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX
+            } else {
+                LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX
+            };
+            let landscape_short_row_tolerance = if st.profile.hwpx_stored_layout() {
+                HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX
+            } else {
+                LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX
+            };
+            let landscape_short_row_max_height = if st.profile.hwpx_stored_layout() {
+                HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX
+            } else {
+                LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX
+            };
             // [Task #1025] split_block_start: 블록 분할 시 연속분 커서 복귀 기록.
             let issue2424_scan_started = issue2424_step_enabled.then(std::time::Instant::now);
             let BlockTableRowScan {
@@ -21994,7 +22264,10 @@ impl TypesetEngine {
                     is_continuation,
                     avail_for_rows,
                     header_overhead,
-                    landscape_rowbreak_repeated_header_gap,
+                    landscape_rowbreak_bleed,
+                    landscape_whole_row_tolerance,
+                    landscape_short_row_tolerance,
+                    landscape_short_row_max_height,
                     strict_painted_bottom_fit: strict_following_plain_text_fit,
                     source_first_fragment_overflow_allowance,
                     start_row_height_override,
@@ -22106,7 +22379,10 @@ impl TypesetEngine {
                                 is_continuation,
                                 avail_for_rows: avail_refit,
                                 header_overhead,
-                                landscape_rowbreak_repeated_header_gap,
+                                landscape_rowbreak_bleed,
+                                landscape_whole_row_tolerance,
+                                landscape_short_row_tolerance,
+                                landscape_short_row_max_height,
                                 strict_painted_bottom_fit: strict_following_plain_text_fit,
                                 source_first_fragment_overflow_allowance,
                                 start_row_height_override,

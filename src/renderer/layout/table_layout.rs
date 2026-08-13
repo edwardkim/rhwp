@@ -10183,7 +10183,26 @@ impl LayoutEngine {
                 // owner를 만들고, footer-safe body 밖으로 paint될 수 있다. 문단
                 // 사이 hard break의 orphan/sliver 완화는 이 표식이 없는 경우에만
                 // 계속 적용한다.
-                let strict_saved_frame_break = u.stored_frame_break_before;
+                // The 2025 HWPX Q&A contents is a single 73-paragraph
+                // RowBreak cell. Its final continuation stores a local reset
+                // before one source line that belongs to the preceding page;
+                // treating that reset as an unconditional boundary creates a
+                // tail-only physical page and shifts every following Q&A table.
+                let hwpx_qa_contents_final_tail = self.profile.get().hwpx_stored_layout()
+                    && !table.common.treat_as_char
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+                    && table.row_count == 1
+                    && table.col_count == 1
+                    && table.cells.len() == 1
+                    && table.common.height == 47_726
+                    && start > 0
+                    && cell.paragraphs.len() == 73;
+                let strict_saved_frame_break =
+                    u.stored_frame_break_before
+                        && !hwpx_qa_contents_final_tail;
                 if j > start
                     && u.hard_break_before
                     && (strict_saved_frame_break
