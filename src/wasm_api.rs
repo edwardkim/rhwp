@@ -42,8 +42,8 @@ use crate::renderer::style_resolver::{
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::DEFAULT_DPI;
 
-/// 어떤 렌더 export 가 Subsecond 핫패치 경계 뒤에 있는지 선언하는 곳 (#4577).
-mod subsecond_boundary;
+/// 어떤 렌더 export가 교체 가능한 경계 뒤에 있는지 선언하는 곳 (#4577, #4642).
+mod render_patch_boundary;
 
 impl From<HwpError> for JsValue {
     fn from(err: HwpError) -> Self {
@@ -214,13 +214,12 @@ fn render_page_patch_to_canvas_filtered_with_profile_impl(
     use crate::renderer::render_tree::BoundingBox;
     use crate::renderer::web_canvas::WebCanvasRenderer;
 
-    let BoundingBox {
-        x,
-        y,
-        width,
-        height,
-    } = patch;
-    if ![x, y, width, height].into_iter().all(f64::is_finite) || width <= 0.0 || height <= 0.0 {
+    if ![patch.x, patch.y, patch.width, patch.height]
+        .into_iter()
+        .all(f64::is_finite)
+        || patch.width <= 0.0
+        || patch.height <= 0.0
+    {
         return Err(JsValue::from_str("invalid page patch rectangle"));
     }
 
@@ -241,10 +240,10 @@ fn render_page_patch_to_canvas_filtered_with_profile_impl(
         ));
     }
 
-    let left = x.max(0.0).min(tree.page_width);
-    let top = y.max(0.0).min(tree.page_height);
-    let right = (x + width).max(left).min(tree.page_width);
-    let bottom = (y + height).max(top).min(tree.page_height);
+    let left = patch.x.max(0.0).min(tree.page_width);
+    let top = patch.y.max(0.0).min(tree.page_height);
+    let right = (patch.x + patch.width).max(left).min(tree.page_width);
+    let bottom = (patch.y + patch.height).max(top).min(tree.page_height);
     if right <= left || bottom <= top {
         return Err(JsValue::from_str(
             "page patch rectangle does not intersect the page",
@@ -808,7 +807,7 @@ impl HwpDocument {
         layer_kind: &str,
         profile: &str,
     ) -> Result<(), JsValue> {
-        subsecond_boundary::render_page_to_canvas_filtered_with_profile(
+        render_patch_boundary::render_page_to_canvas_filtered_with_profile(
             self, page_num, canvas, scale, layer_kind, profile,
         )
     }
@@ -834,7 +833,7 @@ impl HwpDocument {
     ) -> Result<(), JsValue> {
         use crate::renderer::render_tree::BoundingBox;
 
-        subsecond_boundary::render_page_patch_to_canvas_filtered_with_profile(
+        render_patch_boundary::render_page_patch_to_canvas_filtered_with_profile(
             self,
             page_num,
             canvas,
@@ -908,7 +907,7 @@ impl HwpDocument {
         omit_image_bytes: Option<bool>,
     ) -> Result<String, JsValue> {
         let omit_image_bytes = omit_image_bytes.unwrap_or(false);
-        subsecond_boundary::get_page_layer_tree_with_profile(
+        render_patch_boundary::get_page_layer_tree_with_profile(
             self,
             page_num,
             profile,
@@ -921,9 +920,9 @@ impl HwpDocument {
     /// 소비자는 이 문자열을 해석하지 않고 이전 값과 비교만 한다. 오늘 그 값을 바꾸는 것은
     /// Subsecond 핫패치뿐이지만, 이름은 그 사실이 아니라 소비자가 알아야 하는 것을 말한다 —
     /// 벤더가 바뀌어도 "렌더 코드의 리비전"이라는 질문은 그대로다 (#4580). 벤더를 아는 곳은
-    /// 몸통이 부르는 `subsecond_boundary` 하나다.
+    /// 몸통이 부르는 `render_patch_boundary` 하나다.
     ///
-    /// 값은 경계 목록(`subsecond_boundary`)에서 바로 나오므로 경계를 더할 때 여기를 같이 고칠
+    /// 값은 경계 목록(`render_patch_boundary`)에서 바로 나오므로 경계를 더할 때 여기를 같이 고칠
     /// 일이 없다 — 리비전이 경계 하나를 놓쳐 재도색이 안 도는 구멍이 생기지 않는다.
     ///
     /// 아래 재구성과 **한 쌍이다.** 리비전이 바뀐 것을 보고 재구성을 부르는 것이 TS 계약
@@ -933,7 +932,7 @@ impl HwpDocument {
     #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
     #[wasm_bindgen(js_name = getRenderCodeRevision)]
     pub fn get_render_code_revision(&self) -> String {
-        subsecond_boundary::patch_revision()
+        render_patch_boundary::patch_revision()
     }
 
     /// 바이트는 그대로인데 화면용으로 파생해 둔 것이 더는 원본과 대응하지 않을 때 다시 만든다.
@@ -996,7 +995,7 @@ impl HwpDocument {
     /// 페이지 overlay 이미지 정보만 JSON 문자열로 반환한다.
     #[wasm_bindgen(js_name = getPageOverlayImages)]
     pub fn get_page_overlay_images(&self, page_num: u32) -> Result<String, JsValue> {
-        subsecond_boundary::get_page_overlay_images(self, page_num)
+        render_patch_boundary::get_page_overlay_images(self, page_num)
     }
 
     /// 페이지가 그리는 그림들의 신원 키만 작은 JSON 으로 반환한다 (Task #3315).
@@ -1012,7 +1011,7 @@ impl HwpDocument {
     /// 있고 `sourceImageKey` 로 `getSourceImageBytes` 를 부르면 된다.
     #[wasm_bindgen(js_name = getPageFlowImageOps)]
     pub fn get_page_flow_image_ops(&self, page_num: u32) -> Result<String, JsValue> {
-        subsecond_boundary::get_page_flow_image_ops(self, page_num)
+        render_patch_boundary::get_page_flow_image_ops(self, page_num)
     }
 
     /// 그림 신원 키로 바이트를 Uint8Array 로 반환한다 (Task #3315).
