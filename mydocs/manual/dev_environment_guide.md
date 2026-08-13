@@ -101,9 +101,35 @@ cargo nextest run \
 
 Rust 또는 WASM 경계가 바뀌면 저장소 루트에서 `pkg/`를 갱신한다.
 
-```bash
-wasm-pack build --target web --out-dir pkg
+Windows·macOS·Linux 공통 표준 경로는 Docker의 `wasm` 서비스다. 최초 한 번만 `.env.docker`가
+없을 때 예제를 복사하고, 이후에는 기존 파일을 덮어쓰지 않는다.
+
+```powershell
+if (-not (Test-Path .env.docker)) {
+    Copy-Item .env.docker.example .env.docker
+}
+docker compose --env-file .env.docker run --rm wasm
 ```
+
+이 서비스는 Cargo target을 named volume에 유지한다. 특히 Windows Docker Desktop의 `/app/target`
+bind mount는 hard-link를 지원하지 않아 Cargo가 실패할 수 있으므로, host `target/`을 강제로
+재사용하지 않는다. 빌드 시작 시에는 이전에 중단된 wasm-pack이 남긴 `pkg/*-opt.wasm`만 제거한다.
+이 파일을 남기면 wasm-pack이 임시 최적화 결과를 다시 입력으로 열거해 무한 실행 또는
+`*-opt.wasm-opt.wasm` 실패로 이어질 수 있다. (#4089)
+
+Docker를 사용할 수 없는 호스트에서 원인을 분리하는 **진단용** 네이티브 경로는 아래와 같다.
+`--no-opt` 결과는 최적화된 배포 산출물을 대체하지 않는다.
+
+```powershell
+Remove-Item -Force -ErrorAction SilentlyContinue pkg\*-opt.wasm
+$env:CARGO_TARGET_DIR = 'target\pr-review'
+wasm-pack build --target web --out-dir pkg --no-opt
+Remove-Item Env:CARGO_TARGET_DIR
+```
+
+네이티브 `wasm-pack build`를 최적화까지 포함해 반복 검증해야 하면 먼저 표준 Docker 경로를
+복구한다. Windows에서는 이전의 직접 최적화 명령을 반복 실행하지 않으며, 위 진단으로
+`pkg/` 잔재와 wasm-opt만 분리해 확인한다.
 
 TypeScript와 CSS는 Vite가 다시 읽지만 Rust 변경은 위 빌드가 끝나야 브라우저에 반영된다.
 
