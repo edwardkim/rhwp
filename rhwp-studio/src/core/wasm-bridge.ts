@@ -300,19 +300,26 @@ export class WasmBridge {
     wasmModule: { memory?: WebAssembly.Memory },
   ): Promise<void> {
     if (!import.meta.env.DEV) return;
-    const runtime = await import('./subsecond-runtime');
-    this.renderCodeReload = runtime.createRenderCodeReload(wasmExports, () => this.doc);
-    if (!disconnectSubsecondDevtools) {
-      disconnectSubsecondDevtools = runtime.connectSubsecondDevtools(
-        wasmExports as unknown as SubsecondWasmExports,
-        {
-          patchAccumulation: new runtime.SubsecondPatchAccumulation({
-            // subsecond 세션에서는 이 모듈이 dx 가 만든 glue(`target/rhwp-subsecond-vite/`)로
-            // 바뀐다. 타입은 언제나 `pkg/rhwp.d.ts` 를 보므로 memory 부재는 타입으로 못 걸러진다.
-            measureHeapBytes: () => wasmModule.memory?.buffer.byteLength ?? null,
-          }),
-        },
-      );
+    try {
+      const runtime = await import('./subsecond-runtime');
+      const renderCodeReload = runtime.createRenderCodeReload(wasmExports, () => this.doc);
+      const disconnect = disconnectSubsecondDevtools
+        ? null
+        : runtime.connectSubsecondDevtools(
+          wasmExports as unknown as SubsecondWasmExports,
+          {
+            patchAccumulation: new runtime.SubsecondPatchAccumulation({
+              // subsecond 세션에서는 이 모듈이 dx 가 만든 glue(`target/rhwp-subsecond-vite/`)로
+              // 바뀐다. 타입은 언제나 `pkg/rhwp.d.ts` 를 보므로 memory 부재는 타입으로 못 걸러진다.
+              measureHeapBytes: () => wasmModule.memory?.buffer.byteLength ?? null,
+            }),
+          },
+        );
+      this.renderCodeReload = renderCodeReload;
+      if (disconnect) disconnectSubsecondDevtools = disconnect;
+    } catch (error) {
+      // 개발 편의 기능의 준비 실패가 문서 편집기의 WASM 초기화 전체를 막으면 안 된다.
+      console.warn('[WasmBridge] 개발용 렌더 코드 교체를 시작하지 못했습니다:', error);
     }
   }
 
