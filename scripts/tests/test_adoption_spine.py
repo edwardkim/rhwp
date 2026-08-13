@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import importlib.util
-import io
 import json
 import tempfile
 import unittest
@@ -58,16 +57,60 @@ class AdoptionSpineTests(unittest.TestCase):
     def test_surface_pointer_loss_is_caught(self):
         """뿌리(AGENTS.md)가 표준을 안 가리키면 걸린다 — 척추 끊김 감지."""
         spine = load_spine()
-        with tempfile.TemporaryDirectory() as d:
-            empty = Path(d) / "AGENTS.md"
-            empty.write_text("# 표준을 안 가리키는 파일\n", encoding="utf-8")
-            original = spine.AGENTS
-            spine.AGENTS = empty
-            try:
-                problems = spine.check()
-            finally:
-                spine.AGENTS = original
+        agents = spine.REPO_ROOT / "AGENTS.md"
+        original = spine._read
+
+        def without_agents_pointer(path: Path) -> str:
+            if path.resolve() == agents.resolve():
+                return "## 작업 증빙 — 에이전트 기본 경로 (권장)\n"
+            return original(path)
+
+        spine._read = without_agents_pointer
+        try:
+            problems = spine.check()
+        finally:
+            spine._read = original
         self.assertTrue(any("AGENTS.md" in p for p in problems), problems)
+
+    def test_gym_surface_pointer_loss_is_caught(self):
+        """gym 표면의 링크만 빠져도 잡는다(파일 존재만 검사하면 안 됨)."""
+        spine = load_spine()
+        gym = spine.REPO_ROOT / "gym" / "PARK.md"
+        original = spine._read
+
+        def without_gym_pointer(path: Path) -> str:
+            if path.resolve() == gym.resolve():
+                return "# gym 운동장\n"
+            return original(path)
+
+        spine._read = without_gym_pointer
+        try:
+            problems = spine.check()
+        finally:
+            spine._read = original
+        self.assertTrue(any("gym/PARK.md" in p for p in problems), problems)
+
+    def test_declared_surface_anchor_loss_is_caught(self):
+        """기계 정본이 선언한 AGENTS anchor가 사라지면 잡는다."""
+        spine = load_spine()
+        agents = spine.REPO_ROOT / "AGENTS.md"
+        original = spine._read
+
+        def without_declared_anchor(path: Path) -> str:
+            text = original(path)
+            if path.resolve() == agents.resolve():
+                return text.replace(
+                    "## 작업 증빙 — 에이전트 기본 경로 (권장)",
+                    "## 작업 증빙 — 에이전트 증빙 경로",
+                )
+            return text
+
+        spine._read = without_declared_anchor
+        try:
+            problems = spine.check()
+        finally:
+            spine._read = original
+        self.assertTrue(any("anchor" in p for p in problems), problems)
 
 
 if __name__ == "__main__":

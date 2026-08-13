@@ -1,5 +1,5 @@
 ---
-kind: standard
+kind: reference
 status: active
 canonical: mydocs/tech/standards/agent_work_standard.md
 last_verified: 2026-08-13

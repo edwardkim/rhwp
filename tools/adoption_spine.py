@@ -27,22 +27,49 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import re
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 STD_JSON = REPO_ROOT / "mydocs" / "tech" / "standards" / "agent_work_standard.json"
 STD_MD = REPO_ROOT / "mydocs" / "tech" / "standards" / "agent_work_standard.md"
-AGENTS = REPO_ROOT / "AGENTS.md"
-TRACK_L = REPO_ROOT / "mydocs" / "tech" / "agent_roadmap" / "track_l_adoption_gravity.md"
 
 LEVEL_IDS = ["AW-L1", "AW-L2", "AW-L3", "AW-L4", "AW-L5"]
-#: AGENTS.md·트랙 L 이 표준을 가리킨다고 인정하는 표지 중 하나라도 있으면 통과.
-STD_MARKERS = ("agent_work_standard", "AWS/1.0", "에이전트 작업 표준")
+MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)(?:\s+[^)]*)?\)")
+MARKDOWN_HEADING_RE = re.compile(r"^#{1,6}\s+(.+?)(?:\s+#+)?\s*$")
 
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
+
+
+def _points_to_standard(surface: Path, text: str) -> bool:
+    """surface의 실제 Markdown 링크가 사람용 정본을 가리키는지 확인한다."""
+    standard = STD_MD.resolve()
+    for destination in MARKDOWN_LINK_RE.findall(text):
+        destination = destination.strip("<>").split("#", 1)[0]
+        if not destination or "://" in destination or destination.startswith("#"):
+            continue
+        if (surface.parent / destination).resolve() == standard:
+            return True
+    return False
+
+
+def _github_heading_anchor(heading: str) -> str:
+    """이 저장소에서 쓰는 일반 Markdown heading의 GitHub anchor를 만든다."""
+    return "".join(
+        char.lower() if char.isalnum() else char if char in "- " else ""
+        for char in heading
+    ).replace(" ", "-")
+
+
+def _has_declared_anchor(text: str, anchor: str) -> bool:
+    for line in text.splitlines():
+        match = MARKDOWN_HEADING_RE.match(line)
+        if match and _github_heading_anchor(match.group(1)) == anchor:
+            return True
+    return False
 
 
 def check() -> list[str]:
@@ -61,10 +88,16 @@ def check() -> list[str]:
         if key not in spec:
             problems.append(f"기계용 정본에 필수 키 없음: {key}")
     levels = spec.get("levels", [])
-    got_ids = [lvl.get("id") for lvl in levels]
+    if not isinstance(levels, list):
+        problems.append("기계용 정본의 levels 가 목록이 아니다")
+        levels = []
+    got_ids = [lvl.get("id") if isinstance(lvl, dict) else None for lvl in levels]
     if got_ids != LEVEL_IDS:
         problems.append(f"레벨 id 가 {LEVEL_IDS} 가 아니다: {got_ids}")
     for lvl in levels:
+        if not isinstance(lvl, dict):
+            problems.append(f"레벨 항목이 객체가 아니다: {lvl!r}")
+            continue
         for key in ("id", "name", "requires", "referenceCommand"):
             if not lvl.get(key):
                 problems.append(f"레벨 {lvl.get('id')} 에 {key} 가 비었다")
@@ -81,21 +114,25 @@ def check() -> list[str]:
             if lid not in md:
                 problems.append(f"사람용 정본에 레벨 {lid} 서술이 없다")
 
-    # 3) 선언한 surfaces 가 실재하는가
-    for surf in spec.get("surfaces", []):
-        rel = surf.split("#", 1)[0]
-        if not (REPO_ROOT / rel).exists():
+    # 3) 선언한 surfaces 가 실재하고 실제 정본 링크·선언 anchor를 지키는가
+    surfaces = spec.get("surfaces", [])
+    if not isinstance(surfaces, list):
+        problems.append("기계용 정본의 surfaces 가 목록이 아니다")
+        surfaces = []
+    for surf in surfaces:
+        if not isinstance(surf, str):
+            problems.append(f"표면 경로가 문자열이 아니다: {surf!r}")
+            continue
+        rel, separator, anchor = surf.partition("#")
+        surface = REPO_ROOT / rel
+        if not surface.is_file():
             problems.append(f"표준이 선언한 표면이 실재하지 않는다: {surf}")
-
-    # 4) AGENTS.md 척추 뿌리가 표준을 가리키는가
-    if not AGENTS.is_file():
-        problems.append("AGENTS.md 없음 — 척추 뿌리 부재")
-    elif not any(m in _read(AGENTS) for m in STD_MARKERS):
-        problems.append("AGENTS.md 가 에이전트 작업 표준을 가리키지 않는다(척추 뿌리 끊김)")
-
-    # 5) 트랙 L 이 표준을 가리키는가
-    if TRACK_L.is_file() and not any(m in _read(TRACK_L) for m in STD_MARKERS):
-        problems.append("트랙 L 문서가 에이전트 작업 표준을 가리키지 않는다(로드맵 정합 끊김)")
+            continue
+        content = _read(surface)
+        if surface.resolve() != STD_MD.resolve() and not _points_to_standard(surface, content):
+            problems.append(f"표면이 사람용 정본을 가리키지 않는다: {surf}")
+        if separator and not _has_declared_anchor(content, anchor):
+            problems.append(f"표면에 선언한 anchor가 없다: {surf}")
 
     return problems
 
