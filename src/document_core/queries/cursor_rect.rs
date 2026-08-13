@@ -3067,8 +3067,7 @@ impl DocumentCore {
         // 있다 — 보수적 폴백
         if col.items.iter().any(|it| {
             matches!(it,
-                PageItem::Shape { para_index, .. }
-            | PageItem::PartialOverlayTable { para_index, .. } | PageItem::Table { para_index, .. }
+                PageItem::Shape { para_index, .. } | PageItem::Table { para_index, .. }
                     if *para_index == parent_para_idx)
         }) {
             return Ok(Unsupported);
@@ -6486,8 +6485,7 @@ mod tests {
         eprintln!("items0 = {:?}", col.items.first());
         let host_anchor = col.items.iter().any(|it| {
             matches!(it,
-                PageItem::Shape { para_index, .. }
-            | PageItem::PartialOverlayTable { para_index, .. } | PageItem::Table { para_index, .. }
+                PageItem::Shape { para_index, .. } | PageItem::Table { para_index, .. }
                     if *para_index == host_pi)
         });
         eprintln!("host_anchor_items = {host_anchor}");

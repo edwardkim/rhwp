@@ -606,10 +606,6 @@ impl DocumentCore {
                                 crate::renderer::pagination::PageItem::Shape {
                                     para_index, ..
                                 } => Some(*para_index),
-                                crate::renderer::pagination::PageItem::PartialOverlayTable {
-                                    para_index,
-                                    ..
-                                } => Some(*para_index),
                                 crate::renderer::pagination::PageItem::EndnoteSeparator {
                                     ..
                                 } => None,

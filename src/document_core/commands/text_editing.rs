@@ -4670,10 +4670,6 @@ impl DocumentCore {
                                 crate::renderer::pagination::PageItem::Shape {
                                     para_index, ..
                                 } => Some(*para_index),
-                                crate::renderer::pagination::PageItem::PartialOverlayTable {
-                                    para_index,
-                                    ..
-                                } => Some(*para_index),
                                 crate::renderer::pagination::PageItem::EndnoteSeparator {
                                     ..
                                 } => None,
@@ -4773,7 +4769,6 @@ impl DocumentCore {
                         | PageItem::PartialParagraph { para_index, .. }
                         | PageItem::Table { para_index, .. }
                         | PageItem::Shape { para_index, .. }
-                        | PageItem::PartialOverlayTable { para_index, .. }
                             if *para_index == para_idx =>
                         {
                             return true;

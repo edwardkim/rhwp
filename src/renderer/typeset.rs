@@ -1120,6 +1120,9 @@ struct TypesetState {
     /// "몇 번째 행부터 잘렸는지"만 적어 두고, 단/쪽이 열릴 때 그 시작에 방출한다.
     /// `(para_index, control_index, start_row)`.
     pending_overlay_continuations: Vec<(usize, usize, usize)>,
+    /// [#4568] 현재 단에 이어 그릴 overlay 잔여 행 목록. `flush_column` 에서
+    /// `ColumnContent::overlay_continuations` 로 옮긴다.
+    current_column_overlay_continuations: Vec<crate::renderer::pagination::OverlayContinuation>,
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
@@ -1633,11 +1636,7 @@ fn page_item_para_index(item: &PageItem) -> Option<usize> {
         | PageItem::Table { para_index, .. }
         | PageItem::PartialTable { para_index, .. }
         | PageItem::Shape { para_index, .. } => Some(*para_index),
-        // [#4568] overlay 잔여 행 조각은 앞 쪽 앵커의 장식이 새 쪽에 이어 그려지는
-        // 것일 뿐, 이 쪽이 그 문단을 **소유**한다는 뜻이 아니다. 소유로 계상하면
-        // 조각이 새 쪽의 첫 항목이라 쪽↔문단 매핑과 vpos 기준을 가로챈다
-        // (실측: `overflow_cell_baseline` 래칫 62 → 63).
-        PageItem::PartialOverlayTable { .. } | PageItem::EndnoteSeparator { .. } => None,
+        PageItem::EndnoteSeparator { .. } => None,
     }
 }
 
@@ -1658,9 +1657,7 @@ fn page_item_vpos_base(item: &PageItem, paragraphs: &[Paragraph]) -> Option<i32>
             .get(*para_index)
             .and_then(|para| para.line_segs.first())
             .map(|seg| seg.vertical_pos),
-        // [#4568] 같은 이유로 vpos 기준도 잡지 않는다 — 이 조각의 문단은 앞 쪽에서
-        // 이미 기준을 세웠다.
-        PageItem::PartialOverlayTable { .. } | PageItem::EndnoteSeparator { .. } => None,
+        PageItem::EndnoteSeparator { .. } => None,
     }
 }
 
@@ -3579,6 +3576,7 @@ impl TypesetState {
             behind_pending_absorbs: Vec::new(),
             overlay_shape_shortcut_para: None,
             pending_overlay_continuations: Vec::new(),
+            current_column_overlay_continuations: Vec::new(),
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
             current_zone_column_type: column_type,
@@ -3982,6 +3980,7 @@ impl TypesetState {
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
             wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
+            overlay_continuations: std::mem::take(&mut self.current_column_overlay_continuations),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -4051,6 +4050,7 @@ impl TypesetState {
             wrap_around_paras: std::mem::take(&mut self.current_column_wrap_around_paras),
             used_height: self.current_height,
             wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
+            overlay_continuations: std::mem::take(&mut self.current_column_overlay_continuations),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -4112,17 +4112,20 @@ impl TypesetState {
         // Task #321: 새 페이지에서는 body-wide top reserve 초기화
         self.pending_body_wide_top_reserve = 0.0;
         // [#4568] 앞 쪽에서 잘린 overlay 표의 잔여 행을 이 쪽 최상단에 이어 그린다.
-        // 흐름은 소비하지 않으므로(`current_height` 불변) 본문 배치는 바뀌지 않는다.
-        for (para_index, control_index, start_row) in
+        // `current_items` 가 아니라 단 전용 목록으로 넘긴다 — 흐름 항목이 아니라
+        // z-layer 장식이고, 항목으로 섞으면 이 조각이 단의 첫 항목이 되어
+        // `items.first()` 를 보는 휴리스틱이 조각을 본문으로 읽는다.
+        self.current_column_overlay_continuations.extend(
             std::mem::take(&mut self.pending_overlay_continuations)
-        {
-            self.current_items
-                .push(crate::renderer::pagination::PageItem::PartialOverlayTable {
-                    para_index,
-                    control_index,
-                    start_row,
-                });
-        }
+                .into_iter()
+                .map(|(para_index, control_index, start_row)| {
+                    crate::renderer::pagination::OverlayContinuation {
+                        para_index,
+                        control_index,
+                        start_row,
+                    }
+                }),
+        );
     }
 
     fn reset_for_new_page(&mut self) {
@@ -6501,8 +6504,7 @@ impl TypesetEngine {
                             .and_then(|item| match item {
                                 PageItem::FullParagraph { para_index }
                                 | PageItem::Table { para_index, .. }
-                                | PageItem::Shape { para_index, .. }
-                                | PageItem::PartialOverlayTable { para_index, .. } => paragraphs
+                                | PageItem::Shape { para_index, .. } => paragraphs
                                     .get(*para_index)
                                     .and_then(|p| p.line_segs.first())
                                     .map(|s| s.vertical_pos),
@@ -6720,8 +6722,7 @@ impl TypesetEngine {
                     PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
                     PageItem::Table { para_index, .. } => Some(*para_index),
                     PageItem::PartialTable { para_index, .. } => Some(*para_index),
-                    PageItem::Shape { para_index, .. }
-                    | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
+                    PageItem::Shape { para_index, .. } => Some(*para_index),
                     PageItem::EndnoteSeparator { .. } => None,
                 });
                 let page_top_vpos_opt = page_first_para_idx
@@ -12873,17 +12874,6 @@ impl TypesetEngine {
                         para_index: l + 1,
                         control_index: *control_index,
                     }),
-                    // [#4568] overlay 표 잔여 행 조각 — Shape 와 같은 방식으로 지역
-                    // 인덱스로 옮긴다(행 오프셋은 원본 그대로).
-                    PageItem::PartialOverlayTable {
-                        para_index,
-                        control_index,
-                        start_row,
-                    } => lookup_local(*para_index).map(|l| PageItem::PartialOverlayTable {
-                        para_index: l + 1,
-                        control_index: *control_index,
-                        start_row: *start_row,
-                    }),
                     // 구분선은 측정에서 제외(현 per-para 시뮬과 동일 — start_height 가 단 콘텐츠
                     // 시작을 이미 반영).
                     PageItem::EndnoteSeparator { .. } => None,
@@ -16721,18 +16711,7 @@ impl TypesetEngine {
                                 .position(|cum| *cum > room)
                                 .map(|i| i.saturating_sub(1))
                                 .unwrap_or(ft.row_heights.len());
-                            // [#4568 3단계 대기] 방출은 기본 꺼짐이다. 이 조각을
-                            // `current_items` 에 섞으면 쪽의 **첫 항목**이 되어
-                            // `items.first()` 기반 휴리스틱(예:
-                            // `page_item_is_treat_as_char_picture_only`)이 조각을 보고
-                            // 판단한다 — 실측으로 `overflow_cell_baseline` 래칫이
-                            // 62 → 63 줄로 늘었다. 잔여 행은 흐름 항목이 아니라 z-layer
-                            // 장식이므로, 3단계에서 `ColumnContent` 의 별도 목록으로
-                            // 옮기고 렌더러가 그 목록만 읽도록 한다.
-                            if std::env::var("RHWP_4568_EMIT").is_ok()
-                                && first_unfit > 0
-                                && first_unfit < ft.row_heights.len()
-                            {
+                            if first_unfit > 0 && first_unfit < ft.row_heights.len() {
                                 st.pending_overlay_continuations.push((
                                     para_idx,
                                     ctrl_idx,
@@ -22459,8 +22438,7 @@ impl TypesetEngine {
                     | PageItem::PartialParagraph { para_index, .. }
                     | PageItem::Table { para_index, .. }
                     | PageItem::PartialTable { para_index, .. }
-                    | PageItem::Shape { para_index, .. }
-                    | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
+                    | PageItem::Shape { para_index, .. } => Some(*para_index),
                     PageItem::EndnoteSeparator { .. } => None,
                 });
                 if let Some(pi) = last_para_idx {
@@ -22694,8 +22672,7 @@ impl TypesetEngine {
                     PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
                     PageItem::Table { para_index, .. } => Some(*para_index),
                     PageItem::PartialTable { para_index, .. } => Some(*para_index),
-                    PageItem::Shape { para_index, .. }
-                    | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
+                    PageItem::Shape { para_index, .. } => Some(*para_index),
                     PageItem::EndnoteSeparator { .. } => None,
                 })
                 .max();
@@ -22729,10 +22706,7 @@ impl TypesetEngine {
                             is_continuation,
                             ..
                         } => *para_index == *ph_para && !*is_continuation,
-                        PageItem::Shape { para_index, .. }
-                        | PageItem::PartialOverlayTable { para_index, .. } => {
-                            *para_index == *ph_para
-                        }
+                        PageItem::Shape { para_index, .. } => *para_index == *ph_para,
                         PageItem::EndnoteSeparator { .. } => false,
                     })
                 });
@@ -24126,6 +24100,7 @@ mod tests {
                 wrap_around_paras: Vec::new(),
                 used_height: 0.0,
                 wrap_anchors: std::collections::HashMap::new(),
+                overlay_continuations: Vec::new(),
             }],
             active_header: None,
             active_footer: None,

@@ -2818,8 +2818,7 @@ impl Paginator {
                             PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
                             PageItem::Table { para_index, .. } => Some(*para_index),
                             PageItem::PartialTable { para_index, .. } => Some(*para_index),
-                            PageItem::Shape { para_index, .. }
-                            | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
+                            PageItem::Shape { para_index, .. } => Some(*para_index),
                             PageItem::EndnoteSeparator { .. } => None,
                         })
                     })
@@ -2838,8 +2837,7 @@ impl Paginator {
                     PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
                     PageItem::Table { para_index, .. } => Some(*para_index),
                     PageItem::PartialTable { para_index, .. } => Some(*para_index),
-                    PageItem::Shape { para_index, .. }
-                    | PageItem::PartialOverlayTable { para_index, .. } => Some(*para_index),
+                    PageItem::Shape { para_index, .. } => Some(*para_index),
                     PageItem::EndnoteSeparator { .. } => None,
                 })
                 .max()
@@ -2887,12 +2885,7 @@ impl Paginator {
                         ..
                     } if *para_index == para_idx && *start_line == 0 => return true,
                     PageItem::Table { para_index, .. } if *para_index == para_idx => return true,
-                    PageItem::Shape { para_index, .. }
-                    | PageItem::PartialOverlayTable { para_index, .. }
-                        if *para_index == para_idx =>
-                    {
-                        return true
-                    }
+                    PageItem::Shape { para_index, .. } if *para_index == para_idx => return true,
                     _ => {}
                 }
             }
@@ -2909,8 +2902,7 @@ impl Paginator {
                     PageItem::PartialParagraph { para_index, .. } => *para_index,
                     PageItem::Table { para_index, .. } => *para_index,
                     PageItem::PartialTable { para_index, .. } => *para_index,
-                    PageItem::Shape { para_index, .. }
-                    | PageItem::PartialOverlayTable { para_index, .. } => *para_index,
+                    PageItem::Shape { para_index, .. } => *para_index,
                     PageItem::EndnoteSeparator { .. } => continue,
                 };
                 if pi == para_idx {

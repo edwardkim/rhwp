@@ -424,6 +424,25 @@ pub struct ColumnContent {
     /// layout 시점까지 보존. layout 이 본 메타데이터로 wrap zone 판정 + LineSeg cs/sw
     /// 정합 렌더 (PR #589 wrap_precomputed 메커니즘 대체).
     pub wrap_anchors: std::collections::HashMap<usize, WrapAnchorRef>,
+    /// [#4568] 앞 쪽에서 쪽 하단에 잘린 overlay 표의 **잔여 행**을 이 단 최상단에
+    /// 이어 그리기 위한 목록.
+    ///
+    /// `items` 에 섞지 않는 이유는 소유 의미가 다르기 때문이다 — 잔여 행은 흐름을
+    /// 소비하지 않는 z-layer 장식이고 이 단이 그 문단을 소유하지도 않는다. 항목으로
+    /// 넣으면 이 조각이 단의 **첫 항목**이 되어 `items.first()` 를 보는 휴리스틱들이
+    /// 조각을 본문으로 읽는다(실측: `overflow_cell_baseline` 래칫 62 → 63줄).
+    pub overlay_continuations: Vec<OverlayContinuation>,
+}
+
+/// [#4568] 쪽을 넘긴 overlay 표의 잔여 행 조각.
+#[derive(Debug, Clone)]
+pub struct OverlayContinuation {
+    /// 표 컨트롤이 있는 원본 문단 인덱스
+    pub para_index: usize,
+    /// 문단 내 컨트롤 인덱스
+    pub control_index: usize,
+    /// 이 단에서 그릴 첫 행 (inclusive). 앞 쪽이 이미 그린 행 수와 같다.
+    pub start_row: usize,
 }
 
 /// 어울림 배치 표 옆에 배치되는 빈 리턴 문단 정보
@@ -529,23 +548,6 @@ pub enum PageItem {
         para_index: usize,
         control_index: usize,
     },
-    /// [#4568] 쪽 경계를 넘는 글앞으로/글뒤로(overlay) 표의 **잔여 행** 조각.
-    ///
-    /// overlay 표는 #703 이후 흐름 소비 0 으로 `Shape` z-layer 에 배치되므로, 앵커 쪽에
-    /// 한 번만 그려지고 쪽 하단을 넘는 행은 잘린다(bleed clip). 자리차지 표의
-    /// `PartialTable` 에 해당하는 이어 그리기 수단이 이 경로에는 없었다.
-    ///
-    /// `Shape` 와 분리한 이유는 소비 지점 때문이다 — `Shape` 는 앵커 좌표로 그리지만
-    /// 이 조각은 **쪽 최상단**에서 `start_row` 부터 그린다. 같은 변형에 플래그로 얹으면
-    /// 기존 73개 소비 지점이 전부 두 의미를 구분해야 한다.
-    PartialOverlayTable {
-        /// 원본 문단 인덱스
-        para_index: usize,
-        /// 컨트롤 인덱스
-        control_index: usize,
-        /// 이 조각이 그릴 첫 행 (inclusive). 앞 쪽이 이미 그린 행 수와 같다.
-        start_row: usize,
-    },
     /// 미주 영역 시작 구분선
     EndnoteSeparator {
         /// 구분선 길이 (HWP 단위). 한컴 전폭 sentinel(14692344)이 i16을 넘으므로 i32.
@@ -637,8 +639,7 @@ impl PageItem {
             PageItem::PartialParagraph { para_index, .. } => *para_index,
             PageItem::Table { para_index, .. } => *para_index,
             PageItem::PartialTable { para_index, .. } => *para_index,
-            PageItem::Shape { para_index, .. }
-            | PageItem::PartialOverlayTable { para_index, .. } => *para_index,
+            PageItem::Shape { para_index, .. } => *para_index,
             PageItem::EndnoteSeparator { .. } => usize::MAX,
         }
     }
@@ -697,15 +698,6 @@ impl PageItem {
             } => PageItem::Shape {
                 para_index: adjust(*para_index),
                 control_index: *control_index,
-            },
-            PageItem::PartialOverlayTable {
-                para_index,
-                control_index,
-                start_row,
-            } => PageItem::PartialOverlayTable {
-                para_index: adjust(*para_index),
-                control_index: *control_index,
-                start_row: *start_row,
             },
             PageItem::EndnoteSeparator {
                 separator_length,
@@ -843,6 +835,7 @@ impl PaginationResult {
                         start_height: cc.start_height,
                         endnote_flow: cc.endnote_flow,
                         items: cc.items.iter().map(|it| it.with_offset(offset)).collect(),
+                        overlay_continuations: cc.overlay_continuations.clone(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,
                         wrap_around_paras: cc
