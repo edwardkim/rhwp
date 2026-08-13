@@ -20735,7 +20735,11 @@ impl TypesetEngine {
                 crate::model::table::TablePageBreak::RowBreak
             )
             && ft.table_footnotes.is_empty()
-            && declared_excess_has_source_frame
+            // HWPX stored-layout keeps a pagination frame independent from
+            // the native HWP5 table declaration. Its near measured fit is a
+            // converter provenance contract; native HWP5 must additionally
+            // prove that its object frame owns all declared row geometry.
+            && (!st.profile.native_hwp5_layout() || declared_excess_has_source_frame)
             && declared_object_total > host_spacing_total
             && st.current_height + declared_object_total <= available
             && st.current_height + ft.effective_height
