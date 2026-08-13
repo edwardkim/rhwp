@@ -9427,6 +9427,39 @@ impl LayoutEngine {
         let units =
             Self::delay_empty_anchor_topandbottom_flow_units_before_hard_break(units, cell, table);
 
+        if let Ok(pattern) = std::env::var("RHWP_DIAG_CELL_UNITS") {
+            if cell
+                .paragraphs
+                .iter()
+                .any(|paragraph| paragraph.text.contains(&pattern))
+            {
+                eprintln!(
+                    "DIAG_CELL_UNITS profile={:?} rows={} cols={} cells={} break={:?} tac={} units={}",
+                    self.profile.get(),
+                    table.row_count,
+                    table.col_count,
+                    table.cells.len(),
+                    table.page_break,
+                    table.common.treat_as_char,
+                    units.len(),
+                );
+                for (unit_idx, unit) in units.iter().enumerate() {
+                    eprintln!(
+                        "  unit[{unit_idx}] h={:.2} para={} lines={}..{} hard={} stored={} gap={} empty={} topbottom={}",
+                        unit.height,
+                        unit.para_idx,
+                        unit.vis_start,
+                        unit.vis_end,
+                        unit.hard_break_before,
+                        unit.stored_frame_break_before,
+                        unit.vpos_gap_before,
+                        unit.empty_spacer,
+                        unit.top_and_bottom_flow,
+                    );
+                }
+            }
+        }
+
         let _ = (pad_top, pad_bottom); // [Task #1022] cell.height 필러 제거 — row_cut_content_height 가 셀별 max(cell.height, content+pad) 로 행 단계에서 정합.
         units
     }
