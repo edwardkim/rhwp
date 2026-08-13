@@ -15364,7 +15364,8 @@ impl TypesetEngine {
         // (다음 줄 vpos==0 이고 현재 줄 bottom 이 본문 안이면 현재 쪽 유지) 가 모든 줄을 한
         // 쪽에 쌓아 버린다. 이 문단만 hwp_authoritative 를 끄고 줄별 fit 분할(쪽당 1장)로
         // 되돌린다. 게이트는 formatter 의 stacked_tac_picture_heights 와 동일 의미.
-        let is_tac_picture_stack = para_is_treat_as_char_picture_only(para)
+        let tac_picture_only_para = para_is_treat_as_char_picture_only(para);
+        let is_tac_picture_stack = tac_picture_only_para
             && line_count >= 2
             && fmt
                 .line_heights
@@ -15530,7 +15531,25 @@ impl TypesetEngine {
                 // line_segs[li].vertical_pos == 0 (li>0) 은 HWP 가 해당 line 을
                 // 다음 단/페이지 최상단에 배치하도록 인코딩한 신호.
                 // 다단 한정 적용 — 단일 단은 partial-table split 회귀 (issue #418) 차단 위해 미적용.
-                if st.col_count > 1
+                //
+                // [#4092] 단일 단이라도 **전면 개체 줄**은 이 신호를 존중한다. 한 문단에
+                // 전면 그림이 여럿 든 형상에서, 한컴은 줄마다 reset 을 기록해 쪽마다
+                // 하나씩 두는데 rhwp 는 그 신호를 버리고 한 쪽에 쌓았다(HPV 코호트
+                // pi=970: 본문 895.8px 에 763~770px 짜리 줄 6개 = 4,654px, 문서 전체
+                // 246쪽 ↔ 한글 235쪽).
+                //
+                // 조건은 문단이 아니라 **그 줄**에 건다 — 같은 문단이라도 첫 줄은
+                // 199.7px 라 `is_tac_picture_stack`(모든 줄이 절반 초과)은 거짓이다.
+                // #418 의 partial-table 회귀는 여기에 닿지 않는다:
+                // `para_is_treat_as_char_picture_only` 가 TAC 그림 외 콘텐츠를 배제하므로
+                // 표가 든 문단은 애초에 해당하지 않는다.
+                let tac_picture_full_page_line = tac_picture_only_para
+                    && fmt
+                        .line_heights
+                        .get(li)
+                        .map(|h| *h > st.base_available_height() * 0.5)
+                        .unwrap_or(false);
+                if (st.col_count > 1 || tac_picture_full_page_line)
                     && li > cursor_line
                     && para
                         .line_segs
