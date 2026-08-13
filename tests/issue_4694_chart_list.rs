@@ -133,6 +133,78 @@ fn a_chart_inside_a_table_cell_carries_its_container_path() {
     assert_eq!(data["ok"], true, "셀 안 차트도 순번으로 읽힌다");
 }
 
+/// R1 점검(#4694) — 표 셀 안 ole 레이아웃 노드는 컨테이너 문맥(cellPath)을 방출한다.
+///
+/// 이것이 비면 studio 선택 ref 가 본문 직속과 구분 불가한 3좌표로 떨어져, 같은 문단에
+/// 앵커된 다른 차트를 조용히 여는 오매칭이 성립한다(Image 노드는 #1151/#1161 에서
+/// 이 문맥을 실었고 ole 만 빠져 있었다). 글상자 경로도 같은 helper 인자를 지나므로
+/// 이 테스트가 방출 계약의 핀이다.
+#[test]
+fn a_table_cell_ole_layout_node_carries_its_cell_path() {
+    let path = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");
+    let mut doc = core_of(&path);
+    let chart = collect_charts(doc.document())[0].clone();
+    let (sec, para, ctrl) = (chart.section, chart.paragraph, chart.control);
+
+    // 본문 직속 차트를 1x1 표의 셀 문단 안으로 옮긴다(열거 테스트와 동일 수술).
+    // 레이아웃이 실제로 돌도록 표·셀에 실치수를 준다.
+    {
+        let d = doc.document_mut();
+        let ole = d.sections[sec].paragraphs[para].controls.remove(ctrl);
+        let cell_para = Paragraph {
+            controls: vec![ole],
+            ..Default::default()
+        };
+        let cell = Cell {
+            col_span: 1,
+            row_span: 1,
+            width: 30000,
+            height: 20000,
+            paragraphs: vec![cell_para],
+            ..Default::default()
+        };
+        let mut table = Table {
+            row_count: 1,
+            col_count: 1,
+            row_sizes: vec![1],
+            cells: vec![cell],
+            cell_grid: vec![Some(0)],
+            ..Default::default()
+        };
+        table.common.width = 30000;
+        table.common.height = 20000;
+        d.sections[sec].paragraphs[para]
+            .controls
+            .insert(ctrl, Control::Table(Box::new(table)));
+    }
+    // 구조 수술 뒤 파생 상태 전체 재구성 — 수술본을 스냅샷으로 떠서 즉시 복원하면
+    // `restore_snapshot_native` 가 recompose·pagination·캐시 무효화를 전부 수행한다
+    // (`rebuild_derived_state` 는 네이티브 공개 표면이 없다).
+    let snap = doc.save_snapshot_native();
+    doc.restore_snapshot_native(snap).expect("파생 상태 재구성");
+
+    let layout: serde_json::Value =
+        serde_json::from_str(&doc.get_page_control_layout_native(0).expect("레이아웃"))
+            .expect("JSON");
+    let ole_node = layout["controls"]
+        .as_array()
+        .expect("controls")
+        .iter()
+        .find(|c| c["type"] == "ole")
+        .expect("ole 노드가 방출돼야 한다")
+        .clone();
+
+    assert_eq!(ole_node["paraIdx"], para, "루트 문단");
+    let cell_path = ole_node["cellPath"]
+        .as_array()
+        .expect("cellPath — 없으면 선택 ref 가 본문 직속과 구분 불가(오매칭 결함)");
+    assert_eq!(cell_path.len(), 1, "중첩 한 단계");
+    assert_eq!(cell_path[0]["controlIndex"], ctrl);
+    assert_eq!(cell_path[0]["cellIndex"], 0);
+    assert_eq!(cell_path[0]["cellParaIndex"], 0);
+    assert_eq!(ole_node["parentParaIdx"], para, "루트 문단(경로 기준점)");
+}
+
 fn slot_bytes(core: &DocumentCore) -> Vec<Vec<u8>> {
     core.document()
         .bin_data_content

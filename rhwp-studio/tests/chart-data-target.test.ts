@@ -130,14 +130,39 @@ test('컨테이너 안 차트는 맨 좌표(3인자)로는 절대 맞지 않는�
   assert.equal(matchChartRef(CHARTS, { sec: 0, ppi: 7, ci: 0 }), null);
 });
 
-test('cellPath 가 tableCell 아닌 컨테이너 단계와 겹치면 맞지 않는다', () => {
+test('글상자 안 차트는 sentinel cellPath(cellIdx 0, #1171 계약)로 textbox 와 맞는다', () => {
+  // 코어 레이아웃이 글상자 ole 에 [{controlIndex: 글상자ci, cellIndex: 0,
+  // cellParaIndex: 내부문단}] sentinel 을 방출한다(#4694 R1 정공법).
+  const hit = matchChartRef(CHARTS, {
+    sec: 0, ppi: 9, ci: 0,
+    cellPath: [{ controlIndex: 3, cellIndex: 0, cellParaIndex: 0 }],
+  });
+  assert.equal(hit?.index, 3);
+});
+
+test('sentinel 아닌 cellIdx 는 textbox 컨테이너와 맞지 않는다', () => {
   assert.equal(
     matchChartRef(CHARTS, {
       sec: 0, ppi: 9, ci: 0,
-      cellPath: [{ controlIndex: 3, cellIndex: 0, cellParaIndex: 0 }],
+      cellPath: [{ controlIndex: 3, cellIndex: 1, cellParaIndex: 0 }],
     }),
     null,
   );
+});
+
+test('맨 좌표 대조는 컨테이너 차트의 루트 좌표와 겹치면 모호로 보고 거부한다', () => {
+  // 머리말 ole 는 레이아웃이 컨테이너 문맥을 아직 싣지 않아 맨 3좌표로 선택된다 —
+  // 그 좌표가 본문 직속 차트와 겹치면 어느 쪽을 클릭했는지 구분할 수 없다.
+  // 오매칭(다른 차트 편집)이 최악이므로 거부한다.
+  const shadowed: ChartRefJson[] = [
+    { index: 0, section: 0, paragraph: 0, control: 0, nestedCopy: 1 },
+    {
+      index: 1, section: 0, paragraph: 0, control: 0,
+      container: [{ kind: 'header', control: 1, paragraph: 0 }],
+      nestedCopy: 2,
+    },
+  ];
+  assert.equal(matchChartRef(shadowed, { sec: 0, ppi: 0, ci: 0 }), null);
 });
 
 // ── 선택 ref → 매처 입력 정규화 (#4694 S4) ────────────────

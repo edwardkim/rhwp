@@ -214,6 +214,20 @@ function normalizeCellPath(path: CellPathLike): NormalizedCellSeg[] | null {
  *   ∧ 루트 문단 === outerParaIdx ∧ 내부 컨트롤 === ci
  */
 export function matchChartRef(charts: ChartRefJson[], ref: ChartTargetRef): ChartRefJson | null {
+  // [#4694 R1] 맨 3좌표 선택은 머리말/꼬리말 안 ole(레이아웃이 컨테이너 문맥을 아직
+  // 싣지 않는 유일한 경로)와 구분되지 않을 수 있다. 컨테이너 차트의 루트 좌표
+  // (paragraph=본문 앵커, control=내부 인덱스)가 같은 3좌표와 겹치면 어느 쪽을
+  // 클릭했는지 알 수 없다 — 오매칭(다른 차트 편집)이 최악이므로 거부한다.
+  if (!ref.headerFooter && (!ref.cellPath || ref.cellPath.length === 0)) {
+    const shadowed = charts.some(
+      (chart) =>
+        (chart.container?.length ?? 0) > 0 &&
+        chart.section === ref.sec &&
+        chart.paragraph === ref.ppi &&
+        chart.control === ref.ci,
+    );
+    if (shadowed) return null;
+  }
   const hits = charts.filter((chart) => matchesOne(chart, ref));
   // 주소는 문서 안에서 유일해야 한다 — 둘 이상 맞으면 계약 밖 상태이므로 안전하게 실패.
   return hits.length === 1 ? hits[0] : null;
@@ -240,14 +254,21 @@ function matchesOne(chart: ChartRefJson, ref: ChartTargetRef): boolean {
     if (!path || container.length !== path.length) return false;
     for (let i = 0; i < path.length; i++) {
       const level = container[i];
-      if (
-        level.kind !== 'tableCell' ||
-        level.control !== path[i].controlIdx ||
-        level.cell !== path[i].cellIdx ||
-        level.paragraph !== path[i].cellParaIdx
-      ) {
-        return false;
-      }
+      const seg = path[i];
+      // 표 셀 정합 — (control, cell, paragraph) 전 좌표 일치.
+      const cellMatch =
+        level.kind === 'tableCell' &&
+        level.control === seg.controlIdx &&
+        level.cell === seg.cellIdx &&
+        level.paragraph === seg.cellParaIdx;
+      // 글상자 sentinel(#1171 계약) — 코어가 cellIndex 0 으로 방출한다. 같은 컨트롤이
+      // 표이면서 글상자일 수는 없으므로 이 분기가 모호성을 만들지 않는다.
+      const textboxMatch =
+        level.kind === 'textbox' &&
+        seg.cellIdx === 0 &&
+        level.control === seg.controlIdx &&
+        level.paragraph === seg.cellParaIdx;
+      if (!cellMatch && !textboxMatch) return false;
     }
     return chart.paragraph === ref.ppi && chart.control === ref.ci;
   }

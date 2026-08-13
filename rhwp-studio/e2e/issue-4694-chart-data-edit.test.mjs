@@ -120,5 +120,20 @@ runTest('#4694 차트 데이터 편집 — 메뉴·더블클릭·편집·undo·�
   if (untouched !== original) throw new Error(`무편집인데 값이 바뀌었다 — ${untouched}`);
   console.log('무편집 [확인]: 무흔적');
 
+  // ── 6. 차트 아닌 OLE(한셀)는 더블클릭에도 다이얼로그가 열리지 않는다 ──
+  // listCharts 대조 실패 → 기존 동작(무반응) 유지의 음성 계약.
+  await loadHwpFile(page, '한셀OLE.hwp');
+  const ptOle = await oleClickPoint(page);
+  if (ptOle) {
+    await page.mouse.click(ptOle.x, ptOle.y);
+    await pause(page, 400);
+    await doubleClick(page, ptOle);
+    await pause(page, 700);
+    if (await dialogOpen(page)) throw new Error('차트 아닌 OLE 에 차트 다이얼로그가 열렸다');
+    console.log('비-차트 OLE 더블클릭: 미개방 (기존 동작 유지)');
+  } else {
+    console.log('비-차트 OLE: 레이아웃에 ole 미방출 — 단계 생략');
+  }
+
   console.log('\n=== #4694 e2e 전 단계 통과 ===');
 });

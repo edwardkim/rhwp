@@ -32,7 +32,7 @@ export interface CommandInfo {
  * **레지스트리가 아니라 DOM 에서 파생한다.** 메뉴 구조의 선언은 `index.html` 에 있고
  * (`.menu-item` 8 / `.md-item` 197 / `.md-sub` 32), 레이블·활성은 레지스트리에서 온다.
  * 그래서 `getMenuModel()` 은 `listCommands()` 의 부분집합이 아니다 — 레지스트리에는 있으나
- * 메뉴 마크업에 없는 커맨드가 41개 있다(컨텍스트 메뉴·단축키 전용).
+ * 메뉴 마크업에 없는 커맨드가 42개 있다(컨텍스트 메뉴·단축키 전용, #4694 에서 +1).
  */
 export interface MenuNode {
   /** `data-menu` 값 — file, edit, view, insert, format, page, table, tool */

@@ -263,8 +263,13 @@ export class ChartDataDialog extends ModalDialog {
       return;
     }
 
-    let applied = false;
-    let raceInvalid: ChartInvalidEntry[] | null = null;
+    // null 반환은 무기록 신호인데 사유가 셋이라 결과로 구분한다 — 뭉개면
+    // "쓰기 시점 이미 같은 값"(무해)에 오안내를 내보내게 된다.
+    // (객체 홀더인 이유: 클로저 안 대입을 CFA 가 못 봐 유니온 let 은 협착된다.)
+    const result: {
+      outcome: 'applied' | 'noop' | 'refused' | 'notFound';
+      invalid?: ChartInvalidEntry[];
+    } = { outcome: 'notFound' };
     ih.executeOperation({
       kind: 'snapshot',
       operationType: 'objectProps',
@@ -274,18 +279,26 @@ export class ChartDataDialog extends ModalDialog {
         if (!found) return null;
         const res = this.wasm.setChartDataByIndex(found.index, edits);
         if (!res.ok) {
-          raceInvalid = res.invalid ?? [];
+          result.outcome = 'refused';
+          result.invalid = res.invalid ?? [];
           return null;
         }
-        if ((res.changedCount ?? 0) === 0) return null;
-        applied = true;
+        if ((res.changedCount ?? 0) === 0) {
+          result.outcome = 'noop';
+          return null;
+        }
+        result.outcome = 'applied';
         return ih.getCursorPosition();
       },
     });
-    if (!applied) {
-      if (raceInvalid) this.showInvalid(raceInvalid);
-      else this.showError('차트를 다시 찾지 못했습니다 — 문서가 바뀌었습니다. 다시 열어 주세요.');
+    if (result.outcome === 'refused') {
+      this.showInvalid(result.invalid);
       return false;
     }
+    if (result.outcome === 'notFound') {
+      this.showError('차트를 다시 찾지 못했습니다 — 문서가 바뀌었습니다. 다시 열어 주세요.');
+      return false;
+    }
+    // applied·noop(쓰기 시점 이미 같은 값) 모두 닫는다.
   }
 }
