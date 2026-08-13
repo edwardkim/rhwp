@@ -3472,7 +3472,7 @@ fn native_hwp5_circled_rowbreak_table_heading_requires_fresh_page(
     para_idx: usize,
     dpi: f64,
 ) -> bool {
-    if !st.profile.native_hwp5_layout()
+    if !st.profile.hwp5_stored_pagination_layout()
         || st.col_count != 1
         || st.current_items.is_empty()
         || !para.controls.is_empty()
