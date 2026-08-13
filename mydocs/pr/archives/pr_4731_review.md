@@ -15,6 +15,7 @@ last_verified: 2026-08-13
 | 메인터너 보정 | `3de1aff81` `fix(security): HWPX container 재귀 한계 보강` |
 | 통합 PR | [#4738](https://github.com/edwardkim/rhwp/pull/4738) |
 | base / code candidate | `devel` `b5c14346d0` / `3de1aff81` |
+| 최신 기준선 merge / Full CI head | `77a61f68f` / `77a61f68f` |
 
 ## 범위와 보정
 
@@ -42,6 +43,9 @@ container 하나만 다룬다.
   `cargo fmt --check`는 이 호스트의 긴 경로 OS error 206으로 실행 자체가 실패해 대상 파일
   Rustfmt 검사로 대체했다.
 - code candidate `3de1aff81`의 GitHub Full CI, CodeQL, Build & Test aggregate가 모두 성공했다.
+- 검토 중 `devel`이 `cdeb1ba540`으로 전진해 오늘할일 충돌을 해소하는 최신 기준선 merge
+  `77a61f68f`를 만들었다. 이 head에서 기본 debug focused 회귀를 다시 통과했고, GitHub
+  Full CI, CodeQL, Build & Test aggregate도 모두 성공했다.
 
 Rust parser와 unit test만 바뀌며 fixture·renderer·WASM 출력은 변경하지 않는다. 따라서
 시각·Hancom 검증은 적용 대상이 아니다. Cargo incremental 환경 변수는 지정하지 않았다.
@@ -49,5 +53,5 @@ Rust parser와 unit test만 바뀌며 fixture·renderer·WASM 출력은 변경�
 ## 판정
 
 **self-review 수용.** 원 contributor commit과 fork branch는 보존하고, 메인터너 보정과
-검토 기록을 최신 `devel` 기반 통합 PR에 분리한다. 이 문서와 오늘할일을 올린 뒤 최신
-trailing head의 fast-pass·mergeability를 다시 확인하고, 작업지시자 승인 뒤에만 merge한다.
+검토 기록을 최신 `devel` 기반 통합 PR에 분리한다. 이 최종 기록 commit을 올린 뒤 최신
+trailing head의 required check·mergeability를 다시 확인하고, 작업지시자 승인 뒤에만 merge한다.

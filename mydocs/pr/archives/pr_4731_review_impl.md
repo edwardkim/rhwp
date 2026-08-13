@@ -30,6 +30,9 @@ modifiers: intake_and_review, local_validation, review_only_fast_pass, post_merg
 4. #4730이 아직 완료되지 않았으므로 원 PR description의 `closes #4730`을 관련 이슈 표현으로 정정했다.
 5. Windows PowerShell에서 debug·release-test focused 회귀, 대상 파일 Rustfmt, 공백 검사를 통과시켰고,
    code candidate `3de1aff81`의 Full CI·CodeQL·Build & Test aggregate 성공을 확인했다.
+6. 검토 중 `devel`이 `cdeb1ba540`으로 전진해 오늘할일 충돌을 양쪽 PR 기록을 보존하는 방식으로
+   해소하고 `77a61f68f`를 만들었다. 이 최신 기준선 merge head에서 focused 회귀와 Full CI·CodeQL·
+   Build & Test aggregate 성공을 다시 확인했다.
 
 ## 경계와 rollback
 
@@ -37,5 +40,5 @@ modifiers: intake_and_review, local_validation, review_only_fast_pass, post_merg
 않는다. 보정을 되돌려야 하면 contributor 원 commit·fork branch를 건드리지 않고 통합 branch에
 되돌림 commit을 추가한다.
 
-이 문서와 오늘할일은 code candidate 뒤의 review-only trailing commit이다. push 뒤 최신 head의
-fast-pass preflight와 Build & Test aggregate, mergeability를 확인한 다음 self-review와 merge로 진행한다.
+이 문서와 오늘할일의 최종 갱신은 최신 기준선 merge 뒤의 review-only trailing commit이다. push 뒤
+최신 head의 required check와 mergeability를 확인한 다음 self-review와 merge로 진행한다.
