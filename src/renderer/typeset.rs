@@ -19224,12 +19224,31 @@ impl TypesetEngine {
                 // hard break는 이 계약에 포함하지 않는다. 그런 형상은 선언 높이가
                 // 실제 content frame을 대표하지 않을 수 있으므로 기존 split/이월
                 // 경로가 계속 소유한다.
-                let block_has_rowspan = table.cells.iter().any(|cell| {
-                    let cell_start = cell.row as usize;
-                    let cell_end = cell_start + cell.row_span as usize;
-                    cell.row_span > 1 && cell_start < b_end && cell_end > b_start
-                });
-                let source_complete_rowspan_block = block_has_rowspan
+                // label cell 하나가 block 전체 행을 덮고, 각 행에는 그 label의
+                // 오른쪽 폭 전체를 차지하는 response cell 하나만 있는 form 구조다.
+                // 일반 평가 grid처럼 label 오른쪽에 여러 독립 열이 있으면 선언
+                // blank도 각 열의 frame 일부이므로 이 경로로 압축하지 않는다.
+                let block_is_label_response_form = table
+                    .cells
+                    .iter()
+                    .find(|cell| {
+                        cell.row as usize == b_start && cell.row_span as usize == block_size
+                    })
+                    .is_some_and(|label| {
+                        (b_start..b_end).all(|row| {
+                            let mut row_cells = table.cells.iter().filter(|cell| {
+                                cell.row as usize == row
+                                    && !(row == b_start && cell.col == label.col)
+                            });
+                            row_cells.next().is_some_and(|response| {
+                                row_cells.next().is_none()
+                                    && response.row_span == 1
+                                    && response.col == label.col + label.col_span
+                                    && response.col_span + label.col_span == table.col_count
+                            })
+                        })
+                    });
+                let source_complete_rowspan_block = block_is_label_response_form
                     && mt.allows_row_break_split()
                     && r > cursor_row
                     && blk_start_cut.is_empty()
