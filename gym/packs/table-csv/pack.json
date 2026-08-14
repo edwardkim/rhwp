@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "table-csv",
+  "title": "표 CSV 왕복 (되쓰기)",
+  "axis": "편집 (표를 CSV로 뽑아 고쳐 되넣기 — table-to-csv↔csv-to-table)",
+  "description": "에이전트가 표 데이터를 CSV로 뽑아 고친 뒤 같은 자리에 되넣는 능력을 검증한다. csv-to-table 은 크기·라벨을 바꾸지 않고 값만 덮어쓴다(다르면 exit 2). 라이브 오라클로 채점.",
+  "requires": {
+    "commands": [
+      "table-to-csv",
+      "csv-to-table"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.4",
+    "rhwpCommit": "4324eb0e4cf1a65f7efb305993a79ac44859a7ca",
+    "capabilitiesSha256": "4767e61c3af751bb2f97af9d0b3e5ffa5cbb5dc70a89cf3ae85987132fa5473d"
+  }
+}
