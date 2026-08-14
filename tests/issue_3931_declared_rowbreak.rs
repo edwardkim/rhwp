@@ -1,15 +1,14 @@
 //! Issue #3931 — native HWP5 RowBreak 표의 저장 높이와 셀 줄높이 회계.
 //!
-//! Stage 1은 동작을 바꾸지 않고 두 결함 서명을 고정한다.
+//! Stage 1은 동작을 바꾸지 않고 두 결함 서명을 고정했다.
 //! - section 10, paragraph 23의 6행 표에서 r4/c2는 저장 줄 16개(12+4)와
-//!   문단 사이 vpos reset을 갖지만, 현재 엔진은 표 전체를 새 쪽으로 이월한다.
-//! - 전체 HWP는 한컴 2020 PDF 383쪽보다 10쪽 많은 393쪽이다.
+//!   문단 사이 vpos reset을 갖는다.
+//! - #4763은 전체 HWP/HWPX를 한컴 2020 PDF와 같은 383쪽으로 맞췄다.
 //!
 //! Stage 2는 표 구조와 저장 pitch를 바꾸지 않은 채 pi=23의 12+4 소유권을,
-//! Stage 3은 pi=14의 declared 선이월을 물리 fragment 계약으로 전환한다. 383쪽은
-//! 여러 독립 누적 오차가 합쳐진 외부 오라클이므로 진단 ledger로 `ignore`한다.
-//! 따라서 전역 줄높이를 줄이거나 다른 표를 우연히 이동한 결과를 #3931 해결로
-//! 오인하지 않는다.
+//! Stage 3은 pi=14의 declared 선이월을 물리 fragment 계약으로 전환한다. 최신
+//! 회귀는 #4763의 383쪽 계약을 유지하면서 두 HWP 표 조각이 본문 하단 안에
+//! 머무는지를 함께 고정한다.
 
 use std::fs;
 use std::path::Path;
@@ -260,12 +259,12 @@ fn issue_3931_pi23_stored_reset_splits_across_adjacent_pages() {
 }
 
 #[test]
-fn issue_3931_stage2_records_hwp_page_count_after_pi23_fix() {
+fn issue_3931_keeps_pr4763_hwp_page_count_contract() {
     let document = HwpDocument::from_bytes(&read_fixture()).expect("paginate #3931 HWP fixture");
     assert_eq!(
         document.page_count(),
-        392,
-        "HWP after the pi23 fragment fix"
+        383,
+        "#3931 fragment containment must preserve the #4763 HWP page-count contract"
     );
 }
 
@@ -295,8 +294,8 @@ fn issue_3931_hwpx_keeps_existing_fragment_route() {
     let document = HwpDocument::from_bytes(&bytes).expect("paginate #3931 HWPX fixture");
     assert_eq!(
         document.page_count(),
-        386,
-        "current HWPX page-count ratchet"
+        383,
+        "#3931 fragment containment must preserve the #4763 HWPX page-count contract"
     );
     let (question_page, answer_page) = paragraph_text_pages(
         &document,
@@ -306,15 +305,7 @@ fn issue_3931_hwpx_keeps_existing_fragment_route() {
         PI14_HEAD_TEXT,
     );
     assert_eq!(
-        answer_page,
-        question_page + 1,
-        "HWPX already enters the fragment scanner; its remaining first-answer ownership drift is not declared whole-table deferral"
+        answer_page, question_page,
+        "#4763 keeps the HWPX question and first answer on the same physical page"
     );
-}
-
-#[test]
-#[ignore = "#3931 oracle ledger: independent residual pagination drift remains after pi14/pi23 ownership fixes"]
-fn issue_3931_hwp_matches_hancom_2020_page_count() {
-    let document = HwpDocument::from_bytes(&read_fixture()).expect("paginate #3931 HWP fixture");
-    assert_eq!(document.page_count(), 383);
 }

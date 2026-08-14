@@ -19857,6 +19857,12 @@ impl TypesetEngine {
                 mt.max_padding_for_row(r)
             };
             let mut budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
+            let native_hwp5_internal_reset_row_tail = st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && layout_engine.row_block_has_internal_hard_break(table, r, r + 1, styles);
             // A visible terminal response followed by a no-text/no-control row is
             // a two-part physical row: the spacer owns no ink, while the
             // response carries the stored page frame. A direct HWPX opening
@@ -19866,11 +19872,27 @@ impl TypesetEngine {
             // Stored vpos-frame resets are source-owned physical fragment boundaries.
             // First take the ordinary budget cut, then extend only to the end of
             // the recorded source frame when that exact CellUnit boundary is known.
-            let source_frame_tail_contract = terminal_response_before_empty_spacer
+            let mut res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
+            // A terminal paragraph tail must not cross the exact plain-text
+            // reset where the ordinary capacity cut already stopped.  A row
+            // may contain other `vpos=0` transitions for control-only
+            // paragraphs; those are local layout coordinates and keep the
+            // existing source-frame tail contract.
+            let ordinary_cut_ends_at_plain_text_saved_reset = st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && terminal_response_before_empty_spacer
+                && layout_engine.row_cut_ends_at_plain_text_saved_reset(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                );
+            let source_frame_tail_contract = (terminal_response_before_empty_spacer
+                && !ordinary_cut_ends_at_plain_text_saved_reset)
                 || terminal_source_frame
                 || continued_source_frame
                 || opening_source_frame;
-            let mut res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
             let mut uses_source_frame_tail = false;
             if (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout())
                 && !table.common.treat_as_char
@@ -20036,12 +20058,6 @@ impl TypesetEngine {
             // HWP5·비-TAC·RowBreak·같은 row의 stored reset·앞선 행이 이미 있는
             // 경우, 그리고 HWPX Q5의 saved-frame response tail에 한정해 #2439와
             // 같은 painted-height 판정을 사용한다.
-            let native_hwp5_internal_reset_row_tail = st.profile.native_hwp5_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && layout_engine.row_block_has_internal_hard_break(table, r, r + 1, styles);
             let row_split_min_keep_uses_painted_height = strict_painted_bottom_fit
                 || native_hwp5_internal_reset_row_tail
                 || uses_source_frame_tail
@@ -20120,7 +20136,7 @@ impl TypesetEngine {
                 let stored_frame_tail_overflow = if uses_source_frame_tail {
                     // `split_total` is the painted row footprint, whereas
                     // the source frame is selected in CellUnit content
-                    // space.  Admit exactly that selected frame's paint
+                    // space. Admit exactly that selected frame's paint
                     // overfill, never an unrelated fixed allowance.
                     (split_candidate_rows_height - avail_for_rows).max(0.0)
                 } else {
