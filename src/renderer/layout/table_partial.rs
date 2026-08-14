@@ -2820,15 +2820,15 @@ impl LayoutEngine {
                 crate::model::shape::VertRelTo::Para
             );
         let reclaim_previous_host_margin = if !is_continuation && start_cut.is_empty() {
-            native_multirow_internal_reset_rowbreak_anchor_advance_hu(
-                self.profile.get().native_hwp5_layout(),
-                paragraphs
-                    .get(para_index)
-                    .expect("partial table host paragraph"),
-                table,
-                paragraphs.get(para_index + 1),
-            )
-            .map(|advance| hwpunit_to_px(advance, self.dpi))
+            paragraphs.get(para_index).and_then(|host| {
+                native_multirow_internal_reset_rowbreak_anchor_advance_hu(
+                    self.profile.get().native_hwp5_layout(),
+                    host,
+                    table,
+                    paragraphs.get(para_index + 1),
+                )
+                .map(|advance| hwpunit_to_px(advance, self.dpi))
+            })
         } else {
             None
         };
