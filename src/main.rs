@@ -249,6 +249,30 @@ fn strip_global_auth_options(mut args: Vec<String>) -> Result<Vec<String>, i32> 
     Ok(args)
 }
 
+/// 쪽수와 IR 검증은 모두 수행하되, 종료 코드는 쪽수 실패를 우선한다.
+fn verification_exit_code(page_failed: bool, ir_failed: bool) -> i32 {
+    if page_failed {
+        4
+    } else if ir_failed {
+        3
+    } else {
+        EXIT_OK
+    }
+}
+
+#[cfg(test)]
+mod verification_exit_code_tests {
+    use super::verification_exit_code;
+
+    #[test]
+    fn page_failure_keeps_precedence_when_ir_also_fails() {
+        assert_eq!(verification_exit_code(false, false), 0);
+        assert_eq!(verification_exit_code(false, true), 3);
+        assert_eq!(verification_exit_code(true, false), 4);
+        assert_eq!(verification_exit_code(true, true), 4);
+    }
+}
+
 fn main() {
     let raw_args: Vec<String> = env::args().collect();
     if is_batch_invocation(&raw_args) && has_global_auth_option(&raw_args) {
@@ -13072,7 +13096,7 @@ fn convert_hwp(args: &[String]) -> i32 {
                             // 쪽수와 IR 은 서로 다른 결함을 재므로, 한쪽이 실패해도 다른
                             // 쪽을 마저 재고 함께 보고한다. 종료 코드는 종전대로 쪽수
                             // 실패를 우선한다(4) — 계약 무변경.
-                            exit_code = 4;
+                            exit_code = verification_exit_code(true, exit_code == 3);
                         } else {
                             if !json_mode {
                                 println!("검증 통과(--verify-pages): {}쪽", before);
@@ -13104,9 +13128,7 @@ fn convert_hwp(args: &[String]) -> i32 {
                             });
                             // [#3915] 쪽수 실패(4)가 이미 잡혔으면 그 코드를 유지한다 —
                             // 두 축이 함께 실패해도 종전 계약대로 4 로 끝난다.
-                            if exit_code == EXIT_OK {
-                                exit_code = 3;
-                            }
+                            exit_code = verification_exit_code(exit_code == 4, true);
                         } else {
                             if !json_mode {
                                 println!("검증 통과(--verify): IR 차이 없음");
@@ -13436,7 +13458,7 @@ fn export_hwpx(args: &[String]) -> i32 {
                             // 쪽수와 IR 은 서로 다른 결함을 재므로, 한쪽이 실패해도 다른
                             // 쪽을 마저 재고 함께 보고한다. 종료 코드는 종전대로 쪽수
                             // 실패를 우선한다(4) — 계약 무변경.
-                            exit_code = 4;
+                            exit_code = verification_exit_code(true, exit_code == 3);
                         } else {
                             if !json_mode {
                                 println!("검증 통과(--verify-pages): {}쪽", before);
@@ -13459,9 +13481,7 @@ fn export_hwpx(args: &[String]) -> i32 {
                             });
                             // [#3915] 쪽수 실패(4)가 이미 잡혔으면 그 코드를 유지한다 —
                             // 두 축이 함께 실패해도 종전 계약대로 4 로 끝난다.
-                            if exit_code == EXIT_OK {
-                                exit_code = 3;
-                            }
+                            exit_code = verification_exit_code(exit_code == 4, true);
                         } else {
                             if !json_mode {
                                 println!("검증 통과(--verify): IR 차이 없음");

@@ -2306,8 +2306,8 @@ pub(crate) use table_layout::border_style_has_diagonal;
 pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
-    extract_tab_leaders_with_extended, find_next_tab_stop, is_cjk_char, is_halfwidth_cjk_quote,
-    resolved_to_text_style, split_into_clusters, stale_split_hanyang_shinmyeongjo_space_width,
+    extract_tab_leaders_with_extended, find_next_tab_stop, hancom_regenerated_space_width,
+    is_cjk_char, is_halfwidth_cjk_quote, resolved_to_text_style, split_into_clusters,
 };
 // [Task #826] map_pua_bullet_char 는 통합 테스트 (tests/issue_826.rs) 에서 직접 검증
 // (PUA substitution 매핑 정합) — pub 노출.
@@ -7409,6 +7409,8 @@ impl LayoutEngine {
                                         para,
                                         Some(comp),
                                         styles,
+                                        styles.hwp3_variant
+                                            && self.endnote_para_source_for(*para_index).is_none(),
                                         col_area,
                                         y_offset,
                                         start_line,
@@ -7724,6 +7726,7 @@ impl LayoutEngine {
                         para,
                         comp.as_ref(),
                         styles,
+                        styles.hwp3_variant && self.endnote_para_source_for(*para_index).is_none(),
                         col_area,
                         pp_y_in,
                         *start_line,
@@ -9229,6 +9232,8 @@ impl LayoutEngine {
                                     para,
                                     Some(comp),
                                     styles,
+                                    styles.hwp3_variant
+                                        && self.endnote_para_source_for(para_index).is_none(),
                                     col_area,
                                     y_offset,
                                     start_line,
@@ -9773,6 +9778,8 @@ impl LayoutEngine {
                                     para,
                                     Some(comp),
                                     styles,
+                                    styles.hwp3_variant
+                                        && self.endnote_para_source_for(para_index).is_none(),
                                     col_area,
                                     y_offset,
                                     start_line,
@@ -9912,6 +9919,8 @@ impl LayoutEngine {
                                 para,
                                 Some(comp),
                                 styles,
+                                styles.hwp3_variant
+                                    && self.endnote_para_source_for(para_index).is_none(),
                                 col_area,
                                 y_offset,
                                 start_line,
@@ -11052,6 +11061,8 @@ impl LayoutEngine {
                             table_para,
                             Some(comp),
                             styles,
+                            styles.hwp3_variant
+                                && self.endnote_para_source_for(table_para_index).is_none(),
                             &wrap_area,
                             table_y_start,
                             start_line,
@@ -11168,6 +11179,7 @@ impl LayoutEngine {
                     para,
                     comp,
                     styles,
+                    styles.hwp3_variant && self.endnote_para_source_for(wp.para_index).is_none(),
                     &strip_area,
                     para_y,
                     start_line,

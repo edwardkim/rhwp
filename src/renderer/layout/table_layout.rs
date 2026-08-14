@@ -3536,8 +3536,18 @@ impl LayoutEngine {
             0.0
         };
         if target_height > 0.0 {
+            // `common.height` is the stored outer table height: it already
+            // contains the gaps between adjacent rows.  `row_heights`, on the
+            // other hand, is consumed together with `cell_spacing` when row_y
+            // is built.  Giving the full common height to the row sum adds the
+            // same gaps a second time, making every multi-row stored table
+            // taller by `(row_count - 1) * cell_spacing` at paint time.
+            let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
+            let target_row_sum = (target_height
+                - cell_spacing * row_heights.len().saturating_sub(1) as f64)
+                .max(0.0);
             let current: f64 = row_heights.iter().sum();
-            let residual = target_height - current;
+            let residual = target_row_sum - current;
             if residual > 0.5 {
                 if let Some(last) = row_heights.last_mut() {
                     *last += residual;
@@ -7168,7 +7178,7 @@ impl LayoutEngine {
             }
             // [#4069 Stage 2/Task #3820 Stage 48] 저장 프레임 경계는 문단 내부인지
             // 문단 사이인지와 무관하게 하나라도 부모 원장에 보존한다. 작은 로컬 reset은
-            // `is_hwp5_stored_frame_rewind`의 body-half 조건에서 이미 제외된다.
+            // `is_stored_frame_rewind`의 저장 frame 판정에서 이미 제외된다.
             // 42065 p10은 같은 문단 58620→0, p14는 item7→item8의 문단간
             // 32932→0 경계이며 둘 다 한컴 정본의 실제 쪽 경계다.
             if canonical_stored_frame_profile
@@ -7905,11 +7915,19 @@ impl LayoutEngine {
         let line_seg_is_synthetic = |seg: &crate::model::paragraph::LineSeg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         };
-        let is_hwp5_stored_frame_rewind = |prev: &crate::model::paragraph::LineSeg,
-                                           cur: &crate::model::paragraph::LineSeg|
+        let is_block_rowbreak_table = matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        ) && !table.common.treat_as_char;
+        let direct_hwpx_stored_frame_cell =
+            self.direct_hwpx_cell_has_declared_stored_frame(cell, table);
+        let is_stored_frame_rewind = |prev: &crate::model::paragraph::LineSeg,
+                                      cur: &crate::model::paragraph::LineSeg|
          -> bool {
             let profile = self.profile.get();
-            if (!profile.native_hwp5_layout() && !profile.hwp5_origin_hwpx())
+            if (!profile.native_hwp5_layout()
+                && !profile.hwp5_origin_hwpx()
+                && !direct_hwpx_stored_frame_cell)
                 || line_seg_is_synthetic(prev)
                 || line_seg_is_synthetic(cur)
             {
@@ -7918,6 +7936,12 @@ impl LayoutEngine {
             let prev_end = prev.vertical_pos + prev.line_height;
             if cur.vertical_pos < 0 || prev_end <= 0 || cur.vertical_pos >= prev_end {
                 return false;
+            }
+            if direct_hwpx_stored_frame_cell {
+                // 선언 object frame이 없는 synthetic 표의 vpos reset은 물리 쪽
+                // 경계를 증명하지 못한다. 실제 저장 표는 선언 높이가 있으므로
+                // 기존 direct HWPX frame 계약을 그대로 따른다.
+                return table.common.height > 0;
             }
             // HWPX 저장 lineseg의 reset은 중첩 셀 로컬 좌표계일 수 있다
             // (#3637). HWP5 저장 계약 안에서도 작은 내부 표의 로컬 reset
@@ -7931,10 +7955,6 @@ impl LayoutEngine {
             };
             hwpunit_to_px(prev_end, self.dpi) >= frame_floor
         };
-        let is_block_rowbreak_table = matches!(
-            table.page_break,
-            crate::model::table::TablePageBreak::RowBreak
-        ) && !table.common.treat_as_char;
         let has_visible_text_with_nested_table =
             self.table_has_visible_text_with_nested_table(table);
         // [Task #700] vpos 동기화 가드와 동일 — 한컴 정상 인코딩(첫 문단 vpos=0) 한정.
@@ -8276,7 +8296,7 @@ impl LayoutEngine {
                     {
                         next.line_segs
                             .first()
-                            .is_some_and(|cur| is_hwp5_stored_frame_rewind(prev, cur))
+                            .is_some_and(|cur| is_stored_frame_rewind(prev, cur))
                     }
                     _ => false,
                 }
@@ -8286,7 +8306,7 @@ impl LayoutEngine {
             let stored_frame_break_before_para = if pi > 0 && cell_has_local_vpos_origin {
                 let prev_para = &cell.paragraphs[pi - 1];
                 match (prev_para.line_segs.last(), p.line_segs.first()) {
-                    (Some(prev), Some(cur)) => is_hwp5_stored_frame_rewind(prev, cur),
+                    (Some(prev), Some(cur)) => is_stored_frame_rewind(prev, cur),
                     _ => false,
                 }
             } else {
@@ -8352,7 +8372,7 @@ impl LayoutEngine {
                 };
                 // 42065 p10의 같은 문단 58620→0HU도 위의 HWP5 저장 프레임
                 // 판정과 같은 계약을 사용한다.
-                is_hwp5_stored_frame_rewind(prev, cur)
+                is_stored_frame_rewind(prev, cur)
             };
             // [Task #993] 줄 높이는 렌더러(layout_composed_paragraph)와 동일하게
             // corrected_line_height 를 적용한다 — raw line_height 가 폰트보다
@@ -9374,6 +9394,39 @@ impl LayoutEngine {
         let units =
             Self::delay_empty_anchor_topandbottom_flow_units_before_hard_break(units, cell, table);
 
+        if let Ok(pattern) = std::env::var("RHWP_DIAG_CELL_UNITS") {
+            if cell
+                .paragraphs
+                .iter()
+                .any(|paragraph| paragraph.text.contains(&pattern))
+            {
+                eprintln!(
+                    "DIAG_CELL_UNITS profile={:?} rows={} cols={} cells={} break={:?} tac={} units={}",
+                    self.profile.get(),
+                    table.row_count,
+                    table.col_count,
+                    table.cells.len(),
+                    table.page_break,
+                    table.common.treat_as_char,
+                    units.len(),
+                );
+                for (unit_idx, unit) in units.iter().enumerate() {
+                    eprintln!(
+                        "  unit[{unit_idx}] h={:.2} para={} lines={}..{} hard={} stored={} gap={} empty={} topbottom={}",
+                        unit.height,
+                        unit.para_idx,
+                        unit.vis_start,
+                        unit.vis_end,
+                        unit.hard_break_before,
+                        unit.stored_frame_break_before,
+                        unit.vpos_gap_before,
+                        unit.empty_spacer,
+                        unit.top_and_bottom_flow,
+                    );
+                }
+            }
+        }
+
         let _ = (pad_top, pad_bottom); // [Task #1022] cell.height 필러 제거 — row_cut_content_height 가 셀별 max(cell.height, content+pad) 로 행 단계에서 정합.
         units
     }
@@ -9526,6 +9579,25 @@ impl LayoutEngine {
         }
     }
 
+    /// RowBreak fragment의 마지막 가시 unit을, 뒤의 구조적 spacer와 함께 현재 조각에
+    /// 남길 수 있는지 판정한다. 고정 px 상한 대신 해당 unit의 실제 높이만큼만 overfill을
+    /// 허용하므로, 이미 넘친 fragment나 다중 본문 line을 추가로 끌어올리지 않는다.
+    fn visible_tail_fits_before_spacer(
+        units: &[CellUnit],
+        j: usize,
+        consumed_height: f64,
+        avail_height: f64,
+    ) -> bool {
+        let Some(tail) = units.get(j) else {
+            return false;
+        };
+        if tail.empty_spacer || tail.vis_start >= tail.vis_end || consumed_height > avail_height {
+            return false;
+        }
+        let overflow = (consumed_height + tail.height - avail_height).max(0.0);
+        overflow <= tail.height && Self::grace_visible_tail_before_spacer(units, j)
+    }
+
     /// [#1921] 예산 정지 유닛 `j` 부터 다음 저장 hard-break 유닛까지의 잔여 높이가
     /// 소량(오버플로 한도 48px)이면 `(흡수 후 높이, hard-break 유닛 인덱스)` 를 반환한다.
     ///
@@ -9545,6 +9617,30 @@ impl LayoutEngine {
                 return Some((h + extra, k));
             }
             extra += u.height;
+            if h + extra > avail_height + SLIVER_ABSORB_OVERFLOW_TOLERANCE_PX {
+                return None;
+            }
+        }
+        None
+    }
+
+    /// `absorb_tail_before_stored_hard_break`의 더 좁은 변형이다. 일반
+    /// hard-break가 아니라 원본 LINE_SEG가 기록한 frame 경계에만 도달한다.
+    /// RowBreak의 일반 capacity cut에서 이 tail을 남기면 그 tail만 든 물리
+    /// 페이지가 생기므로, 동일한 sliver 정책을 direct row-cut에도 쓴다.
+    fn absorb_tail_before_stored_frame_break(
+        units: &[CellUnit],
+        j: usize,
+        h: f64,
+        avail_height: f64,
+    ) -> Option<(f64, usize)> {
+        const SLIVER_ABSORB_OVERFLOW_TOLERANCE_PX: f64 = 48.0;
+        let mut extra = 0.0f64;
+        for (k, unit) in units.iter().enumerate().skip(j) {
+            if k > j && unit.stored_frame_break_before {
+                return Some((h + extra, k));
+            }
+            extra += unit.height;
             if h + extra > avail_height + SLIVER_ABSORB_OVERFLOW_TOLERANCE_PX {
                 return None;
             }
@@ -9802,6 +9898,411 @@ impl LayoutEngine {
         result
     }
 
+    /// Return the complete source-owned frame beginning at `start_cut` when it
+    /// ends at an explicit stored vpos-frame reset.  Unlike a numeric overflow
+    /// allowance, this exposes the exact CellUnit boundary that the source
+    /// recorded for the current physical fragment.
+    pub(crate) fn stored_frame_cut_for_row(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<RowCutResult> {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|cell| cell.col);
+        if row_cells.is_empty() {
+            return None;
+        }
+
+        // Do not use `advance_row_cut(f64::MAX)` here.  Its normal orphan
+        // protection may intentionally rewind a unit *before* the stored
+        // boundary, which is correct for a capacity cut but not when asking
+        // for the source frame itself.
+        let frame_height = row_cells
+            .iter()
+            .enumerate()
+            .filter_map(|(cell_idx, cell)| {
+                let units = self.cell_units(cell, table, styles);
+                let start = start_cut
+                    .get(cell_idx)
+                    .copied()
+                    .unwrap_or(0)
+                    .min(units.len());
+                units
+                    .iter()
+                    .enumerate()
+                    .skip(start + 1)
+                    .find(|(_, unit)| unit.stored_frame_break_before)
+                    .map(|(end, _)| {
+                        units[start..end]
+                            .iter()
+                            .map(|unit| unit.height)
+                            .sum::<f64>()
+                    })
+            })
+            .filter(|height| *height > 0.5)
+            .reduce(f64::min)?;
+
+        let mut end_cut = Vec::with_capacity(row_cells.len());
+        let mut consumed_height = 0.0f64;
+        let mut fully_consumed = true;
+        for (cell_idx, cell) in row_cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(0)
+                .min(units.len());
+            let mut end = start;
+            let mut height = 0.0f64;
+            while end < units.len()
+                && !units[end].stored_frame_break_before
+                && (height <= 0.5 || height + units[end].height <= frame_height + 0.5)
+            {
+                height += units[end].height;
+                end += 1;
+            }
+            fully_consumed &= end == units.len();
+            consumed_height = consumed_height.max(height);
+            end_cut.push(end);
+        }
+
+        (!fully_consumed && consumed_height > 0.5).then_some(RowCutResult {
+            end_cut,
+            hit_hard_break: true,
+            fully_consumed,
+            consumed_height,
+        })
+    }
+
+    /// Extend an existing row cut to the end of the omitted source paragraph.
+    ///
+    /// This is deliberately narrower than a row-height allowance: it only
+    /// consumes the visible paragraph already selected by the normal cut and
+    /// never crosses a stored frame reset.  Callers use it for a terminal
+    /// response followed by a source-empty spacer, where moving a short
+    /// paragraph suffix alone would otherwise create a tail-only fragment.
+    pub(crate) fn paragraph_tail_cut_for_row(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        base_end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<RowCutResult> {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|cell| cell.col);
+        if row_cells.is_empty() {
+            return None;
+        }
+
+        let mut end_cut = Vec::with_capacity(row_cells.len());
+        let mut consumed_height = 0.0f64;
+        let mut fully_consumed = true;
+        let mut extended = false;
+        for (cell_idx, cell) in row_cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(0)
+                .min(units.len());
+            let mut end = base_end_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(start)
+                .clamp(start, units.len());
+            if let Some(first_omitted) = units.get(end) {
+                if !first_omitted.empty_spacer
+                    && first_omitted.vis_start < first_omitted.vis_end
+                    && !first_omitted.stored_frame_break_before
+                {
+                    let para_idx = first_omitted.para_idx;
+                    while let Some(unit) = units.get(end) {
+                        if unit.para_idx != para_idx || unit.stored_frame_break_before {
+                            break;
+                        }
+                        end += 1;
+                    }
+                    extended |= end > base_end_cut.get(cell_idx).copied().unwrap_or(start);
+                }
+            }
+            fully_consumed &= end == units.len();
+            consumed_height =
+                consumed_height.max(units[start..end].iter().map(|unit| unit.height).sum());
+            end_cut.push(end);
+        }
+
+        extended.then_some(RowCutResult {
+            end_cut,
+            hit_hard_break: false,
+            fully_consumed,
+            consumed_height,
+        })
+    }
+
+    /// Extend a row cut by exactly the next visible source unit in the cell
+    /// that owns a stored frame reset, or in a single-cell continuation.
+    ///
+    /// This is narrower than `paragraph_tail_cut_for_row`: a stored frame can
+    /// own one response line without owning the remainder of that paragraph.
+    /// The returned height is therefore the measured line unit, not a
+    /// fixture-specific pixel allowance.
+    pub(crate) fn next_visible_unit_cut_for_row(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        base_end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<RowCutResult> {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|cell| cell.col);
+        if row_cells.is_empty() {
+            return None;
+        }
+        let single_cell_row = row_cells.len() == 1;
+
+        let mut end_cut = Vec::with_capacity(row_cells.len());
+        let mut consumed_height = 0.0f64;
+        let mut fully_consumed = true;
+        let mut extended = false;
+        for (cell_idx, cell) in row_cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(0)
+                .min(units.len());
+            let mut end = base_end_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(start)
+                .clamp(start, units.len());
+            let owns_stored_frame_reset = cell.paragraphs.iter().any(|paragraph| {
+                paragraph
+                    .line_segs
+                    .iter()
+                    .skip(1)
+                    .any(|segment| segment.vertical_pos == 0)
+            });
+            if let Some(first_omitted) = units.get(end) {
+                if (owns_stored_frame_reset || single_cell_row)
+                    && !first_omitted.empty_spacer
+                    && first_omitted.vis_start < first_omitted.vis_end
+                    && !first_omitted.stored_frame_break_before
+                {
+                    end += 1;
+                    extended = true;
+                }
+            }
+            fully_consumed &= end == units.len();
+            consumed_height =
+                consumed_height.max(units[start..end].iter().map(|unit| unit.height).sum());
+            end_cut.push(end);
+        }
+
+        extended.then_some(RowCutResult {
+            end_cut,
+            hit_hard_break: false,
+            fully_consumed,
+            consumed_height,
+        })
+    }
+
+    /// Return whether a physical table row contains only source-empty spacer
+    /// units.  Text/control inspection alone is insufficient here: imported
+    /// HWPX may retain structural controls in a row that has no line or atom
+    /// to paint.
+    pub(crate) fn row_has_only_empty_spacer_units(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let mut row_cells = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .peekable();
+        row_cells.peek().is_some()
+            && row_cells.all(|cell| {
+                self.cell_units(cell, table, styles)
+                    .iter()
+                    .all(|unit| unit.empty_spacer)
+            })
+    }
+
+    /// Return whether exactly one physical-row cell owns visible source
+    /// content.  Direct HWPX RowBreak tables use the opposite empty cell as a
+    /// structural band; a stored frame rewind in the sole visible cell must
+    /// therefore not be erased by the whole-row fast path.
+    pub(crate) fn row_has_single_visible_source_cell(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .filter(|cell| {
+                self.cell_units(cell, table, styles)
+                    .iter()
+                    .any(|unit| !unit.empty_spacer && unit.vis_start < unit.vis_end)
+            })
+            .count()
+            == 1
+    }
+
+    /// Direct HWPX RowBreak cell의 reset이 선언된 cell box 안에서 source frame을
+    /// 완결하는지 판별한다. reset 뒤의 저장 lineSeg가 선언 높이를 계속 넘으면
+    /// writer-local cursor일 뿐, 물리 fragment owner가 아니다.
+    fn direct_hwpx_cell_has_declared_stored_frame(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+    ) -> bool {
+        let profile = self.profile.get();
+        if !profile.hwpx_stored_layout()
+            || profile.hwp5_origin_hwpx()
+            || table.common.treat_as_char
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            || cell.height >= 0x8000_0000
+            || cell.paragraphs.iter().any(|paragraph| {
+                paragraph
+                    .controls
+                    .iter()
+                    .any(|control| matches!(control, Control::Table(_)))
+            })
+        {
+            return false;
+        }
+
+        let mut reset_count = 0usize;
+        let mut previous_frame_end: Option<i32> = None;
+        let mut preceding_frame_end = 0i32;
+        let mut trailing_frame_end = 0i32;
+        for paragraph in &cell.paragraphs {
+            for seg in paragraph.line_segs.iter().filter(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            }) {
+                let frame_end = seg.vertical_pos.saturating_add(seg.line_height);
+                if previous_frame_end
+                    .is_some_and(|previous_end| previous_end > 0 && seg.vertical_pos <= 0)
+                {
+                    reset_count += 1;
+                    preceding_frame_end =
+                        preceding_frame_end.max(previous_frame_end.unwrap_or_default());
+                    trailing_frame_end = 0;
+                }
+                if reset_count > 0 {
+                    trailing_frame_end = trailing_frame_end.max(frame_end);
+                }
+                previous_frame_end = Some(frame_end);
+            }
+        }
+
+        reset_count >= 2
+            || (reset_count == 1 && {
+                let source_frame_span = preceding_frame_end.saturating_add(trailing_frame_end);
+                let declared_height = cell.height as i32;
+                source_frame_span >= declared_height.saturating_mul(4) / 5
+                    && source_frame_span <= declared_height
+            })
+    }
+
+    /// Return whether a row records an in-paragraph return from a positive
+    /// stored vertical position to the top of a new physical frame.  This is
+    /// source pagination data, not a measured-height heuristic.
+    pub(crate) fn row_has_stored_vpos_frame_rewind(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+    ) -> bool {
+        let profile = self.profile.get();
+        // Direct HWPX의 physical frame reset은 문단 내부뿐 아니라 문단 사이에도
+        // 저장된다. 이 profile에서는 raw in-paragraph window를 다시 검사하지 않고,
+        // 선언 cell 안에서 source frame이 완결되는 동일 predicate를 사용한다.
+        // 따라서 writer-local single reset은 Stage 227 수용성 검사에서 계속 제외된다.
+        if profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx() {
+            return table
+                .cells
+                .iter()
+                .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+                .any(|cell| self.direct_hwpx_cell_has_declared_stored_frame(cell, table));
+        }
+
+        let has_raw_rewind = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .flat_map(|cell| &cell.paragraphs)
+            .any(|paragraph| {
+                paragraph
+                    .line_segs
+                    .windows(2)
+                    .any(|lines| lines[0].vertical_pos > 0 && lines[1].vertical_pos == 0)
+            });
+        if !has_raw_rewind {
+            return false;
+        }
+
+        has_raw_rewind
+    }
+
+    /// Return the painted height of a response cell whose stored source frame
+    /// consists of exactly two lines.  This includes the cell's resolved
+    /// vertical padding, so callers can compare it directly with a row-cut
+    /// content budget without a document-specific pixel allowance.
+    pub(crate) fn row_two_line_source_frame_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .filter(|cell| {
+                cell.paragraphs.iter().any(|paragraph| {
+                    paragraph.line_segs.len() == 2
+                        && paragraph.line_segs[0].vertical_pos == 0
+                        && paragraph.line_segs[1].vertical_pos > 0
+                })
+            })
+            .map(|cell| {
+                let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
+                let visible_units_height: f64 = self
+                    .cell_units(cell, table, styles)
+                    .iter()
+                    .filter(|unit| !unit.empty_spacer && unit.vis_start < unit.vis_end)
+                    .map(|unit| unit.height)
+                    .sum();
+                visible_units_height + pad_top + pad_bottom
+            })
+            .filter(|height| *height > 0.5)
+            .reduce(f64::max)
+    }
+
     fn advance_row_cut_inner(
         &self,
         table: &crate::model::table::Table,
@@ -9822,7 +10323,6 @@ impl LayoutEngine {
         let mut fully_consumed = true;
         let mut consumed_height = 0.0f64;
         const HARD_BREAK_REMAINING_TOLERANCE_PX: f64 = 32.0;
-        const ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX: f64 = 120.0;
         let row_has_top_and_bottom_flow = row_cells
             .iter()
             .any(|cell| self.cell_has_top_and_bottom_non_inline_flow(cell));
@@ -9935,17 +10435,39 @@ impl LayoutEngine {
                     && !u.empty_spacer
                     && h + u.height <= avail_height
                     && avail_height - h > HARD_BREAK_REMAINING_TOLERANCE_PX;
-                // [#4069 Stage 2/3] 재귀 투영된 자식 표의 문단 내부 저장 프레임
-                // 경계(p10), 그리고 1×1 자식 표 host 직후의 저장 프레임 경계(p15)는
-                // relaxed/absorb 규칙으로 넘지 않는다. 그 밖의 문단 사이 hard break의
-                // orphan/sliver 완화와 직접 표 셀의 기존 적응은 유지한다.
+                // HWPX 저장 reset은 문단 내부에서 양수 vpos가 0으로 되감기고,
+                // 그 행의 유일한 가시 source cell이 그 reset을 소유할 때만 물리
+                // 조각 경계 권한을 갖는다. 여러 가시 셀 중 하나의 reset은 셀 로컬
+                // cursor이므로 행 전체를 앞당겨 자르지 않고 일반 capacity cut에
+                // 맡긴다. 한 셀에 저장 reset이 여러 개인 continuation stream은
+                // 기존처럼 mid-page absorb 판정이 행과 잔여 공간을 함께 검증한다.
                 let follows_single_cell_nested_host = u
                     .para_idx
                     .checked_sub(1)
                     .and_then(|para_idx| cell.paragraphs.get(para_idx))
                     .is_some_and(Self::paragraph_hosts_single_cell_nested_table);
+                let hwpx_local_reset_stream = self.profile.get().hwpx_stored_layout()
+                    && !table.common.treat_as_char
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+                    && table.row_count == 1
+                    && table.col_count == 1
+                    && row_cells.len() == 1
+                    && start > 0
+                    && units
+                        .iter()
+                        .filter(|unit| unit.stored_frame_break_before)
+                        .nth(1)
+                        .is_some();
                 let strict_saved_frame_break = u.stored_frame_break_before
-                    && (u.mixed_nested_recursive || follows_single_cell_nested_host);
+                    && (u.mixed_nested_recursive
+                        || follows_single_cell_nested_host
+                        || (self.profile.get().hwpx_stored_layout()
+                            && self.row_has_stored_vpos_frame_rewind(table, row)
+                            && self.row_has_single_visible_source_cell(table, row, styles)
+                            && !hwpx_local_reset_stream));
                 if j > start
                     && u.hard_break_before
                     && (strict_saved_frame_break
@@ -9985,12 +10507,22 @@ impl LayoutEngine {
                     break;
                 }
                 if j > start && h + u.height > avail_height {
+                    // source frame tail은 원본 LINE_SEG가 직접 소유한다. 셀 텍스트
+                    // 편집 뒤에는 reflow suffix가 같은 tag/metrics를 계승할 수 있어
+                    // line segment만으로는 원본과 구별되지 않는다. 편집 관문이 남긴
+                    // provenance가 있을 때는 일반 capacity cut으로 새 줄을 분할한다.
+                    if self.profile.get().native_hwp5_layout() && !table.text_reflowed_after_edit {
+                        if let Some((absorbed_h, absorbed_j)) =
+                            Self::absorb_tail_before_stored_frame_break(&units, j, h, avail_height)
+                        {
+                            h = absorbed_h;
+                            j = absorbed_j;
+                            hit_hard_break = true;
+                            break;
+                        }
+                    }
                     let visible_tail_before_spacer = relaxed_hard_break
-                        && !u.empty_spacer
-                        && u.vis_start < u.vis_end
-                        && h + u.height
-                            <= avail_height + ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX
-                        && Self::grace_visible_tail_before_spacer(&units, j);
+                        && Self::visible_tail_fits_before_spacer(&units, j, h, avail_height);
                     if visible_tail_before_spacer {
                         h += u.height;
                         j += 1;
@@ -10105,7 +10637,6 @@ impl LayoutEngine {
         let mut fully_consumed = true;
         let mut consumed_height = 0.0f64;
         const HARD_BREAK_REMAINING_TOLERANCE_PX: f64 = 32.0;
-        const ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX: f64 = 120.0;
         let block_has_top_and_bottom_flow = cells
             .iter()
             .any(|cell| self.cell_has_top_and_bottom_non_inline_flow(cell));
@@ -10142,13 +10673,7 @@ impl LayoutEngine {
                     j = units.len();
                     break;
                 }
-                let follows_single_cell_nested_host = u
-                    .para_idx
-                    .checked_sub(1)
-                    .and_then(|para_idx| cell.paragraphs.get(para_idx))
-                    .is_some_and(Self::paragraph_hosts_single_cell_nested_table);
-                let strict_saved_frame_break = u.stored_frame_break_before
-                    && (u.mixed_nested_recursive || follows_single_cell_nested_host);
+                let strict_saved_frame_break = u.stored_frame_break_before;
                 if j > start
                     && u.hard_break_before
                     && (strict_saved_frame_break
@@ -10185,11 +10710,7 @@ impl LayoutEngine {
                 }
                 if j > start && h + u.height > avail_height {
                     let visible_tail_before_spacer = relaxed_hard_break
-                        && !u.empty_spacer
-                        && u.vis_start < u.vis_end
-                        && h + u.height
-                            <= avail_height + ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX
-                        && Self::grace_visible_tail_before_spacer(&units, j);
+                        && Self::visible_tail_fits_before_spacer(&units, j, h, avail_height);
                     if visible_tail_before_spacer {
                         h += u.height;
                         j += 1;

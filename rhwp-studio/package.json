@@ -33,6 +33,7 @@
     "e2e:issue-4430-content-loss": "node e2e/content-loss-save-issue4430.test.mjs --mode=headless",
     "e2e:issue-2214": "node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless",
     "e2e:issue-3815": "node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --continuous-only",
+    "e2e:issue-3820": "node e2e/issue-3820-hwp-hwpx-page-count.test.mjs --mode=headless",
     "e2e:issue-3137-perf": "node e2e/probe-input-perf-issue3137.mjs --mode=headless",
     "e2e:issue-4031-cell-enter": "node e2e/cell-enter-pagination-issue4031.test.mjs --mode=headless",
     "e2e:issue-2809": "node e2e/issue-2809-split-alignment.test.mjs --mode=headless",

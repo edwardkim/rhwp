@@ -71,6 +71,10 @@ pub struct Table {
     /// 구조/내용 변경 시 true → 재측정 필요 (Default: false)
     #[doc(hidden)]
     pub dirty: bool,
+    /// 셀 텍스트 편집으로 line segment를 다시 계산했는지 나타내는 런타임 provenance.
+    /// 저장된 source frame과 reflow suffix를 구분하는 pagination 전용 상태다.
+    #[doc(hidden)]
+    pub text_reflowed_after_edit: bool,
     /// Studio 보상 resize로 행별 독립 가로 경계를 보존해야 하는 행.
     #[doc(hidden)]
     pub local_resize_rows: Vec<u16>,

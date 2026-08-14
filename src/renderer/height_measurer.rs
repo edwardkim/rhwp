@@ -659,16 +659,22 @@ impl HeightMeasurer {
                     );
                     Some(cloned)
                 } else if inner > 0.0
-                    && crate::renderer::composer::masked_stored_lines_stale(c, para, inner, styles)
+                    && crate::renderer::composer::stored_body_lines_stale(
+                        c,
+                        para,
+                        inner,
+                        styles,
+                        styles.hwp3_variant,
+                    )
                 {
-                    // [#2279] 마스킹 저장분할 stale(실폭-과잉/줄수-과소) 본문 문단
-                    // fresh 재래핑 — typeset/paragraph_layout(렌더)와 동일.
+                    // stale 저장분할 본문 문단을 fresh 재래핑한다.
                     let mut cloned = c.clone();
-                    crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
+                    crate::renderer::composer::recompose_stale_body_lines(
                         &mut cloned,
                         para,
                         inner,
                         styles,
+                        styles.hwp3_variant,
                     );
                     Some(cloned)
                 } else {

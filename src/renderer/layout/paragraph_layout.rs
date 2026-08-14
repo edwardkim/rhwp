@@ -2106,6 +2106,7 @@ impl LayoutEngine {
             para,
             composed,
             styles,
+            styles.hwp3_variant && self.endnote_para_source_for(para_index).is_none(),
             col_area,
             y_start,
             0,
@@ -2126,6 +2127,7 @@ impl LayoutEngine {
         para: &Paragraph,
         composed: Option<&ComposedParagraph>,
         styles: &ResolvedStyleSet,
+        hwp3_body_reflow: bool,
         col_area: &LayoutRect,
         y_start: f64,
         start_line: usize,
@@ -2158,21 +2160,22 @@ impl LayoutEngine {
                     );
                     Some(cloned)
                 } else if column_inner_width > 0.0
-                    && crate::renderer::composer::masked_stored_lines_stale(
+                    && crate::renderer::composer::stored_body_lines_stale(
                         comp,
                         para,
                         column_inner_width,
                         styles,
+                        hwp3_body_reflow,
                     )
                 {
-                    // [#2279] 마스킹 저장분할 stale(실폭-과잉/줄수-과소) 본문 문단
-                    // fresh 재래핑 — typeset(format_paragraph)과 동일.
+                    // stale 저장분할 본문 문단을 fresh 재래핑한다.
                     let mut cloned = comp.clone();
-                    crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
+                    crate::renderer::composer::recompose_stale_body_lines(
                         &mut cloned,
                         para,
                         column_inner_width,
                         styles,
+                        hwp3_body_reflow,
                     );
                     Some(cloned)
                 } else {

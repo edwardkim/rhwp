@@ -1234,19 +1234,16 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
     total // round 없이 반환
 }
 
-/// 셀 분할 뒤 stale LineSeg를 다시 만들 때만 쓰는 한컴 12pt 공백 폭.
+/// 한컴이 폭 변경 뒤 LINE_SEG를 다시 만들 때 쓰는 공백 advance.
 ///
-/// 원본 HWP의 저장 LineSeg 재현에는 `한양신명조` 411/1024em 보정이 맞지만, 한컴 2020은
-/// 폭이 줄어든 셀을 다시 저장하면서 같은 12pt 공백을 일반 반각(512/1024em)으로 계산한다.
-/// 이 규칙을 전역 측정에 넣으면 원본 issue1949의 외부 PDF 115쪽이 116쪽으로 바뀐다.
-/// 따라서 `reflow_line_segs_after_cell_split`의 토큰화만 opt-in한다.
-pub(crate) fn stale_split_hanyang_shinmyeongjo_space_width(style: &TextStyle) -> Option<f64> {
-    let primary_name = style.font_family.split(',').next().unwrap_or("").trim();
+/// 저장본은 글꼴 고유 공백 폭을 보존할 수 있지만, 한컴의 새 재조판은 반각 공백을
+/// 사용한다. 이 규칙을 전역 측정에 넣으면 원본 저장 LINE_SEG의 정합이 깨지므로,
+/// stale cell 복구나 LINE_SEG 부재 재조판처럼 새 줄을 만드는 경로만 opt-in한다.
+///
+/// 저장 metric과 재조판 metric이 같은 style에는 `None`을 반환해 별도 보정이 없도록
+/// 한다. 따라서 글꼴명이나 고정 글자 크기에 의존하지 않는다.
+pub(crate) fn hancom_regenerated_space_width(style: &TextStyle) -> Option<f64> {
     let (font_size, ratio, _) = style_params(style);
-    if primary_name != "한양신명조" || (font_size - 16.0).abs() > 0.01 {
-        return None;
-    }
-
     let base_w = font_size * 0.5;
     let mut width = base_w * ratio
         + glyph_letter_spacing(style.letter_spacing, base_w * ratio, font_size)
@@ -1255,7 +1252,8 @@ pub(crate) fn stale_split_hanyang_shinmyeongjo_space_width(style: &TextStyle) ->
     if style.letter_spacing + style.extra_char_spacing < 0.0 {
         width = width.max(base_w * ratio * 0.5);
     }
-    Some(width)
+    let stored_width = estimate_text_width_unrounded(" ", style);
+    (width > stored_width + f64::EPSILON).then_some(width)
 }
 
 /// 글자별 X 위치 경계값 계산
@@ -1867,8 +1865,7 @@ mod tests {
             ..Default::default()
         };
         assert!(
-            (stale_split_hanyang_shinmyeongjo_space_width(&stale_split_style)
-                .expect("split 12pt space")
+            (hancom_regenerated_space_width(&stale_split_style).expect("split 12pt space")
                 - standard_body_fs * 0.5)
                 .abs()
                 < f64::EPSILON,

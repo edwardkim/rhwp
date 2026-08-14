@@ -8,8 +8,8 @@ use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph};
 use crate::model::style::LineSpacingType;
 use crate::renderer::layout::{
-    estimate_text_width, estimate_text_width_unrounded, is_cjk_char, resolved_to_text_style,
-    stale_split_hanyang_shinmyeongjo_space_width,
+    estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
+    is_cjk_char, resolved_to_text_style,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, RowSegment};
 use crate::renderer::px_to_hwpunit;
@@ -203,7 +203,7 @@ pub(crate) fn tokenize_paragraph(
     english_break_unit: u8,
     korean_break_unit: u8,
 ) -> Vec<BreakToken> {
-    tokenize_paragraph_with_split_cell_space_metric(
+    tokenize_paragraph_with_regenerated_space_metric(
         text_chars,
         char_offsets,
         char_shapes,
@@ -215,16 +215,16 @@ pub(crate) fn tokenize_paragraph(
     )
 }
 
-/// `split_stale_cell_reflow`는 한컴이 폭 변경 뒤 다시 저장하는 12pt 한양신명조
-/// 공백 규칙을 쓴다. 일반 HWP/HWPX tokenization은 저장 LineSeg 호환성을 위해 끈다.
-fn tokenize_paragraph_with_split_cell_space_metric(
+/// `regenerated_line_space_metric`은 한컴이 폭 변경 뒤 다시 저장하는 공백 규칙을
+/// 쓴다. 일반 HWP/HWPX tokenization은 저장 LINE_SEG 호환성을 위해 끈다.
+fn tokenize_paragraph_with_regenerated_space_metric(
     text_chars: &[char],
     char_offsets: &[u32],
     char_shapes: &[CharShapeRef],
     styles: &ResolvedStyleSet,
     english_break_unit: u8,
     korean_break_unit: u8,
-    split_stale_cell_reflow: bool,
+    regenerated_line_space_metric: bool,
     inline_controls: &[FlowInlineControl],
 ) -> Vec<BreakToken> {
     let text_len = text_chars.len();
@@ -282,8 +282,8 @@ fn tokenize_paragraph_with_split_cell_space_metric(
             } else {
                 12.0
             };
-            let w = if split_stale_cell_reflow {
-                stale_split_hanyang_shinmyeongjo_space_width(&ts)
+            let w = if regenerated_line_space_metric {
+                hancom_regenerated_space_width(&ts)
                     .unwrap_or_else(|| estimate_text_width_unrounded(" ", &ts))
             } else {
                 estimate_text_width_unrounded(" ", &ts)
@@ -1874,7 +1874,7 @@ pub(crate) fn layout_paragraph_in_frame(
     // `FlowInlineControl` path. A non-TAC Picture deliberately contributes no
     // inline token: it is represented by the caller's exclusion instead.
     let inline_controls = flow_inline_controls(para);
-    let tokens = tokenize_paragraph_with_split_cell_space_metric(
+    let tokens = tokenize_paragraph_with_regenerated_space_metric(
         &text_chars,
         &para.char_offsets,
         &para.char_shapes,
@@ -2409,7 +2409,7 @@ fn reflow_line_segs_impl(
     let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
 
     // 토큰화 → 줄 채움 → LineSeg 생성
-    let tokens = tokenize_paragraph_with_split_cell_space_metric(
+    let tokens = tokenize_paragraph_with_regenerated_space_metric(
         &text_chars,
         &para.char_offsets,
         &para.char_shapes,
@@ -3125,7 +3125,7 @@ mod frame_reflow_tests {
             .map(|value| value.line_spacing_type)
             .unwrap_or(LineSpacingType::Percent);
         let line_spacing_value = style.map(|value| value.line_spacing).unwrap_or(160.0);
-        let tokens = tokenize_paragraph_with_split_cell_space_metric(
+        let tokens = tokenize_paragraph_with_regenerated_space_metric(
             &text_chars,
             &para.char_offsets,
             &para.char_shapes,
