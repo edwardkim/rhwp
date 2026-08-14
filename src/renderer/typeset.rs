@@ -19214,6 +19214,76 @@ impl TypesetEngine {
                         genuinely_page_larger
                     );
                 }
+                // RowBreak rowspan block의 선언 높이가 현재 body band를 넘더라도,
+                // 실제 저장 line으로 만든 block content가 그 band 안에서 완결될 수
+                // 있다. 이때 넘치는 부분은 cell의 의도된 내용이 아니라 선언된
+                // 아래 blank 영역이다. 그 blank가 별도 physical page를 소유하면
+                // 1741000처럼 짧은 tail page가 생긴다.
+                //
+                // source line이 없는 fresh reflow, nested/control block, cell 내부
+                // hard break는 이 계약에 포함하지 않는다. 그런 형상은 선언 높이가
+                // 실제 content frame을 대표하지 않을 수 있으므로 기존 split/이월
+                // 경로가 계속 소유한다.
+                let block_has_rowspan = table.cells.iter().any(|cell| {
+                    let cell_start = cell.row as usize;
+                    let cell_end = cell_start + cell.row_span as usize;
+                    cell.row_span > 1 && cell_start < b_end && cell_end > b_start
+                });
+                let source_complete_rowspan_block = block_has_rowspan
+                    && mt.allows_row_break_split()
+                    && r > cursor_row
+                    && blk_start_cut.is_empty()
+                    && !rowbreak_use_row_offsets
+                    && res.fully_consumed
+                    && !res.hit_hard_break
+                    && table
+                        .cells
+                        .iter()
+                        .filter(|cell| {
+                            let cell_start = cell.row as usize;
+                            let cell_end = cell_start + cell.row_span as usize;
+                            cell_start < b_end && cell_end > b_start
+                        })
+                        .all(|cell| {
+                            cell.paragraphs.iter().all(|paragraph| {
+                                paragraph.controls.is_empty()
+                                    && (!para_has_visible_text(paragraph)
+                                        || paragraph
+                                            .line_segs
+                                            .iter()
+                                            .any(|seg| !is_synthetic_line_seg(seg)))
+                            })
+                        });
+                if source_complete_rowspan_block {
+                    let remaining_band = budget;
+                    let source_content_height = layout_engine.row_block_content_height(
+                        table,
+                        b_start,
+                        b_end,
+                        &[],
+                        &[],
+                        styles,
+                    );
+                    let before_last_row = (b_start..b_end.saturating_sub(1))
+                        .map(|row| cut_row_h[row])
+                        .sum::<f64>()
+                        + cs * b_end.saturating_sub(b_start + 1) as f64;
+                    let last_row_band = remaining_band - before_last_row;
+                    if source_content_height > 0.0
+                        && source_content_height <= remaining_band
+                        && last_row_band > 0.0
+                        && last_row_band <= cut_row_h[b_end - 1]
+                    {
+                        // 마지막 행만 남은 body band까지 줄인다. preceding rowspan
+                        // row와 spacing은 그대로 두어 renderer의 row geometry와
+                        // scanner의 physical fragment height가 같은 좌표계를 쓴다.
+                        consumed += cs_before + remaining_band;
+                        r = b_end;
+                        end_row = r;
+                        end_row_height_override = Some(last_row_band);
+                        continue;
+                    }
+                }
                 let allow_block_split = if rowbreak_rowspan_block {
                     r == cursor_row
                         || (res.hit_hard_break && res.consumed_height >= MIN_TOP_KEEP_PX)
