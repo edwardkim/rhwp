@@ -20109,9 +20109,11 @@ impl TypesetEngine {
                     && source_first_fragment_overflow_allowance > 0.0
                     && source_first_fragment_row_end == Some(r);
                 let saved_first_fragment_next_row_cut_overflow =
-                    saved_first_fragment_next_row_cut
-                        .then(|| (res.consumed_height - budget).max(0.0))
-                        .unwrap_or(0.0);
+                    if saved_first_fragment_next_row_cut {
+                        (res.consumed_height - budget).max(0.0)
+                    } else {
+                        0.0
+                    };
                 let split_row_overflow_tolerance =
                         if uses_source_frame_tail {
                             stored_frame_tail_overflow
