@@ -1261,7 +1261,7 @@ mod tests {
     #[test]
     fn para_shape_migrates_identifiable_legacy_break_bits_without_repurposing_bit5() {
         let mut data = make_para_shape_bytes(0, None);
-        let legacy_attr2 = (1 << 5) | (1 << 6) | (1 << 8);
+        let legacy_attr2: u32 = (1 << 5) | (1 << 6) | (1 << 8);
         data[42..46].copy_from_slice(&legacy_attr2.to_le_bytes());
 
         let ps = parse_para_shape(&data).expect("parse legacy para shape");
