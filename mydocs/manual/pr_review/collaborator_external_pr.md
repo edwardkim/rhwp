@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-12
+last_verified: 2026-08-14
 ---
 
 # Collaborator 매개 외부 PR 처리
@@ -272,3 +272,29 @@ code 또는 test 보정이 하나라도 있으면 fast-pass가 아니며 최신 
 원 코드 PR을 merge한 뒤에는 [merge 후속 처리](post_merge.md)를 적용한다. 이미 완료된 원 PR의
 review·asset·오늘할일만 반영한 별도 fast-pass PR은 issue close/comment와 오늘할일 생성을 반복하지 않되,
 devel sync와 branch/worktree/target 정리는 수행한다.
+
+### 9.4.1 명시 지시된 maintainer `--admin` merge 예외
+
+일반 collaborator는 외부 contributor PR도 `--admin`으로 branch protection을 우회하지 않는다. 단,
+maintainer 권한을 가진 실행자가 작업지시자로부터 **해당 PR의 `--admin` merge 명시 지시**를 받은 경우에는
+다음 조건을 모두 만족할 때만 사용할 수 있다.
+
+- code candidate와 review·오늘할일 trailing head 각각의 최신 GitHub Actions가 성공했고, 실패·대기 중인
+  check가 없다.
+- trailing head의 `mergeable`은 `MERGEABLE`, `mergeStateStatus`는 `CLEAN`이며, merge 직전에 다시
+  조회한 head SHA가 명령의 `--match-head-commit` 값과 같다.
+- trailing commit은 review, 오늘할일, stage·절차 문서만 추가한다. source, test, fixture, workflow,
+  baseline, sample 변경이 trailing commit에 섞이면 이 예외를 적용하지 않는다.
+- 이 옵션은 contributor 원 commit의 rebase·amend·force-push, source branch 권한 우회, reviewer 부족,
+  실패한 검증, 오래된 code candidate, 충돌을 우회하는 용도로 사용하지 않는다.
+
+위 조건에서는 다음과 같이 squash merge할 수 있다. 권한이 없는 collaborator의 토큰에서는 명령이 실패할
+수 있으며, 그 경우 정상 merge 경로로 되돌아간다.
+
+~~~bash
+gh pr merge N --repo edwardkim/rhwp --squash --admin \
+  --match-head-commit <latest-trailing-head>
+~~~
+
+merge 뒤에는 이 PR에 contributor 원 변경과 collaborator review 기록이 모두 포함됐는지와 issue 상태를
+확인하기 위해 [merge 후속 처리](post_merge.md)를 적용한다.
