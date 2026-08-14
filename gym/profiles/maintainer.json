@@ -10,6 +10,7 @@
     "core-cli",
     "corpus-diagnostics",
     "expert-challenges",
+    "extraction",
     "layout-rendering",
     "objects-media",
     "security",
