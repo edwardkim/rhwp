@@ -7303,6 +7303,19 @@ impl TypesetEngine {
                         .iter()
                         .all(|ctrl| matches!(ctrl, Control::Equation(_)));
                 if saved_equation_host_next_anchor {
+                    // 수식 host의 조판 높이를 다음 저장 VPOS로 되돌릴 근거는
+                    // 수식 control과 같은 위치의 source LineSeg가 서로 다른 높이를
+                    // 기록한 경우다. 두 높이가 일치하면 다음 앵커는 일반 본문 흐름의
+                    // 정상 간격이므로 이를 압축하면 후속 쪽 owner를 앞당긴다.
+                    let saved_equation_line_height_mismatch = para.line_segs.len()
+                        == para.controls.len()
+                        && para.line_segs.iter().zip(&para.controls).any(|(seg, ctrl)| {
+                            matches!(ctrl, Control::Equation(equation)
+                                if !is_synthetic_line_seg(seg)
+                                    && seg.line_height > 0
+                                    && equation.common.height > 0
+                                    && seg.line_height != equation.common.height as i32)
+                        });
                     let source_host = para
                         .line_segs
                         .iter()
@@ -7326,7 +7339,8 @@ impl TypesetEngine {
                                 (source_next.vertical_pos as i64 - base as i64) as i32,
                                 self.dpi,
                             );
-                        if source_next.vertical_pos > source_host.vertical_pos
+                        if saved_equation_line_height_mismatch
+                            && source_next.vertical_pos > source_host.vertical_pos
                             && source_host_y >= 0.0
                             && source_next_y <= st.base_available_height() + 0.5
                             && st.current_height > source_next_y
