@@ -400,6 +400,11 @@ fn compute_control_mask(para: &Paragraph) -> u32 {
     if para.text.contains('\u{00A0}') {
         mask |= 1u32 << 0x001E;
     }
+    // 하이픈 (0x0018): serialize_para_text 가 U+00AD 마다 코드 0x18 을 방출하므로
+    // control_mask 비트 24 도 세워 PARA_HEADER 를 PARA_TEXT 와 일치시킨다.
+    if para.text.contains('\u{00AD}') {
+        mask |= 1u32 << 0x0018;
+    }
     // FIXED_WIDTH_SPACE (0x001F): HWPX에서 들어온 일부 문맥은 U+2007을
     // literal code point가 아니라 HWP5 fixed blank control로 저장해야 한다.
     if should_serialize_figure_space_as_hwp_fixed_blank(para) {
@@ -784,9 +789,16 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 prev_end = offset + 1;
             }
             '\u{00A0}' => {
-                // 묶음 빈칸 (HWP 5.0 표 7: 코드 30). 코드 24(0x18)는 하이픈으로
-                // 재파싱 시 '-' 가 되므로 쓰면 안 된다 (#1793).
+                // 묶음 빈칸 (HWP 5.0 표 7: 코드 30). 코드 24(0x18)는 하이픈이므로
+                // 여기 쓰면 안 된다 (#1793).
                 code_units.push(0x001E);
+                prev_end = offset + 1;
+            }
+            '\u{00AD}' => {
+                // 소프트 하이픈 (HWP 5.0 표 7: 코드 24). 파서가 0x18 을 U+00AD 로
+                // 받으므로 저장도 제어문자로 되돌린다 — 리터럴로 쓰면 다음 왕복에서
+                // 실제 하이픈이 되어 단어가 갈라진다.
+                code_units.push(0x0018);
                 prev_end = offset + 1;
             }
             '\u{2007}' => {
@@ -2011,6 +2023,7 @@ mod tests {
                 end_char_idx: 2,
                 control_idx: 1,
                 end_field_id: 0,
+                inner_slot_count: 0,
             }],
             ..Default::default()
         };

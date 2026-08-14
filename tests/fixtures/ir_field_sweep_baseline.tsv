@@ -71,7 +71,7 @@ hwp5rb	86712_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].
 hwp5rb	86712_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	56
 hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].char_count	14
 hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].char_offsets[]	80
-hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].control_mask	18
+hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].control_mask	17
 hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	12
 hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].controls[].text_box.paragraphs[].char_count	5
 hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].controls[].text_box.paragraphs[].char_offsets[]	18
@@ -133,6 +133,7 @@ hwp5rb	float-stack-defer.hwp	sections[].paragraphs[].controls[].cells[].list_hea
 hwp5rb	footnote-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2
 hwp5rb	hcar-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	89
 hwp5rb	hcar-001.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	20
+hwp5rb	hcar-001.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].control_mask	4
 hwp5rb	honbo-save.hwp	doc_info.bullet_count	1
 hwp5rb	honbo-save.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	18
 hwp5rb	honbo-save.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].img_dim[]	8
@@ -181,6 +182,7 @@ hwp5rb	hwp_table_test-m.hwp	sections[].paragraphs[].controls[].cells[].list_head
 hwp5rb	hwp_table_test.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	46
 hwp5rb	hwp_table_test_saved.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	46
 hwp5rb	hwpctl_API_v2.4.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1024
+hwp5rb	hwpctl_API_v2.4.hwp	sections[].paragraphs[].field_ranges[].inner_slot_count	1
 hwp5rb	hwpctl_Action_Table__v1.1.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	939
 hwp5rb	hwpctl_Action_Table__v1.1.hwp	sections[].section_def.master_pages.len	1
 hwp5rb	hwpctl_ParameterSetID_Item_v1.2.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1786
@@ -192,6 +194,7 @@ hwp5rb	hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	sec
 hwp5rb	hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1693
 hwp5rb	hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1453
 hwp5rb	hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1536
+hwp5rb	hwpx/hancom-hwp/[2027] 온새미로 1 본교재.hwp	sections[].paragraphs[].control_mask	12
 hwp5rb	hwpx/hancom-hwp/[2027] 온새미로 1 본교재.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	115
 hwp5rb	hwpx/hancom-hwp/form-002.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	430
 hwp5rb	hwpx/hancom-hwp/form-002.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	10
@@ -221,6 +224,7 @@ hwp5rb	issue1921/59043_regulatory_analysis.hwp	sections[].paragraphs[].controls[
 hwp5rb	issue1921/59043_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].char_count	4
 hwp5rb	issue1921/59043_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].control_mask	4
 hwp5rb	issue1921/59043_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	9
+hwp5rb	issue1921/59043_regulatory_analysis.hwp	sections[].paragraphs[].field_ranges[].inner_slot_count	1
 hwp5rb	issue1937_rowbreak_footnote_overpagination.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	701
 hwp5rb	issue1937_rowbreak_footnote_overpagination.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].control_mask	3
 hwp5rb	issue1949_giant_cell_nested_tables_perf.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3
@@ -308,7 +312,6 @@ hwp5rb	task1705/wrap_empty_para_anchor_page.hwp	sections[].paragraphs[].controls
 hwp5rb	task1706/empty_para_between_tac_tables.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	32
 hwp5rb	task1718/table_giant_cell_overfill.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
 hwp5rb	task1718/table_giant_cell_overfill.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	5
-hwp5rb	task1725/text_footnote_tail_overpagination.hwp	sections[].paragraphs[].control_mask	1
 hwp5rb	task1725/text_footnote_tail_overpagination.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1083
 hwp5rb	task1745/table_text_anchor_wrap.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	153
 hwp5rb	task1749/saved_bounds_cumulative_page_break.hwp	sections[].paragraphs[].char_count	1
