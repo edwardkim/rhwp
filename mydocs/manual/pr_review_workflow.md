@@ -228,6 +228,39 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
 - 게시 직후 해당 review/comment API의 `body`를 읽어 literal `\\n`이 남지 않았는지 확인하고, 임시 본문
   파일은 정확한 경로만 정리한다.
 
+#### 3.4.1 Windows PowerShell 한글 본문
+
+Windows PowerShell 5.1의 here-string을 `gh ... --body-file -`에 직접 pipe하면 현재 console code page나
+UTF-8 BOM이 `gh` 표준입력에 섞일 수 있다. 그러면 GitHub에는 한글이 `??`로 치환되거나 본문 첫 글자
+앞에 보이지 않는 BOM이 남는다. 한글을 포함한 다단락 PR 본문·review·comment에는 **UTF-8 without BOM
+파일 경로**만 사용한다.
+
+```powershell
+$body = @'
+## 변경 요약
+
+- 한글 본문 예시
+'@
+$bodyPath = Join-Path $env:TEMP "rhwp-pr-body-$PID.md"
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($bodyPath, $body, $utf8NoBom)
+
+# 생성 또는 수정 중 하나를 사용한다.
+gh pr create --repo edwardkim/rhwp --base devel --head <branch> --body-file $bodyPath
+gh pr edit <N> --repo edwardkim/rhwp --body-file $bodyPath
+
+$posted = (gh pr view <N> --repo edwardkim/rhwp --json body | ConvertFrom-Json).body
+if ($posted.Length -eq 0 -or [int][char]$posted[0] -eq 0xFEFF -or $posted.Contains('??')) {
+    throw 'PR 본문 UTF-8 전송을 다시 확인하세요.'
+}
+Remove-Item -LiteralPath $bodyPath
+```
+
+`<N>`은 `gh pr create`가 성공한 뒤 실제 번호로 바꾼다. create 직후 본문을 검증할 때는 같은 방식으로
+`gh pr view`를 실행한다. `??`가 문서 내용으로 의도된 경우에는 그 검사 대신 예상한 한글 제목·문장을
+`Contains()`로 확인한다. 임시 파일은 정확한 `$bodyPath`만 정리하며, `.env`·token·server URL을 본문이나
+검증 출력에 넣지 않는다.
+
 ## 4. review 산출물의 공통 규칙
 
 PR review 문서는 merge 후에도 모순되지 않아야 한다. draft, mergeable, head SHA, CI 상태는
