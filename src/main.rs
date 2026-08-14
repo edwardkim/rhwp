@@ -160,6 +160,13 @@ fn has_global_auth_option(args: &[String]) -> bool {
     })
 }
 
+/// Windows PowerShell/.NET이 UTF-8 표준입력의 첫 바이트에 붙일 수 있는 BOM은
+/// 비밀번호 본문이 아니라 인코딩 표식이다. 첫 줄 암호에 섞이면 정상 비밀번호도
+/// 오입력으로 판정되므로, stdin 전체의 맨 앞에서만 제거한다.
+fn strip_utf8_bom(input: &str) -> &str {
+    input.strip_prefix('\u{feff}').unwrap_or(input)
+}
+
 /// args 전체를 스캔해 입력·출력 인증 옵션을 떼어낸다.
 ///
 /// 뽑아낸 입력 암호와 출력 암호는 이 함수 안에서 thread-local 상태로 소비하고,
@@ -230,6 +237,7 @@ fn strip_global_auth_options(mut args: Vec<String>) -> Result<Vec<String>, i32> 
             eprintln!("오류: 표준 입력에서 비밀번호 읽기 실패 - {}", error);
             return Err(EXIT_RUNTIME);
         }
+        let stdin = strip_utf8_bom(&stdin);
         let mut lines = stdin.lines();
         if password_stdin {
             password = Some(lines.next().unwrap_or_default().to_string());
@@ -13372,6 +13380,7 @@ fn export_hwpx(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
+    let source_format = rhwp::parser::detect_format(&data);
 
     let doc = match load_document(&data) {
         Ok(d) => d,
@@ -13474,6 +13483,22 @@ fn export_hwpx(args: &[String]) -> i32 {
                             doc.document(),
                             reloaded.document(),
                         );
+                        // HWP 계열은 HWPX와 표현 자리가 다른 필드 메타데이터가 있고,
+                        // HWP3에는 하이퍼텍스트·빈 그림 imgRect의 추가 정규화가 있다.
+                        // 실제 내용·배치 차이는 계속 검출한다 (#3739).
+                        let diff = match source_format {
+                            rhwp::parser::FileFormat::Hwp => {
+                                rhwp::serializer::hwpx::roundtrip::strip_hwp_to_hwpx_noise(diff)
+                            }
+                            rhwp::parser::FileFormat::Hwp3 => {
+                                rhwp::serializer::hwpx::roundtrip::strip_hwp3_to_hwpx_noise(
+                                    doc.document(),
+                                    reloaded.document(),
+                                    diff,
+                                )
+                            }
+                            _ => diff,
+                        };
                         if !diff.is_empty() {
                             print_ir_verify_failure(&diff, &output_path.display().to_string());
                             verify_report = serde_json::json!({
@@ -25385,8 +25410,8 @@ mod tests {
     use super::{
         allows_implicit_sibling_resources, cli_output_password, cli_password,
         collect_audit_capsules, replay_scratch_dir, set_cli_output_password, set_cli_password,
-        strip_global_auth_options, tab_ext_semantic_differs, with_replay_input_snapshot,
-        EXIT_USAGE,
+        strip_global_auth_options, strip_utf8_bom, tab_ext_semantic_differs,
+        with_replay_input_snapshot, EXIT_USAGE,
     };
     use rhwp::parser::FileFormat;
 
@@ -25500,6 +25525,16 @@ mod tests {
         // 비밀번호는 반환값이 아니라 CLI_PASSWORD(thread_local)로 전달된다.
         assert_eq!(cli_password().as_deref(), Some("secret"));
         set_cli_password(None);
+    }
+
+    #[test]
+    fn password_stdin_ignores_only_a_leading_utf8_bom() {
+        assert_eq!(strip_utf8_bom("\u{feff}123456\n"), "123456\n");
+        assert_eq!(strip_utf8_bom("123456\n"), "123456\n");
+        assert_eq!(
+            strip_utf8_bom("123456\n\u{feff}next"),
+            "123456\n\u{feff}next"
+        );
     }
 
     #[test]

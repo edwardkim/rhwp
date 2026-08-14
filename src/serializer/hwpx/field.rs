@@ -136,7 +136,6 @@ pub fn write_field_end_full<W: Write>(
 // 하이퍼링크 (필드의 특수형) — <hp:fieldBegin type="HYPERLINK"> 변형
 // =====================================================================
 
-#[allow(dead_code)]
 pub fn write_hyperlink_begin<W: Write>(
     w: &mut Writer<W>,
     link: &Hyperlink,
@@ -160,7 +159,15 @@ pub fn write_hyperlink_begin<W: Write>(
     )?;
     start_tag(w, "hp:parameters")?;
     start_tag_attrs(w, "hp:stringParam", &[("name", "Command")])?;
-    text(w, &link.url)?;
+    // HWP3 Hyperlink control은 추가 정보 블록이 없거나 순서가 어긋난 경우 url을
+    // 비워 둔 채 표시 텍스트만 남긴다. 이때 URL처럼 보이는 표시 텍스트를 버리기보다
+    // HWPX Command의 최소값으로 승격한다.
+    let target = if link.url.is_empty() {
+        &link.text
+    } else {
+        &link.url
+    };
+    text(w, target)?;
     end_tag(w, "hp:stringParam")?;
     end_tag(w, "hp:parameters")?;
     end_tag(w, "hp:fieldBegin")
@@ -316,6 +323,23 @@ mod tests {
         );
         assert!(
             xml.contains(r#"<hp:stringParam name="Command">https://example.com</hp:stringParam>"#),
+            "{xml}"
+        );
+    }
+
+    #[test]
+    fn hyperlink_begin_uses_display_text_when_hwp3_url_is_absent() {
+        // HWP3 추가정보 블록이 없으면 URL 자리에 빈 문자열만 남을 수 있다. 표시 문자열을
+        // Command로 승격해야 HWPX 변환본이 빈 하이퍼링크가 되지 않는다.
+        let link = Hyperlink {
+            url: String::new(),
+            text: "https://example.com/help".to_string(),
+        };
+        let xml = to_string(|w| write_hyperlink_begin(w, &link, 8));
+        assert!(
+            xml.contains(
+                r#"<hp:stringParam name="Command">https://example.com/help</hp:stringParam>"#
+            ),
             "{xml}"
         );
     }

@@ -30,6 +30,10 @@
   라우팅 결과에 해당하는 역할별 자식 절차를 따른다. 모 문서만 읽고 세부 경로를 추정해 진행하지 않는다.
 - 작업 단계가 바뀌면 현재 단계의 변경을 커밋한 뒤 다음 단계 문서를 시작한다.
 - GitHub comment, remote push, PR 생성은 사용자 승인을 받은 뒤 수행한다.
+- Windows PowerShell에서 한글을 포함한 여러 단락의 PR·review·comment 본문은 here-string을
+  `gh --body-file -`로 직접 pipe하지 않는다. UTF-8 **without BOM** 임시 Markdown 파일을
+  `--body-file`로 전달하고, 게시 뒤 API로 한글·선두 BOM·`??` 치환 여부를 확인한다. 정확한
+  명령과 정리 절차는 `mydocs/manual/pr_review_workflow.md`의 3.4.1을 따른다.
 
 ## 문서와 검증
 

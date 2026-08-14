@@ -64,6 +64,8 @@ rhwp --password '문서비밀번호' export-text protected.hwp -o output/
 ```
 
 - `--password <값>`과 `--password-stdin`은 명령 앞뒤 어느 위치든 한 번만 지정할 수 있다.
+  `--password-stdin`은 Windows PowerShell/.NET pipe가 붙인 UTF-8 BOM도 인코딩 표식으로
+  처리하므로, 권장 stdin 전달 방식으로도 정상 비밀번호를 그대로 사용할 수 있다.
 - 비밀번호가 없으면 종료 코드 2, 틀리면 종료 코드 1이다. 지원하지 않는 HWP5
   EncryptVersion 또는 비압축 HWP3 암호 본문은 종료 코드 1로 거부한다.
 - 일반 열기·내보내기·변환 명령과 `dump-records`가 이 옵션을 사용한다.

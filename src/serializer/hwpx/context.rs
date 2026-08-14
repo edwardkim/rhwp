@@ -108,6 +108,10 @@ pub struct SerializeContext {
     pub chart_entries: Vec<ChartPartEntry>,
     /// 문서 전역 문단 ID 카운터 — `<hp:p id="...">` 에 발급한다.
     para_id_counter: u32,
+    /// HWP3 전용 Hyperlink control을 HWPX `fieldBegin`으로 승격할 때 쓰는 ID.
+    /// HWP3 원본에는 HWPX field ID가 없으므로, 기존 Field ID와 충돌 가능성이 낮은
+    /// 상위 범위를 문서 내에서 단조 감소시켜 링크마다 다른 값을 발급한다.
+    generated_hyperlink_id: u32,
     /// subList(셀·글상자) 직렬화 중첩 깊이 (#1379 3단계).
     ///
     /// 본문 경로는 colPr 를 섹션 템플릿 첫 run 에서 처리하므로 인라인 미방출이
@@ -141,6 +145,7 @@ impl Default for SerializeContext {
             bin_data_map: HashMap::new(),
             chart_entries: Vec::new(),
             para_id_counter: 0,
+            generated_hyperlink_id: u32::MAX,
             sub_list_depth: 0,
             body_coldef_template_pending: false,
             content_loss: ContentLossReport::new(SerializedFormat::Hwpx),
@@ -149,6 +154,13 @@ impl Default for SerializeContext {
 }
 
 impl SerializeContext {
+    /// HWP3 `Control::Hyperlink`용 HWPX field ID를 하나 발급한다.
+    pub fn next_generated_hyperlink_id(&mut self) -> u32 {
+        let id = self.generated_hyperlink_id;
+        self.generated_hyperlink_id = self.generated_hyperlink_id.saturating_sub(1);
+        id
+    }
+
     /// Document IR 전체를 1-pass 스캔하여 ID 풀을 채운다.
     ///
     /// Stage 0에서는 최소 등록(header.xml 리소스만)만 수행한다. Stage 1~4에서
