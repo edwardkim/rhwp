@@ -9652,8 +9652,9 @@ impl LayoutEngine {
     /// paint되지 않는 마지막 줄의 trailing line/paragraph spacing.
     ///
     /// `CellUnit` 전체 높이는 표를 통째로 측정할 때 필요하므로 변경하지 않는다.
-    /// 실제 컷이 문단 경계의 `양수 vpos -> 0 이하`에서 끝날 때만 이 값을 빼서,
-    /// 마지막 가시 줄은 현 쪽에 남기고 그 뒤의 공백은 물리 쪽 경계에서 버린다.
+    /// 실제 컷이 control-free 문단 경계의 `양수 vpos -> 0 이하`에서 끝날 때만
+    /// 이 값을 빼서, 마지막 가시 줄은 현 쪽에 남기고 그 뒤의 공백은 물리 쪽
+    /// 경계에서 버린다. control 문단의 로컬 좌표 reset은 물리 경계가 아니다.
     fn native_multirow_saved_reset_trailing_trim(
         &self,
         table: &crate::model::table::Table,
@@ -9693,7 +9694,10 @@ impl LayoutEngine {
         let Some(next_para) = cell.paragraphs.get(next_unit.para_idx) else {
             return 0.0;
         };
-        if previous_unit.vis_end != previous_para.line_segs.len() {
+        if !previous_para.controls.is_empty()
+            || !next_para.controls.is_empty()
+            || previous_unit.vis_end != previous_para.line_segs.len()
+        {
             return 0.0;
         }
         let Some(previous_seg) = previous_para.line_segs.last() else {
@@ -13188,6 +13192,35 @@ mod row_cut_tests {
         }
     }
 
+    fn saved_reset_unit(
+        height: f64,
+        para_idx: usize,
+        vis_end: usize,
+        hard_break_before: bool,
+    ) -> CellUnit {
+        CellUnit {
+            height,
+            hard_break_before,
+            stored_frame_break_before: hard_break_before,
+            vpos_gap_before: false,
+            para_idx,
+            vis_start: 0,
+            vis_end,
+            nested_row: None,
+            nested_table_fragment: None,
+            mixed_nested_fragment: false,
+            mixed_nested_trailing: false,
+            mixed_nested_content_height: 0.0,
+            mixed_nested_recursive: false,
+            mixed_nested_starts_after_table: false,
+            mixed_nested_source_para_idx: None,
+            recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
+            top_and_bottom_flow: false,
+            empty_spacer: false,
+            non_inline_control_range: None,
+        }
+    }
+
     fn mixed_owner_marker(
         para_idx: usize,
         trailing: bool,
@@ -13970,6 +14003,71 @@ mod row_cut_tests {
                 &styles,
             ),
             "control 문단의 로컬 vpos=0은 plain-text 물리 frame reset으로 승격하지 않음"
+        );
+    }
+
+    #[test]
+    fn test_saved_reset_trailing_trim_requires_plain_text_owners() {
+        let eng = LayoutEngine::new(96.0);
+        eng.set_layout_profile(crate::model::provenance::LayoutCompatibilityProfile::new(
+            false, false, false, false, false, true,
+        ));
+        let styles = ResolvedStyleSet::default();
+
+        let mut previous = visible_text_para(1, 1_200);
+        previous.line_segs[0].line_spacing = 600;
+        let next = visible_text_para(1, 0);
+        let mut host = rowbreak_table(vec![
+            cell(0, 0, vec![previous.clone(), next.clone()]),
+            cell(1, 0, vec![visible_text_para(1, 0)]),
+        ]);
+        host.common = CommonObjAttr {
+            treat_as_char: false,
+            text_wrap: TextWrap::TopAndBottom,
+            ..Default::default()
+        };
+
+        let units = vec![
+            saved_reset_unit(24.0, 0, 1, false),
+            saved_reset_unit(16.0, 1, 1, true),
+        ];
+
+        let plain_cell = &host.cells[0];
+        assert!(
+            eng.native_multirow_saved_reset_trailing_trim(&host, plain_cell, &units, 1, &styles,)
+                > 0.0,
+            "plain-text 문단 사이 저장 reset은 마지막 줄의 trailing spacing을 trim"
+        );
+
+        let mut control_only = non_inline_picture_para(0);
+        control_only.text.clear();
+        control_only.char_count = 0;
+        host.cells[0].paragraphs[1] = control_only;
+        assert_eq!(
+            eng.native_multirow_saved_reset_trailing_trim(
+                &host,
+                &host.cells[0],
+                &units,
+                1,
+                &styles,
+            ),
+            0.0,
+            "text -> control-only 로컬 vpos reset은 trailing spacing trim 대상이 아님"
+        );
+
+        let mut previous_with_control = previous;
+        previous_with_control.controls = non_inline_picture_para(1_200).controls;
+        host.cells[0].paragraphs = vec![previous_with_control, next];
+        assert_eq!(
+            eng.native_multirow_saved_reset_trailing_trim(
+                &host,
+                &host.cells[0],
+                &units,
+                1,
+                &styles,
+            ),
+            0.0,
+            "control을 소유한 이전 문단도 plain-text 저장 reset으로 승격하지 않음"
         );
     }
 
