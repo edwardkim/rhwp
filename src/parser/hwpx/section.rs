@@ -368,10 +368,53 @@ fn parse_page_margin(e: &quick_xml::events::BytesStart, page: &mut PageDef) {
 
 // ─── Paragraph ───
 
+/// [#4759] HWPX 섹션 본문의 상호재귀 — 문단↔표↔셀(`parse_paragraph`↔`parse_table`
+/// ↔`parse_table_cell`), 글상자 `drawText`, 서브리스트 각주 — 는 파일이 정하는
+/// 중첩 깊이로 무한 재귀할 수 있다. 상한이 없으면 `<hp:tbl><hp:tr><hp:tc><hp:p>…` 를
+/// 수만 겹 중첩한 section XML 하나로 네이티브 스택을 고갈시켜 프로세스를 죽인다
+/// (패닉과 달리 catch_unwind 로 못 잡는 SIGSEGV). 이 재귀 계열은 **전부
+/// `parse_paragraph` 를 경유**하므로, 그 진입 깊이를 스레드-로컬 카운터로 세어 한
+/// 곳에서 전 경로를 막는다(파라미터를 여러 호출부에 관통시키지 않는다). 그룹
+/// (`<hp:container>`) 자기재귀는 별도로 `MAX_HWPX_CONTAINER_DEPTH` 가 막는다.
+/// 상한 64 는 그 형제 가드와 같은 값이다(실문서의 표 중첩은 이에 한참 못 미친다).
+const MAX_HWPX_SECTION_DEPTH: u32 = 64;
+
+thread_local! {
+    // 완전 경로 — 이 모듈의 `Cell` 은 이미 `crate::model::table::Cell`(표 셀)이다.
+    static HWPX_SECTION_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+}
+
+/// `parse_paragraph` 진입 시 재귀 깊이를 +1 하고 이탈(Drop, 오류 전파·조기 반환
+/// 포함) 시 되돌리는 RAII 가드. 상한 초과면 스택을 고갈시키기 전에 오류로 거부한다.
+struct SectionDepthGuard;
+
+impl SectionDepthGuard {
+    fn enter() -> Result<SectionDepthGuard, HwpxError> {
+        HWPX_SECTION_DEPTH.with(|d| {
+            if d.get() >= MAX_HWPX_SECTION_DEPTH {
+                return Err(HwpxError::XmlError(format!(
+                    "section nesting exceeds {} levels",
+                    MAX_HWPX_SECTION_DEPTH
+                )));
+            }
+            d.set(d.get() + 1);
+            Ok(SectionDepthGuard)
+        })
+    }
+}
+
+impl Drop for SectionDepthGuard {
+    fn drop(&mut self) {
+        HWPX_SECTION_DEPTH.with(|d| d.set(d.get().saturating_sub(1)));
+    }
+}
+
 fn parse_paragraph(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
 ) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
+    // [#4759] 문단-경유 상호재귀(표·글상자·서브리스트) 깊이 상한 — 위 가드 참고.
+    let _depth_guard = SectionDepthGuard::enter()?;
     let mut para = Paragraph::default();
     let mut sec_def: Option<SectionDef> = None;
 
@@ -6810,6 +6853,54 @@ mod tests {
         assert_eq!(section.paragraphs.len(), 1);
         assert_eq!(section.paragraphs[0].text, "Hello World");
         assert_eq!(section.paragraphs[0].para_shape_id, 0);
+    }
+
+    // ---------- [#4759] 문단↔표↔셀 상호재귀 무한 중첩 → 스택 오버플로 DoS 가드 ----------
+
+    fn nested_table_section_xml(depth: usize) -> String {
+        // 각 겹 <hp:tbl><hp:tr><hp:tc><hp:p> 가 문단→표→셀→문단 재귀를 한 단계 판다.
+        let mut xml = String::from(
+            r#"<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"><hp:p paraPrIDRef="0" styleIDRef="0">"#,
+        );
+        for _ in 0..depth {
+            xml.push_str("<hp:tbl><hp:tr><hp:tc><hp:p>");
+        }
+        for _ in 0..depth {
+            xml.push_str("</hp:p></hp:tc></hp:tr></hp:tbl>");
+        }
+        xml.push_str("</hp:p></hs:sec>");
+        xml
+    }
+
+    #[test]
+    fn table_nesting_beyond_limit_is_rejected() {
+        // 상한을 넘는 표 중첩(문단↔표↔셀 사이클)은 스택을 고갈시키기 전에 오류로
+        // 거부돼야 한다. 가드가 없으면 이 입력은 파싱돼(Ok) 이 단언이 실패하고, 실파일
+        // 규모(수만 겹)에서는 catch_unwind 로도 못 잡는 SIGSEGV 가 난다. 컨테이너 가드와
+        // 같은 이유로 넉넉한 스택 전용 스레드에서 경계를 결정적으로 시험한다.
+        let rejected = std::thread::Builder::new()
+            .stack_size(64 * 1024 * 1024)
+            .spawn(|| {
+                let xml = nested_table_section_xml(MAX_HWPX_SECTION_DEPTH as usize + 60);
+                parse_hwpx_section(&xml).is_err()
+            })
+            .expect("파서 스레드 생성 실패")
+            .join()
+            .expect("파서 스레드 패닉");
+        assert!(
+            rejected,
+            "상한 초과 표 중첩이 거부되지 않았다 — 상호재귀 깊이 가드 회귀"
+        );
+    }
+
+    #[test]
+    fn table_nesting_within_limit_still_parses() {
+        // 상한 안쪽의 정상적인 표 중첩은 계속 성공해야 한다(가드가 과잉 차단 안 함).
+        let xml = nested_table_section_xml(5);
+        assert!(
+            parse_hwpx_section(&xml).is_ok(),
+            "정상 깊이 표 중첩이 거부됐다 — 가드가 과잉 차단"
+        );
     }
 
     // ---------- [#4730] <hp:container> 무한 중첩 → 스택 오버플로 DoS 가드 ----------

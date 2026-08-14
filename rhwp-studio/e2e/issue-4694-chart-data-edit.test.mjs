@@ -7,8 +7,17 @@
  */
 import { runTest, loadHwpFile, screenshot } from './helpers.mjs';
 
-const SAMPLE = 'chart/세로막대형/묶은세로막대형.hwp';
-const SENTINEL = '91.7'; // #4055 — 원본 최대값 5 라 반영되면 첫 막대가 솟는다
+// [온램프 #3 · 이슈 #4756] 이 e2e 의 문서-수준 데이터 계약의 단일 출처.
+// gym/tools/from_e2e.mjs 가 이 export 를 '정적 파싱'(import 아님)해 CLI 채점 gym
+// 과제를 생성한다 — 이 파일의 브라우저 실행과 무관하다. UI 계약(메뉴·더블클릭·
+// undo·무흔적)은 CLI 로 표현 불가라 계약에 넣지 않고 e2e 에만 남긴다.
+export const gymContract = {
+  sample: 'chart/세로막대형/묶은세로막대형.hwp',
+  chart: 1,                                                // 문서 순서 1-based (getChartDataByIndex(0) = 1번)
+  edit: { series: 0, point: 0, from: '4.3', to: '91.7' },  // series[0].values[0]
+};
+const SAMPLE = gymContract.sample;
+const SENTINEL = gymContract.edit.to; // #4055 — 원본 최대값 5 라 반영되면 첫 막대가 솟는다
 
 async function pause(page, ms = 300) {
   await page.evaluate(d => new Promise(r => setTimeout(r, d)), ms);
