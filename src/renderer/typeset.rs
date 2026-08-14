@@ -9,6 +9,7 @@
 //! MS Word/OOXML의 cantSplit/tblHeader를 참고.
 
 use crate::model::control::Control;
+use crate::document_core::queries::rendering::body_pile_stays_on_anchor_page;
 use crate::model::footnote::{Footnote, FootnoteShape};
 use crate::model::header_footer::HeaderFooterApply;
 use crate::model::page::{ColumnDef, ColumnType, PageDef};
@@ -7671,30 +7672,22 @@ impl TypesetEngine {
                 .iter()
                 .filter(|c| matches!(c, Control::Picture(pic) if !pic.common.treat_as_char))
                 .count();
-            // [#4770] 저장 첫 줄이 그림 폭 이상 오른쪽에서 시작하고(cs ≥ 그림 폭 —
-            // 저작 한글이 빈 줄을 Square 배제로 그림 옆에 끼운 흔적) 첫 그림이 앵커
-            // 잔여 본문에 물리적으로 들어가면(저장 vpos + max 그림 높이 ≤ 본문 높이)
-            // pile 은 앵커 쪽에 겹친 채 남는다(HPV 코호트 s2/pi1007: cs=42520·
-            // vpos=5040, 한글 1쪽 ↔ 낱장 배치 시 24쪽). 펼쳐진 스택(#1995 96장,
-            // vpos=53602 로 안 들어감, 한글 96쪽)은 걸리지 않는다.
-            let stored_line_beside_pile = {
-                let mut min_w = i32::MAX;
-                let mut max_h = i32::MIN;
-                for c in &para.controls {
-                    if let Control::Picture(pic) = c {
-                        if !pic.common.treat_as_char {
-                            min_w = min_w.min(pic.common.width as i32);
-                            max_h = max_h.max(pic.common.height as i32);
-                        }
-                    }
-                }
-                min_w != i32::MAX
-                    && para.line_segs.first().is_some_and(|seg| {
-                        seg.column_start >= min_w
-                            && hwpunit_to_px(seg.vertical_pos.saturating_add(max_h), self.dpi)
-                                <= fullpage_img_body_h + 0.5
-                    })
-            };
+            // [#4770] #2004 본문 정규화와 같은 엄격한 저장 스택 계약을 쓴다. 즉 빈
+            // 문단의 비-TAC Square·겹침불허 그림/그림-도형이 같은 세로 band에 있고,
+            // 저장 첫 줄이 그림 폭 이상 오른쪽에서 시작하며, 그림 하단이 본문 하단 절대
+            // 좌표 안에 있을 때만 #1995 낱장 배치를 억제한다. 일반 TopAndBottom·서로
+            // 다른 anchor·본문 텍스트 문단은 기존 분산을 유지한다.
+            let fullpage_img_min_height_hu =
+                (crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi) / 2).max(1);
+            let fullpage_img_body_bottom_hu = crate::renderer::px_to_hwpunit(
+                st.layout.body_area.y + st.layout.body_area.height,
+                self.dpi,
+            );
+            let stored_line_beside_pile = body_pile_stays_on_anchor_page(
+                para,
+                fullpage_img_min_height_hu,
+                fullpage_img_body_bottom_hu,
+            );
             let is_multi_fullpage_img_para = !stored_line_beside_pile
                 && has_majority_fullpage_images(fullpage_img_ctrls.len(), noninline_pic_count);
 
@@ -26734,6 +26727,50 @@ mod tests {
             "[#4770] 저장 줄이 그림 옆에 끼인(cs ≥ 그림 폭) 스택은 앵커 쪽 1 페이지에 \
              남아야 함. 실제 {} 페이지 — 낱장 분산이 오발동",
             typeset_result.pages.len(),
+        );
+    }
+
+    #[test]
+    fn test_4770_anchor_pile_contract_requires_square_stack_and_page_bottom() {
+        use crate::document_core::queries::rendering::body_pile_stays_on_anchor_page;
+        use crate::model::page::PageAreas;
+        use crate::model::shape::TextWrap;
+
+        let page_def = a4_page_def();
+        let body_area = PageAreas::from_page_def(&page_def).body_area;
+        let make_para = |text_wrap| {
+            let make_pic = || {
+                let mut pic = crate::model::image::Picture::default();
+                pic.common.treat_as_char = false;
+                pic.common.text_wrap = text_wrap;
+                pic.common.allow_overlap = false;
+                pic.common.width = 51974;
+                pic.common.height = 60000;
+                crate::model::control::Control::Picture(Box::new(pic))
+            };
+            Paragraph {
+                line_segs: vec![LineSeg {
+                    vertical_pos: body_area.bottom - 60000,
+                    column_start: 51974,
+                    segment_width: 3480,
+                    ..Default::default()
+                }],
+                controls: vec![make_pic(), make_pic(), make_pic()],
+                ..Default::default()
+            }
+        };
+
+        assert!(
+            body_pile_stays_on_anchor_page(&make_para(TextWrap::Square), 30000, body_area.bottom),
+            "페이지 상단 기준 vpos가 본문 하단에 정확히 닿는 Square 스택은 앵커 쪽에 남아야 함"
+        );
+        assert!(
+            !body_pile_stays_on_anchor_page(
+                &make_para(TextWrap::TopAndBottom),
+                30000,
+                body_area.bottom,
+            ),
+            "TopAndBottom 전면 그림은 cs/vpos가 같아도 #1995 낱장 배치를 억제하면 안 됨"
         );
     }
 
