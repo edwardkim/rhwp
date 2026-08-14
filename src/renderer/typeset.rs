@@ -20912,6 +20912,8 @@ impl TypesetEngine {
             // 단, 1행 표의 저장 object height 는 현재 쪽 하단 tolerance 안에 맞고
             // cell 내용 측정치만 크게 나온 경우에는 한컴이 현재 쪽 하단까지 한 덩어리로
             // 배치하므로 아래 object-height fit 경로를 우선한다.
+            const DECLARED_FLOAT_FIT_TOLERANCE_PX: f64 = 1.0;
+            let has_internal_saved_vpos_reset = rowbreak_table_has_internal_saved_vpos_reset(table);
             let measured_fits_current = st.current_height + table_total <= available;
             let declared_overflows_current = st.current_height + declared_total > available;
             let measured_declared_excess = (table_total - declared_total).max(0.0);
@@ -20974,11 +20976,15 @@ impl TypesetEngine {
             //
             // 일반 anchor tolerance를 넓히면 page-tail float를 통째로 남기는
             // document-wide 회귀가 생길 수 있다. native HWP5, non-TAC, paragraph
-            // TopAndBottom, RowBreak, 다행 ordinary-row, table-footnote 없음, 다음
-            // source paragraph의 vpos rewind라는 여섯 저장 계약을 모두 만족하고,
-            // the delayed flow anchor is fully explained by measured growth,
-            // and the saved object bottom is inside the body, skip declared
-            // defer and let the fragment scan select the source-owned prefix.
+            // TopAndBottom, RowBreak, 다행 표, table-footnote 없음, 다음 source
+            // paragraph의 vpos rewind라는 저장 계약을 모두 만족하고, saved object
+            // bottom이 body 안에 드는 경우에만 declared defer를 건너뛰어 아래
+            // fragment scan에 맡긴다. ordinary-row 표는 #4763처럼 delayed flow가
+            // measured growth로 전부 설명될 때만 허용한다. rowspan 표는 cell 내부
+            // 저장 reset이 있어 scanner가 블록 안의 실제 hard-break를 제시할 때만
+            // 24px의 fragment-local anchor drift를 허용한다.
+            const NATIVE_HWP5_NEAR_ANCHOR_ROWBREAK_FRAGMENT_TOLERANCE_PX: f64 = 24.0;
+            let has_rowspan = table.cells.iter().any(|cell| cell.row_span > 1);
             let native_hwp5_near_anchor_rowbreak_needs_fragment_scan =
                 st.profile.native_hwp5_layout()
                     && !table.common.treat_as_char
@@ -20989,14 +20995,24 @@ impl TypesetEngine {
                     )
                     && table.row_count > 1
                     && ft.table_footnotes.is_empty()
-                    && table.cells.iter().all(|cell| cell.row_span == 1)
+                    && (!has_rowspan || has_internal_saved_vpos_reset)
                     && next_rewinds_after_table
                     && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
                         let flow_overrun = st.current_height - top_px;
                         let measured_excess = (table_total - declared_total).max(0.0);
+                        let allowed_flow_overrun = if has_rowspan {
+                            NATIVE_HWP5_NEAR_ANCHOR_ROWBREAK_FRAGMENT_TOLERANCE_PX
+                        } else {
+                            measured_excess
+                        };
+                        let bottom_tolerance = if has_rowspan {
+                            DECLARED_FLOAT_FIT_TOLERANCE_PX
+                        } else {
+                            0.0
+                        };
                         top_px <= st.current_height
-                            && flow_overrun <= measured_excess
-                            && bottom_px <= available
+                            && flow_overrun <= allowed_flow_overrun
+                            && bottom_px <= available + bottom_tolerance
                     });
             // native HWP의 저장 object는 host LineSeg의 시작보다 약간 뒤에서 paint될 수
             // 있다. 현재 flow가 그 host line 안에 있고 object top도 같은 line 안에 있으며,
@@ -21064,7 +21080,7 @@ impl TypesetEngine {
                 && table.cells.len() == 1
                 && ft.table_footnotes.is_empty()
                 && st.current_footnote_height > 0.0
-                && rowbreak_table_has_internal_saved_vpos_reset(table)
+                && has_internal_saved_vpos_reset
                 && next_rewinds_after_table
                 && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
                     let flow_overrun = st.current_height - top_px;
@@ -21101,7 +21117,7 @@ impl TypesetEngine {
                     && st.current_footnote_height <= 0.5
                     && declared_overflows_current
                     && !saved_object_bottom_fits_current
-                    && rowbreak_table_has_internal_saved_vpos_reset(table)
+                    && has_internal_saved_vpos_reset
                     && next_rewinds_after_table
                     && saved_span.is_some_and(|(anchor_px, _top_px, bottom_px)| {
                         // #4763 이후 saved span은 flow anchor와 paint top을 따로
@@ -21177,7 +21193,7 @@ impl TypesetEngine {
                     saved_object_bottom_fits_current,
                     saved_anchor_splits_here,
                     native_hwp5_near_anchor_rowbreak_needs_fragment_scan,
-                    rowbreak_table_has_internal_saved_vpos_reset(table),
+                    has_internal_saved_vpos_reset,
                     next_rewinds_after_table,
                     native_hwp5_internal_reset_rewind_needs_anchor_resync,
                     native_hwp5_multirow_internal_reset_needs_anchor_resync,

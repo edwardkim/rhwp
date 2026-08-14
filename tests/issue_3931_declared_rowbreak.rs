@@ -5,8 +5,9 @@
 //!   문단 사이 vpos reset을 갖지만, 현재 엔진은 표 전체를 새 쪽으로 이월한다.
 //! - 전체 HWP는 한컴 2020 PDF 383쪽보다 10쪽 많은 393쪽이다.
 //!
-//! Stage 2는 표 구조와 저장 pitch를 바꾸지 않은 채 물리 조각의 12+4 소유권을
-//! 정답 계약으로 전환한다. 전체 383쪽 계약만 Stage 3 구현 전까지 `ignore`한다.
+//! Stage 2는 표 구조와 저장 pitch를 바꾸지 않은 채 pi=23의 12+4 소유권을,
+//! Stage 3은 pi=14의 declared 선이월을 물리 fragment 계약으로 전환한다. 383쪽은
+//! 여러 독립 누적 오차가 합쳐진 외부 오라클이므로 진단 ledger로 `ignore`한다.
 //! 따라서 전역 줄높이를 줄이거나 다른 표를 우연히 이동한 결과를 #3931 해결로
 //! 오인하지 않는다.
 
@@ -31,6 +32,9 @@ const TARGET_ROW: usize = 4;
 const TARGET_COL: usize = 2;
 const HEAD_FRAGMENT_TEXT: &str = "문서결재와 업무분장 등을 공무원에게 부여하고 있습니다.";
 const TAIL_FRAGMENT_TEXT: &str = "채용목적에 따른 업무범위 내에서";
+const PI14_QUESTION_TEXT: &str = "문서등록번호가 빠진 공문서는 효력이 없는 것이 아닌가요?";
+const PI14_HEAD_TEXT: &str = "그렇지 않습니다. 공문서에 문서등록번호가 빠졌다고";
+const PI14_TAIL_TEXT: &str = "따라서, 해당 문서를 생산한 행정기관에";
 
 fn read_fixture() -> Vec<u8> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE);
@@ -90,9 +94,15 @@ fn page_index_from_json(json: &str, field: &str) -> u32 {
         .unwrap_or_else(|| panic!("JSON has no {field}: {json}"))
 }
 
-fn target_paragraph_pages(document: &HwpDocument) -> (u32, u32) {
+fn paragraph_text_pages(
+    document: &HwpDocument,
+    section_index: u32,
+    para_index: u32,
+    head_text: &str,
+    tail_text: &str,
+) -> (u32, u32) {
     let first_page_json = document
-        .get_page_of_position(SECTION_INDEX as u32, TARGET_PARA_INDEX as u32)
+        .get_page_of_position(section_index, para_index)
         .expect("target outer paragraph page");
     let first_page = page_index_from_json(&first_page_json, "page");
     let trees = [first_page, first_page + 1].map(|page| {
@@ -111,7 +121,17 @@ fn target_paragraph_pages(document: &HwpDocument) -> (u32, u32) {
                 panic!("target text {needle:?} absent from first two table fragments")
             })
     };
-    (page_for(HEAD_FRAGMENT_TEXT), page_for(TAIL_FRAGMENT_TEXT))
+    (page_for(head_text), page_for(tail_text))
+}
+
+fn target_paragraph_pages(document: &HwpDocument) -> (u32, u32) {
+    paragraph_text_pages(
+        document,
+        SECTION_INDEX as u32,
+        TARGET_PARA_INDEX as u32,
+        HEAD_FRAGMENT_TEXT,
+        TAIL_FRAGMENT_TEXT,
+    )
 }
 
 fn find_node<'a>(value: &'a Value, predicate: &impl Fn(&Value) -> bool) -> Option<&'a Value> {
@@ -132,6 +152,34 @@ fn bbox_bottom(node: &Value) -> f64 {
     let bbox = node.get("bbox").expect("render node bbox");
     bbox.get("y").and_then(Value::as_f64).expect("bbox y")
         + bbox.get("h").and_then(Value::as_f64).expect("bbox h")
+}
+
+fn assert_table_fragment_inside_body(
+    document: &HwpDocument,
+    page: u32,
+    para_index: usize,
+    fragment_text: &str,
+) {
+    let tree_json = document
+        .get_page_render_tree(page)
+        .expect("render target table fragment");
+    let tree: Value = serde_json::from_str(&tree_json).expect("parse target render tree");
+    let body = find_node(&tree, &|node| {
+        node.get("type") == Some(&Value::from("Body"))
+    })
+    .expect("page body");
+    let target_fragment = find_node(&tree, &|node| {
+        node.get("type") == Some(&Value::from("Table"))
+            && node.get("pi").and_then(Value::as_u64) == Some(para_index as u64)
+            && node.to_string().contains(fragment_text)
+    })
+    .expect("target table fragment");
+    assert!(
+        bbox_bottom(target_fragment) <= bbox_bottom(body) + 0.5,
+        "target fragment must stay inside the page body: table bottom {:.1}, body bottom {:.1}",
+        bbox_bottom(target_fragment),
+        bbox_bottom(body)
+    );
 }
 
 #[test]
@@ -208,26 +256,7 @@ fn issue_3931_pi23_stored_reset_splits_across_adjacent_pages() {
         "Hancom 2020 puts the first 12 lines at the previous page tail and the last 4 lines at the next page head"
     );
 
-    let tree_json = document
-        .get_page_render_tree(head_page)
-        .expect("render first target table fragment");
-    let tree: Value = serde_json::from_str(&tree_json).expect("parse target render tree");
-    let body = find_node(&tree, &|node| {
-        node.get("type") == Some(&Value::from("Body"))
-    })
-    .expect("page body");
-    let target_fragment = find_node(&tree, &|node| {
-        node.get("type") == Some(&Value::from("Table"))
-            && node.get("pi").and_then(Value::as_u64) == Some(TARGET_PARA_INDEX as u64)
-            && node.to_string().contains(HEAD_FRAGMENT_TEXT)
-    })
-    .expect("first target table fragment");
-    assert!(
-        bbox_bottom(target_fragment) <= bbox_bottom(body) + 0.5,
-        "the first target fragment must stay inside the page body: table bottom {:.1}, body bottom {:.1}",
-        bbox_bottom(target_fragment),
-        bbox_bottom(body)
-    );
+    assert_table_fragment_inside_body(&document, head_page, TARGET_PARA_INDEX, HEAD_FRAGMENT_TEXT);
 }
 
 #[test]
@@ -241,7 +270,50 @@ fn issue_3931_stage2_records_hwp_page_count_after_pi23_fix() {
 }
 
 #[test]
-#[ignore = "#3931 RED: Stage 3 must match the 383-page Hancom 2020 PDF oracle"]
+fn issue_3931_pi14_declared_overflow_enters_fragment_scan() {
+    let document = HwpDocument::from_bytes(&read_fixture()).expect("paginate #3931 HWP fixture");
+    let (head_page, tail_page) = paragraph_text_pages(
+        &document,
+        SECTION_INDEX as u32,
+        14,
+        PI14_HEAD_TEXT,
+        PI14_TAIL_TEXT,
+    );
+    assert_eq!(
+        tail_page,
+        head_page + 1,
+        "Hancom 2020 keeps the first answer paragraph with question 7, then continues the answer on the next page"
+    );
+    assert_table_fragment_inside_body(&document, head_page, 14, PI14_HEAD_TEXT);
+}
+
+#[test]
+fn issue_3931_hwpx_keeps_existing_fragment_route() {
+    let path =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/2025 행정업무운영 편람(최종).hwpx");
+    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
+    let document = HwpDocument::from_bytes(&bytes).expect("paginate #3931 HWPX fixture");
+    assert_eq!(
+        document.page_count(),
+        386,
+        "current HWPX page-count ratchet"
+    );
+    let (question_page, answer_page) = paragraph_text_pages(
+        &document,
+        SECTION_INDEX as u32,
+        14,
+        PI14_QUESTION_TEXT,
+        PI14_HEAD_TEXT,
+    );
+    assert_eq!(
+        answer_page,
+        question_page + 1,
+        "HWPX already enters the fragment scanner; its remaining first-answer ownership drift is not declared whole-table deferral"
+    );
+}
+
+#[test]
+#[ignore = "#3931 oracle ledger: independent residual pagination drift remains after pi14/pi23 ownership fixes"]
 fn issue_3931_hwp_matches_hancom_2020_page_count() {
     let document = HwpDocument::from_bytes(&read_fixture()).expect("paginate #3931 HWP fixture");
     assert_eq!(document.page_count(), 383);
