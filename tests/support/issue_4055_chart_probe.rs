@@ -7,23 +7,12 @@ use rhwp::ooxml_chart::OoxmlChart;
 use rhwp::parser::ole_container::parse_ole_container;
 
 /// 레거시 그리드에서 f64 값 뒤에 항상 붙는 트레일러.
+///
+/// 로케이터 자체는 프로덕션에 위임했지만(#4098), 이 상수는 **의도적으로 무제한인**
+/// 대조 스캔(`locator_must_be_bounded_to_the_data_grid_window`)이 독립 채점자로 남기
+/// 위해 여기 둔다. 채점자를 피채점자에게 위임하면 판정이 아니라 동어반복이 된다.
 pub(super) const VALUE_TRAILER: &[u8] = &[0xFF, 0xFF, 0x06, 0x00, 0x00, 0x00];
-const GRID_MARKER: &[u8] = b"VtDataGrid\0";
 pub(super) const DOUBLE_MARKER: &[u8] = b"VtDouble\0";
-
-/// `VtDataGrid` 다음에 오는 형제 오브젝트 마커들 — 그리드 구간의 끝을 정한다.
-/// `src/ole_chart/parser.rs` 의 `find_next_legacy_object_marker` 와 같은 목록이다.
-const OBJECT_MARKERS: &[&[u8]] = &[
-    b"VtBackdrop\0",
-    b"VtBackDrop\0",
-    b"VtChartSection\0",
-    b"VtFootnote\0",
-    b"VtLegend\0",
-    b"VtPlot\0",
-    b"VtPrintInformation\0",
-    b"VtChartTitle\0",
-    b"VtTitle\0",
-];
 
 /// sentinel — 원본 최대값이 `5` 라 `91.7` 이면 첫 막대가 차트를 뚫고 솟는다.
 pub(super) const SENTINEL: f64 = 91.7;
@@ -43,50 +32,16 @@ pub(super) fn find_from(haystack: &[u8], needle: &[u8], from: usize) -> Option<u
         .map(|p| from + p)
 }
 
-/// `VtDataGrid` 데이터 구간 `[start, end)`.
-///
-/// 시작은 마커 + `StoredName` NUL + `StoredVersion`(4B) 뒤다
-/// (`legacy_chart_object_data_start` 와 같은 규약).
-fn grid_window(contents: &[u8]) -> Option<(usize, usize)> {
-    let marker = find_from(contents, GRID_MARKER, 0)?;
-    let start = marker + GRID_MARKER.len() + 4;
-    if start > contents.len() {
-        return None;
-    }
-    let end = OBJECT_MARKERS
-        .iter()
-        .filter_map(|m| find_from(contents, m, start))
-        .min()
-        .unwrap_or(contents.len());
-    Some((start, end))
-}
-
 /// 그리드 값 셀의 `(바이트 오프셋, 값)` 목록.
 ///
-/// **값의 크기·부호·정수 여부를 보지 않는다.** 오직 트레일러 위치로만 찾는다.
+/// **값의 크기·부호·정수 여부를 보지 않는다.** #4055 가 실증한 구조 로케이터는 #4098 에서
+/// `rhwp::ole_chart::scan_legacy_grid` 로 승격됐으므로 여기서는 위임한다 — 그 결과
+/// 아래 코퍼스 테스트가 프로덕션 게이트가 된다. 반환 순서는 셀 인덱스(= 바이트) 순으로
+/// 종전과 같다.
 pub(super) fn locate_grid_values(contents: &[u8]) -> Vec<(usize, f64)> {
-    let Some((start, end)) = grid_window(contents) else {
-        return Vec::new();
-    };
-    // 첫 값은 `VtDouble` 선언 뒤에 온다. 그 앞의 트레일러 유사 바이트는 값이 아니다.
-    let Some(anchor) = find_from(&contents[..end], DOUBLE_MARKER, start) else {
-        return Vec::new();
-    };
-
-    let mut out = Vec::new();
-    let mut cursor = anchor;
-    while let Some(hit) = find_from(&contents[..end], VALUE_TRAILER, cursor + 1) {
-        cursor = hit;
-        let Some(value_at) = hit.checked_sub(8) else {
-            continue;
-        };
-        if value_at < anchor {
-            continue;
-        }
-        let bytes: [u8; 8] = contents[value_at..hit].try_into().expect("8바이트");
-        out.push((value_at, f64::from_le_bytes(bytes)));
-    }
-    out
+    rhwp::ole_chart::scan_legacy_grid(contents)
+        .map(|grid| grid.value_offsets().collect())
+        .unwrap_or_default()
 }
 
 /// 문서에서 (레거시 `Contents`, OOXML 차트 XML) 을 꺼낸다.
