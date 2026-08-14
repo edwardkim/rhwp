@@ -238,15 +238,18 @@ pub(crate) fn next_object_marker(contents: &[u8], start: usize) -> Option<usize>
 
 /// `VtDataGrid` 데이터 구간 `[start, end)`.
 ///
-/// 시작은 마커 + `StoredName` NUL + `StoredVersion`(4B) 뒤다. 끝은 최초의 형제 마커이고,
-/// 없으면 스트림 끝으로 닫는다.
+/// 시작은 `VtDataGrid` 이름 뒤의 `version(u16) + payload(u32)` 뒤다. 끝은 최초의 형제
+/// 마커이고, 없으면 스트림 끝으로 닫는다.
 pub fn legacy_grid_window(contents: &[u8]) -> Option<Range<usize>> {
     let marker = find_from(contents, GRID_MARKER, 0)?;
     grid_window_from(contents, marker)
 }
 
 fn grid_window_from(contents: &[u8], marker: usize) -> Option<Range<usize>> {
-    let start = marker + GRID_MARKER.len() + 4;
+    let start = marker
+        .checked_add(GRID_MARKER.len())?
+        .checked_add(2)?
+        .checked_add(4)?;
     if start > contents.len() {
         return None;
     }
@@ -269,7 +272,9 @@ pub fn scan_legacy_grid(contents: &[u8]) -> Result<LegacyChartGrid, GridScanErro
     let expected = (rows as usize - 1) * (cols as usize - 1);
     let cell_count = rows as usize * cols as usize;
 
-    let mut cells = Vec::with_capacity(cell_count);
+    // rows/cols 는 문서가 선언한 값이므로, 그 값만으로 대규모 메모리를 예약하지 않는다.
+    // 실제 셀 수는 아래에서 입력 바이트를 훑어 수집하고, 마지막에 선언 치수와 대조한다.
+    let mut cells = Vec::new();
     collect_number_cells(contents, &window, &mut cells);
     collect_text_cells(contents, &window, &mut cells);
     cells.sort_by_key(|cell| cell.index);
@@ -588,6 +593,20 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn grid_window_starts_after_datagrid_declaration() {
+        let bytes = control_like_grid();
+        let marker = find_from(&bytes, GRID_MARKER, 0).expect("VtDataGrid");
+        let expected_start = marker + GRID_MARKER.len() + 2 + 4;
+        let expected_end = find_from(&bytes, b"VtPlot\0", expected_start).expect("VtPlot");
+
+        assert_eq!(
+            legacy_grid_window(&bytes),
+            Some(expected_start..expected_end),
+            "window는 VtDataGrid 선언 전체 뒤에서 시작해야 한다"
+        );
+    }
+
+    #[test]
     fn zero_negative_and_fractional_values_are_read() {
         // 전부 옛 `is_plausible_grid_value` 가 거부하던 값이다.
         let bytes = synth_grid(
@@ -771,6 +790,20 @@ pub(crate) mod tests {
         assert_eq!(
             scan_legacy_grid(&bytes),
             Err(GridScanError::EmptyGrid { rows: 1, cols: 4 })
+        );
+    }
+
+    #[test]
+    fn oversized_declared_dimensions_do_not_preallocate_cells() {
+        // 작은 손상 스트림이 최대 u16 치수를 주장해도, 입력에 없는 셀만큼 메모리를
+        // 예약하지 않고 최종 구조 검증으로 거부해야 한다.
+        let bytes = synth_grid(u16::MAX, u16::MAX, &[]);
+        assert_eq!(
+            scan_legacy_grid(&bytes),
+            Err(GridScanError::NumberCellCountMismatch {
+                found: 0,
+                expected: (u16::MAX as usize - 1) * (u16::MAX as usize - 1),
+            })
         );
     }
 
