@@ -389,6 +389,15 @@ pub struct FieldRange {
     /// 항상 소실된다. 고아(다단락) fieldEnd 는 `OrphanFieldEnd::field_id` 로 이미 보존하므로,
     /// 같은 문단 내 짝(matched) 경로에도 대칭적으로 보존한다.
     pub end_field_id: u32,
+    /// FIELD_BEGIN 과 FIELD_END **사이에 있는 컨트롤 슬롯 수**.
+    ///
+    /// 표·그림처럼 텍스트 문자를 만들지 않는 인라인 개체를 감싼 누름틀은
+    /// `start_char_idx == end_char_idx`(텍스트 축 0길이)가 된다. 이때 직렬화기가
+    /// fieldEnd 를 자기 fieldBegin 직후에 놓으면 개체가 필드 **밖으로** 밀려나
+    /// 빈 누름틀이 되고, 한글은 빈 누름틀의 안내문("이곳을 마우스로 누르고 …")을
+    /// 본문으로 표시한다(10k 스윕 G-순수증식 16경로 근인). 이 값만큼 슬롯을
+    /// 지나서 fieldEnd 를 놓으면 원본 범위가 보존된다.
+    pub inner_slot_count: usize,
 }
 
 /// 고아 FIELD_END (0x04) — 짝이 되는 FIELD_BEGIN 이 다른 문단에 있는
@@ -1164,6 +1173,7 @@ impl Paragraph {
                     end_char_idx: fr.end_char_idx - split_pos,
                     control_idx: fr.control_idx,
                     end_field_id: fr.end_field_id,
+                    inner_slot_count: fr.inner_slot_count,
                 });
             } else if fr.end_char_idx <= split_pos {
                 // 완전히 원래 문단 쪽
@@ -1175,6 +1185,8 @@ impl Paragraph {
                     end_char_idx: split_pos,
                     control_idx: fr.control_idx,
                     end_field_id: fr.end_field_id,
+                    // 문단이 잘려 안쪽 슬롯 소속이 불확실해진다 — 보수적으로 0.
+                    inner_slot_count: 0,
                 });
             }
         }
@@ -1375,6 +1387,7 @@ impl Paragraph {
                 end_char_idx: fr.end_char_idx + self_text_len,
                 control_idx: fr.control_idx + ctrl_offset,
                 end_field_id: fr.end_field_id,
+                inner_slot_count: fr.inner_slot_count,
             });
         }
 

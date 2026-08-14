@@ -328,11 +328,14 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
             } else if ch == 0x0004 {
                 // FIELD_END: 인라인 컨트롤 → controls[]에 대응하지 않음
                 if let Some((start_idx, field_ctrl_idx)) = field_stack.pop() {
+                    // HWP5 는 인라인 개체도 char_count 를 전진시키므로(8유닛 슬롯)
+                    // 텍스트 축 0길이가 곧 "안쪽이 비었다"를 뜻한다 — 별도 보정 불필요.
                     field_ranges.push(FieldRange {
                         start_char_idx: start_idx,
                         end_char_idx: char_count,
                         control_idx: field_ctrl_idx,
                         end_field_id: 0,
+                        inner_slot_count: ctrl_idx.saturating_sub(field_ctrl_idx + 1),
                     });
                 }
             } else if is_extended_only_ctrl_char(ch) {
@@ -353,7 +356,13 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
             match ch {
                 0x0018 => {
                     char_offsets.push(code_unit_pos);
-                    text.push('-'); // 하이픈 (HWP 5.0 표 7: 코드 24)
+                    // 하이픈 (HWP 5.0 표 7: 코드 24) — 줄바꿈 자리에서만 보이는
+                    // **소프트 하이픈**이다. 한글은 텍스트 추출에 싣지 않는다.
+                    // 종전처럼 '-'(U+002D)로 내리면 실제 하이픈과 구별할 수 없어
+                    // HWPX 저장본이 `pertinent` 를 `per-tinent` 로 만든다
+                    // (10k 스윕 G-순수증식). #4675 가 U+2007 을 `<hp:fwSpace/>` 로
+                    // 옮긴 것과 같은 계열 — 고유 코드포인트로 받아 요소로 되돌린다.
+                    text.push('\u{00AD}');
                     char_count += 1;
                 }
                 0x0019 => {

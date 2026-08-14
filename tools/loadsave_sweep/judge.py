@@ -13,8 +13,12 @@
 원본이 한글에서 안 열리는 문서(ORACLE_ORIG_FAIL)는 판정 모수에서 제외해 따로 센다.
 rhwp 자기검증(exit 3/4)은 selfVerify 열에 참고로 싣는다 — 오라클 판정과 독립이다.
 
-원본 유령 성공 의심(원본 텍스트 0자 + 페이지 1)은 origSuspect 열로 표시한다. 보안 모듈
-미등록 등으로 대화상자가 자동 거부되면 "빈 문서를 연 성공"이 나온다(메모리: 빈 PDF 사례).
+원본 유령 성공 의심(원본 텍스트 0자 + 페이지 1)은 origSuspect 열에 SUSPECT 로 표시한다.
+보안 모듈 미등록 등으로 대화상자가 자동 거부되면 "빈 문서를 연 성공"이 나온다(메모리: 빈 PDF 사례).
+
+원본이 여러 쪽인데 텍스트가 0자면 한글의 **텍스트 추출이 실패**한 것이다(문서가 빈 게 아니다).
+이때 텍스트 축은 비교 자체가 불가능하므로 TEXT_MISMATCH 를 내지 않고 origSuspect 열에
+ORIG_TEXT_FAIL 로 표시한다 — 쪽수·컨트롤 축 판정은 그대로 유효하므로 유지한다.
 
 사용:
     python judge.py --master master.tsv --phase-a <out>/phase_a.ndjson \
@@ -118,6 +122,7 @@ def main() -> int:
     n_orig_fail = 0
     n_orig_missing = 0
     n_orig_suspect = 0
+    n_orig_text_fail = 0
 
     for doc in docs:
         docid, fmt = doc["docid"], doc["format"]
@@ -132,6 +137,13 @@ def main() -> int:
         orig_suspect = orig["textLen"] == 0 and orig["pages"] <= 1
         if orig_suspect:
             n_orig_suspect += 1
+        # 여러 쪽인데 0자 = 한글의 텍스트 추출 실패. 문서가 빈 게 아니다.
+        orig_text_fail = orig["textLen"] == 0 and orig["pages"] > 1
+        if orig_text_fail:
+            n_orig_text_fail += 1
+        # 원본이 0자면 유령 성공이든 추출 실패든 텍스트 축은 비교 자체가 성립하지 않는다
+        # (0자 원본과의 차이는 결함과 측정 실패를 구별할 수 없다). 쪽수·컨트롤 축은 유효하다.
+        text_axis_void = orig["textLen"] == 0
         orig_text = None  # 필요할 때만 읽는다
         orig_ctrls = parse_ctrls(orig["ctrls"])
 
@@ -158,7 +170,7 @@ def main() -> int:
                 else:
                     pages_str = f"{orig['pages']}->{var['pages']}"
                     len_delta = str(var["textLen"] - orig["textLen"])
-                    if var["textSha"] != orig["textSha"]:
+                    if var["textSha"] != orig["textSha"] and not text_axis_void:
                         if orig_text is None:
                             orig_text = load_text(f"{docid}.orig")
                         var_text = load_text(f"{docid}.{route}")
@@ -176,8 +188,9 @@ def main() -> int:
                         verdicts.append("PAGE_DIFF")
             verdict = ";".join(verdicts) if verdicts else "OK"
             counts[route][verdicts[0] if verdicts else "OK"] += 1
+            orig_flag = "SUSPECT" if orig_suspect else ("ORIG_TEXT_FAIL" if orig_text_fail else "")
             rows.append([docid, fmt, route, verdict, self_verify, pages_str, len_delta,
-                         "SUSPECT" if orig_suspect else "", detail, doc["src"]])
+                         orig_flag, detail, doc["src"]])
 
     header = ["docid", "format", "route", "verdict", "selfVerify", "pages", "textLenDelta",
               "origSuspect", "detail", "src"]
@@ -191,7 +204,11 @@ def main() -> int:
     lines = ["# load/save 스윕 판정 요약", ""]
     total_judged = sum(sum(c.values()) for c in counts.values())
     lines.append(f"- 문서: {len(docs)} (원본 오라클 실패 {n_orig_fail}, Phase B 미도달 {n_orig_missing}, "
-                 f"원본 유령성공 의심 {n_orig_suspect})")
+                 f"원본 유령성공 의심 {n_orig_suspect}, 원본 텍스트추출 실패 {n_orig_text_fail})")
+    if n_orig_suspect or n_orig_text_fail:
+        lines.append(f"  - 원본 텍스트가 0자인 문서 {n_orig_suspect + n_orig_text_fail}건은 텍스트 축 판정을 보류했다 "
+                     f"(origSuspect 열: 0자+1쪽은 SUSPECT, 0자+여러 쪽은 ORIG_TEXT_FAIL). "
+                     f"0자 원본과의 차이는 결함과 측정 실패를 구별할 수 없다. 쪽수·컨트롤 축은 그대로 판정한다.")
     lines.append(f"- 판정된 (문서×경로): {total_judged}")
     lines.append("")
     lines.append("| route | OK | CONVERT_FAIL | OPEN_FAIL | TEXT_MISMATCH | CTRL_DIFF | PAGE_DIFF | MEASURE_FAIL |")

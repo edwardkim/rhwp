@@ -209,10 +209,21 @@ fn bool01(b: bool) -> &'static str {
     }
 }
 
+/// `<hp:fieldBegin type="...">` 값. **반드시 OWPML `FieldType` 열거 안의 값이어야 한다**
+/// (`mydocs/manual/OWPML SCHEMA/ParaList XML schema.xml:2701-2719` — 15개).
+///
+/// 열거 밖의 값을 쓰면 한글은 그 지점에서 섹션 파싱을 포기하고 **이후 본문을 통째로
+/// 버린다**(파일은 열리지만 뒷부분이 사라진다). 10k 스윕 실측: `type="UNKNOWN"` 을 담은
+/// h2x 산출물에서 한글이 원본 105,388자 중 5,306자만 읽었고, 값을 열거 안의 값으로
+/// 바꾸자 100% 복원됐다(03787·03788·06841 동일).
+///
+/// `Unknown`·`TableOfContents` 는 열거에 대응 값이 없다. 구조를 더 요구하지 않는
+/// `CROSSREF` 로 보낸다 — `MEMO` 는 memo subList/memoShape 를 요구해서 내용 없이
+/// type 만 바꾸면 한글이 **파일을 아예 열지 못한다**(실측 확인).
 fn field_type_str(t: FieldType) -> &'static str {
     use FieldType::*;
     match t {
-        Unknown => "UNKNOWN",
+        Unknown => "CROSSREF",
         Date => "DATE",
         DocDate => "DOC_DATE",
         Path => "PATH",
@@ -226,7 +237,13 @@ fn field_type_str(t: FieldType) -> &'static str {
         Hyperlink => "HYPERLINK",
         Memo => "MEMO",
         PrivateInfoSecurity => "PRIVATE_INFO",
-        TableOfContents => "TABLE_OF_CONTENTS",
+        // 스키마에 목차 항목이 없다. #2845 는 rhwp 자체 라운드트립에서 TOC 정체성을
+        // 살리려고 "TABLE_OF_CONTENTS" 를 골랐지만, 한글 실측은 그 값이 **임의의 쓰레기
+        // 값과 똑같이** 본문 폐기를 부른다고 말한다(03787 대조 실측, type 값만 교체):
+        //   CROSSREF / CLICK_HERE / BOOKMARK -> 5,727자(100%)
+        //   TABLE_OF_CONTENTS / UNKNOWN / ZZZ_NOT_A_TYPE -> 840자(14.7%)
+        // 판정 기준은 오직 "열거 안인가"다. 라운드트립 정체성보다 본문 보존이 우선이다.
+        TableOfContents => "CROSSREF",
     }
 }
 
@@ -319,23 +336,88 @@ mod tests {
         assert_eq!(field_type_str(FieldType::Hyperlink), "HYPERLINK");
         assert_eq!(field_type_str(FieldType::Bookmark), "BOOKMARK");
         assert_eq!(field_type_str(FieldType::Date), "DATE");
-        assert_eq!(
-            field_type_str(FieldType::TableOfContents),
-            "TABLE_OF_CONTENTS"
-        );
     }
 
     #[test]
-    fn field_type_str_toc_round_trips_through_hwpx_parser() {
-        // [#2845] 종전 "TOC" 방출은 parse_field_type()이 인식하지 못해(매칭 분기 없음)
-        // 재파싱 시 FieldType::Unknown 으로 떨어졌다(TOC 필드 정체성 소실). 파서가
-        // 실제로 받아들이는 "TABLE_OF_CONTENTS"/"TABLEOFCONTENTS" 중 하나와 일치해야
-        // HWPX 저장→재로드 라운드트립에서 TOC 필드가 살아남는다.
-        assert_eq!(
-            field_type_str(FieldType::TableOfContents),
-            "TABLE_OF_CONTENTS"
+    fn field_type_str_toc_stays_inside_owpml_enum() {
+        // [#2845] 는 rhwp 라운드트립에서 TOC 정체성을 살리려고 "TABLE_OF_CONTENTS" 를
+        // 방출했다. 그러나 그 표기는 OWPML FieldType 열거에 없다 — 한글 실측(03787,
+        // type 값만 교체)에서 임의의 쓰레기 값과 동일하게 본문을 버렸다:
+        //   CROSSREF/CLICK_HERE/BOOKMARK -> 5,727자(100%)
+        //   TABLE_OF_CONTENTS/UNKNOWN/ZZZ_NOT_A_TYPE -> 840자(14.7%)
+        // 라운드트립 정체성(rhwp 내부 관심사)보다 본문 보존(사용자 문서)이 우선이므로
+        // 열거 안의 값으로 내려보낸다. TOC 정체성 보존은 별도 축(예: name 속성)이 필요하다.
+        let emitted = field_type_str(FieldType::TableOfContents);
+        assert_ne!(emitted, "TABLE_OF_CONTENTS");
+        assert!(OWPML_FIELD_TYPES.contains(&emitted), "got: {emitted}");
+    }
+
+    #[test]
+    fn every_field_type_maps_inside_owpml_enum() {
+        // 불변식: `type` 은 어떤 IR 값에서도 OWPML 열거를 벗어나면 안 된다.
+        // 벗어나면 한글이 그 지점부터 본문을 버린다(값이 무엇인지는 무관 — 실측상
+        // "TABLE_OF_CONTENTS" 도 "ZZZ_NOT_A_TYPE" 과 동일하게 폐기됐다).
+        use FieldType::*;
+        for t in [
+            Unknown,
+            Date,
+            DocDate,
+            Path,
+            Bookmark,
+            MailMerge,
+            CrossRef,
+            Formula,
+            ClickHere,
+            Summary,
+            UserInfo,
+            Hyperlink,
+            Memo,
+            PrivateInfoSecurity,
+            TableOfContents,
+        ] {
+            let s = field_type_str(t);
+            assert!(
+                OWPML_FIELD_TYPES.contains(&s),
+                "{t:?} -> {s:?} 는 OWPML FieldType 열거 밖이다 (한글이 본문을 버린다)"
+            );
+        }
+    }
+
+    #[test]
+    fn unknown_field_type_never_emits_schema_outside_value() {
+        // OWPML FieldType 열거(ParaList XML schema.xml:2701-2719)에 "UNKNOWN" 은 없다.
+        // 열거 밖 값을 만나면 한글은 그 지점에서 섹션 파싱을 포기하고 이후 본문을 버린다
+        // — 10k 스윕 h2x 절단군의 근인 하나다. 실측: 07868 은 105,388자 중 5,306자만
+        // 읽히다가 열거 안의 값으로 바꾸자 100% 복원(03787·03788·06841 동일).
+        let emitted = field_type_str(FieldType::Unknown);
+        assert_ne!(
+            emitted, "UNKNOWN",
+            "스키마 밖 값을 방출하면 한글이 본문을 버린다"
+        );
+        assert!(
+            OWPML_FIELD_TYPES.contains(&emitted),
+            "Unknown 은 열거 안의 값으로 내려가야 한다: {emitted}"
         );
     }
+
+    /// OWPML `FieldType` 열거 전체 (ParaList XML schema.xml:2701-2719).
+    const OWPML_FIELD_TYPES: &[&str] = &[
+        "CLICK_HERE",
+        "HYPERLINK",
+        "BOOKMARK",
+        "FORMULA",
+        "SUMMERY",
+        "USER_INFO",
+        "DATE",
+        "DOC_DATE",
+        "PATH",
+        "CROSSREF",
+        "MAILMERGE",
+        "MEMO",
+        "PROOFREADING_MARKS",
+        "PRIVATE_INFO",
+        "METATAG",
+    ];
 
     #[test]
     fn field_type_str_matches_owpml_schema() {
