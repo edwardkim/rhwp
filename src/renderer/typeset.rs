@@ -21145,7 +21145,8 @@ impl TypesetEngine {
         // 다행 RowBreak 표는 common.height가 첫 fragment만 뜻할 수도 있다. cell
         // 내부 reset 없이 다음 host가 새 물리 page를 명시할 때만, object frame을
         // 현 page 전체를 소유한 frame으로 쓴다.
-        let saved_rowbreak_object_frame = (!table.common.treat_as_char
+        let saved_rowbreak_object_frame = (st.profile.hwpx_container()
+            && !table.common.treat_as_char
             && matches!(
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
