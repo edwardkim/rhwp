@@ -20776,8 +20776,49 @@ impl TypesetEngine {
                         let measured_excess = (table_total - declared_total).max(0.0);
                         top_px <= st.current_height
                             && flow_overrun <= measured_excess
-                            && bottom_px <= available
-                    });
+                              && bottom_px <= available
+                      });
+            // native HWP의 저장 object는 host LineSeg의 시작보다 약간 뒤에서 paint될 수
+            // 있다. 현재 flow가 그 host line 안에 있고 object top도 같은 line 안에 있으며,
+            // object bottom과 다음 source reset이 현재 물리 page를 증명하면 declared
+            // overrun으로 표 전체를 이월하지 않는다. 이 경우 RowBreak scanner가 저장
+            // frame의 실제 행 prefix를 현재 page owner로 확정한다.
+            let native_hwp5_anchor_line_rowbreak_needs_fragment_scan = st
+                .profile
+                .native_hwp5_layout()
+                && !table.common.treat_as_char
+                && is_para_topbottom_float(&table.common)
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && !para_has_visible_text(para)
+                && table.row_count > 1
+                && ft.table_footnotes.is_empty()
+                && next_rewinds_after_table
+                && !rowbreak_table_has_internal_saved_vpos_reset(table)
+                && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
+                    bottom_px <= available
+                        && para
+                            .line_segs
+                            .iter()
+                            .find(|seg| !is_synthetic_line_seg(seg))
+                            .and_then(|seg| {
+                                line_seg_visible_bounds_px(
+                                    seg,
+                                    st.vpos_page_base.unwrap_or(0),
+                                    self.dpi,
+                                )
+                            })
+                            .is_some_and(|(line_top, line_bottom)| {
+                                saved_bounds_overlap_current_flow(
+                                    (line_top, line_bottom),
+                                    st.current_height,
+                                )
+                                    && st.current_height <= top_px
+                                    && top_px <= line_bottom
+                            })
+                });
             // [#3820 Stage 11] 1×1 빈-host RowBreak 표도 cell 안의 저장 vpos reset이
             // 있으면, 선언 common.height는 첫 physical fragment의 높이이고 실제 cell
             // 측정치는 다음 쪽 tail까지 합친 값이다. 앞선 out-of-flow 표의 측정 팽창이
@@ -20904,6 +20945,7 @@ impl TypesetEngine {
                 && !saved_object_bottom_fits_current
                 && !saved_anchor_splits_here
                 && !native_hwp5_near_anchor_rowbreak_needs_fragment_scan
+                && !native_hwp5_anchor_line_rowbreak_needs_fragment_scan
                 && !native_hwp5_internal_reset_rewind_needs_anchor_resync
                 && !native_hwp5_own_footnote_fragment_can_start_before_reservation
                 && !saved_host_line_after_stack_fits
