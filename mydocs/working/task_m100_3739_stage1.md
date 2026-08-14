@@ -36,6 +36,21 @@
 `cargo fmt --all`은 이 Windows 호스트에서 기존 경로 길이 제한(OS error 206)으로 실행되지
 않아, 변경한 Rust 파일에는 동일 rustfmt 버전으로 직접 `--check`를 수행했다.
 
+## 추가 HWP 샘플 확인
+
+같은 Windows `rhwp export-hwpx --verify --verify-pages` 명령으로 다음 샘플을 추가 확인했다.
+
+| 샘플 | 결과 |
+|---|---|
+| `hwp3-pagedef-1915.hwp` | exit 0 — IR 무차이 |
+| `issue1892_hwp3_tab_roundtrip.hwp` | exit 0 — IR 무차이 |
+| `hwpers_test4_complex_table.hwp` | exit 0 — IR 무차이 |
+| `footnote-tbox-01.hwp` | exit 0 — IR 무차이 |
+| `tac-img-02.hwp` | exit 3 — field `parameters` 6건 기존 차이, char_shapes 차이 없음; 페이지 66쪽 검증 통과 |
+
+마지막 항목은 #3739의 수정 경로와 다른 field 메타데이터 축이므로 본 수정의 회귀로 분류하지
+않았다.
+
 ## 보류
 
 - HWPX baseline 전수, `cargo clippy`, 전체 PR CI 성격의 검증은 별도 승인 전에는 실행하지 않았다.

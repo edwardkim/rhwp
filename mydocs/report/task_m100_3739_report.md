@@ -29,5 +29,9 @@ handoff만 예외적으로 정규화했다.
 - 실제 샘플 통합 회귀 테스트: 1 passed
 - 기존 표 슬롯 동일-ID parser 테스트: 1 passed
 - 변경 Rust 파일 rustfmt 검사 및 diff whitespace 검사: 통과
+- 추가 HWP 4종(페이지 설정·탭·복합 표·각주/글상자): 모두 `--verify --verify-pages` exit 0
+
+이미지 포함 `tac-img-02.hwp`는 페이지 66쪽 검증은 통과했으나 field `parameters` 6건의
+기존 IR 차이로 exit 3이다. `char_shapes` 차이는 없으므로 #3739과는 무관하다.
 
 전체 baseline·clippy·PR CI는 사용자 승인 후 다음 검증 단계에서 실행한다.
