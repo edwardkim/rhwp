@@ -11,120 +11,276 @@
  * 그래서 계약은 "무슨 칸을 무슨 값으로" 만 말하면 되고, 형태 맞추기는 어댑터가
  * rhwp 자신에게 시킨다 — gym 의 라이브 오라클과 같은 원리.
  *
- * 설계 함정 둘(이 세션에서 실측으로 확인해 회피함):
- *   ① e2e 파일은 top-level 에서 runTest 를 실행한다 → `import` 하면 브라우저가
- *      기동된다. 그래서 파일을 실행하지 않고 gymContract '객체 리터럴만' 정적
- *      파싱해 평가한다.
- *   ② `chart-to-csv --json` 은 순수 JSON 이다(출처 머리줄 없음) → 그대로 파싱하고
- *      `charts[0].csv` 를 쓴다.
- *
  * 사용:
  *   node gym/tools/from_e2e.mjs \
  *     --e2e rhwp-studio/e2e/issue-4694-chart-data-edit.test.mjs \
- *     --pack studio-e2e --id SE01 --bin target/debug/rhwp
- *
- * 생성 뒤 기존 게이트로 스스로 왕복 검증:
- *   python gym/tools/build_baseline.py --agent baseline --pack studio-e2e --bin <bin>
- *   python gym/score.py               --agent baseline --pack studio-e2e --bin <bin>
- *   → studio-e2e 3/3 이면 계약이 CLI 로 충실히 왕복함이 증명된다.
+ *     --pack studio-e2e --id ST01 --bin target/debug/rhwp
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 function arg(name, def) {
   const i = process.argv.indexOf(`--${name}`);
   return i >= 0 ? process.argv[i + 1] : def;
 }
 
-const ROOT = process.cwd();
-const e2ePath = arg('e2e');
-const packId = arg('pack', 'studio-e2e');
-const taskId = arg('id');
-const bin = path.resolve(ROOT, arg('bin', 'target/debug/rhwp'));
-if (!e2ePath || !taskId) {
-  console.error('필수: --e2e <경로> --id <과제ID> [--pack studio-e2e] [--bin target/debug/rhwp]');
-  process.exit(2);
-}
-const packDir = path.join(ROOT, 'gym', 'packs', packId);
+/**
+ * e2e 파일을 실행하지 않고 gymContract의 제한된 객체 리터럴만 읽는다.
+ *
+ * 허용 값은 중첩 객체, 문자열, 숫자뿐이다. 식·함수·템플릿·배열·식별자는 거부한다.
+ * 외부 PR의 e2e 파일은 검토 환경에서 신뢰할 수 없으므로 Function/eval을 사용하면 안 된다.
+ */
+export function parseContractLiteral(source) {
+  let index = 0;
+  const fail = message => {
+    throw new Error(`gymContract ${message} (offset ${index})`);
+  };
+  const skipWhitespace = () => {
+    while (index < source.length) {
+      while (index < source.length && /\s/.test(source[index])) index += 1;
+      if (source.startsWith('//', index)) {
+        index = source.indexOf('\n', index + 2);
+        if (index < 0) {
+          index = source.length;
+          return;
+        }
+        continue;
+      }
+      if (source.startsWith('/*', index)) {
+        const end = source.indexOf('*/', index + 2);
+        if (end < 0) fail('블록 주석이 닫히지 않았다');
+        index = end + 2;
+        continue;
+      }
+      return;
+    }
+  };
+  const parseString = () => {
+    const quote = source[index++];
+    let value = '';
+    while (index < source.length) {
+      const ch = source[index++];
+      if (ch === quote) return value;
+      if (ch !== '\\') {
+        value += ch;
+        continue;
+      }
+      if (index >= source.length) fail('문자열 escape가 끝나지 않았다');
+      const escaped = source[index++];
+      const simple = {
+        '"': '"',
+        "'": "'",
+        '\\': '\\',
+        b: '\b',
+        f: '\f',
+        n: '\n',
+        r: '\r',
+        t: '\t',
+        v: '\v',
+      };
+      if (Object.hasOwn(simple, escaped)) {
+        value += simple[escaped];
+      } else if (escaped === 'u') {
+        const hex = source.slice(index, index + 4);
+        if (!/^[0-9a-fA-F]{4}$/.test(hex)) fail('유효하지 않은 Unicode escape다');
+        value += String.fromCharCode(Number.parseInt(hex, 16));
+        index += 4;
+      } else {
+        fail(`허용되지 않은 문자열 escape \\${escaped}`);
+      }
+    }
+    fail('문자열이 닫히지 않았다');
+  };
+  const parseKey = () => {
+    skipWhitespace();
+    if (source[index] === '"' || source[index] === "'") return parseString();
+    const match = /^[A-Za-z_$][A-Za-z0-9_$]*/.exec(source.slice(index));
+    if (!match) fail('객체 키가 필요하다');
+    index += match[0].length;
+    return match[0];
+  };
+  const parseNumber = () => {
+    const match = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/.exec(source.slice(index));
+    if (!match) fail('유효한 숫자가 필요하다');
+    index += match[0].length;
+    const value = Number(match[0]);
+    if (!Number.isFinite(value)) fail('유한한 숫자만 허용한다');
+    return value;
+  };
+  const parseValue = () => {
+    skipWhitespace();
+    const ch = source[index];
+    if (ch === '{') return parseObject();
+    if (ch === '"' || ch === "'") return parseString();
+    if (ch === '-' || (ch >= '0' && ch <= '9')) return parseNumber();
+    fail('객체·문자열·숫자 이외의 식은 허용하지 않는다');
+  };
+  const parseObject = () => {
+    if (source[index] !== '{') fail("'{'가 필요하다");
+    index += 1;
+    const object = {};
+    skipWhitespace();
+    if (source[index] === '}') {
+      index += 1;
+      return object;
+    }
+    while (true) {
+      const key = parseKey();
+      if (Object.hasOwn(object, key)) fail(`중복 키 '${key}'는 허용하지 않는다`);
+      skipWhitespace();
+      if (source[index] !== ':') fail(`키 '${key}' 뒤에 ':'가 필요하다`);
+      index += 1;
+      object[key] = parseValue();
+      skipWhitespace();
+      if (source[index] === '}') {
+        index += 1;
+        return object;
+      }
+      if (source[index] !== ',') fail(`키 '${key}' 뒤에 ',' 또는 '}'가 필요하다`);
+      index += 1;
+      skipWhitespace();
+      if (source[index] === '}') {
+        index += 1;
+        return object;
+      }
+    }
+  };
 
-// 1) 계약을 '정적 파싱' 으로 읽는다 — 파일을 import/실행하지 않는다(함정 ①).
-function readContract(file) {
-  const src = readFileSync(path.resolve(ROOT, file), 'utf8');
-  const m = src.match(/export\s+const\s+gymContract\s*=\s*\{/);
-  if (!m) throw new Error(`${file} 에 'export const gymContract' 가 없다`);
-  const open = src.indexOf('{', m.index);
-  let depth = 0, end = -1;
-  for (let j = open; j < src.length; j++) {
-    if (src[j] === '{') depth++;
-    else if (src[j] === '}' && --depth === 0) { end = j; break; }
+  const value = parseValue();
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    fail('최상위 값은 객체여야 한다');
   }
-  if (end < 0) throw new Error('gymContract 객체 리터럴의 닫는 괄호를 못 찾음');
-  const literal = src.slice(open, end + 1);
-  // 리터럴 하나만 평가한다 — 파일 본문(runTest)은 실행되지 않는다.
-  return Function(`"use strict"; return (${literal});`)();
-}
-const c = readContract(e2ePath);
-for (const k of ['sample', 'chart', 'edit']) {
-  if (c[k] === undefined) throw new Error(`gymContract.${k} 가 없다`);
+  return value;
 }
 
-// 2) 실제 차트를 CSV 로 뽑는다 — chart-to-csv --json 은 순수 JSON(함정 ②).
-const sampleRel = path.posix.join('samples', c.sample);
-const env = JSON.parse(execFileSync(
-  bin, ['chart-to-csv', sampleRel, '--chart', String(c.chart), '--json'],
-  { cwd: ROOT, encoding: 'utf8' }));
-const baseCsv = env.charts[0].csv;
-
-// 3) 계약이 지정한 한 칸만 교체. chart-to-csv 규약: 행=카테고리, 열=계열.
-//    (values 는 숫자, 이름은 콤마 없음 → 단순 split 안전.)
-const eol = baseCsv.includes('\r\n') ? '\r\n' : '\n';
-const rows = baseCsv.replace(/\r\n/g, '\n').replace(/\n$/, '').split('\n').map(r => r.split(','));
-const dataRow = rows[1 + c.edit.point];        // 0행 = 헤더(계열명)
-const col = 1 + c.edit.series;                 // 0열 = 카테고리 라벨
-if (!dataRow) throw new Error(`point ${c.edit.point} 데이터 행이 없다`);
-if (dataRow[col] !== String(c.edit.from)) {
-  throw new Error(`계약 불일치: (계열 ${c.edit.series}, 값 ${c.edit.point}) 현재 `
-    + `'${dataRow[col]}' ≠ from '${c.edit.from}' — 샘플이 바뀌었다`);
+export function readContract(root, file) {
+  const src = readFileSync(path.resolve(root, file), 'utf8');
+  const match = src.match(/export\s+const\s+gymContract\s*=\s*\{/);
+  if (!match || match.index === undefined) {
+    throw new Error(`${file} 에 'export const gymContract' 가 없다`);
+  }
+  const objectStart = src.indexOf('{', match.index);
+  return parseContractLiteral(src.slice(objectStart));
 }
-dataRow[col] = String(c.edit.to);
-const editCsv = rows.map(r => r.join(',')).join(eol) + eol;
 
-// 4) 산출: 자산 CSV + 과제 + 기준풀이. 과제·기준은 순수 템플릿(로직 0).
-for (const d of ['assets', 'tasks', 'reference']) mkdirSync(path.join(packDir, d), { recursive: true });
-const csvAsset = `gym/packs/${packId}/assets/${taskId}-edit.csv`;
-writeFileSync(path.join(ROOT, csvAsset), editCsv, 'utf8');
+export function validateContract(contract) {
+  if (typeof contract.sample !== 'string' || contract.sample.length === 0) {
+    throw new Error('gymContract.sample은 비어 있지 않은 문자열이어야 한다');
+  }
+  if (!Number.isInteger(contract.chart) || contract.chart < 1) {
+    throw new Error('gymContract.chart는 1 이상의 정수여야 한다');
+  }
+  if (contract.edit === null || typeof contract.edit !== 'object' || Array.isArray(contract.edit)) {
+    throw new Error('gymContract.edit는 객체여야 한다');
+  }
+  for (const field of ['series', 'point']) {
+    if (!Number.isInteger(contract.edit[field]) || contract.edit[field] < 0) {
+      throw new Error(`gymContract.edit.${field}는 0 이상의 정수여야 한다`);
+    }
+  }
+  for (const field of ['from', 'to']) {
+    if (typeof contract.edit[field] !== 'string' && typeof contract.edit[field] !== 'number') {
+      throw new Error(`gymContract.edit.${field}는 문자열 또는 숫자여야 한다`);
+    }
+  }
+}
 
-const task = {
-  id: taskId,
-  tier: 3,
-  title: `차트 데이터 편집 왕복 (studio ${path.basename(e2ePath)} 파생)`,
-  input: sampleRel,
-  instructions:
-    `차트 ${c.chart}의 (계열 ${c.edit.series}, 값 ${c.edit.point}) 원본 ${c.edit.from} 을 `
-    + `'${c.edit.to}' 로 바꿔 out.hwp 로 저장하라. 원본 크기(계열 수·값 개수·계열명·`
-    + `카테고리 라벨)는 그대로 두어야 한다. 힌트: chart-to-csv 로 뽑아 그 칸만 고치고 `
-    + `csv-to-chart 로 되넣어라(-o out.hwp).`,
-  submit: { kind: 'artifact', files: ['out.hwp'] },
-  checks: [
-    { name: '산출물 존재', op: 'file_exists', file: 'out.hwp', minBytes: 1 },
-    { name: '원본과 다름 (무편집 복사 거부)', op: 'differs_from_input', file: 'out.hwp' },
-    {
-      name: `첫 값이 이미 ${c.edit.to} (센티넬 재적용이 무변경)`,
-      op: 'value_eq', path: 'changedCount', value: 0,
-      cmd: ['csv-to-chart', '{file:out.hwp}', '--csv', csvAsset,
-            '--chart', String(c.chart), '--dry-run', '--json'],
-    },
-  ],
-};
-const reference = {
-  id: taskId,
-  steps: [{ run: ['csv-to-chart', '{input}', '--csv', csvAsset,
-                  '--chart', String(c.chart), '-o', '{sub:out.hwp}', '--json'] }],
-};
-const dump = (obj) => JSON.stringify(obj, null, 2) + '\n';
-writeFileSync(path.join(packDir, 'tasks', `${taskId}.json`), dump(task), 'utf8');
-writeFileSync(path.join(packDir, 'reference', `${taskId}.json`), dump(reference), 'utf8');
+export function assertTaskIdAvailable(root, pack, id) {
+  const packsDir = path.join(root, 'gym', 'packs');
+  if (!existsSync(packsDir)) return;
 
-console.log(`생성: ${taskId} — assets/${taskId}-edit.csv · tasks/${taskId}.json · reference/${taskId}.json`);
-console.log(`검증: python gym/tools/build_baseline.py --agent baseline --pack ${packId} --bin <bin> && python gym/score.py --agent baseline --pack ${packId} --bin <bin>`);
+  const owners = [];
+  for (const entry of readdirSync(packsDir, { withFileTypes: true })) {
+    if (!entry.isDirectory() || entry.name === pack) continue;
+    const tasksDir = path.join(packsDir, entry.name, 'tasks');
+    if (!existsSync(tasksDir)) continue;
+    for (const name of readdirSync(tasksDir)) {
+      if (!name.endsWith('.json')) continue;
+      const task = JSON.parse(readFileSync(path.join(tasksDir, name), 'utf8'));
+      if (task.id === id) owners.push(`${entry.name}/${name}`);
+    }
+  }
+  if (owners.length > 0) {
+    throw new Error(`과제 ID '${id}' 가 다른 pack에 이미 있다: ${owners.join(', ')}`);
+  }
+}
+
+function main() {
+  const root = process.cwd();
+  const e2ePath = arg('e2e');
+  const packId = arg('pack', 'studio-e2e');
+  const taskId = arg('id');
+  const bin = path.resolve(root, arg('bin', 'target/debug/rhwp'));
+  if (!e2ePath || !taskId) {
+    throw new Error('필수: --e2e <경로> --id <과제ID> [--pack studio-e2e] [--bin target/debug/rhwp]');
+  }
+  const contract = readContract(root, e2ePath);
+  validateContract(contract);
+  assertTaskIdAvailable(root, packId, taskId);
+
+  const packDir = path.join(root, 'gym', 'packs', packId);
+  const sampleRel = path.posix.join('samples', contract.sample);
+  const env = JSON.parse(execFileSync(
+    bin, ['chart-to-csv', sampleRel, '--chart', String(contract.chart), '--json'],
+    { cwd: root, encoding: 'utf8' }));
+  const baseCsv = env.charts[0].csv;
+
+  // 생성 자산은 Git text 파일로 보관하므로 입력 CSV의 플랫폼 줄바꿈과 무관하게 LF로 고정한다.
+  const eol = '\n';
+  const rows = baseCsv.replace(/\r\n/g, '\n').replace(/\n$/, '').split('\n').map(row => row.split(','));
+  const dataRow = rows[1 + contract.edit.point];
+  const column = 1 + contract.edit.series;
+  if (!dataRow) throw new Error(`point ${contract.edit.point} 데이터 행이 없다`);
+  if (dataRow[column] !== String(contract.edit.from)) {
+    throw new Error(`계약 불일치: (계열 ${contract.edit.series}, 값 ${contract.edit.point}) 현재 `
+      + `'${dataRow[column]}' ≠ from '${contract.edit.from}' — 샘플이 바뀌었다`);
+  }
+  dataRow[column] = String(contract.edit.to);
+  const editCsv = rows.map(row => row.join(',')).join(eol) + eol;
+
+  for (const directory of ['assets', 'tasks', 'reference']) {
+    mkdirSync(path.join(packDir, directory), { recursive: true });
+  }
+  const csvAsset = `gym/packs/${packId}/assets/${taskId}-edit.csv`;
+  writeFileSync(path.join(root, csvAsset), editCsv, 'utf8');
+
+  const task = {
+    id: taskId,
+    tier: 3,
+    title: `차트 데이터 편집 왕복 (studio ${path.basename(e2ePath)} 파생)`,
+    input: sampleRel,
+    instructions:
+      `차트 ${contract.chart}의 (계열 ${contract.edit.series}, 값 ${contract.edit.point}) 원본 ${contract.edit.from} 을 `
+      + `'${contract.edit.to}' 로 바꿔 out.hwp 로 저장하라. 원본 크기(계열 수·값 개수·계열명·`
+      + `카테고리 라벨)는 그대로 두어야 한다. 힌트: chart-to-csv 로 뽑아 그 칸만 고치고 `
+      + `csv-to-chart 로 되넣어라(-o out.hwp).`,
+    submit: { kind: 'artifact', files: ['out.hwp'] },
+    checks: [
+      { name: '산출물 존재', op: 'file_exists', file: 'out.hwp', minBytes: 1 },
+      { name: '원본과 다름 (무편집 복사 거부)', op: 'differs_from_input', file: 'out.hwp' },
+      {
+        name: `첫 값이 이미 ${contract.edit.to} (센티넬 재적용이 무변경)`,
+        op: 'value_eq', path: 'changedCount', value: 0,
+        cmd: ['csv-to-chart', '{file:out.hwp}', '--csv', csvAsset,
+          '--chart', String(contract.chart), '--dry-run', '--json'],
+      },
+    ],
+  };
+  const reference = {
+    id: taskId,
+    steps: [{ run: ['csv-to-chart', '{input}', '--csv', csvAsset,
+      '--chart', String(contract.chart), '-o', '{sub:out.hwp}', '--json'] }],
+  };
+  const dump = object => JSON.stringify(object, null, 2) + '\n';
+  writeFileSync(path.join(packDir, 'tasks', `${taskId}.json`), dump(task), 'utf8');
+  writeFileSync(path.join(packDir, 'reference', `${taskId}.json`), dump(reference), 'utf8');
+
+  console.log(`생성: ${taskId} — assets/${taskId}-edit.csv · tasks/${taskId}.json · reference/${taskId}.json`);
+  console.log(`검증: python gym/tools/build_baseline.py --agent baseline --pack ${packId} --bin <bin> && python gym/score.py --agent baseline --pack ${packId} --bin <bin>`);
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main();
+}

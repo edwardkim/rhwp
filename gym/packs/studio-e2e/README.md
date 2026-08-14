@@ -15,7 +15,7 @@ rhwp-studio 기여자는 편집 기능을 **브라우저 e2e 테스트**로 검�
 CLI로 재현 가능한 부분**을 gym 과제로 파생한다. 스튜디오 기여자의 편집 작업이
 같은 코어를 CLI로도 두드리므로, 그 계약은 gym 과제로 **집계될 수 있다.**
 
-## SE01 — 차트 데이터 편집 (studio #4694 파생)
+## ST01 — 차트 데이터 편집 (studio #4694 파생)
 
 - **출처 e2e**: `rhwp-studio/e2e/issue-4694-chart-data-edit.test.mjs`
 - **같은 코어**: e2e의 `window.__wasm.getChartDataByIndex`/`setChartDataByIndex`와
@@ -44,7 +44,7 @@ python gym/score.py               --agent baseline --pack studio-e2e --bin targe
 # → baseline: 3/3 (studio-e2e 3/3, 1/1 과제)
 ```
 
-`assets/SE01-edit.csv`는 손으로 쓰지 않았다 — `chart-to-csv`로 실제 차트를 뽑아
+`assets/ST01-edit.csv`는 손으로 쓰지 않았다 — `chart-to-csv`로 실제 차트를 뽑아
 (계열명·라벨·타 값이 정확히 맞는 CSV) 첫 데이터 칸만 91.7로 바꾼 것이다. `runner`
 블록은 이 왕복을 검증한 바이너리 신원(v0.8.4)이다.
 
@@ -64,14 +64,14 @@ export const gymContract = {
 ```bash
 node gym/tools/from_e2e.mjs \
   --e2e rhwp-studio/e2e/issue-4694-chart-data-edit.test.mjs \
-  --pack studio-e2e --id SE01 --bin target/debug/rhwp
-# → assets/SE01-edit.csv · tasks/SE01.json · reference/SE01.json 을 생성
+  --pack studio-e2e --id ST01 --bin target/debug/rhwp
+# → assets/ST01-edit.csv · tasks/ST01.json · reference/ST01.json 을 생성
 ```
 
 어댑터는 편집 CSV를 손으로 쓰지 않는다 — `chart-to-csv`로 실제 차트를 뽑아 계약이
 지정한 한 칸만 바꾼다(형태 맞추기를 rhwp에 시킨다 = gym 라이브 오라클과 같은 원리).
 설계 함정 둘을 실측으로 회피했다: ① e2e는 top-level에서 `runTest`를 돌리므로
-`import`가 아니라 **정적 파싱**으로 계약 리터럴만 평가한다(브라우저 기동 방지),
+`import`가 아니라 **무실행 정적 parser**로 계약 리터럴만 읽는다(브라우저 기동과 임의 코드 실행 방지),
 ② `chart-to-csv --json`은 순수 JSON이라 머리줄 strip 없이 `charts[0].csv`를 쓴다.
 
 이것이 온램프의 핵심이다 — 스튜디오 기여자가 e2e를 쓰면 그 데이터 계약이 gym

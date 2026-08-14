@@ -1,5 +1,5 @@
 {
-  "id": "SE01",
+  "id": "ST01",
   "tier": 3,
   "title": "차트 데이터 편집 왕복 (studio issue-4694-chart-data-edit.test.mjs 파생)",
   "input": "samples/chart/세로막대형/묶은세로막대형.hwp",
@@ -31,7 +31,7 @@
         "csv-to-chart",
         "{file:out.hwp}",
         "--csv",
-        "gym/packs/studio-e2e/assets/SE01-edit.csv",
+        "gym/packs/studio-e2e/assets/ST01-edit.csv",
         "--chart",
         "1",
         "--dry-run",

@@ -1,12 +1,12 @@
 {
-  "id": "SE01",
+  "id": "ST01",
   "steps": [
     {
       "run": [
         "csv-to-chart",
         "{input}",
         "--csv",
-        "gym/packs/studio-e2e/assets/SE01-edit.csv",
+        "gym/packs/studio-e2e/assets/ST01-edit.csv",
         "--chart",
         "1",
         "-o",
