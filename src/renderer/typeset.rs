@@ -3738,6 +3738,22 @@ fn saved_table_bounds_fit_at_flow_tail(
         && bounds.0 + table_height <= available
 }
 
+/// 저장 LineSeg에 앵커된 TAC 표는 `common.height`가 한컴이 기록한 물리 object
+/// frame이다. 행 측정 총합에는 host의 outer margin이 더해질 수 있으므로, 저장 frame
+/// fit을 판정할 때는 선언 frame을 우선하고 선언값이 없을 때만 측정 높이를 사용한다.
+fn stored_tac_table_frame_height(
+    table: &crate::model::table::Table,
+    dpi: f64,
+    measured_height: f64,
+) -> f64 {
+    let declared_height = hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, dpi);
+    if declared_height.is_finite() && declared_height > 0.0 {
+        declared_height
+    } else {
+        measured_height
+    }
+}
+
 #[cfg(test)]
 mod saved_tac_table_flow_tail_contract {
     use super::saved_table_bounds_fit_at_flow_tail;
@@ -17079,20 +17095,25 @@ impl TypesetEngine {
                 .iter()
                 .find_map(|ctrl| match ctrl {
                     Control::Table(table) if self.is_effective_tac_table(para, table, &fmt) => {
-                        Some(self.tac_table_line_index(para, table, &fmt).unwrap_or(0))
+                        Some((
+                            self.tac_table_line_index(para, table, &fmt).unwrap_or(0),
+                            stored_tac_table_frame_height(table, self.dpi, height_for_fit),
+                        ))
                     }
                     _ => None,
                 })
-                .and_then(|line_idx| para.line_segs.get(line_idx))
-                .and_then(|seg| {
-                    line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
+                .and_then(|(line_idx, frame_height)| {
+                    para.line_segs.get(line_idx).and_then(|seg| {
+                        line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
+                            .map(|bounds| (bounds, frame_height))
+                    })
                 })
-                .is_some_and(|bounds| {
+                .is_some_and(|(bounds, frame_height)| {
                     saved_table_bounds_fit_at_flow_tail(
                         bounds,
                         st.current_height,
                         st.available_height(),
-                        height_for_fit,
+                        frame_height,
                     )
                 })
         } else {
@@ -18240,6 +18261,8 @@ impl TypesetEngine {
                 .all(|item| matches!(item, PageItem::Shape { .. }));
         let fits_after_overlay_shapes =
             current_column_has_only_overlay_shapes && table_height <= available + 12.0;
+        let saved_tac_table_frame_height =
+            stored_tac_table_frame_height(table, self.dpi, table_height);
         let current_page_vpos_base = st.vpos_page_base.unwrap_or(0);
         let saved_tac_table_bottom_fits = Some(current_page_vpos_base)
             .and_then(|base| {
@@ -18252,7 +18275,7 @@ impl TypesetEngine {
                     bounds,
                     st.current_height,
                     available,
-                    table_height,
+                    saved_tac_table_frame_height,
                 )
             });
         // [#3837] 저장 vpos 되돌아감은 한글이 이 표를 다음 쪽 맨 위에 뒀다는 신호다
