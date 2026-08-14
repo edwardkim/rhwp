@@ -681,7 +681,7 @@ fn parse_tab_def(data: &[u8]) -> Result<TabDef, DocInfoError> {
 
 fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
     let mut r = ByteReader::new(data);
-    let attr1 = r.read_u32().unwrap_or(0);
+    let mut attr1 = r.read_u32().unwrap_or(0);
     let margin_left = r.read_i32().unwrap_or(0);
     let margin_right = r.read_i32().unwrap_or(0);
     let indent = r.read_i32().unwrap_or(0);
@@ -720,11 +720,22 @@ fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
     }
 
     // 속성2 (5.0.1.7 이상)
-    let attr2 = if r.remaining() >= 4 {
+    let mut attr2 = if r.remaining() >= 4 {
         r.read_u32().unwrap_or(0)
     } else {
         0
     };
+
+    // #2777 이전 rhwp HWPX 파서는 breakSetting의 keep 계열을 attr2 6-8에
+    // 저장했고 HWP5 직렬화는 이를 그대로 기록했다. 한컴 HWP5는 이 비트를 쓰지
+    // 않으므로 식별 가능한 구규약만 attr1 17-19로 1회 이관한다. attr2 bit 5는
+    // 구 widowOrphan과 정본 autoSpaceKrNum을 구별할 수 없어 정본 의미로 보존한다.
+    const LEGACY_BREAK_SETTING_MASK: u32 = (1 << 6) | (1 << 7) | (1 << 8);
+    let legacy_break_setting = attr2 & LEGACY_BREAK_SETTING_MASK;
+    if legacy_break_setting != 0 {
+        attr1 |= legacy_break_setting << 11;
+        attr2 &= !LEGACY_BREAK_SETTING_MASK;
+    }
 
     // 속성3 - 줄 간격 종류 확장 (5.0.2.5 이상)
     let attr3 = if r.remaining() >= 4 {
@@ -1245,6 +1256,30 @@ mod tests {
             data.extend_from_slice(&t.to_le_bytes());
         }
         data
+    }
+
+    #[test]
+    fn para_shape_migrates_identifiable_legacy_break_bits_without_repurposing_bit5() {
+        let mut data = make_para_shape_bytes(0, None);
+        let legacy_attr2 = (1 << 5) | (1 << 6) | (1 << 8);
+        data[42..46].copy_from_slice(&legacy_attr2.to_le_bytes());
+
+        let ps = parse_para_shape(&data).expect("parse legacy para shape");
+        assert_eq!(
+            ps.attr1 & ((1 << 17) | (1 << 19)),
+            (1 << 17) | (1 << 19),
+            "식별 가능한 구 keepWithNext/pageBreakBefore는 attr1로 이관해야 한다"
+        );
+        assert_eq!(
+            ps.attr2 & ((1 << 6) | (1 << 7) | (1 << 8)),
+            0,
+            "이관한 구규약 비트는 소거해야 한다"
+        );
+        assert_eq!(
+            ps.attr2 & (1 << 5),
+            1 << 5,
+            "모호한 bit 5는 정본 autoSpaceKrNum으로 유지해야 한다"
+        );
     }
 
     #[test]

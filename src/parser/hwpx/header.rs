@@ -1098,22 +1098,30 @@ fn parse_para_shape_child(
                     }
                     b"widowOrphan" => {
                         if parse_bool(&attr) {
-                            ps.attr2 |= 1 << 5;
+                            ps.attr1 |= 1 << 16;
+                        } else {
+                            ps.attr1 &= !(1 << 16);
                         }
                     }
                     b"keepWithNext" => {
                         if parse_bool(&attr) {
-                            ps.attr2 |= 1 << 6;
+                            ps.attr1 |= 1 << 17;
+                        } else {
+                            ps.attr1 &= !(1 << 17);
                         }
                     }
                     b"keepLines" => {
                         if parse_bool(&attr) {
-                            ps.attr2 |= 1 << 7;
+                            ps.attr1 |= 1 << 18;
+                        } else {
+                            ps.attr1 &= !(1 << 18);
                         }
                     }
                     b"pageBreakBefore" => {
                         if parse_bool(&attr) {
-                            ps.attr2 |= 1 << 8;
+                            ps.attr1 |= 1 << 19;
+                        } else {
+                            ps.attr1 &= !(1 << 19);
                         }
                     }
                     _ => {}
@@ -1124,7 +1132,26 @@ fn parse_para_shape_child(
         b"autoSpacing" => {
             // HWPX autoSpacing은 HWP ParaShape.attr1 bits 20..21이 아니다.
             // 해당 비트는 문단 세로 정렬이며, <align vertical="...">에서 채운다.
-            // autoSpacing의 HWP 저장 위치는 별도 검증 전까지 attr1에 반영하지 않는다.
+            // 한컴 HWP5의 자동 간격 정본은 attr2 bits 4/5다.
+            for attr in ce.attributes().flatten() {
+                match attr.key.as_ref() {
+                    b"eAsianEng" => {
+                        if parse_bool(&attr) {
+                            ps.attr2 |= 1 << 4;
+                        } else {
+                            ps.attr2 &= !(1 << 4);
+                        }
+                    }
+                    b"eAsianNum" => {
+                        if parse_bool(&attr) {
+                            ps.attr2 |= 1 << 5;
+                        } else {
+                            ps.attr2 &= !(1 << 5);
+                        }
+                    }
+                    _ => {}
+                }
+            }
             ParaShapeChildKind::Other
         }
         b"switch" => ParaShapeChildKind::Switch,
@@ -2796,6 +2823,40 @@ mod tests {
         assert_eq!(
             doc_info.para_shapes[2].break_latin_word.as_deref(),
             Some("HYPHENATION")
+        );
+    }
+
+    #[test]
+    fn para_shape_break_setting_and_auto_spacing_use_distinct_bits() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:paraProperties itemCnt="1">
+      <hh:paraPr id="1" tabPrIDRef="0">
+        <hh:align horizontal="JUSTIFY" vertical="CENTER"/>
+        <hh:breakSetting breakLatinWord="KEEP_WORD" breakNonLatinWord="KEEP_WORD" widowOrphan="1" keepWithNext="1" keepLines="1" pageBreakBefore="1" lineWrap="BREAK"/>
+        <hh:autoSpacing eAsianEng="1" eAsianNum="1"/>
+      </hh:paraPr>
+    </hh:paraProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).expect("HWPX header parse");
+        let ps = &doc_info.para_shapes[1];
+        assert_eq!(
+            ps.attr1 & ((1 << 16) | (1 << 17) | (1 << 18) | (1 << 19)),
+            (1 << 16) | (1 << 17) | (1 << 18) | (1 << 19),
+            "breakSetting은 attr1 16-19에만 기록해야 한다"
+        );
+        assert_eq!(
+            ps.attr2 & ((1 << 4) | (1 << 5)),
+            (1 << 4) | (1 << 5),
+            "autoSpacing은 attr2 4/5에 기록해야 한다"
+        );
+        assert_eq!(
+            ps.attr2 & ((1 << 6) | (1 << 7) | (1 << 8)),
+            0,
+            "구 breakSetting attr2 6-8 규약을 새 HWPX 입력에 만들면 안 된다"
         );
     }
 
