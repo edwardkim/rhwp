@@ -1,6 +1,6 @@
-//! Subsecond 핫패치가 실제로 도달하는 렌더 경계 (#4577).
+//! 교체 가능한 렌더 코드가 실제로 도달하는 경계 (#4577, #4642).
 //!
-//! `subsecond::HotFn::current(f)` 는 **`f` 하나만** 점프 테이블로 우회시킨다. 점프 테이블은
+//! 개발 feature의 `HotFn::current(f)` 는 **`f` 하나만** 점프 테이블로 우회시킨다. 점프 테이블은
 //! `map.get(&real)` 단일 키 조회이고, wasm `apply_patch` 는 메모리와 간접 함수 테이블을
 //! **늘리기만** 할 뿐 이미 있는 슬롯을 다시 묶지 않는다. 즉 **전이적 재링크가 없다** — JS 가
 //! base 모듈의 export 를 직접 부르면 그 아래 호출은 끝까지 옛 코드다.
@@ -21,7 +21,7 @@
 //!
 //! ## 인자 9개 상한
 //!
-//! `subsecond` 는 `HotFunction` 을 인자 9개까지만 구현한다(`impl_hot_function!` 의
+//! 개발용 교체 런타임은 인자 9개까지만 구현한다(`impl_hot_function!` 의
 //! `Fn9Marker` 가 마지막이다). `&HwpDocument` 가 첫 자리를 쓰므로 경계 함수가 실제로 받을 수
 //! 있는 인자는 8개다. 부분 재도색은 `x/y/width/height` 를 `BoundingBox` 하나로 접어 이 상한
 //! 안에 들어간다 — 그대로 펴 두면 10개라 `HotFn::current` 가 아예 컴파일되지 않는다.
@@ -108,7 +108,11 @@ macro_rules! hot_render_boundaries {
                     let _ = write!(
                         revision,
                         "{:016x}",
-                        crate::subsecond_dev::hot_fn_ptr($target)
+                        // `ptr_address()` 는 적용된 점프 테이블이 있으면 현재 패치 함수 주소를
+                        // 돌려준다. 일반 함수 포인터 캐스팅으로 바꾸면 base 주소가 고정돼 Studio가
+                        // 패치 뒤 재도색을 놓친다. 제네릭 벤더 trait 계약은 이 경계 구현 안에만
+                        // 두고 `subsecond_dev`의 공용 helper로 새지 않게 한다 (#4642).
+                        subsecond::HotFn::current($target).ptr_address().0
                     );
                 }
             )+

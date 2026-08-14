@@ -12,8 +12,12 @@ merge, merge 후속 처리는 기본 경로 문서와 [merge 후속 처리](post
 
 ## 2.1 reviewer assign 선행
 
-개별 PR review를 시작하면 metadata 조사, local fetch, review 문서 작성보다 먼저 reviewer를 assign한다.
-대량 PR은 [다수 PR과 update branch](multi_pr_update_branch.md)의 사전 분류 뒤, 각 원 PR마다 assign한다.
+외부 contributor PR과 maintainer가 처리하는 PR review는 metadata 조사, local fetch, review 문서 작성보다
+먼저 reviewer를 assign한다. 대량 PR은 [다수 PR과 update branch](multi_pr_update_branch.md)의 사전 분류 뒤,
+각 원 PR마다 assign한다.
+
+collaborator 자신의 self PR은 reviewer를 지정하지 않는다. 이 경우 review 문서에 작성자 self-review임을
+기록하고, 최신 CI와 merge 조건을 독립적으로 확인한다.
 
 ~~~bash
 gh pr edit N --repo edwardkim/rhwp --add-reviewer <reviewer>
@@ -74,7 +78,7 @@ python tools/object_visual_regression.py --preset ovr5 -o output/poc/ovr --diff-
 maintainer 일반 경로는 처리 중 active 경로에 작성하고, 완료 후 archive로 이동한다.
 collaborator self-merge와 collaborator 매개 외부 PR은 해당 기본 경로 문서가 정한 archive 경로를 처음부터 쓴다.
 PR 번호는 PR 생성 시점에 확정하며 생성 전에 예측하지 않는다. collaborator self-merge는 PR을 생성해
-번호를 받은 뒤 reviewer assign을 거쳐 번호 기반 review 문서를 같은 PR의 후속 commit으로 추가한다.
+번호를 받은 뒤 self-review 기록을 번호 기반 review 문서로 작성하고 같은 PR의 후속 commit으로 추가한다.
 
 ~~~text
 mydocs/pr/pr_N_review.md

@@ -131,6 +131,31 @@ let rendererInitialized = false;
 let extensionViewerSettings: ExtensionViewerSettings = {
   disableExternalWebFonts: false,
 };
+/** DEV 동적 런타임의 realm 단위 해제선. 현재 Studio에는 뷰 교체 경로가 없어 호출하지 않는다. */
+let stopDevelopmentRenderRuntime: (() => void) | null = null;
+
+/**
+ * 개발 전용 렌더 교체를 앱 조립점에서만 시작한다 (#4636, #4641).
+ *
+ * `WasmBridge`는 wasm 초기화와 문서 소유만, `CanvasView`는 화면 수명만 맡는다. 개발 소켓과
+ * 리비전 감시는 여기서 DEV 동적 import로만 만들고 문서 리비전이 아닌 렌더 코드가 바뀌면 현재
+ * 뷰를 직접 다시 그린다. 이 함수 전체는 production build에서 제거돼 runtime chunk도 남지 않는다.
+ */
+async function startDevelopmentRenderRuntime(): Promise<void> {
+  if (!import.meta.env.DEV || stopDevelopmentRenderRuntime || !canvasView) return;
+  try {
+    const runtime = await import('@/core/subsecond-runtime');
+    stopDevelopmentRenderRuntime = runtime.startDevelopmentRenderRuntime(
+      wasm.getWasmModuleExports(),
+      () => wasm.borrowDocumentHandle(),
+      () => canvasView?.refreshPages(),
+      { measureHeapBytes: () => wasm.getWasmLinearMemoryBytes() },
+    );
+  } catch (error) {
+    // 개발 편의 기능 실패가 문서 편집기 초기화를 막으면 안 된다.
+    console.warn('[main] 개발용 렌더 코드 교체를 시작하지 못했습니다:', error);
+  }
+}
 
 
 // ─── UI chrome 프로파일 (#4564) ─────────────────────────────
@@ -507,6 +532,7 @@ async function initialize(): Promise<void> {
       eventBus,
       rendererSession,
     );
+    await startDevelopmentRenderRuntime();
 
     // [#3313] 외부 연결 그림(HWP3 pic_type=0)의 비동기 주입이 첫 렌더 이후에 끝나면
     // 화면이 이전 프레임(그림 없는 상태)에 머무른다. 주입 완료 시 뷰 문서를 다시

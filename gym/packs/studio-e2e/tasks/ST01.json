@@ -1,0 +1,42 @@
+{
+  "id": "ST01",
+  "tier": 3,
+  "title": "차트 데이터 편집 왕복 (studio issue-4694-chart-data-edit.test.mjs 파생)",
+  "input": "samples/chart/세로막대형/묶은세로막대형.hwp",
+  "instructions": "차트 1의 (계열 0, 값 0) 원본 4.3 을 '91.7' 로 바꿔 out.hwp 로 저장하라. 원본 크기(계열 수·값 개수·계열명·카테고리 라벨)는 그대로 두어야 한다. 힌트: chart-to-csv 로 뽑아 그 칸만 고치고 csv-to-chart 로 되넣어라(-o out.hwp).",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "out.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "out.hwp"
+    },
+    {
+      "name": "첫 값이 이미 91.7 (센티넬 재적용이 무변경)",
+      "op": "value_eq",
+      "path": "changedCount",
+      "value": 0,
+      "cmd": [
+        "csv-to-chart",
+        "{file:out.hwp}",
+        "--csv",
+        "gym/packs/studio-e2e/assets/ST01-edit.csv",
+        "--chart",
+        "1",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

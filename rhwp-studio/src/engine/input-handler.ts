@@ -486,7 +486,7 @@ export class InputHandler {
   private formOverlay: HTMLElement | null = null;
 
   // [Task #394] 셀 진입 자동 ON 로직 비활성화 — checkTransparentBordersTransition 와 동시 주석 처리.
-  // 되돌리려면 아래 3 개 변수 + 호출 지점 + 메서드 본체 + 이벤트 핸들러의 주석을 동시에 해제.
+  // 되돌리려면 아래 3 개 변수 + 호출 지점 + 메서드 본체의 주석을 동시에 해제.
   // // 투명선 자동 활성화 상태
   // private wasInCell = false;
   // private manualTransparentBorders = false;
@@ -689,13 +689,6 @@ export class InputHandler {
     eventBus.on('open-document-bytes', () => {
       this.clearTableResizeRuntimeCache();
     });
-
-    // [Task #394] 셀 진입 자동 ON 로직 비활성화 — manual 추적 불필요.
-    // transparent-borders-changed 이벤트 자체는 view.ts 에서 emit 되므로 보존됨 (다른 구독자가 사용 가능).
-    // // 투명선 수동 토글 상태 추적
-    // eventBus.on('transparent-borders-changed', (show) => {
-    //   this.manualTransparentBorders = show as boolean;
-    // });
 
     // Toolbar에서 서식 적용 요청 수신 (글꼴명, 크기, 색상 — 커맨드 시스템 미경유)
     eventBus.on('format-char', (props) => {

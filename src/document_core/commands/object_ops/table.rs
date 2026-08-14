@@ -578,6 +578,7 @@ impl DocumentCore {
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
             dirty: true,
+            text_reflowed_after_edit: false,
             local_resize_rows: Vec::new(),
             local_resize_cols: Vec::new(),
             local_resize_cell_widths: Vec::new(),
@@ -1006,6 +1007,7 @@ impl DocumentCore {
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
             dirty: true,
+            text_reflowed_after_edit: false,
             local_resize_rows: Vec::new(),
             local_resize_cols: Vec::new(),
             local_resize_cell_widths: Vec::new(),

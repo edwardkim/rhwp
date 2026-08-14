@@ -952,6 +952,10 @@ jobs:
       - name: Clippy
         run: cargo clippy -- -D warnings
 
+      # [#4630] wasm32 전용 cfg 경로의 lint 부채는 네이티브 Clippy로 보이지 않는다.
+      - name: Clippy (WASM32)
+        run: cargo clippy -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings
+
       # [#3664] Native FFI 크레이트가 워크스페이스 밖이라 어느 CI job 도 건드리지
       # 않는 사이 코어 API 변경을 못 따라가 이미 컴파일이 깨져 있었다(C#·Swift 래퍼
       # 동반 무력화). 기본 `cargo clippy` 는 루트 크레이트만 보므로 별도 검사가 필요하다.

@@ -1608,6 +1608,40 @@ fn test_expand_numbering_format_hangul() {
 }
 
 #[test]
+fn test_expand_numbering_format_zero_start_number_does_not_underflow() {
+    let numbering = Numbering {
+        raw_data: None,
+        heads: [NumberingHead {
+            number_format: 0,
+            ..Default::default()
+        }; 7],
+        level_formats: [
+            "^1.".to_string(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+        ],
+        start_number: 0,
+        level_start_numbers: [0, 1, 1, 1, 1, 1, 1],
+        raw_para_heads: None,
+    };
+    let counters = [1, 0, 0, 0, 0, 0, 0];
+
+    let result = expand_numbering_format(
+        "^1.",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        0,
+    );
+
+    assert_eq!(result, "1.");
+}
+
+#[test]
 fn test_expand_numbering_format_level_path() {
     // ^n/^N: 레벨 경로 자동코드 (#2145). 재현 문서는 전 수준 "^N".
     let numbering = Numbering {

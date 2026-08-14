@@ -119,7 +119,7 @@ fn should_suppress_group_child_construction_stroke(drawing: &DrawingObjAttr) -> 
 }
 
 fn push_placeholder_render_node(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
     bbox: BoundingBox,
     fill_color: u32,
@@ -152,7 +152,7 @@ fn ole_cell_context(
 }
 
 fn push_ole_placeholder_render_node(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
     bbox: BoundingBox,
     fill_color: u32,
@@ -181,7 +181,7 @@ fn push_ole_placeholder_render_node(
 }
 
 fn push_raw_svg_render_node(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
     bbox: BoundingBox,
     svg: String,
@@ -196,7 +196,7 @@ fn push_raw_svg_render_node(
 }
 
 fn push_ole_raw_svg_render_node(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
     bbox: BoundingBox,
     svg: String,
@@ -221,7 +221,7 @@ fn push_ole_raw_svg_render_node(
 }
 
 fn push_ole_empty_para_end_anchor(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
     anchor_x: f64,
     anchor_y: f64,
@@ -457,7 +457,7 @@ fn reflow_matrix_textbox_para(
 impl LayoutEngine {
     fn push_hwpx_hmapsi_preview_clip_node(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         bbox: BoundingBox,
         cfb_data: &[u8],
@@ -626,7 +626,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_shape(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         paragraphs: &[Paragraph],
         para_index: usize,
@@ -947,7 +947,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_group_child_affine(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         child: &crate::model::shape::ShapeObject,
         group_origin_x: f64,
@@ -1148,7 +1148,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_shape_object(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         shape: &crate::model::shape::ShapeObject,
         base_x: f64,
@@ -1192,7 +1192,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_shape_object_with_group_origin(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         shape: &crate::model::shape::ShapeObject,
         base_x: f64,
@@ -2220,7 +2220,7 @@ impl LayoutEngine {
     /// 도형의 이미지 채우기를 자식 이미지 노드로 추가한다.
     pub(crate) fn add_image_fill_node(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         drawing: &crate::model::shape::DrawingObjAttr,
         base_x: f64,
@@ -2307,7 +2307,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_textbox_content(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         shape_node: &mut RenderNode,
         drawing: &crate::model::shape::DrawingObjAttr,
         base_x: f64,
@@ -3158,7 +3158,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_vertical_textbox_text_with_paras(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         shape_node: &mut RenderNode,
         paragraphs: &[Paragraph],
         text_box: &crate::model::shape::TextBox,

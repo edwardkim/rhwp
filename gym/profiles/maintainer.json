@@ -15,6 +15,7 @@
     "security",
     "self-description",
     "serialization",
+    "studio-e2e",
     "table-editing",
     "text-editing"
   ]

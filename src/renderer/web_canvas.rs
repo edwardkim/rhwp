@@ -1684,7 +1684,7 @@ impl WebCanvasRenderer {
         }
 
         let canvas_grad = match grad.gradient_type {
-            2 | 3 | 4 => {
+            2..=4 => {
                 // Radial / Conical / Square → radialGradient
                 let cx = x + w * (grad.center_x as f64 / 100.0);
                 let cy = y + h * (grad.center_y as f64 / 100.0);
@@ -1992,7 +1992,7 @@ impl WebCanvasRenderer {
             } else {
                 1.0
             };
-            let r = (shadow.color >> 0) & 0xFF;
+            let r = shadow.color & 0xFF;
             let g = (shadow.color >> 8) & 0xFF;
             let b = (shadow.color >> 16) & 0xFF;
             let color = format!("rgba({},{},{},{:.2})", r, g, b, opacity);
@@ -2674,7 +2674,7 @@ impl Renderer for WebCanvasRenderer {
             } else {
                 1.0
             };
-            let r = (shadow.color >> 0) & 0xFF;
+            let r = shadow.color & 0xFF;
             let g = (shadow.color >> 8) & 0xFF;
             let b = (shadow.color >> 16) & 0xFF;
             self.ctx
@@ -3437,7 +3437,7 @@ impl WebCanvasRenderer {
         while cx < x2 {
             let next = (cx + wave_w).min(x2);
             let cy = if up { y1 - wave_h } else { y1 + wave_h };
-            let _ = self.ctx.quadratic_curve_to((cx + next) / 2.0, cy, next, y1);
+            self.ctx.quadratic_curve_to((cx + next) / 2.0, cy, next, y1);
             cx = next;
             up = !up;
         }

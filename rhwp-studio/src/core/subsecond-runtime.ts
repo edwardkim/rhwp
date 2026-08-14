@@ -84,6 +84,11 @@ type AnimationFrameScheduler = {
   cancelAnimationFrame(id: number): void;
 };
 
+export type DevelopmentRenderRuntimeOptions = {
+  measureHeapBytes?: () => number | null;
+  scheduler?: AnimationFrameScheduler;
+};
+
 type WebSocketConnection = {
   onmessage: ((event: MessageEvent) => void) | null;
   onclose: ((event: CloseEvent) => void) | null;
@@ -117,6 +122,8 @@ export type SubsecondPatchAccumulationOptions = {
 
 const RECONNECT_MIN_MS = 250;
 const RECONNECT_MAX_MS = 4_000;
+/** 엔진이 점프 테이블 수신까지 수락했음을 뜻하는 결과 코드의 단일 소유자. */
+export const PATCH_DISPATCHED_OUTCOME = 'patch-dispatched';
 /**
  * 이 시간보다 오래 붙어 있었던 연결만 "살아 있었다"고 보고 백오프를 되돌린다.
  * 재연결 상한과 우연히 같은 값이지만 다른 개념이다 — 상한을 바꾼다고 같이 바뀌면 안 된다.
@@ -195,7 +202,7 @@ export class SubsecondPatchAccumulation {
  * 번들까지 따라온다.
  */
 const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
-  'patch-dispatched': {
+  [PATCH_DISPATCHED_OUTCOME]: {
     level: 'info',
     message:
       '점프 테이블을 subsecond 에 넘겼다. wasm 에서 적용은 비동기라 성공 여부는 여기서 알 수 없다 — ' +
@@ -246,6 +253,11 @@ const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
  * 엔진 소스에서 읽은 목록과 맞대 볼 수 있고, 어긋남이 테스트 실패가 된다.
  */
 export const SUBSECOND_OUTCOME_CODES: readonly string[] = Object.keys(SUBSECOND_OUTCOMES);
+
+/** 적용 요청 결과만 누적 계수와 전역 오류 귀속의 기준으로 삼는다. */
+export function isPatchDispatchedOutcome(outcome: string): boolean {
+  return outcome === PATCH_DISPATCHED_OUTCOME;
+}
 
 /** 신호 하나를 개발자가 읽을 한 줄로 만든다. */
 export function describeSubsecondSignal(signal: SubsecondSignal): SubsecondDiagnostic {
@@ -383,10 +395,53 @@ export class RenderCodeReloadWatcher {
 }
 
 /**
+ * 개발용 렌더 교체 런타임을 한 realm에 하나만 연결한다.
+ *
+ * 소켓·패치 계수·리비전 감시는 모두 이 개발 전용 모듈에 둔다. `WasmBridge`나 `CanvasView`는
+ * 문서 편집과 화면 수명만 소유해야 하므로 클래스 멤버로 이 능력을 노출하지 않는다 (#4636, #4641).
+ * 호출자는 DEV 동적 import를 한 `main.ts`뿐이며, 반환된 해제 함수는 미래의 Studio 인스턴스 교체
+ * 경로를 위한 유일한 정리선이다.
+ */
+let stopDevelopmentRenderRuntime: (() => void) | null = null;
+
+export function startDevelopmentRenderRuntime(
+  exports: object,
+  currentDocument: () => object | null,
+  onPatched: (revision: string) => void,
+  options: DevelopmentRenderRuntimeOptions = {},
+): (() => void) | null {
+  if (stopDevelopmentRenderRuntime) return stopDevelopmentRenderRuntime;
+
+  const capabilities = createRenderCodeReload(exports, currentDocument);
+  if (!capabilities.isAvailable()) return null;
+
+  const disconnectDevtools = connectSubsecondDevtools(
+    exports as SubsecondWasmExports,
+    {
+      patchAccumulation: new SubsecondPatchAccumulation({
+        measureHeapBytes: options.measureHeapBytes,
+      }),
+    },
+  );
+  const watcher = new RenderCodeReloadWatcher(capabilities, onPatched, options.scheduler);
+  if (!watcher.start()) {
+    disconnectDevtools?.();
+    return null;
+  }
+
+  stopDevelopmentRenderRuntime = () => {
+    watcher.stop();
+    disconnectDevtools?.();
+    stopDevelopmentRenderRuntime = null;
+  };
+  return stopDevelopmentRenderRuntime;
+}
+
+/**
  * dx devserver 소켓에 붙어 도착한 패치를 wasm 에 넘긴다.
  *
  * 돌려주는 해제 함수는 소켓과 재연결 타이머를 함께 내린다. 스튜디오에서는 realm 이 끝날 때까지
- * 부를 시점이 없고(문서 닫기·뷰 폐기가 없다) 호출부는 `wasm-bridge.ts` 의 중복 연결 guard 하나뿐이지만,
+ * 부를 시점이 없고(문서 닫기·뷰 폐기가 없다) 호출부는 이 모듈의 realm 단위 소유자 하나뿐이지만,
  * 소켓을 연 곳이 내리는 방법을 함께 돌려주는 형태는 유지한다 — 테스트와 이후 종료 경로의 유일한 해제선이다.
  */
 export function connectSubsecondDevtools(
@@ -439,7 +494,7 @@ export function connectSubsecondDevtools(
     socket.onmessage = event => {
       if (typeof event.data !== 'string') return;
       const outcome = applyMessage(event.data);
-      if (outcome === 'patch-dispatched') {
+      if (isPatchDispatchedOutcome(outcome)) {
         dispatchedPatches += 1;
         patchAccumulation.recordApplied();
       }

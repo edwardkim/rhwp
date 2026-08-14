@@ -1155,7 +1155,7 @@ fn write_para_pr<W: Write>(
     //
     // 종전엔 align@vertical, breakSetting@{breakNonLatinWord, widowOrphan,
     // keepWithNext, keepLines, pageBreakBefore} 를 상수로 하드코딩해, 파서가
-    // attr1/attr2 비트로 보존한 값을 직렬화에서 모두 잃었다(예: vertical=CENTER →
+    // attr1 비트로 보존한 값을 직렬화에서 모두 잃었다(예: vertical=CENTER →
     // BASELINE, breakNonLatinWord=BREAK_WORD → KEEP_WORD). 이제 보존 비트에서
     // 역매핑한다. (breakLatinWord/lineWrap 은 파서가 아직 미수집 → 상수 유지.)
     let vertical = vertical_alignment_str((ps.attr1 >> 20) & 0x03);
@@ -1167,10 +1167,12 @@ fn write_para_pr<W: Write>(
     };
     // [#1986] breakLatinWord 는 IR 원문 보존값(없으면 KEEP_WORD 기본).
     let break_latin = ps.break_latin_word.as_deref().unwrap_or("KEEP_WORD");
-    let widow_orphan = ((ps.attr2 >> 5) & 1).to_string();
-    let keep_with_next = ((ps.attr2 >> 6) & 1).to_string();
-    let keep_lines = ((ps.attr2 >> 7) & 1).to_string();
-    let page_break_before = ((ps.attr2 >> 8) & 1).to_string();
+    let widow_orphan = ((ps.attr1 >> 16) & 1).to_string();
+    let keep_with_next = ((ps.attr1 >> 17) & 1).to_string();
+    let keep_lines = ((ps.attr1 >> 18) & 1).to_string();
+    let page_break_before = ((ps.attr1 >> 19) & 1).to_string();
+    let auto_space_kr_en = ((ps.attr2 >> 4) & 1).to_string();
+    let auto_space_kr_num = ((ps.attr2 >> 5) & 1).to_string();
     empty_tag(
         w,
         "hh:align",
@@ -1205,7 +1207,10 @@ fn write_para_pr<W: Write>(
     empty_tag(
         w,
         "hh:autoSpacing",
-        &[("eAsianEng", "0"), ("eAsianNum", "0")],
+        &[
+            ("eAsianEng", &auto_space_kr_en),
+            ("eAsianNum", &auto_space_kr_num),
+        ],
     )?;
 
     // margin + lineSpacing 은 한컴 원본과 동일하게 <hp:switch>(case/default)로 감싼다.
@@ -2120,13 +2125,14 @@ mod tests {
     fn write_para_pr_emits_align_and_break_from_preserved_bits() {
         // [Finding 18] align@vertical, breakSetting@{breakNonLatinWord, widowOrphan,
         // keepWithNext, keepLines, pageBreakBefore} 가 상수 하드코딩이 아니라
-        // attr1/attr2 보존 비트에서 역매핑돼야 한다.
+        // attr1 보존 비트에서 역매핑돼야 한다.
         let mut ps = ParaShape::default();
         ps.break_latin_word = Some("HYPHENATION".to_string());
         ps.attr1 = (2 << 20) // vertical = CENTER
-            & !(1 << 7); // breakNonLatinWord = BREAK_WORD (bit7=0)
-        ps.attr2 = (1 << 5) // widowOrphan = 1
-            | (1 << 8); // pageBreakBefore = 1
+            | (1 << 16) // widowOrphan = 1
+            | (1 << 19); // pageBreakBefore = 1
+        ps.attr1 &= !(1 << 7); // breakNonLatinWord = BREAK_WORD (bit7=0)
+        ps.attr2 = 1 << 5; // eAsianNum = 1
 
         let mut writer = Writer::new(Vec::new());
         write_para_pr(&mut writer, 1, &ps).expect("write paraPr");
@@ -2147,6 +2153,29 @@ mod tests {
         assert!(
             xml.contains(r#"widowOrphan="1" keepWithNext="0" keepLines="0" pageBreakBefore="1""#),
             "widowOrphan/pageBreakBefore 보존 비트 역매핑: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hh:autoSpacing eAsianEng="0" eAsianNum="1""#),
+            "autoSpacing은 attr2 4/5에서 역매핑해야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_para_pr_does_not_treat_auto_spacing_num_as_widow_orphan() {
+        let mut ps = ParaShape::default();
+        ps.attr2 = 1 << 5; // autoSpaceKrNum = 1
+
+        let mut writer = Writer::new(Vec::new());
+        write_para_pr(&mut writer, 1, &ps).expect("write paraPr");
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"widowOrphan="0""#),
+            "attr2 bit 5는 widowOrphan으로 해석되면 안 됨: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hh:autoSpacing eAsianEng="0" eAsianNum="1""#),
+            "attr2 bit 5는 eAsianNum으로만 방출해야 함: {xml}"
         );
     }
 

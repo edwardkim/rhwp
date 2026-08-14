@@ -101,9 +101,35 @@ cargo nextest run \
 
 Rust 또는 WASM 경계가 바뀌면 저장소 루트에서 `pkg/`를 갱신한다.
 
-```bash
-wasm-pack build --target web --out-dir pkg
+Windows·macOS·Linux 공통 표준 경로는 Docker의 `wasm` 서비스다. 최초 한 번만 `.env.docker`가
+없을 때 예제를 복사하고, 이후에는 기존 파일을 덮어쓰지 않는다.
+
+```powershell
+if (-not (Test-Path .env.docker)) {
+    Copy-Item .env.docker.example .env.docker
+}
+docker compose --env-file .env.docker run --rm wasm
 ```
+
+이 서비스는 Cargo target을 named volume에 유지한다. 특히 Windows Docker Desktop의 `/app/target`
+bind mount는 hard-link를 지원하지 않아 Cargo가 실패할 수 있으므로, host `target/`을 강제로
+재사용하지 않는다. 빌드 시작 시에는 이전에 중단된 wasm-pack이 남긴 `pkg/*-opt.wasm`만 제거한다.
+이 파일을 남기면 wasm-pack이 임시 최적화 결과를 다시 입력으로 열거해 무한 실행 또는
+`*-opt.wasm-opt.wasm` 실패로 이어질 수 있다. (#4089)
+
+Docker를 사용할 수 없는 호스트에서 원인을 분리하는 **진단용** 네이티브 경로는 아래와 같다.
+`--no-opt` 결과는 최적화된 배포 산출물을 대체하지 않는다.
+
+```powershell
+Remove-Item -Force -ErrorAction SilentlyContinue pkg\*-opt.wasm
+$env:CARGO_TARGET_DIR = 'target\pr-review'
+wasm-pack build --target web --out-dir pkg --no-opt
+Remove-Item Env:CARGO_TARGET_DIR
+```
+
+네이티브 `wasm-pack build`를 최적화까지 포함해 반복 검증해야 하면 먼저 표준 Docker 경로를
+복구한다. Windows에서는 이전의 직접 최적화 명령을 반복 실행하지 않으며, 위 진단으로
+`pkg/` 잔재와 wasm-opt만 분리해 확인한다.
 
 TypeScript와 CSS는 Vite가 다시 읽지만 Rust 변경은 위 빌드가 끝나야 브라우저에 반영된다.
 
@@ -182,6 +208,10 @@ npm run subsecond:install
 처음 빌드하므로 수 분이 걸릴 수 있다. `target/dioxus-cli/`, `target/dx/`,
 `target/rhwp-subsecond-vite/`는 로컬 생성물이며 커밋하지 않는다.
 
+`subsecond:serve`는 Dioxus 대화형 제어를 켠다. 기동 배너의 `r`(전체 rebuild), `p`(자동 rebuild
+토글), `v`(상세 로그), `/`(전체 단축키)은 실행 중인 터미널에서 사용할 수 있다. 대화형 제어를
+끄면 배너는 단축키를 계속 보여도 키 입력은 동작하지 않으므로 `--interactive false`를 쓰지 않는다.
+
 이 경로에서는 일반 배포용 `wasm-pack build --target web --out-dir pkg`를 먼저 실행할 필요가 없다.
 `subsecond:serve`가 개발용 WASM을 `target/dx/`에 만들고, `dev:subsecond`가 필요한 JS/WASM 두 파일을
 `target/rhwp-subsecond-vite/`로 동기화한다.
@@ -218,6 +248,10 @@ cd rhwp-studio
 npm run dev:subsecond -- --host 0.0.0.0 --port 7700
 ```
 
+최초 기동 뒤에는 터미널 1에서 `/`를 눌러 단축키 메뉴가 나타나는지 먼저 확인한다. 이 확인은
+`subsecond:serve` 스크립트가 실제 대화형 모드로 실행됐는지 검증한다. 일반 Rust 저장은 자동 rebuild가
+기본으로 켜져 있어 바로 감지하며, 필요할 때만 `r`로 전체 rebuild를 요청한다.
+
 `0.0.0.0`은 Vite의 모든 NIC 수신 대기 주소다. 브라우저에는 이 서버의 실제 호스트 IP를 사용해
 `http://<host-ip>:7700/`으로 접속한다. `7711`은 Vite의 `/_dioxus`, `/wasm` 프록시 전용이므로 외부에
 직접 열지 않는다. 주소가 필요한 환경에서는 `hostname -I`로 현재 호스트 IP를 확인한다.
@@ -247,9 +281,9 @@ curl -fsS -o /dev/null -w 'vite-wasm=%{http_code}\n' http://127.0.0.1:7700/wasm/
 
 1. 브라우저에서 `http://<host-ip>:7700/`을 열고 `WASM 로딩 중...` 화면이 끝난 뒤에 검증한다. 개발
    모드의 `window.__wasm` 객체는 초기화 전에 먼저 만들어질 수 있으므로, 객체 존재 여부나
-   `getRenderCodeReload()?.isAvailable()`만으로 준비 완료를 판별하지
-   않는다. (능력 객체는 개발 빌드에서만 채워진다 — 프로덕션 번들에서는 언제나 `null` 이다. #4580)
-2. `src/wasm_api/subsecond_boundary.rs`의 `hot_render_boundaries!` 목록에 배선된 렌더 경계 안의 Rust
+   `getWasmModuleExports()`만으로 준비 완료를 판별하지 않는다. 개발용 런타임은 `main.ts`가
+   `await wasm.initialize()`와 `CanvasView` 생성 뒤에만 동적으로 시작한다. (#4636, #4641)
+2. `src/wasm_api/render_patch_boundary.rs`의 `hot_render_boundaries!` 목록에 배선된 렌더 경계 안의 Rust
    변경을 저장하고 터미널 1의 rebuild/patch 메시지를 확인한다. 목록 밖의 export, 타입 레이아웃 또는
    초기화 경로 변경은 hot-patch 대상이 아니며 전체 rebuild/새로고침이 필요할 수 있다.
 3. 브라우저 콘솔에서 `[subsecond]` 진단과 Rust panic, 전역 오류를 확인한다. 화면 재도색은

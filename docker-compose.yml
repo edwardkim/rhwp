@@ -34,15 +34,40 @@ services:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
     env_file: .env.docker
+    # Docker Desktop의 Windows bind mount는 Cargo가 쓰는 hard link를 보장하지 않는다.
+    # named volume에는 빌드 cache를 보존하고, host에 노출되는 pkg만 /app에 남긴다. (#4089)
+    user: "0:0"
+    environment:
+      CARGO_TARGET_DIR: /build-target
+      HOST_UID: ${UID:-1000}
+      HOST_GID: ${GID:-1000}
     volumes:
       - .:/app
       - cargo-cache:/home/builder/.cargo/registry
       - cargo-bin:/home/builder/.cargo/bin
       - wasm-pack-cache:/home/builder/.cache/.wasm-pack
+      - wasm-target:/build-target
     working_dir: /app
-    command: wasm-pack build --target web
+    command:
+      - sh
+      - -ec
+      - |
+        finish() {
+          status=$?
+          if [ -d pkg ]; then
+            chown -R "$${HOST_UID}:$${HOST_GID}" pkg || exit 1
+          fi
+          exit "$${status}"
+        }
+        trap 'exit 129' HUP
+        trap 'exit 130' INT
+        trap 'exit 143' TERM
+        trap finish EXIT
+        rm -f pkg/*-opt.wasm
+        wasm-pack build --target web
 
 volumes:
   cargo-cache:
   cargo-bin:
   wasm-pack-cache:
+  wasm-target:

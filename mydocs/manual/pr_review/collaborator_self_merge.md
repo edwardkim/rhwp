@@ -15,7 +15,7 @@ last_verified: 2026-08-07
 - PR 작성자 또는 준비자가 repository collaborator다.
 - PR 번호가 이미 있어 review 문서명을 확정할 수 있다.
 - merge 뒤 별도 문서 commit을 만들지 않기 위해 review 문서를 현재 PR diff에 포함한다.
-- ready 전환, review approval, merge 판단은 작업지시자 승인 뒤에만 한다.
+- ready 전환, self-review 기록 확정, merge 판단은 작업지시자 승인 뒤에만 한다.
 
 ## 8.2 문서와 오늘할일
 
@@ -36,7 +36,7 @@ mydocs/orders/YYYYMMDD.md                  # 갱신이 필요한 경우
 
 1. 검증을 마친 후보 commit을 원격 작업 branch에 push한다.
 2. Draft 지시가 없으면 Open PR을 생성해 번호 `N`을 받는다.
-3. reviewer를 assign하고 `mydocs/pr/archives/pr_N_review.md`와 필요한 오늘할일을 작성한다.
+3. reviewer를 지정하지 않고 self-review를 `mydocs/pr/archives/pr_N_review.md`와 필요한 오늘할일에 기록한다.
 4. review 문서와 오늘할일을 같은 source branch의 후속 commit으로 push해 PR diff에 포함한다.
 
 PR 생성 전에 번호를 예측해 review 파일명을 만들지 않는다. 이미 active 경로에 만든 review 문서는
@@ -59,6 +59,28 @@ git push upstream HEAD:task_m100_<issue>
 - 필요한 review, review_impl, 오늘할일이 PR diff에 포함된다.
 - draft·mergeable·head SHA·CI 상태는 작성 시점 참고값으로만 기록한다.
 - 작업지시자 승인을 받는다.
+
+### 8.4.1 명시 지시된 maintainer `--admin` merge 예외
+
+일반 collaborator는 `--admin`으로 branch protection을 우회하지 않는다. 단, maintainer 권한을 가진
+실행자가 collaborator self PR을 처리하면서 작업지시자로부터 **해당 PR의 `--admin` merge 명시 지시**를
+받은 경우에는 다음 조건을 모두 만족할 때만 사용할 수 있다.
+
+- code candidate와 review·오늘할일 trailing head 각각의 최신 GitHub Actions가 성공했고, 실패·대기 중인
+  check가 없다.
+- trailing head의 `mergeable`은 `MERGEABLE`, `mergeStateStatus`는 `CLEAN`이며, merge 직전에 다시
+  조회한 head SHA가 명령의 `--match-head-commit` 값과 같다.
+- trailing commit은 review, 오늘할일, stage·절차 문서만 추가한다. source, test, fixture, workflow,
+  baseline, sample 변경이 trailing commit에 섞이면 이 예외를 적용하지 않는다.
+- 이 옵션은 reviewer 부족, 실패한 검증, 오래된 code candidate, 충돌을 우회하는 용도로 사용하지 않는다.
+
+위 조건에서는 다음과 같이 squash merge할 수 있다. 권한이 없는 collaborator의 토큰에서는 명령이 실패할
+수 있으며, 그 경우 정상 merge 경로로 되돌아간다.
+
+~~~bash
+gh pr merge N --repo edwardkim/rhwp --squash --admin \
+  --match-head-commit <latest-trailing-head>
+~~~
 
 merge 뒤에는 이 PR 자체가 review 기록을 포함했는지와 issue 상태를 확인하기 위해
 [merge 후속 처리](post_merge.md)를 적용한다.

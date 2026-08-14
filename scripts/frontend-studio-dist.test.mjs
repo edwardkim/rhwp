@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const STUDIO_ASSETS = path.join(ROOT, 'rhwp-studio/dist/assets');
+const STUDIO_DIST = path.join(ROOT, 'rhwp-studio/dist');
 const HOTPATCH_RUNTIME = path.join(ROOT, 'rhwp-studio/src/core/subsecond-runtime.ts');
 
 /**
@@ -27,7 +27,6 @@ const HOTPATCH_MARKERS = [
   'subsecondProbe',
   'applySubsecondDevtoolsMessage',
   'getRenderCodeRevision',
-  'rebuildDerivedState',
 ];
 
 /**
@@ -44,18 +43,26 @@ const VENDOR_NAMES = ['subsecond', 'Subsecond', 'dioxus', 'Dioxus'];
 const BUNDLE_SENTINEL = 'document-view-changed';
 const BUILD_INSTRUCTION = '먼저 `npm --prefix rhwp-studio run build`';
 
-function readStudioBundle(studioAssets = STUDIO_ASSETS) {
+function readStudioBundle(studioDist = STUDIO_DIST) {
   assert.ok(
-    existsSync(studioAssets),
-    `${studioAssets} 가 없다 — ${BUILD_INSTRUCTION}`,
+    existsSync(studioDist),
+    `${studioDist} 가 없다 — ${BUILD_INSTRUCTION}`,
   );
 
-  const files = readdirSync(studioAssets).filter((file) => file.endsWith('.js'));
+  const files = [];
+  const visit = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const file = path.join(directory, entry.name);
+      if (entry.isDirectory()) visit(file);
+      else if (entry.isFile() && /\.m?js$/.test(entry.name)) files.push(file);
+    }
+  };
+  visit(studioDist);
   assert.ok(
     files.length > 0,
-    `${studioAssets} 에 자바스크립트 번들이 없다 — ${BUILD_INSTRUCTION}`,
+    `${studioDist} 에 자바스크립트 번들이 없다 — ${BUILD_INSTRUCTION}`,
   );
-  return files.map((file) => readFileSync(path.join(studioAssets, file), 'utf8')).join('\n');
+  return files.sort().map((file) => readFileSync(file, 'utf8')).join('\n');
 }
 
 function countOccurrences(haystack, needle) {
@@ -81,15 +88,28 @@ test('hot-patch markers still name something in the development-only runtime', (
 
 test('studio bundle test gives build guidance when the assets directory is absent', () => {
   const temporaryRoot = mkdtempSync(path.join(tmpdir(), 'rhwp-studio-dist-test-'));
-  const missingAssets = path.join(temporaryRoot, 'assets');
+  const missingDist = path.join(temporaryRoot, 'dist');
 
   try {
     assert.throws(
-      () => readStudioBundle(missingAssets),
+      () => readStudioBundle(missingDist),
       (error) =>
         error instanceof assert.AssertionError &&
-        error.message === `${missingAssets} 가 없다 — ${BUILD_INSTRUCTION}`,
+        error.message === `${missingDist} 가 없다 — ${BUILD_INSTRUCTION}`,
     );
+  } finally {
+    rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test('studio bundle reader includes JavaScript below nested deliverable directories', () => {
+  const temporaryRoot = mkdtempSync(path.join(tmpdir(), 'rhwp-studio-dist-test-'));
+  const nested = path.join(temporaryRoot, 'assets', 'nested');
+
+  try {
+    mkdirSync(nested, { recursive: true });
+    writeFileSync(path.join(nested, 'runtime.js'), 'nested-deliverable-marker');
+    assert.match(readStudioBundle(temporaryRoot), /nested-deliverable-marker/);
   } finally {
     rmSync(temporaryRoot, { recursive: true, force: true });
   }

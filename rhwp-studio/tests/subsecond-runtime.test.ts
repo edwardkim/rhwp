@@ -343,6 +343,48 @@ test('render capabilities stay silent on a plain WASM build and follow the curre
   assert.equal(hotpatch.getRenderCodeRevision(), null, '문서를 닫으면 다시 리비전이 없다');
 });
 
+test('development render runtime owns one watcher and releases it for a later realm setup', async () => {
+  const { startDevelopmentRenderRuntime } = await loadRuntime();
+  const frames = new FakeAnimationFrames();
+  let revision = 'baseline';
+  let rebuilds = 0;
+  const repaints: string[] = [];
+  const document = {
+    getRenderCodeRevision: () => revision,
+    rebuildDerivedState: () => {
+      rebuilds += 1;
+    },
+  };
+  const exports = { subsecondProbe: () => 41 };
+  const options = {
+    scheduler: {
+      requestAnimationFrame: frames.request,
+      cancelAnimationFrame: frames.cancel,
+    },
+  };
+
+  const stop = startDevelopmentRenderRuntime(exports, () => document, next => repaints.push(next), options);
+  assert.ok(stop, '개발 빌드는 한 realm 수명 감시자를 시작해야 한다');
+  assert.equal(
+    startDevelopmentRenderRuntime(exports, () => document, () => {}, options),
+    stop,
+    '중복 시작은 같은 realm 소유자를 돌려줘야 한다',
+  );
+  frames.flush();
+  revision = 'patched';
+  frames.flush();
+  assert.equal(rebuilds, 1);
+  assert.deepEqual(repaints, ['patched']);
+
+  stop();
+  assert.equal(frames.pendingCount, 0, '해제선은 감시 프레임을 남기면 안 된다');
+
+  const nextStop = startDevelopmentRenderRuntime(exports, () => document, () => {}, options);
+  assert.ok(nextStop, '해제 뒤 다음 Studio realm은 새 감시자를 시작할 수 있어야 한다');
+  assert.notEqual(nextStop, stop);
+  nextStop();
+});
+
 test('devtools websocket forwards patch messages and reconnects without reloading', async () => {
   const { connectSubsecondDevtools } = await loadRuntime();
   const sockets: FakeWebSocket[] = [];
@@ -493,6 +535,25 @@ test('the studio describes exactly the outcome codes the engine declares', async
     [],
     '스튜디오 표에 엔진이 더는 선언하지 않는 결과 코드가 남아 있다 — 도달하지 않는 진단 문구다',
   );
+});
+
+test('applied patch outcome has one source shared by diagnostics and accumulation', async () => {
+  const {
+    PATCH_DISPATCHED_OUTCOME,
+    SUBSECOND_OUTCOME_CODES,
+    isPatchDispatchedOutcome,
+  } = await loadRuntime();
+
+  assert.ok(
+    ENGINE_OUTCOME_CODES.includes(PATCH_DISPATCHED_OUTCOME),
+    '누적 계수가 쓰는 적용 결과는 엔진의 DevtoolsMessageOutcome::code()에 있어야 한다',
+  );
+  assert.ok(
+    SUBSECOND_OUTCOME_CODES.includes(PATCH_DISPATCHED_OUTCOME),
+    '누적 계수가 쓰는 적용 결과는 Studio 진단 표에도 있어야 한다',
+  );
+  assert.equal(isPatchDispatchedOutcome(PATCH_DISPATCHED_OUTCOME), true);
+  assert.equal(isPatchDispatchedOutcome('not-hot-reload'), false);
 });
 
 test('every devserver outcome reaches a reporter instead of being discarded', async () => {

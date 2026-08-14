@@ -1,6 +1,6 @@
 //! 문단 (Paragraph, CharRun, LineSeg, RangeTag)
 
-use super::control::Control;
+use super::control::{Control, CTRL_CHAR_CODE_UNITS};
 use serde::{Deserialize, Serialize};
 
 /// 문단 (HWPTAG_PARA_HEADER + 하위 레코드)
@@ -1581,6 +1581,49 @@ impl Paragraph {
         let _ = already_filled; // 향후 디버그용 (현재 미사용)
 
         positions
+    }
+
+    /// Return each control's source `PARA_TEXT` UTF-16 start position.
+    ///
+    /// `char_offsets` point after every control gap preceding a visible
+    /// character. Consumers which anchor geometry in the raw stream therefore
+    /// need to reconstruct the individual starts inside that gap instead of
+    /// using the visible-text position alone.
+    pub(crate) fn control_utf16_positions(&self) -> Vec<u32> {
+        let text_positions = self.control_text_positions();
+        let text_chars = self.text.chars().collect::<Vec<_>>();
+        let text_end = self
+            .char_offsets
+            .last()
+            .zip(text_chars.last())
+            .map(|(offset, ch)| *offset + ch.len_utf16() as u32)
+            .unwrap_or_else(|| text_chars.iter().map(|ch| ch.len_utf16() as u32).sum());
+        let mut raw_positions = vec![text_end; text_positions.len()];
+
+        let mut group_start = 0;
+        while group_start < text_positions.len() {
+            let text_position = text_positions[group_start];
+            let mut group_end = group_start + 1;
+            while text_positions.get(group_end) == Some(&text_position) {
+                group_end += 1;
+            }
+
+            let count = (group_end - group_start) as u32;
+            let first_raw = self
+                .char_offsets
+                .get(text_position)
+                .copied()
+                .map(|offset| offset.saturating_sub(count * CTRL_CHAR_CODE_UNITS))
+                .unwrap_or(text_end);
+            for (ordinal, raw_position) in
+                raw_positions[group_start..group_end].iter_mut().enumerate()
+            {
+                *raw_position = first_raw + ordinal as u32 * CTRL_CHAR_CODE_UNITS;
+            }
+            group_start = group_end;
+        }
+
+        raw_positions
     }
 
     /// 편집/커서 이동용 control position 을 반환한다.

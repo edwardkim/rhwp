@@ -168,6 +168,9 @@ struct BlockTableContinuationPreparedState {
     /// 사용해도 되는 것으로 조판 전에 확인됐을 때의 첫 fragment 절대 경계.
     /// 일반 표에는 `None`으로 기존 보수 budget을 유지한다.
     first_fragment_actual_footnote_boundary: Option<f64>,
+    /// 다음 host의 양수 vpos rewind가 현재 RowBreak 표의 continuation source
+    /// page를 가리키는지 여부. page-top reset은 표 종료이므로 포함하지 않는다.
+    source_next_positive_rewind: bool,
     /// 고정 선언 높이보다 실측 내용이 크게 넘치는 native HWP5 RowBreak 표가 마지막
     /// continuation fragment에서 URL 각주를 붙일 때의 실제 경계 완화 여부.
     relax_terminal_table_footnote_fit: bool,
@@ -297,8 +300,11 @@ struct BlockRowScanVars {
     landscape_whole_row_tolerance: f64,
     landscape_short_row_tolerance: f64,
     landscape_short_row_max_height: f64,
-    rowbreak_split_row_overflow_tolerance: f64,
     strict_painted_bottom_fit: bool,
+    source_first_fragment_overflow_allowance: f64,
+    /// 저장된 첫 조각 프레임이 가장 가깝게 소유하는 행 끝. 프레임 여유로
+    /// whole-row를 수용할 때 이 끝을 넘지 않도록 제한한다.
+    source_first_fragment_row_end: Option<usize>,
     start_row_height_override: Option<f64>,
 }
 
@@ -701,11 +707,6 @@ pub struct TypesetEngine {
 }
 
 /// 조판 중 현재 페이지/단 상태
-/// [Task #1725 v2] tail-before-vpos-reset 문단에 1회 허용하는 소량 오버플로(px).
-/// 한글은 하드 페이지 경계 직전 tail 을 본문 하단(여백 침범 무시)에 배치하므로, rhwp 가 수 px
-/// over-fill 한 경우에도 tail 을 현재 페이지에 유지해 near-empty 페이지 over-pagination 을 막는다.
-const TAIL_BREAK_OVERFLOW_TOLERANCE_PX: f64 = 20.0;
-const HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX: f64 = 64.0;
 /// [#3236] 1행 1열 RowBreak 표의 선언 높이 신뢰(#1891) 상한 배율. 측정이 선언의
 /// 이 배율을 넘으면 폰트 대체 팽창이 아니라 셀 내용이 진짜로 큰 것이므로 특례를
 /// 적용하지 않고 인트라-로우 분할 경로에 맡긴다.
@@ -908,21 +909,6 @@ fn partial_rowbreak_fragment_spacing_px(
     };
     (before, bottom)
 }
-/// [#2097] 쪽 하단 압축 수용치 — 한글은 쪽 경계에서 행/블록이 잔여를 이 이내로
-/// 초과하면 압축해 끼워 넣는다 (1741000 실측 초과 10.4px 수용).
-const BOTTOM_SQUEEZE_TOLERANCE_PX: f64 = 13.0;
-/// [#2097] 압축 수용은 쪽 끝자락(잔여 ≤ 이 값)에서만 — 한글의 압축은 쪽 마무리
-/// 동작이다 (1741000 잔여 87.8/73.5px 압축 vs kps-ai 잔여 237.3px 이월 실측).
-const BOTTOM_SQUEEZE_MAX_REST_PX: f64 = 100.0;
-/// [#2097] 압축 수용에 필요한 콘텐츠 여유(잔여-콘텐츠) 하한 — 콘텐츠가 눌릴
-/// 공간이 없으면 한글도 이월한다 (scattered_header r139 여유 1.3px 이월 vs
-/// 1741000 여유 30~58px 압축 실측).
-const BOTTOM_SQUEEZE_MIN_HEADROOM_PX: f64 = 12.0;
-const ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX: f64 = 40.0;
-/// [Task #1733] 저장 LINE_SEG 좌표가 현재 쪽 하단 안에 tail 을 두었다는 증거가 있을 때
-/// 제한된 tail 경로에만 허용하는 누적 높이 drift 완화값.
-const SAVED_TAIL_VPOS_OVERFLOW_TOLERANCE_PX: f64 = 128.0;
-
 struct TypesetState {
     /// 완성된 페이지 목록
     pages: Vec<PageContent>,
@@ -1048,10 +1034,9 @@ struct TypesetState {
     /// 각주 있는 페이지에서 한글 LINESEG 는 tail 문단을 본문에 배치(각주는 아래)하는데,
     /// rhwp 각주 예약(+40px 버퍼)이 tail 을 수 px 초과로 밀어 near-empty 페이지 over-pagination.
     skip_footnote_margin_once: bool,
-    /// [Task #1725 v2] tail-before-vpos-reset 문단 1회 소량 오버플로 허용(px). 각주 없이도
-    /// 페이지가 수 px over-fill 되어 tail 이 밀리는 케이스(국제고속선기준 pi=718/995/1789/2128).
-    /// 한글은 tail 을 본문 하단(여백 침범 무시)에 배치하므로 tail 에 한해 소량 초과를 허용한다.
-    tail_overflow_tolerance_once: f64,
+    /// 다음 저장 vpos-reset 직전 tail의 실제 저장 line bounds. 현재 flow와 저장 bottom의
+    /// 차이만 다음 문단의 fit allowance로 쓴다.
+    tail_saved_bounds_once: Option<(f64, f64)>,
     /// #2439: 단일 양수-offset 빈 호스트 RowBreak 표 뒤 일반 문단의 1회 엄격 fit.
     /// 이 문단은 표의 실제 painted bottom 뒤에서 시작하므로 저장 page-tail 예외와
     /// trailing line-spacing 트림을 적용하지 않는다.
@@ -2088,24 +2073,12 @@ fn text_line_is_picture_lead_in(
         .unwrap_or(false)
 }
 
-fn is_sample16_integrated_db_cluster_tail_paragraph(para: &Paragraph) -> bool {
-    para.text.starts_with('\u{F03C5}')
-        && para
-            .text
-            .contains("계약상대자는 통합DB서버에서 운영될 주요업무에 대해 Active-Active")
-        && para.controls.iter().all(|c| matches!(c, Control::Field(_)))
-}
-
-/// 원본 HWP3의 저장 LINE_SEG 안쪽 vpos 되감김은 hyperlink marker가 있어도 본문 흐름을
-/// 바꾸지 않는다. hyperlink는 글자 위치의 인라인 메타데이터이므로, 표·그림·각주처럼
-/// 줄/쪽을 점유하는 컨트롤과 같은 이유로 reset 신호를 무시하면 안 된다.
-///
-/// 범위를 `Hyperlink` 하나로 제한한다. Field/Ruby/수식/form과 모든 객체 컨트롤은 각각
-/// 별도 줄높이·분할 계약을 가지므로 여기서 허용하지 않는다.
-fn hwp3_text_rewind_controls_are_inline_hyperlinks(para: &Paragraph) -> bool {
+/// Field와 hyperlink는 글자 위치의 인라인 metadata다. 저장 vpos reset의 본문 흐름을
+/// 해석할 때 표·그림·각주처럼 줄이나 쪽을 점유하는 control과 구별한다.
+fn controls_are_inline_text_metadata(para: &Paragraph) -> bool {
     para.controls
         .iter()
-        .all(|control| matches!(control, Control::Hyperlink(_)))
+        .all(|control| matches!(control, Control::Field(_) | Control::Hyperlink(_)))
 }
 
 fn internal_vpos_page_break_line(
@@ -2113,23 +2086,29 @@ fn internal_vpos_page_break_line(
     line_count: usize,
     body_height_px: f64,
     dpi: f64,
-    hwp3_lineseg_source: bool,
+    source_uses_inline_field_reset: bool,
+    hwp3_converted_requires_negative_reset: bool,
 ) -> Option<usize> {
     if line_count < 2 || para.line_segs.len() < line_count {
         return None;
     }
+    // HWP3 변환 HWP5의 두 줄 음수 cursor는 한컴이 문단의 물리 조각을 나눈
+    // 증거가 아니라 local cursor 보정으로도 사용한다(pi=140 유형). 세 줄 이상인
+    // multi-line fragment만 내부 페이지 경계로 승격한다.
+    if hwp3_converted_requires_negative_reset && line_count < 3 {
+        return None;
+    }
 
     let first = para.line_segs.first()?;
-    let sample16_tail = is_sample16_integrated_db_cluster_tail_paragraph(para);
-    let hwp3_text_rewind = hwp3_lineseg_source
-        && hwp3_text_rewind_controls_are_inline_hyperlinks(para)
-        && para_has_visible_text(para);
+    let text_vpos_rewind = source_uses_inline_field_reset
+        && para_has_visible_text(para)
+        && controls_are_inline_text_metadata(para);
 
     // [Issue #2006] 빈-텍스트 문단에 전면(full-page) tac 이미지가 다수 스택된 경우
     // (예: 1790387 PrEP 보고서 pi=367, tac 그림 2장 각 lh≈900px, vpos=0..0), 한글은
     // 각 전면 이미지를 쪽당 1장으로 배치한다. rhwp 는 한 쪽에 겹쳐(2×본문 높이) 두어
     // 과소 페이지가 된다(−16). 연속한 두 라인이 모두 전면급 tac 이미지면 그 경계에서
-    // 강제 분할한다(캐스케이드는 잔여 재처리로). sample16/hwp3 vpos-reset 과 독립 —
+    // 강제 분할한다(캐스케이드는 잔여 재처리로). text vpos-reset 과 독립 —
     // 본 케이스는 vpos 가 0 이라 아래 first.vertical_pos>0 가드에 걸린다.
     if para_is_treat_as_char_picture_only(para) {
         let full_page_px = body_height_px * 0.8;
@@ -2150,7 +2129,7 @@ fn internal_vpos_page_break_line(
         }
     }
 
-    if !sample16_tail && !hwp3_text_rewind {
+    if !text_vpos_rewind {
         return None;
     }
 
@@ -2168,14 +2147,20 @@ fn internal_vpos_page_break_line(
                 return None;
             }
 
-            let sample16_reset = sample16_tail && cur.vertical_pos <= 0;
-            let hwp3_rewind_reset = hwp3_text_rewind
-                && cur.vertical_pos < prev.vertical_pos
-                && hwpunit_to_px(prev.vertical_pos + prev.line_height, dpi)
-                    >= body_height_px * 0.72
-                && hwpunit_to_px(cur.vertical_pos, dpi) <= body_height_px * 0.06;
+            let stored_page_reset = if hwp3_converted_requires_negative_reset {
+                // HWP3 변환 HWP5의 `vpos=0`은 문단 내부의 실제 쪽 reset이 아니라
+                // 변환기의 local cursor 초기화로도 쓰인다. 음수로 되감긴 조각만
+                // 저장된 다음 페이지 조각으로 해석한다.
+                cur.vertical_pos < 0
+            } else {
+                cur.vertical_pos <= 0
+                    || (cur.vertical_pos < prev.vertical_pos
+                        && hwpunit_to_px(prev.vertical_pos + prev.line_height, dpi)
+                            >= body_height_px * 0.72
+                        && hwpunit_to_px(cur.vertical_pos, dpi) <= body_height_px * 0.06)
+            };
 
-            if sample16_reset || hwp3_rewind_reset {
+            if stored_page_reset {
                 Some(prev_idx + 1)
             } else {
                 None
@@ -3019,53 +3004,232 @@ fn is_single_rowbreak_table_with_trustworthy_declared_height(
         && effective_height <= declared_height * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO
 }
 
-/// native HWP5 RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
+/// RowBreak 표의 특정 행 셀 안에 저장된 vpos reset이 있는지 판별한다.
 ///
 /// 표 행 경계가 아니라 셀 내부 줄에서 `양수 vpos → 0 이하`로 되감긴 경우는 해당
-/// cell tail이 다음 물리 페이지에서 이어진다는 HWP 저장 신호다. 일반 row split과
-/// 달리 이 경계 직전에는 기존 FootnoteArea 바로 위까지 채워져야 하므로, caller가
-/// 안전 여백을 실제 각주 경계로 바꿀 수 있게 구조 신호만 제공한다.
-fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
-    table.cells.iter().any(|cell| {
-        // 저장된 물리 page reset은 cell paragraph 경계에서 시작할 수도 있다. 각
-        // paragraph 안의 `windows(2)`만 보면 `<OPTN>` 다음 `간 특수 검사`처럼
-        // p[n]의 마지막 LINE_SEG → p[n+1]의 첫 LINE_SEG reset을 놓친다.
-        let mut previous_vpos = None;
-        for para in &cell.paragraphs {
-            for seg in para
-                .line_segs
-                .iter()
-                .filter(|seg| !is_synthetic_line_seg(seg))
-            {
-                if previous_vpos.is_some_and(|previous| previous > 0 && seg.vertical_pos <= 0) {
-                    return true;
+/// cell tail이 다음 물리 페이지에서 이어진다는 저장 frame 신호다. HWP와 HWPX의
+/// 원본 `lineSeg` 모두에 같은 방식으로 적용된다.
+fn rowbreak_row_has_internal_saved_vpos_reset(
+    table: &crate::model::table::Table,
+    row: usize,
+) -> bool {
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row)
+        .any(|cell| {
+            // 저장된 물리 page reset은 cell paragraph 경계에서 시작할 수도 있다. 각
+            // paragraph 안의 `windows(2)`만 보면 `<OPTN>` 다음 `간 특수 검사`처럼
+            // p[n]의 마지막 LINE_SEG → p[n+1]의 첫 LINE_SEG reset을 놓친다.
+            let mut previous_vpos = None;
+            for para in &cell.paragraphs {
+                for seg in para
+                    .line_segs
+                    .iter()
+                    .filter(|seg| !is_synthetic_line_seg(seg))
+                {
+                    if previous_vpos.is_some_and(|previous| previous > 0 && seg.vertical_pos <= 0) {
+                        return true;
+                    }
+                    previous_vpos = Some(seg.vertical_pos);
                 }
-                previous_vpos = Some(seg.vertical_pos);
             }
-        }
-        false
-    })
+            false
+        })
 }
 
-fn sample16_missing_lineseg_tail_break_line(
+/// RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
+fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
+    (0..table.row_count as usize).any(|row| rowbreak_row_has_internal_saved_vpos_reset(table, row))
+}
+
+/// Whether every text-bearing cell proves, through its stored line segments,
+/// that its content belongs inside the declared cell box. This distinguishes a
+/// renderer metric expansion from a source-owned row growth without a table
+/// size ratio or a pixel cap. Rowspans and controls have independent physical
+/// ownership, so they stay on the measured-row path.
+fn table_declared_height_has_stored_cell_content_frame(
+    table: &crate::model::table::Table,
+    dpi: f64,
+) -> bool {
+    !table.cells.is_empty()
+        && table.cells.iter().all(|cell| {
+            if cell.row_span != 1 || cell.height >= 0x8000_0000 {
+                return false;
+            }
+            let mut has_text = false;
+            let mut stored_bottom = None;
+            for para in &cell.paragraphs {
+                if !para.controls.is_empty() {
+                    return false;
+                }
+                let text = para.text.replace(|c: char| c.is_control(), "");
+                if text.trim().is_empty() {
+                    continue;
+                }
+                has_text = true;
+                for seg in para
+                    .line_segs
+                    .iter()
+                    .filter(|seg| !is_synthetic_line_seg(seg))
+                    .filter(|seg| seg.vertical_pos >= 0 && seg.line_height > 0)
+                {
+                    let bottom = hwpunit_to_px(seg.vertical_pos + seg.line_height, dpi);
+                    stored_bottom =
+                        Some(stored_bottom.map_or(bottom, |current: f64| current.max(bottom)));
+                }
+            }
+            !has_text
+                || stored_bottom
+                    .is_some_and(|bottom| bottom <= hwpunit_to_px(cell.height as i32, dpi))
+        })
+}
+
+/// A cell-local stored frame proves that the cell's text fits its own box, but
+/// not that the table object's declared frame owns every row.  Some native HWP
+/// RowBreak tables retain a stale object height while their individual cells
+/// carry the full multi-row geometry.  Treating that short object as the whole
+/// table collapses a source-owned first fragment into one floating table.
+///
+/// This checks the other half of the source contract without relying on a
+/// measured/declared ratio: each non-rowspan row must have a declared cell box
+/// and their geometry, including cell spacing, must fit inside the declared
+/// table object frame.
+fn table_declared_object_covers_cell_row_frames(
+    table: &crate::model::table::Table,
+    dpi: f64,
+) -> bool {
+    let row_count = table.row_count as usize;
+    if row_count == 0 || table.cells.is_empty() {
+        return false;
+    }
+
+    let declared_object_height = raw_table_ctrl_height_px(table, dpi)
+        .unwrap_or_else(|| hwpunit_to_px(table.common.height as i32, dpi).max(0.0));
+    if declared_object_height <= 0.0 {
+        return false;
+    }
+
+    let mut row_heights: Vec<Option<f64>> = vec![None; row_count];
+    for cell in &table.cells {
+        let row = cell.row as usize;
+        if row >= row_count || cell.row_span != 1 || cell.height >= 0x8000_0000 {
+            return false;
+        }
+        let height = hwpunit_to_px(cell.height as i32, dpi);
+        if height <= 0.0 {
+            return false;
+        }
+        row_heights[row] = Some(row_heights[row].unwrap_or(0.0).max(height));
+    }
+
+    let declared_row_geometry =
+        row_heights
+            .into_iter()
+            .collect::<Option<Vec<_>>>()
+            .map(|heights| {
+                heights.iter().sum::<f64>()
+                    + hwpunit_to_px(table.cell_spacing as i32, dpi)
+                        * heights.len().saturating_sub(1) as f64
+            });
+    declared_row_geometry.is_some_and(|height| height <= declared_object_height + 0.5)
+}
+
+fn missing_lineseg_trailing_line_break(
     para: &Paragraph,
     line_count: usize,
     current_height: f64,
     available: f64,
+    source_uses_inline_field_reset: bool,
+    hwp3_converted_missing_lineseg: bool,
 ) -> Option<usize> {
+    // HWP3 변환 HWP5는 저장 lineSeg가 전부 생략된 경우만 formatter의 마지막
+    // 줄을 다음 물리 조각으로 추론한다. 고정 여유값 대신 "마지막 한 줄"의
+    // 비율로 최소 페이지 채움을 계산한다. 예를 들어 5줄 문단은 4/5 이상이
+    // 채워졌을 때만 4+1 조각을 추론하므로, 같은 5줄이라도 페이지 상단의
+    // 정상 RDBMS 문단은 분할하지 않는다.
+    let minimum_fill_ratio = if hwp3_converted_missing_lineseg {
+        1.0 - 1.0 / line_count as f64
+    } else {
+        0.75
+    };
     if !para.line_segs.is_empty()
         || line_count < 4
-        || current_height < available * 0.75
-        || !is_sample16_integrated_db_cluster_tail_paragraph(para)
+        || current_height < available * minimum_fill_ratio
+        || !para_has_visible_text(para)
+        || !source_uses_inline_field_reset
+        || !controls_are_inline_text_metadata(para)
     {
         return None;
     }
 
-    Some(3)
+    if hwp3_converted_missing_lineseg {
+        // 저장 좌표가 전부 사라진 변환본은 기존 source fragment의 줄 수를 알 수 없다.
+        // 현재 formatter가 만든 줄을 두 조각으로 가능한 한 균등하게 나누면, 원래
+        // 3+3 저장 조각이 5줄로 재래핑된 경우에도 3+2 경계를 유지한다.
+        Some((line_count + 1) / 2)
+    } else {
+        Some(line_count - 1)
+    }
 }
 
 fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
     ls.tag & 0x80000000 != 0
+}
+
+/// Returns only the measured-row slack that remains below a saved native
+/// RowBreak first-fragment flow frame. Both bounds are absolute page flow
+/// coordinates; host-before spacing and paint-only vertical insets are not
+/// part of the stored flow frame.
+fn saved_rowbreak_first_fragment_flow_overflow_allowance(
+    declared_height: u32,
+    outer_table_owns_row_geometry: bool,
+    source_flow_bottom: f64,
+    fragment_flow_bottom: f64,
+) -> f64 {
+    const SOURCE_FRAME_EPSILON_PX: f64 = 0.5;
+    if declared_height == 0
+        || declared_height > i32::MAX as u32
+        || !outer_table_owns_row_geometry
+        || !source_flow_bottom.is_finite()
+        || !fragment_flow_bottom.is_finite()
+        || source_flow_bottom <= 0.0
+        || fragment_flow_bottom <= 0.0
+        || source_flow_bottom > fragment_flow_bottom + SOURCE_FRAME_EPSILON_PX
+    {
+        return 0.0;
+    }
+
+    (fragment_flow_bottom - source_flow_bottom).max(0.0)
+}
+
+/// 저장된 첫 RowBreak 조각 높이에 가장 가까운 행 경계를 찾는다.
+///
+/// 저장 프레임의 남은 물리 공간은 글꼴 측정 drift를 흡수할 수 있지만, 다음 행까지
+/// 허용하는 일반 여유값은 아니다. 동률이면 앞 경계를 택해 다음 행을 앞당겨
+/// 소유하지 않는다.
+fn nearest_saved_rowbreak_frame_row_end(
+    frame_height: f64,
+    row_heights: &[f64],
+    cell_spacing: f64,
+) -> Option<usize> {
+    if !frame_height.is_finite() || frame_height <= 0.0 {
+        return None;
+    }
+
+    let mut bottom = 0.0;
+    let mut nearest: Option<(usize, f64)> = None;
+    for (row, height) in row_heights.iter().enumerate() {
+        if row > 0 {
+            bottom += cell_spacing;
+        }
+        bottom += height;
+        let distance = (bottom - frame_height).abs();
+        if nearest.is_none_or(|(_, best)| distance < best) {
+            nearest = Some((row + 1, distance));
+        }
+    }
+    nearest.map(|(end_row, _)| end_row)
 }
 
 /// Visible host text that is structurally a numbered table caption.
@@ -3291,6 +3455,179 @@ fn paragraph_forces_page_boundary_after(
     )
 }
 
+/// Native HWP5 regulatory forms commonly encode a circled subheading, one empty
+/// carrier line, and its explanatory RowBreak table as three independent
+/// paragraphs.  The heading itself can fit in the remaining tail while the table
+/// cannot retain even its minimum visible first fragment.  Hancom keeps that
+/// heading with the table rather than leaving it alone at the physical page
+/// bottom (76076 p55/p70).
+///
+/// This is intentionally a structural, not a generic heading, rule: it accepts
+/// only a circled heading followed by exactly one empty line and a single
+/// non-TAC 1x1 TopAndBottom RowBreak table.  Native HWP5 can omit LINE_SEG from
+/// that carrier, so its semantic emptiness is the reliable source contract.
+/// Normal section titles, explicit keep-with-next styles, and multi-cell tables
+/// remain on their normal pagination paths.
+fn native_hwp5_circled_rowbreak_table_heading_requires_fresh_page(
+    st: &TypesetState,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    dpi: f64,
+) -> bool {
+    if !st.profile.hwp5_stored_pagination_layout()
+        || st.col_count != 1
+        || st.current_items.is_empty()
+        || !para.controls.is_empty()
+        || fmt.line_heights.len() != 1
+        || !para_has_visible_text(para)
+        || !matches!(
+            para.text.trim_start().chars().next(),
+            Some('\u{2460}'..='\u{2473}')
+        )
+    {
+        return false;
+    }
+
+    let Some(blank) = paragraphs.get(para_idx + 1) else {
+        return false;
+    };
+    let Some(table_host) = paragraphs.get(para_idx + 2) else {
+        return false;
+    };
+    if !blank.text.trim().is_empty()
+        || !blank.controls.is_empty()
+        || !table_host.text.trim().is_empty()
+    {
+        return false;
+    }
+
+    let Some(Control::Table(table)) = table_host.controls.first() else {
+        return false;
+    };
+    if table_host.controls.len() != 1
+        || table.common.treat_as_char
+        || !matches!(
+            table.common.text_wrap,
+            crate::model::shape::TextWrap::TopAndBottom
+        )
+        || !matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        )
+        || table.row_count != 1
+        || table.col_count != 1
+        || table.cells.len() != 1
+        || table.common.height == 0
+    {
+        return false;
+    }
+
+    let blank_advance = blank
+        .line_segs
+        .first()
+        .filter(|seg| !is_synthetic_line_seg(seg))
+        .map(|seg| hwpunit_to_px(seg.line_height + seg.line_spacing, dpi))
+        // A missing carrier LINE_SEG is a native HWP5 encoding variant.  Its
+        // actual advance is never smaller than the RowBreak orphan minimum, so
+        // use that lower bound only for this page-tail decision.
+        .unwrap_or(MIN_TOP_KEEP_PX);
+    let group_minimum = fmt.height_for_fit + blank_advance + MIN_TOP_KEEP_PX;
+    let remaining = (st.available_height() - st.current_height).max(0.0);
+
+    remaining + 0.5 >= fmt.height_for_fit
+        && remaining + 0.5 < group_minimum
+        && group_minimum <= st.base_available_height() + 0.5
+}
+
+/// HWP5-origin 문서는 모든 page ornament를 감추는 빈 PageHide marker 뒤에 같은 쪽의
+/// 장식 host를 `Page` break로 한 번 더 기록할 수 있다. 첫 marker가 이미 새 physical
+/// page를 열었으므로 host의 break까지 적용하면 빈 page가 materialize된다.
+fn hwp5_origin_redundant_pagehide_break_marker(
+    para_idx: usize,
+    para: &Paragraph,
+    paragraphs: &[Paragraph],
+    hwpx_stored_layout: bool,
+) -> bool {
+    if para_idx < 2
+        || para.column_type != ColumnBreakType::Page
+        || !para.text.trim().is_empty()
+        || para.controls.len() != 1
+        || !matches!(para.controls.first(), Some(Control::PageHide(_)))
+    {
+        return false;
+    }
+
+    let prior_empty = &paragraphs[para_idx - 1];
+    let section_marker = &paragraphs[para_idx - 2];
+    let Some(next_para) = paragraphs.get(para_idx + 1) else {
+        return false;
+    };
+
+    // Stored-layout HWPX section markers that combine a decorative group and
+    // PageHide own the blank PageHide page immediately before a page-starting
+    // non-inline table. That marker is not the redundant HWP5-origin marker
+    // handled here.
+    let hwpx_pagehide_blank_page_owner = hwpx_stored_layout
+        && section_marker.controls.iter().any(|control| {
+            matches!(
+                control,
+                Control::Shape(shape)
+                    if matches!(
+                        shape.as_ref(),
+                        crate::model::shape::ShapeObject::Group(_)
+                    )
+            )
+        })
+        && next_para
+            .controls
+            .iter()
+            .any(|control| matches!(control, Control::Table(table) if !table.common.treat_as_char));
+
+    prior_empty.text.trim().is_empty()
+        && prior_empty.controls.is_empty()
+        && section_marker.column_type == ColumnBreakType::Section
+        && section_marker
+            .controls
+            .iter()
+            .any(|control| matches!(control, Control::PageHide(_)))
+        && next_para.column_type == ColumnBreakType::Page
+        && next_para
+            .controls
+            .iter()
+            .any(|control| !matches!(control, Control::PageHide(_)))
+        && !hwpx_pagehide_blank_page_owner
+}
+
+/// 빈 ColumnBreak가 두 non-inline 표 사이에 있고 다음 표가 이미 PageBreak를
+/// 소유하면, ColumnBreak는 별도 physical page가 아니라 다음 표의 carrier다.
+/// 표의 shape, 크기, 저장 vpos가 아니라 형제 paragraph의 break 소유권만 쓴다.
+fn empty_table_carrier_column_break_before_page_table(
+    para_idx: usize,
+    para: &Paragraph,
+    paragraphs: &[Paragraph],
+) -> bool {
+    if para_idx == 0
+        || para.column_type != ColumnBreakType::Column
+        || !para.text.trim().is_empty()
+        || !para.controls.is_empty()
+    {
+        return false;
+    }
+
+    let previous = &paragraphs[para_idx - 1];
+    let Some(next) = paragraphs.get(para_idx + 1) else {
+        return false;
+    };
+
+    matches!(previous.controls.as_slice(), [Control::Table(table)]
+        if !table.common.treat_as_char)
+        && next.column_type == ColumnBreakType::Page
+        && matches!(next.controls.as_slice(), [Control::Table(table)]
+            if !table.common.treat_as_char)
+}
+
 fn single_line_visible_bounds_px(
     para: &Paragraph,
     page_vpos_base: i32,
@@ -3344,6 +3681,21 @@ fn saved_tail_fit_chain_decision(
     }
 }
 
+const SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX: f64 = 16.0;
+
+fn saved_bounds_overlap_current_flow(bounds: (f64, f64), current_height: f64) -> bool {
+    let (top, bottom) = bounds;
+    let line_height = (bottom - top).max(0.0);
+    line_height > 0.0 && top <= current_height + line_height && current_height <= bottom
+}
+
+fn saved_line_is_anchored_to_current_flow(bounds: (f64, f64), current_height: f64) -> bool {
+    let (top, bottom) = bounds;
+    bottom > top
+        && top <= current_height
+        && current_height <= top + SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX
+}
+
 fn saved_line_clears_footnote_area(
     current_footnote_height: f64,
     is_single_column: bool,
@@ -3361,22 +3713,125 @@ fn saved_line_clears_footnote_area(
             top >= 0.0
                 && top <= base_available_height
                 && bottom <= text_limit
-                && current_height <= top + 16.0
+                && saved_line_is_anchored_to_current_flow((top, bottom), current_height)
         })
 }
 
-fn saved_bounds_fit_at_flow_tail(bounds: (f64, f64), current_height: f64, available: f64) -> bool {
-    saved_bounds_fit_at_flow_tail_with_tolerance(bounds, current_height, available, 16.0)
-}
-
-fn saved_bounds_fit_at_flow_tail_with_tolerance(
+fn saved_bounds_fit_at_flow_tail(
     bounds: (f64, f64),
     current_height: f64,
     available: f64,
-    tolerance_px: f64,
+    bottom_spill: f64,
 ) -> bool {
+    saved_bounds_overlap_current_flow(bounds, current_height)
+        && bounds.1 <= available + bottom_spill
+}
+
+fn saved_table_bounds_fit_at_flow_tail(
+    bounds: (f64, f64),
+    current_height: f64,
+    available: f64,
+    table_height: f64,
+) -> bool {
+    let (top, _) = bounds;
+    // 저장 object frame이 현재 누적 흐름보다 조금 앞에서 시작해도, 그 line이 현재
+    // 흐름과 겹치고 object bottom이 같은 body 안에 있으면 그 frame이 물리 page
+    // owner다. 반대로 현재 흐름보다 뒤처진 쪽 상단 frame은 stale anchor이므로
+    // 일반 fit 경로에 맡긴다.
+    let source_frame_leads_current_flow =
+        current_height <= top && saved_bounds_overlap_current_flow(bounds, current_height);
+    table_height.is_finite()
+        && table_height > 0.0
+        && (saved_line_is_anchored_to_current_flow(bounds, current_height)
+            || source_frame_leads_current_flow)
+        && bounds.1 <= available
+        && bounds.0 + table_height <= available
+}
+
+/// 저장 LineSeg에 앵커된 TAC 표는 `common.height`가 한컴이 기록한 물리 object
+/// frame이다. 행 측정 총합에는 host의 outer margin이 더해질 수 있으므로, 저장 frame
+/// fit을 판정할 때는 선언 frame을 우선하고 선언값이 없을 때만 측정 높이를 사용한다.
+fn stored_tac_table_frame_height(
+    table: &crate::model::table::Table,
+    dpi: f64,
+    measured_height: f64,
+) -> f64 {
+    let declared_height = hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, dpi);
+    if declared_height.is_finite() && declared_height > 0.0 {
+        declared_height
+    } else {
+        measured_height
+    }
+}
+
+#[cfg(test)]
+mod saved_tac_table_flow_tail_contract {
+    use super::saved_table_bounds_fit_at_flow_tail;
+
+    #[test]
+    fn requires_the_table_object_not_just_its_anchor_line_to_fit() {
+        assert!(saved_table_bounds_fit_at_flow_tail(
+            (850.0, 870.0),
+            858.0,
+            971.0,
+            100.0,
+        ));
+        assert!(
+            !saved_table_bounds_fit_at_flow_tail((850.0, 870.0), 858.0, 971.0, 889.0,),
+            "a tail anchor line cannot authorize a table that extends into the next page"
+        );
+    }
+
+    #[test]
+    fn accepts_a_forward_source_frame_that_overlaps_the_current_flow() {
+        assert!(saved_table_bounds_fit_at_flow_tail(
+            (120.0, 500.0),
+            100.0,
+            700.0,
+            350.0,
+        ));
+        assert!(!saved_table_bounds_fit_at_flow_tail(
+            (0.0, 500.0),
+            400.0,
+            700.0,
+            350.0,
+        ));
+    }
+}
+
+fn paragraph_saved_visible_bounds(
+    para: &Paragraph,
+    page_vpos_base: i32,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    let mut bounds: Option<(f64, f64)> = None;
+    for seg in para
+        .line_segs
+        .iter()
+        .filter(|seg| !is_synthetic_line_seg(seg))
+    {
+        let (top, bottom) = line_seg_visible_bounds_px(seg, page_vpos_base, dpi)?;
+        bounds = Some(match bounds {
+            Some((min_top, max_bottom)) => (min_top.min(top), max_bottom.max(bottom)),
+            None => (top, bottom),
+        });
+    }
+    bounds
+}
+
+/// 저장 tail의 하단이 본문 안에 있다는 source 증거가 있을 때, 현재 조판 흐름이 그
+/// 하단에 닿는 데 필요한 정확한 차이만 반환한다. 임의 px allowance를 쓰지 않는다.
+fn saved_tail_overflow_to_fit(
+    bounds: (f64, f64),
+    current_height: f64,
+    fit_height: f64,
+    body_height: f64,
+) -> Option<f64> {
     let (top, bottom) = bounds;
-    top + tolerance_px >= current_height && bottom <= available + 0.5
+    (top >= 0.0
+        && bottom <= body_height
+        && saved_bounds_overlap_current_flow(bounds, current_height))
+    .then(|| (current_height + fit_height - bottom).max(0.0))
 }
 
 fn saved_line_range_fits_body_tail(
@@ -3406,6 +3861,55 @@ fn saved_line_range_fits_body_tail(
     }
 
     true
+}
+
+/// HWPX의 문단 내부 `vpos=0` reset은, reset 직전 fragment가 현재 flow 앵커에서
+/// 시작할 때에만 다음 물리 쪽의 시작을 뜻한다. 이 경우 reset 전 줄들은 저장된
+/// 현재 쪽 fragment의 owner이므로, 일반 줄 높이 예산만으로 중간 쪽으로 분리하지
+/// 않는다. 표·개체·다단·local cursor rewind는 이 계약 밖에 둔다.
+fn hwpx_saved_reset_fragment_matches_current_flow(
+    st: &TypesetState,
+    para: &Paragraph,
+    start_line: usize,
+    break_line: usize,
+    current_page_vpos_base: i32,
+    dpi: f64,
+) -> bool {
+    if !st.profile.hwpx_stored_layout()
+        || st.col_count != 1
+        || !para.controls.is_empty()
+        || start_line >= break_line
+        || break_line >= para.line_segs.len()
+    {
+        return false;
+    }
+
+    let Some(start_bounds) = para
+        .line_segs
+        .get(start_line)
+        .filter(|seg| !is_synthetic_line_seg(seg))
+        .and_then(|seg| line_seg_visible_bounds_px(seg, current_page_vpos_base, dpi))
+    else {
+        return false;
+    };
+    if !saved_line_is_anchored_to_current_flow(start_bounds, st.current_height) {
+        return false;
+    }
+
+    let mut previous_vpos = None;
+    for seg in &para.line_segs[start_line..break_line] {
+        if is_synthetic_line_seg(seg)
+            || seg.vertical_pos <= 0
+            || previous_vpos.is_some_and(|previous| seg.vertical_pos <= previous)
+        {
+            return false;
+        }
+        previous_vpos = Some(seg.vertical_pos);
+    }
+
+    para.line_segs
+        .get(break_line)
+        .is_some_and(|seg| !is_synthetic_line_seg(seg) && seg.vertical_pos == 0)
 }
 
 fn paragraph_text_looks_like_list_continuation_tail(para: &Paragraph) -> bool {
@@ -3555,7 +4059,7 @@ impl TypesetState {
             pre_emitted_host_heights: std::collections::HashMap::new(),
             skip_safety_margin_once: false,
             skip_footnote_margin_once: false,
-            tail_overflow_tolerance_once: 0.0,
+            tail_saved_bounds_once: None,
             strict_plain_text_fit_after_empty_host_float_once: false,
             profile: Default::default(),
             has_stored_line_segs: false,
@@ -6072,7 +6576,11 @@ impl TypesetEngine {
             let suppress_floating_anchor_column_break = !has_diff_col_def
                 && (crate::renderer::layout::para_is_floating_overlay_anchor(para)
                     || empty_columndef_only_break
-                    || overlay_columndef_separator_break);
+                    || overlay_columndef_separator_break
+                    || (profile.hwpx_stored_layout()
+                        && empty_table_carrier_column_break_before_page_table(
+                            para_idx, para, paragraphs,
+                        )));
             if para.column_type == ColumnBreakType::Column && !suppress_floating_anchor_column_break
             {
                 if has_diff_col_def {
@@ -6153,6 +6661,21 @@ impl TypesetEngine {
                         st.current_zone_design_spacing_px = new_ds;
                     }
                 }
+            }
+
+            // HWP5-origin 문서는 section PageHide를 연 빈 marker와, 같은 쪽 장식 host의
+            // Page break를 함께 기록할 수 있다. marker의 break는 적용하되 marker
+            // 자체를 배치하지 않아 host가 그 새 쪽을 바로 소유하도록 한다.
+            if (profile.native_hwp5_layout() || profile.hwpx_stored_layout())
+                && hwp5_origin_redundant_pagehide_break_marker(
+                    para_idx,
+                    para,
+                    paragraphs,
+                    profile.hwpx_stored_layout(),
+                )
+            {
+                st.hidden_empty_paras.insert(para_idx);
+                continue;
             }
 
             // [Task #1046] 사후 reflow 이월: layout 에서 본문 하단 overflow 로 판정된 항목은
@@ -6383,7 +6906,7 @@ impl TypesetEngine {
             if tail_before_break_through_empty {
                 st.skip_safety_margin_once = true;
                 st.skip_footnote_margin_once = true;
-                st.tail_overflow_tolerance_once = TAIL_BREAK_OVERFLOW_TOLERANCE_PX;
+                st.tail_saved_bounds_once = paragraph_saved_visible_bounds(para, 0, self.dpi);
             }
 
             // [Task #1733] 페이지 하단 빈 줄이 다음 vpos-reset 흐름 앞에 1개 이상 끼는 경우.
@@ -6571,8 +7094,9 @@ impl TypesetEngine {
                     // 밀어 near-empty 페이지 over-pagination(국제고속선기준 258 vs 242) 을 만든다.
                     st.skip_footnote_margin_once = true;
                     // [Task #1725 v2] 각주 없이 페이지가 수 px over-fill 되어 tail 이 밀리는 경우도
-                    // 한글은 tail 을 본문 하단에 배치하므로 소량 오버플로를 1회 허용.
-                    st.tail_overflow_tolerance_once = TAIL_BREAK_OVERFLOW_TOLERANCE_PX;
+                    // 한글은 저장 tail의 본문 하단 좌표를 유지한다. 다음 fit에서 실제
+                    // 저장 bottom까지의 차이만 허용하도록 bounds를 전달한다.
+                    st.tail_saved_bounds_once = paragraph_saved_visible_bounds(para, 0, self.dpi);
                 }
             } else if !st.current_items.is_empty() && para_idx + 1 < paragraphs.len() {
                 // [Task #967] 빈 paragraph 직후 force page break (쪽나누기) case 가드:
@@ -6807,6 +7331,11 @@ impl TypesetEngine {
                 native_hwp5_footnote_break =
                     native_hwp5_first_footnote_overlap_break_line(&st, para, &formatted, self.dpi);
                 let is_last_in_section = para_idx + 1 == paragraphs.len();
+                if native_hwp5_circled_rowbreak_table_heading_requires_fresh_page(
+                    &st, para, &formatted, paragraphs, para_idx, self.dpi,
+                ) {
+                    st.advance_column_or_new_page();
+                }
                 // [Task #1027 Stage D] fit 직전 vpos 스냅으로 누적 drift 제거 (렌더러 정합).
                 self.vpos_snap_current_height(
                     &mut st,
@@ -6824,6 +7353,69 @@ impl TypesetEngine {
                     styles,
                     is_last_in_section,
                 );
+                // HWPX가 수식 인라인 개체를 포함한 문단의 line_seg 높이를 실제
+                // 조판보다 작게 저장하는 경우, 다음 문단의 양수 VPOS가 같은 물리
+                // 쪽의 정확한 흐름 끝을 가리킨다. 일반 문단과 표에는 적용하지 않고,
+                // 수식 전용 host가 같은 본문 영역의 다음 앵커를 넘겨 소비했을
+                // 때에만 source flow 끝으로 되돌린다.
+                let saved_equation_host_next_anchor = st.profile.hwpx_stored_layout()
+                    && st.col_count == 1
+                    && !para.controls.is_empty()
+                    && para
+                        .controls
+                        .iter()
+                        .all(|ctrl| matches!(ctrl, Control::Equation(_)));
+                if saved_equation_host_next_anchor {
+                    // 수식 host의 조판 높이를 다음 저장 VPOS로 되돌릴 근거는
+                    // 수식 control과 같은 위치의 source LineSeg가 서로 다른 높이를
+                    // 기록한 경우다. 두 높이가 일치하면 다음 앵커는 일반 본문 흐름의
+                    // 정상 간격이므로 이를 압축하면 후속 쪽 owner를 앞당긴다.
+                    let saved_equation_line_height_mismatch = para.line_segs.len()
+                        == para.controls.len()
+                        && para
+                            .line_segs
+                            .iter()
+                            .zip(&para.controls)
+                            .any(|(seg, ctrl)| {
+                                matches!(ctrl, Control::Equation(equation)
+                                if !is_synthetic_line_seg(seg)
+                                    && seg.line_height > 0
+                                    && equation.common.height > 0
+                                    && seg.line_height != equation.common.height as i32)
+                            });
+                    let source_host = para
+                        .line_segs
+                        .iter()
+                        .rev()
+                        .find(|seg| !is_synthetic_line_seg(seg));
+                    let source_next = paragraphs.get(para_idx + 1).and_then(|next| {
+                        next.line_segs
+                            .iter()
+                            .find(|seg| !is_synthetic_line_seg(seg))
+                    });
+                    if let (Some(base), Some(source_host), Some(source_next)) =
+                        (st.vpos_page_base, source_host, source_next)
+                    {
+                        let source_host_y = st.vpos_col_anchor
+                            + hwpunit_to_px(
+                                (source_host.vertical_pos as i64 - base as i64) as i32,
+                                self.dpi,
+                            );
+                        let source_next_y = st.vpos_col_anchor
+                            + hwpunit_to_px(
+                                (source_next.vertical_pos as i64 - base as i64) as i32,
+                                self.dpi,
+                            );
+                        if saved_equation_line_height_mismatch
+                            && source_next.vertical_pos > source_host.vertical_pos
+                            && source_host_y >= 0.0
+                            && source_next_y <= st.base_available_height() + 0.5
+                            && st.current_height > source_next_y
+                        {
+                            st.current_height = source_next_y;
+                        }
+                    }
+                }
             } else {
                 // 표 문단: Phase 2에서 전환 예정. 현재는 기존 방식 호환용 stub.
                 self.typeset_table_paragraph(
@@ -8784,7 +9376,8 @@ impl TypesetEngine {
                 .get(st.current_column as usize)
                 .map(|a| a.width)
                 .unwrap_or(st.layout.body_area.width);
-            let fmt = self.format_paragraph(en_para, Some(&composed), &styles, Some(en_col_w));
+            let fmt =
+                self.format_endnote_paragraph(en_para, Some(&composed), &styles, Some(en_col_w));
             if std::env::var("RHWP_ENDNOTE_LINE_DEBUG").is_ok() {
                 debug_print_endnote_line_segments(
                     en_ref.number,
@@ -8973,7 +9566,7 @@ impl TypesetEngine {
                             .map(|tail_para| {
                                 let tail_comp =
                                     crate::renderer::composer::compose_paragraph(tail_para);
-                                self.format_paragraph(
+                                self.format_endnote_paragraph(
                                     tail_para,
                                     Some(&tail_comp),
                                     &styles,
@@ -9015,7 +9608,7 @@ impl TypesetEngine {
                             .map(|tail_para| {
                                 let tail_comp =
                                     crate::renderer::composer::compose_paragraph(tail_para);
-                                self.format_paragraph(
+                                self.format_endnote_paragraph(
                                     tail_para,
                                     Some(&tail_comp),
                                     &styles,
@@ -9220,18 +9813,21 @@ impl TypesetEngine {
             } else {
                 None
             };
-            let same_endnote_body_first_line_advance = if ep_idx == 0
-                && no_separator_large_between_notes_gap
-            {
-                en_ctrl.paragraphs.get(1).map(|body_para| {
-                    let body_comp = crate::renderer::composer::compose_paragraph(body_para);
-                    let body_fmt =
-                        self.format_paragraph(body_para, Some(&body_comp), &styles, Some(en_col_w));
-                    body_fmt.line_advance(0)
-                })
-            } else {
-                None
-            };
+            let same_endnote_body_first_line_advance =
+                if ep_idx == 0 && no_separator_large_between_notes_gap {
+                    en_ctrl.paragraphs.get(1).map(|body_para| {
+                        let body_comp = crate::renderer::composer::compose_paragraph(body_para);
+                        let body_fmt = self.format_endnote_paragraph(
+                            body_para,
+                            Some(&body_comp),
+                            &styles,
+                            Some(en_col_w),
+                        );
+                        body_fmt.line_advance(0)
+                    })
+                } else {
+                    None
+                };
             let no_separator_new_note_head_fits_current_column =
                 no_separator_large_between_notes_gap
                     && ep_idx == 0
@@ -9472,7 +10068,7 @@ impl TypesetEngine {
                     prepend_endnote_marker_text(&mut next_para, next_ctrl);
 
                     let next_comp = crate::renderer::composer::compose_paragraph(&next_para);
-                    let next_fmt = self.format_paragraph(
+                    let next_fmt = self.format_endnote_paragraph(
                         &next_para,
                         Some(&next_comp),
                         &styles,
@@ -9497,7 +10093,7 @@ impl TypesetEngine {
                     prepend_endnote_marker_text(&mut next_para, next_ctrl);
 
                     let next_comp = crate::renderer::composer::compose_paragraph(&next_para);
-                    let next_fmt = self.format_paragraph(
+                    let next_fmt = self.format_endnote_paragraph(
                         &next_para,
                         Some(&next_comp),
                         &styles,
@@ -9521,7 +10117,7 @@ impl TypesetEngine {
                     prepend_endnote_marker_text(&mut next_para, next_ctrl);
 
                     let next_comp = crate::renderer::composer::compose_paragraph(&next_para);
-                    let next_fmt = self.format_paragraph(
+                    let next_fmt = self.format_endnote_paragraph(
                         &next_para,
                         Some(&next_comp),
                         &styles,
@@ -9548,7 +10144,7 @@ impl TypesetEngine {
                                 return false;
                             }
                             let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                            let next_fmt = self.format_paragraph(
+                            let next_fmt = self.format_endnote_paragraph(
                                 next_para,
                                 Some(&next_comp),
                                 &styles,
@@ -9706,8 +10302,12 @@ impl TypesetEngine {
                     <= available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
                 && en_ctrl.paragraphs.get(ep_idx + 1).is_some_and(|next_para| {
                     let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                    let next_fmt =
-                        self.format_paragraph(next_para, Some(&next_comp), &styles, Some(en_col_w));
+                    let next_fmt = self.format_endnote_paragraph(
+                        next_para,
+                        Some(&next_comp),
+                        &styles,
+                        Some(en_col_w),
+                    );
                     let next_first = next_fmt.line_advance(0);
                     st.current_height + en_fit + next_first
                         > available - ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
@@ -10173,7 +10773,7 @@ impl TypesetEngine {
                     && line_is_equation_tac_text_run_only(en_para, &composed, 0)
                     && en_ctrl.paragraphs.get(ep_idx + 1).is_some_and(|next_para| {
                         let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                        let next_fmt = self.format_paragraph(
+                        let next_fmt = self.format_endnote_paragraph(
                             next_para,
                             Some(&next_comp),
                             &styles,
@@ -10367,8 +10967,13 @@ impl TypesetEngine {
             let next_endnote_first_line_advance = if ep_idx == 0 {
                 en_ctrl.paragraphs.get(1).map(|next_para| {
                     let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                    self.format_paragraph(next_para, Some(&next_comp), &styles, Some(en_col_w))
-                        .line_advance(0)
+                    self.format_endnote_paragraph(
+                        next_para,
+                        Some(&next_comp),
+                        &styles,
+                        Some(en_col_w),
+                    )
+                    .line_advance(0)
                 })
             } else {
                 None
@@ -10378,8 +10983,12 @@ impl TypesetEngine {
                 let mut count = 0;
                 for next_para in en_ctrl.paragraphs.iter().skip(1).take(2) {
                     let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                    let next_fmt =
-                        self.format_paragraph(next_para, Some(&next_comp), &styles, Some(en_col_w));
+                    let next_fmt = self.format_endnote_paragraph(
+                        next_para,
+                        Some(&next_comp),
+                        &styles,
+                        Some(en_col_w),
+                    );
                     total += next_fmt.line_advance(0);
                     count += 1;
                 }
@@ -10739,7 +11348,7 @@ impl TypesetEngine {
                     && st.current_column + 1 >= st.col_count
                     && en_ctrl.paragraphs.get(ep_idx + 1).is_some_and(|next_para| {
                         let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                        let next_fmt = self.format_paragraph(
+                        let next_fmt = self.format_endnote_paragraph(
                             next_para,
                             Some(&next_comp),
                             &styles,
@@ -10988,7 +11597,7 @@ impl TypesetEngine {
                     && !para_has_non_tac_picture_or_shape(en_para)
                     && en_ctrl.paragraphs.get(ep_idx + 1).is_some_and(|next_para| {
                         let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                        let next_fmt = self.format_paragraph(
+                        let next_fmt = self.format_endnote_paragraph(
                             next_para,
                             Some(&next_comp),
                             &styles,
@@ -11019,7 +11628,7 @@ impl TypesetEngine {
                     && !para_has_non_tac_picture_or_shape(en_para)
                     && en_ctrl.paragraphs.get(ep_idx + 1).is_some_and(|next_para| {
                         let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                        let next_fmt = self.format_paragraph(
+                        let next_fmt = self.format_endnote_paragraph(
                             next_para,
                             Some(&next_comp),
                             &styles,
@@ -11047,7 +11656,7 @@ impl TypesetEngine {
                         <= available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX + 2.0
                     && en_ctrl.paragraphs.get(ep_idx + 1).is_some_and(|next_para| {
                         let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                        let next_fmt = self.format_paragraph(
+                        let next_fmt = self.format_endnote_paragraph(
                             next_para,
                             Some(&next_comp),
                             &styles,
@@ -11110,7 +11719,7 @@ impl TypesetEngine {
                     }
                     && en_ctrl.paragraphs.get(ep_idx + 1).is_some_and(|next_para| {
                         let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                        let next_fmt = self.format_paragraph(
+                        let next_fmt = self.format_endnote_paragraph(
                             next_para,
                             Some(&next_comp),
                             &styles,
@@ -11328,8 +11937,12 @@ impl TypesetEngine {
                     last_render_endnote_para_local_idx = Some(st.endnote_paragraphs.len() - 1);
 
                     let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                    let next_fmt =
-                        self.format_paragraph(next_para, Some(&next_comp), &styles, Some(en_col_w));
+                    let next_fmt = self.format_endnote_paragraph(
+                        next_para,
+                        Some(&next_comp),
+                        &styles,
+                        Some(en_col_w),
+                    );
                     st.current_items.push(PageItem::FullParagraph {
                         para_index: next_para_idx,
                     });
@@ -11578,8 +12191,13 @@ impl TypesetEngine {
                             .iter()
                             .map(|p| {
                                 let comp = crate::renderer::composer::compose_paragraph(p);
-                                self.format_paragraph(p, Some(&comp), &styles, Some(en_col_w))
-                                    .total_height
+                                self.format_endnote_paragraph(
+                                    p,
+                                    Some(&comp),
+                                    &styles,
+                                    Some(en_col_w),
+                                )
+                                .total_height
                             })
                             .sum();
                         let note_span = if endnote_has_vpos_rewind {
@@ -12264,7 +12882,8 @@ impl TypesetEngine {
                         .map(|a| a.width)
                         .unwrap_or(st.layout.body_area.width);
                     let comp = crate::renderer::composer::compose_paragraph(p);
-                    let fmt = self.format_paragraph(p, Some(&comp), &styles, Some(en_col_w));
+                    let fmt =
+                        self.format_endnote_paragraph(p, Some(&comp), &styles, Some(en_col_w));
                     fmt.line_heights.len() == 1
                         && line_has_visible_text_or_tac_equation(p, &comp, 0)
                         && st.current_height + fmt.line_advance(0)
@@ -12976,8 +13595,12 @@ impl TypesetEngine {
             // 내부 vpos rewind para 는 line_segs vpos 범위가 작지만(되감김) 렌더러는 순차
             // 적층(Divergence A) → line_advances_sum 사용. (sep20/20 pi=522: saved 32.5 vs 실제 183)
             let heuristic_advance = {
-                let item_fmt =
-                    self.format_paragraph(item_para, Some(&item_composed), styles, Some(en_col_w));
+                let item_fmt = self.format_endnote_paragraph(
+                    item_para,
+                    Some(&item_composed),
+                    styles,
+                    Some(en_col_w),
+                );
                 let internal_rewind = item_para
                     .line_segs
                     .windows(2)
@@ -13150,8 +13773,12 @@ impl TypesetEngine {
                 y = hc.vpos_adjust(y, local, &local_paras, &styles);
                 let item_para = &local_paras[local];
                 let item_composed = crate::renderer::composer::compose_paragraph(item_para);
-                let item_fmt =
-                    self.format_paragraph(item_para, Some(&item_composed), &styles, Some(en_col_w));
+                let item_fmt = self.format_endnote_paragraph(
+                    item_para,
+                    Some(&item_composed),
+                    &styles,
+                    Some(en_col_w),
+                );
                 y += match item {
                     PageItem::PartialParagraph {
                         start_line,
@@ -13532,8 +14159,12 @@ impl TypesetEngine {
                 .get(1)
                 .map(|next_para| {
                     let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                    let next_fmt =
-                        self.format_paragraph(next_para, Some(&next_comp), &styles, Some(en_col_w));
+                    let next_fmt = self.format_endnote_paragraph(
+                        next_para,
+                        Some(&next_comp),
+                        &styles,
+                        Some(en_col_w),
+                    );
                     let next_h = next_fmt.height_for_fit;
                     let title_body_limit =
                         if has_visible_endnote_separator && st.current_height > available * 0.95 {
@@ -13737,7 +14368,7 @@ impl TypesetEngine {
                             .map(|head_para| {
                                 let head_comp =
                                     crate::renderer::composer::compose_paragraph(head_para);
-                                self.format_paragraph(
+                                self.format_endnote_paragraph(
                                     head_para,
                                     Some(&head_comp),
                                     &styles,
@@ -13804,8 +14435,12 @@ impl TypesetEngine {
             } else if ep_idx == 1 {
                 en_ctrl.paragraphs.get(ep_idx + 1).is_some_and(|next_para| {
                     let next_comp = crate::renderer::composer::compose_paragraph(next_para);
-                    let next_fmt =
-                        self.format_paragraph(next_para, Some(&next_comp), &styles, Some(en_col_w));
+                    let next_fmt = self.format_endnote_paragraph(
+                        next_para,
+                        Some(&next_comp),
+                        &styles,
+                        Some(en_col_w),
+                    );
                     next_fmt.line_heights.len() == 1
                         && next_fmt.line_advance(0) <= 24.0
                         && line_has_visible_text_or_tac_equation(next_para, &next_comp, 0)
@@ -13917,8 +14552,13 @@ impl TypesetEngine {
                     .take(3)
                     .map(|head_para| {
                         let head_comp = crate::renderer::composer::compose_paragraph(head_para);
-                        self.format_paragraph(head_para, Some(&head_comp), &styles, Some(en_col_w))
-                            .total_height
+                        self.format_endnote_paragraph(
+                            head_para,
+                            Some(&head_comp),
+                            &styles,
+                            Some(en_col_w),
+                        )
+                        .total_height
                     })
                     .sum();
                 st.current_height + head_group_h
@@ -14224,7 +14864,7 @@ impl TypesetEngine {
     ) -> f64 {
         use crate::renderer::layout::{layout_rect_to_bbox, LayoutEngine};
         use crate::renderer::page_layout::LayoutRect;
-        use crate::renderer::render_tree::{LayoutFrame, RenderNode, RenderNodeType};
+        use crate::renderer::render_tree::{PageLayoutContext, RenderNode, RenderNodeType};
 
         // 렌더 `layout_column_item` 의 FullParagraph 텍스트 경로 정합: 실제 텍스트가 있는 para 는
         // **leading 컨트롤-전용 줄**(수식 객체마커 ￼ 등)을 건너뛰고 첫 텍스트 줄부터 그린다.
@@ -14259,10 +14899,10 @@ impl TypesetEngine {
         };
         // [#4277] 페이지네이션 측정은 paint 트리를 만들지 않는다 — 레이아웃 재귀가 실제로
         // 쓰는 건 흐름 상태(id 카운터 + 인라인 Shape 레지스트리 + 페이지 기하)뿐이므로
-        // `LayoutFrame` 만 만든다. `col_node` 는 방출된 노드를 받는 sink 로만 쓰이고
+        // `PageLayoutContext` 만 만든다. `col_node` 는 방출된 노드를 받는 sink 로만 쓰이고
         // 높이만 읽은 뒤 버려진다.
         let scratch = LayoutEngine::new(self.dpi);
-        let mut frame = LayoutFrame::new(0, en_col_w, height);
+        let mut frame = PageLayoutContext::new(0, en_col_w, height);
         let col_id = frame.next_id();
         let mut col_node = RenderNode::new(
             col_id,
@@ -14275,6 +14915,7 @@ impl TypesetEngine {
             item_para,
             Some(item_composed),
             styles,
+            false, // 미주 scratch는 저장 LineSeg 흐름을 보존한다.
             &col_area,
             y_start,
             start_line,
@@ -14414,6 +15055,29 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         column_width_px: Option<f64>,
     ) -> FormattedParagraph {
+        self.format_paragraph_for_flow(para, composed, styles, column_width_px, styles.hwp3_variant)
+    }
+
+    /// 미주는 저장 LineSeg가 쪽/단 흐름의 정본이므로, HWP3 본문 orphan tail을
+    /// 위한 fresh 줄 수 축소를 적용하지 않는다.
+    fn format_endnote_paragraph(
+        &self,
+        para: &Paragraph,
+        composed: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
+        column_width_px: Option<f64>,
+    ) -> FormattedParagraph {
+        self.format_paragraph_for_flow(para, composed, styles, column_width_px, false)
+    }
+
+    fn format_paragraph_for_flow(
+        &self,
+        para: &Paragraph,
+        composed: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
+        column_width_px: Option<f64>,
+        hwp3_body_reflow: bool,
+    ) -> FormattedParagraph {
         let para_style_id = composed.map(|c| c.para_style_id as usize).unwrap_or(0);
         let para_style = styles.para_styles.get(para_style_id);
 
@@ -14440,16 +15104,22 @@ impl TypesetEngine {
                     );
                     Some(cloned)
                 } else if inner > 0.0
-                    && crate::renderer::composer::masked_stored_lines_stale(c, para, inner, styles)
+                    && crate::renderer::composer::stored_body_lines_stale(
+                        c,
+                        para,
+                        inner,
+                        styles,
+                        hwp3_body_reflow,
+                    )
                 {
-                    // [#2279] 마스킹 저장분할 stale(실폭-과잉/줄수-과소) 본문 문단
-                    // fresh 재래핑 — paragraph_layout(렌더)와 동일.
+                    // stale 저장분할 본문 문단을 fresh 재래핑한다.
                     let mut cloned = c.clone();
-                    crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
+                    crate::renderer::composer::recompose_stale_body_lines(
                         &mut cloned,
                         para,
                         inner,
                         styles,
+                        hwp3_body_reflow,
                     );
                     Some(cloned)
                 } else {
@@ -14936,18 +15606,23 @@ impl TypesetEngine {
         } else {
             0.0
         };
-        // [Task #1725 v2] tail-before-vpos-reset 문단은 소량 오버플로를 1회 허용(각주 무관 page-full
-        // over-fill 로 tail 이 밀리는 케이스). 다음 문단이 새 페이지를 시작하므로 tail 을 현재
-        // 페이지 하단에 유지하는 것이 한글 정합.
+        // vpos-reset 직전 tail은 저장 line의 실제 bottom이 body 안에 있을 때만, 현재
+        // flow가 그 bottom까지 닿는 정확한 차이를 1회 반영한다.
         let tail_overflow = if strict_after_empty_host_float {
-            st.tail_overflow_tolerance_once = 0.0;
+            st.tail_saved_bounds_once = None;
             0.0
-        } else if st.tail_overflow_tolerance_once > 0.0 {
-            let t = st.tail_overflow_tolerance_once;
-            st.tail_overflow_tolerance_once = 0.0;
-            t
         } else {
-            0.0
+            st.tail_saved_bounds_once
+                .take()
+                .and_then(|bounds| {
+                    saved_tail_overflow_to_fit(
+                        bounds,
+                        st.current_height,
+                        fmt.height_for_fit,
+                        st.base_available_height(),
+                    )
+                })
+                .unwrap_or(0.0)
         };
         let available =
             (st.available_height() - safety + footnote_margin_addback + tail_overflow).max(0.0);
@@ -15078,45 +15753,72 @@ impl TypesetEngine {
             native_hwp5_existing_footnote_reset_overlap_break_line(
                 st, para, fmt, paragraphs, self.dpi,
             );
-        let forced_page_break_line = internal_vpos_page_break_line(
+        let current_page_vpos_base = st.vpos_page_base.or_else(|| {
+            st.current_items
+                .first()
+                .and_then(|item| page_item_vpos_base(item, paragraphs))
+        });
+        let hwp3_converted_hwp5 = st.profile.hwp3_layout()
+            && !st.profile.hwp3_native_layout()
+            && !st.profile.hwpx_container();
+        let internal_forced_page_break_line = internal_vpos_page_break_line(
             para,
             fmt.line_heights.len(),
             st.layout.body_area.height,
             self.dpi,
-            st.profile.hwp3_native_layout(),
+            st.profile.hwpx_stored_layout()
+                || st.profile.hwp3_native_layout()
+                || hwp3_converted_hwp5,
+            hwp3_converted_hwp5,
         )
-        .or_else(|| {
-            st.profile.hwpx_stored_layout().then(|| {
-                hwpx_explicit_page_break_tail_line(
+        .filter(|break_line| {
+            // HWPX의 reset은 local writer cursor도 재사용한다. 현재 flow와
+            // anchor가 맞지 않는 reset은 physical page 경계로 승격하지 않는다.
+            !st.profile.hwpx_stored_layout()
+                || st.current_items.is_empty()
+                || hwpx_saved_reset_fragment_matches_current_flow(
+                    st,
                     para,
-                    paragraphs.get(para_idx + 1),
-                    fmt.line_heights.len(),
-                    st.layout.body_area.height,
+                    0,
+                    *break_line,
+                    current_page_vpos_base.unwrap_or(0),
                     self.dpi,
                 )
-            })?
-        })
-        .or_else(|| {
-            native_hwp5_first_footnote_overlap_break_line(st, para, fmt, self.dpi)
-                .map(|footnote_break| footnote_break.body_break_line)
-        })
-        .or_else(|| {
-            sample16_missing_lineseg_tail_break_line(
-                para,
-                fmt.line_heights.len(),
-                st.current_height,
-                available,
-            )
-        })
-        .or_else(|| {
-            native_hwp5_text_reset_before_large_tac_topbottom_picture_break_line(
-                st, para, fmt, paragraphs, para_idx, self.dpi,
-            )
-        })
-        // full-fit early return보다 앞의 같은 chain에 넣어야 reset tail을 통째로
-        // 배치해 separator와 겹치는 우회가 없다.
-        .or(native_hwp5_existing_footnote_reset_line);
-
+        });
+        let forced_page_break_line = internal_forced_page_break_line
+            .or_else(|| {
+                st.profile.hwpx_stored_layout().then(|| {
+                    hwpx_explicit_page_break_tail_line(
+                        para,
+                        paragraphs.get(para_idx + 1),
+                        fmt.line_heights.len(),
+                        st.layout.body_area.height,
+                        self.dpi,
+                    )
+                })?
+            })
+            .or_else(|| {
+                native_hwp5_first_footnote_overlap_break_line(st, para, fmt, self.dpi)
+                    .map(|footnote_break| footnote_break.body_break_line)
+            })
+            .or_else(|| {
+                missing_lineseg_trailing_line_break(
+                    para,
+                    fmt.line_heights.len(),
+                    st.current_height,
+                    available,
+                    st.profile.hwpx_stored_layout() || hwp3_converted_hwp5,
+                    hwp3_converted_hwp5,
+                )
+            })
+            .or_else(|| {
+                native_hwp5_text_reset_before_large_tac_topbottom_picture_break_line(
+                    st, para, fmt, paragraphs, para_idx, self.dpi,
+                )
+            })
+            // full-fit early return보다 앞의 같은 chain에 넣어야 reset tail을 통째로
+            // 배치해 separator와 겹치는 우회가 없다.
+            .or(native_hwp5_existing_footnote_reset_line);
         // fits: 문단 전체가 현재 공간에 들어가는가?
         // [Task #359] fit 판정은 height_for_fit (trailing_ls 제외) 으로,
         // 누적은 total_height (full) 로 분리. 각 항목별 trailing_ls 가
@@ -15134,11 +15836,6 @@ impl TypesetEngine {
         let trim_spacing_before_for_flow =
             !st.profile.hwp3_layout() && !para_near_rowbreak_table(paragraphs, para_idx);
 
-        let current_page_vpos_base = st.vpos_page_base.or_else(|| {
-            st.current_items
-                .first()
-                .and_then(|item| page_item_vpos_base(item, paragraphs))
-        });
         // [#2279 OMIT-fit] spacing-누락 문서군에서 **저장 리셋 직전의 페이지말
         // 빈 문단**은 다음 쪽 상단 귀속이다 — 한글 fresh 는 누락 spacing 을
         // 재가산해 이 빈 문단을 다음 쪽으로 넘긴다(36392557 pi14: 저장 bottom
@@ -15191,8 +15888,12 @@ impl TypesetEngine {
                         0.0
                     };
                     let (top, bottom) = bounds;
-                    top + 16.0 >= st.current_height
-                        && bottom <= st.available_height() + 0.5 + spill
+                    saved_bounds_fit_at_flow_tail(
+                        (top, bottom),
+                        st.current_height,
+                        st.available_height(),
+                        spill,
+                    )
                 });
         let saved_list_tail_body_vpos_fits = !strict_after_empty_host_float
             && forced_page_break_line.is_none()
@@ -15209,11 +15910,11 @@ impl TypesetEngine {
                 .first()
                 .and_then(|seg| line_seg_visible_bounds_px(seg, 0, self.dpi))
                 .is_some_and(|bounds| {
-                    saved_bounds_fit_at_flow_tail_with_tolerance(
+                    saved_bounds_fit_at_flow_tail(
                         bounds,
                         st.current_height,
                         st.base_available_height(),
-                        SAVED_TAIL_VPOS_OVERFLOW_TOLERANCE_PX,
+                        0.0,
                     )
                 });
 
@@ -15649,7 +16350,6 @@ impl TypesetEngine {
                         && para.controls.is_empty()
                         && !st.current_items.is_empty()
                         && !para_near_rowbreak_table(paragraphs, para_idx)
-                        && overflow <= SAVED_TAIL_VPOS_OVERFLOW_TOLERANCE_PX
                         && saved_line_range_fits_body_tail(
                             para,
                             li,
@@ -15657,6 +16357,24 @@ impl TypesetEngine {
                             st.base_available_height(),
                             self.dpi,
                         );
+                    // HWPX의 vpos=0 reset은 일반 writer-local cursor가 아니라
+                    // `internal_vpos_page_break_line`이 확인한 물리 fragment 경계일 수
+                    // 있다. 현재 fragment의 첫 줄이 flow 앵커와 일치하면 reset 전
+                    // 전체는 같은 쪽 owner다. 본문 bottom을 넘었다는 계산만으로
+                    // 중간 tail-only 쪽을 만들지 않는다.
+                    let hwpx_reset_fragment_owner =
+                        forced_page_break_line.is_some_and(|break_line| {
+                            cursor_line < break_line
+                                && li < break_line
+                                && hwpx_saved_reset_fragment_matches_current_flow(
+                                    st,
+                                    para,
+                                    cursor_line,
+                                    break_line,
+                                    current_page_vpos_base.unwrap_or(0),
+                                    self.dpi,
+                                )
+                        });
                     // native HWP5가 문단 중간 reset 직전의 연속 줄들을 기존 각주
                     // 바로 위에 저장한 경우에는, 40px safety margin 때문에 그 줄을
                     // 조기 이월하지 않는다. 일반 body height가 아니라 실제
@@ -15682,8 +16400,8 @@ impl TypesetEngine {
                                     self.dpi,
                                 )
                             })
-                            .is_some_and(|(top, _)| {
-                                top + 16.0 >= st.current_height && top <= st.current_height + 16.0
+                            .is_some_and(|bounds| {
+                                saved_bounds_overlap_current_flow(bounds, st.current_height)
                             })
                         && saved_line_range_fits_body_tail(
                             para,
@@ -15732,13 +16450,15 @@ impl TypesetEngine {
                     }
                     if !hwp_authoritative
                         && !saved_tail_vpos_fit
+                        && !hwpx_reset_fragment_owner
                         && !native_hwp5_reset_tail_fits_actual_footnote_boundary
                         && !saved_line_clears_footnote_area
                     {
                         break;
                     }
-                    used_saved_tail_vpos_fit |=
-                        saved_tail_vpos_fit || native_hwp5_reset_tail_fits_actual_footnote_boundary;
+                    used_saved_tail_vpos_fit |= saved_tail_vpos_fit
+                        || hwpx_reset_fragment_owner
+                        || native_hwp5_reset_tail_fits_actual_footnote_boundary;
                 }
                 cumulative += fmt.line_advance(li);
                 end_line = li + 1;
@@ -16442,21 +17162,30 @@ impl TypesetEngine {
                 .iter()
                 .find_map(|ctrl| match ctrl {
                     Control::Table(table) if self.is_effective_tac_table(para, table, &fmt) => {
-                        Some(self.tac_table_line_index(para, table, &fmt).unwrap_or(0))
+                        Some((
+                            self.tac_table_line_index(para, table, &fmt).unwrap_or(0),
+                            stored_tac_table_frame_height(table, self.dpi, height_for_fit),
+                        ))
                     }
                     _ => None,
                 })
-                .and_then(|line_idx| para.line_segs.get(line_idx))
-                .and_then(|seg| {
-                    line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
+                .and_then(|(line_idx, frame_height)| {
+                    para.line_segs.get(line_idx).and_then(|seg| {
+                        line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
+                            .map(|bounds| (bounds, frame_height))
+                    })
                 })
-                .is_some_and(|bounds| {
-                    saved_bounds_fit_at_flow_tail(bounds, st.current_height, st.available_height())
+                .is_some_and(|(bounds, frame_height)| {
+                    saved_table_bounds_fit_at_flow_tail(
+                        bounds,
+                        st.current_height,
+                        st.available_height(),
+                        frame_height,
+                    )
                 })
         } else {
             false
         };
-
         // [#2311] 단일 TAC 표가 후행 줄(ctrl 1:1 lineseg, vpos==0 저장 리셋)에 있고
         // 선행 줄이 전부 TAC 그림/도형이면, 표는 아래 #1152 intra-para reset 가드가
         // 자체적으로 새 쪽 이동한다. 이때 pre-flush 를 문단 전체 높이로 판정하면
@@ -17024,6 +17753,22 @@ impl TypesetEngine {
                     }
                 }
             }
+            let has_owned_rowbreak_tac_frame = st.profile.hwpx_stored_layout()
+                && tac_count == 1
+                && fmt.line_heights.len() == 1
+                && para
+                    .controls
+                    .iter()
+                    .enumerate()
+                    .any(|(control_index, control)| {
+                        matches!(control, Control::Table(table)
+                        if self.is_effective_tac_table(para, table, &fmt))
+                            && crate::renderer::composer::owned_rowbreak_tac_height(
+                                para,
+                                control_index,
+                            )
+                            .is_some()
+                    });
             // [#3738] 위 합은 표만 센다. 그런데 같은 문단의 **선행 자리차지 개체가
             // 있는** TAC 그림/글상자는 Task #402 경로가 자기 line_seg 만큼 이미
             // current_height 에 더했다(위 13980 블록). cap 이 그 줄을 빼놓으면
@@ -17090,7 +17835,12 @@ impl TypesetEngine {
                         _ => None,
                     })
                     .sum();
-                (effective_sb + outer_top + tac_seg_total).min(fmt.total_height)
+                let owned_row_total = effective_sb + outer_top + tac_seg_total;
+                if has_owned_rowbreak_tac_frame {
+                    owned_row_total
+                } else {
+                    owned_row_total.min(fmt.total_height)
+                }
             } else {
                 fmt.total_height
             };
@@ -17466,6 +18216,12 @@ impl TypesetEngine {
             tac_table_line_idx.unwrap_or(0)
         };
 
+        let owned_single_tac_row_height =
+            (st.profile.hwpx_stored_layout() && tac_count == 1 && fmt.line_heights.len() == 1)
+                .then(|| crate::renderer::composer::owned_rowbreak_tac_height(para, ctrl_idx))
+                .flatten()
+                .map(|height| hwpunit_to_px(height, self.dpi));
+
         // [Task #1152] 호스트 문단의 intra-paragraph vpos-reset 가드 —
         // (a) 빈-host ctrl 1:1 매핑(원형), (b) [#2322] 텍스트-host 포함 일반형:
         // 표의 매핑 lineseg(tac_seg_idx>0)가 저장 vpos==0 이면 "이 표를 새 쪽
@@ -17506,6 +18262,8 @@ impl TypesetEngine {
                     }
                 })
                 .unwrap_or(ft.total_height)
+        } else if let Some(owned_row_height) = owned_single_tac_row_height {
+            owned_row_height
         } else if tac_table_line_idx == Some(0) && fmt.line_heights.len() > 1 {
             // PR #1088 follow-up: hwp-multi-001 pi=46 처럼 TAC 표가 문단의
             // 첫 줄이고 뒤따르는 제목 줄이 같은 문단의 line1(vpos reset)로
@@ -17568,6 +18326,8 @@ impl TypesetEngine {
                 .all(|item| matches!(item, PageItem::Shape { .. }));
         let fits_after_overlay_shapes =
             current_column_has_only_overlay_shapes && table_height <= available + 12.0;
+        let saved_tac_table_frame_height =
+            stored_tac_table_frame_height(table, self.dpi, table_height);
         let current_page_vpos_base = st.vpos_page_base.unwrap_or(0);
         let saved_tac_table_bottom_fits = Some(current_page_vpos_base)
             .and_then(|base| {
@@ -17576,7 +18336,12 @@ impl TypesetEngine {
                     .and_then(|seg| line_seg_visible_bounds_px(seg, base, self.dpi))
             })
             .is_some_and(|bounds| {
-                saved_bounds_fit_at_flow_tail(bounds, st.current_height, available)
+                saved_table_bounds_fit_at_flow_tail(
+                    bounds,
+                    st.current_height,
+                    available,
+                    saved_tac_table_frame_height,
+                )
             });
         // [#3837] 저장 vpos 되돌아감은 한글이 이 표를 다음 쪽 맨 위에 뒀다는 신호다
         // (21967401 응시원서: 직전 항목 vpos=41645 인데 이 표는 1000).
@@ -18340,8 +19105,9 @@ impl TypesetEngine {
             landscape_whole_row_tolerance,
             landscape_short_row_tolerance,
             landscape_short_row_max_height,
-            rowbreak_split_row_overflow_tolerance,
             strict_painted_bottom_fit,
+            source_first_fragment_overflow_allowance,
+            source_first_fragment_row_end,
             start_row_height_override,
         } = v;
         let BlockTableRowScan {
@@ -18545,6 +19311,95 @@ impl TypesetEngine {
                         genuinely_page_larger
                     );
                 }
+                // RowBreak rowspan block의 선언 높이가 현재 body band를 넘더라도,
+                // 실제 저장 line으로 만든 block content가 그 band 안에서 완결될 수
+                // 있다. 이때 넘치는 부분은 cell의 의도된 내용이 아니라 선언된
+                // 아래 blank 영역이다. 그 blank가 별도 physical page를 소유하면
+                // 1741000처럼 짧은 tail page가 생긴다.
+                //
+                // source line이 없는 fresh reflow, nested/control block, cell 내부
+                // hard break는 이 계약에 포함하지 않는다. 그런 형상은 선언 높이가
+                // 실제 content frame을 대표하지 않을 수 있으므로 기존 split/이월
+                // 경로가 계속 소유한다.
+                // label cell 하나가 block 전체 행을 덮고, 각 행에는 그 label의
+                // 오른쪽 폭 전체를 차지하는 response cell 하나만 있는 form 구조다.
+                // 일반 평가 grid처럼 label 오른쪽에 여러 독립 열이 있으면 선언
+                // blank도 각 열의 frame 일부이므로 이 경로로 압축하지 않는다.
+                let block_is_label_response_form = table
+                    .cells
+                    .iter()
+                    .find(|cell| {
+                        cell.row as usize == b_start && cell.row_span as usize == block_size
+                    })
+                    .is_some_and(|label| {
+                        (b_start..b_end).all(|row| {
+                            let mut row_cells = table.cells.iter().filter(|cell| {
+                                cell.row as usize == row
+                                    && !(row == b_start && cell.col == label.col)
+                            });
+                            row_cells.next().is_some_and(|response| {
+                                row_cells.next().is_none()
+                                    && response.row_span == 1
+                                    && response.col == label.col + label.col_span
+                                    && response.col_span + label.col_span == table.col_count
+                            })
+                        })
+                    });
+                let source_complete_rowspan_block = block_is_label_response_form
+                    && mt.allows_row_break_split()
+                    && r > cursor_row
+                    && blk_start_cut.is_empty()
+                    && !rowbreak_use_row_offsets
+                    && res.fully_consumed
+                    && !res.hit_hard_break
+                    && table
+                        .cells
+                        .iter()
+                        .filter(|cell| {
+                            let cell_start = cell.row as usize;
+                            let cell_end = cell_start + cell.row_span as usize;
+                            cell_start < b_end && cell_end > b_start
+                        })
+                        .all(|cell| {
+                            cell.paragraphs.iter().all(|paragraph| {
+                                paragraph.controls.is_empty()
+                                    && (!para_has_visible_text(paragraph)
+                                        || paragraph
+                                            .line_segs
+                                            .iter()
+                                            .any(|seg| !is_synthetic_line_seg(seg)))
+                            })
+                        });
+                if source_complete_rowspan_block {
+                    let remaining_band = budget;
+                    let source_content_height = layout_engine.row_block_content_height(
+                        table,
+                        b_start,
+                        b_end,
+                        &[],
+                        &[],
+                        styles,
+                    );
+                    let before_last_row = (b_start..b_end.saturating_sub(1))
+                        .map(|row| cut_row_h[row])
+                        .sum::<f64>()
+                        + cs * b_end.saturating_sub(b_start + 1) as f64;
+                    let last_row_band = remaining_band - before_last_row;
+                    if source_content_height > 0.0
+                        && source_content_height <= remaining_band
+                        && last_row_band > 0.0
+                        && last_row_band <= cut_row_h[b_end - 1]
+                    {
+                        // 마지막 행만 남은 body band까지 줄인다. preceding rowspan
+                        // row와 spacing은 그대로 두어 renderer의 row geometry와
+                        // scanner의 physical fragment height가 같은 좌표계를 쓴다.
+                        consumed += cs_before + remaining_band;
+                        r = b_end;
+                        end_row = r;
+                        end_row_height_override = Some(last_row_band);
+                        continue;
+                    }
+                }
                 let allow_block_split = if rowbreak_rowspan_block {
                     r == cursor_row
                         || (res.hit_hard_break && res.consumed_height >= MIN_TOP_KEEP_PX)
@@ -18667,59 +19522,6 @@ impl TypesetEngine {
                     r = b_end;
                     end_row = r;
                     continue;
-                }
-                // [#2097] 쪽 하단 압축 수용: 한글은 쪽 경계에서 행/블록이 잔여를
-                // 소폭 초과하면 압축해 끼워 넣는다 (1741000 블록 rows 10-11: 잔여
-                // 87.8px 에 선언 98.2px 블록을 85.9px 로 압축 배치 — COM·PDF 실측).
-                // 초과분 ≤ 허용치 && **블록 콘텐츠가 잔여에 실제 수용**될 때 한정
-                // (행 경로의 콘텐츠 프로브와 동일 근거).
-                if !strict_painted_bottom_fit
-                    && mt.allows_row_break_split()
-                    && consumed + cs_before + block_h
-                        <= avail_for_rows + BOTTOM_SQUEEZE_TOLERANCE_PX
-                {
-                    let block_content = layout_engine.row_block_content_height(
-                        table,
-                        b_start,
-                        b_end,
-                        &[],
-                        &[],
-                        styles,
-                    );
-                    let rest = (avail_for_rows - consumed - cs_before).max(0.0);
-                    // 중첩 표 보유 블록 제외 — 중첩 분할 지점(kps-ai r8..11)은
-                    // 한글도 이월한다 (issue_1073 골든).
-                    let block_has_nested = table.cells.iter().any(|c| {
-                        let cr = c.row as usize;
-                        cr >= b_start
-                            && cr < b_end
-                            && c.paragraphs.iter().any(|p| {
-                                p.controls
-                                    .iter()
-                                    .any(|ctrl| matches!(ctrl, Control::Table(_)))
-                            })
-                    });
-                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-                        eprintln!(
-                            "DIAG_SCAN SQUEEZE_BLOCK? r={}..{} block_h={:.1} content={:.1} rest={:.1} nested={}",
-                            r, b_end, block_h, block_content, rest, block_has_nested
-                        );
-                    }
-                    // [#2097 프로브 기록] 쪽 끝자락 한정(rest ≤ MAX_REST) 완화는 반증됨:
-                    // 3144149 p3(잔여 333.6px 에 342.4px 블록, 초과 8.8px, 콘텐츠
-                    // 123.8px)는 한글이 압축 수용(hc=6)하지만, 국소 수치가 동형인
-                    // kps-ai r=8..11(잔여 237.3px 에 243.3px, 초과 6.0px, 콘텐츠
-                    // 59.8px)은 한글이 이월(issue_1073 골든) — 잔여/초과/콘텐츠
-                    // 여유로는 분리 불가. 한글의 판별 신호는 별도 규명 필요.
-                    if rest - block_content >= BOTTOM_SQUEEZE_MIN_HEADROOM_PX
-                        && !block_has_nested
-                        && rest <= BOTTOM_SQUEEZE_MAX_REST_PX
-                    {
-                        consumed += cs_before + block_h;
-                        r = b_end;
-                        end_row = r;
-                        continue;
-                    }
                 }
                 end_row = r;
                 break;
@@ -18852,10 +19654,69 @@ impl TypesetEngine {
                 // 강제 없음).
                 layout_engine.row_cut_content_height(table, r, row_start_cut, &[], styles)
             };
+            // The final visible response is followed by a row without text or
+            // controls. Its stored row height is authoritative for whole-row ownership;
+            // browser-composed height may be larger solely because of font
+            // metrics and must not create a tail-only physical page.
+            let terminal_response_before_empty_spacer = mt.allows_row_break_split()
+                && r + 2 == row_count
+                && row_start_cut.is_empty()
+                && !rowspan_touched.get(r).copied().unwrap_or(true)
+                && (Self::row_has_no_text_or_controls(table, r + 1)
+                    || layout_engine.row_has_only_empty_spacer_units(table, r + 1, styles));
+            let two_line_terminal_response_source_frame = (st.profile.hwpx_stored_layout()
+                && r > cursor_row
+                && terminal_response_before_empty_spacer
+                && table.outer_margin_bottom > 0)
+                .then(|| layout_engine.row_two_line_source_frame_height(table, r, styles))
+                .flatten();
+            // 저장 vpos reset은 같은 문단 안에서 양수 좌표가 0으로 되감긴 경우에만
+            // 물리 조각 경계를 소유한다. 문단 전환의 0은 HWPX writer-local cursor라
+            // 저장 프레임 컷으로 선택하지 않고 일반 행 용량 계산에 맡긴다.
+            let stored_source_frame = (st.profile.hwpx_stored_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
+                && layout_engine.row_has_single_visible_source_cell(table, r, styles)
+                && !rowspan_touched.get(r).copied().unwrap_or(true))
+            .then(|| layout_engine.stored_frame_cut_for_row(table, r, row_start_cut, styles))
+            .flatten();
+            let terminal_source_frame = st.profile.hwpx_stored_layout()
+                && r + 2 == row_count
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && layout_engine.row_has_stored_vpos_frame_rewind(table, r);
+            let continued_source_frame =
+                is_continuation && !row_start_cut.is_empty() && stored_source_frame.is_some();
+            // direct HWPX의 첫 RowBreak 조각도 저장 LINE_SEG frame이 물리 owner를
+            // 명시할 수 있다. 일반 capacity cut이 frame 끝 직전에서 멈추면 다음
+            // fragment가 그 짧은 tail만 소유해 쪽 하나가 늘어난다. 이 경우에는
+            // 기존 source-frame cut이 가진 정확한 CellUnit 끝을 첫 조각에도 쓴다.
+            // 편집 뒤 reflow된 텍스트는 저장 좌표를 그대로 신뢰할 수 없으므로
+            // continuation/terminal 경로와 달리 새 첫-fragment 경로에서는 제외한다.
+            let opening_source_frame = !is_continuation
+                && r == cursor_row
+                && row_start_cut.is_empty()
+                && !table.text_reflowed_after_edit
+                && stored_source_frame.is_some();
+            let single_visible_source_frame = st.profile.hwpx_stored_layout()
+                && stored_source_frame.is_some()
+                && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
+                && layout_engine.row_has_single_visible_source_cell(table, r, styles);
             let strict_nonterminal_rounding_fit = strict_painted_bottom_fit
                 && r + 1 < row_count
                 && consumed + cs_before + row_total <= avail_for_rows + 0.5;
-            if consumed + cs_before + row_total <= avail_for_rows || strict_nonterminal_rounding_fit
+            let source_frame_whole_row_fits = source_first_fragment_overflow_allowance > 0.0
+                && source_first_fragment_row_end == Some(r + 1)
+                && consumed + cs_before + row_total
+                    <= avail_for_rows + source_first_fragment_overflow_allowance;
+            // A direct HWPX row with one visible owner and a structural empty
+            // partner has an explicit source fragment boundary.  Let the
+            // row-cut walk retain it; ordinary and multi-owner rows keep the
+            // measured whole-row fast path.
+            if !single_visible_source_frame && consumed + cs_before + row_total <= avail_for_rows
+                || strict_nonterminal_rounding_fit
+                || source_frame_whole_row_fits
             {
                 // 행 전체가 예산 안에 들어감.
                 consumed += cs_before + row_total;
@@ -18863,88 +19724,25 @@ impl TypesetEngine {
                 end_row = r;
                 continue;
             }
-            // [#2097] 쪽 하단 압축 수용 (블록 경로와 동일 근거): 잔여를 소폭
-            // 초과하는 행을 한글은 압축해 끼워 넣는다 — 표 마지막 행 sliver
-            // 계열의 직접 원인 (1741000 r14: 초과 6.9px 인데 이월되어 3쪽).
-            // 단 **콘텐츠가 잔여에 실제로 들어가는 행 한정** — 선언(행높이)만
-            // 초과하고 내용은 여유인 형상이 압축 대상이다. 콘텐츠 자체가 잔여를
-            // 넘는 행은 한글도 컷/이월 (86712 r26 초과 0.9px 케이스: 압축하면
-            // 65→66 회귀).
-            if !strict_painted_bottom_fit
-                && mt.allows_row_break_split()
-                && r > cursor_row
-                && consumed + cs_before + row_total
-                    <= avail_for_rows + BOTTOM_SQUEEZE_TOLERANCE_PX
-                // 측정-선언 정합 행 한정 — 측정이 선언을 크게 웃도는 행은 산식
-                // 과대(#2237, 86712 pi=172 r26: 선언 31.2px 가 106.5 로 측정)
-                // 가능성이 있어 미검증 압축을 배제한다.
-                && {
-                    let row_decl_max = table
-                        .cells
-                        .iter()
-                        .filter(|c| {
-                            c.row as usize == r && c.row_span == 1 && c.height < 0x8000_0000
-                        })
-                        .map(|c| hwpunit_to_px(c.height as i32, self.dpi))
-                        .fold(0.0f64, f64::max);
-                    row_decl_max > 0.0 && row_total <= row_decl_max * 1.2 + 2.0
-                }
-            {
-                let rest = (avail_for_rows - consumed - cs_before).max(0.0);
-                let probe = layout_engine.advance_row_cut(table, r, row_start_cut, rest, styles);
-                // 중첩 표 보유 행 제외 (블록 경로와 동일 근거 — issue_1073 골든).
-                let row_has_nested = table.cells.iter().any(|c| {
-                    c.row as usize == r
-                        && c.row_span == 1
-                        && c.paragraphs.iter().any(|p| {
-                            p.controls
-                                .iter()
-                                .any(|ctrl| matches!(ctrl, Control::Table(_)))
-                        })
-                });
-                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-                    eprintln!(
-                        "DIAG_SCAN SQUEEZE_ROW? r={} row_total={:.1} content={:.1} rest={:.1} fully={} nested={}",
-                        r, row_total, probe.consumed_height, rest, probe.fully_consumed, row_has_nested
-                    );
-                }
-                if probe.fully_consumed
-                    && !row_has_nested
-                    && rest <= BOTTOM_SQUEEZE_MAX_REST_PX
-                    && rest - probe.consumed_height >= BOTTOM_SQUEEZE_MIN_HEADROOM_PX
-                {
-                    consumed += cs_before + row_total;
-                    r += 1;
-                    end_row = r;
-                    continue;
-                }
-            }
-            // RowBreak 표의 마지막 빈 spacer 행은 한컴이 직전 조각 하단에 붙여
-            // 그리는 경우가 많다. 이 행 하나만 몇 px 넘친다고 별도 빈 꼬리
-            // 페이지를 만들면 Q&A 표처럼 작은 잔여 조각 페이지가 반복된다.
-            if mt.allows_row_break_split()
-                && r + 1 == row_count
-                && Self::row_is_empty_trailing_spacer(table, r)
-                && consumed > 0.0
-                && consumed + cs_before + row_total
-                    <= avail_for_rows + ROWBREAK_TRAILING_EMPTY_ROW_OVERFLOW_TOLERANCE_PX
+            if r > cursor_row
+                && terminal_response_before_empty_spacer
+                && mt.row_heights.get(r).is_some_and(|stored_height| {
+                    consumed + cs_before + *stored_height <= avail_for_rows + 0.5
+                })
             {
                 consumed += cs_before + row_total;
                 r += 1;
                 end_row = r;
                 continue;
             }
-            // [#2291] landscape RowBreak 연속 페이지 bleed 는 순수 rs=1 행에만
-            // 적용한다. rowspan 걸침 행(세로 병합 라벨이 확정한 행 그리드)은
-            // 한글이 병합 셀 높이 배분으로 정한 행 경계를 지켜 예산을 넘겨
-            // 적재하지 않는다 — 교육과정 연결맵(244×10, rs=176 세로 라벨)에서
-            // 이 bleed 가 쪽당 ~260px(≈5행) 과다 적재를 누적해 s5 표를 24→19쪽
-            // 으로 과소분할(문서 전체 −30쪽)했다. task #1672 편람(순수 rs=1
-            // 행)의 과다분할 완화 대상은 rs_touched=false 라 그대로 보존된다.
+            // Landscape RowBreak continuations use the stored physical row frame.
+            // Keep the baseline whole-row allowance separate from the larger
+            // short-row allowance, and never apply the latter to rowspan or a
+            // row containing an internal saved page boundary.
             if landscape_rowbreak_bleed
                 && mt.allows_row_break_split()
                 && is_continuation
-                && header_overhead > 0.5
+                && header_overhead > 0.0
                 && row_start_cut.is_empty()
                 && r > cursor_row
                 && consumed + cs_before + row_total
@@ -18958,10 +19756,18 @@ impl TypesetEngine {
             if landscape_rowbreak_bleed
                 && mt.allows_row_break_split()
                 && is_continuation
-                && header_overhead > 0.5
+                && header_overhead > 0.0
                 && row_start_cut.is_empty()
                 && r > cursor_row
                 && !rowspan_touched[r]
+                // Direct HWPX의 local reset은 physical frame이 아니다. 선언 cell 안에
+                // source frame이 완결될 때만 short-row bleed를 막아 source owner를
+                // 보존한다.
+                && !(((st.profile.native_hwp5_layout() || st.profile.hwp5_origin_hwpx())
+                    && rowbreak_row_has_internal_saved_vpos_reset(table, r))
+                    || (st.profile.hwpx_stored_layout()
+                        && !st.profile.hwp5_origin_hwpx()
+                        && layout_engine.row_has_stored_vpos_frame_rewind(table, r)))
                 && row_total <= landscape_short_row_max_height
                 && consumed + cs_before + row_total
                     <= avail_for_rows + landscape_short_row_tolerance
@@ -18978,6 +19784,49 @@ impl TypesetEngine {
             // `cell_units`가 fragment를 만들더라도 그 값이 1이라 atomic으로 남는다.
             // 동일 storage/physical-height gate와 실제 multi-unit 확인을 통해서만
             // 해당 행을 `advance_row_cut`에 전달한다 (76076 p81→82).
+            let terminal_single_source_note_row = !strict_painted_bottom_fit
+                && mt.allows_row_break_split()
+                && r > cursor_row
+                && r + 1 == row_count
+                && row_start_cut.is_empty()
+                && !rowspan_touched[r]
+                && {
+                    let mut cells = table
+                        .cells
+                        .iter()
+                        .filter(|cell| cell.row as usize == r && cell.row_span == 1);
+                    cells.next().is_some_and(|cell| {
+                        cells.next().is_none()
+                            && cell.col_span as usize == table.col_count as usize
+                            && cell.paragraphs.iter().all(|paragraph| {
+                                paragraph.controls.is_empty()
+                                    && para_has_visible_text(paragraph)
+                                    && paragraph
+                                        .line_segs
+                                        .iter()
+                                        .filter(|seg| !is_synthetic_line_seg(seg))
+                                        .count()
+                                        == 1
+                            })
+                    })
+                };
+            if terminal_single_source_note_row {
+                let remaining_band = (avail_for_rows - consumed - cs_before).max(0.0);
+                let source_cut =
+                    layout_engine.advance_row_cut(table, r, row_start_cut, remaining_band, styles);
+                if remaining_band > 0.0
+                    && source_cut.fully_consumed
+                    && source_cut.consumed_height > 0.0
+                {
+                    // 마지막 주석의 실제 저장 line이 남은 band 안에 모두 있으므로,
+                    // 선언 row 높이의 빈 아래 영역은 별도 physical page를 소유하지 않는다.
+                    consumed += cs_before + remaining_band;
+                    r += 1;
+                    end_row = r;
+                    end_row_height_override = Some(remaining_band);
+                    continue;
+                }
+            }
             let native_short_parent_child_splittable =
                 layout_engine.native_short_parent_child_row_is_fragmentable(table, r, styles);
             let splittable = can_intra_split
@@ -19007,8 +19856,61 @@ impl TypesetEngine {
             } else {
                 mt.max_padding_for_row(r)
             };
-            let budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
+            let mut budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
+            // A visible terminal response followed by a no-text/no-control row is
+            // a two-part physical row: the spacer owns no ink, while the
+            // response carries the stored page frame. A direct HWPX opening
+            // frame with one visible source owner has the same exact boundary.
+            // This is structural source evidence and deliberately does not
+            // depend on a document shape, stored table size, or line count.
+            // Stored vpos-frame resets are source-owned physical fragment boundaries.
+            // First take the ordinary budget cut, then extend only to the end of
+            // the recorded source frame when that exact CellUnit boundary is known.
+            let source_frame_tail_contract = terminal_response_before_empty_spacer
+                || terminal_source_frame
+                || continued_source_frame
+                || opening_source_frame;
             let mut res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
+            let mut uses_source_frame_tail = false;
+            if (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout())
+                && !table.common.treat_as_char
+                && source_frame_tail_contract
+            {
+                let source_tail_cut = if continued_source_frame || res.consumed_height <= 0.5 {
+                    // A numeric tail allowance used to make this 0px case
+                    // reach the first saved response line.  Select that exact
+                    // source unit instead, so a page-tail frame can begin
+                    // without guessing its pixel height.
+                    layout_engine.next_visible_unit_cut_for_row(
+                        table,
+                        r,
+                        row_start_cut,
+                        &res.end_cut,
+                        styles,
+                    )
+                } else {
+                    stored_source_frame.or_else(|| {
+                        layout_engine.paragraph_tail_cut_for_row(
+                            table,
+                            r,
+                            row_start_cut,
+                            &res.end_cut,
+                            styles,
+                        )
+                    })
+                };
+                if let Some(source_tail_cut) = source_tail_cut {
+                    if source_tail_cut.consumed_height > res.consumed_height + 0.5 {
+                        // Downstream fit/retry decisions must reason in the
+                        // same frame-sized budget as the cut.  The precise
+                        // physical overfill is measured from the painted
+                        // candidate below.
+                        budget = source_tail_cut.consumed_height;
+                        res = source_tail_cut;
+                        uses_source_frame_tail = true;
+                    }
+                }
+            }
             // [#2236 진단] 인트라 컷 시도 결과 — 동작 불변.
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(
@@ -19093,10 +19995,28 @@ impl TypesetEngine {
                     }
                     break;
                 }
+                // A terminal response immediately followed by a no-text/no-control row can
+                // exceed the composed row metric only by the measured-versus-stored
+                // row drift.  Use that exact drift rather than a template allowance.
+                let stored_terminal_response_tail_fits = r > cursor_row
+                    && terminal_response_before_empty_spacer
+                    && (uses_source_frame_tail
+                        || mt.row_heights.get(r).is_some_and(|stored_height| {
+                            row_total <= budget + (row_total - *stored_height).max(0.0) + 0.5
+                        }));
+                let two_line_terminal_response_source_frame_fits =
+                    two_line_terminal_response_source_frame.is_some_and(|source_frame_height| {
+                        row_total <= budget + source_frame_height + 0.5
+                    });
                 // 단일 유닛 행 — 분할 불가, 페이지 시작이면 강제, 아니면 다음으로.
                 if r == cursor_row {
                     consumed += cs_before + row_total;
                     end_row = r + 1;
+                } else if stored_terminal_response_tail_fits
+                    || two_line_terminal_response_source_frame_fits
+                {
+                    consumed += cs_before + row_total;
+                    end_row = row_count;
                 } else {
                     end_row = r;
                 }
@@ -19114,7 +20034,8 @@ impl TypesetEngine {
             // 포함해 경계를 충족한다. content-only guard로 통째 이월하면 표 24의
             // row 4가 p77에서 재배치되어 그림 51까지 다음 쪽으로 밀린다. native
             // HWP5·비-TAC·RowBreak·같은 row의 stored reset·앞선 행이 이미 있는
-            // 경우로 한정해 #2439와 같은 painted-height 판정을 사용한다.
+            // 경우, 그리고 HWPX Q5의 saved-frame response tail에 한정해 #2439와
+            // 같은 painted-height 판정을 사용한다.
             let native_hwp5_internal_reset_row_tail = st.profile.native_hwp5_layout()
                 && !table.common.treat_as_char
                 && mt.allows_row_break_split()
@@ -19123,6 +20044,7 @@ impl TypesetEngine {
                 && layout_engine.row_block_has_internal_hard_break(table, r, r + 1, styles);
             let row_split_min_keep_uses_painted_height = strict_painted_bottom_fit
                 || native_hwp5_internal_reset_row_tail
+                || uses_source_frame_tail
                 || native_short_parent_child_splittable;
             // [Task #713] sliver(orphan) 회피 — 일반 표는 기존 content-only 기준을
             // 유지한다. 패딩 포함 painted 기준은 좁은 #2439 strict 표, saved internal
@@ -19184,14 +20106,59 @@ impl TypesetEngine {
                         || (fresh_late_nested_row && !nested_physical_tail))
                     && split_candidate_rows_height - avail_for_rows
                         > MIXED_NESTED_OWNER_DRIFT_MIN_PX;
-                let split_row_overflow_tolerance =
-                    if native_split_continuation_row_tail || mixed_nested_owner_guard {
-                        0.1
-                    } else if mt.allows_row_break_split() {
-                        rowbreak_split_row_overflow_tolerance
+                // An ordinary stored HWPX RowBreak cut can differ from its
+                // painted footprint only by the cell padding that the logical
+                // CellUnit cut omits.  Preserve that measured difference; a
+                // document-independent pixel tolerance would otherwise let
+                // unrelated rows consume a physical page tail.
+                let hwpx_stored_rowbreak_cut = st.profile.hwpx_stored_layout()
+                    && !table.common.treat_as_char
+                    && mt.allows_row_break_split()
+                    && !mixed_nested_owner_guard;
+                let measured_rowbreak_paint_tail =
+                    (split_total - res.consumed_height - padding).max(0.0);
+                let stored_frame_tail_overflow = if uses_source_frame_tail {
+                    // `split_total` is the painted row footprint, whereas
+                    // the source frame is selected in CellUnit content
+                    // space.  Admit exactly that selected frame's paint
+                    // overfill, never an unrelated fixed allowance.
+                    (split_candidate_rows_height - avail_for_rows).max(0.0)
+                } else {
+                    0.0
+                };
+                // Native HWP5 can record `common.height` through the leading
+                // header row while the first physical fragment continues into
+                // the next body row.  The stored frame's unused physical space
+                // authorizes that next row only; admit the exact CellUnit
+                // capacity overfill selected there, rather than turning the
+                // entire frame slack into a general tolerance.
+                let saved_first_fragment_next_row_cut = !is_continuation
+                    && cursor_row == 0
+                    && r > cursor_row
+                    && row_start_cut.is_empty()
+                    && source_first_fragment_overflow_allowance > 0.0
+                    && source_first_fragment_row_end == Some(r);
+                let saved_first_fragment_next_row_cut_overflow =
+                    if saved_first_fragment_next_row_cut {
+                        (res.consumed_height - budget).max(0.0)
                     } else {
-                        0.1
+                        0.0
                     };
+                let split_row_overflow_tolerance = if uses_source_frame_tail {
+                    stored_frame_tail_overflow
+                } else if saved_first_fragment_next_row_cut {
+                    saved_first_fragment_next_row_cut_overflow
+                } else if source_first_fragment_overflow_allowance > 0.0
+                    && source_first_fragment_row_end == Some(r + 1)
+                {
+                    source_first_fragment_overflow_allowance
+                } else if hwpx_stored_rowbreak_cut {
+                    measured_rowbreak_paint_tail
+                } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
+                    0.1
+                } else {
+                    0.1
+                };
                 if (r > cursor_row
                     || mixed_nested_owner_guard
                     || native_split_continuation_row_tail)
@@ -19234,11 +20201,26 @@ impl TypesetEngine {
                             styles,
                         );
                         let cand2 = consumed + cs_before + split_total2;
+                        let retry_split_row_overflow_tolerance = if uses_source_frame_tail {
+                            stored_frame_tail_overflow
+                        } else if saved_first_fragment_next_row_cut {
+                            (res2.consumed_height - retry_budget).max(0.0)
+                        } else if source_first_fragment_overflow_allowance > 0.0
+                            && source_first_fragment_row_end == Some(r + 1)
+                        {
+                            source_first_fragment_overflow_allowance
+                        } else if hwpx_stored_rowbreak_cut {
+                            (split_total2 - res2.consumed_height - padding).max(0.0)
+                        } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
+                            0.1
+                        } else {
+                            0.1
+                        };
                         if row_split_meets_min_top_keep(
                             res2.consumed_height,
                             split_total2,
                             row_split_min_keep_uses_painted_height,
-                        ) && cand2 <= avail_for_rows + split_row_overflow_tolerance
+                        ) && cand2 <= avail_for_rows + retry_split_row_overflow_tolerance
                         {
                             end_row = r + 1;
                             split_end_cut = res2.end_cut.clone();
@@ -19246,35 +20228,6 @@ impl TypesetEngine {
                             consumed += cs_before + split_total2;
                             retried = true;
                         }
-                    }
-                    // [#2097] 쪽 하단 압축 컷 수용: 재시도까지 실패해도 초과분이
-                    // 압축 허용치 이내면 한글은 첫 유닛을 압축해 컷한다
-                    // (21298295 p1: 잔여 32.5px 에 첫 줄 36.8px 를 압축 배치 —
-                    // 재저장 사다리 실측 p2 시작 831.8 = row13 부분 컷 후 잔여).
-                    // 행/블록 squeeze 와 동일한 쪽 끝자락 한정.
-                    if !retried
-                        && !strict_painted_bottom_fit
-                        && mt.allows_row_break_split()
-                        && split_candidate_rows_height
-                            <= avail_for_rows + BOTTOM_SQUEEZE_TOLERANCE_PX
-                        && (avail_for_rows - consumed) <= BOTTOM_SQUEEZE_MAX_REST_PX
-                        && row_split_meets_min_top_keep(
-                            res.consumed_height,
-                            split_total,
-                            row_split_min_keep_uses_painted_height,
-                        )
-                    {
-                        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-                            eprintln!(
-                                "DIAG_SCAN SQUEEZE_CUT r={} cand={:.1} avail={:.1} cut_h={:.1}",
-                                r, split_candidate_rows_height, avail_for_rows, res.consumed_height
-                            );
-                        }
-                        end_row = r + 1;
-                        split_end_cut = res.end_cut.clone();
-                        split_end_limit = res.consumed_height;
-                        consumed += cs_before + split_total;
-                        retried = true;
                     }
                     if !retried {
                         end_row = r;
@@ -19860,7 +20813,11 @@ impl TypesetEngine {
                     // 스택 뒤를 인코딩(선두-줄 host 의 vpos 0/흐름-일치 저장은 제외).
                     let line_h = (bounds.1 - bounds.0).max(0.0);
                     bounds.0 > st.current_height + line_h + 16.0
-                        && saved_bounds_fit_at_flow_tail(bounds, st.current_height, available)
+                        // 일반 tail helper는 line이 현재 flow와 겹칠 때만 쓴다.
+                        // 여기서는 바로 위 조건이 line이 float stack 뒤에 있음을
+                        // 이미 증명하므로, 같은 physical body의 하단 안에 있는지만
+                        // source frame으로 확인한다.
+                        && bounds.1 <= available
                 });
         // 통째-배치 구제는 스택의 2번째 이후 표(선행 co-anchored 존재)이면서
         // 표 자체가 한 쪽에 들어갈 때만 — 첫 표는 정상 fit/분할 경로를 그대로
@@ -19935,7 +20892,7 @@ impl TypesetEngine {
             && !para.line_segs.is_empty()
             && !para_has_visible_text(para)
             && declared_object_total > 0.0
-            && table_total > declared_object_total + HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
+            && table_total > declared_object_total
             // [#3236] 선언 신뢰는 측정 초과가 폰트 대체 팽창으로 설명되는 범위까지만.
             // 실측 팽창은 인접 가드들 기준 10~20% 수준이라 1.5배를 넘는 초과는 셀
             // 내용이 진짜로 큰 것이다 — 한컴도 이 경우 쪽 경계에서 셀을 분할한다
@@ -19943,9 +20900,7 @@ impl TypesetEngine {
             // p2 로 셀 내용을 이어 배치). 상한 없이는 통짜 배치 후 쪽 밖 clip 으로
             // 내용이 소실된다.
             && table_total <= declared_object_total * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO
-            && table_total <= available + HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
-            && st.current_height + declared_object_total
-                <= available + HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX;
+            && st.current_height + declared_object_total <= available;
 
         if let Some(declared_total) = declared_empty_para_float_total {
             // 빈 host 문단의 자리차지 RowBreak 표는 렌더러가 문서에 저장된 표 선언
@@ -19956,12 +20911,11 @@ impl TypesetEngine {
             // 단, 1행 표의 저장 object height 는 현재 쪽 하단 tolerance 안에 맞고
             // cell 내용 측정치만 크게 나온 경우에는 한컴이 현재 쪽 하단까지 한 덩어리로
             // 배치하므로 아래 object-height fit 경로를 우선한다.
-            const DECLARED_FLOAT_FIT_TOLERANCE_PX: f64 = 1.0;
             let measured_fits_current = st.current_height + table_total <= available;
-            let declared_overflows_current =
-                st.current_height + declared_total > available + DECLARED_FLOAT_FIT_TOLERANCE_PX;
-            // 저장된 LineSeg와 객체 높이가 현재 쪽 본문 하단 안에 들어간다고 말하면,
-            // host 줄 간격/선언 높이의 근소 초과만으로 먼저 이월하지 않는다.
+            let declared_overflows_current = st.current_height + declared_total > available;
+            let measured_declared_excess = (table_total - declared_total).max(0.0);
+            // 저장된 LineSeg와 객체 높이가 현재 쪽 본문 하단 안에 들어간다고 말하려면,
+            // anchor 지연이 실제 measured excess로 설명되어야 한다.
             let saved_span = para
                 .line_segs
                 .iter()
@@ -19969,30 +20923,47 @@ impl TypesetEngine {
                 .map(|seg| {
                     let base = st.vpos_page_base.unwrap_or(0);
                     let v_off = signed_hwpunit(table.common.vertical_offset);
-                    let top_hu = seg
-                        .vertical_pos
-                        .saturating_add(v_off.max(0))
-                        .saturating_sub(base);
+                    // The stored LineSeg is the flow anchor. A positive table
+                    // offset moves only the painted object top below that
+                    // anchor; using the painted top as the fit anchor rejects
+                    // source-owned body-top fragments by exactly that inset.
+                    let anchor_hu = seg.vertical_pos.saturating_sub(base);
+                    let top_hu = anchor_hu.saturating_add(v_off.max(0));
                     let bottom_hu =
                         top_hu.saturating_add(table.common.height.min(i32::MAX as u32) as i32);
                     (
+                        hwpunit_to_px(anchor_hu, self.dpi),
                         hwpunit_to_px(top_hu, self.dpi),
                         hwpunit_to_px(bottom_hu, self.dpi),
                     )
                 });
-            let saved_object_bottom_fits_current = saved_span.is_some_and(|(top_px, bottom_px)| {
-                top_px + 16.0 >= st.current_height
-                    && bottom_px <= available + DECLARED_FLOAT_FIT_TOLERANCE_PX
-            });
+            let saved_object_bottom_fits_current =
+                saved_span.is_some_and(|(anchor_px, _top_px, bottom_px)| {
+                    let anchor_delay = (st.current_height - anchor_px).max(0.0);
+                    anchor_px <= st.current_height
+                        && anchor_delay <= measured_declared_excess
+                        && bottom_px <= available
+                });
             // [#2097] 저장 앵커가 현재 흐름 위치와 정합하는데 저장 하단이 쪽 본문을
             // 넘으면, 원본 한글 레이아웃은 이월이 아니라 이 지점에서 표를 분할했다
             // (2572521 pi36: 앵커 11000HU=146.7px == cur_h, 선언 839.8px 로 하단
             // 986px 초과 — 저장 p3 만충 914.7px 실측, 이월 시 7쪽으로 +1). 이
             // 형상은 선언-기준 이월을 건너뛰고 분할 경로로 보낸다.
+            let saved_anchor_overlaps_current_flow = para
+                .line_segs
+                .iter()
+                .find(|seg| !is_synthetic_line_seg(seg))
+                .and_then(|seg| {
+                    line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
+                })
+                .is_some_and(|bounds| saved_bounds_overlap_current_flow(bounds, st.current_height));
             let saved_anchor_splits_here = st.has_stored_line_segs
-                && saved_span.is_some_and(|(top_px, bottom_px)| {
-                    (top_px - st.current_height).abs() <= 16.0
-                        && bottom_px > available + DECLARED_FLOAT_FIT_TOLERANCE_PX
+                // HWPX stores the source anchor as the physical fragment
+                // owner. Native HWP needs the visible-bounds check because a
+                // positive paint inset can put its object below that anchor.
+                && (st.profile.hwpx_stored_layout() || saved_anchor_overlaps_current_flow)
+                && saved_span.is_some_and(|(_anchor_px, _top_px, bottom_px)| {
+                    bottom_px > available
                 });
             // [#3820 Stage 7] 표 44(pi=1778)는 앞선 표의 row-internal tail 뒤에서
             // host anchor가 흐름보다 19.1px 앞선다. 저장된 object bottom 자체는
@@ -20004,11 +20975,9 @@ impl TypesetEngine {
             // document-wide 회귀가 생길 수 있다. native HWP5, non-TAC, paragraph
             // TopAndBottom, RowBreak, 다행 ordinary-row, table-footnote 없음, 다음
             // source paragraph의 vpos rewind라는 여섯 저장 계약을 모두 만족하고,
-            // saved object bottom이 이미 body 안에 드는 경우에만 declared defer를
-            // 건너뛰어 아래 fragment scan에 맡긴다. 24px은 1.8개의 HWP 기본 line
-            // 높이보다 작고, 이 fixture의 19.1px flow/anchor drift를 포괄하는
-            // fragment-local 허용치다.
-            const NATIVE_HWP5_NEAR_ANCHOR_ROWBREAK_FRAGMENT_TOLERANCE_PX: f64 = 24.0;
+            // the delayed flow anchor is fully explained by measured growth,
+            // and the saved object bottom is inside the body, skip declared
+            // defer and let the fragment scan select the source-owned prefix.
             let native_hwp5_near_anchor_rowbreak_needs_fragment_scan =
                 st.profile.native_hwp5_layout()
                     && !table.common.treat_as_char
@@ -20021,11 +20990,51 @@ impl TypesetEngine {
                     && ft.table_footnotes.is_empty()
                     && table.cells.iter().all(|cell| cell.row_span == 1)
                     && next_rewinds_after_table
-                    && saved_span.is_some_and(|(top_px, bottom_px)| {
+                    && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
+                        let flow_overrun = st.current_height - top_px;
+                        let measured_excess = (table_total - declared_total).max(0.0);
                         top_px <= st.current_height
-                            && st.current_height - top_px
-                                <= NATIVE_HWP5_NEAR_ANCHOR_ROWBREAK_FRAGMENT_TOLERANCE_PX
-                            && bottom_px <= available + DECLARED_FLOAT_FIT_TOLERANCE_PX
+                            && flow_overrun <= measured_excess
+                            && bottom_px <= available
+                    });
+            // native HWP의 저장 object는 host LineSeg의 시작보다 약간 뒤에서 paint될 수
+            // 있다. 현재 flow가 그 host line 안에 있고 object top도 같은 line 안에 있으며,
+            // object bottom과 다음 source reset이 현재 물리 page를 증명하면 declared
+            // overrun으로 표 전체를 이월하지 않는다. 이 경우 RowBreak scanner가 저장
+            // frame의 실제 행 prefix를 현재 page owner로 확정한다.
+            let native_hwp5_anchor_line_rowbreak_needs_fragment_scan =
+                st.profile.native_hwp5_layout()
+                    && !table.common.treat_as_char
+                    && is_para_topbottom_float(&table.common)
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+                    && !para_has_visible_text(para)
+                    && table.row_count > 1
+                    && ft.table_footnotes.is_empty()
+                    && next_rewinds_after_table
+                    && !rowbreak_table_has_internal_saved_vpos_reset(table)
+                    && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
+                        bottom_px <= available
+                            && para
+                                .line_segs
+                                .iter()
+                                .find(|seg| !is_synthetic_line_seg(seg))
+                                .and_then(|seg| {
+                                    line_seg_visible_bounds_px(
+                                        seg,
+                                        st.vpos_page_base.unwrap_or(0),
+                                        self.dpi,
+                                    )
+                                })
+                                .is_some_and(|(line_top, line_bottom)| {
+                                    saved_bounds_overlap_current_flow(
+                                        (line_top, line_bottom),
+                                        st.current_height,
+                                    ) && st.current_height <= top_px
+                                        && top_px <= line_bottom
+                                })
                     });
             // [#3820 Stage 11] 1×1 빈-host RowBreak 표도 cell 안의 저장 vpos reset이
             // 있으면, 선언 common.height는 첫 physical fragment의 높이이고 실제 cell
@@ -20041,7 +21050,6 @@ impl TypesetEngine {
             // 실제 footnote boundary 안에 있고, 현재 flow의 초과분이 해당 표의
             // `measured - declared` 팽창으로 설명될 때만 anchor를 복원한다. 이 경우에만
             // 첫 fragment scan은 reset 전 cell tail을 현 페이지에 남길 수 있다.
-            const NATIVE_HWP5_INTERNAL_RESET_REWIND_RESYNC_TOLERANCE_PX: f64 = 16.0;
             native_hwp5_internal_reset_rewind_needs_anchor_resync = st.profile.native_hwp5_layout()
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
@@ -20057,19 +21065,16 @@ impl TypesetEngine {
                 && st.current_footnote_height > 0.0
                 && rowbreak_table_has_internal_saved_vpos_reset(table)
                 && next_rewinds_after_table
-                && saved_span.is_some_and(|(top_px, bottom_px)| {
+                && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
                     let flow_overrun = st.current_height - top_px;
                     let measured_excess = (table_total - declared_total).max(0.0);
                     top_px <= st.current_height
                         && top_px <= available
-                        && bottom_px <= available + DECLARED_FLOAT_FIT_TOLERANCE_PX
-                        && flow_overrun >= NATIVE_HWP5_INTERNAL_RESET_REWIND_RESYNC_TOLERANCE_PX
-                        && flow_overrun
-                            <= measured_excess
-                                + NATIVE_HWP5_INTERNAL_RESET_REWIND_RESYNC_TOLERANCE_PX
+                        && bottom_px <= available
+                        && flow_overrun <= measured_excess
                 });
             if native_hwp5_internal_reset_rewind_needs_anchor_resync {
-                let (top_px, _) = saved_span.expect("resync requires stored table anchor");
+                let (_, top_px, _) = saved_span.expect("resync requires stored table anchor");
                 st.current_height = top_px;
                 placement_para_start_height = top_px;
             }
@@ -20100,8 +21105,7 @@ impl TypesetEngine {
                     && st.current_height + declared_total
                         <= st.base_available_height()
                             - st.current_zone_y_offset
-                            - st.current_bottom_fixed_exclusion
-                            + DECLARED_FLOAT_FIT_TOLERANCE_PX;
+                            - st.current_bottom_fixed_exclusion;
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(
                     "DIAG_SCAN DECL_DEFER? pi={} cur_h={:.1} declared={:.1} avail={:.1} saved={:?} bottom_fits={} splits_here={} near_anchor_fragment={} internal_reset_resync={} own_fn_fragment={}",
@@ -20123,16 +21127,47 @@ impl TypesetEngine {
             // — 한글은 이 형상(86712 pi=30: 4×3 RowBreak, saved=None, 측정 비적합
             // 980.8>971.3)을 행 분할해 현재 쪽에 머리 행들을 남긴다(p10/p11).
             // 위 주석의 원 의도("LS 없는 계열은 측정 fit 일 때만 선언 이월")와 정합.
+            // native HWP의 1x1 RowBreak 표에서 실제 셀 본문이 declared object
+            // height의 신뢰 상한을 넘으면, declared height로 통째 이월할 수 없다.
+            // 이 형상은 현재 쪽에서 cell-unit fragment scan을 시작해야 하며, 그렇지
+            // 않으면 p4처럼 첫 fragment 전체가 불필요하게 다음 쪽으로 밀린다.
+            let native_hwp5_large_single_cell_rowbreak_needs_fragment_scan =
+                st.profile.native_hwp5_layout()
+                    && !table.common.treat_as_char
+                    && table.row_count == 1
+                    && table.col_count == 1
+                    && table.cells.len() == 1
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+                    && !para_has_visible_text(para)
+                    && declared_object_total > 0.0
+                    && table_total > declared_object_total * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO;
+            // 빈 host의 native HWP5 RowBreak 표가 셀 안에 명시적 저장 frame
+            // reset을 가지면, declared object bottom만으로 통째 이월할 수 없다.
+            // row-cut scanner가 source-owned frame prefix를 확정해야 한다.
+            let native_hwp5_stored_rowbreak_needs_fragment_scan = st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && !para_has_visible_text(para)
+                && rowbreak_table_has_internal_saved_vpos_reset(table);
             if !st.current_items.is_empty()
                 && !ft.strict_following_plain_text_fit
                 && declared_overflows_current
                 && !saved_object_bottom_fits_current
                 && !saved_anchor_splits_here
                 && !native_hwp5_near_anchor_rowbreak_needs_fragment_scan
+                && !native_hwp5_anchor_line_rowbreak_needs_fragment_scan
                 && !native_hwp5_internal_reset_rewind_needs_anchor_resync
                 && !native_hwp5_own_footnote_fragment_can_start_before_reservation
                 && !saved_host_line_after_stack_fits
                 && !single_row_object_declared_fits_current
+                && !native_hwp5_large_single_cell_rowbreak_needs_fragment_scan
+                && !native_hwp5_stored_rowbreak_needs_fragment_scan
                 && (saved_span.is_some() || measured_fits_current)
                 && declared_total <= available
             {
@@ -20154,17 +21189,18 @@ impl TypesetEngine {
 
         let para_has_stored_line_seg = para.line_segs.iter().any(|ls| !is_synthetic_line_seg(ls));
         let single_row_object_height_fits_current = single_row_object_declared_fits_current;
-        // 저장 object 높이 기준으로는 현재 쪽에 들어가지만, cell 내용 측정치는 더 큰
-        // 1행 자리차지 표는 렌더러에서 쪽 하단까지 차지한다. 이 경우 표 자체는 현재
-        // 쪽에 두되 후속 flow 는 남은 영역을 모두 소비한 것으로 보아 같은 쪽 overflow 를
-        // 막는다.
-        let single_row_object_height_advance = single_row_object_height_fits_current.then(|| {
-            if st.current_height + table_total > available {
-                (available - st.current_height).max(0.0)
-            } else {
-                declared_object_total
-            }
-        });
+        // HWP5-origin HWPX는 저장 object 높이 기준으로는 현재 쪽에 들어가지만,
+        // cell 내용 측정치는 더 큰 1행 자리차지 표를 쪽 하단까지 차지한 것으로
+        // 기록한다. native HWP는 RowBreak fragment의 실제 소비량을 따라야 하므로
+        // 이 HWPX 호환 보정을 적용하지 않는다.
+        let single_row_object_height_advance =
+            (st.profile.hwp5_origin_hwpx() && single_row_object_height_fits_current).then(|| {
+                if st.current_height + table_total > available {
+                    (available - st.current_height).max(0.0)
+                } else {
+                    declared_object_total
+                }
+            });
 
         let current_column_has_only_overlay_shapes = st.current_height <= 0.5
             && st
@@ -20179,8 +21215,7 @@ impl TypesetEngine {
         // 문단 vpos rewind가 physical fragment 경계를 명시하고, rowspan/cell-footnote가
         // 없는 ordinary-row 형상에서만 measured row footprint를 권위로 삼는다.
         // 일반 HWPX, page-top 표, rowspan 및 실제 intra-row cut은 기존 경로를 유지한다.
-        let native_hwp5_rewinding_rowbreak_uses_painted_row_footprint =
-            st.profile.native_hwp5_layout()
+        let native_hwp5_rewinding_rowbreak_uses_painted_row_footprint = st.profile.native_hwp5_layout()
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
@@ -20191,7 +21226,12 @@ impl TypesetEngine {
                 && ft.table_footnotes.is_empty()
                 && st.current_height >= st.base_available_height() * 0.5
                 && table.cells.iter().all(|cell| cell.row_span == 1)
-                && next_rewinds_after_table;
+                // The physical fragment boundary may be stored inside the last
+                // cell's lineSeg sequence, not only at the following host
+                // paragraph. Both are source-owned rewinds; ignoring the former
+                // lets a declared whole-fit gate retain one painted row too many.
+                && (next_rewinds_after_table
+                    || rowbreak_table_has_internal_saved_vpos_reset(table));
         let measured_row_table_height = mt.as_ref().and_then(|measured| {
             (!measured.row_heights.is_empty()).then(|| {
                 measured.row_heights.iter().sum::<f64>()
@@ -20227,44 +21267,46 @@ impl TypesetEngine {
         // 않는다 — 선언이 fit 하지 않는 다쪽 표의 분할 의미론은 불변. CellBreak 는
         // 셀 중간 컷 의미론이 별개라 비대상. advance 는 측정 table_total 을 유지해
         // 같은 쪽 후속 겹침을 차단한다.
-        // RowBreak 중간-쪽 확대(#2097 잔존 백로그): 쪽 상단(current_height≈0) 한정
-        // (#2105)을 넘어, 두 초과량이 모두 측정 노이즈 수준일 때만 선언을 신뢰한다.
-        //   overshoot(cur_h+실측-available) ≤ 16px — 한글도 자기 실측이 쪽을 넘치면
-        //     분할하므로, 크면 한글의 실측(폰트 대체 등으로 저장 선언보다 팽창)도
-        //     넘쳤을 개연성이 높다. 10k A/B: 완전-MATCH 문서 회귀 3건(17445525 등)이
-        //     overshoot 17.7~52.6px, 해소 계열(별지서식류 3080901 2→1쪽 등)은 ≤13.9px.
-        //   excess(실측-선언) ≤ 20px — 상대 한도(10%)만으로는 선언이 큰 표에서 실측
-        //     팽창 27~35px(6%)까지 통과해 per-pi 오라클 악화(1690000: nmis 210→864)를
-        //     냈다. 해소 계열의 중간-쪽 팽창은 ≤17.6px.
-        //   저위험 티어: overshoot ≤ 4px(실측 자체가 반올림 수준으로 fit)이면 실측이
-        //     쪽을 사실상 넘지 않으므로 더 큰 선언 팽창(≤48px)까지 허용 — 55965
-        //     규제영향분석서(overshoot 1.3px, excess 42.3px)가 per-pi 완전 MATCH
-        //     (nmis 1147→0)로 해소되는 축. 1690000(overshoot ≥6.4px)은 양 티어 밖.
-        // 쪽 상단은 available 이 정확해 기존(#2105) 드리프트 한도만 유지.
-        const MIDPAGE_ROWBREAK_DECLARED_TRUST_OVERSHOOT_TOLERANCE_PX: f64 = 16.0;
-        const MIDPAGE_ROWBREAK_DECLARED_TRUST_EXCESS_TOLERANCE_PX: f64 = 20.0;
-        const MIDPAGE_ROWBREAK_NEAR_FIT_OVERSHOOT_TOLERANCE_PX: f64 = 4.0;
-        const MIDPAGE_ROWBREAK_NEAR_FIT_EXCESS_TOLERANCE_PX: f64 = 48.0;
-        let midpage_overshoot = st.current_height + whole_fit_table_total - available;
-        let midpage_excess = table_total - declared_object_total;
+        // A RowBreak table on a fresh fragment has no preceding flow to
+        // contradict its declared height. Mid-fragment, trust the declaration
+        // only when the source host records the object's bottom inside the same
+        // body frame. Measured overshoot buckets cannot distinguish a font-metric
+        // drift from a real source-owned fragment boundary.
+        let rowbreak_at_fragment_start = st.current_items.is_empty();
+        let midpage_rowbreak_has_saved_object_bottom = para
+            .line_segs
+            .iter()
+            .find(|ls| !is_synthetic_line_seg(ls))
+            .is_some_and(|seg| {
+                let base = st.vpos_page_base.unwrap_or(0);
+                let v_off = signed_hwpunit(table.common.vertical_offset);
+                let top_hu = seg
+                    .vertical_pos
+                    .saturating_add(v_off.max(0))
+                    .saturating_sub(base);
+                let bottom_hu =
+                    top_hu.saturating_add(table.common.height.min(i32::MAX as u32) as i32);
+                hwpunit_to_px(bottom_hu, self.dpi) <= available
+            });
         let declared_fit_scope_ok = match table.page_break {
             crate::model::table::TablePageBreak::None => true,
             crate::model::table::TablePageBreak::RowBreak => {
-                st.current_height <= 0.5
-                    || (midpage_overshoot <= MIDPAGE_ROWBREAK_DECLARED_TRUST_OVERSHOOT_TOLERANCE_PX
-                        && midpage_excess <= MIDPAGE_ROWBREAK_DECLARED_TRUST_EXCESS_TOLERANCE_PX)
-                    || (midpage_overshoot <= MIDPAGE_ROWBREAK_NEAR_FIT_OVERSHOOT_TOLERANCE_PX
-                        && midpage_excess <= MIDPAGE_ROWBREAK_NEAR_FIT_EXCESS_TOLERANCE_PX)
+                rowbreak_at_fragment_start || midpage_rowbreak_has_saved_object_bottom
             }
             crate::model::table::TablePageBreak::CellBreak => false,
         };
-        // 실측 초과가 드리프트 수준일 때만 선언을 신뢰한다 — 셀 저장 높이는 최소값
-        // 의미라 내용이 진짜로 크면 한글도 행을 팽창·분할한다 (17712219 남극서식:
-        // 선언 882.7px vs 실측 1758.6px, 한글 2쪽). #2097/#2105 대상 계열의 실측
-        // 초과는 +17~48px(≤5%) 수준.
-        let measured_excess = table_total - declared_object_total;
-        let declared_excess_within_drift =
-            measured_excess <= (declared_object_total * 0.10).min(64.0);
+        // Declared cell boxes are trustworthy only when every text-bearing cell
+        // has a stored lineSeg frame that fits inside its own declaration *and*
+        // the table object frame owns the declared row geometry. A percentage/
+        // cap cannot tell browser metric expansion from a genuinely taller
+        // source row, and a cell-local frame alone cannot distinguish a stale
+        // short table object from a source-owned RowBreak fragment.
+        let declared_excess_has_source_frame =
+            table_declared_height_has_stored_cell_content_frame(table, self.dpi)
+                && (!matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                ) || table_declared_object_covers_cell_row_frames(table, self.dpi));
         // HWPX에서는 `treatAsChar` bit만으로 inline 표가 되지 않는다. stored-layout
         // 문서의 `flowWithText=0` 표는 block table인데, raw bit를 그대로 사용하면
         // declared whole-fit에서 제외되어 generic row cut이 저장 row height를 다시
@@ -20282,13 +21324,117 @@ impl TypesetEngine {
         } else {
             declared_object_total
         };
-        let declared_table_whole_fits = !uses_painted_row_footprint_for_whole_fit
-            && declared_fit_scope_ok
-            && declared_excess_within_drift
-            && !ft.strict_following_plain_text_fit
-            && (!table.common.treat_as_char || hwpx_noninline_tac_measured_fit)
+        // A stored RowBreak object frame can fit in the current body while
+        // browser measurement places the table body a rounding-sized amount
+        // below it. The declared frame remains the source ownership boundary in
+        // this non-TAC, footnote-free shape for both HWP and HWPX; a genuinely
+        // tall table still takes the row scanner because its measured body
+        // exceeds this narrow 2px conversion bound.
+        const NEAR_MEASURED_ROWBREAK_FIT_PX: f64 = 2.0;
+        // A vertical merge beginning in the first logical row makes that row
+        // and its successor an atomic stored band. Splitting before that band
+        // would retain a border-only fragment even though the declared object
+        // fits in the current body.
+        let has_leading_rowspan_band = table
+            .cells
+            .iter()
+            .any(|cell| cell.row == 0 && cell.row_span > 1);
+        let near_measured_rowbreak_fits = !table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && ft.table_footnotes.is_empty()
+            // HWPX stored-layout keeps a pagination frame independent from
+            // the native HWP5 table declaration. Its near measured fit is a
+            // converter provenance contract; native HWP5 must additionally
+            // prove that its object frame owns all declared row geometry.
+            && (!st.profile.native_hwp5_layout()
+                || declared_excess_has_source_frame
+                || has_leading_rowspan_band)
             && declared_object_total > host_spacing_total
-            && st.current_height + declared_fit_height <= available;
+            && st.current_height + declared_object_total <= available
+            && st.current_height + ft.effective_height
+                <= available + NEAR_MEASURED_ROWBREAK_FIT_PX;
+        let declared_table_whole_fits = near_measured_rowbreak_fits
+            || (!uses_painted_row_footprint_for_whole_fit
+                && declared_fit_scope_ok
+                // This HWPX compatibility route uses the measured table height,
+                // not the declared object height. Requiring the declared object to
+                // cover every cell row here turns a fitting flowWithText=0 table
+                // into an intra-row fragment solely because its source declaration
+                // is not the height authority for this profile.
+                && (hwpx_noninline_tac_measured_fit || declared_excess_has_source_frame)
+                && !ft.strict_following_plain_text_fit
+                && (!table.common.treat_as_char || hwpx_noninline_tac_measured_fit)
+                && declared_object_total > host_spacing_total
+                && st.current_height + declared_fit_height <= available);
+        // 빈 host의 단일 inline 표에서 저장 LineSeg 높이와 table common 높이가
+        // 정확히 같으면, 그 LineSeg는 표의 실제 physical frame이다. 누적 측정이
+        // source top을 지나쳤더라도 frame 전체가 현재 body 안에 있으면 source
+        // frame이 generic table_total보다 page owner를 우선한다.
+        let saved_single_inline_table_source_frame = (table.common.treat_as_char
+            && table.row_count == 1
+            && table.col_count == 1
+            && table.cells.len() == 1
+            && para.controls.len() == 1
+            && !para_has_visible_text(para)
+            && ft.table_footnotes.is_empty())
+        .then(|| {
+            let mut source_lines = para
+                .line_segs
+                .iter()
+                .filter(|seg| !is_synthetic_line_seg(seg));
+            let seg = source_lines.next()?;
+            if source_lines.next().is_some()
+                || seg.line_height != table.common.height.min(i32::MAX as u32) as i32
+            {
+                return None;
+            }
+            line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
+        })
+        .flatten()
+        .filter(|(source_top, source_bottom)| {
+            *source_top < st.current_height && *source_bottom <= available
+        });
+        // 다행 RowBreak 표는 common.height가 첫 fragment만 뜻할 수도 있다. cell
+        // 내부 reset 없이 다음 host가 새 물리 page를 명시할 때만, object frame을
+        // 현 page 전체를 소유한 frame으로 쓴다.
+        let saved_rowbreak_object_frame = (st.profile.hwpx_container()
+            && !table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && table.row_count > 1
+            && para.controls.len() == 1
+            && !para_has_visible_text(para)
+            && ft.table_footnotes.is_empty()
+            && signed_hwpunit(table.common.vertical_offset) <= 0
+            && next_starts_new_page
+            && !rowbreak_table_has_internal_saved_vpos_reset(table))
+        .then(|| {
+            let mut source_lines = para
+                .line_segs
+                .iter()
+                .filter(|seg| !is_synthetic_line_seg(seg));
+            let seg = source_lines.next()?;
+            (source_lines.next().is_none())
+                .then(|| line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi))
+                .flatten()
+        })
+        .flatten()
+        .and_then(|(source_top, _)| {
+            let source_bottom = source_top + declared_object_total - host_spacing_total;
+            (source_top < st.current_height && source_bottom <= available)
+                .then_some((source_top, source_bottom))
+        });
+        let saved_table_source_frame =
+            saved_single_inline_table_source_frame.or(saved_rowbreak_object_frame);
+        if let Some((source_top, _)) = saved_table_source_frame {
+            st.current_height = source_top;
+            placement_para_start_height = source_top;
+        }
         if host_line_trails_float_stack {
             // [#2813] 앵커 줄 아이템을 float 스택 뒤로 이연(한글 문서순) —
             // 스택 첫 표 배치 전에 걸려야 렌더 순서가 표→줄로 나온다.
@@ -20299,6 +21445,7 @@ impl TypesetEngine {
             || single_row_object_height_advance.is_some()
             || declared_table_whole_fits
             || saved_host_line_after_stack_fits
+            || saved_table_source_frame.is_some()
         {
             // [#3674 진단] fit 분기 발동 사유 — 동작 불변.
             if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
@@ -20321,7 +21468,9 @@ impl TypesetEngine {
                 table,
                 fmt,
                 placement_para_start_height,
-                if let Some(advance) = single_row_object_height_advance {
+                if let Some((source_top, source_bottom)) = saved_table_source_frame {
+                    source_bottom - source_top
+                } else if let Some(advance) = single_row_object_height_advance {
                     advance
                 } else if is_para_topbottom_float(&table.common)
                     && (para_has_non_whitespace_text(para) || hwpx_noninline_tac_measured_fit)
@@ -20520,8 +21669,8 @@ impl TypesetEngine {
         // 로 측정해 렌더러와 단일 측정 공간을 공유한다.
         //
         // rowspan 행은 기본적으로 저장 행 높이(MeasuredTable)를 기준으로 삼는다. 다만
-        // 같은 행의 row_span==1 셀 내용이 저장 행 높이를 RowBreak 허용 오차보다 크게
-        // 초과하면, 저장 높이가 실제 셀 내용보다 작게 기록된 경우이므로 컷 높이를 쓴다.
+        // 같은 행의 row_span==1 셀 내용이 저장 행 높이를 초과하면, 저장 높이가 실제
+        // 셀 내용보다 작게 기록된 경우이므로 컷 높이를 쓴다.
         // 이 판정은 파일명/페이지가 아니라 표 셀 내용 높이와 저장 행 높이의 차이에 근거한다.
         let cut_row_h: Vec<f64> = (0..row_count)
             .map(|r| {
@@ -20534,10 +21683,9 @@ impl TypesetEngine {
                 } else {
                     0.0
                 };
-                let row_content_significantly_exceeds_stored = has_single_row_cells
-                    && row_cut_h
-                        > mt.row_heights[r] + HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX;
-                let allow_rowspan_content_height = row_content_significantly_exceeds_stored;
+                let row_content_exceeds_stored =
+                    has_single_row_cells && row_cut_h > mt.row_heights[r];
+                let allow_rowspan_content_height = row_content_exceeds_stored;
                 if rowspan_touched[r] && (!has_single_row_cells || !allow_rowspan_content_height) {
                     mt.row_heights[r]
                 } else if has_single_row_cells {
@@ -20714,7 +21862,7 @@ impl TypesetEngine {
         // 첫 행이 남은 공간보다 크면 다음 페이지로 (인트라-로우 분할 가능성 확인).
         // Task #398: rowspan>1 셀이 행 0의 시작점이면 블록 전체 높이로 판정.
         // [Task #1046 Stage 2] 첫(비연속) fragment 의 렌더러 y_start 점프 — host_spacing.before
-        // 와 (TopAndBottom+vert=Para+v_off>0 표의) vertical_offset — 를 잔여공간에서 차감한다.
+        // 와 문단 기준 양수 vertical_offset — 를 잔여공간에서 차감한다.
         // 종전엔 미차감해 잔여를 과대평가 → 첫 행이 실제 안 들어가는데도 가드를 통과시켜
         // 일반 행 강제 배치 경로가 통째로 밀어넣어 본문 초과(예: pi=242 vert_off 38px,
         // 잔여 65.4px 로 보였으나 실가용 23.4px < 행0 34.9px). 루프 내 page_avail
@@ -20728,12 +21876,11 @@ impl TypesetEngine {
                 self.dpi,
             );
             let vert_off = {
-                use crate::model::shape::{TextWrap as TW, VertRelTo as VR};
-                let is_para_topbottom = !table.common.treat_as_char
-                    && matches!(table.common.text_wrap, TW::TopAndBottom)
-                    && matches!(table.common.vert_rel_to, VR::Para);
+                use crate::model::shape::VertRelTo as VR;
+                let is_para_relative_table =
+                    !table.common.treat_as_char && matches!(table.common.vert_rel_to, VR::Para);
                 let v = table.common.vertical_offset as i32;
-                if is_para_topbottom && v > 0 {
+                if is_para_relative_table && v > 0 {
                     hwpunit_to_px(v, self.dpi)
                 } else {
                     0.0
@@ -21109,6 +22256,7 @@ impl TypesetEngine {
                             - st.current_zone_y_offset
                             - st.current_bottom_fixed_exclusion
                     }),
+            source_next_positive_rewind: next_rewinds_after_table && !next_starts_new_page,
             // 표 25처럼 저장 table 높이 안에는 들어가지만 셀 원문은 그보다 훨씬 긴
             // HWP5 RowBreak 표는 PDF가 마지막 continuation 표와 URL 각주 사이에
             // 일반 40px safety margin을 두지 않는다. 이 예외는 셀 각주가 많은
@@ -21416,6 +22564,7 @@ impl TypesetEngine {
             let budget_para_start_height = prepared.budget_para_start_height;
             let first_fragment_actual_footnote_boundary =
                 prepared.first_fragment_actual_footnote_boundary;
+            let source_next_positive_rewind = prepared.source_next_positive_rewind;
             let relax_terminal_table_footnote_fit =
                 prepared.relax_terminal_table_footnote_fit;
             let cursor_row = continuation.row;
@@ -21454,7 +22603,7 @@ impl TypesetEngine {
                     0.0
                 };
             // [Task #874 #9] 첫 fragment 의 page_avail 은 host_spacing.before 와
-            // (TopAndBottom + vert=Para + v_offset>0 표의) vertical_offset 를 제외해야 한다.
+            // 문단 기준 양수 vertical_offset 를 제외해야 한다.
             // layout 은 표를 cur_h + host_spacing.before + v_offset 위치에 배치하지만,
             // typeset 의 page_avail = (table_available - cur_h) 은 두 overhead 를
             // 포함하지 않아 split 결정 시 actual 가용보다 과대 평가됨 → partial 오버플로우.
@@ -21470,13 +22619,12 @@ impl TypesetEngine {
             let vert_offset_overhead = if is_continuation {
                 0.0
             } else {
-                use crate::model::shape::{TextWrap as TW3, VertRelTo as VR3};
-                let is_para_topbottom = !table.common.treat_as_char
-                    && matches!(table.common.text_wrap, TW3::TopAndBottom)
+                use crate::model::shape::VertRelTo as VR3;
+                let is_para_relative_table = !table.common.treat_as_char
                     && matches!(table.common.vert_rel_to, VR3::Para);
                 // HwpUnit=u32 이므로 음수 (u32 wrap) 는 i32 로 캐스트 후 확인.
                 let v_off_i32 = table.common.vertical_offset as i32;
-                if is_para_topbottom && v_off_i32 > 0 {
+                if is_para_relative_table && v_off_i32 > 0 {
                     let raw = hwpunit_to_px(v_off_i32, self.dpi);
                     // [#2015] host 텍스트가 pre-emit(pre_emit_visible_rowbreak_host_text)
                     // 되어 current_height 를 para_start → para_start+host_h 로 전진시킨 경우,
@@ -21568,6 +22716,69 @@ impl TypesetEngine {
                 page_avail
             };
 
+            // RowBreak 표의 common.height가 전체 표가 아니라 첫 physical fragment를
+            // 저장할 수 있다. 저장 anchor가 현재 flow와 같고 declared bottom이 이
+            // fragment bound 안에 있을 때만 source frame을 행 경계 후보로 쓴다.
+            // host spacing과 paint inset은 source object 좌표가 아니므로 섞지 않는다.
+            let source_first_fragment_flow_bottom = table_available;
+            let saved_first_fragment_source_frame = if !is_continuation
+                && cursor_row == 0
+                && start_cut.is_empty()
+                && first_fragment_painted_row_footer_guard <= 0.0
+                && !table.common.treat_as_char
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && row_count > 1
+                && table_footnotes.is_empty()
+                && table.common.height > 0
+                && table.common.height <= i32::MAX as u32
+                && std::ptr::eq(row_geometry_table, table)
+            {
+                para.line_segs
+                    .iter()
+                    .find(|seg| !is_synthetic_line_seg(seg))
+                    .and_then(|seg| {
+                        let base = st.vpos_page_base.unwrap_or(0);
+                        let anchor_hu = seg.vertical_pos.saturating_sub(base);
+                        let anchor_px = hwpunit_to_px(anchor_hu, self.dpi);
+                        let flow_bottom_hu = anchor_hu
+                            .saturating_add(table.common.height.min(i32::MAX as u32) as i32);
+                        let flow_bottom_px = hwpunit_to_px(flow_bottom_hu, self.dpi);
+                        ((anchor_px - st.current_height).abs() <= 0.5
+                            && flow_bottom_px <= source_first_fragment_flow_bottom + 0.5)
+                            .then_some((
+                                hwpunit_to_px(
+                                    table.common.height.min(i32::MAX as u32) as i32,
+                                    self.dpi,
+                                ),
+                                flow_bottom_px,
+                            ))
+                    })
+            } else {
+                None
+            };
+            let source_first_fragment_row_end = saved_first_fragment_source_frame
+                .and_then(|(frame_height, _)| {
+                    nearest_saved_rowbreak_frame_row_end(frame_height, cut_row_h, cs)
+                });
+            // 기존 각주가 이미 이 page의 body tail을 예약했으면 object frame만으로
+            // whole row를 수용할 수 없다. 그 마지막 행의 cell-unit partial cut은
+            // footnote-aware row scanner가 소유한다.
+            let mut source_first_fragment_overflow_allowance = saved_first_fragment_source_frame
+                .filter(|_| st.profile.native_hwp5_layout())
+                .filter(|_| st.current_footnote_height <= 0.0)
+                .map(|(_, flow_bottom_px)| {
+                    saved_rowbreak_first_fragment_flow_overflow_allowance(
+                        table.common.height,
+                        std::ptr::eq(row_geometry_table, table),
+                        flow_bottom_px,
+                        source_first_fragment_flow_bottom,
+                    )
+                })
+                .unwrap_or(0.0);
+
             // [Task #1022] 머리행 반복 overhead — 렌더러(layout_partial_table)는
             // start_row 이전의 반복 제목행을 다시 그리므로(다중 머리행: rs>=2 헤더 셀 등),
             // 페이지네이터도 동일 제목행 전체 높이 + 각 행 뒤 cs 를 계산한다.
@@ -21613,6 +22824,24 @@ impl TypesetEngine {
                     base
                 }
             };
+            // 후속 host의 양수 vpos rewind는 표 continuation이 새 source page에서
+            // 이어짐을 뜻한다. object가 전체 row geometry를 덮지 않을 때만 common
+            // height를 첫 fragment frame으로 보고, 그 frame에 가장 가까운 행 끝에만
+            // 측정 행높이와 source row boundary의 차이를 적용한다.
+            if source_next_positive_rewind
+                && st.current_footnote_height <= 0.0
+                && !table_declared_object_covers_cell_row_frames(table, self.dpi)
+            {
+                if let Some(row_end) = source_first_fragment_row_end {
+                    let source_row_end_height = cut_row_h
+                        .iter()
+                        .take(row_end)
+                        .sum::<f64>()
+                        + cs * row_end.saturating_sub(1) as f64;
+                    source_first_fragment_overflow_allowance = source_first_fragment_overflow_allowance
+                        .max((source_row_end_height - avail_for_rows).max(0.0));
+                }
+            }
 
             // [Task #1046 Stage 2 진단] 첫/연속 fragment 의 가용공간 분해 — 렌더러
             // y_start 점프(vert_offset)·host_before 와의 정합 확인용. 동작 불변(게이트).
@@ -21632,7 +22861,6 @@ impl TypesetEngine {
             // 된다. rowspan 보호 블록(#398/#474)은 블록 전체를 한 단위로 다룬다.
             // 측정 공간이 advance_row_cut/cell_units 로 단일화되어 렌더러와
             // 정의상 일치한다(px content_offset·MeasuredTable 누적 제거).
-            const ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX: f64 = 2.0;
             const LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX: f64 = 36.0;
             const LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX: f64 = 260.0;
             const LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX: f64 = 260.0;
@@ -21655,17 +22883,6 @@ impl TypesetEngine {
             } else {
                 LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX
             };
-            // 64px 여유는 한컴 저장 layout 및 stored LineSeg가 없는 재조판 source의
-            // 측정 drift를 위한 기존 정책이다. 실제 native continuation paint tail은
-            // scan loop에서만 strict cut으로 별도 처리한다.
-            let rowbreak_split_row_overflow_tolerance = if st.profile.hwpx_stored_layout()
-                || !st.has_stored_line_segs
-            {
-                HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
-            } else {
-                ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
-            };
-
             // [Task #1025] split_block_start: 블록 분할 시 연속분 커서 복귀 기록.
             let issue2424_scan_started = issue2424_step_enabled.then(std::time::Instant::now);
             let BlockTableRowScan {
@@ -21697,8 +22914,9 @@ impl TypesetEngine {
                     landscape_whole_row_tolerance,
                     landscape_short_row_tolerance,
                     landscape_short_row_max_height,
-                    rowbreak_split_row_overflow_tolerance,
                     strict_painted_bottom_fit: strict_following_plain_text_fit,
+                    source_first_fragment_overflow_allowance,
+                    source_first_fragment_row_end,
                     start_row_height_override,
                 },
                 BlockTableRowScan {
@@ -21716,6 +22934,23 @@ impl TypesetEngine {
             }
             if end_row <= cursor_row {
                 end_row = cursor_row + 1;
+            }
+            // 첫 source fragment가 선택한 마지막 행은 scanner에서는 measured
+            // boundary까지 소비하지만, paint는 common object frame의 남은 물리 높이로
+            // 끝나야 한다. 이 값은 source frame과 그 직전 행들의 합으로 계산한다.
+            if source_next_positive_rewind
+                && !table_declared_object_covers_cell_row_frames(table, self.dpi)
+                && split_end_limit <= 0.0
+                && source_first_fragment_row_end == Some(end_row)
+            {
+                if let Some((frame_height, _)) = saved_first_fragment_source_frame {
+                    let before_last = cut_row_h
+                        .iter()
+                        .take(end_row.saturating_sub(1))
+                        .sum::<f64>()
+                        + cs * end_row.saturating_sub(2) as f64;
+                    end_row_height_override = Some((frame_height - before_last).max(0.0));
+                }
             }
             // [#3674 진단] 표 행 분할 스캔 입력/결과 — 동작 불변.
             if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
@@ -21812,8 +23047,9 @@ impl TypesetEngine {
                                 landscape_whole_row_tolerance,
                                 landscape_short_row_tolerance,
                                 landscape_short_row_max_height,
-                                rowbreak_split_row_overflow_tolerance,
                                 strict_painted_bottom_fit: strict_following_plain_text_fit,
+                                source_first_fragment_overflow_allowance,
+                                source_first_fragment_row_end,
                                 start_row_height_override,
                             },
                             BlockTableRowScan {
@@ -22756,7 +23992,10 @@ impl TypesetEngine {
         })
     }
 
-    fn row_is_empty_trailing_spacer(table: &crate::model::table::Table, row: usize) -> bool {
+    /// Text-flow predicate only. A matching row can still paint a declared cell
+    /// height, border, fill, or table-level fallback, so it must not by itself
+    /// authorize a fragment-height overflow.
+    fn row_has_no_text_or_controls(table: &crate::model::table::Table, row: usize) -> bool {
         let mut row_cells = table
             .cells
             .iter()
@@ -23015,6 +24254,57 @@ fn endnote_separator_height_px(shape: &FootnoteShape, dpi: f64) -> f64 {
     hwpunit_to_px(shape.separator_above_margin_hu() as i32, dpi)
         + line_height
         + hwpunit_to_px(endnote_separator_below_margin(shape) as i32, dpi)
+}
+
+#[cfg(test)]
+mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
+    use super::{
+        nearest_saved_rowbreak_frame_row_end, saved_rowbreak_first_fragment_flow_overflow_allowance,
+    };
+
+    #[test]
+    fn rejects_missing_or_unowned_saved_frames() {
+        assert_eq!(
+            saved_rowbreak_first_fragment_flow_overflow_allowance(0, true, 959.0, 970.0),
+            0.0,
+            "height=0 is not a saved first-fragment frame"
+        );
+        assert_eq!(
+            saved_rowbreak_first_fragment_flow_overflow_allowance(0x8000_0000, true, 959.0, 970.0,),
+            0.0,
+            "signed-wrap height is not a usable source frame"
+        );
+        assert_eq!(
+            saved_rowbreak_first_fragment_flow_overflow_allowance(929, false, 959.0, 970.0,),
+            0.0,
+            "an outer wrapper frame cannot authorize an inner table row cut"
+        );
+    }
+
+    #[test]
+    fn uses_the_absolute_fragment_bottom_not_row_space() {
+        assert_eq!(
+            saved_rowbreak_first_fragment_flow_overflow_allowance(929, true, 972.0, 970.0,),
+            0.0,
+            "the source frame may not enter the fragment-reserved bottom lane"
+        );
+        assert!(
+            (saved_rowbreak_first_fragment_flow_overflow_allowance(929, true, 959.0, 971.0,)
+                - 12.0)
+                .abs()
+                < f64::EPSILON,
+            "host-before flow spacing does not shrink the saved object's physical slack"
+        );
+    }
+
+    #[test]
+    fn frame_slack_stops_at_its_nearest_row_boundary() {
+        assert_eq!(
+            nearest_saved_rowbreak_frame_row_end(87.0, &[30.0, 55.0, 60.0], 0.0),
+            Some(2),
+            "saved-frame slack may absorb measurement drift at row 2, but not admit row 3"
+        );
+    }
 }
 
 #[cfg(test)]
@@ -24044,6 +25334,7 @@ mod tests {
             strict_following_plain_text_fit: false,
             budget_para_start_height: 0.0,
             first_fragment_actual_footnote_boundary: None,
+            source_next_positive_rewind: false,
             relax_terminal_table_footnote_fit: false,
         };
         let flow_layout =
