@@ -25410,8 +25410,8 @@ mod tests {
     use super::{
         allows_implicit_sibling_resources, cli_output_password, cli_password,
         collect_audit_capsules, replay_scratch_dir, set_cli_output_password, set_cli_password,
-        strip_global_auth_options, tab_ext_semantic_differs, with_replay_input_snapshot,
-        EXIT_USAGE,
+        strip_global_auth_options, strip_utf8_bom, tab_ext_semantic_differs,
+        with_replay_input_snapshot, EXIT_USAGE,
     };
     use rhwp::parser::FileFormat;
 
