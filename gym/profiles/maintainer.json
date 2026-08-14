@@ -16,6 +16,7 @@
     "self-description",
     "serialization",
     "studio-e2e",
+    "table-csv",
     "table-editing",
     "text-editing"
   ]
