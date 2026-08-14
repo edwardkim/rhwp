@@ -7671,8 +7671,32 @@ impl TypesetEngine {
                 .iter()
                 .filter(|c| matches!(c, Control::Picture(pic) if !pic.common.treat_as_char))
                 .count();
-            let is_multi_fullpage_img_para =
-                has_majority_fullpage_images(fullpage_img_ctrls.len(), noninline_pic_count);
+            // [#4770] 저장 첫 줄이 그림 폭 이상 오른쪽에서 시작하고(cs ≥ 그림 폭 —
+            // 저작 한글이 빈 줄을 Square 배제로 그림 옆에 끼운 흔적) 첫 그림이 앵커
+            // 잔여 본문에 물리적으로 들어가면(저장 vpos + max 그림 높이 ≤ 본문 높이)
+            // pile 은 앵커 쪽에 겹친 채 남는다(HPV 코호트 s2/pi1007: cs=42520·
+            // vpos=5040, 한글 1쪽 ↔ 낱장 배치 시 24쪽). 펼쳐진 스택(#1995 96장,
+            // vpos=53602 로 안 들어감, 한글 96쪽)은 걸리지 않는다.
+            let stored_line_beside_pile = {
+                let mut min_w = i32::MAX;
+                let mut max_h = i32::MIN;
+                for c in &para.controls {
+                    if let Control::Picture(pic) = c {
+                        if !pic.common.treat_as_char {
+                            min_w = min_w.min(pic.common.width as i32);
+                            max_h = max_h.max(pic.common.height as i32);
+                        }
+                    }
+                }
+                min_w != i32::MAX
+                    && para.line_segs.first().is_some_and(|seg| {
+                        seg.column_start >= min_w
+                            && hwpunit_to_px(seg.vertical_pos.saturating_add(max_h), self.dpi)
+                                <= fullpage_img_body_h + 0.5
+                    })
+            };
+            let is_multi_fullpage_img_para = !stored_line_beside_pile
+                && has_majority_fullpage_images(fullpage_img_ctrls.len(), noninline_pic_count);
 
             // [#2097] 이 문단의 TopAndBottom 자리차지 float pushdown 가로 컬럼
             // (h_left, h_right, 스택_높이) px — 가로 겹침으로 스택/나란히 판별.
@@ -26647,6 +26671,68 @@ mod tests {
             typeset_result.pages.len() >= 3,
             "[#1995] 전면 non-TAC 이미지 3장은 각각 한 페이지에 단독 배치되어야 함(>= 3 페이지). \
              실제 {} 페이지 — 미수정 시 한 앵커에 스택",
+            typeset_result.pages.len(),
+        );
+    }
+
+    /// #4770: 같은 앵커에 겹친 Square 전면 그림 무리라도, 저장 첫 줄이 그림 폭 이상
+    /// 오른쪽에서 시작하면(cs ≥ 그림 폭 — 한글이 빈 줄을 그림 옆에 끼운 저장 흔적)
+    /// 한글은 스택을 앵커 쪽에 남긴다. 낱장 분산(#1995)을 걸면 안 된다.
+    ///
+    /// HPV 코호트 s2/pi=1007 실측: 그림 24장(150×212mm) cs=42520=그림 폭·sw=3480,
+    /// 한글 1쪽 ↔ 분산 시 24쪽(+24) — 이슈 #4770.
+    #[test]
+    fn test_typeset_4770_stored_line_beside_pile_keeps_stack_on_anchor_page() {
+        use crate::model::shape::TextWrap;
+        let engine = TypesetEngine::with_default_dpi();
+        let paginator = Paginator::with_default_dpi();
+        let styles = ResolvedStyleSet::default();
+        let page_def = a4_page_def();
+        let col_def = ColumnDef::default();
+        let composed: Vec<ComposedParagraph> = Vec::new();
+
+        // #1995 테스트와 같은 전면 그림 3장 — 유일한 차이는 저장 첫 줄의
+        // column_start 가 그림 폭 이상(= 줄이 그림 옆에 끼임)이라는 것.
+        let make_pic = || {
+            let mut pic = crate::model::image::Picture::default();
+            pic.common.treat_as_char = false;
+            pic.common.text_wrap = TextWrap::Square;
+            pic.common.width = 51974;
+            pic.common.height = 60000;
+            crate::model::control::Control::Picture(Box::new(pic))
+        };
+        let host_para = Paragraph {
+            line_segs: vec![LineSeg {
+                line_height: 1000,
+                line_spacing: 600,
+                column_start: 51974,
+                segment_width: 3480,
+                ..Default::default()
+            }],
+            controls: vec![make_pic(), make_pic(), make_pic()],
+            ..Default::default()
+        };
+        let paras = vec![host_para];
+
+        let (_paginator_result, measured) =
+            paginator.paginate(&paras, &composed, &styles, &page_def, &col_def, 0);
+        let typeset_result = engine.typeset_section(
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &measured.tables,
+            false,
+            &std::collections::HashSet::new(),
+        );
+
+        assert_eq!(
+            typeset_result.pages.len(),
+            1,
+            "[#4770] 저장 줄이 그림 옆에 끼인(cs ≥ 그림 폭) 스택은 앵커 쪽 1 페이지에 \
+             남아야 함. 실제 {} 페이지 — 낱장 분산이 오발동",
             typeset_result.pages.len(),
         );
     }
