@@ -14224,7 +14224,7 @@ impl TypesetEngine {
     ) -> f64 {
         use crate::renderer::layout::{layout_rect_to_bbox, LayoutEngine};
         use crate::renderer::page_layout::LayoutRect;
-        use crate::renderer::render_tree::{LayoutFrame, RenderNode, RenderNodeType};
+        use crate::renderer::render_tree::{PageLayoutContext, RenderNode, RenderNodeType};
 
         // 렌더 `layout_column_item` 의 FullParagraph 텍스트 경로 정합: 실제 텍스트가 있는 para 는
         // **leading 컨트롤-전용 줄**(수식 객체마커 ￼ 등)을 건너뛰고 첫 텍스트 줄부터 그린다.
@@ -14259,10 +14259,10 @@ impl TypesetEngine {
         };
         // [#4277] 페이지네이션 측정은 paint 트리를 만들지 않는다 — 레이아웃 재귀가 실제로
         // 쓰는 건 흐름 상태(id 카운터 + 인라인 Shape 레지스트리 + 페이지 기하)뿐이므로
-        // `LayoutFrame` 만 만든다. `col_node` 는 방출된 노드를 받는 sink 로만 쓰이고
+        // `PageLayoutContext` 만 만든다. `col_node` 는 방출된 노드를 받는 sink 로만 쓰이고
         // 높이만 읽은 뒤 버려진다.
         let scratch = LayoutEngine::new(self.dpi);
-        let mut frame = LayoutFrame::new(0, en_col_w, height);
+        let mut frame = PageLayoutContext::new(0, en_col_w, height);
         let col_id = frame.next_id();
         let mut col_node = RenderNode::new(
             col_id,
@@ -17024,6 +17024,22 @@ impl TypesetEngine {
                     }
                 }
             }
+            let has_owned_rowbreak_tac_frame = st.profile.hwpx_stored_layout()
+                && tac_count == 1
+                && fmt.line_heights.len() == 1
+                && para
+                    .controls
+                    .iter()
+                    .enumerate()
+                    .any(|(control_index, control)| {
+                        matches!(control, Control::Table(table)
+                        if self.is_effective_tac_table(para, table, &fmt))
+                            && crate::renderer::composer::owned_rowbreak_tac_height(
+                                para,
+                                control_index,
+                            )
+                            .is_some()
+                    });
             // [#3738] 위 합은 표만 센다. 그런데 같은 문단의 **선행 자리차지 개체가
             // 있는** TAC 그림/글상자는 Task #402 경로가 자기 line_seg 만큼 이미
             // current_height 에 더했다(위 13980 블록). cap 이 그 줄을 빼놓으면
@@ -17090,7 +17106,12 @@ impl TypesetEngine {
                         _ => None,
                     })
                     .sum();
-                (effective_sb + outer_top + tac_seg_total).min(fmt.total_height)
+                let owned_row_total = effective_sb + outer_top + tac_seg_total;
+                if has_owned_rowbreak_tac_frame {
+                    owned_row_total
+                } else {
+                    owned_row_total.min(fmt.total_height)
+                }
             } else {
                 fmt.total_height
             };
@@ -17466,6 +17487,12 @@ impl TypesetEngine {
             tac_table_line_idx.unwrap_or(0)
         };
 
+        let owned_single_tac_row_height =
+            (st.profile.hwpx_stored_layout() && tac_count == 1 && fmt.line_heights.len() == 1)
+                .then(|| crate::renderer::composer::owned_rowbreak_tac_height(para, ctrl_idx))
+                .flatten()
+                .map(|height| hwpunit_to_px(height, self.dpi));
+
         // [Task #1152] 호스트 문단의 intra-paragraph vpos-reset 가드 —
         // (a) 빈-host ctrl 1:1 매핑(원형), (b) [#2322] 텍스트-host 포함 일반형:
         // 표의 매핑 lineseg(tac_seg_idx>0)가 저장 vpos==0 이면 "이 표를 새 쪽
@@ -17506,6 +17533,8 @@ impl TypesetEngine {
                     }
                 })
                 .unwrap_or(ft.total_height)
+        } else if let Some(owned_row_height) = owned_single_tac_row_height {
+            owned_row_height
         } else if tac_table_line_idx == Some(0) && fmt.line_heights.len() > 1 {
             // PR #1088 follow-up: hwp-multi-001 pi=46 처럼 TAC 표가 문단의
             // 첫 줄이고 뒤따르는 제목 줄이 같은 문단의 line1(vpos reset)로

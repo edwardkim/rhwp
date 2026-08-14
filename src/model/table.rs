@@ -18,6 +18,13 @@ pub const CELL_FLAG_PROTECT: u16 = 0x0002;
 pub const CELL_FLAG_HEADER: u16 = 0x0004;
 pub const CELL_FLAG_EDITABLE_IN_FORM: u16 = 0x0008;
 
+#[cfg(test)]
+std::thread_local! {
+    static PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS: std::cell::Cell<usize> = const {
+        std::cell::Cell::new(0)
+    };
+}
+
 /// 표 개체 (HWPTAG_TABLE)
 #[derive(Debug, Default, Clone)]
 pub struct Table {
@@ -266,6 +273,25 @@ impl Cell {
         }
     }
 
+    /// Padding that bounds a newly generated paragraph layout frame.
+    ///
+    /// An all-zero table padding is a real zero-width frame boundary for
+    /// stored HWP LineSeg geometry. `effective_padding()` deliberately keeps
+    /// a separate paint/measurement compatibility fallback to the cell's
+    /// saved padding, so frame construction must not reuse that exception.
+    pub(crate) fn paragraph_frame_padding(
+        &self,
+        table_padding: &crate::model::Padding,
+    ) -> crate::model::Padding {
+        if self.apply_inner_margin {
+            self.padding
+        } else if Self::table_padding_unspecified(table_padding) {
+            crate::model::Padding::default()
+        } else {
+            self.effective_padding(table_padding)
+        }
+    }
+
     pub fn cell_protect(&self) -> bool {
         self.list_header_width_ref & CELL_FLAG_PROTECT != 0
     }
@@ -402,6 +428,147 @@ impl Cell {
 }
 
 impl Table {
+    #[cfg(test)]
+    pub(crate) fn reset_paragraph_frame_owner_widths_calls_for_test() {
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.set(0));
+    }
+
+    #[cfg(test)]
+    pub(crate) fn paragraph_frame_owner_widths_calls_for_test() -> usize {
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.get())
+    }
+
+    /// Widths owned by cell paragraph frames before padding and paragraph margins.
+    ///
+    /// Native tables may repeat a row with raw cell widths whose sum is a few
+    /// HWPUNIT short of the table's resolved column grid. Those raw values are
+    /// serialization auxiliaries, not independent row boundaries. Preserve
+    /// explicit/inferred local-resize rows; otherwise use genuine base-track
+    /// evidence and place any positive table-width residual on the last column.
+    ///
+    /// This is deliberately batch-shaped. Row-role inference examines the table
+    /// as a whole, so repeating it once per cell makes large native tables
+    /// quadratic and can prevent on-demand reflow from completing.
+    pub(crate) fn paragraph_frame_owner_widths(&self) -> Vec<i32> {
+        #[cfg(test)]
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.set(calls.get() + 1));
+
+        let to_i32 = |width: u64| width.min(i32::MAX as u64) as i32;
+        let mut owners = self
+            .cells
+            .iter()
+            .map(|cell| to_i32(u64::from(cell.width)))
+            .collect::<Vec<_>>();
+        let col_count = usize::from(self.col_count);
+        if owners.is_empty()
+            || col_count == 0
+            || self.common.treat_as_char
+            || self.common.width == 0
+        {
+            return owners;
+        }
+
+        let explicit_rows = self
+            .local_resize_rows
+            .iter()
+            .copied()
+            .collect::<std::collections::BTreeSet<_>>();
+        let (outlier_rows, inferred_rows) = self.inferred_width_row_roles();
+
+        // Runtime edit metadata is keyed by cell index, not by row/column.
+        // Preserve exact overrides without treating a missing override as zero.
+        for &(cell_index, width) in &self.local_resize_cell_widths {
+            if width > 0
+                && self
+                    .cells
+                    .get(cell_index)
+                    .is_some_and(|cell| explicit_rows.contains(&cell.row))
+            {
+                owners[cell_index] = to_i32(u64::from(width));
+            }
+        }
+
+        // Extract only real single-column evidence. `base_grid_column_widths`
+        // intentionally fills holes from the display grid; that fallback would
+        // make excluded local/outlier data look like a paragraph-frame base.
+        let mut base_tracks = vec![0u32; col_count];
+        for cell in &self.cells {
+            let col = usize::from(cell.col);
+            if cell.row >= self.row_count
+                || cell.col_span != 1
+                || cell.width == 0
+                || col >= col_count
+                || explicit_rows.contains(&cell.row)
+                || outlier_rows.contains(&cell.row)
+            {
+                continue;
+            }
+            base_tracks[col] = base_tracks[col].max(cell.width);
+        }
+        if base_tracks.contains(&0) {
+            return owners;
+        }
+        let base_total = base_tracks.iter().copied().map(u64::from).sum::<u64>();
+        let table_width = u64::from(self.common.width);
+        if table_width > base_total {
+            let residual = (table_width - base_total).min(u64::from(u32::MAX)) as u32;
+            if let Some(last) = base_tracks.last_mut() {
+                *last = last.saturating_add(residual);
+            }
+        }
+
+        let mut rows = vec![Vec::<usize>::new(); usize::from(self.row_count)];
+        for (cell_index, cell) in self.cells.iter().enumerate() {
+            if let Some(row) = rows.get_mut(usize::from(cell.row)) {
+                row.push(cell_index);
+            }
+        }
+        for (row_index, cell_indices) in rows.iter_mut().enumerate() {
+            let row = row_index as u16;
+            if explicit_rows.contains(&row) || inferred_rows.contains(&row) {
+                continue;
+            }
+            cell_indices.sort_by_key(|index| self.cells[*index].col);
+            let mut next_col = 0usize;
+            let mut row_total = 0u64;
+            let mut complete = !cell_indices.is_empty();
+            for &cell_index in cell_indices.iter() {
+                let cell = &self.cells[cell_index];
+                let start = usize::from(cell.col);
+                let Some(end) = start.checked_add(usize::from(cell.col_span)) else {
+                    complete = false;
+                    break;
+                };
+                if cell.row_span != 1
+                    || cell.col_span == 0
+                    || cell.width == 0
+                    || start != next_col
+                    || end > col_count
+                {
+                    complete = false;
+                    break;
+                }
+                row_total = row_total.saturating_add(u64::from(cell.width));
+                next_col = end;
+            }
+            if !complete || next_col != col_count || row_total == table_width {
+                continue;
+            }
+            for &cell_index in cell_indices.iter() {
+                let cell = &self.cells[cell_index];
+                let start = usize::from(cell.col);
+                let end = start + usize::from(cell.col_span);
+                let resolved = base_tracks[start..end]
+                    .iter()
+                    .copied()
+                    .map(u64::from)
+                    .sum::<u64>();
+                owners[cell_index] = to_i32(resolved);
+            }
+        }
+        owners
+    }
+
     /// [Task #1716] 반복 제목행으로 재사용할 **표 상단의 연속 제목행 블록** `0..H` 를 반환한다.
     ///
     /// 행 r 이 제목행 ⟺ header 셀(`is_header`, rowspan 덮개 포함)이 r 을 덮음. 상단(행 0)부터
@@ -450,16 +617,20 @@ impl Table {
         let mut grouped_rows =
             std::collections::BTreeMap::<Vec<(u16, u16)>, Vec<(u16, Vec<u32>)>>::new();
 
-        for row in 0..self.row_count {
+        let mut cells_by_row = vec![Vec::new(); usize::from(self.row_count)];
+        for cell in &self.cells {
+            if cell.row_span == 1 {
+                if let Some(row) = cells_by_row.get_mut(usize::from(cell.row)) {
+                    row.push(cell);
+                }
+            }
+        }
+
+        for (row_index, row_cells) in cells_by_row.iter_mut().enumerate() {
+            let row = row_index as u16;
             if explicit_rows.contains(&row) {
                 continue;
             }
-
-            let mut row_cells = self
-                .cells
-                .iter()
-                .filter(|cell| cell.row == row && cell.row_span == 1)
-                .collect::<Vec<_>>();
             row_cells.sort_by_key(|cell| cell.col);
 
             let mut next_col = 0u16;
@@ -467,7 +638,7 @@ impl Table {
             let mut widths = Vec::new();
             let mut valid = !row_cells.is_empty();
 
-            for cell in row_cells {
+            for cell in row_cells.iter().copied() {
                 let span = cell.col_span.max(1);
                 let end_col = cell.col.saturating_add(span);
                 if cell.col != next_col || end_col <= cell.col || end_col as usize > col_count {

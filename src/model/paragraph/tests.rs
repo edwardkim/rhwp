@@ -1348,6 +1348,24 @@ fn test_control_text_positions_gap_between_chars() {
 }
 
 #[test]
+fn test_control_utf16_positions_reconstructs_a_shared_control_gap() {
+    // Two controls share the visible-text boundary before B. The raw stream
+    // has their distinct 8-unit control slots at 1 and 9 before B at 17.
+    let para = Paragraph {
+        text: "AB".to_string(),
+        char_offsets: vec![0, 17],
+        controls: vec![
+            Control::Table(Box::<Table>::default()),
+            Control::Table(Box::<Table>::default()),
+        ],
+        ..Default::default()
+    };
+
+    assert_eq!(para.control_text_positions(), vec![1, 1]);
+    assert_eq!(para.control_utf16_positions(), vec![1, 9]);
+}
+
+#[test]
 fn test_control_text_positions_gap_before() {
     // text = "A", char_offsets = [8] → 'A' 앞에 8 unit 갭 = inline ctrl 1개
     let para = Paragraph {

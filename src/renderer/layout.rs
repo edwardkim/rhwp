@@ -378,7 +378,7 @@ fn receipt_seal_line_text(
 }
 
 fn push_tac_receipt_seal_line(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     col_node: &mut RenderNode,
     section_index: usize,
     para_index: usize,
@@ -503,7 +503,7 @@ fn tac_receipt_post_f081c_line(
 
 #[allow(clippy::too_many_arguments)]
 fn push_tac_post_f081c_line(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     col_node: &mut RenderNode,
     section_index: usize,
     para_index: usize,
@@ -1906,7 +1906,7 @@ fn force_para_end_on_last_run(col_node: &mut RenderNode) {
 
 /// 빈 TopAndBottom 표 host 문단의 조판부호를 표 시작 위치에 직접 그린다.
 fn push_empty_para_end_mark(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     col_node: &mut RenderNode,
     para: &Paragraph,
     styles: &ResolvedStyleSet,
@@ -3151,7 +3151,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_header_footer_paragraphs(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         area_node: &mut RenderNode,
         hf_paragraphs: &[Paragraph],
         _composed: &[ComposedParagraph],
@@ -4204,7 +4204,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_header_footer_picture(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         area_node: &mut RenderNode,
         pic: &crate::model::image::Picture,
         area: &LayoutRect,
@@ -4422,7 +4422,7 @@ impl LayoutEngine {
     /// 꼬리말 영역 노드를 생성하여 반환한다.
     fn build_footer(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         page_content: &PageContent,
         paragraphs: &[Paragraph],
         composed: &[ComposedParagraph],
@@ -4687,7 +4687,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn build_columns(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         body_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         page_content: &PageContent,
@@ -5016,7 +5016,7 @@ impl LayoutEngine {
     /// zone_layout 기준 + y 범위 인자로 단 구분선을 그린다.
     fn emit_zone_column_separators(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         body_node: &mut RenderNode,
         zone_layout: &PageLayoutInfo,
         y_start: f64,
@@ -5142,7 +5142,7 @@ impl LayoutEngine {
             extra_master_pages: Vec::new(),
         };
         // [#4277] 높이 측정 전용 — paint 트리가 아니라 흐름 상태만 만든다.
-        let mut frame = LayoutFrame::new(0, col_area.width, col_area.y + col_area.height);
+        let mut frame = PageLayoutContext::new(0, col_area.width, col_area.y + col_area.height);
         let mut paper_images: Vec<RenderNode> = Vec::new();
         let (_node, y_offset) = self.build_single_column(
             &mut frame,
@@ -5171,7 +5171,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn render_para_border_groups(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         composed: &[ComposedParagraph],
         col_node: &mut RenderNode,
         styles: &ResolvedStyleSet,
@@ -5476,7 +5476,7 @@ impl LayoutEngine {
 
     fn build_single_column(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         paper_images: &mut Vec<RenderNode>,
         col_content: &ColumnContent,
         page_content: &PageContent,
@@ -7221,7 +7221,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_column_item(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
@@ -7832,7 +7832,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_endnote_separator_item(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         col_area: &LayoutRect,
         mut y_offset: f64,
@@ -7883,7 +7883,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_table_control_block(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
@@ -9040,7 +9040,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_table_item(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
@@ -9522,7 +9522,23 @@ impl LayoutEngine {
                 let mut stored_lh_covers_om = false;
                 if let Some(seg) = host_seg {
                     if seg.line_spacing > 0 {
-                        y_offset += hwpunit_to_px(seg.line_spacing, self.dpi);
+                        let current_owned_row_covers_object =
+                            self.profile.get().hwpx_stored_layout()
+                                && para.line_segs.len() == 1
+                                && seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    != 0
+                                && crate::renderer::composer::owned_rowbreak_tac_height(
+                                    para,
+                                    control_index,
+                                )
+                                .is_some();
+                        let trailing_spacing = hwpunit_to_px(seg.line_spacing, self.dpi);
+                        y_offset += if current_owned_row_covers_object {
+                            trailing_spacing / 2.0
+                        } else {
+                            trailing_spacing
+                        };
                     } else if seg.line_spacing < 0 {
                         // 음수 ls (Fixed 줄간격 TAC 표): y를 문단 advance로 리셋 (Task #9)
                         // 표 렌더 높이가 아닌, 일반 문단과 동일한 lh+ls advance 사용
@@ -9663,7 +9679,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_partial_table_item(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
         para_index: usize,
@@ -10020,7 +10036,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_shape_item(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         para_start_y: &mut std::collections::HashMap<usize, f64>,
@@ -10922,7 +10938,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_wrap_around_paras(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         paragraphs: &[Paragraph],
         composed: &[ComposedParagraph],
@@ -11232,7 +11248,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_column_shapes_pass(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         paper_images: &mut Vec<RenderNode>,
         col_content: &ColumnContent,

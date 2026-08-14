@@ -700,7 +700,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_partial_table_cells(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         table_node: &mut RenderNode,
         table: &crate::model::table::Table,
         para_index: usize,
@@ -2598,7 +2598,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_partial_table(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         paragraphs: &[Paragraph],
         para_index: usize,
@@ -2695,7 +2695,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_partial_table_resolved(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         outer_table: &crate::model::table::Table,
         host: PartialTableHostContext<'_>,
