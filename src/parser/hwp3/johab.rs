@@ -100,12 +100,76 @@ pub fn decode_johab(ch: u16) -> char {
     '?'
 }
 
+/// KS C 5601(KS X 1001) 완성형 좌표 한 쌍을 유니코드 한 글자로 푼다.
+///
+/// `row`/`cell` 은 EUC-KR 고위 바이트 표기(0xA1..0xFE)다. 완성형에 배정되지 않은
+/// 자리는 `None` 을 돌려 호출부가 다음 규칙으로 넘어가게 한다.
+fn ksc5601_char(row: u8, cell: u8) -> Option<char> {
+    if !(0xA1..=0xFE).contains(&row) || !(0xA1..=0xFE).contains(&cell) {
+        return None;
+    }
+    let bytes = [row, cell];
+    let (text, _, had_errors) = encoding_rs::EUC_KR.decode(&bytes);
+    if had_errors {
+        return None;
+    }
+    let mut it = text.chars();
+    let c = it.next()?;
+    if it.next().is_some() {
+        return None;
+    }
+    Some(hancom_variant(c))
+}
+
+/// HWP3 기호 영역: KS C 5601 기호행(0xA1..0xAC)의 좌표를 **행 간격 96**으로 편 코드.
+///
+/// 실측 근거 — 기존 하드코딩 매핑이 이 식에서 그대로 유도된다:
+/// `→`0x3446 · `■`0x3441 · `▷`0x3479 · `▶`0x347A · `─`0x35E1,
+/// 로마숫자 0x3590..0x3599(Ⅰ..Ⅹ), 원문자 0x36E7..0x36F0(①..⑩) 전부 일치.
+/// (한자 영역은 행 간격이 94 라 식이 다르다 — `decode_hwp3_ksc_hanja` 참고.)
+fn decode_hwp3_ksc_symbol(ch: u16) -> Option<char> {
+    const BASE: u16 = 0x3401;
+    const ROW_STRIDE: u16 = 96;
+    if ch < BASE {
+        return None;
+    }
+    let idx = ch - BASE;
+    let row = 0xA1u16.checked_add(idx / ROW_STRIDE)?;
+    let cell = 0xA1u16.checked_add(idx % ROW_STRIDE)?;
+    if row > 0xAC {
+        return None;
+    }
+    ksc5601_char(u8::try_from(row).ok()?, u8::try_from(cell).ok()?)
+}
+
+/// HWP3 한자 영역: KS C 5601 한자행(0xCA..0xFD)의 좌표를 **행 간격 94**로 편 코드.
+///
+/// 실측 근거 — HWP3 원본에서 직접 확인한 두 글자가 정확히 맞는다:
+/// `債` 0x4F5D → idx 3933 → 0xF3F0, `權` 0x4222 → idx 546 → 0xCFED.
+fn decode_hwp3_ksc_hanja(ch: u16) -> Option<char> {
+    const BASE: u16 = 0x4000;
+    const ROW_STRIDE: u16 = 94;
+    if ch < BASE {
+        return None;
+    }
+    let idx = ch - BASE;
+    let row = 0xCAu16.checked_add(idx / ROW_STRIDE)?;
+    let cell = 0xA1u16.checked_add(idx % ROW_STRIDE)?;
+    if row > 0xFD {
+        return None;
+    }
+    ksc5601_char(u8::try_from(row).ok()?, u8::try_from(cell).ok()?)
+}
+
 /// HWP3 사적 graphic char (0x0080~0x7FFF 영역) → Unicode 매핑.
 ///
 /// 한컴 변환본 (HWP3 → HWP5) 의 IR 과 정합. PUA (Private Use Area) 영역도
 /// 변환본 정합 위해 그대로 보존.
 ///
 /// 매핑 출처: hwp3-sample10.hwp ↔ hwp3-sample10-hwp5.hwp paragraph 별 cross-ref.
+///
+/// 하드코딩 표를 **먼저** 본 뒤 규칙(기호·한자 완성형 좌표)을 적용한다. 순서가 중요하다 —
+/// 예컨대 회사명 graphic 0x37C0..0x37C5 는 기호 규칙으로는 가타카나가 되어 버린다.
 fn decode_hwp3_extra(ch: u16) -> Option<char> {
     // [Task #877 Stage 3] 로마숫자 대문자 Ⅰ~Ⅹ: 0x3590~0x3599 → U+2160~U+2169.
     // sample16 (hwp3-sample16.hwp) 의 cross-ref 로 도출. 한컴 HWP5 변환본의
@@ -149,9 +213,30 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         // 이를 한컴오피스 표시값인 □(U+25A1)로 확장한다. 여기서 ○로 직접
         // 낮추면 HWP3 원본만 정답지와 다른 bullet 로 보이므로 PUA를 보존한다.
         0x3366 => 0xF03C5,
-        _ => return None,
+        // 04442 실측: 이 문서는 한자를 완성형 좌표로 담으면서 `※` 만 유니코드 값
+        // 그대로(0x203B) 담았다. 구간 전체를 유니코드로 통과시키면 안 된다 —
+        // 같은 구간의 0x205A·0x2024·0x2058 은 한글이 각각 ○·・△ 로 표시하는
+        // 사적 코드라, 통과시키면 ⁚·․·⁘ 라는 다른 글자가 된다(한글 대조 실측 89건).
+        // 사적 코드 → 표시 문자의 일반식이 없으므로 실측된 값만 하나씩 싣는다.
+        0x203B => 0x203B,
+        // 하드코딩에 없으면 완성형 좌표 규칙으로 넘어간다. 종전에는 여기서 None →
+        // decode_johab 가 '?' → HWP3 파서가 그 문자를 **조용히 버렸다**(10k 스윕
+        // A-개체치환 17문서: `채권(債權)조서` → `채권()조서`, ※·○·□ 등 전량 소실).
+        _ => return decode_hwp3_ksc_symbol(ch).or_else(|| decode_hwp3_ksc_hanja(ch)),
     };
     char::from_u32(codepoint)
+}
+
+/// KS C 5601 완성형 → 한컴이 실제로 쓰는 코드포인트 보정.
+///
+/// 표준 매핑과 한컴 관행이 갈리는 자리가 있다. `encoding_rs::EUC_KR` 은 표준을 주지만
+/// 한글은 전각형을 쓴다 — 한글 오라클 대조 실측(A군 17문서)에서 나온 차이만 담는다.
+fn hancom_variant(c: char) -> char {
+    match c {
+        // 0xA1AD: 표준 U+223C(∼) ↔ 한컴 U+FF5E(～). 실측 80건.
+        '\u{223C}' => '\u{FF5E}',
+        other => other,
+    }
 }
 
 #[cfg(test)]
@@ -187,5 +272,65 @@ mod tests {
     #[test]
     fn decode_hwp3_table_triangle_bullet() {
         assert_eq!(decode_johab(0x2F67), '▸');
+    }
+
+    #[test]
+    fn ksc_hanja_rule_decodes_real_hwp3_codes() {
+        // HWP3 원본(10k 스윕 04442 `[23-1호서식] 채권(債權)조서`)에서 직접 읽은 값.
+        // 종전에는 매핑이 없어 '?' → 파서가 조용히 버려 `채권()조서`가 됐다.
+        assert_eq!(decode_johab(0x4F5D), '債');
+        assert_eq!(decode_johab(0x4222), '權');
+    }
+
+    #[test]
+    fn ksc_symbol_rule_reproduces_hardcoded_mappings() {
+        // 규칙(행 간격 96)이 기존 하드코딩 매핑을 그대로 유도한다 — 규칙이 옳다는 근거.
+        assert_eq!(decode_johab(0x3446), '→');
+        assert_eq!(decode_johab(0x3441), '■');
+        assert_eq!(decode_johab(0x3479), '▷');
+        assert_eq!(decode_johab(0x347A), '▶');
+        assert_eq!(decode_johab(0x35E1), '─');
+        // 범위 매핑도 동일하게 유도된다.
+        let roman: String = (0x3590..=0x3599).map(decode_johab).collect();
+        assert_eq!(roman, "ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ");
+        let circled: String = (0x36E7..=0x36F0).map(decode_johab).collect();
+        assert_eq!(circled, "①②③④⑤⑥⑦⑧⑨⑩");
+    }
+
+    #[test]
+    fn ksc_symbol_rule_recovers_lost_symbols() {
+        // A-개체치환 군에서 사라지던 기호들 (※ 195회·○ 등 코퍼스 실측).
+        assert_eq!(decode_johab(0x3438), '※');
+        assert_eq!(decode_johab(0x343B), '○');
+        assert_eq!(decode_johab(0x3440), '□');
+        assert_eq!(decode_johab(0x341C), '【');
+        assert_eq!(decode_johab(0x341D), '】');
+    }
+
+    #[test]
+    fn hardcoded_mapping_wins_over_rule() {
+        // 회사명 graphic 0x37C0..0x37C5 는 기호 규칙으로는 가타카나가 된다.
+        // 하드코딩이 먼저여야 한컴 PUA 보존 계약이 깨지지 않는다.
+        assert_eq!(decode_johab(0x37C1), '\u{F03F0}');
+        assert_eq!(decode_johab(0x3366), '\u{F03C5}');
+    }
+
+    #[test]
+    fn only_measured_private_codes_are_mapped() {
+        // ※ 를 유니코드 값 그대로(0x203B) 담은 HWP3 이 있다 — 04442 실측.
+        assert_eq!(decode_johab(0x203B), '※');
+        // 같은 구간이라도 근거 없이 통과시키면 안 된다. 아래 셋은 한글이 각각
+        // ○·・△ 로 표시하는 사적 코드라, 유니코드로 읽으면 ⁚·․·⁘ 가 된다.
+        for ch in [0x205A_u16, 0x2024, 0x2058, 0x2BCE] {
+            assert_eq!(decode_johab(ch), '?', "0x{ch:04X} 는 근거 없이 매핑하면 안 된다");
+        }
+    }
+
+    #[test]
+    fn hancom_tilde_variant_matches_hangul() {
+        // KS X 1001 0xA1AD 는 표준 매핑이 U+223C(∼)지만 한글은 U+FF5E(～)를 쓴다.
+        // 실측 80건 — 보정하지 않으면 되살린 문자가 다른 글자가 된다.
+        assert_eq!(hancom_variant('\u{223C}'), '\u{FF5E}');
+        assert_eq!(ksc5601_char(0xA1, 0xAD), Some('\u{FF5E}'));
     }
 }
