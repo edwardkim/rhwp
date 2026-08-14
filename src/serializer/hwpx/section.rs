@@ -637,6 +637,7 @@ fn first_run_char_shape_id(p: &Paragraph) -> u32 {
 /// - `para.line_segs` 가 비어있지 않으면 **IR 값 그대로** `<hp:linesegarray>` 요소로 출력
 /// - 비어있으면 **요소 자체를 방출 생략** (빈 문자열 반환) — 원본에 linesegarray 가
 ///   없는 문단의 보존 + rhwp 는 lineseg 를 새로 생산하지 않음. 한컴은 열 때 재계산
+///
 pub(crate) fn render_paragraph_parts(
     para: &Paragraph,
     vert_start: u32,
@@ -704,6 +705,13 @@ pub(crate) fn render_hp_t_content(
             '\u{2007}' => {
                 flush_buf(&mut t_xml, &mut buf);
                 t_xml.push_str("<hp:fwSpace/>");
+            }
+            // 소프트 하이픈도 같은 계약이다 — 리터럴 '-' 로 내리면 한글이 실제
+            // 하이픈으로 읽어 단어가 갈라진다(`pertinent` → `per-tinent`).
+            // 스키마의 `<hp:hyphen>`(ParaList XML schema.xml:291)으로 되돌린다.
+            '\u{00AD}' => {
+                flush_buf(&mut t_xml, &mut buf);
+                t_xml.push_str("<hp:hyphen/>");
             }
             c if (c as u32) < 0x20 => { /* 기타 제어문자 무시 */ }
             c => buf.push(c),
@@ -918,6 +926,7 @@ fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, tab_idx: &mut u
 }
 
 /// Paragraph 본문을 완전한 `<hp:run>` 시퀀스로 직렬화한다 (#1378 다중 run 분할).
+///
 fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
@@ -936,6 +945,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         && para.field_ranges.is_empty()
         && para.orphan_field_ends.is_empty()
     {
+        // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
         return String::new();
     }
 
@@ -1042,6 +1052,8 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     {
         let t = render_hp_t_content(&para.text, &para.tab_extended, &mut tab_idx);
         splitter.content.push_str(&t);
+        // 슬롯이 하나도 없는데 char_count 는 슬롯을 주장하면(파서가 못 읽은 컨트롤)
+        // 방출 축이 원본보다 짧다 — 이때도 lineseg 를 그대로 쓰면 안 된다.
         return splitter.finish();
     }
 
@@ -1062,6 +1074,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         for ofe in &para.orphan_field_ends {
             emit_orphan_field_end(&mut splitter.content, ofe);
         }
+        // 컨트롤을 말미로 몰았으므로 원본 lineseg 좌표계는 더 이상 유효하지 않다.
         return splitter.finish();
     }
 
@@ -1075,19 +1088,25 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     let text_char_count = para.text.chars().count();
 
     // 빈 문단(text == "")의 0-length 필드: 메인 루프가 실행되지 않아
-    // pre-char 검사를 통과하지 못하므로 루프 전에 slots → fieldEnd 순으로 방출한다.
+    // pre-char 검사를 통과하지 못한다. 따라서 슬롯마다 `inner_slot_count`를
+    // 확인해 fieldEnd를 제자리에 방출한다. 모든 슬롯 뒤에 fieldEnd를 몰면
+    // 연속 또는 중첩 필드의 닫는 순서가 뒤바뀐다.
     if para.text.is_empty() {
         while slot_idx < slots.len() {
             splitter.cut_before(expected_utf16_pos);
             render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+            let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
-        }
-        for (i, fr) in para.field_ranges.iter().enumerate() {
-            if fr.start_char_idx == fr.end_char_idx && !field_end_emitted[i] {
-                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
-                field_end_emitted[i] = true;
+            for (i, fr) in para.field_ranges.iter().enumerate() {
+                if !field_end_emitted[i]
+                    && fr.start_char_idx == fr.end_char_idx
+                    && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
+                {
+                    emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                    expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                    field_end_emitted[i] = true;
+                }
             }
         }
         // [Task #1556] 빈 문단의 고아 fieldEnd (char_idx == 0).
@@ -1151,11 +1170,14 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             // 그 fieldEnd 를 즉시 이어서 방출 — 같은 갭의 end 몫 8유닛을 다음 슬롯이
             // 가로채 begin 들이 연속 배치되면 재파스 LIFO 페어링이 교차된다
             // (fr(0,0)+(50,50) → fr(0,50)+(0,0), 빈 누름틀 placeholder 소실/줄바꿈 분기).
+            // 필드가 표·그림을 감쌌으면 안쪽 슬롯을 지나서 닫는다 — 자기 슬롯 직후에
+            // 닫으면 개체가 필드 밖으로 밀려 빈 누름틀이 되고, 한글이 안내문을 본문에
+            // 찍는다(G-순수증식). `inner_slot_count` 가 0 이면 종전과 동일하다.
             for (i, fr) in para.field_ranges.iter().enumerate() {
                 if !field_end_emitted[i]
                     && fr.start_char_idx == fr.end_char_idx
                     && fr.end_char_idx == idx
-                    && fr.control_idx == emitted_ctrl_idx
+                    && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
                 {
                     emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
                     expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1343,11 +1365,16 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         slot_idx += 1;
         expected_utf16_pos = expected_utf16_pos.saturating_add(8);
         // [Task #1893] 위에서 지연한 문단 끝 0-length 필드의 fieldEnd 를 자기
-        // fieldBegin 슬롯 직후에 방출 — begin→end 순서 보존.
+        // fieldBegin 슬롯 **뒤**에 방출 — begin→end 순서 보존.
+        //
+        // 필드가 표·그림을 감싸면 텍스트 축은 0길이지만 안쪽에 컨트롤 슬롯이 있다.
+        // `inner_slot_count` 만큼 지나서 닫아야 개체가 필드 안에 남는다. 자기 슬롯
+        // 직후에 닫으면 개체가 밖으로 밀려 빈 누름틀이 되고, 한글이 안내문을 본문에
+        // 찍는다(G-순수증식 16경로).
         for (i, fr) in para.field_ranges.iter().enumerate() {
             if !field_end_emitted[i]
                 && fr.start_char_idx == fr.end_char_idx
-                && fr.control_idx == emitted_ctrl_idx
+                && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
             {
                 emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1453,10 +1480,19 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
 /// 의 **비교 축**과 공유되기 때문이다 — 비교 축 변경은 #4388 처럼 무관한 회귀를 만든다.
 /// 여기서 필요한 것은 위치 축 하나뿐이다.
 fn occupies_hwpx_slot_axis(control: &Control) -> bool {
-    // Hyperlink은 HWP3의 8-unit object slot이고 HWPX에서는 fieldBegin으로 승격한다.
-    // `is_hwpx_inline_slot`에는 넣지 않는다. 해당 헬퍼는 포맷 비종속 diff에도 공유되어
-    // HWP5의 기존 Hyperlink 표현 범위까지 바꾸기 때문이다.
-    is_hwpx_inline_slot(control) || matches!(control, Control::Bookmark(_) | Control::Hyperlink(_))
+    is_hwpx_inline_slot(control)
+        || matches!(
+            control,
+            // Hyperlink은 HWP3의 8-unit object slot이고 HWPX에서는 fieldBegin으로 승격한다.
+            // `is_hwpx_inline_slot`에는 넣지 않는다. 해당 헬퍼는 포맷 비종속 diff에도 공유되어
+            // HWP5의 기존 Hyperlink 표현 범위까지 바꾸기 때문이다.
+            // 숨은 설명은 HWPX 네이티브 표현(`<hp:hiddenComment>`)이 있고 방출 arm 도
+            // 있으나, 이 필터에서 빠지면 mismatch 경로에서 **조용히 버려진다**.
+            // HWP3 는 char_count 에 8유닛 슬롯을 배정하지 않아(06397 문단 0.0:
+            // `cc=2, text_len=1, controls=3`) 늘 mismatch 경로로 오므로, 여기 없으면
+            // HWP3 문서의 숨은 설명이 통째로 사라진다(06397 유지율 2.2%).
+            Control::Bookmark(_) | Control::Hyperlink(_) | Control::HiddenComment(_)
+        )
 }
 
 pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
@@ -1596,6 +1632,9 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         // [Task #1587] 덧말(Ruby) 인라인 방출. is_hwpx_inline_slot 에 등록돼 슬롯 위치는
         // 자동이나 종전 방출 arm 부재로 드롭됐다. parse_dutmal 의 역매핑.
         Control::Ruby(r) => out.push_str(&render_dutmal(r)),
+        // 숨은 설명 — 화면에 안 보여도 파일에는 문단 리스트로 존재한다. 방출 arm 이
+        // 없던 탓에 저장할 때마다 통째로 사라졌다(자세한 근거는 아래 catch-all 주석).
+        Control::HiddenComment(hc) => out.push_str(&render_hidden_comment(hc, ctx)),
         // [Task #1379/#1584] 인라인 colPr 방출.
         // - subList(depth>0): 전부 인라인 방출(원본 XML 인라인 존재).
         // - 본문(depth 0): 첫 문단의 첫 ColumnDef 1개는 섹션 템플릿 colPr 앵커가 이미
@@ -1620,16 +1659,15 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         //     966행 근처 주석)만 소비하고 XML 은 별도 경로(`<hp:secPr>` 섹션 템플릿)가
         //     방출한다 — 여기서 다시 방출하면 중복이 된다. warn 헬퍼도 이 변형은
         //     무시한다.
-        //   - `HiddenComment`: **구현 누락으로 확인됨(경고 미부착)**. HWPX 는
-        //     `<hp:hiddenComment>` 네이티브 표현이 있고 파서(`parse_ctrl_hidden_comment`)
-        //     는 이미 sub-paragraph 까지 온전히 읽지만 직렬화기엔 대응 방출 arm 이
-        //     없다. 다만 이 컨트롤은 PARA_TEXT 상 폭이 0(파서가 위치 마커를 push 하지
-        //     않음 — Bookmark 와 동형)이라 실제 문서에서는 `render_runs` 의
-        //     mismatch-분기 필터(위쪽, "제외된 hidden 슬롯 후보" 블록 부근)에서 먼저
-        //     걸러져 이 함수 자체에 거의 도달하지 않는다 — 진짜 수정은 Bookmark 의
-        //     `emit_inorder_bookmarks` 류 zero-width in-order 방출 인프라가 필요한
-        //     별도 작업(그 로직은 #1591/#1627/#1584 이력이 보여주듯 섬세하다) —
-        //     후속 이슈로 분리 권장.
+        //   - `HiddenComment`: 이제 위 `render_hidden_comment` arm 이 방출한다.
+        //     종전 주석은 "폭이 0이라 이 함수에 거의 도달하지 않는다"고 봤지만 그건
+        //     **HWPX 파서 기준**이었다. HWP5 에서 `tcmt` 는 8유닛 확장 컨트롤이라
+        //     h2x 경로에서는 정상적으로 슬롯에 들어와 여기 도달한다 — 실측(08361
+        //     문단 0.0: `cc=33, text_len=0, controls=4` = 4×8+1)이 이를 보인다.
+        //     방출 arm 이 없던 탓에 10k 스윕에서 숨은 설명이 통째로 사라졌고
+        //     (`tcmt` CTRL_DIFF 13경로), 내용이 본문의 대부분인 문서는 96.9% 를
+        //     잃었다(06397). x2x 축(HWPX 파서가 위치 마커를 push 하지 않아 폭 0)은
+        //     여전히 별도 작업이 필요하다.
         c => warn_if_unrepresentable_in_hwpx(c),
     }
 }
@@ -2475,6 +2513,31 @@ fn render_note_sublist(
         out.push_str("</hp:p>");
     }
     out.push_str(&format!("</hp:subList></hp:{tag}></hp:ctrl>", tag = tag));
+    out
+}
+
+/// 숨은 설명(`<hp:hiddenComment>`) — 스키마상 `subList` 하나만 갖는다
+/// (ParaList XML schema.xml:217-224). 각주와 달리 속성이 없다.
+fn render_hidden_comment(
+    hc: &crate::model::control::HiddenComment,
+    ctx: &mut SerializeContext,
+) -> String {
+    let mut out = String::from("<hp:ctrl><hp:hiddenComment>");
+    out.push_str(&render_sub_list_open(None));
+    let mut vert_cursor: u32 = 0;
+    for p in hc.paragraphs.iter() {
+        ctx.para_shape_ids.reference(p.para_shape_id);
+        let sid = ctx.effective_style_id(p.style_id);
+        ctx.style_ids.reference(sid as u16);
+        let (runs, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
+        vert_cursor = advance;
+        let pid = ctx.next_para_id();
+        out.push_str(&render_hp_p_open(p, pid, sid));
+        out.push_str(&runs);
+        out.push_str(&linesegs);
+        out.push_str("</hp:p>");
+    }
+    out.push_str("</hp:subList></hp:hiddenComment></hp:ctrl>");
     out
 }
 
@@ -4483,6 +4546,7 @@ mod tests {
             end_char_idx: 2,
             control_idx: 0,
             end_field_id: 100,
+            inner_slot_count: 0,
         });
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);
@@ -4583,6 +4647,7 @@ mod tests {
             end_char_idx: 1,
             control_idx: 0,
             end_field_id: 0,
+            inner_slot_count: 0,
         });
 
         let (doc, section) = make_doc_with_paragraph(para);

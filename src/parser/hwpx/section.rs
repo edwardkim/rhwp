@@ -699,12 +699,17 @@ fn parse_paragraph(
                     .copied()
                     .unwrap_or((0, 0));
                 field_end_idx += 1;
-                if let Some((start_char_idx, control_idx)) = field_stack.pop() {
+                if let Some((start_char_idx, begin_control_idx)) = field_stack.pop() {
+                    // 필드 안쪽 컨트롤 슬롯 수 — 표·그림을 감싼 누름틀이 텍스트 축에서
+                    // 0길이가 되어도 직렬화기가 fieldEnd 위치를 잃지 않게 한다.
+                    // (begin 자신의 컨트롤 1개는 제외)
+                    let inner_slot_count = control_idx.saturating_sub(begin_control_idx + 1);
                     field_ranges.push(FieldRange {
                         start_char_idx,
                         end_char_idx: visible_char_idx,
-                        control_idx,
+                        control_idx: begin_control_idx,
                         end_field_id: field_id,
+                        inner_slot_count,
                     });
                 } else {
                     // [Task #1556] 짝 fieldBegin 이 다른 문단에 있는 다단락 필드의 종료 마커.
@@ -1744,6 +1749,9 @@ fn read_text_content_with_tabs(
                     }
                     b"nbSpace" => text.push('\u{00A0}'),
                     b"fwSpace" => text.push('\u{2007}'),
+                    // 소프트 하이픈 — 줄바꿈 자리에서만 보인다. 리터럴 '-' 와 구별해야
+                    // 저장 왕복에서 단어가 갈라지지 않는다(ParaList XML schema.xml:291).
+                    b"hyphen" => text.push('\u{00AD}'),
                     _ => {}
                 }
             }
