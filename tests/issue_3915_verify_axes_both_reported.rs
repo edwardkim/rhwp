@@ -4,8 +4,8 @@
 //! IR 비교가 **아예 돌지 않아** 차이가 있어도 보고되지 않았다.
 //!
 //! 두 축은 서로 다른 결함을 잰다 — 쪽수는 조판 결과, IR 은 저장 손실이다. 한쪽이 실패했다고
-//! 다른 쪽을 건너뛰면, 사람이 "쪽수만 문제고 내용은 온전하다" 로 잘못 읽는다. 실제로
-//! `synam-001.hwp` 는 두 축이 **함께** 실패하는데 쪽수 실패만 보였다.
+//! 다른 쪽을 건너뛰면, 사람이 "쪽수만 문제고 내용은 온전하다" 로 잘못 읽는다. 이중 실패의
+//! 종료 코드 우선순위는 바이너리 단위 테스트로, 실제 문서의 각 축 출력은 이 테스트로 지킨다.
 //!
 //! 종료 코드 계약은 바꾸지 않는다 — 쪽수 실패는 그대로 4 다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -13,14 +13,16 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-/// 두 축이 함께 실패하는 표본 — 쪽수 49→50, IR 차이 2건.
+/// 쪽수 축만 실패하는 표본 — 35→36쪽.
 ///
-/// [#4677] 종전 표본 `synam-001.hwp` 는 IR 축이 **고쳐져** 더 이상 두 축이 함께 실패하지
-/// 않는다. 그 문서의 IR 차이 3건은 전부 char_shape 경계가 8 유닛 배수만큼 밀린 것이었고
-/// (예: `(9,146)` → `(1,146)`), 근인은 HWPX 저장기가 책갈피를 zero-width 로 다뤄 위치 축에서
-/// 뺀 것이었다. 책갈피를 8 유닛 슬롯으로 편입하면서 사라졌다. 이 테스트가 지키는 축은
-/// "쪽수 실패가 IR 보고를 가리지 않는다" 이므로 표본만 교체한다.
-const BOTH_FAIL_SAMPLE: &str = "samples/issue1937_rowbreak_footnote_overpagination.hwp";
+/// [#4677] `synam-001.hwp`의 이전 IR 차이는 책갈피 위치 보정으로 해소되었지만, 저장 HWPX의
+/// 쪽수 차이는 여전히 남아 있다.
+const PAGE_FAIL_SAMPLE: &str = "samples/synam-001.hwp";
+/// IR 축만 실패하고 쪽수는 안정적인 표본 — 50쪽, IR 차이 2건.
+///
+/// [#3820] `issue1937`의 이전 쪽수 49→50 차이는 RowBreak/각주 조판 보정으로 해소되었다.
+/// 정상화된 문서를 이중 실패 표본으로 계속 쓰지 않는다.
+const IR_FAIL_SAMPLE: &str = "samples/issue1937_rowbreak_footnote_overpagination.hwp";
 /// 두 축 모두 통과하는 표본 — 무회귀 기준선.
 const CLEAN_SAMPLE: &str = "samples/table-001.hwp";
 
@@ -50,31 +52,48 @@ fn stderr(out: &Output) -> String {
     String::from_utf8_lossy(&out.stderr).into_owned()
 }
 
-/// #3906 본체 — 쪽수가 실패해도 IR 비교를 마저 돌려 함께 보고한다.
+/// 두 검증 축은 실제 실패 상태를 각각 보고한다.
 #[test]
-fn page_failure_no_longer_hides_ir_differences() {
+fn page_and_ir_axes_report_their_actual_results() {
     let dir = std::env::temp_dir().join(format!("rhwp-3915-{}", std::process::id()));
     std::fs::create_dir_all(&dir).expect("임시 디렉터리");
-    let out = dir.join("both.hwpx");
+    let page_out = dir.join("page-fail.hwpx");
 
-    let o = export(BOTH_FAIL_SAMPLE, &out, &["--verify", "--verify-pages"]);
-    let err = stderr(&o);
+    let page = export(PAGE_FAIL_SAMPLE, &page_out, &["--verify", "--verify-pages"]);
+    let page_combined = format!("{}{}", stderr(&page), String::from_utf8_lossy(&page.stdout));
 
     assert!(
-        err.contains("검증 실패(--verify-pages)"),
-        "쪽수 실패가 보고되지 않았습니다:\n{err}"
+        page_combined.contains("검증 실패(--verify-pages)"),
+        "쪽수 실패가 보고되지 않았습니다:\n{page_combined}"
     );
     assert!(
-        err.contains("검증 실패(--verify)"),
-        "쪽수 실패가 IR 차이를 가렸습니다 — 두 축은 서로 다른 결함을 재므로 함께 보고해야 \
-         합니다:\n{err}"
+        page_combined.contains("검증 통과(--verify): IR 차이 없음"),
+        "IR 축의 실제 통과 상태가 보고되지 않았습니다:\n{page_combined}"
     );
-
-    // 종료 코드 계약 무변경 — 쪽수 실패가 우선한다.
     assert_eq!(
-        o.status.code(),
+        page.status.code(),
         Some(4),
-        "두 축이 함께 실패해도 종료 코드는 종전대로 4 여야 합니다:\n{err}"
+        "쪽수 실패의 종료 코드는 4 여야 합니다:\n{page_combined}"
+    );
+
+    let ir = export(
+        IR_FAIL_SAMPLE,
+        &dir.join("ir-fail.hwpx"),
+        &["--verify", "--verify-pages"],
+    );
+    let ir_combined = format!("{}{}", stderr(&ir), String::from_utf8_lossy(&ir.stdout));
+    assert!(
+        ir_combined.contains("검증 통과(--verify-pages)"),
+        "쪽수 축의 실제 통과 상태가 보고되지 않았습니다:\n{ir_combined}"
+    );
+    assert!(
+        ir_combined.contains("검증 실패(--verify)"),
+        "IR 실패가 보고되지 않았습니다:\n{ir_combined}"
+    );
+    assert_eq!(
+        ir.status.code(),
+        Some(3),
+        "IR 실패만 있을 때 종료 코드는 3 이어야 합니다:\n{ir_combined}"
     );
 
     let _ = std::fs::remove_dir_all(&dir);
@@ -87,7 +106,7 @@ fn failing_page_axis_does_not_also_report_pass() {
     std::fs::create_dir_all(&dir).expect("임시 디렉터리");
     let out = dir.join("nopass.hwpx");
 
-    let o = export(BOTH_FAIL_SAMPLE, &out, &["--verify", "--verify-pages"]);
+    let o = export(PAGE_FAIL_SAMPLE, &out, &["--verify", "--verify-pages"]);
     let combined = format!("{}{}", stderr(&o), String::from_utf8_lossy(&o.stdout));
 
     assert!(
@@ -105,7 +124,7 @@ fn single_axis_and_clean_document_are_unchanged() {
     std::fs::create_dir_all(&dir).expect("임시 디렉터리");
 
     // --verify-pages 단독: 쪽수만 보고, exit 4.
-    let o = export(BOTH_FAIL_SAMPLE, &dir.join("p.hwpx"), &["--verify-pages"]);
+    let o = export(PAGE_FAIL_SAMPLE, &dir.join("p.hwpx"), &["--verify-pages"]);
     let err = stderr(&o);
     assert!(err.contains("검증 실패(--verify-pages)"), "{err}");
     assert!(
