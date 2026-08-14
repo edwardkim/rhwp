@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "form-fill",
+  "title": "누름틀 양식 채우기",
+  "axis": "편집 (누름틀 양식 채우기·재조회 검증)",
+  "description": "에이전트의 핵심 문서 시나리오 — 신청서·서식의 누름틀을 채우는 능력을 검증한다. 실제 폼 샘플의 필드를 edit fill-fields 로 채우고 fields --json 재조회로 채운 값을 확인하는 라이브 왕복(골든 파일 없음).",
+  "requires": {
+    "commands": [
+      "edit",
+      "fields"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.4",
+    "rhwpCommit": "4324eb0e4cf1a65f7efb305993a79ac44859a7ca",
+    "capabilitiesSha256": "4767e61c3af751bb2f97af9d0b3e5ffa5cbb5dc70a89cf3ae85987132fa5473d"
+  }
+}

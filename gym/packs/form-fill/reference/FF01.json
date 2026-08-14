@@ -1,0 +1,17 @@
+{
+  "id": "FF01",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@gym/packs/form-fill/assets/FF01-data.json",
+        "-o",
+        "{sub:out.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

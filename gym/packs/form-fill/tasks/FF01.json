@@ -1,0 +1,37 @@
+{
+  "id": "FF01",
+  "tier": 2,
+  "title": "누름틀 양식 채우기 — 기관명",
+  "input": "samples/20250130-hongbo.hwp",
+  "instructions": "이 보도자료 서식의 '기관명' 누름틀을 '한국수자원공사' 로 채워 out.hwp 로 저장하라. 다른 필드·본문은 건드리지 말 것. 힌트: edit fill-fields <파일> --data '{\"기관명\":\"한국수자원공사\"}' -o out.hwp.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "out.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "원본과 다름 (무편집 거부)",
+      "op": "differs_from_input",
+      "file": "out.hwp"
+    },
+    {
+      "name": "기관명 필드가 채워짐 (재조회 검증)",
+      "op": "value_eq",
+      "path": "fields[0].value",
+      "value": "한국수자원공사",
+      "cmd": [
+        "fields",
+        "{file:out.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}
