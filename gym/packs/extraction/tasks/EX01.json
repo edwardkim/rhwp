@@ -1,0 +1,25 @@
+{
+  "id": "EX01",
+  "tier": 2,
+  "title": "차트 데이터 추출 — 행 수",
+  "input": "samples/chart/세로막대형/묶은세로막대형.hwp",
+  "instructions": "chart-to-csv 로 이 문서의 차트 1을 뽑아, 그 데이터의 행 수(카테고리 개수, rowCount)를 보고하라. 답 형식: {\"rows\": <수>}.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "행 수 일치",
+      "op": "answer_eq",
+      "answer": "rows",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--chart",
+        "1",
+        "--json"
+      ],
+      "path": "charts[0].rowCount"
+    }
+  ]
+}

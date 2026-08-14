@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "extraction",
+  "title": "데이터 추출 (읽기)",
+  "axis": "조회 (문서에서 데이터를 뽑아내는 능력)",
+  "description": "에이전트가 문서에서 데이터를 뽑는 읽기 능력을 검증한다 — 차트 데이터 추출(chart-to-csv), 본문 텍스트 추출(export-text). 라이브 오라클로 봉투 값을 대조한다.",
+  "requires": {
+    "commands": [
+      "chart-to-csv",
+      "export-text"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.4",
+    "rhwpCommit": "4324eb0e4cf1a65f7efb305993a79ac44859a7ca",
+    "capabilitiesSha256": "4767e61c3af751bb2f97af9d0b3e5ffa5cbb5dc70a89cf3ae85987132fa5473d"
+  }
+}
