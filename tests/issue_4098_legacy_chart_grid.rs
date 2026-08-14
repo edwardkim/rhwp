@@ -387,7 +387,11 @@ fn generate_legacy_only_variant() {
     let mut streams = all_streams(&nested);
     let before = streams.len();
     streams.retain(|(name, _)| name != "/OOXMLChartContents");
-    assert_eq!(before - streams.len(), 1, "OOXML 사본이 정확히 하나 빠져야 한다");
+    assert_eq!(
+        before - streams.len(),
+        1,
+        "OOXML 사본이 정확히 하나 빠져야 한다"
+    );
     assert!(
         streams.iter().any(|(name, _)| name == "/Contents"),
         "레거시 Contents 는 남아 있어야 한다"
