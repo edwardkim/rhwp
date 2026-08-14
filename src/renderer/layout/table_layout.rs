@@ -7919,41 +7919,8 @@ impl LayoutEngine {
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
         ) && !table.common.treat_as_char;
-        // 원본 HWPX의 작은 nested cell은 자체 local 좌표계를 `0`에서 다시
-        // 시작할 수 있다. 반면 직접 RowBreak 셀의 저장 좌표 되감김은 원본이
-        // 기록한 물리 fragment 경계다. 선언 셀 높이의 비율을 추정하지 않고,
-        // 표 소유 관계와 lineSeg topology 자체를 사용한다.
-        let direct_hwpx_stored_frame_cell = {
-            let profile = self.profile.get();
-            let has_nested_table = cell.paragraphs.iter().any(|paragraph| {
-                paragraph
-                    .controls
-                    .iter()
-                    .any(|control| matches!(control, Control::Table(_)))
-            });
-            let mut reset_count = 0usize;
-            let mut previous_frame_end = None;
-            for paragraph in &cell.paragraphs {
-                for seg in paragraph
-                    .line_segs
-                    .iter()
-                    .filter(|seg| !line_seg_is_synthetic(seg))
-                {
-                    let frame_end = seg.vertical_pos.saturating_add(seg.line_height);
-                    if previous_frame_end
-                        .is_some_and(|previous_end| previous_end > 0 && seg.vertical_pos <= 0)
-                    {
-                        reset_count += 1;
-                    }
-                    previous_frame_end = Some(frame_end);
-                }
-            }
-            profile.hwpx_stored_layout()
-                && !profile.hwp5_origin_hwpx()
-                && is_block_rowbreak_table
-                && !has_nested_table
-                && reset_count > 0
-        };
+        let direct_hwpx_stored_frame_cell =
+            self.direct_hwpx_cell_has_declared_stored_frame(cell, table);
         let is_stored_frame_rewind = |prev: &crate::model::paragraph::LineSeg,
                                       cur: &crate::model::paragraph::LineSeg|
          -> bool {
@@ -10180,6 +10147,64 @@ impl LayoutEngine {
             == 1
     }
 
+    /// Direct HWPX RowBreak cell의 reset이 선언된 cell box 안에서 source frame을
+    /// 완결하는지 판별한다. reset 뒤의 저장 lineSeg가 선언 높이를 계속 넘으면
+    /// writer-local cursor일 뿐, 물리 fragment owner가 아니다.
+    fn direct_hwpx_cell_has_declared_stored_frame(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+    ) -> bool {
+        let profile = self.profile.get();
+        if !profile.hwpx_stored_layout()
+            || profile.hwp5_origin_hwpx()
+            || table.common.treat_as_char
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            || cell.height >= 0x8000_0000
+            || cell.paragraphs.iter().any(|paragraph| {
+                paragraph
+                    .controls
+                    .iter()
+                    .any(|control| matches!(control, Control::Table(_)))
+            })
+        {
+            return false;
+        }
+
+        let mut reset_count = 0usize;
+        let mut previous_frame_end: Option<i32> = None;
+        let mut preceding_frame_end = 0i32;
+        let mut trailing_frame_end = 0i32;
+        for paragraph in &cell.paragraphs {
+            for seg in paragraph.line_segs.iter().filter(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            }) {
+                let frame_end = seg.vertical_pos.saturating_add(seg.line_height);
+                if previous_frame_end
+                    .is_some_and(|previous_end| previous_end > 0 && seg.vertical_pos <= 0)
+                {
+                    reset_count += 1;
+                    preceding_frame_end = preceding_frame_end.max(previous_frame_end.unwrap_or_default());
+                    trailing_frame_end = 0;
+                }
+                if reset_count > 0 {
+                    trailing_frame_end = trailing_frame_end.max(frame_end);
+                }
+                previous_frame_end = Some(frame_end);
+            }
+        }
+
+        reset_count >= 2 || (reset_count == 1 && {
+            let source_frame_span = preceding_frame_end.saturating_add(trailing_frame_end);
+            let declared_height = cell.height as i32;
+            source_frame_span >= declared_height.saturating_mul(4) / 5
+                && source_frame_span <= declared_height
+        })
+    }
+
     /// Return whether a row records an in-paragraph return from a positive
     /// stored vertical position to the top of a new physical frame.  This is
     /// source pagination data, not a measured-height heuristic.
@@ -10188,7 +10213,7 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         row: usize,
     ) -> bool {
-        table
+        let has_raw_rewind = table
             .cells
             .iter()
             .filter(|cell| cell.row as usize == row && cell.row_span == 1)
@@ -10197,7 +10222,21 @@ impl LayoutEngine {
                 paragraph.line_segs.windows(2).any(|lines| {
                     lines[0].vertical_pos > 0 && lines[1].vertical_pos == 0
                 })
-            })
+            });
+        if !has_raw_rewind {
+            return false;
+        }
+
+        let profile = self.profile.get();
+        if profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx() {
+            return table
+                .cells
+                .iter()
+                .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+                .any(|cell| self.direct_hwpx_cell_has_declared_stored_frame(cell, table));
+        }
+
+        true
     }
 
     /// Return the painted height of a response cell whose stored source frame

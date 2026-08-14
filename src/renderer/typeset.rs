@@ -19565,7 +19565,14 @@ impl TypesetEngine {
                 && row_start_cut.is_empty()
                 && r > cursor_row
                 && !rowspan_touched[r]
-                && !rowbreak_row_has_internal_saved_vpos_reset(table, r)
+                // Direct HWPX의 local reset은 physical frame이 아니다. 선언 cell 안에
+                // source frame이 완결될 때만 short-row bleed를 막아 source owner를
+                // 보존한다.
+                && !(((st.profile.native_hwp5_layout() || st.profile.hwp5_origin_hwpx())
+                    && rowbreak_row_has_internal_saved_vpos_reset(table, r))
+                    || (st.profile.hwpx_stored_layout()
+                        && !st.profile.hwp5_origin_hwpx()
+                        && layout_engine.row_has_stored_vpos_frame_rewind(table, r)))
                 && row_total <= landscape_short_row_max_height
                 && consumed + cs_before + row_total
                     <= avail_for_rows + landscape_short_row_tolerance
