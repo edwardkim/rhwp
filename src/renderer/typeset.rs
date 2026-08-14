@@ -22683,8 +22683,16 @@ impl TypesetEngine {
             } else {
                 None
             };
+            let source_first_fragment_row_end = saved_first_fragment_source_frame
+                .and_then(|(frame_height, _)| {
+                    nearest_saved_rowbreak_frame_row_end(frame_height, cut_row_h, cs)
+                });
+            // 기존 각주가 이미 이 page의 body tail을 예약했으면 object frame만으로
+            // whole row를 수용할 수 없다. 그 마지막 행의 cell-unit partial cut은
+            // footnote-aware row scanner가 소유한다.
             let mut source_first_fragment_overflow_allowance = saved_first_fragment_source_frame
                 .filter(|_| st.profile.native_hwp5_layout())
+                .filter(|_| st.current_footnote_height <= 0.0)
                 .map(|(_, flow_bottom_px)| {
                     saved_rowbreak_first_fragment_flow_overflow_allowance(
                         table.common.height,
@@ -22694,10 +22702,6 @@ impl TypesetEngine {
                     )
                 })
                 .unwrap_or(0.0);
-            let source_first_fragment_row_end = saved_first_fragment_source_frame
-                .and_then(|(frame_height, _)| {
-                    nearest_saved_rowbreak_frame_row_end(frame_height, cut_row_h, cs)
-                });
 
             // [Task #1022] 머리행 반복 overhead — 렌더러(layout_partial_table)는
             // start_row 이전의 반복 제목행을 다시 그리므로(다중 머리행: rs>=2 헤더 셀 등),
@@ -22749,6 +22753,7 @@ impl TypesetEngine {
             // height를 첫 fragment frame으로 보고, 그 frame에 가장 가까운 행 끝에만
             // 측정 행높이와 source row boundary의 차이를 적용한다.
             if source_next_positive_rewind
+                && st.current_footnote_height <= 0.0
                 && !table_declared_object_covers_cell_row_frames(table, self.dpi)
             {
                 if let Some(row_end) = source_first_fragment_row_end {
