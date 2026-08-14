@@ -14,7 +14,9 @@ use crate::model::page::ColumnDef;
 use crate::model::paragraph::{LineSeg, ParaMeta, Paragraph};
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::model::style::Alignment;
-use crate::renderer::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
+use crate::renderer::composer::{
+    compose_paragraph, layout_picture_band, reflow_line_segs, ComposedParagraph,
+};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
@@ -494,7 +496,311 @@ fn target_table_first_global_page(
     None
 }
 
+/// Decide whether a Picture band needs another projection after pagination.
+///
+/// `None` means that the column which supplied the latest band projection
+/// still owns its host. `Some` supplies the newly observed column for one
+/// bounded re-projection. A changed column after that budget is exhausted
+/// cannot be published: its LineSegs were made for a different width.
+fn next_picture_band_column(
+    host_index: usize,
+    projected_column: u16,
+    observed_column: u16,
+    reprojections_remaining: usize,
+) -> Result<Option<u16>, HwpError> {
+    if observed_column == projected_column {
+        return Ok(None);
+    }
+    if reprojections_remaining > 0 {
+        return Ok(Some(observed_column));
+    }
+
+    Err(HwpError::RenderError(format!(
+        "그림 배치 영역({}..)의 단 배치가 수렴하지 않습니다",
+        host_index
+    )))
+}
+
 impl DocumentCore {
+    /// Return the completed Picture band which currently owns a body
+    /// paragraph, together with the host's physical column width.
+    fn picture_band_owning_body_paragraph(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Option<(usize, std::ops::Range<usize>, i32)> {
+        let section = self.document.sections.get(section_idx)?;
+        let host_index = (0..=para_idx).rev().find(|&index| {
+            section.paragraphs[index].controls.iter().any(|control| {
+                matches!(control, Control::Picture(picture) if !picture.common.treat_as_char)
+            })
+        })?;
+        let column_def = Self::find_column_def_for_paragraph(&section.paragraphs, host_index);
+        let layout =
+            PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, self.dpi);
+        let column_index = self
+            .para_column_map
+            .get(section_idx)
+            .and_then(|columns| columns.get(host_index))
+            .copied()
+            .unwrap_or(0) as usize;
+        let column_width = layout
+            .column_areas
+            .get(column_index)
+            .or_else(|| layout.column_areas.first())
+            .map(|area| area.width)
+            .unwrap_or(layout.body_area.width);
+        let band = layout_picture_band(
+            &section.paragraphs,
+            host_index,
+            crate::renderer::px_to_hwpunit(column_width, self.dpi),
+            &self.styles,
+            self.dpi,
+        )?;
+        band.paragraph_range.contains(&para_idx).then_some((
+            host_index,
+            band.paragraph_range,
+            crate::renderer::px_to_hwpunit(column_width, self.dpi),
+        ))
+    }
+
+    /// Apply one body-paragraph mutation through its complete Picture band.
+    ///
+    /// A Picture-band edit can change page flow enough to move its host into
+    /// another physical column. Stage that bounded re-projection sequence on
+    /// a complete derived-state copy, then commit it only after every width
+    /// accepts the band.
+    fn apply_body_edit_through_picture_band<F>(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        edit: F,
+    ) -> Result<bool, HwpError>
+    where
+        F: FnOnce(&mut Paragraph),
+    {
+        // Keep the ordinary scalar path cheap: only build the full staging
+        // core after the live state proves this paragraph belongs to a
+        // supported Picture band.
+        if self
+            .picture_band_owning_body_paragraph(section_idx, para_idx)
+            .is_none()
+        {
+            return Ok(false);
+        }
+
+        let mut staged = self.picture_band_edit_shadow();
+        let Some((host_index, mut previous_column)) =
+            staged.stage_body_edit_through_picture_band(section_idx, para_idx, edit)?
+        else {
+            return Ok(false);
+        };
+
+        let mut reprojections_remaining = 2;
+        loop {
+            let current_column = staged
+                .para_column_map
+                .get(section_idx)
+                .and_then(|columns| columns.get(host_index))
+                .copied()
+                .unwrap_or(0);
+            let Some(next_column) = next_picture_band_column(
+                host_index,
+                previous_column,
+                current_column,
+                reprojections_remaining,
+            )?
+            else {
+                break;
+            };
+
+            staged
+                .stage_body_edit_through_picture_band(section_idx, host_index, |_| {})?
+                .ok_or_else(|| {
+                    HwpError::RenderError(format!(
+                        "그림 배치 영역({}..)을 새 단 너비로 다시 배치할 수 없습니다",
+                        host_index
+                    ))
+                })?;
+            previous_column = next_column;
+            reprojections_remaining -= 1;
+        }
+
+        self.commit_picture_band_edit(section_idx, staged);
+        Ok(true)
+    }
+
+    /// Build only the state needed to stage a Picture-band body edit.
+    ///
+    /// The current paragraph-to-column map is the source width for the first
+    /// projection. The staging core always paginates privately so it can find
+    /// a destination column even when the live caller is batching. Every
+    /// section starts dirty, so that pass rebuilds instead of borrowing live
+    /// pagination or measurement state.
+    fn picture_band_edit_shadow(&self) -> DocumentCore {
+        let mut staged = DocumentCore::new_empty();
+        staged.document = self.document.clone();
+        staged.styles = self.styles.clone();
+        staged.composed = self.composed.clone();
+        staged.dpi = self.dpi;
+        staged.respect_vpos_reset = self.respect_vpos_reset;
+        staged.batch_mode = false;
+        staged.para_column_map = self.para_column_map.clone();
+        staged.dirty_sections = vec![true; staged.document.sections.len()];
+        staged
+    }
+
+    /// Commit a completed Picture-band staging core to this document core.
+    ///
+    /// A normal body edit finishes pagination in the staging core, so its
+    /// document section and every derived layout result cross this boundary
+    /// together. Batch mode retains the existing deferred-pagination contract:
+    /// only the edited section becomes dirty on the live core.
+    fn commit_picture_band_edit(&mut self, section_idx: usize, mut staged: DocumentCore) {
+        self.document.sections[section_idx] = staged.document.sections.remove(section_idx);
+
+        if self.batch_mode {
+            self.invalidate_page_tree_cache();
+            self.composed[section_idx] = staged.composed.remove(section_idx);
+            self.mark_section_dirty(section_idx);
+            if section_idx < self.dirty_paragraphs.len() {
+                self.dirty_paragraphs[section_idx] = None;
+            }
+            return;
+        }
+
+        self.pagination = std::mem::take(&mut staged.pagination);
+        self.composed = std::mem::take(&mut staged.composed);
+        self.render_normalization = std::mem::take(&mut staged.render_normalization);
+        self.measured_tables = std::mem::take(&mut staged.measured_tables);
+        self.dirty_sections = std::mem::take(&mut staged.dirty_sections);
+        self.measured_sections = std::mem::take(&mut staged.measured_sections);
+        self.dirty_paragraphs = std::mem::take(&mut staged.dirty_paragraphs);
+        self.para_column_map = std::mem::take(&mut staged.para_column_map);
+        self.para_offset = std::mem::take(&mut staged.para_offset);
+        self.pending_pagination_job = None;
+        self.deferred_pagination_descriptor = None;
+        self.invalidate_page_tree_cache();
+    }
+
+    /// Prepare a complete Picture-band projection in a staging core.
+    ///
+    /// The source paragraph list remains untouched while the edit, the fresh
+    /// band projection, released rows, and downstream vertical positions are
+    /// prepared on a shadow copy. Its section is recomposed and paginated only
+    /// in that staging core; the caller owns the live commit.
+    /// Returns the host and its pre-publication column when the target has a
+    /// supported Picture-band owner.
+    fn stage_body_edit_through_picture_band<F>(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        edit: F,
+    ) -> Result<Option<(usize, u16)>, HwpError>
+    where
+        F: FnOnce(&mut Paragraph),
+    {
+        let Some((host_index, old_range, column_width_hwp)) =
+            self.picture_band_owning_body_paragraph(section_idx, para_idx)
+        else {
+            return Ok(None);
+        };
+        let pre_publication_column = self
+            .para_column_map
+            .get(section_idx)
+            .and_then(|columns| columns.get(host_index))
+            .copied()
+            .unwrap_or(0);
+
+        let section = &self.document.sections[section_idx];
+        let stored_host_end =
+            crate::renderer::composer::paragraph_flow_end(&section.paragraphs[host_index]);
+        let mut staged_paragraphs = section.paragraphs.clone();
+        edit(&mut staged_paragraphs[para_idx]);
+
+        let Some(new_band) = layout_picture_band(
+            &staged_paragraphs,
+            host_index,
+            column_width_hwp,
+            &self.styles,
+            self.dpi,
+        ) else {
+            return Err(HwpError::RenderError(format!(
+                "그림 배치 영역({}..)의 편집 결과를 완전한 줄 배치로 만들 수 없습니다",
+                host_index
+            )));
+        };
+        let new_range = new_band.paragraph_range.clone();
+        if new_range.start != host_index || !new_range.contains(&para_idx) {
+            return Err(HwpError::RenderError(format!(
+                "그림 배치 영역({}..)이 편집 문단 {}을 포함하지 않습니다",
+                host_index, para_idx
+            )));
+        }
+
+        for (paragraph, line_segs) in staged_paragraphs[new_range.clone()]
+            .iter_mut()
+            .zip(new_band.line_segs)
+        {
+            paragraph.invalidate_single_line_overflow_memo();
+            paragraph.line_segs = line_segs;
+        }
+
+        // When an edited paragraph clears the exclusion earlier than before,
+        // its old band successors become ordinary full-width paragraphs again.
+        // Reflow those successors on the shadow state before calculating the
+        // downstream vertical ladder.
+        for released_para_idx in new_range.end..old_range.end {
+            let column_def =
+                Self::find_column_def_for_paragraph(&staged_paragraphs, released_para_idx);
+            let layout =
+                PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, self.dpi);
+            let column_index = self
+                .para_column_map
+                .get(section_idx)
+                .and_then(|columns| columns.get(released_para_idx))
+                .copied()
+                .unwrap_or(0) as usize;
+            let column_area = layout
+                .column_areas
+                .get(column_index)
+                .or_else(|| layout.column_areas.first())
+                .unwrap_or(&layout.body_area);
+            let paragraph = &mut staged_paragraphs[released_para_idx];
+            let para_style = self
+                .styles
+                .para_styles
+                .get(paragraph.para_shape_id as usize);
+            let margin_left = para_style.map(|style| style.margin_left).unwrap_or(0.0);
+            let margin_right = para_style.map(|style| style.margin_right).unwrap_or(0.0);
+            reflow_line_segs(
+                paragraph,
+                column_area.width - margin_left - margin_right,
+                &self.styles,
+                self.dpi,
+            );
+        }
+
+        let affected_end = old_range.end.max(new_range.end);
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut staged_paragraphs,
+            host_index,
+            Some(host_index..affected_end),
+            stored_host_end,
+            &self.styles,
+            self.dpi,
+            self.document.layout_profile().hwp3_layout(),
+        );
+
+        // This staging core owns the section source and every changed LineSeg
+        // together. The caller can expose it only after convergence succeeds.
+        self.document.sections[section_idx].paragraphs = staged_paragraphs;
+        self.document.sections[section_idx].raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        Ok(Some((host_index, pre_publication_column)))
+    }
+
     /// [#2424] resumable step 시작 전에 descriptor가 여전히 같은 text-only table edit을
     /// 가리키는지 좌표로 다시 조회한다. 불일치하면 shadow state를 commit하지 않고 기존
     /// full pagination으로 fallback해야 한다.
@@ -1097,9 +1403,6 @@ impl DocumentCore {
             )));
         }
 
-        // 편집 시 raw 스트림 무효화 (재직렬화 유도)
-        self.document.sections[section_idx].raw_stream = None;
-
         // 텍스트 삽입
         let new_chars_count = text.chars().count();
         let active_field = self.active_field.clone();
@@ -1119,53 +1422,32 @@ impl DocumentCore {
             None,
             char_offset,
         );
-        {
-            let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+        let apply_insert = |para: &mut Paragraph| {
             para.insert_text_at(char_offset, text);
             keep_inactive_field_start_outside(para, &before_insertions, new_chars_count);
             keep_inactive_field_end_outside(para, &outside_insertions, new_chars_count);
             if has_clickhere_field_range(para) {
                 rebuild_char_offsets(para);
             }
-        }
+        };
+        let picture_band_applied =
+            self.apply_body_edit_through_picture_band(section_idx, para_idx, &apply_insert)?;
 
-        // line_segs 재계산 (리플로우) → vpos 재계산 → 재구성 → 재페이지네이션
-        // 다단 문서에서 편집 후 문단이 다른 단으로 재배치될 수 있으므로
-        // para_column_map 변경 감지 + 재reflow 수렴 루프 (최대 3회)
-        let old_col = self
-            .para_column_map
-            .get(section_idx)
-            .and_then(|m| m.get(para_idx))
-            .copied()
-            .unwrap_or(0);
-        // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
-        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
-            &self.document.sections[section_idx].paragraphs[para_idx],
-        );
-        self.reflow_paragraph(section_idx, para_idx);
-        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
-        crate::renderer::composer::recalculate_section_vpos(
-            &mut self.document.sections[section_idx].paragraphs,
-            para_idx,
-            None,
-            stored_end_for_reset,
-            &self.styles,
-            self.dpi,
-            doc_hwp3_layout,
-        );
-        self.recompose_paragraph(section_idx, para_idx);
-        self.paginate_if_needed();
+        if !picture_band_applied {
+            // 편집 시 raw 스트림 무효화 (재직렬화 유도)
+            self.document.sections[section_idx].raw_stream = None;
+            let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            apply_insert(para);
 
-        for _ in 0..2 {
-            let new_col = self
+            // line_segs 재계산 (리플로우) → vpos 재계산 → 재구성 → 재페이지네이션
+            // 다단 문서에서 편집 후 문단이 다른 단으로 재배치될 수 있으므로
+            // para_column_map 변경 감지 + 재reflow 수렴 루프 (최대 3회)
+            let old_col = self
                 .para_column_map
                 .get(section_idx)
                 .and_then(|m| m.get(para_idx))
                 .copied()
                 .unwrap_or(0);
-            if new_col == old_col {
-                break;
-            }
             // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
             let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
                 &self.document.sections[section_idx].paragraphs[para_idx],
@@ -1183,6 +1465,35 @@ impl DocumentCore {
             );
             self.recompose_paragraph(section_idx, para_idx);
             self.paginate_if_needed();
+
+            for _ in 0..2 {
+                let new_col = self
+                    .para_column_map
+                    .get(section_idx)
+                    .and_then(|m| m.get(para_idx))
+                    .copied()
+                    .unwrap_or(0);
+                if new_col == old_col {
+                    break;
+                }
+                // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
+                let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+                    &self.document.sections[section_idx].paragraphs[para_idx],
+                );
+                self.reflow_paragraph(section_idx, para_idx);
+                let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+                crate::renderer::composer::recalculate_section_vpos(
+                    &mut self.document.sections[section_idx].paragraphs,
+                    para_idx,
+                    None,
+                    stored_end_for_reset,
+                    &self.styles,
+                    self.dpi,
+                    doc_hwp3_layout,
+                );
+                self.recompose_paragraph(section_idx, para_idx);
+                self.paginate_if_needed();
+            }
         }
 
         let new_offset = char_offset + new_chars_count;
@@ -1242,48 +1553,26 @@ impl DocumentCore {
             )));
         }
 
-        // 편집 시 raw 스트림 무효화 (재직렬화 유도)
-        self.document.sections[section_idx].raw_stream = None;
-
         // 텍스트 삭제
-        self.document.sections[section_idx].paragraphs[para_idx].delete_text_at(char_offset, count);
+        let apply_delete = |para: &mut Paragraph| {
+            para.delete_text_at(char_offset, count);
+        };
+        let picture_band_applied =
+            self.apply_body_edit_through_picture_band(section_idx, para_idx, &apply_delete)?;
 
-        // line_segs 재계산 (리플로우) → 재구성 → 재페이지네이션
-        // 다단 수렴 루프 (최대 3회)
-        let old_col = self
-            .para_column_map
-            .get(section_idx)
-            .and_then(|m| m.get(para_idx))
-            .copied()
-            .unwrap_or(0);
-        // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
-        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
-            &self.document.sections[section_idx].paragraphs[para_idx],
-        );
-        self.reflow_paragraph(section_idx, para_idx);
-        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
-        crate::renderer::composer::recalculate_section_vpos(
-            &mut self.document.sections[section_idx].paragraphs,
-            para_idx,
-            None,
-            stored_end_for_reset,
-            &self.styles,
-            self.dpi,
-            doc_hwp3_layout,
-        );
-        self.recompose_paragraph(section_idx, para_idx);
-        self.paginate_if_needed();
+        if !picture_band_applied {
+            // 편집 시 raw 스트림 무효화 (재직렬화 유도)
+            self.document.sections[section_idx].raw_stream = None;
+            apply_delete(&mut self.document.sections[section_idx].paragraphs[para_idx]);
 
-        for _ in 0..2 {
-            let new_col = self
+            // line_segs 재계산 (리플로우) → 재구성 → 재페이지네이션
+            // 다단 수렴 루프 (최대 3회)
+            let old_col = self
                 .para_column_map
                 .get(section_idx)
                 .and_then(|m| m.get(para_idx))
                 .copied()
                 .unwrap_or(0);
-            if new_col == old_col {
-                break;
-            }
             // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
             let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
                 &self.document.sections[section_idx].paragraphs[para_idx],
@@ -1301,6 +1590,35 @@ impl DocumentCore {
             );
             self.recompose_paragraph(section_idx, para_idx);
             self.paginate_if_needed();
+
+            for _ in 0..2 {
+                let new_col = self
+                    .para_column_map
+                    .get(section_idx)
+                    .and_then(|m| m.get(para_idx))
+                    .copied()
+                    .unwrap_or(0);
+                if new_col == old_col {
+                    break;
+                }
+                // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
+                let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+                    &self.document.sections[section_idx].paragraphs[para_idx],
+                );
+                self.reflow_paragraph(section_idx, para_idx);
+                let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+                crate::renderer::composer::recalculate_section_vpos(
+                    &mut self.document.sections[section_idx].paragraphs,
+                    para_idx,
+                    None,
+                    stored_end_for_reset,
+                    &self.styles,
+                    self.dpi,
+                    doc_hwp3_layout,
+                );
+                self.recompose_paragraph(section_idx, para_idx);
+                self.paginate_if_needed();
+            }
         }
 
         // 캐럿 위치 갱신 (DocProperties)
@@ -7220,6 +7538,639 @@ mod tests {
         assert!(
             para.single_line_overflow_memo.is_unjudged(),
             "삭제 직후 memo 는 미판정 상태여야 함 (다음 렌더에서 fresh 재판정)"
+        );
+    }
+
+    #[test]
+    fn picture_frame_body_edit_publishes_complete_band_before_recompose() {
+        use crate::model::control::Control;
+        use crate::model::page::ColumnDef;
+        use crate::renderer::page_layout::PageLayoutInfo;
+
+        const HOST: usize = 325;
+        const INTERIOR: usize = 326;
+        const DOWNSTREAM: usize = 332;
+        const DPI: f64 = 96.0;
+
+        let bytes = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/3-09월_교육_통합_2022.hwp"),
+        )
+        .expect("p325 corpus fixture");
+        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
+
+        let styles = core.styles.clone();
+        let page_def = core.document.sections[0].section_def.page_def.clone();
+        let para_column_map = core.para_column_map.clone();
+        let hwp3_layout = core.document.layout_profile().hwp3_layout();
+        let original_paragraphs = core.document.sections[0].paragraphs.clone();
+        let column_def = original_paragraphs[..=HOST]
+            .iter()
+            .flat_map(|paragraph| &paragraph.controls)
+            .filter_map(|control| match control {
+                Control::ColumnDef(column) => Some(column.clone()),
+                _ => None,
+            })
+            .next_back()
+            .unwrap_or_else(ColumnDef::default);
+        let page_layout = PageLayoutInfo::from_page_def(&page_def, &column_def, DPI);
+        let host_column_index = para_column_map
+            .first()
+            .and_then(|columns| columns.get(HOST))
+            .copied()
+            .unwrap_or(0) as usize;
+        let column_width_hwp = crate::renderer::px_to_hwpunit(
+            page_layout
+                .column_areas
+                .get(host_column_index)
+                .or_else(|| page_layout.column_areas.first())
+                .unwrap_or(&page_layout.body_area)
+                .width,
+            DPI,
+        );
+        let initial_band = crate::renderer::composer::layout_picture_band(
+            &original_paragraphs,
+            HOST,
+            column_width_hwp,
+            &styles,
+            DPI,
+        )
+        .expect("p325 Picture frame");
+        assert_eq!(initial_band.paragraph_range, HOST..DOWNSTREAM);
+        assert!(initial_band.paragraph_range.contains(&INTERIOR));
+
+        let geometry = |paragraphs: &[Paragraph]| {
+            paragraphs
+                .iter()
+                .map(|paragraph| {
+                    paragraph
+                        .line_segs
+                        .iter()
+                        .map(|line| {
+                            (
+                                line.text_start,
+                                line.vertical_pos,
+                                line.line_height,
+                                line.text_height,
+                                line.baseline_distance,
+                                line.line_spacing,
+                                line.column_start,
+                                line.segment_width,
+                                line.tag,
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>()
+        };
+        let reflow_released_body_paragraph = |paragraphs: &mut [Paragraph], para_idx: usize| {
+            let column_def = DocumentCore::find_column_def_for_paragraph(paragraphs, para_idx);
+            let layout = PageLayoutInfo::from_page_def(&page_def, &column_def, DPI);
+            let column_index = para_column_map
+                .first()
+                .and_then(|columns| columns.get(para_idx))
+                .copied()
+                .unwrap_or(0) as usize;
+            let column_area = layout
+                .column_areas
+                .get(column_index)
+                .or_else(|| layout.column_areas.first())
+                .unwrap_or(&layout.body_area);
+            let paragraph = &mut paragraphs[para_idx];
+            let para_style = styles.para_styles.get(paragraph.para_shape_id as usize);
+            let margin_left = para_style.map(|style| style.margin_left).unwrap_or(0.0);
+            let margin_right = para_style.map(|style| style.margin_right).unwrap_or(0.0);
+            reflow_line_segs(
+                paragraph,
+                column_area.width - margin_left - margin_right,
+                &styles,
+                DPI,
+            );
+        };
+
+        let insertion = "가".repeat(4);
+        let original_text = original_paragraphs[INTERIOR].text.clone();
+        let mut expected_after_insert = original_paragraphs.clone();
+        expected_after_insert[INTERIOR].insert_text_at(0, &insertion);
+        let inserted_band = crate::renderer::composer::layout_picture_band(
+            &expected_after_insert,
+            HOST,
+            column_width_hwp,
+            &styles,
+            DPI,
+        )
+        .expect("edited p325 Picture frame");
+        let inserted_range = inserted_band.paragraph_range.clone();
+        assert_eq!(inserted_range, HOST..331);
+        assert_eq!(
+            inserted_band.line_segs[INTERIOR - HOST].len(),
+            2,
+            "the interior insertion must add one physical row"
+        );
+        for (paragraph, line_segs) in expected_after_insert[inserted_range.clone()]
+            .iter_mut()
+            .zip(inserted_band.line_segs)
+        {
+            paragraph.invalidate_single_line_overflow_memo();
+            paragraph.line_segs = line_segs;
+        }
+        for released_para_idx in inserted_range.end..initial_band.paragraph_range.end {
+            reflow_released_body_paragraph(&mut expected_after_insert, released_para_idx);
+        }
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut expected_after_insert,
+            HOST,
+            Some(HOST..initial_band.paragraph_range.end.max(inserted_range.end)),
+            crate::renderer::composer::paragraph_flow_end(&original_paragraphs[HOST]),
+            &styles,
+            DPI,
+            hwp3_layout,
+        );
+
+        core.insert_text_native(0, INTERIOR, 0, &insertion)
+            .expect("Picture-owned paragraph insert succeeds");
+        assert_eq!(
+            core.document.sections[0].paragraphs[INTERIOR].text,
+            format!("{}{}", insertion, original_text),
+        );
+        assert!(
+            core.document.sections[0].raw_stream.is_none(),
+            "the successful transaction invalidates the source section together with its LineSegs"
+        );
+        assert_eq!(
+            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
+            geometry(&expected_after_insert[HOST..=DOWNSTREAM]),
+            "the complete fresh band, released p331, and downstream p332 boundary must publish together"
+        );
+        assert_eq!(
+            core.document.sections[0].paragraphs[DOWNSTREAM].line_segs[0].segment_width,
+            original_paragraphs[DOWNSTREAM].line_segs[0].segment_width,
+            "p332 remains a full-width downstream paragraph while its vertical position is recomposed"
+        );
+
+        let before_delete = core.document.sections[0].paragraphs.clone();
+        let before_delete_band = crate::renderer::composer::layout_picture_band(
+            &before_delete,
+            HOST,
+            column_width_hwp,
+            &styles,
+            DPI,
+        )
+        .expect("inserted Picture frame before delete");
+        assert_eq!(before_delete_band.paragraph_range, HOST..331);
+        let mut expected_after_delete = before_delete.clone();
+        expected_after_delete[INTERIOR].delete_text_at(0, insertion.chars().count());
+        let deleted_band = crate::renderer::composer::layout_picture_band(
+            &expected_after_delete,
+            HOST,
+            column_width_hwp,
+            &styles,
+            DPI,
+        )
+        .expect("restored p325 Picture frame");
+        let deleted_range = deleted_band.paragraph_range.clone();
+        assert_eq!(deleted_range, HOST..DOWNSTREAM);
+        for (paragraph, line_segs) in expected_after_delete[deleted_range.clone()]
+            .iter_mut()
+            .zip(deleted_band.line_segs)
+        {
+            paragraph.invalidate_single_line_overflow_memo();
+            paragraph.line_segs = line_segs;
+        }
+        for released_para_idx in deleted_range.end..before_delete_band.paragraph_range.end {
+            reflow_released_body_paragraph(&mut expected_after_delete, released_para_idx);
+        }
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut expected_after_delete,
+            HOST,
+            Some(
+                HOST..before_delete_band
+                    .paragraph_range
+                    .end
+                    .max(deleted_range.end),
+            ),
+            crate::renderer::composer::paragraph_flow_end(&before_delete[HOST]),
+            &styles,
+            DPI,
+            hwp3_layout,
+        );
+
+        core.delete_text_native(0, INTERIOR, 0, insertion.chars().count())
+            .expect("Picture-owned paragraph delete succeeds");
+        assert_eq!(
+            core.document.sections[0].paragraphs[INTERIOR].text, original_text,
+            "delete restores the edited paragraph text"
+        );
+        assert_eq!(
+            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
+            geometry(&expected_after_delete[HOST..=DOWNSTREAM]),
+            "delete must also republish the fresh complete band and p332 boundary"
+        );
+    }
+
+    #[test]
+    fn picture_frame_transaction_rejects_shadow_failure_without_publication() {
+        const HOST: usize = 325;
+        const INTERIOR: usize = 326;
+        const DOWNSTREAM: usize = 332;
+
+        let bytes = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/3-09월_교육_통합_2022.hwp"),
+        )
+        .expect("p325 corpus fixture");
+        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
+        let before_paragraphs = core.document.sections[0].paragraphs.clone();
+        let before_raw_stream = core.document.sections[0].raw_stream.clone();
+        let geometry = |paragraphs: &[Paragraph]| {
+            paragraphs
+                .iter()
+                .map(|paragraph| {
+                    paragraph
+                        .line_segs
+                        .iter()
+                        .map(|line| {
+                            (
+                                line.text_start,
+                                line.vertical_pos,
+                                line.line_height,
+                                line.text_height,
+                                line.baseline_distance,
+                                line.line_spacing,
+                                line.column_start,
+                                line.segment_width,
+                                line.tag,
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>()
+        };
+
+        let result = core.apply_body_edit_through_picture_band(0, INTERIOR, |paragraph| {
+            paragraph.column_type = ColumnBreakType::Column;
+        });
+
+        assert!(
+            result.is_err(),
+            "the staged layout must reject a column break"
+        );
+        assert_eq!(
+            core.document.sections[0].paragraphs[INTERIOR].text, before_paragraphs[INTERIOR].text,
+            "a rejected shadow edit must not publish source text"
+        );
+        assert_eq!(
+            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
+            geometry(&before_paragraphs[HOST..=DOWNSTREAM]),
+            "a rejected shadow edit must not publish partial LineSeg geometry"
+        );
+        assert_eq!(
+            core.document.sections[0].raw_stream, before_raw_stream,
+            "a rejected shadow edit must not invalidate source serialization state"
+        );
+    }
+
+    #[test]
+    fn picture_frame_column_convergence_accepts_stable_and_rejects_exhaustion() {
+        const HOST: usize = 325;
+
+        let projected = next_picture_band_column(HOST, 0, 1, 2)
+            .expect("a changed column has reprojection budget")
+            .expect("a changed column needs another projection");
+        assert_eq!(projected, 1);
+        assert_eq!(
+            next_picture_band_column(HOST, projected, 1, 1)
+                .expect("a stable projection must converge"),
+            None,
+            "the host keeps the column that supplied its final projection"
+        );
+
+        let mut projected = 0;
+        let mut reprojections_remaining = 2;
+        for observed in [1, 0] {
+            projected =
+                next_picture_band_column(HOST, projected, observed, reprojections_remaining)
+                    .expect("the bounded reprojection is still available")
+                    .expect("an alternating column needs another projection");
+            reprojections_remaining -= 1;
+        }
+        assert_eq!(projected, 0);
+        assert_eq!(reprojections_remaining, 0);
+        assert!(
+            matches!(
+                next_picture_band_column(HOST, projected, 1, reprojections_remaining),
+                Err(HwpError::RenderError(ref message))
+                    if message == "그림 배치 영역(325..)의 단 배치가 수렴하지 않습니다"
+            ),
+            "an exhausted alternating column sequence must be rejected before commit"
+        );
+    }
+
+    #[test]
+    fn picture_frame_reprojects_after_host_moves_to_unequal_column() {
+        use crate::model::control::Control;
+
+        const HOST: usize = 325;
+        const INTERIOR: usize = 326;
+        const DPI: f64 = 96.0;
+
+        let bytes = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/3-09월_교육_통합_2022.hwp"),
+        )
+        .expect("p325 corpus fixture");
+
+        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
+        let column = core.document.sections[0].paragraphs[0]
+            .controls
+            .iter_mut()
+            .find_map(|control| match control {
+                Control::ColumnDef(column) => Some(column),
+                _ => None,
+            })
+            .expect("p0 column definition");
+        column.same_width = false;
+        column.proportional_widths = true;
+        column.widths = vec![10_000, 22_000];
+        column.gaps = vec![500];
+        core.document.sections[0].section_def.page_def.height = 12_000;
+        core.recompose_section(0);
+        core.paginate();
+
+        let before_col = core.para_column_map[0][HOST];
+        let (_, _, before_width_hwp) = core
+            .picture_band_owning_body_paragraph(0, HOST)
+            .expect("initial Picture band");
+        assert_eq!(
+            before_col, 0,
+            "fixture starts the host in the narrow column"
+        );
+
+        core.insert_text_native(0, HOST, 0, &"가".repeat(32))
+            .expect("host insert succeeds");
+
+        let after_col = core.para_column_map[0][HOST];
+        let (_, fresh_range, after_width_hwp) = core
+            .picture_band_owning_body_paragraph(0, HOST)
+            .expect("Picture band after pagination");
+        assert_eq!(after_col, 1, "the expanded host moves to the wide column");
+        assert_ne!(
+            before_width_hwp, after_width_hwp,
+            "the two physical columns must have different available widths"
+        );
+
+        let fresh_band = crate::renderer::composer::layout_picture_band(
+            &core.document.sections[0].paragraphs,
+            HOST,
+            after_width_hwp,
+            &core.styles,
+            DPI,
+        )
+        .expect("fresh band at the post-pagination column width");
+        assert_eq!(fresh_band.paragraph_range, fresh_range);
+        let horizontal_projection = |line: &LineSeg| {
+            (
+                line.text_start,
+                line.line_height,
+                line.text_height,
+                line.baseline_distance,
+                line.line_spacing,
+                line.column_start,
+                line.segment_width,
+                line.tag,
+            )
+        };
+        for (paragraph, fresh_lines) in core.document.sections[0].paragraphs[fresh_range.clone()]
+            .iter()
+            .zip(fresh_band.line_segs)
+        {
+            assert_eq!(
+                paragraph
+                    .line_segs
+                    .iter()
+                    .map(horizontal_projection)
+                    .collect::<Vec<_>>(),
+                fresh_lines
+                    .iter()
+                    .map(horizontal_projection)
+                    .collect::<Vec<_>>(),
+                "every current band member must match the post-pagination column projection"
+            );
+        }
+    }
+
+    #[test]
+    fn picture_frame_batch_edit_reprojects_before_final_pagination() {
+        use crate::model::control::Control;
+
+        const HOST: usize = 325;
+        const DPI: f64 = 96.0;
+
+        let bytes = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/3-09월_교육_통합_2022.hwp"),
+        )
+        .expect("p325 corpus fixture");
+
+        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
+        let column = core.document.sections[0].paragraphs[0]
+            .controls
+            .iter_mut()
+            .find_map(|control| match control {
+                Control::ColumnDef(column) => Some(column),
+                _ => None,
+            })
+            .expect("p0 column definition");
+        column.same_width = false;
+        column.proportional_widths = true;
+        column.widths = vec![10_000, 22_000];
+        column.gaps = vec![500];
+        core.document.sections[0].section_def.page_def.height = 12_000;
+        core.recompose_section(0);
+        core.paginate();
+
+        let before_col = core.para_column_map[0][HOST];
+        let (_, _, before_width_hwp) = core
+            .picture_band_owning_body_paragraph(0, HOST)
+            .expect("initial Picture band");
+        assert_eq!(before_col, 0, "fixture starts in the narrow column");
+
+        core.begin_batch_native().expect("begin batch");
+        core.insert_text_native(0, HOST, 0, &"가".repeat(32))
+            .expect("host insert succeeds during batch");
+        let after_edit_col = core.para_column_map[0][HOST];
+        core.end_batch_native().expect("end batch");
+
+        let after_flush_col = core.para_column_map[0][HOST];
+        let (_, fresh_range, after_width_hwp) = core
+            .picture_band_owning_body_paragraph(0, HOST)
+            .expect("Picture band after final pagination");
+        assert_eq!(
+            after_edit_col, before_col,
+            "batch mode keeps the live column map deferred"
+        );
+        assert_eq!(
+            after_flush_col, 1,
+            "the expanded host moves to the wide column when the batch flushes"
+        );
+        assert_ne!(before_width_hwp, after_width_hwp);
+
+        let fresh_band = crate::renderer::composer::layout_picture_band(
+            &core.document.sections[0].paragraphs,
+            HOST,
+            after_width_hwp,
+            &core.styles,
+            DPI,
+        )
+        .expect("fresh band at the post-batch column width");
+        assert_eq!(fresh_band.paragraph_range, fresh_range);
+        let horizontal_projection = |line: &LineSeg| {
+            (
+                line.text_start,
+                line.line_height,
+                line.text_height,
+                line.baseline_distance,
+                line.line_spacing,
+                line.column_start,
+                line.segment_width,
+                line.tag,
+            )
+        };
+        let actual_projection = core.document.sections[0].paragraphs[fresh_range.clone()]
+            .iter()
+            .map(|paragraph| {
+                paragraph
+                    .line_segs
+                    .iter()
+                    .map(horizontal_projection)
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        let fresh_projection = fresh_band
+            .line_segs
+            .iter()
+            .map(|line_segs| {
+                line_segs
+                    .iter()
+                    .map(horizontal_projection)
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            actual_projection, fresh_projection,
+            "the deferred batch flush must already receive the destination-width Picture band"
+        );
+    }
+
+    #[test]
+    fn picture_frame_failed_narrow_column_convergence_publishes_nothing() {
+        use crate::model::control::Control;
+
+        const HOST: usize = 325;
+        const DOWNSTREAM: usize = 332;
+        let bytes = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/3-09월_교육_통합_2022.hwp"),
+        )
+        .expect("p325 corpus fixture");
+
+        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
+        let host_style_id = core.document.sections[0].paragraphs[HOST].para_shape_id;
+        core.styles.para_styles[host_style_id as usize].margin_left =
+            crate::renderer::hwpunit_to_px(20_000, core.dpi);
+        let column = core.document.sections[0].paragraphs[0]
+            .controls
+            .iter_mut()
+            .find_map(|control| match control {
+                Control::ColumnDef(column) => Some(column),
+                _ => None,
+            })
+            .expect("p0 column definition");
+        column.same_width = false;
+        column.proportional_widths = true;
+        column.widths = vec![22_000, 10_000];
+        column.gaps = vec![500];
+        core.document.sections[0].section_def.page_def.height = 12_000;
+        core.recompose_section(0);
+        core.paginate();
+
+        let before_col = core.para_column_map[0][HOST];
+        let (_, before_range, before_width_hwp) = core
+            .picture_band_owning_body_paragraph(0, HOST)
+            .expect("supported Picture band in the wide source column");
+        assert_eq!(before_col, 0, "fixture starts in the wide column");
+        assert_eq!(before_range, HOST..326);
+        assert_eq!(before_width_hwp, 36_842);
+
+        let geometry = |paragraphs: &[Paragraph]| {
+            paragraphs
+                .iter()
+                .map(|paragraph| {
+                    paragraph
+                        .line_segs
+                        .iter()
+                        .map(|line| {
+                            (
+                                line.text_start,
+                                line.vertical_pos,
+                                line.line_height,
+                                line.text_height,
+                                line.baseline_distance,
+                                line.line_spacing,
+                                line.column_start,
+                                line.segment_width,
+                                line.tag,
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>()
+        };
+        let before_text = core.document.sections[0].paragraphs[HOST].text.clone();
+        let before_geometry = geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]);
+        let before_raw_stream = core.document.sections[0].raw_stream.clone();
+        let before_columns = core.para_column_map.clone();
+        let before_event_count = core.event_log.len();
+
+        let result = core.insert_text_native(0, HOST, 0, &"가".repeat(32));
+        let after_col = core.para_column_map[0][HOST];
+        let text_changed = core.document.sections[0].paragraphs[HOST].text != before_text;
+        let raw_changed = core.document.sections[0].raw_stream != before_raw_stream;
+        let event_count = core.event_log.len();
+
+        assert!(
+            matches!(
+                result,
+                Err(HwpError::RenderError(ref message))
+                    if message == "그림 배치 영역(325..)을 새 단 너비로 다시 배치할 수 없습니다"
+            ),
+            "the narrow destination column must reject its re-projection"
+        );
+        assert_eq!(
+            after_col, before_col,
+            "a rejected convergence must not publish its destination column"
+        );
+        assert!(
+            !text_changed,
+            "a rejected convergence must not publish text"
+        );
+        assert!(
+            !raw_changed,
+            "a rejected convergence must not invalidate raw data"
+        );
+        assert_eq!(
+            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
+            before_geometry,
+            "a rejected convergence must not publish partial LineSeg geometry"
+        );
+        assert_eq!(
+            core.para_column_map, before_columns,
+            "a rejected convergence must not publish pagination state"
+        );
+        assert_eq!(
+            event_count, before_event_count,
+            "a rejected convergence must not publish an edit event"
         );
     }
 }
