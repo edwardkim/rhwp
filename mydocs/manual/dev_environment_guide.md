@@ -208,6 +208,10 @@ npm run subsecond:install
 처음 빌드하므로 수 분이 걸릴 수 있다. `target/dioxus-cli/`, `target/dx/`,
 `target/rhwp-subsecond-vite/`는 로컬 생성물이며 커밋하지 않는다.
 
+`subsecond:serve`는 Dioxus 대화형 제어를 켠다. 기동 배너의 `r`(전체 rebuild), `p`(자동 rebuild
+토글), `v`(상세 로그), `/`(전체 단축키)은 실행 중인 터미널에서 사용할 수 있다. 대화형 제어를
+끄면 배너는 단축키를 계속 보여도 키 입력은 동작하지 않으므로 `--interactive false`를 쓰지 않는다.
+
 이 경로에서는 일반 배포용 `wasm-pack build --target web --out-dir pkg`를 먼저 실행할 필요가 없다.
 `subsecond:serve`가 개발용 WASM을 `target/dx/`에 만들고, `dev:subsecond`가 필요한 JS/WASM 두 파일을
 `target/rhwp-subsecond-vite/`로 동기화한다.
@@ -243,6 +247,10 @@ npm run subsecond:serve     # dx serve --hot-patch (127.0.0.1:7711)
 cd rhwp-studio
 npm run dev:subsecond -- --host 0.0.0.0 --port 7700
 ```
+
+최초 기동 뒤에는 터미널 1에서 `/`를 눌러 단축키 메뉴가 나타나는지 먼저 확인한다. 이 확인은
+`subsecond:serve` 스크립트가 실제 대화형 모드로 실행됐는지 검증한다. 일반 Rust 저장은 자동 rebuild가
+기본으로 켜져 있어 바로 감지하며, 필요할 때만 `r`로 전체 rebuild를 요청한다.
 
 `0.0.0.0`은 Vite의 모든 NIC 수신 대기 주소다. 브라우저에는 이 서버의 실제 호스트 IP를 사용해
 `http://<host-ip>:7700/`으로 접속한다. `7711`은 Vite의 `/_dioxus`, `/wasm` 프록시 전용이므로 외부에
