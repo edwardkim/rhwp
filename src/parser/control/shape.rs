@@ -236,7 +236,7 @@ pub(crate) fn parse_gso_control(ctrl_data: &[u8], child_records: &[Record]) -> C
         let mut group = GroupShape::default();
         group.common = common;
         group.shape_attr = drawing.shape_attr;
-        group.children = parse_container_children(child_records);
+        group.children = parse_container_children(child_records, 0);
         group.caption = drawing.caption;
         return Control::Shape(Box::new(ShapeObject::Group(group)));
     }
@@ -638,8 +638,19 @@ fn parse_shape_component_full(data: &[u8]) -> ShapeComponentParsed {
 ///
 /// SHAPE_COMPONENT_CONTAINER 또는 첫 SHAPE_COMPONENT 이후의 레코드에서
 /// SHAPE_COMPONENT + 도형 태그 쌍을 찾아 각각을 개별 ShapeObject로 파싱한다.
-fn parse_container_children(child_records: &[Record]) -> Vec<ShapeObject> {
+/// [#4761] HWP5 묶음(그룹) 개체는 자식으로 다시 묶음을 가질 수 있고, 그 중첩 깊이는
+/// `level` 필드로 파일에서 온다. 상한이 없으면 깊이 중첩된 그룹 체인 하나로 네이티브
+/// 스택을 고갈시켜 프로세스를 죽일 수 있다(패닉과 달리 catch_unwind 로 못 잡는
+/// SIGSEGV). HWP3 형제 `parse_shape_list` 의 `MAX_DRAWING_OBJECT_DEPTH`(#4285)와 같은
+/// 취지·같은 값으로 상한을 둔다. 이 함수는 `Result` 가 아니므로 초과 시 빈 자식으로
+/// 절단한다(크래시 대신 깊은 중첩 유실 — 실문서의 그룹 중첩은 이에 한참 못 미친다).
+const MAX_HWP5_SHAPE_DEPTH: u32 = 256;
+
+fn parse_container_children(child_records: &[Record], depth: u32) -> Vec<ShapeObject> {
     let mut children = Vec::new();
+    if depth > MAX_HWP5_SHAPE_DEPTH {
+        return children;
+    }
 
     // SHAPE_COMPONENT_CONTAINER 이후 또는 구버전 그룹의 첫 SHAPE_COMPONENT 이후
     let container_idx = child_records
@@ -812,7 +823,7 @@ fn parse_container_children(child_records: &[Record]) -> Vec<ShapeObject> {
         {
             let mut group = GroupShape::default();
             group.shape_attr = child_drawing.shape_attr.clone();
-            group.children = parse_container_children(child_slice);
+            group.children = parse_container_children(child_slice, depth + 1);
             children.push(ShapeObject::Group(group));
             continue;
         }
@@ -1282,5 +1293,74 @@ mod task195_tests {
         assert_eq!(ole.extent_y, 0);
         assert_eq!(ole.bin_data_id, 0);
         assert_eq!(ole.raw_tag_data.len(), 4);
+    }
+}
+
+#[cfg(test)]
+mod shape_recursion_tests {
+    use super::*;
+
+    /// `level` 증가로 표현한 N겹 중첩 그룹 레코드. SCC(level0) 뒤에 SHAPE_COMPONENT
+    /// level 1..=n 을 두면 각 재귀가 한 레벨씩 파고들어 n-깊이 중첩을 만든다. data 는
+    /// 비워도 parse_shape_component_full 이 기본값을 돌려주므로 안전하다.
+    fn nested_group_records(n: usize) -> Vec<Record> {
+        let mut records = vec![Record {
+            tag_id: tags::HWPTAG_SHAPE_COMPONENT_CONTAINER,
+            level: 0,
+            size: 0,
+            data: Vec::new(),
+        }];
+        for lvl in 1..=n {
+            records.push(Record {
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
+                level: lvl as u16,
+                size: 0,
+                data: Vec::new(),
+            });
+        }
+        records
+    }
+
+    fn group_nesting_depth(shapes: &[ShapeObject]) -> usize {
+        shapes
+            .iter()
+            .map(|s| match s {
+                ShapeObject::Group(g) => 1 + group_nesting_depth(&g.children),
+                _ => 0,
+            })
+            .max()
+            .unwrap_or(0)
+    }
+
+    #[test]
+    fn deep_group_nesting_is_bounded_not_overflowed() {
+        // 상한을 넘는 중첩 그룹은 스택을 고갈시키기 전에 유한 트리로 절단돼야 한다.
+        // 가드가 없으면 입력 깊이만큼의 트리가 만들어져(또는 스택 오버플로) depth 가
+        // 상한을 넘어 이 단언이 실패한다(회귀 포착). 넉넉한 스택 전용 스레드에서
+        // 경계를 빌드 프로파일과 무관하게 결정적으로 시험한다. 가드는 depth > MAX
+        // 에서 절단하므로 최대 중첩은 MAX+1 이다.
+        let records = nested_group_records(MAX_HWP5_SHAPE_DEPTH as usize + 100);
+        let depth = std::thread::Builder::new()
+            .stack_size(64 * 1024 * 1024)
+            .spawn(move || group_nesting_depth(&parse_container_children(&records, 0)))
+            .expect("파서 스레드 생성 실패")
+            .join()
+            .expect("파서 스레드 패닉");
+        assert!(
+            depth <= MAX_HWP5_SHAPE_DEPTH as usize + 1,
+            "그룹 중첩 depth {depth} 가 상한 {MAX_HWP5_SHAPE_DEPTH}(+1) 을 넘었다 — 깊이 가드 회귀"
+        );
+        assert!(depth > 0, "가드가 전부 버렸다 — 과잉 절단");
+    }
+
+    #[test]
+    fn shallow_group_nesting_is_preserved() {
+        // 상한 안쪽의 정상 중첩은 절단 없이 보존돼야 한다(가드가 과잉 차단 안 함).
+        let records = nested_group_records(8);
+        let depth = group_nesting_depth(&parse_container_children(&records, 0));
+        assert!(
+            (1..=8).contains(&depth),
+            "얕은 중첩 depth {depth} 가 예상 범위(1..=8) 밖 — 가드 과잉 절단 의심"
+        );
     }
 }
