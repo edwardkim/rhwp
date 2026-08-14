@@ -55,6 +55,21 @@ last_verified: 2026-08-14
 - [x] code candidate `e1cb68ff0`에서 Node 53/53, focused Python 9/9, 전체 workflow 108/108,
   actionlint와 diff check를 통과한다.
 
+## Stage 2.8 — file-list 신뢰와 base-generation 보정
+
+- [x] 외부 fork에 `collection-error`, 3,000개 file-list 경계, `file-list-empty`가 생기면
+  `full`이 아니라 `blocked`로 닫는다.
+- [x] same-repository/collaborator의 불완전 목록은 모든 workflow를 요구하는 기존 `full`을 유지한다.
+- [x] policy status contract를 v3으로 올리고 평가한 40자리 base SHA를 compact description에 포함한다.
+- [x] 동일 head의 base B1/B2 status description이 달라지는 단위 회귀를 추가한다.
+- [x] 작성 시점 실제 PR이 과거 base snapshot인데도 `CLEAN`이고 required context가 `Build & Test`뿐인
+  상태를 확인해 strict up-to-date가 현재 적용되지 않았음을 기록한다.
+- [x] `CI Impact Policy` required 활성화 전 `required_status_checks.strict=true`, GitHub Actions app source,
+  `B1 success → 동일 head / B2 merge 차단 → 새 head 재검증`의 admin live gate를 명시한다.
+- [x] 최종 보정 head에서 Node 55/55, focused Python 9/9, 전체 workflow 108/108,
+  actionlint와 diff check를 통과한다.
+- [x] code/test 보정을 `8ff214740`으로 분리 커밋한다.
+
 ## Stage 3 — 원격 보정과 새 head CI
 
 - [x] 작업지시자 승인 뒤 보정·동기화 commit을 같은 PR branch에 push한다.
@@ -72,7 +87,8 @@ last_verified: 2026-08-14
   - privileged controller가 PR head code·artifact를 실행하지 않는 신뢰 경계
   - 외부 fork와 stale/retry run identity 검증
   - CI·CodeQL·Render Diff job/step 진리표와 fail-closed 동작
-  - 정상 `devel → main` 반영 뒤 `CI Impact Policy` required context 채택 여부
+  - 정상 `devel → main` 반영 뒤 strict up-to-date와 expected app source를 선행한
+    `CI Impact Policy` required context 채택 여부
 - [ ] maintainer 승인 전에는 collaborator 권한이 있어도 merge하지 않는다.
 
 ## Stage 5 — merge와 운영 후속
@@ -81,6 +97,7 @@ last_verified: 2026-08-14
 - [ ] merge comment와 #3790 업데이트 comment에 merge commit, 검증, 아직 활성화되지 않은 이유를 남긴다.
 - [ ] 정상 release로 workflow가 main에 포함될 때까지 controller 비활성 상태를 유지한다.
 - [ ] main 등록 뒤 live PR에서 pending→success와 의도적 불일치 failure를 감사한다.
-- [ ] repository admin의 required context 채택 또는 미채택 결정을 기록한다.
+- [ ] repository admin이 strict up-to-date와 GitHub Actions expected source를 실제 설정에서 검증한 뒤
+  required context 채택 또는 미채택 결정을 기록한다. 현재 설정은 미충족이므로 활성화하지 않는다.
 - [ ] 위 live audit 또는 미채택 결정 뒤에만 작업지시자 승인으로
   `tmp/issue-3790-stage26` prototype과 새 worktree 정리를 검토한다.

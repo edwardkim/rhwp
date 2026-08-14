@@ -57,7 +57,9 @@ commit status, stale run 무시와 fail-closed 기본값을 재사용할 가치�
 2. devel PR의 full CI를 통과한다. 이때 새 controller는 main에 없어 live status를 발행하지 않는다.
 3. 다음 정상 release로 main에 포함된 뒤 실제 PR에서 pending→success와 의도적 불일치 failure 표본을
    확인한다.
-4. repository admin이 `CI Impact Policy`를 devel required context로 채택하거나 미채택 결정을 남긴다.
+4. repository admin이 `Require branches to be up to date before merging`과 GitHub Actions expected source를
+   실제 `devel` 보호 규칙에서 검증한 뒤에만 `CI Impact Policy`를 required context로 채택한다. 둘 중
+   하나라도 확인되지 않으면 미채택 상태를 유지한다.
 5. 위 live audit 또는 미채택 결정 뒤에만 사용자 승인으로 원형 branch/worktree를 정리한다.
 
 ## 구현 결과
@@ -120,6 +122,33 @@ Draft PR #4682의 첫 전체 CI가 통과한 뒤 최신 devel과 실제 Actions 
 표본으로 확인한다. devel 이동 때문에 둘이 다르면 임의 허용하지 않고 새 head 실행 또는 base 동기화로
 증거를 갱신한 뒤 required context 채택 여부를 판단한다.
 
+## 후속 review — file-list 완전성과 base 이동
+
+head `3fca10931` 기준 후속 review는 두 P1 경계를 확인했다.
+
+1. 외부 fork에서 PR file 목록이 3,000개 경계로 잘리거나 조회에 실패하면 기존 policy는 관측된 부분만으로
+   enforcement 변경을 판단해 `full`로 진행했다. `controller-mediated-fork`과 `forceFullReason`의 조합을
+   `blocked`로 바꾸고 `collection-error`, `pull_request-file-list-boundary`, `file-list-empty`를 회귀로
+   고정했다. same-repository/collaborator는 보수적 full 실행을 유지한다.
+2. head가 고정된 채 `devel`만 이동하면 기존 성공 status가 같은 head에 남는다. 작성 시점 PR은 base
+   snapshot `d871bb8ce`에서 현재 `devel@a5a92ca3`보다 34 commits 뒤였지만 `CLEAN`이었고, required context는
+   `Build & Test` 하나였다. 따라서 strict up-to-date가 현재 실제 설정에 적용되지 않았으며,
+   `CI Impact Policy` required 활성화는 금지 상태다.
+
+base-push마다 모든 열린 PR에 status를 게시하는 fan-out은 별도 운영 승인 없이 도입하지 않는다.
+`CI Impact Policy`만 test-merge SHA에 게시하는 안도 기존 head SHA의 `Build & Test`와 required-check 기준
+commit을 갈라놓을 수 있어 채택하지 않는다. 대신 required 활성화의 선행조건을 다음처럼 고정한다.
+
+- repository admin이 `required_status_checks.strict=true`와 GitHub Actions app expected source를 실제
+  protection API 또는 Settings에서 확인한다.
+- live 표본에서 `base B1 / head H success → 동일 H / base B2`가 `BEHIND` 또는 merge 차단이 되고,
+  base 반영으로 새 head가 생성된 뒤에만 새 policy success가 생기는지 확인한다.
+- policy status contract v3는 평가한 40자리 base SHA를 `b=<sha>`로 포함한다. 같은 head의 B1/B2 설명이
+  달라지는 단위 회귀로 감사 generation을 식별한다.
+
+현재 설정이 선행조건을 충족하지 않으므로 main 등록 뒤에도 live audit과 admin 설정 검증 전에는
+non-required 관측 상태로만 운영한다.
+
 최신 `upstream/devel@55eb2860b7fa`는 merge simulation tree
 `f70884072c51f4248b4361f8aa5b3c56ee0f57dc`로 충돌이 없었고, 실제 merge head `d5b7ef831`에 반영했다.
 
@@ -178,7 +207,8 @@ identity와 run 결론을 검증한 뒤 이 표지가 없으면 `job-evidence-un
 남기며, 정상 조회 뒤 실제 job이 없으면 기존 `missing-job` failure를 유지한다. 따라서 transient API
 증거 부족은 false red로 바뀌지 않고, 실제 필수 검사 누락도 숨기지 않는다.
 
-검증 결과는 Node classifier+policy 53/53, focused Python workflow 9/9, 전체 workflow 108/108 통과다.
-CI·CodeQL·Render Diff·CI Impact Policy 네 workflow의 actionlint와 `git diff --check`도 통과했다.
+이 후속 보정은 Node classifier+policy 55/55, focused Python workflow 9/9, 전체 workflow 108/108을
+통과했다. CI·CodeQL·Render Diff·CI Impact Policy 네 workflow의 actionlint와 `git diff --check`도
+통과했다. code/test 보정은 `8ff214740`으로 분리 커밋했다.
 renderer·제품 코드·fixture 변경은 없어 Cargo·Studio·WASM·시각 검증은 추가하지 않았다. 이 code와 review
 기록을 PR branch에 push한 뒤 최신 head GitHub Actions와 maintainer 재확인을 새 merge 조건으로 둔다.

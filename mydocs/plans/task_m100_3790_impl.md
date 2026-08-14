@@ -75,8 +75,9 @@ ref의 제어를 받는다. 따라서 `pr-base-trusted-shadow`는 classifier-sou
 4. Stage 3~5와 canary는 main 릴리즈 전에 devel 대상 PR에서 실행한다. controller는 별도 main PR로
    등록하지 않고 정상 `devel → main` 릴리즈를 기다린다.
 5. main 등록 뒤 controller가 PR head code/artifact를 실행하지 않고 실제 job의 expected
-   `success|skipped`를 독립 감사하게 한다. repository admin이 required status를 채택해야 merge
-   enforcement가 완성된다.
+   `success|skipped`를 독립 감사하게 한다. repository admin이 `devel`의 strict up-to-date와 GitHub
+   Actions expected source를 실제 설정에서 확인한 뒤 required status를 채택해야 merge enforcement가
+   완성된다. 현재처럼 strict가 확인되지 않은 상태에서는 required로 활성화하지 않는다.
 
 controller 프로토타입은 대체 controller가 main에서 live audit까지 통과하거나 maintainer가 required
 policy를 미채택하기로 결정할 때까지 보존한다. 이후 재사용할 설계·테스트 근거를 계획·보고서에 옮긴 뒤
@@ -107,8 +108,9 @@ policy를 미채택하기로 결정할 때까지 보존한다. 이후 재사용�
    세 workflow가 모두 완료·일치할 때만 success다. privileged job은 PR head/merge ref checkout,
    artifact download, PR 제공 script 실행을 금지한다.
 8. devel PR과 로컬 검증은 controller 활성화가 아니다. 정상 release로 workflow가 main에 등록된 뒤
-   live pending→success/failure 표본을 확인하고, repository admin이 required context를 채택해야
-   enforcement 완료로 판정한다.
+   live pending→success/failure와 `base B1 success → 동일 head / base B2 merge 차단 → 새 head 재검증`
+   표본을 확인한다. repository admin이 `required_status_checks.strict=true`와 GitHub Actions app source를
+   실제 보호 규칙에서 확인한 뒤 required context를 채택해야 enforcement 완료로 판정한다.
 
 ## Stage 3 — frontend unit/package/render 활성화
 

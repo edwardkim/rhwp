@@ -47,6 +47,7 @@ review remediation base merge: d5b7ef8318a1ff790b9d4e55f02c1f126c980427
 maintainer review head: 3b421b12d49e9ceb9c3c4499660ab950288e996f
 latest correction base head: d31fa652f535decce7fb51f8551c3913b0d1a106
 job evidence correction commit: e1cb68ff0
+file-list and base-generation correction commit: 8ff214740
 ```
 
 1,000줄이 넘고 default-branch privileged controller와 향후 required status 채택 판단을 포함하므로,
@@ -149,9 +150,45 @@ policy는 workflow identity와 run 결론을 먼저 검증한 뒤 `jobsCollected
 기존 `missing-job` failure를 유지해 실제 검사 누락을 숨기지 않는다. 두 경로를 Node 회귀로 각각 고정하고,
 workflow 정적 계약은 수집 완료 표지가 직렬화되는지 확인한다.
 
+### 9. 불완전한 file 목록의 외부 fork 차단
+
+[후속 maintainer review](https://github.com/edwardkim/rhwp/pull/4682#issuecomment-5294368734)는 PR files
+API가 3,000개 경계에서 잘리거나 조회에 실패해도 `forceFullReason`만 설정되고, 외부 fork 차단은 실제로
+수집된 `files`의 enforcement surface만 보는 경계를 지적했다. 보정 전에는 외부 fork에
+`collection-error` 또는 `pull_request-file-list-boundary`와 빈·부분 목록을 주면 `blocked`가 아니라
+`full`이었다.
+
+policy는 이제 `controller-mediated-fork`에서 enforcement 변경이 직접 관측됐거나 `forceFullReason`으로
+목록 완전성을 증명할 수 없는 경우를 모두 `blocked`로 닫는다. `collection-error`, 3,000개 경계,
+`file-list-empty`를 외부 fork 회귀로 고정하고, 동일 사유의 same-repository/collaborator PR은 기존처럼
+모든 workflow를 요구하는 `full`을 유지한다.
+
+### 10. base 이동과 required-context 활성화 조건
+
+같은 review는 `devel`만 이동해도 head SHA에 남은 과거 `success`가 자동으로 무효화되지 않는다고
+지적했다. 작성 시점 실제 상태에서도 PR head `3fca10931`의 base snapshot은 `d871bb8ce`였고 현재
+`devel@a5a92ca3`보다 34 commits 뒤였지만 PR은 `CLEAN`이었다. branch metadata가 노출한 required context도
+`Build & Test` 하나뿐이므로, 현재 보호 규칙은 이 gap을 막는 strict up-to-date 상태가 아니다.
+
+이 PR은 모든 열린 PR에 base-push fan-out status를 게시하지 않는다. 또한 `CI Impact Policy`만 test-merge
+SHA에 게시하면 현재 head SHA에 귀속되는 `Build & Test`와 GitHub required-check 기준 commit이 갈릴 수 있어
+그 경로도 채택하지 않는다. 대신 이 controller의 required-context 활성화를 다음 운영 계약으로 닫는다.
+
+1. `Require branches to be up to date before merging`이 실제 `devel` 보호 규칙에서 활성화되지 않으면
+   `CI Impact Policy`를 required context로 추가하지 않는다.
+2. repository admin이 protection API 또는 Settings 화면에서 `required_status_checks.strict=true`와
+   `CI Impact Policy`의 expected source를 GitHub Actions app으로 제한했는지 확인하고 근거를 남긴다.
+3. live audit에서 `base B1 / head H success → 동일 H / base B2` 전이가 `BEHIND` 또는 merge 차단으로
+   바뀌고, base를 반영해 새 head가 된 뒤에만 policy가 다시 성공하는지 검증한다.
+4. policy status contract v3는 평가에 사용한 40자리 base SHA를 `b=<sha>`로 포함한다. 동일 head의 B1/B2
+   설명이 달라지는 단위 회귀를 추가해 live 전이에서 어느 base를 감사했는지 식별한다.
+
+현재 실제 설정은 1번을 충족하지 않으므로 이 context는 **required로 활성화할 수 없다**. main 등록 뒤
+live audit과 admin 설정 변경·재검증이 끝나기 전까지는 관측용 non-required 상태로만 운영한다.
+
 ## 검증
 
-- Node classifier+policy: 53/53 통과
+- Node classifier+policy: 55/55 통과
 - focused Python CI impact policy workflow 계약: 9/9 통과
 - 전체 workflow 계약: 108/108 통과
 - `actionlint` 대상 CI·CodeQL·Render Diff·CI Impact Policy: 진단 없음
@@ -168,7 +205,7 @@ renderer, layout, paint, sample과 제품 UI를 바꾸지 않으므로 시각·f
 현재는 **pending-ci**다. maintainer finding 보정과 focused 검증은 완료됐다. 다음 순서를
 모두 만족한 뒤에만 수용 권고로 전환한다.
 
-1. `e1cb68ff0`과 이 review 기록을 같은 PR branch에 push한다.
+1. 외부 fork file-list 차단과 strict 활성화 계약 보정을 이 review 기록과 함께 같은 PR branch에 push한다.
 2. 보정 내용·로컬 검증·새 head CI 대기 상태를 maintainer review의 후속 코멘트로 게시한다.
 3. 같은 최신 head에서 GitHub 전체 CI를 통과시킨다.
 4. maintainer의 재확인과 명시적 승인, merge 직전 최신 head·checks·mergeability 재확인 뒤 merge한다.
