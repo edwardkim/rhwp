@@ -8,8 +8,8 @@
 //! Chromium LayoutNG의 Break Token 패턴, LibreOffice Writer의 Master/Follow Chain,
 //! MS Word/OOXML의 cantSplit/tblHeader를 참고.
 
-use crate::model::control::Control;
 use crate::document_core::queries::rendering::body_pile_stays_on_anchor_page;
+use crate::model::control::Control;
 use crate::model::footnote::{Footnote, FootnoteShape};
 use crate::model::header_footer::HeaderFooterApply;
 use crate::model::page::{ColumnDef, ColumnType, PageDef};

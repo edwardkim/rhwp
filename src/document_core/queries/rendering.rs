@@ -365,9 +365,7 @@ fn floating_image_stack_extents(para: &Paragraph, min_height_hu: i32) -> Option<
     let mut min_pic_w = i32::MAX;
     let mut max_pic_h = i32::MIN;
     for ctrl in &para.controls {
-        let Some(common) = floating_stack_picture_common(ctrl) else {
-            return None;
-        };
+        let common = floating_stack_picture_common(ctrl)?;
         if common.treat_as_char
             || !matches!(common.text_wrap, TextWrap::Square)
             || common.allow_overlap
@@ -4896,11 +4894,11 @@ impl DocumentCore {
             let matches: Vec<usize> = section
                 .paragraphs
                 .iter()
-                    .enumerate()
-                    .filter(|(_, p)| {
-                        para_is_floating_image_stack(p, min_height_hu)
+                .enumerate()
+                .filter(|(_, p)| {
+                    para_is_floating_image_stack(p, min_height_hu)
                         && !body_pile_stays_on_anchor_page(p, min_height_hu, body_bottom_hu)
-                    })
+                })
                 .map(|(i, _)| i)
                 .collect();
             // [#2004] 표 셀 내부 부동 이미지 스택 검출(본문 스택과 별개 경로).
