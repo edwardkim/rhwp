@@ -816,21 +816,16 @@ impl DocumentCore {
                 };
                 // 원본 ParaShape에서 attr 비트 추출
                 let (a1, a2) = raw_ps.map(|r| (r.attr1, r.attr2)).unwrap_or((0, 0));
-                // 바이너리: attr1, HWPX: attr2 — OR 조합으로 양쪽 지원
-                let widow_orphan = ((a1 >> 16) & 1 != 0) || ((a2 >> 5) & 1 != 0);
-                let keep_with_next = ((a1 >> 17) & 1 != 0) || ((a2 >> 6) & 1 != 0);
-                let keep_lines = ((a1 >> 18) & 1 != 0) || ((a2 >> 7) & 1 != 0);
-                let page_break_before = ((a1 >> 19) & 1 != 0) || ((a2 >> 8) & 1 != 0);
+                // #2777 정본: breakSetting은 attr1 16-19, autoSpacing은 attr2 4/5.
+                let widow_orphan = (a1 >> 16) & 1 != 0;
+                let keep_with_next = (a1 >> 17) & 1 != 0;
+                let keep_lines = (a1 >> 18) & 1 != 0;
+                let page_break_before = (a1 >> 19) & 1 != 0;
                 let font_line_height = (a1 >> 22) & 1 != 0;
                 let single_line = (a2 & 0x03) != 0;
-                let auto_space_kr_en = ((a2 >> 4) & 1 != 0) || ((a1 >> 20) & 1 != 0);
-                let auto_space_kr_num = ((a2 >> 5) & 1 != 0) || ((a1 >> 21) & 1 != 0);
-                // verticalAlign: attr1 bits 20-21 (autoSpacing과 충돌 시 0)
-                let vertical_align = if !auto_space_kr_en && !auto_space_kr_num {
-                    (a1 >> 20) & 0x03
-                } else {
-                    0
-                };
+                let auto_space_kr_en = (a2 >> 4) & 1 != 0;
+                let auto_space_kr_num = (a2 >> 5) & 1 != 0;
+                let vertical_align = (a1 >> 20) & 0x03;
                 let english_break_unit = (a1 >> 5) & 0x03;
                 let korean_break_unit = (a1 >> 7) & 0x01;
                 let border_connect = (a1 >> 28) & 1 != 0;
