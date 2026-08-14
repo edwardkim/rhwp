@@ -455,8 +455,13 @@ fn parse_paragraph(
     let mut text_parts: Vec<String> = Vec::new();
     let mut current_char_shape_id: u32 = 0;
     let mut char_shape_changes: Vec<(u32, u32)> = Vec::new(); // (utf16_pos, char_shape_id)
-                                                              // [Task #1556] fieldEnd 의 (beginIDRef, fieldid) 를 출현 순서대로 보관 — text_parts 의
-                                                              // `\u{0004}` 와 1:1 대응. 고아 fieldEnd 복원에 사용.
+                                                              // 템플릿 첫 run 의 secPr/colPr 뒤에는 같은 charPrIDRef 의 텍스트 run 이 한 번 더
+                                                              // 올 수 있다. 이 경우만 HWP PARA_CHAR_SHAPE 의 단일 시작 entry 로 정규화한다.
+                                                              // 일반 동일-ID run 경계는 위치 자체가 IR이 보존할 정보이므로 제거하면 안 된다 (#3739).
+    let mut preceding_run_had_sec_pr = false;
+    let mut preceding_run_char_shape_id: Option<u32> = None;
+    // [Task #1556] fieldEnd 의 (beginIDRef, fieldid) 를 출현 순서대로 보관 — text_parts 의
+    // `\u{0004}` 와 1:1 대응. 고아 fieldEnd 복원에 사용.
     let mut field_end_attrs: Vec<(u32, u32)> = Vec::new();
 
     loop {
@@ -474,7 +479,13 @@ fn parse_paragraph(
                         }
                         // 현재 UTF-16 위치에서 글자모양 변경 기록
                         let utf16_pos = calc_utf16_len_from_parts(&text_parts);
-                        char_shape_changes.push((utf16_pos, current_char_shape_id));
+                        let template_sec_pr_handoff = preceding_run_had_sec_pr
+                            && preceding_run_char_shape_id == Some(current_char_shape_id);
+                        if !template_sec_pr_handoff {
+                            char_shape_changes.push((utf16_pos, current_char_shape_id));
+                        }
+                        preceding_run_had_sec_pr = false;
+                        preceding_run_char_shape_id = Some(current_char_shape_id);
                     }
                     b"t" => {
                         // 텍스트 읽기 (탭 확장 데이터 포함)
@@ -523,6 +534,7 @@ fn parse_paragraph(
                         }
                     }
                     b"secPr" => {
+                        preceding_run_had_sec_pr = true;
                         // 문단 내 섹션 정의 파싱
                         let mut sd = SectionDef::default();
                         parse_section_def_start(ce, &mut sd);
@@ -760,21 +772,15 @@ fn parse_paragraph(
     para.has_para_text = !para.text.is_empty() || !para.controls.is_empty();
 
     // char_shapes는 원본 문단 순서(text_parts)를 기준으로 계산한 위치를 그대로 사용한다.
-    // [Task #1058 후속] 같은 char_shape_id 연속 dedup — HWPX 의 여러 run 이 같은
-    // charPrIDRef 일 때 HWP PARA_CHAR_SHAPE 는 첫 entry 1개만 유지하므로 정합.
-    let mut deduped_cs: Vec<CharShapeRef> = Vec::new();
-    for (pos, id) in char_shape_changes {
-        if let Some(last) = deduped_cs.last() {
-            if last.char_shape_id == id {
-                continue;
-            }
-        }
-        deduped_cs.push(CharShapeRef {
+    // 같은 char_shape_id라도 run 시작 위치가 다르면 HWP PARA_CHAR_SHAPE 의 의미 있는
+    // 경계다. secPr 템플릿 handoff만 run 시작 시점에 별도로 정규화한다 (#3739).
+    para.char_shapes = char_shape_changes
+        .into_iter()
+        .map(|(pos, id)| CharShapeRef {
             start_pos: pos,
             char_shape_id: id,
-        });
-    }
-    para.char_shapes = deduped_cs;
+        })
+        .collect();
 
     // [Task #1058 후속] column_type/raw_break_type — HWP 정합 (스펙 표 59):
     //   bit 0 (0x01) = 구역 나누기, bit 1 (0x02) = 다단 나누기,
@@ -7799,11 +7805,40 @@ mod tests {
         let para = &section.paragraphs[0];
         assert_eq!(para.text, "AB");
         assert_eq!(para.char_offsets, vec![0, 9]);
-        // [Task #1058] 같은 char_shape_id 연속 dedup — HWP PARA_CHAR_SHAPE 는 첫 entry 1개만 유지.
-        // 두 run 모두 charPrIDRef="0" 이므로 dedup 후 char_shapes.len() = 1.
-        assert_eq!(para.char_shapes[0].start_pos, 0);
-        assert_eq!(para.char_shapes.len(), 1);
+        // 같은 ID여도 표 슬롯 뒤의 별도 run 경계(start_pos=9)는 보존해야 한다 (#3739).
+        assert_eq!(
+            para.char_shapes
+                .iter()
+                .map(|cs| (cs.start_pos, cs.char_shape_id))
+                .collect::<Vec<_>>(),
+            vec![(0, 0), (9, 0)]
+        );
         assert_eq!(para.controls.len(), 1);
+    }
+
+    #[test]
+    fn issue_3739_secpr_template_handoff_same_id_is_normalized() {
+        // 첫 secPr run과 템플릿이 별도로 넣는 첫 텍스트 run은 같은 ID여도
+        // HWP PARA_CHAR_SHAPE에서 하나의 시작 entry여야 한다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="5"><hp:secPr textDirection="HORIZONTAL"></hp:secPr></hp:run>
+    <hp:run charPrIDRef="5"><hp:t>A</hp:t></hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let para = &section.paragraphs[0];
+        assert_eq!(para.text, "A");
+        assert_eq!(
+            para.char_shapes
+                .iter()
+                .map(|cs| (cs.start_pos, cs.char_shape_id))
+                .collect::<Vec<_>>(),
+            vec![(0, 5)]
+        );
     }
 
     #[test]

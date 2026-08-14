@@ -715,12 +715,12 @@ pub(crate) fn render_hp_t_content(
 /// 문단 콘텐츠를 `char_shapes` 경계 기준 다중 `<hp:run>` 으로 분할 출력하는 빌더 (#1378).
 ///
 /// 파서(`src/parser/hwpx/section.rs`)는 각 `<hp:run charPrIDRef>` 시작 위치에서
-/// `(utf16_pos, char_shape_id)` 를 기록하고 연속 동일 id 를 dedup 한다.
+/// `(utf16_pos, char_shape_id)` 를 기록한다. 동일 id라도 위치가 다른 경계는 보존한다.
 /// 이 빌더는 그 역방향: `segs[i].0` (i ≥ 1) 위치에서 run 을 닫고 새 run 을 연다.
 ///
 /// 경계 규칙 (구현계획서 1.2):
 /// 1. 경계와 슬롯/문자가 같은 위치면 경계 먼저 — 해당 콘텐츠는 새 run 소속 (`cut_before`)
-/// 2. 연속 동일 id 경계는 출력 시 skip (IR 은 이미 dedup 상태이나 방어적으로 유지)
+/// 2. 연속 동일 id 경계도 run으로 방출 — start_pos 보존 (#3739)
 /// 3. `char_shapes` 가 비어있으면 단일 run `charPrIDRef="0"`
 /// 4. `segs[0].start_pos > 0` 인 비정상 IR 도 첫 run 은 위치 0 부터 시작 (관용 처리)
 /// 5. 빈 세그먼트는 `<hp:t></hp:t>` 로 방출 — 재파싱 시 run 시작 entry 위치 보존
@@ -739,11 +739,6 @@ impl RunSplitter {
     fn new(para: &Paragraph) -> Self {
         let mut segs: Vec<(u32, u32)> = Vec::new();
         for cs in &para.char_shapes {
-            if let Some(&(_, last_id)) = segs.last() {
-                if last_id == cs.char_shape_id {
-                    continue; // 규칙 2
-                }
-            }
             segs.push((cs.start_pos, cs.char_shape_id));
         }
         if segs.is_empty() {
@@ -4919,16 +4914,16 @@ mod tests {
     }
 
     #[test]
-    fn task1378_consecutive_same_id_boundary_skipped() {
-        // 연속 동일 id 경계 skip — 파서 dedup 왕복 정합 (경계 케이스 3)
+    fn issue_3739_consecutive_same_id_boundary_preserved() {
+        // 같은 ID여도 start_pos는 HWP PARA_CHAR_SHAPE 의 보존 대상이다.
         let mut para = Paragraph::default();
         para.text = "abcdef".to_string();
         para.char_shapes = vec![cs(0, 5), cs(2, 5), cs(4, 6)];
         let xml = runs_of(&para);
         assert_eq!(
             xml,
-            r#"<hp:run charPrIDRef="5"><hp:t>abcd</hp:t></hp:run><hp:run charPrIDRef="6"><hp:t>ef</hp:t></hp:run>"#,
-            "동일 id 경계 (2,5) 는 skip 되고 (4,6) 만 분할해야 한다"
+            r#"<hp:run charPrIDRef="5"><hp:t>ab</hp:t></hp:run><hp:run charPrIDRef="5"><hp:t>cd</hp:t></hp:run><hp:run charPrIDRef="6"><hp:t>ef</hp:t></hp:run>"#,
+            "동일 id 경계 (2,5)도 별도 run으로 출력해야 한다"
         );
     }
 
