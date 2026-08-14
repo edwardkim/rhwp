@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: pending-approval
+status: pending-ci
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-15
 ---
@@ -9,7 +9,7 @@ last_verified: 2026-08-15
 
 ## 결론
 
-**2026-08-15 maintainer review 완료, 작업지시자 승인 대기.** [PR #4682](https://github.com/edwardkim/rhwp/pull/4682)는
+**2026-08-15 최신 devel 병합 뒤 Full CI 대기.** [PR #4682](https://github.com/edwardkim/rhwp/pull/4682)는
 Stage 3~5에서 빨라진 CI·CodeQL·Render Diff가 필요한 job과 step을 실제로 실행했는지 default-branch
 controller가 독립 검증하는 변경이다. 제품 기능이나 선택 실행 규칙을 새로 줄이는 PR이 아니라,
 PR-controlled workflow가 필수 검사를 잘못 건너뛰면 `CI Impact Policy`를 실패시키는 안전망을 추가한다.
@@ -25,6 +25,11 @@ focused 검증을 다시 통과했다. 첫 CI는 최종 merge 근거로 재사�
 PR head·artifact를 실행하지 않고 base SHA의 두 정책 파일만 sparse checkout하는지, workflow run의
 repository·branch·SHA identity와 status 게시 직전 live head 재검증을 확인했다. 차단 또는 메인터너
 보정이 필요한 finding은 없었다.
+
+그 뒤 최신 `upstream/devel@e65f81776`이 같은 날짜의 오늘할일 파일을 추가해 source branch와 add/add
+충돌이 생겼다. 두 PR의 운영 기록을 모두 보존하는 merge resolution을 적용한다. 이 merge는 #4682 고유
+기능을 바꾸지 않지만 PR head 자체는 새 SHA가 되므로, 기존 `9e4eb9ac6`의 green check를 merge 근거로
+재사용하지 않는다. 새 head의 Full CI·CodeQL·Render Diff가 모두 성공한 뒤에만 승인 대기로 전환한다.
 
 2026-08-13 게시 self-review 코멘트의 유효한 후속 지적도 로컬에서 보정했다. Node policy 테스트를 실제
 CI에 배선하고, 필요한 검사 누락만 차단하면서 안전한 full 상위 집합은 허용했다. 취소·stale controller의
@@ -67,7 +72,8 @@ loaded documents: pr_review_workflow.md, pr_review/README.md,
                   rework_and_exceptions.md, post_merge.md
 review branch: review/postmelee-4682-20260815
 current code candidate: 9e4eb9ac6a09a04c8f6d4ee205c82b7b0bcd325d
-current devel base: a5a92ca3bbd65c54d7ab3bd9525c831a1ff71e9e
+review devel base: a5a92ca3bbd65c54d7ab3bd9525c831a1ff71e9e
+merged devel base: e65f81776
 ```
 
 1,000줄이 넘고 default-branch privileged controller와 향후 required status 채택 판단을 포함하므로,
@@ -214,6 +220,7 @@ live audit과 admin 설정 변경·재검증이 끝나기 전까지는 관측용
 - 최신 `upstream/devel`과의 merge tree: 충돌 없이 생성
 - 최종 code candidate의 GitHub CI run `31811942557`, CodeQL run `31811942171`, Render Diff run
   `31811942174`: 모두 같은 `9e4eb9ac6` head에서 성공
+- 최신 devel merge resolution 뒤 새 head의 Full CI·CodeQL·Render Diff: 대기
 - Node classifier+policy: 55/55 통과
 - focused Python CI impact policy workflow 계약: 9/9 통과
 - 전체 workflow 계약: 108/108 통과
@@ -228,8 +235,8 @@ renderer, layout, paint, sample과 제품 UI를 바꾸지 않으므로 시각·f
 
 ## 최종 권고
 
-현재는 **pending-approval**이다. maintainer finding 보정과 focused 검증, 최종 code head의 GitHub
-CI·CodeQL·Render Diff는 완료됐다. review·오늘할일 trailing docs-only head의 fast-pass aggregate와
+현재는 **pending-ci**다. maintainer finding 보정과 기존 code candidate의 focused 검증은 완료됐지만,
+최신 devel merge resolution으로 PR head가 바뀌었다. 새 head의 Full CI·CodeQL·Render Diff와
 mergeability를 재확인하고, `edwardkim`의 명시적 승인 뒤에만 merge를 권고한다. `CI Impact Policy`는
 strict up-to-date 보호 규칙과 GitHub Actions expected source가 실제로 확인되기 전에는 required context로
 활성화하지 않는다.
@@ -237,6 +244,6 @@ strict up-to-date 보호 규칙과 GitHub Actions expected source가 실제로 �
 merge 전에는 다음 순서를
 모두 만족한 뒤에만 수용 권고로 전환한다.
 
-1. 이 review와 오늘할일 docs-only commit을 같은 PR branch에 push한다.
-2. latest trailing head의 fast-pass aggregate와 `MERGEABLE`/`CLEAN`을 확인한다.
+1. 최신 devel merge resolution을 같은 PR branch에 push한다.
+2. 새 head의 Full CI·CodeQL·Render Diff와 `MERGEABLE`/`CLEAN`을 확인한다.
 3. 작업지시자의 명시적 승인과 merge 직전 최신 head·checks·mergeability 재확인 뒤 merge한다.
