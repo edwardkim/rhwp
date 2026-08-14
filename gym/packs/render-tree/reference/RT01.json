@@ -1,0 +1,27 @@
+{
+  "id": "RT01",
+  "steps": [
+    {
+      "run": [
+        "export-render-tree",
+        "{input}",
+        "-p",
+        "0",
+        "-o",
+        "{sub:_rt}"
+      ]
+    },
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}
