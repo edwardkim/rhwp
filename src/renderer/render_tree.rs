@@ -1479,7 +1479,7 @@ pub(crate) fn doc_path_for_node(node: &RenderNode) -> Option<DocPath> {
 /// 런타임에 확인하던 자리(`shape_layout.rs` 의 hmapsi 미리보기 게이트)는, 프레임이 페이지
 /// 기하 없이는 생성될 수 없다는 이 구성 불변식으로 대체됐다.
 #[derive(Debug, Clone)]
-pub struct LayoutFrame {
+pub struct PageLayoutContext {
     /// 다음 노드 ID 카운터
     next_id: NodeId,
     /// 인라인 Shape 좌표 맵: (section, para, control, cell_path) → (x, y)
@@ -1490,7 +1490,7 @@ pub struct LayoutFrame {
     page_bbox: BoundingBox,
 }
 
-impl LayoutFrame {
+impl PageLayoutContext {
     /// 새 흐름 상태. id 는 root(0) 다음부터 발급한다.
     pub fn new(page_index: u32, width: f64, height: f64) -> Self {
         Self {
@@ -1580,6 +1580,9 @@ impl LayoutFrame {
     }
 }
 
+#[deprecated(note = "use PageLayoutContext")]
+pub type LayoutFrame = PageLayoutContext;
+
 /// 한 페이지의 렌더 트리
 #[derive(Debug, Clone, Serialize)]
 pub struct PageRenderTree {
@@ -1587,7 +1590,7 @@ pub struct PageRenderTree {
     pub root: RenderNode,
     /// 레이아웃 흐름 상태 (id 카운터 + 인라인 Shape 레지스트리). 직렬화 대상 아님.
     #[serde(skip)]
-    pub(crate) frame: LayoutFrame,
+    pub(crate) frame: PageLayoutContext,
 }
 
 /// `clip_overlapping_same_bin_images` 전용 대략적 replay plane 분류.
@@ -1632,12 +1635,12 @@ impl PageRenderTree {
         );
         Self {
             root,
-            frame: LayoutFrame::new(page_index, width, height),
+            frame: PageLayoutContext::new(page_index, width, height),
         }
     }
 
     /// 레이아웃 흐름 상태 가변 참조 — 재귀 진입 시 `&mut tree.frame` 으로 넘긴다.
-    pub(crate) fn frame_mut(&mut self) -> &mut LayoutFrame {
+    pub(crate) fn frame_mut(&mut self) -> &mut PageLayoutContext {
         &mut self.frame
     }
 
@@ -1660,7 +1663,7 @@ impl PageRenderTree {
             .set_inline_shape_position(sec, para, ctrl, cell_ctx, x, y);
     }
 
-    /// 인라인 Shape 좌표 조회 (셀 컨텍스트 포함). `LayoutFrame` 위임.
+    /// 인라인 Shape 좌표 조회 (셀 컨텍스트 포함). `PageLayoutContext` 위임.
     pub fn get_inline_shape_position(
         &self,
         sec: usize,
@@ -1853,7 +1856,7 @@ impl PageRenderTree {
 }
 
 impl Deref for PageRenderTree {
-    type Target = LayoutFrame;
+    type Target = PageLayoutContext;
 
     fn deref(&self) -> &Self::Target {
         &self.frame

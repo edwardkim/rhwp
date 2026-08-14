@@ -2061,7 +2061,15 @@ fn serialize_text_box_if_present(drawing: &DrawingObjAttr, level: u16, records: 
 fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
     let mut w = ByteWriter::new();
     let attr = if common.attr != 0 {
+        // HWPX parser can materialize this compatibility bit semantically while
+        // retaining a non-zero raw attr captured before that materialization.
+        // Keep raw-first serialization, but do not drop an asserted bit 28.
         common.attr
+            | if common.hwp5_gen_shape_attr_bit28 {
+                1 << 28
+            } else {
+                0
+            }
     } else {
         pack_common_attr_bits(common)
     };

@@ -1353,7 +1353,7 @@ fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec
 impl LayoutEngine {
     pub(crate) fn layout_inline_table_paragraph(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         para: &Paragraph,
         composed: Option<&ComposedParagraph>,
@@ -2084,7 +2084,7 @@ impl LayoutEngine {
     /// 문단 전체를 레이아웃하여 단 노드에 추가
     pub(crate) fn layout_paragraph(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         para: &Paragraph,
         composed: Option<&ComposedParagraph>,
@@ -2106,6 +2106,7 @@ impl LayoutEngine {
             para,
             composed,
             styles,
+            styles.hwp3_variant && self.endnote_para_source_for(para_index).is_none(),
             col_area,
             y_start,
             0,
@@ -2121,11 +2122,12 @@ impl LayoutEngine {
     /// 문단 일부를 레이아웃하여 단 노드에 추가
     pub(crate) fn layout_partial_paragraph(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         para: &Paragraph,
         composed: Option<&ComposedParagraph>,
         styles: &ResolvedStyleSet,
+        hwp3_body_reflow: bool,
         col_area: &LayoutRect,
         y_start: f64,
         start_line: usize,
@@ -2158,21 +2160,22 @@ impl LayoutEngine {
                     );
                     Some(cloned)
                 } else if column_inner_width > 0.0
-                    && crate::renderer::composer::masked_stored_lines_stale(
+                    && crate::renderer::composer::stored_body_lines_stale(
                         comp,
                         para,
                         column_inner_width,
                         styles,
+                        hwp3_body_reflow,
                     )
                 {
-                    // [#2279] 마스킹 저장분할 stale(실폭-과잉/줄수-과소) 본문 문단
-                    // fresh 재래핑 — typeset(format_paragraph)과 동일.
+                    // stale 저장분할 본문 문단을 fresh 재래핑한다.
                     let mut cloned = comp.clone();
-                    crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
+                    crate::renderer::composer::recompose_stale_body_lines(
                         &mut cloned,
                         para,
                         column_inner_width,
                         styles,
+                        hwp3_body_reflow,
                     );
                     Some(cloned)
                 } else {
@@ -2231,7 +2234,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn place_unmatched_line_tac_pictures(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         line_node: &mut RenderNode,
         comp_line: &ComposedLine,
         para: Option<&Paragraph>,
@@ -2312,7 +2315,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn place_empty_line_tac_forms(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         line_node: &mut RenderNode,
         comp_line: &ComposedLine,
         para: Option<&Paragraph>,
@@ -2373,7 +2376,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn place_empty_line_inline_equations(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         line_node: &mut RenderNode,
         comp_line: &ComposedLine,
         composed: &ComposedParagraph,
@@ -2650,7 +2653,7 @@ impl LayoutEngine {
 
     pub(crate) fn layout_composed_paragraph(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         composed: &ComposedParagraph,
         styles: &ResolvedStyleSet,
@@ -4549,7 +4552,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn emit_line_runs(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         line_node: &mut RenderNode,
         col_node: &mut RenderNode,
         comp_line: &crate::renderer::composer::ComposedLine,
@@ -5714,7 +5717,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_click_here_and_bookmark_markers(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         line_node: &mut RenderNode,
         p: &Paragraph,
         comp_line: &crate::renderer::composer::ComposedLine,
@@ -6362,7 +6365,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_empty_runs_line(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         line_node: &mut RenderNode,
         comp_line: &crate::renderer::composer::ComposedLine,
         composed: &ComposedParagraph,
@@ -6535,7 +6538,7 @@ impl LayoutEngine {
     /// 원본 문단 데이터로 레이아웃 (ComposedParagraph 없는 경우 fallback)
     pub(crate) fn layout_raw_paragraph(
         &self,
-        tree: &mut LayoutFrame,
+        tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,
         para: &Paragraph,
         col_area: &LayoutRect,
@@ -6849,7 +6852,7 @@ pub(crate) fn calc_sibling_topandbottom_reserved_hu(
 /// `layout_picture_full` 가 본문/머리말/꼬리말 path 의 진입점 helper 인 것과 짝.
 #[allow(clippy::too_many_arguments)]
 fn make_picture_image_node(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     pic: &crate::model::image::Picture,
     section_index: usize,
     para_index: usize,

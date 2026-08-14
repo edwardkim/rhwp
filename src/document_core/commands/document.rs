@@ -9,7 +9,7 @@ use crate::model::control::Control;
 use crate::model::document::Document;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::{Caption, DrawingObjAttr, ShapeObject};
-use crate::renderer::composer::{compose_section, reflow_line_segs};
+use crate::renderer::composer::{compose_section, layout_picture_band, reflow_line_segs};
 use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
@@ -415,24 +415,15 @@ impl DocumentCore {
                             table.page_break,
                             crate::model::table::TablePageBreak::RowBreak
                         );
-                        for cell in &mut table.cells {
-                            // [Task #671 후속 / Issue #671 자동보정 영역 정정]
-                            // 셀 폭 (cell.width) 에서 좌우 padding 차감하여 셀 inner 폭 계산.
-                            // col_width 사용 시 셀 너비 영역 밖으로 LINE_SEG 가 채워져
-                            // recompose_for_cell_width 가드 #1 (line_segs.is_empty()) 영역 거짓 →
-                            // PR #673 영역의 layout 단계 정정 미적용 → 자동보정 모드 영역 한 줄 겹침 회귀.
-                            let cell_w_px = crate::renderer::hwpunit_to_px(cell.width as i32, dpi);
-                            // [#2195] 실효 pad 규칙(aim=false = 표 기본, pad 사다리 2종)과
-                            // 정합 — 종전 셀 저장 pad 직접 차감은 measurer/recompose 와 폭이
-                            // 어긋나 셀 reflow 줄수가 이원화된다.
-                            let eff_pad = if cell.apply_inner_margin {
-                                cell.padding
-                            } else {
-                                cell.effective_padding(&table.padding)
-                            };
-                            let pad_left = crate::renderer::hwpunit_to_px(eff_pad.left as i32, dpi);
+                        let owner_widths = table.paragraph_frame_owner_widths();
+                        let table_padding = table.padding;
+                        for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
+                            let cell_w_px = crate::renderer::hwpunit_to_px(owner_width, dpi);
+                            let frame_padding = cell.paragraph_frame_padding(&table_padding);
+                            let pad_left =
+                                crate::renderer::hwpunit_to_px(frame_padding.left as i32, dpi);
                             let pad_right =
-                                crate::renderer::hwpunit_to_px(eff_pad.right as i32, dpi);
+                                crate::renderer::hwpunit_to_px(frame_padding.right as i32, dpi);
                             let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
                             // [#2195/#2146] 사선(대각선) 셀의 빈 문단은 코너 라벨의
                             // 짝 — 한글은 흐름 배치하지 않으므로 합성 제외 (21761835
@@ -1042,30 +1033,108 @@ impl DocumentCore {
                 .unwrap_or(layout.body_area.width);
 
             let mut min_reflowed_idx: Option<usize> = None;
-            for (pi, para) in section.paragraphs.iter_mut().enumerate() {
-                if Self::needs_reflow_broadly(para) {
+            let mut latest_non_tac_picture_host = None;
+            let mut pi = 0usize;
+            while pi < section.paragraphs.len() {
+                if section.paragraphs[pi].controls.iter().any(|control| {
+                    matches!(control, Control::Picture(picture) if !picture.common.treat_as_char)
+                }) {
+                    latest_non_tac_picture_host = Some(pi);
+                }
+                if Self::needs_reflow_broadly(&section.paragraphs[pi]) {
+                    // A damaged successor can still belong to a stored
+                    // Picture host. The forward walk records the latest
+                    // possible owner, resolves its own physical column, and
+                    // only claims this row when the completed projection
+                    // contains it.
+                    let mut tracked_picture_band_rejected = false;
+                    let picture_band = if let Some(host_index) = latest_non_tac_picture_host {
+                        let picture_column_def =
+                            Self::find_column_def_for_paragraph(&section.paragraphs, host_index);
+                        let picture_layout =
+                            PageLayoutInfo::from_page_def(page_def, &picture_column_def, dpi);
+                        let picture_col_width = picture_layout
+                            .column_areas
+                            .first()
+                            .map(|area| area.width)
+                            .unwrap_or(picture_layout.body_area.width);
+                        let picture_band = layout_picture_band(
+                            &section.paragraphs,
+                            host_index,
+                            px_to_hwpunit(picture_col_width, dpi),
+                            &styles,
+                            dpi,
+                        );
+                        // A tracked host keeps ownership until a complete
+                        // projection proves that its band already ended.
+                        match picture_band {
+                            Some(band) if band.paragraph_range.contains(&pi) => Some(band),
+                            Some(band) if band.paragraph_range.end <= pi => {
+                                latest_non_tac_picture_host = None;
+                                None
+                            }
+                            _ => {
+                                tracked_picture_band_rejected = true;
+                                None
+                            }
+                        }
+                    } else {
+                        None
+                    };
+                    if let Some(band) = picture_band {
+                        let paragraph_range = band.paragraph_range;
+                        let band_len = paragraph_range.len();
+                        debug_assert_eq!(band.line_segs.len(), band_len);
+                        for (paragraph, line_segs) in section.paragraphs[paragraph_range.clone()]
+                            .iter_mut()
+                            .zip(band.line_segs)
+                        {
+                            paragraph.invalidate_single_line_overflow_memo();
+                            paragraph.line_segs = line_segs;
+                        }
+                        reflowed += band_len;
+                        min_reflowed_idx =
+                            Some(min_reflowed_idx.map_or(paragraph_range.start, |start| {
+                                start.min(paragraph_range.start)
+                            }));
+                        pi = paragraph_range.end;
+                        continue;
+                    }
+                    if tracked_picture_band_rejected {
+                        break;
+                    }
+
+                    // A non-TAC Picture host owns a possible multi-paragraph
+                    // exclusion. If its complete band cannot be represented,
+                    // do not publish a scalar host row and leave the source
+                    // geometry intact for the caller's existing path.
+                    if section.paragraphs[pi].controls.iter().any(|control| {
+                        matches!(control, Control::Picture(picture) if !picture.common.treat_as_char)
+                    }) {
+                        break;
+                    }
+
+                    let para = &mut section.paragraphs[pi];
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                     let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                     let available_width = (col_width - margin_left - margin_right).max(1.0);
                     reflow_line_segs(para, available_width, &styles, dpi);
                     reflowed += 1;
-                    if min_reflowed_idx.is_none() {
-                        min_reflowed_idx = Some(pi);
-                    }
+                    min_reflowed_idx.get_or_insert(pi);
                 }
                 // 표 셀 내부 문단도 동일 처리
-                for ctrl in &mut para.controls {
+                for ctrl in &mut section.paragraphs[pi].controls {
                     if let Control::Table(ref mut table) = ctrl {
-                        for cell in &mut table.cells {
-                            // [Task #671 후속 / Issue #671 자동보정 영역 정정]
-                            // 셀 폭 (cell.width) 에서 좌우 padding 차감하여 셀 inner 폭 계산.
-                            // 동일 본질 정정: line 270 영역 참조.
-                            let cell_w_px = crate::renderer::hwpunit_to_px(cell.width as i32, dpi);
+                        let owner_widths = table.paragraph_frame_owner_widths();
+                        let table_padding = table.padding;
+                        for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
+                            let cell_w_px = crate::renderer::hwpunit_to_px(owner_width, dpi);
+                            let frame_padding = cell.paragraph_frame_padding(&table_padding);
                             let pad_left =
-                                crate::renderer::hwpunit_to_px(cell.padding.left as i32, dpi);
+                                crate::renderer::hwpunit_to_px(frame_padding.left as i32, dpi);
                             let pad_right =
-                                crate::renderer::hwpunit_to_px(cell.padding.right as i32, dpi);
+                                crate::renderer::hwpunit_to_px(frame_padding.right as i32, dpi);
                             let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
                             for cell_para in &mut cell.paragraphs {
                                 if Self::needs_reflow_broadly(cell_para) {
@@ -1076,6 +1145,7 @@ impl DocumentCore {
                         }
                     }
                 }
+                pi += 1;
             }
 
             // [Task #927] reflow 후 vpos 일관성 재계산 — 본문 paragraphs 만.
@@ -2083,7 +2153,31 @@ impl DocumentCore {
 mod validate_linesegs_tests {
     use super::*;
     use crate::model::document::{Document, Section};
-    use crate::model::paragraph::{LineSeg, Paragraph};
+    use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
+
+    fn p325_picture_band_core() -> DocumentCore {
+        DocumentCore::from_bytes(include_bytes!("../../../samples/3-09월_교육_통합_2022.hwp"))
+            .expect("p325 Picture-band corpus fixture")
+    }
+
+    fn line_seg_fields(lines: &[LineSeg]) -> Vec<(u32, i32, i32, i32, i32, i32, i32, i32, u32)> {
+        lines
+            .iter()
+            .map(|line| {
+                (
+                    line.text_start,
+                    line.vertical_pos,
+                    line.line_height,
+                    line.text_height,
+                    line.baseline_distance,
+                    line.line_spacing,
+                    line.column_start,
+                    line.segment_width,
+                    line.tag,
+                )
+            })
+            .collect()
+    }
 
     #[test]
     fn from_bytes_retains_hml_import_metadata_outside_document_ir() {
@@ -2257,6 +2351,135 @@ mod validate_linesegs_tests {
         assert_eq!(cp.inner_para_idx, 0);
     }
 
+    fn short_table_frame_document() -> Document {
+        use crate::model::table::{Cell, Table};
+        use crate::model::Padding;
+
+        const RAW_TRACK_WIDTH: u32 = 4_998;
+        let mut cells = Vec::new();
+        for row in 0..2 {
+            for col in 0..2 {
+                let paragraph = if (row, col) == (0, 1) {
+                    Paragraph {
+                        text: "reflow this cell".to_string(),
+                        char_offsets: "reflow this cell"
+                            .chars()
+                            .scan(0u32, |offset, character| {
+                                let current = *offset;
+                                *offset += character.len_utf16() as u32;
+                                Some(current)
+                            })
+                            .collect(),
+                        char_count: "reflow this cell".encode_utf16().count() as u32 + 1,
+                        ..Default::default()
+                    }
+                } else {
+                    Paragraph::default()
+                };
+                cells.push(Cell {
+                    row,
+                    col,
+                    row_span: 1,
+                    col_span: 1,
+                    width: RAW_TRACK_WIDTH,
+                    // The saved cell padding remains a paint fallback only when
+                    // the table's stored padding is all zero.
+                    padding: Padding {
+                        left: 141,
+                        right: 141,
+                        top: 141,
+                        bottom: 141,
+                    },
+                    paragraphs: vec![paragraph],
+                    ..Default::default()
+                });
+            }
+        }
+        let mut table = Table {
+            row_count: 2,
+            col_count: 2,
+            cells,
+            ..Default::default()
+        };
+        // Each raw row is 4 HWPUNIT short. The frame owner is the resolved
+        // table track, so the residual belongs to the last column.
+        table.common.width = 10_000;
+
+        Document {
+            sections: vec![Section {
+                section_def: crate::model::document::SectionDef {
+                    page_def: crate::model::page::PageDef::a4_default(),
+                    ..Default::default()
+                },
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Table(Box::new(table))],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    fn short_table_frame_target_line(document: &Document) -> &LineSeg {
+        let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
+            panic!("table control");
+        };
+        &table.cells[1].paragraphs[0].line_segs[0]
+    }
+
+    #[test]
+    fn eager_reflow_uses_table_frame_owner_width_and_padding() {
+        const RESOLVED_LAST_TRACK_WIDTH: i32 = 5_002;
+        let mut document = short_table_frame_document();
+        let styles = resolve_styles(&document.doc_info, DEFAULT_DPI);
+
+        DocumentCore::reflow_zero_height_paragraphs(
+            &mut document,
+            &styles,
+            DEFAULT_DPI,
+            true,
+            false,
+        );
+
+        let line = short_table_frame_target_line(&document);
+        assert_eq!(
+            line.segment_width,
+            crate::renderer::px_to_hwpunit(
+                crate::renderer::hwpunit_to_px(RESOLVED_LAST_TRACK_WIDTH, DEFAULT_DPI),
+                DEFAULT_DPI,
+            ),
+            "eager reflow must use the table-owned frame width and the table's zero padding"
+        );
+    }
+
+    #[test]
+    fn on_demand_reflow_uses_table_frame_owner_width_and_padding() {
+        const RESOLVED_LAST_TRACK_WIDTH: i32 = 5_002;
+        let document = short_table_frame_document();
+        let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
+            panic!("table control");
+        };
+        assert_eq!(
+            table.paragraph_frame_owner_widths()[1],
+            RESOLVED_LAST_TRACK_WIDTH
+        );
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+        core.validation_report = DocumentCore::validate_linesegs(core.document(), false);
+
+        assert_eq!(core.reflow_linesegs_on_demand(), 1);
+        let line = short_table_frame_target_line(core.document());
+        assert_eq!(
+            line.segment_width,
+            crate::renderer::px_to_hwpunit(
+                crate::renderer::hwpunit_to_px(RESOLVED_LAST_TRACK_WIDTH, core.dpi),
+                core.dpi,
+            ),
+            "on-demand reflow must use the table-owned frame width and the table's zero padding"
+        );
+    }
+
     /// 다중 경고 — 각각 기록됨
     #[test]
     fn validate_records_multiple_warnings() {
@@ -2321,6 +2544,270 @@ mod validate_linesegs_tests {
     fn needs_reflow_broadly_skips_empty_paragraph() {
         let para = Paragraph::default();
         assert!(!DocumentCore::needs_reflow_broadly(&para));
+    }
+
+    #[test]
+    fn on_demand_picture_band_publishes_the_complete_p325_transaction() {
+        let mut core = p325_picture_band_core();
+        let section = &mut core.document.sections[0];
+        let stored_band = section.paragraphs[325..332]
+            .iter()
+            .map(|paragraph| paragraph.line_segs.clone())
+            .collect::<Vec<_>>();
+        let stored_first_full_width = section.paragraphs[332].line_segs.clone();
+
+        for paragraph in &mut section.paragraphs[325..332] {
+            paragraph.single_line_overflow_memo.set(123, true);
+        }
+        section.paragraphs[332]
+            .single_line_overflow_memo
+            .set(123, true);
+        section.paragraphs[325].line_segs.clear();
+        core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
+        assert!(
+            core.validation_report
+                .warnings
+                .iter()
+                .any(|warning| warning.paragraph_idx == 325),
+            "the missing host row must enter the explicit on-demand path"
+        );
+
+        assert_eq!(core.reflow_linesegs_on_demand(), 7);
+
+        let section = &core.document.sections[0];
+        let mut expected_vpos = stored_band[0][0].vertical_pos;
+        for (paragraph_index, stored) in (325..332).zip(&stored_band) {
+            let generated = &section.paragraphs[paragraph_index].line_segs;
+            assert_eq!(generated.len(), stored.len(), "p{paragraph_index}");
+            for (actual, expected) in generated.iter().zip(stored) {
+                assert_eq!(actual.text_start, expected.text_start, "p{paragraph_index}");
+                assert_eq!(actual.vertical_pos, expected_vpos, "p{paragraph_index}");
+                assert_eq!(
+                    actual.column_start, expected.column_start,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.segment_width, expected.segment_width,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.line_height, expected.line_height,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.text_height, expected.text_height,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.baseline_distance, expected.baseline_distance,
+                    "p{paragraph_index}"
+                );
+                assert!(
+                    actual.line_spacing.abs_diff(expected.line_spacing) <= 3,
+                    "p{paragraph_index}: generated={} stored={}",
+                    actual.line_spacing,
+                    expected.line_spacing,
+                );
+                assert!(actual.is_first_segment(), "p{paragraph_index}");
+                assert!(actual.is_last_segment(), "p{paragraph_index}");
+                expected_vpos += actual.line_height + actual.line_spacing;
+            }
+        }
+        assert!(
+            section.paragraphs[325..332]
+                .iter()
+                .all(|paragraph| paragraph.single_line_overflow_memo.is_unjudged()),
+            "each published row invalidates its derived overflow memo"
+        );
+        assert_eq!(
+            section.paragraphs[332].line_segs.len(),
+            stored_first_full_width.len(),
+            "p332 remains outside the transaction"
+        );
+        for (actual, expected) in section.paragraphs[332]
+            .line_segs
+            .iter()
+            .zip(&stored_first_full_width)
+        {
+            assert_eq!(actual.text_start, expected.text_start);
+            assert_eq!(actual.line_height, expected.line_height);
+            assert_eq!(actual.text_height, expected.text_height);
+            assert_eq!(actual.baseline_distance, expected.baseline_distance);
+            assert_eq!(actual.line_spacing, expected.line_spacing);
+            assert_eq!(actual.column_start, expected.column_start);
+            assert_eq!(actual.segment_width, expected.segment_width);
+            assert_eq!(actual.tag, expected.tag);
+        }
+        assert!(
+            section.paragraphs[332]
+                .line_segs
+                .iter()
+                .all(|line| line.column_start == 0 && line.segment_width > 3_406),
+            "p332 is the first full-width row after the side-wrap band"
+        );
+        assert!(
+            !section.paragraphs[332]
+                .single_line_overflow_memo
+                .is_unjudged(),
+            "p332 was not published as part of the Picture band"
+        );
+    }
+
+    #[test]
+    fn on_demand_picture_band_discovers_stored_p325_host_from_missing_successor() {
+        let mut core = p325_picture_band_core();
+        let section = &mut core.document.sections[0];
+        let stored_band = section.paragraphs[325..332]
+            .iter()
+            .map(|paragraph| paragraph.line_segs.clone())
+            .collect::<Vec<_>>();
+        let stored_p326_column_start = stored_band[1][0].column_start;
+        let stored_p326_segment_width = stored_band[1][0].segment_width;
+        let first_full_width = section.paragraphs[332].line_segs[0].segment_width;
+
+        for paragraph in &mut section.paragraphs[325..332] {
+            paragraph.single_line_overflow_memo.set(123, true);
+        }
+        section.paragraphs[326].line_segs.clear();
+        core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
+        assert!(
+            core.validation_report
+                .warnings
+                .iter()
+                .any(|warning| warning.paragraph_idx == 326),
+            "the missing successor must enter the explicit on-demand path"
+        );
+
+        assert_eq!(core.reflow_linesegs_on_demand(), 7);
+
+        let section = &core.document.sections[0];
+        let mut expected_vpos = stored_band[0][0].vertical_pos;
+        for (paragraph_index, stored) in (325..332).zip(&stored_band) {
+            let generated = &section.paragraphs[paragraph_index].line_segs;
+            assert_eq!(generated.len(), stored.len(), "p{paragraph_index}");
+            for (actual, expected) in generated.iter().zip(stored) {
+                assert_eq!(actual.text_start, expected.text_start, "p{paragraph_index}");
+                assert_eq!(actual.vertical_pos, expected_vpos, "p{paragraph_index}");
+                assert_eq!(
+                    actual.column_start, expected.column_start,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.segment_width, expected.segment_width,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.line_height, expected.line_height,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.text_height, expected.text_height,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.baseline_distance, expected.baseline_distance,
+                    "p{paragraph_index}"
+                );
+                assert!(
+                    actual.line_spacing.abs_diff(expected.line_spacing) <= 3,
+                    "p{paragraph_index}: generated={} stored={}",
+                    actual.line_spacing,
+                    expected.line_spacing,
+                );
+                assert!(actual.is_first_segment(), "p{paragraph_index}");
+                assert!(actual.is_last_segment(), "p{paragraph_index}");
+                expected_vpos += actual.line_height + actual.line_spacing;
+            }
+        }
+        assert!(
+            section.paragraphs[325..332]
+                .iter()
+                .all(|paragraph| paragraph.single_line_overflow_memo.is_unjudged()),
+            "the stored host and every successor are atomically republished"
+        );
+        let p326 = &section.paragraphs[326].line_segs[0];
+        assert_eq!(p326.column_start, stored_p326_column_start);
+        assert_eq!(p326.segment_width, stored_p326_segment_width);
+        assert!(
+            p326.segment_width < first_full_width,
+            "p326 keeps the Picture band's narrow side-wrap width rather than scalar full width"
+        );
+    }
+
+    #[test]
+    fn on_demand_rejected_tracked_picture_band_leaves_successor_source_geometry_untouched() {
+        let mut core = p325_picture_band_core();
+        let section = &mut core.document.sections[0];
+        section.paragraphs[326].line_segs.clear();
+        section.paragraphs[329].column_type = ColumnBreakType::Page;
+        for paragraph in &mut section.paragraphs[325..333] {
+            paragraph.single_line_overflow_memo.set(123, true);
+        }
+        let source_rows = section.paragraphs[325..333]
+            .iter()
+            .map(|paragraph| line_seg_fields(&paragraph.line_segs))
+            .collect::<Vec<_>>();
+        core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
+        assert!(
+            core.validation_report
+                .warnings
+                .iter()
+                .any(|warning| warning.paragraph_idx == 326),
+            "the missing successor must enter the explicit on-demand path"
+        );
+
+        assert_eq!(core.reflow_linesegs_on_demand(), 0);
+
+        let section = &core.document.sections[0];
+        for (paragraph_index, source) in (325..333).zip(&source_rows) {
+            assert_eq!(
+                line_seg_fields(&section.paragraphs[paragraph_index].line_segs),
+                *source,
+                "p{paragraph_index} stays source-owned after the tracked host rejects its transaction"
+            );
+        }
+        assert!(
+            section.paragraphs[326].line_segs.is_empty(),
+            "the rejected tracked host must not scalar-reflow the missing successor"
+        );
+        assert!(
+            section.paragraphs[325..333]
+                .iter()
+                .all(|paragraph| !paragraph.single_line_overflow_memo.is_unjudged()),
+            "the failed transaction must not publish or invalidate any source row"
+        );
+    }
+
+    #[test]
+    fn on_demand_rejected_picture_band_leaves_host_and_later_body_rows_untouched() {
+        let mut core = p325_picture_band_core();
+        let section = &mut core.document.sections[0];
+        let middle_before = line_seg_fields(&section.paragraphs[330].line_segs);
+        section.paragraphs[325].line_segs.clear();
+        section.paragraphs[329].column_type = ColumnBreakType::Page;
+        section.paragraphs[332].line_segs.clear();
+        let host_before = line_seg_fields(&section.paragraphs[325].line_segs);
+        let later_before = line_seg_fields(&section.paragraphs[332].line_segs);
+        core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
+
+        assert_eq!(core.reflow_linesegs_on_demand(), 0);
+
+        let section = &core.document.sections[0];
+        assert_eq!(
+            line_seg_fields(&section.paragraphs[325].line_segs),
+            host_before,
+            "the rejected non-TAC Picture host cannot fall back to scalar geometry"
+        );
+        assert_eq!(
+            line_seg_fields(&section.paragraphs[330].line_segs),
+            middle_before,
+            "the incomplete transaction publishes no prefix rows"
+        );
+        assert_eq!(
+            line_seg_fields(&section.paragraphs[332].line_segs),
+            later_before,
+            "the conservative section stop leaves later body reflow for its existing owner"
+        );
     }
 
     // ---------- R3: LinesegTextRunReflow ----------

@@ -916,6 +916,7 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut DivergenceCollector) 
         raw_table_record_attr,
         raw_table_record_extra,
         dirty,
+        text_reflowed_after_edit: _,
         local_resize_rows,
         local_resize_cols,
         local_resize_cell_widths,

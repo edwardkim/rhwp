@@ -787,8 +787,8 @@ impl DocumentCore {
     ///
     /// `Table::split_cell*` 는 셀 폭·배치만 바꾸고 저장 line_segs 는 그대로 두므로,
     /// 렌더러(LayoutEngine::layout_paragraph)가 옛 폭 기준 줄을 그대로 그려 새(더
-    /// 좁은) 셀 클립 경계에서 glyph 가 잘린다. 대상 판별: 저장 seg 폭이 셀 폭을
-    /// 넘으면 stale 로 확정한다 — seg 폭은 항상 패딩만큼 셀 폭보다 작게 계산되므로
+    /// 좁은) 셀 클립 경계에서 glyph 가 잘린다. 대상 판별: 저장 seg 폭이 해석된 문단 frame 폭을
+    /// 넘으면 stale 로 확정한다 — seg 폭은 패딩을 빼며 frame 폭을 넘지 않으므로
     /// 초과는 옛 폭의 증거다 (`resize_table_cells_native` 의 reflow 계약을 분할에도
     /// 적용; 분할이 만든 새 셀은 원본 line_segs 를 클론하므로 같은 판별에 걸린다).
     ///
@@ -802,34 +802,37 @@ impl DocumentCore {
         parent_para_idx: usize,
         control_idx: usize,
     ) {
-        let stale_cells: Vec<(usize, usize)> = {
+        let (stale_cells, metrics) = {
             let para = &self.document.sections[section_idx].paragraphs[parent_para_idx];
             let Some(Control::Table(table)) = para.controls.get(control_idx) else {
                 return;
             };
-            table
+            let metrics = Self::table_cell_reflow_metrics(table);
+            let stale_cells: Vec<(usize, usize)> = table
                 .cells
                 .iter()
                 .enumerate()
-                .filter(|(_, cell)| {
+                .filter(|(cell_idx, cell)| {
+                    let Some(&(owner_width, _, _)) = metrics.get(*cell_idx) else {
+                        return false;
+                    };
                     cell.paragraphs
                         .iter()
                         .flat_map(|p| p.line_segs.iter())
-                        .any(|ls| (ls.segment_width as i64) > (cell.width as i64))
+                        .any(|ls| i64::from(ls.segment_width) > i64::from(owner_width))
                 })
                 .map(|(ci, cell)| (ci, cell.paragraphs.len()))
-                .collect()
+                .collect();
+            (stale_cells, metrics)
         };
-        for (cell_idx, para_count) in stale_cells {
-            for cell_para_idx in 0..para_count {
-                self.reflow_cell_paragraph_after_split(
-                    section_idx,
-                    parent_para_idx,
-                    control_idx,
-                    cell_idx,
-                    cell_para_idx,
-                );
-            }
+        self.reflow_table_cell_paragraphs_after_split(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            &stale_cells,
+            &metrics,
+        );
+        for &(cell_idx, _) in &stale_cells {
             self.rebuild_table_cell_vpos_ladder_native(
                 section_idx,
                 parent_para_idx,
@@ -944,17 +947,12 @@ impl DocumentCore {
         };
 
         self.document.sections[section_idx].raw_stream = None;
-        for (cell_idx, para_count) in changed_cells {
-            for cell_para_idx in 0..para_count {
-                self.reflow_cell_paragraph(
-                    section_idx,
-                    parent_para_idx,
-                    control_idx,
-                    cell_idx,
-                    cell_para_idx,
-                );
-            }
-        }
+        self.reflow_table_cell_paragraphs(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            &changed_cells,
+        );
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
@@ -988,17 +986,12 @@ impl DocumentCore {
         };
 
         self.document.sections[section_idx].raw_stream = None;
-        for (cell_idx, para_count) in changed_cells {
-            for cell_para_idx in 0..para_count {
-                self.reflow_cell_paragraph(
-                    section_idx,
-                    parent_para_idx,
-                    control_idx,
-                    cell_idx,
-                    cell_para_idx,
-                );
-            }
-        }
+        self.reflow_table_cell_paragraphs(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            &changed_cells,
+        );
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
@@ -2197,17 +2190,7 @@ impl DocumentCore {
                 Vec::new()
             }
         };
-        for (cell_idx, para_count) in reflow_cells {
-            for cell_para_idx in 0..para_count {
-                self.reflow_cell_paragraph(
-                    section_idx,
-                    parent_para_idx,
-                    control_idx,
-                    cell_idx,
-                    cell_para_idx,
-                );
-            }
-        }
+        self.reflow_table_cell_paragraphs(section_idx, parent_para_idx, control_idx, &reflow_cells);
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -2249,17 +2232,7 @@ impl DocumentCore {
                 Vec::new()
             }
         };
-        for (cell_idx, para_count) in reflow {
-            for cell_para_idx in 0..para_count {
-                self.reflow_cell_paragraph(
-                    section_idx,
-                    parent_para_idx,
-                    control_idx,
-                    cell_idx,
-                    cell_para_idx,
-                );
-            }
-        }
+        self.reflow_table_cell_paragraphs(section_idx, parent_para_idx, control_idx, &reflow);
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -3793,6 +3766,136 @@ mod tests {
         assert_eq!(common.width, 9000, "width at [12..16]");
         assert_eq!(common.height, 3000, "height at [16..20]");
         assert_eq!(common.horizontal_offset, 0, "h_offset at [8..12] untouched");
+    }
+}
+
+#[cfg(test)]
+mod table_frame_reflow_batch_tests {
+    use crate::document_core::DocumentCore;
+    use crate::model::control::Control;
+    use crate::model::document::{Document, Section};
+    use crate::model::paragraph::Paragraph;
+    use crate::model::table::{Cell, Table};
+
+    const ROWS: u16 = 2;
+    const COLUMNS: u16 = 2;
+    const PARAGRAPHS_PER_CELL: usize = 2;
+
+    fn core_with_two_by_two_table() -> DocumentCore {
+        let mut table = Table {
+            row_count: ROWS,
+            col_count: COLUMNS,
+            row_sizes: vec![COLUMNS as i16; ROWS as usize],
+            ..Default::default()
+        };
+        table.cells = (0..ROWS)
+            .flat_map(|row| {
+                (0..COLUMNS).map(move |col| Cell {
+                    row,
+                    col,
+                    row_span: 1,
+                    col_span: 1,
+                    width: 5_000,
+                    height: 1_000,
+                    paragraphs: vec![Paragraph::new_empty(); PARAGRAPHS_PER_CELL],
+                    ..Default::default()
+                })
+            })
+            .collect();
+        table.update_ctrl_dimensions();
+        table.rebuild_grid();
+
+        let mut host = Paragraph::new_empty();
+        host.controls.push(Control::Table(Box::new(table)));
+
+        let mut section = Section::default();
+        section.paragraphs.push(host);
+
+        let mut document = Document::default();
+        document.sections.push(section);
+
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+        core
+    }
+
+    fn core_with_residual_owner_width_table() -> DocumentCore {
+        let mut core = core_with_two_by_two_table();
+        let Control::Table(table) = &mut core.document.sections[0].paragraphs[0].controls[0] else {
+            unreachable!("fixture host must contain a table");
+        };
+        for cell in &mut table.cells {
+            cell.width = 4_998;
+            cell.paragraphs.truncate(1);
+            cell.paragraphs[0].line_segs[0].segment_width = 5_002;
+        }
+        table.update_ctrl_dimensions();
+        table.common.width = 10_000;
+        table.rebuild_grid();
+        core
+    }
+
+    #[test]
+    fn transpose_reflows_all_changed_cells_from_one_owner_width_plan() {
+        let mut core = core_with_two_by_two_table();
+        core.begin_batch_native().expect("begin batch");
+        Table::reset_paragraph_frame_owner_widths_calls_for_test();
+
+        core.transpose_table_cells_in_place_native(0, 0, 0)
+            .expect("transpose 2x2 table");
+
+        assert_eq!(
+            Table::paragraph_frame_owner_widths_calls_for_test(),
+            1,
+            "one owner-width plan must serve all {} changed-cell paragraphs",
+            usize::from(ROWS) * usize::from(COLUMNS) * PARAGRAPHS_PER_CELL,
+        );
+    }
+
+    #[test]
+    fn column_width_change_reflows_all_cells_from_one_owner_width_plan() {
+        let mut core = core_with_two_by_two_table();
+        core.begin_batch_native().expect("begin batch");
+        Table::reset_paragraph_frame_owner_widths_calls_for_test();
+
+        core.set_table_column_widths_native(0, 0, 0, vec![4_000, 6_000])
+            .expect("set 2x2 column widths");
+
+        assert_eq!(
+            Table::paragraph_frame_owner_widths_calls_for_test(),
+            1,
+            "one owner-width plan must serve all {} changed-cell paragraphs",
+            usize::from(ROWS) * usize::from(COLUMNS) * PARAGRAPHS_PER_CELL,
+        );
+    }
+
+    #[test]
+    fn split_keeps_valid_residual_owner_width_line_segs_after_vertical_merge() {
+        let mut core = core_with_residual_owner_width_table();
+        core.merge_table_cells_native(0, 0, 0, 0, 0, 1, 0)
+            .expect("vertically merge the left cells");
+        core.split_table_cell_native(0, 0, 0, 0, 0)
+            .expect("split the left cell back into two rows");
+
+        let Control::Table(table) = &core.document.sections[0].paragraphs[0].controls[0] else {
+            unreachable!("fixture host must still contain a table");
+        };
+        assert_eq!(
+            table.paragraph_frame_owner_widths(),
+            vec![4_998, 5_002, 4_998, 5_002],
+            "the residual belongs to the last column's paragraph frame"
+        );
+        let right_line_widths: Vec<_> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.col == 1)
+            .map(|cell| cell.paragraphs[0].line_segs[0].segment_width)
+            .collect();
+        assert_eq!(
+            right_line_widths,
+            vec![5_002, 5_002],
+            "the untouched right cells already match their resolved owner width"
+        );
     }
 }
 
