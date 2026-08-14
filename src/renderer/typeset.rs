@@ -3731,9 +3731,17 @@ fn saved_table_bounds_fit_at_flow_tail(
     available: f64,
     table_height: f64,
 ) -> bool {
+    let (top, _) = bounds;
+    // 저장 object frame이 현재 누적 흐름보다 조금 앞에서 시작해도, 그 line이 현재
+    // 흐름과 겹치고 object bottom이 같은 body 안에 있으면 그 frame이 물리 page
+    // owner다. 반대로 현재 흐름보다 뒤처진 쪽 상단 frame은 stale anchor이므로
+    // 일반 fit 경로에 맡긴다.
+    let source_frame_leads_current_flow = current_height <= top
+        && saved_bounds_overlap_current_flow(bounds, current_height);
     table_height.is_finite()
         && table_height > 0.0
-        && saved_line_is_anchored_to_current_flow(bounds, current_height)
+        && (saved_line_is_anchored_to_current_flow(bounds, current_height)
+            || source_frame_leads_current_flow)
         && bounds.1 <= available
         && bounds.0 + table_height <= available
 }
@@ -3770,6 +3778,22 @@ mod saved_tac_table_flow_tail_contract {
             !saved_table_bounds_fit_at_flow_tail((850.0, 870.0), 858.0, 971.0, 889.0,),
             "a tail anchor line cannot authorize a table that extends into the next page"
         );
+    }
+
+    #[test]
+    fn accepts_a_forward_source_frame_that_overlaps_the_current_flow() {
+        assert!(saved_table_bounds_fit_at_flow_tail(
+            (120.0, 500.0),
+            100.0,
+            700.0,
+            350.0,
+        ));
+        assert!(!saved_table_bounds_fit_at_flow_tail(
+            (0.0, 500.0),
+            400.0,
+            700.0,
+            350.0,
+        ));
     }
 }
 
@@ -17119,7 +17143,6 @@ impl TypesetEngine {
         } else {
             false
         };
-
         // [#2311] 단일 TAC 표가 후행 줄(ctrl 1:1 lineseg, vpos==0 저장 리셋)에 있고
         // 선행 줄이 전부 TAC 그림/도형이면, 표는 아래 #1152 intra-para reset 가드가
         // 자체적으로 새 쪽 이동한다. 이때 pre-flush 를 문단 전체 높이로 판정하면
