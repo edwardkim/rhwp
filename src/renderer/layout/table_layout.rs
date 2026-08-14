@@ -9648,6 +9648,83 @@ impl LayoutEngine {
         None
     }
 
+    /// [#3931] native HWP5 다행 RowBreak 셀의 저장 page reset 직전에서
+    /// paint되지 않는 마지막 줄의 trailing line/paragraph spacing.
+    ///
+    /// `CellUnit` 전체 높이는 표를 통째로 측정할 때 필요하므로 변경하지 않는다.
+    /// 실제 컷이 control-free 문단 경계의 `양수 vpos -> 0 이하`에서 끝날 때만
+    /// 이 값을 빼서, 마지막 가시 줄은 현 쪽에 남기고 그 뒤의 공백은 물리 쪽
+    /// 경계에서 버린다. control 문단의 로컬 좌표 reset은 물리 경계가 아니다.
+    fn native_multirow_saved_reset_trailing_trim(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        units: &[CellUnit],
+        end_cut: usize,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        if !self.profile.get().native_hwp5_layout()
+            || table.row_count <= 1
+            || table.common.treat_as_char
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            || !matches!(
+                table.common.text_wrap,
+                crate::model::shape::TextWrap::TopAndBottom
+            )
+            || end_cut == 0
+            || end_cut >= units.len()
+        {
+            return 0.0;
+        }
+
+        let previous_unit = &units[end_cut - 1];
+        let next_unit = &units[end_cut];
+        if !next_unit.hard_break_before
+            || next_unit.para_idx <= previous_unit.para_idx
+            || previous_unit.vis_start >= previous_unit.vis_end
+        {
+            return 0.0;
+        }
+        let Some(previous_para) = cell.paragraphs.get(previous_unit.para_idx) else {
+            return 0.0;
+        };
+        let Some(next_para) = cell.paragraphs.get(next_unit.para_idx) else {
+            return 0.0;
+        };
+        if !previous_para.controls.is_empty()
+            || !next_para.controls.is_empty()
+            || previous_unit.vis_end != previous_para.line_segs.len()
+        {
+            return 0.0;
+        }
+        let Some(previous_seg) = previous_para.line_segs.last() else {
+            return 0.0;
+        };
+        let Some(next_seg) = next_para.line_segs.iter().find(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        }) else {
+            return 0.0;
+        };
+        if previous_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || previous_seg.vertical_pos <= 0
+            || next_seg.vertical_pos > 0
+        {
+            return 0.0;
+        }
+
+        let line_spacing = hwpunit_to_px(previous_seg.line_spacing.max(0), self.dpi);
+        let paragraph_spacing = styles
+            .para_styles
+            .get(previous_para.para_shape_id as usize)
+            .map(|style| style.spacing_after)
+            .unwrap_or(0.0)
+            .max(0.0);
+        (line_spacing + paragraph_spacing).min(previous_unit.height.max(0.0))
+    }
+
     fn is_non_inline_control_flow_unit(unit: &CellUnit) -> bool {
         unit.vis_start == unit.vis_end
             && !unit.empty_spacer
@@ -10507,6 +10584,24 @@ impl LayoutEngine {
                     break;
                 }
                 if j > start && h + u.height > avail_height {
+                    // [#3931] 저장 reset 직전 마지막 가시 줄의 trailing 공백을
+                    // 물리 쪽 경계에서 제외하면 예산에 들어가는 경우, 그 줄까지
+                    // 현 조각에 넣고 다음 문단 hard break 직전에서 멈춘다. source
+                    // frame tail 흡수보다 먼저 적용해 본문 하단 침범을 피한다.
+                    let trailing_trim = self.native_multirow_saved_reset_trailing_trim(
+                        table,
+                        cell,
+                        &units,
+                        j + 1,
+                        styles,
+                    );
+                    if trailing_trim > 0.0 && h + u.height - trailing_trim <= avail_height + 0.5 {
+                        h += (u.height - trailing_trim).max(0.0);
+                        j += 1;
+                        hit_hard_break = true;
+                        break;
+                    }
+
                     // source frame tail은 원본 LINE_SEG가 직접 소유한다. 셀 텍스트
                     // 편집 뒤에는 reflow suffix가 같은 tag/metrics를 계승할 수 있어
                     // line segment만으로는 원본과 구별되지 않는다. 편집 관문이 남긴
@@ -11219,6 +11314,64 @@ impl LayoutEngine {
             .is_some()
     }
 
+    /// Return whether an ordinary row cut stops immediately before a saved
+    /// cross-paragraph reset whose two owners are plain text paragraphs.
+    ///
+    /// A paragraph-local `vpos=0` also appears when a control-only paragraph
+    /// starts (for example, an inline diagram table).  That transition is not
+    /// by itself a physical page boundary, so callers must not treat the much
+    /// broader `row_block_has_internal_hard_break` predicate as equivalent to
+    /// this cut-local source contract.
+    pub(crate) fn row_cut_ends_at_plain_text_saved_reset(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|cell| cell.col);
+
+        row_cells.iter().enumerate().any(|(cell_idx, cell)| {
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(0)
+                .min(units.len());
+            let end = end_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(start)
+                .clamp(start, units.len());
+            if end <= start || end >= units.len() {
+                return false;
+            }
+
+            let previous = &units[end - 1];
+            let next = &units[end];
+            if !next.hard_break_before
+                || previous.vis_start >= previous.vis_end
+                || next.vis_start >= next.vis_end
+                || next.para_idx <= previous.para_idx
+            {
+                return false;
+            }
+
+            cell.paragraphs
+                .get(previous.para_idx)
+                .zip(cell.paragraphs.get(next.para_idx))
+                .is_some_and(|(previous_para, next_para)| {
+                    previous_para.controls.is_empty() && next_para.controls.is_empty()
+                })
+        })
+    }
+
     /// [Task #1025] 행블록 `[b_start, b_end)` 와 교차하는 셀(rs>1 포함)을 모은다.
     /// `advance_row_block_cut` / `row_block_content_height` / 렌더러 공유 — 순서는
     /// 호출부에서 `(row, col)` 로 정렬한다.
@@ -11261,7 +11414,13 @@ impl LayoutEngine {
                 .copied()
                 .unwrap_or(units.len())
                 .clamp(su, units.len());
-            let content: f64 = units[su..eu].iter().map(|u| u.height).sum();
+            let trailing_trim = if end_cut.is_empty() {
+                0.0
+            } else {
+                self.native_multirow_saved_reset_trailing_trim(table, cell, &units, eu, styles)
+            };
+            let content: f64 =
+                (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0);
             let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
             let h = content + pad_top + pad_bottom;
             // [#2287 진단] start_cut 적용 잔여 평가 분해 — 동작 불변.
@@ -11302,7 +11461,10 @@ impl LayoutEngine {
         let units = self.cell_units(cell, table, styles);
         let su = start_unit.min(units.len());
         let eu = end_unit.clamp(su, units.len());
-        let content: f64 = units[su..eu].iter().map(|u| u.height).sum();
+        let trailing_trim =
+            self.native_multirow_saved_reset_trailing_trim(table, cell, &units, eu, styles);
+        let content: f64 =
+            (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0);
         if content <= 0.0 {
             return 0.0;
         }
@@ -12397,8 +12559,14 @@ impl LayoutEngine {
             } else {
                 self.mixed_nested_flow_extra_from_cut(cell, table, styles, su, eu)
             };
+            let trailing_trim = if is_whole_row {
+                0.0
+            } else {
+                self.native_multirow_saved_reset_trailing_trim(table, cell, &units, eu, styles)
+            };
             let content: f64 =
-                units[su..eu].iter().map(|u| u.height).sum::<f64>() + mixed_nested_extra;
+                (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0)
+                    + mixed_nested_extra;
             let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
             let has_visible_cut = units[su..eu]
                 .iter()
@@ -13021,6 +13189,35 @@ mod row_cut_tests {
         Table {
             page_break: crate::model::table::TablePageBreak::RowBreak,
             ..table(cells)
+        }
+    }
+
+    fn saved_reset_unit(
+        height: f64,
+        para_idx: usize,
+        vis_end: usize,
+        hard_break_before: bool,
+    ) -> CellUnit {
+        CellUnit {
+            height,
+            hard_break_before,
+            stored_frame_break_before: hard_break_before,
+            vpos_gap_before: false,
+            para_idx,
+            vis_start: 0,
+            vis_end,
+            nested_row: None,
+            nested_table_fragment: None,
+            mixed_nested_fragment: false,
+            mixed_nested_trailing: false,
+            mixed_nested_content_height: 0.0,
+            mixed_nested_recursive: false,
+            mixed_nested_starts_after_table: false,
+            mixed_nested_source_para_idx: None,
+            recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
+            top_and_bottom_flow: false,
+            empty_spacer: false,
+            non_inline_control_range: None,
         }
     }
 
@@ -13769,6 +13966,109 @@ mod row_cut_tests {
         let r2 = eng.advance_row_cut(&t, 0, &r.end_cut, 1000.0, &styles);
         assert_eq!(r2.end_cut, vec![5]);
         assert!(r2.fully_consumed);
+    }
+
+    #[test]
+    fn test_plain_text_saved_reset_is_distinct_from_control_local_reset() {
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let plain = table(vec![cell(
+            0,
+            0,
+            vec![visible_text_para(3, 0), visible_text_para(2, 0)],
+        )]);
+        let plain_cut = eng.advance_row_cut(&plain, 0, &[], 1_000.0, &styles);
+        assert!(eng.row_cut_ends_at_plain_text_saved_reset(
+            &plain,
+            0,
+            &[],
+            &plain_cut.end_cut,
+            &styles,
+        ));
+
+        let mut control_owner = visible_text_para(2, 0);
+        control_owner.controls = non_inline_picture_para(0).controls;
+        let with_control = table(vec![cell(
+            0,
+            0,
+            vec![visible_text_para(3, 0), control_owner],
+        )]);
+        let control_cut = eng.advance_row_cut(&with_control, 0, &[], 1_000.0, &styles);
+        assert!(
+            !eng.row_cut_ends_at_plain_text_saved_reset(
+                &with_control,
+                0,
+                &[],
+                &control_cut.end_cut,
+                &styles,
+            ),
+            "control 문단의 로컬 vpos=0은 plain-text 물리 frame reset으로 승격하지 않음"
+        );
+    }
+
+    #[test]
+    fn test_saved_reset_trailing_trim_requires_plain_text_owners() {
+        let eng = LayoutEngine::new(96.0);
+        eng.set_layout_profile(crate::model::provenance::LayoutCompatibilityProfile::new(
+            false, false, false, false, false, true,
+        ));
+        let styles = ResolvedStyleSet::default();
+
+        let mut previous = visible_text_para(1, 1_200);
+        previous.line_segs[0].line_spacing = 600;
+        let next = visible_text_para(1, 0);
+        let mut host = rowbreak_table(vec![
+            cell(0, 0, vec![previous.clone(), next.clone()]),
+            cell(1, 0, vec![visible_text_para(1, 0)]),
+        ]);
+        host.common = CommonObjAttr {
+            treat_as_char: false,
+            text_wrap: TextWrap::TopAndBottom,
+            ..Default::default()
+        };
+
+        let units = vec![
+            saved_reset_unit(24.0, 0, 1, false),
+            saved_reset_unit(16.0, 1, 1, true),
+        ];
+
+        let plain_cell = &host.cells[0];
+        assert!(
+            eng.native_multirow_saved_reset_trailing_trim(&host, plain_cell, &units, 1, &styles,)
+                > 0.0,
+            "plain-text 문단 사이 저장 reset은 마지막 줄의 trailing spacing을 trim"
+        );
+
+        let mut control_only = non_inline_picture_para(0);
+        control_only.text.clear();
+        control_only.char_count = 0;
+        host.cells[0].paragraphs[1] = control_only;
+        assert_eq!(
+            eng.native_multirow_saved_reset_trailing_trim(
+                &host,
+                &host.cells[0],
+                &units,
+                1,
+                &styles,
+            ),
+            0.0,
+            "text -> control-only 로컬 vpos reset은 trailing spacing trim 대상이 아님"
+        );
+
+        let mut previous_with_control = previous;
+        previous_with_control.controls = non_inline_picture_para(1_200).controls;
+        host.cells[0].paragraphs = vec![previous_with_control, next];
+        assert_eq!(
+            eng.native_multirow_saved_reset_trailing_trim(
+                &host,
+                &host.cells[0],
+                &units,
+                1,
+                &styles,
+            ),
+            0.0,
+            "control을 소유한 이전 문단도 plain-text 저장 reset으로 승격하지 않음"
+        );
     }
 
     #[test]

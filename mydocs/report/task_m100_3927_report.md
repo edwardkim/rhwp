@@ -12,6 +12,17 @@ last_verified: 2026-08-04
   이관([코멘트](https://github.com/edwardkim/rhwp/issues/3931#issuecomment-5177423421)).
 - 단계 기록: `mydocs/working/task_m100_3927_stage{1,2}.md`
 
+## 2026-08-15 정정 — 최종 근인 판정 폐기
+
+이 보고서 아래의 "16줄을 한 쪽에 18.8px pitch로 배치"와 "160% 이중 적용" 결론은
+한컴 2020 PDF의 물리 쪽 경계를 잘못 읽은 결과이므로 폐기한다. PDF p287에는 첫 문단 12줄,
+p288에는 둘째 문단 4줄이 있으며, 실제 줄 간격은 약 18.36pt = 24.48 CSS px로 HWP 저장
+pitch 24.51px와 일치한다.
+
+따라서 #3931에서 전역 셀 줄높이를 줄여서는 안 된다. 최신 결론과 구현 계약은
+`mydocs/plans/task_m100_3931.md` 및 `mydocs/working/task_m100_3931_stage1.md`가 정본이다.
+아래 내용은 가설 변경의 역사 기록으로만 남긴다.
+
 ## 결과
 
 이 PR 은 **동작 변경 없음** — 진단 프로브 보강(env 가드)과 문서뿐이다.

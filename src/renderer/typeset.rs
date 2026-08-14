@@ -19874,6 +19874,12 @@ impl TypesetEngine {
                 mt.max_padding_for_row(r)
             };
             let mut budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
+            let native_hwp5_internal_reset_row_tail = st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && mt.allows_row_break_split()
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && layout_engine.row_block_has_internal_hard_break(table, r, r + 1, styles);
             // A visible terminal response followed by a no-text/no-control row is
             // a two-part physical row: the spacer owns no ink, while the
             // response carries the stored page frame. A direct HWPX opening
@@ -19883,11 +19889,27 @@ impl TypesetEngine {
             // Stored vpos-frame resets are source-owned physical fragment boundaries.
             // First take the ordinary budget cut, then extend only to the end of
             // the recorded source frame when that exact CellUnit boundary is known.
-            let source_frame_tail_contract = terminal_response_before_empty_spacer
+            let mut res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
+            // A terminal paragraph tail must not cross the exact plain-text
+            // reset where the ordinary capacity cut already stopped.  A row
+            // may contain other `vpos=0` transitions for control-only
+            // paragraphs; those are local layout coordinates and keep the
+            // existing source-frame tail contract.
+            let ordinary_cut_ends_at_plain_text_saved_reset = st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && terminal_response_before_empty_spacer
+                && layout_engine.row_cut_ends_at_plain_text_saved_reset(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                );
+            let source_frame_tail_contract = (terminal_response_before_empty_spacer
+                && !ordinary_cut_ends_at_plain_text_saved_reset)
                 || terminal_source_frame
                 || continued_source_frame
                 || opening_source_frame;
-            let mut res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
             let mut uses_source_frame_tail = false;
             if (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout())
                 && !table.common.treat_as_char
@@ -20053,12 +20075,6 @@ impl TypesetEngine {
             // HWP5·비-TAC·RowBreak·같은 row의 stored reset·앞선 행이 이미 있는
             // 경우, 그리고 HWPX Q5의 saved-frame response tail에 한정해 #2439와
             // 같은 painted-height 판정을 사용한다.
-            let native_hwp5_internal_reset_row_tail = st.profile.native_hwp5_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && layout_engine.row_block_has_internal_hard_break(table, r, r + 1, styles);
             let row_split_min_keep_uses_painted_height = strict_painted_bottom_fit
                 || native_hwp5_internal_reset_row_tail
                 || uses_source_frame_tail
@@ -20137,7 +20153,7 @@ impl TypesetEngine {
                 let stored_frame_tail_overflow = if uses_source_frame_tail {
                     // `split_total` is the painted row footprint, whereas
                     // the source frame is selected in CellUnit content
-                    // space.  Admit exactly that selected frame's paint
+                    // space. Admit exactly that selected frame's paint
                     // overfill, never an unrelated fixed allowance.
                     (split_candidate_rows_height - avail_for_rows).max(0.0)
                 } else {
@@ -20482,6 +20498,7 @@ impl TypesetEngine {
         };
         let mut reserve_declared_table_total = false;
         let mut native_hwp5_internal_reset_rewind_needs_anchor_resync = false;
+        let mut native_hwp5_multirow_internal_reset_needs_anchor_resync = false;
 
         // [Task #1046 Stage 1] 표 측정 드리프트 진단: 페이지네이터 effective_height vs
         // MeasuredTable 행높이 합(+cell_spacing). RHWP_TABLE_DRIFT=1 시 출력.
@@ -20928,6 +20945,8 @@ impl TypesetEngine {
             // 단, 1행 표의 저장 object height 는 현재 쪽 하단 tolerance 안에 맞고
             // cell 내용 측정치만 크게 나온 경우에는 한컴이 현재 쪽 하단까지 한 덩어리로
             // 배치하므로 아래 object-height fit 경로를 우선한다.
+            const DECLARED_FLOAT_FIT_TOLERANCE_PX: f64 = 1.0;
+            let has_internal_saved_vpos_reset = rowbreak_table_has_internal_saved_vpos_reset(table);
             let measured_fits_current = st.current_height + table_total <= available;
             let declared_overflows_current = st.current_height + declared_total > available;
             let measured_declared_excess = (table_total - declared_total).max(0.0);
@@ -20990,11 +21009,15 @@ impl TypesetEngine {
             //
             // 일반 anchor tolerance를 넓히면 page-tail float를 통째로 남기는
             // document-wide 회귀가 생길 수 있다. native HWP5, non-TAC, paragraph
-            // TopAndBottom, RowBreak, 다행 ordinary-row, table-footnote 없음, 다음
-            // source paragraph의 vpos rewind라는 여섯 저장 계약을 모두 만족하고,
-            // the delayed flow anchor is fully explained by measured growth,
-            // and the saved object bottom is inside the body, skip declared
-            // defer and let the fragment scan select the source-owned prefix.
+            // TopAndBottom, RowBreak, 다행 표, table-footnote 없음, 다음 source
+            // paragraph의 vpos rewind라는 저장 계약을 모두 만족하고, saved object
+            // bottom이 body 안에 드는 경우에만 declared defer를 건너뛰어 아래
+            // fragment scan에 맡긴다. ordinary-row 표는 #4763처럼 delayed flow가
+            // measured growth로 전부 설명될 때만 허용한다. rowspan 표는 cell 내부
+            // 저장 reset이 있어 scanner가 블록 안의 실제 hard-break를 제시할 때만
+            // 24px의 fragment-local anchor drift를 허용한다.
+            const NATIVE_HWP5_NEAR_ANCHOR_ROWBREAK_FRAGMENT_TOLERANCE_PX: f64 = 24.0;
+            let has_rowspan = table.cells.iter().any(|cell| cell.row_span > 1);
             let native_hwp5_near_anchor_rowbreak_needs_fragment_scan =
                 st.profile.native_hwp5_layout()
                     && !table.common.treat_as_char
@@ -21005,14 +21028,24 @@ impl TypesetEngine {
                     )
                     && table.row_count > 1
                     && ft.table_footnotes.is_empty()
-                    && table.cells.iter().all(|cell| cell.row_span == 1)
+                    && (!has_rowspan || has_internal_saved_vpos_reset)
                     && next_rewinds_after_table
                     && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
                         let flow_overrun = st.current_height - top_px;
                         let measured_excess = (table_total - declared_total).max(0.0);
+                        let allowed_flow_overrun = if has_rowspan {
+                            NATIVE_HWP5_NEAR_ANCHOR_ROWBREAK_FRAGMENT_TOLERANCE_PX
+                        } else {
+                            measured_excess
+                        };
+                        let bottom_tolerance = if has_rowspan {
+                            DECLARED_FLOAT_FIT_TOLERANCE_PX
+                        } else {
+                            0.0
+                        };
                         top_px <= st.current_height
-                            && flow_overrun <= measured_excess
-                            && bottom_px <= available
+                            && flow_overrun <= allowed_flow_overrun
+                            && bottom_px <= available + bottom_tolerance
                     });
             // native HWP의 저장 object는 host LineSeg의 시작보다 약간 뒤에서 paint될 수
             // 있다. 현재 flow가 그 host line 안에 있고 object top도 같은 line 안에 있으며,
@@ -21080,7 +21113,7 @@ impl TypesetEngine {
                 && table.cells.len() == 1
                 && ft.table_footnotes.is_empty()
                 && st.current_footnote_height > 0.0
-                && rowbreak_table_has_internal_saved_vpos_reset(table)
+                && has_internal_saved_vpos_reset
                 && next_rewinds_after_table
                 && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
                     let flow_overrun = st.current_height - top_px;
@@ -21090,10 +21123,62 @@ impl TypesetEngine {
                         && bottom_px <= available
                         && flow_overrun <= measured_excess
                 });
-            if native_hwp5_internal_reset_rewind_needs_anchor_resync {
-                let (_, top_px, _) = saved_span.expect("resync requires stored table anchor");
-                st.current_height = top_px;
-                placement_para_start_height = top_px;
+            // [#3931 Stage 2] 다행 RowBreak 표도 cell 문단 경계의 저장 vpos reset과
+            // 후속 source 문단의 되감김이 함께 있으면, 선언 common.height는 첫
+            // physical fragment의 span이고 측정 table_total은 다음 쪽 tail까지 합친
+            // 높이다. 빈 host 줄과 그 spacing을 flow가 먼저 소비한 경우 current_height가
+            // 저장 anchor보다 조금 아래로 밀려 declared defer가 12+4 저장 분할을
+            // 통째 이월로 바꾼다.
+            //
+            // 일반 anchor tolerance는 넓히지 않는다. native HWP5·빈 host·비-TAC·
+            // TopAndBottom·다행 RowBreak·표/현재 쪽 각주 없음·내부 reset·후속 rewind를
+            // 모두 요구하고, 저장 object 하단이 실제 body 안에 있으며 flow 초과분
+            // 전부가 host line + host spacing 소비로 설명될 때만 anchor를 복원한다.
+            // 저장 span이 현재 flow와 이미 맞거나 declared가 넘치지 않는 경우에는
+            // 동작하지 않는다.
+            native_hwp5_multirow_internal_reset_needs_anchor_resync =
+                st.profile.native_hwp5_layout()
+                    && !table.common.treat_as_char
+                    && is_para_topbottom_float(&table.common)
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+                    && !para_has_visible_text(para)
+                    && table.row_count > 1
+                    && ft.table_footnotes.is_empty()
+                    && st.current_footnote_height <= 0.5
+                    && declared_overflows_current
+                    && !saved_object_bottom_fits_current
+                    && has_internal_saved_vpos_reset
+                    && next_rewinds_after_table
+                    && saved_span.is_some_and(|(anchor_px, _top_px, bottom_px)| {
+                        // #4763 이후 saved span은 flow anchor와 paint top을 따로
+                        // 보존한다. 다행 표 재동기화는 vertical offset이 적용되기
+                        // 전의 source flow anchor를 사용한다.
+                        let vertical_offset_px = hwpunit_to_px(
+                            signed_hwpunit(table.common.vertical_offset).max(0),
+                            self.dpi,
+                        );
+                        let flow_overrun = st.current_height - anchor_px;
+                        let host_consumption =
+                            fmt.total_height + host_spacing_total + vertical_offset_px;
+                        anchor_px < st.current_height
+                            && bottom_px <= available + DECLARED_FLOAT_FIT_TOLERANCE_PX
+                            && flow_overrun <= host_consumption + DECLARED_FLOAT_FIT_TOLERANCE_PX
+                    });
+            if native_hwp5_internal_reset_rewind_needs_anchor_resync
+                || native_hwp5_multirow_internal_reset_needs_anchor_resync
+            {
+                let (anchor_px, top_px, _) =
+                    saved_span.expect("resync requires stored table anchor");
+                let flow_top = if native_hwp5_multirow_internal_reset_needs_anchor_resync {
+                    anchor_px
+                } else {
+                    top_px
+                };
+                st.current_height = flow_top;
+                placement_para_start_height = flow_top;
             }
             // [#3820 Stage 11] native HWP5의 빈-host 1×1 RowBreak 표가 자체 각주를
             // 여러 개 갖고 실제 셀 내용이 선언 높이보다 크게 자랐을 때, 첫 fragment에
@@ -21125,16 +21210,26 @@ impl TypesetEngine {
                             - st.current_bottom_fixed_exclusion;
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(
-                    "DIAG_SCAN DECL_DEFER? pi={} cur_h={:.1} declared={:.1} avail={:.1} saved={:?} bottom_fits={} splits_here={} near_anchor_fragment={} internal_reset_resync={} own_fn_fragment={}",
+                    "DIAG_SCAN DECL_DEFER? pi={} cur_h={:.1} declared={:.1} avail={:.1} host_h={:.1} host_before={:.1} v_off={:.1} outer_top={:.1} saved={:?} bottom_fits={} splits_here={} near_anchor_fragment={} internal_reset={} next_rewind={} internal_reset_resync={} multirow_internal_reset_resync={} own_fn_fragment={}",
                     para_idx,
                     st.current_height,
                     declared_total,
                     available,
+                    fmt.total_height,
+                    ft.host_spacing.before,
+                    hwpunit_to_px(
+                        signed_hwpunit(table.common.vertical_offset).max(0),
+                        self.dpi,
+                    ),
+                    hwpunit_to_px(table.outer_margin_top as i32, self.dpi),
                     saved_span,
                     saved_object_bottom_fits_current,
                     saved_anchor_splits_here,
                     native_hwp5_near_anchor_rowbreak_needs_fragment_scan,
+                    has_internal_saved_vpos_reset,
+                    next_rewinds_after_table,
                     native_hwp5_internal_reset_rewind_needs_anchor_resync,
+                    native_hwp5_multirow_internal_reset_needs_anchor_resync,
                     native_hwp5_own_footnote_fragment_can_start_before_reservation,
                 );
             }
@@ -21180,6 +21275,7 @@ impl TypesetEngine {
                 && !native_hwp5_near_anchor_rowbreak_needs_fragment_scan
                 && !native_hwp5_anchor_line_rowbreak_needs_fragment_scan
                 && !native_hwp5_internal_reset_rewind_needs_anchor_resync
+                && !native_hwp5_multirow_internal_reset_needs_anchor_resync
                 && !native_hwp5_own_footnote_fragment_can_start_before_reservation
                 && !saved_host_line_after_stack_fits
                 && !single_row_object_declared_fits_current

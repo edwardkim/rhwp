@@ -1720,7 +1720,10 @@ impl HeightMeasurer {
                             .iter()
                             .all(|p| !crate::renderer::para_has_no_stored_line_segs(p));
                     eprintln!(
-                        "DIAG_ROWH r={} c={} decl={:.1} req={:.1} content={:.1} pad={:.1} trail={:.1} stored={} nested={}",
+                        "DIAG_ROWH pi={} ci={} depth={} r={} c={} decl={:.1} req={:.1} content={:.1} pad={:.1} trail={:.1} stored={} nested={}",
+                        para_index,
+                        control_index,
+                        depth,
                         cell.row,
                         cell.col,
                         cell_h_px,
@@ -1731,6 +1734,97 @@ impl HeightMeasurer {
                         all_stored,
                         has_nested_table_in_cell,
                     );
+                    // #3931 Stage 1: 저장 LINE_SEG가 선언 셀높이보다 크게 팽창한
+                    // 셀의 줄별 성분을 선택적으로 분해한다. 모든 셀을 무조건 덤프하면
+                    // 대형 문서 로그가 폭발하므로 별도 환경변수와 큰 초과 형상으로
+                    // 한정한다. 진단 전용 재구성이며 측정값에는 관여하지 않는다.
+                    if std::env::var("RHWP_DIAG_ROWH_LINES").is_ok()
+                        && cell_h_px > 0.0
+                        && required_height > cell_h_px + 64.0
+                        && required_height > cell_h_px * 1.5
+                    {
+                        for (cell_para_index, cell_para) in cell.paragraphs.iter().enumerate() {
+                            let mut comp = compose_paragraph(cell_para);
+                            crate::renderer::composer::recompose_for_cell_width(
+                                &mut comp,
+                                cell_para,
+                                cell_inner_width,
+                                styles,
+                            );
+                            let para_style =
+                                styles.para_styles.get(cell_para.para_shape_id as usize);
+                            let line_spacing_type = para_style
+                                .map(|style| style.line_spacing_type)
+                                .unwrap_or(crate::model::style::LineSpacingType::Percent);
+                            let line_spacing_value =
+                                para_style.map(|style| style.line_spacing).unwrap_or(160.0);
+                            eprintln!(
+                                "DIAG_ROWH_PARA pi={} ci={} depth={} r={} c={} cp={} lines={} first_vpos={:?} last_end={:?} before={:.2} after={:.2} para_ls={:?}/{:.1}",
+                                para_index,
+                                control_index,
+                                depth,
+                                cell.row,
+                                cell.col,
+                                cell_para_index,
+                                comp.lines.len(),
+                                cell_para.line_segs.first().map(|segment| {
+                                    hwpunit_to_px(segment.vertical_pos, self.dpi)
+                                }),
+                                cell_para.line_segs.last().map(|segment| {
+                                    hwpunit_to_px(
+                                        segment.vertical_pos.saturating_add(segment.line_height),
+                                        self.dpi,
+                                    )
+                                }),
+                                para_style.map(|style| style.spacing_before).unwrap_or(0.0),
+                                para_style.map(|style| style.spacing_after).unwrap_or(0.0),
+                                line_spacing_type,
+                                line_spacing_value,
+                            );
+                            for (line_index, line) in comp.lines.iter().enumerate() {
+                                let max_font_size = line
+                                    .runs
+                                    .iter()
+                                    .map(|run| {
+                                        styles
+                                            .char_styles
+                                            .get(run.char_style_id as usize)
+                                            .map(|style| style.font_size)
+                                            .unwrap_or(0.0)
+                                    })
+                                    .fold(0.0f64, f64::max);
+                                eprintln!(
+                                    "DIAG_ROWH_LINE pi={} ci={} depth={} r={} c={} cp={} li={} stored_vpos={:?} raw_lh={:.2} raw_th={:?} raw_bl={:?} raw_ls={:.2} raw_pitch={:.2} max_fs={:.2} para_ls={:?}/{:.1}",
+                                    para_index,
+                                    control_index,
+                                    depth,
+                                    cell.row,
+                                    cell.col,
+                                    cell_para_index,
+                                    line_index,
+                                    cell_para
+                                        .line_segs
+                                        .get(line_index)
+                                        .map(|segment| hwpunit_to_px(segment.vertical_pos, self.dpi)),
+                                    hwpunit_to_px(line.line_height, self.dpi),
+                                    cell_para.line_segs.get(line_index).map(|segment| {
+                                        hwpunit_to_px(segment.text_height, self.dpi)
+                                    }),
+                                    cell_para.line_segs.get(line_index).map(|segment| {
+                                        hwpunit_to_px(segment.baseline_distance, self.dpi)
+                                    }),
+                                    hwpunit_to_px(line.line_spacing, self.dpi),
+                                    hwpunit_to_px(
+                                        line.line_height.saturating_add(line.line_spacing),
+                                        self.dpi,
+                                    ),
+                                    max_font_size,
+                                    line_spacing_type,
+                                    line_spacing_value,
+                                );
+                            }
+                        }
+                    }
                 }
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;
