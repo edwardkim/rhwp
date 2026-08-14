@@ -8,7 +8,7 @@ use crate::document_core::{
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::document::{Document, Section};
-use crate::model::page::ColumnDef;
+use crate::model::page::{ColumnDef, PageAreas};
 use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::model::style::Alignment;
 use crate::paint::{
@@ -345,43 +345,85 @@ fn floating_stack_picture_common(ctrl: &Control) -> Option<&crate::model::shape:
     }
 }
 
-/// 한 문단이 "동일 위치·겹침불허·전면급 부동 그림 다수" 스택인지.
-/// 한글은 이런 그림을 쪽당 1장씩 배치하지만 rhwp 는 앵커 쪽에 겹쳐 그린다(#2004 부동 변종).
-/// 게이트를 좁혀(모든 컨트롤이 tac=false·Square·overlap=false·전면급 그림 + 동일 세로오프셋 +
-/// 개수≥2 + 가시 텍스트 없음) 일반 부동개체 문단 오검출을 차단한다.
-fn para_is_floating_image_stack(para: &Paragraph, min_height_hu: i32) -> bool {
+/// 동일 위치·겹침불허·전면급 부동 그림 스택의 폭·높이 범위.
+///
+/// 모든 control이 비-TAC Square 그림/그림-도형이고, 가시 텍스트가 없으며, 세로 offset이
+/// 그림 높이 하나 안에서 겹칠 때만 반환한다. 본문 정규화와 #1995 낱장 배치 억제가 같은
+/// 저장 형상을 판정하도록 이 조건을 한 곳에 둔다.
+fn floating_image_stack_extents(para: &Paragraph, min_height_hu: i32) -> Option<(i32, i32)> {
     use crate::model::shape::TextWrap;
     if para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}') {
-        return false;
+        return None;
     }
     if para.controls.is_empty() {
-        return false;
+        return None;
     }
     let mut count = 0usize;
     let mut min_voff = i32::MAX;
     let mut max_voff = i32::MIN;
     let mut min_pic_h = i32::MAX;
+    let mut min_pic_w = i32::MAX;
+    let mut max_pic_h = i32::MIN;
     for ctrl in &para.controls {
-        let Some(common) = floating_stack_picture_common(ctrl) else {
-            return false;
-        };
+        let common = floating_stack_picture_common(ctrl)?;
         if common.treat_as_char
             || !matches!(common.text_wrap, TextWrap::Square)
             || common.allow_overlap
             || (common.height as i32) < min_height_hu
         {
-            return false;
+            return None;
         }
         let voff = common.vertical_offset as i32;
         min_voff = min_voff.min(voff);
         max_voff = max_voff.max(voff);
         min_pic_h = min_pic_h.min(common.height as i32);
+        min_pic_w = min_pic_w.min(common.width as i32);
+        max_pic_h = max_pic_h.max(common.height as i32);
         count += 1;
     }
     // [#2004] 세로오프셋이 동일하거나(#1995: 전부 0) 이미지 높이보다 작은 band 안에서
     // varying(156714340: 0/-3360/-2940 …)이어 서로 크게 겹치면 "겹침 스택"으로 판정한다.
     // 오프셋 spread ≥ 이미지 높이면 이미 세로로 벌어진 정상 배치이므로 제외.
-    count >= 2 && (max_voff as i64 - min_voff as i64) <= min_pic_h as i64
+    (count >= 2 && (max_voff as i64 - min_voff as i64) <= min_pic_h as i64)
+        .then_some((min_pic_w, max_pic_h))
+}
+
+/// 한 문단이 "동일 위치·겹침불허·전면급 부동 그림 다수" 스택인지.
+/// 한글은 이런 그림을 쪽당 1장씩 배치하지만 rhwp 는 앵커 쪽에 겹쳐 그린다(#2004 부동 변종).
+/// 게이트를 좁혀(모든 컨트롤이 tac=false·Square·overlap=false·전면급 그림 + 동일 세로오프셋 +
+/// 개수≥2 + 가시 텍스트 없음) 일반 부동개체 문단 오검출을 차단한다.
+fn para_is_floating_image_stack(para: &Paragraph, min_height_hu: i32) -> bool {
+    floating_image_stack_extents(para, min_height_hu).is_some()
+}
+
+/// [#4770] 본문 그림 스택이 "앵커 쪽에 겹친 채 남는" 저장 형상인지.
+///
+/// 두 조건이 함께 성립해야 한다:
+/// 1. 저장 첫 줄이 그림 폭 이상 오른쪽에서 시작(cs ≥ min 그림 폭) — 저작 한글이
+///    빈 줄을 Square 배제로 그림 **옆에** 끼운 흔적.
+/// 2. 첫 그림이 앵커 위치의 본문 하단에 물리적으로 들어감(저장 vpos + max 그림
+///    높이 ≤ 본문 하단 절대 좌표) — 들어가지 않으면 한글은 겹침불허 캐스케이드로 낱장 분산한다.
+///
+/// HPV 코호트 s2/pi1007(그림 24장 150×212mm, cs=42520·vpos=5040, 한글 1쪽)은 둘 다
+/// 성립 → 스택 유지. #2004 본문 96장(cs=0·vpos=53602, 한글 96쪽)과 셀 스택 픽스처
+/// (cs-옆끼임이나 그림 h≈65k 가 잔여에 안 들어감, 한글 8쪽)는 성립하지 않아 기존
+/// 낱장 분산이 보존된다. **셀 내부 스택에는 적용하지 않는다** — 컨테이너가 쪽이
+/// 아니라 셀이라 잔여 판정의 기준이 다르다.
+///
+/// `vertical_pos`는 페이지 상단 기준 절대 좌표이므로 `body_bottom_hu`와 비교해야 한다.
+/// 이 계약은 본문 정규화와 typeset의 #1995 낱장 배치 억제가 함께 사용한다.
+pub(crate) fn body_pile_stays_on_anchor_page(
+    para: &Paragraph,
+    min_height_hu: i32,
+    body_bottom_hu: i32,
+) -> bool {
+    let Some((min_pic_w, max_pic_h)) = floating_image_stack_extents(para, min_height_hu) else {
+        return false;
+    };
+    para.line_segs.first().is_some_and(|seg| {
+        seg.column_start >= min_pic_w
+            && seg.vertical_pos.saturating_add(max_pic_h) <= body_bottom_hu
+    })
 }
 
 /// 문단의 그림/그림-도형을 인라인(tac=true)으로 재분류(정규화본에만 적용, 원본 무손상).
@@ -4845,17 +4887,18 @@ impl DocumentCore {
             }
             let section = &self.document.sections[idx];
             let pd = &section.section_def.page_def;
-            let body_h_hu = pd.height as i32
-                - pd.margin_top as i32
-                - pd.margin_bottom as i32
-                - pd.margin_header as i32
-                - pd.margin_footer as i32;
+            let body_area = PageAreas::from_page_def(pd).body_area;
+            let body_h_hu = body_area.height();
+            let body_bottom_hu = body_area.bottom;
             let min_height_hu = (body_h_hu / 2).max(1);
             let matches: Vec<usize> = section
                 .paragraphs
                 .iter()
                 .enumerate()
-                .filter(|(_, p)| para_is_floating_image_stack(p, min_height_hu))
+                .filter(|(_, p)| {
+                    para_is_floating_image_stack(p, min_height_hu)
+                        && !body_pile_stays_on_anchor_page(p, min_height_hu, body_bottom_hu)
+                })
                 .map(|(i, _)| i)
                 .collect();
             // [#2004] 표 셀 내부 부동 이미지 스택 검출(본문 스택과 별개 경로).
