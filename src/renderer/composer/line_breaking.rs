@@ -1874,7 +1874,7 @@ pub(crate) fn layout_paragraph_in_frame(
     // `FlowInlineControl` path. A non-TAC Picture deliberately contributes no
     // inline token: it is represented by the caller's exclusion instead.
     let inline_controls = flow_inline_controls(para);
-    let tokens = tokenize_paragraph_with_split_cell_space_metric(
+    let tokens = tokenize_paragraph_with_regenerated_space_metric(
         &text_chars,
         &para.char_offsets,
         &para.char_shapes,
@@ -3125,7 +3125,7 @@ mod frame_reflow_tests {
             .map(|value| value.line_spacing_type)
             .unwrap_or(LineSpacingType::Percent);
         let line_spacing_value = style.map(|value| value.line_spacing).unwrap_or(160.0);
-        let tokens = tokenize_paragraph_with_split_cell_space_metric(
+        let tokens = tokenize_paragraph_with_regenerated_space_metric(
             &text_chars,
             &para.char_offsets,
             &para.char_shapes,
