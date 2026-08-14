@@ -19603,6 +19603,54 @@ impl TypesetEngine {
             // `cell_units`가 fragment를 만들더라도 그 값이 1이라 atomic으로 남는다.
             // 동일 storage/physical-height gate와 실제 multi-unit 확인을 통해서만
             // 해당 행을 `advance_row_cut`에 전달한다 (76076 p81→82).
+            let terminal_single_source_note_row = !strict_painted_bottom_fit
+                && mt.allows_row_break_split()
+                && r > cursor_row
+                && r + 1 == row_count
+                && row_start_cut.is_empty()
+                && !rowspan_touched[r]
+                && {
+                    let mut cells = table
+                        .cells
+                        .iter()
+                        .filter(|cell| cell.row as usize == r && cell.row_span == 1);
+                    cells.next().is_some_and(|cell| {
+                        cells.next().is_none()
+                            && cell.col_span as usize == table.col_count as usize
+                            && cell.paragraphs.iter().all(|paragraph| {
+                                paragraph.controls.is_empty()
+                                    && para_has_visible_text(paragraph)
+                                    && paragraph
+                                        .line_segs
+                                        .iter()
+                                        .filter(|seg| !is_synthetic_line_seg(seg))
+                                        .count()
+                                        == 1
+                            })
+                    })
+                };
+            if terminal_single_source_note_row {
+                let remaining_band = (avail_for_rows - consumed - cs_before).max(0.0);
+                let source_cut = layout_engine.advance_row_cut(
+                    table,
+                    r,
+                    row_start_cut,
+                    remaining_band,
+                    styles,
+                );
+                if remaining_band > 0.0
+                    && source_cut.fully_consumed
+                    && source_cut.consumed_height > 0.0
+                {
+                    // 마지막 주석의 실제 저장 line이 남은 band 안에 모두 있으므로,
+                    // 선언 row 높이의 빈 아래 영역은 별도 physical page를 소유하지 않는다.
+                    consumed += cs_before + remaining_band;
+                    r += 1;
+                    end_row = r;
+                    end_row_height_override = Some(remaining_band);
+                    continue;
+                }
+            }
             let native_short_parent_child_splittable =
                 layout_engine.native_short_parent_child_row_is_fragmentable(table, r, styles);
             let splittable = can_intra_split
