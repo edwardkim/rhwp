@@ -20727,12 +20727,11 @@ impl TypesetEngine {
                     // 스택 뒤를 인코딩(선두-줄 host 의 vpos 0/흐름-일치 저장은 제외).
                     let line_h = (bounds.1 - bounds.0).max(0.0);
                     bounds.0 > st.current_height + line_h + 16.0
-                        && saved_bounds_fit_at_flow_tail(
-                            bounds,
-                            st.current_height,
-                            available,
-                            0.0,
-                        )
+                        // 일반 tail helper는 line이 현재 flow와 겹칠 때만 쓴다.
+                        // 여기서는 바로 위 조건이 line이 float stack 뒤에 있음을
+                        // 이미 증명하므로, 같은 physical body의 하단 안에 있는지만
+                        // source frame으로 확인한다.
+                        && bounds.1 <= available
                 });
         // 통째-배치 구제는 스택의 2번째 이후 표(선행 co-anchored 존재)이면서
         // 표 자체가 한 쪽에 들어갈 때만 — 첫 표는 정상 fit/분할 경로를 그대로
