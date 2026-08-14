@@ -11,6 +11,7 @@ use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, is_cjk_char, resolved_to_text_style,
     stale_split_hanyang_shinmyeongjo_space_width,
 };
+use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, RowSegment};
 use crate::renderer::px_to_hwpunit;
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
 
@@ -57,6 +58,25 @@ struct LineBreakResult {
     end_idx: usize, // exclusive
     max_font_size: f64,
     has_line_break: bool, // 강제 줄 바꿈 여부
+}
+
+/// Why one carved interval stopped receiving text.
+///
+/// A false `has_line_break` alone is ambiguous: a segment can stop because it
+/// reached its interval, or because it finished the paragraph. Frame layout
+/// needs the distinction to decide whether the next horizontal interval is
+/// part of the same physical row.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FillTermination {
+    IntervalFull,
+    ForcedBreak,
+    ParagraphEnd,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct FilledInterval {
+    line: LineBreakResult,
+    termination: FillTermination,
 }
 
 /// 줄 머리 금칙: 줄 시작에 올 수 없는 문자
@@ -806,7 +826,7 @@ fn fill_lines(
     let mut cursor = FillCursor::new(initial_start_idx, initial_is_first_line);
     let mut results = Vec::new();
 
-    while let Some(line) = fill_one_interval(
+    while let Some(interval) = fill_one_interval(
         tokens,
         text_chars,
         available_width_px,
@@ -816,7 +836,7 @@ fn fill_lines(
         condense_min_space,
         &mut cursor,
     ) {
-        results.push(line);
+        results.push(interval.line);
     }
 
     results
@@ -832,7 +852,7 @@ fn fill_one_interval(
     korean_break_unit: u8,
     condense_min_space: u8,
     cursor: &mut FillCursor,
-) -> Option<LineBreakResult> {
+) -> Option<FilledInterval> {
     if cursor.finished {
         return None;
     }
@@ -840,11 +860,14 @@ fn fill_one_interval(
     if tokens.is_empty() {
         cursor.finished = true;
         cursor.emitted_any = true;
-        return Some(LineBreakResult {
-            start_idx: cursor.initial_start_idx,
-            end_idx: cursor.initial_start_idx,
-            max_font_size: 0.0,
-            has_line_break: false,
+        return Some(FilledInterval {
+            line: LineBreakResult {
+                start_idx: cursor.initial_start_idx,
+                end_idx: cursor.initial_start_idx,
+                max_font_size: 0.0,
+                has_line_break: false,
+            },
+            termination: FillTermination::ParagraphEnd,
         });
     }
 
@@ -886,21 +909,27 @@ fn fill_one_interval(
 
             if cursor.line_start_idx <= last_end {
                 cursor.emitted_any = true;
-                return Some(LineBreakResult {
-                    start_idx: cursor.line_start_idx,
-                    end_idx: last_end,
-                    max_font_size: cursor.line_max_fs,
-                    has_line_break: false,
+                return Some(FilledInterval {
+                    line: LineBreakResult {
+                        start_idx: cursor.line_start_idx,
+                        end_idx: last_end,
+                        max_font_size: cursor.line_max_fs,
+                        has_line_break: false,
+                    },
+                    termination: FillTermination::ParagraphEnd,
                 });
             }
 
             if !cursor.emitted_any {
                 cursor.emitted_any = true;
-                return Some(LineBreakResult {
-                    start_idx: cursor.initial_start_idx,
-                    end_idx: text_chars.len(),
-                    max_font_size: 0.0,
-                    has_line_break: false,
+                return Some(FilledInterval {
+                    line: LineBreakResult {
+                        start_idx: cursor.initial_start_idx,
+                        end_idx: text_chars.len(),
+                        max_font_size: 0.0,
+                        has_line_break: false,
+                    },
+                    termination: FillTermination::ParagraphEnd,
                 });
             }
             return None;
@@ -923,7 +952,10 @@ fn fill_one_interval(
                 cursor.last_break_token_idx = None;
                 cursor.token_index += 1;
                 cursor.emitted_any = true;
-                return Some(result);
+                return Some(FilledInterval {
+                    line: result,
+                    termination: FillTermination::ForcedBreak,
+                });
             }
             BreakToken::Tab { idx, max_font_size } => {
                 // 탭 계산은 px로 수행 후 HWPUNIT 변환 (정밀도 유지)
@@ -966,7 +998,10 @@ fn fill_one_interval(
                     cursor.lw = to_hwp(next_tab2);
                     cursor.token_index += 1;
                     cursor.emitted_any = true;
-                    return Some(result);
+                    return Some(FilledInterval {
+                        line: result,
+                        termination: FillTermination::IntervalFull,
+                    });
                 }
 
                 cursor.last_break_token_idx = Some(ti);
@@ -1033,7 +1068,10 @@ fn fill_one_interval(
                             cursor.is_first_line = false;
                             cursor.fallback_char_idx = Some(ci + 1);
                             cursor.emitted_any = true;
-                            return Some(result);
+                            return Some(FilledInterval {
+                                line: result,
+                                termination: FillTermination::IntervalFull,
+                            });
                         }
                         cursor.lw += char_w;
                         ci += 1;
@@ -1111,7 +1149,10 @@ fn fill_one_interval(
                                 cursor.lw += w_hwp;
                                 cursor.token_index += 1;
                                 cursor.emitted_any = true;
-                                return Some(result);
+                                return Some(FilledInterval {
+                                    line: result,
+                                    termination: FillTermination::IntervalFull,
+                                });
                             }
 
                             // [#3822] 이전 break 뒤로 옮긴 현재 토큰이 새 줄에도
@@ -1128,14 +1169,20 @@ fn fill_one_interval(
                                 cursor.lw += w_hwp;
                                 cursor.token_index += 1;
                                 cursor.emitted_any = true;
-                                return Some(result);
+                                return Some(FilledInterval {
+                                    line: result,
+                                    termination: FillTermination::IntervalFull,
+                                });
                             }
 
                             cursor.line_space_savings = 0;
                             cursor.last_break_token_idx = None;
                             cursor.fallback_char_idx = Some(*start_idx);
                             cursor.emitted_any = true;
-                            return Some(result);
+                            return Some(FilledInterval {
+                                line: result,
+                                termination: FillTermination::IntervalFull,
+                            });
                         }
                     }
 
@@ -1716,6 +1763,197 @@ fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
     }
 }
 
+fn frame_metrics_for_line(
+    max_font_size: f64,
+    fallback_font_size: f64,
+    line_spacing_type: LineSpacingType,
+    line_spacing_value: f64,
+    dpi: f64,
+) -> FrameRowMetrics {
+    let font_size = if max_font_size > 0.0 {
+        max_font_size
+    } else {
+        fallback_font_size
+    };
+    let line_height = font_size_to_line_height(font_size, dpi).max(1);
+    FrameRowMetrics {
+        vertical_pos: 0,
+        line_height,
+        text_height: line_height,
+        baseline_distance: (line_height as f64 * 0.85) as i32,
+        line_spacing: compute_line_spacing_hwp(
+            line_spacing_type,
+            line_spacing_value,
+            line_height,
+            dpi,
+        ),
+    }
+}
+
+/// Lay out a scalar paragraph through a caller-owned physical frame.
+///
+/// Every interval returned by one carve belongs to the same physical row. The
+/// cursor continues from left to right and the frame does not advance until
+/// that complete row has been committed. This helper deliberately has no
+/// document or picture-band caller yet; it is the reflow boundary between the
+/// cursor and `LayoutFrame`.
+pub(crate) fn layout_paragraph_in_frame(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<Vec<LineSeg>> {
+    if para.text.is_empty() || !para.controls.is_empty() {
+        return None;
+    }
+
+    let text_chars = para.text.chars().collect::<Vec<_>>();
+    let para_style = styles.para_styles.get(para.para_shape_id as usize);
+    let indent_px = para_style.map(|style| style.indent).unwrap_or(0.0);
+    let english_break_unit = para_style
+        .map(|style| style.english_break_unit)
+        .unwrap_or(0);
+    let korean_break_unit = para_style.map(|style| style.korean_break_unit).unwrap_or(0);
+    let condense_min_space = para_style
+        .map(|style| style.condense_min_space)
+        .unwrap_or(0);
+    let default_tab_width = para_style
+        .map(|style| style.default_tab_width)
+        .unwrap_or(0.0);
+    let line_spacing_type = para_style
+        .map(|style| style.line_spacing_type)
+        .unwrap_or(LineSpacingType::Percent);
+    let line_spacing_value = para_style.map(|style| style.line_spacing).unwrap_or(160.0);
+    let tokens = tokenize_paragraph_with_split_cell_space_metric(
+        &text_chars,
+        &para.char_offsets,
+        &para.char_shapes,
+        styles,
+        english_break_unit,
+        korean_break_unit,
+        false,
+        &[],
+    );
+    // Keep the existing scalar fallback for a terminal empty line after a
+    // forced break. The active character shape is deliberately not consulted
+    // here because the pre-frame reflow uses a fixed 12px fallback.
+    let fallback_font_size = 12.0;
+    let source_tag = para
+        .line_segs
+        .first()
+        .map(|segment| segment.tag)
+        .unwrap_or(LineSeg::TAG_IMPLEMENTATION_PROPERTY | LineSeg::TAG_SINGLE_SEGMENT_LINE);
+    let first_row = frame.row_count();
+    let frame_checkpoint = frame.clone();
+    let mut cursor = FillCursor::new(0, true);
+
+    let result = (|| {
+        while !cursor.finished {
+            let row_frame_checkpoint = frame.clone();
+            let cursor_checkpoint = cursor.clone();
+            let mut candidate_height = frame_metrics_for_line(
+                fallback_font_size,
+                fallback_font_size,
+                line_spacing_type,
+                line_spacing_value,
+                dpi,
+            )
+            .line_height;
+            const MAX_ROW_HEIGHT_TRIALS: usize = 8;
+            let mut attempted_trials = Vec::with_capacity(MAX_ROW_HEIGHT_TRIALS);
+
+            loop {
+                frame.restore_checkpoint(row_frame_checkpoint.clone());
+                cursor = cursor_checkpoint.clone();
+                let intervals = frame.carve(candidate_height).to_vec();
+                if intervals.is_empty()
+                    || intervals
+                        .iter()
+                        .any(|interval| interval.start >= interval.end)
+                {
+                    return None;
+                }
+                let trial = (frame.top, candidate_height, intervals.clone());
+                if attempted_trials.contains(&trial)
+                    || attempted_trials.len() == MAX_ROW_HEIGHT_TRIALS
+                {
+                    return None;
+                }
+                attempted_trials.push(trial);
+
+                let mut segments = Vec::with_capacity(intervals.len());
+                let mut maximum_font_size = 0.0f64;
+                let mut row_terminated = false;
+                for interval in intervals {
+                    let available_width_px = crate::renderer::hwpunit_to_px(
+                        interval.end.saturating_sub(interval.start),
+                        dpi,
+                    );
+                    let filled = fill_one_interval(
+                        &tokens,
+                        &text_chars,
+                        available_width_px,
+                        indent_px,
+                        default_tab_width,
+                        korean_break_unit,
+                        condense_min_space,
+                        &mut cursor,
+                    )?;
+                    let line = &filled.line;
+                    maximum_font_size = maximum_font_size.max(line.max_font_size);
+                    let text_start = if frame.row_count() == first_row && segments.is_empty() {
+                        0
+                    } else {
+                        char_index_to_utf16_offset(para, line.start_idx)
+                    };
+                    let text_end = char_index_to_utf16_offset(para, line.end_idx).max(text_start);
+                    segments.push(RowSegment::new(text_start..text_end, interval, source_tag));
+
+                    if filled.termination != FillTermination::IntervalFull {
+                        row_terminated = true;
+                        break;
+                    }
+                }
+
+                let metrics = frame_metrics_for_line(
+                    maximum_font_size,
+                    fallback_font_size,
+                    line_spacing_type,
+                    line_spacing_value,
+                    dpi,
+                );
+                if metrics.line_height != candidate_height {
+                    candidate_height = metrics.line_height;
+                    continue;
+                }
+
+                if row_terminated && segments.len() < frame.current_intervals.len() {
+                    let text_start = segments
+                        .last()
+                        .map(|segment| segment.text_range.end)
+                        .unwrap_or(0);
+                    for interval in frame.current_intervals[segments.len()..].iter().cloned() {
+                        segments.push(RowSegment::new(
+                            text_start..text_start,
+                            interval,
+                            source_tag | LineSeg::TAG_EMPTY_SEGMENT,
+                        ));
+                    }
+                }
+
+                frame.commit_carved_row(metrics, segments)?;
+                break;
+            }
+        }
+        Some(frame.project_line_segs_since(first_row))
+    })();
+
+    if result.is_none() {
+        frame.restore_checkpoint(frame_checkpoint);
+    }
+    result
+}
+
 /// 문단의 line_segs를 텍스트 내용과 컬럼 너비에 맞게 재계산한다.
 ///
 /// 텍스트 편집(삽입/삭제) 후 호출하여 줄 바꿈을 재배치한다.
@@ -2014,6 +2252,26 @@ fn reflow_line_segs_impl(
             }
         }
     }
+
+    // The frame owns physical-row recurrence only for an ordinary scalar
+    // reflow. Stored-prefix edits, split-cell recovery, empty paragraphs, and
+    // inline controls retain their established specialized paths below.
+    let frame_eligible = !split_stale_cell_reflow
+        && preserve_prefix_for_edit.is_none()
+        && para.controls.is_empty()
+        && preserved_prefix.is_empty();
+    if frame_eligible {
+        let mut frame = LayoutFrame::new(
+            0..seg_width_hwp,
+            orig.as_ref().map(|line| line.vertical_pos).unwrap_or(0),
+            Vec::new(),
+        );
+        if let Some(projected) = layout_paragraph_in_frame(para, &mut frame, styles, dpi) {
+            para.line_segs = projected;
+            return false;
+        }
+    }
+
     let line_breaks = fill_lines(
         &tokens[token_start..],
         &text_chars,
@@ -2395,7 +2653,7 @@ mod fill_cursor_tests {
             condense_min_space,
             &mut cursor,
         ) {
-            results.push(result);
+            results.push(result.line);
         }
         results
     }
@@ -2533,6 +2791,292 @@ mod fill_cursor_tests {
         ];
 
         assert_cursor_matches_frozen_scalar(&tokens, &text_chars, 24.0, 0.0, 48.0, 0, 0, 0, true);
+    }
+}
+
+#[cfg(test)]
+mod frame_reflow_tests {
+    use super::*;
+    use crate::renderer::layout_frame::FrameExclusion;
+    use crate::renderer::style_resolver::{ResolvedCharStyle, ResolvedParaStyle};
+
+    fn styles(font_sizes: &[f64]) -> ResolvedStyleSet {
+        ResolvedStyleSet {
+            char_styles: font_sizes
+                .iter()
+                .map(|font_size| ResolvedCharStyle {
+                    font_size: *font_size,
+                    ratio: 1.0,
+                    ..Default::default()
+                })
+                .collect(),
+            para_styles: vec![ResolvedParaStyle::default()],
+            ..Default::default()
+        }
+    }
+
+    fn paragraph(text: &str, char_shapes: Vec<CharShapeRef>) -> Paragraph {
+        Paragraph {
+            text: text.to_string(),
+            char_offsets: text
+                .chars()
+                .scan(0u32, |offset, character| {
+                    let current = *offset;
+                    *offset += character.len_utf16() as u32;
+                    Some(current)
+                })
+                .collect(),
+            char_count: text.encode_utf16().count() as u32 + 1,
+            char_shapes,
+            ..Default::default()
+        }
+    }
+
+    fn shared_metrics(lines: &[LineSeg]) -> Vec<(i32, i32, i32, i32, i32)> {
+        lines
+            .iter()
+            .map(|line| {
+                (
+                    line.vertical_pos,
+                    line.line_height,
+                    line.text_height,
+                    line.baseline_distance,
+                    line.line_spacing,
+                )
+            })
+            .collect()
+    }
+
+    fn line_fields(lines: &[LineSeg]) -> Vec<(u32, i32, i32, i32, i32, i32, i32, i32, u32)> {
+        lines
+            .iter()
+            .map(|line| {
+                (
+                    line.text_start,
+                    line.vertical_pos,
+                    line.line_height,
+                    line.text_height,
+                    line.baseline_distance,
+                    line.line_spacing,
+                    line.column_start,
+                    line.segment_width,
+                    line.tag,
+                )
+            })
+            .collect()
+    }
+
+    fn frozen_scalar_projection(
+        para: &Paragraph,
+        available_width_px: f64,
+        styles: &ResolvedStyleSet,
+        dpi: f64,
+    ) -> Vec<LineSeg> {
+        let text_chars = para.text.chars().collect::<Vec<_>>();
+        let style = styles.para_styles.get(para.para_shape_id as usize);
+        let indent_px = style.map(|value| value.indent).unwrap_or(0.0);
+        let english_break_unit = style.map(|value| value.english_break_unit).unwrap_or(0);
+        let korean_break_unit = style.map(|value| value.korean_break_unit).unwrap_or(0);
+        let condense_min_space = style.map(|value| value.condense_min_space).unwrap_or(0);
+        let default_tab_width = style.map(|value| value.default_tab_width).unwrap_or(0.0);
+        let line_spacing_type = style
+            .map(|value| value.line_spacing_type)
+            .unwrap_or(LineSpacingType::Percent);
+        let line_spacing_value = style.map(|value| value.line_spacing).unwrap_or(160.0);
+        let tokens = tokenize_paragraph_with_split_cell_space_metric(
+            &text_chars,
+            &para.char_offsets,
+            &para.char_shapes,
+            styles,
+            english_break_unit,
+            korean_break_unit,
+            false,
+            &[],
+        );
+        let line_breaks = fill_lines_before_cursor(
+            &tokens,
+            &text_chars,
+            available_width_px,
+            indent_px,
+            default_tab_width,
+            korean_break_unit,
+            condense_min_space,
+            0,
+            true,
+        );
+        let segment_width = px_to_hwpunit(available_width_px, dpi);
+        let source_tag = para
+            .line_segs
+            .first()
+            .map(|line| line.tag)
+            .unwrap_or(LineSeg::TAG_SINGLE_SEGMENT_LINE | LineSeg::TAG_IMPLEMENTATION_PROPERTY);
+        let mut vertical_pos = para
+            .line_segs
+            .first()
+            .map(|line| line.vertical_pos)
+            .unwrap_or(0);
+
+        line_breaks
+            .iter()
+            .enumerate()
+            .map(|(index, line)| {
+                let font_size = if line.max_font_size > 0.0 {
+                    line.max_font_size
+                } else {
+                    12.0
+                };
+                let line_height = font_size_to_line_height(font_size, dpi);
+                let line_spacing = compute_line_spacing_hwp(
+                    line_spacing_type,
+                    line_spacing_value,
+                    line_height,
+                    dpi,
+                );
+                let projected = LineSeg {
+                    text_start: if index == 0 {
+                        0
+                    } else {
+                        char_index_to_utf16_offset(para, line.start_idx)
+                    },
+                    vertical_pos,
+                    line_height,
+                    text_height: line_height,
+                    baseline_distance: (line_height as f64 * 0.85) as i32,
+                    line_spacing,
+                    column_start: 0,
+                    segment_width,
+                    tag: if source_tag == 0 {
+                        LineSeg::TAG_SINGLE_SEGMENT_LINE
+                    } else {
+                        source_tag
+                    },
+                };
+                vertical_pos += line_height + line_spacing;
+                projected
+            })
+            .collect()
+    }
+
+    #[test]
+    fn frame_reflow_projects_two_intervals_as_one_physical_row() {
+        let styles = styles(&[12.0]);
+        let para = paragraph(
+            "abcdef ghijkl",
+            vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+        );
+        let mut frame = LayoutFrame::new(
+            0..9_000,
+            100,
+            vec![FrameExclusion {
+                horizontal: 3_000..5_000,
+                vertical: 0..10_000,
+            }],
+        );
+
+        let lines = layout_paragraph_in_frame(&para, &mut frame, &styles, 96.0)
+            .expect("two usable intervals accept scalar text");
+
+        assert_eq!(lines.len(), 2);
+        assert_eq!(
+            lines.iter().map(|line| line.text_start).collect::<Vec<_>>(),
+            vec![0, 7]
+        );
+        assert_eq!(
+            lines
+                .iter()
+                .map(|line| (line.column_start, line.segment_width))
+                .collect::<Vec<_>>(),
+            vec![(0, 3_000), (5_000, 4_000)]
+        );
+        assert_eq!(shared_metrics(&lines), vec![(100, 900, 900, 765, 540); 2]);
+        assert!(lines[0].is_first_segment());
+        assert!(!lines[0].is_last_segment());
+        assert!(!lines[1].is_first_segment());
+        assert!(lines[1].is_last_segment());
+        assert_eq!(frame.row_count(), 1);
+        assert_eq!(frame.top, 1_540);
+    }
+
+    #[test]
+    fn frame_reflow_retries_a_taller_row_without_consuming_the_cursor() {
+        let styles = styles(&[12.0, 20.0]);
+        let para = paragraph(
+            "abcdef ghijk",
+            vec![
+                CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 0,
+                },
+                CharShapeRef {
+                    start_pos: 7,
+                    char_shape_id: 1,
+                },
+            ],
+        );
+        let mut frame = LayoutFrame::new(
+            0..9_000,
+            0,
+            vec![FrameExclusion {
+                horizontal: 4_000..5_000,
+                vertical: 1_000..5_000,
+            }],
+        );
+
+        let lines = layout_paragraph_in_frame(&para, &mut frame, &styles, 96.0)
+            .expect("the taller retry restores the first interval's cursor");
+
+        // The 12px trial has one full-width interval below the exclusion. The
+        // 20px row reaches it, so retrying from the same cursor must produce
+        // the two carved segments rather than an exhausted paragraph.
+        assert_eq!(lines.len(), 2);
+        assert_eq!(
+            lines.iter().map(|line| line.text_start).collect::<Vec<_>>(),
+            vec![0, 7]
+        );
+        assert_eq!(
+            lines
+                .iter()
+                .map(|line| (line.column_start, line.segment_width))
+                .collect::<Vec<_>>(),
+            vec![(0, 4_000), (5_000, 4_000)]
+        );
+        assert_eq!(
+            shared_metrics(&lines),
+            vec![(0, 1_500, 1_500, 1_275, 900); 2]
+        );
+        assert_eq!(frame.row_count(), 1);
+        assert_eq!(frame.top, 2_400);
+    }
+
+    #[test]
+    fn eligible_scalar_reflow_projects_the_frozen_scalar_oracle() {
+        let styles = styles(&[12.0]);
+        let mut para = paragraph(
+            "alpha beta gamma delta epsilon",
+            vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+        );
+        para.line_segs = vec![LineSeg {
+            vertical_pos: 321,
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE | LineSeg::TAG_IMPLEMENTATION_PROPERTY,
+            ..Default::default()
+        }];
+        let expected = frozen_scalar_projection(&para, 50.0, &styles, 96.0);
+        assert!(expected.len() > 1, "fixture must exercise row recurrence");
+
+        reflow_line_segs(&mut para, 50.0, &styles, 96.0);
+
+        assert_eq!(line_fields(&para.line_segs), line_fields(&expected));
+        assert!(para
+            .line_segs
+            .iter()
+            .all(|line| line.segment_width == 3_750 && line.column_start == 0));
+        assert_eq!(para.line_segs[0].vertical_pos, 321);
     }
 }
 

@@ -5,6 +5,7 @@ use std::ops::Range;
 use crate::model::paragraph::LineSeg;
 
 const SEGMENT_BOUNDARY_TAGS: u32 = LineSeg::TAG_FIRST_SEGMENT | LineSeg::TAG_LAST_SEGMENT;
+const MINIMUM_USABLE_INTERVAL_HWP: i32 = 1_440;
 
 /// The vertical values shared by every horizontal segment in one physical row.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -98,6 +99,24 @@ pub(crate) struct LayoutFrame {
 }
 
 impl LayoutFrame {
+    /// Start a paragraph-local physical frame at a known horizontal extent.
+    pub(crate) fn new(horizontal: Range<i32>, top: i32, exclusions: Vec<FrameExclusion>) -> Self {
+        Self {
+            horizontal,
+            top,
+            exclusions,
+            current_intervals: Vec::new(),
+            next_geometry_event: None,
+            minimum_width: MINIMUM_USABLE_INTERVAL_HWP,
+            rows: Vec::new(),
+        }
+    }
+
+    /// Discard an uncommitted row trial and restore its exact frame state.
+    pub(crate) fn restore_checkpoint(&mut self, checkpoint: Self) {
+        *self = checkpoint;
+    }
+
     /// Carve the current physical row into ordered horizontal intervals.
     pub(crate) fn carve(&mut self, band_height: i32) -> &[Range<i32>] {
         let old_max = self.next_geometry_event.map(|_| {
@@ -290,6 +309,18 @@ impl LayoutFrame {
         }
 
         projected
+    }
+
+    /// Flatten only rows appended after a paragraph-local checkpoint.
+    pub(crate) fn project_line_segs_since(&self, first_row: usize) -> Vec<LineSeg> {
+        let first_segment = self.rows[..first_row.min(self.rows.len())]
+            .iter()
+            .map(|row| row.segments.len())
+            .sum();
+        self.project_line_segs()
+            .into_iter()
+            .skip(first_segment)
+            .collect()
     }
 }
 
