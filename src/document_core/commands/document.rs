@@ -415,24 +415,15 @@ impl DocumentCore {
                             table.page_break,
                             crate::model::table::TablePageBreak::RowBreak
                         );
-                        for cell in &mut table.cells {
-                            // [Task #671 후속 / Issue #671 자동보정 영역 정정]
-                            // 셀 폭 (cell.width) 에서 좌우 padding 차감하여 셀 inner 폭 계산.
-                            // col_width 사용 시 셀 너비 영역 밖으로 LINE_SEG 가 채워져
-                            // recompose_for_cell_width 가드 #1 (line_segs.is_empty()) 영역 거짓 →
-                            // PR #673 영역의 layout 단계 정정 미적용 → 자동보정 모드 영역 한 줄 겹침 회귀.
-                            let cell_w_px = crate::renderer::hwpunit_to_px(cell.width as i32, dpi);
-                            // [#2195] 실효 pad 규칙(aim=false = 표 기본, pad 사다리 2종)과
-                            // 정합 — 종전 셀 저장 pad 직접 차감은 measurer/recompose 와 폭이
-                            // 어긋나 셀 reflow 줄수가 이원화된다.
-                            let eff_pad = if cell.apply_inner_margin {
-                                cell.padding
-                            } else {
-                                cell.effective_padding(&table.padding)
-                            };
-                            let pad_left = crate::renderer::hwpunit_to_px(eff_pad.left as i32, dpi);
+                        let owner_widths = table.paragraph_frame_owner_widths();
+                        let table_padding = table.padding;
+                        for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
+                            let cell_w_px = crate::renderer::hwpunit_to_px(owner_width, dpi);
+                            let frame_padding = cell.paragraph_frame_padding(&table_padding);
+                            let pad_left =
+                                crate::renderer::hwpunit_to_px(frame_padding.left as i32, dpi);
                             let pad_right =
-                                crate::renderer::hwpunit_to_px(eff_pad.right as i32, dpi);
+                                crate::renderer::hwpunit_to_px(frame_padding.right as i32, dpi);
                             let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
                             // [#2195/#2146] 사선(대각선) 셀의 빈 문단은 코너 라벨의
                             // 짝 — 한글은 흐름 배치하지 않으므로 합성 제외 (21761835
@@ -1057,15 +1048,15 @@ impl DocumentCore {
                 // 표 셀 내부 문단도 동일 처리
                 for ctrl in &mut para.controls {
                     if let Control::Table(ref mut table) = ctrl {
-                        for cell in &mut table.cells {
-                            // [Task #671 후속 / Issue #671 자동보정 영역 정정]
-                            // 셀 폭 (cell.width) 에서 좌우 padding 차감하여 셀 inner 폭 계산.
-                            // 동일 본질 정정: line 270 영역 참조.
-                            let cell_w_px = crate::renderer::hwpunit_to_px(cell.width as i32, dpi);
+                        let owner_widths = table.paragraph_frame_owner_widths();
+                        let table_padding = table.padding;
+                        for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
+                            let cell_w_px = crate::renderer::hwpunit_to_px(owner_width, dpi);
+                            let frame_padding = cell.paragraph_frame_padding(&table_padding);
                             let pad_left =
-                                crate::renderer::hwpunit_to_px(cell.padding.left as i32, dpi);
+                                crate::renderer::hwpunit_to_px(frame_padding.left as i32, dpi);
                             let pad_right =
-                                crate::renderer::hwpunit_to_px(cell.padding.right as i32, dpi);
+                                crate::renderer::hwpunit_to_px(frame_padding.right as i32, dpi);
                             let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
                             for cell_para in &mut cell.paragraphs {
                                 if Self::needs_reflow_broadly(cell_para) {
@@ -2255,6 +2246,135 @@ mod validate_linesegs_tests {
         assert_eq!(cp.row, 0);
         assert_eq!(cp.col, 0);
         assert_eq!(cp.inner_para_idx, 0);
+    }
+
+    fn short_table_frame_document() -> Document {
+        use crate::model::table::{Cell, Table};
+        use crate::model::Padding;
+
+        const RAW_TRACK_WIDTH: u32 = 4_998;
+        let mut cells = Vec::new();
+        for row in 0..2 {
+            for col in 0..2 {
+                let paragraph = if (row, col) == (0, 1) {
+                    Paragraph {
+                        text: "reflow this cell".to_string(),
+                        char_offsets: "reflow this cell"
+                            .chars()
+                            .scan(0u32, |offset, character| {
+                                let current = *offset;
+                                *offset += character.len_utf16() as u32;
+                                Some(current)
+                            })
+                            .collect(),
+                        char_count: "reflow this cell".encode_utf16().count() as u32 + 1,
+                        ..Default::default()
+                    }
+                } else {
+                    Paragraph::default()
+                };
+                cells.push(Cell {
+                    row,
+                    col,
+                    row_span: 1,
+                    col_span: 1,
+                    width: RAW_TRACK_WIDTH,
+                    // The saved cell padding remains a paint fallback only when
+                    // the table's stored padding is all zero.
+                    padding: Padding {
+                        left: 141,
+                        right: 141,
+                        top: 141,
+                        bottom: 141,
+                    },
+                    paragraphs: vec![paragraph],
+                    ..Default::default()
+                });
+            }
+        }
+        let mut table = Table {
+            row_count: 2,
+            col_count: 2,
+            cells,
+            ..Default::default()
+        };
+        // Each raw row is 4 HWPUNIT short. The frame owner is the resolved
+        // table track, so the residual belongs to the last column.
+        table.common.width = 10_000;
+
+        Document {
+            sections: vec![Section {
+                section_def: crate::model::document::SectionDef {
+                    page_def: crate::model::page::PageDef::a4_default(),
+                    ..Default::default()
+                },
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Table(Box::new(table))],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    fn short_table_frame_target_line(document: &Document) -> &LineSeg {
+        let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
+            panic!("table control");
+        };
+        &table.cells[1].paragraphs[0].line_segs[0]
+    }
+
+    #[test]
+    fn eager_reflow_uses_table_frame_owner_width_and_padding() {
+        const RESOLVED_LAST_TRACK_WIDTH: i32 = 5_002;
+        let mut document = short_table_frame_document();
+        let styles = resolve_styles(&document.doc_info, DEFAULT_DPI);
+
+        DocumentCore::reflow_zero_height_paragraphs(
+            &mut document,
+            &styles,
+            DEFAULT_DPI,
+            true,
+            false,
+        );
+
+        let line = short_table_frame_target_line(&document);
+        assert_eq!(
+            line.segment_width,
+            crate::renderer::px_to_hwpunit(
+                crate::renderer::hwpunit_to_px(RESOLVED_LAST_TRACK_WIDTH, DEFAULT_DPI),
+                DEFAULT_DPI,
+            ),
+            "eager reflow must use the table-owned frame width and the table's zero padding"
+        );
+    }
+
+    #[test]
+    fn on_demand_reflow_uses_table_frame_owner_width_and_padding() {
+        const RESOLVED_LAST_TRACK_WIDTH: i32 = 5_002;
+        let document = short_table_frame_document();
+        let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
+            panic!("table control");
+        };
+        assert_eq!(
+            table.paragraph_frame_owner_widths()[1],
+            RESOLVED_LAST_TRACK_WIDTH
+        );
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+        core.validation_report = DocumentCore::validate_linesegs(core.document(), false);
+
+        assert_eq!(core.reflow_linesegs_on_demand(), 1);
+        let line = short_table_frame_target_line(core.document());
+        assert_eq!(
+            line.segment_width,
+            crate::renderer::px_to_hwpunit(
+                crate::renderer::hwpunit_to_px(RESOLVED_LAST_TRACK_WIDTH, core.dpi),
+                core.dpi,
+            ),
+            "on-demand reflow must use the table-owned frame width and the table's zero padding"
+        );
     }
 
     /// 다중 경고 — 각각 기록됨

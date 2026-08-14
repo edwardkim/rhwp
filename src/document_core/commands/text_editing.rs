@@ -19,6 +19,8 @@ use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
 
+pub(crate) type CellReflowMetrics = (i32, i16, i16);
+
 fn recalculate_cell_paragraph_vpos(
     paragraphs: &mut [Paragraph],
     start_para: usize,
@@ -2298,6 +2300,106 @@ impl DocumentCore {
         );
     }
 
+    /// Reflow every paragraph selected from one table after a width-changing operation.
+    ///
+    /// The table-wide frame calculation is intentionally outside the paragraph loop:
+    /// it derives each cell's resolved frame width from the same post-mutation table.
+    pub(crate) fn reflow_table_cell_paragraphs(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cells: &[(usize, usize)],
+    ) {
+        self.reflow_table_cell_paragraphs_impl(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cells,
+            false,
+        );
+    }
+
+    /// Reflow stale cell paragraphs after a table split with the split-specific rule.
+    pub(crate) fn reflow_table_cell_paragraphs_after_split(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cells: &[(usize, usize)],
+        metrics: &[CellReflowMetrics],
+    ) {
+        self.reflow_table_cell_paragraphs_with_metrics(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cells,
+            metrics,
+            true,
+        );
+    }
+
+    fn reflow_table_cell_paragraphs_impl(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cells: &[(usize, usize)],
+        split_stale_cell_reflow: bool,
+    ) {
+        if cells.is_empty() {
+            return;
+        }
+
+        let metrics = {
+            let Some(Control::Table(table)) = self.document.sections[section_idx].paragraphs
+                [parent_para_idx]
+                .controls
+                .get(control_idx)
+            else {
+                return;
+            };
+            Self::table_cell_reflow_metrics(table)
+        };
+
+        self.reflow_table_cell_paragraphs_with_metrics(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cells,
+            &metrics,
+            split_stale_cell_reflow,
+        );
+    }
+
+    fn reflow_table_cell_paragraphs_with_metrics(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cells: &[(usize, usize)],
+        metrics: &[CellReflowMetrics],
+        split_stale_cell_reflow: bool,
+    ) {
+        for &(cell_idx, para_count) in cells {
+            let Some(cell_metrics) = metrics.get(cell_idx).copied() else {
+                continue;
+            };
+            for cell_para_idx in 0..para_count {
+                self.reflow_cell_paragraph_with_metrics(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                    cell_metrics,
+                    None,
+                    split_stale_cell_reflow,
+                );
+            }
+        }
+    }
+
     fn reflow_cell_paragraph_with_edit(
         &mut self,
         section_idx: usize,
@@ -2308,11 +2410,8 @@ impl DocumentCore {
         edit_char_offset: Option<usize>,
         split_stale_cell_reflow: bool,
     ) {
-        use crate::renderer::hwpunit_to_px;
-
         // 셀/글상자 폭과 패딩 읽기 (불변 참조) — path 변형과 공유하는 helper 사용.
-        let (cell_width, pad_left, pad_right) = match self.document.sections[section_idx].paragraphs
-            [parent_para_idx]
+        let metrics = match self.document.sections[section_idx].paragraphs[parent_para_idx]
             .controls
             .get(control_idx)
             .and_then(|control| Self::cell_metrics_for_control(control, cell_idx))
@@ -2321,8 +2420,33 @@ impl DocumentCore {
             None => return,
         };
 
+        self.reflow_cell_paragraph_with_metrics(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            metrics,
+            edit_char_offset,
+            split_stale_cell_reflow,
+        );
+    }
+
+    fn reflow_cell_paragraph_with_metrics(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        (cell_width, pad_left, pad_right): CellReflowMetrics,
+        edit_char_offset: Option<usize>,
+        split_stale_cell_reflow: bool,
+    ) {
+        use crate::renderer::hwpunit_to_px;
+
         let styles = resolve_styles(&self.document.doc_info, self.dpi);
-        let cell_width_px = hwpunit_to_px(cell_width as i32, self.dpi);
+        let cell_width_px = hwpunit_to_px(cell_width, self.dpi);
         let pad_left_px = hwpunit_to_px(pad_left as i32, self.dpi);
         let pad_right_px = hwpunit_to_px(pad_right as i32, self.dpi);
         let available_width = (cell_width_px - pad_left_px - pad_right_px).max(0.0);
@@ -2549,7 +2673,21 @@ impl DocumentCore {
     ///
     /// `reflow_cell_paragraph`(flat)와 `reflow_cell_paragraph_by_path`(중첩)가 공유한다.
     /// `None` = 표/글상자/그림 캡션이 아니거나 대상 셀/텍스트박스가 없음.
-    fn cell_metrics_for_control(control: &Control, cell_idx: usize) -> Option<(u32, i16, i16)> {
+    pub(crate) fn table_cell_reflow_metrics(
+        table: &crate::model::table::Table,
+    ) -> Vec<CellReflowMetrics> {
+        table
+            .cells
+            .iter()
+            .zip(table.paragraph_frame_owner_widths())
+            .map(|(cell, width)| {
+                let padding = cell.paragraph_frame_padding(&table.padding);
+                (width, padding.left, padding.right)
+            })
+            .collect()
+    }
+
+    fn cell_metrics_for_control(control: &Control, cell_idx: usize) -> Option<CellReflowMetrics> {
         match control {
             Control::Table(table) => {
                 if cell_idx == 65534 {
@@ -2560,28 +2698,21 @@ impl DocumentCore {
                         CaptionDirection::Left | CaptionDirection::Right => cap.width,
                         _ => cap.max_width,
                     };
-                    Some((w, 0, 0))
+                    Some((w as i32, 0, 0))
                 } else {
                     let cell = table.cells.get(cell_idx)?;
-                    let pad_l = if cell.apply_inner_margin {
-                        cell.padding.left
-                    } else {
-                        table.padding.left
-                    };
-                    let pad_r = if cell.apply_inner_margin {
-                        cell.padding.right
-                    } else {
-                        table.padding.right
-                    };
-                    Some((cell.width, pad_l, pad_r))
+                    let owner_widths = table.paragraph_frame_owner_widths();
+                    let width = *owner_widths.get(cell_idx)?;
+                    let padding = cell.paragraph_frame_padding(&table.padding);
+                    Some((width, padding.left, padding.right))
                 }
             }
             Control::Shape(shape) => {
                 let tb = super::super::helpers::get_textbox_from_shape(shape)?;
                 let common = shape.common();
-                Some((common.width as u32, tb.margin_left, tb.margin_right))
+                Some((common.width as i32, tb.margin_left, tb.margin_right))
             }
-            Control::Picture(pic) => Some((pic.common.width as u32, 0, 0)),
+            Control::Picture(pic) => Some((pic.common.width as i32, 0, 0)),
             _ => None,
         }
     }
@@ -2594,7 +2725,7 @@ impl DocumentCore {
         section_idx: usize,
         parent_para_idx: usize,
         path: &[(usize, usize, usize)],
-    ) -> Option<(u32, i16, i16)> {
+    ) -> Option<CellReflowMetrics> {
         let mut para = self
             .document
             .sections
@@ -2639,7 +2770,7 @@ impl DocumentCore {
         };
         let styles = resolve_styles(&self.document.doc_info, self.dpi);
         let dpi = self.dpi;
-        let cell_width_px = hwpunit_to_px(cell_width as i32, dpi);
+        let cell_width_px = hwpunit_to_px(cell_width, dpi);
         let pad_left_px = hwpunit_to_px(pad_left as i32, dpi);
         let pad_right_px = hwpunit_to_px(pad_right as i32, dpi);
         let available_width = (cell_width_px - pad_left_px - pad_right_px).max(0.0);
@@ -5979,6 +6110,190 @@ mod tests {
             panic!("표 컨트롤이어야 함");
         };
         &t.cells[0].paragraphs[0]
+    }
+
+    const RAW_TABLE_FRAME_WIDTH: u32 = 4_998;
+    const RESOLVED_TABLE_FRAME_WIDTH: i32 = 5_002;
+
+    fn paragraph_for_table_frame_mutation() -> Paragraph {
+        let text = "reflow this cell".to_string();
+        let char_offsets = text
+            .chars()
+            .scan(0u32, |offset, character| {
+                let current = *offset;
+                *offset += character.len_utf16() as u32;
+                Some(current)
+            })
+            .collect();
+        Paragraph {
+            char_count: text.encode_utf16().count() as u32 + 1,
+            char_offsets,
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            has_para_text: true,
+            text,
+            ..Default::default()
+        }
+    }
+
+    fn table_with_short_row_frame_target() -> crate::model::table::Table {
+        use crate::model::table::{Cell, Table};
+        use crate::model::Padding;
+
+        let mut cells = Vec::new();
+        for row in 0..2 {
+            for col in 0..2 {
+                cells.push(Cell {
+                    row,
+                    col,
+                    row_span: 1,
+                    col_span: 1,
+                    width: RAW_TABLE_FRAME_WIDTH,
+                    padding: Padding {
+                        left: 141,
+                        right: 141,
+                        top: 141,
+                        bottom: 141,
+                    },
+                    paragraphs: vec![if (row, col) == (0, 1) {
+                        paragraph_for_table_frame_mutation()
+                    } else {
+                        Paragraph::default()
+                    }],
+                    ..Default::default()
+                });
+            }
+        }
+        let mut table = Table {
+            row_count: 2,
+            col_count: 2,
+            padding: Padding::default(),
+            cells,
+            ..Default::default()
+        };
+        table.common.width = 10_000;
+        table
+    }
+
+    fn core_with_table_frame_mutation_target() -> DocumentCore {
+        use crate::model::document::Section;
+
+        let document = Document {
+            sections: vec![Section {
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Table(
+                        Box::new(table_with_short_row_frame_target()),
+                    )],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+        core
+    }
+
+    fn core_with_nested_table_frame_mutation_target() -> (DocumentCore, Vec<(usize, usize, usize)>)
+    {
+        use crate::model::document::Section;
+        use crate::model::table::{Cell, Table};
+
+        let inner = table_with_short_row_frame_target();
+        let outer_table = Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                row_span: 1,
+                col_span: 1,
+                width: 10_000,
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Table(Box::new(inner))],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let document = Document {
+            sections: vec![Section {
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Table(Box::new(outer_table))],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+        (core, vec![(0, 0, 0), (0, 1, 0)])
+    }
+
+    fn resolved_table_frame_segment_width(dpi: f64) -> i32 {
+        crate::renderer::px_to_hwpunit(
+            crate::renderer::hwpunit_to_px(RESOLVED_TABLE_FRAME_WIDTH, dpi),
+            dpi,
+        )
+    }
+
+    #[test]
+    fn flat_cell_text_mutation_uses_table_owned_frame_width() {
+        let mut core = core_with_table_frame_mutation_target();
+        let Control::Table(table) = &core.document.sections[0].paragraphs[0].controls[0] else {
+            panic!("expected table");
+        };
+        assert_eq!(
+            table.paragraph_frame_owner_widths()[1],
+            RESOLVED_TABLE_FRAME_WIDTH
+        );
+
+        core.delete_text_in_cell_native(0, 0, 0, 1, 0, 0, 1)
+            .expect("flat cell delete should reflow its paragraph");
+
+        let Control::Table(table) = &core.document.sections[0].paragraphs[0].controls[0] else {
+            panic!("expected table");
+        };
+        assert_eq!(
+            table.cells[1].paragraphs[0].line_segs[0].segment_width,
+            resolved_table_frame_segment_width(core.dpi),
+            "flat cell mutation must reflow through the table-owned frame"
+        );
+    }
+
+    #[test]
+    fn nested_cell_text_mutation_uses_table_owned_frame_width() {
+        let (mut core, path) = core_with_nested_table_frame_mutation_target();
+        let Control::Table(outer) = &core.document.sections[0].paragraphs[0].controls[0] else {
+            panic!("expected outer table");
+        };
+        let Control::Table(inner) = &outer.cells[0].paragraphs[0].controls[0] else {
+            panic!("expected inner table");
+        };
+        assert_eq!(
+            inner.paragraph_frame_owner_widths()[1],
+            RESOLVED_TABLE_FRAME_WIDTH
+        );
+
+        core.delete_text_in_cell_by_path(0, 0, &path, 0, 1)
+            .expect("nested cell delete should reflow its paragraph");
+
+        let Control::Table(outer) = &core.document.sections[0].paragraphs[0].controls[0] else {
+            panic!("expected outer table");
+        };
+        let Control::Table(inner) = &outer.cells[0].paragraphs[0].controls[0] else {
+            panic!("expected inner table");
+        };
+        assert_eq!(
+            inner.cells[1].paragraphs[0].line_segs[0].segment_width,
+            resolved_table_frame_segment_width(core.dpi),
+            "nested cell mutation must reflow through the table-owned frame"
+        );
     }
 
     /// [#2755] 항목 1 — `delete_range_in_cell_by_path` 가 깊이 1 셀에서 셀 폭 리플로우를

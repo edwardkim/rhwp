@@ -18,6 +18,13 @@ pub const CELL_FLAG_PROTECT: u16 = 0x0002;
 pub const CELL_FLAG_HEADER: u16 = 0x0004;
 pub const CELL_FLAG_EDITABLE_IN_FORM: u16 = 0x0008;
 
+#[cfg(test)]
+std::thread_local! {
+    static PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS: std::cell::Cell<usize> = const {
+        std::cell::Cell::new(0)
+    };
+}
+
 /// 표 개체 (HWPTAG_TABLE)
 #[derive(Debug, Default, Clone)]
 pub struct Table {
@@ -421,6 +428,16 @@ impl Cell {
 }
 
 impl Table {
+    #[cfg(test)]
+    pub(crate) fn reset_paragraph_frame_owner_widths_calls_for_test() {
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.set(0));
+    }
+
+    #[cfg(test)]
+    pub(crate) fn paragraph_frame_owner_widths_calls_for_test() -> usize {
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.get())
+    }
+
     /// Widths owned by cell paragraph frames before padding and paragraph margins.
     ///
     /// Native tables may repeat a row with raw cell widths whose sum is a few
@@ -433,6 +450,9 @@ impl Table {
     /// as a whole, so repeating it once per cell makes large native tables
     /// quadratic and can prevent on-demand reflow from completing.
     pub(crate) fn paragraph_frame_owner_widths(&self) -> Vec<i32> {
+        #[cfg(test)]
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.set(calls.get() + 1));
+
         let to_i32 = |width: u64| width.min(i32::MAX as u64) as i32;
         let mut owners = self
             .cells
