@@ -10213,6 +10213,19 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         row: usize,
     ) -> bool {
+        let profile = self.profile.get();
+        // Direct HWPX의 physical frame reset은 문단 내부뿐 아니라 문단 사이에도
+        // 저장된다. 이 profile에서는 raw in-paragraph window를 다시 검사하지 않고,
+        // 선언 cell 안에서 source frame이 완결되는 동일 predicate를 사용한다.
+        // 따라서 writer-local single reset은 Stage 227 수용성 검사에서 계속 제외된다.
+        if profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx() {
+            return table
+                .cells
+                .iter()
+                .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+                .any(|cell| self.direct_hwpx_cell_has_declared_stored_frame(cell, table));
+        }
+
         let has_raw_rewind = table
             .cells
             .iter()
@@ -10227,16 +10240,7 @@ impl LayoutEngine {
             return false;
         }
 
-        let profile = self.profile.get();
-        if profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx() {
-            return table
-                .cells
-                .iter()
-                .filter(|cell| cell.row as usize == row && cell.row_span == 1)
-                .any(|cell| self.direct_hwpx_cell_has_declared_stored_frame(cell, table));
-        }
-
-        true
+        has_raw_rewind
     }
 
     /// Return the painted height of a response cell whose stored source frame
