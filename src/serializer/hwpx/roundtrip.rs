@@ -528,6 +528,23 @@ pub fn strip_cross_format_noise(diff: IrDiff) -> IrDiff {
     }
 }
 
+/// HWP/HWP3를 HWPX로 저장할 때만 생기는 비교 불능 항목을 걷어낸다.
+///
+/// HWP 계열 필드에는 HWPX `<hp:parameters>` 원문을 실을 슬롯이 없다. 따라서
+/// `Field.command`만 있던 HWP 필드를 HWPX로 내보내면 스키마가 요구하는 최소
+/// `Command` 단일 parameters가 합성된다. 이는 command를 보존한 표현 변환이지 새 필드
+/// 메타데이터가 아니므로, `export-hwpx --verify`에서는 해당 한 방향 차이만 제외한다
+/// (#3739). 원문 parameters나 Command 외 항목의 차이는 계속 검출한다.
+pub fn strip_hwp_to_hwpx_noise(diff: IrDiff) -> IrDiff {
+    IrDiff {
+        differences: diff
+            .differences
+            .into_iter()
+            .filter(|d| !is_hwp_to_hwpx_incomparable(d))
+            .collect(),
+    }
+}
+
 /// HWPX를 HWP5로 저장한 뒤에만 적용하는 추가 비교 불능 항목을 걷어낸다.
 ///
 /// 한컴 2020은 HWPX 그림을 HWP5 `SC_PICTURE`로 저장할 때 extra의 original width/height
@@ -551,6 +568,20 @@ fn is_cross_format_incomparable(d: &IrDifference) -> bool {
         // 원본이 값을 안 가진 imgDim 만 — 다른 크기 필드가 섞여 있으면 남긴다.
         IrDifference::PictureSize { detail, .. } => {
             detail.starts_with("imgDim: expected=(0, 0)") && !detail.contains(';')
+        }
+        _ => false,
+    }
+}
+
+fn is_hwp_to_hwpx_incomparable(d: &IrDifference) -> bool {
+    match d {
+        // generated_field_parameters()가 raw_parameters_xml 없는 HWP 필드에만 만드는
+        // 정확한 최소 표현. cnt·이름·요소 종류·닫는 태그까지 모두 고정해 다른 parameters
+        // 손실이나 추가를 숨기지 않는다.
+        IrDifference::FieldContent { detail, .. } => {
+            const PREFIX: &str = r#"parameters: expected=None actual=Some("<hp:parameters cnt=\"1\" name=\"\"><hp:stringParam name=\"Command\">"#;
+            const SUFFIX: &str = r#"</hp:stringParam></hp:parameters>")"#;
+            detail.starts_with(PREFIX) && detail.ends_with(SUFFIX)
         }
         _ => false,
     }
@@ -2820,6 +2851,45 @@ mod tests {
         assert!(matches!(
             &filtered.differences[0],
             IrDifference::PictureSize { detail, .. } if detail.starts_with("curSz:")
+        ));
+    }
+
+    #[test]
+    fn issue_3739_hwp_to_hwpx_generated_command_parameters_are_incomparable() {
+        let diff = IrDiff {
+            differences: vec![
+                IrDifference::FieldContent {
+                    section: 0,
+                    paragraph: 0,
+                    path: "/ctrl[0]field".to_string(),
+                    detail: r#"parameters: expected=None actual=Some("<hp:parameters cnt=\"1\" name=\"\"><hp:stringParam name=\"Command\">https://example.test</hp:stringParam></hp:parameters>")"#.to_string(),
+                },
+                IrDifference::FieldContent {
+                    section: 0,
+                    paragraph: 1,
+                    path: "/ctrl[1]field".to_string(),
+                    detail: r#"parameters: expected=None actual=Some("<hp:parameters cnt=\"2\" name=\"\"><hp:stringParam name=\"Command\">keep</hp:stringParam><hp:stringParam name=\"Direction\">keep</hp:stringParam></hp:parameters>")"#.to_string(),
+                },
+                IrDifference::CharShapeCount {
+                    expected: 1,
+                    actual: 2,
+                },
+            ],
+        };
+
+        let filtered = strip_hwp_to_hwpx_noise(diff);
+        assert_eq!(
+            filtered.differences.len(),
+            2,
+            "합성 Command 단일 parameters 외 차이는 남겨야 한다"
+        );
+        assert!(matches!(
+            &filtered.differences[0],
+            IrDifference::FieldContent { detail, .. } if detail.contains("cnt=\\\"2\\\"")
+        ));
+        assert!(matches!(
+            &filtered.differences[1],
+            IrDifference::CharShapeCount { .. }
         ));
     }
 

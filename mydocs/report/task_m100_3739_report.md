@@ -14,22 +14,42 @@ serializer와 parser가 모두 연속 동일 ID를 값만으로 dedup했다. 그
 따라서 일반 run 경계는 위치까지 유지하고, 템플릿이 만드는 첫 `secPr` run의 동일-ID
 handoff만 예외적으로 정규화했다.
 
+## 1단계 추가 보정
+
+- `tac-img-02.hwp`의 field `Command` 단일 parameters는 HWP/HWP3 원본에 해당 raw XML
+  저장 슬롯이 없어 HWPX 저장 과정에서 합성되는 표현이다. HWP/HWP3→HWPX `--verify`에서
+  그 정확한 diff만 제거해 실제 parameters·char_shapes 등 다른 차이는 계속 실패한다.
+- Windows PowerShell/.NET pipe가 `--password-stdin` 첫 바이트에 붙이는 UTF-8 BOM을
+  인코딩 표식으로 제거했다. 따라서 암호 HWP3·HWP5·HWPX도 stdin 비밀번호로 HWPX로
+  전환할 수 있다.
+- 실제 암호 표본 3종은 BOM 포함 stdin으로 HWPX 산출물 생성과 `--verify-pages`
+  재열기(24·23·64쪽)를 모두 통과했다.
+
+`HWP3-password-123456.hwp`에 `--verify`까지 주면 hyperlink 2건의 미지원 변환과
+기존 문자 오프셋·그림 영역 차이를 포함한 15건이 남아 exit 3이다. 이는 내보내기 실패가
+아니며, 다음 스테이지에서 원인별 개선 대상으로 분리한다.
+
 ## 변경 파일
 
 - `src/serializer/hwpx/section.rs`
 - `src/parser/hwpx/section.rs`
+- `src/serializer/hwpx/roundtrip.rs`
+- `src/main.rs`
 - `tests/issue_3739_hwpx_same_char_shape_boundary.rs`
 - `mydocs/plans/task_m100_3739.md`
 - `mydocs/working/task_m100_3739_stage1.md`
+- `mydocs/report/task_m100_3739_report.md`
+- `mydocs/manual/cli_commands.md`
 
 ## 검증
 
 - 실제 재현 샘플 CLI: `--verify --verify-pages` exit 0
-- #3739 serializer/parser 단위 테스트: 2 passed
-- 실제 샘플 통합 회귀 테스트: 1 passed
+- #3739 serializer/parser/검증 정규화 단위 테스트: 3 passed
+- 실제 샘플 통합 회귀 테스트: 3 passed
 - 기존 표 슬롯 동일-ID parser 테스트: 1 passed
 - 변경 Rust 파일 rustfmt 검사 및 diff whitespace 검사: 통과
 - 추가 HWP 4종(페이지 설정·탭·복합 표·각주/글상자): 모두 `--verify --verify-pages` exit 0
+- BOM 포함 stdin 암호 HWP3·HWP5·HWPX HWPX 변환: 모두 산출물 생성 및 페이지 재열기 통과
 
 이미지 포함 `tac-img-02.hwp`는 페이지 66쪽 검증은 통과했으나 field `parameters` 6건의
 기존 IR 차이로 exit 3이다. `char_shapes` 차이는 없으므로 #3739과는 무관하다.

@@ -55,3 +55,31 @@
 
 - HWPX baseline 전수, `cargo clippy`, 전체 PR CI 성격의 검증은 별도 승인 전에는 실행하지 않았다.
 - 원격 push·PR 생성·merge는 수행하지 않았다.
+
+## 1단계 보정 — field parameters 및 Windows 암호 stdin
+
+1. `tac-img-02.hwp`의 field `parameters` 6건은 HWP 원본의 저장 슬롯 부재로 인해
+   HWPX serializer가 `Command` 단일 parameter를 합성하고, 재파서가 그 원문을 보존해
+   생기는 표현 차이였다. HWP/HWP3 입력의 **정확히 그 합성 표현만** 검증 diff에서
+   제외해 `--verify`가 실제 손실을 계속 보고하도록 했다.
+2. Windows PowerShell/.NET이 `--password-stdin` 첫 바이트에 붙이는 UTF-8 BOM을
+   비밀번호 본문으로 해석하던 문제를 고쳤다. stdin 전체의 선두 BOM만 제거하므로 실제
+   비밀번호와 두 번째 줄의 output password는 변경하지 않는다.
+3. `tests/issue_3739_hwpx_same_char_shape_boundary.rs`에 다음 실제 표본 회귀를 더했다.
+   - `tac-img-02.hwp`: `--verify --verify-pages` IR 무차이, 66쪽
+   - `HWP3-password-123456.hwp`: BOM 포함 `--password-stdin`으로 HWPX 생성·24쪽 재열기
+   - `HWP5-password-123456.hwpx`: 같은 경로로 생성·23쪽 재열기
+   - `hwp3-sample16-hwp5-2024-password-123456.hwp`: 같은 경로로 생성·64쪽 재열기
+
+암호 HWP3 표본은 위 변환 자체와 페이지 검증은 통과한다. 다만 `--verify`를 함께 주면
+기존 hyperlink 2건 드롭, 문자 오프셋·그림 영역을 포함한 15건 IR 차이로 exit 3이므로,
+이는 다음 스테이지에서 별도로 분석한다.
+
+### 1단계 focused 검증 추가
+
+| 검증 | 결과 |
+|---|---|
+| `issue_3739_hwpx_same_char_shape_boundary` | 3 passed |
+| `issue_3739` library 단위 테스트 | 3 passed |
+| BOM 포함 stdin으로 암호 HWP3·HWP5·HWPX `export-hwpx --verify-pages` | 모두 exit 0, 24·23·64쪽 |
+| 변경 Rust 파일 `rustfmt --check`, `git diff --check` | 통과 |

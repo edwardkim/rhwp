@@ -2,13 +2,15 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
+use std::sync::atomic::{AtomicU64, Ordering};
 
-const SAMPLE: &str = "samples/lseg-04-indent.hwp";
+static OUTPUT_DIR_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
-fn sample_path() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)
+fn sample_path(sample: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join(sample)
 }
 
 fn rhwp_bin() -> String {
@@ -16,8 +18,9 @@ fn rhwp_bin() -> String {
 }
 
 fn unique_output_dir() -> PathBuf {
+    let sequence = OUTPUT_DIR_SEQUENCE.fetch_add(1, Ordering::Relaxed);
     std::env::temp_dir().join(format!(
-        "rhwp-issue3739-{}-{}",
+        "rhwp-issue3739-{}-{}-{sequence}",
         std::process::id(),
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -35,9 +38,8 @@ fn describe(args: &[String], output: &Output) -> String {
     )
 }
 
-#[test]
-fn export_hwpx_verify_preserves_same_char_shape_id_boundary() {
-    let source = sample_path();
+fn assert_export_hwpx_verify_success(sample: &str) {
+    let source = sample_path(sample);
     assert!(
         source.exists(),
         "회귀 입력 샘플이 없습니다: {}",
@@ -46,7 +48,7 @@ fn export_hwpx_verify_preserves_same_char_shape_id_boundary() {
 
     let output_dir = unique_output_dir();
     std::fs::create_dir(&output_dir).expect("임시 출력 디렉터리 생성");
-    let output = output_dir.join("lseg-04-indent.hwpx");
+    let output = output_dir.join("output.hwpx");
     let args = vec![
         "export-hwpx".to_string(),
         source.display().to_string(),
@@ -73,4 +75,75 @@ fn export_hwpx_verify_preserves_same_char_shape_id_boundary() {
     );
 
     std::fs::remove_dir_all(&output_dir).expect("임시 출력 디렉터리 정리");
+}
+
+fn assert_password_protected_export_hwpx_success(sample: &str) {
+    let source = sample_path(sample);
+    assert!(
+        source.exists(),
+        "회귀 입력 샘플이 없습니다: {}",
+        source.display()
+    );
+
+    let output_dir = unique_output_dir();
+    std::fs::create_dir(&output_dir).expect("임시 출력 디렉터리 생성");
+    let output = output_dir.join("output.hwpx");
+    let args = vec![
+        "export-hwpx".to_string(),
+        source.display().to_string(),
+        output.display().to_string(),
+        "--verify-pages".to_string(),
+        "--password-stdin".to_string(),
+    ];
+
+    // Windows PowerShell/.NET의 pipe는 UTF-8 BOM을 앞에 붙일 수 있다. raw stdin
+    // 경로도 그 실제 바이트열을 비밀번호로 오해하지 않아야 한다.
+    let mut child = Command::new(rhwp_bin())
+        .args(&args)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("rhwp export-hwpx 실행");
+    let mut stdin = child.stdin.take().expect("stdin pipe");
+    stdin
+        .write_all(b"\xEF\xBB\xBF123456\n")
+        .expect("비밀번호 stdin 쓰기");
+    drop(stdin);
+    let result = child.wait_with_output().expect("rhwp 종료 대기");
+
+    assert_eq!(
+        result.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &result)
+    );
+    assert!(
+        output.is_file(),
+        "HWPX 산출물이 없습니다: {}",
+        output.display()
+    );
+
+    std::fs::remove_dir_all(&output_dir).expect("임시 출력 디렉터리 정리");
+}
+
+#[test]
+fn export_hwpx_verify_preserves_same_char_shape_id_boundary() {
+    assert_export_hwpx_verify_success("samples/lseg-04-indent.hwp");
+}
+
+#[test]
+fn issue_3739_export_hwpx_verify_accepts_generated_field_command_parameters() {
+    assert_export_hwpx_verify_success("samples/tac-img-02.hwp");
+}
+
+#[test]
+fn issue_3739_export_hwpx_accepts_password_stdin_for_hwp3_hwp5_and_hwpx() {
+    for sample in [
+        "samples/HWP3-password-123456.hwp",
+        "samples/HWP5-password-123456.hwpx",
+        "samples/hwp3-sample16-hwp5-2024-password-123456.hwp",
+    ] {
+        assert_password_protected_export_hwpx_success(sample);
+    }
 }
