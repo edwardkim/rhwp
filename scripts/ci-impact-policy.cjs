@@ -694,6 +694,10 @@ function auditPolicyRuns(input = {}) {
         reason: `workflow-not-success:${workflow}:${run.conclusion || 'unknown'}`,
       };
     }
+    if (evidence.jobsCollected !== true) {
+      pending.push(`job-evidence-unavailable:${workflow}`);
+      continue;
+    }
     const failure = workflow === 'CI'
       ? auditCi(policy, evidence.jobs)
       : workflow === 'CodeQL'

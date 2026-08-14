@@ -185,18 +185,21 @@ function workflowEvidence(policy, options = {}) {
   if (policy.expected_workflows.CI === 'true' && !options.omitCi) {
     evidence.CI = {
       run: workflowRun('CI'),
+      jobsCollected: true,
       jobs: ciJobs(policy.classification, options.fastPass === true),
     };
   }
   if (policy.expected_workflows.CodeQL === 'true' && !options.omitCodeql) {
     evidence.CodeQL = {
       run: workflowRun('CodeQL'),
+      jobsCollected: true,
       jobs: codeqlJobs(policy.classification, options.fastPass === true),
     };
   }
   if (policy.expected_workflows['Render Diff'] === 'true' && !options.omitRender) {
     evidence['Render Diff'] = {
       run: workflowRun('Render Diff'),
+      jobsCollected: true,
       jobs: renderJobs(policy.classification, options.fastPass === true),
     };
   }
@@ -442,6 +445,30 @@ test('aggregate audit stays pending until every expected workflow is present', (
   });
   assert.equal(audit.conclusion, 'pending');
   assert.equal(audit.reason, 'missing-workflow:Render Diff');
+});
+
+test('aggregate audit stays pending when job evidence collection is unavailable', () => {
+  const input = policyInput();
+  const policy = determinePolicy(input);
+  const workflows = workflowEvidence(policy);
+  workflows.CI.jobsCollected = false;
+  workflows.CI.jobs = [];
+  const audit = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
+  assert.deepEqual(audit, {
+    publish: 'true',
+    conclusion: 'pending',
+    reason: 'job-evidence-unavailable:CI',
+  });
+});
+
+test('aggregate audit rejects missing jobs after successful evidence collection', () => {
+  const input = policyInput();
+  const policy = determinePolicy(input);
+  const workflows = workflowEvidence(policy);
+  workflows.CI.jobs = [];
+  const audit = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
+  assert.equal(audit.conclusion, 'failure');
+  assert.equal(audit.reason, 'CI:missing-job:CI preflight');
 });
 
 test('aggregate audit rejects a skipped required Rust job despite green aggregate', () => {

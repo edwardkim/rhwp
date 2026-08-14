@@ -83,6 +83,12 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
         self.assertIn("CodeQL: '.github/workflows/codeql.yml'", self.workflow)
         self.assertIn("'Render Diff': '.github/workflows/render-diff.yml'", self.workflow)
 
+    def test_job_collection_errors_are_serialized_as_incomplete_evidence(self) -> None:
+        self.assertIn("let jobsCollected = false;", self.workflow)
+        self.assertIn("jobsCollected = true;", self.workflow)
+        self.assertIn("jobsCollected,", self.workflow)
+        self.assertIn("audit will remain pending", self.workflow)
+
     def test_status_is_exact_head_bound_and_supports_pending_aggregation(self) -> None:
         self.assertEqual(self.workflow.count("context: 'CI Impact Policy'"), 1)
         self.assertEqual(

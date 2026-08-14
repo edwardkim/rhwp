@@ -227,6 +227,7 @@ jobs:
                 });
                 if (!run) continue;
                 let jobs = [];
+                let jobsCollected = false;
                 try {
                   jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
                     owner,
@@ -235,8 +236,12 @@ jobs:
                     filter: 'latest',
                     per_page: 100,
                   });
+                  jobsCollected = true;
                 } catch (error) {
-                  core.warning(`Could not collect ${name} jobs: ${error.message}`);
+                  core.warning(
+                    `Could not collect ${name} jobs after configured retries; `
+                    + `audit will remain pending. ${error.message}`,
+                  );
                 }
                 evidence[name] = {
                   run: {
@@ -251,6 +256,7 @@ jobs:
                     pullNumbers: (run.pull_requests || []).map((pull) => pull.number),
                     baseShas: (run.pull_requests || []).map((pull) => pull.base?.sha || ''),
                   },
+                  jobsCollected,
                   jobs: jobs.map((job) => ({
                     name: job.name,
                     status: job.status,
