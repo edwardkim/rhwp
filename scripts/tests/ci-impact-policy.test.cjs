@@ -238,6 +238,35 @@ test('external fork is mediated unless it changes the enforcement surface', () =
   assert.equal(blocked.reason, 'fail-closed:untrusted-enforcement-change');
 });
 
+test('external fork is blocked when the changed-file list is incomplete', () => {
+  const pullRequest = {
+    ...policyInput().pullRequest,
+    headRepository: 'external/rhwp',
+    authorPermission: 'read',
+  };
+  for (const forceFullReason of [
+    'collection-error',
+    'pull_request-file-list-boundary',
+    'file-list-empty',
+  ]) {
+    const blocked = determinePolicy(policyInput({
+      files: [],
+      forceFullReason,
+      pullRequest,
+    }));
+    assert.equal(blocked.head_trust, 'controller-mediated-fork');
+    assert.equal(blocked.enforcement_surface_changed, 'false');
+    assert.equal(blocked.decision, 'blocked');
+    assert.equal(
+      blocked.reason,
+      `fail-closed:untrusted-incomplete-file-list:${forceFullReason}`,
+    );
+    assert.deepEqual(blocked.expected_workflows, Object.fromEntries(
+      WORKFLOW_ORDER.map((workflow) => [workflow, 'true']),
+    ));
+  }
+});
+
 test('collaborator workflow change is full and requires CI plus CodeQL', () => {
   const files = [{ filename: '.github/workflows/ci.yml', status: 'modified' }];
   const policy = determinePolicy(policyInput({ files, classification: classificationFor(files) }));
@@ -284,7 +313,7 @@ test('compact status description round-trips workflow and impact axes', () => {
   const policy = determinePolicy(policyInput());
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
-    v: '2',
+    v: '3',
     cv: '2',
     mode: 'selective',
     wf: '111',
@@ -293,6 +322,7 @@ test('compact status description round-trips workflow and impact axes', () => {
     render: '0',
     skia: '0',
     ql: 'js',
+    b: BASE_SHA,
   });
   assert.throws(
     () => parseStatusDescription(`${policy.status_description};rust=1`),
@@ -380,10 +410,34 @@ test('workflow selection prefers the newest run and rejects a mismatched PR asso
       head: { ref: HEAD_BRANCH, sha: HEAD_SHA },
     }],
   });
+  const staleBase = apiWorkflowRun({
+    id: 13,
+    run_started_at: '2026-08-12T13:00:00Z',
+    pull_requests: [{
+      number: 123,
+      base: { ref: 'devel', sha: 'c'.repeat(40) },
+      head: { ref: HEAD_BRANCH, sha: HEAD_SHA },
+    }],
+  });
   assert.equal(
-    selectLatestWorkflowRun([olderRerun, newerRun, wrongPull], workflowRunIdentity()),
+    selectLatestWorkflowRun(
+      [olderRerun, newerRun, wrongPull, staleBase],
+      workflowRunIdentity(),
+    ),
     newerRun,
   );
+});
+
+test('status description binds the same head policy to its evaluated base generation', () => {
+  const movedBase = 'c'.repeat(40);
+  const firstPolicy = determinePolicy(policyInput());
+  const movedInput = policyInput({
+    pullRequest: { ...policyInput().pullRequest, baseSha: movedBase },
+  });
+  const movedPolicy = determinePolicy(movedInput);
+  assert.equal(parseStatusDescription(firstPolicy.status_description).b, BASE_SHA);
+  assert.equal(parseStatusDescription(movedPolicy.status_description).b, movedBase);
+  assert.notEqual(firstPolicy.status_description, movedPolicy.status_description);
 });
 
 test('workflow selection uses run id before attempt when timestamps tie', () => {
@@ -672,5 +726,5 @@ test('CLI writes policy and aggregate audit outputs', (t) => {
   assert.equal(result.audit.conclusion, 'success');
   assert.match(outputs, /^codeql_run_expected=true$/m);
   assert.match(outputs, /^audit_conclusion=success$/m);
-  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '2');
+  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '3');
 });

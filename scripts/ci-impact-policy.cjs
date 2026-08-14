@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const POLICY_VERSION = '2';
+const POLICY_VERSION = '3';
 const POLICY_CONTEXT = 'CI Impact Policy';
 const WORKFLOW_ORDER = ['CI', 'CodeQL', 'Render Diff'];
 const WORKFLOW_PATHS = {
@@ -333,6 +333,7 @@ function statusDescription(policy) {
     `render=${classification.render_required === 'true' ? '1' : '0'}`,
     `skia=${classification.native_skia_required === 'true' ? '1' : '0'}`,
     `ql=${encodeCodeqlLanguages(classification.codeql_languages)}`,
+    `b=${policy.base_sha}`,
   ].join(';');
 }
 
@@ -346,7 +347,9 @@ function parseStatusDescription(description) {
     if (fields.has(key)) throw new Error(`duplicate policy status field: ${key}`);
     fields.set(key, value);
   }
-  const expected = ['v', 'cv', 'mode', 'wf', 'rust', 'fe', 'render', 'skia', 'ql'];
+  const expected = [
+    'v', 'cv', 'mode', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
+  ];
   if (fields.size !== expected.length || expected.some((key) => !fields.has(key))) {
     throw new Error('policy status fields are incomplete');
   }
@@ -367,6 +370,9 @@ function parseStatusDescription(description) {
   }
   const languages = fields.get('ql').split(',');
   if (languages.length !== new Set(languages).size) throw new Error('duplicate CodeQL axis');
+  if (!/^(?:[0-9a-f]{40}|unavailable)$/.test(fields.get('b'))) {
+    throw new Error('invalid base SHA');
+  }
   return Object.fromEntries(fields);
 }
 
@@ -374,7 +380,10 @@ function determinePolicy(input = {}) {
   const repository = String(input.repository || '');
   const pullRequest = input.pullRequest || {};
   let classification = normalizeClassification(input.classification);
-  const forceFullReason = String(input.forceFullReason || '');
+  let forceFullReason = String(input.forceFullReason || '');
+  const baseShaValue = String(pullRequest.baseSha || '').toLowerCase();
+  const baseSha = /^[0-9a-f]{40}$/.test(baseShaValue) ? baseShaValue : 'unavailable';
+  if (baseSha === 'unavailable' && !forceFullReason) forceFullReason = 'base-sha-unavailable';
   const controllerAvailable = input.controllerAvailable !== false;
   if (forceFullReason) classification = fullClassification(forceFullReason);
   else if (!controllerAvailable) classification = fullClassification('trusted-controller-unavailable');
@@ -382,14 +391,22 @@ function determinePolicy(input = {}) {
   const headTrust = determineHeadTrust(repository, pullRequest);
   const enforcementChanged = changesEnforcementSurface(input.files);
   let decision = classification.classification_status === 'classified' ? 'selective' : 'full';
-  if (headTrust === 'controller-mediated-fork' && enforcementChanged) {
+  if (
+    headTrust === 'controller-mediated-fork'
+    && (enforcementChanged || forceFullReason)
+  ) {
     decision = 'blocked';
-    classification = fullClassification('untrusted-enforcement-change');
+    classification = fullClassification(
+      enforcementChanged
+        ? 'untrusted-enforcement-change'
+        : `untrusted-incomplete-file-list:${forceFullReason}`,
+    );
   }
   const forceAllWorkflows = Boolean(forceFullReason || !controllerAvailable);
   const policy = {
     policy_version: POLICY_VERSION,
     policy_context: POLICY_CONTEXT,
+    base_sha: baseSha,
     decision,
     skip_eligible: decision === 'selective' ? 'true' : 'false',
     head_trust: headTrust,
@@ -730,6 +747,7 @@ function flatOutputs(policy, audit) {
   const output = {
     policy_version: policy.policy_version,
     policy_context: policy.policy_context,
+    base_sha: policy.base_sha,
     decision: policy.decision,
     skip_eligible: policy.skip_eligible,
     head_trust: policy.head_trust,
