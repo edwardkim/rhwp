@@ -1091,19 +1091,25 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     let text_char_count = para.text.chars().count();
 
     // 빈 문단(text == "")의 0-length 필드: 메인 루프가 실행되지 않아
-    // pre-char 검사를 통과하지 못하므로 루프 전에 slots → fieldEnd 순으로 방출한다.
+    // pre-char 검사를 통과하지 못한다. 따라서 슬롯마다 `inner_slot_count`를
+    // 확인해 fieldEnd를 제자리에 방출한다. 모든 슬롯 뒤에 fieldEnd를 몰면
+    // 연속 또는 중첩 필드의 닫는 순서가 뒤바뀐다.
     if para.text.is_empty() {
         while slot_idx < slots.len() {
             splitter.cut_before(expected_utf16_pos);
             render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+            let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
-        }
-        for (i, fr) in para.field_ranges.iter().enumerate() {
-            if fr.start_char_idx == fr.end_char_idx && !field_end_emitted[i] {
-                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
-                field_end_emitted[i] = true;
+            for (i, fr) in para.field_ranges.iter().enumerate() {
+                if !field_end_emitted[i]
+                    && fr.start_char_idx == fr.end_char_idx
+                    && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
+                {
+                    emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                    expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                    field_end_emitted[i] = true;
+                }
             }
         }
         // [Task #1556] 빈 문단의 고아 fieldEnd (char_idx == 0).
