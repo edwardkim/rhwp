@@ -2,7 +2,7 @@
 kind: pr-review
 status: pending-ci
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-13
+last_verified: 2026-08-14
 ---
 
 # PR #4682 self-review — 선택 실행 독립 정책 감사
@@ -24,19 +24,29 @@ focused 검증을 다시 통과했다. 첫 CI는 최종 merge 근거로 재사�
 CI에 배선하고, 필요한 검사 누락만 차단하면서 안전한 full 상위 집합은 허용했다. 취소·stale controller의
 status 게시를 막고 CI 감사 lane 완전성 계약을 추가했다. 최신 devel 동기화 head의 새 CI가 남아 있다.
 
+2026-08-13 maintainer review는 완료된 workflow의 job 목록 API 조회가 재시도 뒤에도 실패하면 빈 목록이
+실제 누락으로 오인되어 `failure` status를 게시하는 운영 결함을 지적했다. 이 finding을 수용해 기존
+`retries: 3`은 유지하고, 조회 완료 여부를 별도 증거로 전달해 API 증거가 불완전한 경우만 `pending`으로
+남겼다. 정상 조회 뒤 필수 job이 실제로 빠진 경우는 계속 `failure`다. 보정 code candidate는
+`e1cb68ff0`이며 새 원격 head CI와 maintainer 재확인이 남아 있다.
+
 ## 검토 경로
 
 ```text
 base route: collaborator_self_merge.md
 modifiers: intake_and_review.md, local_validation.md,
-           rework_and_exceptions.md
+           multi_pr_update_branch.md, rework_and_exceptions.md
 loaded documents: pr_review_workflow.md, pr_review/README.md,
                   collaborator_self_merge.md, intake_and_review.md,
-                  local_validation.md, rework_and_exceptions.md
+                  local_validation.md, multi_pr_update_branch.md,
+                  rework_and_exceptions.md
 remote head at intake: f69856f4d5101eec4d9a454f7db91e3bb8a18a22
 local correction commit: 4ba5e431dd13500e4321d4e1eb0082c98b6004bf
 latest devel merge head: 30bbcf9fe1d0b5a55c4635d3f0bca56ba79b26b9
 review remediation base merge: d5b7ef8318a1ff790b9d4e55f02c1f126c980427
+maintainer review head: 3b421b12d49e9ceb9c3c4499660ab950288e996f
+latest correction base head: d31fa652f535decce7fb51f8551c3913b0d1a106
+job evidence correction commit: e1cb68ff0
 ```
 
 1,000줄이 넘고 default-branch privileged controller와 향후 required status 채택 판단을 포함하므로,
@@ -66,7 +76,9 @@ artifact는 실행하지 않는다. Actions API에서 읽은 PR file과 workflow
 CI의 Rust archive·worker, Native Skia, frontend unit/package, CodeQL 세 언어의 analysis/skip step,
 Render Diff와 Canvas 결과를 classifier 진리표와 대조한다. 세 workflow가 모두 완료되고 기대
 `success|skipped` 조합과 일치할 때만 exact head의 `CI Impact Policy`를 success로 바꾼다. 미완료는
-pending, workflow 실패·증거 누락·중복·예상 밖 실행은 failure로 닫는다.
+pending, workflow run 실패와 정상 job 조회 뒤의 실제 누락·중복·예상 밖 실행은 failure로 닫는다.
+workflow run 목록 또는 job 목록 API가 재시도 뒤에도 실패한 경우는 증거 불완전 상태이므로 pending을
+유지하며, 빈 job 목록과 구분한다.
 
 제품 Rust·TypeScript·renderer 코드와 기존 worker 선택 진리표는 바꾸지 않는다. 다만 enforcement
 surface 자체를 바꾼 PR은 review-only trailing commit이 붙어도 과거 green candidate를 재사용하지 않고
@@ -124,25 +136,39 @@ main 등록 뒤 기존 열린 PR도 base policy와 workflow evidence base SHA를
 오탐을 허용하지 않고 새 head 실행 또는 base 동기화로 증거를 갱신한다. 이 확인은 required context 채택
 전 live audit 게이트다.
 
+### 8. Job 증거 조회 실패의 false failure
+
+[maintainer review](https://github.com/edwardkim/rhwp/pull/4682#issuecomment-5280530677)가 지적한 대로,
+`listJobsForWorkflowRun`이 설정된 3회 재시도 뒤에도 실패하면 기존 controller는 예외를 경고한 뒤
+`jobs: []`를 기록했다. 완료·성공한 workflow가 이 빈 목록과 함께 policy로 넘어가면
+`missing-job:CI preflight` 같은 실제 누락 판정으로 바뀌어 exact head에 false failure가 게시됐다.
+
+보정 commit `e1cb68ff0`은 `jobsCollected`를 API pagination이 온전히 끝난 뒤에만 `true`로 설정한다.
+policy는 workflow identity와 run 결론을 먼저 검증한 뒤 `jobsCollected !== true`면
+`job-evidence-unavailable:<workflow>` 사유의 pending을 반환한다. API가 정상 응답한 뒤 빈 목록이 온 경우는
+기존 `missing-job` failure를 유지해 실제 검사 누락을 숨기지 않는다. 두 경로를 Node 회귀로 각각 고정하고,
+workflow 정적 계약은 수집 완료 표지가 직렬화되는지 확인한다.
+
 ## 검증
 
-- Node classifier+policy: 51/51 통과
-- focused Python 계약: 21/21 통과
-- 전체 workflow 계약: 107/107 통과
+- Node classifier+policy: 53/53 통과
+- focused Python CI impact policy workflow 계약: 9/9 통과
+- 전체 workflow 계약: 108/108 통과
 - `actionlint` 대상 CI·CodeQL·Render Diff·CI Impact Policy: 진단 없음
 - `git diff --check`: 통과
 - 원격 `f69856f4d`의 CI와 CodeQL: 성공. 로컬 보정 전 head이므로 최종 판정에는 재사용하지 않음
-- 최신 `upstream/devel@55eb2860b7fa` merge: 충돌 없음, merge head `d5b7ef831`
+- reviewer finding 재현: 완료·성공 CI와 빈 job 목록은 보정 전
+  `failure / CI:missing-job:CI preflight`를 반환함
+- 최신 review 기준 head: `d31fa652f`; job 증거 보정 code candidate: `e1cb68ff0`
 
 renderer, layout, paint, sample과 제품 UI를 바꾸지 않으므로 시각·fixture sweep 대상은 아니다.
 
 ## 최종 권고
 
-현재는 **pending-ci**다. 리뷰 보정, 최신 devel merge와 focused 검증은 완료됐다. 다음 순서를
+현재는 **pending-ci**다. maintainer finding 보정과 focused 검증은 완료됐다. 다음 순서를
 모두 만족한 뒤에만 수용 권고로 전환한다.
 
-1. 같은 head에서 GitHub 전체 CI를 다시 통과시킨다.
-2. 통과 결과를 포함한 보정 반영 코멘트를 게시한다.
-3. Draft를 해제하고 `edwardkim`에게 controller의 privileged 경계와 main 등록 뒤 required status 채택
-   판단을 포함한 review를 요청한다.
-4. maintainer의 명시적 승인과 merge 직전 최신 head·checks·mergeability 재확인 뒤 merge한다.
+1. `e1cb68ff0`과 이 review 기록을 같은 PR branch에 push한다.
+2. 보정 내용·로컬 검증·새 head CI 대기 상태를 maintainer review의 후속 코멘트로 게시한다.
+3. 같은 최신 head에서 GitHub 전체 CI를 통과시킨다.
+4. maintainer의 재확인과 명시적 승인, merge 직전 최신 head·checks·mergeability 재확인 뒤 merge한다.

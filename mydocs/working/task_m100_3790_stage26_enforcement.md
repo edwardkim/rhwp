@@ -158,3 +158,27 @@ git diff --check
 
 제품 Rust·TypeScript·renderer 코드는 바꾸지 않는다. 이번 gate는 controller의 순수 Node 정책,
 workflow 정적 계약과 실제 Actions metadata 대조이므로 Cargo·Studio·WASM·시각 검증은 범위에서 제외한다.
+
+## Maintainer review job 증거 보정 — 2026-08-14
+
+[review comment](https://github.com/edwardkim/rhwp/pull/4682#issuecomment-5280530677)의 경로를
+원격 head `d31fa652f`에서 재현했다. `listJobsForWorkflowRun`이 설정된 3회 재시도 뒤에도 실패하면
+controller가 `jobs: []`를 기록했고, 완료·성공한 CI run과 이 빈 목록을 policy에 넣은 결과는 다음과 같았다.
+
+```json
+{
+  "publish": "true",
+  "conclusion": "failure",
+  "reason": "CI:missing-job:CI preflight"
+}
+```
+
+code candidate `e1cb68ff0`은 API pagination이 끝난 경우에만 `jobsCollected: true`를 기록한다. workflow
+identity와 run 결론을 검증한 뒤 이 표지가 없으면 `job-evidence-unavailable:<workflow>` pending으로
+남기며, 정상 조회 뒤 실제 job이 없으면 기존 `missing-job` failure를 유지한다. 따라서 transient API
+증거 부족은 false red로 바뀌지 않고, 실제 필수 검사 누락도 숨기지 않는다.
+
+검증 결과는 Node classifier+policy 53/53, focused Python workflow 9/9, 전체 workflow 108/108 통과다.
+CI·CodeQL·Render Diff·CI Impact Policy 네 workflow의 actionlint와 `git diff --check`도 통과했다.
+renderer·제품 코드·fixture 변경은 없어 Cargo·Studio·WASM·시각 검증은 추가하지 않았다. 이 code와 review
+기록을 PR branch에 push한 뒤 최신 head GitHub Actions와 maintainer 재확인을 새 merge 조건으로 둔다.

@@ -2,7 +2,7 @@
 kind: pr-review-implementation
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-13
+last_verified: 2026-08-14
 ---
 
 # PR #4682 self-review 보정 및 수용 이행 기록
@@ -32,6 +32,7 @@ last_verified: 2026-08-13
 - [x] 최종 diff가 PR 목적 밖 제품·배포 변경을 포함하지 않는지 다시 확인한다.
 - [x] 동기화 head에서 focused 검증과 `git diff --check`를 다시 실행한다.
 - [x] 게시 self-review 뒤 전진한 `upstream/devel@55eb2860b7fa`도 merge head `d5b7ef831`에 반영한다.
+- [x] maintainer review 시점의 최신 devel을 추가 반영한 원격 head `d31fa652f`를 보정 기준으로 고정한다.
 
 ## Stage 2.5 — 게시 self-review 후속 보정
 
@@ -43,12 +44,24 @@ last_verified: 2026-08-13
 - [x] 활성화 시 기존 PR과 base 이동은 required 채택 전 live audit 항목으로 기록한다.
 - [x] Node 51/51, focused Python 21/21, 전체 workflow 107/107, actionlint와 diff check를 통과한다.
 
+## Stage 2.75 — maintainer review job 증거 보정
+
+- [x] job API 조회 실패가 빈 job 목록으로 바뀌어 false failure를 게시하는 finding을 재현한다.
+- [x] 기존 `actions/github-script`의 `retries: 3`을 유지하고, 재시도 소진 뒤 수집 완료 여부를
+  `jobsCollected`로 명시한다.
+- [x] 불완전한 job 증거는 `job-evidence-unavailable:<workflow>` pending, 정상 조회 뒤 실제 누락은
+  `missing-job` failure로 분리한다.
+- [x] 두 판정과 workflow 직렬화 경로를 Node·Python 회귀 테스트로 고정한다.
+- [x] code candidate `e1cb68ff0`에서 Node 53/53, focused Python 9/9, 전체 workflow 108/108,
+  actionlint와 diff check를 통과한다.
+
 ## Stage 3 — 원격 보정과 새 head CI
 
 - [x] 작업지시자 승인 뒤 보정·동기화 commit을 같은 PR branch에 push한다.
 - [x] PR 본문의 검증 수치와 동작 설명을 최종 구현에 맞춰 갱신한다.
-- [ ] CI·CodeQL·Render Diff와 `Build & Test`의 같은 head 결과를 분석한다.
-- [ ] 모든 CI 통과 뒤 보정 항목과 검증 결과를 기존 self-review 코멘트의 후속 코멘트로 게시한다.
+- [ ] `e1cb68ff0`과 review 기록을 같은 PR branch에 push하고 최신 head를 재확인한다.
+- [ ] maintainer finding 보정, 로컬 검증과 새 CI 대기 상태를 후속 코멘트로 게시한다.
+- [ ] CI·CodeQL·Render Diff와 `Build & Test`의 같은 최신 head 결과를 분석한다.
 - [ ] 실패가 있으면 Draft를 유지하고 원인을 보정한 뒤 새 head에서 다시 검증한다.
 
 ## Stage 4 — maintainer review

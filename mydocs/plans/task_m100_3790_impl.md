@@ -18,7 +18,9 @@
   보정 commit `4ba5e431d`와 최신 devel merge `30bbcf9fe`의 로컬 focused 검증을 통과했다. 게시
   self-review 후속으로 Node policy 테스트 CI 배선, 안전한 full 상위 집합 허용, 취소·stale status 차단,
   감사 lane 완전성 계약을 추가하고 최신 devel `55eb2860b`을 merge head `d5b7ef831`에 반영했다. push
-  뒤 새 head 전체 CI·maintainer 명시적 승인을 다시 받아야 한다.
+  뒤 새 head 전체 CI를 통과했다. maintainer review에서 job API 조회 실패가 빈 목록으로 바뀌어 false
+  failure를 게시하는 경계를 추가로 확인했고, code candidate `e1cb68ff0`에서 불완전한 증거는 pending,
+  정상 조회 뒤 실제 누락은 failure로 분리했다. 이 보정의 push·새 head CI·maintainer 재확인이 남아 있다.
 
 ## Stage 1 — shadow classifier
 
@@ -100,7 +102,8 @@ policy를 미채택하기로 결정할 때까지 보존한다. 이후 재사용�
    skipped를 요구한다. fast-pass는 enforcement surface가 바뀌지 않은 경우에만 허용한다.
 6. Render Diff는 trigger 경로와 `render_required`에 따라 preflight success 및 Canvas visual diff의
    success 또는 skipped를 요구한다. trigger 비대상 workflow는 감사 집합에서 제외한다.
-7. expected workflow가 미완료면 status는 pending을 유지한다. 실패·예상 밖 job/step은 failure,
+7. expected workflow가 미완료이거나 workflow/job API 증거 수집이 재시도 뒤에도 완료되지 않으면 status는
+   pending을 유지한다. API가 정상 응답한 뒤의 실제 job 누락과 실패·예상 밖 job/step은 failure,
    세 workflow가 모두 완료·일치할 때만 success다. privileged job은 PR head/merge ref checkout,
    artifact download, PR 제공 script 실행을 금지한다.
 8. devel PR과 로컬 검증은 controller 활성화가 아니다. 정상 release로 workflow가 main에 등록된 뒤
