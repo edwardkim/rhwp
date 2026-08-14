@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "studio-e2e",
+  "title": "스튜디오 e2e 문서 계약",
+  "axis": "편집 (studio e2e 에서 파생한 CLI 검증 가능 문서 계약)",
+  "description": "rhwp-studio e2e 테스트가 브라우저에서 검증하는 문서-수준 계약 중 CLI 로 재현 가능한 부분만 gym 과제로 파생한다. UI 계약(메뉴·더블클릭·undo·무흔적)은 e2e 에만 남고, 이 pack 은 코어 왕복(값 편집→재조회)만 채점한다. SE01 은 rhwp-studio/e2e/issue-4694-chart-data-edit.test.mjs 의 데이터 계약에서 파생했다.",
+  "requires": {
+    "commands": [
+      "chart-to-csv",
+      "csv-to-chart"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.4",
+    "rhwpCommit": "fbca0aa6c22db9a30e6c417190ae4ddfe924773e",
+    "capabilitiesSha256": "4767e61c3af751bb2f97af9d0b3e5ffa5cbb5dc70a89cf3ae85987132fa5473d"
+  }
+}
