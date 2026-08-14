@@ -1865,8 +1865,7 @@ mod tests {
             ..Default::default()
         };
         assert!(
-            (hancom_regenerated_space_width(&stale_split_style)
-                .expect("split 12pt space")
+            (hancom_regenerated_space_width(&stale_split_style).expect("split 12pt space")
                 - standard_body_fs * 0.5)
                 .abs()
                 < f64::EPSILON,

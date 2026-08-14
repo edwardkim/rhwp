@@ -8,8 +8,8 @@ use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph};
 use crate::model::style::LineSpacingType;
 use crate::renderer::layout::{
-    estimate_text_width, estimate_text_width_unrounded, is_cjk_char, resolved_to_text_style,
-    hancom_regenerated_space_width,
+    estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
+    is_cjk_char, resolved_to_text_style,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, RowSegment};
 use crate::renderer::px_to_hwpunit;

@@ -3543,9 +3543,9 @@ impl LayoutEngine {
             // same gaps a second time, making every multi-row stored table
             // taller by `(row_count - 1) * cell_spacing` at paint time.
             let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
-            let target_row_sum =
-                (target_height - cell_spacing * row_heights.len().saturating_sub(1) as f64)
-                    .max(0.0);
+            let target_row_sum = (target_height
+                - cell_spacing * row_heights.len().saturating_sub(1) as f64)
+                .max(0.0);
             let current: f64 = row_heights.iter().sum();
             let residual = target_row_sum - current;
             if residual > 0.5 {
@@ -9928,13 +9928,22 @@ impl LayoutEngine {
             .enumerate()
             .filter_map(|(cell_idx, cell)| {
                 let units = self.cell_units(cell, table, styles);
-                let start = start_cut.get(cell_idx).copied().unwrap_or(0).min(units.len());
+                let start = start_cut
+                    .get(cell_idx)
+                    .copied()
+                    .unwrap_or(0)
+                    .min(units.len());
                 units
                     .iter()
                     .enumerate()
                     .skip(start + 1)
                     .find(|(_, unit)| unit.stored_frame_break_before)
-                    .map(|(end, _)| units[start..end].iter().map(|unit| unit.height).sum::<f64>())
+                    .map(|(end, _)| {
+                        units[start..end]
+                            .iter()
+                            .map(|unit| unit.height)
+                            .sum::<f64>()
+                    })
             })
             .filter(|height| *height > 0.5)
             .reduce(f64::min)?;
@@ -9944,7 +9953,11 @@ impl LayoutEngine {
         let mut fully_consumed = true;
         for (cell_idx, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
-            let start = start_cut.get(cell_idx).copied().unwrap_or(0).min(units.len());
+            let start = start_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(0)
+                .min(units.len());
             let mut end = start;
             let mut height = 0.0f64;
             while end < units.len()
@@ -9998,7 +10011,11 @@ impl LayoutEngine {
         let mut extended = false;
         for (cell_idx, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
-            let start = start_cut.get(cell_idx).copied().unwrap_or(0).min(units.len());
+            let start = start_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(0)
+                .min(units.len());
             let mut end = base_end_cut
                 .get(cell_idx)
                 .copied()
@@ -10020,7 +10037,8 @@ impl LayoutEngine {
                 }
             }
             fully_consumed &= end == units.len();
-            consumed_height = consumed_height.max(units[start..end].iter().map(|unit| unit.height).sum());
+            consumed_height =
+                consumed_height.max(units[start..end].iter().map(|unit| unit.height).sum());
             end_cut.push(end);
         }
 
@@ -10064,7 +10082,11 @@ impl LayoutEngine {
         let mut extended = false;
         for (cell_idx, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
-            let start = start_cut.get(cell_idx).copied().unwrap_or(0).min(units.len());
+            let start = start_cut
+                .get(cell_idx)
+                .copied()
+                .unwrap_or(0)
+                .min(units.len());
             let mut end = base_end_cut
                 .get(cell_idx)
                 .copied()
@@ -10187,7 +10209,8 @@ impl LayoutEngine {
                     .is_some_and(|previous_end| previous_end > 0 && seg.vertical_pos <= 0)
                 {
                     reset_count += 1;
-                    preceding_frame_end = preceding_frame_end.max(previous_frame_end.unwrap_or_default());
+                    preceding_frame_end =
+                        preceding_frame_end.max(previous_frame_end.unwrap_or_default());
                     trailing_frame_end = 0;
                 }
                 if reset_count > 0 {
@@ -10197,12 +10220,13 @@ impl LayoutEngine {
             }
         }
 
-        reset_count >= 2 || (reset_count == 1 && {
-            let source_frame_span = preceding_frame_end.saturating_add(trailing_frame_end);
-            let declared_height = cell.height as i32;
-            source_frame_span >= declared_height.saturating_mul(4) / 5
-                && source_frame_span <= declared_height
-        })
+        reset_count >= 2
+            || (reset_count == 1 && {
+                let source_frame_span = preceding_frame_end.saturating_add(trailing_frame_end);
+                let declared_height = cell.height as i32;
+                source_frame_span >= declared_height.saturating_mul(4) / 5
+                    && source_frame_span <= declared_height
+            })
     }
 
     /// Return whether a row records an in-paragraph return from a positive
@@ -10232,9 +10256,10 @@ impl LayoutEngine {
             .filter(|cell| cell.row as usize == row && cell.row_span == 1)
             .flat_map(|cell| &cell.paragraphs)
             .any(|paragraph| {
-                paragraph.line_segs.windows(2).any(|lines| {
-                    lines[0].vertical_pos > 0 && lines[1].vertical_pos == 0
-                })
+                paragraph
+                    .line_segs
+                    .windows(2)
+                    .any(|lines| lines[0].vertical_pos > 0 && lines[1].vertical_pos == 0)
             });
         if !has_raw_rewind {
             return false;
@@ -10486,15 +10511,9 @@ impl LayoutEngine {
                     // 편집 뒤에는 reflow suffix가 같은 tag/metrics를 계승할 수 있어
                     // line segment만으로는 원본과 구별되지 않는다. 편집 관문이 남긴
                     // provenance가 있을 때는 일반 capacity cut으로 새 줄을 분할한다.
-                    if self.profile.get().native_hwp5_layout()
-                        && !table.text_reflowed_after_edit
-                    {
-                        if let Some((absorbed_h, absorbed_j)) = Self::absorb_tail_before_stored_frame_break(
-                            &units,
-                            j,
-                            h,
-                            avail_height,
-                        )
+                    if self.profile.get().native_hwp5_layout() && !table.text_reflowed_after_edit {
+                        if let Some((absorbed_h, absorbed_j)) =
+                            Self::absorb_tail_before_stored_frame_break(&units, j, h, avail_height)
                         {
                             h = absorbed_h;
                             j = absorbed_j;

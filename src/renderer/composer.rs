@@ -1790,9 +1790,10 @@ pub fn stored_body_lines_stale(
     // HWP3 변환본의 stored-vs-fresh 비교는 본문 flow에만 적용한다. 미주는
     // 저장 LineSeg가 물리 쪽/단 흐름을 보존하므로 fresh 폭 측정이 더 짧아도
     // stale로 승격하지 않는다.
-    let hwp3_text_only_line_geometry = para.controls.iter().all(|control| {
-        matches!(control, Control::Field(_) | Control::Hyperlink(_))
-    });
+    let hwp3_text_only_line_geometry = para
+        .controls
+        .iter()
+        .all(|control| matches!(control, Control::Field(_) | Control::Hyperlink(_)));
     let hwp3_variant_overcounts_lines = hwp3_body_reflow
         && hwp3_text_only_line_geometry
         && probe.lines.len() < composed.lines.len();
@@ -1953,7 +1954,11 @@ pub fn recompose_for_cell_width(
     }
     for (gi, (combined_line, ends_with_break)) in groups.into_iter().enumerate() {
         // 내어쓰기 첫 줄 폭은 문단의 첫 줄에만 적용 — \n 이후 그룹은 전부 연속 폭.
-        let g_first = if gi == 0 { first_width_px } else { cont_width_px };
+        let g_first = if gi == 0 {
+            first_width_px
+        } else {
+            cont_width_px
+        };
         let start = composed.lines.len();
         let total_width: f64 = combined_line
             .runs
@@ -2465,8 +2470,7 @@ fn split_composed_line_by_width(
                 } else {
                     current_run_text.push_str(&word);
                     current_width += word_width;
-                    space_w += text_width(" ", &ts)
-                        * word.matches(' ').count() as f64;
+                    space_w += text_width(" ", &ts) * word.matches(' ').count() as f64;
                     chars_in_line += word.chars().count();
                 }
                 word.clear();
@@ -2497,7 +2501,7 @@ fn split_composed_line_by_width(
             if word_width > limit(&result) && current_width == 0.0 {
                 for wch in word.chars() {
                     let wch_str: String = std::iter::once(wch).collect();
-                        let wch_width = text_width(&wch_str, &ts);
+                    let wch_width = text_width(&wch_str, &ts);
                     if current_width - space_w * space_condense + wch_width > limit(&result)
                         && chars_in_line > 0
                     {
