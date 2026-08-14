@@ -5,9 +5,10 @@
 //!   문단 사이 vpos reset을 갖지만, 현재 엔진은 표 전체를 새 쪽으로 이월한다.
 //! - 전체 HWP는 한컴 2020 PDF 383쪽보다 10쪽 많은 393쪽이다.
 //!
-//! 정답 계약 테스트는 Stage 2/3 구현 전까지 `ignore`한다. 기준선 테스트가
-//! 표 구조, 저장 pitch, 물리 조각의 현재 소유권을 고정하므로 전역 줄높이를
-//! 줄이거나 다른 표를 우연히 이동한 결과를 #3931 해결로 오인하지 않는다.
+//! Stage 2는 표 구조와 저장 pitch를 바꾸지 않은 채 물리 조각의 12+4 소유권을
+//! 정답 계약으로 전환한다. 전체 383쪽 계약만 Stage 3 구현 전까지 `ignore`한다.
+//! 따라서 전역 줄높이를 줄이거나 다른 표를 우연히 이동한 결과를 #3931 해결로
+//! 오인하지 않는다.
 
 use std::fs;
 use std::path::Path;
@@ -21,12 +22,15 @@ use rhwp::renderer::height_measurer::{HeightMeasurer, MeasuredTable};
 use rhwp::renderer::style_resolver::resolve_styles_with_variant;
 use rhwp::renderer::{hwpunit_to_px, DEFAULT_DPI};
 use rhwp::wasm_api::HwpDocument;
+use serde_json::Value;
 
 const FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwp";
 const SECTION_INDEX: usize = 10;
 const TARGET_PARA_INDEX: usize = 23;
 const TARGET_ROW: usize = 4;
 const TARGET_COL: usize = 2;
+const HEAD_FRAGMENT_TEXT: &str = "문서결재와 업무분장 등을 공무원에게 부여하고 있습니다.";
+const TAIL_FRAGMENT_TEXT: &str = "채용목적에 따른 업무범위 내에서";
 
 fn read_fixture() -> Vec<u8> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE);
@@ -78,32 +82,56 @@ fn measured_target_table(document: &Document, control_index: usize) -> MeasuredT
         .expect("measured section 10 paragraph 23 table")
 }
 
-fn page_index_from_rect(rect: &str) -> u32 {
-    rect.split("\"pageIndex\":")
+fn page_index_from_json(json: &str, field: &str) -> u32 {
+    json.split(&format!("\"{field}\":"))
         .nth(1)
         .and_then(|value| value.split([',', '}']).next())
         .and_then(|value| value.trim().parse().ok())
-        .unwrap_or_else(|| panic!("cursor rect JSON has no pageIndex: {rect}"))
+        .unwrap_or_else(|| panic!("JSON has no {field}: {json}"))
 }
 
 fn target_paragraph_pages(document: &HwpDocument) -> (u32, u32) {
-    let parsed = parse_fixture();
-    let (control_index, table) = target_table(&parsed);
-    let (cell_index, _) = target_cell(table);
-    let page_for = |cell_para_index| {
-        document
-            .get_cursor_rect_in_cell(
-                SECTION_INDEX as u32,
-                TARGET_PARA_INDEX as u32,
-                control_index as u32,
-                cell_index as u32,
-                cell_para_index,
-                0,
-            )
-            .map(|rect| page_index_from_rect(&rect))
-            .unwrap_or_else(|_| panic!("target cell paragraph {cell_para_index} cursor lookup"))
+    let first_page_json = document
+        .get_page_of_position(SECTION_INDEX as u32, TARGET_PARA_INDEX as u32)
+        .expect("target outer paragraph page");
+    let first_page = page_index_from_json(&first_page_json, "page");
+    let trees = [first_page, first_page + 1].map(|page| {
+        (
+            page,
+            document
+                .get_page_render_tree(page)
+                .unwrap_or_else(|_| panic!("render target table page {page}")),
+        )
+    });
+    let page_for = |needle: &str| {
+        trees
+            .iter()
+            .find_map(|(page, tree)| tree.contains(needle).then_some(*page))
+            .unwrap_or_else(|| {
+                panic!("target text {needle:?} absent from first two table fragments")
+            })
     };
-    (page_for(0), page_for(1))
+    (page_for(HEAD_FRAGMENT_TEXT), page_for(TAIL_FRAGMENT_TEXT))
+}
+
+fn find_node<'a>(value: &'a Value, predicate: &impl Fn(&Value) -> bool) -> Option<&'a Value> {
+    if predicate(value) {
+        return Some(value);
+    }
+    value
+        .get("children")
+        .and_then(Value::as_array)
+        .and_then(|children| {
+            children
+                .iter()
+                .find_map(|child| find_node(child, predicate))
+        })
+}
+
+fn bbox_bottom(node: &Value) -> f64 {
+    let bbox = node.get("bbox").expect("render node bbox");
+    bbox.get("y").and_then(Value::as_f64).expect("bbox y")
+        + bbox.get("h").and_then(Value::as_f64).expect("bbox h")
 }
 
 #[test]
@@ -171,17 +199,6 @@ fn issue_3931_stage1_pins_pi23_stored_line_geometry() {
 }
 
 #[test]
-fn issue_3931_stage1_records_pi23_current_whole_table_defer() {
-    let document = HwpDocument::from_bytes(&read_fixture()).expect("paginate #3931 HWP fixture");
-    let (head_page, tail_page) = target_paragraph_pages(&document);
-    assert_eq!(
-        head_page, tail_page,
-        "latest devel defers pi23 whole instead of honoring the stored 12+4 line split"
-    );
-}
-
-#[test]
-#[ignore = "#3931 RED: Stage 2 must honor the stored 12+4-line physical split"]
 fn issue_3931_pi23_stored_reset_splits_across_adjacent_pages() {
     let document = HwpDocument::from_bytes(&read_fixture()).expect("paginate #3931 HWP fixture");
     let (head_page, tail_page) = target_paragraph_pages(&document);
@@ -190,12 +207,37 @@ fn issue_3931_pi23_stored_reset_splits_across_adjacent_pages() {
         head_page + 1,
         "Hancom 2020 puts the first 12 lines at the previous page tail and the last 4 lines at the next page head"
     );
+
+    let tree_json = document
+        .get_page_render_tree(head_page)
+        .expect("render first target table fragment");
+    let tree: Value = serde_json::from_str(&tree_json).expect("parse target render tree");
+    let body = find_node(&tree, &|node| {
+        node.get("type") == Some(&Value::from("Body"))
+    })
+    .expect("page body");
+    let target_fragment = find_node(&tree, &|node| {
+        node.get("type") == Some(&Value::from("Table"))
+            && node.get("pi").and_then(Value::as_u64) == Some(TARGET_PARA_INDEX as u64)
+            && node.to_string().contains(HEAD_FRAGMENT_TEXT)
+    })
+    .expect("first target table fragment");
+    assert!(
+        bbox_bottom(target_fragment) <= bbox_bottom(body) + 0.5,
+        "the first target fragment must stay inside the page body: table bottom {:.1}, body bottom {:.1}",
+        bbox_bottom(target_fragment),
+        bbox_bottom(body)
+    );
 }
 
 #[test]
-fn issue_3931_stage1_records_current_hwp_page_count() {
+fn issue_3931_stage2_records_hwp_page_count_after_pi23_fix() {
     let document = HwpDocument::from_bytes(&read_fixture()).expect("paginate #3931 HWP fixture");
-    assert_eq!(document.page_count(), 393, "latest devel HWP baseline");
+    assert_eq!(
+        document.page_count(),
+        392,
+        "HWP after the pi23 fragment fix"
+    );
 }
 
 #[test]

@@ -9648,6 +9648,79 @@ impl LayoutEngine {
         None
     }
 
+    /// [#3931] native HWP5 다행 RowBreak 셀의 저장 page reset 직전에서
+    /// paint되지 않는 마지막 줄의 trailing line/paragraph spacing.
+    ///
+    /// `CellUnit` 전체 높이는 표를 통째로 측정할 때 필요하므로 변경하지 않는다.
+    /// 실제 컷이 문단 경계의 `양수 vpos -> 0 이하`에서 끝날 때만 이 값을 빼서,
+    /// 마지막 가시 줄은 현 쪽에 남기고 그 뒤의 공백은 물리 쪽 경계에서 버린다.
+    fn native_multirow_saved_reset_trailing_trim(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        units: &[CellUnit],
+        end_cut: usize,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        if !self.profile.get().native_hwp5_layout()
+            || table.row_count <= 1
+            || table.common.treat_as_char
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            || !matches!(
+                table.common.text_wrap,
+                crate::model::shape::TextWrap::TopAndBottom
+            )
+            || end_cut == 0
+            || end_cut >= units.len()
+        {
+            return 0.0;
+        }
+
+        let previous_unit = &units[end_cut - 1];
+        let next_unit = &units[end_cut];
+        if !next_unit.hard_break_before
+            || next_unit.para_idx <= previous_unit.para_idx
+            || previous_unit.vis_start >= previous_unit.vis_end
+        {
+            return 0.0;
+        }
+        let Some(previous_para) = cell.paragraphs.get(previous_unit.para_idx) else {
+            return 0.0;
+        };
+        let Some(next_para) = cell.paragraphs.get(next_unit.para_idx) else {
+            return 0.0;
+        };
+        if previous_unit.vis_end != previous_para.line_segs.len() {
+            return 0.0;
+        }
+        let Some(previous_seg) = previous_para.line_segs.last() else {
+            return 0.0;
+        };
+        let Some(next_seg) = next_para.line_segs.iter().find(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        }) else {
+            return 0.0;
+        };
+        if previous_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || previous_seg.vertical_pos <= 0
+            || next_seg.vertical_pos > 0
+        {
+            return 0.0;
+        }
+
+        let line_spacing = hwpunit_to_px(previous_seg.line_spacing.max(0), self.dpi);
+        let paragraph_spacing = styles
+            .para_styles
+            .get(previous_para.para_shape_id as usize)
+            .map(|style| style.spacing_after)
+            .unwrap_or(0.0)
+            .max(0.0);
+        (line_spacing + paragraph_spacing).min(previous_unit.height.max(0.0))
+    }
+
     fn is_non_inline_control_flow_unit(unit: &CellUnit) -> bool {
         unit.vis_start == unit.vis_end
             && !unit.empty_spacer
@@ -10507,6 +10580,24 @@ impl LayoutEngine {
                     break;
                 }
                 if j > start && h + u.height > avail_height {
+                    // [#3931] 저장 reset 직전 마지막 가시 줄의 trailing 공백을
+                    // 물리 쪽 경계에서 제외하면 예산에 들어가는 경우, 그 줄까지
+                    // 현 조각에 넣고 다음 문단 hard break 직전에서 멈춘다. source
+                    // frame tail 흡수보다 먼저 적용해 본문 하단 침범을 피한다.
+                    let trailing_trim = self.native_multirow_saved_reset_trailing_trim(
+                        table,
+                        cell,
+                        &units,
+                        j + 1,
+                        styles,
+                    );
+                    if trailing_trim > 0.0 && h + u.height - trailing_trim <= avail_height + 0.5 {
+                        h += (u.height - trailing_trim).max(0.0);
+                        j += 1;
+                        hit_hard_break = true;
+                        break;
+                    }
+
                     // source frame tail은 원본 LINE_SEG가 직접 소유한다. 셀 텍스트
                     // 편집 뒤에는 reflow suffix가 같은 tag/metrics를 계승할 수 있어
                     // line segment만으로는 원본과 구별되지 않는다. 편집 관문이 남긴
@@ -11261,7 +11352,13 @@ impl LayoutEngine {
                 .copied()
                 .unwrap_or(units.len())
                 .clamp(su, units.len());
-            let content: f64 = units[su..eu].iter().map(|u| u.height).sum();
+            let trailing_trim = if end_cut.is_empty() {
+                0.0
+            } else {
+                self.native_multirow_saved_reset_trailing_trim(table, cell, &units, eu, styles)
+            };
+            let content: f64 =
+                (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0);
             let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
             let h = content + pad_top + pad_bottom;
             // [#2287 진단] start_cut 적용 잔여 평가 분해 — 동작 불변.
@@ -11302,7 +11399,10 @@ impl LayoutEngine {
         let units = self.cell_units(cell, table, styles);
         let su = start_unit.min(units.len());
         let eu = end_unit.clamp(su, units.len());
-        let content: f64 = units[su..eu].iter().map(|u| u.height).sum();
+        let trailing_trim =
+            self.native_multirow_saved_reset_trailing_trim(table, cell, &units, eu, styles);
+        let content: f64 =
+            (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0);
         if content <= 0.0 {
             return 0.0;
         }
@@ -12397,8 +12497,14 @@ impl LayoutEngine {
             } else {
                 self.mixed_nested_flow_extra_from_cut(cell, table, styles, su, eu)
             };
+            let trailing_trim = if is_whole_row {
+                0.0
+            } else {
+                self.native_multirow_saved_reset_trailing_trim(table, cell, &units, eu, styles)
+            };
             let content: f64 =
-                units[su..eu].iter().map(|u| u.height).sum::<f64>() + mixed_nested_extra;
+                (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0)
+                    + mixed_nested_extra;
             let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
             let has_visible_cut = units[su..eu]
                 .iter()

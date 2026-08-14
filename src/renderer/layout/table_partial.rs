@@ -24,6 +24,7 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::CaptionDirection;
 use crate::model::style::{Alignment, BorderLine};
+use crate::renderer::float_placement::native_multirow_internal_reset_rowbreak_anchor_advance_hu;
 
 /// `layout_partial_table_resolved`가 표 자체와 분리해 사용하는 host 문맥.
 ///
@@ -2818,6 +2819,19 @@ impl LayoutEngine {
                 table.common.vert_rel_to,
                 crate::model::shape::VertRelTo::Para
             );
+        let reclaim_previous_host_margin = if !is_continuation && start_cut.is_empty() {
+            native_multirow_internal_reset_rowbreak_anchor_advance_hu(
+                self.profile.get().native_hwp5_layout(),
+                paragraphs
+                    .get(para_index)
+                    .expect("partial table host paragraph"),
+                table,
+                paragraphs.get(para_index + 1),
+            )
+            .map(|advance| hwpunit_to_px(advance, self.dpi))
+        } else {
+            None
+        };
         let y_start = if is_para_flow_table {
             let prev_table_end = col_node
                 .children
@@ -2844,7 +2858,14 @@ impl LayoutEngine {
                     Some(child.bbox.y + child.bbox.height + repeated_previous_bottom)
                 })
                 .fold(f64::NEG_INFINITY, f64::max);
-            if repeat_fragment_outer_margin {
+            let reclaims_previous_host_margin = reclaim_previous_host_margin.is_some_and(|max| {
+                prev_table_end.is_finite()
+                    && y_start > prev_table_end
+                    && y_start - prev_table_end <= max + 0.5
+            });
+            if reclaims_previous_host_margin {
+                prev_table_end
+            } else if repeat_fragment_outer_margin {
                 // The strict native-HWP shape uses the painted predecessor plus its trailing
                 // margin as the flow base, then opens this fragment's top margin.  Apply the
                 // positive object offset only to the first fragment.  This ordering restores the

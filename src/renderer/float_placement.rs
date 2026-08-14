@@ -175,6 +175,74 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
     Some(advance)
 }
 
+/// [#3931] native HWP5 다행 RowBreak 표가 cell 내부 저장 page reset을 갖고,
+/// 후속 source 문단도 host anchor 위로 되감기는 빈-host 형상인지 판별한다.
+///
+/// 반환값은 host의 저장 line advance다. 첫 fragment를 앞선 표 바로 뒤에 그릴 때
+/// layout cursor에 남은 이전 host trailing margin이 이 advance 이내면 회수할 수
+/// 있다는 구조 증거로 사용한다.
+pub(crate) fn native_multirow_internal_reset_rowbreak_anchor_advance_hu(
+    native_hwp5_layout: bool,
+    para: &Paragraph,
+    table: &Table,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    let has_non_whitespace_text = |paragraph: &Paragraph| {
+        paragraph
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+    };
+    if !native_hwp5_layout
+        || table.row_count <= 1
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || has_non_whitespace_text(para)
+        || para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            != 1
+    {
+        return None;
+    }
+
+    let host_seg = para.line_segs.iter().find(|seg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && seg.line_height > 0
+    })?;
+    let next_seg = next_para?
+        .line_segs
+        .iter()
+        .find(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)?;
+    if next_seg.vertical_pos >= host_seg.vertical_pos {
+        return None;
+    }
+
+    let has_internal_reset = table.cells.iter().any(|cell| {
+        let mut previous_vpos = None;
+        for cell_para in &cell.paragraphs {
+            for seg in cell_para.line_segs.iter().filter(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            }) {
+                if previous_vpos.is_some_and(|previous| previous > 0 && seg.vertical_pos <= 0) {
+                    return true;
+                }
+                previous_vpos = Some(seg.vertical_pos);
+            }
+        }
+        false
+    });
+    if !has_internal_reset {
+        return None;
+    }
+
+    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    (advance > 0).then_some(advance)
+}
+
 /// Native HWP5가 빈 host의 저장 LINE_SEG 사다리에 표의 outer box 전체를 기록한
 /// 경우만 paint origin에 outer-left/top을 복원한다.
 ///
