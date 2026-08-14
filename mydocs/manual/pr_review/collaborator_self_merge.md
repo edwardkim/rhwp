@@ -15,7 +15,7 @@ last_verified: 2026-08-07
 - PR 작성자 또는 준비자가 repository collaborator다.
 - PR 번호가 이미 있어 review 문서명을 확정할 수 있다.
 - merge 뒤 별도 문서 commit을 만들지 않기 위해 review 문서를 현재 PR diff에 포함한다.
-- ready 전환, review approval, merge 판단은 작업지시자 승인 뒤에만 한다.
+- ready 전환, self-review 기록 확정, merge 판단은 작업지시자 승인 뒤에만 한다.
 
 ## 8.2 문서와 오늘할일
 
@@ -36,7 +36,7 @@ mydocs/orders/YYYYMMDD.md                  # 갱신이 필요한 경우
 
 1. 검증을 마친 후보 commit을 원격 작업 branch에 push한다.
 2. Draft 지시가 없으면 Open PR을 생성해 번호 `N`을 받는다.
-3. reviewer를 assign하고 `mydocs/pr/archives/pr_N_review.md`와 필요한 오늘할일을 작성한다.
+3. reviewer를 지정하지 않고 self-review를 `mydocs/pr/archives/pr_N_review.md`와 필요한 오늘할일에 기록한다.
 4. review 문서와 오늘할일을 같은 source branch의 후속 commit으로 push해 PR diff에 포함한다.
 
 PR 생성 전에 번호를 예측해 review 파일명을 만들지 않는다. 이미 active 경로에 만든 review 문서는
