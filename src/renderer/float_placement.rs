@@ -1,17 +1,100 @@
 //! Flow reservation helpers for non-inline floating objects.
 
+use std::ops::Range;
+
 use crate::model::control::Control;
+use crate::model::image::Picture;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
+use crate::model::shape::{
+    CommonObjAttr, HorzAlign, HorzRelTo, TextFlow, TextWrap, VertAlign, VertRelTo,
+};
 use crate::model::table::{Table, TablePageBreak};
 use crate::model::HwpUnit;
 
 use super::hwpunit_to_px;
+use super::layout::picture_flow_frame_size_hu;
+use super::layout_frame::{FrameExclusion, FrameExclusionPolicy};
 use super::page_layout::LayoutRect;
 
 /// Interpret an HWPUNIT value that may have been stored through a signed field.
 pub(crate) fn signed_hwpunit(value: HwpUnit) -> i32 {
     value as i32
+}
+
+/// Resolve the deliberately small Picture/Square side-wrap subset used by a
+/// caller-owned `LayoutFrame`.
+///
+/// The caller owns both the paragraph-relative anchor and the exclusion's
+/// lifetime. This function intentionally has no fallback policy: only an
+/// uncaptained, non-TAC Picture with `Square` and the two recovered side-wrap
+/// flows has a physical-row representation. Every other object shape remains
+/// with its existing owner.
+pub(crate) fn resolve_picture_exclusion(
+    picture: &Picture,
+    column_horizontal: Range<i32>,
+    paragraph_horizontal: Range<i32>,
+    paragraph_top: i32,
+) -> Option<FrameExclusion> {
+    let common = &picture.common;
+    if common.treat_as_char
+        || picture.caption.is_some()
+        || common.text_wrap != TextWrap::Square
+        || !matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+        || common.vert_rel_to != VertRelTo::Para
+        || !matches!(common.vert_align, VertAlign::Top | VertAlign::Inside)
+    {
+        return None;
+    }
+    let policy = match common.text_flow {
+        TextFlow::BothSides => FrameExclusionPolicy::BothSides,
+        TextFlow::LargestOnly => FrameExclusionPolicy::LargestSide,
+        TextFlow::LeftOnly | TextFlow::RightOnly => return None,
+    };
+
+    let (width, height) = picture_flow_frame_size_hu(picture);
+    if column_horizontal.is_empty() || paragraph_horizontal.is_empty() || width <= 0 || height <= 0
+    {
+        return None;
+    }
+
+    let horizontal_offset = signed_hwpunit(common.horizontal_offset);
+    let reference = match common.horz_rel_to {
+        HorzRelTo::Column => column_horizontal,
+        HorzRelTo::Para => paragraph_horizontal,
+        HorzRelTo::Paper | HorzRelTo::Page => return None,
+    };
+    let reference_width = reference.end.saturating_sub(reference.start);
+    let visible_left = match common.horz_align {
+        HorzAlign::Left | HorzAlign::Inside => reference.start.saturating_add(horizontal_offset),
+        HorzAlign::Center => reference
+            .start
+            .saturating_add(
+                reference_width
+                    .saturating_sub(width)
+                    .max(0)
+                    .saturating_div(2),
+            )
+            .saturating_add(horizontal_offset),
+        HorzAlign::Right | HorzAlign::Outside => reference
+            .end
+            .saturating_sub(width)
+            .saturating_sub(horizontal_offset),
+    };
+    let visible_top = paragraph_top.saturating_add(signed_hwpunit(common.vertical_offset));
+    let horizontal = visible_left.saturating_sub(i32::from(common.margin.left))
+        ..visible_left
+            .saturating_add(width)
+            .saturating_add(i32::from(common.margin.right));
+    let vertical = visible_top.saturating_sub(i32::from(common.margin.top))
+        ..visible_top
+            .saturating_add(height)
+            .saturating_add(i32::from(common.margin.bottom));
+
+    (!horizontal.is_empty() && !vertical.is_empty()).then_some(FrameExclusion {
+        horizontal,
+        vertical,
+        policy,
+    })
 }
 
 /// A non-TAC `TopAndBottom` object positioned from its host paragraph.
@@ -465,6 +548,7 @@ mod tests {
     use crate::model::paragraph::LineSeg;
     use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign};
     use crate::model::table::Cell;
+    use crate::renderer::layout_frame::FrameExclusionPolicy;
 
     fn base_common() -> CommonObjAttr {
         CommonObjAttr {
@@ -474,6 +558,83 @@ mod tests {
             horz_align: HorzAlign::Left,
             ..Default::default()
         }
+    }
+
+    fn supported_picture(flow: TextFlow) -> Picture {
+        Picture {
+            common: CommonObjAttr {
+                width: 300,
+                height: 200,
+                text_wrap: TextWrap::Square,
+                text_flow: flow,
+                vert_rel_to: VertRelTo::Para,
+                vert_align: VertAlign::Top,
+                horz_rel_to: HorzRelTo::Column,
+                horz_align: HorzAlign::Left,
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn picture_exclusion_maps_only_recovered_side_wrap_flows() {
+        let both_sides = resolve_picture_exclusion(
+            &supported_picture(TextFlow::BothSides),
+            0..1_000,
+            0..1_000,
+            50,
+        )
+        .expect("BothSides is represented by the physical row frame");
+        assert_eq!(both_sides.policy, FrameExclusionPolicy::BothSides);
+
+        let largest_only = resolve_picture_exclusion(
+            &supported_picture(TextFlow::LargestOnly),
+            0..1_000,
+            0..1_000,
+            50,
+        )
+        .expect("LargestOnly has a recovered frame policy");
+        assert_eq!(largest_only.policy, FrameExclusionPolicy::LargestSide);
+
+        assert!(resolve_picture_exclusion(
+            &supported_picture(TextFlow::LeftOnly),
+            0..1_000,
+            0..1_000,
+            50,
+        )
+        .is_none());
+        assert!(resolve_picture_exclusion(
+            &supported_picture(TextFlow::RightOnly),
+            0..1_000,
+            0..1_000,
+            50,
+        )
+        .is_none());
+    }
+
+    #[test]
+    fn picture_exclusion_uses_flow_frame_for_oversized_current_square_float() {
+        let mut picture = supported_picture(TextFlow::BothSides);
+        picture.shape_attr.current_width = 900;
+        picture.shape_attr.current_height = 800;
+
+        let exclusion = resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 50)
+            .expect("Square side-wrap float has a physical row frame");
+
+        assert_eq!(exclusion.horizontal, 0..300);
+        assert_eq!(exclusion.vertical, 50..250);
+    }
+
+    #[test]
+    fn picture_exclusion_rejects_non_square_or_inline_hosts() {
+        let mut picture = supported_picture(TextFlow::BothSides);
+        picture.common.treat_as_char = true;
+        assert!(resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0).is_none());
+
+        picture.common.treat_as_char = false;
+        picture.common.text_wrap = TextWrap::TopAndBottom;
+        assert!(resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0).is_none());
     }
 
     #[test]

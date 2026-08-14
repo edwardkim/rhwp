@@ -5,7 +5,7 @@
 
 use super::{find_active_char_shape, is_lang_neutral};
 use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
-use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph};
 use crate::model::style::LineSpacingType;
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, is_cjk_char, resolved_to_text_style,
@@ -14,6 +14,16 @@ use crate::renderer::layout::{
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, RowSegment};
 use crate::renderer::px_to_hwpunit;
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
+use std::ops::Range;
+
+/// A complete, source-independent projection of one supported Picture wrap
+/// band. The document layer owns the one-shot publication of every paragraph
+/// in this range.
+#[derive(Debug, Clone)]
+pub(crate) struct PictureBandLayout {
+    pub(crate) paragraph_range: Range<usize>,
+    pub(crate) line_segs: Vec<Vec<LineSeg>>,
+}
 
 /// 줄 나눔 토큰
 #[derive(Debug, Clone)]
@@ -49,6 +59,9 @@ struct FlowInlineControl {
     char_position: usize,
     width_hwp: i32,
     height_hwp: i32,
+    /// Equation supplies an object-owned baseline for the physical row. Other
+    /// inline objects keep the text metrics already selected by the caller.
+    baseline_distance_hwp: Option<i32>,
 }
 
 /// 줄 채움 결과
@@ -1650,13 +1663,39 @@ fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
                 return None;
             }
             let (width_hwp, height_hwp) = inline_control_size_hwp(control)?;
+            let baseline_distance_hwp = match control {
+                Control::Equation(equation) if equation.baseline > 0 => Some(
+                    height_hwp
+                        .saturating_mul(i32::from(equation.baseline))
+                        .saturating_div(100),
+                ),
+                _ => None,
+            };
             (char_position < text_len).then_some(FlowInlineControl {
                 char_position,
                 width_hwp,
                 height_hwp,
+                baseline_distance_hwp,
             })
         })
         .collect()
+}
+
+/// The picture-band frame intentionally admits only its floating host and the
+/// already-supported treat-as-character Equation flow. Other controls have
+/// their own layout owners and must leave this transaction untouched.
+fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
+    let mut non_tac_pictures = 0usize;
+    for control in &para.controls {
+        match control {
+            Control::Picture(picture) if !picture.common.treat_as_char => {
+                non_tac_pictures += 1;
+            }
+            Control::Equation(equation) if equation.common.treat_as_char => {}
+            _ => return false,
+        }
+    }
+    non_tac_pictures <= 1
 }
 
 /// 본문 뒤 남은 폭에 놓이지 않는 inline control은 별도 physical line을 가진다.
@@ -1763,6 +1802,14 @@ fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
     }
 }
 
+fn apply_inline_control_frame_height(metrics: &mut FrameRowMetrics, height_hwp: i32) {
+    if height_hwp > metrics.line_height {
+        metrics.line_height = height_hwp;
+        metrics.text_height = height_hwp;
+        metrics.baseline_distance = (height_hwp as f64 * 0.85).round() as i32;
+    }
+}
+
 fn frame_metrics_for_line(
     max_font_size: f64,
     fallback_font_size: f64,
@@ -1790,20 +1837,19 @@ fn frame_metrics_for_line(
     }
 }
 
-/// Lay out a scalar paragraph through a caller-owned physical frame.
+/// Lay out the small scalar/Picture-band paragraph subset through a
+/// caller-owned physical frame.
 ///
 /// Every interval returned by one carve belongs to the same physical row. The
 /// cursor continues from left to right and the frame does not advance until
-/// that complete row has been committed. This helper deliberately has no
-/// document or picture-band caller yet; it is the reflow boundary between the
-/// cursor and `LayoutFrame`.
+/// that complete row has been committed.
 pub(crate) fn layout_paragraph_in_frame(
     para: &Paragraph,
     frame: &mut LayoutFrame,
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<Vec<LineSeg>> {
-    if para.text.is_empty() || !para.controls.is_empty() {
+    if !supports_picture_band_frame_controls(para) {
         return None;
     }
 
@@ -1824,6 +1870,10 @@ pub(crate) fn layout_paragraph_in_frame(
         .map(|style| style.line_spacing_type)
         .unwrap_or(LineSpacingType::Percent);
     let line_spacing_value = para_style.map(|style| style.line_spacing).unwrap_or(160.0);
+    // Keep Equation width and height ownership with the current scalar
+    // `FlowInlineControl` path. A non-TAC Picture deliberately contributes no
+    // inline token: it is represented by the caller's exclusion instead.
+    let inline_controls = flow_inline_controls(para);
     let tokens = tokenize_paragraph_with_split_cell_space_metric(
         &text_chars,
         &para.char_offsets,
@@ -1832,12 +1882,46 @@ pub(crate) fn layout_paragraph_in_frame(
         english_break_unit,
         korean_break_unit,
         false,
-        &[],
+        &inline_controls,
     );
-    // Keep the existing scalar fallback for a terminal empty line after a
-    // forced break. The active character shape is deliberately not consulted
-    // here because the pre-frame reflow uses a fixed 12px fallback.
-    let fallback_font_size = 12.0;
+    let fallback_font_size = if para.text.is_empty() {
+        para.char_shapes
+            .first()
+            .and_then(|char_shape| styles.char_styles.get(char_shape.char_shape_id as usize))
+            .map(|style| style.font_size)
+            .unwrap_or(12.0)
+    } else {
+        12.0
+    };
+    // This matches the scalar path's terminal-control behavior: controls not
+    // admitted to `FlowInlineControl` because they sit after the last visible
+    // character enlarge the first line box without inventing a second width
+    // accounting path.
+    let terminal_inline_metrics = inline_controls
+        .is_empty()
+        .then(|| {
+            let height_hwp = inline_control_line_height_hwp(para)?;
+            let baseline_distance_hwp = para
+                .controls
+                .iter()
+                .filter_map(|control| match control {
+                    Control::Equation(equation)
+                        if equation.common.treat_as_char
+                            && equation.common.height as i32 == height_hwp
+                            && equation.baseline > 0 =>
+                    {
+                        Some(
+                            height_hwp
+                                .saturating_mul(i32::from(equation.baseline))
+                                .saturating_div(100),
+                        )
+                    }
+                    _ => None,
+                })
+                .max();
+            Some((height_hwp, baseline_distance_hwp))
+        })
+        .flatten();
     let source_tag = para
         .line_segs
         .first()
@@ -1883,6 +1967,9 @@ pub(crate) fn layout_paragraph_in_frame(
 
                 let mut segments = Vec::with_capacity(intervals.len());
                 let mut maximum_font_size = 0.0f64;
+                let mut inline_metrics = (frame.row_count() == first_row)
+                    .then_some(terminal_inline_metrics)
+                    .flatten();
                 let mut row_terminated = false;
                 for interval in intervals {
                     let available_width_px = crate::renderer::hwpunit_to_px(
@@ -1901,6 +1988,28 @@ pub(crate) fn layout_paragraph_in_frame(
                     )?;
                     let line = &filled.line;
                     maximum_font_size = maximum_font_size.max(line.max_font_size);
+                    for control in inline_controls.iter().filter(|control| {
+                        (line.start_idx..line.end_idx).contains(&control.char_position)
+                            || (line.end_idx == text_chars.len()
+                                && control.char_position == text_chars.len())
+                    }) {
+                        inline_metrics = match inline_metrics {
+                            Some((height_hwp, baseline_distance_hwp))
+                                if height_hwp > control.height_hwp =>
+                            {
+                                Some((height_hwp, baseline_distance_hwp))
+                            }
+                            Some((height_hwp, baseline_distance_hwp))
+                                if height_hwp == control.height_hwp =>
+                            {
+                                Some((
+                                    height_hwp,
+                                    baseline_distance_hwp.max(control.baseline_distance_hwp),
+                                ))
+                            }
+                            _ => Some((control.height_hwp, control.baseline_distance_hwp)),
+                        };
+                    }
                     let text_start = if frame.row_count() == first_row && segments.is_empty() {
                         0
                     } else {
@@ -1915,13 +2024,22 @@ pub(crate) fn layout_paragraph_in_frame(
                     }
                 }
 
-                let metrics = frame_metrics_for_line(
+                let mut metrics = frame_metrics_for_line(
                     maximum_font_size,
                     fallback_font_size,
                     line_spacing_type,
                     line_spacing_value,
                     dpi,
                 );
+                if let Some((height_hwp, baseline_distance_hwp)) = inline_metrics {
+                    let inline_owns_row_height = height_hwp > metrics.line_height;
+                    apply_inline_control_frame_height(&mut metrics, height_hwp);
+                    if inline_owns_row_height {
+                        if let Some(baseline_distance_hwp) = baseline_distance_hwp {
+                            metrics.baseline_distance = baseline_distance_hwp;
+                        }
+                    }
+                }
                 if metrics.line_height != candidate_height {
                     candidate_height = metrics.line_height;
                     continue;
@@ -1952,6 +2070,129 @@ pub(crate) fn layout_paragraph_in_frame(
         frame.restore_checkpoint(frame_checkpoint);
     }
     result
+}
+
+/// This mirrors `float_placement::horizontal_range`'s `HorzRelTo::Para`
+/// rule: the host's left paragraph margin shifts the object reference, but
+/// the right text margin does not shrink it.
+fn picture_band_paragraph_reference(
+    column_horizontal: &Range<i32>,
+    host_margin_left: i32,
+) -> Option<Range<i32>> {
+    let start = column_horizontal.start.saturating_add(host_margin_left);
+    (start < column_horizontal.end).then_some(start..column_horizontal.end)
+}
+
+/// Lay out one proven non-TAC Picture/Square band without reading stored
+/// `LineSeg` geometry. One `LayoutFrame` remains live from the Picture's
+/// source anchor through the first full-width paragraph boundary.
+///
+/// This is intentionally a fail-closed transaction. It accepts one host
+/// Picture, treats only TAC Equations as inline flow, and rejects any
+/// paragraph boundary that would require another layout owner.
+pub(crate) fn layout_picture_band(
+    paragraphs: &[Paragraph],
+    host_index: usize,
+    column_width_hwp: i32,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<PictureBandLayout> {
+    let host = paragraphs.get(host_index)?;
+    let column_horizontal = 0..column_width_hwp;
+    let margins_for = |paragraph: &Paragraph| {
+        let style = styles.para_styles.get(paragraph.para_shape_id as usize);
+        (
+            px_to_hwpunit(style.map(|value| value.margin_left).unwrap_or(0.0), dpi),
+            px_to_hwpunit(style.map(|value| value.margin_right).unwrap_or(0.0), dpi),
+        )
+    };
+    let horizontal_for = |paragraph: &Paragraph| {
+        let (margin_left, margin_right) = margins_for(paragraph);
+        let start = column_horizontal.start.saturating_add(margin_left);
+        let end = column_horizontal.end.saturating_sub(margin_right);
+        (start < end).then_some(start..end)
+    };
+    let host_horizontal = horizontal_for(host)?;
+    let (host_margin_left, _) = margins_for(host);
+    let host_paragraph_horizontal =
+        picture_band_paragraph_reference(&column_horizontal, host_margin_left)?;
+
+    let mut host_pictures = host
+        .controls
+        .iter()
+        .enumerate()
+        .filter_map(|(index, control)| match control {
+            Control::Picture(picture) if !picture.common.treat_as_char => {
+                Some((index, picture.as_ref()))
+            }
+            _ => None,
+        });
+    let (picture_control_index, picture) = host_pictures.next()?;
+    if host_pictures.next().is_some() {
+        return None;
+    }
+
+    // A paragraph-relative Picture starts at its control's raw UTF-16 stream
+    // position, not necessarily at the first visible character. Lay out a
+    // clean, full-width host first so the anchor row has no stored-LineSeg
+    // dependency.
+    let picture_raw_start = host
+        .control_utf16_positions()
+        .get(picture_control_index)
+        .copied()?;
+    let mut anchor_input = host.clone();
+    anchor_input.line_segs.clear();
+    let mut anchor_frame = LayoutFrame::new(host_horizontal.clone(), 0, Vec::new());
+    let anchor_rows = layout_paragraph_in_frame(&anchor_input, &mut anchor_frame, styles, dpi)?;
+    let anchor_top = anchor_rows
+        .iter()
+        .rfind(|row| row.text_start <= picture_raw_start)
+        .map(|row| row.vertical_pos)?;
+
+    let exclusion = crate::renderer::float_placement::resolve_picture_exclusion(
+        picture,
+        column_horizontal.clone(),
+        host_paragraph_horizontal,
+        anchor_top,
+    )?;
+    let exclusion_end = exclusion.vertical.end;
+    let mut frame = LayoutFrame::new(host_horizontal.clone(), 0, vec![exclusion]);
+    let mut line_segs = Vec::new();
+
+    for (paragraph_index, paragraph) in paragraphs.iter().enumerate().skip(host_index) {
+        if frame.top >= exclusion_end {
+            break;
+        }
+
+        let paragraph_style = styles.para_styles.get(paragraph.para_shape_id as usize);
+        if paragraph.column_type != ColumnBreakType::None
+            || paragraph_style.is_some_and(|style| {
+                style.spacing_before.abs() > f64::EPSILON
+                    || style.spacing_after.abs() > f64::EPSILON
+                    || style.page_break_before
+            })
+            || horizontal_for(paragraph)? != host_horizontal
+            || (paragraph_index != host_index
+                && paragraph.controls.iter().any(|control| {
+                    matches!(control, Control::Picture(picture) if !picture.common.treat_as_char)
+                }))
+        {
+            return None;
+        }
+
+        let mut input = paragraph.clone();
+        // Clones carry only source content. A failed band leaves every cached
+        // LineSeg exactly as it was; only the finished projection is published
+        // by the document owner.
+        input.line_segs.clear();
+        let paragraph_lines = layout_paragraph_in_frame(&input, &mut frame, styles, dpi)?;
+        line_segs.push(paragraph_lines);
+    }
+
+    (!line_segs.is_empty() && frame.top >= exclusion_end).then_some(PictureBandLayout {
+        paragraph_range: host_index..host_index + line_segs.len(),
+        line_segs,
+    })
 }
 
 /// 문단의 line_segs를 텍스트 내용과 컬럼 너비에 맞게 재계산한다.
@@ -2258,6 +2499,7 @@ fn reflow_line_segs_impl(
     // inline controls retain their established specialized paths below.
     let frame_eligible = !split_stale_cell_reflow
         && preserve_prefix_for_edit.is_none()
+        && !para.text.is_empty()
         && para.controls.is_empty()
         && preserved_prefix.is_empty();
     if frame_eligible {
@@ -2797,7 +3039,7 @@ mod fill_cursor_tests {
 #[cfg(test)]
 mod frame_reflow_tests {
     use super::*;
-    use crate::renderer::layout_frame::FrameExclusion;
+    use crate::renderer::layout_frame::{FrameExclusion, FrameExclusionPolicy};
     use crate::renderer::style_resolver::{ResolvedCharStyle, ResolvedParaStyle};
 
     fn styles(font_sizes: &[f64]) -> ResolvedStyleSet {
@@ -2973,6 +3215,7 @@ mod frame_reflow_tests {
             vec![FrameExclusion {
                 horizontal: 3_000..5_000,
                 vertical: 0..10_000,
+                policy: FrameExclusionPolicy::BothSides,
             }],
         );
 
@@ -3022,6 +3265,7 @@ mod frame_reflow_tests {
             vec![FrameExclusion {
                 horizontal: 4_000..5_000,
                 vertical: 1_000..5_000,
+                policy: FrameExclusionPolicy::BothSides,
             }],
         );
 
@@ -3077,6 +3321,233 @@ mod frame_reflow_tests {
             .iter()
             .all(|line| line.segment_width == 3_750 && line.column_start == 0));
         assert_eq!(para.line_segs[0].vertical_pos, 321);
+    }
+
+    #[test]
+    fn picture_band_uses_para_reference_not_text_frame_for_right_aligned_picture() {
+        use crate::model::image::Picture;
+        use crate::model::shape::{HorzAlign, HorzRelTo, TextFlow, TextWrap, VertAlign, VertRelTo};
+
+        const DPI: f64 = 96.0;
+        const COLUMN_WIDTH: i32 = 15_000;
+        const MARGIN_LEFT: i32 = 1_500;
+        const MARGIN_RIGHT: i32 = 3_000;
+        const PICTURE_WIDTH: u32 = 3_000;
+
+        let mut styles = styles(&[12.0]);
+        styles.para_styles[0].margin_left = crate::renderer::hwpunit_to_px(MARGIN_LEFT, DPI);
+        styles.para_styles[0].margin_right = crate::renderer::hwpunit_to_px(MARGIN_RIGHT, DPI);
+        let text_frame = MARGIN_LEFT..COLUMN_WIDTH - MARGIN_RIGHT;
+        let paragraph_reference = picture_band_paragraph_reference(&(0..COLUMN_WIDTH), MARGIN_LEFT)
+            .expect("host left margin leaves a usable Paragraph reference");
+        assert_eq!(paragraph_reference, MARGIN_LEFT..COLUMN_WIDTH);
+        assert_ne!(text_frame, paragraph_reference);
+
+        let picture = Picture {
+            common: crate::model::shape::CommonObjAttr {
+                width: PICTURE_WIDTH,
+                height: 600,
+                text_wrap: TextWrap::Square,
+                text_flow: TextFlow::BothSides,
+                vert_rel_to: VertRelTo::Para,
+                vert_align: VertAlign::Top,
+                horz_rel_to: HorzRelTo::Para,
+                horz_align: HorzAlign::Right,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let expected_exclusion = crate::renderer::float_placement::resolve_picture_exclusion(
+            &picture,
+            0..COLUMN_WIDTH,
+            paragraph_reference.clone(),
+            0,
+        )
+        .expect("supported Paragraph-relative Picture");
+        assert_eq!(expected_exclusion.horizontal, 12_000..15_000);
+
+        let mut host = paragraph(
+            "x",
+            vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+        );
+        host.controls.push(Control::Picture(Box::new(picture)));
+
+        let band = layout_picture_band(&[host], 0, COLUMN_WIDTH, &styles, DPI)
+            .expect("the one-row Paragraph-relative Picture band");
+
+        assert_eq!(band.paragraph_range, 0..1);
+        assert_eq!(band.line_segs[0].len(), 1);
+        assert_eq!(band.line_segs[0][0].column_start, text_frame.start);
+        assert_eq!(
+            band.line_segs[0][0].segment_width,
+            text_frame.end - text_frame.start,
+            "the right-aligned Para exclusion begins at the text frame's end"
+        );
+    }
+
+    #[test]
+    fn real_p325_picture_band_matches_the_stored_seven_paragraph_geometry() {
+        use crate::model::page::ColumnDef;
+        use crate::renderer::page_layout::PageLayoutInfo;
+
+        const DPI: f64 = 96.0;
+        let bytes = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/3-09월_교육_통합_2022.hwp"),
+        )
+        .expect("p325 corpus fixture");
+        let document = crate::parse_document(&bytes).expect("parse p325 corpus fixture");
+        let section = &document.sections[0];
+        let column_def = section.paragraphs[..=325]
+            .iter()
+            .flat_map(|paragraph| &paragraph.controls)
+            .filter_map(|control| match control {
+                Control::ColumnDef(column) => Some(column.clone()),
+                _ => None,
+            })
+            .next_back()
+            .unwrap_or_else(ColumnDef::default);
+        let page_layout =
+            PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, DPI);
+        let column_width = crate::renderer::px_to_hwpunit(page_layout.column_areas[0].width, DPI);
+        let styles = crate::renderer::style_resolver::resolve_styles(&document.doc_info, DPI);
+
+        let band = layout_picture_band(&section.paragraphs, 325, column_width, &styles, DPI)
+            .expect("one Picture + trailing TAC Equation p325 band");
+
+        assert_eq!(band.paragraph_range, 325..332);
+        assert_eq!(band.line_segs.len(), 7);
+        for (paragraph_index, generated) in band.paragraph_range.clone().zip(&band.line_segs) {
+            let stored = &section.paragraphs[paragraph_index].line_segs;
+            assert_eq!(generated.len(), 1, "p{paragraph_index}");
+            assert_eq!(
+                generated[0].text_start, stored[0].text_start,
+                "p{paragraph_index}"
+            );
+            assert_eq!(
+                generated[0].column_start, stored[0].column_start,
+                "p{paragraph_index}"
+            );
+            assert_eq!(
+                generated[0].segment_width, stored[0].segment_width,
+                "p{paragraph_index}"
+            );
+            assert!(
+                generated[0].line_height.abs_diff(stored[0].line_height) <= 1,
+                "p{paragraph_index}"
+            );
+            assert!(
+                generated[0].text_height.abs_diff(stored[0].text_height) <= 1,
+                "p{paragraph_index}"
+            );
+            assert!(
+                generated[0]
+                    .baseline_distance
+                    .abs_diff(stored[0].baseline_distance)
+                    <= 1,
+                "p{paragraph_index}: generated={} stored={}",
+                generated[0].baseline_distance,
+                stored[0].baseline_distance,
+            );
+            assert!(
+                generated[0].line_spacing.abs_diff(stored[0].line_spacing) <= 3,
+                "p{paragraph_index}"
+            );
+        }
+        assert!(
+            band.line_segs[0][0].line_height > 900,
+            "the host's trailing TAC Equation must enlarge the retried first row"
+        );
+        assert_eq!(
+            band.line_segs[0][0].baseline_distance,
+            section.paragraphs[325].line_segs[0].baseline_distance,
+            "p325 retains the TAC Equation's object-owned baseline"
+        );
+        assert_ne!(
+            band.line_segs.last().expect("band tail")[0].segment_width,
+            section.paragraphs[332].line_segs[0].segment_width,
+            "p332 is the first full-width paragraph after the exclusion"
+        );
+    }
+
+    #[test]
+    fn picture_band_rejects_a_truncated_p325_before_any_projection() {
+        use crate::model::page::ColumnDef;
+        use crate::renderer::page_layout::PageLayoutInfo;
+
+        const DPI: f64 = 96.0;
+        let bytes = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/3-09월_교육_통합_2022.hwp"),
+        )
+        .expect("p325 corpus fixture");
+        let document = crate::parse_document(&bytes).expect("parse p325 corpus fixture");
+        let section = &document.sections[0];
+        let column_def = section.paragraphs[..=325]
+            .iter()
+            .flat_map(|paragraph| &paragraph.controls)
+            .filter_map(|control| match control {
+                Control::ColumnDef(column) => Some(column.clone()),
+                _ => None,
+            })
+            .next_back()
+            .unwrap_or_else(ColumnDef::default);
+        let page_layout =
+            PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, DPI);
+        let column_width = crate::renderer::px_to_hwpunit(page_layout.column_areas[0].width, DPI);
+        let styles = crate::renderer::style_resolver::resolve_styles(&document.doc_info, DPI);
+
+        assert!(
+            layout_picture_band(&section.paragraphs[325..329], 0, column_width, &styles, DPI)
+                .is_none(),
+            "a subset ending before the exclusion clears cannot be published"
+        );
+    }
+
+    #[test]
+    fn pic2_two_picture_host_is_explicitly_outside_the_one_picture_band_contract() {
+        use crate::model::page::ColumnDef;
+        use crate::renderer::page_layout::PageLayoutInfo;
+
+        const DPI: f64 = 96.0;
+        let bytes = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/pic2.hwp"),
+        )
+        .expect("pic2 fixture");
+        let document = crate::parse_document(&bytes).expect("parse pic2 fixture");
+        let section = &document.sections[0];
+        let column_def = section.paragraphs[..=0]
+            .iter()
+            .flat_map(|paragraph| &paragraph.controls)
+            .filter_map(|control| match control {
+                Control::ColumnDef(column) => Some(column.clone()),
+                _ => None,
+            })
+            .next_back()
+            .unwrap_or_else(ColumnDef::default);
+        let page_layout =
+            PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, DPI);
+        let column_width = crate::renderer::px_to_hwpunit(page_layout.column_areas[0].width, DPI);
+        let styles = crate::renderer::style_resolver::resolve_styles(&document.doc_info, DPI);
+
+        assert_eq!(
+            section.paragraphs[0]
+                .controls
+                .iter()
+                .filter(|control| {
+                    matches!(control, Control::Picture(picture) if !picture.common.treat_as_char)
+                })
+                .count(),
+            2,
+            "fixture premise: pic2's first paragraph has two floating pictures"
+        );
+        assert!(
+            layout_picture_band(&section.paragraphs, 0, column_width, &styles, DPI).is_none(),
+            "two floating pictures are deliberately not a one-picture band"
+        );
     }
 }
 

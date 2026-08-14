@@ -9,7 +9,7 @@ use crate::model::control::Control;
 use crate::model::document::Document;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::{Caption, DrawingObjAttr, ShapeObject};
-use crate::renderer::composer::{compose_section, reflow_line_segs};
+use crate::renderer::composer::{compose_section, layout_picture_band, reflow_line_segs};
 use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
@@ -1033,20 +1033,98 @@ impl DocumentCore {
                 .unwrap_or(layout.body_area.width);
 
             let mut min_reflowed_idx: Option<usize> = None;
-            for (pi, para) in section.paragraphs.iter_mut().enumerate() {
-                if Self::needs_reflow_broadly(para) {
+            let mut latest_non_tac_picture_host = None;
+            let mut pi = 0usize;
+            while pi < section.paragraphs.len() {
+                if section.paragraphs[pi].controls.iter().any(|control| {
+                    matches!(control, Control::Picture(picture) if !picture.common.treat_as_char)
+                }) {
+                    latest_non_tac_picture_host = Some(pi);
+                }
+                if Self::needs_reflow_broadly(&section.paragraphs[pi]) {
+                    // A damaged successor can still belong to a stored
+                    // Picture host. The forward walk records the latest
+                    // possible owner, resolves its own physical column, and
+                    // only claims this row when the completed projection
+                    // contains it.
+                    let mut tracked_picture_band_rejected = false;
+                    let picture_band = if let Some(host_index) = latest_non_tac_picture_host {
+                        let picture_column_def =
+                            Self::find_column_def_for_paragraph(&section.paragraphs, host_index);
+                        let picture_layout =
+                            PageLayoutInfo::from_page_def(page_def, &picture_column_def, dpi);
+                        let picture_col_width = picture_layout
+                            .column_areas
+                            .first()
+                            .map(|area| area.width)
+                            .unwrap_or(picture_layout.body_area.width);
+                        let picture_band = layout_picture_band(
+                            &section.paragraphs,
+                            host_index,
+                            px_to_hwpunit(picture_col_width, dpi),
+                            &styles,
+                            dpi,
+                        );
+                        // A tracked host keeps ownership until a complete
+                        // projection proves that its band already ended.
+                        match picture_band {
+                            Some(band) if band.paragraph_range.contains(&pi) => Some(band),
+                            Some(band) if band.paragraph_range.end <= pi => {
+                                latest_non_tac_picture_host = None;
+                                None
+                            }
+                            _ => {
+                                tracked_picture_band_rejected = true;
+                                None
+                            }
+                        }
+                    } else {
+                        None
+                    };
+                    if let Some(band) = picture_band {
+                        let paragraph_range = band.paragraph_range;
+                        let band_len = paragraph_range.len();
+                        debug_assert_eq!(band.line_segs.len(), band_len);
+                        for (paragraph, line_segs) in section.paragraphs[paragraph_range.clone()]
+                            .iter_mut()
+                            .zip(band.line_segs)
+                        {
+                            paragraph.invalidate_single_line_overflow_memo();
+                            paragraph.line_segs = line_segs;
+                        }
+                        reflowed += band_len;
+                        min_reflowed_idx =
+                            Some(min_reflowed_idx.map_or(paragraph_range.start, |start| {
+                                start.min(paragraph_range.start)
+                            }));
+                        pi = paragraph_range.end;
+                        continue;
+                    }
+                    if tracked_picture_band_rejected {
+                        break;
+                    }
+
+                    // A non-TAC Picture host owns a possible multi-paragraph
+                    // exclusion. If its complete band cannot be represented,
+                    // do not publish a scalar host row and leave the source
+                    // geometry intact for the caller's existing path.
+                    if section.paragraphs[pi].controls.iter().any(|control| {
+                        matches!(control, Control::Picture(picture) if !picture.common.treat_as_char)
+                    }) {
+                        break;
+                    }
+
+                    let para = &mut section.paragraphs[pi];
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                     let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                     let available_width = (col_width - margin_left - margin_right).max(1.0);
                     reflow_line_segs(para, available_width, &styles, dpi);
                     reflowed += 1;
-                    if min_reflowed_idx.is_none() {
-                        min_reflowed_idx = Some(pi);
-                    }
+                    min_reflowed_idx.get_or_insert(pi);
                 }
                 // 표 셀 내부 문단도 동일 처리
-                for ctrl in &mut para.controls {
+                for ctrl in &mut section.paragraphs[pi].controls {
                     if let Control::Table(ref mut table) = ctrl {
                         let owner_widths = table.paragraph_frame_owner_widths();
                         let table_padding = table.padding;
@@ -1067,6 +1145,7 @@ impl DocumentCore {
                         }
                     }
                 }
+                pi += 1;
             }
 
             // [Task #927] reflow 후 vpos 일관성 재계산 — 본문 paragraphs 만.
@@ -2074,7 +2153,31 @@ impl DocumentCore {
 mod validate_linesegs_tests {
     use super::*;
     use crate::model::document::{Document, Section};
-    use crate::model::paragraph::{LineSeg, Paragraph};
+    use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
+
+    fn p325_picture_band_core() -> DocumentCore {
+        DocumentCore::from_bytes(include_bytes!("../../../samples/3-09월_교육_통합_2022.hwp"))
+            .expect("p325 Picture-band corpus fixture")
+    }
+
+    fn line_seg_fields(lines: &[LineSeg]) -> Vec<(u32, i32, i32, i32, i32, i32, i32, i32, u32)> {
+        lines
+            .iter()
+            .map(|line| {
+                (
+                    line.text_start,
+                    line.vertical_pos,
+                    line.line_height,
+                    line.text_height,
+                    line.baseline_distance,
+                    line.line_spacing,
+                    line.column_start,
+                    line.segment_width,
+                    line.tag,
+                )
+            })
+            .collect()
+    }
 
     #[test]
     fn from_bytes_retains_hml_import_metadata_outside_document_ir() {
@@ -2441,6 +2544,270 @@ mod validate_linesegs_tests {
     fn needs_reflow_broadly_skips_empty_paragraph() {
         let para = Paragraph::default();
         assert!(!DocumentCore::needs_reflow_broadly(&para));
+    }
+
+    #[test]
+    fn on_demand_picture_band_publishes_the_complete_p325_transaction() {
+        let mut core = p325_picture_band_core();
+        let section = &mut core.document.sections[0];
+        let stored_band = section.paragraphs[325..332]
+            .iter()
+            .map(|paragraph| paragraph.line_segs.clone())
+            .collect::<Vec<_>>();
+        let stored_first_full_width = section.paragraphs[332].line_segs.clone();
+
+        for paragraph in &mut section.paragraphs[325..332] {
+            paragraph.single_line_overflow_memo.set(123, true);
+        }
+        section.paragraphs[332]
+            .single_line_overflow_memo
+            .set(123, true);
+        section.paragraphs[325].line_segs.clear();
+        core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
+        assert!(
+            core.validation_report
+                .warnings
+                .iter()
+                .any(|warning| warning.paragraph_idx == 325),
+            "the missing host row must enter the explicit on-demand path"
+        );
+
+        assert_eq!(core.reflow_linesegs_on_demand(), 7);
+
+        let section = &core.document.sections[0];
+        let mut expected_vpos = stored_band[0][0].vertical_pos;
+        for (paragraph_index, stored) in (325..332).zip(&stored_band) {
+            let generated = &section.paragraphs[paragraph_index].line_segs;
+            assert_eq!(generated.len(), stored.len(), "p{paragraph_index}");
+            for (actual, expected) in generated.iter().zip(stored) {
+                assert_eq!(actual.text_start, expected.text_start, "p{paragraph_index}");
+                assert_eq!(actual.vertical_pos, expected_vpos, "p{paragraph_index}");
+                assert_eq!(
+                    actual.column_start, expected.column_start,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.segment_width, expected.segment_width,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.line_height, expected.line_height,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.text_height, expected.text_height,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.baseline_distance, expected.baseline_distance,
+                    "p{paragraph_index}"
+                );
+                assert!(
+                    actual.line_spacing.abs_diff(expected.line_spacing) <= 3,
+                    "p{paragraph_index}: generated={} stored={}",
+                    actual.line_spacing,
+                    expected.line_spacing,
+                );
+                assert!(actual.is_first_segment(), "p{paragraph_index}");
+                assert!(actual.is_last_segment(), "p{paragraph_index}");
+                expected_vpos += actual.line_height + actual.line_spacing;
+            }
+        }
+        assert!(
+            section.paragraphs[325..332]
+                .iter()
+                .all(|paragraph| paragraph.single_line_overflow_memo.is_unjudged()),
+            "each published row invalidates its derived overflow memo"
+        );
+        assert_eq!(
+            section.paragraphs[332].line_segs.len(),
+            stored_first_full_width.len(),
+            "p332 remains outside the transaction"
+        );
+        for (actual, expected) in section.paragraphs[332]
+            .line_segs
+            .iter()
+            .zip(&stored_first_full_width)
+        {
+            assert_eq!(actual.text_start, expected.text_start);
+            assert_eq!(actual.line_height, expected.line_height);
+            assert_eq!(actual.text_height, expected.text_height);
+            assert_eq!(actual.baseline_distance, expected.baseline_distance);
+            assert_eq!(actual.line_spacing, expected.line_spacing);
+            assert_eq!(actual.column_start, expected.column_start);
+            assert_eq!(actual.segment_width, expected.segment_width);
+            assert_eq!(actual.tag, expected.tag);
+        }
+        assert!(
+            section.paragraphs[332]
+                .line_segs
+                .iter()
+                .all(|line| line.column_start == 0 && line.segment_width > 3_406),
+            "p332 is the first full-width row after the side-wrap band"
+        );
+        assert!(
+            !section.paragraphs[332]
+                .single_line_overflow_memo
+                .is_unjudged(),
+            "p332 was not published as part of the Picture band"
+        );
+    }
+
+    #[test]
+    fn on_demand_picture_band_discovers_stored_p325_host_from_missing_successor() {
+        let mut core = p325_picture_band_core();
+        let section = &mut core.document.sections[0];
+        let stored_band = section.paragraphs[325..332]
+            .iter()
+            .map(|paragraph| paragraph.line_segs.clone())
+            .collect::<Vec<_>>();
+        let stored_p326_column_start = stored_band[1][0].column_start;
+        let stored_p326_segment_width = stored_band[1][0].segment_width;
+        let first_full_width = section.paragraphs[332].line_segs[0].segment_width;
+
+        for paragraph in &mut section.paragraphs[325..332] {
+            paragraph.single_line_overflow_memo.set(123, true);
+        }
+        section.paragraphs[326].line_segs.clear();
+        core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
+        assert!(
+            core.validation_report
+                .warnings
+                .iter()
+                .any(|warning| warning.paragraph_idx == 326),
+            "the missing successor must enter the explicit on-demand path"
+        );
+
+        assert_eq!(core.reflow_linesegs_on_demand(), 7);
+
+        let section = &core.document.sections[0];
+        let mut expected_vpos = stored_band[0][0].vertical_pos;
+        for (paragraph_index, stored) in (325..332).zip(&stored_band) {
+            let generated = &section.paragraphs[paragraph_index].line_segs;
+            assert_eq!(generated.len(), stored.len(), "p{paragraph_index}");
+            for (actual, expected) in generated.iter().zip(stored) {
+                assert_eq!(actual.text_start, expected.text_start, "p{paragraph_index}");
+                assert_eq!(actual.vertical_pos, expected_vpos, "p{paragraph_index}");
+                assert_eq!(
+                    actual.column_start, expected.column_start,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.segment_width, expected.segment_width,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.line_height, expected.line_height,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.text_height, expected.text_height,
+                    "p{paragraph_index}"
+                );
+                assert_eq!(
+                    actual.baseline_distance, expected.baseline_distance,
+                    "p{paragraph_index}"
+                );
+                assert!(
+                    actual.line_spacing.abs_diff(expected.line_spacing) <= 3,
+                    "p{paragraph_index}: generated={} stored={}",
+                    actual.line_spacing,
+                    expected.line_spacing,
+                );
+                assert!(actual.is_first_segment(), "p{paragraph_index}");
+                assert!(actual.is_last_segment(), "p{paragraph_index}");
+                expected_vpos += actual.line_height + actual.line_spacing;
+            }
+        }
+        assert!(
+            section.paragraphs[325..332]
+                .iter()
+                .all(|paragraph| paragraph.single_line_overflow_memo.is_unjudged()),
+            "the stored host and every successor are atomically republished"
+        );
+        let p326 = &section.paragraphs[326].line_segs[0];
+        assert_eq!(p326.column_start, stored_p326_column_start);
+        assert_eq!(p326.segment_width, stored_p326_segment_width);
+        assert!(
+            p326.segment_width < first_full_width,
+            "p326 keeps the Picture band's narrow side-wrap width rather than scalar full width"
+        );
+    }
+
+    #[test]
+    fn on_demand_rejected_tracked_picture_band_leaves_successor_source_geometry_untouched() {
+        let mut core = p325_picture_band_core();
+        let section = &mut core.document.sections[0];
+        section.paragraphs[326].line_segs.clear();
+        section.paragraphs[329].column_type = ColumnBreakType::Page;
+        for paragraph in &mut section.paragraphs[325..333] {
+            paragraph.single_line_overflow_memo.set(123, true);
+        }
+        let source_rows = section.paragraphs[325..333]
+            .iter()
+            .map(|paragraph| line_seg_fields(&paragraph.line_segs))
+            .collect::<Vec<_>>();
+        core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
+        assert!(
+            core.validation_report
+                .warnings
+                .iter()
+                .any(|warning| warning.paragraph_idx == 326),
+            "the missing successor must enter the explicit on-demand path"
+        );
+
+        assert_eq!(core.reflow_linesegs_on_demand(), 0);
+
+        let section = &core.document.sections[0];
+        for (paragraph_index, source) in (325..333).zip(&source_rows) {
+            assert_eq!(
+                line_seg_fields(&section.paragraphs[paragraph_index].line_segs),
+                *source,
+                "p{paragraph_index} stays source-owned after the tracked host rejects its transaction"
+            );
+        }
+        assert!(
+            section.paragraphs[326].line_segs.is_empty(),
+            "the rejected tracked host must not scalar-reflow the missing successor"
+        );
+        assert!(
+            section.paragraphs[325..333]
+                .iter()
+                .all(|paragraph| !paragraph.single_line_overflow_memo.is_unjudged()),
+            "the failed transaction must not publish or invalidate any source row"
+        );
+    }
+
+    #[test]
+    fn on_demand_rejected_picture_band_leaves_host_and_later_body_rows_untouched() {
+        let mut core = p325_picture_band_core();
+        let section = &mut core.document.sections[0];
+        let middle_before = line_seg_fields(&section.paragraphs[330].line_segs);
+        section.paragraphs[325].line_segs.clear();
+        section.paragraphs[329].column_type = ColumnBreakType::Page;
+        section.paragraphs[332].line_segs.clear();
+        let host_before = line_seg_fields(&section.paragraphs[325].line_segs);
+        let later_before = line_seg_fields(&section.paragraphs[332].line_segs);
+        core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
+
+        assert_eq!(core.reflow_linesegs_on_demand(), 0);
+
+        let section = &core.document.sections[0];
+        assert_eq!(
+            line_seg_fields(&section.paragraphs[325].line_segs),
+            host_before,
+            "the rejected non-TAC Picture host cannot fall back to scalar geometry"
+        );
+        assert_eq!(
+            line_seg_fields(&section.paragraphs[330].line_segs),
+            middle_before,
+            "the incomplete transaction publishes no prefix rows"
+        );
+        assert_eq!(
+            line_seg_fields(&section.paragraphs[332].line_segs),
+            later_before,
+            "the conservative section stop leaves later body reflow for its existing owner"
+        );
     }
 
     // ---------- R3: LinesegTextRunReflow ----------

@@ -77,10 +77,19 @@ impl PhysicalRow {
     }
 }
 
+/// The side-wrap choices represented by this physical-row frame. This is
+/// layout geometry, rather than a mirror of model `TextFlow`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum FrameExclusionPolicy {
+    BothSides,
+    LargestSide,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct FrameExclusion {
     pub(crate) horizontal: Range<i32>,
     pub(crate) vertical: Range<i32>,
+    pub(crate) policy: FrameExclusionPolicy,
 }
 
 /// Mutable geometry of one layout flow.
@@ -150,8 +159,25 @@ impl LayoutFrame {
                     if interval.end <= left || right <= interval.start {
                         carved.push(interval.clone());
                     } else if interval.start < left && right < interval.end {
-                        carved.push(interval.start..left);
-                        carved.push(right..interval.end);
+                        let left_interval = interval.start..left;
+                        let right_interval = right..interval.end;
+                        if exclusion.policy == FrameExclusionPolicy::LargestSide {
+                            let left_width = left_interval.end - left_interval.start;
+                            let right_width = right_interval.end - right_interval.start;
+                            // HWP's `LargestOnly` choice normally keeps the
+                            // widest side, ties left, and has one recovered
+                            // narrow-lane exception: a 1,440-HWP left lane
+                            // chooses the right side even when it is shorter.
+                            if left_width == MINIMUM_USABLE_INTERVAL_HWP || left_width < right_width
+                            {
+                                carved.push(right_interval);
+                            } else {
+                                carved.push(left_interval);
+                            }
+                        } else {
+                            carved.push(left_interval);
+                            carved.push(right_interval);
+                        }
                     } else if interval.start < left {
                         carved.push(interval.start..left);
                     } else if right < interval.end {
@@ -358,6 +384,7 @@ mod tests {
             vec![FrameExclusion {
                 horizontal: 0..60,
                 vertical: 1_000..3_000,
+                policy: FrameExclusionPolicy::BothSides,
             }],
         );
 
@@ -480,6 +507,7 @@ mod tests {
             vec![FrameExclusion {
                 horizontal: 35..65,
                 vertical: 0..1_000,
+                policy: FrameExclusionPolicy::BothSides,
             }],
         );
         assert_eq!(frame.carve(400), &[0..35, 65..100]);
@@ -513,5 +541,130 @@ mod tests {
         assert_eq!(projected[0].segment_width, 35);
         assert_eq!(projected[1].column_start, 65);
         assert_eq!(projected[1].segment_width, 35);
+    }
+
+    #[test]
+    fn both_sides_four_physical_rows_project_eight_segments() {
+        // `pic2` has two floating Pictures and is intentionally rejected by
+        // the one-Picture transaction. This independent frame proof keeps the
+        // core's ordinary two-interval physical-row behavior explicit.
+        let mut frame = frame(
+            0..100,
+            0,
+            vec![FrameExclusion {
+                horizontal: 35..65,
+                vertical: 0..1_000,
+                policy: FrameExclusionPolicy::BothSides,
+            }],
+        );
+
+        for row in 0..4 {
+            assert_eq!(frame.carve(100), &[0..35, 65..100]);
+            assert_eq!(
+                frame.commit_carved_row(
+                    metrics(100, 0),
+                    vec![
+                        RowSegment::new(
+                            (row * 2) as u32..(row * 2 + 1) as u32,
+                            0..35,
+                            LineSeg::TAG_FIRST_SEGMENT,
+                        ),
+                        RowSegment::new(
+                            (row * 2 + 1) as u32..(row * 2 + 2) as u32,
+                            65..100,
+                            LineSeg::TAG_LAST_SEGMENT,
+                        ),
+                    ],
+                ),
+                Some(row)
+            );
+        }
+
+        let projected = frame.project_line_segs();
+        assert_eq!(projected.len(), 8);
+        for (row, pair) in projected.chunks_exact(2).enumerate() {
+            assert_eq!(pair[0].vertical_pos, (row * 100) as i32);
+            assert_eq!(pair[1].vertical_pos, pair[0].vertical_pos);
+            assert_eq!(
+                (pair[0].column_start, pair[0].segment_width),
+                (0, 35),
+                "row {row} left interval"
+            );
+            assert_eq!(
+                (pair[1].column_start, pair[1].segment_width),
+                (65, 35),
+                "row {row} right interval"
+            );
+            assert!(pair[0].is_first_segment());
+            assert!(!pair[0].is_last_segment());
+            assert!(!pair[1].is_first_segment());
+            assert!(pair[1].is_last_segment());
+        }
+    }
+
+    #[test]
+    fn largest_side_carve_chooses_the_wider_right_lane() {
+        let mut frame = frame(
+            0..100,
+            0,
+            vec![FrameExclusion {
+                horizontal: 20..60,
+                vertical: 0..1_000,
+                policy: FrameExclusionPolicy::LargestSide,
+            }],
+        );
+
+        let expected = 60..100;
+        assert_eq!(frame.carve(100), std::slice::from_ref(&expected));
+    }
+
+    #[test]
+    fn largest_side_carve_breaks_a_tie_to_the_left_lane() {
+        let mut frame = frame(
+            0..100,
+            0,
+            vec![FrameExclusion {
+                horizontal: 30..70,
+                vertical: 0..1_000,
+                policy: FrameExclusionPolicy::LargestSide,
+            }],
+        );
+
+        let expected = 0..30;
+        assert_eq!(frame.carve(100), std::slice::from_ref(&expected));
+    }
+
+    #[test]
+    fn largest_side_carve_moves_a_1440_hwp_left_lane_to_the_right() {
+        let mut frame = frame(
+            0..10_000,
+            0,
+            vec![FrameExclusion {
+                horizontal: 1_440..9_000,
+                vertical: 0..1_000,
+                policy: FrameExclusionPolicy::LargestSide,
+            }],
+        );
+
+        let expected = 9_000..10_000;
+        assert_eq!(frame.carve(100), std::slice::from_ref(&expected));
+    }
+
+    #[test]
+    fn live_frame_retries_when_the_1440_exception_selects_an_unusable_right_lane() {
+        let mut frame = LayoutFrame::new(
+            0..10_000,
+            0,
+            vec![FrameExclusion {
+                horizontal: 1_440..9_000,
+                vertical: 0..1_000,
+                policy: FrameExclusionPolicy::LargestSide,
+            }],
+        );
+
+        let expected = 0..10_000;
+        assert_eq!(frame.carve(100), std::slice::from_ref(&expected));
+        assert_eq!(frame.top, 1_000);
+        assert_eq!(frame.next_geometry_event, None);
     }
 }
