@@ -36,7 +36,9 @@ use crate::model::shape::{
 };
 
 use super::context::SerializeContext;
-use super::field::{write_bookmark, write_field_begin, write_field_end, write_field_end_full};
+use super::field::{
+    write_bookmark, write_field_begin, write_field_end, write_field_end_full, write_hyperlink_begin,
+};
 use super::utils::xml_escape;
 use super::SerializeError;
 use super::{picture, table};
@@ -978,10 +980,10 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                 } else {
                     // [#4677] 위치 축은 책갈피까지 포함한다(`occupies_hwpx_slot_axis`).
                     let slot = occupies_hwpx_slot_axis(c);
-                    // [#4388] Hyperlink/Unknown 은 슬롯이 아니라 여기서 조용히
-                    // 제외된다 — is_hwpx_inline_slot 에 등록하지 않기로 한 대가로,
-                    // 이 실제 배제 지점에서 직접 경고한다. HiddenComment 등 다른
-                    // non-slot 컨트롤은 이 헬퍼가 내부적으로 무시한다.
+                    // [#4388] Unknown 은 슬롯이 아니므로 이 실제 배제 지점에서 직접
+                    // 경고한다. HWP3 Hyperlink은 occupies_hwpx_slot_axis가 HWPX field로
+                    // 승격해 보존한다. HiddenComment 등 다른 non-slot 컨트롤은 이 헬퍼가
+                    // 내부적으로 무시한다.
                     if !slot {
                         warn_if_unrepresentable_in_hwpx(c);
                     }
@@ -1178,6 +1180,27 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             }
         }
 
+        // HWP3 원본은 개체가 있는 위치를 U+FFFC 하나로 `text`에도 남기면서,
+        // char_offsets에서는 그 한 글자를 HWP5와 같은 8 UTF-16 단위 슬롯으로 센다.
+        // HWPX에서는 개체 태그 자체가 그 슬롯이므로 U+FFFC를 <hp:t>로 다시 쓰면
+        // 문자 1단위가 중복되고, 다음 문자까지는 슬롯이 감지되지 않아 제어가 문단
+        // 끝으로 밀린다. 현재 위치가 슬롯의 시작이고 소비할 control이 있을 때만
+        // 표시 문자를 그 control의 HWPX 표현으로 직접 바꾼다. 실제 리터럴 U+FFFC나
+        // 위치가 불명확한 합성 IR은 기존 텍스트 경로를 유지한다.
+        if c == '\u{fffc}' && slot_idx < slots.len() && char_pos == expected_utf16_pos {
+            flush_text_fragment(
+                &mut splitter.content,
+                &mut text_buf,
+                &para.tab_extended,
+                &mut tab_idx,
+            );
+            splitter.cut_before(expected_utf16_pos);
+            render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+            slot_idx += 1;
+            expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+            continue;
+        }
+
         // 0-length 필드(start == end == idx): fieldBegin 방출 직후, 문자 push 전에 fieldEnd 방출.
         // post-char 검사(next_idx 기준)는 end-1 번째 문자 처리 후 방출하므로 0-length 필드에서
         // fieldEnd가 fieldBegin 앞에 나오거나 텍스트 뒤로 밀리는 문제가 생긴다.
@@ -1356,10 +1379,22 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
         .count() as u32;
 
     let text_units: u32 = para.text.chars().map(char_utf16_width).sum();
+    // 암호 HWP3 parser는 개체 자리에 U+FFFC 하나를 남기되, 실제 offset은 HWP5와
+    // 같은 8단위로 전진시킨다. 이 표식은 HWPX에서 개체 슬롯으로 치환되므로, 1단위
+    // 텍스트로만 세면 `(char_count - text_units) / 8`가 0으로 내림되어 mismatch
+    // fallback(텍스트 뒤에 control 몰아쓰기)으로 빠진다. control이 없는 리터럴 U+FFFC는
+    // 제외하기 위해 가능한 control 수까지만 슬롯 증거로 반영한다.
+    let hwp3_object_marker_slots = para
+        .text
+        .chars()
+        .filter(|c| *c == '\u{fffc}')
+        .count()
+        .min(para.controls.len()) as u32;
     let from_char_count = para
         .char_count
         .saturating_sub(1)
-        .saturating_sub(text_units)
+        // U+FFFC 자체 1단위를 빼면 실제 8단위 control 슬롯만 남는다.
+        .saturating_sub(text_units.saturating_sub(hwp3_object_marker_slots))
         .saturating_add(autonum_count)
         / 8;
 
@@ -1372,7 +1407,12 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
         }
         expected = pos.max(expected).saturating_add(char_utf16_width(c));
     }
-    let from_offsets = offsets_gap.saturating_add(autonum_count) / 8;
+    // marker 다음 offset gap은 8이 아니라 7(표식 텍스트 1단위를 이미 센 뒤)이므로,
+    // 나누기 전에 marker 수를 더해 실제 8단위 슬롯 수로 복원한다.
+    let from_offsets = offsets_gap
+        .saturating_add(autonum_count)
+        .saturating_add(hwp3_object_marker_slots)
+        / 8;
 
     // fieldEnd는 8 code unit 슬롯이지만 para.controls[]에 대응 컨트롤이 없다.
     // field_ranges.len()이 fieldEnd 수와 정확히 일치하므로 빼서 보정한다.
@@ -1413,7 +1453,10 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
 /// 의 **비교 축**과 공유되기 때문이다 — 비교 축 변경은 #4388 처럼 무관한 회귀를 만든다.
 /// 여기서 필요한 것은 위치 축 하나뿐이다.
 fn occupies_hwpx_slot_axis(control: &Control) -> bool {
-    is_hwpx_inline_slot(control) || matches!(control, Control::Bookmark(_))
+    // Hyperlink은 HWP3의 8-unit object slot이고 HWPX에서는 fieldBegin으로 승격한다.
+    // `is_hwpx_inline_slot`에는 넣지 않는다. 해당 헬퍼는 포맷 비종속 diff에도 공유되어
+    // HWP5의 기존 Hyperlink 표현 범위까지 바꾸기 때문이다.
+    is_hwpx_inline_slot(control) || matches!(control, Control::Bookmark(_) | Control::Hyperlink(_))
 }
 
 pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
@@ -1462,6 +1505,17 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
             }
             Err(e) => eprintln!("[hwpx] Bookmark 직렬화 실패: {e}"),
         },
+        Control::Hyperlink(link) => {
+            let field_id = ctx.next_generated_hyperlink_id();
+            match writer_to_string(|w| write_hyperlink_begin(w, link, field_id)) {
+                Ok(xml) => {
+                    out.push_str("<hp:ctrl>");
+                    out.push_str(&xml);
+                    out.push_str("</hp:ctrl>");
+                }
+                Err(e) => eprintln!("[hwpx] Hyperlink 직렬화 실패: {e}"),
+            }
+        }
         Control::Equation(eq) => {
             out.push_str(&render_equation(eq));
         }
@@ -1554,14 +1608,14 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                 out.push_str(&render_col_pr_ctrl(cd));
             }
         }
-        // [#4388] Hyperlink/Unknown 은 HWPX 로 옮길 대응 표현이 없어 여기서도
-        // 드롭된다("exact" 슬롯 분기 — 모든 컨트롤이 위치 슬롯인 문단). 경고는
-        // `warn_if_unrepresentable_in_hwpx` 하나로 통일한다(mismatch-분기 제외
-        // 지점, 위쪽 934행 부근과 동일 호출). 이 함수 아래 catch-all 이 처리한다.
+        // [#4388] Unknown은 HWPX 로 옮길 대응 표현이 없어 여기서도 드롭된다.
+        // Hyperlink은 위 arm에서 HWPX fieldBegin으로 승격한다. Unknown 경고는
+        // `warn_if_unrepresentable_in_hwpx` 하나로 통일한다(mismatch-분기 제외 지점,
+        // 위쪽 934행 부근과 동일 호출). 이 함수 아래 catch-all 이 처리한다.
         //
         // [#4388 census] catch-all `_`(warn 호출 포함)에 실제로 도달하는 나머지
         // `Control` 변형은 세 가지 — 새 변형을 추가할 때 이 목록을 갱신할 것:
-        //   - `Hyperlink`/`Unknown`: 위 참조. 조용히 버리지 않도록 경고.
+        //   - `Unknown`: 위 참조. 조용히 버리지 않도록 경고.
         //   - `SectionDef`: 의도적 무해 no-op. 위치 슬롯 축(hidden 슬롯 정합, 이 함수
         //     966행 근처 주석)만 소비하고 XML 은 별도 경로(`<hp:secPr>` 섹션 템플릿)가
         //     방출한다 — 여기서 다시 방출하면 중복이 된다. warn 헬퍼도 이 변형은

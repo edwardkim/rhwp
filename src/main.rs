@@ -13483,12 +13483,19 @@ fn export_hwpx(args: &[String]) -> i32 {
                             doc.document(),
                             reloaded.document(),
                         );
-                        // HWP 계열은 HWPX `<hp:parameters>` 원문을 실을 슬롯이 없어
-                        // command 단일 parameters가 합성될 수 있다. 실제 내용 손실과
-                        // 구분해 이 표현 차이만 제외한다 (#3739).
+                        // HWP 계열은 HWPX와 표현 자리가 다른 필드 메타데이터가 있고,
+                        // HWP3에는 하이퍼텍스트·빈 그림 imgRect의 추가 정규화가 있다.
+                        // 실제 내용·배치 차이는 계속 검출한다 (#3739).
                         let diff = match source_format {
-                            rhwp::parser::FileFormat::Hwp | rhwp::parser::FileFormat::Hwp3 => {
+                            rhwp::parser::FileFormat::Hwp => {
                                 rhwp::serializer::hwpx::roundtrip::strip_hwp_to_hwpx_noise(diff)
+                            }
+                            rhwp::parser::FileFormat::Hwp3 => {
+                                rhwp::serializer::hwpx::roundtrip::strip_hwp3_to_hwpx_noise(
+                                    doc.document(),
+                                    reloaded.document(),
+                                    diff,
+                                )
                             }
                             _ => diff,
                         };

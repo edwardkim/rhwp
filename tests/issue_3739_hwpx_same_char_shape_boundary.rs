@@ -77,7 +77,7 @@ fn assert_export_hwpx_verify_success(sample: &str) {
     std::fs::remove_dir_all(&output_dir).expect("임시 출력 디렉터리 정리");
 }
 
-fn assert_password_protected_export_hwpx_success(sample: &str) {
+fn assert_password_protected_export_hwpx_success(sample: &str, verify_ir: bool) {
     let source = sample_path(sample);
     assert!(
         source.exists(),
@@ -88,13 +88,16 @@ fn assert_password_protected_export_hwpx_success(sample: &str) {
     let output_dir = unique_output_dir();
     std::fs::create_dir(&output_dir).expect("임시 출력 디렉터리 생성");
     let output = output_dir.join("output.hwpx");
-    let args = vec![
+    let mut args = vec![
         "export-hwpx".to_string(),
         source.display().to_string(),
         output.display().to_string(),
         "--verify-pages".to_string(),
-        "--password-stdin".to_string(),
     ];
+    if verify_ir {
+        args.push("--verify".to_string());
+    }
+    args.push("--password-stdin".to_string());
 
     // Windows PowerShell/.NET의 pipe는 UTF-8 BOM을 앞에 붙일 수 있다. raw stdin
     // 경로도 그 실제 바이트열을 비밀번호로 오해하지 않아야 한다.
@@ -140,10 +143,16 @@ fn issue_3739_export_hwpx_verify_accepts_generated_field_command_parameters() {
 #[test]
 fn issue_3739_export_hwpx_accepts_password_stdin_for_hwp3_hwp5_and_hwpx() {
     for sample in [
-        "samples/HWP3-password-123456.hwp",
         "samples/HWP5-password-123456.hwpx",
         "samples/hwp3-sample16-hwp5-2024-password-123456.hwp",
     ] {
-        assert_password_protected_export_hwpx_success(sample);
+        assert_password_protected_export_hwpx_success(sample, false);
     }
+}
+
+#[test]
+fn issue_3739_hwp3_password_export_hwpx_preserves_ir_and_pages() {
+    // HWP3 object marker(U+FFFC)·하이퍼텍스트·빈 imgRect가 HWPX 표현으로 옮겨진 뒤에도
+    // 암호 stdin(BOM 포함) 경로에서 --verify와 --verify-pages가 모두 통과해야 한다.
+    assert_password_protected_export_hwpx_success("samples/HWP3-password-123456.hwp", true);
 }

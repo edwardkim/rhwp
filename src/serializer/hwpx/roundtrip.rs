@@ -545,6 +545,25 @@ pub fn strip_hwp_to_hwpx_noise(diff: IrDiff) -> IrDiff {
     }
 }
 
+/// HWP3를 HWPX로 저장할 때만 생기는 추가 표현 차이를 걷어낸다.
+///
+/// HWP3의 하이퍼텍스트 개체와 그림 crop 사각형은 HWPX와 같은 IR 자리가 없다.
+/// 전자는 HWPX `HYPERLINK` field로, 후자는 HWPX가 요구하는 실제 이미지 사각형으로
+/// 물질화한다. 두 경우 모두 원래 내용이나 배치 크기를 바꾸지는 않지만, HWP3 전용
+/// `Control::Hyperlink`/영(0) 센티널과는 동일 비교할 수 없다. 이 함수는 그 두 방향의
+/// 정확한 형태만 제외하며 HWP5에는 적용하지 않는다.
+pub fn strip_hwp3_to_hwpx_noise(
+    expected_document: &Document,
+    actual_document: &Document,
+    diff: IrDiff,
+) -> IrDiff {
+    let mut diff = strip_hwp_to_hwpx_noise(diff);
+    diff.differences.retain(|difference| {
+        !is_hwp3_to_hwpx_incomparable(expected_document, actual_document, difference)
+    });
+    diff
+}
+
 /// HWPX를 HWP5로 저장한 뒤에만 적용하는 추가 비교 불능 항목을 걷어낸다.
 ///
 /// 한컴 2020은 HWPX 그림을 HWP5 `SC_PICTURE`로 저장할 때 extra의 original width/height
@@ -585,6 +604,116 @@ fn is_hwp_to_hwpx_incomparable(d: &IrDifference) -> bool {
         }
         _ => false,
     }
+}
+
+fn is_hwp3_to_hwpx_incomparable(
+    expected_document: &Document,
+    actual_document: &Document,
+    d: &IrDifference,
+) -> bool {
+    match d {
+        // HWP3 하이퍼텍스트는 별도 Control::Hyperlink 개체지만 HWPX에는 대응 컨트롤이
+        // 없어서 `fieldBegin type="HYPERLINK"`로 승격한다. 비교 축은 Hyperlink를
+        // 비슬롯으로 두므로, HWP3 원본의 빈 슬롯과 재파싱된 HWPX field 하나만 정확히
+        // 이 형태가 된다. 일반 HWP5 Field의 추가·소실에는 적용하지 않는다.
+        IrDifference::ParagraphControls {
+            section,
+            paragraph,
+            path,
+            expected,
+            actual,
+        } => {
+            expected == "[]"
+                && actual == "[field]"
+                && is_hwp3_top_level_hyperlink_field_materialization(
+                    expected_document,
+                    actual_document,
+                    *section,
+                    *paragraph,
+                    path,
+                )
+        }
+        // HWP3 SC_PICTURE의 영 imgRect는 crop 정보가 없다는 센티널이다. HWPX는
+        // `(0,0,width,0)/(width,height,0,height)` 실제 사각형을 반드시 기록한다.
+        // curSz·imgDim·다른 기하가 함께 달라지면 detail에 ';'가 붙으므로 남긴다.
+        IrDifference::PictureSize { detail, .. } => is_hwp3_zero_img_rect_materialization(detail),
+        _ => false,
+    }
+}
+
+fn is_hwp3_top_level_hyperlink_field_materialization(
+    expected_document: &Document,
+    actual_document: &Document,
+    section: usize,
+    paragraph: usize,
+    path: &str,
+) -> bool {
+    // 중첩 문단은 path를 해석해 원본 control까지 확인하는 경로가 아직 없으므로,
+    // 추정으로 정규화하지 않고 보수적으로 diff를 남긴다.
+    if !path.is_empty() {
+        return false;
+    }
+    let Some(expected) = expected_document
+        .sections
+        .get(section)
+        .and_then(|section| section.paragraphs.get(paragraph))
+    else {
+        return false;
+    };
+    let Some(actual) = actual_document
+        .sections
+        .get(section)
+        .and_then(|section| section.paragraphs.get(paragraph))
+    else {
+        return false;
+    };
+
+    expected
+        .controls
+        .iter()
+        .any(|control| matches!(control, crate::model::control::Control::Hyperlink(_)))
+        && actual.controls.iter().any(|control| {
+            matches!(
+                control,
+                crate::model::control::Control::Field(field)
+                    if field.field_type == crate::model::control::FieldType::Hyperlink
+            )
+        })
+}
+
+fn is_hwp3_zero_img_rect_materialization(detail: &str) -> bool {
+    const PREFIX: &str = "imgRect: expected=[0, 0, 0, 0]/[0, 0, 0, 0] actual=";
+    if !detail.starts_with(PREFIX) || detail.contains(';') {
+        return false;
+    }
+
+    let Some((x_part, y_part)) = detail[PREFIX.len()..].split_once('/') else {
+        return false;
+    };
+    let x: Vec<i32> = x_part
+        .strip_prefix('[')
+        .unwrap_or_default()
+        .strip_suffix(']')
+        .unwrap_or_default()
+        .split(", ")
+        .filter_map(|value| value.parse().ok())
+        .collect();
+    let y: Vec<i32> = y_part
+        .strip_prefix('[')
+        .unwrap_or_default()
+        .strip_suffix(']')
+        .unwrap_or_default()
+        .split(", ")
+        .filter_map(|value| value.parse().ok())
+        .collect();
+    matches!(
+        (x.as_slice(), y.as_slice()),
+        ([0, 0, width, 0], [same_width, height, 0, same_height])
+            if *width > 0
+                && *height > 0
+                && width == same_width
+                && height == same_height
+    )
 }
 
 fn is_hwpx_to_hwp_incomparable(d: &IrDifference) -> bool {
@@ -2890,6 +3019,82 @@ mod tests {
         assert!(matches!(
             &filtered.differences[1],
             IrDifference::CharShapeCount { .. }
+        ));
+    }
+
+    #[test]
+    fn issue_3739_hwp3_to_hwpx_materializes_hyperlink_and_empty_img_rect_only() {
+        use crate::model::control::{Control, Field, FieldType, Hyperlink};
+
+        let mut expected_document = Document::default();
+        let mut actual_document = Document::default();
+        let mut expected_section: crate::model::document::Section = Default::default();
+        let mut actual_section: crate::model::document::Section = Default::default();
+        for index in 0..4 {
+            let mut expected = Paragraph::default();
+            let mut actual = Paragraph::default();
+            if index == 0 {
+                expected.controls.push(Control::Hyperlink(Hyperlink {
+                    url: "https://example.test".to_string(),
+                    text: "example".to_string(),
+                }));
+                actual.controls.push(Control::Field(Field {
+                    field_type: FieldType::Hyperlink,
+                    command: "https://example.test".to_string(),
+                    ..Default::default()
+                }));
+            }
+            expected_section.paragraphs.push(expected);
+            actual_section.paragraphs.push(actual);
+        }
+        expected_document.sections.push(expected_section);
+        actual_document.sections.push(actual_section);
+
+        let diff = IrDiff {
+            differences: vec![
+                IrDifference::ParagraphControls {
+                    section: 0,
+                    paragraph: 0,
+                    path: String::new(),
+                    expected: "[]".to_string(),
+                    actual: "[field]".to_string(),
+                },
+                IrDifference::PictureSize {
+                    section: 0,
+                    paragraph: 1,
+                    path: "/ctrl[0]pic".to_string(),
+                    detail: "imgRect: expected=[0, 0, 0, 0]/[0, 0, 0, 0] actual=[0, 0, 2228, 0]/[2228, 2372, 0, 2372]".to_string(),
+                },
+                IrDifference::ParagraphControls {
+                    section: 0,
+                    paragraph: 2,
+                    path: String::new(),
+                    expected: "[pic]".to_string(),
+                    actual: "[field]".to_string(),
+                },
+                IrDifference::PictureSize {
+                    section: 0,
+                    paragraph: 3,
+                    path: "/ctrl[0]pic".to_string(),
+                    detail: "curSz: expected=1x1 actual=2x2; imgRect: expected=[0, 0, 0, 0]/[0, 0, 0, 0] actual=[0, 0, 2, 0]/[2, 2, 0, 2]".to_string(),
+                },
+            ],
+        };
+
+        let filtered = strip_hwp3_to_hwpx_noise(&expected_document, &actual_document, diff);
+        assert_eq!(
+            filtered.differences.len(),
+            2,
+            "실제 control/기하 차이는 남겨야 한다"
+        );
+        assert!(matches!(
+            &filtered.differences[0],
+            IrDifference::ParagraphControls { expected, actual, .. }
+                if expected == "[pic]" && actual == "[field]"
+        ));
+        assert!(matches!(
+            &filtered.differences[1],
+            IrDifference::PictureSize { detail, .. } if detail.starts_with("curSz:")
         ));
     }
 
