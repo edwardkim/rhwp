@@ -1,0 +1,476 @@
+name: CI Impact Policy Controller
+
+# [#3790 Stage 2.6] Privileged default-branch controller.
+# It never checks out a pull request head/merge ref and never downloads PR artifacts.
+# Executable repository files are limited to the live PR base SHA's classifier and policy.
+# pull_request_target and workflow_run are registered only from the default branch (main),
+# so merging this file to devel is not activation; the next normal release must carry it to main.
+on:
+  pull_request_target:
+    branches: [devel]
+    types: [opened, reopened, synchronize]
+  workflow_run:
+    workflows: [CI, CodeQL, Render Diff]
+    types: [completed]
+
+permissions: {}
+
+# Completion events for one candidate serialize on the exact head SHA. The newest event
+# recomputes all workflow evidence, so completion order cannot overwrite a failure with
+# partial success from another workflow.
+concurrency:
+  group: >-
+    ci-impact-policy-${{
+      github.event.pull_request.head.sha
+      || github.event.workflow_run.head_sha
+      || github.run_id
+    }}
+  cancel-in-progress: true
+
+jobs:
+  controller:
+    name: Evaluate trusted CI impact policy
+    if: >-
+      ${{
+        github.event_name == 'pull_request_target'
+        || (
+          github.event_name == 'workflow_run'
+          && github.event.workflow_run.event == 'pull_request'
+        )
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+      statuses: write
+    steps:
+      - name: Resolve live pull request identity
+        id: resolve
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          retries: 3
+          script: |
+            const { owner, repo } = context.repo;
+            let pull = null;
+            let mode = '';
+            let triggerHeadSha = '';
+
+            if (context.eventName === 'pull_request_target') {
+              mode = 'publish';
+              const eventPull = context.payload.pull_request;
+              triggerHeadSha = eventPull.head.sha;
+              const response = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: eventPull.number,
+              });
+              pull = response.data;
+              if (pull.state !== 'open' || pull.head.sha !== eventPull.head.sha) {
+                core.info(
+                  `Ignore stale policy event for PR #${eventPull.number}: `
+                  + `event=${eventPull.head.sha} live=${pull.head.sha} state=${pull.state}.`,
+                );
+                pull = null;
+              }
+            } else {
+              mode = 'audit';
+              const run = context.payload.workflow_run;
+              triggerHeadSha = run.head_sha;
+              const headRepository = run.head_repository?.full_name || '';
+              const headOwner = run.head_repository?.owner?.login || headRepository.split('/')[0];
+              if (headOwner && run.head_branch && run.head_sha) {
+                const pulls = await github.paginate(github.rest.pulls.list, {
+                  owner,
+                  repo,
+                  state: 'open',
+                  base: 'devel',
+                  head: `${headOwner}:${run.head_branch}`,
+                  per_page: 100,
+                });
+                pull = pulls.find((candidate) => (
+                  candidate.head.sha === run.head_sha
+                  && candidate.head.repo?.full_name === headRepository
+                )) || null;
+              }
+              if (!pull) {
+                core.info(
+                  `Ignore stale or unrelated workflow ${run.id}: `
+                  + `${headRepository}:${run.head_branch}@${run.head_sha}.`,
+                );
+              }
+            }
+
+            if (!pull) {
+              core.setOutput('active', 'false');
+              return;
+            }
+
+            let authorPermission = 'none';
+            try {
+              const response = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner,
+                repo,
+                username: pull.user.login,
+              });
+              authorPermission = response.data.permission || 'none';
+            } catch (error) {
+              core.warning(
+                `Could not resolve author permission; treating the head as untrusted. ${error.message}`,
+              );
+            }
+
+            core.setOutput('active', 'true');
+            core.setOutput('mode', mode);
+            core.setOutput('pull_number', String(pull.number));
+            core.setOutput('base_ref', pull.base.ref);
+            core.setOutput('base_sha', pull.base.sha);
+            core.setOutput('head_sha', pull.head.sha);
+            core.setOutput('trigger_head_sha', triggerHeadSha);
+            core.setOutput('head_branch', pull.head.ref);
+            core.setOutput('head_repository', pull.head.repo?.full_name || '');
+            core.setOutput('author_permission', authorPermission);
+
+      # SECURITY: never replace this ref with pull.head.sha, a merge ref, or github.sha.
+      - name: Check out trusted base policy implementation
+        id: checkout-policy
+        if: ${{ steps.resolve.outputs.active == 'true' }}
+        continue-on-error: true
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.resolve.outputs.base_sha }}
+          path: trusted-base
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/ci-impact-classifier.cjs
+            scripts/ci-impact-policy.cjs
+          sparse-checkout-cone-mode: false
+
+      # SECURITY: workflow runs, jobs, and steps are data only. No PR artifact or code is used.
+      - name: Collect policy and same-head workflow evidence
+        id: collect
+        if: ${{ steps.resolve.outputs.active == 'true' }}
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          MODE: ${{ steps.resolve.outputs.mode }}
+          PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+          HEAD_BRANCH: ${{ steps.resolve.outputs.head_branch }}
+          HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}
+        with:
+          retries: 3
+          script: |
+            const fs = require('node:fs');
+            const path = require('node:path');
+            const { owner, repo } = context.repo;
+            const { selectLatestWorkflowRun } = require(path.join(
+              process.env.GITHUB_WORKSPACE,
+              'trusted-base/scripts/ci-impact-policy.cjs',
+            ));
+            let files = [];
+            let forceFullReason = '';
+            try {
+              files = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number: Number(process.env.PULL_NUMBER),
+                per_page: 100,
+              });
+              if (files.length === 0) forceFullReason = 'file-list-empty';
+              else if (files.length >= 3000) forceFullReason = 'pull_request-file-list-boundary';
+            } catch (error) {
+              core.warning(`File collection failed; forcing all workflows. ${error.message}`);
+              forceFullReason = 'collection-error';
+            }
+            const normalizedFiles = files.map((file) => ({
+              filename: file.filename,
+              previous_filename: file.previous_filename || '',
+              status: file.status,
+            }));
+
+            const evidence = {};
+            if (process.env.MODE === 'audit') {
+              const workflowPaths = {
+                CI: '.github/workflows/ci.yml',
+                CodeQL: '.github/workflows/codeql.yml',
+                'Render Diff': '.github/workflows/render-diff.yml',
+              };
+              let runs = [];
+              try {
+                runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+                  owner,
+                  repo,
+                  event: 'pull_request',
+                  // [#2183/#3508] head_sha server filtering can omit fork runs. The
+                  // branch filter finds them; trusted policy code then checks repo,
+                  // branch, exact SHA, and PR/base association when GitHub exposes it.
+                  branch: process.env.HEAD_BRANCH,
+                  per_page: 100,
+                });
+              } catch (error) {
+                core.warning(`Workflow run collection failed; audit will remain pending. ${error.message}`);
+              }
+              for (const [name, expectedPath] of Object.entries(workflowPaths)) {
+                const run = selectLatestWorkflowRun(runs, {
+                  name,
+                  path: expectedPath,
+                  pullNumber: Number(process.env.PULL_NUMBER),
+                  baseRef: process.env.BASE_REF,
+                  baseSha: process.env.BASE_SHA,
+                  headSha: process.env.HEAD_SHA,
+                  headBranch: process.env.HEAD_BRANCH,
+                  headRepository: process.env.HEAD_REPOSITORY,
+                });
+                if (!run) continue;
+                let jobs = [];
+                let jobsCollected = false;
+                try {
+                  jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                    owner,
+                    repo,
+                    run_id: run.id,
+                    filter: 'latest',
+                    per_page: 100,
+                  });
+                  jobsCollected = true;
+                } catch (error) {
+                  core.warning(
+                    `Could not collect ${name} jobs after configured retries; `
+                    + `audit will remain pending. ${error.message}`,
+                  );
+                }
+                evidence[name] = {
+                  run: {
+                    name: run.name,
+                    path: String(run.path || '').split('@')[0],
+                    event: run.event,
+                    status: run.status,
+                    conclusion: run.conclusion || '',
+                    headSha: run.head_sha,
+                    headBranch: run.head_branch,
+                    headRepository: run.head_repository?.full_name || '',
+                    pullNumbers: (run.pull_requests || []).map((pull) => pull.number),
+                    baseShas: (run.pull_requests || []).map((pull) => pull.base?.sha || ''),
+                  },
+                  jobsCollected,
+                  jobs: jobs.map((job) => ({
+                    name: job.name,
+                    status: job.status,
+                    conclusion: job.conclusion || '',
+                    steps: (job.steps || []).map((step) => ({
+                      name: step.name,
+                      status: step.status,
+                      conclusion: step.conclusion || '',
+                    })),
+                  })),
+                };
+              }
+            }
+
+            const workspace = process.env.GITHUB_WORKSPACE;
+            fs.writeFileSync(
+              path.join(workspace, '.ci-impact-classifier-input.json'),
+              JSON.stringify({
+                eventName: 'pull_request',
+                files: normalizedFiles,
+                forceFullReason,
+              }),
+            );
+            fs.writeFileSync(
+              path.join(workspace, '.ci-impact-workflows.json'),
+              JSON.stringify(evidence),
+            );
+
+      - name: Classify with trusted base implementation
+        id: classify
+        if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
+        continue-on-error: true
+        run: >-
+          node trusted-base/scripts/ci-impact-classifier.cjs
+          --input .ci-impact-classifier-input.json
+          > .ci-impact-classification.json
+
+      - name: Prepare trusted policy input
+        if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          MODE: ${{ steps.resolve.outputs.mode }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
+          CURRENT_HEAD_SHA: ${{ steps.resolve.outputs.trigger_head_sha }}
+          HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+          HEAD_BRANCH: ${{ steps.resolve.outputs.head_branch }}
+          HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}
+          AUTHOR_PERMISSION: ${{ steps.resolve.outputs.author_permission }}
+          PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
+          CLASSIFY_OUTCOME: ${{ steps.classify.outcome }}
+        with:
+          script: |
+            const fs = require('node:fs');
+            const path = require('node:path');
+            const workspace = process.env.GITHUB_WORKSPACE;
+            let classifierInput = {
+              files: [],
+              forceFullReason: 'trusted-input-unavailable',
+            };
+            try {
+              classifierInput = JSON.parse(fs.readFileSync(
+                path.join(workspace, '.ci-impact-classifier-input.json'),
+                'utf8',
+              ));
+            } catch (error) {
+              core.warning(`Classifier input unavailable; forcing full. ${error.message}`);
+            }
+            let classification = null;
+            if (process.env.CLASSIFY_OUTCOME === 'success') {
+              try {
+                classification = JSON.parse(fs.readFileSync(
+                  path.join(workspace, '.ci-impact-classification.json'),
+                  'utf8',
+                ));
+              } catch (error) {
+                core.warning(`Classifier output unavailable; forcing full. ${error.message}`);
+              }
+            }
+            let workflows = {};
+            if (process.env.MODE === 'audit') {
+              try {
+                workflows = JSON.parse(fs.readFileSync(
+                  path.join(workspace, '.ci-impact-workflows.json'),
+                  'utf8',
+                ));
+              } catch (error) {
+                core.warning(`Workflow evidence unavailable; audit will remain pending. ${error.message}`);
+              }
+            }
+            const input = {
+              repository: process.env.GITHUB_REPOSITORY,
+              pullRequest: {
+                number: Number(process.env.PULL_NUMBER),
+                baseRef: process.env.BASE_REF,
+                baseSha: process.env.BASE_SHA,
+                headSha: process.env.HEAD_SHA,
+                headBranch: process.env.HEAD_BRANCH,
+                headRepository: process.env.HEAD_REPOSITORY,
+                authorPermission: process.env.AUTHOR_PERMISSION,
+              },
+              files: classifierInput.files,
+              classification,
+              forceFullReason: classifierInput.forceFullReason,
+              controllerAvailable: true,
+            };
+            if (process.env.MODE === 'audit') {
+              // Keep the triggering workflow's SHA independent from the live PR SHA.
+              // auditPolicyRuns rejects a stale event before any status can be published.
+              input.currentHeadSha = process.env.CURRENT_HEAD_SHA;
+              input.workflows = workflows;
+            }
+            fs.writeFileSync(
+              path.join(workspace, '.ci-impact-policy-input.json'),
+              JSON.stringify(input),
+            );
+
+      - name: Evaluate trusted policy and aggregate audit
+        id: policy
+        if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
+        continue-on-error: true
+        run: >-
+          node trusted-base/scripts/ci-impact-policy.cjs
+          --input .ci-impact-policy-input.json
+          --github-output "$GITHUB_OUTPUT"
+          --output .ci-impact-policy.json
+
+      - name: Summarize trusted policy
+        if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
+        env:
+          MODE: ${{ steps.resolve.outputs.mode }}
+          DECISION: ${{ steps.policy.outputs.decision || 'full' }}
+          CI_EXPECTED: ${{ steps.policy.outputs.ci_run_expected || 'true' }}
+          CODEQL_EXPECTED: ${{ steps.policy.outputs.codeql_run_expected || 'true' }}
+          RENDER_EXPECTED: ${{ steps.policy.outputs.render_diff_run_expected || 'true' }}
+          AUDIT_CONCLUSION: ${{ steps.policy.outputs.audit_conclusion || 'n/a' }}
+          REASON: ${{ steps.policy.outputs.audit_reason || steps.policy.outputs.reason || 'trusted-policy-unavailable' }}
+        run: |
+          {
+            echo '### Trusted CI impact policy'
+            echo
+            printf -- '- mode: %s\n' "${MODE}"
+            printf -- '- decision: %s\n' "${DECISION}"
+            printf -- '- expected workflows (CI/CodeQL/Render Diff): %s/%s/%s\n' \
+              "${CI_EXPECTED}" "${CODEQL_EXPECTED}" "${RENDER_EXPECTED}"
+            printf -- '- aggregate conclusion: %s\n' "${AUDIT_CONCLUSION}"
+            printf -- '- reason: %s\n' "${REASON}"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Publish exact-head policy status
+        if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          MODE: ${{ steps.resolve.outputs.mode }}
+          PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
+          HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+          DECISION: ${{ steps.policy.outputs.decision || 'full' }}
+          CI_EXPECTED: ${{ steps.policy.outputs.ci_run_expected || 'true' }}
+          CODEQL_EXPECTED: ${{ steps.policy.outputs.codeql_run_expected || 'true' }}
+          RENDER_EXPECTED: ${{ steps.policy.outputs.render_diff_run_expected || 'true' }}
+          AUDIT_PUBLISH: ${{ steps.policy.outputs.audit_publish || 'true' }}
+          AUDIT_CONCLUSION: ${{ steps.policy.outputs.audit_conclusion || 'failure' }}
+          AUDIT_REASON: ${{ steps.policy.outputs.audit_reason || 'trusted-audit-unavailable' }}
+          DESCRIPTION: ${{ steps.policy.outputs.status_description || 'trusted policy unavailable' }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const response = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: Number(process.env.PULL_NUMBER),
+            });
+            const livePull = response.data;
+            if (livePull.state !== 'open' || livePull.head.sha !== process.env.HEAD_SHA) {
+              core.info(
+                `Do not publish stale policy status for PR #${process.env.PULL_NUMBER}: `
+                + `resolved=${process.env.HEAD_SHA} live=${livePull.head.sha} state=${livePull.state}.`,
+              );
+              return;
+            }
+            if (process.env.MODE === 'audit' && process.env.AUDIT_PUBLISH !== 'true') {
+              core.info('Stale audit is not allowed to overwrite the current head status.');
+              return;
+            }
+            let state = 'pending';
+            if (process.env.MODE === 'publish') {
+              const noWorkflowExpected = [
+                process.env.CI_EXPECTED,
+                process.env.CODEQL_EXPECTED,
+                process.env.RENDER_EXPECTED,
+              ].every((value) => value === 'false');
+              if (process.env.DECISION === 'blocked') state = 'failure';
+              else if (noWorkflowExpected) state = 'success';
+            } else if (new Set(['pending', 'success', 'failure']).has(
+              process.env.AUDIT_CONCLUSION,
+            )) {
+              state = process.env.AUDIT_CONCLUSION;
+            } else {
+              state = 'failure';
+            }
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: process.env.HEAD_SHA,
+              state,
+              context: 'CI Impact Policy',
+              description: process.env.DESCRIPTION,
+              target_url: `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`,
+            });
+            if (state === 'failure') {
+              core.setFailed(
+                process.env.MODE === 'audit'
+                  ? `Trusted CI impact audit failed: ${process.env.AUDIT_REASON}`
+                  : 'Untrusted head changed the enforcement surface.',
+              );
+            }

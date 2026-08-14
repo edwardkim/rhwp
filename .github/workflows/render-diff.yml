@@ -150,6 +150,7 @@ jobs:
               return filename.startsWith('.github/workflows/')
                 || filename.startsWith('.github/actions/')
                 || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/ci-impact-policy.cjs'
                 || filename === 'scripts/verify_review_only_merge_resolution.py';
             }
 
@@ -266,6 +267,14 @@ jobs:
                 pull_number: pr.number,
                 per_page: 100,
               });
+              const hasCiExecutionSurfaceChange = prFiles.some((file) => (
+                isCiExecutionPath(file.filename)
+                || isCiExecutionPath(file.previous_filename || '')
+              ));
+              if (hasCiExecutionSurfaceChange) {
+                setResult(false, 'ci-execution-surface-change');
+                return;
+              }
               if (prFiles.length > 0 && prFiles.every((file) => isAllowedReviewPath(file))) {
                 core.info(`all PR files are review-only; using base SHA ${pr.base.sha}`);
                 setResult(true, 'all-review-only-no-render-impact', pr.base.sha);
