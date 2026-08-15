@@ -9,15 +9,61 @@ use super::symbols::{
 };
 use super::tokenizer::{tokenize, Token, TokenType};
 
+/// 수식 중첩 깊이 상한.
+///
+/// 적대적으로 깊게 중첩된 입력(`{{{…}}}`, `sqrt sqrt …`, `LEFT ( LEFT ( …`,
+/// 중첩 `matrix`/`cases`/`pile`/`eqalign`, 긴 `OVER`/`ATOP` 연쇄)은 재귀 하강
+/// 파서를 무한 재귀로 몰거나, 반복으로 쌓인 깊은 `EqNode` 트리의 재귀적
+/// `Drop`/layout/svg 에서 스택을 오버플로한다. 형제 파서 가드
+/// (`MAX_HWPX_SECTION_DEPTH = 64`, `MAX_HWP5_SHAPE_DEPTH`, `MAX_DRAWING_OBJECT_DEPTH`)와
+/// 같은 취지로 상한을 둔다. 실측 디버그 스택 오버플로 임계(중첩 sqrt ≈ 144)보다
+/// 충분히 낮고, 실제 수식의 중첩 깊이(수 단계)는 넉넉히 웃돈다. 초과분은 조용히
+/// 잘라내(truncate) 유효 수식 출력은 바뀌지 않는다.
+const MAX_EQ_DEPTH: u32 = 64;
+
 /// 수식 파서
 pub struct EqParser {
     tokens: Vec<Token>,
     pos: usize,
+    /// 현재 재귀 깊이. 중첩 게이트웨이(`parse_command`/`parse_group`/
+    /// `parse_paren_group`)에서 증감하여 무한 재귀·깊은 트리를 막는다.
+    depth: u32,
+    /// LParen 인덱스 → 매칭 RParen 인덱스 사전계산 결과. `paren_then_script` 의
+    /// 매 호출당 O(n) 전방 스캔을 O(1) 조회로 바꿔, 괄호가 많은/깊은 입력에서의
+    /// O(n^2) 행(hang)을 없앤다. LParen 이 아니거나 짝이 없으면 `tokens.len()`.
+    paren_match: Vec<usize>,
 }
 
 impl EqParser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Self { tokens, pos: 0 }
+        let paren_match = Self::compute_paren_match(&tokens);
+        Self {
+            tokens,
+            pos: 0,
+            depth: 0,
+            paren_match,
+        }
+    }
+
+    /// LParen→RParen 짝을 스택으로 한 번에(O(n)) 계산한다. `paren_then_script` 의
+    /// 원래 선형 깊이 스캔과 동일하게 LParen/RParen 만 세고 그 외 토큰(중괄호 등)은
+    /// 무시한다. 짝 없는 LParen 은 `tokens.len()` 으로 남는다.
+    fn compute_paren_match(tokens: &[Token]) -> Vec<usize> {
+        let n = tokens.len();
+        let mut m = vec![n; n];
+        let mut stack: Vec<usize> = Vec::new();
+        for (i, t) in tokens.iter().enumerate() {
+            match t.ty {
+                TokenType::LParen => stack.push(i),
+                TokenType::RParen => {
+                    if let Some(open) = stack.pop() {
+                        m[open] = i;
+                    }
+                }
+                _ => {}
+            }
+        }
+        m
     }
 
     fn current(&self) -> Option<&Token> {
@@ -97,16 +143,34 @@ impl EqParser {
     /// pop 하여 분수/atop 으로 결합한다. 처리했으면 true, 아니면 false.
     /// CASES/PILE/EQALIGN 등 row-collecting 파서가 분수를 인식하지 못하는 결함(#505)을
     /// 방지하기 위해 모든 token-collecting 루프에서 호출한다.
-    fn try_consume_infix_over_atop(&mut self, children: &mut Vec<EqNode>) -> bool {
+    ///
+    /// `over_run` 은 현재 루프의 "연속 OVER/ATOP 결합 횟수"다. `1 over 1 over …`
+    /// 같은 긴 연쇄는 반복으로 좌편향 깊은 트리를 쌓아 [`MAX_EQ_DEPTH`] 재귀 가드를
+    /// 우회하므로(그 뒤 재귀적 Drop/layout/svg 에서 오버플로), 연쇄 길이를
+    /// [`MAX_EQ_DEPTH`] 로 제한한다. 상한 초과 시 결합을 멈춰 false 를 돌려주면 남은
+    /// OVER 는 parse_element 가 Empty 로 소비하므로 진행이 보장된다.
+    fn try_consume_infix_over_atop(
+        &mut self,
+        children: &mut Vec<EqNode>,
+        over_run: &mut u32,
+    ) -> bool {
         if self.current_type() != TokenType::Command {
+            *over_run = 0; // 다음은 일반 요소 — 연쇄 종료, 카운터 리셋.
             return false;
         }
         let val = self.current_value();
         let is_over = Self::cmd_eq(val, "OVER");
         let is_atop = Self::cmd_eq(val, "ATOP");
         if !is_over && !is_atop {
+            *over_run = 0; // OVER/ATOP 이 아닌 명령 — 연쇄 종료, 카운터 리셋.
             return false;
         }
+        if *over_run >= MAX_EQ_DEPTH {
+            // 상한 도달: 결합 중단(리셋하지 않음). 남은 OVER 는 parse_element 가
+            // Empty 로 소비하고, 이어지는 일반 요소가 카운터를 리셋한다.
+            return false;
+        }
+        *over_run += 1;
         self.pos += 1;
         let top = children.pop().unwrap_or(EqNode::Empty);
         let bottom = self.parse_element();
@@ -128,6 +192,7 @@ impl EqParser {
     /// OVER/ATOP을 중위 연산자로 처리: 바로 앞/뒤 요소를 위아래로 배치
     fn parse_expression(&mut self) -> EqNode {
         let mut children = Vec::new();
+        let mut over_run = 0u32;
         while !self.at_end() {
             // 그룹 종료 또는 RIGHT 만나면 중단
             if self.current_type() == TokenType::RBrace {
@@ -139,7 +204,7 @@ impl EqParser {
                 break;
             }
             // OVER/ATOP 중위 연산자: 직전/직후 요소를 위아래로 결합
-            if self.try_consume_infix_over_atop(&mut children) {
+            if self.try_consume_infix_over_atop(&mut children, &mut over_run) {
                 continue;
             }
             children.push(self.parse_element());
@@ -223,8 +288,25 @@ impl EqParser {
         }
     }
 
-    /// 명령어 처리
+    /// 명령어 처리 (깊이 가드).
+    ///
+    /// 구조 명령(SQRT/MATRIX/LEFT/…)은 모두 여기서 처리되고, 그 인자 파싱이 다시
+    /// `parse_command`/`parse_group`/`parse_paren_group` 로 되돌아오므로 이 셋을
+    /// 공유 카운터로 감싸면 모든 중첩 경로가 [`MAX_EQ_DEPTH`] 로 제한된다. 상한을
+    /// 넘으면 더 내려가지 않고 `Empty` 를 돌려준다(명령 토큰은 호출부에서 이미
+    /// 소비했으므로 진행이 보장된다).
     fn parse_command(&mut self, cmd: &str) -> EqNode {
+        self.depth += 1;
+        if self.depth > MAX_EQ_DEPTH {
+            self.depth -= 1;
+            return EqNode::Empty;
+        }
+        let node = self.parse_command_inner(cmd);
+        self.depth -= 1;
+        node
+    }
+
+    fn parse_command_inner(&mut self, cmd: &str) -> EqNode {
         let cmd_upper = cmd.to_ascii_uppercase();
         let cu = cmd_upper.as_str();
         // [#1204] hwpeq 명령은 대소문자 무시 — DECORATIONS/FONT_STYLES 는 소문자 키이므로
@@ -561,20 +643,36 @@ impl EqParser {
         self.try_parse_scripts(node)
     }
 
-    /// 중괄호 그룹 파싱: {...}
+    /// 중괄호 그룹 파싱: {...} (깊이 가드).
     /// 그룹 내의 OVER는 parse_expression의 중위 연산자 처리로 자동 처리된다.
     fn parse_group(&mut self) -> EqNode {
-        if !self.expect(TokenType::LBrace) {
+        if self.current_type() != TokenType::LBrace {
+            // 여는 중괄호가 아니면 그룹이 아님 — 위임 (깊이 변화 없음).
             return self.parse_element();
         }
+        self.depth += 1;
+        if self.depth > MAX_EQ_DEPTH {
+            // 상한 초과: 그룹 전체를 건너뛰어(truncate) 진행을 보장한다.
+            self.depth -= 1;
+            self.skip_braced_group();
+            return EqNode::Empty;
+        }
+        let node = self.parse_group_inner();
+        self.depth -= 1;
+        node
+    }
+
+    fn parse_group_inner(&mut self) -> EqNode {
+        self.expect(TokenType::LBrace); // 여는 '{' 소비 (호출부에서 존재 보장)
 
         let mut children = Vec::new();
+        let mut over_run = 0u32;
         while !self.at_end() {
             if self.current_type() == TokenType::RBrace {
                 break;
             }
             // OVER/ATOP 중위 연산자: 그룹 내에서도 동일하게 처리
-            if self.try_consume_infix_over_atop(&mut children) {
+            if self.try_consume_infix_over_atop(&mut children, &mut over_run) {
                 continue;
             }
             children.push(self.parse_element());
@@ -584,6 +682,37 @@ impl EqParser {
         self.expect(TokenType::RBrace);
 
         EqNode::Row(children).simplify()
+    }
+
+    /// 현재 `{` 부터 매칭되는 `}` 까지 통째로 소비한다(깊이 상한 초과 시 truncate).
+    fn skip_braced_group(&mut self) {
+        // 전제: 현재 토큰이 LBrace.
+        self.pos += 1; // 여는 '{' 소비
+        let close = self.find_matching_brace(self.pos);
+        self.pos = close.min(self.tokens.len());
+        self.expect(TokenType::RBrace); // 매칭 '}' 가 있으면 소비
+    }
+
+    /// 현재 `(` 부터 매칭되는 `)` 까지 통째로 소비한다(깊이 상한 초과 시 truncate).
+    fn skip_paren_group(&mut self) {
+        // 전제: 현재 토큰이 LParen.
+        let mut depth = 0i32;
+        while self.pos < self.tokens.len() {
+            match self.tokens[self.pos].ty {
+                TokenType::LParen => depth += 1,
+                TokenType::RParen => {
+                    depth -= 1;
+                    self.pos += 1;
+                    if depth <= 0 {
+                        return;
+                    }
+                    continue;
+                }
+                TokenType::Eof => return,
+                _ => {}
+            }
+            self.pos += 1;
+        }
     }
 
     /// 매칭되는 닫는 괄호 위치 찾기
@@ -608,36 +737,40 @@ impl EqParser {
 
     /// 현재 LParen 의 매칭 RParen 다음 토큰이 첨자(`^`/`_`)인지 (#1305).
     /// 참이면 `(...)` 를 Paren 그룹으로 묶어 첨자를 결합해야 한다.
-    /// 현재 토큰이 LParen 이라는 전제.
+    /// 현재 토큰이 LParen 이라는 전제. 사전계산된 `paren_match` 로 O(1) 조회한다
+    /// (원래는 매 호출 O(n) 전방 스캔 → 괄호 많은 입력에서 O(n^2) 행 유발).
     fn paren_then_script(&self) -> bool {
-        let mut depth = 0i32;
-        let mut p = self.pos;
-        while p < self.tokens.len() {
-            match self.tokens[p].ty {
-                TokenType::LParen => depth += 1,
-                TokenType::RParen => {
-                    depth -= 1;
-                    if depth == 0 {
-                        return matches!(
-                            self.tokens.get(p + 1).map(|t| t.ty),
-                            Some(TokenType::Subscript) | Some(TokenType::Superscript)
-                        );
-                    }
-                }
-                TokenType::Eof => return false,
-                _ => {}
-            }
-            p += 1;
-        }
-        false
+        let close = self
+            .paren_match
+            .get(self.pos)
+            .copied()
+            .unwrap_or(self.tokens.len());
+        matches!(
+            self.tokens.get(close + 1).map(|t| t.ty),
+            Some(TokenType::Subscript) | Some(TokenType::Superscript)
+        )
     }
 
-    /// `(...)` 를 자동크기 괄호 그룹으로 파싱 (#1305). 현재 LParen 전제.
+    /// `(...)` 를 자동크기 괄호 그룹으로 파싱 (#1305). 현재 LParen 전제 (깊이 가드).
     fn parse_paren_group(&mut self) -> EqNode {
+        self.depth += 1;
+        if self.depth > MAX_EQ_DEPTH {
+            // 상한 초과: 괄호 그룹 전체를 건너뛰어(truncate) 진행을 보장한다.
+            self.depth -= 1;
+            self.skip_paren_group();
+            return EqNode::Empty;
+        }
+        let node = self.parse_paren_group_inner();
+        self.depth -= 1;
+        node
+    }
+
+    fn parse_paren_group_inner(&mut self) -> EqNode {
         self.pos += 1; // '(' 소비
         let mut items = Vec::new();
+        let mut over_run = 0u32;
         while !self.at_end() && self.current_type() != TokenType::RParen {
-            if self.try_consume_infix_over_atop(&mut items) {
+            if self.try_consume_infix_over_atop(&mut items, &mut over_run) {
                 continue;
             }
             items.push(self.parse_element());
@@ -1083,6 +1216,7 @@ impl EqParser {
     fn parse_latex_env_matrix(&mut self, style: MatrixStyle, env_name: &str) -> EqNode {
         let mut rows: Vec<Vec<EqNode>> = vec![vec![]];
         let mut current_cell = Vec::new();
+        let mut over_run = 0u32;
 
         while !self.at_end() && !self.at_latex_env_end(env_name) {
             if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
@@ -1098,7 +1232,7 @@ impl EqParser {
                 }
                 current_cell = Vec::new();
                 self.pos += 1;
-            } else if self.try_consume_infix_over_atop(&mut current_cell) {
+            } else if self.try_consume_infix_over_atop(&mut current_cell, &mut over_run) {
                 continue;
             } else {
                 current_cell.push(self.parse_element());
@@ -1123,6 +1257,7 @@ impl EqParser {
     fn parse_latex_env_cases(&mut self, env_name: &str) -> EqNode {
         let mut case_rows = Vec::new();
         let mut current_row = Vec::new();
+        let mut over_run = 0u32;
 
         while !self.at_end() && !self.at_latex_env_end(env_name) {
             if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
@@ -1132,7 +1267,7 @@ impl EqParser {
             } else if self.current_type() == TokenType::Whitespace && self.current_value() == "&" {
                 current_row.push(EqNode::Space(SpaceKind::Tab));
                 self.pos += 1;
-            } else if self.try_consume_infix_over_atop(&mut current_row) {
+            } else if self.try_consume_infix_over_atop(&mut current_row, &mut over_run) {
                 continue;
             } else {
                 current_row.push(self.parse_element());
@@ -1152,6 +1287,7 @@ impl EqParser {
         let mut eq_rows: Vec<(EqNode, EqNode)> = Vec::new();
         let mut current_left = Vec::new();
         let mut current_right: Option<Vec<EqNode>> = None;
+        let mut over_run = 0u32;
 
         while !self.at_end() && !self.at_latex_env_end(env_name) {
             if self.current_type() == TokenType::Whitespace && self.current_value() == "#" {
@@ -1170,9 +1306,9 @@ impl EqParser {
                 self.pos += 1;
             } else {
                 let consumed = if let Some(ref mut right) = current_right {
-                    self.try_consume_infix_over_atop(right)
+                    self.try_consume_infix_over_atop(right, &mut over_run)
                 } else {
-                    self.try_consume_infix_over_atop(&mut current_left)
+                    self.try_consume_infix_over_atop(&mut current_left, &mut over_run)
                 };
                 if consumed {
                     continue;
@@ -1242,6 +1378,7 @@ impl EqParser {
         let end = self.find_matching_brace(self.pos);
         let mut rows: Vec<Vec<EqNode>> = vec![vec![]];
         let mut current_cell = Vec::new();
+        let mut over_run = 0u32;
 
         while self.pos < end && !self.at_end() {
             if self.current_type() == TokenType::RBrace {
@@ -1262,7 +1399,7 @@ impl EqParser {
                 }
                 current_cell = Vec::new();
                 self.pos += 1;
-            } else if self.try_consume_infix_over_atop(&mut current_cell) {
+            } else if self.try_consume_infix_over_atop(&mut current_cell, &mut over_run) {
                 // OVER/ATOP 중위 처리 (#505)
                 continue;
             } else {
@@ -1291,6 +1428,7 @@ impl EqParser {
         let end = self.find_matching_brace(self.pos);
         let mut rows = Vec::new();
         let mut current_row = Vec::new();
+        let mut over_run = 0u32;
 
         while self.pos < end && !self.at_end() {
             if self.current_type() == TokenType::RBrace {
@@ -1313,7 +1451,7 @@ impl EqParser {
                 for _ in 0..amp_count {
                     current_row.push(EqNode::Space(super::ast::SpaceKind::Tab));
                 }
-            } else if self.try_consume_infix_over_atop(&mut current_row) {
+            } else if self.try_consume_infix_over_atop(&mut current_row, &mut over_run) {
                 // OVER/ATOP 중위 처리 (#505)
                 continue;
             } else {
@@ -1339,6 +1477,7 @@ impl EqParser {
         let end = self.find_matching_brace(self.pos);
         let mut rows = Vec::new();
         let mut current_row = Vec::new();
+        let mut over_run = 0u32;
 
         while self.pos < end && !self.at_end() {
             if self.current_type() == TokenType::RBrace {
@@ -1348,7 +1487,7 @@ impl EqParser {
                 rows.push(EqNode::Row(current_row).simplify());
                 current_row = Vec::new();
                 self.pos += 1;
-            } else if self.try_consume_infix_over_atop(&mut current_row) {
+            } else if self.try_consume_infix_over_atop(&mut current_row, &mut over_run) {
                 // OVER/ATOP 중위 처리 (#505)
                 continue;
             } else {
@@ -1375,6 +1514,7 @@ impl EqParser {
         let mut rows: Vec<(EqNode, EqNode)> = Vec::new();
         let mut current_left = Vec::new();
         let mut current_right: Option<Vec<EqNode>> = None;
+        let mut over_run = 0u32;
 
         while self.pos < end && !self.at_end() {
             if self.current_type() == TokenType::RBrace {
@@ -1418,9 +1558,9 @@ impl EqParser {
             } else {
                 // OVER/ATOP 중위 처리 (#505) — 활성 측(right 우선) 의 children 에 적용
                 let consumed = if let Some(ref mut right) = current_right {
-                    self.try_consume_infix_over_atop(right)
+                    self.try_consume_infix_over_atop(right, &mut over_run)
                 } else {
-                    self.try_consume_infix_over_atop(&mut current_left)
+                    self.try_consume_infix_over_atop(&mut current_left, &mut over_run)
                 };
                 if consumed {
                     continue;
@@ -2832,5 +2972,68 @@ mod latex_compat_tests {
             lr.contains("Superscript") && lr.contains("Paren") && !lr.contains("base: Empty"),
             "left(x)right^2 결합 정상: {lr}"
         );
+    }
+
+    // --- DoS 하드닝 회귀 (적대적 깊은 중첩/괄호 O(n^2)) ---
+
+    /// EqNode 트리의 최대 깊이(가드가 트리 깊이를 실제로 묶는지 검증용).
+    fn eq_depth(node: &EqNode) -> u32 {
+        let kids: Vec<&EqNode> = match node {
+            EqNode::Row(v) => v.iter().collect(),
+            EqNode::Fraction { numer, denom } => vec![numer, denom],
+            EqNode::Atop { top, bottom } => vec![top, bottom],
+            EqNode::Sqrt { index, body } => index
+                .as_deref()
+                .into_iter()
+                .chain(std::iter::once(body.as_ref()))
+                .collect(),
+            EqNode::Superscript { base, sup } => vec![base, sup],
+            EqNode::Subscript { base, sub } => vec![base, sub],
+            EqNode::SubSup { base, sub, sup } => vec![base, sub, sup],
+            EqNode::Paren { body, .. } => vec![body],
+            EqNode::Decoration { body, .. } => vec![body],
+            EqNode::FontStyle { body, .. } => vec![body],
+            EqNode::Color { body, .. } => vec![body],
+            EqNode::Rel { over, under, .. } => {
+                let mut v = vec![over.as_ref()];
+                if let Some(u) = under {
+                    v.push(u.as_ref());
+                }
+                v
+            }
+            EqNode::Matrix { rows, .. } => rows.iter().flatten().collect(),
+            EqNode::Cases { rows } | EqNode::Pile { rows, .. } => rows.iter().collect(),
+            _ => vec![],
+        };
+        1 + kids.iter().map(|k| eq_depth(k)).max().unwrap_or(0)
+    }
+
+    /// 적대적으로 깊은 중첩은 스택 오버플로/패닉 없이 파싱되고, 생성된 트리 깊이는
+    /// 상한 근방으로 묶여 재귀적 layout/svg/Drop 도 안전하다.
+    #[test]
+    fn dos_deep_nesting_is_bounded_not_overflow() {
+        let cases = [
+            "{".repeat(20000) + "x" + &"}".repeat(20000),
+            "sqrt ".repeat(20000) + "x",
+            "LEFT ( ".repeat(20000) + "x",
+            "1 ".to_string() + &"over 1 ".repeat(20000),
+            "cases{".repeat(20000) + "a" + &"}".repeat(20000),
+            "pile{".repeat(20000) + "a" + &"}".repeat(20000),
+            "(".repeat(20000) + "x" + &")".repeat(20000) + "^2",
+        ];
+        for s in cases {
+            let ast = parse(&s); // 오버플로/패닉 없이 반환해야 함
+            let d = eq_depth(&ast);
+            assert!(
+                d <= MAX_EQ_DEPTH + 8,
+                "트리 깊이 {d} 가 상한 {MAX_EQ_DEPTH}(+여유) 를 넘었다 — 깊이 가드 회귀"
+            );
+            // layout 도 오버플로 없이 완료되고 유한한 크기를 낸다.
+            let lb = super::super::layout::EqLayout::new(16.0).layout(&ast);
+            assert!(
+                lb.width.is_finite() && lb.height.is_finite(),
+                "layout 크기가 유한해야 함"
+            );
+        }
     }
 }

@@ -85,12 +85,28 @@ pub enum Node {
     Font(String, Box<Node>),
 }
 
+/// Maximum equation nesting depth accepted by the recursive-descent parser.
+///
+/// Adversarial input (`{{{…}}}`, `sqrt sqrt …`, `bar bar …`, deep `matrix`/`left`
+/// nesting, or long `over`/`sup`/`sub` chains) would otherwise drive unbounded
+/// recursion — and, even when built iteratively, an unbounded-depth [`Node`] tree
+/// whose recursive `Drop`/LaTeX emit overflows the stack. This cap mirrors the
+/// sibling parser guards (`MAX_HWPX_SECTION_DEPTH = 64`, `MAX_HWP5_SHAPE_DEPTH`,
+/// `MAX_DRAWING_OBJECT_DEPTH`) and sits far below the measured debug-build stack
+/// limit (~150 nested groups) while dwarfing any real equation's nesting.
+pub const MAX_EQ_DEPTH: u32 = 64;
+
 /// Parses a full token stream into a top-level [`Node::Group`].
 ///
 /// Returns [`EqError::UnbalancedBrace`] if a `}` appears with no matching `{`,
-/// or a `{` is never closed.
+/// or a `{` is never closed, and [`EqError::TooDeep`] if the script nests beyond
+/// [`MAX_EQ_DEPTH`].
 pub fn parse(tokens: &[Token]) -> Result<Node, EqError> {
-    let mut p = Parser { tokens, pos: 0 };
+    let mut p = Parser {
+        tokens,
+        pos: 0,
+        depth: 0,
+    };
     let nodes = p.parse_seq(/* in_group = */ false)?;
     Ok(Node::Group(nodes))
 }
@@ -98,6 +114,9 @@ pub fn parse(tokens: &[Token]) -> Result<Node, EqError> {
 struct Parser<'a> {
     tokens: &'a [Token],
     pos: usize,
+    /// Current recursion depth, tracked at the [`Parser::parse_atom`] funnel so
+    /// unbounded nesting is rejected before it can overflow the stack.
+    depth: u32,
 }
 
 impl<'a> Parser<'a> {
@@ -146,14 +165,28 @@ impl<'a> Parser<'a> {
     }
 
     /// Lowest precedence: fraction operators `over` / `atop` (left-associative).
+    ///
+    /// A long `a over b over c …` chain builds a left-nested tree iteratively, so
+    /// the [`parse_atom`](Self::parse_atom) depth guard never fires; the resulting
+    /// deep tree would overflow the stack on recursive `Drop`/emit. Cap the chain
+    /// length at [`MAX_EQ_DEPTH`] so the produced tree depth stays bounded.
     fn parse_frac(&mut self) -> Result<Node, EqError> {
         let mut left = self.parse_script()?;
+        let mut chain = 0u32;
         while let Some(Token::Word(w)) = self.peek() {
             if w.eq_ignore_ascii_case("over") {
+                chain += 1;
+                if chain > MAX_EQ_DEPTH {
+                    return Err(EqError::TooDeep);
+                }
                 self.next();
                 let right = self.parse_script()?;
                 left = Node::Frac(Box::new(left), Box::new(right));
             } else if w.eq_ignore_ascii_case("atop") {
+                chain += 1;
+                if chain > MAX_EQ_DEPTH {
+                    return Err(EqError::TooDeep);
+                }
                 self.next();
                 let right = self.parse_script()?;
                 left = Node::Atop(Box::new(left), Box::new(right));
@@ -165,9 +198,24 @@ impl<'a> Parser<'a> {
     }
 
     /// Superscript / subscript via `^`, `_`, or the `sup` / `sub` keywords.
+    ///
+    /// As with [`parse_frac`](Self::parse_frac), a long `x^a^b…` / `x_a_b…` chain
+    /// builds a deep left-nested tree iteratively, so the chain length is capped
+    /// at [`MAX_EQ_DEPTH`] to keep the tree shallow enough for recursive
+    /// `Drop`/emit.
     fn parse_script(&mut self) -> Result<Node, EqError> {
         let mut base = self.parse_postfix()?;
+        let mut chain = 0u32;
         loop {
+            let is_script = matches!(self.peek(), Some(Token::Caret) | Some(Token::Underscore))
+                || matches!(self.peek(), Some(Token::Word(w))
+                if w.eq_ignore_ascii_case("sup") || w.eq_ignore_ascii_case("sub"));
+            if is_script {
+                chain += 1;
+                if chain > MAX_EQ_DEPTH {
+                    return Err(EqError::TooDeep);
+                }
+            }
             match self.peek() {
                 Some(Token::Caret) => {
                     self.next();
@@ -232,7 +280,24 @@ impl<'a> Parser<'a> {
     }
 
     /// A single atomic unit, including prefix commands that consume arguments.
+    ///
+    /// This is the universal recursion funnel: nested groups (`{`), command
+    /// arguments (`sqrt`/`root`/`binom`/decorations/fonts), matrix cells, and
+    /// `left … right` bodies all re-enter here one level deeper. Guarding it with
+    /// a depth counter therefore bounds *every* nesting path; exceeding
+    /// [`MAX_EQ_DEPTH`] returns [`EqError::TooDeep`] instead of overflowing.
     fn parse_atom(&mut self) -> Result<Node, EqError> {
+        self.depth += 1;
+        if self.depth > MAX_EQ_DEPTH {
+            self.depth -= 1;
+            return Err(EqError::TooDeep);
+        }
+        let r = self.parse_atom_inner();
+        self.depth -= 1;
+        r
+    }
+
+    fn parse_atom_inner(&mut self) -> Result<Node, EqError> {
         match self.peek() {
             None => Ok(Node::Group(vec![])),
             Some(Token::LBrace) => {
@@ -567,5 +632,55 @@ mod tests {
     #[test]
     fn parse_empty_is_empty_group() {
         assert_eq!(parse(&lex("")), Ok(Node::Group(vec![])));
+    }
+
+    // --- DoS 하드닝 회귀 (적대적 깊은 중첩) ---
+    // 가드가 없으면 아래 입력들은 재귀 하강 파서(깊은 그룹/명령)나, 반복으로 쌓인
+    // 깊은 AST 의 재귀적 Drop/LaTeX emit 에서 스택을 오버플로한다. 상한 초과 시
+    // `EqError::TooDeep` 로 우아하게 실패해야 한다.
+
+    #[test]
+    fn dos_deeply_nested_groups_return_toodeep_not_overflow() {
+        let s = "{".repeat(5000) + "x" + &"}".repeat(5000);
+        assert_eq!(parse(&lex(&s)), Err(EqError::TooDeep));
+    }
+
+    #[test]
+    fn dos_deeply_nested_commands_return_toodeep() {
+        let sqrt = "sqrt ".repeat(5000) + "x";
+        assert_eq!(parse(&lex(&sqrt)), Err(EqError::TooDeep));
+        let bar = "bar ".repeat(5000) + "x";
+        assert_eq!(parse(&lex(&bar)), Err(EqError::TooDeep));
+        let root = "root ".repeat(5000) + "x";
+        assert_eq!(parse(&lex(&root)), Err(EqError::TooDeep));
+    }
+
+    #[test]
+    fn dos_long_over_and_script_chains_return_toodeep() {
+        // 반복으로 쌓이는 좌편향 깊은 트리 — parse_atom 재귀 가드로는 못 막고
+        // 연쇄 길이 캡으로 막는다.
+        let over = "1 ".to_string() + &"over 1 ".repeat(5000);
+        assert_eq!(parse(&lex(&over)), Err(EqError::TooDeep));
+        let atop = "1 ".to_string() + &"atop 1 ".repeat(5000);
+        assert_eq!(parse(&lex(&atop)), Err(EqError::TooDeep));
+        let sup = "x".to_string() + &"^x".repeat(5000);
+        assert_eq!(parse(&lex(&sup)), Err(EqError::TooDeep));
+        let sub = "x".to_string() + &"_x".repeat(5000);
+        assert_eq!(parse(&lex(&sub)), Err(EqError::TooDeep));
+    }
+
+    #[test]
+    fn dos_nested_matrix_returns_toodeep() {
+        let s = "matrix{".repeat(5000) + "a" + &"}".repeat(5000);
+        assert_eq!(parse(&lex(&s)), Err(EqError::TooDeep));
+    }
+
+    #[test]
+    fn valid_moderate_nesting_below_cap_still_parses() {
+        // 상한 한참 아래(30단계) 균형 중괄호는 정상 파싱되어 `x` 로 수렴한다.
+        let n = 30;
+        assert!(n < MAX_EQ_DEPTH as usize);
+        let s = "{".repeat(n) + "x" + &"}".repeat(n);
+        assert_eq!(super::super::convert(&s).unwrap(), "x");
     }
 }
