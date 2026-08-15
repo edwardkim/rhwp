@@ -45,6 +45,11 @@ getrandom = { version = "0.4", features = ["wasm_js"] }
 sha1 = "0.11"
 sha2 = "0.11"
 blake3 = "1"
+# [보안 트레일러] HWP3 강암호 append 트레일러 — memory-hard KDF(Argon2id) +
+# misuse-resistant AEAD(XChaCha20-Poly1305). 순수 Rust(RustCrypto) 라 wasm 도 그대로 컴파일.
+argon2 = "0.5"
+chacha20poly1305 = { version = "0.10", features = ["alloc"] }
+zeroize = "1"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
 quick-xml = "0.41"
 roxmltree = "0.21"
