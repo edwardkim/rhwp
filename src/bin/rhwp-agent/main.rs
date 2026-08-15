@@ -19,6 +19,7 @@
 
 mod caps;
 mod chunkplan;
+mod contextcost;
 mod difftext;
 mod doctor;
 mod envelope;
