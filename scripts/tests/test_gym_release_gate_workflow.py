@@ -62,6 +62,17 @@ class ReleaseGateWorkflowTests(unittest.TestCase):
         """게이트는 판정만 한다 — 쓰기 권한이 필요 없다."""
         self.assertIn("contents: read", self.wf)
 
+    def test_runs_trajectory_necessity_audit_before_the_gate(self):
+        """트라젝토리 무결성 전제 — 무의미한 마지막 스텝(연극)이 있으면 릴리스 차단.
+
+        다단계 과제의 마지막 스텝이 채점에 무의미하면(부분 트라젝토리가 통과)
+        exit 1 로 워크플로를 실패시킨다. 게이트 차등 이전에 배선돼야 한다.
+        """
+        self.assertIn("gym/tools/trajectory.py", self.wf)
+        audit_at = self.wf.index("trajectory.py")
+        gate_at = self.wf.index("release_gate.py")
+        self.assertLess(audit_at, gate_at, "트라젝토리 감사가 게이트보다 먼저 배선돼야 한다")
+
 
 class GateRunnerContractTests(unittest.TestCase):
     """러너의 판정 계약 — 종료 코드가 게이트 의미론과 일치하는지."""
