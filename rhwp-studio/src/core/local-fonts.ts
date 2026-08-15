@@ -625,7 +625,8 @@ function probeCandidateFamilies(candidateFamilies: readonly string[]): string[] 
   if (!context) return [];
   return normalizeFamilies(candidateFamilies)
     .filter(family => !GENERIC_FONTS.has(family))
-    .filter(family => !REGISTERED_FONTS.has(family))
+    // 웹폰트 카탈로그 등록은 시스템 설치 증거가 아니다. 문서의 exact face는
+    // CDN 대체를 결정하기 전에 로컬 presence probe로 별도 확인한다.
     .filter(family => isFamilyLikelyAvailable(context, family));
 }
 
@@ -636,7 +637,6 @@ function unresolvedCandidateFamilies(
   const lookup = buildLocalFontLookup(records);
   return normalizeFamilies(candidateFamilies)
     .filter(family => !GENERIC_FONTS.has(family))
-    .filter(family => !REGISTERED_FONTS.has(family))
     .filter(family => resolveLocalFontFromLookup(family, lookup) === null);
 }
 

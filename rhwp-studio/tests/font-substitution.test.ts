@@ -68,7 +68,7 @@ test('KoPub바탕체 weight face는 고정폭이 아니라 비례폭 serif로 �
     'KoPubBatang Bold',
   ]) {
     const chain = fontFamilyChainForDisplay(fontName, 0, 0);
-    assert.match(chain, /^"Batang"/u, fontName);
+    assert.match(chain, new RegExp(`^"${fontName}", "Batang"`, 'u'), fontName);
     assert.match(chain, /"Noto Serif KR"/u, fontName);
     assert.match(chain, /serif$/u, fontName);
     assert.doesNotMatch(chain, /monospace/u, fontName);
@@ -89,13 +89,13 @@ test('정부상징 legacy face는 exact, ROKG successor, 문서 대체 face 순�
     confirmedLocalFonts: ['대한민국정부상징체 R'],
     documentFallbackFamilies,
   });
-  assert.match(successor, /^"대한민국정부상징체 R", "한컴바탕"/u);
+  assert.match(successor, /^"정부상징 부처명_16040911", "대한민국정부상징체 R", "한컴바탕"/u);
 
   const documentSubstitute = fontFamilyChainForDisplay(legacy, 1, 0, {
     confirmedLocalFonts: [],
     documentFallbackFamilies,
   });
-  assert.match(documentSubstitute, /^"한컴바탕"/u);
+  assert.match(documentSubstitute, /^"정부상징 부처명_16040911", "한컴바탕"/u);
 });
 
 test('ROKG successor는 정부상징 legacy 이름에만 적용한다', () => {
