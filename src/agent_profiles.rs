@@ -18,6 +18,10 @@ pub const ALL_SESSION_TOOLS: &[&str] = &[
     "hwp_doc_tables",
     "hwp_doc_render_page",
     "hwp_doc_search",
+    // [#4856] 세션 조회 파리티 — 무상태 표면(export-structure·extract-data)에는 있으나
+    // 세션에는 없던 개요/조문·데이터 추출 축. 대형 문서를 한 번 열어 재파싱 없이 훑는다.
+    "hwp_doc_structure",
+    "hwp_doc_extract_data",
     "hwp_doc_replace_text",
     "hwp_doc_set_cell",
     "hwp_doc_fill_fields",
@@ -42,6 +46,10 @@ pub const SESSION_READ_TOOLS: &[&str] = &[
     "hwp_doc_fields",
     "hwp_doc_tables",
     "hwp_doc_search",
+    // [#4856] 조회 파리티 축 — 둘 다 문서를 바꾸지 않는 순수 조회다(structure=개요/조문,
+    // extract_data=날짜·금액·수량). 조회 전용 직무가 세션으로 여는 집합에 함께 든다.
+    "hwp_doc_structure",
+    "hwp_doc_extract_data",
     "hwp_doc_render_page",
     "hwp_close",
     // [#4357 W1] 워크스페이스 4종은 전부 조회 축 — 저널·인벤토리·트리는 읽기,
