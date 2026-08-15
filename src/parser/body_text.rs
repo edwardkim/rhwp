@@ -122,10 +122,56 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
     Ok(section)
 }
 
+/// [#4827] 문단↔표↔셀 상호재귀 깊이 상한.
+///
+/// 셀 안의 문단이 다시 표를 품는 사이클(`parse_paragraph`→`parse_ctrl_header`→
+/// `parse_control`→`parse_table_control`→`parse_cell`→`parse_paragraph_list`→
+/// `parse_paragraph`)에 상한이 없으면, 손상 문서가 스택을 고갈시켜 SIGSEGV(패닉과 달리
+/// `catch_unwind` 로 못 잡음) 를 낸다. 레코드 레벨은 10비트(≤1023)라 표 중첩이 최대 ~341겹까지
+/// 파일로 도달 가능하고, 그 깊이가 스레드 기본 스택 한계 근처라 크래시/완주가 비결정적으로 갈린다
+/// (#4822 §2). 이 재귀 계열은 머리말/꼬리말·각주/미주·글상자·캡션까지 **전부 `parse_paragraph` 를
+/// 경유**하므로, 그 진입 깊이를 스레드-로컬로 세어 한 곳에서 전 경로를 막는다(파라미터를 여러
+/// 호출부에 관통시키지 않는다). HWPX `MAX_HWPX_SECTION_DEPTH`(#4759)·HWP3(#4285)·HWP5 묶음
+/// 개체(#4761)·HML 의 형제 가드와 같은 취지·같은 값이다. 실문서의 표 중첩은 이에 한참 못 미친다.
+pub(crate) const MAX_HWP5_SECTION_DEPTH: u32 = 64;
+
+thread_local! {
+    static HWP5_SECTION_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+}
+
+/// `parse_paragraph` 진입 시 재귀 깊이를 +1 하고 이탈(Drop, 오류 전파·조기 반환 포함) 시
+/// 되돌리는 RAII 가드. 상한 초과면 스택을 고갈시키기 전에 오류로 거부한다.
+struct SectionDepthGuard;
+
+impl SectionDepthGuard {
+    fn enter() -> Result<SectionDepthGuard, BodyTextError> {
+        HWP5_SECTION_DEPTH.with(|d| {
+            if d.get() >= MAX_HWP5_SECTION_DEPTH {
+                return Err(BodyTextError::ParseError(format!(
+                    "문단 중첩이 {MAX_HWP5_SECTION_DEPTH} 단계를 초과했습니다(표·셀 상호재귀 상한)"
+                )));
+            }
+            d.set(d.get() + 1);
+            Ok(SectionDepthGuard)
+        })
+    }
+}
+
+impl Drop for SectionDepthGuard {
+    fn drop(&mut self) {
+        HWP5_SECTION_DEPTH.with(|d| d.set(d.get().saturating_sub(1)));
+    }
+}
+
 /// 문단 레코드 그룹에서 Paragraph 구성
 ///
 /// records[0] = PARA_HEADER, records[1..] = 자식 레코드
 pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
+    // [#4827] 문단↔표↔셀 상호재귀 깊이 상한 — 위 `SectionDepthGuard` 참고. 진입 즉시 +1,
+    // 반환(오류·조기 반환 포함) 시 -1. 상한 초과 시 `parse_paragraph_list` 의 `if let Ok(..)`
+    // 가 해당 하위 트리만 절단하고 나머지는 정상 파싱한다.
+    let _depth_guard = SectionDepthGuard::enter()?;
+
     if records.is_empty() || records[0].tag_id != tags::HWPTAG_PARA_HEADER {
         return Err(BodyTextError::ParseError("PARA_HEADER 레코드 없음".into()));
     }
