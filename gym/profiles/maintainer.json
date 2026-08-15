@@ -6,16 +6,20 @@
   "description": "전 표면 — 검증 사다리와 자기서술까지 포함한 완주 코스.",
   "packs": [
     "automation",
+    "batch-ops",
     "casual-rides",
     "core-cli",
     "corpus-diagnostics",
     "expert-challenges",
+    "extraction",
     "layout-rendering",
     "objects-media",
+    "render-tree",
     "security",
     "self-description",
     "serialization",
     "studio-e2e",
+    "table-csv",
     "table-editing",
     "text-editing"
   ]

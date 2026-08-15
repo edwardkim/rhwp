@@ -714,6 +714,51 @@ fn initialize_declares_resources_capability() {
         r["result"]["capabilities"]["resources"].is_object(),
         "resources capability 선언이 없습니다: {r}"
     );
+    assert!(
+        r["result"]["capabilities"]["prompts"].is_object(),
+        "prompts capability 선언이 없습니다: {r}"
+    );
+}
+
+#[test]
+fn prompts_list_and_get_expose_static_playbooks() {
+    let mut s = Server::started();
+    let list = s.request("prompts/list", serde_json::json!({}));
+    let prompts = list["result"]["prompts"]
+        .as_array()
+        .unwrap_or_else(|| panic!("prompts/list 응답에 prompts 배열이 없습니다: {list}"));
+    let names: Vec<&str> = prompts
+        .iter()
+        .filter_map(|prompt| prompt["name"].as_str())
+        .collect();
+    assert_eq!(names, ["triage-document", "prove-work"]);
+    for prompt in prompts {
+        assert!(prompt["title"].is_string(), "title 누락: {prompt}");
+        assert!(
+            prompt["description"].is_string(),
+            "description 누락: {prompt}"
+        );
+        assert_eq!(prompt["arguments"], serde_json::json!([]), "{prompt}");
+    }
+
+    let triage = s.request(
+        "prompts/get",
+        serde_json::json!({"name": "triage-document"}),
+    );
+    assert_eq!(triage["result"]["messages"][0]["role"], "user", "{triage}");
+    assert_eq!(
+        triage["result"]["messages"][0]["content"]["type"], "text",
+        "{triage}"
+    );
+    assert!(
+        triage["result"]["messages"][0]["content"]["text"]
+            .as_str()
+            .is_some_and(|text| text.contains("export-structure")),
+        "triage playbook 본문이 없습니다: {triage}"
+    );
+
+    let unknown = s.request("prompts/get", serde_json::json!({"name": "unknown"}));
+    assert_eq!(unknown["error"]["code"], -32602, "{unknown}");
 }
 
 #[test]

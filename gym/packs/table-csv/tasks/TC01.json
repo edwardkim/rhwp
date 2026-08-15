@@ -1,0 +1,42 @@
+{
+  "id": "TC01",
+  "tier": 3,
+  "title": "표 값 되쓰기 — 재정표 적립금",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "이 문서 표 0(재정표)의 2010년 행 '적립금' 값 328 을 999 로 바꿔 out.hwp 로 저장하라. 표 크기·라벨·다른 값은 그대로 두어야 한다. 힌트: table-to-csv 로 뽑아 그 칸만 고치고 csv-to-table --table 0 으로 되넣어라(-o out.hwp).",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "out.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "원본과 다름(무편집 거부)",
+      "op": "differs_from_input",
+      "file": "out.hwp"
+    },
+    {
+      "name": "적립금이 이미 999(센티넬 재적용 무변경)",
+      "op": "value_eq",
+      "path": "changedCount",
+      "value": 0,
+      "cmd": [
+        "csv-to-table",
+        "{file:out.hwp}",
+        "--table",
+        "0",
+        "--csv",
+        "gym/packs/table-csv/assets/TC01-edit.csv",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

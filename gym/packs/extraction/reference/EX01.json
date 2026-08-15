@@ -1,0 +1,19 @@
+{
+  "id": "EX01",
+  "steps": [
+    {
+      "answer": {
+        "rows": {
+          "cmd": [
+            "chart-to-csv",
+            "{input}",
+            "--chart",
+            "1",
+            "--json"
+          ],
+          "path": "charts[0].rowCount"
+        }
+      }
+    }
+  ]
+}
