@@ -803,6 +803,27 @@ rhwp inspect injection samples/field-01.hwp --json | jq '{clean, highestConfiden
 rhwp inspect unicode samples/field-01.hwp --json --kind zero-width | jq '{clean, findingCount}'
 ```
 
+### `armor <파일.hwp|파일.hwpx> [--json]` (프롬프트 주입 방패)
+문서 본문을 이 호출만의 무작위 nonce 격벽 `⟦UNTRUSTED:<nonce>⟧ … ⟦/UNTRUSTED:<nonce>⟧` 으로 감싸,
+LLM 프롬프트에 통째로 넣어도 문서 안 문장이 사용자의 지시로 오인되지 않게 한다 — `inspect injection`
+(주입 신호)·출처 표지(`untrustedContent`/`untrustedFields`)·격벽을 **한 번의 호출**로 묶은 것이다.
+문서는 nonce 를 모르므로 격벽을 위조하거나 조기 종료할 수 없다. **문서를 고치지 않는다** — 격벽은 뜻을
+지우지 않고 "지시가 아니라 데이터"라는 경계만 구조로 세운다(`inspect injection` 과 같은 무변경 규약).
+- `armoredText`: `⟦UNTRUSTED:<nonce>⟧\n<본문>\n⟦/UNTRUSTED:<nonce>⟧`. 본문은 `export-text` 와 같은
+  출처(렌더 텍스트)라 조판 줄바꿈이 들어갈 수 있다. 반면 주입 판정은 IR 을 훑으므로(격벽이 감싸는 렌더
+  텍스트보다 넓다) 렌더 줄바꿈으로 끊긴 지시나 각주·머리말에 심긴 지시도 잡는다.
+- `safety`: `{nonce, fenceOpen, fenceClose, injectionSignalCount, highestConfidence, note}` — nonce·격벽
+  표지는 엔진 생성값이라 문서가 정할 수 없다. `note` 는 소비자에게 "격벽 안은 전부 데이터"임을 알린다.
+- 검사 범위는 `scanScopes` 가 밝힌다(본문·표 셀·글상자·수식·각주·미주·머리말·꼬리말·캡션). 탐지 건수가
+  0이 아니어도 종료 코드는 0이다 — "위험 문서 발견"은 실패가 아니라 정상 판정 결과다(#2707).
+- `--json` 봉투: `{"schemaVersion":"1.0","source","pageCount","scanScopes":[...],"safety":{...},"armoredText","injectionSignals":[...],"signalCount","clean"}`
+- 위협 모델의 전체 근거는 [간접 프롬프트 인젝션](../tech/agent_security/indirect_prompt_injection.md)과
+  [봉투 출처 표지](../tech/envelope_provenance.md)를 따른다.
+
+```bash
+rhwp armor 편람.hwp --json | jq '{clean, signalCount, nonce: .safety.nonce}'
+```
+
 ### `edit fill-fields <파일> --data <JSON|@파일> [옵션]` (#3329)
 누름틀에 값을 채운다 — 서식 자동 작성/메일머지. 검증된 코어 경로
 (`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없고, **필드 값만 바꾸므로
