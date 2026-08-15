@@ -47,17 +47,31 @@ fn write_flipped(sample: &str, flip_pct: usize, label: &str) -> PathBuf {
 /// 이제 손상 입력을 패닉 없이 우아하게 처리한다(101 이 아니어야 한다).
 #[test]
 fn corrupt_input_does_not_panic_in_renderer() {
-    for (sample, pct, label) in [
-        ("hwp3-sample11.hwp", 45, "typeset-vpos"),
-        ("issue1949_giant_cell_nested_tables_perf.hwp", 55, "tablelayout-vpos"),
+    // 초인적 규모 퍼징이 잡은 렌더러 오버플로 사이트들의 재현자 — info(레이아웃) 와
+    // export-text(전체 렌더) 두 경로 모두.
+    for (sample, pct, cmd, label) in [
+        ("hwp3-sample11.hwp", 45, "info", "typeset-vpos"),
+        ("issue1949_giant_cell_nested_tables_perf.hwp", 55, "info", "tablelayout-vpos"),
+        ("HWP5-nopassword-123456.hwp", 90, "export-text", "typeset-lhls"),
+        (
+            "issue1937_rowbreak_footnote_overpagination.hwp",
+            90,
+            "export-text",
+            "heightmeasurer-vpos",
+        ),
     ] {
         let path = write_flipped(sample, pct, label);
         let arg = path.to_str().expect("경로");
-        let output = assert_code(&["info", arg, "--json"], 0);
+        let args: Vec<&str> = if cmd == "info" {
+            vec![cmd, arg, "--json"]
+        } else {
+            vec![cmd, arg]
+        };
+        let output = assert_code(&args, 0);
         assert_ne!(
             output.status.code(),
             Some(101),
-            "손상 입력이 렌더러에서 패닉했다: {sample}"
+            "손상 입력이 렌더러에서 패닉했다: {sample} ({cmd})"
         );
         let _ = std::fs::remove_file(&path);
     }
