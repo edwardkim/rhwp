@@ -992,6 +992,7 @@ jobs:
           python3 -m unittest scripts/tests/test_gym_trajectory.py
           python3 -m unittest scripts/tests/test_gym_leaderboard.py
           python3 -m unittest scripts/tests/test_gym_robustness.py
+          python3 -m unittest scripts/tests/test_gym_fuzz_corpus.py
           python3 -m unittest scripts/tests/test_gym_release_diff.py
           python3 -m unittest scripts/tests/test_gym_discriminate.py
 
