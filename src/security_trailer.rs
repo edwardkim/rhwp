@@ -730,14 +730,14 @@ mod tests {
         // 비밀번호 경로(open)로 공개키 트레일러를 열면 kdf=2 분기에서 Broken(패닉 없음).
         let (ek, _dk) = generate_keypair();
         let sealed = seal_to_pubkey(HOST, SECRET, &ek).unwrap();
-        assert!(matches!(open(&sealed, PW), Opened::Broken { .. }));
+        assert!(matches!(open(&sealed, &pw()), Opened::Broken { .. }));
     }
 
     #[test]
     fn pq_open_with_privkey_on_password_trailer_is_broken_not_panic() {
         // 공개키 경로(open_with_privkey)로 비밀번호(kdf=1) 트레일러를 열면 Broken(패닉 없음).
         let (_ek, dk) = generate_keypair();
-        let sealed = seal(HOST, SECRET, PW).unwrap();
+        let sealed = seal(HOST, SECRET, &pw()).unwrap();
         assert!(matches!(
             open_with_privkey(&sealed, &dk),
             Opened::Broken { .. }
