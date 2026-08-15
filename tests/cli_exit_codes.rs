@@ -30,6 +30,39 @@ fn sample_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)
 }
 
+/// 샘플을 결정적으로 손상시켜(바이트 플립) 임시 파일로 쓴다 — 퍼징 재현자용.
+fn write_flipped(sample: &str, flip_pct: usize, label: &str) -> PathBuf {
+    let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples").join(sample);
+    let mut data = std::fs::read(&src).expect("샘플 읽기");
+    let pos = data.len() * flip_pct / 100;
+    data[pos] ^= 0xFF;
+    let path = unique_temp_path(label);
+    std::fs::write(&path, &data).expect("손상본 쓰기");
+    path
+}
+
+/// [robustness] 초인적 규모 퍼징(6371 손상)이 잡은 렌더러 i32 덧셈 오버플로 패닉
+/// 회귀. `s.vertical_pos + s.line_height`(typeset.rs·table_layout.rs)가 손상 입력의
+/// 거대 layout 값으로 오버플로해 패닉(exit 101)하던 것을 saturating 으로 막았다.
+/// 이제 손상 입력을 패닉 없이 우아하게 처리한다(101 이 아니어야 한다).
+#[test]
+fn corrupt_input_does_not_panic_in_renderer() {
+    for (sample, pct, label) in [
+        ("hwp3-sample11.hwp", 45, "typeset-vpos"),
+        ("issue1949_giant_cell_nested_tables_perf.hwp", 55, "tablelayout-vpos"),
+    ] {
+        let path = write_flipped(sample, pct, label);
+        let arg = path.to_str().expect("경로");
+        let output = assert_code(&["info", arg, "--json"], 0);
+        assert_ne!(
+            output.status.code(),
+            Some(101),
+            "손상 입력이 렌더러에서 패닉했다: {sample}"
+        );
+        let _ = std::fs::remove_file(&path);
+    }
+}
+
 // --- 2: 사용법 오류 -------------------------------------------------------
 
 #[test]
