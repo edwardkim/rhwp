@@ -12,7 +12,8 @@ use std::collections::HashMap;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, Bookmark, CharOverlap, Control, Equation, Field, FieldType,
-    FormObject, FormType, HiddenComment, NewNumber, PageHide, PageNumberPos, UnknownControl,
+    FormObject, FormType, HiddenComment, IndexMark, NewNumber, PageHide, PageNumberPos,
+    UnknownControl,
 };
 use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
@@ -44,6 +45,7 @@ pub fn parse_control(ctrl_id: u32, ctrl_data: &[u8], child_records: &[Record]) -
         tags::CTRL_PAGE_NUM_POS => parse_page_num_pos(ctrl_data),
         tags::CTRL_PAGE_HIDE => parse_page_hide(ctrl_data),
         tags::CTRL_BOOKMARK => parse_bookmark(ctrl_data),
+        tags::CTRL_INDEX_MARK => parse_index_mark(ctrl_data),
         tags::CTRL_TCPS => parse_char_overlap(ctrl_data),
         tags::CTRL_EQUATION => parse_equation_control(ctrl_data, child_records),
         tags::CTRL_FORM => parse_form_control(ctrl_data, child_records),
@@ -721,6 +723,28 @@ fn parse_bookmark(ctrl_data: &[u8]) -> Control {
         }
     }
     Control::Bookmark(bm)
+}
+
+/// 찾아보기 표식 파싱 ('idxm')
+///
+/// ctrl_data 레이아웃 (ctrl_id 4바이트는 이미 제거된 상태) — 실측 06926:
+///   WORD(2) + WCHAR[n]  첫째 키
+///   WORD(2) + WCHAR[m]  둘째 키
+///   4바이트 예약(전부 0)
+///
+/// arm 이 없으면 `Control::Unknown` 이 되는데, 그러면 HWPX 저장기가 슬롯으로는
+/// 세어 놓고 XML 은 내지 않아 문단 축이 8유닛 짧아진다 — 한글은 범위를 넘는
+/// `textpos` 를 만나면 파일을 아예 열지 못한다.
+fn parse_index_mark(ctrl_data: &[u8]) -> Control {
+    let mut im = IndexMark::default();
+    let mut r = ByteReader::new(ctrl_data);
+    if let Ok(first) = r.read_hwp_string() {
+        im.first_key = first;
+    }
+    if let Ok(second) = r.read_hwp_string() {
+        im.second_key = second;
+    }
+    Control::IndexMark(im)
 }
 
 /// 글자 겹침 파싱 (HWP 스펙 표 152)

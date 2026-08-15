@@ -494,7 +494,7 @@ impl Paragraph {
             Control::Footnote(_) | Control::Endnote(_) => 0x0011,
             Control::AutoNumber(_) | Control::NewNumber(_) => 0x0012,
             Control::PageNumberPos(_) | Control::PageHide(_) => 0x0015,
-            Control::Bookmark(_) => 0x0016,
+            Control::Bookmark(_) | Control::IndexMark(_) => 0x0016,
             Control::CharOverlap(_) => 0x0017,
         }
     }

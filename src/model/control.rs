@@ -40,6 +40,8 @@ pub enum Control {
     PageNumberPos(PageNumberPos),
     /// 책갈피 ('bokm')
     Bookmark(Bookmark),
+    /// 찾아보기 표식 ('idxm')
+    IndexMark(IndexMark),
     /// 하이퍼링크 ('%hlk')
     Hyperlink(Hyperlink),
     /// 덧말 ('tdut')
@@ -209,6 +211,23 @@ pub struct PageNumberPos {
 pub struct Bookmark {
     /// 책갈피 이름
     pub name: String,
+}
+
+/// 찾아보기 표식 ('idxm') — 색인에 실릴 키워드를 본문 위치에 붙여 둔 표식.
+///
+/// HWP5 CTRL_DATA 레이아웃(ctrl_id 4바이트 제거 후, 실측 06926):
+///   WORD(2) + WCHAR[n]  첫째 키
+///   WORD(2) + WCHAR[m]  둘째 키
+///   4바이트 예약(실측 전부 0)
+///
+/// HWPX 는 `<hp:ctrl><hp:indexmark><hp:firstKey/><hp:secondKey/></hp:indexmark></hp:ctrl>`
+/// 로 적는다(ParaList XML schema.xml:209).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct IndexMark {
+    /// 첫째 키
+    pub first_key: String,
+    /// 둘째 키 (없으면 빈 문자열)
+    pub second_key: String,
 }
 
 /// 하이퍼링크 ('%hlk' 필드)

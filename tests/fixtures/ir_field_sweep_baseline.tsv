@@ -69,13 +69,7 @@ hwp5rb	86712_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].
 hwp5rb	86712_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].control_mask	4
 hwp5rb	86712_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	30
 hwp5rb	86712_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	56
-hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].char_count	14
-hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].char_offsets[]	80
-hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].control_mask	17
 hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	12
-hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].controls[].text_box.paragraphs[].char_count	5
-hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].controls[].text_box.paragraphs[].char_offsets[]	18
-hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].controls[].text_box.paragraphs[].control_mask	5
 hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].line_segs[].vertical_pos	295
 hwp5rb	KTX.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	280
 hwp5rb	KTX.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	3
@@ -142,14 +136,8 @@ hwp5rb	hwp-img-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_wi
 hwp5rb	hwp-multi-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	289
 hwp5rb	hwp-multi-002.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	16
 hwp5rb	hwp3-sample-hwp5.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	72
-hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].char_count	290
-hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].char_offsets.n	1248
-hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].char_offsets[]	7143
-hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].control_mask	290
 hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	91
-hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].line_segs.len	4
 hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].line_segs[].vertical_pos	54
-hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].raw_header_extra[]	4
 hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	163
 hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[].children[].children[].children[].children[].children[].children[].children[].children[].children[][].drawing.fill.solid	192
 hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[].children[].children[].children[].children[].children[].children[].children[].children[][].drawing.fill.solid	128
@@ -241,8 +229,6 @@ hwp5rb	issue2217/20200830.hwp	sections[].paragraphs[].controls[].cells[].list_he
 hwp5rb	issue2217/20200830.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].control_mask	1
 hwp5rb	issue2217/20200830.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	46
 hwp5rb	issue2439/issue2439_repeat_table_overlap.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	289
-hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].char_count	1
-hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].control_mask	1
 hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	985
 hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	16
 hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[].children[][].drawing.text_box.raw_list_header_extra.len	7
@@ -267,18 +253,12 @@ hwp5rb	multi-table-001.hwp	sections[].paragraphs[].control_mask	1
 hwp5rb	multi-table-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	69
 hwp5rb	multi-table-002.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	69
 hwp5rb	pic-in-head-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	26
-hwp5rb	pic-in-head-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].char_count	2
-hwp5rb	pic-in-head-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].char_offsets[]	33
-hwp5rb	pic-in-head-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].control_mask	2
 hwp5rb	pic-in-head-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	20
 hwp5rb	pic-in-head-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].control_mask	1
 hwp5rb	pic-in-head-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	25
 hwp5rb	pic-in-head-02.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
 hwp5rb	pic-in-head-02.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	5
 hwp5rb	pic-in-table-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	26
-hwp5rb	pic-in-table-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].char_count	2
-hwp5rb	pic-in-table-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].char_offsets[]	33
-hwp5rb	pic-in-table-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].control_mask	2
 hwp5rb	pic-in-table-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	20
 hwp5rb	pic-in-table-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].control_mask	1
 hwp5rb	pic-in-table-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	25
@@ -342,8 +322,6 @@ hwp5rb	task2287/1342000_edu_curriculum_map.hwp	sections[].paragraphs[].controls[
 hwp5rb	task2319/20544835_jinan_apt_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	92
 hwp5rb	task2322/20862337_cheongyang_voucher_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	22
 hwp5rb	task2322/20862337_cheongyang_voucher_form.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	109
-hwp5rb	task2430/1382000_domestic_violence_survey.hwp	sections[].paragraphs[].char_count	1
-hwp5rb	task2430/1382000_domestic_violence_survey.hwp	sections[].paragraphs[].control_mask	1
 hwp5rb	task2430/1382000_domestic_violence_survey.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	220
 hwp5rb	task2430/1382000_domestic_violence_survey.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
 hwp5rb	tb-img-03.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	4
@@ -358,9 +336,6 @@ hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증
 hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].control_mask	2
 hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].paragraphs[].control_mask	2
 hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	sections[].paragraphs[].controls[].paragraphs[].control_mask	6
-hwp5rb	추진일정.hwp	sections[].paragraphs[].char_count	1
-hwp5rb	추진일정.hwp	sections[].paragraphs[].char_offsets[]	7
-hwp5rb	추진일정.hwp	sections[].paragraphs[].control_mask	1
 hwp5rb	통합재정통계(2010.11월).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	20
 hwp5rb	통합재정통계(2011.10월).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	20
 hwpx	143E433F503322BD33.hwpx	doc_info.border_fills[].fill.image.brightness	1

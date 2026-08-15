@@ -1203,6 +1203,7 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
         Control::PageNumberPos(_) => (0x0015, tags::CTRL_PAGE_NUM_POS),
         Control::PageHide(_) => (0x0015, tags::CTRL_PAGE_HIDE),
         Control::Bookmark(_) => (0x0016, tags::CTRL_BOOKMARK),
+        Control::IndexMark(_) => (0x0016, tags::CTRL_INDEX_MARK),
         Control::Hyperlink(_) => (0x000B, 0),
         // [#4677] 덧말은 한컴 원본에서 `17 00 74 75 64 74 …`(코드 0x0017 + 'tdut')로 나간다.
         // 종전엔 `(0x000B, 0)` — 개체 제어문자 자리에 **id 0** 을 써 놓고 짝이 되는
@@ -1220,7 +1221,9 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::control::{AutoNumber, Bookmark, Field, FieldType, Hyperlink, NewNumber};
+    use crate::model::control::{
+        AutoNumber, Bookmark, Field, FieldType, Hyperlink, IndexMark, NewNumber,
+    };
     use crate::model::document::{Section, SectionDef};
     use crate::model::paragraph::{
         CharShapeRef, FieldRange, LineSeg, Paragraph, RangeTag, TitleMark,
@@ -1260,6 +1263,81 @@ mod tests {
         assert_eq!(parsed.paragraphs.len(), 1);
         assert_eq!(parsed.paragraphs[0].text, "Hello");
         assert_eq!(parsed.paragraphs[0].char_offsets, vec![0, 1, 2, 3, 4]);
+    }
+
+    /// 찾아보기 표식 라운드트립 — 키와 8유닛 자리가 함께 살아야 한다.
+    ///
+    /// arm 이 없으면 `Control::Unknown` 이 되고, HWPX 저장기가 슬롯으로는 세어 놓고
+    /// XML 은 내지 않아 문단 축이 8유닛 짧아진다. 한글은 범위를 넘는 `textpos` 를
+    /// 만나면 파일을 아예 열지 못한다(06926·07833·08051 실측).
+    #[test]
+    fn test_roundtrip_index_mark() {
+        let para = Paragraph {
+            // 글자 2 + 표식 8 + 끝 마커 1
+            char_count: 11,
+            text: "가나".to_string(),
+            char_offsets: vec![0, 1],
+            controls: vec![Control::IndexMark(IndexMark {
+                first_key: "위로보상금과".to_string(),
+                second_key: String::new(),
+            })],
+            ..Default::default()
+        };
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+        let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
+        let out = &parsed.paragraphs[0];
+
+        assert_eq!(out.text, "가나");
+        assert_eq!(
+            out.controls.len(),
+            1,
+            "표식이 컨트롤로 남아야 한다: {:?}",
+            out.controls
+        );
+        match &out.controls[0] {
+            Control::IndexMark(im) => {
+                assert_eq!(im.first_key, "위로보상금과");
+                assert_eq!(im.second_key, "");
+            }
+            other => panic!("IndexMark 가 아니다: {other:?}"),
+        }
+        assert_eq!(
+            out.control_mask & (1 << 0x0016),
+            1 << 0x0016,
+            "찾아보기 표식은 컨트롤 문자 0x16 을 쓴다"
+        );
+    }
+
+    /// 두 키가 모두 있는 표식도 그대로 왕복한다.
+    #[test]
+    fn test_roundtrip_index_mark_with_second_key() {
+        let para = Paragraph {
+            char_count: 9,
+            controls: vec![Control::IndexMark(IndexMark {
+                first_key: "첫키".to_string(),
+                second_key: "둘째키".to_string(),
+            })],
+            ..Default::default()
+        };
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+        let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
+        match &parsed.paragraphs[0].controls[0] {
+            Control::IndexMark(im) => {
+                assert_eq!(
+                    (im.first_key.as_str(), im.second_key.as_str()),
+                    ("첫키", "둘째키")
+                );
+            }
+            other => panic!("IndexMark 가 아니다: {other:?}"),
+        }
     }
 
     /// 제목 차례 표시 라운드트립 — 위치·`ignore` 값·8유닛 폭이 모두 살아야 한다.

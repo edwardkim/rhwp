@@ -8,7 +8,7 @@ use quick_xml::Reader;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, Bookmark, CharOverlap, Control, Equation, Field, FieldType,
-    FormObject, FormType, HiddenComment, NewNumber, PageHide, PageNumberPos, Parameter,
+    FormObject, FormType, HiddenComment, IndexMark, NewNumber, PageHide, PageNumberPos, Parameter,
     ParameterList, Ruby, EQUATION_LINE_MODE_BIT,
 };
 use crate::model::document::{Section, SectionDef};
@@ -4588,6 +4588,14 @@ fn parse_ctrl(
                         let ctrl = parse_ctrl_hidden_comment(reader)?;
                         controls.push(ctrl);
                     }
+                    // 찾아보기 표식 — 책갈피와 같이 8 유닛 자리를 차지한다. 한컴 산출물
+                    // 실측(06926 section3 문단 347): 텍스트 342자에 표식 3개인데 lineseg
+                    // 최대 `textpos` 가 348 이라, 표식이 자리를 잡지 않으면 범위 밖이 된다.
+                    b"indexmark" => {
+                        let im = parse_index_mark_element(reader)?;
+                        controls.push(Control::IndexMark(im));
+                        text_parts.push("\u{0002}".to_string());
+                    }
                     b"fieldBegin" => {
                         let ctrl = parse_ctrl_field_begin(ce, reader)?;
                         controls.push(ctrl);
@@ -4691,6 +4699,11 @@ fn parse_ctrl(
                         text_parts.push("\u{0004}".to_string());
                     }
                     b"hiddenComment" => {}
+                    // 키가 하나도 없는 표식은 빈 요소로 온다 — 자리는 똑같이 차지한다.
+                    b"indexmark" => {
+                        controls.push(Control::IndexMark(IndexMark::default()));
+                        text_parts.push("\u{0002}".to_string());
+                    }
                     _ => {}
                 }
             }
@@ -4789,6 +4802,46 @@ fn parse_page_num_attrs(e: &quick_xml::events::BytesStart) -> PageNumberPos {
         }
     }
     pn
+}
+
+/// `<hp:indexmark><hp:firstKey>…</hp:firstKey><hp:secondKey>…</hp:secondKey></hp:indexmark>`
+///
+/// 한컴 실측(06926, 23건)은 `secondKey` 가 비면 요소 자체를 쓰지 않는다.
+fn parse_index_mark_element(reader: &mut Reader<&[u8]>) -> Result<IndexMark, HwpxError> {
+    let mut im = IndexMark::default();
+    let mut cur: Option<&'static str> = None;
+    let mut buf = Vec::new();
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Start(ref e)) => {
+                cur = match local_name(e.name().as_ref()) {
+                    b"firstKey" => Some("first"),
+                    b"secondKey" => Some("second"),
+                    _ => None,
+                };
+            }
+            Ok(Event::Text(ref t)) => {
+                let v = t.decode().unwrap_or_default().to_string();
+                match cur {
+                    Some("first") => im.first_key.push_str(&v),
+                    Some("second") => im.second_key.push_str(&v),
+                    _ => {}
+                }
+            }
+            Ok(Event::End(ref e)) => {
+                let name = local_name(e.name().as_ref()).to_vec();
+                if name == b"indexmark" {
+                    break;
+                }
+                cur = None;
+            }
+            Ok(Event::Eof) => break,
+            Err(e) => return Err(HwpxError::XmlError(format!("indexmark: {}", e))),
+            _ => {}
+        }
+        buf.clear();
+    }
+    Ok(im)
 }
 
 fn parse_bookmark_attrs(e: &quick_xml::events::BytesStart) -> Bookmark {

@@ -1597,7 +1597,10 @@ fn occupies_hwpx_slot_axis(control: &Control) -> bool {
             // HWP3 는 char_count 에 8유닛 슬롯을 배정하지 않아(06397 문단 0.0:
             // `cc=2, text_len=1, controls=3`) 늘 mismatch 경로로 오므로, 여기 없으면
             // HWP3 문서의 숨은 설명이 통째로 사라진다(06397 유지율 2.2%).
-            Control::Bookmark(_) | Control::Hyperlink(_) | Control::HiddenComment(_)
+            Control::Bookmark(_)
+                | Control::Hyperlink(_)
+                | Control::HiddenComment(_)
+                | Control::IndexMark(_)
         )
 }
 
@@ -1688,6 +1691,18 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                 }
                 Err(e) => eprintln!("[hwpx] Hyperlink 직렬화 실패: {e}"),
             }
+        }
+        // 찾아보기 표식 — 한컴 실측(06926, 23건)은 `secondKey` 가 비면 아예 쓰지 않는다.
+        Control::IndexMark(im) => {
+            out.push_str("<hp:ctrl><hp:indexmark><hp:firstKey>");
+            out.push_str(&xml_escape(&im.first_key));
+            out.push_str("</hp:firstKey>");
+            if !im.second_key.is_empty() {
+                out.push_str("<hp:secondKey>");
+                out.push_str(&xml_escape(&im.second_key));
+                out.push_str("</hp:secondKey>");
+            }
+            out.push_str("</hp:indexmark></hp:ctrl>");
         }
         Control::Equation(eq) => {
             out.push_str(&render_equation(eq));
