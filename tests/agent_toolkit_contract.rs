@@ -122,6 +122,7 @@ fn capabilities_lists_every_command_and_every_command_dispatches() {
             "verify",
             "pii-scan",
             "chunk-plan",
+            "context-cost",
             "evidence",
         ],
         "{v}"

@@ -148,6 +148,16 @@ pub const COMMANDS: &[CommandSpec] = &[
         handler: crate::chunkplan::run,
     },
     CommandSpec {
+        name: "context-cost",
+        usage: "rhwp-agent context-cost <파일...> [--json]",
+        summary: "컨텍스트 비용 실측 — 파일을 그대로 싣는 경로와 문서-네이티브 경로의 문자 수·본문 복원율 비교",
+        flags: &[("--json", "계약 봉투(JSON)로 출력")],
+        json_contract: true,
+        gate_exit3: None,
+        untrusted_decl: &[],
+        handler: crate::contextcost::run,
+    },
+    CommandSpec {
         name: "evidence",
         usage: "rhwp-agent evidence <전.hwp> <후.hwp> [--json|--md] [-o <파일>]",
         summary: "전/후 증빙 번들 — 지문 비교 + 텍스트 diff 요약을 마크다운/JSON 한 벌로",
