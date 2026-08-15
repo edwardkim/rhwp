@@ -752,6 +752,16 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        // [프롬프트 주입 방패] armoredText 가 문서 본문을 담으므로 오라클이 그 경로에서
+        // 문서 문자열을 찾아야 하고, 지도가 armoredText 를 선언하는지 실측으로 고정한다.
+        Recipe {
+            command: "armor",
+            doc: Some(main.clone()),
+            args: vec![s("armor"), p(&main), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         // inspect 는 하위 명령군이므로, 새 유니코드 축을 실제 문서에서 실행한다.
         // 정상 문서의 빈 findings 도 출처 표지가 유지되는지 확인할 수 있다.
         Recipe {

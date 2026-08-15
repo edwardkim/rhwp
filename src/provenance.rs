@@ -276,6 +276,26 @@ pub const MAP: &[CommandProvenance] = &[
         note: "hiddenText·injectionSignals·findings의 문장·표시 문자열만 문서 파생이며, 종류·주소·근거·집계는 엔진 판정값이다.",
     },
     CommandProvenance {
+        command: "armor",
+        untrusted: &[
+            f(
+                "armoredText",
+                "queries::armor::fence — HwpDocument::extract_page_text_native 로 뽑은 문서 본문을 nonce 격벽으로 감싼 값. 격벽 표지만 엔진 생성이고 격벽 사이 본문은 전부 문서 파생이다",
+            ),
+            f(
+                "injectionSignals[].excerpt",
+                "queries::injection_scan::make_excerpt — 주입 신호가 발견된 문서 문맥의 제한 발췌",
+            ),
+            f(
+                "injectionSignals[].matched",
+                "queries::injection_scan::scan_text_in — 문서에서 실제 매치된 신호 조각",
+            ),
+        ],
+        note: "safety.nonce·fenceOpen·fenceClose 는 이 호출만의 무작위 격벽 표지(엔진 생성)이고, \
+               pageCount·signalCount·clean·scanScopes·safety.note·신호의 종류·주소·근거는 엔진 판정값이다. \
+               armoredText 안 격벽 사이 본문과 신호 발췌(excerpt·matched)만 문서 파생이다.",
+    },
+    CommandProvenance {
         command: "edit",
         untrusted: &[
             f(
