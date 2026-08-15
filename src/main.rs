@@ -3751,6 +3751,7 @@ fn print_help() {
         "      --profile <프로필>      layer 출력 프로필: screen|print|high-quality|fast-preview"
     );
     println!("      --show-para-marks       문단부호(↵/↓) 표시");
+    println!("      --annotate-metric-font  배치에 쓴 내장 메트릭 face 를 data-metric-font 로 주석 (#4709)");
     println!("      --show-control-codes    조판부호 보이기 (문단부호 + 개체 마커 등)");
     println!("      --debug-overlay         디버그 오버레이 (문단/표 경계 + 인덱스 라벨)");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
@@ -4329,6 +4330,7 @@ fn export_svg(args: &[String]) -> i32 {
     let mut target_page: Option<u32> = None;
     let mut show_para_marks = false;
     let mut show_control_codes = false;
+    let mut annotate_metric_font = false;
     let mut debug_overlay = false;
     let mut grid_mm: Option<f64> = None;
     let mut grid_origin = GridOriginOption::Fixed((0.0_f64, 0.0_f64));
@@ -4386,6 +4388,10 @@ fn export_svg(args: &[String]) -> i32 {
             }
             "--show-control-codes" => {
                 show_control_codes = true;
+                i += 1;
+            }
+            "--annotate-metric-font" => {
+                annotate_metric_font = true;
                 i += 1;
             }
             "--debug-overlay" => {
@@ -4529,6 +4535,9 @@ fn export_svg(args: &[String]) -> i32 {
     }
     if show_control_codes {
         doc.set_show_control_codes(true);
+    }
+    if annotate_metric_font {
+        doc.set_annotate_metric_font(true);
     }
     if debug_overlay {
         doc.set_debug_overlay(true);

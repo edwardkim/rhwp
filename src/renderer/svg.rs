@@ -125,6 +125,14 @@ pub struct SvgRenderer {
     /// 일반 face 하나만 `@font-face`로 임베드하면 브라우저가 synthetic bold를
     /// 적용해 획 두께와 글리프 폭이 기준 PDF와 달라진다.
     font_bold_families: std::collections::HashSet<String>,
+    /// [#4709] 배치에 쓴 내장 메트릭 face를 출력에 주석으로 남길지 (옵트인).
+    ///
+    /// 켜면 각 `<text>`에 `data-metric-font`, 루트 `<svg>`에 페이지에서 쓰인
+    /// face 목록 `data-rhwp-metric-fonts`가 붙는다. 임베드 호스트가 폰트 설치
+    /// 확인·대체 폰트 보정에 쓴다. 기본 꺼짐 — 골든/스냅샷 출력 불변.
+    pub annotate_metric_font: bool,
+    /// [#4709] 현재 페이지에서 배치에 쓰인 메트릭 face 수집 (루트 주석용).
+    metric_faces: std::collections::BTreeSet<String>,
 }
 
 /// 디버그 오버레이용 문단 경계 정보
@@ -199,6 +207,8 @@ impl SvgRenderer {
             font_paths: Vec::new(),
             font_codepoints: std::collections::HashMap::new(),
             font_bold_families: std::collections::HashSet::new(),
+            annotate_metric_font: false,
+            metric_faces: std::collections::BTreeSet::new(),
         }
     }
 
@@ -2686,6 +2696,7 @@ impl Renderer for SvgRenderer {
         self.overlay_vpos_resets.clear();
         self.overlay_skip_depth = 0;
         self.overlay_page_section = -1;
+        self.metric_faces.clear();
         // xmlns:xlink 필수: SVG 가 <img> 로 로드될 때(예: blob URL 미리보기)
         // 엄격한 XML 파싱으로 인해 xmlns:xlink 미선언 시 <image xlink:href=...> 가 무시됨.
         self.output.push_str(&format!(
@@ -2708,6 +2719,21 @@ impl Renderer for SvgRenderer {
             }
             defs_block.push_str("</defs>\n");
             self.output.insert_str(self.defs_insert_pos, &defs_block);
+        }
+        // [#4709] 루트 <svg>에 이 페이지 배치에 쓰인 메트릭 face 목록 주석 (옵트인).
+        if self.annotate_metric_font && !self.metric_faces.is_empty() {
+            if let Some(pos) = self.output.find('>') {
+                let list = self
+                    .metric_faces
+                    .iter()
+                    .cloned()
+                    .collect::<Vec<_>>()
+                    .join(",");
+                self.output.insert_str(
+                    pos,
+                    &format!(" data-rhwp-metric-fonts=\"{}\"", escape_xml(&list)),
+                );
+            }
         }
         self.output.push_str("</svg>\n");
     }
@@ -2763,6 +2789,18 @@ impl Renderer for SvgRenderer {
         }
         if style.italic {
             base_attrs.push_str(" font-style=\"italic\"");
+        }
+        // [#4709] 옵트인: 이 run 의 배치 폭을 계산한 내장 메트릭 face 주석.
+        // 임베드 호스트가 함초롬 등 미설치 폰트의 자간 불일치를 보정할 근거.
+        if self.annotate_metric_font {
+            if let Some(face) = crate::renderer::font_metrics_data::layout_metric_face_name(
+                &style.font_family,
+                style.is_visually_bold(),
+                style.italic,
+            ) {
+                base_attrs.push_str(&format!(" data-metric-font=\"{}\"", escape_xml(&face)));
+                self.metric_faces.insert(face);
+            }
         }
         let attrs_for_cluster = |cluster_str: &str, fill: &str| {
             let cluster_font_family = if super::contains_old_hangul_jamo(cluster_str) {

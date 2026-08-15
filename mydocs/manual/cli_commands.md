@@ -120,6 +120,10 @@ HWP/HWPX → SVG.
 - `-o`, `-p` (공통)
 - `--show-para-marks` — 문단부호(↵/↓)
 - `--show-control-codes` — 조판부호(문단부호 + 개체 마커)
+- `--annotate-metric-font` — 배치 폭 계산에 쓴 내장 메트릭 face 를 각 `<text>`의
+  `data-metric-font` 와 루트 `<svg>`의 `data-rhwp-metric-fonts`(쉼표 목록)로 주석 (#4709).
+  임베드 호스트의 폰트 설치 확인·대체 폰트 자간 보정용. 레이아웃 불변, 기본 꺼짐.
+  WASM 은 `setAnnotateMetricFont(true)` 후 `renderPageSvg`.
 - `--debug-overlay` — 디버그 오버레이(문단/표 경계 + 인덱스 라벨)
 - `--respect-vpos-reset` — LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리
 - `--show-grid[=Nmm]` — 격자 오버레이(기본 1mm, 예 `--show-grid=3mm`)

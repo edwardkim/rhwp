@@ -1022,6 +1022,7 @@ impl DocumentCore {
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.debug_overlay = self.debug_overlay;
+        renderer.annotate_metric_font = self.annotate_metric_font;
         renderer.render_tree(&tree);
         Ok(renderer.output().to_string())
     }
@@ -1040,6 +1041,7 @@ impl DocumentCore {
         // WASM에서도 문서 내장 face 사용량을 수집한다. 실제 CSS 생성은 아래의
         // embedded-only 경로가 담당하므로 시스템 font file I/O는 발생하지 않는다.
         renderer.inner_mut().font_embed_mode = crate::renderer::svg::FontEmbedMode::Style;
+        renderer.inner_mut().annotate_metric_font = self.annotate_metric_font;
         renderer.render_page(&layer_tree)?;
         let mut svg = renderer.output().to_string();
 
