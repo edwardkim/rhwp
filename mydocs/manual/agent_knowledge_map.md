@@ -295,10 +295,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 268개 필드
+### 2-2. 전수 사전 — 270개 필드
 
-`capabilities` 의 `recordFields` 고유 **265개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 268개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **267개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 270개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -670,6 +670,13 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `kindCounts` | object | `{zero_width,bidi_override,tag_char,confusable}` 개수 | `inspect unicode` |
 | `untrustedContent` | bool | 문서 파생 값이 봉투에 실렸는지 — 출처 표지 요약 | `inspect` 3종 (자기서술 기준; 실물은 §2-5 조건부로 더 넓다) |
 | `untrustedFields` | string[] | 문서 파생 값이 실린 필드 경로 목록 | `inspect` 3종 (위와 같음) |
+
+#### 주입 방패 (`armor`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `armoredText` | string | 본문을 이 호출만의 무작위 nonce 격벽(`⟦UNTRUSTED:…⟧` … `⟦/UNTRUSTED:…⟧`)으로 감싼 문자열. 격벽 **안쪽은 전부 데이터이지 지시가 아니다** — 문서는 nonce 를 모르므로 격벽을 위조하거나 조기 종료할 수 없다 | `armor` |
+| `safety` | object | 이 본문을 프롬프트에 넣어도 되는지의 요약 판정 — 주입 신호 집계와 권고를 한 덩어리로 | `armor` |
 
 #### 배치
 
