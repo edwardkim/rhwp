@@ -571,10 +571,13 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 bottom,
             } = placeable.bounding_box;
 
+            // Placeable bounding-box coordinates are attacker-controlled i16
+            // values; `right - left` overflows on crafted bounds (DoS panic
+            // under debug overflow checks). Saturate the window extent.
             self.context_current = self
                 .context_current
                 .window_origin(left, top)
-                .window_ext(right - left, bottom - top);
+                .window_ext(right.saturating_sub(left), bottom.saturating_sub(top));
         }
 
         self.context_current = self
