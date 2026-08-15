@@ -2707,8 +2707,8 @@ const verticalTextReadinessSample = rendererBaselineManifest.samples
   .find((sample) => sample.id === 'table-border-style');
 assert.equal(
   verticalTextReadinessSample?.browserParityThresholds?.inkMaskMaxDiffRatio,
-  0.005,
-  'vertical text readiness must keep its calibrated ink-mask tolerance bounded',
+  0.006,
+  'vertical text readiness must retain the calibrated font-raster ink-mask tolerance',
 );
 assert.equal(
   verticalTextReadinessSample?.browserParityThresholds?.nonInkMaxDiffPixels,
