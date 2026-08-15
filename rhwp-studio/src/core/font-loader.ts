@@ -488,6 +488,10 @@ export async function loadWebFonts(
   // 해당 이름은 재감지하지 않는다.
   const targetNames = [...(docFonts ?? []), ...CRITICAL_FONTS];
   detectOSFonts(targetNames);
+  const systemFontNames = [...new Set(targetNames.filter(isDetectedOSFont))];
+  if (systemFontNames.length > 0) {
+    console.debug(`[FontLoader][debug] 시스템 글꼴 사용: ${systemFontNames.join(', ')}`);
+  }
 
   // 1) 문서에서 요청한 글꼴과 초기 필수 글꼴만 대상으로 삼는다.
   // 시스템 글꼴이 감지되면 CSS 규칙도 추가하지 않아 원격 face가 이를 덮어쓰지 않는다.
@@ -495,6 +499,11 @@ export async function loadWebFonts(
   const requestedEntries = selectableFontList(options).filter(entry => (
     targetSet.has(normalizeFontFamily(entry.name)) && !isDetectedOSFont(entry.name)
   ));
+  if (requestedEntries.length > 0) {
+    console.debug(
+      `[FontLoader][debug] CDN 후보: ${requestedEntries.map(entry => entry.name).join(', ')}`,
+    );
+  }
   registerFontFaces(requestedEntries, options);
 
   // 2) 같은 파일을 쓰더라도 새 별칭은 FontFace에 별도로 등록한다.
@@ -520,8 +529,10 @@ export async function loadWebFonts(
   for (let i = 0; i < uniqueToLoad.length; i += BATCH) {
     const batch = uniqueToLoad.slice(i, i + BATCH);
     await Promise.all(batch.map(async (f) => {
+      const entries = entriesByFile.get(f.file) ?? [f];
+      const fontNames = entries.map(entry => entry.name).join(', ');
+      console.debug(`[FontLoader][debug] CDN 로드 시작: ${fontNames} <- ${f.file}`);
       try {
-        const entries = entriesByFile.get(f.file) ?? [f];
         for (const entry of entries) {
           const fmt = entry.format ?? 'woff2';
           const face = new FontFace(entry.name, `url(${entry.file}) format('${fmt}')`);
@@ -531,8 +542,10 @@ export async function loadWebFonts(
         }
         loadedFiles.add(f.file);
         loaded++;
-      } catch {
+        console.debug(`[FontLoader][debug] CDN 로드 성공: ${fontNames} <- ${f.file}`);
+      } catch (error) {
         failed++;
+        console.debug(`[FontLoader][debug] CDN 로드 실패: ${fontNames} <- ${f.file}`, error);
       }
       onProgress?.(loaded + failed, total);
     }));

@@ -34,6 +34,8 @@ test('외부 웹폰트 사용 안 함 옵션은 CDN @font-face와 FontFace.load�
   const fontFaceRequests: Array<{ family: string; source: string }> = [];
   const previousDocument = (globalThis as typeof globalThis & { document?: unknown }).document;
   const previousFontFace = (globalThis as typeof globalThis & { FontFace?: unknown }).FontFace;
+  const previousConsoleDebug = console.debug;
+  const debugLogs: string[] = [];
 
   const fakeDocument = {
     head: {
@@ -81,6 +83,9 @@ test('외부 웹폰트 사용 안 함 옵션은 CDN @font-face와 FontFace.load�
     configurable: true,
     value: FakeFontFace,
   });
+  console.debug = (...args: unknown[]) => {
+    debugLogs.push(args.map(value => String(value)).join(' '));
+  };
 
   try {
     await loadWebFonts([], undefined, { disableExternalWebFonts: true });
@@ -188,6 +193,18 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
     assert.equal(styles[0].textContent.includes('경기천년제목 Medium'), true);
     assert.equal(styles[0].textContent.includes('62570체'), true);
     assert.equal(
+      debugLogs.some(log => log.includes('시스템 글꼴 사용') && log.includes('DejaVu Serif')),
+      true,
+    );
+    assert.equal(
+      debugLogs.some(log => (
+        log.includes('CDN 로드 성공')
+        && log.includes('KoPubWorld돋움체 Medium')
+        && log.includes('KoPubWorld-Dotum-Medium.woff2')
+      )),
+      true,
+    );
+    assert.equal(
       fontFaceRequests.some(request => (
         request.source.includes('korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf')
         && request.source.includes("format('truetype')")
@@ -235,5 +252,6 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
       configurable: true,
       value: previousFontFace,
     });
+    console.debug = previousConsoleDebug;
   }
 });
