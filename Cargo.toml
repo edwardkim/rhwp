@@ -45,7 +45,11 @@ getrandom = { version = "0.4", features = ["wasm_js"] }
 # [agent_seal] 에이전트 전용 완전 엔트로피 봉인(1번 모드)의 AEAD. XChaCha20-Poly1305
 # 는 24바이트 난수 논스라 논스 재사용 위험이 낮고, 순수 Rust 라 wasm 타깃도
 # 그대로 컴파일된다. OTP(2번 모드)는 XOR+getrandom 뿐이라 별도 의존성이 없다.
-chacha20poly1305 = { version = "0.10", features = ["alloc"] }
+# 기본 피처를 끈다 — `getrandom` 피처가 rand_core 0.6 을 거쳐 **getrandom 0.2** 를
+# 끌어오는데, 0.2 는 wasm32-unknown-unknown 에서 `js` 없이 compile_error! 로 죽는다
+# (이 저장소는 getrandom 0.4 + wasm_js 를 쓴다). agent_seal 은 키·논스·패드를
+# `getrandom::fill` 로 직접 만들어 그 피처가 필요 없다.
+chacha20poly1305 = { version = "0.10", default-features = false, features = ["alloc"] }
 sha1 = "0.11"
 sha2 = "0.11"
 blake3 = "1"
