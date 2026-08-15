@@ -47,6 +47,17 @@ class ReleaseGateWorkflowTests(unittest.TestCase):
     def test_writes_github_summary(self):
         self.assertIn("--github-summary", self.wf)
 
+    def test_runs_discrimination_audit_before_the_gate(self):
+        """벤치마크 무결성 전제 — 약한 오라클(false-pass)이 있으면 릴리스 차단.
+
+        판별 감사는 old/new 차등 이전에 돌아야 한다(벤치마크 자체가 성립하는지
+        먼저 본다). exit 1 로 워크플로를 실패시켜 릴리스를 막는다.
+        """
+        self.assertIn("gym/tools/discriminate.py", self.wf)
+        audit_at = self.wf.index("discriminate.py")
+        gate_at = self.wf.index("release_gate.py")
+        self.assertLess(audit_at, gate_at, "판별 감사가 게이트보다 먼저 배선돼야 한다")
+
     def test_read_only_permissions(self):
         """게이트는 판정만 한다 — 쓰기 권한이 필요 없다."""
         self.assertIn("contents: read", self.wf)

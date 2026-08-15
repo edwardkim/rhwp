@@ -16,6 +16,11 @@
       "op": "file_exists",
       "file": "table.csv",
       "minBytes": 8
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "table.csv"
     }
   ]
 }
