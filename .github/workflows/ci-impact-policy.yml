@@ -215,6 +215,12 @@ jobs:
                     reason: 'pull-commit-list-incomplete',
                     candidateSha: '',
                   };
+                } else if (commitSummaries.at(-1)?.sha !== process.env.HEAD_SHA) {
+                  reviewSelection = {
+                    eligible: false,
+                    reason: 'pull-commit-head-mismatch',
+                    candidateSha: '',
+                  };
                 } else {
                   const commits = [];
                   for (const summary of commitSummaries) {

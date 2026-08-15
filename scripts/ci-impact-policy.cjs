@@ -319,6 +319,7 @@ function selectReviewOnlyCandidate(commits, currentBaseSha) {
   }
   let trailingCount = 0;
   let baseMergeBridge = null;
+  let expectedSha = '';
   for (let index = entries.length - 1; index >= 0; index -= 1) {
     const commit = entries[index] || {};
     const sha = String(commit.sha || '');
@@ -328,6 +329,13 @@ function selectReviewOnlyCandidate(commits, currentBaseSha) {
     const files = Array.isArray(commit.files) ? commit.files : [];
     if (!/^[0-9a-f]{40}$/.test(sha)) {
       return { eligible: false, reason: 'invalid-commit-sha', candidateSha: '' };
+    }
+    if (expectedSha && sha !== expectedSha) {
+      return {
+        eligible: false,
+        reason: `non-linear-review-tail:${sha}`,
+        candidateSha: '',
+      };
     }
     const isCurrentBaseMerge = parents.length === 2
       && parents.filter((parent) => parent === currentBaseSha).length === 1;
@@ -348,6 +356,7 @@ function selectReviewOnlyCandidate(commits, currentBaseSha) {
         };
       }
       baseMergeBridge = { mergeSha: sha, sourceParentSha };
+      expectedSha = sourceParentSha;
       continue;
     }
     if (files.length === 0 || files.length >= 300) {
@@ -358,6 +367,7 @@ function selectReviewOnlyCandidate(commits, currentBaseSha) {
         return { eligible: false, reason: `review-only-merge-not-reusable:${sha}`, candidateSha: '' };
       }
       trailingCount += 1;
+      expectedSha = parents[0];
       continue;
     }
     if (trailingCount === 0 && !baseMergeBridge) {

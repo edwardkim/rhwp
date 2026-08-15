@@ -831,6 +831,15 @@ test('review candidate lineage accepts only single-parent review tails and verif
     baseMergeBridge: null,
   });
 
+  const disconnectedReview = {
+    ...review,
+    parents: [{ sha: '9'.repeat(40) }],
+  };
+  assert.match(
+    selectReviewOnlyCandidate([candidate, disconnectedReview], baseSha).reason,
+    /non-linear-review-tail/,
+  );
+
   const reviewMerge = {
     ...review,
     parents: [{ sha: candidateSha }, { sha: '2'.repeat(40) }],
@@ -852,6 +861,12 @@ test('review candidate lineage accepts only single-parent review tails and verif
     mergeSha,
     sourceParentSha: candidateSha,
   });
+
+  const disconnectedBridgeTail = selectReviewOnlyCandidate([candidate, bridge, {
+    ...review,
+    parents: [{ sha: '8'.repeat(40) }],
+  }], baseSha);
+  assert.match(disconnectedBridgeTail.reason, /non-linear-review-tail/);
 });
 
 test('CodeQL fast pass accepts exactly one matrix skip representation', () => {

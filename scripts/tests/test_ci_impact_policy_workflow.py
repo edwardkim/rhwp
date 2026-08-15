@@ -144,6 +144,7 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
     def test_controller_collects_full_candidate_and_review_lineage(self) -> None:
         self.assertIn("selectReviewOnlyCandidate", self.workflow)
         self.assertIn("pull-commit-list-incomplete", self.workflow)
+        self.assertIn("pull-commit-head-mismatch", self.workflow)
         self.assertIn("allowPriorBase", self.workflow)
         self.assertIn("github-advanced-security", self.workflow)
         self.assertIn(".ci-impact-review-reuse.json", self.workflow)
