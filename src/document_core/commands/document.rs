@@ -2376,7 +2376,7 @@ mod validate_linesegs_tests {
         assert_eq!(doc.sections[0].paragraphs[0].line_segs.len(), 3);
 
         // 경계: 줄바꿈만 있는 문단은 line_seg 수가 문자 수와 비슷해도 상한(+64) 안이라 보존.
-        let text: String = std::iter::repeat('\n').take(300).collect();
+        let text: String = "\n".repeat(300);
         let mut doc2 = doc_with_para(&text, 301);
         DocumentCore::drop_corrupt_oversized_linesegs(&mut doc2);
         assert_eq!(
