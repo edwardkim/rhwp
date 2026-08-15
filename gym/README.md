@@ -317,6 +317,25 @@ python gym/tools/robustness.py --bin target/debug/rhwp --limit 40
 적대적 입력에 죽지 않음을 인증한다. 첫 주행이 HWP3 파서의 실제 DoS 2건을 잡았다
 (line-spacing 곱셈 i32 오버플로 패닉 — 이 PR 에서 수정 · 무한루프 1건 — 후속 이슈).
 
+## 코퍼스 퍼징 발견 엔진 — DoS 를 근본원인별로 색출한다
+
+`robustness.py` 가 릴리스 **게이트**(바운드된 부분집합으로 "패닉·행 0" 강제)라면,
+`fuzz_corpus.py` 는 그 앞단의 **발견 엔진**이다. 전 코퍼스를 여러 명령·여러 손상으로
+**exhaustive** 하게 병렬로 두들겨, 아직 안 고쳐진 DoS 를 **소스 위치(file:line)별로
+클러스터링**해 "고쳐야 할 고유 버그 목록"을 낸다.
+
+```bash
+python gym/tools/fuzz_corpus.py --bin target/debug/rhwp                     # 전 코퍼스·기본 명령
+python gym/tools/fuzz_corpus.py --bin <bin> --commands info,export-text --json
+```
+
+- 패닉은 `panicked at file:line` 로 클러스터(스택 오버플로·어보트 코드도 별도 버킷).
+- 무한루프는 timeout → 명령·샘플별 버킷.
+
+아무도 손으로 수백 문서를 수천 가지로 퍼징하지 않는다 — 에이전트가 이걸 돌려 rhwp 를
+계속 경화한다(발견 → 수정 → `robustness.py` 게이트가 회귀를 막음). 이 캠페인의 실제
+DoS(렌더러·파서 오버플로·무한루프·스택 오버플로)를 전부 이 엔진이 잡았다.
+
 ## 설계 원칙 (채점기가 지키는 것)
 
 - 표준 라이브러리 전용, Windows/리눅스 경로 안전.
