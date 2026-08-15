@@ -588,7 +588,7 @@ impl LayoutEngine {
                         break;
                     }
                     if let Some(last_ls) = tp.line_segs.last() {
-                        let end = last_ls.vertical_pos + last_ls.line_height;
+                        let end = last_ls.vertical_pos.saturating_add(last_ls.line_height);
                         if end > max_vpos_end {
                             max_vpos_end = end;
                         }
@@ -2552,7 +2552,7 @@ impl LayoutEngine {
                 }
                 // 이 문단의 마지막 line_seg의 끝 위치 추적
                 if let Some(last_ls) = para.line_segs.last() {
-                    let end = last_ls.vertical_pos + last_ls.line_height;
+                    let end = last_ls.vertical_pos.saturating_add(last_ls.line_height);
                     if end > max_vpos_end {
                         max_vpos_end = end;
                     }
@@ -3221,7 +3221,9 @@ impl LayoutEngine {
                     start_idx: chars.len(),
                     end_idx: chars.len(),
                     col_width: ls
-                        .map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
+                        .map(|l| {
+                            hwpunit_to_px(l.line_height.saturating_add(l.line_spacing), self.dpi)
+                        })
                         .unwrap_or(13.0),
                     col_spacing: 0.0,
                     total_height: 0.0,
@@ -3236,7 +3238,7 @@ impl LayoutEngine {
                 let ls = para.line_segs.get(line_idx);
                 // 칼럼 너비 = line_height + line_spacing (전체 피치 흡수)
                 let col_width = ls
-                    .map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
+                    .map(|l| hwpunit_to_px(l.line_height.saturating_add(l.line_spacing), self.dpi))
                     .unwrap_or(13.0);
                 let col_spacing = 0.0;
                 let absorbed_spacing = ls
@@ -3727,7 +3729,7 @@ impl LayoutEngine {
                     .paragraphs
                     .iter()
                     .flat_map(|p| p.line_segs.last())
-                    .map(|s| s.vertical_pos + s.line_height)
+                    .map(|s| s.vertical_pos.saturating_add(s.line_height))
                     .max()
                     .unwrap_or(0);
                 let required = content_h as u32 + pad_top + pad_bottom;

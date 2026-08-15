@@ -992,8 +992,14 @@ jobs:
           python3 -m unittest scripts/tests/test_gym_trajectory.py
           python3 -m unittest scripts/tests/test_gym_leaderboard.py
           python3 -m unittest scripts/tests/test_gym_robustness.py
+          python3 -m unittest scripts/tests/test_gym_fuzz_corpus.py
           python3 -m unittest scripts/tests/test_gym_release_diff.py
           python3 -m unittest scripts/tests/test_gym_discriminate.py
+
+      # [#4855] 경쟁 벤치 하네스 순수 로직 가드 — 집계·능력 매트릭스·리포트 렌더·정직한
+      # 저하(못 돌린 도구는 'n/a: 이유', 숫자 날조 금지)를 바이너리·외부도구 없이 검증한다.
+      - name: Validate competitive benchmark harness contract
+        run: python3 -m unittest scripts/tests/test_gym_competitive_bench.py
 
       # [#4715] 채택 척추 — 에이전트 작업 표준(AWS)이 전 표면에서 정합한지.
       # 바이너리 불요(커밋 문서만) — 표면이 늘어도 표준 링크가 끊기지 않게 한다.

@@ -1056,3 +1056,95 @@ fn field_closed_in_its_own_paragraph_is_not_left_open() {
         "짝을 못 찾으면 0 으로 남긴다 — 없는 id 를 지어내지 않는다"
     );
 }
+
+// ==========================================================================
+// [#4827] 문단↔표↔셀 상호재귀 깊이 상한 회귀 — 손상 문서 스택 오버플로 DoS 가드
+// ==========================================================================
+
+/// 표 `depth` 겹을 선형 중첩한 BodyText 레코드 바이트 스트림을 만든다.
+///
+/// 한 겹 = PARA_HEADER(L) → CTRL_HEADER(L+1, `tbl `) → HWPTAG_TABLE(L+2) →
+/// LIST_HEADER(L+2, 셀). 셀 안의 다음 PARA_HEADER 는 L+3 — 즉 표 한 겹이 레코드 레벨을 3 판다.
+/// 레벨 필드는 10비트(≤1023)라 이 방식으로 최대 ~341겹까지 만들 수 있다(실파일 도달 한계).
+fn build_nested_table_stream(depth: u16) -> Vec<u8> {
+    let para = make_para_header_data(0, 0, 0);
+    let table_data = [0u8; 4];
+    let cell_data = [0u8; 32];
+    let ctrl = tags::CTRL_TABLE.to_le_bytes();
+
+    let mut bytes = Vec::new();
+    for k in 0..depth {
+        let l = 3 * k;
+        bytes.extend(make_record_bytes(tags::HWPTAG_PARA_HEADER, l, &para));
+        bytes.extend(make_record_bytes(tags::HWPTAG_CTRL_HEADER, l + 1, &ctrl));
+        bytes.extend(make_record_bytes(tags::HWPTAG_TABLE, l + 2, &table_data));
+        bytes.extend(make_record_bytes(
+            tags::HWPTAG_LIST_HEADER,
+            l + 2,
+            &cell_data,
+        ));
+    }
+    bytes.extend(make_record_bytes(
+        tags::HWPTAG_PARA_HEADER,
+        3 * depth,
+        &para,
+    ));
+    bytes
+}
+
+/// 파싱된 문단 트리에서 최대 표 중첩 깊이를 잰다(표→셀→문단 재귀).
+fn max_table_nesting(paras: &[crate::model::paragraph::Paragraph]) -> usize {
+    let mut best = 0;
+    for p in paras {
+        for c in &p.controls {
+            if let Control::Table(t) = c {
+                let mut deepest = 0;
+                for cell in &t.cells {
+                    deepest = deepest.max(max_table_nesting(&cell.paragraphs));
+                }
+                best = best.max(1 + deepest);
+            }
+        }
+    }
+    best
+}
+
+#[test]
+fn nested_table_recursion_is_depth_capped() {
+    // 상한(64)을 크게 넘는 표 중첩을 파싱해도 크래시 없이 완주하고, 결과 트리의 표 중첩
+    // 깊이가 상한 이내로 절단돼야 한다. 가드가 없으면 이 입력은 341겹 근처에서 스택을
+    // 고갈시켜 SIGSEGV 를 내거나(비결정적) 입력 깊이 그대로 내려간다. 넉넉한 스택 전용
+    // 스레드에서 경계를 결정론적으로 시험한다(HWPX #4759 형제 테스트와 같은 방식).
+    let input_depth = MAX_HWP5_SECTION_DEPTH + 40;
+    let nesting = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            let stream = build_nested_table_stream(input_depth as u16);
+            let section = parse_body_text_section(&stream).expect("파싱은 성공(하위 트리만 절단)");
+            max_table_nesting(&section.paragraphs)
+        })
+        .expect("파서 스레드 생성 실패")
+        .join()
+        .expect("파서 스레드 패닉");
+
+    assert!(
+        nesting <= MAX_HWP5_SECTION_DEPTH as usize,
+        "표 중첩이 상한을 넘겨 절단되지 않았다 — 상호재귀 깊이 가드 회귀 (nesting={nesting})"
+    );
+    assert!(
+        nesting >= 8,
+        "가드가 얕은 깊이에서 과잉 차단했다 (nesting={nesting})"
+    );
+}
+
+#[test]
+fn shallow_table_nesting_is_preserved() {
+    // 상한 안쪽의 정상적인 표 중첩은 깊이 그대로 보존돼야 한다(가드가 과잉 차단 안 함).
+    let stream = build_nested_table_stream(5);
+    let section = parse_body_text_section(&stream).expect("파싱 실패");
+    assert_eq!(
+        max_table_nesting(&section.paragraphs),
+        5,
+        "정상 깊이(5겹) 표 중첩이 보존되지 않았다 — 가드 과잉 차단"
+    );
+}

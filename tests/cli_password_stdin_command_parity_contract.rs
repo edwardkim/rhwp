@@ -197,6 +197,7 @@ fn every_password_capable_mcp_tool_declares_the_password_stdin_contract() {
         "hwp_inspect_hidden_text",
         "hwp_inspect_injection",
         "hwp_inspect_unicode",
+        "hwp_inspect_watermark",
         "hwp_fill_fields",
         "hwp_replace_text",
         "hwp_set_checkbox",

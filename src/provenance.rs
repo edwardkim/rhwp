@@ -276,6 +276,26 @@ pub const MAP: &[CommandProvenance] = &[
         note: "hiddenText·injectionSignals·findings의 문장·표시 문자열만 문서 파생이며, 종류·주소·근거·집계는 엔진 판정값이다.",
     },
     CommandProvenance {
+        command: "armor",
+        untrusted: &[
+            f(
+                "armoredText",
+                "queries::armor::fence — HwpDocument::extract_page_text_native 로 뽑은 문서 본문을 nonce 격벽으로 감싼 값. 격벽 표지만 엔진 생성이고 격벽 사이 본문은 전부 문서 파생이다",
+            ),
+            f(
+                "injectionSignals[].excerpt",
+                "queries::injection_scan::make_excerpt — 주입 신호가 발견된 문서 문맥의 제한 발췌",
+            ),
+            f(
+                "injectionSignals[].matched",
+                "queries::injection_scan::scan_text_in — 문서에서 실제 매치된 신호 조각",
+            ),
+        ],
+        note: "safety.nonce·fenceOpen·fenceClose 는 이 호출만의 무작위 격벽 표지(엔진 생성)이고, \
+               pageCount·signalCount·clean·scanScopes·safety.note·신호의 종류·주소·근거는 엔진 판정값이다. \
+               armoredText 안 격벽 사이 본문과 신호 발췌(excerpt·matched)만 문서 파생이다.",
+    },
+    CommandProvenance {
         command: "edit",
         untrusted: &[
             f(
@@ -480,6 +500,19 @@ pub const MAP: &[CommandProvenance] = &[
         note: "path·bytes·extFormat 은 파일시스템 실측이고 magicFormat·extMismatch· \
                pageCount 는 엔진 판정이다. 문서 파생 가능성은 probe.error 하나뿐이며, \
                표지는 그 필드가 실제로 실린 호출에만 붙는다.",
+    },
+    CommandProvenance {
+        command: "threat-scan",
+        untrusted: &[f(
+            "findings[].detail",
+            "queries::threat_scan — 외부 참조 URL·링크 대상 경로 등 문서가 정한 문자열 조각. \
+             종류(kind)·심각도·주소(location)·근거(rationale)는 엔진 판정이고, detail 만 \
+             문서 파생이라 원격 참조를 신고할 때만 실린다 (looks_remote 통과 대상)",
+        )],
+        note: "kind·severity·location·rationale·findingCount·clean·scanScopes·format 은 전부 \
+               엔진의 구조 판정값이다. 문서 파생 문자열은 detail 하나뿐이며(외부참조 대상), \
+               표지는 그 필드가 실제로 실린 봉투에만 붙는다 — 실행체·손상 레코드·매크로 \
+               신고에는 detail 이 없어 untrustedContent 가 false 다.",
     },
     CommandProvenance {
         command: "export-svg",

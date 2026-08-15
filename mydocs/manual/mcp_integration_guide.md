@@ -44,7 +44,7 @@ VS Code·Zed·Goose·Gemini CLI 등 18개 호스트별 설정은
 | `initialize` | `protocolVersion`(클라이언트 제안 에코), `capabilities.tools`, `serverInfo{name:"rhwp",version}` |
 | `notifications/initialized` | (알림 — 무응답) |
 | `ping` | `{}` |
-| `tools/list` | 선언 도구 전부 + 세션 도구 3종. 각 항목은 MCP 필수 3종(`name`/`description`/`inputSchema`) |
+| `tools/list` | 선언 도구 전부 + 세션 도구. 각 항목은 MCP 필수 3종(`name`/`description`/`inputSchema`) |
 | `tools/call` | `content[0].text` 에 CLI 와 동일한 JSON 봉투. JSON 이면 `structuredContent` 로도 병행 제공 |
 
 지원하지 않는 메서드는 JSON-RPC `-32601`, 파싱 불가 입력은 `-32700`,
@@ -135,8 +135,9 @@ rhwp capabilities --mcp | jq -c '.tools[] | {name, cli: .cli.args, required: .in
 | 문서 규모·형식 파악 | `hwp_info` |
 | 본문 읽기 (1회) | `hwp_export_text` / (반복) `hwp_open`→`hwp_doc_text` |
 | "어느 쪽에 있나" | `hwp_search` (페이지·셀 주소 동봉) |
-| 조문·개요 구조 | `hwp_export_structure` |
-| 표 격자(병합 보존) | `hwp_export_tables` |
+| 조문·개요 구조 | (1회) `hwp_export_structure` / (반복) `hwp_open`→`hwp_doc_structure` |
+| 날짜·금액·수량 추출 | (1회) `hwp_extract_data` / (반복) `hwp_open`→`hwp_doc_extract_data` |
+| 표 격자(병합 보존) | (1회) `hwp_export_tables` / (반복) `hwp_open`→`hwp_doc_tables` |
 | 누름틀 조사 → 채우기 | `hwp_fields` → `hwp_fill_fields` |
 | 표 좌표로 값 쓰기 | `hwp_set_cell` |
 | 문구 일괄 치환 | `hwp_replace_text` |

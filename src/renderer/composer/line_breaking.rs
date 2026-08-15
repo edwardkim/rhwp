@@ -2372,7 +2372,7 @@ fn reflow_line_segs_impl(
             let mut vpos = orig.as_ref().map(|ls| ls.vertical_pos).unwrap_or(0);
             for seg in &mut new_line_segs {
                 seg.vertical_pos = vpos;
-                vpos += seg.line_height + seg.line_spacing;
+                vpos += seg.line_height.saturating_add(seg.line_spacing);
             }
             para.line_segs = new_line_segs;
         } else {
@@ -2603,7 +2603,9 @@ fn reflow_line_segs_impl(
     // (layout.rs의 vpos 보정이 문단 간 vpos 연속성을 가정하므로)
     let mut vpos = if preserved_prefix_len > 0 {
         let last = &new_line_segs[preserved_prefix_len - 1];
-        last.vertical_pos + last.line_height + last.line_spacing
+        last.vertical_pos
+            .saturating_add(last.line_height)
+            .saturating_add(last.line_spacing)
     } else {
         orig.as_ref().map(|ls| ls.vertical_pos).unwrap_or(0)
     };

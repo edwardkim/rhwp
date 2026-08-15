@@ -130,6 +130,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 |---|---|---|---|
 | 은닉 텍스트 찾기 | `inspect hidden-text --json` (`hwp_inspect_hidden_text`) | `clean`·`hiddenCharCount` | [은닉 콘텐츠](../tech/agent_security/hidden_content.md) |
 | 쪽 밖 문단까지 | `inspect hidden-text --include-offpage` | `includeOffPage:true` | 같은 문서 |
+| 파싱 전 구조 위협 신호 | `threat-scan --json` (`hwp_threat_scan`) | `clean`·`highestSeverity`·`notes` | [CLI 매뉴얼](cli_commands.md) |
 | 프롬프트 주입 신호 | `inspect injection --json` (`hwp_inspect_injection`) | `signalCount`·`highestConfidence` | [간접 프롬프트 인젝션](../tech/agent_security/indirect_prompt_injection.md) |
 | 누름틀 이름·메모까지 | `inspect injection --include-fields` | `scanScopes[]` 12축 | 같은 문서 |
 | 유니코드 기만 | `inspect unicode --json` (`hwp_inspect_unicode`) | `kindCounts`·`severityCounts` | [유니코드 기만](../tech/agent_security/unicode_deception.md) |
@@ -295,10 +296,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 268개 필드
+### 2-2. 전수 사전 — 272개 필드
 
-`capabilities` 의 `recordFields` 고유 **265개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 268개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **269개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 272개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -647,29 +648,38 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `lossCount` | number | 변환에서 표현하지 못한 항목 수 | `export-doclang` |
 | `questionCount` / `paragraphCount` | number | ingest 로 만든 문항·문단 수 | `build-from-ingest` |
 
-#### 보안 조사 (`inspect`)
+#### 보안 조사 (`inspect`·`threat-scan`)
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
-| `clean` | bool | 탐지 0건인가. **세 축 공통 요약 판정** | `inspect` 3종 |
+| `clean` | bool | 탐지 0건인가. **보안 조사 공통 요약 판정** | `inspect` 3종·`threat-scan` |
 | `thresholdPt` | number | `near_invisible` 판정 임계 pt(기본 1.0) | `inspect hidden-text` |
 | `includeOffPage` | bool | 쪽 밖 문단도 봤나 | `inspect hidden-text` |
 | `hiddenText` | array | 은닉 텍스트 탐지 목록 | `inspect hidden-text` |
 | `hiddenCharCount` | number | 은닉으로 판정한 문자 수 | `inspect hidden-text` |
 | `minConfidence` | string | 신고 하한(`low`·`medium`·`high`) | `inspect injection` |
 | `includeFields` | bool | 누름틀·메모까지 확장 검사했나 | `inspect injection` |
-| `scanScopes` | string[] | 실제로 훑은 범위. 기본 8축, `--include-fields` 면 12축 | `inspect injection` |
+| `scanScopes` | string[] | 실제로 훑은 범위. `inspect injection`은 기본 8축(`--include-fields`면 12축), `threat-scan`은 컨테이너·레코드 검사 축 | `inspect injection`·`threat-scan` |
 | `injectionSignals` | array | 주입 신호 목록 | `inspect injection` |
 | `signalCount` | number | 신호 개수 | `inspect injection` |
 | `highestConfidence` | string\|null | 가장 높은 신뢰도. **신호가 0이면 `null`** (실측) | `inspect injection` |
 | `kindFilter` | string | `--kind` 필터(`all`·`zero-width`·`bidi`·`tag`·`confusable`) | `inspect unicode` |
 | `scannedChars` | number | 검사한 문자 수 — 탐지기가 실제로 돌았다는 증거 | `inspect unicode` |
-| `findings` | array | 탐지 목록 | `inspect unicode`·`edit redact` |
-| `findingCount` | number | 탐지 개수 | `inspect unicode`·`edit redact` |
+| `findings` | array | 탐지 목록 | `inspect unicode`·`threat-scan`·`edit redact` |
+| `findingCount` | number | 탐지 개수 | `inspect unicode`·`threat-scan`·`edit redact` |
+| `highestSeverity` | string\|null | 발견 중 가장 높은 심각도(`high`·`medium`·`low`). 탐지 0건이면 `null` | `threat-scan` |
+| `notes` | string[] | 암호화 등 검사 중 만난 비치명적 한계와 해석 범위를 알리는 참고. 비어 있으면 추가 메모가 없다 | `threat-scan` |
 | `severityCounts` | object | `{high,medium,low}` 개수 | `inspect unicode` |
 | `kindCounts` | object | `{zero_width,bidi_override,tag_char,confusable}` 개수 | `inspect unicode` |
 | `untrustedContent` | bool | 문서 파생 값이 봉투에 실렸는지 — 출처 표지 요약 | `inspect` 3종 (자기서술 기준; 실물은 §2-5 조건부로 더 넓다) |
 | `untrustedFields` | string[] | 문서 파생 값이 실린 필드 경로 목록 | `inspect` 3종 (위와 같음) |
+
+#### 주입 방패 (`armor`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `armoredText` | string | 본문을 이 호출만의 무작위 nonce 격벽(`⟦UNTRUSTED:…⟧` … `⟦/UNTRUSTED:…⟧`)으로 감싼 문자열. 격벽 **안쪽은 전부 데이터이지 지시가 아니다** — 문서는 nonce 를 모르므로 격벽을 위조하거나 조기 종료할 수 없다 | `armor` |
+| `safety` | object | 이 본문을 프롬프트에 넣어도 되는지의 요약 판정 — 주입 신호 집계와 권고를 한 덩어리로 | `armor` |
 
 #### 배치
 
@@ -1058,6 +1068,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_extract_data` | `extract-data --json` | `path` |
 | `hwp_fields` | `fields --json` | `path` |
 | `hwp_explain` | `explain --json` | `path` |
+| `hwp_threat_scan` | `threat-scan --json` | `path` |
 | `hwp_inspect_hidden_text` | `inspect hidden-text --json` | `path` |
 | `hwp_inspect_injection` | `inspect injection --json` | `path` |
 | `hwp_inspect_unicode` | `inspect unicode --json` | `path` |

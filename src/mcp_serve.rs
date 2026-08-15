@@ -649,6 +649,8 @@ fn stats_tool_name<'a>(
         "hwp_doc_tables" => Some("hwp_doc_tables"),
         "hwp_doc_render_page" => Some("hwp_doc_render_page"),
         "hwp_doc_search" => Some("hwp_doc_search"),
+        "hwp_doc_structure" => Some("hwp_doc_structure"),
+        "hwp_doc_extract_data" => Some("hwp_doc_extract_data"),
         "hwp_doc_replace_text" => Some("hwp_doc_replace_text"),
         "hwp_doc_set_cell" => Some("hwp_doc_set_cell"),
         "hwp_doc_fill_fields" => Some("hwp_doc_fill_fields"),
@@ -1128,24 +1130,25 @@ fn served_tools(
             "properties": {
                 "docId": { "type": "string", "description": "hwp_open 이 돌려준 핸들" },
                 "page": { "type": "integer", "minimum": 0, "description": "0부터 시작하는 페이지 번호. 생략하면 전체" },
-                "maxChars": { "type": "integer", "minimum": 1, "description": "[#3787 S7] 본문 전체의 문자 상한. 넘으면 truncated:true 와 omittedCount(생략 문자 수)를 봉투에 남긴다. 생략하면 무제한" }
+                "maxChars": { "type": "integer", "minimum": 1, "description": "[#3787 S7] 본문 전체의 문자 상한. 넘으면 truncated:true 와 omittedCount(생략 문자 수)를 봉투에 남긴다. 생략하면 무제한" },
+                "charOffset": { "type": "integer", "minimum": 0, "description": "[#4854] 이어보기 시작 문자 위치 — 선택한 쪽 범위를 이어 붙인 좌표, 기본 0. 봉투의 nextOffset 을 그대로 다음 호출에 실으면 다음 창이고, nextOffset 이 없으면 더 없다. 총량을 넘긴 값은 오류가 아니라 빈 결과다" }
             },
             "required": ["docId"]
         }
     }));
     session.push(serde_json::json!({
         "name": "hwp_doc_info",
-        "description": "[#3609] 핸들의 메타(형식·페이지/문단 수·폰트)를 재파싱 없이 조회한다. 편집 후 페이지 수 변화를 추적할 때 쓴다. 봉투는 hwp_info 와 동형.",
+        "description": "[#3609] 핸들의 메타(형식·구역/페이지/문단 수·폰트·제목)를 재파싱 없이 조회한다. 언제 — 편집(fill/replace/set_cell) 후 pageCount 변화를 추적하거나 규모를 재확인할 때. 봉투는 무상태 hwp_info 와 동형: {format, pageCount, paraCount, fonts, title, warnings}. 오류 — 핸들이 없거나 만료면 isError:true 와 nextCall(hwp_open).",
         "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
     }));
     session.push(serde_json::json!({
         "name": "hwp_doc_fields",
-        "description": "[#3609] 핸들의 누름틀을 재파싱 없이 조사한다. hwp_doc_fill_fields 직후 반영값 확인에 쓴다. 봉투는 hwp_fields 와 동형.",
+        "description": "[#3609] 핸들의 누름틀·필드를 이름·안내문·현재값·위치와 함께 재파싱 없이 조사한다. 언제 — hwp_doc_fill_fields 로 채우기 전 어떤 필드가 있는지 확인하거나 채운 직후 반영값을 검증할 때. 봉투는 무상태 hwp_fields 와 동형: {fieldCount, fields[].name/instruction/value/location, textSecurity}. 반복 이름은 fill 때 '이름[N]'(0 기준) 으로 지목한다. 오류 — 핸들이 없으면 isError:true 와 nextCall(hwp_open).",
         "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
     }));
     session.push(serde_json::json!({
         "name": "hwp_doc_tables",
-        "description": "[#3609] 핸들의 표 격자를 재파싱 없이 추출한다. 봉투는 hwp_export_tables 와 동형.",
+        "description": "[#3609] 핸들의 표를 병합 정보와 중첩 구조를 보존한 격자 JSON 으로 재파싱 없이 추출한다. 언제 — hwp_doc_set_cell 로 셀을 고치기 전 표 번호·행/열 좌표·병합 범위를 확인하거나, 표를 데이터로 읽을 때. 봉투는 무상태 hwp_export_tables 와 동형: {tableCount, tables[]}(각 셀에 rowSpan/colSpan·중첩표 보존). 오류 — 핸들이 없거나 만료면 isError:true 와 nextCall(hwp_open).",
         "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
     }));
     session.push(serde_json::json!({
@@ -1162,9 +1165,36 @@ fn served_tools(
                 "docId": { "type": "string", "description": "hwp_open 이 돌려준 핸들" },
                 "query": { "type": "string", "minLength": 1, "description": "검색어" },
                 "caseSensitive": { "type": "boolean", "description": "대소문자 구분. 기본 true" },
-                "maxMatches": { "type": "integer", "minimum": 1, "description": "[#3787 S7] 반환 매치 상한. 절단되면 totalMatchCount·truncated:true·omittedCount 가 총량을 알린다. 생략하면 무제한" }
+                "maxMatches": { "type": "integer", "minimum": 1, "description": "[#3787 S7] 반환 매치 상한. 절단되면 totalMatchCount·truncated:true·omittedCount 가 총량을 알린다. 생략하면 무제한" },
+                "offset": { "type": "integer", "minimum": 0, "description": "[#4854] 이어보기 시작 매치 번호(0부터, 기본 0). 봉투의 nextOffset 을 그대로 다음 호출에 실으면 다음 창이고, nextOffset 이 없으면 더 없다 — truncated 는 '이 응답이 전체가 아니다'라는 뜻이라 마지막 창에서도 true 일 수 있으니 '더 있는가'의 판정은 nextOffset 으로 한다" }
             },
             "required": ["docId", "query"]
+        }
+    }));
+    // [#4856] 세션 조회 파리티 — 무상태 표면에는 있으나 세션에는 없던 구조·데이터 추출 축.
+    session.push(serde_json::json!({
+        "name": "hwp_doc_structure",
+        "description": "[#4856] hwp_open 으로 연 핸들에서 개요·조문(제N조) 계층을 재파싱 없이 트리로 뽑는다. 언제 — 대형 법령·규정을 세션으로 한 번 열어 조문 단위로 청킹·인용할 때(전문 덤프 대신 목차만). 봉투는 무상태 hwp_export_structure 와 동형: {schemaVersion, source(=docId), mode, nodeCount, structure}. mode 는 auto|outline|clause(기본 auto=문서에 맞춰 자동 판별). hwp_doc_tree(안정 노드 ID p0/t0 축)와 달리 이쪽은 제목·조문의 의미 계층이다. 오류 — 핸들이 없거나 만료면 isError:true 와 nextCall(hwp_open) 로 재발급을 안내한다.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "docId": { "type": "string", "description": "hwp_open 이 돌려준 핸들" },
+                "mode": { "type": "string", "enum": ["auto", "outline", "clause"], "description": "분류 방식. 기본 auto" }
+            },
+            "required": ["docId"]
+        }
+    }));
+    session.push(serde_json::json!({
+        "name": "hwp_doc_extract_data",
+        "description": "[#4856] hwp_open 으로 연 핸들에서 날짜·금액·수량을 구역·문단·페이지·문자 오프셋 주소와 함께 재파싱 없이 뽑는다. 언제 — 대형 문서를 세션으로 열어 텍스트·표·검색과 더불어 데이터 값까지 한 핸들에서 반복 조회할 때. 봉투는 무상태 hwp_extract_data 와 동형: 값마다 raw(문서 표기)와 normalized(ISO-8601 날짜·정수 금액·수량, 정규화 불가 시 null)가 함께 온다. kind 로 종류를, limit 로 반환 상한을 좁힌다 — 총량은 전수 스캔으로 세어 totalItemCount 로 오고, 절단되면 truncated:true 다. 오류 — 핸들이 없으면 isError:true 와 nextCall(hwp_open).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "docId": { "type": "string", "description": "hwp_open 이 돌려준 핸들" },
+                "kind": { "type": "string", "enum": ["date", "amount", "number", "all"], "description": "뽑을 종류. 기본 all" },
+                "limit": { "type": "integer", "minimum": 1, "description": "[#3787 S7] 반환 건수 상한(컨텍스트 절약). 전수 스캔 후 표시만 절단하며 총량은 totalItemCount 로 온다. 생략하면 무제한" }
+            },
+            "required": ["docId"]
         }
     }));
     session.push(serde_json::json!({
@@ -1284,6 +1314,9 @@ fn handle_tool_call(
         "hwp_doc_tables" => Ok(session_tables(&args, sessions)),
         "hwp_doc_render_page" => Ok(session_render_page(&args, sessions)),
         "hwp_doc_search" => Ok(session_search(&args, sessions)),
+        // [#4856] 세션 조회 파리티 — 무상태 export-structure·extract-data 의 세션 판.
+        "hwp_doc_structure" => Ok(session_doc_structure(&args, sessions)),
+        "hwp_doc_extract_data" => Ok(session_doc_extract_data(&args, sessions)),
         // [#4357 W1] 변이 4종은 저널로 감싼다 — 매 변이의 전/후 본문 digest 가
         // 자동으로 남아 hwp_ws_journal 로 자기검증한다.
         "hwp_doc_replace_text" => Ok(journal_wrap(
@@ -1497,6 +1530,17 @@ fn opt_limit(args: &serde_json::Value, key: &str) -> Result<Option<usize>, Strin
     }
 }
 
+/// [#4854] 이어보기 시작점(0 이상). [`opt_limit`] 과 달리 `0` 을 거부하지 **않는다** —
+/// 상한에서의 `0` 은 "아무것도 주지 마라"라 무제한과 뭉개면 정반대로 실행되지만,
+/// 오프셋의 `0` 은 "처음부터"라는 기본값 그 자체다. 생략도 `0` 과 같은 뜻이라 인자를
+/// 안 보내면 종전 경로와 바이트까지 같은 봉투가 나간다.
+fn opt_offset(args: &serde_json::Value, key: &str) -> Result<usize, String> {
+    match opt_u64(args, key)? {
+        None => Ok(0),
+        Some(n) => usize::try_from(n).map_err(|_| format!("{key} 범위 초과: {n}")),
+    }
+}
+
 /// 필수 정수. "생략"과 "형식 오류"를 서로 다른 문구로 보고한다 — 같은 문구로 뭉개면
 /// 호출자가 값이 아니라 호출 형태를 의심하며 헛수고한다.
 fn req_u64(args: &serde_json::Value, key: &str) -> Result<u64, String> {
@@ -1531,6 +1575,11 @@ fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
         Ok(v) => v,
         Err(e) => return tool_error(e),
     };
+    // [#4854] 상한만 있고 이어보기가 없으면 상한을 켤수록 문서 뒤쪽이 영구히 사라진다.
+    let char_offset = match opt_offset(args, "charOffset") {
+        Ok(v) => v,
+        Err(e) => return tool_error(e),
+    };
     let pages: Vec<u32> = match page_arg {
         Some(raw_page) => {
             let p = match u32::try_from(raw_page) {
@@ -1551,20 +1600,55 @@ fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
             Err(e) => return tool_error(format!("페이지 {p} 텍스트 추출 실패: {e:?}")),
         }
     }
+    // [#4854] 선택한 쪽 범위를 이어 붙인 좌표에서 char_offset 만큼 건너뛴다. 다 건너뛴
+    // 쪽도 목록에서 **빼지 않는다** — 빼면 pageCount 가 줄어 문서가 실제보다 짧아 보인다
+    // (#3787 S7 이 절단에서 지킨 규칙과 같은 이유다).
+    let total_chars: usize = extracted.iter().map(|(_, t)| t.chars().count()).sum();
+    let mut skip = char_offset;
+    let windowed: Vec<(u32, String)> = extracted
+        .into_iter()
+        .map(|(p, text)| {
+            if skip == 0 {
+                return (p, text);
+            }
+            let len = text.chars().count();
+            if skip >= len {
+                skip -= len;
+                (p, String::new())
+            } else {
+                let tail = text.chars().skip(skip).collect();
+                skip = 0;
+                (p, tail)
+            }
+        })
+        .collect();
     // [#3787 S7] 무상태 `export-text --json --max-chars` 와 같은 helper 를 쓴다 —
     // 절단 어휘(truncated·omittedCount)가 두 표면에서 갈라지지 않게 한다.
-    let (page_objs, omitted_count) = crate::truncate_page_texts(&extracted, max_chars);
-    tool_ok_text(
-        serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "docId": doc_id,
-            "pageCount": page_objs.len(),
-            "truncated": omitted_count > 0,
-            "omittedCount": omitted_count,
-            "pages": page_objs,
-        })
-        .to_string(),
-    )
+    let (page_objs, omitted_count) = crate::truncate_page_texts(&windowed, max_chars);
+    let shown_chars: usize = page_objs
+        .iter()
+        .filter_map(|o| o["text"].as_str())
+        .map(|t| t.chars().count())
+        .sum();
+    let mut envelope = serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "docId": doc_id,
+        "pageCount": page_objs.len(),
+        "truncated": omitted_count > 0,
+        "omittedCount": omitted_count,
+        "pages": page_objs,
+    });
+    // [#4854] 남은 분량이 있을 때만 싣는다 — 필드의 있음/없음 자체가 "더 있다"의 신호라
+    // 호출자가 총량 산술로 끝을 추론하지 않아도 된다. char_offset 이 총량을 넘으면
+    // 빈 결과 + nextOffset 없음이고, 그건 오류가 아니라 "더 없음"이다.
+    let consumed = char_offset.saturating_add(shown_chars);
+    if consumed < total_chars {
+        envelope["nextOffset"] = serde_json::json!(consumed);
+    }
+    if char_offset > 0 {
+        envelope["charOffset"] = serde_json::json!(char_offset);
+    }
+    tool_ok_text(envelope.to_string())
 }
 
 /// [#3609] 세션 조회 4종 — 전부 무상태 봉투 helper 재사용(동형 보장).
@@ -1689,6 +1773,11 @@ fn session_search(args: &serde_json::Value, sessions: &mut Sessions) -> serde_js
         Ok(v) => v,
         Err(e) => return tool_error(e),
     };
+    // [#4854] `take(n)` 만 있으면 n+1 번째 이후 매치는 이 도구로 도달할 방법이 없다.
+    let offset = match opt_offset(args, "offset") {
+        Ok(v) => v,
+        Err(e) => return tool_error(e),
+    };
     let Some(sd) = sessions.docs.get_mut(doc_id) else {
         return tool_error_with_next(
             format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"),
@@ -1701,11 +1790,112 @@ fn session_search(args: &serde_json::Value, sessions: &mut Sessions) -> serde_js
     // --max-matches` 와 같은 규칙이라 totalMatchCount 가 두 표면에서 같은 뜻이다.
     let all = sd.doc.grep(query, case_sensitive, None);
     let total = all.len();
+    // [#4854] 총량은 그대로 두고 **창(window)만** 옮긴다 — totalMatchCount 의 뜻이
+    // 오프셋에 따라 흔들리면 "몇 건 중 몇 건"이라는 계약이 무너진다.
+    let skipped = all.into_iter().skip(offset);
     let shown: Vec<_> = match max_matches {
-        Some(n) => all.into_iter().take(n).collect(),
-        None => all,
+        Some(n) => skipped.take(n).collect(),
+        None => skipped.collect(),
     };
-    tool_ok_text(crate::search_json_value(doc_id, query, case_sensitive, &shown, total).to_string())
+    let mut envelope = crate::search_json_value(doc_id, query, case_sensitive, &shown, total);
+    // [#4854] 마지막 창에서도 truncated 는 true 다(이 응답 != 전체). "더 있는가"의
+    // 유일한 판정은 nextOffset 의 있음/없음이다.
+    let consumed = offset.saturating_add(shown.len());
+    if consumed < total {
+        envelope["nextOffset"] = serde_json::json!(consumed);
+    }
+    if offset > 0 {
+        envelope["offset"] = serde_json::json!(offset);
+    }
+    tool_ok_text(envelope.to_string())
+}
+
+/// [#4856] 열린 핸들에서 개요·조문 구조를 재파싱 없이 추출한다 — 무상태
+/// `export-structure --json` 과 **같은 코어(build_structure)·봉투(structure_json_value)**
+/// 를 재사용해 동형을 보장한다(`source` 자리에는 경로 대신 핸들 docId 가 들어간다).
+///
+/// mode 오타는 조용히 auto 로 되돌아가면 안 된다 — 요청한 분류축이 바뀐 채 성공으로
+/// 보고되기 때문이다(무상태 `--mode` 가 EXIT_USAGE 로 끊는 것과 같은 갈래). 그래서
+/// mode 검증을 핸들 조회보다 **먼저** 해, 핸들이 없는 오타 호출도 어느 축이 왜
+/// 틀렸는지부터 답한다.
+fn session_doc_structure(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    use rhwp::document_core::queries::structure::{build_structure, StructureMode};
+    let mode = match args.get("mode") {
+        None | Some(serde_json::Value::Null) => StructureMode::Auto,
+        Some(serde_json::Value::String(s)) => match StructureMode::parse(s) {
+            Some(m) => m,
+            None => {
+                return tool_error(format!(
+                    "mode 는 auto|outline|clause 여야 합니다 (받은 값: {s})"
+                ))
+            }
+        },
+        Some(other) => {
+            return tool_error(format!("mode 는 문자열이어야 합니다 (받은 값: {other})"))
+        }
+    };
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    let st = build_structure(sd.doc.document(), mode);
+    tool_ok_text(crate::structure_json_value(&id, &st).to_string())
+}
+
+/// [#4856] 열린 핸들에서 날짜·금액·수량을 재파싱 없이 뽑는다 — 무상태
+/// `extract-data --json` 과 **같은 코어(extract_data)·봉투(extract_data_json_value)**
+/// 를 재사용한다. 총량은 전수 스캔으로 세고 **표시만** 절단해(무상태 `--limit` 과 같은
+/// 규칙) `totalItemCount` 가 두 표면에서 같은 뜻이다.
+///
+/// kind 오타를 조용히 all 로 되돌리면 뽑는 종류가 바뀐 채 성공으로 보고된다 — search
+/// 의 caseSensitive 와 같은 이유로 거부가 유일하게 안전하다.
+fn session_doc_extract_data(
+    args: &serde_json::Value,
+    sessions: &mut Sessions,
+) -> serde_json::Value {
+    use rhwp::document_core::queries::extract_data::DataKind;
+    let (kind_arg, selected): (String, Vec<DataKind>) = match args.get("kind") {
+        None | Some(serde_json::Value::Null) => ("all".to_string(), DataKind::ALL.to_vec()),
+        Some(serde_json::Value::String(s)) if s == "all" => {
+            ("all".to_string(), DataKind::ALL.to_vec())
+        }
+        Some(serde_json::Value::String(s)) => match DataKind::parse(s) {
+            Some(k) => (s.clone(), vec![k]),
+            None => {
+                return tool_error(format!(
+                    "kind 는 date|amount|number|all 여야 합니다 (받은 값: {s})"
+                ))
+            }
+        },
+        Some(other) => {
+            return tool_error(format!("kind 는 문자열이어야 합니다 (받은 값: {other})"))
+        }
+    };
+    // [#3787 S7] 반환 상한. 0·음수·소수·문자열은 거부, 생략은 무제한(종전 무상태와 동형).
+    let limit = match opt_limit(args, "limit") {
+        Ok(v) => v,
+        Err(e) => return tool_error(e),
+    };
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    let all_items = sd.doc.extract_data(&selected);
+    let total_item_count = all_items.len();
+    let mut counts = serde_json::Map::new();
+    for kind in &selected {
+        let n = all_items.iter().filter(|it| it.kind == *kind).count();
+        counts.insert(kind.as_str().to_string(), serde_json::json!(n));
+    }
+    let counts = serde_json::Value::Object(counts);
+    let items: Vec<_> = match limit {
+        Some(n) => all_items.into_iter().take(n).collect(),
+        None => all_items,
+    };
+    tool_ok_text(
+        crate::extract_data_json_value(&id, &kind_arg, &items, total_item_count, &counts)
+            .to_string(),
+    )
 }
 
 /// [#3719 §6-1] 세션 편집 봉투의 `changedPages` — 무상태 판(#3712)과 **같은** 코어

@@ -36,15 +36,40 @@ base64 = "0.23"
 # [#4509] 캡슐 서명(4년 축) — 결정론 서명이라 replay/lineage 의 결정론 문화와
 # 정합. 순수 Rust 라 wasm 타깃도 그대로 컴파일된다.
 ed25519-dalek = "2"
+# 양자내성 서명(ML-DSA / Dilithium, NIST FIPS 204) — Ed25519 는 Shor 로 깨지므로
+# 작업캡슐·출처 서명을 양자 이후에도 살리는 확장. 순수 Rust 라 wasm 도 그대로 컴파일된다.
+# 시드(32B) 결정론 키생성·결정론 서명만 쓰므로 crate 의 getrandom/rand_core/pkcs8 기능은
+# 끄고(엔트로피는 프로젝트의 getrandom::fill 로 공급) alloc 만 켠다 — 의존 표면 최소화.
+ml-dsa = { version = "0.1", default-features = false, features = ["alloc"] }
 aes = "0.9"
 cbc = "0.2"
 cipher = "0.5"
 hmac = "0.13"
 pbkdf2 = "0.13"
 getrandom = { version = "0.4", features = ["wasm_js"] }
+# [agent_seal] 에이전트 전용 완전 엔트로피 봉인(1번 모드)도 아래 보안 트레일러와
+# 같은 XChaCha20-Poly1305를 쓴다. OTP(2번 모드)는 XOR+getrandom뿐이라 별도
+# 의존성이 없다.
 sha1 = "0.11"
 sha2 = "0.11"
 blake3 = "1"
+# [보안 트레일러] HWP3 강암호 append 트레일러 — memory-hard KDF(Argon2id) +
+# misuse-resistant AEAD(XChaCha20-Poly1305). 순수 Rust(RustCrypto) 라 wasm 도 그대로 컴파일.
+#
+# 기본 피처는 끈다 — argon2 의 `rand`/`password-hash` 와 chacha20poly1305 의
+# `getrandom` 은 rand_core 0.6 을 거쳐 **getrandom 0.2** 를 끌어오는데, 0.2 는
+# wasm32-unknown-unknown 에서 `js` 피처 없이는 compile_error! 로 죽는다(이
+# 저장소는 getrandom 0.4 + wasm_js 를 쓴다). 여기 코드는 소금·논스를
+# `getrandom::fill` 로 직접 만들고 저수준 Argon2 API 만 쓰므로 그 피처가
+# 필요 없다 — 끊어 두면 wasm 빌드가 구버전 getrandom 을 아예 만나지 않는다.
+argon2 = { version = "0.5", default-features = false, features = ["alloc"] }
+chacha20poly1305 = { version = "0.10", default-features = false, features = ["alloc"] }
+zeroize = "1"
+# [보안 트레일러 · 포스트양자] ML-KEM-768(NIST FIPS 203) 격자 KEM — 공개키 봉인의
+# 양자안전 키교환. 대칭부(XChaCha20-Poly1305)는 이미 양자내성이고, Shor 에 깨지는
+# 비대칭 키교환만 격자 KEM 으로 교체한다. 순수 Rust(RustCrypto) 라 wasm 도 그대로 컴파일.
+ml-kem = "0.2"
+rand_core = "0.6"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
 quick-xml = "0.41"
 roxmltree = "0.21"
@@ -74,6 +99,11 @@ subsecond = { version = "=0.7.10", optional = true }
 default = ["console_error_panic_hook"]
 native-skia = ["dep:resvg", "dep:skia-safe"]
 subsecond-dev = ["dep:subsecond"]
+# [gym_gpu_raster] GPU 가속 SVG 래스터화 경로 (네이티브 전용). native-skia 와 같은 방식으로
+# 선택 게이팅한다 — CI 는 GPU 없이도 컴파일되고, 실제 GPU 실행은 로컬에서만 일어난다.
+# vello(+vello_svg)로 SVG 를 GPU 래스터화하고, resvg(CPU)를 같은 usvg 트리로 돌려 정직한
+# 벤치마크 기준선으로 삼는다.
+gpu = ["dep:vello", "dep:vello_svg", "dep:pollster", "dep:resvg-gpu"]
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -83,6 +113,17 @@ resvg = { version = "0.47", optional = true }
 pdf-writer = "0.12"
 subsetter = "0.2"
 skia-safe = { version = "0.99.0", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
+
+# [gym_gpu_raster] GPU 래스터화 스택 (feature = "gpu", 네이티브 전용).
+# vello: Linebender 의 GPU 2D 렌더러(컴퓨트 파이프라인). vello_svg: usvg 트리 → vello Scene.
+# pollster: 헤드리스라 이벤트 루프가 없으므로 wgpu 의 async(adapter/device/버퍼매핑)를 블로킹.
+# resvg-gpu: CPU 기준선. vello_svg 0.7 과 usvg 0.45 를 공유하도록 0.45 로 핀했다(같은 트리를
+# 두 래스터라이저에 동일 입력으로 넣어 벤치마크·픽셀비교를 성립). native-skia 의 resvg 0.47 과
+# 별개 버전으로 공존한다.
+vello = { version = "0.5", optional = true }
+vello_svg = { version = "0.7", optional = true }
+pollster = { version = "0.4", optional = true }
+resvg-gpu = { package = "resvg", version = "0.45", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-sys = { version = "0.3", features = [

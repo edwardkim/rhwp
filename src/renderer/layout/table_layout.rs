@@ -1688,7 +1688,7 @@ fn stored_fragment_extent_hu(cell: &crate::model::table::Cell, group: (usize, us
         .iter()
         .flat_map(|para| para.line_segs.iter())
         .filter(|seg| seg.vertical_pos >= 0)
-        .map(|seg| seg.vertical_pos + seg.line_height.max(0))
+        .map(|seg| seg.vertical_pos.saturating_add(seg.line_height.max(0)))
         .max()
         .unwrap_or(0)
 }
@@ -2072,7 +2072,12 @@ impl LayoutEngine {
                 let para_extent = p
                     .line_segs
                     .iter()
-                    .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height.max(0), self.dpi))
+                    .map(|s| {
+                        hwpunit_to_px(
+                            s.vertical_pos.saturating_add(s.line_height.max(0)),
+                            self.dpi,
+                        )
+                    })
                     .fold(prev_extent, f64::max);
                 prev_extent = para_extent;
                 let object_bottom = p
@@ -6203,7 +6208,7 @@ impl LayoutEngine {
                 let vpos_height = if cell.paragraphs.len() > 1 {
                     let last_para = cell.paragraphs.last().unwrap();
                     if let Some(seg) = last_para.line_segs.last() {
-                        let mut last_end = seg.vertical_pos + seg.line_height;
+                        let mut last_end = seg.vertical_pos.saturating_add(seg.line_height);
                         // 마지막 문단에 중첩 표가 있고 lh가 표 높이보다 작으면 보정
                         for ctrl in &last_para.controls {
                             if let Control::Table(t) = ctrl {
@@ -6354,7 +6359,7 @@ impl LayoutEngine {
                     .filter(|s| s.vertical_pos >= 0 && s.line_height > 0)
                     .map(|s| {
                         (
-                            hwpunit_to_px(s.vertical_pos + s.line_height, self.dpi),
+                            hwpunit_to_px(s.vertical_pos.saturating_add(s.line_height), self.dpi),
                             hwpunit_to_px(s.line_height, self.dpi),
                         )
                     })
@@ -6604,7 +6609,7 @@ impl LayoutEngine {
             paragraphs
                 .iter()
                 .flat_map(|p| p.line_segs.iter())
-                .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height, self.dpi))
+                .map(|s| hwpunit_to_px(s.vertical_pos.saturating_add(s.line_height), self.dpi))
                 .fold(0.0f64, f64::max)
         } else {
             0.0
@@ -6643,7 +6648,9 @@ impl LayoutEngine {
                         .iter()
                         .take(pidx)
                         .flat_map(|prev| prev.line_segs.iter())
-                        .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height, self.dpi))
+                        .map(|s| {
+                            hwpunit_to_px(s.vertical_pos.saturating_add(s.line_height), self.dpi)
+                        })
                         .filter(|&e| e <= para_top + 0.5)
                         .fold(f64::NEG_INFINITY, f64::max);
                     let gap_before = para_top - prev_end;
@@ -6859,7 +6866,7 @@ impl LayoutEngine {
                 let prev_end_vpos = prev_para
                     .line_segs
                     .last()
-                    .map(|s| s.vertical_pos + s.line_height)
+                    .map(|s| s.vertical_pos.saturating_add(s.line_height))
                     .unwrap_or(-1);
                 let cur_first_vpos = para.line_segs.first().map(|s| s.vertical_pos).unwrap_or(-1);
                 if cur_first_vpos >= 0 && prev_end_vpos > 0 {
@@ -7933,7 +7940,7 @@ impl LayoutEngine {
             {
                 return false;
             }
-            let prev_end = prev.vertical_pos + prev.line_height;
+            let prev_end = prev.vertical_pos.saturating_add(prev.line_height);
             if cur.vertical_pos < 0 || prev_end <= 0 || cur.vertical_pos >= prev_end {
                 return false;
             }
@@ -8177,7 +8184,8 @@ impl LayoutEngine {
                                         && i64::from(seg.line_height) * 4
                                             >= i64::from(next.line_height) * 3;
                                     full_line_box
-                                        && next.vertical_pos >= seg.vertical_pos + seg.line_height
+                                        && next.vertical_pos
+                                            >= seg.vertical_pos.saturating_add(seg.line_height)
                                 }
                                 _ => false,
                             }
@@ -8268,7 +8276,7 @@ impl LayoutEngine {
                     (Some(prev_seg), Some(cur_seg))
                         if !line_seg_is_synthetic(prev_seg) && !line_seg_is_synthetic(cur_seg) =>
                     {
-                        let prev_end = prev_seg.vertical_pos + prev_seg.line_height;
+                        let prev_end = prev_seg.vertical_pos.saturating_add(prev_seg.line_height);
                         cur_seg.vertical_pos >= 0 && prev_end > 0 && cur_seg.vertical_pos < prev_end
                     }
                     _ => false,
@@ -8327,8 +8335,10 @@ impl LayoutEngine {
                     (Some(prev_seg), Some(cur_seg))
                         if !line_seg_is_synthetic(prev_seg) && !line_seg_is_synthetic(cur_seg) =>
                     {
-                        let prev_end =
-                            prev_seg.vertical_pos + prev_seg.line_height + prev_seg.line_spacing;
+                        let prev_end = prev_seg
+                            .vertical_pos
+                            .saturating_add(prev_seg.line_height)
+                            .saturating_add(prev_seg.line_spacing);
                         cur_seg.vertical_pos >= 0
                             && prev_end > 0
                             && cur_seg.vertical_pos > prev_end + vpos_gap_threshold_hu
@@ -8354,7 +8364,7 @@ impl LayoutEngine {
                 if line_seg_is_synthetic(prev) || line_seg_is_synthetic(cur) {
                     return false;
                 }
-                let prev_end = prev.vertical_pos + prev.line_height;
+                let prev_end = prev.vertical_pos.saturating_add(prev.line_height);
                 cur.vertical_pos >= 0 && prev_end > 0 && cur.vertical_pos < prev_end
             };
             let stored_frame_break_before = |li: usize| -> bool {

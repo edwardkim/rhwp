@@ -202,7 +202,10 @@ impl HeightCursor {
         if seg.vertical_pos == 0 && prev_pi > 0 {
             return y_offset;
         }
-        let prev_vpos_end = seg.vertical_pos + seg.line_height + seg.line_spacing;
+        let prev_vpos_end = seg
+            .vertical_pos
+            .saturating_add(seg.line_height)
+            .saturating_add(seg.line_spacing);
         let curr_first_vpos = paragraphs
             .get(item_para)
             .and_then(|p| p.line_segs.first())
@@ -546,7 +549,7 @@ impl HeightCursor {
             && !curr_is_equation_only_tail
             && matches!(
                 curr_first_vpos,
-                Some(v) if v - seg.vertical_pos >= seg.line_height + seg.line_spacing
+                Some(v) if v - seg.vertical_pos >= seg.line_height.saturating_add(seg.line_spacing)
             );
         let compact_endnote_page_tail_backtrack = self.suppress_large_forward_jump
             && is_page_path
@@ -629,7 +632,12 @@ impl HeightCursor {
         let current_line_advance_px = paragraphs
             .get(item_para)
             .and_then(|p| p.line_segs.first())
-            .map(|s| hwpunit_to_px((s.line_height + s.line_spacing).max(0), self.dpi))
+            .map(|s| {
+                hwpunit_to_px(
+                    (s.line_height.saturating_add(s.line_spacing)).max(0),
+                    self.dpi,
+                )
+            })
             .unwrap_or(0.0);
         let compact_endnote_page_no_separator_tail_pullup = self.suppress_large_forward_jump
             && is_page_path

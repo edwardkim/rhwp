@@ -544,7 +544,12 @@ impl HeightMeasurer {
                 let para_extent = p
                     .line_segs
                     .iter()
-                    .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height.max(0), self.dpi))
+                    .map(|s| {
+                        hwpunit_to_px(
+                            s.vertical_pos.saturating_add(s.line_height.max(0)),
+                            self.dpi,
+                        )
+                    })
                     .fold(prev_extent, f64::max);
                 prev_extent = para_extent;
                 let object_bottom = p
@@ -893,7 +898,9 @@ impl HeightMeasurer {
                     && first.line_height == last.line_height
                 {
                     let vpos_h = hwpunit_to_px(
-                        last.vertical_pos + last.line_height + last.line_spacing
+                        last.vertical_pos
+                            .saturating_add(last.line_height)
+                            .saturating_add(last.line_spacing)
                             - first.vertical_pos,
                         self.dpi,
                     );
@@ -927,7 +934,10 @@ impl HeightMeasurer {
                                 let adj: f64 = para.line_segs[..guide_segs]
                                     .iter()
                                     .map(|seg| {
-                                        hwpunit_to_px(seg.line_height + seg.line_spacing, self.dpi)
+                                        hwpunit_to_px(
+                                            seg.line_height.saturating_add(seg.line_spacing),
+                                            self.dpi,
+                                        )
                                     })
                                     .sum();
                                 return Some(adj);
@@ -1099,7 +1109,7 @@ impl HeightMeasurer {
             paragraphs
                 .iter()
                 .flat_map(|p| p.line_segs.iter())
-                .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height, self.dpi))
+                .map(|s| hwpunit_to_px(s.vertical_pos.saturating_add(s.line_height), self.dpi))
                 .fold(0.0f64, f64::max)
         } else {
             0.0
@@ -1147,7 +1157,9 @@ impl HeightMeasurer {
                         .iter()
                         .take(pidx)
                         .flat_map(|prev| prev.line_segs.iter())
-                        .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height, self.dpi))
+                        .map(|s| {
+                            hwpunit_to_px(s.vertical_pos.saturating_add(s.line_height), self.dpi)
+                        })
                         .filter(|&e| e <= para_top + 0.5)
                         .fold(f64::NEG_INFINITY, f64::max);
                     let gap_before = para_top - prev_end;
@@ -1541,7 +1553,7 @@ impl HeightMeasurer {
                         .paragraphs
                         .iter()
                         .flat_map(|p| p.line_segs.last())
-                        .map(|s| s.vertical_pos + s.line_height)
+                        .map(|s| s.vertical_pos.saturating_add(s.line_height))
                         .max()
                         .unwrap_or(0);
                     let nested_bottom = self.cell_nested_controls_bottom(
@@ -1574,7 +1586,12 @@ impl HeightMeasurer {
                             .iter()
                             .flat_map(|pp| pp.line_segs.iter())
                             .filter(|seg| seg.vertical_pos >= 0 && seg.line_height > 0)
-                            .map(|seg| hwpunit_to_px(seg.vertical_pos + seg.line_height, self.dpi))
+                            .map(|seg| {
+                                hwpunit_to_px(
+                                    seg.vertical_pos.saturating_add(seg.line_height),
+                                    self.dpi,
+                                )
+                            })
                             .fold(0.0f64, f64::max)
                     } else {
                         0.0

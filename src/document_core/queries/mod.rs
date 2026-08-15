@@ -11,6 +11,8 @@ mod form_query;
 pub mod hwpctrl_sets;
 pub mod rendering;
 // [#3283] `grep` 이 같은 매칭 규칙(find_matches)을 쓰도록 크레이트 내부 공개.
+/// [프롬프트 주입 방패] 문서 본문을 nonce 격벽으로 감싸 LLM 에 안전하게 넘긴다 — 읽기 전용.
+pub mod armor;
 /// 주소(구역·문단·페이지)를 가진 검색 — 조판 엔진이 있어야만 가능한 질의.
 pub mod changed_pages;
 /// 날짜·금액·수량을 주소와 함께 뽑는 추출 코어 — `grep` 과 같은 페이지 인덱스를 쓴다.
@@ -25,7 +27,11 @@ pub mod navigation;
 /// [#3719 §6-11] 공개 전 개인정보 탐지 — 읽기 전용 판정(마스킹은 CLI 의 치환 경로).
 pub mod pii_scan;
 pub(crate) mod search_query;
+/// 숨은 마크(제로폭·호모글리프·공백 스테가노) 탐지 + 방어적 정화 코어 — 읽기 전용 판정.
+pub mod stego_scan;
 pub mod structure;
+/// 무기화 문서 구조 위협 탐지 — 읽기 전용 안전 에어락(컨테이너·레코드 구조 층).
+pub mod threat_scan;
 // [#3719 §6-7] 표 ↔ CSV 변환 — `table_extract` 격자를 재사용하는 순수 변환 코어.
 /// [#4100] 차트 데이터 ↔ CSV 행렬 (행=카테고리, 열=계열).
 pub mod chart_csv;

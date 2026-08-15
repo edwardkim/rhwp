@@ -81,6 +81,10 @@ impl DocumentCore {
         let mut document = parsed.document;
         let hml_metadata = parsed.hml_metadata;
 
+        // [#4813] 손상 입력 DoS 방어 — 파싱 직후, compose/pagination/layout 이 저장
+        // line_seg 를 소비하기 전에 물리적으로 불가능한 과다 line_seg 배열을 제거한다.
+        Self::drop_corrupt_oversized_linesegs(&mut document);
+
         // [#2279 실험 전용] 본문 저장 lineseg 전면 무시 → fresh 재계산.
         // 기계생성 결재문서의 부분-사다리 불신 실험 계측용 (기본 no-op).
         // 주의: 92셋 전수 실측(2026-07-18)에서 전면 fresh 는 88→76 광역 회귀 —
@@ -306,6 +310,32 @@ impl DocumentCore {
                 cell_path,
                 kind: WarningKind::LinesegTextRunReflow,
             });
+        }
+    }
+
+    /// [#4813] 손상 입력 DoS 방어 — 저장된 line_seg(줄 배열) 수가 문단의 문자 수를
+    /// 크게 초과하는 문단은 line_seg 를 비운다.
+    ///
+    /// line_seg 하나는 화면상 한 줄이고 한 줄은 문자를 최소 1개 담으므로, 정상
+    /// 문서에서는 언제나 `line_segs.len() ≤ 문자 수 + 1` 이다. 손상된 HWP/HWPX 는
+    /// 길이·개수 필드 훼손으로 이 배열을 수만 개까지 부풀릴 수 있고(퍼징 실측
+    /// `samples/hwp3-sample14.hwp` 10% 바이트 플립본: 한 문단의 line_seg 25,856 개 >
+    /// 문자 21,454 개), 그러면 `compose_lines`·layout 이 line_seg 마다 문단 전체
+    /// 텍스트를 다시 슬라이싱·배치해 O(line_seg 수 × 문단 길이) 로 폭주한다 —
+    /// `info`·`export-text` 가 유한 시간에 끝나지 않는 서비스 거부(DoS)다.
+    ///
+    /// 이런 배열은 신뢰할 수 없으므로 비운다. 이후 리플로우/합성 경로(`compose_lines`
+    /// 의 line_seg 부재 폴백 등)가 문단을 텍스트로부터 정상 재구성한다. 상한을
+    /// `문자 수 + 64` 로 넉넉히 잡아 정상 문서(줄바꿈만 있는 문단 포함)는 절대 걸리지
+    /// 않으므로 동작이 완전히 동일하다. 포맷 무관 가드다.
+    fn drop_corrupt_oversized_linesegs(document: &mut Document) {
+        for section in &mut document.sections {
+            for para in &mut section.paragraphs {
+                let seg_count = para.line_segs.len();
+                if seg_count > 64 && seg_count > para.text.chars().count() + 64 {
+                    para.line_segs.clear();
+                }
+            }
         }
     }
 
@@ -2311,6 +2341,55 @@ mod validate_linesegs_tests {
 
         let report = DocumentCore::validate_linesegs(&doc, true);
         assert!(report.is_empty());
+    }
+
+    fn doc_with_para(text: &str, seg_count: usize) -> Document {
+        let mut doc = Document::default();
+        let mut section = Section::default();
+        let mut para = Paragraph::default();
+        para.text = text.to_string();
+        para.line_segs = (0..seg_count).map(|_| LineSeg::default()).collect();
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+        doc
+    }
+
+    /// [#4813] 문자 수를 크게 초과하는 손상 line_seg 배열(퍼징 실측 hwp3-sample14
+    /// 손상본: 문자 21,454 개인데 line_seg 25,856 개)은 비워져야 한다 —
+    /// compose/layout 이 line_seg 마다 문단 전체를 재슬라이싱하는 O(n²) 폭주(DoS)
+    /// 방지. 비우면 이후 폴백 경로가 문단을 정상 재구성한다.
+    #[test]
+    fn drop_corrupt_oversized_linesegs_clears_impossible_array() {
+        let mut doc = doc_with_para("가나다", 25_856); // 문자 3, line_seg 25,856
+        DocumentCore::drop_corrupt_oversized_linesegs(&mut doc);
+        assert!(
+            doc.sections[0].paragraphs[0].line_segs.is_empty(),
+            "문자 수를 크게 초과하는 손상 line_seg 배열은 비워져야 한다"
+        );
+    }
+
+    /// [#4813] 정상 문단은 절대 건드리지 않는다 — line_seg 수 ≤ 문자 수 + 64.
+    #[test]
+    fn drop_corrupt_oversized_linesegs_keeps_valid_paragraphs() {
+        // 일반 문단: 문자보다 line_seg 가 훨씬 적다.
+        let mut doc = doc_with_para("hello world", 3);
+        DocumentCore::drop_corrupt_oversized_linesegs(&mut doc);
+        assert_eq!(doc.sections[0].paragraphs[0].line_segs.len(), 3);
+
+        // 경계: 줄바꿈만 있는 문단은 line_seg 수가 문자 수와 비슷해도 상한(+64) 안이라 보존.
+        let text: String = "\n".repeat(300);
+        let mut doc2 = doc_with_para(&text, 301);
+        DocumentCore::drop_corrupt_oversized_linesegs(&mut doc2);
+        assert_eq!(
+            doc2.sections[0].paragraphs[0].line_segs.len(),
+            301,
+            "line_seg 수가 문자 수를 넘지 않는 정상 문단은 보존되어야 한다"
+        );
+
+        // 작은 배열은 상한(64) 아래라 문자 수와 무관하게 보존한다.
+        let mut doc3 = doc_with_para("", 40);
+        DocumentCore::drop_corrupt_oversized_linesegs(&mut doc3);
+        assert_eq!(doc3.sections[0].paragraphs[0].line_segs.len(), 40);
     }
 
     /// 표 셀 내부 문단도 검증 — cell_path 가 기록됨
