@@ -54,3 +54,4 @@ last_verified: 2026-08-15
 - [Issue #2392 picture props apply 계약 조사](issue-2392/README.md)
 - [Issue #3486 HWP3 렌더링 정합 조사](issue-3486/README.md)
 - [Issue #4739 정부상징 폰트 후계·대체 조사](issue-4739/README.md)
+- [Issue #4741 Local Font Access 부분 열거 누락 조사](issue-4741/README.md)
