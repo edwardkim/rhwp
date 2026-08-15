@@ -8,7 +8,7 @@
  * 의도적으로 부분 결과를 반환하도록 덮어쓰며 다른 탭과 실제 저장 글꼴 목록은 변경하지 않는다.
  */
 
-import { assert, loadApp, runTest, setTestCase } from './helpers.mjs';
+import { assert, loadApp, loadHwpFile, runTest, setTestCase } from './helpers.mjs';
 
 const FACE = 'KoPub바탕체 Light';
 const TEST_TEXT = '행정업무운영 편람 KoPub바탕체 Light 0123456789 가나다라마';
@@ -100,4 +100,58 @@ runTest('Issue #4741 Local Font Access 부분 열거와 exact Canvas2D face', as
   );
 
   console.log(JSON.stringify(result, null, 2));
+
+  setTestCase('#4741 편람 HWP 물리 11쪽 exact face와 페이지 경계');
+  await page.evaluate(() => {
+    const prototype = CanvasRenderingContext2D.prototype;
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, 'font');
+    if (!descriptor?.get || !descriptor.set) throw new Error('patched Canvas font descriptor가 없습니다');
+    globalThis.__issue4741CanvasFonts = [];
+    Object.defineProperty(prototype, 'font', {
+      configurable: true,
+      enumerable: descriptor.enumerable,
+      get() {
+        return descriptor.get.call(this);
+      },
+      set(value) {
+        descriptor.set.call(this, value);
+        if (/KoPub/u.test(String(value))) {
+          globalThis.__issue4741CanvasFonts.push({
+            requested: String(value),
+            effective: descriptor.get.call(this),
+          });
+        }
+      },
+    });
+  });
+  const sample = await loadHwpFile(page, '2025 행정업무운영 편람(최종).hwp');
+  await page.evaluate(() => {
+    const view = globalThis.__canvasView;
+    const container = document.querySelector('#scroll-container');
+    const pageOffset = view?.virtualScroll?.getPageOffset?.(10);
+    if (!container || !Number.isFinite(pageOffset)) throw new Error('물리 11쪽 offset을 찾을 수 없습니다');
+    globalThis.__issue4741CanvasFonts = [];
+    container.scrollTop = pageOffset;
+    container.dispatchEvent(new Event('scroll'));
+  });
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1500)));
+  const sampleResult = await page.evaluate(() => ({
+    pageCount: globalThis.__wasm?.pageCount,
+    backend: globalThis.__canvasView?.getRenderBackend?.(),
+    fonts: globalThis.__issue4741CanvasFonts ?? [],
+  }));
+  const exactLightFonts = sampleResult.fonts.filter(item => /KoPub바탕체 Light/u.test(item.requested));
+  assert(sample.pageCount === 383 && sampleResult.pageCount === 383, '편람 HWP 페이지 경계는 383쪽 유지');
+  assert(sampleResult.backend === 'canvas2d', '편람 검증 backend는 Canvas2D');
+  assert(exactLightFonts.length > 0, '물리 11쪽 렌더가 KoPub바탕체 Light를 요청');
+  assert(
+    exactLightFonts.every(item => item.effective.includes(FACE) && !/GulimChe|monospace/u.test(item.effective)),
+    '물리 11쪽 KoPub바탕체 Light가 exact proportional serif chain으로 렌더',
+  );
+  console.log(JSON.stringify({
+    pageCount: sampleResult.pageCount,
+    backend: sampleResult.backend,
+    exactLightAssignments: exactLightFonts.length,
+    representativeFont: exactLightFonts[0] ?? null,
+  }, null, 2));
 }, { skipLoadApp: true });
