@@ -930,6 +930,7 @@ jobs:
         run: |
           python3 -m unittest scripts/tests/test_gym_score.py
           python3 -m unittest scripts/tests/test_gym_packs.py
+          python3 -m unittest scripts/tests/test_gym_trajectory.py
           python3 -m unittest scripts/tests/test_gym_leaderboard.py
           python3 -m unittest scripts/tests/test_gym_release_diff.py
 

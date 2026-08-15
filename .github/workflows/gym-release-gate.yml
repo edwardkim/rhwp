@@ -51,6 +51,12 @@ jobs:
           (cd ../rhwp-old && cargo build --bin rhwp)
           cp ../rhwp-old/target/debug/rhwp ./rhwp-old-bin
 
+      # 트라젝토리 필요성 감사 — 다단계 과제의 마지막 스텝이 채점에 무의미하면
+      # (부분 트라젝토리가 통과) exit 1 로 릴리스 차단. 종점만 채점하는 게이트가
+      # 놓치는 '트라젝토리 연극'을 골든 경로·judge 없이 잡는 무결성 전제.
+      - name: Trajectory necessity audit (theater gate)
+        run: python3 gym/tools/trajectory.py --bin target/debug/rhwp
+
       - name: Run release gate
         id: gate
         run: |

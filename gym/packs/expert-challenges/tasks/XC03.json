@@ -17,6 +17,12 @@
   },
   "checks": [
     {
+      "name": "원장 기록 실재 (settle record 스텝 load-bearing)",
+      "op": "file_exists",
+      "file": "ledger.ndjson",
+      "minBytes": 100
+    },
+    {
       "name": "캡슐 무결",
       "op": "value_eq",
       "value": true,
