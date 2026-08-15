@@ -34,8 +34,6 @@ test('외부 웹폰트 사용 안 함 옵션은 CDN @font-face와 FontFace.load�
   const fontFaceRequests: Array<{ family: string; source: string }> = [];
   const previousDocument = (globalThis as typeof globalThis & { document?: unknown }).document;
   const previousFontFace = (globalThis as typeof globalThis & { FontFace?: unknown }).FontFace;
-  const previousConsoleDebug = console.debug;
-  const debugLogs: string[] = [];
 
   const fakeDocument = {
     head: {
@@ -83,9 +81,6 @@ test('외부 웹폰트 사용 안 함 옵션은 CDN @font-face와 FontFace.load�
     configurable: true,
     value: FakeFontFace,
   });
-  console.debug = (...args: unknown[]) => {
-    debugLogs.push(args.map(value => String(value)).join(' '));
-  };
 
   try {
     await loadWebFonts([], undefined, { disableExternalWebFonts: true });
@@ -116,6 +111,8 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
   const fontFaceRequests: Array<{ family: string; source: string }> = [];
   const previousDocument = (globalThis as typeof globalThis & { document?: unknown }).document;
   const previousFontFace = (globalThis as typeof globalThis & { FontFace?: unknown }).FontFace;
+  const previousConsoleDebug = console.debug;
+  const debugLogs: string[] = [];
 
   const fakeDocument = {
     head: {
@@ -163,6 +160,9 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
     configurable: true,
     value: FakeFontFace,
   });
+  console.debug = (...args: unknown[]) => {
+    debugLogs.push(args.map(value => String(value)).join(' '));
+  };
 
   try {
     await loadWebFonts([
