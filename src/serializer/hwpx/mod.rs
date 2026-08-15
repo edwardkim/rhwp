@@ -417,6 +417,23 @@ mod tests {
         assert_eq!(got, static_assets::VERSION_XML.as_bytes());
     }
 
+    /// `version.xml` 의 `xmlVersion` 은 조판을 가른다 — 상수를 되돌리지 못하게 못 박는다.
+    ///
+    /// 한글은 선언된 OWPML 판본에 따라 옛 조판 규칙을 적용한다. `1.2` 를 선언하면 같은
+    /// 내용이 한 쪽 더 늘어난다(01513·01888·01892·01908 실측: 원본 1쪽 / `1.2` 2쪽 /
+    /// `1.5` 1쪽). 쪽수가 이미 맞던 문서 12건에는 영향이 없었다(회귀 0).
+    ///
+    /// 같은 파일의 `appVersion`·`micro`·`buildNumber` 는 바꿔도 쪽수가 그대로다 —
+    /// 조판을 가르는 것은 이 속성 하나뿐이다.
+    #[test]
+    fn version_xml_declares_the_owpml_revision_that_hangul_lays_out_with() {
+        assert!(
+            static_assets::VERSION_XML.contains(r#"xmlVersion="1.5""#),
+            "xmlVersion 은 1.5 여야 한다: {}",
+            static_assets::VERSION_XML
+        );
+    }
+
     #[test]
     fn serialize_with_one_section_parses_back() {
         let mut doc = Document::default();

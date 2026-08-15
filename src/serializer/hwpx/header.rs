@@ -22,6 +22,7 @@ use crate::model::style::{
     SubstFont, TabDef,
 };
 use crate::model::ColorRef;
+use crate::parser::tags;
 
 use super::canonical_defaults::FONTFACE_LANG_NAMES;
 use super::context::SerializeContext;
@@ -107,7 +108,7 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
         None => {
             write_compatible_document(&mut w)?;
             write_doc_option(&mut w)?;
-            write_track_change_config(&mut w)?;
+            write_track_change_config(&mut w, track_change_flags(&doc.doc_info))?;
         }
     }
 
@@ -1443,8 +1444,35 @@ fn write_doc_option<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
     Ok(())
 }
 
-fn write_track_change_config<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
-    empty_tag(w, "hh:trackchageConfig", &[("flags", "0")])
+/// `<hh:trackchageConfig flags>` 값을 원본 DocInfo 에서 되찾는다.
+///
+/// 종전에는 `0` 을 하드코딩했다. 이 값은 이름과 달리 **조판에 영향을 준다** — 한글이
+/// `flags="0"` 문서를 열면 같은 내용이 한 쪽 더 늘어난다(00295 실측: 원본 1쪽,
+/// rhwp 저장본 2쪽, 이 값만 56 으로 바꾸면 다시 1쪽). 10k 스윕의 h2x 쪽수 불일치
+/// 978 경로 중 +1쪽이 526 건인데, 그 계열의 근인이다.
+///
+/// HWP5 는 `HWPTAG_TRACKCHANGE` 레코드 첫 `u32` 에 싣는다(파서가 모델링하지 않아
+/// `extra_records` 에 원시 보존된다). 레코드가 없으면 56 — 한컴 실측이다:
+/// 코퍼스 6,473 문서 중 4,588 이 레코드를 갖고 그중 4,555 가 56 이며, 레코드가
+/// **없는** 문서(00000·00001)를 한글로 저장해도 `flags="56"` 이 나온다.
+fn track_change_flags(doc_info: &DocInfo) -> u32 {
+    doc_info
+        .extra_records
+        .iter()
+        .find(|r| r.tag_id == tags::HWPTAG_TRACKCHANGE)
+        .and_then(|r| r.data.get(..4))
+        .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+        .unwrap_or(TRACK_CHANGE_FLAGS_DEFAULT)
+}
+
+/// 한컴이 `HWPTAG_TRACKCHANGE` 없는 문서에 쓰는 값 (실측).
+const TRACK_CHANGE_FLAGS_DEFAULT: u32 = 56;
+
+fn write_track_change_config<W: Write>(
+    w: &mut Writer<W>,
+    flags: u32,
+) -> Result<(), SerializeError> {
+    empty_tag(w, "hh:trackchageConfig", &[("flags", &flags.to_string())])
 }
 
 // 내부에서 쓰는 start_tag 별명
@@ -1453,6 +1481,45 @@ use super::utils::start_tag;
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// `trackchageConfig flags` 는 원본 값을 실어야 한다.
+    ///
+    /// 이름과 달리 조판에 영향을 준다 — 한글은 `flags="0"` 문서를 같은 내용인데도
+    /// 한 쪽 더 늘려 연다(00295 실측: 원본 1쪽 / 저장본 2쪽 / 이 값만 56 으로
+    /// 바꾸면 1쪽). 종전에는 `0` 을 하드코딩했다.
+    #[test]
+    fn track_change_flags_come_from_the_original_record() {
+        use crate::model::document::RawRecord;
+
+        let mut info = DocInfo::default();
+        assert_eq!(
+            track_change_flags(&info),
+            56,
+            "레코드가 없으면 한컴이 쓰는 값(56)으로 떨어진다 — 00000·00001 실측"
+        );
+
+        info.extra_records.push(RawRecord {
+            tag_id: tags::HWPTAG_TRACKCHANGE,
+            level: 0,
+            data: 60_u32.to_le_bytes().to_vec(),
+        });
+        assert_eq!(track_change_flags(&info), 60, "원본 값을 그대로 옮긴다");
+    }
+
+    /// 4바이트가 안 되는 손상 레코드는 기본값으로 떨어진다 — 쓰레기값을 쓰지 않는다.
+    #[test]
+    fn truncated_track_change_record_falls_back_to_the_default() {
+        use crate::model::document::RawRecord;
+
+        let mut info = DocInfo::default();
+        info.extra_records.push(RawRecord {
+            tag_id: tags::HWPTAG_TRACKCHANGE,
+            level: 0,
+            data: vec![0x38, 0x00],
+        });
+        assert_eq!(track_change_flags(&info), 56);
+    }
+
     use crate::parser::hwpx::parse_hwpx;
 
     #[test]
@@ -1630,7 +1697,13 @@ mod tests {
             xml.contains("<hh:layoutCompatibility><hh:char/><hh:paragraph/><hh:section/><hh:object/><hh:field/></hh:layoutCompatibility>"),
             "원본 부재 시 하드코딩 폴백: {xml}"
         );
-        assert!(xml.contains(r#"<hh:trackchageConfig flags="0"/>"#));
+        // 종전에는 `flags="0"` 을 못 박았다. 그 값은 실측으로 틀렸다 — 한글은 0 인 문서를
+        // 같은 내용인데도 한 쪽 더 늘려 연다(00295: 원본 1쪽 / 저장본 2쪽 / 이 값만 56 으로
+        // 바꾸면 1쪽). 이제 원본 레코드 값을 싣고, 없으면 한컴이 쓰는 56 으로 떨어진다.
+        assert!(
+            xml.contains(r#"<hh:trackchageConfig flags="56"/>"#),
+            "폴백은 한컴 기본값 56 이어야 한다: {xml}"
+        );
     }
 
     #[test]

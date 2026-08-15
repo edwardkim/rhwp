@@ -73,6 +73,21 @@ pub fn serialize_control(
                 &serialize_page_hide(ph),
             ));
         }
+        // 쪽 번호 시작 쪽 — payload 는 u32 하나뿐이다(실측 102건 전부 8바이트).
+        Control::PageNumCtrl(pnc) => {
+            records.push(make_ctrl_record(
+                tags::CTRL_PAGE_NUM_CTRL,
+                level,
+                &pnc.page_starts_on.to_hwp5().to_le_bytes(),
+            ));
+        }
+        Control::IndexMark(im) => {
+            records.push(make_ctrl_record(
+                tags::CTRL_INDEX_MARK,
+                level,
+                &serialize_index_mark_payload(im),
+            ));
+        }
         Control::Bookmark(bm) => {
             records.push(make_ctrl_record(tags::CTRL_BOOKMARK, level, &[]));
             if ctrl_data_record.is_none() {
@@ -1020,6 +1035,24 @@ fn serialize_page_hide(ph: &PageHide) -> Vec<u8> {
         attr |= 0x20;
     }
     attr.to_le_bytes().to_vec()
+}
+
+/// 찾아보기 표식 payload — 책갈피와 달리 키가 CTRL_HEADER 안에 들어간다.
+///
+/// 실측(06926): `ctrl_id` 뒤에 곧바로 `WORD+WCHAR[]` 두 벌과 예약 4바이트가 오고,
+/// 뒤따르는 CTRL_DATA 레코드는 없다.
+fn serialize_index_mark_payload(im: &IndexMark) -> Vec<u8> {
+    let mut w = ByteWriter::new();
+    for key in [&im.first_key, &im.second_key] {
+        let utf16: Vec<u16> = key.encode_utf16().collect();
+        w.write_u16(utf16.len() as u16).unwrap();
+        for ch in utf16 {
+            w.write_u16(ch).unwrap();
+        }
+    }
+    // 예약 4바이트 — 실측 전부 0.
+    w.write_u32(0).unwrap();
+    w.into_bytes()
 }
 
 fn serialize_bookmark_ctrl_data(bm: &Bookmark) -> Option<Vec<u8>> {

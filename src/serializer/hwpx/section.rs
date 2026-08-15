@@ -24,13 +24,15 @@ use quick_xml::Writer;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, CharOverlap, Control, Equation, Field, NewNumber, PageHide,
-    PageNumberPos, Ruby, EQUATION_LINE_MODE_BIT,
+    PageNumCtrl, PageNumberPos, PageStartsOn, Ruby, EQUATION_LINE_MODE_BIT,
 };
 use crate::model::document::{Document, Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType};
-use crate::model::paragraph::{ColumnBreakType, FieldRange, LineSeg, OrphanFieldEnd, Paragraph};
+use crate::model::paragraph::{
+    ColumnBreakType, FieldRange, LineSeg, OrphanFieldEnd, Paragraph, TitleMark,
+};
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, SizeCriterion, TextWrap, VertAlign, VertRelTo,
 };
@@ -653,6 +655,7 @@ pub(crate) fn render_paragraph_parts(
     // 생략하면 한글이 열 때 재계산한다(#1380 과 같은 계약).
     if !para.line_segs.is_empty() && position_axis_intact {
         // IR 기반 출력 — 원본 lineseg 값 보존 (#177)
+        //
         let linesegs = format!(
             "{}{}{}",
             LINESEG_SLOT_OPEN,
@@ -667,25 +670,85 @@ pub(crate) fn render_paragraph_parts(
     }
 }
 
+/// 원본에서 글자들이 0 부터 연속으로 놓여 있었는가 — 곧 컨트롤이 전부 텍스트 뒤에 있어
+/// mismatch 경로로 다시 써도 글자 위치가 밀리지 않는가.
+///
+/// mismatch 경로는 텍스트를 0 부터 연속으로 방출한다. 원본 `char_offsets` 가 그 누적 폭과
+/// 같으면 방출 전후 좌표가 일치하므로 lineseg 의 `text_start` 가 그대로 유효하다.
+fn text_positions_unshifted(para: &Paragraph) -> bool {
+    let mut expected = 0u32;
+    for (i, c) in para.text.chars().enumerate() {
+        match para.char_offsets.get(i) {
+            Some(&off) if off == expected => {}
+            // char_offsets 가 없는 합성 IR 은 갭이 없다고 본다(종전 동작 유지).
+            None => {}
+            _ => return false,
+        }
+        expected = expected.saturating_add(char_utf16_width(c));
+    }
+    true
+}
+
+/// 문단 하나를 여러 `<hp:t>` 조각으로 나눠 방출해도 위치가 이어지는 커서.
+///
+/// 탭 확장·제목 차례 표시는 둘 다 "문단 축 위 n번째" 로만 식별되므로, run 분할·필드
+/// 방출로 조각이 갈려도 같은 커서를 물려줘야 제자리에 실린다.
+#[derive(Default)]
+pub(crate) struct InlineCursor<'a> {
+    /// 다음에 소비할 `tab_extended` 인덱스
+    pub tab_idx: usize,
+    /// 문단의 제목 차례 표시 전체 (문자 인덱스 오름차순)
+    pub title_marks: &'a [TitleMark],
+    /// 다음에 방출할 `title_marks` 인덱스
+    pub mark_idx: usize,
+    /// 지금까지 방출한 문단 텍스트의 문자 수
+    pub char_idx: usize,
+}
+
+impl InlineCursor<'_> {
+    /// 현재 문자 위치에 걸린 제목 차례 표시를 전부 방출한다.
+    fn flush_marks_at_cursor(&mut self, t_xml: &mut String, buf: &mut String) {
+        while let Some(m) = self.title_marks.get(self.mark_idx) {
+            if m.char_idx > self.char_idx {
+                break;
+            }
+            flush_buf(t_xml, buf);
+            t_xml.push_str(&format!(
+                r#"<hp:titleMark ignore="{}"/>"#,
+                if m.ignore { 1 } else { 0 }
+            ));
+            self.mark_idx += 1;
+        }
+    }
+}
+
 /// `<hp:t>...</hp:t>` 본문 생성 — 탭/소프트브레이크/XML escape 포함.
 ///
-/// `tab_extended`: IR의 탭 확장 정보 목록. `tab_idx`를 통해 탭 문자마다 순서대로 참조.
-/// 항목이 없으면 "데이터 없음" 마커(width=`TAB_NO_DATA_WIDTH_MARKER`=0, leader=0, type=1)를
-/// 방출한다(#4403) — 파서가 이를 인식해 `tab_extended` 를 만들지 않아야 렌더러가 실제 `TabDef`
-/// 기준으로 탭 정지를 다시 계산한다.
+/// `tab_extended`: IR의 탭 확장 정보 목록. `cursor.tab_idx` 를 통해 탭 문자마다 순서대로
+/// 참조한다. 항목이 없으면 "데이터 없음" 마커(width=`TAB_NO_DATA_WIDTH_MARKER`=0, leader=0,
+/// type=1)를 방출한다(#4403) — 파서가 이를 인식해 `tab_extended` 를 만들지 않아야 렌더러가
+/// 실제 `TabDef` 기준으로 탭 정지를 다시 계산한다.
 pub(crate) fn render_hp_t_content(
     text: &str,
     tab_extended: &[[u16; 7]],
-    tab_idx: &mut usize,
+    cursor: &mut InlineCursor<'_>,
 ) -> String {
     let mut t_xml = String::from("<hp:t>");
     let mut buf = String::new();
+    // 조각 첫머리에서도 훑는다 — char_shape 경계가 표시 자리에 걸리면 그 표시만 담은
+    // 빈 run 이 나오는데(한컴 실측: `<hp:t><hp:titleMark ignore="1"/></hp:t>`),
+    // 문자 루프만으로는 문자가 없어 그 run 을 그냥 지나친다.
+    cursor.flush_marks_at_cursor(&mut t_xml, &mut buf);
     for c in text.chars() {
+        // 제목 차례 표시는 이 문자 **앞**에 놓인다.
+        cursor.flush_marks_at_cursor(&mut t_xml, &mut buf);
+        cursor.char_idx += 1;
         match c {
             '\t' => {
                 flush_buf(&mut t_xml, &mut buf);
-                let (width, leader, tab_type) = if let Some(ext) = tab_extended.get(*tab_idx) {
-                    *tab_idx += 1;
+                let (width, leader, tab_type) = if let Some(ext) = tab_extended.get(cursor.tab_idx)
+                {
+                    cursor.tab_idx += 1;
                     (ext[0] as u32, ext[2] & 0x00ff, (ext[2] >> 8) & 0x00ff)
                 } else {
                     (TAB_NO_DATA_WIDTH_MARKER, 0u16, 1u16)
@@ -877,10 +940,11 @@ fn emit_guide_residue(splitter: &mut RunSplitter, para: &Paragraph, fr: &FieldRa
     while splitter.needs_cut(pos) && splitter.current_shape_id() != residue.char_shape_id {
         splitter.cut_one();
     }
-    let mut tab_idx = 0usize;
+    // 안내문 잔재는 합성 텍스트라 탭 확장·제목 차례 표시가 없다 — 빈 커서로 낸다.
+    let mut cursor = InlineCursor::default();
     splitter
         .content
-        .push_str(&render_hp_t_content(&residue.text, &[], &mut tab_idx));
+        .push_str(&render_hp_t_content(&residue.text, &[], &mut cursor));
 }
 
 /// `pos` 위치에서 경계를 적용하고 `fieldEnd` 를 방출한다.
@@ -904,7 +968,7 @@ fn emit_orphan_field_end(out: &mut String, ofe: &OrphanFieldEnd) {
 ///
 /// `char_offsets` 로 문자 idx → UTF-16 위치를 매핑하므로 IR 내 컨트롤(8 유닛 갭)이
 /// 있어도 경계 위치가 어긋나지 않는다.
-fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, tab_idx: &mut usize) {
+fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, cursor: &mut InlineCursor<'_>) {
     let mut text_buf = String::new();
     let mut running_pos = 0u32;
     for (idx, c) in para.text.chars().enumerate() {
@@ -914,7 +978,7 @@ fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, tab_idx: &mut u
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
-                tab_idx,
+                cursor,
             );
             splitter.cut_before(char_pos);
         }
@@ -927,8 +991,10 @@ fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, tab_idx: &mut u
         &mut splitter.content,
         &mut text_buf,
         &para.tab_extended,
-        tab_idx,
+        cursor,
     );
+    // 마지막 문자 뒤에 남은 제목 차례 표시 — 빈 조각으로 한 번 더 낸다.
+    flush_trailing_title_marks(&mut splitter.content, &para.tab_extended, cursor);
 }
 
 /// Paragraph 본문을 완전한 `<hp:run>` 시퀀스로 직렬화한다 (#1378 다중 run 분할).
@@ -956,6 +1022,8 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         && para.controls.is_empty()
         && para.field_ranges.is_empty()
         && para.orphan_field_ends.is_empty()
+        // 표시만 있고 텍스트가 없는 문단도 8유닛을 점유한다 — 여기서 빠지면 축이 밀린다.
+        && para.title_marks.is_empty()
     {
         // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
         return (String::new(), true);
@@ -1058,7 +1126,10 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
     // [#4677] 책갈피는 이제 위치 슬롯이라(`occupies_hwpx_slot_axis`) 슬롯 루프가 제자리에
     // 방출한다. 종전의 별도 방출(문단 시작 hoist / slot 사이 in-order, Task #1591·#1627)은
     // 슬롯 축이 책갈피를 잡지 못하던 시절의 우회였고, 그대로 두면 이중 방출이 된다.
-    let mut tab_idx = 0usize;
+    let mut cursor = InlineCursor {
+        title_marks: &para.title_marks,
+        ..Default::default()
+    };
 
     // fast path: 슬롯·필드·고아 fieldEnd·경계 없음 — 텍스트 전체를 단일 run 으로
     if slots.is_empty()
@@ -1066,8 +1137,9 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         && para.orphan_field_ends.is_empty()
         && splitter.single_run()
     {
-        let t = render_hp_t_content(&para.text, &para.tab_extended, &mut tab_idx);
+        let t = render_hp_t_content(&para.text, &para.tab_extended, &mut cursor);
         splitter.content.push_str(&t);
+        flush_trailing_title_marks(&mut splitter.content, &para.tab_extended, &mut cursor);
         // 슬롯이 하나도 없는데 char_count 는 슬롯을 주장하면(파서가 못 읽은 컨트롤 —
         // 예: 차례표지 0x0008) 방출 축이 원본보다 짧다 — 이때 lineseg 를 그대로 쓰면
         // 한글이 그 문단부터 본문을 폐기한다(#4778). 축 붕괴를 호출부에 알린다.
@@ -1080,7 +1152,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
 
     // mismatch 경로: 슬롯 위치 추정 불가 — 텍스트(경계 분할 포함) 후 슬롯 일괄 방출
     if slot_count != slots.len() {
-        split_text_into(&mut splitter, para, &mut tab_idx);
+        split_text_into(&mut splitter, para, &mut cursor);
         for slot in slots.iter() {
             render_control_slot(&mut splitter.content, slot, ctx);
         }
@@ -1101,6 +1173,11 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         let shortfall = slot_count.saturating_sub(slots.len());
         return (splitter.finish(), marker_count >= shortfall);
     }
+
+    // 슬롯으로 세어 놓고 XML 은 내지 않는 컨트롤이 섞여 있으면, 방출 축은 그만큼 짧다.
+    // 위치는 여전히 최선을 다해 맞추되 **축 정합을 주장하지는 않는다** — lineseg 를 그대로
+    // 쓰면 한글이 범위 밖 textpos 를 만나 파일을 아예 열지 못한다.
+    let axis_faithful = slots.iter().all(|c| emits_hwpx_slot_xml(c));
 
     // 메인 경로 — UTF-16 위치 축 위에서 슬롯/필드/문자/경계를 함께 처리
     let mut text_buf = String::new();
@@ -1170,7 +1247,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
-                    &mut tab_idx,
+                    &mut cursor,
                 );
                 splitter.cut_before(expected_utf16_pos);
                 emit_orphan_field_end(&mut splitter.content, &para.orphan_field_ends[oi]);
@@ -1182,7 +1259,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
-                &mut tab_idx,
+                &mut cursor,
             );
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
             splitter.cut_before(expected_utf16_pos);
@@ -1217,7 +1294,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
-                    &mut tab_idx,
+                    &mut cursor,
                 );
                 splitter.cut_before(expected_utf16_pos);
                 emit_orphan_field_end(&mut splitter.content, ofe);
@@ -1238,7 +1315,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
-                &mut tab_idx,
+                &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
             render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
@@ -1259,7 +1336,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
-                    &mut tab_idx,
+                    &mut cursor,
                 );
                 emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
                 field_end_emitted[i] = true;
@@ -1289,7 +1366,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
-                &mut tab_idx,
+                &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
             render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
@@ -1304,7 +1381,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
-                &mut tab_idx,
+                &mut cursor,
             );
             splitter.cut_before(char_pos);
         }
@@ -1329,7 +1406,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
-                    &mut tab_idx,
+                    &mut cursor,
                 );
                 emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
                 // [#1407] fieldEnd 는 8유닛 슬롯을 소비한다. expected 를 +8 진행하지
@@ -1345,8 +1422,9 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         &mut splitter.content,
         &mut text_buf,
         &para.tab_extended,
-        &mut tab_idx,
+        &mut cursor,
     );
+    flush_trailing_title_marks(&mut splitter.content, &para.tab_extended, &mut cursor);
 
     // end_char_idx >= text.len() 인 경우 루프에서 감지되지 않으므로 루프 후에 처리.
     // [Task #1893] 단, 문단 끝의 0-length 필드(start == end == text.len())는 자기
@@ -1414,7 +1492,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
             field_end_emitted[i] = true;
         }
     }
-    (splitter.finish(), true)
+    (splitter.finish(), axis_faithful)
 }
 
 fn inferred_control_slot_count(para: &Paragraph) -> usize {
@@ -1468,10 +1546,14 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
     // fieldEnd는 8 code unit 슬롯이지만 para.controls[]에 대응 컨트롤이 없다.
     // field_ranges.len()이 fieldEnd 수와 정확히 일치하므로 빼서 보정한다.
     // [Task #1556] 고아(다단락) fieldEnd 도 컨트롤 없는 8유닛 슬롯이므로 동일하게 차감.
+    // 제목 차례 표시(`Mtit`/`Mign`)도 CTRL_HEADER 가 없는 8유닛 슬롯이라 같은 계열이다 —
+    // 차감하지 않으면 슬롯 수가 `controls.len()` 보다 커져 문단이 mismatch 경로로 떨어지고,
+    // 그 문단의 linesegarray 가 통째로 빠진다.
     from_char_count
         .max(from_offsets)
         .saturating_sub(para.field_ranges.len() as u32)
-        .saturating_sub(para.orphan_field_ends.len() as u32) as usize
+        .saturating_sub(para.orphan_field_ends.len() as u32)
+        .saturating_sub(para.title_marks.len() as u32) as usize
 }
 
 /// HWPX 인라인 슬롯(U+FFFC 오브젝트 위치)을 점유하는 컨트롤인지 판정한다.
@@ -1515,8 +1597,28 @@ fn occupies_hwpx_slot_axis(control: &Control) -> bool {
             // HWP3 는 char_count 에 8유닛 슬롯을 배정하지 않아(06397 문단 0.0:
             // `cc=2, text_len=1, controls=3`) 늘 mismatch 경로로 오므로, 여기 없으면
             // HWP3 문서의 숨은 설명이 통째로 사라진다(06397 유지율 2.2%).
-            Control::Bookmark(_) | Control::Hyperlink(_) | Control::HiddenComment(_)
+            Control::Bookmark(_)
+                | Control::Hyperlink(_)
+                | Control::HiddenComment(_)
+                | Control::IndexMark(_)
         )
+}
+
+/// 이 컨트롤이 슬롯 자리에 **실제 XML 을 남기는가**.
+///
+/// `render_control_slot` 은 표현할 방법이 없는 컨트롤(`Unknown`)을 경고만
+/// 내고 버린다. 그런데 위치 슬롯 수가 `controls.len()` 과 같으면 축 정합 경로로 들어가
+/// **버려진 컨트롤도 슬롯으로 세어 놓고** `axis_faithful=true` 를 주장한다. 그러면 방출본은
+/// 컨트롤 하나당 8유닛씩 짧은데 lineseg 는 원본 좌표 그대로 나가고, 한글 2022 는 범위를
+/// 넘는 `textpos` 를 만나면 **파일 자체를 열지 못한다**(본문 폐기보다 강한 실패).
+///
+/// 실측(06926 section3 문단 347): 찾아보기 표식(`idxm`) 3개가 여기서 사라져 축이 366→342 로
+/// 줄었고, 원본에서 유효하던 `textpos=348` 이 범위 밖이 되어 산출물이 열리지 않았다.
+fn emits_hwpx_slot_xml(control: &Control) -> bool {
+    // `Hyperlink` 는 devel 이 방출 arm 을 갖췄으므로(`render_control_slot`) 여기서
+    // 빼면 안 된다 — 빼면 HWP3 변환본의 축이 근거 없이 무너진 것으로 판정돼
+    // 저장 lineseg 가 통째로 억제된다(#3739 암호 변환본 계약 파손).
+    !matches!(control, Control::Unknown(_))
 }
 
 pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
@@ -1538,6 +1640,7 @@ pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
             | Control::Header(_)
             | Control::Footer(_)
             | Control::AutoNumber(_)
+            | Control::PageNumCtrl(_)
     )
 }
 
@@ -1545,11 +1648,25 @@ fn flush_text_fragment(
     out: &mut String,
     text_buf: &mut String,
     tab_extended: &[[u16; 7]],
-    tab_idx: &mut usize,
+    cursor: &mut InlineCursor<'_>,
 ) {
     if !text_buf.is_empty() {
-        out.push_str(&render_hp_t_content(text_buf, tab_extended, tab_idx));
+        out.push_str(&render_hp_t_content(text_buf, tab_extended, cursor));
         text_buf.clear();
+    }
+}
+
+/// 문단 끝에 남은 제목 차례 표시를 빈 `<hp:t>` 조각으로 방출한다.
+///
+/// 조각 경계에서 flush 를 건너뛰는 이유는 표시가 **다음** run 소속이기 때문인데,
+/// 다음 run 이 없는 문단 말미에서는 그 규칙이 그대로 유실이 된다.
+fn flush_trailing_title_marks(
+    out: &mut String,
+    tab_extended: &[[u16; 7]],
+    cursor: &mut InlineCursor<'_>,
+) {
+    if cursor.mark_idx < cursor.title_marks.len() {
+        out.push_str(&render_hp_t_content("", tab_extended, cursor));
     }
 }
 
@@ -1575,6 +1692,18 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                 }
                 Err(e) => eprintln!("[hwpx] Hyperlink 직렬화 실패: {e}"),
             }
+        }
+        // 찾아보기 표식 — 한컴 실측(06926, 23건)은 `secondKey` 가 비면 아예 쓰지 않는다.
+        Control::IndexMark(im) => {
+            out.push_str("<hp:ctrl><hp:indexmark><hp:firstKey>");
+            out.push_str(&xml_escape(&im.first_key));
+            out.push_str("</hp:firstKey>");
+            if !im.second_key.is_empty() {
+                out.push_str("<hp:secondKey>");
+                out.push_str(&xml_escape(&im.second_key));
+                out.push_str("</hp:secondKey>");
+            }
+            out.push_str("</hp:indexmark></hp:ctrl>");
         }
         Control::Equation(eq) => {
             out.push_str(&render_equation(eq));
@@ -1643,6 +1772,10 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         }
         Control::PageHide(ph) => out.push_str(&render_page_hiding(ph)),
         Control::PageNumberPos(pn) => out.push_str(&render_page_num(pn)),
+        Control::PageNumCtrl(pnc) => out.push_str(&format!(
+            r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{}"/></hp:ctrl>"#,
+            pnc.page_starts_on.as_hwpx()
+        )),
         Control::NewNumber(nn) => out.push_str(&render_new_num(nn)),
         Control::Header(h) => out.push_str(&render_header(h, ctx)),
         Control::Footer(f) => out.push_str(&render_footer(f, ctx)),
@@ -2758,20 +2891,25 @@ fn horz_align_to_hwpx(align: HorzAlign) -> &'static str {
 fn render_lineseg_array_from_ir(segs: &[LineSeg]) -> String {
     let mut out = String::new();
     for seg in segs {
-        out.push_str(&format!(
-            r#"<hp:lineseg textpos="{}" vertpos="{}" vertsize="{}" textheight="{}" baseline="{}" spacing="{}" horzpos="{}" horzsize="{}" flags="{}"/>"#,
-            seg.text_start,
-            seg.vertical_pos,
-            seg.line_height,
-            seg.text_height,
-            seg.baseline_distance,
-            seg.line_spacing,
-            seg.column_start,
-            seg.segment_width,
-            seg.tag,
-        ));
+        out.push_str(&render_one_lineseg(seg, seg.text_start));
     }
     out
+}
+
+/// `<hp:lineseg>` 한 줄 — `textpos` 만 호출부가 정하고 나머지 8필드는 IR 값 그대로.
+fn render_one_lineseg(seg: &LineSeg, text_start: u32) -> String {
+    format!(
+        r#"<hp:lineseg textpos="{}" vertpos="{}" vertsize="{}" textheight="{}" baseline="{}" spacing="{}" horzpos="{}" horzsize="{}" flags="{}"/>"#,
+        text_start,
+        seg.vertical_pos,
+        seg.line_height,
+        seg.text_height,
+        seg.baseline_distance,
+        seg.line_spacing,
+        seg.column_start,
+        seg.segment_width,
+        seg.tag,
+    )
 }
 
 /// IR 기반 다음 문단의 vert_start 계산 — 마지막 lineseg 의 vpos + lh 사용.
@@ -2972,6 +3110,91 @@ mod tests {
         assert!(
             !xml.contains(r#"formatType="CIRCLE_DIGIT""#),
             "CIRCLE_DIGIT 오탈자 잔존 금지: {xml}"
+        );
+    }
+
+    /// 쪽 번호 시작 쪽 컨트롤(`pgct`)은 `<hp:ctrl><hp:pageNumCtrl>` 로 나가야 한다.
+    ///
+    /// 구역 속성의 `pageStartsOn`(`<hp:secPr>`)과는 다른 자리다 — 이쪽은 문단 위
+    /// 8유닛 슬롯을 차지하는 컨트롤이라, 방출하지 않으면 축이 그만큼 짧아진다.
+    #[test]
+    fn page_num_ctrl_is_emitted_as_a_ctrl_element() {
+        let mut ctx = SerializeContext::default();
+        for (want, text) in [
+            (PageStartsOn::Both, "BOTH"),
+            (PageStartsOn::Even, "EVEN"),
+            (PageStartsOn::Odd, "ODD"),
+        ] {
+            let mut out = String::new();
+            render_control_slot(
+                &mut out,
+                &Control::PageNumCtrl(PageNumCtrl {
+                    page_starts_on: want,
+                }),
+                &mut ctx,
+            );
+            assert_eq!(
+                out,
+                format!(r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{text}"/></hp:ctrl>"#)
+            );
+        }
+    }
+
+    /// 제목 차례 표시는 `<hp:t>` 안 인라인 요소로 되살아나야 한다 — 스키마상
+    /// `<hp:ctrl>` 이 아니라 `<hp:t>` 의 자식이다(ParaList XML schema.xml:238).
+    #[test]
+    fn title_mark_is_emitted_inside_hp_t() {
+        let mut cursor = InlineCursor {
+            title_marks: &[TitleMark {
+                char_idx: 0,
+                ignore: true,
+            }],
+            ..Default::default()
+        };
+        let xml = render_hp_t_content("가나", &[], &mut cursor);
+        assert_eq!(xml, "<hp:t><hp:titleMark ignore=\"1\"/>가나</hp:t>");
+    }
+
+    /// `ignore="0"`(`Mign`)도 구별해 낸다 — 한글 2022 양방향 실측(06699).
+    #[test]
+    fn title_mark_ignore_off_round_trips() {
+        let mut cursor = InlineCursor {
+            title_marks: &[TitleMark {
+                char_idx: 1,
+                ignore: false,
+            }],
+            ..Default::default()
+        };
+        let xml = render_hp_t_content("가나", &[], &mut cursor);
+        assert_eq!(xml, "<hp:t>가<hp:titleMark ignore=\"0\"/>나</hp:t>");
+    }
+
+    /// 표시가 주장하는 8유닛 슬롯을 슬롯 수에서 빼지 않으면 문단이 mismatch 경로로
+    /// 떨어져 `<hp:linesegarray>` 가 통째로 빠진다 — F-절단군의 근인이다.
+    #[test]
+    fn title_mark_slot_is_not_counted_as_a_control_slot() {
+        let mut para = Paragraph {
+            text: "가나".to_string(),
+            char_offsets: vec![8, 9],
+            // 표시 8 + 글자 2 + 끝 마커 1
+            char_count: 11,
+            title_marks: vec![TitleMark {
+                char_idx: 0,
+                ignore: true,
+            }],
+            ..Default::default()
+        };
+        assert_eq!(
+            inferred_control_slot_count(&para),
+            0,
+            "표시 슬롯은 controls[] 에 대응이 없으므로 차감돼야 한다"
+        );
+
+        para.title_marks.clear();
+        assert_eq!(
+            inferred_control_slot_count(&para),
+            1,
+            "표시를 모르면 같은 문단이 컨트롤 슬롯 1개를 주장한다(종전 동작)"
         );
     }
 
@@ -4390,6 +4613,30 @@ mod tests {
     }
 
     #[test]
+    fn text_positions_unshifted_detects_leading_and_mid_controls() {
+        // mismatch 경로는 텍스트를 0 부터 연속으로 다시 쓴다. 원본에서도 연속이었으면
+        // 좌표가 그대로라 lineseg 를 버릴 이유가 없다.
+        let mut para = Paragraph::default();
+        para.text = "abcde".to_string();
+
+        // 컨트롤이 전부 텍스트 뒤 — 위치 안 밀림
+        para.char_offsets = vec![0, 1, 2, 3, 4];
+        assert!(text_positions_unshifted(&para));
+
+        // 앞에 8유닛 슬롯 — 전부 밀림
+        para.char_offsets = vec![8, 9, 10, 11, 12];
+        assert!(!text_positions_unshifted(&para));
+
+        // 중간에 슬롯 — 뒤쪽만 밀림
+        para.char_offsets = vec![0, 1, 2, 11, 12];
+        assert!(!text_positions_unshifted(&para));
+
+        // char_offsets 없는 합성 IR 은 종전 동작 유지
+        para.char_offsets = vec![];
+        assert!(text_positions_unshifted(&para));
+    }
+
+    #[test]
     fn task1380_linesegarray_omitted_when_ir_empty() {
         // IR 의 line_segs 가 비어있으면 linesegarray 요소 자체를 방출 생략 (#1380).
         // 종전 fallback(vertsize=1000 합성)은 원본 무 → RT 유 비대칭을 만들었다.
@@ -4468,6 +4715,7 @@ mod tests {
             char_idx: 2,
             begin_id_ref: 1_878_228_493,
             field_id: 627_272_811,
+            begin_ctrl_id: 0,
         }];
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);
@@ -4541,6 +4789,7 @@ mod tests {
             char_idx: 1,
             begin_id_ref: 42,
             field_id: 0,
+            begin_ctrl_id: 0,
         }];
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);

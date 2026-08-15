@@ -644,6 +644,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         raw_header_extra,
         has_para_text,
         tab_extended,
+        title_marks,
         numbering_restart,
         // [#4149] 파생 캐시 — IR 비교 대상 아님 (직렬화·저장 경로에도 미포함).
         single_line_overflow_memo: _,
@@ -674,6 +675,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
     f!(raw_header_extra);
     f!(has_para_text);
     f!(tab_extended);
+    f!(title_marks);
     f!(numbering_restart);
 
     sweep_controls(&format!("{base}.controls"), controls, &b.controls, out);
@@ -788,6 +790,8 @@ fn sweep_control(base: &str, a: &Control, b: &Control, out: &mut DivergenceColle
         (CharOverlap(x), CharOverlap(y)) => cmp_debug(base, x, y, out),
         (PageHide(x), PageHide(y)) => cmp_debug(base, x, y, out),
         (Equation(x), Equation(y)) => cmp_debug(base, x, y, out),
+        (IndexMark(x), IndexMark(y)) => cmp_debug(base, x, y, out),
+        (PageNumCtrl(x), PageNumCtrl(y)) => cmp_debug(base, x, y, out),
         (Unknown(x), Unknown(y)) => cmp_debug(base, x, y, out),
         // 컨트롤 종류 자체가 달라진 경우 — 왕복 소실 중 가장 큰 종류.
         _ => push_leaf(base, control_kind(a), control_kind(b), out),
@@ -811,6 +815,8 @@ fn control_kind(c: &Control) -> &'static str {
         NewNumber(_) => "NewNumber",
         PageNumberPos(_) => "PageNumberPos",
         Bookmark(_) => "Bookmark",
+        IndexMark(_) => "IndexMark",
+        PageNumCtrl(_) => "PageNumCtrl",
         Hyperlink(_) => "Hyperlink",
         Ruby(_) => "Ruby",
         CharOverlap(_) => "CharOverlap",

@@ -1,4 +1,5 @@
 use super::*;
+use crate::model::paragraph::TitleMark;
 use crate::parser::tags;
 
 /// 테스트용 레코드 바이너리 생성
@@ -44,7 +45,11 @@ fn hancom_single_odd_master_flag_is_not_parsed_as_both() {
 
 #[test]
 fn test_parse_para_text_simple() {
-    let (text, offsets, _, _) = parse_para_text(&make_para_text_data("Hello, World!"));
+    let ParaTextParts {
+        text,
+        char_offsets: offsets,
+        ..
+    } = parse_para_text(&make_para_text_data("Hello, World!"));
     assert_eq!(text, "Hello, World!");
     assert_eq!(offsets.len(), 13);
     assert_eq!(offsets[0], 0); // 'H' at position 0
@@ -52,7 +57,11 @@ fn test_parse_para_text_simple() {
 
 #[test]
 fn test_parse_para_text_korean() {
-    let (text, offsets, _, _) = parse_para_text(&make_para_text_data("한글 테스트입니다."));
+    let ParaTextParts {
+        text,
+        char_offsets: offsets,
+        ..
+    } = parse_para_text(&make_para_text_data("한글 테스트입니다."));
     assert_eq!(text, "한글 테스트입니다.");
     assert_eq!(offsets.len(), text.chars().count());
 }
@@ -69,7 +78,11 @@ fn test_parse_para_text_with_tab() {
     }
     data.extend_from_slice(&0x0042u16.to_le_bytes()); // 'B'
     data.extend_from_slice(&0x000Du16.to_le_bytes()); // para break
-    let (text, offsets, _, _) = parse_para_text(&data);
+    let ParaTextParts {
+        text,
+        char_offsets: offsets,
+        ..
+    } = parse_para_text(&data);
     assert_eq!(text, "A\tB");
     // 'A' at code unit 0, tab takes 8 units (1-8), 'B' at code unit 9
     assert_eq!(offsets, vec![0, 1, 9]);
@@ -87,7 +100,11 @@ fn test_parse_para_text_with_extended_ctrl() {
     }
     data.extend_from_slice(&0x0042u16.to_le_bytes()); // 'B'
     data.extend_from_slice(&0x000Du16.to_le_bytes()); // para break
-    let (text, offsets, _, _) = parse_para_text(&data);
+    let ParaTextParts {
+        text,
+        char_offsets: offsets,
+        ..
+    } = parse_para_text(&data);
     assert_eq!(text, "AB");
     // 'A' at code unit 0, extended ctrl takes 8 units (1-8), 'B' at code unit 9
     assert_eq!(offsets, vec![0, 9]);
@@ -97,7 +114,11 @@ fn test_parse_para_text_with_extended_ctrl() {
 fn test_parse_para_text_empty() {
     // 문단 끝만 있는 경우
     let data = 0x000Du16.to_le_bytes();
-    let (text, offsets, _, _) = parse_para_text(&data);
+    let ParaTextParts {
+        text,
+        char_offsets: offsets,
+        ..
+    } = parse_para_text(&data);
     assert_eq!(text, "");
     assert!(offsets.is_empty());
 }
@@ -851,4 +872,187 @@ fn test_table_paragraph_diagnostics() {
     }
 
     eprintln!("=== 진단 완료 ===\n");
+}
+
+/// 제목 차례 표시(`Mtit`/`Mign`)를 통째로 흘리면 문단 축이 8유닛 짧아진다.
+///
+/// 한글은 축이 어긋난 `<hp:lineseg textpos>` 를 만나면 본문을 통째로 버리므로
+/// (10k 스윕 F-절단군), 텍스트에 싣지 않되 위치는 반드시 남겨야 한다.
+#[test]
+fn title_mark_is_preserved_as_eight_unit_slot() {
+    // [Mtit 16바이트][가][나]
+    let mut data = Vec::new();
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    data.extend_from_slice(&tags::CTRL_TITLE_MARK_IGNORE_ON.to_le_bytes());
+    for _ in 0..4 {
+        data.extend_from_slice(&0u16.to_le_bytes());
+    }
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    for ch in "가나".encode_utf16() {
+        data.extend_from_slice(&ch.to_le_bytes());
+    }
+    data.extend_from_slice(&0x000Du16.to_le_bytes());
+
+    let parts = parse_para_text(&data);
+    assert_eq!(parts.text, "가나", "표시는 텍스트가 아니다");
+    assert_eq!(
+        parts.char_offsets,
+        vec![8, 9],
+        "표시가 앞 8유닛을 점유하므로 첫 글자는 8 에서 시작한다"
+    );
+    assert_eq!(
+        parts.title_marks,
+        vec![TitleMark {
+            char_idx: 0,
+            ignore: true,
+        }]
+    );
+}
+
+/// `Mign` 은 같은 자리의 `ignore="0"` 짝이다 — 한글 2022 양방향 실측(06699).
+#[test]
+fn title_mark_ignore_off_variant_is_distinguished() {
+    let mut data = Vec::new();
+    for ch in "가".encode_utf16() {
+        data.extend_from_slice(&ch.to_le_bytes());
+    }
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    data.extend_from_slice(&tags::CTRL_TITLE_MARK_IGNORE_OFF.to_le_bytes());
+    for _ in 0..4 {
+        data.extend_from_slice(&0u16.to_le_bytes());
+    }
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    data.extend_from_slice(&0x000Du16.to_le_bytes());
+
+    let parts = parse_para_text(&data);
+    assert_eq!(parts.text, "가");
+    assert_eq!(
+        parts.title_marks,
+        vec![TitleMark {
+            char_idx: 1,
+            ignore: false,
+        }],
+        "글자 뒤에 붙은 표시도 위치가 남아야 한다"
+    );
+}
+
+/// 0x08 이라도 알려지지 않은 ctrl_id 는 표시로 오인하지 않는다.
+#[test]
+fn unknown_inline_ctrl_id_is_not_taken_for_a_title_mark() {
+    let mut data = Vec::new();
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    data.extend_from_slice(&u32::from_le_bytes(*b"zzzz").to_le_bytes());
+    for _ in 0..4 {
+        data.extend_from_slice(&0u16.to_le_bytes());
+    }
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    data.extend_from_slice(&0x000Du16.to_le_bytes());
+
+    assert!(parse_para_text(&data).title_marks.is_empty());
+}
+
+/// 짝 FIELD_BEGIN 이 앞 문단에 있는 종료 마커도 8유닛 슬롯을 지켜야 한다.
+///
+/// 종전에는 스택이 비면 아무것도 남기지 않고 흘려보냈다. 그러면 축이 8유닛 짧아져
+/// 그 문단의 lineseg 가 범위 밖이 되고 조판이 통째로 버려진다(01752 실측).
+#[test]
+fn orphan_field_end_is_preserved_as_a_slot() {
+    let mut data = Vec::new();
+    for ch in "가나".encode_utf16() {
+        data.extend_from_slice(&ch.to_le_bytes());
+    }
+    // FIELD_END 16바이트 (짝 BEGIN 없음)
+    data.extend_from_slice(&0x0004u16.to_le_bytes());
+    data.extend_from_slice(&u32::from_le_bytes(*b"klc\x09").to_le_bytes());
+    for _ in 0..4 {
+        data.extend_from_slice(&0u16.to_le_bytes());
+    }
+    data.extend_from_slice(&0x0004u16.to_le_bytes());
+    data.extend_from_slice(&0x000Du16.to_le_bytes());
+
+    let parts = parse_para_text(&data);
+    assert_eq!(parts.text, "가나");
+    assert_eq!(
+        parts.field_ranges.len(),
+        0,
+        "짝이 없으니 범위는 만들지 않는다"
+    );
+    assert_eq!(parts.orphan_field_ends.len(), 1);
+    assert_eq!(parts.orphan_field_ends[0].char_idx, 2, "글자 뒤에 놓인다");
+}
+
+/// 종료 마커는 앞 문단에서 열린 필드의 id 를 물려받아야 한다.
+///
+/// 매달린 참조(`beginIDRef="0"`)를 내보내면 한글이 **파일을 열지 못한다**(01752 실측).
+#[test]
+fn orphan_field_end_links_to_the_open_field_id() {
+    use crate::model::control::{Field, FieldType};
+    use crate::model::paragraph::OrphanFieldEnd;
+
+    let mut opener = Paragraph {
+        text: "가".to_string(),
+        ..Default::default()
+    };
+    opener.controls.push(Control::Field(Field {
+        field_type: FieldType::ClickHere,
+        field_id: 2031845287,
+        ..Default::default()
+    }));
+
+    let closer = Paragraph {
+        text: "나".to_string(),
+        orphan_field_ends: vec![OrphanFieldEnd {
+            char_idx: 1,
+            begin_id_ref: 0,
+            field_id: 0,
+            begin_ctrl_id: 0,
+        }],
+        ..Default::default()
+    };
+
+    let mut paras = vec![opener, closer];
+    link_orphan_field_ends(&mut paras);
+    assert_eq!(paras[1].orphan_field_ends[0].begin_id_ref, 2031845287);
+}
+
+/// 같은 문단에서 닫힌 필드는 열린 채로 쌓지 않는다 — 뒤 문단의 마커가 엉뚱한 필드를
+/// 가리키면 안 된다.
+#[test]
+fn field_closed_in_its_own_paragraph_is_not_left_open() {
+    use crate::model::control::{Field, FieldType};
+    use crate::model::paragraph::{FieldRange, OrphanFieldEnd};
+
+    let mut closed = Paragraph {
+        text: "가".to_string(),
+        ..Default::default()
+    };
+    closed.controls.push(Control::Field(Field {
+        field_type: FieldType::ClickHere,
+        field_id: 111,
+        ..Default::default()
+    }));
+    closed.field_ranges.push(FieldRange {
+        start_char_idx: 0,
+        end_char_idx: 1,
+        control_idx: 0,
+        end_field_id: 0,
+        inner_slot_count: 0,
+    });
+
+    let stray = Paragraph {
+        orphan_field_ends: vec![OrphanFieldEnd {
+            char_idx: 0,
+            begin_id_ref: 0,
+            field_id: 0,
+            begin_ctrl_id: 0,
+        }],
+        ..Default::default()
+    };
+
+    let mut paras = vec![closed, stray];
+    link_orphan_field_ends(&mut paras);
+    assert_eq!(
+        paras[1].orphan_field_ends[0].begin_id_ref, 0,
+        "짝을 못 찾으면 0 으로 남긴다 — 없는 id 를 지어내지 않는다"
+    );
 }

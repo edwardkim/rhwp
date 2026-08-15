@@ -8,8 +8,8 @@ use quick_xml::Reader;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, Bookmark, CharOverlap, Control, Equation, Field, FieldType,
-    FormObject, FormType, HiddenComment, NewNumber, PageHide, PageNumberPos, Parameter,
-    ParameterList, Ruby, EQUATION_LINE_MODE_BIT,
+    FormObject, FormType, HiddenComment, IndexMark, NewNumber, PageHide, PageNumCtrl,
+    PageNumberPos, PageStartsOn, Parameter, ParameterList, Ruby, EQUATION_LINE_MODE_BIT,
 };
 use crate::model::document::{Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
@@ -22,7 +22,9 @@ use crate::model::page::{
     BindingMethod, ColumnDef, ColumnDirection, ColumnType, PageBorderBasis, PageBorderFill,
     PageBorderUiBasis, PageDef,
 };
-use crate::model::paragraph::{CharShapeRef, FieldRange, LineSeg, OrphanFieldEnd, Paragraph};
+use crate::model::paragraph::{
+    CharShapeRef, FieldRange, LineSeg, OrphanFieldEnd, Paragraph, TitleMark,
+};
 use crate::model::shape::{
     ArcShape, CommonObjAttr, ConnectorControlPoint, ConnectorData, CurveShape, DrawingObjAttr,
     EllipseShape, GroupShape, HorzAlign, HorzRelTo, LineShape, LinkLineType, PolygonShape,
@@ -71,7 +73,51 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
         buf.clear();
     }
 
+    link_orphan_field_ends(&mut section.paragraphs);
+
     Ok(section)
+}
+
+/// 같은 문단 목록 안에서 끝난 다문단 fieldEnd에 짝 fieldBegin의 HWP5 control id를 연결한다.
+///
+/// HWPX fieldEnd는 beginIDRef와 fieldid만 보관하므로, HWP5 PARA_TEXT로 다시 쓸 때 필요한
+/// field control fourcc는 앞 문단의 fieldBegin에서 찾아야 한다. 짝을 찾지 못한 종료 마커는
+/// 그대로 남긴다. 임의의 필드 종류를 만들어 내는 것보다 보존 실패를 명시하는 편이 안전하다.
+fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
+    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+
+    for para in paragraphs.iter_mut() {
+        for orphan in &mut para.orphan_field_ends {
+            let Some((field_id, ctrl_id)) = open_fields.last().copied() else {
+                continue;
+            };
+
+            // HWPX는 beginIDRef로 짝을 식별한다. 0은 손상·부분 입력 호환을 위한
+            // 미지정값이므로 HWP5 parser와 같이 현재 열린 필드에 연결한다.
+            if orphan.begin_id_ref != 0 && orphan.begin_id_ref != field_id {
+                continue;
+            }
+
+            open_fields.pop();
+            if orphan.begin_id_ref == 0 {
+                orphan.begin_id_ref = field_id;
+            }
+            orphan.begin_ctrl_id = ctrl_id;
+        }
+
+        for (control_idx, control) in para.controls.iter().enumerate() {
+            let Control::Field(field) = control else {
+                continue;
+            };
+            let closes_in_this_paragraph = para
+                .field_ranges
+                .iter()
+                .any(|range| range.control_idx == control_idx);
+            if !closes_in_this_paragraph && field.field_id != 0 {
+                open_fields.push((field.field_id, field.ctrl_id));
+            }
+        }
+    }
 }
 
 /// section XML의 `<hp:masterPage idRef="...">` 참조를 문서 순서대로 수집한다.
@@ -489,8 +535,8 @@ fn parse_paragraph(
                     }
                     b"t" => {
                         // 텍스트 읽기 (탭 확장 데이터 포함)
-                        let (text, tab_exts) = read_text_content_with_tabs(reader)?;
-                        text_parts.push(text);
+                        let (parts, tab_exts) = read_text_content_with_tabs(reader)?;
+                        text_parts.extend(parts);
                         para.tab_extended.extend(tab_exts);
                     }
                     b"tbl" => {
@@ -718,6 +764,9 @@ fn parse_paragraph(
                         char_idx: visible_char_idx,
                         begin_id_ref,
                         field_id,
+                        // HWPX `<hp:fieldEnd>` 는 필드 종류를 싣지 않는다 — 짝
+                        // `fieldBegin` 은 다른 문단에 있어 여기서는 알 수 없다.
+                        begin_ctrl_id: 0,
                     });
                 }
             }
@@ -728,6 +777,10 @@ fn parse_paragraph(
                 control_idx += 1;
                 visible_char_idx += 1;
             }
+            // 제목 차례 표시는 `text_parts` 안에서는 두 문자 센티널이지만 실제 본문
+            // 텍스트에는 들어가지 않는다. fieldRange는 visual_text 좌표를 쓰므로 여기서
+            // 센티널 길이를 더하면 그 뒤 fieldBegin/fieldEnd가 두 글자 밀린다.
+            TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => {}
             _ => {
                 visible_char_idx += part.chars().count();
             }
@@ -745,6 +798,13 @@ fn parse_paragraph(
     for part in &text_parts {
         match part.as_str() {
             "\u{0002}" | "\u{0003}" | "\u{0004}" => {
+                utf16_pos += 8;
+            }
+            TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => {
+                para.title_marks.push(TitleMark {
+                    char_idx: visual_text.chars().count(),
+                    ignore: part.as_str() == TITLE_MARK_PART_IGNORE,
+                });
                 utf16_pos += 8;
             }
             "\u{0012}" => {
@@ -774,7 +834,8 @@ fn parse_paragraph(
     para.text = visual_text;
     para.char_offsets = char_offsets;
     para.char_count = utf16_pos + 1; // +1 for 끝 마커
-    para.has_para_text = !para.text.is_empty() || !para.controls.is_empty();
+    para.has_para_text =
+        !para.text.is_empty() || !para.controls.is_empty() || !para.title_marks.is_empty();
 
     // char_shapes는 원본 문단 순서(text_parts)를 기준으로 계산한 위치를 그대로 사용한다.
     // 같은 char_shape_id라도 run 시작 위치가 다르면 HWP PARA_CHAR_SHAPE 의 의미 있는
@@ -1683,11 +1744,22 @@ fn parse_lineseg_element(e: &quick_xml::events::BytesStart) -> LineSeg {
     seg
 }
 
+/// `text_parts` 안에서 제목 차례 표시를 나타내는 센티널 — `ignore="1"` 쪽.
+///
+/// 표시는 텍스트가 아니라 8유닛 슬롯이라 `visual_text` 에 실리지 않는다. 표(`\u{0002}`)
+/// 처럼 조각 하나를 통째로 차지하는 마커로 두고, 문단 조립 루프가 위치만 걷어 간다.
+const TITLE_MARK_PART_IGNORE: &str = "\u{0008}1";
+/// `text_parts` 안의 제목 차례 표시 센티널 — `ignore="0"` 쪽.
+const TITLE_MARK_PART_KEEP: &str = "\u{0008}0";
+
 /// <hp:t> 텍스트 컨텐츠를 읽는다.
 /// 탭 확장 데이터도 함께 반환 (HWPX 인라인 탭의 leader/type/width)
 fn read_text_content(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
-    let (text, _) = read_text_content_with_tabs(reader)?;
-    Ok(text)
+    let (parts, _) = read_text_content_with_tabs(reader)?;
+    Ok(parts
+        .into_iter()
+        .filter(|p| p != TITLE_MARK_PART_IGNORE && p != TITLE_MARK_PART_KEEP)
+        .collect())
 }
 
 fn decode_xml_general_ref(r: &BytesRef<'_>) -> String {
@@ -1708,7 +1780,8 @@ fn decode_xml_general_ref(r: &BytesRef<'_>) -> String {
 
 fn read_text_content_with_tabs(
     reader: &mut Reader<&[u8]>,
-) -> Result<(String, Vec<[u16; 7]>), HwpxError> {
+) -> Result<(Vec<String>, Vec<[u16; 7]>), HwpxError> {
+    let mut parts: Vec<String> = Vec::new();
     let mut text = String::new();
     let mut tab_ext_buf: Vec<[u16; 7]> = Vec::new();
     let mut buf = Vec::new();
@@ -1752,6 +1825,30 @@ fn read_text_content_with_tabs(
                     // 소프트 하이픈 — 줄바꿈 자리에서만 보인다. 리터럴 '-' 와 구별해야
                     // 저장 왕복에서 단어가 갈라지지 않는다(ParaList XML schema.xml:291).
                     b"hyphen" => text.push('\u{00AD}'),
+                    // 제목 차례 표시 — 8유닛 슬롯이라 텍스트가 아니라 조각 마커로 끊는다.
+                    // 이걸 흘리면 저장본 축이 8유닛 짧아져 한글이 본문을 통째로 버린다.
+                    b"titleMark" => {
+                        if !text.is_empty() {
+                            parts.push(std::mem::take(&mut text));
+                        }
+                        let ignore = ce
+                            .attributes()
+                            .flatten()
+                            .find(|a| a.key.as_ref() == b"ignore")
+                            .map(|a| {
+                                let v = String::from_utf8_lossy(&a.value).to_lowercase();
+                                v == "1" || v == "true"
+                            })
+                            .unwrap_or(false);
+                        parts.push(
+                            if ignore {
+                                TITLE_MARK_PART_IGNORE
+                            } else {
+                                TITLE_MARK_PART_KEEP
+                            }
+                            .to_string(),
+                        );
+                    }
                     _ => {}
                 }
             }
@@ -1762,7 +1859,10 @@ fn read_text_content_with_tabs(
         buf.clear();
     }
 
-    Ok((text, tab_ext_buf))
+    if !text.is_empty() || parts.is_empty() {
+        parts.push(text);
+    }
+    Ok((parts, tab_ext_buf))
 }
 
 fn parse_tab_extension(e: &quick_xml::events::BytesStart) -> [u16; 7] {
@@ -4539,6 +4639,14 @@ fn parse_ctrl(
                         let ctrl = parse_ctrl_hidden_comment(reader)?;
                         controls.push(ctrl);
                     }
+                    // 찾아보기 표식 — 책갈피와 같이 8 유닛 자리를 차지한다. 한컴 산출물
+                    // 실측(06926 section3 문단 347): 텍스트 342자에 표식 3개인데 lineseg
+                    // 최대 `textpos` 가 348 이라, 표식이 자리를 잡지 않으면 범위 밖이 된다.
+                    b"indexmark" => {
+                        let im = parse_index_mark_element(reader)?;
+                        controls.push(Control::IndexMark(im));
+                        text_parts.push("\u{0002}".to_string());
+                    }
                     b"fieldBegin" => {
                         let ctrl = parse_ctrl_field_begin(ce, reader)?;
                         controls.push(ctrl);
@@ -4557,6 +4665,11 @@ fn parse_ctrl(
                         controls.push(Control::PageHide(ph));
                         text_parts.push("\u{0002}".to_string());
                         skip_element(reader, b"pageHiding")?;
+                    }
+                    b"pageNumCtrl" => {
+                        controls.push(Control::PageNumCtrl(parse_page_num_ctrl_attrs(ce)));
+                        text_parts.push("\u{0002}".to_string());
+                        skip_element(reader, b"pageNumCtrl")?;
                     }
                     b"pageNum" => {
                         let pn = parse_page_num_attrs(ce);
@@ -4606,6 +4719,10 @@ fn parse_ctrl(
                         controls.push(Control::PageHide(ph));
                         text_parts.push("\u{0002}".to_string());
                     }
+                    b"pageNumCtrl" => {
+                        controls.push(Control::PageNumCtrl(parse_page_num_ctrl_attrs(ce)));
+                        text_parts.push("\u{0002}".to_string());
+                    }
                     b"pageNum" => {
                         let pn = parse_page_num_attrs(ce);
                         controls.push(Control::PageNumberPos(pn));
@@ -4642,6 +4759,11 @@ fn parse_ctrl(
                         text_parts.push("\u{0004}".to_string());
                     }
                     b"hiddenComment" => {}
+                    // 키가 하나도 없는 표식은 빈 요소로 온다 — 자리는 똑같이 차지한다.
+                    b"indexmark" => {
+                        controls.push(Control::IndexMark(IndexMark::default()));
+                        text_parts.push("\u{0002}".to_string());
+                    }
                     _ => {}
                 }
             }
@@ -4740,6 +4862,58 @@ fn parse_page_num_attrs(e: &quick_xml::events::BytesStart) -> PageNumberPos {
         }
     }
     pn
+}
+
+/// `<hp:indexmark><hp:firstKey>…</hp:firstKey><hp:secondKey>…</hp:secondKey></hp:indexmark>`
+///
+/// 한컴 실측(06926, 23건)은 `secondKey` 가 비면 요소 자체를 쓰지 않는다.
+fn parse_index_mark_element(reader: &mut Reader<&[u8]>) -> Result<IndexMark, HwpxError> {
+    let mut im = IndexMark::default();
+    let mut cur: Option<&'static str> = None;
+    let mut buf = Vec::new();
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Start(ref e)) => {
+                cur = match local_name(e.name().as_ref()) {
+                    b"firstKey" => Some("first"),
+                    b"secondKey" => Some("second"),
+                    _ => None,
+                };
+            }
+            Ok(Event::Text(ref t)) => {
+                let v = t.decode().unwrap_or_default().to_string();
+                match cur {
+                    Some("first") => im.first_key.push_str(&v),
+                    Some("second") => im.second_key.push_str(&v),
+                    _ => {}
+                }
+            }
+            Ok(Event::End(ref e)) => {
+                let name = local_name(e.name().as_ref()).to_vec();
+                if name == b"indexmark" {
+                    break;
+                }
+                cur = None;
+            }
+            Ok(Event::Eof) => break,
+            Err(e) => return Err(HwpxError::XmlError(format!("indexmark: {}", e))),
+            _ => {}
+        }
+        buf.clear();
+    }
+    Ok(im)
+}
+
+/// `<hp:pageNumCtrl pageStartsOn="BOTH|EVEN|ODD"/>` (ParaList XML schema.xml:134)
+fn parse_page_num_ctrl_attrs(e: &quick_xml::events::BytesStart) -> PageNumCtrl {
+    let mut pnc = PageNumCtrl::default();
+    for attr in e.attributes().flatten() {
+        if attr.key.as_ref() == b"pageStartsOn" {
+            pnc.page_starts_on =
+                PageStartsOn::from_hwpx(&String::from_utf8_lossy(&attr.value).to_uppercase());
+        }
+    }
+    pnc
 }
 
 fn parse_bookmark_attrs(e: &quick_xml::events::BytesStart) -> Bookmark {
@@ -6045,6 +6219,7 @@ fn calc_utf16_len_from_parts(parts: &[String]) -> u32 {
             // (offsets 조립 루프와 동일 축). 종전 `_` 분기(1유닛)로 빠져 char_shapes
             // 경계가 offsets 축과 어긋났다 (143E 각주 run 경계 2 → 정답 9).
             "\u{0002}" | "\u{0003}" | "\u{0004}" | "\u{0012}" => 8,
+            TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => 8,
             _ => s
                 .chars()
                 .map(|c| {
@@ -7721,6 +7896,72 @@ mod tests {
         );
     }
 
+    /// 한컴은 제목 문단 첫머리에 `<hp:t><hp:titleMark ignore="1"/>제1장 …</hp:t>` 를 쓴다.
+    /// 이 요소를 흘리면 문단 축이 8유닛 짧아져 다음 왕복에서 본문이 폐기된다.
+    #[test]
+    fn test_parse_title_mark_occupies_eight_units() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0"><hp:t><hp:titleMark ignore="1"/>가나</hp:t></hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let para = &parse_hwpx_section(xml).unwrap().paragraphs[0];
+        assert_eq!(para.text, "가나", "표시는 텍스트가 아니다");
+        assert_eq!(para.char_offsets, vec![8, 9], "앞 8유닛을 점유한다");
+        assert_eq!(
+            para.title_marks,
+            vec![TitleMark {
+                char_idx: 0,
+                ignore: true,
+            }]
+        );
+        // 표시 8 + 글자 2 + 끝 마커 1
+        assert_eq!(para.char_count, 11);
+    }
+
+    /// `ignore="0"` 은 `Mign` 과 짝이라 따로 구별해 읽어야 한다.
+    #[test]
+    fn test_parse_title_mark_ignore_off() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0"><hp:t>가<hp:titleMark ignore="0"/>나</hp:t></hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let para = &parse_hwpx_section(xml).unwrap().paragraphs[0];
+        assert_eq!(para.text, "가나");
+        assert_eq!(para.char_offsets, vec![0, 9]);
+        assert_eq!(
+            para.title_marks,
+            vec![TitleMark {
+                char_idx: 1,
+                ignore: false,
+            }]
+        );
+    }
+
+    #[test]
+    fn title_mark_does_not_shift_following_field_range() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0"><hp:t><hp:titleMark ignore="1"/>앞</hp:t><hp:ctrl><hp:fieldBegin id="100" type="HYPERLINK" name="" fieldid="100"/></hp:ctrl><hp:t>뒤</hp:t><hp:ctrl><hp:fieldEnd beginIDRef="100" fieldid="100"/></hp:ctrl></hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let para = &parse_hwpx_section(xml).unwrap().paragraphs[0];
+        assert_eq!(para.text, "앞뒤");
+        assert_eq!(para.field_ranges.len(), 1);
+        assert_eq!(para.field_ranges[0].start_char_idx, 1);
+        assert_eq!(para.field_ranges[0].end_char_idx, 2);
+    }
+
     #[test]
     fn test_parse_linebreak_preserves_offsets() {
         let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
@@ -8402,6 +8643,23 @@ mod tests {
         assert_eq!(ofe.char_idx, 2, "텍스트 끝(인덱스 2) 위치");
         assert_eq!(ofe.begin_id_ref, 1_878_228_493);
         assert_eq!(ofe.field_id, 627_272_811);
+        let begin_ctrl_id = match p0.controls.first() {
+            Some(Control::Field(field)) => field.ctrl_id,
+            other => panic!("fieldBegin 컨트롤이 아니다: {other:?}"),
+        };
+        assert_eq!(
+            ofe.begin_ctrl_id, begin_ctrl_id,
+            "HWP5 저장에 필요한 field control id를 앞 문단 fieldBegin에서 연결한다"
+        );
+        let hwp_roundtrip = crate::parser::body_text::parse_body_text_section(
+            &crate::serializer::body_text::serialize_section(&section),
+        )
+        .expect("HWP5로 저장한 다문단 field가 다시 파싱돼야 한다");
+        let hwp_end = hwp_roundtrip.paragraphs[1]
+            .orphan_field_ends
+            .first()
+            .expect("HWP5 저장본에도 fieldEnd 슬롯이 남아야 한다");
+        assert_eq!(hwp_end.begin_ctrl_id, begin_ctrl_id);
         // char_count = 텍스트 2 + fieldEnd 8 + 끝마커 1 = 11.
         assert_eq!(
             p1.char_count, 11,

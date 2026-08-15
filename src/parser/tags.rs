@@ -182,10 +182,23 @@ pub const CTRL_AUTO_NUMBER: u32 = ctrl_id(b"atno");
 pub const CTRL_NEW_NUMBER: u32 = ctrl_id(b"nwno");
 /// 쪽 번호 위치
 pub const CTRL_PAGE_NUM_POS: u32 = ctrl_id(b"pgnp");
+/// 쪽 번호 시작 쪽 제어 — `<hp:pageNumCtrl pageStartsOn>` 에 대응한다.
+pub const CTRL_PAGE_NUM_CTRL: u32 = ctrl_id(b"pgct");
 /// 감추기
 pub const CTRL_PAGE_HIDE: u32 = ctrl_id(b"pghd");
 /// 찾아보기 표식
 pub const CTRL_INDEX_MARK: u32 = ctrl_id(b"idxm");
+/// 제목 차례 표시 — `<hp:titleMark ignore="1"/>` 쪽.
+///
+/// 인라인 컨트롤(문자 `0x08`)이라 CTRL_HEADER 레코드를 만들지 않는다. 그래서
+/// `controls[]` 에 대응 항목이 없고 `Paragraph::title_marks` 로만 보존된다.
+///
+/// **fourcc 와 속성의 짝이 직관과 어긋난다** — `Mtit` 가 `ignore="1"`, `Mign` 이
+/// `ignore="0"` 이다. 한글 2022 양방향 실측이며(06699 한 문서에 둘 다 있어 같은
+/// 파일에서 확인된다) 이름에서 유추한 값이 아니다.
+pub const CTRL_TITLE_MARK_IGNORE_ON: u32 = ctrl_id(b"Mtit");
+/// 제목 차례 표시 — `<hp:titleMark ignore="0"/>` 쪽. 짝 상수의 주석 참고.
+pub const CTRL_TITLE_MARK_IGNORE_OFF: u32 = ctrl_id(b"Mign");
 /// 책갈피
 pub const CTRL_BOOKMARK: u32 = ctrl_id(b"bokm");
 /// 글자 겹침
@@ -313,8 +326,11 @@ pub fn ctrl_name(ctrl_id: u32) -> &'static str {
         CTRL_AUTO_NUMBER => "AutoNumber",
         CTRL_NEW_NUMBER => "NewNumber",
         CTRL_PAGE_NUM_POS => "PageNumPos",
+        CTRL_PAGE_NUM_CTRL => "PageNumCtrl",
         CTRL_PAGE_HIDE => "PageHide",
         CTRL_INDEX_MARK => "IndexMark",
+        CTRL_TITLE_MARK_IGNORE_ON => "TitleMark(ignore)",
+        CTRL_TITLE_MARK_IGNORE_OFF => "TitleMark",
         CTRL_BOOKMARK => "Bookmark",
         CTRL_TCPS => "Tcps",
         CTRL_FORM => "Form",

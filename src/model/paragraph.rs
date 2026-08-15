@@ -63,6 +63,12 @@ pub struct Paragraph {
     /// TAB 확장 데이터 (라운드트립 보존용)
     /// 각 탭 문자의 7 code unit (탭 너비, 종류 등) — text 내 '\t' 순서와 1:1 대응
     pub tab_extended: Vec<[u16; 7]>,
+    /// 제목 차례 표시 (`<hp:t>` 안의 `<hp:titleMark/>`, HWP5 인라인 `Mtit`/`Mign`)
+    ///
+    /// 텍스트가 아니라 **텍스트 축 위에 놓인 8유닛 슬롯**이라 `text` 에 싣지 않는다.
+    /// 대신 `field_ranges`·`tab_extended` 와 같은 부수 채널로 위치만 보존한다 —
+    /// `text` 에 문자를 넣으면 추출·렌더·비교 축이 전부 달라진다.
+    pub title_marks: Vec<TitleMark>,
     /// 문단 번호 시작 방식 오버라이드
     /// None = 앞 번호 목록에 이어 (기본)
     /// Some(NumberingRestart) = 이전 번호 이어 / 새 번호 시작
@@ -373,6 +379,27 @@ pub struct RangeTag {
     pub tag: u32,
 }
 
+/// 제목 차례 표시 — 이 문단을 제목 차례에 넣을지 표시하는 인라인 마커.
+///
+/// HWP5 는 컨트롤 문자 `0x08` + ctrl_id 로 PARA_TEXT 안에 직접 싣는다(CTRL_HEADER 없음).
+/// 실측(한글 2022 양방향, 06699 한 문서에서 둘 다 확인):
+///
+/// | HWP5 ctrl_id | HWPX |
+/// |---|---|
+/// | `Mtit` | `<hp:titleMark ignore="1"/>` |
+/// | `Mign` | `<hp:titleMark ignore="0"/>` |
+///
+/// 8 code unit 을 점유하므로 이 마커를 버리면 문단 축이 그만큼 짧아지고,
+/// 한글은 축이 어긋난 `<hp:lineseg textpos>` 를 만나면 본문을 통째로 버린다
+/// (10k 스윕 F-절단군 — 77 문서·2,237 개).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct TitleMark {
+    /// `text` 문자열 내 삽입 위치 (이 인덱스의 문자 **앞**에 놓인다)
+    pub char_idx: usize,
+    /// `ignore` 속성 — `true` 면 `Mtit`, `false` 면 `Mign`
+    pub ignore: bool,
+}
+
 /// 필드 텍스트 범위 (0x03 FIELD_BEGIN ~ 0x04 FIELD_END 사이 텍스트)
 #[derive(Debug, Clone, Default)]
 pub struct FieldRange {
@@ -413,6 +440,11 @@ pub struct OrphanFieldEnd {
     pub begin_id_ref: u32,
     /// `<hp:fieldEnd fieldid="..">` — 필드 인스턴스 id.
     pub field_id: u32,
+    /// 짝 필드의 HWP5 `ctrl_id`(`%clk` 등). HWP5 저장기가 종료 마커를 쓸 때 쓴다.
+    ///
+    /// 0 이면 모른다는 뜻이고, 그때는 HWP5 저장에서 마커를 내지 않는다 — 필드 종류를
+    /// 지어내면 한글이 짝을 못 맞춘다. HWPX 에서 들어온 고아 마커가 이 경우다.
+    pub begin_ctrl_id: u32,
 }
 
 impl Paragraph {
@@ -466,8 +498,8 @@ impl Paragraph {
             Control::Header(_) | Control::Footer(_) => 0x0010,
             Control::Footnote(_) | Control::Endnote(_) => 0x0011,
             Control::AutoNumber(_) | Control::NewNumber(_) => 0x0012,
-            Control::PageNumberPos(_) | Control::PageHide(_) => 0x0015,
-            Control::Bookmark(_) => 0x0016,
+            Control::PageNumberPos(_) | Control::PageHide(_) | Control::PageNumCtrl(_) => 0x0015,
+            Control::Bookmark(_) | Control::IndexMark(_) => 0x0016,
             Control::CharOverlap(_) => 0x0017,
         }
     }
@@ -1049,6 +1081,18 @@ impl Paragraph {
             .collect();
         self.char_offsets.truncate(split_pos);
 
+        // 2-1. 제목 차례 표시 분할 — 문자 인덱스 기준이라 뒤 절반은 원점을 옮긴다.
+        let new_title_marks: Vec<TitleMark> = self
+            .title_marks
+            .iter()
+            .filter(|m| m.char_idx >= split_pos)
+            .map(|m| TitleMark {
+                char_idx: m.char_idx - split_pos,
+                ignore: m.ignore,
+            })
+            .collect();
+        self.title_marks.retain(|m| m.char_idx < split_pos);
+
         // 3. char_shapes 분할
         let mut new_char_shapes: Vec<CharShapeRef> = Vec::new();
         // 분할 지점에서의 활성 스타일 찾기
@@ -1276,6 +1320,7 @@ impl Paragraph {
             raw_header_extra: self.raw_header_extra.clone(),
             has_para_text: new_has_para_text,
             tab_extended: Vec::new(),
+            title_marks: new_title_marks,
             numbering_restart: None,
             // [#4149] 분할 산출 문단은 미판정으로 시작한다.
             single_line_overflow_memo: SingleLineOverflowMemo::default(),
@@ -1319,6 +1364,14 @@ impl Paragraph {
         // 2. char_offsets 결합 (other의 오프셋에 utf16_end 추가)
         for &off in &other.char_offsets {
             self.char_offsets.push(off + utf16_end);
+        }
+
+        // 2-1. 제목 차례 표시 결합 — 문자 인덱스 축이라 앞 문단 길이만큼 민다.
+        for m in &other.title_marks {
+            self.title_marks.push(TitleMark {
+                char_idx: m.char_idx + self_text_len,
+                ignore: m.ignore,
+            });
         }
 
         // 3. char_shapes 결합 (other의 start_pos에 utf16_end 추가)

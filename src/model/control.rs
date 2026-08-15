@@ -40,6 +40,10 @@ pub enum Control {
     PageNumberPos(PageNumberPos),
     /// 책갈피 ('bokm')
     Bookmark(Bookmark),
+    /// 찾아보기 표식 ('idxm')
+    IndexMark(IndexMark),
+    /// 쪽 번호 시작 쪽 ('pgct')
+    PageNumCtrl(PageNumCtrl),
     /// 하이퍼링크 ('%hlk')
     Hyperlink(Hyperlink),
     /// 덧말 ('tdut')
@@ -209,6 +213,89 @@ pub struct PageNumberPos {
 pub struct Bookmark {
     /// 책갈피 이름
     pub name: String,
+}
+
+/// 쪽 번호가 시작되는 쪽 ('pgct') — `<hp:pageNumCtrl pageStartsOn>` 에 대응한다.
+///
+/// HWP5 CTRL_HEADER payload 는 ctrl_id 뒤 `u32` 하나뿐이다. 한글 2022 양방향 실측
+/// (06731 을 HWPX 로 저장 → 속성만 바꿔 다시 HWP5 로 저장, 각 17/17):
+///
+/// | u32 | `pageStartsOn` |
+/// |---|---|
+/// | 0 | `BOTH` |
+/// | 1 | `EVEN` |
+/// | 2 | `ODD` |
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum PageStartsOn {
+    /// 양쪽 (기본값)
+    #[default]
+    Both,
+    /// 짝수 쪽
+    Even,
+    /// 홀수 쪽
+    Odd,
+}
+
+impl PageStartsOn {
+    /// HWP5 payload u32 → 열거. 규정 밖 값은 기본값으로 떨어뜨린다.
+    pub fn from_hwp5(v: u32) -> Self {
+        match v {
+            1 => Self::Even,
+            2 => Self::Odd,
+            _ => Self::Both,
+        }
+    }
+
+    /// 열거 → HWP5 payload u32.
+    pub fn to_hwp5(self) -> u32 {
+        match self {
+            Self::Both => 0,
+            Self::Even => 1,
+            Self::Odd => 2,
+        }
+    }
+
+    /// OWPML `pageStartsOn` 속성값.
+    pub fn as_hwpx(self) -> &'static str {
+        match self {
+            Self::Both => "BOTH",
+            Self::Even => "EVEN",
+            Self::Odd => "ODD",
+        }
+    }
+
+    /// OWPML `pageStartsOn` 속성값 → 열거.
+    pub fn from_hwpx(v: &str) -> Self {
+        match v {
+            "EVEN" => Self::Even,
+            "ODD" => Self::Odd,
+            _ => Self::Both,
+        }
+    }
+}
+
+/// 쪽 번호 시작 쪽 컨트롤 ('pgct')
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct PageNumCtrl {
+    /// 쪽 번호가 시작되는 쪽
+    pub page_starts_on: PageStartsOn,
+}
+
+/// 찾아보기 표식 ('idxm') — 색인에 실릴 키워드를 본문 위치에 붙여 둔 표식.
+///
+/// HWP5 CTRL_DATA 레이아웃(ctrl_id 4바이트 제거 후, 실측 06926):
+///   WORD(2) + WCHAR[n]  첫째 키
+///   WORD(2) + WCHAR[m]  둘째 키
+///   4바이트 예약(실측 전부 0)
+///
+/// HWPX 는 `<hp:ctrl><hp:indexmark><hp:firstKey/><hp:secondKey/></hp:indexmark></hp:ctrl>`
+/// 로 적는다(ParaList XML schema.xml:209).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct IndexMark {
+    /// 첫째 키
+    pub first_key: String,
+    /// 둘째 키 (없으면 빈 문자열)
+    pub second_key: String,
 }
 
 /// 하이퍼링크 ('%hlk' 필드)
