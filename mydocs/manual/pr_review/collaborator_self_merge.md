@@ -83,4 +83,11 @@ gh pr merge N --repo edwardkim/rhwp --squash --admin \
 ~~~
 
 merge 뒤에는 이 PR 자체가 review 기록을 포함했는지와 issue 상태를 확인하기 위해
-[merge 후속 처리](post_merge.md)를 적용한다.
+[merge 후속 처리](post_merge.md)를 적용한다. 이 과정이 끝나면 이번 PR만을 위해 만든 local worktree는
+clean 상태와 다른 작업의 소유 여부를 확인한 뒤 제거한다. 단순히 다음 작업에 재사용할 편의만으로 유지하지
+않으며, 제거할 수 없는 활성 작업 또는 사용자 보존 지시가 있으면 그 사유와 경로를 최종 상태에 남긴다.
+
+작업지시자가 이 경로의 PR 병합과 `merge 후 후속 처리`를 승인했다면, 그 승인은 이번 PR 전용의 clean한
+local branch와 local worktree를 제거하는 데에도 적용된다. 따라서 조건을 만족한 뒤에는 별도의 "정리" 지시를
+기다리지 않고 후속 처리에서 제거한다. 이 승인은 원격 head branch 삭제, 기본 작업공간, 공유 target,
+사용자·다른 도구의 branch/worktree 삭제에는 적용되지 않으며, 그 대상은 별도 승인과 소유 확인이 필요하다.
