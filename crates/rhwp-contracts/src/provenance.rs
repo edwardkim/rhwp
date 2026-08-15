@@ -190,6 +190,14 @@ pub const MAP: &[CommandProvenance] = &[
         note: "format·pageCount·paragraphCount·footnoteCount·endnoteCount·encrypted 는 엔진값이고, tables[] 는 rows/cols/hasMergedCells 만 담아 셀 텍스트를 싣지 않는다.",
     },
     CommandProvenance {
+        command: "explore",
+        untrusted: NONE,
+        note: "어포던스 메뉴 봉투는 형식 레이블·개수(pageCount·affordanceCount)·확신도·고정 \
+               명령 템플릿(<file> 자리표시자)·고정 고지문(note)뿐이다. 증거 menu[].why 는 \
+               문서 원문이 아니라 엔진이 센 개수를 엮은 사람 문장이라 문서 파생 문자열이 \
+               나갈 자리가 없다 — source 는 호출자 경로 에코다.",
+    },
+    CommandProvenance {
         command: "export-tables",
         untrusted: &[
             f("tables[].caption", "표 캡션 텍스트"),
