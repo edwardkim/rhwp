@@ -37,6 +37,30 @@ python tools/agent_onboarding/rhwp_doctor.py --json     # 기계 판독(stdout=J
    `--force` 없이 덮어쓰지 않는다.
 4. **첫 5분 레시피 지도** — 실존하는 스킬·레시피만 인용해 5대 고가치 과제를 명령과 함께 제시.
 
+## 닥터가 실제로 돌리는 명령 (손으로 확인할 때)
+
+닥터가 `FAIL` 을 내면 같은 명령을 직접 쳐서 원인을 본다 — 닥터는 아래를 감싼 것뿐이다.
+
+```bash
+rhwp --version
+rhwp info samples/basic/english.hwp --json
+rhwp export-text samples/basic/english.hwp --json --max-chars 2000
+```
+
+`.mcp.json` 이 띄우는 상주 서버도 같은 바이너리다 — 배선 전에 한 번 손으로 띄워 본다.
+
+```bash
+rhwp mcp-serve
+```
+
+붙였으면 첫 과제로 넘어간다. 어느 스킬로 갈지는 아래 지도를 따르되, 한 문서를 빠르게
+파악하는 최단 경로는 이 두 명령이다.
+
+```bash
+rhwp explain samples/basic/english.hwp --json
+rhwp digest samples/basic/english.hwp --json
+```
+
 ## 종료 코드로 판정
 
 | 코드 | 뜻 | 다음 |
