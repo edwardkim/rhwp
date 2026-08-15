@@ -1,0 +1,41 @@
+{
+  "id": "SH04",
+  "tier": 3,
+  "title": "🎪 표 왕복 — 데이터 안전 교환",
+  "input": "samples/hwpx/basic-table-01.hwpx",
+  "instructions": "rhwp 는 문서의 표를 CSV 로 뽑아 고친 뒤 같은 자리에 되넣는다 — csv-to-table 은 표 크기·라벨을 바꾸지 않고 값만 덮어쓴다(다르면 거부). 표 0 의 (행 1, 열 2) 칸 값 7 을 700 으로 바꿔 out.hwpx 로 저장하라. 표 크기·다른 값은 그대로 두어야 한다. 힌트: rhwp table-to-csv 로 뽑아 그 칸만 고치고 rhwp csv-to-table <입력> --table 0 --csv <고친.csv> -o out.hwpx.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "out.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "원본과 다름(무편집 거부)",
+      "op": "differs_from_input",
+      "file": "out.hwpx"
+    },
+    {
+      "name": "표0 (1,2) 값이 700",
+      "op": "cell_text_eq",
+      "path": "tables",
+      "table": 0,
+      "row": 1,
+      "col": 2,
+      "value": 700,
+      "cmd": [
+        "export-tables",
+        "{file:out.hwpx}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "편집"
+}

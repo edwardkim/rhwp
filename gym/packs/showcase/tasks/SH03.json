@@ -1,0 +1,44 @@
+{
+  "id": "SH03",
+  "tier": 3,
+  "title": "🎢 왕복 충실도 — IR 무손실",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "형식을 바꿔도 내용 구조가 그대로인지 rhwp 는 IR 로 증명한다 — 조용한 손상이 없다. 입력을 HWPX 로 변환해 conv.hwpx 로 제출하고, 변환물이 원본과 IR 동일한지 answer.json 에 {\"identical\": true|false} 로 적어라. 힌트: rhwp export-hwpx <입력> conv.hwpx 로 만들고 rhwp ir-diff <입력> conv.hwpx --json 의 identical 을 읽어라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwpx",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "진짜 HWPX 형식",
+      "op": "value_eq",
+      "value": "hwpx",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:conv.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "name": "IR 동일 판정",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "{file:conv.hwpx}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "검증"
+}

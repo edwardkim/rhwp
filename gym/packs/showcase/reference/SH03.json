@@ -1,0 +1,30 @@
+{
+  "id": "SH03",
+  "steps": [
+    {
+      "run": [
+        "export-hwpx",
+        "{input}",
+        "{sub:conv.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "identical": {
+          "cmd": [
+            "ir-diff",
+            "{input}",
+            "{sub:conv.hwpx}",
+            "--json"
+          ],
+          "path": "identical",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

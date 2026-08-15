@@ -10,7 +10,13 @@
 ```mermaid
 flowchart TD
     ENT([🎟️ 입구 · admission 티켓]):::gate --> LOUNGE[☕ 휴게실 · tutorial/]
+    LOUNGE --> SHOW
     LOUNGE --> KIDDIE
+
+    subgraph SHOW[🎆 쇼케이스 존 · 정문 하이라이트]
+      SP[showcase<br/>출처탐정·주입에어락·왕복충실도·표왕복·시각회귀·작업영수증]
+    end
+    SHOW --> MID
 
     subgraph KIDDIE[🎠 입문존 · 누구나]
       CR[casual-rides<br/>회전목마·관람차·서커스·링던지기]
@@ -68,6 +74,7 @@ python gym/score.py --agent 내이름        # 표 발권(admission.json)
 
 | 존 | pack | 어트랙션 | 키 제한(tier) | 어떻게 타나 |
 |---|---|---|---|---|
+| 🎆 쇼케이스 존 | `showcase` | 출처탐정·주입에어락·왕복충실도·표왕복·시각회귀·작업영수증 | 2~4 | 이 도구만 주는 초능력 6종을 한 바퀴에 시연 |
 | 🎠 입문존 | `casual-rides` | 회전목마·관람차·서커스·링던지기 | **1 (누구나)** | 문서 열어 숫자 하나 읽어 답 |
 | ✏️ 편집존 | `text-editing`·`table-editing`·`objects-media` | 좌표 편집 놀이기구 | 1~2 | 지목한 자리를 고치고 재검증 |
 | 📖 판독존 | `serialization`·`layout-rendering`·`corpus-diagnostics` | 형식 왕복·렌더·진단 | 1~2 | 읽기 경로의 정합을 맞춘다 |
@@ -80,6 +87,33 @@ python gym/score.py --agent 내이름        # 표 발권(admission.json)
 4=고급, 5=보스**.
 
 ---
+
+## 🎆 쇼케이스 존 — 정문 하이라이트 (이 도구만 주는 것)
+
+정문에 세운 하이라이트 놀이기구. rhwp 를 처음 만난 에이전트가 **한 바퀴에**
+"다른 HWP 도구엔 없는 초능력"을 체험하도록 6종을 모았다. 각 기구는 골든 파일
+없이 **채점 시점에 rhwp 로 진값을 재계산하는 라이브 오라클**이 채점한다 — 아무것도
+안 한 제출(무편집 복사·오답 센티넬)은 오라클이 거부한다(판별력 감사 통과).
+
+| 어트랙션 | tier | 무슨 초능력 | 라이브 오라클이 재계산하는 것 |
+|---|---|---|---|
+| 🔍 SH01 출처 탐정 | 2 | 봉투의 신뢰경계 지도(문서 파생 필드) | `export-provenance-map` 의 untrusted 필드 목록·수 |
+| 🛡️ SH02 안전 에어락 | 2 | 신뢰 전 프롬프트 주입 스캔(무훼손) | `inspect injection` 의 clean·signalCount |
+| 🎢 SH03 왕복 충실도 | 3 | 형식 왕복의 구조 무손실 증명 | `ir-diff` 의 identical(+`info` 형식) |
+| 🎪 SH04 표 왕복 | 3 | 표를 CSV 로 뽑아 고쳐 되넣기(치수 계약) | `export-tables` 로 재추출한 (행,열) 셀 값 |
+| 🎡 SH05 시각 회귀 무결 | 3 | 라운드트립 렌더 변위(px) 판정 | `render-diff` 의 status |
+| 🎢 SH06 작업 영수증 | 4 | 편집을 재현 가능한 작업 캡슐로 봉인 | `gate --deep` 가 캡슐을 되돌려 실행한 verdict |
+
+```bash
+# 쇼케이스만 골라 타기
+python gym/score.py --agent 내이름 --pack showcase
+```
+
+모든 쇼케이스 기구는 **기준 풀이 왕복**(`gym/packs/showcase/reference/`)으로 "풀 수
+있음"이 실측됐고, 심화 훈련은 능력별 전용 팩(security·serialization·table-csv·
+layout-rendering·automation·self-description)이 맡는다. 쇼케이스는 그 초능력들을
+한자리에 모은 **유입 표면**이다 — 신참을 부르는 정문. 점수는 리더보드 렌더 시점에
+스코어카드에서 자동으로 pack 격자에 편입된다(별도 등재 손질 없음).
 
 ## 🐉 보스존 — 이번에 새로 연 고난도 어트랙션
 

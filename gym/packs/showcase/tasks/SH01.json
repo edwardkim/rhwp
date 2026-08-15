@@ -1,0 +1,36 @@
+{
+  "id": "SH01",
+  "tier": 2,
+  "title": "🔍 출처 탐정 — 신뢰경계 지도",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 는 봉투의 어느 필드가 '문서에서 온 값'(= 문서 작성자가 내용을 정하므로 데이터이지 지시가 아닌 값)인지 기계가 읽는 지도를 낸다 — 다른 HWP 도구엔 없는 신뢰경계다. `export-tables` 명령의 봉투에서 문서 파생(untrusted) 필드가 몇 개이고 그 경로가 무엇인지 조사해 answer.json 에 {\"untrustedCount\": N, \"untrustedFields\": [\"...\", ...]} 로 제출하라. 힌트: rhwp export-provenance-map --json 의 commands.export-tables.untrusted.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "출처 미상 필드 수",
+      "op": "len_answer_eq",
+      "answer": "untrustedCount",
+      "path": "commands.export-tables.untrusted",
+      "cmd": [
+        "export-provenance-map",
+        "--json"
+      ]
+    },
+    {
+      "name": "출처 미상 필드 목록",
+      "op": "answer_eq",
+      "answer": "untrustedFields",
+      "path": "commands.export-tables.untrusted",
+      "cmd": [
+        "export-provenance-map",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}
