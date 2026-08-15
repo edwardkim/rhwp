@@ -27,6 +27,8 @@ pub mod navigation;
 /// [#3719 §6-11] 공개 전 개인정보 탐지 — 읽기 전용 판정(마스킹은 CLI 의 치환 경로).
 pub mod pii_scan;
 pub(crate) mod search_query;
+/// 숨은 마크(제로폭·호모글리프·공백 스테가노) 탐지 + 방어적 정화 코어 — 읽기 전용 판정.
+pub mod stego_scan;
 pub mod structure;
 // [#3719 §6-7] 표 ↔ CSV 변환 — `table_extract` 격자를 재사용하는 순수 변환 코어.
 /// [#4100] 차트 데이터 ↔ CSV 행렬 (행=카테고리, 열=계열).
