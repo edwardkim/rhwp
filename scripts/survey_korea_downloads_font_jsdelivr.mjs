@@ -484,11 +484,33 @@ function knownKoPubWorldCdn(font) {
   };
 }
 
+function knownGovernmentSymbolCdn(font) {
+  const normalized = String(font)
+    .normalize('NFKC')
+    .toLocaleLowerCase('en-US')
+    .replace(/\.(?:ttf|otf|woff2?)$/u, '')
+    .replace(/[\s_.-]+/gu, '');
+  if (!new Set(['government16040911', '정부상징부처명16040911']).has(normalized)) return null;
+
+  return {
+    packageType: 'github',
+    owner: 'jangster77',
+    repo: 'korea-government-symbol-font',
+    ref: 'v1.0.0',
+    file: 'fonts/Government_16040911.ttf',
+    license: '공공누리 제4유형 (출처표시+상업적 이용금지+변경금지)',
+    delivery: 'jsDelivr GitHub',
+    note: '문화체육관광부 대한민국정부상징서체 원본 TTF의 고정 태그 CDN 확인',
+  };
+}
+
 function knownCdn(font) {
   const koPub = knownKoPubCdn(font);
   if (koPub) return koPub;
   const koPubWorld = knownKoPubWorldCdn(font);
   if (koPubWorld) return koPubWorld;
+  const governmentSymbol = knownGovernmentSymbolCdn(font);
+  if (governmentSymbol) return governmentSymbol;
 
   const key = familyKey(font);
   const batang = new Set(['함초롬바탕', '함초롱바탕', '한컴바탕', '새바탕'].map(familyKey));
