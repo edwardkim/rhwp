@@ -36,6 +36,11 @@ base64 = "0.23"
 # [#4509] 캡슐 서명(4년 축) — 결정론 서명이라 replay/lineage 의 결정론 문화와
 # 정합. 순수 Rust 라 wasm 타깃도 그대로 컴파일된다.
 ed25519-dalek = "2"
+# 양자내성 서명(ML-DSA / Dilithium, NIST FIPS 204) — Ed25519 는 Shor 로 깨지므로
+# 작업캡슐·출처 서명을 양자 이후에도 살리는 확장. 순수 Rust 라 wasm 도 그대로 컴파일된다.
+# 시드(32B) 결정론 키생성·결정론 서명만 쓰므로 crate 의 getrandom/rand_core/pkcs8 기능은
+# 끄고(엔트로피는 프로젝트의 getrandom::fill 로 공급) alloc 만 켠다 — 의존 표면 최소화.
+ml-dsa = { version = "0.1", default-features = false, features = ["alloc"] }
 aes = "0.9"
 cbc = "0.2"
 cipher = "0.5"
