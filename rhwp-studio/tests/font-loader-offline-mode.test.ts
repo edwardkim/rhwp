@@ -160,18 +160,27 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
   });
 
   try {
-    await loadWebFonts(['DejaVu Serif', 'Roboto', '정부상징 부처명_16040911']);
+    await loadWebFonts(['DejaVu Serif', 'Roboto', '정부상징 부처명_16040911', 'KoPub돋움체 Medium']);
 
     assert.equal(fontFaceRequests.some(request => request.family === 'DejaVu Serif'), false);
     assert.equal(fontFaceRequests.some(request => request.family === 'Roboto'), true);
     assert.equal(fontFaceRequests.some(request => request.family === '정부상징 부처명_16040911'), true);
+    assert.equal(fontFaceRequests.some(request => request.family === 'KoPub돋움체 Medium'), true);
     assert.equal(styles[0].textContent.includes('DejaVu Serif'), false);
     assert.equal(styles[0].textContent.includes('Roboto'), true);
     assert.equal(styles[0].textContent.includes('정부상징 부처명_16040911'), true);
+    assert.equal(styles[0].textContent.includes('KoPub돋움체 Medium'), true);
     assert.equal(
       fontFaceRequests.some(request => (
         request.source.includes('korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf')
         && request.source.includes("format('truetype')")
+      )),
+      true,
+    );
+    assert.equal(
+      fontFaceRequests.some(request => (
+        request.source.includes('font-kopub@1.0.2/fonts/KoPubDotum-Medium.woff')
+        && request.source.includes("format('woff')")
       )),
       true,
     );
