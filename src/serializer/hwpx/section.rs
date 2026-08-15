@@ -643,9 +643,15 @@ pub(crate) fn render_paragraph_parts(
     vert_start: u32,
     ctx: &mut SerializeContext,
 ) -> (String, String, u32) {
-    let runs_xml = render_runs(para, ctx);
+    let (runs_xml, position_axis_intact) = render_runs(para, ctx);
 
-    if !para.line_segs.is_empty() {
+    // [#4778] 위치 축이 무너진 문단(파서가 담지 못한 8유닛 슬롯 — 예: 차례표지
+    // 0x0008 — 이 있거나 mismatch 폴백으로 컨트롤을 말미에 몰아쓴 문단)에는 저장
+    // lineseg 를 방출하지 않는다. 방출 텍스트와 textpos 사다리가 어긋난 lineseg 를
+    // 한글 2022 가 만나면 **그 문단부터 문서 끝까지 본문을 통째로 폐기**한다
+    // (성년후견 h2x: -112,075자 실측 — lineseg 억제만으로 전량 회복). 방출을
+    // 생략하면 한글이 열 때 재계산한다(#1380 과 같은 계약).
+    if !para.line_segs.is_empty() && position_axis_intact {
         // IR 기반 출력 — 원본 lineseg 값 보존 (#177)
         let linesegs = format!(
             "{}{}{}",
@@ -927,7 +933,13 @@ fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, tab_idx: &mut u
 
 /// Paragraph 본문을 완전한 `<hp:run>` 시퀀스로 직렬화한다 (#1378 다중 run 분할).
 ///
-fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
+/// 반환: (run 시퀀스 XML, **위치 축 보존 여부**).
+///
+/// [#4778] 두 번째 값이 `false` 면 방출된 텍스트 스트림이 원본 8유닛 슬롯 축과
+/// 어긋난 상태다(파서 미수용 슬롯 또는 mismatch 폴백). 호출부는 이때 저장
+/// lineseg 방출을 억제해야 한다 — textpos 사다리와 어긋난 lineseg 는 한글이
+/// 그 문단부터 본문을 통째 폐기하는 트리거다.
+fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
     // 직렬화를 깨지 않도록.
@@ -946,12 +958,16 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         && para.orphan_field_ends.is_empty()
     {
         // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
-        return String::new();
+        return (String::new(), true);
     }
 
     let mut splitter = RunSplitter::new(para);
 
     let slot_count = inferred_control_slot_count(para);
+    // [#4778] U+FFFC 마커는 컨트롤이 없어도 위치 축의 정규 시민이다(HWP3 암호 변환본:
+    // 마커 리터럴이 그대로 방출돼 재파싱 고정점 유지 — #3739 --verify 계약). 억제는
+    // **마커로 설명되지 않는 8유닛 구멍**(차례표지 0x0008 등 파서 미수용 슬롯)에만 건다.
+    let marker_count = para.text.chars().filter(|c| *c == '\u{fffc}').count();
     // slots 와 각 slot 의 para.controls 인덱스(slot_ctrl_indices)를 병행 수집 —
     // [Task #1627] empty-text 문단의 bookmark in-order 방출에서 slot 사이 위치 계산에 사용.
     let (slots, slot_ctrl_indices): (Vec<&Control>, Vec<usize>) =
@@ -1052,9 +1068,14 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     {
         let t = render_hp_t_content(&para.text, &para.tab_extended, &mut tab_idx);
         splitter.content.push_str(&t);
-        // 슬롯이 하나도 없는데 char_count 는 슬롯을 주장하면(파서가 못 읽은 컨트롤)
-        // 방출 축이 원본보다 짧다 — 이때도 lineseg 를 그대로 쓰면 안 된다.
-        return splitter.finish();
+        // 슬롯이 하나도 없는데 char_count 는 슬롯을 주장하면(파서가 못 읽은 컨트롤 —
+        // 예: 차례표지 0x0008) 방출 축이 원본보다 짧다 — 이때 lineseg 를 그대로 쓰면
+        // 한글이 그 문단부터 본문을 폐기한다(#4778). 축 붕괴를 호출부에 알린다.
+        // U+FFFC 마커가 슬롯 주장을 전부 설명하면 종전 계약 유지(#3739).
+        return (
+            splitter.finish(),
+            slot_count == 0 || marker_count >= slot_count,
+        );
     }
 
     // mismatch 경로: 슬롯 위치 추정 불가 — 텍스트(경계 분할 포함) 후 슬롯 일괄 방출
@@ -1074,8 +1095,11 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         for ofe in &para.orphan_field_ends {
             emit_orphan_field_end(&mut splitter.content, ofe);
         }
-        // 컨트롤을 말미로 몰았으므로 원본 lineseg 좌표계는 더 이상 유효하지 않다.
-        return splitter.finish();
+        // 컨트롤을 말미로 몰았으므로 원본 lineseg 좌표계는 더 이상 유효하지 않다 —
+        // 호출부가 저장 lineseg 방출을 억제하게 한다(#4778). 단, 슬롯 부족분이
+        // U+FFFC 마커로 전부 설명되면 종전 계약(방출 유지, #3739 고정점)을 지킨다.
+        let shortfall = slot_count.saturating_sub(slots.len());
+        return (splitter.finish(), marker_count >= shortfall);
     }
 
     // 메인 경로 — UTF-16 위치 축 위에서 슬롯/필드/문자/경계를 함께 처리
@@ -1390,7 +1414,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             field_end_emitted[i] = true;
         }
     }
-    splitter.finish()
+    (splitter.finish(), true)
 }
 
 fn inferred_control_slot_count(para: &Paragraph) -> usize {
@@ -4971,7 +4995,51 @@ mod tests {
     fn runs_of(para: &Paragraph) -> String {
         let doc = Document::default();
         let mut ctx = SerializeContext::collect_from_document(&doc);
-        render_runs(para, &mut ctx)
+        render_runs(para, &mut ctx).0
+    }
+
+    /// [#4778] 위치 축이 무너진 문단(파서 미수용 8유닛 슬롯 — 차례표지 0x0008 등)의
+    /// 저장 lineseg 는 방출하지 않는다. textpos 사다리와 어긋난 lineseg 를 한글 2022 가
+    /// 만나면 그 문단부터 문서 끝까지 본문을 폐기한다(성년후견 h2x -112,075자 실측,
+    /// lineseg 억제만으로 전량 회복).
+    #[test]
+    fn issue4778_broken_position_axis_suppresses_stored_linesegs() {
+        use crate::model::paragraph::LineSeg;
+        let doc = Document::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+
+        // 성년후견 #156 동형: 텍스트 앞에 8유닛 슬롯 갭(차례표지 자리)이 있는데
+        // controls 는 비어 있다 — char_count/char_offsets 만 슬롯을 주장한다.
+        let mut broken = Paragraph::default();
+        broken.text = "다. 표제".to_string();
+        broken.char_offsets = (0..broken.text.chars().count() as u32)
+            .map(|i| 8 + i)
+            .collect();
+        broken.char_count = 8 + broken.text.chars().count() as u32 + 1;
+        broken.line_segs = vec![LineSeg {
+            line_height: 1100,
+            ..Default::default()
+        }];
+        let (_, linesegs, _) = render_paragraph_parts(&broken, 0, &mut ctx);
+        assert!(
+            linesegs.is_empty(),
+            "축 붕괴 문단은 저장 lineseg 를 방출하면 안 된다(한글 본문 폐기 트리거): {linesegs}"
+        );
+
+        // 대조군: 축이 온전한 문단은 종전대로 저장 lineseg 를 방출한다.
+        let mut intact = Paragraph::default();
+        intact.text = "본문".to_string();
+        intact.char_offsets = (0..intact.text.chars().count() as u32).collect();
+        intact.char_count = intact.text.chars().count() as u32 + 1;
+        intact.line_segs = vec![LineSeg {
+            line_height: 1100,
+            ..Default::default()
+        }];
+        let (_, linesegs, _) = render_paragraph_parts(&intact, 0, &mut ctx);
+        assert!(
+            linesegs.contains("<hp:lineseg"),
+            "온전한 문단의 저장 lineseg 보존이 깨졌다"
+        );
     }
 
     #[test]
