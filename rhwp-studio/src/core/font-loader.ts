@@ -11,6 +11,8 @@ interface FontEntry {
   file: string;
   /** woff2(기본), woff, truetype 또는 opentype — CDN 원본 글꼴 파일용 */
   format?: 'woff2' | 'woff' | 'truetype' | 'opentype';
+  /** CanvasKit이 직접 해석할 SFNT 원본. CSS 웹폰트와 다른 경우에만 지정한다. */
+  canvasKitFile?: string;
   /** CSS unicode-range — 지정 시 해당 코드포인트만 매칭, 다운로드도 해당 영역 사용 시에만 발생 */
   unicodeRange?: string;
 }
@@ -136,35 +138,35 @@ const FONT_LIST: FontEntry[] = [
   { name: 'Government_16040911', file: CDN_GOVERNMENT_SYMBOL_REGULAR, format: 'truetype' },
   { name: '정부상징 부처명_16040911', file: CDN_GOVERNMENT_SYMBOL_REGULAR, format: 'truetype' },
   // === KoPub (KOPUS 공개 패키지, 문서 요청 시에만 CDN 로드) ===
-  { name: 'KoPub돋움체 Light', file: `${CDN_KOPUB}/KoPubDotum-Light.woff`, format: 'woff' },
-  { name: 'KoPub돋움체 Medium', file: `${CDN_KOPUB}/KoPubDotum-Medium.woff`, format: 'woff' },
-  { name: 'KoPub돋움체 Bold', file: `${CDN_KOPUB}/KoPubDotum-Bold.woff`, format: 'woff' },
-  { name: 'KoPub바탕체 Light', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff' },
-  { name: 'KoPub바탕체 Medium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff' },
-  { name: 'KoPub바탕체 Bold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff' },
-  { name: 'KoPubDotum Light', file: `${CDN_KOPUB}/KoPubDotum-Light.woff`, format: 'woff' },
-  { name: 'KoPubDotum Medium', file: `${CDN_KOPUB}/KoPubDotum-Medium.woff`, format: 'woff' },
-  { name: 'KoPubDotum Bold', file: `${CDN_KOPUB}/KoPubDotum-Bold.woff`, format: 'woff' },
-  { name: 'KoPubBatang Light', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff' },
-  { name: 'KoPubBatang Medium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff' },
-  { name: 'KoPubBatang Bold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff' },
-  { name: 'KoPubDotumLight', file: `${CDN_KOPUB}/KoPubDotum-Light.woff`, format: 'woff' },
-  { name: 'KoPubDotumMedium', file: `${CDN_KOPUB}/KoPubDotum-Medium.woff`, format: 'woff' },
-  { name: 'KoPubDotumBold', file: `${CDN_KOPUB}/KoPubDotum-Bold.woff`, format: 'woff' },
-  { name: 'KoPubBatangLight', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff' },
-  { name: 'KoPubBatangMedium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff' },
-  { name: 'KoPubBatangBold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff' },
+  { name: 'KoPub돋움체 Light', file: `${CDN_KOPUB}/KoPubDotum-Light.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubDotum-Light.ttf` },
+  { name: 'KoPub돋움체 Medium', file: `${CDN_KOPUB}/KoPubDotum-Medium.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubDotum-Medium.ttf` },
+  { name: 'KoPub돋움체 Bold', file: `${CDN_KOPUB}/KoPubDotum-Bold.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubDotum-Bold.ttf` },
+  { name: 'KoPub바탕체 Light', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubBatang-Light.ttf` },
+  { name: 'KoPub바탕체 Medium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubBatang-Medium.ttf` },
+  { name: 'KoPub바탕체 Bold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubBatang-Bold.ttf` },
+  { name: 'KoPubDotum Light', file: `${CDN_KOPUB}/KoPubDotum-Light.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubDotum-Light.ttf` },
+  { name: 'KoPubDotum Medium', file: `${CDN_KOPUB}/KoPubDotum-Medium.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubDotum-Medium.ttf` },
+  { name: 'KoPubDotum Bold', file: `${CDN_KOPUB}/KoPubDotum-Bold.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubDotum-Bold.ttf` },
+  { name: 'KoPubBatang Light', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubBatang-Light.ttf` },
+  { name: 'KoPubBatang Medium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubBatang-Medium.ttf` },
+  { name: 'KoPubBatang Bold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubBatang-Bold.ttf` },
+  { name: 'KoPubDotumLight', file: `${CDN_KOPUB}/KoPubDotum-Light.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubDotum-Light.ttf` },
+  { name: 'KoPubDotumMedium', file: `${CDN_KOPUB}/KoPubDotum-Medium.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubDotum-Medium.ttf` },
+  { name: 'KoPubDotumBold', file: `${CDN_KOPUB}/KoPubDotum-Bold.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubDotum-Bold.ttf` },
+  { name: 'KoPubBatangLight', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubBatang-Light.ttf` },
+  { name: 'KoPubBatangMedium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubBatang-Medium.ttf` },
+  { name: 'KoPubBatangBold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff', canvasKitFile: `${CDN_KOPUB}/KoPubBatang-Bold.ttf` },
   // === KoPubWorld (KOPUS 공개 글꼴, 문서 요청 시에만 CDN 로드) ===
-  { name: 'KoPubWorld돋움체 Light', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Light.woff2` },
-  { name: 'KoPubWorld돋움체 Medium', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2` },
-  { name: 'KoPubWorld돋움체 Bold', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Bold.woff2` },
-  { name: 'KoPubWorld바탕체 Light', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Light.woff2` },
-  { name: 'KoPubWorld바탕체 Medium', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2` },
-  { name: 'KoPubWorld바탕체 Bold', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Bold.woff2` },
-  { name: 'KoPubWorld Dotum', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2` },
-  { name: 'KoPubWorld Batang', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2` },
-  { name: 'KoPubWorldDotum', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2` },
-  { name: 'KoPubWorldBatang', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2` },
+  { name: 'KoPubWorld돋움체 Light', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Light.woff2`, canvasKitFile: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Light.otf` },
+  { name: 'KoPubWorld돋움체 Medium', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2`, canvasKitFile: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.otf` },
+  { name: 'KoPubWorld돋움체 Bold', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Bold.woff2`, canvasKitFile: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Bold.otf` },
+  { name: 'KoPubWorld바탕체 Light', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Light.woff2`, canvasKitFile: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Light.otf` },
+  { name: 'KoPubWorld바탕체 Medium', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2`, canvasKitFile: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.otf` },
+  { name: 'KoPubWorld바탕체 Bold', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Bold.woff2`, canvasKitFile: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Bold.otf` },
+  { name: 'KoPubWorld Dotum', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2`, canvasKitFile: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.otf` },
+  { name: 'KoPubWorld Batang', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2`, canvasKitFile: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.otf` },
+  { name: 'KoPubWorldDotum', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2`, canvasKitFile: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.otf` },
+  { name: 'KoPubWorldBatang', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2`, canvasKitFile: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.otf` },
   // === Noonnu에서 웹사이트 사용 가능으로 확인된 문서 사용 글꼴 ===
   { name: '경기천년바탕 Bold', file: `${CDN_GYEONGGI_MILLENNIUM}/Batang_Regular.woff`, format: 'woff' },
   { name: '경기천년바탕 Regular', file: `${CDN_GYEONGGI_MILLENNIUM}/Batang_Regular.woff`, format: 'woff' },
@@ -313,10 +315,12 @@ export function resolveCanvasKitFontPlan(
       unavailableFonts.set(normalized, requested.trim());
       continue;
     }
-    const localFile = entry.file.startsWith('fonts/')
-      ? entry.file.slice('fonts/'.length)
+    const canvasKitFile = entry.canvasKitFile ?? entry.file;
+    const localFile = canvasKitFile.startsWith('fonts/')
+      ? canvasKitFile.slice('fonts/'.length)
       : null;
-    const unavailable = (options.disableExternalWebFonts === true && isExternalFontFile(entry.file))
+    const unavailable = (options.disableExternalWebFonts === true
+      && (isExternalFontFile(entry.file) || isExternalFontFile(canvasKitFile)))
       || (localFile !== null
         && options.availableLocalFiles !== undefined
         && !options.availableLocalFiles.has(localFile));
@@ -328,11 +332,12 @@ export function resolveCanvasKitFontPlan(
   }
 
   for (const { entry, requested } of requiredEntries) {
-    const url = canvasKitFontUrl(entry.file, options.localFontBaseUrl);
+    const canvasKitFile = entry.canvasKitFile ?? entry.file;
+    const url = canvasKitFontUrl(canvasKitFile, options.localFontBaseUrl);
     const aliases = sourcesByUrl.get(url) ?? new Set<string>();
     aliases.add(requested);
     for (const candidate of FONT_LIST) {
-      if (candidate.file === entry.file) aliases.add(candidate.name);
+      if ((candidate.canvasKitFile ?? candidate.file) === canvasKitFile) aliases.add(candidate.name);
     }
     sourcesByUrl.set(url, aliases);
   }
