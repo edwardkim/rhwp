@@ -156,7 +156,7 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 | renderer/layout/typeset/WASM | focused test, release-test 전체, Native Skia 3종, wasm-pack build, 시각 증적. 단, 4.3.0의 검토 재사용 조건이면 focused test, WASM·시각 증적과 GitHub 전체 CI 근거 |
 | rhwp-studio만 변경 | TypeScript 검사, npm test, 실제 browser 동작 |
 | npm/editor public API·transport·type | 아래 package 검증 |
-| CI workflow | workflow 구문·변경 조건·최신 GitHub Actions 결과 |
+| CI workflow | [GitHub 저장소 운영 매뉴얼](../github_operations.md)의 변경 등급에 따른 workflow 구문·정책 테스트·required check 영향·최신 GitHub Actions 결과 |
 | 기존 golden/baseline/fixture | 관련 focused test, snapshot 결정성, 최신 PR head CI |
 
 ### 4.3.0 PR 검토의 GitHub Full CI 재사용

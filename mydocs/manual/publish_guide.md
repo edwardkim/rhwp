@@ -8,6 +8,9 @@ last_verified: 2026-07-17
 # 배포 가이드
 
 rhwp 프로젝트의 배포 대상과 절차를 정리한다.
+GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollback은
+[GitHub 저장소 운영 매뉴얼](github_operations.md)을 먼저 적용하고, 이 문서는 release·package·스토어별
+배포 절차를 담당한다.
 
 ---
 

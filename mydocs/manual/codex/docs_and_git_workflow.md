@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-08-07
+last_verified: 2026-08-15
 ---
 
 # Documentation And Git Workflow
@@ -138,6 +138,10 @@ note.rs"` 한 번이면 두 이슈가 나란히 나온다(2026-07-31 실측). �
   auto-close 로 닫히더라도 외부 리포터에게는 별도 설명이 필요하다.
 
 ## GitHub CLI Usage
+
+GitHub Actions, branch protection, repository permission, cache, runner, workflow 실행·복구를 다루는 작업은
+먼저 [GitHub 저장소 운영 매뉴얼](../github_operations.md)에서 변경 등급과 비례 검증 범위를 선택한다.
+이 절은 일반 GitHub CLI 변경 경로만 설명한다.
 
 GitHub connector가 읽기는 가능하지만 mutation 권한 부족으로 403을 반환할 수 있다.
 이슈 assignee 지정, 이슈/PR metadata 수정, 코멘트 작성 등 GitHub 변경 작업은

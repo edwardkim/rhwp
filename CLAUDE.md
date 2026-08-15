@@ -26,6 +26,8 @@ rhwp는 Rust로 HWP/HWPX/HWP3 문서를 읽고 편집·렌더링하며, WebAssem
 
 ## 작업과 검증
 
+- GitHub Actions·저장소 설정·branch protection·cache·runner 운영:
+  [`github_operations.md`](mydocs/manual/github_operations.md)
 - 문서·Git 작업: [`docs_and_git_workflow.md`](mydocs/manual/codex/docs_and_git_workflow.md)
 - PR 리뷰·merge·후속 처리: [`pr_review_workflow.md`](mydocs/manual/pr_review_workflow.md)와
   그 [조건별 자식 가이드 선택표](mydocs/manual/pr_review/README.md)

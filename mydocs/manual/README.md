@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/README.md
-last_verified: 2026-08-07
+last_verified: 2026-08-15
 ---
 
 # manual 문서 지도
@@ -14,6 +14,7 @@ last_verified: 2026-08-07
 
 | 상황 | 권위 문서 | 보조 문서 |
 | --- | --- | --- |
+| GitHub Actions·저장소 설정·branch protection·cache·runner 운영 | [GitHub 저장소 운영 매뉴얼](github_operations.md) | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md), [PR 리뷰·통합 워크플로우](pr_review_workflow.md), [배포 가이드](publish_guide.md) |
 | 이슈 작업의 문서·브랜치·커밋 흐름 | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) | [하이퍼 워터폴 문서 가이드](hyper_waterfall_docs_guide.md) |
 | Codex 저장소 부트스트랩 | [Codex 문서 지도](codex/README.md) | [프로젝트 메모리 덤프](codex/MEMORY.md), [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) |
 | Claude·Codex 재사용 capability 등록·중복 판단 | [에이전트 capability 카탈로그](agent_capability_registry.md) | 각 capability의 권위 playbook |
@@ -45,6 +46,8 @@ last_verified: 2026-08-07
 ## 문서 경계
 
 - `manual/`: 사람이 반복 수행하는 절차, 명령, 검증, 배포, 운영 규칙
+- GitHub 저장소 운영은 `github_operations.md`가 분류·비례 검증·적용 후 관찰·복구를 담당한다. 일반
+  Git·이슈 흐름, PR 통합, 제품 배포의 세부 절차는 각 canonical 문서로 라우팅하고 중복하지 않는다.
 - `manual/codex/`: Codex 부트스트랩, 활성 프로젝트 메모리, 현행 문서·Git 절차. 종료 세션과 task
   memory는 `archive/`의 historical snapshot이며 현재 절차의 근거로 사용하지 않는다.
 - `manual/pr_review/`: `pr_review_workflow.md`가 역할과 변경 조건에 따라 선택하도록 지정하는
