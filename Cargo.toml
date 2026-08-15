@@ -99,6 +99,11 @@ subsecond = { version = "=0.7.10", optional = true }
 default = ["console_error_panic_hook"]
 native-skia = ["dep:resvg", "dep:skia-safe"]
 subsecond-dev = ["dep:subsecond"]
+# [gym_gpu_raster] GPU 가속 SVG 래스터화 경로 (네이티브 전용). native-skia 와 같은 방식으로
+# 선택 게이팅한다 — CI 는 GPU 없이도 컴파일되고, 실제 GPU 실행은 로컬에서만 일어난다.
+# vello(+vello_svg)로 SVG 를 GPU 래스터화하고, resvg(CPU)를 같은 usvg 트리로 돌려 정직한
+# 벤치마크 기준선으로 삼는다.
+gpu = ["dep:vello", "dep:vello_svg", "dep:pollster", "dep:resvg-gpu"]
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -108,6 +113,17 @@ resvg = { version = "0.47", optional = true }
 pdf-writer = "0.12"
 subsetter = "0.2"
 skia-safe = { version = "0.99.0", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
+
+# [gym_gpu_raster] GPU 래스터화 스택 (feature = "gpu", 네이티브 전용).
+# vello: Linebender 의 GPU 2D 렌더러(컴퓨트 파이프라인). vello_svg: usvg 트리 → vello Scene.
+# pollster: 헤드리스라 이벤트 루프가 없으므로 wgpu 의 async(adapter/device/버퍼매핑)를 블로킹.
+# resvg-gpu: CPU 기준선. vello_svg 0.7 과 usvg 0.45 를 공유하도록 0.45 로 핀했다(같은 트리를
+# 두 래스터라이저에 동일 입력으로 넣어 벤치마크·픽셀비교를 성립). native-skia 의 resvg 0.47 과
+# 별개 버전으로 공존한다.
+vello = { version = "0.5", optional = true }
+vello_svg = { version = "0.7", optional = true }
+pollster = { version = "0.4", optional = true }
+resvg-gpu = { package = "resvg", version = "0.45", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-sys = { version = "0.3", features = [
