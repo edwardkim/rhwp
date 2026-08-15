@@ -47,8 +47,15 @@ sha2 = "0.11"
 blake3 = "1"
 # [보안 트레일러] HWP3 강암호 append 트레일러 — memory-hard KDF(Argon2id) +
 # misuse-resistant AEAD(XChaCha20-Poly1305). 순수 Rust(RustCrypto) 라 wasm 도 그대로 컴파일.
-argon2 = "0.5"
-chacha20poly1305 = { version = "0.10", features = ["alloc"] }
+#
+# 기본 피처는 끈다 — argon2 의 `rand`/`password-hash` 와 chacha20poly1305 의
+# `getrandom` 은 rand_core 0.6 을 거쳐 **getrandom 0.2** 를 끌어오는데, 0.2 는
+# wasm32-unknown-unknown 에서 `js` 피처 없이는 compile_error! 로 죽는다(이
+# 저장소는 getrandom 0.4 + wasm_js 를 쓴다). 여기 코드는 소금·논스를
+# `getrandom::fill` 로 직접 만들고 저수준 Argon2 API 만 쓰므로 그 피처가
+# 필요 없다 — 끊어 두면 wasm 빌드가 구버전 getrandom 을 아예 만나지 않는다.
+argon2 = { version = "0.5", default-features = false, features = ["alloc"] }
+chacha20poly1305 = { version = "0.10", default-features = false, features = ["alloc"] }
 zeroize = "1"
 # [보안 트레일러 · 포스트양자] ML-KEM-768(NIST FIPS 203) 격자 KEM — 공개키 봉인의
 # 양자안전 키교환. 대칭부(XChaCha20-Poly1305)는 이미 양자내성이고, Shor 에 깨지는
