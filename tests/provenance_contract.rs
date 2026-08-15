@@ -1588,6 +1588,16 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        // 구조 위협 스캔 — 정상 문서는 clean 이라 문서 문자열이 실리지 않는다.
+        // detail(외부참조 대상)만 문서 파생이고 그 표지는 지도가 선언한다.
+        Recipe {
+            command: "threat-scan",
+            doc: Some(main.clone()),
+            args: vec![s("threat-scan"), p(&main), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         Recipe {
             command: "capabilities",
             doc: None,

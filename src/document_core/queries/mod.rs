@@ -24,6 +24,8 @@ pub mod injection_scan;
 pub mod navigation;
 /// [#3719 §6-11] 공개 전 개인정보 탐지 — 읽기 전용 판정(마스킹은 CLI 의 치환 경로).
 pub mod pii_scan;
+/// 무기화 문서 구조 위협 탐지 — 읽기 전용 안전 에어락(컨테이너·레코드 구조 층).
+pub mod threat_scan;
 pub(crate) mod search_query;
 pub mod structure;
 // [#3719 §6-7] 표 ↔ CSV 변환 — `table_extract` 격자를 재사용하는 순수 변환 코어.

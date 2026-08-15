@@ -482,6 +482,19 @@ pub const MAP: &[CommandProvenance] = &[
                표지는 그 필드가 실제로 실린 호출에만 붙는다.",
     },
     CommandProvenance {
+        command: "threat-scan",
+        untrusted: &[f(
+            "findings[].detail",
+            "queries::threat_scan — 외부 참조 URL·링크 대상 경로 등 문서가 정한 문자열 조각. \
+             종류(kind)·심각도·주소(location)·근거(rationale)는 엔진 판정이고, detail 만 \
+             문서 파생이라 원격 참조를 신고할 때만 실린다 (looks_remote 통과 대상)",
+        )],
+        note: "kind·severity·location·rationale·findingCount·clean·scanScopes·format 은 전부 \
+               엔진의 구조 판정값이다. 문서 파생 문자열은 detail 하나뿐이며(외부참조 대상), \
+               표지는 그 필드가 실제로 실린 봉투에만 붙는다 — 실행체·손상 레코드·매크로 \
+               신고에는 detail 이 없어 untrustedContent 가 false 다.",
+    },
+    CommandProvenance {
         command: "export-svg",
         untrusted: NONE,
         note: "매니페스트는 산출 경로·바이트·쪽수뿐이다. 문서 텍스트는 SVG 파일 \

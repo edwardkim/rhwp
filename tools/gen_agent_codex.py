@@ -140,7 +140,7 @@ FAMILIES = [
       "harness init", "harness wrap", "harness-status", "anchor", "gate", "bundle", "disclose", "settle",
       "audit-report", "recall-scope", "conformance"]),
     ("60_보안", "보안 — 받은 문서를 의심한다",
-     ["inspect", "inspect injection", "inspect hidden-text", "inspect unicode"]),
+     ["inspect", "inspect injection", "inspect hidden-text", "inspect unicode", "threat-scan"]),
     ("70_자기서술", "자기서술 — 도구가 도구를 설명한다",
      ["capabilities", "export-provenance-map", "export-ir-schema", "export-plan-schema",
       "export-capabilities-schema", "export-agent-manifest", "export-ontology", "export-doclang-schema"]),
