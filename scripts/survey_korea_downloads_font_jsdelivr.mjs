@@ -450,7 +450,27 @@ async function pool(items, concurrency, task) {
   return results;
 }
 
+function knownKoPubCdn(font) {
+  const match = compact(font).match(/^kopub(dotum|batang|돋움체|바탕체)(light|medium|bold)$/u);
+  if (!match) return null;
+
+  const family = match[1] === 'dotum' || match[1] === '돋움체' ? 'Dotum' : 'Batang';
+  const weight = `${match[2][0].toUpperCase()}${match[2].slice(1)}`;
+  return {
+    packageType: 'npm',
+    packageName: 'font-kopub',
+    version: '1.0.2',
+    file: `fonts/KoPub${family}-${weight}.woff`,
+    license: 'KOPUS-Custom (패키지 메타데이터 표기)',
+    delivery: 'jsDelivr npm',
+    note: 'KoPub 돋움·바탕의 요청 굵기와 일치하는 font-kopub WOFF 확인',
+  };
+}
+
 function knownCdn(font) {
+  const koPub = knownKoPubCdn(font);
+  if (koPub) return koPub;
+
   const key = familyKey(font);
   const batang = new Set(['함초롬바탕', '함초롱바탕', '한컴바탕', '새바탕'].map(familyKey));
   const dotum = new Set(['함초롬돋움', '함초롱돋움', '한컴돋움', '한컴산뜻돋움', '새돋움'].map(familyKey));
@@ -861,24 +881,26 @@ async function jsDelivrCandidates(font) {
 async function resolveFont(font, documentCount, catalog, npmSearchEnabled) {
   const direct = knownCdn(font);
   if (direct) {
-    const url = `${CDN_ROOT}/gh/${direct.packageName}@${direct.version}/${direct.file}`;
+    const url = direct.packageType === 'npm'
+      ? `${CDN_ROOT}/npm/${direct.packageName}@${direct.version}/${direct.file}`
+      : `${CDN_ROOT}/gh/${direct.packageName}@${direct.version}/${direct.file}`;
     try {
       if (await confirmsDownload(url)) {
         return {
           font,
           documentCount,
           status: 'available',
-          delivery: 'jsDelivr GitHub',
+          delivery: direct.delivery ?? 'jsDelivr GitHub',
           packageName: direct.packageName,
           version: direct.version,
           license: direct.license,
           url,
-          note: 'rhwp-studio font-loader.ts에 이미 등록된 배포본',
+          note: direct.note ?? 'rhwp-studio font-loader.ts에 이미 등록된 배포본',
         };
       }
       return { font, documentCount, status: 'not-found', delivery: '', packageName: direct.packageName, version: direct.version, license: direct.license, url, note: '등록된 jsDelivr URL이 현재 응답하지 않음' };
     } catch (error) {
-      return { font, documentCount, status: 'lookup-error', delivery: '', packageName: direct.packageName, version: direct.version, license: direct.license, url, note: `GitHub CDN 확인 실패: ${error.message}` };
+      return { font, documentCount, status: 'lookup-error', delivery: '', packageName: direct.packageName, version: direct.version, license: direct.license, url, note: `jsDelivr CDN 확인 실패: ${error.message}` };
     }
   }
 
