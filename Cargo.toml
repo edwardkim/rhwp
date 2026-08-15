@@ -42,6 +42,10 @@ cipher = "0.5"
 hmac = "0.13"
 pbkdf2 = "0.13"
 getrandom = { version = "0.4", features = ["wasm_js"] }
+# [agent_seal] 에이전트 전용 완전 엔트로피 봉인(1번 모드)의 AEAD. XChaCha20-Poly1305
+# 는 24바이트 난수 논스라 논스 재사용 위험이 낮고, 순수 Rust 라 wasm 타깃도
+# 그대로 컴파일된다. OTP(2번 모드)는 XOR+getrandom 뿐이라 별도 의존성이 없다.
+chacha20poly1305 = { version = "0.10", features = ["alloc"] }
 sha1 = "0.11"
 sha2 = "0.11"
 blake3 = "1"
