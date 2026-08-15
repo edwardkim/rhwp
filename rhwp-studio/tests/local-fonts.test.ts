@@ -499,9 +499,52 @@ test('SFNT 지역화 이름을 보존해 HWP 한글 full name을 영문 family�
     assert.deepEqual(report.fonts.map(item => [item.fontName, item.status, item.source]), [
       ['08서울한강체 M', 'available', 'local'],
     ]);
-    assert.match(cssChain, /^"08SeoulHangang"/);
+    assert.equal(firstQuotedFontFamily(cssChain), record?.fullName);
     assert.equal(stored.version, 2);
     assert.equal('blob' in (stored.fontRecords?.[0] ?? {}), false);
+  } finally {
+    await clearStoredLocalFonts();
+    resetLocalFontsForTests();
+    restoreGlobals(originals);
+  }
+});
+
+test('여러 style이 있는 local family는 요청 face의 full name을 Canvas chain 첫 항목으로 둔다', async () => {
+  const g = globalThis as TestGlobals;
+  const originals = {
+    browser: g.browser,
+    chrome: g.chrome,
+    document: g.document,
+    localStorage: g.localStorage,
+    queryLocalFonts: g.queryLocalFonts,
+  };
+  const storage = createStorage();
+
+  resetLocalFontsForTests();
+  g.browser = undefined;
+  g.chrome = undefined;
+  g.localStorage = storage;
+  g.queryLocalFonts = async () => [{
+    family: 'KoPub Batang',
+    fullName: 'KoPub Batang Light',
+    postscriptName: 'KoPubBatang-Light',
+    style: 'Light',
+    blob: async () => new Blob([createSfntWithNameRecords([
+      { nameId: 1, value: 'KoPub바탕체' },
+      { nameId: 2, value: 'Light' },
+      { nameId: 4, value: 'KoPub바탕체 Light' },
+      { nameId: 6, value: 'KoPubBatang-Light' },
+    ])]),
+  }];
+
+  try {
+    await detectLocalFonts({ force: true, includeRegistered: true });
+    const record = resolveLocalFont('KoPub바탕체 Light');
+    const chain = fontFamilyChainForDisplay('KoPub바탕체 Light');
+
+    assert.equal(record?.style, 'Light');
+    assert.equal(firstQuotedFontFamily(chain), record?.fullName);
+    assert.notEqual(firstQuotedFontFamily(chain), record?.family);
   } finally {
     await clearStoredLocalFonts();
     resetLocalFontsForTests();

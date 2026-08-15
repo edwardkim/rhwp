@@ -457,10 +457,19 @@ fn lookup_font_name(doc_info: &DocInfo, lang_index: usize, font_id: u16) -> Stri
             let font = &lang_fonts[font_id as usize];
             let name = &font.name;
             // 폰트 치환: HFT 등 웹 미지원 폰트를 렌더링 가능한 폰트로 완전 대체
-            if let Some(resolved) = resolve_font_substitution(name, font.alt_type, lang_index) {
-                return resolved.to_string();
+            let resolved = resolve_font_substitution(name, font.alt_type, lang_index)
+                .unwrap_or(name)
+                .to_string();
+            if let Some(substitute) = font
+                .subst_font
+                .as_ref()
+                .filter(|substitute| !substitute.is_embedded)
+                .filter(|substitute| !substitute.face.trim().is_empty())
+                .filter(|substitute| substitute.face.trim() != resolved)
+            {
+                return format!("{resolved},{}", substitute.face.trim());
             }
-            return name.clone();
+            return resolved;
         }
     }
     String::new()

@@ -7,6 +7,8 @@ export interface DocumentInfo {
   hwp3Variant?: boolean;
   fallbackFont: string;
   fontsUsed: string[];  // 문서에서 사용하는 폰트 이름 목록
+  /** HWPX non-embedded substFont: [원본 face, 문서 선언 대체 face]. */
+  fontSubstitutions?: Array<[string, string]>;
 }
 
 /** WASM getPageInfo() 반환 타입 */

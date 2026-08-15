@@ -1340,7 +1340,7 @@ impl CanvasKitReplayPlanBuilder {
     }
 
     fn record_required_font_family(&mut self, font_family: &str) {
-        let font_family = font_family.trim();
+        let font_family = crate::renderer::style_resolver::primary_font_name(font_family);
         if font_family.is_empty() || self.required_font_families.contains(font_family) {
             return;
         }
@@ -3345,6 +3345,30 @@ mod tests {
         assert!(preflight.blockers.is_empty());
         assert_eq!(preflight.required_font_families, ["Test"]);
         assert!(preflight.capability_digest.starts_with("blake3:"));
+    }
+
+    #[test]
+    fn document_preflight_uses_primary_face_when_style_carries_document_substitute() {
+        let mut run = text_run("A");
+        run.style.font_family = "정부상징 부처명_16040911,한컴바탕".to_string();
+        let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), run)]);
+        let preflight = analyze_canvaskit_document_preflight_with_limits(
+            1,
+            CanvasKitReplayMode::Default,
+            RenderProfile::Screen,
+            CanvasKitDocumentPreflightLimits {
+                max_pages: 4,
+                max_work_units: 16,
+                max_blockers: 4,
+                max_required_font_families: 8,
+            },
+            move |_, _| Ok::<_, &'static str>(preflight_page(tree.clone())),
+        );
+
+        assert_eq!(
+            preflight.required_font_families,
+            ["정부상징 부처명_16040911"]
+        );
     }
 
     #[test]

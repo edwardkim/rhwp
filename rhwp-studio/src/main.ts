@@ -51,6 +51,7 @@ import { initRhwpDev } from '@/core/rhwp-dev';
 import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
 import { analyzeDocumentFonts } from '@/core/document-font-status';
+import { setDocumentFontSubstitutions } from '@/core/font-substitution';
 import { detectLocalFonts, getLocalFontState, loadStoredLocalFonts } from '@/core/local-fonts';
 import { userSettings } from '@/core/user-settings';
 import { AutosaveManager, type AutosaveScheduleSettings, type AutosaveStatus } from '@/recovery/autosave-manager';
@@ -1047,6 +1048,7 @@ async function initializeDocument(
 ): Promise<void> {
   const msg = sbMessage();
   try {
+    setDocumentFontSubstitutions(docInfo.fontSubstitutions);
     console.log('[initDoc] 1. 폰트 로딩 시작');
     await updateLoadProgress(55, '폰트 준비 중...');
     if (docInfo.fontsUsed?.length) {
@@ -1056,6 +1058,9 @@ async function initializeDocument(
       }, extensionViewerSettings);
     }
     console.log('[initDoc] 2. 폰트 로딩 완료');
+    // 저장 snapshot은 권한 prompt 없이 읽을 수 있다. Canvas2D 첫 paint의 family 해소가
+    // 이미 승인된 exact local face를 놓치지 않도록 문서 view보다 먼저 준비한다 (#4739).
+    await loadStoredLocalFonts();
     await updateLoadProgress(75, '문서 상태 적용 중...');
     totalSections = docInfo.sectionCount ?? 1;
     sbSection().textContent = `구역: 1 / ${totalSections}`;
@@ -1118,7 +1123,7 @@ async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: stri
 
   const msg = sbMessage();
   try {
-    await loadStoredLocalFonts();
+    if (!getLocalFontState().loaded) await loadStoredLocalFonts();
     const report = analyzeDocumentFonts(docInfo.fontsUsed);
     if (!report.shouldPromptLocalAccess) return;
 

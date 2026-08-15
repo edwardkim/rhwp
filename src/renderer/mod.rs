@@ -1230,11 +1230,38 @@ pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
 /// `HY중고딕`(fontconfig full name: `HYGothic-Medium`)이다. 두 이름을 모두
 /// 체인에 넣어 원 font가 설치된 호스트에서는 해당 glyph를 먼저 선택한다.
 /// 원 font가 없는 호스트에서는 `Malgun Gothic`이 종전과 같은 마지막 대체다.
-fn installed_render_font_alias(font_family: &str) -> Option<&'static str> {
+fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
     match font_family {
-        "한양중고딕" => Some("HY중고딕"),
-        "HY중고딕" => Some("Malgun Gothic"),
-        _ => None,
+        "한양중고딕" => &["HY중고딕"],
+        "HY중고딕" => &["Malgun Gothic"],
+        // #4739: 구형 정부상징 부처명 face가 없을 때 현재 공식 배포 face를 찾는다.
+        // 동일 alias가 아니라 availability 기반 successor이므로 exact legacy 뒤에만 둔다.
+        "정부상징 부처명_16040911" | "Government_16040911" => &[
+            "ROKG",
+            "ROKG R",
+            "대한민국정부상징체",
+            "대한민국정부상징체 R",
+            "ROKGR",
+        ],
+        _ => &[],
+    }
+}
+
+fn internal_font_family_members(font_family: &str) -> Vec<&str> {
+    font_family
+        .split(',')
+        .map(str::trim)
+        .filter(|family| !family.is_empty())
+        .collect()
+}
+
+fn push_unique_family<'a>(
+    families: &mut Vec<std::borrow::Cow<'a, str>>,
+    family: impl Into<std::borrow::Cow<'a, str>>,
+) {
+    let family = family.into();
+    if !families.iter().any(|existing| existing == &family) {
+        families.push(family);
     }
 }
 
@@ -1247,16 +1274,29 @@ fn css_single_quoted_font_family(font_family: &str) -> String {
     format!("'{escaped}'")
 }
 
-/// [#3314] 렌더용 폴백 체인 문자열: `요청 face → (한컴 대체 face) → (base family) → generic 체인`.
+/// 렌더용 폴백 체인 문자열:
+/// `요청 face → 설치 successor/alias → base family → 문서 substFont → generic 체인`.
 pub fn render_font_family_chain(font_family: &str) -> String {
-    let fb = generic_fallback(font_family);
-    let mut families = vec![css_single_quoted_font_family(font_family)];
-    if let Some(alias) = installed_render_font_alias(font_family) {
-        families.push(css_single_quoted_font_family(alias));
+    let requested = internal_font_family_members(font_family);
+    let Some(primary) = requested.first().copied() else {
+        return generic_fallback("").to_string();
+    };
+    let fb = generic_fallback(primary);
+    let mut family_names = Vec::new();
+    push_unique_family(&mut family_names, primary);
+    for alias in installed_render_font_aliases(primary) {
+        push_unique_family(&mut family_names, *alias);
     }
-    if let Some(base) = base_family_without_weight_suffix(font_family) {
-        families.push(css_single_quoted_font_family(&base));
+    if let Some(base) = base_family_without_weight_suffix(primary) {
+        push_unique_family(&mut family_names, base);
     }
+    for declared_fallback in requested.into_iter().skip(1) {
+        push_unique_family(&mut family_names, declared_fallback);
+    }
+    let mut families: Vec<String> = family_names
+        .iter()
+        .map(|family| css_single_quoted_font_family(family))
+        .collect();
     families.push(fb.to_string());
     families.join(",")
 }
@@ -1267,18 +1307,27 @@ pub fn render_font_family_chain(font_family: &str) -> String {
 /// 바로 뒤에 base family를 넣어 generic 폴백보다 먼저 선택되게 한다.
 /// 측정 경로에는 사용하지 않는다.
 pub fn canvas_font_family_chain(font_family: &str) -> String {
-    if font_family.is_empty() {
+    let requested = internal_font_family_members(font_family);
+    let Some(primary) = requested.first().copied() else {
         return "sans-serif".to_string();
-    }
+    };
 
-    let fallback = generic_fallback(font_family);
-    let mut families = vec![format!("\"{}\"", font_family)];
-    if let Some(alias) = installed_render_font_alias(font_family) {
-        families.push(format!("\"{}\"", alias));
+    let fallback = generic_fallback(primary);
+    let mut family_names = Vec::new();
+    push_unique_family(&mut family_names, primary);
+    for alias in installed_render_font_aliases(primary) {
+        push_unique_family(&mut family_names, *alias);
     }
-    if let Some(base) = base_family_without_weight_suffix(font_family) {
-        families.push(format!("\"{}\"", base));
+    if let Some(base) = base_family_without_weight_suffix(primary) {
+        push_unique_family(&mut family_names, base);
     }
+    for declared_fallback in requested.into_iter().skip(1) {
+        push_unique_family(&mut family_names, declared_fallback);
+    }
+    let mut families: Vec<String> = family_names
+        .iter()
+        .map(|family| format!("\"{}\"", family.replace('"', "\\\"")))
+        .collect();
     families.push(fallback.to_string());
     families.join(", ")
 }
