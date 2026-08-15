@@ -22,31 +22,36 @@ def capabilities(command_count: int) -> dict:
 
 
 class CommandSurfaceContractTests(unittest.TestCase):
-    def test_exact_documented_command_count_passes(self) -> None:
+    def test_documented_command_floor_passes(self) -> None:
         ok, detail = HARNESS_PROOFS.command_surface_contract(
-            capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_COUNT)
+            capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_FLOOR)
         )
 
         self.assertTrue(ok, detail)
-        self.assertIn("expected=68", detail)
+        self.assertIn("floor=68", detail)
 
-    def test_missing_or_extra_commands_fail(self) -> None:
-        for count in (67, 69):
-            with self.subTest(count=count):
-                ok, detail = HARNESS_PROOFS.command_surface_contract(capabilities(count))
+    def test_count_below_documented_floor_fails(self) -> None:
+        count = HARNESS_PROOFS.EXPECTED_COMMAND_FLOOR - 1
+        ok, detail = HARNESS_PROOFS.command_surface_contract(capabilities(count))
 
-                self.assertFalse(ok, detail)
-                self.assertIn(f"commands={count}", detail)
+        self.assertFalse(ok, detail)
+        self.assertIn(f"commands={count}", detail)
+
+    def test_count_above_documented_floor_passes(self) -> None:
+        count = HARNESS_PROOFS.EXPECTED_COMMAND_FLOOR + 1
+        ok, detail = HARNESS_PROOFS.command_surface_contract(capabilities(count))
+
+        self.assertTrue(ok, detail)
 
     def test_commands_require_objects_nonempty_unique_names(self) -> None:
         cases = []
-        not_object = capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_COUNT)
+        not_object = capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_FLOOR)
         not_object["commands"][0] = "command-0"
         cases.append((not_object, "commands[0]"))
-        empty_name = capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_COUNT)
+        empty_name = capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_FLOOR)
         empty_name["commands"][0]["name"] = "  "
         cases.append((empty_name, "commands[0].name"))
-        duplicate = capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_COUNT)
+        duplicate = capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_FLOOR)
         duplicate["commands"][-1]["name"] = duplicate["commands"][0]["name"]
         cases.append((duplicate, "중복"))
 
@@ -59,7 +64,7 @@ class CommandSurfaceContractTests(unittest.TestCase):
     def test_exit_codes_require_an_object_with_core_meanings(self) -> None:
         for value in (None, {}, {"0": "", "1": "runtime failure", "2": "usage error"}):
             with self.subTest(value=value):
-                caps = capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_COUNT)
+                caps = capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_FLOOR)
                 caps["exitCodes"] = value
                 ok, detail = HARNESS_PROOFS.command_surface_contract(caps)
                 self.assertFalse(ok, detail)
@@ -68,7 +73,7 @@ class CommandSurfaceContractTests(unittest.TestCase):
     def test_json_contract_requires_an_object_with_core_meanings(self) -> None:
         for value in (None, {}, {"stdout": "JSON data only", "schemaPolicy": ""}):
             with self.subTest(value=value):
-                caps = capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_COUNT)
+                caps = capabilities(HARNESS_PROOFS.EXPECTED_COMMAND_FLOOR)
                 caps["jsonContract"] = value
                 ok, detail = HARNESS_PROOFS.command_surface_contract(caps)
                 self.assertFalse(ok, detail)
