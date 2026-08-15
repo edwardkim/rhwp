@@ -344,6 +344,12 @@ const SWEEP_EXEMPT: &[(&str, &str)] = &[
          tests/issue_3358_ingest_unknown_fields.rs 가 그 봉투를 따로 고정한다.",
     ),
     (
+        "scaffold",
+        "입력이 문서가 아니라 사용자/에이전트가 만든 spec JSON 이라 '문서에서 온 문자열' \
+         오라클을 만들 수 없다. 봉투는 경로·바이트·블록/문단/표 개수뿐이고, 산출물은 \
+         명세에서 생성한 새 문서다 — 문서 파생 값이 아니다.",
+    ),
+    (
         "export-ir-schema",
         "문서를 입력으로 받지 않는 IR 타입 스키마다. --bare가 아닌 모드도 특정 문서가 아닌 \
          스키마 봉투를 낸다.",
@@ -2121,6 +2127,9 @@ fn sweep_exempt_envelopes_still_carry_provenance_marks() {
     let ingest = dir.join("prov-exempt-ingest.json");
     std::fs::write(&ingest, r#"{"version":"1","questions":[]}"#).expect("ingest 픽스처");
     let ingest_out = dir.join("prov-exempt-ingest.hwpx");
+    let scaffold_spec = dir.join("prov-exempt-scaffold.json");
+    std::fs::write(&scaffold_spec, r#"{"version":"1","blocks":[]}"#).expect("scaffold 픽스처");
+    let scaffold_out = dir.join("prov-exempt-scaffold.hwpx");
 
     let invocations: BTreeMap<&str, Vec<String>> = [
         ("export-ir-schema", vec![s("export-ir-schema"), s("--json")]),
