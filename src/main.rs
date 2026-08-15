@@ -9461,12 +9461,17 @@ fn info_json_value(
             document.header.version.revision,
         ))
     };
+    // DOCINFO는 한글·영어·한자·일어·기타·기호·사용자 글꼴군을 따로 보관한다.
+    // `info --json`은 문서 인벤토리 용도이므로 첫 번째(한글) 군만이 아니라 선언된
+    // 모든 글꼴군을 문서 순서대로 평탄화해 내보낸다. 같은 이름이 여러 군에 있으면
+    // 소비자가 출처별 필요에 따라 중복을 보존하거나 제거할 수 있게 그대로 남긴다.
     let fonts: Vec<String> = document
         .doc_info
         .font_faces
-        .first()
-        .map(|faces| faces.iter().map(|f| f.name.clone()).collect())
-        .unwrap_or_default();
+        .iter()
+        .flatten()
+        .map(|face| face.name.clone())
+        .collect();
     let para_count: usize = document.sections.iter().map(|s| s.paragraphs.len()).sum();
     provenance::marked(
         serde_json::json!({
