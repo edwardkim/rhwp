@@ -1,5 +1,5 @@
 use super::*;
-use crate::model::paragraph::TitleMark;
+use crate::model::paragraph::{FieldRange, OrphanFieldEnd, TitleMark};
 use crate::parser::tags;
 
 /// 테스트용 레코드 바이너리 생성
@@ -1057,94 +1057,374 @@ fn field_closed_in_its_own_paragraph_is_not_left_open() {
     );
 }
 
-// ==========================================================================
-// [#4827] 문단↔표↔셀 상호재귀 깊이 상한 회귀 — 손상 문서 스택 오버플로 DoS 가드
-// ==========================================================================
+// 
+// ===================================================================
+// #4860 벌크빌드 byte-identity 하네스
+// ===================================================================
+//
+// parse_para_text 의 벌크빌드(reserve + 평문 런 일괄 extend) 최적화가 최적화 이전
+// 스칼라 구현(문자별 캐스케이드 + 개별 push)과 완전히 동일한 출력을 내는지 대조한다.
+// 아래 `parse_para_text_reference` 는 현재 devel 의 최적화 이전 함수를 그대로 복사한
+// 독립 스칼라 레퍼런스다. text·offsets·field_ranges·tab_extended·title_marks·
+// orphan_field_ends 산출물을 모두 비교한다.
 
-/// 표 `depth` 겹을 선형 중첩한 BodyText 레코드 바이트 스트림을 만든다.
-///
-/// 한 겹 = PARA_HEADER(L) → CTRL_HEADER(L+1, `tbl `) → HWPTAG_TABLE(L+2) →
-/// LIST_HEADER(L+2, 셀). 셀 안의 다음 PARA_HEADER 는 L+3 — 즉 표 한 겹이 레코드 레벨을 3 판다.
-/// 레벨 필드는 10비트(≤1023)라 이 방식으로 최대 ~341겹까지 만들 수 있다(실파일 도달 한계).
-fn build_nested_table_stream(depth: u16) -> Vec<u8> {
-    let para = make_para_header_data(0, 0, 0);
-    let table_data = [0u8; 4];
-    let cell_data = [0u8; 32];
-    let ctrl = tags::CTRL_TABLE.to_le_bytes();
+fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
+    let mut text = String::new();
+    let mut char_offsets: Vec<u32> = Vec::new();
+    let mut field_ranges: Vec<FieldRange> = Vec::new();
+    let mut tab_extended: Vec<[u16; 7]> = Vec::new();
+    let mut title_marks: Vec<TitleMark> = Vec::new();
+    let mut orphan_field_ends: Vec<OrphanFieldEnd> = Vec::new();
+    let mut pos = 0;
+    // 확장 컨트롤(extended) 카운터 → controls[] 인덱스와 1:1 대응
+    let mut ctrl_idx: usize = 0;
+    // text 문자열 내 문자 수 (바이트가 아닌 char 카운트)
+    let mut char_count: usize = 0;
+    // 현재 열린 필드 범위 스택 (중첩 필드 지원)
+    let mut field_stack: Vec<(usize, usize)> = Vec::new(); // (start_char_idx, control_idx)
 
-    let mut bytes = Vec::new();
-    for k in 0..depth {
-        let l = 3 * k;
-        bytes.extend(make_record_bytes(tags::HWPTAG_PARA_HEADER, l, &para));
-        bytes.extend(make_record_bytes(tags::HWPTAG_CTRL_HEADER, l + 1, &ctrl));
-        bytes.extend(make_record_bytes(tags::HWPTAG_TABLE, l + 2, &table_data));
-        bytes.extend(make_record_bytes(
-            tags::HWPTAG_LIST_HEADER,
-            l + 2,
-            &cell_data,
-        ));
-    }
-    bytes.extend(make_record_bytes(
-        tags::HWPTAG_PARA_HEADER,
-        3 * depth,
-        &para,
-    ));
-    bytes
-}
+    while pos + 1 < data.len() {
+        let code_unit_pos = (pos / 2) as u32; // UTF-16 코드 유닛 인덱스
+        let ch = u16::from_le_bytes([data[pos], data[pos + 1]]);
 
-/// 파싱된 문단 트리에서 최대 표 중첩 깊이를 잰다(표→셀→문단 재귀).
-fn max_table_nesting(paras: &[crate::model::paragraph::Paragraph]) -> usize {
-    let mut best = 0;
-    for p in paras {
-        for c in &p.controls {
-            if let Control::Table(t) = c {
-                let mut deepest = 0;
-                for cell in &t.cells {
-                    deepest = deepest.max(max_table_nesting(&cell.paragraphs));
+        if ch == 0 {
+            pos += 2;
+        } else if ch == 0x0009 {
+            // 탭: inline 컨트롤 (8 code unit = 16바이트)
+            char_offsets.push(code_unit_pos);
+            text.push('\t');
+            char_count += 1;
+            // TAB 확장 데이터 보존 (code unit 1~7: 탭 너비, 종류 등)
+            let mut ext = [0u16; 7];
+            for k in 0..7 {
+                let bp = pos + 2 + k * 2;
+                if bp + 1 < data.len() {
+                    ext[k] = u16::from_le_bytes([data[bp], data[bp + 1]]);
                 }
-                best = best.max(1 + deepest);
             }
+            // 직렬화기의 "데이터 없음" 마커([0,...,0,0x0009] — body_text.rs 탭 방출부)는
+            // IR 에 싣지 않는다. 한컴 실측 탭 확장은 ext[2] 고바이트=종류 enum+1 이라
+            // 전부 0 일 수 없고, 이 마커를 tab_extended 로 실으면 레이아웃이 ext[0]=0 을
+            // 탭 결과 위치로 해석해 탭이 무폭이 된다 (#1892 — tab_extended 없던 HWP3
+            // 문단이 라운드트립 후 탭 스톱을 잃는 렌더 분기).
+            let is_null_ext = ext[..6].iter().all(|&v| v == 0) && ext[6] == 0x0009;
+            if !is_null_ext {
+                tab_extended.push(ext);
+            }
+            pos += 16;
+        } else if ch == 0x000A {
+            // 줄 끝: char 컨트롤 (1 code unit = 2바이트)
+            char_offsets.push(code_unit_pos);
+            text.push('\n');
+            char_count += 1;
+            pos += 2;
+        } else if ch == 0x000D {
+            // 문단 끝
+            break;
+        } else if is_extended_ctrl_char(ch) {
+            // 확장/인라인 컨트롤 문자: 8 code unit = 16바이트
+            if ch == 0x0003 {
+                // FIELD_BEGIN: 확장 컨트롤 → controls[]에 대응
+                field_stack.push((char_count, ctrl_idx));
+                ctrl_idx += 1;
+            } else if ch == 0x0004 {
+                // FIELD_END: 인라인 컨트롤 → controls[]에 대응하지 않음
+                if let Some((start_idx, field_ctrl_idx)) = field_stack.pop() {
+                    // HWP5 는 인라인 개체도 char_count 를 전진시키므로(8유닛 슬롯)
+                    // 텍스트 축 0길이가 곧 "안쪽이 비었다"를 뜻한다 — 별도 보정 불필요.
+                    field_ranges.push(FieldRange {
+                        start_char_idx: start_idx,
+                        end_char_idx: char_count,
+                        control_idx: field_ctrl_idx,
+                        end_field_id: 0,
+                        inner_slot_count: ctrl_idx.saturating_sub(field_ctrl_idx + 1),
+                    });
+                } else {
+                    // 짝 FIELD_BEGIN 이 **앞 문단**에 있는 다단락 필드의 종료 마커.
+                    //
+                    // 종전에는 스택이 비면 아무것도 남기지 않고 흘려보냈다. 그러면 이
+                    // 8유닛 슬롯이 IR 에서 사라져 문단 축이 그만큼 짧아지고, 원본
+                    // lineseg 의 `textpos` 가 범위 밖을 가리켜 그 문단의 조판이 통째로
+                    // 버려진다(01752 문단 13 실측: 한컴 lineseg 11 / rhwp 6, 쪽수 1→2).
+                    //
+                    // HWPX 파서는 이미 같은 것을 `orphan_field_ends` 로 보존한다
+                    // (Task #1556). HWP5 쪽만 비어 있었다.
+                    orphan_field_ends.push(OrphanFieldEnd {
+                        char_idx: char_count,
+                        // HWP5 PARA_TEXT 의 종료 마커는 짝 id 를 싣지 않는다
+                        // (`04 00 6b 6c 63 09 01 00 …`). `link_orphan_field_ends` 가
+                        // 섹션을 훑어 채운다.
+                        begin_id_ref: 0,
+                        field_id: 0,
+                        begin_ctrl_id: 0,
+                    });
+                }
+            } else if is_extended_only_ctrl_char(ch) {
+                // extended 컨트롤 (CTRL_HEADER 있음) → ctrl_idx 증가
+                ctrl_idx += 1;
+            }
+            // inline 컨트롤 (4-9, 19-20 중 0x04 제외): ctrl_idx 증가 없음
+            //
+            // 제목 차례 표시(0x08 + `Mtit`/`Mign`)는 CTRL_HEADER 가 없어 `controls[]` 에
+            // 실을 자리가 없다. 그렇다고 그냥 흘려보내면 8유닛 슬롯이 IR 에서 사라져
+            // 저장본의 문단 축이 그만큼 짧아지고, 한글은 어긋난 `textpos` 를 만나면
+            // 본문을 통째로 버린다(10k 스윕 F-절단군). `title_marks` 로 위치만 보존한다.
+            if ch == 0x0008 && pos + 5 < data.len() {
+                let ctrl_id = u32::from_le_bytes([
+                    data[pos + 2],
+                    data[pos + 3],
+                    data[pos + 4],
+                    data[pos + 5],
+                ]);
+                match ctrl_id {
+                    tags::CTRL_TITLE_MARK_IGNORE_ON => title_marks.push(TitleMark {
+                        char_idx: char_count,
+                        ignore: true,
+                    }),
+                    tags::CTRL_TITLE_MARK_IGNORE_OFF => title_marks.push(TitleMark {
+                        char_idx: char_count,
+                        ignore: false,
+                    }),
+                    _ => {}
+                }
+            }
+            // 자동번호(0x12) / 새번호(0x12): 텍스트에 공백 placeholder 추가
+            // → apply_auto_numbers_to_composed에서 "  " (연속 2공백)으로 번호 삽입
+            if ch == 0x0012 {
+                char_offsets.push(code_unit_pos);
+                text.push(' ');
+                char_count += 1;
+            }
+            pos += 16;
+        } else if ch < 0x0020 {
+            // 문자 컨트롤 (1 code unit = 2바이트)
+            match ch {
+                0x0018 => {
+                    char_offsets.push(code_unit_pos);
+                    // 하이픈 (HWP 5.0 표 7: 코드 24) — 줄바꿈 자리에서만 보이는
+                    // **소프트 하이픈**이다. 한글은 텍스트 추출에 싣지 않는다.
+                    // 종전처럼 '-'(U+002D)로 내리면 실제 하이픈과 구별할 수 없어
+                    // HWPX 저장본이 `pertinent` 를 `per-tinent` 로 만든다
+                    // (10k 스윕 G-순수증식). #4675 가 U+2007 을 `<hp:fwSpace/>` 로
+                    // 옮긴 것과 같은 계열 — 고유 코드포인트로 받아 요소로 되돌린다.
+                    text.push('\u{00AD}');
+                    char_count += 1;
+                }
+                0x0019 => {
+                    char_offsets.push(code_unit_pos);
+                    text.push(' '); // 예약 (코드 25-29) — 호환성 위해 공백 유지
+                    char_count += 1;
+                }
+                0x001E => {
+                    char_offsets.push(code_unit_pos);
+                    text.push('\u{00A0}'); // 묶음 빈칸 (HWP 5.0 표 7: 코드 30, NO-BREAK SPACE)
+                    char_count += 1;
+                }
+                0x001F => {
+                    char_offsets.push(code_unit_pos);
+                    text.push('\u{2007}'); // 고정폭 빈칸 (HWP 5.0 표 7: 코드 31, FIGURE SPACE)
+                    char_count += 1;
+                }
+                _ => {}
+            }
+            pos += 2;
+        } else {
+            // 일반 문자 (서로게이트 페어 처리)
+            if (0xD800..=0xDBFF).contains(&ch) && pos + 3 < data.len() {
+                let low = u16::from_le_bytes([data[pos + 2], data[pos + 3]]);
+                if (0xDC00..=0xDFFF).contains(&low) {
+                    let code_point = 0x10000 + ((ch as u32 - 0xD800) << 10) + (low as u32 - 0xDC00);
+                    if let Some(c) = char::from_u32(code_point) {
+                        char_offsets.push(code_unit_pos);
+                        text.push(c);
+                        char_count += 1;
+                    }
+                    pos += 4;
+                    continue;
+                }
+            }
+            if let Some(c) = char::from_u32(ch as u32) {
+                char_offsets.push(code_unit_pos);
+                text.push(c);
+                char_count += 1;
+            }
+            pos += 2;
         }
     }
-    best
+
+    ParaTextParts {
+        text,
+        char_offsets,
+        field_ranges,
+        tab_extended,
+        title_marks,
+        orphan_field_ends,
+    }
 }
 
-#[test]
-fn nested_table_recursion_is_depth_capped() {
-    // 상한(64)을 크게 넘는 표 중첩을 파싱해도 크래시 없이 완주하고, 결과 트리의 표 중첩
-    // 깊이가 상한 이내로 절단돼야 한다. 가드가 없으면 이 입력은 341겹 근처에서 스택을
-    // 고갈시켜 SIGSEGV 를 내거나(비결정적) 입력 깊이 그대로 내려간다. 넉넉한 스택 전용
-    // 스레드에서 경계를 결정론적으로 시험한다(HWPX #4759 형제 테스트와 같은 방식).
-    let input_depth = MAX_HWP5_SECTION_DEPTH + 40;
-    let nesting = std::thread::Builder::new()
-        .stack_size(64 * 1024 * 1024)
-        .spawn(move || {
-            let stream = build_nested_table_stream(input_depth as u16);
-            let section = parse_body_text_section(&stream).expect("파싱은 성공(하위 트리만 절단)");
-            max_table_nesting(&section.paragraphs)
-        })
-        .expect("파서 스레드 생성 실패")
-        .join()
-        .expect("파서 스레드 패닉");
+/// extended 컨트롤 문자 여부 (CTRL_HEADER 레코드가 있는 컨트롤)
+///
+/// HWP 5.0 제어 문자 분류 (표 6):
+///   extended: 1-3, 11-12, 14-18, 21-23
+///   inline: 4-9, 19-20
 
-    assert!(
-        nesting <= MAX_HWP5_SECTION_DEPTH as usize,
-        "표 중첩이 상한을 넘겨 절단되지 않았다 — 상호재귀 깊이 가드 회귀 (nesting={nesting})"
-    );
-    assert!(
-        nesting >= 8,
-        "가드가 얕은 깊이에서 과잉 차단했다 (nesting={nesting})"
-    );
+fn title_mark_key(m: &TitleMark) -> (usize, bool) {
+    (m.char_idx, m.ignore)
 }
 
-#[test]
-fn shallow_table_nesting_is_preserved() {
-    // 상한 안쪽의 정상적인 표 중첩은 깊이 그대로 보존돼야 한다(가드가 과잉 차단 안 함).
-    let stream = build_nested_table_stream(5);
-    let section = parse_body_text_section(&stream).expect("파싱 실패");
+fn orphan_end_key(o: &OrphanFieldEnd) -> (usize, u32, u32, u32) {
+    (o.char_idx, o.begin_id_ref, o.field_id, o.begin_ctrl_id)
+}
+
+/// FieldRange 는 PartialEq 를 파생하지 않으므로 비교용 튜플로 사영한다.
+fn field_range_key(f: &FieldRange) -> (usize, usize, usize, u32, usize) {
+    (
+        f.start_char_idx,
+        f.end_char_idx,
+        f.control_idx,
+        f.end_field_id,
+        f.inner_slot_count,
+    )
+}
+
+fn assert_decode_identical(data: &[u8]) {
+    let new = parse_para_text(data);
+    let reference = parse_para_text_reference(data);
+    assert_eq!(new.text, reference.text, "text 불일치: {:02x?}", data);
+    assert_eq!(new.char_offsets, reference.char_offsets, "offsets 불일치: {:02x?}", data);
+    let fr_new: Vec<_> = new.field_ranges.iter().map(field_range_key).collect();
+    let fr_ref: Vec<_> = reference.field_ranges.iter().map(field_range_key).collect();
+    assert_eq!(fr_new, fr_ref, "field_ranges 불일치: {:02x?}", data);
+    assert_eq!(new.tab_extended, reference.tab_extended, "tab_extended 불일치: {:02x?}", data);
+    let tm_new: Vec<_> = new.title_marks.iter().map(title_mark_key).collect();
+    let tm_ref: Vec<_> = reference.title_marks.iter().map(title_mark_key).collect();
+    assert_eq!(tm_new, tm_ref, "title_marks 불일치: {:02x?}", data);
+    let oe_new: Vec<_> = new.orphan_field_ends.iter().map(orphan_end_key).collect();
+    let oe_ref: Vec<_> = reference.orphan_field_ends.iter().map(orphan_end_key).collect();
+    assert_eq!(oe_new, oe_ref, "orphan_field_ends 불일치: {:02x?}", data);
     assert_eq!(
-        max_table_nesting(&section.paragraphs),
-        5,
-        "정상 깊이(5겹) 표 중첩이 보존되지 않았다 — 가드 과잉 차단"
+        new.text.chars().count(),
+        new.char_offsets.len(),
+        "char/offset 개수 불변식 위반: {:02x?}",
+        data
     );
+}
+
+fn push_u16(buf: &mut Vec<u8>, v: u16) {
+    buf.extend_from_slice(&v.to_le_bytes());
+}
+
+struct SplitMix64(u64);
+impl SplitMix64 {
+    fn next_u64(&mut self) -> u64 {
+        self.0 = self.0.wrapping_add(0x9E37_79B9_7F4A_7C15);
+        let mut z = self.0;
+        z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+        z ^ (z >> 31)
+    }
+}
+
+#[test]
+fn bulkbuild_identical_exhaustive_single_unit() {
+    for v in 0..=u16::MAX {
+        assert_decode_identical(&v.to_le_bytes());
+
+        let mut embedded = Vec::new();
+        push_u16(&mut embedded, 0x0041);
+        push_u16(&mut embedded, v);
+        push_u16(&mut embedded, 0x0042);
+        assert_decode_identical(&embedded);
+
+        let mut odd_tail = Vec::new();
+        push_u16(&mut odd_tail, 0x0041);
+        push_u16(&mut odd_tail, v);
+        odd_tail.push(0x99);
+        assert_decode_identical(&odd_tail);
+    }
+}
+
+#[test]
+fn bulkbuild_identical_run_length_sweep() {
+    let boundaries = [
+        0x0000u16, 0x0009, 0x000A, 0x000B, 0x0012, 0x0018, 0x001F, 0xD800, 0xDC00,
+    ];
+    for len in 0..=80usize {
+        for &boundary in &boundaries {
+            let mut buf = Vec::new();
+            for i in 0..len {
+                push_u16(&mut buf, 0x0041 + (i % 26) as u16);
+            }
+            push_u16(&mut buf, boundary);
+            for i in 0..len {
+                push_u16(&mut buf, 0xAC00 + (i % 100) as u16);
+            }
+            assert_decode_identical(&buf);
+
+            let mut odd = buf.clone();
+            odd.push(0x77);
+            assert_decode_identical(&odd);
+        }
+    }
+}
+
+#[test]
+fn bulkbuild_identical_surrogates() {
+    let highs = [0xD800u16, 0xD83D, 0xDBFF];
+    let lows = [0xDC00u16, 0xDE00, 0xDFFF];
+    let others = [0x0000u16, 0x0041, 0x000D, 0xAC00, 0xDBFF, 0xDC00];
+
+    for &h in &highs {
+        for &l in &lows {
+            let mut a = Vec::new();
+            push_u16(&mut a, 0x0041);
+            push_u16(&mut a, h);
+            push_u16(&mut a, l);
+            push_u16(&mut a, 0x0042);
+            assert_decode_identical(&a);
+
+            let mut split = Vec::new();
+            push_u16(&mut split, h);
+            push_u16(&mut split, 0x000A);
+            push_u16(&mut split, l);
+            assert_decode_identical(&split);
+        }
+        for &o in &others {
+            let mut b = Vec::new();
+            push_u16(&mut b, h);
+            push_u16(&mut b, o);
+            assert_decode_identical(&b);
+        }
+        assert_decode_identical(&h.to_le_bytes());
+        let mut c = h.to_le_bytes().to_vec();
+        c.push(0x00);
+        assert_decode_identical(&c);
+    }
+    for &l in &lows {
+        assert_decode_identical(&l.to_le_bytes());
+    }
+}
+
+#[test]
+fn bulkbuild_identical_random_fuzz() {
+    let mut rng = SplitMix64(0x0BAD_C0DE_CAFE_F00D);
+    let mut buf = Vec::with_capacity(128);
+    let iters = 320_000;
+    for _ in 0..iters {
+        buf.clear();
+        let n_units = (rng.next_u64() % 41) as usize;
+        for _ in 0..n_units {
+            let r = rng.next_u64();
+            let val = match r & 0x3 {
+                0 | 1 => (r >> 8) as u16,
+                2 => ((r >> 8) as u16) & 0x001F,
+                _ => 0xD800 | (((r >> 8) as u16) & 0x07FF),
+            };
+            push_u16(&mut buf, val);
+        }
+        if rng.next_u64() & 0x3 == 0 {
+            buf.push((rng.next_u64() >> 16) as u8);
+        }
+        assert_decode_identical(&buf);
+    }
 }
