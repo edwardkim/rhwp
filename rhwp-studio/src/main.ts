@@ -51,6 +51,7 @@ import { initRhwpDev } from '@/core/rhwp-dev';
 import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
 import { analyzeDocumentFonts } from '@/core/document-font-status';
+import { setDocumentFontSubstitutions } from '@/core/font-substitution';
 import { detectLocalFonts, getLocalFontState, loadStoredLocalFonts } from '@/core/local-fonts';
 import { userSettings } from '@/core/user-settings';
 import { AutosaveManager, type AutosaveScheduleSettings, type AutosaveStatus } from '@/recovery/autosave-manager';
@@ -904,6 +905,8 @@ function setupZoomControls(): void {
 }
 
 let totalSections = 1;
+let currentDocumentFonts: string[] = [];
+let lastAppliedLocalFontGeneration: string | null = null;
 
 function setupEventListeners(): void {
   sbPage().addEventListener('click', () => {
@@ -948,6 +951,22 @@ function setupEventListeners(): void {
       (window as any).__renderBackendFallbackReason = diagnostics.fallbackReason;
       (window as any).__rendererSelection = diagnostics;
     }
+  });
+
+  eventBus.on('local-fonts-changed', () => {
+    if (!canvasView || wasm.pageCount === 0) return;
+    const state = getLocalFontState();
+    const generation = `${state.detectedAt ?? 'none'}:${state.source ?? 'none'}:${state.count}`;
+    if (generation === lastAppliedLocalFontGeneration) return;
+    lastAppliedLocalFontGeneration = generation;
+
+    if (canvasView.getRenderBackend() === 'canvaskit') {
+      // CanvasKit은 browser CSS를 쓰지 않으므로 local SFNT 준비가 끝난 뒤 helper가 한 번 갱신한다.
+      prepareCanvasKitLocalFonts(currentDocumentFonts);
+      return;
+    }
+    // Canvas2D는 Rust layout과 문서를 다시 열지 않고 현재 보이는 view만 새 family chain으로 그린다.
+    eventBus.emit('document-view-changed');
   });
 
   eventBus.on('document-dirty-changed', () => {
@@ -1047,6 +1066,9 @@ async function initializeDocument(
 ): Promise<void> {
   const msg = sbMessage();
   try {
+    setDocumentFontSubstitutions(docInfo.fontSubstitutions);
+    currentDocumentFonts = [...(docInfo.fontsUsed ?? [])];
+    lastAppliedLocalFontGeneration = null;
     console.log('[initDoc] 1. 폰트 로딩 시작');
     await updateLoadProgress(55, '폰트 준비 중...');
     if (docInfo.fontsUsed?.length) {
@@ -1056,6 +1078,9 @@ async function initializeDocument(
       }, extensionViewerSettings);
     }
     console.log('[initDoc] 2. 폰트 로딩 완료');
+    // 저장 snapshot은 권한 prompt 없이 읽을 수 있다. Canvas2D 첫 paint의 family 해소가
+    // 이미 승인된 exact local face를 놓치지 않도록 문서 view보다 먼저 준비한다 (#4739).
+    await loadStoredLocalFonts();
     await updateLoadProgress(75, '문서 상태 적용 중...');
     totalSections = docInfo.sectionCount ?? 1;
     sbSection().textContent = `구역: 1 / ${totalSections}`;
@@ -1118,7 +1143,7 @@ async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: stri
 
   const msg = sbMessage();
   try {
-    await loadStoredLocalFonts();
+    if (!getLocalFontState().loaded) await loadStoredLocalFonts();
     const report = analyzeDocumentFonts(docInfo.fontsUsed);
     if (!report.shouldPromptLocalAccess) return;
 
@@ -1135,7 +1160,6 @@ async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: stri
     });
     const nextReport = analyzeDocumentFonts(docInfo.fontsUsed);
     eventBus.emit('local-fonts-changed', { fonts, report: nextReport });
-    prepareCanvasKitLocalFonts(docInfo.fontsUsed);
     const state = getLocalFontState();
     const resultLabel = state.source === 'font-presence-probe' ? '확인됨' : '감지됨';
     msg.textContent = `${displayName} (로컬 글꼴 ${fonts.length}개 ${resultLabel})`;

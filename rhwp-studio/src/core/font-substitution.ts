@@ -199,6 +199,95 @@ interface FontFamilyChainOptions {
   confirmedLocalFonts?: readonly string[];
   /** 테스트/레거시 용도: 감지 전 원본 글꼴명을 강제로 포함한다. */
   includeUnconfirmedOriginal?: boolean;
+  /** Rust/HWPX가 전달한 문서 선언 substFont. successor 뒤, generic 앞에 둔다. */
+  documentFallbackFamilies?: readonly string[];
+}
+
+const GOVERNMENT_LEGACY_FONTS = new Set([
+  '정부상징 부처명_16040911',
+  'government_16040911',
+]);
+
+const GOVERNMENT_SUCCESSOR_FONTS = [
+  'ROKG',
+  'ROKG R',
+  '대한민국정부상징체',
+  '대한민국정부상징체 R',
+  'ROKGR',
+] as const;
+
+let documentFontSubstitutions = new Map<string, string[]>();
+
+function normalizedFamilyKey(fontName: string): string {
+  return fontName.normalize('NFC').replace(/\s+/g, ' ').trim().toLocaleLowerCase('en-US');
+}
+
+function isGovernmentLegacyFont(fontName: string): boolean {
+  return GOVERNMENT_LEGACY_FONTS.has(normalizedFamilyKey(fontName));
+}
+
+/** 새 문서가 열릴 때 이전 문서의 substFont를 남기지 않고 현재 선언으로 교체한다. */
+export function setDocumentFontSubstitutions(
+  substitutions: ReadonlyArray<readonly [string, string]> | undefined,
+): void {
+  const next = new Map<string, string[]>();
+  for (const entry of substitutions ?? []) {
+    if (!Array.isArray(entry) || entry.length !== 2) continue;
+    const source = entry[0]?.trim();
+    const substitute = entry[1]?.trim();
+    if (!source || !substitute) continue;
+    const key = normalizedFamilyKey(source);
+    const families = next.get(key) ?? [];
+    if (!families.some(existing => normalizedFamilyKey(existing) === normalizedFamilyKey(substitute))) {
+      families.push(substitute);
+    }
+    next.set(key, families);
+  }
+  documentFontSubstitutions = next;
+}
+
+function confirmedFontName(
+  candidates: readonly string[],
+  confirmedLocalFonts: readonly string[],
+): string | null {
+  const confirmed = new Map(
+    confirmedLocalFonts.map(fontName => [normalizedFamilyKey(fontName), fontName] as const),
+  );
+  for (const candidate of candidates) {
+    const match = confirmed.get(normalizedFamilyKey(candidate));
+    if (match) return match;
+  }
+  return null;
+}
+
+function localRecordCssFamily(
+  requestedFontName: string,
+  record: NonNullable<ReturnType<typeof resolveLocalFont>>,
+): string {
+  if (normalizedFamilyKey(requestedFontName) === normalizedFamilyKey(record.family)) {
+    return record.family;
+  }
+  const style = normalizedFamilyKey(record.style);
+  if (!style || style === 'regular' || style === 'normal' || style === 'r' || style === 'roman') {
+    return record.family;
+  }
+  return record.fullName || record.family;
+}
+
+/** 정부상징 legacy 이름에서만 현재 공식 successor의 설치 face를 찾는다. */
+export function resolveGovernmentFontSuccessor(
+  fontName: string,
+  confirmedLocalFonts?: readonly string[],
+): string | null {
+  if (!isGovernmentLegacyFont(fontName)) return null;
+  if (confirmedLocalFonts !== undefined) {
+    return confirmedFontName(GOVERNMENT_SUCCESSOR_FONTS, confirmedLocalFonts);
+  }
+  for (const candidate of GOVERNMENT_SUCCESSOR_FONTS) {
+    const record = resolveLocalFont(candidate);
+    if (record) return localRecordCssFamily(candidate, record);
+  }
+  return null;
 }
 
 function quoteCssFontFamily(fontName: string): string {
@@ -221,6 +310,10 @@ function pushUniqueFontFamily(families: string[], fontName: string): void {
 
 function systemFallbackFamilies(fontName: string): string[] {
   if (GENERIC_FONTS.has(fontName)) return [fontName];
+  // KoPub바탕체는 이름에 "바탕체"가 있지만 Windows BatangChe와 달리 비례폭 출판 명조다.
+  if (/KoPub\s*바탕(?:체)?|KoPub\s*Batang/i.test(fontName)) {
+    return ['Batang', 'AppleMyungjo', 'Noto Serif KR', 'serif'];
+  }
   // Monospace 판별
   if (/굴림체|바탕체|gulimche|batangche|coding|courier/i.test(fontName)) {
     return ['GulimChe', 'D2Coding', 'Noto Sans Mono', 'monospace'];
@@ -329,9 +422,17 @@ export function fontFamilyChainForDisplay(
     confirmedLocalFontSet.has(fontName.toLocaleLowerCase('en-US'));
 
   if (localRecord) {
-    pushUniqueFontFamily(families, localRecord.family);
+    pushUniqueFontFamily(families, localRecordCssFamily(fontName, localRecord));
   } else if (originalAllowed) {
     pushUniqueFontFamily(families, fontName);
+  }
+
+  const governmentSuccessor = resolveGovernmentFontSuccessor(
+    fontName,
+    options.confirmedLocalFonts,
+  );
+  if (governmentSuccessor) {
+    pushUniqueFontFamily(families, governmentSuccessor);
   }
 
   const resolved = resolveFont(fontName, altType, langId);
@@ -339,7 +440,26 @@ export function fontFamilyChainForDisplay(
     pushUniqueFontFamily(families, resolved);
   }
 
-  const fallbackBase = resolved && resolved !== fontName ? resolved : fontName;
+  const documentFallbackFamilies = options.documentFallbackFamilies
+    ?? documentFontSubstitutions.get(normalizedFamilyKey(fontName))
+    ?? [];
+  for (const documentFallback of documentFallbackFamilies) {
+    const localFallback = options.confirmedLocalFonts === undefined
+      ? resolveLocalFont(documentFallback)
+      : null;
+    const confirmedFallback = confirmedFontName([documentFallback], confirmedLocalFonts);
+    if (localFallback) {
+      pushUniqueFontFamily(
+        families,
+        localRecordCssFamily(documentFallback, localFallback),
+      );
+    } else if (confirmedFallback || REGISTERED_FONTS.has(documentFallback)) {
+      pushUniqueFontFamily(families, confirmedFallback ?? documentFallback);
+    }
+  }
+
+  const fallbackBase = documentFallbackFamilies.at(-1)
+    ?? (resolved && resolved !== fontName ? resolved : fontName);
   for (const fallback of systemFallbackFamilies(fallbackBase)) {
     pushUniqueFontFamily(families, fallback);
   }

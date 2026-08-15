@@ -457,10 +457,19 @@ fn lookup_font_name(doc_info: &DocInfo, lang_index: usize, font_id: u16) -> Stri
             let font = &lang_fonts[font_id as usize];
             let name = &font.name;
             // 폰트 치환: HFT 등 웹 미지원 폰트를 렌더링 가능한 폰트로 완전 대체
-            if let Some(resolved) = resolve_font_substitution(name, font.alt_type, lang_index) {
-                return resolved.to_string();
+            let resolved = resolve_font_substitution(name, font.alt_type, lang_index)
+                .unwrap_or(name)
+                .to_string();
+            if let Some(substitute) = font
+                .subst_font
+                .as_ref()
+                .filter(|substitute| !substitute.is_embedded)
+                .filter(|substitute| !substitute.face.trim().is_empty())
+                .filter(|substitute| substitute.face.trim() != resolved)
+            {
+                return format!("{resolved},{}", substitute.face.trim());
             }
-            return name.clone();
+            return resolved;
         }
     }
     String::new()
@@ -1251,6 +1260,28 @@ mod tests {
         let doc_info = DocInfo::default();
         let name = lookup_font_name(&doc_info, 0, 0);
         assert!(name.is_empty());
+    }
+
+    #[test]
+    fn test_lookup_font_preserves_non_embedded_document_substitute() {
+        let doc_info = DocInfo {
+            font_faces: vec![vec![Font {
+                name: "정부상징 부처명_16040911".to_string(),
+                alt_type: 1,
+                subst_font: Some(SubstFont {
+                    face: "한컴바탕".to_string(),
+                    font_type: 1,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }]],
+            ..Default::default()
+        };
+
+        assert_eq!(
+            lookup_font_name(&doc_info, 0, 0),
+            "정부상징 부처명_16040911,한컴바탕"
+        );
     }
 
     #[test]

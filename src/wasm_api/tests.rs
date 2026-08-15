@@ -1518,6 +1518,27 @@ fn test_empty_document_info() {
 }
 
 #[test]
+fn test_document_info_exposes_non_embedded_font_substitutions() {
+    let mut doc = HwpDocument::create_empty();
+    doc.document.doc_info.font_faces = vec![vec![crate::model::style::Font {
+        name: "정부상징 부처명_16040911".to_string(),
+        alt_type: 1,
+        subst_font: Some(crate::model::style::SubstFont {
+            face: "한컴바탕".to_string(),
+            font_type: 1,
+            ..Default::default()
+        }),
+        ..Default::default()
+    }]];
+
+    let info: Value = serde_json::from_str(&doc.get_document_info()).expect("document info JSON");
+    assert_eq!(
+        info["fontSubstitutions"],
+        serde_json::json!([["정부상징 부처명_16040911", "한컴바탕"]])
+    );
+}
+
+#[test]
 fn test_render_empty_page_svg() {
     let doc = HwpDocument::create_empty();
     let svg = doc.render_page_svg_native(0);

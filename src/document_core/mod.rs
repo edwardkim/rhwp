@@ -257,11 +257,22 @@ impl DocumentCore {
         use crate::renderer::style_resolver::resolve_font_substitution;
 
         let mut fonts = std::collections::BTreeSet::new();
+        let mut font_substitutions = std::collections::BTreeSet::new();
         for (lang_idx, lang_fonts) in self.document.doc_info.font_faces.iter().enumerate() {
             for font in lang_fonts {
                 let resolved = resolve_font_substitution(&font.name, font.alt_type, lang_idx)
                     .unwrap_or(&font.name);
                 fonts.insert(resolved.to_string());
+                if let Some(substitute) = font
+                    .subst_font
+                    .as_ref()
+                    .filter(|substitute| !substitute.is_embedded)
+                    .filter(|substitute| !substitute.face.trim().is_empty())
+                    .filter(|substitute| substitute.face.trim() != resolved)
+                {
+                    font_substitutions
+                        .insert((resolved.to_string(), substitute.face.trim().to_string()));
+                }
             }
         }
         let fonts_json: Vec<String> = fonts
@@ -293,8 +304,10 @@ impl DocumentCore {
                 c => vec![c],
             })
             .collect();
+        let font_substitutions_json =
+            serde_json::to_string(&font_substitutions).unwrap_or_else(|_| "[]".to_string());
         format!(
-            "{{\"version\":\"{}.{}.{}.{}\",\"sectionCount\":{},\"pageCount\":{},\"encrypted\":{},\"hwp3Variant\":{},\"fallbackFont\":\"{}\",\"fontsUsed\":[{}]}}",
+            "{{\"version\":\"{}.{}.{}.{}\",\"sectionCount\":{},\"pageCount\":{},\"encrypted\":{},\"hwp3Variant\":{},\"fallbackFont\":\"{}\",\"fontsUsed\":[{}],\"fontSubstitutions\":{}}}",
             self.document.header.version.major,
             self.document.header.version.minor,
             self.document.header.version.build,
@@ -305,6 +318,7 @@ impl DocumentCore {
             self.document.layout_profile().hwp3_layout(),
             escaped_fallback,
             fonts_json.join(","),
+            font_substitutions_json,
         )
     }
 
