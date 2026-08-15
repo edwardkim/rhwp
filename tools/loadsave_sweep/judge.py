@@ -4,6 +4,7 @@
 판정 어휘 (경로 하나에 여러 개 겹칠 수 있다 · 심각도 순):
     CONVERT_FAIL      rhwp 가 변환 자체를 못 함 (FAIL/TIMEOUT/SPAWN_FAIL)
     OPEN_FAIL         rhwp 산출물을 한글이 못 엶  ← 저장하기 치명 결함
+    ORACLE_TIMEOUT    감독의 stall-kill 이 만든 실패 ← 결함 아님, 재확인 필요 (#4751)
     MEASURE_FAIL      한글이 열었지만 측정 중 오류 (판정 불가)
     TEXT_MISMATCH     본문 텍스트 불일치            ← 텍스트 누락/변형
     CTRL_DIFF         컨트롤 집계 불일치 (표·그림 등) ← 개체 누락
@@ -11,6 +12,9 @@
     OK                위 어느 것도 아님
 
 원본이 한글에서 안 열리는 문서(ORACLE_ORIG_FAIL)는 판정 모수에서 제외해 따로 센다.
+원본이 stall-kill 에 걸린 문서(ORACLE_ORIG_TIMEOUT)도 모수에서 빠지되 결함이 아니라
+재확인 대상이다 — stall-kill 키는 oracle_run.ps1 이 남기는 stall_kills.tsv 로 식별한다
+(경로는 --stall-kills, 생략 시 result.tsv 옆에서 자동 탐색).
 rhwp 자기검증(exit 3/4)은 selfVerify 열에 참고로 싣는다 — 오라클 판정과 독립이다.
 
 원본 유령 성공 의심(원본 텍스트 0자 + 페이지 1)은 origSuspect 열에 SUSPECT 로 표시한다.
@@ -80,7 +84,20 @@ def main() -> int:
     ap.add_argument("--oracle", required=True, help="oracle result.tsv")
     ap.add_argument("--texts", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--stall-kills", default=None,
+                    help="[#4751] oracle_run.ps1 의 stall_kills.tsv 경로 "
+                         "(생략 시 result.tsv 옆의 stall_kills.tsv 자동 탐색)")
     args = ap.parse_args()
+
+    # [#4751] 감독의 stall-kill 이 만든 실패는 실제 한글 크래시와 같은 HRESULT
+    # (0x800706BE)로 기록된다. 죽인 키 목록으로 가려내 "결함"이 아니라
+    # "측정 실패 — 재확인 필요"(ORACLE_TIMEOUT)로 판정한다.
+    stall_path = Path(args.stall_kills) if args.stall_kills else Path(args.oracle).parent / "stall_kills.tsv"
+    stall_killed: set[str] = set()
+    if stall_path.is_file():
+        for line in stall_path.read_text(encoding="utf-8-sig").splitlines():
+            if line.strip():
+                stall_killed.add(line.split("\t", 1)[0])
 
     docs = []
     for line in Path(args.master).read_text(encoding="utf-8").splitlines():
@@ -120,6 +137,7 @@ def main() -> int:
     rows = []
     counts: dict[str, Counter] = defaultdict(Counter)
     n_orig_fail = 0
+    n_orig_timeout = 0
     n_orig_missing = 0
     n_orig_suspect = 0
     n_orig_text_fail = 0
@@ -131,8 +149,15 @@ def main() -> int:
             n_orig_missing += 1
             continue  # Phase B 미도달 (부분 실행) — 모수에서 제외
         if orig["status"] != "OK":
-            n_orig_fail += 1
-            rows.append([docid, fmt, "-", "ORACLE_ORIG_FAIL", "", "", "", "", orig["err"][:200], doc["src"]])
+            if f"{docid}.orig" in stall_killed:
+                # [#4751] 원본이 stall-kill 에 걸리면 그 문서의 모든 경로가 모수에서
+                # 빠진다 — 결함이 아니라 측정 실패이므로 별도 판정으로 가른다.
+                n_orig_timeout += 1
+                rows.append([docid, fmt, "-", "ORACLE_ORIG_TIMEOUT", "", "", "", "",
+                             orig["err"][:200], doc["src"]])
+            else:
+                n_orig_fail += 1
+                rows.append([docid, fmt, "-", "ORACLE_ORIG_FAIL", "", "", "", "", orig["err"][:200], doc["src"]])
             continue
         orig_suspect = orig["textLen"] == 0 and orig["pages"] <= 1
         if orig_suspect:
@@ -165,7 +190,10 @@ def main() -> int:
                     verdicts.append("MEASURE_FAIL")
                     detail = "no oracle row (phase B incomplete?)"
                 elif var["status"] != "OK":
-                    verdicts.append("OPEN_FAIL")
+                    # [#4751] stall-kill 이 만든 ERR 는 저장하기 결함(OPEN_FAIL)이 아니라
+                    # 측정 실패 — 재확인 대상(ORACLE_TIMEOUT)이다.
+                    verdicts.append("ORACLE_TIMEOUT" if f"{docid}.{route}" in stall_killed
+                                    else "OPEN_FAIL")
                     detail = var["err"][:200]
                 else:
                     pages_str = f"{orig['pages']}->{var['pages']}"
@@ -203,7 +231,8 @@ def main() -> int:
     # 요약
     lines = ["# load/save 스윕 판정 요약", ""]
     total_judged = sum(sum(c.values()) for c in counts.values())
-    lines.append(f"- 문서: {len(docs)} (원본 오라클 실패 {n_orig_fail}, Phase B 미도달 {n_orig_missing}, "
+    lines.append(f"- 문서: {len(docs)} (원본 오라클 실패 {n_orig_fail}, 원본 stall-kill 재확인 대상 {n_orig_timeout}, "
+                 f"Phase B 미도달 {n_orig_missing}, "
                  f"원본 유령성공 의심 {n_orig_suspect}, 원본 텍스트추출 실패 {n_orig_text_fail})")
     if n_orig_suspect or n_orig_text_fail:
         lines.append(f"  - 원본 텍스트가 0자인 문서 {n_orig_suspect + n_orig_text_fail}건은 텍스트 축 판정을 보류했다 "
@@ -211,15 +240,32 @@ def main() -> int:
                      f"0자 원본과의 차이는 결함과 측정 실패를 구별할 수 없다. 쪽수·컨트롤 축은 그대로 판정한다.")
     lines.append(f"- 판정된 (문서×경로): {total_judged}")
     lines.append("")
-    lines.append("| route | OK | CONVERT_FAIL | OPEN_FAIL | TEXT_MISMATCH | CTRL_DIFF | PAGE_DIFF | MEASURE_FAIL |")
-    lines.append("|---|---|---|---|---|---|---|---|")
+    lines.append("| route | OK | CONVERT_FAIL | OPEN_FAIL | ORACLE_TIMEOUT | TEXT_MISMATCH | CTRL_DIFF | PAGE_DIFF | MEASURE_FAIL |")
+    lines.append("|---|---|---|---|---|---|---|---|---|")
     for route in ("h2h", "h2x", "x2h", "x2x"):
         c = counts[route]
         lines.append(f"| {route} | {c['OK']} | {c['CONVERT_FAIL']} | {c['OPEN_FAIL']} | "
+                     f"{c['ORACLE_TIMEOUT']} | "
                      f"{c['TEXT_MISMATCH']} | {c['CTRL_DIFF']} | {c['PAGE_DIFF']} | {c['MEASURE_FAIL']} |")
     lines.append("")
     lines.append("(표의 셀은 첫 번째(최고 심각도) 판정 기준. 겹친 판정 전체는 verdicts.tsv 의 verdict 열.)")
-    bad = [r for r in rows if r[3] not in ("OK", "ORACLE_ORIG_FAIL")]
+    # [#4751] stall-kill 유발 측정 실패는 결함 목록이 아니라 재확인 절로 안내한다.
+    timeouts = [r for r in rows if r[3].split(";")[0] in ("ORACLE_TIMEOUT", "ORACLE_ORIG_TIMEOUT")]
+    if timeouts:
+        keys = [(f"{r[0]}.orig" if r[3].startswith("ORACLE_ORIG") else f"{r[0]}.{r[2]}")
+                for r in timeouts]
+        lines.append("")
+        lines.append(f"## 재확인 필요 — stall-kill 유발 측정 실패 {len(timeouts)}건 (결함 아님)")
+        for k in keys:
+            lines.append(f"- `{k}`")
+        lines.append("")
+        lines.append("재확인: 위 키만 담은 task 파일을 만들어 감독을 넉넉한 임계로 재실행한 뒤 다시 판정한다.")
+        lines.append("```")
+        lines.append("oracle_run.ps1 -HwpVersion <ver> -TaskPath <재확인.task> -OutDir <재확인_out> -StallSeconds 1200")
+        lines.append("```")
+    bad = [r for r in rows
+           if r[3] not in ("OK", "ORACLE_ORIG_FAIL", "ORACLE_ORIG_TIMEOUT")
+           and r[3].split(";")[0] != "ORACLE_TIMEOUT"]
     if bad:
         lines.append("")
         lines.append(f"## 결함 상위 예시 ({min(len(bad), 20)}/{len(bad)})")
