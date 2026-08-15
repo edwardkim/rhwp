@@ -575,6 +575,12 @@ pub const MAP: &[CommandProvenance] = &[
                문서가 아니라 호출자가 만든 계획서다.",
     },
     CommandProvenance {
+        command: "scaffold",
+        untrusted: NONE,
+        note: "생성 봉투는 경로·바이트·블록/문단/표 개수뿐이다. 입력 spec JSON 은 \
+               문서가 아니라 사용자/에이전트가 만든 명세다 — 문서 파생 값이 아니다.",
+    },
+    CommandProvenance {
         command: "capabilities",
         untrusted: NONE,
         note: "문서를 열지 않는다 — 전부 바이너리 자신의 선언이다.",

@@ -344,6 +344,7 @@ fn main() {
         Some("convert") => exit_with(convert_hwp(&args[2..])),
         Some("extract-pages") => exit_with(extract_pages(&args[2..])),
         Some("build-from-ingest") => exit_with(build_from_ingest(&args[2..])),
+        Some("scaffold") => exit_with(run_scaffold(&args[2..])),
         Some("hwp5-inventory") => exit_with(rhwp::diagnostics::hwp5_inventory::run(&args[2..])),
         Some("hwp5-inventory-diff") => {
             exit_with(rhwp::diagnostics::hwp5_inventory_diff::run(&args[2..]))
@@ -896,6 +897,21 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "build-from-ingest",
             serde_json::json!(["build-from-ingest", "{path}", "-o", "{output}", "--json"]),
             &["schemaVersion", "source", "output", "format", "bytes", "questionCount", "paragraphCount"],
+        ),
+        tool(
+            "hwp_scaffold",
+            "구조화된 명세(JSON)에서 새 HWPX 문서를 생성한다 — 제목·개요 제목·본문 문단·단순 표를 무(無)에서 만든다. 스키마는 mydocs/manual/cli_commands.md 의 scaffold 절 참조.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "scaffold 명세 JSON 경로" },
+                    "output": { "type": "string", "description": "출력 HWPX 파일 경로" }
+                },
+                "required": ["path", "output"],
+            }),
+            "scaffold",
+            serde_json::json!(["scaffold", "{path}", "-o", "{output}", "--json"]),
+            &["schemaVersion", "source", "output", "format", "bytes", "blockCount", "paragraphCount", "tableCount"],
         ),
         tool(
             "hwp_thumbnail",
@@ -3313,6 +3329,23 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             ],
         ),
         cmd_json(
+            "scaffold",
+            "export",
+            "구조화된 명세(JSON)에서 유효한 HWPX 문서 생성 — 문서를 *만드는* 생성 축 (--json 봉투)",
+            false,
+            &["-o", "--output", "--format", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "output",
+                "format",
+                "bytes",
+                "blockCount",
+                "paragraphCount",
+                "tableCount",
+            ],
+        ),
+        cmd_json(
             "thumbnail",
             "export",
             "내장 썸네일(PrvImage) 추출 (--json 봉투)",
@@ -4379,6 +4412,9 @@ fn print_help() {
     println!();
     println!("  build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>");
     println!("      ingest JSON(시험문제 등)을 HWPX로 생성 (rhwp-exam-ingest 파이프라인)");
+    println!();
+    println!("  scaffold <spec.json> [--format hwpx] -o <out.hwpx> [--json]");
+    println!("      구조화된 명세(제목·개요 제목·문단·표)에서 유효한 HWPX 문서를 생성");
     println!();
     println!("  ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>] [--json]");
     println!("  verify <파일> --expect-pages <N> | --expect-min-pages <N> | --expect-max-pages <N> | --expect-min-chars <N> | --expect-min-tables <N> | --expect-table-count <N> | --expect-contains <문자열> | --expect-not-contains <문자열> | --expect-field <이름=값> | --expect-format <형식> [--json]");
@@ -14847,6 +14883,150 @@ fn build_from_ingest(args: &[String]) -> i32 {
                     hwpx_bytes.len(),
                     ingest.questions.len(),
                     paragraph_count
+                );
+            }
+            EXIT_OK
+        }
+        Err(e) => {
+            eprintln!("오류: 파일 저장 실패 - {}: {}", output, e);
+            EXIT_RUNTIME
+        }
+    }
+}
+
+/// `rhwp scaffold <spec.json> [--format hwpx] [-o out.hwpx] [--json]`
+///
+/// 구조화된 명세(JSON)에서 유효한 HWPX 문서를 생성한다. `build-from-ingest` 와 같은
+/// 생성(authoring) 계열이며, rhwp 의 읽기/편집 축과 직교한다 — 입력은 문서가 아니라
+/// 호출자(사용자/에이전트)가 만든 계획서다. 지원 요소(제목·개요 제목·문단·단순 표)는
+/// 모두 왕복 검증을 통과한 것만 방출한다 (`src/scaffold/` 참조).
+fn run_scaffold(args: &[String]) -> i32 {
+    if args.is_empty() {
+        eprintln!("사용법: rhwp scaffold <spec.json> [--format hwpx] -o <out.hwpx> [--json]");
+        return EXIT_USAGE;
+    }
+
+    let mut input_path: Option<&str> = None;
+    let mut output_path: Option<&str> = None;
+    let mut format: &str = "hwpx";
+    let mut json_mode = false;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "-o" | "--output" => {
+                if i + 1 >= args.len() {
+                    eprintln!("오류: -o 옵션에 값이 필요합니다");
+                    return EXIT_USAGE;
+                }
+                output_path = Some(&args[i + 1]);
+                i += 2;
+            }
+            "--format" => {
+                if i + 1 >= args.len() {
+                    eprintln!("오류: --format 옵션에 값이 필요합니다");
+                    return EXIT_USAGE;
+                }
+                format = &args[i + 1];
+                i += 2;
+            }
+            "--json" => {
+                json_mode = true;
+                i += 1;
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if input_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+                i += 1;
+            }
+        }
+    }
+
+    if !format.eq_ignore_ascii_case("hwpx") {
+        eprintln!("오류: 지원하는 --format 은 hwpx 뿐입니다 (받음: {format})");
+        return EXIT_USAGE;
+    }
+
+    let input = match input_path {
+        Some(p) => p,
+        None => {
+            eprintln!("오류: 입력 spec JSON 경로가 누락되었습니다");
+            return EXIT_USAGE;
+        }
+    };
+    let output = match output_path {
+        Some(p) => p,
+        None => {
+            eprintln!("오류: -o <출력 경로> 가 누락되었습니다");
+            return EXIT_USAGE;
+        }
+    };
+
+    let bytes = match fs::read(input) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: 입력 파일 읽기 실패 - {}: {}", input, e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let spec = match rhwp::scaffold::parse_scaffold_bytes(&bytes) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: scaffold JSON 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let doc = rhwp::scaffold::build_scaffold(&spec);
+
+    let hwpx_bytes = match rhwp::serializer::serialize_hwpx(&doc) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: HWPX 직렬화 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    match fs::write(output, &hwpx_bytes) {
+        Ok(_) => {
+            let paragraph_count: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
+            let table_count = spec
+                .blocks
+                .iter()
+                .filter(|b| matches!(b, rhwp::scaffold::Block::Table { .. }))
+                .count();
+            if json_mode {
+                println!(
+                    "{}",
+                    provenance::marked(
+                        serde_json::json!({
+                            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                            "source": input,
+                            "output": output,
+                            "format": "hwpx",
+                            "bytes": hwpx_bytes.len(),
+                            "blockCount": spec.blocks.len(),
+                            "paragraphCount": paragraph_count,
+                            "tableCount": table_count,
+                        }),
+                        "scaffold",
+                    )
+                );
+            } else {
+                println!(
+                    "저장 완료: {} ({}바이트, 블록 {}개, 문단 {}개, 표 {}개)",
+                    output,
+                    hwpx_bytes.len(),
+                    spec.blocks.len(),
+                    paragraph_count,
+                    table_count
                 );
             }
             EXIT_OK
