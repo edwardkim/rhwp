@@ -41,6 +41,14 @@ export interface CanvasKitFontPlan {
 const CDN_HAMCHOB_R = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff';
 const CDN_HAMCHOB_B = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatangB.woff';
 const CDN_HAMCHOD_R = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff';
+const CDN_FONTSOURCE = 'https://cdn.jsdelivr.net/npm/@fontsource';
+// 조사 TSV에서 실제 package CSS와 글꼴 파일 응답까지 확인한 face만 추가한다.
+const CDN_NANUM_GOTHIC_BOLD = `${CDN_FONTSOURCE}/nanum-gothic@5.3.0/files/nanum-gothic-0-700-normal.woff`;
+const CDN_NANUM_GOTHIC_EXTRA_BOLD = `${CDN_FONTSOURCE}/nanum-gothic@5.3.0/files/nanum-gothic-0-800-normal.woff`;
+const CDN_NANUM_MYEONGJO_EXTRA_BOLD = `${CDN_FONTSOURCE}/nanum-myeongjo@5.3.0/files/nanum-myeongjo-0-800-normal.woff`;
+const CDN_NOTO_SANS_KR_MEDIUM = `${CDN_FONTSOURCE}/noto-sans-kr@5.3.0/files/noto-sans-kr-0-500-normal.woff`;
+const CDN_DEJAVU_SERIF_REGULAR = `${CDN_FONTSOURCE}/dejavu-serif@5.3.0/files/dejavu-serif-latin-400-normal.woff2`;
+const CDN_ROBOTO_REGULAR = `${CDN_FONTSOURCE}/roboto@5.3.0/files/roboto-latin-400-normal.woff2`;
 
 // 한컴 webhwp CSS(@font-face) 매핑 기준 + HWP 문서에서 사용하는 별칭
 const FONT_LIST: FontEntry[] = [
@@ -89,12 +97,18 @@ const FONT_LIST: FontEntry[] = [
   { name: '새궁서', file: 'fonts/GowunBatang-Regular.woff2' },
   // === 나눔 폰트 (OFL, 로컬) ===
   { name: '나눔고딕', file: 'fonts/NanumGothic-Regular.woff2' },
+  { name: '나눔고딕 Bold', file: CDN_NANUM_GOTHIC_BOLD, format: 'woff' },
+  { name: '나눔고딕 ExtraBold', file: CDN_NANUM_GOTHIC_EXTRA_BOLD, format: 'woff' },
   { name: '나눔명조', file: 'fonts/NanumMyeongjo-Regular.woff2' },
+  { name: '나눔명조 ExtraBold', file: CDN_NANUM_MYEONGJO_EXTRA_BOLD, format: 'woff' },
   { name: '나눔고딕코딩', file: 'fonts/NanumGothicCoding-Regular.woff2' },
+  { name: '나눔고딕_코딩', file: 'fonts/NanumGothicCoding-Regular.woff2' },
+  { name: 'NanumGothic', file: 'fonts/NanumGothic-Regular.woff2' },
   // === 영문 폰트 → OS 폴백 (번들 제거) ===
   { name: 'Palatino Linotype', file: 'fonts/NotoSerifKR-Regular.woff2' },
   // === Noto (OFL, 로컬) ===
   { name: 'Noto Sans KR', file: 'fonts/NotoSansKR-Regular.woff2' },
+  { name: 'Noto Sans KR Medium', file: CDN_NOTO_SANS_KR_MEDIUM, format: 'woff' },
   // Task #1224: generic_fallback sans 체인 말단의 'Noto Sans KR ExtraLight' 해석용.
   // 미등록 고딕 문서폰트가 체인을 따라 내려올 때 무거운 Noto 직전에 ExtraLight 매칭.
   { name: 'Noto Sans KR ExtraLight', file: 'fonts/NotoSansKR-ExtraLight.woff2' },
@@ -109,6 +123,9 @@ const FONT_LIST: FontEntry[] = [
   { name: 'Pretendard Bold', file: 'fonts/Pretendard-Bold.woff2' },
   { name: 'Pretendard ExtraBold', file: 'fonts/Pretendard-ExtraBold.woff2' },
   { name: 'Pretendard Black', file: 'fonts/Pretendard-Black.woff2' },
+  // === 조사 기반 영문 글꼴 (OFL, 문서 요청 시에만 CDN 로드) ===
+  { name: 'DejaVu Serif', file: CDN_DEJAVU_SERIF_REGULAR },
+  { name: 'Roboto', file: CDN_ROBOTO_REGULAR },
   // === D2 Coding (OFL, 로컬) ===
   { name: 'D2Coding', file: 'fonts/D2Coding-Regular.woff2' },
   // === Happiness Sans ===
@@ -147,11 +164,14 @@ export const REGISTERED_FONTS = new Set(FONT_LIST.map(f => f.name));
 /** 초기 렌더링에 필수인 폰트 (대부분의 HWP 문서 기본 서체) */
 const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움']);
 
-/** CSS @font-face 등록 여부 (중복 등록 방지) */
-let fontFaceRegistrationMode: 'all' | 'local-only' | null = null;
+/** CSS @font-face에 등록한 글꼴 (문서 요청 단위로 누적) */
+const registeredFontFaces: FontEntry[] = [];
+const registeredFontFaceKeys = new Set<string>();
 
-/** 이미 로드 완료된 woff2 파일 (중복 네트워크 요청 방지) */
+/** 한번이라도 요청한 실제 글꼴 파일 (진단용) */
 const loadedFiles = new Set<string>();
+/** FontFace API로 등록한 이름과 파일 조합 (별칭의 지연 등록 지원) */
+const loadedFontFaceKeys = new Set<string>();
 
 function isExternalFontFile(file: string): boolean {
   return /^https?:\/\//i.test(file);
@@ -238,10 +258,28 @@ export function resolveCanvasKitFontPlan(
   };
 }
 
-function registerFontFaces(options?: WebFontLoadOptions): void {
+function fontFaceKey(entry: FontEntry): string {
+  return [normalizeFontFamily(entry.name), entry.file, entry.format ?? 'woff2', entry.unicodeRange ?? ''].join('\u0000');
+}
+
+function isDetectedOSFont(name: string): boolean {
+  return detectedOSFontFamilies.has(normalizeFontFamily(name));
+}
+
+function isRegisteredFontFamily(name: string): boolean {
+  const normalized = normalizeFontFamily(name);
+  return registeredFontFaces.some(entry => normalizeFontFamily(entry.name) === normalized);
+}
+
+function registerFontFaces(entries: readonly FontEntry[], options?: WebFontLoadOptions): void {
   const disableExternal = options?.disableExternalWebFonts === true;
-  const mode = disableExternal ? 'local-only' : 'all';
-  if (fontFaceRegistrationMode === mode) return;
+  for (const entry of entries) {
+    const key = fontFaceKey(entry);
+    if (!registeredFontFaceKeys.has(key)) {
+      registeredFontFaceKeys.add(key);
+      registeredFontFaces.push(entry);
+    }
+  }
 
   const styleId = 'rhwp-web-font-faces';
   let style = document.getElementById(styleId) as HTMLStyleElement | null;
@@ -250,12 +288,13 @@ function registerFontFaces(options?: WebFontLoadOptions): void {
     style.id = styleId;
     document.head.appendChild(style);
   }
-  style.textContent = selectableFontList(options).map(f => {
+  style.textContent = registeredFontFaces
+    .filter(entry => !(disableExternal && isExternalFontFile(entry.file)))
+    .map(f => {
     const fmt = f.format ?? 'woff2';
     const ur = f.unicodeRange ? ` unicode-range: ${f.unicodeRange};` : '';
     return `@font-face { font-family: "${f.name}"; src: url("${f.file}") format("${fmt}"); font-display: swap;${ur} }`;
-  }).join('\n');
-  fontFaceRegistrationMode = mode;
+    }).join('\n');
 }
 
 /**
@@ -272,13 +311,63 @@ const OS_FONT_CANDIDATES = [
   'Noto Sans KR', 'Noto Serif KR',
 ];
 const detectedOSFonts = new Set<string>();
+const detectedOSFontFamilies = new Set<string>();
+
+/**
+ * 등록 전 시스템 글꼴을 generic fallback과의 폭 비교로 감지한다.
+ * `document.fonts.check()`만 사용하면 일치하는 @font-face가 없을 때도
+ * fallback으로 렌더할 수 있어 설치 여부를 확정할 수 없다.
+ */
+function isSystemFontAvailable(name: string): boolean {
+  const body = document.body;
+  if (body) {
+    try {
+      const probe = document.createElement('span');
+      probe.textContent = 'mmmmmmmmmwwwwwwwWMWMWM한글글꼴측정0123456789';
+      probe.style.position = 'absolute';
+      probe.style.visibility = 'hidden';
+      probe.style.whiteSpace = 'nowrap';
+      probe.style.fontSize = '72px';
+      probe.style.fontStyle = 'normal';
+      probe.style.fontWeight = 'normal';
+      body.appendChild(probe);
+
+      try {
+        const genericFamilies = ['monospace', 'serif', 'sans-serif'];
+        const fallbackWidths = genericFamilies.map(family => {
+          probe.style.fontFamily = family;
+          return probe.offsetWidth;
+        });
+        const escapedName = name.replace(/(["\\])/g, '\\$1');
+        return genericFamilies.some((family, index) => {
+          probe.style.fontFamily = `"${escapedName}", ${family}`;
+          return probe.offsetWidth !== fallbackWidths[index];
+        });
+      } finally {
+        body.removeChild(probe);
+      }
+    } catch {
+      // body가 아직 없거나 레이아웃 측정을 지원하지 않는 surface는 기존 API로 보수적으로 처리한다.
+    }
+  }
+
+  try {
+    return document.fonts.check(`16px "${name}"`);
+  } catch {
+    return false;
+  }
+}
 
 /** OS 폰트 감지 실행 (@font-face 등록 전에 호출) */
-function detectOSFonts(): void {
-  for (const name of OS_FONT_CANDIDATES) {
+function detectOSFonts(fontNames: readonly string[]): void {
+  const candidates = new Set([...OS_FONT_CANDIDATES, ...fontNames]);
+  for (const name of candidates) {
+    const normalized = normalizeFontFamily(name);
+    if (!normalized || detectedOSFontFamilies.has(normalized) || isRegisteredFontFamily(name)) continue;
     try {
-      if (document.fonts.check(`16px "${name}"`)) {
+      if (isSystemFontAvailable(name)) {
         detectedOSFonts.add(name);
+        detectedOSFontFamilies.add(normalized);
       }
     } catch { /* 무시 */ }
   }
@@ -306,48 +395,35 @@ export async function loadWebFonts(
   onProgress?: (loaded: number, total: number) => void,
   options?: WebFontLoadOptions,
 ): Promise<void> {
-  // 0) OS 폰트 감지 (@font-face 등록 전에 실행해야 정확)
-  if (!fontFaceRegistrationMode) {
-    detectOSFonts();
+  // 0) 문서 요청명과 필수 글꼴을 @font-face 등록 전에 감지한다.
+  // 이미 등록한 face가 있으면 브라우저가 그 face를 시스템 글꼴처럼 보고할 수 있으므로
+  // 해당 이름은 재감지하지 않는다.
+  const targetNames = [...(docFonts ?? []), ...CRITICAL_FONTS];
+  detectOSFonts(targetNames);
+
+  // 1) 문서에서 요청한 글꼴과 초기 필수 글꼴만 대상으로 삼는다.
+  // 시스템 글꼴이 감지되면 CSS 규칙도 추가하지 않아 원격 face가 이를 덮어쓰지 않는다.
+  const targetSet = new Set(targetNames.map(normalizeFontFamily));
+  const requestedEntries = selectableFontList(options).filter(entry => (
+    targetSet.has(normalizeFontFamily(entry.name)) && !isDetectedOSFont(entry.name)
+  ));
+  registerFontFaces(requestedEntries, options);
+
+  // 2) 같은 파일을 쓰더라도 새 별칭은 FontFace에 별도로 등록한다.
+  // 이미 받아 둔 URL은 브라우저 캐시를 사용하므로 추가 네트워크 전송은 발생하지 않는다.
+  const toLoad = requestedEntries.filter(entry => !loadedFontFaceKeys.has(fontFaceKey(entry)));
+  const entriesByFile = new Map<string, FontEntry[]>();
+  for (const entry of toLoad) {
+    const entries = entriesByFile.get(entry.file) ?? [];
+    entries.push(entry);
+    entriesByFile.set(entry.file, entries);
   }
-
-  // 1) CSS @font-face 규칙 등록. 오프라인 옵션이면 외부 URL 폰트는 제외한다.
-  registerFontFaces(options);
-
-  // 2) 로드 대상 결정: docFonts에 포함된 폰트 + CRITICAL만 로드
-  //    OS에 설치된 폰트는 웹폰트 로딩 건너뜀
-  const targetSet = new Set([...(docFonts ?? []), ...CRITICAL_FONTS]);
-  const toLoad = selectableFontList(options).filter(f => {
-    if (!targetSet.has(f.name)) return false;
-    // OS에 동일 이름 폰트가 있으면 웹폰트 로딩 불필요
-    if (detectedOSFonts.has(f.name)) return false;
-    return true;
-  });
-
-  // woff2 파일 기준으로 중복 제거 + 이미 로드된 파일 건너뜀
-  const seenFiles = new Set<string>();
-  const uniqueToLoad: FontEntry[] = [];
-  for (const f of toLoad) {
-    if (!seenFiles.has(f.file) && !loadedFiles.has(f.file)) {
-      seenFiles.add(f.file);
-      uniqueToLoad.push(f);
-    }
-  }
+  const uniqueToLoad = [...entriesByFile.values()].map(entries => entries[0]);
 
   if (uniqueToLoad.length === 0) return;
 
   const total = uniqueToLoad.length;
-  console.log(`[FontLoader] 웹폰트 로드 시작: ${total}개 woff2 (이미 로드됨: ${loadedFiles.size}개)`);
-
-  // 같은 woff2 파일에 매핑된 모든 이름도 함께 등록
-  const fileToNames = new Map<string, string[]>();
-  for (const f of toLoad) {
-    if (!loadedFiles.has(f.file)) {
-      const names = fileToNames.get(f.file) ?? [];
-      names.push(f.name);
-      fileToNames.set(f.file, names);
-    }
-  }
+  console.log(`[FontLoader] 웹폰트 로드 시작: ${total}개 파일 (이미 요청함: ${loadedFiles.size}개)`);
 
   let loaded = 0;
   let failed = 0;
@@ -357,12 +433,13 @@ export async function loadWebFonts(
     const batch = uniqueToLoad.slice(i, i + BATCH);
     await Promise.all(batch.map(async (f) => {
       try {
-        const names = fileToNames.get(f.file) ?? [f.name];
-        const fmt = f.format ?? 'woff2';
-        for (const name of names) {
-          const face = new FontFace(name, `url(${f.file}) format('${fmt}')`);
+        const entries = entriesByFile.get(f.file) ?? [f];
+        for (const entry of entries) {
+          const fmt = entry.format ?? 'woff2';
+          const face = new FontFace(entry.name, `url(${entry.file}) format('${fmt}')`);
           const result = await face.load();
           document.fonts.add(result);
+          loadedFontFaceKeys.add(fontFaceKey(entry));
         }
         loadedFiles.add(f.file);
         loaded++;
@@ -376,5 +453,5 @@ export async function loadWebFonts(
     }
   }
 
-  console.log(`[FontLoader] 폰트 로드 완료: ${loaded}개 성공, ${failed}개 실패 (총 ${loadedFiles.size}개 woff2 로드됨)`);
+  console.log(`[FontLoader] 폰트 로드 완료: ${loaded}개 성공, ${failed}개 실패 (총 ${loadedFiles.size}개 파일 요청)`);
 }

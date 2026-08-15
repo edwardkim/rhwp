@@ -105,3 +105,75 @@ test('외부 웹폰트 사용 안 함 옵션은 CDN @font-face와 FontFace.load�
     });
   }
 });
+
+test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록한다', async () => {
+  const styles: Array<{ id: string; textContent: string }> = [];
+  const fontFaceRequests: Array<{ family: string; source: string }> = [];
+  const previousDocument = (globalThis as typeof globalThis & { document?: unknown }).document;
+  const previousFontFace = (globalThis as typeof globalThis & { FontFace?: unknown }).FontFace;
+
+  const fakeDocument = {
+    head: {
+      appendChild(element: { id: string; textContent: string }) {
+        styles.push(element);
+      },
+    },
+    createElement(tagName: string) {
+      assert.equal(tagName, 'style');
+      return { id: '', textContent: '' };
+    },
+    getElementById(id: string) {
+      return styles.find(style => style.id === id) ?? null;
+    },
+    fonts: {
+      check(font: string) {
+        return font.includes('DejaVu Serif');
+      },
+      add() {
+        // 테스트에서는 FontFace 생성 기록으로 등록 여부를 검증한다.
+      },
+    },
+  };
+
+  class FakeFontFace {
+    family: string;
+    source: string;
+
+    constructor(family: string, source: string) {
+      this.family = family;
+      this.source = source;
+      fontFaceRequests.push({ family, source });
+    }
+
+    async load(): Promise<FakeFontFace> {
+      return this;
+    }
+  }
+
+  Object.defineProperty(globalThis, 'document', {
+    configurable: true,
+    value: fakeDocument,
+  });
+  Object.defineProperty(globalThis, 'FontFace', {
+    configurable: true,
+    value: FakeFontFace,
+  });
+
+  try {
+    await loadWebFonts(['DejaVu Serif', 'Roboto']);
+
+    assert.equal(fontFaceRequests.some(request => request.family === 'DejaVu Serif'), false);
+    assert.equal(fontFaceRequests.some(request => request.family === 'Roboto'), true);
+    assert.equal(styles[0].textContent.includes('DejaVu Serif'), false);
+    assert.equal(styles[0].textContent.includes('Roboto'), true);
+  } finally {
+    Object.defineProperty(globalThis, 'document', {
+      configurable: true,
+      value: previousDocument,
+    });
+    Object.defineProperty(globalThis, 'FontFace', {
+      configurable: true,
+      value: previousFontFace,
+    });
+  }
+});
