@@ -26,6 +26,8 @@ pub mod injection_scan;
 pub mod navigation;
 /// [#3719 §6-11] 공개 전 개인정보 탐지 — 읽기 전용 판정(마스킹은 CLI 의 치환 경로).
 pub mod pii_scan;
+/// 무기화 문서 구조 위협 탐지 — 읽기 전용 안전 에어락(컨테이너·레코드 구조 층).
+pub mod threat_scan;
 pub(crate) mod search_query;
 /// 숨은 마크(제로폭·호모글리프·공백 스테가노) 탐지 + 방어적 정화 코어 — 읽기 전용 판정.
 pub mod stego_scan;
