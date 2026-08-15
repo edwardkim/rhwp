@@ -27,6 +27,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -43,6 +44,9 @@ from core import runner  # noqa: E402
 def deterministic_mutants(data: bytes):
     """결정적 손상 변형들 — (라벨, 바이트). 무작위 없음(재현 가능)."""
     n = len(data)
+    if n == 0:
+        # 빈 입력은 위치 기반 flip/절단을 할 수 없지만, 감사 자체가 예외를 내면 안 된다.
+        return [("empty-to-nul", b"\0")]
     out = []
     for pct in (25, 50, 75, 95):                       # 절단
         out.append((f"truncate@{pct}%", data[:max(1, n * pct // 100)]))
@@ -83,7 +87,11 @@ def is_panic(code, err: str) -> bool:
         return True
     if code is None:
         return False
-    return code == 101 or code < 0 or code >= 132  # 시그널/어보트/AV
+    # POSIX subprocess는 signal 종료를 음수로 돌려준다. Windows NTSTATUS 기반
+    # 크래시는 큰 양수로 오므로 상위 두 비트로 구분한다. 임의의 CLI 오류 코드
+    # (예: 255)를 패닉으로 오판하지 않는다.
+    windows_exception = code >= 0 and (code & 0xC0000000) == 0xC0000000
+    return code == 101 or code < 0 or windows_exception
 
 
 def probe(bin_path: str, path: str, timeout: int):
@@ -105,9 +113,11 @@ def audit(bin_path: str, samples_dir: str, limit: int, timeout: int) -> dict:
     with tempfile.TemporaryDirectory() as work:
         mut_path = os.path.join(work, "mutant.hwp")
         for name in picked:
-            data = open(os.path.join(samples_dir, name), "rb").read()
+            with open(os.path.join(samples_dir, name), "rb") as fh:
+                data = fh.read()
             for label, mut in deterministic_mutants(data):
-                open(mut_path, "wb").write(mut)
+                with open(mut_path, "wb") as fh:
+                    fh.write(mut)
                 code, panicked, timed_out, head = probe(bin_path, mut_path, timeout)
                 checked += 1
                 tag = f"{name}:{label}"
@@ -137,10 +147,11 @@ def main() -> int:
     ap.add_argument("--timeout", type=int, default=20)
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args()
+    if a.timeout <= 0:
+        ap.error("--timeout은 양수여야 합니다")
     bin_path = runner.find_bin(a.bin)
     samples_dir = os.path.join(REPO_ROOT, "samples")
     report = audit(bin_path, samples_dir, a.limit, a.timeout)
-    import json
     if a.json:
         sys.stdout.write(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     elif report["ok"]:

@@ -36,20 +36,26 @@ class RobustnessTests(unittest.TestCase):
         for label, mut in a:
             self.assertNotEqual(mut, data, f"{label} 이 원본과 같다(무의미 변형)")
 
+    def test_empty_input_has_a_deterministic_mutant(self):
+        mod = load()
+        self.assertEqual(mod.deterministic_mutants(b""), [("empty-to-nul", b"\0")])
+
     def test_is_panic_distinguishes_crash_from_clean_failure(self):
         mod = load()
         self.assertTrue(mod.is_panic(101, ""))                       # 어보트
         self.assertTrue(mod.is_panic(0, "thread 'main' panicked"))   # 패닉 메시지
         self.assertTrue(mod.is_panic(-1073741819, ""))               # AV(음수)
+        self.assertTrue(mod.is_panic(0xC0000005, ""))                # Windows AV(NTSTATUS)
         self.assertFalse(mod.is_panic(1, "오류: 유효하지 않은 파일")) # 깨끗한 실패
+        self.assertFalse(mod.is_panic(255, "명시적 CLI 오류"))        # 일반 오류 코드는 패닉 아님
         self.assertFalse(mod.is_panic(0, "정상"))                    # 정상
 
     def test_select_samples_deterministic_and_bounded(self):
         mod = load()
         with tempfile.TemporaryDirectory() as d:
             for i in range(50):
-                open(os.path.join(d, f"s{i:03d}.hwp"), "wb").write(b"x")
-            open(os.path.join(d, "not-a-sample.txt"), "wb").write(b"x")
+                Path(d, f"s{i:03d}.hwp").write_bytes(b"x")
+            Path(d, "not-a-sample.txt").write_bytes(b"x")
             picked1, total = mod.select_samples(d, 10)
             picked2, _ = mod.select_samples(d, 10)
             self.assertEqual(total, 50)              # .txt 제외
@@ -59,7 +65,7 @@ class RobustnessTests(unittest.TestCase):
 
     def _audit_with_probe(self, mod, probe_result):
         with tempfile.TemporaryDirectory() as d:
-            open(os.path.join(d, "s.hwp"), "wb").write(bytes(range(256)) * 8)
+            Path(d, "s.hwp").write_bytes(bytes(range(256)) * 8)
             mod.probe = lambda bin_path, path, timeout: probe_result
             return mod.audit("bin", d, limit=1, timeout=5)
 
