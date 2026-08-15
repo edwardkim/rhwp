@@ -517,6 +517,15 @@ fn inspect_unicode_kind_enum() -> Vec<String> {
         .collect()
 }
 
+/// `inspect watermark --kind` 의 허용값 — 탐지 코어(MarkKind)가 단일 출처다.
+fn inspect_watermark_kind_enum() -> Vec<String> {
+    rhwp::document_core::queries::stego_scan::MarkKind::ALL
+        .iter()
+        .map(|kind| kind.filter_name().to_string())
+        .chain(std::iter::once("all".to_string()))
+        .collect()
+}
+
 /// [#3263→#3140] MCP 도구 정의의 단일 출처 — `capabilities --mcp`(선언 출력)와
 /// `mcp-serve`(실행 서버)가 같은 목록을 쓴다. 여기에만 추가하면 양쪽이 함께 갱신된다.
 fn mcp_tool_definitions() -> Vec<serde_json::Value> {
@@ -599,6 +608,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 | "hwp_inspect_hidden_text"
                 | "hwp_inspect_injection"
                 | "hwp_inspect_unicode"
+                | "hwp_inspect_watermark"
                 | "hwp_fill_fields"
                 | "hwp_replace_text"
                 | "hwp_set_checkbox"
@@ -1214,6 +1224,36 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             })),
             "inspect",
             serde_json::json!(["inspect", "unicode", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "kind", "args": ["--kind", "{kind}"] }
+            ]),
+            &[
+                "schemaVersion",
+                "source",
+                "kindFilter",
+                "scannedChars",
+                "findings",
+                "findingCount",
+                "clean",
+                "severityCounts",
+                "kindCounts",
+                "untrustedContent",
+                "untrustedFields",
+            ],
+        ),
+        // 받은 문서에 심어진 숨은 마크(은닉 추적·워터마크)를 읽기 전에 찾는다.
+        tool_with_optional_args(
+            "hwp_inspect_watermark",
+            "문서에 심어진 숨은 마크(은닉 추적·워터마크)를 탐지한다 — 제로폭·비가시 문자 열(비트열이면 ASCII 로 복원)·라틴 낱말에 섞인 동형자·비정상 공백 열. 방어/탐지 전용이며 문서를 변형하지 않는다.",
+            path_schema(serde_json::json!({
+                "kind": {
+                    "type": "string",
+                    "enum": inspect_watermark_kind_enum(),
+                    "description": "검사 축. 생략하면 all(전 축)",
+                }
+            })),
+            "inspect",
+            serde_json::json!(["inspect", "watermark", "{path}", "--json"]),
             serde_json::json!([
                 { "when": "kind", "args": ["--kind", "{kind}"] }
             ]),
@@ -2256,7 +2296,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 6] = [
     ("sanitize", "메타데이터 제거 — removed 봉투, --in-place"),
 ];
 
-const INSPECT_SUBCOMMANDS: [(&str, &str); 3] = [
+const INSPECT_SUBCOMMANDS: [(&str, &str); 4] = [
     (
         "hidden-text",
         "은닉 텍스트 탐지 — --threshold-pt 임계·--include-offpage 쪽 밖",
@@ -2268,6 +2308,10 @@ const INSPECT_SUBCOMMANDS: [(&str, &str); 3] = [
     (
         "unicode",
         "유니코드 기만 판정 — confusable·bidi·비가시 문자, --kind 필터",
+    ),
+    (
+        "watermark",
+        "숨은 마크 탐지 — 제로폭 비트열·동형자·공백 스테가노, --kind 필터",
     ),
 ];
 
@@ -4168,6 +4212,18 @@ fn print_help() {
     println!();
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      --kind <축>               zero-width|bidi|tag|confusable|all (기본: all)");
+    println!();
+    println!("  inspect watermark <파일.hwp|파일.hwpx> [--json] [--kind <축>]");
+    println!("      숨은 마크(스테가노그래피) 탐지 (읽기 전용) — 받은 문서에 심어진 은닉 추적·");
+    println!(
+        "      워터마크를 찾는다. 제로폭·비가시 문자 열(비트열이면 ASCII 로 복원)·라틴 낱말에"
+    );
+    println!(
+        "      섞인 동형자·비정상 공백 열을 위치·개수와 함께 신고한다 (검사 회피용이 아니다)."
+    );
+    println!();
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!("      --kind <축>               hidden|homoglyph|whitespace|all (기본: all)");
     println!();
     println!("  edit fill-fields <파일.hwp|파일.hwpx> --data <JSON|@파일> [-o <출력>] [옵션]");
     println!("      누름틀에 값을 채운다 (서식 자동 작성/메일머지)");
@@ -25026,6 +25082,283 @@ fn inspect_unicode(args: &[String]) -> i32 {
     EXIT_OK
 }
 
+fn inspect_watermark_scan_unit(
+    out: &mut Vec<serde_json::Value>,
+    scanned_chars: &mut usize,
+    section: usize,
+    paragraph: usize,
+    location: &str,
+    text: &str,
+    only: Option<rhwp::document_core::queries::stego_scan::MarkKind>,
+) {
+    use rhwp::document_core::queries::stego_scan as ss;
+    use rhwp::document_core::text_security::format_codepoint;
+
+    *scanned_chars += text.chars().count();
+    for f in ss::scan_stego(text, only) {
+        let mut item = serde_json::json!({
+            "kind": f.kind.label(),
+            "severity": f.severity.label(),
+            "section": section,
+            "paragraph": paragraph,
+            "location": location,
+            "charOffset": f.char_offset,
+            "runLength": f.run_length,
+            "codepoints": f
+                .codepoints
+                .iter()
+                .map(|c| format_codepoint(*c))
+                .collect::<Vec<_>>(),
+            "excerpt": f.excerpt,
+            "why": f.kind.why(),
+        });
+        if let Some(detail) = f.detail {
+            item["detail"] = serde_json::Value::String(detail);
+        }
+        out.push(item);
+    }
+}
+
+/// `rhwp inspect watermark` — 받은 문서에 심어진 **숨은 마크**(은닉 추적·워터마크)를 찾는다.
+///
+/// 세 축을 훑는다: 제로폭·비가시 문자 열(비트열이면 복원해 보여 준다)·라틴 낱말에 섞인
+/// 동형자·비정상 공백 열. `inspect unicode` 가 "화면과 바이트의 불일치"를 보는 것과 달리
+/// 이 축은 **은닉 payload(스테가노그래피)** 관점에 특화된다 — 제로폭 열을 비트/ASCII 로
+/// 복호하고, 공백 인코딩을 본다.
+///
+/// **문서를 고치지 않는다**(inspect 는 읽기 전용 명령군이다). 정화(clean)는 순수 코어
+/// `stego_scan::sanitize_stego` 가 담당하며, 문서 재저장 경로는 검증된 본문 치환에 얹는
+/// `edit` 계열 후속 작업에서 붙인다.
+fn inspect_watermark(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::stego_scan as ss;
+    use rhwp::model::control::Control;
+
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut kind_filter: Option<ss::MarkKind> = None;
+    let mut kind_label = "all";
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--kind" => {
+                i += 1;
+                let Some(value) = args.get(i) else {
+                    eprintln!(
+                        "오류: --kind 뒤에 축 이름이 필요합니다 (hidden|homoglyph|whitespace|all)."
+                    );
+                    return EXIT_USAGE;
+                };
+                if value == "all" {
+                    kind_filter = None;
+                    kind_label = "all";
+                } else if let Some(k) = ss::MarkKind::from_filter(value) {
+                    kind_filter = Some(k);
+                    kind_label = k.filter_name();
+                } else {
+                    eprintln!("오류: 알 수 없는 --kind 값입니다 - {value}");
+                    eprintln!("가능한 값: hidden, homoglyph, whitespace, all");
+                    return EXIT_USAGE;
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.is_none() {
+                    file_path = Some(other);
+                } else {
+                    eprintln!("오류: 인자가 너무 많습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!("오류: 검사할 문서 경로를 지정해주세요.");
+        eprintln!(
+            "사용법: rhwp inspect watermark <파일.hwp|파일.hwpx> [--json] [--kind hidden|homoglyph|whitespace|all]"
+        );
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let core = match load_document_core(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let document = core.document();
+
+    let mut findings: Vec<serde_json::Value> = Vec::new();
+    let mut scanned_chars = 0usize;
+
+    // 본문·표 셀·글상자·수식 — `inspect unicode` 와 같은 텍스트 단위 순회.
+    for (si, section) in document.sections.iter().enumerate() {
+        for (pi, para) in section.paragraphs.iter().enumerate() {
+            inspect_watermark_scan_unit(
+                &mut findings,
+                &mut scanned_chars,
+                si,
+                pi,
+                "body",
+                &para.text,
+                kind_filter,
+            );
+            for (ci, ctrl) in para.controls.iter().enumerate() {
+                match ctrl {
+                    Control::Table(table) => {
+                        for (celli, cell) in table.cells.iter().enumerate() {
+                            for (cpi, cp) in cell.paragraphs.iter().enumerate() {
+                                let loc = format!("cell[{ci}:{celli}].para[{cpi}]");
+                                inspect_watermark_scan_unit(
+                                    &mut findings,
+                                    &mut scanned_chars,
+                                    si,
+                                    pi,
+                                    &loc,
+                                    &cp.text,
+                                    kind_filter,
+                                );
+                                for nested in &cp.controls {
+                                    if let Control::Equation(eq) = nested {
+                                        inspect_watermark_scan_unit(
+                                            &mut findings,
+                                            &mut scanned_chars,
+                                            si,
+                                            pi,
+                                            &format!("{loc}.equation"),
+                                            &eq.script,
+                                            kind_filter,
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Control::Shape(shape) => {
+                        if let Some(tb) = shape.as_ref().drawing().and_then(|d| d.text_box.as_ref())
+                        {
+                            for (tpi, tp) in tb.paragraphs.iter().enumerate() {
+                                inspect_watermark_scan_unit(
+                                    &mut findings,
+                                    &mut scanned_chars,
+                                    si,
+                                    pi,
+                                    &format!("textbox[{ci}].para[{tpi}]"),
+                                    &tp.text,
+                                    kind_filter,
+                                );
+                            }
+                        }
+                    }
+                    Control::Equation(eq) => {
+                        inspect_watermark_scan_unit(
+                            &mut findings,
+                            &mut scanned_chars,
+                            si,
+                            pi,
+                            &format!("equation[{ci}]"),
+                            &eq.script,
+                            kind_filter,
+                        );
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    let count_by = |key: &str, field: &str| {
+        findings
+            .iter()
+            .filter(|f| f[field].as_str() == Some(key))
+            .count()
+    };
+    let severity_counts = serde_json::json!({
+        "high": count_by("high", "severity"),
+        "medium": count_by("medium", "severity"),
+        "low": count_by("low", "severity"),
+    });
+    let mut kind_counts = serde_json::Map::new();
+    for k in ss::MarkKind::ALL {
+        kind_counts.insert(
+            k.label().to_string(),
+            serde_json::Value::from(count_by(k.label(), "kind")),
+        );
+    }
+
+    if json_mode {
+        // 0건이면 findings: [] · clean: true — "검사했는데 깨끗함"과 "검사 안 함"은 다르다.
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "kindFilter": kind_label,
+            "scannedChars": scanned_chars,
+            "findings": findings,
+            "findingCount": findings.len(),
+            "clean": findings.is_empty(),
+            "severityCounts": severity_counts,
+            "kindCounts": serde_json::Value::Object(kind_counts),
+        });
+        println!("{}", provenance::marked(envelope, "inspect"));
+        // 탐지 건수는 실행 실패가 아니다 — 1은 런타임 실패 전용이다(#2707).
+        return EXIT_OK;
+    }
+
+    if findings.is_empty() {
+        println!(
+            "숨은 마크 검사: {file_path} (축: {kind_label}, {scanned_chars}자) — 탐지 0건, 깨끗합니다"
+        );
+        return EXIT_OK;
+    }
+    println!(
+        "숨은 마크 검사: {file_path} (축: {kind_label}, {scanned_chars}자) — 탐지 {}건 (high {} · medium {} · low {})",
+        findings.len(),
+        severity_counts["high"],
+        severity_counts["medium"],
+        severity_counts["low"],
+    );
+    for f in &findings {
+        let s = |k: &str| f[k].as_str().unwrap_or("");
+        let cps = f["codepoints"]
+            .as_array()
+            .map(|a| {
+                a.iter()
+                    .filter_map(|v| v.as_str())
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            })
+            .unwrap_or_default();
+        println!(
+            "  [{}] {} {}  구역{}:문단{} {} +{} (열 {})",
+            s("severity"),
+            s("kind"),
+            cps,
+            f["section"],
+            f["paragraph"],
+            s("location"),
+            f["charOffset"],
+            f["runLength"],
+        );
+        println!("      발췌 : {}", s("excerpt"));
+        if let Some(detail) = f["detail"].as_str() {
+            println!("      해설 : {detail}");
+        }
+        println!("      까닭 : {}", s("why"));
+    }
+    EXIT_OK
+}
+
 /// [#3787 S2] `tool_directive` 판정에 쓰는 **도구 이름 등록부**.
 ///
 /// 이름을 탐지 모듈에 하드코딩하지 않는다. 도구가 늘어도 목록이 따라오지 않으면
@@ -25054,15 +25387,16 @@ fn mcp_tool_name_registry() -> Vec<String> {
 /// 불일치를 판정한다. 어느 축도 문서를 고치지 않는다.
 fn inspect_command(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp inspect <hidden-text|injection|unicode> <파일.hwp|파일.hwpx> [각 축 옵션]";
+        "사용법: rhwp inspect <hidden-text|injection|unicode|watermark> <파일.hwp|파일.hwpx> [각 축 옵션]";
 
     match args.first().map(|s| s.as_str()) {
         Some("hidden-text") => inspect_hidden_text(&args[1..]),
         Some("injection") => inspect_injection(&args[1..]),
         Some("unicode") => inspect_unicode(&args[1..]),
+        Some("watermark") => inspect_watermark(&args[1..]),
         Some(other) => {
             eprintln!("오류: 알 수 없는 inspect 하위 명령입니다 - {other}");
-            let hint = closest_name(other, ["hidden-text", "injection", "unicode"]);
+            let hint = closest_name(other, ["hidden-text", "injection", "unicode", "watermark"]);
             if let Some(hint) = &hint {
                 eprintln!("혹시 이것인가요? inspect {hint}");
             }
@@ -25080,7 +25414,9 @@ fn inspect_command(args: &[String]) -> i32 {
         None => {
             // [#4220 T4] 하위 명령 누락은 어느 축을 원했는지 결정론적으로 알 수 없다 —
             // 수복 줄을 지어내지 않는다(오제안 0).
-            eprintln!("오류: inspect 하위 명령을 지정해주세요 (hidden-text|injection|unicode).");
+            eprintln!(
+                "오류: inspect 하위 명령을 지정해주세요 (hidden-text|injection|unicode|watermark)."
+            );
             eprintln!("{USAGE}");
             EXIT_USAGE
         }

@@ -108,7 +108,10 @@ fn script_of(ch: char) -> Option<ConfusableScript> {
 ///
 /// 출처 원칙: 키릴·그리스에서 라틴 글리프와 **사실상 동일하게 렌더되는** 글자.
 /// 목록을 넓히는 것보다 정확히 유지하는 편이 오탐을 막는다.
-fn confusable_to_latin(ch: char) -> Option<char> {
+///
+/// `queries::stego_scan`(숨은 마크 탐지·정화)의 동형자 판정과 정규화가 이 단일 표를
+/// 공유한다 — 표가 갈라져 드리프트하지 않도록 크레이트 내부에 공개한다.
+pub(crate) fn confusable_to_latin(ch: char) -> Option<char> {
     Some(match ch {
         // 키릴 소문자
         'а' => 'a',
