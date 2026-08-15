@@ -168,6 +168,7 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
       'KoPubBatangMedium',
       'KoPubWorld돋움체 Medium',
       '경기천년제목 Medium',
+      '62570체',
     ]);
 
     assert.equal(fontFaceRequests.some(request => request.family === 'DejaVu Serif'), false);
@@ -177,6 +178,7 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
     assert.equal(fontFaceRequests.some(request => request.family === 'KoPubBatangMedium'), true);
     assert.equal(fontFaceRequests.some(request => request.family === 'KoPubWorld돋움체 Medium'), true);
     assert.equal(fontFaceRequests.some(request => request.family === '경기천년제목 Medium'), true);
+    assert.equal(fontFaceRequests.some(request => request.family === '62570체'), true);
     assert.equal(styles[0].textContent.includes('DejaVu Serif'), false);
     assert.equal(styles[0].textContent.includes('Roboto'), true);
     assert.equal(styles[0].textContent.includes('정부상징 부처명_16040911'), true);
@@ -184,6 +186,7 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
     assert.equal(styles[0].textContent.includes('KoPubBatangMedium'), true);
     assert.equal(styles[0].textContent.includes('KoPubWorld돋움체 Medium'), true);
     assert.equal(styles[0].textContent.includes('경기천년제목 Medium'), true);
+    assert.equal(styles[0].textContent.includes('62570체'), true);
     assert.equal(
       fontFaceRequests.some(request => (
         request.source.includes('korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf')
@@ -214,6 +217,12 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
     assert.equal(
       fontFaceRequests.some(request => request.source.includes(
         'projectnoonnu/2410-3@1.0/Title_Medium.woff',
+      )),
+      true,
+    );
+    assert.equal(
+      fontFaceRequests.some(request => request.source.includes(
+        '@noonnu/62570che@0.1.0/fonts/62570-normal.woff',
       )),
       true,
     );
