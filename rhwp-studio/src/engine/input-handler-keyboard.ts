@@ -553,6 +553,16 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
         }
       }
     }
+    // 조합 중에도 e.code로 판별 가능한 기본 Ctrl/Meta 단축키는 일반 경로와 같은 dispatcher로 보낸다.
+    // Ctrl+M chord는 위에서 먼저 소비하고, 매칭되지 않는 키는 기존 조합 처리로 계속 진행한다.
+    if ((e.ctrlKey || e.metaKey) && this.dispatcher) {
+      const cmdId = matchShortcut(e, defaultShortcuts);
+      if (cmdId) {
+        e.preventDefault();
+        this.dispatcher.dispatch(cmdId);
+        return;
+      }
+    }
     const navCodes = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
                       'Home', 'End', 'Escape', 'Enter', 'Tab',
                       'PageUp', 'PageDown'];
