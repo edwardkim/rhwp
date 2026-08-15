@@ -6604,7 +6604,7 @@ impl LayoutEngine {
             paragraphs
                 .iter()
                 .flat_map(|p| p.line_segs.iter())
-                .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height, self.dpi))
+                .map(|s| hwpunit_to_px(s.vertical_pos.saturating_add(s.line_height), self.dpi))
                 .fold(0.0f64, f64::max)
         } else {
             0.0

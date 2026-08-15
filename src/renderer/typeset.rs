@@ -7283,12 +7283,14 @@ impl TypesetEngine {
                     // para_h_px 누적은 트레일링 line_spacing 까지 포함하여 ~10-12 HU 과대.
                     // HWP 가 페이지 끝에서 트레일링 ls 를 고려하지 않고 lh 만 fit 검사하는
                     // 시멘틱 정합 (pi=39 page 3 fits 케이스).
+                    // 손상 입력의 거대한 vpos/height 로 i32 덧셈이 오버플로(패닉)하지
+                    // 않도록 saturating — 정상값에선 동일, 손상값은 i32::MAX 로 포화.
                     let vpos_end = para
                         .line_segs
                         .last()
-                        .map(|s| s.vertical_pos + s.line_height)
-                        .unwrap_or(first_seg.vertical_pos + para_h_hu);
-                    let page_bottom_vpos = page_top_vpos + body_h_hu;
+                        .map(|s| s.vertical_pos.saturating_add(s.line_height))
+                        .unwrap_or(first_seg.vertical_pos.saturating_add(para_h_hu));
+                    let page_bottom_vpos = page_top_vpos.saturating_add(body_h_hu);
 
                     let avail = st.available_height();
                     let current_fits = st.current_height + para_h_px <= avail;
