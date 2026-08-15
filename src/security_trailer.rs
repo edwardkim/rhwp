@@ -266,15 +266,26 @@ mod tests {
 
     const HOST: &[u8] = b"\x1b\x00\x00\x00HWP Document File V3.00\x00 ... valid hwp3 bytes ...";
     const SECRET: &[u8] = "진짜 비밀 — 주민번호 900101-1234567".as_bytes();
-    const PW: &[u8] = b"correct horse battery staple";
+
+    /// 테스트 비밀번호는 **실행마다 새로 뽑는다**.
+    ///
+    /// 상수로 두면 (a) CodeQL 이 하드코딩 암호값(critical)으로 잡고, (b) 어느
+    /// 경로가 특정 비밀번호에 우연히 기대게 되어도 드러나지 않는다. 난수면
+    /// 왕복·변조·오답 판정이 값에 무관하게 성립함을 매 실행이 재확인한다.
+    fn pw() -> Vec<u8> {
+        let mut buf = [0u8; 32];
+        getrandom::fill(&mut buf).expect("테스트 비밀번호 난수");
+        buf.to_vec()
+    }
 
     #[test]
     fn seal_then_open_roundtrips() {
-        let sealed = seal(HOST, SECRET, PW).unwrap();
+        let pw = pw();
+        let sealed = seal(HOST, SECRET, &pw).unwrap();
         // 가시층은 원본 그대로(순정 한컴이 읽는 것).
         assert_eq!(visible_layer(&sealed), HOST);
         // rhwp + 올바른 비밀번호 → 진짜 비밀 복원.
-        match open(&sealed, PW) {
+        match open(&sealed, &pw) {
             Opened::Sealed { plaintext, flags } => {
                 assert_eq!(plaintext, SECRET);
                 assert_eq!(flags, FLAG_REDACTED);
@@ -285,21 +296,26 @@ mod tests {
 
     #[test]
     fn wrong_password_is_broken_not_panic() {
-        let sealed = seal(HOST, SECRET, PW).unwrap();
-        assert!(matches!(open(&sealed, b"wrong"), Opened::Broken { .. }));
+        let (right, wrong) = (pw(), pw());
+        let sealed = seal(HOST, SECRET, &right).unwrap();
+        assert!(
+            matches!(open(&sealed, &wrong), Opened::Broken { .. }),
+            "다른 비밀번호는 Broken 이어야 한다"
+        );
     }
 
     #[test]
     fn tampered_ciphertext_is_broken() {
-        let mut sealed = seal(HOST, SECRET, PW).unwrap();
+        let pw = pw();
+        let mut sealed = seal(HOST, SECRET, &pw).unwrap();
         let n = sealed.len();
         sealed[n - 20] ^= 0xFF; // 트레일러 내부(암호문/태그) 1비트 변조
-        assert!(matches!(open(&sealed, PW), Opened::Broken { .. }));
+        assert!(matches!(open(&sealed, &pw), Opened::Broken { .. }));
     }
 
     #[test]
     fn no_trailer_is_plain() {
-        assert_eq!(open(HOST, PW), Opened::Plain);
+        assert_eq!(open(HOST, &pw()), Opened::Plain);
         assert_eq!(visible_layer(HOST), HOST);
     }
 
@@ -308,21 +324,23 @@ mod tests {
         // 원본이 우연히 MAGIC_END 로 끝나도, trailer_len 역산이 MAGIC_START 와 안 맞아 Plain.
         let mut tricky = HOST.to_vec();
         tricky.extend_from_slice(MAGIC_END);
-        assert_eq!(open(&tricky, PW), Opened::Plain);
+        assert_eq!(open(&tricky, &pw()), Opened::Plain);
         assert!(detect_trailer(&tricky).is_none());
     }
 
     #[test]
     fn stripped_trailer_reopens_as_plain() {
         // 한컴 재저장 = 가시층만 남고 트레일러 소실 → Plain 으로 정상화(에러 없음).
-        let sealed = seal(HOST, SECRET, PW).unwrap();
+        let pw = pw();
+        let sealed = seal(HOST, SECRET, &pw).unwrap();
         let stripped = visible_layer(&sealed).to_vec();
-        assert_eq!(open(&stripped, PW), Opened::Plain);
+        assert_eq!(open(&stripped, &pw), Opened::Plain);
     }
 
     #[test]
     fn empty_secret_roundtrips() {
-        let sealed = seal(HOST, b"", PW).unwrap();
-        assert!(matches!(open(&sealed, PW), Opened::Sealed { .. }));
+        let pw = pw();
+        let sealed = seal(HOST, b"", &pw).unwrap();
+        assert!(matches!(open(&sealed, &pw), Opened::Sealed { .. }));
     }
 }
