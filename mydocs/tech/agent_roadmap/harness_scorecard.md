@@ -2,7 +2,7 @@
 kind: investigation
 status: active
 canonical: mydocs/tech/agent_roadmap/harness_scorecard.md
-last_verified: 2026-08-10
+last_verified: 2026-08-15
 ---
 
 # 하네스 스코어카드 — 주장마다 실행 명령 (#4389)
@@ -21,16 +21,31 @@ last_verified: 2026-08-10
 python tools/harness_proofs.py        # 6개 성질 실검증 — 하나라도 깨지면 exit 1
 ```
 
-## 실검증 6종 (러너가 지금 판정 — 2026-08-10 로컬 실측 6/6 PASS)
+## 실검증 8종 (러너가 지금 판정 — 2026-08-15 로컬 실측 8/8 PASS)
 
 | # | 성질 | 검증 명령 |
 |---|---|---|
 | P1 | **자기서술 결정론** — capabilities 2회 호출이 바이트까지 동일(모델·시각 무개입) | `rhwp capabilities` ×2 비교 |
-| P2 | **명령 표면 전수 자기서술** — 68개 명령의 계약(exitCodes·jsonContract) 동봉 | `rhwp capabilities` |
+| P2 | **명령 표면 전수 자기서술** — 모든 명령이 계약(exitCodes·jsonContract) 동봉, 표면 하한 68 | `rhwp capabilities` |
 | P3 | **사용법 오류 사전** — 미지 옵션 = exit 2 + stdout 0바이트(반쪽 JSON 금지) | `rhwp info … --nope --json` |
 | P4 | **실패 stdout 순수성** — 런타임 실패도 stdout 무오염(exit 1 + 0바이트) | `rhwp info no_such.hwp --json` |
 | P5 | **출처 표지 S1** — 문서 파생 값의 신뢰 경계를 봉투가 스스로 밝힘 | `rhwp info <doc> --json` |
 | P6 | **explain 결정론** — 서술이 생성 문장이 아니라 조립(드리프트 가드 가능 조건) | `rhwp explain <doc> --json` ×2 |
+| P7 | **본문 도달성** — 원시 바이트를 어떻게 디코딩해도(UTF-8·UTF-16LE) 안 나오는 본문을 도구는 준다 | `rhwp export-text <doc> --json` + 원시 바이트 대조 |
+| P8 | **주소 왕복** — `search` 가 준 쪽 주소가 `export-text` 가 그 줄을 실은 쪽과 일치 | `rhwp search <doc> "<본문 줄>" --json` |
+
+P1~P6 은 전부 **도구가 예의 바른가**를 묻는다(결정론·종료 코드·stdout 순수성·표지).
+P7~P8 이 처음으로 **이 도구가 없으면 못 하는 일이 무엇인가**를 묻는다(#4868).
+
+- P7 실측(2026-08-15, `samples/hwp3-sample.hwp`): 본문 줄 425개 중 **420개(98.8%)** 가
+  원시 디코딩 어디에도 없다. 판정 임계는 과반(50%)이다 — 표본 하나의 수치를 성질로
+  굳히지 않는다. UTF-16LE 를 함께 대조하는 것은 공정성 때문이다(한글 문서의 여러
+  바이너리 포맷이 UTF-16LE 로 문자열을 담으므로 UTF-8 만 보면 허수아비가 된다).
+- P8 실측: 표적 줄(78자)에 대해 `search` 가 `page=15`, `export-text` 도 같은 쪽. 원시
+  바이트 경로는 그 줄을 못 찾으므로 돌려줄 좌표 자체가 없고, 찾더라도 바이트 오프셋은
+  쪽·문단 어느 좌표계로도 번역되지 않는다.
+- P2 는 명령 수 **정확 일치**에서 **하한**으로 바뀌었다(#4870). 정확 일치이던 동안 표면이
+  68→85 로 자라 러너가 상시 red 였다 — 상시 red 인 게이트는 게이트가 아니다.
 
 ## 계약 테스트·PR 로 검증되는 4종 (러너 밖 — 거짓 PASS 를 만들지 않는다)
 
@@ -50,4 +65,9 @@ python tools/harness_proofs.py        # 6개 성질 실검증 — 하나라도 �
    문서에 남긴다.
 4. 신간·업계 대사는 `trend_harness_2026w32.md` 계열([PR
    #4385](https://github.com/edwardkim/rhwp/pull/4385) 리뷰 중 — 상대 링크는
-   착지 후)이 담당하고, 이 문서는 **검증 가능한 성질의 대장**만 유지한다.
+   착지 후)이 담당하고, 이 문서는 **검증 가능한 성질의 대장**만 유지한다. W33 판은
+   [trend_harness_2026w33.md](trend_harness_2026w33.md) — 범용 하네스의 플러그인화
+   흐름과, 그 흐름이 도메인 도구에 남기는 자리(P7·P8)를 대사한다.
+5. 러너의 임계는 **성질이 살아남을 만큼 느슨하게** 둔다. 표본 하나의 실측값을 그대로
+   임계로 박으면 표본이 바뀔 때 성질이 아니라 표본을 검사하게 되고, 명령 수처럼
+   자라는 값을 정확 일치로 박으면 게이트가 상시 red 가 된다(#4870 의 교훈).
