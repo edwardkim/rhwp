@@ -1174,6 +1174,11 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         return (splitter.finish(), marker_count >= shortfall);
     }
 
+    // 슬롯으로 세어 놓고 XML 은 내지 않는 컨트롤이 섞여 있으면, 방출 축은 그만큼 짧다.
+    // 위치는 여전히 최선을 다해 맞추되 **축 정합을 주장하지는 않는다** — lineseg 를 그대로
+    // 쓰면 한글이 범위 밖 textpos 를 만나 파일을 아예 열지 못한다.
+    let axis_faithful = slots.iter().all(|c| emits_hwpx_slot_xml(c));
+
     // 메인 경로 — UTF-16 위치 축 위에서 슬롯/필드/문자/경계를 함께 처리
     let mut text_buf = String::new();
     let mut slot_idx = 0usize;
@@ -1487,7 +1492,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
             field_end_emitted[i] = true;
         }
     }
-    (splitter.finish(), true)
+    (splitter.finish(), axis_faithful)
 }
 
 fn inferred_control_slot_count(para: &Paragraph) -> usize {
@@ -1594,6 +1599,23 @@ fn occupies_hwpx_slot_axis(control: &Control) -> bool {
             // HWP3 문서의 숨은 설명이 통째로 사라진다(06397 유지율 2.2%).
             Control::Bookmark(_) | Control::Hyperlink(_) | Control::HiddenComment(_)
         )
+}
+
+/// 이 컨트롤이 슬롯 자리에 **실제 XML 을 남기는가**.
+///
+/// `render_control_slot` 은 표현할 방법이 없는 컨트롤(`Unknown`)을 경고만
+/// 내고 버린다. 그런데 위치 슬롯 수가 `controls.len()` 과 같으면 축 정합 경로로 들어가
+/// **버려진 컨트롤도 슬롯으로 세어 놓고** `axis_faithful=true` 를 주장한다. 그러면 방출본은
+/// 컨트롤 하나당 8유닛씩 짧은데 lineseg 는 원본 좌표 그대로 나가고, 한글 2022 는 범위를
+/// 넘는 `textpos` 를 만나면 **파일 자체를 열지 못한다**(본문 폐기보다 강한 실패).
+///
+/// 실측(06926 section3 문단 347): 찾아보기 표식(`idxm`) 3개가 여기서 사라져 축이 366→342 로
+/// 줄었고, 원본에서 유효하던 `textpos=348` 이 범위 밖이 되어 산출물이 열리지 않았다.
+fn emits_hwpx_slot_xml(control: &Control) -> bool {
+    // `Hyperlink` 는 devel 이 방출 arm 을 갖췄으므로(`render_control_slot`) 여기서
+    // 빼면 안 된다 — 빼면 HWP3 변환본의 축이 근거 없이 무너진 것으로 판정돼
+    // 저장 lineseg 가 통째로 억제된다(#3739 암호 변환본 계약 파손).
+    !matches!(control, Control::Unknown(_))
 }
 
 pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
