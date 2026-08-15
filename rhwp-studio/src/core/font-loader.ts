@@ -138,6 +138,18 @@ const FONT_LIST: FontEntry[] = [
   { name: 'KoPub바탕체 Light', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff' },
   { name: 'KoPub바탕체 Medium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff' },
   { name: 'KoPub바탕체 Bold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff' },
+  { name: 'KoPubDotum Light', file: `${CDN_KOPUB}/KoPubDotum-Light.woff`, format: 'woff' },
+  { name: 'KoPubDotum Medium', file: `${CDN_KOPUB}/KoPubDotum-Medium.woff`, format: 'woff' },
+  { name: 'KoPubDotum Bold', file: `${CDN_KOPUB}/KoPubDotum-Bold.woff`, format: 'woff' },
+  { name: 'KoPubBatang Light', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff' },
+  { name: 'KoPubBatang Medium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff' },
+  { name: 'KoPubBatang Bold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff' },
+  { name: 'KoPubDotumLight', file: `${CDN_KOPUB}/KoPubDotum-Light.woff`, format: 'woff' },
+  { name: 'KoPubDotumMedium', file: `${CDN_KOPUB}/KoPubDotum-Medium.woff`, format: 'woff' },
+  { name: 'KoPubDotumBold', file: `${CDN_KOPUB}/KoPubDotum-Bold.woff`, format: 'woff' },
+  { name: 'KoPubBatangLight', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff' },
+  { name: 'KoPubBatangMedium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff' },
+  { name: 'KoPubBatangBold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff' },
   // === D2 Coding (OFL, 로컬) ===
   { name: 'D2Coding', file: 'fonts/D2Coding-Regular.woff2' },
   // === Happiness Sans ===
