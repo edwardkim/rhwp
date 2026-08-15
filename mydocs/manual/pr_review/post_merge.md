@@ -24,6 +24,11 @@ last_verified: 2026-08-09
 시각 asset URL을 comment에 쓰면 asset이 devel에 실제 존재한 뒤에만 게시한다. 이미 완료된 원 PR의 기록만
 담는 별도 fast-pass PR은 5–6과 오늘할일 갱신을 반복하지 않고, devel sync와 cleanup만 수행한다.
 
+작업지시자가 PR 병합과 `merge 후 후속 처리`를 함께 승인한 경우, 7번은 선택 보고가 아니라 완료 전 실행
+게이트다. 해당 PR만을 위해 만든 clean한 local branch와 local worktree의 제거는 별도 승인 없이 이 단계에서
+수행한다. 원격 branch 삭제나 기본 작업공간·공유 산출물·사용자 또는 다른 도구 소유 대상의 삭제는 포함하지
+않는다.
+
 ## 7.5 renderer golden 선행조건
 
 renderer 영향 PR의 golden 재생성은 원 PR merge 전에
@@ -185,6 +190,16 @@ heavy worker skip, final aggregate, issue 상태를 PR comment에 남긴다. 반
 성공 merge뿐 아니라 reject/close, supersede, review 중단, 후속 기록 fast-pass 완료도 최종 종료 gate다.
 정리 또는 유지 사유를 확인하기 전에는 후속 처리 완료라고 보고하지 않는다.
 
+이번 PR 또는 검토만을 위해 만든 별도 local worktree는 merge와 필수 후속 처리가 끝난 뒤 **제거가 기본**이다.
+다음 작업의 편의를 위한 보존은 유지 사유가 아니다. 제거 전에는 clean 상태와 사용자·다른 도구의 소유 여부를
+확인하며, 활성 작업 또는 작업지시자의 명시 보존 지시 때문에 제거하지 못하면 정확한 경로와 사유를 최종 상태에
+기록한다. 기본 작업공간, 공유 `target/pr-review`, 사용자·다른 도구가 만든 worktree는 이 규칙의 삭제 대상이
+아니다.
+
+대상 worktree는 자기 자신을 제거할 수 없으므로, 정리 명령은 반드시 보존할 기본 작업공간 또는 다른 clean
+worktree에서 실행한다. merge가 성공한 것만 확인하고 대상 worktree에 그대로 남아 "후속 처리 완료"로
+보고해서는 안 된다.
+
 먼저 정확한 대상 이름과 worktree를 확인한다.
 
 ~~~bash
@@ -232,6 +247,9 @@ git branch -vv | rg ': gone\]' || true
 git ls-remote --heads upstream <headRefName>
 git status --short --branch
 ~~~
+
+최종 보고에는 이번 작업에서 사용한 각 local worktree를 `제거 완료` 또는 `유지`로 구분해 경로와 사유를
+기록한다. 이 확인 없이 PR 병합만으로 후속 처리가 완료된 것으로 보고하지 않는다.
 
 contributor fork의 head는 위 `upstream` 조회 대상이 아니다. PR metadata의 `headRepository`와
 `headRefName`을 기록하고, fork branch 삭제를 시도하지 않은 사실을 최종 상태에 남긴다.
