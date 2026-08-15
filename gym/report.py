@@ -119,7 +119,13 @@ def render_card(report: dict) -> str:
 
 
 def _run(tool_argv: list[str]) -> None:
-    subprocess.run([sys.executable, *tool_argv], cwd=REPO_ROOT, check=True)
+    # 하위 도구(build_baseline·score)의 진행 로그는 stderr 로 넘긴다 — report.py 의
+    # stdout 은 카드/JSON 전용으로 순수하게 둬, --json 을 기계가 그대로 파싱할 수 있게.
+    out = subprocess.run([sys.executable, *tool_argv], cwd=REPO_ROOT, capture_output=True)
+    sys.stderr.write(out.stdout.decode("utf-8", "replace"))
+    sys.stderr.write(out.stderr.decode("utf-8", "replace"))
+    if out.returncode != 0:
+        raise SystemExit(f"하위 도구 실패: {os.path.basename(str(tool_argv[0]))}")
 
 
 def _from_bin(bin_path: str) -> tuple[dict, dict]:
