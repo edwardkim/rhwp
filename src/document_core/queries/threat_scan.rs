@@ -723,7 +723,7 @@ mod tests {
     fn record_overrun_is_flagged_and_clean_stream_is_not() {
         // 정상: 크기 2인 레코드 하나(헤더 4B + 데이터 2B).
         let size: u32 = 2;
-        let header = (0x10u32) | (0u32 << 10) | (size << 20);
+        let header = 0x10u32 | (size << 20);
         let mut clean = header.to_le_bytes().to_vec();
         clean.extend_from_slice(&[0xAA, 0xBB]);
         let mut col = Collector::new();
@@ -731,7 +731,7 @@ mod tests {
         assert!(col.findings.is_empty(), "정상 레코드는 신고되면 안 된다");
 
         // 오버런: 크기 9999를 선언하지만 데이터는 2바이트뿐.
-        let header = (0x10u32) | (0u32 << 10) | (9999u32 << 20);
+        let header = 0x10u32 | (9999u32 << 20);
         let mut bad = header.to_le_bytes().to_vec();
         bad.extend_from_slice(&[0xAA, 0xBB]);
         let mut col = Collector::new();

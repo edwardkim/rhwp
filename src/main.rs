@@ -3990,7 +3990,9 @@ fn print_help() {
     println!();
     println!("  threat-scan <파일.hwp|파일.hwpx> [--json]");
     println!("      무기화 문서 구조 위협 탐지 — 파싱 전 읽기 전용 안전 에어락");
-    println!("      실행체 내장(MZ/PE)·OLE 패키지·손상 레코드·매크로/스크립트·원격 외부참조를 신고");
+    println!(
+        "      실행체 내장(MZ/PE)·OLE 패키지·손상 레코드·매크로/스크립트·원격 외부참조를 신고"
+    );
     println!("      ※ 휴리스틱이며 안티바이러스가 아니다 — 신호이지 안전 보증이 아니다");
     println!("      --json                  위협 신호·범위 봉투를 stdout 으로 출력");
     println!();
@@ -26474,7 +26476,9 @@ fn cmd_threat_scan(args: &[String]) -> i32 {
             }
             println!("      근거: {}", finding.rationale);
         }
-        println!("  ※ 이 도구는 신호를 신고할 뿐 증거·안전을 보증하지 않습니다(안티바이러스 아님).");
+        println!(
+            "  ※ 이 도구는 신호를 신고할 뿐 증거·안전을 보증하지 않습니다(안티바이러스 아님)."
+        );
     }
     if report.truncated {
         println!("  · 발견 수가 상한에 걸려 목록이 잘렸습니다.");

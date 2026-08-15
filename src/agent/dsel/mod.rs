@@ -57,6 +57,7 @@ mod glob;
 mod lex;
 mod node;
 mod parse;
+mod suggest;
 mod token;
 
 pub use ast::{

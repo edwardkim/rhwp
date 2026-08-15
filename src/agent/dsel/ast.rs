@@ -36,6 +36,8 @@
 
 use super::error::SelectorError;
 
+pub use super::suggest::{nearest, unknown_attr, unknown_axis};
+
 /// 선택자 하나 — 쉼표로 이어진 경로들의 합집합.
 ///
 /// `source` 를 들고 다니는 이유: 평가 단계 오류도 캐럿을 그려야 하는데, 그때
@@ -810,87 +812,6 @@ impl PseudoDef {
     pub fn from_name(name: &str) -> Option<&'static PseudoDef> {
         PSEUDO_DEFS.iter().find(|d| d.name == name)
     }
-}
-
-/// 오타에 가장 가까운 후보를 찾는다 — 진단의 `hint` 로 나간다.
-///
-/// 편집 거리 2 이내만 후보로 본다. 3 이상을 허용하면 `para` 의 후보로 `cell` 이
-/// 나오는 식이라 힌트가 오히려 방해가 된다.
-///
-/// 구현은 제자리 Levenshtein — 후보가 십수 개뿐이라 자료구조를 더 얹을 이유가 없다.
-pub fn nearest(
-    name: &str,
-    candidates: impl IntoIterator<Item = &'static str>,
-) -> Option<&'static str> {
-    let mut best: Option<(usize, &'static str)> = None;
-    for cand in candidates {
-        let d = edit_distance(name, cand);
-        if d > 2 {
-            continue;
-        }
-        // 같은 거리면 사전순 앞선 쪽 — 결정론을 위해서다. 후보 목록의 선언 순서에
-        // 의존하면 사전을 재배치할 때 힌트가 조용히 바뀐다.
-        match best {
-            Some((bd, bc)) if bd < d || (bd == d && bc <= cand) => {}
-            _ => best = Some((d, cand)),
-        }
-    }
-    best.map(|(_, c)| c)
-}
-
-/// 두 문자열의 Levenshtein 거리 (문자 단위).
-fn edit_distance(a: &str, b: &str) -> usize {
-    let a: Vec<char> = a.chars().collect();
-    let b: Vec<char> = b.chars().collect();
-    if a.is_empty() {
-        return b.len();
-    }
-    if b.is_empty() {
-        return a.len();
-    }
-    let mut prev: Vec<usize> = (0..=b.len()).collect();
-    let mut cur = vec![0usize; b.len() + 1];
-    for (i, ca) in a.iter().enumerate() {
-        cur[0] = i + 1;
-        for (j, cb) in b.iter().enumerate() {
-            let cost = usize::from(ca != cb);
-            cur[j + 1] = (prev[j + 1] + 1).min(cur[j] + 1).min(prev[j] + cost);
-        }
-        std::mem::swap(&mut prev, &mut cur);
-    }
-    prev[b.len()]
-}
-
-/// 축 이름 오타를 후보와 함께 거절한다.
-pub fn unknown_axis(name: &str, offset: usize) -> SelectorError {
-    let err = SelectorError::resolve(offset, format!("알 수 없는 축 `{name}`"))
-        .expecting(AXIS_NAMES.iter().map(|(n, _)| *n));
-    match nearest(name, AXIS_NAMES.iter().map(|(n, _)| *n)) {
-        Some(c) => err.hinting(format!("`{c}` 를 뜻했나")),
-        None => err,
-    }
-}
-
-/// 속성 이름 오타를 그 축의 후보와 함께 거절한다.
-pub fn unknown_attr(axis: Axis, name: &str, offset: usize) -> SelectorError {
-    let names: Vec<&'static str> = axis.attributes().iter().map(|a| a.name).collect();
-    let err = SelectorError::resolve(
-        offset,
-        format!("축 `{}` 에 없는 속성 `{name}`", axis.name()),
-    )
-    .expecting(names.clone());
-    if let Some(c) = nearest(name, names) {
-        return err.hinting(format!("`{c}` 를 뜻했나"));
-    }
-    // 축을 적지 않은 스텝은 `*` 이고 `*` 에는 공통 속성밖에 없다. 사람이
-    // `para [len>0]` 처럼 공백을 넣으면 그 공백이 자손 결합자가 되어 뒤 스텝의
-    // 축이 사라진다 — 오류는 속성에서 나지만 원인은 공백이므로 그렇게 적는다.
-    if axis == Axis::Any {
-        return err.hinting(
-            "축을 생략하면 `*` 이라 공통 속성만 쓸 수 있다 — 술어는 축에 붙여 `para[len>0]` 처럼 적는다 (공백은 자손 결합자다)",
-        );
-    }
-    err
 }
 
 #[cfg(test)]
