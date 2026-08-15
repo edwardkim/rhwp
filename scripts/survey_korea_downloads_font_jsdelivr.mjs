@@ -184,7 +184,10 @@ function tsv(value) {
 }
 
 function markdownCell(value) {
-  return String(value ?? '').replace(/\|/g, '\\|').replace(/[\r\n]+/g, ' ');
+  return String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/\|/g, '\\|')
+    .replace(/[\r\n]+/g, ' ');
 }
 
 function webfontAvailability(row) {
@@ -585,12 +588,15 @@ async function googleFontsCandidate(font) {
 }
 
 function decodeHtml(value) {
+  const entities = {
+    '&amp;': '&',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&lt;': '<',
+    '&gt;': '>',
+  };
   return value
-    .replace(/&amp;/giu, '&')
-    .replace(/&quot;/giu, '"')
-    .replace(/&#39;/giu, "'")
-    .replace(/&lt;/giu, '<')
-    .replace(/&gt;/giu, '>')
+    .replace(/&(amp|quot|#39|lt|gt);/giu, entity => entities[entity.toLocaleLowerCase('en-US')])
     .trim();
 }
 
