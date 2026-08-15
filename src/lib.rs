@@ -20,6 +20,7 @@ pub mod parser;
 pub mod password_crypto;
 pub mod plan_schema;
 pub mod provenance;
+pub mod rag;
 pub mod renderer;
 pub mod schema_registry;
 pub mod serializer;
