@@ -9,8 +9,8 @@
 interface FontEntry {
   name: string;
   file: string;
-  /** woff2(기본) 또는 woff — CDN woff 파일용 */
-  format?: 'woff2' | 'woff';
+  /** woff2(기본), woff 또는 truetype — CDN 원본 TTF 파일용 */
+  format?: 'woff2' | 'woff' | 'truetype';
   /** CSS unicode-range — 지정 시 해당 코드포인트만 매칭, 다운로드도 해당 영역 사용 시에만 발생 */
   unicodeRange?: string;
 }
@@ -49,6 +49,7 @@ const CDN_NANUM_MYEONGJO_EXTRA_BOLD = `${CDN_FONTSOURCE}/nanum-myeongjo@5.3.0/fi
 const CDN_NOTO_SANS_KR_MEDIUM = `${CDN_FONTSOURCE}/noto-sans-kr@5.3.0/files/noto-sans-kr-0-500-normal.woff`;
 const CDN_DEJAVU_SERIF_REGULAR = `${CDN_FONTSOURCE}/dejavu-serif@5.3.0/files/dejavu-serif-latin-400-normal.woff2`;
 const CDN_ROBOTO_REGULAR = `${CDN_FONTSOURCE}/roboto@5.3.0/files/roboto-latin-400-normal.woff2`;
+const CDN_GOVERNMENT_SYMBOL_REGULAR = 'https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf';
 
 // 한컴 webhwp CSS(@font-face) 매핑 기준 + HWP 문서에서 사용하는 별칭
 const FONT_LIST: FontEntry[] = [
@@ -126,6 +127,9 @@ const FONT_LIST: FontEntry[] = [
   // === 조사 기반 영문 글꼴 (OFL, 문서 요청 시에만 CDN 로드) ===
   { name: 'DejaVu Serif', file: CDN_DEJAVU_SERIF_REGULAR },
   { name: 'Roboto', file: CDN_ROBOTO_REGULAR },
+  // === 대한민국정부상징서체 (공공누리 제4유형, 문서 요청 시에만 원본 TTF CDN 로드) ===
+  { name: 'Government_16040911', file: CDN_GOVERNMENT_SYMBOL_REGULAR, format: 'truetype' },
+  { name: '정부상징 부처명_16040911', file: CDN_GOVERNMENT_SYMBOL_REGULAR, format: 'truetype' },
   // === D2 Coding (OFL, 로컬) ===
   { name: 'D2Coding', file: 'fonts/D2Coding-Regular.woff2' },
   // === Happiness Sans ===
