@@ -222,11 +222,11 @@ impl PageAreas {
             if page_def.binding == BindingMethod::DuplexSided && is_even_page {
                 (
                     page_def.margin_right,
-                    page_def.margin_left + page_def.margin_gutter,
+                    page_def.margin_left.saturating_add(page_def.margin_gutter),
                 )
             } else {
                 (
-                    page_def.margin_left + page_def.margin_gutter,
+                    page_def.margin_left.saturating_add(page_def.margin_gutter),
                     page_def.margin_right,
                 )
             };
@@ -234,7 +234,7 @@ impl PageAreas {
         let mut content_left = effective_left;
         let mut content_right = page_width.saturating_sub(effective_right);
         // HWP 본문 시작 = margin_header + margin_top (한컴 도움말 기준)
-        let mut content_top = page_def.margin_header + page_def.margin_top;
+        let mut content_top = page_def.margin_header.saturating_add(page_def.margin_top);
         // HWP 본문 끝 = height - margin_footer - margin_bottom
         let mut content_bottom = page_height
             .saturating_sub(page_def.margin_footer)
@@ -268,7 +268,7 @@ impl PageAreas {
             left: content_left as i32,
             top: content_bottom as i32,
             right: content_right as i32,
-            bottom: (page_height - page_def.margin_footer) as i32,
+            bottom: page_height.saturating_sub(page_def.margin_footer) as i32,
         };
 
         PageAreas {
