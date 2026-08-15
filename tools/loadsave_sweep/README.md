@@ -104,5 +104,11 @@ Phase A 산출물은 버전 무관이므로 재사용 — Phase B 만 `-HwpVersi
 <S>/s1/oracle_<ver>/verdicts/  verdicts.tsv + summary.md
 ```
 
-판정 어휘: `CONVERT_FAIL` > `OPEN_FAIL` > `MEASURE_FAIL` > `TEXT_MISMATCH` > `CTRL_DIFF` >
-`PAGE_DIFF` > `OK`. 원본이 안 열리는 문서는 `ORACLE_ORIG_FAIL` 로 모수에서 제외.
+판정 어휘: `CONVERT_FAIL` > `OPEN_FAIL` > `ORACLE_TIMEOUT` > `MEASURE_FAIL` > `TEXT_MISMATCH` >
+`CTRL_DIFF` > `PAGE_DIFF` > `OK`. 원본이 안 열리는 문서는 `ORACLE_ORIG_FAIL` 로 모수에서 제외.
+
+stall-kill 오판 방어(#4749/#4751): 감독은 heartbeat 를 `FileShare.ReadWrite` 로 읽어
+공유 위반 사망을 막고, stall 임계는 `StallSeconds + StallSecondsPerMB(기본 60) × 문서 MB`
+로 크기에 비례한다. 죽인 키는 `<OutDir>/stall_kills.tsv` 에 남고, judge 는 그 키의 ERR 를
+`OPEN_FAIL` 이 아닌 `ORACLE_TIMEOUT`(원본이면 `ORACLE_ORIG_TIMEOUT`) 으로 내
+"결함"과 "측정 실패 — 재확인 필요"를 가른다. 재확인 키·명령은 summary.md 에 나온다.
