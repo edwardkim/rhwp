@@ -4715,6 +4715,7 @@ mod tests {
             char_idx: 2,
             begin_id_ref: 1_878_228_493,
             field_id: 627_272_811,
+            begin_ctrl_id: 0,
         }];
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);
@@ -4788,6 +4789,7 @@ mod tests {
             char_idx: 1,
             begin_id_ref: 42,
             field_id: 0,
+            begin_ctrl_id: 0,
         }];
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);

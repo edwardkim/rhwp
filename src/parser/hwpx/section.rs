@@ -720,6 +720,9 @@ fn parse_paragraph(
                         char_idx: visible_char_idx,
                         begin_id_ref,
                         field_id,
+                        // HWPX `<hp:fieldEnd>` 는 필드 종류를 싣지 않는다 — 짝
+                        // `fieldBegin` 은 다른 문단에 있어 여기서는 알 수 없다.
+                        begin_ctrl_id: 0,
                     });
                 }
             }

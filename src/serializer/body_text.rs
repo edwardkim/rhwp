@@ -672,6 +672,20 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             prev_end
         };
 
+        // 다단락 필드의 종료 마커 — 짝 fieldBegin 이 앞 문단에 있어 `field_ranges` 가
+        // 아니라 `orphan_field_ends` 로 온다. 내지 않으면 8유닛 슬롯이 사라져 이 문단의
+        // lineseg 가 범위 밖이 되고 조판이 통째로 버려진다(01752 실측: 쪽수 1→2).
+        // `begin_ctrl_id` 가 0 이면 필드 종류를 모른다는 뜻이라 내지 않는다 — 종류를
+        // 지어내면 한글이 짝을 못 맞춘다.
+        for ofe in para
+            .orphan_field_ends
+            .iter()
+            .filter(|o| o.char_idx == i && o.begin_ctrl_id != 0)
+        {
+            push_extended_ctrl(&mut code_units, 0x0004, ofe.begin_ctrl_id);
+            prev_end += 8;
+        }
+
         // 제목 차례 표시 — CTRL_HEADER 없는 인라인 컨트롤이라 여기서 직접 낸다.
         // 이 자리의 다른 컨트롤보다 먼저 놓는다: 8유닛만 채우면 되므로 순서는 축에
         // 영향을 주지 않고, 실측 대다수(2,237 중 1,879)가 문단 선두다.
@@ -851,6 +865,16 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
     // [#4402] 이 구간은 본디 위치 예산(offset/prev_end 갭 채우기)을 추적하지 않지만,
     // `char_shapes` 시프트 계산은 절대 위치가 필요하다 — `prev_end` 를 그대로 이어 써서
     // (메인 루프가 끝난 시점 값에서 시작) 8 code unit 씩 전진시킨다.
+    // 마지막 문자 뒤(또는 텍스트가 없는 문단)의 고아 종료 마커.
+    for ofe in para
+        .orphan_field_ends
+        .iter()
+        .filter(|o| o.char_idx >= text_chars.len() && o.begin_ctrl_id != 0)
+    {
+        push_extended_ctrl(&mut code_units, 0x0004, ofe.begin_ctrl_id);
+        prev_end += 8;
+    }
+
     // 마지막 문자 뒤(또는 텍스트가 없는 문단)의 제목 차례 표시.
     for m in para
         .title_marks

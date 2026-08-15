@@ -27,7 +27,8 @@ use crate::model::page::{
     BindingMethod, ColumnDef, ColumnDirection, ColumnType, PageBorderFill, PageDef,
 };
 use crate::model::paragraph::{
-    CharShapeRef, ColumnBreakType, FieldRange, LineSeg, Paragraph, RangeTag, TitleMark,
+    CharShapeRef, ColumnBreakType, FieldRange, LineSeg, OrphanFieldEnd, Paragraph, RangeTag,
+    TitleMark,
 };
 
 /// `PARA_TEXT` 한 레코드에서 뽑아낸 문단 본문 축 정보.
@@ -37,6 +38,7 @@ struct ParaTextParts {
     field_ranges: Vec<FieldRange>,
     tab_extended: Vec<[u16; 7]>,
     title_marks: Vec<TitleMark>,
+    orphan_field_ends: Vec<OrphanFieldEnd>,
 }
 
 /// BodyText 파싱 에러
@@ -93,6 +95,8 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
         }
     }
 
+    link_orphan_field_ends(&mut section.paragraphs);
+
     // 확장 바탕쪽 파싱: 마지막 문단 이후의 LIST_HEADER (level=1)
     // HWP 바이너리에서 확장 바탕쪽(마지막 쪽, 임의 쪽)은 Section 스트림 끝에 저장되지만,
     // level=1로 태그되어 마지막 문단의 자식으로 오인됨.
@@ -131,6 +135,42 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
     Ok(section)
 }
 
+/// 다단락 필드의 종료 마커에 짝 `fieldBegin` 의 id 를 채운다.
+///
+/// PARA_TEXT 의 종료 마커에는 짝 id 가 없어서(`04 00 6b 6c 63 09 01 00 …` — ctrl_id
+/// 자리에 필드 종류만) 문단 단위 파싱만으로는 알 수 없다. 섹션을 순서대로 훑으며
+/// 아직 닫히지 않은 필드를 쌓아 두고 연결한다.
+///
+/// 매달린 참조(`beginIDRef="0"`)를 그대로 내보내면 **한글이 파일을 열지 못한다**
+/// (01752 실측). 짝을 못 찾은 종료 마커는 8유닛 슬롯만 지키고 id 는 0 으로 남긴다.
+fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
+    // (필드 인스턴스 id, HWP5 ctrl_id)
+    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+
+    for para in paragraphs.iter_mut() {
+        // 이 문단의 종료 마커는 **앞서 열린** 필드를 닫는다.
+        for ofe in para.orphan_field_ends.iter_mut() {
+            if ofe.begin_id_ref == 0 {
+                if let Some((id, ctrl_id)) = open_fields.pop() {
+                    ofe.begin_id_ref = id;
+                    ofe.begin_ctrl_id = ctrl_id;
+                }
+            }
+        }
+
+        // 이 문단에서 열리고 여기서 닫히지 않은 필드를 쌓는다.
+        for (i, ctrl) in para.controls.iter().enumerate() {
+            let Control::Field(field) = ctrl else {
+                continue;
+            };
+            let closed_here = para.field_ranges.iter().any(|fr| fr.control_idx == i);
+            if !closed_here && field.field_id != 0 {
+                open_fields.push((field.field_id, field.ctrl_id));
+            }
+        }
+    }
+}
+
 /// 문단 레코드 그룹에서 Paragraph 구성
 ///
 /// records[0] = PARA_HEADER, records[1..] = 자식 레코드
@@ -160,6 +200,7 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
                 para.field_ranges = parts.field_ranges;
                 para.tab_extended = parts.tab_extended;
                 para.title_marks = parts.title_marks;
+                para.orphan_field_ends = parts.orphan_field_ends;
                 para.has_para_text = true;
             }
             tags::HWPTAG_PARA_CHAR_SHAPE => {
@@ -284,6 +325,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
     let mut field_ranges: Vec<FieldRange> = Vec::new();
     let mut tab_extended: Vec<[u16; 7]> = Vec::new();
     let mut title_marks: Vec<TitleMark> = Vec::new();
+    let mut orphan_field_ends: Vec<OrphanFieldEnd> = Vec::new();
     let mut pos = 0;
     // 확장 컨트롤(extended) 카운터 → controls[] 인덱스와 1:1 대응
     let mut ctrl_idx: usize = 0;
@@ -347,6 +389,25 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                         control_idx: field_ctrl_idx,
                         end_field_id: 0,
                         inner_slot_count: ctrl_idx.saturating_sub(field_ctrl_idx + 1),
+                    });
+                } else {
+                    // 짝 FIELD_BEGIN 이 **앞 문단**에 있는 다단락 필드의 종료 마커.
+                    //
+                    // 종전에는 스택이 비면 아무것도 남기지 않고 흘려보냈다. 그러면 이
+                    // 8유닛 슬롯이 IR 에서 사라져 문단 축이 그만큼 짧아지고, 원본
+                    // lineseg 의 `textpos` 가 범위 밖을 가리켜 그 문단의 조판이 통째로
+                    // 버려진다(01752 문단 13 실측: 한컴 lineseg 11 / rhwp 6, 쪽수 1→2).
+                    //
+                    // HWPX 파서는 이미 같은 것을 `orphan_field_ends` 로 보존한다
+                    // (Task #1556). HWP5 쪽만 비어 있었다.
+                    orphan_field_ends.push(OrphanFieldEnd {
+                        char_idx: char_count,
+                        // HWP5 PARA_TEXT 의 종료 마커는 짝 id 를 싣지 않는다
+                        // (`04 00 6b 6c 63 09 01 00 …`). `link_orphan_field_ends` 가
+                        // 섹션을 훑어 채운다.
+                        begin_id_ref: 0,
+                        field_id: 0,
+                        begin_ctrl_id: 0,
                     });
                 }
             } else if is_extended_only_ctrl_char(ch) {
@@ -448,6 +509,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
         field_ranges,
         tab_extended,
         title_marks,
+        orphan_field_ends,
     }
 }
 
@@ -568,6 +630,10 @@ pub fn parse_paragraph_list(records: &[Record]) -> Vec<Paragraph> {
             idx += 1;
         }
     }
+
+    // 셀·각주 같은 중첩 문단 목록도 자기 안에서 필드가 여러 문단에 걸칠 수 있다.
+    // 최상위에서만 연결하면 그 안의 종료 마커가 짝을 못 찾아 저장에서 빠진다.
+    link_orphan_field_ends(&mut paragraphs);
 
     paragraphs
 }

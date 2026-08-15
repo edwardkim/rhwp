@@ -440,6 +440,11 @@ pub struct OrphanFieldEnd {
     pub begin_id_ref: u32,
     /// `<hp:fieldEnd fieldid="..">` — 필드 인스턴스 id.
     pub field_id: u32,
+    /// 짝 필드의 HWP5 `ctrl_id`(`%clk` 등). HWP5 저장기가 종료 마커를 쓸 때 쓴다.
+    ///
+    /// 0 이면 모른다는 뜻이고, 그때는 HWP5 저장에서 마커를 내지 않는다 — 필드 종류를
+    /// 지어내면 한글이 짝을 못 맞춘다. HWPX 에서 들어온 고아 마커가 이 경우다.
+    pub begin_ctrl_id: u32,
 }
 
 impl Paragraph {

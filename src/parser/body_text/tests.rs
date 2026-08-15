@@ -950,3 +950,109 @@ fn unknown_inline_ctrl_id_is_not_taken_for_a_title_mark() {
 
     assert!(parse_para_text(&data).title_marks.is_empty());
 }
+
+/// 짝 FIELD_BEGIN 이 앞 문단에 있는 종료 마커도 8유닛 슬롯을 지켜야 한다.
+///
+/// 종전에는 스택이 비면 아무것도 남기지 않고 흘려보냈다. 그러면 축이 8유닛 짧아져
+/// 그 문단의 lineseg 가 범위 밖이 되고 조판이 통째로 버려진다(01752 실측).
+#[test]
+fn orphan_field_end_is_preserved_as_a_slot() {
+    let mut data = Vec::new();
+    for ch in "가나".encode_utf16() {
+        data.extend_from_slice(&ch.to_le_bytes());
+    }
+    // FIELD_END 16바이트 (짝 BEGIN 없음)
+    data.extend_from_slice(&0x0004u16.to_le_bytes());
+    data.extend_from_slice(&u32::from_le_bytes(*b"klc\x09").to_le_bytes());
+    for _ in 0..4 {
+        data.extend_from_slice(&0u16.to_le_bytes());
+    }
+    data.extend_from_slice(&0x0004u16.to_le_bytes());
+    data.extend_from_slice(&0x000Du16.to_le_bytes());
+
+    let parts = parse_para_text(&data);
+    assert_eq!(parts.text, "가나");
+    assert_eq!(
+        parts.field_ranges.len(),
+        0,
+        "짝이 없으니 범위는 만들지 않는다"
+    );
+    assert_eq!(parts.orphan_field_ends.len(), 1);
+    assert_eq!(parts.orphan_field_ends[0].char_idx, 2, "글자 뒤에 놓인다");
+}
+
+/// 종료 마커는 앞 문단에서 열린 필드의 id 를 물려받아야 한다.
+///
+/// 매달린 참조(`beginIDRef="0"`)를 내보내면 한글이 **파일을 열지 못한다**(01752 실측).
+#[test]
+fn orphan_field_end_links_to_the_open_field_id() {
+    use crate::model::control::{Field, FieldType};
+    use crate::model::paragraph::OrphanFieldEnd;
+
+    let mut opener = Paragraph {
+        text: "가".to_string(),
+        ..Default::default()
+    };
+    opener.controls.push(Control::Field(Field {
+        field_type: FieldType::ClickHere,
+        field_id: 2031845287,
+        ..Default::default()
+    }));
+
+    let closer = Paragraph {
+        text: "나".to_string(),
+        orphan_field_ends: vec![OrphanFieldEnd {
+            char_idx: 1,
+            begin_id_ref: 0,
+            field_id: 0,
+            begin_ctrl_id: 0,
+        }],
+        ..Default::default()
+    };
+
+    let mut paras = vec![opener, closer];
+    link_orphan_field_ends(&mut paras);
+    assert_eq!(paras[1].orphan_field_ends[0].begin_id_ref, 2031845287);
+}
+
+/// 같은 문단에서 닫힌 필드는 열린 채로 쌓지 않는다 — 뒤 문단의 마커가 엉뚱한 필드를
+/// 가리키면 안 된다.
+#[test]
+fn field_closed_in_its_own_paragraph_is_not_left_open() {
+    use crate::model::control::{Field, FieldType};
+    use crate::model::paragraph::{FieldRange, OrphanFieldEnd};
+
+    let mut closed = Paragraph {
+        text: "가".to_string(),
+        ..Default::default()
+    };
+    closed.controls.push(Control::Field(Field {
+        field_type: FieldType::ClickHere,
+        field_id: 111,
+        ..Default::default()
+    }));
+    closed.field_ranges.push(FieldRange {
+        start_char_idx: 0,
+        end_char_idx: 1,
+        control_idx: 0,
+        end_field_id: 0,
+        inner_slot_count: 0,
+    });
+
+    let stray = Paragraph {
+        orphan_field_ends: vec![OrphanFieldEnd {
+            char_idx: 0,
+            begin_id_ref: 0,
+            field_id: 0,
+            begin_ctrl_id: 0,
+        }],
+        ..Default::default()
+    };
+
+    let mut paras = vec![closed, stray];
+    link_orphan_field_ends(&mut paras);
+    assert_eq!(
+        paras[1].orphan_field_ends[0].begin_id_ref, 0,
+        "짝을 못 찾으면 0 으로 남긴다 — 없는 id 를 지어내지 않는다"
+    );
+}
