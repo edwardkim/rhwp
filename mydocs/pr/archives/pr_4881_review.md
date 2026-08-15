@@ -57,6 +57,22 @@ loaded documents: `pr_review_workflow.md`, `pr_review/README.md`, `collaborator_
 이번 PR의 SFNT 선택은 단위 계약으로 검증했으며, #4764의 실제 문서 PDF 대조와 페이지 수 결론은 별도 근거로
 계속 확인한다.
 
+## GitHub CI 결과
+
+기록 당시 code candidate `2102eead0`에서 GitHub Actions를 완료까지 관찰했다.
+
+| CI | 결과 |
+| --- | --- |
+| CI preflight | 성공 |
+| Frontend package gates | 성공 |
+| Build & Test | 성공 |
+| CodeQL JavaScript/TypeScript 분석 | 성공 |
+| Canvas visual diff | 성공 (6분 24초) |
+| Rust lint, Native Skia, WASM Build, Rust test shards | 프론트 변경 범위에 따른 정상 skip |
+
+완료 시점 참고값은 `MERGEABLE`/`CLEAN`이었다. 이 문서 commit은 review·오늘할일만 변경하므로 새 trailing
+head의 CI와 mergeability를 merge 직전에 다시 확인한다.
+
 ## 위험과 병합 조건
 
 - CDN의 SFNT 원본 URL이 제공되는 동안에만 CanvasKit 직접 렌더링이 해당 원본을 사용한다. 기존 offline
@@ -68,5 +84,5 @@ loaded documents: `pr_review_workflow.md`, `pr_review/README.md`, `collaborator_
 
 ## 최종 권고
 
-**보류.** 로컬 프론트 검증은 통과했다. trailing 문서 commit의 최신 CI와 mergeability를 확인한 뒤
-작업지시자 승인에 따라 병합한다.
+**보류.** 로컬 프론트 검증과 code candidate GitHub CI는 통과했다. trailing 문서 commit의 최신 CI와
+mergeability를 확인한 뒤 작업지시자 승인에 따라 병합한다.
