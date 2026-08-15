@@ -413,7 +413,7 @@ pub fn caption_height_px(caption: &Option<Caption>, dpi: f64) -> f64 {
     for para in &caption.paragraphs {
         if let (Some(first), Some(last)) = (para.line_segs.first(), para.line_segs.last()) {
             let para_top = first.vertical_pos.min(0);
-            let para_bottom = last.vertical_pos + last.line_height;
+            let para_bottom = last.vertical_pos.saturating_add(last.line_height);
             line_seg_height = line_seg_height.max(hwpunit_to_px(para_bottom - para_top, dpi));
         }
 
