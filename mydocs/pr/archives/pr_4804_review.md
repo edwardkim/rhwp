@@ -11,7 +11,7 @@ last_verified: 2026-08-15
 | --- | --- |
 | 원 PR | [#4804](https://github.com/edwardkim/rhwp/pull/4804) · @kevin9327 |
 | 원 head | `03c1705866dac9c70b8d88049496e2e1333d8071` |
-| 기준선 | `upstream/devel@bcb65ed68` |
+| 기준선 | `upstream/devel@4cf8a5898` |
 | 누적 적용 | `03c170586` → `3edf841e5` |
 | 메인터너 보정 | `f674ac7c5` |
 | 원 CI | 작성 시점 참고값: CI·CodeQL 성공, mergeable `MERGEABLE` |
