@@ -6,6 +6,7 @@
  * 사용자 승인 흐름에서만 호출하도록 API를 분리한다.
  */
 import { REGISTERED_FONTS } from './font-loader.ts';
+import { setRawCanvasFont } from './canvas-font-raw.ts';
 
 /** queryLocalFonts 반환 타입 (DOM 표준 미포함) */
 interface FontData {
@@ -31,18 +32,24 @@ export interface LocalFontRecord {
   style: string;
   displayName: string;
   aliases: string[];
+  /** face를 실제 Local Font Access 열거로 얻었는지, 이름 presence probe로만 확인했는지 구분한다. */
+  detectionSource?: LocalFontDetectionSource;
 }
 
 export interface LocalFontSnapshot {
-  /** v1은 family 문자열만 저장한 이전 형식이며 로드 시 v2 레코드로 승격한다. */
-  version: 1 | 2;
+  /** v1은 family 전용, v2는 face 레코드, v3는 문서 후보 coverage/provenance를 보존한다. */
+  version: 1 | 2 | 3;
   detectedAt: string;
   families: string[];
-  /** v2에서만 저장되는 설치 글꼴 face 메타데이터. */
+  /** v2 이상에서 저장되는 설치 글꼴 face 메타데이터. */
   fontRecords?: LocalFontRecord[];
   source: LocalFontDetectionSource;
-  /** font-presence-probe는 전체 목록이 아니라 문서 후보만 확인한다. */
+  /** 이 감지 세대에서 존재 여부 판정을 마친 문서 후보. */
   checkedFamilies?: string[];
+  /** Local Font Access 결과에 없어 raw Canvas presence probe로 확인된 후보. */
+  probedFamilies?: string[];
+  /** 확인을 마쳤지만 열거·probe 어느 쪽에서도 찾지 못한 후보. */
+  unresolvedFamilies?: string[];
 }
 
 export type LocalFontStorageKind =
@@ -61,6 +68,8 @@ export interface LocalFontState {
   storage: LocalFontStorageKind;
   count: number;
   checkedFamilies: string[];
+  probedFamilies: string[];
+  unresolvedFamilies: string[];
   detectedAt: string | null;
   lastError: string | null;
 }
@@ -70,7 +79,7 @@ export interface DetectLocalFontsOptions {
   force?: boolean;
   /** true면 REGISTERED_FONTS에 포함된 family도 반환한다. */
   includeRegistered?: boolean;
-  /** Local Font Access API가 없는 브라우저에서 현재 문서 글꼴만 확인할 때 사용한다. */
+  /** 현재 문서 face 중 열거 결과에 없는 후보를 제한적으로 확인할 때 사용한다. */
   candidateFamilies?: readonly string[];
 }
 
@@ -252,6 +261,22 @@ function buildLocalFontLookup(records: readonly LocalFontRecord[]): LocalFontLoo
   return lookup;
 }
 
+function resolveLocalFontFromLookup(fontName: string, lookup: LocalFontLookup): LocalFontRecord | null {
+  const target = normalizeFontAlias(fontName);
+  if (!target) return null;
+  const matches = lookup.aliases.get(target) ?? [];
+  if (matches.length === 0) return null;
+
+  const uniqueMatch = (records: readonly LocalFontRecord[] | undefined): LocalFontRecord | null =>
+    records?.length === 1 ? records[0] : null;
+  return uniqueMatch(lookup.postscriptNames.get(target))
+    ?? uniqueMatch(lookup.fullNames.get(target))
+    ?? uniqueMatch(lookup.familyStyles.get(target))
+    // family만으로 여러 style face가 매칭되면 임의 face를 고르지 않는다.
+    ?? uniqueMatch(lookup.families.get(target))
+    ?? (matches.length === 1 ? matches[0] : null);
+}
+
 function emptySfntFontNames(): SfntFontNames {
   return { families: [], fullNames: [], postscriptNames: [], styles: [] };
 }
@@ -391,7 +416,11 @@ function isUsableFontDisplayName(value: string): boolean {
   return !/[\u00ab\u00bb\u00c2\u00c3\u00d0\u00db]/.test(value);
 }
 
-function makeLocalFontRecord(fontData: Pick<FontData, 'family' | 'fullName' | 'postscriptName' | 'style'>, sfntNames: SfntFontNames = emptySfntFontNames()): LocalFontRecord | null {
+function makeLocalFontRecord(
+  fontData: Pick<FontData, 'family' | 'fullName' | 'postscriptName' | 'style'>,
+  sfntNames: SfntFontNames = emptySfntFontNames(),
+  detectionSource: LocalFontDetectionSource = 'local-font-access',
+): LocalFontRecord | null {
   const families = normalizeFontNames([fontData.family, ...sfntNames.families]);
   const fullNames = normalizeFontNames([fontData.fullName, ...sfntNames.fullNames]);
   const postscriptNames = normalizeFontNames([fontData.postscriptName, ...sfntNames.postscriptNames]);
@@ -412,10 +441,14 @@ function makeLocalFontRecord(fontData: Pick<FontData, 'family' | 'fullName' | 'p
     style: styles[0] ?? '',
     displayName: preferredLocalFontDisplayName(fullNames, families) || family,
     aliases,
+    detectionSource,
   };
 }
 
-function normalizeLocalFontRecords(value: unknown): LocalFontRecord[] {
+function normalizeLocalFontRecords(
+  value: unknown,
+  defaultSource: LocalFontDetectionSource = 'local-font-access',
+): LocalFontRecord[] {
   if (!Array.isArray(value)) return [];
   const records = new Map<string, LocalFontRecord>();
   for (const candidate of value) {
@@ -431,7 +464,9 @@ function normalizeLocalFontRecords(value: unknown): LocalFontRecord[] {
       fullNames: [],
       postscriptNames: [],
       styles: [],
-    });
+    }, data.detectionSource === 'font-presence-probe' || data.detectionSource === 'local-font-access'
+      ? data.detectionSource
+      : defaultSource);
     if (!record) continue;
     const aliases = normalizeFontNames([...record.aliases, ...(Array.isArray(data.aliases) ? data.aliases : [])]);
     const displayCandidates = [
@@ -451,13 +486,21 @@ function normalizeLocalFontRecords(value: unknown): LocalFontRecord[] {
   return Array.from(records.values()).sort((a, b) => a.displayName.localeCompare(b.displayName, 'ko'));
 }
 
-function recordsFromFamilies(families: readonly string[]): LocalFontRecord[] {
-  return normalizeLocalFontRecords(families.map(family => ({ family, fullName: family, postscriptName: '', style: '' })));
+function recordsFromFamilies(
+  families: readonly string[],
+  detectionSource: LocalFontDetectionSource = 'font-presence-probe',
+): LocalFontRecord[] {
+  return normalizeLocalFontRecords(
+    families.map(family => ({ family, fullName: family, postscriptName: '', style: '', detectionSource })),
+    detectionSource,
+  );
 }
 
 function snapshotRecords(snapshot: LocalFontSnapshot | null): LocalFontRecord[] {
   if (!snapshot) return [];
-  return snapshot.fontRecords?.length ? snapshot.fontRecords : recordsFromFamilies(snapshot.families);
+  return snapshot.fontRecords?.length
+    ? normalizeLocalFontRecords(snapshot.fontRecords, snapshot.source)
+    : recordsFromFamilies(snapshot.families, snapshot.source);
 }
 
 function cacheLocalFontSnapshot(snapshot: LocalFontSnapshot | null): void {
@@ -474,7 +517,7 @@ async function collectLocalFontRecords(fontDataList: readonly FontData[]): Promi
       const index = nextIndex;
       nextIndex += 1;
       const fontData = fontDataList[index];
-      records[index] = makeLocalFontRecord(fontData, await readSfntFontNames(fontData));
+      records[index] = makeLocalFontRecord(fontData, await readSfntFontNames(fontData), 'local-font-access');
     }
   };
   await Promise.all(Array.from(
@@ -489,34 +532,49 @@ function normalizeSnapshot(value: unknown): LocalFontSnapshot | null {
   const data = value as Partial<LocalFontSnapshot>;
   if (data.source !== 'local-font-access' && data.source !== 'font-presence-probe') return null;
   if (typeof data.detectedAt !== 'string' || !data.detectedAt) return null;
-  if (data.version !== 1 && data.version !== 2) return null;
-  const records = data.version === 2
-    ? normalizeLocalFontRecords(data.fontRecords)
+  if (data.version !== 1 && data.version !== 2 && data.version !== 3) return null;
+  const records = data.version >= 2
+    ? normalizeLocalFontRecords(data.fontRecords, data.source)
     : [];
   return makeSnapshot(
-    records.length > 0 ? records : recordsFromFamilies(normalizeFamilies(data.families)),
+    records.length > 0 ? records : recordsFromFamilies(normalizeFamilies(data.families), data.source),
     data.source,
-    data.checkedFamilies,
-    data.detectedAt,
+    {
+      checkedFamilies: data.version === 3 || data.source === 'font-presence-probe'
+        ? data.checkedFamilies
+        : undefined,
+      probedFamilies: data.version === 3 ? data.probedFamilies : undefined,
+      unresolvedFamilies: data.version === 3 ? data.unresolvedFamilies : undefined,
+      detectedAt: data.detectedAt,
+    },
   );
+}
+
+interface MakeSnapshotOptions {
+  checkedFamilies?: readonly string[];
+  probedFamilies?: readonly string[];
+  unresolvedFamilies?: readonly string[];
+  detectedAt?: string;
 }
 
 function makeSnapshot(
   records: readonly LocalFontRecord[],
   source: LocalFontDetectionSource,
-  checkedFamilies?: readonly string[],
-  detectedAt = new Date().toISOString(),
+  options: MakeSnapshotOptions = {},
 ): LocalFontSnapshot {
-  const fontRecords = normalizeLocalFontRecords(records);
+  const fontRecords = normalizeLocalFontRecords(records, source);
+  const checkedFamilies = normalizeFamilies(options.checkedFamilies);
+  const probedFamilies = normalizeFamilies(options.probedFamilies);
+  const unresolvedFamilies = normalizeFamilies(options.unresolvedFamilies);
   return {
-    version: 2,
-    detectedAt,
+    version: 3,
+    detectedAt: options.detectedAt ?? new Date().toISOString(),
     families: normalizeFamilies(fontRecords.map(record => record.family)),
     fontRecords,
     source,
-    checkedFamilies: source === 'font-presence-probe'
-      ? normalizeFamilies(checkedFamilies)
-      : undefined,
+    checkedFamilies: checkedFamilies.length > 0 ? checkedFamilies : undefined,
+    probedFamilies: probedFamilies.length > 0 ? probedFamilies : undefined,
+    unresolvedFamilies: unresolvedFamilies.length > 0 ? unresolvedFamilies : undefined,
   };
 }
 
@@ -541,7 +599,7 @@ function measureWithFamily(
   family: string,
   text: string,
 ): number {
-  context.font = `${PROBE_FONT_SIZE}px ${family}`;
+  setRawCanvasFont(context, `${PROBE_FONT_SIZE}px ${family}`);
   return context.measureText(text).width;
 }
 
@@ -569,6 +627,17 @@ function probeCandidateFamilies(candidateFamilies: readonly string[]): string[] 
     .filter(family => !GENERIC_FONTS.has(family))
     .filter(family => !REGISTERED_FONTS.has(family))
     .filter(family => isFamilyLikelyAvailable(context, family));
+}
+
+function unresolvedCandidateFamilies(
+  records: readonly LocalFontRecord[],
+  candidateFamilies: readonly string[],
+): string[] {
+  const lookup = buildLocalFontLookup(records);
+  return normalizeFamilies(candidateFamilies)
+    .filter(family => !GENERIC_FONTS.has(family))
+    .filter(family => !REGISTERED_FONTS.has(family))
+    .filter(family => resolveLocalFontFromLookup(family, lookup) === null);
 }
 
 const GENERIC_FONTS = new Set(['serif', 'sans-serif', 'monospace']);
@@ -814,15 +883,36 @@ export async function detectLocalFonts(options: DetectLocalFontsOptions = {}): P
     }
   }
 
+  const checkedFamilies = normalizeFamilies([
+    ...(cachedSnapshot?.checkedFamilies ?? []),
+    ...(options.candidateFamilies ?? []),
+  ]);
   let snapshot: LocalFontSnapshot | null = null;
   if (isLocalFontAccessSupported()) {
     const queryLocalFonts = (globalThis as LocalFontGlobal).queryLocalFonts!;
     const fontDataList = await queryLocalFonts();
-    snapshot = makeSnapshot(await collectLocalFontRecords(fontDataList), 'local-font-access');
-  } else if (isFontPresenceProbeSupported() && options.candidateFamilies?.length) {
-    const checkedFamilies = normalizeFamilies(options.candidateFamilies);
+    const enumeratedRecords = await collectLocalFontRecords(fontDataList);
+    const probeCandidates = unresolvedCandidateFamilies(enumeratedRecords, checkedFamilies);
+    const probedFamilies = isFontPresenceProbeSupported()
+      ? probeCandidateFamilies(probeCandidates)
+      : [];
+    const records = [
+      ...enumeratedRecords,
+      ...recordsFromFamilies(probedFamilies, 'font-presence-probe'),
+    ];
+    snapshot = makeSnapshot(records, 'local-font-access', {
+      checkedFamilies,
+      probedFamilies,
+      unresolvedFamilies: unresolvedCandidateFamilies(records, checkedFamilies),
+    });
+  } else if (isFontPresenceProbeSupported() && checkedFamilies.length > 0) {
     const families = probeCandidateFamilies(checkedFamilies);
-    snapshot = makeSnapshot(recordsFromFamilies(families), 'font-presence-probe', checkedFamilies);
+    const records = recordsFromFamilies(families, 'font-presence-probe');
+    snapshot = makeSnapshot(records, 'font-presence-probe', {
+      checkedFamilies,
+      probedFamilies: families,
+      unresolvedFamilies: unresolvedCandidateFamilies(records, checkedFamilies),
+    });
   }
 
   if (!snapshot) return [];
@@ -853,19 +943,7 @@ export function getDetectedLocalFonts(): string[] {
 
 /** HWP/CSS 글꼴명에서 동일한 설치 글꼴 face를 찾는다. */
 export function resolveLocalFont(fontName: string): LocalFontRecord | null {
-  const target = normalizeFontAlias(fontName);
-  if (!target) return null;
-  const matches = cachedFontLookup.aliases.get(target) ?? [];
-  if (matches.length === 0) return null;
-
-  const uniqueMatch = (records: readonly LocalFontRecord[] | undefined): LocalFontRecord | null =>
-    records?.length === 1 ? records[0] : null;
-  return uniqueMatch(cachedFontLookup.postscriptNames.get(target))
-    ?? uniqueMatch(cachedFontLookup.fullNames.get(target))
-    ?? uniqueMatch(cachedFontLookup.familyStyles.get(target))
-    // family만으로 여러 style face가 매칭되면 임의 face를 고르지 않는다.
-    ?? uniqueMatch(cachedFontLookup.families.get(target))
-    ?? (matches.length === 1 ? matches[0] : null);
+  return resolveLocalFontFromLookup(fontName, cachedFontLookup);
 }
 
 /** CSS family와 달리 style별 native Typeface cache를 구분하는 안정 키다. */
@@ -970,10 +1048,10 @@ export async function loadLocalFontBytes(fontName: string): Promise<ArrayBuffer 
 /** 현재 로컬 글꼴 감지/저장 상태를 반환한다. */
 export function getLocalFontState(): LocalFontState {
   const method = getLocalFontDetectionMethod();
-  const complete = cachedSnapshot?.source === 'local-font-access';
-  const checkedFamilies = cachedSnapshot?.source === 'font-presence-probe'
-    ? (cachedSnapshot.checkedFamilies ?? [])
-    : (complete ? (cachedSnapshot?.families ?? []) : []);
+  // Local Font Access가 성공해도 설치 face 일부가 빠질 수 있으므로 전체 시스템 기준 complete를
+  // 주장하지 않는다. 문서별 완료 여부는 checkedFamilies로 판정한다.
+  const complete = false;
+  const checkedFamilies = cachedSnapshot?.checkedFamilies ?? [];
   return {
     supported: method !== null,
     method,
@@ -984,6 +1062,8 @@ export function getLocalFontState(): LocalFontState {
     storage: getStorageKind(),
     count: cachedSnapshot?.families.length ?? 0,
     checkedFamilies,
+    probedFamilies: cachedSnapshot?.probedFamilies ?? [],
+    unresolvedFamilies: cachedSnapshot?.unresolvedFamilies ?? [],
     detectedAt: cachedSnapshot?.detectedAt ?? null,
     lastError: lastStorageError,
   };

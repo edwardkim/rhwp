@@ -201,6 +201,7 @@ export interface DeferredPaginationResult {
 }
 
 import { fontFamilyChainForDisplay } from './font-substitution';
+import { rememberRawCanvasFontDescriptor } from './canvas-font-raw';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
 
 /**
@@ -232,6 +233,7 @@ function installCanvasFontSubstitution(): void {
   const proto = CanvasRenderingContext2D.prototype;
   const descriptor = Object.getOwnPropertyDescriptor(proto, 'font');
   if (!descriptor?.get || !descriptor.set || descriptor.configurable === false) return;
+  rememberRawCanvasFontDescriptor(descriptor);
 
   Object.defineProperty(proto, 'font', {
     configurable: true,
