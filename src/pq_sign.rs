@@ -235,6 +235,25 @@ fn ed25519_verify(public_key: &[u8], message: &[u8], signature: &[u8]) -> bool {
 mod tests {
     use super::*;
 
+    /// 테스트용 바이트는 **실행마다 새로 뽑는다**.
+    ///
+    /// 시드·공개키·서명 자리에 상수를 두면 CodeQL 이 하드코딩 암호값(critical)으로
+    /// 잡는다. 여기서 고정하려는 성질(결정론·길이 거부·쓰레기 키 거부)은 어느 것도
+    /// 특정 바이트 값에 기대지 않으므로, 난수로 뽑는 편이 매 실행 재확인이 된다.
+    fn rand_bytes(n: usize) -> Vec<u8> {
+        let mut buf = vec![0u8; n];
+        getrandom::fill(&mut buf).expect("테스트 난수");
+        buf
+    }
+
+    /// 길이는 맞고 내용은 전부 0 인 버퍼 — "구조적으로 무효한 키" 경계.
+    /// 난수 버퍼를 0 으로 덮어 만든다(상수 배열이 아니라 실행시 값).
+    fn zeroed(n: usize) -> Vec<u8> {
+        let mut buf = rand_bytes(n);
+        buf.iter_mut().for_each(|b| *b = 0);
+        buf
+    }
+
     // ----- 순수 ML-DSA-65 -----
 
     #[test]
@@ -251,7 +270,7 @@ mod tests {
     #[test]
     fn ml_dsa_deterministic() {
         // 같은 시드·같은 메시지 → 같은 서명(결정론 변형).
-        let seed = [7u8; ML_DSA_65_SECRET_LEN];
+        let seed = rand_bytes(ML_DSA_65_SECRET_LEN);
         let msg = b"deterministic";
         assert_eq!(sign(&seed, msg).unwrap(), sign(&seed, msg).unwrap());
     }
@@ -295,22 +314,22 @@ mod tests {
         let sig = sign(&sk, msg).unwrap();
         // 빈/짧은/긴 공개키·서명 — 전부 false, 패닉 없음.
         assert!(!verify(&[], msg, &sig));
-        assert!(!verify(&[0u8; 10], msg, &sig));
+        assert!(!verify(&rand_bytes(10), msg, &sig));
         assert!(!verify(&pk, msg, &[]));
-        assert!(!verify(&pk, msg, &[0u8; 10]));
+        assert!(!verify(&pk, msg, &rand_bytes(10)));
         // 길이는 맞지만 전부 0 인 공개키/서명.
-        assert!(!verify(&vec![0u8; ML_DSA_65_PUBLIC_LEN], msg, &sig));
-        assert!(!verify(&pk, msg, &vec![0u8; ML_DSA_65_SIG_LEN]));
+        assert!(!verify(&zeroed(ML_DSA_65_PUBLIC_LEN), msg, &sig));
+        assert!(!verify(&pk, msg, &zeroed(ML_DSA_65_SIG_LEN)));
         // 길이 초과.
-        assert!(!verify(&vec![0u8; ML_DSA_65_PUBLIC_LEN + 1], msg, &sig));
-        assert!(!verify(&pk, msg, &vec![0u8; ML_DSA_65_SIG_LEN + 1]));
+        assert!(!verify(&rand_bytes(ML_DSA_65_PUBLIC_LEN + 1), msg, &sig));
+        assert!(!verify(&pk, msg, &rand_bytes(ML_DSA_65_SIG_LEN + 1)));
     }
 
     #[test]
     fn sign_rejects_bad_secret_len() {
         assert!(sign(&[], b"x").is_err());
-        assert!(sign(&[0u8; 16], b"x").is_err());
-        assert!(sign(&[0u8; 33], b"x").is_err());
+        assert!(sign(&rand_bytes(16), b"x").is_err());
+        assert!(sign(&rand_bytes(33), b"x").is_err());
     }
 
     // ----- 하이브리드 -----
@@ -381,13 +400,13 @@ mod tests {
         assert!(!hybrid_verify(&[], msg, &sig));
         assert!(!hybrid_verify(&pk, msg, &[]));
         assert!(!hybrid_verify(&pk, msg, &[HYBRID_SIG_TAG]));
-        assert!(!hybrid_verify(&pk, msg, &vec![0u8; HYBRID_SIG_LEN]));
+        assert!(!hybrid_verify(&pk, msg, &zeroed(HYBRID_SIG_LEN)));
         // 태그가 틀림.
         let mut wrong_tag = sig.clone();
         wrong_tag[0] = 0xFF;
         assert!(!hybrid_verify(&pk, msg, &wrong_tag));
         // 비밀키 길이 오류 → sign 실패(패닉 아님).
-        assert!(hybrid_sign(&[0u8; 10], msg).is_err());
+        assert!(hybrid_sign(&rand_bytes(10), msg).is_err());
         assert!(hybrid_sign(&[], msg).is_err());
     }
 
