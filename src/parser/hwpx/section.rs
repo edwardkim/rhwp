@@ -73,7 +73,51 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
         buf.clear();
     }
 
+    link_orphan_field_ends(&mut section.paragraphs);
+
     Ok(section)
+}
+
+/// 같은 문단 목록 안에서 끝난 다문단 fieldEnd에 짝 fieldBegin의 HWP5 control id를 연결한다.
+///
+/// HWPX fieldEnd는 beginIDRef와 fieldid만 보관하므로, HWP5 PARA_TEXT로 다시 쓸 때 필요한
+/// field control fourcc는 앞 문단의 fieldBegin에서 찾아야 한다. 짝을 찾지 못한 종료 마커는
+/// 그대로 남긴다. 임의의 필드 종류를 만들어 내는 것보다 보존 실패를 명시하는 편이 안전하다.
+fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
+    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+
+    for para in paragraphs.iter_mut() {
+        for orphan in &mut para.orphan_field_ends {
+            let Some((field_id, ctrl_id)) = open_fields.last().copied() else {
+                continue;
+            };
+
+            // HWPX는 beginIDRef로 짝을 식별한다. 0은 손상·부분 입력 호환을 위한
+            // 미지정값이므로 HWP5 parser와 같이 현재 열린 필드에 연결한다.
+            if orphan.begin_id_ref != 0 && orphan.begin_id_ref != field_id {
+                continue;
+            }
+
+            open_fields.pop();
+            if orphan.begin_id_ref == 0 {
+                orphan.begin_id_ref = field_id;
+            }
+            orphan.begin_ctrl_id = ctrl_id;
+        }
+
+        for (control_idx, control) in para.controls.iter().enumerate() {
+            let Control::Field(field) = control else {
+                continue;
+            };
+            let closes_in_this_paragraph = para
+                .field_ranges
+                .iter()
+                .any(|range| range.control_idx == control_idx);
+            if !closes_in_this_paragraph && field.field_id != 0 {
+                open_fields.push((field.field_id, field.ctrl_id));
+            }
+        }
+    }
 }
 
 /// section XML의 `<hp:masterPage idRef="...">` 참조를 문서 순서대로 수집한다.
@@ -733,6 +777,10 @@ fn parse_paragraph(
                 control_idx += 1;
                 visible_char_idx += 1;
             }
+            // 제목 차례 표시는 `text_parts` 안에서는 두 문자 센티널이지만 실제 본문
+            // 텍스트에는 들어가지 않는다. fieldRange는 visual_text 좌표를 쓰므로 여기서
+            // 센티널 길이를 더하면 그 뒤 fieldBegin/fieldEnd가 두 글자 밀린다.
+            TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => {}
             _ => {
                 visible_char_idx += part.chars().count();
             }
@@ -7898,6 +7946,23 @@ mod tests {
     }
 
     #[test]
+    fn title_mark_does_not_shift_following_field_range() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0"><hp:t><hp:titleMark ignore="1"/>앞</hp:t><hp:ctrl><hp:fieldBegin id="100" type="HYPERLINK" name="" fieldid="100"/></hp:ctrl><hp:t>뒤</hp:t><hp:ctrl><hp:fieldEnd beginIDRef="100" fieldid="100"/></hp:ctrl></hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let para = &parse_hwpx_section(xml).unwrap().paragraphs[0];
+        assert_eq!(para.text, "앞뒤");
+        assert_eq!(para.field_ranges.len(), 1);
+        assert_eq!(para.field_ranges[0].start_char_idx, 1);
+        assert_eq!(para.field_ranges[0].end_char_idx, 2);
+    }
+
+    #[test]
     fn test_parse_linebreak_preserves_offsets() {
         let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
 <hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
@@ -8578,6 +8643,23 @@ mod tests {
         assert_eq!(ofe.char_idx, 2, "텍스트 끝(인덱스 2) 위치");
         assert_eq!(ofe.begin_id_ref, 1_878_228_493);
         assert_eq!(ofe.field_id, 627_272_811);
+        let begin_ctrl_id = match p0.controls.first() {
+            Some(Control::Field(field)) => field.ctrl_id,
+            other => panic!("fieldBegin 컨트롤이 아니다: {other:?}"),
+        };
+        assert_eq!(
+            ofe.begin_ctrl_id, begin_ctrl_id,
+            "HWP5 저장에 필요한 field control id를 앞 문단 fieldBegin에서 연결한다"
+        );
+        let hwp_roundtrip = crate::parser::body_text::parse_body_text_section(
+            &crate::serializer::body_text::serialize_section(&section),
+        )
+        .expect("HWP5로 저장한 다문단 field가 다시 파싱돼야 한다");
+        let hwp_end = hwp_roundtrip.paragraphs[1]
+            .orphan_field_ends
+            .first()
+            .expect("HWP5 저장본에도 fieldEnd 슬롯이 남아야 한다");
+        assert_eq!(hwp_end.begin_ctrl_id, begin_ctrl_id);
         // char_count = 텍스트 2 + fieldEnd 8 + 끝마커 1 = 11.
         assert_eq!(
             p1.char_count, 11,
