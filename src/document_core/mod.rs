@@ -147,6 +147,8 @@ pub struct DocumentCore {
     pub(crate) paste_cascade_count: u32,
     /// 문단부호(¶) 표시 여부
     pub(crate) show_paragraph_marks: bool,
+    /// [#4709] SVG 출력에 배치 메트릭 face 주석(data-metric-font) 부착 여부 (옵트인)
+    pub(crate) annotate_metric_font: bool,
     /// 조판부호 표시 여부 (개체 마커 [표]/[그림] 등, 문단부호 포함)
     pub(crate) show_control_codes: bool,
     /// 투명선 표시 여부
@@ -340,6 +342,7 @@ impl DocumentCore {
             table_transpose_clipboard: None,
             paste_cascade_count: 0,
             show_paragraph_marks: false,
+            annotate_metric_font: false,
             show_control_codes: false,
             show_transparent_borders: false,
             clip_enabled: true,
