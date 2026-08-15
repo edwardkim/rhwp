@@ -26,6 +26,14 @@ function setupEventListenersSource(): string {
   return main.slice(start, end);
 }
 
+function localFontsChangedHandlerSource(): string {
+  const listeners = setupEventListenersSource();
+  const start = listeners.indexOf("eventBus.on('local-fonts-changed'");
+  const end = listeners.indexOf('\n  });', start);
+  assert.ok(start >= 0 && end > start, 'local-fonts-changed 핸들러를 찾을 수 있어야 한다');
+  return listeners.slice(start, end + 5);
+}
+
 test('문서 초기화는 로컬 글꼴 확인 후에만 입력 핸들러를 활성화한다', () => {
   const initializeDocument = initializeDocumentSource();
   const promptIndex = initializeDocument.indexOf('await promptLocalFontsIfNeeded(docInfo, displayName);');
@@ -74,8 +82,7 @@ test('CanvasKit 첫 replay는 저장된 local face를 bundled fallback보다 먼
 });
 
 test('로컬 글꼴 감지는 Canvas2D 문서를 전체 재로딩하지 않는다', () => {
-  const main = source('src/main.ts');
-  assert.doesNotMatch(main, /eventBus\.on\('local-fonts-changed',[\s\S]*?canvasView\?\.loadDocument\(\);/);
+  assert.doesNotMatch(localFontsChangedHandlerSource(), /canvasView\?\.loadDocument\(\);/u);
 });
 
 test('저장된 local-font snapshot은 Canvas2D 첫 문서 paint보다 먼저 준비한다', () => {
@@ -88,12 +95,10 @@ test('저장된 local-font snapshot은 Canvas2D 첫 문서 paint보다 먼저 �
 });
 
 test('로컬 글꼴 갱신은 backend별 준비 뒤 현재 문서 view를 한 번 갱신한다', () => {
-  const listeners = setupEventListenersSource();
-  const start = listeners.indexOf("eventBus.on('local-fonts-changed'");
-  assert.ok(start >= 0, 'main이 local-fonts-changed를 구독해야 한다');
-  const handler = listeners.slice(start, listeners.indexOf('\n  });', start) + 5);
+  const handler = localFontsChangedHandlerSource();
 
   assert.match(handler, /prepareCanvasKitLocalFonts/u);
   assert.match(handler, /eventBus\.emit\('document-view-changed'\)/u);
+  assert.match(handler, /if \(generation === lastAppliedLocalFontGeneration\) return;/u);
   assert.doesNotMatch(handler, /canvasView\?\.loadDocument\(\)/u);
 });
