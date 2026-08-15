@@ -52,7 +52,13 @@ import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
 import { analyzeDocumentFonts } from '@/core/document-font-status';
 import { setDocumentFontSubstitutions } from '@/core/font-substitution';
-import { detectLocalFonts, getLocalFontState, loadStoredLocalFonts } from '@/core/local-fonts';
+import {
+  clearStoredLocalFonts,
+  detectLocalFonts,
+  getLocalFontState,
+  loadStoredLocalFonts,
+  resolveLocalFont,
+} from '@/core/local-fonts';
 import { userSettings } from '@/core/user-settings';
 import { AutosaveManager, type AutosaveScheduleSettings, type AutosaveStatus } from '@/recovery/autosave-manager';
 import { clearAutosaveDrafts, deleteAutosaveDraft, listAutosaveDrafts, type AutosaveDraft } from '@/recovery/autosave-store';
@@ -117,6 +123,12 @@ if (import.meta.env.DEV) {
   (window as any).__documentState = documentState;
   (window as any).__autosaveManager = autosaveManager;
   (window as any).__theme = { getThemeMode, getEffectiveTheme, setThemeMode };
+  (window as any).__localFonts = {
+    clearStoredLocalFonts,
+    detectLocalFonts,
+    getLocalFontState,
+    resolveLocalFont,
+  };
   initRhwpDev(wasm);
 }
 let canvasView: CanvasView | null = null;
@@ -1161,7 +1173,9 @@ async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: stri
     const nextReport = analyzeDocumentFonts(docInfo.fontsUsed);
     eventBus.emit('local-fonts-changed', { fonts, report: nextReport });
     const state = getLocalFontState();
-    const resultLabel = state.source === 'font-presence-probe' ? '확인됨' : '감지됨';
+    const resultLabel = state.source === 'font-presence-probe'
+      ? '확인됨'
+      : (state.probedFamilies.length > 0 ? '열거·확인됨' : '열거됨');
     msg.textContent = `${displayName} (로컬 글꼴 ${fonts.length}개 ${resultLabel})`;
     showToast({
       message: `로컬 글꼴 ${fonts.length}개를 ${resultLabel.replace('됨', '')}하고 저장했습니다.\n다음 문서 로드부터 감지 결과를 재사용합니다.`,

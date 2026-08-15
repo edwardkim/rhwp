@@ -158,7 +158,7 @@ export class OptionsDialog extends ModalDialog {
 
     const localDesc = document.createElement('p');
     localDesc.className = 'opt-desc';
-    localDesc.textContent = 'PC에 설치된 글꼴을 감지하여 글꼴 목록에 추가합니다. (Chrome/Edge 전체 감지 지원, Firefox는 문서 로드 시 필요한 글꼴만 확인)';
+    localDesc.textContent = 'PC에 설치된 글꼴을 감지하여 글꼴 목록에 추가합니다. (Chrome/Edge는 목록 열거 후 문서에서 누락된 후보를 추가 확인, Firefox는 문서에 필요한 후보만 확인)';
     localSection.appendChild(localDesc);
 
     const localRow = document.createElement('div');
@@ -200,7 +200,7 @@ export class OptionsDialog extends ModalDialog {
       localStatus.textContent = '감지 중...';
       try {
         const fonts = await detectLocalFonts({ force: true });
-        updateLocalStatus(`${fonts.length}개 로컬 글꼴을 감지하고 저장했습니다.`);
+        updateLocalStatus(`${fonts.length}개 로컬 글꼴 열거 결과를 저장했습니다. 문서별 누락 후보는 문서를 열 때 추가 확인합니다.`);
         this.eventBus?.emit('local-fonts-changed', { fonts, source: 'options-dialog' });
       } catch (error) {
         updateLocalStatus(describeLocalFontDetectionError(error));
@@ -397,7 +397,10 @@ function formatLocalFontStatus(state: LocalFontState): string {
   if (state.source === 'font-presence-probe') {
     return `문서별 확인 결과 저장됨: 사용 가능 ${state.count}개 / 확인한 글꼴 ${state.checkedFamilies.length}개${dateSuffix}`;
   }
-  return `전체 로컬 글꼴 감지 결과 저장됨: ${state.count}개${dateSuffix}`;
+  if (state.checkedFamilies.length > 0) {
+    return `로컬 글꼴 결과 저장됨: 사용 가능 ${state.count}개 / 문서 후보 ${state.checkedFamilies.length}개 / 열거 누락 확인 ${state.probedFamilies.length}개${dateSuffix}`;
+  }
+  return `로컬 글꼴 열거 결과 저장됨: ${state.count}개 · 문서별 누락 후보는 문서를 열 때 추가 확인${dateSuffix}`;
 }
 
 function formatDetectedAt(value: string | null): string {
