@@ -29,6 +29,7 @@ import re
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GYM_ROOT = os.path.dirname(HERE)
@@ -105,7 +106,7 @@ def fuzz(bin_path, samples_dir, commands, limit, workers, timeout, work_dir):
     picked, total = select_samples(samples_dir, limit)
     jobs = []
     for i, name in enumerate(picked):
-        data = open(os.path.join(samples_dir, name), "rb").read()
+        data = Path(samples_dir, name).read_bytes()
         for label, mut in deterministic_mutants(data):
             jobs.append((i, name, label, mut))
 
@@ -115,7 +116,7 @@ def fuzz(bin_path, samples_dir, commands, limit, workers, timeout, work_dir):
     def run_one(job):
         idx, name, label, mut = job
         p = os.path.join(work_dir, f"m{idx}_{label}.hwp")
-        open(p, "wb").write(mut)
+        Path(p).write_bytes(mut)
         try:
             results = []
             for cmd in commands:

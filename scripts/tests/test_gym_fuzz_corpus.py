@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import importlib.util
-import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -46,9 +45,10 @@ class FuzzCorpusTests(unittest.TestCase):
     def test_select_samples_deterministic_bounded(self):
         mod = load()
         with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
             for i in range(40):
-                open(os.path.join(d, f"s{i:03d}.hwp"), "wb").write(b"x")
-            open(os.path.join(d, "note.txt"), "wb").write(b"x")
+                (root / f"s{i:03d}.hwp").write_bytes(b"x")
+            (root / "note.txt").write_bytes(b"x")
             picked, total = mod.select_samples(d, 8)
             self.assertEqual(total, 40)                 # .txt 제외
             self.assertLessEqual(len(picked), 8)
@@ -67,12 +67,13 @@ class FuzzCorpusTests(unittest.TestCase):
             return (None, None)
         mod.probe = fake_probe
         with tempfile.TemporaryDirectory() as d:
-            samples = os.path.join(d, "samples")
-            os.makedirs(samples)
-            open(os.path.join(samples, "one.hwp"), "wb").write(bytes(range(256)) * 16)
-            work = os.path.join(d, "w")
-            os.makedirs(work)
-            r = mod.fuzz("bin", samples, ["a", "b", "c"], limit=0, workers=2, timeout=5, work_dir=work)
+            root = Path(d)
+            samples = root / "samples"
+            samples.mkdir()
+            (samples / "one.hwp").write_bytes(bytes(range(256)) * 16)
+            work = root / "w"
+            work.mkdir()
+            r = mod.fuzz("bin", str(samples), ["a", "b", "c"], limit=0, workers=2, timeout=5, work_dir=str(work))
         self.assertFalse(r["ok"])
         self.assertEqual(r["distinctPanicSites"], 1)                 # x.rs:10 한 곳으로 묶임
         self.assertEqual(r["panicClusters"][0]["location"], "src/x.rs:10")
@@ -83,12 +84,13 @@ class FuzzCorpusTests(unittest.TestCase):
         mod = load()
         mod.probe = lambda *a, **k: (None, None)
         with tempfile.TemporaryDirectory() as d:
-            samples = os.path.join(d, "samples")
-            os.makedirs(samples)
-            open(os.path.join(samples, "one.hwp"), "wb").write(bytes(range(256)) * 16)
-            work = os.path.join(d, "w")
-            os.makedirs(work)
-            r = mod.fuzz("bin", samples, ["info"], limit=0, workers=2, timeout=5, work_dir=work)
+            root = Path(d)
+            samples = root / "samples"
+            samples.mkdir()
+            (samples / "one.hwp").write_bytes(bytes(range(256)) * 16)
+            work = root / "w"
+            work.mkdir()
+            r = mod.fuzz("bin", str(samples), ["info"], limit=0, workers=2, timeout=5, work_dir=str(work))
         self.assertTrue(r["ok"])
         self.assertEqual(r["panicClusters"], [])
         self.assertEqual(r["hangClusters"], [])
