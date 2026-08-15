@@ -4,6 +4,7 @@
 
 use wasm_bindgen::prelude::*;
 
+pub mod agent;
 pub mod capabilities_schema;
 pub mod diagnostics;
 pub mod doclang;
