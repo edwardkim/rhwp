@@ -72,6 +72,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-4272-nested-table-object-copy.test.mjs` | 상시 | active | #4272 물리 5쪽 3중 중첩 표 객체 선택의 owner path·control index 분리와 Ctrl+C 검증 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4272-table-copy | `output/4272/nested-table-object-copy.{json,png}` |
 | `issue-4272-nested-cell-text-selection.test.mjs` | 상시 | active | #4272 중첩 표 안쪽 셀의 전체 cellPath 선택 rect, 실제 마우스 드래그와 Ctrl+C/V | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4272 | 물리 5쪽 `23,504`, `output/4272/nested-cell-*.{json,png}` |
 | `issue-536-boxed-pua-canvas2d.test.mjs` | 상시 | active | #536 실제 HWP의 사각 안 숫자 PUA를 기본 Canvas2D가 결정적으로 합성 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-536 | #4122 17쪽 pagination stack 계약 포함 |
+| `local-font-partial-enumeration-issue4741.test.mjs` | 상시 | active | #4741 Local Font Access 부분 열거를 강제해 raw probe·exact Canvas2D face·폭·cache 계약 검증 | — | npm e2e:issue-4741 | KoPub바탕체 Light 설치 호스트 Chrome 전용 |
 | `issue-595.test.mjs` | 진단 | hold | Issue #595 진단 e2e | exam_math.hwp | 수동 | legacy-name · #595 진단 (assertion 0) |
 | `line-spacing.test.mjs` | 상시 | active | 줄간격 변경에 따른 페이지 넘김 검증 | — | 수동 |  |
 | `navigation-shortcuts.test.mjs` | 상시 | active | 플랫폼별 navigation shortcut | — | 수동 |  |

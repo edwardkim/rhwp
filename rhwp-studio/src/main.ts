@@ -52,7 +52,13 @@ import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
 import { analyzeDocumentFonts } from '@/core/document-font-status';
 import { setDocumentFontSubstitutions } from '@/core/font-substitution';
-import { detectLocalFonts, getLocalFontState, loadStoredLocalFonts } from '@/core/local-fonts';
+import {
+  clearStoredLocalFonts,
+  detectLocalFonts,
+  getLocalFontState,
+  loadStoredLocalFonts,
+  resolveLocalFont,
+} from '@/core/local-fonts';
 import { userSettings } from '@/core/user-settings';
 import { AutosaveManager, type AutosaveScheduleSettings, type AutosaveStatus } from '@/recovery/autosave-manager';
 import { clearAutosaveDrafts, deleteAutosaveDraft, listAutosaveDrafts, type AutosaveDraft } from '@/recovery/autosave-store';
@@ -117,6 +123,12 @@ if (import.meta.env.DEV) {
   (window as any).__documentState = documentState;
   (window as any).__autosaveManager = autosaveManager;
   (window as any).__theme = { getThemeMode, getEffectiveTheme, setThemeMode };
+  (window as any).__localFonts = {
+    clearStoredLocalFonts,
+    detectLocalFonts,
+    getLocalFontState,
+    resolveLocalFont,
+  };
   initRhwpDev(wasm);
 }
 let canvasView: CanvasView | null = null;
