@@ -931,6 +931,7 @@ jobs:
           python3 -m unittest scripts/tests/test_gym_score.py
           python3 -m unittest scripts/tests/test_gym_packs.py
           python3 -m unittest scripts/tests/test_gym_leaderboard.py
+          python3 -m unittest scripts/tests/test_gym_robustness.py
           python3 -m unittest scripts/tests/test_gym_release_diff.py
 
       # [#4715] 채택 척추 — 에이전트 작업 표준(AWS)이 전 표면에서 정합한지.

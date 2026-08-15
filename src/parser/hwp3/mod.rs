@@ -2896,7 +2896,9 @@ pub(crate) fn parse_paragraph_list(
                 // percent: lh=th, ls=th*(ratio-100)/100
                 (
                     fallback_text_height,
-                    fallback_text_height * (line_spacing_ratio - 100) / 100,
+                    // 손상 입력의 큰 line_spacing 으로 i32 곱셈이 오버플로(패닉)하지
+                    // 않도록 i64 중간연산 — 정상값에선 결과가 i32 범위라 동일하다.
+                    (fallback_text_height as i64 * (line_spacing_ratio as i64 - 100) / 100) as i32,
                 )
             };
         fallback_line_height = fallback_line_height.max(100); // 0 방지
@@ -3067,7 +3069,8 @@ pub(crate) fn parse_paragraph_list(
                         {
                             HWP3_TAC_OBJECT_LINE_SPACING_HU
                         } else {
-                            th * (line_spacing_ratio - 100) / 100
+                            // i64 중간연산으로 손상 입력의 i32 곱셈 오버플로(패닉) 방지.
+                            (th as i64 * (line_spacing_ratio as i64 - 100) / 100) as i32
                         };
                     }
                 }
@@ -4812,6 +4815,20 @@ mod tests {
             decompress_hwp3_body_limited(&compressed, plain.len()).unwrap(),
             plain
         );
+    }
+
+    /// [robustness] 손상된 HWP3 의 큰 line_spacing 으로 line-spacing 곱셈
+    /// `th * (ratio-100)` 이 i32 오버플로로 패닉하던 회귀(hwp3/mod.rs:3070).
+    /// 이제 i64 중간연산이라 패닉 없이 Ok/Err 로 우아하게 끝나야 한다. 패닉하면
+    /// 이 테스트가 abort 되어 실패한다.
+    #[test]
+    fn corrupt_hwp3_line_spacing_does_not_overflow_panic() {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/samples/hwp3-sample11.hwp");
+        let data = std::fs::read(path).expect("샘플 읽기");
+        let mut corrupt = data.clone();
+        let pos = corrupt.len() * 10 / 100; // 감사기가 패닉을 재현한 결정적 손상
+        corrupt[pos] ^= 0xFF;
+        let _ = parse_hwp3(&corrupt); // 결과값 무관 — 패닉만 안 하면 통과
     }
 
     /// [#3676] `cold`는 미주 fixup의 부수 효과가 아니라 구역 본문 계약이다.
