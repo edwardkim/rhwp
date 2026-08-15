@@ -33,6 +33,7 @@ last_verified: 2026-08-15
 | AI 에이전트 호스트에 rhwp 를 MCP 도구로 연결 | [MCP 통합 가이드](mcp_integration_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md), [CLI JSON 파이프라인 가이드](cli_json_pipeline_guide.md) |
 | 브라우저 확장 개발·배포 | [브라우저 확장 개발 가이드](browser_extension_dev_guide.md) | [Chrome/Edge 확장 빌드·배포](chrome_edge_extension_build_deploy.md) |
 | Studio E2E·CDP 검증 | [E2E 조판 자동 검증](e2e_verification_guide.md) | [CDP E2E 가이드](e2e-cdp.md) |
+| 로컬 폰트 감지·이름·backend·정답지 불일치 대응 | [폰트 감지·대체 사고 대응 절차](font_incident_response.md) | [폰트 fallback 전략](../tech/font_fallback_strategy.md), [시각 검증 거버넌스](verification/visual_verification_governance.md) |
 | HWP/HWPX 저장 회귀 기준 | [HWP5 roundtrip baseline](hwp5_roundtrip_baseline.md), [HWPX roundtrip baseline](hwpx_roundtrip_baseline.md) | [문서 진단 도구](document_diagnostics_tool_manual.md), [HWPX2HWP probe 온보딩](hwpx2hwp_probe_onboarding.md) |
 | `@rhwp/core` 편집 API | [소비자용 편집 API](consumer_edit_api_guide.md) | [WASM options object 규약](wasm_api_options_convention.md) |
 | 웹한글컨트롤 호환 층 개발·Oracle 대조 | [웹한글컨트롤 호환 개발 가이드](webhwpctrl_compat_development.md) | [`@rhwp/hwpctrl` 패키지 안내](../../npm/hwpctrl-ocx/README.md), [호환 하니스](../../tools/hwpctrl_compat/README.md) |

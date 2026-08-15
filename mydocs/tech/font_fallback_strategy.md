@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/font_fallback_strategy.md
-last_verified: 2026-07-16
+last_verified: 2026-08-15
 ---
 
 # CJK 폰트 폴백 전략 보고서
@@ -12,6 +12,9 @@ last_verified: 2026-07-16
 > 2026-07-17 현행화: canonical 웹폰트 source는 `assets/fonts/`이며, Git 추적 WOFF2는 36개
 > (22,651,296 bytes)다. Studio의 runtime `fonts/...` URL과 이 문서의 fallback 정책은 변경하지 않았다.
 > 아래 2026-04-07 로드맵·권장안의 `web/fonts` 표현은 당시 구현 경로를 설명하는 기록으로 보존한다.
+>
+> 2026-08-15 현행화: Local Font Access API의 성공 응답은 설치 face 전체 열거를 보장하지 않는다.
+> 문서 후보 coverage와 Canvas2D/CanvasKit 조달 능력을 분리하는 hybrid 감지 계약을 6.2에 반영했다.
 
 ## 목차
 
@@ -386,17 +389,27 @@ async function getSystemFonts(): Promise<Set<string>> {
 **장점**: 시스템 설치 폰트 전체 목록 확보
 **단점**: Chrome 전용, 사용자 권한 요청 필요
 
-### 6.2 권장 감지 전략
+### 6.2 현행 hybrid 감지 전략
 
 ```
-문서 로드 시:
-  1. HWP 문서에서 사용된 폰트 목록 추출
-  2. 각 폰트에 대해 document.fonts.check() 또는 measureText 비교로 감지
-  3. 사용 가능 → 그대로 사용
-  4. 사용 불가 → 대체 매핑 테이블에서 오픈소스 폰트 결정
-  5. 오픈소스 폰트 woff2 로드 → FontFace API로 등록
-  6. Canvas ctx.font에 최종 폰트명 설정
+사용자 승인 뒤 감지 세대마다:
+  1. HWP/HWPX 문서의 exact face 후보 추출
+  2. Local Font Access 지원 시 목록을 한 번 열거하고 family/full/PostScript/style/지역화 이름 정규화
+  3. 열거 record와 번들 exact face로 해소되지 않은 문서 후보만 raw Canvas presence probe
+  4. 열거 face, probe-positive face, 확인했지만 미해소인 후보를 provenance와 함께 snapshot에 저장
+  5. 같은 감지 세대에서는 결과 재사용 — glyph/measure hot path에서 probe 금지
+  6. Canvas2D는 exact-enumerated 또는 exact-probed face를 CSS chain 앞에 배치
+  7. CanvasKit은 FontData.blob()으로 SFNT bytes를 얻은 exact-enumerated face만 Typeface로 등록
+  8. 나머지는 문서 대체 face → 공개 웹폰트 → portable generic 순서로 fallback
 ```
+
+`queryLocalFonts()` 함수의 존재, 성공, 결과 count는 문서 후보에 대한 완전성 증거가 아니다. 제품이
+`CanvasRenderingContext2D.font` setter를 패치하는 경우 presence probe는 패치 전 원시 descriptor 또는
+격리 realm을 사용해야 한다. `exact-probed`는 CSS Canvas2D 사용 가능 상태이며 SFNT bytes를 확보한
+상태가 아니므로 CanvasKit local Typeface 성공으로 승격하지 않는다.
+
+진단 매트릭스, RED fixture 분할, 검증 자산과 관련 이슈 인계 절차는
+[폰트 감지·대체 사고 대응 절차](../manual/font_incident_response.md)를 따른다.
 
 ### 6.3 font-loader.ts 개선안
 
