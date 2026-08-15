@@ -2185,7 +2185,10 @@ mod tests {
     /// saturating 으로 막았다 — 이제 파싱이 패닉 없이 Ok/Err 로 끝난다.
     #[test]
     fn corrupt_variant_vpos_does_not_overflow_panic() {
-        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/samples/hwp3-sample11-hwp5.hwp");
+        let path = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/samples/hwp3-sample11-hwp5.hwp"
+        );
         let data = std::fs::read(path).expect("샘플 읽기");
         let mut corrupt = data.clone();
         let pos = corrupt.len() * 90 / 100; // 감사기가 패닉을 재현한 결정적 손상
