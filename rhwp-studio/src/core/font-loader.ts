@@ -51,6 +51,7 @@ const CDN_DEJAVU_SERIF_REGULAR = `${CDN_FONTSOURCE}/dejavu-serif@5.3.0/files/dej
 const CDN_ROBOTO_REGULAR = `${CDN_FONTSOURCE}/roboto@5.3.0/files/roboto-latin-400-normal.woff2`;
 const CDN_GOVERNMENT_SYMBOL_REGULAR = 'https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf';
 const CDN_KOPUB = 'https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts';
+const CDN_KOPUB_WORLD = 'https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts';
 const CDN_GYEONGGI_MILLENNIUM = 'https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0';
 const CDN_NOONFONTS_TWO = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0';
 
@@ -152,6 +153,17 @@ const FONT_LIST: FontEntry[] = [
   { name: 'KoPubBatangLight', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff' },
   { name: 'KoPubBatangMedium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff' },
   { name: 'KoPubBatangBold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff' },
+  // === KoPubWorld (KOPUS 공개 글꼴, 문서 요청 시에만 CDN 로드) ===
+  { name: 'KoPubWorld돋움체 Light', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Light.woff2` },
+  { name: 'KoPubWorld돋움체 Medium', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2` },
+  { name: 'KoPubWorld돋움체 Bold', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Bold.woff2` },
+  { name: 'KoPubWorld바탕체 Light', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Light.woff2` },
+  { name: 'KoPubWorld바탕체 Medium', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2` },
+  { name: 'KoPubWorld바탕체 Bold', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Bold.woff2` },
+  { name: 'KoPubWorld Dotum', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2` },
+  { name: 'KoPubWorld Batang', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2` },
+  { name: 'KoPubWorldDotum', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2` },
+  { name: 'KoPubWorldBatang', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2` },
   // === Noonnu에서 웹사이트 사용 가능으로 확인된 문서 사용 글꼴 ===
   { name: '경기천년바탕 Bold', file: `${CDN_GYEONGGI_MILLENNIUM}/Batang_Regular.woff`, format: 'woff' },
   { name: '경기천년바탕 Regular', file: `${CDN_GYEONGGI_MILLENNIUM}/Batang_Regular.woff`, format: 'woff' },

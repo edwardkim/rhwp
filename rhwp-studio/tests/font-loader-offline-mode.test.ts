@@ -166,6 +166,7 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
       '정부상징 부처명_16040911',
       'KoPub돋움체 Medium',
       'KoPubBatangMedium',
+      'KoPubWorld돋움체 Medium',
       '경기천년제목 Medium',
     ]);
 
@@ -174,12 +175,14 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
     assert.equal(fontFaceRequests.some(request => request.family === '정부상징 부처명_16040911'), true);
     assert.equal(fontFaceRequests.some(request => request.family === 'KoPub돋움체 Medium'), true);
     assert.equal(fontFaceRequests.some(request => request.family === 'KoPubBatangMedium'), true);
+    assert.equal(fontFaceRequests.some(request => request.family === 'KoPubWorld돋움체 Medium'), true);
     assert.equal(fontFaceRequests.some(request => request.family === '경기천년제목 Medium'), true);
     assert.equal(styles[0].textContent.includes('DejaVu Serif'), false);
     assert.equal(styles[0].textContent.includes('Roboto'), true);
     assert.equal(styles[0].textContent.includes('정부상징 부처명_16040911'), true);
     assert.equal(styles[0].textContent.includes('KoPub돋움체 Medium'), true);
     assert.equal(styles[0].textContent.includes('KoPubBatangMedium'), true);
+    assert.equal(styles[0].textContent.includes('KoPubWorld돋움체 Medium'), true);
     assert.equal(styles[0].textContent.includes('경기천년제목 Medium'), true);
     assert.equal(
       fontFaceRequests.some(request => (
@@ -198,6 +201,13 @@ test('문서 글꼴은 시스템에 없을 때만 조건부 웹폰트로 등록�
     assert.equal(
       fontFaceRequests.some(request => request.source.includes(
         'font-kopub@1.0.2/fonts/KoPubBatang-Medium.woff',
+      )),
+      true,
+    );
+    assert.equal(
+      fontFaceRequests.some(request => (
+        request.source.includes('font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Medium.woff2')
+        && request.source.includes("format('woff2')")
       )),
       true,
     );
