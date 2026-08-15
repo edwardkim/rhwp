@@ -80,6 +80,7 @@ const FONT_LIST: FontEntry[] = [
   { name: 'HYMyeongJo-Extra', file: 'fonts/NotoSerifKR-Bold.woff2' },
   { name: 'HY신명조', file: 'fonts/NotoSerifKR-Regular.woff2' },
   { name: 'HY중고딕', file: 'fonts/NotoSansKR-Regular.woff2' },
+  { name: '한양중고딕', file: 'fonts/NotoSansKR-Regular.woff2' },
   { name: '양재튼튼체B', file: 'fonts/NotoSansKR-Bold.woff2' },
   // === 한글 시스템 폰트 → 오픈소스 대체 (OS 폰트 없을 때 폴백) ===
   { name: 'Malgun Gothic', file: 'fonts/Pretendard-Regular.woff2' },
