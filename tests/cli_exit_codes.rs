@@ -219,6 +219,68 @@ fn page_write_failure_is_counted_and_reported() {
     let _ = std::fs::remove_file(&blocker);
 }
 
+// --- 손상 입력 DoS 패닉 방어 (writer/convert 경로) -----------------------
+
+/// CARGO_BIN_EXE_rhwp(런타임 우선, #3289) 로 rhwp 를 실행해 Output 을 돌려준다.
+fn run_cli(args: &[&str]) -> std::process::Output {
+    let bin = std::env::var("CARGO_BIN_EXE_rhwp")
+        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string());
+    std::process::Command::new(bin)
+        .args(args)
+        .output()
+        .expect("rhwp 실행 실패")
+}
+
+/// 손상된 HWP3 의 footer_length 를 과대(0xFFFF)로 만들면 margin_footer 가 용지
+/// 높이를 넘어 `PageAreas::from_page_def_for_page` 의 본문 영역 계산에서 u32
+/// 뺄셈이 언더플로해 convert/export-hwpx/export-markdown 이 패닉(종료 101)하던
+/// DoS 를 막는다. HWP3 DocInfo 는 파일 오프셋 30 에서 시작하고 footer_length(u16)
+/// 는 그 안 오프셋 20 → 파일 바이트 50..52 다. saturating 화라 정상 데이터 동작은
+/// 불변이고, 손상 입력은 패닉 대신 우아하게(101 이 아닌 코드) 끝나야 한다.
+#[test]
+fn corrupt_page_margin_does_not_panic_in_writer() {
+    let mut data = std::fs::read(sample_path()).expect("hwp3 샘플 읽기");
+    assert!(
+        data.len() > 52,
+        "샘플이 DocInfo(footer_length) 를 포함할 만큼 커야 한다"
+    );
+    // footer_length = 0xFFFF → margin_footer 과대 → page_height - margin_footer 언더플로.
+    data[50] = 0xFF;
+    data[51] = 0xFF;
+
+    let corrupt = unique_temp_path("corrupt-footer.hwp");
+    std::fs::write(&corrupt, &data).expect("손상 샘플 쓰기");
+    let corrupt = corrupt.to_str().expect("utf-8 경로").to_string();
+
+    let mut out_hwp = unique_temp_path("corrupt-footer-out");
+    out_hwp.set_extension("hwp");
+    let out_hwp = out_hwp.to_str().expect("utf-8 경로").to_string();
+    let mut out_hwpx = unique_temp_path("corrupt-footer-out");
+    out_hwpx.set_extension("hwpx");
+    let out_hwpx = out_hwpx.to_str().expect("utf-8 경로").to_string();
+    let md_dir = unique_temp_path("corrupt-footer-md");
+    let md_dir = md_dir.to_str().expect("utf-8 경로").to_string();
+
+    for args in [
+        vec!["convert", &corrupt, &out_hwp],
+        vec!["export-hwpx", &corrupt, &out_hwpx],
+        vec!["export-markdown", &corrupt, "-o", &md_dir],
+    ] {
+        let output = run_cli(&args);
+        assert_ne!(
+            output.status.code(),
+            Some(101),
+            "손상 입력이 패닉(101)하면 안 된다 — 우아하게 처리해야 한다\n{}",
+            describe(&args, &output)
+        );
+    }
+
+    let _ = std::fs::remove_file(&corrupt);
+    let _ = std::fs::remove_file(&out_hwp);
+    let _ = std::fs::remove_file(&out_hwpx);
+    let _ = std::fs::remove_dir_all(&md_dir);
+}
+
 // --- 0: 성공 경로 회귀 방지 ----------------------------------------------
 
 #[test]
