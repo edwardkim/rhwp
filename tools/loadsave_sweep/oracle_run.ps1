@@ -14,6 +14,10 @@ param(
   [Parameter(Mandatory = $true)][string]$TaskPath,
   [Parameter(Mandatory = $true)][string]$OutDir,
   [int]$StallSeconds = 300,
+  # [#4751] Large documents legitimately take minutes to open. The stall allowance grows
+  # with file size: allowed = StallSeconds + StallSecondsPerMB * MB. A 11MB doc gets ~960s
+  # (same order as the 1200s recheck that passed 18/18), a 4KB doc keeps the base 300s.
+  [int]$StallSecondsPerMB = 60,
   [int]$RecycleEvery = 200,
   [int]$WarmupDocs = 5,
   # Hangul 2018 deadlocks in Open() when hidden -- only pass this on 2022+.
@@ -81,6 +85,21 @@ if (-not (Test-Path $OutDir)) { New-Item -ItemType Directory -Force -Path $OutDi
 $all = Get-Content -LiteralPath $TaskPath -Encoding UTF8 | Where-Object { $_.Trim().Length -gt 0 }
 Write-Output "[sup] tasks: $($all.Count) opens (single worker -- concurrent Hangul instances corrupt measurements)"
 
+# [#4751] key -> file MB, for the size-scaled stall allowance. Missing files map to 0
+# (base allowance). Built once up front; the loop below only does hashtable lookups.
+$sizeMB = @{}
+foreach ($taskLine in $all) {
+  $c = $taskLine -split "`t"
+  if ($c.Count -ge 2) {
+    $mb = 0.0
+    try { $mb = (Get-Item -LiteralPath $c[1] -ErrorAction Stop).Length / 1MB } catch { }
+    $sizeMB[$c[0]] = $mb
+  }
+}
+# [#4751] Every stall-kill is recorded here so judge.py can distinguish supervisor-made
+# failures (ORACLE_TIMEOUT: re-measure) from genuine Hangul crashes (OPEN_FAIL).
+$stallLog = Join-Path $OutDir 'stall_kills.tsv'
+
 $state = @{
   Out = Join-Path $OutDir 'result.tsv'
   HB = Join-Path $OutDir 'hb.txt'
@@ -100,6 +119,21 @@ function Start-Worker {
   if ($HideWindow) { $wargs += '-HideWindow' }
   $state.Proc = Start-Process -FilePath 'powershell.exe' -ArgumentList $wargs -PassThru -WindowStyle Hidden
   Write-Output "[sup] worker started (pid $($state.Proc.Id))"
+}
+
+# [#4749] The worker writes the heartbeat with WriteAllText while we read it; ReadAllText
+# opens with FileShare.Read, which conflicts with the writer's live handle and throws --
+# and $ErrorActionPreference='Stop' escalates that into supervisor death (measured: died
+# at minute 88 of a 217-minute pass). Open with FileShare.ReadWrite like Get-DoneCount,
+# and return $null on any failure so the caller just skips this 10s tick.
+function Read-SharedText($path) {
+  try {
+    $fs = New-Object System.IO.FileStream($path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+    try {
+      $sr = New-Object System.IO.StreamReader($fs, (New-Object System.Text.UTF8Encoding($false)))
+      try { return $sr.ReadToEnd() } finally { $sr.Dispose() }
+    } finally { $fs.Dispose() }
+  } catch { return $null }
 }
 
 function Get-DoneCount($path) {
@@ -135,14 +169,25 @@ while ($true) {
   if ($running) {
     $alive = $true
     if (Test-Path -LiteralPath $state.HB) {
-      $parts = ([System.IO.File]::ReadAllText($state.HB, [System.Text.Encoding]::UTF8)) -split '\|'
+      $hbText = Read-SharedText $state.HB
+      $parts = if ($null -ne $hbText) { $hbText -split '\|' } else { @() }
       if ($parts.Count -ge 3) {
-        $age = ($nowMs - [int64]$parts[1]) / 1000.0
-        if ($age -gt $StallSeconds) {
+        # A torn read (writer mid-flight) can leave a non-numeric timestamp; skip the tick.
+        $age = $null
+        try { $age = ($nowMs - [int64]$parts[1]) / 1000.0 } catch { }
+        # [#4751] Size-scaled allowance; heartbeat states without a task key (startup /
+        # warmup / ready) fall back to the base allowance.
+        $curKey = $parts[2]
+        $allowed = $StallSeconds
+        if ($sizeMB.ContainsKey($curKey)) { $allowed = $StallSeconds + [int]($StallSecondsPerMB * $sizeMB[$curKey]) }
+        if ($null -ne $age -and $age -gt $allowed) {
           $hp = [int]$parts[0]
-          Write-Output ("[sup] worker stalled {0:N0}s on '{1}' -> killing Hwp pid {2}" -f $age, $parts[2], $hp)
+          Write-Output ("[sup] worker stalled {0:N0}s (allowed {1}s) on '{2}' -> killing Hwp pid {3}" -f $age, $allowed, $curKey, $hp)
+          # [#4751] Record the kill so judge.py grades the resulting ERR as
+          # ORACLE_TIMEOUT (re-measure) instead of OPEN_FAIL (real defect).
+          try { Add-Content -LiteralPath $stallLog -Value ("{0}`t{1:N0}`t{2}" -f $curKey, $age, (Get-Date -Format o)) -Encoding UTF8 } catch { }
           if ($hp -gt 0) { try { Stop-Process -Id $hp -Force -ErrorAction SilentlyContinue } catch { } }
-          if ($age -gt ($StallSeconds * 2)) {
+          if ($age -gt ($allowed * 2)) {
             try { Stop-Process -Id $state.Proc.Id -Force -ErrorAction SilentlyContinue } catch { }
           }
         }

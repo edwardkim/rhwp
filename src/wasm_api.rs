@@ -642,6 +642,23 @@ impl HwpDocument {
         self.show_paragraph_marks
     }
 
+    /// [#4709] SVG 출력에 배치 메트릭 face 주석을 붙일지 설정한다 (기본 꺼짐).
+    ///
+    /// 켜면 `renderPageSvg` 계열 출력의 각 `<text>`에 `data-metric-font`,
+    /// 루트 `<svg>`에 `data-rhwp-metric-fonts`(쉼표 구분 목록)가 붙는다.
+    /// 임베드 호스트가 해당 폰트 설치 여부 확인·대체 폰트 자간 보정에 쓴다.
+    /// 배치(레이아웃)에는 영향이 없는 뷰 전용 주석이다.
+    #[wasm_bindgen(js_name = setAnnotateMetricFont)]
+    pub fn set_annotate_metric_font(&mut self, enabled: bool) {
+        self.annotate_metric_font = enabled;
+    }
+
+    /// [#4709] SVG 메트릭 face 주석 부착 여부를 반환한다.
+    #[wasm_bindgen(js_name = getAnnotateMetricFont)]
+    pub fn get_annotate_metric_font(&self) -> bool {
+        self.annotate_metric_font
+    }
+
     /// 조판부호 표시 여부를 반환한다.
     #[wasm_bindgen(js_name = getShowControlCodes)]
     pub fn get_show_control_codes(&self) -> bool {
@@ -8295,6 +8312,12 @@ impl HwpViewer {
     #[wasm_bindgen(js_name = renderPageSvg)]
     pub fn render_page_svg(&self, page_num: u32) -> Result<String, JsValue> {
         self.document.render_page_svg(page_num)
+    }
+
+    /// [#4709] SVG 출력에 배치 메트릭 face 주석을 붙일지 설정한다 (기본 꺼짐).
+    #[wasm_bindgen(js_name = setAnnotateMetricFont)]
+    pub fn set_annotate_metric_font(&mut self, enabled: bool) {
+        self.document.set_annotate_metric_font(enabled);
     }
 
     /// 명시적인 출력 profile로 특정 페이지 SVG 렌더링

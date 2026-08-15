@@ -228,6 +228,30 @@ pub fn find_metric(name: &str, bold: bool, italic: bool) -> Option<MetricMatch> 
     })
 }
 
+/// [#4709] 이 스타일의 글자폭 배치에 실제로 쓰인 내장 메트릭 face 이름.
+///
+/// `measure_char_width_embedded`(text_measurement.rs)의 해석 순서를 따른다:
+/// CSS 체인 첫 face → KoPub 전용 표 → 별칭 해석 → 메트릭 DB. DB 에 없는
+/// face(폭이 휴리스틱 추정으로 결정되는 경우)는 None — 주석도 붙이지 않는다.
+pub fn layout_metric_face_name(font_family: &str, bold: bool, italic: bool) -> Option<String> {
+    let primary = font_family
+        .split(',')
+        .next()
+        .unwrap_or(font_family)
+        .trim()
+        .trim_matches('\'');
+    // KoPub 은 kopub_char_width 전용 표가 find_metric 보다 앞선다 — face 자체가 정체.
+    let lower = primary.to_lowercase();
+    if primary.contains("KoPub돋움체")
+        || lower.contains("kopub dotum")
+        || primary.contains("KoPub바탕체")
+        || lower.contains("kopub batang")
+    {
+        return Some(primary.to_string());
+    }
+    find_metric(primary, bold, italic).map(|m| m.metric.name.to_string())
+}
+
 /// 기존 선형 스캔 구현 — 색인 등가성 검증 전용으로 보존 (수정 금지).
 #[cfg(test)]
 fn legacy_find_metric(name: &str, bold: bool, italic: bool) -> Option<MetricMatch> {
