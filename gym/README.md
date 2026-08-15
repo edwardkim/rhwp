@@ -219,7 +219,8 @@ python gym/tools/discriminate.py --bin target/debug/rhwp   # 전 과제 판별 �
 ```
 
 - **answer 과제** — 모든 답 키에 명백한 오답(sentinel). answer_eq 가 진값과 대조하니 거부해야 한다.
-- **artifact 과제** — 입력을 산출물로 무편집 복사. `differs_from_input`·값 검사가 거부해야 한다.
+- **artifact 과제** — 입력을 산출물로 무편집 복사하는 대조와 synthetic garbage 대조를
+  모두 실행한다. `differs_from_input`만이 아니라 형식·핵심값 검사도 garbage를 거부해야 한다.
 
 음성 대조에 통과하는 과제 = 판별력 없는 약한 오라클. 거부하면 진짜 일을 요구하는
 것이다. 이 감사는 릴리스 게이트(`gym-release-gate.yml`)에서 old/new 차등 **이전**에
@@ -254,14 +255,15 @@ python gym/tools/release_diff.py --old target/debug/rhwp.exe --new <신 바이�
 경로)를 채점하지만 대부분 **LLM-judge** 나 **골든 경로**로 — 둘 다 취약하다.
 
 `gym/tools/trajectory.py` 는 골든도 judge 도 없이 그 사각을 잡는다: 각 다단계
-과제에서 **마지막 스텝을 빼고**(부분 트라젝토리) 채점한다.
+과제에서 trailing answer·keyring 수집은 남기고 **마지막 외부 의미 스텝을 뺀**
+부분 트라젝토리를 채점한다.
 
 ```bash
 python gym/tools/trajectory.py --bin target/debug/rhwp
-# → gym 트라젝토리 필요성 감사: 26 다단계 과제 전부 마지막 스텝이 load-bearing — 연극 0
+# → gym 트라젝토리 필요성 감사: 마지막 외부 의미 스텝이 load-bearing인지 확인
 ```
 
-부분 트라젝토리가 **통과** = 마지막 스텝(선언된 최종 산출물)이 채점에 무의미 =
+부분 트라젝토리가 **통과** = 마지막 외부 의미 스텝이 채점에 무의미 =
 **트라젝토리 연극**. 실패(빌드 실패 포함) = 그 스텝이 load-bearing(정상). 이는
 판별력 감사(종점: "산출이 입력과 다른가")를 **경로**로 민 것이다 — 모든 선언된
 스텝이 결과를 바꿔야 한다. 릴리스 게이트(`gym-release-gate.yml`)에서 차등 이전에

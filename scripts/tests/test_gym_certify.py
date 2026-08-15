@@ -44,14 +44,32 @@ class CertifyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             pd = os.path.join(d, "packs", "p1")
             os.makedirs(os.path.join(pd, "tasks"))
-            open(os.path.join(pd, "pack.json"), "w").write('{"id":"p1"}')
-            open(os.path.join(pd, "tasks", "A01.json"), "w").write('{"id":"A01"}')
+            Path(pd, "pack.json").write_text('{"id":"p1"}', encoding="utf-8")
+            Path(pd, "tasks", "A01.json").write_text('{"id":"A01"}', encoding="utf-8")
             fp1 = cov.benchmark_fingerprint(d)
             fp2 = cov.benchmark_fingerprint(d)
             self.assertEqual(fp1, fp2)                       # 결정적
             self.assertEqual(len(fp1), 64)                   # sha256 hex
-            open(os.path.join(pd, "tasks", "A01.json"), "w").write('{"id":"A01","x":1}')
+            Path(pd, "tasks", "A01.json").write_text('{"id":"A01","x":1}', encoding="utf-8")
             self.assertNotEqual(fp1, cov.benchmark_fingerprint(d))  # 변조에 민감
+
+    def test_fingerprint_covers_pack_assets_and_measurement_protocol(self):
+        cov = load()
+        with tempfile.TemporaryDirectory() as d:
+            pd = os.path.join(d, "packs", "p1", "assets")
+            os.makedirs(pd)
+            tools = os.path.join(d, "tools")
+            os.makedirs(tools)
+            asset = os.path.join(pd, "input.csv")
+            protocol = os.path.join(tools, "build_baseline.py")
+            Path(asset).write_text("a,b\n1,2\n", encoding="utf-8")
+            Path(protocol).write_text("print('v1')\n", encoding="utf-8")
+            fp1 = cov.benchmark_fingerprint(d)
+            Path(asset).write_text("a,b\n3,4\n", encoding="utf-8")
+            self.assertNotEqual(fp1, cov.benchmark_fingerprint(d))
+            fp2 = cov.benchmark_fingerprint(d)
+            Path(protocol).write_text("print('v2')\n", encoding="utf-8")
+            self.assertNotEqual(fp2, cov.benchmark_fingerprint(d))
 
     def test_reproducible_core_excludes_volatile_metadata(self):
         cov = load()

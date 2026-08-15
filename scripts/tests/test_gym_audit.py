@@ -30,23 +30,25 @@ def _write_pack(root, pid, task_id, with_ref=True):
     pd = os.path.join(root, "packs", pid)
     os.makedirs(os.path.join(pd, "tasks"))
     os.makedirs(os.path.join(pd, "reference"))
-    json.dump(
-        {"schemaVersion": "1.0", "kind": "gymPack", "id": pid, "title": "t", "axis": "조회 (x)",
-         "requires": {"commands": ["info"]},
-         "runner": {"rhwpVersion": "0.8.4", "rhwpCommit": "a" * 40, "capabilitiesSha256": "b" * 64}},
-        open(os.path.join(pd, "pack.json"), "w", encoding="utf-8"), ensure_ascii=False)
-    json.dump(
-        {"id": task_id, "tier": 2, "title": "t", "input": "samples/x.hwp", "instructions": "i",
-         "submit": {"kind": "answer"},
-         "checks": [{"op": "answer_eq", "answer": "p", "cmd": ["info", "{input}", "--json"],
-                     "path": "pageCount"}]},
-        open(os.path.join(pd, "tasks", f"{task_id}.json"), "w", encoding="utf-8"), ensure_ascii=False)
-    if with_ref:
+    with open(os.path.join(pd, "pack.json"), "w", encoding="utf-8") as fh:
         json.dump(
-            {"id": task_id, "steps": [{"answer": {"p": {"cmd": ["info", "{input}", "--json"],
-                                                        "path": "pageCount"}}}]},
-            open(os.path.join(pd, "reference", f"{task_id}.json"), "w", encoding="utf-8"),
-            ensure_ascii=False)
+            {"schemaVersion": "1.0", "kind": "gymPack", "id": pid, "title": "t", "axis": "조회 (x)",
+             "requires": {"commands": ["info"]},
+             "runner": {"rhwpVersion": "0.8.4", "rhwpCommit": "a" * 40, "capabilitiesSha256": "b" * 64}},
+            fh, ensure_ascii=False)
+    with open(os.path.join(pd, "tasks", f"{task_id}.json"), "w", encoding="utf-8") as fh:
+        json.dump(
+            {"id": task_id, "tier": 2, "title": "t", "input": "samples/x.hwp", "instructions": "i",
+             "submit": {"kind": "answer"},
+             "checks": [{"op": "answer_eq", "answer": "p", "cmd": ["info", "{input}", "--json"],
+                         "path": "pageCount"}]},
+            fh, ensure_ascii=False)
+    if with_ref:
+        with open(os.path.join(pd, "reference", f"{task_id}.json"), "w", encoding="utf-8") as fh:
+            json.dump(
+                {"id": task_id, "steps": [{"answer": {"p": {"cmd": ["info", "{input}", "--json"],
+                                                            "path": "pageCount"}}}]},
+                fh, ensure_ascii=False)
 
 
 class AuditTests(unittest.TestCase):

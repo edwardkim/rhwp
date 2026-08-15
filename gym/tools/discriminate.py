@@ -12,8 +12,9 @@
 음성 대조 구성:
 - **answer 과제** — 모든 답 키에 명백한 오답(sentinel). answer_eq 가 진값과 대조하니
   거부해야 한다.
-- **artifact 과제** — 입력을 산출물로 그대로 복사(무편집). differs_from_input·값 검사가
-  거부해야 한다.
+- **artifact 과제** — 입력을 산출물로 그대로 복사하는 대조와 1KiB synthetic garbage
+  대조를 모두 실행한다. `differs_from_input`만으로는 garbage가 통과할 수 있으므로
+  형식·핵심값 검사도 함께 요구한다.
 
 음성 대조에 **통과하는** 과제 = 판별력 없는 약한 오라클(false-pass). 이걸 리포트한다.
 통과 못 하면(=거부) 그 과제는 진짜 일을 요구하는 것이다.
@@ -42,6 +43,7 @@ from core import runner  # noqa: E402
 # 진값과 절대 같을 리 없는 오답 — 숫자 진값엔 문자열이라 타입부터 다르고, 문자열
 # 진값엔 이 특이 문자열이라 값이 다르다. answer_eq 는 어느 쪽이든 거부한다.
 WRONG_SENTINEL = "__NEGATIVE_CONTROL_definitely_wrong__"
+GARBAGE_BYTES = (b"RHWP_GYM_GARBAGE_NEGATIVE_CONTROL\x00" * 64)
 
 
 def answer_keys(task: dict) -> set[str]:
@@ -52,8 +54,8 @@ def answer_keys(task: dict) -> set[str]:
     return keys
 
 
-def build_negative(task: dict, neg_pack_dir: str) -> None:
-    """음성 대조 제출물 — 오답 answer.json + 입력을 산출물로 무편집 복사."""
+def build_negative(task: dict, neg_pack_dir: str, artifact_mode: str = "input-copy") -> None:
+    """음성 대조 제출물 — 오답 answer.json + artifact별 무편집/garbage 대조."""
     sub_dir = os.path.join(neg_pack_dir, task["id"])
     shutil.rmtree(sub_dir, ignore_errors=True)
     os.makedirs(sub_dir, exist_ok=True)
@@ -69,16 +71,21 @@ def build_negative(task: dict, neg_pack_dir: str) -> None:
         for rel in submit.get("files", []):
             dst = os.path.join(sub_dir, rel)
             os.makedirs(os.path.dirname(dst) or sub_dir, exist_ok=True)
-            if os.path.isfile(src):
+            if artifact_mode == "input-copy" and os.path.isfile(src):
                 shutil.copyfile(src, dst)   # 무편집 복사 = 일 안 함
+            elif artifact_mode == "garbage":
+                with open(dst, "wb") as fh:
+                    fh.write(GARBAGE_BYTES)
             else:
-                open(dst, "wb").write(b"\0")  # 입력이 없으면 최소 바이트
+                raise ValueError(f"지원하지 않는 artifact 음성 대조: {artifact_mode}")
 
 
 def discriminate(bin_path: str, gym_root: str, neg_root: str) -> dict:
     packs_dir = os.path.join(gym_root, "packs")
     results = []
     false_pass = []
+    false_pass_controls = []
+    task_count = 0
     for pack_id in sorted(os.listdir(packs_dir)):
         pack_dir = os.path.join(packs_dir, pack_id)
         tasks_dir = os.path.join(pack_dir, "tasks")
@@ -88,21 +95,33 @@ def discriminate(bin_path: str, gym_root: str, neg_root: str) -> dict:
         for name in sorted(os.listdir(tasks_dir)):
             if not name.endswith(".json"):
                 continue
-            task = json.load(open(os.path.join(tasks_dir, name), encoding="utf-8"))
-            build_negative(task, neg_pack_dir)
-            result = runner.score_task(task, neg_pack_dir, bin_path)
-            # 음성 대조는 '실패'(=거부) 해야 판별력이 있다. pass=True 면 약한 오라클.
-            discriminates = not result.get("pass")
-            results.append({"pack": pack_id, "task": task["id"], "discriminates": discriminates})
-            if not discriminates:
-                false_pass.append(f"{pack_id}/{task['id']}")
+            with open(os.path.join(tasks_dir, name), encoding="utf-8") as fh:
+                task = json.load(fh)
+            task_count += 1
+            artifact = task.get("submit", {}).get("kind") == "artifact"
+            controls = ("input-copy", "garbage") if artifact else ("wrong-answer",)
+            for control in controls:
+                control_pack_dir = os.path.join(neg_root, control, pack_id)
+                build_negative(task, control_pack_dir, artifact_mode=control)
+                result = runner.score_task(task, control_pack_dir, bin_path)
+                # 음성 대조는 '실패'(=거부) 해야 판별력이 있다. pass=True 면 약한 오라클.
+                discriminates = not result.get("pass")
+                results.append({"pack": pack_id, "task": task["id"], "control": control,
+                                "discriminates": discriminates})
+                if not discriminates:
+                    label = f"{pack_id}/{task['id']}"
+                    if label not in false_pass:
+                        false_pass.append(label)
+                    false_pass_controls.append(f"{label} ({control})")
     return {
         "kind": "gymDiscrimination",
         "schemaVersion": "1.0",
         "ok": len(false_pass) == 0,
-        "taskCount": len(results),
-        "discriminating": sum(1 for r in results if r["discriminates"]),
+        "taskCount": task_count,
+        "controlCount": len(results),
+        "discriminating": task_count - len(false_pass),
         "falsePass": false_pass,
+        "falsePassControls": false_pass_controls,
     }
 
 

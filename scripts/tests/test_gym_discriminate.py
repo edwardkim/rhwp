@@ -37,7 +37,8 @@ def _artifact_task():
 def _temp_gym(root, task):
     td = os.path.join(root, "gym", "packs", "p1", "tasks")
     os.makedirs(td)
-    json.dump(task, open(os.path.join(td, "T.json"), "w", encoding="utf-8"), ensure_ascii=False)
+    with open(os.path.join(td, "T.json"), "w", encoding="utf-8") as fh:
+        json.dump(task, fh, ensure_ascii=False)
     return os.path.join(root, "gym")
 
 
@@ -47,10 +48,13 @@ class DiscriminateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             mod.build_negative(_artifact_task(), d)
             sub = os.path.join(d, "T")
-            ans = json.load(open(os.path.join(sub, "answer.json"), encoding="utf-8"))
+            with open(os.path.join(sub, "answer.json"), encoding="utf-8") as fh:
+                ans = json.load(fh)
             self.assertEqual(ans["pages"], mod.WRONG_SENTINEL)         # 오답 대조
-            real = open(os.path.join(mod.REPO_ROOT, SAMPLE), "rb").read()
-            self.assertEqual(open(os.path.join(sub, "out.svg"), "rb").read(), real)  # 무편집 복사
+            with open(os.path.join(mod.REPO_ROOT, SAMPLE), "rb") as fh:
+                real = fh.read()
+            with open(os.path.join(sub, "out.svg"), "rb") as fh:
+                self.assertEqual(fh.read(), real)  # 무편집 복사
 
     def test_flags_false_pass_when_negative_passes(self):
         mod = load()
@@ -70,6 +74,30 @@ class DiscriminateTests(unittest.TestCase):
             self.assertTrue(r["ok"])
             self.assertEqual(r["falsePass"], [])
             self.assertEqual(r["discriminating"], 1)
+
+    def test_artifact_garbage_false_pass_is_reported_separately(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as d:
+            gym = _temp_gym(d, _artifact_task())
+
+            def score(_task, pack_dir, _bin_path):
+                return {"pass": "garbage" in pack_dir}
+
+            mod.runner.score_task = score
+            r = mod.discriminate("bin", gym, os.path.join(d, "neg"))
+            self.assertFalse(r["ok"])
+            self.assertEqual(r["taskCount"], 1)
+            self.assertEqual(r["controlCount"], 2)
+            self.assertEqual(r["falsePass"], ["p1/T"])
+            self.assertEqual(r["falsePassControls"], ["p1/T (garbage)"])
+
+    def test_build_garbage_negative_writes_non_input_bytes(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as d:
+            mod.build_negative(_artifact_task(), d, artifact_mode="garbage")
+            with open(os.path.join(d, "T", "out.svg"), "rb") as fh:
+                data = fh.read()
+            self.assertEqual(data, mod.GARBAGE_BYTES)
 
 
 if __name__ == "__main__":

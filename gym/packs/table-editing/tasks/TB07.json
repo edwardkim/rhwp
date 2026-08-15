@@ -21,6 +21,19 @@
       "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
       "op": "differs_from_input",
       "file": "bom.csv"
+    },
+    {
+      "name": "UTF-8 BOM",
+      "op": "utf8_bom",
+      "file": "bom.csv"
+    },
+    {
+      "name": "첫 표 첫 셀",
+      "op": "csv_cell_eq",
+      "file": "bom.csv",
+      "row": 0,
+      "col": 0,
+      "value": "구 분"
     }
   ]
 }

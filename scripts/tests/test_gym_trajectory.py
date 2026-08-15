@@ -33,9 +33,11 @@ def _temp_gym(root, steps):
     os.makedirs(refs)
     task = {"id": "T", "tier": 1, "title": "t", "input": "samples/x.hwp",
             "submit": {"kind": "artifact", "files": ["o"]}, "checks": []}
-    json.dump(task, open(os.path.join(tasks, "T.json"), "w", encoding="utf-8"))
+    with open(os.path.join(tasks, "T.json"), "w", encoding="utf-8") as fh:
+        json.dump(task, fh)
     ref = {"id": "T", "steps": [{"run": ["a"]} for _ in range(steps)]}
-    json.dump(ref, open(os.path.join(refs, "T.json"), "w", encoding="utf-8"))
+    with open(os.path.join(refs, "T.json"), "w", encoding="utf-8") as fh:
+        json.dump(ref, fh)
     return os.path.join(root, "gym")
 
 
@@ -48,7 +50,7 @@ class TrajectoryTests(unittest.TestCase):
             gym = _temp_gym(d, steps=2)
             r = mod.audit("bin", gym, os.path.join(d, "w"))
             self.assertFalse(r["ok"])
-            self.assertIn("p1/T (마지막 스텝 빼도 통과 — 2→1)", r["theater"])
+            self.assertIn("p1/T (마지막 실제 스텝 run을 빼도 통과 — 2→1)", r["theater"])
 
     def test_load_bearing_when_truncated_fails(self):
         mod = load()
@@ -82,6 +84,28 @@ class TrajectoryTests(unittest.TestCase):
             r = mod.audit("bin", gym, os.path.join(d, "w"))
             self.assertEqual(r["taskCount"], 0)  # 감사 대상 아님
             self.assertTrue(r["ok"])
+
+    def test_removes_last_meaningful_step_but_keeps_answer_collection(self):
+        mod = load()
+        captured = []
+
+        def build(_bin, _pack, _task, reference, _root):
+            captured.append(reference["steps"])
+
+        mod.baseline.build_task = build
+        mod.runner.score_task = lambda *_args: {"pass": False}
+        with tempfile.TemporaryDirectory() as d:
+            gym = _temp_gym(d, steps=2)
+            reference = Path(gym) / "packs" / "p1" / "reference" / "T.json"
+            reference.write_text(json.dumps({"id": "T", "steps": [
+                {"run": ["agent-action"]}, {"answer": {"value": {"const": 1}}}
+            ]}), encoding="utf-8")
+            r = mod.audit("bin", gym, os.path.join(d, "w"))
+
+        self.assertTrue(r["ok"])
+        self.assertEqual(captured, [[{"answer": {"value": {"const": 1}}}]])
+        self.assertEqual(r["loadBearing"], 1)
+        self.assertEqual(r["taskCount"], 1)
 
 
 if __name__ == "__main__":

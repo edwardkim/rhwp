@@ -21,6 +21,13 @@
       "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
       "op": "differs_from_input",
       "file": "ir.json"
+    },
+    {
+      "name": "IR 스키마 dialect",
+      "op": "json_value_eq",
+      "file": "ir.json",
+      "path": "dialect",
+      "value": "https://json-schema.org/draft/2020-12/schema"
     }
   ]
 }

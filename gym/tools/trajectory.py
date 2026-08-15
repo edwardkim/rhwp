@@ -12,7 +12,9 @@ gym 도 종점-오라클이라 같은 사각을 가진다. 다단계 과제가 "
 — 에이전트는 N-1 스텝만 하고도 만점을 받는다.
 
 이 감사기는 골든 경로도 judge 도 없이 그 연극을 잡는다: 각 다단계 과제에서
-**마지막 스텝을 빼고**(부분 트라젝토리) 기준 풀이를 재조립해 채점한다.
+**마지막 외부 의미 스텝을 빼고**(부분 트라젝토리) 기준 풀이를 재조립해 채점한다.
+trailing `answer`·`keyring_from`은 제출을 모으는 내부 단계이므로 남겨야 마지막 실제
+에이전트 동작이 load-bearing인지 판별할 수 있다.
 
 - 부분 트라젝토리가 **통과** → 마지막 스텝(=선언된 최종 산출물)이 채점에 무의미.
   트라젝토리 연극이다. 리포트한다.
@@ -49,6 +51,16 @@ _spec = importlib.util.spec_from_file_location("gym_build_baseline", os.path.joi
 baseline = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(baseline)
 
+COLLECTION_STEP_KEYS = frozenset({"answer", "keyring_from"})
+
+
+def last_meaningful_step_index(steps: list[dict]) -> int | None:
+    """수집 전용 tail을 건너뛴 마지막 외부 의미 기준 풀이 step 위치."""
+    for index in range(len(steps) - 1, -1, -1):
+        if not COLLECTION_STEP_KEYS.intersection(steps[index]):
+            return index
+    return None
+
 
 def multi_step_tasks(gym_root: str):
     """(pack_id, task, reference) 중 reference 가 ≥2 스텝인 것만."""
@@ -64,8 +76,10 @@ def multi_step_tasks(gym_root: str):
             ref_path = os.path.join(ref_dir, name)
             if not os.path.isfile(ref_path):
                 continue
-            task = json.load(open(os.path.join(tasks_dir, name), encoding="utf-8"))
-            reference = json.load(open(ref_path, encoding="utf-8"))
+            with open(os.path.join(tasks_dir, name), encoding="utf-8") as fh:
+                task = json.load(fh)
+            with open(ref_path, encoding="utf-8") as fh:
+                reference = json.load(fh)
             if len(reference.get("steps", [])) >= 2:
                 yield pack_id, task, reference
 
@@ -75,8 +89,12 @@ def audit(bin_path: str, gym_root: str, work_root: str) -> dict:
     theater = []
     for pack_id, task, reference in multi_step_tasks(gym_root):
         steps = reference["steps"]
+        removed_index = last_meaningful_step_index(steps)
+        if removed_index is None:
+            continue
         truncated = dict(reference)
-        truncated["steps"] = steps[:-1]  # 마지막 스텝을 뺀 부분 트라젝토리
+        # answer/keyring 같은 trailing 수집 단계는 유지하고 마지막 실제 동작만 뺀다.
+        truncated["steps"] = steps[:removed_index] + steps[removed_index + 1:]
         sub_root = os.path.join(work_root, pack_id)
         load_bearing = True
         try:
@@ -87,10 +105,12 @@ def audit(bin_path: str, gym_root: str, work_root: str) -> dict:
         except Exception:
             # 부분 트라젝토리가 유효 제출을 못 만듦 = 마지막 스텝이 필수(정상).
             load_bearing = True
+        removed_kind = "/".join(sorted(steps[removed_index]))
         results.append({"pack": pack_id, "task": task["id"], "loadBearing": load_bearing,
-                        "steps": len(steps)})
+                        "steps": len(steps), "removedStep": removed_kind})
         if not load_bearing:
-            theater.append(f"{pack_id}/{task['id']} (마지막 스텝 빼도 통과 — {len(steps)}→{len(steps) - 1})")
+            theater.append(f"{pack_id}/{task['id']} (마지막 실제 스텝 {removed_kind}을 빼도 통과 — "
+                           f"{len(steps)}→{len(steps) - 1})")
     return {
         "kind": "gymTrajectoryNecessity",
         "schemaVersion": "1.0",
