@@ -50,6 +50,8 @@
 
 use chacha20poly1305::aead::{Aead, Payload};
 use chacha20poly1305::{Key, KeyInit, XChaCha20Poly1305, XNonce};
+use ml_kem::kem::{Decapsulate, Encapsulate};
+use ml_kem::{Ciphertext, Encoded, EncodedSizeUser, KemCore, MlKem768};
 use zeroize::Zeroizing;
 
 pub const MAGIC_START: &[u8; 8] = b"RHWPSEC1";
@@ -64,7 +66,20 @@ pub const FLAG_REDACTED: u16 = 0x01;
 
 pub const VERSION: u16 = 1;
 pub const KDF_ARGON2ID: u8 = 1;
+/// **포스트양자 공개키 봉인** — kdf 슬롯을 재사용해 "키 유도 방식"을 ML-KEM-768(FIPS 203)
+/// 격자 KEM 으로 표시한다. 비밀번호 없이 수신자 공개키로 봉인하며, 파생된 32바이트 공유비밀을
+/// 그대로 AEAD 키로 쓴다. 대칭부(XChaCha20-Poly1305)는 이미 양자내성이고, Shor 에 깨지는
+/// 비대칭 키교환만 이 격자 KEM 으로 대체한다.
+pub const KDF_MLKEM768: u8 = 2;
 pub const AEAD_XCHACHA20POLY1305: u8 = 1;
+
+// ML-KEM-768 (FIPS 203, 보안 카테고리 3) 고정 크기. PQ 트레일러의 고정 프리픽스는
+// MAGIC_START[8] version[2] flags[2] kdf[1] aead[1] encap_len[4] = 18 바이트.
+const MLKEM768_EK_LEN: usize = 1184; // encapsulation key (공개키)
+const MLKEM768_DK_LEN: usize = 2400; // decapsulation key (개인키)
+const MLKEM768_CT_LEN: usize = 1088; // encapsulation (KEM 암호문)
+const MLKEM768_SS_LEN: usize = 32; // shared secret == XChaCha20 키 길이
+const PQ_HEADER_PREFIX: usize = 8 + 2 + 2 + 1 + 1 + 4; // = 18
 
 // kdf_algo=1 의 고정 Argon2id 파라미터(seal/unseal 이 반드시 같아야 하므로 상수).
 // OWASP 권고 하한 근방 — memory-hard 성질을 지키면서 CI·wasm 에서도 감당된다.
@@ -83,6 +98,13 @@ pub enum SealError {
     Kdf(String),
     Aead,
     Random(String),
+    /// 수신자 공개키 길이가 ML-KEM-768 EK(1184바이트)와 다르다.
+    BadPublicKey {
+        expected: usize,
+        got: usize,
+    },
+    /// ML-KEM 캡슐화 실패 — FIPS 203 상 실무 도달 불가지만, 절대 panic 하지 않도록 방어적으로 표면화.
+    Kem,
 }
 
 impl std::fmt::Display for SealError {
@@ -91,6 +113,13 @@ impl std::fmt::Display for SealError {
             SealError::Kdf(e) => write!(f, "키 유도 실패: {e}"),
             SealError::Aead => write!(f, "암호화 실패"),
             SealError::Random(e) => write!(f, "엔트로피 획득 실패: {e}"),
+            SealError::BadPublicKey { expected, got } => {
+                write!(
+                    f,
+                    "공개키 길이 오류: {expected}바이트 기대, {got}바이트 받음"
+                )
+            }
+            SealError::Kem => write!(f, "ML-KEM 캡슐화 실패"),
         }
     }
 }
@@ -221,9 +250,15 @@ pub fn open(bytes: &[u8], password: &[u8]) -> Opened {
     let kdf = t[12];
     let aead = t[13];
     if kdf != KDF_ARGON2ID || aead != AEAD_XCHACHA20POLY1305 {
-        return Opened::Broken {
-            reason: format!("미지원 알고리즘 (kdf={kdf}, aead={aead})"),
+        // kdf=2 는 공개키(ML-KEM) 봉인이다 — 비밀번호로는 못 연다. 안내 메시지만 개선하고
+        // 동작은 그대로(Broken) 유지한다(비밀번호 경로는 kdf=1 전용).
+        let reason = if kdf == KDF_MLKEM768 {
+            "공개키(ML-KEM) 봉인 트레일러다 — 비밀번호가 아니라 개인키로 열어야 한다(open_with_privkey)"
+                .to_string()
+        } else {
+            format!("미지원 알고리즘 (kdf={kdf}, aead={aead})")
         };
+        return Opened::Broken { reason };
     }
     let salt: [u8; SALT_LEN] = t[14..30].try_into().expect("salt 16");
     let nonce: [u8; NONCE_LEN] = t[30..54].try_into().expect("nonce 24");
@@ -256,6 +291,289 @@ pub fn open(bytes: &[u8], password: &[u8]) -> Opened {
         Ok(plaintext) => Opened::Sealed { plaintext, flags },
         Err(_) => Opened::Broken {
             reason: "복호 실패 (비밀번호 오류 또는 변조)".to_string(),
+        },
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 포스트양자 공개키 봉인 (kdf=2, ML-KEM-768 / NIST FIPS 203)
+//
+// 왜 필요한가: 기존 비밀번호 모드(Argon2id → XChaCha20-Poly1305)는 **이미 양자내성**이다 —
+// 대칭 암호는 Grover 로 유효 강도가 절반(256→128비트)으로 줄 뿐 여전히 안전하다. 양자
+// (Shor)에 깨지는 건 **비대칭 공개키 교환**이다. 그래서 이 모드는 비밀번호 공유 없이
+// 수신자의 공개키로 봉인하는 **양자안전 공개키 교환(ML-KEM 격자 KEM)** 을 추가한다.
+//
+// 흐름: 봉인자는 수신자 공개키(EK)로 `encapsulate` → (KEM 암호문 CT, 32바이트 공유비밀 SS).
+// SS 를 그대로 XChaCha20-Poly1305 키로 쓴다(ML-KEM 공유비밀은 균일 난수라 별도 KDF 불필요).
+// 수신자는 개인키(DK)로 `decapsulate(CT)` → 같은 SS 를 복원해 AEAD 를 푼다.
+//
+// PQ 트레일러 레이아웃(append; 비밀번호 트레일러와 매직마커·꼬리는 공유해 `detect_trailer`
+// 가 그대로 판별한다):
+//
+// ```text
+// MAGIC_START [8]  "RHWPSEC1"
+// version     [2]  u16 LE
+// flags       [2]  u16 LE   (REDACTED=0x01)
+// kdf_algo    [1]  2=ML-KEM-768
+// aead_algo   [1]  1=XChaCha20-Poly1305
+// encap_len   [4]  u32 LE   (= 1088)
+// encap       [encap_len]   KEM 암호문(CT)
+// nonce       [24]
+// ct_len      [4]  u32 LE
+// ciphertext  [ct_len]      (AEAD, AAD = MAGIC..ct_len 전체 헤더)
+// trailer_len [4]  u32 LE
+// MAGIC_END   [8]  "RHWPEND1"
+// ```
+//
+// 정당한 용도·경고는 비밀번호 모드와 동일하다 — REDACTED 전용, 평문 매직마커로 **탐지 가능**,
+// decoy 모드 없음. 이 모드가 바꾸는 건 "비밀을 여는 자격"뿐이다(비밀번호 → 개인키 보유).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// `getrandom` 을 rand_core 0.6 `RngCore` + `CryptoRng` 로 감싼 어댑터 — ml-kem 0.2 의
+/// `generate`/`encapsulate` 가 요구하는 `CryptoRngCore`(= `CryptoRng + RngCore` 블랭킷)를
+/// 충족한다. 엔트로피는 OS(getrandom)에서 직접 뽑는다.
+struct GetRandomRng;
+
+impl rand_core::RngCore for GetRandomRng {
+    fn next_u32(&mut self) -> u32 {
+        let mut b = [0u8; 4];
+        getrandom::fill(&mut b).expect("getrandom: next_u32");
+        u32::from_le_bytes(b)
+    }
+    fn next_u64(&mut self) -> u64 {
+        let mut b = [0u8; 8];
+        getrandom::fill(&mut b).expect("getrandom: next_u64");
+        u64::from_le_bytes(b)
+    }
+    fn fill_bytes(&mut self, dest: &mut [u8]) {
+        getrandom::fill(dest).expect("getrandom: fill_bytes");
+    }
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
+        self.fill_bytes(dest);
+        Ok(())
+    }
+}
+
+impl rand_core::CryptoRng for GetRandomRng {}
+
+/// PQ 헤더(= AEAD associated data). MAGIC..ct_len 전체를 묶어 encap·nonce·길이·플래그 등
+/// 어느 헤더 필드를 변조해도 복호가 거부되게 한다(비밀번호 모드 `build_header` 와 같은 원리).
+fn build_pq_header(flags: u16, encap: &[u8], nonce: &[u8; NONCE_LEN], ct_len: u32) -> Vec<u8> {
+    let mut h = Vec::with_capacity(PQ_HEADER_PREFIX + encap.len() + NONCE_LEN + 4);
+    h.extend_from_slice(MAGIC_START);
+    h.extend_from_slice(&VERSION.to_le_bytes());
+    h.extend_from_slice(&flags.to_le_bytes());
+    h.push(KDF_MLKEM768);
+    h.push(AEAD_XCHACHA20POLY1305);
+    h.extend_from_slice(&(encap.len() as u32).to_le_bytes());
+    h.extend_from_slice(encap);
+    h.extend_from_slice(nonce);
+    h.extend_from_slice(&ct_len.to_le_bytes());
+    h
+}
+
+/// ML-KEM-768 키쌍을 새로 만든다 → `(공개키 EK 바이트[1184], 개인키 DK 바이트[2400])`.
+/// 공개키는 봉인자에게 배포하고, 개인키는 수신자만 보관해 `open_with_privkey` 로 연다.
+pub fn generate_keypair() -> (Vec<u8>, Vec<u8>) {
+    let mut rng = GetRandomRng;
+    // KemCore::generate → (decapsulation key, encapsulation key) = (dk, ek).
+    let (dk, ek) = MlKem768::generate(&mut rng);
+    let ek_bytes = ek.as_bytes().to_vec();
+    let dk_bytes = dk.as_bytes().to_vec();
+    debug_assert_eq!(ek_bytes.len(), MLKEM768_EK_LEN);
+    debug_assert_eq!(dk_bytes.len(), MLKEM768_DK_LEN);
+    (ek_bytes, dk_bytes)
+}
+
+/// 유효한 HWP3 바이트에 리댁션된 원값을 **수신자 공개키로** 봉인한 트레일러를 append 한다
+/// (비밀번호 불필요, REDACTED 전용). `host_hwp3` 는 이미 민감 스팬이 가려진 실제 리댁션
+/// 문서여야 한다 — 이 함수는 그 가려진 원값(`secret`)만 봉인한다.
+pub fn seal_to_pubkey(
+    host_hwp3: &[u8],
+    secret: &[u8],
+    recipient_public: &[u8],
+) -> Result<Vec<u8>, SealError> {
+    if recipient_public.len() != MLKEM768_EK_LEN {
+        return Err(SealError::BadPublicKey {
+            expected: MLKEM768_EK_LEN,
+            got: recipient_public.len(),
+        });
+    }
+    type Ek = <MlKem768 as KemCore>::EncapsulationKey;
+    // 길이는 위에서 검증했지만 from_bytes 는 정확 크기 Array 를 요구하므로 try_from 으로 안전 변환.
+    let ek_arr =
+        Encoded::<Ek>::try_from(recipient_public).map_err(|_| SealError::BadPublicKey {
+            expected: MLKEM768_EK_LEN,
+            got: recipient_public.len(),
+        })?;
+    let ek = Ek::from_bytes(&ek_arr);
+
+    let mut rng = GetRandomRng;
+    // encapsulate → (KEM 암호문 CT, 32바이트 공유비밀 SS). FIPS 203 상 무오류지만 방어적으로 map_err.
+    let (ct_kem, shared) = ek.encapsulate(&mut rng).map_err(|_| SealError::Kem)?;
+    let encap = ct_kem.as_slice();
+    debug_assert_eq!(encap.len(), MLKEM768_CT_LEN);
+    debug_assert_eq!(shared.as_slice().len(), MLKEM768_SS_LEN);
+
+    let mut nonce = [0u8; NONCE_LEN];
+    getrandom::fill(&mut nonce).map_err(|e| SealError::Random(e.to_string()))?;
+
+    let ct_len = (secret.len() + TAG_LEN) as u32;
+    let header = build_pq_header(FLAG_REDACTED, encap, &nonce, ct_len);
+
+    // AEAD 키 = 32바이트 공유비밀을 그대로 사용(ML-KEM SS 는 균일 난수). Zeroizing 로 소거 보장.
+    let mut key = Zeroizing::new([0u8; 32]);
+    key.copy_from_slice(shared.as_slice());
+    let cipher = XChaCha20Poly1305::new(Key::from_slice(key.as_ref()));
+    let ciphertext = cipher
+        .encrypt(
+            XNonce::from_slice(&nonce),
+            Payload {
+                msg: secret,
+                aad: &header,
+            },
+        )
+        .map_err(|_| SealError::Aead)?;
+    debug_assert_eq!(ciphertext.len(), ct_len as usize);
+
+    let trailer_len = (header.len() + ciphertext.len() + 4 + 8) as u32;
+    let mut out = Vec::with_capacity(host_hwp3.len() + trailer_len as usize);
+    out.extend_from_slice(host_hwp3);
+    out.extend_from_slice(&header);
+    out.extend_from_slice(&ciphertext);
+    out.extend_from_slice(&trailer_len.to_le_bytes());
+    out.extend_from_slice(MAGIC_END);
+    Ok(out)
+}
+
+/// 공개키로 봉인된 파일을 **개인키로** 정상화해 연다 — 절대 Err/panic 없이
+/// Plain/Sealed/Broken 중 하나로 수렴한다(모든 길이 읽기는 엄격 경계 검사).
+pub fn open_with_privkey(bytes: &[u8], secret_key: &[u8]) -> Opened {
+    let start = match detect_trailer(bytes) {
+        Some(s) => s,
+        None => return Opened::Plain,
+    };
+    let t = &bytes[start..];
+    // detect_trailer 가 t.len() >= MIN_TRAILER_LEN 를 보장하지만, 여기서도 프리픽스 경계를 명시 검사.
+    if t.len() < PQ_HEADER_PREFIX {
+        return Opened::Broken {
+            reason: "트레일러가 너무 짧다".to_string(),
+        };
+    }
+    let version = u16::from_le_bytes([t[8], t[9]]);
+    if version != VERSION {
+        // 모르는 버전은 향후 포맷 진화로 보고 무시(Plain) — 비밀번호 경로와 동일 정책.
+        return Opened::Plain;
+    }
+    let flags = u16::from_le_bytes([t[10], t[11]]);
+    let kdf = t[12];
+    let aead = t[13];
+    if kdf != KDF_MLKEM768 {
+        // 비밀번호(kdf=1) 트레일러를 개인키로 열려는 경우 등 → Broken(패닉 금지).
+        return Opened::Broken {
+            reason: "공개키 봉인이 아니다 (kdf != 2) — 비밀번호로 열어야 한다(open)".to_string(),
+        };
+    }
+    if aead != AEAD_XCHACHA20POLY1305 {
+        return Opened::Broken {
+            reason: format!("미지원 AEAD (aead={aead})"),
+        };
+    }
+
+    // ── 엄격 경계 파싱: 어떤 길이 필드가 조작돼도 인덱스 OOB/패닉 없이 Broken 으로 귀결 ──
+    let encap_len = u32::from_le_bytes([t[14], t[15], t[16], t[17]]) as usize;
+    let len_mismatch = || Opened::Broken {
+        reason: "트레일러 길이 불일치".to_string(),
+    };
+    // encap 이 정확히 ML-KEM-768 CT 크기인지 먼저 확인(decapsulate 가 고정 크기 Array 를 요구).
+    if encap_len != MLKEM768_CT_LEN {
+        return Opened::Broken {
+            reason: format!("encap 길이 불일치 ({encap_len})"),
+        };
+    }
+    let encap_end = match PQ_HEADER_PREFIX.checked_add(encap_len) {
+        Some(v) => v,
+        None => return len_mismatch(),
+    };
+    let nonce_end = match encap_end.checked_add(NONCE_LEN) {
+        Some(v) => v,
+        None => return len_mismatch(),
+    };
+    let ctlen_end = match nonce_end.checked_add(4) {
+        Some(v) => v,
+        None => return len_mismatch(),
+    };
+    if ctlen_end > t.len() {
+        return len_mismatch();
+    }
+    let encap = &t[PQ_HEADER_PREFIX..encap_end];
+    let nonce: [u8; NONCE_LEN] = t[encap_end..nonce_end].try_into().expect("nonce 24");
+    let ct_len = u32::from_le_bytes([
+        t[nonce_end],
+        t[nonce_end + 1],
+        t[nonce_end + 2],
+        t[nonce_end + 3],
+    ]) as usize;
+    let ct_start = ctlen_end;
+    let ct_end = match ct_start.checked_add(ct_len) {
+        Some(v) => v,
+        None => return len_mismatch(),
+    };
+    // 암호문 뒤에는 trailer_len[4] + MAGIC_END[8] = 12바이트가 있어야 한다.
+    let need_tail = match ct_end.checked_add(4 + 8) {
+        Some(v) => v,
+        None => return len_mismatch(),
+    };
+    if ct_len < TAG_LEN || need_tail > t.len() {
+        return len_mismatch();
+    }
+    let ciphertext = &t[ct_start..ct_end];
+    // AAD = MAGIC..ct_len 전체 헤더(암호문 직전까지). 원본 바이트를 그대로 써 봉인 시점과 바이트 동일.
+    let aad = &t[..ctlen_end];
+
+    // ── 개인키로 역캡슐화 → 공유비밀 복원 → AEAD 복호 ──
+    type Dk = <MlKem768 as KemCore>::DecapsulationKey;
+    let dk_arr = match Encoded::<Dk>::try_from(secret_key) {
+        Ok(a) => a,
+        Err(_) => {
+            return Opened::Broken {
+                reason: format!(
+                    "개인키 길이 오류: {}바이트 기대, {}바이트 받음",
+                    MLKEM768_DK_LEN,
+                    secret_key.len()
+                ),
+            }
+        }
+    };
+    let dk = Dk::from_bytes(&dk_arr);
+    let ct_kem = match Ciphertext::<MlKem768>::try_from(encap) {
+        Ok(c) => c,
+        Err(_) => return len_mismatch(),
+    };
+    // ML-KEM 역캡슐화는 무오류다 — 틀린 개인키·변조 CT 여도 (묵시적 거부로) *다른* 공유비밀을
+    // 돌려줄 뿐 Err 를 내지 않는다. 그래서 진짜 무결성 관문은 아래 AEAD 다: 공유비밀이 다르면
+    // AEAD 키가 달라져 복호가 실패하고 Broken 이 된다.
+    let shared = match dk.decapsulate(&ct_kem) {
+        Ok(s) => s,
+        Err(_) => {
+            return Opened::Broken {
+                reason: "역캡슐화 실패".to_string(),
+            }
+        }
+    };
+    let mut key = Zeroizing::new([0u8; 32]);
+    key.copy_from_slice(shared.as_slice());
+    let cipher = XChaCha20Poly1305::new(Key::from_slice(key.as_ref()));
+    match cipher.decrypt(
+        XNonce::from_slice(&nonce),
+        Payload {
+            msg: ciphertext,
+            aad,
+        },
+    ) {
+        Ok(plaintext) => Opened::Sealed { plaintext, flags },
+        Err(_) => Opened::Broken {
+            reason: "복호 실패 (개인키 불일치 또는 변조)".to_string(),
         },
     }
 }
@@ -324,5 +642,132 @@ mod tests {
     fn empty_secret_roundtrips() {
         let sealed = seal(HOST, b"", PW).unwrap();
         assert!(matches!(open(&sealed, PW), Opened::Sealed { .. }));
+    }
+
+    // ───────────────────────── 포스트양자 공개키 봉인 (kdf=2) ─────────────────────────
+
+    #[test]
+    fn pq_keypair_sizes_are_fips203() {
+        let (ek, dk) = generate_keypair();
+        assert_eq!(ek.len(), MLKEM768_EK_LEN, "EK=1184");
+        assert_eq!(dk.len(), MLKEM768_DK_LEN, "DK=2400");
+    }
+
+    #[test]
+    fn pq_generate_seal_open_roundtrips() {
+        let (ek, dk) = generate_keypair();
+        let sealed = seal_to_pubkey(HOST, SECRET, &ek).unwrap();
+        // 가시층은 원본 그대로(순정 한컴이 읽는 것) — 트레일러만 append.
+        assert_eq!(visible_layer(&sealed), HOST);
+        // 수신자 개인키 → 진짜 비밀 정확 복원.
+        match open_with_privkey(&sealed, &dk) {
+            Opened::Sealed { plaintext, flags } => {
+                assert_eq!(plaintext, SECRET);
+                assert_eq!(flags, FLAG_REDACTED);
+            }
+            other => panic!("Sealed 를 기대: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn pq_wrong_private_key_is_broken_not_panic() {
+        let (ek, _dk) = generate_keypair();
+        let (_ek2, dk2) = generate_keypair(); // 서로 다른 키쌍의 개인키
+        let sealed = seal_to_pubkey(HOST, SECRET, &ek).unwrap();
+        // 틀린 개인키 → ML-KEM 묵시적 거부로 *다른* 공유비밀 → AEAD 복호 실패 → Broken(패닉 없음).
+        assert!(matches!(
+            open_with_privkey(&sealed, &dk2),
+            Opened::Broken { .. }
+        ));
+    }
+
+    #[test]
+    fn pq_tampered_ciphertext_is_broken() {
+        let (ek, dk) = generate_keypair();
+        let mut sealed = seal_to_pubkey(HOST, SECRET, &ek).unwrap();
+        let n = sealed.len();
+        // ciphertext 는 trailer_len[4]+MAGIC_END[8] 바로 앞에서 끝난다 → n-13 은 AEAD 태그 안.
+        sealed[n - 13] ^= 0xFF;
+        assert!(matches!(
+            open_with_privkey(&sealed, &dk),
+            Opened::Broken { .. }
+        ));
+    }
+
+    #[test]
+    fn pq_tampered_encap_header_is_broken() {
+        // encap 은 AAD(헤더)의 일부다 → 1비트만 변조해도 복호가 거부된다(AAD 바인딩 + KEM 불일치).
+        let (ek, dk) = generate_keypair();
+        let mut sealed = seal_to_pubkey(HOST, SECRET, &ek).unwrap();
+        let encap_off = HOST.len() + PQ_HEADER_PREFIX + 100; // encap 내부 임의 지점
+        sealed[encap_off] ^= 0xFF;
+        assert!(matches!(
+            open_with_privkey(&sealed, &dk),
+            Opened::Broken { .. }
+        ));
+    }
+
+    #[test]
+    fn pq_password_open_on_pq_trailer_is_broken_not_panic() {
+        // 비밀번호 경로(open)로 공개키 트레일러를 열면 kdf=2 분기에서 Broken(패닉 없음).
+        let (ek, _dk) = generate_keypair();
+        let sealed = seal_to_pubkey(HOST, SECRET, &ek).unwrap();
+        assert!(matches!(open(&sealed, PW), Opened::Broken { .. }));
+    }
+
+    #[test]
+    fn pq_open_with_privkey_on_password_trailer_is_broken_not_panic() {
+        // 공개키 경로(open_with_privkey)로 비밀번호(kdf=1) 트레일러를 열면 Broken(패닉 없음).
+        let (_ek, dk) = generate_keypair();
+        let sealed = seal(HOST, SECRET, PW).unwrap();
+        assert!(matches!(
+            open_with_privkey(&sealed, &dk),
+            Opened::Broken { .. }
+        ));
+    }
+
+    #[test]
+    fn pq_no_trailer_is_plain() {
+        let (_ek, dk) = generate_keypair();
+        assert_eq!(open_with_privkey(HOST, &dk), Opened::Plain);
+    }
+
+    #[test]
+    fn pq_stripped_trailer_reopens_as_plain() {
+        // 한컴 재저장 = 트레일러 소실 → 개인키 경로도 Plain 으로 정상화(에러 없음).
+        let (ek, dk) = generate_keypair();
+        let sealed = seal_to_pubkey(HOST, SECRET, &ek).unwrap();
+        let stripped = visible_layer(&sealed).to_vec();
+        assert_eq!(open_with_privkey(&stripped, &dk), Opened::Plain);
+    }
+
+    #[test]
+    fn pq_empty_secret_roundtrips() {
+        let (ek, dk) = generate_keypair();
+        let sealed = seal_to_pubkey(HOST, b"", &ek).unwrap();
+        match open_with_privkey(&sealed, &dk) {
+            Opened::Sealed { plaintext, .. } => assert_eq!(plaintext, b""),
+            other => panic!("Sealed 를 기대: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn pq_bad_public_key_length_is_error() {
+        let short = vec![0u8; 100];
+        assert!(matches!(
+            seal_to_pubkey(HOST, SECRET, &short),
+            Err(SealError::BadPublicKey { .. })
+        ));
+    }
+
+    #[test]
+    fn pq_bad_private_key_length_is_broken_not_panic() {
+        let (ek, _dk) = generate_keypair();
+        let sealed = seal_to_pubkey(HOST, SECRET, &ek).unwrap();
+        let short = vec![0u8; 100];
+        assert!(matches!(
+            open_with_privkey(&sealed, &short),
+            Opened::Broken { .. }
+        ));
     }
 }

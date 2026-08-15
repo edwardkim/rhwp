@@ -50,6 +50,11 @@ blake3 = "1"
 argon2 = "0.5"
 chacha20poly1305 = { version = "0.10", features = ["alloc"] }
 zeroize = "1"
+# [보안 트레일러 · 포스트양자] ML-KEM-768(NIST FIPS 203) 격자 KEM — 공개키 봉인의
+# 양자안전 키교환. 대칭부(XChaCha20-Poly1305)는 이미 양자내성이고, Shor 에 깨지는
+# 비대칭 키교환만 격자 KEM 으로 교체한다. 순수 Rust(RustCrypto) 라 wasm 도 그대로 컴파일.
+ml-kem = "0.2"
+rand_core = "0.6"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
 quick-xml = "0.41"
 roxmltree = "0.21"
