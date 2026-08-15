@@ -909,3 +909,74 @@ test('Local Font Access API가 없으면 문서 후보 글꼴만 probe snapshot�
     restoreGlobals(originals);
   }
 });
+
+test('Local Font Access가 문서 face를 누락하면 미해소 후보만 probe해 exact face를 보존한다', async () => {
+  const g = globalThis as TestGlobals;
+  const originals = {
+    browser: g.browser,
+    chrome: g.chrome,
+    document: g.document,
+    localStorage: g.localStorage,
+    queryLocalFonts: g.queryLocalFonts,
+  };
+  let storedSnapshot: LocalFontSnapshot | null = null;
+  let queryCount = 0;
+
+  resetLocalFontsForTests();
+  g.browser = undefined;
+  g.chrome = undefined;
+  g.localStorage = {
+    get length() {
+      return storedSnapshot ? 1 : 0;
+    },
+    clear() {
+      storedSnapshot = null;
+    },
+    getItem() {
+      return null;
+    },
+    key() {
+      return storedSnapshot ? STORAGE_KEY : null;
+    },
+    removeItem() {
+      storedSnapshot = null;
+    },
+    setItem(_key: string, value: string) {
+      storedSnapshot = JSON.parse(value) as LocalFontSnapshot;
+    },
+  } as Storage;
+  g.queryLocalFonts = async () => {
+    queryCount++;
+    return [{
+      family: '열거된 글꼴',
+      fullName: '열거된 글꼴 Regular',
+      postscriptName: 'Enumerated-Regular',
+      style: 'Regular',
+    }];
+  };
+  g.document = createProbeDocument(['KoPub바탕체 Light']);
+
+  try {
+    const fonts = await detectLocalFonts({
+      force: true,
+      includeRegistered: true,
+      candidateFamilies: ['열거된 글꼴 Regular', 'KoPub바탕체 Light', '없는글꼴'],
+    });
+    const state = getLocalFontState();
+    const chain = fontFamilyChainForDisplay('KoPub바탕체 Light');
+
+    assert.equal(queryCount, 1);
+    assert.ok(fonts.includes('KoPub바탕체 Light'));
+    assert.equal(resolveLocalFont('KoPub바탕체 Light')?.fullName, 'KoPub바탕체 Light');
+    assert.match(chain, /^"KoPub바탕체 Light"/u);
+    assert.deepEqual(
+      state.checkedFamilies,
+      sortedKo(['열거된 글꼴 Regular', 'KoPub바탕체 Light', '없는글꼴']),
+    );
+    assert.equal(state.complete, false);
+  } finally {
+    await clearStoredLocalFonts();
+    resetLocalFontsForTests();
+    restoreGlobals(originals);
+  }
+});
