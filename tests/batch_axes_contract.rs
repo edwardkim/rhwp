@@ -13,6 +13,9 @@ const SAMPLE: &str = "samples/hwp3-sample.hwp";
 const SAMPLE_TABLE: &str = "samples/table-001.hwp";
 /// 누름틀을 가진 문서.
 const SAMPLE_FIELDS: &str = "samples/field-01.hwp";
+/// 페이지 정의 헤더가 작은 hwp3 문서 — 헤더 바이트를 결정적으로 뒤집어
+/// `margin_footer > height` 손상본을 만드는 데 쓴다(page.rs 오버플로 회귀).
+const SAMPLE_PAGEDEF: &str = "samples/hwp3-pagedef-1915.hwp";
 
 fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
@@ -190,6 +193,96 @@ fn batch_new_axes_preserve_input_order_and_report_partial_failure() {
     assert_eq!(records[1]["exitClass"], "runtime", "{:?}", records[1]);
     assert_eq!(records[1]["schemaVersion"], "1.0", "{:?}", records[1]);
     assert!(records[2].get("error").is_none(), "{:?}", records[2]);
+}
+
+/// [DoS 하드닝 회귀] batch 경로 퍼징이 잡은 `src/model/page.rs` 여백 뺄셈 오버플로.
+///
+/// `margin_footer > page_height` 인 hwp3 손상 문서가 페이지 영역 계산에서
+/// `page_height - margin_footer` 를 u32 언더플로시켜 패닉했다. 단건 명령
+/// (`rhwp info`)에는 catch_unwind 가드가 없어 그대로 exit 101 로 죽었고, batch 는
+/// 행별 catch_unwind 로 격리해 그 행을 "내부 오류(panic)" error 레코드로 바꿨다.
+/// `saturating_sub` 수정 후에는 손상 문서도 우아하게 처리되어 그 행이 **성공**
+/// 레코드가 된다.
+///
+/// 이 테스트는 손상 파일이 섞인 배치가 (1) 패닉·행 무단누락 없이 끝까지 돌고
+/// (2) 진짜 실패 행을 격리해 부분 실패 exit 1 을 내며 (3) page.rs 오버플로
+/// 트리거 행이 더는 실패가 아님을 함께 잠근다.
+#[test]
+fn batch_isolates_corrupt_page_def_without_panic() {
+    let tmp = ConvertTmpDir::new("corrupt-pagedef");
+
+    // 1) page.rs:271 트리거 — 커밋된 hwp3 샘플의 페이지 정의 헤더 2바이트를
+    //    결정적으로 뒤집어 margin_footer > height 로 만든다(수정 전 패닉하던 입력).
+    let mut corrupt = std::fs::read(sample(SAMPLE_PAGEDEF)).expect("pagedef 샘플 읽기");
+    assert!(
+        corrupt.len() > 56,
+        "샘플이 예상보다 작습니다: {}",
+        corrupt.len()
+    );
+    corrupt[51] = 0x5d;
+    corrupt[56] = 0xd1;
+    let corrupt_path = tmp.path().join("corrupt_pagedef.hwp");
+    std::fs::write(&corrupt_path, &corrupt).expect("손상본 쓰기");
+
+    // 2) 어떤 파서로도 열리지 않는 순수 쓰레기 — 진짜 실패 행(격리·exit 1 계약용).
+    let garbage_path = tmp.path().join("garbage.hwp");
+    std::fs::write(&garbage_path, b"NOT-AN-HWP-FILE\x00\x01\x02rubbish").expect("쓰레기 쓰기");
+
+    let valid = sample(SAMPLE);
+    let (v, c, g) = (
+        valid.to_str().unwrap(),
+        corrupt_path.to_str().unwrap(),
+        garbage_path.to_str().unwrap(),
+    );
+    let args = ["batch", "info", "--json"];
+    // 유효 · 손상(page.rs 트리거) · 쓰레기 · 유효 순서로 섞는다.
+    let output = run_with_stdin(&args, &format!("{v}\n{c}\n{g}\n{v}\n"));
+
+    // 무패닉: 프로세스가 패닉 종료(101)하지 않는다.
+    assert_ne!(
+        output.status.code(),
+        Some(101),
+        "{}",
+        describe(&args, &output)
+    );
+    // 부분 실패(쓰레기 행 하나) → exit 1 (기존 batch 계약).
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "{}",
+        describe(&args, &output)
+    );
+
+    let records = ndjson(&args, &output);
+    // 입력 N = 출력 N — 조용히 사라지는 행이 없다.
+    assert_eq!(records.len(), 4, "{}", describe(&args, &output));
+    // 순서 보존: 유효 행.
+    assert!(
+        records[0].get("error").is_none(),
+        "유효 행0: {:?}",
+        records[0]
+    );
+    // 핵심 회귀: page.rs 오버플로 수정 후, 손상 페이지 정의 행은 더는 패닉/실패가
+    // 아니라 성공 레코드다(수정 전에는 catch_unwind 가 잡은 panic error 였다).
+    assert!(
+        records[1].get("error").is_none(),
+        "손상 페이지 정의 행이 여전히 실패한다(page.rs 오버플로 수정 회귀?): {:?}",
+        records[1]
+    );
+    assert_eq!(records[1]["format"], "hwp3", "{:?}", records[1]);
+    // 진짜 실패 행은 격리되어 error 레코드로 보고된다.
+    assert!(
+        records[2].get("error").is_some(),
+        "쓰레기 행은 error 레코드여야 한다: {:?}",
+        records[2]
+    );
+    assert_eq!(records[2]["exitClass"], "runtime", "{:?}", records[2]);
+    // 순서 보존: 마지막 유효 행.
+    assert!(
+        records[3].get("error").is_none(),
+        "유효 행3: {:?}",
+        records[3]
+    );
 }
 
 #[test]

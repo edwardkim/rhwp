@@ -222,11 +222,11 @@ impl PageAreas {
             if page_def.binding == BindingMethod::DuplexSided && is_even_page {
                 (
                     page_def.margin_right,
-                    page_def.margin_left + page_def.margin_gutter,
+                    page_def.margin_left.saturating_add(page_def.margin_gutter),
                 )
             } else {
                 (
-                    page_def.margin_left + page_def.margin_gutter,
+                    page_def.margin_left.saturating_add(page_def.margin_gutter),
                     page_def.margin_right,
                 )
             };
@@ -234,7 +234,10 @@ impl PageAreas {
         let mut content_left = effective_left;
         let mut content_right = page_width.saturating_sub(effective_right);
         // HWP 본문 시작 = margin_header + margin_top (한컴 도움말 기준)
-        let mut content_top = page_def.margin_header + page_def.margin_top;
+        // [DoS] 손상 문서는 여백 필드에 u32 극값을 넣을 수 있다 — 합이 u32 를 넘으면
+        // 오버플로 패닉이 난다. saturating_add 로 막아도 아래 content_bottom<=content_top
+        // 폴백(5% 기본 여백)이 포화값을 정상 경로로 흡수한다.
+        let mut content_top = page_def.margin_header.saturating_add(page_def.margin_top);
         // HWP 본문 끝 = height - margin_footer - margin_bottom
         let mut content_bottom = page_height
             .saturating_sub(page_def.margin_footer)
@@ -268,7 +271,11 @@ impl PageAreas {
             left: content_left as i32,
             top: content_bottom as i32,
             right: content_right as i32,
-            bottom: (page_height - page_def.margin_footer) as i32,
+            // [DoS] margin_footer 가 page_height 를 넘는 손상 문서에서 뺄셈이 u32
+            // 언더플로 패닉을 냈다(퍼징 실측). 위 content_bottom 과 같은 규약으로
+            // saturating_sub 를 쓴다 — 정상 문서(margin_footer <= page_height)에서는
+            // 결과가 동일하다.
+            bottom: page_height.saturating_sub(page_def.margin_footer) as i32,
         };
 
         PageAreas {
@@ -316,6 +323,58 @@ mod tests {
             body.bottom > body.top && body.right > body.left,
             "여백 과대여도 본문 영역은 양수여야 한다: {body:?}"
         );
+    }
+
+    /// [DoS 하드닝] 손상 문서가 여백 필드에 u32 극값을 넣어도 페이지 영역 계산이
+    /// 오버플로 패닉을 내지 않는다. batch 경로 퍼징에서 `margin_footer > height`
+    /// 인 hwp3 손상 파일이 `page.rs` 의 `page_height - margin_footer` 뺄셈을
+    /// u32 언더플로시켜 `rhwp info` 를 exit 101 로 죽였다(단건 명령엔 catch_unwind
+    /// 가드가 없다). 뺄셈(footer)·덧셈(header/top, left/gutter) 전 자리를 함께 잠근다.
+    #[test]
+    fn test_page_areas_extreme_margins_do_not_overflow() {
+        // 1) 뺄셈 언더플로: margin_footer 가 height 를 초과.
+        let underflow = PageDef {
+            width: 59528,
+            height: 84188,
+            margin_footer: u32::MAX,
+            ..Default::default()
+        };
+        let areas = PageAreas::from_page_def_for_page(&underflow, 1);
+        // 패닉 없이 반환되고, footer bottom 은 saturating_sub 로 0 이하로 새지 않는다.
+        assert!(
+            areas.footer_area.bottom >= 0,
+            "footer bottom 은 음수로 새면 안 된다: {:?}",
+            areas.footer_area
+        );
+        assert!(
+            areas.body_area.bottom > areas.body_area.top
+                && areas.body_area.right > areas.body_area.left,
+            "극값 여백에서도 본문 영역은 양수로 폴백해야 한다: {:?}",
+            areas.body_area
+        );
+
+        // 2) 덧셈 오버플로: margin_header + margin_top, margin_left + margin_gutter
+        //    가 각각 u32 를 넘는다. 짝수쪽(짝수 페이지) 경로까지 함께 태운다.
+        let add_overflow = PageDef {
+            width: 59528,
+            height: 84188,
+            margin_header: u32::MAX,
+            margin_top: u32::MAX,
+            margin_left: u32::MAX,
+            margin_gutter: u32::MAX,
+            margin_right: u32::MAX,
+            binding: BindingMethod::DuplexSided,
+            ..Default::default()
+        };
+        for page_number in [1, 2] {
+            let areas = PageAreas::from_page_def_for_page(&add_overflow, page_number);
+            assert!(
+                areas.body_area.bottom > areas.body_area.top
+                    && areas.body_area.right > areas.body_area.left,
+                "덧셈 오버플로 여백에서도 본문 영역은 양수로 폴백해야 한다 (page={page_number}): {:?}",
+                areas.body_area
+            );
+        }
     }
 
     #[test]
