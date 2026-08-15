@@ -303,6 +303,10 @@ fn main() {
         Some("export-render-tree") => exit_with(export_render_tree(&args[2..])),
         Some("export-structure") => exit_with(export_structure(&args[2..])),
         Some("export-png") => exit_with(export_png(&args[2..])),
+        // [gym_gpu_raster] GPU 가속 PNG 래스터화 (feature = "gpu"). export-png(native-skia)과
+        // 같은 방식으로 feature 게이팅 — 미빌드 바이너리는 사용법 오류(exit 2)로 안내한다.
+        Some("export-png-gpu") => exit_with(export_png_gpu(&args[2..])),
+        Some("gpu-info") => exit_with(gpu_info(&args[2..])),
         Some("export-pdf") => exit_with(export_pdf(&args[2..])),
         Some("export-text") => exit_with(export_text(&args[2..])),
         Some("export-markdown") => exit_with(export_markdown(&args[2..])),
@@ -2750,6 +2754,20 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             "native-skia",
             cfg!(feature = "native-skia"),
         ),
+        cmd_gated(
+            "export-png-gpu",
+            "export",
+            "SVG를 GPU(vello/wgpu)로 래스터화해 페이지별 PNG로 렌더 (--benchmark 로 CPU 대비 실측)",
+            "gpu",
+            cfg!(feature = "gpu"),
+        ),
+        cmd_gated(
+            "gpu-info",
+            "export",
+            "사용 가능한 GPU 어댑터 열거 (export-png-gpu 가 쓸 백엔드 확인)",
+            "gpu",
+            cfg!(feature = "gpu"),
+        ),
         cmd_json(
             "export-pdf",
             "export",
@@ -3804,6 +3822,23 @@ fn print_help() {
     println!("                              gemini:     3072 px (Google Gemini)");
     println!("                              qwen-vl:    2240 px (Qwen-VL, 별칭: qwen)");
     println!("                              llava:      672 px (LLaVA / OSS CLIP)");
+    println!();
+    println!("  export-png-gpu <파일.hwp|파일.hwpx> [옵션]   (gpu feature 필요)");
+    println!("      기존 SVG 산출을 GPU(vello/wgpu)로 래스터화해 PNG로 내보내기");
+    println!("      대량 문서 코퍼스를 VLM 입력 이미지로 굽는 파이프라인용. 파싱·레이아웃은");
+    println!("      GPU 대상이 아니다(분기 지배적) — 래스터화 단계만 GPU로 옮긴다.");
+    println!();
+    println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
+    println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!("      --scale <배율>          렌더링 배율 (기본: 2.0)");
+    println!("      --font-path <경로>      폰트 파일/디렉터리 탐색 경로 (여러 번 지정 가능)");
+    println!(
+        "      --benchmark             같은 벡터를 CPU(resvg)로도 굽고 시간·픽셀차를 정직 보고"
+    );
+    println!("      --repeat <N>            각 페이지 래스터화 반복 후 최솟값 (기본: 1)");
+    println!();
+    println!("  gpu-info                        (gpu feature 필요)");
+    println!("      사용 가능한 GPU 어댑터를 열거 (export-png-gpu 가 쓸 백엔드 확인)");
     println!();
     println!("  export-text <파일.hwp> [옵션]");
     println!("      페이지별 텍스트를 TXT로 내보내기");
@@ -5358,6 +5393,487 @@ fn export_png(args: &[String]) -> i32 {
         EXIT_OK
     } else {
         EXIT_RUNTIME
+    }
+}
+
+// ============================================================================
+// [gym_gpu_raster] export-png-gpu — GPU 가속 SVG→PNG 래스터화 (feature = "gpu")
+//
+// 파싱·레이아웃은 GPU로 가속되지 않는다(분기 지배적). 이 명령은 그 경계를 넘지 않고, 기존
+// SVG 산출(render_page_svg_native)이 만든 벡터를 **픽셀로 굽는 단계만** GPU(vello/wgpu)로
+// 옮긴다. 대량 문서 코퍼스를 VLM 입력 이미지로 굽는 에이전트 파이프라인이 대상이다.
+// ============================================================================
+
+/// gpu feature 없이 빌드된 바이너리 — export-png 의 native-skia 스텁과 같은 계약.
+#[cfg(not(feature = "gpu"))]
+fn export_png_gpu(_args: &[String]) -> i32 {
+    eprintln!("오류: export-png-gpu 명령은 gpu feature 가 활성화되어야 합니다.");
+    eprintln!("       cargo build --release --features gpu");
+    // 기능이 아예 빌드되지 않은 바이너리다. 0으로 끝내면 스크립트가 성공으로 오인한다(#2707).
+    EXIT_USAGE
+}
+
+#[cfg(feature = "gpu")]
+fn export_png_gpu(args: &[String]) -> i32 {
+    use rhwp::renderer::gpu;
+    use std::time::Instant;
+
+    let mut file_path: Option<&str> = None;
+    let mut output_dir = "output".to_string();
+    let mut target_page: Option<u32> = None;
+    let mut scale: f64 = 2.0;
+    let mut font_paths: Vec<std::path::PathBuf> = Vec::new();
+    let mut benchmark = false;
+    let mut repeat: u32 = 1;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--help" | "-h" => {
+                print_export_png_gpu_usage();
+                return EXIT_OK;
+            }
+            "--output" | "-o" => {
+                if i + 1 < args.len() {
+                    output_dir = args[i + 1].clone();
+                    i += 2;
+                } else {
+                    eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--page" | "-p" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse::<u32>() {
+                        Ok(n) => target_page = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
+                            return EXIT_USAGE;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--scale" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse::<f64>() {
+                        Ok(s) if s.is_finite() && s > 0.0 => scale = s,
+                        _ => {
+                            eprintln!("오류: --scale 값이 올바르지 않습니다 (양수 실수 필요).");
+                            return EXIT_USAGE;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --scale 뒤에 배율 값이 필요합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--font-path" => {
+                if i + 1 < args.len() {
+                    font_paths.push(std::path::PathBuf::from(&args[i + 1]));
+                    i += 2;
+                } else {
+                    eprintln!("오류: --font-path 뒤에 경로가 필요합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--benchmark" => {
+                benchmark = true;
+                i += 1;
+            }
+            "--repeat" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse::<u32>() {
+                        Ok(n) if n >= 1 => repeat = n,
+                        _ => {
+                            eprintln!("오류: --repeat 값이 올바르지 않습니다 (1 이상 정수 필요).");
+                            return EXIT_USAGE;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --repeat 뒤에 반복 횟수가 필요합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+                i += 1;
+            }
+        }
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp export-png-gpu <파일.hwp|파일.hwpx> [옵션] (rhwp export-png-gpu --help 참조)");
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let mut core = match load_document_core(&data) {
+        Ok(c) => c,
+        Err(e) => return e.report(),
+    };
+
+    // 외부 연결 그림 자동 적재 — export-svg/export-png 와 동일 규칙(#3302).
+    if allows_implicit_sibling_resources(rhwp::parser::detect_format(&data)) {
+        if let Some(parent) = Path::new(file_path).parent() {
+            let _loaded = core.populate_external_images_from_dir(parent);
+        }
+    }
+
+    let page_count = core.page_count();
+    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+
+    let output_path = Path::new(&output_dir);
+    if !output_path.exists() {
+        if let Err(e) = fs::create_dir_all(output_path) {
+            eprintln!(
+                "오류: 출력 폴더를 생성할 수 없습니다 - {}: {}",
+                output_dir, e
+            );
+            return EXIT_RUNTIME;
+        }
+    }
+
+    let pages: Vec<u32> = match target_page {
+        Some(p) => {
+            if p >= page_count as u32 {
+                eprintln!(
+                    "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
+                    page_count - 1
+                );
+                return EXIT_USAGE;
+            }
+            vec![p]
+        }
+        None => (0..page_count as u32).collect(),
+    };
+
+    let file_stem = Path::new(file_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("page");
+
+    // ── GPU 컨텍스트: 배치 전체에서 재사용할 단 하나. 생성 비용(일회성)을 측정해 둔다. ──
+    let init_start = Instant::now();
+    let mut ctx = match gpu::GpuContext::new() {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("오류: GPU 컨텍스트 생성 실패 - {e}");
+            eprintln!("      (헤드리스 Vulkan/DX12/Metal 어댑터가 필요합니다. `rhwp gpu-info` 로 확인하세요.)");
+            return EXIT_RUNTIME;
+        }
+    };
+    let init_ms = init_start.elapsed().as_secs_f64() * 1000.0;
+    println!("GPU 어댑터: {}", ctx.adapter_summary());
+    println!("GPU 컨텍스트 초기화(일회성): {:.1} ms", init_ms);
+    if benchmark {
+        println!(
+            "벤치마크 모드: 각 페이지 래스터화를 {}회 반복해 최솟값(노이즈 최소)을 취합니다.\n",
+            repeat
+        );
+    }
+
+    let total_pages = pages.len();
+    let mut success = 0usize;
+    let mut total_bytes = 0usize;
+
+    // 벤치마크 누적기(래스터화 단계만 — 파싱·인코딩은 두 경로 공통이라 별도 집계).
+    let mut sum_svg_ms = 0.0f64; // 레이아웃+SVG 생성(CPU, 두 경로 공통 입력)
+    let mut sum_parse_ms = 0.0f64; // usvg 파싱+텍스트 셰이핑(두 경로 공통)
+    let mut sum_gpu_ms = 0.0f64; // vello: scene 빌드+GPU 래스터+리드백
+    let mut sum_cpu_ms = 0.0f64; // resvg: tiny-skia CPU 래스터
+    let mut sum_encode_ms = 0.0f64; // PNG 인코딩(두 경로 공통 코드)
+    let mut worst_mean_abs = 0.0f64;
+    let mut worst_pct = 0.0f64;
+    let mut dims_all_match = true;
+
+    for page_num in &pages {
+        // 1) 레이아웃+SVG 생성 (CPU, 두 경로 공통 입력)
+        let t = Instant::now();
+        let svg = match core.render_page_svg_native(*page_num) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("오류: 페이지 {} SVG 생성 실패 - {:?}", page_num + 1, e);
+                continue;
+            }
+        };
+        sum_svg_ms += t.elapsed().as_secs_f64() * 1000.0;
+
+        // 2) usvg 파싱 (두 경로 공통 벡터 트리)
+        let t = Instant::now();
+        let tree = match gpu::parse_svg(&svg, &font_paths) {
+            Ok(t) => t,
+            Err(e) => {
+                eprintln!("오류: 페이지 {} SVG 파싱 실패 - {e}", page_num + 1);
+                continue;
+            }
+        };
+        sum_parse_ms += t.elapsed().as_secs_f64() * 1000.0;
+
+        // 3) GPU 래스터화 (repeat 회 중 최솟값)
+        let mut gpu_best = f64::INFINITY;
+        let mut gpu_img = None;
+        for _ in 0..repeat {
+            let t = Instant::now();
+            match ctx.rasterize(&tree, scale) {
+                Ok(img) => {
+                    let ms = t.elapsed().as_secs_f64() * 1000.0;
+                    gpu_best = gpu_best.min(ms);
+                    gpu_img = Some(img);
+                }
+                Err(e) => {
+                    eprintln!("오류: 페이지 {} GPU 래스터화 실패 - {e}", page_num + 1);
+                    break;
+                }
+            }
+        }
+        let Some(gpu_img) = gpu_img else { continue };
+        sum_gpu_ms += gpu_best;
+
+        // 4) PNG 인코딩 (공통 코드)
+        let t = Instant::now();
+        let png_bytes = match gpu_img.encode_png() {
+            Ok(b) => b,
+            Err(e) => {
+                eprintln!("오류: 페이지 {} PNG 인코딩 실패 - {e}", page_num + 1);
+                continue;
+            }
+        };
+        sum_encode_ms += t.elapsed().as_secs_f64() * 1000.0;
+
+        let png_filename = if total_pages == 1 {
+            format!("{}.png", file_stem)
+        } else {
+            format!("{}_{:03}.png", file_stem, page_num + 1)
+        };
+        let png_path = output_path.join(&png_filename);
+        if let Err(e) = fs::write(&png_path, &png_bytes) {
+            eprintln!("오류: 페이지 {} PNG 저장 실패 - {}", page_num + 1, e);
+            continue;
+        }
+        println!(
+            "  → {} ({}x{}, {} bytes, GPU {:.1} ms)",
+            png_path.display(),
+            gpu_img.width,
+            gpu_img.height,
+            png_bytes.len(),
+            gpu_best
+        );
+        total_bytes += png_bytes.len();
+        success += 1;
+
+        // 5) 벤치마크: 같은 트리를 CPU(resvg)로도 굽고, 시간·픽셀차를 잰다.
+        if benchmark {
+            let mut cpu_best = f64::INFINITY;
+            let mut cpu_img = None;
+            for _ in 0..repeat {
+                let t = Instant::now();
+                match gpu::cpu_rasterize(&tree, scale) {
+                    Ok(img) => {
+                        cpu_best = cpu_best.min(t.elapsed().as_secs_f64() * 1000.0);
+                        cpu_img = Some(img);
+                    }
+                    Err(e) => {
+                        eprintln!("경고: 페이지 {} CPU 래스터화 실패 - {e}", page_num + 1);
+                        break;
+                    }
+                }
+            }
+            if let Some(cpu_img) = cpu_img {
+                sum_cpu_ms += cpu_best;
+                // CPU PNG 도 저장(눈 검증용).
+                if let Ok(cpu_png) = cpu_img.encode_png() {
+                    let cpu_name = format!("{}_{:03}.cpu.png", file_stem, page_num + 1);
+                    let _ = fs::write(output_path.join(cpu_name), &cpu_png);
+                }
+                let d = gpu::diff(&gpu_img, &cpu_img);
+                if !d.dims_match {
+                    dims_all_match = false;
+                    println!(
+                        "     [벤치] p{}: GPU {:.1}ms / CPU {:.1}ms · 치수 불일치 GPU {}x{} vs CPU {}x{}",
+                        page_num + 1,
+                        gpu_best,
+                        cpu_best,
+                        d.width_a,
+                        d.height_a,
+                        d.width_b,
+                        d.height_b
+                    );
+                } else {
+                    worst_mean_abs = worst_mean_abs.max(d.mean_abs);
+                    worst_pct = worst_pct.max(d.pct_pixels_over_thresh);
+                    println!(
+                        "     [벤치] p{}: GPU {:.1}ms / CPU {:.1}ms (x{:.2}) · 픽셀차 평균 {:.2}/255, |Δ|≥16 {:.2}%",
+                        page_num + 1,
+                        gpu_best,
+                        cpu_best,
+                        cpu_best / gpu_best,
+                        d.mean_abs,
+                        d.pct_pixels_over_thresh * 100.0
+                    );
+                }
+            }
+        }
+    }
+
+    println!(
+        "\n내보내기 완료: {}개 PNG → {}/ ({:.1} MB), 배율 {}x",
+        success,
+        output_dir,
+        total_bytes as f64 / 1024.0 / 1024.0,
+        scale
+    );
+
+    if benchmark && success > 0 {
+        let n = success as f64;
+        println!("\n==================== 정직한 벤치마크 요약 ====================");
+        println!(
+            "표본: {} 페이지, 배율 {}x, 반복 {}회(최솟값), 어댑터 {}",
+            success,
+            scale,
+            repeat,
+            ctx.adapter_summary()
+        );
+        println!("공통 단계(두 경로 동일 입력, 가속 대상 아님):");
+        println!(
+            "  레이아웃+SVG 생성 : 합계 {:8.1} ms  (페이지당 {:6.2} ms)",
+            sum_svg_ms,
+            sum_svg_ms / n
+        );
+        println!(
+            "  usvg 파싱+셰이핑  : 합계 {:8.1} ms  (페이지당 {:6.2} ms)",
+            sum_parse_ms,
+            sum_parse_ms / n
+        );
+        println!(
+            "  PNG 인코딩        : 합계 {:8.1} ms  (페이지당 {:6.2} ms)",
+            sum_encode_ms,
+            sum_encode_ms / n
+        );
+        println!("래스터화 단계(비교 대상):");
+        println!(
+            "  CPU (resvg/tiny-skia) : 합계 {:8.1} ms  (페이지당 {:6.2} ms)",
+            sum_cpu_ms,
+            sum_cpu_ms / n
+        );
+        println!(
+            "  GPU (vello/wgpu)      : 합계 {:8.1} ms  (페이지당 {:6.2} ms)",
+            sum_gpu_ms,
+            sum_gpu_ms / n
+        );
+        if sum_gpu_ms > 0.0 {
+            println!(
+                "  → 래스터화만: GPU가 CPU 대비 {:.2}x",
+                sum_cpu_ms / sum_gpu_ms
+            );
+        }
+        // 엔드투엔드(초기화 포함/제외) — 소규모에서 GPU가 손해 보는 구간을 정직하게 보인다.
+        let e2e_common = sum_svg_ms + sum_parse_ms + sum_encode_ms;
+        let e2e_cpu = e2e_common + sum_cpu_ms;
+        let e2e_gpu_no_init = e2e_common + sum_gpu_ms;
+        let e2e_gpu_with_init = e2e_gpu_no_init + init_ms;
+        println!("엔드투엔드(공통 단계 포함):");
+        println!("  CPU 경로              : {:8.1} ms", e2e_cpu);
+        println!(
+            "  GPU 경로(초기화 제외) : {:8.1} ms  → {:.2}x",
+            e2e_gpu_no_init,
+            e2e_cpu / e2e_gpu_no_init
+        );
+        println!(
+            "  GPU 경로(초기화 포함) : {:8.1} ms  (일회성 {:.1} ms 포함) → {:.2}x",
+            e2e_gpu_with_init,
+            init_ms,
+            e2e_cpu / e2e_gpu_with_init
+        );
+        println!("시각 일치(GPU vs CPU, 같은 벡터 입력):");
+        if dims_all_match {
+            println!(
+                "  치수 전 페이지 일치 · 최악 평균 픽셀차 {:.2}/255 · 최악 |Δ|≥16 비율 {:.2}%",
+                worst_mean_abs,
+                worst_pct * 100.0
+            );
+            println!("  (차이는 레이아웃이 아니라 두 래스터라이저의 안티에일리어싱 방식 차이다.)");
+        } else {
+            println!("  일부 페이지 치수 불일치 — 위 로그 참조.");
+        }
+        println!("=============================================================");
+    }
+
+    if success == total_pages {
+        EXIT_OK
+    } else {
+        EXIT_RUNTIME
+    }
+}
+
+#[cfg(feature = "gpu")]
+fn print_export_png_gpu_usage() {
+    println!("rhwp export-png-gpu <파일.hwp|파일.hwpx> [옵션]");
+    println!("  기존 SVG 산출을 GPU(vello/wgpu)로 래스터화해 페이지별 PNG로 내보낸다.");
+    println!("  파싱·레이아웃은 GPU 대상이 아니다(분기 지배적) — 래스터화 단계만 GPU로 옮긴다.");
+    println!();
+    println!("  -o, --output <폴더>   출력 폴더 (기본: output/)");
+    println!("  -p, --page <번호>     특정 페이지만 (0부터)");
+    println!("  --scale <배율>        렌더 배율 (기본: 2.0)");
+    println!("  --font-path <경로>    폰트 파일/디렉터리 탐색 경로 (여러 번 지정 가능)");
+    println!("  --benchmark           같은 벡터를 CPU(resvg)로도 굽고 시간·픽셀차를 보고");
+    println!("  --repeat <N>          각 페이지 래스터화 반복 후 최솟값 (기본: 1)");
+}
+
+/// gpu feature 없이 빌드된 바이너리 — gpu-info 스텁.
+#[cfg(not(feature = "gpu"))]
+fn gpu_info(_args: &[String]) -> i32 {
+    eprintln!("오류: gpu-info 명령은 gpu feature 가 활성화되어야 합니다.");
+    eprintln!("       cargo build --release --features gpu");
+    EXIT_USAGE
+}
+
+/// 사용 가능한 GPU 어댑터를 열거한다 — export-png-gpu 가 어떤 GPU를 쓸지 확인용.
+#[cfg(feature = "gpu")]
+fn gpu_info(_args: &[String]) -> i32 {
+    use rhwp::renderer::gpu;
+    let adapters = gpu::probe_adapters();
+    if adapters.is_empty() {
+        println!("사용 가능한 GPU 어댑터가 없습니다.");
+        return EXIT_RUNTIME;
+    }
+    println!("사용 가능한 GPU 어댑터 ({}개):", adapters.len());
+    for (idx, a) in adapters.iter().enumerate() {
+        println!("  [{}] {}", idx, a);
+    }
+    println!();
+    match gpu::GpuContext::new() {
+        Ok(ctx) => {
+            println!(
+                "export-png-gpu 가 선택할 어댑터(HighPerformance): {}",
+                ctx.adapter_summary()
+            );
+            EXIT_OK
+        }
+        Err(e) => {
+            eprintln!("경고: 헤드리스 렌더 컨텍스트 생성 실패 - {e}");
+            EXIT_RUNTIME
+        }
     }
 }
 
