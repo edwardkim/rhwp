@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const POLICY_VERSION = '4';
+const POLICY_VERSION = '5';
 const POLICY_CONTEXT = 'CI Impact Policy';
 const WORKFLOW_ORDER = ['CI', 'CodeQL', 'Render Diff'];
 const WORKFLOW_PATHS = {
@@ -289,6 +289,113 @@ function changesEnforcementSurface(files) {
   ));
 }
 
+function isReviewReferencePath(filename) {
+  const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+  return (
+    filename.startsWith('samples/')
+    && (
+      filename.endsWith('.hwp')
+      || filename.endsWith('.hwpx')
+      || filename.endsWith('.pdf')
+      || filename.endsWith('.png')
+    )
+  ) || (
+    pdfPrefixes.some((prefix) => filename.startsWith(prefix))
+    && filename.endsWith('.pdf')
+  );
+}
+
+function isAllowedReviewFile(file) {
+  const normalized = normalizeFile(file);
+  if (normalized.filename.startsWith('mydocs/')) return true;
+  return String(file?.status || '') === 'added'
+    && isReviewReferencePath(normalized.filename);
+}
+
+function selectReviewOnlyCandidate(commits, currentBaseSha) {
+  const entries = Array.isArray(commits) ? commits : [];
+  if (entries.length === 0) {
+    return { eligible: false, reason: 'no-pr-commits', candidateSha: '' };
+  }
+  let trailingCount = 0;
+  let baseMergeBridge = null;
+  let expectedSha = '';
+  for (let index = entries.length - 1; index >= 0; index -= 1) {
+    const commit = entries[index] || {};
+    const sha = String(commit.sha || '');
+    const parents = Array.isArray(commit.parents)
+      ? commit.parents.map((parent) => String(parent?.sha || parent || '')).filter(Boolean)
+      : [];
+    const files = Array.isArray(commit.files) ? commit.files : [];
+    if (!/^[0-9a-f]{40}$/.test(sha)) {
+      return { eligible: false, reason: 'invalid-commit-sha', candidateSha: '' };
+    }
+    if (expectedSha && sha !== expectedSha) {
+      return {
+        eligible: false,
+        reason: `non-linear-review-tail:${sha}`,
+        candidateSha: '',
+      };
+    }
+    const isCurrentBaseMerge = parents.length === 2
+      && parents.filter((parent) => parent === currentBaseSha).length === 1;
+    if (isCurrentBaseMerge) {
+      if (baseMergeBridge) {
+        return {
+          eligible: false,
+          reason: `multiple-current-base-update-merges:${sha}`,
+          candidateSha: '',
+        };
+      }
+      const sourceParentSha = parents.find((parent) => parent !== currentBaseSha) || '';
+      if (!sourceParentSha) {
+        return {
+          eligible: false,
+          reason: `current-base-source-parent-unavailable:${sha}`,
+          candidateSha: '',
+        };
+      }
+      baseMergeBridge = { mergeSha: sha, sourceParentSha };
+      expectedSha = sourceParentSha;
+      continue;
+    }
+    if (files.length === 0 || files.length >= 300) {
+      return { eligible: false, reason: `unusable-file-list:${sha}`, candidateSha: '' };
+    }
+    if (files.every(isAllowedReviewFile)) {
+      if (parents.length !== 1) {
+        return { eligible: false, reason: `review-only-merge-not-reusable:${sha}`, candidateSha: '' };
+      }
+      trailingCount += 1;
+      expectedSha = parents[0];
+      continue;
+    }
+    if (trailingCount === 0 && !baseMergeBridge) {
+      return { eligible: false, reason: 'no-trailing-review-only-commits', candidateSha: '' };
+    }
+    if (baseMergeBridge && baseMergeBridge.sourceParentSha !== sha) {
+      return { eligible: false, reason: 'base-merge-source-parent-mismatch', candidateSha: '' };
+    }
+    return {
+      eligible: true,
+      reason: baseMergeBridge ? 'candidate-with-current-base-bridge' : 'candidate-with-review-tail',
+      candidateSha: sha,
+      trailingCount,
+      baseMergeBridge,
+    };
+  }
+  if (baseMergeBridge) {
+    return {
+      eligible: true,
+      reason: 'direct-current-base-bridge',
+      candidateSha: baseMergeBridge.sourceParentSha,
+      trailingCount,
+      baseMergeBridge,
+    };
+  }
+  return { eligible: false, reason: 'no-code-candidate', candidateSha: '' };
+}
+
 function matchesPathPattern(filename, pattern) {
   if (pattern === '*.md') return !filename.includes('/') && filename.endsWith('.md');
   if (pattern === 'rhwp-logo.*') return /^rhwp-logo\.[^/]+$/.test(filename);
@@ -333,7 +440,10 @@ function workflowRunMatchesPull(run, identity) {
   return pulls.some((pull) => (
     Number(pull?.number || 0) === Number(identity.pullNumber || 0)
     && String(pull?.base?.ref || '') === String(identity.baseRef || '')
-    && String(pull?.base?.sha || '') === String(identity.baseSha || '')
+    && (
+      identity.allowPriorBase === true
+      || String(pull?.base?.sha || '') === String(identity.baseSha || '')
+    )
     && String(pull?.head?.ref || '') === String(identity.headBranch || '')
     && String(pull?.head?.sha || '') === String(identity.headSha || '')
   ));
@@ -385,6 +495,7 @@ function statusDescription(policy) {
     `v=${POLICY_VERSION}`,
     `cv=${classification.classifier_version}`,
     `mode=${policy.decision}`,
+    `rfp=${policy.trusted_review_fast_pass === 'true' ? '1' : '0'}`,
     `wf=${workflowBits}`,
     `rust=${classification.rust_required === 'true' ? '1' : '0'}`,
     `fe=${classification.frontend_mode}`,
@@ -406,7 +517,7 @@ function parseStatusDescription(description) {
     fields.set(key, value);
   }
   const expected = [
-    'v', 'cv', 'mode', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
+    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
   ];
   if (fields.size !== expected.length || expected.some((key) => !fields.has(key))) {
     throw new Error('policy status fields are incomplete');
@@ -417,6 +528,9 @@ function parseStatusDescription(description) {
   }
   if (!new Set(['blocked', 'full', 'selective']).has(fields.get('mode'))) {
     throw new Error('invalid policy mode');
+  }
+  if (!new Set(['0', '1']).has(fields.get('rfp'))) {
+    throw new Error('invalid trusted review fast-pass axis');
   }
   if (!/^[01]{3}$/.test(fields.get('wf'))) throw new Error('invalid workflow axes');
   if (!new Set(['0', '1']).has(fields.get('rust'))) throw new Error('invalid rust axis');
@@ -469,10 +583,18 @@ function determinePolicy(input = {}) {
     skip_eligible: decision === 'selective' ? 'true' : 'false',
     head_trust: headTrust,
     enforcement_surface_changed: enforcementChanged ? 'true' : 'false',
+    trusted_review_fast_pass: 'false',
+    review_candidate_sha: '',
     expected_workflows: expectedWorkflowMap(input.files, forceAllWorkflows),
     reason: classification.reason,
     classification,
   };
+  const reviewAudit = auditReviewReuse({ ...input, policy });
+  if (reviewAudit.eligible === true) {
+    policy.trusted_review_fast_pass = 'true';
+    policy.review_candidate_sha = reviewAudit.candidateSha;
+  }
+  policy.review_reuse_reason = reviewAudit.reason;
   policy.ci_run_expected = policy.expected_workflows.CI;
   policy.status_description = statusDescription(policy);
   return policy;
@@ -604,7 +726,10 @@ function auditCi(policy, jobs) {
 
   const laneJobs = [...CI_RUST_JOBS, CI_NATIVE_JOB, ...CI_FRONTEND_JOBS];
   if (preflight.fastPass) {
-    if (policy.enforcement_surface_changed === 'true') return 'fast-pass-with-enforcement-change:CI';
+    if (
+      policy.enforcement_surface_changed === 'true'
+      && policy.trusted_review_fast_pass !== 'true'
+    ) return 'fast-pass-with-enforcement-change:CI';
     for (const name of laneJobs) {
       const failure = requireSafeAliasedJobConclusion(byName, name, 'skipped');
       if (failure) return failure;
@@ -646,7 +771,10 @@ function auditCodeql(policy, jobs) {
   );
   if (preflight.error) return preflight.error;
   if (preflight.fastPass) {
-    if (policy.enforcement_surface_changed === 'true') return 'fast-pass-with-enforcement-change:CodeQL';
+    if (
+      policy.enforcement_surface_changed === 'true'
+      && policy.trusted_review_fast_pass !== 'true'
+    ) return 'fast-pass-with-enforcement-change:CodeQL';
     const templateName = 'Analyze (${{ matrix.language }})';
     const templateEntries = byName.get(templateName) || [];
     const expandedCount = Object.values(CODEQL_JOBS)
@@ -710,13 +838,100 @@ function auditRenderDiff(policy, jobs) {
     'Check out trusted CI impact classifier',
   );
   if (preflight.error) return preflight.error;
-  if (preflight.fastPass && policy.enforcement_surface_changed === 'true') {
+  if (
+    preflight.fastPass
+    && policy.enforcement_surface_changed === 'true'
+    && policy.trusted_review_fast_pass !== 'true'
+  ) {
     return 'fast-pass-with-enforcement-change:Render Diff';
   }
   const conclusion = preflight.fastPass || policy.classification.render_required !== 'true'
     ? 'skipped'
     : 'success';
   return requireSafeJobConclusion(byName, 'Canvas visual diff', conclusion);
+}
+
+function auditReviewReuse(input = {}) {
+  const policy = input.policy;
+  const reuse = input.reviewReuse || {};
+  const candidateSha = String(reuse.candidateSha || '');
+  if (!policy || policy.enforcement_surface_changed !== 'true') {
+    return { eligible: false, candidateSha: '', reason: 'review-reuse-not-required' };
+  }
+  if (String(input.forceFullReason || '')) {
+    return { eligible: false, candidateSha: '', reason: 'review-reuse-trusted-input-incomplete' };
+  }
+  if (policy.head_trust !== 'same-repository') {
+    return { eligible: false, candidateSha: '', reason: 'review-reuse-requires-same-repository' };
+  }
+  if (policy.decision === 'blocked') {
+    return { eligible: false, candidateSha: '', reason: 'review-reuse-policy-blocked' };
+  }
+  if (!reuse.lineageEligible || !/^[0-9a-f]{40}$/.test(candidateSha)) {
+    return {
+      eligible: false,
+      candidateSha: '',
+      reason: String(reuse.reason || 'review-reuse-lineage-unavailable'),
+    };
+  }
+  if (reuse.baseMergeBridge && reuse.mergeTreeVerified !== true) {
+    return { eligible: false, candidateSha: '', reason: 'review-reuse-merge-tree-unverified' };
+  }
+
+  for (const workflow of WORKFLOW_ORDER) {
+    if (policy.expected_workflows[workflow] !== 'true') continue;
+    const evidence = reuse.workflows?.[workflow];
+    if (!evidence?.run) {
+      return { eligible: false, candidateSha: '', reason: `review-reuse-missing-workflow:${workflow}` };
+    }
+    const run = evidence.run;
+    const runCreatedAt = Date.parse(run.createdAt || 0);
+    const pullCreatedAt = Date.parse(input.pullRequest?.createdAt || 0);
+    if (
+      String(run.name || '') !== workflow
+      || String(run.path || '') !== WORKFLOW_PATHS[workflow]
+      || String(run.event || '') !== 'pull_request'
+      || String(run.headSha || '') !== candidateSha
+      || String(run.headBranch || '') !== String(input.pullRequest?.headBranch || '')
+      || String(run.headRepository || '') !== String(input.pullRequest?.headRepository || '')
+      || !Array.isArray(run.pullNumbers)
+      || !run.pullNumbers.map(Number).includes(Number(input.pullRequest?.number || 0))
+      || !Number.isFinite(runCreatedAt)
+      || !Number.isFinite(pullCreatedAt)
+      || runCreatedAt < pullCreatedAt
+      || String(run.status || '') !== 'completed'
+      || String(run.conclusion || '') !== 'success'
+      || evidence.jobsCollected !== true
+    ) {
+      return { eligible: false, candidateSha: '', reason: `review-reuse-invalid-workflow:${workflow}` };
+    }
+    const failure = workflow === 'CI'
+      ? auditCi(policy, evidence.jobs)
+      : workflow === 'CodeQL'
+        ? auditCodeql(policy, evidence.jobs)
+        : auditRenderDiff(policy, evidence.jobs);
+    if (failure) {
+      return { eligible: false, candidateSha: '', reason: `review-reuse-${workflow}:${failure}` };
+    }
+    if (workflow === 'CodeQL') {
+      const check = evidence.securityCheck;
+      const runStartedAt = Date.parse(run.runStartedAt || 0);
+      const checkStartedAt = Date.parse(check?.startedAt || 0);
+      if (
+        check?.appSlug !== 'github-advanced-security'
+        || check?.name !== 'CodeQL'
+        || check?.headSha !== candidateSha
+        || check?.status !== 'completed'
+        || !new Set(['success', 'neutral']).has(check?.conclusion)
+        || !Number.isFinite(runStartedAt)
+        || !Number.isFinite(checkStartedAt)
+        || checkStartedAt < runStartedAt
+      ) {
+        return { eligible: false, candidateSha: '', reason: 'review-reuse-invalid-security-check:CodeQL' };
+      }
+    }
+  }
+  return { eligible: true, candidateSha, reason: 'trusted-review-only-full-candidate' };
 }
 
 function auditPolicyRuns(input = {}) {
@@ -810,6 +1025,9 @@ function flatOutputs(policy, audit) {
     skip_eligible: policy.skip_eligible,
     head_trust: policy.head_trust,
     enforcement_surface_changed: policy.enforcement_surface_changed,
+    trusted_review_fast_pass: policy.trusted_review_fast_pass,
+    review_candidate_sha: policy.review_candidate_sha,
+    review_reuse_reason: policy.review_reuse_reason,
     ci_run_expected: policy.expected_workflows.CI,
     codeql_run_expected: policy.expected_workflows.CodeQL,
     render_diff_run_expected: policy.expected_workflows['Render Diff'],
@@ -879,12 +1097,14 @@ module.exports = {
   WORKFLOW_ORDER,
   WORKFLOW_PATHS,
   auditPolicyRuns,
+  auditReviewReuse,
   changesEnforcementSurface,
   determinePolicy,
   expectedWorkflowMap,
   fullClassification,
   parseStatusDescription,
   runCli,
+  selectReviewOnlyCandidate,
   selectLatestWorkflowRun,
   statusDescription,
   workflowRunExpected,

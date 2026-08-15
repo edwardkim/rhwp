@@ -62,6 +62,32 @@ local Cargo 성공만으로 candidate의 GitHub Actions를 대체하지 않는�
 collaborator가 contributor code를 local에서 검증한 뒤 review·오늘할일만 같은 source head에 추가하는 경우도
 이 A 경로다. local 검증 결과와 candidate SHA, 재사용한 Build & Test URL을 review 문서에 기록한다.
 
+### A.1 CI 실행 정책을 바꾼 PR의 trusted 재사용
+
+PR 전체 변경에 `.github/workflows/**`, `.github/actions/**`, CI impact classifier·policy 또는
+review-only merge 검사기가 포함되면 PR head의 preflight만으로 A 경로를 허용하지 않는다. 해당 PR이 자신이
+바꾼 workflow로 검증을 생략할 수 있기 때문이다. 기본값은 `ci-execution-surface-change` Full 실행이다.
+
+예외는 기본 브랜치에 등록된 `CI Impact Policy Controller`가 current head에 `CI Impact Policy` status를
+발행한 same-repository PR뿐이다. controller는 PR head나 artifact를 실행하지 않고 live base의 정책 코드로
+다음을 독립 확인한다.
+
+1. exact code candidate의 CI·CodeQL과 변경 범위상 필요한 Render Diff가 같은 repository·branch·PR·SHA에서
+   **fast-pass가 아닌 Full 실행**으로 성공했다. CodeQL은 언어별 Analyze job과 같은 run 이후 GHAS CodeQL
+   check까지 성공 또는 neutral이어야 한다.
+2. candidate 뒤 current head까지는 허용된 single-parent review-only commit뿐이다. current-base bridge는
+   trusted controller가 commit object만 fetch해 자동 merge tree 일치 또는 `mydocs/` 한정 충돌 해소를 다시
+   검증한 경우에만 허용한다.
+3. status는 exact current head에 묶이고 policy version, `rfp=1`, current base SHA, trusted controller
+   `pull_request_target` run identity가 모두 일치한다.
+
+CI·CodeQL·Render Diff preflight는 이 status를 짧게 기다린 뒤에만 기존 candidate 탐색을 계속한다. status가
+누락·pending·failed·stale이거나 candidate 실행·GHAS check·commit/file 목록·merge tree 중 하나라도 불완전하면
+재사용하지 않고 Full 실행한다. 외부 fork의 실행 정책 변경은 이 예외 대상이 아니다.
+
+`pull_request_target`과 `workflow_run`은 기본 브랜치에 있는 workflow만 등록한다. 따라서 controller 변경을
+`devel`에 병합한 것만으로 이 예외가 활성화되지 않으며, 정상 release 절차로 `main`에 반영된 뒤부터 적용한다.
+
 ## B. PR 전체가 review-only
 
 PR 전체 파일이 허용 범위에만 있으면 preflight는 base SHA를 candidate로 기록하고
@@ -75,13 +101,14 @@ all-review-only-no-code-impact fast-pass를 즉시 선택한다. candidate의 �
 
 다음 중 하나면 fast-pass로 단정하지 않고 workflow의 full CI 결과를 기다린다.
 
-- code, test, CI workflow, Cargo.lock 변경
+- code, test, CI workflow, Cargo.lock 변경. 단, CI workflow 변경 뒤 review-only 기록만 추가된 경우에는
+  A.1의 trusted controller 증명이 전부 성립할 때만 예외로 한다.
 - 기존 sample, PDF, golden, baseline, fixture의 수정·삭제·rename
 - 허용 목록 밖의 신규 파일
 - A 경로의 candidate workflow 누락·실패·미완료·PR identity 불일치, current-base merge tree 불일치,
   `mydocs/` 밖 충돌 해소·해소 경로 조회 실패·복수 base merge 또는 허용되지 않은 merge 형태
 - preflight가 fast_pass=false를 반환
 
-fast-pass는 merge 조건을 없애지 않는다. 최신 head, mergeable 상태, required aggregate, 작업지시자 승인을
+fast-pass는 merge 조건을 없애지 않는다. 최신 head, mergeable 상태, required aggregate, 메인테이너 승인을
 확인한다. 완료된 원 PR의 기록만 담는 별도 B 경로 PR은 merge 뒤 issue/PR comment와 오늘할일을 반복하지 않고
 devel sync와 branch/worktree/target cleanup만 수행한다.

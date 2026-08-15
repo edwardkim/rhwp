@@ -27,6 +27,7 @@ const {
   parseStatusDescription,
   runCli,
   selectLatestWorkflowRun,
+  selectReviewOnlyCandidate,
   workflowRunExpected,
 } = require('../ci-impact-policy.cjs');
 
@@ -57,6 +58,7 @@ function policyInput(overrides = {}) {
       headBranch: HEAD_BRANCH,
       headRepository: 'edwardkim/rhwp',
       authorPermission: 'write',
+      createdAt: '2026-08-15T00:00:00Z',
     },
     files,
     classification: classificationFor(files),
@@ -85,6 +87,7 @@ function workflowRun(name, status = 'completed', conclusion = 'success') {
     headRepository: 'edwardkim/rhwp',
     pullNumbers: [123],
     baseShas: [BASE_SHA],
+    createdAt: '2026-08-15T01:00:00Z',
   };
 }
 
@@ -205,6 +208,29 @@ function workflowEvidence(policy, options = {}) {
       jobsCollected: true,
       jobs: renderJobs(policy.classification, options.fastPass === true),
     };
+  }
+  return evidence;
+}
+
+function reviewReuseEvidence(policy, candidateSha, options = {}) {
+  const evidence = workflowEvidence(policy);
+  for (const [name, entry] of Object.entries(evidence)) {
+    entry.run.headSha = candidateSha;
+    entry.run.baseShas = ['d'.repeat(40)];
+    entry.run.runStartedAt = '2026-08-15T01:00:00Z';
+    if (name === 'CodeQL') {
+      entry.securityCheck = {
+        appSlug: 'github-advanced-security',
+        name: 'CodeQL',
+        headSha: candidateSha,
+        status: 'completed',
+        conclusion: options.securityConclusion || 'success',
+        startedAt: '2026-08-15T01:01:00Z',
+      };
+    }
+  }
+  if (options.fastPass === true && evidence.CI) {
+    evidence.CI.jobs = ciJobs(policy.classification, true);
   }
   return evidence;
 }
@@ -340,9 +366,10 @@ test('compact status description round-trips workflow and impact axes', () => {
   const policy = determinePolicy(policyInput());
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
-    v: '4',
+    v: '5',
     cv: '3',
     mode: 'selective',
+    rfp: '0',
     wf: '111',
     rust: '0',
     fe: 'unit',
@@ -690,6 +717,158 @@ test('trailing review-only fast pass is accepted only on unchanged enforcement s
   assert.match(failure.reason, /fast-pass-with-enforcement-change/);
 });
 
+test('trusted full candidate permits enforcement-change review-only fast pass', () => {
+  const candidateSha = 'c'.repeat(40);
+  const files = [
+    { filename: '.github/workflows/ci.yml', status: 'modified' },
+    { filename: 'mydocs/pr/pr_4819_review.md', status: 'added' },
+  ];
+  const baselineInput = policyInput({ files, classification: classificationFor(files) });
+  const baselinePolicy = determinePolicy(baselineInput);
+  const reviewReuse = {
+    lineageEligible: true,
+    reason: 'candidate-with-review-tail',
+    candidateSha,
+    trailingCount: 1,
+    baseMergeBridge: null,
+    mergeTreeVerified: true,
+    workflows: reviewReuseEvidence(baselinePolicy, candidateSha),
+  };
+  const input = { ...baselineInput, reviewReuse };
+  const policy = determinePolicy(input);
+  assert.equal(policy.trusted_review_fast_pass, 'true');
+  assert.equal(policy.review_candidate_sha, candidateSha);
+  assert.equal(parseStatusDescription(policy.status_description).rfp, '1');
+
+  const audit = auditPolicyRuns({
+    ...input,
+    policy,
+    currentHeadSha: HEAD_SHA,
+    workflows: workflowEvidence(policy, { fastPass: true }),
+  });
+  assert.equal(audit.conclusion, 'success');
+
+  const fastCandidateInput = {
+    ...baselineInput,
+    reviewReuse: {
+      ...reviewReuse,
+      workflows: reviewReuseEvidence(baselinePolicy, candidateSha, { fastPass: true }),
+    },
+  };
+  assert.equal(determinePolicy(fastCandidateInput).trusted_review_fast_pass, 'false');
+});
+
+test('trusted review reuse fails closed on missing, pending, or mismatched candidate evidence', () => {
+  const candidateSha = 'c'.repeat(40);
+  const files = [{ filename: '.github/workflows/ci.yml', status: 'modified' }];
+  const baselineInput = policyInput({ files, classification: classificationFor(files) });
+  const baselinePolicy = determinePolicy(baselineInput);
+  const validEvidence = reviewReuseEvidence(baselinePolicy, candidateSha);
+  function reviewed(overrides = {}) {
+    return determinePolicy({
+      ...baselineInput,
+      reviewReuse: {
+        lineageEligible: true,
+        candidateSha,
+        mergeTreeVerified: true,
+        workflows: validEvidence,
+        ...overrides,
+      },
+    });
+  }
+
+  const missing = structuredClone(validEvidence);
+  delete missing.CodeQL;
+  assert.equal(reviewed({ workflows: missing }).trusted_review_fast_pass, 'false');
+
+  const pending = structuredClone(validEvidence);
+  pending.CI.run.status = 'in_progress';
+  pending.CI.run.conclusion = '';
+  assert.equal(reviewed({ workflows: pending }).trusted_review_fast_pass, 'false');
+
+  const mismatch = structuredClone(validEvidence);
+  mismatch.CodeQL.run.headRepository = 'external/rhwp';
+  assert.equal(reviewed({ workflows: mismatch }).trusted_review_fast_pass, 'false');
+
+  const missingSecurity = structuredClone(validEvidence);
+  delete missingSecurity.CodeQL.securityCheck;
+  assert.equal(reviewed({ workflows: missingSecurity }).trusted_review_fast_pass, 'false');
+
+  assert.equal(reviewed({ baseMergeBridge: { mergeSha: 'f'.repeat(40) }, mergeTreeVerified: false })
+    .trusted_review_fast_pass, 'false');
+  assert.equal(determinePolicy({
+    ...baselineInput,
+    forceFullReason: 'collection-error',
+    reviewReuse: {
+      lineageEligible: true,
+      candidateSha,
+      mergeTreeVerified: true,
+      workflows: validEvidence,
+    },
+  }).trusted_review_fast_pass, 'false');
+});
+
+test('review candidate lineage accepts only single-parent review tails and verified base bridges', () => {
+  const candidateSha = 'c'.repeat(40);
+  const reviewSha = 'd'.repeat(40);
+  const baseSha = 'e'.repeat(40);
+  const mergeSha = 'f'.repeat(40);
+  const candidate = {
+    sha: candidateSha,
+    parents: [{ sha: '1'.repeat(40) }],
+    files: [{ filename: '.github/workflows/ci.yml', status: 'modified' }],
+  };
+  const review = {
+    sha: reviewSha,
+    parents: [{ sha: candidateSha }],
+    files: [{ filename: 'mydocs/pr/pr_4819_review.md', status: 'added' }],
+  };
+  assert.deepEqual(selectReviewOnlyCandidate([candidate, review], baseSha), {
+    eligible: true,
+    reason: 'candidate-with-review-tail',
+    candidateSha,
+    trailingCount: 1,
+    baseMergeBridge: null,
+  });
+
+  const disconnectedReview = {
+    ...review,
+    parents: [{ sha: '9'.repeat(40) }],
+  };
+  assert.match(
+    selectReviewOnlyCandidate([candidate, disconnectedReview], baseSha).reason,
+    /non-linear-review-tail/,
+  );
+
+  const reviewMerge = {
+    ...review,
+    parents: [{ sha: candidateSha }, { sha: '2'.repeat(40) }],
+  };
+  assert.match(selectReviewOnlyCandidate([candidate, reviewMerge], baseSha).reason, /review-only-merge/);
+
+  const bridge = {
+    sha: mergeSha,
+    parents: [{ sha: candidateSha }, { sha: baseSha }],
+    files: [{ filename: 'mydocs/orders/20260815.md', status: 'modified' }],
+  };
+  const selected = selectReviewOnlyCandidate([candidate, bridge, {
+    ...review,
+    parents: [{ sha: mergeSha }],
+  }], baseSha);
+  assert.equal(selected.eligible, true);
+  assert.equal(selected.candidateSha, candidateSha);
+  assert.deepEqual(selected.baseMergeBridge, {
+    mergeSha,
+    sourceParentSha: candidateSha,
+  });
+
+  const disconnectedBridgeTail = selectReviewOnlyCandidate([candidate, bridge, {
+    ...review,
+    parents: [{ sha: '8'.repeat(40) }],
+  }], baseSha);
+  assert.match(disconnectedBridgeTail.reason, /non-linear-review-tail/);
+});
+
 test('CodeQL fast pass accepts exactly one matrix skip representation', () => {
   const input = policyInput();
   const policy = determinePolicy(input);
@@ -767,5 +946,5 @@ test('CLI writes policy and aggregate audit outputs', (t) => {
   assert.equal(result.audit.conclusion, 'success');
   assert.match(outputs, /^codeql_run_expected=true$/m);
   assert.match(outputs, /^audit_conclusion=success$/m);
-  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '4');
+  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '5');
 });
