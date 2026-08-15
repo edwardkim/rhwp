@@ -337,11 +337,18 @@ fn served_tools_reflect_manifest_and_session_tools_are_consistent() {
                 assert_eq!(a["destructiveHint"], false, "{name}: {a}");
                 assert_eq!(a["idempotentHint"], true, "{name}: {a}");
             }
+            // [#4856] 세션 조회 파리티 — 개요/조문(structure)·데이터 추출(extract_data).
+            // 환경 무변경이고 같은 인자 재호출이 같은 관찰로 수렴한다(순수 조회).
+            "hwp_doc_structure" | "hwp_doc_extract_data" => {
+                assert_eq!(a["readOnlyHint"], true, "{name}: {a}");
+                assert_eq!(a["destructiveHint"], false, "{name}: {a}");
+                assert_eq!(a["idempotentHint"], true, "{name}: {a}");
+            }
             other => panic!("계약에 없는 세션 도구 {other} — 이 match 에 판정을 추가하라: {a}"),
         }
     }
     assert_eq!(
-        session_seen, 16,
+        session_seen, 18,
         "세션 도구 수가 달라졌다 — agent_profiles::ALL_SESSION_TOOLS 와 이 계약을 함께 갱신하라"
     );
 }
