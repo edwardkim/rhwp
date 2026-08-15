@@ -644,6 +644,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         raw_header_extra,
         has_para_text,
         tab_extended,
+        title_marks,
         numbering_restart,
         // [#4149] 파생 캐시 — IR 비교 대상 아님 (직렬화·저장 경로에도 미포함).
         single_line_overflow_memo: _,
@@ -674,6 +675,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
     f!(raw_header_extra);
     f!(has_para_text);
     f!(tab_extended);
+    f!(title_marks);
     f!(numbering_restart);
 
     sweep_controls(&format!("{base}.controls"), controls, &b.controls, out);

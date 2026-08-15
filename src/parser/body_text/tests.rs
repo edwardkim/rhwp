@@ -1,4 +1,5 @@
 use super::*;
+use crate::model::paragraph::TitleMark;
 use crate::parser::tags;
 
 /// 테스트용 레코드 바이너리 생성
@@ -44,7 +45,11 @@ fn hancom_single_odd_master_flag_is_not_parsed_as_both() {
 
 #[test]
 fn test_parse_para_text_simple() {
-    let (text, offsets, _, _) = parse_para_text(&make_para_text_data("Hello, World!"));
+    let ParaTextParts {
+        text,
+        char_offsets: offsets,
+        ..
+    } = parse_para_text(&make_para_text_data("Hello, World!"));
     assert_eq!(text, "Hello, World!");
     assert_eq!(offsets.len(), 13);
     assert_eq!(offsets[0], 0); // 'H' at position 0
@@ -52,7 +57,11 @@ fn test_parse_para_text_simple() {
 
 #[test]
 fn test_parse_para_text_korean() {
-    let (text, offsets, _, _) = parse_para_text(&make_para_text_data("한글 테스트입니다."));
+    let ParaTextParts {
+        text,
+        char_offsets: offsets,
+        ..
+    } = parse_para_text(&make_para_text_data("한글 테스트입니다."));
     assert_eq!(text, "한글 테스트입니다.");
     assert_eq!(offsets.len(), text.chars().count());
 }
@@ -69,7 +78,11 @@ fn test_parse_para_text_with_tab() {
     }
     data.extend_from_slice(&0x0042u16.to_le_bytes()); // 'B'
     data.extend_from_slice(&0x000Du16.to_le_bytes()); // para break
-    let (text, offsets, _, _) = parse_para_text(&data);
+    let ParaTextParts {
+        text,
+        char_offsets: offsets,
+        ..
+    } = parse_para_text(&data);
     assert_eq!(text, "A\tB");
     // 'A' at code unit 0, tab takes 8 units (1-8), 'B' at code unit 9
     assert_eq!(offsets, vec![0, 1, 9]);
@@ -87,7 +100,11 @@ fn test_parse_para_text_with_extended_ctrl() {
     }
     data.extend_from_slice(&0x0042u16.to_le_bytes()); // 'B'
     data.extend_from_slice(&0x000Du16.to_le_bytes()); // para break
-    let (text, offsets, _, _) = parse_para_text(&data);
+    let ParaTextParts {
+        text,
+        char_offsets: offsets,
+        ..
+    } = parse_para_text(&data);
     assert_eq!(text, "AB");
     // 'A' at code unit 0, extended ctrl takes 8 units (1-8), 'B' at code unit 9
     assert_eq!(offsets, vec![0, 9]);
@@ -97,7 +114,11 @@ fn test_parse_para_text_with_extended_ctrl() {
 fn test_parse_para_text_empty() {
     // 문단 끝만 있는 경우
     let data = 0x000Du16.to_le_bytes();
-    let (text, offsets, _, _) = parse_para_text(&data);
+    let ParaTextParts {
+        text,
+        char_offsets: offsets,
+        ..
+    } = parse_para_text(&data);
     assert_eq!(text, "");
     assert!(offsets.is_empty());
 }
@@ -851,4 +872,81 @@ fn test_table_paragraph_diagnostics() {
     }
 
     eprintln!("=== 진단 완료 ===\n");
+}
+
+/// 제목 차례 표시(`Mtit`/`Mign`)를 통째로 흘리면 문단 축이 8유닛 짧아진다.
+///
+/// 한글은 축이 어긋난 `<hp:lineseg textpos>` 를 만나면 본문을 통째로 버리므로
+/// (10k 스윕 F-절단군), 텍스트에 싣지 않되 위치는 반드시 남겨야 한다.
+#[test]
+fn title_mark_is_preserved_as_eight_unit_slot() {
+    // [Mtit 16바이트][가][나]
+    let mut data = Vec::new();
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    data.extend_from_slice(&tags::CTRL_TITLE_MARK_IGNORE_ON.to_le_bytes());
+    for _ in 0..4 {
+        data.extend_from_slice(&0u16.to_le_bytes());
+    }
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    for ch in "가나".encode_utf16() {
+        data.extend_from_slice(&ch.to_le_bytes());
+    }
+    data.extend_from_slice(&0x000Du16.to_le_bytes());
+
+    let parts = parse_para_text(&data);
+    assert_eq!(parts.text, "가나", "표시는 텍스트가 아니다");
+    assert_eq!(
+        parts.char_offsets,
+        vec![8, 9],
+        "표시가 앞 8유닛을 점유하므로 첫 글자는 8 에서 시작한다"
+    );
+    assert_eq!(
+        parts.title_marks,
+        vec![TitleMark {
+            char_idx: 0,
+            ignore: true,
+        }]
+    );
+}
+
+/// `Mign` 은 같은 자리의 `ignore="0"` 짝이다 — 한글 2022 양방향 실측(06699).
+#[test]
+fn title_mark_ignore_off_variant_is_distinguished() {
+    let mut data = Vec::new();
+    for ch in "가".encode_utf16() {
+        data.extend_from_slice(&ch.to_le_bytes());
+    }
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    data.extend_from_slice(&tags::CTRL_TITLE_MARK_IGNORE_OFF.to_le_bytes());
+    for _ in 0..4 {
+        data.extend_from_slice(&0u16.to_le_bytes());
+    }
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    data.extend_from_slice(&0x000Du16.to_le_bytes());
+
+    let parts = parse_para_text(&data);
+    assert_eq!(parts.text, "가");
+    assert_eq!(
+        parts.title_marks,
+        vec![TitleMark {
+            char_idx: 1,
+            ignore: false,
+        }],
+        "글자 뒤에 붙은 표시도 위치가 남아야 한다"
+    );
+}
+
+/// 0x08 이라도 알려지지 않은 ctrl_id 는 표시로 오인하지 않는다.
+#[test]
+fn unknown_inline_ctrl_id_is_not_taken_for_a_title_mark() {
+    let mut data = Vec::new();
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    data.extend_from_slice(&u32::from_le_bytes(*b"zzzz").to_le_bytes());
+    for _ in 0..4 {
+        data.extend_from_slice(&0u16.to_le_bytes());
+    }
+    data.extend_from_slice(&0x0008u16.to_le_bytes());
+    data.extend_from_slice(&0x000Du16.to_le_bytes());
+
+    assert!(parse_para_text(&data).title_marks.is_empty());
 }

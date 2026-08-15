@@ -251,7 +251,9 @@ fn serialize_paragraph_with_msb(
     // [#4402] `serialize_para_text` 는 미기입 누름틀의 안내문 잔재(`Field.guide_residue`)를
     // 함께 되살리고, 그로 인해 벌어진 위치들을 `residue_shifts` 로 돌려준다 — 아래
     // PARA_CHAR_SHAPE 가 그 시프트를 반영해야 텍스트 버퍼와 서식 경계가 어긋나지 않는다.
-    let has_content = !para.text.is_empty() || !para.controls.is_empty();
+    // 표시만 있는 문단도 PARA_TEXT 가 있어야 8유닛이 파일에 남는다.
+    let has_content =
+        !para.text.is_empty() || !para.controls.is_empty() || !para.title_marks.is_empty();
     let (text_data, residue_shifts): (Option<Vec<u8>>, Vec<GuideResidueShift>) =
         if has_content || (para.has_para_text && para.char_count > 1) {
             let result = serialize_para_text(para);
@@ -404,6 +406,13 @@ fn compute_control_mask(para: &Paragraph) -> u32 {
     // control_mask 비트 24 도 세워 PARA_HEADER 를 PARA_TEXT 와 일치시킨다.
     if para.text.contains('\u{00AD}') {
         mask |= 1u32 << 0x0018;
+    }
+    // 제목 차례 표시 (0x0008): serialize_para_text 가 title_marks 마다 코드 0x08 을
+    // 방출하므로 control_mask 비트 8 도 세워 PARA_HEADER 를 PARA_TEXT 와 일치시킨다.
+    // 한컴 원본 실측(07589·08288·06858): 표시가 든 문단 286/286 이 비트 8 을 세우고,
+    // 나머지 9,285 문단은 하나도 세우지 않아 이 비트는 표시와 정확히 일대일이다.
+    if !para.title_marks.is_empty() {
+        mask |= 1u32 << 0x0008;
     }
     // FIXED_WIDTH_SPACE (0x001F): HWPX에서 들어온 일부 문맥은 U+2007을
     // literal code point가 아니라 HWP5 fixed blank control로 저장해야 한다.
@@ -663,6 +672,22 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             prev_end
         };
 
+        // 제목 차례 표시 — CTRL_HEADER 없는 인라인 컨트롤이라 여기서 직접 낸다.
+        // 이 자리의 다른 컨트롤보다 먼저 놓는다: 8유닛만 채우면 되므로 순서는 축에
+        // 영향을 주지 않고, 실측 대다수(2,237 중 1,879)가 문단 선두다.
+        for m in para.title_marks.iter().filter(|m| m.char_idx == i) {
+            push_extended_ctrl(
+                &mut code_units,
+                0x0008,
+                if m.ignore {
+                    tags::CTRL_TITLE_MARK_IGNORE_ON
+                } else {
+                    tags::CTRL_TITLE_MARK_IGNORE_OFF
+                },
+            );
+            prev_end += 8;
+        }
+
         // [Task #1050] AutoNumber placeholder 검출:
         // char_offsets[i] == prev_end 이고 ch == ' ' 이고 다음 char_offset 이 prev_end + 8 +
         // (실제 char 폭)인 경우 = placeholder space (i char 한 자리 차지 + 다음 char 가 8 점프 후).
@@ -826,6 +851,24 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
     // [#4402] 이 구간은 본디 위치 예산(offset/prev_end 갭 채우기)을 추적하지 않지만,
     // `char_shapes` 시프트 계산은 절대 위치가 필요하다 — `prev_end` 를 그대로 이어 써서
     // (메인 루프가 끝난 시점 값에서 시작) 8 code unit 씩 전진시킨다.
+    // 마지막 문자 뒤(또는 텍스트가 없는 문단)의 제목 차례 표시.
+    for m in para
+        .title_marks
+        .iter()
+        .filter(|m| m.char_idx >= text_chars.len())
+    {
+        push_extended_ctrl(
+            &mut code_units,
+            0x0008,
+            if m.ignore {
+                tags::CTRL_TITLE_MARK_IGNORE_ON
+            } else {
+                tags::CTRL_TITLE_MARK_IGNORE_OFF
+            },
+        );
+        prev_end += 8;
+    }
+
     while ctrl_idx < para.controls.len() {
         if emits_ctrl_header(&para.controls[ctrl_idx]) {
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
@@ -1179,7 +1222,9 @@ mod tests {
     use super::*;
     use crate::model::control::{AutoNumber, Bookmark, Field, FieldType, Hyperlink, NewNumber};
     use crate::model::document::{Section, SectionDef};
-    use crate::model::paragraph::{CharShapeRef, FieldRange, LineSeg, Paragraph, RangeTag};
+    use crate::model::paragraph::{
+        CharShapeRef, FieldRange, LineSeg, Paragraph, RangeTag, TitleMark,
+    };
     use crate::parser::body_text::parse_body_text_section;
 
     /// 간단한 텍스트 문단 라운드트립
@@ -1215,6 +1260,81 @@ mod tests {
         assert_eq!(parsed.paragraphs.len(), 1);
         assert_eq!(parsed.paragraphs[0].text, "Hello");
         assert_eq!(parsed.paragraphs[0].char_offsets, vec![0, 1, 2, 3, 4]);
+    }
+
+    /// 제목 차례 표시 라운드트립 — 위치·`ignore` 값·8유닛 폭이 모두 살아야 한다.
+    ///
+    /// 이 표시를 흘리면 문단 축이 8유닛 짧아지고, 한글은 축이 어긋난 lineseg 를
+    /// 만나면 본문을 통째로 버린다(10k 스윕 F-절단군 77문서·2,237개).
+    #[test]
+    fn test_roundtrip_title_mark() {
+        let para = Paragraph {
+            // 표시 8 + 글자 2 + 끝 마커 1
+            char_count: 11,
+            text: "가나".to_string(),
+            char_offsets: vec![8, 9],
+            title_marks: vec![TitleMark {
+                char_idx: 0,
+                ignore: true,
+            }],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            ..Default::default()
+        };
+
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+        let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
+        let out = &parsed.paragraphs[0];
+
+        assert_eq!(out.text, "가나", "표시가 텍스트로 새면 안 된다");
+        assert_eq!(
+            out.title_marks,
+            vec![TitleMark {
+                char_idx: 0,
+                ignore: true,
+            }]
+        );
+        assert_eq!(out.char_offsets, vec![8, 9], "표시가 앞 8유닛을 점유한다");
+        assert_eq!(out.char_count, 11);
+        assert_eq!(
+            out.control_mask & (1 << 0x0008),
+            1 << 0x0008,
+            "한컴 원본 실측(286/286)대로 control_mask 비트 8 을 세운다"
+        );
+    }
+
+    /// `ignore="0"`(`Mign`)도 자기 ID 로 나가야 한다 — 두 fourcc 가 별개 컨트롤이다.
+    #[test]
+    fn test_roundtrip_title_mark_ignore_off() {
+        let para = Paragraph {
+            char_count: 10,
+            text: "가".to_string(),
+            char_offsets: vec![0],
+            title_marks: vec![TitleMark {
+                char_idx: 1,
+                ignore: false,
+            }],
+            ..Default::default()
+        };
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+        let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
+        assert_eq!(
+            parsed.paragraphs[0].title_marks,
+            vec![TitleMark {
+                char_idx: 1,
+                ignore: false,
+            }]
+        );
     }
 
     /// 한글 텍스트 라운드트립

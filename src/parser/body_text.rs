@@ -27,8 +27,17 @@ use crate::model::page::{
     BindingMethod, ColumnDef, ColumnDirection, ColumnType, PageBorderFill, PageDef,
 };
 use crate::model::paragraph::{
-    CharShapeRef, ColumnBreakType, FieldRange, LineSeg, Paragraph, RangeTag,
+    CharShapeRef, ColumnBreakType, FieldRange, LineSeg, Paragraph, RangeTag, TitleMark,
 };
+
+/// `PARA_TEXT` 한 레코드에서 뽑아낸 문단 본문 축 정보.
+struct ParaTextParts {
+    text: String,
+    char_offsets: Vec<u32>,
+    field_ranges: Vec<FieldRange>,
+    tab_extended: Vec<[u16; 7]>,
+    title_marks: Vec<TitleMark>,
+}
 
 /// BodyText 파싱 에러
 #[derive(Debug)]
@@ -145,11 +154,12 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
 
         match record.tag_id {
             tags::HWPTAG_PARA_TEXT => {
-                let (text, offsets, field_ranges, tab_ext) = parse_para_text(&record.data);
-                para.text = text;
-                para.char_offsets = offsets;
-                para.field_ranges = field_ranges;
-                para.tab_extended = tab_ext;
+                let parts = parse_para_text(&record.data);
+                para.text = parts.text;
+                para.char_offsets = parts.char_offsets;
+                para.field_ranges = parts.field_ranges;
+                para.tab_extended = parts.tab_extended;
+                para.title_marks = parts.title_marks;
                 para.has_para_text = true;
             }
             tags::HWPTAG_PARA_CHAR_SHAPE => {
@@ -268,11 +278,12 @@ fn parse_para_header(data: &[u8]) -> Paragraph {
 /// HWP의 텍스트는 UTF-16LE로 저장되며, 0x0000~0x001F 범위는 컨트롤 문자.
 /// - 확장 컨트롤 문자: 8 code unit (16바이트) 차지
 /// - 인라인 컨트롤 문자: 1 code unit (2바이트) 차지
-fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16; 7]>) {
+fn parse_para_text(data: &[u8]) -> ParaTextParts {
     let mut text = String::new();
     let mut char_offsets: Vec<u32> = Vec::new();
     let mut field_ranges: Vec<FieldRange> = Vec::new();
     let mut tab_extended: Vec<[u16; 7]> = Vec::new();
+    let mut title_marks: Vec<TitleMark> = Vec::new();
     let mut pos = 0;
     // 확장 컨트롤(extended) 카운터 → controls[] 인덱스와 1:1 대응
     let mut ctrl_idx: usize = 0;
@@ -343,6 +354,30 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
                 ctrl_idx += 1;
             }
             // inline 컨트롤 (4-9, 19-20 중 0x04 제외): ctrl_idx 증가 없음
+            //
+            // 제목 차례 표시(0x08 + `Mtit`/`Mign`)는 CTRL_HEADER 가 없어 `controls[]` 에
+            // 실을 자리가 없다. 그렇다고 그냥 흘려보내면 8유닛 슬롯이 IR 에서 사라져
+            // 저장본의 문단 축이 그만큼 짧아지고, 한글은 어긋난 `textpos` 를 만나면
+            // 본문을 통째로 버린다(10k 스윕 F-절단군). `title_marks` 로 위치만 보존한다.
+            if ch == 0x0008 && pos + 5 < data.len() {
+                let ctrl_id = u32::from_le_bytes([
+                    data[pos + 2],
+                    data[pos + 3],
+                    data[pos + 4],
+                    data[pos + 5],
+                ]);
+                match ctrl_id {
+                    tags::CTRL_TITLE_MARK_IGNORE_ON => title_marks.push(TitleMark {
+                        char_idx: char_count,
+                        ignore: true,
+                    }),
+                    tags::CTRL_TITLE_MARK_IGNORE_OFF => title_marks.push(TitleMark {
+                        char_idx: char_count,
+                        ignore: false,
+                    }),
+                    _ => {}
+                }
+            }
             // 자동번호(0x12) / 새번호(0x12): 텍스트에 공백 placeholder 추가
             // → apply_auto_numbers_to_composed에서 "  " (연속 2공백)으로 번호 삽입
             if ch == 0x0012 {
@@ -407,7 +442,13 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
         }
     }
 
-    (text, char_offsets, field_ranges, tab_extended)
+    ParaTextParts {
+        text,
+        char_offsets,
+        field_ranges,
+        tab_extended,
+        title_marks,
+    }
 }
 
 /// extended 컨트롤 문자 여부 (CTRL_HEADER 레코드가 있는 컨트롤)
