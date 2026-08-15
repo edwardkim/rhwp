@@ -14,8 +14,11 @@ pack 이 늘어나도 판정 어휘는 여기 한 곳에서만 자란다. 과제
 3. **부재를 통과로 위장하지 마라.** 좌표가 없으면 `None` 으로 실패한다.
 """
 
+import csv
 import hashlib
+import json
 import os
+from xml.etree import ElementTree
 
 
 def sha256_of(path):
@@ -119,6 +122,65 @@ def op_files_differ(ctx):
             "ok": len(set(hashes)) == len(hashes)}
 
 
+def op_xml_root_eq(ctx):
+    """제출 XML의 실제 root local-name을 확인한다.
+
+    `file_exists`와 크기만으로는 임의 바이트가 SVG 산출물로 통과할 수 있다. XML을
+    파싱해 root를 확인하면 최소한 도구가 요구한 형식의 문서인지 판정할 수 있다.
+    """
+    expected = ctx.check["value"]
+    try:
+        root = ElementTree.parse(ctx.sub_path(ctx.check["file"])).getroot()
+        actual = root.tag.rsplit("}", 1)[-1]
+    except (OSError, ElementTree.ParseError) as exc:
+        return {"expected": expected, "actual": f"XML 파싱 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": actual == expected}
+
+
+def op_json_value_eq(ctx):
+    """제출 JSON의 지목된 값을 확인한다."""
+    expected = ctx.check["value"]
+    try:
+        with open(ctx.sub_path(ctx.check["file"]), encoding="utf-8") as fh:
+            actual = dig(json.load(fh), ctx.check.get("path", ""))
+    except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"JSON 경로 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": norm(actual) == norm(expected)}
+
+
+def op_csv_cell_eq(ctx):
+    """제출 CSV의 좌표 셀을 확인한다."""
+    expected = ctx.check["value"]
+    row_index = ctx.check["row"]
+    col_index = ctx.check["col"]
+    try:
+        if not isinstance(row_index, int) or not isinstance(col_index, int):
+            raise TypeError("row/col은 정수여야 함")
+        if row_index < 0 or col_index < 0:
+            raise IndexError("row/col은 음수일 수 없음")
+        with open(ctx.sub_path(ctx.check["file"]), encoding="utf-8-sig", newline="") as fh:
+            for index, row in enumerate(csv.reader(fh)):
+                if index == row_index:
+                    actual = row[col_index]
+                    break
+            else:
+                raise IndexError(f"행 {row_index} 없음")
+    except (OSError, UnicodeError, csv.Error, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"CSV 좌표 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": norm(actual) == norm(expected)}
+
+
+def op_utf8_bom(ctx):
+    """제출 파일이 UTF-8 BOM으로 시작하는지 확인한다."""
+    expected = bool(ctx.check.get("value", True))
+    try:
+        with open(ctx.sub_path(ctx.check["file"]), "rb") as fh:
+            actual = fh.read(3) == b"\xef\xbb\xbf"
+    except OSError as exc:
+        return {"expected": expected, "actual": f"파일 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": actual == expected}
+
+
 # --- 봉투 연산자 — CLI 봉투의 지목된 자리를 본다 ---
 
 
@@ -193,6 +255,10 @@ REGISTRY = {
     "differs_from_input": (op_differs_from_input, False),
     "file_exists": (op_file_exists, False),
     "files_differ": (op_files_differ, False),
+    "xml_root_eq": (op_xml_root_eq, False),
+    "json_value_eq": (op_json_value_eq, False),
+    "csv_cell_eq": (op_csv_cell_eq, False),
+    "utf8_bom": (op_utf8_bom, False),
     # 봉투 연산자(CLI 호출)
     "answer_eq": (op_answer_eq, True),
     "len_answer_eq": (op_len_answer_eq, True),

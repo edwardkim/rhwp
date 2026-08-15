@@ -44,12 +44,24 @@ jobs:
       - name: Build current rhwp
         run: cargo build --bin rhwp
 
+      # 판별력 감사 — old/new 비교 이전의 무결성 전제. 벤치마크 자체에 약한
+      # 오라클(일 안 한 제출이 통과하는 false-pass)이 하나라도 있으면 exit 1 로
+      # 릴리스를 차단한다. 표면 변화 판정과 달리 이건 '리뷰 신호'가 아니라 결함이다.
+      - name: Discrimination audit (weak-oracle gate)
+        run: python3 gym/tools/discriminate.py --bin target/debug/rhwp
+
       - name: Build old rhwp (if ref given)
         if: ${{ github.event.inputs.old_ref != '' }}
         run: |
           git worktree add --detach ../rhwp-old "${{ github.event.inputs.old_ref }}"
           (cd ../rhwp-old && cargo build --bin rhwp)
           cp ../rhwp-old/target/debug/rhwp ./rhwp-old-bin
+
+      # 트라젝토리 필요성 감사 — 다단계 과제의 마지막 스텝이 채점에 무의미하면
+      # (부분 트라젝토리가 통과) exit 1 로 릴리스 차단. 종점만 채점하는 게이트가
+      # 놓치는 '트라젝토리 연극'을 골든 경로·judge 없이 잡는 무결성 전제.
+      - name: Trajectory necessity audit (theater gate)
+        run: python3 gym/tools/trajectory.py --bin target/debug/rhwp
 
       - name: Run release gate
         id: gate

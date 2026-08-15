@@ -548,6 +548,15 @@ fn hwp3_paragraph_has_treat_as_char_table(para: &crate::model::paragraph::Paragr
 /// HWP5 변환본이 HWP3 inline 개체 호스트에 보존하는 고정 후행 줄간격(2mm).
 const HWP3_TAC_OBJECT_LINE_SPACING_HU: i32 = 600;
 
+/// HWP3 percent 줄간격의 추가 간격을 계산한다.
+///
+/// 손상 문서는 line spacing과 글꼴 높이를 비정상적으로 크게 가질 수 있다. i64에서
+/// 계산한 뒤 i32 경계로 포화해, debug overflow panic과 `as i32` wrap을 모두 막는다.
+fn hwp3_percent_line_spacing(text_height: i32, line_spacing_ratio: i32) -> i32 {
+    let spacing = i64::from(text_height) * (i64::from(line_spacing_ratio) - 100) / 100;
+    spacing.clamp(i64::from(i32::MIN), i64::from(i32::MAX)) as i32
+}
+
 /// 암호 HWP3 차례의 텍스트 포함 inline 도형 호스트 후행 줄간격. 같은 문서의
 /// HWP5 변환본과 한컴 PDF에서 840 HU임을 확인했다.
 const HWP3_PASSWORD_TOC_LINE_SPACING_HU: i32 = 840;
@@ -2896,7 +2905,7 @@ pub(crate) fn parse_paragraph_list(
                 // percent: lh=th, ls=th*(ratio-100)/100
                 (
                     fallback_text_height,
-                    fallback_text_height * (line_spacing_ratio - 100) / 100,
+                    hwp3_percent_line_spacing(fallback_text_height, line_spacing_ratio),
                 )
             };
         fallback_line_height = fallback_line_height.max(100); // 0 방지
@@ -3067,7 +3076,7 @@ pub(crate) fn parse_paragraph_list(
                         {
                             HWP3_TAC_OBJECT_LINE_SPACING_HU
                         } else {
-                            th * (line_spacing_ratio - 100) / 100
+                            hwp3_percent_line_spacing(th, line_spacing_ratio)
                         };
                     }
                 }
@@ -4812,6 +4821,27 @@ mod tests {
             decompress_hwp3_body_limited(&compressed, plain.len()).unwrap(),
             plain
         );
+    }
+
+    /// [robustness] 손상된 HWP3 의 큰 line_spacing 으로 line-spacing 곱셈
+    /// `th * (ratio-100)` 이 i32 오버플로로 패닉하던 회귀(hwp3/mod.rs:3070).
+    /// 이제 i64 중간연산이라 패닉 없이 Ok/Err 로 우아하게 끝나야 한다. 패닉하면
+    /// 이 테스트가 abort 되어 실패한다.
+    #[test]
+    fn corrupt_hwp3_line_spacing_does_not_overflow_panic() {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/samples/hwp3-sample11.hwp");
+        let data = std::fs::read(path).expect("샘플 읽기");
+        let mut corrupt = data.clone();
+        let pos = corrupt.len() * 10 / 100; // 감사기가 패닉을 재현한 결정적 손상
+        corrupt[pos] ^= 0xFF;
+        let _ = parse_hwp3(&corrupt); // 결과값 무관 — 패닉만 안 하면 통과
+    }
+
+    #[test]
+    fn percent_line_spacing_saturates_corrupt_extremes() {
+        assert_eq!(hwp3_percent_line_spacing(1_000, 160), 600);
+        assert_eq!(hwp3_percent_line_spacing(i32::MAX, i32::MAX), i32::MAX);
+        assert_eq!(hwp3_percent_line_spacing(i32::MIN, i32::MAX), i32::MIN);
     }
 
     /// [#3676] `cold`는 미주 fixup의 부수 효과가 아니라 구역 본문 계약이다.

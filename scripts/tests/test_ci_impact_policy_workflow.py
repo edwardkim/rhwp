@@ -130,10 +130,35 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
             else:
                 self.assertIn(marker, self.workflow)
 
-    def test_existing_workers_do_not_consume_policy_status(self) -> None:
+    def test_workers_consume_only_exact_trusted_review_reuse_status(self) -> None:
         for workflow in (self.ci_workflow, self.codeql_workflow, self.render_workflow):
-            self.assertNotIn("CI Impact Policy", workflow)
+            self.assertIn("status.context === 'CI Impact Policy'", workflow)
+            self.assertIn("fields.get('v') === '5'", workflow)
+            self.assertIn("fields.get('rfp') === '1'", workflow)
+            self.assertIn("fields.get('b') === pr.base.sha", workflow)
+            self.assertIn("run.name === 'CI Impact Policy Controller'", workflow)
+            self.assertIn("run.event === 'pull_request_target'", workflow)
+            self.assertIn("statuses: read", workflow)
             self.assertNotIn("skip_eligible", workflow)
+
+    def test_controller_collects_full_candidate_and_review_lineage(self) -> None:
+        self.assertIn("selectReviewOnlyCandidate", self.workflow)
+        self.assertIn("pull-commit-list-incomplete", self.workflow)
+        self.assertIn("pull-commit-head-mismatch", self.workflow)
+        self.assertIn("allowPriorBase", self.workflow)
+        self.assertIn("github-advanced-security", self.workflow)
+        self.assertIn(".ci-impact-review-reuse.json", self.workflow)
+        self.assertIn("reviewReuse.mergeTreeVerified", self.workflow)
+        self.assertIn("REVIEW_FAST_PASS", self.workflow)
+        self.assertIn("else if (process.env.REVIEW_FAST_PASS === 'true') state = 'success'", self.workflow)
+        self.assertIn("process.env.AUDIT_CONCLUSION === 'pending'", self.workflow)
+
+    def test_merge_bridge_fetches_objects_without_checking_out_pr_head(self) -> None:
+        self.assertIn("name: Verify trusted current-base merge bridge", self.workflow)
+        self.assertIn("git -C trusted-base fetch", self.workflow)
+        self.assertIn("git -C trusted-base merge-tree --write-tree", self.workflow)
+        self.assertIn("verify_review_only_merge_resolution.py", self.workflow)
+        self.assertNotIn("ref: refs/pull/", self.workflow)
 
 
 if __name__ == "__main__":

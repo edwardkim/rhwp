@@ -267,6 +267,23 @@ CI 영향 분류와 trigger mirror는 다음 파일에 있다.
 관련 파일을 바꾼 경우 실제 존재하는 테스트만 선택해 실행하고, 변경 기록에 명령과 결과를 적는다. 경로
 필터 변경에는 적어도 classifier·policy의 Node test와 해당 CI·CodeQL workflow Python test를 포함한다.
 
+### 7.5 workflow PR의 후행 review 기록
+
+workflow·action·CI impact 정책을 바꾼 PR은 PR 전체 변경 목록에 실행 정책 파일이 남으므로, 후행
+`mydocs/**` commit만 보고 자체 preflight가 검증을 생략해서는 안 된다. 기본 브랜치의
+`CI Impact Policy Controller`가 exact Full candidate, 이후 review-only 계보, current-base merge bridge,
+현재 head·base 결합을 독립 검증해 `rfp=1` status를 발행한 same-repository PR만 제한적으로 fast-pass한다.
+
+consumer workflow는 status context 문자열만 신뢰하지 않는다. status의 policy version·current base SHA,
+creator, target Action run의 workflow name·path·`pull_request_target` event를 함께 확인한다. 증빙 누락,
+API pagination 경계, candidate의 fast-pass 실행, failed·pending run, GHAS CodeQL check 누락, fork, stale base는
+전부 Full 실행으로 fallback한다. 상세 허용 범위와 merge bridge 규칙은
+[review-only fast-pass](pr_review/review_only_fast_pass.md#a1-ci-실행-정책을-바꾼-pr의-trusted-재사용)를 따른다.
+
+이 controller는 default branch 등록형이므로 `devel` 병합은 배포 전 검증 단계다. 정상 release로 `main`에
+반영하기 전에는 live `pull_request_target` controller가 존재하지 않으며, 그 기간의 workflow PR은 계속 Full
+실행하는 것이 정상이다.
+
 ## 8. required check와 branch protection
 
 required context 이름은 외부 계약이다. job 이름 변경, workflow 분리, path skip, matrix 이름 변경은 YAML
