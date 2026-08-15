@@ -2202,6 +2202,16 @@ mod tests {
             canvas_font_family_chain("맑은 고딕"),
             format!("\"맑은 고딕\", {}", generic_fallback("맑은 고딕"))
         );
+
+        let government = "정부상징 부처명_16040911,한컴바탕";
+        assert!(render_font_family_chain(government).starts_with(
+            "'정부상징 부처명_16040911','ROKG','ROKG R','대한민국정부상징체',\
+             '대한민국정부상징체 R','ROKGR','한컴바탕',"
+        ));
+        assert!(canvas_font_family_chain(government).starts_with(
+            "\"정부상징 부처명_16040911\", \"ROKG\", \"ROKG R\", \
+             \"대한민국정부상징체\", \"대한민국정부상징체 R\", \"ROKGR\", \"한컴바탕\", "
+        ));
     }
 
     #[test]

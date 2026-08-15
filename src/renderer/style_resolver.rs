@@ -1254,6 +1254,28 @@ mod tests {
     }
 
     #[test]
+    fn test_lookup_font_preserves_non_embedded_document_substitute() {
+        let doc_info = DocInfo {
+            font_faces: vec![vec![Font {
+                name: "정부상징 부처명_16040911".to_string(),
+                alt_type: 1,
+                subst_font: Some(SubstFont {
+                    face: "한컴바탕".to_string(),
+                    font_type: 1,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }]],
+            ..Default::default()
+        };
+
+        assert_eq!(
+            lookup_font_name(&doc_info, 0, 0),
+            "정부상징 부처명_16040911,한컴바탕"
+        );
+    }
+
+    #[test]
     fn test_resolve_border_no_fill() {
         let doc_info = DocInfo {
             border_fills: vec![BorderFill::default()],
