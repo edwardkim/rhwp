@@ -1,0 +1,35 @@
+{
+  "id": "SH02",
+  "steps": [
+    {
+      "answer": {
+        "clean": {
+          "cmd": [
+            "inspect",
+            "injection",
+            "{input}",
+            "--json"
+          ],
+          "path": "clean",
+          "allowExits": [
+            0,
+            3
+          ]
+        },
+        "signalCount": {
+          "cmd": [
+            "inspect",
+            "injection",
+            "{input}",
+            "--json"
+          ],
+          "path": "signalCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}
