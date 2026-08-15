@@ -17,6 +17,17 @@ RESOLUTION_CHECK = ROOT / "scripts/verify_review_only_merge_resolution.py"
 
 
 class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
+    def test_all_preflights_share_reference_pdf_directories(self) -> None:
+        expected = "const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];"
+        for name, workflow_path in WORKFLOWS.items():
+            with self.subTest(workflow=name):
+                workflow = workflow_path.read_text(encoding="utf-8")
+                self.assertIn(expected, workflow)
+                self.assertIn(
+                    "pdfPrefixes.some((prefix) => filename.startsWith(prefix))",
+                    workflow,
+                )
+
     def test_base_advance_does_not_invalidate_a_trailing_review_record(self) -> None:
         for name, workflow_path in WORKFLOWS.items():
             with self.subTest(workflow=name):

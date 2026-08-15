@@ -8,6 +8,9 @@ on:
       - 'mydocs/**'
       - 'docs/**'
       - 'samples/**'
+      - 'pdf/**'
+      - 'pdf-2020/**'
+      - 'pdf-large/**'
       - 'assets/chrome/**'
       - 'assets/edge/**'
       - 'assets/logo/**'
@@ -26,7 +29,8 @@ on:
     types: [opened, reopened, synchronize]
     paths-ignore:
       - 'docs/**'
-      - 'samples/**'
+      # samples는 required Build & Test를 발행해야 하므로 preflight에서
+      # 신규 reference-only와 기존 자료 변경을 구분한다.
       - 'assets/chrome/**'
       - 'assets/edge/**'
       - 'assets/logo/**'
@@ -191,6 +195,7 @@ jobs:
             }
 
             function isReviewReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
               return (
                 filename.startsWith('samples/')
                 && (
@@ -199,7 +204,10 @@ jobs:
                   || filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (filename.startsWith('pdf/') && filename.endsWith('.pdf'));
+              ) || (
+                pdfPrefixes.some((prefix) => filename.startsWith(prefix))
+                && filename.endsWith('.pdf')
+              );
             }
 
             function reviewOnlyLabel(files) {

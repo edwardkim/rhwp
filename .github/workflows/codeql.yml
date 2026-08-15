@@ -7,6 +7,9 @@ on:
       - 'mydocs/**'
       - 'docs/**'
       - 'samples/**'
+      - 'pdf/**'
+      - 'pdf-2020/**'
+      - 'pdf-large/**'
       - 'assets/**'
       - '*.md'
       - 'LICENSE'
@@ -21,7 +24,8 @@ on:
     branches: [main, devel]
     paths-ignore:
       - 'docs/**'
-      - 'samples/**'
+      # samples는 PR preflight에서 신규 reference-only와 기존 자료 변경을
+      # 구분해 CodeQL no-op/full 판정을 발행한다.
       - 'assets/**'
       - '*.md'
       - 'LICENSE'
@@ -115,16 +119,19 @@ jobs:
             }
 
             function isReviewReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
               return (
                 filename.startsWith('samples/')
                 && (
                   filename.endsWith('.hwp')
                   || filename.endsWith('.hwpx')
-                  || filename.endsWith('.hml')
                   || filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (filename.startsWith('pdf/') && filename.endsWith('.pdf'));
+              ) || (
+                pdfPrefixes.some((prefix) => filename.startsWith(prefix))
+                && filename.endsWith('.pdf')
+              );
             }
 
             function reviewOnlyLabel(files) {

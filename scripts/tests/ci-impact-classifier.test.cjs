@@ -43,7 +43,7 @@ test('review-only changes require no code worker', () => {
       native_skia_required: 'false',
       codeql_languages: 'none',
       classification_status: 'classified',
-      classifier_version: '2',
+      classifier_version: '3',
       reason: 'classified:review-only',
     },
   );
@@ -65,7 +65,7 @@ test('mixed Studio package and Rust changes union modes and CodeQL languages', (
       native_skia_required: 'false',
       codeql_languages: 'javascript-typescript,rust',
       classification_status: 'classified',
-      classifier_version: '2',
+      classifier_version: '3',
       reason: 'classified:rust+studio-package',
     },
   );
@@ -106,7 +106,7 @@ test('Native Skia integration test and support changes run Rust and Native Skia 
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '2', filename);
+    assert.equal(result.classifier_version, '3', filename);
     assert.equal(result.reason, 'classified:native-skia-rust', filename);
   }
 });
@@ -126,7 +126,7 @@ test('Rust test input changes keep default Rust tests alongside render gates', (
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '2', filename);
+    assert.equal(result.classifier_version, '3', filename);
     assert.equal(result.reason, 'classified:rust-test-input', filename);
   }
 });
@@ -182,6 +182,61 @@ test('known command sources and non-render tests stay on the unit lane', () => {
     assert.equal(result.frontend_mode, 'unit', filename);
     assert.equal(result.render_required, 'false', filename);
   }
+});
+
+test('new review reference assets require no product or CodeQL worker', () => {
+  for (const filename of [
+    'samples/new-reference.hwp',
+    'samples/new-reference.hwpx',
+    'samples/new-reference.pdf',
+    'samples/new-reference.png',
+    'pdf/new-reference.pdf',
+    'pdf-2020/new-reference.pdf',
+    'pdf-large/nested/new-reference.pdf',
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'added' }],
+    });
+    assert.equal(result.rust_required, 'false', filename);
+    assert.equal(result.frontend_mode, 'none', filename);
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'false', filename);
+    assert.equal(result.codeql_languages, 'none', filename);
+    assert.equal(result.classification_status, 'classified', filename);
+    assert.equal(result.classifier_version, '3', filename);
+    assert.equal(result.reason, 'classified:review-only', filename);
+  }
+});
+
+test('existing review reference changes remain fail-closed', () => {
+  for (const filename of [
+    'samples/existing-reference.hwp',
+    'pdf/existing-reference.pdf',
+    'pdf-2020/existing-reference.pdf',
+    'pdf-large/nested/existing-reference.pdf',
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'modified' }],
+    });
+    assert.equal(result.classification_status, 'full', filename);
+    assert.equal(result.reason, 'fail-closed:unclassified-path', filename);
+  }
+});
+
+test('reference assets mixed with source preserve the source impact', () => {
+  const result = classifyChanges({
+    eventName: 'pull_request',
+    files: [
+      { filename: 'pdf-2020/new-reference.pdf', status: 'added' },
+      { filename: 'src/parser/hwpx/mod.rs', status: 'modified' },
+    ],
+  });
+  assert.equal(result.rust_required, 'true');
+  assert.equal(result.codeql_languages, 'rust');
+  assert.equal(result.classification_status, 'classified');
+  assert.equal(result.reason, 'classified:rust');
 });
 
 test('rename evaluates fail-closed before either path can be skipped', () => {

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-07
+last_verified: 2026-08-15
 ---
 
 # Review-only fast-pass
@@ -15,10 +15,10 @@ review-only인 경우에 적용하는 공용 modifier다. maintainer·collaborat
 - mydocs 아래 모든 파일 — 파일 상태와 확장자를 제한하지 않는다. 따라서 `mydocs/pr/assets` 등에
   올리는 PDF, HWP/HWPX, PNG 등 검토 증적도 문서-only PR과 같은 허용 범위다.
 - added 상태의 samples 아래 hwp, hwpx, pdf, png
-- added 상태의 pdf 아래 PDF
+- added 상태의 pdf, pdf-2020, pdf-large 아래 PDF
 
-기존 samples 또는 pdf 파일의 수정·삭제·rename, source, test, workflow, Cargo.lock, golden, baseline은
-허용 범위가 아니다.
+기존 samples 또는 세 PDF 디렉터리 파일의 수정·삭제·rename, source, test, workflow, Cargo.lock,
+golden, baseline은 허용 범위가 아니다.
 
 ## A. code PR 뒤의 trailing review-only commit
 

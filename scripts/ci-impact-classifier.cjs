@@ -2,9 +2,15 @@
 
 const fs = require('node:fs');
 
-const CLASSIFIER_VERSION = '2';
+const CLASSIFIER_VERSION = '3';
 const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
 const FRONTEND_MODE_RANK = { none: 0, unit: 1, package: 2 };
+
+const REVIEW_REFERENCE_PDF_PREFIXES = [
+  'pdf/',
+  'pdf-2020/',
+  'pdf-large/',
+];
 
 const RENDER_RUST_PREFIXES = [
   'src/paint/',
@@ -111,6 +117,21 @@ function isReviewOnlyPath(filename) {
     || filename === 'AGENTS.md'
     || filename === 'CLAUDE.md'
     || filename === 'llms.txt'
+  );
+}
+
+function isReviewReferencePath(filename) {
+  return (
+    filename.startsWith('samples/')
+    && (
+      filename.endsWith('.hwp')
+      || filename.endsWith('.hwpx')
+      || filename.endsWith('.pdf')
+      || filename.endsWith('.png')
+    )
+  ) || (
+    REVIEW_REFERENCE_PDF_PREFIXES.some((prefix) => filename.startsWith(prefix))
+    && filename.endsWith('.pdf')
   );
 }
 
@@ -236,6 +257,11 @@ function classifyChanges(input = {}) {
 
   for (const file of files.slice().sort((a, b) => a.filename.localeCompare(b.filename))) {
     const filename = file.filename;
+
+    if (file.status === 'added' && isReviewReferencePath(filename)) {
+      reviewOnlyCount += 1;
+      continue;
+    }
 
     if (isRenderRustPath(filename)) {
       rustRequired = true;

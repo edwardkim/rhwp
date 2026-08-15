@@ -120,16 +120,19 @@ jobs:
             }
 
             function isReviewReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
               return (
                 filename.startsWith('samples/')
                 && (
                   filename.endsWith('.hwp')
                   || filename.endsWith('.hwpx')
-                  || filename.endsWith('.hml')
                   || filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (filename.startsWith('pdf/') && filename.endsWith('.pdf'));
+              ) || (
+                pdfPrefixes.some((prefix) => filename.startsWith(prefix))
+                && filename.endsWith('.pdf')
+              );
             }
 
             function reviewOnlyLabel(files) {

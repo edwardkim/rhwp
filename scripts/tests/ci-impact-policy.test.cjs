@@ -12,10 +12,13 @@ const {
   CI_FRONTEND_JOBS,
   CI_JOB_ALIASES,
   CI_NATIVE_JOB,
+  CI_PUSH_PATHS_IGNORE,
   CI_PULL_REQUEST_PATHS_IGNORE,
   CI_RUST_JOBS,
   CODEQL_JOBS,
+  CODEQL_PUSH_PATHS_IGNORE,
   CODEQL_PULL_REQUEST_PATHS_IGNORE,
+  DEPLOY_PAGES_PUSH_PATHS_IGNORE,
   RENDER_DIFF_PULL_REQUEST_PATHS,
   WORKFLOW_ORDER,
   WORKFLOW_PATHS,
@@ -219,6 +222,30 @@ test('same-repository Studio unit PR gets selective three-workflow policy', () =
   assert.equal(policy.classification.codeql_languages, 'javascript-typescript');
 });
 
+test('new review reference PR keeps required aggregates without product workers', () => {
+  for (const filename of [
+    'samples/new-reference.hwp',
+    'pdf/new-reference.pdf',
+    'pdf-2020/new-reference.pdf',
+    'pdf-large/nested/new-reference.pdf',
+  ]) {
+    const files = [{ filename, status: 'added' }];
+    const policy = determinePolicy(policyInput({ files }));
+    assert.equal(policy.decision, 'selective', filename);
+    assert.deepEqual(policy.expected_workflows, {
+      CI: 'true',
+      CodeQL: 'true',
+      'Render Diff': 'false',
+    }, filename);
+    assert.equal(policy.classification.rust_required, 'false', filename);
+    assert.equal(policy.classification.frontend_mode, 'none', filename);
+    assert.equal(policy.classification.render_required, 'false', filename);
+    assert.equal(policy.classification.native_skia_required, 'false', filename);
+    assert.equal(policy.classification.codeql_languages, 'none', filename);
+    assert.equal(policy.classification.reason, 'classified:review-only', filename);
+  }
+});
+
 test('external fork is mediated unless it changes the enforcement surface', () => {
   const input = policyInput();
   input.pullRequest = {
@@ -313,8 +340,8 @@ test('compact status description round-trips workflow and impact axes', () => {
   const policy = determinePolicy(policyInput());
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
-    v: '3',
-    cv: '2',
+    v: '4',
+    cv: '3',
     mode: 'selective',
     wf: '111',
     rust: '0',
@@ -341,12 +368,24 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
     );
   }
   assert.deepEqual(
+    triggerItems('ci.yml', '  push:\n', '  pull_request:\n'),
+    CI_PUSH_PATHS_IGNORE,
+  );
+  assert.deepEqual(
     triggerItems('ci.yml', '  pull_request:\n', '  workflow_dispatch:\n'),
     CI_PULL_REQUEST_PATHS_IGNORE,
   );
   assert.deepEqual(
+    triggerItems('codeql.yml', '  push:\n', '  pull_request:\n'),
+    CODEQL_PUSH_PATHS_IGNORE,
+  );
+  assert.deepEqual(
     triggerItems('codeql.yml', '  pull_request:\n', '  schedule:\n'),
     CODEQL_PULL_REQUEST_PATHS_IGNORE,
+  );
+  assert.deepEqual(
+    triggerItems('deploy-pages.yml', '  push:\n', '  workflow_dispatch:\n'),
+    DEPLOY_PAGES_PUSH_PATHS_IGNORE,
   );
   assert.deepEqual(
     triggerItems('render-diff.yml', '  pull_request:\n', '  workflow_dispatch:\n'),
@@ -354,6 +393,8 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
   );
   assert.equal(workflowRunExpected('CI', [{ filename: 'README.md' }]), false);
   assert.equal(workflowRunExpected('CodeQL', [{ filename: 'assets/logo/icon.svg' }]), false);
+  assert.equal(workflowRunExpected('CI', [{ filename: 'samples/new-reference.hwp' }]), true);
+  assert.equal(workflowRunExpected('CodeQL', [{ filename: 'samples/new-reference.hwp' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'rhwp-studio/tests/a.ts' }]), true);
 });
 
@@ -726,5 +767,5 @@ test('CLI writes policy and aggregate audit outputs', (t) => {
   assert.equal(result.audit.conclusion, 'success');
   assert.match(outputs, /^codeql_run_expected=true$/m);
   assert.match(outputs, /^audit_conclusion=success$/m);
-  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '3');
+  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '4');
 });

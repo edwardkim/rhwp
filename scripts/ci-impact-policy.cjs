@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const POLICY_VERSION = '3';
+const POLICY_VERSION = '4';
 const POLICY_CONTEXT = 'CI Impact Policy';
 const WORKFLOW_ORDER = ['CI', 'CodeQL', 'Render Diff'];
 const WORKFLOW_PATHS = {
@@ -16,9 +16,13 @@ const BOOLEAN_VALUES = new Set(['true', 'false']);
 const CLASSIFICATION_STATUSES = new Set(['classified', 'full']);
 const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
 
-const CI_PULL_REQUEST_PATHS_IGNORE = [
+const CI_PUSH_PATHS_IGNORE = [
+  'mydocs/**',
   'docs/**',
   'samples/**',
+  'pdf/**',
+  'pdf-2020/**',
+  'pdf-large/**',
   'assets/chrome/**',
   'assets/edge/**',
   'assets/logo/**',
@@ -34,9 +38,63 @@ const CI_PULL_REQUEST_PATHS_IGNORE = [
   'rhwp-logo.*',
 ];
 
-const CODEQL_PULL_REQUEST_PATHS_IGNORE = [
+const CI_PULL_REQUEST_PATHS_IGNORE = [
+  'docs/**',
+  'assets/chrome/**',
+  'assets/edge/**',
+  'assets/logo/**',
+  'assets/screenshots/**',
+  '*.md',
+  'LICENSE',
+  '.github/ISSUE_TEMPLATE/**',
+  '.github/FUNDING.yml',
+  '.github/CODE_OF_CONDUCT.md',
+  '.github/SECURITY.md',
+  '.github/pull_request_template.md',
+  '.github/dependabot.yml',
+  'rhwp-logo.*',
+];
+
+const CODEQL_PUSH_PATHS_IGNORE = [
+  'mydocs/**',
   'docs/**',
   'samples/**',
+  'pdf/**',
+  'pdf-2020/**',
+  'pdf-large/**',
+  'assets/**',
+  '*.md',
+  'LICENSE',
+  '.github/ISSUE_TEMPLATE/**',
+  '.github/FUNDING.yml',
+  '.github/CODE_OF_CONDUCT.md',
+  '.github/SECURITY.md',
+  '.github/pull_request_template.md',
+  '.github/dependabot.yml',
+  'rhwp-logo.*',
+];
+
+const CODEQL_PULL_REQUEST_PATHS_IGNORE = [
+  'docs/**',
+  'assets/**',
+  '*.md',
+  'LICENSE',
+  '.github/ISSUE_TEMPLATE/**',
+  '.github/FUNDING.yml',
+  '.github/CODE_OF_CONDUCT.md',
+  '.github/SECURITY.md',
+  '.github/pull_request_template.md',
+  '.github/dependabot.yml',
+  'rhwp-logo.*',
+];
+
+const DEPLOY_PAGES_PUSH_PATHS_IGNORE = [
+  'mydocs/**',
+  'docs/**',
+  'samples/**',
+  'pdf/**',
+  'pdf-2020/**',
+  'pdf-large/**',
   'assets/**',
   '*.md',
   'LICENSE',
@@ -808,10 +866,13 @@ module.exports = {
   CI_FRONTEND_JOBS,
   CI_JOB_ALIASES,
   CI_NATIVE_JOB,
+  CI_PUSH_PATHS_IGNORE,
   CI_PULL_REQUEST_PATHS_IGNORE,
   CI_RUST_JOBS,
   CODEQL_JOBS,
+  CODEQL_PUSH_PATHS_IGNORE,
   CODEQL_PULL_REQUEST_PATHS_IGNORE,
+  DEPLOY_PAGES_PUSH_PATHS_IGNORE,
   POLICY_CONTEXT,
   POLICY_VERSION,
   RENDER_DIFF_PULL_REQUEST_PATHS,
