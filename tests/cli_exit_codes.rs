@@ -32,7 +32,9 @@ fn sample_path() -> PathBuf {
 
 /// 샘플을 결정적으로 손상시켜(바이트 플립) 임시 파일로 쓴다 — 퍼징 재현자용.
 fn write_flipped(sample: &str, flip_pct: usize, label: &str) -> PathBuf {
-    let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples").join(sample);
+    let src = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples")
+        .join(sample);
     let mut data = std::fs::read(&src).expect("샘플 읽기");
     let pos = data.len() * flip_pct / 100;
     data[pos] ^= 0xFF;
@@ -51,8 +53,18 @@ fn corrupt_input_does_not_panic_in_renderer() {
     // export-text(전체 렌더) 두 경로 모두.
     for (sample, pct, cmd, label) in [
         ("hwp3-sample11.hwp", 45, "info", "typeset-vpos"),
-        ("issue1949_giant_cell_nested_tables_perf.hwp", 55, "info", "tablelayout-vpos"),
-        ("HWP5-nopassword-123456.hwp", 90, "export-text", "typeset-lhls"),
+        (
+            "issue1949_giant_cell_nested_tables_perf.hwp",
+            55,
+            "info",
+            "tablelayout-vpos",
+        ),
+        (
+            "HWP5-nopassword-123456.hwp",
+            90,
+            "export-text",
+            "typeset-lhls",
+        ),
         (
             "issue1937_rowbreak_footnote_overpagination.hwp",
             90,

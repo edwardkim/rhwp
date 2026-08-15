@@ -3221,7 +3221,9 @@ impl LayoutEngine {
                     start_idx: chars.len(),
                     end_idx: chars.len(),
                     col_width: ls
-                        .map(|l| hwpunit_to_px(l.line_height.saturating_add(l.line_spacing), self.dpi))
+                        .map(|l| {
+                            hwpunit_to_px(l.line_height.saturating_add(l.line_spacing), self.dpi)
+                        })
                         .unwrap_or(13.0),
                     col_spacing: 0.0,
                     total_height: 0.0,
