@@ -295,6 +295,28 @@ python gym/tools/differential.py --limit 20 # 표본
 첫 전수 주행 실측: 139쌍·834대조 → 이름만 같은 다른 문서 7쌍 제외, 후보 2건,
 그중 IR 동일 모순 1건([#4658](https://github.com/edwardkim/rhwp/issues/4658)).
 
+## 손상-강건성 감사 — 도구가 적대적 입력에 죽지 않는가
+
+2026 프론티어(AgentHijack 등)는 에이전트가 **환경 손상**에 견디는지 잰다. gym 은
+에이전트가 rhwp 를 몰아 능력을 낸다 — 그런데 rhwp 가 손상 문서에 **패닉**하면
+에이전트가 아무리 유능해도 과제를 못 끝낸다. **도구 강건성이 능력의 천장이다.**
+
+`gym/tools/robustness.py` 는 코퍼스를 **결정적으로 손상**시켜(무작위 없음) rhwp 가
+언제나 우아하게(패닉·행 없이) 실패/부분복구하는지 인증한다:
+
+```bash
+python gym/tools/robustness.py --bin target/debug/rhwp        # 결정적 부분집합
+python gym/tools/robustness.py --bin target/debug/rhwp --limit 40
+```
+
+- **패닉**(exit 101·시그널·'panicked'·스택 오버플로)·**행**(timeout) → 실패.
+- 깨끗한 비-0 실패·경고 후 부분복구·정상 파싱 → 우아함(정상).
+
+이는 종점 무결성(판별력)·경로 무결성(트라젝토리)에 이은 세 번째 기둥 — 도구
+자체의 손상 강건성이다. 다른 문서 벤치마크가 안 재는 축: 벤치마크가 자기 도구가
+적대적 입력에 죽지 않음을 인증한다. 첫 주행이 HWP3 파서의 실제 DoS 2건을 잡았다
+(line-spacing 곱셈 i32 오버플로 패닉 — 이 PR 에서 수정 · 무한루프 1건 — 후속 이슈).
+
 ## 설계 원칙 (채점기가 지키는 것)
 
 - 표준 라이브러리 전용, Windows/리눅스 경로 안전.
