@@ -2201,7 +2201,8 @@ fn hwpx_explicit_page_break_tail_line(
             && prev.vertical_pos > 0
             && tail.vertical_pos == 0
             && hwpunit_to_px(prev.vertical_pos, dpi) >= body_height_px * 0.70
-            && hwpunit_to_px(prev.vertical_pos.saturating_add(prev.line_height), dpi) <= body_height_px + 1.0
+            && hwpunit_to_px(prev.vertical_pos.saturating_add(prev.line_height), dpi)
+                <= body_height_px + 1.0
         {
             return Some(split_line);
         }
@@ -2482,7 +2483,8 @@ fn native_hwp5_first_footnote_overlap_break_line(
             let visible_bottom =
                 hwpunit_to_px(prev.vertical_pos - page_vpos_base + prev.line_height, dpi);
             let trailing_bottom = hwpunit_to_px(
-                prev.vertical_pos - page_vpos_base + prev.line_height.saturating_add(prev.line_spacing),
+                prev.vertical_pos - page_vpos_base
+                    + prev.line_height.saturating_add(prev.line_spacing),
                 dpi,
             );
             let trailing_spacing_only_overlap =
@@ -3075,7 +3077,8 @@ fn table_declared_height_has_stored_cell_content_frame(
                     .filter(|seg| !is_synthetic_line_seg(seg))
                     .filter(|seg| seg.vertical_pos >= 0 && seg.line_height > 0)
                 {
-                    let bottom = hwpunit_to_px(seg.vertical_pos.saturating_add(seg.line_height), dpi);
+                    let bottom =
+                        hwpunit_to_px(seg.vertical_pos.saturating_add(seg.line_height), dpi);
                     stored_bottom =
                         Some(stored_bottom.map_or(bottom, |current: f64| current.max(bottom)));
                 }
@@ -4949,7 +4952,10 @@ fn ladder_spacing_omitted_signature(
             continue;
         }
         let step = hwpunit_to_px(next_first.vertical_pos - cur_last.vertical_pos, dpi);
-        let bare = hwpunit_to_px(cur_last.line_height.saturating_add(cur_last.line_spacing), dpi);
+        let bare = hwpunit_to_px(
+            cur_last.line_height.saturating_add(cur_last.line_spacing),
+            dpi,
+        );
         if step <= 0.0 || bare <= 0.0 {
             continue;
         }
@@ -6162,7 +6168,9 @@ impl TypesetEngine {
                                     .iter()
                                     .filter(|seg| !is_synthetic_line_seg(seg))
                                     .map(|seg| {
-                                        seg.vertical_pos.saturating_add(seg.line_height).saturating_add(seg.line_spacing)
+                                        seg.vertical_pos
+                                            .saturating_add(seg.line_height)
+                                            .saturating_add(seg.line_spacing)
                                     })
                                     .max()?;
                                 (text_bottom > anchor_top)
@@ -6239,7 +6247,9 @@ impl TypesetEngine {
                                         .take(wrap_prefix_len)
                                         .filter(|seg| !is_synthetic_line_seg(seg))
                                         .map(|seg| {
-                                            seg.vertical_pos.saturating_add(seg.line_height).saturating_add(seg.line_spacing)
+                                            seg.vertical_pos
+                                                .saturating_add(seg.line_height)
+                                                .saturating_add(seg.line_spacing)
                                         })
                                         .max()?;
                                     (prefix_bottom > anchor_top).then(|| {
@@ -7017,7 +7027,12 @@ impl TypesetEngine {
                     let empty_h_px = para
                         .line_segs
                         .first()
-                        .map(|s| hwpunit_to_px((s.line_height.saturating_add(s.line_spacing)) as i32, self.dpi))
+                        .map(|s| {
+                            hwpunit_to_px(
+                                (s.line_height.saturating_add(s.line_spacing)) as i32,
+                                self.dpi,
+                            )
+                        })
                         .unwrap_or(0.0);
                     let height_fits = empty_h_px <= st.available_height() - st.current_height;
 
@@ -7062,7 +7077,8 @@ impl TypesetEngine {
                                     st.layout.body_area.height,
                                     self.dpi,
                                 );
-                                let vpos_end = last_seg.vertical_pos.saturating_add(last_seg.line_height);
+                                let vpos_end =
+                                    last_seg.vertical_pos.saturating_add(last_seg.line_height);
                                 vpos_end <= top + body_h_hu + 283
                             }
                             // vpos 판정 불가 → 제약 없음(height fit 에 위임).
@@ -7117,7 +7133,12 @@ impl TypesetEngine {
                     let empty_h_px = para
                         .line_segs
                         .first()
-                        .map(|s| hwpunit_to_px((s.line_height.saturating_add(s.line_spacing)) as i32, self.dpi))
+                        .map(|s| {
+                            hwpunit_to_px(
+                                (s.line_height.saturating_add(s.line_spacing)) as i32,
+                                self.dpi,
+                            )
+                        })
                         .unwrap_or(0.0);
                     let avail = st.available_height() - st.current_height;
                     if empty_h_px > avail {
@@ -7174,7 +7195,12 @@ impl TypesetEngine {
                 let empty_h_px = para
                     .line_segs
                     .first()
-                    .map(|s| hwpunit_to_px((s.line_height.saturating_add(s.line_spacing)) as i32, self.dpi))
+                    .map(|s| {
+                        hwpunit_to_px(
+                            (s.line_height.saturating_add(s.line_spacing)) as i32,
+                            self.dpi,
+                        )
+                    })
                     .unwrap_or(0.0);
                 let avail = st.available_height() - st.current_height;
                 if empty_h_px > avail {
@@ -7275,7 +7301,10 @@ impl TypesetEngine {
                         .line_segs
                         .iter()
                         .map(|s| {
-                            crate::renderer::hwpunit_to_px(s.line_height.saturating_add(s.line_spacing), self.dpi)
+                            crate::renderer::hwpunit_to_px(
+                                s.line_height.saturating_add(s.line_spacing),
+                                self.dpi,
+                            )
                         })
                         .sum();
                     let para_h_hu = crate::renderer::px_to_hwpunit(para_h_px, self.dpi);
@@ -9441,7 +9470,10 @@ impl TypesetEngine {
                 .iter()
                 .map(|s| {
                     (
-                        s.vertical_pos.saturating_add(s.line_height).saturating_add(s.line_spacing) + endnote_start,
+                        s.vertical_pos
+                            .saturating_add(s.line_height)
+                            .saturating_add(s.line_spacing)
+                            + endnote_start,
                         s.line_spacing,
                     )
                 })
@@ -9927,7 +9959,12 @@ impl TypesetEngine {
                         .iter()
                         .skip(ep_idx + 1)
                         .flat_map(|p| p.line_segs.iter())
-                        .map(|s| s.vertical_pos.saturating_add(s.line_height).saturating_add(s.line_spacing) + endnote_start)
+                        .map(|s| {
+                            s.vertical_pos
+                                .saturating_add(s.line_height)
+                                .saturating_add(s.line_spacing)
+                                + endnote_start
+                        })
                         .max();
                     Some(
                         tail_bottom
@@ -12817,7 +12854,11 @@ impl TypesetEngine {
                         let bottom = p
                             .line_segs
                             .iter()
-                            .map(|s| s.vertical_pos.saturating_add(s.line_height).saturating_add(s.line_spacing))
+                            .map(|s| {
+                                s.vertical_pos
+                                    .saturating_add(s.line_height)
+                                    .saturating_add(s.line_spacing)
+                            })
                             .max()?;
                         Some(hwpunit_to_px((bottom - first).max(0), self.dpi))
                     })
@@ -12867,7 +12908,11 @@ impl TypesetEngine {
                     let Some(bottom) = para
                         .line_segs
                         .iter()
-                        .map(|seg| seg.vertical_pos.saturating_add(seg.line_height).saturating_add(seg.line_spacing))
+                        .map(|seg| {
+                            seg.vertical_pos
+                                .saturating_add(seg.line_height)
+                                .saturating_add(seg.line_spacing)
+                        })
                         .max()
                     else {
                         continue;
@@ -12921,8 +12966,10 @@ impl TypesetEngine {
             && !st.current_items.is_empty()
             && en_ctrl.paragraphs.first().is_some_and(|head| {
                 head.line_segs.first().is_some_and(|seg| {
-                    let title_h =
-                        hwpunit_to_px((seg.line_height.saturating_add(seg.line_spacing)).max(0), self.dpi);
+                    let title_h = hwpunit_to_px(
+                        (seg.line_height.saturating_add(seg.line_spacing)).max(0),
+                        self.dpi,
+                    );
                     title_h > 0.0
                         && st.current_height + title_h
                             <= st.available_height()
@@ -12945,8 +12992,10 @@ impl TypesetEngine {
                 let Some(first) = head.line_segs.first() else {
                     return false;
                 };
-                let title_h =
-                    hwpunit_to_px((first.line_height.saturating_add(first.line_spacing)).max(0), self.dpi);
+                let title_h = hwpunit_to_px(
+                    (first.line_height.saturating_add(first.line_spacing)).max(0),
+                    self.dpi,
+                );
                 title_h > 0.0
                     && st.current_height + title_h
                         <= st.available_height() + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX + 2.0
@@ -12972,9 +13021,11 @@ impl TypesetEngine {
                 .paragraphs
                 .iter()
                 .flat_map(|p| {
-                    p.line_segs
-                        .iter()
-                        .map(|s| s.vertical_pos.saturating_add(s.line_height).saturating_add(s.line_spacing))
+                    p.line_segs.iter().map(|s| {
+                        s.vertical_pos
+                            .saturating_add(s.line_height)
+                            .saturating_add(s.line_spacing)
+                    })
                 })
                 .max();
             if let (Some(first), Some(bottom)) = (group_first, group_bottom) {
@@ -13006,7 +13057,11 @@ impl TypesetEngine {
             let bottom = p
                 .line_segs
                 .iter()
-                .map(|s| s.vertical_pos.saturating_add(s.line_height).saturating_add(s.line_spacing))
+                .map(|s| {
+                    s.vertical_pos
+                        .saturating_add(s.line_height)
+                        .saturating_add(s.line_spacing)
+                })
                 .max();
             let group_rewind = matches!(
                 (prev_group_bottom, first),
@@ -13299,7 +13354,11 @@ impl TypesetEngine {
             let mut vpos_offset: i32 = paragraphs
                 .last()
                 .and_then(|p| p.line_segs.last())
-                .map(|ls| ls.vertical_pos.saturating_add(ls.line_height).saturating_add(ls.line_spacing))
+                .map(|ls| {
+                    ls.vertical_pos
+                        .saturating_add(ls.line_height)
+                        .saturating_add(ls.line_spacing)
+                })
                 .unwrap_or(0);
             // [Task #1082] 다단 미주 vpos-delta 누적용 prev tracker.
             // 시드 = 현재 단의 본문 last bottom vpos(body→endnote 전환 정합); 없으면 None
@@ -13632,7 +13691,9 @@ impl TypesetEngine {
                     let segs = &item_para.line_segs;
                     match (
                         segs.first(),
-                        segs.iter().map(|s| s.vertical_pos.saturating_add(s.line_height)).max(),
+                        segs.iter()
+                            .map(|s| s.vertical_pos.saturating_add(s.line_height))
+                            .max(),
                     ) {
                         (Some(first), Some(bottom)) => {
                             hwpunit_to_px((bottom - first.vertical_pos).max(0), self.dpi)
@@ -13646,7 +13707,9 @@ impl TypesetEngine {
                     let segs = &item_para.line_segs;
                     match (
                         segs.first(),
-                        segs.iter().map(|s| s.vertical_pos.saturating_add(s.line_height)).max(),
+                        segs.iter()
+                            .map(|s| s.vertical_pos.saturating_add(s.line_height))
+                            .max(),
                     ) {
                         (Some(first), Some(bottom)) => {
                             hwpunit_to_px((bottom - first.vertical_pos).max(0), self.dpi)
@@ -14513,7 +14576,12 @@ impl TypesetEngine {
                         .iter()
                         .take(3)
                         .flat_map(|p| p.line_segs.iter())
-                        .map(|s| s.vertical_pos.saturating_add(s.line_height).saturating_add(s.line_spacing) + endnote_start)
+                        .map(|s| {
+                            s.vertical_pos
+                                .saturating_add(s.line_height)
+                                .saturating_add(s.line_spacing)
+                                + endnote_start
+                        })
                         .max()?;
                     let group_first = first_para_vpos.vertical_pos + endnote_start;
                     let group_h = hwpunit_to_px((group_bottom - group_first).max(0), self.dpi);
@@ -14627,7 +14695,10 @@ impl TypesetEngine {
                         .take(3)
                         .flat_map(|p| p.line_segs.iter())
                         .map(|seg| {
-                            seg.vertical_pos.saturating_add(seg.line_height).saturating_add(seg.line_spacing) + endnote_start
+                            seg.vertical_pos
+                                .saturating_add(seg.line_height)
+                                .saturating_add(seg.line_spacing)
+                                + endnote_start
                         })
                         .max();
                     group_first
@@ -15846,10 +15917,11 @@ impl TypesetEngine {
         // trailing_ls 는 페이지 마지막 항목의 fit 판정에만 의미가 있음
         // (페이지 끝에는 다음 줄이 없으니 line_spacing 미적용).
         // [Task #1082] 본문 para 의 bottom offset vpos — 미주 vpos-delta 시드용.
-        let body_bottom_vpos: Option<i32> = para
-            .line_segs
-            .last()
-            .map(|s| s.vertical_pos.saturating_add(s.line_height).saturating_add(s.line_spacing));
+        let body_bottom_vpos: Option<i32> = para.line_segs.last().map(|s| {
+            s.vertical_pos
+                .saturating_add(s.line_height)
+                .saturating_add(s.line_spacing)
+        });
         // HWP3-origin 변환본은 spacing_before 누적을 보존해야 dump-pages 요약과
         // 실제 한컴 줄 흐름이 유지된다(#1116).
         let trim_spacing_before_for_flow =
@@ -17835,7 +17907,10 @@ impl TypesetEngine {
                             lh + ls_extra,
                             para.line_segs
                                 .first()
-                                .map(|s0| hwpunit_to_px(s0.line_height.saturating_add(s0.line_spacing), self.dpi))
+                                .map(|s0| hwpunit_to_px(
+                                    s0.line_height.saturating_add(s0.line_spacing),
+                                    self.dpi
+                                ))
                                 .unwrap_or(0.0),
                         );
                     }
@@ -23819,7 +23894,9 @@ impl TypesetEngine {
                 if let Some(pi) = last_para_idx {
                     if let Some(seg) = paragraphs.get(pi).and_then(|p| p.line_segs.last()) {
                         let v = hwpunit_to_px(
-                            seg.vertical_pos.saturating_add(seg.line_height).saturating_add(seg.line_spacing),
+                            seg.vertical_pos
+                                .saturating_add(seg.line_height)
+                                .saturating_add(seg.line_spacing),
                             self.dpi,
                         );
                         if v > band_height_px {
