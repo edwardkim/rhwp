@@ -420,6 +420,7 @@ fn control_structure_tag(control: &Control) -> usize {
         Control::PageNumberPos(_) => 12,
         Control::Bookmark(_) => 13,
         Control::IndexMark(_) => 23,
+        Control::PageNumCtrl(_) => 24,
         Control::Hyperlink(_) => 14,
         Control::Ruby(_) => 15,
         Control::CharOverlap(_) => 16,

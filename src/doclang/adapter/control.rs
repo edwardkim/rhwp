@@ -308,6 +308,7 @@ pub(crate) fn convert_control(
         Control::AutoNumber(_)
         | Control::NewNumber(_)
         | Control::PageNumberPos(_)
+        | Control::PageNumCtrl(_)
         | Control::PageHide(_) => ControlOutcome::empty(),
     }
 }

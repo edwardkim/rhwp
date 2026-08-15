@@ -575,6 +575,11 @@ fn dump_bookreview_section1_controls() {
                     Control::IndexMark(im) => {
                         eprintln!("    Ctrl[{}]: IndexMark({:?})", ci, im.first_key)
                     }
+                    Control::PageNumCtrl(p) => eprintln!(
+                        "    Ctrl[{}]: PageNumCtrl({})",
+                        ci,
+                        p.page_starts_on.as_hwpx()
+                    ),
                     Control::Hyperlink(h) => {
                         eprintln!("    Ctrl[{}]: Hyperlink(url={:?})", ci, h.url)
                     }
@@ -688,6 +693,12 @@ fn dump_control_brief(ctrl: &Control, idx: usize, indent: usize) {
         Control::IndexMark(im) => eprintln!(
             "{}Ctrl[{}]: IndexMark({:?}, {:?})",
             pad, idx, im.first_key, im.second_key
+        ),
+        Control::PageNumCtrl(p) => eprintln!(
+            "{}Ctrl[{}]: PageNumCtrl({})",
+            pad,
+            idx,
+            p.page_starts_on.as_hwpx()
         ),
         Control::Hyperlink(h) => eprintln!("{}Ctrl[{}]: Hyperlink({:?})", pad, idx, h.url),
         Control::Ruby(_) => eprintln!("{}Ctrl[{}]: Ruby", pad, idx),

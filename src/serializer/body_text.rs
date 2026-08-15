@@ -1201,6 +1201,7 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
         // section paragraph as damaged/modified around the page control chain.
         Control::NewNumber(_) => (0x0015, tags::CTRL_NEW_NUMBER),
         Control::PageNumberPos(_) => (0x0015, tags::CTRL_PAGE_NUM_POS),
+        Control::PageNumCtrl(_) => (0x0015, tags::CTRL_PAGE_NUM_CTRL),
         Control::PageHide(_) => (0x0015, tags::CTRL_PAGE_HIDE),
         Control::Bookmark(_) => (0x0016, tags::CTRL_BOOKMARK),
         Control::IndexMark(_) => (0x0016, tags::CTRL_INDEX_MARK),
@@ -1222,7 +1223,8 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
 mod tests {
     use super::*;
     use crate::model::control::{
-        AutoNumber, Bookmark, Field, FieldType, Hyperlink, IndexMark, NewNumber,
+        AutoNumber, Bookmark, Field, FieldType, Hyperlink, IndexMark, NewNumber, PageNumCtrl,
+        PageStartsOn,
     };
     use crate::model::document::{Section, SectionDef};
     use crate::model::paragraph::{
@@ -1263,6 +1265,46 @@ mod tests {
         assert_eq!(parsed.paragraphs.len(), 1);
         assert_eq!(parsed.paragraphs[0].text, "Hello");
         assert_eq!(parsed.paragraphs[0].char_offsets, vec![0, 1, 2, 3, 4]);
+    }
+
+    /// 쪽 번호 시작 쪽 라운드트립 — 세 값 모두 자기 자리로 돌아와야 한다.
+    ///
+    /// 열거 대응은 한글 2022 양방향 실측이다(06731 을 HWPX 로 저장 → 속성만 바꿔
+    /// 다시 HWP5 로 저장, 각 17/17): 0=BOTH, 1=EVEN, 2=ODD.
+    #[test]
+    fn test_roundtrip_page_num_ctrl() {
+        for want in [PageStartsOn::Both, PageStartsOn::Even, PageStartsOn::Odd] {
+            let para = Paragraph {
+                char_count: 9,
+                controls: vec![Control::PageNumCtrl(PageNumCtrl {
+                    page_starts_on: want,
+                })],
+                ..Default::default()
+            };
+            let section = Section {
+                paragraphs: vec![para],
+                raw_stream: None,
+                ..Default::default()
+            };
+            let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
+            match &parsed.paragraphs[0].controls[0] {
+                Control::PageNumCtrl(pnc) => assert_eq!(pnc.page_starts_on, want),
+                other => panic!("PageNumCtrl 이 아니다: {other:?}"),
+            }
+        }
+    }
+
+    /// 규정 밖 값은 기본값(BOTH)으로 떨어뜨린다 — 열거 밖 값을 그대로 쓰면 한글이
+    /// 쓰레기값으로 읽는다(#4756 FieldType 계열과 같은 계약).
+    #[test]
+    fn page_starts_on_rejects_values_outside_the_enum() {
+        assert_eq!(PageStartsOn::from_hwp5(3), PageStartsOn::Both);
+        assert_eq!(PageStartsOn::from_hwp5(u32::MAX), PageStartsOn::Both);
+        assert_eq!(PageStartsOn::from_hwpx("SOMETHING"), PageStartsOn::Both);
+        for v in [PageStartsOn::Both, PageStartsOn::Even, PageStartsOn::Odd] {
+            assert_eq!(PageStartsOn::from_hwp5(v.to_hwp5()), v);
+            assert_eq!(PageStartsOn::from_hwpx(v.as_hwpx()), v);
+        }
     }
 
     /// 찾아보기 표식 라운드트립 — 키와 8유닛 자리가 함께 살아야 한다.

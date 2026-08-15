@@ -73,6 +73,14 @@ pub fn serialize_control(
                 &serialize_page_hide(ph),
             ));
         }
+        // 쪽 번호 시작 쪽 — payload 는 u32 하나뿐이다(실측 102건 전부 8바이트).
+        Control::PageNumCtrl(pnc) => {
+            records.push(make_ctrl_record(
+                tags::CTRL_PAGE_NUM_CTRL,
+                level,
+                &pnc.page_starts_on.to_hwp5().to_le_bytes(),
+            ));
+        }
         Control::IndexMark(im) => {
             records.push(make_ctrl_record(
                 tags::CTRL_INDEX_MARK,

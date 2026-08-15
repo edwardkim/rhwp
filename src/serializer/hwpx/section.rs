@@ -24,7 +24,7 @@ use quick_xml::Writer;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, CharOverlap, Control, Equation, Field, NewNumber, PageHide,
-    PageNumberPos, Ruby, EQUATION_LINE_MODE_BIT,
+    PageNumCtrl, PageNumberPos, PageStartsOn, Ruby, EQUATION_LINE_MODE_BIT,
 };
 use crate::model::document::{Document, Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
@@ -1640,6 +1640,7 @@ pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
             | Control::Header(_)
             | Control::Footer(_)
             | Control::AutoNumber(_)
+            | Control::PageNumCtrl(_)
     )
 }
 
@@ -1771,6 +1772,10 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         }
         Control::PageHide(ph) => out.push_str(&render_page_hiding(ph)),
         Control::PageNumberPos(pn) => out.push_str(&render_page_num(pn)),
+        Control::PageNumCtrl(pnc) => out.push_str(&format!(
+            r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{}"/></hp:ctrl>"#,
+            pnc.page_starts_on.as_hwpx()
+        )),
         Control::NewNumber(nn) => out.push_str(&render_new_num(nn)),
         Control::Header(h) => out.push_str(&render_header(h, ctx)),
         Control::Footer(f) => out.push_str(&render_footer(f, ctx)),
@@ -3106,6 +3111,33 @@ mod tests {
             !xml.contains(r#"formatType="CIRCLE_DIGIT""#),
             "CIRCLE_DIGIT 오탈자 잔존 금지: {xml}"
         );
+    }
+
+    /// 쪽 번호 시작 쪽 컨트롤(`pgct`)은 `<hp:ctrl><hp:pageNumCtrl>` 로 나가야 한다.
+    ///
+    /// 구역 속성의 `pageStartsOn`(`<hp:secPr>`)과는 다른 자리다 — 이쪽은 문단 위
+    /// 8유닛 슬롯을 차지하는 컨트롤이라, 방출하지 않으면 축이 그만큼 짧아진다.
+    #[test]
+    fn page_num_ctrl_is_emitted_as_a_ctrl_element() {
+        let mut ctx = SerializeContext::default();
+        for (want, text) in [
+            (PageStartsOn::Both, "BOTH"),
+            (PageStartsOn::Even, "EVEN"),
+            (PageStartsOn::Odd, "ODD"),
+        ] {
+            let mut out = String::new();
+            render_control_slot(
+                &mut out,
+                &Control::PageNumCtrl(PageNumCtrl {
+                    page_starts_on: want,
+                }),
+                &mut ctx,
+            );
+            assert_eq!(
+                out,
+                format!(r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{text}"/></hp:ctrl>"#)
+            );
+        }
     }
 
     /// 제목 차례 표시는 `<hp:t>` 안 인라인 요소로 되살아나야 한다 — 스키마상

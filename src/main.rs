@@ -10986,6 +10986,7 @@ fn control_kind(ctrl: &rhwp::model::control::Control) -> &'static str {
         Control::PageNumberPos(_) => "PageNumberPos",
         Control::Bookmark(_) => "Bookmark",
         Control::IndexMark(_) => "IndexMark",
+        Control::PageNumCtrl(_) => "PageNumCtrl",
         Control::Hyperlink(_) => "Hyperlink",
         Control::Ruby(_) => "Ruby",
         Control::CharOverlap(_) => "CharOverlap",
@@ -12276,6 +12277,9 @@ fn dump_controls(args: &[String]) -> i32 {
                             "{}찾아보기표식: \"{}\" / \"{}\"",
                             prefix, im.first_key, im.second_key
                         );
+                    }
+                    Control::PageNumCtrl(pnc) => {
+                        println!("{}쪽번호시작쪽: {}", prefix, pnc.page_starts_on.as_hwpx());
                     }
                     Control::Hyperlink(hl) => {
                         println!("{}하이퍼링크: \"{}\"", prefix, hl.url);
@@ -14581,6 +14585,7 @@ fn control_tag(c: &rhwp::model::control::Control) -> &'static str {
         Control::PageNumberPos(_) => "pgnp",
         Control::Bookmark(_) => "bokm",
         Control::IndexMark(_) => "idxm",
+        Control::PageNumCtrl(_) => "pgct",
         Control::Hyperlink(_) => "hlk",
         Control::Ruby(_) => "ruby",
         Control::CharOverlap(_) => "tcps",

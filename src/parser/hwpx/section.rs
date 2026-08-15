@@ -8,8 +8,8 @@ use quick_xml::Reader;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, Bookmark, CharOverlap, Control, Equation, Field, FieldType,
-    FormObject, FormType, HiddenComment, IndexMark, NewNumber, PageHide, PageNumberPos, Parameter,
-    ParameterList, Ruby, EQUATION_LINE_MODE_BIT,
+    FormObject, FormType, HiddenComment, IndexMark, NewNumber, PageHide, PageNumCtrl,
+    PageNumberPos, PageStartsOn, Parameter, ParameterList, Ruby, EQUATION_LINE_MODE_BIT,
 };
 use crate::model::document::{Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
@@ -4615,6 +4615,11 @@ fn parse_ctrl(
                         text_parts.push("\u{0002}".to_string());
                         skip_element(reader, b"pageHiding")?;
                     }
+                    b"pageNumCtrl" => {
+                        controls.push(Control::PageNumCtrl(parse_page_num_ctrl_attrs(ce)));
+                        text_parts.push("\u{0002}".to_string());
+                        skip_element(reader, b"pageNumCtrl")?;
+                    }
                     b"pageNum" => {
                         let pn = parse_page_num_attrs(ce);
                         controls.push(Control::PageNumberPos(pn));
@@ -4661,6 +4666,10 @@ fn parse_ctrl(
                     b"pageHiding" => {
                         let ph = parse_page_hiding_attrs(ce);
                         controls.push(Control::PageHide(ph));
+                        text_parts.push("\u{0002}".to_string());
+                    }
+                    b"pageNumCtrl" => {
+                        controls.push(Control::PageNumCtrl(parse_page_num_ctrl_attrs(ce)));
                         text_parts.push("\u{0002}".to_string());
                     }
                     b"pageNum" => {
@@ -4842,6 +4851,18 @@ fn parse_index_mark_element(reader: &mut Reader<&[u8]>) -> Result<IndexMark, Hwp
         buf.clear();
     }
     Ok(im)
+}
+
+/// `<hp:pageNumCtrl pageStartsOn="BOTH|EVEN|ODD"/>` (ParaList XML schema.xml:134)
+fn parse_page_num_ctrl_attrs(e: &quick_xml::events::BytesStart) -> PageNumCtrl {
+    let mut pnc = PageNumCtrl::default();
+    for attr in e.attributes().flatten() {
+        if attr.key.as_ref() == b"pageStartsOn" {
+            pnc.page_starts_on =
+                PageStartsOn::from_hwpx(&String::from_utf8_lossy(&attr.value).to_uppercase());
+        }
+    }
+    pnc
 }
 
 fn parse_bookmark_attrs(e: &quick_xml::events::BytesStart) -> Bookmark {

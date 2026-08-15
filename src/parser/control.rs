@@ -12,8 +12,8 @@ use std::collections::HashMap;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, Bookmark, CharOverlap, Control, Equation, Field, FieldType,
-    FormObject, FormType, HiddenComment, IndexMark, NewNumber, PageHide, PageNumberPos,
-    UnknownControl,
+    FormObject, FormType, HiddenComment, IndexMark, NewNumber, PageHide, PageNumCtrl,
+    PageNumberPos, PageStartsOn, UnknownControl,
 };
 use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
@@ -46,6 +46,7 @@ pub fn parse_control(ctrl_id: u32, ctrl_data: &[u8], child_records: &[Record]) -
         tags::CTRL_PAGE_HIDE => parse_page_hide(ctrl_data),
         tags::CTRL_BOOKMARK => parse_bookmark(ctrl_data),
         tags::CTRL_INDEX_MARK => parse_index_mark(ctrl_data),
+        tags::CTRL_PAGE_NUM_CTRL => parse_page_num_ctrl(ctrl_data),
         tags::CTRL_TCPS => parse_char_overlap(ctrl_data),
         tags::CTRL_EQUATION => parse_equation_control(ctrl_data, child_records),
         tags::CTRL_FORM => parse_form_control(ctrl_data, child_records),
@@ -723,6 +724,20 @@ fn parse_bookmark(ctrl_data: &[u8]) -> Control {
         }
     }
     Control::Bookmark(bm)
+}
+
+/// 쪽 번호 시작 쪽 파싱 ('pgct')
+///
+/// ctrl_data 는 `u32` 하나다(실측 11문서·102건 전부 8바이트 CTRL_HEADER).
+fn parse_page_num_ctrl(ctrl_data: &[u8]) -> Control {
+    let raw = if ctrl_data.len() >= 4 {
+        u32::from_le_bytes([ctrl_data[0], ctrl_data[1], ctrl_data[2], ctrl_data[3]])
+    } else {
+        0
+    };
+    Control::PageNumCtrl(PageNumCtrl {
+        page_starts_on: PageStartsOn::from_hwp5(raw),
+    })
 }
 
 /// 찾아보기 표식 파싱 ('idxm')

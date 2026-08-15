@@ -791,6 +791,7 @@ fn sweep_control(base: &str, a: &Control, b: &Control, out: &mut DivergenceColle
         (PageHide(x), PageHide(y)) => cmp_debug(base, x, y, out),
         (Equation(x), Equation(y)) => cmp_debug(base, x, y, out),
         (IndexMark(x), IndexMark(y)) => cmp_debug(base, x, y, out),
+        (PageNumCtrl(x), PageNumCtrl(y)) => cmp_debug(base, x, y, out),
         (Unknown(x), Unknown(y)) => cmp_debug(base, x, y, out),
         // 컨트롤 종류 자체가 달라진 경우 — 왕복 소실 중 가장 큰 종류.
         _ => push_leaf(base, control_kind(a), control_kind(b), out),
@@ -815,6 +816,7 @@ fn control_kind(c: &Control) -> &'static str {
         PageNumberPos(_) => "PageNumberPos",
         Bookmark(_) => "Bookmark",
         IndexMark(_) => "IndexMark",
+        PageNumCtrl(_) => "PageNumCtrl",
         Hyperlink(_) => "Hyperlink",
         Ruby(_) => "Ruby",
         CharOverlap(_) => "CharOverlap",

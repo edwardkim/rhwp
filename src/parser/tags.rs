@@ -182,6 +182,8 @@ pub const CTRL_AUTO_NUMBER: u32 = ctrl_id(b"atno");
 pub const CTRL_NEW_NUMBER: u32 = ctrl_id(b"nwno");
 /// 쪽 번호 위치
 pub const CTRL_PAGE_NUM_POS: u32 = ctrl_id(b"pgnp");
+/// 쪽 번호 시작 쪽 제어 — `<hp:pageNumCtrl pageStartsOn>` 에 대응한다.
+pub const CTRL_PAGE_NUM_CTRL: u32 = ctrl_id(b"pgct");
 /// 감추기
 pub const CTRL_PAGE_HIDE: u32 = ctrl_id(b"pghd");
 /// 찾아보기 표식
@@ -324,6 +326,7 @@ pub fn ctrl_name(ctrl_id: u32) -> &'static str {
         CTRL_AUTO_NUMBER => "AutoNumber",
         CTRL_NEW_NUMBER => "NewNumber",
         CTRL_PAGE_NUM_POS => "PageNumPos",
+        CTRL_PAGE_NUM_CTRL => "PageNumCtrl",
         CTRL_PAGE_HIDE => "PageHide",
         CTRL_INDEX_MARK => "IndexMark",
         CTRL_TITLE_MARK_IGNORE_ON => "TitleMark(ignore)",
