@@ -44,6 +44,12 @@ jobs:
       - name: Build current rhwp
         run: cargo build --bin rhwp
 
+      # 판별력 감사 — old/new 비교 이전의 무결성 전제. 벤치마크 자체에 약한
+      # 오라클(일 안 한 제출이 통과하는 false-pass)이 하나라도 있으면 exit 1 로
+      # 릴리스를 차단한다. 표면 변화 판정과 달리 이건 '리뷰 신호'가 아니라 결함이다.
+      - name: Discrimination audit (weak-oracle gate)
+        run: python3 gym/tools/discriminate.py --bin target/debug/rhwp
+
       - name: Build old rhwp (if ref given)
         if: ${{ github.event.inputs.old_ref != '' }}
         run: |
