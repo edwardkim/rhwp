@@ -467,9 +467,28 @@ function knownKoPubCdn(font) {
   };
 }
 
+function knownKoPubWorldCdn(font) {
+  const match = compact(font).match(/^kopubworld(dotum|batang|돋움체|바탕체)(light|medium|bold)$/u);
+  if (!match) return null;
+
+  const family = match[1] === 'dotum' || match[1] === '돋움체' ? 'Dotum' : 'Batang';
+  const weight = `${match[2][0].toUpperCase()}${match[2].slice(1)}`;
+  return {
+    packageType: 'npm',
+    packageName: 'font-kopubworld',
+    version: '1.0.3',
+    file: `fonts/KoPubWorld-${family}-${weight}.otf`,
+    license: 'KOPUS-Custom (사용 등록 후 상업적·온라인 사용 가능)',
+    delivery: 'jsDelivr npm',
+    note: 'KOPUS 공식 공개 글꼴 안내에 따른 KoPubWorld 요청 굵기 일치 OTF 확인',
+  };
+}
+
 function knownCdn(font) {
   const koPub = knownKoPubCdn(font);
   if (koPub) return koPub;
+  const koPubWorld = knownKoPubWorldCdn(font);
+  if (koPubWorld) return koPubWorld;
 
   const key = familyKey(font);
   const batang = new Set(['함초롬바탕', '함초롱바탕', '한컴바탕', '새바탕'].map(familyKey));
