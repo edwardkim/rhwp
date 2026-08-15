@@ -72,6 +72,7 @@ jobs:
       contents: read
       checks: read
       pull-requests: read
+      statuses: read
     outputs:
       fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
       reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
@@ -242,6 +243,59 @@ jobs:
                 })[0];
             }
 
+            async function hasTrustedReviewReuse(pr) {
+              for (let attempt = 0; attempt < 7; attempt += 1) {
+                const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
+                  owner,
+                  repo,
+                  ref: pr.head.sha,
+                  per_page: 100,
+                });
+                const latest = statuses
+                  .filter((status) => status.context === 'CI Impact Policy')
+                  .sort((left, right) => Number(right.id || 0) - Number(left.id || 0))[0];
+                if (latest) {
+                  const fields = new Map(String(latest.description || '').split(';').map((part) => {
+                    const separator = part.indexOf('=');
+                    return separator > 0
+                      ? [part.slice(0, separator), part.slice(separator + 1)]
+                      : ['', ''];
+                  }));
+                  const expectedFields = [
+                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
+                  ];
+                  const target = String(latest.target_url || '').match(/\/actions\/runs\/(\d+)$/);
+                  if (
+                    latest.state === 'success'
+                    && latest.creator?.login === 'github-actions[bot]'
+                    && fields.size === expectedFields.length
+                    && expectedFields.every((field) => fields.has(field))
+                    && fields.get('v') === '5'
+                    && fields.get('rfp') === '1'
+                    && fields.get('b') === pr.base.sha
+                    && target
+                  ) {
+                    const response = await github.rest.actions.getWorkflowRun({
+                      owner,
+                      repo,
+                      run_id: Number(target[1]),
+                    });
+                    const run = response.data;
+                    if (
+                      run.name === 'CI Impact Policy Controller'
+                      && String(run.path || '').split('@')[0] === '.github/workflows/ci-impact-policy.yml'
+                      && run.event === 'pull_request_target'
+                      && run.repository?.full_name === `${owner}/${repo}`
+                      && !(run.status === 'completed' && run.conclusion !== 'success')
+                    ) return true;
+                  }
+                  return false;
+                }
+                if (attempt < 6) await new Promise((resolve) => setTimeout(resolve, 5000));
+              }
+              return false;
+            }
+
             async function buildResult(candidateSha, pr) {
               const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
                 owner,
@@ -317,9 +371,12 @@ jobs:
                 isCiExecutionPath(file.filename)
                 || isCiExecutionPath(file.previous_filename || '')
               ));
-              if (hasCiExecutionSurfaceChange) {
+              if (hasCiExecutionSurfaceChange && !await hasTrustedReviewReuse(pr)) {
                 setResult(false, 'ci-execution-surface-change');
                 return;
+              }
+              if (hasCiExecutionSurfaceChange) {
+                core.info('trusted controller authorized enforcement-change review reuse');
               }
               if (prFiles.length > 0 && prFiles.every((file) => isAllowedReviewPath(file))) {
                 core.info(`all PR files are review-only; using base SHA ${pr.base.sha}`);

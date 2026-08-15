@@ -131,6 +131,8 @@ jobs:
             core.setOutput('head_branch', pull.head.ref);
             core.setOutput('head_repository', pull.head.repo?.full_name || '');
             core.setOutput('author_permission', authorPermission);
+            core.setOutput('pull_commits', String(pull.commits));
+            core.setOutput('pull_created_at', pull.created_at);
 
       # SECURITY: never replace this ref with pull.head.sha, a merge ref, or github.sha.
       - name: Check out trusted base policy implementation
@@ -145,6 +147,7 @@ jobs:
           sparse-checkout: |
             scripts/ci-impact-classifier.cjs
             scripts/ci-impact-policy.cjs
+            scripts/verify_review_only_merge_resolution.py
           sparse-checkout-cone-mode: false
 
       # SECURITY: workflow runs, jobs, and steps are data only. No PR artifact or code is used.
@@ -161,13 +164,14 @@ jobs:
           HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
           HEAD_BRANCH: ${{ steps.resolve.outputs.head_branch }}
           HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}
+          PULL_COMMITS: ${{ steps.resolve.outputs.pull_commits }}
         with:
           retries: 3
           script: |
             const fs = require('node:fs');
             const path = require('node:path');
             const { owner, repo } = context.repo;
-            const { selectLatestWorkflowRun } = require(path.join(
+            const { selectLatestWorkflowRun, selectReviewOnlyCandidate } = require(path.join(
               process.env.GITHUB_WORKSPACE,
               'trusted-base/scripts/ci-impact-policy.cjs',
             ));
@@ -192,13 +196,82 @@ jobs:
               status: file.status,
             }));
 
+            let reviewSelection = {
+              eligible: false,
+              reason: 'review-reuse-not-evaluated',
+              candidateSha: '',
+            };
+            if (process.env.HEAD_REPOSITORY === process.env.GITHUB_REPOSITORY) {
+              try {
+                const commitSummaries = await github.paginate(github.rest.pulls.listCommits, {
+                  owner,
+                  repo,
+                  pull_number: Number(process.env.PULL_NUMBER),
+                  per_page: 100,
+                });
+                if (commitSummaries.length !== Number(process.env.PULL_COMMITS)) {
+                  reviewSelection = {
+                    eligible: false,
+                    reason: 'pull-commit-list-incomplete',
+                    candidateSha: '',
+                  };
+                } else {
+                  const commits = [];
+                  for (const summary of commitSummaries) {
+                    let commit = null;
+                    const commitFiles = [];
+                    const pages = github.paginate.iterator(github.rest.repos.getCommit, {
+                      owner,
+                      repo,
+                      ref: summary.sha,
+                      per_page: 100,
+                    });
+                    for await (const response of pages) {
+                      if (!commit) commit = response.data;
+                      commitFiles.push(...(response.data.files || []));
+                    }
+                    if (!commit) throw new Error(`Commit metadata unavailable: ${summary.sha}`);
+                    commits.push({
+                      sha: commit.sha,
+                      parents: (commit.parents || []).map((parent) => ({ sha: parent.sha })),
+                      files: commitFiles.map((file) => ({
+                        filename: file.filename,
+                        previous_filename: file.previous_filename || '',
+                        status: file.status,
+                      })),
+                    });
+                  }
+                  reviewSelection = selectReviewOnlyCandidate(commits, process.env.BASE_SHA);
+                }
+              } catch (error) {
+                core.warning(`Review lineage collection failed; reuse is disabled. ${error.message}`);
+                reviewSelection = {
+                  eligible: false,
+                  reason: 'review-lineage-collection-error',
+                  candidateSha: '',
+                };
+              }
+            } else {
+              reviewSelection.reason = 'review-reuse-requires-same-repository';
+            }
+            core.setOutput('review_candidate_sha', reviewSelection.candidateSha || '');
+            core.setOutput(
+              'base_merge_sha',
+              reviewSelection.baseMergeBridge?.mergeSha || '',
+            );
+            core.setOutput(
+              'source_parent_sha',
+              reviewSelection.baseMergeBridge?.sourceParentSha || '',
+            );
+
             const evidence = {};
-            if (process.env.MODE === 'audit') {
-              const workflowPaths = {
-                CI: '.github/workflows/ci.yml',
-                CodeQL: '.github/workflows/codeql.yml',
-                'Render Diff': '.github/workflows/render-diff.yml',
-              };
+            const reviewEvidence = {};
+            const workflowPaths = {
+              CI: '.github/workflows/ci.yml',
+              CodeQL: '.github/workflows/codeql.yml',
+              'Render Diff': '.github/workflows/render-diff.yml',
+            };
+            if (process.env.MODE === 'audit' || reviewSelection.eligible) {
               let runs = [];
               try {
                 runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
@@ -214,18 +287,19 @@ jobs:
               } catch (error) {
                 core.warning(`Workflow run collection failed; audit will remain pending. ${error.message}`);
               }
-              for (const [name, expectedPath] of Object.entries(workflowPaths)) {
+              async function collectRun(name, expectedPath, headSha, allowPriorBase) {
                 const run = selectLatestWorkflowRun(runs, {
                   name,
                   path: expectedPath,
                   pullNumber: Number(process.env.PULL_NUMBER),
                   baseRef: process.env.BASE_REF,
                   baseSha: process.env.BASE_SHA,
-                  headSha: process.env.HEAD_SHA,
+                  headSha,
                   headBranch: process.env.HEAD_BRANCH,
                   headRepository: process.env.HEAD_REPOSITORY,
+                  allowPriorBase,
                 });
-                if (!run) continue;
+                if (!run) return null;
                 let jobs = [];
                 let jobsCollected = false;
                 try {
@@ -243,7 +317,7 @@ jobs:
                     + `audit will remain pending. ${error.message}`,
                   );
                 }
-                evidence[name] = {
+                const collected = {
                   run: {
                     name: run.name,
                     path: String(run.path || '').split('@')[0],
@@ -255,6 +329,8 @@ jobs:
                     headRepository: run.head_repository?.full_name || '',
                     pullNumbers: (run.pull_requests || []).map((pull) => pull.number),
                     baseShas: (run.pull_requests || []).map((pull) => pull.base?.sha || ''),
+                    runStartedAt: run.run_started_at || run.created_at || '',
+                    createdAt: run.created_at || '',
                   },
                   jobsCollected,
                   jobs: jobs.map((job) => ({
@@ -268,6 +344,55 @@ jobs:
                     })),
                   })),
                 };
+                if (name === 'CodeQL' && allowPriorBase) {
+                  try {
+                    const checks = await github.paginate(github.rest.checks.listForRef, {
+                      owner,
+                      repo,
+                      ref: headSha,
+                      filter: 'latest',
+                      per_page: 100,
+                    });
+                    const check = checks
+                      .filter((candidate) => (
+                        candidate.app?.slug === 'github-advanced-security'
+                        && candidate.name === 'CodeQL'
+                        && candidate.head_sha === headSha
+                      ))
+                      .sort((left, right) => (
+                        Date.parse(right.started_at || right.created_at || 0)
+                        - Date.parse(left.started_at || left.created_at || 0)
+                      ))[0];
+                    if (check) {
+                      collected.securityCheck = {
+                        appSlug: check.app?.slug || '',
+                        name: check.name,
+                        headSha: check.head_sha,
+                        status: check.status,
+                        conclusion: check.conclusion || '',
+                        startedAt: check.started_at || check.created_at || '',
+                      };
+                    }
+                  } catch (error) {
+                    core.warning(`Could not collect candidate CodeQL policy check. ${error.message}`);
+                  }
+                }
+                return collected;
+              }
+              for (const [name, expectedPath] of Object.entries(workflowPaths)) {
+                if (process.env.MODE === 'audit') {
+                  const current = await collectRun(name, expectedPath, process.env.HEAD_SHA, false);
+                  if (current) evidence[name] = current;
+                }
+                if (reviewSelection.eligible) {
+                  const prior = await collectRun(
+                    name,
+                    expectedPath,
+                    reviewSelection.candidateSha,
+                    true,
+                  );
+                  if (prior) reviewEvidence[name] = prior;
+                }
               }
             }
 
@@ -284,6 +409,49 @@ jobs:
               path.join(workspace, '.ci-impact-workflows.json'),
               JSON.stringify(evidence),
             );
+            fs.writeFileSync(
+              path.join(workspace, '.ci-impact-review-reuse.json'),
+              JSON.stringify({
+                lineageEligible: reviewSelection.eligible === true,
+                reason: reviewSelection.reason,
+                candidateSha: reviewSelection.candidateSha || '',
+                trailingCount: reviewSelection.trailingCount || 0,
+                baseMergeBridge: reviewSelection.baseMergeBridge || null,
+                workflows: reviewEvidence,
+              }),
+            );
+
+      # SECURITY: fetches same-repository commit objects as data; it never checks out or executes PR code.
+      - name: Verify trusted current-base merge bridge
+        id: verify-review-merge
+        if: >-
+          ${{
+            steps.resolve.outputs.active == 'true'
+            && steps.collect.outputs.base_merge_sha != ''
+          }}
+        continue-on-error: true
+        shell: bash
+        env:
+          BASE_MERGE_SHA: ${{ steps.collect.outputs.base_merge_sha }}
+          SOURCE_PARENT_SHA: ${{ steps.collect.outputs.source_parent_sha }}
+          CURRENT_BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+          printf 'verified=false\nreason=current-base-merge-verification-failed\n' >> "$GITHUB_OUTPUT"
+          git -C trusted-base fetch --no-tags --no-recurse-submodules origin \
+            "${HEAD_SHA}" "${BASE_MERGE_SHA}" "${SOURCE_PARENT_SHA}"
+          if expected_tree="$(git -C trusted-base merge-tree --write-tree \
+            "${SOURCE_PARENT_SHA}" "${CURRENT_BASE_SHA}" 2>/dev/null)"; then
+            expected_tree="${expected_tree%%$'\n'*}"
+            actual_tree="$(git -C trusted-base show -s --format=%T "${BASE_MERGE_SHA}")"
+            if [[ "${expected_tree}" == "${actual_tree}" ]]; then
+              printf 'verified=true\nreason=current-base-merge-tree-match\n' >> "$GITHUB_OUTPUT"
+            fi
+          elif reason="$(python3 trusted-base/scripts/verify_review_only_merge_resolution.py \
+            --repository trusted-base --base-sha "${CURRENT_BASE_SHA}" "${BASE_MERGE_SHA}")"; then
+            printf 'verified=true\nreason=%s\n' "${reason}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Classify with trusted base implementation
         id: classify
@@ -308,7 +476,9 @@ jobs:
           HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}
           AUTHOR_PERMISSION: ${{ steps.resolve.outputs.author_permission }}
           PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
+          PULL_CREATED_AT: ${{ steps.resolve.outputs.pull_created_at }}
           CLASSIFY_OUTCOME: ${{ steps.classify.outcome }}
+          REVIEW_MERGE_VERIFIED: ${{ steps.verify-review-merge.outputs.verified || 'false' }}
         with:
           script: |
             const fs = require('node:fs');
@@ -348,6 +518,23 @@ jobs:
                 core.warning(`Workflow evidence unavailable; audit will remain pending. ${error.message}`);
               }
             }
+            let reviewReuse = {
+              lineageEligible: false,
+              reason: 'review-reuse-input-unavailable',
+              candidateSha: '',
+              workflows: {},
+            };
+            try {
+              reviewReuse = JSON.parse(fs.readFileSync(
+                path.join(workspace, '.ci-impact-review-reuse.json'),
+                'utf8',
+              ));
+              reviewReuse.mergeTreeVerified = reviewReuse.baseMergeBridge
+                ? process.env.REVIEW_MERGE_VERIFIED === 'true'
+                : true;
+            } catch (error) {
+              core.warning(`Review reuse evidence unavailable; forcing full. ${error.message}`);
+            }
             const input = {
               repository: process.env.GITHUB_REPOSITORY,
               pullRequest: {
@@ -358,11 +545,16 @@ jobs:
                 headBranch: process.env.HEAD_BRANCH,
                 headRepository: process.env.HEAD_REPOSITORY,
                 authorPermission: process.env.AUTHOR_PERMISSION,
+                createdAt: process.env.PULL_CREATED_AT,
               },
               files: classifierInput.files,
               classification,
-              forceFullReason: classifierInput.forceFullReason,
+              forceFullReason: classifierInput.forceFullReason
+                || (process.env.CLASSIFY_OUTCOME === 'success'
+                  ? ''
+                  : 'trusted-classifier-unavailable'),
               controllerAvailable: true,
+              reviewReuse,
             };
             if (process.env.MODE === 'audit') {
               // Keep the triggering workflow's SHA independent from the live PR SHA.
@@ -395,6 +587,9 @@ jobs:
           RENDER_EXPECTED: ${{ steps.policy.outputs.render_diff_run_expected || 'true' }}
           AUDIT_CONCLUSION: ${{ steps.policy.outputs.audit_conclusion || 'n/a' }}
           REASON: ${{ steps.policy.outputs.audit_reason || steps.policy.outputs.reason || 'trusted-policy-unavailable' }}
+          REVIEW_FAST_PASS: ${{ steps.policy.outputs.trusted_review_fast_pass || 'false' }}
+          REVIEW_CANDIDATE: ${{ steps.policy.outputs.review_candidate_sha || '' }}
+          REVIEW_REASON: ${{ steps.policy.outputs.review_reuse_reason || 'review-reuse-unavailable' }}
         run: |
           {
             echo '### Trusted CI impact policy'
@@ -404,6 +599,9 @@ jobs:
             printf -- '- expected workflows (CI/CodeQL/Render Diff): %s/%s/%s\n' \
               "${CI_EXPECTED}" "${CODEQL_EXPECTED}" "${RENDER_EXPECTED}"
             printf -- '- aggregate conclusion: %s\n' "${AUDIT_CONCLUSION}"
+            printf -- '- trusted review fast-pass: %s\n' "${REVIEW_FAST_PASS}"
+            printf -- '- review candidate: %s\n' "${REVIEW_CANDIDATE}"
+            printf -- '- review reuse reason: %s\n' "${REVIEW_REASON}"
             printf -- '- reason: %s\n' "${REASON}"
           } >> "${GITHUB_STEP_SUMMARY}"
 
@@ -422,6 +620,7 @@ jobs:
           AUDIT_CONCLUSION: ${{ steps.policy.outputs.audit_conclusion || 'failure' }}
           AUDIT_REASON: ${{ steps.policy.outputs.audit_reason || 'trusted-audit-unavailable' }}
           DESCRIPTION: ${{ steps.policy.outputs.status_description || 'trusted policy unavailable' }}
+          REVIEW_FAST_PASS: ${{ steps.policy.outputs.trusted_review_fast_pass || 'false' }}
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -450,7 +649,15 @@ jobs:
                 process.env.RENDER_EXPECTED,
               ].every((value) => value === 'false');
               if (process.env.DECISION === 'blocked') state = 'failure';
+              else if (process.env.REVIEW_FAST_PASS === 'true') state = 'success';
               else if (noWorkflowExpected) state = 'success';
+            } else if (
+              process.env.REVIEW_FAST_PASS === 'true'
+              && process.env.AUDIT_CONCLUSION === 'pending'
+            ) {
+              // Candidate truth is already complete. Keep the authorization visible while
+              // current-head no-op aggregates finish; a later failed audit still overwrites it.
+              state = 'success';
             } else if (new Set(['pending', 'success', 'failure']).has(
               process.env.AUDIT_CONCLUSION,
             )) {

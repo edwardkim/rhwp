@@ -146,6 +146,11 @@ base 반영을 강제하지 않는 정책이면, 같은 PR·같은 source reposi
 재사용해 trailing review-only commit을 fast-pass할 수 있다. contributor가 source·test를 새로 push한 경우에는
 그 새 code head의 CI를 먼저 통과시킨 뒤 review 기록을 한 번만 이어 붙인다.
 
+PR 자체가 workflow·action·CI impact 정책을 바꾼 경우에는 PR head의 이 판단을 그대로 신뢰하지 않는다.
+기본 브랜치 trusted controller가 exact Full candidate와 review-only tail을 증명한 same-repository PR만
+[review-only fast-pass의 A.1](pr_review/review_only_fast_pass.md#a1-ci-실행-정책을-바꾼-pr의-trusted-재사용)에
+따라 예외 처리한다. controller가 아직 `main`에 활성화되지 않았거나 status가 불완전하면 Full CI를 기다린다.
+
 단, GitHub의 `MERGEABLE` 표시는 텍스트 충돌이 없다는 참고값일 뿐 최신 `devel`과의 컴파일·테스트 호환을
 보장하지 않는다. source가 공용 struct·trait·API를 바꾼 뒤 최신 `devel`이 그 API의 초기화·호출부를
 추가했다면 current-base merge tree의 CI가 실패할 수 있다. 이 사실이 `git merge-tree` 또는 최신 PR head의
