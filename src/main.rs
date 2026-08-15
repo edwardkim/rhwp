@@ -397,6 +397,7 @@ fn main() {
         Some("thumbnail") => exit_with(extract_thumbnail(&args[2..])),
         Some("fields") => exit_with(show_fields(&args[2..])),
         Some("explain") => exit_with(explain_document(&args[2..])),
+        Some("explore") => exit_with(explore_document(&args[2..])),
         Some("edit") => exit_with(run_edit(&args[2..])),
         Some("run") => exit_with(cmd_run_plan(&args[2..])),
         Some("replay") => exit_with(cmd_replay(&args[2..])),
@@ -613,6 +614,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 | "hwp_extract_data"
                 | "hwp_fields"
                 | "hwp_explain"
+                | "hwp_explore"
                 | "hwp_inspect_hidden_text"
                 | "hwp_inspect_injection"
                 | "hwp_inspect_unicode"
@@ -1152,6 +1154,25 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "endnoteCount",
                 "encrypted",
                 "summary",
+            ],
+        ),
+        // [#gym] 어포던스 라우터 — hwp_explain(문서가 무엇인지)의 자매 도구로, 이 문서로
+        // 무엇을 할 수 있는지 순위 매긴 행동 메뉴를 준다. 새 판정 없이 기존 조회 개수에서 유도.
+        tool(
+            "hwp_explore",
+            "이 문서로 무엇을 할 수 있는지 — 적용 가능한 rhwp 행동을 순위 매긴 메뉴(표→CSV·누름틀 채우기·구조 추출·차트→CSV·보안 스윕·요약)로 라우팅한다. 처음 보는 문서 앞에서 '어떤 명령이 이 문서에 맞는지'를 매번 뒤지지 않도록, 각 항목이 근거(why)·다음 명령(command)·스킬(skill)·확신도를 함께 준다. 기존 조회 개수에서 유도한 정직한 휴리스틱이라 제안일 뿐 완전성을 보장하지 않는다.",
+            path_schema(serde_json::json!({})),
+            "explore",
+            serde_json::json!(["explore", "{path}", "--json"]),
+            &[
+                "schemaVersion",
+                "source",
+                "format",
+                "pageCount",
+                "encrypted",
+                "affordanceCount",
+                "menu",
+                "note",
             ],
         ),
         // [#3787 S3] 신뢰할 수 없는 문서를 LLM 에 먹이기 전에 부르는 도구.
@@ -3173,6 +3194,25 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "summary",
             ],
         ),
+        // [#gym] 어포던스 라우터 — explain(문서가 무엇인지)·capabilities(도구 일반)와
+        // 구별되는 세 번째 축: 이 문서로 무엇을 할 수 있는지. 기존 조회 개수에서 유도.
+        cmd_json(
+            "explore",
+            "query",
+            "이 문서로 할 수 있는 rhwp 행동을 순위 매긴 메뉴로 라우팅(표·누름틀·구조·차트·보안·요약)",
+            false,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "format",
+                "pageCount",
+                "encrypted",
+                "affordanceCount",
+                "menu",
+                "note",
+            ],
+        ),
         // [#3787 S2/S3/S4] 문서를 읽기만 하는 보안 검사 명령군. 세 하위 명령의 플래그와
         // 봉투 필드는 합집합으로 광고해 capabilities 자체가 어느 축도 숨기지 않게 한다.
         cmd_json(
@@ -4221,6 +4261,14 @@ fn print_help() {
     println!("      fields 를 조합한 템플릿 조립일 뿐 LLM 판정은 없다 (#3828)");
     println!();
     println!("      --json                  요약 봉투를 JSON으로 stdout에 출력");
+    println!();
+    println!("  explore <파일.hwp|파일.hwpx|파일.hml> [--json]");
+    println!("      이 문서로 무엇을 할 수 있는지 — 적용 가능한 rhwp 행동을 순위 매긴 메뉴로");
+    println!("      라우팅한다(표·누름틀·구조·차트·보안·요약). 각 항목은 근거·다음 명령·");
+    println!("      스킬·확신도를 준다. explain(문서가 무엇인지)과 구별되는 어포던스 축이며,");
+    println!("      기존 조회 개수에서 유도한 정직한 휴리스틱이라 완전성을 보장하지 않는다");
+    println!();
+    println!("      --json                  어포던스 메뉴 봉투를 JSON으로 stdout에 출력");
     println!();
     println!("  capabilities [--mcp]");
     println!("      도구 자기서술 JSON 출력 (명령·플래그·JSON 계약·종료 코드) — 에이전트용");
@@ -25677,6 +25725,156 @@ fn explain_document(args: &[String]) -> i32 {
         encrypted,
     );
     println!("{summary}");
+    EXIT_OK
+}
+
+/// `rhwp explore <파일> [--json]` — 이 문서로 **무엇을 할 수 있는지** 어포던스 메뉴를 라우팅한다.
+///
+/// [#gym] 새 판정 로직이 아니라 기존 조회(`table_extract`·`field_query`·`structure`·
+/// `chart_extract`·`explain::count_notes`·`injection_scan`·`hidden_text`)가 이미 센
+/// 개수에서 유도한 결정론적 메뉴다 — 순위·근거·명령 매핑 로직은
+/// `document_core::queries::explore` 에 있다. `explain`(문서가 무엇인지)·
+/// `capabilities`(도구 일반)와 달리 explore 는 **이 문서로 무엇을 할 수 있는지**를
+/// 라우팅한다. 정직한 휴리스틱이라 제안일 뿐 완전성을 보장하지 않는다. 암호 문서는
+/// `load_document` 가 다른 명령과 같은 규약으로 처리한다.
+fn explore_document(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::chart_extract::collect_charts;
+    use rhwp::document_core::queries::explore::{build_menu, DocFacts, HONESTY_NOTE};
+    use rhwp::document_core::queries::hidden_text::HiddenTextOptions;
+    use rhwp::document_core::queries::injection_scan as scan;
+    use rhwp::document_core::queries::structure::{build_structure, StructureMode};
+    use rhwp::document_core::queries::table_extract::extract_tables;
+
+    let mut json_mode = false;
+    let mut file_path: Option<&str> = None;
+    for arg in args {
+        match arg.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp explore <파일.hwp|파일.hwpx|파일.hml> [--json]");
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {file_path}: {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let detected_format = rhwp::parser::detect_format(&data);
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let document = doc.document();
+
+    let format_label = match detected_format {
+        rhwp::parser::FileFormat::Hwp => "HWP5",
+        rhwp::parser::FileFormat::Hwpx => "HWPX",
+        rhwp::parser::FileFormat::Hwp3 => "HWP3",
+        rhwp::parser::FileFormat::Hml => "HML",
+        rhwp::parser::FileFormat::DrmProtected => "DRM",
+        rhwp::parser::FileFormat::Empty => "빈 파일",
+        rhwp::parser::FileFormat::Unknown => "알 수 없음",
+    };
+
+    // 기존 공개 조회를 각각 한 번씩만 호출해 개수를 모은다 — 탐지기 재구현·재파싱 없음.
+    let tables = extract_tables(document);
+    let merged_table_count = tables
+        .iter()
+        .filter(|g| g.cells.iter().any(|c| c.row_span > 1 || c.col_span > 1))
+        .count();
+    let structure = build_structure(document, StructureMode::Auto);
+    let notes = rhwp::document_core::queries::explain::count_notes(document);
+    let injection_options = scan::InjectionScanOptions {
+        min_confidence: scan::Confidence::Low,
+        include_fields: true,
+        tool_names: mcp_tool_name_registry(),
+    };
+    let injection_signal_count = doc.scan_injection(&injection_options).len();
+    let hidden = doc.detect_hidden_text(&HiddenTextOptions::default());
+
+    let facts = DocFacts {
+        format_label: format_label.to_string(),
+        page_count: doc.page_count(),
+        para_count: document.sections.iter().map(|s| s.paragraphs.len()).sum(),
+        table_count: tables.len(),
+        merged_table_count,
+        field_count: doc.collect_all_fields().len(),
+        chart_count: collect_charts(document).len(),
+        structure_node_count: structure.node_count,
+        footnote_count: notes.footnote_count,
+        endnote_count: notes.endnote_count,
+        injection_signal_count,
+        hidden_text_count: hidden.hidden_text.len(),
+        encrypted: document.header.encrypted,
+    };
+
+    let menu = build_menu(&facts);
+
+    if json_mode {
+        let menu_json: Vec<serde_json::Value> = menu
+            .iter()
+            .map(|a| {
+                serde_json::json!({
+                    "affordance": a.affordance,
+                    "why": a.why,
+                    "command": a.command,
+                    "skill": a.skill,
+                    "confidence": a.confidence,
+                })
+            })
+            .collect();
+        let envelope = provenance::marked(
+            serde_json::json!({
+                "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                "source": file_path,
+                "format": format_label,
+                "pageCount": facts.page_count,
+                "encrypted": facts.encrypted,
+                "affordanceCount": menu.len(),
+                "menu": menu_json,
+                "note": HONESTY_NOTE,
+            }),
+            "explore",
+        );
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    // 기본 출력은 사람용 메뉴 — 기계 소비는 --json 이 담당한다.
+    println!(
+        "이 문서로 해 볼 수 있는 행동 ({format_label} 형식·{}쪽·어포던스 {}개):",
+        facts.page_count,
+        menu.len()
+    );
+    for (i, a) in menu.iter().enumerate() {
+        println!(
+            "  {}. [{}] {} — 스킬 {}",
+            i + 1,
+            a.confidence,
+            a.affordance,
+            a.skill
+        );
+        println!("      이유: {}", a.why);
+        println!("      명령: {}", a.command);
+    }
+    println!();
+    println!("{HONESTY_NOTE}");
     EXIT_OK
 }
 

@@ -808,6 +808,17 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        // [#gym] explore — 어포던스 메뉴 봉투. 증거(menu[].why)는 엔진이 센 개수라 문서
+        // 파생 문자열이 없다(untrustedContent:false). 본문·표·개요가 있는 main 을 써
+        // 오라클을 비지 않게 하고, 표지 존재·지도 정합만 확인한다.
+        Recipe {
+            command: "explore",
+            doc: Some(main.clone()),
+            args: vec![s("explore"), p(&main), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         Recipe {
             command: "edit",
             doc: Some(table.clone()),

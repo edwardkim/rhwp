@@ -87,6 +87,7 @@ pub const PROFILES: &[AgentProfile] = &[
         tools: &[
             "hwp_info",
             "hwp_explain",
+            "hwp_explore",
             "hwp_digest",
             "hwp_export_text",
             "hwp_export_structure",
@@ -96,6 +97,7 @@ pub const PROFILES: &[AgentProfile] = &[
         ],
         session_tools: None,
         recipe: &[
+            "처음 보는 문서면 hwp_explore 로 '이 문서로 무엇을 할 수 있는지' 행동 메뉴를 먼저 받는다",
             "hwp_explain 으로 메타·구조·표·누름틀을 한 봉투로, 또는 hwp_digest 로 메타·개요·발췌를 한 번에 파악",
             "hwp_export_structure 로 목차 확보 후 필요한 절만 hwp_export_text",
             "근거 위치는 hwp_search 로 쪽 번호까지",

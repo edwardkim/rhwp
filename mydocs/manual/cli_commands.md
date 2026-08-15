@@ -685,6 +685,37 @@ rhwp explain 편람.hwp
 rhwp explain 편람.hwp --json | jq '{format, pageCount, tables, fields}'
 ```
 
+### `explore <파일.hwp|파일.hwpx|파일.hml> [--json]`
+이 문서로 **무엇을 할 수 있는지**를 라우팅하는 어포던스 메뉴다. `explain` 이 문서가
+*무엇인지*를, `capabilities` 가 *도구 일반*을 서술한다면, `explore` 는 *이 문서*에
+적용 가능한 rhwp 행동만 골라 순위 매긴 메뉴로 준다 — 처음 보는 문서 앞에서 "70개
+명령 중 무엇이 이 문서에 맞는지"를 매번 뒤지지 않게 하는 놀이터 입구다.
+- 새 판정 로직이 아니라 기존 조회(`export-tables`·`fields`·`export-structure`·
+  `chart-to-csv`·`explain`(각주/미주)·`inspect injection`·`inspect hidden-text`)가
+  이미 센 개수에서 유도한 **결정론적** 메뉴다. LLM 판정은 없다.
+- 기본 출력은 사람용 메뉴. `--json` 이면 봉투 —
+  `{"schemaVersion":"1.0","source","format","pageCount","encrypted","affordanceCount","menu":[{"affordance","why","command","skill","confidence"}],"note"}`
+- `menu[]` 는 우선순위 내림차순이다. 있는 어포던스만 담기므로 **문서마다 메뉴가
+  다르다** — 표가 많은 문서는 `table-extract` 가, 서식은 `form-fill` 이, 주입 신호가
+  있으면 `security-sweep` 가 위로 온다. 아무 특수 신호가 없어도 `triage-overview`
+  한 갈래는 늘 담겨 메뉴가 비지 않는다.
+- 각 항목: `affordance`(안정 식별자), `why`(엔진이 센 개수 근거), `command`(다음에
+  실행할 명령 템플릿 — 경로 자리는 `<file>` 자리표시자), `skill`(다루는 스킬 이름),
+  `confidence`(high/medium/low).
+- **정직한 휴리스틱**이다 — 적용 가능한 행동을 제안할 뿐 완전성을 보장하지 않는다.
+  `note` 필드가 이 성격을 봉투 안에서도 밝힌다.
+- 증거(`why`)는 문서 원문이 아니라 개수·형식 레이블이라 봉투는 문서 파생 문자열을
+  싣지 않는다(`untrustedContent:false`). `capabilities --mcp` 의 `hwp_explore` 도구로도
+  노출된다(읽기 전용·무상태).
+- 암호 문서는 다른 명령과 같은 규약(`--password`/`--password-stdin`).
+
+```bash
+# 이 문서로 무엇을 할 수 있는지 사람용 메뉴로
+rhwp explore 편람.hwp
+# 기계용: 가장 높은 확신도의 다음 명령만 뽑기
+rhwp explore 편람.hwp --json | jq -r '.menu[0] | "\(.command)  # \(.why)"'
+```
+
 ### `search <파일> [--json] [--ignore-case] [--limit N] [--] <검색어>` (#3283)
 문서를 검색해 매치마다 **구역·문단·페이지·문자 오프셋**을 함께 돌려준다.
 평문을 뽑아 외부에서 찾으면 주소가 소멸해 근거 제시가 불가능한데, rhwp 는 조판 엔진이
