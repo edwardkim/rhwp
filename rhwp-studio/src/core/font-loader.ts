@@ -51,6 +51,8 @@ const CDN_DEJAVU_SERIF_REGULAR = `${CDN_FONTSOURCE}/dejavu-serif@5.3.0/files/dej
 const CDN_ROBOTO_REGULAR = `${CDN_FONTSOURCE}/roboto@5.3.0/files/roboto-latin-400-normal.woff2`;
 const CDN_GOVERNMENT_SYMBOL_REGULAR = 'https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf';
 const CDN_KOPUB = 'https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts';
+const CDN_GYEONGGI_MILLENNIUM = 'https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0';
+const CDN_NOONFONTS_TWO = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0';
 
 // 한컴 webhwp CSS(@font-face) 매핑 기준 + HWP 문서에서 사용하는 별칭
 const FONT_LIST: FontEntry[] = [
@@ -150,6 +152,16 @@ const FONT_LIST: FontEntry[] = [
   { name: 'KoPubBatangLight', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff' },
   { name: 'KoPubBatangMedium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff' },
   { name: 'KoPubBatangBold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff' },
+  // === Noonnu에서 웹사이트 사용 가능으로 확인된 문서 사용 글꼴 ===
+  { name: '경기천년바탕 Bold', file: `${CDN_GYEONGGI_MILLENNIUM}/Batang_Regular.woff`, format: 'woff' },
+  { name: '경기천년바탕 Regular', file: `${CDN_GYEONGGI_MILLENNIUM}/Batang_Regular.woff`, format: 'woff' },
+  { name: '경기천년제목 Bold', file: `${CDN_GYEONGGI_MILLENNIUM}/Title_Medium.woff`, format: 'woff' },
+  { name: '경기천년제목 Light', file: `${CDN_GYEONGGI_MILLENNIUM}/Title_Medium.woff`, format: 'woff' },
+  { name: '경기천년제목 Medium', file: `${CDN_GYEONGGI_MILLENNIUM}/Title_Medium.woff`, format: 'woff' },
+  { name: '나눔바른펜', file: `${CDN_NOONFONTS_TWO}/NanumBarunpen.woff`, format: 'woff' },
+  { name: '나눔스퀘어라운드 Bold', file: `${CDN_NOONFONTS_TWO}/NanumSquareRound.woff`, format: 'woff' },
+  { name: '나눔스퀘어라운드 ExtraBold', file: `${CDN_NOONFONTS_TWO}/NanumSquareRound.woff`, format: 'woff' },
+  { name: '나눔스퀘어라운드 Regular', file: `${CDN_NOONFONTS_TWO}/NanumSquareRound.woff`, format: 'woff' },
   // === D2 Coding (OFL, 로컬) ===
   { name: 'D2Coding', file: 'fonts/D2Coding-Regular.woff2' },
   // === Happiness Sans ===
