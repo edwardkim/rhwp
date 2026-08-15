@@ -1047,7 +1047,13 @@ test('Local Font Access가 문서 face를 누락하면 미해소 후보만 probe
     assert.equal(state.complete, false);
 
     const rawSetCount = patchedProbe.rawSetCount();
-    assert.deepEqual(await detectLocalFonts({ candidateFamilies: ['KoPub바탕체 Light'] }), fonts);
+    assert.deepEqual(
+      await detectLocalFonts({
+        candidateFamilies: ['KoPub바탕체 Light'],
+        includeRegistered: true,
+      }),
+      fonts,
+    );
     assert.equal(queryCount, 1);
     assert.equal(patchedProbe.rawSetCount(), rawSetCount);
     assert.equal(await loadLocalFontBytes('KoPub바탕체 Light'), null);

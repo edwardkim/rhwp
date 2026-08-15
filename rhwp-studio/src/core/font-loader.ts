@@ -9,8 +9,8 @@
 interface FontEntry {
   name: string;
   file: string;
-  /** woff2(기본) 또는 woff — CDN woff 파일용 */
-  format?: 'woff2' | 'woff';
+  /** woff2(기본), woff, truetype 또는 opentype — CDN 원본 글꼴 파일용 */
+  format?: 'woff2' | 'woff' | 'truetype' | 'opentype';
   /** CSS unicode-range — 지정 시 해당 코드포인트만 매칭, 다운로드도 해당 영역 사용 시에만 발생 */
   unicodeRange?: string;
 }
@@ -41,6 +41,19 @@ export interface CanvasKitFontPlan {
 const CDN_HAMCHOB_R = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff';
 const CDN_HAMCHOB_B = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatangB.woff';
 const CDN_HAMCHOD_R = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff';
+const CDN_FONTSOURCE = 'https://cdn.jsdelivr.net/npm/@fontsource';
+// 조사 TSV에서 실제 package CSS와 글꼴 파일 응답까지 확인한 face만 추가한다.
+const CDN_NANUM_GOTHIC_BOLD = `${CDN_FONTSOURCE}/nanum-gothic@5.3.0/files/nanum-gothic-0-700-normal.woff`;
+const CDN_NANUM_GOTHIC_EXTRA_BOLD = `${CDN_FONTSOURCE}/nanum-gothic@5.3.0/files/nanum-gothic-0-800-normal.woff`;
+const CDN_NANUM_MYEONGJO_EXTRA_BOLD = `${CDN_FONTSOURCE}/nanum-myeongjo@5.3.0/files/nanum-myeongjo-0-800-normal.woff`;
+const CDN_NOTO_SANS_KR_MEDIUM = `${CDN_FONTSOURCE}/noto-sans-kr@5.3.0/files/noto-sans-kr-0-500-normal.woff`;
+const CDN_DEJAVU_SERIF_REGULAR = `${CDN_FONTSOURCE}/dejavu-serif@5.3.0/files/dejavu-serif-latin-400-normal.woff2`;
+const CDN_ROBOTO_REGULAR = `${CDN_FONTSOURCE}/roboto@5.3.0/files/roboto-latin-400-normal.woff2`;
+const CDN_GOVERNMENT_SYMBOL_REGULAR = 'https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf';
+const CDN_KOPUB = 'https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts';
+const CDN_KOPUB_WORLD = 'https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts';
+const CDN_GYEONGGI_MILLENNIUM = 'https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0';
+const CDN_NOONFONTS_TWO = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0';
 
 // 한컴 webhwp CSS(@font-face) 매핑 기준 + HWP 문서에서 사용하는 별칭
 const FONT_LIST: FontEntry[] = [
@@ -67,6 +80,7 @@ const FONT_LIST: FontEntry[] = [
   { name: 'HYMyeongJo-Extra', file: 'fonts/NotoSerifKR-Bold.woff2' },
   { name: 'HY신명조', file: 'fonts/NotoSerifKR-Regular.woff2' },
   { name: 'HY중고딕', file: 'fonts/NotoSansKR-Regular.woff2' },
+  { name: '한양중고딕', file: 'fonts/NotoSansKR-Regular.woff2' },
   { name: '양재튼튼체B', file: 'fonts/NotoSansKR-Bold.woff2' },
   // === 한글 시스템 폰트 → 오픈소스 대체 (OS 폰트 없을 때 폴백) ===
   { name: 'Malgun Gothic', file: 'fonts/Pretendard-Regular.woff2' },
@@ -89,12 +103,18 @@ const FONT_LIST: FontEntry[] = [
   { name: '새궁서', file: 'fonts/GowunBatang-Regular.woff2' },
   // === 나눔 폰트 (OFL, 로컬) ===
   { name: '나눔고딕', file: 'fonts/NanumGothic-Regular.woff2' },
+  { name: '나눔고딕 Bold', file: CDN_NANUM_GOTHIC_BOLD, format: 'woff' },
+  { name: '나눔고딕 ExtraBold', file: CDN_NANUM_GOTHIC_EXTRA_BOLD, format: 'woff' },
   { name: '나눔명조', file: 'fonts/NanumMyeongjo-Regular.woff2' },
+  { name: '나눔명조 ExtraBold', file: CDN_NANUM_MYEONGJO_EXTRA_BOLD, format: 'woff' },
   { name: '나눔고딕코딩', file: 'fonts/NanumGothicCoding-Regular.woff2' },
+  { name: '나눔고딕_코딩', file: 'fonts/NanumGothicCoding-Regular.woff2' },
+  { name: 'NanumGothic', file: 'fonts/NanumGothic-Regular.woff2' },
   // === 영문 폰트 → OS 폴백 (번들 제거) ===
   { name: 'Palatino Linotype', file: 'fonts/NotoSerifKR-Regular.woff2' },
   // === Noto (OFL, 로컬) ===
   { name: 'Noto Sans KR', file: 'fonts/NotoSansKR-Regular.woff2' },
+  { name: 'Noto Sans KR Medium', file: CDN_NOTO_SANS_KR_MEDIUM, format: 'woff' },
   // Task #1224: generic_fallback sans 체인 말단의 'Noto Sans KR ExtraLight' 해석용.
   // 미등록 고딕 문서폰트가 체인을 따라 내려올 때 무거운 Noto 직전에 ExtraLight 매칭.
   { name: 'Noto Sans KR ExtraLight', file: 'fonts/NotoSansKR-ExtraLight.woff2' },
@@ -109,6 +129,92 @@ const FONT_LIST: FontEntry[] = [
   { name: 'Pretendard Bold', file: 'fonts/Pretendard-Bold.woff2' },
   { name: 'Pretendard ExtraBold', file: 'fonts/Pretendard-ExtraBold.woff2' },
   { name: 'Pretendard Black', file: 'fonts/Pretendard-Black.woff2' },
+  // === 조사 기반 영문 글꼴 (OFL, 문서 요청 시에만 CDN 로드) ===
+  { name: 'DejaVu Serif', file: CDN_DEJAVU_SERIF_REGULAR },
+  { name: 'Roboto', file: CDN_ROBOTO_REGULAR },
+  // === 대한민국정부상징서체 (공공누리 제4유형, 문서 요청 시에만 원본 TTF CDN 로드) ===
+  { name: 'Government_16040911', file: CDN_GOVERNMENT_SYMBOL_REGULAR, format: 'truetype' },
+  { name: '정부상징 부처명_16040911', file: CDN_GOVERNMENT_SYMBOL_REGULAR, format: 'truetype' },
+  // === KoPub (KOPUS 공개 패키지, 문서 요청 시에만 CDN 로드) ===
+  { name: 'KoPub돋움체 Light', file: `${CDN_KOPUB}/KoPubDotum-Light.woff`, format: 'woff' },
+  { name: 'KoPub돋움체 Medium', file: `${CDN_KOPUB}/KoPubDotum-Medium.woff`, format: 'woff' },
+  { name: 'KoPub돋움체 Bold', file: `${CDN_KOPUB}/KoPubDotum-Bold.woff`, format: 'woff' },
+  { name: 'KoPub바탕체 Light', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff' },
+  { name: 'KoPub바탕체 Medium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff' },
+  { name: 'KoPub바탕체 Bold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff' },
+  { name: 'KoPubDotum Light', file: `${CDN_KOPUB}/KoPubDotum-Light.woff`, format: 'woff' },
+  { name: 'KoPubDotum Medium', file: `${CDN_KOPUB}/KoPubDotum-Medium.woff`, format: 'woff' },
+  { name: 'KoPubDotum Bold', file: `${CDN_KOPUB}/KoPubDotum-Bold.woff`, format: 'woff' },
+  { name: 'KoPubBatang Light', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff' },
+  { name: 'KoPubBatang Medium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff' },
+  { name: 'KoPubBatang Bold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff' },
+  { name: 'KoPubDotumLight', file: `${CDN_KOPUB}/KoPubDotum-Light.woff`, format: 'woff' },
+  { name: 'KoPubDotumMedium', file: `${CDN_KOPUB}/KoPubDotum-Medium.woff`, format: 'woff' },
+  { name: 'KoPubDotumBold', file: `${CDN_KOPUB}/KoPubDotum-Bold.woff`, format: 'woff' },
+  { name: 'KoPubBatangLight', file: `${CDN_KOPUB}/KoPubBatang-Light.woff`, format: 'woff' },
+  { name: 'KoPubBatangMedium', file: `${CDN_KOPUB}/KoPubBatang-Medium.woff`, format: 'woff' },
+  { name: 'KoPubBatangBold', file: `${CDN_KOPUB}/KoPubBatang-Bold.woff`, format: 'woff' },
+  // === KoPubWorld (KOPUS 공개 글꼴, 문서 요청 시에만 CDN 로드) ===
+  { name: 'KoPubWorld돋움체 Light', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Light.woff2` },
+  { name: 'KoPubWorld돋움체 Medium', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2` },
+  { name: 'KoPubWorld돋움체 Bold', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Bold.woff2` },
+  { name: 'KoPubWorld바탕체 Light', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Light.woff2` },
+  { name: 'KoPubWorld바탕체 Medium', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2` },
+  { name: 'KoPubWorld바탕체 Bold', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Bold.woff2` },
+  { name: 'KoPubWorld Dotum', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2` },
+  { name: 'KoPubWorld Batang', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2` },
+  { name: 'KoPubWorldDotum', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Dotum-Medium.woff2` },
+  { name: 'KoPubWorldBatang', file: `${CDN_KOPUB_WORLD}/KoPubWorld-Batang-Medium.woff2` },
+  // === Noonnu에서 웹사이트 사용 가능으로 확인된 문서 사용 글꼴 ===
+  { name: '경기천년바탕 Bold', file: `${CDN_GYEONGGI_MILLENNIUM}/Batang_Regular.woff`, format: 'woff' },
+  { name: '경기천년바탕 Regular', file: `${CDN_GYEONGGI_MILLENNIUM}/Batang_Regular.woff`, format: 'woff' },
+  { name: '경기천년제목 Bold', file: `${CDN_GYEONGGI_MILLENNIUM}/Title_Medium.woff`, format: 'woff' },
+  { name: '경기천년제목 Light', file: `${CDN_GYEONGGI_MILLENNIUM}/Title_Medium.woff`, format: 'woff' },
+  { name: '경기천년제목 Medium', file: `${CDN_GYEONGGI_MILLENNIUM}/Title_Medium.woff`, format: 'woff' },
+  { name: '나눔바른펜', file: `${CDN_NOONFONTS_TWO}/NanumBarunpen.woff`, format: 'woff' },
+  { name: '나눔스퀘어라운드 Bold', file: `${CDN_NOONFONTS_TWO}/NanumSquareRound.woff`, format: 'woff' },
+  { name: '나눔스퀘어라운드 ExtraBold', file: `${CDN_NOONFONTS_TWO}/NanumSquareRound.woff`, format: 'woff' },
+  { name: '나눔스퀘어라운드 Regular', file: `${CDN_NOONFONTS_TWO}/NanumSquareRound.woff`, format: 'woff' },
+  // BEGIN SURVEY_WEBFONT_CATALOG
+  // 조사 증적에서 웹폰트 사용 가능으로 판정된 문서 글꼴. 생성 스크립트로 갱신한다.
+  { name: '62570체', file: 'https://cdn.jsdelivr.net/npm/@noonnu/62570che@0.1.0/fonts/62570-normal.woff', format: 'woff' },
+  { name: '나눔고딕 Light', file: 'https://cdn.jsdelivr.net/npm/@fontsource/nanum-gothic@5.3.0/files/nanum-gothic-0-400-normal.woff', format: 'woff' },
+  { name: '나눔고딕OTF', file: 'https://cdn.jsdelivr.net/npm/@kfonts/nanum-gothic-otf@0.2.0/src/NanumGothic.otf', format: 'opentype' },
+  { name: '나눔고딕OTF Bold', file: 'https://cdn.jsdelivr.net/npm/@kfonts/nanum-gothic-otf@0.2.0/src/NanumGothicBold.otf', format: 'opentype' },
+  { name: '나눔명조OTF ExtraBold', file: 'https://cdn.jsdelivr.net/npm/@kfonts/nanum-myeongjo-otf@0.2.0/src/NanumMyeongjoExtraBold.otf', format: 'opentype' },
+  { name: '나눔바른고딕 Light', file: 'https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic@0.3.0/NanumBarunGothicLight.woff', format: 'woff' },
+  { name: '나눔바른고딕OTF', file: 'https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic-yet-hangul-otf@0.2.0/src/NanumBarunGothic-YetHangul.otf', format: 'opentype' },
+  { name: '나눔스퀘어OTF', file: 'https://cdn.jsdelivr.net/npm/@kfonts/nanum-square-otf@0.2.0/src/NanumSquareB.otf', format: 'opentype' },
+  { name: '다음_SemiBold', file: 'https://cdn.jsdelivr.net/npm/alibabapuhuiti-3-75-semibold@1.0.0/AlibabaPuHuiTi-3-75-SemiBold.otf', format: 'opentype' },
+  { name: '에스코어 드림 3 Light', file: 'https://cdn.jsdelivr.net/npm/@noonnu/s-core-dream-3-light@0.1.0/fonts/s-coredream-3light-normal.woff', format: 'woff' },
+  { name: 'Baskerville BT', file: 'https://cdn.jsdelivr.net/npm/@fontsource/libre-baskerville@5.3.0/files/libre-baskerville-latin-400-italic.woff', format: 'woff' },
+  { name: 'Bodoni Bd BT', file: 'https://cdn.jsdelivr.net/npm/@fontsource/bodoni-moda@5.3.0/files/bodoni-moda-latin-400-italic.woff', format: 'woff' },
+  { name: 'Bodoni Bk BT', file: 'https://cdn.jsdelivr.net/npm/@fontsource/bodoni-moda@5.3.0/files/bodoni-moda-latin-400-italic.woff', format: 'woff' },
+  { name: 'Bodoni MT', file: 'https://cdn.jsdelivr.net/npm/@fontsource/bodoni-moda@5.3.0/files/bodoni-moda-latin-400-italic.woff', format: 'woff' },
+  { name: 'BrushScript BT', file: 'https://cdn.jsdelivr.net/npm/@fontsource/nanum-brush-script@5.3.0/files/nanum-brush-script-0-400-normal.woff', format: 'woff' },
+  { name: 'Calisto MT', file: 'https://cdn.jsdelivr.net/npm/@fontsource/calistoga@5.3.0/files/calistoga-latin-400-normal.woff', format: 'woff' },
+  { name: 'Century Schoolbook', file: 'https://cdn.jsdelivr.net/npm/centschbook-mono@3.2.1/Century-Schoolbook-Monospace-BT.ttf', format: 'truetype' },
+  { name: 'FangSong', file: 'https://cdn.jsdelivr.net/npm/@fontpkg/zhuque-fangsong-technical-preview@0.212.0/ZhuqueFangsong-Regular.ttf', format: 'truetype' },
+  { name: 'Futura Hv BT', file: 'https://cdn.jsdelivr.net/npm/futura-font@1.0.0/FuturaBT-Medium.ttf', format: 'truetype' },
+  { name: 'Garamond', file: 'https://cdn.jsdelivr.net/npm/@fontsource/cormorant-garamond@5.3.0/files/cormorant-garamond-cyrillic-300-italic.woff', format: 'woff' },
+  { name: 'HCRDotum', file: 'https://cdn.jsdelivr.net/npm/@noonnu/hcr-dotum@0.1.0/fonts/hcrdotum-normal.woff', format: 'woff' },
+  { name: 'Helvetica', file: 'https://cdn.jsdelivr.net/npm/helvetica-original@1.0.0/Black/Helvetica-Black.ttf', format: 'truetype' },
+  { name: 'Helvetica 65 Medium', file: 'https://cdn.jsdelivr.net/npm/@duppla-font/helvetica-now@1.0.0/files/HelveticaNowTextMedium.otf', format: 'opentype' },
+  { name: 'Helvetica Neue', file: 'https://cdn.jsdelivr.net/npm/@marcius-studio/font@0.0.1/HelveticaNeueCyr/HelveticaNeueCyr-Black.ttf', format: 'truetype' },
+  { name: 'KBIZ한마음명조 R', file: 'https://cdn.jsdelivr.net/npm/@noonnu/kbiz-hanmaum-myungjo@0.1.0/fonts/kbizhanmaummyungjo-normal.woff', format: 'woff' },
+  { name: 'MS Gothic', file: 'https://cdn.jsdelivr.net/npm/@fontsource/zen-maru-gothic@5.3.0/files/zen-maru-gothic-10-300-normal.woff', format: 'woff' },
+  { name: 'MS Mincho', file: 'https://cdn.jsdelivr.net/npm/@fontsource/shippori-mincho@5.3.0/files/shippori-mincho-0-400-normal.woff', format: 'woff' },
+  { name: 'MS Song', file: 'https://cdn.jsdelivr.net/npm/@fontsource/song-myung@5.3.0/files/song-myung-10-400-normal.woff', format: 'woff' },
+  { name: 'MS UI Gothic', file: 'https://cdn.jsdelivr.net/npm/@fontsource/zen-maru-gothic@5.3.0/files/zen-maru-gothic-10-300-normal.woff', format: 'woff' },
+  { name: 'MT Extra', file: 'https://cdn.jsdelivr.net/npm/@fontsource/fira-sans-extra-condensed@5.3.0/files/fira-sans-extra-condensed-cyrillic-100-italic.woff', format: 'woff' },
+  { name: 'Myeongjo', file: 'https://cdn.jsdelivr.net/npm/@fontsource/nanum-myeongjo@5.3.0/files/nanum-myeongjo-0-400-normal.woff', format: 'woff' },
+  { name: 'Nanum Barun Gothic', file: 'https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic@0.3.0/NanumBarunGothic.woff', format: 'woff' },
+  { name: 'Noto', file: 'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp@5.3.0/files/noto-sans-jp-0-100-normal.woff', format: 'woff' },
+  { name: 'Noto Sans CJK JP Regular', file: 'https://cdn.jsdelivr.net/npm/noto-sans-cjk-jp@1.0.1/fonts/NotoSansCJKjp-Regular.woff', format: 'woff' },
+  { name: 'Segoe UI', file: 'https://cdn.jsdelivr.net/npm/@fontpkg/segoe-ui@5.67.0/segoeui.ttf', format: 'truetype' },
+  { name: 'SimSun', file: 'https://cdn.jsdelivr.net/npm/react-native-font-sim@2.0.1/fonts/SimSun.ttf', format: 'truetype' },
+  { name: 'Yu Mincho', file: 'https://cdn.jsdelivr.net/npm/@fontsource/shippori-mincho@5.3.0/files/shippori-mincho-0-400-normal.woff', format: 'woff' },
+  // END SURVEY_WEBFONT_CATALOG
   // === D2 Coding (OFL, 로컬) ===
   { name: 'D2Coding', file: 'fonts/D2Coding-Regular.woff2' },
   // === Happiness Sans ===
@@ -147,11 +253,14 @@ export const REGISTERED_FONTS = new Set(FONT_LIST.map(f => f.name));
 /** 초기 렌더링에 필수인 폰트 (대부분의 HWP 문서 기본 서체) */
 const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움']);
 
-/** CSS @font-face 등록 여부 (중복 등록 방지) */
-let fontFaceRegistrationMode: 'all' | 'local-only' | null = null;
+/** CSS @font-face에 등록한 글꼴 (문서 요청 단위로 누적) */
+const registeredFontFaces: FontEntry[] = [];
+const registeredFontFaceKeys = new Set<string>();
 
-/** 이미 로드 완료된 woff2 파일 (중복 네트워크 요청 방지) */
+/** 한번이라도 요청한 실제 글꼴 파일 (진단용) */
 const loadedFiles = new Set<string>();
+/** FontFace API로 등록한 이름과 파일 조합 (별칭의 지연 등록 지원) */
+const loadedFontFaceKeys = new Set<string>();
 
 function isExternalFontFile(file: string): boolean {
   return /^https?:\/\//i.test(file);
@@ -238,10 +347,28 @@ export function resolveCanvasKitFontPlan(
   };
 }
 
-function registerFontFaces(options?: WebFontLoadOptions): void {
+function fontFaceKey(entry: FontEntry): string {
+  return [normalizeFontFamily(entry.name), entry.file, entry.format ?? 'woff2', entry.unicodeRange ?? ''].join('\u0000');
+}
+
+function isDetectedOSFont(name: string): boolean {
+  return detectedOSFontFamilies.has(normalizeFontFamily(name));
+}
+
+function isRegisteredFontFamily(name: string): boolean {
+  const normalized = normalizeFontFamily(name);
+  return registeredFontFaces.some(entry => normalizeFontFamily(entry.name) === normalized);
+}
+
+function registerFontFaces(entries: readonly FontEntry[], options?: WebFontLoadOptions): void {
   const disableExternal = options?.disableExternalWebFonts === true;
-  const mode = disableExternal ? 'local-only' : 'all';
-  if (fontFaceRegistrationMode === mode) return;
+  for (const entry of entries) {
+    const key = fontFaceKey(entry);
+    if (!registeredFontFaceKeys.has(key)) {
+      registeredFontFaceKeys.add(key);
+      registeredFontFaces.push(entry);
+    }
+  }
 
   const styleId = 'rhwp-web-font-faces';
   let style = document.getElementById(styleId) as HTMLStyleElement | null;
@@ -250,12 +377,13 @@ function registerFontFaces(options?: WebFontLoadOptions): void {
     style.id = styleId;
     document.head.appendChild(style);
   }
-  style.textContent = selectableFontList(options).map(f => {
+  style.textContent = registeredFontFaces
+    .filter(entry => !(disableExternal && isExternalFontFile(entry.file)))
+    .map(f => {
     const fmt = f.format ?? 'woff2';
     const ur = f.unicodeRange ? ` unicode-range: ${f.unicodeRange};` : '';
     return `@font-face { font-family: "${f.name}"; src: url("${f.file}") format("${fmt}"); font-display: swap;${ur} }`;
-  }).join('\n');
-  fontFaceRegistrationMode = mode;
+    }).join('\n');
 }
 
 /**
@@ -272,13 +400,63 @@ const OS_FONT_CANDIDATES = [
   'Noto Sans KR', 'Noto Serif KR',
 ];
 const detectedOSFonts = new Set<string>();
+const detectedOSFontFamilies = new Set<string>();
+
+/**
+ * 등록 전 시스템 글꼴을 generic fallback과의 폭 비교로 감지한다.
+ * `document.fonts.check()`만 사용하면 일치하는 @font-face가 없을 때도
+ * fallback으로 렌더할 수 있어 설치 여부를 확정할 수 없다.
+ */
+function isSystemFontAvailable(name: string): boolean {
+  const body = document.body;
+  if (body) {
+    try {
+      const probe = document.createElement('span');
+      probe.textContent = 'mmmmmmmmmwwwwwwwWMWMWM한글글꼴측정0123456789';
+      probe.style.position = 'absolute';
+      probe.style.visibility = 'hidden';
+      probe.style.whiteSpace = 'nowrap';
+      probe.style.fontSize = '72px';
+      probe.style.fontStyle = 'normal';
+      probe.style.fontWeight = 'normal';
+      body.appendChild(probe);
+
+      try {
+        const genericFamilies = ['monospace', 'serif', 'sans-serif'];
+        const fallbackWidths = genericFamilies.map(family => {
+          probe.style.fontFamily = family;
+          return probe.offsetWidth;
+        });
+        const escapedName = name.replace(/(["\\])/g, '\\$1');
+        return genericFamilies.some((family, index) => {
+          probe.style.fontFamily = `"${escapedName}", ${family}`;
+          return probe.offsetWidth !== fallbackWidths[index];
+        });
+      } finally {
+        body.removeChild(probe);
+      }
+    } catch {
+      // body가 아직 없거나 레이아웃 측정을 지원하지 않는 surface는 기존 API로 보수적으로 처리한다.
+    }
+  }
+
+  try {
+    return document.fonts.check(`16px "${name}"`);
+  } catch {
+    return false;
+  }
+}
 
 /** OS 폰트 감지 실행 (@font-face 등록 전에 호출) */
-function detectOSFonts(): void {
-  for (const name of OS_FONT_CANDIDATES) {
+function detectOSFonts(fontNames: readonly string[]): void {
+  const candidates = new Set([...OS_FONT_CANDIDATES, ...fontNames]);
+  for (const name of candidates) {
+    const normalized = normalizeFontFamily(name);
+    if (!normalized || detectedOSFontFamilies.has(normalized) || isRegisteredFontFamily(name)) continue;
     try {
-      if (document.fonts.check(`16px "${name}"`)) {
+      if (isSystemFontAvailable(name)) {
         detectedOSFonts.add(name);
+        detectedOSFontFamilies.add(normalized);
       }
     } catch { /* 무시 */ }
   }
@@ -306,48 +484,44 @@ export async function loadWebFonts(
   onProgress?: (loaded: number, total: number) => void,
   options?: WebFontLoadOptions,
 ): Promise<void> {
-  // 0) OS 폰트 감지 (@font-face 등록 전에 실행해야 정확)
-  if (!fontFaceRegistrationMode) {
-    detectOSFonts();
+  // 0) 문서 요청명과 필수 글꼴을 @font-face 등록 전에 감지한다.
+  // 이미 등록한 face가 있으면 브라우저가 그 face를 시스템 글꼴처럼 보고할 수 있으므로
+  // 해당 이름은 재감지하지 않는다.
+  const targetNames = [...(docFonts ?? []), ...CRITICAL_FONTS];
+  detectOSFonts(targetNames);
+  const systemFontNames = [...new Set(targetNames.filter(isDetectedOSFont))];
+  if (systemFontNames.length > 0) {
+    console.debug(`[FontLoader][debug] 시스템 글꼴 사용: ${systemFontNames.join(', ')}`);
   }
 
-  // 1) CSS @font-face 규칙 등록. 오프라인 옵션이면 외부 URL 폰트는 제외한다.
-  registerFontFaces(options);
-
-  // 2) 로드 대상 결정: docFonts에 포함된 폰트 + CRITICAL만 로드
-  //    OS에 설치된 폰트는 웹폰트 로딩 건너뜀
-  const targetSet = new Set([...(docFonts ?? []), ...CRITICAL_FONTS]);
-  const toLoad = selectableFontList(options).filter(f => {
-    if (!targetSet.has(f.name)) return false;
-    // OS에 동일 이름 폰트가 있으면 웹폰트 로딩 불필요
-    if (detectedOSFonts.has(f.name)) return false;
-    return true;
-  });
-
-  // woff2 파일 기준으로 중복 제거 + 이미 로드된 파일 건너뜀
-  const seenFiles = new Set<string>();
-  const uniqueToLoad: FontEntry[] = [];
-  for (const f of toLoad) {
-    if (!seenFiles.has(f.file) && !loadedFiles.has(f.file)) {
-      seenFiles.add(f.file);
-      uniqueToLoad.push(f);
-    }
+  // 1) 문서에서 요청한 글꼴과 초기 필수 글꼴만 대상으로 삼는다.
+  // 시스템 글꼴이 감지되면 CSS 규칙도 추가하지 않아 원격 face가 이를 덮어쓰지 않는다.
+  const targetSet = new Set(targetNames.map(normalizeFontFamily));
+  const requestedEntries = selectableFontList(options).filter(entry => (
+    targetSet.has(normalizeFontFamily(entry.name)) && !isDetectedOSFont(entry.name)
+  ));
+  if (requestedEntries.length > 0) {
+    console.debug(
+      `[FontLoader][debug] CDN 후보: ${requestedEntries.map(entry => entry.name).join(', ')}`,
+    );
   }
+  registerFontFaces(requestedEntries, options);
+
+  // 2) 같은 파일을 쓰더라도 새 별칭은 FontFace에 별도로 등록한다.
+  // 이미 받아 둔 URL은 브라우저 캐시를 사용하므로 추가 네트워크 전송은 발생하지 않는다.
+  const toLoad = requestedEntries.filter(entry => !loadedFontFaceKeys.has(fontFaceKey(entry)));
+  const entriesByFile = new Map<string, FontEntry[]>();
+  for (const entry of toLoad) {
+    const entries = entriesByFile.get(entry.file) ?? [];
+    entries.push(entry);
+    entriesByFile.set(entry.file, entries);
+  }
+  const uniqueToLoad = [...entriesByFile.values()].map(entries => entries[0]);
 
   if (uniqueToLoad.length === 0) return;
 
   const total = uniqueToLoad.length;
-  console.log(`[FontLoader] 웹폰트 로드 시작: ${total}개 woff2 (이미 로드됨: ${loadedFiles.size}개)`);
-
-  // 같은 woff2 파일에 매핑된 모든 이름도 함께 등록
-  const fileToNames = new Map<string, string[]>();
-  for (const f of toLoad) {
-    if (!loadedFiles.has(f.file)) {
-      const names = fileToNames.get(f.file) ?? [];
-      names.push(f.name);
-      fileToNames.set(f.file, names);
-    }
-  }
+  console.log(`[FontLoader] 웹폰트 로드 시작: ${total}개 파일 (이미 요청함: ${loadedFiles.size}개)`);
 
   let loaded = 0;
   let failed = 0;
@@ -356,18 +530,23 @@ export async function loadWebFonts(
   for (let i = 0; i < uniqueToLoad.length; i += BATCH) {
     const batch = uniqueToLoad.slice(i, i + BATCH);
     await Promise.all(batch.map(async (f) => {
+      const entries = entriesByFile.get(f.file) ?? [f];
+      const fontNames = entries.map(entry => entry.name).join(', ');
+      console.debug(`[FontLoader][debug] CDN 로드 시작: ${fontNames} <- ${f.file}`);
       try {
-        const names = fileToNames.get(f.file) ?? [f.name];
-        const fmt = f.format ?? 'woff2';
-        for (const name of names) {
-          const face = new FontFace(name, `url(${f.file}) format('${fmt}')`);
+        for (const entry of entries) {
+          const fmt = entry.format ?? 'woff2';
+          const face = new FontFace(entry.name, `url(${entry.file}) format('${fmt}')`);
           const result = await face.load();
           document.fonts.add(result);
+          loadedFontFaceKeys.add(fontFaceKey(entry));
         }
         loadedFiles.add(f.file);
         loaded++;
-      } catch {
+        console.debug(`[FontLoader][debug] CDN 로드 성공: ${fontNames} <- ${f.file}`);
+      } catch (error) {
         failed++;
+        console.debug(`[FontLoader][debug] CDN 로드 실패: ${fontNames} <- ${f.file}`, error);
       }
       onProgress?.(loaded + failed, total);
     }));
@@ -376,5 +555,5 @@ export async function loadWebFonts(
     }
   }
 
-  console.log(`[FontLoader] 폰트 로드 완료: ${loaded}개 성공, ${failed}개 실패 (총 ${loadedFiles.size}개 woff2 로드됨)`);
+  console.log(`[FontLoader] 폰트 로드 완료: ${loaded}개 성공, ${failed}개 실패 (총 ${loadedFiles.size}개 파일 요청)`);
 }

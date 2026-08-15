@@ -1,7 +1,7 @@
 # korea_downloads HWP/HWPX 글꼴과 웹폰트 전수 조사
 
-- **생성 시각**: 2026-08-15T10:07:58.173Z
-- **기준 커밋**: `8dbb2557ee6e` (local `devel`)
+- **생성 시각**: 2026-08-15T13:03:54.582Z
+- **기준 커밋**: `7540dc8a5840` (local `devel`)
 - **입력**: `/Users/tsjang/Downloads/korea_downloads`의 HWP/HWPX 10,000건
 - **파서**: `/Users/tsjang/rhwp/target/release/rhwp`의 `batch info --json --threads 8`
 - **글꼴 범위**: HWP/HWPX DOCINFO의 한글·영어·한자·일어·기타·기호·사용자 7개 글꼴군 전체. 문서 내부 중복은 문서별 1회만 센다.
@@ -15,12 +15,12 @@
 | 파싱 성공 | 9,948 |
 | 파싱 실패 | 52 |
 | 고유 선언 글꼴 | 1,379 |
-| 글꼴 파일 다운로드 가능 | 319 |
-| 웹폰트 사용 가능 | 59 |
-| 웹폰트 사용 라이선스 검토 필요 | 260 |
-| 웹폰트 공급 경로·CDN 응답 확인 | 86 |
+| 글꼴 파일 다운로드 가능 | 328 |
+| 웹폰트 사용 가능 | 80 |
+| 웹폰트 사용 라이선스 검토 필요 | 248 |
+| 웹폰트 공급 경로·CDN 응답 확인 | 95 |
 | CDN 응답 확인·원 권리자 라이선스 검토 필요 | 233 |
-| 검증 가능한 배포본 미발견 | 1,059 |
+| 검증 가능한 배포본 미발견 | 1,050 |
 | 조회 오류 | 1 |
 
 `미발견`은 인터넷의 임의 GitHub 저장소까지 부정하는 판정이 아니다. 공개 Fontsource 카탈로그와 jsDelivr 웹 검색, 기존 등록 GitHub 배포본을 이 스크립트의 동일 알고리즘으로 확인했을 때, **글꼴 바이트 파일을 실제로 내려받을 수 있는 웹폰트 URL을 검증하지 못했다**는 뜻이다. Noonnu의 `웹사이트 사용 가능` 표기는 Noonnu가 제공하는 요약 정보이므로 실제 배포 전 해당 글꼴의 최신 원 라이선스를 확인한다. OnlineWebFonts 응답 확인은 원 권리자의 웹 사용 허가를 뜻하지 않으며, `원 권리자 라이선스 검토 필요` 행은 서비스 배포에 사용하면 안 된다.
@@ -44,54 +44,61 @@
 | 바탕체 | 2590 | 가능 | 가능 | jsDelivr 웹 검색 | `@noonnu/bareun-batang` | [파일](https://cdn.jsdelivr.net/npm/@noonnu/bareun-batang@0.1.0/fonts/bareunbatang-400.woff) |
 | 돋움체 | 2589 | 가능 | 가능 | jsDelivr 웹 검색 | `@noonnu/yi-sun-shin-dotum-m` | [파일](https://cdn.jsdelivr.net/npm/@noonnu/yi-sun-shin-dotum-m@0.1.0/fonts/yisunshindotumm-normal.woff) |
 | Times New Roman | 889 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `@canvas-fonts/times-new-roman` | [파일](https://cdn.jsdelivr.net/npm/@canvas-fonts/times-new-roman@1.0.4/Times New Roman.ttf) |
-| KoPub바탕체 Light | 582 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Light.ttf) |
-| KoPub돋움체 Light | 503 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubDotum-Light.ttf) |
+| KoPub바탕체 Light | 582 | 가능 | 가능 | jsDelivr npm | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Light.woff) |
+| KoPub돋움체 Light | 503 | 가능 | 가능 | jsDelivr npm | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubDotum-Light.woff) |
 | 한컴돋움 | 495 | 가능 | 가능 | jsDelivr GitHub | `projectnoonnu/noonfonts_four` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff) |
 | Arial | 464 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `@canvas-fonts/arial` | [파일](https://cdn.jsdelivr.net/npm/@canvas-fonts/arial@1.0.4/Arial.ttf) |
 | 나눔고딕 Bold | 251 | 가능 | 가능 | Fontsource npm | `@fontsource/nanum-gothic` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/nanum-gothic@5.3.0/files/nanum-gothic-0-400-normal.woff) |
-| KoPubWorld돋움체 Bold | 214 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Bold.otf) |
+| KoPubWorld돋움체 Bold | 214 | 가능 | 가능 | jsDelivr npm | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Bold.otf) |
 | 나눔고딕 | 205 | 가능 | 가능 | Fontsource npm | `@fontsource/nanum-gothic` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/nanum-gothic@5.3.0/files/nanum-gothic-0-400-normal.woff) |
-| KoPub돋움체 Bold | 201 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubDotum-Bold.ttf) |
-| KoPub돋움체 Medium | 143 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubDotum-Medium.ttf) |
+| KoPub돋움체 Bold | 201 | 가능 | 가능 | jsDelivr npm | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubDotum-Bold.woff) |
+| KoPub돋움체 Medium | 143 | 가능 | 가능 | jsDelivr npm | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubDotum-Medium.woff) |
 | Arial Narrow | 141 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `@canvas-fonts/arial-narrow-bold` | [파일](https://cdn.jsdelivr.net/npm/@canvas-fonts/arial-narrow-bold@1.0.4/Arial Narrow Bold.ttf) |
 | 나눔명조 | 116 | 가능 | 가능 | Fontsource npm | `@fontsource/nanum-myeongjo` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/nanum-myeongjo@5.3.0/files/nanum-myeongjo-0-400-normal.woff) |
 | 나눔고딕 ExtraBold | 91 | 가능 | 가능 | Fontsource npm | `@fontsource/nanum-gothic` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/nanum-gothic@5.3.0/files/nanum-gothic-0-400-normal.woff) |
 | 나눔고딕 Light | 65 | 가능 | 가능 | Fontsource npm | `@fontsource/nanum-gothic` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/nanum-gothic@5.3.0/files/nanum-gothic-0-400-normal.woff) |
 | Garamond | 38 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/cormorant-garamond` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/cormorant-garamond@5.3.0/files/cormorant-garamond-cyrillic-300-italic.woff) |
 | Courier New | 37 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `@canvas-fonts/courier-new` | [파일](https://cdn.jsdelivr.net/npm/@canvas-fonts/courier-new@1.0.4/Courier New.ttf) |
-| KoPub바탕체 Bold | 34 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Bold.ttf) |
-| KoPub바탕체 Medium | 29 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Medium.ttf) |
+| KoPub바탕체 Bold | 34 | 가능 | 가능 | jsDelivr npm | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Bold.woff) |
+| KoPub바탕체 Medium | 29 | 가능 | 가능 | jsDelivr npm | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Medium.woff) |
 | MS Mincho | 27 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/shippori-mincho` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/shippori-mincho@5.3.0/files/shippori-mincho-0-400-normal.woff) |
 | Arial Black | 23 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `@canvas-fonts/arial-black` | [파일](https://cdn.jsdelivr.net/npm/@canvas-fonts/arial-black@1.0.4/Arial Black.ttf) |
+| 경기천년바탕 Regular | 20 | 가능 | 가능 | Noonnu CDN | `noonnu:font_page/13` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Batang_Regular.woff) |
 | 나눔명조 ExtraBold | 19 | 가능 | 가능 | Fontsource npm | `@fontsource/nanum-myeongjo` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/nanum-myeongjo@5.3.0/files/nanum-myeongjo-0-400-normal.woff) |
 | 나눔고딕_코딩 | 18 | 가능 | 가능 | Fontsource npm | `@fontsource/nanum-gothic-coding` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/nanum-gothic-coding@5.3.0/files/nanum-gothic-coding-0-400-normal.woff) |
 | SimSun | 17 | 가능 | 가능 | jsDelivr 웹 검색 | `react-native-font-sim` | [파일](https://cdn.jsdelivr.net/npm/react-native-font-sim@2.0.1/fonts/SimSun.ttf) |
 | 한컴산뜻돋움 | 16 | 가능 | 가능 | jsDelivr GitHub | `projectnoonnu/noonfonts_four` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff) |
+| 경기천년제목 Medium | 13 | 가능 | 가능 | Noonnu CDN | `noonnu:font_page/14` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Title_Medium.woff) |
 | Baskerville BT | 13 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/libre-baskerville` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/libre-baskerville@5.3.0/files/libre-baskerville-latin-400-italic.woff) |
 | Comic Sans MS | 12 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `@canvas-fonts/comic-sans-ms` | [파일](https://cdn.jsdelivr.net/npm/@canvas-fonts/comic-sans-ms@1.0.4/Comic Sans MS.ttf) |
-| KoPubWorld돋움체 Light | 12 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Light.otf) |
-| KoPubWorld바탕체 Light | 12 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Light.otf) |
+| KoPubWorld돋움체 Light | 12 | 가능 | 가능 | jsDelivr npm | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Light.otf) |
+| KoPubWorld바탕체 Light | 12 | 가능 | 가능 | jsDelivr npm | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Light.otf) |
 | Bodoni Bd BT | 11 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/bodoni-moda` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/bodoni-moda@5.3.0/files/bodoni-moda-latin-400-italic.woff) |
 | Bodoni Bk BT | 11 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/bodoni-moda` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/bodoni-moda@5.3.0/files/bodoni-moda-latin-400-italic.woff) |
 | BrushScript BT | 10 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/nanum-brush-script` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/nanum-brush-script@5.3.0/files/nanum-brush-script-0-400-normal.woff) |
-| KoPubWorld돋움체 Medium | 10 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Medium.otf) |
+| KoPubWorld돋움체 Medium | 10 | 가능 | 가능 | jsDelivr npm | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Medium.otf) |
 | MS Gothic | 10 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/zen-maru-gothic` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/zen-maru-gothic@5.3.0/files/zen-maru-gothic-10-300-normal.woff) |
 | 나눔명조OTF ExtraBold | 9 | 가능 | 가능 | jsDelivr 웹 검색 | `@kfonts/nanum-myeongjo-otf` | [파일](https://cdn.jsdelivr.net/npm/@kfonts/nanum-myeongjo-otf@0.2.0/src/NanumMyeongjoExtraBold.otf) |
 | Times New Roman Bold | 8 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `@canvas-fonts/times-new-roman-bold` | [파일](https://cdn.jsdelivr.net/npm/@canvas-fonts/times-new-roman-bold@1.0.4/Times New Roman Bold.ttf) |
 | 다음_SemiBold | 7 | 가능 | 가능 | jsDelivr 웹 검색 | `alibabapuhuiti-3-75-semibold` | [파일](https://cdn.jsdelivr.net/npm/alibabapuhuiti-3-75-semibold@1.0.0/AlibabaPuHuiTi-3-75-SemiBold.otf) |
 | MS UI Gothic | 6 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/zen-maru-gothic` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/zen-maru-gothic@5.3.0/files/zen-maru-gothic-10-300-normal.woff) |
 | Calisto MT | 5 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/calistoga` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/calistoga@5.3.0/files/calistoga-latin-400-normal.woff) |
+| 경기천년제목 Light | 4 | 가능 | 가능 | Noonnu CDN | `noonnu:font_page/14` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Title_Medium.woff) |
 | Helvetica Neue | 4 | 가능 | 가능 | jsDelivr 웹 검색 | `@marcius-studio/font` | [파일](https://cdn.jsdelivr.net/npm/@marcius-studio/font@0.0.1/HelveticaNeueCyr/HelveticaNeueCyr-Black.ttf) |
-| KoPubWorld바탕체 Medium | 4 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Medium.otf) |
+| KoPubWorld바탕체 Medium | 4 | 가능 | 가능 | jsDelivr npm | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Medium.otf) |
 | Myeongjo | 4 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/nanum-myeongjo` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/nanum-myeongjo@5.3.0/files/nanum-myeongjo-0-400-normal.woff) |
+| 경기천년제목 Bold | 3 | 가능 | 가능 | Noonnu CDN | `noonnu:font_page/14` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Title_Medium.woff) |
+| 나눔바른펜 | 3 | 가능 | 가능 | Noonnu CDN | `noonnu:font_page/42` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumBarunpen.woff) |
 | 에스코어 드림 3 Light | 3 | 가능 | 가능 | jsDelivr 웹 검색 | `@noonnu/s-core-dream-3-light` | [파일](https://cdn.jsdelivr.net/npm/@noonnu/s-core-dream-3-light@0.1.0/fonts/s-coredream-3light-normal.woff) |
 | Bodoni MT | 3 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/bodoni-moda` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/bodoni-moda@5.3.0/files/bodoni-moda-latin-400-italic.woff) |
 | Century Schoolbook | 3 | 가능 | 가능 | jsDelivr 웹 검색 | `centschbook-mono` | [파일](https://cdn.jsdelivr.net/npm/centschbook-mono@3.2.1/Century-Schoolbook-Monospace-BT.ttf) |
 | Cooper Black | 3 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `fonts-archive-cooper-black` | [파일](https://cdn.jsdelivr.net/npm/fonts-archive-cooper-black@0.0.0/CooperBlack Italic-Regular.otf) |
 | Helvetica | 3 | 가능 | 가능 | jsDelivr 웹 검색 | `helvetica-original` | [파일](https://cdn.jsdelivr.net/npm/helvetica-original@1.0.0/Black/Helvetica-Black.ttf) |
-| KoPubWorld바탕체 Bold | 3 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Bold.otf) |
+| KoPubBatangLight | 3 | 가능 | 가능 | jsDelivr npm | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Light.woff) |
+| KoPubWorld바탕체 Bold | 3 | 가능 | 가능 | jsDelivr npm | `font-kopubworld` | [파일](https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Bold.otf) |
 | MT Extra | 3 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/fira-sans-extra-condensed` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/fira-sans-extra-condensed@5.3.0/files/fira-sans-extra-condensed-cyrillic-100-italic.woff) |
 | Segoe UI | 3 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontpkg/segoe-ui` | [파일](https://cdn.jsdelivr.net/npm/@fontpkg/segoe-ui@5.67.0/segoeui.ttf) |
+| 경기천년바탕 Bold | 2 | 가능 | 가능 | Noonnu CDN | `noonnu:font_page/13` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Batang_Regular.woff) |
 | 나눔바른고딕 Light | 2 | 가능 | 가능 | jsDelivr 웹 검색 | `@kfonts/nanum-barun-gothic` | [파일](https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic@0.3.0/NanumBarunGothicLight.woff) |
 | arial | 2 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `@canvas-fonts/arial` | [파일](https://cdn.jsdelivr.net/npm/@canvas-fonts/arial@1.0.4/Arial.ttf) |
 | MS Song | 2 | 가능 | 가능 | jsDelivr 웹 검색 | `@fontsource/song-myung` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/song-myung@5.3.0/files/song-myung-10-400-normal.woff) |
@@ -102,6 +109,9 @@
 | 나눔고딕OTF | 1 | 가능 | 가능 | jsDelivr 웹 검색 | `@kfonts/nanum-gothic-otf` | [파일](https://cdn.jsdelivr.net/npm/@kfonts/nanum-gothic-otf@0.2.0/src/NanumGothic.otf) |
 | 나눔고딕OTF Bold | 1 | 가능 | 가능 | jsDelivr 웹 검색 | `@kfonts/nanum-gothic-otf` | [파일](https://cdn.jsdelivr.net/npm/@kfonts/nanum-gothic-otf@0.2.0/src/NanumGothicBold.otf) |
 | 나눔바른고딕OTF | 1 | 가능 | 가능 | jsDelivr 웹 검색 | `@kfonts/nanum-barun-gothic-yet-hangul-otf` | [파일](https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic-yet-hangul-otf@0.2.0/src/NanumBarunGothic-YetHangul.otf) |
+| 나눔스퀘어라운드 Bold | 1 | 가능 | 가능 | Noonnu CDN | `noonnu:font_page/38` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.woff) |
+| 나눔스퀘어라운드 ExtraBold | 1 | 가능 | 가능 | Noonnu CDN | `noonnu:font_page/38` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.woff) |
+| 나눔스퀘어라운드 Regular | 1 | 가능 | 가능 | Noonnu CDN | `noonnu:font_page/38` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.woff) |
 | 나눔스퀘어OTF | 1 | 가능 | 가능 | jsDelivr 웹 검색 | `@kfonts/nanum-square-otf` | [파일](https://cdn.jsdelivr.net/npm/@kfonts/nanum-square-otf@0.2.0/src/NanumSquareB.otf) |
 | 새바탕 | 1 | 가능 | 가능 | jsDelivr GitHub | `projectnoonnu/noonfonts_2104` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff) |
 | Apple SD 산돌고딕 Neo 일반체 | 1 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `font-applesdgothicneo` | [파일](https://cdn.jsdelivr.net/npm/font-applesdgothicneo@1.0.3/fonts/100_AppleSDGothicNeo-Thin.otf) |
@@ -112,11 +122,10 @@
 | Futura Std ExtraBold | 1 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `fonts-archive-futura-std` | [파일](https://cdn.jsdelivr.net/npm/fonts-archive-futura-std@0.0.0/FuturaStd-ExtraBold.otf) |
 | Futura Std Light | 1 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `fonts-archive-futura-std` | [파일](https://cdn.jsdelivr.net/npm/fonts-archive-futura-std@0.0.0/FuturaStd-Light.otf) |
 | Futura Std Medium | 1 | 가능 | 라이선스 검토 필요 | jsDelivr 웹 검색 | `fonts-archive-futura-std` | [파일](https://cdn.jsdelivr.net/npm/fonts-archive-futura-std@0.0.0/FuturaStd-Medium.otf) |
-| G마켓 산스 Bold | 1 | 가능 | 가능 | Noonnu CDN | `noonnu:font_page/366` | [파일](https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff) |
 | HCRDotum | 1 | 가능 | 가능 | jsDelivr 웹 검색 | `@noonnu/hcr-dotum` | [파일](https://cdn.jsdelivr.net/npm/@noonnu/hcr-dotum@0.1.0/fonts/hcrdotum-normal.woff) |
 | Helvetica 65 Medium | 1 | 가능 | 가능 | jsDelivr 웹 검색 | `@duppla-font/helvetica-now` | [파일](https://cdn.jsdelivr.net/npm/@duppla-font/helvetica-now@1.0.0/files/HelveticaNowTextMedium.otf) |
 | KBIZ한마음명조 R | 1 | 가능 | 가능 | jsDelivr 웹 검색 | `@noonnu/kbiz-hanmaum-myungjo` | [파일](https://cdn.jsdelivr.net/npm/@noonnu/kbiz-hanmaum-myungjo@0.1.0/fonts/kbizhanmaummyungjo-normal.woff) |
-| KoPubDotumMedium | 1 | 가능 | 가능 | jsDelivr 웹 검색 | `@noonnu/kopubdotummedium` | [파일](https://cdn.jsdelivr.net/npm/@noonnu/kopubdotummedium@0.0.1/KoPubDotumMedium.woff) |
+| KoPubDotumMedium | 1 | 가능 | 가능 | jsDelivr npm | `font-kopub` | [파일](https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubDotum-Medium.woff) |
 | Nanum Barun Gothic | 1 | 가능 | 가능 | jsDelivr 웹 검색 | `@kfonts/nanum-barun-gothic` | [파일](https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic@0.3.0/NanumBarunGothic.woff) |
 | Noto Sans CJK JP Regular | 1 | 가능 | 가능 | jsDelivr 웹 검색 | `noto-sans-cjk-jp` | [파일](https://cdn.jsdelivr.net/npm/noto-sans-cjk-jp@1.0.1/fonts/NotoSansCJKjp-Regular.woff) |
 | Noto Sans KR Medium | 1 | 가능 | 가능 | Fontsource npm | `@fontsource/noto-sans-kr` | [파일](https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-kr@5.3.0/files/noto-sans-kr-0-100-normal.woff) |

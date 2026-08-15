@@ -450,7 +450,68 @@ async function pool(items, concurrency, task) {
   return results;
 }
 
+function knownKoPubCdn(font) {
+  const match = compact(font).match(/^kopub(dotum|batang|돋움체|바탕체)(light|medium|bold)$/u);
+  if (!match) return null;
+
+  const family = match[1] === 'dotum' || match[1] === '돋움체' ? 'Dotum' : 'Batang';
+  const weight = `${match[2][0].toUpperCase()}${match[2].slice(1)}`;
+  return {
+    packageType: 'npm',
+    packageName: 'font-kopub',
+    version: '1.0.2',
+    file: `fonts/KoPub${family}-${weight}.woff`,
+    license: 'KOPUS-Custom (패키지 메타데이터 표기)',
+    delivery: 'jsDelivr npm',
+    note: 'KoPub 돋움·바탕의 요청 굵기와 일치하는 font-kopub WOFF 확인',
+  };
+}
+
+function knownKoPubWorldCdn(font) {
+  const match = compact(font).match(/^kopubworld(dotum|batang|돋움체|바탕체)(light|medium|bold)$/u);
+  if (!match) return null;
+
+  const family = match[1] === 'dotum' || match[1] === '돋움체' ? 'Dotum' : 'Batang';
+  const weight = `${match[2][0].toUpperCase()}${match[2].slice(1)}`;
+  return {
+    packageType: 'npm',
+    packageName: 'font-kopubworld',
+    version: '1.0.3',
+    file: `fonts/KoPubWorld-${family}-${weight}.otf`,
+    license: 'KOPUS-Custom (사용 등록 후 상업적·온라인 사용 가능)',
+    delivery: 'jsDelivr npm',
+    note: 'KOPUS 공식 공개 글꼴 안내에 따른 KoPubWorld 요청 굵기 일치 OTF 확인',
+  };
+}
+
+function knownGovernmentSymbolCdn(font) {
+  const normalized = String(font)
+    .normalize('NFKC')
+    .toLocaleLowerCase('en-US')
+    .replace(/\.(?:ttf|otf|woff2?)$/u, '')
+    .replace(/[\s_.-]+/gu, '');
+  if (!new Set(['government16040911', '정부상징부처명16040911']).has(normalized)) return null;
+
+  return {
+    packageType: 'github',
+    owner: 'jangster77',
+    repo: 'korea-government-symbol-font',
+    ref: 'v1.0.0',
+    file: 'fonts/Government_16040911.ttf',
+    license: '공공누리 제4유형 (출처표시+상업적 이용금지+변경금지)',
+    delivery: 'jsDelivr GitHub',
+    note: '문화체육관광부 대한민국정부상징서체 원본 TTF의 고정 태그 CDN 확인',
+  };
+}
+
 function knownCdn(font) {
+  const koPub = knownKoPubCdn(font);
+  if (koPub) return koPub;
+  const koPubWorld = knownKoPubWorldCdn(font);
+  if (koPubWorld) return koPubWorld;
+  const governmentSymbol = knownGovernmentSymbolCdn(font);
+  if (governmentSymbol) return governmentSymbol;
+
   const key = familyKey(font);
   const batang = new Set(['함초롬바탕', '함초롱바탕', '한컴바탕', '새바탕'].map(familyKey));
   const dotum = new Set(['함초롬돋움', '함초롱돋움', '한컴돋움', '한컴산뜻돋움', '새돋움'].map(familyKey));
@@ -861,24 +922,26 @@ async function jsDelivrCandidates(font) {
 async function resolveFont(font, documentCount, catalog, npmSearchEnabled) {
   const direct = knownCdn(font);
   if (direct) {
-    const url = `${CDN_ROOT}/gh/${direct.packageName}@${direct.version}/${direct.file}`;
+    const url = direct.packageType === 'npm'
+      ? `${CDN_ROOT}/npm/${direct.packageName}@${direct.version}/${direct.file}`
+      : `${CDN_ROOT}/gh/${direct.packageName}@${direct.version}/${direct.file}`;
     try {
       if (await confirmsDownload(url)) {
         return {
           font,
           documentCount,
           status: 'available',
-          delivery: 'jsDelivr GitHub',
+          delivery: direct.delivery ?? 'jsDelivr GitHub',
           packageName: direct.packageName,
           version: direct.version,
           license: direct.license,
           url,
-          note: 'rhwp-studio font-loader.ts에 이미 등록된 배포본',
+          note: direct.note ?? 'rhwp-studio font-loader.ts에 이미 등록된 배포본',
         };
       }
       return { font, documentCount, status: 'not-found', delivery: '', packageName: direct.packageName, version: direct.version, license: direct.license, url, note: '등록된 jsDelivr URL이 현재 응답하지 않음' };
     } catch (error) {
-      return { font, documentCount, status: 'lookup-error', delivery: '', packageName: direct.packageName, version: direct.version, license: direct.license, url, note: `GitHub CDN 확인 실패: ${error.message}` };
+      return { font, documentCount, status: 'lookup-error', delivery: '', packageName: direct.packageName, version: direct.version, license: direct.license, url, note: `jsDelivr CDN 확인 실패: ${error.message}` };
     }
   }
 
