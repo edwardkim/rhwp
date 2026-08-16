@@ -17,6 +17,18 @@
 collaborator self PR이므로 reviewer는 지정하지 않았다. `mergeable`, `mergeStateStatus`, head SHA와 CI 결과는
 작성 시점의 참고값이며, 최종 merge 전에 이 trailing 기록을 포함한 최신 head에서 다시 확인한다.
 
+## 개별 원 PR 검토 기록
+
+- [#4919 검토](pr_4919_review.md): service 공통 문서 열기·조회 축
+- [#4920 검토](pr_4920_review.md): render backend 공통 trait 계층
+- [#4921 검토](pr_4921_review.md): 문서 의미 diff 라이브러리
+- [#4922 검토](pr_4922_review.md): CAS 판정과 재계획 hint
+- [#4923 검토](pr_4923_review.md): CI agent preflight 배선
+- [#4924 검토](pr_4924_review.md): 실물 대형 문서 scale ladder
+
+각 원 PR의 source head, 변경 범위와 원 PR CI 결과는 위 개별 기록에 남겼다. #4931의 전체 회귀는 이들을
+한 tree로 누적한 결과의 최종 검증이며, 원 PR을 직접 merge하는 판단을 대체하지 않는다.
+
 ## 체리픽 범위와 판단
 
 - [#4919](https://github.com/edwardkim/rhwp/pull/4919)의 service 공통 축, [#4920](https://github.com/edwardkim/rhwp/pull/4920)의
