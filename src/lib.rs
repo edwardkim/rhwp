@@ -8,6 +8,7 @@ pub mod agent;
 pub mod agent_seal;
 pub mod capabilities_schema;
 pub mod diagnostics;
+pub mod docdiff;
 pub mod doclang;
 pub mod document_core;
 pub mod emf;
