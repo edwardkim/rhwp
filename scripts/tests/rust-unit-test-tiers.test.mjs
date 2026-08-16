@@ -61,6 +61,20 @@ test('repository source를 module과 support item으로 전수 분류한다', (t
   assert.equal(inventory.summary.tiers.white_box.testAttributes, 1);
 });
 
+test('내부 workspace crate의 source test도 기준선에 포함한다', (t) => {
+  const root = fixture(t, 'pub fn root() {}');
+  const crateSource = path.join(root, 'crates', 'leaf', 'src');
+  mkdirSync(crateSource, { recursive: true });
+  writeFileSync(
+    path.join(crateSource, 'lib.rs'),
+    '#[cfg(test)] mod tests { use super::*; #[test] fn leaf_contract() {} }',
+  );
+  const inventory = inventorySourceTests(root);
+  assert.equal(inventory.summary.cfgTestModules, 1);
+  assert.equal(inventory.modules[0].file, 'crates/leaf/src/lib.rs');
+  assert.equal(inventory.modules[0].tier, 'white_box');
+});
+
 test('#[path] 외부 test module을 선언 파일 기준으로 해석한다', (t) => {
   const root = fixture(
     t,

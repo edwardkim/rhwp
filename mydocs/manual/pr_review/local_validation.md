@@ -59,7 +59,8 @@ node scripts/run-rust-test.mjs issue_1234_short_description \
 weighted LPT로 다시 분배하므로 target 구조를 의도적으로 재조정하는 별도 단계에서만 사용한다.
 경로·crate-root 의존성이 탐지된 source는 생성기가 singleton exception으로 보존한다.
 
-제품 소스의 `#[cfg(test)]`는 기존 모듈별 테스트 수와 test support 항목을 기준선으로 관리한다.
+제품 소스의 `#[cfg(test)]`는 root `src/`와 내부 `crates/*/src/`의 기존 모듈별 테스트 수와 test
+support 항목을 기준선으로 관리한다.
 `integration_ready`는 공개 integration test 이동 후보, `test_support`는 제한된 지원 API가 필요한 후보,
 `white_box`는 private 구현 불변식으로 남길 후보이다. 다음 검사는 새 모듈·지원 항목 또는 기존 모듈의
 테스트 증가를 실패시키며, 단계적으로 `tests/cases/`로 옮겨 감소하는 변경은 허용한다.
@@ -69,8 +70,10 @@ node --test scripts/tests/rust-unit-test-tiers.test.mjs
 node scripts/rust-unit-test-tiers.mjs --check
 ~~~
 
-로컬 전체 nextest와 CI nextest archive는 모두 manifest에서 생성된 같은 Cargo `[[test]]` target을
-사용한다. 따라서 새 일반 test source는 test case 수만 늘리고 integration binary 수는 늘리지 않는다.
+로컬 전체 nextest와 CI nextest archive는 manifest에서 생성된 root Cargo `[[test]]` target을 사용한다.
+내부 `crates/*`의 lib test는 로컬 workspace `default-members`와 CI의 `Test internal Rust crates` gate가
+실행한다. 따라서 새 일반 test source는 integration binary 수를 늘리지 않고, private white-box test는
+production crate 경계와 함께 독립 binary로 점진 분리할 수 있다.
 
 ### 시각 대조용 최신 바이너리 준비는 별도다
 

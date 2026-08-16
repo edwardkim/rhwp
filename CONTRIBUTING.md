@@ -250,8 +250,8 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
 
    제품 소스의 `#[cfg(test)]`에는 새 테스트 모듈이나 test support 항목을 추가하지 않습니다. 공개 API로
    재현할 수 있는 테스트는 `tests/cases/`에 작성하고, 기존 소스 테스트의 차등 이동 상태는 다음 명령으로
-   확인합니다. private 구현 불변식을 검증해야 하는 예외는 별도 단계에서 근거와 기준선 변경을 함께
-   검토합니다.
+   확인합니다. root `src/`와 내부 `crates/*/src/`가 모두 검사 대상입니다. private 구현 불변식을 검증해야
+   하는 예외나 새 내부 crate 경계는 별도 단계에서 근거와 기준선 변경을 함께 검토합니다.
 
    ```bash
    node scripts/rust-unit-test-tiers.mjs --check

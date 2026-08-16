@@ -20,7 +20,7 @@ pub mod ontology;
 pub mod ooxml_chart;
 pub mod paint;
 pub mod parser;
-pub mod password_crypto;
+pub use rhwp_password_crypto as password_crypto;
 pub mod plan_schema;
 pub mod pq_sign;
 pub mod provenance;

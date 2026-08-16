@@ -58,6 +58,19 @@
   },
   "modules": [
     {
+      "id": "crates/rhwp-password-crypto/src/lib.rs::tests#1",
+      "file": "crates/rhwp-password-crypto/src/lib.rs",
+      "sourcePath": "crates/rhwp-password-crypto/src/lib.rs",
+      "line": 981,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
       "id": "src/agent_seal.rs::tests#1",
       "file": "src/agent_seal.rs",
       "sourcePath": "src/agent_seal.rs",
@@ -2409,19 +2422,6 @@
         "super_private_scope"
       ],
       "maximumTestAttributes": 4
-    },
-    {
-      "id": "src/password_crypto.rs::tests#1",
-      "file": "src/password_crypto.rs",
-      "sourcePath": "src/password_crypto.rs",
-      "line": 981,
-      "module": "tests",
-      "testAttributes": 2,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 2
     },
     {
       "id": "src/plan_schema.rs::tests#1",

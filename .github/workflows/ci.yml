@@ -973,6 +973,15 @@ jobs:
           node scripts/rust-unit-test-tiers.mjs --check
           node scripts/run-rust-test.mjs --print issue_1035_alignment
 
+      - name: Test internal Rust crates
+        run: |
+          cargo test --workspace \
+            --exclude rhwp \
+            --exclude rhwp-subsecond \
+            --exclude rhwp-native-ffi \
+            --exclude batch-convert \
+            --lib
+
       - name: Validate Render Diff trigger policy
         run: python3 -m unittest scripts/tests/test_render_diff_workflow.py
 

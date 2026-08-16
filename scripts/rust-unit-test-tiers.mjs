@@ -26,6 +26,26 @@ function walkRustFiles(directory) {
   });
 }
 
+function productionSourceDirectories(root) {
+  const directories = [path.join(root, 'src')];
+  const cratesDirectory = path.join(root, 'crates');
+  if (!existsSync(cratesDirectory)) {
+    return directories;
+  }
+  for (const entry of readdirSync(cratesDirectory, { withFileTypes: true }).sort(
+    (left, right) => left.name.localeCompare(right.name),
+  )) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+    const sourceDirectory = path.join(cratesDirectory, entry.name, 'src');
+    if (existsSync(sourceDirectory)) {
+      directories.push(sourceDirectory);
+    }
+  }
+  return directories;
+}
+
 function blank(masked, source, start, end) {
   for (let index = start; index < end; index += 1) {
     if (source[index] !== '\n' && source[index] !== '\r') {
@@ -268,10 +288,12 @@ export function analyzeSourceFile(file, root = ROOT) {
 export function inventorySourceTests(root = ROOT) {
   const modules = [];
   const supportItems = [];
-  for (const file of walkRustFiles(path.join(root, 'src'))) {
-    const result = analyzeSourceFile(file, root);
-    modules.push(...result.modules);
-    supportItems.push(...result.supportItems);
+  for (const directory of productionSourceDirectories(root)) {
+    for (const file of walkRustFiles(directory)) {
+      const result = analyzeSourceFile(file, root);
+      modules.push(...result.modules);
+      supportItems.push(...result.supportItems);
+    }
   }
   modules.sort((left, right) => left.id.localeCompare(right.id));
   supportItems.sort((left, right) => left.id.localeCompare(right.id));
