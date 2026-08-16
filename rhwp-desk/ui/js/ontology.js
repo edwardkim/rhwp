@@ -42,6 +42,12 @@ TOOL_TO_CLI.hwp_inspect_unicode = "inspect unicode";
 /** 온톨로지 도구 이름(hwp_*) → 명령 팔레트 검색어로 쓸 CLI 명령 이름. */
 export const cliCommandFor = (toolName) => TOOL_TO_CLI[toolName] || toolName;
 
+/** tool_name이 만든 결과를 이어받을 수 있는 MCP 도구 이름들(hwp_*) — 없으면 빈 배열. */
+export async function suggestedTools(toolName) {
+  const graph = await loadGraph();
+  return graph?.edges?.[toolName] || [];
+}
+
 function toolNameFromEntry(entry) {
   const cmd = entry.command || entry.args?.[0];
   if (cmd === "inspect") {
