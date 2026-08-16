@@ -164,6 +164,18 @@
   "surfaces": [
     "mydocs/tech/standards/document_transaction_protocol.md",
     "mydocs/tech/standards/document_agent_runtime.md",
-    "tools/dar/conformance.py"
-  ]
+    "tools/dar/conformance.py",
+    "tools/dar/transaction.py"
+  ],
+  "referenceDriver": {
+    "path": "tools/dar/transaction.py",
+    "enforces": [
+      "상태기계 전이표",
+      "COMMIT 전 VALIDATE 성공 게이트",
+      "원본 무훼손(매 연산 입력 해시 재확인)",
+      "영수증 불변(확정 후 재COMMIT 거절)",
+      "영수증만으로 REPLAY 재현 판정"
+    ],
+    "note": "선언을 강제로 바꾸는 층. 모든 연산은 DAP/1.0 봉투를 낸다."
+  }
 }
