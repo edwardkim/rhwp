@@ -78,7 +78,11 @@ mod tests {
     fn build_serializes_to_hwpx() {
         let doc = build_scaffold(&full_spec());
         let bytes = serialize_hwpx(&doc).expect("scaffold 문서는 HWPX 로 직렬화되어야 한다");
-        assert!(bytes.len() > 100, "생성 산출물이 비어있다: {}바이트", bytes.len());
+        assert!(
+            bytes.len() > 100,
+            "생성 산출물이 비어있다: {}바이트",
+            bytes.len()
+        );
     }
 
     /// 왕복 안정성: 생성 바이트를 파싱→재직렬화→재파싱했을 때 IR 차이가 없어야 한다.
@@ -110,7 +114,9 @@ mod tests {
             "제목이 복원되지 않았다: {texts:?}"
         );
         assert!(
-            texts.iter().any(|t| t == "본 보고서는 자동 생성되었습니다."),
+            texts
+                .iter()
+                .any(|t| t == "본 보고서는 자동 생성되었습니다."),
             "본문 문단이 복원되지 않았다: {texts:?}"
         );
         assert!(
