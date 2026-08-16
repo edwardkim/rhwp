@@ -32,7 +32,7 @@ rhwp 를 "에이전트 도구가 딸린 문서 엔진"에서 **검증 가능하�
 |---|---|---|---|
 | 1 | 문서 에이전트 프로토콜 (DAP) | **빠짐** | 봉투마다 `schemaVersion` 은 있으나 요청·트랜잭션 신원과 안정 오류 코드를 묶는 프로토콜 이름이 없다 → [DAP/1.0](document_agent_protocol.md) |
 | 2 | 문서 트랜잭션 프로토콜 (DATP) | **실질 있음·이름 없음** | `run`(선언적 계획·정적 선검증·원자 실행·저널) + `replay`(입력·계획·산출 3해시 영수증, `--expect-output-sha256` 제3자 재현, 불일치 exit 3) → [DATP/1.0](document_transaction_protocol.md) 이 이를 형식화 |
-| 3 | 샌드박스·정책 엔진 | **빠짐** | 능력 축소(MCP 프로필)는 있으나 작업 단위 정책 서술·집행·해시가 없다 |
+| 3 | 샌드박스·정책 엔진 | **부분** | 능력 축소(MCP 프로필) + DATP 참조 드라이버의 COMMIT 전 집행(`tools/dar/transaction.py commit --policy`: `admissionPolicy` 서술 → 위반은 4000 으로 커밋 차단, 통과분은 `policySha256` 을 영수증에 기록). `rhwp run`(러스트 본체) 에는 아직 미결속 |
 | 4 | 능력 등록부 | **있음** | `capabilities`·`export-agent-manifest`·[capability 카탈로그](../../manual/agent_capability_registry.md) |
 | 5 | 문서 에이전트 벤치마크 | **부분** | `gym/` 과제 팩·`tools/agent_bench` 존재. 표준 점수 계약 미정 |
 | 6 | 문서 컴파일러 / IR | **있음** | 전 포맷 파서가 공통 `Document` IR 반환([parser_architecture](../parser_architecture.md)), `export-ir-schema` 로 자기서술 |

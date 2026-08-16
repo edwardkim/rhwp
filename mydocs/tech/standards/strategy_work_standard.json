@@ -68,6 +68,7 @@
     "mydocs/tech/standards/strategy_work_standard.md",
     "mydocs/tech/standards/agent_work_standard.md",
     "tools/strategist/sws_audit.py",
-    "tools/strategist/track_record.py"
+    "tools/strategist/track_record.py",
+    "tools/strategist/engagement.py"
   ]
 }

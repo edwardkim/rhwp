@@ -1609,6 +1609,14 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        Recipe {
+            command: "layout-anomaly",
+            doc: Some(main.clone()),
+            args: vec![s("layout-anomaly"), p(&main), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         // [#3918 승격 3호] scan — 파싱이 성공하는 표본이므로 probe.error 는 실리지
         // 않는다. 스윕의 관심은 판정 결과가 아니라 표지(untrustedContent·Fields)가
         // 항상 실리고 지도 밖 경로를 광고하지 않는 것이다.

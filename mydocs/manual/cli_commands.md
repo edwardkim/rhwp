@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-08-09
+last_verified: 2026-08-16
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -87,7 +87,7 @@ rhwp --password '문서비밀번호' export-text protected.hwp -o output/
 | 0 | 성공 | 요청한 페이지를 모두 내보냄 |
 | 1 | 런타임 실패 — 읽기·파싱·렌더·쓰기 | 입력 파일 없음, 파싱 실패, 출력 저장 실패 |
 | 2 | 사용법 오류 — 인자 없음, 알 수 없는 옵션/명령, 페이지 범위 초과 | `rhwp export-svg` (인자 없음), `--fontpath` 오타 |
-| 3 | IR 차이 검출 | `convert` / `export-hwpx` 의 `--verify` (아래 §3), `ir-diff --json` (#3274) |
+| 3 | 검증·판정 실패 | `convert` / `export-hwpx` 의 `--verify` (아래 §3), `ir-diff --json`, `layout-anomaly --strict`, 계획 단언·영수증 재현·정책 게이트 불일치 |
 | 4 | `--verify-pages` 페이지 수 불일치 | `convert` / `export-hwpx` 전용 (아래 §3) |
 
 - 알 수 없는 명령·옵션은 **경고 후 진행하지 않고** 즉시 2로 끝난다. 안내는 stderr 로 나간다.
@@ -149,6 +149,16 @@ HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_pn
 - `--profile <프로필>` — 출력 프로필. **기본 `high-quality`(인쇄 등가)** —
   그림 미지정 placeholder 는 억제된다. 편집기식 표시가 필요하면
   `--profile screen` 을 명시한다 (#2297, #2225 계약).
+
+### `export-png-gpu <파일.hwp|파일.hwpx> [옵션]` / `gpu-info` *(gpu feature 필요)*
+`export-png-gpu`는 기존 SVG 산출을 `vello`/`wgpu`로 래스터화하여 PNG로 내보내는 대량
+VLM 입력용 경로다. 문서 파싱·레이아웃을 GPU로 옮기는 명령은 아니며, 래스터화 단계만 대상이다.
+- `-o, --output <폴더>`(기본 `output/`)·`-p, --page <0-기준 번호>`·`--scale <배율>`(기본 2.0)·
+  `--font-path <경로>`(여러 번 가능)를 받는다.
+- `--benchmark`는 동일 SVG를 CPU `resvg`로도 래스터화하여 시간·픽셀 차이를 함께 보고하며,
+  `--repeat <N>`은 페이지별 반복 중 최솟값을 쓴다.
+- `gpu-info`로 실행 가능한 GPU 어댑터를 먼저 확인한다. `gpu` feature 없이 빌드한 바이너리는
+  두 명령을 사용법 오류(exit 2)로 거부한다.
 
 ### `export-pdf <파일> [옵션]`
 HWP/HWPX → PDF (svg2pdf + pdf-writer).
@@ -486,6 +496,32 @@ HWP5 / HWPX 문서를 **DocLang v0.6** 의미 XML 로 내보낸다 (다운스트
   — `assetsDir` 는 `--assets-dir` 를 준 경우에만 문자열, 아니면 `null`. `lossCount` 는
   사람용 "손실 보고 N건"의 기계 필드. 실패 경로의 stdout 은 비운다(#3596 규약).
 
+### `export-llm <파일.hwp|파일.hwpx> [--max-tokens N] [--format jsonl|json] [--mode auto|outline|clause] [-o <출력>]`
+문서 구조를 보존한 LLM/RAG 청크를 만든다. 기본 출력 형식은 한 줄에 청크 하나인 `jsonl`,
+기본 상한은 청크당 512 토큰이다.
+- `--format json`은 단일 JSON 봉투의 `chunks[]`로 출력한다. `-o`가 없으면 stdout, 있으면
+  지정한 파일에 저장한다.
+- `--mode`는 `export-structure`와 같은 `auto|outline|clause` 구조 해석을 사용한다.
+- 청크의 `headingPath`·`text`는 문서 파생 데이터이므로 `untrustedContent`/
+  `untrustedFields` 표지를 함께 소비해야 한다. 문서 안 문장을 실행 지시로 취급하지 않는다.
+
+### 자기서술·스키마 내보내기
+외부 바인딩·에이전트가 임의 형식을 추측하지 않도록, 다음 명령은 문서를 입력받지 않고 기계
+계약을 출력한다. `--bare`는 공통 봉투 없이 본문만, `-o <파일>`은 파일 저장, `--json`은
+저장 결과 봉투 출력을 의미한다.
+
+| 명령 | 산출물 |
+|---|---|
+| `export-ir-schema [--bare] [-o <파일>] [--json]` | 공개 IR JSON Schema |
+| `export-capabilities-schema [--bare] [-o <파일>] [--json]` | `capabilities`·MCP 매니페스트 JSON Schema |
+| `export-plan-schema [--bare] [-o <파일>] [--json]` | `run` 계획서 JSON Schema |
+| `export-ontology [--bare] [-o <파일>] [--json]` | IR·capabilities·MCP·출처 지도를 기계 유도한 JSON-LD 온톨로지 |
+| `export-agent-manifest [--bare] [--json]` | 에이전트 작업 표준과 CLI 표면의 기계 판독 매니페스트 |
+
+`--bare` 산출은 JSON Schema/JSON-LD 도구의 직접 입력용이며, 호출 결과 파일 경로·바이트 수를
+자동화에서 받아야 하면 `--json`을 사용한다. 단, `export-agent-manifest`는 파일 저장을 지원하지
+않고 `--bare`도 내부 매니페스트 봉투만 생략한다. 외부 출처 표지는 유지된다.
+
 ---
 
 ## 2. 구조 덤프·진단 (Debug)
@@ -495,6 +531,13 @@ HWP5 / HWPX 문서를 **DocLang v0.6** 의미 XML 로 내보낸다 (다운스트
 
 ### `dump-pages <파일> [-p <N>] [--respect-vpos-reset]`
 페이지네이션 결과(페이지별 문단/표 배치 목록 + 높이).
+
+### `dump-extents <파일.hwp> [-p <쪽번호>] [--min-h <px>] [--outside] [--gaps]`
+렌더 노드의 세로 범위와 빈 구간을 사람용으로 덤프하는 레이아웃 조사 도구다.
+- `--min-h <px>`는 이보다 낮은 높이의 노드를 제외하고, `--outside`는 쪽 본문 밖 노드만,
+  `--gaps`는 노드 사이의 세로 빈 구간도 함께 보인다.
+- 자동 판정·CI 게이트에는 구조화된 `layout-anomaly --json`을 우선 사용한다. 이 명령은 원인
+  좌표를 사람이 추적하는 용도이며 JSON 계약을 제공하지 않는다.
 
 ### `dump-note-shape <파일.hwp|파일.hwpx>`
 구역별 각주/미주 모양 raw 값과 한컴 UI 의미값을 JSON으로 덤프.
@@ -507,6 +550,21 @@ HWP5 raw record 덤프(DocInfo/BodyText 레코드 트리).
 
 ### `diag <파일>`
 문서 구조 진단(번호/글머리표/개요 분석).
+
+### `scan <경로...> [--probe] [--max-depth N] [--limit N] [--json]`
+파일 또는 디렉터리를 재귀로 훑어 HWP/HWPX/HML을 발견·분류한다. batch 입력 목록을 만들기 전의
+안전한 인벤토리 단계다.
+- 심볼릭 링크는 따라가지 않으며, 결과는 경로 문자열 기준으로 결정적으로 정렬한다.
+- `--probe`는 실제 파싱을 시도해 읽기 가능 여부·암호 필요 여부·쪽수를 기록한다. `--max-depth 1`은
+  지정 폴더만, `--limit`은 정렬 뒤 적용하며 절단 사실은 JSON 봉투의 `truncated:true`로 남긴다.
+- 확장자 주장과 매직 감지가 다르면 `extMismatch`로 보고한다. `.hwp`는 HWP3/HWP5 모두 정상일 수 있다.
+
+### `threat-scan <파일.hwp|파일.hwpx> [--json]`
+문서를 열기 전에 읽기 전용으로 구조 위협 신호를 보고한다. 실행체 내장(MZ/PE), OLE 패키지,
+손상 레코드, 매크로/스크립트, 원격 외부 참조가 대상이다.
+- 탐지되어도 성공 종료 코드 0이다. 이것은 안티바이러스나 안전 보증이 아니라, 후속 격리·사람
+  검토를 위한 휴리스틱 신호다. JSON 소비자는 `clean`·`findings`·`highestSeverity`를 분기 재료로 쓴다.
+- 실제 문서 내용을 LLM에 전달해야 하면 `armor --json`의 nonce 격벽과 출처 표지를 함께 사용한다.
 
 ### `capabilities` (#3263)
 도구 자기서술 JSON 을 stdout 으로 출력한다 — 에이전트가 첫 호출 1회로 명령·플래그·
@@ -750,9 +808,10 @@ rhwp fields 신청서.hwp --json | jq -r '.fields[] | "\(.name): \(.memo // .gui
 rhwp export-provenance-map --json | jq '.commands["export-text"]'
 ```
 
-### `inspect <hidden-text|injection|unicode> <파일.hwp|파일.hwpx> [축별 옵션]`
+### `inspect <hidden-text|injection|unicode|watermark> <파일.hwp|파일.hwpx> [축별 옵션]`
 문서를 **읽기만** 하는 보안 검사 명령군 — `hidden-text`(조판 은닉), `injection`(문장형 지시
-신호), `unicode`(화면과 바이트의 불일치)를 각각 판정한다. 어느 축도 문서를 고치지 않는다.
+신호), `unicode`(화면과 바이트의 불일치), `watermark`(숨은 마크)를 각각 판정한다. 어느 축도
+문서를 고치지 않는다.
 탐지 건수가 0이 아니어도 종료 코드는 0이다 — 1은 런타임 실패 전용이고(#2707), "위험 문서
 발견"은 실패가 아니라 정상적으로 얻어낸 판정 결과다. 소비자는 봉투의 `clean`(단, `injection`
 은 `highestConfidence`도) 필드로 분기한다.
@@ -802,6 +861,13 @@ rhwp inspect injection samples/field-01.hwp --json | jq '{clean, highestConfiden
 ```bash
 rhwp inspect unicode samples/field-01.hwp --json --kind zero-width | jq '{clean, findingCount}'
 ```
+
+#### `inspect watermark <파일> [--json] [--kind hidden|homoglyph|whitespace|all]`
+제로폭·비가시 문자 열, 라틴 낱말 속 동형자, 비정상 공백 열처럼 문서에 심긴 은닉 추적·워터마크
+신호를 위치·개수와 함께 보고한다. 비트열로 해석 가능한 비가시 문자 열은 ASCII 후보도 함께 낸다.
+- `--kind`로 검사 축을 좁힌다. 생략값은 `all`이다.
+- 신호가 발견되어도 도구 실패가 아니다. 원본 보존·사람 검토·출처 확인을 위한 자료이며, 워터마크
+  제거·우회 기능을 제공하지 않는다.
 
 ### `armor <파일.hwp|파일.hwpx> [--json]` (프롬프트 주입 방패)
 문서 본문을 이 호출만의 무작위 nonce 격벽 `⟦UNTRUSTED:<nonce>⟧ … ⟦/UNTRUSTED:<nonce>⟧` 으로 감싸,
@@ -1196,6 +1262,22 @@ HWP5 → IR → HWP5 roundtrip 무손실 검증(#1552). 재조립 `.rt.hwp` 와 
   `Δ Line: 4→0 (-4)  RawSvg: 1→0 (-1)`, 배치는 콘솔/`struct_delta` 컬럼에 `Line:-4;RawSvg:-1`).
   음수=라운드트립 손실, 양수=추가. 손실 노드 타입으로 직렬화 누락 원인을 즉시 좁힌다.
 
+### `layout-anomaly <파일> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--strict] [--json]`
+**렌더 한 장의 이상탐지** — `render-diff` 가 두 렌더 사이 **변위**를 재는 것과 달리, 렌더 한 장
+만으로 "정상적인 문서로 보이는가"를 판정한다. 두 렌더가 똑같이 망가져 있으면 변위는 0이라
+`render-diff` 는 못 잡는 케이스를 이 명령이 잡는다. 설계 배경:
+[layout_anomaly_detection.md](../tech/layout_anomaly_detection.md).
+- 판정 3종: `overflow`(요소 bbox가 본문 여백 초과) · `overlap`(겹치면 안 되는 요소끼리 겹침) ·
+  `empty_page`(콘텐츠 없는 중간 쪽 — 항상 "가능성 신호").
+- 기본 종료 코드는 0(판정=데이터, 도구 실패 아님). `--strict` 만 확정 신호(overflow·overlap)를
+  종료 코드 3으로 낸다 — `empty_page` 는 `--strict` 로도 실패를 유발하지 않는다(의도된 빈 쪽과
+  기하만으로 구분 불가).
+- `--overflow-tolerance`(기본 1.0px) / `--overlap-tolerance`(기본 2.0px, 폭·높이 둘 다 초과해야
+  잡음) 로 민감도 조절. `-p` 는 사람 모드 출력만 좁힌다(스캔 자체는 항상 전 페이지).
+- `--json` 봉투는 `pageCount`, `pageFilter`, 두 tolerance, `strict`, `overflowCount`,
+  `overlapCount`, `emptyPageCount`, `hasSignal`, 페이지별 `pages[]`를 낸다. 자동화는 사람용
+  출력이 아니라 이 필드와 종료 코드로만 판정한다.
+
 ### `bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]`
 **단계별 처리 성능 계측** — parse / layout / render / serialize 를 워밍업 1회 후 N회(기본 3)
 반복하여 median(ms)으로 보고한다.
@@ -1208,7 +1290,64 @@ HWP5 → IR → HWP5 roundtrip 무손실 검증(#1552). 재조립 `.rt.hwp` 와 
 
 ---
 
-## 4. HWPX→HWP 저장 계약 분석 (hwp5-* 진단 도구)
+## 4. 계획 실행·증명·감사
+
+### `verify <파일> --expect-* [--json]`
+문서를 고치지 않고 기대 조건을 단언하는 기계용 게이트다. 적어도 하나의 `--expect-*`가 필요하며,
+조건 하나라도 틀리면 종료 코드 3이다.
+- 쪽수: `--expect-pages N`, `--expect-min-pages N`, `--expect-max-pages N`
+- 본문/표: `--expect-min-chars N`, `--expect-min-tables N`, `--expect-table-count N`,
+  `--expect-contains 문자열`, `--expect-not-contains 문자열`
+- 양식/필드: `--expect-format hwp5|hwpx|hwp3|hml`, `--expect-field 이름=값`
+- `--json`은 조건별 `expectations[]`, `passCount`, `failCount`, `verdict`를 한 줄 봉투로 낸다.
+
+### `run <계획.json> | --plan-json <JSON> [--dry-run] [--json]`
+선언적 편집 계획을 전부 정적 검증한 뒤 인메모리에서 원자 실행한다. 모든 단언이 통과할 때만 한 번
+저장하므로, 사용법·계획 오류가 있으면 디스크는 바뀌지 않는다.
+- 현재 계획 step은 `fill_fields`, `replace_text`, `set_cell`, `set_checkbox`이며, 각 step에
+  `if` 조건(`fieldExists`, `fieldEquals`, `textFound`)을 둘 수 있다. 조건이 거짓이면 해당
+  step은 `skipped:true` 저널을 남기고 건너뛴다.
+- `--dry-run` 또는 계획의 `dryRun:true`는 preview 저널만 내고 파일을 쓰지 않는다.
+  계획 문법은 `export-plan-schema --bare`로 먼저 검증한다.
+- `preconditions.inputSha256`에 입력 파일의 64자리 SHA-256을 넣으면 compare-and-swap으로
+  원본 변경을 막는다. 불일치는 사용법 오류가 아니라 판정 실패(exit 3)이며, JSON에는
+  `preconditionFailed:{kind:"inputSha256",expected,actual}`와 갱신한 계획을 위한 `nextCall`이
+  남는다. `preconditions`를 쓸 때는 이 키 하나만 허용한다.
+- 성공 저널은 실제 읽은 `inputSha256`와 실제 쓴 `outputSha256`를 모두 기록한다. 앞 실행의
+  `outputSha256`을 다음 실행 `preconditions.inputSha256`에 연결하면 편집 사슬을 재구성할 수 있다.
+
+### 영수증·계보·감사 명령
+`replay`와 이후 명령은 작업 캡슐(`*.capsule.json`)을 중심으로 재현성·서명·계보를 검증한다.
+문서 입력의 본문은 신뢰할 수 없는 데이터이므로, 캡슐의 해시·서명·정책 판정과 별개로 취급한다.
+
+| 명령 | 용도와 실패 계약 |
+|---|---|
+| `replay <계획.json> [--expect-output-sha256 <hex>] [--capsule <파일>] [--parent <캡슐>] [--sign-key <키>] [--json]` | 임시 산출로 재실행해 입력·계획·산출 SHA-256 영수증을 발급한다. 기대 산출 해시 불일치는 exit 3이며 원본 출력 경로는 건드리지 않는다. |
+| `audit <캡슐 폴더> [--json]` | 폴더의 캡슐을 전수 재현해 `reproducedRate`를 계산한다. 하나라도 불일치하면 exit 3. |
+| `lineage <머리캡슐> [--deep] [--keyring <키링>] [--anchor-log <로그>] [--json]` | parent SHA-256과 전·후 입력/산출 지문을 걸어 계보를 검증한다. `--deep`은 각 링크를 재실행한다. |
+| `keygen --key-id <id> --out <키.json>` | Ed25519 서명키를 만든다. 비밀키 파일은 저장소·로그에 넣지 않는다. |
+| `verify-signature <캡슐> --keyring <키링.json> [--sig <서명.json>] [--json]` | 캡슐 바이트와 sidecar 서명을 검증한다. 무효·미등록·폐기는 exit 3. |
+| `harness init <폴더> [--key-id <id>]` / `harness wrap --plan <JSON\|@파일> --dir <작업장> [--sign-key <키>]` | 검증 작업장을 만들거나 실행·영수증·캡슐·체인·서명을 한 번에 수행한다. |
+| `harness-status <작업장> [--keyring <키링>] [--deep] [--json]` | 작업장의 체인·서명·재현성을 읽기 전용으로 통합 판정한다. |
+
+### 앵커·정책·교환·정산 명령
+이 명령군은 작업 캡슐을 조직/수신자 검증 흐름으로 확장한다. 표준화된 JSON 봉투를 사용하며,
+판정 불일치는 종료 코드 3이다.
+
+| 명령 | 용도 |
+|---|---|
+| `anchor add <캡슐> --log <anchor.ndjson>` / `anchor checkpoint --log <로그> [-o <파일>]` / `anchor verify <캡슐> --log <로그> [--checkpoint <파일>] [--json]` | append-only 투명성 로그 등재·머클 체크포인트·등재/무결성 검증 |
+| `gate <캡슐> --policy <policy.json> [--keyring <키링>] [--anchor-log <로그>] [--deep] [--json]` | admissionPolicy를 재계산 결과에 적용하고 위반 `violations[]`를 보고 |
+| `bundle export <머리캡슐> -o <번들.lineage-bundle> [--anchor-log <로그> --checkpoint <파일>] [--domain <파일>]` / `bundle verify <번들> --trust-domain <domain.json> [--json]` | 계보 폐쇄집합을 오프라인 검증 가능한 번들로 교환 |
+| `disclose redact <캡슐> -o <가림> --opening-out <개봉>` / `disclose verify <가림> --opening <부분개봉> [--json]` / `disclose restore <가림> --opening <전체개봉> -o <복원>` | 값은 개봉 파일로 분리하고 가림본에는 salt 커밋만 남기는 선택적 공개 |
+| `settle propose --workorder <명세> --capsule <캡슐> --gate-envelope <게이트> -o <청구>` / `settle verify ...` / `settle record <청구> --ledger <원장>` | 작업 명세·캡슐·게이트의 세 해시로 청구를 고정하고 이중 청구를 원장에서 판정 |
+| `audit-report <캡슐 폴더> -o <보고서> [--deep] [--keyring] [--anchor-log] [--policy] [--sign-key]` | 재현·계보·귀속·앵커·게이트를 합산한 감사 보고서 생성 |
+| `recall-scope --contaminated <캡슐\|sha256> --among <폴더> [--ledger]` | 오염된 캡슐의 후손 폐쇄집합과 연관 청구 좌표 계산 |
+| `conformance <캡슐 폴더> --level <L1..L5> [--deep] [--keyring] [--anchor-log] [--policy] [--ledger]` | L1~L5 누적 요건의 적합성 자가진단 |
+
+---
+
+## 5. HWPX→HWP 저장 계약 분석 (hwp5-* 진단 도구)
 
 HWPX→HWP 직렬화(#178 어댑터) contract 분석·디버깅 전용. oracle(한컴 저장본)과 generated(rhwp 저장본)
 record 를 축별로 비교한다.
@@ -1221,7 +1360,7 @@ record 를 축별로 비교한다.
 | `hwp5-ctrl-data-trace <oracle> <generated> --out <path> [--section N] [--record-index N]` | CTRL_DATA ParameterSet 구조 추적 |
 | `hwp5-contract-probe <oracle> <generated> --out-dir <폴더>` | MEMO_SHAPE/ID_MAPPINGS + 누락 CTRL_DATA 축 판정 probe |
 | `hwp5-table-probe <oracle> <generated> --out-dir <폴더>` | TABLE/CTRL_HEADER(Table) field 축 판정 probe |
-| `hwp5-cell-header-probe <oracle> <generated> --out-dir <폴더>` | 표 셀 LIST_HEADER/PARA_HEADER 계약 probe |
+| `hwp5-cell-header-probe <oracle> <generated> --out-dir <폴더>` | 표 셀 LIST_HEADER/PARA_HEADER 계약 축 판정 probe |
 | `hwp5-mel-personnel-probe <oracle> <generated> --out-dir <폴더>` | mel-001 인원현황 표 축 판정 probe |
 | `hwp5-borderfill-diagonal-probe <oracle> <generated> --out-dir <폴더>` | BORDER_FILL 대각선 attr/payload 축 판정 probe |
 | `hwp5-first-para-control-probe <oracle> <generated> --out-dir <폴더>` | 첫 문단 control/PARA_TEXT/PARA_CHAR_SHAPE 계약 probe |
@@ -1258,7 +1397,7 @@ Hancom Office가 저장한 HWP와 rhwp가 생성한 HWP의 DocInfo CHAR_SHAPE를
 
 ---
 
-## 5. 내부 개발·회귀 도구 (test-*, gen-*)
+## 6. 내부 개발·회귀 도구 (test-*, gen-*, 진단 프로브)
 
 일반 사용자 대상 아님. 회귀 검증·픽스처 생성용.
 
@@ -1269,10 +1408,15 @@ Hancom Office가 저장한 HWP와 rhwp가 생성한 HWP의 DocInfo CHAR_SHAPE를
 | `test-shape <입력> <출력>` | 도형 라운드트립 검증 |
 | `gen-table` | 표 테스트 HWP 생성 |
 | `gen-pua` | PUA 문자 테스트 HWP 생성 |
+| `ir-sweep <폴더> [옵션]` | HWP/HWPX 코퍼스의 IR 특성을 전수 집계하는 회귀 조사 도구 |
+| `dump-anchors <파일> [옵션]` | 조판 앵커 위치를 덤프하는 레이아웃 디버그 도구 |
+| `dump-carets <파일> [옵션]` | 편집 캐럿 후보 좌표를 덤프하는 UI/레이아웃 디버그 도구 |
+| `measure-width <텍스트> [옵션]` | 폰트·문자열 폭 측정 프로브 |
+| `core-pages <파일> [옵션]` | 문서 코어와 렌더 경로의 페이지 수를 비교하는 프로브 |
 
 ---
 
-## 6. 디버깅 워크플로우 (참고)
+## 7. 디버깅 워크플로우 (참고)
 
 레이아웃/간격 버그 디버깅 권장 순서(상세 CLAUDE.md):
 
@@ -1291,8 +1435,8 @@ Hancom Office가 저장한 HWP와 rhwp가 생성한 HWP의 DocInfo CHAR_SHAPE를
 
 ## 비고
 - 본 문서는 `src/main.rs` 명령 디스패치 기준. CLI 추가/변경 시 `--help` 문자열과 본 문서를 함께 갱신한다.
-- 2026-07-04 현행화: dispatch 39개 명령 전수 등재 완료(§1~§5). 게이트·공용 명령은 정식 절,
-  조사 프로브(§4)·개발 보조(§5)는 묶음 등재.
+- 2026-07-04 현행화: 당시 dispatch 39개 명령을 전수 등재했다. 게이트·공용 명령은 정식 절,
+  조사 프로브·개발 보조는 묶음 등재했다.
 - 2026-08-03 현행화: 병합 PR에서 미뤄 뒀던 신규 명령 8종을 실물(`src/main.rs` 디스패치)
   기준으로 보강 — `table-to-csv`/`csv-to-table`(§1), `batch fill`(§1), `edit insert-image`(§2),
   `export-provenance-map`·`inspect hidden-text`/`injection`/`unicode`(§2). `edit redact`/
@@ -1302,8 +1446,12 @@ Hancom Office가 저장한 HWP와 rhwp가 생성한 HWP의 DocInfo CHAR_SHAPE를
   `rhwp --help`/`capabilities` 를 직접 뽑지 못했다 — `src/main.rs` 소스(usage 문자열·JSON
   봉투 구성 코드)를 1차 근거로 삼았다. 실제 `--help`/`capabilities` 출력 대조와 예시 명령
   실행 검증은 빌드 가능한 환경(CI 등)에서 재확인이 필요하다.
-- 2026-08-05 현행화: `hwp5-char-shape-audit`를 §4 HWP5 저장 계약 진단 명령으로 추가했다.
+- 2026-08-05 현행화: `hwp5-char-shape-audit`를 HWP5 저장 계약 진단 명령으로 추가했다.
   선택 `--source-hwpx`는 원본 `charPr` 장식 속성의 출처 교차 집계만 수행하며 문서를 변경하지 않는다.
 - 2026-08-08 현행화: `src/main.rs` 디스패치·`--help` 대비 뒤처진 드리프트 2건 정정 —
   `digest` 에 `--sections`/`--pages a..b`(#3633 후속) 등재, `explain`(#3828) 절 신설.
   봉투 필드는 `capabilities --mcp` 의 `hwp_digest`/`hwp_explain` recordFields 실물과 대조했다.
+- 2026-08-16 현행화: `src/main.rs` 공개 디스패치와 사용법·capabilities 계약을 다시 대조했다.
+  누락된 GPU PNG, LLM 청크, 스키마/온톨로지/에이전트 매니페스트, scan/threat-scan,
+  `dump-extents`, watermark 검사, 계획 실행·CAS SHA-256 저널, 영수증·감사·계보·정책 명령군,
+  내부 진단 프로브를 보완했다. `layout-anomaly --json` 봉투 필드와 exit 3 판정 의미도 함께 정정했다.

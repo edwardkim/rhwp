@@ -59,7 +59,7 @@ engagement.json: {"objective": "…",             # 필수 — 고객 목표 문
 | A 코퍼스 지도 | 문서별 `info --json` (+광고되면 `explain --json`) | `corpus_map.json` |
 | B 근거 대장 | 질문 키워드별 `search --json` (+광고되면 `extract-data` 날짜·금액) | `evidence.json` |
 | C 산출물 골격 | scaffold_schema_v1 명세 — CLAIM 플레이스홀더 + 근거 연결표 | `spec.json` (+`deliverable.hwpx`) |
-| D 게이트 | `--validate <완성 spec>` — 주장-근거 연결의 기계 검증 | 판정 봉투 (exit 0/3) |
+| D 게이트 | `--validate <완성 spec>` — 주장-근거 연결의 기계 검증 + SWS/1.0 자동 감사 | 판정 봉투 (exit 0/3), `sws_deliverable.json`, `sws_audit.json` |
 
 C 의 HWPX 생성은 **`scaffold` 가 `capabilities` 에 광고된 경우에만** 실행한다
 (scaffold 는 #4888, devel 미포함 빌드에서는 `spec.json` 까지가 산출물이고 그
@@ -104,6 +104,30 @@ C 의 HWPX 생성은 **`scaffold` 가 `capabilities` 에 광고된 경우에만*
   - `placeholder` — 플레이스홀더가 실제 주장으로 작성되지 않음
 - 매치 0건인 질문에는 CLAIM 자체가 생성되지 않는다 — "근거 없음"이 그 절의
   정직한 내용이다. 0건은 오류가 아니다.
+
+## 5.1 SWS/1.0 자동 감사 — CAP-4903 과 SWS/1.0(#4904)의 접합
+
+`--validate` 는 근거 대장 연결(§5)만 보지 않는다. 같은 호출에서 spec·ledger·
+corpus_map 을 [SWS/1.0 공개 포맷](../tech/standards/strategy_work_standard.md)으로
+옮겨 [`sws_audit.py`](../../tools/strategist/sws_audit.py)를 자동 호출하고, 도달
+레벨(SW-L1~L5)을 `sws_audit.json` 에 남긴다(`--no-sws-audit` 로 생략).
+
+이전까지는 감사기가 독립 CLI로만 있어서 산출물마다 사람이 따로 불러야 했다 —
+호출을 잊으면 검증되지 않은 산출물이 그대로 나갔다. 지금은 게이트를 통과하는
+모든 산출물이 자동으로 채점된다.
+
+- **엔진이 보장하는 만큼만 정직하게 채점된다.** 좌표(L1)·전수성(L2)은 ledger·
+  corpus_map 값 그대로 옮겨 재독까지 검증한다. 하지만 `challenge`/`falsifier`/
+  `confidence`(L3·L4)는 spec.json 골격에 아직 담을 자리가 없다 — 에이전트가
+  §5 의 CLAIM 문장에 반증 시도와 확신도를 구조화해 싣기 전까지는 L3 이상이
+  미달로 남는 것이 맞다. 낮은 도달 레벨은 실패가 아니라 포맷의 현재 한계를
+  드러내는 정직한 신호다(SWS/1.0 §legitimacy).
+- **이 판정은 exit code 를 바꾸지 않는다.** §5 의 근거 대장 연결 게이트만
+  납품 가부를 결정한다. SWS 도달 레벨은 산출물에 함께 실어 고객에게 명시할
+  근거일 뿐, 별도 차단 조건이 아니다 — 낮은 레벨로도 §5 를 통과한 산출물은
+  기존과 같이 납품 가능하고, 그 사실을 `sws_audit.json` 이 숨기지 않는다.
+- 감사 실행 자체가 실패해도(바이너리 없음 등) §5 게이트 판정은 그대로
+  유지된다 — `swsAudit.error` 로 사유만 남는다.
 
 ## 6. 종료 코드
 
