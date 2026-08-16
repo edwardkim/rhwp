@@ -873,6 +873,22 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        Recipe {
+            command: "edit",
+            doc: Some(field.clone()),
+            args: vec![
+                s("edit"),
+                s("insert-text"),
+                p(&field),
+                s("--text"),
+                s("marker"),
+                s("--dry-run"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         // ── [#3880 T1] recordFields 전수 대조 보강 — 선언 필드를 실제로 내는 호출들 ──
         Recipe {
             // digest --sections: 선언 필드 sections(절 단위 청크)는 이 플래그에서만 나온다.
