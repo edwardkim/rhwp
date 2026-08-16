@@ -170,7 +170,10 @@ pub fn build_menu(f: &DocFacts) -> Vec<Affordance> {
                 f.table_count, f.merged_table_count
             )
         } else {
-            format!("표 {}개 — 격자를 CSV 로 뽑아 고치고 되돌리기", f.table_count)
+            format!(
+                "표 {}개 — 격자를 CSV 로 뽑아 고치고 되돌리기",
+                f.table_count
+            )
         };
         items.push(ranked(
             75,
