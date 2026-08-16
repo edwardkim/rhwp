@@ -116,6 +116,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_set_cell",
             "hwp_insert_row",
             "hwp_insert_col",
+            "hwp_delete_row",
             "hwp_set_checkbox",
             "hwp_replace_text",
             "hwp_insert_text",
