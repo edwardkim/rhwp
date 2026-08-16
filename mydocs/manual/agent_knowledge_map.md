@@ -23,7 +23,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **83개**(그중 `--json` 계약 **52개**, batch 축 **9개**) · MCP 도구 **85개**(무상태 69 + 세션 전용 16) |
+| 표면 규모 | CLI 명령 **84개**(그중 `--json` 계약 **53개**, batch 축 **9개**) · MCP 도구 **86개**(무상태 70 + 세션 전용 16) |
 | 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **261개** · §2 전수 사전 **264개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
@@ -325,8 +325,12 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `format` | string | `hwp5`·`hwpx`·`hwp3`·`hml`, 산출 계열은 산출 형식(`svg`·`gif`…) | `info`·`digest`·렌더/변환 8종·`thumbnail` |
 | `sizeBytes` | number | 입력 파일 크기 | `info` |
 | `sections` | number | 구역 수(`info`) / 절 청크 배열(`digest --sections`) — **같은 이름, 다른 타입** | `info`·`digest` |
-| `pageCount` | number | 조판 결과 쪽 수 | `info`·`digest`·`export-text`·`export-svg`·`export-pdf`·`export-markdown`·`dump-pages`·`layout-anomaly` |
+| `pageCount` | number | 조판 결과 쪽 수 | `info`·`digest`·`export-text`·`export-svg`·`export-pdf`·`export-markdown`·`dump-pages`·`layout-anomaly`·`word-count` |
 | `paraCount` | number | 문단 수 | `info`·`digest` |
+| `sectionCount` | number | 구역 수 | `word-count` |
+| `paragraphCount` | number | 문단 수(`word-count`) / ingest 산출 문단 수 | `word-count`·`build-from-ingest` |
+| `charCount` | number | IR 본문 글자 수 | `word-count` |
+| `wordCount` | number | 공백 분리 어절 수 | `word-count` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
 | `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |
@@ -1051,13 +1055,15 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 85개
+## 6. MCP 도구 전수 지도 — 86개
 
-### 6-1. 무상태 69개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 70개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
 | `hwp_info` | `info --json` | `path` |
+| `hwp_word_count` | `word-count --json` | `path` |
+| `hwp_word_count` | `word-count --json` | `path` |
 | `hwp_digest` | `digest --json` | `path` |
 | `hwp_export_text` | `export-text --json` | `path` |
 | `hwp_export_structure` | `export-structure --json` | `path` |

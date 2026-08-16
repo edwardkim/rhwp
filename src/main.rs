@@ -330,6 +330,7 @@ fn main() {
         Some("scan") => exit_with(cmd_scan(&args[2..])),
         Some("threat-scan") => exit_with(cmd_threat_scan(&args[2..])),
         Some("info") => exit_with(show_info(&args[2..])),
+        Some("word-count") => exit_with(word_count(&args[2..])),
         Some("digest") => exit_with(digest_document(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
         Some("dump-note-shape") => exit_with(dump_note_shape(&args[2..])),
@@ -651,6 +652,14 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "info",
             serde_json::json!(["info", "--json", "{path}"]),
             &["format", "sizeBytes", "sections", "pageCount", "paraCount", "fonts", "title", "warnings"],
+        ),
+        tool(
+            "hwp_word_count",
+            "[#4999] 문서 분량 — 구역·문단·글자·어절 수를 IR 본문에서 센다. 새 파서 없음.",
+            path_schema(serde_json::json!({})),
+            "word-count",
+            serde_json::json!(["word-count", "--json", "{path}"]),
+            &["schemaVersion", "source", "sectionCount", "paragraphCount", "charCount", "wordCount", "pageCount"],
         ),
         // [#3633] 초소형 모델용 매크로 1호. 설명은 40자 이내로 극단 압축한다 —
         // 도구 목록 자체가 컨텍스트 예산을 잠식하는 4B급 모델이 1차 소비자이기
@@ -2519,6 +2528,22 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             ],
         ),
         cmd_json(
+            "word-count",
+            "query",
+            "문서 분량(구역·문단·글자·어절·쪽 수) — IR 본문만 센다",
+            true,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "sectionCount",
+                "paragraphCount",
+                "charCount",
+                "wordCount",
+                "pageCount",
+            ],
+        ),
+        cmd_json(
             "export-text",
             "export",
             "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
@@ -4302,6 +4327,11 @@ fn print_help() {
     println!("      HWP/HWPX/HML 문서 정보 표시");
     println!();
     println!("      --json                  문서 정보를 JSON으로 stdout에 출력");
+    println!();
+    println!("  word-count <파일.hwp|파일.hwpx|파일.hml> [--json]");
+    println!("      구역·문단·글자·어절·쪽 수를 IR 본문에서 센다");
+    println!();
+    println!("      --json                  분량 봉투를 JSON으로 stdout에 출력");
     println!();
     println!("  digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]");
     println!("      문서 요약 봉투 한 줄 출력 — 메타(info)·개요 상위 노드·첫 페이지 발췌·");
@@ -10922,6 +10952,71 @@ fn digest_document(args: &[String]) -> i32 {
         "nextStep": DIGEST_NEXT_STEP,
     });
     println!("{}", provenance::marked(envelope, "digest"));
+    EXIT_OK
+}
+
+/// [#4999] `word-count` — IR 본문에서 구역·문단·글자·어절·쪽 수를 센다.
+fn word_count(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp word-count <파일.hwp|파일.hwpx|파일.hml> [--json]");
+        return EXIT_USAGE;
+    };
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let mut paragraph_count = 0usize;
+    let mut char_count = 0usize;
+    let mut word_count = 0usize;
+    for section in &doc.document().sections {
+        paragraph_count += section.paragraphs.len();
+        for para in &section.paragraphs {
+            char_count += para.text.chars().count();
+            word_count += para.text.split_whitespace().count();
+        }
+    }
+    let section_count = doc.document().sections.len();
+    let page_count = doc.page_count();
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "sectionCount": section_count,
+            "paragraphCount": paragraph_count,
+            "charCount": char_count,
+            "wordCount": word_count,
+            "pageCount": page_count,
+        });
+        println!("{}", provenance::marked(envelope, "word-count"));
+        return EXIT_OK;
+    }
+    println!(
+        "{file_path}: 구역 {section_count} · 문단 {paragraph_count} · 글자 {char_count} · 어절 {word_count} · 쪽 {page_count}"
+    );
     EXIT_OK
 }
 
