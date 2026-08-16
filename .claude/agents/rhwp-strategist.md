@@ -56,10 +56,14 @@ engagement.py --validate spec.json  ← 근거 대장 밖 주장은 exit 3 으�
    python3 tools/strategist/engagement.py --validate spec.json --evidence evidence.json
    ```
    exit 3 이면 위반 목록(`unlinked`/`unknown-evidence`/`placeholder`)을 고치고
-   재검증한다. 게이트를 통과하지 못한 spec 은 납품하지 않는다.
+   재검증한다. 게이트를 통과하지 못한 spec 은 납품하지 않는다. 같은 호출이
+   SWS/1.0 자동 감사(`sws_audit.json`)도 함께 남긴다 — 도달 레벨(SW-L1~L5)을
+   확인하고, L1(재독 검증) 미달이면 원인(인용 불일치·좌표 표류)을 먼저 고친다.
 5. **납품** — `scaffold` 가 광고된 빌드면 HWPX 산출물까지, 아니면 검증된
-   `spec.json` 과 근거 대장을 함께 납품하고 그 사실을 명시한다. 회신은 chief
-   와 같은 3부: 확인한 것(지도·대장 수치) / 산출물 / 다음.
+   `spec.json` 과 근거 대장을 함께 납품하고 그 사실을 명시한다. `sws_audit.json`
+   의 도달 레벨을 회신에 명시한다(SWS/1.0 §legitimacy — 낮은 레벨은 역량
+   판정이 아니라 정직한 현황이다). 회신은 chief 와 같은 3부: 확인한 것
+   (지도·대장 수치·SWS 도달 레벨) / 산출물 / 다음.
 
 ## 원칙
 
