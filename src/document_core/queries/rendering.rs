@@ -7803,6 +7803,7 @@ mod tests {
                 ..Default::default()
             }],
             raw_stream: None,
+            raw_provenance: None,
         });
 
         let mut core = DocumentCore::new_empty();
@@ -7921,6 +7922,7 @@ mod tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
 
         let mut core = DocumentCore::new_empty();
@@ -7967,6 +7969,7 @@ mod tests {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
                 raw_stream: None,
+                raw_provenance: None,
             }
         }
 
@@ -8037,6 +8040,7 @@ mod tests {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
                 raw_stream: None,
+                raw_provenance: None,
             }
         }
 
@@ -8100,6 +8104,7 @@ mod tests {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
                 raw_stream: None,
+                raw_provenance: None,
             }
         }
 
@@ -8157,6 +8162,7 @@ mod tests {
             section_def: SectionDef::default(),
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
         core.set_document(document);
         core.paginate();

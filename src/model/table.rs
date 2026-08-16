@@ -26,7 +26,7 @@ std::thread_local! {
 }
 
 /// 표 개체 (HWPTAG_TABLE)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Table {
     /// 속성 비트 플래그
     pub attr: u32,
@@ -64,6 +64,12 @@ pub struct Table {
     pub outer_margin_bottom: i16,
     /// CTRL_HEADER ctrl_data의 4바이트(attr) 이후 추가 바이트 (라운드트립 보존용)
     pub raw_ctrl_data: Vec<u8>,
+    /// [#4495] raw_ctrl_data 출처 봉인 — 봉인 시점 `common`(CommonObjAttr) 의
+    /// 다이제스트. 저장 시 `common` 이 봉인과 같을 때만 raw 를 재사용한다.
+    /// None(합성 IR·봉인 이전)은 종전 계약(raw 우선) 유지. 다이제스트 밖 —
+    /// `model::raw_provenance` 참조.
+    #[serde(skip)]
+    pub raw_ctrl_seal: Option<[u8; 32]>,
     /// HWPTAG_TABLE 레코드의 원본 속성 값 (라운드트립 보존용, 0이면 재구성)
     pub raw_table_record_attr: u32,
     /// HWPTAG_TABLE 레코드의 border_fill_id 이후 추가 바이트 (라운드트립 보존용)
@@ -91,7 +97,7 @@ pub struct Table {
 
 /// 표 쪽 나눔 종류
 /// bit 0-1: 0=나누지 않음, 1=셀 단위로 나눔, 2=나눔(행 단위)
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum TablePageBreak {
     /// 나누지 않음 (0)
     #[default]
@@ -103,7 +109,7 @@ pub enum TablePageBreak {
 }
 
 /// 표 영역 속성
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct TableZone {
     /// 시작 열 주소
     pub start_col: u16,
@@ -118,7 +124,7 @@ pub struct TableZone {
 }
 
 /// 표 셀 (HWPTAG_LIST_HEADER + 셀 속성)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Cell {
     /// 셀 열 주소 (0부터 시작)
     pub col: u16,
@@ -203,7 +209,7 @@ fn checked_table_span_end(start: u16, span: u16, axis: &str) -> Result<u16, Stri
 }
 
 /// 세로 정렬
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum VerticalAlign {
     #[default]
     Top,

@@ -24,9 +24,16 @@ use crate::parser::tags;
 
 /// Section을 레코드 바이너리 스트림으로 직렬화
 pub fn serialize_section(section: &Section) -> Vec<u8> {
-    // 원본 스트림이 있으면 그대로 반환 (완벽한 라운드트립)
-    if let Some(ref raw) = section.raw_stream {
-        return raw.clone();
+    // 원본 스트림이 있으면 그대로 반환 (완벽한 라운드트립).
+    //
+    // [#4488] 다만 공개 모델 직접 변경은 raw_stream 을 무효화하지 않으므로,
+    // 파싱(+로드 픽스업) 시점에 봉인한 (모델, raw) 다이제스트 쌍과 현재 상태가
+    // 둘 다 일치할 때만 통과한다 — 불일치·raw 교체는 아래 모델 writer 로
+    // 재생성한다. 봉인 계약은 model::raw_provenance 참조.
+    if section.raw_provenance_permits_reuse() {
+        if let Some(ref raw) = section.raw_stream {
+            return raw.clone();
+        }
     }
 
     // [Task #852 Stage 2.4] Form 컨트롤의 z-order/TabOrder 카운터 reset.
@@ -1286,6 +1293,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1314,6 +1322,7 @@ mod tests {
             let section = Section {
                 paragraphs: vec![para],
                 raw_stream: None,
+                raw_provenance: None,
                 ..Default::default()
             };
             let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
@@ -1358,6 +1367,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
         let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
@@ -1398,6 +1408,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
         let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
@@ -1437,6 +1448,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
         let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
@@ -1475,6 +1487,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
         let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
@@ -1508,6 +1521,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1538,6 +1552,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1569,6 +1584,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1589,6 +1605,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1639,6 +1656,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para1, para2],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1678,6 +1696,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1719,6 +1738,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1768,6 +1788,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1810,6 +1831,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1845,6 +1867,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1891,6 +1914,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1930,6 +1954,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -2177,6 +2202,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -2228,6 +2254,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -2289,6 +2316,7 @@ mod tests {
             },
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
         };
 
         let bytes = serialize_section(&section);
@@ -2353,6 +2381,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -2411,6 +2440,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
