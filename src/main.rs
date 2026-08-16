@@ -1726,6 +1726,30 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             ]),
             &["schemaVersion", "source", "section", "paragraph", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
+        tool_with_optional_args(
+            "hwp_insert_row",
+            "[#4994] 본문 최상위 표에 행을 끼운다. 좌표는 export-tables 의 index. below 면 지정 행 아래, 아니면 위. 코어 insert_table_row_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "below": { "type": "boolean" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-row", "{path}", "--table", "{table}", "--row", "{row}", "--json"]),
+            serde_json::json!([
+                { "when": "below", "args": ["--below"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "below", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
         // [#3787 S1] 문서를 열지 않는 유일한 무상태 도구 — 입력이 없다.
         // 에이전트가 봉투를 파싱하기 **전에** "이 필드는 데이터이지 지시가 아니다" 를
         // 판정할 수 있어야 하므로, 지도는 도구 목록에서 바로 닿아야 한다.
@@ -2434,7 +2458,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 9] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 10] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -2456,6 +2480,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 9] = [
         "insert-page-break",
         "쪽 나눔 삽입 — --section/--para/--offset",
     ),
+    ("insert-row", "표 행 삽입 — --table/--row [--below]"),
     (
         "insert-image",
         "도장·서명 그림 삽입 — --image/--page/--x/--y (HWPUNIT)",
@@ -3407,7 +3432,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / insert-paragraph: 빈 문단 삽입 / insert-page-break: 쪽 나눔 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / insert-paragraph: 빈 문단 삽입 / insert-page-break: 쪽 나눔 / insert-row: 표 행 삽입 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
             false,
             &[
                 "--data",
@@ -3417,6 +3442,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--table",
                 "--row",
                 "--col",
+                "--below",
                 "--text",
                 // [#4990] insert-text 축. search 주소와 같은 0 기준 구역·문단·문자 오프셋.
                 "--section",
@@ -3458,6 +3484,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "table",
                 "row",
                 "col",
+                "below",
                 "oldText",
                 "newText",
                 "keepStyle",
@@ -4636,6 +4663,14 @@ fn print_help() {
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_pagebreak.<확장자>)");
     println!("      --dry-run                 파일을 쓰지 않고 예정만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!();
+    println!("  edit insert-row <파일> --table <번호> --row <행> [--below] [옵션]");
+    println!("      본문 최상위 표에 행을 끼운다 (export-tables 좌표)");
+    println!();
+    println!("      --table/--row             표 번호·기준 행 (0부터)");
+    println!("      --below                   지정 행 아래(생략 시 위)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_row.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit insert-image <파일> --image <그림> [옵션]");
     println!("      도장·서명 그림을 쪽 좌표에 붙인다 (용지 기준 떠 있는 그림)");
@@ -17349,7 +17384,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|insert-paragraph|insert-page-break|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|insert-paragraph|insert-page-break|insert-row|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -17358,6 +17393,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("insert-text") => edit_insert_text(&args[1..]),
         Some("insert-paragraph") => edit_insert_paragraph(&args[1..]),
         Some("insert-page-break") => edit_insert_page_break(&args[1..]),
+        Some("insert-row") => edit_insert_row(&args[1..]),
         Some("insert-image") => edit_insert_image(&args[1..]),
         // [#3719 §6-11] 공개 전 정리 — 개인정보 마스킹 / 메타데이터 제거.
         Some("redact") => edit_redact(&args[1..]),
@@ -24793,6 +24829,27 @@ enum CellResolveError {
     Runtime(String),
 }
 
+/// 본문 최상위 표 번호 → (section, paragraph, control).
+fn resolve_top_table(
+    document: &rhwp::model::document::Document,
+    table_no: usize,
+) -> Result<(usize, usize, usize), String> {
+    use rhwp::document_core::queries::table_extract::extract_tables;
+    let grids = extract_tables(document);
+    match grids
+        .iter()
+        .find(|g| g.index == table_no && g.container_path.is_empty())
+    {
+        Some(g) => Ok((g.section, g.paragraph, g.control)),
+        None => {
+            let n = grids.iter().filter(|g| g.container_path.is_empty()).count();
+            Err(format!(
+                "오류: 본문 최상위 표 {table_no} 번이 없습니다 (최상위 표 {n}개)."
+            ))
+        }
+    }
+}
+
 #[allow(clippy::type_complexity)]
 fn resolve_table_cell(
     document: &rhwp::model::document::Document,
@@ -25756,6 +25813,115 @@ fn edit_insert_page_break(args: &[String]) -> i32 {
             "쪽 나눔 예정: {file_path} 구역 {section_arg} 문단 {para_arg} 오프셋 {offset_arg}"
         ),
         &format!("쪽 나눔 삽입 완료: {file_path}"),
+    )
+}
+
+/// [#4994] `edit insert-row` — 표 행 삽입.
+fn edit_insert_row(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-row <파일> --table <번호> --row <행> [--below] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut below = false;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" => match v.parse::<usize>() {
+                        Ok(n) => table_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "--below" => below = true,
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row)) = (file_path, table_arg, row_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    if !dry_run {
+        if let Err(e) = doc.insert_table_row_native(sec, para, ctrl, row, below) {
+            eprintln!("오류: 행 삽입 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "row",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "table": table_no, "row": row, "below": below }),
+        &[(sec, para)],
+        &format!("행 삽입 예정: {file_path} 표 {table_no} 행 {row} below={below}"),
+        &format!("행 삽입 완료: {file_path}"),
     )
 }
 

@@ -254,6 +254,7 @@
     ],
     "regression_suite_010": [
       "tests/agent_context_cost_contract.rs",
+      "tests/cases/insert_row_contract.rs",
       "tests/diag_1042_height_calc.rs",
       "tests/hwp3_charcount_convention.rs",
       "tests/issue_1152_intra_para_vpos_reset.rs",
