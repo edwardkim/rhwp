@@ -39,6 +39,7 @@ last_verified: 2026-07-26
 | `CAP-3398` | `bug-hunter` | 실사례 여정과 정답지 대조로 재현 가능한 결함을 발굴. 수정 구현은 요청 시 별도 작업 | [버그 헌팅 playbook](bug_hunting_playbook.md) | [에이전트](../../.claude/agents/bug-hunter.md) | [Skill](../../.agents/skills/bug-hunter/SKILL.md) | active · rhwp maintainers |
 | `CAP-4893` | `rhwp-fde` | 고객 문서 증상의 실시간 접수·트리아지·응급처치·에스컬레이션·회신. 코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖 | [FDE playbook](fde_playbook.md) | [에이전트](../../.claude/agents/rhwp-fde.md) | — | active · rhwp maintainers |
 | `CAP-4900` | `rhwp-chief` | 고객 요청 큐의 상시 자율 처리(트리아지 게이트→goal 라우팅→실행→검증→회신)와 needs-agent 요청의 커버리지 재축적. 코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖 | [Chief playbook](chief_playbook.md) | [에이전트](../../.claude/agents/rhwp-chief.md) | — | active · rhwp maintainers |
+| `CAP-4903` | `rhwp-strategist` | 고객 목표+문서 코퍼스에서 코퍼스 전수 지도→좌표 박힌 근거 대장→산출물 골격→주장-근거 연결 게이트까지의 전략 산출물 파이프라인. 전략 판단은 에이전트 몫이되 근거 대장 밖 주장은 게이트가 거부. 근거 없는 전망·예측 생성·코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖 | [Strategist playbook](strategist_playbook.md) | [에이전트](../../.claude/agents/rhwp-strategist.md) | — | active · rhwp maintainers |
 
 `—`는 해당 런타임용 어댑터가 아직 없다는 뜻이며, capability 자체가 없다는 뜻은 아니다.
 
