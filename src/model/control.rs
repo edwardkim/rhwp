@@ -11,8 +11,21 @@ use super::paragraph::Paragraph;
 use super::shape::{CommonObjAttr, ShapeObject};
 use super::table::Table;
 
+/// [#4488] HashMap 을 키 정렬 순서로 직렬화한다 — 다이제스트 결정성 보장용.
+fn serialize_sorted_string_map<S>(
+    map: &HashMap<String, String>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let mut entries: Vec<(&String, &String)> = map.iter().collect();
+    entries.sort();
+    serializer.collect_map(entries)
+}
+
 /// 문단 내 컨트롤 (확장 컨트롤)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub enum Control {
     /// 구역 정의 ('secd')
     SectionDef(Box<SectionDef>),
@@ -112,7 +125,7 @@ pub const CTRL_CHAR_CODE_UNITS: u32 = 8;
 pub const EQUATION_LINE_MODE_BIT: u32 = 0x0000_0001;
 
 /// 수식 ('eqed' 컨트롤, HWP 스펙 표 105)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Equation {
     /// 개체 공통 속성 (위치, 크기, 배치)
     pub common: CommonObjAttr,
@@ -145,10 +158,14 @@ pub struct Equation {
     pub font_name: String,
     /// 라운드트립용 원본 ctrl_data
     pub raw_ctrl_data: Vec<u8>,
+    /// [#4495] raw_ctrl_data 출처 봉인 — 봉인 시점 `common` 의 다이제스트.
+    /// 계약은 Table::raw_ctrl_seal 과 동일 (`model::raw_provenance` 참조).
+    #[serde(skip)]
+    pub raw_ctrl_seal: Option<[u8; 32]>,
 }
 
 /// 자동 번호 ('atno' 컨트롤, HWP 스펙 표 144)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct AutoNumber {
     /// 번호 종류 (각주, 미주, 그림, 표, 수식)
     pub number_type: AutoNumberType,
@@ -169,7 +186,7 @@ pub struct AutoNumber {
 }
 
 /// 자동 번호 종류
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum AutoNumberType {
     #[default]
     Page,
@@ -183,7 +200,7 @@ pub enum AutoNumberType {
 }
 
 /// 새 번호 지정 ('nwno' 컨트롤)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct NewNumber {
     /// 번호 종류
     pub number_type: AutoNumberType,
@@ -192,7 +209,7 @@ pub struct NewNumber {
 }
 
 /// 쪽 번호 위치 ('pgnp' 컨트롤, HWP 스펙 표 149)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct PageNumberPos {
     /// 번호 형식 (표 150 bit 0~7, 표 134 참조)
     pub format: u8,
@@ -209,7 +226,7 @@ pub struct PageNumberPos {
 }
 
 /// 책갈피 ('bokm' 컨트롤)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Bookmark {
     /// 책갈피 이름
     pub name: String,
@@ -225,7 +242,7 @@ pub struct Bookmark {
 /// | 0 | `BOTH` |
 /// | 1 | `EVEN` |
 /// | 2 | `ODD` |
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize)]
 pub enum PageStartsOn {
     /// 양쪽 (기본값)
     #[default]
@@ -275,7 +292,7 @@ impl PageStartsOn {
 }
 
 /// 쪽 번호 시작 쪽 컨트롤 ('pgct')
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize)]
 pub struct PageNumCtrl {
     /// 쪽 번호가 시작되는 쪽
     pub page_starts_on: PageStartsOn,
@@ -290,7 +307,7 @@ pub struct PageNumCtrl {
 ///
 /// HWPX 는 `<hp:ctrl><hp:indexmark><hp:firstKey/><hp:secondKey/></hp:indexmark></hp:ctrl>`
 /// 로 적는다(ParaList XML schema.xml:209).
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
 pub struct IndexMark {
     /// 첫째 키
     pub first_key: String,
@@ -299,7 +316,7 @@ pub struct IndexMark {
 }
 
 /// 하이퍼링크 ('%hlk' 필드)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Hyperlink {
     /// URL
     pub url: String,
@@ -308,7 +325,7 @@ pub struct Hyperlink {
 }
 
 /// 덧말 ('tdut' 컨트롤)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Ruby {
     /// 기준 텍스트 (`<hp:mainText>`) — 덧말이 달리는 본문 글자. (#1587)
     /// 파서가 para.text 에 넣지 않고 여기 보존한다(시각 충실도 핵심).
@@ -328,7 +345,7 @@ pub struct Ruby {
 }
 
 /// 글자 겹침 ('tcps' 컨트롤, HWP 스펙 표 152)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct CharOverlap {
     /// 겹칠 글자 목록 (최대 9글자)
     pub chars: Vec<char>,
@@ -343,7 +360,7 @@ pub struct CharOverlap {
 }
 
 /// 감추기 ('pghd' 컨트롤)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct PageHide {
     /// 머리말 감추기
     pub hide_header: bool,
@@ -360,7 +377,7 @@ pub struct PageHide {
 }
 
 /// 숨은 설명 ('tcmt' 컨트롤)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct HiddenComment {
     /// 문단 리스트
     pub paragraphs: Vec<Paragraph>,
@@ -370,7 +387,7 @@ pub struct HiddenComment {
 ///
 /// 편집 IR 은 빈 필드로 정규화된 상태가 authoritative 이고, 이 구조체는 **저장 시
 /// 원본 파일 형상을 되돌리기 위한 파생 상태**다 (값 API·렌더는 이 값을 보지 않는다).
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
 pub struct GuideResidue {
     /// 제거된 본문 텍스트 원문 (한컴이 안내문 뒤에 붙이는 trailing 공백까지 그대로).
     pub text: String,
@@ -385,7 +402,7 @@ pub struct GuideResidue {
 /// 스칼라와 재귀하는 listParam 1종, 도합 5종. 각 파라미터의 **의미는 해석하지 않고**
 /// 이름과 타입 그대로 보존한다(HWP5 왕복 시 `Prop`/`Direction`/`Path`/`Category` 등이
 /// `Command` 하나로 축소되던 손실의 근본 수정).
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub enum Parameter {
     Boolean {
         name: Option<String>,
@@ -411,7 +428,7 @@ pub enum Parameter {
 
 /// `hp:ParameterList` 자체 — `<hp:parameters>`(필드 루트) 또는 `<hp:listParam>`(중첩) 둘 다
 /// 이 표현을 쓴다. `cnt` 속성은 `items.len()` 에서 유도하므로 별도 저장하지 않는다.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct ParameterList {
     pub name: Option<String>,
     pub items: Vec<Parameter>,
@@ -754,7 +771,7 @@ mod parameter_list_codec_tests {
 }
 
 /// 필드 컨트롤
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Field {
     /// 필드 타입
     pub field_type: FieldType,
@@ -953,7 +970,7 @@ impl Field {
 }
 
 /// 필드 타입
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum FieldType {
     #[default]
     Unknown,
@@ -990,7 +1007,7 @@ pub enum FormType {
 }
 
 /// 양식 개체 ('form' 컨트롤, ctrl_id=0x666f726d)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct FormObject {
     /// 양식 개체 타입
     pub form_type: FormType,
@@ -1013,11 +1030,15 @@ pub struct FormObject {
     /// 활성화 여부
     pub enabled: bool,
     /// 기타 속성 (원본 키-값 보존)
+    ///
+    /// [#4488] serde 직렬화는 정렬 순회를 강제한다 — HashMap 순회 순서가
+    /// 다이제스트(model::raw_provenance)에 실리면 봉인이 비결정적이 된다.
+    #[serde(serialize_with = "serialize_sorted_string_map")]
     pub properties: HashMap<String, String>,
 }
 
 /// 알 수 없는 컨트롤
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct UnknownControl {
     /// 컨트롤 ID
     pub ctrl_id: u32,

@@ -780,6 +780,7 @@ mod tests {
             font_name: "HYhwpEQ".to_string(),
             version_info: "Equation Version 60".to_string(),
             raw_ctrl_data: Vec::new(),
+            raw_ctrl_seal: None,
         })));
         section.paragraphs.push(para);
         doc.sections.push(section);

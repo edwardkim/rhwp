@@ -6203,6 +6203,7 @@ fn parse_equation(
         font_name,
         version_info,
         raw_ctrl_data: Vec::new(),
+        raw_ctrl_seal: None,
     };
     Ok(Control::Equation(Box::new(equation)))
 }

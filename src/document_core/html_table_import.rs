@@ -612,6 +612,7 @@ impl DocumentCore {
             outer_margin_top: outer_margin,
             outer_margin_bottom: outer_margin,
             raw_ctrl_data,
+            raw_ctrl_seal: None,
             raw_table_record_attr: tbl_rec_attr,
             raw_table_record_extra: vec![0u8; 2], // 표준 추가 2바이트
             dirty: true,

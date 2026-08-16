@@ -3,7 +3,7 @@
 use super::*;
 
 /// 용지 설정 (HWPTAG_PAGE_DEF)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct PageDef {
     /// 용지 가로 크기
     pub width: HwpUnit,
@@ -54,7 +54,7 @@ impl PageDef {
 }
 
 /// 제책 방법
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum BindingMethod {
     #[default]
     /// 한쪽 편집
@@ -66,7 +66,7 @@ pub enum BindingMethod {
 }
 
 /// 쪽 테두리/배경 (HWPTAG_PAGE_BORDER_FILL)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct PageBorderFill {
     /// 속성 비트 플래그
     pub attr: u32,
@@ -97,7 +97,7 @@ pub struct PageBorderFill {
 }
 
 /// 쪽 테두리 렌더 위치 기준
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize)]
 pub enum PageBorderBasis {
     /// 본문 영역 기준 (body_area edge 에서 spacing)
     #[default]
@@ -107,7 +107,7 @@ pub enum PageBorderBasis {
 }
 
 /// 쪽 테두리/배경 대화상자 위치 기준
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize)]
 pub enum PageBorderUiBasis {
     /// 한컴 UI의 종이 기준
     #[default]
@@ -117,7 +117,7 @@ pub enum PageBorderUiBasis {
 }
 
 /// 단 정의 ('cold' 컨트롤)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct ColumnDef {
     /// 단 종류
     pub column_type: ColumnType,
@@ -147,7 +147,7 @@ pub struct ColumnDef {
 }
 
 /// 단 종류
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum ColumnType {
     #[default]
     Normal,
@@ -158,7 +158,7 @@ pub enum ColumnType {
 }
 
 /// 단 방향
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum ColumnDirection {
     #[default]
     LeftToRight,

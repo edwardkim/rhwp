@@ -1476,6 +1476,10 @@ fn parse_document_inner(
         .document
         .doc_info
         .seal_raw_provenance(&parsed.document.doc_properties);
+    // [#4488/#4495] 본문 Section raw_stream 과 하위 컨트롤 raw 레코드도 같은
+    // 지점에서 봉인한다. DocumentCore 로 열리는 경로는 from_bytes 의 로드 픽스업
+    // (손상 lineseg 제거 등) 뒤에 다시 봉인된다.
+    parsed.document.seal_body_raw_provenance();
     Ok(parsed)
 }
 

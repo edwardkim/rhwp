@@ -206,6 +206,14 @@ impl DocumentCore {
         };
 
         doc.paginate();
+
+        // [#4488/#4495] 로드 픽스업(손상 lineseg 제거·빈 문단 reflow·안내문 제거)과
+        // 첫 paginate 의 materialization(그림 img_dim 등)까지 끝난 뒤 본문을 다시
+        // 봉인한다 — 파서 말미 봉인 그대로면 무변경 문서의 원본 바이트 통과가
+        // 로드 경로의 모델 보정 차이로 죽는다(honbo-save imgDim 실측). 이 지점
+        // 이후 본문 변경은 편집 명령(raw_stream 무효화 동반) 또는 공개 모델 직접
+        // 변경(봉인이 잡아야 할 대상)뿐이다.
+        doc.document.seal_body_raw_provenance();
         Ok(doc)
     }
 

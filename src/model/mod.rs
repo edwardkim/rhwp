@@ -33,7 +33,7 @@ pub type HwpUnit16 = i16;
 pub type ColorRef = u32;
 
 /// 2차원 좌표
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
 pub struct Point {
     pub x: i32,
     pub y: i32,
@@ -59,7 +59,7 @@ impl Rect {
 }
 
 /// 4방향 여백
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
 pub struct Padding {
     pub left: HwpUnit16,
     pub right: HwpUnit16,

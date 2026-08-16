@@ -4,7 +4,7 @@ use super::control::{Control, CTRL_CHAR_CODE_UNITS};
 use serde::{Deserialize, Serialize};
 
 /// 문단 (HWPTAG_PARA_HEADER + 하위 레코드)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Paragraph {
     /// 문자 수 (제어 문자 포함)
     pub char_count: u32,
@@ -96,7 +96,7 @@ pub struct Paragraph {
 ///
 /// `Relaxed` 순서로 충분하다 — 값은 (문단, 폭)의 결정적 함수라 경합 시 최악이
 /// 중복 측정일 뿐 오답이 없다.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, serde::Serialize)]
 pub struct SingleLineOverflowMemo(std::sync::atomic::AtomicU64);
 
 impl SingleLineOverflowMemo {
@@ -237,7 +237,7 @@ pub enum ColumnBreakType {
 }
 
 /// 글자 모양 참조 (문단 내 위치별 글자 모양)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct CharShapeRef {
     /// 글자 모양이 바뀌는 시작 위치
     pub start_pos: u32,
@@ -249,7 +249,7 @@ pub struct CharShapeRef {
 ///
 /// **표준**: `mydocs/tech/document_ir_lineseg_standard.md` (Task #604)
 /// 모든 i32 필드는 HWPUNIT (1 inch = 7200 HWPUNIT).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct LineSeg {
     /// 본 줄이 차지하는 텍스트 시작 위치 (UTF-16 code unit, 문단 시작 기준)
     pub text_start: u32,
@@ -369,7 +369,7 @@ impl LineSeg {
 }
 
 /// 영역 태그 (HWPTAG_PARA_RANGE_TAG)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct RangeTag {
     /// 영역 시작
     pub start: u32,
@@ -392,7 +392,7 @@ pub struct RangeTag {
 /// 8 code unit 을 점유하므로 이 마커를 버리면 문단 축이 그만큼 짧아지고,
 /// 한글은 축이 어긋난 `<hp:lineseg textpos>` 를 만나면 본문을 통째로 버린다
 /// (10k 스윕 F-절단군 — 77 문서·2,237 개).
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
 pub struct TitleMark {
     /// `text` 문자열 내 삽입 위치 (이 인덱스의 문자 **앞**에 놓인다)
     pub char_idx: usize,
@@ -401,7 +401,7 @@ pub struct TitleMark {
 }
 
 /// 필드 텍스트 범위 (0x03 FIELD_BEGIN ~ 0x04 FIELD_END 사이 텍스트)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct FieldRange {
     /// text 문자열 내 시작 인덱스 (포함)
     pub start_char_idx: usize,
@@ -431,7 +431,7 @@ pub struct FieldRange {
 /// 다단락 필드의 종료 마커. begin 문단에서 `Control::Field` 로 보존되는 것과 달리,
 /// end 문단에는 컨트롤·FieldRange 가 없어 8유닛 슬롯을 표현할 산출물이 없다.
 /// 이를 기록해 직렬화기가 `<hp:fieldEnd>` 를 같은 위치에 복원한다 (Task #1556).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct OrphanFieldEnd {
     /// text 문자열 내 위치 (이 인덱스 직전에 8유닛 fieldEnd 슬롯이 놓인다).
     /// 텍스트 끝이면 `text.chars().count()`.

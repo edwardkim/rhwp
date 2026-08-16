@@ -12,7 +12,7 @@ use super::*;
 /// LIST_HEADER for Footnote (size=16): paraCount(SInt4) + property(UInt4) + 8 byte zero padding.
 ///
 /// 참조: `hwplib::ControlFootnote` + `CtrlHeaderFootnote`.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Footnote {
     /// 각주 번호
     pub number: u16,
@@ -31,7 +31,7 @@ pub struct Footnote {
 }
 
 /// 미주 ('en  ' 컨트롤) — [Task #1050] Footnote 와 동일 구조
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Endnote {
     /// 미주 번호
     pub number: u16,
@@ -50,7 +50,7 @@ pub struct Endnote {
 }
 
 /// 각주/미주 모양 (HWPTAG_FOOTNOTE_SHAPE)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct FootnoteShape {
     /// 속성 비트 플래그
     pub attr: u32,
@@ -237,7 +237,7 @@ impl FootnoteShape {
 }
 
 /// 번호 형식
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum NumberFormat {
     #[default]
     Digit, // 1, 2, 3
@@ -262,7 +262,7 @@ pub enum NumberFormat {
 }
 
 /// 번호 매기기 방식
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum FootnoteNumbering {
     #[default]
     /// 앞 구역에 이어서
@@ -274,7 +274,7 @@ pub enum FootnoteNumbering {
 }
 
 /// 배치 방법
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum FootnotePlacement {
     #[default]
     /// 각 단마다 따로 배열 / 문서의 마지막

@@ -919,6 +919,7 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut DivergenceCollector) 
         outer_margin_top,
         outer_margin_bottom,
         raw_ctrl_data,
+        raw_ctrl_seal: _,
         raw_table_record_attr,
         raw_table_record_extra,
         dirty,

@@ -783,7 +783,7 @@ pub enum ImageFillMode {
 }
 
 /// 테두리 선 정보 (그리기 개체용)
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
 pub struct ShapeBorderLine {
     /// 선 색상
     pub color: ColorRef,

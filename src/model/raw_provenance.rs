@@ -232,6 +232,205 @@ impl DocInfo {
     }
 }
 
+// ===========================================================================
+// [#4488] Section raw_stream 봉인 + [#4495] 본문 컨트롤 하위 raw 봉인
+// ===========================================================================
+
+/// 파싱 완료 시점의 Section 봉인 — DocInfo 와 같은 계약, 다른 스트림·소유자.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SectionSeal {
+    /// 봉인 시점 모델 상태(section_def + paragraphs)의 다이제스트.
+    pub model_digest: [u8; 32],
+    /// 봉인 시점 `raw_stream` 바이트의 다이제스트.
+    pub raw_digest: [u8; 32],
+}
+
+/// Section 모델 상태의 다이제스트 — raw 캐시 필드는 전수 구조분해로 뺀다.
+pub fn section_model_digest(section: &crate::model::document::Section) -> [u8; 32] {
+    let crate::model::document::Section {
+        section_def,
+        paragraphs,
+        raw_stream: _,
+        raw_provenance: _,
+    } = section;
+
+    #[derive(Serialize)]
+    struct Fingerprint<'a> {
+        section_def: &'a crate::model::document::SectionDef,
+        paragraphs: &'a [crate::model::paragraph::Paragraph],
+    }
+
+    let mut hasher = blake3::Hasher::new();
+    serde_json::to_writer(
+        &mut hasher,
+        &Fingerprint {
+            section_def,
+            paragraphs,
+        },
+    )
+    .expect("모델 다이제스트 직렬화는 실패할 수 없다 (순수 인메모리 인코딩)");
+    *hasher.finalize().as_bytes()
+}
+
+impl crate::model::document::Section {
+    /// 파싱(+로드 픽스업) 완료 시점에 호출 — raw 캐시가 있으면 봉인한다.
+    pub fn seal_raw_provenance(&mut self) {
+        self.raw_provenance = self.raw_stream.as_ref().map(|raw| SectionSeal {
+            model_digest: section_model_digest(self),
+            raw_digest: bytes_digest(raw),
+        });
+    }
+
+    /// 저장 시점 검증 — DocInfo 쪽과 동일 계약(봉인 없는 raw 는 종전대로 허용).
+    pub fn raw_provenance_permits_reuse(&self) -> bool {
+        let Some(raw) = self.raw_stream.as_ref() else {
+            return false;
+        };
+        match &self.raw_provenance {
+            None => true,
+            Some(seal) => {
+                seal.raw_digest == bytes_digest(raw)
+                    && seal.model_digest == section_model_digest(self)
+            }
+        }
+    }
+}
+
+/// [#4495] OLE payload(raw_tag_data)가 대표하는 모델 필드의 다이제스트.
+///
+/// `serialize_ole_data` 의 모델 경로가 소비하는 필드가 판정 범위다 — 그 밖의
+/// 필드 변경은 이 레코드의 바이트에 영향을 주지 않으므로 raw 를 유지한다.
+pub fn ole_payload_digest(ole: &crate::model::shape::OleShape) -> [u8; 32] {
+    record_digest(&(ole.extent_x, ole.extent_y, ole.bin_data_id))
+}
+
+/// [#4495] 하위 raw 레코드를 가진 컨트롤 전부를 깊이 우선으로 봉인한다.
+///
+/// - Table/Equation CTRL_HEADER raw ↔ `common`(CommonObjAttr) — 저장기가 raw
+///   부재 시 합성하는 원천이 `common` 이므로 판정 범위도 `common` 이다.
+///   (`raw_ctrl_data` 자체는 판정 밖 — 셀 폭 조절처럼 raw 를 직접 갱신하는
+///   기존 명령(dual-write, table.rs `refresh_raw_ctrl_size` 참조)과 충돌하지
+///   않기 위함이다.)
+/// - OLE raw_tag_data ↔ payload 모델 필드([`ole_payload_digest`]).
+///
+/// 순회는 `for_each_ole_mut`(hwpx_to_hwp.rs)와 같은 소유자 집합을 밟는다 —
+/// 저장소에 정본 순회기가 아직 없어(#4422) 여기 사본을 둔다. 누락되면 그
+/// 컨트롤은 봉인 없이 남아 **종전 계약(raw 우선)** 으로 동작한다 — 새 검증이
+/// 빠지는 것이지 새 손실이 생기는 방향이 아니다.
+fn seal_raw_bearing_controls(paragraphs: &mut [crate::model::paragraph::Paragraph]) {
+    use crate::model::control::Control;
+    use crate::model::shape::ShapeObject;
+
+    fn walk_caption(caption: &mut crate::model::shape::Caption) {
+        seal_raw_bearing_controls(&mut caption.paragraphs);
+    }
+
+    fn walk_drawing(drawing: &mut crate::model::shape::DrawingObjAttr) {
+        if let Some(text_box) = &mut drawing.text_box {
+            seal_raw_bearing_controls(&mut text_box.paragraphs);
+        }
+        if let Some(caption) = &mut drawing.caption {
+            walk_caption(caption);
+        }
+    }
+
+    fn walk_shape(shape: &mut ShapeObject) {
+        match shape {
+            ShapeObject::Picture(pic) => {
+                if let Some(caption) = &mut pic.caption {
+                    walk_caption(caption);
+                }
+            }
+            ShapeObject::Group(group) => {
+                for child in &mut group.children {
+                    walk_shape(child);
+                }
+                if let Some(caption) = &mut group.caption {
+                    walk_caption(caption);
+                }
+            }
+            ShapeObject::Chart(chart) => {
+                walk_drawing(&mut chart.drawing);
+                if let Some(caption) = &mut chart.caption {
+                    walk_caption(caption);
+                }
+            }
+            ShapeObject::Ole(ole) => {
+                walk_drawing(&mut ole.drawing);
+                if let Some(caption) = &mut ole.caption {
+                    walk_caption(caption);
+                }
+                if !ole.raw_tag_data.is_empty() {
+                    ole.raw_tag_seal = Some(ole_payload_digest(ole));
+                }
+            }
+            _ => {
+                if let Some(drawing) = shape.drawing_mut() {
+                    walk_drawing(drawing);
+                }
+            }
+        }
+    }
+
+    for para in paragraphs {
+        for control in &mut para.controls {
+            match control {
+                Control::Table(table) => {
+                    for cell in &mut table.cells {
+                        seal_raw_bearing_controls(&mut cell.paragraphs);
+                    }
+                    if let Some(caption) = &mut table.caption {
+                        walk_caption(caption);
+                    }
+                    if !table.raw_ctrl_data.is_empty() {
+                        table.raw_ctrl_seal = Some(record_digest(&table.common));
+                    }
+                }
+                Control::Equation(eq) => {
+                    if !eq.raw_ctrl_data.is_empty() {
+                        eq.raw_ctrl_seal = Some(record_digest(&eq.common));
+                    }
+                }
+                Control::Picture(pic) => {
+                    if let Some(caption) = &mut pic.caption {
+                        walk_caption(caption);
+                    }
+                }
+                Control::Shape(shape) => walk_shape(shape),
+                Control::Header(header) => seal_raw_bearing_controls(&mut header.paragraphs),
+                Control::Footer(footer) => seal_raw_bearing_controls(&mut footer.paragraphs),
+                Control::Footnote(fnote) => seal_raw_bearing_controls(&mut fnote.paragraphs),
+                Control::Endnote(enote) => seal_raw_bearing_controls(&mut enote.paragraphs),
+                Control::HiddenComment(comment) => {
+                    seal_raw_bearing_controls(&mut comment.paragraphs)
+                }
+                Control::Field(field) => seal_raw_bearing_controls(&mut field.memo_paragraphs),
+                Control::SectionDef(section_def) => {
+                    for master_page in &mut section_def.master_pages {
+                        seal_raw_bearing_controls(&mut master_page.paragraphs);
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+}
+
+impl crate::model::document::Document {
+    /// [#4488/#4495] 본문 raw 캐시 전부를 봉인한다 — 파싱(+로드 픽스업) 완료
+    /// 시점에 호출. 컨트롤 봉인을 먼저 세우고(봉인 필드는 `#[serde(skip)]` 이라
+    /// Section 다이제스트에 실리지 않는다) Section 봉인을 계산한다.
+    pub fn seal_body_raw_provenance(&mut self) {
+        for section in &mut self.sections {
+            seal_raw_bearing_controls(&mut section.paragraphs);
+            for master_page in &mut section.section_def.master_pages {
+                seal_raw_bearing_controls(&mut master_page.paragraphs);
+            }
+            section.seal_raw_provenance();
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
