@@ -263,7 +263,7 @@ fn parse_bin_data(data: &[u8]) -> Result<BinData, DocInfoError> {
     Ok(bin)
 }
 
-fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
+pub(crate) fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
     let mut r = ByteReader::new(data);
     let attr = r.read_u8().unwrap_or(0);
 

@@ -6895,7 +6895,10 @@ struct PageDumpSectionCtx<'a> {
 
 /// [#3697] dump-pages JSON 의 문단 미리보기 — 텍스트 덤프와 같은 제어문자 제거 + 40자.
 /// 기계 소비자용이므로 텍스트 덤프의 "(빈)" 대체 표기는 쓰지 않는다 (빈 문단 = "").
-fn para_text_preview(para: Option<&Paragraph>) -> String {
+///
+/// [세션 노드 경로 확장] `mcp_serve::session_doc_tree` 의 문단 노드 미리보기도 이 함수를
+/// 그대로 쓴다 — 같은 문서에서 미리보기 규칙(제어문자 제거·40자 절단)이 갈리면 안 된다.
+pub fn para_text_preview(para: Option<&Paragraph>) -> String {
     para.map(|p| {
         p.text
             .chars()
@@ -7800,6 +7803,7 @@ mod tests {
                 ..Default::default()
             }],
             raw_stream: None,
+            raw_provenance: None,
         });
 
         let mut core = DocumentCore::new_empty();
@@ -7918,6 +7922,7 @@ mod tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
 
         let mut core = DocumentCore::new_empty();
@@ -7964,6 +7969,7 @@ mod tests {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
                 raw_stream: None,
+                raw_provenance: None,
             }
         }
 
@@ -8034,6 +8040,7 @@ mod tests {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
                 raw_stream: None,
+                raw_provenance: None,
             }
         }
 
@@ -8097,6 +8104,7 @@ mod tests {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
                 raw_stream: None,
+                raw_provenance: None,
             }
         }
 
@@ -8154,6 +8162,7 @@ mod tests {
             section_def: SectionDef::default(),
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
         core.set_document(document);
         core.paginate();

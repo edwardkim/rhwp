@@ -390,6 +390,7 @@ fn main() {
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
         Some("render-diff") => rhwp::diagnostics::render_geom_diff::run(&args[2..]),
+        Some("layout-anomaly") => exit_with(rhwp::diagnostics::layout_anomaly::run(&args[2..])),
         Some("measure-width") => exit_with(rhwp::diagnostics::text_width_probe::run(&args[2..])),
         Some("core-pages") => exit_with(rhwp::diagnostics::core_pages_probe::run(&args[2..])),
         Some("bench") => exit_with(rhwp::diagnostics::bench::run(&args[2..])),
@@ -1766,7 +1767,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             }),
             "run",
             serde_json::json!(["run", "--plan-json", "{plan}", "--json"]),
-            &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "steps[].confusable", "steps[].skipped", "verify", "invalid", "changedPages", "dryRun", "preview"],
+            &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "steps[].confusable", "steps[].skipped", "verify", "invalid", "changedPages", "dryRun", "preview", "inputSha256", "outputSha256"],
         ),
         tool_with_optional_args(
             "hwp_replay",
@@ -2208,6 +2209,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "overPages", "structPages", "hardStructPages", "status", "regression", "pages",
             ],
         ),
+        tool_with_optional_args(
+            "hwp_layout_anomaly",
+            "렌더 한 장의 기하에서 overflow·overlap·중간 빈 쪽 이상 신호를 찾는다. render-diff가 두 렌더 사이의 변위를 재는 것과 달리, 이 도구는 단일 렌더 자체가 정상적인지 판정한다. 기본은 발견 결과를 데이터로 보고 성공하며, strict를 주면 overflow·overlap 확정 신호가 있을 때 종료 코드 3을 반환한다(빈 쪽은 가능성 신호라 strict에서도 실패시키지 않는다).",
+            path_schema(serde_json::json!({
+                "page": { "type": "integer", "minimum": 0, "description": "특정 페이지만 검사하는 0 기준 번호. 생략하면 전체 문서" },
+                "strict": { "type": "boolean", "description": "참이면 overflow 또는 overlap이 발견될 때 검증 실패(exit 3)로 처리. 빈 쪽 신호는 실패시키지 않음" },
+                "overflowTolerance": { "type": "number", "minimum": 0, "description": "본문 여백 밖으로 벗어난 요소를 overflow로 볼 최소 거리(px). 기본 1.0" },
+                "overlapTolerance": { "type": "number", "minimum": 0, "description": "두 요소를 overlap으로 볼 최소 겹침 폭과 높이(px). 기본 2.0" }
+            })),
+            "layout-anomaly",
+            serde_json::json!(["layout-anomaly", "--json", "{path}"]),
+            serde_json::json!([
+                { "when": "page", "args": ["-p", "{page}"] },
+                { "when": "strict", "args": ["--strict"] },
+                { "when": "overflowTolerance", "args": ["--overflow-tolerance", "{overflowTolerance}"] },
+                { "when": "overlapTolerance", "args": ["--overlap-tolerance", "{overlapTolerance}"] }
+            ]),
+            &[
+                "schemaVersion", "source", "pageCount", "pageFilter", "overflowTolerancePx",
+                "overlapTolerancePx", "strict", "overflowCount", "overlapCount", "emptyPageCount",
+                "hasSignal", "pages",
+            ],
+        ),
     ];
     for definition in &mut tools {
         if definition["name"]
@@ -2364,7 +2388,7 @@ const INSPECT_SUBCOMMANDS: [(&str, &str); 4] = [
     ),
 ];
 
-/// 하위 명령 배열을 해당 부모 항목에 단다. 항목 정의 자리(cmd_json 호출)를 건드리지
+/// 하위 명령 배열을 해당 부모 항목에 단다. 항목 정의 자리를 건드리지
 /// 않는 후처리인 이유: 저 vec 은 거의 모든 표면 PR 이 지나는 자리라, 삽입 지점을
 /// 밖으로 빼야 병렬 PR 과의 충돌면이 줄어든다.
 fn attach_subcommands(commands: &mut [serde_json::Value]) {
@@ -2460,7 +2484,10 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "run",
             "edit",
-            "선언적 편집 계획 실행 — 정적 선검증·원자 실행·저널 (#3703)",
+            "선언적 편집 계획 실행 — 정적 선검증·원자 실행·저널 (#3703). 선택 필드 \
+             preconditions.inputSha256 을 실으면 실행 입구에서 입력 지문을 대조해 낡은 기준을 \
+             거부한다 — 실행 0·디스크 무변경·preconditionFailed+nextCall·exit 3, --dry-run 도 \
+             같은 판정 (#4378 R22)",
             false,
             &["--json", "--plan-json", "--dry-run"],
             &[
@@ -2472,6 +2499,10 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "steps",
                 "verify",
                 "invalid",
+                "preconditionFailed",
+                "nextCall",
+                "inputSha256",
+                "outputSha256",
             ],
         ),
         // [#4391] 작업 영수증 — run 계획의 제3자 재현·증명. 사용자 파일은 건드리지
@@ -3502,6 +3533,33 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "pages",
             ],
         ),
+        cmd_json(
+            "layout-anomaly",
+            "diagnostic",
+            "렌더 한 장의 기하 이상탐지(overflow/overlap/empty_page) — render-diff(변위)와 다른 질문. 기본 exit 0, --strict 만 확정 신호를 exit 3",
+            false,
+            &[
+                "--json",
+                "-p",
+                "--strict",
+                "--overflow-tolerance",
+                "--overlap-tolerance",
+            ],
+            &[
+                "schemaVersion",
+                "source",
+                "pageCount",
+                "pageFilter",
+                "overflowTolerancePx",
+                "overlapTolerancePx",
+                "strict",
+                "overflowCount",
+                "overlapCount",
+                "emptyPageCount",
+                "hasSignal",
+                "pages",
+            ],
+        ),
         cmd("hwpx-roundtrip", "diagnostic", "HWPX 왕복 무손실 게이트"),
         cmd("hwp5-roundtrip", "diagnostic", "HWP5 왕복 무손실 게이트"),
         cmd("measure-width", "diagnostic", "텍스트 폭 측정 프로브"),
@@ -3785,7 +3843,7 @@ fn capabilities_value() -> serde_json::Value {
             "0": "성공",
             "1": "런타임 실패 (읽기·파싱·렌더·쓰기)",
             "2": "사용법 오류 (인자 없음, 알 수 없는 옵션/명령, 페이지 범위 초과)",
-            "3": "검증 단언 실패 — convert/export-hwpx --verify IR 차이, edit 3종 --verify 저장본 불일치, run 계획 assertions 미충족, render-diff --json 시각 회귀 검출(사람 모드는 종전대로 1)",
+            "3": "검증 단언 실패 — convert/export-hwpx --verify IR 차이, edit 3종 --verify 저장본 불일치, run 계획 assertions 미충족, render-diff --json 시각 회귀 검출(사람 모드는 종전대로 1), layout-anomaly --strict 확정 신호 검출(기본은 0)",
             "4": "--verify-pages 페이지 수 불일치 (convert/export-hwpx)",
         },
         "jsonContract": {
@@ -4300,6 +4358,15 @@ fn print_help() {
     println!("      배치: geom_inventory.tsv 산출(기본 output/poc/render_diff)");
     println!("      --json: 단건은 한 줄 봉투, --batch 는 NDJSON(로드 실패도 error 레코드로 남김)");
     println!("      --json 회귀 검출은 종료 코드 3(검증 단언 실패) — 사람 모드는 종전대로 1");
+    println!(
+        "  layout-anomaly <파일> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--strict] [--json]"
+    );
+    println!("      렌더 한 장의 기하만으로 이상 신호 3종 탐지 — render-diff(변위)와 다른 질문");
+    println!(
+        "      overflow: 요소 bbox가 본문 여백을 벗어남 / overlap: 겹치면 안 되는 요소끼리 겹침"
+    );
+    println!("      empty_page: 콘텐츠 없는 중간 쪽(첫/끝 제외) — 항상 가능성 신호, --strict 로도 실패 안 함");
+    println!("      --json: 판정 봉투 한 줄. 기본 종료 코드는 0(판정=데이터) — --strict 만 확정 신호를 exit 3 으로 냄");
     println!("  bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]");
     println!("      단계별 처리 성능 계측 — parse/layout/render/serialize median(ms)");
     println!("      워밍업 1회 후 N회(기본 3) 반복. 파일별 크기/쪽수 + total 표 + TSV");
@@ -11343,6 +11410,12 @@ fn dump_extents(args: &[String]) -> i32 {
         println!("\n=== {}쪽 (트리 {:.1}x{:.1}px) ===", p + 1, page_w, page_h);
 
         let mut outside: Vec<(f64, f64, &'static str, String)> = Vec::new();
+        // [#4889] 쪽 **위쪽** 밖(음수 y) 노드. 아래쪽 넘침만 세던 탓에 이 방향은
+        // 어떤 지표로도 안 잡혔다 — 쪽수는 정답지와 같고(3/3), 글자는 트리에 남아
+        // 있어 텍스트 추출도 통과한다. 판별자는 `y < 0` 이 **아니라** `bottom <= 0`
+        // 이다: 상단만 음수인 노드는 위가 잘릴 뿐 일부가 보이며(반복 머리말이 흔한
+        // 예), 이를 소실로 세면 10k 기준 3배 과대집계된다.
+        let mut above: Vec<(f64, f64, &'static str, String)> = Vec::new();
         let mut spans: Vec<(f64, f64, &'static str, String)> = Vec::new();
 
         walk(&tree.root, 0, &mut |n, depth| {
@@ -11355,6 +11428,9 @@ fn dump_extents(args: &[String]) -> i32 {
             let is_outside = bottom > page_h + 0.5;
             if is_outside {
                 outside.push((b.y, bottom, kind, idx.clone()));
+            }
+            if bottom < -0.5 {
+                above.push((b.y, bottom, kind, idx.clone()));
             }
             // 빈 구간 계산에는 **잎 콘텐츠**만 쓴다.
             //
@@ -11429,6 +11505,23 @@ fn dump_extents(args: &[String]) -> i32 {
                 println!(
                     "     {kind:12} y={y:8.1}..{bottom:8.1} 초과 {:7.1}px  {idx}",
                     bottom - page_h
+                );
+            }
+        }
+
+        // 위쪽 밖은 있을 때만 보고한다 — 없을 때도 한 줄 찍으면 기존 스냅샷이 전부
+        // 흔들린다.
+        if !above.is_empty() {
+            let worst = above.iter().map(|(_, b, _, _)| -*b).fold(0.0f64, f64::max);
+            println!(
+                "  ** 쪽 위쪽 밖 노드 {}개 · 최대 {:.1}px 위 **",
+                above.len(),
+                worst
+            );
+            for (y, bottom, kind, idx) in above.iter().take(8) {
+                println!(
+                    "     {kind:12} y={y:8.1}..{bottom:8.1} 위 {:7.1}px  {idx}",
+                    -*bottom
                 );
             }
         }
@@ -22205,33 +22298,68 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
         Ok(d) => d,
         Err(e) => return fail(format!("입력을 읽을 수 없습니다 - {}: {}", input, e)),
     };
+    // [#4378 R23] 입력 지문 — CAS 대조(있으면)와 성공 저널의 `inputSha256` 이 같은
+    // 값을 공유한다. R22 가 세운 해시 함수(`sha256_hex_of`)를 그대로 재사용한다 —
+    // 저널이 계획서와 다른 해시를 쓰면 사슬(R23)이 끊긴다.
+    let input_sha256 = sha256_hex_of(&bytes);
     // [#4378 R22] CAS — 계획이 세워진 시점의 문서가 아니면 실행 0·저장 0 으로
     // 거절한다(#3905 M1: 두 exit 0 이 편집 하나를 지우는 경합의 차단기).
+    //
+    // 판정 코드는 **3**(#2707 "판정" 계열)이다 — 사용법 오류(2)가 아니다. 계획서는
+    // 문법도 의미도 옳고 틀린 것은 세상 쪽이라, 이건 실패가 아니라 판정이다. 같은
+    // 이유로 `invalid[]` 는 비워 둔다: "invalid 가 비어 있지 않으면 exit 2"(정적
+    // 선검증 위반) 불변식을 CAS 가 흔들면 소비자의 분기표가 깨진다. 단발 경로
+    // (`edit ... --expect-sha256`, R24)가 이미 내는 `preconditionFailed{kind,
+    // expected, actual}` 와 **같은 모양·같은 코드**여서, CAS 판정은 진입점과
+    // 무관하게 하나다.
     let precondition_failure = |expected: &str, actual: String| {
+        // 재계획 힌트 — 같은 의도를 **새 지문으로** 다시 선검증하는 실행 가능한 호출.
+        // `--dry-run` 이라 디스크를 건드리지 않는다: step 이 바뀐 문서에서도 성립하면
+        // 통과하고(그때 `--dry-run` 만 빼고 다시 부르면 된다), 성립하지 않으면
+        // `invalid[]` 로 "진짜 재계획이 필요하다"를 알려 준다. 기대 해시를 실제
+        // 해시로 갈아 끼운 계획을 그대로 실어, 소비자가 계획을 재조립하지 않게 한다.
+        let mut replan = plan.clone();
+        if let Some(obj) = replan.as_object_mut() {
+            // dryRun 은 아래 argv 의 `--dry-run` 이 싣는다 — 같은 뜻을 두 곳에 두면
+            // 통과 후 재실행할 때 계획 본문에서 지우는 걸 잊는 함정이 된다.
+            obj.remove("dryRun");
+            obj.insert(
+                "preconditions".to_string(),
+                serde_json::json!({ "inputSha256": actual }),
+            );
+        }
         (
             provenance::marked(
                 serde_json::json!({
                     "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                     "planVersion": "1.0",
                     "input": input,
-                    "invalid": [{
-                        "step": serde_json::Value::Null,
-                        "action": "preconditions",
-                        "code": "preconditionFailed",
-                        "reason": "입력 문서가 계획의 기대 해시와 다릅니다 — 계획 수립 후 문서가 바뀌었습니다. 실행 0·저장 0. 문서를 다시 읽고 재계획하세요 (#3905 CAS).",
+                    "output": output,
+                    // 정적 선검증은 통과했다 — 계획이 무효한 게 아니다.
+                    "invalid": [],
+                    "preconditionFailed": {
+                        "kind": "inputSha256",
                         "expected": expected,
                         "actual": actual,
-                    }],
+                    },
+                    // `name` = 명령, `arguments` = 그 뒤에 그대로 붙일 argv 조각.
+                    "nextCall": {
+                        "name": "run",
+                        "arguments": [
+                            "--plan-json", replan.to_string(), "--dry-run", "--json",
+                        ],
+                        "why": "계획 수립 후 입력 문서가 바뀌었습니다. 같은 의도를 새 지문으로 다시 선검증하세요 — 통과하면 --dry-run 만 빼고 그대로 실행하고, invalid 가 나오면 문서를 다시 읽고 재계획하세요.",
+                    },
+                    "error": "입력 문서가 계획의 기대 해시와 다릅니다 — 계획 수립 후 문서가 바뀌었습니다. 실행 0·저장 0. nextCall 로 재계획하세요 (#3905 CAS).",
                 }),
                 "run",
             ),
-            EXIT_USAGE,
+            3, // #2707: 판정(verify 단언 실패와 같은 계열) — 사용법 오류가 아니다
         )
     };
     if let Some(expected) = expected_input_sha.as_deref() {
-        let actual = sha256_hex_of(&bytes);
-        if actual != expected {
-            return precondition_failure(expected, actual);
+        if input_sha256 != expected {
+            return precondition_failure(expected, input_sha256.clone());
         }
         cas_test_mark_checked_and_wait();
     }
@@ -22661,6 +22789,11 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
         Ok(b) => b,
         Err(e) => return fail(format!("{} 직렬화 실패 - {}", out_format.label(), e)),
     };
+    // [#4378 R23] 산출 지문 — 다음 계획의 `preconditions.inputSha256`(또는 다음
+    // 저널의 `inputSha256`)과 대조하면 저널만으로 편집 사슬을 재구성할 수 있다.
+    // 이 값은 실제로 디스크에 쓰는 바이트(`out_bytes`)의 해시다 — 재파싱 후
+    // 해시를 다시 재는 것이 아니라 "무엇을 썼는가"를 직접 지문 찍는다.
+    let output_sha256 = sha256_hex_of(&out_bytes);
     let mut verify_report = serde_json::Value::Null;
     if assert_verify {
         let cross = out_format == EditOutputFormat::Hwp
@@ -22706,6 +22839,10 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
                 "input": input, "output": output, "outputFormat": out_format.label(),
                 "steps": journal_steps, "verify": verify_report,
                 "changedPages": changed_pages,
+                // [#4378 R23] 지문 체인 — 앞 실행의 outputSha256 = 뒤 실행의
+                // inputSha256 이면 저널만으로 편집 사슬을 재구성할 수 있다.
+                "inputSha256": input_sha256,
+                "outputSha256": output_sha256,
                 "assertions": { "notFoundEmpty": assert_not_found_empty, "verify": assert_verify },
             }),
             "run",

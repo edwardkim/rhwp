@@ -402,10 +402,11 @@ fn for_each_ole_mut(doc: &mut Document, f: &mut dyn FnMut(&mut OleShape)) {
 /// 읽는 중첩 `OOXMLChartContents` 가 들어 있다(#4055 실측: 그 사본만 고쳐도 렌더에
 /// 반영된다).
 ///
-/// 두 브랜치는 `sz`/`pos`/`outMargin`/`zOrder`/`textWrap` 이 전부 같고, 모델에 남는
-/// 차이는 `bin_data_id`·`instance_id`·`rotate_image`·`drawing_aspect`·`caption` 뿐이다
-/// (`parse_common_shape_children` 이 `orgSz`/`curSz`/`flip`/`lineShape` 를 IR 에 싣지
-/// 않는다). 그중 HWP5 로 나가는 것은 앞의 둘이고 둘 다 fallback 쪽이 정답이다.
+/// 두 브랜치는 `sz`/`pos`/`outMargin`/`zOrder`/`textWrap` 이 전부 같고(실물은
+/// `orgSz`/`curSz`/`flip`/`lineShape` 도 동일하게 중복 기록한다 — #4669 이후 양쪽
+/// 모두 IR 에 실린다), 모델에 남는 차이는 `bin_data_id`·`instance_id`·
+/// `rotate_image`·`drawing_aspect`·`caption` 뿐이다. 그중 HWP5 로 나가는 것은
+/// 앞의 둘이고 둘 다 fallback 쪽이 정답이다.
 ///
 /// ## fallback 이 없으면
 ///

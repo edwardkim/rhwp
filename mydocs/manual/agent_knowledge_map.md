@@ -296,18 +296,18 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 272개 필드
+### 2-2. 전수 사전 — 281개 필드
 
-`capabilities` 의 `recordFields` 고유 **269개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 272개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **278개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 281개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
-| `schemaVersion` | string | 봉투 계약 버전 | 전 40개 `--json` 명령(`--bare` 본문 제외) |
-| `source` | string | 입력 경로 | 26개(문서를 여는 명령 전부) |
+| `schemaVersion` | string | 봉투 계약 버전 | 전 41개 `--json` 명령(`--bare` 본문 제외) |
+| `source` | string | 입력 경로 | 27개(문서를 여는 명령 전부) |
 | `tool` | string | 도구 이름(`"rhwp"`) | `capabilities`·`export-provenance-map` |
 | `version` | string | 문서 판본(`info`) 또는 바이너리 버전(`capabilities`) — **같은 이름, 다른 뜻** | `info`·`capabilities`·`export-provenance-map` |
 | `a` / `b` | string | 비교 대상 두 문서 경로 | `ir-diff` |
@@ -324,7 +324,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `format` | string | `hwp5`·`hwpx`·`hwp3`·`hml`, 산출 계열은 산출 형식(`svg`·`gif`…) | `info`·`digest`·렌더/변환 8종·`thumbnail` |
 | `sizeBytes` | number | 입력 파일 크기 | `info` |
 | `sections` | number | 구역 수(`info`) / 절 청크 배열(`digest --sections`) — **같은 이름, 다른 타입** | `info`·`digest` |
-| `pageCount` | number | 조판 결과 쪽 수 | `info`·`digest`·`export-text`·`export-svg`·`export-pdf`·`export-markdown`·`dump-pages` |
+| `pageCount` | number | 조판 결과 쪽 수 | `info`·`digest`·`export-text`·`export-svg`·`export-pdf`·`export-markdown`·`dump-pages`·`layout-anomaly` |
 | `paraCount` | number | 문단 수 | `info`·`digest` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
@@ -348,7 +348,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
-| `pages` | array | 쪽 단위 레코드. 명령마다 원소 모양이 다르다(§2-3) | `export-text`·`export-svg`·`export-markdown`·`dump-pages`·`render-diff` |
+| `pages` | array | 쪽 단위 레코드. 명령마다 원소 모양이 다르다(§2-3) | `export-text`·`export-svg`·`export-markdown`·`dump-pages`·`render-diff`·`layout-anomaly` |
 | `omittedCount` | number | 상한 때문에 뺀 개수(문자 수 또는 매치 수) | `export-text`·`search` |
 | `mode` | string | `export-structure` 의 분류 방식(`auto`→실제 `outline`/`clause`) / `render-diff` 의 비교 모드(`roundtrip`) | `export-structure`·`render-diff` |
 | `nodeCount` | number | 구조 트리 노드 총수 | `export-structure` |
@@ -445,8 +445,12 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `planVersion` | string | 계획서 버전. `"1.0"` 이 아니면 실행 0 · exit 2 | `run` |
 | `steps` | array\|number | `run` 은 실행 저널(step 마다 `action` 과 판정 필드), `replay` 는 실행된 step 수 — **같은 이름, 다른 타입** | `run`·`replay` |
 | `invalid` | array | **정적 선검증 위반.** 비어 있지 않으면 한 step 도 실행하지 않는다 | `run` |
+| `preconditionFailed` | object\|null | **CAS 판정** (#4378 R22·R24) — `{kind:"inputSha256",expected,actual}`. 계획 수립 시점의 입력 지문과 실행 시점의 실제 지문이 다르다는 뜻이고, 실행 0 · 디스크 무변경 · **exit 3**. `invalid[]` 는 비어 있다 — 계획이 무효한 게 아니라 문서가 바뀐 것이다. `--dry-run` 도 같은 판정을 낸다. `null`/부재 = 대조하지 않았거나 일치 | `run`·`edit …  --expect-sha256` |
+| `nextCall` | object | **다음에 그대로 부를 호출** — `{name, arguments, why}`. `name` 은 실존 명령, `arguments` 는 그 뒤에 이어 붙일 argv 조각이다. CAS 거부에서는 기대 해시를 실제 해시로 갈아 끼운 계획을 `--dry-run` 으로 재선검증하는 호출이 온다(통과하면 `--dry-run` 만 빼고 재실행, `invalid` 가 나오면 문서를 다시 읽고 재계획). MCP 오류 봉투(R72)·CLI `수복:` 줄과 같은 어휘 | `run` |
 | `assertions` | object | 적용된 단언 `{verify,notFoundEmpty}` — 미지정 기본값도 명시해 저널에 남는다 | `run` (실측; `recordFields` 에는 없다) |
 | `preview` | array | `--dry-run` 전용. 선검증이 이미 계산한 대상 목록 | `run --dry-run` (실측) |
+| `inputSha256` | string | [#4378 R23] 실행에 쓴 `input` 문서 바이트의 SHA-256(R22 와 같은 해시 함수). 앞 실행 저널의 `outputSha256` 과 값이 같으면 두 실행이 연속이다 — 다르면 그 사이 다른 도구가 문서를 건드렸다는 뜻(저널만으로 탐지, 실행을 막지는 않는다) | `run` |
+| `outputSha256` | string | [#4378 R23] 실제로 저장한 산출 바이트의 SHA-256. 다음 계획의 `preconditions.inputSha256` 또는 다음 저널의 `inputSha256` 과 이어 붙이면 편집 사슬이 재구성된다 — `replay` 의 동명 필드는 임시 재실행 영수증이라 문맥이 다르다(같은 해시 함수, 다른 대상) | `run` |
 
 #### 작업 영수증 (`replay`)
 
@@ -625,7 +629,14 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `structPages` / `hardStructPages` | number | 구조 불일치 쪽 수 / 그중 완화 규칙으로도 못 넘긴 쪽 수 | `render-diff` |
 | `pageCountA` / `pageCountB` | number | 양쪽 쪽 수 | `render-diff` |
 | `pageCountMismatch` | bool | 쪽 수가 다른가 | `render-diff` |
-| `pageFilter` | number\|null | `-p` 로 좁혔나. `null` = 전 쪽 | `render-diff`·`dump-pages` |
+| `pageFilter` | number\|null | `-p` 로 좁혔나. `null` = 전 쪽 | `render-diff`·`dump-pages`·`layout-anomaly` |
+| `strict` | bool | 확정 이상 신호를 종료 코드 3으로 취급할지. 빈 쪽 신호는 `true`여도 실패시키지 않는다 | `layout-anomaly` |
+| `overflowTolerancePx` | number | 본문 여백 밖 이탈을 overflow로 볼 최소 거리(px) | `layout-anomaly` |
+| `overlapTolerancePx` | number | 두 요소 겹침을 overlap으로 볼 최소 폭·높이(px) | `layout-anomaly` |
+| `overflowCount` | number | 전 쪽에서 확정한 overflow 신호 수 | `layout-anomaly` |
+| `overlapCount` | number | 전 쪽에서 확정한 overlap 신호 수 | `layout-anomaly` |
+| `emptyPageCount` | number | 내용이 없는 중간 쪽 가능성 신호 수 | `layout-anomaly` |
+| `hasSignal` | bool | overflow·overlap·빈 쪽 가능성 신호가 하나 이상 있는가 | `layout-anomaly` |
 
 #### 쪽 자르기 (`extract-pages`)
 
@@ -1016,17 +1027,17 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `edit` | 3 | `run`·`csv-to-table`·`edit`(6개 하위 명령) |
 | `batch` | 2 | `batch`(9축)·`scan` |
 | `serve` | 1 | `mcp-serve` |
-| `diagnostic` | 27 | `dump`·`dump-pages`·`dump-extents`·`dump-note-shape`·`dump-endnote-lines`·`dump-records`·`diag`·`ir-diff`·`verify`·`render-diff`·`hwpx-roundtrip`·`hwp5-roundtrip`·`measure-width`·`core-pages`·`bench`·`hwp5-inventory`·`hwp5-inventory-diff`·`hwp5-contract-analyze`·`hwp5-contract-probe`·`hwp5-ctrl-data-trace`·`hwp5-table-probe`·`hwp5-mel-personnel-probe`·`hwp5-borderfill-diagonal-probe`·`hwp5-first-para-control-probe`·`hwp5-anchor-trace`·`hwp5-cell-header-probe`·`hwp5-char-shape-audit` |
+| `diagnostic` | 28 | `dump`·`dump-pages`·`dump-extents`·`dump-note-shape`·`dump-endnote-lines`·`dump-records`·`diag`·`ir-diff`·`verify`·`render-diff`·`layout-anomaly`·`hwpx-roundtrip`·`hwp5-roundtrip`·`measure-width`·`core-pages`·`bench`·`hwp5-inventory`·`hwp5-inventory-diff`·`hwp5-contract-analyze`·`hwp5-contract-probe`·`hwp5-ctrl-data-trace`·`hwp5-table-probe`·`hwp5-mel-personnel-probe`·`hwp5-borderfill-diagonal-probe`·`hwp5-first-para-control-probe`·`hwp5-anchor-trace`·`hwp5-cell-header-probe`·`hwp5-char-shape-audit` |
 | `internal` | 5 | `test-shape`·`test-caption`·`test-field`·`gen-table`·`gen-pua` |
 
-**`--json` 계약 40개** — `info`·`export-text`·`export-structure`·`digest`·
+**`--json` 계약 41개** — `info`·`export-text`·`export-structure`·`digest`·
 `export-ir-schema`·`run`·`replay`·`lineage`·`audit`·`export-plan-schema`·
 `capabilities`·`export-provenance-map`·`export-agent-manifest`·`export-svg`·
 `export-pdf`·`export-markdown`·`export-hwpx`·`export-hml`·`export-doclang`·
 `export-capabilities-schema`·`export-ontology`·`export-tables`·`table-to-csv`·
 `csv-to-table`·`extract-pages`·`search`·`extract-data`·`fields`·`explain`·`inspect`·
 `convert`·`build-from-ingest`·`thumbnail`·`edit`·`batch`·`scan`·`dump-pages`·
-`ir-diff`·`verify`·`render-diff`.
+`ir-diff`·`verify`·`render-diff`·`layout-anomaly`.
 
 **batch 로도 도는 축 9개** — `export-text`·`info`·`export-structure`·`export-tables`·
 `fields`·`search`·`extract-data`·`convert`·`fill`. 이 중 파일을 쓰는 축은
@@ -1107,6 +1118,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_audit` | `audit --json` | `dir` |
 | `hwp_export_plan_schema` | `export-plan-schema --json` | (없음) |
 | `hwp_render_diff` | `render-diff --json` | `path` |
+| `hwp_layout_anomaly` | `layout-anomaly --json` | `path`,`page`,`strict`,`overflowTolerance`,`overlapTolerance` |
 | `hwp_export_ir_schema` | `export-ir-schema --json` | (없음) |
 | `hwp_export_capabilities_schema` | `export-capabilities-schema --json` | (없음) |
 | `hwp_export_provenance_map` | `export-provenance-map --json` | (없음) |
@@ -1133,6 +1145,18 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 **세션이 이기는 지점** — 387쪽 문서에서 `hwp_open` + 검색 3회 + `hwp_doc_info` +
 `hwp_close` 를 한 프로세스로 돌면 **310ms**, 같은 검색 3회를 무상태 CLI 로 돌리면
 **810ms** 다(실측). 문서가 클수록, 호출이 많을수록 격차가 벌어진다.
+
+**`hwp_doc_tree` 의 두 안정 ID 체계** — `nodes.pages`/`nodes.tables` 의 `p0../t0..`
+는 페이지·표 단위까지만 내려간다(#4357). 문단·표 셀 단위 좌표가 필요하면
+`nodes.paragraphs[].nodePath`/`nodes.cells[].nodePath` 를 쓴다 — 회귀 비교 엔진
+`docdiff::NodePath`/`PathStep`(`src/docdiff/model.rs`)가 이미 쓰는
+`sec[i]/para[i]/ctrl[i]/cell[r,c]` 문법을 그대로 승격한 것이라 새 문법이 아니다.
+두 체계는 **독립이고 서로 대체하지 않는다** — `idContract`(p0../t0..)와
+`nodePathContract`(sec.../cell...)가 응답에 나란히 실린다. 범위는 docdiff 비교
+엔진과 같아 본문과 표 셀 중첩까지만 내려가고, 글상자·머리말·꼬리말·각주/미주 안의
+표는 `PathStep` 에 대응 칸이 없어 `nodes.cells`/`nodes.paragraphs` 에 나오지 않는다
+(그 표의 위치는 `nodes.tables[].containerPath` 로 이미 알 수 있다 — `kind` 가
+`textbox`/`header`/`footer`/`footnote`/`endnote` 인 항목).
 
 ### 6-3. `structuredContent` 가 없는 도구
 

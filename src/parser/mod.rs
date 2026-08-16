@@ -720,16 +720,25 @@ fn apply_hwp3_origin_fixup(doc: &mut Document) {
     let ps_ratio = doc.doc_info.para_shapes.len() as f64 / total_paragraphs as f64;
     let cs_ratio = doc.doc_info.char_shapes.len() as f64 / total_paragraphs as f64;
     if ps_ratio < 0.05 && cs_ratio < 0.15 {
-        // [Task #554] 변환본 의심 시 margin_bottom 보정 (한글97 의 마지막 줄
-        // tolerance 모방). is_hwp3_variant 플래그 설정은 caller 가 별도 (HwpSummary
-        // HWP3-era + 더 관대한 ratio AND 조건) 로 처리 — hwpspec.hwp 같은 spec 문서
-        // false-positive 차단 위해 ratio 단독 변환본 확정 회피.
+        // [Task #554] 변환본 의심 시 한글97 의 마지막 줄 tolerance 를 흉내 낸다.
+        // is_hwp3_variant 플래그 설정은 caller 가 별도 (HwpSummary HWP3-era + 더 관대한
+        // ratio AND 조건) 로 처리 — hwpspec.hwp 같은 spec 문서 false-positive 차단 위해
+        // ratio 단독 변환본 확정 회피.
+        //
+        // 종전에는 `margin_bottom` 을 직접 1600 깎았다. 그건 **파일에 실리는 값**이라
+        // 저장본의 쪽 기하가 원본과 달라진다 — 위 #3707 블록이 같은 이유로 이미 금지한
+        // 조작이다. 이 휴리스틱은 확정이 아니라 추정이라 오탐 비용이 특히 크다:
+        // 02600 은 진짜 HWP5 인데 비율에 걸려 아래 여백이 4252 -> 2652 가 되고, 쪽당
+        // 내용이 늘어 한글이 36쪽 문서를 35쪽으로 연다(오라클 실측).
+        //
+        // 페이지네이터에게만 여유를 주는 `pagination_bottom_tolerance` 로 옮기면 의도한
+        // 조판 효과는 그대로 두면서 파일 값은 원본대로 남는다. 이 필드는 렌더러 내부
+        // 값이라 `--verify` IR 비교에서도 제외된다.
         for section in doc.sections.iter_mut() {
-            section.section_def.page_def.margin_bottom = section
-                .section_def
-                .page_def
-                .margin_bottom
-                .saturating_sub(1600);
+            let pd = &mut section.section_def.page_def;
+            if pd.pagination_bottom_tolerance == 0 {
+                pd.pagination_bottom_tolerance = 1600.min(pd.margin_bottom);
+            }
         }
     }
 }
@@ -1467,6 +1476,26 @@ fn parse_document_inner(
     data: &[u8],
     password: Option<&[u8]>,
 ) -> Result<ParsedDocument, ParseError> {
+    let mut parsed = parse_document_inner_unsealed(data, password)?;
+    // [#4493] 파싱과 모든 load fixup 이 끝난 마지막 지점에서 DocInfo raw 출처를
+    // 봉인한다 — 이보다 앞(포맷별 파서 내부)에서 봉인하면 HWP3-변환본 spacing
+    // 반감 같은 로드 보정이 봉인을 깨서, 무변경 문서의 원본 바이트 통과가 죽는다.
+    // raw 캐시가 없는 포맷(HWPX/HWP3/HML)에서는 no-op.
+    parsed
+        .document
+        .doc_info
+        .seal_raw_provenance(&parsed.document.doc_properties);
+    // [#4488/#4495] 본문 Section raw_stream 과 하위 컨트롤 raw 레코드도 같은
+    // 지점에서 봉인한다. DocumentCore 로 열리는 경로는 from_bytes 의 로드 픽스업
+    // (손상 lineseg 제거 등) 뒤에 다시 봉인된다.
+    parsed.document.seal_body_raw_provenance();
+    Ok(parsed)
+}
+
+fn parse_document_inner_unsealed(
+    data: &[u8],
+    password: Option<&[u8]>,
+) -> Result<ParsedDocument, ParseError> {
     let open_policy = document_open_decompression_policy();
     match detect_format(data) {
         FileFormat::Hwp => {
@@ -2196,6 +2225,87 @@ mod tests {
         let _ = parse_document(&corrupt); // 결과값 무관 — 패닉만 안 하면 통과
     }
 
+    /// HWP3 변환본 추정 휴리스틱은 **파일에 실리는 여백을 건드리면 안 된다**.
+    ///
+    /// 종전에는 `margin_bottom` 을 직접 1600 깎았다. 이 판정은 확정이 아니라 추정이라
+    /// 오탐이 있는데, 오탐이 파일 값을 바꾸면 저장본의 쪽 기하가 원본과 달라진다
+    /// (02600 실측: 진짜 HWP5 인데 비율에 걸려 4252 -> 2652, 한글이 36쪽을 35쪽으로 연다).
+    ///
+    /// 같은 함수의 #3707 블록이 이미 같은 이유로 이 조작을 금지하고
+    /// `pagination_bottom_tolerance`(렌더러 내부 값, `--verify` IR 비교 제외)를 쓴다.
+    #[test]
+    fn hwp3_origin_heuristic_moves_tolerance_not_the_saved_margin() {
+        use crate::model::document::Section;
+        use crate::model::paragraph::Paragraph;
+        use crate::model::style::{CharShape, ParaShape};
+
+        let mut doc = Document::default();
+        let mut section = Section::default();
+        section.section_def.page_def.margin_bottom = 4252;
+        // 휴리스틱 발화 조건: 문단 > 50, ParaShape/문단 < 0.05, CharShape/문단 < 0.15
+        section.paragraphs = (0..60).map(|_| Paragraph::default()).collect();
+        doc.sections.push(section);
+        doc.doc_info.para_shapes = vec![ParaShape::default()];
+        doc.doc_info.char_shapes = vec![CharShape::default()];
+
+        apply_hwp3_origin_fixup(&mut doc);
+
+        let pd = &doc.sections[0].section_def.page_def;
+        assert_eq!(
+            pd.margin_bottom, 4252,
+            "파일에 실리는 여백은 그대로여야 한다 — 줄이면 한컴이 보는 쪽 기하가 원본과 달라진다"
+        );
+        assert_eq!(
+            pd.pagination_bottom_tolerance, 1600,
+            "조판 여유는 렌더러 내부 값으로만 준다"
+        );
+    }
+
+    /// 여백이 1600 보다 작으면 그만큼만 허용한다 — 음수 여유를 만들지 않는다.
+    #[test]
+    fn hwp3_origin_tolerance_is_clamped_to_the_available_margin() {
+        use crate::model::document::Section;
+        use crate::model::paragraph::Paragraph;
+        use crate::model::style::{CharShape, ParaShape};
+
+        let mut doc = Document::default();
+        let mut section = Section::default();
+        section.section_def.page_def.margin_bottom = 900;
+        section.paragraphs = (0..60).map(|_| Paragraph::default()).collect();
+        doc.sections.push(section);
+        doc.doc_info.para_shapes = vec![ParaShape::default()];
+        doc.doc_info.char_shapes = vec![CharShape::default()];
+
+        apply_hwp3_origin_fixup(&mut doc);
+
+        let pd = &doc.sections[0].section_def.page_def;
+        assert_eq!(pd.margin_bottom, 900);
+        assert_eq!(pd.pagination_bottom_tolerance, 900);
+    }
+
+    /// 휴리스틱이 발화하지 않는 문서는 아무것도 바뀌지 않는다.
+    #[test]
+    fn ordinary_hwp5_document_keeps_margin_and_tolerance() {
+        use crate::model::document::Section;
+        use crate::model::paragraph::Paragraph;
+        use crate::model::style::{CharShape, ParaShape};
+
+        let mut doc = Document::default();
+        let mut section = Section::default();
+        section.section_def.page_def.margin_bottom = 4252;
+        section.paragraphs = (0..60).map(|_| Paragraph::default()).collect();
+        doc.sections.push(section);
+        // 스타일이 문단 수만큼 있으면 변환본으로 보지 않는다.
+        doc.doc_info.para_shapes = (0..60).map(|_| ParaShape::default()).collect();
+        doc.doc_info.char_shapes = (0..60).map(|_| CharShape::default()).collect();
+
+        apply_hwp3_origin_fixup(&mut doc);
+
+        let pd = &doc.sections[0].section_def.page_def;
+        assert_eq!(pd.margin_bottom, 4252);
+        assert_eq!(pd.pagination_bottom_tolerance, 0);
+    }
+
     fn png_preview() -> Vec<u8> {
         let mut png = vec![0; 24];
         png[..8].copy_from_slice(b"\x89PNG\r\n\x1a\n");
@@ -2520,10 +2630,17 @@ mod tests {
         let mut doc = hwp3_ratio_suspect_doc();
         assert!(!doc.is_hwpx_variant);
         apply_hwp3_origin_fixup(&mut doc);
+        let pd = &doc.sections[0].section_def.page_def;
+        // 보정은 그대로 적용되지만 **파일 값이 아니라 렌더러 내부 값**에 실린다.
+        // 종전에는 `margin_bottom` 을 4252 - 1600 으로 깎았다 — 추정이 빗나가면 저장본의
+        // 쪽 기하가 원본과 달라진다(02600 실측: 36쪽 문서가 35쪽으로 열림).
         assert_eq!(
-            doc.sections[0].section_def.page_def.margin_bottom,
-            4252 - 1600,
-            "native HWP5 의심본은 종전대로 margin_bottom 보정"
+            pd.margin_bottom, 4252,
+            "파일에 실리는 여백은 건드리지 않는다"
+        );
+        assert_eq!(
+            pd.pagination_bottom_tolerance, 1600,
+            "native HWP5 의심본에는 종전대로 보정이 적용된다 — 자리만 옮겼다"
         );
     }
 
@@ -2532,8 +2649,12 @@ mod tests {
         let mut doc = hwp3_ratio_suspect_doc();
         doc.is_hwpx_variant = true;
         apply_hwp3_origin_fixup(&mut doc);
+        let pd = &doc.sections[0].section_def.page_def;
+        assert_eq!(pd.margin_bottom, 4252);
+        // 보정이 tolerance 로 옮겨간 뒤로는 여백만 봐서는 오발동을 잡을 수 없다 —
+        // 보정이 실리는 자리를 직접 본다.
         assert_eq!(
-            doc.sections[0].section_def.page_def.margin_bottom, 4252,
+            pd.pagination_bottom_tolerance, 0,
             "rhwp HWPX→HWP 변환본(마커)은 HWP3-origin 보정 오발동 금지 (#1880 v2, 2959953)"
         );
     }

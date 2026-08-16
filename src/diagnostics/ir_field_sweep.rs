@@ -919,6 +919,7 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut DivergenceCollector) 
         outer_margin_top,
         outer_margin_bottom,
         raw_ctrl_data,
+        raw_ctrl_seal: _,
         raw_table_record_attr,
         raw_table_record_extra,
         dirty,
@@ -1000,6 +1001,7 @@ fn sweep_cell(base: &str, a: &Cell, b: &Cell, out: &mut DivergenceCollector) {
         paragraphs,
         list_header_width_ref,
         text_direction,
+        line_wrap,
         vertical_align,
         apply_inner_margin,
         is_header,
@@ -1023,6 +1025,7 @@ fn sweep_cell(base: &str, a: &Cell, b: &Cell, out: &mut DivergenceCollector) {
     f!(border_fill_id);
     f!(list_header_width_ref);
     f!(text_direction);
+    f!(line_wrap);
     f!(vertical_align);
     f!(apply_inner_margin);
     f!(is_header);

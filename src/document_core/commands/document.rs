@@ -206,6 +206,14 @@ impl DocumentCore {
         };
 
         doc.paginate();
+
+        // [#4488/#4495] 로드 픽스업(손상 lineseg 제거·빈 문단 reflow·안내문 제거)과
+        // 첫 paginate 의 materialization(그림 img_dim 등)까지 끝난 뒤 본문을 다시
+        // 봉인한다 — 파서 말미 봉인 그대로면 무변경 문서의 원본 바이트 통과가
+        // 로드 경로의 모델 보정 차이로 죽는다(honbo-save imgDim 실측). 이 지점
+        // 이후 본문 변경은 편집 명령(raw_stream 무효화 동반) 또는 공개 모델 직접
+        // 변경(봉인이 잡아야 할 대상)뿐이다.
+        doc.document.seal_body_raw_provenance();
         Ok(doc)
     }
 
@@ -360,6 +368,9 @@ impl DocumentCore {
         use crate::model::control::Control;
 
         for section in &mut document.sections {
+            // [#4898] 이 구역의 저장 lineseg 가 배치 권위를 갖는지 먼저 판정한다 —
+            // 권위가 있으면 0높이 lineseg(한컴이 접어 둔 숨은 블록)를 재조판하지 않는다.
+            let section_sized = Self::section_has_sized_lineseg(section);
             let page_def = &section.section_def.page_def;
             let column_def = Self::find_initial_column_def(&section.paragraphs);
             let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
@@ -382,7 +393,7 @@ impl DocumentCore {
                 // 본문 합성 lineseg 는 흐름 소비를 문단당 ~2.7px 팽창시켜 sijang
                 // 밀도 핀 -5쪽(302 vs 307, #2070v2)만 남기는 잉여 축으로 판정.
                 // 본문 NO_LS 텍스트 문단의 실폭 래핑은 composer recompose 가 담당한다.
-                if Self::needs_line_seg_reflow(para, include_empty) {
+                if Self::needs_line_seg_reflow_in_scope(para, include_empty, section_sized) {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                     let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
@@ -488,7 +499,14 @@ impl DocumentCore {
                                         && cell_para.text.is_empty()
                                         && cell_para.controls.is_empty()
                                         && !cell_diagonal);
-                                if Self::needs_line_seg_reflow(cell_para, inc) {
+                                // [#4898] 본문과 셀은 같은 구역의 저장 lineseg 좌표계를
+                                // 공유한다. 셀만 구역 권위를 무시하면 한컴이 0 높이로 접어
+                                // 둔 셀 내부 블록을 다시 조판해 표 높이와 뒤쪽 페이지가 변한다.
+                                if Self::needs_line_seg_reflow_in_scope(
+                                    cell_para,
+                                    inc,
+                                    section_sized,
+                                ) {
                                     reflow_line_segs(cell_para, cell_inner_width, styles, dpi);
                                 }
                             }
@@ -716,11 +734,54 @@ impl DocumentCore {
         para: &crate::model::paragraph::Paragraph,
         include_empty: bool,
     ) -> bool {
+        Self::needs_line_seg_reflow_in_scope(para, include_empty, false)
+    }
+
+    /// [#4898] `section_has_sized_lineseg` 는 **이 구역의 lineseg 가 배치 권위를 갖는가**다.
+    ///
+    /// 높이 0 짜리 단일 lineseg 는 보통 "아직 계산 안 됨"이지만, 한컴은 숨긴 블록
+    /// (CLIPDATA 등)을 **일부러** 0높이로 접어서 저장한다. 구역에 0 아닌 lineseg 가 있으면
+    /// 그 구역의 저장 lineseg 는 믿을 수 있는 값이므로 0높이도 그대로 두어야 한다 — 새로
+    /// 조판하면 숨은 내용이 펼쳐져 뒤가 밀리고 쪽수가 는다(08852 실측: 한글 1쪽 → 2쪽,
+    /// 최대 vertpos 40,525 → 77,965).
+    fn needs_line_seg_reflow_in_scope(
+        para: &crate::model::paragraph::Paragraph,
+        include_empty: bool,
+        section_has_sized_lineseg: bool,
+    ) -> bool {
         if para.line_segs.len() == 1 && para.line_segs[0].is_missing_lineseg_placeholder() {
             return false;
         }
-        (include_empty && para.line_segs.is_empty())
-            || (para.line_segs.len() == 1 && para.line_segs[0].line_height == 0)
+        if include_empty && para.line_segs.is_empty() {
+            return true;
+        }
+        para.line_segs.len() == 1
+            && para.line_segs[0].line_height == 0
+            && !section_has_sized_lineseg
+    }
+
+    /// 구역 본문·중첩 표 셀에 높이가 0 이 아닌 lineseg 가 하나라도 있는가.
+    fn section_has_sized_lineseg(section: &crate::model::document::Section) -> bool {
+        section
+            .paragraphs
+            .iter()
+            .any(Self::paragraph_or_nested_table_has_sized_lineseg)
+    }
+
+    /// 표 셀은 section의 저장 좌표계를 공유하므로, 중첩 표까지 재귀해 lineseg 권위를
+    /// 판정한다. 글상자 문단은 이 자동 reflow 경로의 대상이 아니므로 포함하지 않는다.
+    fn paragraph_or_nested_table_has_sized_lineseg(
+        para: &crate::model::paragraph::Paragraph,
+    ) -> bool {
+        para.line_segs.iter().any(|s| s.line_height != 0)
+            || para.controls.iter().any(|control| match control {
+                Control::Table(table) => table.cells.iter().any(|cell| {
+                    cell.paragraphs
+                        .iter()
+                        .any(Self::paragraph_or_nested_table_has_sized_lineseg)
+                }),
+                _ => false,
+            })
     }
 
     /// HWP5 -> HWPX export가 넣은 LineSeg 부재 marker는 reflow gate에서만 사용한다.
@@ -1339,10 +1400,40 @@ impl DocumentCore {
 
         let saved_hwpx_page_border_fills = self.snapshot_hwpx_page_border_fill_overlay();
         let _report = convert_if_hwpx_source(&mut self.document, self.source_format);
+        self.refresh_doc_info_raw_cache();
         self.serialize_hwp_after_adapter(
             saved_hwpx_page_border_fills,
             crate::serializer::serialize_document,
         )
+    }
+
+    /// [#4432] DocInfo raw 캐시 재밀봉 — dirty(또는 봉인 불일치) 상태로 저장에
+    /// 들어가면 매 저장마다 DocInfo 를 처음부터 재구성한다. 여기서 한 번 재구성해
+    /// raw 캐시를 그 결과로 갱신하고 dirty 를 내리면, 이번 저장은 방금 만든
+    /// 바이트를 그대로 쓰고 이후 저장은 원본 바이트 통과로 돌아간다 —
+    /// "직렬화 성공 지점에서 되돌리는 것이 자연스러운 자리" 를 &mut 저장
+    /// 진입점에서 구현한 것이다. raw 캐시가 없던 문서(HWPX/HWP3 출처)는 건드리지
+    /// 않는다(raw_stream 유무가 출처 판별에 쓰이는 경로를 오염시키지 않기 위함).
+    fn refresh_doc_info_raw_cache(&mut self) {
+        let doc = &mut self.document;
+        if doc.doc_info.raw_stream.is_none() {
+            return;
+        }
+        let dirty = doc.doc_info.raw_stream_dirty
+            || !doc
+                .doc_info
+                .raw_provenance_permits_reuse(&doc.doc_properties);
+        if !dirty {
+            return;
+        }
+        // 재구성 강제: dirty 를 세운 채 한 번 직렬화한다(통과 게이트 우회).
+        doc.doc_info.raw_stream_dirty = true;
+        let rebuilt =
+            crate::serializer::doc_info::serialize_doc_info(&doc.doc_info, &doc.doc_properties);
+        doc.doc_info.raw_stream = Some(rebuilt);
+        doc.doc_info.raw_stream_dirty = false;
+        // 방금 만든 바이트와 현재 모델을 재밀봉 — 이후 무변경 저장은 통과.
+        doc.doc_info.seal_raw_provenance(&doc.doc_properties);
     }
 
     /// 어댑터를 **복제본에 적용해** HWP5 를 낸다 — 호출자의 IR 은 그대로다.
@@ -1403,6 +1494,7 @@ impl DocumentCore {
 
         let saved_hwpx_page_border_fills = self.snapshot_hwpx_page_border_fill_overlay();
         let _report = convert_if_hwpx_source(&mut self.document, self.source_format);
+        self.refresh_doc_info_raw_cache();
         self.serialize_hwp_after_adapter(saved_hwpx_page_border_fills, |document| {
             crate::serializer::serialize_hwp_with_password(document, password)
         })
@@ -2955,6 +3047,40 @@ mod validate_linesegs_tests {
         seg.line_height = 1000;
         para.line_segs.push(seg);
         assert!(!DocumentCore::needs_reflow_broadly(&para));
+    }
+
+    #[test]
+    fn issue4898_section_authority_includes_nested_table_cells() {
+        let zero_height_para = Paragraph {
+            line_segs: vec![LineSeg {
+                line_height: 0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut cell = crate::model::table::Cell::default();
+        cell.paragraphs.push(Paragraph {
+            line_segs: vec![LineSeg {
+                line_height: 100,
+                ..Default::default()
+            }],
+            ..Default::default()
+        });
+        let mut table = crate::model::table::Table::default();
+        table.cells.push(cell);
+        let section = Section {
+            paragraphs: vec![Paragraph {
+                controls: vec![Control::Table(Box::new(table))],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        assert!(DocumentCore::section_has_sized_lineseg(&section));
+        assert!(
+            !DocumentCore::needs_line_seg_reflow_in_scope(&zero_height_para, false, true),
+            "셀의 저장 lineseg가 있는 구역에서는 0 높이 lineseg를 재조판하면 안 된다"
+        );
     }
 }
 

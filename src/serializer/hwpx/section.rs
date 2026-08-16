@@ -580,6 +580,46 @@ pub fn write_section(
 
         // 템플릿의 텍스트 run 전체를 문단의 run 시퀀스(다중 run 분할 포함)로 1회 치환.
         out = out.replacen(TEMPLATE_TEXT_RUN, &first_runs, 1);
+
+        // [#3367/#4433] 컨트롤 방출 순서를 IR 순서에 맞춘다 — HWP5 원본이
+        // `[cold, secd]` 인 문단(field-01 실측: 전 구역 cold→secd)을 템플릿 고정
+        // 순서(secPr → ctrl/colPr)로 내보내면 재파싱 IR 이 `[secd, cold]` 로
+        // 뒤집혀 왕복 무손실 계약(ir-diff)이 깨진다. OWPML 스키마(run 의
+        // choice, ParaList XML schema)는 순서를 규정하지 않고, 한컴 원산 실물도
+        // colPr-before-secPr 20건 / colPr-after-secPr 315건으로 양쪽을 다 쓴다 —
+        // 문서 순서가 곧 보존 대상이다. 파서(parse_ctrl/secPr arm)는 이미 문서
+        // 순서를 보존하므로 방출만 IR 순서를 따르면 왕복이 닫힌다.
+        let cold_before_secd = {
+            let i_secd = p
+                .controls
+                .iter()
+                .position(|c| matches!(c, Control::SectionDef(_)));
+            let i_cold = p
+                .controls
+                .iter()
+                .position(|c| matches!(c, Control::ColumnDef(_)));
+            matches!((i_cold, i_secd), (Some(c), Some(s)) if c < s)
+        };
+        if cold_before_secd {
+            if let Some(Control::ColumnDef(cd)) = p
+                .controls
+                .iter()
+                .find(|c| matches!(c, Control::ColumnDef(_)))
+            {
+                // 위 #1407 치환이 이미 심어 둔 IR colPr 블록을 정확히 되찾아
+                // (render_col_pr_ctrl 은 결정적) secPr 앞으로 옮긴다.
+                let rendered = render_col_pr_ctrl(cd);
+                if let Some(colpr_at) = out.find(&rendered) {
+                    out.replace_range(colpr_at..colpr_at + rendered.len(), "");
+                    if let Some(secpr_at) = out.find("<hp:secPr ") {
+                        out.insert_str(secpr_at, &rendered);
+                    } else {
+                        // secPr 미발견(비정상 템플릿) — 원위치 복원으로 무손실 유지.
+                        out.insert_str(colpr_at, &rendered);
+                    }
+                }
+            }
+        }
     }
 
     // 추가 문단: `</hp:p></hs:sec>` 직전에 `<hp:p>` 요소를 삽입.
@@ -703,6 +743,11 @@ pub(crate) struct InlineCursor<'a> {
     pub mark_idx: usize,
     /// 지금까지 방출한 문단 텍스트의 문자 수
     pub char_idx: usize,
+    /// [#4895] 이 문단의 소프트 하이픈을 `<hp:hyphen/>` 요소로 내릴지 여부.
+    ///
+    /// 한컴 원본은 소프트 하이픈을 리터럴 U+00AD 로도, 제어 표기로도 쓴다. 출처가
+    /// 제어 표기(HWP5 `control_mask` 비트 24)일 때만 요소로 내려 원본 표기를 지킨다.
+    pub soft_hyphen_as_element: bool,
 }
 
 impl InlineCursor<'_> {
@@ -775,10 +820,19 @@ pub(crate) fn render_hp_t_content(
                 flush_buf(&mut t_xml, &mut buf);
                 t_xml.push_str("<hp:fwSpace/>");
             }
-            // 소프트 하이픈도 같은 계약이다 — 리터럴 '-' 로 내리면 한글이 실제
-            // 하이픈으로 읽어 단어가 갈라진다(`pertinent` → `per-tinent`).
-            // 스키마의 `<hp:hyphen>`(ParaList XML schema.xml:291)으로 되돌린다.
-            '\u{00AD}' => {
+            // [#4895] 소프트 하이픈(U+00AD)은 U+2007 과 달리 **원본 표기를 따라간다.**
+            // 종전에는 늘 `<hp:hyphen/>` 요소로 내렸는데(#4776), 한컴이 만든 문서는
+            // 두 표기를 다 쓴다(10k 코퍼스 실측: 리터럴 원본 58문서 · 제어 표기 원본 10문서).
+            //
+            // 한글 2022 대조 실측(01628, 하이픈 표기만 교체):
+            //   `<hp:hyphen/>`     → 본문 2,477자 (한글이 글자를 버린다)
+            //   raw U+00AD 리터럴  → 본문 2,478자, 원본과 textSha 일치
+            //
+            // 즉 한글은 요소·제어문자를 텍스트로 복원하지 않는다. 리터럴 원본을 요소로
+            // 바꾸면 글자가 사라지고(10k 스윕 36경로 회귀), 반대로 제어 표기 원본을
+            // 리터럴로 바꾸면 원본에 없던 글자가 생긴다. 그래서 출처 표기를 보존한다 —
+            // HWP5 PARA_HEADER `control_mask` 비트 24 가 그 신호다(`cursor` 가 나른다).
+            '\u{00AD}' if cursor.soft_hyphen_as_element => {
                 flush_buf(&mut t_xml, &mut buf);
                 t_xml.push_str("<hp:hyphen/>");
             }
@@ -1128,6 +1182,8 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
     // 슬롯 축이 책갈피를 잡지 못하던 시절의 우회였고, 그대로 두면 이중 방출이 된다.
     let mut cursor = InlineCursor {
         title_marks: &para.title_marks,
+        // [#4895] 출처가 제어 표기였던 문단만 `<hp:hyphen/>` 로 되돌린다.
+        soft_hyphen_as_element: para.control_mask & (1u32 << 0x0018) != 0,
         ..Default::default()
     };
 
@@ -1244,11 +1300,23 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
             // 방출돼, 말미 슬롯(표 등)이 고아 fieldEnd 의 8유닛 갭을 먼저 가로채
             // char_offsets 가 +8 밀렸다(36380743 문단 0.10: 표가 fieldEnd 자리로 당겨짐).
             // 갭 소유자인 고아 fieldEnd 를 먼저 방출하고 while 을 재평가한다.
+            //
+            // [#4902] 단, 그 갭을 다투는 슬롯이 **이 문단의 fieldBegin** 이면 양보하지
+            // 않는다. 한 자리에서 begin 과 (앞 문단 필드를 닫는) 고아 end 가 겹치면
+            // 원본 순서는 언제나 `begin → end → end` 다 — HWP5 PARA_TEXT 실측
+            // (08368 문단: `<0x0003 %clk><0x0004><0x0004>해 도 별 목 차`).
+            // 고아를 앞세우면 `<hp:fieldEnd>` 가 짝 `<hp:fieldBegin>` 보다 먼저 나가고,
+            // 한글은 그 지점에서 구역 파싱을 포기해 **이후 본문을 통째로 버린다**
+            // (실측: 19쪽 35,205자 → 2쪽 7,838자, 개체 45→1. 고아를 짝 뒤로 옮기거나
+            // 지우면 100% 복원되고, beginIDRef 값만 고치는 것으로는 복원되지 않는다).
+            // #1948 이 막으려던 것은 **표 등 다른 슬롯**이 갭을 가로채는 경우다.
+            let field_begin_owns_gap = matches!(slots[slot_idx], Control::Field(_));
             if let Some(oi) = para
                 .orphan_field_ends
                 .iter()
                 .enumerate()
                 .position(|(i, ofe)| ofe.char_idx == idx && !orphan_emitted[i])
+                .filter(|_| !field_begin_owns_gap)
             {
                 flush_text_fragment(
                     &mut splitter.content,
@@ -3117,6 +3185,44 @@ mod tests {
         assert!(
             !xml.contains(r#"formatType="CIRCLE_DIGIT""#),
             "CIRCLE_DIGIT 오탈자 잔존 금지: {xml}"
+        );
+    }
+
+    /// [#4895] 소프트 하이픈(U+00AD)은 `<hp:hyphen/>` 요소가 아니라 **리터럴 문자**로 나간다.
+    ///
+    /// #4776 이 요소로 바꿨다가 10k 전수에서 36경로가 깨졌다. 한글 2022 대조 실측(01628,
+    /// 하이픈 표기만 교체): 요소 → 본문 2,477자(글자 소실) / 리터럴 → 2,478자로 원본과
+    /// textSha 일치. 한컴 원본 hwpx 도 `<hp:t>` 안에 raw U+00AD 를 담는다.
+    #[test]
+    fn soft_hyphen_stays_literal_in_hp_t() {
+        let mut cursor = InlineCursor::default();
+        let xml = render_hp_t_content("축사로\u{00AD}한우", &[], &mut cursor);
+        assert!(
+            !xml.contains("<hp:hyphen/>"),
+            "소프트 하이픈을 요소로 내리면 한글이 글자를 버린다: {xml}"
+        );
+        assert!(
+            xml.contains('\u{00AD}'),
+            "소프트 하이픈이 리터럴로 실려야 한다: {xml:?}"
+        );
+    }
+
+    /// [#4895] 출처가 제어 표기(HWP5 control_mask 비트 24)인 문단만 `<hp:hyphen/>` 로
+    /// 되돌린다 — 원본에 없던 글자를 만들지 않기 위해서다.
+    #[test]
+    fn soft_hyphen_from_control_origin_is_written_as_element() {
+        let mut cursor = InlineCursor {
+            soft_hyphen_as_element: true,
+            ..Default::default()
+        };
+        let xml = render_hp_t_content("축사로\u{00AD}한우", &[], &mut cursor);
+        assert!(
+            xml.contains("<hp:hyphen/>"),
+            "제어 표기 출처는 요소로 보존되어야 한다: {xml}"
+        );
+        assert!(
+            !xml.contains('\u{00AD}'),
+            "요소로 내렸으면 리터럴은 남지 않는다: {xml:?}"
         );
     }
 
@@ -5252,6 +5358,86 @@ mod tests {
         let doc = Document::default();
         let mut ctx = SerializeContext::collect_from_document(&doc);
         render_runs(para, &mut ctx).0
+    }
+
+    /// [#4902] 한 자리에서 이 문단의 `fieldBegin` 과 (앞 문단 필드를 닫는) 고아 `fieldEnd`
+    /// 가 겹치면 **begin 이 먼저** 나가야 한다.
+    ///
+    /// 한컴 원본 PARA_TEXT 는 언제나 `begin(0x03) → end(0x04) → end(0x04)`(LIFO) 순이다
+    /// (08368 실측). 고아를 앞세우면 한글은 짝 없는 `fieldEnd` 를 만나 그 지점에서 구역
+    /// 파싱을 포기하고 이후 본문·개체를 통째로 버린다 — 실측 19쪽 35,205자 → 2쪽 7,838자,
+    /// 개체 45→1. `beginIDRef` 값을 유효한 id 로 고쳐도 복원되지 않고, 순서를 바로잡으면
+    /// 100% 복원된다.
+    #[test]
+    fn issue4902_field_begin_precedes_orphan_field_end_at_same_slot() {
+        use crate::model::control::{Field, FieldType};
+        use crate::model::paragraph::OrphanFieldEnd;
+
+        let doc = Document::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let _ = &mut ctx;
+
+        // 08368 문단 32 동형: 8유닛 슬롯 3개(begin·짝 end·고아 end) 뒤에 텍스트.
+        let mut para = Paragraph::default();
+        para.text = "해도".to_string();
+        para.char_offsets = vec![24, 25];
+        para.char_count = 24 + 2 + 1;
+        para.controls = vec![Control::Field(Field {
+            field_type: FieldType::ClickHere,
+            field_id: 1_867_945_538,
+            ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+            ..Default::default()
+        })];
+        para.field_ranges = vec![FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 0,
+            control_idx: 0,
+            end_field_id: 1_867_945_538,
+            inner_slot_count: 0,
+        }];
+        para.orphan_field_ends = vec![OrphanFieldEnd {
+            char_idx: 0,
+            begin_id_ref: 0,
+            field_id: 0,
+            begin_ctrl_id: 0,
+        }];
+
+        let runs = runs_of(&para);
+        let begin = runs.find("<hp:fieldBegin").expect("fieldBegin 방출");
+        let orphan = runs
+            .find(r#"<hp:fieldEnd beginIDRef="0""#)
+            .expect("고아 fieldEnd 방출");
+        assert!(
+            begin < orphan,
+            "고아 fieldEnd 가 짝 fieldBegin 보다 앞서면 한글이 본문을 버린다:\n{runs}"
+        );
+    }
+
+    /// [#1948] 반면 갭을 다투는 슬롯이 **표 등 다른 컨트롤**이면 종전대로 고아 fieldEnd 가
+    /// 먼저다 — 그러지 않으면 말미 슬롯이 고아의 8유닛 갭을 가로채 `char_offsets` 가 밀린다.
+    #[test]
+    fn issue1948_orphan_field_end_still_precedes_non_field_slot() {
+        use crate::model::paragraph::OrphanFieldEnd;
+
+        let mut para = Paragraph::default();
+        para.text = "가".to_string();
+        para.char_offsets = vec![16];
+        para.char_count = 16 + 1 + 1;
+        para.controls = vec![Control::Table(Box::default())];
+        para.orphan_field_ends = vec![OrphanFieldEnd {
+            char_idx: 0,
+            begin_id_ref: 2_031_845_287,
+            field_id: 0,
+            begin_ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+        }];
+
+        let runs = runs_of(&para);
+        let orphan = runs.find("<hp:fieldEnd").expect("고아 fieldEnd 방출");
+        let table = runs.find("<hp:tbl").expect("표 방출");
+        assert!(
+            orphan < table,
+            "표 슬롯이 고아 fieldEnd 의 갭을 가로채면 char_offsets 가 밀린다:\n{runs}"
+        );
     }
 
     /// [#4778] 위치 축이 무너진 문단(파서 미수용 8유닛 슬롯 — 차례표지 0x0008 등)의

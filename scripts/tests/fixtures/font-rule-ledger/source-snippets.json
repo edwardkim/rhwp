@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "1.0",
+  "sourceCommit": "0000000000000000000000000000000000000000",
+  "snippets": [
+    {
+      "kind": "grouped-mapping",
+      "ruleIdPrefix": "fixture.grouped",
+      "sourceOwner": "fixture-style-resolution",
+      "sourceLocation": {
+        "path": "fixtures/style.rs",
+        "symbol": "resolve_fixture_font",
+        "selector": "FixtureBatang | FixtureBatangEnglish"
+      },
+      "decisionPlane": "layout-name",
+      "relationType": "paint-substitute",
+      "sourceFaces": [
+        "FixtureBatang",
+        "FixtureBatangEnglish"
+      ],
+      "targetFaceOrPolicy": "Fixture Serif",
+      "conditions": {
+        "languageSlot": "korean",
+        "altType": "ttf",
+        "bold": null,
+        "italic": null,
+        "weight": null,
+        "availability": null,
+        "profile": null
+      },
+      "backends": [
+        "shared"
+      ]
+    },
+    {
+      "kind": "ordered-chain",
+      "ruleIdPrefix": "fixture.chain",
+      "sourceOwner": "fixture-paint-chain",
+      "sourceLocation": {
+        "path": "fixtures/paint.rs",
+        "symbol": "fixture_font_chain",
+        "selector": "FixtureMissing -> FixtureA -> FixtureB"
+      },
+      "decisionPlane": "paint",
+      "relationType": "style-fallback",
+      "sourceFace": "FixtureMissing",
+      "targets": [
+        "FixtureA",
+        "FixtureB"
+      ],
+      "conditions": {
+        "languageSlot": null,
+        "altType": null,
+        "bold": true,
+        "italic": false,
+        "weight": "700",
+        "availability": "source-missing",
+        "profile": "fixture"
+      },
+      "backends": [
+        "rust-svg",
+        "native-skia"
+      ]
+    },
+    {
+      "kind": "predicate",
+      "ruleId": "fixture.predicate.serif",
+      "sourceOwner": "fixture-generic-classifier",
+      "sourceLocation": {
+        "path": "fixtures/classifier.rs",
+        "symbol": "generic_fixture_fallback",
+        "selector": "contains(serif marker)"
+      },
+      "decisionPlane": "paint",
+      "relationType": "generic-fallback",
+      "sourceFace": null,
+      "targetFaceOrPolicy": "if normalized family contains a serif marker, choose serif",
+      "conditions": {
+        "languageSlot": null,
+        "altType": null,
+        "bold": null,
+        "italic": null,
+        "weight": null,
+        "availability": null,
+        "profile": "algorithmic-predicate"
+      },
+      "backends": [
+        "shared"
+      ]
+    }
+  ]
+}

@@ -13,6 +13,7 @@ use super::record_writer::write_record;
 
 use crate::model::bin_data::{BinData, BinDataType};
 use crate::model::document::{DocInfo, DocProperties};
+use crate::model::raw_provenance;
 use crate::model::style::{
     BorderFill, BorderLineType, Bullet, CenterLine, FillType, Font, ImageFillMode, Numbering,
     ParaShape, Style, TabDef,
@@ -21,8 +22,13 @@ use crate::parser::tags;
 
 /// DocInfo + DocProperties를 레코드 바이너리 스트림으로 직렬화
 pub fn serialize_doc_info(doc_info: &DocInfo, doc_props: &DocProperties) -> Vec<u8> {
-    // 원본 스트림이 있고 변경되지 않았으면 그대로 반환 (완벽한 라운드트립)
-    if !doc_info.raw_stream_dirty {
+    // 원본 스트림이 있고 변경되지 않았으면 그대로 반환 (완벽한 라운드트립).
+    //
+    // [#4493] "변경되지 않았음" 은 dirty 표식만으로 판정하지 않는다 — 공개 모델
+    // 필드 직접 변경은 표식을 세우지 않으므로, 파싱 시점에 봉인한 (모델, raw)
+    // 다이제스트 쌍과 현재 상태가 둘 다 일치할 때만 통과한다(불일치·raw 교체는
+    // 아래 모델 writer 로 재생성). 봉인 계약은 model::raw_provenance 참조.
+    if !doc_info.raw_stream_dirty && doc_info.raw_provenance_permits_reuse(doc_props) {
         if let Some(ref raw) = doc_info.raw_stream {
             let mut result = raw.clone();
             // 배포용 문서 해제 시 DISTRIBUTE_DOC_DATA 레코드 제거
@@ -35,11 +41,22 @@ pub fn serialize_doc_info(doc_info: &DocInfo, doc_props: &DocProperties) -> Vec<
 
     let mut stream = Vec::new();
 
+    // [#4493] 레코드별 raw_data 지름길도 봉인 검증을 거친다 — 스트림이 재생성될
+    // 때(공개 모델 직접 변경 등) 변경되지 않은 레코드만 원본 바이트를 재사용하고,
+    // 변경된 레코드는 모델 writer 로 다시 쓴다. 봉인이 없는 합성 IR(record_seals
+    // 부재)은 종전 계약(무조건 raw 우선)을 유지한다.
+    let seals = doc_info.raw_provenance.as_ref().map(|s| &s.record_seals);
+
     // 1. DOCUMENT_PROPERTIES
+    let props_data = match (doc_props.raw_data.as_ref(), seals) {
+        (Some(raw), None) => raw.clone(),
+        (Some(raw), Some(s)) if s.props == raw_provenance::record_digest(doc_props) => raw.clone(),
+        _ => serialize_document_properties_from_model(doc_props),
+    };
     stream.extend(write_record(
         tags::HWPTAG_DOCUMENT_PROPERTIES,
         0,
-        &serialize_document_properties(doc_props),
+        &props_data,
     ));
 
     // 2. ID_MAPPINGS
@@ -49,74 +66,90 @@ pub fn serialize_doc_info(doc_info: &DocInfo, doc_props: &DocProperties) -> Vec<
         &serialize_id_mappings(doc_info),
     ));
 
+    // 레코드 봉인 게이트 — raw_data 가 있고 봉인이 허용할 때만 raw 재사용.
+    fn sealed_raw<'a, T: serde::Serialize>(
+        record: &'a T,
+        raw: &'a Option<Vec<u8>>,
+        seals: Option<&[[u8; 32]]>,
+        idx: usize,
+    ) -> Option<&'a Vec<u8>> {
+        raw.as_ref()
+            .filter(|_| raw_provenance::record_raw_permitted(seals, idx, record))
+    }
+
     // 3~10: ID_MAPPINGS 하위 레코드 (모두 level 1)
-    for bin_data in &doc_info.bin_data_list {
-        let data = bin_data
-            .raw_data
-            .clone()
-            .unwrap_or_else(|| serialize_bin_data(bin_data));
+    for (i, bin_data) in doc_info.bin_data_list.iter().enumerate() {
+        let data = sealed_raw(
+            bin_data,
+            &bin_data.raw_data,
+            seals.map(|s| &s.bin_data[..]),
+            i,
+        )
+        .cloned()
+        .unwrap_or_else(|| serialize_bin_data(bin_data));
         stream.extend(write_record(tags::HWPTAG_BIN_DATA, 1, &data));
     }
 
-    for lang_fonts in &doc_info.font_faces {
-        for font in lang_fonts {
-            let data = font
-                .raw_data
-                .clone()
+    for (li, lang_fonts) in doc_info.font_faces.iter().enumerate() {
+        let lang_seals = seals.and_then(|s| s.fonts.get(li)).map(|v| &v[..]);
+        for (fi, font) in lang_fonts.iter().enumerate() {
+            let data = sealed_raw(font, &font.raw_data, lang_seals, fi)
+                .cloned()
                 .unwrap_or_else(|| serialize_face_name(font));
             stream.extend(write_record(tags::HWPTAG_FACE_NAME, 1, &data));
         }
     }
 
-    for bf in &doc_info.border_fills {
-        let data = bf
-            .raw_data
-            .clone()
+    for (i, bf) in doc_info.border_fills.iter().enumerate() {
+        let data = sealed_raw(bf, &bf.raw_data, seals.map(|s| &s.border_fills[..]), i)
+            .cloned()
             .unwrap_or_else(|| serialize_border_fill(bf));
         stream.extend(write_record(tags::HWPTAG_BORDER_FILL, 1, &data));
     }
 
-    for cs in &doc_info.char_shapes {
-        let data = cs
-            .raw_data
-            .clone()
+    for (i, cs) in doc_info.char_shapes.iter().enumerate() {
+        let data = sealed_raw(cs, &cs.raw_data, seals.map(|s| &s.char_shapes[..]), i)
+            .cloned()
             .unwrap_or_else(|| serialize_char_shape(cs));
         stream.extend(write_record(tags::HWPTAG_CHAR_SHAPE, 1, &data));
     }
 
-    for td in &doc_info.tab_defs {
-        let data = td.raw_data.clone().unwrap_or_else(|| serialize_tab_def(td));
+    for (i, td) in doc_info.tab_defs.iter().enumerate() {
+        let data = sealed_raw(td, &td.raw_data, seals.map(|s| &s.tab_defs[..]), i)
+            .cloned()
+            .unwrap_or_else(|| serialize_tab_def(td));
         stream.extend(write_record(tags::HWPTAG_TAB_DEF, 1, &data));
     }
 
-    for numbering in &doc_info.numberings {
-        let data = numbering
-            .raw_data
-            .clone()
-            .unwrap_or_else(|| serialize_numbering(numbering));
+    for (i, numbering) in doc_info.numberings.iter().enumerate() {
+        let data = sealed_raw(
+            numbering,
+            &numbering.raw_data,
+            seals.map(|s| &s.numberings[..]),
+            i,
+        )
+        .cloned()
+        .unwrap_or_else(|| serialize_numbering(numbering));
         stream.extend(write_record(tags::HWPTAG_NUMBERING, 1, &data));
     }
 
-    for bullet in &doc_info.bullets {
-        let data = bullet
-            .raw_data
-            .clone()
+    for (i, bullet) in doc_info.bullets.iter().enumerate() {
+        let data = sealed_raw(bullet, &bullet.raw_data, seals.map(|s| &s.bullets[..]), i)
+            .cloned()
             .unwrap_or_else(|| serialize_bullet(bullet));
         stream.extend(write_record(tags::HWPTAG_BULLET, 1, &data));
     }
 
-    for ps in &doc_info.para_shapes {
-        let data = ps
-            .raw_data
-            .clone()
+    for (i, ps) in doc_info.para_shapes.iter().enumerate() {
+        let data = sealed_raw(ps, &ps.raw_data, seals.map(|s| &s.para_shapes[..]), i)
+            .cloned()
             .unwrap_or_else(|| serialize_para_shape(ps));
         stream.extend(write_record(tags::HWPTAG_PARA_SHAPE, 1, &data));
     }
 
-    for style in &doc_info.styles {
-        let data = style
-            .raw_data
-            .clone()
+    for (i, style) in doc_info.styles.iter().enumerate() {
+        let data = sealed_raw(style, &style.raw_data, seals.map(|s| &s.styles[..]), i)
+            .cloned()
             .unwrap_or_else(|| serialize_style(style));
         stream.extend(write_record(tags::HWPTAG_STYLE, 1, &data));
     }
@@ -138,6 +171,12 @@ pub fn serialize_document_properties(props: &DocProperties) -> Vec<u8> {
     if let Some(ref raw) = props.raw_data {
         return raw.clone();
     }
+    serialize_document_properties_from_model(props)
+}
+
+/// [#4493] raw_data 를 무시하고 모델 값으로 DOCUMENT_PROPERTIES 를 쓴다 —
+/// 봉인 검증이 "모델이 바뀌었다" 고 판정한 경로 전용.
+fn serialize_document_properties_from_model(props: &DocProperties) -> Vec<u8> {
     let mut w = ByteWriter::new();
     w.write_u16(props.section_count).unwrap();
     w.write_u16(props.page_start_num).unwrap();
@@ -229,6 +268,187 @@ pub fn serialize_bin_data(bin_data: &BinData) -> Vec<u8> {
     w.into_bytes()
 }
 
+/// [#4898] 한글 글꼴 이름 → HWP5 FACE_NAME 의 **기본 글꼴 이름**(default_name) 실측 대응표.
+///
+/// 한글은 HWP5 로 저장할 때 이 자리에 영문(PostScript) 기본 이름을 함께 싣는다. HWPX 에는
+/// 대응 자리가 없어 HWPX→HWP 저장에서 이 값이 통째로 빠지고, 한글이 그 파일을 열 때 글꼴을
+/// 이름만으로 찾는다 — 글꼴이 없어 대체가 일어나면 글자 폭이 달라져 줄 수·쪽수가 흔들린다
+/// (한글 오라클 실측: 09254 FACE_NAME 33개가 오라클 37~65바이트 vs rhwp 19~23바이트,
+/// 차이가 정확히 이 필드였다).
+///
+/// **표는 실측이다.** 코퍼스의 한컴 저장 `.hwp` 원본 796건에서 `(글꼴 이름, default_name)`
+/// 36,351쌍을 모아, 이름별 최빈값이 60% 이상인 것만 담았다(2026-08-16 측정).
+/// 한 이름에 값이 갈리는 경우(같은 글꼴의 구·신 PostScript 이름)는 최빈값을 쓴다:
+/// `HY헤드라인M` HYHeadLine-Medium 1217 / HYHeadLine M 245 · `HY견고딕` HYGothic-Extra 351 /
+/// HYgtrE 126 · `HY견명조` HYMyeongJo-Extra 200 / HYmjrE 68.
+/// 라틴 글꼴은 한글도 이름을 그대로 싣는다(Arial→Arial).
+const FONT_DEFAULT_NAMES: &[(&str, &str)] = &[
+    ("#견고딕", "#Gyeongothic"),
+    ("#견명조", "#Gyeonmyeongjo"),
+    ("#그래픽", "#Graphic"),
+    ("#디나루", "#Dinaru"),
+    ("#세고딕", "#Segothic"),
+    ("#세나루", "#Senaru"),
+    ("#세명조", "#Semyeongjo"),
+    ("#신그래픽", "#Singraphic"),
+    ("#신디나루", "#Sindinaru"),
+    ("#신명조", "#Sinmyeongjo"),
+    ("#신문견고", "#Sinmungyeongo"),
+    ("#신문태고", "#Sinmuntaego"),
+    ("#신문태명", "#Sinmuntaemyeong"),
+    ("#신세고딕", "#Sinsegothic"),
+    ("#신중명조", "#Sin Jungmyeongjo"),
+    ("#신태명조", "#Sintaemyeongjo"),
+    ("#중고딕", "#Junggothic"),
+    ("#중명조", "#Jungmyeongjo"),
+    ("#태고딕", "#Taegothic"),
+    ("#태그래픽", "#Taegraphic"),
+    ("#태명조", "#Taemyeongjo"),
+    ("#태신명조", "#Taesinmyeongjo"),
+    ("-윤고딕340", "YDIYGO340"),
+    ("08서울남산체 B", "08SeoulNamsan B"),
+    ("08서울남산체 EB", "08SeoulNamsan EB"),
+    ("08서울남산체 M", "08SeoulNamsan M"),
+    ("08서울한강체 L", "08SeoulHangang L"),
+    ("08서울한강체 M", "08SeoulHangang M"),
+    ("AmeriGarmnd BT", "AmeriGarmnd BT"),
+    ("Arial", "Arial"),
+    ("Arial Black", "Arial Black"),
+    ("Arial Narrow", "Arial Narrow"),
+    ("Arial Unicode MS", "Arial Unicode MS"),
+    ("Calibri", "Calibri"),
+    ("Century", "Century"),
+    ("Courier New", "Courier New"),
+    ("Garamond", "Garamond"),
+    ("HCI Acacia", "HCI Acacia"),
+    ("HCI Bellflower", "HCI Bellflower"),
+    ("HCI Hollyhock", "HCI Hollyhock"),
+    ("HCI Morning Glory", "HCI Morning Glory"),
+    ("HCI Poppy", "HCI Poppy"),
+    ("HCI Tulip", "HCI Tulip"),
+    ("HY강B", "HYkanB"),
+    ("HY강M", "HYkanM"),
+    ("HY견고딕", "HYGothic-Extra"),
+    ("HY견명조", "HYMyeongJo-Extra"),
+    ("HY궁서", "HYgsrB"),
+    ("HY그래픽", "HYgprM"),
+    ("HY그래픽M", "HYGraphic-Medium"),
+    ("HY동녘M", "HYdnkM"),
+    ("HY백송B", "HYbsrB"),
+    ("HY수평선B", "HYsupB"),
+    ("HY수평선M", "HYsupM"),
+    ("HY신명조", "HYSinMyeongJo-Medium"),
+    ("HY엽서M", "HYPost-Medium"),
+    ("HY울릉도B", "HYwulB"),
+    ("HY울릉도M", "HYwulM"),
+    ("HY중고딕", "HYGothic-Medium"),
+    ("HY헤드라인M", "HYHeadLine-Medium"),
+    ("Hobo BT", "Hobo BT"),
+    ("KoPubWorld돋움체 Bold", "KoPubWorldDotum Bold"),
+    ("KoPub돋움체 Bold", "KoPubDotum Bold"),
+    ("KoPub돋움체 Light", "KoPubDotum Light"),
+    ("KoPub돋움체 Medium", "KoPubDotum Medium"),
+    ("KoPub바탕체 Bold", "KoPubBatang Bold"),
+    ("KoPub바탕체 Light", "KoPubBatang Light"),
+    ("KoPub바탕체 Medium", "KoPubBatang Medium"),
+    ("MS PMincho", "MS PMincho"),
+    ("Noto Sans CJK KR Bold", "Noto Sans CJK KR Bold"),
+    ("Noto Sans CJK KR DemiLight", "Noto Sans CJK KR DemiLight"),
+    ("Noto Sans CJK KR Medium", "Noto Sans CJK KR Medium"),
+    ("SimSun", "SimSun"),
+    ("Tahoma", "Tahoma"),
+    ("Times New Roman", "Times New Roman"),
+    ("Trebuchet MS", "Trebuchet MS"),
+    ("Verdana", "Verdana"),
+    ("가는안상수체", "가는안상수체"),
+    ("가는한", "Ganeunhan"),
+    ("경기천년바탕 Regular", "GyeonggiBatang Regular"),
+    ("고딕", "Gothic"),
+    ("굴림", "Gulim"),
+    ("굴림체", "GulimChe"),
+    ("궁서", "Gungsuh"),
+    ("궁서체", "GungsuhChe"),
+    ("나눔고딕", "NanumGothic"),
+    ("나눔고딕 ExtraBold", "NanumGothicExtraBold"),
+    ("나눔명조", "NanumMyeongjo"),
+    ("나눔명조 ExtraBold", "NanumMyeongjoExtraBold"),
+    ("돋움", "Dotum"),
+    ("돋움체", "DotumChe"),
+    ("맑은 고딕", "Malgun Gothic"),
+    ("맑은 고딕 Semilight", "Malgun Gothic Semilight"),
+    ("명조", "Myeongjo"),
+    ("문체부 궁체 정자체", "MGungJeong"),
+    ("문체부 돋음체", "MDotum"),
+    ("문체부 바탕체", "MBatang"),
+    ("문체부 쓰기 흘림체", "MSugiHeulim"),
+    ("문체부 제목 돋음체", "MJemokGothic"),
+    ("바탕", "Batang"),
+    ("바탕체", "BatangChe"),
+    ("산세리프", "Sans Serif"),
+    ("새굴림", "New Gulim"),
+    ("시스템", "System"),
+    ("신명 견고딕", "Sinmyeong Gyeongothic"),
+    ("신명 견명조", "Sinmyeong Gyeonmyeongjo"),
+    ("신명 궁서", "Sinmyeong Gungseo"),
+    ("신명 디나루", "Sinmyeong Dinaru"),
+    ("신명 세나루", "Sinmyeong Senaru"),
+    ("신명 세명조", "Sinmyeong Semyeongjo"),
+    ("신명 순명조", "Sinmyeong Sunmyeongjo"),
+    ("신명 신그래픽", "Sinmyeong Singraphic"),
+    ("신명 신명조", "Sinmyeong Sinmyeongjo"),
+    ("신명 신문명조", "Sinmyeong Sinmunmyeongjo"),
+    ("신명 신신명조", "Sinmyeong Sinsinmyeongjo"),
+    ("신명 중고딕", "Sinmyeong Junggothic"),
+    ("신명 중명조", "Sinmyeong Jungmyeongjo"),
+    ("신명 태고딕", "Sinmyeong Taegothic"),
+    ("신명 태그래픽", "Sinmyeong Taegraphic"),
+    ("신명 태명조", "Sinmyeong Taemyeongjo"),
+    ("신명조 간자", "Sinmyeongjo Chinese"),
+    ("신명조 약자", "Sinmyeongjo Jananese"),
+    ("양재 다운명조M", "YJ Daunmyeongjo M"),
+    ("양재 튼튼B", "YJ Teunteun B"),
+    ("옥수수", "Corn"),
+    ("중고딕 간자", "Junggothic Chinese"),
+    ("태 가는 헤드라인D", "Tae Headline D Narrow"),
+    ("태 가는 헤드라인T", "Tae Headline T Narrow"),
+    ("태 나무", "태 나무"),
+    ("태 헤드라인T", "Tae Headline T"),
+    ("필기", "Pilgi"),
+    ("한양견고딕", "HY Gyeongothic"),
+    ("한양견명조", "HY Gyeonmyeongjo"),
+    ("한양궁서", "HY Gungseo"),
+    ("한양그래픽", "HY Graphic"),
+    ("한양신명조", "HY Sinmyeongjo"),
+    ("한양신명조V", "HY Sinmyeongjo V"),
+    ("한양중고딕", "HY Junggothic"),
+    ("한양중고딕V", "HY Junggothic V"),
+    ("한양해서", "HYhaeseo"),
+    ("한컴 백제 M", "Haan Baekje M"),
+    ("한컴 윤고딕 250", "Haan YGodic 250"),
+    ("한컴 쿨재즈 B", "Haan Cooljazz B"),
+    ("한컴돋움", "Haansoft Dotum"),
+    ("한컴바탕", "Haansoft Batang"),
+    ("한컴산뜻돋움", "Han Santteut Dotum Regular"),
+    ("함초롬돋움", "HCR Dotum"),
+    ("함초롬돋움 확장", "HCR Dotum Ext"),
+    ("함초롬바탕", "HCR Batang"),
+    ("휴먼고딕", "휴먼고딕"),
+    ("휴먼둥근헤드라인", "Headline R"),
+    ("휴먼명조", "휴먼명조"),
+    ("휴먼모음T", "MoeumT R"),
+    ("휴먼아미체", "Ami R"),
+    ("휴먼엑스포", "Expo M"),
+    ("휴먼옛체", "Yet R"),
+];
+
+/// 글꼴 이름에 대응하는 기본 글꼴 이름(실측표). 없으면 `None`.
+fn measured_default_font_name(name: &str) -> Option<&'static str> {
+    FONT_DEFAULT_NAMES
+        .iter()
+        .find(|(korean, _)| *korean == name)
+        .map(|(_, default)| *default)
+}
+
 pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
@@ -244,6 +464,13 @@ pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     });
 
     // attr 바이트 재구성
+    // [#4898] 기본 글꼴 이름: HWPX 에는 이 자리가 없어 HWPX 출처 문서는 늘 비어 있었다.
+    // 한글은 자기 글꼴 엔진의 대응을 여기 실어 두므로, 실측표로 같은 값을 채워 준다.
+    let default_name = font
+        .default_name
+        .as_deref()
+        .or_else(|| measured_default_font_name(&font.name));
+
     let mut attr = font.alt_type & 0x03;
     if alt_name.is_some() {
         attr |= 0x80;
@@ -251,7 +478,7 @@ pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     if font.type_info.is_some() {
         attr |= 0x40;
     }
-    if font.default_name.is_some() {
+    if default_name.is_some() {
         attr |= 0x20;
     }
     w.write_u8(attr).unwrap();
@@ -265,7 +492,7 @@ pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     if let Some(type_info) = font.type_info {
         w.write_bytes(&type_info).unwrap();
     }
-    if let Some(ref default_name) = font.default_name {
+    if let Some(default_name) = default_name {
         w.write_hwp_string(default_name).unwrap();
     }
 

@@ -49,6 +49,11 @@ SW-L1 산출물보다 더 좋은 전략이라는 뜻이 아니다 — 더 **되�
 
 자기 채점: `python tools/strategist/sws_audit.py <deliverable.json> --bin <rhwp> --level L1 --json`
 
+이 감사기는 독립 CLI 로도 쓰지만, [`tools/strategist/engagement.py`](../../../tools/strategist/engagement.py)
+`--validate` 가 산출물마다 **자동으로** 호출한다([Strategist playbook §5.1](../../manual/strategist_playbook.md#51-sws10-자동-감사--cap-4903-과-sws104904의-접합))
+— 사람이 감사를 잊고 산출물을 내보내는 경로를 막는다. 엔진이 실제로 채워 주는
+좌표(L1)·전수성(L2) 이상은 spec 골격에 아직 자리가 없어 정직하게 미달로 남는다.
+
 ## 왜 이 다섯 개인가
 
 각 레벨은 전략 산출물의 **알려진 실패 양식** 하나씩에 대응한다.

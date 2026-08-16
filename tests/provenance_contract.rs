@@ -628,6 +628,18 @@ fn recipes() -> Vec<Recipe> {
         "steps": [ { "action": "fill_fields", "data": { "prov없는필드": "x" } } ],
     })
     .to_string();
+    // [#4378 R22] 낡은 기준의 계획 — preconditionFailed·nextCall 은 CAS 거부
+    // 봉투에만 실린다(exit 3). 지문이 대조 단계에서 이미 틀리므로 step 은 판정
+    // 대상이 되지 않는다 — find 값은 문서에서 오지 않은 문자열이라 오라클과
+    // 겹치지 않는다.
+    let stale_plan = serde_json::json!({
+        "planVersion": "1.0",
+        "input": p(&field),
+        "output": out("prov-run-stale.hwp"),
+        "preconditions": { "inputSha256": "0".repeat(64) },
+        "steps": [ { "action": "replace_text", "find": "prov없는문자열", "replace": "y" } ],
+    })
+    .to_string();
     let fill_rows_path = PathBuf::from(out("prov-fill-rows.jsonl"));
     std::fs::write(&fill_rows_path, "{\"작성자\":\"홍길동 제안\"}\n").expect("fill rows 쓰기");
     let fill_out_dir = dir.join("prov-fill-out");
@@ -897,6 +909,16 @@ fn recipes() -> Vec<Recipe> {
             args: vec![s("run"), s("--plan-json"), bad_plan, s("--json")],
             stdin: None,
             exit: 2,
+            ndjson: false,
+        },
+        Recipe {
+            // [#4378 R22] run CAS 거부 — preconditionFailed·nextCall 은 이 봉투에만
+            // 실린다(exit 3, 실행 0·디스크 무변경). 거부 봉투도 표지 검사를 받는다.
+            command: "run",
+            doc: Some(field.clone()),
+            args: vec![s("run"), s("--plan-json"), stale_plan, s("--json")],
+            stdin: None,
+            exit: 3,
             ndjson: false,
         },
         Recipe {
@@ -1583,6 +1605,14 @@ fn recipes() -> Vec<Recipe> {
             command: "render-diff",
             doc: Some(main.clone()),
             args: vec![s("render-diff"), p(&main), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "layout-anomaly",
+            doc: Some(main.clone()),
+            args: vec![s("layout-anomaly"), p(&main), s("--json")],
             stdin: None,
             exit: 0,
             ndjson: false,

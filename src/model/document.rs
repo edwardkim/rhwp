@@ -47,7 +47,7 @@ pub const HWPX_ORIGIN_STREAM_PATH: &str = "/RhwpHwpxOrigin";
 pub const HWP3_ORIGIN_STREAM_PATH: &str = "/RhwpHwp3Origin";
 
 /// 파서가 모델링하지 않는 원시 레코드 (라운드트립 보존용)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct RawRecord {
     /// 태그 ID
     pub tag_id: u16,
@@ -154,7 +154,7 @@ pub struct HwpVersion {
 }
 
 /// 문서 속성 (HWPTAG_DOCUMENT_PROPERTIES)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct DocProperties {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -229,6 +229,10 @@ pub struct DocInfo {
     /// (1.2~1.5 등) 원본 값을 보존해 직렬화 때 그대로 재방출한다.
     /// 원본 HWPX가 없으면 None → serializer가 "1.2" 폴백.
     pub hwpml_version: Option<String>,
+    /// [#4493] raw_stream 출처 봉인 — 파싱(+로드 픽스업) 완료 시점의 모델 상태와
+    /// 원본 바이트의 다이제스트 쌍. 저장 시 둘 다 일치할 때만 raw 를 재사용한다.
+    /// 계약 전문은 `model::raw_provenance` 모듈 주석.
+    pub raw_provenance: Option<crate::model::raw_provenance::DocInfoSeal>,
 }
 
 /// 본문의 구역 (Section)
@@ -241,10 +245,14 @@ pub struct Section {
     /// 원본 BodyText 레코드 스트림 바이트 (직렬화 시 원본 복원용)
     /// 편집 시 None으로 초기화하여 재직렬화 유도
     pub raw_stream: Option<Vec<u8>>,
+    /// [#4488] raw_stream 출처 봉인 — 파싱(+로드 픽스업) 완료 시점의 모델 상태와
+    /// 원본 바이트의 다이제스트 쌍. 저장 시 둘 다 일치할 때만 raw 를 재사용한다.
+    /// 계약 전문은 `model::raw_provenance` 모듈 주석.
+    pub raw_provenance: Option<crate::model::raw_provenance::SectionSeal>,
 }
 
 /// 구역 정의 (HWPTAG_CTRL_HEADER - 'secd')
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct SectionDef {
     /// 속성 비트 플래그
     pub flags: u32,

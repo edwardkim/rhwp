@@ -121,6 +121,15 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
             .unwrap_or_else(|| SETTINGS_XML.as_bytes()),
     )?;
 
+    // 6-1. [#3557] Scripts/* — IR 밖 패키지 스크립트 원본 통과. 파서가 aux 로
+    //      보존한 것을 그대로 되쓴다(content.hpf 참조는 write_content_hpf 의
+    //      원본 splice 가 담당).
+    for (path, bytes) in &doc.hwpx_aux_entries {
+        if path.starts_with("Scripts/") {
+            z.write_deflated(path, bytes)?;
+        }
+    }
+
     // 7. META-INF/container.rdf — header + every section part.
     // Hancom uses this RDF graph alongside content.hpf; a stale one-section
     // RDF makes multi-section documents fail to open even when the ZIP and
@@ -780,6 +789,7 @@ mod tests {
             font_name: "HYhwpEQ".to_string(),
             version_info: "Equation Version 60".to_string(),
             raw_ctrl_data: Vec::new(),
+            raw_ctrl_seal: None,
         })));
         section.paragraphs.push(para);
         doc.sections.push(section);

@@ -200,15 +200,29 @@ pub fn serialize_control(
         }
         // [Task #852 Stage 2.4] 양식 개체 직렬화 — CTRL_HEADER + HWPTAG_FORM_OBJECT
         Control::Form(form) => serialize_form_control(form, level, records),
+        // [#4397] 덧말('tdut') — CTRL_HEADER 에 스펙 표 151 payload 를 온전히 싣는다.
+        // #4677 은 짝(제어문자↔헤더)만 맞춰 한글의 본문 폐기를 막았고, 여기서
+        // 내용(mainText/subText/위치/크기비율/옵션/스타일/정렬)까지 옮겨 왕복
+        // 소실을 없앤다. 파서측 parse_ruby(parser/control.rs)와 레이아웃 동일.
+        Control::Ruby(ruby) => {
+            let mut w = ByteWriter::new();
+            w.write_hwp_string(&ruby.main_text).unwrap();
+            w.write_hwp_string(&ruby.ruby_text).unwrap();
+            w.write_u32(u32::from(ruby.pos_type)).unwrap();
+            w.write_u32(u32::from(ruby.sz_ratio)).unwrap();
+            w.write_u32(ruby.option).unwrap();
+            w.write_u32(u32::from(ruby.style_id_ref)).unwrap();
+            w.write_u32(u32::from(ruby.align)).unwrap();
+            records.push(make_ctrl_record(
+                tags::CTRL_CHAR_OVERLAP,
+                level,
+                &w.into_bytes(),
+            ));
+        }
         // 미구현 컨트롤은 최소한의 CTRL_HEADER만 생성
-        Control::Hyperlink(_) | Control::Ruby(_) | Control::Unknown(_) => {
+        Control::Hyperlink(_) | Control::Unknown(_) => {
             let ctrl_id = match ctrl {
                 Control::Unknown(u) => u.ctrl_id,
-                // [#4677] 덧말은 PARA_TEXT 에 `17 00 'tdut'` 제어문자가 나가므로 짝이 되는
-                // CTRL_HEADER 도 반드시 있어야 한다. 내용(mainText/subText/속성)까지 옮기는
-                // 것은 #4397 소관이고, 여기서는 **짝을 맞추는 것**이 목적이다 — 짝이 없으면
-                // 한글 2022 가 그 문서의 본문을 통째로 버린다.
-                Control::Ruby(_) => tags::CTRL_CHAR_OVERLAP,
                 _ => 0,
             };
             if ctrl_id != 0 {
@@ -575,8 +589,15 @@ fn serialize_table(table: &Table, level: u16, records: &mut Vec<Record>) {
     // IR 의 common 으로 합성한다 (attr=0 이면 pack_common_attr_bits 경유 —
     // flow_with_text bit 13 포함). HWP5 파스본(raw 보존)·어댑터 경로(Stage 2
     // 합성)는 raw_ctrl_data 가 채워져 있어 동작 불변.
+    // [#4495] raw 재사용은 봉인 검증을 거친다 — 공개 모델에서 `common` 을 직접
+    // 바꾸면(봉인 불일치) raw 대신 IR 합성으로 쓴다. 봉인 None(합성 IR·봉인
+    // 이전)은 종전 계약(raw 우선) 유지. raw 를 직접 갱신하는 기존 명령
+    // (refresh_raw_ctrl_size 의 dual-write)은 `common` 이 봉인과 같아 통과한다.
+    let raw_permitted = table
+        .raw_ctrl_seal
+        .is_none_or(|sealed| sealed == crate::model::raw_provenance::record_digest(&table.common));
     let composed_common;
-    let ctrl_data: &[u8] = if !table.raw_ctrl_data.is_empty() {
+    let ctrl_data: &[u8] = if !table.raw_ctrl_data.is_empty() && raw_permitted {
         &table.raw_ctrl_data
     } else {
         composed_common = serialize_common_obj_attr(&table.common);
@@ -674,7 +695,11 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
         VerticalAlign::Center => 1,
         VerticalAlign::Bottom => 2,
     };
-    let list_attr: u32 = ((cell.text_direction as u32) << 16) | (v_align_code << 21);
+    // [#4898] 줄바꿈 방식(bit 19~20)을 함께 되돌린다 — 빼먹으면 SQUEEZE 셀이 BREAK 로
+    // 굳어 한글이 줄을 다시 나눈다(줄 수 → 셀 높이 → 표 높이 → 쪽수).
+    let list_attr: u32 = ((cell.text_direction as u32) << 16)
+        | (((cell.line_wrap as u32) & 0x03) << 19)
+        | (v_align_code << 21);
     w.write_u32(list_attr).unwrap();
     let list_header_width_ref = if cell.list_header_width_ref == 0 {
         0x0400
@@ -1984,7 +2009,12 @@ fn serialize_group_child(
 }
 
 fn serialize_ole_data(ole: &OleShape) -> Vec<u8> {
-    if !ole.raw_tag_data.is_empty() {
+    // [#4495] payload 모델 필드(extent_x/extent_y/bin_data_id)를 직접 바꾸면
+    // (봉인 불일치) raw 대신 모델 값으로 쓴다. 봉인 None 은 종전 계약 유지.
+    let raw_permitted = ole
+        .raw_tag_seal
+        .is_none_or(|sealed| sealed == crate::model::raw_provenance::ole_payload_digest(ole));
+    if !ole.raw_tag_data.is_empty() && raw_permitted {
         return ole.raw_tag_data.clone();
     }
 
@@ -2775,7 +2805,12 @@ fn build_header_footer_list_header(
 /// raw_ctrl_data를 보존하여 라운드트립 무손실 직렬화.
 fn serialize_equation_control(eq: &Equation, level: u16, records: &mut Vec<Record>) {
     // CTRL_HEADER with CommonObjAttr (또는 원본 ctrl_data)
-    let ctrl_data = if eq.raw_ctrl_data.is_empty() {
+    // [#4495] 표 CTRL_HEADER 와 동일한 봉인 검증 — `common` 직접 변경 시 raw 대신
+    // IR 합성으로 쓴다.
+    let raw_permitted = eq
+        .raw_ctrl_seal
+        .is_none_or(|sealed| sealed == crate::model::raw_provenance::record_digest(&eq.common));
+    let ctrl_data = if eq.raw_ctrl_data.is_empty() || !raw_permitted {
         serialize_common_obj_attr(&eq.common)
     } else {
         eq.raw_ctrl_data.clone()

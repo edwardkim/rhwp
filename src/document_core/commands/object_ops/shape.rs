@@ -2680,6 +2680,7 @@ mod resize_clamp_tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
         let mut core = DocumentCore::new_empty();
         // set_document이 composed/styles/pagination 벡터를 일관되게 초기화한다.

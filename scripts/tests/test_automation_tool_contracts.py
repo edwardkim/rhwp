@@ -7,6 +7,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import shutil
 import sys
 import tempfile
 import unittest
@@ -126,6 +127,60 @@ class CapabilityContracts(unittest.TestCase):
                 self.assertEqual(tool.run_engagement(args), 1)
             self.assertFalse((out / "corpus_map.json").exists())
 
+    def test_engagement_records_absolute_corpus_for_later_sws_reread(self):
+        tool = load_tool("tools/strategist/engagement.py")
+        root = Path(tempfile.mkdtemp(dir=REPO_ROOT))
+        try:
+            corpus = root / "corpus"
+            corpus.mkdir()
+            (corpus / "input.hwp").write_bytes(b"sample")
+            engagement = root / "engagement.json"
+            engagement.write_text(json.dumps({
+                "objective": "검토", "corpus": "corpus", "questions": ["무엇인가"],
+            }), encoding="utf-8")
+            captured = {}
+
+            def map_corpus(_bin, mapped_corpus, _files, _available, _timeout):
+                captured["corpus"] = mapped_corpus
+                return {
+                    "schemaVersion": "1", "generatedBy": "test",
+                    "corpus": mapped_corpus.as_posix(), "documentCount": 1,
+                    "mappedCount": 1, "documents": [],
+                }
+
+            relative = root.relative_to(REPO_ROOT)
+            args = SimpleNamespace(
+                engagement=str(relative / "engagement.json"), bin="/bin/true",
+                out=None, timeout=1,
+            )
+            with (
+                patch.object(tool, "advertised_commands", return_value={"info", "search"}),
+                patch.object(tool, "map_corpus", side_effect=map_corpus),
+                patch.object(tool, "build_ledger", return_value={"entryCount": 0, "failures": [], "entries": []}),
+                patch.object(tool, "build_spec", return_value={"spec": {"claims": []}, "claims": 0, "noEvidenceQuestions": []}),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                self.assertEqual(tool.run_engagement(args), 0)
+
+            self.assertEqual(captured["corpus"], corpus.resolve())
+            spec_path = relative / "spec.json"
+            seen = {}
+
+            class FakeSwsAudit:
+                class Rereader:
+                    def __init__(self, _bin, base):
+                        seen["base"] = base
+
+                @staticmethod
+                def audit(_deliverable, _reader, _base, _today):
+                    return {"attained": [], "rereadVerified": False}
+
+            with patch.object(tool, "_load_sws_audit", return_value=FakeSwsAudit):
+                tool.run_sws_audit("검토", {"claims": []}, {"entries": []}, spec_path, None)
+            self.assertEqual(seen["base"], corpus.resolve())
+        finally:
+            shutil.rmtree(root)
+
 
 class ChiefQueueContracts(unittest.TestCase):
     def test_request_paths_cannot_escape_request_directory(self):
@@ -158,6 +213,18 @@ class DatpContracts(unittest.TestCase):
         self.assertIsNotNone(tool.validate_proposal("replace-text", {"find": "a"}))
         self.assertIsNotNone(tool.validate_proposal("replace-text", ["a", "b"]))
         self.assertIsNone(tool.validate_proposal("replace-text", {"find": "a", "replace": "b"}))
+
+    def test_policy_parser_rejects_ambiguous_policy_shapes(self):
+        tool = load_tool("tools/dar/transaction.py")
+        for policy in (
+            [],
+            {"kind": "admissionPolicy", "defaultVerdict": "allow"},
+            {"kind": "admissionPolicy", "rules": {}},
+            {"kind": "admissionPolicy", "rules": ["not-an-object"]},
+        ):
+            with self.subTest(policy=policy):
+                with self.assertRaises(ValueError):
+                    tool.parse_policy(json.dumps(policy))
 
     def test_commit_never_overwrites_transaction_input(self):
         tool = load_tool("tools/dar/transaction.py")

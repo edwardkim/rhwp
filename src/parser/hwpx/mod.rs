@@ -365,6 +365,21 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
             hwpx_aux_entries.push((path.to_string(), bytes));
         }
     }
+    // [#3557] Scripts/* — IR 로 모델링되지 않는 패키지 스크립트를 원본 그대로
+    // 보존한다. 소실되면 문서 동작이 조용히 사라지는데 --verify(IR 대조)로는
+    // 잡히지 않는다. content.hpf 의 opf:item/spine 참조는 write_content_hpf 가
+    // 원본 블록에서 그대로 splice 하고, ZIP 방출은 serializer/hwpx/mod.rs 가
+    // 이 aux 엔트리를 통과시킨다.
+    let script_paths: Vec<String> = reader
+        .file_names()
+        .into_iter()
+        .filter(|n| n.starts_with("Scripts/"))
+        .collect();
+    for path in script_paths {
+        if let Ok(bytes) = reader.read_file_bytes(&path) {
+            hwpx_aux_entries.push((path, bytes));
+        }
+    }
 
     // 2. content.hpf → 섹션 파일 목록 + BinData 목록
     let content_xml = reader.read_file("Contents/content.hpf")?;
@@ -416,6 +431,15 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     }
 
     // 4. section*.xml → Section 변환
+    //
+    // [#4916 계열] rhwp 자기 산출 HWPX(HWP5-origin 마커)는 각주·미주 subList
+    // lineseg 의 vpos=0 보정(task 1692)을 건너뛴다 — HWP5 원본 저장값의 왕복
+    // 보존이 마커 계약(#1770)이다. 가드는 구역 파싱 동안만 유효(RAII).
+    let _hwp5_origin_guard = section::Hwp5OriginSourceGuard::set(
+        hwpx_aux_entries
+            .iter()
+            .any(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH),
+    );
     let mut sections = Vec::new();
     for (section_idx, section_href) in package_info.section_files.iter().enumerate() {
         let section_xml = reader.read_file(section_href)?;

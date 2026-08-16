@@ -101,6 +101,8 @@ Phase A 산출물은 버전 무관이므로 재사용 — Phase B 만 `-HwpVersi
 <S>/s1/oracle_tasks.tsv        Phase B 작업 목록 (key \t path)
 <S>/s1/oracle_<ver>/result.tsv key, status, pages, textLen, textSha, ctrls, fileBytes, err
 <S>/s1/oracle_<ver>/texts/     한글이 추출한 본문 텍스트 (판정·삼각측량용)
+<S>/s1/oracle_<ver>/stall_kills.tsv  key, 정지 초, 시각, 직전 kill 이후 경과 초 (#4751/#4899)
+<S>/s1/oracle_<ver>/retried.tsv      key, 재측정 전 status, 재측정 후 status (#4899)
 <S>/s1/oracle_<ver>/verdicts/  verdicts.tsv + summary.md
 ```
 
@@ -112,3 +114,20 @@ stall-kill 오판 방어(#4749/#4751): 감독은 heartbeat 를 `FileShare.ReadWr
 로 크기에 비례한다. 죽인 키는 `<OutDir>/stall_kills.tsv` 에 남고, judge 는 그 키의 ERR 를
 `OPEN_FAIL` 이 아닌 `ORACLE_TIMEOUT`(원본이면 `ORACLE_ORIG_TIMEOUT`) 으로 내
 "결함"과 "측정 실패 — 재확인 필요"를 가른다. 재확인 키·명령은 summary.md 에 나온다.
+
+### 실패 키 자동 재측정 (#4899)
+
+한글 COM 은 강제 종료·자원 압박 뒤 한동안 불안정해서 **멀쩡한 문서도 실패**한다. s13 전수
+(29,896 opens)에서 실패로 남은 6건이 재측정에서 6/6 정상이었고, 그중 하나는 최상위 판정인
+`OPEN_FAIL`("저장 치명 결함")로 기록돼 있었다. 그래서 패스는 스스로 한 번 더 잰다:
+
+- 본 패스가 끝나면 `OK` 가 아닌 키를 모아, **남은 Hwp.exe 를 모두 내리고 20초 쉰 뒤**
+  깨끗한 워커로 재측정한다(임계는 `max(StallSeconds×4, 1200)`).
+- 두 번째도 실패하면 그대로 결함으로 남긴다. 성공하면 `result.tsv` 의 그 행을 교체한다.
+- 무엇이 어떻게 바뀌었는지는 `<OutDir>/retried.tsv` 에 `key<TAB>before<TAB>after` 로 남는다.
+- 재측정을 끄려면 `-NoRetryFailures`.
+
+kill 연쇄 방어도 함께 있다 — 강제 종료 직후 첫 `Open()` 이 수 분 블록되는 회복 구간
+(`RecoverySeconds`, 기본 600초)에는 임계에 `RecoveryBonusSeconds`(기본 300초)를 더하고,
+같은 키를 두 번 죽였으면 세 번째는 죽이지 않고 4배까지 기다린다. `stall_kills.tsv` 에는
+직전 kill 이후 경과(초)가 4번째 열로 함께 남아 사후에 사슬을 식별할 수 있다.

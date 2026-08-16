@@ -8,6 +8,7 @@ pub mod agent;
 pub mod agent_seal;
 pub mod capabilities_schema;
 pub mod diagnostics;
+pub mod docdiff;
 pub mod doclang;
 pub mod document_core;
 pub mod emf;
@@ -24,10 +25,12 @@ pub mod plan_schema;
 pub mod pq_sign;
 pub mod provenance;
 pub mod rag;
+pub mod render_backend;
 pub mod renderer;
 pub mod schema_registry;
 pub mod security_trailer;
 pub mod serializer;
+pub mod service;
 /// 핫패치 벤더(Dioxus subsecond) 어댑터. **rhwp 의 API 가 아니다** (#4580).
 ///
 /// `pub` 인 이유는 `tools/rhwp-subsecond` 가 `link_wasm_exports()` 를 불러 wasm export 를 살려

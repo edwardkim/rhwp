@@ -47,6 +47,8 @@ pub fn parse_control(ctrl_id: u32, ctrl_data: &[u8], child_records: &[Record]) -
         tags::CTRL_BOOKMARK => parse_bookmark(ctrl_data),
         tags::CTRL_INDEX_MARK => parse_index_mark(ctrl_data),
         tags::CTRL_PAGE_NUM_CTRL => parse_page_num_ctrl(ctrl_data),
+        // [#4397] 'tdut'(덧말) — 상수 이름과 달리 CTRL_CHAR_OVERLAP 이 'tdut' 다.
+        tags::CTRL_CHAR_OVERLAP => parse_ruby(ctrl_data),
         tags::CTRL_TCPS => parse_char_overlap(ctrl_data),
         tags::CTRL_EQUATION => parse_equation_control(ctrl_data, child_records),
         tags::CTRL_FORM => parse_form_control(ctrl_data, child_records),
@@ -134,6 +136,9 @@ fn parse_field_control(ctrl_id: u32, ctrl_data: &[u8]) -> Control {
         field_id,
         ctrl_id,
         instance_id: None,
+        // [#4896] HWP5 는 ctrl_id 자체가 종류라 원문 문자열이 없다 — 직렬화기가
+        // `tags::OWPML_EXTRA_FIELD_TYPES` 로 ctrl_id 에서 이름을 되찾는다.
+        raw_type: None,
         ctrl_data_name: None,
         memo_index,
         memo_paragraphs: Vec::new(),
@@ -347,6 +352,9 @@ fn parse_cell(records: &[Record]) -> Cell {
     // bit 19~20: 줄바꿈 방식
     // bit 21~22: 세로 정렬 (0=top, 1=center, 2=bottom)
     cell.text_direction = ((list_attr >> 16) & 0x07) as u8;
+    // [#4898] 줄바꿈 방식(bit 19~20)도 싣는다 — 종전엔 읽지 않아 저장에서 0(BREAK)으로
+    // 굳었고, SQUEEZE 셀의 줄 수·높이가 달라져 한글 쪽수까지 흔들렸다.
+    cell.line_wrap = ((list_attr >> 19) & 0x03) as u8;
     let v_align = ((list_attr >> 21) & 0x03) as u8;
     cell.vertical_align = match v_align {
         1 => VerticalAlign::Center,
@@ -772,6 +780,25 @@ fn parse_index_mark(ctrl_data: &[u8]) -> Control {
 ///   UINT8(1): 펼침
 ///   UINT8(1): charshape 아이디 수(cnt)
 ///   UINT[cnt](4×cnt): charshape_id 배열
+/// [#4397] 덧말('tdut') CTRL_HEADER payload 파싱 — HWP5 스펙 표 151.
+///
+/// `mainText`(HWP string) + `subText`(HWP string) + 덧말 위치/Fsizeratio/Option/
+/// Style number/정렬 (UINT32 ×5). 종전에는 arm 이 없어 `Control::Unknown` 으로
+/// 떨어졌고, HWPX→HWP5 저장도 최소 CTRL_HEADER(짝 맞춤, #4677)만 내 내용이
+/// 통째로 소실됐다 — 저장측(serialize_control)과 함께 양방향을 잇는다.
+fn parse_ruby(ctrl_data: &[u8]) -> Control {
+    let mut ruby = crate::model::control::Ruby::default();
+    let mut r = ByteReader::new(ctrl_data);
+    ruby.main_text = r.read_hwp_string().unwrap_or_default();
+    ruby.ruby_text = r.read_hwp_string().unwrap_or_default();
+    ruby.pos_type = r.read_u32().unwrap_or(0) as u8;
+    ruby.sz_ratio = r.read_u32().unwrap_or(0) as u8;
+    ruby.option = r.read_u32().unwrap_or(0);
+    ruby.style_id_ref = r.read_u32().unwrap_or(0) as u16;
+    ruby.align = r.read_u32().unwrap_or(0) as u8;
+    Control::Ruby(ruby)
+}
+
 fn parse_char_overlap(ctrl_data: &[u8]) -> Control {
     let mut co = CharOverlap::default();
     if ctrl_data.len() < 2 {

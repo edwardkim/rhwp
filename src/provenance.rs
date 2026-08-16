@@ -455,6 +455,11 @@ pub const MAP: &[CommandProvenance] = &[
         note: "기하 차이 봉투는 경로·노드 유형·좌표·집계값만 싣는다. 본문 텍스트와 이미지 바이트는 싣지 않는다.",
     },
     CommandProvenance {
+        command: "layout-anomaly",
+        untrusted: NONE,
+        note: "단일 렌더 트리의 overflow·overlap·빈 쪽 신호는 경로·노드 유형·좌표·집계만 싣는다. 본문 텍스트와 이미지 바이트는 봉투에 넣지 않는다.",
+    },
+    CommandProvenance {
         command: "thumbnail",
         untrusted: &[
             f("base64", "문서에 내장된 PrvImage 미리보기 이미지 바이트"),
