@@ -11,8 +11,9 @@
 
 use serde::{Deserialize, Serialize};
 
-/// 지원하는 스키마 버전.
-pub const SCAFFOLD_SCHEMA_VERSION: &str = "1";
+/// 지원하는 스키마 버전 — 정의는 버전 단일 출처(#4329)인
+/// `schema_registry` 에 있고 여기서는 재수출만 한다.
+pub use crate::schema_registry::SCAFFOLD_SCHEMA_VERSION;
 
 /// 문서 전체 — 에이전트가 작성하는 JSON 최상위.
 #[derive(Debug, Clone, Serialize, Deserialize)]
