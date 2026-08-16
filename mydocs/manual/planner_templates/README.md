@@ -63,11 +63,17 @@ rhwp replay my.plan.json --capsule work.capsule.json --json
 "preconditions": { "inputSha256": "<원본 SHA-256 64자리>" }
 ```
 
-실행 시점의 실제 해시와 다르면 아무것도 적용하지 않고 `preconditionFailed` 로 거절한다.
-해시는 `rhwp-agent fingerprint <문서>` 또는 `sha256sum` 으로 얻는다.
+실행 시점의 실제 해시와 다르면 아무것도 적용하지 않고 거절한다 — **실행 0건 · 디스크
+무변경 · `preconditionFailed{kind,expected,actual}` + `nextCall`(재계획 힌트) ·
+`exit 3`**(#2707 의 "판정" 계열이다. 계획서는 옳고 틀린 것은 문서 쪽이라 사용법
+오류가 아니다). `--dry-run` 도 **같은 대조·같은 판정**을 한다 — 예행이 통과했는데
+실행이 거부되는 상태를 만들지 않기 위해서다. `nextCall` 은 기대 해시를 실제 해시로
+갈아 끼운 계획을 `--dry-run` 으로 다시 선검증하는 **그대로 실행 가능한 호출**이다:
+통과하면 `--dry-run` 만 빼고 재실행하고, `invalid` 가 나오면 문서를 다시 읽고
+재계획한다. 해시는 `rhwp-agent fingerprint <문서>` 또는 `sha256sum` 으로 얻는다.
 
 ## 판(version) 규약
 
 계획 문법 판번호는 `planVersion: "1.0"`(스키마 판번호와 별개 — `rhwp export-plan-schema`
-의 `planSchemaVersion` 은 1.1). 실행기는 `"1.0"` 만 받는다. 스텝·단언·전제 형식의
+의 `planSchemaVersion` 은 1.2). 실행기는 `"1.0"` 만 받는다. 스텝·단언·전제 형식의
 단일 출처는 `rhwp export-plan-schema` 다.
