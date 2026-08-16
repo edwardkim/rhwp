@@ -580,6 +580,46 @@ pub fn write_section(
 
         // 템플릿의 텍스트 run 전체를 문단의 run 시퀀스(다중 run 분할 포함)로 1회 치환.
         out = out.replacen(TEMPLATE_TEXT_RUN, &first_runs, 1);
+
+        // [#3367/#4433] 컨트롤 방출 순서를 IR 순서에 맞춘다 — HWP5 원본이
+        // `[cold, secd]` 인 문단(field-01 실측: 전 구역 cold→secd)을 템플릿 고정
+        // 순서(secPr → ctrl/colPr)로 내보내면 재파싱 IR 이 `[secd, cold]` 로
+        // 뒤집혀 왕복 무손실 계약(ir-diff)이 깨진다. OWPML 스키마(run 의
+        // choice, ParaList XML schema)는 순서를 규정하지 않고, 한컴 원산 실물도
+        // colPr-before-secPr 20건 / colPr-after-secPr 315건으로 양쪽을 다 쓴다 —
+        // 문서 순서가 곧 보존 대상이다. 파서(parse_ctrl/secPr arm)는 이미 문서
+        // 순서를 보존하므로 방출만 IR 순서를 따르면 왕복이 닫힌다.
+        let cold_before_secd = {
+            let i_secd = p
+                .controls
+                .iter()
+                .position(|c| matches!(c, Control::SectionDef(_)));
+            let i_cold = p
+                .controls
+                .iter()
+                .position(|c| matches!(c, Control::ColumnDef(_)));
+            matches!((i_cold, i_secd), (Some(c), Some(s)) if c < s)
+        };
+        if cold_before_secd {
+            if let Some(Control::ColumnDef(cd)) = p
+                .controls
+                .iter()
+                .find(|c| matches!(c, Control::ColumnDef(_)))
+            {
+                // 위 #1407 치환이 이미 심어 둔 IR colPr 블록을 정확히 되찾아
+                // (render_col_pr_ctrl 은 결정적) secPr 앞으로 옮긴다.
+                let rendered = render_col_pr_ctrl(cd);
+                if let Some(colpr_at) = out.find(&rendered) {
+                    out.replace_range(colpr_at..colpr_at + rendered.len(), "");
+                    if let Some(secpr_at) = out.find("<hp:secPr ") {
+                        out.insert_str(secpr_at, &rendered);
+                    } else {
+                        // secPr 미발견(비정상 템플릿) — 원위치 복원으로 무손실 유지.
+                        out.insert_str(colpr_at, &rendered);
+                    }
+                }
+            }
+        }
     }
 
     // 추가 문단: `</hp:p></hs:sec>` 직전에 `<hp:p>` 요소를 삽입.
