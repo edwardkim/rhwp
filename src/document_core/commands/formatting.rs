@@ -58,6 +58,27 @@ pub(super) fn para_shape_mods_affect_text_flow(mods: &crate::model::style::ParaS
         || mods.korean_break_unit.is_some()
 }
 
+/// 문단 하나를 주어진 영역 폭으로 다시 접는다. 영역 폭에서 그 문단의 좌우 여백을 뺀 것이
+/// 실제 줄 폭이다.
+fn reflow_paragraph_to_width(
+    para: &mut Paragraph,
+    area_width: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) {
+    let para_style = styles.para_styles.get(para.para_shape_id as usize);
+    let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+    let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+    para.line_segs.clear();
+    para.invalidate_single_line_overflow_memo();
+    reflow_line_segs(
+        para,
+        (area_width - margin_left - margin_right).max(1.0),
+        styles,
+        dpi,
+    );
+}
+
 fn body_available_width_for_para_shape(
     core: &DocumentCore,
     sec_idx: usize,
@@ -1850,6 +1871,44 @@ impl DocumentCore {
         {
             para.line_segs.clear();
             reflow_line_segs(para, available_width, &styles, self.dpi);
+        }
+    }
+
+    /// 구역의 본문 문단 전부를 현재 용지/단 기준으로 다시 접는다 — 쪽 설정이 바뀌어 본문
+    /// 폭 자체가 달라졌을 때 쓴다.
+    ///
+    /// 비우기만 하고 재계산을 조판에 맡기면 안 된다. 저장 분할이 없는 문단은 조판에서
+    /// NO_LS 계급이 되는데, 그 계급은 쪽 나눔에서 문단 위 간격을 0 으로 세고(typeset.rs 의
+    /// `para.line_segs.is_empty()` 분기) 렌더는 그대로 그린다 — 여백을 조금만 건드려도
+    /// 쪽 나눔과 그리기가 문단마다 spacing_before 만큼 어긋난다.
+    ///
+    /// 문단 하나짜리 `reflow_body_paragraph` 를 문단 수만큼 부르면 `resolve_styles` 와
+    /// `PageLayoutInfo` 계산이 그만큼 반복된다. 둘 다 한 번만 하고 문단별 여백만 뺀다.
+    ///
+    /// 본문 문단만 다룬다. 표 셀은 폭의 주인이 표라서 제외하고, 머리말·꼬리말은 폭이 본문과
+    /// 같지만(`header_area`/`footer_area` 가 같은 `content_left..content_right`) 여기서 건드릴
+    /// 필요가 없다 — 합성 경로가 저장 분할과 무관하게 영역 폭으로 다시 접는다. 실측: 저장
+    /// 분할 1줄 그대로인 꼬리말이 본문을 절반으로 좁힌 뒤에도 렌더에서 386.7px 로 본문
+    /// 오른쪽 끝(396.9px) 안에 들어온다 (samples/hwp3-sample19-hwp5.hwp).
+    pub(crate) fn reflow_body_paragraphs_in_section(&mut self, sec_idx: usize) {
+        let styles = resolve_styles(&self.document.doc_info, self.dpi);
+        let dpi = self.dpi;
+        let Some(section) = self.document.sections.get(sec_idx) else {
+            return;
+        };
+        let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
+        let layout = PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, dpi);
+        let column_width = layout
+            .column_areas
+            .first()
+            .map(|a| a.width)
+            .unwrap_or(layout.body_area.width);
+
+        let Some(section) = self.document.sections.get_mut(sec_idx) else {
+            return;
+        };
+        for para in section.paragraphs.iter_mut() {
+            reflow_paragraph_to_width(para, column_width, &styles, dpi);
         }
     }
 

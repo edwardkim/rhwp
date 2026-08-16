@@ -2795,6 +2795,12 @@ impl DocumentCore {
             .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
         let pd = &mut section.section_def.page_def;
 
+        // 저장 line_segs 가 계산된 전제는 "본문 가로 폭"이다. 그 폭을 정하는 규칙은
+        // PageAreas 하나뿐이므로(제본 여백 가산, 가로/세로 뒤바꿈, 여백 과대 시 5% 폴백)
+        // 필드를 손으로 나열하지 않고 결과 폭을 그대로 비교한다 — 나열하면 용지 높이처럼
+        // 줄바꿈과 무관한 필드가 섞여 들어가 쓸데없이 전 구역을 다시 접는다.
+        let body_width_before = PageAreas::from_page_def(pd).body_area.width();
+
         use super::super::helpers::{json_bool, json_u32};
 
         if let Some(v) = json_u32(json, "width") {
@@ -2857,6 +2863,29 @@ impl DocumentCore {
 
         // FIX 3: raw_stream 무효화 → 직렬화 시 모델에서 재구성
         section.raw_stream = None;
+
+        // [#4956] 본문 가로 상자가 바뀌었으면 이 구역 본문을 새 폭으로 다시 접는다.
+        //
+        // 저장 분할은 파일이 기록해 둔 "이 용지 폭에서의 줄 나눔"이다. 본문 폭이 바뀌면 그
+        // 전제가 깨지는데, 본문 재래핑 게이트(`paragraph_layout`/`typeset`/`height_measurer`
+        // 의 `para.line_segs.is_empty()`)는 저장 분할이 있으면 무조건 신뢰한다 — 그래서 여백만
+        // 바꾸면 줄은 그대로 두고 글자만 눌러 짜여 본문 밖으로 넘쳤다(실측: 본문 폭 657.7→438.6
+        // 인데 3쪽 텍스트가 x 709.6 까지, run 수 109 불변).
+        //
+        // 비우기만 하고 재계산을 조판에 맡기지 않는다. 저장 분할이 없는 문단은 NO_LS 계급이
+        // 되고, 그 계급은 쪽 나눔에서 문단 위 간격을 0 으로 세는데(typeset.rs) 렌더는 그대로
+        // 그려, 여백을 조금만 건드려도 쪽 나눔과 그리기가 문단마다 spacing_before 만큼
+        // 어긋난다. reflow_body_paragraphs_in_section 은 비우고 곧바로 다시 접어 그 계급에
+        // 머무르지 않게 한다.
+        //
+        // 범위는 이 구역의 본문 문단뿐이다 — 표 셀 폭은 용지 여백이 아니라 표 자신이 정하므로
+        // 셀 문단의 저장 분할은 여전히 유효하다.
+        let body_width_after = PageAreas::from_page_def(&section.section_def.page_def)
+            .body_area
+            .width();
+        if body_width_after != body_width_before {
+            self.reflow_body_paragraphs_in_section(section_idx);
+        }
 
         // 재조판 + 재페이지네이션
         self.composed = self
