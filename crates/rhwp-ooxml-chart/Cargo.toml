@@ -1,0 +1,12 @@
+[package]
+name = "rhwp-ooxml-chart"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[lints.clippy]
+too_many_arguments = "allow"
+
+[dependencies]
+quick-xml = "0.41"

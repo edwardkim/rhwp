@@ -93,6 +93,38 @@ cargo nextest run \
   --tests --test-threads 12 --no-fail-fast
 ```
 
+새 Rust integration test는 `tests/cases/`에 원본 `.rs` 파일만 추가하고 suite를 직접 선택하지 않는다.
+다음 명령이 source 크기와 test 수를 기준으로 기존 generated suite에 자동 배정한다.
+
+```bash
+node scripts/rust-test-suite-manifest.mjs --generate
+node scripts/run-rust-test.mjs <확장자를_뺀_test_source_이름>
+```
+
+`tests/generated/`는 생성물이며 직접 수정하지 않는다. test source 이름 변경·삭제 후에는
+`node scripts/rust-test-suite-manifest.mjs --sync`를 실행한다. 전체 배정 정책과 PR 검증 절차는
+[로컬 사전 검증](pr_review/local_validation.md)의 "integration test source 추가와 자동 sharding"을
+따른다.
+
+제품 소스의 기존 `#[cfg(test)]`는 의존성에 따라 `integration_ready`, `test_support`, `white_box`로
+차등 관리한다. root `src/`와 내부 `crates/*/src/`를 모두 검사한다. 신규 소스 테스트 모듈과 test
+support 항목은 추가하지 않고 공개 API 회귀는 `tests/cases/`로 보낸다. 다음 계약 검사는 기존 기준선의
+증가를 차단하지만 테스트를 외부로 이동하거나 production crate와 함께 분리하는 변경은 허용한다.
+
+```bash
+node --test scripts/tests/rust-unit-test-tiers.test.mjs
+node scripts/rust-unit-test-tiers.mjs --check
+```
+
+PR CI에서는 같은 검사에 `--base-ref`를 전달해 base 브랜치 기준선을 별도로 대조한다.
+따라서 새 최상위 `tests/*.rs`나 `--accept-baseline`을 이용한 source-side 테스트 증가는
+생성물을 함께 커밋해도 실패한다. Git rename으로 확인되고 테스트 수가 늘지 않는 내부 crate
+이동은 허용한다.
+
+workspace의 `default-members`에는 root와 `crates/*`가 포함된다. 따라서 위의 일반 `cargo test`와
+`cargo nextest` 명령은 내부 production crate 테스트도 자동 실행한다. 새 내부 crate는 `crates/` 아래에
+추가해 이 계약에서 빠지지 않게 한다.
+
 `release-test`는 통합 테스트 시간을 줄이기 위한 프로필이며 실제 release 산출물은 계속
 `cargo build --release`로 만든다.
 `--test-threads 12`는 CPU·메모리가 충분한 host의 기본값이며, 작은 host에서는 논리 CPU 이하로 낮춘다.
