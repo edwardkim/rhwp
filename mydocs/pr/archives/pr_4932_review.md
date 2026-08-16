@@ -48,3 +48,13 @@
 명시적 `hp:ole id="0"`을 보존하는 메인터너 보정은 `1afe41afb`에 포함되어 #4941로
 반영됐다. 원본 #4932 head에는 이 보정이 없으므로 개별 병합하지 않고, 전체 local validation을
 통과한 #4941의 최신 head CI가 통과하면 #4941만 병합한다.
+
+## 원격 CI 완료 기록
+
+통합 PR [#4941](https://github.com/edwardkim/rhwp/pull/4941)의 code-and-review head
+`b11c20231`에 대해 GitHub Actions가 성공으로 완료됐다. `Lint`, `Native Skia tests`, 세 test
+archive, regular test 3개 shard, slow test shard 및 최종 `Build & Test`가 모두 통과했다. 영향 범위
+정책에 따라 WASM·frontend·Canvas visual diff·CodeQL 분석 job은 skip됐고, 각 preflight는 통과했다.
+
+이후 문서 전용 trailing commit으로 head가 전진하므로, 병합 전에는 그 최신 head의 CI와
+`MERGEABLE`/`CLEAN`을 다시 확인한다.
