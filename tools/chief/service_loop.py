@@ -23,7 +23,7 @@
     큐폴더/<요청id>/request.json     ← 고객(또는 상위 시스템)이 떨어뜨림
     큐폴더/<요청id>/<문서파일>
 
-    request.json: {"doc": "문서.hwpx",          # 필수, 폴더 내 상대 경로
+    request.json: {"doc": "문서.hwpx",          # 필수, 폴더 내 상대 경로(../·절대경로 불가)
                    "goal": "export-pdf",         # 선택 — 없으면 diagnose
                    "symptom": "…",               # 선택, 기록용 데이터
                    "params": {...}}              # goal 별 (fill 의 data 등)
@@ -72,20 +72,34 @@ def run(cmd: list[str], timeout: float) -> subprocess.CompletedProcess:
     )
 
 
+def resolve_request_file(req_dir: Path, value: object) -> Path | None:
+    """큐 요청이 자기 요청 폴더 밖 파일을 참조하지 못하게 한다."""
+    if not isinstance(value, str) or not value or Path(value).is_absolute():
+        return None
+    try:
+        root = req_dir.resolve()
+        candidate = (req_dir / value).resolve()
+    except OSError:
+        return None
+    return candidate if candidate.is_relative_to(root) else None
+
+
 class Chief:
     def __init__(self, bin_path: str, timeout: float):
         self.bin = bin_path
         self.timeout = timeout
-        self.available: set = set()
-        cap = run([bin_path, "capabilities", "--json"], timeout)
-        if cap.returncode == 0:
-            try:
-                env = json.loads(cap.stdout)
+        self.available: set[str] | None = None
+        try:
+            cap = run([bin_path, "capabilities", "--json"], timeout)
+            env = json.loads(cap.stdout) if cap.returncode == 0 else None
+            commands = env.get("commands") if isinstance(env, dict) else None
+            if isinstance(commands, list):
                 self.available = {
-                    c.get("name") for c in env.get("commands", []) if isinstance(c, dict)
+                    c.get("name") for c in commands
+                    if isinstance(c, dict) and isinstance(c.get("name"), str)
                 }
-            except json.JSONDecodeError:
-                pass
+        except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+            pass
 
     # --- 게이트 ---------------------------------------------------------
 
@@ -102,26 +116,32 @@ class Chief:
 
     # --- goal 핸들러 (각각: 실행 → 검증 → (요약문, 산출물 목록)) --------
 
-    def handle(self, goal: str, doc: Path, params: dict, out: Path) -> dict:
+    def handle(self, goal: str, doc: Path, params: dict, out: Path,
+               request_dir: Path) -> dict:
         out.mkdir(exist_ok=True)
         fn = getattr(self, "goal_" + goal.replace("-", "_"), None)
         if fn is None:
             return {"status": "needs-agent", "reason": f"모르는 goal: {goal}"}
         needed = fn.__doc__.split("needs:")[1].split()[0].split(",") if "needs:" in (fn.__doc__ or "") else []
-        missing = [c for c in needed if self.available and c not in self.available]
+        if self.available is None:
+            return {"status": "needs-agent",
+                    "reason": "capabilities 조회 실패 — 광고되지 않은 명령 실행을 중단함"}
+        missing = [c for c in needed if c not in self.available]
         if missing:
             return {"status": "needs-agent",
                     "reason": f"바이너리가 {missing} 를 광고하지 않음 (버전 차이)"}
         try:
-            return fn(doc, params, out)
+            return fn(doc, params, out, request_dir)
         except subprocess.TimeoutExpired:
             return {"status": "failed", "reason": f"{goal} 시간 초과"}
+        except (json.JSONDecodeError, OSError, ValueError) as exc:
+            return {"status": "failed", "reason": f"{goal} 결과 검증 실패: {exc}"}
 
-    def goal_diagnose(self, doc, params, out) -> dict:
+    def goal_diagnose(self, doc, params, out, request_dir) -> dict:
         """트리아지 티켓만으로 응답. needs:info"""
         return {"status": "done", "summary": "진단 완료 — 티켓과 회신문 참조", "artifacts": []}
 
-    def goal_export_text(self, doc, params, out) -> dict:
+    def goal_export_text(self, doc, params, out, request_dir) -> dict:
         """본문 추출. needs:export-text"""
         p = run([self.bin, "export-text", str(doc), "--json"], self.timeout)
         if p.returncode != 0:
@@ -133,7 +153,7 @@ class Chief:
                 "summary": f"본문 추출 완료 — {env.get('pageCount', '?')}쪽",
                 "artifacts": [art.name]}
 
-    def goal_export_pdf(self, doc, params, out) -> dict:
+    def goal_export_pdf(self, doc, params, out, request_dir) -> dict:
         """PDF 내보내기. needs:export-pdf"""
         art = out / (doc.stem + ".pdf")
         p = run([self.bin, "export-pdf", str(doc), "-o", str(art)], self.timeout * 4)
@@ -144,7 +164,7 @@ class Chief:
         return {"status": "done", "summary": f"PDF 생성 완료 ({art.stat().st_size:,}바이트)",
                 "artifacts": [art.name]}
 
-    def goal_export_hwpx(self, doc, params, out) -> dict:
+    def goal_export_hwpx(self, doc, params, out, request_dir) -> dict:
         """HWPX 변환(자기검증 포함). needs:export-hwpx"""
         art = out / (doc.stem + ".hwpx")
         p = run([self.bin, "export-hwpx", str(doc), str(art), "--verify"], self.timeout * 4)
@@ -152,7 +172,7 @@ class Chief:
             return {"status": "failed", "reason": f"export-hwpx --verify exit {p.returncode}"}
         return {"status": "done", "summary": "HWPX 변환 + verify 통과", "artifacts": [art.name]}
 
-    def goal_convert_hwp(self, doc, params, out) -> dict:
+    def goal_convert_hwp(self, doc, params, out, request_dir) -> dict:
         """편집 가능 HWP 변환(자기검증 포함). needs:convert"""
         art = out / (doc.stem + ".hwp")
         p = run([self.bin, "convert", str(doc), str(art), "--verify"], self.timeout * 4)
@@ -160,7 +180,7 @@ class Chief:
             return {"status": "failed", "reason": f"convert --verify exit {p.returncode}"}
         return {"status": "done", "summary": "HWP 변환 + verify 통과", "artifacts": [art.name]}
 
-    def goal_extract_tables(self, doc, params, out) -> dict:
+    def goal_extract_tables(self, doc, params, out, request_dir) -> dict:
         """전 표 CSV 수확. needs:export-tables,table-to-csv"""
         p = run([self.bin, "export-tables", str(doc), "--json"], self.timeout)
         if p.returncode != 0:
@@ -179,13 +199,13 @@ class Chief:
             arts.append(art.name)
         return {"status": "done", "summary": f"표 {len(arts)}개 CSV 수확", "artifacts": arts}
 
-    def goal_fill(self, doc, params, out) -> dict:
+    def goal_fill(self, doc, params, out, request_dir) -> dict:
         """서식 채움(봉투 게이트). needs:fields"""
         data = params.get("data")
         if not data:
             return {"status": "needs-agent", "reason": "params.data(값 JSON 파일) 없음"}
-        data_path = doc.parent / data
-        if not data_path.is_file():
+        data_path = resolve_request_file(request_dir, data)
+        if data_path is None or not data_path.is_file():
             return {"status": "failed", "reason": f"값 파일 없음: {data}"}
         art = out / ("filled" + doc.suffix)
         p = run([self.bin, "edit", "fill-fields", str(doc), "--data", f"@{data_path}",
@@ -235,23 +255,34 @@ def write_response(req_dir: Path, request: dict, ticket: dict, outcome: dict) ->
 
 
 def process_request(chief: Chief, req_dir: Path) -> dict:
-    request = json.loads((req_dir / "request.json").read_text(encoding="utf-8"))
-    doc_name = request.get("doc")
-    doc = (req_dir / doc_name) if doc_name else None
-    if not doc or not doc.is_file():
-        outcome = {"status": "failed", "reason": f"doc 없음: {doc_name}"}
-        ticket = {}
-    else:
-        ticket = chief.triage(doc, request.get("symptom", ""), req_dir / "ticket.json")
-        route = ticket.get("route")
-        if route in ("escalate-bug", "invalid-input"):
-            outcome = {"status": "escalated" if route == "escalate-bug" else "invalid-input"}
+    request: dict = {}
+    ticket: dict = {}
+    try:
+        parsed = json.loads((req_dir / "request.json").read_text(encoding="utf-8"))
+        if not isinstance(parsed, dict):
+            raise ValueError("request.json 최상위는 객체여야 한다")
+        request = parsed
+        params = request.get("params") or {}
+        if not isinstance(params, dict):
+            raise ValueError("request.json params 는 객체여야 한다")
+        doc_name = request.get("doc")
+        doc = resolve_request_file(req_dir, doc_name)
+        if not doc or not doc.is_file():
+            outcome = {"status": "failed", "reason": f"요청 폴더 안 문서가 없음: {doc_name}"}
         else:
-            goal = request.get("goal") or "diagnose"
-            if goal not in KNOWN_GOALS:
-                outcome = {"status": "needs-agent", "reason": f"모르는 goal: {goal}"}
+            ticket = chief.triage(doc, request.get("symptom", ""), req_dir / "ticket.json")
+            route = ticket.get("route")
+            if route in ("escalate-bug", "invalid-input"):
+                outcome = {"status": "escalated" if route == "escalate-bug" else "invalid-input"}
             else:
-                outcome = chief.handle(goal, doc, request.get("params") or {}, req_dir / "out")
+                goal = request.get("goal") or "diagnose"
+                if goal not in KNOWN_GOALS:
+                    outcome = {"status": "needs-agent", "reason": f"모르는 goal: {goal}"}
+                else:
+                    outcome = chief.handle(goal, doc, params, req_dir / "out", req_dir)
+    except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        ticket = {"route": "invalid-input", "routeReason": f"요청 형식 오류: {exc}", "steps": []}
+        outcome = {"status": "failed", "reason": f"요청 형식 오류: {exc}"}
     write_response(req_dir, request, ticket, outcome)
     result = {
         "schemaVersion": "1",

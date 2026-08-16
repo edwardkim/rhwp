@@ -323,6 +323,7 @@ def emit_issue_draft(path: Path, args, sig: tuple, before: int, after: int, mini
 def main(argv=None) -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
         sys.stderr.reconfigure(encoding="utf-8")
 
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -344,6 +345,11 @@ def main(argv=None) -> int:
         return 2
     if not zipfile.is_zipfile(input_path):
         log("입력이 ZIP(HWPX)이 아니다 — 이 도구는 HWPX 전용이다 (docstring 참조).")
+        return 2
+
+    output = Path(args.output) if args.output else input_path.with_suffix(".min.hwpx")
+    if output.resolve() == input_path.resolve():
+        log("산출 경로가 원본과 같다 — 원본을 덮어쓸 수 없다.")
         return 2
 
     if args.oracle:
@@ -369,7 +375,6 @@ def main(argv=None) -> int:
         return 2
     log(f"목표 시그니처: {target_sig}")
 
-    output = Path(args.output) if args.output else input_path.with_suffix(".min.hwpx")
     before_bytes = input_path.stat().st_size
 
     started = time.monotonic()

@@ -52,7 +52,8 @@ MAGIC = [
 
 
 def sniff_container(path: Path) -> str | None:
-    head = path.open("rb").read(32)
+    with path.open("rb") as source:
+        head = source.read(32)
     for magic, kind in MAGIC:
         if head.startswith(magic):
             return kind
@@ -94,6 +95,20 @@ def run_step(bin_path: str, args: list[str], doc: Path, timeout: float) -> dict:
     return step
 
 
+def advertised_commands(step: dict) -> set[str] | None:
+    """성공한 capabilities 봉투에서만 명령을 얻는다.
+
+    `None`은 capabilities 자체가 실패했거나 봉투가 계약을 지키지 않았다는 뜻이다.
+    빈 집합은 유효하지만 명령이 하나도 없는 빌드다. 두 경우 모두 추측 실행은 금지한다.
+    """
+    env = step.get("envelope")
+    commands = env.get("commands") if isinstance(env, dict) else None
+    if not step.get("ok") or not isinstance(commands, list):
+        return None
+    return {entry.get("name") for entry in commands
+            if isinstance(entry, dict) and isinstance(entry.get("name"), str)}
+
+
 def envelope_says_encrypted(steps: list[dict]) -> bool:
     for s in steps:
         env = s.get("envelope")
@@ -108,6 +123,8 @@ def decide_route(container: str | None, steps: list[dict]) -> tuple[str, str]:
     """fde_playbook.md §3 의 표를 코드로 옮긴 것 — 표를 바꾸면 여기도 같은 PR 에서 바꾼다."""
     if container is None:
         return "invalid-input", "매직 바이트가 hwpx/hwp5/hwp3 어느 것도 아니다"
+    if steps and steps[0].get("command") == "capabilities --json" and not steps[0].get("ok"):
+        return "workaround", "capabilities 조회 실패 — 광고되지 않은 진단 명령은 실행하지 않음"
     crashed = [s for s in steps if "failureSignature" in s]
     if crashed:
         sig = crashed[0]["failureSignature"]
@@ -171,22 +188,24 @@ def main(argv=None) -> int:
     started = time.monotonic()
     container = sniff_container(doc)
     steps: list[dict] = []
-    available: set = set()
+    available: set[str] = set()
 
     if container is not None:
         cap = run_step(bin_path, ["capabilities", "--json"], doc, args.timeout)
-        if cap["ok"] and isinstance(cap.get("envelope"), dict):
-            available = {
-                c.get("name") for c in cap["envelope"].get("commands", [])
-                if isinstance(c, dict)
-            }
-        for _label, cmd_name, template in LADDER:
-            if available and cmd_name not in available:
-                continue
-            step = run_step(bin_path, template, doc, args.timeout)
-            steps.append(step)
-            if "failureSignature" in step:
-                break  # 크래시 밑으로는 내려가지 않는다 — 같은 원인만 반복된다
+        steps.append(cap)
+        advertised = advertised_commands(cap)
+        if advertised is None:
+            cap["ok"] = False
+            cap.setdefault("stderrHead", ["capabilities 봉투에 commands 배열이 없거나 조회에 실패함"])
+        else:
+            available = advertised
+            for _label, cmd_name, template in LADDER:
+                if cmd_name not in available:
+                    continue
+                step = run_step(bin_path, template, doc, args.timeout)
+                steps.append(step)
+                if "failureSignature" in step:
+                    break  # 크래시 밑으로는 내려가지 않는다 — 같은 원인만 반복된다
 
     route, reason = decide_route(container, steps)
     ticket = {

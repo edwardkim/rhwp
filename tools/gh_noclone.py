@@ -18,7 +18,7 @@ git pack 전송이 구조적으로 불안정해서 `git clone`/`git fetch`(blob 
 (포맷 수정, 오타, 작은 로직 조각, 새 파일 추가)인데 로컬 clone 이 느리거나
 실패할 때. **언제 못 쓰는가**: 여러 파일에 걸친 구조적 병합·충돌 해결·
 `cargo build`/`cargo test` 로 실제 컴파일 검증이 필요한 변경 — 그런 작업은
-`git sparse-checkout`(`tools/sparse_clone_hint.md` 참고)으로 필요한 하위
+`git sparse-checkout`(`tools/sparse_clone_hint.py` 참고)으로 필요한 하위
 디렉터리만 좁혀서 받는 쪽이 낫다. 이 도구는 그 좁히기가 오히려 배보다 배꼽인
 "파일 한두 개" 규모를 위한 것이다.
 
@@ -63,6 +63,8 @@ def cmd_read(args: argparse.Namespace) -> int:
         [
             "api",
             f"repos/{args.repo}/contents/{args.path}",
+            "-X",
+            "GET",
             "-f",
             f"ref={args.ref}",
             "--jq",
@@ -104,6 +106,8 @@ def cmd_write(args: argparse.Namespace) -> int:
             [
                 "api",
                 f"repos/{args.repo}/contents/{args.path}",
+                "-X",
+                "GET",
                 "-f",
                 f"ref={args.ref}",
                 "--jq",
@@ -222,8 +226,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_log = sub.add_parser("ci-log", help="워크플로 실행 로그 조회")
     p_log.add_argument("run_id")
-    p_log.add_argument("--failed-only", action="store_true", default=True)
+    p_log.add_argument("--failed-only", action="store_true",
+                       help="실패한 step 로그만 조회한다 (기본: 전체 로그)")
     p_log.set_defaults(func=cmd_ci_log)
+
+    # argparse의 최상위 옵션은 하위 명령 뒤에 쓰면 인식하지 않는다. 사용 예시처럼
+    # `read ... --repo owner/name`를 허용하되, 전역으로 준 값은 덮어쓰지 않는다.
+    for child in (p_read, p_write, p_status, p_log):
+        child.add_argument("--repo", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
 
     return parser
 

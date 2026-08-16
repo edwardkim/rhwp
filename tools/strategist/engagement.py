@@ -83,12 +83,12 @@ def dump_json(path: Path, obj) -> None:
     path.write_text(json.dumps(obj, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
-def advertised_commands(bin_path: str, timeout: float) -> set:
+def advertised_commands(bin_path: str, timeout: float) -> set[str] | None:
     """capabilities 봉투에서 광고 명령 집합을 얻는다.
 
     devel 계열은 `capabilities` 가 곧 JSON 이고, 일부 빌드는 `--json` 을 함께
-    받는다 — 두 형태를 순서대로 시도하고, 둘 다 실패하면 빈 집합(광고 확인
-    불가 = 광고 안 됨으로 취급, 추측으로 메꾸지 않는다).
+    받는다 — 두 형태를 순서대로 시도한다. 둘 다 실패하면 `None`을 반환한다.
+    빈 집합과 조회 실패를 구별해야 광고되지 않은 명령을 추측 실행하지 않는다.
     """
     for args in ([bin_path, "capabilities"], [bin_path, "capabilities", "--json"]):
         try:
@@ -101,8 +101,12 @@ def advertised_commands(bin_path: str, timeout: float) -> set:
             env = json.loads(proc.stdout)
         except json.JSONDecodeError:
             continue
-        return {c.get("name") for c in env.get("commands", []) if isinstance(c, dict)}
-    return set()
+        commands = env.get("commands") if isinstance(env, dict) else None
+        if not isinstance(commands, list):
+            continue
+        return {c.get("name") for c in commands
+                if isinstance(c, dict) and isinstance(c.get("name"), str)}
+    return None
 
 
 # --- Phase A: 코퍼스 지도 ---------------------------------------------------
@@ -409,8 +413,12 @@ def run_engagement(args) -> int:
     out.mkdir(parents=True, exist_ok=True)
 
     available = advertised_commands(bin_path, args.timeout)
-    if available and "search" not in available:
-        log("바이너리가 search 를 광고하지 않는다 — 근거 대장을 만들 수 없다")
+    if available is None:
+        log("capabilities 조회에 실패했다 — 광고되지 않은 명령을 추측 실행하지 않는다")
+        return 1
+    missing_required = sorted({"info", "search"} - available)
+    if missing_required:
+        log(f"바이너리가 {missing_required} 를 광고하지 않는다 — 근거 대장을 만들 수 없다")
         return 1
 
     log(f"[A] 코퍼스 지도: 문서 {len(files)}건")

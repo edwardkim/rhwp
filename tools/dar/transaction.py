@@ -26,7 +26,9 @@ MODIFY 는 원본 무훼손, 한 트랜잭션은 한 입력 해시. **선언만�
     python3 $T diff     --tx <id>
     python3 $T commit   --tx <id> -o 산출.hwpx      # VALIDATE 성공 없으면 거절
     python3 $T rollback --tx <id>
-    python3 $T replay   --receipt txs/<id>/receipt.json --bin <rhwp>
+    python3 $T replay   --tx <id>                    # 영수증 재실행 상태를 기록
+    python3 $T verify   --tx <id>                    # 영수증·입출력 해시 검증 상태를 기록
+    python3 $T replay   --receipt txs/<id>/receipt.json --bin <rhwp>  # 독립 재현
 
 종료 코드는 DAP/1.0 오류 코드의 상위 1자리다: 0 성공 / 1 런타임 / 2 사용법 /
 3 판정 / 4 정책. **판정(3)은 실패가 아니라 결과다.**
@@ -183,6 +185,17 @@ def guard(tx: Tx, op: str, rid: str):
     return None
 
 
+def validate_proposal(op: str, params: object) -> str | None:
+    """MODIFY 전에 제안의 타입·필수 키를 확정해 런타임 예외를 봉투 오류로 바꾼다."""
+    if not isinstance(params, dict):
+        return "params 는 객체여야 한다"
+    if op == "replace-text":
+        for key in ("find", "replace"):
+            if not isinstance(params.get(key), str):
+                return f"replace-text params.{key} 는 문자열이어야 한다"
+    return None
+
+
 # --- 연산 -------------------------------------------------------------------
 
 def op_begin(a) -> int:
@@ -248,6 +261,10 @@ def op_propose(a, tx: Tx) -> int:
     except json.JSONDecodeError as e:
         return emit(envelope(rid, "transaction.propose", "error", 2000,
                              tx=tx.state["transactionId"], record={"reason": f"params JSON 오류: {e}"}))
+    invalid = validate_proposal(a.op, params)
+    if invalid:
+        return emit(envelope(rid, "transaction.propose", "error", 2000,
+                             tx=tx.state["transactionId"], record={"reason": invalid}))
     proposal = {"op": a.op, "params": params}
     tx.state["proposal"] = proposal
     tx.state["operationSha256"] = sha256_obj(proposal)
@@ -367,6 +384,10 @@ def op_commit(a, tx: Tx) -> int:
                                      "validated": False}))
     out = Path(tx.state["workingOutput"])
     final = Path(a.output)
+    if final.resolve() == Path(tx.state["input"]).resolve():
+        return emit(envelope(rid, "transaction.commit", "error", 2000,
+                             tx=tx.state["transactionId"],
+                             record={"reason": "산출 경로가 원본 입력과 같다 — 원본을 덮어쓸 수 없다"}))
     if final.exists() and not a.overwrite:
         return emit(envelope(rid, "transaction.commit", "error", 2000,
                              tx=tx.state["transactionId"],
@@ -418,15 +439,46 @@ def op_rollback(a, tx: Tx) -> int:
                                  "inputSha256": tx.state["inputSha256"]}))
 
 
-def op_replay(a) -> int:
+def load_receipt(path: Path, rid: str, tx_id: str | None = None):
+    if not path.is_file():
+        return None, envelope(rid, "transaction.replay", "error", 2001,
+                              record={"reason": f"영수증이 없다: {path}"})
+    try:
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return None, envelope(rid, "transaction.replay", "error", 2000,
+                              record={"reason": f"영수증 JSON 오류: {exc}"})
+    required = {"transactionId", "input", "inputSha256", "output", "outputSha256", "proposal"}
+    missing = sorted(required - set(receipt)) if isinstance(receipt, dict) else []
+    if not isinstance(receipt, dict) or missing:
+        return None, envelope(rid, "transaction.replay", "error", 2000,
+                              record={"reason": f"영수증 필수 필드 없음: {missing if isinstance(receipt, dict) else '객체 아님'}"})
+    if tx_id is not None and receipt["transactionId"] != tx_id:
+        return None, envelope(rid, "transaction.replay", "error", 2000,
+                              tx=tx_id, record={"reason": "영수증 transactionId 가 현재 트랜잭션과 다르다"})
+    proposal = receipt["proposal"]
+    if not isinstance(proposal, dict):
+        return None, envelope(rid, "transaction.replay", "error", 2000,
+                              record={"reason": "영수증 proposal 은 객체여야 한다"})
+    op = proposal.get("op")
+    if not isinstance(op, str) or op not in MUTATING_OPS:
+        return None, envelope(rid, "transaction.replay", "error", 2000,
+                              record={"reason": f"영수증 proposal.op 가 지원되지 않는다: {op!r}"})
+    invalid = validate_proposal(op, proposal.get("params"))
+    if invalid:
+        return None, envelope(rid, "transaction.replay", "error", 2000,
+                              record={"reason": f"영수증 proposal 이 유효하지 않다: {invalid}"})
+    return receipt, None
+
+
+def op_replay(a, tx: Tx | None = None) -> int:
     """영수증만으로 재실행해 같은 산출 해시가 나오는지 판정한다."""
     rid = a.request_id
-    rp = Path(a.receipt)
-    if not rp.is_file():
-        return emit(envelope(rid, "transaction.replay", "error", 2001,
-                             record={"reason": f"영수증이 없다: {rp}"}))
-    r = json.loads(rp.read_text(encoding="utf-8"))
-    bin_path = a.bin or shutil.which("rhwp")
+    rp = Path(a.receipt) if getattr(a, "receipt", None) else tx.path / "receipt.json"
+    r, error = load_receipt(rp, rid, tx.state["transactionId"] if tx else None)
+    if error:
+        return emit(error)
+    bin_path = getattr(a, "bin", None) or (tx.state["bin"] if tx else None) or shutil.which("rhwp")
     if not bin_path:
         return emit(envelope(rid, "transaction.replay", "error", 2000,
                              record={"reason": "rhwp 바이너리를 찾을 수 없다"}))
@@ -448,18 +500,47 @@ def op_replay(a) -> int:
                             "-o", str(out), "--json"])
         if not p or p.returncode != 0 or not out.is_file():
             return emit(envelope(rid, "transaction.replay", "error", 1000,
+                                 tx=tx.state["transactionId"] if tx else r["transactionId"],
                                  record={"exit": p.returncode if p else None}, retryable=True))
         observed = sha256_file(out)
 
     reproduced = observed == r["outputSha256"]
-    return emit(envelope(rid, "transaction.replay",
-                         "ok" if reproduced else "verdict",
-                         0 if reproduced else 3000,
-                         tx=r["transactionId"],
-                         record={"reproduced": reproduced,
-                                 "expectedOutputSha256": r["outputSha256"],
-                                 "observedOutputSha256": observed,
-                                 "operationSha256": r["operationSha256"]}))
+    env = envelope(rid, "transaction.replay",
+                   "ok" if reproduced else "verdict",
+                   0 if reproduced else 3000,
+                   tx=r["transactionId"],
+                   record={"reproduced": reproduced,
+                           "expectedOutputSha256": r["outputSha256"],
+                           "observedOutputSha256": observed,
+                           "operationSha256": r.get("operationSha256")})
+    if tx:
+        tx.advance("REPLAY")
+        tx.save()
+    return emit(env)
+
+
+def op_verify(a, tx: Tx) -> int:
+    """확정 영수증과 실제 입출력의 해시를 대조하고 VERIFY 상태를 남긴다."""
+    rid = a.request_id
+    receipt, error = load_receipt(tx.path / "receipt.json", rid, tx.state["transactionId"])
+    if error:
+        error["operation"] = "transaction.verify"
+        error["transaction_id"] = tx.state["transactionId"]
+        return emit(error)
+    failures = []
+    for field in ("input", "output"):
+        path = Path(receipt[field])
+        digest_field = f"{field}Sha256"
+        if not path.is_file():
+            failures.append(f"{field} 파일이 없다: {path}")
+        elif sha256_file(path) != receipt[digest_field]:
+            failures.append(f"{field} 해시가 영수증과 다르다")
+    tx.advance("VERIFY")
+    tx.save()
+    return emit(envelope(rid, "transaction.verify", "ok" if not failures else "verdict",
+                         0 if not failures else 3000, tx=tx.state["transactionId"],
+                         record={"verified": not failures, "failures": failures,
+                                 "receipt": str(tx.path / "receipt.json")}))
 
 
 def main(argv=None) -> int:
@@ -483,7 +564,12 @@ def main(argv=None) -> int:
         x = sub.add_parser(name); x.add_argument("--tx", required=True)
     c = sub.add_parser("commit"); c.add_argument("--tx", required=True)
     c.add_argument("-o", "--output", required=True); c.add_argument("--overwrite", action="store_true")
-    rp = sub.add_parser("replay"); rp.add_argument("--receipt", required=True); rp.add_argument("--bin")
+    rp = sub.add_parser("replay")
+    replay_input = rp.add_mutually_exclusive_group(required=True)
+    replay_input.add_argument("--receipt")
+    replay_input.add_argument("--tx")
+    rp.add_argument("--bin")
+    v = sub.add_parser("verify"); v.add_argument("--tx", required=True)
 
     a = ap.parse_args(argv)
     if not a.request_id:
@@ -491,7 +577,7 @@ def main(argv=None) -> int:
 
     if a.cmd == "begin":
         return op_begin(a)
-    if a.cmd == "replay":
+    if a.cmd == "replay" and a.receipt:
         return op_replay(a)
 
     tx = load_tx(Path(a.tx_dir), a.tx)
@@ -500,13 +586,13 @@ def main(argv=None) -> int:
                              record={"reason": f"트랜잭션을 찾을 수 없다: {a.tx}"}))
     op = {"read": "READ", "select": "SELECT", "propose": "PROPOSE", "modify": "MODIFY",
           "validate": "VALIDATE", "diff": "DIFF", "commit": "COMMIT",
-          "rollback": "ROLLBACK"}[a.cmd]
+          "rollback": "ROLLBACK", "replay": "REPLAY", "verify": "VERIFY"}[a.cmd]
     blocked = guard(tx, op, a.request_id)
     if blocked:
         return emit(blocked)
     return {"read": op_read, "select": op_select, "propose": op_propose, "modify": op_modify,
             "validate": op_validate, "diff": op_diff, "commit": op_commit,
-            "rollback": op_rollback}[a.cmd](a, tx)
+            "rollback": op_rollback, "replay": op_replay, "verify": op_verify}[a.cmd](a, tx)
 
 
 if __name__ == "__main__":

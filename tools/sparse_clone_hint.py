@@ -37,7 +37,7 @@ Python 3 표준 라이브러리만 사용한다(agent-toolkit 관례, `mydocs/ma
 와 같은 계열).
 
 종료 코드: 0 성공(미리보기 또는 적용 완료) / 1 git 실행 실패
-/ 2 사용법 오류(알 수 없는 프리셋 이름, `--task` 누락 등)
+/ 2 사용법 오류(알 수 없는 프리셋 이름, `--task` 누락, `--apply` 전 초기화 필요 등)
 """
 
 from __future__ import annotations
@@ -253,7 +253,9 @@ def main(argv: list[str] | None = None) -> int:
             print("현재 sparse-checkout 상태를 확인할 수 없습니다(초기화 안 됐을 수 있음).",
                   file=sys.stderr)
             print(f"먼저 초기화가 필요하면: {init_hint}", file=sys.stderr)
-        return 0
+        # 미리보기는 초기화 방법을 안내하는 성공이다. 반면 --apply 는 실제 반영을
+        # 약속했으므로 아무 것도 바꾸지 않았으면 성공으로 보고하면 안 된다.
+        return 2 if args.apply else 0
 
     if args.apply:
         r = subprocess.run(
