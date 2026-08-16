@@ -347,7 +347,10 @@ pub(crate) fn write_ole<W: Write>(
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
     let c = &ole.common;
-    let id_str = c.instance_id.to_string();
+    // [#4669] 원본 `id` 는 `instid` 와 별개 값이다 — 파서가 보존한 원문을 되쓰고,
+    // HWP5 출신(None)은 종전대로 instance_id 를 겸용한다.
+    let id_str = ole.hwpx_ole_id.unwrap_or(c.instance_id).to_string();
+    let instid_str = c.instance_id.to_string();
     let z_order = c.z_order.to_string();
     let tw = text_wrap_str(c.text_wrap);
     let tf = text_flow_str(c.text_flow);
@@ -385,7 +388,7 @@ pub(crate) fn write_ole<W: Write>(
             ("dropcapstyle", "None"),
             ("href", ""),
             ("groupLevel", "0"),
-            ("instid", &id_str),
+            ("instid", &instid_str),
             ("objectType", "UNKNOWN"),
             ("binaryItemIDRef", &bidref),
             ("hasMoniker", "0"),
@@ -1974,6 +1977,64 @@ mod tests {
         assert_eq!(hatch_style_str(5), "CROSS");
         assert_eq!(hatch_style_str(6), "CROSS_DIAGONAL");
         assert_eq!(hatch_style_str(99), "HORIZONTAL");
+    }
+
+    /// [#4669] 재방출 `id` 는 파서가 보존한 원문(hwpx_ole_id)을 되쓰고 `instid`
+    /// 는 instance_id 를 쓴다 — 원산 파일은 두 값이 다르다(실측 2141242094 /
+    /// 1067500271). 종전엔 둘 다 instance_id 로 방출돼 id 원문이 유실됐다.
+    /// curSz=0 센티널(#2017)의 OLE 경로 복원도 함께 고정한다.
+    #[test]
+    fn issue4669_write_ole_preserves_original_id_and_cur_sz_zero() {
+        use crate::model::document::Document;
+
+        let doc = Document::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+
+        let mut ole = OleShape::default();
+        ole.hwpx_ole_id = Some(2141242094);
+        ole.common.instance_id = 1067500271;
+        ole.drawing.shape_attr.original_width = 42001;
+        ole.drawing.shape_attr.original_height = 13501;
+        ole.drawing.shape_attr.current_width = 42001;
+        ole.drawing.shape_attr.current_height = 13501;
+        ole.drawing.shape_attr.current_width_was_zero = true;
+        ole.drawing.shape_attr.current_height_was_zero = true;
+
+        let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
+        write_ole(&mut w, &ole, &mut ctx).expect("write_ole");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+
+        assert!(xml.contains(r#"id="2141242094""#), "id 원문 보존: {xml}");
+        assert!(
+            xml.contains(r#"instid="1067500271""#),
+            "instid 는 instance_id: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:curSz width="0" height="0"/>"#),
+            "curSz=0 원문 복원(#2017 센티널): {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:orgSz width="42001" height="13501"/>"#),
+            "orgSz 보존: {xml}"
+        );
+    }
+
+    /// [#4669] HWP5 출신(hwpx_ole_id=None)은 종전대로 id=instid=instance_id.
+    #[test]
+    fn issue4669_write_ole_without_original_id_falls_back_to_instance_id() {
+        use crate::model::document::Document;
+
+        let doc = Document::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+
+        let mut ole = OleShape::default();
+        ole.common.instance_id = 77;
+
+        let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
+        write_ole(&mut w, &ole, &mut ctx).expect("write_ole");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+        assert!(xml.contains(r#"id="77""#), "{xml}");
+        assert!(xml.contains(r#"instid="77""#), "{xml}");
     }
 
     /// [버그] OLE 의 `bin_data_id` 는 HWP5 바이너리상 u32 필드다. 종전 코드는
