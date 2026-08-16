@@ -35,6 +35,19 @@ Stage 2 candidate 30개는 mapping rule 30개라는 뜻이 아니다. source bou
 뜻이며, 하나의 selector가 여러 finite mapping을 포함할 수 있다. 실제 행 확장과 전수성 판정은
 Stage 3에서 수행한다.
 
+### Stage 3 확장 뒤 해석
+
+Stage 3은 같은 `font_rule_candidates.json`에 30개 boundary를 그대로 보존하고 `ruleCandidates`,
+`dispositions`, `summary`를 추가했다. 따라서 현재 파일 전체 SHA-256은 Stage 2의 boundary-only
+SHA-256과 다르다. 그러나 W0가 소비하는 30개 boundary projection은 바뀌지 않았으며, 확장된
+파일을 입력으로 W0 baseline을 메모리에서 재생성한 결과 기존 baseline과 byte 동일했다.
+
+- Stage 3 확장 candidate SHA-256:
+  `0c5316fcb0bad11e7af17586062486fcf6a26206a478da1fd9bb641c1aa9474a`
+- 재생성 W0 baseline SHA-256:
+  `a0fac05c3138471eb3e7404fc701f0053caa6c01a923afae60fd4da64064b466`
+- 기존 W0 baseline과 byte equal: `true`
+
 ## 3. metric table 기준선
 
 | 항목 | 값 |
