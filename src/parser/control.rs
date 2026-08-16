@@ -134,6 +134,9 @@ fn parse_field_control(ctrl_id: u32, ctrl_data: &[u8]) -> Control {
         field_id,
         ctrl_id,
         instance_id: None,
+        // [#4896] HWP5 는 ctrl_id 자체가 종류라 원문 문자열이 없다 — 직렬화기가
+        // `tags::OWPML_EXTRA_FIELD_TYPES` 로 ctrl_id 에서 이름을 되찾는다.
+        raw_type: None,
         ctrl_data_name: None,
         memo_index,
         memo_paragraphs: Vec::new(),
