@@ -298,3 +298,25 @@ fn rewrapped_paragraphs_keep_their_line_segs() {
          문단 위 간격을 세지 않는다"
     );
 }
+
+#[test]
+fn body_rewraps_when_the_column_count_changes() {
+    // [#4972] 단 설정도 본문이 접히는 폭을 바꾼다. 쪽 여백과 같은 결함이 같은 이유로 생긴다 —
+    // 저장 분할이 1단 시절의 줄 나눔으로 남으면 2단 폭을 넘어 삐져나온다.
+    let bytes = std::fs::read("rhwp-studio/public/samples/biz_plan.hwp")
+        .expect("fixture 를 읽을 수 있어야 한다");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("fixture 파싱");
+
+    let before = body_line_seg_fingerprint(&core);
+
+    // 1단 → 2단 (간격 8mm)
+    core.set_column_def_native(0, 2, 0, true, 2268)
+        .expect("단 설정 변경");
+
+    assert_ne!(
+        body_line_seg_fingerprint(&core),
+        before,
+        "단을 2단으로 나눴는데 줄 나눔이 그대로다 — 저장 분할이 1단 폭의 것을 유지하면 \
+         본문이 단을 넘어 삐져나온다"
+    );
+}

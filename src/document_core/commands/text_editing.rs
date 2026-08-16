@@ -3868,6 +3868,10 @@ impl DocumentCore {
             _ => ColumnType::Normal,
         };
 
+        // [#4972] 단 설정은 본문이 접히는 폭을 바꾼다 — 쪽 여백(#4956)과 같은 이유로 저장
+        // line_segs 가 옛 폭의 줄 나눔으로 남으면 새 단을 넘어 삐져나온다.
+        let wrap_width_before = self.body_wrap_width(section_idx);
+
         // 구역의 초기 ColumnDef 찾기 (find_initial_column_def와 동일 로직)
         let mut found = false;
         let paragraphs = &mut self.document.sections[section_idx].paragraphs;
@@ -3906,6 +3910,10 @@ impl DocumentCore {
                     .controls
                     .push(Control::ColumnDef(cd));
             }
+        }
+
+        if self.body_wrap_width(section_idx) != wrap_width_before {
+            self.reflow_body_paragraphs_in_section(section_idx);
         }
 
         // 조판 갱신

@@ -1893,23 +1893,33 @@ impl DocumentCore {
     pub(crate) fn reflow_body_paragraphs_in_section(&mut self, sec_idx: usize) {
         let styles = resolve_styles(&self.document.doc_info, self.dpi);
         let dpi = self.dpi;
-        let Some(section) = self.document.sections.get(sec_idx) else {
-            return;
-        };
-        let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
-        let layout = PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, dpi);
-        let column_width = layout
-            .column_areas
-            .first()
-            .map(|a| a.width)
-            .unwrap_or(layout.body_area.width);
-
+        let wrap_width = self.body_wrap_width(sec_idx);
         let Some(section) = self.document.sections.get_mut(sec_idx) else {
             return;
         };
         for para in section.paragraphs.iter_mut() {
-            reflow_paragraph_to_width(para, column_width, &styles, dpi);
+            reflow_paragraph_to_width(para, wrap_width, &styles, dpi);
         }
+    }
+
+    /// 이 구역의 본문 문단이 접히는 폭 (px) — 단이 나뉘어 있으면 첫 단 폭, 아니면 본문 상자 폭.
+    ///
+    /// "줄 나눔을 정하는 폭"의 정의는 하나여야 한다. 저장 분할을 버릴지 판단하는 곳(쪽 설정·단
+    /// 설정 변경)과 실제로 다시 접는 곳이 각자 계산하면, 제본 여백·가로세로 뒤바꿈·여백 과대
+    /// 폴백 같은 규칙이 한쪽에만 반영돼 "바뀐 줄 모르고 안 접거나, 안 바뀐 걸 접는" 어긋남이
+    /// 생긴다.
+    pub(crate) fn body_wrap_width(&self, sec_idx: usize) -> f64 {
+        let Some(section) = self.document.sections.get(sec_idx) else {
+            return 0.0;
+        };
+        let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
+        let layout =
+            PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, self.dpi);
+        layout
+            .column_areas
+            .first()
+            .map(|a| a.width)
+            .unwrap_or(layout.body_area.width)
     }
 
     /// 스타일 적용 (네이티브) — 본문 문단
