@@ -678,7 +678,7 @@ const AGENT_TOOL_ALLOWLIST = [
   "hwp_inspect_watermark", "hwp_threat_scan", "hwp_layout_anomaly",
   "hwp_export_pdf", "hwp_export_svg", "hwp_export_markdown", "hwp_thumbnail",
   "hwp_convert_hwpx", "hwp_convert_hwp5",
-  "hwp_ir_diff", "hwp_render_diff",
+  "hwp_ir_diff", "hwp_render_diff", "hwp_split_document",
   "hwp_export_tables", "hwp_table_to_csv", "hwp_csv_to_table",
   "hwp_chart_to_csv", "hwp_csv_to_chart", "hwp_replace_text",
   "hwp_fill_fields", "hwp_set_cell", "hwp_set_checkbox", "hwp_insert_image",
