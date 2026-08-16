@@ -356,3 +356,150 @@ pub enum GroupKind {
     TextBox,
     Group(GroupNode),
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::renderer::render_tree::TextRunNode;
+    use crate::renderer::TextStyle;
+
+    fn text_run(text: &str) -> TextRunNode {
+        TextRunNode {
+            text: text.to_string(),
+            style: TextStyle::default(),
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: None,
+            para_index: None,
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline: 12.0,
+            field_marker: Default::default(),
+            display_text: None,
+        }
+    }
+
+    fn leaf_with(texts: &[&str]) -> LayerNode {
+        let ops = texts
+            .iter()
+            .map(|t| PaintOp::text_run(BoundingBox::default(), text_run(t)))
+            .collect();
+        LayerNode::leaf(BoundingBox::default(), None, ops)
+    }
+
+    /// UTF-8 바이트 길이와 UTF-16 코드유닛 수는 한글·이모지에서 **갈라진다**.
+    /// 두 범위가 각자의 단위를 지키는지가 이 표의 핵심 계약이다.
+    #[test]
+    fn utf8_and_utf16_ranges_diverge_for_korean_and_emoji() {
+        let table = TextSourceTable::from_layer_node(&leaf_with(&["한글", "ab", "🙂"]));
+        assert_eq!(table.entries.len(), 3);
+
+        // 한글 2자 = UTF-8 6바이트, UTF-16 2유닛
+        assert_eq!(table.entries[0].utf8_range, TextSourceRange::new(0, 6));
+        assert_eq!(table.entries[0].utf16_range, TextSourceRange::new(0, 2));
+
+        // ASCII 는 둘이 같다
+        assert_eq!(table.entries[1].utf8_range, TextSourceRange::new(0, 2));
+        assert_eq!(table.entries[1].utf16_range, TextSourceRange::new(0, 2));
+
+        // BMP 밖 이모지 = UTF-8 4바이트, UTF-16 2유닛(서로게이트 쌍)
+        assert_eq!(table.entries[2].utf8_range, TextSourceRange::new(0, 4));
+        assert_eq!(table.entries[2].utf16_range, TextSourceRange::new(0, 2));
+    }
+
+    /// 트리 재귀는 Group·ClipRect 를 뚫고 중첩된 TextRun 까지 닿아야 한다.
+    #[test]
+    fn collection_descends_through_group_and_clip_rect() {
+        let deep = LayerNode::clip_rect(
+            BoundingBox::default(),
+            None,
+            BoundingBox::default(),
+            leaf_with(&["안쪽"]),
+            ClipKind::TextBox,
+        );
+        let root = LayerNode::group(
+            BoundingBox::default(),
+            None,
+            vec![leaf_with(&["바깥"]), deep],
+            CacheHint::None,
+            GroupKind::Generic,
+        );
+
+        let table = TextSourceTable::from_layer_node(&root);
+        let texts: Vec<&str> = table.entries.iter().map(|e| e.text.as_str()).collect();
+        assert_eq!(texts, vec!["바깥", "안쪽"], "중첩된 TextRun 을 놓쳤다");
+    }
+
+    /// id 는 수집 순서의 색인이다 — 소비자가 이 순서로 되짚는다.
+    #[test]
+    fn entry_ids_are_sequential_collection_indices() {
+        let table = TextSourceTable::from_layer_node(&leaf_with(&["a", "b", "c"]));
+        for (idx, entry) in table.entries.iter().enumerate() {
+            assert_eq!(entry.id, TextSourceId(idx as u32));
+        }
+    }
+
+    /// TextRun 이 없으면 표는 비어 있다 — 다른 op 를 텍스트로 착각하지 않는다.
+    #[test]
+    fn tree_without_text_runs_yields_empty_table() {
+        let empty_leaf = LayerNode::leaf(BoundingBox::default(), None, vec![]);
+        let root = LayerNode::group(
+            BoundingBox::default(),
+            None,
+            vec![empty_leaf],
+            CacheHint::None,
+            GroupKind::Generic,
+        );
+        assert!(TextSourceTable::from_layer_node(&root).is_empty());
+    }
+
+    /// 문단 끝·줄바꿈 표식의 오프셋도 각자의 단위를 지켜야 한다.
+    #[test]
+    fn paragraph_end_annotation_offsets_follow_their_own_units() {
+        let mut run = text_run("한글");
+        run.is_para_end = true;
+        let node = LayerNode::leaf(
+            BoundingBox::default(),
+            None,
+            vec![PaintOp::text_run(BoundingBox::default(), run)],
+        );
+
+        let table = TextSourceTable::from_layer_node(&node);
+        match &table.entries[0].annotations[..] {
+            [TextSourceAnnotation::ParagraphEnd {
+                offset_utf8,
+                offset_utf16,
+            }] => {
+                assert_eq!(*offset_utf8, 6, "UTF-8 오프셋이 바이트 길이가 아니다");
+                assert_eq!(*offset_utf16, 2, "UTF-16 오프셋이 코드유닛 수가 아니다");
+            }
+            other => panic!("기대한 ParagraphEnd 주석이 아니다: {other:?}"),
+        }
+    }
+
+    /// 안정 키는 구역·문단·문자 시작이 다 있어야 만들어진다.
+    #[test]
+    fn stable_source_key_requires_section_and_para_index() {
+        assert_eq!(stable_text_source_key(&text_run("가")), None);
+
+        let mut run = text_run("가");
+        run.section_index = Some(1);
+        assert_eq!(
+            stable_text_source_key(&run),
+            None,
+            "문단 색인이 없는데 키가 났다"
+        );
+
+        run.para_index = Some(2);
+        assert_eq!(
+            stable_text_source_key(&run).as_deref(),
+            Some("section:1/para:2/char:0")
+        );
+    }
+}
