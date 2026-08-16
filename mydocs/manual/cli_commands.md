@@ -1021,6 +1021,12 @@ rhwp edit insert-text 공문.hwp --section 0 --para 0 --offset 0 --text "긴급:
 rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ```
 
+### `edit insert-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4992)
+지정한 자리에 빈 문단을 끼운다. 앞 문단 서식을 상속한다(한글 Enter). 코어
+`insert_paragraph_native` 배선이며 새 편집 로직은 없다.
+- `--section` / `--para` — 0 기준. `--para` 가 구역 문단 수와 같으면 끝에 붙인다.
+- `-o` / `--dry-run` / `--verify` / `--json` 은 형제 `edit` 과 같다.
+
 ### `edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]` (#3719 §6-5)
 도장·서명 같은 그림을 쪽 좌표에 붙인다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각.
 - `--image <그림>` (필수) — 지원 형식은 `png`·`jpg`·`jpeg`·`bmp`·`tif`·`tiff` 뿐(확장자와 내용
@@ -1134,7 +1140,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 7종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`insert-image`/`redact`/`sanitize`)은
+`edit` 8종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`insert-paragraph`/`insert-image`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`
