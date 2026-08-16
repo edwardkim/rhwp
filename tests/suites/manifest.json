@@ -1,8 +1,13 @@
 {
   "version": 1,
   "budgets": {
-    "automaticIntegrationTargets": 539,
+    "nonAutomaticIntegrationTargets": 538,
     "standaloneIssueTargets": 373
+  },
+  "automaticIssueAssignment": {
+    "firstSuite": "issue_regression_pilot",
+    "suitePrefix": "issue_regression_",
+    "maxCasesPerSuite": 32
   },
   "suites": {
     "issue_regression_pilot": [

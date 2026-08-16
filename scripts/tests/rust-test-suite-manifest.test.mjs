@@ -5,6 +5,7 @@ import { resolveCase } from '../run-rust-test.mjs';
 import {
   loadManifest,
   renderHarness,
+  selectAutomaticSuite,
   validateRepository,
 } from '../rust-test-suite-manifest.mjs';
 
@@ -26,4 +27,16 @@ test('harness 생성 순서는 manifest 배열 순서와 무관하다', () => {
     renderHarness('issue_regression_pilot', [...cases].reverse()),
     renderHarness('issue_regression_pilot', cases),
   );
+});
+
+test('새 issue case는 현재 suite를 채운 뒤 다음 suite로 분리한다', () => {
+  const manifest = loadManifest();
+  assert.equal(selectAutomaticSuite(manifest), 'issue_regression_pilot');
+
+  const fullManifest = structuredClone(manifest);
+  fullManifest.suites.issue_regression_pilot = Array.from(
+    { length: fullManifest.automaticIssueAssignment.maxCasesPerSuite },
+    (_, index) => `issue_full_${index}`,
+  );
+  assert.equal(selectAutomaticSuite(fullManifest), 'issue_regression_002');
 });
