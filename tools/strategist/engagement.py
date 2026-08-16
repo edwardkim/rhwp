@@ -501,6 +501,9 @@ def run_engagement(args) -> int:
     corpus = Path(corpus_field)
     if not corpus.is_absolute():
         corpus = eng_path.parent / corpus
+    # corpus_map.json 은 이후 --validate/SWS 감사에서 다시 읽힌다. 상대 경로를
+    # 산출 폴더 기준으로 한 번 더 붙이지 않도록 여기서 한 번만 절대 경로로 고정한다.
+    corpus = corpus.resolve()
     if not corpus.is_dir():
         log(f"corpus 폴더가 없다: {corpus}")
         return 2

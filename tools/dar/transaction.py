@@ -108,14 +108,22 @@ POLICY_OPS = ("eq", "in", "gte", "lte")
 def parse_policy(text: str) -> dict:
     """정책 JSON을 파싱하고 키·연산자를 사전 대조한다 — 위반은 ValueError."""
     v = json.loads(text)
+    if not isinstance(v, dict):
+        raise ValueError("정책 최상위는 객체여야 합니다")
     if v.get("kind") != "admissionPolicy":
         raise ValueError("정책 kind 가 admissionPolicy 가 아닙니다")
     default_verdict = v.get("defaultVerdict", "deny")
     if default_verdict not in ("deny", "allow"):
         raise ValueError(f"미지 defaultVerdict: {default_verdict} (deny|allow)")
+    raw_rules = v.get("rules")
+    if not isinstance(raw_rules, list):
+        raise ValueError("정책에 rules 배열이 필요합니다")
     rules = []
-    for idx, rule in enumerate(v.get("rules") or []):
-        rid = rule.get("id") or f"R{idx}"
+    for idx, rule in enumerate(raw_rules):
+        if not isinstance(rule, dict):
+            raise ValueError(f"R{idx}: 규칙 객체가 필요합니다")
+        raw_id = rule.get("id")
+        rid = raw_id if isinstance(raw_id, str) and raw_id else f"R{idx}"
         req = rule.get("require")
         if not isinstance(req, dict):
             raise ValueError(f"{rid}: require 객체가 필요합니다")

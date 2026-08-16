@@ -138,6 +138,7 @@ FAMILIES = [
       "export-png-gpu", "gpu-info"]),
     ("50_검증_사다리", "검증 사다리 — 판정은 데이터다",
      ["verify", "ir-diff", "replay", "audit", "lineage", "hwpx-roundtrip",
+      "layout-anomaly",
       "keygen", "verify-signature", "harness",
       "harness init", "harness wrap", "harness-status", "anchor", "gate", "bundle", "disclose", "settle",
       "audit-report", "recall-scope", "conformance"]),

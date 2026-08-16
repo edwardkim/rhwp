@@ -243,6 +243,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_export_hml",
             "hwp_export_svg",
             "hwp_render_diff",
+            "hwp_layout_anomaly",
             "hwp_info",
         ],
         session_tools: None,
@@ -250,6 +251,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "변환은 hwp_convert_* 의 verify 봉투로 1차 판정",
             "차이가 있으면 hwp_ir_diff 로 categories 분류",
             "시각 대조가 필요하면 양쪽을 hwp_export_svg 로 렌더, 픽셀 변위 판정은 hwp_render_diff",
+            "기준본 없이 단일 렌더의 기하 이상을 선별할 때는 hwp_layout_anomaly (strict는 overflow·overlap만 실패로 판정)",
         ],
     },
     AgentProfile {
