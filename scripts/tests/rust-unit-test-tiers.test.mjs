@@ -14,6 +14,7 @@ import {
   classifyTestModule,
   inventorySourceTests,
   maskRustNonCode,
+  validateTierManifestAgainstBase,
 } from '../rust-unit-test-tiers.mjs';
 
 function fixture(t, source) {
@@ -134,6 +135,39 @@ test('기존 source-side test 감소는 허용하고 최대값은 보존한다',
   assert.deepEqual(result.violations, []);
   assert.equal(result.manifest.modules[0].testAttributes, 1);
   assert.equal(result.manifest.modules[0].maximumTestAttributes, 2);
+});
+
+test('accept-baseline으로 숨긴 source test 증가도 PR base 대비 거부한다', (t) => {
+  const root = fixture(
+    t,
+    '#[cfg(test)] mod tests { use super::*; #[test] fn first() {} }',
+  );
+  const base = buildTierManifest(inventorySourceTests(root)).manifest;
+  writeFileSync(
+    path.join(root, 'src', 'sample.rs'),
+    '#[cfg(test)] mod tests { use super::*; #[test] fn first() {} #[test] fn added() {} }',
+  );
+  const accepted = buildTierManifest(inventorySourceTests(root), base, {
+    acceptBaseline: true,
+  }).manifest;
+  assert.match(
+    validateTierManifestAgainstBase(accepted, base).join('\n'),
+    /PR base 대비 source-side test 총량 증가 금지/,
+  );
+});
+
+test('Git rename으로 확인된 module 이동은 test 수가 같으면 허용한다', (t) => {
+  const root = fixture(
+    t,
+    '#[cfg(test)] mod tests { use super::*; #[test] fn contract() {} }',
+  );
+  const base = buildTierManifest(inventorySourceTests(root)).manifest;
+  const current = structuredClone(base);
+  current.modules[0].file = 'crates/leaf/src/lib.rs';
+  current.modules[0].sourcePath = 'crates/leaf/src/lib.rs';
+  current.modules[0].id = 'crates/leaf/src/lib.rs::tests#1';
+  const renamed = new Map([['crates/leaf/src/lib.rs', 'src/sample.rs']]);
+  assert.deepEqual(validateTierManifestAgainstBase(current, base, renamed), []);
 });
 
 test('생성한 tier manifest를 다시 계산해도 동일하다', (t) => {

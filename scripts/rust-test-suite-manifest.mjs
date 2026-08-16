@@ -12,6 +12,11 @@ import {
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  parseBaseRefArgument,
+  readJsonAtRef,
+} from './rust-test-policy-base.mjs';
+
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 export const ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
 export const MANIFEST_RELATIVE_PATH = 'tests/suites/manifest.json';
@@ -188,6 +193,19 @@ export function discoverSourceFiles(manifest, root = ROOT) {
     }
   }
   return [...sources].sort((left, right) => left.localeCompare(right));
+}
+
+export function validateSourcePlacementAgainstBase(sources, baseManifest) {
+  const baseSources = declaredSourcePaths(baseManifest);
+  return sources
+    .filter(
+      (source) =>
+        !source.startsWith('tests/cases/') && !baseSources.has(source),
+    )
+    .map(
+      (source) =>
+        `PR base에 없는 신규 integration source는 tests/cases/ 아래에 두어야 합니다: ${source}`,
+    );
 }
 
 const TEST_ATTRIBUTE =
@@ -536,13 +554,17 @@ function updateCargoManifest(manifest, root = ROOT) {
 function inspectRepository(
   manifest,
   root = ROOT,
-  { checkGenerated = true, checkCargo = true } = {},
+  { checkGenerated = true, checkCargo = true, baseManifest = null } = {},
 ) {
   const errors = [];
   const discovered = discoverSourceFiles(manifest, root);
   const discoveredSet = new Set(discovered);
   const declared = declaredSourcePaths(manifest);
   let caseIndex = new Map();
+
+  if (baseManifest !== null) {
+    errors.push(...validateSourcePlacementAgainstBase(discovered, baseManifest));
+  }
 
   try {
     caseIndex = buildCaseIndex(manifest);
@@ -688,9 +710,9 @@ function inspectRepository(
   };
 }
 
-export function validateRepository(root = ROOT) {
+export function validateRepository(root = ROOT, { baseManifest = null } = {}) {
   try {
-    return inspectRepository(loadManifest(root), root);
+    return inspectRepository(loadManifest(root), root, { baseManifest });
   } catch (error) {
     return {
       errors: [error instanceof Error ? error.message : String(error)],
@@ -796,11 +818,16 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
       generateArtifacts(manifest);
       printValidation(validateRepository());
     } else if (command === '--check') {
-      printValidation(validateRepository());
+      const baseRef = parseBaseRefArgument(process.argv.slice(3));
+      const baseManifest = baseRef
+        ? readJsonAtRef(ROOT, baseRef, MANIFEST_RELATIVE_PATH, { optional: true })
+        : null;
+      printValidation(validateRepository(ROOT, { baseManifest }));
     } else {
       process.stderr.write(
         '사용법: node scripts/rust-test-suite-manifest.mjs ' +
-          '--check|--generate|--sync|--rebalance|--adopt-new|--adopt <파일...>\n',
+          '--check [--base-ref <Git ref>]|--generate|--sync|--rebalance|' +
+          '--adopt-new|--adopt <파일...>\n',
       );
       process.exitCode = 2;
     }

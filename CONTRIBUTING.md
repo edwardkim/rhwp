@@ -256,6 +256,11 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    ```bash
    node scripts/rust-unit-test-tiers.mjs --check
    ```
+
+   CI는 PR base의 두 manifest와 현재 source를 다시 비교한다. 따라서 새 최상위
+   `tests/*.rs`를 생성물에 등록하거나 `--accept-baseline` 결과를 함께 커밋해도 우회할 수 없다.
+   새 integration source는 `tests/cases/`만 허용하며, source-side 테스트는 Git rename으로 확인되는
+   순수 crate 이동처럼 개수가 늘지 않는 경로 변경만 허용한다.
 2. **수정 전 실패 증명 (권장)** — "수정 커밋만 원복한 상태에서 신규 테스트가 실제로 FAIL"
    함을 PR 본문에 기록해주세요. 테스트가 결함을 판별한다는 증명이 되어 리뷰 신뢰도가
    높아집니다.

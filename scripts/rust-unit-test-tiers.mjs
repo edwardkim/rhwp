@@ -9,6 +9,12 @@ import {
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  parseBaseRefArgument,
+  readJsonAtRef,
+  renamedFilesSince,
+} from './rust-test-policy-base.mjs';
+
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 export const ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
 export const MANIFEST_RELATIVE_PATH = 'tests/suites/unit-test-tiers.json';
@@ -405,6 +411,89 @@ export function buildTierManifest(
   };
 }
 
+function previousEntry(entry, previousEntries, renamedFiles) {
+  const direct = previousEntries.get(entry.id);
+  if (direct) {
+    return direct;
+  }
+  const previousFile = renamedFiles.get(entry.file);
+  if (!previousFile || !entry.id.startsWith(entry.file)) {
+    return null;
+  }
+  return previousEntries.get(previousFile + entry.id.slice(entry.file.length)) ?? null;
+}
+
+export function validateTierManifestAgainstBase(
+  current,
+  base,
+  renamedFiles = new Map(),
+) {
+  const violations = [];
+  const baseMaximum = base.policy.maximumStaticTestAttributes;
+  if (current.summary.staticTestAttributes > baseMaximum) {
+    violations.push(
+      `PR base 대비 source-side test 총량 증가 금지: ` +
+        `${current.summary.staticTestAttributes} > ${baseMaximum}`,
+    );
+  }
+  if (current.policy.maximumStaticTestAttributes > baseMaximum) {
+    violations.push(
+      `PR base 대비 source-side 기준선 상향 금지: ` +
+        `${current.policy.maximumStaticTestAttributes} > ${baseMaximum}`,
+    );
+  }
+  if (
+    current.policy.newCfgTestModules !== 'forbidden' ||
+    current.policy.newCfgTestSupportItems !== 'forbidden'
+  ) {
+    violations.push('source unit test 신규 항목 금지 정책을 완화할 수 없습니다.');
+  }
+
+  const baseModules = new Map(base.modules.map((entry) => [entry.id, entry]));
+  for (const entry of current.modules) {
+    const previous = previousEntry(entry, baseModules, renamedFiles);
+    if (!previous) {
+      violations.push('PR base에 없는 신규 cfg(test) module 금지: ' + entry.id);
+      continue;
+    }
+    if (entry.testAttributes > previous.maximumTestAttributes) {
+      violations.push(
+        `PR base 대비 source unit test 증가 금지: ${entry.id} ` +
+          `(${entry.testAttributes} > ${previous.maximumTestAttributes})`,
+      );
+    }
+    if (entry.maximumTestAttributes > previous.maximumTestAttributes) {
+      violations.push(
+        `PR base 대비 module 기준선 상향 금지: ${entry.id} ` +
+          `(${entry.maximumTestAttributes} > ${previous.maximumTestAttributes})`,
+      );
+    }
+  }
+
+  const baseSupport = new Map(base.supportItems.map((entry) => [entry.id, entry]));
+  for (const entry of current.supportItems) {
+    if (!previousEntry(entry, baseSupport, renamedFiles)) {
+      violations.push('PR base에 없는 신규 cfg(test) support item 금지: ' + entry.id);
+    }
+  }
+  const baseAllowedSupport = new Set(base.policy.allowedSupportItems);
+  for (const id of current.policy.allowedSupportItems) {
+    if (baseAllowedSupport.has(id)) {
+      continue;
+    }
+    const separator = id.indexOf('::');
+    const currentFile = separator === -1 ? id : id.slice(0, separator);
+    const previousFile = renamedFiles.get(currentFile);
+    const previousId = previousFile
+      ? previousFile + id.slice(currentFile.length)
+      : null;
+    if (!previousId || !baseAllowedSupport.has(previousId)) {
+      violations.push('PR base 대비 support 허용 기준선 추가 금지: ' + id);
+    }
+  }
+  return violations;
+}
+
 function manifestText(manifest) {
   return JSON.stringify(manifest, null, 2) + '\n';
 }
@@ -450,6 +539,23 @@ function run() {
   const expected = manifestText(result.manifest);
   const manifestPath = path.join(ROOT, MANIFEST_RELATIVE_PATH);
   if (option === '--check') {
+    const baseRef = parseBaseRefArgument(process.argv.slice(3));
+    if (baseRef) {
+      const baseManifest = readJsonAtRef(ROOT, baseRef, MANIFEST_RELATIVE_PATH, {
+        optional: true,
+      });
+      if (baseManifest !== null) {
+        const renamedFiles = renamedFilesSince(ROOT, baseRef, ['src', 'crates']);
+        const baseViolations = validateTierManifestAgainstBase(
+          result.manifest,
+          baseManifest,
+          renamedFiles,
+        );
+        if (baseViolations.length > 0) {
+          throw new Error(baseViolations.join('\n'));
+        }
+      }
+    }
     if (!existing || readFileSync(manifestPath, 'utf8') !== expected) {
       throw new Error(
         'unit test tier manifest가 현재 source와 다릅니다. --generate를 실행하세요.',

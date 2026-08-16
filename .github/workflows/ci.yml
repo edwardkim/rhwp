@@ -966,11 +966,18 @@ jobs:
           python3 -m unittest scripts/tests/test_ci_impact_workflow.py
 
       - name: Validate Rust test suite manifest
+        env:
+          RHWP_TEST_POLICY_BASE_REF: ${{ github.event.pull_request.base.sha || '' }}
         run: |
+          base_args=()
+          if [[ -n "$RHWP_TEST_POLICY_BASE_REF" ]]; then
+            git fetch --no-tags --depth=1 origin "$RHWP_TEST_POLICY_BASE_REF"
+            base_args=(--base-ref "$RHWP_TEST_POLICY_BASE_REF")
+          fi
           node --test scripts/tests/rust-test-suite-manifest.test.mjs
-          node scripts/rust-test-suite-manifest.mjs --check
+          node scripts/rust-test-suite-manifest.mjs --check "${base_args[@]}"
           node --test scripts/tests/rust-unit-test-tiers.test.mjs
-          node scripts/rust-unit-test-tiers.mjs --check
+          node scripts/rust-unit-test-tiers.mjs --check "${base_args[@]}"
           node scripts/run-rust-test.mjs --print issue_1035_alignment
 
       - name: Test internal Rust crates

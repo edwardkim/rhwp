@@ -22,6 +22,7 @@ import {
   loadManifest,
   renderCargoTestBlock,
   renderHarness,
+  validateSourcePlacementAgainstBase,
   validateRepository,
 } from '../rust-test-suite-manifest.mjs';
 
@@ -113,6 +114,24 @@ test('신규 source는 선택된 suite에 정확히 한 번만 배정한다', (t
   assert.equal(assigned.filter((source) => source === 'tests/second.rs').length, 1);
 });
 
+test('PR base에 없던 integration source는 tests/cases 밖에서 거부한다', () => {
+  const baseManifest = {
+    exceptions: [{ path: 'tests/legacy.rs' }],
+    suites: { regression_suite_001: ['tests/cases/existing.rs'] },
+  };
+  const errors = validateSourcePlacementAgainstBase(
+    [
+      'tests/legacy.rs',
+      'tests/new_top_level.rs',
+      'tests/cases/new_nested.rs',
+    ],
+    baseManifest,
+  );
+  assert.deepEqual(errors, [
+    'PR base에 없는 신규 integration source는 tests/cases/ 아래에 두어야 합니다: tests/new_top_level.rs',
+  ]);
+});
+
 test('개발자 가이드가 자동 sharding 진입점을 안내한다', () => {
   const guides = [
     'CONTRIBUTING.md',
@@ -126,4 +145,20 @@ test('개발자 가이드가 자동 sharding 진입점을 안내한다', () => {
     assert.match(guide, /rust-test-suite-manifest\.mjs --sync/);
     assert.match(guide, /tests\/generated/);
   }
+});
+
+test('CI가 PR base를 integration과 source unit 정책 검사에 전달한다', () => {
+  const workflow = readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
+  assert.match(
+    workflow,
+    /RHWP_TEST_POLICY_BASE_REF: \$\{\{ github\.event\.pull_request\.base\.sha \|\| '' \}\}/,
+  );
+  assert.match(
+    workflow,
+    /rust-test-suite-manifest\.mjs --check "\$\{base_args\[@\]\}"/,
+  );
+  assert.match(
+    workflow,
+    /rust-unit-test-tiers\.mjs --check "\$\{base_args\[@\]\}"/,
+  );
 });

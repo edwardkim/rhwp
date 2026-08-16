@@ -70,6 +70,12 @@ node --test scripts/tests/rust-unit-test-tiers.test.mjs
 node scripts/rust-unit-test-tiers.mjs --check
 ~~~
 
+PR CI는 `github.event.pull_request.base.sha`의 integration·unit manifest를 읽어 현재 source와
+비교한다. 새 최상위 `tests/*.rs`는 generated manifest에 등록해도 실패하며 새 source는
+`tests/cases/` 아래만 허용한다. `--accept-baseline`은 crate 이동에 따른 로컬 경로 기준선 갱신
+도구이지 테스트 수 증가 승인 수단이 아니다. CI는 Git rename으로 확인되는 순수 이동만 대응시키고
+base 대비 module·support item·총 테스트 수 또는 최대값 증가를 실패시킨다.
+
 로컬 전체 nextest와 CI nextest archive는 manifest에서 생성된 root Cargo `[[test]]` target을 사용한다.
 내부 `crates/*`의 lib test는 로컬 workspace `default-members`와 CI의 `Test internal Rust crates` gate가
 실행한다. 따라서 새 일반 test source는 integration binary 수를 늘리지 않고, private white-box test는
