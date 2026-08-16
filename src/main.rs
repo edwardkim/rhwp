@@ -11343,6 +11343,12 @@ fn dump_extents(args: &[String]) -> i32 {
         println!("\n=== {}쪽 (트리 {:.1}x{:.1}px) ===", p + 1, page_w, page_h);
 
         let mut outside: Vec<(f64, f64, &'static str, String)> = Vec::new();
+        // [#4889] 쪽 **위쪽** 밖(음수 y) 노드. 아래쪽 넘침만 세던 탓에 이 방향은
+        // 어떤 지표로도 안 잡혔다 — 쪽수는 정답지와 같고(3/3), 글자는 트리에 남아
+        // 있어 텍스트 추출도 통과한다. 판별자는 `y < 0` 이 **아니라** `bottom <= 0`
+        // 이다: 상단만 음수인 노드는 위가 잘릴 뿐 일부가 보이며(반복 머리말이 흔한
+        // 예), 이를 소실로 세면 10k 기준 3배 과대집계된다.
+        let mut above: Vec<(f64, f64, &'static str, String)> = Vec::new();
         let mut spans: Vec<(f64, f64, &'static str, String)> = Vec::new();
 
         walk(&tree.root, 0, &mut |n, depth| {
@@ -11355,6 +11361,9 @@ fn dump_extents(args: &[String]) -> i32 {
             let is_outside = bottom > page_h + 0.5;
             if is_outside {
                 outside.push((b.y, bottom, kind, idx.clone()));
+            }
+            if bottom < -0.5 {
+                above.push((b.y, bottom, kind, idx.clone()));
             }
             // 빈 구간 계산에는 **잎 콘텐츠**만 쓴다.
             //
@@ -11429,6 +11438,23 @@ fn dump_extents(args: &[String]) -> i32 {
                 println!(
                     "     {kind:12} y={y:8.1}..{bottom:8.1} 초과 {:7.1}px  {idx}",
                     bottom - page_h
+                );
+            }
+        }
+
+        // 위쪽 밖은 있을 때만 보고한다 — 없을 때도 한 줄 찍으면 기존 스냅샷이 전부
+        // 흔들린다.
+        if !above.is_empty() {
+            let worst = above.iter().map(|(_, b, _, _)| -*b).fold(0.0f64, f64::max);
+            println!(
+                "  ** 쪽 위쪽 밖 노드 {}개 · 최대 {:.1}px 위 **",
+                above.len(),
+                worst
+            );
+            for (y, bottom, kind, idx) in above.iter().take(8) {
+                println!(
+                    "     {kind:12} y={y:8.1}..{bottom:8.1} 위 {:7.1}px  {idx}",
+                    -*bottom
                 );
             }
         }
