@@ -768,6 +768,13 @@ pub struct Field {
     pub field_id: u32,
     /// 원본 ctrl_id (직렬화용)
     pub ctrl_id: u32,
+    /// [#4896] HWPX `<hp:fieldBegin type="..">` 원문 — IR `FieldType` 이 모델링하지 않는
+    /// 종류일 때만 채운다(그 외는 `None`).
+    ///
+    /// 종류를 못 알아본다고 `CROSSREF` 로 굳히면 원본 필드 정체성이 사라진다(10k 스윕에서
+    /// 교정부호 필드 27경로가 상호참조로 바뀌었다). 원본이 준 값은 한글이 이미 받아들인
+    /// 값이므로 그대로 되돌려주는 편이 안전하고 무손실이다.
+    pub raw_type: Option<String>,
     /// HWPX `<hp:fieldBegin fieldid="..">` 원본 값 (동종 필드 간 공유되는 instance id).
     /// `id`(=field_id, 문서 내 고유)와 별개 값이며 실물 파일에서 서로 다를 수 있다(#1512).
     /// `None` 이면 fieldid 속성 자체가 없었거나 파서가 값을 못 읽은 경우 — 방출 생략.

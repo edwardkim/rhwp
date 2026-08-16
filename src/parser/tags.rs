@@ -244,6 +244,53 @@ pub const FIELD_PRIVATE_INFO: u32 = ctrl_id(b"%cpr");
 pub const FIELD_TOC: u32 = ctrl_id(b"%toc");
 /// 필드: 알 수 없음
 pub const FIELD_UNKNOWN: u32 = ctrl_id(b"%unk");
+/// 필드: 교정부호(삭제)
+pub const FIELD_PROOFREADING_DELETE: u32 = ctrl_id(b"%%*d");
+
+/// [#4896] IR `FieldType` 이 모델링하지 않는 필드 종류의 **정체성 보존표**.
+///
+/// OWPML `<hp:fieldBegin type>` 값 ↔ HWP5 필드 ctrl_id. 이 표가 없으면 두 포맷을 오갈 때
+/// 종류가 `Unknown` 으로 붕괴하고, 직렬화기가 본문 보존을 위해 `CROSSREF` 로 굳혀
+/// 원본 필드 정체성이 영구히 사라진다.
+///
+/// **실측으로만 채운다.** 10k 코퍼스 실측(hwpx 원본 1,853문서):
+/// 열거 밖 값은 `PROOFREADING_MARKS_DELETE` 하나뿐이었고(12회/7문서), 같은 문서에서
+/// 한글이 세는 컨트롤 `%%*d` 와 개수까지 일치했다.
+pub const OWPML_EXTRA_FIELD_TYPES: &[(&str, u32)] =
+    &[("PROOFREADING_MARKS_DELETE", FIELD_PROOFREADING_DELETE)];
+
+/// [#4896] HWP5 는 이 종류의 정체성을 **ctrl_id 가 아니라 command 문자열**로 들고 있다.
+///
+/// 실측(10k 코퍼스): 교정부호(삭제) 필드는 hwp 원본에서 ctrl_id 가 `%unk` 이고 command 가
+/// `$RevisionDelete;` 다. 같은 command 를 hwpx 원본도 그대로 싣고(type 은
+/// `PROOFREADING_MARKS_DELETE`), 두 포맷 모두에서 한글은 컨트롤을 `%%*d` 로 센다
+/// — 03430(6개)·01838(4개) 등에서 개수까지 일치한다.
+pub const OWPML_FIELD_TYPE_BY_COMMAND: &[(&str, &str)] =
+    &[("$RevisionDelete", "PROOFREADING_MARKS_DELETE")];
+
+/// 필드 command → OWPML `type` 문자열 (표에 없으면 `None`).
+pub fn owpml_field_type_by_command(command: &str) -> Option<&'static str> {
+    OWPML_FIELD_TYPE_BY_COMMAND
+        .iter()
+        .find(|(prefix, _)| command.starts_with(prefix))
+        .map(|(_, name)| *name)
+}
+
+/// OWPML `type` 문자열 → HWP5 필드 ctrl_id (표에 없으면 `None`).
+pub fn owpml_extra_field_ctrl_id(type_str: &str) -> Option<u32> {
+    OWPML_EXTRA_FIELD_TYPES
+        .iter()
+        .find(|(name, _)| *name == type_str)
+        .map(|(_, id)| *id)
+}
+
+/// HWP5 필드 ctrl_id → OWPML `type` 문자열 (표에 없으면 `None`).
+pub fn owpml_extra_field_type_str(ctrl_id: u32) -> Option<&'static str> {
+    OWPML_EXTRA_FIELD_TYPES
+        .iter()
+        .find(|(_, id)| *id == ctrl_id)
+        .map(|(name, _)| *name)
+}
 
 /// ctrl_id가 필드 컨트롤인지 확인 (첫 바이트가 '%')
 pub const fn is_field_ctrl_id(id: u32) -> bool {
