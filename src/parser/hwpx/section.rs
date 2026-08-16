@@ -4960,7 +4960,15 @@ fn parse_field_begin_attrs(e: &quick_xml::events::BytesStart) -> Field {
     let mut fieldid_attr: Option<u32> = None;
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
-            b"type" => f.field_type = parse_field_type(&attr_str(&attr)),
+            b"type" => {
+                let raw = attr_str(&attr);
+                f.field_type = parse_field_type(&raw);
+                // [#4896] IR 이 못 알아본 종류는 원문을 들고 간다 — 그래야 저장에서
+                // `CROSSREF` 로 굳지 않는다(교정부호 필드가 상호참조가 되던 결함).
+                if f.field_type == FieldType::Unknown {
+                    f.raw_type = Some(raw);
+                }
+            }
             b"name" => field_name = Some(attr_str(&attr)),
             // [Task #852 Stage 2.5] HWP5 직렬화에 필요한 필드 메타
             b"id" => {
@@ -5019,7 +5027,13 @@ fn parse_field_begin_attrs(e: &quick_xml::events::BytesStart) -> Field {
         FieldType::Memo => tags::FIELD_MEMO,
         FieldType::PrivateInfoSecurity => tags::FIELD_PRIVATE_INFO,
         FieldType::TableOfContents => tags::FIELD_TOC,
-        FieldType::Unknown => 0,
+        // [#4896] 종류를 못 알아봐도 실측표에 있는 값이면 HWP5 ctrl_id 를 준다 —
+        // 0 을 쓰면 HWPX→HWP 저장에서 한글이 무효 컨트롤로 보고 필드를 잃는다.
+        FieldType::Unknown => f
+            .raw_type
+            .as_deref()
+            .and_then(tags::owpml_extra_field_ctrl_id)
+            .unwrap_or(0),
     };
     // ClickHere 의 extra_properties 정답지 관찰값: 0x09
     if matches!(f.field_type, FieldType::ClickHere) {
@@ -9644,6 +9658,33 @@ mod tests {
             parse_field_type("TABLE_OF_CONTENTS"),
             FieldType::TableOfContents
         );
+    }
+
+    /// [#4896] IR 이 모르는 종류는 원문(`raw_type`)과 실측 ctrl_id 를 함께 챙긴다.
+    ///
+    /// 종전에는 `Unknown` 으로만 떨어져 ctrl_id 가 0 이 됐고, 직렬화기가 종류를 되찾을
+    /// 근거가 없어 `CROSSREF` 로 굳혔다 — 10k 스윕에서 교정부호 필드 27경로가 상호참조로
+    /// 바뀐 사슬의 입구다.
+    #[test]
+    fn unknown_field_type_keeps_raw_string_and_ctrl_id() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ctrl><hp:fieldBegin id="1" type="PROOFREADING_MARKS_DELETE" name="" editable="0" dirty="0"/></hp:ctrl>
+      <hp:t>지운 글</hp:t>
+      <hp:ctrl><hp:fieldEnd beginIDRef="1"/></hp:ctrl>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Field(f) = &section.paragraphs[0].controls[0] else {
+            panic!("expected Field control");
+        };
+        assert_eq!(f.field_type, FieldType::Unknown);
+        assert_eq!(f.raw_type.as_deref(), Some("PROOFREADING_MARKS_DELETE"));
+        assert_eq!(f.ctrl_id, tags::FIELD_PROOFREADING_DELETE);
     }
 
     #[test]

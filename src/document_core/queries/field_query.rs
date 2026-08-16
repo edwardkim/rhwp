@@ -1466,6 +1466,7 @@ fn collect_fields_from_paragraph(
                                 extra_properties: 0,
                                 ctrl_data_name: Some(fname.clone()),
                                 instance_id: None,
+                                raw_type: None,
                                 memo_index: 0,
                                 memo_paragraphs: Vec::new(),
                                 memo_text_direction: None,
@@ -2215,6 +2216,7 @@ fn insert_click_here_field_in_para(
         field_id,
         ctrl_id: tags::FIELD_CLICKHERE,
         instance_id: None,
+        raw_type: None,
         ctrl_data_name: if name.is_empty() {
             None
         } else {
@@ -2434,6 +2436,7 @@ mod tests {
             field_id: ctrl_id,
             ctrl_id,
             instance_id: None,
+            raw_type: None,
             ctrl_data_name: None,
             memo_index: 0,
             memo_paragraphs: Vec::new(),

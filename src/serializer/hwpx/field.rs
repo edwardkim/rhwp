@@ -14,6 +14,7 @@ use std::io::Write;
 use quick_xml::Writer;
 
 use crate::model::control::{Bookmark, Field, FieldType, Hyperlink};
+use crate::parser::tags;
 
 use super::utils::{empty_tag, end_tag, filter_xml_1_0_chars, start_tag, start_tag_attrs, text};
 use super::SerializeError;
@@ -36,7 +37,7 @@ pub fn write_bookmark<W: Write>(w: &mut Writer<W>, bm: &Bookmark) -> Result<(), 
 /// 로 닫는다. 없으면 호출부가 `/>` 로 자기닫힘 처리.
 pub fn field_begin_open_tag(field: &Field) -> String {
     let id_str = field.field_id.to_string();
-    let ft = field_type_str(field.field_type);
+    let ft = field_type_attr(field);
     let name = xml_escape_attr(field.ctrl_data_name.as_deref().unwrap_or(""));
     // [#task-m100] 원본 `fieldid` 속성 보존 — id 와 별개 값일 수 있어(#1512) 생략하면
     // 왕복 시 영구 손실된다. 없으면(None) 속성 자체를 생략(#1391 자기닫힘 태그 호환).
@@ -76,7 +77,7 @@ fn xml_escape_attr(s: &str) -> String {
 /// HWPX 필드는 텍스트 흐름 안에서 `<hp:fieldBegin>` ~ 텍스트 ~ `<hp:fieldEnd>` 쌍으로 표현된다.
 pub fn write_field_begin<W: Write>(w: &mut Writer<W>, field: &Field) -> Result<(), SerializeError> {
     let id_str = field.field_id.to_string();
-    let ft = field_type_str(field.field_type);
+    let ft = field_type_attr(field);
     let fieldid_str = field.instance_id.map(|v| v.to_string());
     let editable_str = bool01(field.is_editable_in_form());
     let dirty_str = bool01(field.is_dirty());
@@ -216,6 +217,30 @@ fn bool01(b: bool) -> &'static str {
     }
 }
 
+/// `<hp:fieldBegin type="...">` 에 실을 값 — **원본 종류를 잃지 않는 자리**.
+///
+/// [#4896] IR `FieldType` 이 모델링하지 않는 종류(`Unknown`)를 무턱대고 `CROSSREF` 로
+/// 굳히면 본문은 살아도 **필드 정체성이 영구히 사라진다**(10k 스윕: 교정부호 필드 27경로가
+/// 상호참조로 바뀌었다). 원본이 준 값은 한글이 이미 받아들인 값이므로, 그 값을 알고 있으면
+/// 그대로 되돌려준다. 순서대로:
+///
+/// 1. HWPX 출처의 `type` 원문(`Field::raw_type`)
+/// 2. HWP5 출처의 command 실측 대응(`tags::OWPML_FIELD_TYPE_BY_COMMAND`, 예:
+///    `$RevisionDelete;` — hwp 는 종류를 ctrl_id 가 아니라 command 로 들고 있다)
+/// 3. ctrl_id 실측 대응(`tags::OWPML_EXTRA_FIELD_TYPES`, 예: `%%*d`)
+/// 4. 아무 근거도 없을 때만 본문 보존용 `CROSSREF` 대체
+fn field_type_attr(field: &Field) -> &str {
+    if field.field_type != FieldType::Unknown {
+        return field_type_str(field.field_type);
+    }
+    if let Some(raw) = field.raw_type.as_deref() {
+        return raw;
+    }
+    tags::owpml_field_type_by_command(&field.command)
+        .or_else(|| tags::owpml_extra_field_type_str(field.ctrl_id))
+        .unwrap_or_else(|| field_type_str(field.field_type))
+}
+
 /// `<hp:fieldBegin type="...">` 값. **반드시 OWPML `FieldType` 열거 안의 값이어야 한다**
 /// (`mydocs/manual/OWPML SCHEMA/ParaList XML schema.xml:2701-2719` — 15개).
 ///
@@ -272,6 +297,65 @@ mod tests {
         };
         let xml = to_string(|w| write_bookmark(w, &bm));
         assert!(xml.contains(r#"<hp:bookmark name="chapter1"/>"#), "{}", xml);
+    }
+
+    /// [#4896] HWPX 출처의 종류 원문은 그대로 되돌아간다 — 한글이 이미 받아들인 값이다.
+    /// 10k 코퍼스 실측: 한컴 원본이 쓰는 열거 밖 값은 `PROOFREADING_MARKS_DELETE` 하나였고
+    /// (12회/7문서), 종전 코드는 이를 `CROSSREF` 로 굳혀 교정부호를 상호참조로 바꿨다.
+    #[test]
+    fn unknown_field_keeps_original_type_string() {
+        let f = Field {
+            field_type: FieldType::Unknown,
+            raw_type: Some("PROOFREADING_MARKS_DELETE".to_string()),
+            ..Default::default()
+        };
+        assert_eq!(field_type_attr(&f), "PROOFREADING_MARKS_DELETE");
+    }
+
+    /// [#4896] HWP5 출처는 원문 문자열이 없다 — ctrl_id 실측 대응표로 이름을 되찾는다.
+    /// (`%%*d` ↔ `PROOFREADING_MARKS_DELETE`: 같은 문서에서 한글 컨트롤 집계와 개수 일치)
+    #[test]
+    fn unknown_field_recovers_type_from_ctrl_id() {
+        let f = Field {
+            field_type: FieldType::Unknown,
+            ctrl_id: tags::FIELD_PROOFREADING_DELETE,
+            ..Default::default()
+        };
+        assert_eq!(field_type_attr(&f), "PROOFREADING_MARKS_DELETE");
+    }
+
+    /// [#4896] HWP5 원본은 종류를 ctrl_id 가 아니라 **command** 로 들고 있다 — 실측(03430)에서
+    /// 교정부호 필드의 ctrl_id 는 `%unk` 이고 command 만 `$RevisionDelete;` 였다.
+    #[test]
+    fn unknown_field_recovers_type_from_command() {
+        let f = Field {
+            field_type: FieldType::Unknown,
+            ctrl_id: tags::FIELD_UNKNOWN,
+            command: "$RevisionDelete;".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(field_type_attr(&f), "PROOFREADING_MARKS_DELETE");
+    }
+
+    /// 되찾을 근거가 하나도 없을 때만 본문 보존용 `CROSSREF` 로 대체한다(#4776 계약 유지).
+    #[test]
+    fn unknown_field_without_evidence_falls_back_to_crossref() {
+        let f = Field {
+            field_type: FieldType::Unknown,
+            ..Default::default()
+        };
+        assert_eq!(field_type_attr(&f), "CROSSREF");
+    }
+
+    /// 아는 종류는 종전대로 IR 값이 이긴다 — raw_type 이 끼어들지 않는다.
+    #[test]
+    fn known_field_type_ignores_raw_type() {
+        let f = Field {
+            field_type: FieldType::Hyperlink,
+            raw_type: Some("ZZZ_NOT_A_TYPE".to_string()),
+            ..Default::default()
+        };
+        assert_eq!(field_type_attr(&f), "HYPERLINK");
     }
 
     #[test]
@@ -409,6 +493,11 @@ mod tests {
 
     #[test]
     fn unknown_field_type_never_emits_schema_outside_value() {
+        // [#4896] 이 불변식은 **되찾을 근거가 없을 때의 대체값**(`field_type_str`)에 걸린다.
+        // 원본이 준 값(`raw_type`)이나 ctrl_id 실측 대응은 열거 밖이어도 그대로 내보낸다 —
+        // 한컴 자신이 쓰는 값이라 한글이 받아들이고(코퍼스 실측 `PROOFREADING_MARKS_DELETE`
+        // 12회/7문서), 열거로 뭉개면 필드 정체성이 사라진다.
+        //
         // OWPML FieldType 열거(ParaList XML schema.xml:2701-2719)에 "UNKNOWN" 은 없다.
         // 열거 밖 값을 만나면 한글은 그 지점에서 섹션 파싱을 포기하고 이후 본문을 버린다
         // — 10k 스윕 h2x 절단군의 근인 하나다. 실측: 07868 은 105,388자 중 5,306자만
@@ -425,6 +514,11 @@ mod tests {
     }
 
     /// OWPML `FieldType` 열거 전체 (ParaList XML schema.xml:2701-2719).
+    ///
+    /// [#4896] **실물 파일은 이 목록보다 넓다** — 한컴이 만든 hwpx 가
+    /// `PROOFREADING_MARKS_DELETE`(목록에 없는 값)를 쓴다(10k 코퍼스 12회/7문서, 정상 개방).
+    /// 그러므로 이 목록은 "우리가 새로 지어낼 때 고를 값"의 화이트리스트일 뿐,
+    /// 원본에서 온 값을 거를 필터가 아니다.
     const OWPML_FIELD_TYPES: &[&str] = &[
         "CLICK_HERE",
         "HYPERLINK",
