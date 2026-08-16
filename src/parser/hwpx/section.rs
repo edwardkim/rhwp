@@ -5258,7 +5258,38 @@ fn parse_ctrl_endnote(
     Ok(Control::Endnote(Box::new(note)))
 }
 
+thread_local! {
+    /// [#4916/#4660/#3531/#4882 계열] 지금 파싱 중인 HWPX 가 rhwp 자기 산출
+    /// (HWP5-origin 마커 보유)인가 — `parse_hwpx` 가 구역 파싱 동안 세운다.
+    static HWPX_HWP5_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// [#4916 계열] HWP5-origin 마커 문서 파싱 구간 표식 — RAII 로 해제된다.
+pub(crate) struct Hwp5OriginSourceGuard;
+
+impl Hwp5OriginSourceGuard {
+    pub(crate) fn set(active: bool) -> Self {
+        HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.set(active));
+        Hwp5OriginSourceGuard
+    }
+}
+
+impl Drop for Hwp5OriginSourceGuard {
+    fn drop(&mut self) {
+        HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.set(false));
+    }
+}
+
 fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph) {
+    // [#4916/#4660/#3531/#4882 계열] rhwp 자기 산출 HWPX(HWP5-origin 마커)는
+    // 보정하지 않는다 — HWP5 원본의 각주·미주 subList 저장 lineseg 는 후속 줄
+    // vpos=0 이 **정당한 저장값**이라(마커 계약: lineSeg 시멘틱은 HWP5 원본을
+    // 따른다, #1770), 여기서 합성하면 h2x 왕복 IR 이 원본 파싱과 어긋나고
+    // (--verify vertpos 차이) 쪽수 자기정합도 깨진다. 실물 한컴 HWPX 의
+    // "미주 내부 후속 줄 vpos=0 아티팩트" 보정(task 1692, SO-SUEOP)은 종전 유지.
+    if HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get()) {
+        return;
+    }
     if paragraph.line_segs.len() <= 1 {
         return;
     }
