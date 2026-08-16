@@ -27,6 +27,8 @@ function ctx(over: Partial<HPinDropContext> = {}): HPinDropContext {
     pageDisplayWidth: 793.7,
     refLeft: 381,
     paraMarginLeftPx: 0,
+    pageGutterPx: 0,
+    bindingMirrored: false,
     ...over,
   };
 }
@@ -145,4 +147,36 @@ test('HWPUNIT 은 가까운 쪽으로 반올림한다 — 안 움직인 드래�
   const px = (313 + 127.4) - 313;
   assert.notEqual(px, 127.4, '이 회귀를 재현하려면 px 에 부동소수 오차가 있어야 한다');
   assert.equal(pxToHwpunit(px), pxToHwpunit(127.4));
+});
+
+test('제본 여백이 있으면 본문 경계에서 그만큼 빼고 marginLeft 로 되돌린다', () => {
+  // 본문 왼쪽 경계 = marginLeft + gutter (model/page.rs). 경계를 그대로 marginLeft 로 쓰면
+  // 핀을 글 앞에 맞출 때마다 본문이 gutter 만큼 더 밀려 수렴하지 않는다.
+  const c = ctx({ pageGutterPx: 30 });
+  const dropX = pageMarginPinX('left', c.pageLeft, c.pageDisplayWidth, 100, c.zoom);
+  const commit = horizontalPinCommit('pageMarginLeft', dropX, c);
+  assert(commit.kind === 'pageMargin');
+  assert.equal(commit.marginKind, 'left');
+  assert.equal(commit.hwpunit, pxToHwpunit(70), '본문 경계 100 − 제본 30 = marginLeft 70');
+});
+
+test('맞쪽 제본 짝수 쪽에서는 왼쪽 핀이 marginRight 를 바꾼다', () => {
+  // 짝수 쪽은 좌우 여백이 뒤바뀌어 적용된다 — 화면의 왼쪽 경계를 정하는 건 marginRight 다.
+  const c = ctx({ bindingMirrored: true });
+  const left = horizontalPinCommit('pageMarginLeft', 440, c);
+  assert(left.kind === 'pageMargin');
+  assert.equal(left.marginKind, 'right', '왼쪽 핀인데 marginLeft 를 쓰면 반대쪽이 움직인다');
+
+  const right = horizontalPinCommit('pageMarginRight', 900, c);
+  assert(right.kind === 'pageMargin');
+  assert.equal(right.marginKind, 'left');
+});
+
+test('맞쪽 짝수 쪽에서는 제본 여백이 오른쪽 경계에 붙는다', () => {
+  const c = ctx({ bindingMirrored: true, pageGutterPx: 30 });
+  const left = horizontalPinCommit('pageMarginLeft', 440, c) as { hwpunit: number };
+  const right = horizontalPinCommit('pageMarginRight', 900, c) as { hwpunit: number };
+  // 왼쪽 경계(=marginRight)에는 제본이 없고, 오른쪽 경계(=marginLeft)에서 30 을 뺀다.
+  assert.equal(left.hwpunit, pxToHwpunit((440 - c.pageLeft) / c.zoom));
+  assert.equal(right.hwpunit, pxToHwpunit((c.pageLeft + c.pageDisplayWidth - 900) / c.zoom - 30));
 });

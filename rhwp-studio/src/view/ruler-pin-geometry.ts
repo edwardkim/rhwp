@@ -31,6 +31,10 @@ export interface HPinDropContext {
   refLeft: number;
   /** 커서 문단의 왼쪽 여백 (zoom=1 px) — ▽의 기준점이고, 눈금자는 이 값을 바꾸지 않는다 */
   paraMarginLeftPx: number;
+  /** 제본 여백 (zoom=1 px). 본문 왼쪽 경계 = marginLeft + gutter 라서, 경계에서 되돌릴 때 뺀다. */
+  pageGutterPx: number;
+  /** 맞쪽 제본의 짝수 쪽인가 — 그 쪽은 좌우 여백이 뒤바뀌어 적용된다(model/page.rs). */
+  bindingMirrored: boolean;
 }
 
 /** px (zoom=1, 96dpi) → HWPUNIT.
@@ -87,16 +91,25 @@ export function horizontalPinCommit(
 ): RulerPinCommit {
   if (kind === 'pageMarginLeft' || kind === 'pageMarginRight') {
     // 세로 눈금자의 쪽 위/아래 여백 핀과 같은 소유·같은 커밋 경로(PageDef).
-    // 0 이상으로 clamp — 음수 쪽 여백은 본문 영역을 종이 밖으로 밀어낸다.
-    const side = kind === 'pageMarginLeft' ? 'left' : 'right';
-    const px = side === 'left'
+    //
+    // 핀은 본문 상자 경계에 서 있고, 그 경계는 PageDef 값과 두 가지로 다르다:
+    //   본문 왼쪽 = marginLeft + gutter,  맞쪽 제본 짝수 쪽 = 좌우가 뒤바뀜 (model/page.rs)
+    // 그래서 화면 쪽(왼쪽/오른쪽)과 실제로 쓸 필드가 갈린다. 뒤바뀐 쪽에서 왼쪽 핀을
+    // 끌면 marginRight 를, 오른쪽 핀을 끌면 marginLeft 를 바꿔야 한다.
+    const draggedLeftEdge = kind === 'pageMarginLeft';
+    const edgeInsetPx = draggedLeftEdge
       ? (dropX - ctx.pageLeft) / ctx.zoom
       : (ctx.pageLeft + ctx.pageDisplayWidth - dropX) / ctx.zoom;
+    // 제본 여백은 "본문 시작 쪽" 경계에만 더해져 있다. 뒤바뀐 쪽에서는 그 시작이 오른쪽이다.
+    const gutterOnThisEdge = draggedLeftEdge !== ctx.bindingMirrored ? ctx.pageGutterPx : 0;
+    // 0 이상으로 clamp — 음수 쪽 여백은 본문 영역을 종이 밖으로 밀어낸다.
+    const marginPx = Math.max(0, edgeInsetPx - gutterOnThisEdge);
+    const marginKind: 'left' | 'right' = draggedLeftEdge !== ctx.bindingMirrored ? 'left' : 'right';
     return {
       kind: 'pageMargin',
       pageIdx: ctx.pageIdx,
-      marginKind: side,
-      hwpunit: pxToHwpunit(Math.max(0, px)),
+      marginKind,
+      hwpunit: pxToHwpunit(marginPx),
     };
   }
 

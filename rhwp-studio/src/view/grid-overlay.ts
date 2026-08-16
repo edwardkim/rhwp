@@ -137,9 +137,11 @@ function getGridOriginPx(
 }
 
 function getPageGridAreaPx(pageInfo: PageInfo): { left: number; right: number; top: number; bottom: number } {
+  // 좌우는 해석된 본문 상자에서 온다 — 원본 여백을 쓰면 제본 여백만큼 어긋나고 맞쪽 제본
+  // 짝수 쪽에서는 좌우가 뒤바뀐다 (#4971).
   return {
-    left: pageInfo.marginLeft,
-    right: pageInfo.marginRight,
+    left: pageInfo.bodyLeft,
+    right: pageInfo.width - pageInfo.bodyRight,
     top: pageInfo.marginTop + pageInfo.marginHeader,
     bottom: pageInfo.marginBottom + pageInfo.marginFooter,
   };

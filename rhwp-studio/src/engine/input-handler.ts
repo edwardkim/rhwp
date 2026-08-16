@@ -192,7 +192,7 @@ function pxToRaw(px: number): number {
 }
 
 function availableDropWidthPx(pageInfo: PageInfo, pageX: number): number {
-  const bodyWidth = Math.max(1, pageInfo.width - pageInfo.marginLeft - pageInfo.marginRight);
+  const bodyWidth = Math.max(1, pageInfo.bodyRight - pageInfo.bodyLeft);
   const columns = pageInfo.columns?.filter((column) => column.width > 0) ?? [];
   if (columns.length === 0) return bodyWidth;
 
