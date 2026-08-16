@@ -191,7 +191,9 @@ export async function runAgentTask(userText, deps) {
               const entry = await runTool(deps.enginePath(), argv, "agent");
               deps.ui.toolCard(entry);
               resultContent = toolResultContent(entry, deps.allowBody());
-              resultContent += await nextToolHint(call.name);
+              if (entry.exitCode === 0) {
+                resultContent += await nextToolHint(call.name);
+              }
             }
           } catch (e) {
             resultContent = `도구 실행 실패: ${String(e).slice(0, 400)}`;

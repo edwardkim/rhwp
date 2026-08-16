@@ -141,9 +141,20 @@ fn keyring_entry(profile_id: &str) -> Result<keyring::Entry, String> {
 
 /// API 키 저장 — 실패하면 Err. 호출측(UI)은 "이 세션에만 유지" 폴백을 안내한다.
 pub fn secret_set(profile_id: &str, key: &str) -> Result<(), String> {
-    keyring_entry(profile_id)?
+    let entry = keyring_entry(profile_id)?;
+    entry
         .set_password(key)
-        .map_err(|e| format!("자격 증명 저장 실패: {e}"))
+        .map_err(|e| format!("자격 증명 저장 실패: {e}"))?;
+
+    // 일부 keyring backend는 저장 호출은 성공으로 끝내도 즉시 조회하지 못한다.
+    // UI가 영구 저장 성공으로 오인하지 않도록 실제 복원 가능성을 확인한다.
+    let restored =
+        secret_get(profile_id).ok_or_else(|| "자격 증명 저장 후 확인 실패".to_string())?;
+    if restored == key {
+        Ok(())
+    } else {
+        Err("자격 증명 저장 후 확인 값이 일치하지 않습니다".into())
+    }
 }
 
 pub fn secret_exists(profile_id: &str) -> bool {
