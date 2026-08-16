@@ -293,6 +293,15 @@ def validate_result_schema(task: dict, result: Any) -> list[dict]:
             if not isinstance(o, dict) or not isinstance(o.get("path"), str) or not o.get("path"):
                 f.append(_finding("schema", "badOutputEntry",
                                   f"outputs[{idx}].path 는 비어 있지 않은 문자열이어야 한다"))
+                continue
+            claimed = o.get("sha256")
+            if (not isinstance(claimed, str) or len(claimed) != 64
+                    or any(ch not in "0123456789abcdefABCDEF" for ch in claimed)):
+                f.append(_finding(
+                    "schema",
+                    "badOutputSha256",
+                    f"outputs[{idx}].sha256 은 64자리 16진수 SHA-256 이어야 한다",
+                ))
     caps = result.get("capabilities", [])
     if not isinstance(caps, list):
         f.append(_finding("schema", "badCapabilities", "capabilities 는 배열이어야 한다"))
@@ -394,7 +403,7 @@ def validate_completion(task: dict, result: dict, sandbox: dict) -> list[dict]:
                                   f"선언한 산출물이 실제로 없다: out/{rel}"))
             continue
         claimed = o.get("sha256")
-        if isinstance(claimed, str) and claimed and claimed != sha256_file(p):
+        if isinstance(claimed, str) and claimed.lower() != sha256_file(p):
             f.append(_finding("completion", "sha256Mismatch",
                               f"선언한 sha256 이 실물과 다르다: {rel}"))
     return f

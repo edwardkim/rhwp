@@ -113,6 +113,13 @@ def make_fake_rhwp(tmpdir: str, exit_code: int) -> str:
 
 AGENT_SUCCESS = 'print(json.dumps(ok_result(write_expected())))'
 
+AGENT_SUCCESS_WITHOUT_SHA256 = """
+outputs = write_expected()
+for output in outputs:
+    output.pop("sha256")
+print(json.dumps(ok_result(outputs)))
+"""
+
 AGENT_FAIL_THEN_SUCCEED_TEMPLATE = """
 state_path = Path({state!r})
 calls = int(state_path.read_text()) if state_path.exists() else 0
@@ -143,7 +150,7 @@ print(json.dumps(ok_result(outputs)))
 
 AGENT_OUTPUT_ESCAPE = """
 outputs = write_expected()
-outputs.append({"path": "../escape.txt"})
+outputs.append({"path": "../escape.txt", "sha256": "0" * 64})
 print(json.dumps(ok_result(outputs)))
 """
 
@@ -457,6 +464,19 @@ class ResultValidationTest(HandoffCase):
         codes = [f["code"] for f in env["attempts"][0]["findings"]]
         self.assertIn("badStatus", codes)
         self.assertIn("badOutputs", codes)
+
+    def test_output_without_sha256_is_rejected(self):
+        """수거한 산출물은 에이전트 선언 해시와 대조 가능한 경우에만 수용한다."""
+        task_path = self.write_task()
+        agent = make_agent(self.tmp, "no_sha256", AGENT_SUCCESS_WITHOUT_SHA256)
+        work = str(Path(self.tmp) / "work_no_sha256")
+        rc, env = self.run_main(["--task", str(task_path), "--agent", agent,
+                                 "--work-dir", work, "--json"])
+        self.assertEqual(rc, 3)
+        self.assertEqual(env["outcome"], "handoff")
+        self.assertEqual(env["attempts"][0]["category"], "schemaViolation")
+        codes = [f["code"] for f in env["attempts"][0]["findings"]]
+        self.assertIn("badOutputSha256", codes)
 
     def test_unparseable_stdout_is_runtime_error(self):
         task_path = self.write_task()
