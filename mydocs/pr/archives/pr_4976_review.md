@@ -18,11 +18,11 @@ last_verified: 2026-08-17
 | PR | [#4976](https://github.com/edwardkim/rhwp/pull/4976) |
 | 작성자 | `jangster77` (collaborator self-review) |
 | base / head | `devel` / `task_m100_4947` |
-| head SHA | `a626eb493a5e59d8d9e98e43fc660a101e63e31a` |
-| 규모 | 102 files, +9,900 / -172, 15 commits |
+| 검증 code candidate SHA | `ccb8f518f9456b98cdf8a7133e9236a007e66291` |
+| 규모 | 106 files, +10,117 / -172, 18 commits |
 | draft | `false` |
 | mergeable | `MERGEABLE` |
-| merge state | `BLOCKED` (초기 GitHub Actions 진행 중) |
+| merge state | `CLEAN` (code candidate GitHub Actions 완료 시점) |
 
 collaborator 자체 PR이므로 reviewer를 지정하지 않았다. 위 상태값은 문서 작성 시점의 참고값이며,
 최종 판단 전 최신 head, GitHub Actions, mergeability를 다시 확인해야 한다.
@@ -33,7 +33,7 @@ collaborator 자체 PR이므로 reviewer를 지정하지 않았다. 위 상태�
 링크 fan-out을 줄여 로컬과 CI의 Rust 전수 회귀 비용을 낮추는 작업이다. PR 본문은 `Closes #4947`을
 포함한다.
 
-- integration source 564개를 32개 weighted generated suite와 8개 단독 예외 target으로 구성했다.
+- integration source 565개를 32개 weighted generated suite와 9개 단독 예외 target으로 구성했다.
 - 새 `tests/cases/**` 소스를 manifest에 자동 배정하고 generated harness와 Cargo target을 동기화한다.
 - 기존 상위 `tests/*.rs`는 PR base에 존재하는 레거시 입력으로 인정하고 신규 파일만 새 배치 규칙을 적용한다.
 - `src/**`와 내부 workspace crate의 단위 테스트를 ready/support/white-box 계층으로 전수 분류한다.
@@ -67,17 +67,19 @@ harness, 564개 소스 배정 manifest, 298개 단위 테스트 모듈 인벤토
 
 | 검증 | 결과 |
 | --- | --- |
-| 최신 `upstream/devel` 리베이스 | PR #4965 병합 커밋 `88b44de37` 기준, 충돌 없음 |
-| upstream/current nextest 목록 대조 | 양쪽 모두 ignored 포함 6,556개 |
-| release-test nextest 전수 실행 | 6,518 passed, 38 skipped, 실패 0 |
+| 최신 `upstream/devel` 리베이스 | PR #4970 병합 커밋 `b9efb7c20` 기준, 충돌 없음 |
+| upstream/current nextest 목록 대조 | 양쪽 모두 ignored 포함 6,559개 |
+| release-test nextest 전수 실행 | 6,521 passed, 38 skipped, 실패 0 |
 | workspace clippy | `--all-targets --all-features -D warnings` 통과 |
 | release build | 통과 |
 | workspace doc test | 8 passed, 2 ignored |
 | WASM32 clippy/check | CI와 같은 `rhwp --lib` 범위로 모두 통과 |
-| integration/unit manifest current/base 검사 | 통과: 564 sources, 2,476 integration attrs, 4,224 unit attrs |
+| integration/unit manifest current/base 검사 | 통과: 565 sources, 2,478 integration attrs, 4,225 unit attrs |
 | Node 정책 테스트 | 20 passed |
 | Python workflow 테스트 | 427 passed, 1 skipped |
 | rustfmt / diff check | 통과 |
+| GitHub Actions | code candidate `ccb8f518f`: 20 successful, 3 skipped, 실패·대기 0 |
+| CI archive/shard | archive a/b/slow, regular shard 1~3, slow shard, Native Skia 모두 통과 |
 
 ## 렌더 영향과 시각 검증
 
@@ -87,13 +89,15 @@ renderer, typeset, pagination, paint 계약과 기준 PDF·golden·fixture는 �
 
 ## 위험과 후속 조건
 
-- 대형 구조 변경이므로 최신 head의 전체 GitHub Actions와 test archive/shard 결과를 독립적으로 확인해야 한다.
-- PR #4970과 #4974가 `devel`에 병합되면 같은 head 브랜치를 최신 기준에 리베이스한다.
-- 리베이스 뒤 integration 샤드, 단위 계층, nextest 전체 수를 다시 계산하고 로컬 정책 게이트를 재실행한다.
-- 후속 push는 기존 GitHub Actions 결과를 무효화하므로 최종 head의 CI가 다시 완료돼야 한다.
-- merge 직전 이 문서의 head SHA, 규모, CI 상태와 최종 권고를 최신 값으로 갱신한다.
+- code candidate `ccb8f518f`의 전체 GitHub Actions와 test archive/shard 결과를 독립적으로 확인했다.
+- 아직 열린 PR #4974, #4977 등은 #4976 병합 뒤 최신 `devel`로 재리베이스하고 각자 추가한 테스트를 자동 배정한다.
+- 이 review·오늘할일 trailing commit은 source, test, fixture, workflow를 변경하지 않는다.
+- trailing 문서 head의 CI와 `CLEAN` 상태를 다시 확인한 뒤 병합한다.
+- 후속 PR의 재리베이스·재생성은 이 PR의 현재 기준선을 변경하는 사유가 아니다.
 
 ## 현재 권고
 
-**보류.** 현재 head의 로컬 검증은 모두 통과했지만 초기 GitHub Actions가 진행 중이고 PR #4970/#4974
-병합 후 재리베이스·재계산이 예정돼 있다. 후속 보정과 최신 CI가 완료된 뒤 병합 권고로 전환한다.
+**병합 권고.** 최신 `upstream/devel@b9efb7c20` 기준 재계산, 로컬 전수 회귀, code candidate
+`ccb8f518f`의 GitHub Actions가 모두 통과했다. review·오늘할일 trailing head의 CI가 실패·대기 없이
+완료되고 merge state가 `CLEAN`이면 #4976을 먼저 병합한다. 이후 열려 있는 PR은 갱신된 `devel` 위로
+재리베이스해 manifest와 단위 테스트 기준을 다시 계산한다.
