@@ -107,15 +107,16 @@ impl<'de> Deserialize<'de> for Block {
     {
         use serde::de::Error;
         let raw = RawBlock::deserialize(deserializer)?;
-        let forbid = |present: bool, block: &str, field: &str, hint: &str| -> Result<(), D::Error> {
-            if present {
-                Err(D::Error::custom(format!(
-                    "{block} 블록에 허용되지 않는 필드 '{field}' — {hint}"
-                )))
-            } else {
-                Ok(())
-            }
-        };
+        let forbid =
+            |present: bool, block: &str, field: &str, hint: &str| -> Result<(), D::Error> {
+                if present {
+                    Err(D::Error::custom(format!(
+                        "{block} 블록에 허용되지 않는 필드 '{field}' — {hint}"
+                    )))
+                } else {
+                    Ok(())
+                }
+            };
         match raw.block_type.as_str() {
             "heading" => {
                 forbid(
@@ -206,8 +207,7 @@ mod tests {
 
     #[test]
     fn defaults_apply() {
-        let spec: ScaffoldSpec =
-            serde_json::from_str(r#"{"version":"1","blocks":[]}"#).unwrap();
+        let spec: ScaffoldSpec = serde_json::from_str(r#"{"version":"1","blocks":[]}"#).unwrap();
         assert_eq!(spec.font, "함초롬바탕");
         assert_eq!(spec.page_size.width_mm, 210.0);
         assert!(spec.title.is_none());
@@ -218,7 +218,10 @@ mod tests {
         let e = serde_json::from_str::<Block>(r#"{"type":"paragraph","text":"a","rows":[["x"]]}"#)
             .unwrap_err()
             .to_string();
-        assert!(e.contains("paragraph 블록에 허용되지 않는 필드 'rows'"), "{e}");
+        assert!(
+            e.contains("paragraph 블록에 허용되지 않는 필드 'rows'"),
+            "{e}"
+        );
     }
 
     #[test]
