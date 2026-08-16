@@ -1045,6 +1045,16 @@ jobs:
           cargo build --workspace
           cargo clippy --workspace --all-targets -- -D warnings
 
+      # [로드맵 R12] 에이전트 표면 선검사 — 실패 경로 전수(전 명령 "없는 파일" 호출
+      # → exit≠0 + stdout 0바이트)·미선언 명령 감지(capabilities 에 flags 를 선언하지
+      # 않은 명령이 미지 플래그를 exit 0 으로 조용히 삼키는지)를 한 번에 돌린다.
+      # 바로 위 스텝의 `cargo build --workspace` 가 만든 debug 바이너리를 그대로 쓴다
+      # — 이 게이트만을 위해 release 를 다시 빌드하지 않는다. 큐 규율 검사(gh
+      # PR 목록 조회, 경고 전용)는 이 저장소의 병렬 세션 운영 규약용이라 CI 실행과는
+      # 무관하므로 --no-network 로 끈다(tools/agent_preflight.py 참고).
+      - name: Agent preflight (failure-path sweep + undeclared-command detection)
+        run: python3 tools/agent_preflight.py --repo . --bin target/debug/rhwp --no-network
+
       - name: Check WASM target
         run: cargo check --target wasm32-unknown-unknown --lib
 

@@ -296,10 +296,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 272개 필드
+### 2-2. 전수 사전 — 274개 필드
 
-`capabilities` 의 `recordFields` 고유 **269개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 272개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **271개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 274개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -445,6 +445,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `planVersion` | string | 계획서 버전. `"1.0"` 이 아니면 실행 0 · exit 2 | `run` |
 | `steps` | array\|number | `run` 은 실행 저널(step 마다 `action` 과 판정 필드), `replay` 는 실행된 step 수 — **같은 이름, 다른 타입** | `run`·`replay` |
 | `invalid` | array | **정적 선검증 위반.** 비어 있지 않으면 한 step 도 실행하지 않는다 | `run` |
+| `preconditionFailed` | object\|null | **CAS 판정** (#4378 R22·R24) — `{kind:"inputSha256",expected,actual}`. 계획 수립 시점의 입력 지문과 실행 시점의 실제 지문이 다르다는 뜻이고, 실행 0 · 디스크 무변경 · **exit 3**. `invalid[]` 는 비어 있다 — 계획이 무효한 게 아니라 문서가 바뀐 것이다. `--dry-run` 도 같은 판정을 낸다. `null`/부재 = 대조하지 않았거나 일치 | `run`·`edit …  --expect-sha256` |
+| `nextCall` | object | **다음에 그대로 부를 호출** — `{name, arguments, why}`. `name` 은 실존 명령, `arguments` 는 그 뒤에 이어 붙일 argv 조각이다. CAS 거부에서는 기대 해시를 실제 해시로 갈아 끼운 계획을 `--dry-run` 으로 재선검증하는 호출이 온다(통과하면 `--dry-run` 만 빼고 재실행, `invalid` 가 나오면 문서를 다시 읽고 재계획). MCP 오류 봉투(R72)·CLI `수복:` 줄과 같은 어휘 | `run` |
 | `assertions` | object | 적용된 단언 `{verify,notFoundEmpty}` — 미지정 기본값도 명시해 저널에 남는다 | `run` (실측; `recordFields` 에는 없다) |
 | `preview` | array | `--dry-run` 전용. 선검증이 이미 계산한 대상 목록 | `run --dry-run` (실측) |
 

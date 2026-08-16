@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-09
+last_verified: 2026-08-16
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -212,8 +212,9 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
   merge와 stale run force-cancel은 대상 SHA를 확인한 뒤 순차로 실행한다.
 - 실제 GitHub review/comment, issue close, PR close는 승인과 선행 조건이 갖춰진 뒤에만 게시한다.
 - merge 후에는 merge SHA 확인 → 문서·asset의 devel 반영 → 최종 devel sync → issue 상태 확인 및
-  comment → branch/worktree/검토 전용 target 정리 순서를 지킨다. raw image URL을 쓰는 comment는
-  asset이 devel에 존재한 뒤에만 게시한다.
+  comment → branch/worktree/검토 전용 target 정리 순서를 지킨다. 이때 worktree 정리에는 commit을
+  만들지 않았더라도 이번 PR의 diff·CI·재현·검증만을 위해 만든 local 검토 worktree를 포함한다. raw image
+  URL을 쓰는 comment는 asset이 devel에 존재한 뒤에만 게시한다.
 
 서로 다른 host, worktree, CARGO_TARGET_DIR, Cargo home이 실제로 분리된 경우에도 로컬 Cargo 병렬 실행은
 이 매뉴얼의 기본 경로가 아니다. 필요하면 별도 작업 계획과 작업지시자 승인을 받아 lock·disk·결과 귀속을

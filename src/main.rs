@@ -2460,7 +2460,10 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "run",
             "edit",
-            "선언적 편집 계획 실행 — 정적 선검증·원자 실행·저널 (#3703)",
+            "선언적 편집 계획 실행 — 정적 선검증·원자 실행·저널 (#3703). 선택 필드 \
+             preconditions.inputSha256 을 실으면 실행 입구에서 입력 지문을 대조해 낡은 기준을 \
+             거부한다 — 실행 0·디스크 무변경·preconditionFailed+nextCall·exit 3, --dry-run 도 \
+             같은 판정 (#4378 R22)",
             false,
             &["--json", "--plan-json", "--dry-run"],
             &[
@@ -2472,6 +2475,8 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "steps",
                 "verify",
                 "invalid",
+                "preconditionFailed",
+                "nextCall",
             ],
         ),
         // [#4391] 작업 영수증 — run 계획의 제3자 재현·증명. 사용자 파일은 건드리지
@@ -22207,25 +22212,57 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     };
     // [#4378 R22] CAS — 계획이 세워진 시점의 문서가 아니면 실행 0·저장 0 으로
     // 거절한다(#3905 M1: 두 exit 0 이 편집 하나를 지우는 경합의 차단기).
+    //
+    // 판정 코드는 **3**(#2707 "판정" 계열)이다 — 사용법 오류(2)가 아니다. 계획서는
+    // 문법도 의미도 옳고 틀린 것은 세상 쪽이라, 이건 실패가 아니라 판정이다. 같은
+    // 이유로 `invalid[]` 는 비워 둔다: "invalid 가 비어 있지 않으면 exit 2"(정적
+    // 선검증 위반) 불변식을 CAS 가 흔들면 소비자의 분기표가 깨진다. 단발 경로
+    // (`edit ... --expect-sha256`, R24)가 이미 내는 `preconditionFailed{kind,
+    // expected, actual}` 와 **같은 모양·같은 코드**여서, CAS 판정은 진입점과
+    // 무관하게 하나다.
     let precondition_failure = |expected: &str, actual: String| {
+        // 재계획 힌트 — 같은 의도를 **새 지문으로** 다시 선검증하는 실행 가능한 호출.
+        // `--dry-run` 이라 디스크를 건드리지 않는다: step 이 바뀐 문서에서도 성립하면
+        // 통과하고(그때 `--dry-run` 만 빼고 다시 부르면 된다), 성립하지 않으면
+        // `invalid[]` 로 "진짜 재계획이 필요하다"를 알려 준다. 기대 해시를 실제
+        // 해시로 갈아 끼운 계획을 그대로 실어, 소비자가 계획을 재조립하지 않게 한다.
+        let mut replan = plan.clone();
+        if let Some(obj) = replan.as_object_mut() {
+            // dryRun 은 아래 argv 의 `--dry-run` 이 싣는다 — 같은 뜻을 두 곳에 두면
+            // 통과 후 재실행할 때 계획 본문에서 지우는 걸 잊는 함정이 된다.
+            obj.remove("dryRun");
+            obj.insert(
+                "preconditions".to_string(),
+                serde_json::json!({ "inputSha256": actual }),
+            );
+        }
         (
             provenance::marked(
                 serde_json::json!({
                     "schemaVersion": ENVELOPE_SCHEMA_VERSION,
                     "planVersion": "1.0",
                     "input": input,
-                    "invalid": [{
-                        "step": serde_json::Value::Null,
-                        "action": "preconditions",
-                        "code": "preconditionFailed",
-                        "reason": "입력 문서가 계획의 기대 해시와 다릅니다 — 계획 수립 후 문서가 바뀌었습니다. 실행 0·저장 0. 문서를 다시 읽고 재계획하세요 (#3905 CAS).",
+                    "output": output,
+                    // 정적 선검증은 통과했다 — 계획이 무효한 게 아니다.
+                    "invalid": [],
+                    "preconditionFailed": {
+                        "kind": "inputSha256",
                         "expected": expected,
                         "actual": actual,
-                    }],
+                    },
+                    // `name` = 명령, `arguments` = 그 뒤에 그대로 붙일 argv 조각.
+                    "nextCall": {
+                        "name": "run",
+                        "arguments": [
+                            "--plan-json", replan.to_string(), "--dry-run", "--json",
+                        ],
+                        "why": "계획 수립 후 입력 문서가 바뀌었습니다. 같은 의도를 새 지문으로 다시 선검증하세요 — 통과하면 --dry-run 만 빼고 그대로 실행하고, invalid 가 나오면 문서를 다시 읽고 재계획하세요.",
+                    },
+                    "error": "입력 문서가 계획의 기대 해시와 다릅니다 — 계획 수립 후 문서가 바뀌었습니다. 실행 0·저장 0. nextCall 로 재계획하세요 (#3905 CAS).",
                 }),
                 "run",
             ),
-            EXIT_USAGE,
+            3, // #2707: 판정(verify 단언 실패와 같은 계열) — 사용법 오류가 아니다
         )
     };
     if let Some(expected) = expected_input_sha.as_deref() {
