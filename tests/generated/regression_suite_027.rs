@@ -38,6 +38,9 @@ mod issue_2424_pagination_subphase_probe;
 #[path = "../issue_3738_hwp_caption_cell_alignment.rs"]
 mod issue_3738_hwp_caption_cell_alignment;
 
+#[path = "../issue_3893_bindata_sequence_ref.rs"]
+mod issue_3893_bindata_sequence_ref;
+
 #[path = "../issue_4138_split_cell_stale_linesegs.rs"]
 mod issue_4138_split_cell_stale_linesegs;
 

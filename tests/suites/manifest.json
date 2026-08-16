@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "minimumNextestCases": 6556,
+  "minimumNextestCases": 6559,
   "sharding": {
     "suitePrefix": "regression_suite_",
     "suiteCount": 32,
@@ -617,6 +617,7 @@
       "tests/issue_2226_cell_flow_pictures_overlap.rs",
       "tests/issue_2424_pagination_subphase_probe.rs",
       "tests/issue_3738_hwp_caption_cell_alignment.rs",
+      "tests/issue_3893_bindata_sequence_ref.rs",
       "tests/issue_4138_split_cell_stale_linesegs.rs",
       "tests/issue_4252_nested_partial_table_cell_path.rs",
       "tests/issue_514.rs",

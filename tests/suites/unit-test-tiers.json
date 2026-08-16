@@ -3,7 +3,7 @@
   "policy": {
     "newCfgTestModules": "forbidden",
     "newCfgTestSupportItems": "forbidden",
-    "maximumStaticTestAttributes": 4224,
+    "maximumStaticTestAttributes": 4225,
     "allowedSupportItems": [
       "src/document_core/helpers.rs::cfg-fn#1",
       "src/model/table.rs::cfg-fn#1",
@@ -39,7 +39,7 @@
     "files": 258,
     "cfgTestModules": 298,
     "cfgTestSupportItems": 28,
-    "staticTestAttributes": 4224,
+    "staticTestAttributes": 4225,
     "standaloneTestAttributes": 4,
     "tiers": {
       "integration_ready": {
@@ -52,7 +52,7 @@
       },
       "white_box": {
         "modules": 278,
-        "testAttributes": 4133
+        "testAttributes": 4134
       }
     }
   },
@@ -3519,14 +3519,14 @@
       "id": "src/serializer/hwpx/context.rs::tests#1",
       "file": "src/serializer/hwpx/context.rs",
       "sourcePath": "src/serializer/hwpx/context.rs",
-      "line": 529,
+      "line": 556,
       "module": "tests",
-      "testAttributes": 21,
+      "testAttributes": 22,
       "tier": "white_box",
       "reasons": [
         "super_private_scope"
       ],
-      "maximumTestAttributes": 21
+      "maximumTestAttributes": 22
     },
     {
       "id": "src/serializer/hwpx/field.rs::tests#1",
