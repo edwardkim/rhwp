@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-09
+last_verified: 2026-08-16
 ---
 
 # Merge 후속 처리
@@ -191,10 +191,11 @@ heavy worker skip, final aggregate, issue 상태를 PR comment에 남긴다. 반
 정리 또는 유지 사유를 확인하기 전에는 후속 처리 완료라고 보고하지 않는다.
 
 이번 PR 또는 검토만을 위해 만든 별도 local worktree는 merge와 필수 후속 처리가 끝난 뒤 **제거가 기본**이다.
-다음 작업의 편의를 위한 보존은 유지 사유가 아니다. 제거 전에는 clean 상태와 사용자·다른 도구의 소유 여부를
-확인하며, 활성 작업 또는 작업지시자의 명시 보존 지시 때문에 제거하지 못하면 정확한 경로와 사유를 최종 상태에
-기록한다. 기본 작업공간, 공유 `target/pr-review`, 사용자·다른 도구가 만든 worktree는 이 규칙의 삭제 대상이
-아니다.
+여기에는 commit·push를 만들지 않고 PR diff 열람, CI 로그 조사, 재현, 검증, cherry-pick 누적 또는 merge
+simulation만 수행한 local 검토 worktree도 포함한다. 다음 작업의 편의를 위한 보존은 유지 사유가 아니다. 제거
+전에는 clean 상태와 사용자·다른 도구의 소유 여부를 확인하며, 활성 작업 또는 작업지시자의 명시 보존 지시 때문에
+제거하지 못하면 정확한 경로와 사유를 최종 상태에 기록한다. 기본 작업공간, 공유 `target/pr-review`, 사용자·다른
+도구가 만든 worktree는 이 규칙의 삭제 대상이 아니다.
 
 대상 worktree는 자기 자신을 제거할 수 없으므로, 정리 명령은 반드시 보존할 기본 작업공간 또는 다른 clean
 worktree에서 실행한다. merge가 성공한 것만 확인하고 대상 worktree에 그대로 남아 "후속 처리 완료"로
@@ -208,9 +209,9 @@ git branch --show-current
 git worktree list --porcelain
 ~~~
 
-PR fetch branch, merge simulation branch, review branch, docs-only/follow-up branch, 해당 worktree, collaborator가
-원본 저장소에 만든 head branch가 대상이다. 사용자·다른 도구가 만든 branch·worktree·remote branch는
-이름이 비슷해도 삭제 대상으로 가정하지 않는다.
+PR fetch branch, merge simulation branch, review branch, docs-only/follow-up branch, 그리고 코드 변경 없이
+검토만 수행한 local worktree가 대상이다. collaborator가 원본 저장소에 만든 head branch도 정리 후보가 될 수
+있다. 사용자·다른 도구가 만든 branch·worktree·remote branch는 이름이 비슷해도 삭제 대상으로 가정하지 않는다.
 
 worktree를 먼저 제거하고 그 뒤 local branch를 삭제한다. squash merge로 graph상 not fully merged여도
 PR MERGED, merge commit의 upstream/devel 포함, worktree clean, 문서·asset의 devel 존재를 모두 확인한
