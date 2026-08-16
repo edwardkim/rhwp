@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "issue": 4961,
+  "fixtures": [
+    {
+      "format": "hwp",
+      "path": "samples/3-10월_교육_통합_2022.hwp",
+      "sha256": "5197fc670bb1783edd859a0fdfcddddd2a421aeb819cabae5887f47827942d55",
+      "size": 2950656,
+      "visibility": "repository-tracked",
+      "privateCorpus": false,
+      "purpose": "Stage 4 HWP document-face, substitution, metric and backend trace candidate"
+    },
+    {
+      "format": "hwpx",
+      "path": "samples/3-10월_교육_통합_2022.hwpx",
+      "sha256": "f37246219339c8900b19f3da65afc105fbf6823afe5f2bb357a7e4c2b14b0314",
+      "size": 2677940,
+      "visibility": "repository-tracked",
+      "privateCorpus": false,
+      "purpose": "Stage 4 HWPX document-face, substitution, metric and backend trace candidate"
+    }
+  ]
+}
