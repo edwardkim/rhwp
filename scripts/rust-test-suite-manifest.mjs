@@ -79,6 +79,16 @@ export function loadManifest(root = ROOT) {
   if (maximumIntegrationTargets < suiteCount) {
     throw new Error('maximumIntegrationTargets는 suiteCount 이상이어야 합니다.');
   }
+  if (!Array.isArray(manifest.nextestPriorities)) {
+    throw new Error('nextestPriorities는 배열이어야 합니다.');
+  }
+  for (const [index, entry] of manifest.nextestPriorities.entries()) {
+    assertRecord(entry, `nextestPriorities[${index}]`);
+    if (!RUST_MODULE_NAME.test(entry.case)) {
+      throw new Error(`잘못된 nextest priority case: ${entry.case}`);
+    }
+    assertPositiveInteger(entry.priority, `nextestPriorities[${index}].priority`);
+  }
 
   if (!Array.isArray(manifest.sourceRoots) || manifest.sourceRoots.length === 0) {
     throw new Error('sourceRoots에는 하나 이상의 검색 루트가 필요합니다.');
@@ -507,6 +517,11 @@ function inspectRepository(
     caseIndex = buildCaseIndex(manifest);
   } catch (error) {
     errors.push(error instanceof Error ? error.message : String(error));
+  }
+  for (const entry of manifest.nextestPriorities) {
+    if (!caseIndex.has(entry.case)) {
+      errors.push(`nextest priority case가 manifest에 없습니다: ${entry.case}`);
+    }
   }
 
   for (const source of discovered) {

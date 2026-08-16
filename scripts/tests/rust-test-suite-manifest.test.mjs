@@ -49,6 +49,14 @@ test('경로 의존 case는 기존 target 이름을 유지한다', () => {
   assert.equal(nextestArguments(plan).includes('-E'), false);
 });
 
+test('nextest 우선순위 case는 generated suite에서도 유지된다', () => {
+  const manifest = loadManifest();
+  assert.deepEqual(manifest.nextestPriorities, [
+    { case: 'overflow_cell_baseline', priority: 100 },
+  ]);
+  assert.match(resolveCase('overflow_cell_baseline'), /^regression_suite_\d{3}$/);
+});
+
 test('harness와 Cargo target 렌더링은 입력 순서와 무관하다', () => {
   const manifest = loadManifest();
   const [suite] = Object.keys(manifest.suites).sort();

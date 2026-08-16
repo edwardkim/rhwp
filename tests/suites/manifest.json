@@ -7,6 +7,12 @@
     "testAttributeWeight": 4096,
     "maximumIntegrationTargets": 48
   },
+  "nextestPriorities": [
+    {
+      "case": "overflow_cell_baseline",
+      "priority": 100
+    }
+  ],
   "sourceRoots": [
     {
       "path": "tests",
