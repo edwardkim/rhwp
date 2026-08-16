@@ -198,8 +198,22 @@ def check_datp(bin_path: str) -> list[dict]:
         driver_ok,
         "tools/dar/transaction.py 참조 드라이버가 전이표·validated 게이트·사후 검증으로 강제"
         if driver_ok else "미구현 — 참조 드라이버 없음")
-    add("정책 해시(policySha256)가 영수증에 실린다", False,
-        "미구현 — 정책 엔진(DAR 층 3) 대상")
+    # 정책 엔진(DAR 층 3) — COMMIT 전 집행 + 정책 해시가 영수증에 실리는가.
+    # 상태기계 검사와 같은 근거 등급: 참조 드라이버 소스에서 표지를 확인한다
+    # (rhwp gate/audit --policy 는 이미 끝난 캡슐을 심사하는 별개 표면이고,
+    # 여기서 보는 것은 COMMIT 자체를 가르는 policy_gate.rs 와 같은 설계다).
+    policy_wired = driver_ok
+    if policy_wired:
+        policy_wired = ("--policy" in src
+                        and "def parse_policy" in src
+                        and "def evaluate_policy" in src
+                        and 'tx.state["policySha256"] = policy_sha' in src
+                        and "4000" in src)
+    add("정책 해시(policySha256)가 영수증에 실린다 — 위반 시 COMMIT 자체가 거부된다",
+        policy_wired,
+        "tools/dar/transaction.py: commit --policy → 위반은 4000으로 커밋 차단(디스크 무변경), "
+        "통과는 policySha256을 영수증에 기록"
+        if policy_wired else "미구현 — 정책 엔진(DAR 층 3) 대상")
     _ = datp
     return checks
 
