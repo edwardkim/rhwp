@@ -5,6 +5,9 @@
 #[path = "../agent_context_cost_contract.rs"]
 mod agent_context_cost_contract;
 
+#[path = "../cases/insert_row_contract.rs"]
+mod insert_row_contract;
+
 #[path = "../diag_1042_height_calc.rs"]
 mod diag_1042_height_calc;
 
