@@ -365,6 +365,21 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
             hwpx_aux_entries.push((path.to_string(), bytes));
         }
     }
+    // [#3557] Scripts/* — IR 로 모델링되지 않는 패키지 스크립트를 원본 그대로
+    // 보존한다. 소실되면 문서 동작이 조용히 사라지는데 --verify(IR 대조)로는
+    // 잡히지 않는다. content.hpf 의 opf:item/spine 참조는 write_content_hpf 가
+    // 원본 블록에서 그대로 splice 하고, ZIP 방출은 serializer/hwpx/mod.rs 가
+    // 이 aux 엔트리를 통과시킨다.
+    let script_paths: Vec<String> = reader
+        .file_names()
+        .into_iter()
+        .filter(|n| n.starts_with("Scripts/"))
+        .collect();
+    for path in script_paths {
+        if let Ok(bytes) = reader.read_file_bytes(&path) {
+            hwpx_aux_entries.push((path, bytes));
+        }
+    }
 
     // 2. content.hpf → 섹션 파일 목록 + BinData 목록
     let content_xml = reader.read_file("Contents/content.hpf")?;
