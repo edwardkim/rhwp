@@ -229,6 +229,187 @@ pub fn serialize_bin_data(bin_data: &BinData) -> Vec<u8> {
     w.into_bytes()
 }
 
+/// [#4898] 한글 글꼴 이름 → HWP5 FACE_NAME 의 **기본 글꼴 이름**(default_name) 실측 대응표.
+///
+/// 한글은 HWP5 로 저장할 때 이 자리에 영문(PostScript) 기본 이름을 함께 싣는다. HWPX 에는
+/// 대응 자리가 없어 HWPX→HWP 저장에서 이 값이 통째로 빠지고, 한글이 그 파일을 열 때 글꼴을
+/// 이름만으로 찾는다 — 글꼴이 없어 대체가 일어나면 글자 폭이 달라져 줄 수·쪽수가 흔들린다
+/// (한글 오라클 실측: 09254 FACE_NAME 33개가 오라클 37~65바이트 vs rhwp 19~23바이트,
+/// 차이가 정확히 이 필드였다).
+///
+/// **표는 실측이다.** 코퍼스의 한컴 저장 `.hwp` 원본 796건에서 `(글꼴 이름, default_name)`
+/// 36,351쌍을 모아, 이름별 최빈값이 60% 이상인 것만 담았다(2026-08-16 측정).
+/// 한 이름에 값이 갈리는 경우(같은 글꼴의 구·신 PostScript 이름)는 최빈값을 쓴다:
+/// `HY헤드라인M` HYHeadLine-Medium 1217 / HYHeadLine M 245 · `HY견고딕` HYGothic-Extra 351 /
+/// HYgtrE 126 · `HY견명조` HYMyeongJo-Extra 200 / HYmjrE 68.
+/// 라틴 글꼴은 한글도 이름을 그대로 싣는다(Arial→Arial).
+const FONT_DEFAULT_NAMES: &[(&str, &str)] = &[
+    ("#견고딕", "#Gyeongothic"),
+    ("#견명조", "#Gyeonmyeongjo"),
+    ("#그래픽", "#Graphic"),
+    ("#디나루", "#Dinaru"),
+    ("#세고딕", "#Segothic"),
+    ("#세나루", "#Senaru"),
+    ("#세명조", "#Semyeongjo"),
+    ("#신그래픽", "#Singraphic"),
+    ("#신디나루", "#Sindinaru"),
+    ("#신명조", "#Sinmyeongjo"),
+    ("#신문견고", "#Sinmungyeongo"),
+    ("#신문태고", "#Sinmuntaego"),
+    ("#신문태명", "#Sinmuntaemyeong"),
+    ("#신세고딕", "#Sinsegothic"),
+    ("#신중명조", "#Sin Jungmyeongjo"),
+    ("#신태명조", "#Sintaemyeongjo"),
+    ("#중고딕", "#Junggothic"),
+    ("#중명조", "#Jungmyeongjo"),
+    ("#태고딕", "#Taegothic"),
+    ("#태그래픽", "#Taegraphic"),
+    ("#태명조", "#Taemyeongjo"),
+    ("#태신명조", "#Taesinmyeongjo"),
+    ("-윤고딕340", "YDIYGO340"),
+    ("08서울남산체 B", "08SeoulNamsan B"),
+    ("08서울남산체 EB", "08SeoulNamsan EB"),
+    ("08서울남산체 M", "08SeoulNamsan M"),
+    ("08서울한강체 L", "08SeoulHangang L"),
+    ("08서울한강체 M", "08SeoulHangang M"),
+    ("AmeriGarmnd BT", "AmeriGarmnd BT"),
+    ("Arial", "Arial"),
+    ("Arial Black", "Arial Black"),
+    ("Arial Narrow", "Arial Narrow"),
+    ("Arial Unicode MS", "Arial Unicode MS"),
+    ("Calibri", "Calibri"),
+    ("Century", "Century"),
+    ("Courier New", "Courier New"),
+    ("Garamond", "Garamond"),
+    ("HCI Acacia", "HCI Acacia"),
+    ("HCI Bellflower", "HCI Bellflower"),
+    ("HCI Hollyhock", "HCI Hollyhock"),
+    ("HCI Morning Glory", "HCI Morning Glory"),
+    ("HCI Poppy", "HCI Poppy"),
+    ("HCI Tulip", "HCI Tulip"),
+    ("HY강B", "HYkanB"),
+    ("HY강M", "HYkanM"),
+    ("HY견고딕", "HYGothic-Extra"),
+    ("HY견명조", "HYMyeongJo-Extra"),
+    ("HY궁서", "HYgsrB"),
+    ("HY그래픽", "HYgprM"),
+    ("HY그래픽M", "HYGraphic-Medium"),
+    ("HY동녘M", "HYdnkM"),
+    ("HY백송B", "HYbsrB"),
+    ("HY수평선B", "HYsupB"),
+    ("HY수평선M", "HYsupM"),
+    ("HY신명조", "HYSinMyeongJo-Medium"),
+    ("HY엽서M", "HYPost-Medium"),
+    ("HY울릉도B", "HYwulB"),
+    ("HY울릉도M", "HYwulM"),
+    ("HY중고딕", "HYGothic-Medium"),
+    ("HY헤드라인M", "HYHeadLine-Medium"),
+    ("Hobo BT", "Hobo BT"),
+    ("KoPubWorld돋움체 Bold", "KoPubWorldDotum Bold"),
+    ("KoPub돋움체 Bold", "KoPubDotum Bold"),
+    ("KoPub돋움체 Light", "KoPubDotum Light"),
+    ("KoPub돋움체 Medium", "KoPubDotum Medium"),
+    ("KoPub바탕체 Bold", "KoPubBatang Bold"),
+    ("KoPub바탕체 Light", "KoPubBatang Light"),
+    ("KoPub바탕체 Medium", "KoPubBatang Medium"),
+    ("MS PMincho", "MS PMincho"),
+    ("Noto Sans CJK KR Bold", "Noto Sans CJK KR Bold"),
+    ("Noto Sans CJK KR DemiLight", "Noto Sans CJK KR DemiLight"),
+    ("Noto Sans CJK KR Medium", "Noto Sans CJK KR Medium"),
+    ("SimSun", "SimSun"),
+    ("Tahoma", "Tahoma"),
+    ("Times New Roman", "Times New Roman"),
+    ("Trebuchet MS", "Trebuchet MS"),
+    ("Verdana", "Verdana"),
+    ("가는안상수체", "가는안상수체"),
+    ("가는한", "Ganeunhan"),
+    ("경기천년바탕 Regular", "GyeonggiBatang Regular"),
+    ("고딕", "Gothic"),
+    ("굴림", "Gulim"),
+    ("굴림체", "GulimChe"),
+    ("궁서", "Gungsuh"),
+    ("궁서체", "GungsuhChe"),
+    ("나눔고딕", "NanumGothic"),
+    ("나눔고딕 ExtraBold", "NanumGothicExtraBold"),
+    ("나눔명조", "NanumMyeongjo"),
+    ("나눔명조 ExtraBold", "NanumMyeongjoExtraBold"),
+    ("돋움", "Dotum"),
+    ("돋움체", "DotumChe"),
+    ("맑은 고딕", "Malgun Gothic"),
+    ("맑은 고딕 Semilight", "Malgun Gothic Semilight"),
+    ("명조", "Myeongjo"),
+    ("문체부 궁체 정자체", "MGungJeong"),
+    ("문체부 돋음체", "MDotum"),
+    ("문체부 바탕체", "MBatang"),
+    ("문체부 쓰기 흘림체", "MSugiHeulim"),
+    ("문체부 제목 돋음체", "MJemokGothic"),
+    ("바탕", "Batang"),
+    ("바탕체", "BatangChe"),
+    ("산세리프", "Sans Serif"),
+    ("새굴림", "New Gulim"),
+    ("시스템", "System"),
+    ("신명 견고딕", "Sinmyeong Gyeongothic"),
+    ("신명 견명조", "Sinmyeong Gyeonmyeongjo"),
+    ("신명 궁서", "Sinmyeong Gungseo"),
+    ("신명 디나루", "Sinmyeong Dinaru"),
+    ("신명 세나루", "Sinmyeong Senaru"),
+    ("신명 세명조", "Sinmyeong Semyeongjo"),
+    ("신명 순명조", "Sinmyeong Sunmyeongjo"),
+    ("신명 신그래픽", "Sinmyeong Singraphic"),
+    ("신명 신명조", "Sinmyeong Sinmyeongjo"),
+    ("신명 신문명조", "Sinmyeong Sinmunmyeongjo"),
+    ("신명 신신명조", "Sinmyeong Sinsinmyeongjo"),
+    ("신명 중고딕", "Sinmyeong Junggothic"),
+    ("신명 중명조", "Sinmyeong Jungmyeongjo"),
+    ("신명 태고딕", "Sinmyeong Taegothic"),
+    ("신명 태그래픽", "Sinmyeong Taegraphic"),
+    ("신명 태명조", "Sinmyeong Taemyeongjo"),
+    ("신명조 간자", "Sinmyeongjo Chinese"),
+    ("신명조 약자", "Sinmyeongjo Jananese"),
+    ("양재 다운명조M", "YJ Daunmyeongjo M"),
+    ("양재 튼튼B", "YJ Teunteun B"),
+    ("옥수수", "Corn"),
+    ("중고딕 간자", "Junggothic Chinese"),
+    ("태 가는 헤드라인D", "Tae Headline D Narrow"),
+    ("태 가는 헤드라인T", "Tae Headline T Narrow"),
+    ("태 나무", "태 나무"),
+    ("태 헤드라인T", "Tae Headline T"),
+    ("필기", "Pilgi"),
+    ("한양견고딕", "HY Gyeongothic"),
+    ("한양견명조", "HY Gyeonmyeongjo"),
+    ("한양궁서", "HY Gungseo"),
+    ("한양그래픽", "HY Graphic"),
+    ("한양신명조", "HY Sinmyeongjo"),
+    ("한양신명조V", "HY Sinmyeongjo V"),
+    ("한양중고딕", "HY Junggothic"),
+    ("한양중고딕V", "HY Junggothic V"),
+    ("한양해서", "HYhaeseo"),
+    ("한컴 백제 M", "Haan Baekje M"),
+    ("한컴 윤고딕 250", "Haan YGodic 250"),
+    ("한컴 쿨재즈 B", "Haan Cooljazz B"),
+    ("한컴돋움", "Haansoft Dotum"),
+    ("한컴바탕", "Haansoft Batang"),
+    ("한컴산뜻돋움", "Han Santteut Dotum Regular"),
+    ("함초롬돋움", "HCR Dotum"),
+    ("함초롬돋움 확장", "HCR Dotum Ext"),
+    ("함초롬바탕", "HCR Batang"),
+    ("휴먼고딕", "휴먼고딕"),
+    ("휴먼둥근헤드라인", "Headline R"),
+    ("휴먼명조", "휴먼명조"),
+    ("휴먼모음T", "MoeumT R"),
+    ("휴먼아미체", "Ami R"),
+    ("휴먼엑스포", "Expo M"),
+    ("휴먼옛체", "Yet R"),
+];
+
+/// 글꼴 이름에 대응하는 기본 글꼴 이름(실측표). 없으면 `None`.
+fn measured_default_font_name(name: &str) -> Option<&'static str> {
+    FONT_DEFAULT_NAMES
+        .iter()
+        .find(|(korean, _)| *korean == name)
+        .map(|(_, default)| *default)
+}
+
 pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
@@ -244,6 +425,13 @@ pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     });
 
     // attr 바이트 재구성
+    // [#4898] 기본 글꼴 이름: HWPX 에는 이 자리가 없어 HWPX 출처 문서는 늘 비어 있었다.
+    // 한글은 자기 글꼴 엔진의 대응을 여기 실어 두므로, 실측표로 같은 값을 채워 준다.
+    let default_name = font
+        .default_name
+        .as_deref()
+        .or_else(|| measured_default_font_name(&font.name));
+
     let mut attr = font.alt_type & 0x03;
     if alt_name.is_some() {
         attr |= 0x80;
@@ -251,7 +439,7 @@ pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     if font.type_info.is_some() {
         attr |= 0x40;
     }
-    if font.default_name.is_some() {
+    if default_name.is_some() {
         attr |= 0x20;
     }
     w.write_u8(attr).unwrap();
@@ -265,7 +453,7 @@ pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     if let Some(type_info) = font.type_info {
         w.write_bytes(&type_info).unwrap();
     }
-    if let Some(ref default_name) = font.default_name {
+    if let Some(default_name) = default_name {
         w.write_hwp_string(default_name).unwrap();
     }
 
