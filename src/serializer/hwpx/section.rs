@@ -1153,6 +1153,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
     // mismatch 경로: 슬롯 위치 추정 불가 — 텍스트(경계 분할 포함) 후 슬롯 일괄 방출
     if slot_count != slots.len() {
         split_text_into(&mut splitter, para, &mut cursor);
+        // [#3532] 본문 끝 zero-width 글자모양 경계(문단 마크 전용 모양)는 말미
+        // 컨트롤보다 앞에 적용한다 — 종전에는 컨트롤을 먼저 몰아써서 재파싱
+        // 경계가 컨트롤 슬롯 폭(8유닛×n)만큼 밀렸다(hwp3-sample10 실측:
+        // (50,80)→(66,80)). 경계를 먼저 끊으면 컨트롤이 마지막 run 안쪽(경계
+        // 뒤)에 실려 왕복이 고정점이 된다.
+        let text_units: u32 = para.text.chars().map(char_utf16_width).sum();
+        splitter.cut_before(text_units);
         for slot in slots.iter() {
             render_control_slot(&mut splitter.content, slot, ctx);
         }
