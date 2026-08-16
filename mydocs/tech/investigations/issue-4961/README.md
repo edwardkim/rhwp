@@ -32,6 +32,23 @@ import하거나 W7 registry projection을 선행하지 않는다.
 Stage 1은 production renderer·resolver·Studio source를 변경하지 않는다. Stage 2 이후 구현은 이 계약을
 소비해야 하며, 계약에 없는 값을 조용히 채워 넣지 않는다.
 
+## 3.1 Stage 2 Rust layout trace
+
+Stage 2는 다음 읽기 전용 경계를 구현했다.
+
+- `lookup_font_name_decision`: 7개 언어 slot의 원문 face·`altType`·embedded·document `substFont`와
+  기존 CSS family chain을 함께 반환하고, 기존 문자열 함수는 그 chain만 투영한다.
+- `find_metric_decision`: alias 해소명, exact/bold-only/name-first rung, metric entry와
+  `bold_fallback`을 보존하고, 기존 `find_metric`은 종전 `MetricMatch`만 투영한다.
+- `CharWidthDecision`: KoPub·내장 metric·space/punctuation overlay·metric character miss·CJK/narrow/
+  generic heuristic와 장평·자간·추가 advance를 기존 세 측정 경로가 공유한다.
+- `DocumentCore::get_font_decision_trace_native`와 WASM `getFontDecisionTrace`: 페이지 한 개와
+  `maxCharacters`만 받으며, source/DocInfo/layout record와 결정적 두 hash를 반환한다.
+
+Stage 3 전에는 paint backend를 관찰하지 않는다. 따라서 native·Canvas2D·CanvasKit은 빈 성공이 아니라
+`unsupported`와 `backendObservationDeferredToStage3`를 반환한다. W1 원장 파일은 갱신하지 않았고,
+Stage 2가 바꾼 네 Rust source의 historical digest 차이는 `ledgerSourceDrift`로 노출한다.
+
 ## 4. identity와 ledger 연결
 
 candidate identity의 필드는 W1 collector와 같다.

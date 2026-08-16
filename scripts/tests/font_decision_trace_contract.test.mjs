@@ -203,16 +203,30 @@ test('W1 source digest drift is detected without exposing an absolute checkout p
     'issue-4939',
     'font_rule_candidates.json',
   ));
-  assert.deepEqual(detectLedgerSourceDrift(snapshot, ROOT), []);
+  const expectedStage2Drift = [
+    'src/renderer/font_metrics_data.rs',
+    'src/renderer/layout/text_measurement.rs',
+    'src/renderer/mod.rs',
+    'src/renderer/style_resolver.rs',
+  ];
+  const currentDrift = detectLedgerSourceDrift(snapshot, ROOT);
+  assert.deepEqual(currentDrift.map(entry => entry.path), expectedStage2Drift);
+  for (const entry of currentDrift) {
+    assert.match(entry.expectedSha256, /^[0-9a-f]{64}$/);
+    assert.match(entry.actualSha256, /^[0-9a-f]{64}$/);
+    assert.equal(path.isAbsolute(entry.path), false);
+  }
 
   const changed = structuredClone(snapshot);
-  const changedPath = changed.candidates[0].path;
+  const changedPath = changed.candidates.find(
+    candidate => !expectedStage2Drift.includes(candidate.path),
+  ).path;
   for (const candidate of changed.candidates) {
     if (candidate.path === changedPath) candidate.sourceSha256 = '0'.repeat(64);
   }
   const drift = detectLedgerSourceDrift(changed, ROOT);
-  assert.equal(drift.length, 1);
-  assert.equal(drift[0].path, changedPath);
+  assert.equal(drift.length, currentDrift.length + 1);
+  assert.ok(drift.some(entry => entry.path === changedPath));
   assert.equal(path.isAbsolute(drift[0].path), false);
 });
 
