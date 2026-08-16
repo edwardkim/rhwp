@@ -10,6 +10,8 @@ const LABEL = {
   hwp_inspect_injection: "주입 신호 검사", hwp_inspect_unicode: "유니코드 기만 검사",
   hwp_export_pdf: "PDF 내보내기", hwp_export_svg: "SVG 내보내기", hwp_export_markdown: "마크다운 내보내기",
   hwp_thumbnail: "썸네일", hwp_export_tables: "표 추출", hwp_table_to_csv: "표 CSV 변환",
+  hwp_csv_to_table: "CSV로 표 채우기", hwp_chart_to_csv: "차트 CSV 변환",
+  hwp_csv_to_chart: "CSV로 차트 채우기",
   hwp_replace_text: "텍스트 치환", hwp_fill_fields: "필드 채우기", hwp_set_cell: "셀 채우기",
   hwp_set_checkbox: "체크박스 설정",
 };
@@ -30,6 +32,8 @@ const CLI_TO_TOOL = {
   "export-pdf": "hwp_export_pdf", "export-svg": "hwp_export_svg",
   "export-markdown": "hwp_export_markdown", thumbnail: "hwp_thumbnail",
   "export-tables": "hwp_export_tables", "table-to-csv": "hwp_table_to_csv",
+  "csv-to-table": "hwp_csv_to_table", "chart-to-csv": "hwp_chart_to_csv",
+  "csv-to-chart": "hwp_csv_to_chart",
   "replace-text": "hwp_replace_text", "fill-fields": "hwp_fill_fields",
   "set-cell": "hwp_set_cell", "set-checkbox": "hwp_set_checkbox",
 };

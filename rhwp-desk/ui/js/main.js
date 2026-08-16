@@ -646,7 +646,8 @@ const AGENT_TOOL_ALLOWLIST = [
   "hwp_search", "hwp_extract_data", "hwp_fields", "hwp_explain",
   "hwp_inspect_hidden_text", "hwp_inspect_injection", "hwp_inspect_unicode",
   "hwp_export_pdf", "hwp_export_svg", "hwp_export_markdown", "hwp_thumbnail",
-  "hwp_export_tables", "hwp_table_to_csv", "hwp_replace_text",
+  "hwp_export_tables", "hwp_table_to_csv", "hwp_csv_to_table",
+  "hwp_chart_to_csv", "hwp_csv_to_chart", "hwp_replace_text",
   "hwp_fill_fields", "hwp_set_cell", "hwp_set_checkbox",
 ];
 async function ensureTools() {
