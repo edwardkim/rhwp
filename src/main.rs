@@ -2209,6 +2209,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "overPages", "structPages", "hardStructPages", "status", "regression", "pages",
             ],
         ),
+        tool_with_optional_args(
+            "hwp_layout_anomaly",
+            "렌더 한 장의 기하에서 overflow·overlap·중간 빈 쪽 이상 신호를 찾는다. render-diff가 두 렌더 사이의 변위를 재는 것과 달리, 이 도구는 단일 렌더 자체가 정상적인지 판정한다. 기본은 발견 결과를 데이터로 보고 성공하며, strict를 주면 overflow·overlap 확정 신호가 있을 때 종료 코드 3을 반환한다(빈 쪽은 가능성 신호라 strict에서도 실패시키지 않는다).",
+            path_schema(serde_json::json!({
+                "page": { "type": "integer", "minimum": 0, "description": "특정 페이지만 검사하는 0 기준 번호. 생략하면 전체 문서" },
+                "strict": { "type": "boolean", "description": "참이면 overflow 또는 overlap이 발견될 때 검증 실패(exit 3)로 처리. 빈 쪽 신호는 실패시키지 않음" },
+                "overflowTolerance": { "type": "number", "minimum": 0, "description": "본문 여백 밖으로 벗어난 요소를 overflow로 볼 최소 거리(px). 기본 1.0" },
+                "overlapTolerance": { "type": "number", "minimum": 0, "description": "두 요소를 overlap으로 볼 최소 겹침 폭과 높이(px). 기본 2.0" }
+            })),
+            "layout-anomaly",
+            serde_json::json!(["layout-anomaly", "--json", "{path}"]),
+            serde_json::json!([
+                { "when": "page", "args": ["-p", "{page}"] },
+                { "when": "strict", "args": ["--strict"] },
+                { "when": "overflowTolerance", "args": ["--overflow-tolerance", "{overflowTolerance}"] },
+                { "when": "overlapTolerance", "args": ["--overlap-tolerance", "{overlapTolerance}"] }
+            ]),
+            &[
+                "schemaVersion", "source", "pageCount", "pageFilter", "overflowTolerancePx",
+                "overlapTolerancePx", "strict", "overflowCount", "overlapCount", "emptyPageCount",
+                "hasSignal", "pages",
+            ],
+        ),
     ];
     for definition in &mut tools {
         if definition["name"]
@@ -2365,7 +2388,7 @@ const INSPECT_SUBCOMMANDS: [(&str, &str); 4] = [
     ),
 ];
 
-/// 하위 명령 배열을 해당 부모 항목에 단다. 항목 정의 자리(cmd_json 호출)를 건드리지
+/// 하위 명령 배열을 해당 부모 항목에 단다. 항목 정의 자리를 건드리지
 /// 않는 후처리인 이유: 저 vec 은 거의 모든 표면 PR 이 지나는 자리라, 삽입 지점을
 /// 밖으로 빼야 병렬 PR 과의 충돌면이 줄어든다.
 fn attach_subcommands(commands: &mut [serde_json::Value]) {
