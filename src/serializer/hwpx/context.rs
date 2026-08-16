@@ -102,6 +102,9 @@ pub struct SerializeContext {
     pub style_ids: IdPool<u16>,
     /// `bin_data_id` (IR) → manifest 엔트리 매핑
     pub bin_data_map: HashMap<u16, BinDataEntry>,
+    /// [#3893/#4049] BIN_DATA 레코드 순번(1-based) → storage_id 폴백 사상.
+    /// 직접 키(bin_data_map)에 없는 순번만 담는다 — `resolve_bin_id` 주석 참조.
+    bin_seq_fallback: HashMap<u16, u16>,
     /// [#3546] OOXML 차트 파트 — Chart/chartN.xml 원형 방출 목록.
     /// 원본 content.hpf 는 Chart 파트를 나열하지 않으므로 manifest·3-way
     /// 단언 대상 밖이다.
@@ -143,6 +146,7 @@ impl Default for SerializeContext {
             numbering_ids: IdPool::default(),
             style_ids: IdPool::default(),
             bin_data_map: HashMap::new(),
+            bin_seq_fallback: HashMap::new(),
             chart_entries: Vec::new(),
             para_id_counter: 0,
             generated_hyperlink_id: u32::MAX,
@@ -286,6 +290,19 @@ impl SerializeContext {
             );
         }
 
+        // [#3893/#4049] 순번 축 폴백 사상 — 순번(1-based)과 storage_id 가 다르고,
+        // 그 순번이 직접 키로 존재하지 않는 항목만 담는다(직접 참조 불가림 계약).
+        for (i, bd) in doc.doc_info.bin_data_list.iter().enumerate() {
+            let seq = (i + 1) as u16;
+            if bd.storage_id != 0
+                && bd.storage_id != seq
+                && !ctx.bin_data_map.contains_key(&seq)
+                && ctx.bin_data_map.contains_key(&bd.storage_id)
+            {
+                ctx.bin_seq_fallback.insert(seq, bd.storage_id);
+            }
+        }
+
         ctx
     }
 
@@ -301,6 +318,19 @@ impl SerializeContext {
         self.bin_data_map
             .get(&bin_data_id)
             .map(|e| e.manifest_id.as_str())
+            .or_else(|| {
+                // [#3893/#4049] 순번 축 폴백 — HWP5 본문 참조는 BIN_DATA 레코드
+                // 순번(1-based)이고 storage_id(스트림 이름 축)와 별개다. 편집으로
+                // storage id 에 구멍 난 문서(실측: exam_social 1..4,7,8 / pic-crop-01
+                // 단일 3)에서 직접 조회가 빗나가면 순번→storage 사상으로 한 번 더
+                // 푼다. 직접 키가 있는 참조는 절대 가리지 않으므로(직접 조회 우선)
+                // Link 류 기존 동작은 불변이고, 모델 IR 도 손대지 않아 h2h 왕복
+                // 대칭성에 영향이 없다.
+                self.bin_seq_fallback
+                    .get(&bin_data_id)
+                    .and_then(|storage| self.bin_data_map.get(storage))
+                    .map(|e| e.manifest_id.as_str())
+            })
     }
 
     /// 모든 참조가 해소되었는지 단언. 해소되지 않은 ID가 있으면 `SerializeError::XmlError` 반환.
