@@ -34,6 +34,13 @@
                    scaffold 가 capabilities 에 광고된 경우에만 deliverable.hwpx 까지
     D 게이트       --validate <완성된 spec.json> — 모든 CLAIM 이 근거 대장에
                    실존하는 EV id 에 연결됐는지 검증. 판정은 예외가 아니라 데이터다.
+                   같은 호출에서 산출을 [SWS/1.0](../../mydocs/tech/standards/
+                   strategy_work_standard.md) 공개 포맷(sws_deliverable.json)으로
+                   옮겨 `sws_audit.py` 를 자동 호출하고, 도달 레벨을 sws_audit.json
+                   에 남긴다(`--no-sws-audit` 로 생략 가능). 이 판정은 exit code를
+                   바꾸지 않는다 — 엔진이 보장하는 범위(L1·L2)를 넘는 L3~L5 는
+                   에이전트의 전략 판단이 아직 spec 에 실리지 않았으면 정직하게
+                   미달로 남기기 때문이다.
 
 ## 사용
 
@@ -49,11 +56,14 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 
 GENERATED_BY = "tools/strategist/engagement.py"
@@ -366,6 +376,106 @@ def validate_spec(spec: dict, ledger: dict) -> dict:
     }
 
 
+# --- SWS/1.0 게이트 (--validate 에 얹는 자동 감사) -----------------------------
+
+def _load_sws_audit():
+    """`sws_audit.py` 를 모듈로 로드한다 — subprocess 왕복 없이 같은 프로세스에서
+    감사기 함수(audit/Rereader)를 그대로 재사용한다. 두 파일은 같은 디렉터리에
+    있고 패키지가 아니므로 파일 경로로 직접 로드한다."""
+    path = Path(__file__).resolve().parent / "sws_audit.py"
+    spec = importlib.util.spec_from_file_location("sws_audit", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)  # type: ignore[union-attr]
+    return mod
+
+
+def build_sws_deliverable(objective: str, ledger: dict, spec: dict,
+                          corpus_map: dict | None) -> dict:
+    """engagement.py 산출(ledger/spec/corpus_map)을 SWS/1.0 공개 포맷
+    (`mydocs/tech/standards/strategy_work_standard.json` 의 deliverableFormat)
+    으로 옮긴다. 엔진이 실제로 보장하는 것만 옮긴다 — 좌표·전수성(L1·L2)은
+    ledger·corpus_map 값 그대로다. challenge/falsifier/confidence(L3·L4)는
+    산출물 골격(spec.json)에 아직 실릴 자리가 없는 필드라 지어내지 않는다:
+    그 레벨은 미달로 정직하게 남는다(에이전트가 spec 에 반영해야 채워진다)."""
+    evidence = []
+    for e in ledger.get("entries", []):
+        locator = {k: e[k] for k in ("section", "paragraph", "page", "charOffset")
+                  if k in e}
+        evidence.append({
+            "id": e.get("id"), "file": e.get("file"), "locator": locator,
+            "quote": e.get("quote"), "command": e.get("command"),
+        })
+
+    if corpus_map is not None:
+        docs = corpus_map.get("documents", [])
+        declared = [d["file"] for d in docs]
+        read = [d["file"] for d in docs if d.get("status") == "ok"]
+        unreadable = [{"path": d["file"], "reason": f"info exit {d.get('infoExit')}"}
+                     for d in docs if d.get("status") != "ok"]
+    else:
+        # corpus_map.json 이 spec 옆에 없다(예: --out 을 달리 쓴 호출) — 근거가
+        # 실제로 인용한 파일만이라도 선언·읽음으로 남긴다. 미읽음 사유는 이
+        # 경로에서는 알 수 없으므로 지어내지 않고 비워 둔다.
+        files = sorted({e["file"] for e in evidence if e.get("file")})
+        declared = read = files
+        unreadable = []
+
+    known_ev = {e["id"] for e in evidence}
+    claims = []
+    for block in spec.get("blocks", []):
+        if block.get("type") not in ("heading", "paragraph"):
+            continue
+        text = block.get("text")
+        if not isinstance(text, str):
+            continue
+        claim_ids = sorted(set(CLAIM_RE.findall(text)), key=int)
+        if not claim_ids:
+            continue
+        ev_ids = [f"EV-{n}" for n in EV_RE.findall(text) if f"EV-{n}" in known_ev]
+        for n in claim_ids:
+            claims.append({"id": f"CLAIM-{n}", "text": text, "evidence": ev_ids})
+
+    return {
+        "engagement": objective,
+        "corpus": {"declared": declared, "read": read, "unreadable": unreadable},
+        "evidence": evidence,
+        "claims": claims,
+    }
+
+
+def run_sws_audit(objective: str, spec: dict, ledger: dict, spec_path: Path,
+                  bin_path: str | None) -> dict:
+    """SWS 감사를 실행하고 산출물(sws_deliverable.json)과 리포트(sws_audit.json)를
+    spec.json 옆에 남긴다. 실행 실패로 전체 --validate 를 막지 않는다 — 감사는
+    부가 판정이지 근거 대장 연결 게이트(validate_spec)를 대체하지 않는다."""
+    corpus_map_path = spec_path.parent / "corpus_map.json"
+    corpus_map = load_json(corpus_map_path) if corpus_map_path.is_file() else None
+    deliverable = build_sws_deliverable(objective, ledger, spec, corpus_map)
+    deliverable_path = spec_path.parent / "sws_deliverable.json"
+    dump_json(deliverable_path, deliverable)
+
+    # 재독 기준 폴더 — 근거의 file 은 corpus 루트 기준 상대경로다(engagement.py
+    # 의 build_ledger 가 corpus.relative_to(corpus) 로 채운다). --out 을
+    # 기본값(engagement.json 옆)으로 썼다면 corpus_map.json 의 corpus 값이 바로
+    # spec.json 기준 상대경로이므로 그대로 이어붙인다. 없으면 spec 폴더로
+    # 대체한다(문서를 못 찾으면 L1 이 정직하게 미달로 남는다).
+    base = spec_path.parent
+    if corpus_map and corpus_map.get("corpus"):
+        corpus_root = Path(corpus_map["corpus"])
+        base = corpus_root if corpus_root.is_absolute() else spec_path.parent / corpus_root
+
+    sws_audit = _load_sws_audit()
+    rr = sws_audit.Rereader(bin_path, base)
+    report = sws_audit.audit(deliverable, rr, base, date.today())
+    report["standard"] = "SWS/1.0"
+    report["deliverable"] = deliverable_path.as_posix()
+    report["rereadVerified"] = bool(bin_path)
+    report_path = spec_path.parent / "sws_audit.json"
+    dump_json(report_path, report)
+    return {"attained": report["attained"], "rereadVerified": report["rereadVerified"],
+            "deliverableFile": deliverable_path.name, "reportFile": report_path.name}
+
+
 # --- 실행 ---------------------------------------------------------------------
 
 def run_engagement(args) -> int:
@@ -402,7 +512,6 @@ def run_engagement(args) -> int:
         log(f"corpus 에 .hwp/.hwpx 문서가 없다: {corpus}")
         return 2
 
-    import os
     bin_path = args.bin or os.environ.get("RHWP_BIN") or shutil.which("rhwp")
     if not bin_path or not (Path(bin_path).is_file() or shutil.which(bin_path)):
         log("rhwp 바이너리를 찾을 수 없다 (--bin / RHWP_BIN / PATH)")
@@ -491,6 +600,17 @@ def run_validate(args) -> int:
         log(f"JSON 파싱 실패: {e}")
         return 2
     judgment = validate_spec(spec, ledger)
+
+    if not args.no_sws_audit:
+        bin_path = args.bin or os.environ.get("RHWP_BIN") or shutil.which("rhwp")
+        objective = spec.get("title") or ""
+        try:
+            judgment["swsAudit"] = run_sws_audit(objective, spec, ledger, spec_path,
+                                                 bin_path)
+        except Exception as e:  # noqa: BLE001 — 감사 실패로 게이트 결과 자체를 잃지 않는다
+            judgment["swsAudit"] = {"error": str(e)}
+            log(f"SWS 감사 실행 실패(게이트 판정에는 영향 없음): {e}")
+
     print(json.dumps(judgment, ensure_ascii=False, indent=1))
     return 0 if judgment["verdict"] == "pass" else 3
 
@@ -508,6 +628,8 @@ def main(argv=None) -> int:
                     help="완성된 spec.json 의 주장-근거 연결 검증 (exit 3 = 위반 존재)")
     ap.add_argument("--evidence", metavar="LEDGER", default=None,
                     help="--validate 에 쓸 근거 대장 (기본: spec 옆 evidence.json)")
+    ap.add_argument("--no-sws-audit", action="store_true",
+                    help="--validate 에서 SWS/1.0 자동 감사(sws_audit.json 산출)를 생략한다")
     ap.add_argument("--timeout", type=float, default=30.0)
     args = ap.parse_args(argv)
 
