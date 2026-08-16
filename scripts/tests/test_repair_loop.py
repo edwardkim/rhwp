@@ -4,7 +4,7 @@
 `render-diff`/`ir-diff`/`run`)을 서브프로세스로 그대로 부른다. 진단(diagnose)과
 수리(repair) 함수는 실제 바이너리 없이 순수 함수로 시험하고, 오케스트레이션의
 안전장치(max_attempts·진전 판정·loop detection)는 실행 순서를 미리 정해 둔
-가짜 rhwp 스텁(`.bat` + 파이썬 구현)으로 결정론적으로 시험한다 — 진짜 rhwp 빌드가
+가짜 rhwp 스텁(운영체제별 래퍼 + 파이썬 구현)으로 결정론적으로 시험한다 — 진짜 rhwp 빌드가
 없어도(CI에 바이너리가 없어도) 이 시험은 항상 돈다.
 """
 
@@ -13,6 +13,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import shlex
 import sys
 import tempfile
 import unittest
@@ -64,7 +65,6 @@ def make_fake_bin(tmpdir: str, responses: list[dict]) -> str:
     resp_path = tmp / "responses.json"
     state_path = tmp / "state.json"
     impl_path = tmp / "fake_rhwp_impl.py"
-    bat_path = tmp / "fake_rhwp.bat"
 
     resp_path.write_text(json.dumps(responses, ensure_ascii=False), encoding="utf-8")
     if state_path.exists():
@@ -73,11 +73,21 @@ def make_fake_bin(tmpdir: str, responses: list[dict]) -> str:
         _IMPL_TEMPLATE.format(state_path=str(state_path), resp_path=str(resp_path)),
         encoding="utf-8",
     )
-    bat_path.write_text(
-        f'@echo off\r\n"{sys.executable}" "{impl_path}" %*\r\nexit /b %errorlevel%\r\n',
-        encoding="utf-8",
-    )
-    return str(bat_path)
+    if os.name == "nt":
+        wrapper_path = tmp / "fake_rhwp.bat"
+        wrapper_path.write_text(
+            f'@echo off\r\n"{sys.executable}" "{impl_path}" %*\r\nexit /b %errorlevel%\r\n',
+            encoding="utf-8",
+        )
+    else:
+        wrapper_path = tmp / "fake_rhwp"
+        wrapper_path.write_text(
+            "#!/bin/sh\n"
+            f"exec {shlex.quote(sys.executable)} {shlex.quote(str(impl_path))} \"$@\"\n",
+            encoding="utf-8",
+        )
+        wrapper_path.chmod(0o755)
+    return str(wrapper_path)
 
 
 # ---------------------------------------------------------------------------
