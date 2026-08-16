@@ -27,7 +27,7 @@ pub use rhwp_contracts::provenance;
 pub mod rag;
 pub mod render_backend;
 pub mod renderer;
-pub use rhwp_contracts::schema_registry;
+pub mod schema_registry;
 pub mod security_trailer;
 pub mod serializer;
 pub mod service;

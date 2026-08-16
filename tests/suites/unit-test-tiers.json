@@ -87,7 +87,7 @@
       "id": "crates/rhwp-contracts/src/schema_registry.rs::tests#1",
       "file": "crates/rhwp-contracts/src/schema_registry.rs",
       "sourcePath": "crates/rhwp-contracts/src/schema_registry.rs",
-      "line": 114,
+      "line": 123,
       "module": "tests",
       "testAttributes": 2,
       "tier": "white_box",

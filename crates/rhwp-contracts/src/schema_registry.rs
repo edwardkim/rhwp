@@ -69,18 +69,17 @@ pub fn crate_version() -> &'static str {
     env!("CARGO_PKG_VERSION")
 }
 
-/// 레지스트리의 기계 소비용 자기서술 — `capabilities` 봉투의 `schemaRegistry` 로
-/// 노출된다(#4327 U2, 외부 소비자 대사 채널).
+/// 제품 크레이트 버전을 명시적으로 받아 레지스트리 자기서술을 조립한다.
 ///
-/// 소비자 계약: `axes[].axis` 는 {"envelope","ir","capabilities","plan"} 고정
-/// 집합이고(추가 = capabilities minor), `axes[].version` 은 위 상수들과 항상
-/// 일치한다(`tests/schema_registry_contract.rs` 가 실행 봉투로 고정). 정책 전문은
-/// `policy` 가 가리키는 저장소 경로에서 읽는다.
-pub fn registry_value() -> Value {
+/// 계약 정의를 내부 크레이트로 분리해도 공개 제품 버전의 소유자는 루트 `rhwp`
+/// 크레이트다. 따라서 루트 파사드는 자신의 `CARGO_PKG_VERSION`을 이 함수에
+/// 전달하고, 내부 크레이트를 직접 사용할 때만 [`registry_value`]가 내부 버전을
+/// 사용한다.
+pub fn registry_value_with_crate_version(crate_version: &str) -> Value {
     const BUMP_RULE: &str =
         "필드 추가 = minor, 의미 변경·삭제 = major (major 는 분기 회고 승인 필요)";
     json!({
-        "crateVersion": crate_version(),
+        "crateVersion": crate_version,
         "axes": [
             {
                 "axis": "envelope",
@@ -109,6 +108,16 @@ pub fn registry_value() -> Value {
         ],
         "policy": "mydocs/tech/agent_runtime/version_policy.md",
     })
+}
+
+/// 내부 크레이트 자체를 사용할 때의 기계 소비용 자기서술.
+///
+/// 소비자 계약: `axes[].axis` 는 {"envelope","ir","capabilities","plan"} 고정
+/// 집합이고(추가 = capabilities minor), `axes[].version` 은 위 상수들과 항상
+/// 일치한다(`tests/schema_registry_contract.rs` 가 실행 봉투로 고정). 정책 전문은
+/// `policy` 가 가리키는 저장소 경로에서 읽는다.
+pub fn registry_value() -> Value {
+    registry_value_with_crate_version(crate_version())
 }
 
 #[cfg(test)]
