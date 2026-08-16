@@ -2242,6 +2242,7 @@ dependencies = [
  "rand_core",
  "resvg 0.45.1",
  "resvg 0.47.0",
+ "rhwp-contracts",
  "rhwp-password-crypto",
  "roxmltree 0.21.1",
  "serde",
@@ -2267,6 +2268,13 @@ dependencies = [
  "web-sys",
  "zeroize",
  "zip",
+]
+
+[[package]]
+name = "rhwp-contracts"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
 ]
 
 [[package]]

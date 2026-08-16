@@ -58,6 +58,45 @@
   },
   "modules": [
     {
+      "id": "crates/rhwp-contracts/src/ir_schema.rs::tests#1",
+      "file": "crates/rhwp-contracts/src/ir_schema.rs",
+      "sourcePath": "crates/rhwp-contracts/src/ir_schema.rs",
+      "line": 882,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "crates/rhwp-contracts/src/ontology.rs::tests#1",
+      "file": "crates/rhwp-contracts/src/ontology.rs",
+      "sourcePath": "crates/rhwp-contracts/src/ontology.rs",
+      "line": 443,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "crates/rhwp-contracts/src/schema_registry.rs::tests#1",
+      "file": "crates/rhwp-contracts/src/schema_registry.rs",
+      "sourcePath": "crates/rhwp-contracts/src/schema_registry.rs",
+      "line": 114,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
       "id": "crates/rhwp-password-crypto/src/lib.rs::tests#1",
       "file": "crates/rhwp-password-crypto/src/lib.rs",
       "sourcePath": "crates/rhwp-password-crypto/src/lib.rs",
@@ -1449,19 +1488,6 @@
       "maximumTestAttributes": 1
     },
     {
-      "id": "src/ir_schema.rs::tests#1",
-      "file": "src/ir_schema.rs",
-      "sourcePath": "src/ir_schema.rs",
-      "line": 882,
-      "module": "tests",
-      "testAttributes": 5,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 5
-    },
-    {
       "id": "src/lib.rs::tests#1",
       "file": "src/lib.rs",
       "sourcePath": "src/lib.rs",
@@ -1798,19 +1824,6 @@
         "super_private_scope"
       ],
       "maximumTestAttributes": 2
-    },
-    {
-      "id": "src/ontology.rs::tests#1",
-      "file": "src/ontology.rs",
-      "sourcePath": "src/ontology.rs",
-      "line": 443,
-      "module": "tests",
-      "testAttributes": 8,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 8
     },
     {
       "id": "src/ooxml_chart/data.rs::tests#1",
@@ -3358,19 +3371,6 @@
         "super_private_scope"
       ],
       "maximumTestAttributes": 1
-    },
-    {
-      "id": "src/schema_registry.rs::tests#1",
-      "file": "src/schema_registry.rs",
-      "sourcePath": "src/schema_registry.rs",
-      "line": 114,
-      "module": "tests",
-      "testAttributes": 2,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 2
     },
     {
       "id": "src/security_trailer.rs::tests#1",

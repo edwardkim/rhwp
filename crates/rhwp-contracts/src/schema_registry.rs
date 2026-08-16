@@ -141,7 +141,9 @@ mod tests {
     #[cfg(not(target_arch = "wasm32"))]
     fn policy_path_points_to_existing_document() {
         let policy = registry_value()["policy"].as_str().unwrap().to_string();
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(&policy);
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join(&policy);
         assert!(path.exists(), "정책 문서가 없다: {policy}");
     }
 }
