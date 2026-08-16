@@ -5,6 +5,7 @@ edition = "2021"
 description = "HWP file viewer and editor written in Rust, targeting WebAssembly"
 license = "MIT"
 repository = "https://github.com/edwardkim/rhwp"
+autotests = false
 
 [workspace]
 members = [".", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert"]
@@ -24,6 +25,171 @@ path = "src/main.rs"
 [[bin]]
 name = "font-metric-gen"
 path = "src/tools/font_metric_gen.rs"
+
+# BEGIN RHWP GENERATED TEST TARGETS
+# tests/suites/manifest.json에서 생성한다. 직접 수정하지 않는다.
+
+[[test]]
+name = "regression_suite_001"
+path = "tests/generated/regression_suite_001.rs"
+
+[[test]]
+name = "regression_suite_002"
+path = "tests/generated/regression_suite_002.rs"
+
+[[test]]
+name = "regression_suite_003"
+path = "tests/generated/regression_suite_003.rs"
+
+[[test]]
+name = "regression_suite_004"
+path = "tests/generated/regression_suite_004.rs"
+
+[[test]]
+name = "regression_suite_005"
+path = "tests/generated/regression_suite_005.rs"
+
+[[test]]
+name = "regression_suite_006"
+path = "tests/generated/regression_suite_006.rs"
+
+[[test]]
+name = "regression_suite_007"
+path = "tests/generated/regression_suite_007.rs"
+
+[[test]]
+name = "regression_suite_008"
+path = "tests/generated/regression_suite_008.rs"
+
+[[test]]
+name = "regression_suite_009"
+path = "tests/generated/regression_suite_009.rs"
+
+[[test]]
+name = "regression_suite_010"
+path = "tests/generated/regression_suite_010.rs"
+
+[[test]]
+name = "regression_suite_011"
+path = "tests/generated/regression_suite_011.rs"
+
+[[test]]
+name = "regression_suite_012"
+path = "tests/generated/regression_suite_012.rs"
+
+[[test]]
+name = "regression_suite_013"
+path = "tests/generated/regression_suite_013.rs"
+
+[[test]]
+name = "regression_suite_014"
+path = "tests/generated/regression_suite_014.rs"
+
+[[test]]
+name = "regression_suite_015"
+path = "tests/generated/regression_suite_015.rs"
+
+[[test]]
+name = "regression_suite_016"
+path = "tests/generated/regression_suite_016.rs"
+
+[[test]]
+name = "regression_suite_017"
+path = "tests/generated/regression_suite_017.rs"
+
+[[test]]
+name = "regression_suite_018"
+path = "tests/generated/regression_suite_018.rs"
+
+[[test]]
+name = "regression_suite_019"
+path = "tests/generated/regression_suite_019.rs"
+
+[[test]]
+name = "regression_suite_020"
+path = "tests/generated/regression_suite_020.rs"
+
+[[test]]
+name = "regression_suite_021"
+path = "tests/generated/regression_suite_021.rs"
+
+[[test]]
+name = "regression_suite_022"
+path = "tests/generated/regression_suite_022.rs"
+
+[[test]]
+name = "regression_suite_023"
+path = "tests/generated/regression_suite_023.rs"
+
+[[test]]
+name = "regression_suite_024"
+path = "tests/generated/regression_suite_024.rs"
+
+[[test]]
+name = "regression_suite_025"
+path = "tests/generated/regression_suite_025.rs"
+
+[[test]]
+name = "regression_suite_026"
+path = "tests/generated/regression_suite_026.rs"
+
+[[test]]
+name = "regression_suite_027"
+path = "tests/generated/regression_suite_027.rs"
+
+[[test]]
+name = "regression_suite_028"
+path = "tests/generated/regression_suite_028.rs"
+
+[[test]]
+name = "regression_suite_029"
+path = "tests/generated/regression_suite_029.rs"
+
+[[test]]
+name = "regression_suite_030"
+path = "tests/generated/regression_suite_030.rs"
+
+[[test]]
+name = "regression_suite_031"
+path = "tests/generated/regression_suite_031.rs"
+
+[[test]]
+name = "regression_suite_032"
+path = "tests/generated/regression_suite_032.rs"
+
+[[test]]
+name = "cli_exit_codes"
+path = "tests/cli_exit_codes.rs"
+
+[[test]]
+name = "cli_exit_codes_native"
+path = "tests/cli_exit_codes_native.rs"
+
+[[test]]
+name = "issue_1144"
+path = "tests/issue_1144.rs"
+
+[[test]]
+name = "issue_1144_native"
+path = "tests/issue_1144_native.rs"
+
+[[test]]
+name = "issue_4055_b1_chart_edit_probe"
+path = "tests/issue_4055_b1_chart_edit_probe.rs"
+
+[[test]]
+name = "issue_4098_legacy_chart_grid"
+path = "tests/issue_4098_legacy_chart_grid.rs"
+
+[[test]]
+name = "issue_4099_hwpx_chart_to_hwp"
+path = "tests/issue_4099_hwpx_chart_to_hwp.rs"
+
+[[test]]
+name = "issue_4100_chart_data_edit"
+path = "tests/issue_4100_chart_data_edit.rs"
+
+# END RHWP GENERATED TEST TARGETS
 
 [dependencies]
 wasm-bindgen = "0.2"

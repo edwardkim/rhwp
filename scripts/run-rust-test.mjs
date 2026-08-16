@@ -13,43 +13,58 @@ import {
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const CASE_NAME = /^[a-z][a-z0-9_]*$/;
 
-export function resolveCase(caseName, root = ROOT) {
+export function resolveCasePlan(caseName, root = ROOT) {
   if (!CASE_NAME.test(caseName)) {
     throw new Error(`잘못된 Rust test case 이름: ${caseName}`);
   }
-
-  const suite = buildCaseIndex(loadManifest(root)).get(caseName);
-  if (!suite) {
+  const manifest = loadManifest(root);
+  const target = buildCaseIndex(manifest).get(caseName);
+  if (!target) {
     throw new Error(`suite manifest에서 case를 찾을 수 없습니다: ${caseName}`);
   }
-  return suite;
+  return {
+    caseName,
+    target,
+    grouped: Object.hasOwn(manifest.suites, target),
+  };
 }
 
-export function nextestArguments(caseName, suite, extraArguments = []) {
-  return [
-    'nextest',
-    'run',
-    '--test',
-    suite,
-    '-E',
-    `test(/${caseName}/)`,
-    ...extraArguments,
-  ];
+export function resolveCase(caseName, root = ROOT) {
+  return resolveCasePlan(caseName, root).target;
+}
+
+export function nextestArguments(plan, extraArguments = []) {
+  const arguments_ = ['nextest', 'run', '--test', plan.target];
+  if (plan.grouped) {
+    arguments_.push('-E', `test(/(^|::)${plan.caseName}::/)`);
+  }
+  return [...arguments_, ...extraArguments];
+}
+
+export function cargoTestArguments(plan, extraArguments = []) {
+  const arguments_ = ['test', ...extraArguments, '--test', plan.target];
+  if (plan.grouped) {
+    arguments_.push(`${plan.caseName}::`);
+  }
+  return arguments_;
 }
 
 function usage() {
   return (
-    '사용법: node scripts/run-rust-test.mjs [--print] <case> ' +
-    '[-- <cargo-nextest 인자>]\n'
+    '사용법: node scripts/run-rust-test.mjs [--print] [--cargo-test] <case> ' +
+    '[-- <cargo 인자>]\n'
   );
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
   try {
     const arguments_ = process.argv.slice(2);
-    const printOnly = arguments_[0] === '--print';
-    if (printOnly) {
-      arguments_.shift();
+    let printOnly = false;
+    let cargoTest = false;
+    while (arguments_[0] === '--print' || arguments_[0] === '--cargo-test') {
+      const option = arguments_.shift();
+      printOnly ||= option === '--print';
+      cargoTest ||= option === '--cargo-test';
     }
 
     const caseName = arguments_.shift();
@@ -63,10 +78,13 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
       arguments_.shift();
     }
 
-    const suite = resolveCase(caseName);
-    const cargoArguments = nextestArguments(caseName, suite, arguments_);
+    const plan = resolveCasePlan(caseName);
+    const cargoArguments = cargoTest
+      ? cargoTestArguments(plan, arguments_)
+      : nextestArguments(plan, arguments_);
     process.stdout.write(
-      `[RustTestSuite] ${caseName} -> ${suite}\n` +
+      `[RustTestSuite] ${caseName} -> ${plan.target}` +
+        `${plan.grouped ? `::${caseName}` : ''}\n` +
         `[RustTestSuite] cargo ${cargoArguments.join(' ')}\n`,
     );
 
