@@ -350,6 +350,9 @@ fn parse_cell(records: &[Record]) -> Cell {
     // bit 19~20: 줄바꿈 방식
     // bit 21~22: 세로 정렬 (0=top, 1=center, 2=bottom)
     cell.text_direction = ((list_attr >> 16) & 0x07) as u8;
+    // [#4898] 줄바꿈 방식(bit 19~20)도 싣는다 — 종전엔 읽지 않아 저장에서 0(BREAK)으로
+    // 굳었고, SQUEEZE 셀의 줄 수·높이가 달라져 한글 쪽수까지 흔들렸다.
+    cell.line_wrap = ((list_attr >> 19) & 0x03) as u8;
     let v_align = ((list_attr >> 21) & 0x03) as u8;
     cell.vertical_align = match v_align {
         1 => VerticalAlign::Center,
