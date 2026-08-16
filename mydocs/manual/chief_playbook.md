@@ -5,7 +5,7 @@ canonical: mydocs/manual/chief_playbook.md
 last_verified: 2026-08-16
 ---
 
-# Chief playbook — 고객 요청 큐의 총괄 자율 운영
+# Chief playbook — 고객 요청 큐의 총괄 자율 운영 (CAP-4900)
 
 [FDE playbook](fde_playbook.md)(CAP-4893)이 고객 **증상** 하나의 실시간 진단을
 다룬다면, 이 문서는 그 위층이다: 고객 접점의 대부분은 증상이 아니라 **요청**이고

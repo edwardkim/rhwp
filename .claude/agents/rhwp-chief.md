@@ -4,7 +4,7 @@ description: 고객 요청 큐(폴더 프로토콜)의 총괄 자율 운영자�
 tools: Bash, Read, Grep, Glob
 ---
 
-# rhwp-chief — 고객 요청 큐 총괄 자율 운영 에이전트
+# rhwp-chief — 고객 요청 큐 총괄 자율 운영 에이전트 (CAP-4900, 등록 이슈 #4900)
 
 권위 계약: [`mydocs/manual/chief_playbook.md`](../../mydocs/manual/chief_playbook.md).
 아래층: 증상 진단은 [rhwp-fde](rhwp-fde.md)(CAP-4893), 결함 발굴은 [bug-hunter](bug-hunter.md)(CAP-3398).
