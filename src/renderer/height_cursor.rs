@@ -42,8 +42,15 @@ fn para_has_equation_only(para: &Paragraph) -> bool {
             .any(|ctrl| matches!(ctrl, Control::Equation(_)))
 }
 
+/// [#4626] 빈 텍스트 판정은 `para_has_visible_text` 하나로 통일한다.
+///
+/// 종전의 `text.trim().is_empty()` 는 개체 대체 문자(`\u{FFFC}`)를 공백으로 보지
+/// 않아, **도형만 있는 문단의 표준형(`text == "\u{FFFC}"`)** 에서 `typeset.rs` 의
+/// 동명 술어와 반대 답을 냈다. 바로 위 형제 술어
+/// (`para_is_treat_as_char_equation_only`)는 이미 `para_has_visible_text` 를 쓴다 —
+/// 이 함수만 예외였다.
 fn para_is_treat_as_char_picture_only(para: &Paragraph) -> bool {
-    para.text.trim().is_empty()
+    !para_has_visible_text(para)
         && para.controls.iter().any(|ctrl| match ctrl {
             Control::Picture(pic) => pic.common.treat_as_char,
             Control::Shape(shape) => shape.common().treat_as_char,
@@ -1400,6 +1407,61 @@ mod tests {
     use super::*;
     use crate::model::paragraph::LineSeg;
     use crate::renderer::style_resolver::ResolvedParaStyle;
+
+    /// [#4626] 글자처럼 취급하는 도형 하나만 든 문단.
+    fn tac_shape_para(text: &str) -> Paragraph {
+        use crate::model::shape::{RectangleShape, ShapeObject};
+        let mut rect = RectangleShape::default();
+        rect.common.treat_as_char = true;
+        Paragraph {
+            text: text.to_string(),
+            controls: vec![Control::Shape(Box::new(ShapeObject::Rectangle(rect)))],
+            ..Default::default()
+        }
+    }
+
+    /// 도형만 있는 문단의 **표준형**은 `text == "\u{FFFC}"` 다. 종전 판정은
+    /// `trim()` 이 개체 대체 문자를 공백으로 보지 않아 여기서 `false` 를 냈고,
+    /// `typeset.rs` 의 동명 술어(`true`)와 정면으로 어긋났다.
+    #[test]
+    fn object_replacement_only_para_is_treat_as_char_picture_only() {
+        assert!(
+            para_is_treat_as_char_picture_only(&tac_shape_para("\u{FFFC}")),
+            "개체 대체 문자만 있는 문단을 도형 전용으로 보지 않았다"
+        );
+    }
+
+    /// 같은 파일의 형제 술어와 같은 답을 내야 한다 — 빈 텍스트 판정의 단일 정의.
+    #[test]
+    fn empty_and_control_only_paras_agree_with_visible_text_helper() {
+        for text in ["", "\u{FFFC}", "\u{FFFC}\u{FFFC}", "\u{000D}"] {
+            let para = tac_shape_para(text);
+            assert_eq!(
+                para_is_treat_as_char_picture_only(&para),
+                !para_has_visible_text(&para),
+                "text={text:?} 에서 빈 텍스트 판정이 갈렸다"
+            );
+        }
+    }
+
+    /// 실제 글자가 있으면 도형 전용이 아니다.
+    #[test]
+    fn para_with_real_text_is_not_treat_as_char_picture_only() {
+        assert!(!para_is_treat_as_char_picture_only(&tac_shape_para("가")));
+        assert!(!para_is_treat_as_char_picture_only(&tac_shape_para(
+            "\u{FFFC}가"
+        )));
+    }
+
+    /// 도형이 없으면 텍스트가 비어도 도형 전용이 아니다.
+    #[test]
+    fn para_without_treat_as_char_shape_is_not_picture_only() {
+        let para = Paragraph {
+            text: "\u{FFFC}".to_string(),
+            ..Default::default()
+        };
+        assert!(!para_is_treat_as_char_picture_only(&para));
+    }
 
     // DPI=96 → 75 HWPUNIT = 1px (1 inch = 7200 HU = 96px). 손계산 정합용.
     const DPI: f64 = 96.0;
