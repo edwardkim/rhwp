@@ -112,6 +112,16 @@ const REGISTRY: &[ToolNode] = &[
         consumes: &[],
     },
     ToolNode {
+        tool: "hwp_convert_hwpx",
+        produces: &["converted-hwpx"],
+        consumes: &[],
+    },
+    ToolNode {
+        tool: "hwp_convert_hwp5",
+        produces: &["converted-hwp5"],
+        consumes: &[],
+    },
+    ToolNode {
         tool: "hwp_export_tables",
         produces: &["table-data"],
         consumes: &[],
@@ -303,6 +313,8 @@ mod tests {
             "hwp_export_svg",
             "hwp_export_markdown",
             "hwp_thumbnail",
+            "hwp_convert_hwpx",
+            "hwp_convert_hwp5",
         ] {
             assert!(suggest_next(t).is_empty(), "{t} 는 말단이어야 한다");
         }
