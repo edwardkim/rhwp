@@ -449,7 +449,10 @@ fn diff_picture_size(
     {
         parts.push(format!(
             "offset: expected=({}, {}) actual=({}, {})",
-            a.shape_attr.offset_x, a.shape_attr.offset_y, b.shape_attr.offset_x, b.shape_attr.offset_y
+            a.shape_attr.offset_x,
+            a.shape_attr.offset_y,
+            b.shape_attr.offset_x,
+            b.shape_attr.offset_y
         ));
     }
     if parts.is_empty() {
