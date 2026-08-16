@@ -636,6 +636,7 @@
       "tests/unicode_deception_contract.rs"
     ],
     "regression_suite_028": [
+      "tests/cases/merge_cells_contract.rs",
       "tests/diag_1042_trailing.rs",
       "tests/issue_1067_shape_rotation.rs",
       "tests/issue_1105.rs",
