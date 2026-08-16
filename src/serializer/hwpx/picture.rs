@@ -99,7 +99,7 @@ pub fn write_picture<W: Write>(
     // --- 자식 순서 (한컴 관찰 샘플 기준) ---
     // offset, orgSz, curSz, flip, rotationInfo, renderingInfo, imgRect, imgClip,
     // inMargin, imgDim, img, effects, sz, pos, outMargin
-    write_offset(w, &pic.common)?;
+    write_offset(w, &pic.shape_attr)?;
     write_org_sz(w, &pic.shape_attr)?;
     write_cur_sz(w, pic)?;
     write_flip(w, &pic.shape_attr)?;
@@ -129,9 +129,17 @@ pub fn write_picture<W: Write>(
 
 // ---------- 자식 요소 ----------
 
-fn write_offset<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
-    let x = c.horizontal_offset.to_string();
-    let y = c.vertical_offset.to_string();
+// [#4668] hp:offset 은 파서가 보존한 shape_attr.offset_x/y 원문을 되쓴다 —
+// 종전에는 pic 전용 writer 만 pos 유래(c.horizontal_offset/vertical_offset)로
+// 재유도해, 음수(u32 wraparound) offset 으로 쪽 밖에 둔 그림이 무편집 저장 후
+// 쪽 안에 노출됐다(transMatrix 병진과도 모순). 도형·OLE·컨테이너 공용
+// writer(shape.rs write_offset, #3544)와 동형.
+fn write_offset<W: Write>(
+    w: &mut Writer<W>,
+    sa: &ShapeComponentAttr,
+) -> Result<(), SerializeError> {
+    let x = (sa.offset_x as u32).to_string();
+    let y = (sa.offset_y as u32).to_string();
     empty_tag(w, "hp:offset", &[("x", &x), ("y", &y)])
 }
 

@@ -49,6 +49,12 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
     let mut reader = Reader::from_str(xml);
     let mut buf = Vec::new();
 
+    // [#4898] 0높이 lineseg 정규화(#2070)의 판단 범위를 구역으로 넓힌다 — 문단 단위로
+    // 보면 한컴이 접어 둔 숨은 블록까지 지우게 된다. RAII 로 되돌려 중첩 파싱(표 셀 안의
+    // 구역 없음)이나 다음 구역에 값이 새지 않게 한다.
+    let sized = section_xml_has_sized_lineseg(xml);
+    let _lineseg_scope = SectionLinesegScope::enter(sized);
+
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref e)) => {
@@ -428,6 +434,40 @@ const MAX_HWPX_SECTION_DEPTH: u32 = 64;
 thread_local! {
     // 완전 경로 — 이 모듈의 `Cell` 은 이미 `crate::model::table::Cell`(표 셀)이다.
     static HWPX_SECTION_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+    /// [#4898] 이 구역의 lineseg 가 **배치 권위를 갖는가** — 0 아닌 높이가 하나라도 있으면 참.
+    ///
+    /// #2070 의 0높이 정규화를 문단이 아니라 **구역** 범위로 판단하기 위한 신호다.
+    /// `parse_paragraph` 는 표 셀·글상자·각주 등 여러 경로에서 재귀 호출되므로
+    /// 파라미터를 관통시키지 않고 형제 가드(`HWPX_SECTION_DEPTH`)와 같은 방식으로 나른다.
+    static HWPX_SECTION_HAS_SIZED_LINESEG: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// 구역 XML 에 **높이가 0 이 아닌 lineseg** 가 하나라도 있는지 훑는다.
+///
+/// [#4898] 한컴은 숨긴 블록(예: CLIPDATA)을 `vertsize="0"` lineseg 로 **접어서** 저장한다.
+/// 그 0높이를 "권위 없음"으로 보고 지우면 rhwp 가 그 문단을 새로 조판해 숨은 내용이
+/// 펼쳐지고, 뒤 내용이 밀려 쪽수가 늘어난다(08852 실측: 최대 vertpos 40,525 → 77,965,
+/// 1쪽 → 2쪽). 반대로 lineseg 를 **전부** 0 으로 채워 저장하는 생성계 문서도 실재하고,
+/// 그쪽은 #2070 대로 부재 취급해야 셀·문단 높이가 선언값으로 붕괴하지 않는다.
+///
+/// 두 경우를 가르는 신호가 "이 구역에 0 아닌 lineseg 가 있는가"다.
+fn section_xml_has_sized_lineseg(xml: &str) -> bool {
+    for tag in xml.split("<hp:lineseg").skip(1) {
+        let Some(end) = tag.find('>') else { continue };
+        let attrs = &tag[..end];
+        let sized = |name: &str| -> bool {
+            attrs
+                .split(name)
+                .nth(1)
+                .and_then(|rest| rest.strip_prefix("=\""))
+                .and_then(|rest| rest.split('"').next())
+                .is_some_and(|v| v.parse::<i64>().is_ok_and(|n| n != 0))
+        };
+        if sized("vertsize") || sized("textheight") {
+            return true;
+        }
+    }
+    false
 }
 
 /// `parse_paragraph` 진입 시 재귀 깊이를 +1 하고 이탈(Drop, 오류 전파·조기 반환
@@ -452,6 +492,23 @@ impl SectionDepthGuard {
 impl Drop for SectionDepthGuard {
     fn drop(&mut self) {
         HWPX_SECTION_DEPTH.with(|d| d.set(d.get().saturating_sub(1)));
+    }
+}
+
+/// [#4898] 구역 파싱 동안 "이 구역의 lineseg 가 배치 권위를 갖는가"를 세워 두고
+/// 이탈 시 이전 값으로 되돌리는 RAII 가드.
+struct SectionLinesegScope(bool);
+
+impl SectionLinesegScope {
+    fn enter(has_sized: bool) -> SectionLinesegScope {
+        let prev = HWPX_SECTION_HAS_SIZED_LINESEG.with(|f| f.replace(has_sized));
+        SectionLinesegScope(prev)
+    }
+}
+
+impl Drop for SectionLinesegScope {
+    fn drop(&mut self) {
+        HWPX_SECTION_HAS_SIZED_LINESEG.with(|f| f.set(self.0));
     }
 }
 
@@ -899,7 +956,14 @@ fn parse_paragraph(
     // 0 높이 lineseg 는 배치 권위가 없고(한글은 열 때 재계산) 실저장 취급 시
     // NO_LS 성장 경로가 죽어 셀/문단 높이가 선언값으로 붕괴한다 (#1380 대칭,
     // body_text.rs parse_para_line_seg 와 동일 규칙).
+    //
+    // [#4898] 단, 판단 범위는 문단이 아니라 **구역**이다. 한컴은 숨긴 블록을 0높이
+    // lineseg 로 접어서 저장하는데(08852: 9개가 vertpos 38605 에 겹쳐 있다), 그것까지
+    // 지우면 rhwp 가 그 문단을 새로 조판해 숨은 내용이 펼쳐지고 뒤가 밀려 쪽수가 는다
+    // (실측 1쪽 → 2쪽, 최대 vertpos 40,525 → 77,965). 구역에 0 아닌 lineseg 가 하나라도
+    // 있으면 그 구역의 lineseg 는 배치 권위가 있는 것이므로 0높이도 원본대로 보존한다.
     if !para.line_segs.is_empty()
+        && !HWPX_SECTION_HAS_SIZED_LINESEG.with(|f| f.get())
         && para
             .line_segs
             .iter()
@@ -2489,6 +2553,16 @@ fn parse_table_cell(
                                 b"textDirection" => {
                                     cell.text_direction =
                                         if attr_str(&attr) == "VERTICAL" { 1 } else { 0 };
+                                }
+                                // [#4898] 줄바꿈 방식. 종전엔 읽지 않아 HWP5 저장에서 항상
+                                // BREAK(0)이 됐고, SQUEEZE 셀은 한글이 줄을 다시 나눠
+                                // 셀·표 높이가 달라졌다(코퍼스 표본에 SQUEEZE 3,019회).
+                                b"lineWrap" => {
+                                    cell.line_wrap = match attr_str(&attr).as_str() {
+                                        "SQUEEZE" => 1,
+                                        "KEEP" => 2,
+                                        _ => 0,
+                                    };
                                 }
                                 _ => {}
                             }
@@ -6694,6 +6768,7 @@ fn parse_hp_chart_element(
     let mut extent: Option<(i32, i32)> = None;
     let mut shape_attr = ShapeComponentAttr::default();
     let mut caption: Option<crate::model::shape::Caption> = None;
+    let mut line_shape: Option<crate::model::style::ShapeBorderLine> = None;
     parse_common_shape_children(
         reader,
         &mut common,
@@ -6701,6 +6776,7 @@ fn parse_hp_chart_element(
         &mut extent,
         &mut shape_attr,
         &mut caption,
+        &mut line_shape,
     )?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
@@ -6714,6 +6790,10 @@ fn parse_hp_chart_element(
     let mut ole = OleShape::default();
     ole.common = common;
     ole.drawing.shape_attr = shape_attr;
+    // [#4669] `<hp:lineShape>` 원본 보존 — 없으면 기본값 유지(종전과 동일).
+    if let Some(ls) = line_shape {
+        ole.drawing.border_line = ls;
+    }
     ole.bin_data_id = 60000u32 + chart_num as u32;
     ole.chart_id_ref = chart_id_ref;
     // <hc:extent> 가 있으면 원본 개체 크기를 보존한다(없으면 종전 기본값 7200).
@@ -6746,6 +6826,12 @@ fn parse_hp_ole_element(
     let mut bin_id: u32 = 0;
     let mut numbering_type_picture = false;
     let mut draw_aspect = OleDrawingAspect::default();
+    // [#4669] `id` 는 `instid` 와 별개 값이다(한컴 원산 실측). 종전에는 id arm 이
+    // 없어(차트는 #3546 에서 받음) 재방출 id 가 "0" 또는 instid 로 되쓰였다.
+    // `id`는 선택 속성이고 0도 유효하다. 따라서 값 0을 "속성 없음"과 합치면
+    // 원문 id=0을 instance_id로 다시 써서 라운드트립을 깨뜨린다.
+    let mut id_attr: Option<u32> = None;
+    let mut saw_instid = false;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
@@ -6797,17 +6883,28 @@ fn parse_hp_ole_element(
                 let digits: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
                 bin_id = digits.parse().unwrap_or(0);
             }
-            b"instid" => common.instance_id = parse_u32(&attr),
+            b"id" => id_attr = Some(parse_u32(&attr)),
+            b"instid" => {
+                saw_instid = true;
+                common.instance_id = parse_u32(&attr);
+            }
             // [#2931] 개체 잠금(lock) — 종전 미파싱으로 직렬화 시 항상 "0"으로
             // 되돌아가 OLE 개체의 잠금 상태가 유실됐다.
             b"lock" => common.locked = attr_str(&attr) == "1",
             _ => {}
         }
     }
+    // 차트(#3546)와 동형 — instid **부재** 시에만 id 가 instance_id 를 겸한다.
+    // 명시적 instid="0"(차트 fallback OLE 의 한컴 정답값, #4099 오라클)은 보존해야
+    // 하므로 "0 이면 폴백" 이 아니라 "속성이 없으면 폴백" 이다.
+    if !saw_instid {
+        common.instance_id = id_attr.unwrap_or_default();
+    }
 
     let mut extent: Option<(i32, i32)> = None;
     let mut shape_attr = ShapeComponentAttr::default();
     let mut caption: Option<crate::model::shape::Caption> = None;
+    let mut line_shape: Option<crate::model::style::ShapeBorderLine> = None;
     parse_common_shape_children(
         reader,
         &mut common,
@@ -6815,6 +6912,7 @@ fn parse_hp_ole_element(
         &mut extent,
         &mut shape_attr,
         &mut caption,
+        &mut line_shape,
     )?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
@@ -6824,6 +6922,12 @@ fn parse_hp_ole_element(
     let mut ole = OleShape::default();
     ole.common = common;
     ole.drawing.shape_attr = shape_attr;
+    // [#4669] `<hp:lineShape>` 원본 보존 — 없으면 기본값 유지(종전과 동일).
+    if let Some(ls) = line_shape {
+        ole.drawing.border_line = ls;
+    }
+    // [#4669] id 원문 보존 — instid 와 분리해 재방출 시 원본 id 를 되쓴다.
+    ole.hwpx_ole_id = id_attr;
     ole.bin_data_id = bin_id;
     ole.drawing_aspect = draw_aspect;
     // <hc:extent> 가 있으면 원본 개체 크기를 보존한다(없으면 종전 기본값 7200).
@@ -6851,6 +6955,11 @@ fn apply_hwpx_ole_shape_component_contract(ole: &mut crate::model::shape::OleSha
     } else {
         7200
     };
+    // [#4669] 파싱된 `<hp:curSz width="0">`(한컴 원산 관례)를 orgSz 로 materialize
+    // 할 때 was_zero 센티널(#2017)을 세운다 — pic·일반 도형과 동형. writer
+    // (write_cur_sz)가 센티널을 보고 원본 0 을 복원한다. orgSz 미파싱(HWP5 출신
+    // 등 original=0)이면 no-op 이라 아래 extent 폴백과 충돌하지 않는다.
+    materialize_shape_current_size_from_original(&mut ole.common, &mut ole.drawing.shape_attr);
     let shape_attr = &mut ole.drawing.shape_attr;
     shape_attr.ctrl_id = tags::SHAPE_OLE_ID;
     shape_attr.is_two_ctrl_id = true;
@@ -6888,8 +6997,13 @@ fn parse_common_shape_children(
     // 캡션을 읽지만 차트·OLE 만 빠져 있었다. HWP5 파서(parser/control/shape.rs:213,
     // 222)와 동형으로 drawing.caption 에 채운 뒤 호출자가 `.caption` 으로 정규화한다.
     caption_out: &mut Option<crate::model::shape::Caption>,
+    // [#4669] `<hp:lineShape>` 수집용. 종전 미파싱으로 OLE 테두리 선이 저장 시
+    // 기본값으로 되쓰였다(offset/orgSz/curSz/flip/renderingInfo 와 함께 이 공용
+    // 파서만 shape-component 자식 arm 이 없던 간극).
+    line_shape_out: &mut Option<crate::model::style::ShapeBorderLine>,
 ) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
+    let mut has_pos = false;
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
@@ -6910,6 +7024,20 @@ fn parse_common_shape_children(
                     }
                     b"rotationInfo" => {
                         parse_shape_rotation_info(ce, shape_attr_out);
+                    }
+                    // [#4669] offset/orgSz/curSz — 공용 개체 파서(parse_object_layout_child)
+                    // 와 동형으로 위임한다. 종전 미파싱으로 원본 curSz=0(한컴 원산
+                    // 관례)·offset 이 IR 에 실리지 않아 저장 시 재유도값으로 되쓰였다.
+                    b"offset" | b"orgSz" | b"curSz" => {
+                        parse_object_layout_child(local, ce, common, shape_attr_out, &mut has_pos);
+                    }
+                    // [#4669] flip/renderingInfo/lineShape — 도형·그림 파서와 동형.
+                    b"flip" => parse_shape_flip(ce, shape_attr_out),
+                    b"renderingInfo" => {
+                        parse_rendering_info(reader, shape_attr_out)?;
+                    }
+                    b"lineShape" => {
+                        *line_shape_out = Some(parse_line_shape_attr(ce));
                     }
                     b"sz" => {
                         for attr in ce.attributes().flatten() {
@@ -6935,6 +7063,7 @@ fn parse_common_shape_children(
                         }
                     }
                     b"pos" => {
+                        has_pos = true;
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"vertRelTo" => {
@@ -9170,6 +9299,145 @@ mod tests {
         }
     }
 
+    /// [#4669] `hp:ole` 의 shape-component 자식(offset/orgSz/curSz/flip/
+    /// renderingInfo/lineShape)과 `id` 속성이 IR 에 실려야 한다. 종전엔 공용
+    /// 자식 파서(`parse_common_shape_children`)에 arm 이 없고 `id` 는 instid 만
+    /// 파싱해, 저장 시 전부 재유도값·"0" 으로 되쓰였다. 값은 실물
+    /// samples/한셀OLE.hwpx 의 hp:ole 을 축약했고(id≠instid 실측), curSz=0 은
+    /// 한컴 원산 관례로 was_zero 센티널(#2017, pic 과 동형)까지 고정한다.
+    #[test]
+    fn issue4669_parse_ole_preserves_shape_component_children_and_id() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="2141242094" zOrder="1" numberingType="PICTURE" textWrap="SQUARE"
+              textFlow="BOTH_SIDES" lock="0" instid="1067500271" objectType="EMBEDDED"
+              binaryItemIDRef="ole1" drawAspect="CONTENT">
+        <hp:offset x="12" y="34"/>
+        <hp:orgSz width="42001" height="13501"/>
+        <hp:curSz width="0" height="0"/>
+        <hp:flip horizontal="1" vertical="0"/>
+        <hp:rotationInfo angle="0" centerX="14999" centerY="2025" rotateimage="1"/>
+        <hp:renderingInfo>
+          <hc:transMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+          <hc:scaMatrix e1="0.714245" e2="0" e3="0" e4="0" e5="0.300052" e6="0"/>
+          <hc:rotMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+        </hp:renderingInfo>
+        <hc:extent x="29999" y="4051"/>
+        <hp:lineShape color="#000000" width="5" style="SOLID" endCap="ROUND"/>
+        <hp:sz width="29999" widthRelTo="ABSOLUTE" height="4051" heightRelTo="ABSOLUTE" protect="0"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="COLUMN" vertOffset="0" horzOffset="0"/>
+        <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected OLE shape");
+        };
+        assert_eq!(ole.hwpx_ole_id, Some(2141242094), "id 원문 보존");
+        assert_eq!(
+            ole.common.instance_id, 1067500271,
+            "instid 는 id 와 분리 보존"
+        );
+        let sa = &ole.drawing.shape_attr;
+        assert_eq!((sa.offset_x, sa.offset_y), (12, 34), "hp:offset");
+        assert_eq!(
+            (sa.original_width, sa.original_height),
+            (42001, 13501),
+            "hp:orgSz"
+        );
+        // curSz=0 → orgSz 로 materialize 하되 원본 0 복원용 센티널이 서야 한다.
+        assert_eq!((sa.current_width, sa.current_height), (42001, 13501));
+        assert!(
+            sa.current_width_was_zero && sa.current_height_was_zero,
+            "curSz=0 센티널(#2017)"
+        );
+        assert!(sa.horz_flip && !sa.vert_flip, "hp:flip");
+        assert!(sa.rotate_image, "rotationInfo rotateimage=1");
+        // 행렬 값은 f32 양자화(hwp5_matrix_value)를 거친다 — 1e-5 면 충분.
+        assert!(
+            (sa.render_sx - 0.714245).abs() < 1e-5,
+            "renderingInfo scaMatrix 보존: {}",
+            sa.render_sx
+        );
+        assert_eq!(ole.drawing.border_line.width, 5, "lineShape width");
+        assert_eq!(
+            ole.drawing.border_line.attr & 0xFF,
+            1,
+            "lineShape style=SOLID"
+        );
+    }
+
+    /// [#4669] 명시적 `instid="0"` 은 id 로 덮지 않는다 — 차트 fallback OLE 의
+    /// 한컴 정답값이 instance_id=0 이다(#4099 오라클). id 폴백은 instid **부재**
+    /// 시에만 작동해야 한다.
+    #[test]
+    fn issue4669_explicit_zero_id_is_not_rewritten_to_instid() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="0" zOrder="7" textWrap="SQUARE" instid="1067500271" binaryItemIDRef="ole1">
+        <hp:sz width="7200" height="7200" protect="0"/>
+        <hp:pos treatAsChar="1" vertRelTo="PARA" horzRelTo="PARA"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected OLE shape");
+        };
+        assert_eq!(ole.hwpx_ole_id, Some(0), "명시적 id=0 원문 보존");
+        assert_eq!(
+            ole.common.instance_id, 1067500271,
+            "instid 와 id는 별개로 보존"
+        );
+    }
+
+    #[test]
+    fn issue4669_explicit_zero_instid_is_not_overridden_by_id() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="1117817146" zOrder="7" textWrap="SQUARE" instid="0" binaryItemIDRef="ole1">
+        <hp:sz width="7200" height="7200" protect="0"/>
+        <hp:pos treatAsChar="1" vertRelTo="PARA" horzRelTo="PARA"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected OLE shape");
+        };
+        assert_eq!(ole.common.instance_id, 0, "명시적 instid=0 보존 (#4099)");
+        assert_eq!(ole.hwpx_ole_id, Some(1117817146), "id 원문은 별도 보존");
+    }
+
     #[test]
     fn test_parse_line_preserves_is_reverse_hv() {
         // <hp:line isReverseHV="1"> → LineShape.started_right_or_bottom.
@@ -9646,6 +9914,45 @@ mod tests {
         assert_eq!(
             eq.script, "a < b > c",
             "CDATA 로 감싸진 수식 스크립트가 소실되면 안 된다"
+        );
+    }
+
+    /// [#4898] 0높이 lineseg 정규화(#2070)는 **구역 단위**로 판단한다.
+    ///
+    /// 한컴은 숨긴 블록(CLIPDATA 등)을 `vertsize="0"` lineseg 로 접어서 저장한다. 그것을
+    /// 문단 단위로 "부재"로 보면 rhwp 가 그 문단을 새로 조판해 숨은 내용이 펼쳐지고 뒤가
+    /// 밀린다 — 08852 실측 최대 vertpos 40,525 → 77,965, 한글 1쪽 → 2쪽. 구역에 0 아닌
+    /// lineseg 가 있으면 그 구역의 lineseg 는 권위가 있으므로 0높이도 보존한다.
+    #[test]
+    fn issue4898_zero_height_linesegs_survive_when_section_has_sized_ones() {
+        let with_sized = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>본문</hp:t></hp:run>
+    <hp:linesegarray><hp:lineseg textpos="0" vertpos="0" vertsize="1200" textheight="1200" baseline="1020" spacing="600" horzpos="0" horzsize="42520" flags="393216"/></hp:linesegarray>
+  </hp:p>
+  <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>숨긴 블록</hp:t></hp:run>
+    <hp:linesegarray><hp:lineseg textpos="0" vertpos="1200" vertsize="0" textheight="0" baseline="0" spacing="0" horzpos="0" horzsize="42520" flags="393216"/></hp:linesegarray>
+  </hp:p>
+</hs:sec>"#;
+        let section = parse_hwpx_section(with_sized).unwrap();
+        assert_eq!(
+            section.paragraphs[1].line_segs.len(),
+            1,
+            "0 아닌 lineseg 가 있는 구역에서는 0높이 lineseg 도 원본대로 보존해야 한다"
+        );
+
+        // 대조군(#2070): 구역 전체가 0높이면 종전대로 부재로 정규화한다 —
+        // 생성계 문서가 lineseg 를 0 으로 채워 저장하는 경우, 실저장 취급하면
+        // 셀·문단 높이가 선언값으로 붕괴한다.
+        let all_zero = with_sized.replace(
+            r#"vertsize="1200" textheight="1200""#,
+            r#"vertsize="0" textheight="0""#,
+        );
+        let section = parse_hwpx_section(&all_zero).unwrap();
+        assert!(
+            section.paragraphs.iter().all(|p| p.line_segs.is_empty()),
+            "구역 전체가 0높이면 종전대로 부재 취급한다"
         );
     }
 

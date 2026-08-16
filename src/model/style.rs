@@ -48,7 +48,7 @@ pub fn border_width_mm_str(index: u8) -> &'static str {
 }
 
 /// 글꼴 정보 (HWPTAG_FACE_NAME)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Font {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -81,7 +81,7 @@ pub struct Font {
 /// 4개 속성을 모두 보존해 라운드트립 무손실을 보장한다. `font_type`/`is_embedded`/
 /// `bin_item_id_ref` 는 부모 `<hh:font>` 의 같은 이름 속성과 독립적이다
 /// (예: HFT 글꼴이 TTF 대체 글꼴을 가질 수 있음).
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct SubstFont {
     /// 대체 글꼴 이름
     pub face: String,
@@ -99,7 +99,7 @@ pub struct SubstFont {
 ///
 /// `Default` 는 [수동 구현](#impl-Default-for-CharShape)이다 — 파생하면 `relative_sizes` 가
 /// 스펙 위반값 0 이 된다(#4141).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct CharShape {
     /// 원본 레코드 바이트 (라운드트립 보존용, 있으면 직렬화 시 우선 사용)
     pub raw_data: Option<Vec<u8>>,
@@ -293,7 +293,7 @@ pub enum UnderlineType {
 }
 
 /// 문단 머리 모양 종류 (attr1 bit 23~24)
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum HeadType {
     /// 없음
     #[default]
@@ -307,7 +307,7 @@ pub enum HeadType {
 }
 
 /// 문단 모양 (HWPTAG_PARA_SHAPE)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct ParaShape {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -382,7 +382,7 @@ impl PartialEq for ParaShape {
 impl Eq for ParaShape {}
 
 /// 문단 번호 정의 (HWPTAG_NUMBERING)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Numbering {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -403,7 +403,7 @@ pub struct Numbering {
 }
 
 /// 문단 머리 정보 (표 41)
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
 pub struct NumberingHead {
     /// 속성 (정렬, 너비 따름, 자동 내어쓰기 등)
     pub attr: u32,
@@ -418,7 +418,7 @@ pub struct NumberingHead {
 }
 
 /// 글머리표 정의 (HWPTAG_BULLET, 표 44, 24바이트)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Bullet {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -445,7 +445,7 @@ pub struct Bullet {
 }
 
 /// 텍스트 정렬 방식
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum Alignment {
     #[default]
     Justify,
@@ -457,7 +457,7 @@ pub enum Alignment {
 }
 
 /// 줄 간격 종류
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum LineSpacingType {
     #[default]
     Percent,
@@ -467,7 +467,7 @@ pub enum LineSpacingType {
 }
 
 /// 탭 정의 (HWPTAG_TAB_DEF)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct TabDef {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -482,7 +482,7 @@ pub struct TabDef {
 }
 
 /// 탭 항목
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct TabItem {
     /// 탭 위치
     pub position: HwpUnit,
@@ -511,7 +511,7 @@ impl PartialEq for TabDef {
 impl Eq for TabDef {}
 
 /// 스타일 (HWPTAG_STYLE)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Style {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -539,7 +539,7 @@ pub struct Style {
 }
 
 /// 테두리/배경 (HWPTAG_BORDER_FILL)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct BorderFill {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -558,7 +558,7 @@ pub struct BorderFill {
 }
 
 /// 중심선 방향 (HWPX borderFill@centerLine)
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize)]
 pub enum CenterLine {
     /// 없음
     #[default]
@@ -623,7 +623,7 @@ impl CenterLine {
 }
 
 /// 테두리선 정보
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
 pub struct BorderLine {
     /// 선 종류
     pub line_type: BorderLineType,
@@ -635,7 +635,7 @@ pub struct BorderLine {
 
 /// 테두리선 종류 (HWP 스펙 표 27)
 /// 0=선없음, 1=실선, 2=파선, 3=점선, ...
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum BorderLineType {
     /// 선 없음 (0)
     None,
@@ -677,7 +677,7 @@ pub enum BorderLineType {
 }
 
 /// 대각선 정보
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
 pub struct DiagonalLine {
     /// 대각선 선 종류 코드. BorderLineType의 HWP/HWPX 코드와 같은 값을 사용한다.
     pub diagonal_type: u8,
@@ -688,7 +688,7 @@ pub struct DiagonalLine {
 }
 
 /// 채우기 정보
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Fill {
     /// 채우기 종류
     pub fill_type: FillType,
@@ -703,7 +703,7 @@ pub struct Fill {
 }
 
 /// 채우기 종류
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum FillType {
     #[default]
     None,
@@ -713,7 +713,7 @@ pub enum FillType {
 }
 
 /// 단색 채우기
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
 pub struct SolidFill {
     /// 배경색
     pub background_color: ColorRef,
@@ -724,7 +724,7 @@ pub struct SolidFill {
 }
 
 /// 그러데이션 채우기
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct GradientFill {
     /// 유형 (1: 줄무늬, 2: 원형, 3: 원뿔형, 4: 사각형)
     pub gradient_type: i16,
@@ -745,7 +745,7 @@ pub struct GradientFill {
 }
 
 /// 이미지 채우기
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct ImageFill {
     /// 채우기 유형
     pub fill_mode: ImageFillMode,

@@ -442,6 +442,19 @@ fn diff_picture_size(
             a.img_dim, b.img_dim
         ));
     }
+    // [#4668] hp:offset — 종전 pic writer 가 pos 유래로 재작성해도 이 게이트가
+    // offset 을 비교하지 않아 잡히지 않았다(음수 wraparound offset 그림 노출).
+    if a.shape_attr.offset_x != b.shape_attr.offset_x
+        || a.shape_attr.offset_y != b.shape_attr.offset_y
+    {
+        parts.push(format!(
+            "offset: expected=({}, {}) actual=({}, {})",
+            a.shape_attr.offset_x,
+            a.shape_attr.offset_y,
+            b.shape_attr.offset_x,
+            b.shape_attr.offset_y
+        ));
+    }
     if parts.is_empty() {
         None
     } else {
@@ -2945,6 +2958,31 @@ mod tests {
                 assert_eq!(path, "/ctrl[0]pic");
                 assert!(
                     detail.contains("curSz") && detail.contains("imgDim"),
+                    "{detail}"
+                );
+            }
+            other => panic!("PictureSize 여야 함: {other:?}"),
+        }
+    }
+
+    /// [#4668] offset 재작성이 게이트에 잡혀야 한다 — 종전 PictureSize 비교가
+    /// curSz/imgRect/imgDim 만 보고 offset 을 비교하지 않아, pic writer 의 pos
+    /// 유래 offset 재작성이 왕복 검증을 통과했다.
+    #[test]
+    fn issue4668_picture_offset_diff_in_gate() {
+        let mut pa = crate::model::image::Picture::default();
+        pa.shape_attr.offset_x = 5250;
+        pa.shape_attr.offset_y = -4332;
+        let pb = crate::model::image::Picture::default(); // offset (0, 0)
+        let a = doc_with_control(crate::model::control::Control::Picture(Box::new(pa)));
+        let b = doc_with_control(crate::model::control::Control::Picture(Box::new(pb)));
+        let diff = diff_documents(&a, &b);
+        assert_eq!(diff.differences.len(), 1, "{:?}", diff.differences);
+        match &diff.differences[0] {
+            IrDifference::PictureSize { path, detail, .. } => {
+                assert_eq!(path, "/ctrl[0]pic");
+                assert!(
+                    detail.contains("offset: expected=(5250, -4332) actual=(0, 0)"),
                     "{detail}"
                 );
             }

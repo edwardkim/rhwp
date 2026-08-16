@@ -142,6 +142,14 @@ pub struct Cell {
     pub list_header_width_ref: u16,
     /// 텍스트 방향 (0: 가로, 1: 세로)
     pub text_direction: u8,
+    /// [#4898] 줄바꿈 방식 — LIST_HEADER `list_attr` bit 19~20, OWPML `lineWrap`.
+    ///
+    /// `0` = BREAK(어절 단위 줄바꿈, 기본) · `1` = SQUEEZE(자간을 조절해 한 줄 유지) ·
+    /// `2` = KEEP. 종전에는 이 두 비트를 읽지도 쓰지도 않아 HWPX→HWP 저장에서 항상 0 이
+    /// 됐다 — 셀 줄바꿈 방식이 바뀌면 줄 수·셀 높이·표 높이가 따라 바뀐다.
+    /// 매핑은 한글 2022 실측이다(SQUEEZE 만 쓰는 문서를 SaveAs → LIST_HEADER 19개가 전부
+    /// bit19=1, BREAK 위주 문서는 SQUEEZE 인 셀 하나만 1). KEEP=2 는 스키마 열거 순서다.
+    pub line_wrap: u8,
     /// 세로 정렬 (0: top, 1: center, 2: bottom)
     pub vertical_align: VerticalAlign,
     /// 안 여백 지정 여부 (list_attr bit 16)
@@ -420,6 +428,7 @@ impl Cell {
             padding: template.padding,
             list_header_width_ref: template.list_header_width_ref,
             text_direction: template.text_direction,
+            line_wrap: template.line_wrap,
             vertical_align: template.vertical_align,
             apply_inner_margin: template.apply_inner_margin,
             is_header: template.is_header,
