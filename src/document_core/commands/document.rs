@@ -1339,10 +1339,40 @@ impl DocumentCore {
 
         let saved_hwpx_page_border_fills = self.snapshot_hwpx_page_border_fill_overlay();
         let _report = convert_if_hwpx_source(&mut self.document, self.source_format);
+        self.refresh_doc_info_raw_cache();
         self.serialize_hwp_after_adapter(
             saved_hwpx_page_border_fills,
             crate::serializer::serialize_document,
         )
+    }
+
+    /// [#4432] DocInfo raw 캐시 재밀봉 — dirty(또는 봉인 불일치) 상태로 저장에
+    /// 들어가면 매 저장마다 DocInfo 를 처음부터 재구성한다. 여기서 한 번 재구성해
+    /// raw 캐시를 그 결과로 갱신하고 dirty 를 내리면, 이번 저장은 방금 만든
+    /// 바이트를 그대로 쓰고 이후 저장은 원본 바이트 통과로 돌아간다 —
+    /// "직렬화 성공 지점에서 되돌리는 것이 자연스러운 자리" 를 &mut 저장
+    /// 진입점에서 구현한 것이다. raw 캐시가 없던 문서(HWPX/HWP3 출처)는 건드리지
+    /// 않는다(raw_stream 유무가 출처 판별에 쓰이는 경로를 오염시키지 않기 위함).
+    fn refresh_doc_info_raw_cache(&mut self) {
+        let doc = &mut self.document;
+        if doc.doc_info.raw_stream.is_none() {
+            return;
+        }
+        let dirty = doc.doc_info.raw_stream_dirty
+            || !doc
+                .doc_info
+                .raw_provenance_permits_reuse(&doc.doc_properties);
+        if !dirty {
+            return;
+        }
+        // 재구성 강제: dirty 를 세운 채 한 번 직렬화한다(통과 게이트 우회).
+        doc.doc_info.raw_stream_dirty = true;
+        let rebuilt =
+            crate::serializer::doc_info::serialize_doc_info(&doc.doc_info, &doc.doc_properties);
+        doc.doc_info.raw_stream = Some(rebuilt);
+        doc.doc_info.raw_stream_dirty = false;
+        // 방금 만든 바이트와 현재 모델을 재밀봉 — 이후 무변경 저장은 통과.
+        doc.doc_info.seal_raw_provenance(&doc.doc_properties);
     }
 
     /// 어댑터를 **복제본에 적용해** HWP5 를 낸다 — 호출자의 IR 은 그대로다.
@@ -1403,6 +1433,7 @@ impl DocumentCore {
 
         let saved_hwpx_page_border_fills = self.snapshot_hwpx_page_border_fill_overlay();
         let _report = convert_if_hwpx_source(&mut self.document, self.source_format);
+        self.refresh_doc_info_raw_cache();
         self.serialize_hwp_after_adapter(saved_hwpx_page_border_fills, |document| {
             crate::serializer::serialize_hwp_with_password(document, password)
         })

@@ -13,6 +13,7 @@ use super::record_writer::write_record;
 
 use crate::model::bin_data::{BinData, BinDataType};
 use crate::model::document::{DocInfo, DocProperties};
+use crate::model::raw_provenance;
 use crate::model::style::{
     BorderFill, BorderLineType, Bullet, CenterLine, FillType, Font, ImageFillMode, Numbering,
     ParaShape, Style, TabDef,
@@ -21,8 +22,13 @@ use crate::parser::tags;
 
 /// DocInfo + DocProperties를 레코드 바이너리 스트림으로 직렬화
 pub fn serialize_doc_info(doc_info: &DocInfo, doc_props: &DocProperties) -> Vec<u8> {
-    // 원본 스트림이 있고 변경되지 않았으면 그대로 반환 (완벽한 라운드트립)
-    if !doc_info.raw_stream_dirty {
+    // 원본 스트림이 있고 변경되지 않았으면 그대로 반환 (완벽한 라운드트립).
+    //
+    // [#4493] "변경되지 않았음" 은 dirty 표식만으로 판정하지 않는다 — 공개 모델
+    // 필드 직접 변경은 표식을 세우지 않으므로, 파싱 시점에 봉인한 (모델, raw)
+    // 다이제스트 쌍과 현재 상태가 둘 다 일치할 때만 통과한다(불일치·raw 교체는
+    // 아래 모델 writer 로 재생성). 봉인 계약은 model::raw_provenance 참조.
+    if !doc_info.raw_stream_dirty && doc_info.raw_provenance_permits_reuse(doc_props) {
         if let Some(ref raw) = doc_info.raw_stream {
             let mut result = raw.clone();
             // 배포용 문서 해제 시 DISTRIBUTE_DOC_DATA 레코드 제거
@@ -35,11 +41,22 @@ pub fn serialize_doc_info(doc_info: &DocInfo, doc_props: &DocProperties) -> Vec<
 
     let mut stream = Vec::new();
 
+    // [#4493] 레코드별 raw_data 지름길도 봉인 검증을 거친다 — 스트림이 재생성될
+    // 때(공개 모델 직접 변경 등) 변경되지 않은 레코드만 원본 바이트를 재사용하고,
+    // 변경된 레코드는 모델 writer 로 다시 쓴다. 봉인이 없는 합성 IR(record_seals
+    // 부재)은 종전 계약(무조건 raw 우선)을 유지한다.
+    let seals = doc_info.raw_provenance.as_ref().map(|s| &s.record_seals);
+
     // 1. DOCUMENT_PROPERTIES
+    let props_data = match (doc_props.raw_data.as_ref(), seals) {
+        (Some(raw), None) => raw.clone(),
+        (Some(raw), Some(s)) if s.props == raw_provenance::record_digest(doc_props) => raw.clone(),
+        _ => serialize_document_properties_from_model(doc_props),
+    };
     stream.extend(write_record(
         tags::HWPTAG_DOCUMENT_PROPERTIES,
         0,
-        &serialize_document_properties(doc_props),
+        &props_data,
     ));
 
     // 2. ID_MAPPINGS
@@ -49,74 +66,90 @@ pub fn serialize_doc_info(doc_info: &DocInfo, doc_props: &DocProperties) -> Vec<
         &serialize_id_mappings(doc_info),
     ));
 
+    // 레코드 봉인 게이트 — raw_data 가 있고 봉인이 허용할 때만 raw 재사용.
+    fn sealed_raw<'a, T: serde::Serialize>(
+        record: &'a T,
+        raw: &'a Option<Vec<u8>>,
+        seals: Option<&[[u8; 32]]>,
+        idx: usize,
+    ) -> Option<&'a Vec<u8>> {
+        raw.as_ref()
+            .filter(|_| raw_provenance::record_raw_permitted(seals, idx, record))
+    }
+
     // 3~10: ID_MAPPINGS 하위 레코드 (모두 level 1)
-    for bin_data in &doc_info.bin_data_list {
-        let data = bin_data
-            .raw_data
-            .clone()
-            .unwrap_or_else(|| serialize_bin_data(bin_data));
+    for (i, bin_data) in doc_info.bin_data_list.iter().enumerate() {
+        let data = sealed_raw(
+            bin_data,
+            &bin_data.raw_data,
+            seals.map(|s| &s.bin_data[..]),
+            i,
+        )
+        .cloned()
+        .unwrap_or_else(|| serialize_bin_data(bin_data));
         stream.extend(write_record(tags::HWPTAG_BIN_DATA, 1, &data));
     }
 
-    for lang_fonts in &doc_info.font_faces {
-        for font in lang_fonts {
-            let data = font
-                .raw_data
-                .clone()
+    for (li, lang_fonts) in doc_info.font_faces.iter().enumerate() {
+        let lang_seals = seals.and_then(|s| s.fonts.get(li)).map(|v| &v[..]);
+        for (fi, font) in lang_fonts.iter().enumerate() {
+            let data = sealed_raw(font, &font.raw_data, lang_seals, fi)
+                .cloned()
                 .unwrap_or_else(|| serialize_face_name(font));
             stream.extend(write_record(tags::HWPTAG_FACE_NAME, 1, &data));
         }
     }
 
-    for bf in &doc_info.border_fills {
-        let data = bf
-            .raw_data
-            .clone()
+    for (i, bf) in doc_info.border_fills.iter().enumerate() {
+        let data = sealed_raw(bf, &bf.raw_data, seals.map(|s| &s.border_fills[..]), i)
+            .cloned()
             .unwrap_or_else(|| serialize_border_fill(bf));
         stream.extend(write_record(tags::HWPTAG_BORDER_FILL, 1, &data));
     }
 
-    for cs in &doc_info.char_shapes {
-        let data = cs
-            .raw_data
-            .clone()
+    for (i, cs) in doc_info.char_shapes.iter().enumerate() {
+        let data = sealed_raw(cs, &cs.raw_data, seals.map(|s| &s.char_shapes[..]), i)
+            .cloned()
             .unwrap_or_else(|| serialize_char_shape(cs));
         stream.extend(write_record(tags::HWPTAG_CHAR_SHAPE, 1, &data));
     }
 
-    for td in &doc_info.tab_defs {
-        let data = td.raw_data.clone().unwrap_or_else(|| serialize_tab_def(td));
+    for (i, td) in doc_info.tab_defs.iter().enumerate() {
+        let data = sealed_raw(td, &td.raw_data, seals.map(|s| &s.tab_defs[..]), i)
+            .cloned()
+            .unwrap_or_else(|| serialize_tab_def(td));
         stream.extend(write_record(tags::HWPTAG_TAB_DEF, 1, &data));
     }
 
-    for numbering in &doc_info.numberings {
-        let data = numbering
-            .raw_data
-            .clone()
-            .unwrap_or_else(|| serialize_numbering(numbering));
+    for (i, numbering) in doc_info.numberings.iter().enumerate() {
+        let data = sealed_raw(
+            numbering,
+            &numbering.raw_data,
+            seals.map(|s| &s.numberings[..]),
+            i,
+        )
+        .cloned()
+        .unwrap_or_else(|| serialize_numbering(numbering));
         stream.extend(write_record(tags::HWPTAG_NUMBERING, 1, &data));
     }
 
-    for bullet in &doc_info.bullets {
-        let data = bullet
-            .raw_data
-            .clone()
+    for (i, bullet) in doc_info.bullets.iter().enumerate() {
+        let data = sealed_raw(bullet, &bullet.raw_data, seals.map(|s| &s.bullets[..]), i)
+            .cloned()
             .unwrap_or_else(|| serialize_bullet(bullet));
         stream.extend(write_record(tags::HWPTAG_BULLET, 1, &data));
     }
 
-    for ps in &doc_info.para_shapes {
-        let data = ps
-            .raw_data
-            .clone()
+    for (i, ps) in doc_info.para_shapes.iter().enumerate() {
+        let data = sealed_raw(ps, &ps.raw_data, seals.map(|s| &s.para_shapes[..]), i)
+            .cloned()
             .unwrap_or_else(|| serialize_para_shape(ps));
         stream.extend(write_record(tags::HWPTAG_PARA_SHAPE, 1, &data));
     }
 
-    for style in &doc_info.styles {
-        let data = style
-            .raw_data
-            .clone()
+    for (i, style) in doc_info.styles.iter().enumerate() {
+        let data = sealed_raw(style, &style.raw_data, seals.map(|s| &s.styles[..]), i)
+            .cloned()
             .unwrap_or_else(|| serialize_style(style));
         stream.extend(write_record(tags::HWPTAG_STYLE, 1, &data));
     }
@@ -138,6 +171,12 @@ pub fn serialize_document_properties(props: &DocProperties) -> Vec<u8> {
     if let Some(ref raw) = props.raw_data {
         return raw.clone();
     }
+    serialize_document_properties_from_model(props)
+}
+
+/// [#4493] raw_data 를 무시하고 모델 값으로 DOCUMENT_PROPERTIES 를 쓴다 —
+/// 봉인 검증이 "모델이 바뀌었다" 고 판정한 경로 전용.
+fn serialize_document_properties_from_model(props: &DocProperties) -> Vec<u8> {
     let mut w = ByteWriter::new();
     w.write_u16(props.section_count).unwrap();
     w.write_u16(props.page_start_num).unwrap();

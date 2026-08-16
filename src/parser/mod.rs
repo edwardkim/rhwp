@@ -1467,6 +1467,22 @@ fn parse_document_inner(
     data: &[u8],
     password: Option<&[u8]>,
 ) -> Result<ParsedDocument, ParseError> {
+    let mut parsed = parse_document_inner_unsealed(data, password)?;
+    // [#4493] 파싱과 모든 load fixup 이 끝난 마지막 지점에서 DocInfo raw 출처를
+    // 봉인한다 — 이보다 앞(포맷별 파서 내부)에서 봉인하면 HWP3-변환본 spacing
+    // 반감 같은 로드 보정이 봉인을 깨서, 무변경 문서의 원본 바이트 통과가 죽는다.
+    // raw 캐시가 없는 포맷(HWPX/HWP3/HML)에서는 no-op.
+    parsed
+        .document
+        .doc_info
+        .seal_raw_provenance(&parsed.document.doc_properties);
+    Ok(parsed)
+}
+
+fn parse_document_inner_unsealed(
+    data: &[u8],
+    password: Option<&[u8]>,
+) -> Result<ParsedDocument, ParseError> {
     let open_policy = document_open_decompression_policy();
     match detect_format(data) {
         FileFormat::Hwp => {

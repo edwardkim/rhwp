@@ -26,7 +26,7 @@ pub struct StoredBinData {
 }
 
 /// 바이너리 데이터 아이템 (HWPTAG_BIN_DATA)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct BinData {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -49,7 +49,7 @@ pub struct BinData {
 }
 
 /// 바이너리 데이터 타입
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum BinDataType {
     #[default]
     /// 외부 파일 참조
@@ -61,7 +61,7 @@ pub enum BinDataType {
 }
 
 /// 바이너리 데이터 압축 방식
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum BinDataCompression {
     #[default]
     /// 스토리지 디폴트
@@ -73,7 +73,7 @@ pub enum BinDataCompression {
 }
 
 /// 바이너리 데이터 접근 상태
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum BinDataStatus {
     #[default]
     /// 아직 접근하지 않음
