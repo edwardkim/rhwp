@@ -26,18 +26,22 @@ last_verified: 2026-08-16
 | Stage 1 | `font_rule_ledger.schema.json`, `font_rule_sources.json`, source fixture와 boundary test | 작성됨 |
 | Stage 2 | `font_rule_candidates.json`, `font_rule_baseline.json`, `task_m100_4939_baseline_manifest.md` | 작성됨 |
 | Stage 3 | `font_rule_candidates.json`의 1,352개 실제 rule candidate와 disposition | 작성됨 |
-| Stage 4 | `font_rule_ledger.json`, `font_rule_ledger_summary.md` | 미착수 |
+| Stage 4 | `font_rule_ledger.json`, `font_rule_ledger_summary.md` | 작성됨 |
 | Stage 5 | baseline 재생성과 최종 감사 | 미착수 |
 
 Stage 1은 실제 source mapping을 수집하지 않는다. owner와 안정 selector의 존재, 규칙 행 스키마,
 grouped mapping·ordered chain·algorithmic predicate의 확장 계약만 고정한다. 실제 collector와
 canonical JSON writer는 Stage 2에서 구현했다. Stage 2의 candidate는 30개 source selector의
 폐합 snapshot이다. Stage 3은 이 30개 boundary를 유지한 채 1,352개 rule candidate와 각
-selector의 disposition을 같은 파일에 추가했다. relation type과 evidence 판정은 아직 하지 않았다.
+selector의 disposition을 같은 파일에 추가했다. Stage 4는 이 candidate 전부를 1,507개 원장 행으로
+판정했다. Studio `FONT_LIST` 153개와 정부상징 oracle 1개만 승인된 backend/profile 분할을 사용한다.
+근거가 부족한 44개 규칙은 `unknown`으로 보존했고, SFNT/byte 증거 없는 `identity-alias` 승격은 없다.
 
 - [W0 baseline manifest](task_m100_4939_baseline_manifest.md)
 - `font_rule_candidates.json`: owner·selector·source digest 기준선
 - `font_rule_baseline.json`: metric table·lookup projection·fixture·gate 기준선
+- [Font Rule Ledger 요약](font_rule_ledger_summary.md)
+- `font_rule_ledger.json`: candidate evidence reference와 판정 결과를 가진 조사 원장
 
 ## Stage 1 검증
 
