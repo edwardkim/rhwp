@@ -28,7 +28,8 @@
       "id": "SW-L4",
       "name": "반증가능성·교정 (Falsifiability & Calibration)",
       "requires": "각 주장이 '무엇이 관측되면 이 주장이 틀린가'(falsifier)와 확신도를 명시한다. 예측형 주장은 판정 기한을 갖고, 기한이 지나면 실제 결과로 채점된다.",
-      "referenceCommand": "(도구 무관) claims[].falsifier · confidence · resolveBy · resolvedOutcome"
+      "referenceCommand": "(도구 무관) claims[].falsifier · confidence · resolveBy · resolvedOutcome",
+      "trackRecord": "예측의 사후 채점은 tools/strategist/track_record.py 가 맡는다 — Brier 점수와 확신도 구간별 실제 적중률, 그리고 판정률(미판정 방치 노출)."
     },
     {
       "id": "SW-L5",
@@ -66,6 +67,7 @@
   "surfaces": [
     "mydocs/tech/standards/strategy_work_standard.md",
     "mydocs/tech/standards/agent_work_standard.md",
-    "tools/strategist/sws_audit.py"
+    "tools/strategist/sws_audit.py",
+    "tools/strategist/track_record.py"
   ]
 }
