@@ -4,8 +4,8 @@
 
 import { runTool, listDocuments, basename, dirname } from "./api.js";
 
-/** main.js 의 AXES 와 맞춘 검증 스윕 축 — 늘어나면 여기와 main.js 둘 다 바꾼다. */
-const VERIFY_AXES = ["hidden-text", "injection", "unicode", "watermark"];
+/** 문서 카드와 일괄 스윕이 함께 쓰는 검증 축의 단일 출처. */
+export const VERIFY_AXES = Object.freeze(["hidden-text", "injection", "unicode", "watermark"]);
 
 export class BatchRunner {
   /**

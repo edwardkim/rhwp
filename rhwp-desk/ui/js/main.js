@@ -6,7 +6,7 @@ import * as api from "./api.js";
 import * as cards from "./cards.js";
 import { Palette } from "./palette.js";
 import { Viewer } from "./viewer.js";
-import { BatchRunner } from "./batch.js";
+import { BatchRunner, VERIFY_AXES } from "./batch.js";
 import { runAgentTask } from "./agent.js";
 import { attachSuggestions, cliCommandFor } from "./ontology.js";
 
@@ -126,7 +126,7 @@ function renderQueue() {
 }
 
 /* ══════════ 문서 관리 ══════════ */
-const AXES = ["hidden-text", "injection", "unicode", "watermark"];
+const AXES = VERIFY_AXES;
 
 function getDoc(path) {
   if (!state.docs.has(path)) {
