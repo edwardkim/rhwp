@@ -40,6 +40,28 @@ cargo nextest run \
   --tests --test-threads 12 --no-fail-fast
 ~~~
 
+### integration test source 추가와 자동 sharding
+
+새 회귀·계약 테스트는 종전과 같이 `tests/issue_<번호>_<설명>.rs` 또는 `tests/<계약명>.rs`로
+`tests/` 최상위에 작성한다. Cargo는 top-level 파일을 개별 binary로 자동 발견하지 않는다.
+다음 생성기가 새 source를 manifest에 등록하고 현재 weight가 가장 낮은 generated suite에 배정한 뒤
+harness와 Cargo target 블록을 함께 갱신한다.
+
+~~~bash
+node scripts/rust-test-suite-manifest.mjs --generate
+node scripts/rust-test-suite-manifest.mjs --check
+node scripts/run-rust-test.mjs issue_1234_short_description \
+  -- --cargo-profile release-test --target-dir target/pr-review
+~~~
+
+`tests/generated/*.rs`와 manifest·Cargo generated block은 직접 편집하지 않는다. 이름 변경·삭제는
+`node scripts/rust-test-suite-manifest.mjs --sync`로 반영한다. `--rebalance`는 전체 source를
+weighted LPT로 다시 분배하므로 target 구조를 의도적으로 재조정하는 별도 단계에서만 사용한다.
+경로·crate-root 의존성이 탐지된 source는 생성기가 singleton exception으로 보존한다.
+
+로컬 전체 nextest와 CI nextest archive는 모두 manifest에서 생성된 같은 Cargo `[[test]]` target을
+사용한다. 따라서 새 일반 test source는 test case 수만 늘리고 integration binary 수는 늘리지 않는다.
+
 ### 시각 대조용 최신 바이너리 준비는 별도다
 
 renderer/layout 변경을 한컴 기준 PDF와 비교할 때는 비교 하네스가 수정 후 바이너리를 실행하도록 다음
@@ -90,7 +112,7 @@ PowerShell의 `target/pr-review`는 Windows에서 정상 경로로 해석된다.
 ### 장시간 baseline의 조기 실행
 
 `overflow_cell_baseline::overflow_cell_lines_do_not_grow`는 samples 전수를 자체 worker로 검사해 60초를
-넘길 수 있다. `.config/nextest.toml`은 이 binary에 `priority = 100`을 적용한다. nextest는 개별 테스트를
+넘길 수 있다. `.config/nextest.toml`은 generated suite 안의 이 module에 `priority = 100`을 적용한다. nextest는 개별 테스트를
 별도 프로세스로 스케줄하므로, 동일한 nextest run의 시작 시점에 이 long-running baseline을 먼저 배치하면서도
 별도 Cargo 프로세스·별도 target을 병렬로 열지 않는다. `SLOW` 행은 시작 로그가 아니라 60초 경과 알림이므로
 출력 순서만으로 시작 순서를 판단하지 않는다. 2026-08-09 전체 run에서 이 baseline은 시작 뒤 다른 3,923개
@@ -333,3 +355,21 @@ git branch -D prN-merge-test
 merge가 시작되지 않았거나 Already up to date면 abort는 생략한다. 이 절은 simulation branch만 정리한다.
 fetch branch, review branch, docs-only branch, worktree, 검토 전용 target은 review 종료 뒤
 [merge 후속 처리](post_merge.md)의 최종 종료 게이트에서 정리한다.
+
+## 4.5 전체 Rust 회귀 sharding 실측
+
+2026-08-16 macOS에서 `target/pr-review`, release-test profile, test thread 8개로 weighted
+sharding 전체 회귀를 실행했다. `CARGO_INCREMENTAL=0`은 지정하지 않았다.
+
+- integration target: 40개(32개 generated suite와 singleton exception 8개)
+- 전체 Rust suite: 44개(lib/bin 4개 포함)
+- 컴파일: 3분 39초
+- 전체 wall time: 407.56초
+- `nextest list`: 6,541개, ignored 38개, runnable 6,503개
+- 전체 실행: 종료 코드 0, 실패 0건
+- warm `nextest list`: 0.19초
+
+신규 회귀 test source는 `tests/` 최상위에 추가하고
+`node scripts/rust-test-suite-manifest.mjs --generate`로 기존 suite에 자동 배정한다. 이름 변경이나
+삭제는 `node scripts/rust-test-suite-manifest.mjs --sync`를 사용하며 generated 파일은 직접 편집하지
+않는다.

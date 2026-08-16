@@ -425,6 +425,36 @@ export function assignUnlistedSources(manifest, root = ROOT) {
   return assignSources(manifest, unlisted, root);
 }
 
+export function syncManifestSources(manifest, root = ROOT) {
+  const discovered = new Set(discoverSourceFiles(manifest, root));
+  let removed = 0;
+
+  manifest.exceptions = manifest.exceptions.filter((entry) => {
+    if (discovered.has(entry.path)) {
+      return true;
+    }
+    removed += 1;
+    process.stdout.write(`[RustTestSuite] 제거 반영: ${entry.path}\n`);
+    return false;
+  });
+  for (const [suite, sources] of Object.entries(manifest.suites)) {
+    manifest.suites[suite] = sources.filter((source) => {
+      if (discovered.has(source)) {
+        return true;
+      }
+      removed += 1;
+      process.stdout.write(`[RustTestSuite] 제거 반영: ${source} (${suite})\n`);
+      return false;
+    });
+  }
+  if (removed > 0) {
+    writeManifest(manifest, root);
+  }
+
+  const added = assignUnlistedSources(manifest, root);
+  return { removed, added };
+}
+
 export function renderHarness(suite, sources) {
   const modules = [...sources]
     .sort((left, right) => left.localeCompare(right))
@@ -746,6 +776,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
       assignUnlistedSources(manifest);
       generateArtifacts(manifest);
       printValidation(validateRepository());
+    } else if (command === '--sync') {
+      const manifest = loadManifest();
+      syncManifestSources(manifest);
+      generateArtifacts(manifest);
+      printValidation(validateRepository());
     } else if (command === '--adopt') {
       const requested = process.argv.slice(3).map((inputPath) =>
         path.isAbsolute(inputPath)
@@ -764,7 +799,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
     } else {
       process.stderr.write(
         '사용법: node scripts/rust-test-suite-manifest.mjs ' +
-          '--check|--generate|--rebalance|--adopt-new|--adopt <파일...>\n',
+          '--check|--generate|--sync|--rebalance|--adopt-new|--adopt <파일...>\n',
       );
       process.exitCode = 2;
     }

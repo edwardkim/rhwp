@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "minimumNextestCases": 6484,
+  "minimumNextestCases": 6541,
   "sharding": {
     "suitePrefix": "regression_suite_",
     "suiteCount": 32,

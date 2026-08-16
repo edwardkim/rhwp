@@ -93,6 +93,19 @@ cargo nextest run \
   --tests --test-threads 12 --no-fail-fast
 ```
 
+새 Rust integration test는 `tests/` 최상위에 원본 `.rs` 파일만 추가하고 suite를 직접 선택하지 않는다.
+다음 명령이 source 크기와 test 수를 기준으로 기존 generated suite에 자동 배정한다.
+
+```bash
+node scripts/rust-test-suite-manifest.mjs --generate
+node scripts/run-rust-test.mjs <확장자를_뺀_test_source_이름>
+```
+
+`tests/generated/`는 생성물이며 직접 수정하지 않는다. test source 이름 변경·삭제 후에는
+`node scripts/rust-test-suite-manifest.mjs --sync`를 실행한다. 전체 배정 정책과 PR 검증 절차는
+[로컬 사전 검증](pr_review/local_validation.md)의 "integration test source 추가와 자동 sharding"을
+따른다.
+
 `release-test`는 통합 테스트 시간을 줄이기 위한 프로필이며 실제 release 산출물은 계속
 `cargo build --release`로 만든다.
 `--test-threads 12`는 CPU·메모리가 충분한 host의 기본값이며, 작은 host에서는 논리 CPU 이하로 낮춘다.

@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import {
   cargoTestArguments,
@@ -13,6 +16,11 @@ import {
   renderHarness,
   validateRepository,
 } from '../rust-test-suite-manifest.mjs';
+
+const ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../..',
+);
 
 test('전체 integration source와 generated target 계약이 일치한다', () => {
   const manifest = loadManifest();
@@ -66,4 +74,19 @@ test('harness와 Cargo target 렌더링은 입력 순서와 무관하다', () =>
     renderHarness(suite, sources),
   );
   assert.match(renderCargoTestBlock(manifest), /\[\[test\]\]/);
+});
+
+test('개발자 가이드가 자동 sharding 진입점을 안내한다', () => {
+  const guides = [
+    'CONTRIBUTING.md',
+    'mydocs/manual/pr_review/local_validation.md',
+    'mydocs/manual/dev_environment_guide.md',
+  ].map((relativePath) =>
+    readFileSync(path.join(ROOT, relativePath), 'utf8'),
+  );
+  for (const guide of guides) {
+    assert.match(guide, /rust-test-suite-manifest\.mjs --generate/);
+    assert.match(guide, /rust-test-suite-manifest\.mjs --sync/);
+    assert.match(guide, /tests\/generated/);
+  }
 });
