@@ -1138,6 +1138,18 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `hwp_close` 를 한 프로세스로 돌면 **310ms**, 같은 검색 3회를 무상태 CLI 로 돌리면
 **810ms** 다(실측). 문서가 클수록, 호출이 많을수록 격차가 벌어진다.
 
+**`hwp_doc_tree` 의 두 안정 ID 체계** — `nodes.pages`/`nodes.tables` 의 `p0../t0..`
+는 페이지·표 단위까지만 내려간다(#4357). 문단·표 셀 단위 좌표가 필요하면
+`nodes.paragraphs[].nodePath`/`nodes.cells[].nodePath` 를 쓴다 — 회귀 비교 엔진
+`docdiff::NodePath`/`PathStep`(`src/docdiff/model.rs`)가 이미 쓰는
+`sec[i]/para[i]/ctrl[i]/cell[r,c]` 문법을 그대로 승격한 것이라 새 문법이 아니다.
+두 체계는 **독립이고 서로 대체하지 않는다** — `idContract`(p0../t0..)와
+`nodePathContract`(sec.../cell...)가 응답에 나란히 실린다. 범위는 docdiff 비교
+엔진과 같아 본문과 표 셀 중첩까지만 내려가고, 글상자·머리말·꼬리말·각주/미주 안의
+표는 `PathStep` 에 대응 칸이 없어 `nodes.cells`/`nodes.paragraphs` 에 나오지 않는다
+(그 표의 위치는 `nodes.tables[].containerPath` 로 이미 알 수 있다 — `kind` 가
+`textbox`/`header`/`footer`/`footnote`/`endnote` 인 항목).
+
 ### 6-3. `structuredContent` 가 없는 도구
 
 단건 봉투 도구는 `content[0].text`(JSON 문자열)와 `structuredContent`(파싱된 객체)를
