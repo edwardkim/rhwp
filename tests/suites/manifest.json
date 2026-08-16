@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "minimumNextestCases": 6551,
+  "minimumNextestCases": 6556,
   "sharding": {
     "suitePrefix": "regression_suite_",
     "suiteCount": 32,
@@ -275,6 +275,7 @@
       "tests/issue_2387_prvtext_supplement.rs",
       "tests/issue_2524_embedded_font_svg.rs",
       "tests/issue_3507_sectiondef_ctrl_data.rs",
+      "tests/issue_3557_package_preservation.rs",
       "tests/issue_3693_structure_clause_context.rs",
       "tests/issue_4388_arc_type_roundtrip.rs",
       "tests/issue_493_cell_attrs.rs",
@@ -358,6 +359,7 @@
       "tests/issue_3744_structure_clause_confidence.rs",
       "tests/issue_4272_nested_cell_text_selection.rs",
       "tests/issue_4709_metric_font_annotation.rs",
+      "tests/issue_4916_note_vpos_roundtrip.rs",
       "tests/issue_676_trailing_empty_para.rs",
       "tests/render_p37_pdf_backend_cli.rs",
       "tests/split_document_tool_contract.rs",
@@ -400,6 +402,7 @@
       "tests/issue_3707_hwp3_roundtrip_endnote_columns.rs",
       "tests/issue_3739_hwpx_same_char_shape_boundary.rs",
       "tests/issue_4031_enter_latency_probe.rs",
+      "tests/issue_4397_ruby_hwp5_roundtrip.rs",
       "tests/mcp_split_page_base_contract.rs",
       "tests/public_rust_api_vec_compat.rs",
       "tests/suites/issue_regression_pilot/issue_2097_squeeze.rs"

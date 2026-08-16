@@ -32,6 +32,9 @@ mod issue_2524_embedded_font_svg;
 #[path = "../issue_3507_sectiondef_ctrl_data.rs"]
 mod issue_3507_sectiondef_ctrl_data;
 
+#[path = "../issue_3557_package_preservation.rs"]
+mod issue_3557_package_preservation;
+
 #[path = "../issue_3693_structure_clause_context.rs"]
 mod issue_3693_structure_clause_context;
 

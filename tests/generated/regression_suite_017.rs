@@ -47,6 +47,9 @@ mod issue_3739_hwpx_same_char_shape_boundary;
 #[path = "../issue_4031_enter_latency_probe.rs"]
 mod issue_4031_enter_latency_probe;
 
+#[path = "../issue_4397_ruby_hwp5_roundtrip.rs"]
+mod issue_4397_ruby_hwp5_roundtrip;
+
 #[path = "../mcp_split_page_base_contract.rs"]
 mod mcp_split_page_base_contract;
 

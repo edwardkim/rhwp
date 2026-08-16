@@ -41,6 +41,9 @@ mod issue_4272_nested_cell_text_selection;
 #[path = "../issue_4709_metric_font_annotation.rs"]
 mod issue_4709_metric_font_annotation;
 
+#[path = "../issue_4916_note_vpos_roundtrip.rs"]
+mod issue_4916_note_vpos_roundtrip;
+
 #[path = "../issue_676_trailing_empty_para.rs"]
 mod issue_676_trailing_empty_para;
 
