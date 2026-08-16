@@ -572,6 +572,28 @@ async function initialize(): Promise<void> {
     );
     inputHandler.setEditMode(editMode);
 
+    // 눈금자 핀 드래그 커밋 — 종류(문단 서식/쪽 여백)에 따라 InputHandler 호출은 다르지만
+    // 진입점은 하나다. 콜백 두 개로 나뉘어 있었을 때 한쪽만 executeOperation 커밋 경로를
+    // 타고 다른 쪽은 wasm을 직접 호출하는 어긋남이 실제로 발생했었다 — 쪽 여백 핀 드래그가
+    // 모델은 바꿨지만 CanvasView를 재플로우시키지 못한 사례. 여기서 그 어긋남을 구조적으로
+    // 막는다: 두 갈래 모두 이 한 함수 안에서, 같은 InputHandler 커밋 원리(executeOperation)
+    // 를 거친다.
+    ruler.onCommitPin = (commit) => {
+      if (!inputHandler) return;
+      if (commit.kind === 'paraProps') {
+        inputHandler.applyParaPropsAtCursor(commit.props);
+        return;
+      }
+      inputHandler.executeOperation({
+        kind: 'snapshot',
+        operationType: 'pageMargin',
+        operation: (wasm) => {
+          wasm.setPageMargin(commit.pageIdx, commit.marginKind, commit.hwpunit);
+          return inputHandler!.getCursorPosition();
+        },
+      });
+    };
+
     // [#4180] 저장 시점 캐럿 스탬핑 — 셀/글상자 캐럿은 현행 캐럿 필드(list_id 를
     // 구역 인덱스로 쓰는 rhwp 관례)로 표현 불가 → 호스트 문단 시작으로 강등.
     wasm.onBeforeExport = () => {
