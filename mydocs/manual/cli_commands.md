@@ -1196,6 +1196,19 @@ HWP5 → IR → HWP5 roundtrip 무손실 검증(#1552). 재조립 `.rt.hwp` 와 
   `Δ Line: 4→0 (-4)  RawSvg: 1→0 (-1)`, 배치는 콘솔/`struct_delta` 컬럼에 `Line:-4;RawSvg:-1`).
   음수=라운드트립 손실, 양수=추가. 손실 노드 타입으로 직렬화 누락 원인을 즉시 좁힌다.
 
+### `layout-anomaly <파일> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--strict]`
+**렌더 한 장의 이상탐지** — `render-diff` 가 두 렌더 사이 **변위**를 재는 것과 달리, 렌더 한 장
+만으로 "정상적인 문서로 보이는가"를 판정한다. 두 렌더가 똑같이 망가져 있으면 변위는 0이라
+`render-diff` 는 못 잡는 케이스를 이 명령이 잡는다. 설계 배경:
+[layout_anomaly_detection.md](../tech/layout_anomaly_detection.md).
+- 판정 3종: `overflow`(요소 bbox가 본문 여백 초과) · `overlap`(겹치면 안 되는 요소끼리 겹침) ·
+  `empty_page`(콘텐츠 없는 중간 쪽 — 항상 "가능성 신호").
+- 기본 종료 코드는 0(판정=데이터, 도구 실패 아님). `--strict` 만 확정 신호(overflow·overlap)를
+  종료 코드 3으로 낸다 — `empty_page` 는 `--strict` 로도 실패를 유발하지 않는다(의도된 빈 쪽과
+  기하만으로 구분 불가).
+- `--overflow-tolerance`(기본 1.0px) / `--overlap-tolerance`(기본 2.0px, 폭·높이 둘 다 초과해야
+  잡음) 로 민감도 조절. `-p` 는 사람 모드 출력만 좁힌다(스캔 자체는 항상 전 페이지).
+
 ### `bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]`
 **단계별 처리 성능 계측** — parse / layout / render / serialize 를 워밍업 1회 후 N회(기본 3)
 반복하여 median(ms)으로 보고한다.
