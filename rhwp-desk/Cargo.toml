@@ -6,7 +6,7 @@
 
 [package]
 name = "rhwp-desk"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "rhwp 데스크톱 워크벤치 — HWP/HWPX 뷰어·검증·명령 팔레트"
 license = "MIT OR Apache-2.0"
