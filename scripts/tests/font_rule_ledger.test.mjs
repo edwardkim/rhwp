@@ -6,7 +6,11 @@ import { fileURLToPath } from 'node:url';
 
 import {
   assertSourceBoundary,
+  buildBaseline,
+  canonicalJson,
+  collectSourceCandidates,
   expandFixtureSnippets,
+  sha256Text,
   validateLedger,
 } from '../font_rule_ledger.mjs';
 
@@ -90,4 +94,51 @@ test('a disappeared symbol selector is rejected instead of matching zero candida
   sources.owners[0].selectors[0].selector = '__removed_selector_for_red_test__';
 
   assert.match(assertSourceBoundary(sources, ROOT).join('\n'), /matched 0 time/);
+});
+
+test('source candidate collection is deterministic and closes every declared selector', () => {
+  const sources = readJson(path.join(INVESTIGATION, 'font_rule_sources.json'));
+  const first = collectSourceCandidates(
+    sources,
+    ROOT,
+    'acb1465a6026747231420945c30407e8f008a898',
+  );
+  const second = collectSourceCandidates(
+    sources,
+    ROOT,
+    'acb1465a6026747231420945c30407e8f008a898',
+  );
+
+  assert.equal(first.candidates.length, 30);
+  assert.equal(first.candidates.every(candidate => candidate.matchCount >= candidate.minMatches), true);
+  assert.equal(canonicalJson(first), canonicalJson(second));
+  assert.equal(sha256Text(canonicalJson(first)), sha256Text(canonicalJson(second)));
+});
+
+test('W0 baseline preserves all metric entries and lookup fallback projection', () => {
+  const sources = readJson(path.join(INVESTIGATION, 'font_rule_sources.json'));
+  const candidates = collectSourceCandidates(
+    sources,
+    ROOT,
+    'acb1465a6026747231420945c30407e8f008a898',
+  );
+  const baseline = buildBaseline(candidates, ROOT);
+
+  assert.equal(baseline.fontMetrics.entryCount, 600);
+  assert.equal(baseline.fontMetrics.uniqueNameCount, 401);
+  assert.deepEqual(baseline.lookupContract.exactOrder, [
+    'name+bold+italic',
+    'name+bold+italic=false',
+    'name-first',
+  ]);
+  assert.equal(baseline.lookupContract.knownInputCount > 401, true);
+  assert.match(baseline.fontMetrics.tableSha256, /^[0-9a-f]{64}$/);
+  assert.match(baseline.lookupContract.projectionSha256, /^[0-9a-f]{64}$/);
+});
+
+test('canonical JSON sorts object keys, preserves array order and ends with one newline', () => {
+  assert.equal(
+    canonicalJson({ z: 1, a: { y: 2, b: 3 }, rows: [{ d: 4, c: 5 }, 6] }),
+    '{\n  "a": {\n    "b": 3,\n    "y": 2\n  },\n  "rows": [\n    {\n      "c": 5,\n      "d": 4\n    },\n    6\n  ],\n  "z": 1\n}\n',
+  );
 });
