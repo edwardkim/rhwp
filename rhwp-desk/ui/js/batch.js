@@ -4,6 +4,9 @@
 
 import { runTool, listDocuments, basename, dirname } from "./api.js";
 
+/** main.js 의 AXES 와 맞춘 검증 스윕 축 — 늘어나면 여기와 main.js 둘 다 바꾼다. */
+const VERIFY_AXES = ["hidden-text", "injection", "unicode", "watermark"];
+
 export class BatchRunner {
   /**
    * deps: { enginePath(), queue: {start,step,finish,isCancelled,progress},
@@ -22,7 +25,7 @@ export class BatchRunner {
   async run(dir, files, mode) {
     const d = this.deps;
     const label = { info: "메타 스윕", verify: "검증 스윕", pdf: "PDF 변환" }[mode] || mode;
-    const q = d.queue.start(`${label}: ${basename(dir)} (${files.length}건)`, files.length * (mode === "verify" ? 3 : 1));
+    const q = d.queue.start(`${label}: ${basename(dir)} (${files.length}건)`, files.length * (mode === "verify" ? VERIFY_AXES.length : 1));
     const failed = [];
     let done = 0;
 
@@ -43,7 +46,7 @@ export class BatchRunner {
           await call(file, ["info", file, "--json"], "batch");
           d.queue.progress(q, ++done);
         } else if (mode === "verify") {
-          for (const axis of ["hidden-text", "injection", "unicode"]) {
+          for (const axis of VERIFY_AXES) {
             await call(file, ["inspect", axis, file, "--json"], "batch");
             d.queue.progress(q, ++done);
           }
@@ -55,7 +58,7 @@ export class BatchRunner {
       } catch (e) {
         failed.push(`${basename(file)} — ${String(e).slice(0, 120)}`);
         // 실패 격리: 다음 문서로 계속
-        done = mode === "verify" ? Math.ceil(done / 3) * 3 : done;
+        done = mode === "verify" ? Math.ceil(done / VERIFY_AXES.length) * VERIFY_AXES.length : done;
         d.queue.progress(q, done, failed.length);
       }
     }

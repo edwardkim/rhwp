@@ -8,6 +8,7 @@ const LABEL = {
   hwp_export_structure: "구조 추출", hwp_search: "검색", hwp_extract_data: "데이터 추출",
   hwp_fields: "필드 목록", hwp_explain: "설명", hwp_inspect_hidden_text: "은닉 텍스트 검사",
   hwp_inspect_injection: "주입 신호 검사", hwp_inspect_unicode: "유니코드 기만 검사",
+  hwp_inspect_watermark: "워터마크 검사",
   hwp_export_pdf: "PDF 내보내기", hwp_export_svg: "SVG 내보내기", hwp_export_markdown: "마크다운 내보내기",
   hwp_thumbnail: "썸네일", hwp_export_tables: "표 추출", hwp_table_to_csv: "표 CSV 변환",
   hwp_csv_to_table: "CSV로 표 채우기", hwp_chart_to_csv: "차트 CSV 변환",
@@ -42,6 +43,7 @@ const TOOL_TO_CLI = Object.fromEntries(Object.entries(CLI_TO_TOOL).map(([cli, to
 TOOL_TO_CLI.hwp_inspect_hidden_text = "inspect hidden-text";
 TOOL_TO_CLI.hwp_inspect_injection = "inspect injection";
 TOOL_TO_CLI.hwp_inspect_unicode = "inspect unicode";
+TOOL_TO_CLI.hwp_inspect_watermark = "inspect watermark";
 
 /** 온톨로지 도구 이름(hwp_*) → 명령 팔레트 검색어로 쓸 CLI 명령 이름. */
 export const cliCommandFor = (toolName) => TOOL_TO_CLI[toolName] || toolName;
@@ -59,6 +61,7 @@ function toolNameFromEntry(entry) {
     if (axis === "hidden-text") return "hwp_inspect_hidden_text";
     if (axis === "injection") return "hwp_inspect_injection";
     if (axis === "unicode") return "hwp_inspect_unicode";
+    if (axis === "watermark") return "hwp_inspect_watermark";
     return null;
   }
   return CLI_TO_TOOL[cmd] || null;
