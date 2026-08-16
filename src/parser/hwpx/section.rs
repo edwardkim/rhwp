@@ -6741,6 +6741,7 @@ fn parse_hp_ole_element(
     // [#4669] `id` 는 `instid` 와 별개 값이다(한컴 원산 실측). 종전에는 id arm 이
     // 없어(차트는 #3546 에서 받음) 재방출 id 가 "0" 또는 instid 로 되쓰였다.
     let mut id_attr: u32 = 0;
+    let mut saw_instid = false;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
@@ -6793,15 +6794,20 @@ fn parse_hp_ole_element(
                 bin_id = digits.parse().unwrap_or(0);
             }
             b"id" => id_attr = parse_u32(&attr),
-            b"instid" => common.instance_id = parse_u32(&attr),
+            b"instid" => {
+                saw_instid = true;
+                common.instance_id = parse_u32(&attr);
+            }
             // [#2931] 개체 잠금(lock) — 종전 미파싱으로 직렬화 시 항상 "0"으로
             // 되돌아가 OLE 개체의 잠금 상태가 유실됐다.
             b"lock" => common.locked = attr_str(&attr) == "1",
             _ => {}
         }
     }
-    // 차트(#3546)와 동형 — instid 부재 시 id 가 instance_id 를 겸한다.
-    if common.instance_id == 0 {
+    // 차트(#3546)와 동형 — instid **부재** 시에만 id 가 instance_id 를 겸한다.
+    // 명시적 instid="0"(차트 fallback OLE 의 한컴 정답값, #4099 오라클)은 보존해야
+    // 하므로 "0 이면 폴백" 이 아니라 "속성이 없으면 폴백" 이다.
+    if !saw_instid {
         common.instance_id = id_attr;
     }
 
@@ -9282,6 +9288,36 @@ mod tests {
             1,
             "lineShape style=SOLID"
         );
+    }
+
+    /// [#4669] 명시적 `instid="0"` 은 id 로 덮지 않는다 — 차트 fallback OLE 의
+    /// 한컴 정답값이 instance_id=0 이다(#4099 오라클). id 폴백은 instid **부재**
+    /// 시에만 작동해야 한다.
+    #[test]
+    fn issue4669_explicit_zero_instid_is_not_overridden_by_id() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="1117817146" zOrder="7" textWrap="SQUARE" instid="0" binaryItemIDRef="ole1">
+        <hp:sz width="7200" height="7200" protect="0"/>
+        <hp:pos treatAsChar="1" vertRelTo="PARA" horzRelTo="PARA"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected OLE shape");
+        };
+        assert_eq!(ole.common.instance_id, 0, "명시적 instid=0 보존 (#4099)");
+        assert_eq!(ole.hwpx_ole_id, Some(1117817146), "id 원문은 별도 보존");
     }
 
     #[test]
