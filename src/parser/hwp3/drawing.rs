@@ -720,6 +720,20 @@ fn hwp3_uses_no_line_marker(header: &Hwp3DrawingObjectCommonHeader) -> bool {
     header.basic_attr.line_color == 0x1000_0000
 }
 
+/// [다섯 번째 계약] HWP3 다각형 점 배열 → PolygonShape (HWP3 단위 ×HWP3_UNIT_SCALE).
+fn polygon_shape_from_points(points: &[[i32; 2]]) -> PolygonShape {
+    PolygonShape {
+        points: points
+            .iter()
+            .map(|p| crate::model::Point {
+                x: p[0].saturating_mul(HWP3_UNIT_SCALE),
+                y: p[1].saturating_mul(HWP3_UNIT_SCALE),
+            })
+            .collect(),
+        ..Default::default()
+    }
+}
+
 fn map_to_shape_object(
     raw: Hwp3DrawingObject,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -738,8 +752,14 @@ fn map_to_shape_object(
         }
         Hwp3DrawingObject::Ellipse(hdr) => (hdr, ShapeObject::Ellipse(EllipseShape::default())),
         Hwp3DrawingObject::Arc(hdr, _details) => (hdr, ShapeObject::Arc(ArcShape::default())),
-        Hwp3DrawingObject::Polygon(hdr, _details) => {
-            (hdr, ShapeObject::Polygon(PolygonShape::default()))
+        Hwp3DrawingObject::Polygon(hdr, details) => {
+            // [다섯 번째 계약] 꼭짓점을 IR 에 싣는다 — 종전 default() 는 점 0개
+            // SC_POLYGON(8B)을 저장했고, 한글 2022 는 빈 다각형이 든 문서를
+            // 통째로 거부했다(hwp3-sample11 문단 이등분 COM 실측 — p1809 Polygon).
+            (
+                hdr,
+                ShapeObject::Polygon(polygon_shape_from_points(&details.points)),
+            )
         }
         Hwp3DrawingObject::TextBox(hdr, details) => {
             if details.info2_len > 0 {
@@ -768,8 +788,12 @@ fn map_to_shape_object(
         Hwp3DrawingObject::ExtendedCurve(hdr, _details) => {
             (hdr, ShapeObject::Curve(CurveShape::default()))
         }
-        Hwp3DrawingObject::ClosedPolygon(hdr, _details) => {
-            (hdr, ShapeObject::Polygon(PolygonShape::default()))
+        Hwp3DrawingObject::ClosedPolygon(hdr, details) => {
+            // 닫힌 다각형(ExtendedPolygon)도 같은 계약 — 점 좌표는 동일 레이아웃.
+            (
+                hdr,
+                ShapeObject::Polygon(polygon_shape_from_points(&details.points)),
+            )
         }
         Hwp3DrawingObject::Unknown(hdr, _data) => (hdr, ShapeObject::Group(GroupShape::default())),
     };

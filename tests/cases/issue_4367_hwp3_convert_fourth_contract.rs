@@ -88,3 +88,57 @@ fn equation_eqedit_contract_is_normalized() {
     }
     assert!(checked >= 2, "샘플 전제: 수식 2개");
 }
+
+/// 다섯 번째 계약 (hwp3-sample11, 같은 COM 이등분 기법) — 다각형 꼭짓점.
+///
+/// HWP3 파서가 점 배열을 읽고도 `PolygonShape::default()` 로 버려 SC_POLYGON 이
+/// 점 0개(8B)로 저장됐고, 한글 2022 는 빈 다각형이 든 문서를 통째로 거부했다
+/// (p1809 Polygon 이 발동체 — N=1809 열림/1810 거부). 점을 실으면 전문서가
+/// 열린다(OPEN_OK 207,570자).
+#[test]
+fn hwp3_polygon_points_are_loaded() {
+    use rhwp::model::shape::ShapeObject;
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-sample11.hwp");
+    let raw = std::fs::read(&path).expect("read sample11");
+    let mut doc = rhwp::parser::hwp3::parse_hwp3(&raw).expect("HWP3 파싱");
+    rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
+        &mut doc,
+        FileFormat::Hwp3,
+    );
+    fn walk(paragraphs: &[rhwp::model::paragraph::Paragraph], seen: &mut usize, empty: &mut usize) {
+        for p in paragraphs {
+            for c in &p.controls {
+                if let Control::Shape(s) = c {
+                    match s.as_ref() {
+                        ShapeObject::Polygon(poly) => {
+                            *seen += 1;
+                            if poly.points.is_empty() {
+                                *empty += 1;
+                            }
+                        }
+                        ShapeObject::Group(g) => {
+                            for child in &g.children {
+                                if let ShapeObject::Polygon(poly) = child {
+                                    *seen += 1;
+                                    if poly.points.is_empty() {
+                                        *empty += 1;
+                                    }
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+    let (mut seen, mut empty) = (0usize, 0usize);
+    for sec in &doc.sections {
+        walk(&sec.paragraphs, &mut seen, &mut empty);
+    }
+    assert!(seen > 0, "샘플 전제: 다각형이 있어야 한다");
+    assert_eq!(
+        empty, 0,
+        "점 0개 SC_POLYGON 은 한글 2022 가 문서 전체를 거부한다"
+    );
+}
