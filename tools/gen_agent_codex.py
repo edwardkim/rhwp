@@ -134,7 +134,7 @@ FAMILIES = [
     ("30_편집과_계획", "편집·계획 — 원본 무훼손 변경",
      ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit insert-image", "edit redact", "edit sanitize", "run"]),
     ("40_변환과_렌더", "변환·렌더 — 형식을 넘나든다",
-     ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "thumbnail", "render-diff", "build-from-ingest", "split-document",
+     ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "thumbnail", "render-diff", "build-from-ingest", "scaffold", "split-document",
       "export-png-gpu", "gpu-info"]),
     ("50_검증_사다리", "검증 사다리 — 판정은 데이터다",
      ["verify", "ir-diff", "replay", "audit", "lineage", "hwpx-roundtrip",
