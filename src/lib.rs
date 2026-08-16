@@ -17,7 +17,7 @@ pub use rhwp_contracts::ir_schema;
 pub mod model;
 pub mod ole_chart;
 pub use rhwp_contracts::ontology;
-pub mod ooxml_chart;
+pub use rhwp_ooxml_chart as ooxml_chart;
 pub mod paint;
 pub mod parser;
 pub use rhwp_password_crypto as password_crypto;

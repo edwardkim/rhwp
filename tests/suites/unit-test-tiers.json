@@ -97,6 +97,58 @@
       "maximumTestAttributes": 2
     },
     {
+      "id": "crates/rhwp-ooxml-chart/src/data.rs::tests#1",
+      "file": "crates/rhwp-ooxml-chart/src/data.rs",
+      "sourcePath": "crates/rhwp-ooxml-chart/src/data.rs",
+      "line": 405,
+      "module": "tests",
+      "testAttributes": 17,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 17
+    },
+    {
+      "id": "crates/rhwp-ooxml-chart/src/parser.rs::tests#1",
+      "file": "crates/rhwp-ooxml-chart/src/parser.rs",
+      "sourcePath": "crates/rhwp-ooxml-chart/src/parser.rs",
+      "line": 682,
+      "module": "tests",
+      "testAttributes": 43,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 43
+    },
+    {
+      "id": "crates/rhwp-ooxml-chart/src/patch.rs::tests#1",
+      "file": "crates/rhwp-ooxml-chart/src/patch.rs",
+      "sourcePath": "crates/rhwp-ooxml-chart/src/patch.rs",
+      "line": 223,
+      "module": "tests",
+      "testAttributes": 10,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 10
+    },
+    {
+      "id": "crates/rhwp-ooxml-chart/src/renderer.rs::tests#1",
+      "file": "crates/rhwp-ooxml-chart/src/renderer.rs",
+      "sourcePath": "crates/rhwp-ooxml-chart/src/renderer.rs",
+      "line": 2260,
+      "module": "tests",
+      "testAttributes": 95,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 95
+    },
+    {
       "id": "crates/rhwp-password-crypto/src/lib.rs::tests#1",
       "file": "crates/rhwp-password-crypto/src/lib.rs",
       "sourcePath": "crates/rhwp-password-crypto/src/lib.rs",
@@ -1824,58 +1876,6 @@
         "super_private_scope"
       ],
       "maximumTestAttributes": 2
-    },
-    {
-      "id": "src/ooxml_chart/data.rs::tests#1",
-      "file": "src/ooxml_chart/data.rs",
-      "sourcePath": "src/ooxml_chart/data.rs",
-      "line": 405,
-      "module": "tests",
-      "testAttributes": 17,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 17
-    },
-    {
-      "id": "src/ooxml_chart/parser.rs::tests#1",
-      "file": "src/ooxml_chart/parser.rs",
-      "sourcePath": "src/ooxml_chart/parser.rs",
-      "line": 682,
-      "module": "tests",
-      "testAttributes": 43,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 43
-    },
-    {
-      "id": "src/ooxml_chart/patch.rs::tests#1",
-      "file": "src/ooxml_chart/patch.rs",
-      "sourcePath": "src/ooxml_chart/patch.rs",
-      "line": 223,
-      "module": "tests",
-      "testAttributes": 10,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 10
-    },
-    {
-      "id": "src/ooxml_chart/renderer.rs::tests#1",
-      "file": "src/ooxml_chart/renderer.rs",
-      "sourcePath": "src/ooxml_chart/renderer.rs",
-      "line": 2260,
-      "module": "tests",
-      "testAttributes": 95,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 95
     },
     {
       "id": "src/paint/builder.rs::tests#1",

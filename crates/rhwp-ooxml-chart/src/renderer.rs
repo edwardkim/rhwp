@@ -6,7 +6,7 @@
 
 use super::{
     BarGrouping, LegendPos, OfPieInfo, OfPieType, OoxmlChart, OoxmlChartType, OoxmlSeries,
-    ScatterStyle, SeriesMarker, View3D,
+    SeriesMarker, View3D,
 };
 
 /// 기본 시리즈 색상 팔레트 (시리즈 색상 미지정 시 순환 사용)
@@ -2260,6 +2260,7 @@ fn render_legend_right(svg: &mut String, chart: &OoxmlChart, x: f64, y: f64, h: 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ScatterStyle;
 
     #[test]
     fn test_render_empty_chart() {

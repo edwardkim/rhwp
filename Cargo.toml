@@ -194,6 +194,7 @@ path = "tests/issue_4100_chart_data_edit.rs"
 
 [dependencies]
 rhwp-contracts = { path = "crates/rhwp-contracts" }
+rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart" }
 rhwp-password-crypto = { path = "crates/rhwp-password-crypto" }
 wasm-bindgen = "0.2"
 cfb = "0.14"

@@ -2243,6 +2243,7 @@ dependencies = [
  "resvg 0.45.1",
  "resvg 0.47.0",
  "rhwp-contracts",
+ "rhwp-ooxml-chart",
  "rhwp-password-crypto",
  "roxmltree 0.21.1",
  "serde",
@@ -2282,6 +2283,13 @@ name = "rhwp-native-ffi"
 version = "0.1.0"
 dependencies = [
  "rhwp",
+]
+
+[[package]]
+name = "rhwp-ooxml-chart"
+version = "0.1.0"
+dependencies = [
+ "quick-xml",
 ]
 
 [[package]]
