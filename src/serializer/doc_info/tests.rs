@@ -832,3 +832,48 @@ fn test_serialize_bullet_layout_and_roundtrip() {
     assert_eq!(parsed_info.bullets[0].char_shape_id, 2);
     assert_eq!(parsed_info.bullets[0].text_distance, 50);
 }
+
+/// [#4898] HWPX 출처 글꼴은 `default_name` 이 비어 있다 — 한글은 그 자리에 영문 기본
+/// 이름을 싣는다. 실측표로 같은 값을 채워 FACE_NAME 이 한컴 저장본과 같은 모양이 되게 한다.
+///
+/// 실측: 09254 의 FACE_NAME 33개가 한글 오라클 37~65바이트 vs rhwp 19~23바이트였고,
+/// 표 적용 후 크기가 일치했다(일치 레코드 399 → 410).
+/// 표 자체는 한컴 저장 `.hwp` 796건에서 모은 36,351쌍의 이름별 최빈값이다.
+#[test]
+fn issue4898_face_name_fills_measured_default_font_name() {
+    let mut font = Font {
+        name: "굴림체".to_string(),
+        ..Default::default()
+    };
+    font.default_name = None;
+
+    let bytes = serialize_face_name(&font);
+    // attr bit 0x20 = 기본 글꼴 이름 있음
+    assert_ne!(bytes[0] & 0x20, 0, "기본 글꼴 이름 플래그가 서야 한다");
+
+    let parsed = crate::parser::doc_info::parse_face_name(&bytes).expect("FACE_NAME 재파싱");
+    assert_eq!(
+        parsed.default_name.as_deref(),
+        Some("GulimChe"),
+        "한글이 싣는 영문 기본 이름과 같아야 한다"
+    );
+
+    // 원본이 이미 값을 갖고 있으면 그 값이 이긴다(표가 덮어쓰지 않는다).
+    let mut explicit = Font {
+        name: "굴림체".to_string(),
+        ..Default::default()
+    };
+    explicit.default_name = Some("Explicit".to_string());
+    let parsed = crate::parser::doc_info::parse_face_name(&serialize_face_name(&explicit))
+        .expect("FACE_NAME 재파싱");
+    assert_eq!(parsed.default_name.as_deref(), Some("Explicit"));
+
+    // 표에 없는 이름은 종전대로 비운다.
+    let unknown = Font {
+        name: "존재하지않는글꼴".to_string(),
+        ..Default::default()
+    };
+    let parsed = crate::parser::doc_info::parse_face_name(&serialize_face_name(&unknown))
+        .expect("FACE_NAME 재파싱");
+    assert_eq!(parsed.default_name, None);
+}
