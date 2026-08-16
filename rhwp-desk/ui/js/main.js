@@ -169,7 +169,12 @@ function axisStatus(doc, axis) {
   if (env === "run") return "run";
   if (!env) return "";
   if (env.clean === true) return "ok";
-  const n = env.findingCount ?? env.signalCount ?? env.hiddenCharCount ?? (Array.isArray(env.hiddenText) ? env.hiddenText.length : 0);
+  // layout-anomaly 는 판정=데이터 계약: hasSignal 이 공식 불리언이고,
+  // overflow/overlap/empty_page 카운트는 그 근거다. 기존 축은 findingCount 등.
+  if (env.hasSignal === true) return "bad";
+  const n = env.findingCount ?? env.signalCount ?? env.hiddenCharCount
+    ?? env.overflowCount ?? env.overlapCount
+    ?? (Array.isArray(env.hiddenText) ? env.hiddenText.length : 0);
   return n > 0 ? "bad" : "ok";
 }
 
@@ -226,7 +231,7 @@ function docChip(doc) {
   }
   const axes = document.createElement("span");
   axes.className = "c-axes";
-  axes.title = "검증 5축: 은닉 텍스트 · 주입 신호 · 유니코드 기만 · 워터마크 · 무기화 위협";
+  axes.title = "검증 6축: 은닉 텍스트 · 주입 신호 · 유니코드 기만 · 워터마크 · 무기화 위협 · 레이아웃 이상";
   for (const a of AXES) axes.append(axisDot(axisStatus(doc, a)));
   chip.append(axes);
 
@@ -239,7 +244,7 @@ function docChip(doc) {
     return b;
   };
   chip.append(
-    mk("검증", "5축 스윕 — 결과는 카드와 배지로", () => verifyDoc(doc.path)),
+    mk("검증", "6축 스윕 — 결과는 카드와 배지로", () => verifyDoc(doc.path)),
     mk("보기", "보조 문서 패널에서 페이지 렌더", () => viewer.open(doc.path)),
     mk("텍스트", "쪽별 TXT 추출 (문서 폴더/rhwp-out)", () => exportText(doc.path)),
     mk("PDF", "PDF 내보내기 (문서 폴더/rhwp-out)", () => exportPdf(doc.path)),
@@ -264,7 +269,7 @@ function docHasAttention(doc) {
 function docAttentionReasons(doc) {
   const LABEL = {
     "hidden-text": "은닉 텍스트", injection: "주입 신호", unicode: "유니코드 기만",
-    watermark: "워터마크", "threat-scan": "무기화 위협",
+    watermark: "워터마크", "threat-scan": "무기화 위협", "layout-anomaly": "레이아웃 이상",
   };
   return AXES.filter((a) => axisStatus(doc, a) === "bad").map((a) => LABEL[a]);
 }
@@ -420,7 +425,6 @@ function onEntry(entry, opts = {}) {
 async function verifyDoc(path) {
   const doc = getDoc(path);
   const axes = [...AXES];
-  if (state.caps?.commands?.some((c) => c.name === "layout-anomaly")) axes.push("layout-anomaly");
   const q = queue.start(`검증: ${api.basename(path)}`, axes.length);
   let done = 0, bad = 0;
   for (const axis of axes) {
@@ -650,7 +654,7 @@ const AGENT_TOOL_ALLOWLIST = [
   "hwp_info", "hwp_digest", "hwp_export_text", "hwp_export_structure",
   "hwp_search", "hwp_extract_data", "hwp_fields", "hwp_explain",
   "hwp_inspect_hidden_text", "hwp_inspect_injection", "hwp_inspect_unicode",
-  "hwp_inspect_watermark", "hwp_threat_scan",
+  "hwp_inspect_watermark", "hwp_threat_scan", "hwp_layout_anomaly",
   "hwp_export_pdf", "hwp_export_svg", "hwp_export_markdown", "hwp_thumbnail",
   "hwp_export_tables", "hwp_table_to_csv", "hwp_csv_to_table",
   "hwp_chart_to_csv", "hwp_csv_to_chart", "hwp_replace_text",

@@ -5,7 +5,7 @@
 import { runTool, listDocuments, basename, dirname } from "./api.js";
 
 /** 문서 카드와 일괄 스윕이 함께 쓰는 검증 축의 단일 출처. */
-export const VERIFY_AXES = Object.freeze(["hidden-text", "injection", "unicode", "watermark", "threat-scan"]);
+export const VERIFY_AXES = Object.freeze(["hidden-text", "injection", "unicode", "watermark", "threat-scan", "layout-anomaly"]);
 
 /**
  * 축 이름 → CLI 인자열. 대부분은 `inspect <axis>` 서브커맨드지만, threat-scan·
