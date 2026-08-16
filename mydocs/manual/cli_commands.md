@@ -999,6 +999,28 @@ rhwp edit set-cell 양식.hwpx --table 0 --row 2 --col 1 --text "1,234" -o 작�
 rhwp export-tables 작성본.hwpx --json | jq '.tables[0].cells[] | select(.row==2 and .col==1).text'
 ```
 
+### `edit insert-text <파일> --text <문자열> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4990)
+문단 좌표에 **새 텍스트를 삽입**한다. `replace-text`/`fill-fields`/`set-cell` 은 있는 값을
+바꾸는 축이고, 이 명령은 **없는 자리에 글자를 넣는** 축이다. 새 편집 로직은 없다 —
+검증된 코어 `insert_text_native`(스튜디오·세션이 이미 쓰는 경로)만 배선한다.
+
+- `--text <문자열>` (필수) — 넣을 문자열. 빈 문자열은 사용법 오류(exit 2).
+- `--section` / `--para` / `--offset` — 구역·문단·문자 오프셋(전부 **0 기준**, `search`
+  주소와 같다). 생략하면 0. `--offset` 이 그 문단의 문자 수와 같으면 끝에 붙인다.
+  문단 길이를 넘으면 조용히 자르지 않고 exit 2 + 실제 길이를 안내한다.
+  구역·문단이 범위를 벗어나도 exit 2.
+- `-o, --output <파일>` — 출력 파일(기본 `<입력명>_inserted.<입력과 같은 확장자>`, §edit 산출 형식)
+- `--dry-run` — 파일을 쓰지 않고 삽입 예정만 보고
+- `--verify` — 저장 직후 IR 자기검증(차이 시 exit 3)
+- `--json` 봉투: `{"schemaVersion":"1.0","source","section","paragraph","offset","text","insertedChars","dryRun","changedPages","output"?,"outputFormat"?,"verify"?}`
+  - `output`/`outputFormat`/`verify` 는 실제 저장했을 때만 실린다.
+- 실패 시 원본 불변.
+
+```bash
+rhwp edit insert-text 공문.hwp --section 0 --para 0 --offset 0 --text "긴급: " -o 개정본.hwp --json
+rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
+```
+
 ### `edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]` (#3719 §6-5)
 도장·서명 같은 그림을 쪽 좌표에 붙인다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각.
 - `--image <그림>` (필수) — 지원 형식은 `png`·`jpg`·`jpeg`·`bmp`·`tif`·`tiff` 뿐(확장자와 내용
@@ -1112,7 +1134,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 6종(`fill-fields`/`replace-text`/`set-cell`/`insert-image`/`redact`/`sanitize`)은
+`edit` 7종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`insert-image`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`
