@@ -491,7 +491,14 @@ impl DocumentCore {
                                         && cell_para.text.is_empty()
                                         && cell_para.controls.is_empty()
                                         && !cell_diagonal);
-                                if Self::needs_line_seg_reflow(cell_para, inc) {
+                                // [#4898] 본문과 셀은 같은 구역의 저장 lineseg 좌표계를
+                                // 공유한다. 셀만 구역 권위를 무시하면 한컴이 0 높이로 접어
+                                // 둔 셀 내부 블록을 다시 조판해 표 높이와 뒤쪽 페이지가 변한다.
+                                if Self::needs_line_seg_reflow_in_scope(
+                                    cell_para,
+                                    inc,
+                                    section_sized,
+                                ) {
                                     reflow_line_segs(cell_para, cell_inner_width, styles, dpi);
                                 }
                             }
@@ -745,12 +752,28 @@ impl DocumentCore {
             && !section_has_sized_lineseg
     }
 
-    /// 구역(셀·글상자 등 중첩 포함)에 높이가 0 이 아닌 lineseg 가 하나라도 있는가.
+    /// 구역 본문·중첩 표 셀에 높이가 0 이 아닌 lineseg 가 하나라도 있는가.
     fn section_has_sized_lineseg(section: &crate::model::document::Section) -> bool {
         section
             .paragraphs
             .iter()
-            .any(|p| p.line_segs.iter().any(|s| s.line_height != 0))
+            .any(Self::paragraph_or_nested_table_has_sized_lineseg)
+    }
+
+    /// 표 셀은 section의 저장 좌표계를 공유하므로, 중첩 표까지 재귀해 lineseg 권위를
+    /// 판정한다. 글상자 문단은 이 자동 reflow 경로의 대상이 아니므로 포함하지 않는다.
+    fn paragraph_or_nested_table_has_sized_lineseg(
+        para: &crate::model::paragraph::Paragraph,
+    ) -> bool {
+        para.line_segs.iter().any(|s| s.line_height != 0)
+            || para.controls.iter().any(|control| match control {
+                Control::Table(table) => table.cells.iter().any(|cell| {
+                    cell.paragraphs
+                        .iter()
+                        .any(Self::paragraph_or_nested_table_has_sized_lineseg)
+                }),
+                _ => false,
+            })
     }
 
     /// HWP5 -> HWPX export가 넣은 LineSeg 부재 marker는 reflow gate에서만 사용한다.
@@ -3016,6 +3039,40 @@ mod validate_linesegs_tests {
         seg.line_height = 1000;
         para.line_segs.push(seg);
         assert!(!DocumentCore::needs_reflow_broadly(&para));
+    }
+
+    #[test]
+    fn issue4898_section_authority_includes_nested_table_cells() {
+        let zero_height_para = Paragraph {
+            line_segs: vec![LineSeg {
+                line_height: 0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut cell = crate::model::table::Cell::default();
+        cell.paragraphs.push(Paragraph {
+            line_segs: vec![LineSeg {
+                line_height: 100,
+                ..Default::default()
+            }],
+            ..Default::default()
+        });
+        let mut table = crate::model::table::Table::default();
+        table.cells.push(cell);
+        let section = Section {
+            paragraphs: vec![Paragraph {
+                controls: vec![Control::Table(Box::new(table))],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        assert!(DocumentCore::section_has_sized_lineseg(&section));
+        assert!(
+            !DocumentCore::needs_line_seg_reflow_in_scope(&zero_height_para, false, true),
+            "셀의 저장 lineseg가 있는 구역에서는 0 높이 lineseg를 재조판하면 안 된다"
+        );
     }
 }
 

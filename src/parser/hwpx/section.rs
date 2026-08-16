@@ -6828,7 +6828,9 @@ fn parse_hp_ole_element(
     let mut draw_aspect = OleDrawingAspect::default();
     // [#4669] `id` 는 `instid` 와 별개 값이다(한컴 원산 실측). 종전에는 id arm 이
     // 없어(차트는 #3546 에서 받음) 재방출 id 가 "0" 또는 instid 로 되쓰였다.
-    let mut id_attr: u32 = 0;
+    // `id`는 선택 속성이고 0도 유효하다. 따라서 값 0을 "속성 없음"과 합치면
+    // 원문 id=0을 instance_id로 다시 써서 라운드트립을 깨뜨린다.
+    let mut id_attr: Option<u32> = None;
     let mut saw_instid = false;
 
     for attr in e.attributes().flatten() {
@@ -6881,7 +6883,7 @@ fn parse_hp_ole_element(
                 let digits: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
                 bin_id = digits.parse().unwrap_or(0);
             }
-            b"id" => id_attr = parse_u32(&attr),
+            b"id" => id_attr = Some(parse_u32(&attr)),
             b"instid" => {
                 saw_instid = true;
                 common.instance_id = parse_u32(&attr);
@@ -6896,7 +6898,7 @@ fn parse_hp_ole_element(
     // 명시적 instid="0"(차트 fallback OLE 의 한컴 정답값, #4099 오라클)은 보존해야
     // 하므로 "0 이면 폴백" 이 아니라 "속성이 없으면 폴백" 이다.
     if !saw_instid {
-        common.instance_id = id_attr;
+        common.instance_id = id_attr.unwrap_or_default();
     }
 
     let mut extent: Option<(i32, i32)> = None;
@@ -6925,9 +6927,7 @@ fn parse_hp_ole_element(
         ole.drawing.border_line = ls;
     }
     // [#4669] id 원문 보존 — instid 와 분리해 재방출 시 원본 id 를 되쓴다.
-    if id_attr != 0 {
-        ole.hwpx_ole_id = Some(id_attr);
-    }
+    ole.hwpx_ole_id = id_attr;
     ole.bin_data_id = bin_id;
     ole.drawing_aspect = draw_aspect;
     // <hc:extent> 가 있으면 원본 개체 크기를 보존한다(없으면 종전 기본값 7200).
@@ -9381,6 +9381,36 @@ mod tests {
     /// [#4669] 명시적 `instid="0"` 은 id 로 덮지 않는다 — 차트 fallback OLE 의
     /// 한컴 정답값이 instance_id=0 이다(#4099 오라클). id 폴백은 instid **부재**
     /// 시에만 작동해야 한다.
+    #[test]
+    fn issue4669_explicit_zero_id_is_not_rewritten_to_instid() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="0" zOrder="7" textWrap="SQUARE" instid="1067500271" binaryItemIDRef="ole1">
+        <hp:sz width="7200" height="7200" protect="0"/>
+        <hp:pos treatAsChar="1" vertRelTo="PARA" horzRelTo="PARA"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected OLE shape");
+        };
+        assert_eq!(ole.hwpx_ole_id, Some(0), "명시적 id=0 원문 보존");
+        assert_eq!(
+            ole.common.instance_id, 1067500271,
+            "instid 와 id는 별개로 보존"
+        );
+    }
+
     #[test]
     fn issue4669_explicit_zero_instid_is_not_overridden_by_id() {
         let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
