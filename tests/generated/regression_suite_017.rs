@@ -14,9 +14,6 @@ mod hwpx_form_roundtrip;
 #[path = "../insert_image_contract.rs"]
 mod insert_image_contract;
 
-#[path = "../insert_text_contract.rs"]
-mod insert_text_contract;
-
 #[path = "../issue_1058_textbox_list_header.rs"]
 mod issue_1058_textbox_list_header;
 

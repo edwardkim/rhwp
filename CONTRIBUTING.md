@@ -137,7 +137,10 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 ```bash
 cargo install cargo-nextest --locked             # 최초 1회
-cargo fmt --all -- --check                       # 포맷 정책 준수
+cargo fmt --all                                  # 로컬 포맷 적용
+cargo fmt --all -- --check                       # CI와 같은 포맷 검증 — PR 전 필수
+node scripts/rust-test-suite-manifest.mjs --check
+node scripts/rust-unit-test-tiers.mjs --check
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
@@ -145,7 +148,13 @@ cargo nextest run \
 cargo clippy -- -D warnings                      # 린트 경고 0건
 ```
 
-세 명령이 모두 통과하는지 확인한 후 PR을 생성해주세요.
+`cargo fmt --all -- --check` 가 실패하면 PR을 만들지 마세요. `cargo fmt --check`
+만으로는 CI `Lint (fmt, clippy, WASM check)` 와 같지 않습니다. 포맷이 깨졌으면
+`cargo fmt --all` 로 고친 뒤 다시 `--check` 가 통과한 다음에만 PR을 생성해주세요.
+
+새 통합 테스트는 `tests/cases/` 에만 둡니다. `tests/generated/` 와
+`tests/suites/manifest.json` 은 수기 수정하지 말고
+`node scripts/rust-test-suite-manifest.mjs --generate` 로 재생성합니다.
 
 - `release-test` 프로필은 PR CI와 같은 기준이며 debug 대비 수 배 빠릅니다.
 - 논리 CPU가 12개 미만이거나 메모리가 부족하면 `--test-threads`를 논리 CPU 이하로 낮춰주세요.

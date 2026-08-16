@@ -249,7 +249,7 @@ cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads 12 --no-fail-fast
-cargo fmt --check
+cargo fmt --all -- --check
 cargo clippy --all-targets -- -D warnings
 ~~~
 
@@ -334,7 +334,7 @@ cargo nextest run \
 cargo test --profile release-test --features native-skia skia --lib
 cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder
 cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export
-cargo fmt --check
+cargo fmt --all -- --check
 git diff --check
 cargo clippy --all-targets -- -D warnings
 cargo test --doc

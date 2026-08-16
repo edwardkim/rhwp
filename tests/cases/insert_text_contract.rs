@@ -33,8 +33,12 @@ fn temp_path(tag: &str, ext: &str) -> PathBuf {
     ))
 }
 
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
+
 fn run(args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    Command::new(rhwp_bin())
         .args(args)
         .output()
         .expect("rhwp 실행 실패")
