@@ -134,6 +134,13 @@ const REGISTRY: &[ToolNode] = &[
         produces: &["finding:visual"],
         consumes: &["converted-hwpx", "converted-hwp5", "doc-mutation"],
     },
+    // 쪽 발췌 — info 로 pageCount 를 본 다음 일부만 제출·이분법. from/to 는
+    // 1 기준(extract-pages 만). 산출은 새 파일이라 변환·내보내기로 이어질 수 있다.
+    ToolNode {
+        tool: "hwp_split_document",
+        produces: &["extracted-pages"],
+        consumes: &["doc-meta"],
+    },
     ToolNode {
         tool: "hwp_export_tables",
         produces: &["table-data"],
@@ -338,6 +345,12 @@ mod tests {
             assert!(next.contains(&"hwp_ir_diff"), "{t} 다음에 ir-diff");
             assert!(next.contains(&"hwp_render_diff"), "{t} 다음에 render-diff");
         }
+    }
+
+    #[test]
+    fn 문서_정보는_쪽_발췌로_이어진다() {
+        let next = suggest_next("hwp_info");
+        assert!(next.contains(&"hwp_split_document"));
     }
 
     #[test]

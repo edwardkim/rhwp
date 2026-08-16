@@ -13,6 +13,7 @@ const LABEL = {
   hwp_export_pdf: "PDF 내보내기", hwp_export_svg: "SVG 내보내기", hwp_export_markdown: "마크다운 내보내기",
   hwp_thumbnail: "썸네일", hwp_convert_hwpx: "HWPX 변환", hwp_convert_hwp5: "HWP 변환",
   hwp_ir_diff: "IR 비교", hwp_render_diff: "렌더 비교",
+  hwp_split_document: "쪽 발췌",
   hwp_export_tables: "표 추출", hwp_table_to_csv: "표 CSV 변환",
   hwp_csv_to_table: "CSV로 표 채우기", hwp_chart_to_csv: "차트 CSV 변환",
   hwp_csv_to_chart: "CSV로 차트 채우기",
@@ -42,6 +43,7 @@ const CLI_TO_TOOL = {
   "layout-anomaly": "hwp_layout_anomaly",
   "export-hwpx": "hwp_convert_hwpx", convert: "hwp_convert_hwp5",
   "ir-diff": "hwp_ir_diff", "render-diff": "hwp_render_diff",
+  "extract-pages": "hwp_split_document",
 };
 
 /**
