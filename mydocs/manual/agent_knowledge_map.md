@@ -296,10 +296,11 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 281개 필드
+### 2-2. 전수 사전 — 284개 필드
 
 `capabilities` 의 `recordFields` 고유 **278개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 281개다. `등장 명령` 은 자기서술
+`assertions`·`docId`·`preview` **3개**, `explore` 전용 `affordanceCount`·`menu`·`note`
+**3개**를 합친 284개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -334,6 +335,14 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `footnoteCount` | number | 각주 수 | `explain` |
 | `endnoteCount` | number | 미주 수 | `explain` |
 | `wasDistribution` | bool | 입력이 배포용(읽기전용)이었나 | `convert` |
+
+#### 탐색 메뉴 (`explore`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `affordanceCount` | number | `menu` 배열 길이 — 이 문서에 적용 가능하다고 판단한 행동 수 | `explore` |
+| `menu` | array | 순위 매긴 행동 메뉴 `{affordance,why,command,skill,confidence}`. `affordance`·`command`·`skill` 은 고정 어휘, `why` 만 기존 조회가 센 개수를 엮은 문장(문서 파생 아님) | `explore` |
+| `note` | string | 정직성 고지 — 메뉴는 제안이지 완전성 보장이 아니라는 고정 문구 | `explore` |
 
 #### 요약·개요 (`digest`)
 
