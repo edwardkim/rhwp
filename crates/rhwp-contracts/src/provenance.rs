@@ -89,6 +89,11 @@ pub const MAP: &[CommandProvenance] = &[
         note: "sizeBytes·pageCount·paraCount·sections·version 은 엔진 계산값이다.",
     },
     CommandProvenance {
+        command: "word-count",
+        untrusted: &[],
+        note: "구역·문단·글자·어절·쪽 수는 엔진이 IR 본문을 센 숫자다. 본문 문자열은 싣지 않는다.",
+    },
+    CommandProvenance {
         command: "export-text",
         untrusted: &[
             f(

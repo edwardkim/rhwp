@@ -337,6 +337,7 @@
       "tests/wmf_poly_negative_point_count_no_panic.rs"
     ],
     "regression_suite_014": [
+      "tests/cases/word_count_contract.rs",
       "tests/edit_field_occurrence_contract.rs",
       "tests/hwpx_roundtrip_integration.rs",
       "tests/ir_diff_summary_mode.rs",

@@ -86,6 +86,7 @@ pub const PROFILES: &[AgentProfile] = &[
         summary: "임원·보고용 — 문서 파악과 요약 근거 수집, 제출용 산출물 확인",
         tools: &[
             "hwp_info",
+            "hwp_word_count",
             "hwp_explain",
             "hwp_explore",
             "hwp_digest",
