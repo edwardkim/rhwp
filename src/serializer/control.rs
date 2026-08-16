@@ -200,15 +200,29 @@ pub fn serialize_control(
         }
         // [Task #852 Stage 2.4] 양식 개체 직렬화 — CTRL_HEADER + HWPTAG_FORM_OBJECT
         Control::Form(form) => serialize_form_control(form, level, records),
+        // [#4397] 덧말('tdut') — CTRL_HEADER 에 스펙 표 151 payload 를 온전히 싣는다.
+        // #4677 은 짝(제어문자↔헤더)만 맞춰 한글의 본문 폐기를 막았고, 여기서
+        // 내용(mainText/subText/위치/크기비율/옵션/스타일/정렬)까지 옮겨 왕복
+        // 소실을 없앤다. 파서측 parse_ruby(parser/control.rs)와 레이아웃 동일.
+        Control::Ruby(ruby) => {
+            let mut w = ByteWriter::new();
+            w.write_hwp_string(&ruby.main_text).unwrap();
+            w.write_hwp_string(&ruby.ruby_text).unwrap();
+            w.write_u32(u32::from(ruby.pos_type)).unwrap();
+            w.write_u32(u32::from(ruby.sz_ratio)).unwrap();
+            w.write_u32(ruby.option).unwrap();
+            w.write_u32(u32::from(ruby.style_id_ref)).unwrap();
+            w.write_u32(u32::from(ruby.align)).unwrap();
+            records.push(make_ctrl_record(
+                tags::CTRL_CHAR_OVERLAP,
+                level,
+                &w.into_bytes(),
+            ));
+        }
         // 미구현 컨트롤은 최소한의 CTRL_HEADER만 생성
-        Control::Hyperlink(_) | Control::Ruby(_) | Control::Unknown(_) => {
+        Control::Hyperlink(_) | Control::Unknown(_) => {
             let ctrl_id = match ctrl {
                 Control::Unknown(u) => u.ctrl_id,
-                // [#4677] 덧말은 PARA_TEXT 에 `17 00 'tdut'` 제어문자가 나가므로 짝이 되는
-                // CTRL_HEADER 도 반드시 있어야 한다. 내용(mainText/subText/속성)까지 옮기는
-                // 것은 #4397 소관이고, 여기서는 **짝을 맞추는 것**이 목적이다 — 짝이 없으면
-                // 한글 2022 가 그 문서의 본문을 통째로 버린다.
-                Control::Ruby(_) => tags::CTRL_CHAR_OVERLAP,
                 _ => 0,
             };
             if ctrl_id != 0 {
