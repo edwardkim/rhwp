@@ -420,6 +420,19 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
 .card.approval { border-left: 3px solid var(--warn); }
 .approval-actions { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); }
 
+/* 도구 온톨로지 — "다음 작업 제안" 칩 (tool_ontology 그래프 기반) */
+.ontology-row {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 8px 12px; border-top: 1px dashed var(--border);
+}
+.ontology-label { font-size: 11px; color: var(--text-faint); flex-shrink: 0; }
+.ontology-chip {
+  font-size: 11.5px; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent-text);
+  cursor: pointer; font-family: inherit;
+}
+.ontology-chip:hover { filter: brightness(1.05); }
+
 /* 텍스트 미리보기(추출 결과) */
 .text-preview {
   margin-top: 8px; padding: 10px; border-radius: 8px;

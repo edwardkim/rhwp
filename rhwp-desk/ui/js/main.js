@@ -8,6 +8,7 @@ import { Palette } from "./palette.js";
 import { Viewer } from "./viewer.js";
 import { BatchRunner } from "./batch.js";
 import { runAgentTask } from "./agent.js";
+import { attachSuggestions, cliCommandFor } from "./ontology.js";
 
 const $ = (id) => document.getElementById(id);
 const LS = {
@@ -400,6 +401,12 @@ function onEntry(entry, opts = {}) {
   }
   if (entry.command === "export-text" && entry.envelope) cards.attachTextPreview(card, entry.envelope);
   if (!opts.historical && (entry.exitCode === 0 || entry.exitCode === 3)) bumpDoneToday();
+  attachSuggestions(card, entry, (nextTool) => {
+    palette.open();
+    const input = $("palette-input");
+    input.value = cliCommandFor(nextTool);
+    input.dispatchEvent(new Event("input"));
+  });
   return card;
 }
 

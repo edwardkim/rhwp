@@ -8,6 +8,7 @@ mod engine;
 mod journal;
 mod planner;
 mod planner_net;
+mod tool_ontology;
 
 use tauri::Manager;
 
@@ -38,6 +39,7 @@ fn main() {
             commands::secret_set,
             commands::secret_exists,
             commands::secret_delete,
+            tool_ontology::tool_ontology,
         ])
         .run(tauri::generate_context!())
         .expect("rhwp-desk 실행 실패");
