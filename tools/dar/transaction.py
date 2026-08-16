@@ -105,8 +105,12 @@ POLICY_JUDGMENT_KEYS = ("op", "format", "validated")
 POLICY_OPS = ("eq", "in", "gte", "lte")
 
 
-def parse_policy(text: str) -> dict:
-    """정책 JSON을 파싱하고 키·연산자를 사전 대조한다 — 위반은 ValueError."""
+def parse_policy(text: str, judgment_keys: tuple = POLICY_JUDGMENT_KEYS) -> dict:
+    """정책 JSON을 파싱하고 키·연산자를 사전 대조한다 — 위반은 ValueError.
+
+    `judgment_keys` 는 이 정책이 판정할 수 있는 키 사전이다. 기본은 DATP COMMIT
+    문맥(POLICY_JUDGMENT_KEYS)이고, 같은 정책 언어를 다른 문맥에서 재사용할 때는
+    그 문맥의 사전을 넘긴다(예: tools/handoff/orchestrator.py 의 수용 정책)."""
     v = json.loads(text)
     if not isinstance(v, dict):
         raise ValueError("정책 최상위는 객체여야 합니다")
@@ -129,9 +133,9 @@ def parse_policy(text: str) -> dict:
             raise ValueError(f"{rid}: require 객체가 필요합니다")
         require = []
         for key, cond in req.items():
-            if key not in POLICY_JUDGMENT_KEYS:
+            if key not in judgment_keys:
                 raise ValueError(
-                    f"{rid}: 미지 판정 키 `{key}` — 사전: {list(POLICY_JUDGMENT_KEYS)} "
+                    f"{rid}: 미지 판정 키 `{key}` — 사전: {list(judgment_keys)} "
                     "(오타는 항상-참 구멍이 되므로 로드 시점에 거부한다)")
             if not isinstance(cond, dict):
                 raise ValueError(f"{rid}.{key}: {{연산자: 값}} 객체가 필요합니다")
