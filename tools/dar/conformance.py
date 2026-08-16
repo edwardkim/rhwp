@@ -185,9 +185,17 @@ def check_datp(bin_path: str) -> list[dict]:
     add("원자 실행 + 정적 선검증 + 저널",
         "run" in names, "run (선언적 계획)" if "run" in names else "run 없음")
 
-    # 상태기계 불변식은 정의는 있으나 런타임이 강제하지 않는다 — 정직하게
-    add("상태기계 강제 — COMMIT 전 VALIDATE 성공을 런타임이 요구한다", False,
-        "미구현 — 현재는 계획서 관례로 지켜지며 프로토콜 수준 강제가 없다")
+    # 상태기계 강제 — 참조 드라이버가 실제로 막는지 확인한다.
+    driver = REPO_ROOT / "tools" / "dar" / "transaction.py"
+    driver_ok = driver.is_file()
+    if driver_ok:
+        src = driver.read_text(encoding="utf-8")
+        driver_ok = ("TRANSITIONS" in src
+                     and 'if not tx.state["validated"]' in src)
+    add("상태기계 강제 — COMMIT 전 VALIDATE 성공을 런타임이 요구한다",
+        driver_ok,
+        "tools/dar/transaction.py 참조 드라이버가 전이표와 validated 게이트로 강제"
+        if driver_ok else "미구현 — 참조 드라이버 없음")
     add("정책 해시(policySha256)가 영수증에 실린다", False,
         "미구현 — 정책 엔진(DAR 층 3) 대상")
     _ = datp

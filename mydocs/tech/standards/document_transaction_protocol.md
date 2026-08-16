@@ -91,6 +91,26 @@ BEGIN ──▶ READ ─┐
 - 여러 변경을 한 트랜잭션으로 묶으려면 PROPOSE 에 전부 담는다. MODIFY 를 나눠
   부르지 않는다.
 
+## 참조 구현 — 선언을 강제로
+
+[`tools/dar/transaction.py`](../../../tools/dar/transaction.py) 가 이 상태기계를
+**실제로 강제한다.** 순서를 어긴 연산은 실행 자체를 거절하고, 검증에 실패한
+트랜잭션은 COMMIT 경로가 물리적으로 닫힌다. 모든 연산은 DAP/1.0 봉투를 낸다.
+
+```bash
+T=tools/dar/transaction.py
+python3 $T begin  --doc 원본.hwpx --bin <rhwp> --tx-dir txs/
+python3 $T select --tx <id> --query "찾을말"          # 0건 → verdict 3002
+python3 $T propose --tx <id> --op replace-text --params '{"find":"A","replace":"B"}'
+python3 $T modify --tx <id>                            # 원본 무훼손 확인
+python3 $T commit --tx <id> -o 산출.hwpx               # ← 여기서 거절된다(VALIDATE 없음)
+python3 $T validate --tx <id> && python3 $T commit --tx <id> -o 산출.hwpx
+python3 $T replay --receipt txs/<id>/receipt.json --bin <rhwp>
+```
+
+VALIDATE 는 **MODIFY 의 성공 보고를 믿지 않는다** — 산출물을 직접 다시 열고,
+연산별 사후조건(치환이면 "산출에 find 가 남지 않았는가")까지 확인한다.
+
 ## 준수
 
 ```bash
