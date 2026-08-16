@@ -103,8 +103,23 @@ const REGISTRY: &[ToolNode] = &[
     },
     ToolNode {
         tool: "hwp_table_to_csv",
-        produces: &["csv-file"],
+        produces: &["table-csv"],
         consumes: &["table-data"],
+    },
+    ToolNode {
+        tool: "hwp_csv_to_table",
+        produces: &["doc-mutation"],
+        consumes: &["table-csv"],
+    },
+    ToolNode {
+        tool: "hwp_chart_to_csv",
+        produces: &["chart-csv"],
+        consumes: &[],
+    },
+    ToolNode {
+        tool: "hwp_csv_to_chart",
+        produces: &["doc-mutation"],
+        consumes: &["chart-csv"],
     },
     ToolNode {
         tool: "hwp_replace_text",
@@ -181,6 +196,26 @@ mod tests {
         let next = suggest_next("hwp_fields");
         assert!(next.contains(&"hwp_fill_fields"));
         assert!(next.contains(&"hwp_set_checkbox"));
+    }
+
+    #[test]
+    fn 표_csv는_다시_표에_써넣는_도구로_이어진다() {
+        let next = suggest_next("hwp_table_to_csv");
+        assert!(next.contains(&"hwp_csv_to_table"));
+    }
+
+    #[test]
+    fn 차트_csv_왕복도_닫힌다() {
+        let next = suggest_next("hwp_chart_to_csv");
+        assert!(next.contains(&"hwp_csv_to_chart"));
+    }
+
+    #[test]
+    fn 표_csv와_차트_csv는_서로_섞이지_않는다() {
+        // table-csv 는 hwp_csv_to_chart 를 태우면 안 되고, 그 반대도 마찬가지다 —
+        // 태그를 공유하면 표를 CSV로 뽑았는데 차트에 써넣으라는 잘못된 제안이 뜬다.
+        assert!(!suggest_next("hwp_table_to_csv").contains(&"hwp_csv_to_chart"));
+        assert!(!suggest_next("hwp_chart_to_csv").contains(&"hwp_csv_to_table"));
     }
 
     #[test]
