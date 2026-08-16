@@ -965,6 +965,12 @@ jobs:
           node --test scripts/tests/ci-impact-policy.test.cjs
           python3 -m unittest scripts/tests/test_ci_impact_workflow.py
 
+      - name: Validate Rust test suite manifest
+        run: |
+          node --test scripts/tests/rust-test-suite-manifest.test.mjs
+          node scripts/rust-test-suite-manifest.mjs --check
+          node scripts/run-rust-test.mjs --print issue_1035_alignment
+
       - name: Validate Render Diff trigger policy
         run: python3 -m unittest scripts/tests/test_render_diff_workflow.py
 

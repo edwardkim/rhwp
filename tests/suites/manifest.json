@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "budgets": {
+    "automaticIntegrationTargets": 539,
+    "standaloneIssueTargets": 373
+  },
+  "suites": {
+    "issue_regression_pilot": [
+      "issue_1035_alignment",
+      "issue_1608_hwpx_native_no_hwp3_tolerance",
+      "issue_1611_footer_page_bottom_pagination",
+      "issue_1624_footer_overpush_pagination",
+      "issue_1749_saved_bounds_cumulative",
+      "issue_1750_split_guard_spacing_before",
+      "issue_1768_distribution_doc_save",
+      "issue_1937_rowbreak_footnote_overpagination",
+      "issue_2006_1790387_prep_pagination_pin",
+      "issue_2087_document_core_send",
+      "issue_2093_1192000_real_doc_pin",
+      "issue_2097_1730000_real_doc_pin",
+      "issue_2097_3080901_real_doc_pin",
+      "issue_2097_squeeze",
+      "issue_2098_margin_boundary_split",
+      "issue_2277_mini_chart_axis",
+      "issue_2373_tac_host_press_pin",
+      "issue_2559_footnote_footer_band",
+      "issue_3486_hancom_pua_display",
+      "issue_546"
+    ]
+  }
+}
