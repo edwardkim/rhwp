@@ -5,7 +5,7 @@
 import { runTool, listDocuments, basename, dirname } from "./api.js";
 
 /** main.js 의 AXES 와 맞춘 검증 스윕 축 — 늘어나면 여기와 main.js 둘 다 바꾼다. */
-const VERIFY_AXES = ["hidden-text", "injection", "unicode", "watermark", "threat-scan"];
+const VERIFY_AXES = ["hidden-text", "injection", "unicode", "watermark", "threat-scan", "layout-anomaly"];
 
 /**
  * 축 이름 → CLI 인자열. 대부분은 `inspect <axis>` 서브커맨드지만, threat-scan·
