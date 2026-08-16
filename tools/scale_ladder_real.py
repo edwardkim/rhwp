@@ -9,7 +9,8 @@
 이 2차 러너가 그 구멍 세 개를 메운다:
 
 1. **실물 사다리** — `samples/` 의 진짜 HWP/HWPX 를 파일 크기순으로 세워 로그
-   간격으로 뽑고(`--rungs`), 명령별 시간·최대 RSS·산출 봉투 크기·종료 코드를 잰다.
+   간격으로 뽑고(`--rungs`), 명령별 시간·산출 봉투 크기·종료 코드를 잰다. 최대 RSS는
+   현재 Windows에서만 수집하며, 다른 플랫폼에서는 `null`로 명시한다.
 2. **반복·분산** — 단마다 `--repeats` 회 반복하고 원시값을 전부 남긴다. 표에는
    중앙값과 min~max 폭을 같이 낸다(단발 수치를 일반화하지 않기 위해).
 3. **실물 증폭 탐침** — 실물 HWPX 의 본문(문단·표·개체 그대로)을 K 배로 복제해
@@ -499,7 +500,7 @@ def _human_bytes(n: int) -> str:
 
 
 def _cell(runs: list) -> str:
-    """중앙값 + min~max 폭 + 판정. 실패는 판정만."""
+    """중앙값 + min~max 폭 + 판정 + Windows RSS. 실패는 판정만."""
     verdicts = {r["verdict"] for r in runs}
     if verdicts != {"ok"} and verdicts != {"ok", "slow"} and verdicts != {"slow"}:
         bad = sorted(v for v in verdicts if v not in ("ok", "slow"))
@@ -689,7 +690,7 @@ def main() -> None:
                 results[(key, command)] = runs
                 if any(r["verdict"] in ("timeout", "crash") for r in runs):
                     dead.add((fmt, command))
-        md.write("### 실물 코퍼스 사다리 (중앙값 ms ±폭 / 최대 RSS MB)\n\n")
+        md.write("### 실물 코퍼스 사다리 (중앙값 ms ±폭 / 최대 RSS MB: Windows 전용)\n\n")
         md.write(build_table(results, commands, rows, "문서"))
         md.write("\n")
 

@@ -83,6 +83,14 @@ pub enum RenderBackendError {
         /// op 종류 이름(`super::paint_op_kind`).
         op: &'static str,
     },
+    /// 한 SVG 문서로는 여러 페이지를 담을 수 없다.
+    ///
+    /// 페이지별 SVG는 각각 완전한 독립 문서다. 이를 하나의 문자열로 이어 붙이면
+    /// 유효한 SVG 파일이 아니므로, 호출자는 페이지마다 새 백엔드를 만들어야 한다.
+    MultiplePagesUnsupported {
+        /// 백엔드 이름(`BackendCapabilities::name`).
+        backend: &'static str,
+    },
     /// 감싼 기존 백엔드가 낸 오류를 문자열로 옮긴 것.
     ///
     /// 어댑터가 기존 `HwpError` 를 잃지 않고 전달하는 통로다.
@@ -107,6 +115,9 @@ impl std::fmt::Display for RenderBackendError {
             }
             Self::UnsupportedOp { backend, op } => {
                 write!(f, "백엔드 {backend}가 지원하지 않는 op 입니다: {op}")
+            }
+            Self::MultiplePagesUnsupported { backend } => {
+                write!(f, "백엔드 {backend}는 한 산출물에 여러 페이지를 담을 수 없습니다")
             }
             Self::Backend(msg) => write!(f, "백엔드 오류: {msg}"),
         }

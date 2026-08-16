@@ -286,7 +286,9 @@ impl OpenedDocument {
         }
         let total_chars: usize = extracted.iter().map(|(_, t, _)| t.chars().count()).sum();
 
-        // 2) 오프셋 창 — 이어붙인 좌표에서 char_offset 만큼 건너뛴다.
+        // 2) 오프셋 창 — 쪽 본문 텍스트를 논리적으로 이은 좌표에서 char_offset 만큼
+        //    건너뛴다. TextExport::concatenated()가 표시 편의를 위해 삽입하는 줄바꿈은
+        //    문서 본문 글자가 아니므로 이 좌표·총량·다음 오프셋에 세지 않는다.
         let mut skip = opts.char_offset;
         let windowed: Vec<(u32, String, Option<String>)> = extracted
             .into_iter()

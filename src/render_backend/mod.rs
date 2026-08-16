@@ -265,6 +265,8 @@ mod tests {
         assert!(svg.supports(BackendFeature::VectorText));
         assert!(svg.supports(BackendFeature::Gradients));
         assert!(!svg.supports(BackendFeature::EmbeddedFonts));
+        assert!(!svg.supports(BackendFeature::Clipping));
+        assert!(!svg.supports(BackendFeature::MultiPage));
         assert!(svg.covers(&[BackendFeature::VectorText, BackendFeature::Images]));
         assert!(!svg.covers(&[BackendFeature::EmbeddedFonts]));
 
@@ -324,7 +326,20 @@ mod tests {
         assert!(svg.trim_end().ends_with("</svg>"), "{svg}");
     }
 
-    // 10. 어댑터도 결정적이다 — 같은 페이지를 두 번 그리면 같은 바이트열이다.
+    // 10. 페이지별 SVG 문서를 이어 붙여 유효하지 않은 단일 SVG를 만들지 않는다.
+    #[test]
+    fn svg_backend_rejects_a_second_page() {
+        let mut backend = SvgBackend::new();
+        backend.begin_page(PageSize::new(400.0, 300.0)).unwrap();
+        backend.end_page().unwrap();
+
+        assert_eq!(
+            backend.begin_page(PageSize::new(400.0, 300.0)).unwrap_err(),
+            RenderBackendError::MultiplePagesUnsupported { backend: "svg" }
+        );
+    }
+
+    // 11. 어댑터도 결정적이다 — 같은 페이지를 두 번 그리면 같은 바이트열이다.
     #[test]
     fn svg_backend_is_deterministic() {
         fn run() -> String {

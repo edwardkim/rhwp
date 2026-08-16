@@ -23,9 +23,9 @@ use super::util::PageState;
 
 /// 기존 SVG 렌더러를 `RenderBackend` 계약으로 감싼 어댑터.
 ///
-/// 산출물은 페이지마다 독립된 `<svg>` 문서이며, `finish` 는 그것들을 줄바꿈으로
-/// 이어 붙인 하나의 문자열을 돌려준다. 페이지별로 따로 쓰려면 [`SvgBackend::pages`]
-/// 를 본다.
+/// 산출물은 독립된 `<svg>` 문서 한 장이다. SVG 문서 여러 개를 문자열로 이어 붙이면
+/// 유효한 SVG 파일이 아니므로, 이 어댑터는 두 번째 페이지를 거절한다. 여러 페이지를
+/// 내려면 페이지마다 새 `SvgBackend` 를 만들고 [`SvgBackend::pages`] 를 사용한다.
 #[derive(Debug)]
 pub struct SvgBackend {
     state: PageState,
@@ -75,11 +75,21 @@ impl RenderBackend for SvgBackend {
             // 일은 상위(`document_core`)가 `generate_embedded_font_style` 로
             // 따로 한다.
             embedded_fonts: false,
+            // 이 얇은 어댑터는 PaintOp만 받아 새 leaf로 평탄화한다. 원래 레이어
+            // 트리의 ClipRect는 전달되지 않으므로, SVG 자체가 clipPath를 지원하더라도
+            // 이 구현은 클립을 보존하지 못한다.
+            clipping: false,
+            // 페이지별 SVG는 각각 완전한 문서다. 여러 문서를 이어 붙인 문자열은
+            // 유효한 단일 SVG 산출물이 아니므로 다중 페이지 지원을 선언하지 않는다.
+            multi_page: false,
             ..BackendCapabilities::vector("svg")
         }
     }
 
     fn begin_page(&mut self, size: PageSize) -> Result<(), Self::Error> {
+        if !self.pages.is_empty() {
+            return Err(RenderBackendError::MultiplePagesUnsupported { backend: "svg" });
+        }
         self.state.begin(size)?;
         self.pending.clear();
         Ok(())
@@ -107,7 +117,7 @@ impl RenderBackend for SvgBackend {
 
     fn finish(self) -> Result<Self::Output, Self::Error> {
         self.state.assert_finished()?;
-        Ok(self.pages.join("\n"))
+        Ok(self.pages.into_iter().next().unwrap_or_default())
     }
 
     fn finish_boxed(self: Box<Self>) -> Result<Self::Output, Self::Error> {
