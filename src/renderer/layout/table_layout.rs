@@ -11936,11 +11936,26 @@ impl LayoutEngine {
                 });
         // PR #4122가 만든 재귀 child cursor가 있으면 그 cursor가 소유권의
         // 권위다. scalar offset 보정은 재귀 투영이 없는 기존 fallback에만 쓴다.
+        // [#4889] 보정이 이 조각의 가시 내용을 **통째로** 먹으면 안 된다.
+        //
+        // 이 보정은 앞 조각이 물리 reservation 으로 이미 전진시킨 첫 unit 을 다시 그리지
+        // 않으려고 content origin 을 한 unit 앞으로 민다(42065 p12–p17). 그 전제는 "첫
+        // unit 은 줄 하나 크기" 다. 그런데 블록 중첩 표는 **표 전체가 unit 하나**라, 가시
+        // unit 이 그 표뿐인 조각에서는 표 높이만큼 밀려 조각에 남는 게 없어진다.
+        //
+        // 실측(18098267 2쪽): offset 36.4 + first_visible 2095.6 = 2132.0 으로 원점이
+        // 내려가, 높이 2091.9 인 55×3 표가 -2049.9..42.0 에 놓여 가시 창(79.3..1084.7)에
+        // 하나도 안 걸린다. 쪽수는 한/글과 같아(3/3) 어떤 게이트도 침묵한다.
+        //
+        // 조각에 남는 게 있을 때만 민다 — 42065 처럼 뒤따르는 unit 이 있는 조각은 그대로다.
+        let compensation_would_consume_fragment =
+            first_visible_content_height >= flow_visible - 0.5;
         let compensate_first_visible = recursive_cut.is_none()
             && offset > 0.5
             && single_cell_nested_continuation
             && !terminal
-            && !first_visible_starts_after_table;
+            && !first_visible_starts_after_table
+            && !compensation_would_consume_fragment;
         let offset_within_start = if recursive_cut.is_some() {
             (offset - first_visible_content_height).max(0.0)
         } else if compensate_first_visible {
