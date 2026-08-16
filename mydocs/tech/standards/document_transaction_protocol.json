@@ -1,0 +1,169 @@
+{
+  "protocol": "DATP",
+  "version": "1.0",
+  "summary": "문서 에이전트 트랜잭션 프로토콜 — 원자성·결정적 재실행·불변 영수증을 갖는 문서 변경 상태기계.",
+  "principle": "검증에 실패하면 COMMIT 하지 않는다. 모든 COMMIT 은 제3자가 재현할 수 있는 영수증을 남긴다.",
+  "designNote": "rhwp 는 이 상태기계를 이미 실질적으로 구현한다 — run(선언적 계획·정적 선검증·원자 실행·저널)과 replay(입력·계획·산출 3해시 영수증, --expect-output-sha256 제3자 재현, 불일치 exit 3). DATP/1.0 은 그것을 형식화해 이름과 계약을 준다.",
+  "operations": [
+    {
+      "op": "BEGIN",
+      "mutating": false,
+      "meaning": "트랜잭션 시작 — transaction_id 발급, 입력 문서 해시 고정",
+      "rhwp": "run 계획서의 input 고정"
+    },
+    {
+      "op": "READ",
+      "mutating": false,
+      "meaning": "문서 상태 조회",
+      "rhwp": "info·export-* 계열"
+    },
+    {
+      "op": "SELECT",
+      "mutating": false,
+      "meaning": "변경 대상 지정 — 0건/다건은 판정(3002/3003)이지 오류가 아니다",
+      "rhwp": "search·fields·export-tables 좌표"
+    },
+    {
+      "op": "PROPOSE",
+      "mutating": false,
+      "meaning": "변경안 작성 — 아직 아무것도 바꾸지 않는다",
+      "rhwp": "계획서(plan) 작성"
+    },
+    {
+      "op": "MODIFY",
+      "mutating": true,
+      "meaning": "제안을 임시 산출에 적용. 원본은 훼손하지 않는다",
+      "rhwp": "edit 계열 -o 산출 분리"
+    },
+    {
+      "op": "VALIDATE",
+      "mutating": false,
+      "meaning": "산출이 계약을 지키는지 결정적으로 판정. 실패 시 3001",
+      "rhwp": "--verify · --dry-run · 정적 선검증"
+    },
+    {
+      "op": "DIFF",
+      "mutating": false,
+      "meaning": "입력 대비 산출의 구조·시각 차이",
+      "rhwp": "ir-diff · render-diff"
+    },
+    {
+      "op": "COMMIT",
+      "mutating": true,
+      "meaning": "산출을 확정하고 영수증을 발급. VALIDATE 실패 상태에서는 금지",
+      "rhwp": "run 원자 실행 + replay --capsule"
+    },
+    {
+      "op": "ROLLBACK",
+      "mutating": false,
+      "meaning": "트랜잭션 폐기 — 원본이 그대로임을 확인한다",
+      "rhwp": "산출 폐기(원본 무훼손이 기본이라 되돌릴 것이 없음)"
+    },
+    {
+      "op": "REPLAY",
+      "mutating": false,
+      "meaning": "영수증으로 재실행해 같은 산출 해시가 나오는지 확인",
+      "rhwp": "replay --expect-output-sha256 (불일치 exit 3)"
+    },
+    {
+      "op": "VERIFY",
+      "mutating": false,
+      "meaning": "타인의 영수증·서명·계보를 검증",
+      "rhwp": "verify-signature · lineage · audit · conformance"
+    }
+  ],
+  "stateMachine": {
+    "start": "BEGIN",
+    "transitions": {
+      "BEGIN": [
+        "READ",
+        "SELECT",
+        "PROPOSE",
+        "ROLLBACK"
+      ],
+      "READ": [
+        "READ",
+        "SELECT",
+        "PROPOSE",
+        "ROLLBACK"
+      ],
+      "SELECT": [
+        "READ",
+        "SELECT",
+        "PROPOSE",
+        "ROLLBACK"
+      ],
+      "PROPOSE": [
+        "MODIFY",
+        "PROPOSE",
+        "ROLLBACK"
+      ],
+      "MODIFY": [
+        "VALIDATE",
+        "ROLLBACK"
+      ],
+      "VALIDATE": [
+        "DIFF",
+        "COMMIT",
+        "PROPOSE",
+        "ROLLBACK"
+      ],
+      "DIFF": [
+        "COMMIT",
+        "PROPOSE",
+        "ROLLBACK"
+      ],
+      "COMMIT": [
+        "REPLAY",
+        "VERIFY"
+      ],
+      "ROLLBACK": [],
+      "REPLAY": [
+        "VERIFY"
+      ],
+      "VERIFY": []
+    },
+    "invariants": [
+      "COMMIT 은 직전에 성공한 VALIDATE 가 있을 때만 허용된다 — MODIFY 직후 COMMIT 은 프로토콜 위반이다.",
+      "VALIDATE 가 3001 을 내면 그 트랜잭션은 COMMIT 으로 갈 수 없다. PROPOSE 로 돌아가거나 ROLLBACK 한다.",
+      "MODIFY 는 원본을 바꾸지 않는다 — 산출은 항상 분리된다. 그래서 ROLLBACK 이 값싸다.",
+      "한 트랜잭션의 모든 연산은 같은 transaction_id 와 같은 입력 문서 해시를 참조한다.",
+      "REPLAY·VERIFY 는 열린 트랜잭션이 아니라 확정된 영수증에 작용한다 — COMMIT 이후에만 의미가 있고, 문서를 바꾸지 않는다."
+    ]
+  },
+  "receipt": {
+    "required": [
+      "transactionId",
+      "parentTransactionId",
+      "inputSha256",
+      "operationSha256",
+      "outputSha256",
+      "policySha256",
+      "toolVersion",
+      "agentIdentity",
+      "timestamp"
+    ],
+    "optional": [
+      "signature",
+      "anchorEpoch"
+    ],
+    "rules": [
+      "영수증은 불변이다 — 정정은 새 트랜잭션으로 하고 parentTransactionId 로 잇는다.",
+      "operationSha256 은 계획(연산 목록)의 해시다. 계획이 다르면 다른 트랜잭션이다.",
+      "policySha256 은 COMMIT 시점에 적용된 정책의 해시다 — 정책이 바뀌면 과거 COMMIT 의 근거를 소급 변경할 수 없다.",
+      "결정적 재실행: 같은 input+operation+toolVersion 이면 같은 outputSha256 이어야 한다. 아니면 REPLAY 가 3000 을 낸다."
+    ],
+    "rhwp": "replay --capsule 이 입력·계획·산출 3해시를, --parent 가 계보를, --sign-key 가 서명을, anchor 가 에폭을 담당한다(AWS/1.0 AW-L1..L4)."
+  },
+  "atomicity": [
+    "COMMIT 은 전부 적용되거나 전부 적용되지 않는다 — 부분 적용된 산출을 남기지 않는다.",
+    "실패한 트랜잭션이 만든 임시 산출은 지운다. '성공처럼 보이는 미완성 산출물'을 남기지 않는다.",
+    "여러 변경을 한 트랜잭션으로 묶으려면 PROPOSE 에 전부 담는다 — MODIFY 를 나눠 부르지 않는다."
+  ],
+  "conformance": "python3 tools/dar/conformance.py --bin <rhwp> --protocol datp --json",
+  "surfaces": [
+    "mydocs/tech/standards/document_transaction_protocol.md",
+    "mydocs/tech/standards/document_agent_runtime.md",
+    "tools/dar/conformance.py"
+  ]
+}
