@@ -297,10 +297,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 281개 필드
+### 2-2. 전수 사전 — 282개 필드
 
-`capabilities` 의 `recordFields` 고유 **278개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 281개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **279개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 282개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -317,6 +317,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `csv` | string | 읽은 CSV 경로 | `csv-to-table` |
 | `image` | string | 삽입할 그림 경로 | `edit insert-image` |
 | `below` | bool | 지정 행 아래에 끼울지 | `edit insert-row` |
+| `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
 | `docId` | string | 세션 핸들. 서버 프로세스 수명과 같고 영속되지 않는다 | 세션 도구 12종 |
 
 #### 문서 메타
@@ -1050,8 +1051,8 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 10개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·
-`insert-paragraph`·`insert-page-break`·`insert-row`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 11개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·
+`insert-paragraph`·`insert-page-break`·`insert-row`·`insert-col`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
@@ -1101,7 +1102,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_set_checkbox` | `edit replace-text --find □ --replace ☑ --occurrence` | `path`,`occurrence`,`output` |
 | `hwp_set_cell` | `edit set-cell --json` | `path`,`table`,`row`,`col`,`text` |
 | `hwp_insert_row` | `edit insert-row --json` | `path`,`table`,`row` |
-| `hwp_insert_row` | `edit insert-row --json` | `path`,`table`,`row` |
+| `hwp_insert_col` | `edit insert-col --json` | `path`,`table`,`col` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |

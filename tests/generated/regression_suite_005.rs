@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_005
 
+#[path = "../cases/insert_col_contract.rs"]
+mod insert_col_contract;
+
 #[path = "../convert_verify_corpus_ratchet.rs"]
 mod convert_verify_corpus_ratchet;
 
