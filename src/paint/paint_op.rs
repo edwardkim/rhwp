@@ -537,11 +537,93 @@ fn color_paint_graph_key(graph: &ColorPaintGraphPayload) -> String {
             key.push('|');
         }
         key.push_str(&format!(
-            "{}:{}:{}:{}",
+            "{}:{}:{}:{}:range:{}:paint:{}",
             node.node_id,
             node.kind.as_str(),
             optional_glyph_range_key(node.glyph_range),
             font_color_glyph_ref_key(node.source_font_ref.as_ref()),
+            optional_text_range_key(node.source_range_utf8),
+            color_paint_graph_node_paint_key(node),
+        ));
+    }
+    key
+}
+
+/// 그래프 노드가 **실제로 무엇을 칠하는가**. `kind` 는 종류만 말하고 내용은
+/// 말하지 않는다 — 두 SolidPath 노드가 서로 다른 색이어도 `kind` 는 같다.
+/// 페인트 내용이 키에 없으면 그 둘이 같은 캐시 슬롯을 쓴다.
+fn color_paint_graph_node_paint_key(node: &ColorPaintGraphNode) -> String {
+    if let Some(solid) = &node.solid_path {
+        return format!(
+            "solid:{}:{}:{}:{}:{}",
+            path_commands_key(Some(&solid.commands)),
+            resolved_color_key(Some(&solid.fill)),
+            solid.fill_rule.as_str(),
+            optional_u32_key(solid.source_glyph_id),
+            optional_u32_key(solid.palette_index),
+        );
+    }
+    if let Some(linear) = &node.linear_gradient_path {
+        return format!(
+            "linear:{}:{:.6},{:.6},{:.6},{:.6}:{}:{}:{}:{}",
+            path_commands_key(Some(&linear.commands)),
+            linear.gradient.x0,
+            linear.gradient.y0,
+            linear.gradient.x1,
+            linear.gradient.y1,
+            gradient_stops_key(&linear.gradient.stops),
+            linear.fill_rule.as_str(),
+            optional_u32_key(linear.source_glyph_id),
+            optional_u32_key(linear.palette_index),
+        );
+    }
+    if let Some(radial) = &node.radial_gradient_path {
+        return format!(
+            "radial:{}:{:.6},{:.6},{:.6}:{}:{}:{}:{}",
+            path_commands_key(Some(&radial.commands)),
+            radial.gradient.cx,
+            radial.gradient.cy,
+            radial.gradient.radius,
+            gradient_stops_key(&radial.gradient.stops),
+            radial.fill_rule.as_str(),
+            optional_u32_key(radial.source_glyph_id),
+            optional_u32_key(radial.palette_index),
+        );
+    }
+    if let Some(sweep) = &node.sweep_gradient_path {
+        return format!(
+            "sweep:{}:{:.6},{:.6},{:.6},{:.6}:{}:{}:{}:{}",
+            path_commands_key(Some(&sweep.commands)),
+            sweep.gradient.cx,
+            sweep.gradient.cy,
+            sweep.gradient.start_angle_degrees,
+            sweep.gradient.end_angle_degrees,
+            gradient_stops_key(&sweep.gradient.stops),
+            sweep.fill_rule.as_str(),
+            optional_u32_key(sweep.source_glyph_id),
+            optional_u32_key(sweep.palette_index),
+        );
+    }
+    if let Some(transform) = &node.transform {
+        return format!(
+            "transform:{}:{}",
+            transform.child_node_id,
+            affine_key(transform.transform),
+        );
+    }
+    "-".to_string()
+}
+
+fn gradient_stops_key(stops: &[ColorGradientStop]) -> String {
+    let mut key = String::from("stops:");
+    for (idx, stop) in stops.iter().enumerate() {
+        if idx > 0 {
+            key.push(';');
+        }
+        key.push_str(&format!(
+            "{:.6}@{}",
+            stop.offset,
+            resolved_color_key(Some(&stop.color))
         ));
     }
     key
@@ -1655,22 +1737,145 @@ mod tests {
         }
     }
 
+    fn graph_node() -> ColorPaintGraphNode {
+        ColorPaintGraphNode {
+            node_id: 1,
+            kind: ColorPaintGraphNodeKind::SolidPath,
+            solid_path: None,
+            linear_gradient_path: None,
+            radial_gradient_path: None,
+            sweep_gradient_path: None,
+            transform: None,
+            source_range_utf8: None,
+            glyph_range: None,
+            source_font_ref: None,
+        }
+    }
+
     fn graph() -> ColorPaintGraphPayload {
         ColorPaintGraphPayload {
             root_node_id: 1,
-            nodes: vec![ColorPaintGraphNode {
-                node_id: 1,
-                kind: ColorPaintGraphNodeKind::SolidPath,
-                solid_path: None,
-                linear_gradient_path: None,
-                radial_gradient_path: None,
-                sweep_gradient_path: None,
-                transform: None,
-                source_range_utf8: None,
-                glyph_range: None,
-                source_font_ref: None,
-            }],
+            nodes: vec![graph_node()],
         }
+    }
+
+    fn graph_of(node: ColorPaintGraphNode) -> ColorPaintGraphPayload {
+        ColorPaintGraphPayload {
+            root_node_id: 1,
+            nodes: vec![node],
+        }
+    }
+
+    fn color(rgba: [f32; 4]) -> ResolvedColor {
+        ResolvedColor {
+            color_space: None,
+            rgba,
+        }
+    }
+
+    fn square() -> Vec<PathCommand> {
+        vec![
+            PathCommand::MoveTo(0.0, 0.0),
+            PathCommand::LineTo(10.0, 10.0),
+            PathCommand::ClosePath,
+        ]
+    }
+
+    fn solid_node(fill: [f32; 4]) -> ColorPaintGraphNode {
+        let mut node = graph_node();
+        node.solid_path = Some(ColorPaintSolidPathNode {
+            commands: square(),
+            fill: color(fill),
+            fill_rule: GlyphOutlineFillRule::NonZero,
+            source_glyph_id: None,
+            palette_index: None,
+        });
+        node
+    }
+
+    fn linear_node(x1: f64, stop_color: [f32; 4]) -> ColorPaintGraphNode {
+        let mut node = graph_node();
+        node.kind = ColorPaintGraphNodeKind::LinearGradientPath;
+        node.linear_gradient_path = Some(ColorPaintLinearGradientPathNode {
+            commands: square(),
+            gradient: ColorLinearGradient {
+                x0: 0.0,
+                y0: 0.0,
+                x1,
+                y1: 0.0,
+                stops: vec![ColorGradientStop {
+                    offset: 0.0,
+                    color: color(stop_color),
+                }],
+            },
+            fill_rule: GlyphOutlineFillRule::NonZero,
+            source_glyph_id: None,
+            palette_index: None,
+        });
+        node
+    }
+
+    fn graph_key(node: ColorPaintGraphNode) -> String {
+        let mut payload = payload(vec![]);
+        payload.paint_graph = Some(graph_of(node));
+        color_layers_payload_resource_key(&payload)
+    }
+
+    /// `kind` 는 종류만 말한다. 두 SolidPath 노드가 서로 다른 색이어도 종전 키는
+    /// 같았고, 캐시가 앞서 그린 색을 돌려줬다.
+    #[test]
+    fn graph_solid_path_fill_changes_the_resource_key() {
+        assert_ne!(
+            graph_key(solid_node([1.0, 0.0, 0.0, 1.0])),
+            graph_key(solid_node([0.0, 0.0, 1.0, 1.0])),
+            "SolidPath 채움색이 다른데 같은 캐시 키가 나왔다"
+        );
+    }
+
+    #[test]
+    fn graph_solid_path_geometry_changes_the_resource_key() {
+        let base = solid_node([1.0, 0.0, 0.0, 1.0]);
+        let mut wider = solid_node([1.0, 0.0, 0.0, 1.0]);
+        wider.solid_path.as_mut().unwrap().commands = vec![
+            PathCommand::MoveTo(0.0, 0.0),
+            PathCommand::LineTo(99.0, 0.0),
+        ];
+
+        assert_ne!(graph_key(base), graph_key(wider));
+    }
+
+    /// 그라디언트 기하와 stop 색이 각각 키를 바꿔야 한다.
+    #[test]
+    fn graph_linear_gradient_geometry_and_stops_change_the_resource_key() {
+        let base = graph_key(linear_node(10.0, [1.0, 0.0, 0.0, 1.0]));
+
+        assert_ne!(
+            base,
+            graph_key(linear_node(20.0, [1.0, 0.0, 0.0, 1.0])),
+            "그라디언트 끝점이 달라도 키가 같다"
+        );
+        assert_ne!(
+            base,
+            graph_key(linear_node(10.0, [0.0, 1.0, 0.0, 1.0])),
+            "그라디언트 stop 색이 달라도 키가 같다"
+        );
+    }
+
+    /// 같은 `kind` 라도 페인트 내용이 없는 노드와 있는 노드는 달라야 한다.
+    #[test]
+    fn graph_node_without_paint_differs_from_one_with_paint() {
+        assert_ne!(
+            graph_key(graph_node()),
+            graph_key(solid_node([1.0, 0.0, 0.0, 1.0])),
+        );
+    }
+
+    #[test]
+    fn identical_graphs_share_one_key() {
+        assert_eq!(
+            graph_key(solid_node([0.25, 0.5, 0.75, 1.0])),
+            graph_key(solid_node([0.25, 0.5, 0.75, 1.0])),
+        );
     }
 
     /// 채워지는 색이 다르면 캐시 슬롯도 달라야 한다. 종전 키는 `fill` 을 싣지
