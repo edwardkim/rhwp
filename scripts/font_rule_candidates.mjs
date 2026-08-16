@@ -260,7 +260,7 @@ function parseInstalledAliases(boundary, source) {
   return extracted('rust-array-match-arms', rows, matches.length);
 }
 
-function parseStudioSubstitutions(boundary, source) {
+export function parseStudioSubstitutions(boundary, source) {
   const start = source.indexOf(boundary.selector);
   const assignment = source.indexOf('=', start);
   const body = extractBalanced(source, assignment, '[', ']');
@@ -270,7 +270,7 @@ function parseStudioSubstitutions(boundary, source) {
   for (const line of body.split('\n')) {
     const language = line.match(/Lang\s+(\d+)/);
     if (language) languageSlot = language[1];
-    for (const match of line.matchAll(/\['((?:\\.|[^'])*)',\s*(\d+),\s*'((?:\\.|[^'])*)',\s*(\d+)\]/g)) {
+    for (const match of line.matchAll(/\['((?:\\.|[^'\\])*)',\s*(\d+),\s*'((?:\\.|[^'\\])*)',\s*(\d+)\]/g)) {
       tupleCount += 1;
       rows.push(candidate(
         boundary,
@@ -289,7 +289,7 @@ function parseStudioSubstitutions(boundary, source) {
       ));
     }
   }
-  const rawTupleCount = [...body.matchAll(/\['(?:\\.|[^'])*',\s*\d+,\s*'(?:\\.|[^'])*',\s*\d+\]/g)].length;
+  const rawTupleCount = [...body.matchAll(/\['(?:\\.|[^'\\])*',\s*\d+,\s*'(?:\\.|[^'\\])*',\s*\d+\]/g)].length;
   if (tupleCount !== rawTupleCount || languageSlot === null) {
     throw new Error(`SUBST_TABLES parsed ${tupleCount}/${rawTupleCount}; language=${languageSlot}`);
   }

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   collectRuleCandidates,
+  parseStudioSubstitutions,
   validateCandidateSnapshot,
 } from '../font_rule_candidates.mjs';
 import { canonicalJson, sha256Text } from '../font_rule_ledger.mjs';
@@ -79,6 +80,29 @@ test('candidate collection is byte deterministic', () => {
 
   assert.equal(canonicalJson(first), canonicalJson(second));
   assert.equal(sha256Text(canonicalJson(first)), sha256Text(canonicalJson(second)));
+});
+
+test('Studio substitution tuple parsing keeps escape and plain character paths disjoint', () => {
+  const boundary = {
+    ownerId: 'studio-substitution',
+    selectorId: 'redos-regression',
+    path: 'synthetic/substitution.ts',
+    symbol: 'SUBST_TABLES',
+    selector: 'const SUBST_TABLES',
+    sourceSha256: '0'.repeat(64),
+  };
+  const escapedPairs = '\\\\'.repeat(10_000);
+  const source = `const SUBST_TABLES = [
+    // Lang 0
+    ['source${escapedPairs}', 0, 'target${escapedPairs}', 1],
+  ];`;
+
+  const parsed = parseStudioSubstitutions(boundary, source);
+
+  assert.equal(parsed.rows.length, 1);
+  assert.equal(parsed.recognizedMappingBlocks, 1);
+  assert.equal(parsed.rows[0].sourceFace, `source${escapedPairs}`);
+  assert.equal(parsed.rows[0].targetOrPolicy, `target${escapedPairs}`);
 });
 
 test('a zero-count disposition fails closed', () => {
