@@ -407,6 +407,13 @@ pub enum Parameter {
     Boolean {
         name: Option<String>,
         value: bool,
+        /// [#4437] 원본 lexical 표기 보존. `xs:boolean` 은 `0`/`1`/`false`/`true`
+        /// 네 표기가 모두 유효하고 실물 코퍼스에 섞여 있다(`Fiexde=1`,
+        /// `RefHyperLink=false`). 종전 렌더는 항상 `0`/`1` 로 정규화해 원본이
+        /// `false` 로 적은 것이 왕복에서 바이트가 달라졌다. 파서가 유효 lexical
+        /// 을 그대로 담고, 렌더는 이 값을 우선 되쓴다. 프로그램 생성 값은 None
+        /// → 종전대로 `0`/`1`.
+        lexical: Option<String>,
     },
     Integer {
         name: Option<String>,
@@ -467,8 +474,15 @@ impl ParameterList {
 impl Parameter {
     fn render_xml_into(&self, out: &mut String) {
         match self {
-            Parameter::Boolean { name, value } => {
-                render_scalar_param(out, "booleanParam", name, if *value { "1" } else { "0" });
+            Parameter::Boolean {
+                name,
+                value,
+                lexical,
+            } => {
+                // [#4437] 원본 표기 우선 — 파서가 검증한 유효 lexical 만 담기므로
+                // 그대로 되써도 스키마 안전하다.
+                let text = lexical.as_deref().unwrap_or(if *value { "1" } else { "0" });
+                render_scalar_param(out, "booleanParam", name, text);
             }
             Parameter::Integer { name, value } => {
                 render_scalar_param(out, "integerParam", name, &value.to_string());
@@ -506,6 +520,15 @@ fn render_scalar_param(out: &mut String, tag: &str, name: &Option<String>, text:
     out.push_str("</hp:");
     out.push_str(tag);
     out.push('>');
+}
+
+/// [#4437] `xs:boolean` 의 유효 lexical 이면 그 표기를 돌려준다 — 아니면 None.
+///
+/// 렌더가 이 값을 검증 없이 되쓰므로 유효 표기만 담는 것이 계약이다. 규정 밖
+/// 텍스트(빈 문자열 등)는 None 으로 떨어져 종전 정규화(`0`/`1`)를 탄다.
+pub(crate) fn boolean_lexical_of(text: &str) -> Option<String> {
+    let t = text.trim();
+    matches!(t, "0" | "1" | "true" | "false").then(|| t.to_string())
 }
 
 /// `ParameterList::render_xml` 전용 최소 XML 텍스트/속성값 이스케이프.
@@ -593,6 +616,7 @@ fn parse_one_param(s: &str, pos: &mut usize) -> Option<Parameter> {
             "booleanParam" => Parameter::Boolean {
                 name: Some(name),
                 value: matches!(text.trim(), "1" | "true"),
+                lexical: boolean_lexical_of(&text),
             },
             "integerParam" => Parameter::Integer {
                 name: Some(name),
@@ -719,13 +743,16 @@ mod parameter_list_codec_tests {
                     value: "이곳을 마우스로 누르고 내용을 입력하세요.".to_string(),
                     preserve_space: false,
                 },
+                // [#4437] 실물 코퍼스 표기 그대로 — `1` 과 `false` 가 섞여 있다.
                 Parameter::Boolean {
                     name: Some("Fiexde".to_string()),
                     value: true,
+                    lexical: Some("1".to_string()),
                 },
                 Parameter::Boolean {
                     name: Some("RefHyperLink".to_string()),
                     value: false,
+                    lexical: Some("false".to_string()),
                 },
                 Parameter::Float {
                     name: Some("Ratio".to_string()),
@@ -750,6 +777,37 @@ mod parameter_list_codec_tests {
         assert!(xml.ends_with("</hp:parameters>"));
         let parsed = ParameterList::parse_xml(&xml).expect("parse_xml 실패");
         assert_eq!(parsed, original);
+    }
+
+    /// [#4437] 원본 lexical(`false`/`true`) 이 정규화(`0`/`1`)되지 않고 바이트
+    /// 그대로 왕복해야 한다.
+    #[test]
+    fn issue4437_boolean_lexical_round_trips_verbatim() {
+        let xml = sample_tree().render_xml("parameters");
+        assert!(
+            xml.contains(r#"<hp:booleanParam name="RefHyperLink">false</hp:booleanParam>"#),
+            "원본 `false` 표기가 `0` 으로 정규화되면 안 된다: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:booleanParam name="Fiexde">1</hp:booleanParam>"#),
+            "원본 `1` 표기는 그대로: {xml}"
+        );
+        // parse → render 재왕복도 바이트 동일.
+        let reparsed = ParameterList::parse_xml(&xml).expect("parse_xml");
+        assert_eq!(reparsed.render_xml("parameters"), xml);
+
+        // lexical 이 없는(프로그램 생성) Boolean 은 종전대로 0/1 정규화.
+        let synth = ParameterList {
+            name: Some(String::new()),
+            items: vec![Parameter::Boolean {
+                name: Some("New".to_string()),
+                value: false,
+                lexical: None,
+            }],
+        };
+        assert!(synth
+            .render_xml("parameters")
+            .contains(r#"<hp:booleanParam name="New">0</hp:booleanParam>"#));
     }
 
     #[test]
