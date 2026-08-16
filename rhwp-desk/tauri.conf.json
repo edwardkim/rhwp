@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "rhwp-desk",
+  "version": "0.1.0",
+  "identifier": "kr.rhwp.desk",
+  "build": {
+    "frontendDist": "ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "rhwp-desk",
+        "width": 1480,
+        "height": 920,
+        "minWidth": 980,
+        "minHeight": 640,
+        "center": true,
+        "dragDropEnabled": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
+    "fileAssociations": [
+      {
+        "ext": ["hwp"],
+        "name": "HWP 문서",
+        "description": "한글 워드프로세서 문서 (HWP5)",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["hwpx"],
+        "name": "HWPX 문서",
+        "description": "개방형 한글 문서 (OWPML)",
+        "role": "Viewer"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+# rhwp-desk — HWP/HWPX 문서를 위한 Windows 데스크톱 워크벤치 (M0+M1)
+#
+# 의도적으로 루트 워크스페이스의 멤버가 아니다: tauri 의존 트리(~500 crate)가
+# 코어 Cargo.lock 에 섞이면 CI 와 supply-chain 감사 표면이 무거워진다.
+# 빈 [workspace] 테이블이 이 crate 를 독립 워크스페이스 루트로 고정한다.
+
+[package]
+name = "rhwp-desk"
+version = "0.1.0"
+edition = "2021"
+description = "rhwp 데스크톱 워크벤치 — HWP/HWPX 뷰어·검증·명령 팔레트"
+license = "MIT OR Apache-2.0"
+
+[workspace]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Planner 어댑터(OpenAI 호환 HTTP) — 로컬/사내/클라우드 서버 공통 규격
+ureq = { version = "2", features = ["json"] }
+# API 키는 평문 설정 파일이 아니라 Windows 자격 증명 관리자에 저장한다
+keyring = { version = "3", features = ["windows-native"] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
