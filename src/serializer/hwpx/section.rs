@@ -1237,11 +1237,23 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
             // 방출돼, 말미 슬롯(표 등)이 고아 fieldEnd 의 8유닛 갭을 먼저 가로채
             // char_offsets 가 +8 밀렸다(36380743 문단 0.10: 표가 fieldEnd 자리로 당겨짐).
             // 갭 소유자인 고아 fieldEnd 를 먼저 방출하고 while 을 재평가한다.
+            //
+            // [#4902] 단, 그 갭을 다투는 슬롯이 **이 문단의 fieldBegin** 이면 양보하지
+            // 않는다. 한 자리에서 begin 과 (앞 문단 필드를 닫는) 고아 end 가 겹치면
+            // 원본 순서는 언제나 `begin → end → end` 다 — HWP5 PARA_TEXT 실측
+            // (08368 문단: `<0x0003 %clk><0x0004><0x0004>해 도 별 목 차`).
+            // 고아를 앞세우면 `<hp:fieldEnd>` 가 짝 `<hp:fieldBegin>` 보다 먼저 나가고,
+            // 한글은 그 지점에서 구역 파싱을 포기해 **이후 본문을 통째로 버린다**
+            // (실측: 19쪽 35,205자 → 2쪽 7,838자, 개체 45→1. 고아를 짝 뒤로 옮기거나
+            // 지우면 100% 복원되고, beginIDRef 값만 고치는 것으로는 복원되지 않는다).
+            // #1948 이 막으려던 것은 **표 등 다른 슬롯**이 갭을 가로채는 경우다.
+            let field_begin_owns_gap = matches!(slots[slot_idx], Control::Field(_));
             if let Some(oi) = para
                 .orphan_field_ends
                 .iter()
                 .enumerate()
                 .position(|(i, ofe)| ofe.char_idx == idx && !orphan_emitted[i])
+                .filter(|_| !field_begin_owns_gap)
             {
                 flush_text_fragment(
                     &mut splitter.content,
@@ -5245,6 +5257,86 @@ mod tests {
         let doc = Document::default();
         let mut ctx = SerializeContext::collect_from_document(&doc);
         render_runs(para, &mut ctx).0
+    }
+
+    /// [#4902] 한 자리에서 이 문단의 `fieldBegin` 과 (앞 문단 필드를 닫는) 고아 `fieldEnd`
+    /// 가 겹치면 **begin 이 먼저** 나가야 한다.
+    ///
+    /// 한컴 원본 PARA_TEXT 는 언제나 `begin(0x03) → end(0x04) → end(0x04)`(LIFO) 순이다
+    /// (08368 실측). 고아를 앞세우면 한글은 짝 없는 `fieldEnd` 를 만나 그 지점에서 구역
+    /// 파싱을 포기하고 이후 본문·개체를 통째로 버린다 — 실측 19쪽 35,205자 → 2쪽 7,838자,
+    /// 개체 45→1. `beginIDRef` 값을 유효한 id 로 고쳐도 복원되지 않고, 순서를 바로잡으면
+    /// 100% 복원된다.
+    #[test]
+    fn issue4902_field_begin_precedes_orphan_field_end_at_same_slot() {
+        use crate::model::control::{Field, FieldType};
+        use crate::model::paragraph::OrphanFieldEnd;
+
+        let doc = Document::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let _ = &mut ctx;
+
+        // 08368 문단 32 동형: 8유닛 슬롯 3개(begin·짝 end·고아 end) 뒤에 텍스트.
+        let mut para = Paragraph::default();
+        para.text = "해도".to_string();
+        para.char_offsets = vec![24, 25];
+        para.char_count = 24 + 2 + 1;
+        para.controls = vec![Control::Field(Field {
+            field_type: FieldType::ClickHere,
+            field_id: 1_867_945_538,
+            ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+            ..Default::default()
+        })];
+        para.field_ranges = vec![FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 0,
+            control_idx: 0,
+            end_field_id: 1_867_945_538,
+            inner_slot_count: 0,
+        }];
+        para.orphan_field_ends = vec![OrphanFieldEnd {
+            char_idx: 0,
+            begin_id_ref: 0,
+            field_id: 0,
+            begin_ctrl_id: 0,
+        }];
+
+        let runs = runs_of(&para);
+        let begin = runs.find("<hp:fieldBegin").expect("fieldBegin 방출");
+        let orphan = runs
+            .find(r#"<hp:fieldEnd beginIDRef="0""#)
+            .expect("고아 fieldEnd 방출");
+        assert!(
+            begin < orphan,
+            "고아 fieldEnd 가 짝 fieldBegin 보다 앞서면 한글이 본문을 버린다:\n{runs}"
+        );
+    }
+
+    /// [#1948] 반면 갭을 다투는 슬롯이 **표 등 다른 컨트롤**이면 종전대로 고아 fieldEnd 가
+    /// 먼저다 — 그러지 않으면 말미 슬롯이 고아의 8유닛 갭을 가로채 `char_offsets` 가 밀린다.
+    #[test]
+    fn issue1948_orphan_field_end_still_precedes_non_field_slot() {
+        use crate::model::paragraph::OrphanFieldEnd;
+
+        let mut para = Paragraph::default();
+        para.text = "가".to_string();
+        para.char_offsets = vec![16];
+        para.char_count = 16 + 1 + 1;
+        para.controls = vec![Control::Table(Box::default())];
+        para.orphan_field_ends = vec![OrphanFieldEnd {
+            char_idx: 0,
+            begin_id_ref: 2_031_845_287,
+            field_id: 0,
+            begin_ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+        }];
+
+        let runs = runs_of(&para);
+        let orphan = runs.find("<hp:fieldEnd").expect("고아 fieldEnd 방출");
+        let table = runs.find("<hp:tbl").expect("표 방출");
+        assert!(
+            orphan < table,
+            "표 슬롯이 고아 fieldEnd 의 갭을 가로채면 char_offsets 가 밀린다:\n{runs}"
+        );
     }
 
     /// [#4778] 위치 축이 무너진 문단(파서 미수용 8유닛 슬롯 — 차례표지 0x0008 등)의
