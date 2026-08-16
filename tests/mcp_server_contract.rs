@@ -361,6 +361,89 @@ fn session_open_read_close_without_reparse() {
     );
 }
 
+/// [세션 노드 경로 확장] `hwp_doc_tree` 의 기존 `nodes.pages`/`nodes.tables`
+/// (p0../t0..)는 무변경이고, 새 `nodes.paragraphs`/`nodes.cells` 가
+/// `docdiff::NodePath` 문법(`sec[i]/para[i]/ctrl[i]/cell[r,c]`)의 안정 좌표를
+/// 문단·표 셀까지 내려가며 준다.
+#[test]
+fn doc_tree_adds_node_path_for_paragraphs_and_table_cells() {
+    let p = sample("samples/table-001.hwp");
+    if !p.exists() {
+        eprintln!("샘플 없음 — 건너뜀");
+        return;
+    }
+    let mut s = Server::started();
+
+    let opened = s.call_tool("hwp_open", serde_json::json!({"path": p.to_str().unwrap()}));
+    let doc_id = opened["docId"]
+        .as_str()
+        .unwrap_or_else(|| panic!("hwp_open 이 docId 를 돌려줘야 합니다: {opened}"))
+        .to_string();
+
+    let tree = s.call_tool("hwp_doc_tree", serde_json::json!({"docId": doc_id}));
+
+    // 기존 체계는 그대로다 — 하위 호환 무회귀.
+    assert_eq!(tree["nodes"]["pages"][0], "p0", "{tree}");
+    let tables = tree["nodes"]["tables"]
+        .as_array()
+        .unwrap_or_else(|| panic!("nodes.tables 가 배열이어야 합니다: {tree}"));
+    assert!(
+        !tables.is_empty(),
+        "table-001 샘플엔 표가 있어야 합니다: {tree}"
+    );
+    assert_eq!(tables[0]["nodeId"], "t0", "{tree}");
+    assert!(
+        tree["idContract"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("p0.."),
+        "{tree}"
+    );
+
+    // 새 체계 — 문단.
+    let paragraphs = tree["nodes"]["paragraphs"]
+        .as_array()
+        .unwrap_or_else(|| panic!("nodes.paragraphs 가 배열이어야 합니다: {tree}"));
+    assert!(!paragraphs.is_empty(), "{tree}");
+    let first_para_path = paragraphs[0]["nodePath"]
+        .as_str()
+        .unwrap_or_else(|| panic!("nodePath 가 문자열이어야 합니다: {tree}"));
+    assert!(
+        first_para_path.starts_with("sec[0]/para["),
+        "문단 경로 문법: {first_para_path}"
+    );
+    assert!(paragraphs[0]["textPreview"].is_string(), "{tree}");
+
+    // 새 체계 — 표 셀. table-001 은 19x9 격자에 병합이 있는 표본이다(agent_knowledge_map.md).
+    let cells = tree["nodes"]["cells"]
+        .as_array()
+        .unwrap_or_else(|| panic!("nodes.cells 가 배열이어야 합니다: {tree}"));
+    assert!(!cells.is_empty(), "표가 있는데 cells 가 비었습니다: {tree}");
+    let cell0 = &cells[0];
+    let cell0_path = cell0["nodePath"]
+        .as_str()
+        .unwrap_or_else(|| panic!("nodePath 가 문자열이어야 합니다: {tree}"));
+    assert!(
+        cell0_path.contains("/ctrl[0]/cell[r0,c0]"),
+        "첫 셀 경로: {cell0_path}"
+    );
+    assert_eq!(cell0["row"], 0, "{tree}");
+    assert_eq!(cell0["col"], 0, "{tree}");
+    assert!(cell0["rowSpan"].as_u64().unwrap_or(0) >= 1, "{tree}");
+    assert!(cell0["colSpan"].as_u64().unwrap_or(0) >= 1, "{tree}");
+
+    // 두 체계는 나란히 실리고 서로를 지우지 않는다.
+    assert!(
+        tree["nodePathContract"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("NodePath"),
+        "{tree}"
+    );
+
+    s.call_tool("hwp_close", serde_json::json!({"docId": doc_id}));
+}
+
 #[test]
 fn unknown_method_returns_jsonrpc_error() {
     let mut s = Server::started();

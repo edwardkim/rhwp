@@ -328,6 +328,81 @@ fn session_ws_open(args: &serde_json::Value, sessions: &mut Sessions) -> serde_j
     session_open(&open_args, sessions)
 }
 
+/// [세션 노드 경로 확장] `docdiff::NodePath`/`PathStep` 이 이미 쓰는
+/// `sec[i]/para[i]/ctrl[i]/cell[r,c]` 문법을 그대로 승격해 문단·표 셀까지 내려가는
+/// 좌표를 만든다. **새 문법을 만들지 않는다** — 회귀 비교 엔진(`docdiff::compare`)이
+/// 문서를 훑는 범위와 똑같이 구역→문단→(표 컨트롤)→셀→문단만 재귀한다.
+///
+/// 범위가 `hwp_doc_tables`(#3346, `extract_tables`)보다 좁다: 글상자·머리말·꼬리말·
+/// 각주/미주 안의 표는 `NodePath` 에 대응하는 `PathStep` 이 없어 여기 나오지 않는다
+/// (그 표들의 위치는 `hwp_doc_tables` 응답의 `containerPath` 로 이미 알 수 있다).
+/// 없는 문법을 지어내는 대신 표현 가능한 범위만 정직하게 채운다.
+fn collect_node_path_tree(
+    document: &rhwp::model::document::Document,
+) -> (Vec<serde_json::Value>, Vec<serde_json::Value>) {
+    use rhwp::docdiff::{NodePath, PathStep};
+    use rhwp::document_core::queries::rendering::para_text_preview;
+    use rhwp::model::control::Control;
+    use rhwp::model::paragraph::Paragraph;
+
+    /// docdiff::compare 의 `MAX_DEPTH` 와 같은 재귀 안전 상한 — 병적으로 중첩된
+    /// 표(셀 안에 표 안에 표...)에서도 스택이 터지지 않게 한다.
+    const MAX_DEPTH: usize = 32;
+
+    fn walk(
+        list: &[Paragraph],
+        base: &NodePath,
+        depth: usize,
+        paragraphs: &mut Vec<serde_json::Value>,
+        cells: &mut Vec<serde_json::Value>,
+    ) {
+        if depth >= MAX_DEPTH {
+            return;
+        }
+        for (i, para) in list.iter().enumerate() {
+            let path = base.child(PathStep::Paragraph(i));
+            paragraphs.push(serde_json::json!({
+                "nodePath": path.to_string(),
+                "textPreview": para_text_preview(Some(para)),
+            }));
+            for (ci, ctrl) in para.controls.iter().enumerate() {
+                let Control::Table(table) = ctrl else {
+                    continue;
+                };
+                let ctrl_path = path.child(PathStep::Control(ci));
+                for cell in &table.cells {
+                    let cell_path = ctrl_path.child(PathStep::TableCell {
+                        row: cell.row,
+                        col: cell.col,
+                    });
+                    cells.push(serde_json::json!({
+                        "nodePath": cell_path.to_string(),
+                        "row": cell.row,
+                        "col": cell.col,
+                        "rowSpan": cell.row_span,
+                        "colSpan": cell.col_span,
+                    }));
+                    walk(&cell.paragraphs, &cell_path, depth + 1, paragraphs, cells);
+                }
+            }
+        }
+    }
+
+    let mut paragraphs = Vec::new();
+    let mut cells = Vec::new();
+    for (si, section) in document.sections.iter().enumerate() {
+        let sec_path = NodePath::root().child(PathStep::Section(si));
+        walk(
+            &section.paragraphs,
+            &sec_path,
+            0,
+            &mut paragraphs,
+            &mut cells,
+        );
+    }
+    (paragraphs, cells)
+}
+
 fn session_doc_tree(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
     let (sd, id) = match with_doc(args, sessions) {
         Ok(v) => v,
@@ -345,14 +420,25 @@ fn session_doc_tree(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
         }
     }
     let pages: Vec<String> = (0..page_count).map(|p| format!("p{p}")).collect();
+    let (paragraph_nodes, cell_nodes) = collect_node_path_tree(sd.doc.document());
     tool_ok_text(
         serde_json::json!({
             "docId": id,
             "pageCount": page_count,
-            "nodes": { "pages": pages, "tables": table_nodes },
+            "nodes": {
+                "pages": pages,
+                "tables": table_nodes,
+                "paragraphs": paragraph_nodes,
+                "cells": cell_nodes,
+            },
             "idContract": "안정 ID: 페이지 p0.. / 표 t0.. — 같은 문서·같은 빌드에서 결정론. \
                            표 순서는 hwp_doc_tables 와 동일하며, 셀 편집은 t{i} 순서의 표에 \
                            hwp_doc_set_cell(table=i, row, col) 로 잇는다.",
+            "nodePathContract": "nodes.paragraphs[].nodePath / nodes.cells[].nodePath 는 \
+                           docdiff::model::NodePath 표기(sec[i]/para[i]/ctrl[i]/cell[r,c])를 \
+                           그대로 쓴 문단·표 셀 좌표 — idContract 의 p0../t0.. 와는 별개 체계다. \
+                           범위는 본문과 표 셀 중첩까지이며, 글상자·머리말·꼬리말·각주/미주 \
+                           안의 표는 여기 없다(hwp_doc_tables 의 containerPath 로 확인).",
         })
         .to_string(),
     )
@@ -1114,7 +1200,7 @@ fn served_tools(
     }));
     session.push(serde_json::json!({
         "name": "hwp_doc_tree",
-        "description": "[#4357] 열린 핸들의 안정 노드 ID 구조 트리(페이지 p0..·표 t0.. — 같은 문서·같은 빌드에서 결정론). 픽셀 없이 구조로 문서를 본다.",
+        "description": "[#4357] 열린 핸들의 안정 노드 ID 구조 트리(페이지 p0..·표 t0.. — 같은 문서·같은 빌드에서 결정론). 픽셀 없이 구조로 문서를 본다. [세션 노드 경로 확장] nodes.paragraphs[]/nodes.cells[] 는 docdiff::NodePath 표기(sec[i]/para[i]/ctrl[i]/cell[r,c])로 문단·표 셀까지 내려가는 좌표를 더 준다 — p0../t0.. 와 별개 체계이며 기존 응답 필드는 무변경. 범위는 본문과 표 셀 중첩까지(글상자·머리말·꼬리말·각주/미주 안의 표는 제외, hwp_doc_tables 의 containerPath 로 확인).",
         "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
     }));
     session.push(serde_json::json!({
