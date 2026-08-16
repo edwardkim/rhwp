@@ -431,6 +431,15 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     }
 
     // 4. section*.xml → Section 변환
+    //
+    // [#4916 계열] rhwp 자기 산출 HWPX(HWP5-origin 마커)는 각주·미주 subList
+    // lineseg 의 vpos=0 보정(task 1692)을 건너뛴다 — HWP5 원본 저장값의 왕복
+    // 보존이 마커 계약(#1770)이다. 가드는 구역 파싱 동안만 유효(RAII).
+    let _hwp5_origin_guard = section::Hwp5OriginSourceGuard::set(
+        hwpx_aux_entries
+            .iter()
+            .any(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH),
+    );
     let mut sections = Vec::new();
     for (section_idx, section_href) in package_info.section_files.iter().enumerate() {
         let section_xml = reader.read_file(section_href)?;
