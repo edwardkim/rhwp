@@ -121,6 +121,19 @@ const REGISTRY: &[ToolNode] = &[
         produces: &["converted-hwp5"],
         consumes: &[],
     },
+    // 변환·편집 다음 판정 — 엔진 도구 설명 그대로: convert 의 verify.identical=false
+    // (exit 3)는 오류가 아니라 판정이라 hwp_ir_diff 로 상세를 보고, 픽셀 변위는
+    // hwp_render_diff. 편집(doc-mutation) 뒤에도 눈검증 게이트로 이어진다.
+    ToolNode {
+        tool: "hwp_ir_diff",
+        produces: &["finding:ir"],
+        consumes: &["converted-hwpx", "converted-hwp5", "doc-mutation"],
+    },
+    ToolNode {
+        tool: "hwp_render_diff",
+        produces: &["finding:visual"],
+        consumes: &["converted-hwpx", "converted-hwp5", "doc-mutation"],
+    },
     ToolNode {
         tool: "hwp_export_tables",
         produces: &["table-data"],
@@ -313,11 +326,25 @@ mod tests {
             "hwp_export_svg",
             "hwp_export_markdown",
             "hwp_thumbnail",
-            "hwp_convert_hwpx",
-            "hwp_convert_hwp5",
         ] {
             assert!(suggest_next(t).is_empty(), "{t} 는 말단이어야 한다");
         }
+    }
+
+    #[test]
+    fn 변환_다음엔_ir_비교와_렌더_비교가_이어진다() {
+        for t in ["hwp_convert_hwpx", "hwp_convert_hwp5"] {
+            let next = suggest_next(t);
+            assert!(next.contains(&"hwp_ir_diff"), "{t} 다음에 ir-diff");
+            assert!(next.contains(&"hwp_render_diff"), "{t} 다음에 render-diff");
+        }
+    }
+
+    #[test]
+    fn 편집_다음에도_렌더_비교가_이어진다() {
+        let next = suggest_next("hwp_replace_text");
+        assert!(next.contains(&"hwp_render_diff"));
+        assert!(next.contains(&"hwp_ir_diff"));
     }
 
     #[test]
