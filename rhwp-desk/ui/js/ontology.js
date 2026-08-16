@@ -15,6 +15,7 @@ const LABEL = {
   hwp_csv_to_chart: "CSV로 차트 채우기",
   hwp_replace_text: "텍스트 치환", hwp_fill_fields: "필드 채우기", hwp_set_cell: "셀 채우기",
   hwp_set_checkbox: "체크박스 설정", hwp_insert_image: "도장/서명 삽입",
+  hwp_redact: "개인정보 마스킹", hwp_sanitize: "메타데이터 제거",
 };
 
 let graphPromise = null;
@@ -49,6 +50,7 @@ const CLI_TO_TOOL = {
 const EDIT_SUB_TO_TOOL = {
   "fill-fields": "hwp_fill_fields", "replace-text": "hwp_replace_text",
   "set-cell": "hwp_set_cell", "insert-image": "hwp_insert_image",
+  redact: "hwp_redact", sanitize: "hwp_sanitize",
 };
 
 const TOOL_TO_CLI = Object.fromEntries([
