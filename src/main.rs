@@ -1766,7 +1766,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             }),
             "run",
             serde_json::json!(["run", "--plan-json", "{plan}", "--json"]),
-            &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "steps[].confusable", "steps[].skipped", "verify", "invalid", "changedPages", "dryRun", "preview"],
+            &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "steps[].confusable", "steps[].skipped", "verify", "invalid", "changedPages", "dryRun", "preview", "inputSha256", "outputSha256"],
         ),
         tool_with_optional_args(
             "hwp_replay",
@@ -2472,6 +2472,8 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "steps",
                 "verify",
                 "invalid",
+                "inputSha256",
+                "outputSha256",
             ],
         ),
         // [#4391] 작업 영수증 — run 계획의 제3자 재현·증명. 사용자 파일은 건드리지
@@ -22205,6 +22207,10 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
         Ok(d) => d,
         Err(e) => return fail(format!("입력을 읽을 수 없습니다 - {}: {}", input, e)),
     };
+    // [#4378 R23] 입력 지문 — CAS 대조(있으면)와 성공 저널의 `inputSha256` 이 같은
+    // 값을 공유한다. R22 가 세운 해시 함수(`sha256_hex_of`)를 그대로 재사용한다 —
+    // 저널이 계획서와 다른 해시를 쓰면 사슬(R23)이 끊긴다.
+    let input_sha256 = sha256_hex_of(&bytes);
     // [#4378 R22] CAS — 계획이 세워진 시점의 문서가 아니면 실행 0·저장 0 으로
     // 거절한다(#3905 M1: 두 exit 0 이 편집 하나를 지우는 경합의 차단기).
     let precondition_failure = |expected: &str, actual: String| {
@@ -22229,9 +22235,8 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
         )
     };
     if let Some(expected) = expected_input_sha.as_deref() {
-        let actual = sha256_hex_of(&bytes);
-        if actual != expected {
-            return precondition_failure(expected, actual);
+        if input_sha256 != expected {
+            return precondition_failure(expected, input_sha256.clone());
         }
         cas_test_mark_checked_and_wait();
     }
@@ -22661,6 +22666,11 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
         Ok(b) => b,
         Err(e) => return fail(format!("{} 직렬화 실패 - {}", out_format.label(), e)),
     };
+    // [#4378 R23] 산출 지문 — 다음 계획의 `preconditions.inputSha256`(또는 다음
+    // 저널의 `inputSha256`)과 대조하면 저널만으로 편집 사슬을 재구성할 수 있다.
+    // 이 값은 실제로 디스크에 쓰는 바이트(`out_bytes`)의 해시다 — 재파싱 후
+    // 해시를 다시 재는 것이 아니라 "무엇을 썼는가"를 직접 지문 찍는다.
+    let output_sha256 = sha256_hex_of(&out_bytes);
     let mut verify_report = serde_json::Value::Null;
     if assert_verify {
         let cross = out_format == EditOutputFormat::Hwp
@@ -22706,6 +22716,10 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
                 "input": input, "output": output, "outputFormat": out_format.label(),
                 "steps": journal_steps, "verify": verify_report,
                 "changedPages": changed_pages,
+                // [#4378 R23] 지문 체인 — 앞 실행의 outputSha256 = 뒤 실행의
+                // inputSha256 이면 저널만으로 편집 사슬을 재구성할 수 있다.
+                "inputSha256": input_sha256,
+                "outputSha256": output_sha256,
                 "assertions": { "notFoundEmpty": assert_not_found_empty, "verify": assert_verify },
             }),
             "run",

@@ -447,6 +447,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `invalid` | array | **정적 선검증 위반.** 비어 있지 않으면 한 step 도 실행하지 않는다 | `run` |
 | `assertions` | object | 적용된 단언 `{verify,notFoundEmpty}` — 미지정 기본값도 명시해 저널에 남는다 | `run` (실측; `recordFields` 에는 없다) |
 | `preview` | array | `--dry-run` 전용. 선검증이 이미 계산한 대상 목록 | `run --dry-run` (실측) |
+| `inputSha256` | string | [#4378 R23] 실행에 쓴 `input` 문서 바이트의 SHA-256(R22 와 같은 해시 함수). 앞 실행 저널의 `outputSha256` 과 값이 같으면 두 실행이 연속이다 — 다르면 그 사이 다른 도구가 문서를 건드렸다는 뜻(저널만으로 탐지, 실행을 막지는 않는다) | `run` |
+| `outputSha256` | string | [#4378 R23] 실제로 저장한 산출 바이트의 SHA-256. 다음 계획의 `preconditions.inputSha256` 또는 다음 저널의 `inputSha256` 과 이어 붙이면 편집 사슬이 재구성된다 — `replay` 의 동명 필드는 임시 재실행 영수증이라 문맥이 다르다(같은 해시 함수, 다른 대상) | `run` |
 
 #### 작업 영수증 (`replay`)
 
