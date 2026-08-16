@@ -82,6 +82,11 @@ const REGISTRY: &[ToolNode] = &[
         consumes: &[],
     },
     ToolNode {
+        tool: "hwp_threat_scan",
+        produces: &["finding:threat"],
+        consumes: &[],
+    },
+    ToolNode {
         tool: "hwp_export_pdf",
         produces: &["pdf-file"],
         consumes: &[],
@@ -277,11 +282,12 @@ mod tests {
     }
 
     #[test]
-    fn 검증_축_4종은_말단이라_다음_제안이_없다() {
+    fn 검증_축_5종은_말단이라_다음_제안이_없다() {
         assert!(suggest_next("hwp_inspect_hidden_text").is_empty());
         assert!(suggest_next("hwp_inspect_injection").is_empty());
         assert!(suggest_next("hwp_inspect_unicode").is_empty());
         assert!(suggest_next("hwp_inspect_watermark").is_empty());
+        assert!(suggest_next("hwp_threat_scan").is_empty());
     }
 
     #[test]

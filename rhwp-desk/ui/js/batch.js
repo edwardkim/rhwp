@@ -5,7 +5,18 @@
 import { runTool, listDocuments, basename, dirname } from "./api.js";
 
 /** 문서 카드와 일괄 스윕이 함께 쓰는 검증 축의 단일 출처. */
-export const VERIFY_AXES = Object.freeze(["hidden-text", "injection", "unicode", "watermark"]);
+export const VERIFY_AXES = Object.freeze(["hidden-text", "injection", "unicode", "watermark", "threat-scan"]);
+
+/**
+ * 축 이름 → CLI 인자열. 대부분은 `inspect <axis>` 서브커맨드지만, threat-scan·
+ * layout-anomaly 는 자체 최상위 명령이다 — 여기 한 곳에서만 분기해 main.js의
+ * verifyDoc과 배치 스윕이 같은 로직을 쓰게 한다(따로 뒀다가 한쪽만 축을
+ * 추가하면 조용히 깨지는 걸 막는다).
+ */
+export function axisArgs(axis, path) {
+  if (axis === "layout-anomaly" || axis === "threat-scan") return [axis, path, "--json"];
+  return ["inspect", axis, path, "--json"];
+}
 
 export class BatchRunner {
   /**
@@ -47,7 +58,7 @@ export class BatchRunner {
           d.queue.progress(q, ++done);
         } else if (mode === "verify") {
           for (const axis of VERIFY_AXES) {
-            await call(file, ["inspect", axis, file, "--json"], "batch");
+            await call(file, axisArgs(axis, file), "batch");
             d.queue.progress(q, ++done);
           }
         } else if (mode === "pdf") {
