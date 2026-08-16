@@ -390,6 +390,7 @@ fn main() {
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
         Some("render-diff") => rhwp::diagnostics::render_geom_diff::run(&args[2..]),
+        Some("layout-anomaly") => exit_with(rhwp::diagnostics::layout_anomaly::run(&args[2..])),
         Some("measure-width") => exit_with(rhwp::diagnostics::text_width_probe::run(&args[2..])),
         Some("core-pages") => exit_with(rhwp::diagnostics::core_pages_probe::run(&args[2..])),
         Some("bench") => exit_with(rhwp::diagnostics::bench::run(&args[2..])),
@@ -3509,6 +3510,33 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "pages",
             ],
         ),
+        cmd_json(
+            "layout-anomaly",
+            "diagnostic",
+            "렌더 한 장의 기하 이상탐지(overflow/overlap/empty_page) — render-diff(변위)와 다른 질문. 기본 exit 0, --strict 만 확정 신호를 exit 3",
+            false,
+            &[
+                "--json",
+                "-p",
+                "--strict",
+                "--overflow-tolerance",
+                "--overlap-tolerance",
+            ],
+            &[
+                "schemaVersion",
+                "source",
+                "pageCount",
+                "pageFilter",
+                "overflowTolerancePx",
+                "overlapTolerancePx",
+                "strict",
+                "overflowCount",
+                "overlapCount",
+                "emptyPageCount",
+                "hasSignal",
+                "pages",
+            ],
+        ),
         cmd("hwpx-roundtrip", "diagnostic", "HWPX 왕복 무손실 게이트"),
         cmd("hwp5-roundtrip", "diagnostic", "HWP5 왕복 무손실 게이트"),
         cmd("measure-width", "diagnostic", "텍스트 폭 측정 프로브"),
@@ -3792,7 +3820,7 @@ fn capabilities_value() -> serde_json::Value {
             "0": "성공",
             "1": "런타임 실패 (읽기·파싱·렌더·쓰기)",
             "2": "사용법 오류 (인자 없음, 알 수 없는 옵션/명령, 페이지 범위 초과)",
-            "3": "검증 단언 실패 — convert/export-hwpx --verify IR 차이, edit 3종 --verify 저장본 불일치, run 계획 assertions 미충족, render-diff --json 시각 회귀 검출(사람 모드는 종전대로 1)",
+            "3": "검증 단언 실패 — convert/export-hwpx --verify IR 차이, edit 3종 --verify 저장본 불일치, run 계획 assertions 미충족, render-diff --json 시각 회귀 검출(사람 모드는 종전대로 1), layout-anomaly --strict 확정 신호 검출(기본은 0)",
             "4": "--verify-pages 페이지 수 불일치 (convert/export-hwpx)",
         },
         "jsonContract": {
@@ -4307,6 +4335,15 @@ fn print_help() {
     println!("      배치: geom_inventory.tsv 산출(기본 output/poc/render_diff)");
     println!("      --json: 단건은 한 줄 봉투, --batch 는 NDJSON(로드 실패도 error 레코드로 남김)");
     println!("      --json 회귀 검출은 종료 코드 3(검증 단언 실패) — 사람 모드는 종전대로 1");
+    println!(
+        "  layout-anomaly <파일> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--strict] [--json]"
+    );
+    println!("      렌더 한 장의 기하만으로 이상 신호 3종 탐지 — render-diff(변위)와 다른 질문");
+    println!(
+        "      overflow: 요소 bbox가 본문 여백을 벗어남 / overlap: 겹치면 안 되는 요소끼리 겹침"
+    );
+    println!("      empty_page: 콘텐츠 없는 중간 쪽(첫/끝 제외) — 항상 가능성 신호, --strict 로도 실패 안 함");
+    println!("      --json: 판정 봉투 한 줄. 기본 종료 코드는 0(판정=데이터) — --strict 만 확정 신호를 exit 3 으로 냄");
     println!("  bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]");
     println!("      단계별 처리 성능 계측 — parse/layout/render/serialize median(ms)");
     println!("      워밍업 1회 후 N회(기본 3) 반복. 파일별 크기/쪽수 + total 표 + TSV");
