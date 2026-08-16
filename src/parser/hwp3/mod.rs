@@ -3993,6 +3993,7 @@ fn parse_hwp3_inner(
     let section = Section {
         section_def,
         paragraphs,
+        raw_provenance: None,
         raw_stream: None,
     };
     doc.sections.push(section);

@@ -43,6 +43,7 @@ pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError>
         document.sections.push(Section {
             section_def,
             paragraphs,
+            raw_provenance: None,
             raw_stream: None,
         });
     }

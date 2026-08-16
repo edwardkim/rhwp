@@ -24,9 +24,16 @@ use crate::parser::tags;
 
 /// Section을 레코드 바이너리 스트림으로 직렬화
 pub fn serialize_section(section: &Section) -> Vec<u8> {
-    // 원본 스트림이 있으면 그대로 반환 (완벽한 라운드트립)
-    if let Some(ref raw) = section.raw_stream {
-        return raw.clone();
+    // 원본 스트림이 있으면 그대로 반환 (완벽한 라운드트립).
+    //
+    // [#4488] 다만 공개 모델 직접 변경은 raw_stream 을 무효화하지 않으므로,
+    // 파싱(+로드 픽스업) 시점에 봉인한 (모델, raw) 다이제스트 쌍과 현재 상태가
+    // 둘 다 일치할 때만 통과한다 — 불일치·raw 교체는 아래 모델 writer 로
+    // 재생성한다. 봉인 계약은 model::raw_provenance 참조.
+    if section.raw_provenance_permits_reuse() {
+        if let Some(ref raw) = section.raw_stream {
+            return raw.clone();
+        }
     }
 
     // [Task #852 Stage 2.4] Form 컨트롤의 z-order/TabOrder 카운터 reset.
@@ -252,8 +259,16 @@ fn serialize_paragraph_with_msb(
     // 함께 되살리고, 그로 인해 벌어진 위치들을 `residue_shifts` 로 돌려준다 — 아래
     // PARA_CHAR_SHAPE 가 그 시프트를 반영해야 텍스트 버퍼와 서식 경계가 어긋나지 않는다.
     // 표시만 있는 문단도 PARA_TEXT 가 있어야 8유닛이 파일에 남는다.
-    let has_content =
-        !para.text.is_empty() || !para.controls.is_empty() || !para.title_marks.is_empty();
+    // [#4398] 다단락 필드의 고아 종료 마커(짝 fieldBegin 이 앞 문단)도 8유닛
+    // 실체다 — 이것만 있는 문단을 "빈 문단" 으로 접으면 PARA_TEXT 없이 헤더만
+    // char_count 를 주장하는 자기모순 레코드가 되거나(종전), #4677 가드로
+    // char_count=1 로 무너져 FIELD_END 슬롯이 영구 소실된다. `serialize_para_text`
+    // 는 begin_ctrl_id 를 아는 마커만 방출하므로 판정도 같은 조건을 쓴다.
+    let has_emittable_orphan_end = para.orphan_field_ends.iter().any(|o| o.begin_ctrl_id != 0);
+    let has_content = !para.text.is_empty()
+        || !para.controls.is_empty()
+        || !para.title_marks.is_empty()
+        || has_emittable_orphan_end;
     let (text_data, residue_shifts): (Option<Vec<u8>>, Vec<GuideResidueShift>) =
         if has_content || (para.has_para_text && para.char_count > 1) {
             let result = serialize_para_text(para);
@@ -387,6 +402,12 @@ fn compute_control_mask(para: &Paragraph) -> u32 {
     }
     // FIELD_END (0x0004): field_ranges가 있으면 비트 4 설정
     if !para.field_ranges.is_empty() {
+        mask |= 1u32 << 0x0004;
+    }
+    // [#4398] 다단락 필드의 고아 종료 마커 — serialize_para_text 가 방출하는
+    // 조건(begin_ctrl_id 기지)과 동일하게 비트 4 를 세운다. PARA_TEXT 와 mask 는
+    // 항상 함께 움직여야 한다.
+    if para.orphan_field_ends.iter().any(|o| o.begin_ctrl_id != 0) {
         mask |= 1u32 << 0x0004;
     }
     // TAB (0x0009): text에 탭이 있으면 비트 9 설정
@@ -1286,6 +1307,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1314,6 +1336,7 @@ mod tests {
             let section = Section {
                 paragraphs: vec![para],
                 raw_stream: None,
+                raw_provenance: None,
                 ..Default::default()
             };
             let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
@@ -1358,6 +1381,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
         let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
@@ -1398,6 +1422,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
         let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
@@ -1437,6 +1462,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
         let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
@@ -1475,6 +1501,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
         let parsed = parse_body_text_section(&serialize_section(&section)).unwrap();
@@ -1508,6 +1535,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1538,6 +1566,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1569,6 +1598,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1589,6 +1619,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1639,6 +1670,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para1, para2],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1678,6 +1710,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1719,6 +1752,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1768,6 +1802,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1810,6 +1845,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1845,6 +1881,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1891,6 +1928,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -1930,6 +1968,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -2177,6 +2216,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -2228,6 +2268,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -2289,6 +2330,7 @@ mod tests {
             },
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
         };
 
         let bytes = serialize_section(&section);
@@ -2353,6 +2395,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 
@@ -2411,6 +2454,7 @@ mod tests {
         let section = Section {
             paragraphs: vec![para],
             raw_stream: None,
+            raw_provenance: None,
             ..Default::default()
         };
 

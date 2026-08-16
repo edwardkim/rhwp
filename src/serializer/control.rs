@@ -575,8 +575,15 @@ fn serialize_table(table: &Table, level: u16, records: &mut Vec<Record>) {
     // IR 의 common 으로 합성한다 (attr=0 이면 pack_common_attr_bits 경유 —
     // flow_with_text bit 13 포함). HWP5 파스본(raw 보존)·어댑터 경로(Stage 2
     // 합성)는 raw_ctrl_data 가 채워져 있어 동작 불변.
+    // [#4495] raw 재사용은 봉인 검증을 거친다 — 공개 모델에서 `common` 을 직접
+    // 바꾸면(봉인 불일치) raw 대신 IR 합성으로 쓴다. 봉인 None(합성 IR·봉인
+    // 이전)은 종전 계약(raw 우선) 유지. raw 를 직접 갱신하는 기존 명령
+    // (refresh_raw_ctrl_size 의 dual-write)은 `common` 이 봉인과 같아 통과한다.
+    let raw_permitted = table
+        .raw_ctrl_seal
+        .is_none_or(|sealed| sealed == crate::model::raw_provenance::record_digest(&table.common));
     let composed_common;
-    let ctrl_data: &[u8] = if !table.raw_ctrl_data.is_empty() {
+    let ctrl_data: &[u8] = if !table.raw_ctrl_data.is_empty() && raw_permitted {
         &table.raw_ctrl_data
     } else {
         composed_common = serialize_common_obj_attr(&table.common);
@@ -1988,7 +1995,12 @@ fn serialize_group_child(
 }
 
 fn serialize_ole_data(ole: &OleShape) -> Vec<u8> {
-    if !ole.raw_tag_data.is_empty() {
+    // [#4495] payload 모델 필드(extent_x/extent_y/bin_data_id)를 직접 바꾸면
+    // (봉인 불일치) raw 대신 모델 값으로 쓴다. 봉인 None 은 종전 계약 유지.
+    let raw_permitted = ole
+        .raw_tag_seal
+        .is_none_or(|sealed| sealed == crate::model::raw_provenance::ole_payload_digest(ole));
+    if !ole.raw_tag_data.is_empty() && raw_permitted {
         return ole.raw_tag_data.clone();
     }
 
@@ -2779,7 +2791,12 @@ fn build_header_footer_list_header(
 /// raw_ctrl_data를 보존하여 라운드트립 무손실 직렬화.
 fn serialize_equation_control(eq: &Equation, level: u16, records: &mut Vec<Record>) {
     // CTRL_HEADER with CommonObjAttr (또는 원본 ctrl_data)
-    let ctrl_data = if eq.raw_ctrl_data.is_empty() {
+    // [#4495] 표 CTRL_HEADER 와 동일한 봉인 검증 — `common` 직접 변경 시 raw 대신
+    // IR 합성으로 쓴다.
+    let raw_permitted = eq
+        .raw_ctrl_seal
+        .is_none_or(|sealed| sealed == crate::model::raw_provenance::record_digest(&eq.common));
+    let ctrl_data = if eq.raw_ctrl_data.is_empty() || !raw_permitted {
         serialize_common_obj_attr(&eq.common)
     } else {
         eq.raw_ctrl_data.clone()

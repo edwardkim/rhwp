@@ -245,10 +245,14 @@ pub struct Section {
     /// 원본 BodyText 레코드 스트림 바이트 (직렬화 시 원본 복원용)
     /// 편집 시 None으로 초기화하여 재직렬화 유도
     pub raw_stream: Option<Vec<u8>>,
+    /// [#4488] raw_stream 출처 봉인 — 파싱(+로드 픽스업) 완료 시점의 모델 상태와
+    /// 원본 바이트의 다이제스트 쌍. 저장 시 둘 다 일치할 때만 raw 를 재사용한다.
+    /// 계약 전문은 `model::raw_provenance` 모듈 주석.
+    pub raw_provenance: Option<crate::model::raw_provenance::SectionSeal>,
 }
 
 /// 구역 정의 (HWPTAG_CTRL_HEADER - 'secd')
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct SectionDef {
     /// 속성 비트 플래그
     pub flags: u32,

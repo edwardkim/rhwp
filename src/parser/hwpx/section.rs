@@ -5557,6 +5557,9 @@ impl ParamFrame {
             ParamFrame::Boolean { name, text } => Parameter::Boolean {
                 name,
                 value: matches!(text.trim(), "1" | "true"),
+                // [#4437] 원본 lexical 표기(`false`/`true`/`0`/`1`) 보존 — 렌더가
+                // 정규화로 되쓰면 왕복 바이트가 달라진다.
+                lexical: crate::model::control::boolean_lexical_of(&text),
             },
             ParamFrame::Integer { name, text } => Parameter::Integer {
                 name,
@@ -6291,6 +6294,7 @@ fn parse_equation(
         font_name,
         version_info,
         raw_ctrl_data: Vec::new(),
+        raw_ctrl_seal: None,
     };
     Ok(Control::Equation(Box::new(equation)))
 }
