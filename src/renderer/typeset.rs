@@ -17836,7 +17836,8 @@ impl TypesetEngine {
                                 .find(|mt| mt.para_index == para_idx && mt.control_index == ci)
                                 .map(|mt| mt.total_height)
                                 .unwrap_or(0.0);
-                            let effective_h = seg_lh.max(mt_h);
+                            let effective_h =
+                                crate::renderer::tac_table_effective_height(seg_lh, mt_h);
                             let ls_half = hwpunit_to_px(seg.line_spacing, self.dpi) / 2.0;
                             tac_seg_total += effective_h + ls_half;
                         }

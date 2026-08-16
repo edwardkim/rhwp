@@ -919,7 +919,8 @@ impl Paginator {
                                         crate::renderer::hwpunit_to_px(seg.line_height, self.dpi);
                                     let mt_h =
                                         measured.get_table_height(para_idx, ci).unwrap_or(0.0);
-                                    let effective_h = seg_lh.max(mt_h);
+                                    let effective_h =
+                                        crate::renderer::tac_table_effective_height(seg_lh, mt_h);
                                     let ls = if seg.line_spacing > 0 {
                                         crate::renderer::hwpunit_to_px(seg.line_spacing, self.dpi)
                                     } else {
