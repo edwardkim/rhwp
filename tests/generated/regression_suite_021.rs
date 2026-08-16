@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_021
 
+#[path = "../cases/delete_row_contract.rs"]
+mod delete_row_contract;
+
 #[path = "../diag_1042_cfb_check.rs"]
 mod diag_1042_cfb_check;
 

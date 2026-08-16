@@ -1051,8 +1051,8 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 11개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·
-`insert-paragraph`·`insert-page-break`·`insert-row`·`insert-col`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 12개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·
+`insert-paragraph`·`insert-page-break`·`insert-row`·`insert-col`·`delete-row`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
@@ -1103,6 +1103,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_set_cell` | `edit set-cell --json` | `path`,`table`,`row`,`col`,`text` |
 | `hwp_insert_row` | `edit insert-row --json` | `path`,`table`,`row` |
 | `hwp_insert_col` | `edit insert-col --json` | `path`,`table`,`col` |
+| `hwp_delete_row` | `edit delete-row --json` | `path`,`table`,`row` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
