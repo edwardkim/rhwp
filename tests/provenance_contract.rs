@@ -2171,6 +2171,16 @@ fn sweep_exempt_envelopes_still_carry_provenance_marks() {
                 s("--json"),
             ],
         ),
+        (
+            "scaffold",
+            vec![
+                s("scaffold"),
+                scaffold_spec.to_str().expect("경로").to_string(),
+                s("-o"),
+                scaffold_out.to_str().expect("경로").to_string(),
+                s("--json"),
+            ],
+        ),
     ]
     .into_iter()
     .collect();
