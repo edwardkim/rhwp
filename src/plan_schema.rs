@@ -150,7 +150,8 @@ fn plan_def() -> Value {
             "preconditions": r_doc(
                 "Preconditions",
                 "[#4378 R22] 실행 전 전제(CAS). 하나라도 어긋나면 실행 0·저장 0 으로 \
-                 거절한다(exit 2, invalid[].code=preconditionFailed).",
+                 거절한다(exit 3 = 판정, preconditionFailed{kind,expected,actual} + nextCall). \
+                 `--dry-run` 도 같은 대조·같은 판정을 낸다.",
             ),
             "dryRun": json!({
                 "type": "boolean",
@@ -175,8 +176,9 @@ fn preconditions_def() -> Value {
                 "string",
                 "input 파일 전체의 SHA-256(64자리 16진, 대소문자 무관). 실행 시점의 \
                  실제 해시와 다르면 — 계획 수립 후 다른 에이전트/사람이 문서를 바꿨다는 \
-                 뜻이므로 — 아무것도 적용하지 않고 invalid[](code=preconditionFailed)로 \
-                 거절한다. 경합 유실(#3905: 두 exit 0 이 편집 하나를 무신호로 지움)의 \
+                 뜻이므로 — 아무것도 적용하지 않고 preconditionFailed{kind,expected,actual} \
+                 + nextCall(재계획 힌트) + exit 3 으로 거절한다(`--dry-run` 도 같은 판정). \
+                 경합 유실(#3905: 두 exit 0 이 편집 하나를 무신호로 지움)의 \
                  차단기다. 해시는 `rhwp-agent fingerprint` 또는 sha256sum 으로 얻는다.",
             ),
         }),
