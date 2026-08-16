@@ -150,7 +150,7 @@ class CapabilityContracts(unittest.TestCase):
 
             relative = root.relative_to(REPO_ROOT)
             args = SimpleNamespace(
-                engagement=str(relative / "engagement.json"), bin="/bin/true",
+                engagement=str(relative / "engagement.json"), bin=sys.executable,
                 out=None, timeout=1,
             )
             with (
