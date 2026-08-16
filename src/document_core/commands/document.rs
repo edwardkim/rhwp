@@ -360,6 +360,9 @@ impl DocumentCore {
         use crate::model::control::Control;
 
         for section in &mut document.sections {
+            // [#4898] 이 구역의 저장 lineseg 가 배치 권위를 갖는지 먼저 판정한다 —
+            // 권위가 있으면 0높이 lineseg(한컴이 접어 둔 숨은 블록)를 재조판하지 않는다.
+            let section_sized = Self::section_has_sized_lineseg(section);
             let page_def = &section.section_def.page_def;
             let column_def = Self::find_initial_column_def(&section.paragraphs);
             let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
@@ -382,7 +385,7 @@ impl DocumentCore {
                 // 본문 합성 lineseg 는 흐름 소비를 문단당 ~2.7px 팽창시켜 sijang
                 // 밀도 핀 -5쪽(302 vs 307, #2070v2)만 남기는 잉여 축으로 판정.
                 // 본문 NO_LS 텍스트 문단의 실폭 래핑은 composer recompose 가 담당한다.
-                if Self::needs_line_seg_reflow(para, include_empty) {
+                if Self::needs_line_seg_reflow_in_scope(para, include_empty, section_sized) {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                     let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
@@ -716,11 +719,38 @@ impl DocumentCore {
         para: &crate::model::paragraph::Paragraph,
         include_empty: bool,
     ) -> bool {
+        Self::needs_line_seg_reflow_in_scope(para, include_empty, false)
+    }
+
+    /// [#4898] `section_has_sized_lineseg` 는 **이 구역의 lineseg 가 배치 권위를 갖는가**다.
+    ///
+    /// 높이 0 짜리 단일 lineseg 는 보통 "아직 계산 안 됨"이지만, 한컴은 숨긴 블록
+    /// (CLIPDATA 등)을 **일부러** 0높이로 접어서 저장한다. 구역에 0 아닌 lineseg 가 있으면
+    /// 그 구역의 저장 lineseg 는 믿을 수 있는 값이므로 0높이도 그대로 두어야 한다 — 새로
+    /// 조판하면 숨은 내용이 펼쳐져 뒤가 밀리고 쪽수가 는다(08852 실측: 한글 1쪽 → 2쪽,
+    /// 최대 vertpos 40,525 → 77,965).
+    fn needs_line_seg_reflow_in_scope(
+        para: &crate::model::paragraph::Paragraph,
+        include_empty: bool,
+        section_has_sized_lineseg: bool,
+    ) -> bool {
         if para.line_segs.len() == 1 && para.line_segs[0].is_missing_lineseg_placeholder() {
             return false;
         }
-        (include_empty && para.line_segs.is_empty())
-            || (para.line_segs.len() == 1 && para.line_segs[0].line_height == 0)
+        if include_empty && para.line_segs.is_empty() {
+            return true;
+        }
+        para.line_segs.len() == 1
+            && para.line_segs[0].line_height == 0
+            && !section_has_sized_lineseg
+    }
+
+    /// 구역(셀·글상자 등 중첩 포함)에 높이가 0 이 아닌 lineseg 가 하나라도 있는가.
+    fn section_has_sized_lineseg(section: &crate::model::document::Section) -> bool {
+        section
+            .paragraphs
+            .iter()
+            .any(|p| p.line_segs.iter().any(|s| s.line_height != 0))
     }
 
     /// HWP5 -> HWPX export가 넣은 LineSeg 부재 marker는 reflow gate에서만 사용한다.

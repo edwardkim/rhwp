@@ -49,6 +49,12 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
     let mut reader = Reader::from_str(xml);
     let mut buf = Vec::new();
 
+    // [#4898] 0높이 lineseg 정규화(#2070)의 판단 범위를 구역으로 넓힌다 — 문단 단위로
+    // 보면 한컴이 접어 둔 숨은 블록까지 지우게 된다. RAII 로 되돌려 중첩 파싱(표 셀 안의
+    // 구역 없음)이나 다음 구역에 값이 새지 않게 한다.
+    let sized = section_xml_has_sized_lineseg(xml);
+    let _lineseg_scope = SectionLinesegScope::enter(sized);
+
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref e)) => {
@@ -428,6 +434,40 @@ const MAX_HWPX_SECTION_DEPTH: u32 = 64;
 thread_local! {
     // 완전 경로 — 이 모듈의 `Cell` 은 이미 `crate::model::table::Cell`(표 셀)이다.
     static HWPX_SECTION_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+    /// [#4898] 이 구역의 lineseg 가 **배치 권위를 갖는가** — 0 아닌 높이가 하나라도 있으면 참.
+    ///
+    /// #2070 의 0높이 정규화를 문단이 아니라 **구역** 범위로 판단하기 위한 신호다.
+    /// `parse_paragraph` 는 표 셀·글상자·각주 등 여러 경로에서 재귀 호출되므로
+    /// 파라미터를 관통시키지 않고 형제 가드(`HWPX_SECTION_DEPTH`)와 같은 방식으로 나른다.
+    static HWPX_SECTION_HAS_SIZED_LINESEG: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// 구역 XML 에 **높이가 0 이 아닌 lineseg** 가 하나라도 있는지 훑는다.
+///
+/// [#4898] 한컴은 숨긴 블록(예: CLIPDATA)을 `vertsize="0"` lineseg 로 **접어서** 저장한다.
+/// 그 0높이를 "권위 없음"으로 보고 지우면 rhwp 가 그 문단을 새로 조판해 숨은 내용이
+/// 펼쳐지고, 뒤 내용이 밀려 쪽수가 늘어난다(08852 실측: 최대 vertpos 40,525 → 77,965,
+/// 1쪽 → 2쪽). 반대로 lineseg 를 **전부** 0 으로 채워 저장하는 생성계 문서도 실재하고,
+/// 그쪽은 #2070 대로 부재 취급해야 셀·문단 높이가 선언값으로 붕괴하지 않는다.
+///
+/// 두 경우를 가르는 신호가 "이 구역에 0 아닌 lineseg 가 있는가"다.
+fn section_xml_has_sized_lineseg(xml: &str) -> bool {
+    for tag in xml.split("<hp:lineseg").skip(1) {
+        let Some(end) = tag.find('>') else { continue };
+        let attrs = &tag[..end];
+        let sized = |name: &str| -> bool {
+            attrs
+                .split(name)
+                .nth(1)
+                .and_then(|rest| rest.strip_prefix("=\""))
+                .and_then(|rest| rest.split('"').next())
+                .is_some_and(|v| v.parse::<i64>().is_ok_and(|n| n != 0))
+        };
+        if sized("vertsize") || sized("textheight") {
+            return true;
+        }
+    }
+    false
 }
 
 /// `parse_paragraph` 진입 시 재귀 깊이를 +1 하고 이탈(Drop, 오류 전파·조기 반환
@@ -452,6 +492,23 @@ impl SectionDepthGuard {
 impl Drop for SectionDepthGuard {
     fn drop(&mut self) {
         HWPX_SECTION_DEPTH.with(|d| d.set(d.get().saturating_sub(1)));
+    }
+}
+
+/// [#4898] 구역 파싱 동안 "이 구역의 lineseg 가 배치 권위를 갖는가"를 세워 두고
+/// 이탈 시 이전 값으로 되돌리는 RAII 가드.
+struct SectionLinesegScope(bool);
+
+impl SectionLinesegScope {
+    fn enter(has_sized: bool) -> SectionLinesegScope {
+        let prev = HWPX_SECTION_HAS_SIZED_LINESEG.with(|f| f.replace(has_sized));
+        SectionLinesegScope(prev)
+    }
+}
+
+impl Drop for SectionLinesegScope {
+    fn drop(&mut self) {
+        HWPX_SECTION_HAS_SIZED_LINESEG.with(|f| f.set(self.0));
     }
 }
 
@@ -899,7 +956,14 @@ fn parse_paragraph(
     // 0 높이 lineseg 는 배치 권위가 없고(한글은 열 때 재계산) 실저장 취급 시
     // NO_LS 성장 경로가 죽어 셀/문단 높이가 선언값으로 붕괴한다 (#1380 대칭,
     // body_text.rs parse_para_line_seg 와 동일 규칙).
+    //
+    // [#4898] 단, 판단 범위는 문단이 아니라 **구역**이다. 한컴은 숨긴 블록을 0높이
+    // lineseg 로 접어서 저장하는데(08852: 9개가 vertpos 38605 에 겹쳐 있다), 그것까지
+    // 지우면 rhwp 가 그 문단을 새로 조판해 숨은 내용이 펼쳐지고 뒤가 밀려 쪽수가 는다
+    // (실측 1쪽 → 2쪽, 최대 vertpos 40,525 → 77,965). 구역에 0 아닌 lineseg 가 하나라도
+    // 있으면 그 구역의 lineseg 는 배치 권위가 있는 것이므로 0높이도 원본대로 보존한다.
     if !para.line_segs.is_empty()
+        && !HWPX_SECTION_HAS_SIZED_LINESEG.with(|f| f.get())
         && para
             .line_segs
             .iter()
@@ -2489,6 +2553,16 @@ fn parse_table_cell(
                                 b"textDirection" => {
                                     cell.text_direction =
                                         if attr_str(&attr) == "VERTICAL" { 1 } else { 0 };
+                                }
+                                // [#4898] 줄바꿈 방식. 종전엔 읽지 않아 HWP5 저장에서 항상
+                                // BREAK(0)이 됐고, SQUEEZE 셀은 한글이 줄을 다시 나눠
+                                // 셀·표 높이가 달라졌다(코퍼스 표본에 SQUEEZE 3,019회).
+                                b"lineWrap" => {
+                                    cell.line_wrap = match attr_str(&attr).as_str() {
+                                        "SQUEEZE" => 1,
+                                        "KEEP" => 2,
+                                        _ => 0,
+                                    };
                                 }
                                 _ => {}
                             }
@@ -9632,6 +9706,45 @@ mod tests {
         assert_eq!(
             eq.script, "a < b > c",
             "CDATA 로 감싸진 수식 스크립트가 소실되면 안 된다"
+        );
+    }
+
+    /// [#4898] 0높이 lineseg 정규화(#2070)는 **구역 단위**로 판단한다.
+    ///
+    /// 한컴은 숨긴 블록(CLIPDATA 등)을 `vertsize="0"` lineseg 로 접어서 저장한다. 그것을
+    /// 문단 단위로 "부재"로 보면 rhwp 가 그 문단을 새로 조판해 숨은 내용이 펼쳐지고 뒤가
+    /// 밀린다 — 08852 실측 최대 vertpos 40,525 → 77,965, 한글 1쪽 → 2쪽. 구역에 0 아닌
+    /// lineseg 가 있으면 그 구역의 lineseg 는 권위가 있으므로 0높이도 보존한다.
+    #[test]
+    fn issue4898_zero_height_linesegs_survive_when_section_has_sized_ones() {
+        let with_sized = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>본문</hp:t></hp:run>
+    <hp:linesegarray><hp:lineseg textpos="0" vertpos="0" vertsize="1200" textheight="1200" baseline="1020" spacing="600" horzpos="0" horzsize="42520" flags="393216"/></hp:linesegarray>
+  </hp:p>
+  <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>숨긴 블록</hp:t></hp:run>
+    <hp:linesegarray><hp:lineseg textpos="0" vertpos="1200" vertsize="0" textheight="0" baseline="0" spacing="0" horzpos="0" horzsize="42520" flags="393216"/></hp:linesegarray>
+  </hp:p>
+</hs:sec>"#;
+        let section = parse_hwpx_section(with_sized).unwrap();
+        assert_eq!(
+            section.paragraphs[1].line_segs.len(),
+            1,
+            "0 아닌 lineseg 가 있는 구역에서는 0높이 lineseg 도 원본대로 보존해야 한다"
+        );
+
+        // 대조군(#2070): 구역 전체가 0높이면 종전대로 부재로 정규화한다 —
+        // 생성계 문서가 lineseg 를 0 으로 채워 저장하는 경우, 실저장 취급하면
+        // 셀·문단 높이가 선언값으로 붕괴한다.
+        let all_zero = with_sized.replace(
+            r#"vertsize="1200" textheight="1200""#,
+            r#"vertsize="0" textheight="0""#,
+        );
+        let section = parse_hwpx_section(&all_zero).unwrap();
+        assert!(
+            section.paragraphs.iter().all(|p| p.line_segs.is_empty()),
+            "구역 전체가 0높이면 종전대로 부재 취급한다"
         );
     }
 
