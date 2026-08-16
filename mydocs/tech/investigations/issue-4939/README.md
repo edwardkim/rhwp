@@ -27,7 +27,7 @@ last_verified: 2026-08-16
 | Stage 2 | `font_rule_candidates.json`, `font_rule_baseline.json`, `task_m100_4939_baseline_manifest.md` | 작성됨 |
 | Stage 3 | `font_rule_candidates.json`의 1,352개 실제 rule candidate와 disposition | 작성됨 |
 | Stage 4 | `font_rule_ledger.json`, `font_rule_ledger_summary.md` | 작성됨 |
-| Stage 5 | baseline 재생성과 최종 감사 | 미착수 |
+| Stage 5 | baseline 재생성과 최종 감사 | 작성됨 |
 
 Stage 1은 실제 source mapping을 수집하지 않는다. owner와 안정 selector의 존재, 규칙 행 스키마,
 grouped mapping·ordered chain·algorithmic predicate의 확장 계약만 고정한다. 실제 collector와
@@ -42,6 +42,8 @@ selector의 disposition을 같은 파일에 추가했다. Stage 4는 이 candida
 - `font_rule_baseline.json`: metric table·lookup projection·fixture·gate 기준선
 - [Font Rule Ledger 요약](font_rule_ledger_summary.md)
 - `font_rule_ledger.json`: candidate evidence reference와 판정 결과를 가진 조사 원장
+- [최종 결과 보고서](../../../report/task_m100_4939_report.md)
+- [Stage 5 최종 감사 기록](../../../working/task_m100_4939_stage5.md)
 
 ## Stage 1 검증
 
