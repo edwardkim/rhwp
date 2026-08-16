@@ -759,6 +759,18 @@ export class WasmBridge {
     return JSON.parse(this.doc.setPageDef(sectionIdx, JSON.stringify(pageDef)));
   }
 
+  /** 쪽 여백 하나만 바꾼다 (HWPUNIT). 눈금자 핀 드래그 등 단일 필드 커밋용 —
+   * 호출부가 PageDef 전체 셰이프를 알 필요 없이 read-modify-write를 여기서 닫는다. */
+  setPageMargin(pageIdx: number, kind: 'top' | 'bottom' | 'left' | 'right', hwpunit: number): { ok: boolean; pageCount: number } {
+    const sectionIdx = this.getPageInfo(pageIdx).sectionIndex;
+    const def = this.getPageDef(sectionIdx);
+    if (kind === 'top') def.marginTop = hwpunit;
+    else if (kind === 'bottom') def.marginBottom = hwpunit;
+    else if (kind === 'left') def.marginLeft = hwpunit;
+    else def.marginRight = hwpunit;
+    return this.setPageDef(sectionIdx, def);
+  }
+
   getSectionDef(sectionIdx: number): SectionDef {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getSectionDef(sectionIdx));
