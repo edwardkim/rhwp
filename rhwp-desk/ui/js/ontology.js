@@ -11,7 +11,8 @@ const LABEL = {
   hwp_inspect_watermark: "워터마크 검사", hwp_threat_scan: "무기화 위협 스캔",
   hwp_layout_anomaly: "레이아웃 이상탐지",
   hwp_export_pdf: "PDF 내보내기", hwp_export_svg: "SVG 내보내기", hwp_export_markdown: "마크다운 내보내기",
-  hwp_thumbnail: "썸네일", hwp_export_tables: "표 추출", hwp_table_to_csv: "표 CSV 변환",
+  hwp_thumbnail: "썸네일", hwp_convert_hwpx: "HWPX 변환", hwp_convert_hwp5: "HWP 변환",
+  hwp_export_tables: "표 추출", hwp_table_to_csv: "표 CSV 변환",
   hwp_csv_to_table: "CSV로 표 채우기", hwp_chart_to_csv: "차트 CSV 변환",
   hwp_csv_to_chart: "CSV로 차트 채우기",
   hwp_replace_text: "텍스트 치환", hwp_fill_fields: "필드 채우기", hwp_set_cell: "셀 채우기",
@@ -38,6 +39,7 @@ const CLI_TO_TOOL = {
   "csv-to-table": "hwp_csv_to_table", "chart-to-csv": "hwp_chart_to_csv",
   "csv-to-chart": "hwp_csv_to_chart", "threat-scan": "hwp_threat_scan",
   "layout-anomaly": "hwp_layout_anomaly",
+  "export-hwpx": "hwp_convert_hwpx", convert: "hwp_convert_hwp5",
 };
 
 /**

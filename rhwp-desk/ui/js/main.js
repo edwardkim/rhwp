@@ -248,6 +248,8 @@ function docChip(doc) {
     mk("보기", "보조 문서 패널에서 페이지 렌더", () => viewer.open(doc.path)),
     mk("텍스트", "쪽별 TXT 추출 (문서 폴더/rhwp-out)", () => exportText(doc.path)),
     mk("PDF", "PDF 내보내기 (문서 폴더/rhwp-out)", () => exportPdf(doc.path)),
+    mk("HWPX", "HWPX로 변환 (문서 폴더/rhwp-out, --verify)", () => convertHwpx(doc.path)),
+    mk("HWP", "편집용 HWP5로 변환 (문서 폴더/rhwp-out, --verify)", () => convertHwp5(doc.path)),
   );
   const close = document.createElement("button");
   close.className = "btn icon-btn";
@@ -465,6 +467,25 @@ async function exportPdf(path) {
     if (entry.exitCode === 0) toast("PDF 저장: " + out, "ok");
   } catch (e) { toast(String(e), "error"); }
 }
+async function convertHwpx(path) {
+  const out = api.dirname(path) + "\\rhwp-out\\" + api.basename(path).replace(/\.(hwp|hwpx)$/i, "") + ".hwpx";
+  try {
+    // exit 3 = 변환은 저장됐지만 IR 왕복 차이 — 도구 실패가 아니라 판정.
+    const entry = await api.runTool(state.engine.path, ["export-hwpx", path, out, "--verify", "--json"], "export");
+    onEntry(entry);
+    if (entry.exitCode === 0) toast("HWPX 저장: " + out, "ok");
+    else if (entry.exitCode === 3) toast("HWPX 저장(IR 차이): " + out, "");
+  } catch (e) { toast(String(e), "error"); }
+}
+async function convertHwp5(path) {
+  const out = api.dirname(path) + "\\rhwp-out\\" + api.basename(path).replace(/\.(hwp|hwpx)$/i, "") + ".hwp";
+  try {
+    const entry = await api.runTool(state.engine.path, ["convert", path, out, "--verify", "--json"], "export");
+    onEntry(entry);
+    if (entry.exitCode === 0) toast("HWP 저장: " + out, "ok");
+    else if (entry.exitCode === 3) toast("HWP 저장(IR 차이): " + out, "");
+  } catch (e) { toast(String(e), "error"); }
+}
 
 /* ══════════ 뷰어·팔레트·배치 ══════════ */
 const viewer = new Viewer({
@@ -656,6 +677,7 @@ const AGENT_TOOL_ALLOWLIST = [
   "hwp_inspect_hidden_text", "hwp_inspect_injection", "hwp_inspect_unicode",
   "hwp_inspect_watermark", "hwp_threat_scan", "hwp_layout_anomaly",
   "hwp_export_pdf", "hwp_export_svg", "hwp_export_markdown", "hwp_thumbnail",
+  "hwp_convert_hwpx", "hwp_convert_hwp5",
   "hwp_export_tables", "hwp_table_to_csv", "hwp_csv_to_table",
   "hwp_chart_to_csv", "hwp_csv_to_chart", "hwp_replace_text",
   "hwp_fill_fields", "hwp_set_cell", "hwp_set_checkbox", "hwp_insert_image",

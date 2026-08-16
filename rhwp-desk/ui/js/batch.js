@@ -35,7 +35,10 @@ export class BatchRunner {
 
   async run(dir, files, mode) {
     const d = this.deps;
-    const label = { info: "메타 스윕", verify: "검증 스윕", pdf: "PDF 변환" }[mode] || mode;
+    const label = {
+      info: "메타 스윕", verify: "검증 스윕", pdf: "PDF 변환",
+      hwpx: "HWPX 변환", hwp: "HWP 변환",
+    }[mode] || mode;
     const q = d.queue.start(`${label}: ${basename(dir)} (${files.length}건)`, files.length * (mode === "verify" ? VERIFY_AXES.length : 1));
     const failed = [];
     let done = 0;
@@ -64,6 +67,14 @@ export class BatchRunner {
         } else if (mode === "pdf") {
           const out = `${dirname(file)}\\rhwp-pdf\\${basename(file).replace(/\.(hwp|hwpx)$/i, "")}.pdf`;
           await call(file, ["export-pdf", file, "-o", out, "--json"], "batch");
+          d.queue.progress(q, ++done);
+        } else if (mode === "hwpx") {
+          const out = `${dirname(file)}\\rhwp-hwpx\\${basename(file).replace(/\.(hwp|hwpx)$/i, "")}.hwpx`;
+          await call(file, ["export-hwpx", file, out, "--verify", "--json"], "batch");
+          d.queue.progress(q, ++done);
+        } else if (mode === "hwp") {
+          const out = `${dirname(file)}\\rhwp-hwp\\${basename(file).replace(/\.(hwp|hwpx)$/i, "")}.hwp`;
+          await call(file, ["convert", file, out, "--verify", "--json"], "batch");
           d.queue.progress(q, ++done);
         }
       } catch (e) {
