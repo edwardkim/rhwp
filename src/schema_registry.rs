@@ -9,6 +9,12 @@ pub use rhwp_contracts::schema_registry::{
     SIGNING_SCHEMA_VERSION,
 };
 
+/// [#gym] scaffold 축 — `rhwp scaffold` 입력 명세(`scaffold_schema_v1`)의 판.
+/// 서명 축과 같은 **입력/교환 파일 형식** 버전이라 capabilities 의
+/// schemaRegistry 축 집합(봉투 계약 축 고정)에는 싣지 않는다.
+/// 소비처는 `src/scaffold/schema.rs` 의 재수출이 유일하다.
+pub const SCAFFOLD_SCHEMA_VERSION: &str = "1";
+
 /// 공개 `rhwp` 제품의 릴리스 semver.
 pub fn crate_version() -> &'static str {
     env!("CARGO_PKG_VERSION")

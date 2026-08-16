@@ -162,6 +162,7 @@ pub const PROFILES: &[AgentProfile] = &[
         name: "콘텐츠제작",
         summary: "문서 생성·발행 — 명세로 새 문서를 만들고 배포 형식으로 내보냄",
         tools: &[
+            "hwp_scaffold",
             "hwp_build_from_ingest",
             "hwp_export_svg",
             "hwp_export_pdf",
