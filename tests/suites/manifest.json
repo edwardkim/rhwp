@@ -375,6 +375,7 @@
       "tests/verify_contract.rs"
     ],
     "regression_suite_016": [
+      "tests/cases/issue_4367_hwp3_convert_fourth_contract.rs",
       "tests/diag_1042_used_breakdown.rs",
       "tests/disclose_contract.rs",
       "tests/harness_contract.rs",
