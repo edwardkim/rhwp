@@ -99,6 +99,14 @@
         "path_attr",
         "root_mod"
       ]
+    },
+    {
+      "target": "overflow_cell_baseline",
+      "path": "tests/overflow_cell_baseline.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
     }
   ],
   "suites": {
@@ -613,7 +621,6 @@
       "tests/issue_4252_nested_partial_table_cell_path.rs",
       "tests/issue_514.rs",
       "tests/mcp_session_edit_contract.rs",
-      "tests/overflow_cell_baseline.rs",
       "tests/schema_registry_contract.rs",
       "tests/unicode_deception_contract.rs"
     ],

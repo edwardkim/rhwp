@@ -50,9 +50,6 @@ mod issue_514;
 #[path = "../mcp_session_edit_contract.rs"]
 mod mcp_session_edit_contract;
 
-#[path = "../overflow_cell_baseline.rs"]
-mod overflow_cell_baseline;
-
 #[path = "../schema_registry_contract.rs"]
 mod schema_registry_contract;
 

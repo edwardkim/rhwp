@@ -190,6 +190,10 @@ path = "tests/issue_4099_hwpx_chart_to_hwp.rs"
 name = "issue_4100_chart_data_edit"
 path = "tests/issue_4100_chart_data_edit.rs"
 
+[[test]]
+name = "overflow_cell_baseline"
+path = "tests/overflow_cell_baseline.rs"
+
 # END RHWP GENERATED TEST TARGETS
 
 [dependencies]

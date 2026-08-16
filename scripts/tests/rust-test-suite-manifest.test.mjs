@@ -66,12 +66,21 @@ test('경로 의존 case는 기존 target 이름을 유지한다', () => {
   assert.equal(nextestArguments(plan).includes('-E'), false);
 });
 
-test('nextest 우선순위 case는 generated suite에서도 유지된다', () => {
+test('CI slow archive case는 독립 target과 nextest 우선순위를 함께 유지한다', () => {
   const manifest = loadManifest();
   assert.deepEqual(manifest.nextestPriorities, [
     { case: 'overflow_cell_baseline', priority: 100 },
   ]);
-  assert.match(resolveCase('overflow_cell_baseline'), /^regression_suite_\d{3}$/);
+  assert.equal(resolveCase('overflow_cell_baseline'), 'overflow_cell_baseline');
+  const exception = manifest.exceptions.find(
+    (entry) => entry.target === 'overflow_cell_baseline',
+  );
+  assert.deepEqual(exception, {
+    target: 'overflow_cell_baseline',
+    path: 'tests/overflow_cell_baseline.rs',
+    manual: true,
+    reasons: ['manual_isolation'],
+  });
 });
 
 test('harness와 Cargo target 렌더링은 입력 순서와 무관하다', () => {
