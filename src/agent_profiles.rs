@@ -117,6 +117,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_replace_text",
             "hwp_insert_text",
             "hwp_insert_paragraph",
+            "hwp_insert_page_break",
             "hwp_insert_image",
             "hwp_run_plan",
             "hwp_search",
