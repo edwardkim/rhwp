@@ -649,7 +649,7 @@ const AGENT_TOOL_ALLOWLIST = [
   "hwp_export_pdf", "hwp_export_svg", "hwp_export_markdown", "hwp_thumbnail",
   "hwp_export_tables", "hwp_table_to_csv", "hwp_csv_to_table",
   "hwp_chart_to_csv", "hwp_csv_to_chart", "hwp_replace_text",
-  "hwp_fill_fields", "hwp_set_cell", "hwp_set_checkbox",
+  "hwp_fill_fields", "hwp_set_cell", "hwp_set_checkbox", "hwp_insert_image",
 ];
 async function ensureTools() {
   if (state.tools.openaiTools || !state.engine) return;

@@ -14,7 +14,7 @@ const LABEL = {
   hwp_csv_to_table: "CSV로 표 채우기", hwp_chart_to_csv: "차트 CSV 변환",
   hwp_csv_to_chart: "CSV로 차트 채우기",
   hwp_replace_text: "텍스트 치환", hwp_fill_fields: "필드 채우기", hwp_set_cell: "셀 채우기",
-  hwp_set_checkbox: "체크박스 설정",
+  hwp_set_checkbox: "체크박스 설정", hwp_insert_image: "도장/서명 삽입",
 };
 
 let graphPromise = null;
@@ -25,7 +25,7 @@ function loadGraph() {
   return graphPromise;
 }
 
-/** MCP 도구 이름(hwp_*)이 아니라 CLI 명령 인자로 온 경우를 위한 매핑. */
+/** 최상위 CLI 명령이 곧 도구 이름과 1:1인 경우(entry.command === 이 키). */
 const CLI_TO_TOOL = {
   info: "hwp_info", digest: "hwp_digest", "export-text": "hwp_export_text",
   "export-structure": "hwp_export_structure", search: "hwp_search",
@@ -35,15 +35,31 @@ const CLI_TO_TOOL = {
   "export-tables": "hwp_export_tables", "table-to-csv": "hwp_table_to_csv",
   "csv-to-table": "hwp_csv_to_table", "chart-to-csv": "hwp_chart_to_csv",
   "csv-to-chart": "hwp_csv_to_chart",
-  "replace-text": "hwp_replace_text", "fill-fields": "hwp_fill_fields",
-  "set-cell": "hwp_set_cell", "set-checkbox": "hwp_set_checkbox",
 };
 
-const TOOL_TO_CLI = Object.fromEntries(Object.entries(CLI_TO_TOOL).map(([cli, tool]) => [tool, cli]));
+/**
+ * "edit" 서브커맨드 전용 매핑 — journal.rs 는 command 를 args[0] 으로만 채우므로
+ * fill-fields/replace-text/set-cell/insert-image 는 entry.command 가 전부 "edit"다.
+ * args[1](서브커맨드 이름)로 따로 구분해야 한다. 이걸 CLI_TO_TOOL 에 "fill-fields" 같은
+ * 키로 넣어봤자 entry.command("edit")와 절대 안 맞아 죽은 코드였다 — 여기서 고친다.
+ * 예외: hwp_set_checkbox 는 내부적으로 replace-text(□→☑ 치환)라 args[1] 만으로는
+ * hwp_replace_text 와 구분이 안 된다. 어느 쪽으로 표시되든 다음 제안(도장 삽입 등)은
+ * 같아서 실사용에 영향은 없다.
+ */
+const EDIT_SUB_TO_TOOL = {
+  "fill-fields": "hwp_fill_fields", "replace-text": "hwp_replace_text",
+  "set-cell": "hwp_set_cell", "insert-image": "hwp_insert_image",
+};
+
+const TOOL_TO_CLI = Object.fromEntries([
+  ...Object.entries(CLI_TO_TOOL).map(([cli, tool]) => [tool, cli]),
+  ...Object.entries(EDIT_SUB_TO_TOOL).map(([sub, tool]) => [tool, sub]),
+]);
 TOOL_TO_CLI.hwp_inspect_hidden_text = "inspect hidden-text";
 TOOL_TO_CLI.hwp_inspect_injection = "inspect injection";
 TOOL_TO_CLI.hwp_inspect_unicode = "inspect unicode";
 TOOL_TO_CLI.hwp_inspect_watermark = "inspect watermark";
+TOOL_TO_CLI.hwp_set_checkbox = "set-checkbox"; // edit 팔레트 검색어 — 실제 CLI 서브커맨드는 replace-text
 
 /** 온톨로지 도구 이름(hwp_*) → 명령 팔레트 검색어로 쓸 CLI 명령 이름. */
 export const cliCommandFor = (toolName) => TOOL_TO_CLI[toolName] || toolName;
@@ -64,6 +80,7 @@ function toolNameFromEntry(entry) {
     if (axis === "watermark") return "hwp_inspect_watermark";
     return null;
   }
+  if (cmd === "edit") return EDIT_SUB_TO_TOOL[entry.args?.[1]] || null;
   return CLI_TO_TOOL[cmd] || null;
 }
 

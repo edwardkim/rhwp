@@ -146,6 +146,13 @@ const REGISTRY: &[ToolNode] = &[
         produces: &["doc-mutation"],
         consumes: &["field-names"],
     },
+    ToolNode {
+        tool: "hwp_insert_image",
+        // "실물 제출의 마지막 조각" — 편집을 마친 뒤 도장·서명을 얹는 마무리 단계.
+        // 그 자체는 산출물(다음 도구가 이어받을 태그)을 정의하지 않는다.
+        produces: &[],
+        consumes: &["doc-mutation"],
+    },
 ];
 
 /// tool_name이 방금 만들어낸 결과를 이어받을 수 있는 도구 이름들 — 등재 순서대로.
@@ -201,6 +208,28 @@ mod tests {
         let next = suggest_next("hwp_fields");
         assert!(next.contains(&"hwp_fill_fields"));
         assert!(next.contains(&"hwp_set_checkbox"));
+    }
+
+    #[test]
+    fn 편집_도구_전부_도장_서명_삽입으로_이어진다() {
+        for t in [
+            "hwp_replace_text",
+            "hwp_fill_fields",
+            "hwp_set_cell",
+            "hwp_set_checkbox",
+            "hwp_csv_to_table",
+            "hwp_csv_to_chart",
+        ] {
+            assert!(
+                suggest_next(t).contains(&"hwp_insert_image"),
+                "{t} 다음에 도장 삽입이 제안돼야 한다"
+            );
+        }
+    }
+
+    #[test]
+    fn 도장_삽입은_말단이다() {
+        assert!(suggest_next("hwp_insert_image").is_empty());
     }
 
     #[test]
