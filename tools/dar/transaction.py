@@ -25,6 +25,7 @@ MODIFY 는 원본 무훼손, 한 트랜잭션은 한 입력 해시. **선언만�
     python3 $T validate --tx <id>
     python3 $T diff     --tx <id>
     python3 $T commit   --tx <id> -o 산출.hwpx      # VALIDATE 성공 없으면 거절
+    python3 $T commit   --tx <id> -o 산출.hwpx --policy policy.json  # 정책 위반이면 거절(4000)
     python3 $T rollback --tx <id>
     python3 $T replay   --tx <id>                    # 영수증 재실행 상태를 기록
     python3 $T verify   --tx <id>                    # 영수증·입출력 해시 검증 상태를 기록
@@ -32,6 +33,19 @@ MODIFY 는 원본 무훼손, 한 트랜잭션은 한 입력 해시. **선언만�
 
 종료 코드는 DAP/1.0 오류 코드의 상위 1자리다: 0 성공 / 1 런타임 / 2 사용법 /
 3 판정 / 4 정책. **판정(3)은 실패가 아니라 결과다.**
+
+## 정책 (DAR 층 3 — COMMIT 전 집행)
+
+`--policy <policy.json>` 은 [`src/policy_gate.rs`](../../src/policy_gate.rs) 와 같은
+JSON 모양(`kind: admissionPolicy`, `eq|in|gte|lte` 4연산자, 미지 키는 로드 시점
+오류)을 쓰지만 **다른 판정 사전**이다 — `policy_gate.rs` 는 이미 끝난 작업 캡슐의
+계보·서명·앵커를 재계산해 반입을 가른다(`rhwp gate`/`rhwp audit --policy`); 이
+드라이버는 아직 COMMIT 되지 않은 트랜잭션 자신의 제안을 가른다. 그래서 판정 키
+사전이 다르다(POLICY_JUDGMENT_KEYS): `op`(제안 연산) · `format`(문서 포맷) ·
+`validated`(VALIDATE 통과 여부). 정책이 거부하면 COMMIT 은 4000 으로 떨어지고
+디스크는 무변경이다 — 산출 복사도 영수증 기록도 일어나지 않는다. 정책 해시
+(`policySha256`)는 통과한 COMMIT 의 영수증에 실려, 나중에 "그때 어느 정책판으로
+심사했는가"를 소급 없이 증언한다.
 """
 
 from __future__ import annotations
@@ -79,6 +93,70 @@ def sha256_file(p: Path) -> str:
 def sha256_obj(obj) -> str:
     return hashlib.sha256(
         json.dumps(obj, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+# --- COMMIT 전 정책 (DAR 층 3) ------------------------------------------------
+#
+# src/policy_gate.rs 와 같은 정책 언어(연산자 4개, 미지 키는 로드 시점 거부,
+# default_deny)를 쓰되 다른 판정 사전을 쓴다 — 위 모듈 docstring 참고. 새 정책
+# 엔진을 짓는 게 아니라 그 설계를 COMMIT 문맥에 맞는 사전으로 재사용한다.
+
+POLICY_JUDGMENT_KEYS = ("op", "format", "validated")
+POLICY_OPS = ("eq", "in", "gte", "lte")
+
+
+def parse_policy(text: str) -> dict:
+    """정책 JSON을 파싱하고 키·연산자를 사전 대조한다 — 위반은 ValueError."""
+    v = json.loads(text)
+    if v.get("kind") != "admissionPolicy":
+        raise ValueError("정책 kind 가 admissionPolicy 가 아닙니다")
+    default_verdict = v.get("defaultVerdict", "deny")
+    if default_verdict not in ("deny", "allow"):
+        raise ValueError(f"미지 defaultVerdict: {default_verdict} (deny|allow)")
+    rules = []
+    for idx, rule in enumerate(v.get("rules") or []):
+        rid = rule.get("id") or f"R{idx}"
+        req = rule.get("require")
+        if not isinstance(req, dict):
+            raise ValueError(f"{rid}: require 객체가 필요합니다")
+        require = []
+        for key, cond in req.items():
+            if key not in POLICY_JUDGMENT_KEYS:
+                raise ValueError(
+                    f"{rid}: 미지 판정 키 `{key}` — 사전: {list(POLICY_JUDGMENT_KEYS)} "
+                    "(오타는 항상-참 구멍이 되므로 로드 시점에 거부한다)")
+            if not isinstance(cond, dict):
+                raise ValueError(f"{rid}.{key}: {{연산자: 값}} 객체가 필요합니다")
+            for op, expected in cond.items():
+                if op not in POLICY_OPS:
+                    raise ValueError(f"{rid}.{key}: 미지 연산자 `{op}` — 허용: {list(POLICY_OPS)}")
+                require.append((key, op, expected))
+        rules.append({"id": rid, "require": require})
+    return {"name": v.get("name") or "(이름 없음)", "defaultDeny": default_verdict != "allow",
+            "rules": rules}
+
+
+def evaluate_policy(policy: dict, judgments: dict) -> tuple[bool, list]:
+    """평가 — (verdict allow?, violations). 게이트는 모르는 것을 통과시키지 않는다."""
+    violations = []
+    for rule in policy["rules"]:
+        for key, op, expected in rule["require"]:
+            actual = judgments.get(key)
+            if op == "eq":
+                ok = actual == expected
+            elif op == "in":
+                ok = isinstance(expected, list) and actual in expected
+            elif op == "gte":
+                ok = isinstance(actual, (int, float)) and not isinstance(actual, bool) and actual >= expected
+            elif op == "lte":
+                ok = isinstance(actual, (int, float)) and not isinstance(actual, bool) and actual <= expected
+            else:  # pragma: no cover — parse_policy 가 이미 막는다
+                ok = False
+            if not ok:
+                violations.append({"rule": rule["id"], "key": key, "op": op,
+                                   "expected": expected, "actual": actual})
+    allow = (not policy["defaultDeny"]) if not policy["rules"] else not violations
+    return allow, violations
 
 
 def envelope(request_id, operation, status, code, record=None, tx=None,
@@ -392,6 +470,39 @@ def op_commit(a, tx: Tx) -> int:
         return emit(envelope(rid, "transaction.commit", "error", 2000,
                              tx=tx.state["transactionId"],
                              record={"reason": f"산출 경로가 이미 있다: {final} (--overwrite 필요)"}))
+
+    # 정책 (DAR 층 3) — COMMIT 직전, 아직 아무것도 쓰지 않은 시점에 가른다.
+    policy_sha = None
+    policy_path = getattr(a, "policy", None)
+    if policy_path:
+        try:
+            policy_text = Path(policy_path).read_text(encoding="utf-8")
+        except OSError as e:
+            return emit(envelope(rid, "transaction.commit", "error", 2000,
+                                 tx=tx.state["transactionId"],
+                                 record={"reason": f"정책을 읽을 수 없다 - {policy_path}: {e}"}))
+        policy_sha = hashlib.sha256(policy_text.encode("utf-8")).hexdigest()
+        try:
+            policy = parse_policy(policy_text)
+        except (ValueError, json.JSONDecodeError) as e:
+            return emit(envelope(rid, "transaction.commit", "error", 2000,
+                                 tx=tx.state["transactionId"],
+                                 record={"reason": f"정책 사용법 오류: {e}"}))
+        judgments = {
+            "op": tx.state["proposal"]["op"],
+            "format": tx.state["format"],
+            "validated": tx.state["validated"],
+        }
+        allow, violations = evaluate_policy(policy, judgments)
+        if not allow:
+            # 정책 위반은 오류가 아니라 판정(4000)이다 — 원본·작업본 무훼손, COMMIT 미실행.
+            return emit(envelope(rid, "transaction.commit", "verdict", 4000,
+                                 tx=tx.state["transactionId"],
+                                 record={"reason": "정책이 이 COMMIT을 거부했다",
+                                         "policy": policy["name"], "policySha256": policy_sha,
+                                         "violations": violations, "commitBlocked": True}))
+    tx.state["policySha256"] = policy_sha
+
     final.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(out, final)
 
@@ -564,6 +675,7 @@ def main(argv=None) -> int:
         x = sub.add_parser(name); x.add_argument("--tx", required=True)
     c = sub.add_parser("commit"); c.add_argument("--tx", required=True)
     c.add_argument("-o", "--output", required=True); c.add_argument("--overwrite", action="store_true")
+    c.add_argument("--policy", help="admissionPolicy JSON — 위반 시 COMMIT 거부(4000), 통과 시 해시를 영수증에 기록")
     rp = sub.add_parser("replay")
     replay_input = rp.add_mutually_exclusive_group(required=True)
     replay_input.add_argument("--receipt")
