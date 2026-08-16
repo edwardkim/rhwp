@@ -12,6 +12,8 @@ import {
   type HPinKind,
   type RulerPinCommit,
 } from './ruler-pin-geometry';
+// 편집 용지 대화상자와 같은 한도를 쓴다 — 한쪽만 막으면 같은 문서를 다른 입력으로 만들 수 있다.
+import { MIN_BODY_MM } from '@/core/page-body-limits';
 
 export type { RulerPinCommit };
 
@@ -26,9 +28,6 @@ const MARKER_SIZE = 6;
 
 /** 마커 히트테스트 허용 반경 (CSS px) */
 const PIN_HIT_RADIUS = MARKER_SIZE + 2;
-
-/** 핀을 끌 때 반대쪽 핀과의 사이에 남겨야 하는 본문 최소 크기 (mm). */
-const MIN_BODY_MM = 10;
 
 
 interface RulerPalette {
