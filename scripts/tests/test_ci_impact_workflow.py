@@ -679,7 +679,9 @@ class CiImpactWorkflowTests(unittest.TestCase):
         # 역방향 감시: job 이 실행하는 target 은 classifier 소유여야 한다.
         native_step = self._step("Native Skia tests")
         classifier = CLASSIFIER_PATH.read_text(encoding="utf-8")
-        targets = set(re.findall(r"--test ([A-Za-z0-9_]+)", native_step))
+        targets = set(
+            re.findall(r"(?:--test|--cargo-test) ([A-Za-z0-9_]+)", native_step)
+        )
         self.assertTrue(targets)
         for target in targets:
             with self.subTest(target=target):
@@ -843,7 +845,9 @@ mod support;
         """
         native_step = self._step("Native Skia tests")
         classifier = CLASSIFIER_PATH.read_text(encoding="utf-8")
-        targets = set(re.findall(r"--test ([A-Za-z0-9_]+)", native_step))
+        targets = set(
+            re.findall(r"(?:--test|--cargo-test) ([A-Za-z0-9_]+)", native_step)
+        )
 
         missing_from_job = []
         missing_from_classifier = []
@@ -857,7 +861,7 @@ mod support;
             missing_from_job,
             [],
             "Native Skia job 이 실행하지 않는 파일 게이트 test 가 있다. "
-            "`--test <name>` 을 release-test·release 두 경로에 추가한다.",
+            "`run-rust-test.mjs --cargo-test <name>` 을 release-test·release 두 경로에 추가한다.",
         )
         self.assertEqual(
             missing_from_classifier,
@@ -869,12 +873,18 @@ mod support;
     def test_native_skia_targets_run_in_both_profiles(self) -> None:
         """[#4040] release-test 와 release 두 경로가 같은 target 집합을 실행한다."""
         native_step = self._step("Native Skia tests")
-        release_test = set(
-            re.findall(r"--profile release-test --features native-skia --test ([A-Za-z0-9_]+)", native_step)
-        )
-        release = set(
-            re.findall(r"--release --features native-skia --test ([A-Za-z0-9_]+)", native_step)
-        )
+        release_test = {
+            match.group(1)
+            for line in native_step.splitlines()
+            if "--profile release-test" in line
+            if (match := re.search(r"(?:--test|--cargo-test) ([A-Za-z0-9_]+)", line))
+        }
+        release = {
+            match.group(1)
+            for line in native_step.splitlines()
+            if "--release" in line
+            if (match := re.search(r"(?:--test|--cargo-test) ([A-Za-z0-9_]+)", line))
+        }
         self.assertTrue(release_test)
         self.assertEqual(release_test, release)
 
