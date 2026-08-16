@@ -6694,6 +6694,7 @@ fn parse_hp_chart_element(
     let mut extent: Option<(i32, i32)> = None;
     let mut shape_attr = ShapeComponentAttr::default();
     let mut caption: Option<crate::model::shape::Caption> = None;
+    let mut line_shape: Option<crate::model::style::ShapeBorderLine> = None;
     parse_common_shape_children(
         reader,
         &mut common,
@@ -6701,6 +6702,7 @@ fn parse_hp_chart_element(
         &mut extent,
         &mut shape_attr,
         &mut caption,
+        &mut line_shape,
     )?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
@@ -6714,6 +6716,10 @@ fn parse_hp_chart_element(
     let mut ole = OleShape::default();
     ole.common = common;
     ole.drawing.shape_attr = shape_attr;
+    // [#4669] `<hp:lineShape>` 원본 보존 — 없으면 기본값 유지(종전과 동일).
+    if let Some(ls) = line_shape {
+        ole.drawing.border_line = ls;
+    }
     ole.bin_data_id = 60000u32 + chart_num as u32;
     ole.chart_id_ref = chart_id_ref;
     // <hc:extent> 가 있으면 원본 개체 크기를 보존한다(없으면 종전 기본값 7200).
@@ -6746,6 +6752,9 @@ fn parse_hp_ole_element(
     let mut bin_id: u32 = 0;
     let mut numbering_type_picture = false;
     let mut draw_aspect = OleDrawingAspect::default();
+    // [#4669] `id` 는 `instid` 와 별개 값이다(한컴 원산 실측). 종전에는 id arm 이
+    // 없어(차트는 #3546 에서 받음) 재방출 id 가 "0" 또는 instid 로 되쓰였다.
+    let mut id_attr: u32 = 0;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
@@ -6797,6 +6806,7 @@ fn parse_hp_ole_element(
                 let digits: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
                 bin_id = digits.parse().unwrap_or(0);
             }
+            b"id" => id_attr = parse_u32(&attr),
             b"instid" => common.instance_id = parse_u32(&attr),
             // [#2931] 개체 잠금(lock) — 종전 미파싱으로 직렬화 시 항상 "0"으로
             // 되돌아가 OLE 개체의 잠금 상태가 유실됐다.
@@ -6804,10 +6814,15 @@ fn parse_hp_ole_element(
             _ => {}
         }
     }
+    // 차트(#3546)와 동형 — instid 부재 시 id 가 instance_id 를 겸한다.
+    if common.instance_id == 0 {
+        common.instance_id = id_attr;
+    }
 
     let mut extent: Option<(i32, i32)> = None;
     let mut shape_attr = ShapeComponentAttr::default();
     let mut caption: Option<crate::model::shape::Caption> = None;
+    let mut line_shape: Option<crate::model::style::ShapeBorderLine> = None;
     parse_common_shape_children(
         reader,
         &mut common,
@@ -6815,6 +6830,7 @@ fn parse_hp_ole_element(
         &mut extent,
         &mut shape_attr,
         &mut caption,
+        &mut line_shape,
     )?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
@@ -6824,6 +6840,14 @@ fn parse_hp_ole_element(
     let mut ole = OleShape::default();
     ole.common = common;
     ole.drawing.shape_attr = shape_attr;
+    // [#4669] `<hp:lineShape>` 원본 보존 — 없으면 기본값 유지(종전과 동일).
+    if let Some(ls) = line_shape {
+        ole.drawing.border_line = ls;
+    }
+    // [#4669] id 원문 보존 — instid 와 분리해 재방출 시 원본 id 를 되쓴다.
+    if id_attr != 0 {
+        ole.hwpx_ole_id = Some(id_attr);
+    }
     ole.bin_data_id = bin_id;
     ole.drawing_aspect = draw_aspect;
     // <hc:extent> 가 있으면 원본 개체 크기를 보존한다(없으면 종전 기본값 7200).
@@ -6851,6 +6875,11 @@ fn apply_hwpx_ole_shape_component_contract(ole: &mut crate::model::shape::OleSha
     } else {
         7200
     };
+    // [#4669] 파싱된 `<hp:curSz width="0">`(한컴 원산 관례)를 orgSz 로 materialize
+    // 할 때 was_zero 센티널(#2017)을 세운다 — pic·일반 도형과 동형. writer
+    // (write_cur_sz)가 센티널을 보고 원본 0 을 복원한다. orgSz 미파싱(HWP5 출신
+    // 등 original=0)이면 no-op 이라 아래 extent 폴백과 충돌하지 않는다.
+    materialize_shape_current_size_from_original(&mut ole.common, &mut ole.drawing.shape_attr);
     let shape_attr = &mut ole.drawing.shape_attr;
     shape_attr.ctrl_id = tags::SHAPE_OLE_ID;
     shape_attr.is_two_ctrl_id = true;
@@ -6888,8 +6917,13 @@ fn parse_common_shape_children(
     // 캡션을 읽지만 차트·OLE 만 빠져 있었다. HWP5 파서(parser/control/shape.rs:213,
     // 222)와 동형으로 drawing.caption 에 채운 뒤 호출자가 `.caption` 으로 정규화한다.
     caption_out: &mut Option<crate::model::shape::Caption>,
+    // [#4669] `<hp:lineShape>` 수집용. 종전 미파싱으로 OLE 테두리 선이 저장 시
+    // 기본값으로 되쓰였다(offset/orgSz/curSz/flip/renderingInfo 와 함께 이 공용
+    // 파서만 shape-component 자식 arm 이 없던 간극).
+    line_shape_out: &mut Option<crate::model::style::ShapeBorderLine>,
 ) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
+    let mut has_pos = false;
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
@@ -6910,6 +6944,20 @@ fn parse_common_shape_children(
                     }
                     b"rotationInfo" => {
                         parse_shape_rotation_info(ce, shape_attr_out);
+                    }
+                    // [#4669] offset/orgSz/curSz — 공용 개체 파서(parse_object_layout_child)
+                    // 와 동형으로 위임한다. 종전 미파싱으로 원본 curSz=0(한컴 원산
+                    // 관례)·offset 이 IR 에 실리지 않아 저장 시 재유도값으로 되쓰였다.
+                    b"offset" | b"orgSz" | b"curSz" => {
+                        parse_object_layout_child(local, ce, common, shape_attr_out, &mut has_pos);
+                    }
+                    // [#4669] flip/renderingInfo/lineShape — 도형·그림 파서와 동형.
+                    b"flip" => parse_shape_flip(ce, shape_attr_out),
+                    b"renderingInfo" => {
+                        parse_rendering_info(reader, shape_attr_out)?;
+                    }
+                    b"lineShape" => {
+                        *line_shape_out = Some(parse_line_shape_attr(ce));
                     }
                     b"sz" => {
                         for attr in ce.attributes().flatten() {
@@ -6935,6 +6983,7 @@ fn parse_common_shape_children(
                         }
                     }
                     b"pos" => {
+                        has_pos = true;
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"vertRelTo" => {
@@ -9168,6 +9217,85 @@ mod tests {
                 "높이 {raw} 는 Absolute 로 접혀야 한다"
             );
         }
+    }
+
+    /// [#4669] `hp:ole` 의 shape-component 자식(offset/orgSz/curSz/flip/
+    /// renderingInfo/lineShape)과 `id` 속성이 IR 에 실려야 한다. 종전엔 공용
+    /// 자식 파서(`parse_common_shape_children`)에 arm 이 없고 `id` 는 instid 만
+    /// 파싱해, 저장 시 전부 재유도값·"0" 으로 되쓰였다. 값은 실물
+    /// samples/한셀OLE.hwpx 의 hp:ole 을 축약했고(id≠instid 실측), curSz=0 은
+    /// 한컴 원산 관례로 was_zero 센티널(#2017, pic 과 동형)까지 고정한다.
+    #[test]
+    fn issue4669_parse_ole_preserves_shape_component_children_and_id() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="2141242094" zOrder="1" numberingType="PICTURE" textWrap="SQUARE"
+              textFlow="BOTH_SIDES" lock="0" instid="1067500271" objectType="EMBEDDED"
+              binaryItemIDRef="ole1" drawAspect="CONTENT">
+        <hp:offset x="12" y="34"/>
+        <hp:orgSz width="42001" height="13501"/>
+        <hp:curSz width="0" height="0"/>
+        <hp:flip horizontal="1" vertical="0"/>
+        <hp:rotationInfo angle="0" centerX="14999" centerY="2025" rotateimage="1"/>
+        <hp:renderingInfo>
+          <hc:transMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+          <hc:scaMatrix e1="0.714245" e2="0" e3="0" e4="0" e5="0.300052" e6="0"/>
+          <hc:rotMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+        </hp:renderingInfo>
+        <hc:extent x="29999" y="4051"/>
+        <hp:lineShape color="#000000" width="5" style="SOLID" endCap="ROUND"/>
+        <hp:sz width="29999" widthRelTo="ABSOLUTE" height="4051" heightRelTo="ABSOLUTE" protect="0"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="COLUMN" vertOffset="0" horzOffset="0"/>
+        <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected OLE shape");
+        };
+        assert_eq!(ole.hwpx_ole_id, Some(2141242094), "id 원문 보존");
+        assert_eq!(
+            ole.common.instance_id, 1067500271,
+            "instid 는 id 와 분리 보존"
+        );
+        let sa = &ole.drawing.shape_attr;
+        assert_eq!((sa.offset_x, sa.offset_y), (12, 34), "hp:offset");
+        assert_eq!(
+            (sa.original_width, sa.original_height),
+            (42001, 13501),
+            "hp:orgSz"
+        );
+        // curSz=0 → orgSz 로 materialize 하되 원본 0 복원용 센티널이 서야 한다.
+        assert_eq!((sa.current_width, sa.current_height), (42001, 13501));
+        assert!(
+            sa.current_width_was_zero && sa.current_height_was_zero,
+            "curSz=0 센티널(#2017)"
+        );
+        assert!(sa.horz_flip && !sa.vert_flip, "hp:flip");
+        assert!(sa.rotate_image, "rotationInfo rotateimage=1");
+        // 행렬 값은 f32 양자화(hwp5_matrix_value)를 거친다 — 1e-5 면 충분.
+        assert!(
+            (sa.render_sx - 0.714245).abs() < 1e-5,
+            "renderingInfo scaMatrix 보존: {}",
+            sa.render_sx
+        );
+        assert_eq!(ole.drawing.border_line.width, 5, "lineShape width");
+        assert_eq!(
+            ole.drawing.border_line.attr & 0xFF,
+            1,
+            "lineShape style=SOLID"
+        );
     }
 
     #[test]

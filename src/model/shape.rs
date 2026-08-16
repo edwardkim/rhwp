@@ -882,6 +882,10 @@ pub struct OleShape {
     /// None 으로 접힌다(둘 다 미관측 변형 — 이 경우 switch 래핑은
     /// 재방출되지 않는다).
     pub chart_switch_fallback: Option<Box<OleShape>>,
+    /// [#4669] HWPX `<hp:ole id="...">` 원문 — `instid` 와 별개 값이다(한컴
+    /// 원산 파일 실측: id=2141242094 / instid=1067500271). 종전에는 `instid` 만
+    /// 파싱해 재방출 `id` 가 instance_id(또는 "0")로 되쓰였다. HWP5 출신은 None.
+    pub hwpx_ole_id: Option<u32>,
 }
 
 #[cfg(test)]
