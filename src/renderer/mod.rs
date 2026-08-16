@@ -1099,6 +1099,18 @@ pub fn px_to_hwpunit(px: f64, dpi: f64) -> i32 {
     (px * HWPUNIT_PER_INCH / dpi) as i32
 }
 
+/// TAC(글자처럼 취급) 표 한 칸의 유효 높이 — 저장된 line_seg 높이와 실측 표 높이 중
+/// 큰 쪽을 쓴다.
+///
+/// [#4627] 같은 식(`seg_lh.max(mt_h)`)이 `typeset.rs`(레이아웃 확정)와
+/// `pagination/engine.rs`(`RHWP_USE_PAGINATOR=1` 대안 경로)에 각각 따로 있었다 —
+/// 표 높이가 페이지 경계를 정하므로 두 사본이 갈리면 쪽수가 움직인다. 두 소비자
+/// 모두 이 함수를 불러 사본을 없앤다(행동 변경 없음, 순수 NFC).
+#[inline]
+pub fn tac_table_effective_height(seg_lh: f64, mt_h: f64) -> f64 {
+    seg_lh.max(mt_h)
+}
+
 /// [Task #1745] 텍스트 혼합 anchor 문단의 Square wrap 표 우측 wrap 띠 (cs, sw) HU 도출.
 ///
 /// Square wrap(어울림) 표가 텍스트 문단(예: 별표 제목)에 anchor 되면 anchor 문단의
