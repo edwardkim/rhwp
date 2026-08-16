@@ -703,6 +703,11 @@ pub(crate) struct InlineCursor<'a> {
     pub mark_idx: usize,
     /// 지금까지 방출한 문단 텍스트의 문자 수
     pub char_idx: usize,
+    /// [#4895] 이 문단의 소프트 하이픈을 `<hp:hyphen/>` 요소로 내릴지 여부.
+    ///
+    /// 한컴 원본은 소프트 하이픈을 리터럴 U+00AD 로도, 제어 표기로도 쓴다. 출처가
+    /// 제어 표기(HWP5 `control_mask` 비트 24)일 때만 요소로 내려 원본 표기를 지킨다.
+    pub soft_hyphen_as_element: bool,
 }
 
 impl InlineCursor<'_> {
@@ -775,10 +780,19 @@ pub(crate) fn render_hp_t_content(
                 flush_buf(&mut t_xml, &mut buf);
                 t_xml.push_str("<hp:fwSpace/>");
             }
-            // 소프트 하이픈도 같은 계약이다 — 리터럴 '-' 로 내리면 한글이 실제
-            // 하이픈으로 읽어 단어가 갈라진다(`pertinent` → `per-tinent`).
-            // 스키마의 `<hp:hyphen>`(ParaList XML schema.xml:291)으로 되돌린다.
-            '\u{00AD}' => {
+            // [#4895] 소프트 하이픈(U+00AD)은 U+2007 과 달리 **원본 표기를 따라간다.**
+            // 종전에는 늘 `<hp:hyphen/>` 요소로 내렸는데(#4776), 한컴이 만든 문서는
+            // 두 표기를 다 쓴다(10k 코퍼스 실측: 리터럴 원본 58문서 · 제어 표기 원본 10문서).
+            //
+            // 한글 2022 대조 실측(01628, 하이픈 표기만 교체):
+            //   `<hp:hyphen/>`     → 본문 2,477자 (한글이 글자를 버린다)
+            //   raw U+00AD 리터럴  → 본문 2,478자, 원본과 textSha 일치
+            //
+            // 즉 한글은 요소·제어문자를 텍스트로 복원하지 않는다. 리터럴 원본을 요소로
+            // 바꾸면 글자가 사라지고(10k 스윕 36경로 회귀), 반대로 제어 표기 원본을
+            // 리터럴로 바꾸면 원본에 없던 글자가 생긴다. 그래서 출처 표기를 보존한다 —
+            // HWP5 PARA_HEADER `control_mask` 비트 24 가 그 신호다(`cursor` 가 나른다).
+            '\u{00AD}' if cursor.soft_hyphen_as_element => {
                 flush_buf(&mut t_xml, &mut buf);
                 t_xml.push_str("<hp:hyphen/>");
             }
@@ -1128,6 +1142,8 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
     // 슬롯 축이 책갈피를 잡지 못하던 시절의 우회였고, 그대로 두면 이중 방출이 된다.
     let mut cursor = InlineCursor {
         title_marks: &para.title_marks,
+        // [#4895] 출처가 제어 표기였던 문단만 `<hp:hyphen/>` 로 되돌린다.
+        soft_hyphen_as_element: para.control_mask & (1u32 << 0x0018) != 0,
         ..Default::default()
     };
 
@@ -3110,6 +3126,44 @@ mod tests {
         assert!(
             !xml.contains(r#"formatType="CIRCLE_DIGIT""#),
             "CIRCLE_DIGIT 오탈자 잔존 금지: {xml}"
+        );
+    }
+
+    /// [#4895] 소프트 하이픈(U+00AD)은 `<hp:hyphen/>` 요소가 아니라 **리터럴 문자**로 나간다.
+    ///
+    /// #4776 이 요소로 바꿨다가 10k 전수에서 36경로가 깨졌다. 한글 2022 대조 실측(01628,
+    /// 하이픈 표기만 교체): 요소 → 본문 2,477자(글자 소실) / 리터럴 → 2,478자로 원본과
+    /// textSha 일치. 한컴 원본 hwpx 도 `<hp:t>` 안에 raw U+00AD 를 담는다.
+    #[test]
+    fn soft_hyphen_stays_literal_in_hp_t() {
+        let mut cursor = InlineCursor::default();
+        let xml = render_hp_t_content("축사로\u{00AD}한우", &[], &mut cursor);
+        assert!(
+            !xml.contains("<hp:hyphen/>"),
+            "소프트 하이픈을 요소로 내리면 한글이 글자를 버린다: {xml}"
+        );
+        assert!(
+            xml.contains('\u{00AD}'),
+            "소프트 하이픈이 리터럴로 실려야 한다: {xml:?}"
+        );
+    }
+
+    /// [#4895] 출처가 제어 표기(HWP5 control_mask 비트 24)인 문단만 `<hp:hyphen/>` 로
+    /// 되돌린다 — 원본에 없던 글자를 만들지 않기 위해서다.
+    #[test]
+    fn soft_hyphen_from_control_origin_is_written_as_element() {
+        let mut cursor = InlineCursor {
+            soft_hyphen_as_element: true,
+            ..Default::default()
+        };
+        let xml = render_hp_t_content("축사로\u{00AD}한우", &[], &mut cursor);
+        assert!(
+            xml.contains("<hp:hyphen/>"),
+            "제어 표기 출처는 요소로 보존되어야 한다: {xml}"
+        );
+        assert!(
+            !xml.contains('\u{00AD}'),
+            "요소로 내렸으면 리터럴은 남지 않는다: {xml:?}"
         );
     }
 

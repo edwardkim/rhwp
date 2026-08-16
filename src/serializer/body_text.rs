@@ -402,9 +402,11 @@ fn compute_control_mask(para: &Paragraph) -> u32 {
     if para.text.contains('\u{00A0}') {
         mask |= 1u32 << 0x001E;
     }
-    // 하이픈 (0x0018): serialize_para_text 가 U+00AD 마다 코드 0x18 을 방출하므로
-    // control_mask 비트 24 도 세워 PARA_HEADER 를 PARA_TEXT 와 일치시킨다.
-    if para.text.contains('\u{00AD}') {
+    // [#4895] 하이픈 (0x0018) 비트는 **출처가 제어 표기였을 때만** 유지한다.
+    // serialize_para_text 가 같은 조건으로만 코드 24 를 방출하므로 둘이 함께 움직인다.
+    // 리터럴 원본(한컴 실측 00302: PARA_TEXT `ad 00`, mask 0)에 비트를 세우면
+    // PARA_HEADER 가 있지도 않은 제어문자를 주장해 헤더/텍스트가 어긋난다.
+    if para.text.contains('\u{00AD}') && para.control_mask & (1u32 << 0x0018) != 0 {
         mask |= 1u32 << 0x0018;
     }
     // 제목 차례 표시 (0x0008): serialize_para_text 가 title_marks 마다 코드 0x08 을
@@ -833,10 +835,14 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 code_units.push(0x001E);
                 prev_end = offset + 1;
             }
-            '\u{00AD}' => {
-                // 소프트 하이픈 (HWP 5.0 표 7: 코드 24). 파서가 0x18 을 U+00AD 로
-                // 받으므로 저장도 제어문자로 되돌린다 — 리터럴로 쓰면 다음 왕복에서
-                // 실제 하이픈이 되어 단어가 갈라진다.
+            // [#4895] 소프트 하이픈(U+00AD)은 **원본 표기를 따라간다.** #4776 은 늘
+            // 코드 24(0x18)로 되돌렸지만, 한컴이 만든 문서는 두 표기를 다 쓴다
+            // (10k 코퍼스 실측: 리터럴 원본 58문서 · 제어 표기 원본 10문서).
+            // 한글 2022 는 0x18 을 텍스트로 복원하지 않으므로, 리터럴 원본을 제어코드로
+            // 바꾸면 저장본에서 글자가 사라진다(10k 스윕 36경로 회귀).
+            // 출처 신호는 PARA_HEADER `control_mask` 비트 24 다 — 그 비트가 선 문단만
+            // 제어코드로 되돌리고, 나머지는 아래 기본 분기가 리터럴로 방출한다.
+            '\u{00AD}' if para.control_mask & (1u32 << 0x0018) != 0 => {
                 code_units.push(0x0018);
                 prev_end = offset + 1;
             }
@@ -2000,6 +2006,58 @@ mod tests {
         let bytes = test_serialize_para_text(&para);
 
         assert_eq!(&bytes[2..4], &0x001E_u16.to_le_bytes());
+    }
+
+    /// [#4895] 소프트 하이픈(U+00AD)은 코드 24(0x18)가 아니라 **리터럴 문자**로 나간다.
+    ///
+    /// #4776 이 표 7 의 코드 24 로 되돌렸다가 10k 전수에서 36경로가 깨졌다 —
+    /// 한글 2022 는 0x18 을 텍스트로 복원하지 않아 저장본에서 글자가 사라진다.
+    /// 한컴 원본 실측(00302)도 PARA_TEXT 에 `ad 00`(리터럴)을 담는다.
+    #[test]
+    fn test_soft_hyphen_serializes_as_literal_char() {
+        let para = Paragraph {
+            char_count: 4,
+            text: "가\u{00AD}나".to_string(),
+            char_offsets: vec![0, 1, 2],
+            ..Default::default()
+        };
+
+        let bytes = test_serialize_para_text(&para);
+
+        assert_eq!(&bytes[2..4], &0x00AD_u16.to_le_bytes());
+    }
+
+    /// [#4895] 리터럴 출처면 control_mask 비트 24 도 세우지 않는다.
+    /// 한컴 원본(00302)의 PARA_HEADER 도 소프트 하이픈이 든 문단에서 mask 가 0 이다.
+    #[test]
+    fn test_soft_hyphen_does_not_set_control_mask_bit_24() {
+        let para = Paragraph {
+            char_count: 4,
+            text: "가\u{00AD}나".to_string(),
+            char_offsets: vec![0, 1, 2],
+            ..Default::default()
+        };
+
+        assert_eq!(compute_control_mask(&para) & (1u32 << 0x0018), 0);
+    }
+
+    /// [#4895] 반대로 **제어 표기 원본**(control_mask 비트 24)은 코드 24 로 되돌린다 —
+    /// 한글이 그 자리를 텍스트로 내지 않는 것까지가 원본의 동작이라, 리터럴로 바꾸면
+    /// 원본에 없던 글자가 생긴다. 10k 코퍼스에 이런 원본이 10문서 있다.
+    #[test]
+    fn test_soft_hyphen_from_control_origin_stays_code_24() {
+        let para = Paragraph {
+            char_count: 4,
+            control_mask: 1u32 << 0x0018,
+            text: "가\u{00AD}나".to_string(),
+            char_offsets: vec![0, 1, 2],
+            ..Default::default()
+        };
+
+        let bytes = test_serialize_para_text(&para);
+
+        assert_eq!(&bytes[2..4], &0x0018_u16.to_le_bytes());
+        assert_ne!(compute_control_mask(&para) & (1u32 << 0x0018), 0);
     }
 
     /// [NBSP mask] U+00A0 은 PARA_TEXT 에 코드 0x1E 로 방출되므로 PARA_HEADER control_mask
