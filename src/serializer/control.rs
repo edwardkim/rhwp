@@ -674,7 +674,11 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
         VerticalAlign::Center => 1,
         VerticalAlign::Bottom => 2,
     };
-    let list_attr: u32 = ((cell.text_direction as u32) << 16) | (v_align_code << 21);
+    // [#4898] 줄바꿈 방식(bit 19~20)을 함께 되돌린다 — 빼먹으면 SQUEEZE 셀이 BREAK 로
+    // 굳어 한글이 줄을 다시 나눈다(줄 수 → 셀 높이 → 표 높이 → 쪽수).
+    let list_attr: u32 = ((cell.text_direction as u32) << 16)
+        | (((cell.line_wrap as u32) & 0x03) << 19)
+        | (v_align_code << 21);
     w.write_u32(list_attr).unwrap();
     let list_header_width_ref = if cell.list_header_width_ref == 0 {
         0x0400
