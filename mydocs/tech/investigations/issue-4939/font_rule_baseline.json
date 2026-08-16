@@ -1,0 +1,393 @@
+{
+  "fixtures": [
+    {
+      "backend": [
+        "native",
+        "wasm"
+      ],
+      "id": "exam_kor",
+      "path": "samples/exam_kor.hwp",
+      "purpose": "native-wasm-svg-byte-parity",
+      "sha256": "0315576fb25dd29ad3b6b188ee2539d0e8d31c15b74847be801c2186a97aac69"
+    },
+    {
+      "backend": [
+        "native",
+        "wasm"
+      ],
+      "id": "exam_eng",
+      "path": "samples/exam_eng.hwp",
+      "purpose": "native-wasm-svg-byte-parity",
+      "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
+    },
+    {
+      "backend": [
+        "native",
+        "wasm"
+      ],
+      "id": "exam_math",
+      "path": "samples/exam_math.hwp",
+      "purpose": "native-wasm-svg-byte-parity",
+      "sha256": "e40e3d675373c8efb3a844fc71f209600d3b0db987a04b3808b8e74a6b1671fe"
+    },
+    {
+      "backend": [
+        "native",
+        "wasm"
+      ],
+      "id": "exam_science",
+      "path": "samples/exam_science.hwp",
+      "purpose": "native-wasm-svg-byte-parity",
+      "sha256": "22d29786a80d68a9b2ad9294c2dab4915e0eced941e790e37390b14312b8b6a8"
+    },
+    {
+      "backend": [
+        "native",
+        "wasm"
+      ],
+      "id": "synam-001",
+      "path": "samples/synam-001.hwp",
+      "purpose": "native-wasm-svg-byte-parity",
+      "sha256": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b"
+    },
+    {
+      "backend": [
+        "native",
+        "wasm"
+      ],
+      "id": "aift",
+      "path": "samples/aift.hwp",
+      "purpose": "native-wasm-svg-byte-parity",
+      "sha256": "a3e94e613a7d3dad0ee11e2df8f9572a5b7c2d704602960c2075b5fd22df995c"
+    },
+    {
+      "backend": [
+        "native",
+        "wasm"
+      ],
+      "id": "2010-01-06",
+      "path": "samples/2010-01-06.hwp",
+      "purpose": "native-wasm-svg-byte-parity",
+      "sha256": "d2562d9219fc1d491dd6b9f6d787314153246efb79e18c42c63830ac22194958"
+    }
+  ],
+  "fontMetrics": {
+    "duplicateKeys": [],
+    "entryCount": 600,
+    "styleCounts": {
+      "bold": 89,
+      "boldItalic": 49,
+      "italic": 79,
+      "regular": 383
+    },
+    "tableSha256": "bdfec76f6f83894d5c3616796614bed6cc3df622dd638d16d701275636c50f89",
+    "uniqueNameCount": 401
+  },
+  "gates": [
+    {
+      "command": "node --test scripts/tests/font_rule_ledger.test.mjs",
+      "evidence": "mydocs/working/task_m100_4939_stage2.md",
+      "id": "font-rule-ledger-contract",
+      "status": "required"
+    },
+    {
+      "command": "cargo test --profile release-test --lib font_metrics",
+      "evidence": "mydocs/working/task_m100_4939_stage2.md",
+      "id": "rust-font-metrics",
+      "status": "required"
+    },
+    {
+      "command": "node --test rhwp-studio/tests/font-substitution.test.ts rhwp-studio/tests/local-fonts.test.ts rhwp-studio/tests/canvaskit-font-plan.test.ts rhwp-studio/tests/canvaskit-sfnt-face.test.ts rhwp-studio/tests/renderer-baseline-font-loading.test.ts",
+      "evidence": "mydocs/working/task_m100_4939_stage2.md",
+      "id": "studio-font-contracts",
+      "status": "required"
+    },
+    {
+      "command": "node --test scripts/frontend-font-assets.test.mjs",
+      "evidence": "mydocs/working/task_m100_4939_stage2.md",
+      "id": "font-assets",
+      "status": "required"
+    },
+    {
+      "command": "node scripts/svg_native_wasm_diff.mjs samples/exam_kor.hwp samples/exam_eng.hwp samples/exam_math.hwp samples/exam_science.hwp samples/synam-001.hwp samples/aift.hwp samples/2010-01-06.hwp",
+      "evidence": "mydocs/working/task_m100_4939_stage2.md",
+      "id": "native-wasm-public-parity",
+      "status": "required"
+    }
+  ],
+  "generatorVersion": "2.0.0",
+  "inputs": [
+    {
+      "extractionModes": [
+        "markdown-section"
+      ],
+      "owners": [
+        "asset-authority"
+      ],
+      "path": "THIRD_PARTY_LICENSES.md",
+      "sha256": "1c98bcfcf7df2b561df6334d72b155c4366af3ff6d89f163a87bf9c7dc6c04fb"
+    },
+    {
+      "extractionModes": [
+        "markdown-table"
+      ],
+      "owners": [
+        "asset-authority"
+      ],
+      "path": "assets/fonts/FONTS.md",
+      "sha256": "0547f225f68531b9859d40452bd94189c10d76ff89441640b7a5c642ff5bfe3e"
+    },
+    {
+      "extractionModes": [
+        "historical-evidence"
+      ],
+      "owners": [
+        "tests-history"
+      ],
+      "path": "mydocs/tech/investigations/issue-4739/task_m100_4739_government_font_successor_matrix.md",
+      "sha256": "7e5028e703c3774d7160ae349421012865e0052bf8d4a511cb3e90436fcad540"
+    },
+    {
+      "extractionModes": [
+        "contract"
+      ],
+      "owners": [
+        "stage2-tooling"
+      ],
+      "path": "mydocs/tech/investigations/issue-4939/font_rule_ledger.schema.json",
+      "sha256": "f272c8839214ae685ff49d397b5eb7c257af5b570259f0d2e7845d70a5164085"
+    },
+    {
+      "extractionModes": [
+        "contract"
+      ],
+      "owners": [
+        "stage2-tooling"
+      ],
+      "path": "mydocs/tech/investigations/issue-4939/font_rule_sources.json",
+      "sha256": "5e926a2dc18d9541e4ab17d135fb08763742fda10206ca27410cac7937aa4e46"
+    },
+    {
+      "extractionModes": [
+        "typescript-array",
+        "typescript-function-contract"
+      ],
+      "owners": [
+        "studio-supply"
+      ],
+      "path": "rhwp-studio/src/core/font-loader.ts",
+      "sha256": "0c30b22b7c5aa7f502c518456aa07b26ca66b2b504c8197237016e1d38d86e88"
+    },
+    {
+      "extractionModes": [
+        "typescript-array",
+        "typescript-function-contract"
+      ],
+      "owners": [
+        "studio-substitution"
+      ],
+      "path": "rhwp-studio/src/core/font-substitution.ts",
+      "sha256": "abd3448b80ca559b4417bda2475f82c2021cae5da3a48d2a54a036b6723ae361"
+    },
+    {
+      "extractionModes": [
+        "typescript-function-contract",
+        "typescript-predicate"
+      ],
+      "owners": [
+        "studio-detection"
+      ],
+      "path": "rhwp-studio/src/core/local-fonts.ts",
+      "sha256": "25d0e0d2e29f4d758b32c9ec20343fb43e4b022c4168cae1831d31fa93f437cc"
+    },
+    {
+      "extractionModes": [
+        "typescript-function-contract"
+      ],
+      "owners": [
+        "studio-canvas-patch"
+      ],
+      "path": "rhwp-studio/src/core/wasm-bridge.ts",
+      "sha256": "5497786bc32c03ecd75acddeebe7702de503c42df4b4224005e38ccfae57f8d3"
+    },
+    {
+      "extractionModes": [
+        "test-evidence"
+      ],
+      "owners": [
+        "tests-history"
+      ],
+      "path": "rhwp-studio/tests/font-substitution.test.ts",
+      "sha256": "227ce233a3327bd0e698b544715aa91fb7820c88ac2449968668476990089df6"
+    },
+    {
+      "extractionModes": [
+        "contract"
+      ],
+      "owners": [
+        "stage2-tooling"
+      ],
+      "path": "scripts/font_rule_ledger.mjs",
+      "sha256": "9fac36ecc87ccd0157199ea284b8690dc40e476b421df01bce5443558d14a748"
+    },
+    {
+      "extractionModes": [
+        "contract"
+      ],
+      "owners": [
+        "stage2-tooling"
+      ],
+      "path": "scripts/tests/fixtures/font-rule-ledger/source-snippets.json",
+      "sha256": "6b47eaea9953a6e621680d51a0ff6ced4c52facd281dd51af5826a82093eb79a"
+    },
+    {
+      "extractionModes": [
+        "contract"
+      ],
+      "owners": [
+        "stage2-tooling"
+      ],
+      "path": "scripts/tests/font_rule_ledger.test.mjs",
+      "sha256": "479e1f8f44ce3f10181c8f5c59adcfadaa297c43e8a2dd849880a32271079293"
+    },
+    {
+      "extractionModes": [
+        "rust-type-contract"
+      ],
+      "owners": [
+        "paint-resource"
+      ],
+      "path": "src/paint/font.rs",
+      "sha256": "15d9b70a3a9e64d2e934b683c59b05a2b40d0994da3f9729c02387d521e180d6"
+    },
+    {
+      "extractionModes": [
+        "rust-function-contract",
+        "rust-match-arms",
+        "rust-static-array"
+      ],
+      "owners": [
+        "rust-metric"
+      ],
+      "path": "src/renderer/font_metrics_data.rs",
+      "sha256": "b829c75f50e801b09e4ae440b780bf24c33f144b79684bb7c8b8142e0f6aaea6"
+    },
+    {
+      "extractionModes": [
+        "rust-function-contract",
+        "rust-predicate"
+      ],
+      "owners": [
+        "rust-measurement"
+      ],
+      "path": "src/renderer/layout/text_measurement.rs",
+      "sha256": "787571a52cc702da57a55ca76d91d0fad5bdb39e27c223d2d355614e2e037b2c"
+    },
+    {
+      "extractionModes": [
+        "rust-match-arms",
+        "rust-predicate"
+      ],
+      "owners": [
+        "rust-paint-chain"
+      ],
+      "path": "src/renderer/mod.rs",
+      "sha256": "f6a6beceb49305e0e28ea53bfc16c21ae956e9ac30a0d9779f068a4d4129d83d"
+    },
+    {
+      "extractionModes": [
+        "rust-function-contract"
+      ],
+      "owners": [
+        "native-skia"
+      ],
+      "path": "src/renderer/skia/font_lookup.rs",
+      "sha256": "72d291436dfa9596b496e4bbb88f7fd9b39e25e1ef81f8d52e194a87313aeea9"
+    },
+    {
+      "extractionModes": [
+        "rust-function-contract"
+      ],
+      "owners": [
+        "native-skia"
+      ],
+      "path": "src/renderer/skia/text_replay.rs",
+      "sha256": "c7ab9eb37a8cae7b7ab0c78dce4bcea704dc451818c8675fe4b194612eb142fc"
+    },
+    {
+      "extractionModes": [
+        "rust-match-arms",
+        "rust-predicate"
+      ],
+      "owners": [
+        "rust-style-resolution"
+      ],
+      "path": "src/renderer/style_resolver.rs",
+      "sha256": "b9f4dbe0c497f0d9b818e5a2e7ce32776546a50f364023879782d5c7944cc7f6"
+    },
+    {
+      "extractionModes": [
+        "markdown-table"
+      ],
+      "owners": [
+        "asset-authority"
+      ],
+      "path": "ttfs/FONTS.md",
+      "sha256": "cb16352c0735858623c6e1ac5cca1082cb8c37e49fea47c945c3111f1a4dcd6d"
+    }
+  ],
+  "issue": 4939,
+  "kind": "font-rule-baseline",
+  "lookupContract": {
+    "aliasCount": 67,
+    "aliasSha256": "01becc0ed53257f4cc8238982f4417a5869dfb45f16f80d7b4846e7a88057995",
+    "exactOrder": [
+      "name+bold+italic",
+      "name+bold+italic=false",
+      "name-first"
+    ],
+    "fallbackOrder": [
+      "exact",
+      "bold-with-italic-false",
+      "first-name-entry"
+    ],
+    "knownInputCount": 464,
+    "projectionCount": 1856,
+    "projectionSha256": "2012b85fc6de2c103346dbdf3c4d1c34c984d1ae1cc8a71ef06d1baf284fa9fd",
+    "unregisteredSentinel": "__rhwp_font_rule_ledger_unregistered__"
+  },
+  "ruleCandidates": {
+    "countsByKind": {
+      "historical-evidence": 1,
+      "markdown-section": 1,
+      "markdown-table": 2,
+      "rust-function-contract": 4,
+      "rust-match-arms": 5,
+      "rust-predicate": 4,
+      "rust-static-array": 1,
+      "rust-type-contract": 2,
+      "test-evidence": 1,
+      "typescript-array": 2,
+      "typescript-function-contract": 6,
+      "typescript-predicate": 1
+    },
+    "countsByOwner": {
+      "asset-authority": 3,
+      "native-skia": 2,
+      "paint-resource": 2,
+      "rust-measurement": 2,
+      "rust-metric": 3,
+      "rust-paint-chain": 3,
+      "rust-style-resolution": 4,
+      "studio-canvas-patch": 2,
+      "studio-detection": 3,
+      "studio-substitution": 2,
+      "studio-supply": 2,
+      "tests-history": 2
+    },
+    "projectionSha256": "8bf52e13ae5350337be125ecf665446392e54d69b6c39e39c6b44339e3b62af7",
+    "totalCount": 30
+  },
+  "schemaVersion": "1.0",
+  "sourceCommit": "795e7b5fac24cfef79017e9120516570851a03b2"
+}
