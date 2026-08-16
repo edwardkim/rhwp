@@ -1,0 +1,71 @@
+{
+  "standard": "Strategy Work Standard",
+  "abbrev": "SWS",
+  "version": "1.0",
+  "summary": "검증 가능한 전략 산출물의 이식 가능한 표준 — 주장이 곧 원문 좌표로 되짚어지는 증명이 된다.",
+  "principle": "판정은 설득력이 아니라 재독이다. 각 레벨은 독자가 저자의 말 없이도 원문으로 되짚어 확인할 수 있는 산출을 요구한다.",
+  "measures": "검증 가능성(traceability·coverage·adversarial survival·falsifiability). 통찰의 質이나 전략의 옳음은 측정하지 않는다 — 그것은 사람의 판단이다.",
+  "levels": [
+    {
+      "id": "SW-L1",
+      "name": "근거 좌표 (Traceability)",
+      "requires": "모든 주장이 근거에 연결되고, 각 근거는 파일·쪽·문단·문자 오프셋 좌표와 원문 인용을 갖는다. 재독하면 인용이 그 좌표에서 그대로 나온다.",
+      "referenceCommand": "rhwp search <파일> --json <인용> (매치의 section·paragraph·page·charOffset 이 좌표)"
+    },
+    {
+      "id": "SW-L2",
+      "name": "전수 수집 (Coverage)",
+      "requires": "코퍼스 전체가 선언되고, 읽은 문서·못 읽은 문서(사유 포함)가 남는다. 근거는 선언된 코퍼스 안에서만 나온다 — 체리피킹이 기계로 드러난다.",
+      "referenceCommand": "rhwp batch info --json (코퍼스 전수 스윕) ; 실패 레코드는 unreadable 로 선언"
+    },
+    {
+      "id": "SW-L3",
+      "name": "반증 생존 (Adversarial survival)",
+      "requires": "각 주장마다 반증 시도가 기록된다 — 실제로 실행한 반대 근거 검색과 그 결과. 반증된 주장은 삭제하거나 강등한다. 생존만 산출물에 남는다.",
+      "referenceCommand": "rhwp search <파일> --json <반대 키워드> (challenge.searched 에 실행한 질의를 그대로 기록)"
+    },
+    {
+      "id": "SW-L4",
+      "name": "반증가능성·교정 (Falsifiability & Calibration)",
+      "requires": "각 주장이 '무엇이 관측되면 이 주장이 틀린가'(falsifier)와 확신도를 명시한다. 예측형 주장은 판정 기한을 갖고, 기한이 지나면 실제 결과로 채점된다.",
+      "referenceCommand": "(도구 무관) claims[].falsifier · confidence · resolveBy · resolvedOutcome"
+    },
+    {
+      "id": "SW-L5",
+      "name": "정산·감사 (Settlement & Audit)",
+      "requires": "엔게이지먼트 전체가 영수증으로 재현된다 — AWS/1.0 의 AW-L1 이상을 충족하고, 제3자가 산출물 전체를 원자료에서 재생성해 대조할 수 있다.",
+      "referenceCommand": "rhwp replay --capsule ... ; rhwp audit <dir> --json (AWS/1.0 과 접합)"
+    }
+  ],
+  "conformanceSelfReport": "python tools/strategist/sws_audit.py <deliverable.json> --bin <rhwp> --level <L1..L5> --json",
+  "deliverableFormat": {
+    "note": "도구 무관 공개 포맷. 어떤 컨설팅 산출물이든 이 형태로 주장·근거를 노출하면 채점된다.",
+    "schema": {
+      "engagement": "string — 무엇을 묻는 일이었나",
+      "corpus": {
+        "declared": "string[] — 대상 코퍼스 전체 (선언)",
+        "read": "string[] — 실제로 읽은 문서",
+        "unreadable": "[{path, reason}] — 못 읽은 문서와 사유"
+      },
+      "evidence": "[{id, file, locator:{section?,paragraph?,page?,charOffset?}, quote, command}]",
+      "claims": "[{id, text, evidence:[evidenceId], challenge:{searched, counterEvidence, verdict}, falsifier, confidence, resolveBy?, resolvedOutcome?}]"
+    }
+  },
+  "referenceImplementation": {
+    "tool": "rhwp",
+    "basis": "좌표 있는 검색 봉투(search/extract-data)와 검증 사다리",
+    "note": "first-mover 레퍼런스 구현이다. 표준은 도구 무관 — rhwp 명령은 요구가 아니라 예시다."
+  },
+  "adoption": "어떤 컨설팅 도구·조직이든 자기 방식으로 각 레벨의 산출(되짚을 수 있는 근거)을 내면 준수다. 좌표를 주는 검색 엔진이 있으면 rhwp 가 아니어도 된다.",
+  "legitimacy": [
+    "열린 표준 — 준수는 유용성(되짚을 수 있는 주장) 때문이지 강요가 아니다. 다른 방식을 막지 않는다.",
+    "은닉·기만 없음 — 사람용·기계용 정본 모두 평문 공개, 옵트인, 자기 채점 가능.",
+    "측정 범위를 넘겨 주장하지 않는다 — 이 표준은 검증 가능성을 재지, 전략이 옳은지는 재지 않는다.",
+    "낮은 점수는 저자의 역량 판정이 아니다 — 슬라이드 같은 포맷이 좌표를 실을 수 없다는 포맷의 사실이다."
+  ],
+  "surfaces": [
+    "mydocs/tech/standards/strategy_work_standard.md",
+    "mydocs/tech/standards/agent_work_standard.md",
+    "tools/strategist/sws_audit.py"
+  ]
+}
