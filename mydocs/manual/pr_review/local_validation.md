@@ -42,8 +42,8 @@ cargo nextest run \
 
 ### integration test source 추가와 자동 sharding
 
-새 회귀·계약 테스트는 종전과 같이 `tests/issue_<번호>_<설명>.rs` 또는 `tests/<계약명>.rs`로
-`tests/` 최상위에 작성한다. Cargo는 top-level 파일을 개별 binary로 자동 발견하지 않는다.
+새 회귀·계약 테스트는 `tests/cases/issue_<번호>_<설명>.rs` 또는
+`tests/cases/<계약명>.rs`로 작성한다. Cargo는 이 원본 파일을 개별 binary로 자동 발견하지 않는다.
 다음 생성기가 새 source를 manifest에 등록하고 현재 weight가 가장 낮은 generated suite에 배정한 뒤
 harness와 Cargo target 블록을 함께 갱신한다.
 
@@ -58,6 +58,16 @@ node scripts/run-rust-test.mjs issue_1234_short_description \
 `node scripts/rust-test-suite-manifest.mjs --sync`로 반영한다. `--rebalance`는 전체 source를
 weighted LPT로 다시 분배하므로 target 구조를 의도적으로 재조정하는 별도 단계에서만 사용한다.
 경로·crate-root 의존성이 탐지된 source는 생성기가 singleton exception으로 보존한다.
+
+제품 소스의 `#[cfg(test)]`는 기존 모듈별 테스트 수와 test support 항목을 기준선으로 관리한다.
+`integration_ready`는 공개 integration test 이동 후보, `test_support`는 제한된 지원 API가 필요한 후보,
+`white_box`는 private 구현 불변식으로 남길 후보이다. 다음 검사는 새 모듈·지원 항목 또는 기존 모듈의
+테스트 증가를 실패시키며, 단계적으로 `tests/cases/`로 옮겨 감소하는 변경은 허용한다.
+
+~~~bash
+node --test scripts/tests/rust-unit-test-tiers.test.mjs
+node scripts/rust-unit-test-tiers.mjs --check
+~~~
 
 로컬 전체 nextest와 CI nextest archive는 모두 manifest에서 생성된 같은 Cargo `[[test]]` target을
 사용한다. 따라서 새 일반 test source는 test case 수만 늘리고 integration binary 수는 늘리지 않는다.
@@ -369,7 +379,7 @@ sharding 전체 회귀를 실행했다. `CARGO_INCREMENTAL=0`은 지정하지 �
 - 전체 실행: 종료 코드 0, 실패 0건
 - warm `nextest list`: 0.19초
 
-신규 회귀 test source는 `tests/` 최상위에 추가하고
+신규 회귀 test source는 `tests/cases/`에 추가하고
 `node scripts/rust-test-suite-manifest.mjs --generate`로 기존 suite에 자동 배정한다. 이름 변경이나
 삭제는 `node scripts/rust-test-suite-manifest.mjs --sync`를 사용하며 generated 파일은 직접 편집하지
 않는다.

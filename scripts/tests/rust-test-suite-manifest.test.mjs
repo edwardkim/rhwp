@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -11,6 +18,7 @@ import {
   resolveCasePlan,
 } from '../run-rust-test.mjs';
 import {
+  assignSources,
   loadManifest,
   renderCargoTestBlock,
   renderHarness,
@@ -74,6 +82,35 @@ test('harness와 Cargo target 렌더링은 입력 순서와 무관하다', () =>
     renderHarness(suite, sources),
   );
   assert.match(renderCargoTestBlock(manifest), /\[\[test\]\]/);
+});
+
+test('신규 source는 선택된 suite에 정확히 한 번만 배정한다', (t) => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-suite-assign-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(path.join(root, 'tests', 'suites'), { recursive: true });
+  writeFileSync(path.join(root, 'tests', 'first.rs'), '#[test] fn first() {}');
+  writeFileSync(path.join(root, 'tests', 'second.rs'), '#[test] fn second() {}');
+  const manifest = {
+    version: 2,
+    minimumNextestCases: 1,
+    sharding: {
+      suitePrefix: 'regression_suite_',
+      suiteCount: 2,
+      testAttributeWeight: 4096,
+      maximumIntegrationTargets: 2,
+    },
+    nextestPriorities: [],
+    sourceRoots: [{ path: 'tests', recursive: false }],
+    exceptions: [],
+    suites: {
+      regression_suite_001: [],
+      regression_suite_002: [],
+    },
+  };
+  assignSources(manifest, ['tests/first.rs', 'tests/second.rs'], root);
+  const assigned = Object.values(manifest.suites).flat();
+  assert.equal(assigned.filter((source) => source === 'tests/first.rs').length, 1);
+  assert.equal(assigned.filter((source) => source === 'tests/second.rs').length, 1);
 });
 
 test('개발자 가이드가 자동 sharding 진입점을 안내한다', () => {

@@ -1,0 +1,4133 @@
+{
+  "version": 1,
+  "policy": {
+    "newCfgTestModules": "forbidden",
+    "newCfgTestSupportItems": "forbidden",
+    "maximumStaticTestAttributes": 4224,
+    "allowedSupportItems": [
+      "src/document_core/helpers.rs::cfg-fn#1",
+      "src/model/table.rs::cfg-fn#1",
+      "src/model/table.rs::cfg-fn#2",
+      "src/model/table.rs::cfg-PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS#1",
+      "src/model/table.rs::cfg-std#1",
+      "src/parser/crypto.rs::cfg-fn#1",
+      "src/parser/mod.rs::cfg-fn#1",
+      "src/parser/mod.rs::cfg-impl#1",
+      "src/parser/mod.rs::cfg-struct#1",
+      "src/parser/mod.rs::cfg-thread_local!#1",
+      "src/parser/mod.rs::cfg-unknown#1",
+      "src/renderer/composer/line_breaking.rs::cfg-fn#1",
+      "src/renderer/composer/line_breaking.rs::cfg-fn#2",
+      "src/renderer/equation/parser.rs::cfg-fn#1",
+      "src/renderer/equation/parser.rs::cfg-fn#2",
+      "src/renderer/equation/parser.rs::cfg-fn#3",
+      "src/renderer/equation/parser.rs::cfg-fn#4",
+      "src/renderer/font_metrics_data.rs::cfg-fn#1",
+      "src/renderer/image_resolver.rs::cfg-CONVERSIONS_RUN#1",
+      "src/renderer/image_resolver.rs::cfg-thread_local!#1",
+      "src/renderer/layout.rs::cfg-table_nested_text_flag_scan_count#1",
+      "src/renderer/layout.rs::cfg-table_nested_text_flag_scan_count#2",
+      "src/renderer/layout/table_layout.rs::cfg-fn#1",
+      "src/renderer/layout/table_layout.rs::cfg-self#1",
+      "src/serializer/body_text.rs::cfg-fn#1",
+      "src/serializer/hwpx/canonical_defaults.rs::cfg-const#1",
+      "src/wasm_api/render_patch_boundary.rs::cfg-const#1",
+      "src/wasm_api/render_patch_boundary.rs::cfg-fn#1"
+    ]
+  },
+  "summary": {
+    "files": 258,
+    "cfgTestModules": 298,
+    "cfgTestSupportItems": 28,
+    "staticTestAttributes": 4224,
+    "standaloneTestAttributes": 4,
+    "tiers": {
+      "integration_ready": {
+        "modules": 0,
+        "testAttributes": 0
+      },
+      "test_support": {
+        "modules": 20,
+        "testAttributes": 87
+      },
+      "white_box": {
+        "modules": 278,
+        "testAttributes": 4133
+      }
+    }
+  },
+  "modules": [
+    {
+      "id": "src/agent_seal.rs::tests#1",
+      "file": "src/agent_seal.rs",
+      "sourcePath": "src/agent_seal.rs",
+      "line": 413,
+      "module": "tests",
+      "testAttributes": 16,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 16
+    },
+    {
+      "id": "src/agent/dsel/ast.rs::tests#1",
+      "file": "src/agent/dsel/ast.rs",
+      "sourcePath": "src/agent/dsel/ast.rs",
+      "line": 817,
+      "module": "tests",
+      "testAttributes": 11,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 11
+    },
+    {
+      "id": "src/agent/dsel/error.rs::tests#1",
+      "file": "src/agent/dsel/error.rs",
+      "sourcePath": "src/agent/dsel/error.rs",
+      "line": 190,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/agent/dsel/eval.rs::tests#1",
+      "file": "src/agent/dsel/eval.rs",
+      "sourcePath": "src/agent/dsel/eval_tests.rs",
+      "line": 739,
+      "module": "tests",
+      "testAttributes": 24,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 24
+    },
+    {
+      "id": "src/agent/dsel/glob.rs::tests#1",
+      "file": "src/agent/dsel/glob.rs",
+      "sourcePath": "src/agent/dsel/glob.rs",
+      "line": 272,
+      "module": "tests",
+      "testAttributes": 15,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 15
+    },
+    {
+      "id": "src/agent/dsel/lex.rs::tests#1",
+      "file": "src/agent/dsel/lex.rs",
+      "sourcePath": "src/agent/dsel/lex.rs",
+      "line": 291,
+      "module": "tests",
+      "testAttributes": 14,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 14
+    },
+    {
+      "id": "src/agent/dsel/mod.rs::tests#1",
+      "file": "src/agent/dsel/mod.rs",
+      "sourcePath": "src/agent/dsel/mod.rs",
+      "line": 87,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/agent/dsel/node.rs::tests#1",
+      "file": "src/agent/dsel/node.rs",
+      "sourcePath": "src/agent/dsel/node.rs",
+      "line": 453,
+      "module": "tests",
+      "testAttributes": 13,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 13
+    },
+    {
+      "id": "src/agent/dsel/parse.rs::tests#1",
+      "file": "src/agent/dsel/parse.rs",
+      "sourcePath": "src/agent/dsel/parse.rs",
+      "line": 609,
+      "module": "tests",
+      "testAttributes": 29,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 29
+    },
+    {
+      "id": "src/agent/dsel/token.rs::tests#1",
+      "file": "src/agent/dsel/token.rs",
+      "sourcePath": "src/agent/dsel/token.rs",
+      "line": 164,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/atomic_file.rs::tests#1",
+      "file": "src/atomic_file.rs",
+      "sourcePath": "src/atomic_file.rs",
+      "line": 66,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/capabilities_schema.rs::tests#1",
+      "file": "src/capabilities_schema.rs",
+      "sourcePath": "src/capabilities_schema.rs",
+      "line": 595,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/diagnostics/hwp5_char_shape_audit.rs::tests#1",
+      "file": "src/diagnostics/hwp5_char_shape_audit.rs",
+      "sourcePath": "src/diagnostics/hwp5_char_shape_audit.rs",
+      "line": 811,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/diagnostics/hwp5_contract_probe.rs::tests#1",
+      "file": "src/diagnostics/hwp5_contract_probe.rs",
+      "sourcePath": "src/diagnostics/hwp5_contract_probe.rs",
+      "line": 891,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/diagnostics/hwp5_roundtrip_batch.rs::tests#1",
+      "file": "src/diagnostics/hwp5_roundtrip_batch.rs",
+      "sourcePath": "src/diagnostics/hwp5_roundtrip_batch.rs",
+      "line": 706,
+      "module": "tests",
+      "testAttributes": 13,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 13
+    },
+    {
+      "id": "src/diagnostics/hwpx_roundtrip_batch.rs::tests#1",
+      "file": "src/diagnostics/hwpx_roundtrip_batch.rs",
+      "sourcePath": "src/diagnostics/hwpx_roundtrip_batch.rs",
+      "line": 543,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/diagnostics/ir_field_sweep.rs::tests#1",
+      "file": "src/diagnostics/ir_field_sweep.rs",
+      "sourcePath": "src/diagnostics/ir_field_sweep.rs",
+      "line": 1220,
+      "module": "tests",
+      "testAttributes": 18,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 18
+    },
+    {
+      "id": "src/diagnostics/layout_anomaly.rs::tests#1",
+      "file": "src/diagnostics/layout_anomaly.rs",
+      "sourcePath": "src/diagnostics/layout_anomaly.rs",
+      "line": 738,
+      "module": "tests",
+      "testAttributes": 12,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 12
+    },
+    {
+      "id": "src/diagnostics/render_geom_diff.rs::tests#1",
+      "file": "src/diagnostics/render_geom_diff.rs",
+      "sourcePath": "src/diagnostics/render_geom_diff.rs",
+      "line": 1180,
+      "module": "tests",
+      "testAttributes": 23,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 23
+    },
+    {
+      "id": "src/docdiff/mod.rs::tests#1",
+      "file": "src/docdiff/mod.rs",
+      "sourcePath": "src/docdiff/mod.rs",
+      "line": 77,
+      "module": "tests",
+      "testAttributes": 22,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 22
+    },
+    {
+      "id": "src/doclang/adapter/control.rs::tests#1",
+      "file": "src/doclang/adapter/control.rs",
+      "sourcePath": "src/doclang/adapter/control.rs",
+      "line": 452,
+      "module": "tests",
+      "testAttributes": 14,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 14
+    },
+    {
+      "id": "src/doclang/adapter/geometry_pass.rs::tests#1",
+      "file": "src/doclang/adapter/geometry_pass.rs",
+      "sourcePath": "src/doclang/adapter/geometry_pass.rs",
+      "line": 414,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/doclang/adapter/geometry.rs::tests#1",
+      "file": "src/doclang/adapter/geometry.rs",
+      "sourcePath": "src/doclang/adapter/geometry.rs",
+      "line": 37,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/doclang/adapter/inline.rs::tests#1",
+      "file": "src/doclang/adapter/inline.rs",
+      "sourcePath": "src/doclang/adapter/inline.rs",
+      "line": 467,
+      "module": "tests",
+      "testAttributes": 18,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 18
+    },
+    {
+      "id": "src/doclang/adapter/mod.rs::tests#1",
+      "file": "src/doclang/adapter/mod.rs",
+      "sourcePath": "src/doclang/adapter/mod.rs",
+      "line": 153,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/doclang/adapter/paragraph.rs::tests#1",
+      "file": "src/doclang/adapter/paragraph.rs",
+      "sourcePath": "src/doclang/adapter/paragraph.rs",
+      "line": 685,
+      "module": "tests",
+      "testAttributes": 15,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 15
+    },
+    {
+      "id": "src/doclang/adapter/resources.rs::tests#1",
+      "file": "src/doclang/adapter/resources.rs",
+      "sourcePath": "src/doclang/adapter/resources.rs",
+      "line": 83,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/doclang/adapter/table.rs::tests#1",
+      "file": "src/doclang/adapter/table.rs",
+      "sourcePath": "src/doclang/adapter/table.rs",
+      "line": 187,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/doclang/eqedit/latex.rs::tests#1",
+      "file": "src/doclang/eqedit/latex.rs",
+      "sourcePath": "src/doclang/eqedit/latex.rs",
+      "line": 531,
+      "module": "tests",
+      "testAttributes": 10,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 10
+    },
+    {
+      "id": "src/doclang/eqedit/lexer.rs::tests#1",
+      "file": "src/doclang/eqedit/lexer.rs",
+      "sourcePath": "src/doclang/eqedit/lexer.rs",
+      "line": 143,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/doclang/eqedit/mod.rs::tests#1",
+      "file": "src/doclang/eqedit/mod.rs",
+      "sourcePath": "src/doclang/eqedit/mod.rs",
+      "line": 97,
+      "module": "tests",
+      "testAttributes": 47,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 47
+    },
+    {
+      "id": "src/doclang/eqedit/parser.rs::tests#1",
+      "file": "src/doclang/eqedit/parser.rs",
+      "sourcePath": "src/doclang/eqedit/parser.rs",
+      "line": 563,
+      "module": "tests",
+      "testAttributes": 12,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 12
+    },
+    {
+      "id": "src/doclang/ir/prov.rs::tests#1",
+      "file": "src/doclang/ir/prov.rs",
+      "sourcePath": "src/doclang/ir/prov.rs",
+      "line": 133,
+      "module": "tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/doclang/loss/report.rs::tests#1",
+      "file": "src/doclang/loss/report.rs",
+      "sourcePath": "src/doclang/loss/report.rs",
+      "line": 102,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/doclang/mod.rs::tests#1",
+      "file": "src/doclang/mod.rs",
+      "sourcePath": "src/doclang/mod.rs",
+      "line": 228,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/doclang/resources.rs::tests#1",
+      "file": "src/doclang/resources.rs",
+      "sourcePath": "src/doclang/resources.rs",
+      "line": 246,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/doclang/writer/custom.rs::tests#1",
+      "file": "src/doclang/writer/custom.rs",
+      "sourcePath": "src/doclang/writer/custom.rs",
+      "line": 210,
+      "module": "tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/doclang/writer/escape.rs::tests#1",
+      "file": "src/doclang/writer/escape.rs",
+      "sourcePath": "src/doclang/writer/escape.rs",
+      "line": 69,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/doclang/writer/inline.rs::tests#1",
+      "file": "src/doclang/writer/inline.rs",
+      "sourcePath": "src/doclang/writer/inline.rs",
+      "line": 95,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/doclang/writer/mod.rs::tests#1",
+      "file": "src/doclang/writer/mod.rs",
+      "sourcePath": "src/doclang/writer/mod.rs",
+      "line": 432,
+      "module": "tests",
+      "testAttributes": 16,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 16
+    },
+    {
+      "id": "src/doclang/writer/otsl.rs::tests#1",
+      "file": "src/doclang/writer/otsl.rs",
+      "sourcePath": "src/doclang/writer/otsl.rs",
+      "line": 220,
+      "module": "tests",
+      "testAttributes": 11,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 11
+    },
+    {
+      "id": "src/document_core/builders/exam_paper.rs::tests#1",
+      "file": "src/document_core/builders/exam_paper.rs",
+      "sourcePath": "src/document_core/builders/exam_paper.rs",
+      "line": 412,
+      "module": "tests",
+      "testAttributes": 14,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 14
+    },
+    {
+      "id": "src/document_core/commands/clipboard.rs::cell_control_export_tests#1",
+      "file": "src/document_core/commands/clipboard.rs",
+      "sourcePath": "src/document_core/commands/clipboard.rs",
+      "line": 2302,
+      "module": "cell_control_export_tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/document_core/commands/clipboard.rs::char_shape_inherit_tests#1",
+      "file": "src/document_core/commands/clipboard.rs",
+      "sourcePath": "src/document_core/commands/clipboard.rs",
+      "line": 2003,
+      "module": "char_shape_inherit_tests",
+      "testAttributes": 2,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/document_core/commands/clipboard.rs::clipboard_border_fill_offset_tests#1",
+      "file": "src/document_core/commands/clipboard.rs",
+      "sourcePath": "src/document_core/commands/clipboard.rs",
+      "line": 2222,
+      "module": "clipboard_border_fill_offset_tests",
+      "testAttributes": 1,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/document_core/commands/clipboard.rs::nested_cell_paste_reflow_tests#1",
+      "file": "src/document_core/commands/clipboard.rs",
+      "sourcePath": "src/document_core/commands/clipboard.rs",
+      "line": 2098,
+      "module": "nested_cell_paste_reflow_tests",
+      "testAttributes": 1,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/document_core/commands/document.rs::set_document_tests#1",
+      "file": "src/document_core/commands/document.rs",
+      "sourcePath": "src/document_core/commands/document.rs",
+      "line": 3087,
+      "module": "set_document_tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/document_core/commands/document.rs::validate_linesegs_tests#1",
+      "file": "src/document_core/commands/document.rs",
+      "sourcePath": "src/document_core/commands/document.rs",
+      "line": 2276,
+      "module": "validate_linesegs_tests",
+      "testAttributes": 25,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 25
+    },
+    {
+      "id": "src/document_core/commands/footnote_ops.rs::delete_footnote_char_shape_tests#1",
+      "file": "src/document_core/commands/footnote_ops.rs",
+      "sourcePath": "src/document_core/commands/footnote_ops.rs",
+      "line": 827,
+      "module": "delete_footnote_char_shape_tests",
+      "testAttributes": 1,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/document_core/commands/footnote_ops.rs::tests#1",
+      "file": "src/document_core/commands/footnote_ops.rs",
+      "sourcePath": "src/document_core/commands/footnote_ops.rs",
+      "line": 732,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/document_core/commands/formatting.rs::cell_reflow_width_tests#1",
+      "file": "src/document_core/commands/formatting.rs",
+      "sourcePath": "src/document_core/commands/formatting.rs",
+      "line": 2472,
+      "module": "cell_reflow_width_tests",
+      "testAttributes": 8,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/document_core/commands/formatting.rs::tests#1",
+      "file": "src/document_core/commands/formatting.rs",
+      "sourcePath": "src/document_core/commands/formatting.rs",
+      "line": 2226,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/document_core/commands/header_footer_ops.rs::tests#1",
+      "file": "src/document_core/commands/header_footer_ops.rs",
+      "sourcePath": "src/document_core/commands/header_footer_ops.rs",
+      "line": 1097,
+      "module": "tests",
+      "testAttributes": 18,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 18
+    },
+    {
+      "id": "src/document_core/commands/html_import.rs::tests#1",
+      "file": "src/document_core/commands/html_import.rs",
+      "sourcePath": "src/document_core/commands/html_import.rs",
+      "line": 1017,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/document_core/commands/html_import.rs::textdecoline_tests#1",
+      "file": "src/document_core/commands/html_import.rs",
+      "sourcePath": "src/document_core/commands/html_import.rs",
+      "line": 1067,
+      "module": "textdecoline_tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/document_core/commands/object_ops/connector.rs::connector_passthrough_invalidation_tests#1",
+      "file": "src/document_core/commands/object_ops/connector.rs",
+      "sourcePath": "src/document_core/commands/object_ops/connector.rs",
+      "line": 384,
+      "module": "connector_passthrough_invalidation_tests",
+      "testAttributes": 4,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/document_core/commands/object_ops/equation.rs::tests#1",
+      "file": "src/document_core/commands/object_ops/equation.rs",
+      "sourcePath": "src/document_core/commands/object_ops/equation.rs",
+      "line": 470,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/document_core/commands/object_ops/note.rs::char_shape_inherit_tests#1",
+      "file": "src/document_core/commands/object_ops/note.rs",
+      "sourcePath": "src/document_core/commands/object_ops/note.rs",
+      "line": 820,
+      "module": "char_shape_inherit_tests",
+      "testAttributes": 4,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/document_core/commands/object_ops/picture.rs::bindata_storage_id_collision_tests#1",
+      "file": "src/document_core/commands/object_ops/picture.rs",
+      "sourcePath": "src/document_core/commands/object_ops/picture.rs",
+      "line": 3976,
+      "module": "bindata_storage_id_collision_tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/document_core/commands/object_ops/picture.rs::issue_1151_cell_picture_insert_tests#1",
+      "file": "src/document_core/commands/object_ops/picture.rs",
+      "sourcePath": "src/document_core/commands/object_ops/picture.rs",
+      "line": 1818,
+      "module": "issue_1151_cell_picture_insert_tests",
+      "testAttributes": 10,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 10
+    },
+    {
+      "id": "src/document_core/commands/object_ops/picture.rs::issue_1151_v2_tac_toggle_tests#1",
+      "file": "src/document_core/commands/object_ops/picture.rs",
+      "sourcePath": "src/document_core/commands/object_ops/picture.rs",
+      "line": 2514,
+      "module": "issue_1151_v2_tac_toggle_tests",
+      "testAttributes": 17,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 17
+    },
+    {
+      "id": "src/document_core/commands/object_ops/picture.rs::issue_1280_textbox_creation_tests#1",
+      "file": "src/document_core/commands/object_ops/picture.rs",
+      "sourcePath": "src/document_core/commands/object_ops/picture.rs",
+      "line": 3598,
+      "module": "issue_1280_textbox_creation_tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/document_core/commands/object_ops/picture.rs::issue_4347_insert_leaves_coordinate_trace#1",
+      "file": "src/document_core/commands/object_ops/picture.rs",
+      "sourcePath": "src/document_core/commands/object_ops/picture.rs",
+      "line": 4149,
+      "module": "issue_4347_insert_leaves_coordinate_trace",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/document_core/commands/object_ops/shape.rs::char_shape_inherit_tests#1",
+      "file": "src/document_core/commands/object_ops/shape.rs",
+      "sourcePath": "src/document_core/commands/object_ops/shape.rs",
+      "line": 2966,
+      "module": "char_shape_inherit_tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/document_core/commands/object_ops/shape.rs::resize_clamp_tests#1",
+      "file": "src/document_core/commands/object_ops/shape.rs",
+      "sourcePath": "src/document_core/commands/object_ops/shape.rs",
+      "line": 2658,
+      "module": "resize_clamp_tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/document_core/commands/object_ops/table.rs::tests#1",
+      "file": "src/document_core/commands/object_ops/table.rs",
+      "sourcePath": "src/document_core/commands/object_ops/table.rs",
+      "line": 1551,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/document_core/commands/table_ops.rs::neighbor_border_raw_data_tests#1",
+      "file": "src/document_core/commands/table_ops.rs",
+      "sourcePath": "src/document_core/commands/table_ops.rs",
+      "line": 3994,
+      "module": "neighbor_border_raw_data_tests",
+      "testAttributes": 6,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 6
+    },
+    {
+      "id": "src/document_core/commands/table_ops.rs::table_attr_save_roundtrip_tests#1",
+      "file": "src/document_core/commands/table_ops.rs",
+      "sourcePath": "src/document_core/commands/table_ops.rs",
+      "line": 3902,
+      "module": "table_attr_save_roundtrip_tests",
+      "testAttributes": 1,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/document_core/commands/table_ops.rs::table_frame_reflow_batch_tests#1",
+      "file": "src/document_core/commands/table_ops.rs",
+      "sourcePath": "src/document_core/commands/table_ops.rs",
+      "line": 3772,
+      "module": "table_frame_reflow_batch_tests",
+      "testAttributes": 3,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/document_core/commands/table_ops.rs::tests#1",
+      "file": "src/document_core/commands/table_ops.rs",
+      "sourcePath": "src/document_core/commands/table_ops.rs",
+      "line": 3696,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/document_core/commands/text_editing.rs::tests#1",
+      "file": "src/document_core/commands/text_editing.rs",
+      "sourcePath": "src/document_core/commands/text_editing.rs",
+      "line": 5973,
+      "module": "tests",
+      "testAttributes": 41,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 41
+    },
+    {
+      "id": "src/document_core/converters/common_obj_attr_writer.rs::tests#1",
+      "file": "src/document_core/converters/common_obj_attr_writer.rs",
+      "sourcePath": "src/document_core/converters/common_obj_attr_writer.rs",
+      "line": 68,
+      "module": "tests",
+      "testAttributes": 13,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 13
+    },
+    {
+      "id": "src/document_core/converters/diagnostics.rs::tests#1",
+      "file": "src/document_core/converters/diagnostics.rs",
+      "sourcePath": "src/document_core/converters/diagnostics.rs",
+      "line": 209,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/document_core/converters/hwpx_master_page_slots.rs::tests#1",
+      "file": "src/document_core/converters/hwpx_master_page_slots.rs",
+      "sourcePath": "src/document_core/converters/hwpx_master_page_slots.rs",
+      "line": 150,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/document_core/converters/hwpx_to_hwp.rs::tests#1",
+      "file": "src/document_core/converters/hwpx_to_hwp.rs",
+      "sourcePath": "src/document_core/converters/hwpx_to_hwp.rs",
+      "line": 2422,
+      "module": "tests",
+      "testAttributes": 57,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 57
+    },
+    {
+      "id": "src/document_core/helpers.rs::tests#1",
+      "file": "src/document_core/helpers.rs",
+      "sourcePath": "src/document_core/helpers.rs",
+      "line": 1542,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/document_core/html_table_import.rs::nested_table_cell_boundary_tests#1",
+      "file": "src/document_core/html_table_import.rs",
+      "sourcePath": "src/document_core/html_table_import.rs",
+      "line": 1037,
+      "module": "nested_table_cell_boundary_tests",
+      "testAttributes": 1,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/document_core/queries/armor.rs::tests#1",
+      "file": "src/document_core/queries/armor.rs",
+      "sourcePath": "src/document_core/queries/armor.rs",
+      "line": 120,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/document_core/queries/bookmark_query.rs::tests#1",
+      "file": "src/document_core/queries/bookmark_query.rs",
+      "sourcePath": "src/document_core/queries/bookmark_query.rs",
+      "line": 382,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/document_core/queries/chart_csv.rs::tests#1",
+      "file": "src/document_core/queries/chart_csv.rs",
+      "sourcePath": "src/document_core/queries/chart_csv.rs",
+      "line": 162,
+      "module": "tests",
+      "testAttributes": 10,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 10
+    },
+    {
+      "id": "src/document_core/queries/chart_extract.rs::tests#1",
+      "file": "src/document_core/queries/chart_extract.rs",
+      "sourcePath": "src/document_core/queries/chart_extract.rs",
+      "line": 312,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/document_core/queries/cursor_nav.rs::flat_cell_ctx_matches_tests#1",
+      "file": "src/document_core/queries/cursor_nav.rs",
+      "sourcePath": "src/document_core/queries/cursor_nav.rs",
+      "line": 2408,
+      "module": "flat_cell_ctx_matches_tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/document_core/queries/cursor_nav.rs::issue_2215_selection_page_plan_tests#1",
+      "file": "src/document_core/queries/cursor_nav.rs",
+      "sourcePath": "src/document_core/queries/cursor_nav.rs",
+      "line": 2487,
+      "module": "issue_2215_selection_page_plan_tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/document_core/queries/cursor_rect.rs::tests#1",
+      "file": "src/document_core/queries/cursor_rect.rs",
+      "sourcePath": "src/document_core/queries/cursor_rect.rs",
+      "line": 5792,
+      "module": "tests",
+      "testAttributes": 17,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 17
+    },
+    {
+      "id": "src/document_core/queries/extract_data.rs::tests#1",
+      "file": "src/document_core/queries/extract_data.rs",
+      "sourcePath": "src/document_core/queries/extract_data.rs",
+      "line": 934,
+      "module": "tests",
+      "testAttributes": 22,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 22
+    },
+    {
+      "id": "src/document_core/queries/field_query.rs::tests#1",
+      "file": "src/document_core/queries/field_query.rs",
+      "sourcePath": "src/document_core/queries/field_query.rs",
+      "line": 2422,
+      "module": "tests",
+      "testAttributes": 14,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 14
+    },
+    {
+      "id": "src/document_core/queries/form_query.rs::tests#1",
+      "file": "src/document_core/queries/form_query.rs",
+      "sourcePath": "src/document_core/queries/form_query.rs",
+      "line": 421,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/document_core/queries/grep.rs::tests#1",
+      "file": "src/document_core/queries/grep.rs",
+      "sourcePath": "src/document_core/queries/grep.rs",
+      "line": 474,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/document_core/queries/hidden_text.rs::tests#1",
+      "file": "src/document_core/queries/hidden_text.rs",
+      "sourcePath": "src/document_core/queries/hidden_text.rs",
+      "line": 916,
+      "module": "tests",
+      "testAttributes": 15,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 15
+    },
+    {
+      "id": "src/document_core/queries/hwpctrl_sets.rs::tests#1",
+      "file": "src/document_core/queries/hwpctrl_sets.rs",
+      "sourcePath": "src/document_core/queries/hwpctrl_sets.rs",
+      "line": 2424,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/document_core/queries/injection_scan.rs::tests#1",
+      "file": "src/document_core/queries/injection_scan.rs",
+      "sourcePath": "src/document_core/queries/injection_scan.rs",
+      "line": 1381,
+      "module": "tests",
+      "testAttributes": 30,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 30
+    },
+    {
+      "id": "src/document_core/queries/navigation.rs::tests#1",
+      "file": "src/document_core/queries/navigation.rs",
+      "sourcePath": "src/document_core/queries/navigation.rs",
+      "line": 215,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/document_core/queries/pii_scan.rs::tests#1",
+      "file": "src/document_core/queries/pii_scan.rs",
+      "sourcePath": "src/document_core/queries/pii_scan.rs",
+      "line": 519,
+      "module": "tests",
+      "testAttributes": 15,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 15
+    },
+    {
+      "id": "src/document_core/queries/rendering.rs::tests#1",
+      "file": "src/document_core/queries/rendering.rs",
+      "sourcePath": "src/document_core/queries/rendering.rs",
+      "line": 7238,
+      "module": "tests",
+      "testAttributes": 25,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 25
+    },
+    {
+      "id": "src/document_core/queries/search_query.rs::tests#1",
+      "file": "src/document_core/queries/search_query.rs",
+      "sourcePath": "src/document_core/queries/search_query.rs",
+      "line": 666,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/document_core/queries/stego_scan.rs::tests#1",
+      "file": "src/document_core/queries/stego_scan.rs",
+      "sourcePath": "src/document_core/queries/stego_scan.rs",
+      "line": 643,
+      "module": "tests",
+      "testAttributes": 13,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 13
+    },
+    {
+      "id": "src/document_core/queries/structure.rs::tests#1",
+      "file": "src/document_core/queries/structure.rs",
+      "sourcePath": "src/document_core/queries/structure.rs",
+      "line": 621,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/document_core/queries/table_csv.rs::tests#1",
+      "file": "src/document_core/queries/table_csv.rs",
+      "sourcePath": "src/document_core/queries/table_csv.rs",
+      "line": 198,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/document_core/queries/threat_scan.rs::tests#1",
+      "file": "src/document_core/queries/threat_scan.rs",
+      "sourcePath": "src/document_core/queries/threat_scan.rs",
+      "line": 698,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/document_core/table_calc/evaluator.rs::tests#1",
+      "file": "src/document_core/table_calc/evaluator.rs",
+      "sourcePath": "src/document_core/table_calc/evaluator.rs",
+      "line": 282,
+      "module": "tests",
+      "testAttributes": 15,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 15
+    },
+    {
+      "id": "src/document_core/table_calc/parser.rs::tests#1",
+      "file": "src/document_core/table_calc/parser.rs",
+      "sourcePath": "src/document_core/table_calc/parser.rs",
+      "line": 214,
+      "module": "tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/document_core/table_calc/tokenizer.rs::tests#1",
+      "file": "src/document_core/table_calc/tokenizer.rs",
+      "sourcePath": "src/document_core/table_calc/tokenizer.rs",
+      "line": 162,
+      "module": "tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/document_core/text_security.rs::tests#1",
+      "file": "src/document_core/text_security.rs",
+      "sourcePath": "src/document_core/text_security.rs",
+      "line": 944,
+      "module": "tests",
+      "testAttributes": 22,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 22
+    },
+    {
+      "id": "src/document_core/validation.rs::tests#1",
+      "file": "src/document_core/validation.rs",
+      "sourcePath": "src/document_core/validation.rs",
+      "line": 111,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/emf/mod.rs::tests#1",
+      "file": "src/emf/mod.rs",
+      "sourcePath": "src/emf/tests.rs",
+      "line": 24,
+      "module": "tests",
+      "testAttributes": 26,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 26
+    },
+    {
+      "id": "src/error.rs::tests#1",
+      "file": "src/error.rs",
+      "sourcePath": "src/error.rs",
+      "line": 48,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/ir_schema.rs::tests#1",
+      "file": "src/ir_schema.rs",
+      "sourcePath": "src/ir_schema.rs",
+      "line": 882,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/lib.rs::tests#1",
+      "file": "src/lib.rs",
+      "sourcePath": "src/lib.rs",
+      "line": 64,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/main.rs::tests#1",
+      "file": "src/main.rs",
+      "sourcePath": "src/main.rs",
+      "line": 26999,
+      "module": "tests",
+      "testAttributes": 10,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 10
+    },
+    {
+      "id": "src/main.rs::verification_exit_code_tests#1",
+      "file": "src/main.rs",
+      "sourcePath": "src/main.rs",
+      "line": 271,
+      "module": "verification_exit_code_tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/model/bin_data.rs::tests#1",
+      "file": "src/model/bin_data.rs",
+      "sourcePath": "src/model/bin_data.rs",
+      "line": 323,
+      "module": "tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/model/color.rs::tests#1",
+      "file": "src/model/color.rs",
+      "sourcePath": "src/model/color.rs",
+      "line": 45,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/model/control.rs::parameter_list_codec_tests#1",
+      "file": "src/model/control.rs",
+      "sourcePath": "src/model/control.rs",
+      "line": 723,
+      "module": "parameter_list_codec_tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/model/control.rs::tests#1",
+      "file": "src/model/control.rs",
+      "sourcePath": "src/model/control.rs",
+      "line": 1112,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/model/document.rs::tests#1",
+      "file": "src/model/document.rs",
+      "sourcePath": "src/model/document.rs",
+      "line": 637,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/model/event.rs::tests#1",
+      "file": "src/model/event.rs",
+      "sourcePath": "src/model/event.rs",
+      "line": 344,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/model/footnote.rs::tests#1",
+      "file": "src/model/footnote.rs",
+      "sourcePath": "src/model/footnote.rs",
+      "line": 288,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/model/header_footer.rs::tests#1",
+      "file": "src/model/header_footer.rs",
+      "sourcePath": "src/model/header_footer.rs",
+      "line": 109,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/model/image.rs::tests#1",
+      "file": "src/model/image.rs",
+      "sourcePath": "src/model/image.rs",
+      "line": 227,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/model/mod.rs::tests#1",
+      "file": "src/model/mod.rs",
+      "sourcePath": "src/model/mod.rs",
+      "line": 70,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/model/page.rs::tests#1",
+      "file": "src/model/page.rs",
+      "sourcePath": "src/model/page.rs",
+      "line": 284,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/model/paragraph.rs::tests#1",
+      "file": "src/model/paragraph.rs",
+      "sourcePath": "src/model/paragraph/tests.rs",
+      "line": 1947,
+      "module": "tests",
+      "testAttributes": 60,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 60
+    },
+    {
+      "id": "src/model/path.rs::tests#1",
+      "file": "src/model/path.rs",
+      "sourcePath": "src/model/path.rs",
+      "line": 34,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/model/provenance.rs::tests#1",
+      "file": "src/model/provenance.rs",
+      "sourcePath": "src/model/provenance.rs",
+      "line": 154,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/model/raw_provenance.rs::tests#1",
+      "file": "src/model/raw_provenance.rs",
+      "sourcePath": "src/model/raw_provenance.rs",
+      "line": 434,
+      "module": "tests",
+      "testAttributes": 6,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 6
+    },
+    {
+      "id": "src/model/shape.rs::tests#1",
+      "file": "src/model/shape.rs",
+      "sourcePath": "src/model/shape.rs",
+      "line": 896,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/model/style.rs::tests#1",
+      "file": "src/model/style.rs",
+      "sourcePath": "src/model/style.rs",
+      "line": 1108,
+      "module": "tests",
+      "testAttributes": 6,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 6
+    },
+    {
+      "id": "src/model/table.rs::tests#1",
+      "file": "src/model/table.rs",
+      "sourcePath": "src/model/table/tests.rs",
+      "line": 2156,
+      "module": "tests",
+      "testAttributes": 82,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 82
+    },
+    {
+      "id": "src/ole_chart/grid.rs::tests#1",
+      "file": "src/ole_chart/grid.rs",
+      "sourcePath": "src/ole_chart/grid.rs",
+      "line": 481,
+      "module": "tests",
+      "testAttributes": 15,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 15
+    },
+    {
+      "id": "src/ole_chart/ir.rs::tests#1",
+      "file": "src/ole_chart/ir.rs",
+      "sourcePath": "src/ole_chart/ir.rs",
+      "line": 37,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/ole_chart/orientation.rs::tests#1",
+      "file": "src/ole_chart/orientation.rs",
+      "sourcePath": "src/ole_chart/orientation.rs",
+      "line": 109,
+      "module": "tests",
+      "testAttributes": 6,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 6
+    },
+    {
+      "id": "src/ole_chart/parser.rs::tests#1",
+      "file": "src/ole_chart/parser.rs",
+      "sourcePath": "src/ole_chart/parser.rs",
+      "line": 401,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/ole_chart/svg_renderer.rs::tests#1",
+      "file": "src/ole_chart/svg_renderer.rs",
+      "sourcePath": "src/ole_chart/svg_renderer.rs",
+      "line": 298,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/ontology.rs::tests#1",
+      "file": "src/ontology.rs",
+      "sourcePath": "src/ontology.rs",
+      "line": 443,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/ooxml_chart/data.rs::tests#1",
+      "file": "src/ooxml_chart/data.rs",
+      "sourcePath": "src/ooxml_chart/data.rs",
+      "line": 405,
+      "module": "tests",
+      "testAttributes": 17,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 17
+    },
+    {
+      "id": "src/ooxml_chart/parser.rs::tests#1",
+      "file": "src/ooxml_chart/parser.rs",
+      "sourcePath": "src/ooxml_chart/parser.rs",
+      "line": 682,
+      "module": "tests",
+      "testAttributes": 43,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 43
+    },
+    {
+      "id": "src/ooxml_chart/patch.rs::tests#1",
+      "file": "src/ooxml_chart/patch.rs",
+      "sourcePath": "src/ooxml_chart/patch.rs",
+      "line": 223,
+      "module": "tests",
+      "testAttributes": 10,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 10
+    },
+    {
+      "id": "src/ooxml_chart/renderer.rs::tests#1",
+      "file": "src/ooxml_chart/renderer.rs",
+      "sourcePath": "src/ooxml_chart/renderer.rs",
+      "line": 2260,
+      "module": "tests",
+      "testAttributes": 95,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 95
+    },
+    {
+      "id": "src/paint/builder.rs::tests#1",
+      "file": "src/paint/builder.rs",
+      "sourcePath": "src/paint/builder.rs",
+      "line": 295,
+      "module": "tests",
+      "testAttributes": 14,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 14
+    },
+    {
+      "id": "src/paint/font_glyph.rs::tests#1",
+      "file": "src/paint/font_glyph.rs",
+      "sourcePath": "src/paint/font_glyph.rs",
+      "line": 985,
+      "module": "tests",
+      "testAttributes": 18,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 18
+    },
+    {
+      "id": "src/paint/font.rs::tests#1",
+      "file": "src/paint/font.rs",
+      "sourcePath": "src/paint/font.rs",
+      "line": 271,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/paint/json.rs::image_bytes_mode_tests#1",
+      "file": "src/paint/json.rs",
+      "sourcePath": "src/paint/json.rs",
+      "line": 4632,
+      "module": "image_bytes_mode_tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/paint/json.rs::tests#1",
+      "file": "src/paint/json.rs",
+      "sourcePath": "src/paint/json.rs",
+      "line": 3119,
+      "module": "tests",
+      "testAttributes": 18,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 18
+    },
+    {
+      "id": "src/paint/layer_tree.rs::tests#1",
+      "file": "src/paint/layer_tree.rs",
+      "sourcePath": "src/paint/layer_tree.rs",
+      "line": 360,
+      "module": "tests",
+      "testAttributes": 6,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 6
+    },
+    {
+      "id": "src/paint/paint_op.rs::tests#1",
+      "file": "src/paint/paint_op.rs",
+      "sourcePath": "src/paint/paint_op.rs",
+      "line": 1707,
+      "module": "tests",
+      "testAttributes": 10,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 10
+    },
+    {
+      "id": "src/paint/profile.rs::tests#1",
+      "file": "src/paint/profile.rs",
+      "sourcePath": "src/paint/profile.rs",
+      "line": 27,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/paint/replay_order.rs::tests#1",
+      "file": "src/paint/replay_order.rs",
+      "sourcePath": "src/paint/replay_order.rs",
+      "line": 113,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/paint/resources.rs::tests#1",
+      "file": "src/paint/resources.rs",
+      "sourcePath": "src/paint/resources.rs",
+      "line": 352,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/paint/schema.rs::tests#1",
+      "file": "src/paint/schema.rs",
+      "sourcePath": "src/paint/schema.rs",
+      "line": 34,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/paint/text_shape.rs::tests#1",
+      "file": "src/paint/text_shape.rs",
+      "sourcePath": "src/paint/text_shape.rs",
+      "line": 399,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/paint/text_v2.rs::tests#1",
+      "file": "src/paint/text_v2.rs",
+      "sourcePath": "src/paint/text_v2.rs",
+      "line": 824,
+      "module": "tests",
+      "testAttributes": 19,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 19
+    },
+    {
+      "id": "src/paint/text_variants.rs::tests#1",
+      "file": "src/paint/text_variants.rs",
+      "sourcePath": "src/paint/text_variants.rs",
+      "line": 306,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/parser/bin_data.rs::tests#1",
+      "file": "src/parser/bin_data.rs",
+      "sourcePath": "src/parser/bin_data.rs",
+      "line": 70,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/parser/body_text.rs::tests#1",
+      "file": "src/parser/body_text.rs",
+      "sourcePath": "src/parser/body_text/tests.rs",
+      "line": 1125,
+      "module": "tests",
+      "testAttributes": 33,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 33
+    },
+    {
+      "id": "src/parser/byte_reader.rs::tests#1",
+      "file": "src/parser/byte_reader.rs",
+      "sourcePath": "src/parser/byte_reader.rs",
+      "line": 140,
+      "module": "tests",
+      "testAttributes": 14,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 14
+    },
+    {
+      "id": "src/parser/cfb_reader.rs::tests#1",
+      "file": "src/parser/cfb_reader.rs",
+      "sourcePath": "src/parser/cfb_reader.rs",
+      "line": 1255,
+      "module": "tests",
+      "testAttributes": 12,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 12
+    },
+    {
+      "id": "src/parser/control.rs::tests#1",
+      "file": "src/parser/control.rs",
+      "sourcePath": "src/parser/control/tests.rs",
+      "line": 1150,
+      "module": "tests",
+      "testAttributes": 15,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 15
+    },
+    {
+      "id": "src/parser/control/shape.rs::shape_recursion_tests#1",
+      "file": "src/parser/control/shape.rs",
+      "sourcePath": "src/parser/control/shape.rs",
+      "line": 1299,
+      "module": "shape_recursion_tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/parser/control/shape.rs::task195_tests#1",
+      "file": "src/parser/control/shape.rs",
+      "sourcePath": "src/parser/control/shape.rs",
+      "line": 1144,
+      "module": "task195_tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/parser/crypto.rs::tests#1",
+      "file": "src/parser/crypto.rs",
+      "sourcePath": "src/parser/crypto.rs",
+      "line": 252,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/parser/doc_info.rs::tests#1",
+      "file": "src/parser/doc_info.rs",
+      "sourcePath": "src/parser/doc_info.rs",
+      "line": 923,
+      "module": "tests",
+      "testAttributes": 21,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 21
+    },
+    {
+      "id": "src/parser/header.rs::tests#1",
+      "file": "src/parser/header.rs",
+      "sourcePath": "src/parser/header.rs",
+      "line": 175,
+      "module": "tests",
+      "testAttributes": 10,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 10
+    },
+    {
+      "id": "src/parser/hwp3/drawing.rs::drawing_object_recursion_depth_tests#1",
+      "file": "src/parser/hwp3/drawing.rs",
+      "sourcePath": "src/parser/hwp3/drawing.rs",
+      "line": 1136,
+      "module": "drawing_object_recursion_depth_tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/parser/hwp3/drawing.rs::hypertext_bookmark_underread_tests#1",
+      "file": "src/parser/hwp3/drawing.rs",
+      "sourcePath": "src/parser/hwp3/drawing.rs",
+      "line": 1100,
+      "module": "hypertext_bookmark_underread_tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/parser/hwp3/drawing.rs::modified_arc_overread_tests#1",
+      "file": "src/parser/hwp3/drawing.rs",
+      "sourcePath": "src/parser/hwp3/drawing.rs",
+      "line": 965,
+      "module": "modified_arc_overread_tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/parser/hwp3/encoding.rs::tests#1",
+      "file": "src/parser/hwp3/encoding.rs",
+      "sourcePath": "src/parser/hwp3/encoding.rs",
+      "line": 46,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/parser/hwp3/johab.rs::tests#1",
+      "file": "src/parser/hwp3/johab.rs",
+      "sourcePath": "src/parser/hwp3/johab.rs",
+      "line": 242,
+      "module": "tests",
+      "testAttributes": 10,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 10
+    },
+    {
+      "id": "src/parser/hwp3/mod.rs::tests#1",
+      "file": "src/parser/hwp3/mod.rs",
+      "sourcePath": "src/parser/hwp3/mod.rs",
+      "line": 4797,
+      "module": "tests",
+      "testAttributes": 50,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 50
+    },
+    {
+      "id": "src/parser/hwp3/ole.rs::tests#1",
+      "file": "src/parser/hwp3/ole.rs",
+      "sourcePath": "src/parser/hwp3/ole.rs",
+      "line": 237,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/parser/hwpx/content.rs::tests#1",
+      "file": "src/parser/hwpx/content.rs",
+      "sourcePath": "src/parser/hwpx/content.rs",
+      "line": 230,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/parser/hwpx/contract_streams.rs::tests#1",
+      "file": "src/parser/hwpx/contract_streams.rs",
+      "sourcePath": "src/parser/hwpx/contract_streams.rs",
+      "line": 163,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/parser/hwpx/header.rs::tests#1",
+      "file": "src/parser/hwpx/header.rs",
+      "sourcePath": "src/parser/hwpx/header.rs",
+      "line": 2399,
+      "module": "tests",
+      "testAttributes": 54,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 54
+    },
+    {
+      "id": "src/parser/hwpx/mod.rs::tests#1",
+      "file": "src/parser/hwpx/mod.rs",
+      "sourcePath": "src/parser/hwpx/mod.rs",
+      "line": 639,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/parser/hwpx/reader.rs::tests#1",
+      "file": "src/parser/hwpx/reader.rs",
+      "sourcePath": "src/parser/hwpx/reader.rs",
+      "line": 160,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/parser/hwpx/section.rs::tests#1",
+      "file": "src/parser/hwpx/section.rs",
+      "sourcePath": "src/parser/hwpx/section.rs",
+      "line": 7172,
+      "module": "tests",
+      "testAttributes": 94,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 94
+    },
+    {
+      "id": "src/parser/hwpx/utils.rs::tests#1",
+      "file": "src/parser/hwpx/utils.rs",
+      "sourcePath": "src/parser/hwpx/utils.rs",
+      "line": 173,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/parser/ingest/schema.rs::tests#1",
+      "file": "src/parser/ingest/schema.rs",
+      "sourcePath": "src/parser/ingest/schema.rs",
+      "line": 311,
+      "module": "tests",
+      "testAttributes": 11,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 11
+    },
+    {
+      "id": "src/parser/mod.rs::tests#1",
+      "file": "src/parser/mod.rs",
+      "sourcePath": "src/parser/mod.rs",
+      "line": 2207,
+      "module": "tests",
+      "testAttributes": 57,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 57
+    },
+    {
+      "id": "src/parser/ole_container.rs::tests#1",
+      "file": "src/parser/ole_container.rs",
+      "sourcePath": "src/parser/ole_container.rs",
+      "line": 353,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/parser/record.rs::tests#1",
+      "file": "src/parser/record.rs",
+      "sourcePath": "src/parser/record.rs",
+      "line": 136,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/parser/tags.rs::tests#1",
+      "file": "src/parser/tags.rs",
+      "sourcePath": "src/parser/tags.rs",
+      "line": 390,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/password_crypto.rs::tests#1",
+      "file": "src/password_crypto.rs",
+      "sourcePath": "src/password_crypto.rs",
+      "line": 981,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/plan_schema.rs::tests#1",
+      "file": "src/plan_schema.rs",
+      "sourcePath": "src/plan_schema.rs",
+      "line": 512,
+      "module": "tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/pq_sign.rs::tests#1",
+      "file": "src/pq_sign.rs",
+      "sourcePath": "src/pq_sign.rs",
+      "line": 234,
+      "module": "tests",
+      "testAttributes": 13,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 13
+    },
+    {
+      "id": "src/rag/chunker.rs::tests#1",
+      "file": "src/rag/chunker.rs",
+      "sourcePath": "src/rag/chunker.rs",
+      "line": 565,
+      "module": "tests",
+      "testAttributes": 13,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 13
+    },
+    {
+      "id": "src/render_backend/mod.rs::tests#1",
+      "file": "src/render_backend/mod.rs",
+      "sourcePath": "src/render_backend/mod.rs",
+      "line": 80,
+      "module": "tests",
+      "testAttributes": 15,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 15
+    },
+    {
+      "id": "src/renderer/canvas.rs::tests#1",
+      "file": "src/renderer/canvas.rs",
+      "sourcePath": "src/renderer/canvas.rs",
+      "line": 440,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/renderer/canvaskit_policy.rs::tests#1",
+      "file": "src/renderer/canvaskit_policy.rs",
+      "sourcePath": "src/renderer/canvaskit_policy.rs",
+      "line": 2266,
+      "module": "tests",
+      "testAttributes": 43,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 43
+    },
+    {
+      "id": "src/renderer/composer.rs::lineseg_compare_tests#1",
+      "file": "src/renderer/composer.rs",
+      "sourcePath": "src/renderer/composer/lineseg_compare_tests.rs",
+      "line": 2908,
+      "module": "lineseg_compare_tests",
+      "testAttributes": 10,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 10
+    },
+    {
+      "id": "src/renderer/composer.rs::re_sample_gen#1",
+      "file": "src/renderer/composer.rs",
+      "sourcePath": "src/renderer/composer/re_sample_gen.rs",
+      "line": 2910,
+      "module": "re_sample_gen",
+      "testAttributes": 13,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 13
+    },
+    {
+      "id": "src/renderer/composer.rs::tests#1",
+      "file": "src/renderer/composer.rs",
+      "sourcePath": "src/renderer/composer/tests.rs",
+      "line": 2912,
+      "module": "tests",
+      "testAttributes": 62,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 62
+    },
+    {
+      "id": "src/renderer/composer/line_breaking.rs::fill_cursor_tests#1",
+      "file": "src/renderer/composer/line_breaking.rs",
+      "sourcePath": "src/renderer/composer/line_breaking.rs",
+      "line": 2873,
+      "module": "fill_cursor_tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/renderer/composer/line_breaking.rs::frame_reflow_tests#1",
+      "file": "src/renderer/composer/line_breaking.rs",
+      "sourcePath": "src/renderer/composer/line_breaking.rs",
+      "line": 3041,
+      "module": "frame_reflow_tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/renderer/composer/line_breaking.rs::utf16_offset_tests#1",
+      "file": "src/renderer/composer/line_breaking.rs",
+      "sourcePath": "src/renderer/composer/line_breaking.rs",
+      "line": 3556,
+      "module": "utf16_offset_tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/renderer/composer/lineseg_compare_tests.rs::tests#1",
+      "file": "src/renderer/composer/lineseg_compare_tests.rs",
+      "sourcePath": "src/renderer/composer/lineseg_compare_tests.rs",
+      "line": 6,
+      "module": "tests",
+      "testAttributes": 10,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 10
+    },
+    {
+      "id": "src/renderer/composer/re_sample_gen.rs::tests#1",
+      "file": "src/renderer/composer/re_sample_gen.rs",
+      "sourcePath": "src/renderer/composer/re_sample_gen.rs",
+      "line": 7,
+      "module": "tests",
+      "testAttributes": 13,
+      "tier": "test_support",
+      "reasons": [
+        "crate_internal_path"
+      ],
+      "maximumTestAttributes": 13
+    },
+    {
+      "id": "src/renderer/equation/layout.rs::tests#1",
+      "file": "src/renderer/equation/layout.rs",
+      "sourcePath": "src/renderer/equation/layout.rs",
+      "line": 1286,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/renderer/equation/parser.rs::latex_compat_tests#1",
+      "file": "src/renderer/equation/parser.rs",
+      "sourcePath": "src/renderer/equation/parser.rs",
+      "line": 2199,
+      "module": "latex_compat_tests",
+      "testAttributes": 50,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 50
+    },
+    {
+      "id": "src/renderer/equation/parser.rs::tests#1",
+      "file": "src/renderer/equation/parser.rs",
+      "sourcePath": "src/renderer/equation/parser.rs",
+      "line": 1774,
+      "module": "tests",
+      "testAttributes": 25,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 25
+    },
+    {
+      "id": "src/renderer/equation/svg_render.rs::tests#1",
+      "file": "src/renderer/equation/svg_render.rs",
+      "sourcePath": "src/renderer/equation/svg_render.rs",
+      "line": 689,
+      "module": "tests",
+      "testAttributes": 14,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 14
+    },
+    {
+      "id": "src/renderer/equation/symbols.rs::tests#1",
+      "file": "src/renderer/equation/symbols.rs",
+      "sourcePath": "src/renderer/equation/symbols.rs",
+      "line": 662,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/renderer/equation/tokenizer.rs::tests#1",
+      "file": "src/renderer/equation/tokenizer.rs",
+      "sourcePath": "src/renderer/equation/tokenizer.rs",
+      "line": 590,
+      "module": "tests",
+      "testAttributes": 37,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 37
+    },
+    {
+      "id": "src/renderer/float_placement.rs::tests#1",
+      "file": "src/renderer/float_placement.rs",
+      "sourcePath": "src/renderer/float_placement.rs",
+      "line": 613,
+      "module": "tests",
+      "testAttributes": 13,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 13
+    },
+    {
+      "id": "src/renderer/font_metrics_data.rs::tests#1",
+      "file": "src/renderer/font_metrics_data.rs",
+      "sourcePath": "src/renderer/font_metrics_data.rs",
+      "line": 46211,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/renderer/font_paths.rs::tests#1",
+      "file": "src/renderer/font_paths.rs",
+      "sourcePath": "src/renderer/font_paths.rs",
+      "line": 155,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/renderer/form_caption.rs::tests#1",
+      "file": "src/renderer/form_caption.rs",
+      "sourcePath": "src/renderer/form_caption.rs",
+      "line": 29,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/renderer/hancom_pua.rs::tests#1",
+      "file": "src/renderer/hancom_pua.rs",
+      "sourcePath": "src/renderer/hancom_pua.rs",
+      "line": 51,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/renderer/height_cursor.rs::tests#1",
+      "file": "src/renderer/height_cursor.rs",
+      "sourcePath": "src/renderer/height_cursor.rs",
+      "line": 1405,
+      "module": "tests",
+      "testAttributes": 55,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 55
+    },
+    {
+      "id": "src/renderer/height_measurer.rs::tests#1",
+      "file": "src/renderer/height_measurer.rs",
+      "sourcePath": "src/renderer/height_measurer.rs",
+      "line": 3184,
+      "module": "tests",
+      "testAttributes": 22,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 22
+    },
+    {
+      "id": "src/renderer/html.rs::tests#1",
+      "file": "src/renderer/html.rs",
+      "sourcePath": "src/renderer/html.rs",
+      "line": 568,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/renderer/image_header.rs::tests#1",
+      "file": "src/renderer/image_header.rs",
+      "sourcePath": "src/renderer/image_header.rs",
+      "line": 275,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/renderer/image_resolver.rs::emitted_bytes_key_agreement_tests#1",
+      "file": "src/renderer/image_resolver.rs",
+      "sourcePath": "src/renderer/image_resolver.rs",
+      "line": 1405,
+      "module": "emitted_bytes_key_agreement_tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/renderer/image_resolver.rs::tests#1",
+      "file": "src/renderer/image_resolver.rs",
+      "sourcePath": "src/renderer/image_resolver.rs",
+      "line": 976,
+      "module": "tests",
+      "testAttributes": 14,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 14
+    },
+    {
+      "id": "src/renderer/layer_renderer.rs::tests#1",
+      "file": "src/renderer/layer_renderer.rs",
+      "sourcePath": "src/renderer/layer_renderer.rs",
+      "line": 915,
+      "module": "tests",
+      "testAttributes": 44,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 44
+    },
+    {
+      "id": "src/renderer/layout_frame.rs::tests#1",
+      "file": "src/renderer/layout_frame.rs",
+      "sourcePath": "src/renderer/layout_frame.rs",
+      "line": 353,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/renderer/layout.rs::integration_tests#1",
+      "file": "src/renderer/layout.rs",
+      "sourcePath": "src/renderer/layout/integration_tests.rs",
+      "line": 2325,
+      "module": "integration_tests",
+      "testAttributes": 58,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 58
+    },
+    {
+      "id": "src/renderer/layout.rs::tests#1",
+      "file": "src/renderer/layout.rs",
+      "sourcePath": "src/renderer/layout/tests.rs",
+      "line": 2327,
+      "module": "tests",
+      "testAttributes": 78,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 78
+    },
+    {
+      "id": "src/renderer/layout/border_rendering.rs::tests#1",
+      "file": "src/renderer/layout/border_rendering.rs",
+      "sourcePath": "src/renderer/layout/border_rendering.rs",
+      "line": 1127,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/renderer/layout/integration_tests.rs::tests#1",
+      "file": "src/renderer/layout/integration_tests.rs",
+      "sourcePath": "src/renderer/layout/integration_tests.rs",
+      "line": 6,
+      "module": "tests",
+      "testAttributes": 58,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 58
+    },
+    {
+      "id": "src/renderer/layout/paragraph_layout.rs::issue_1151_v3_helper_tests#1",
+      "file": "src/renderer/layout/paragraph_layout.rs",
+      "sourcePath": "src/renderer/layout/paragraph_layout.rs",
+      "line": 7348,
+      "module": "issue_1151_v3_helper_tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/renderer/layout/paragraph_layout.rs::issue_1151_v9_helper_tests#1",
+      "file": "src/renderer/layout/paragraph_layout.rs",
+      "sourcePath": "src/renderer/layout/paragraph_layout.rs",
+      "line": 7439,
+      "module": "issue_1151_v9_helper_tests",
+      "testAttributes": 6,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 6
+    },
+    {
+      "id": "src/renderer/layout/paragraph_layout.rs::issue_2439_lineseg_indent_tests#1",
+      "file": "src/renderer/layout/paragraph_layout.rs",
+      "sourcePath": "src/renderer/layout/paragraph_layout/issue_2439_lineseg_indent_tests.rs",
+      "line": 7345,
+      "module": "issue_2439_lineseg_indent_tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/renderer/layout/paragraph_layout.rs::issue_2809_split_alignment_tests#1",
+      "file": "src/renderer/layout/paragraph_layout.rs",
+      "sourcePath": "src/renderer/layout/paragraph_layout.rs",
+      "line": 6985,
+      "module": "issue_2809_split_alignment_tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/renderer/layout/paragraph_layout.rs::issue_3486_hancom_company_pua_alignment_tests#1",
+      "file": "src/renderer/layout/paragraph_layout.rs",
+      "sourcePath": "src/renderer/layout/paragraph_layout.rs",
+      "line": 7245,
+      "module": "issue_3486_hancom_company_pua_alignment_tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/renderer/layout/paragraph_layout.rs::issue_4370_tac_table_wrap_tests#1",
+      "file": "src/renderer/layout/paragraph_layout.rs",
+      "sourcePath": "src/renderer/layout/paragraph_layout.rs",
+      "line": 6934,
+      "module": "issue_4370_tac_table_wrap_tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/renderer/layout/paragraph_layout.rs::issue_4657_distribute_alignment_tests#1",
+      "file": "src/renderer/layout/paragraph_layout.rs",
+      "sourcePath": "src/renderer/layout/paragraph_layout.rs",
+      "line": 7160,
+      "module": "issue_4657_distribute_alignment_tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/renderer/layout/paragraph_layout.rs::pua_mapping_tests#1",
+      "file": "src/renderer/layout/paragraph_layout.rs",
+      "sourcePath": "src/renderer/layout/paragraph_layout.rs",
+      "line": 7678,
+      "module": "pua_mapping_tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/renderer/layout/paragraph_layout.rs::trailing_tac_width_tests#1",
+      "file": "src/renderer/layout/paragraph_layout.rs",
+      "sourcePath": "src/renderer/layout/paragraph_layout.rs",
+      "line": 7285,
+      "module": "trailing_tac_width_tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/renderer/layout/shape_layout.rs::tests#1",
+      "file": "src/renderer/layout/shape_layout.rs",
+      "sourcePath": "src/renderer/layout/shape_layout.rs",
+      "line": 3772,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/renderer/layout/table_layout.rs::row_cut_tests#1",
+      "file": "src/renderer/layout/table_layout.rs",
+      "sourcePath": "src/renderer/layout/table_layout.rs",
+      "line": 13135,
+      "module": "row_cut_tests",
+      "testAttributes": 39,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 39
+    },
+    {
+      "id": "src/renderer/layout/table_partial.rs::tests#1",
+      "file": "src/renderer/layout/table_partial.rs",
+      "sourcePath": "src/renderer/layout/table_partial.rs",
+      "line": 3596,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/renderer/layout/text_measurement.rs::tests#1",
+      "file": "src/renderer/layout/text_measurement.rs",
+      "sourcePath": "src/renderer/layout/text_measurement.rs",
+      "line": 1497,
+      "module": "tests",
+      "testAttributes": 37,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 37
+    },
+    {
+      "id": "src/renderer/layout/utils.rs::tests#1",
+      "file": "src/renderer/layout/utils.rs",
+      "sourcePath": "src/renderer/layout/utils.rs",
+      "line": 528,
+      "module": "tests",
+      "testAttributes": 13,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 13
+    },
+    {
+      "id": "src/renderer/mod.rs::tests#1",
+      "file": "src/renderer/mod.rs",
+      "sourcePath": "src/renderer/mod.rs",
+      "line": 1773,
+      "module": "tests",
+      "testAttributes": 32,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 32
+    },
+    {
+      "id": "src/renderer/page_layout.rs::tests#1",
+      "file": "src/renderer/page_layout.rs",
+      "sourcePath": "src/renderer/page_layout.rs",
+      "line": 265,
+      "module": "tests",
+      "testAttributes": 6,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 6
+    },
+    {
+      "id": "src/renderer/page_number.rs::tests#1",
+      "file": "src/renderer/page_number.rs",
+      "sourcePath": "src/renderer/page_number.rs",
+      "line": 91,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/renderer/pagination.rs::tests#1",
+      "file": "src/renderer/pagination.rs",
+      "sourcePath": "src/renderer/pagination/tests.rs",
+      "line": 1058,
+      "module": "tests",
+      "testAttributes": 22,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 22
+    },
+    {
+      "id": "src/renderer/partial_replay.rs::tests#1",
+      "file": "src/renderer/partial_replay.rs",
+      "sourcePath": "src/renderer/partial_replay.rs",
+      "line": 47,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/renderer/pua_oldhangul.rs::tests#1",
+      "file": "src/renderer/pua_oldhangul.rs",
+      "sourcePath": "src/renderer/pua_oldhangul.rs",
+      "line": 5732,
+      "module": "tests",
+      "testAttributes": 6,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 6
+    },
+    {
+      "id": "src/renderer/render_normalization.rs::tests#1",
+      "file": "src/renderer/render_normalization.rs",
+      "sourcePath": "src/renderer/render_normalization.rs",
+      "line": 277,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/renderer/render_tree.rs::tests#1",
+      "file": "src/renderer/render_tree.rs",
+      "sourcePath": "src/renderer/render_tree.rs",
+      "line": 1872,
+      "module": "tests",
+      "testAttributes": 18,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 18
+    },
+    {
+      "id": "src/renderer/scheduler.rs::tests#1",
+      "file": "src/renderer/scheduler.rs",
+      "sourcePath": "src/renderer/scheduler.rs",
+      "line": 381,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/renderer/skia/font_lookup.rs::tests#1",
+      "file": "src/renderer/skia/font_lookup.rs",
+      "sourcePath": "src/renderer/skia/font_lookup.rs",
+      "line": 84,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/renderer/skia/renderer.rs::tests#1",
+      "file": "src/renderer/skia/renderer.rs",
+      "sourcePath": "src/renderer/skia/renderer.rs",
+      "line": 1542,
+      "module": "tests",
+      "testAttributes": 47,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 47
+    },
+    {
+      "id": "src/renderer/static_svg.rs::tests#1",
+      "file": "src/renderer/static_svg.rs",
+      "sourcePath": "src/renderer/static_svg.rs",
+      "line": 367,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/renderer/style_resolver.rs::tests#1",
+      "file": "src/renderer/style_resolver.rs",
+      "sourcePath": "src/renderer/style_resolver.rs",
+      "line": 1006,
+      "module": "tests",
+      "testAttributes": 29,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 29
+    },
+    {
+      "id": "src/renderer/svg_fragment.rs::tests#1",
+      "file": "src/renderer/svg_fragment.rs",
+      "sourcePath": "src/renderer/svg_fragment.rs",
+      "line": 120,
+      "module": "tests",
+      "testAttributes": 19,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 19
+    },
+    {
+      "id": "src/renderer/svg_layer.rs::tests#1",
+      "file": "src/renderer/svg_layer.rs",
+      "sourcePath": "src/renderer/svg_layer.rs",
+      "line": 254,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/renderer/svg.rs::tests#1",
+      "file": "src/renderer/svg.rs",
+      "sourcePath": "src/renderer/svg/tests.rs",
+      "line": 4101,
+      "module": "tests",
+      "testAttributes": 50,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 50
+    },
+    {
+      "id": "src/renderer/typeset.rs::issue_3780_line_advance_oob#1",
+      "file": "src/renderer/typeset.rs",
+      "sourcePath": "src/renderer/typeset.rs",
+      "line": 24502,
+      "module": "issue_3780_line_advance_oob",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/renderer/typeset.rs::issue_3820_saved_rowbreak_first_fragment_frame_contract#1",
+      "file": "src/renderer/typeset.rs",
+      "sourcePath": "src/renderer/typeset.rs",
+      "line": 24451,
+      "module": "issue_3820_saved_rowbreak_first_fragment_frame_contract",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/renderer/typeset.rs::saved_tac_table_flow_tail_contract#1",
+      "file": "src/renderer/typeset.rs",
+      "sourcePath": "src/renderer/typeset.rs",
+      "line": 3771,
+      "module": "saved_tac_table_flow_tail_contract",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/renderer/typeset.rs::tests#1",
+      "file": "src/renderer/typeset.rs",
+      "sourcePath": "src/renderer/typeset.rs",
+      "line": 24535,
+      "module": "tests",
+      "testAttributes": 47,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 47
+    },
+    {
+      "id": "src/renderer/web_canvas.rs::tests#1",
+      "file": "src/renderer/web_canvas.rs",
+      "sourcePath": "src/renderer/web_canvas.rs",
+      "line": 3791,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/schema_registry.rs::tests#1",
+      "file": "src/schema_registry.rs",
+      "sourcePath": "src/schema_registry.rs",
+      "line": 114,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/security_trailer.rs::tests#1",
+      "file": "src/security_trailer.rs",
+      "sourcePath": "src/security_trailer.rs",
+      "line": 581,
+      "module": "tests",
+      "testAttributes": 19,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 19
+    },
+    {
+      "id": "src/serializer/body_text.rs::tests#1",
+      "file": "src/serializer/body_text.rs",
+      "sourcePath": "src/serializer/body_text.rs",
+      "line": 1273,
+      "module": "tests",
+      "testAttributes": 34,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 34
+    },
+    {
+      "id": "src/serializer/byte_writer.rs::tests#1",
+      "file": "src/serializer/byte_writer.rs",
+      "sourcePath": "src/serializer/byte_writer.rs",
+      "line": 121,
+      "module": "tests",
+      "testAttributes": 18,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 18
+    },
+    {
+      "id": "src/serializer/cfb_writer.rs::tests#1",
+      "file": "src/serializer/cfb_writer.rs",
+      "sourcePath": "src/serializer/cfb_writer/tests.rs",
+      "line": 410,
+      "module": "tests",
+      "testAttributes": 17,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 17
+    },
+    {
+      "id": "src/serializer/content_loss.rs::tests#1",
+      "file": "src/serializer/content_loss.rs",
+      "sourcePath": "src/serializer/content_loss.rs",
+      "line": 234,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/serializer/control.rs::tests#1",
+      "file": "src/serializer/control.rs",
+      "sourcePath": "src/serializer/control/tests.rs",
+      "line": 3134,
+      "module": "tests",
+      "testAttributes": 31,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 31
+    },
+    {
+      "id": "src/serializer/doc_info.rs::tests#1",
+      "file": "src/serializer/doc_info.rs",
+      "sourcePath": "src/serializer/doc_info/tests.rs",
+      "line": 1128,
+      "module": "tests",
+      "testAttributes": 24,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 24
+    },
+    {
+      "id": "src/serializer/header.rs::tests#1",
+      "file": "src/serializer/header.rs",
+      "sourcePath": "src/serializer/header.rs",
+      "line": 42,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/serializer/hml/body.rs::tests#1",
+      "file": "src/serializer/hml/body.rs",
+      "sourcePath": "src/serializer/hml/body.rs",
+      "line": 624,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/serializer/hwpx/canonical_defaults.rs::tests#1",
+      "file": "src/serializer/hwpx/canonical_defaults.rs",
+      "sourcePath": "src/serializer/hwpx/canonical_defaults.rs",
+      "line": 218,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/serializer/hwpx/content.rs::tests#1",
+      "file": "src/serializer/hwpx/content.rs",
+      "sourcePath": "src/serializer/hwpx/content.rs",
+      "line": 207,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/serializer/hwpx/context.rs::tests#1",
+      "file": "src/serializer/hwpx/context.rs",
+      "sourcePath": "src/serializer/hwpx/context.rs",
+      "line": 529,
+      "module": "tests",
+      "testAttributes": 21,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 21
+    },
+    {
+      "id": "src/serializer/hwpx/field.rs::tests#1",
+      "file": "src/serializer/hwpx/field.rs",
+      "sourcePath": "src/serializer/hwpx/field.rs",
+      "line": 282,
+      "module": "tests",
+      "testAttributes": 17,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 17
+    },
+    {
+      "id": "src/serializer/hwpx/fixtures.rs::tests#1",
+      "file": "src/serializer/hwpx/fixtures.rs",
+      "sourcePath": "src/serializer/hwpx/fixtures.rs",
+      "line": 16,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/serializer/hwpx/form.rs::tests#1",
+      "file": "src/serializer/hwpx/form.rs",
+      "sourcePath": "src/serializer/hwpx/form.rs",
+      "line": 229,
+      "module": "tests",
+      "testAttributes": 7,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 7
+    },
+    {
+      "id": "src/serializer/hwpx/header.rs::tests#1",
+      "file": "src/serializer/hwpx/header.rs",
+      "sourcePath": "src/serializer/hwpx/header.rs",
+      "line": 1481,
+      "module": "tests",
+      "testAttributes": 48,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 48
+    },
+    {
+      "id": "src/serializer/hwpx/master_page.rs::tests#1",
+      "file": "src/serializer/hwpx/master_page.rs",
+      "sourcePath": "src/serializer/hwpx/master_page.rs",
+      "line": 103,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/serializer/hwpx/mod.rs::tests#1",
+      "file": "src/serializer/hwpx/mod.rs",
+      "sourcePath": "src/serializer/hwpx/mod.rs",
+      "line": 361,
+      "module": "tests",
+      "testAttributes": 38,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 38
+    },
+    {
+      "id": "src/serializer/hwpx/package_check.rs::tests#1",
+      "file": "src/serializer/hwpx/package_check.rs",
+      "sourcePath": "src/serializer/hwpx/package_check.rs",
+      "line": 392,
+      "module": "tests",
+      "testAttributes": 11,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 11
+    },
+    {
+      "id": "src/serializer/hwpx/picture.rs::tests#1",
+      "file": "src/serializer/hwpx/picture.rs",
+      "sourcePath": "src/serializer/hwpx/picture.rs",
+      "line": 551,
+      "module": "tests",
+      "testAttributes": 26,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 26
+    },
+    {
+      "id": "src/serializer/hwpx/roundtrip.rs::tests#1",
+      "file": "src/serializer/hwpx/roundtrip.rs",
+      "sourcePath": "src/serializer/hwpx/roundtrip.rs",
+      "line": 1634,
+      "module": "tests",
+      "testAttributes": 65,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 65
+    },
+    {
+      "id": "src/serializer/hwpx/section.rs::tests#1",
+      "file": "src/serializer/hwpx/section.rs",
+      "sourcePath": "src/serializer/hwpx/section.rs",
+      "line": 3160,
+      "module": "tests",
+      "testAttributes": 93,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 93
+    },
+    {
+      "id": "src/serializer/hwpx/shape.rs::tests#1",
+      "file": "src/serializer/hwpx/shape.rs",
+      "sourcePath": "src/serializer/hwpx/shape.rs",
+      "line": 1317,
+      "module": "tests",
+      "testAttributes": 30,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 30
+    },
+    {
+      "id": "src/serializer/hwpx/table.rs::tests#1",
+      "file": "src/serializer/hwpx/table.rs",
+      "sourcePath": "src/serializer/hwpx/table.rs",
+      "line": 580,
+      "module": "tests",
+      "testAttributes": 54,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 54
+    },
+    {
+      "id": "src/serializer/hwpx/utils.rs::tests#1",
+      "file": "src/serializer/hwpx/utils.rs",
+      "sourcePath": "src/serializer/hwpx/utils.rs",
+      "line": 116,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/serializer/mini_cfb.rs::tests#1",
+      "file": "src/serializer/mini_cfb.rs",
+      "sourcePath": "src/serializer/mini_cfb.rs",
+      "line": 613,
+      "module": "tests",
+      "testAttributes": 13,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 13
+    },
+    {
+      "id": "src/serializer/mod.rs::tests#1",
+      "file": "src/serializer/mod.rs",
+      "sourcePath": "src/serializer/mod.rs",
+      "line": 108,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/serializer/ole_container.rs::tests#1",
+      "file": "src/serializer/ole_container.rs",
+      "sourcePath": "src/serializer/ole_container.rs",
+      "line": 88,
+      "module": "tests",
+      "testAttributes": 8,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 8
+    },
+    {
+      "id": "src/serializer/record_writer.rs::tests#1",
+      "file": "src/serializer/record_writer.rs",
+      "sourcePath": "src/serializer/record_writer.rs",
+      "line": 54,
+      "module": "tests",
+      "testAttributes": 9,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 9
+    },
+    {
+      "id": "src/service/mod.rs::tests#1",
+      "file": "src/service/mod.rs",
+      "sourcePath": "src/service/mod.rs",
+      "line": 79,
+      "module": "tests",
+      "testAttributes": 16,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 16
+    },
+    {
+      "id": "src/subsecond_dev.rs::tests#1",
+      "file": "src/subsecond_dev.rs",
+      "sourcePath": "src/subsecond_dev.rs",
+      "line": 110,
+      "module": "tests",
+      "testAttributes": 5,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 5
+    },
+    {
+      "id": "src/wasm_api.rs::tests#1",
+      "file": "src/wasm_api.rs",
+      "sourcePath": "src/wasm_api/tests.rs",
+      "line": 8449,
+      "module": "tests",
+      "testAttributes": 313,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 313
+    },
+    {
+      "id": "src/wasm_api/render_patch_boundary.rs::tests#1",
+      "file": "src/wasm_api/render_patch_boundary.rs",
+      "sourcePath": "src/wasm_api/render_patch_boundary.rs",
+      "line": 212,
+      "module": "tests",
+      "testAttributes": 4,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 4
+    },
+    {
+      "id": "src/wmf/parser/constants/enums/character_set.rs::tests#1",
+      "file": "src/wmf/parser/constants/enums/character_set.rs",
+      "sourcePath": "src/wmf/parser/constants/enums/character_set.rs",
+      "line": 165,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/wmf/parser/objects/graphics/font.rs::tests#1",
+      "file": "src/wmf/parser/objects/graphics/font.rs",
+      "sourcePath": "src/wmf/parser/objects/graphics/font.rs",
+      "line": 256,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/wmf/parser/objects/graphics/region.rs::tests#1",
+      "file": "src/wmf/parser/objects/graphics/region.rs",
+      "sourcePath": "src/wmf/parser/objects/graphics/region.rs",
+      "line": 3,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/wmf/parser/objects/structure/bitmap_info_header/info.rs::tests#1",
+      "file": "src/wmf/parser/objects/structure/bitmap_info_header/info.rs",
+      "sourcePath": "src/wmf/parser/objects/structure/bitmap_info_header/info.rs",
+      "line": 187,
+      "module": "tests",
+      "testAttributes": 3,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 3
+    },
+    {
+      "id": "src/wmf/parser/objects/structure/bitmap_info_header/mod.rs::tests#1",
+      "file": "src/wmf/parser/objects/structure/bitmap_info_header/mod.rs",
+      "sourcePath": "src/wmf/parser/objects/structure/bitmap_info_header/mod.rs",
+      "line": 189,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/wmf/parser/objects/structure/bitmap16.rs::tests#1",
+      "file": "src/wmf/parser/objects/structure/bitmap16.rs",
+      "sourcePath": "src/wmf/parser/objects/structure/bitmap16.rs",
+      "line": 161,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    },
+    {
+      "id": "src/wmf/parser/objects/structure/device_independent_bitmap.rs::tests#1",
+      "file": "src/wmf/parser/objects/structure/device_independent_bitmap.rs",
+      "sourcePath": "src/wmf/parser/objects/structure/device_independent_bitmap.rs",
+      "line": 287,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/wmf/parser/objects/structure/pitch_and_family.rs::tests#1",
+      "file": "src/wmf/parser/objects/structure/pitch_and_family.rs",
+      "sourcePath": "src/wmf/parser/objects/structure/pitch_and_family.rs",
+      "line": 42,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/wmf/parser/objects/structure/poly_polygon.rs::tests#1",
+      "file": "src/wmf/parser/objects/structure/poly_polygon.rs",
+      "sourcePath": "src/wmf/parser/objects/structure/poly_polygon.rs",
+      "line": 70,
+      "module": "tests",
+      "testAttributes": 1,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 1
+    },
+    {
+      "id": "src/wmf/parser/records/mod.rs::tests#1",
+      "file": "src/wmf/parser/records/mod.rs",
+      "sourcePath": "src/wmf/parser/records/mod.rs",
+      "line": 111,
+      "module": "tests",
+      "testAttributes": 2,
+      "tier": "white_box",
+      "reasons": [
+        "super_private_scope"
+      ],
+      "maximumTestAttributes": 2
+    }
+  ],
+  "supportItems": [
+    {
+      "id": "src/document_core/helpers.rs::cfg-fn#1",
+      "file": "src/document_core/helpers.rs",
+      "line": 888,
+      "kind": "fn",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/model/table.rs::cfg-fn#1",
+      "file": "src/model/table.rs",
+      "line": 450,
+      "kind": "fn",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/model/table.rs::cfg-fn#2",
+      "file": "src/model/table.rs",
+      "line": 455,
+      "kind": "fn",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/model/table.rs::cfg-PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS#1",
+      "file": "src/model/table.rs",
+      "line": 472,
+      "kind": "PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/model/table.rs::cfg-std#1",
+      "file": "src/model/table.rs",
+      "line": 21,
+      "kind": "std",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/parser/crypto.rs::cfg-fn#1",
+      "file": "src/parser/crypto.rs",
+      "line": 167,
+      "kind": "fn",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/parser/mod.rs::cfg-fn#1",
+      "file": "src/parser/mod.rs",
+      "line": 149,
+      "kind": "fn",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/parser/mod.rs::cfg-impl#1",
+      "file": "src/parser/mod.rs",
+      "line": 142,
+      "kind": "impl",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/parser/mod.rs::cfg-struct#1",
+      "file": "src/parser/mod.rs",
+      "line": 139,
+      "kind": "struct",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/parser/mod.rs::cfg-thread_local!#1",
+      "file": "src/parser/mod.rs",
+      "line": 116,
+      "kind": "thread_local!",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/parser/mod.rs::cfg-unknown#1",
+      "file": "src/parser/mod.rs",
+      "line": 125,
+      "kind": "unknown",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/renderer/composer/line_breaking.rs::cfg-fn#1",
+      "file": "src/renderer/composer/line_breaking.rs",
+      "line": 1217,
+      "kind": "fn",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/renderer/composer/line_breaking.rs::cfg-fn#2",
+      "file": "src/renderer/composer/line_breaking.rs",
+      "line": 1556,
+      "kind": "fn",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/renderer/equation/parser.rs::cfg-fn#1",
+      "file": "src/renderer/equation/parser.rs",
+      "line": 2145,
+      "kind": "fn",
+      "testAttributes": 1
+    },
+    {
+      "id": "src/renderer/equation/parser.rs::cfg-fn#2",
+      "file": "src/renderer/equation/parser.rs",
+      "line": 2162,
+      "kind": "fn",
+      "testAttributes": 1
+    },
+    {
+      "id": "src/renderer/equation/parser.rs::cfg-fn#3",
+      "file": "src/renderer/equation/parser.rs",
+      "line": 2177,
+      "kind": "fn",
+      "testAttributes": 1
+    },
+    {
+      "id": "src/renderer/equation/parser.rs::cfg-fn#4",
+      "file": "src/renderer/equation/parser.rs",
+      "line": 2187,
+      "kind": "fn",
+      "testAttributes": 1
+    },
+    {
+      "id": "src/renderer/font_metrics_data.rs::cfg-fn#1",
+      "file": "src/renderer/font_metrics_data.rs",
+      "line": 256,
+      "kind": "fn",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/renderer/image_resolver.rs::cfg-CONVERSIONS_RUN#1",
+      "file": "src/renderer/image_resolver.rs",
+      "line": 104,
+      "kind": "CONVERSIONS_RUN",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/renderer/image_resolver.rs::cfg-thread_local!#1",
+      "file": "src/renderer/image_resolver.rs",
+      "line": 88,
+      "kind": "thread_local!",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/renderer/layout.rs::cfg-table_nested_text_flag_scan_count#1",
+      "file": "src/renderer/layout.rs",
+      "line": 2289,
+      "kind": "table_nested_text_flag_scan_count",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/renderer/layout.rs::cfg-table_nested_text_flag_scan_count#2",
+      "file": "src/renderer/layout.rs",
+      "line": 2373,
+      "kind": "table_nested_text_flag_scan_count",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/renderer/layout/table_layout.rs::cfg-fn#1",
+      "file": "src/renderer/layout/table_layout.rs",
+      "line": 7883,
+      "kind": "fn",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/renderer/layout/table_layout.rs::cfg-self#1",
+      "file": "src/renderer/layout/table_layout.rs",
+      "line": 7539,
+      "kind": "self",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/serializer/body_text.rs::cfg-fn#1",
+      "file": "src/serializer/body_text.rs",
+      "line": 530,
+      "kind": "fn",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/serializer/hwpx/canonical_defaults.rs::cfg-const#1",
+      "file": "src/serializer/hwpx/canonical_defaults.rs",
+      "line": 208,
+      "kind": "const",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/wasm_api/render_patch_boundary.rs::cfg-const#1",
+      "file": "src/wasm_api/render_patch_boundary.rs",
+      "line": 184,
+      "kind": "const",
+      "testAttributes": 0
+    },
+    {
+      "id": "src/wasm_api/render_patch_boundary.rs::cfg-fn#1",
+      "file": "src/wasm_api/render_patch_boundary.rs",
+      "line": 84,
+      "kind": "fn",
+      "testAttributes": 0
+    }
+  ]
+}

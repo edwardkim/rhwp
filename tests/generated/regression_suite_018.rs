@@ -17,6 +17,9 @@ mod issue_2743_hml_resource_id_limit;
 #[path = "../issue_3366_thumbnail_contract.rs"]
 mod issue_3366_thumbnail_contract;
 
+#[path = "../issue_3367_secd_cold_order.rs"]
+mod issue_3367_secd_cold_order;
+
 #[path = "../issue_3637_split_cell_nested_table_vpos.rs"]
 mod issue_3637_split_cell_nested_table_vpos;
 

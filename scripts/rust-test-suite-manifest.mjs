@@ -396,9 +396,10 @@ export function assignSources(manifest, requestedSources, root = ROOT) {
       );
     } else {
       const suite = lightestSuite(suites);
+      // suite.sources는 manifest.suites[suite.name]과 같은 배열이다. 한 번만
+      // 추가해야 신규 source가 harness에 중복 선언되지 않는다.
       suite.sources.push(metric.source);
       suite.weight += metric.weight;
-      manifest.suites[suite.name].push(metric.source);
       assignedTarget = suite.name;
       process.stdout.write(
         `[RustTestSuite] 자동 배정: ${metric.source} -> ${suite.name}\n`,

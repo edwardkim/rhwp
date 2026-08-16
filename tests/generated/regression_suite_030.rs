@@ -38,6 +38,9 @@ mod issue_3834_flow_with_text_preserved;
 #[path = "../issue_4323_merge_cell_reflow.rs"]
 mod issue_4323_merge_cell_reflow;
 
+#[path = "../issue_4488_4495_body_provenance.rs"]
+mod issue_4488_4495_body_provenance;
+
 #[path = "../issue_713.rs"]
 mod issue_713;
 

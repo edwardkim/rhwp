@@ -234,7 +234,7 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    파일명 관례: `tests/issue_{이슈번호}_{짧은_설명}.rs`. 수정을 되돌리면 실패하고, 수정을
    적용하면 통과해야 합니다.
 
-   새 파일은 `tests/` 최상위에 만들고 다음 명령을 실행합니다. 생성기가 source weight를 계산해
+   새 파일은 `tests/cases/`에 만들고 다음 명령을 실행합니다. 생성기가 source weight를 계산해
    기존 32개 integration suite 중 가장 가벼운 곳에 자동 등록합니다.
 
    ```bash
@@ -247,6 +247,15 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    이름을 바꾸거나 삭제했다면 `--generate` 대신
    `node scripts/rust-test-suite-manifest.mjs --sync`를 사용합니다. 전체 suite를 다시 나누는
    `--rebalance`는 대규모 generated diff를 만들므로 일반 테스트 추가에는 사용하지 않습니다.
+
+   제품 소스의 `#[cfg(test)]`에는 새 테스트 모듈이나 test support 항목을 추가하지 않습니다. 공개 API로
+   재현할 수 있는 테스트는 `tests/cases/`에 작성하고, 기존 소스 테스트의 차등 이동 상태는 다음 명령으로
+   확인합니다. private 구현 불변식을 검증해야 하는 예외는 별도 단계에서 근거와 기준선 변경을 함께
+   검토합니다.
+
+   ```bash
+   node scripts/rust-unit-test-tiers.mjs --check
+   ```
 2. **수정 전 실패 증명 (권장)** — "수정 커밋만 원복한 상태에서 신규 테스트가 실제로 FAIL"
    함을 PR 본문에 기록해주세요. 테스트가 결함을 판별한다는 증명이 되어 리뷰 신뢰도가
    높아집니다.

@@ -41,6 +41,9 @@ mod issue_3820_stored_reset_fragment_geometry;
 #[path = "../issue_4128_cell_cursor_page_narrowing.rs"]
 mod issue_4128_cell_cursor_page_narrowing;
 
+#[path = "../issue_4398_orphan_fieldend.rs"]
+mod issue_4398_orphan_fieldend;
+
 #[path = "../issue_826.rs"]
 mod issue_826;
 

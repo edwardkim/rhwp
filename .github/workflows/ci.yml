@@ -969,6 +969,8 @@ jobs:
         run: |
           node --test scripts/tests/rust-test-suite-manifest.test.mjs
           node scripts/rust-test-suite-manifest.mjs --check
+          node --test scripts/tests/rust-unit-test-tiers.test.mjs
+          node scripts/rust-unit-test-tiers.mjs --check
           node scripts/run-rust-test.mjs --print issue_1035_alignment
 
       - name: Validate Render Diff trigger policy

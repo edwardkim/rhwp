@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "minimumNextestCases": 6541,
+  "minimumNextestCases": 6551,
   "sharding": {
     "suitePrefix": "regression_suite_",
     "suiteCount": 32,
@@ -17,6 +17,10 @@
     {
       "path": "tests",
       "recursive": false
+    },
+    {
+      "path": "tests/cases",
+      "recursive": true
     },
     {
       "path": "tests/suites/issue_regression_pilot",
@@ -214,6 +218,7 @@
       "tests/issue_2215_selection_page_range.rs",
       "tests/issue_3820_stored_reset_fragment_geometry.rs",
       "tests/issue_4128_cell_cursor_page_narrowing.rs",
+      "tests/issue_4398_orphan_fieldend.rs",
       "tests/issue_826.rs",
       "tests/issue_874_ktx_toc_page_number_right_align.rs",
       "tests/mcp_session_setcell_contract.rs",
@@ -405,6 +410,7 @@
       "tests/issue_2525_single_lineseg_rewrap.rs",
       "tests/issue_2743_hml_resource_id_limit.rs",
       "tests/issue_3366_thumbnail_contract.rs",
+      "tests/issue_3367_secd_cold_order.rs",
       "tests/issue_3637_split_cell_nested_table_vpos.rs",
       "tests/issue_3915_verify_axes_both_reported.rs",
       "tests/issue_4179_cursor_rect_text_host_para_pages.rs",
@@ -663,6 +669,7 @@
       "tests/issue_3820_rowbreak_rowspan_band.rs",
       "tests/issue_3834_flow_with_text_preserved.rs",
       "tests/issue_4323_merge_cell_reflow.rs",
+      "tests/issue_4488_4495_body_provenance.rs",
       "tests/issue_713.rs",
       "tests/issue_898.rs",
       "tests/issue_table_vpos_01_page5_cell_hit_test.rs",
