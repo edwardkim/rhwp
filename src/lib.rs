@@ -24,6 +24,7 @@ pub mod plan_schema;
 pub mod pq_sign;
 pub mod provenance;
 pub mod rag;
+pub mod render_backend;
 pub mod renderer;
 pub mod schema_registry;
 pub mod security_trailer;
