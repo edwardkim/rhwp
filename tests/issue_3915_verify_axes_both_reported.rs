@@ -18,13 +18,13 @@ use std::process::{Command, Output};
 /// [#4677] `synam-001.hwp`의 이전 IR 차이는 책갈피 위치 보정으로 해소되었지만, 저장 HWPX의
 /// 쪽수 차이는 여전히 남아 있다.
 const PAGE_FAIL_SAMPLE: &str = "samples/synam-001.hwp";
-/// IR 축만 실패하고 쪽수는 안정적인 표본 — 1쪽 유지, IR 차이 2건(char_shapes, #3532).
+/// IR 축만 실패하고 쪽수는 안정적인 표본 — 16쪽 유지, IR 차이 1건(선두
+/// char_shapes 경계 시프트 — 본 PR 의 말미 경계 수정(#3532)으로도 남는 별개 클래스).
 ///
-/// [#4916 계열] `issue1937` 의 이전 IR 차이(각주 subList lineseg vertpos)는
-/// HWP5-origin 노트 vpos 보정 스킵으로 해소되었다. 정상화된 문서를 표본으로
-/// 계속 쓰지 않는다(#3820 때 교체와 같은 관례). pic-crop-01 은 BinData 순번
-/// 재사상(#3893) 수정이 정상화하므로 표본으로 쓰지 않는다.
-const IR_FAIL_SAMPLE: &str = "samples/hwp3-sample10.hwp";
+/// hwp3-sample10 은 본 PR(#3532, 말미 경계)이 정상화하므로 표본으로 쓰지 않는다
+/// (#3820·#4916 때 교체와 같은 관례 — 정상화된 문서를 표본으로 계속 쓰지 않는다).
+/// issue_265 는 저장 캠페인 전 수정 통합 트리 전수 스캔으로 잔존을 확인했다.
+const IR_FAIL_SAMPLE: &str = "samples/issue_265.hwp";
 /// 두 축 모두 통과하는 표본 — 무회귀 기준선.
 const CLEAN_SAMPLE: &str = "samples/table-001.hwp";
 
