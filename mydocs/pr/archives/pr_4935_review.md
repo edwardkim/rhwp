@@ -14,10 +14,10 @@ last_verified: 2026-08-16
 | PR | [#4935](https://github.com/edwardkim/rhwp/pull/4935) |
 | 작성자 / source | @kevin9327 / `feat/repair-loop` |
 | 원 source head | `c7cbe757cc9464c50af8e19c8ac105bbb33c0ea4` |
-| 기준 devel | `82f28ae86441` |
+| 기준 devel | `d9f04c6eec1f` |
 | 가시성 검토 branch | `review/kevin9327-20260816` |
-| local 적용 commit | `9a9a49ab9` |
-| 메인터너 보정 | `2656276fc` |
+| local 적용 commit | `59b587c02` |
+| 메인터너 보정 | `9c139b118` |
 | 원 PR 상태 참고값 | 작성 시점 `OPEN` / `MERGEABLE`; merge 직전에 재확인 필요 |
 
 검증 실패에 대해 locate·diagnose·repair·re-verify를 순서대로 수행하고, 최대 횟수·진전 없음·루프를
@@ -26,7 +26,7 @@ last_verified: 2026-08-16
 ## 메인터너 보정
 
 회귀 시험의 가짜 `rhwp` 실행 파일이 Windows `.bat`로만 만들어져 Linux에서는 spawn 단계에서 실패했다.
-`2656276fc`은 Windows는 기존 `.bat`를, Linux/macOS는 실행 가능한 POSIX shell 래퍼를 만들도록 바꿨다.
+`9c139b118`은 Windows는 기존 `.bat`를, Linux/macOS는 실행 가능한 POSIX shell 래퍼를 만들도록 바꿨다.
 테스트 대상 루프의 정책은 바꾸지 않고, 동일한 orchestration 안전장치를 모든 개발·CI 환경에서 실행하게 한다.
 
 ## 완료한 검증

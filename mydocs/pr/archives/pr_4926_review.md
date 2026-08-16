@@ -14,9 +14,9 @@ last_verified: 2026-08-16
 | PR | [#4926](https://github.com/edwardkim/rhwp/pull/4926) |
 | 작성자 / source | @kevin9327 / `docs/r92-preregistration-pattern` |
 | 원 source head | `cce94e73e03cffc9c67188cb043b8385539f6527` |
-| 기준 devel | `82f28ae86441` |
+| 기준 devel | `d9f04c6eec1f` |
 | 가시성 검토 branch | `review/kevin9327-20260816` |
-| local 적용 commit | `2cf46bf34` |
+| local 적용 commit | `bc60bb6cc` |
 | 원 PR 상태 참고값 | 작성 시점 `OPEN` / `MERGEABLE`; merge 직전에 재확인 필요 |
 
 병렬 작업에서 선등재 문서가 할 수 있는 일과 실제 코드 변경의 승인·검증 책임을 구분한다.

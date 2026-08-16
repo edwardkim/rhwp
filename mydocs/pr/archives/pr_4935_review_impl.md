@@ -9,8 +9,8 @@ last_verified: 2026-08-16
 
 | 순서 | commit | 역할 |
 | --- | --- | --- |
-| 1 | `9a9a49ab9` | 원 PR의 locate·diagnose·repair·re-verify 루프 적용 |
-| 2 | `2656276fc` | OS별 가짜 `rhwp` 래퍼로 Python 회귀 시험을 Linux/macOS에서도 실행 가능하게 보정 |
+| 1 | `59b587c02` | 원 PR의 locate·diagnose·repair·re-verify 루프 적용 |
+| 2 | `9c139b118` | OS별 가짜 `rhwp` 래퍼로 Python 회귀 시험을 Linux/macOS에서도 실행 가능하게 보정 |
 
 원 시험은 `.bat`만 만들었기 때문에 Linux에서 가짜 바이너리를 spawn하지 못했다. 보정은 Windows의
 배치 래퍼를 유지하고 POSIX에서는 `exec python ... "$@"` shell 래퍼를 만든다. 루프 알고리즘과

@@ -14,9 +14,9 @@ last_verified: 2026-08-16
 | PR | [#4934](https://github.com/edwardkim/rhwp/pull/4934) |
 | 작성자 / source | @kevin9327 / `feat/session-tree-node-path` |
 | 원 source head | `9feaa257f8f28076e052ffd114db25252e057389` |
-| 기준 devel | `82f28ae86441` |
+| 기준 devel | `d9f04c6eec1f` |
 | 가시성 검토 branch | `review/kevin9327-20260816` |
-| local 적용 commit | `d2518f105` |
+| local 적용 commit | `988ad5c67` |
 | 원 PR 상태 참고값 | 작성 시점 `OPEN` / `MERGEABLE`; merge 직전에 재확인 필요 |
 
 MCP 세션의 문서 트리에 문단·표 셀 단위의 안정 `nodePath`를 추가한다. 원 PR의 첫 commit

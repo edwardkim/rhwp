@@ -14,9 +14,9 @@ last_verified: 2026-08-16
 | PR | [#4927](https://github.com/edwardkim/rhwp/pull/4927) |
 | 작성자 / source | @kevin9327 / `docs/r91-autofix-bot-verification` |
 | 원 source head | `72b0ca1e2af89bbf74b6db7b2845ca81480f3fcd` |
-| 기준 devel | `82f28ae86441` |
+| 기준 devel | `d9f04c6eec1f` |
 | 가시성 검토 branch | `review/kevin9327-20260816` |
-| local 적용 commit | `2b764a9fb` |
+| local 적용 commit | `9014cfc22` |
 | 원 PR 상태 참고값 | 작성 시점 `OPEN` / `MERGEABLE`; merge 직전에 재확인 필요 |
 
 R91/R19 착수 게이트에 대해 자동 수정 봇의 업스트림 PR이 없었다는 당시의 실측 결과를 로드맵에 남긴다.

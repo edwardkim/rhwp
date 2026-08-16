@@ -14,10 +14,10 @@ last_verified: 2026-08-16
 | PR | [#4937](https://github.com/edwardkim/rhwp/pull/4937) |
 | 작성자 / source | @kevin9327 / `feat/render-anomaly-detector` |
 | 원 source head | `12fe6e1e6c27a2503392ba1f8853c71b1f2c3968` |
-| 기준 devel | `82f28ae86441` |
+| 기준 devel | `d9f04c6eec1f` |
 | 가시성 검토 branch | `review/kevin9327-20260816` |
-| local 적용 commits | `886832732`, `0bf52c088`, `e218a34b1` |
-| 메인터너 보정 | `396afddf0`, `2656276fc` |
+| local 적용 commits | `101b6d729`, `76bb06027`, `59ebfb1f7` |
+| 메인터너 보정 | `2d17db4c2`, `9c139b118` |
 | 원 PR 상태 참고값 | 작성 시점 `OPEN` / `MERGEABLE`; merge 직전에 재확인 필요 |
 
 `layout-anomaly`는 단일 RenderTree에서 overflow·overlap·빈 쪽 가능성을 JSON으로 보고하고, strict 모드에서
@@ -25,8 +25,8 @@ last_verified: 2026-08-16
 
 ## 메인터너 보정
 
-첫 보정 `396afddf0`은 agent quality profile·생성 매뉴얼에 명령을 등록하고, 구현 파일의 단위 시험을
-하위 파일로 옮겨 1,000줄 제한을 지켰다. 두 번째 보정 `2656276fc`은 공개 JSON 명령으로서 누락된
+첫 보정 `2d17db4c2`은 agent quality profile·생성 매뉴얼에 명령을 등록하고, 구현 파일의 단위 시험을
+하위 파일로 옮겨 1,000줄 제한을 지켰다. 두 번째 보정 `9c139b118`은 공개 JSON 명령으로서 누락된
 provenance map, provenance 계약 스윕, agent knowledge map의 필드 사전과 MCP 도구 표기를 추가했다.
 따라서 발견 가능성·비신뢰 콘텐츠 경계·문서 계약이 구현과 같은 명령 집합을 광고한다.
 

@@ -14,10 +14,10 @@ last_verified: 2026-08-16
 | PR | [#4930](https://github.com/edwardkim/rhwp/pull/4930) |
 | 작성자 / source | @kevin9327 / `feat/dar-policy-engine-l3` |
 | 원 source head | `632aa77da0b837ca608c7ca942465b9c86251a11` |
-| 기준 devel | `82f28ae86441` |
+| 기준 devel | `d9f04c6eec1f` |
 | 가시성 검토 branch | `review/kevin9327-20260816` |
-| local 적용 commit | `f8d0c34af` |
-| 메인터너 보정 | `396afddf0` |
+| local 적용 commit | `c2fb8c0b8` |
+| 메인터너 보정 | `2d17db4c2` |
 | 원 PR 상태 참고값 | 작성 시점 `OPEN` / `MERGEABLE`; merge 직전에 재확인 필요 |
 
 DATP 참조 드라이버의 COMMIT 전 단계에 정책 해석과 차단 게이트를 추가한다.
@@ -25,7 +25,7 @@ DATP 참조 드라이버의 COMMIT 전 단계에 정책 해석과 차단 게이�
 ## 메인터너 보정
 
 정책 JSON이 배열이 아니거나 `rules`가 없거나 배열이 아니면, 기존 구현은 `AttributeError`를 내거나
-기본값으로 진행할 여지가 있었다. `396afddf0`은 정책 루트·`rules`·각 rule의 object 형식을 명시적으로
+기본값으로 진행할 여지가 있었다. `2d17db4c2`은 정책 루트·`rules`·각 rule의 object 형식을 명시적으로
 검사하고 모두 `ValueError`로 거부하도록 고정했다. malformed 정책은 허용보다 거부가 안전한 경계다.
 
 ## 완료한 검증

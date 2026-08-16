@@ -14,10 +14,10 @@ last_verified: 2026-08-16
 | PR | [#4929](https://github.com/edwardkim/rhwp/pull/4929) |
 | 작성자 / source | @kevin9327 / `feat/sws-strategist-gate` |
 | 원 source head | `4af3d1a27c7ecf66c013e756e170f2bd2f35cfad` |
-| 기준 devel | `82f28ae86441` |
+| 기준 devel | `d9f04c6eec1f` |
 | 가시성 검토 branch | `review/kevin9327-20260816` |
-| local 적용 commit | `717f698e2` |
-| 메인터너 보정 | `396afddf0` |
+| local 적용 commit | `c2c36e8bb` |
+| 메인터너 보정 | `2d17db4c2` |
 | 원 PR 상태 참고값 | 작성 시점 `OPEN` / `MERGEABLE`; merge 직전에 재확인 필요 |
 
 `engagement.py --validate`에 SWS/1.0 감사기를 연결해 corpus·근거 대장·산출물 골격을 검증한다.
@@ -25,7 +25,7 @@ last_verified: 2026-08-16
 ## 메인터너 보정
 
 상대 corpus 출력 경로를 한 번 조합한 뒤 다시 상대 경로로 읽으면 base 경로가 중복 결합될 수 있었다.
-`396afddf0`은 결합 직후 `resolve()`로 절대 경로를 고정하고, 재읽기 경로가 절대 경로임을 회귀로 검증한다.
+`2d17db4c2`은 결합 직후 `resolve()`로 절대 경로를 고정하고, 재읽기 경로가 절대 경로임을 회귀로 검증한다.
 이 보정은 SWS 판정 규칙을 바꾸지 않고 relative root 입력에서의 결과 파일 재사용만 결정적으로 만든다.
 
 ## 완료한 검증

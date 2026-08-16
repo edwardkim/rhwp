@@ -14,9 +14,9 @@ last_verified: 2026-08-16
 | PR | [#4925](https://github.com/edwardkim/rhwp/pull/4925) |
 | 작성자 / source | @kevin9327 / `feat/journal-hash-chain` |
 | 원 source head | `965b45a5e43196d0d132001c10389b749c193ab0` |
-| 기준 devel | `82f28ae86441` |
+| 기준 devel | `d9f04c6eec1f` |
 | 가시성 검토 branch | `review/kevin9327-20260816` |
-| local 적용 commit | `6fa8a1acd` |
+| local 적용 commit | `6b533c7ae` |
 | 원 PR 상태 참고값 | 작성 시점 `OPEN` / `CONFLICTING`; merge 직전에 재확인 필요 |
 
 `run` 실행 저널에 입력과 출력 바이트의 SHA-256을 기록해, 연속 실행의 입출력 연결과 외부 편집에 의한
