@@ -146,11 +146,22 @@ const REGISTRY: &[ToolNode] = &[
         produces: &["doc-mutation"],
         consumes: &["field-names"],
     },
+    // 공개 전 마무리 3종 — 도장/서명·PII 마스킹·메타데이터 제거. 셋 다 doc-mutation을
+    // 소비도 하고 생산도 해서(공무원 문서 배포 전 준비 흐름에서) 서로 순서 없이
+    // 이어질 수 있다: 편집 → 도장 → 마스킹 → 메타데이터 제거, 순서는 자유롭다.
     ToolNode {
         tool: "hwp_insert_image",
-        // "실물 제출의 마지막 조각" — 편집을 마친 뒤 도장·서명을 얹는 마무리 단계.
-        // 그 자체는 산출물(다음 도구가 이어받을 태그)을 정의하지 않는다.
-        produces: &[],
+        produces: &["doc-mutation"],
+        consumes: &["doc-mutation"],
+    },
+    ToolNode {
+        tool: "hwp_redact",
+        produces: &["doc-mutation"],
+        consumes: &["doc-mutation"],
+    },
+    ToolNode {
+        tool: "hwp_sanitize",
+        produces: &["doc-mutation"],
         consumes: &["doc-mutation"],
     },
 ];
@@ -211,7 +222,7 @@ mod tests {
     }
 
     #[test]
-    fn 편집_도구_전부_도장_서명_삽입으로_이어진다() {
+    fn 편집_도구_전부_공개_전_마무리_3종으로_이어진다() {
         for t in [
             "hwp_replace_text",
             "hwp_fill_fields",
@@ -220,16 +231,29 @@ mod tests {
             "hwp_csv_to_table",
             "hwp_csv_to_chart",
         ] {
-            assert!(
-                suggest_next(t).contains(&"hwp_insert_image"),
-                "{t} 다음에 도장 삽입이 제안돼야 한다"
-            );
+            let next = suggest_next(t);
+            for finisher in ["hwp_insert_image", "hwp_redact", "hwp_sanitize"] {
+                assert!(
+                    next.contains(&finisher),
+                    "{t} 다음에 {finisher} 가 제안돼야 한다"
+                );
+            }
         }
     }
 
     #[test]
-    fn 도장_삽입은_말단이다() {
-        assert!(suggest_next("hwp_insert_image").is_empty());
+    fn 공개_전_마무리_3종은_순서_없이_서로_이어진다() {
+        // 도장 → 마스킹 → 메타데이터 제거, 어느 순서로도 가능해야 한다(자기 자신 제외).
+        let finishers = ["hwp_insert_image", "hwp_redact", "hwp_sanitize"];
+        for a in finishers {
+            let next = suggest_next(a);
+            for b in finishers {
+                if a == b {
+                    continue;
+                }
+                assert!(next.contains(&b), "{a} 다음에 {b} 가 제안돼야 한다");
+            }
+        }
     }
 
     #[test]
