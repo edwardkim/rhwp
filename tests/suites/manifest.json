@@ -316,6 +316,7 @@
     ],
     "regression_suite_013": [
       "tests/boundary_integrity_contract.rs",
+      "tests/cases/insert_text_contract.rs",
       "tests/ir_diff_json_contract.rs",
       "tests/issue_1418_textbox_table_overlap.rs",
       "tests/issue_1686.rs",
@@ -403,7 +404,6 @@
       "tests/envelope_integrity_contract.rs",
       "tests/hwpx_form_roundtrip.rs",
       "tests/insert_image_contract.rs",
-      "tests/insert_text_contract.rs",
       "tests/issue_1058_textbox_list_header.rs",
       "tests/issue_1196_hwpx_gutter_left_right.rs",
       "tests/issue_1308_forced_break_hanging_indent.rs",

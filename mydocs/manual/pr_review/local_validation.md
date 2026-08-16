@@ -249,7 +249,7 @@ cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads 12 --no-fail-fast
-cargo fmt --check
+cargo fmt --all -- --check
 cargo clippy --all-targets -- -D warnings
 ~~~
 

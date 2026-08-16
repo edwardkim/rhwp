@@ -5,6 +5,9 @@
 #[path = "../boundary_integrity_contract.rs"]
 mod boundary_integrity_contract;
 
+#[path = "../cases/insert_text_contract.rs"]
+mod insert_text_contract;
+
 #[path = "../ir_diff_json_contract.rs"]
 mod ir_diff_json_contract;
 
