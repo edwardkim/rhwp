@@ -27,13 +27,9 @@ const MARKER_SIZE = 6;
 /** 마커 히트테스트 허용 반경 (CSS px) */
 const PIN_HIT_RADIUS = MARKER_SIZE + 2;
 
-/** 핀을 끌 때 반대쪽 핀과의 사이에 남겨야 하는 본문 최소 크기 (mm).
- *
- * 마주보는 두 여백의 합이 용지를 넘으면 본문이 소멸하고, 렌더러는 용지의 5% 기본 여백으로
- * 폴백한다(model/page.rs의 [Task #1583]) — 화면은 멀쩡해 보이는데 저장되는 PageDef만
- * 망가진다. 게다가 그 상태의 핀은 눈금자 밖이나 반대쪽 핀과 겹친 자리에 그려져 다시
- * 잡을 수 없다. 그래서 값을 커밋할 때가 아니라 끌 때 막는다. */
+/** 핀을 끌 때 반대쪽 핀과의 사이에 남겨야 하는 본문 최소 크기 (mm). */
 const MIN_BODY_MM = 10;
+
 
 interface RulerPalette {
   bgMargin: string;
@@ -81,6 +77,9 @@ export class Ruler {
   /** 기준 페이지의 왼쪽 끝과 표시 너비 (화면 px) — △ 드롭 위치를 쪽 여백으로 되돌리는 데 쓴다 */
   private hPageLeft = 0;
   private hPageDisplayWidth = 0;
+  /** 기준 쪽의 제본 여백과 맞쪽 뒤바꿈 여부 — 본문 경계를 PageDef 필드로 되돌릴 때 쓴다 */
+  private hPageGutterPx = 0;
+  private hBindingMirrored = false;
   private vPins: { kind: 'top' | 'bottom'; y: number; pageIdx: number }[] = [];
 
   /** 드래그 중 상태 — draw*가 이 값이 있으면 실제 문서값 대신 이걸 그린다 (라이브 프리뷰).
@@ -372,6 +371,8 @@ export class Ruler {
       pageDisplayWidth: this.hPageDisplayWidth,
       refLeft: this.hRefLeft,
       paraMarginLeftPx: this.paraMarginLeftPx,
+      pageGutterPx: this.hPageGutterPx,
+      bindingMirrored: this.hBindingMirrored,
     };
   }
 
@@ -455,8 +456,11 @@ export class Ruler {
 
     // 본문 영역 = 쪽 여백 안쪽. 드래그 중이면 잡은 △만 마우스 위치로 대체해 배경과 핀이
     // 함께 움직이게 한다 (라이브 프리뷰).
-    const bodyLeftPx = pageMarginPinX('left', pageScreenLeft, pageDisplayWidth, pageInfo.marginLeft, zoom);
-    const bodyRightPx = pageMarginPinX('right', pageScreenLeft, pageDisplayWidth, pageInfo.marginRight, zoom);
+    // 핀은 해석된 본문 상자 경계에 선다 — 원본 여백으로 그리면 제본 여백이 있는 문서에서
+    // 글의 시작보다 왼쪽에 서고, 끌어다 맞출수록 본문이 더 밀려 수렴하지 않는다 (#4971).
+    const bodyLeftPx = pageMarginPinX('left', pageScreenLeft, pageDisplayWidth, pageInfo.bodyLeft, zoom);
+    const bodyRightPx = pageMarginPinX(
+      'right', pageScreenLeft, pageDisplayWidth, pageInfo.width - pageInfo.bodyRight, zoom);
     const pageLeftPinX = this.hDrag?.kind === 'pageMarginLeft' ? this.hDrag.x : bodyLeftPx;
     const pageRightPinX = this.hDrag?.kind === 'pageMarginRight' ? this.hDrag.x : bodyRightPx;
 
@@ -542,6 +546,8 @@ export class Ruler {
     this.hPageIdx = pageIdx;
     this.hPageLeft = pageScreenLeft;
     this.hPageDisplayWidth = pageDisplayWidth;
+    this.hPageGutterPx = pageInfo.marginGutter ?? 0;
+    this.hBindingMirrored = pageInfo.bindingMirrored ?? false;
     this.hPins.push(
       { kind: 'pageMarginLeft', x: pageLeftPinX, y: canvasH },
       { kind: 'pageMarginRight', x: pageRightPinX, y: canvasH },
