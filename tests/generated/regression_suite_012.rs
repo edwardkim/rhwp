@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_012
 
+#[path = "../cases/insert_paragraph_contract.rs"]
+mod insert_paragraph_contract;
+
 #[path = "../hidden_text_contract.rs"]
 mod hidden_text_contract;
 
