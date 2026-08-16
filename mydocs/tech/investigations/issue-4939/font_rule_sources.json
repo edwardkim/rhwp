@@ -1,0 +1,348 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "font-rule-source-boundary",
+  "owners": [
+    {
+      "ownerId": "rust-style-resolution",
+      "scope": "HWP language and alt-type name substitution",
+      "selectors": [
+        {
+          "selectorId": "legacy-latin",
+          "path": "src/renderer/style_resolver.rs",
+          "symbol": "resolve_legacy_latin_font",
+          "matchMode": "literal",
+          "selector": "fn resolve_legacy_latin_font(",
+          "extractionMode": "rust-match-arms",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "hft",
+          "path": "src/renderer/style_resolver.rs",
+          "symbol": "resolve_hft_font",
+          "matchMode": "literal",
+          "selector": "fn resolve_hft_font(",
+          "extractionMode": "rust-match-arms",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "ttf",
+          "path": "src/renderer/style_resolver.rs",
+          "symbol": "resolve_ttf_font",
+          "matchMode": "literal",
+          "selector": "fn resolve_ttf_font(",
+          "extractionMode": "rust-match-arms",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "heavy-display",
+          "path": "src/renderer/style_resolver.rs",
+          "symbol": "is_heavy_display_face",
+          "matchMode": "literal",
+          "selector": "fn is_heavy_display_face(",
+          "extractionMode": "rust-predicate",
+          "minMatches": 1
+        }
+      ]
+    },
+    {
+      "ownerId": "rust-metric",
+      "scope": "metric aliases, exact table and lookup order",
+      "selectors": [
+        {
+          "selectorId": "metric-alias",
+          "path": "src/renderer/font_metrics_data.rs",
+          "symbol": "resolve_metric_alias",
+          "matchMode": "literal",
+          "selector": "fn resolve_metric_alias(",
+          "extractionMode": "rust-match-arms",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "metric-table",
+          "path": "src/renderer/font_metrics_data.rs",
+          "symbol": "FONT_METRICS",
+          "matchMode": "literal",
+          "selector": "static FONT_METRICS: [FontMetric;",
+          "extractionMode": "rust-static-array",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "metric-lookup",
+          "path": "src/renderer/font_metrics_data.rs",
+          "symbol": "find_metric",
+          "matchMode": "literal",
+          "selector": "pub fn find_metric(",
+          "extractionMode": "rust-function-contract",
+          "minMatches": 1
+        }
+      ]
+    },
+    {
+      "ownerId": "rust-measurement",
+      "scope": "width heuristics and font-specific measurement overrides",
+      "selectors": [
+        {
+          "selectorId": "estimate-width",
+          "path": "src/renderer/layout/text_measurement.rs",
+          "symbol": "estimate_text_width_unrounded",
+          "matchMode": "literal",
+          "selector": "pub(crate) fn estimate_text_width_unrounded(",
+          "extractionMode": "rust-function-contract",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "hancom-space",
+          "path": "src/renderer/layout/text_measurement.rs",
+          "symbol": "hancom_regenerated_space_width",
+          "matchMode": "literal",
+          "selector": "pub(crate) fn hancom_regenerated_space_width(",
+          "extractionMode": "rust-predicate",
+          "minMatches": 1
+        }
+      ]
+    },
+    {
+      "ownerId": "rust-paint-chain",
+      "scope": "installed aliases, weight suffix and generic paint fallback",
+      "selectors": [
+        {
+          "selectorId": "installed-aliases",
+          "path": "src/renderer/mod.rs",
+          "symbol": "installed_render_font_aliases",
+          "matchMode": "literal",
+          "selector": "fn installed_render_font_aliases(",
+          "extractionMode": "rust-match-arms",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "weight-suffix",
+          "path": "src/renderer/mod.rs",
+          "symbol": "base_family_without_weight_suffix",
+          "matchMode": "literal",
+          "selector": "pub fn base_family_without_weight_suffix(",
+          "extractionMode": "rust-predicate",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "generic-fallback",
+          "path": "src/renderer/mod.rs",
+          "symbol": "generic_fallback",
+          "matchMode": "literal",
+          "selector": "pub fn generic_fallback(",
+          "extractionMode": "rust-predicate",
+          "minMatches": 1
+        }
+      ]
+    },
+    {
+      "ownerId": "native-skia",
+      "scope": "native typeface lookup and text replay",
+      "selectors": [
+        {
+          "selectorId": "system-family-style",
+          "path": "src/renderer/skia/font_lookup.rs",
+          "symbol": "match_system_family_style",
+          "matchMode": "literal",
+          "selector": "pub(super) fn match_system_family_style(",
+          "extractionMode": "rust-function-contract",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "text-replay",
+          "path": "src/renderer/skia/text_replay.rs",
+          "symbol": "SkiaTextReplay::draw_text",
+          "matchMode": "literal",
+          "selector": "pub(super) fn draw_text(",
+          "extractionMode": "rust-function-contract",
+          "minMatches": 1
+        }
+      ]
+    },
+    {
+      "ownerId": "paint-resource",
+      "scope": "font resource identity, digest and fallback policy",
+      "selectors": [
+        {
+          "selectorId": "resource-table",
+          "path": "src/paint/font.rs",
+          "symbol": "FontResourceTable",
+          "matchMode": "literal",
+          "selector": "pub struct FontResourceTable",
+          "extractionMode": "rust-type-contract",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "fallback-policy",
+          "path": "src/paint/font.rs",
+          "symbol": "FontFallbackPolicyId",
+          "matchMode": "literal",
+          "selector": "pub struct FontFallbackPolicyId",
+          "extractionMode": "rust-type-contract",
+          "minMatches": 1
+        }
+      ]
+    },
+    {
+      "ownerId": "studio-substitution",
+      "scope": "document, system and language-specific paint substitution",
+      "selectors": [
+        {
+          "selectorId": "substitution-tables",
+          "path": "rhwp-studio/src/core/font-substitution.ts",
+          "symbol": "SUBST_TABLES",
+          "matchMode": "literal",
+          "selector": "const SUBST_TABLES:",
+          "extractionMode": "typescript-array",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "display-chain",
+          "path": "rhwp-studio/src/core/font-substitution.ts",
+          "symbol": "fontFamilyChainForDisplay",
+          "matchMode": "literal",
+          "selector": "export function fontFamilyChainForDisplay(",
+          "extractionMode": "typescript-function-contract",
+          "minMatches": 1
+        }
+      ]
+    },
+    {
+      "ownerId": "studio-supply",
+      "scope": "webfont catalog and CanvasKit byte plan",
+      "selectors": [
+        {
+          "selectorId": "font-list",
+          "path": "rhwp-studio/src/core/font-loader.ts",
+          "symbol": "FONT_LIST",
+          "matchMode": "literal",
+          "selector": "const FONT_LIST:",
+          "extractionMode": "typescript-array",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "canvaskit-plan",
+          "path": "rhwp-studio/src/core/font-loader.ts",
+          "symbol": "resolveCanvasKitFontPlan",
+          "matchMode": "literal",
+          "selector": "export function resolveCanvasKitFontPlan(",
+          "extractionMode": "typescript-function-contract",
+          "minMatches": 1
+        }
+      ]
+    },
+    {
+      "ownerId": "studio-detection",
+      "scope": "local enumeration, probe and SFNT byte capability",
+      "selectors": [
+        {
+          "selectorId": "detection-method",
+          "path": "rhwp-studio/src/core/local-fonts.ts",
+          "symbol": "getLocalFontDetectionMethod",
+          "matchMode": "literal",
+          "selector": "export function getLocalFontDetectionMethod(",
+          "extractionMode": "typescript-function-contract",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "presence-probe",
+          "path": "rhwp-studio/src/core/local-fonts.ts",
+          "symbol": "probeCandidateFamilies",
+          "matchMode": "literal",
+          "selector": "function probeCandidateFamilies(",
+          "extractionMode": "typescript-predicate",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "sfnt-bytes",
+          "path": "rhwp-studio/src/core/local-fonts.ts",
+          "symbol": "loadLocalFontBytesFor",
+          "matchMode": "literal",
+          "selector": "export async function loadLocalFontBytesFor(",
+          "extractionMode": "typescript-function-contract",
+          "minMatches": 1
+        }
+      ]
+    },
+    {
+      "ownerId": "studio-canvas-patch",
+      "scope": "Canvas2D first-family re-resolution",
+      "selectors": [
+        {
+          "selectorId": "css-family-substitution",
+          "path": "rhwp-studio/src/core/wasm-bridge.ts",
+          "symbol": "substituteCssFontFamily",
+          "matchMode": "literal",
+          "selector": "function substituteCssFontFamily(",
+          "extractionMode": "typescript-function-contract",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "canvas-install",
+          "path": "rhwp-studio/src/core/wasm-bridge.ts",
+          "symbol": "installCanvasFontSubstitution",
+          "matchMode": "literal",
+          "selector": "function installCanvasFontSubstitution(",
+          "extractionMode": "typescript-function-contract",
+          "minMatches": 1
+        }
+      ]
+    },
+    {
+      "ownerId": "asset-authority",
+      "scope": "font file, license and distribution authority",
+      "selectors": [
+        {
+          "selectorId": "asset-index",
+          "path": "assets/fonts/FONTS.md",
+          "symbol": "오픈 라이선스 폰트",
+          "matchMode": "literal",
+          "selector": "## 오픈 라이선스 폰트",
+          "extractionMode": "markdown-table",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "metric-source-index",
+          "path": "ttfs/FONTS.md",
+          "symbol": "폰트 파일 목록",
+          "matchMode": "literal",
+          "selector": "## 폰트 파일 목록",
+          "extractionMode": "markdown-table",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "license-index",
+          "path": "THIRD_PARTY_LICENSES.md",
+          "symbol": "웹 폰트 및 폰트 리소스",
+          "matchMode": "literal",
+          "selector": "## 웹 폰트 및 폰트 리소스",
+          "extractionMode": "markdown-section",
+          "minMatches": 1
+        }
+      ]
+    },
+    {
+      "ownerId": "tests-history",
+      "scope": "regression tests and curated historical evidence",
+      "selectors": [
+        {
+          "selectorId": "studio-substitution-test",
+          "path": "rhwp-studio/tests/font-substitution.test.ts",
+          "symbol": "정부상징 legacy face successor order",
+          "matchMode": "literal",
+          "selector": "정부상징 legacy face는 exact, ROKG successor, 문서 대체 face 순서를 따른다",
+          "extractionMode": "test-evidence",
+          "minMatches": 1
+        },
+        {
+          "selectorId": "government-font-matrix",
+          "path": "mydocs/tech/investigations/issue-4739/task_m100_4739_government_font_successor_matrix.md",
+          "symbol": "정부상징 폰트 후계·대체 매트릭스",
+          "matchMode": "literal",
+          "selector": "# #4739 정부상징 폰트 후계·대체 매트릭스",
+          "extractionMode": "historical-evidence",
+          "minMatches": 1
+        }
+      ]
+    }
+  ]
+}
