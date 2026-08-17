@@ -886,6 +886,11 @@ jobs:
           shared-key: lint
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
+      # `Cargo.toml`의 integration target은 파생 harness를 가리킨다. 깨끗한
+      # checkout에서도 fmt/clippy가 target을 해석하기 전에 먼저 준비한다.
+      - name: Prepare derived Rust test suites
+        run: node scripts/rust-test-suite-manifest.mjs --prepare
+
       - name: Format check
         run: cargo fmt --all -- --check
 
@@ -903,7 +908,6 @@ jobs:
           if [[ -n "$RHWP_TEST_POLICY_BASE_REF" ]]; then
             base_args=(--base-ref "$RHWP_TEST_POLICY_BASE_REF")
           fi
-          node scripts/rust-test-suite-manifest.mjs --prepare
           node --test scripts/tests/rust-test-suite-manifest.test.mjs
           node scripts/rust-test-suite-manifest.mjs --check "${base_args[@]}"
           node --test scripts/tests/rust-unit-test-tiers.test.mjs

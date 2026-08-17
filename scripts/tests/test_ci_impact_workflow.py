@@ -643,6 +643,19 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertNotIn("frontend-unit-gates", archive)
         self.assertNotIn("frontend-package-gates", archive)
 
+    def test_lint_prepares_derived_test_targets_before_cargo_commands(self) -> None:
+        lint = self._job("lint")
+        prepare = self._step("Prepare derived Rust test suites", lint)
+        self.assertIn("node scripts/rust-test-suite-manifest.mjs --prepare", prepare)
+        self.assertLess(
+            lint.index("Prepare derived Rust test suites"),
+            lint.index("Format check"),
+        )
+        self.assertEqual(
+            1,
+            lint.count("node scripts/rust-test-suite-manifest.mjs --prepare"),
+        )
+
     def test_native_skia_starts_after_preflight_without_lane_serialization(self) -> None:
         native = self._job("native-skia-tests")
         self.assertIn("needs: [preflight]", native)

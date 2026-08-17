@@ -1057,7 +1057,7 @@ fn field_closed_in_its_own_paragraph_is_not_left_open() {
     );
 }
 
-// 
+//
 // ===================================================================
 // #4860 벌크빌드 byte-identity 하네스
 // ===================================================================
@@ -1291,16 +1291,28 @@ fn assert_decode_identical(data: &[u8]) {
     let new = parse_para_text(data);
     let reference = parse_para_text_reference(data);
     assert_eq!(new.text, reference.text, "text 불일치: {:02x?}", data);
-    assert_eq!(new.char_offsets, reference.char_offsets, "offsets 불일치: {:02x?}", data);
+    assert_eq!(
+        new.char_offsets, reference.char_offsets,
+        "offsets 불일치: {:02x?}",
+        data
+    );
     let fr_new: Vec<_> = new.field_ranges.iter().map(field_range_key).collect();
     let fr_ref: Vec<_> = reference.field_ranges.iter().map(field_range_key).collect();
     assert_eq!(fr_new, fr_ref, "field_ranges 불일치: {:02x?}", data);
-    assert_eq!(new.tab_extended, reference.tab_extended, "tab_extended 불일치: {:02x?}", data);
+    assert_eq!(
+        new.tab_extended, reference.tab_extended,
+        "tab_extended 불일치: {:02x?}",
+        data
+    );
     let tm_new: Vec<_> = new.title_marks.iter().map(title_mark_key).collect();
     let tm_ref: Vec<_> = reference.title_marks.iter().map(title_mark_key).collect();
     assert_eq!(tm_new, tm_ref, "title_marks 불일치: {:02x?}", data);
     let oe_new: Vec<_> = new.orphan_field_ends.iter().map(orphan_end_key).collect();
-    let oe_ref: Vec<_> = reference.orphan_field_ends.iter().map(orphan_end_key).collect();
+    let oe_ref: Vec<_> = reference
+        .orphan_field_ends
+        .iter()
+        .map(orphan_end_key)
+        .collect();
     assert_eq!(oe_new, oe_ref, "orphan_field_ends 불일치: {:02x?}", data);
     assert_eq!(
         new.text.chars().count(),

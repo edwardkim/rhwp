@@ -101,8 +101,7 @@ fn mcp_declared() {
         .find(|t| t["name"] == "hwp_add_bookmark")
         .expect("hwp_add_bookmark 도구");
     assert_eq!(
-        tool["inputSchema"]["properties"]["name"]["pattern"],
-        r".*\S.*",
+        tool["inputSchema"]["properties"]["name"]["pattern"], r".*\\S.*",
         "MCP schema도 CLI와 같이 빈·공백 이름을 거부해야 한다: {tool}"
     );
 }
