@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use rhwp::document_core::queries::table_extract::extract_tables;
+use rhwp::model::control::Control;
 use rhwp::wasm_api::HwpDocument;
 
 fn rhwp_bin() -> String {
@@ -28,6 +29,21 @@ fn first_top_table(path: &str) -> usize {
         .index
 }
 
+fn table_width(path: &Path, index: usize) -> u32 {
+    let bytes = std::fs::read(path).unwrap();
+    let doc = HwpDocument::from_bytes(&bytes).unwrap();
+    let g = extract_tables(doc.document())
+        .into_iter()
+        .find(|g| g.index == index && g.container_path.is_empty())
+        .expect("표");
+    let Control::Table(t) =
+        &doc.document().sections[g.section].paragraphs[g.paragraph].controls[g.control]
+    else {
+        panic!("표 컨트롤");
+    };
+    t.get_column_widths().iter().sum()
+}
+
 fn temp(tag: &str) -> PathBuf {
     std::env::temp_dir().join(format!(
         "rhwp-fittbl-{tag}-{}-{}.hwpx",
@@ -43,6 +59,7 @@ fn temp(tag: &str) -> PathBuf {
 fn fit_table_writes_output() {
     let src = sample();
     let idx = first_top_table(&src);
+    let before = table_width(Path::new(&src), idx);
     let out = temp("out");
     let idx_s = idx.to_string();
     let output = Command::new(rhwp_bin())
@@ -62,6 +79,8 @@ fn fit_table_writes_output() {
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(v["table"], idx);
     assert!(out.exists());
+    let after = table_width(&out, idx);
+    assert!(after > 0 && after <= before);
     let _ = std::fs::remove_file(&out);
 }
 
