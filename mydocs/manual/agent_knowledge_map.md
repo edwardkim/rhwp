@@ -23,7 +23,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **110개**(그중 `--json` 계약 **79개**, batch 축 **9개**) · MCP 도구 **120개**(무상태 104 + 세션 전용 16) |
+| 표면 규모 | CLI 명령 **85개**(그중 `--json` 계약 **54개**, batch 축 **9개**) · MCP 도구 **104개**(무상태 88 + 세션 전용 16) |
 | 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **261개** · §2 전수 사전 **264개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
@@ -323,8 +323,6 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `cols` | number | 셀을 나눌 열 수 (1 이상) | `edit split-cell-into` |
 | `vertical` | bool | 참이면 행 높이, 거짓이면 열 폭 | `edit resize-table-cell` |
 | `forward` | bool | 참이면 늘리고, 거짓이면 줄인다 | `edit resize-table-cell` |
-| `vertical` | bool | 참이면 행 높이, 거짓이면 열 폭 | `edit resize-table-cell` |
-| `forward` | bool | 참이면 늘리고, 거짓이면 줄인다 | `edit resize-table-cell` |
 | `dx` | number | 가로 이동량 (HWPUNIT, 음수 허용) | `edit move-table` |
 | `dy` | number | 세로 이동량 (HWPUNIT, 음수 허용) | `edit move-table` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
@@ -336,18 +334,16 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
 | `cellPara` | number | 셀 안 문단 번호 (0부터) | `edit insert-text-in-cell`·`edit delete-text-in-cell` |
 | `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark`·`rename-bookmark`·`delete-control` |
-| `isHeader` | bool | 머리말이면 true, 꼬리말이면 false | `edit insert-header-footer`·`delete-header-footer` |
-| `applyTo` | number | 머리말/꼬리말 적용 대상 (0 양쪽, 1 짝수, 2 홀수) | `edit insert-header-footer`·`delete-header-footer` |
-| `exists` | bool | 선택한 구역·적용 대상에 머리말/꼬리말이 실제로 있는지 | `header-footer` |
-| `headersFooters` | array | 머리말/꼬리말 목록의 종류·구역·적용 대상 좌표 | `headers-footers` |
+| `isHeader` | bool | 머리말이면 true, 꼬리말이면 false | `edit insert-header-footer`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf` |
+| `applyTo` | number | 머리말/꼬리말 적용 대상 (0 양쪽, 1 짝수, 2 홀수) | `edit insert-header-footer`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf` |
 | `name` | string | 책갈피 이름 | `edit add-bookmark`·`rename-bookmark` |
-| `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell` |
-| `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text` |
+| `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell`·`insert-header-footer-text`·`set-header-footer-text` |
+| `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text`·`insert-header-footer-text` |
 | `below` | bool | 지정 행 아래에 끼울지 | `edit insert-row` |
 | `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
-| `count` | number | 지울 글자 수 (1 이상) | `edit delete-text` |
+| `count` | number | 지울 글자 수 (1 이상) | `edit delete-text`·`delete-hf-text` |
 | `docId` | string | 세션 핸들. 서버 프로세스 수명과 같고 영속되지 않는다 | 세션 도구 12종 |
 
 #### 문서 메타
@@ -364,6 +360,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `charCount` | number | IR 본문 글자 수 | `word-count` |
 | `wordCount` | number | 공백 분리 어절 수 | `word-count` |
 | `bookmarks` | array | 책갈피 목록 `{name,sec,para,ctrlIdx,charPos}` | `bookmarks` |
+| `exists` | bool | 해당 머리말/꼬리말이 있는지 | `header-footer` |
+| `headersFooters` | array | 머리말/꼬리말 목록 `{sectionIdx,isHeader,applyTo,label}` | `headers-footers` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
 | `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |
@@ -437,7 +435,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
 | `chartCount` | number | 문서의 차트 개수(글상자·표 셀 안 포함) | `chart-to-csv` |
-| `charts` | array | 차트 목록 `{chart,rowCount,colCount,csv,output?}` — `csv` 는 **문서 파생** | `chart-to-csv` |
+| `charts` | array | 차트 목록. `charts` 명령은 `{index,section,paragraph,control}`(`--chart N`=`index+1`). `chart-to-csv` 는 `{chart,rowCount,colCount,csv,output?}` — `csv` 는 **문서 파생** | `charts`·`chart-to-csv` |
 | `chart` | number | 대상 차트 번호. **문서 순서 1부터**(표의 `table` 은 0부터 — 다른 규약이다) | `chart-to-csv`·`csv-to-chart` |
 | `wrote` | array | **어느 표현에 실제로 썼나** — `["zipPart","nestedCopy"]`(HWPX) / `["nestedCopy"]`(HWP5) / `[]`(거부·dry-run·무변경). 값이 OOXML 두 곳에 중복 저장돼 있어 한쪽만 쓰면 HWP 변환에서 편집이 사라진다 | `csv-to-chart` |
 
@@ -1092,23 +1090,23 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
 **`edit` 하위 58개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`delete-text-in-cell`·`insert-text`·`delete-text`·
-`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`split-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`split-cell-into`·`split-table`·`fit-table`·`resize-table`·`resize-table-cell`·`move-table`·`merge-table`·`set-column-widths`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`delete-equation`·`add-bookmark`·`delete-bookmark`·`delete-table`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf`·`split-paragraph-in-cell`·`merge-paragraph-in-cell`·`apply-char-format`·`apply-para-format`·`apply-style`·`apply-cell-style`·`delete-control`·`insert-header-footer`·`insert-field-in-hf`·`set-column-def`·`set-numbering-restart`·`set-page-hide`·`transpose-table`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`split-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`split-cell-into`·`split-table`·`fit-table`·`resize-table`·`merge-table`·`set-column-widths`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`delete-equation`·`add-bookmark`·`delete-bookmark`·`delete-table`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf`·`split-paragraph-in-cell`·`merge-paragraph-in-cell`·`apply-char-format`·`apply-para-format`·`apply-style`·`apply-cell-style`·`delete-control`·`insert-header-footer`·`insert-field-in-hf`·`set-column-def`·`set-numbering-restart`·`set-page-hide`·`transpose-table`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 104개
+## 6. MCP 도구 전수 지도 — 113개
 
-### 6-1. 무상태 87개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 97개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
 | `hwp_info` | `info --json` | `path` |
 | `hwp_word_count` | `word-count --json` | `path` |
 | `hwp_bookmarks` | `bookmarks --json` | `path` |
+| `hwp_header_footer` | `header-footer --json` | `path` |
+| `hwp_headers_footers` | `headers-footers --json` | `path` |
 | `hwp_charts` | `charts --json` | `path` |
-| `hwp_transpose_table` | `edit transpose-table --json` | `path`,`table` |
-| `hwp_delete_equation` | `edit delete-equation --json` | `path`,`section`,`paragraph`,`ctrl` |
 | `hwp_digest` | `digest --json` | `path` |
 | `hwp_export_text` | `export-text --json` | `path` |
 | `hwp_export_structure` | `export-structure --json` | `path` |
@@ -1144,54 +1142,46 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_replace_text` | `edit replace-text --json` | `path`,`find`,`replace` |
 | `hwp_set_checkbox` | `edit replace-text --find □ --replace ☑ --occurrence` | `path`,`occurrence`,`output` |
 | `hwp_set_cell` | `edit set-cell --json` | `path`,`table`,`row`,`col`,`text` |
-| `hwp_insert_text_in_cell` | `edit insert-text-in-cell --json` | `path`,`table`,`row`,`col`,`text` |
 | `hwp_insert_row` | `edit insert-row --json` | `path`,`table`,`row` |
 | `hwp_insert_col` | `edit insert-col --json` | `path`,`table`,`col` |
-| `hwp_insert_table` | `edit insert-table --json` | `path`,`rows`,`cols` |
 | `hwp_delete_row` | `edit delete-row --json` | `path`,`table`,`row` |
 | `hwp_delete_col` | `edit delete-col --json` | `path`,`table`,`col` |
 | `hwp_merge_cells` | `edit merge-cells --json` | `path`,`table`,`row`,`col`,`endRow`,`endCol` |
 | `hwp_split_cell` | `edit split-cell --json` | `path`,`table`,`row`,`col` |
 | `hwp_split_cell_into` | `edit split-cell-into --json` | `path`,`table`,`row`,`col`,`rows`,`cols` |
 | `hwp_resize_table_cell` | `edit resize-table-cell --json` | `path`,`table`,`row`,`col` |
-| `hwp_resize_table_cell` | `edit resize-table-cell --json` | `path`,`table`,`row`,`col` |
 | `hwp_move_table` | `edit move-table --json` | `path`,`table`,`dx`,`dy` |
 | `hwp_insert_footnote` | `edit insert-footnote --json` | `path` |
 | `hwp_insert_endnote` | `edit insert-endnote --json` | `path` |
 | `hwp_delete_footnote` | `edit delete-footnote --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_delete_equation` | `edit delete-equation --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_set_numbering_restart` | `edit set-numbering-restart --json` | `path`,`mode` |
 | `hwp_add_bookmark` | `edit add-bookmark --json` | `path`,`name` |
 | `hwp_delete_bookmark` | `edit delete-bookmark --json` | `path`,`section`,`paragraph`,`ctrl` |
-| `hwp_delete_table` | `edit delete-table --json` | `path`,`table` |
-| `hwp_insert_header_footer` | `edit insert-header-footer --json` | `path` |
 | `hwp_rename_bookmark` | `edit rename-bookmark --json` | `path`,`section`,`paragraph`,`ctrl`,`name` |
 | `hwp_delete_header_footer` | `edit delete-header-footer --json` | `path` |
-| `hwp_delete_control` | `edit delete-control --json` | `path`,`section`,`paragraph`,`ctrl` |
 | `hwp_insert_header_footer_text` | `edit insert-header-footer-text --json` | `path`,`text` |
-| `hwp_headers_footers` | `headers-footers --json` | `path` |
 | `hwp_set_header_footer_text` | `edit set-header-footer-text --json` | `path`,`text` |
-| `hwp_set_hf_picture` | `edit set-hf-picture --json` | `path`,`props` |
-| `hwp_header_footer` | `header-footer --json` | `path` |
-| `hwp_apply_hf_template` | `edit apply-hf-template --json` | `path`,`template` |
 | `hwp_delete_hf_text` | `edit delete-hf-text --json` | `path`,`count` |
-| `hwp_insert_field_in_hf` | `edit insert-field-in-hf --json` | `path`,`fieldType` |
 | `hwp_split_paragraph_in_hf` | `edit split-paragraph-in-hf --json` | `path` |
-| `hwp_toggle_hide_hf` | `edit toggle-hide-hf --json` | `path` |
 | `hwp_merge_paragraph_in_hf` | `edit merge-paragraph-in-hf --json` | `path` |
 | `hwp_split_paragraph_in_cell` | `edit split-paragraph-in-cell --json` | `path`,`table`,`row`,`col` |
-| `hwp_merge_paragraph_in_cell` | `edit merge-paragraph-in-cell --json` | `path`,`table`,`row`,`col` |
-| `hwp_set_column_widths` | `edit set-column-widths --json` | `path`,`table`,`widths` |
-| `hwp_apply_char_format` | `edit apply-char-format --json` | `path`,`props` |
 | `hwp_split_paragraph` | `edit split-paragraph --json` | `path` |
+| `hwp_set_page_hide` | `edit set-page-hide --json` | `path` |
+| `hwp_transpose_table` | `edit transpose-table --json` | `path`,`table` |
+| `hwp_merge_paragraph_in_cell` | `edit merge-paragraph-in-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_apply_char_format` | `edit apply-char-format --json` | `path`,`props` |
 | `hwp_apply_para_format` | `edit apply-para-format --json` | `path`,`props` |
 | `hwp_apply_style` | `edit apply-style --json` | `path`,`style` |
-| `hwp_set_numbering_restart` | `edit set-numbering-restart --json` | `path`,`mode` |
-| `hwp_apply_para_format_in_hf` | `edit apply-para-format-in-hf --json` | `path`,`props` |
-| `hwp_apply_endnote_shape` | `edit apply-endnote-shape --json` | `path`,`props` |
-| `hwp_insert_footnote_text` | `edit insert-footnote-text --json` | `path`,`ctrl`,`text` |
-| `hwp_delete_text_in_footnote` | `edit delete-text-in-footnote --json` | `path`,`count` |
-| `hwp_split_paragraph_in_footnote` | `edit split-paragraph-in-footnote --json` | `path` |
-| `hwp_merge_paragraph_in_footnote` | `edit merge-paragraph-in-footnote --json` | `path` |
-| `hwp_apply_para_format_in_footnote` | `edit apply-para-format-in-footnote --json` | `path`,`props` |
+| `hwp_apply_cell_style` | `edit apply-cell-style --json` | `path`,`table`,`row`,`col`,`style` |
+| `hwp_apply_para_format_in_cell` | `edit apply-para-format-in-cell --json` | `path`,`table`,`row`,`col`,`props` |
+| `hwp_delete_control` | `edit delete-control --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_insert_table` | `edit insert-table --json` | `path`,`rows`,`cols` |
+| `hwp_insert_text_in_cell` | `edit insert-text-in-cell --json` | `path`,`table`,`row`,`col`,`text` |
+| `hwp_delete_table` | `edit delete-table --json` | `path`,`table` |
+| `hwp_insert_header_footer` | `edit insert-header-footer --json` | `path` |
+| `hwp_insert_field_in_hf` | `edit insert-field-in-hf --json` | `path`,`fieldType` |
+| `hwp_set_column_def` | `edit set-column-def --json` | `path`,`count` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
