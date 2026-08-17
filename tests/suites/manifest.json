@@ -625,6 +625,7 @@
       "tests/table_csv_contract.rs"
     ],
     "regression_suite_027": [
+      "tests/cases/apply_hf_template_contract.rs",
       "tests/cell_square_picture_anchor.rs",
       "tests/hwp5_password_fixture.rs",
       "tests/issue_1116.rs",
