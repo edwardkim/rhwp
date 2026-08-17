@@ -2237,6 +2237,37 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     &["schemaVersion", "source", "count", "headersFooters"],
                 ),
         tool_with_optional_args(
+                    "hwp_set_header_footer_text",
+                    "기존 머리말/꼬리말 문단 텍스트를 통째로 바꾼다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 delete_text_in_header_footer_native + insert_text_in_header_footer_native 배선.",
+                    serde_json::json!({
+                        "type": "object",
+                        "properties": {
+                            "path": { "type": "string" },
+                            "text": { "type": "string", "description": "바꿀 문자열 (빈 문자열 불가)" },
+                            "section": { "type": "integer", "minimum": 0 },
+                            "header": { "type": "boolean" },
+                            "footer": { "type": "boolean" },
+                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
+                            "paragraph": { "type": "integer", "minimum": 0, "description": "머리말/꼬리말 안 문단 인덱스 (0부터)" },
+                            "output": { "type": "string" },
+                            "dryRun": { "type": "boolean" }
+                        },
+                        "required": ["path", "text"],
+                    }),
+                    "edit",
+                    serde_json::json!(["edit", "set-header-footer-text", "{path}", "--text", "{text}", "--json"]),
+                    serde_json::json!([
+                        { "when": "section", "args": ["--section", "{section}"] },
+                        { "when": "header", "args": ["--header"] },
+                        { "when": "footer", "args": ["--footer"] },
+                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                        { "when": "output", "args": ["-o", "{output}"] },
+                        { "when": "dryRun", "args": ["--dry-run"] }
+                    ]),
+                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+                ),
+        tool_with_optional_args(
             "hwp_delete_table",
             "[#5028] 본문 최상위 표를 지운다. 좌표는 export-tables 의 index. 코어 delete_table_control_native 배선.",
             serde_json::json!({
@@ -3009,7 +3040,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 30] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 31] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3084,6 +3115,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 30] = [
     ("rename-bookmark", "책갈피 이름 변경"),
     ("delete-header-footer", "머리말/꼬리말 삭제"),
     ("insert-header-footer-text", "머리말/꼬리말 텍스트 삽입"),
+    ("set-header-footer-text", "머리말/꼬리말 문단 텍스트 교체"),
 
 ];
 
@@ -18430,6 +18462,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("delete-footnote") => edit_delete_footnote(&args[1..]),
         Some("add-bookmark") => edit_add_bookmark(&args[1..]),
         Some("delete-bookmark") => edit_delete_bookmark(&args[1..]),
+        Some("set-header-footer-text") => edit_set_header_footer_text(&args[1..]),
         Some("insert-header-footer-text") => edit_insert_header_footer_text(&args[1..]),
         Some("delete-header-footer") => edit_delete_header_footer(&args[1..]),
         Some("rename-bookmark") => edit_rename_bookmark(&args[1..]),
@@ -29233,6 +29266,178 @@ fn headers_footers(args: &[String]) -> i32 {
     }
     EXIT_OK
 }
+
+fn edit_set_header_footer_text(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-header-footer-text <파일> --header|--footer --text <문자열> [--section N] [--apply-to 0|1|2] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut is_header: Option<bool> = None;
+    let mut text_arg: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut apply_to: u8 = 0;
+    let mut para: usize = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--header" => {
+                if is_header.replace(true).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--footer" => {
+                if is_header.replace(false).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--text" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => text_arg = Some(v),
+                    None => {
+                        eprintln!("오류: --text 뒤에 바꿀 문자열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--section" | "--apply-to" | "--para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--section" => match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--apply-to" => match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => apply_to = n,
+                        _ => {
+                            eprintln!(
+                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<usize>() {
+                        Ok(n) => para = n,
+                        Err(_) => {
+                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(is_header), Some(text)) = (file_path, is_header, text_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if text.is_empty() {
+        eprintln!("오류: --text 는 빈 문자열일 수 없습니다.");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        let info_raw =
+            match doc.get_header_footer_para_info_native(section, is_header, apply_to, para) {
+                Ok(s) => s,
+                Err(e) => {
+                    eprintln!("오류: 머리말/꼬리말 문단 조회 실패 - {e}");
+                    return EXIT_RUNTIME;
+                }
+            };
+        let info: serde_json::Value = match serde_json::from_str(&info_raw) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("오류: 머리말/꼬리말 문단 JSON 파싱 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+        let char_count = info["charCount"].as_u64().unwrap_or(0) as usize;
+        if char_count > 0 {
+            if let Err(e) = doc.delete_text_in_header_footer_native(
+                section, is_header, apply_to, para, 0, char_count,
+            ) {
+                eprintln!("오류: 머리말/꼬리말 기존 텍스트 삭제 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        }
+        if let Err(e) =
+            doc.insert_text_in_header_footer_native(section, is_header, apply_to, para, 0, text)
+        {
+            eprintln!("오류: 머리말/꼬리말 텍스트 교체 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    let kind = if is_header { "머리말" } else { "꼬리말" };
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "hfset",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "isHeader": is_header,
+            "applyTo": apply_to,
+            "paragraph": para,
+            "text": text
+        }),
+        &[(section, 0)],
+        &format!("{kind} 텍스트 교체 예정: {file_path} 구역 {section} 문단 {para}"),
+        &format!("{kind} 텍스트 교체 완료: {file_path}"),
+    )
+}
+
+/// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
 
 fn edit_insert_image(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]";
