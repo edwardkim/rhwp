@@ -8,6 +8,9 @@ mod issue_4367_hwp3_convert_fourth_contract;
 #[path = "../cases/issue_4956_page_margin_rewrap.rs"]
 mod issue_4956_page_margin_rewrap;
 
+#[path = "../cases/issue_5136_caption_attr_bit29.rs"]
+mod issue_5136_caption_attr_bit29;
+
 #[path = "../diag_1042_used_breakdown.rs"]
 mod diag_1042_used_breakdown;
 
