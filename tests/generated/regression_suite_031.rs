@@ -5,6 +5,9 @@
 #[path = "../cases/insert_column_break_contract.rs"]
 mod insert_column_break_contract;
 
+#[path = "../cases/set_page_border_fill_contract.rs"]
+mod set_page_border_fill_contract;
+
 #[path = "../diag_1042_2024_reverse.rs"]
 mod diag_1042_2024_reverse;
 

@@ -1134,6 +1134,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_group_shapes` | `edit group-shapes --json` | `path`,`targets` |
 | `hwp_set_page_def` | `edit set-page-def --json` | `path`,`props` |
 | `hwp_set_section_def` | `edit set-section-def --json` | `path`,`props` |
+| `hwp_set_page_border_fill` | `edit set-page-border-fill --json` | `path`,`props` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_delete_text_in_footnote` | `edit delete-text-in-footnote --json` | `path`,`count` |

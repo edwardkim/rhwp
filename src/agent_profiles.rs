@@ -150,6 +150,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_group_shapes",
             "hwp_set_page_def",
             "hwp_set_section_def",
+            "hwp_set_page_border_fill",
             "hwp_run_plan",
             "hwp_search",
             "hwp_export_svg",
