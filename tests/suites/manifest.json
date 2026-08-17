@@ -178,6 +178,7 @@
     ],
     "regression_suite_006": [
       "tests/cases/delete_text_contract.rs",
+      "tests/cases/ungroup_shape_contract.rs",
       "tests/cli_json_contract.rs",
       "tests/digest_macro_contract.rs",
       "tests/issue_1434_clickhere_guide_hancom_command.rs",

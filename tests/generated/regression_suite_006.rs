@@ -5,6 +5,9 @@
 #[path = "../cases/delete_text_contract.rs"]
 mod delete_text_contract;
 
+#[path = "../cases/ungroup_shape_contract.rs"]
+mod ungroup_shape_contract;
+
 #[path = "../cli_json_contract.rs"]
 mod cli_json_contract;
 
