@@ -5,6 +5,9 @@
 #[path = "../cases/insert_col_contract.rs"]
 mod insert_col_contract;
 
+#[path = "../cases/insert_footnote_text_contract.rs"]
+mod insert_footnote_text_contract;
+
 #[path = "../convert_verify_corpus_ratchet.rs"]
 mod convert_verify_corpus_ratchet;
 

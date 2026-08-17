@@ -157,6 +157,7 @@
     ],
     "regression_suite_005": [
       "tests/cases/insert_col_contract.rs",
+      "tests/cases/insert_footnote_text_contract.rs",
       "tests/convert_verify_corpus_ratchet.rs",
       "tests/diag_1042_table_row_height.rs",
       "tests/hml_serializer.rs",

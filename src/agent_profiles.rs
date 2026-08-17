@@ -134,6 +134,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_set_page_hide",
             "hwp_transpose_table",
             "hwp_apply_para_format_in_hf",
+            "hwp_insert_footnote_text",
             "hwp_set_checkbox",
             "hwp_replace_text",
             "hwp_insert_text",
