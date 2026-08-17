@@ -2317,6 +2317,16 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     ),
     (
         "edit",
+        "rows",
+        "split-cell-into 전용. 스윕 레시피는 fill-fields/set-cell 이라 rows 를 안 낸다",
+    ),
+    (
+        "edit",
+        "cols",
+        "split-cell-into 전용. 스윕 레시피는 fill-fields/set-cell 이라 cols 를 안 낸다",
+    ),
+    (
+        "edit",
         "count",
         "delete-row/delete-col 전용. 스윕 레시피는 fill-fields/set-cell 이라 count 를 안 낸다",
     ),

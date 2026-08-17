@@ -319,6 +319,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-footnote` |
 | `below` | bool | 지정 행 아래에 끼울지 | `edit insert-row` |
 | `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
+| `rows` | number | 셀을 나눌 행 수 (1 이상) | `edit split-cell-into` |
+| `cols` | number | 셀을 나눌 열 수 (1 이상) | `edit split-cell-into` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
 | `rows` | number | 생성할 표의 행 수 (1 이상) | `edit insert-table` |
@@ -1083,13 +1085,12 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 52개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`insert-text`·`delete-text`·
-`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`delete-control`·`delete-table`·`insert-header-footer`·`insert-image`·`redact`·`sanitize`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`set-hf-picture`·`apply-hf-template`·`delete-hf-text`·`insert-field-in-hf`·`split-paragraph-in-hf`·`toggle-hide-hf`·`merge-paragraph-in-hf`·`apply-char-format`·`split-paragraph`·`apply-para-format`·`apply-style`·`set-numbering-restart`·`apply-para-format-in-hf`·`apply-endnote-shape`·`insert-footnote-text`·`delete-text-in-footnote`·`split-paragraph-in-footnote`·`merge-paragraph-in-footnote`·`apply-para-format-in-footnote`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 53개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`insert-text`·`delete-text`·`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`split-cell-into`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`delete-control`·`delete-table`·`insert-header-footer`·`insert-image`·`redact`·`sanitize`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`set-hf-picture`·`apply-hf-template`·`delete-hf-text`·`insert-field-in-hf`·`split-paragraph-in-hf`·`toggle-hide-hf`·`merge-paragraph-in-hf`·`apply-char-format`·`split-paragraph`·`apply-para-format`·`apply-style`·`set-numbering-restart`·`apply-para-format-in-hf`·`apply-endnote-shape`·`insert-footnote-text`·`delete-text-in-footnote`·`split-paragraph-in-footnote`·`merge-paragraph-in-footnote`·`apply-para-format-in-footnote`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 103개
+## 6. MCP 도구 전수 지도 — 104개
 
 ### 6-1. 무상태 87개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
@@ -1144,6 +1145,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_delete_col` | `edit delete-col --json` | `path`,`table`,`col` |
 | `hwp_merge_cells` | `edit merge-cells --json` | `path`,`table`,`row`,`col`,`endRow`,`endCol` |
 | `hwp_split_cell` | `edit split-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_split_cell_into` | `edit split-cell-into --json` | `path`,`table`,`row`,`col`,`rows`,`cols` |
 | `hwp_insert_footnote` | `edit insert-footnote --json` | `path` |
 | `hwp_insert_endnote` | `edit insert-endnote --json` | `path` |
 | `hwp_delete_footnote` | `edit delete-footnote --json` | `path`,`section`,`paragraph`,`ctrl` |

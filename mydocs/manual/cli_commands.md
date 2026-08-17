@@ -1112,6 +1112,9 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit split-cell <파일> --table <번호> --row <행> --col <열> [-o <출력>] [--dry-run] [--verify] [--json]` (#5010)
 본문 최상위 표의 병합 셀을 다시 나눈다. 코어 `split_table_cell_native`.
 
+### `edit split-cell-into <파일> --table <번호> --row <행> --col <열> --rows <행수> --cols <열수> [--equal-row-height] [--merge-first] [-o <출력>] [--dry-run] [--verify] [--json]` (#5120)
+본문 최상위 표의 셀을 n행 × m열로 나눈다. 코어 `split_table_cell_into_native`. `--rows`/`--cols` 는 1 이상이다.
+
 ### `edit insert-footnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4998)
 문단 좌표에 각주를 끼운다. 코어 `insert_footnote_native`.
 
@@ -1296,7 +1299,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 52종(`fill-fields`/`replace-text`/`set-cell`/`insert-text-in-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-table`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`delete-control`/`delete-table`/`insert-header-footer`/`insert-image`/`redact`/`sanitize`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`set-hf-picture`/`apply-hf-template`/`delete-hf-text`/`insert-field-in-hf`/`split-paragraph-in-hf`/`toggle-hide-hf`/`merge-paragraph-in-hf`/`apply-char-format`/`split-paragraph`/`apply-para-format`/`apply-style`/`set-numbering-restart`/`apply-para-format-in-hf`/`apply-endnote-shape`/`insert-footnote-text`/`delete-text-in-footnote`/`split-paragraph-in-footnote`/`merge-paragraph-in-footnote`/`apply-para-format-in-footnote`)은
+`edit` 53종(`fill-fields`/`replace-text`/`set-cell`/`insert-text-in-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-table`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`split-cell-into`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`delete-control`/`delete-table`/`insert-header-footer`/`insert-image`/`redact`/`sanitize`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`set-hf-picture`/`apply-hf-template`/`delete-hf-text`/`insert-field-in-hf`/`split-paragraph-in-hf`/`toggle-hide-hf`/`merge-paragraph-in-hf`/`apply-char-format`/`split-paragraph`/`apply-para-format`/`apply-style`/`set-numbering-restart`/`apply-para-format-in-hf`/`apply-endnote-shape`/`insert-footnote-text`/`delete-text-in-footnote`/`split-paragraph-in-footnote`/`merge-paragraph-in-footnote`/`apply-para-format-in-footnote`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`
