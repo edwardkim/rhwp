@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_005
 
+#[path = "../cases/apply_style_contract.rs"]
+mod apply_style_contract;
+
 #[path = "../cases/insert_col_contract.rs"]
 mod insert_col_contract;
 
