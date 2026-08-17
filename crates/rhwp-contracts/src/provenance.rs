@@ -102,6 +102,14 @@ pub const MAP: &[CommandProvenance] = &[
         note: "count·sec·para·ctrlIdx·charPos 는 엔진 좌표다. 이름은 문서가 정한다.",
     },
     CommandProvenance {
+        command: "header-footer",
+        untrusted: &[f(
+            "text",
+            "get_header_footer_native — 머리말/꼬리말 본문 (exists 일 때만)",
+        )],
+        note: "section·isHeader·applyTo·exists·좌표는 엔진 값이다. 본문은 exists 일 때만 실린다.",
+    },
+    CommandProvenance {
         command: "export-text",
         untrusted: &[
             f(
