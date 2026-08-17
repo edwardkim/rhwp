@@ -1865,6 +1865,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
+            "hwp_delete_shape",
+            "본문 도형 컨트롤을 지운다. section/para/ctrl 은 0 기준. 코어 delete_shape_control_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-shape", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_insert_text",
             "[#4990] 문단 좌표에 새 텍스트를 삽입해 새 문서를 만든다 — 기존 문자열을 바꾸는 replace-text/fill-fields/set-cell 과 달리, **없는 자리에 글자를 넣는** 축. 주소는 search 와 같다(section/paragraph/offset, 전부 0 기준). offset 이 문단 문자 수와 같으면 끝에 붙이고, 넘으면 인자 오류다. 빈 문자열은 거부한다. 산출물은 입력 형식을 따른다.",
             serde_json::json!({
@@ -7644,6 +7667,13 @@ fn print_help() {
     println!();
     println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_delpic.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-shape <파일> --section N --para N --ctrl N [옵션]");
+    println!("      본문 도형 컨트롤을 지운다");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_delshape.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("      edit 명령 공통: 산출물은 **입력 형식을 보존**한다 (HWPX 입력 → HWPX 산출).");
