@@ -169,15 +169,19 @@ test('PR은 파생 suite 산출물과 Cargo generated target 블록을 커밋할
   assert.match(errors[2], /Cargo\.toml/);
 });
 
-test('개발자 가이드가 원본-only 제출과 검토 단계 생성을 안내한다', () => {
-  const guides = [
-    'CONTRIBUTING.md',
+test('기여자 가이드는 원본-only 제출을 안내한다', () => {
+  const guide = readFileSync(path.join(ROOT, 'CONTRIBUTING.md'), 'utf8');
+  for (const expected of [/tests\/cases/, /PR review|CI/, /tests\/generated/]) {
+    assert.match(guide, expected);
+  }
+});
+
+test('검토·개발 가이드는 파생 suite 준비 경로를 안내한다', () => {
+  const reviewGuides = [
     'mydocs/manual/pr_review/local_validation.md',
     'mydocs/manual/dev_environment_guide.md',
-  ].map((relativePath) =>
-    readFileSync(path.join(ROOT, relativePath), 'utf8'),
-  );
-  for (const guide of guides) {
+  ].map((relativePath) => readFileSync(path.join(ROOT, relativePath), 'utf8'));
+  for (const guide of reviewGuides) {
     assert.match(guide, /tests\/cases/);
     assert.match(guide, /PR review|PR 검토|CI/);
     assert.match(guide, /rust-test-suite-manifest\.mjs --prepare/);
