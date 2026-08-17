@@ -767,6 +767,12 @@ pub(crate) struct InlineCursor<'a> {
     /// 한컴 원본은 소프트 하이픈을 리터럴 U+00AD 로도, 제어 표기로도 쓴다. 출처가
     /// 제어 표기(HWP5 `control_mask` 비트 24)일 때만 요소로 내려 원본 표기를 지킨다.
     pub soft_hyphen_as_element: bool,
+    /// [#5174] 이 문단의 묶음 빈칸을 `<hp:nbSpace/>` 요소로 내릴지 여부.
+    ///
+    /// 하이픈과 같은 계약이다 — 한컴 원본은 U+00A0 을 요소로도, 리터럴로도 쓴다
+    /// (HWPX 실측: 요소 26문서 · 리터럴 20문서 · 혼용 0문서). 출처가 제어·요소 표기
+    /// (`control_mask` 비트 30)일 때만 요소로 내린다.
+    pub nb_space_as_element: bool,
 }
 
 impl InlineCursor<'_> {
@@ -831,13 +837,25 @@ pub(crate) fn render_hp_t_content(
             // 요소를 텍스트 추출에 싣지 않지만 리터럴은 문자로 실어, 저장본의 추출
             // 텍스트·재조판이 원본과 달라진다(10k 스윕 figure-space-only 1,970건).
             //
-            // 한컴 원본 실측(hwpx 300건): U+2007 은 fwSpace 요소 530회 · 리터럴 0회로
-            // **항상 요소**다. 반면 U+00A0 은 nbSpace 요소 15회 · 리터럴 9회로 섞여 있어
-            // 요소로 강제하면 리터럴이던 원본에서 한글 추출 텍스트가 사라진다(실측 23건).
-            // IR 이 두 표기를 구분하지 못하는 한 U+00A0 은 기존대로 리터럴로 둔다.
+            // 한컴 원본 실측(hwpx 전수): U+2007 은 fwSpace 요소 530회 · 리터럴 0회로
+            // **항상 요소**다. 반면 U+00A0 은 요소 26문서 · 리터럴 20문서로 섞여 있어
+            // 요소로 강제하면 리터럴이던 원본에서 한글 추출 텍스트가 사라진다.
+            // 그래서 U+00A0 만 아래에서 출처 표기를 따라간다(#5174).
             '\u{2007}' => {
                 flush_buf(&mut t_xml, &mut buf);
                 t_xml.push_str("<hp:fwSpace/>");
+            }
+            // [#5174] 묶음 빈칸은 U+2007 과 달리 **원본 표기를 따라간다.** 종전에는 늘
+            // 리터럴로 냈는데(표현 강등), 원본이 제어·요소 표기였으면 한글 추출 텍스트에
+            // 없던 공백이 생겨 원본과 어긋난다. 반대로 리터럴 원본을 요소로 바꾸면 글자가
+            // 사라진다 — 그래서 어느 한쪽으로 강제하지 않고 출처를 보존한다.
+            //
+            // 출처 신호는 `control_mask` 비트 30 이다(`cursor` 가 나른다). HWP5 원본은
+            // PARA_HEADER 가 직접 주고(제어코드 존재와 5,553/5,553 일치), HWPX 원본은
+            // 파서가 `<hp:nbSpace/>` 를 만났을 때 세운다.
+            '\u{00A0}' if cursor.nb_space_as_element => {
+                flush_buf(&mut t_xml, &mut buf);
+                t_xml.push_str("<hp:nbSpace/>");
             }
             // [#4895] 소프트 하이픈(U+00AD)은 U+2007 과 달리 **원본 표기를 따라간다.**
             // 종전에는 늘 `<hp:hyphen/>` 요소로 내렸는데(#4776), 한컴이 만든 문서는
@@ -1203,6 +1221,8 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         title_marks: &para.title_marks,
         // [#4895] 출처가 제어 표기였던 문단만 `<hp:hyphen/>` 로 되돌린다.
         soft_hyphen_as_element: para.control_mask & (1u32 << 0x0018) != 0,
+        // [#5174] 같은 계약 — 출처가 제어·요소 표기였던 문단만 `<hp:nbSpace/>` 로 되돌린다.
+        nb_space_as_element: para.control_mask & (1u32 << 0x001E) != 0,
         ..Default::default()
     };
 
@@ -3250,6 +3270,11 @@ mod tests {
             "요소로 내렸으면 리터럴은 남지 않는다: {xml:?}"
         );
     }
+
+    // [#5174] 묶음 빈칸 표기 보존 계약(`nb_space_as_element`)은 실제 문서 왕복으로
+    // `tests/cases/issue_5174_nbspace_representation.rs` 가 지킨다. 제품 소스의
+    // 단위시험을 늘리지 않으려고 여기 두지 않았다 — `render_hp_t_content` 가
+    // `pub(crate)` 라 통합 테스트는 저장·재로드 축으로 같은 계약을 검사한다.
 
     /// 쪽 번호 시작 쪽 컨트롤(`pgct`)은 `<hp:ctrl><hp:pageNumCtrl>` 로 나가야 한다.
     ///
