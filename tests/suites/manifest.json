@@ -282,6 +282,7 @@
       "tests/suites/issue_regression_pilot/issue_2097_1730000_real_doc_pin.rs"
     ],
     "regression_suite_011": [
+      "tests/cases/set_numbering_restart_contract.rs",
       "tests/edit_set_cell_contract.rs",
       "tests/issue_1028_hwpx_textbox_vertical.rs",
       "tests/issue_1271_hwpx_behind_text_table.rs",

@@ -631,6 +631,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 | "hwp_set_column_def"
                 | "hwp_apply_para_format"
                 | "hwp_apply_style"
+                | "hwp_set_numbering_restart"
         )
     }
 
@@ -1877,6 +1878,33 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "section", "paragraph", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
+            "hwp_set_numbering_restart",
+            "문단 번호 매기기를 다시 시작한다. mode 0=해제, 1=이전 이어, 2=새 시작. 코어 set_numbering_restart_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "mode": { "type": "integer", "minimum": 0, "description": "0=해제, 1=이전 이어, 2=새 시작" },
+                    "count": { "type": "integer", "minimum": 0, "description": "mode=2 일 때 시작 번호" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "mode"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-numbering-restart", "{path}", "--mode", "{mode}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "count", "args": ["--count", "{count}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_insert_row",
             "[#4994] 본문 최상위 표에 행을 끼운다. 좌표는 export-tables 의 index. below 면 지정 행 아래, 아니면 위. 코어 insert_table_row_native 배선.",
             serde_json::json!({
@@ -3094,7 +3122,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 35] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 36] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3147,6 +3175,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 35] = [
     (
         "apply-style",
         "문단 스타일 적용 — --style [--section] [--para]",
+    ),
+    (
+        "set-numbering-restart",
+        "번호 다시 시작 — --mode [--count] [--section] [--para]",
     ),
     ("insert-row", "표 행 삽입 — --table/--row [--below]"),
     ("insert-col", "표 열 삽입 — --table/--col [--right]"),
@@ -4157,7 +4189,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / set-column-def: 단 정의 / apply-para-format: 문단 서식 / apply-style: 스타일 적용 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / split-table: 표 나누기 / fit-table: 표 폭 맞춤 / resize-table: 표 크기 조절 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / delete-equation: 수식 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / delete-control: 컨트롤 삭제 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / set-column-def: 단 정의 / apply-para-format: 문단 서식 / apply-style: 스타일 적용 / set-numbering-restart: 번호 다시 시작 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / split-table: 표 나누기 / fit-table: 표 폭 맞춤 / resize-table: 표 크기 조절 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / delete-equation: 수식 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / delete-control: 컨트롤 삭제 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
             false,
             &[
                 "--data",
@@ -4180,6 +4212,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--spacing",
                 "--props",
                 "--style",
+                "--mode",
                 "--cell-para",
                 "--text",
                 // [#4990] insert-text 축. search 주소와 같은 0 기준 구역·문단·문자 오프셋.
@@ -5486,6 +5519,15 @@ fn print_help() {
     println!("      --style N                 스타일 ID (0부터)");
     println!("      --section/--para          구역·문단 (0부터, 기본 0)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_style.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-numbering-restart <파일> --mode N [옵션]");
+    println!("      문단 번호 매기기를 다시 시작한다");
+    println!();
+    println!("      --mode N                  0=해제, 1=이전 이어, 2=새 시작");
+    println!("      --count N                 mode=2 일 때 시작 번호 (기본 1)");
+    println!("      --section/--para          구역·문단 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_numrst.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit insert-row <파일> --table <번호> --row <행> [--below] [옵션]");
@@ -18411,7 +18453,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|set-column-def|apply-para-format|apply-style|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-table|fit-table|resize-table|insert-footnote|insert-endnote|delete-footnote|delete-equation|add-bookmark|delete-bookmark|rename-bookmark|delete-header-footer|delete-control|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|set-column-def|apply-para-format|apply-style|set-numbering-restart|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-table|fit-table|resize-table|insert-footnote|insert-endnote|delete-footnote|delete-equation|add-bookmark|delete-bookmark|rename-bookmark|delete-header-footer|delete-control|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -18428,6 +18470,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("set-column-def") => edit_set_column_def(&args[1..]),
         Some("apply-para-format") => edit_apply_para_format(&args[1..]),
         Some("apply-style") => edit_apply_style(&args[1..]),
+        Some("set-numbering-restart") => edit_set_numbering_restart(&args[1..]),
         Some("insert-row") => edit_insert_row(&args[1..]),
         Some("insert-col") => edit_insert_col(&args[1..]),
         Some("delete-row") => edit_delete_row(&args[1..]),
@@ -27478,6 +27521,122 @@ fn edit_apply_style(args: &[String]) -> i32 {
         &[(section, para)],
         &format!("스타일 적용 예정: {file_path} 구역 {section} 문단 {para} 스타일 {style_id}"),
         &format!("스타일 적용 완료: {file_path}"),
+    )
+}
+
+/// `edit set-numbering-restart` — 번호 다시 시작. 코어 `set_numbering_restart_native`.
+fn edit_set_numbering_restart(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-numbering-restart <파일> --mode N [--count N] [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut mode_arg: Option<u8> = None;
+    let mut start_num: u32 = 1;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--mode" | "--count" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--section" => match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--para" => match v.parse::<usize>() {
+                        Ok(n) => para = n,
+                        Err(_) => {
+                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--mode" => match v.parse::<u8>() {
+                        Ok(n) => mode_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --mode 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u32>() {
+                        Ok(n) => start_num = n,
+                        Err(_) => {
+                            eprintln!("오류: --count 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(mode)) = (file_path, mode_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.set_numbering_restart_native(section, para, mode, start_num) {
+            eprintln!("오류: 번호 다시 시작 설정 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "numrst",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "count": start_num }),
+        &[(section, para)],
+        &format!("번호 다시 시작 예정: {file_path} 구역 {section} 문단 {para} mode {mode}"),
+        &format!("번호 다시 시작 설정 완료: {file_path}"),
     )
 }
 
