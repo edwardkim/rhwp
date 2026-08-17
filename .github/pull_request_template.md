@@ -11,6 +11,9 @@ closes #
 
 ## 테스트
 
+- [ ] **`cargo fmt --all -- --check` 통과** (CI Lint Format check 와 동일. `cargo fmt --check` 만으로는 안 됨. 실패 시 `cargo fmt --all` 후 다시 `--check`)
+- [ ] `node scripts/rust-test-suite-manifest.mjs --check` 통과
+- [ ] `node scripts/rust-unit-test-tiers.mjs --check` 통과
 - [ ] `cargo test` 통과
 - [ ] `cargo clippy -- -D warnings` 통과
 - [ ] 관련 샘플 파일로 SVG 내보내기 확인
