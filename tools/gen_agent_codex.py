@@ -75,6 +75,8 @@ LIVE = {
     "info": ([ "info", DOC, "--json"], "문서 신상 — 형식·쪽수·구역·글꼴"),
     "word-count": (["word-count", DOC, "--json"], "문서 분량 — 구역·문단·글자·어절·쪽"),
     "bookmarks": (["bookmarks", DOC, "--json"], "문서 책갈피 목록"),
+    "headers-footers": (["headers-footers", FORM, "--json"], "문서 머리말/꼬리말 목록"),
+    "header-footer": (["header-footer", FORM, "--header", "--json"], "구역 머리말/꼬리말 한 건"),
     "explain": (["explain", FORM, "--json"], "메타·구조·표·누름틀 한 봉투 요약"),
     "explore": (["explore", DOC, "--json"], "이 문서로 무엇을 할지 — 문서별 행동 메뉴 라우팅"),
     "digest": (["digest", GOV, "--json"], "요약·RAG 청킹 — 개요와 발췌"),
@@ -94,6 +96,7 @@ LIVE = {
     "edit replace-text": (["edit", "replace-text", DOC, "--find", "규제", "--replace", "코덱스검증", "--dry-run", "--json"], "문구 치환 (dry-run — 디스크 무변경 예고 봉투)"),
     "edit set-cell": (["edit", "set-cell", DOC, "--table", "1", "--row", "0", "--col", "0", "--text", "코덱스", "--dry-run", "--json"], "표 셀 교정 (dry-run)"),
     "edit fill-fields": (["edit", "fill-fields", FORM, "--data", "{\"회사명\": \"코덱스\"}", "--dry-run", "--json"], "누름틀 채움 (dry-run)"),
+    "edit apply-endnote-shape": (["edit", "apply-endnote-shape", FORM, "--props", "{\"startNumber\":2}", "--dry-run", "--json"], "미주 모양 적용 (dry-run)"),
     "edit redact": (["edit", "redact", FORM, "--dry-run", "--json"], "개인정보 탐지 (dry-run = 읽기 전용 탐지)"),
     "run": (["run", "{plan_a}", "--json"], "계획서 원자 실행 — 선검증 후 단 한 번 저장"),
     "replay": (["replay", "--plan-json", "{plan_a_inline}", "--json"], "작업 영수증 발급(attest) — 3해시"),
@@ -129,13 +132,13 @@ COMMON_REASON = "입력 합성 비용 또는 산출 부피 때문에 표본 실�
 # 가족 분류 — (장 파일 이름, 제목, 소속 명령 판별자)
 FAMILIES = [
     ("10_조회", "조회 — 문서를 읽고 파악한다",
-     ["info", "word-count", "bookmarks", "explain", "explore", "digest", "search", "export-text", "export-structure", "fields", "dump-pages", "extract-pages"]),
+     ["info", "word-count", "bookmarks", "headers-footers", "header-footer", "explain", "explore", "digest", "search", "export-text", "export-structure", "fields", "dump-pages", "extract-pages"]),
     ("20_표와_데이터", "표·데이터 — 구조화 수확과 왕복",
      ["export-tables", "table-to-csv", "csv-to-table", "extract-data", "scan",
       # [#4100] 차트 숫자 데이터도 같은 CSV 왕복 규약을 쓴다 — 표와 한 가족이다.
       "chart-to-csv", "csv-to-chart"]),
     ("30_편집과_계획", "편집·계획 — 원본 무훼손 변경",
-     ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit insert-image", "edit redact", "edit sanitize", "run"]),
+     ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit apply-endnote-shape", "edit insert-image", "edit redact", "edit sanitize", "run"]),
     ("40_변환과_렌더", "변환·렌더 — 형식을 넘나든다",
      ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "thumbnail", "render-diff", "build-from-ingest", "scaffold", "split-document",
       "export-png-gpu", "gpu-info"]),

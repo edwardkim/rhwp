@@ -677,6 +677,22 @@ fn recipes() -> Vec<Recipe> {
             ndjson: false,
         },
         Recipe {
+            command: "headers-footers",
+            doc: Some(field.clone()),
+            args: vec![s("headers-footers"), s("--json"), p(&field)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "header-footer",
+            doc: Some(field.clone()),
+            args: vec![s("header-footer"), s("--header"), s("--json"), p(&field)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
             command: "export-text",
             doc: Some(main.clone()),
             args: vec![s("export-text"), s("--json"), p(&main)],
