@@ -706,6 +706,7 @@
       "tests/render_p37_direct_pdf_export.rs"
     ],
     "regression_suite_031": [
+      "tests/cases/insert_column_break_contract.rs",
       "tests/diag_1042_2024_reverse.rs",
       "tests/diagnostics_flag_contract.rs",
       "tests/hwpx_password_fixture.rs",

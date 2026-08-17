@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_031
 
+#[path = "../cases/insert_column_break_contract.rs"]
+mod insert_column_break_contract;
+
 #[path = "../diag_1042_2024_reverse.rs"]
 mod diag_1042_2024_reverse;
 
