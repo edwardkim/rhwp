@@ -320,7 +320,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
-| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`insert-number`·`merge-paragraph` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`insert-number`·`apply-endnote-shape`·`merge-paragraph` |
 | `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
 | `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark`·`rename-bookmark`·`delete-control` |

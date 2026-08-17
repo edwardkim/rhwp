@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_021
 
+#[path = "../cases/apply_endnote_shape_contract.rs"]
+mod apply_endnote_shape_contract;
+
 #[path = "../cases/delete_row_contract.rs"]
 mod delete_row_contract;
 

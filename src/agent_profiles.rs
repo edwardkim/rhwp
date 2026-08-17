@@ -125,6 +125,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_delete_equation",
             "hwp_insert_footnote",
             "hwp_insert_endnote",
+            "hwp_apply_endnote_shape",
             "hwp_delete_footnote",
             "hwp_bookmarks",
             "hwp_add_bookmark",
