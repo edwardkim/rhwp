@@ -143,6 +143,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_insert_column_break",
             "hwp_set_column_def",
             "hwp_apply_para_format",
+            "hwp_apply_para_format_in_hf",
             "hwp_apply_style",
             "hwp_set_numbering_restart",
             "hwp_insert_image",
