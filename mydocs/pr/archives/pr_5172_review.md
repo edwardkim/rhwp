@@ -60,4 +60,3 @@ HWP3 parser·serializer와 fixture를 변경하므로 전체 Rust 회귀를 수�
 빈 셀 문단 보정과 누적 HWP3 저장 계약은 현재 통합 head에서 전체 회귀·clippy와 생성 manifest 검사를
 통과했다. 추가 메인터너 코드 보정은 필요하지 않다. 다만 원 PR은 작성 시점에 GitHub에서 `DIRTY`이므로
 최종 통합 전 최신 head·mergeable·required checks를 다시 확인해야 한다. **로컬 통합 수용 권고.**
-

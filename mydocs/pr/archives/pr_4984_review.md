@@ -58,4 +58,3 @@ Studio UI 변경은 없어 WASM·브라우저 시각 검증은 적용하지 않�
 현재 통합 head에서 차단 결함과 추가 메인터너 코드 보정 필요 사항은 발견하지 못했다. 단, 원 PR은
 작성 시점에 GitHub에서 `DIRTY`이므로 최종 통합 PR을 만들 때 최신 source head·mergeable·required
 checks를 다시 확인해야 한다. **로컬 통합 수용 권고.**
-

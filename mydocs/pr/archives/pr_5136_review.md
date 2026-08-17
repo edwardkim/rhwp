@@ -51,4 +51,3 @@ WASM·브라우저 시각 검증은 적용하지 않았다. source PR에 기록�
 현재 통합 head에서 캡션 attr 계약과 기존 회귀를 깨는 문제는 발견하지 못했다. 원 PR은 작성 시점에
 GitHub에서 `DIRTY`이므로 최종 통합 전 최신 head·mergeable·required checks를 다시 확인해야 한다.
 추가 메인터너 코드 보정은 필요하지 않다. **로컬 통합 수용 권고.**
-
