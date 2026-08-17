@@ -2439,6 +2439,31 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "section", "paragraph", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
+            "hwp_apply_style",
+            "본문 문단에 스타일을 적용한다. --style 은 docInfo 스타일 인덱스. 코어 apply_style_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "style": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "style"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "apply-style", "{path}", "--style", "{style}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_delete_control",
             "[#5041] 문단이 담은 컨트롤 하나를 지운다(갈래 무관). section/para/ctrl 은 0 기준. 코어 delete_control_native 배선.",
             serde_json::json!({
@@ -3169,7 +3194,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 36] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 37] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3270,6 +3295,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 36] = [
     (
         "apply-para-format",
         "본문 문단 서식 적용 — --props JSON [--section] [--para]",
+    ),
+    (
+        "apply-style",
+        "본문 문단 스타일 적용 — --style N [--section] [--para]",
     ),
     (
         "delete-control",
@@ -4254,7 +4283,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / insert-header-footer-text: 머리말/꼬리말 텍스트 삽입 / set-header-footer-text: 머리말/꼬리말 문단 텍스트 교체 / delete-hf-text: 머리말/꼬리말 텍스트 삭제 / split-paragraph-in-hf: 머리말/꼬리말 문단 분할 / merge-paragraph-in-hf: 머리말/꼬리말 문단 병합 / split-paragraph-in-cell: 표 셀 문단 분할 / merge-paragraph-in-cell: 표 셀 문단 병합 / apply-char-format: 본문 글자 서식 / apply-para-format: 본문 문단 서식 / delete-control: 컨트롤 삭제 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / insert-header-footer-text: 머리말/꼬리말 텍스트 삽입 / set-header-footer-text: 머리말/꼬리말 문단 텍스트 교체 / delete-hf-text: 머리말/꼬리말 텍스트 삭제 / split-paragraph-in-hf: 머리말/꼬리말 문단 분할 / merge-paragraph-in-hf: 머리말/꼬리말 문단 병합 / split-paragraph-in-cell: 표 셀 문단 분할 / merge-paragraph-in-cell: 표 셀 문단 병합 / apply-char-format: 본문 글자 서식 / apply-para-format: 본문 문단 서식 / apply-style: 본문 문단 스타일 / delete-control: 컨트롤 삭제 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
             false,
             &[
                 "--data",
@@ -4272,6 +4301,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--cell-para",
                 "--text",
                 "--props",
+                "--style",
                 // [#4990] insert-text 축. search 주소와 같은 0 기준 구역·문단·문자 오프셋.
                 "--section",
                 "--para",
@@ -5737,6 +5767,14 @@ fn print_help() {
     println!("      --props <JSON>            문단 서식 (예: {{\"alignment\":\"center\"}})");
     println!("      --section/--para          구역·문단 인덱스 (0부터, 기본 0)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_pfmt.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit apply-style <파일> --style N [옵션]");
+    println!("      본문 문단에 스타일을 적용한다");
+    println!();
+    println!("      --style N                 docInfo 스타일 인덱스 (0부터, 필수)");
+    println!("      --section/--para          구역·문단 인덱스 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_style.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit delete-control <파일> --section N --para N --ctrl N [옵션]");
@@ -18667,7 +18705,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|delete-hf-text|split-paragraph-in-hf|merge-paragraph-in-hf|split-paragraph-in-cell|merge-paragraph-in-cell|apply-char-format|apply-para-format|delete-control|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|delete-hf-text|split-paragraph-in-hf|merge-paragraph-in-hf|split-paragraph-in-cell|merge-paragraph-in-cell|apply-char-format|apply-para-format|apply-style|delete-control|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -18702,6 +18740,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("merge-paragraph-in-cell") => edit_merge_paragraph_in_cell(&args[1..]),
         Some("apply-char-format") => edit_apply_char_format(&args[1..]),
         Some("apply-para-format") => edit_apply_para_format(&args[1..]),
+        Some("apply-style") => edit_apply_style(&args[1..]),
         Some("delete-control") => edit_delete_control(&args[1..]),
         Some("insert-image") => edit_insert_image(&args[1..]),
         // [#3719 §6-11] 공개 전 정리 — 개인정보 마스킹 / 메타데이터 제거.
@@ -30330,6 +30369,121 @@ fn edit_apply_para_format(args: &[String]) -> i32 {
         &[(section, para)],
         &format!("문단 서식 적용 예정: {file_path} 구역 {section} 문단 {para}"),
         &format!("문단 서식 적용 완료: {file_path}"),
+    )
+}
+
+/// `edit apply-style` — 본문 문단에 스타일을 적용한다.
+fn edit_apply_style(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-style <파일> --style N [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut style_arg: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--style" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = n,
+                        "--para" => para = n,
+                        _ => style_arg = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(style_id)) = (file_path, style_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if style_id >= doc.document().doc_info.styles.len() {
+        eprintln!(
+            "오류: --style 이 범위를 벗어났습니다 (스타일 0~{}): {style_id}",
+            doc.document().doc_info.styles.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    let Some(sec) = doc.document().sections.get(section) else {
+        eprintln!("오류: 구역 {section} 이 없습니다.");
+        return EXIT_USAGE;
+    };
+    if sec.paragraphs.get(para).is_none() {
+        eprintln!("오류: 문단 {para} 이 없습니다.");
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) = doc.apply_style_native(section, para, style_id) {
+            eprintln!("오류: 스타일 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "style",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": style_id
+        }),
+        &[(section, para)],
+        &format!("스타일 적용 예정: {file_path} 구역 {section} 문단 {para} 스타일 {style_id}"),
+        &format!("스타일 적용 완료: {file_path}"),
     )
 }
 
