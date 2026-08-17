@@ -18,12 +18,14 @@ fn sample() -> String {
         .into_owned()
 }
 
+/// 샘플의 최상위 1행은 delete-row 가 거절한다.
+/// extract_tables 에서 행 2개 이상인 최상위 표를 고른다.
 fn first_top_table(path: &str) -> (usize, u16) {
     let bytes = std::fs::read(path).expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
     let g = extract_tables(doc.document())
         .into_iter()
-        .find(|g| g.container_path.is_empty())
+        .find(|g| g.container_path.is_empty() && g.rows >= 2)
         .expect("본문 최상위 표");
     (g.index, g.rows)
 }
@@ -53,7 +55,6 @@ fn table_rows(path: &Path, index: usize) -> u16 {
 fn delete_row_decreases_count() {
     let src = sample();
     let (idx, before) = first_top_table(&src);
-    assert!(before >= 2, "삭제 시험에는 행이 2개 이상 필요하다");
     let out = temp("out");
     let idx_s = idx.to_string();
     let output = Command::new(rhwp_bin())
