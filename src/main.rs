@@ -2786,6 +2786,27 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     &["schemaVersion", "source", "section", "paragraph", "offset", "count", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
                 ),
         tool_with_optional_args(
+                    "hwp_transpose_table",
+                    "[#5108] 본문 최상위 표의 행/열을 제자리에서 바꾼다. 병합 셀이 있으면 거부. 좌표는 export-tables 의 index. 코어 transpose_table_cells_in_place_native 배선.",
+                    serde_json::json!({
+                        "type": "object",
+                        "properties": {
+                            "path": { "type": "string" },
+                            "table": { "type": "integer", "minimum": 0 },
+                            "output": { "type": "string" },
+                            "dryRun": { "type": "boolean" }
+                        },
+                        "required": ["path", "table"],
+                    }),
+                    "edit",
+                    serde_json::json!(["edit", "transpose-table", "{path}", "--table", "{table}", "--json"]),
+                    serde_json::json!([
+                        { "when": "output", "args": ["-o", "{output}"] },
+                        { "when": "dryRun", "args": ["--dry-run"] }
+                    ]),
+                    &["schemaVersion", "source", "table", "section", "paragraph", "ctrl", "sourceRows", "sourceCols", "targetRows", "targetCols", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+                ),
+        tool_with_optional_args(
                     "hwp_split_paragraph",
                     "[#5082] 본문 문단을 지정 오프셋에서 가른다. 주소는 search 와 같다. 코어 split_paragraph_native 배선.",
                     serde_json::json!({
@@ -3976,6 +3997,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 59] = [
     ("split-paragraph", "본문 문단 분할"),
     ("apply-para-format", "본문 문단 서식 적용"),
     ("apply-style", "본문 문단 스타일 적용"),
+    ("transpose-table", "표 행/열 바꿈 — --table (병합 없는 본문 최상위 표)"),
     ("set-numbering-restart", "문단 번호 다시 시작"),
     ("apply-para-format-in-hf", "머리말/꼬리말 문단 서식 적용"),
     ("apply-endnote-shape", "미주 모양 적용"),
@@ -6491,6 +6513,13 @@ fn print_help() {
     println!("      --section N               구역 (0부터, 기본 0)");
     println!("      --apply-to N              0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_hf.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit transpose-table <파일> --table <번호> [옵션]");
+    println!("      본문 최상위 표의 행/열을 제자리에서 바꾼다 (병합 셀 거부)");
+    println!();
+    println!("      --table <번호>            export-tables 의 본문 최상위 표 번호");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_transpose.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit insert-image <파일> --image <그림> [옵션]");
@@ -19421,7 +19450,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-table|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-table|fit-table|resize-table|merge-table|merge-paragraph-in-cell|set-column-widths|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-control|delete-table|insert-header-footer|insert-image|redact|sanitize|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|set-hf-picture|apply-hf-template|delete-hf-text|insert-field-in-hf|split-paragraph-in-hf|toggle-hide-hf|merge-paragraph-in-hf|split-paragraph-in-cell|apply-char-format|split-paragraph|apply-para-format|apply-style|set-numbering-restart|apply-para-format-in-hf|apply-endnote-shape|insert-footnote-text|delete-text-in-footnote|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-table|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-table|fit-table|resize-table|merge-table|merge-paragraph-in-cell|set-column-widths|transpose-table|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-control|delete-table|insert-header-footer|insert-image|redact|sanitize|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|set-hf-picture|apply-hf-template|delete-hf-text|insert-field-in-hf|split-paragraph-in-hf|toggle-hide-hf|merge-paragraph-in-hf|split-paragraph-in-cell|apply-char-format|split-paragraph|apply-para-format|apply-style|set-numbering-restart|apply-para-format-in-hf|apply-endnote-shape|insert-footnote-text|delete-text-in-footnote|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -19463,6 +19492,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("apply-para-format-in-hf") => edit_apply_para_format_in_hf(&args[1..]),
         Some("set-numbering-restart") => edit_set_numbering_restart(&args[1..]),
         Some("apply-style") => edit_apply_style(&args[1..]),
+        Some("transpose-table") => edit_transpose_table(&args[1..]),
         Some("apply-para-format") => edit_apply_para_format(&args[1..]),
         Some("split-paragraph") => edit_split_paragraph(&args[1..]),
         Some("apply-char-format") => edit_apply_char_format(&args[1..]),
@@ -27364,6 +27394,125 @@ fn insert_image_page_anchor(
         }
     }
     None
+}
+
+/// [#5108] `edit transpose-table` — 표 행/열 바꿈. 코어 `transpose_table_cells_in_place_native`.
+fn edit_transpose_table(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit transpose-table <파일> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => table_arg = Some(n),
+                    Err(_) => {
+                        eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no)) = (file_path, table_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (section, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(v) => v,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    let mut source_rows = 0u32;
+    let mut source_cols = 0u32;
+    let mut target_rows = 0u32;
+    let mut target_cols = 0u32;
+    if !dry_run {
+        match doc.transpose_table_cells_in_place_native(section, para, ctrl) {
+            Ok(raw) => {
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&raw) {
+                    source_rows = v["sourceRows"].as_u64().unwrap_or(0) as u32;
+                    source_cols = v["sourceCols"].as_u64().unwrap_or(0) as u32;
+                    target_rows = v["targetRows"].as_u64().unwrap_or(0) as u32;
+                    target_cols = v["targetCols"].as_u64().unwrap_or(0) as u32;
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 표 행/열 바꿈 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "transpose",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "sourceRows": source_rows,
+            "sourceCols": source_cols,
+            "targetRows": target_rows,
+            "targetCols": target_cols
+        }),
+        &[(section, para)],
+        &format!("표 행/열 바꿈 예정: {file_path} 표 {table_no}"),
+        &format!("표 행/열 바꿈 완료: {file_path}"),
+    )
 }
 
 // `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).

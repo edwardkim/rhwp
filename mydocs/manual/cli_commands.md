@@ -635,6 +635,13 @@ IR 본문에서 구역·문단·글자·어절·쪽 수를 센다. 새 파서는
 `chart-to-csv --chart N`의 차트 순번 출처다.
 - `--json`: `{"schemaVersion","source","count","charts":[{"index","section","paragraph","control"}]}`
 
+### `edit transpose-table <파일> --table <번호> [옵션]` (#5108)
+본문 최상위 표의 행과 열을 제자리에서 바꾼다. 병합 셀은 거부하며 표 번호는
+`export-tables`의 본문 최상위 표 좌표를 사용한다.
+- `-o, --output <파일>`: 출력 파일 경로
+- `--dry-run`: 파일을 쓰지 않고 변경 예정만 보고
+- `--json`: `source`, `table`, 원본·대상 행열 수와 출력 정보를 봉투로 출력
+
 ### `digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]` (#3633)
 초소형 모델용 매크로 1호 — "info 로 훑고 → export-structure 로 개요를 얻고 →
 export-text 로 첫 장을 읽는" 3단 파이프라인을 **한 번 호출**로 수행한다. 도구

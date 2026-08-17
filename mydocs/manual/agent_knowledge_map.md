@@ -1089,9 +1089,9 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 101개
+## 6. MCP 도구 전수 지도 — 102개
 
-### 6-1. 무상태 85개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 86개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
@@ -1099,6 +1099,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_word_count` | `word-count --json` | `path` |
 | `hwp_bookmarks` | `bookmarks --json` | `path` |
 | `hwp_charts` | `charts --json` | `path` |
+| `hwp_transpose_table` | `edit transpose-table --json` | `path`,`table` |
 | `hwp_digest` | `digest --json` | `path` |
 | `hwp_export_text` | `export-text --json` | `path` |
 | `hwp_export_structure` | `export-structure --json` | `path` |

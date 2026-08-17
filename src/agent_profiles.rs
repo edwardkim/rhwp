@@ -153,6 +153,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_toggle_hide_hf",
             "hwp_split_paragraph_in_hf",
             "hwp_insert_field_in_hf",
+            "hwp_transpose_table",
             "hwp_delete_hf_text",
             "hwp_apply_hf_template",
             "hwp_header_footer",
