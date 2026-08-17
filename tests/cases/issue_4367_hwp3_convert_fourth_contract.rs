@@ -248,6 +248,67 @@ fn hwp3_table_cells_have_at_least_one_paragraph() {
     );
 }
 
+/// 열한 번째 계약 — 표 셀이 격자를 완전히 덮어야 한다.
+///
+/// HWP3 표는 셀이 격자를 다 덮지 않을 수 있다(원본이 일부 격자를 비움). 한글
+/// 2022 는 열 때 미커버 격자를 빈 셀로 자동 채우는데, 우리가 안 채우면 그리드에
+/// 구멍이 남아 렌더가 무한 반복(개방 STALL)한다(크롤 빈티지 20110627 의 12×14
+/// 표: 9칸 미커버로 STALL). 파서에서 미커버 격자를 빈 1×1 셀로 메운다.
+#[test]
+fn hwp3_table_cells_cover_full_grid() {
+    let path =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-table-grid-gap.hwp");
+    let raw = std::fs::read(&path).expect("read grid-gap");
+    let mut doc = rhwp::parser::hwp3::parse_hwp3(&raw).expect("HWP3 파싱");
+    rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
+        &mut doc,
+        FileFormat::Hwp3,
+    );
+    let mut tables = 0usize;
+    let mut uncovered_total = 0usize;
+    fn walk_table(t: &rhwp::model::table::Table, tables: &mut usize, uncovered: &mut usize) {
+        *tables += 1;
+        let rows = t.row_count as usize;
+        let cols = t.col_count as usize;
+        if rows > 0 && cols > 0 && rows * cols <= 0x4000 {
+            let mut covered = vec![false; rows * cols];
+            for c in &t.cells {
+                let r0 = c.row as usize;
+                let c0 = c.col as usize;
+                for r in r0..(r0 + (c.row_span.max(1) as usize)).min(rows) {
+                    for cc in c0..(c0 + (c.col_span.max(1) as usize)).min(cols) {
+                        covered[r * cols + cc] = true;
+                    }
+                }
+            }
+            *uncovered += covered.iter().filter(|&&v| !v).count();
+        }
+        for cell in &t.cells {
+            for p in &cell.paragraphs {
+                for ctrl in &p.controls {
+                    if let Control::Table(inner) = ctrl {
+                        walk_table(inner, tables, uncovered);
+                    }
+                }
+            }
+        }
+    }
+    for sec in &doc.sections {
+        for p in &sec.paragraphs {
+            for c in &p.controls {
+                if let Control::Table(t) = c {
+                    walk_table(t, &mut tables, &mut uncovered_total);
+                }
+            }
+        }
+    }
+    assert!(tables > 0, "샘플 전제: 표가 있어야 한다");
+    assert_eq!(
+        uncovered_total, 0,
+        "격자에 구멍이 남으면 한글 2022 가 렌더 중 개방 STALL 한다"
+    );
+}
+
 /// 글상자 비트 게이트 — 글상자 없는 순수 사각형에 0x0100_0000 을 켜면
 /// 한글 2022 가 개방을 거부한다 (크롤 스윕 29218 p588 실측). storage 기본값
 /// 채움은 글상자일 때만 글상자 비트를 더하고, 순수 사각형은 0x0008_0000 만.

@@ -1365,6 +1365,62 @@ fn parse_hwp3_object_dispatch(
             cells.push(cell);
         }
         table.cells = cells;
+        // [열한 번째 계약] HWP3 표는 셀이 격자를 완전히 덮지 않을 수 있다(원본이 일부
+        // 격자를 비움). 한글 2022 는 열 때 미커버 격자를 빈 셀로 자동 채우는데, 우리가
+        // 안 채우면 그리드에 구멍이 남아 렌더가 무한 반복(개방 STALL)한다(크롤 빈티지
+        // 20110627 의 12×14 표: 행0 열5~13 등 9칸 미커버로 STALL). 미커버 격자를 빈
+        // 1×1 셀로 메워 격자를 완성한다(오라클도 119→128 셀로 9칸을 채운다).
+        {
+            let rows = table.row_count as usize;
+            let cols = table.col_count as usize;
+            if rows > 0 && cols > 0 && rows.saturating_mul(cols) <= 0x4000 {
+                let mut covered = vec![false; rows * cols];
+                for c in &table.cells {
+                    let r0 = c.row as usize;
+                    let c0 = c.col as usize;
+                    for r in r0..(r0 + (c.row_span.max(1) as usize)).min(rows) {
+                        for cc in c0..(c0 + (c.col_span.max(1) as usize)).min(cols) {
+                            covered[r * cols + cc] = true;
+                        }
+                    }
+                }
+                for r in 0..rows {
+                    for cc in 0..cols {
+                        if covered[r * cols + cc] {
+                            continue;
+                        }
+                        let mut filler = crate::model::table::Cell {
+                            row: r as u16,
+                            col: cc as u16,
+                            col_span: 1,
+                            row_span: 1,
+                            border_fill_id: 1,
+                            width: xs
+                                .get(cc + 1)
+                                .zip(xs.get(cc))
+                                .map(|(a, b)| (a - b).max(0) as u32)
+                                .unwrap_or(0),
+                            height: ys
+                                .get(r + 1)
+                                .zip(ys.get(r))
+                                .map(|(a, b)| (a - b).max(0) as u32)
+                                .unwrap_or(0),
+                            ..Default::default()
+                        };
+                        // 셀 계약(nPara≥1): char_count=1 빈 문단 하나 (아홉 번째 계약).
+                        filler.paragraphs.push(crate::model::paragraph::Paragraph {
+                            char_count: 1,
+                            char_shapes: vec![crate::model::paragraph::CharShapeRef {
+                                start_pos: 0,
+                                char_shape_id: 0,
+                            }],
+                            ..Default::default()
+                        });
+                        table.cells.push(filler);
+                    }
+                }
+            }
+        }
         // HWP3 셀 스트림은 시각적 배치 순서라 병합 행에서 행-우선이 깨질 수 있다.
         // Cell 목록의 IR 계약(행 우선 순서)을 여기서 복원한다 — 한글 2022는
         // row_sizes 로 셀을 순차 소비하므로 순서가 어긋나면 개방이 멈춘다.
