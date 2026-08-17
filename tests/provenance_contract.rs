@@ -2281,6 +2281,21 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
         "cellPara",
         "insert-text-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 cellPara 를 안 낸다",
     ),
+    (
+        "edit",
+        "script",
+        "insert-equation 전용. 스윕 레시피는 fill-fields/set-cell 이라 script 를 안 낸다",
+    ),
+    (
+        "edit",
+        "fontSize",
+        "insert-equation 전용. 스윕 레시피는 fill-fields/set-cell 이라 fontSize 를 안 낸다",
+    ),
+    (
+        "edit",
+        "color",
+        "insert-equation 전용. 스윕 레시피는 fill-fields/set-cell 이라 color 를 안 낸다",
+    ),
 ];
 
 #[test]
