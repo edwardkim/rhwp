@@ -1210,6 +1210,17 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 머리말 또는 꼬리말을 만든다. 코어 `create_header_footer_native`. `--header`/`--footer` 중
 하나 필수. `--apply-to` 는 0 양쪽·1 짝수·2 홀수(기본 0). 같은 적용 대상이 있으면 거부.
 
+### `edit insert-shape <파일> --width N --height N [--section N] [--para N] [--offset N] [--x N] [--y N] [--shape rectangle] [--wrap InFrontOfText] [--treat-as-char] [-o <출력>] [--dry-run] [--verify] [--json]`
+
+본문 문단에 도형(기본 사각형)을 끼운다. 코어 `create_shape_control_native` 배선이며 새 편집 로직은 없다.
+
+- `--width` / `--height` (필수) — HWPUNIT. 둘 다 0 이면 거부.
+- `--section` / `--para` / `--offset` — 0 기준. 생략하면 0.
+- `--x` / `--y` — 가로·세로 오프셋(HWPUNIT, 기본 0).
+- `--shape` — `rectangle`(기본)·`ellipse`·`line`·`textbox`·`polygon`·`arc`.
+- `--wrap` — `InFrontOfText`(기본) 등 네이티브가 받는 감싸기 값.
+- `--json` 봉투: `section`/`paragraph`/`offset`/`width`/`height`/`x`/`y`.
+
 ### `edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]` (#3719 §6-5)
 도장·서명 같은 그림을 쪽 좌표에 붙인다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각.
 - `--image <그림>` (필수) — 지원 형식은 `png`·`jpg`·`jpeg`·`bmp`·`tif`·`tiff` 뿐(확장자와 내용

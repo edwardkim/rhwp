@@ -2445,6 +2445,26 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
         "color",
         "insert-equation/apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 color 를 안 낸다",
     ),
+    (
+        "edit",
+        "x",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 x 를 안 낸다",
+    ),
+    (
+        "edit",
+        "y",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 y 를 안 낸다",
+    ),
+    (
+        "edit",
+        "width",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 width 를 안 낸다",
+    ),
+    (
+        "edit",
+        "height",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 height 를 안 낸다",
+    ),
 ];
 
 #[test]

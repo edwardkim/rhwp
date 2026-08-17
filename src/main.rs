@@ -5863,6 +5863,9 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--y",
                 "--width",
                 "--height",
+                "--shape",
+                "--wrap",
+                "--treat-as-char",
                 // [#3719 §6-11] redact/sanitize 축. 선언 누락은 매니페스트만 읽는
                 // 에이전트에게 "그 기능이 없는 것"과 같다.
                 "--kind",
