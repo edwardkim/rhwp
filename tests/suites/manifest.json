@@ -196,6 +196,7 @@
       "tests/suites/issue_regression_pilot/issue_2559_footnote_footer_band.rs"
     ],
     "regression_suite_007": [
+      "tests/cases/merge_paragraph_contract.rs",
       "tests/hwp3_page_number_pos_fixture.rs",
       "tests/issue_1198_nested_cell_paste.rs",
       "tests/issue_1402_enum_token_whitelist.rs",
