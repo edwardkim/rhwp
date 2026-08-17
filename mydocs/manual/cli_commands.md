@@ -1049,6 +1049,10 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 본문 최상위 표 셀 속성(세로정렬·여백·폭·헤더 등)을 고친다. 코어 `set_cell_properties_native`.
 좌표는 `export-tables` 의 index·격자. `--props` 는 JSON 객체.
 
+### `edit set-table-props <파일> --table <번호> --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 최상위 표 속성(칸간격·여백·글자처럼·배치 등)을 고친다. 코어 `set_table_properties_native`.
+표 번호는 `export-tables` 의 index. `--props` 는 JSON 객체.
+
 ### `edit insert-footnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4998)
 문단 좌표에 각주를 끼운다. 코어 `insert_footnote_native`.
 

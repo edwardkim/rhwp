@@ -5,6 +5,9 @@
 #[path = "../cases/delete_text_contract.rs"]
 mod delete_text_contract;
 
+#[path = "../cases/set_table_props_contract.rs"]
+mod set_table_props_contract;
+
 #[path = "../cli_json_contract.rs"]
 mod cli_json_contract;
 
