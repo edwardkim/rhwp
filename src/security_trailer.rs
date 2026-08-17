@@ -50,8 +50,10 @@
 
 use chacha20poly1305::aead::{Aead, Payload};
 use chacha20poly1305::{Key, KeyInit, XChaCha20Poly1305, XNonce};
-use ml_kem::kem::{Decapsulate, Encapsulate};
-use ml_kem::{Ciphertext, Encoded, EncodedSizeUser, KemCore, MlKem768};
+use ml_kem::kem::{Decapsulate, Encapsulate, Kem, KeyExport};
+#[allow(deprecated)]
+use ml_kem::ExpandedKeyEncoding;
+use ml_kem::{Ciphertext, DecapsulationKey768, EncapsulationKey768, MlKem768};
 use zeroize::Zeroizing;
 
 pub const MAGIC_START: &[u8; 8] = b"RHWPSEC1";
@@ -182,10 +184,12 @@ pub fn seal(host_hwp3: &[u8], secret: &[u8], password: &[u8]) -> Result<Vec<u8>,
     let ct_len = (secret.len() + TAG_LEN) as u32;
     let header = build_header(FLAG_REDACTED, &salt, &nonce, ct_len);
 
-    let cipher = XChaCha20Poly1305::new(Key::from_slice(key.as_ref()));
+    let cipher_key = Key::try_from(key.as_ref()).expect("파생 키는 항상 32바이트");
+    let cipher = XChaCha20Poly1305::new(&cipher_key);
+    let nonce = XNonce::from(nonce);
     let ciphertext = cipher
         .encrypt(
-            XNonce::from_slice(&nonce),
+            &nonce,
             Payload {
                 msg: secret,
                 aad: &header,
@@ -280,9 +284,11 @@ pub fn open(bytes: &[u8], password: &[u8]) -> Opened {
             }
         }
     };
-    let cipher = XChaCha20Poly1305::new(Key::from_slice(key.as_ref()));
+    let cipher_key = Key::try_from(key.as_ref()).expect("파생 키는 항상 32바이트");
+    let cipher = XChaCha20Poly1305::new(&cipher_key);
+    let nonce = XNonce::from(nonce);
     match cipher.decrypt(
-        XNonce::from_slice(&nonce),
+        &nonce,
         Payload {
             msg: ciphertext,
             aad: &header,
@@ -329,32 +335,31 @@ pub fn open(bytes: &[u8], password: &[u8]) -> Opened {
 // decoy 모드 없음. 이 모드가 바꾸는 건 "비밀을 여는 자격"뿐이다(비밀번호 → 개인키 보유).
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// `getrandom` 을 rand_core 0.6 `RngCore` + `CryptoRng` 로 감싼 어댑터 — ml-kem 0.2 의
-/// `generate`/`encapsulate` 가 요구하는 `CryptoRngCore`(= `CryptoRng + RngCore` 블랭킷)를
-/// 충족한다. 엔트로피는 OS(getrandom)에서 직접 뽑는다.
+/// `getrandom` 을 rand_core 0.10의 fallible RNG 계약으로 감싼 어댑터다. 오류는 없다고
+/// 가정하는 OS 엔트로피 호출을 `Infallible`로 표현해 ML-KEM의 `TryCryptoRng` 요구를 충족한다.
+/// 엔트로피는 OS(getrandom)에서 직접 뽑는다.
 struct GetRandomRng;
 
-impl rand_core::RngCore for GetRandomRng {
-    fn next_u32(&mut self) -> u32 {
+impl rand_core::TryRng for GetRandomRng {
+    type Error = rand_core::Infallible;
+
+    fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
         let mut b = [0u8; 4];
         getrandom::fill(&mut b).expect("getrandom: next_u32");
-        u32::from_le_bytes(b)
+        Ok(u32::from_le_bytes(b))
     }
-    fn next_u64(&mut self) -> u64 {
+    fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
         let mut b = [0u8; 8];
         getrandom::fill(&mut b).expect("getrandom: next_u64");
-        u64::from_le_bytes(b)
+        Ok(u64::from_le_bytes(b))
     }
-    fn fill_bytes(&mut self, dest: &mut [u8]) {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Self::Error> {
         getrandom::fill(dest).expect("getrandom: fill_bytes");
-    }
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
-        self.fill_bytes(dest);
         Ok(())
     }
 }
 
-impl rand_core::CryptoRng for GetRandomRng {}
+impl rand_core::TryCryptoRng for GetRandomRng {}
 
 /// PQ 헤더(= AEAD associated data). MAGIC..ct_len 전체를 묶어 encap·nonce·길이·플래그 등
 /// 어느 헤더 필드를 변조해도 복호가 거부되게 한다(비밀번호 모드 `build_header` 와 같은 원리).
@@ -376,10 +381,12 @@ fn build_pq_header(flags: u16, encap: &[u8], nonce: &[u8; NONCE_LEN], ct_len: u3
 /// 공개키는 봉인자에게 배포하고, 개인키는 수신자만 보관해 `open_with_privkey` 로 연다.
 pub fn generate_keypair() -> (Vec<u8>, Vec<u8>) {
     let mut rng = GetRandomRng;
-    // KemCore::generate → (decapsulation key, encapsulation key) = (dk, ek).
-    let (dk, ek) = MlKem768::generate(&mut rng);
-    let ek_bytes = ek.as_bytes().to_vec();
-    let dk_bytes = dk.as_bytes().to_vec();
+    let (dk, ek) = MlKem768::generate_keypair_from_rng(&mut rng);
+    let ek_bytes = ek.to_bytes().to_vec();
+    // 0.3은 64바이트 seed 직렬화를 기본으로 하지만, 기존 CLI 키 파일과의 호환을 위해
+    // 0.2에서 쓰던 2,400바이트 expanded private-key 표현을 계속 사용한다.
+    #[allow(deprecated)]
+    let dk_bytes = dk.to_expanded_bytes().to_vec();
     debug_assert_eq!(ek_bytes.len(), MLKEM768_EK_LEN);
     debug_assert_eq!(dk_bytes.len(), MLKEM768_DK_LEN);
     (ek_bytes, dk_bytes)
@@ -399,18 +406,18 @@ pub fn seal_to_pubkey(
             got: recipient_public.len(),
         });
     }
-    type Ek = <MlKem768 as KemCore>::EncapsulationKey;
-    // 길이는 위에서 검증했지만 from_bytes 는 정확 크기 Array 를 요구하므로 try_from 으로 안전 변환.
-    let ek_arr =
-        Encoded::<Ek>::try_from(recipient_public).map_err(|_| SealError::BadPublicKey {
-            expected: MLKEM768_EK_LEN,
-            got: recipient_public.len(),
-        })?;
-    let ek = Ek::from_bytes(&ek_arr);
+    let ek_arr: ml_kem::kem::Key<EncapsulationKey768> =
+        recipient_public
+            .try_into()
+            .map_err(|_| SealError::BadPublicKey {
+                expected: MLKEM768_EK_LEN,
+                got: recipient_public.len(),
+            })?;
+    let ek = EncapsulationKey768::new(&ek_arr).map_err(|_| SealError::Kem)?;
 
     let mut rng = GetRandomRng;
-    // encapsulate → (KEM 암호문 CT, 32바이트 공유비밀 SS). FIPS 203 상 무오류지만 방어적으로 map_err.
-    let (ct_kem, shared) = ek.encapsulate(&mut rng).map_err(|_| SealError::Kem)?;
+    // encapsulate → (KEM 암호문 CT, 32바이트 공유비밀 SS).
+    let (ct_kem, shared) = ek.encapsulate_with_rng(&mut rng);
     let encap = ct_kem.as_slice();
     debug_assert_eq!(encap.len(), MLKEM768_CT_LEN);
     debug_assert_eq!(shared.as_slice().len(), MLKEM768_SS_LEN);
@@ -424,10 +431,12 @@ pub fn seal_to_pubkey(
     // AEAD 키 = 32바이트 공유비밀을 그대로 사용(ML-KEM SS 는 균일 난수). Zeroizing 로 소거 보장.
     let mut key = Zeroizing::new([0u8; 32]);
     key.copy_from_slice(shared.as_slice());
-    let cipher = XChaCha20Poly1305::new(Key::from_slice(key.as_ref()));
+    let cipher_key = Key::try_from(key.as_ref()).expect("ML-KEM 공유비밀은 항상 32바이트");
+    let cipher = XChaCha20Poly1305::new(&cipher_key);
+    let nonce = XNonce::from(nonce);
     let ciphertext = cipher
         .encrypt(
-            XNonce::from_slice(&nonce),
+            &nonce,
             Payload {
                 msg: secret,
                 aad: &header,
@@ -532,8 +541,7 @@ pub fn open_with_privkey(bytes: &[u8], secret_key: &[u8]) -> Opened {
     let aad = &t[..ctlen_end];
 
     // ── 개인키로 역캡슐화 → 공유비밀 복원 → AEAD 복호 ──
-    type Dk = <MlKem768 as KemCore>::DecapsulationKey;
-    let dk_arr = match Encoded::<Dk>::try_from(secret_key) {
+    let dk_arr = match secret_key.try_into() {
         Ok(a) => a,
         Err(_) => {
             return Opened::Broken {
@@ -545,7 +553,15 @@ pub fn open_with_privkey(bytes: &[u8], secret_key: &[u8]) -> Opened {
             }
         }
     };
-    let dk = Dk::from_bytes(&dk_arr);
+    #[allow(deprecated)]
+    let dk = match DecapsulationKey768::from_expanded_bytes(&dk_arr) {
+        Ok(key) => key,
+        Err(_) => {
+            return Opened::Broken {
+                reason: "개인키 형식이 올바르지 않다".to_string(),
+            }
+        }
+    };
     let ct_kem = match Ciphertext::<MlKem768>::try_from(encap) {
         Ok(c) => c,
         Err(_) => return len_mismatch(),
@@ -553,19 +569,14 @@ pub fn open_with_privkey(bytes: &[u8], secret_key: &[u8]) -> Opened {
     // ML-KEM 역캡슐화는 무오류다 — 틀린 개인키·변조 CT 여도 (묵시적 거부로) *다른* 공유비밀을
     // 돌려줄 뿐 Err 를 내지 않는다. 그래서 진짜 무결성 관문은 아래 AEAD 다: 공유비밀이 다르면
     // AEAD 키가 달라져 복호가 실패하고 Broken 이 된다.
-    let shared = match dk.decapsulate(&ct_kem) {
-        Ok(s) => s,
-        Err(_) => {
-            return Opened::Broken {
-                reason: "역캡슐화 실패".to_string(),
-            }
-        }
-    };
+    let shared = dk.decapsulate(&ct_kem);
     let mut key = Zeroizing::new([0u8; 32]);
     key.copy_from_slice(shared.as_slice());
-    let cipher = XChaCha20Poly1305::new(Key::from_slice(key.as_ref()));
+    let cipher_key = Key::try_from(key.as_ref()).expect("ML-KEM 공유비밀은 항상 32바이트");
+    let cipher = XChaCha20Poly1305::new(&cipher_key);
+    let nonce = XNonce::from(nonce);
     match cipher.decrypt(
-        XNonce::from_slice(&nonce),
+        &nonce,
         Payload {
             msg: ciphertext,
             aad,

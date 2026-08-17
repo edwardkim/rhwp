@@ -20,7 +20,7 @@
 //! ```
 //!
 //! `usvg::Tree` 는 한 번만 파싱해 GPU·CPU 두 경로에 **동일 입력**으로 넣는다. resvg 0.45 와
-//! vello_svg 0.7 이 같은 usvg 0.45 를 공유하므로(카고가 단일 노드로 통합) 벤치마크가
+//! vello_svg 0.10 이 같은 usvg 0.46 를 공유하므로(카고가 단일 노드로 통합) 벤치마크가
 //! 순수 래스터화 단계만 비교하게 되고, 픽셀 비교도 의미를 가진다(같은 벡터 → 두 래스터라이저).
 //!
 //! # 정직성
@@ -34,7 +34,7 @@
 use std::path::PathBuf;
 
 // Cargo 에서 `resvg-gpu`(package = resvg, 0.45)로 이름을 바꿔 가져온다 — native-skia 의
-// resvg 0.47 과 버전이 다르기 때문이다. 0.45 로 핀하는 이유는 vello_svg 0.7 과 usvg 0.45 를
+// resvg 0.47 과 버전이 다르기 때문이다. 0.46 으로 핀하는 이유는 vello_svg 0.10 과 usvg 0.46 를
 // **공유**하기 위함이다(카고가 단일 노드로 통합). 그래야 하나의 `usvg::Tree` 를 GPU·CPU 두
 // 래스터라이저에 동일 입력으로 넣을 수 있다. `tiny_skia`·`usvg` 는 resvg 가 재수출한다.
 use resvg_gpu::{tiny_skia, usvg};
@@ -132,34 +132,27 @@ impl GpuContext {
     /// 이 함수 호출 비용(수백 ms 수준)이 곧 "일회성 초기화 비용" 이다 — 배치가 클수록
     /// 페이지당으로 분할 상각된다.
     pub fn new() -> Result<Self, String> {
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
-            // GL 백엔드는 vello 의 컴퓨트 파이프라인을 지원하지 않으므로 PRIMARY(Vulkan/DX12/Metal)만.
-            backends: wgpu::Backends::PRIMARY,
-            ..Default::default()
-        });
+        let instance = make_instance(wgpu::Backends::PRIMARY);
 
         let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
             power_preference: wgpu::PowerPreference::HighPerformance,
             force_fallback_adapter: false,
             compatible_surface: None,
         }))
-        .ok_or_else(|| {
-            "GPU 어댑터를 찾을 수 없습니다 (Vulkan/DX12/Metal 지원 GPU·드라이버 필요)".to_string()
-        })?;
+        .map_err(|e| format!("GPU 어댑터를 찾을 수 없습니다: {e}"))?;
 
         let adapter_info = adapter.get_info();
 
-        let (device, queue) = pollster::block_on(adapter.request_device(
-            &wgpu::DeviceDescriptor {
-                label: Some("rhwp-gpu-raster"),
-                required_features: wgpu::Features::empty(),
-                // 어댑터가 실제로 지원하는 한도를 그대로 요청 — vello 의 스토리지 텍스처/버퍼
-                // 요구를 다운레벨 기본값이 못 맞추는 경우를 피한다.
-                required_limits: adapter.limits(),
-                memory_hints: wgpu::MemoryHints::default(),
-            },
-            None,
-        ))
+        let (device, queue) = pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor {
+            label: Some("rhwp-gpu-raster"),
+            required_features: wgpu::Features::empty(),
+            // 어댑터가 실제로 지원하는 한도를 그대로 요청 — vello 의 스토리지 텍스처/버퍼
+            // 요구를 다운레벨 기본값이 못 맞추는 경우를 피한다.
+            required_limits: adapter.limits(),
+            experimental_features: Default::default(),
+            memory_hints: wgpu::MemoryHints::default(),
+            trace: Default::default(),
+        }))
         .map_err(|e| format!("GPU 디바이스 요청 실패: {e}"))?;
 
         let renderer = Renderer::new(
@@ -284,7 +277,7 @@ impl GpuContext {
         let slice = buffer.slice(..);
         slice.map_async(wgpu::MapMode::Read, |_| {});
         // 헤드리스라 이벤트 루프가 없으므로 블로킹 폴로 매핑 완료를 기다린다.
-        self.device.poll(wgpu::Maintain::Wait);
+        let _ = self.device.poll(wgpu::PollType::wait_indefinitely());
 
         let mapped = slice.get_mapped_range();
         let mut rgba = vec![0u8; (unpadded_bpr as usize) * (height as usize)];
@@ -380,12 +373,8 @@ pub fn diff(a: &RasterImage, b: &RasterImage) -> DiffStats {
 /// 사용 가능한 GPU 어댑터를 열거한다(`gpu-info` 하위명령용). 각 원소는
 /// "(backend) name — type" 요약 문자열이다.
 pub fn probe_adapters() -> Vec<String> {
-    let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
-        backends: wgpu::Backends::all(),
-        ..Default::default()
-    });
-    instance
-        .enumerate_adapters(wgpu::Backends::all())
+    let instance = make_instance(wgpu::Backends::all());
+    pollster::block_on(instance.enumerate_adapters(wgpu::Backends::all()))
         .into_iter()
         .map(|adapter| {
             let info = adapter.get_info();
@@ -395,4 +384,10 @@ pub fn probe_adapters() -> Vec<String> {
             )
         })
         .collect()
+}
+
+fn make_instance(backends: wgpu::Backends) -> wgpu::Instance {
+    let mut descriptor = wgpu::InstanceDescriptor::new_without_display_handle();
+    descriptor.backends = backends;
+    wgpu::Instance::new(descriptor)
 }

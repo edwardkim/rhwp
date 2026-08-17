@@ -366,8 +366,16 @@ fn parse_para_header(data: &[u8]) -> Paragraph {
 /// - 확장 컨트롤 문자: 8 code unit (16바이트) 차지
 /// - 인라인 컨트롤 문자: 1 code unit (2바이트) 차지
 fn parse_para_text(data: &[u8]) -> ParaTextParts {
-    let mut text = String::new();
-    let mut char_offsets: Vec<u32> = Vec::new();
+    // 벌크빌드(#4860): 출력 버퍼를 입력 길이 기준으로 미리 예약하고, 평문 런(plain run)은
+    // code unit 단위 push 대신 일괄 extend 로 채운다. SIMD 아님 — 순수 메모리/할당
+    // 최적화이며 스칼라 구현과 byte-identical.
+    //
+    // char_offsets 는 "출력 문자 수 ≤ 입력 code unit 수" 라서 n_units 가 정확한 상한 →
+    // 재할당 0. text 는 UTF-16→UTF-8 이라 정확한 상한을 못 잡으므로 입력 바이트 수를
+    // 예약값으로 쓴다(ASCII 는 여유, 전각은 doubling 1회 이내).
+    let n_units = data.len() / 2;
+    let mut text = String::with_capacity(data.len());
+    let mut char_offsets: Vec<u32> = Vec::with_capacity(n_units);
     let mut field_ranges: Vec<FieldRange> = Vec::new();
     let mut tab_extended: Vec<[u16; 7]> = Vec::new();
     let mut title_marks: Vec<TitleMark> = Vec::new();
@@ -383,6 +391,35 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
     while pos + 1 < data.len() {
         let code_unit_pos = (pos / 2) as u32; // UTF-16 코드 유닛 인덱스
         let ch = u16::from_le_bytes([data[pos], data[pos + 1]]);
+
+        // 평문 런 빠른 경로 (bulk build) — #4860 실측: 디코드 비용은 스캔이 아니라
+        // String/offsets 메모리 쓰기가 지배한다. 평문 code unit(`ch >= 0x20 && 비서로게이트`)
+        // 은 아래 루프 마지막 else 분기가 pos+=2 로 방출하는 단일 BMP 문자 집합과 정확히
+        // 같다. 이 집합을 런으로 묶어 offsets 는 연속 범위로, text 는 chunk 디코드로 각각
+        // 한 번에 extend 해 문자별 분기 캐스케이드와 개별 push 오버헤드를 없앤다. 런 안의
+        // 모든 code unit 은 BMP 비서로게이트 스칼라라 `char::from_u32` 가 항상 Some 이다
+        // (unwrap_or 폴백은 도달 불가 — byte-identity 를 깨지 않는다).
+        if ch >= 0x20 && !(0xD800..=0xDFFF).contains(&ch) {
+            let run_start = pos;
+            let start_cu = code_unit_pos;
+            loop {
+                pos += 2;
+                if pos + 1 >= data.len() {
+                    break;
+                }
+                let next = u16::from_le_bytes([data[pos], data[pos + 1]]);
+                if next < 0x20 || (0xD800..=0xDFFF).contains(&next) {
+                    break;
+                }
+            }
+            let end_cu = (pos / 2) as u32;
+            char_offsets.extend(start_cu..end_cu);
+            text.extend(data[run_start..pos].chunks_exact(2).map(|c| {
+                char::from_u32(u16::from_le_bytes([c[0], c[1]]) as u32).unwrap_or('\u{FFFD}')
+            }));
+            char_count += (end_cu - start_cu) as usize;
+            continue;
+        }
 
         if ch == 0 {
             pos += 2;

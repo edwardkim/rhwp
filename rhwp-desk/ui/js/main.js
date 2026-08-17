@@ -6,7 +6,7 @@ import * as api from "./api.js";
 import * as cards from "./cards.js";
 import { Palette } from "./palette.js";
 import { Viewer } from "./viewer.js";
-import { BatchRunner, VERIFY_AXES } from "./batch.js";
+import { BatchRunner, VERIFY_AXES, axisArgs } from "./batch.js";
 import { runAgentTask } from "./agent.js";
 import { attachSuggestions, cliCommandFor } from "./ontology.js";
 
@@ -169,7 +169,12 @@ function axisStatus(doc, axis) {
   if (env === "run") return "run";
   if (!env) return "";
   if (env.clean === true) return "ok";
-  const n = env.findingCount ?? env.signalCount ?? env.hiddenCharCount ?? (Array.isArray(env.hiddenText) ? env.hiddenText.length : 0);
+  // layout-anomaly 는 판정=데이터 계약: hasSignal 이 공식 불리언이고,
+  // overflow/overlap/empty_page 카운트는 그 근거다. 기존 축은 findingCount 등.
+  if (env.hasSignal === true) return "bad";
+  const n = env.findingCount ?? env.signalCount ?? env.hiddenCharCount
+    ?? env.overflowCount ?? env.overlapCount
+    ?? (Array.isArray(env.hiddenText) ? env.hiddenText.length : 0);
   return n > 0 ? "bad" : "ok";
 }
 
@@ -226,7 +231,7 @@ function docChip(doc) {
   }
   const axes = document.createElement("span");
   axes.className = "c-axes";
-  axes.title = "검증 4축: 은닉 텍스트 · 주입 신호 · 유니코드 기만 · 워터마크";
+  axes.title = "검증 6축: 은닉 텍스트 · 주입 신호 · 유니코드 기만 · 워터마크 · 무기화 위협 · 레이아웃 이상";
   for (const a of AXES) axes.append(axisDot(axisStatus(doc, a)));
   chip.append(axes);
 
@@ -239,10 +244,12 @@ function docChip(doc) {
     return b;
   };
   chip.append(
-    mk("검증", "inspect 4축 스윕 — 결과는 카드와 배지로", () => verifyDoc(doc.path)),
+    mk("검증", "6축 스윕 — 결과는 카드와 배지로", () => verifyDoc(doc.path)),
     mk("보기", "보조 문서 패널에서 페이지 렌더", () => viewer.open(doc.path)),
     mk("텍스트", "쪽별 TXT 추출 (문서 폴더/rhwp-out)", () => exportText(doc.path)),
     mk("PDF", "PDF 내보내기 (문서 폴더/rhwp-out)", () => exportPdf(doc.path)),
+    mk("HWPX", "HWPX로 변환 (문서 폴더/rhwp-out, --verify)", () => convertHwpx(doc.path)),
+    mk("HWP", "편집용 HWP5로 변환 (문서 폴더/rhwp-out, --verify)", () => convertHwp5(doc.path)),
   );
   const close = document.createElement("button");
   close.className = "btn icon-btn";
@@ -262,7 +269,10 @@ function docHasAttention(doc) {
   return AXES.some((a) => axisStatus(doc, a) === "bad");
 }
 function docAttentionReasons(doc) {
-  const LABEL = { "hidden-text": "은닉 텍스트", injection: "주입 신호", unicode: "유니코드 기만", watermark: "워터마크" };
+  const LABEL = {
+    "hidden-text": "은닉 텍스트", injection: "주입 신호", unicode: "유니코드 기만",
+    watermark: "워터마크", "threat-scan": "무기화 위협", "layout-anomaly": "레이아웃 이상",
+  };
   return AXES.filter((a) => axisStatus(doc, a) === "bad").map((a) => LABEL[a]);
 }
 function docIsChecked(doc) {
@@ -392,10 +402,13 @@ function onEntry(entry, opts = {}) {
   const src = entry.envelope?.source ? String(entry.envelope.source) : null;
   if (src && api.isDocPath(src)) {
     const doc = getDoc(src);
-    // 검증 축 배지 갱신
+    // 검증 축 배지 갱신 — 축은 "inspect <axis>" 서브커맨드거나(hidden-text 등),
+    // threat-scan처럼 축 이름 자체가 최상위 명령인 경우 둘 다 있다.
     if (entry.command === "inspect") {
       const axis = entry.args[1];
       if (AXES.includes(axis)) doc.axes[axis] = entry.envelope;
+    } else if (AXES.includes(entry.command)) {
+      doc.axes[entry.command] = entry.envelope;
     }
     renderDocs();
   }
@@ -414,7 +427,6 @@ function onEntry(entry, opts = {}) {
 async function verifyDoc(path) {
   const doc = getDoc(path);
   const axes = [...AXES];
-  if (state.caps?.commands?.some((c) => c.name === "layout-anomaly")) axes.push("layout-anomaly");
   const q = queue.start(`검증: ${api.basename(path)}`, axes.length);
   let done = 0, bad = 0;
   for (const axis of axes) {
@@ -423,8 +435,7 @@ async function verifyDoc(path) {
     renderDocs();
     queue.step(q, `inspect ${axis}`);
     try {
-      const args = axis === "layout-anomaly" ? [axis, path, "--json"] : ["inspect", axis, path, "--json"];
-      const entry = await api.runTool(state.engine.path, args, "verify");
+      const entry = await api.runTool(state.engine.path, axisArgs(axis, path), "verify");
       onEntry(entry);
       if (entry.exitCode !== 0 && entry.exitCode !== 3) bad++;
       if (!entry.envelope) doc.axes[axis] = undefined;
@@ -454,6 +465,25 @@ async function exportPdf(path) {
     const entry = await api.runTool(state.engine.path, ["export-pdf", path, "-o", out, "--json"], "export");
     onEntry(entry);
     if (entry.exitCode === 0) toast("PDF 저장: " + out, "ok");
+  } catch (e) { toast(String(e), "error"); }
+}
+async function convertHwpx(path) {
+  const out = api.dirname(path) + "\\rhwp-out\\" + api.basename(path).replace(/\.(hwp|hwpx)$/i, "") + ".hwpx";
+  try {
+    // exit 3 = 변환은 저장됐지만 IR 왕복 차이 — 도구 실패가 아니라 판정.
+    const entry = await api.runTool(state.engine.path, ["export-hwpx", path, out, "--verify", "--json"], "export");
+    onEntry(entry);
+    if (entry.exitCode === 0) toast("HWPX 저장: " + out, "ok");
+    else if (entry.exitCode === 3) toast("HWPX 저장(IR 차이): " + out, "");
+  } catch (e) { toast(String(e), "error"); }
+}
+async function convertHwp5(path) {
+  const out = api.dirname(path) + "\\rhwp-out\\" + api.basename(path).replace(/\.(hwp|hwpx)$/i, "") + ".hwp";
+  try {
+    const entry = await api.runTool(state.engine.path, ["convert", path, out, "--verify", "--json"], "export");
+    onEntry(entry);
+    if (entry.exitCode === 0) toast("HWP 저장: " + out, "ok");
+    else if (entry.exitCode === 3) toast("HWP 저장(IR 차이): " + out, "");
   } catch (e) { toast(String(e), "error"); }
 }
 
@@ -645,11 +675,14 @@ const AGENT_TOOL_ALLOWLIST = [
   "hwp_info", "hwp_digest", "hwp_export_text", "hwp_export_structure",
   "hwp_search", "hwp_extract_data", "hwp_fields", "hwp_explain",
   "hwp_inspect_hidden_text", "hwp_inspect_injection", "hwp_inspect_unicode",
-  "hwp_inspect_watermark",
+  "hwp_inspect_watermark", "hwp_threat_scan", "hwp_layout_anomaly",
   "hwp_export_pdf", "hwp_export_svg", "hwp_export_markdown", "hwp_thumbnail",
+  "hwp_convert_hwpx", "hwp_convert_hwp5",
+  "hwp_ir_diff", "hwp_render_diff", "hwp_split_document",
   "hwp_export_tables", "hwp_table_to_csv", "hwp_csv_to_table",
   "hwp_chart_to_csv", "hwp_csv_to_chart", "hwp_replace_text",
-  "hwp_fill_fields", "hwp_set_cell", "hwp_set_checkbox",
+  "hwp_fill_fields", "hwp_set_cell", "hwp_set_checkbox", "hwp_insert_image",
+  "hwp_redact", "hwp_sanitize",
 ];
 async function ensureTools() {
   if (state.tools.openaiTools || !state.engine) return;

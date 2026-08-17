@@ -22,8 +22,26 @@ description: rhwp 저장소에 기여(이슈·코드 변경·문서·PR)할 때�
    [에이전트 표면 플레이북](../../../mydocs/manual/agent_surface_playbook.md)의 등재 절차를 따른다.
 5. **로컬 검증 게이트** — 변경 범위별 기본 검증은
    [local_validation.md §4.3](../../../mydocs/manual/pr_review/local_validation.md) 이 정본.
-   공통 최소: `cargo fmt --check` · `cargo clippy -- -D warnings` · 관련 `cargo test`.
    렌더링·레이아웃 변경은 시각 검증 근거(PDF/SVG 전후 비교)를 남긴다.
+
+   **PR 생성 직전 필수 — 하나라도 실패하면 `gh pr create` 하지 않는다.**
+   CI `Lint (fmt, clippy, WASM check)` 와 같은 명령이다. `cargo fmt --check` 만으로는
+   부족하고, 반드시 `cargo fmt --all -- --check` 를 통과해야 한다.
+
+   ```bash
+   cargo fmt --all
+   cargo fmt --all -- --check
+   node scripts/rust-test-suite-manifest.mjs --check
+   node scripts/rust-unit-test-tiers.mjs --check
+   cargo clippy -- -D warnings
+   ```
+
+   새 통합 테스트는 `tests/cases/` 에만 둔다. `tests/*.rs` 최상위 원본·
+   `tests/generated/`·`tests/suites/manifest.json`·Cargo.toml generated 블록은
+   수기 수정하지 않는다. 케이스 추가 후
+   `node scripts/rust-test-suite-manifest.mjs --generate` 로 하니스를 재생성한다.
+   `src/` 의 `#[cfg(test)]` 줄 번호가 바뀌면
+   `node scripts/rust-unit-test-tiers.mjs --generate` 도 실행한다.
 6. **작업 증빙 (권장)** — 문서를 실제로 편집·생성한 작업이면 영수증을 남긴다:
 
    ```bash

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   buildCaseIndex,
-  loadManifest,
+  deriveManifest,
   ROOT,
 } from './rust-test-suite-manifest.mjs';
 
@@ -17,7 +17,7 @@ export function resolveCasePlan(caseName, root = ROOT) {
   if (!CASE_NAME.test(caseName)) {
     throw new Error(`잘못된 Rust test case 이름: ${caseName}`);
   }
-  const manifest = loadManifest(root);
+  const manifest = deriveManifest(root);
   const target = buildCaseIndex(manifest).get(caseName);
   if (!target) {
     throw new Error(`suite manifest에서 case를 찾을 수 없습니다: ${caseName}`);

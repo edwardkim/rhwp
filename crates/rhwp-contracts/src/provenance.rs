@@ -89,6 +89,32 @@ pub const MAP: &[CommandProvenance] = &[
         note: "sizeBytes·pageCount·paraCount·sections·version 은 엔진 계산값이다.",
     },
     CommandProvenance {
+        command: "word-count",
+        untrusted: &[],
+        note: "구역·문단·글자·어절·쪽 수는 엔진이 IR 본문을 센 숫자다. 본문 문자열은 싣지 않는다.",
+    },
+    CommandProvenance {
+        command: "bookmarks",
+        untrusted: &[f(
+            "bookmarks[].name",
+            "get_bookmarks_native — 문서 책갈피 이름 문자열",
+        )],
+        note: "count·sec·para·ctrlIdx·charPos 는 엔진 좌표다. 이름은 문서가 정한다.",
+    },
+    CommandProvenance {
+        command: "headers-footers",
+        untrusted: &[],
+        note: "목록은 엔진이 컨트롤 종류·적용 대상에서 만든 좌표다. 본문 문자열은 싣지 않는다.",
+    },
+    CommandProvenance {
+        command: "header-footer",
+        untrusted: &[f(
+            "text",
+            "get_header_footer_native — 머리말/꼬리말 문단에서 읽은 문서 텍스트",
+        )],
+        note: "exists·section·isHeader·applyTo 는 호출 조건·컨트롤 좌표 또는 엔진 판정값이고, text만 문서 파생이다.",
+    },
+    CommandProvenance {
         command: "export-text",
         untrusted: &[
             f(
@@ -188,6 +214,14 @@ pub const MAP: &[CommandProvenance] = &[
             ),
         ],
         note: "format·pageCount·paragraphCount·footnoteCount·endnoteCount·encrypted 는 엔진값이고, tables[] 는 rows/cols/hasMergedCells 만 담아 셀 텍스트를 싣지 않는다.",
+    },
+    CommandProvenance {
+        command: "explore",
+        untrusted: NONE,
+        note: "어포던스 메뉴 봉투는 형식 레이블·개수(pageCount·affordanceCount)·확신도·고정 \
+               명령 템플릿(<file> 자리표시자)·고정 고지문(note)뿐이다. 증거 menu[].why 는 \
+               문서 원문이 아니라 엔진이 센 개수를 엮은 사람 문장이라 문서 파생 문자열이 \
+               나갈 자리가 없다 — source 는 호출자 경로 에코다.",
     },
     CommandProvenance {
         command: "export-tables",
@@ -565,6 +599,12 @@ pub const MAP: &[CommandProvenance] = &[
         untrusted: NONE,
         note: "생성 봉투는 경로·바이트·문항/문단 개수뿐이다. 입력 ingest JSON 은 \
                문서가 아니라 호출자가 만든 계획서다.",
+    },
+    CommandProvenance {
+        command: "scaffold",
+        untrusted: NONE,
+        note: "생성 봉투는 경로·바이트·블록/문단/표 개수뿐이다. 입력 spec JSON 은 \
+               문서가 아니라 사용자/에이전트가 만든 명세다 — 문서 파생 값이 아니다.",
     },
     CommandProvenance {
         command: "capabilities",

@@ -1,0 +1,112 @@
+{
+  "version": 2,
+  "minimumNextestCases": 6559,
+  "sharding": {
+    "suitePrefix": "regression_suite_",
+    "suiteCount": 32,
+    "testAttributeWeight": 4096,
+    "maximumIntegrationTargets": 48
+  },
+  "nextestPriorities": [
+    {
+      "case": "overflow_cell_baseline",
+      "priority": 100
+    }
+  ],
+  "sourceRoots": [
+    {
+      "path": "tests",
+      "recursive": false
+    },
+    {
+      "path": "tests/cases",
+      "recursive": true
+    },
+    {
+      "path": "tests/suites/issue_regression_pilot",
+      "recursive": false
+    }
+  ],
+  "exceptions": [
+    {
+      "target": "cli_exit_codes",
+      "path": "tests/cli_exit_codes.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "cli_exit_codes_native",
+      "path": "tests/cli_exit_codes_native.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_1144",
+      "path": "tests/issue_1144.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_1144_native",
+      "path": "tests/issue_1144_native.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_4055_b1_chart_edit_probe",
+      "path": "tests/issue_4055_b1_chart_edit_probe.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_4098_legacy_chart_grid",
+      "path": "tests/issue_4098_legacy_chart_grid.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_4099_hwpx_chart_to_hwp",
+      "path": "tests/issue_4099_hwpx_chart_to_hwp.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_4100_chart_data_edit",
+      "path": "tests/issue_4100_chart_data_edit.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "overflow_cell_baseline",
+      "path": "tests/overflow_cell_baseline.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    }
+  ]
+}

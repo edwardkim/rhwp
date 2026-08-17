@@ -1,5 +1,5 @@
 use super::*;
-use crate::model::paragraph::TitleMark;
+use crate::model::paragraph::{FieldRange, OrphanFieldEnd, TitleMark};
 use crate::parser::tags;
 
 /// 테스트용 레코드 바이너리 생성
@@ -1057,7 +1057,6 @@ fn field_closed_in_its_own_paragraph_is_not_left_open() {
     );
 }
 
-// ==========================================================================
 // [#4827] 문단↔표↔셀 상호재귀 깊이 상한 회귀 — 손상 문서 스택 오버플로 DoS 가드
 // ==========================================================================
 

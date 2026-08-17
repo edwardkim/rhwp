@@ -1,0 +1,24 @@
+{
+  "id": "SH01",
+  "steps": [
+    {
+      "answer": {
+        "untrustedCount": {
+          "cmd": [
+            "export-provenance-map",
+            "--json"
+          ],
+          "path": "commands.export-tables.untrusted",
+          "len": true
+        },
+        "untrustedFields": {
+          "cmd": [
+            "export-provenance-map",
+            "--json"
+          ],
+          "path": "commands.export-tables.untrusted"
+        }
+      }
+    }
+  ]
+}

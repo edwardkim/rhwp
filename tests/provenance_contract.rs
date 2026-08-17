@@ -344,6 +344,12 @@ const SWEEP_EXEMPT: &[(&str, &str)] = &[
          tests/issue_3358_ingest_unknown_fields.rs 가 그 봉투를 따로 고정한다.",
     ),
     (
+        "scaffold",
+        "입력이 문서가 아니라 사용자/에이전트가 만든 spec JSON 이라 '문서에서 온 문자열' \
+         오라클을 만들 수 없다. 봉투는 경로·바이트·블록/문단/표 개수뿐이고, 산출물은 \
+         명세에서 생성한 새 문서다 — 문서 파생 값이 아니다.",
+    ),
+    (
         "export-ir-schema",
         "문서를 입력으로 받지 않는 IR 타입 스키마다. --bare가 아닌 모드도 특정 문서가 아닌 \
          스키마 봉투를 낸다.",
@@ -655,6 +661,38 @@ fn recipes() -> Vec<Recipe> {
             ndjson: false,
         },
         Recipe {
+            command: "word-count",
+            doc: Some(main.clone()),
+            args: vec![s("word-count"), s("--json"), p(&main)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "bookmarks",
+            doc: Some(main.clone()),
+            args: vec![s("bookmarks"), s("--json"), p(&main)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "headers-footers",
+            doc: Some(field.clone()),
+            args: vec![s("headers-footers"), s("--json"), p(&field)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "header-footer",
+            doc: Some(field.clone()),
+            args: vec![s("header-footer"), s("--header"), s("--json"), p(&field)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
             command: "export-text",
             doc: Some(main.clone()),
             args: vec![s("export-text"), s("--json"), p(&main)],
@@ -808,6 +846,17 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        // [#gym] explore — 어포던스 메뉴 봉투. 증거(menu[].why)는 엔진이 센 개수라 문서
+        // 파생 문자열이 없다(untrustedContent:false). 본문·표·개요가 있는 main 을 써
+        // 오라클을 비지 않게 하고, 표지 존재·지도 정합만 확인한다.
+        Recipe {
+            command: "explore",
+            doc: Some(main.clone()),
+            args: vec![s("explore"), p(&main), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         Recipe {
             command: "edit",
             doc: Some(table.clone()),
@@ -866,6 +915,22 @@ fn recipes() -> Vec<Recipe> {
                 p(&field),
                 s("--image"),
                 p(&stamp),
+                s("--dry-run"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "edit",
+            doc: Some(field.clone()),
+            args: vec![
+                s("edit"),
+                s("insert-text"),
+                p(&field),
+                s("--text"),
+                s("marker"),
                 s("--dry-run"),
                 s("--json"),
             ],
@@ -2121,6 +2186,9 @@ fn sweep_exempt_envelopes_still_carry_provenance_marks() {
     let ingest = dir.join("prov-exempt-ingest.json");
     std::fs::write(&ingest, r#"{"version":"1","questions":[]}"#).expect("ingest 픽스처");
     let ingest_out = dir.join("prov-exempt-ingest.hwpx");
+    let scaffold_spec = dir.join("prov-exempt-scaffold.json");
+    std::fs::write(&scaffold_spec, r#"{"version":"1","blocks":[]}"#).expect("scaffold 픽스처");
+    let scaffold_out = dir.join("prov-exempt-scaffold.hwpx");
 
     let invocations: BTreeMap<&str, Vec<String>> = [
         ("export-ir-schema", vec![s("export-ir-schema"), s("--json")]),
@@ -2148,6 +2216,16 @@ fn sweep_exempt_envelopes_still_carry_provenance_marks() {
                 ingest.to_str().expect("경로").to_string(),
                 s("-o"),
                 ingest_out.to_str().expect("경로").to_string(),
+                s("--json"),
+            ],
+        ),
+        (
+            "scaffold",
+            vec![
+                s("scaffold"),
+                scaffold_spec.to_str().expect("경로").to_string(),
+                s("-o"),
+                scaffold_out.to_str().expect("경로").to_string(),
                 s("--json"),
             ],
         ),
@@ -2197,6 +2275,53 @@ fn sweep_exempt_envelopes_still_carry_provenance_marks() {
 /// 나오게 하는 쪽을 택한다(예: sanitize 레시피가 `-o` 로 저장해 `output` 을 낸다).
 const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     // (명령, 필드, 스윕 레시피가 그 필드를 못 내는 사유)
+    // 공유 edit recordFields 에 하위명령 전용 키가 쌓인다. 스윕 레시피는
+    // fill-fields/set-cell/replace-text 라 이 키들을 봉투에 안 낸다.
+    (
+        "edit",
+        "below",
+        "insert-row 전용. 스윕 레시피는 fill-fields/set-cell 이라 below 를 안 낸다",
+    ),
+    (
+        "edit",
+        "right",
+        "insert-col 전용. 스윕 레시피는 fill-fields/set-cell 이라 right 를 안 낸다",
+    ),
+    (
+        "edit",
+        "endRow",
+        "merge-cells 전용. 스윕 레시피는 fill-fields/set-cell 이라 endRow 를 안 낸다",
+    ),
+    (
+        "edit",
+        "endCol",
+        "merge-cells 전용. 스윕 레시피는 fill-fields/set-cell 이라 endCol 를 안 낸다",
+    ),
+    (
+        "edit",
+        "isHeader",
+        "insert-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 isHeader 를 안 낸다",
+    ),
+    (
+        "edit",
+        "applyTo",
+        "insert-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 applyTo 를 안 낸다",
+    ),
+    (
+        "edit",
+        "count",
+        "delete-row/delete-col 전용. 스윕 레시피는 fill-fields/set-cell 이라 count 를 안 낸다",
+    ),
+    (
+        "edit",
+        "ctrl",
+        "insert-text/delete-footnote 등 컨트롤 좌표 전용. 스윕 레시피는 fill-fields/set-cell 이라 ctrl 를 안 낸다",
+    ),
+    (
+        "edit",
+        "name",
+        "add-bookmark/rename-bookmark 전용. 다른 하위는 fill-fields/set-cell 처럼 name 을 안 싣는다",
+    ),
 ];
 
 #[test]

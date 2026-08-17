@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "showcase",
+  "title": "🎆 쇼케이스 — rhwp 초능력 원라이드",
+  "axis": "쇼케이스 (다른 HWP 도구엔 없는 초능력 6종을 한 팩에서 시연 — 라이브 오라클 채점)",
+  "description": "운동장 정문에 세운 하이라이트 놀이기구. 에이전트가 rhwp 를 처음 만났을 때 '이 도구만 주는 것'을 한 바퀴에 체험한다 — 신뢰경계 지도(출처 탐정)·주입 에어락·왕복 충실도(IR)·표 왕복·시각 회귀 무결·작업 영수증. 각 기구는 골든 파일 없이 채점 시점에 rhwp 로 진값을 재계산하는 라이브 오라클이 채점한다(정답은 박제되지 않는다). 심화 훈련은 능력별 전용 팩(security·serialization·table-csv·layout-rendering·automation·self-description)이 맡고, 이 팩은 그 초능력들을 한자리에 모은 정문 쇼케이스다 — 신참 에이전트를 부르는 유입 표면.",
+  "requires": {
+    "commands": [
+      "export-provenance-map",
+      "inspect",
+      "info",
+      "ir-diff",
+      "export-hwpx",
+      "export-tables",
+      "csv-to-table",
+      "render-diff",
+      "replay",
+      "gate"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.4",
+    "rhwpCommit": "627c8c49aecc00b04e8b62c82afe8818d1d87d1b",
+    "capabilitiesSha256": "4767e61c3af751bb2f97af9d0b3e5ffa5cbb5dc70a89cf3ae85987132fa5473d"
+  }
+}

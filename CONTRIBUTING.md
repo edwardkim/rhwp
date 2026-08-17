@@ -137,7 +137,10 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 ```bash
 cargo install cargo-nextest --locked             # 최초 1회
-cargo fmt --all -- --check                       # 포맷 정책 준수
+cargo fmt --all                                  # 로컬 포맷 적용
+cargo fmt --all -- --check                       # CI와 같은 포맷 검증 — PR 전 필수
+node --test scripts/tests/rust-test-suite-manifest.test.mjs
+node scripts/rust-unit-test-tiers.mjs --check
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
@@ -145,7 +148,16 @@ cargo nextest run \
 cargo clippy --all-targets --target-dir target/pr-review -- -D warnings # 린트 경고 0건
 ```
 
-세 명령이 모두 통과하는지 확인한 후 PR을 생성해주세요.
+`cargo fmt --all -- --check` 가 실패하면 PR을 만들지 마세요. `cargo fmt --check`
+만으로는 CI `Lint (fmt, clippy, WASM check)` 와 같지 않습니다. 포맷이 깨졌으면
+`cargo fmt --all` 로 고친 뒤 다시 `--check` 가 통과한 다음에만 PR을 생성해주세요.
+
+새 통합 테스트는 `tests/cases/` 에만 둡니다. `tests/generated/`,
+`tests/suites/suite-policy.json`은 추적하는 배정 정책이고, `tests/suites/manifest.json`,
+`tests/generated/**`, Cargo의 generated test target 블록은 **PR에 넣지 않는 파생 산출물**입니다. 일반 기여자는 자신의 PR checkout에서 `--prepare`, `--generate`,
+`--sync`, `--rebalance`, `--check`를 실행해 이를 등록하지 않습니다. 새 원본의 배정과
+harness 검증은 PR review 전용 worktree 및 CI가 `--prepare` 뒤 `--check`로 수행합니다.
+로컬에서는 위 계약 단위 테스트와 필요한 Rust 회귀 테스트만 실행하세요.
 
 - `release-test` 프로필은 PR CI와 같은 기준이며 debug 대비 수 배 빠릅니다.
 - 논리 CPU가 12개 미만이거나 메모리가 부족하면 `--test-threads`를 논리 CPU 이하로 낮춰주세요.
@@ -244,6 +256,10 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    커밋하면 독립 PR끼리 같은 harness·manifest를 수정해 불필요한 충돌을 만들므로 CI가 거부합니다.
    원본을 이름 변경·삭제해도 PR에는 `tests/cases/` 변경만 제출합니다. `--rebalance`는 일반 기여
    절차에 포함하지 않으며, 배정 정책 자체를 바꾸는 메인터너 전용 별도 작업에서만 검토합니다.
+
+   원본을 커밋한 뒤 전체 integration 실행이 필요하면, PR branch와 분리된 review worktree에서만
+   `--prepare`와 `--check`를 차례로 실행합니다. 생성된 manifest·harness·Cargo 변경은 검증 증적일
+   뿐이므로 테스트가 끝나면 그 review worktree에서 복원하고 stage하지 않습니다.
 
    제품 소스의 `#[cfg(test)]`에는 새 테스트 모듈이나 test support 항목을 추가하지 않습니다. 공개 API로
    재현할 수 있는 테스트는 `tests/cases/`에 작성하고, 기존 소스 테스트의 차등 이동 상태는 다음 명령으로

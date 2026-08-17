@@ -2497,6 +2497,21 @@ impl DocumentCore {
             }
         }
     }
+    /// HWP 직렬화가 읽는 문단 control stream의 구역 정의를 section 메타와 맞춘다.
+    fn sync_section_def_controls_from_section(&mut self, section_idx: usize) {
+        let Some(section) = self.document.sections.get_mut(section_idx) else {
+            return;
+        };
+        let section_def = section.section_def.clone();
+        for paragraph in &mut section.paragraphs {
+            for control in &mut paragraph.controls {
+                if let Control::SectionDef(control_section_def) = control {
+                    **control_section_def = section_def.clone();
+                }
+            }
+        }
+    }
+
     /// 현재 구역의 미주 모양을 조회한다.
     pub fn get_endnote_shape_native(&self, section_idx: usize) -> Result<String, HwpError> {
         let section = self.document.sections.get(section_idx).ok_or_else(|| {
@@ -2564,88 +2579,95 @@ impl DocumentCore {
         section_idx: usize,
         props_json: &str,
     ) -> Result<String, HwpError> {
-        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-        })?;
-        let shape = &mut section.section_def.endnote_shape;
+        {
+            let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+            })?;
+            let shape = &mut section.section_def.endnote_shape;
 
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "numberFormat") {
-            shape.number_format =
-                Self::footnote_shape_number_format_from_str(&v, shape.number_format);
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "numberFormat") {
+                shape.number_format =
+                    Self::footnote_shape_number_format_from_str(&v, shape.number_format);
+            }
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "userChar") {
+                shape.user_char = Self::first_char_or_nul(&v);
+            }
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "prefixChar") {
+                shape.prefix_char = Self::first_char_or_nul(&v);
+            }
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "suffixChar") {
+                shape.suffix_char = Self::first_char_or_nul(&v);
+            }
+            if let Some(v) = crate::document_core::helpers::json_u16(props_json, "startNumber") {
+                shape.start_number = v.max(1);
+            }
+            if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorLength") {
+                shape.separator_length = i32::from(v.max(0));
+            }
+            if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginTop") {
+                let above = v.max(0);
+                // HWP5 저장본은 구분선 위 값을 fallback 슬롯에 보관하는 경우가 있어 함께 갱신한다.
+                shape.separator_margin_top = above;
+                shape.separator_margin_bottom = above;
+            }
+            if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginBottom") {
+                shape.note_spacing = v.max(0);
+            }
+            if let Some(v) = Self::hwpunit16_from_json(props_json, "noteSpacing") {
+                shape.raw_unknown = v.max(0) as u16;
+            }
+            if let Some(v) = crate::document_core::helpers::json_u8(props_json, "separatorLineType")
+            {
+                shape.separator_line_type = v;
+            }
+            if let Some(v) =
+                crate::document_core::helpers::json_u8(props_json, "separatorLineWidth")
+            {
+                shape.separator_line_width = v;
+            }
+            if let Some(v) = crate::document_core::helpers::json_color(props_json, "separatorColor")
+            {
+                shape.separator_color = v;
+            }
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "numbering") {
+                shape.numbering = Self::footnote_numbering_from_str(&v, shape.numbering);
+            }
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "placement") {
+                shape.placement = Self::footnote_placement_from_str(&v, shape.placement);
+            }
+            if let Some(v) =
+                crate::document_core::helpers::json_bool(props_json, "numberCodeSuperscript")
+            {
+                shape.number_code_superscript = v;
+            }
+            if let Some(v) =
+                crate::document_core::helpers::json_bool(props_json, "printInlineAfterText")
+            {
+                shape.print_inline_after_text = v;
+            }
+            if let Some(false) =
+                crate::document_core::helpers::json_bool(props_json, "separatorEnabled")
+            {
+                shape.separator_length = 0;
+                shape.separator_line_type = 0;
+                shape.separator_line_width = 0;
+            }
+            shape.attr = Self::encode_footnote_shape_attr(shape);
+            let start_number = shape.start_number.max(1);
+            let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
+            let prefix_char = shape.prefix_char;
+            let suffix_char = shape.suffix_char;
+            let mut next_number = start_number;
+            Self::renumber_paragraph_endnotes_with_shape(
+                &mut section.paragraphs,
+                &mut next_number,
+                number_format_code,
+                prefix_char,
+                suffix_char,
+            );
+            section.raw_stream = None;
         }
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "userChar") {
-            shape.user_char = Self::first_char_or_nul(&v);
-        }
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "prefixChar") {
-            shape.prefix_char = Self::first_char_or_nul(&v);
-        }
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "suffixChar") {
-            shape.suffix_char = Self::first_char_or_nul(&v);
-        }
-        if let Some(v) = crate::document_core::helpers::json_u16(props_json, "startNumber") {
-            shape.start_number = v.max(1);
-        }
-        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorLength") {
-            shape.separator_length = i32::from(v.max(0));
-        }
-        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginTop") {
-            let above = v.max(0);
-            // HWP5 저장본은 구분선 위 값을 fallback 슬롯에 보관하는 경우가 있어 함께 갱신한다.
-            shape.separator_margin_top = above;
-            shape.separator_margin_bottom = above;
-        }
-        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginBottom") {
-            shape.note_spacing = v.max(0);
-        }
-        if let Some(v) = Self::hwpunit16_from_json(props_json, "noteSpacing") {
-            shape.raw_unknown = v.max(0) as u16;
-        }
-        if let Some(v) = crate::document_core::helpers::json_u8(props_json, "separatorLineType") {
-            shape.separator_line_type = v;
-        }
-        if let Some(v) = crate::document_core::helpers::json_u8(props_json, "separatorLineWidth") {
-            shape.separator_line_width = v;
-        }
-        if let Some(v) = crate::document_core::helpers::json_color(props_json, "separatorColor") {
-            shape.separator_color = v;
-        }
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "numbering") {
-            shape.numbering = Self::footnote_numbering_from_str(&v, shape.numbering);
-        }
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "placement") {
-            shape.placement = Self::footnote_placement_from_str(&v, shape.placement);
-        }
-        if let Some(v) =
-            crate::document_core::helpers::json_bool(props_json, "numberCodeSuperscript")
-        {
-            shape.number_code_superscript = v;
-        }
-        if let Some(v) =
-            crate::document_core::helpers::json_bool(props_json, "printInlineAfterText")
-        {
-            shape.print_inline_after_text = v;
-        }
-        if let Some(false) =
-            crate::document_core::helpers::json_bool(props_json, "separatorEnabled")
-        {
-            shape.separator_length = 0;
-            shape.separator_line_type = 0;
-            shape.separator_line_width = 0;
-        }
-        shape.attr = Self::encode_footnote_shape_attr(shape);
-        let start_number = shape.start_number.max(1);
-        let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
-        let prefix_char = shape.prefix_char;
-        let suffix_char = shape.suffix_char;
-        let mut next_number = start_number;
-        Self::renumber_paragraph_endnotes_with_shape(
-            &mut section.paragraphs,
-            &mut next_number,
-            number_format_code,
-            prefix_char,
-            suffix_char,
-        );
-        section.raw_stream = None;
+        self.sync_section_def_controls_from_section(section_idx);
 
         self.recompose_section(section_idx);
         self.paginate_if_needed();

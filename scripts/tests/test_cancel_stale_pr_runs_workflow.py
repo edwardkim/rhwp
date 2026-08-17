@@ -31,6 +31,27 @@ class CancelStalePrRunsWorkflowTests(unittest.TestCase):
         self.assertLess(reread, active_failure)
         self.assertLess(active_failure, completed_notice)
 
+    def test_force_cancel_retries_transient_github_api_errors(self):
+        """일시적인 GitHub API 장애는 제한된 backoff 뒤에만 재시도한다."""
+        body = self.workflow
+        transient_statuses = body.index(
+            "const retryableForceCancelStatuses = new Set([502, 503, 504]);"
+        )
+        delays = body.index("const forceCancelRetryDelaysMs = [1_000, 2_000, 4_000];")
+        helper = body.index("async function forceCancelWithRetry(runId)")
+        retry_guard = body.index(
+            "if (!retryableForceCancelStatuses.has(error.status) || delay === undefined)",
+            helper,
+        )
+        retry_notice = body.index("Retry force-cancel for stale run", retry_guard)
+        call_site = body.index("await forceCancelWithRetry(run.id);")
+
+        self.assertLess(transient_statuses, helper)
+        self.assertLess(delays, helper)
+        self.assertLess(helper, retry_guard)
+        self.assertLess(retry_guard, retry_notice)
+        self.assertLess(retry_notice, call_site)
+
     def test_github_script_uses_system_ca_without_disabling_tls_verification(self):
         """runner/프록시 CA를 신뢰하되 인증서 검증 자체를 끄지 않는다."""
         body = self.workflow

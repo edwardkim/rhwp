@@ -248,6 +248,131 @@ fn hwp3_table_cells_have_at_least_one_paragraph() {
     );
 }
 
+/// 열한 번째 계약 — 표 셀이 격자를 완전히 덮어야 한다.
+///
+/// HWP3 표는 셀이 격자를 다 덮지 않을 수 있다(원본이 일부 격자를 비움). 한글
+/// 2022 는 열 때 미커버 격자를 빈 셀로 자동 채우는데, 우리가 안 채우면 그리드에
+/// 구멍이 남아 렌더가 무한 반복(개방 STALL)한다(크롤 빈티지 20110627 의 12×14
+/// 표: 9칸 미커버로 STALL). 파서에서 미커버 격자를 빈 1×1 셀로 메운다.
+#[test]
+fn hwp3_table_cells_cover_full_grid() {
+    let path =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-table-grid-gap.hwp");
+    let raw = std::fs::read(&path).expect("read grid-gap");
+    let mut doc = rhwp::parser::hwp3::parse_hwp3(&raw).expect("HWP3 파싱");
+    rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
+        &mut doc,
+        FileFormat::Hwp3,
+    );
+    let mut tables = 0usize;
+    let mut uncovered_total = 0usize;
+    fn walk_table(t: &rhwp::model::table::Table, tables: &mut usize, uncovered: &mut usize) {
+        *tables += 1;
+        let rows = t.row_count as usize;
+        let cols = t.col_count as usize;
+        if rows > 0 && cols > 0 && rows * cols <= 0x4000 {
+            let mut covered = vec![false; rows * cols];
+            for c in &t.cells {
+                let r0 = c.row as usize;
+                let c0 = c.col as usize;
+                for r in r0..(r0 + (c.row_span.max(1) as usize)).min(rows) {
+                    for cc in c0..(c0 + (c.col_span.max(1) as usize)).min(cols) {
+                        covered[r * cols + cc] = true;
+                    }
+                }
+            }
+            *uncovered += covered.iter().filter(|&&v| !v).count();
+        }
+        for cell in &t.cells {
+            for p in &cell.paragraphs {
+                for ctrl in &p.controls {
+                    if let Control::Table(inner) = ctrl {
+                        walk_table(inner, tables, uncovered);
+                    }
+                }
+            }
+        }
+    }
+    for sec in &doc.sections {
+        for p in &sec.paragraphs {
+            for c in &p.controls {
+                if let Control::Table(t) = c {
+                    walk_table(t, &mut tables, &mut uncovered_total);
+                }
+            }
+        }
+    }
+    assert!(tables > 0, "샘플 전제: 표가 있어야 한다");
+    assert_eq!(
+        uncovered_total, 0,
+        "격자에 구멍이 남으면 한글 2022 가 렌더 중 개방 STALL 한다"
+    );
+}
+
+/// 열두 번째 계약 — 표 셀이 서로 겹치면 안 된다.
+///
+/// HWP3 표는 셀이 서로 겹칠 수 있다(원본이 중복 셀·과다 span 을 담음). 한글의
+/// HWP3 임포터는 겹침을 해소하지만, raw 겹침 셀을 그대로 HWP5 로 방출하면 한글
+/// HWP5 파서가 격자 재구성 중 무한 반복(개방 STALL)한다(크롤 빈티지 21854281 의
+/// 11×5 표: c1 이 c4 슬리버를 침범 + 중복 c4 로 겹침 18). 파서에서 행-우선 배치로
+/// span 을 클립하고 중복을 버려 겹침을 없앤다.
+#[test]
+fn hwp3_table_cells_do_not_overlap() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/hwp3-table-cell-overlap.hwp");
+    let raw = std::fs::read(&path).expect("read cell-overlap");
+    let mut doc = rhwp::parser::hwp3::parse_hwp3(&raw).expect("HWP3 파싱");
+    rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
+        &mut doc,
+        FileFormat::Hwp3,
+    );
+    let mut tables = 0usize;
+    let mut overlap_total = 0usize;
+    fn walk_table(t: &rhwp::model::table::Table, tables: &mut usize, overlap: &mut usize) {
+        *tables += 1;
+        let rows = t.row_count as usize;
+        let cols = t.col_count as usize;
+        if rows > 0 && cols > 0 && rows * cols <= 0x4000 {
+            let mut occ = vec![false; rows * cols];
+            for c in &t.cells {
+                let r0 = c.row as usize;
+                let c0 = c.col as usize;
+                for r in r0..(r0 + (c.row_span.max(1) as usize)).min(rows) {
+                    for cc in c0..(c0 + (c.col_span.max(1) as usize)).min(cols) {
+                        if occ[r * cols + cc] {
+                            *overlap += 1;
+                        }
+                        occ[r * cols + cc] = true;
+                    }
+                }
+            }
+        }
+        for cell in &t.cells {
+            for p in &cell.paragraphs {
+                for ctrl in &p.controls {
+                    if let Control::Table(inner) = ctrl {
+                        walk_table(inner, tables, overlap);
+                    }
+                }
+            }
+        }
+    }
+    for sec in &doc.sections {
+        for p in &sec.paragraphs {
+            for c in &p.controls {
+                if let Control::Table(t) = c {
+                    walk_table(t, &mut tables, &mut overlap_total);
+                }
+            }
+        }
+    }
+    assert!(tables > 0, "샘플 전제: 표가 있어야 한다");
+    assert_eq!(
+        overlap_total, 0,
+        "셀이 겹치면 한글 2022 가 렌더 중 개방 STALL 한다"
+    );
+}
+
 /// 글상자 비트 게이트 — 글상자 없는 순수 사각형에 0x0100_0000 을 켜면
 /// 한글 2022 가 개방을 거부한다 (크롤 스윕 29218 p588 실측). storage 기본값
 /// 채움은 글상자일 때만 글상자 비트를 더하고, 순수 사각형은 0x0008_0000 만.
@@ -320,4 +445,50 @@ fn hwp3_table_cells_are_row_major_ordered() {
         }
     }
     assert!(tables > 0, "샘플 전제: 병합 표가 있어야 한다");
+}
+
+/// 열세 번째 계약 — 곡선 점을 IR 에 싣는다(점 0개 곡선 금지).
+///
+/// HWP3 곡선(type 7)은 파서가 점 배열을 읽고도 `CurveShape::default()` 로 버려
+/// 점 0개 곡선을 저장했고, 한글 2022 는 빈 곡선을 만나면 **크래시**(RPC 붕괴)한다
+/// (빈 다각형=거부와 달리 곡선은 크래시 — 다섯 번째 계약의 곡선 판; 크롤 빈티지
+/// 20064483 COM 이등분: p6 곡선이 발동체 — N=6 개방/7 크래시). 점을 실으면 개방.
+#[test]
+fn hwp3_curve_points_are_loaded() {
+    use rhwp::model::shape::ShapeObject;
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-curve.hwp");
+    let raw = std::fs::read(&path).expect("read hwp3-curve");
+    let mut doc = rhwp::parser::hwp3::parse_hwp3(&raw).expect("HWP3 파싱");
+    rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
+        &mut doc,
+        FileFormat::Hwp3,
+    );
+    fn walk(shape: &ShapeObject, seen: &mut usize, empty: &mut usize) {
+        match shape {
+            ShapeObject::Curve(c) => {
+                *seen += 1;
+                if c.points.is_empty() {
+                    *empty += 1;
+                }
+            }
+            ShapeObject::Group(g) => {
+                for child in &g.children {
+                    walk(child, seen, empty);
+                }
+            }
+            _ => {}
+        }
+    }
+    let (mut seen, mut empty) = (0usize, 0usize);
+    for sec in &doc.sections {
+        for p in &sec.paragraphs {
+            for c in &p.controls {
+                if let Control::Shape(s) = c {
+                    walk(s.as_ref(), &mut seen, &mut empty);
+                }
+            }
+        }
+    }
+    assert!(seen > 0, "샘플 전제: 곡선이 있어야 한다");
+    assert_eq!(empty, 0, "점 0개 곡선은 한글 2022 가 크래시한다");
 }
