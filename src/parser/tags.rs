@@ -246,6 +246,8 @@ pub const FIELD_TOC: u32 = ctrl_id(b"%toc");
 pub const FIELD_UNKNOWN: u32 = ctrl_id(b"%unk");
 /// 필드: 교정부호(삭제)
 pub const FIELD_PROOFREADING_DELETE: u32 = ctrl_id(b"%%*d");
+/// 필드: 교정부호(단순 변경)
+pub const FIELD_PROOFREADING_SIMPLECHANGE: u32 = ctrl_id(b"%%*c");
 
 /// [#4896] IR `FieldType` 이 모델링하지 않는 필드 종류의 **정체성 보존표**.
 ///
@@ -256,8 +258,18 @@ pub const FIELD_PROOFREADING_DELETE: u32 = ctrl_id(b"%%*d");
 /// **실측으로만 채운다.** 10k 코퍼스 실측(hwpx 원본 1,853문서):
 /// 열거 밖 값은 `PROOFREADING_MARKS_DELETE` 하나뿐이었고(12회/7문서), 같은 문서에서
 /// 한글이 세는 컨트롤 `%%*d` 와 개수까지 일치했다.
-pub const OWPML_EXTRA_FIELD_TYPES: &[(&str, u32)] =
-    &[("PROOFREADING_MARKS_DELETE", FIELD_PROOFREADING_DELETE)];
+///
+/// [#5171] `PROOFREADING_MARKS_SIMPLECHANGE` 는 코퍼스의 hwpx **원본에는 없지만** 한글 2022 가
+/// 같은 문서를 SaveAs 하면 쓴다(03787: `$RevisionSimpleChange?…` 3개 → 그 값). 원본 컨트롤
+/// 인구조사도 `%%*c:3` 이고, rhwp 산출의 type 만 이 값으로 바꿔 재측정하면 인구조사가
+/// **원본과 완전히 일치**한다(`%%*c:3,%%*d:1,%clk:34,…`). 종전에는 `CROSSREF` 로 굳었다.
+pub const OWPML_EXTRA_FIELD_TYPES: &[(&str, u32)] = &[
+    ("PROOFREADING_MARKS_DELETE", FIELD_PROOFREADING_DELETE),
+    (
+        "PROOFREADING_MARKS_SIMPLECHANGE",
+        FIELD_PROOFREADING_SIMPLECHANGE,
+    ),
+];
 
 /// [#4896] HWP5 는 이 종류의 정체성을 **ctrl_id 가 아니라 command 문자열**로 들고 있다.
 ///
@@ -265,8 +277,12 @@ pub const OWPML_EXTRA_FIELD_TYPES: &[(&str, u32)] =
 /// `$RevisionDelete;` 다. 같은 command 를 hwpx 원본도 그대로 싣고(type 은
 /// `PROOFREADING_MARKS_DELETE`), 두 포맷 모두에서 한글은 컨트롤을 `%%*d` 로 센다
 /// — 03430(6개)·01838(4개) 등에서 개수까지 일치한다.
-pub const OWPML_FIELD_TYPE_BY_COMMAND: &[(&str, &str)] =
-    &[("$RevisionDelete", "PROOFREADING_MARKS_DELETE")];
+pub const OWPML_FIELD_TYPE_BY_COMMAND: &[(&str, &str)] = &[
+    ("$RevisionDelete", "PROOFREADING_MARKS_DELETE"),
+    // [#5171] 같은 계열의 단순 변경. hwp 원본에서 ctrl_id 는 `%unk`, command 는
+    // `$RevisionSimpleChange?<본문>;` 이고 한글은 컨트롤을 `%%*c` 로 센다(03787: 3개).
+    ("$RevisionSimpleChange", "PROOFREADING_MARKS_SIMPLECHANGE"),
+];
 
 /// 필드 command → OWPML `type` 문자열 (표에 없으면 `None`).
 pub fn owpml_field_type_by_command(command: &str) -> Option<&'static str> {
