@@ -2390,6 +2390,11 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
         "widths",
         "set-column-widths 전용. 스윕 레시피는 fill-fields/set-cell 이라 widths 를 안 낸다",
     ),
+    (
+        "edit",
+        "fnPara",
+        "delete-text-in-footnote 전용. 스윕 레시피는 fill-fields/set-cell 이라 fnPara 를 안 낸다",
+    ),
 ];
 
 #[test]
