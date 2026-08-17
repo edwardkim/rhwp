@@ -297,10 +297,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 305개 필드
+### 2-2. 전수 사전 — 306개 필드
 
-`capabilities` 의 `recordFields` 고유 **300개**와 그 밖의 실측-only 필드
-`applyTo`·`assertions`·`docId`·`isHeader`·`preview` **5개**를 합친 305개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **301개**와 그 밖의 실측-only 필드
+`applyTo`·`assertions`·`docId`·`isHeader`·`preview` **5개**를 합친 306개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -326,6 +326,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`merge-paragraph` |
 | `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
+| `cellPara` | number | 셀 안 문단 번호 (0부터) | `edit insert-text-in-cell` |
 | `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark`·`rename-bookmark`·`delete-control` |
 | `isHeader` | bool | 머리말이면 true, 꼬리말이면 false | `edit insert-header-footer`·`delete-header-footer` |
 | `applyTo` | number | 머리말/꼬리말 적용 대상 (0 양쪽, 1 짝수, 2 홀수) | `edit insert-header-footer`·`delete-header-footer` |
