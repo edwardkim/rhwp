@@ -143,6 +143,15 @@ if (-not (Test-Path .env.docker)) {
 docker compose --env-file .env.docker run --rm wasm
 ```
 
+Linux/macOS 셸에서는 같은 준비를 다음처럼 수행한다.
+
+```bash
+if [ ! -f .env.docker ]; then
+  cp .env.docker.example .env.docker
+fi
+docker compose --env-file .env.docker run --rm wasm
+```
+
 이 서비스는 Cargo target을 named volume에 유지한다. 특히 Windows Docker Desktop의 `/app/target`
 bind mount는 hard-link를 지원하지 않아 Cargo가 실패할 수 있으므로, host `target/`을 강제로
 재사용하지 않는다. 빌드 시작 시에는 이전에 중단된 wasm-pack이 남긴 `pkg/*-opt.wasm`만 제거한다.

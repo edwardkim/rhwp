@@ -118,7 +118,6 @@ target을 재사용한 warm 실행은 6분 11초(build 2.74초, test 359.563초)
 
 ~~~powershell
 Set-Location 'C:\\Users\\admin\\Desktop\\rhwp\\rhwp'
-$env:CARGO_INCREMENTAL = '0'
 cargo nextest run `
   --cargo-profile release-test `
   --target-dir target/pr-review `
@@ -256,11 +255,19 @@ cargo clippy --all-targets -- -D warnings
 renderer 영향 PR의 Native Skia 공식 회귀 범위는 다음 3종이다.
 
 ~~~bash
-cargo test --profile release-test --features native-skia skia --lib
-cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder
-cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export
-wasm-pack build --target web --out-dir pkg
+cargo test --profile release-test --target-dir target/pr-review --features native-skia skia --lib
+node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \\
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \\
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+# 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
+docker compose --env-file .env.docker run --rm wasm
 ~~~
+
+개별 Rust 통합 fixture는 `tests/generated/regression_suite_*.rs`에 묶이므로, 이전처럼 파일명을
+`cargo test --test`에 직접 넘기지 않는다. `run-rust-test.mjs`가 manifest에서 실제 suite와 테스트
+필터를 해석한다. Docker 표준 WASM 경로가 없는 호스트에서는 개발 환경 안내의 `--no-opt` 진단 경로를
+사용하고, 검토 기록에 Docker 부재와 대체 명령을 함께 남긴다.
 
 ## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — IR sweep + overflow-cell 원장
 
@@ -317,30 +324,33 @@ iframe RPC 완료 시점이나 기본 옵션이 바뀌면 fresh WASM build와 �
 embed E2E를 추가한다. 기본값 변경은 옵션을 생략한 smoke에서도 loadFile 완료와 페이지 수를 기록한다.
 
 ~~~bash
-wasm-pack build --target web --out-dir pkg
+# 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
+docker compose --env-file .env.docker run --rm wasm
 VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 ~~~
 
 대형 복합 변경 또는 승인된 전체 검증은 build, release lib, release-test, Native Skia 3종, fmt,
-diff check, clippy, doc test, TypeScript, npm test, wasm-pack을 이 순서로 실행한다.
+diff check, clippy, doc test, TypeScript, npm test, 표준 Docker WASM build를 이 순서로 실행한다.
 
 ~~~bash
-cargo build --release
-cargo test --release --lib
+cargo build --release --target-dir target/pr-review
+cargo test --release --target-dir target/pr-review --lib
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads 12 --no-fail-fast
-cargo test --profile release-test --features native-skia skia --lib
-cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder
-cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export
-cargo fmt --check
+cargo test --profile release-test --target-dir target/pr-review --features native-skia skia --lib
+node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+cargo fmt --all -- --check
 git diff --check
-cargo clippy --all-targets -- -D warnings
-cargo test --doc
+cargo clippy --all-targets --target-dir target/pr-review -- -D warnings
+cargo test --doc --target-dir target/pr-review
 (cd rhwp-studio && npx tsc --noEmit)
 npm --prefix rhwp-studio test
-wasm-pack build --target web --out-dir pkg
+docker compose --env-file .env.docker run --rm wasm
 ~~~
 
 각 명령은 앞 명령이 끝난 뒤 실행한다. 실패하면 뒤 명령으로 건너뛰어 전체 통과처럼 기록하지 않는다.
