@@ -103,7 +103,9 @@ machine-readable schema와 공개 fixture authority는
 | headless/host Chrome | 양쪽 통과, 동일 0-delta 결과 |
 
 Stage 6 보정 뒤 focused trace는 default 4건과 native Skia 6건, fresh WASM E2E 3건이 통과했다.
-release-test nextest는 **6,526 passed, 38 skipped**, native 공식 gate는 **58 + 2 + 4 passed**였다.
+최신 `devel` merge 결과의 release-test nextest는 **6,533 passed, 38 skipped**, native 공식 gate는
+**58 + 2 + 4 passed**였다. Studio는 **957 passed, 1 skipped**, editor는 **24 passed**였고 production
+build도 통과했다.
 상세 self-review 원인, 수정 경계와 명령 drift 처리는
 [Stage 6 보고서](../working/task_m100_4961_stage6.md)에 있다.
 

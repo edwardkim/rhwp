@@ -294,6 +294,7 @@
       "tests/svg_snapshot.rs"
     ],
     "regression_suite_012": [
+      "tests/cases/issue_3532_trailing_charshape_boundary.rs",
       "tests/hidden_text_contract.rs",
       "tests/issue_1279_picture_rotation_save.rs",
       "tests/issue_1392_shape_comment_roundtrip.rs",
@@ -375,6 +376,7 @@
       "tests/verify_contract.rs"
     ],
     "regression_suite_016": [
+      "tests/cases/issue_4956_page_margin_rewrap.rs",
       "tests/cases/issue_4961_font_decision_trace.rs",
       "tests/diag_1042_used_breakdown.rs",
       "tests/disclose_contract.rs",

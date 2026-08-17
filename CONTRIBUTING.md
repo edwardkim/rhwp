@@ -142,7 +142,7 @@ cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads 12 --no-fail-fast       # 통합 테스트 포함 전체
-cargo clippy -- -D warnings                      # 린트 경고 0건
+cargo clippy --all-targets --target-dir target/pr-review -- -D warnings # 린트 경고 0건
 ```
 
 세 명령이 모두 통과하는지 확인한 후 PR을 생성해주세요.
@@ -200,7 +200,8 @@ npm --prefix npm/editor test
 node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
 (cd rhwp-studio && npx tsc --ignoreConfig --noEmit --skipLibCheck ../npm/editor/index.d.ts)
 (cd npm/editor && npm pack --dry-run --json)
-wasm-pack build --target web --out-dir pkg
+# 최초 한 번의 .env.docker 준비와 Docker 미설치 host의 진단 경로는 개발 환경 안내를 따른다.
+docker compose --env-file .env.docker run --rm wasm
 VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 ```
 
@@ -300,7 +301,7 @@ cargo fmt --all -- --check       # CI와 같은 포맷 검증
 1. **결정적 자동 검증** (필수):
    - 위 PR 전 체크리스트의 `cargo nextest run` (통합 테스트 포함, 회귀 0)
    - `cargo test --test svg_snapshot` (rhwp 자체 일관성)
-   - `cargo clippy -- -D warnings`
+   - `cargo clippy --all-targets --target-dir target/pr-review -- -D warnings`
 
 2. **시각 검증** (참고):
    - 한컴 PDF / 한컴 화면 캡처 + rhwp SVG 비교 — **본인 환경 명시 필수** (한컴 버전, OS, 폰트 등)
@@ -412,7 +413,7 @@ rhwp-studio/        ← 웹 에디터 (TypeScript + Vite)
 
 ## 코드 스타일
 
-- `cargo clippy -- -D warnings` 경고 0건 (CI에서 강제)
+- `cargo clippy --all-targets --target-dir target/pr-review -- -D warnings` 경고 0건 (CI에서 강제)
 - `unwrap()` 최소화
 - 모든 문서는 한국어로 작성
 - **소스 포맷 분기**: HWP3/HWPX 등 원본 포맷에 따른 레이아웃 분기가 필요하면

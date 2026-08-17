@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_016
 
+#[path = "../cases/issue_4956_page_margin_rewrap.rs"]
+mod issue_4956_page_margin_rewrap;
+
 #[path = "../cases/issue_4961_font_decision_trace.rs"]
 mod issue_4961_font_decision_trace;
 

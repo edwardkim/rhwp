@@ -4,7 +4,7 @@
 - **PR**: [#5122](https://github.com/edwardkim/rhwp/pull/5122)
 - **브랜치**: `local/task4961-font-decision-trace`
 - **Stage 6 시작 HEAD**: `e732ab114bd64b033cd5fa190d6d9cd922d39511`
-- **합성 기준**: `upstream/devel@8d4fb781c2f253f4a9993938f51e6bf415d8488e`
+- **합성 기준**: `upstream/devel@d4cf27eebaf7c2b69780ff80f125cfe1a4148b61`
 - **작성일**: 2026-08-17 KST
 
 ## 1. 결론
@@ -56,12 +56,13 @@ WASM 공개 API와 serialization은 변경하지 않았다.
 | W1 ledger / trace contract | 10 / 12 passed |
 | fresh `wasm-pack build --target web --out-dir pkg` | 통과 |
 | fresh WASM 공개 E2E | 3 passed |
-| release-test nextest | 6,526 passed, 38 skipped |
+| release-test nextest | 6,533 passed, 38 skipped |
 | native Skia lib / missing picture / direct PDF | 58 / 2 / 4 passed |
 | default / native Skia / wasm32 clippy | 통과 |
-| manifest / unit tier 정합성 | 2,484 static attrs / 4,225 source tests, 통과 |
+| Studio / editor | 957 passed + 1 skipped / 24 passed, production build 통과 |
+| manifest / unit tier 정합성 | 2,491 static attrs / 4,225 source tests, 통과 |
 | `cargo fmt --check`, `git diff --check` | 통과 |
-| 최신 `upstream/devel` 합성 | 충돌 없음, CI policy 31 / workflow 27 / focused Rust 4 passed |
+| 최신 `upstream/devel` merge | 운영 일지 1개·생성물 2개 충돌 해소, CI policy 31 / workflow 27 / archive 11 passed |
 
 native integration의 과거 direct target 이름은 test auto-sharding 뒤 더 이상 존재하지 않아 한 번
 `no test target named`으로 종료됐다. 이는 제품 실패가 아니라 문서화된 명령의 절차 drift다. 저장소
@@ -69,7 +70,7 @@ router인 `scripts/run-rust-test.mjs --cargo-test ...`로 동일 두 suite를 �
 통과를 확인했다.
 
 현재 nextest 설치본 0.9.137이 저장소 권장 0.9.140보다 낮다는 비차단 경고가 있었고, 실제 실행된
-6,526건은 모두 통과했다.
+6,533건은 모두 통과했다.
 
 ## 5. 보호 불변식 판정
 
@@ -88,9 +89,10 @@ router인 `scripts/run-rust-test.mjs --cargo-test ...`로 동일 두 suite를 �
 
 ## 6. Stage 종료와 PR 후속
 
-Stage 6 구현·로컬 검증·문서 정산은 완료했다. 최종 code candidate를 최신 `upstream/devel`과 합성해
-충돌과 whitespace가 없음을 확인했고, 합성 tree에서도 CI policy·workflow·manifest·tier와 focused Rust
-gate가 통과했다. code candidate는 로컬 commit으로 고정했으며 remote push는 별도 승인 대상이다.
+Stage 6 구현·로컬 검증·문서 정산은 완료했다. 최신 `upstream/devel` 정상 merge에서 운영 일지와 자동
+생성 test routing 충돌을 양쪽 기록·test를 보존하도록 해결하고 생성기로 다시 고정했다. merge 결과의
+전체 Rust·Native Skia·Studio·editor·fresh WASM과 CI policy gate가 통과했다. remote push는 승인됐으며
+최종 merge commit을 고정한 뒤 정확한 원격 head를 다시 대조해 수행한다.
 
 새 code candidate를 push한 뒤 PR #5122의 Full CI가 녹색이 되어야 self-review 문서를 trailing
 review-only commit으로 추가할 수 있다. 현재 녹색인 기존 원격 HEAD의 CI는 Stage 6 변경을 검증한 결과로
