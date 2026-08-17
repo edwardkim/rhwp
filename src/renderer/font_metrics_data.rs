@@ -46561,20 +46561,4 @@ mod tests {
             }
         }
     }
-
-    #[test]
-    fn metric_decision_preserves_alias_rung_and_entry() {
-        let decision = find_metric_decision("HY각헤드라인M", false, false).unwrap();
-        assert_eq!(decision.requested_name, "HY각헤드라인M");
-        assert_eq!(decision.alias_resolved_name, "HYHeadLine-Medium");
-        assert_eq!(decision.match_kind, MetricMatchKind::Exact);
-        assert_eq!(decision.metric.name, "HYHeadLine-Medium");
-        assert_eq!(
-            find_metric("HY각헤드라인M", false, false)
-                .unwrap()
-                .metric
-                .name,
-            decision.metric.name
-        );
-    }
 }

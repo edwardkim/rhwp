@@ -204,22 +204,4 @@ mod tests {
         assert!(!has_system_family(&system_families, "applegothic"));
         assert!(!has_system_family(&system_families, "Missing Family"));
     }
-
-    #[test]
-    fn text_candidate_family_order_preserves_requested_base_and_fallbacks() {
-        let candidates = text_family_candidates("Noto Serif KR Black");
-        assert_eq!(candidates[0], "Noto Serif KR Black");
-        assert_eq!(candidates[1], "Noto Serif KR");
-        assert!(
-            candidates.iter().position(|family| family == "맑은 고딕")
-                < candidates.iter().position(|family| family == "sans-serif")
-        );
-        assert_eq!(
-            candidates
-                .iter()
-                .filter(|family| *family == "Noto Serif KR")
-                .count(),
-            1
-        );
-    }
 }

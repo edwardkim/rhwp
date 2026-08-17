@@ -375,6 +375,7 @@
       "tests/verify_contract.rs"
     ],
     "regression_suite_016": [
+      "tests/cases/issue_4961_font_decision_trace.rs",
       "tests/diag_1042_used_breakdown.rs",
       "tests/disclose_contract.rs",
       "tests/harness_contract.rs",

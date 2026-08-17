@@ -1575,55 +1575,6 @@ mod tests {
         assert!(have >= 29, "라틴 metric 커버리지 회귀: {have}/30");
     }
 
-    #[test]
-    fn shared_char_decisions_match_all_three_measurement_projections() {
-        let style = TextStyle {
-            font_family: "함초롬바탕".into(),
-            font_size: 18.0,
-            ratio: 0.87,
-            letter_spacing: -0.35,
-            extra_char_spacing: 0.12,
-            extra_word_spacing: 0.4,
-            extra_dash_advance: 0.2,
-            ..Default::default()
-        };
-        let text = "가 A,---\u{FFFC}\u{F081C}";
-        let decisions = trace_char_width_decisions(text, &style);
-        let decision_total: f64 = decisions
-            .iter()
-            .map(|decision| decision.final_width_px)
-            .sum();
-        let positions = compute_char_positions(text, &style);
-        let positioned_total = *positions.last().unwrap();
-        assert!((decision_total - positioned_total).abs() < 1e-9);
-        assert!((decision_total - estimate_text_width_unrounded(text, &style)).abs() < 1e-9);
-        assert_eq!(estimate_text_width(text, &style), decision_total.round());
-        assert!(decisions.iter().any(|decision| decision.metric.is_some()));
-        assert!(decisions.iter().any(|decision| decision.dash_leader));
-        assert!(decisions
-            .iter()
-            .any(|decision| decision.width_source == "inlineObjectPlaceholder"));
-    }
-
-    #[test]
-    fn char_decision_names_metric_overlay_and_heuristic_sources() {
-        let decision = |font_family: &str, ch: char| {
-            let style = TextStyle {
-                font_family: font_family.into(),
-                font_size: 20.0,
-                ..Default::default()
-            };
-            trace_char_width_decisions(&ch.to_string(), &style)[0].width_source
-        };
-        assert_eq!(decision("함초롬바탕", 'A'), "embeddedMetric");
-        assert_eq!(decision("KoPub바탕체", 'A'), "kopubTable");
-        assert_eq!(decision("한양중고딕", ' '), "metricSpaceOverlay");
-        assert_eq!(decision("NoSuchFont", '가'), "heuristicFullwidth");
-        assert_eq!(decision("NoSuchFont", ','), "heuristicNarrow");
-        assert_eq!(decision("NoSuchFont", 'A'), "heuristicHalfwidth");
-        assert_eq!(decision("NoSuchFont", '\u{318D}'), "areaDotFallback");
-    }
-
     /// 테스트용 고정 폭 텍스트 측정기
     ///
     /// 모든 문자를 동일한 폭으로 측정한다.

@@ -1379,28 +1379,6 @@ mod tests {
     }
 
     #[test]
-    fn lookup_decision_covers_all_seven_language_slots() {
-        let doc_info = DocInfo {
-            font_faces: (0..LANG_COUNT)
-                .map(|slot| {
-                    vec![Font {
-                        name: format!("slot-{slot}"),
-                        alt_type: 1,
-                        ..Default::default()
-                    }]
-                })
-                .collect(),
-            ..Default::default()
-        };
-        for slot in 0..LANG_COUNT {
-            let decision = lookup_font_name_decision(&doc_info, slot, 0);
-            assert_eq!(decision.language_slot, slot);
-            assert_eq!(decision.requested_face, Some(format!("slot-{slot}")));
-            assert_eq!(decision.css_family_chain, [format!("slot-{slot}")]);
-        }
-    }
-
-    #[test]
     fn test_resolve_border_no_fill() {
         let doc_info = DocInfo {
             border_fills: vec![BorderFill::default()],
