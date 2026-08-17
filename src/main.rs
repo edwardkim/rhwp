@@ -31388,7 +31388,10 @@ fn edit_group_shapes(args: &[String]) -> i32 {
             "count": targets.len(),
         }),
         &[(section, group_para)],
-        &format!("도형 묶기 예정: {file_path} 구역 {section} {}개", targets.len()),
+        &format!(
+            "도형 묶기 예정: {file_path} 구역 {section} {}개",
+            targets.len()
+        ),
         &format!("도형 묶기 완료: {file_path}"),
     )
 }
@@ -34768,7 +34771,13 @@ fn edit_apply_char_format_in_cell(args: &[String]) -> i32 {
         Err(e) => return e.report(),
     };
     let (sec, parent_para, ctrl, cell_idx, para_lens, table_no, row, col) = match (
-        table_arg, row_arg, col_arg, section_arg, para_arg, ctrl_arg, cell_arg,
+        table_arg,
+        row_arg,
+        col_arg,
+        section_arg,
+        para_arg,
+        ctrl_arg,
+        cell_arg,
     ) {
         (Some(table_no), Some(row), Some(col), _, _, _, _) => {
             match resolve_table_cell(doc.document(), table_no, row, col) {
@@ -34826,7 +34835,14 @@ fn edit_apply_char_format_in_cell(args: &[String]) -> i32 {
     }
     if !dry_run {
         if let Err(e) = doc.apply_char_format_in_cell_native(
-            sec, parent_para, ctrl, cell_idx, cell_para_arg, start, end, &props,
+            sec,
+            parent_para,
+            ctrl,
+            cell_idx,
+            cell_para_arg,
+            start,
+            end,
+            &props,
         ) {
             eprintln!("오류: 셀 글자 서식 적용 실패 - {e}");
             return EXIT_RUNTIME;
