@@ -635,6 +635,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 | "hwp_fit_table"
                 | "hwp_resize_table"
                 | "hwp_delete_equation"
+                | "hwp_delete_equation"
         )
     }
 
@@ -2168,6 +2169,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
             &["schemaVersion", "source", "table", "widths", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_delete_equation",
+            "본문 수식 컨트롤을 지운다. section/para/ctrl 은 0 기준. 코어 delete_equation_control_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-equation", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_delete_text",
@@ -3979,6 +4003,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 59] = [
     ("merge-table", "다음 표와 붙이기 — --table (사이는 빈 문단만 허용)"),
     ("merge-paragraph-in-cell", "표 셀 문단 병합 — --table/--row/--col [--cell-para]"),
     ("set-column-widths", "표 열 폭 설정 — --table/--widths (HWPUNIT 쉼표 목록)"),
+    ("delete-equation", "수식 삭제 — --section/--para/--ctrl"),
     ("delete-equation", "수식 삭제 — --section/--para/--ctrl"),
     ("insert-footnote", "각주 삽입 — --section/--para/--offset"),
     ("insert-endnote", "미주 삽입 — --section/--para/--offset"),
@@ -6475,6 +6500,13 @@ fn print_help() {
     println!("      --table N                 export-tables 의 최상위 표 번호 (0부터)");
     println!("      --widths W1,W2,...        열 폭 HWPUNIT 목록 (열 수와 일치)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_colw.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-equation <파일> --section N --para N --ctrl N [옵션]");
+    println!("      본문 수식 컨트롤을 지운다");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_deleq.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit delete-equation <파일> --section N --para N --ctrl N [옵션]");
