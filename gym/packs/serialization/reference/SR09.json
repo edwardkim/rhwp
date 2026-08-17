@@ -1,0 +1,18 @@
+{
+  "id": "SR09",
+  "steps": [
+    {
+      "answer": {
+        "format": {
+          "cmd": [
+            "convert",
+            "{input}",
+            "{sub:conv.hwp}",
+            "--json"
+          ],
+          "path": "format"
+        }
+      }
+    }
+  ]
+}
