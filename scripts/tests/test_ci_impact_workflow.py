@@ -656,6 +656,19 @@ class CiImpactWorkflowTests(unittest.TestCase):
             lint.count("node scripts/rust-test-suite-manifest.mjs --prepare"),
         )
 
+    def test_native_skia_prepares_derived_test_targets_before_cargo_commands(self) -> None:
+        native_skia = self._job("native-skia-tests")
+        prepare = self._step("Prepare derived Rust test suites", native_skia)
+        self.assertIn("node scripts/rust-test-suite-manifest.mjs --prepare", prepare)
+        self.assertLess(
+            native_skia.index("- name: Prepare derived Rust test suites"),
+            native_skia.index("- name: Native Skia tests"),
+        )
+        self.assertEqual(
+            1,
+            native_skia.count("node scripts/rust-test-suite-manifest.mjs --prepare"),
+        )
+
     def test_native_skia_starts_after_preflight_without_lane_serialization(self) -> None:
         native = self._job("native-skia-tests")
         self.assertIn("needs: [preflight]", native)

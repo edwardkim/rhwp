@@ -1069,6 +1069,11 @@ jobs:
             libfontconfig1-dev \
             libfreetype6-dev
 
+      # Native Skia starts from a clean checkout but compiles generated
+      # integration-test targets through Cargo, so prepare them locally first.
+      - name: Prepare derived Rust test suites
+        run: node scripts/rust-test-suite-manifest.mjs --prepare
+
       - name: Native Skia tests
         env:
           TEST_PROFILE: ${{ needs.preflight.outputs.test_profile || 'release' }}
