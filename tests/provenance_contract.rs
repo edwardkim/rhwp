@@ -2254,7 +2254,7 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     (
         "edit",
         "count",
-        "delete-row/delete-col 전용. 스윕 레시피는 fill-fields/set-cell 이라 count 를 안 낸다",
+        "delete-row/delete-col/group-shapes 전용. 스윕 레시피는 fill-fields/set-cell 이라 count 를 안 낸다",
     ),
     (
         "edit",

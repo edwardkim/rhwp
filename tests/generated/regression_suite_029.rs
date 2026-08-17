@@ -5,6 +5,9 @@
 #[path = "../cases/bookmarks_contract.rs"]
 mod bookmarks_contract;
 
+#[path = "../cases/group_shapes_contract.rs"]
+mod group_shapes_contract;
+
 #[path = "../changed_pages_contract.rs"]
 mod changed_pages_contract;
 
