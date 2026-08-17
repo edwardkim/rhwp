@@ -44,6 +44,7 @@ last_verified: 2026-08-17
 - `node scripts/tests/rust-test-suite-manifest.test.mjs`: **16 passed**
 - `node scripts/tests/rust-unit-test-tiers.test.mjs`: **11 passed**
 - `cargo fmt`
+- `CARGO_INCREMENTAL=0 cargo clippy --profile release-test --tests --target-dir target/pr-review-kevin9327-macos-20260817 -- -D warnings`: **passed**
 - focused nextest: 이전 실패 7건 **7 passed**
 - `CARGO_INCREMENTAL=0 cargo nextest run --cargo-profile release-test --target-dir target/pr-review-kevin9327-macos-20260817 --tests --test-threads 8 --no-fail-fast`
   - **6730 passed, 38 skipped** (`128.359s`; slow 2, leaky 1)
