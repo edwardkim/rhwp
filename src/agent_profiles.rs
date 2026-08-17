@@ -127,6 +127,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_fit_table",
             "hwp_resize_table",
             "hwp_merge_table",
+            "hwp_set_column_widths",
             "hwp_insert_footnote",
             "hwp_insert_endnote",
             "hwp_delete_footnote",
