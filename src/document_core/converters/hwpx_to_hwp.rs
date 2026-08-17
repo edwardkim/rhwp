@@ -1051,9 +1051,18 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
                 // (w/2, h/2) 로 둔다. 이 storage 비트가 없으면 한컴이 개체 이후
                 // 레코드 스트림을 이어 읽지 못하는 케이스가 있다(HWPX materialize
                 // 의 기존 계약 주석·#3930 계열). HWP3 파서는 0 으로 남긴다.
+                //
+                // 글상자 비트(0x0100_0000)는 **글상자가 실재할 때만** 세운다 —
+                // 글상자 없는 일반 사각형에 세우면 한컴이 그 문서를 거부한다
+                // (크롤 스윕 29218 문단 이등분 COM 실측: p588 plain rect 가 발동체).
+                let has_text_box = rect.drawing.text_box.is_some();
                 let sa = &mut rect.drawing.shape_attr;
                 if sa.flip == 0 {
-                    sa.flip = 0x0108_0000;
+                    sa.flip = if has_text_box {
+                        0x0108_0000
+                    } else {
+                        0x0008_0000
+                    };
                 }
                 if sa.rotation_center.x == 0 && sa.rotation_center.y == 0 {
                     sa.rotation_center.x = (sa.current_width / 2) as i32;

@@ -142,3 +142,77 @@ fn hwp3_polygon_points_are_loaded() {
         "점 0개 SC_POLYGON 은 한글 2022 가 문서 전체를 거부한다"
     );
 }
+
+/// 글상자 비트 게이트 — 글상자 없는 순수 사각형에 0x0100_0000 을 켜면
+/// 한글 2022 가 개방을 거부한다 (크롤 스윕 29218 p588 실측). storage 기본값
+/// 채움은 글상자일 때만 글상자 비트를 더하고, 순수 사각형은 0x0008_0000 만.
+#[test]
+fn plain_rect_flip_gate_excludes_textbox_bit() {
+    use rhwp::model::shape::{RectangleShape, ShapeObject};
+    let mut doc = rhwp::model::document::Document::default();
+    let mut sec = rhwp::model::document::Section::default();
+    let mut para = rhwp::model::paragraph::Paragraph::default();
+    let mut rect = RectangleShape::default();
+    rect.common.width = 4000;
+    rect.common.height = 2000;
+    para.controls
+        .push(Control::Shape(Box::new(ShapeObject::Rectangle(rect))));
+    sec.paragraphs.push(para);
+    doc.sections.push(sec);
+    rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
+        &mut doc,
+        FileFormat::Hwp3,
+    );
+    let rect = doc.sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|c| match c {
+            Control::Shape(s) => match s.as_ref() {
+                ShapeObject::Rectangle(r) => Some(r),
+                _ => None,
+            },
+            _ => None,
+        })
+        .expect("사각형 컨트롤");
+    assert_eq!(
+        rect.drawing.shape_attr.flip, 0x0008_0000,
+        "순수 사각형에 글상자 비트(0x0100_0000)가 켜지면 한글이 개방을 거부한다"
+    );
+}
+
+/// 여섯 번째 계약 (크롤 스윕 2912277, 같은 COM 이등분 기법) — 셀 행-우선 순서.
+///
+/// HWP3 셀 스트림은 시각적 배치 순서라 병합 행에서 행-우선이 깨질 수 있다
+/// (이 샘플의 행 6: col 10,11 셀이 col 0,6,8,9 앞에 옴). 한글 2022 는
+/// row_sizes(행별 셀 수)로 셀을 순차 소비하므로 순서가 어긋난 표가 든 문서를
+/// 열 때 무한 대기(STALL)한다 — 표 행 절단 이등분으로 행 6 특정, 셀 정렬만으로
+/// 전문서 개방(OPEN_OK 526자) 실측.
+#[test]
+fn hwp3_table_cells_are_row_major_ordered() {
+    let path =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-table-cell-order.hwp");
+    let raw = std::fs::read(&path).expect("read hwp3-table-cell-order");
+    let mut doc = rhwp::parser::hwp3::parse_hwp3(&raw).expect("HWP3 파싱");
+    rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
+        &mut doc,
+        FileFormat::Hwp3,
+    );
+    let mut tables = 0usize;
+    for sec in &doc.sections {
+        for p in &sec.paragraphs {
+            for c in &p.controls {
+                if let Control::Table(t) = c {
+                    tables += 1;
+                    assert!(
+                        t.cells
+                            .windows(2)
+                            .all(|w| (w[0].row, w[0].col) <= (w[1].row, w[1].col)),
+                        "셀 목록은 행-우선 순서여야 한다 — 어긋나면 한글 2022 개방 STALL"
+                    );
+                    assert_eq!(t.row_sizes.len(), t.row_count as usize);
+                }
+            }
+        }
+    }
+    assert!(tables > 0, "샘플 전제: 병합 표가 있어야 한다");
+}

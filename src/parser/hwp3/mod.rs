@@ -1347,6 +1347,10 @@ fn parse_hwp3_object_dispatch(
             cells.push(cell);
         }
         table.cells = cells;
+        // HWP3 셀 스트림은 시각적 배치 순서라 병합 행에서 행-우선이 깨질 수 있다.
+        // Cell 목록의 IR 계약(행 우선 순서)을 여기서 복원한다 — 한글 2022는
+        // row_sizes 로 셀을 순차 소비하므로 순서가 어긋나면 개방이 멈춘다.
+        table.cells.sort_by_key(|c| (c.row, c.col));
         table.rebuild_grid();
         table.row_sizes = (0..table.row_count)
             .map(|r| table.cells.iter().filter(|c| c.row == r).count() as i16)
