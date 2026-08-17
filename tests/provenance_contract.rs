@@ -679,6 +679,14 @@ fn recipes() -> Vec<Recipe> {
             ndjson: false,
         },
         Recipe {
+            command: "charts",
+            doc: Some(chart.clone()),
+            args: vec![s("charts"), s("--json"), p(&chart)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
             command: "export-text",
             doc: Some(main.clone()),
             args: vec![s("export-text"), s("--json"), p(&main)],

@@ -333,6 +333,7 @@ fn main() {
         Some("word-count") => exit_with(word_count(&args[2..])),
         Some("bookmarks") => exit_with(bookmarks(&args[2..])),
         Some("headers-footers") => exit_with(headers_footers(&args[2..])),
+        Some("charts") => exit_with(charts(&args[2..])),
         Some("digest") => exit_with(digest_document(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
         Some("dump-note-shape") => exit_with(dump_note_shape(&args[2..])),
@@ -678,6 +679,14 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "headers-footers",
             serde_json::json!(["headers-footers", "--json", "{path}"]),
             &["schemaVersion", "source", "count", "headersFooters"],
+        ),
+        tool(
+            "hwp_charts",
+            "[#5051] 문서 차트 목록. 코어 list_charts_native 배선. --chart N 순번 출처. 새 파서 없음.",
+            path_schema(serde_json::json!({})),
+            "charts",
+            serde_json::json!(["charts", "--json", "{path}"]),
+            &["schemaVersion", "source", "count", "charts"],
         ),
         // [#3633] 초소형 모델용 매크로 1호. 설명은 40자 이내로 극단 압축한다 —
         // 도구 목록 자체가 컨텍스트 예산을 잠식하는 4B급 모델이 1차 소비자이기
@@ -3044,6 +3053,19 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             ],
         ),
         cmd_json(
+            "charts",
+            "query",
+            "문서 차트 목록 — 코어 list_charts_native",
+            true,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "count",
+                "charts",
+            ],
+        ),
+        cmd_json(
             "export-text",
             "export",
             "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
@@ -4856,6 +4878,11 @@ fn print_help() {
     println!("      문서 머리말/꼬리말 목록을 조회한다");
     println!();
     println!("      --json                  머리말/꼬리말 봉투를 JSON으로 stdout에 출력");
+    println!();
+    println!("  charts <파일.hwp|파일.hwpx|파일.hml> [--json]");
+    println!("      문서 차트 목록을 조회한다 (chart-to-csv --chart N 순번)");
+    println!();
+    println!("      --json                  차트 봉투를 JSON으로 stdout에 출력");
     println!();
     println!("  digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]");
     println!("      문서 요약 봉투 한 줄 출력 — 메타(info)·개요 상위 노드·첫 페이지 발췌·");
@@ -11815,6 +11842,78 @@ fn headers_footers(args: &[String]) -> i32 {
             let sec = h["sectionIdx"].as_u64().unwrap_or(0);
             let apply = h["applyTo"].as_u64().unwrap_or(0);
             println!("  {label}  구역 {sec} apply-to {apply}");
+        }
+    }
+    EXIT_OK
+}
+
+/// [#5051] `charts` — 문서 차트 목록.
+fn charts(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp charts <파일.hwp|파일.hwpx|파일.hml> [--json]");
+        return EXIT_USAGE;
+    };
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let raw = match doc.list_charts_native() {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: 차트 조회 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let items: serde_json::Value = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 차트 JSON 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let count = items.as_array().map(|a| a.len()).unwrap_or(0);
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "count": count,
+            "charts": items,
+        });
+        println!("{}", provenance::marked(envelope, "charts"));
+        return EXIT_OK;
+    }
+    println!("{file_path}: 차트 {count}개");
+    if let Some(arr) = items.as_array() {
+        for c in arr {
+            let idx = c["index"].as_u64().unwrap_or(0);
+            let sec = c["section"].as_u64().unwrap_or(0);
+            let para = c["paragraph"].as_u64().unwrap_or(0);
+            let ctrl = c["control"].as_u64().unwrap_or(0);
+            println!("  {idx}  구역 {sec} 문단 {para} 컨트롤 {ctrl}");
         }
     }
     EXIT_OK

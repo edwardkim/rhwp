@@ -412,7 +412,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
 | `chartCount` | number | 문서의 차트 개수(글상자·표 셀 안 포함) | `chart-to-csv` |
-| `charts` | array | 차트 목록 `{chart,rowCount,colCount,csv,output?}` — `csv` 는 **문서 파생** | `chart-to-csv` |
+| `charts` | array | 차트 목록. `charts` 명령은 `{index,section,paragraph,control}`(`--chart N`=`index+1`). `chart-to-csv` 는 `{chart,rowCount,colCount,csv,output?}` — `csv` 는 **문서 파생** | `charts`·`chart-to-csv` |
 | `chart` | number | 대상 차트 번호. **문서 순서 1부터**(표의 `table` 은 0부터 — 다른 규약이다) | `chart-to-csv`·`csv-to-chart` |
 | `wrote` | array | **어느 표현에 실제로 썼나** — `["zipPart","nestedCopy"]`(HWPX) / `["nestedCopy"]`(HWP5) / `[]`(거부·dry-run·무변경). 값이 OOXML 두 곳에 중복 저장돼 있어 한쪽만 쓰면 HWP 변환에서 편집이 사라진다 | `csv-to-chart` |
 
@@ -1071,9 +1071,9 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 96개
+## 6. MCP 도구 전수 지도 — 97개
 
-### 6-1. 무상태 80개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 81개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
@@ -1081,6 +1081,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_word_count` | `word-count --json` | `path` |
 | `hwp_bookmarks` | `bookmarks --json` | `path` |
 | `hwp_headers_footers` | `headers-footers --json` | `path` |
+| `hwp_charts` | `charts --json` | `path` |
 | `hwp_digest` | `digest --json` | `path` |
 | `hwp_export_text` | `export-text --json` | `path` |
 | `hwp_export_structure` | `export-structure --json` | `path` |

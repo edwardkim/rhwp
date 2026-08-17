@@ -107,6 +107,11 @@ pub const MAP: &[CommandProvenance] = &[
         note: "목록은 엔진이 컨트롤 종류·적용 대상에서 만든 좌표다. 본문 문자열은 싣지 않는다.",
     },
     CommandProvenance {
+        command: "charts",
+        untrusted: &[],
+        note: "목록은 엔진이 차트 컨트롤 좌표를 센 것이다. 본문·차트 숫자는 싣지 않는다.",
+    },
+    CommandProvenance {
         command: "export-text",
         untrusted: &[
             f(

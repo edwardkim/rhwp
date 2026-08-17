@@ -76,6 +76,7 @@ LIVE = {
     "word-count": (["word-count", DOC, "--json"], "문서 분량 — 구역·문단·글자·어절·쪽"),
     "bookmarks": (["bookmarks", FORM, "--json"], "문서 책갈피 목록"),
     "headers-footers": (["headers-footers", FORM, "--json"], "문서 머리말/꼬리말 목록"),
+    "charts": (["charts", CHART, "--json"], "문서 차트 목록 — --chart N 순번"),
     "explain": (["explain", FORM, "--json"], "메타·구조·표·누름틀 한 봉투 요약"),
     "digest": (["digest", GOV, "--json"], "요약·RAG 청킹 — 개요와 발췌"),
     "search": (["search", GOV, "국어", "--json"], "주소(쪽) 붙은 전수 검색"),
@@ -133,7 +134,7 @@ FAMILIES = [
     ("20_표와_데이터", "표·데이터 — 구조화 수확과 왕복",
      ["export-tables", "table-to-csv", "csv-to-table", "extract-data", "scan",
       # [#4100] 차트 숫자 데이터도 같은 CSV 왕복 규약을 쓴다 — 표와 한 가족이다.
-      "chart-to-csv", "csv-to-chart"]),
+      "charts", "chart-to-csv", "csv-to-chart"]),
     ("30_편집과_계획", "편집·계획 — 원본 무훼손 변경",
      ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit insert-image", "edit redact", "edit sanitize", "run"]),
     ("40_변환과_렌더", "변환·렌더 — 형식을 넘나든다",
