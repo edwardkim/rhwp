@@ -675,13 +675,23 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         } else {
             // trailing FIELD_END: control_idx가 남은 컨트롤에 포함되는지 판별은
             // 메인 루프 후에 수행 (ctrl_idx 확정 후)
+            //
+            // [#5162] 텍스트 없이 표·그림만 감싼 0길이 누름틀(`start==end==text_len`)은
+            // 이 갈래로 온다. FIELD_END 를 자기 FIELD_BEGIN 직후(`control_idx`)에 닫으면
+            // 감싼 개체가 필드 **밖**으로 밀려 빈 누름틀이 되고, 한글이 그 자리에 안내문
+            // ("이곳을 마우스로 누르고 …")을 본문으로 찍는다. 파서가 채운 `inner_slot_count`
+            // 만큼 슬롯을 지나 `control_idx + inner_slot_count` 뒤에서 닫아야 개체가 필드
+            // 안에 남는다 — HWPX 직렬화기의 `control_idx + inner_slot_count == emitted_ctrl_idx`
+            // (serializer/hwpx/section.rs)와 동형이다. `inner_slot_count == 0`(순수 텍스트·빈
+            // 필드)이면 키가 `control_idx` 그대로라 종전과 동일하다.
+            let end_after = fr.control_idx + fr.inner_slot_count;
             trailing_end_after_ctrl
-                .entry(fr.control_idx)
+                .entry(end_after)
                 .or_default()
                 .push(marker);
             if let Some(residue) = residue {
                 trailing_residues
-                    .entry(fr.control_idx)
+                    .entry(end_after)
                     .or_default()
                     .push(residue);
             }
