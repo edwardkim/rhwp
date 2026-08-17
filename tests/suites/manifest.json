@@ -506,6 +506,7 @@
     "regression_suite_021": [
       "tests/cases/apply_para_format_in_footnote_contract.rs",
       "tests/cases/delete_row_contract.rs",
+      "tests/cases/set_form_value_contract.rs",
       "tests/diag_1042_cfb_check.rs",
       "tests/diag_1042_normal_vs_abnormal.rs",
       "tests/diag_1042_version_check.rs",
