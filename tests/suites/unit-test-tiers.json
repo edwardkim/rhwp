@@ -1296,7 +1296,7 @@
       "id": "src/document_core/queries/grep.rs::tests#1",
       "file": "src/document_core/queries/grep.rs",
       "sourcePath": "src/document_core/queries/grep.rs",
-      "line": 474,
+      "line": 516,
       "module": "tests",
       "testAttributes": 1,
       "tier": "white_box",

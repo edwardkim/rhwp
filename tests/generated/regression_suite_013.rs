@@ -5,6 +5,9 @@
 #[path = "../boundary_integrity_contract.rs"]
 mod boundary_integrity_contract;
 
+#[path = "../cases/issue_2792_search_nested_tables.rs"]
+mod issue_2792_search_nested_tables;
+
 #[path = "../ir_diff_json_contract.rs"]
 mod ir_diff_json_contract;
 

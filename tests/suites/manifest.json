@@ -315,6 +315,7 @@
     ],
     "regression_suite_013": [
       "tests/boundary_integrity_contract.rs",
+      "tests/cases/issue_2792_search_nested_tables.rs",
       "tests/ir_diff_json_contract.rs",
       "tests/issue_1418_textbox_table_overlap.rs",
       "tests/issue_1686.rs",
