@@ -2376,6 +2376,39 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "offset", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
                 ),
         tool_with_optional_args(
+                    "hwp_insert_field_in_hf",
+                    "기존 머리말/꼬리말 문단에 필드 마커를 넣는다. --header 또는 --footer 필수. fieldType 1 쪽번호 / 2 총쪽수 / 3 파일이름. 코어 insert_field_in_hf_native 배선.",
+                    serde_json::json!({
+                        "type": "object",
+                        "properties": {
+                            "path": { "type": "string" },
+                            "header": { "type": "boolean", "description": "머리말에 삽입 (footer 와 동시에 쓰지 않는다)" },
+                            "footer": { "type": "boolean", "description": "꼬리말에 삽입 (header 와 동시에 쓰지 않는다)" },
+                            "fieldType": { "type": "integer", "minimum": 1, "maximum": 3, "description": "1 쪽번호 / 2 총쪽수 / 3 파일이름" },
+                            "section": { "type": "integer", "minimum": 0 },
+                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
+                            "paragraph": { "type": "integer", "minimum": 0 },
+                            "offset": { "type": "integer", "minimum": 0 },
+                            "output": { "type": "string" },
+                            "dryRun": { "type": "boolean" }
+                        },
+                        "required": ["path", "fieldType"],
+                    }),
+                    "edit",
+                    serde_json::json!(["edit", "insert-field-in-hf", "{path}", "--field-type", "{fieldType}", "--json"]),
+                    serde_json::json!([
+                        { "when": "header", "args": ["--header"] },
+                        { "when": "footer", "args": ["--footer"] },
+                        { "when": "section", "args": ["--section", "{section}"] },
+                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                        { "when": "offset", "args": ["--offset", "{offset}"] },
+                        { "when": "output", "args": ["-o", "{output}"] },
+                        { "when": "dryRun", "args": ["--dry-run"] }
+                    ]),
+                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "offset", "fieldType", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+                ),
+        tool_with_optional_args(
             "hwp_delete_table",
             "[#5028] 본문 최상위 표를 지운다. 좌표는 export-tables 의 index. 코어 delete_table_control_native 배선.",
             serde_json::json!({
@@ -3148,7 +3181,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 34] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 35] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3227,6 +3260,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 34] = [
     ("set-hf-picture", "머리말/꼬리말 그림 속성 변경"),
     ("apply-hf-template", "머리말/꼬리말 마당 적용"),
     ("delete-hf-text", "머리말/꼬리말 텍스트 삭제"),
+    ("insert-field-in-hf", "머리말/꼬리말 필드 삽입"),
 
 ];
 
@@ -18588,6 +18622,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("delete-footnote") => edit_delete_footnote(&args[1..]),
         Some("add-bookmark") => edit_add_bookmark(&args[1..]),
         Some("delete-bookmark") => edit_delete_bookmark(&args[1..]),
+        Some("insert-field-in-hf") => edit_insert_field_in_hf(&args[1..]),
         Some("delete-hf-text") => edit_delete_hf_text(&args[1..]),
         Some("apply-hf-template") => edit_apply_hf_template(&args[1..]),
         Some("set-hf-picture") => edit_set_hf_picture(&args[1..]),
@@ -30152,6 +30187,174 @@ fn edit_delete_hf_text(args: &[String]) -> i32 {
 }
 
 /// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
+
+fn edit_insert_field_in_hf(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-field-in-hf <파일> --header|--footer --field-type <1|2|3> [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut is_header: Option<bool> = None;
+    let mut field_type: Option<u8> = None;
+    let mut section: usize = 0;
+    let mut apply_to: u8 = 0;
+    let mut para: usize = 0;
+    let mut offset: usize = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--header" => {
+                if is_header.replace(true).is_some() {
+                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--footer" => {
+                if is_header.replace(false).is_some() {
+                    eprintln!("오류: --header 와 --footer 는 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--field-type" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --field-type 뒤에 1·2·3 이 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<u8>() {
+                    Ok(n) if (1..=3).contains(&n) => field_type = Some(n),
+                    _ => {
+                        eprintln!("오류: --field-type 은 1(쪽번호)·2(총쪽수)·3(파일이름) 만 허용합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--section" | "--apply-to" | "--para" | "--offset" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--section" => match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--apply-to" => match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => apply_to = n,
+                        _ => {
+                            eprintln!(
+                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--para" => match v.parse::<usize>() {
+                        Ok(n) => para = n,
+                        Err(_) => {
+                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<usize>() {
+                        Ok(n) => offset = n,
+                        Err(_) => {
+                            eprintln!("오류: --offset 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(is_header), Some(field_type)) = (file_path, is_header, field_type)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) =
+            doc.insert_field_in_hf_native(section, is_header, apply_to, para, offset, field_type)
+        {
+            eprintln!("오류: 머리말/꼬리말 필드 삽입 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    let kind = if is_header { "머리말" } else { "꼬리말" };
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "hffield",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "isHeader": is_header,
+            "applyTo": apply_to,
+            "paragraph": para,
+            "offset": offset,
+            "fieldType": field_type
+        }),
+        &[(section, 0)],
+        &format!("{kind} 필드 삽입 예정: {file_path} 구역 {section} type {field_type}"),
+        &format!("{kind} 필드 삽입 완료: {file_path}"),
+    )
+}
+
+/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+///
+/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+///
+/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+///
+/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 
 fn edit_insert_image(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]";
