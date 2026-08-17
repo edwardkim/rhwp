@@ -402,6 +402,7 @@ fn main() {
         Some("explain") => exit_with(explain_document(&args[2..])),
         Some("explore") => exit_with(explore_document(&args[2..])),
         Some("headers-footers") => exit_with(headers_footers(&args[2..])),
+        Some("charts") => exit_with(charts(&args[2..])),
         Some("header-footer") => exit_with(header_footer(&args[2..])),
         Some("edit") => exit_with(run_edit(&args[2..])),
         Some("run") => exit_with(cmd_run_plan(&args[2..])),
@@ -2461,6 +2462,14 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     serde_json::json!(["headers-footers", "--json", "{path}"]),
                     &["schemaVersion", "source", "count", "headersFooters"],
                 ),
+        tool(
+                    "hwp_charts",
+                    "[#5051] 문서 차트 목록. 코어 list_charts_native 배선. --chart N 순번 출처. 새 파서 없음.",
+                    path_schema(serde_json::json!({})),
+                    "charts",
+                    serde_json::json!(["charts", "--json", "{path}"]),
+                    &["schemaVersion", "source", "count", "charts"],
+                ),
         tool_with_optional_args(
                     "hwp_set_header_footer_text",
                     "기존 머리말/꼬리말 문단 텍스트를 통째로 바꾼다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 delete_text_in_header_footer_native + insert_text_in_header_footer_native 배선.",
@@ -4094,6 +4103,14 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                         "exists",
                     ],
                 ),
+        cmd_json(
+            "charts",
+            "query",
+            "문서 차트 목록 — 코어 list_charts_native",
+            true,
+            &["--json"],
+            &["schemaVersion", "source", "count", "charts"],
+        ),
         cmd_json(
             "export-text",
             "export",
@@ -5946,6 +5963,11 @@ fn print_help() {
     println!();
     println!("  headers-footers <파일.hwp|파일.hwpx|파일.hml> [--json]");
     println!("      문서 머리말/꼬리말 목록을 조회한다");
+    println!();
+    println!("  charts <파일.hwp|파일.hwpx|파일.hml> [--json]");
+    println!("      문서 차트 목록을 조회한다 (chart-to-csv --chart N 순번)");
+    println!();
+    println!("      --json                  차트 봉투를 JSON으로 stdout에 출력");
     println!();
     println!("  header-footer <파일.hwp|파일.hwpx|파일.hml> [--header|--footer] [--section N] [--apply-to 0|1|2] [--json]");
     println!("      구역 머리말 또는 꼬리말 한 건을 조회한다");
@@ -31685,6 +31707,78 @@ fn headers_footers(args: &[String]) -> i32 {
             let sec = h["sectionIdx"].as_u64().unwrap_or(0);
             let apply = h["applyTo"].as_u64().unwrap_or(0);
             println!("  {label}  구역 {sec} apply-to {apply}");
+        }
+    }
+    EXIT_OK
+}
+
+/// [#5051] `charts` — 문서 차트 목록.
+fn charts(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp charts <파일.hwp|파일.hwpx|파일.hml> [--json]");
+        return EXIT_USAGE;
+    };
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let raw = match doc.list_charts_native() {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: 차트 조회 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let items: serde_json::Value = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 차트 JSON 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let count = items.as_array().map(|a| a.len()).unwrap_or(0);
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "count": count,
+            "charts": items,
+        });
+        println!("{}", provenance::marked(envelope, "charts"));
+        return EXIT_OK;
+    }
+    println!("{file_path}: 차트 {count}개");
+    if let Some(arr) = items.as_array() {
+        for c in arr {
+            let idx = c["index"].as_u64().unwrap_or(0);
+            let sec = c["section"].as_u64().unwrap_or(0);
+            let para = c["paragraph"].as_u64().unwrap_or(0);
+            let ctrl = c["control"].as_u64().unwrap_or(0);
+            println!("  {idx}  구역 {sec} 문단 {para} 컨트롤 {ctrl}");
         }
     }
     EXIT_OK
