@@ -401,12 +401,12 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `tableCount` | number | 본문 최상위 표 개수(중첩 표는 세지 않는다) | `export-tables`·`table-to-csv` |
 | `tables` | array | 표 목록(§2-3) — 문서 파생 | `export-tables`·`table-to-csv` |
 | `bom` | bool | CSV 파일에 UTF-8 BOM 을 붙였나 | `table-to-csv` |
-| `table` | number | 대상 표 index | `csv-to-table`·`edit set-cell` |
+| `table` | number | 대상 표 index | `csv-to-table`·`edit set-cell`·`set-cell-props` |
 | `rowCount` / `colCount` | number | 표의 행·열 수(CSV 대조 기준) | `csv-to-table` |
 | `changed` | array | 실제로 바뀔/바뀐 칸 `{row,col,oldText,newText}` | `csv-to-table` |
 | `changedCount` | number | 바뀐 칸 수 | `csv-to-table` |
 | `invalid` | array | **한 칸도 쓰지 않게 만든 이유들.** 비어 있지 않으면 exit 2 | `csv-to-table`·`run` |
-| `row` / `col` | number | 격자 좌표(0 기준). batch fill 에서는 `row` 가 **데이터 행 번호** | `edit set-cell`·`batch fill` |
+| `row` / `col` | number | 격자 좌표(0 기준). batch fill 에서는 `row` 가 **데이터 행 번호** | `edit set-cell`·`set-cell-props`·`batch fill` |
 | `oldText` / `newText` | string | 칸의 이전/새 값. `oldText` 는 **문서 파생** | `edit set-cell` |
 | `keepStyle` | bool | 칸 안내문 스타일을 상속했나 | `edit set-cell` |
 
@@ -1118,6 +1118,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_replace_text` | `edit replace-text --json` | `path`,`find`,`replace` |
 | `hwp_set_checkbox` | `edit replace-text --find □ --replace ☑ --occurrence` | `path`,`occurrence`,`output` |
 | `hwp_set_cell` | `edit set-cell --json` | `path`,`table`,`row`,`col`,`text` |
+| `hwp_set_cell_props` | `edit set-cell-props --json` | `path`,`table`,`row`,`col`,`props` |
 | `hwp_insert_row` | `edit insert-row --json` | `path`,`table`,`row` |
 | `hwp_insert_col` | `edit insert-col --json` | `path`,`table`,`col` |
 | `hwp_delete_row` | `edit delete-row --json` | `path`,`table`,`row` |

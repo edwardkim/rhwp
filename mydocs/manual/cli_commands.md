@@ -1045,6 +1045,10 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit resize-table-cell <파일> --table <번호> --row <행> --col <열> [--vertical] [--forward] [-o <출력>] [--dry-run] [--verify] [--json]`
 본문 최상위 표의 한 칸 크기를 한 걸음(283 HWPUNIT) 조절한다. 코어 `resize_table_cell_native`. 병합 칸이 있으면 네이티브가 거부한다.
 
+### `edit set-cell-props <파일> --table <번호> --row <행> --col <열> --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 최상위 표 셀 속성(세로정렬·여백·폭·헤더 등)을 고친다. 코어 `set_cell_properties_native`.
+좌표는 `export-tables` 의 index·격자. `--props` 는 JSON 객체.
+
 ### `edit insert-footnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4998)
 문단 좌표에 각주를 끼운다. 코어 `insert_footnote_native`.
 
