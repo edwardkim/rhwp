@@ -536,6 +536,7 @@
       "tests/suites/issue_regression_pilot/issue_1750_split_guard_spacing_before.rs"
     ],
     "regression_suite_023": [
+      "tests/cases/add_bookmark_contract.rs",
       "tests/cli_exit_codes_diagnostic_commands.rs",
       "tests/cli_exit_codes_dump_diag.rs",
       "tests/diag_1042_2022.rs",
