@@ -411,6 +411,7 @@
     ],
     "regression_suite_017": [
       "tests/cases/delete_hf_text_contract.rs",
+      "tests/cases/merge_paragraph_in_cell_contract.rs",
       "tests/edit_render_diff_gate.rs",
       "tests/envelope_integrity_contract.rs",
       "tests/hwpx_form_roundtrip.rs",

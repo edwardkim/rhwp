@@ -5,6 +5,9 @@
 #[path = "../cases/delete_hf_text_contract.rs"]
 mod delete_hf_text_contract;
 
+#[path = "../cases/merge_paragraph_in_cell_contract.rs"]
+mod merge_paragraph_in_cell_contract;
+
 #[path = "../edit_render_diff_gate.rs"]
 mod edit_render_diff_gate;
 
