@@ -330,7 +330,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell` |
 | `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text` |
 | `count` | number | 지울 글자 수 (1 이상) | `edit delete-text`·`delete-text-in-footnote` |
-| `fnPara` | number | 각주/미주 안 문단 인덱스 (0부터) | `edit delete-text-in-footnote` |
+| `fnPara` | number | 각주/미주 안 문단 인덱스 (0부터) | `edit delete-text-in-footnote`·`split-paragraph-in-footnote` |
 | `docId` | string | 세션 핸들. 서버 프로세스 수명과 같고 영속되지 않는다 | 세션 도구 12종 |
 
 #### 문서 메타
@@ -1133,6 +1133,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_delete_text_in_footnote` | `edit delete-text-in-footnote --json` | `path`,`count` |
+| `hwp_split_paragraph_in_footnote` | `edit split-paragraph-in-footnote --json` | `path` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
 | `hwp_delete_paragraph` | `edit delete-paragraph --json` | `path` |
 | `hwp_merge_paragraph` | `edit merge-paragraph --json` | `path` |

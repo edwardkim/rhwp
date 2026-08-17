@@ -2284,7 +2284,7 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     (
         "edit",
         "fnPara",
-        "delete-text-in-footnote 전용. 스윕 레시피는 fill-fields/set-cell 이라 fnPara 를 안 낸다",
+        "delete-text-in-footnote/split-paragraph-in-footnote 전용. 스윕 레시피는 fill-fields/set-cell 이라 fnPara 를 안 낸다",
     ),
 ];
 
