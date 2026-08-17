@@ -630,6 +630,12 @@ IR 본문에서 구역·문단·글자·어절·쪽 수를 센다. 새 파서는
 문서 책갈피 목록. 코어 `get_bookmarks_native`. 새 파서는 없다.
 - `--json`: `{"schemaVersion","source","count","bookmarks":[{"name","sec","para","ctrlIdx","charPos"}]}`
 
+### `form-value <파일> --section N --para N --ctrl N [--json]`
+양식 개체 값 조회. 코어 `get_form_value_native`. 새 파서는 없다.
+- `--section`/`--para`/`--ctrl`: 구역·문단·컨트롤 인덱스 (0부터, 필수)
+- `--json`: `{"schemaVersion","source","section","paragraph","ctrl","ok","formType","name","value","text","caption","enabled"}`
+- 대상이 양식이 아니면 `ok:false` 와 `error` 를 싣고 exit 0 (조회 결과)
+
 ### `digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]` (#3633)
 초소형 모델용 매크로 1호 — "info 로 훑고 → export-structure 로 개요를 얻고 →
 export-text 로 첫 장을 읽는" 3단 파이프라인을 **한 번 호출**로 수행한다. 도구
@@ -1064,6 +1070,12 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 
 ### `edit delete-control <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]` (#5041)
 문단이 담은 컨트롤 하나를 지운다(갈래 무관). 코어 `delete_control_native`. `--section`/`--para`/`--ctrl` 필수.
+
+### `edit set-form-value <파일> --section N --para N --ctrl N --value <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 양식 개체 값을 설정한다. 코어 `set_form_value_native`. `--value` 는 `{"value":1}` 또는 `{"text":"..."}` JSON 객체.
+
+### `edit set-form-value-in-cell <파일> --section N --table-para N --table-ci N --cell N --cell-para N --ctrl N --value <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+표 셀 안 양식 개체 값을 설정한다. 코어 `set_form_value_in_cell_native`. 좌표는 문서 트리(표 문단·표 컨트롤·셀·셀 문단·양식 컨트롤)다.
 
 ### `edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]` (#3719 §6-5)
 도장·서명 같은 그림을 쪽 좌표에 붙인다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각.

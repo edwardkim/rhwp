@@ -480,6 +480,7 @@
     "regression_suite_020": [
       "tests/batch_axes_contract.rs",
       "tests/cases/insert_footnote_contract.rs",
+      "tests/cases/set_form_value_in_cell_contract.rs",
       "tests/diag_1042_hwp3_vs_hwp5_paragraph.rs",
       "tests/diag_1042_variant_check.rs",
       "tests/edit_verify_contract.rs",
@@ -501,6 +502,7 @@
     ],
     "regression_suite_021": [
       "tests/cases/delete_row_contract.rs",
+      "tests/cases/set_form_value_contract.rs",
       "tests/diag_1042_cfb_check.rs",
       "tests/diag_1042_normal_vs_abnormal.rs",
       "tests/diag_1042_version_check.rs",
@@ -677,6 +679,7 @@
     ],
     "regression_suite_029": [
       "tests/cases/bookmarks_contract.rs",
+      "tests/cases/form_value_contract.rs",
       "tests/changed_pages_contract.rs",
       "tests/cli_password_stdin_command_parity_contract.rs",
       "tests/diag_1042_vpos_distribution.rs",

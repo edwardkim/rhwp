@@ -102,6 +102,16 @@ pub const MAP: &[CommandProvenance] = &[
         note: "count·sec·para·ctrlIdx·charPos 는 엔진 좌표다. 이름은 문서가 정한다.",
     },
     CommandProvenance {
+        command: "form-value",
+        untrusted: &[
+            f("name", "get_form_value_native — 양식 컨트롤 이름"),
+            f("text", "get_form_value_native — 양식 표시 텍스트"),
+            f("caption", "get_form_value_native — 양식 캡션"),
+            f("formType", "get_form_value_native — 양식 종류 토큰 (이름과 같은 문자열이 실리는 픽스처가 있다)"),
+        ],
+        note: "ok·value·enabled·section·paragraph·ctrl 는 엔진 좌표·판정이다. 이름·텍스트·캡션·종류 토큰은 문서가 정한다.",
+    },
+    CommandProvenance {
         command: "export-text",
         untrusted: &[
             f(

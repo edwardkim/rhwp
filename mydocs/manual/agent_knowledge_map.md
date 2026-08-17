@@ -297,17 +297,17 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 299개 필드
+### 2-2. 전수 사전 — 308개 필드
 
-`capabilities` 의 `recordFields` 고유 **296개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 299개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **305개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 308개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
-| `schemaVersion` | string | 봉투 계약 버전 | 전 41개 `--json` 명령(`--bare` 본문 제외) |
+| `schemaVersion` | string | 봉투 계약 버전 | 전 42개 `--json` 명령(`--bare` 본문 제외) |
 | `source` | string | 입력 경로 | 27개(문서를 여는 명령 전부) |
 | `tool` | string | 도구 이름(`"rhwp"`) | `capabilities`·`export-provenance-map` |
 | `version` | string | 문서 판본(`info`) 또는 바이너리 버전(`capabilities`) — **같은 이름, 다른 뜻** | `info`·`capabilities`·`export-provenance-map` |
@@ -346,6 +346,15 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `charCount` | number | IR 본문 글자 수 | `word-count` |
 | `wordCount` | number | 공백 분리 어절 수 | `word-count` |
 | `bookmarks` | array | 책갈피 목록 `{name,sec,para,ctrlIdx,charPos}` | `bookmarks` |
+| `ok` | bool | 대상이 양식 개체인가 | `form-value` |
+| `formType` | string | 양식 종류 (`PushButton`·`CheckBox`·`ComboBox`·`RadioButton`·`Edit`) | `form-value` |
+| `value` | number\|string | 양식 숫자 값(`form-value`) / 설정 JSON 문자열(`edit set-form-value`) — **같은 이름, 다른 타입** | `form-value`·`edit set-form-value` |
+| `caption` | string | 양식 캡션 — **문서 파생** | `form-value` |
+| `enabled` | bool | 양식 활성 여부 | `form-value` |
+| `tablePara` | number | 표를 담은 본문 문단 인덱스 (0부터) | `edit set-form-value-in-cell` |
+| `tableCi` | number | 표 컨트롤 인덱스 (0부터) | `edit set-form-value-in-cell` |
+| `cell` | number | 셀 인덱스 (0부터) | `edit set-form-value-in-cell` |
+| `cellPara` | number | 셀 안 문단 인덱스 (0부터) | `edit insert-text-in-cell`·`set-form-value-in-cell` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
 | `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |

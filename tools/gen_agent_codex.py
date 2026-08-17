@@ -75,6 +75,7 @@ LIVE = {
     "info": ([ "info", DOC, "--json"], "문서 신상 — 형식·쪽수·구역·글꼴"),
     "word-count": (["word-count", DOC, "--json"], "문서 분량 — 구역·문단·글자·어절·쪽"),
     "bookmarks": (["bookmarks", DOC, "--json"], "문서 책갈피 목록"),
+    "form-value": (["form-value", "samples/form-01.hwp", "--section", "0", "--para", "2", "--ctrl", "0", "--json"], "양식 개체 값 조회"),
     "explain": (["explain", FORM, "--json"], "메타·구조·표·누름틀 한 봉투 요약"),
     "digest": (["digest", GOV, "--json"], "요약·RAG 청킹 — 개요와 발췌"),
     "search": (["search", GOV, "국어", "--json"], "주소(쪽) 붙은 전수 검색"),
@@ -128,7 +129,7 @@ COMMON_REASON = "입력 합성 비용 또는 산출 부피 때문에 표본 실�
 # 가족 분류 — (장 파일 이름, 제목, 소속 명령 판별자)
 FAMILIES = [
     ("10_조회", "조회 — 문서를 읽고 파악한다",
-     ["info", "word-count", "bookmarks", "explain", "digest", "search", "export-text", "export-structure", "fields", "dump-pages", "extract-pages"]),
+     ["info", "word-count", "bookmarks", "form-value", "explain", "digest", "search", "export-text", "export-structure", "fields", "dump-pages", "extract-pages"]),
     ("20_표와_데이터", "표·데이터 — 구조화 수확과 왕복",
      ["export-tables", "table-to-csv", "csv-to-table", "extract-data", "scan",
       # [#4100] 차트 숫자 데이터도 같은 CSV 왕복 규약을 쓴다 — 표와 한 가족이다.

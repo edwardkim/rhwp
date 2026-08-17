@@ -41,6 +41,8 @@ const THUMBNAIL_SAMPLE: &str = "samples/2022년 국립국어원 업무계획.hwp
 /// 않는다 — 오라클이 비면 그 레시피는 아무것도 검사하지 못한다. 이 보고서 문서는 차트 2개와
 /// 본문을 함께 갖고 있고, 계열 6개 중 한 계열에 `c:cat` 이 없는 실사용 변종이기도 하다.
 const CHART_SAMPLE: &str = "samples/issue2006/1790387_prep_final_report.hwpx";
+/// 본문 양식 컨트롤이 있는 문서 — `form-value` 봉투를 비지 않게 한다.
+const FORM_CTRL_SAMPLE: &str = "samples/form-01.hwp";
 
 // ── 실행 도우미 ────────────────────────────────────────────────────────────
 
@@ -389,6 +391,7 @@ fn recipes() -> Vec<Recipe> {
     let hml = sample(HML_SAMPLE);
     let thumb = sample(THUMBNAIL_SAMPLE);
     let chart = sample(CHART_SAMPLE);
+    let form_ctrl = sample(FORM_CTRL_SAMPLE);
 
     let p = |x: &Path| x.to_str().expect("경로").to_string();
     let out = |name: &str| p(&dir.join(name));
@@ -666,6 +669,24 @@ fn recipes() -> Vec<Recipe> {
             command: "bookmarks",
             doc: Some(main.clone()),
             args: vec![s("bookmarks"), s("--json"), p(&main)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "form-value",
+            doc: Some(form_ctrl.clone()),
+            args: vec![
+                s("form-value"),
+                s("--json"),
+                p(&form_ctrl),
+                s("--section"),
+                s("0"),
+                s("--para"),
+                s("2"),
+                s("--ctrl"),
+                s("0"),
+            ],
             stdin: None,
             exit: 0,
             ndjson: false,
@@ -2279,7 +2300,27 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     (
         "edit",
         "cellPara",
-        "insert-text-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 cellPara 를 안 낸다",
+        "insert-text-in-cell/set-form-value-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 cellPara 를 안 낸다",
+    ),
+    (
+        "edit",
+        "value",
+        "set-form-value 전용. 스윕 레시피는 fill-fields/set-cell 이라 value 를 안 낸다",
+    ),
+    (
+        "edit",
+        "tablePara",
+        "set-form-value-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 tablePara 를 안 낸다",
+    ),
+    (
+        "edit",
+        "tableCi",
+        "set-form-value-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 tableCi 를 안 낸다",
+    ),
+    (
+        "edit",
+        "cell",
+        "set-form-value-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 cell 을 안 낸다",
     ),
 ];
 
