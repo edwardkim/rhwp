@@ -1019,6 +1019,9 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit merge-cells <파일> --table <번호> --row <행> --col <열> --end-row <행> --end-col <열> [-o <출력>] [--dry-run] [--verify] [--json]` (#4997)
 본문 최상위 표의 셀 사각형을 병합한다. 코어 `merge_table_cells_native`.
 
+### `edit split-cell <파일> --table <번호> --row <행> --col <열> [-o <출력>] [--dry-run] [--verify] [--json]` (#5010)
+본문 최상위 표의 병합 셀을 다시 나눈다. 코어 `split_table_cell_native`.
+
 ### `edit insert-footnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4998)
 문단 좌표에 각주를 끼운다. 코어 `insert_footnote_native`.
 
@@ -1135,7 +1138,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 15종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`insert-paragraph`/`insert-page-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`insert-footnote`/`insert-image`/`redact`/`sanitize`)은
+`edit` 16종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`insert-paragraph`/`insert-page-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-image`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`
