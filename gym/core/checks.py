@@ -181,6 +181,115 @@ def op_utf8_bom(ctx):
     return {"expected": expected, "actual": actual, "ok": actual == expected}
 
 
+def _load_json_at(ctx):
+    """제출 JSON을 읽고 `path` 좌표의 값을 돌려준다."""
+    with open(ctx.sub_path(ctx.check["file"]), encoding="utf-8") as fh:
+        return dig(json.load(fh), ctx.check.get("path", ""))
+
+
+def iter_ndjson_lines(path):
+    """비어 있지 않은 NDJSON 줄. 앞뒤 공백은 버리고 빈 줄은 센 대상이 아니다."""
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            stripped = line.strip()
+            if stripped:
+                yield stripped
+
+
+def op_json_len_eq(ctx):
+    """제출 JSON의 지목된 배열/객체 길이를 확인한다."""
+    expected = ctx.check["value"]
+    try:
+        got = _load_json_at(ctx)
+        if not isinstance(got, (list, dict)):
+            raise TypeError(f"배열/객체가 아님: {type(got).__name__}")
+        actual = len(got)
+    except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"JSON 길이 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": norm(actual) == norm(expected)}
+
+
+def op_csv_row_count_eq(ctx):
+    """제출 CSV의 행 수(utf-8-sig)를 확인한다."""
+    expected = ctx.check["value"]
+    try:
+        with open(ctx.sub_path(ctx.check["file"]), encoding="utf-8-sig", newline="") as fh:
+            actual = sum(1 for _ in csv.reader(fh))
+    except (OSError, UnicodeError, csv.Error) as exc:
+        return {"expected": expected, "actual": f"CSV 행수 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": norm(actual) == norm(expected)}
+
+
+def op_ndjson_count_eq(ctx):
+    """제출 NDJSON의 비어 있지 않은 줄 수를 확인한다."""
+    expected = ctx.check["value"]
+    try:
+        actual = sum(1 for _ in iter_ndjson_lines(ctx.sub_path(ctx.check["file"])))
+    except (OSError, UnicodeError) as exc:
+        return {"expected": expected, "actual": f"NDJSON 줄수 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": norm(actual) == norm(expected)}
+
+
+def op_ndjson_field_eq(ctx):
+    """제출 NDJSON의 0부터 세는 비어 있지 않은 줄에서 지목 필드를 확인한다."""
+    expected = ctx.check["value"]
+    row_index = ctx.check["row"]
+    try:
+        if not isinstance(row_index, int) or isinstance(row_index, bool):
+            raise TypeError("row는 정수여야 함")
+        if row_index < 0:
+            raise IndexError("row는 음수일 수 없음")
+        actual = None
+        found = False
+        for index, line in enumerate(iter_ndjson_lines(ctx.sub_path(ctx.check["file"]))):
+            if index == row_index:
+                actual = dig(json.loads(line), ctx.check.get("path", ""))
+                found = True
+                break
+        if not found:
+            raise IndexError(f"행 {row_index} 없음")
+    except (OSError, UnicodeError, ValueError, KeyError, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"NDJSON 필드 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": norm(actual) == norm(expected)}
+
+
+def op_json_keys_contain(ctx):
+    """제출 JSON 객체가 `keys` 의 키를 모두 갖는지 확인한다."""
+    required = ctx.check["keys"]
+    try:
+        if not isinstance(required, list) or any(not isinstance(k, str) for k in required):
+            raise TypeError("keys는 문자열 목록이어야 함")
+        got = _load_json_at(ctx)
+        if not isinstance(got, dict):
+            raise TypeError(f"객체가 아님: {type(got).__name__}")
+        actual = sorted(got)
+        missing = [k for k in required if k not in got]
+    except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+        return {"expected": required, "actual": f"JSON 키 확인 실패: {exc}", "ok": False}
+    return {"expected": list(required), "actual": actual, "ok": not missing}
+
+
+def op_text_line_eq(ctx):
+    """제출 텍스트의 0부터 세는 한 줄이 `value` 와 같은지 확인한다."""
+    expected = ctx.check["value"]
+    line_index = ctx.check["line"]
+    try:
+        if not isinstance(line_index, int) or isinstance(line_index, bool):
+            raise TypeError("line은 정수여야 함")
+        if line_index < 0:
+            raise IndexError("line은 음수일 수 없음")
+        with open(ctx.sub_path(ctx.check["file"]), encoding="utf-8") as fh:
+            for index, line in enumerate(fh):
+                if index == line_index:
+                    actual = line.rstrip("\r\n")
+                    break
+            else:
+                raise IndexError(f"줄 {line_index} 없음")
+    except (OSError, UnicodeError, IndexError, TypeError) as exc:
+        return {"expected": expected, "actual": f"텍스트 줄 확인 실패: {exc}", "ok": False}
+    return {"expected": expected, "actual": actual, "ok": actual == expected}
+
+
 # --- 봉투 연산자 — CLI 봉투의 지목된 자리를 본다 ---
 
 
@@ -259,6 +368,12 @@ REGISTRY = {
     "json_value_eq": (op_json_value_eq, False),
     "csv_cell_eq": (op_csv_cell_eq, False),
     "utf8_bom": (op_utf8_bom, False),
+    "json_len_eq": (op_json_len_eq, False),
+    "csv_row_count_eq": (op_csv_row_count_eq, False),
+    "ndjson_count_eq": (op_ndjson_count_eq, False),
+    "ndjson_field_eq": (op_ndjson_field_eq, False),
+    "json_keys_contain": (op_json_keys_contain, False),
+    "text_line_eq": (op_text_line_eq, False),
     # 봉투 연산자(CLI 호출)
     "answer_eq": (op_answer_eq, True),
     "len_answer_eq": (op_len_answer_eq, True),
