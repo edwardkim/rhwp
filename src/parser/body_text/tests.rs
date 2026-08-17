@@ -1273,7 +1273,6 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
 /// HWP 5.0 제어 문자 분류 (표 6):
 ///   extended: 1-3, 11-12, 14-18, 21-23
 ///   inline: 4-9, 19-20
-
 fn title_mark_key(m: &TitleMark) -> (usize, bool) {
     (m.char_idx, m.ignore)
 }
