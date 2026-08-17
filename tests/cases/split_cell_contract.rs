@@ -18,14 +18,30 @@ fn sample() -> String {
         .into_owned()
 }
 
-fn first_wide(path: &str) -> (usize, usize) {
+fn first_merge_range(path: &str) -> (usize, u16, u16, u16, u16, usize) {
     let bytes = std::fs::read(path).expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
-    let g = extract_tables(doc.document())
+    for g in extract_tables(doc.document())
         .into_iter()
-        .find(|g| g.container_path.is_empty() && g.cols >= 2)
-        .expect("열 2개 이상 최상위 표");
-    (g.index, g.cell_count)
+        .filter(|g| g.container_path.is_empty())
+    {
+        for c in &g.cells {
+            if c.row_span != 1 || c.col_span != 1 {
+                continue;
+            }
+            if g.cells.iter().any(|n| {
+                n.row == c.row && n.col == c.col + 1 && n.row_span == 1 && n.col_span == 1
+            }) {
+                return (g.index, c.row, c.col, c.row, c.col + 1, g.cell_count);
+            }
+            if g.cells.iter().any(|n| {
+                n.col == c.col && n.row == c.row + 1 && n.row_span == 1 && n.col_span == 1
+            }) {
+                return (g.index, c.row, c.col, c.row + 1, c.col, g.cell_count);
+            }
+        }
+    }
+    panic!("병합 가능한 1×1 인접 셀이 없다");
 }
 
 fn temp(tag: &str) -> PathBuf {
@@ -52,25 +68,24 @@ fn table_cells(path: &Path, index: usize) -> usize {
 #[test]
 fn split_after_merge_restores_cells() {
     let src = sample();
-    let (idx, before) = first_wide(&src);
+    let (idx, row, col, end_row, end_col, before) = first_merge_range(&src);
     let merged = temp("merged");
     let split = temp("split");
-    let idx_s = idx.to_string();
     let merge = Command::new(rhwp_bin())
         .args([
             "edit",
             "merge-cells",
             src.as_str(),
             "--table",
-            &idx_s,
+            &idx.to_string(),
             "--row",
-            "0",
+            &row.to_string(),
             "--col",
-            "0",
+            &col.to_string(),
             "--end-row",
-            "0",
+            &end_row.to_string(),
             "--end-col",
-            "1",
+            &end_col.to_string(),
             "-o",
             merged.to_str().unwrap(),
             "--json",
@@ -89,11 +104,11 @@ fn split_after_merge_restores_cells() {
             "split-cell",
             merged.to_str().unwrap(),
             "--table",
-            &idx_s,
+            &idx.to_string(),
             "--row",
-            "0",
+            &row.to_string(),
             "--col",
-            "0",
+            &col.to_string(),
             "-o",
             split.to_str().unwrap(),
             "--json",
@@ -112,20 +127,19 @@ fn split_after_merge_restores_cells() {
 #[test]
 fn dry_run_no_file() {
     let src = sample();
-    let (idx, _) = first_wide(&src);
+    let (idx, row, col, _, _, _) = first_merge_range(&src);
     let out = temp("dry");
-    let idx_s = idx.to_string();
     let output = Command::new(rhwp_bin())
         .args([
             "edit",
             "split-cell",
             src.as_str(),
             "--table",
-            &idx_s,
+            &idx.to_string(),
             "--row",
-            "0",
+            &row.to_string(),
             "--col",
-            "0",
+            &col.to_string(),
             "-o",
             out.to_str().unwrap(),
             "--dry-run",
