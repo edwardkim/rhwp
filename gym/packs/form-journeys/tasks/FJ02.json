@@ -1,0 +1,46 @@
+{
+  "id": "FJ02",
+  "tier": 2,
+  "title": "채움 dry-run — 무기록 판정",
+  "input": "samples/form-01.hwp",
+  "axis": "조회",
+  "instructions": "이 서식의 누름틀 'myMsg01' 에 '김가온 귀하' 를 채울 때 --dry-run 으로 무엇이 바뀔지만 보고하라. 출력 파일을 만들지 말고, 봉투의 dryRun 과 filledCount 를 answer.json 에 {\"dryRun\": true|false, \"filledCount\": N} 으로 제출하라. 부재를 통과로 치지 않는다 — 판정은 라이브 오라클이 같은 dry-run 을 다시 돌려 대조한다. 힌트: rhwp edit fill-fields samples/form-01.hwp --data '{\"myMsg01\": \"김가온 귀하\"}' --dry-run --json",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "dryRun 이 true",
+      "op": "answer_eq",
+      "answer": "dryRun",
+      "path": "dryRun",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"myMsg01\": \"김가온 귀하\"}",
+        "--dry-run",
+        "--json"
+      ]
+    },
+    {
+      "name": "채워질 칸 수",
+      "op": "answer_eq",
+      "answer": "filledCount",
+      "path": "filledCount",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"myMsg01\": \"김가온 귀하\"}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

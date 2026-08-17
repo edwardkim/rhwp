@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "form-journeys",
+  "title": "서식 여정 (이름·순번·dry-run·재독)",
+  "axis": "편집 (서식 여정 — 이름 지목·순번·dry-run·재독)",
+  "description": "실제 에이전트 서식 여정을 채점한다. T07 의 '첫 필드(fields[0])에 홍길동' 판정은 복제하지 않는다 — 이름 있는 칸(전화번호), 반복 누름틀 순번(목차1[2]), dry-run 무기록, 본문 치환 후 재검색, 채움+sanitize 제출본처럼 다른 좌표·다른 표본·다른 축만 둔다. 새 CLI 는 없다. fields·edit·search 만 쓴다.",
+  "requires": {
+    "commands": [
+      "edit",
+      "fields",
+      "search"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.4",
+    "rhwpCommit": "4324eb0e4cf1a65f7efb305993a79ac44859a7ca",
+    "capabilitiesSha256": "4767e61c3af751bb2f97af9d0b3e5ffa5cbb5dc70a89cf3ae85987132fa5473d"
+  }
+}
