@@ -141,6 +141,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_merge_paragraph",
             "hwp_insert_page_break",
             "hwp_insert_column_break",
+            "hwp_set_column_def",
             "hwp_insert_image",
             "hwp_run_plan",
             "hwp_search",

@@ -366,6 +366,7 @@
       "tests/suites/issue_regression_pilot/issue_2093_1192000_real_doc_pin.rs"
     ],
     "regression_suite_015": [
+      "tests/cases/set_column_def_contract.rs",
       "tests/dump_pages_json_contract.rs",
       "tests/export_doclang_json_contract.rs",
       "tests/ir_field_sweep_baseline.rs",
