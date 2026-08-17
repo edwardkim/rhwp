@@ -630,6 +630,18 @@ IR 본문에서 구역·문단·글자·어절·쪽 수를 센다. 새 파서는
 문서 책갈피 목록. 코어 `get_bookmarks_native`. 새 파서는 없다.
 - `--json`: `{"schemaVersion","source","count","bookmarks":[{"name","sec","para","ctrlIdx","charPos"}]}`
 
+### `header-footer <파일> [--header|--footer] [--section N] [--apply-to 0|1|2] [--json]`
+구역의 머리말/꼬리말 한 건. 코어 `get_header_footer_native`. 기본은 구역 0 양쪽 머리말.
+- `--json`: `{"schemaVersion","source","section","isHeader","applyTo","exists"}` — 있으면 `kind`/`label`/`paraIndex`/`controlIndex`/`paraCount`/`text` 도 실림
+
+### `headers-footers <파일> [--json]` (#5044)
+문서 머리말/꼬리말 목록. 코어 `get_header_footer_list_native`. 새 파서는 없다.
+- `--json`: `{"schemaVersion","source","count","headersFooters":[{"sectionIdx","isHeader","applyTo","label"}]}`
+
+### `charts <파일> [--json]` (#5051)
+문서 차트 목록. 코어 `list_charts_native`. `chart-to-csv --chart N` 의 순번 출처다. 새 파서는 없다.
+- `--json`: `{"schemaVersion","source","count","charts":[{"index","section","paragraph","control","container"?,"zipPart"?,"nestedCopy"?}]}`
+
 ### `digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]` (#3633)
 초소형 모델용 매크로 1호 — "info 로 훑고 → export-structure 로 개요를 얻고 →
 export-text 로 첫 장을 읽는" 3단 파이프라인을 **한 번 호출**로 수행한다. 도구
@@ -1030,6 +1042,24 @@ rhwp edit insert-text 공문.hwp --section 0 --para 0 --offset 0 --text "긴급:
 rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ```
 
+### `edit insert-text-in-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [--offset N] [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5055)
+표 셀의 지정한 문단 오프셋에 텍스트를 삽입한다. 코어
+`insert_text_in_cell_native` 경로를 사용하며, `--table`/`--row`/`--col`/`--text`는
+필수다. `--cell-para`는 셀 내부 문단 번호(0 기준), `--offset`은 해당 문단의 문자
+오프셋(생략하면 0)이다. 셀·문단·오프셋이 범위를 벗어나면 exit 2로 종료하고 원본은
+변경하지 않는다.
+
+- `-o, --output <파일>` — 출력 파일 (기본 `<입력명>_cell_inserted.<입력과 같은 확장자>`)
+- `--dry-run` — 파일을 쓰지 않고 삽입 예정만 보고한다.
+- `--verify` — 저장 직후 IR 자기검증을 수행한다.
+- `--json` 봉투에는 `table`/`row`/`col`/`cellPara`/`offset`/`text`/`insertedChars`와
+  저장 시 `output`/`outputFormat`/`verify`가 포함된다.
+
+```bash
+rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 0 \
+  --offset 0 --text "추가 문구" -o 작성본.hwpx --verify --json
+```
+
 ### `edit delete-text <파일> --count N [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5011)
 문단 좌표에서 글자를 지운다. 코어 `delete_text_native`. `--count` 는 1 이상.
 
@@ -1046,11 +1076,20 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 지정 문단을 바로 앞 문단에 합친다. 코어 `merge_paragraph_native`. `--para` 는 합쳐질
 문단(1 이상, 0 은 거부).
 
+### `edit set-page-def <파일> --props <JSON> [--section N] [-o <출력>] [--dry-run] [--verify] [--json]`
+구역의 용지 설정(너비·높이·여백, HWPUNIT)을 바꾼다. 코어 `set_page_def_native`. `--props` 필수.
+
+### `edit set-section-def <파일> --props <JSON> [--section N] [-o <출력>] [--dry-run] [--verify] [--json]`
+구역 정의(머리말 감추기·시작 번호 등)를 바꾼다. 코어 `set_section_def_native`. `--props` 필수.
+
 ### `edit insert-page-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4993)
 문단을 지정 오프셋에서 가르고 쪽 나눔을 넣는다. 코어 `insert_page_break_native` 배선.
 
 ### `edit insert-column-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5019)
 문단을 지정 오프셋에서 가르고 단 나눔을 넣는다. 코어 `insert_column_break_native` 배선.
+
+### `edit insert-table <파일> --rows N --cols N [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5040)
+본문 좌표에 빈 표를 만든다. 코어 `create_table_native`. `--rows`/`--cols` 는 1 이상이고, 열 수는 256 이하이다.
 
 ### `edit insert-row <파일> --table <번호> --row <행> [--below] [-o <출력>] [--dry-run] [--verify] [--json]` (#4994)
 본문 최상위 표에 행을 끼운다. 코어 `insert_table_row_native`. `--below` 면 지정 행 아래.
@@ -1070,6 +1109,22 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit split-cell <파일> --table <번호> --row <행> --col <열> [-o <출력>] [--dry-run] [--verify] [--json]` (#5010)
 본문 최상위 표의 병합 셀을 다시 나눈다. 코어 `split_table_cell_native`.
 
+### `edit split-cell-into <파일> --table <번호> --row <행> --col <열> --rows <행수> --cols <열수> [--equal-row-height] [--merge-first] [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 최상위 표의 셀을 n행 × m열로 나눈다. 코어 `split_table_cell_into_native`. `--rows`/`--cols` 는 1 이상.
+
+### `edit resize-table-cell <파일> --table <번호> --row <행> --col <열> [--vertical] [--forward] [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 최상위 표의 한 칸 크기를 한 걸음(283 HWPUNIT) 조절한다. 코어 `resize_table_cell_native`. 병합 칸이 있으면 네이티브가 거부한다.
+
+### `edit set-cell-props <파일> --table <번호> --row <행> --col <열> --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 최상위 표 셀의 속성을 JSON 객체로 변경한다. 코어 `set_cell_properties_native`를 사용하며, `--props`에는 `verticalAlign`, 셀 여백 등 지원되는 속성만 지정한다.
+
+### `edit move-table <파일> --table <번호> --dx <가로> --dy <세로> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 최상위 표의 위치 오프셋을 옮긴다. 코어 `move_table_offset_native`. `--dx`/`--dy` 는 HWPUNIT(양수=오른쪽/아래, 음수 허용).
+
+### `edit set-table-props <파일> --table <번호> --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 최상위 표 속성(칸간격·여백·글자처럼·배치 등)을 고친다. 코어 `set_table_properties_native`.
+표 번호는 `export-tables` 의 index. `--props` 는 JSON 객체.
+
 ### `edit insert-footnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4998)
 문단 좌표에 각주를 끼운다. 코어 `insert_footnote_native`.
 
@@ -1080,11 +1135,64 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 본문 각주/미주 컨트롤을 지운다. 코어 `delete_footnote_native`. `--section`/`--para`/`--ctrl`
 은 필수(0 기준).
 
+### `edit delete-text-in-footnote <파일> --count N [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]`
+각주/미주 문단에서 글자를 지운다. 코어 `delete_text_in_footnote_native`. `--count` 는 1 이상.
+
+### `edit group-shapes <파일> --targets P,C;P,C [--section N] [-o <출력>] [--dry-run] [--verify] [--json]`
+같은 구역의 도형/그림을 하나로 묶는다. 코어 `group_shapes_native`. `--targets` 는
+`para,ctrl;para,ctrl` (0 기준, 2개 이상). `--target P,C` 를 여러 번 써도 같다.
+
 ### `edit add-bookmark <파일> --name <이름> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5026)
 지정 좌표에 책갈피를 넣는다. 코어 `add_bookmark_native`. `--name` 필수. 같은 이름은 거부.
 
 ### `edit delete-bookmark <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]` (#5027)
 책갈피 컨트롤을 지운다. 코어 `delete_bookmark_native`. `--section`/`--para`/`--ctrl` 필수.
+
+### `edit rename-bookmark <파일> --section N --para N --ctrl N --name <이름> [-o <출력>] [--dry-run] [--verify] [--json]` (#5033)
+책갈피 이름을 바꾼다. 코어 `rename_bookmark_native`. `--section`/`--para`/`--ctrl`/`--name` 필수. 같은 이름은 거부.
+
+### `edit delete-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2] [-o <출력>] [--dry-run] [--verify] [--json]` (#5039)
+머리말/꼬리말 컨트롤을 지운다. 코어 `delete_header_footer_native`. `--header` 또는 `--footer` 필수.
+`--apply-to` 는 0 양쪽·1 짝수·2 홀수(기본 0).
+
+### `edit insert-header-footer-text <파일> --header|--footer --text <문자열> [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]`
+기존 머리말/꼬리말 문단에 텍스트를 끼운다. 코어 `insert_text_in_header_footer_native`. `--header` 또는 `--footer` 와 `--text` 필수. 빈 문자열은 거부. `--para` 는 머리말/꼬리말 안 문단(기본 0).
+
+### `edit set-header-footer-text <파일> --header|--footer --text <문자열> [--section N] [--apply-to 0|1|2] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]`
+기존 머리말/꼬리말 문단 텍스트를 통째로 바꾼다. 코어 `delete_text_in_header_footer_native` + `insert_text_in_header_footer_native`. `--header` 또는 `--footer` 와 `--text` 필수.
+
+### `edit delete-hf-text <파일> --header|--footer --count <글자수> [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]`
+기존 머리말/꼬리말 문단에서 글자를 지운다. 코어 `delete_text_in_header_footer_native`. `--header` 또는 `--footer` 와 `--count`(1 이상) 필수.
+
+### `edit split-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]`
+기존 머리말/꼬리말 문단을 오프셋에서 나눈다. 코어 `split_paragraph_in_header_footer_native`. `--header` 또는 `--footer` 필수.
+
+### `edit merge-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]`
+머리말/꼬리말 문단을 바로 앞 문단과 합친다. 코어 `merge_paragraph_in_header_footer_native`. `--header` 또는 `--footer` 필수. `--para` 는 합쳐질 문단(기본 1, 0은 거부).
+
+### `edit split-paragraph-in-cell <파일> --table N --row N --col N [--cell-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]`
+표 셀 문단을 오프셋에서 나눈다. 코어 `split_paragraph_in_cell_native`. `--table`/`--row`/`--col` 필수. `--cell-para` 는 셀 안 문단(기본 0).
+
+### `edit merge-paragraph-in-cell <파일> --table N --row N --col N [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]`
+표 셀 문단을 바로 앞 문단과 합친다. 코어 `merge_paragraph_in_cell_native`. `--table`/`--row`/`--col` 필수. `--cell-para` 는 합쳐질 문단(기본 1, 0은 거부).
+
+### `edit apply-char-format <파일> --props <JSON> [--section N] [--para N] [--offset N] [--count N] [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 문단 글자 범위에 글자 서식을 적용한다. 코어 `apply_char_format_native`. `--props` 필수(예: `{"bold":true}`). `--count` 생략 시 문단 끝까지.
+
+### `edit apply-para-format <파일> --props <JSON> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 문단에 문단 서식을 적용한다. 코어 `apply_para_format_native`. `--props` 필수(예: `{"alignment":"center"}`).
+
+### `edit apply-style <파일> --style N [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 문단에 스타일을 적용한다. 코어 `apply_style_native`. `--style` 은 docInfo 스타일 인덱스.
+
+### `edit apply-cell-style <파일> --table N --row N --col N --style N [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]`
+표 셀 문단에 스타일을 적용한다. 코어 `apply_cell_style_native`. `--table`/`--row`/`--col`/`--style` 필수.
+
+### `edit apply-para-format-in-cell <파일> --table N --row N --col N --props <JSON> [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]`
+표 셀 문단에 문단 서식을 적용한다. 코어 `apply_para_format_in_cell_native`. `--table`/`--row`/`--col`/`--props` 필수.
+
+### `edit delete-control <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]` (#5041)
+문단이 담은 컨트롤 하나를 지운다(갈래 무관). 코어 `delete_control_native`. `--section`/`--para`/`--ctrl` 필수.
 
 ### `edit delete-table <파일> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]` (#5028)
 본문 최상위 표를 지운다. 코어 `delete_table_control_native`. 좌표는 `export-tables` 의 index.
@@ -1092,39 +1200,6 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit insert-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2] [-o <출력>] [--dry-run] [--verify] [--json]` (#5036)
 머리말 또는 꼬리말을 만든다. 코어 `create_header_footer_native`. `--header`/`--footer` 중
 하나 필수. `--apply-to` 는 0 양쪽·1 짝수·2 홀수(기본 0). 같은 적용 대상이 있으면 거부.
-
-### 머리말·꼬리말, 문단·각주 확장 편집 (#5038, #5040-#5138)
-
-아래 명령은 모두 출력 파일(`-o`), `--dry-run`, `--verify`, `--json`을 공통으로 지원한다.
-`--header`/`--footer`는 하나만 지정하며, `--apply-to`는 0 양쪽·1 짝수·2 홀수다.
-
-```text
-edit rename-bookmark <파일> --section N --para N --ctrl N --name <이름>
-edit delete-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2]
-edit insert-header-footer-text <파일> --header|--footer --text <문자열> [--section N] [--apply-to 0|1|2] [--para N] [--offset N]
-headers-footers <파일>
-edit set-header-footer-text <파일> --header|--footer --text <문자열> [--section N] [--apply-to 0|1|2] [--para N]
-edit set-hf-picture <파일> --section N --para N --ctrl N --inner-para N --inner-ctrl N --props <JSON>
-header-footer <파일> [--header|--footer] [--section N] [--apply-to 0|1|2]
-edit apply-hf-template <파일> --header|--footer --template <0-10> [--section N] [--apply-to 0|1|2]
-edit delete-hf-text <파일> --header|--footer --count <글자수> [--section N] [--apply-to 0|1|2] [--para N] [--offset N]
-edit insert-field-in-hf <파일> --header|--footer --field-type <1|2|3> [--section N] [--apply-to 0|1|2] [--para N] [--offset N]
-edit split-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [--offset N]
-edit toggle-hide-hf <파일> --header|--footer [--page N]
-edit merge-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N]
-edit apply-char-format <파일> --props <JSON> [--section N] [--para N] [--offset N] [--count N]
-edit split-paragraph <파일> [--section N] [--para N] [--offset N]
-edit apply-para-format <파일> --props <JSON> [--section N] [--para N]
-edit apply-style <파일> --style N [--section N] [--para N]
-edit set-numbering-restart <파일> --mode N [--count N] [--section N] [--para N]
-edit apply-para-format-in-hf <파일> --header|--footer --props <JSON> [--section N] [--apply-to 0|1|2] [--para N]
-edit apply-endnote-shape <파일> --props <JSON> [--section N]
-edit insert-footnote-text <파일> --ctrl N --text <문자열> [--section N] [--para N] [--fn-para N] [--offset N]
-edit delete-text-in-footnote <파일> --count <글자수> [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N]
-edit split-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N]
-edit merge-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N]
-edit apply-para-format-in-footnote <파일> --section N --para N --ctrl N --props <JSON> [--fn-para N]
-```
 
 ### `edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]` (#3719 §6-5)
 도장·서명 같은 그림을 쪽 좌표에 붙인다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각.
@@ -1239,7 +1314,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 49종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`delete-table`/`insert-header-footer`/`insert-image`/`redact`/`sanitize`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`set-hf-picture`/`apply-hf-template`/`delete-hf-text`/`insert-field-in-hf`/`split-paragraph-in-hf`/`toggle-hide-hf`/`merge-paragraph-in-hf`/`apply-char-format`/`split-paragraph`/`apply-para-format`/`apply-style`/`set-numbering-restart`/`apply-para-format-in-hf`/`apply-endnote-shape`/`insert-footnote-text`/`delete-text-in-footnote`/`split-paragraph-in-footnote`/`merge-paragraph-in-footnote`/`apply-para-format-in-footnote`)은
+`edit` 56종(`fill-fields`/`replace-text`/`set-cell`/`insert-text-in-cell`/`delete-text-in-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`split-paragraph`/`insert-page-break`/`insert-column-break`/`insert-table`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`split-cell-into`/`split-table`/`fit-table`/`resize-table`/`merge-table`/`set-column-widths`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`delete-equation`/`add-bookmark`/`delete-bookmark`/`delete-table`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`delete-hf-text`/`split-paragraph-in-hf`/`merge-paragraph-in-hf`/`split-paragraph-in-cell`/`merge-paragraph-in-cell`/`apply-char-format`/`apply-para-format`/`apply-style`/`apply-cell-style`/`delete-control`/`insert-header-footer`/`insert-field-in-hf`/`set-column-def`/`set-numbering-restart`/`set-page-hide`/`transpose-table`/`insert-image`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`

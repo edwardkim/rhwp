@@ -1,5 +1,19 @@
 # Contributing to rhwp
 
+> **PR·push 차단 게이트 — 하나라도 실패하면 `gh pr create` / `git push` 하지 마세요.**
+> 테스트만 고친 뒤에도 `cargo fmt --all -- --check` 를 다시 돌리세요.
+>
+> ```bash
+> cargo fmt --all
+> cargo fmt --all -- --check
+> node scripts/rust-test-suite-manifest.mjs --check
+> node scripts/rust-unit-test-tiers.mjs --check
+> ```
+>
+> CI Lint job 의 Format check 는 `cargo fmt --all -- --check` 입니다.
+> `cargo fmt --check` 만으로는 부족합니다. 실패하면 `cargo fmt --all` 로 고친 뒤
+> `--check` 가 통과할 때까지 PR 을 만들지 마세요.
+
 rhwp에 관심을 가져주셔서 감사합니다!
 
 "모두의 한글"은 이름 그대로 모두의 참여로 완성됩니다. 코드 기여, 버그 리포트, 문서 개선, HWP 샘플 파일 제공 — 어떤 형태든 환영합니다.

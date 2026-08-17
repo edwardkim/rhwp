@@ -693,6 +693,14 @@ fn recipes() -> Vec<Recipe> {
             ndjson: false,
         },
         Recipe {
+            command: "charts",
+            doc: Some(chart.clone()),
+            args: vec![s("charts"), s("--json"), p(&chart)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
             command: "export-text",
             doc: Some(main.clone()),
             args: vec![s("export-text"), s("--json"), p(&main)],
@@ -2309,8 +2317,38 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     ),
     (
         "edit",
+        "rows",
+        "split-cell-into 전용. 스윕 레시피는 fill-fields/set-cell 이라 rows 를 안 낸다",
+    ),
+    (
+        "edit",
+        "cols",
+        "split-cell-into 전용. 스윕 레시피는 fill-fields/set-cell 이라 cols 를 안 낸다",
+    ),
+    (
+        "edit",
+        "vertical",
+        "resize-table-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 vertical 을 안 낸다",
+    ),
+    (
+        "edit",
+        "forward",
+        "resize-table-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 forward 를 안 낸다",
+    ),
+    (
+        "edit",
+        "dx",
+        "move-table 전용. 스윕 레시피는 fill-fields/set-cell 이라 dx 를 안 낸다",
+    ),
+    (
+        "edit",
+        "dy",
+        "move-table 전용. 스윕 레시피는 fill-fields/set-cell 이라 dy 를 안 낸다",
+    ),
+    (
+        "edit",
         "count",
-        "delete-row/delete-col 전용. 스윕 레시피는 fill-fields/set-cell 이라 count 를 안 낸다",
+        "delete-row/delete-col/group-shapes 전용. 스윕 레시피는 fill-fields/set-cell 이라 count 를 안 낸다",
     ),
     (
         "edit",
@@ -2321,6 +2359,86 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
         "edit",
         "name",
         "add-bookmark/rename-bookmark 전용. 다른 하위는 fill-fields/set-cell 처럼 name 을 안 싣는다",
+    ),
+    (
+        "edit",
+        "isHeader",
+        "delete-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 isHeader 를 안 낸다",
+    ),
+    (
+        "edit",
+        "applyTo",
+        "delete-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 applyTo 를 안 낸다",
+    ),
+    (
+        "edit",
+        "rows",
+        "insert-table 전용. 스윕 레시피는 fill-fields/set-cell 이라 rows 를 안 낸다",
+    ),
+    (
+        "edit",
+        "cols",
+        "insert-table 전용. 스윕 레시피는 fill-fields/set-cell 이라 cols 를 안 낸다",
+    ),
+    (
+        "edit",
+        "cellPara",
+        "insert-text-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 cellPara 를 안 낸다",
+    ),
+    (
+        "edit",
+        "widths",
+        "set-column-widths 전용. 스윕 레시피는 fill-fields/set-cell 이라 widths 를 안 낸다",
+    ),
+    (
+        "edit",
+        "fnPara",
+        "delete-text-in-footnote 전용. 스윕 레시피는 fill-fields/set-cell 이라 fnPara 를 안 낸다",
+    ),
+    (
+        "edit",
+        "columnCount",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 columnCount 를 안 낸다",
+    ),
+    (
+        "edit",
+        "columnType",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 columnType 을 안 낸다",
+    ),
+    (
+        "edit",
+        "sameWidth",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 sameWidth 를 안 낸다",
+    ),
+    (
+        "edit",
+        "spacing",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 spacing 을 안 낸다",
+    ),
+    (
+        "edit",
+        "innerPara",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 innerPara 를 안 낸다",
+    ),
+    (
+        "edit",
+        "props",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 props 를 안 낸다",
+    ),
+    (
+        "edit",
+        "bold",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 bold 를 안 낸다",
+    ),
+    (
+        "edit",
+        "fontSize",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 fontSize 를 안 낸다",
+    ),
+    (
+        "edit",
+        "color",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 color 를 안 낸다",
     ),
 ];
 
