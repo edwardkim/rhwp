@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_027
 
+#[path = "../cases/set_header_footer_text_contract.rs"]
+mod set_header_footer_text_contract;
+
 #[path = "../cell_square_picture_anchor.rs"]
 mod cell_square_picture_anchor;
 
