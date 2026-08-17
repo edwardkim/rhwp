@@ -1293,7 +1293,23 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         // [#1407] 이 idx 위치에서 닫혀야 할(미방출) fieldEnd 가 있으면, 그 8유닛 갭은
         // 슬롯이 아니라 fieldEnd 소유다. 슬롯 방출을 양보해 텍스트-끝 슬롯(newNum 등)이
         // fieldEnd 자리를 가로채지 못하게 한다 (0-length 필드는 아래 pre-char 경로가 처리).
-        while slot_idx < slots.len() && char_pos >= expected_utf16_pos.saturating_add(8) {
+        // [#5173] 이 문자 앞 갭 중 제목 차례 표시(titleMark)가 차지하는 유닛은 슬롯 몫이
+        // 아니다. titleMark 는 `render_hp_t_content` 안 char_idx 위치에 방출되는데(슬롯이
+        // 아님), 슬롯 루프가 그 유닛까지 갭으로 보고 각주 등 슬롯을 먼저 가로채면 각주가
+        // 제목보다 앞서 나간다(08435: 각주가 문단 맨 앞으로). titleMark 유닛(각 8)을 갭에서
+        // 빼면 각주는 자기 실제 갭(제목·본문 뒤)으로 내려가 원본·h2h 순서(제목 → 본문 →
+        // 각주)가 산다.
+        let title_gap_units = cursor.title_marks[cursor.mark_idx..]
+            .iter()
+            .take_while(|m| m.char_idx == idx)
+            .count() as u32
+            * 8;
+        while slot_idx < slots.len()
+            && char_pos
+                >= expected_utf16_pos
+                    .saturating_add(title_gap_units)
+                    .saturating_add(8)
+        {
             // [Issue #1948] 이 갭(expected_utf16_pos)이 미방출 **고아(교차 문단)
             // fieldEnd** 소유면 슬롯 방출을 양보한다. 종전엔 field_ranges 의 fieldEnd
             // 만 갭을 지켰고(위 주석 #1407) 고아 fieldEnd 는 while 뒤(char_idx==idx)에서
