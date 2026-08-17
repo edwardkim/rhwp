@@ -5,6 +5,9 @@
 #[path = "../armor_contract.rs"]
 mod armor_contract;
 
+#[path = "../cases/rename_bookmark_contract.rs"]
+mod rename_bookmark_contract;
+
 #[path = "../doclang_export.rs"]
 mod doclang_export;
 

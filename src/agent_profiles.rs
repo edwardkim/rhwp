@@ -124,6 +124,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_bookmarks",
             "hwp_add_bookmark",
             "hwp_delete_bookmark",
+            "hwp_rename_bookmark",
             "hwp_set_checkbox",
             "hwp_replace_text",
             "hwp_insert_text",
