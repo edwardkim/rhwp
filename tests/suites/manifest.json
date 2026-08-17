@@ -262,6 +262,7 @@
     ],
     "regression_suite_010": [
       "tests/agent_context_cost_contract.rs",
+      "tests/cases/apply_para_format_in_footnote_contract.rs",
       "tests/cases/insert_row_contract.rs",
       "tests/diag_1042_height_calc.rs",
       "tests/hwp3_charcount_convention.rs",

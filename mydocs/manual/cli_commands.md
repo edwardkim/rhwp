@@ -1030,6 +1030,10 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 표 셀 문단에 문단 서식을 적용한다. 코어 `apply_para_format_in_cell_native`. `--props` 필수
 (예: `{"alignment":"center"}`).
 
+### `edit apply-para-format-in-footnote <파일> --section N --para N --ctrl N --props <JSON> [--fn-para N] [-o <출력>] [--dry-run] [--verify] [--json]`
+각주/미주 내부 문단에 문단 서식을 적용한다. 코어 `apply_para_format_in_footnote_native`.
+`--section`/`--para`/`--ctrl`/`--props` 필수. 각주가 없으면 `edit insert-footnote` 로 먼저 만든다.
+
 ### `edit insert-row <파일> --table <번호> --row <행> [--below] [-o <출력>] [--dry-run] [--verify] [--json]` (#4994)
 본문 최상위 표에 행을 끼운다. 코어 `insert_table_row_native`. `--below` 면 지정 행 아래.
 

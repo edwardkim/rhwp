@@ -5,6 +5,9 @@
 #[path = "../agent_context_cost_contract.rs"]
 mod agent_context_cost_contract;
 
+#[path = "../cases/apply_para_format_in_footnote_contract.rs"]
+mod apply_para_format_in_footnote_contract;
+
 #[path = "../cases/insert_row_contract.rs"]
 mod insert_row_contract;
 
