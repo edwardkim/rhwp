@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_006
 
+#[path = "../cases/delete_text_contract.rs"]
+mod delete_text_contract;
+
 #[path = "../cli_json_contract.rs"]
 mod cli_json_contract;
 

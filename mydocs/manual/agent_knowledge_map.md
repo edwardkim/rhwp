@@ -297,11 +297,13 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 293개 필드
+### 2-2. 전수 사전 — 294개 필드
 
 `capabilities` 의 `recordFields` 고유 **286개**와 그 밖의 실측-only 필드
 `assertions`·`docId`·`preview` **3개**, `explore` 전용 `affordanceCount`·`menu`·`note`
 **3개**, `scaffold` 전용 `blockCount` **1개**를 합친 293개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **291개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 294개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -326,6 +328,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
+| `count` | number | 지울 글자 수 (1 이상) | `edit delete-text` |
 | `docId` | string | 세션 핸들. 서버 프로세스 수명과 같고 영속되지 않는다 | 세션 도구 12종 |
 
 #### 문서 메타
@@ -1068,7 +1071,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 16개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·
+**`edit` 하위 17개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
 `insert-paragraph`·`insert-page-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
@@ -1127,6 +1130,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_insert_footnote` | `edit insert-footnote --json` | `path` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
+| `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
 | `hwp_insert_page_break` | `edit insert-page-break --json` | `path` |
 | `hwp_redact` | `edit redact --json` | `path` |

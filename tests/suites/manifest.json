@@ -174,6 +174,7 @@
       "tests/suites/issue_regression_pilot/issue_2098_margin_boundary_split.rs"
     ],
     "regression_suite_006": [
+      "tests/cases/delete_text_contract.rs",
       "tests/cli_json_contract.rs",
       "tests/digest_macro_contract.rs",
       "tests/issue_1434_clickhere_guide_hancom_command.rs",
