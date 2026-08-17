@@ -29,6 +29,26 @@ fn temp(tag: &str) -> PathBuf {
     ))
 }
 
+/// 지정한 각주/미주 문단 본문. 비어 있어도 주소를 유지한다.
+fn note_text_at(path: &Path, si: usize, pi: usize, ci: usize, fi: usize) -> Option<String> {
+    let bytes = std::fs::read(path).unwrap();
+    let doc = HwpDocument::from_bytes(&bytes).unwrap();
+    let ctrl = doc
+        .document()
+        .sections
+        .get(si)?
+        .paragraphs
+        .get(pi)?
+        .controls
+        .get(ci)?;
+    let paras = match ctrl {
+        Control::Footnote(f) => &f.paragraphs,
+        Control::Endnote(e) => &e.paragraphs,
+        _ => return None,
+    };
+    paras.get(fi).map(|fp| fp.text.clone())
+}
+
 /// 첫 각주/미주 중 비어 있지 않은 문단. (0,0,0) 을 가정하지 않는다.
 fn first_note_text(path: &Path) -> Option<(usize, usize, usize, usize, usize, String)> {
     let bytes = std::fs::read(path).unwrap();
@@ -156,8 +176,10 @@ fn delete_text_in_footnote_shortens() {
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(v["fnPara"], fi);
     assert_eq!(v["count"], 1);
-    let after = first_note_text(&out).expect("각주가 남아 있어야 한다");
-    assert_eq!(after.4, before - 1);
+    // 삽입한 빈 각주가 앞에 있으면 first_note_text 는 다른 각주를 다시 고른다.
+    // 방금 지운 주소의 길이를 본다.
+    let after = note_text_at(&out, si, pi, ci, fi).expect("각주가 남아 있어야 한다");
+    assert_eq!(after.chars().count(), before - 1);
     HwpDocument::from_bytes(&std::fs::read(&out).unwrap()).expect("산출물 재파싱");
     let _ = std::fs::remove_file(&inserted);
     let _ = std::fs::remove_file(&out);

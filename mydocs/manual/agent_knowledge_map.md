@@ -298,9 +298,9 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 314개 필드
+### 2-2. 전수 사전 — 315개 필드
 
-`capabilities` 의 `recordFields` 고유 **302개**와 그 밖의 실측-only 필드
+`capabilities` 의 `recordFields` 고유 **303개**와 그 밖의 실측-only 필드
 `applyTo`·`assertions`·`docId`·`exists`·`isHeader`·`preview`·`dx`·`dy` **8개**를 합친 314개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
@@ -344,7 +344,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
-| `count` | number | 지울 글자 수 (1 이상) | `edit delete-text`·`delete-hf-text` |
+| `count` | number | 지울 글자 수 (1 이상) | `edit delete-text`·`delete-hf-text`·`delete-text-in-footnote` |
+| `fnPara` | number | 각주/미주 안 문단 인덱스 (0부터) | `edit delete-text-in-footnote` |
 | `innerPara` | number | 셀·각주 안 문단 (0부터) | `edit apply-char-format-in-cell` |
 | `props` | string | 글자/문단 서식 JSON | `edit apply-char-format-in-cell` |
 | `bold` | bool | `--bold` 를 줬는지 | `edit apply-char-format-in-cell` |
