@@ -53,6 +53,21 @@ fn first_note_text(path: &Path) -> Option<(usize, usize, usize, usize, usize, St
     None
 }
 
+fn first_footnote(path: &Path) -> Option<(usize, usize, usize)> {
+    let bytes = std::fs::read(path).unwrap();
+    let doc = HwpDocument::from_bytes(&bytes).unwrap();
+    for (si, section) in doc.document().sections.iter().enumerate() {
+        for (pi, para) in section.paragraphs.iter().enumerate() {
+            for (ci, ctrl) in para.controls.iter().enumerate() {
+                if matches!(ctrl, Control::Footnote(_)) {
+                    return Some((si, pi, ci));
+                }
+            }
+        }
+    }
+    None
+}
+
 fn insert_footnote() -> PathBuf {
     let src = sample();
     let inserted = temp("ins");
@@ -70,7 +85,37 @@ fn insert_footnote() -> PathBuf {
         .output()
         .unwrap();
     assert_eq!(output.status.code(), Some(0), "{:?}", output);
-    inserted
+    let (si, pi, ci) = first_footnote(&inserted).expect("삽입한 각주가 있어야 한다");
+    let section = si.to_string();
+    let paragraph = pi.to_string();
+    let control = ci.to_string();
+    let with_text = temp("text");
+    let output = Command::new(rhwp_bin())
+        .args([
+            "edit",
+            "insert-footnote-text",
+            inserted.to_str().unwrap(),
+            "--section",
+            &section,
+            "--para",
+            &paragraph,
+            "--ctrl",
+            &control,
+            "--fn-para",
+            "0",
+            "--offset",
+            "0",
+            "--text",
+            "삭제대상",
+            "-o",
+            with_text.to_str().unwrap(),
+            "--json",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0), "{:?}", output);
+    let _ = std::fs::remove_file(&inserted);
+    with_text
 }
 
 #[test]
@@ -78,6 +123,10 @@ fn delete_text_in_footnote_shortens() {
     let inserted = insert_footnote();
     let (si, pi, ci, fi, before, text) =
         first_note_text(&inserted).expect("삽입한 각주에 글자가 있어야 한다");
+    assert!(
+        text.contains("삭제대상"),
+        "사용자 텍스트가 있어야 한다: {text:?}"
+    );
     assert!(before >= 1, "삭제할 글자가 있어야 한다: {text:?}");
     let out = temp("out");
     let output = Command::new(rhwp_bin())

@@ -5659,6 +5659,12 @@ fn print_help() {
     println!();
     println!("      --json                  책갈피 봉투를 JSON으로 stdout에 출력");
     println!();
+    println!("  headers-footers <파일.hwp|파일.hwpx|파일.hml> [--json]");
+    println!("      문서 머리말/꼬리말 목록을 조회한다");
+    println!();
+    println!("  header-footer <파일.hwp|파일.hwpx|파일.hml> [--header|--footer] [--section N] [--apply-to 0|1|2] [--json]");
+    println!("      구역 머리말 또는 꼬리말 한 건을 조회한다");
+    println!();
     println!("  digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]");
     println!("      문서 요약 봉투 한 줄 출력 — 메타(info)·개요 상위 노드·첫 페이지 발췌·");
     println!("      nextStep 유도문을 한 번 호출로 묶은 매크로 (초소형 모델용, #3633)");
