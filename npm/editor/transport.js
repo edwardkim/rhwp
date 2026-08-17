@@ -3,10 +3,11 @@ const CAPABILITIES = [
   'transferable-array-buffer',
   'hml-export',
   'renderer-diagnostics-v1',
+  'font-decision-trace-v1',
   'notify-saved-v1',
 ];
 const LONG_RUNNING_METHODS = new Set([
-  'loadFile', 'exportHwp', 'exportHwpVerify', 'exportHwpx', 'exportHml',
+  'loadFile', 'getFontDecisionTrace', 'exportHwp', 'exportHwpVerify', 'exportHwpx', 'exportHml',
 ]);
 
 export function requestTimeoutFor(method, configuredTimeout) {

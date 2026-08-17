@@ -369,6 +369,53 @@ impl SkiaLayerRenderer {
         self
     }
 
+    /// 기본 native Skia paint와 동일한 후보 사다리에서 문자별 typeface 결정을 읽는다.
+    /// 렌더링, surface 생성, font 파일 적재를 시작하지 않는다.
+    pub(crate) fn font_decision(
+        &self,
+        requested: &str,
+        character: char,
+        bold: bool,
+        italic: bool,
+    ) -> crate::renderer::font_decision::BackendDecision {
+        use super::font_lookup::{select_typeface_for_character, text_typeface_candidates};
+
+        let style = match (bold, italic) {
+            (true, true) => FontStyle::bold_italic(),
+            (true, false) => FontStyle::bold(),
+            (false, true) => FontStyle::italic(),
+            (false, false) => FontStyle::normal(),
+        };
+        let (candidates, typefaces) = text_typeface_candidates(
+            &self.font_mgr,
+            &self.system_families,
+            &self.custom_typefaces,
+            &self.bundled_typefaces,
+            requested,
+            style,
+        );
+        let selected = select_typeface_for_character(&typefaces, character);
+        let mut failures = Vec::new();
+        if typefaces.is_empty() {
+            failures.push("nativeTypefaceUnavailable".into());
+        } else if selected.is_none() {
+            failures.push("nativeGlyphMissingAllCandidates".into());
+        }
+        crate::renderer::font_decision::BackendDecision {
+            status: "complete".into(),
+            certainty: "observed".into(),
+            requested: Some(requested.into()),
+            candidates,
+            resolved: selected.map(|candidate| candidate.typeface.family_name()),
+            source: selected.map(|candidate| candidate.source.into()),
+            capabilities: vec![
+                "nativeTypefaceChainEnumerated".into(),
+                "nativeGlyphCoverageObserved".into(),
+            ],
+            failures,
+        }
+    }
+
     pub fn render_raster_with_options(
         &self,
         tree: &PageLayerTree,

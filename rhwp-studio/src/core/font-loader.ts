@@ -39,6 +39,13 @@ export interface CanvasKitFontPlan {
   unavailableFonts: string[];
 }
 
+export type WebFontSupplyStatus = 'loaded' | 'registered' | 'catalogued' | 'absent';
+
+export interface WebFontSupplySnapshot {
+  status: WebFontSupplyStatus;
+  canvasKitSfntPlanned: boolean;
+}
+
 // 함초롬체 CDN (눈누 jsdelivr — 비상업적 사용 허용, 한컴 라이선스)
 const CDN_HAMCHOB_R = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff';
 const CDN_HAMCHOB_B = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatangB.woff';
@@ -473,6 +480,21 @@ function detectOSFonts(fontNames: readonly string[]): void {
 /** 감지된 OS 폰트 목록 (외부 참조용) */
 export function getDetectedOSFonts(): ReadonlySet<string> {
   return detectedOSFonts;
+}
+
+/** 네트워크 요청 없이 현재 웹폰트 등록/적재 상태와 SFNT 계획 가능 여부만 읽는다. */
+export function getWebFontSupplySnapshot(fontName: string): WebFontSupplySnapshot {
+  const normalized = normalizeFontFamily(fontName);
+  const entries = FONT_LIST.filter(entry => normalizeFontFamily(entry.name) === normalized);
+  const loaded = entries.some(entry => loadedFontFaceKeys.has(fontFaceKey(entry)));
+  const registered = entries.some(entry => registeredFontFaceKeys.has(fontFaceKey(entry)));
+  return {
+    status: loaded ? 'loaded' : registered ? 'registered' : entries.length > 0 ? 'catalogued' : 'absent',
+    canvasKitSfntPlanned: entries.some(entry => {
+      const source = entry.canvasKitFile ?? entry.file;
+      return /\.(?:ttf|otf|ttc)(?:$|[?#])/i.test(source);
+    }),
+  };
 }
 
 /**

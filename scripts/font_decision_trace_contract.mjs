@@ -330,8 +330,9 @@ function validateBackendDecision(value, location, errors) {
     if (!Array.isArray(value[field])) errors.push(`${location}.${field} must be an array`);
     else if (value[field].length > 64) errors.push(`${location}.${field} exceeds 64 items`);
   }
-  if (value.certainty === 'observed' && value.resolved === null) {
-    errors.push(`${location}.observed requires a resolved face`);
+  if (value.certainty === 'observed' && value.resolved === null
+      && (!Array.isArray(value.failures) || value.failures.length === 0)) {
+    errors.push(`${location}.observed without a resolved face requires an explicit failure`);
   }
 }
 

@@ -353,6 +353,8 @@ impl DocumentCore {
         let mut records = Vec::with_capacity(characters_seen.min(applied_limits.max_characters));
         let mut source_mapping_mismatch = false;
         let mut ledger_rule_missing = false;
+        #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+        let native_observer = crate::renderer::skia::SkiaLayerRenderer::new();
 
         'runs: for (run_index, run) in runs.iter().enumerate() {
             let chars: Vec<char> = run.text.chars().collect();
@@ -499,7 +501,21 @@ impl DocumentCore {
                             .unwrap_or_default(),
                         steps: name_steps,
                     },
-                    paint: PaintDecision::stage2(Some(run.style.font_family.clone())),
+                    paint: PaintDecision::stage3(Some(run.style.font_family.clone()), {
+                        #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+                        {
+                            Some(native_observer.font_decision(
+                                &run.style.font_family,
+                                ch,
+                                run.style.bold,
+                                run.style.italic,
+                            ))
+                        }
+                        #[cfg(not(all(not(target_arch = "wasm32"), feature = "native-skia")))]
+                        {
+                            None
+                        }
+                    }),
                     layout_metric,
                     provenance,
                     oracle: OracleDecision::not_provided(),
@@ -556,7 +572,10 @@ impl DocumentCore {
                 records_omitted: Some(records_omitted),
             },
             records,
-            backend_summary: BackendSummary::stage2(),
+            backend_summary: BackendSummary::stage3(cfg!(all(
+                not(target_arch = "wasm32"),
+                feature = "native-skia"
+            ))),
             reasons,
             layout_hash: TraceHash::pending(),
             normalized_hash: TraceHash::pending(),
@@ -600,7 +619,20 @@ mod tests {
             assert!(digest.bytes().all(|byte| byte.is_ascii_hexdigit()));
         }
         for record in value["records"].as_array().unwrap() {
-            assert_eq!(record["paint"]["native"]["status"], "unsupported");
+            if cfg!(all(not(target_arch = "wasm32"), feature = "native-skia")) {
+                assert_ne!(record["paint"]["native"]["status"], "unsupported");
+                assert!(record["paint"]["native"]["capabilities"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|capability| capability == "nativeGlyphCoverageObserved"));
+            } else {
+                assert_eq!(record["paint"]["native"]["status"], "unsupported");
+                assert_eq!(
+                    record["paint"]["native"]["failures"][0],
+                    "nativeSkiaFeatureUnavailable"
+                );
+            }
             assert_eq!(record["paint"]["canvas2d"]["status"], "unsupported");
             assert_eq!(record["paint"]["canvaskit"]["status"], "unsupported");
         }

@@ -1,4 +1,5 @@
 import type { HmlSaveState } from '../core/hml-save-capability.ts';
+import type { EmbedFontDecisionTraceV1 } from '../core/font-decision-trace.ts';
 import type {
   CanvasKitRenderModeRequest,
   CanvasKitSurfaceRequest,
@@ -22,6 +23,7 @@ export interface EmbedRpcHandlers {
   ): Promise<{ pageCount: number }>;
   pageCount(): Promise<number>;
   getRendererDiagnostics(page: number): Promise<EmbedRendererDiagnosticsV1>;
+  getFontDecisionTrace(page: number, maxCharacters: number): Promise<EmbedFontDecisionTraceV1>;
   getPageSvg(page: number): Promise<string>;
   exportHwp(): Promise<Uint8Array>;
   exportHwpx(): Promise<Uint8Array>;
@@ -72,6 +74,11 @@ function asParams(value: unknown): Record<string, unknown> {
   return typeof value === 'object' && value !== null ? value as Record<string, unknown> : {};
 }
 
+function assertOnlyKeys(value: Record<string, unknown>, allowed: readonly string[], label: string): void {
+  const unknown = Object.keys(value).filter(key => !allowed.includes(key));
+  if (unknown.length > 0) throw new Error(`${label} contains unknown field: ${unknown.sort()[0]}`);
+}
+
 /** 비어 있지 않은 문자열 식별자. 라우터에서 거르지 않으면 핸들러마다 같은 검사를 반복한다. */
 function asId(value: unknown): string {
   if (typeof value !== 'string' || value.length === 0) {
@@ -110,6 +117,25 @@ export async function routeEmbedRequest(
         throw new Error('page must be a non-negative safe integer');
       }
       return handlers.getRendererDiagnostics(page as number);
+    }
+    case 'getFontDecisionTrace': {
+      assertOnlyKeys(params, ['page', 'limits'], 'getFontDecisionTrace params');
+      const page = params.page ?? 0;
+      if (!Number.isSafeInteger(page) || (page as number) < 0) {
+        throw new Error('page must be a non-negative safe integer');
+      }
+      const limits = params.limits === undefined ? {} : asParams(params.limits);
+      if (params.limits !== undefined
+        && (typeof params.limits !== 'object' || params.limits === null || Array.isArray(params.limits))) {
+        throw new Error('limits must be an object');
+      }
+      assertOnlyKeys(limits, ['maxCharacters'], 'getFontDecisionTrace limits');
+      const maxCharacters = limits.maxCharacters ?? 1024;
+      if (!Number.isSafeInteger(maxCharacters)
+        || (maxCharacters as number) < 1 || (maxCharacters as number) > 4096) {
+        throw new Error('maxCharacters must be a safe integer in 1..=4096');
+      }
+      return handlers.getFontDecisionTrace(page as number, maxCharacters as number);
     }
     case 'getPageSvg': return handlers.getPageSvg(
       typeof params.page === 'number' ? params.page : 0,

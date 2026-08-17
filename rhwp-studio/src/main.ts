@@ -79,6 +79,7 @@ import {
 import { calculateFitPageZoom, calculateFitWidthZoom } from '@/view/zoom-fit';
 import { installEmbedRuntime } from '@/embed/runtime';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
+import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
@@ -1694,6 +1695,16 @@ installEmbedRuntime({
           canvaskit: canvasView?.getCanvasKitRenderDiagnostics(pageIndex) ?? null,
         },
       };
+    },
+    async getFontDecisionTrace(pageIndex, maxCharacters) {
+      await initPromise;
+      return enrichFontDecisionTrace(
+        wasm.getFontDecisionTrace(pageIndex, maxCharacters),
+        {
+          canvasKitEvidence: record =>
+            canvasView?.getCanvasKitFontDecisionEvidence(pageIndex, record) ?? null,
+        },
+      );
     },
     async getPageSvg(page) {
       await initPromise;

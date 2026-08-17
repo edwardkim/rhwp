@@ -194,6 +194,20 @@ test('valid v1 envelope passes and missing fields, inconsistent counts and silen
   assert.match(validateTraceEnvelope(clamped).join('\n'), /silent clamp/);
 });
 
+test('observed glyph miss requires an explicit failure instead of a guessed face', () => {
+  const trace = validTrace();
+  trace.records[0].paint.native = {
+    ...backend('complete', 'observed'),
+    failures: ['nativeGlyphMissingAllCandidates'],
+  };
+  trace.normalizedHash.value = normalizedTraceHash(trace);
+  assert.deepEqual(validateTraceEnvelope(trace), []);
+
+  trace.records[0].paint.native.failures = [];
+  trace.normalizedHash.value = normalizedTraceHash(trace);
+  assert.match(validateTraceEnvelope(trace).join('\n'), /observed without a resolved face/);
+});
+
 test('W1 source digest drift is detected without exposing an absolute checkout path', () => {
   const snapshot = readJson(path.join(
     ROOT,
@@ -203,14 +217,19 @@ test('W1 source digest drift is detected without exposing an absolute checkout p
     'issue-4939',
     'font_rule_candidates.json',
   ));
-  const expectedStage2Drift = [
+  const expectedTraceDrift = [
+    'rhwp-studio/src/core/font-loader.ts',
+    'rhwp-studio/src/core/font-substitution.ts',
+    'rhwp-studio/src/core/wasm-bridge.ts',
     'src/renderer/font_metrics_data.rs',
     'src/renderer/layout/text_measurement.rs',
     'src/renderer/mod.rs',
+    'src/renderer/skia/font_lookup.rs',
+    'src/renderer/skia/text_replay.rs',
     'src/renderer/style_resolver.rs',
   ];
   const currentDrift = detectLedgerSourceDrift(snapshot, ROOT);
-  assert.deepEqual(currentDrift.map(entry => entry.path), expectedStage2Drift);
+  assert.deepEqual(currentDrift.map(entry => entry.path), expectedTraceDrift);
   for (const entry of currentDrift) {
     assert.match(entry.expectedSha256, /^[0-9a-f]{64}$/);
     assert.match(entry.actualSha256, /^[0-9a-f]{64}$/);
@@ -219,7 +238,7 @@ test('W1 source digest drift is detected without exposing an absolute checkout p
 
   const changed = structuredClone(snapshot);
   const changedPath = changed.candidates.find(
-    candidate => !expectedStage2Drift.includes(candidate.path),
+    candidate => !expectedTraceDrift.includes(candidate.path),
   ).path;
   for (const candidate of changed.candidates) {
     if (candidate.path === changedPath) candidate.sourceSha256 = '0'.repeat(64);

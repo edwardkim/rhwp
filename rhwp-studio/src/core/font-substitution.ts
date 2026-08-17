@@ -194,7 +194,7 @@ const _substMaps = SUBST_TABLES.map(langTable => {
 const _resolveCache = new Map<string, string>();
 const GENERIC_FONTS = new Set(['serif', 'sans-serif', 'monospace']);
 
-interface FontFamilyChainOptions {
+export interface FontFamilyChainOptions {
   /** 감지 승인 후 확인된 로컬 글꼴 목록. 미지정 시 저장된 감지 결과를 사용한다. */
   confirmedLocalFonts?: readonly string[];
   /** 테스트/레거시 용도: 감지 전 원본 글꼴명을 강제로 포함한다. */
@@ -406,7 +406,17 @@ export function fontFamilyChainForDisplay(
   langId = 0,
   options: FontFamilyChainOptions = {},
 ): string {
-  if (!fontName || GENERIC_FONTS.has(fontName)) return fontName;
+  return formatCssFontFamilies(fontFamilyCandidatesForDisplay(fontName, altType, langId, options));
+}
+
+/** Canvas2D 실제 설정과 trace가 공유하는 ordered CSS family 후보다. */
+export function fontFamilyCandidatesForDisplay(
+  fontName: string,
+  altType = 0,
+  langId = 0,
+  options: FontFamilyChainOptions = {},
+): string[] {
+  if (!fontName || GENERIC_FONTS.has(fontName)) return fontName ? [fontName] : [];
 
   const families: string[] = [];
   const confirmedLocalFonts = options.confirmedLocalFonts ?? [];
@@ -464,5 +474,5 @@ export function fontFamilyChainForDisplay(
     pushUniqueFontFamily(families, fallback);
   }
 
-  return formatCssFontFamilies(families);
+  return families;
 }

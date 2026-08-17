@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use skia_safe::{
     font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathEffect, Rect, Typeface,
@@ -17,7 +17,8 @@ use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::{boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, TextStyle};
 
 use super::font_lookup::{
-    legacy_typeface_for_style, match_system_family_style, SystemFontFamilies,
+    legacy_typeface_for_style, match_system_family_style, select_typeface_for_character,
+    text_typeface_candidates, SystemFontFamilies,
 };
 use super::renderer::colorref_to_skia;
 
@@ -74,82 +75,23 @@ impl SkiaTextReplay<'_> {
                     (false, true) => FontStyle::italic(),
                     (false, false) => FontStyle::normal(),
                 };
-                let mut families = Vec::new();
-                // [#3314] 접미사 face("Noto Serif KR Black") 미설치 시 base
-                // family 가 아래 generic 폴백보다 먼저 구제 — SVG 체인과 정합.
-                let base_family =
-                    crate::renderer::base_family_without_weight_suffix(&style.font_family);
-                if !style.font_family.trim().is_empty() {
-                    families.push(style.font_family.as_str());
-                }
-                if let Some(base) = base_family.as_deref() {
-                    families.push(base);
-                }
-                // 한글 fallback (CJK glyph 미보유 폰트로 fallback 시 사각형 방지).
-                // SVG 경로의 CSS font chain 과 동일한 한글 폴백 폰트 순서.
-                families.extend([
-                    "Noto Sans KR",
-                    "Noto Serif KR",
-                    "Noto Sans CJK KR",
-                    "Noto Serif CJK KR",
-                    "Nanum Gothic",
-                    "Nanum Myeongjo",
-                    "Malgun Gothic",
-                    "맑은 고딕",
-                    "Batang",
-                    "바탕",
-                    "Apple SD Gothic Neo",
-                    "AppleMyungjo",
-                    "DejaVu Sans",
-                    "Arial",
-                    "sans-serif",
-                ]);
                 // 1) 사용자 지정 폰트 (--font-path) 우선 검색
                 // 2) 시스템 FontMgr 검색 (한글 fallback chain 포함)
                 // 3) 마지막 fallback (legacy_make_typeface)
                 //
                 // 모든 후보를 chain 으로 보존 — char 단위 fallback 에 사용.
-                let typeface_chain: Vec<Typeface> = {
-                    let mut chain: Vec<Typeface> = Vec::new();
-                    let mut seen: HashSet<String> = HashSet::new();
-                    let mut push =
-                        |chain: &mut Vec<Typeface>, seen: &mut HashSet<String>, tf: Typeface| {
-                            let key = tf.family_name();
-                            if seen.insert(key) {
-                                chain.push(tf);
-                            }
-                        };
-                    for family in &families {
-                        if let Some(tf) = self.custom_typefaces.get(*family).cloned() {
-                            push(&mut chain, &mut seen, tf);
-                        }
-                    }
-                    for family in &families {
-                        if let Some(tf) = match_system_family_style(
-                            self.font_mgr,
-                            self.system_families,
-                            family,
-                            font_style,
-                        ) {
-                            push(&mut chain, &mut seen, tf);
-                        }
-                    }
-                    // [#3300] 번들 최후-폴백(ttfs/opensource)은 custom·시스템
-                    // 뒤에만 선다. #2864 가 번들을 custom 에 섞은 뒤 깊은 폴백
-                    // (Noto Sans KR)이 시스템 1순위를 제치고 본문 전체를 폴백
-                    // 서체로 렌더했다(r23 발산 −6.9pp). 폰트 미설치 환경(#2293)
-                    // 에서는 앞 단계가 비므로 종전대로 번들이 한국어를 구제한다.
-                    for family in &families {
-                        if let Some(tf) = self.bundled_typefaces.get(*family).cloned() {
-                            push(&mut chain, &mut seen, tf);
-                        }
-                    }
-                    if let Some(tf) = legacy_typeface_for_style(self.font_mgr, font_style) {
-                        push(&mut chain, &mut seen, tf);
-                    }
-                    chain
-                };
-                let primary_typeface = typeface_chain.first().cloned();
+                // 후보와 glyph 선택은 opt-in font decision trace도 그대로 사용한다.
+                let (_, typeface_chain) = text_typeface_candidates(
+                    self.font_mgr,
+                    self.system_families,
+                    self.custom_typefaces,
+                    self.bundled_typefaces,
+                    &style.font_family,
+                    font_style,
+                );
+                let primary_typeface = typeface_chain
+                    .first()
+                    .map(|candidate| candidate.typeface.clone());
                 // 한글은 bold face 가 없는 폰트(휴먼명조 등 단일 400 페이스)에
                 // 동일 정규 페이스 + stroke 로 합성 굵게를 적용한다 (오라클
                 // PDF 실측: 굵은 헤더가 정규 휴먼명조 임베드로 방출). custom
@@ -167,15 +109,10 @@ impl SkiaTextReplay<'_> {
                     font
                 };
                 let font_for_text = |sample: &str, size: f32| -> Option<Font> {
-                    let visible_char = sample.chars().find(|ch| !ch.is_whitespace());
-                    if let Some(ch) = visible_char {
-                        let codepoint = ch as i32;
-                        if let Some(tf) = typeface_chain
-                            .iter()
-                            .find(|tf| tf.unichar_to_glyph(codepoint) != 0)
-                            .cloned()
+                    if let Some(ch) = sample.chars().find(|ch| !ch.is_whitespace()) {
+                        if let Some(candidate) = select_typeface_for_character(&typeface_chain, ch)
                         {
-                            return Some(finish_font(tf, size));
+                            return Some(finish_font(candidate.typeface.clone(), size));
                         }
                         return None;
                     }

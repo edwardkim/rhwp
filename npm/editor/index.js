@@ -175,6 +175,29 @@ export class RhwpEditor {
     return result;
   }
 
+  /** 현재 문자의 layout/paint font 결정 계보를 bounded trace로 반환합니다. */
+  async getFontDecisionTrace(page = 0, options = {}) {
+    if (!Number.isSafeInteger(page) || page < 0) {
+      throw new TypeError('page must be a non-negative safe integer');
+    }
+    const maxCharacters = options.maxCharacters ?? 1024;
+    if (!Number.isSafeInteger(maxCharacters) || maxCharacters < 1 || maxCharacters > 4096) {
+      throw new TypeError('maxCharacters must be a safe integer in 1..=4096');
+    }
+    if (!this._transport.supports('font-decision-trace-v1')) {
+      throw new Error('Font decision trace v1 is not supported by this Studio');
+    }
+    const result = await this._request('getFontDecisionTrace', {
+      page,
+      limits: { maxCharacters },
+    });
+    if (result?.schemaVersion !== 1 || result?.scope?.pageIndex !== page
+      || !Array.isArray(result?.records)) {
+      throw new Error('Studio returned invalid font decision trace v1');
+    }
+    return result;
+  }
+
   /**
    * 현재 문서를 HWP 바이너리로 내보냅니다.
    * @returns {Promise<Uint8Array>} HWP 파일 bytes

@@ -35,6 +35,10 @@ interface ReportedWasmDocument {
   exportHwpxWithPasswordAndReport(password: string): WasmDocumentExport;
 }
 
+interface FontDecisionTraceWasmDocument {
+  getFontDecisionTrace(page: number, optionsJson: string): string;
+}
+
 /**
  * 문단 병합으로 사라진 문단의 스코프 메타데이터 (Task #2342).
  *
@@ -671,6 +675,16 @@ export class WasmBridge {
 
   get pageCount(): number {
     return this.doc?.pageCount() ?? 0;
+  }
+
+  getFontDecisionTrace(page: number, maxCharacters: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const query = (this.doc as unknown as Partial<FontDecisionTraceWasmDocument>)
+      .getFontDecisionTrace;
+    if (typeof query !== 'function') {
+      throw new Error('현재 WASM 빌드는 font decision trace를 지원하지 않습니다');
+    }
+    return query.call(this.doc, page, JSON.stringify({ maxCharacters }));
   }
 
   beginDeferredPagination(fragmentBudget = 1): DeferredPaginationResult {

@@ -157,7 +157,7 @@ pub(crate) struct BackendDecision {
 }
 
 impl BackendDecision {
-    pub(crate) fn unsupported(requested: Option<String>) -> Self {
+    pub(crate) fn unsupported(requested: Option<String>, reason: &str) -> Self {
         Self {
             status: "unsupported".into(),
             certainty: "unsupported".into(),
@@ -166,17 +166,19 @@ impl BackendDecision {
             resolved: None,
             source: None,
             capabilities: Vec::new(),
-            failures: vec!["backendObservationDeferredToStage3".into()],
+            failures: vec![reason.into()],
         }
     }
 }
 
 impl PaintDecision {
-    pub(crate) fn stage2(requested: Option<String>) -> Self {
+    pub(crate) fn stage3(requested: Option<String>, native: Option<BackendDecision>) -> Self {
         Self {
-            native: BackendDecision::unsupported(requested.clone()),
-            canvas2d: BackendDecision::unsupported(requested.clone()),
-            canvaskit: BackendDecision::unsupported(requested),
+            native: native.unwrap_or_else(|| {
+                BackendDecision::unsupported(requested.clone(), "nativeSkiaFeatureUnavailable")
+            }),
+            canvas2d: BackendDecision::unsupported(requested.clone(), "studioSnapshotRequired"),
+            canvaskit: BackendDecision::unsupported(requested, "studioSnapshotRequired"),
         }
     }
 }
@@ -229,19 +231,29 @@ pub(crate) struct BackendSummaryEntry {
 }
 
 impl BackendSummary {
-    pub(crate) fn stage2() -> Self {
-        let unsupported = || BackendSummaryEntry {
+    pub(crate) fn stage3(native_available: bool) -> Self {
+        let studio = || BackendSummaryEntry {
             status: "unsupported".into(),
-            reasons: vec!["backendObservationDeferredToStage3".into()],
+            reasons: vec!["studioSnapshotRequired".into()],
         };
         Self {
             layout: BackendSummaryEntry {
                 status: "complete".into(),
                 reasons: Vec::new(),
             },
-            native: unsupported(),
-            canvas2d: unsupported(),
-            canvaskit: unsupported(),
+            native: if native_available {
+                BackendSummaryEntry {
+                    status: "complete".into(),
+                    reasons: Vec::new(),
+                }
+            } else {
+                BackendSummaryEntry {
+                    status: "unsupported".into(),
+                    reasons: vec!["nativeSkiaFeatureUnavailable".into()],
+                }
+            },
+            canvas2d: studio(),
+            canvaskit: studio(),
         }
     }
 }
