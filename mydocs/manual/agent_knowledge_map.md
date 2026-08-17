@@ -110,6 +110,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 도형 묶기 | `edit group-shapes` (`hwp_group_shapes`) | `count`·`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit group-shapes |
 | 본문 문단 좌표에 그림 넣기 | `edit insert-picture` (`hwp_insert_picture`) | `binDataId`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-picture |
 | 본문 그림 지우기 | `edit delete-picture` (`hwp_delete_picture`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit delete-picture |
+| 본문 그림 속성 바꾸기 | `edit set-picture` (`hwp_set_picture`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit set-picture |
 | 없는 자리에 글자 넣기 | `edit insert-text` (`hwp_insert_text`) | `insertedChars`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-text |
 | 개인정보 마스킹 | `edit redact` (`hwp_redact`) | `findingCount`·`redactedCount` | [보안 소비자 가이드](../tech/agent_security/consumer_guide.md) |
 | 메타데이터 제거 | `edit sanitize` (`hwp_sanitize`) | `removedCount`·`removed[]` | 같은 문서 |
@@ -1205,6 +1206,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_set_section_def` | `edit set-section-def --json` | `path`,`props` |
 | `hwp_insert_picture` | `edit insert-picture --json` | `path`,`image` |
 | `hwp_delete_picture` | `edit delete-picture --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_set_picture` | `edit set-picture --json` | `path`,`section`,`paragraph`,`ctrl`,`props` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
