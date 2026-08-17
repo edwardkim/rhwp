@@ -1,4 +1,4 @@
-name: Run Nextest Archives
+name: Run Nextest Archive Partition
 
 on:
   workflow_call:
@@ -11,22 +11,27 @@ on:
         description: Unique worker count artifact suffix.
         required: true
         type: string
-      archive_label:
-        description: Archive label downloaded and executed by this worker.
+      filterset:
+        description: Nextest filterset applied before partitioning.
         required: true
+        type: string
+      partition:
+        description: Optional nextest test-case partition such as hash:1/3.
+        required: false
+        default: ""
         type: string
 
 jobs:
   run:
     name: Default-feature tests (${{ inputs.label }})
     runs-on: ubuntu-latest
-    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    # [#3284] 러너 hang을 실패로 드러내는 상한이며 성능 목표가 아니다.
     timeout-minutes: 30
     permissions:
       contents: read
 
     steps:
-      # 테스트가 samples/ pdf/ 등 저장소 픽스처를 읽으므로 checkout 필요.
+      # 테스트가 samples/pdf 등 저장소 fixture를 읽으므로 checkout이 필요하다.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install Rust toolchain
@@ -39,35 +44,40 @@ jobs:
         with:
           tool: nextest
 
-      - name: Download test archive ${{ inputs.archive_label }}
+      - name: Download shared test archive
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: test-archive-${{ github.run_id }}-${{ inputs.archive_label }}
+          name: test-archive-${{ github.run_id }}
 
-      # [#2393] worker는 archive 하나만 실행하고 Summary run을 남긴다. 집계 job은 slow + 일반 세 archive의
-      # expected count와 네 worker 실행 합을 대조한다.
+      # [#5164] 네 worker는 동일 archive에서 서로 배타적인 filter/partition만 실행한다.
+      # 집계 job은 archive runnable 수와 네 Summary run 합계를 대조한다.
       - name: Run ${{ inputs.label }}
         env:
-          ARCHIVE_LABEL: ${{ inputs.archive_label }}
           COUNT_LABEL: ${{ inputs.count_label }}
+          FILTERSET: ${{ inputs.filterset }}
+          PARTITION: ${{ inputs.partition }}
         run: |
-          set -o pipefail
-          log="nextest-${ARCHIVE_LABEL}.log"
-          # --extract-to . : CLI 테스트의 env!("CARGO_BIN_EXE_rhwp") 는 빌드 러너 절대 경로가
-          # 컴파일 타임에 박힌다. GitHub runner는 job 간 workspace 경로가 같으므로 workspace에
-          # 풀어 target/ 경로를 그대로 복원한다.
+          set -euo pipefail
+          partition_args=()
+          if [[ -n "${PARTITION}" ]]; then
+            partition_args=(--partition "${PARTITION}")
+          fi
+          log="nextest-${COUNT_LABEL}.log"
           cargo nextest run \
-            --archive-file "tests-${ARCHIVE_LABEL}.tar.zst" \
+            --archive-file tests.tar.zst \
             --workspace-remap . \
             --extract-to . \
+            --filterset "${FILTERSET}" \
+            "${partition_args[@]}" \
+            --no-tests fail \
             2>&1 | tee "$log"
           summary=$(sed 's/\x1b\[[0-9;]*m//g' "$log" | grep -E "Summary \[" | tail -1)
           run=$(echo "$summary" | grep -oE "[0-9]+ tests? run" | grep -oE "^[0-9]+")
           if [[ -z "$run" ]]; then
-            echo "::error::archive ${ARCHIVE_LABEL} summary parse failed"
+            echo "::error::worker ${COUNT_LABEL} summary parse failed"
             exit 1
           fi
-          echo "archive=${ARCHIVE_LABEL} run=${run}"
+          echo "worker=${COUNT_LABEL} filter=${FILTERSET} partition=${PARTITION:-none} run=${run}"
           echo "$run" > "shard-count-${COUNT_LABEL}.txt"
           cat "shard-count-${COUNT_LABEL}.txt"
 

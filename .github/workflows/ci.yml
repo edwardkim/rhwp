@@ -759,99 +759,22 @@ jobs:
 
   # [#2393] 기본 테스트 병렬화 — CI impact preflight가 frontend·Rust·Native Skia
   # gate와 worker 조건을 나누는 경계다.
-  # [#3888] slow builder는 archive 2를 함께 만들어 runner 네 개 안에서 compile 부하를 균형화한다.
-  # regular target은 archive 1/2/3에 직접 배정하고, 네 worker는 정확히 자기 archive 하나만 내려받는다.
+  # [#5164] archive는 preflight 직후 한 번만 compile/link하고 Lint와 병렬 실행한다.
+  # 네 worker는 동일 archive를 slow filter와 regular test-case partition으로 나눠 소비한다.
   # required check 는 집계 job "Build & Test" 로 불변이다.
-  build-test-archive-slow:
+  build-test-archive:
     uses: ./.github/workflows/build-nextest-archives.yml
-    needs: [preflight, lint, frontend-unit-gates, frontend-package-gates]
+    needs: [preflight]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && needs.lint.result == 'success'
-        && (
-          (needs.preflight.outputs.frontend_mode == 'none'
-            && needs['frontend-unit-gates'].result == 'skipped'
-            && needs['frontend-package-gates'].result == 'skipped')
-          || (needs.preflight.outputs.frontend_mode == 'unit'
-            && needs['frontend-unit-gates'].result == 'success'
-            && needs['frontend-package-gates'].result == 'skipped')
-          || (needs.preflight.outputs.frontend_mode == 'package'
-            && needs['frontend-unit-gates'].result == 'skipped'
-            && needs['frontend-package-gates'].result == 'success')
-        )
       }}
     permissions:
       contents: read
     with:
-      builder: slow
-      archive_labels: "slow 2"
-      expected_count_suffix: slow
-      cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
-      timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
-
-  build-test-archive-a:
-    uses: ./.github/workflows/build-nextest-archives.yml
-    needs: [preflight, lint, frontend-unit-gates, frontend-package-gates]
-    if: >-
-      ${{
-        always()
-        && needs.preflight.result == 'success'
-        && needs.preflight.outputs.fast_pass != 'true'
-        && needs.preflight.outputs.rust_required == 'true'
-        && needs.lint.result == 'success'
-        && (
-          (needs.preflight.outputs.frontend_mode == 'none'
-            && needs['frontend-unit-gates'].result == 'skipped'
-            && needs['frontend-package-gates'].result == 'skipped')
-          || (needs.preflight.outputs.frontend_mode == 'unit'
-            && needs['frontend-unit-gates'].result == 'success'
-            && needs['frontend-package-gates'].result == 'skipped')
-          || (needs.preflight.outputs.frontend_mode == 'package'
-            && needs['frontend-unit-gates'].result == 'skipped'
-            && needs['frontend-package-gates'].result == 'success')
-        )
-      }}
-    permissions:
-      contents: read
-    with:
-      builder: a
-      archive_labels: "1"
-      expected_count_suffix: a
-      cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
-      timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
-
-  build-test-archive-b:
-    uses: ./.github/workflows/build-nextest-archives.yml
-    needs: [preflight, lint, frontend-unit-gates, frontend-package-gates]
-    if: >-
-      ${{
-        always()
-        && needs.preflight.result == 'success'
-        && needs.preflight.outputs.fast_pass != 'true'
-        && needs.preflight.outputs.rust_required == 'true'
-        && needs.lint.result == 'success'
-        && (
-          (needs.preflight.outputs.frontend_mode == 'none'
-            && needs['frontend-unit-gates'].result == 'skipped'
-            && needs['frontend-package-gates'].result == 'skipped')
-          || (needs.preflight.outputs.frontend_mode == 'unit'
-            && needs['frontend-unit-gates'].result == 'success'
-            && needs['frontend-package-gates'].result == 'skipped')
-          || (needs.preflight.outputs.frontend_mode == 'package'
-            && needs['frontend-unit-gates'].result == 'skipped'
-            && needs['frontend-package-gates'].result == 'success')
-        )
-      }}
-    permissions:
-      contents: read
-    with:
-      builder: b
-      archive_labels: "3"
-      expected_count_suffix: b
       cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
       timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
 
@@ -859,75 +782,78 @@ jobs:
     uses: ./.github/workflows/run-nextest-archives.yml
     # [#4103] shard는 archive만 소비한다. Native Skia는 final aggregate가 별도 집계하므로
     # 여기서 기다리지 않아 archive 완료 즉시 기본 테스트를 시작할 수 있다.
-    needs: [preflight, build-test-archive-slow]
+    needs: [preflight, build-test-archive]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && needs['build-test-archive-slow'].result == 'success'
+        && needs['build-test-archive'].result == 'success'
       }}
     permissions:
       contents: read
     with:
       label: slow shard
       count_label: slow
-      archive_label: slow
+      filterset: "binary(=overflow_cell_baseline)"
 
   test-regular-shard-1:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, build-test-archive-a]
+    needs: [preflight, build-test-archive]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && needs['build-test-archive-a'].result == 'success'
+        && needs['build-test-archive'].result == 'success'
       }}
     permissions:
       contents: read
     with:
       label: shard 1/3
       count_label: "1"
-      archive_label: "1"
+      filterset: "not binary(=overflow_cell_baseline)"
+      partition: "hash:1/3"
 
   test-regular-shard-2:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, build-test-archive-slow]
+    needs: [preflight, build-test-archive]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && needs['build-test-archive-slow'].result == 'success'
+        && needs['build-test-archive'].result == 'success'
       }}
     permissions:
       contents: read
     with:
       label: shard 2/3
       count_label: "2"
-      archive_label: "2"
+      filterset: "not binary(=overflow_cell_baseline)"
+      partition: "hash:2/3"
 
   test-regular-shard-3:
     uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, build-test-archive-b]
+    needs: [preflight, build-test-archive]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && needs['build-test-archive-b'].result == 'success'
+        && needs['build-test-archive'].result == 'success'
       }}
     permissions:
       contents: read
     with:
       label: shard 3/3
       count_label: "3"
-      archive_label: "3"
+      filterset: "not binary(=overflow_cell_baseline)"
+      partition: "hash:3/3"
 
 
   lint:
@@ -1326,9 +1252,7 @@ jobs:
     timeout-minutes: 45
     needs:
       - preflight
-      - build-test-archive-slow
-      - build-test-archive-a
-      - build-test-archive-b
+      - build-test-archive
       - test-slow-shard
       - test-regular-shard-1
       - test-regular-shard-2
@@ -1342,8 +1266,7 @@ jobs:
       contents: read
 
     steps:
-      # [#2393] 네 archive의 target selector별 runnable 수와 네 worker Summary run 합계가
-      # 일치해야 한다 (fast-pass 시 worker 미실행이라 생략).
+      # [#5164] 단일 archive의 runnable 수와 네 worker Summary run 합계가 일치해야 한다.
       - name: Download shard counts
         if: >-
           ${{
@@ -1371,8 +1294,7 @@ jobs:
           }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: archive-expected-*
-          merge-multiple: true
+          name: archive-expected-${{ github.run_id }}
 
       - name: Verify shard totals
         if: >-
@@ -1390,21 +1312,20 @@ jobs:
             echo "::error::expected 4 shard count files, found ${shards}"
             exit 1
           fi
-          expected_files=$(find . -maxdepth 1 -type f -name 'archive-expected-*.txt' | wc -l | tr -d ' ')
-          if [[ "$expected_files" != "4" ]]; then
-            echo "::error::expected 4 archive expected count files, found ${expected_files}"
+          if [[ ! -f archive-expected-total.txt ]]; then
+            echo "::error::archive expected runnable count is missing"
             exit 1
           fi
-          expected=0
-          for f in archive-expected-*.txt; do
-            read -r run < "$f"
-            if ! [[ "$run" =~ ^[0-9]+$ ]]; then
-              echo "::error::invalid archive expected count in ${f}: ${run}"
-              exit 1
-            fi
-            expected=$((expected + run))
-            echo "${f}: expected=${run}"
-          done
+          read -r expected < archive-expected-total.txt
+          if ! [[ "$expected" =~ ^[0-9]+$ ]]; then
+            echo "::error::invalid archive expected count: ${expected}"
+            exit 1
+          fi
+          read -r slow < shard-count-slow.txt
+          if [[ "$slow" != "1" ]]; then
+            echo "::error::slow filter expected exactly 1 runnable test, got ${slow}"
+            exit 1
+          fi
           sum=0
           for f in shard-count-*.txt; do
             read -r run < "$f"
@@ -1429,9 +1350,7 @@ jobs:
           NATIVE_SKIA_REQUIRED: ${{ needs.preflight.outputs.native_skia_required }}
           FRONTEND_MODE: ${{ needs.preflight.outputs.frontend_mode }}
           IMPACT_REASON: ${{ needs.preflight.outputs.impact_reason }}
-          BUILD_SLOW_RESULT: ${{ needs['build-test-archive-slow'].result }}
-          BUILD_A_RESULT: ${{ needs['build-test-archive-a'].result }}
-          BUILD_B_RESULT: ${{ needs['build-test-archive-b'].result }}
+          BUILD_ARCHIVE_RESULT: ${{ needs['build-test-archive'].result }}
           TEST_SLOW_RESULT: ${{ needs['test-slow-shard'].result }}
           TEST_REGULAR_1_RESULT: ${{ needs['test-regular-shard-1'].result }}
           TEST_REGULAR_2_RESULT: ${{ needs['test-regular-shard-2'].result }}
@@ -1447,9 +1366,7 @@ jobs:
           printf 'native_skia_required=%s\n' "${NATIVE_SKIA_REQUIRED}"
           printf 'frontend_mode=%s\n' "${FRONTEND_MODE}"
           printf 'impact_reason=%s\n' "${IMPACT_REASON}"
-          printf 'build_slow=%s\n' "${BUILD_SLOW_RESULT}"
-          printf 'build_a=%s\n' "${BUILD_A_RESULT}"
-          printf 'build_b=%s\n' "${BUILD_B_RESULT}"
+          printf 'build_archive=%s\n' "${BUILD_ARCHIVE_RESULT}"
           printf 'test_slow=%s\n' "${TEST_SLOW_RESULT}"
           printf 'test_regular_1=%s\n' "${TEST_REGULAR_1_RESULT}"
           printf 'test_regular_2=%s\n' "${TEST_REGULAR_2_RESULT}"
@@ -1470,17 +1387,17 @@ jobs:
           fi
 
           failed=0
-          rust_results="${LINT_RESULT}/${BUILD_SLOW_RESULT}/${BUILD_A_RESULT}/${BUILD_B_RESULT}/${TEST_SLOW_RESULT}/${TEST_REGULAR_1_RESULT}/${TEST_REGULAR_2_RESULT}/${TEST_REGULAR_3_RESULT}"
+          rust_results="${LINT_RESULT}/${BUILD_ARCHIVE_RESULT}/${TEST_SLOW_RESULT}/${TEST_REGULAR_1_RESULT}/${TEST_REGULAR_2_RESULT}/${TEST_REGULAR_3_RESULT}"
           case "${RUST_REQUIRED}" in
             true)
-              if [[ "${rust_results}" != "success/success/success/success/success/success/success/success" ]]; then
-                echo "::error::Rust lane expected success for lint/builders/workers, got: ${rust_results}"
+              if [[ "${rust_results}" != "success/success/success/success/success/success" ]]; then
+                echo "::error::Rust lane expected success for lint/builder/workers, got: ${rust_results}"
                 failed=1
               fi
               ;;
             false)
-              if [[ "${rust_results}" != "skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped" ]]; then
-                echo "::error::Rust lane expected skipped for lint/builders/workers, got: ${rust_results}"
+              if [[ "${rust_results}" != "skipped/skipped/skipped/skipped/skipped/skipped" ]]; then
+                echo "::error::Rust lane expected skipped for lint/builder/workers, got: ${rust_results}"
                 failed=1
               fi
               ;;
