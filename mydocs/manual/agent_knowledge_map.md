@@ -298,10 +298,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 300개 필드
+### 2-2. 전수 사전 — 301개 필드
 
-`capabilities` 의 `recordFields` 고유 **297개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 300개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **298개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 301개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -332,6 +332,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text` |
 | `count` | number | 지울 글자 수 (1 이상) | `edit delete-text`·`delete-text-in-footnote` |
 | `fnPara` | number | 각주/미주 안 문단 인덱스 (0부터) | `edit delete-text-in-footnote` |
+| `cellPara` | number | 표 셀 안 문단 인덱스 (0부터) | `edit insert-text-in-cell` |
 | `docId` | string | 세션 핸들. 서버 프로세스 수명과 같고 영속되지 않는다 | 세션 도구 12종 |
 
 #### 문서 메타
