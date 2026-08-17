@@ -19,7 +19,7 @@ last_verified: 2026-08-18
 - 최신 PR head `7286353129ed8ea83c6c7670906b001bb15f80eb`의 Build & Test는 세 regular shard에서 실패했다. 원인은 `hwp_set_form_value`와 `hwp_set_form_value_in_cell` MCP 등록 누락, 그리고 `hwp_charts`·`hwp_delete_equation`·`hwp_group_shapes`의 중복 등록이었다.
 - `src/main.rs`에서 누락 도구 둘을 복원하고 중복 도구 셋을 제거했다. 보정 후 `capabilities --mcp`는 162개 고유 도구를 보고하며 양식 값 설정 도구 둘을 포함한다.
 - `cargo nextest run --cargo-profile release-test --target-dir target\\pr-review --test regression_suite_031`, `regression_suite_032`, `regression_suite_029`는 각각 83/83, 80/80, 85/85 통과했다. 이는 CI 생성 배정과 달리 로컬 review checkout에서 같은 원본 계약이 배정된 suite다.
-- `cargo clippy --all-targets --target-dir target\\pr-review -- -D warnings`, `cargo fmt --all -- --check`, unit-tier check, `gen_agent_codex.py --check`, `git diff --check`도 통과했다. `tests/suites/unit-test-tiers.json`은 `src/main.rs` 테스트 모듈 위치가 세 줄 이동한 기준선만 갱신했다.
+- `cargo clippy --all-targets --target-dir target\\pr-review -- -D warnings`, `cargo fmt --all -- --check`, unit-tier check, `gen_agent_codex.py --check`, `git diff --check`도 통과했다. `tests/suites/unit-test-tiers.json`은 `src/main.rs` 테스트 모듈 위치 기준선만 갱신했다.
 - 생성 `tests/generated/regression_suite_*`와 `tests/suites/manifest.json`은 보정·stage하지 않는다. 새 보정 commit을 push한 뒤 그 head의 Full CI·CodeQL·Render Diff를 다시 확인해야 한다.
 
 # PR #5198 누적 통합 후보 — 메인터너 보정 및 로컬 검증
