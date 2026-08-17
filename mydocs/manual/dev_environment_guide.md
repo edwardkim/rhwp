@@ -94,8 +94,9 @@ cargo nextest run \
 ```
 
 새 Rust integration test는 `tests/cases/`에 원본 `.rs` 파일만 추가하고 suite를 직접 선택하지 않는다.
-기여 PR에는 원본만 제출한다. 검토·CI 단계에서만 다음 명령이 source 크기와 test 수를 기준으로 기존
-generated suite에 자동 배정한다.
+기여 PR에는 원본만 제출한다. 아래 명령은 일반 기여자의 PR checkout이 아니라 별도의 PR review
+worktree와 CI에서만 실행한다. 이 단계가 source 크기와 test 수를 기준으로 기존 generated suite에
+자동 배정한다.
 
 ```bash
 node scripts/rust-test-suite-manifest.mjs --prepare
@@ -103,8 +104,10 @@ node scripts/run-rust-test.mjs <확장자를_뺀_test_source_이름>
 ```
 
 `tests/generated/`, `tests/suites/manifest.json`, Cargo generated test target 블록은 파생 산출물이며
-직접 수정하거나 PR에 포함하지 않는다. `--prepare`가 이름 변경·삭제와 신규 source를 한 번에 반영하고,
-검증 뒤 review worktree에만 남은 파생 변경은 복원한다. 전체 배정 정책과 PR 검증 절차는
+직접 수정하거나 PR에 포함하지 않는다. 일반 기여자는 `--prepare`를 실행해 파생 결과를 자신의 PR에
+등록하지 않으며, PR 전에는 `node --test scripts/tests/rust-test-suite-manifest.test.mjs`로 배정 규칙만
+확인한다. review worktree의 `--prepare`가 이름 변경·삭제와 신규 source를 한 번에 반영하고, 검증 뒤
+그 worktree에만 남은 파생 변경은 복원한다. 전체 배정 정책과 PR 검증 절차는
 [로컬 사전 검증](pr_review/local_validation.md)의 "integration test source 추가와 자동 sharding"을 따른다.
 
 제품 소스의 기존 `#[cfg(test)]`는 의존성에 따라 `integration_ready`, `test_support`, `white_box`로
