@@ -53,6 +53,11 @@ fn test_parse_para_text_simple() {
     assert_eq!(text, "Hello, World!");
     assert_eq!(offsets.len(), 13);
     assert_eq!(offsets[0], 0); // 'H' at position 0
+
+    bulkbuild_identical_exhaustive_single_unit();
+    bulkbuild_identical_run_length_sweep();
+    bulkbuild_identical_surrogates();
+    bulkbuild_identical_random_fuzz();
 }
 
 #[test]
@@ -1338,7 +1343,6 @@ impl SplitMix64 {
     }
 }
 
-#[test]
 fn bulkbuild_identical_exhaustive_single_unit() {
     for v in 0..=u16::MAX {
         assert_decode_identical(&v.to_le_bytes());
@@ -1357,7 +1361,6 @@ fn bulkbuild_identical_exhaustive_single_unit() {
     }
 }
 
-#[test]
 fn bulkbuild_identical_run_length_sweep() {
     let boundaries = [
         0x0000u16, 0x0009, 0x000A, 0x000B, 0x0012, 0x0018, 0x001F, 0xD800, 0xDC00,
@@ -1381,7 +1384,6 @@ fn bulkbuild_identical_run_length_sweep() {
     }
 }
 
-#[test]
 fn bulkbuild_identical_surrogates() {
     let highs = [0xD800u16, 0xD83D, 0xDBFF];
     let lows = [0xDC00u16, 0xDE00, 0xDFFF];
@@ -1418,7 +1420,6 @@ fn bulkbuild_identical_surrogates() {
     }
 }
 
-#[test]
 fn bulkbuild_identical_random_fuzz() {
     let mut rng = SplitMix64(0x0BAD_C0DE_CAFE_F00D);
     let mut buf = Vec::with_capacity(128);
