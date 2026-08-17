@@ -385,6 +385,7 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
         outer_margin_top: outer_margin,
         outer_margin_bottom: outer_margin,
         raw_ctrl_data,
+        raw_ctrl_seal: None,
         raw_table_record_attr: 0x0000_0006, // bit1=셀분리금지, bit2=repeat_header
         raw_table_record_extra: Vec::new(),
         dirty: true,
