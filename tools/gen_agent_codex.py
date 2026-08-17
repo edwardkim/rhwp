@@ -92,6 +92,7 @@ LIVE = {
     "inspect unicode": (["inspect", "unicode", ODD, "--json"], "화면-바이트 불일치 스윕"),
     "edit replace-text": (["edit", "replace-text", DOC, "--find", "규제", "--replace", "코덱스검증", "--dry-run", "--json"], "문구 치환 (dry-run — 디스크 무변경 예고 봉투)"),
     "edit set-cell": (["edit", "set-cell", DOC, "--table", "1", "--row", "0", "--col", "0", "--text", "코덱스", "--dry-run", "--json"], "표 셀 교정 (dry-run)"),
+    "edit set-chart-data": (["edit", "set-chart-data", CHART, "--chart", "1", "--data", "{\"series\":[]}", "--dry-run", "--json"], "차트 숫자 데이터 기록 (dry-run)"),
     "edit fill-fields": (["edit", "fill-fields", FORM, "--data", "{\"회사명\": \"코덱스\"}", "--dry-run", "--json"], "누름틀 채움 (dry-run)"),
     "edit redact": (["edit", "redact", FORM, "--dry-run", "--json"], "개인정보 탐지 (dry-run = 읽기 전용 탐지)"),
     "run": (["run", "{plan_a}", "--json"], "계획서 원자 실행 — 선검증 후 단 한 번 저장"),
@@ -134,7 +135,7 @@ FAMILIES = [
       # [#4100] 차트 숫자 데이터도 같은 CSV 왕복 규약을 쓴다 — 표와 한 가족이다.
       "chart-to-csv", "csv-to-chart"]),
     ("30_편집과_계획", "편집·계획 — 원본 무훼손 변경",
-     ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit insert-image", "edit redact", "edit sanitize", "run"]),
+     ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit set-chart-data", "edit insert-image", "edit redact", "edit sanitize", "run"]),
     ("40_변환과_렌더", "변환·렌더 — 형식을 넘나든다",
      ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "thumbnail", "render-diff", "build-from-ingest", "split-document",
       "export-png-gpu", "gpu-info"]),

@@ -329,7 +329,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `applyTo` | number | 머리말/꼬리말 적용 범위 (0 양쪽·1 짝수·2 홀수) | `edit delete-header-footer` |
 | `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell` |
 | `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text` |
-| `count` | number | 지울 글자 수 (1 이상) | `edit delete-text` |
+| `count` | number | 지울 글자 수·시작 번호·차트 순번(1부터) | `edit delete-text`·`set-numbering-restart`·`set-chart-data` |
 | `docId` | string | 세션 핸들. 서버 프로세스 수명과 같고 영속되지 않는다 | 세션 도구 12종 |
 
 #### 문서 메타
