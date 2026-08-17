@@ -2086,6 +2086,37 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "section", "paragraph", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
+            "hwp_insert_equation",
+            "본문 문단 좌표에 수식을 끼운다. 표 셀/글상자 내부는 미지원. 코어 insert_equation_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "script": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "fontSize": { "type": "integer", "minimum": 1 },
+                    "color": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "script"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-equation", "{path}", "--script", "{script}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "fontSize", "args": ["--font-size", "{fontSize}"] },
+                { "when": "color", "args": ["--color", "{color}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "offset", "script", "fontSize", "color", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_delete_col",
             "[#5009] 본문 최상위 표에서 열을 지운다. 좌표는 export-tables 의 index. 코어 delete_table_column_native 배선.",
             serde_json::json!({
@@ -4541,6 +4572,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 75] = [
     ("insert-footnote", "각주 삽입 — --section/--para/--offset"),
     ("insert-endnote", "미주 삽입 — --section/--para/--offset"),
     (
+        "insert-equation",
+        "수식 삽입 — --script [--section/--para/--offset/--font-size/--color]",
+    ),
+    (
         "delete-footnote",
         "각주/미주 삭제 — --section/--para/--ctrl",
     ),
@@ -5757,6 +5792,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--text",
                 "--props",
                 "--style",
+                "--script",
                 // [#4990] insert-text 축. search 주소와 같은 0 기준 구역·문단·문자 오프셋.
                 "--section",
                 "--para",
@@ -5845,6 +5881,12 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "applyTo",
                 "text",
                 "insertedChars",
+                "script",
+                "fontSize",
+                "color",
+                "script",
+                "fontSize",
+                "color",
                 // [#3719 §6-5] insert-image 봉투 축.
                 "image",
                 "page",
@@ -7257,6 +7299,16 @@ fn print_help() {
     println!();
     println!("      --section/--para/--offset 구역·문단·문자 오프셋 (0부터, 기본 0)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_endnote.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit insert-equation <파일> --script <수식> [옵션]");
+    println!("      본문 문단 좌표에 수식을 끼운다 (표 셀/글상자 내부는 미지원)");
+    println!();
+    println!("      --script <수식>           한컴 수식 스크립트 (빈 문자열 불가)");
+    println!("      --section/--para/--offset 구역·문단·문자 오프셋 (0부터, 기본 0)");
+    println!("      --font-size N             글자 크기 (HWPUNIT, 기본 1000)");
+    println!("      --color N                 RGB 정수 (기본 0=검정)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_eq.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit delete-footnote <파일> --section N --para N --ctrl N [옵션]");
@@ -20750,6 +20802,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("set-column-widths") => edit_set_column_widths(&args[1..]),
         Some("insert-footnote") => edit_insert_footnote(&args[1..]),
         Some("insert-endnote") => edit_insert_endnote(&args[1..]),
+        Some("insert-equation") => edit_insert_equation(&args[1..]),
         Some("delete-footnote") => edit_delete_footnote(&args[1..]),
         Some("insert-footnote-text") => edit_insert_footnote_text(&args[1..]),
         Some("delete-text-in-footnote") => edit_delete_text_in_footnote(&args[1..]),
@@ -30471,6 +30524,143 @@ fn edit_insert_footnote(args: &[String]) -> i32 {
         &[(section, para)],
         &format!("각주 삽입 예정: {file_path} 구역 {section} 문단 {para} 오프셋 {offset}"),
         &format!("각주 삽입 완료: {file_path}"),
+    )
+}
+
+/// [#5009] `edit delete-col` — 표 열 삭제.
+/// `edit insert-equation` — 본문 수식 삽입. 코어 `insert_equation_native`.
+fn edit_insert_equation(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-equation <파일> --script <수식> [--section N] [--para N] [--offset N] [--font-size N] [--color N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut script_arg: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut offset: usize = 0;
+    let mut font_size: u32 = 1000;
+    let mut color: u32 = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--offset" | "--font-size" | "--color" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--font-size" | "--color" => match v.parse::<u32>() {
+                        Ok(n) => {
+                            if name == "--font-size" {
+                                if n == 0 {
+                                    eprintln!("오류: --font-size 는 1 이상이어야 합니다.");
+                                    return EXIT_USAGE;
+                                }
+                                font_size = n;
+                            } else {
+                                color = n;
+                            }
+                        }
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<usize>() {
+                        Ok(n) => match name.as_str() {
+                            "--section" => section = n,
+                            "--para" => para = n,
+                            _ => offset = n,
+                        },
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "--script" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => script_arg = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --script 뒤에 수식 문자열이 필요합니다 (빈 문자열 불가).");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(script)) = (file_path, script_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.insert_equation_native(section, para, offset, script, font_size, color)
+        {
+            eprintln!("오류: 수식 삽입 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "eq",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "offset": offset,
+            "script": script,
+            "fontSize": font_size,
+            "color": color
+        }),
+        &[(section, para)],
+        &format!("수식 삽입 예정: {file_path} 구역 {section} 문단 {para} 오프셋 {offset}"),
+        &format!("수식 삽입 완료: {file_path}"),
     )
 }
 

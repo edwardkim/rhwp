@@ -2432,13 +2432,18 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     ),
     (
         "edit",
+        "script",
+        "insert-equation 전용. 스윕 레시피는 fill-fields/set-cell 이라 script 를 안 낸다",
+    ),
+    (
+        "edit",
         "fontSize",
-        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 fontSize 를 안 낸다",
+        "insert-equation/apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 fontSize 를 안 낸다",
     ),
     (
         "edit",
         "color",
-        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 color 를 안 낸다",
+        "insert-equation/apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 color 를 안 낸다",
     ),
 ];
 
