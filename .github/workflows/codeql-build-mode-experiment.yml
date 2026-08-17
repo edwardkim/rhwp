@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_mode: [autobuild, none]
+        build_mode: [current-default, none]
     env:
       RESULTS_DIR: codeql-experiment-results/${{ matrix.build_mode }}
 
@@ -47,19 +47,26 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Initialize CodeQL
+      # devel의 현재 CodeQL 기준선은 build-mode를 생략하고 analyze 내부의
+      # Rust autobuild.sh를 사용한다. Rust CLI가 명시적 autobuild mode를
+      # 지원하지 않으므로 이 lane을 current-default로 고정한다.
+      - name: Initialize CodeQL current default
+        if: matrix.build_mode == 'current-default'
         uses: github/codeql-action/init@v4
         with:
           languages: rust
-          build-mode: ${{ matrix.build_mode }}
+          db-location: ${{ runner.temp }}/codeql-build-mode-experiment/rust-${{ matrix.build_mode }}
+
+      - name: Initialize CodeQL none
+        if: matrix.build_mode == 'none'
+        uses: github/codeql-action/init@v4
+        with:
+          languages: rust
+          build-mode: none
           db-location: ${{ runner.temp }}/codeql-build-mode-experiment/rust-${{ matrix.build_mode }}
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
-
-      - name: Autobuild Rust
-        if: matrix.build_mode == 'autobuild'
-        uses: github/codeql-action/autobuild@v4
 
       - name: Analyze Rust without uploading Code Scanning data
         uses: github/codeql-action/analyze@v4
@@ -174,11 +181,11 @@ jobs:
       contents: read
       actions: read
     steps:
-      - name: Download autobuild evidence
+      - name: Download current-default evidence
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: codeql-rust-autobuild-${{ github.run_id }}
-          path: experiment/autobuild
+          name: codeql-rust-current-default-${{ github.run_id }}
+          path: experiment/current-default
         continue-on-error: true
 
       - name: Download none evidence
@@ -201,7 +208,7 @@ jobs:
           expected_sha = sys.argv[1]
           rows = []
           summaries = {}
-          for mode in ("autobuild", "none"):
+          for mode in ("current-default", "none"):
               root = Path("experiment") / mode
               summary_paths = list(root.rglob("summary.json"))
               head_paths = list(root.rglob("head-sha.txt"))
@@ -230,7 +237,7 @@ jobs:
                   digest=summary.get("result_digest", "missing"),
               ))
           print()
-          autobuild = summaries["autobuild"]
+          autobuild = summaries["current-default"]
           none = summaries["none"]
           print("- raw SARIF 결과 digest: " + ("일치" if autobuild.get("result_digest") == none.get("result_digest") else "불일치"))
           print("- alert 수: " + ("일치" if autobuild.get("result_count") == none.get("result_count") else "불일치"))
