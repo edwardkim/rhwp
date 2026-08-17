@@ -28,6 +28,13 @@ fn first_mergeable(path: &str) -> (usize, usize) {
     (g.index, g.cell_count)
 }
 
+/// 샘플 표 2 첫 행은 (0,1) rowspan=2 라 가로 (0,0)-(0,1) 병합이 거절된다.
+/// 같은 표의 세로 2×1 (0,0)-(1,0) 은 둘 다 span 1×1 이다.
+const MERGE_ROW: &str = "0";
+const MERGE_COL: &str = "0";
+const MERGE_END_ROW: &str = "1";
+const MERGE_END_COL: &str = "0";
+
 fn temp(tag: &str) -> PathBuf {
     std::env::temp_dir().join(format!(
         "rhwp-merge-{tag}-{}-{}.hwp",
@@ -63,13 +70,13 @@ fn merge_cells_reduces_count() {
             "--table",
             &idx_s,
             "--row",
-            "0",
+            MERGE_ROW,
             "--col",
-            "0",
+            MERGE_COL,
             "--end-row",
-            "0",
+            MERGE_END_ROW,
             "--end-col",
-            "1",
+            MERGE_END_COL,
             "-o",
             out.to_str().unwrap(),
             "--json",
@@ -99,13 +106,13 @@ fn dry_run_no_file() {
             "--table",
             &idx_s,
             "--row",
-            "0",
+            MERGE_ROW,
             "--col",
-            "0",
+            MERGE_COL,
             "--end-row",
-            "0",
+            MERGE_END_ROW,
             "--end-col",
-            "1",
+            MERGE_END_COL,
             "-o",
             out.to_str().unwrap(),
             "--dry-run",
