@@ -1,0 +1,32 @@
+{
+  "id": "SE10",
+  "tier": 1,
+  "title": "워터마크 스윕",
+  "input": "samples/field-01.hwp",
+  "instructions": "입력에 숨은 마크(워터마크) 소견이 몇 건인지 answer.json 에 {\"findings\": N} 으로 제출하라. 힌트: rhwp inspect watermark.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "워터마크 소견 건수",
+      "op": "answer_eq",
+      "answer": "findings",
+      "path": "findingCount",
+      "cmd": [
+        "inspect",
+        "watermark",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "조사"
+}
