@@ -3441,7 +3441,7 @@
       "id": "src/serializer/control.rs::tests#1",
       "file": "src/serializer/control.rs",
       "sourcePath": "src/serializer/control/tests.rs",
-      "line": 3175,
+      "line": 3205,
       "module": "tests",
       "testAttributes": 31,
       "tier": "white_box",
