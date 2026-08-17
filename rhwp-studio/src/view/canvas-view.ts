@@ -7,6 +7,7 @@ import { PageRenderer, type PageRenderContext, type PageRenderResult } from './p
 import { ViewportManager } from './viewport-manager';
 import { CoordinateSystem } from './coordinate-system';
 import type { CanvasKitRenderDiagnostics } from './canvaskit-renderer';
+import type { FontDecisionTraceRecordV1 } from '@/core/font-decision-trace';
 import { clampRenderScale, type RenderBackend } from './render-backend';
 import {
   RendererSession,
@@ -998,6 +999,10 @@ export class CanvasView {
 
   getCurrentCanvasKitRenderDiagnostics(): CanvasKitRenderDiagnostics | null {
     return this.pageRenderer.getCurrentCanvasKitRenderDiagnostics();
+  }
+
+  getCanvasKitFontDecisionEvidence(pageIndex: number, record: FontDecisionTraceRecordV1) {
+    return this.pageRenderer.getCanvasKitFontDecisionEvidence(pageIndex, record);
   }
 
   getCoordinateSystem(): CoordinateSystem {

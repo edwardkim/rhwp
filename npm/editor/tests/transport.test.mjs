@@ -14,6 +14,7 @@ test('EditorTransport는 exact origin의 v1 port로 binary를 caller detach 없�
         'transferable-array-buffer',
         'hml-export',
         'renderer-diagnostics-v1',
+        'font-decision-trace-v1',
         'notify-saved-v1',
       ]);
       const server = ports[0];
@@ -161,6 +162,7 @@ test('EditorTransport는 일반 요청 10초와 load/export 60초 기본 timeout
   assert.equal(requestTimeoutFor('pageCount'), 10_000);
   assert.equal(requestTimeoutFor('ready'), 10_000);
   assert.equal(requestTimeoutFor('loadFile'), 60_000);
+  assert.equal(requestTimeoutFor('getFontDecisionTrace'), 60_000);
   assert.equal(requestTimeoutFor('exportHwp'), 60_000);
   assert.equal(requestTimeoutFor('exportHwpx'), 60_000);
   assert.equal(requestTimeoutFor('exportHml'), 60_000);

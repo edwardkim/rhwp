@@ -70,6 +70,43 @@ pub struct MetricMatch {
     pub bold_fallback: bool,
 }
 
+/// 내장 메트릭 색인이 선택한 기존 3단 폴백 사다리의 단계.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum MetricMatchKind {
+    Exact,
+    BoldOnly,
+    NameFirst,
+}
+
+impl MetricMatchKind {
+    pub(crate) const fn as_str(self) -> &'static str {
+        match self {
+            Self::Exact => "exact",
+            Self::BoldOnly => "boldOnly",
+            Self::NameFirst => "nameFirst",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct MetricSelection {
+    metric: &'static FontMetric,
+    bold_fallback: bool,
+    match_kind: MetricMatchKind,
+    entry_index: usize,
+}
+
+/// `find_metric`가 숨겨 온 별칭과 선택 단계. 기존 반환값의 관측용 확장이다.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct MetricLookupDecision<'a> {
+    pub(crate) requested_name: &'a str,
+    pub(crate) alias_resolved_name: &'a str,
+    pub(crate) metric: &'static FontMetric,
+    pub(crate) bold_fallback: bool,
+    pub(crate) match_kind: MetricMatchKind,
+    pub(crate) entry_index: usize,
+}
+
 /// 한국어 폰트 이름 → 내장 메트릭 영문 이름 별칭.
 ///
 /// 계층:
@@ -172,43 +209,66 @@ fn metric_slot_index(bold: bool, italic: bool) -> usize {
 ///
 /// 키를 (name, bold, italic) 튜플 대신 이름 단독으로 두는 이유: 튜플 키는
 /// &'static str 수명 때문에 임의 사용자 폰트명(&str)으로 borrow 조회가 불가능하다.
-static METRIC_INDEX: OnceLock<HashMap<&'static str, [(&'static FontMetric, bool); 4]>> =
-    OnceLock::new();
+static METRIC_INDEX: OnceLock<HashMap<&'static str, [MetricSelection; 4]>> = OnceLock::new();
 
-fn metric_index() -> &'static HashMap<&'static str, [(&'static FontMetric, bool); 4]> {
+fn metric_index() -> &'static HashMap<&'static str, [MetricSelection; 4]> {
     METRIC_INDEX.get_or_init(|| {
         // 선형 스캔의 "테이블 첫 매칭 우선" 계약 재현: 테이블 순서대로 순회하며
         // (name, bold, italic) 조합별 첫 엔트리와 이름 첫 등장 엔트리만 기록한다.
         struct FirstSeen {
-            exact: [Option<&'static FontMetric>; 4],
-            first: &'static FontMetric,
+            exact: [Option<(&'static FontMetric, usize)>; 4],
+            first: (&'static FontMetric, usize),
         }
         let mut seen: HashMap<&'static str, FirstSeen> = HashMap::new();
-        for m in FONT_METRICS.iter() {
+        for (entry_index, m) in FONT_METRICS.iter().enumerate() {
             let entry = seen.entry(m.name).or_insert(FirstSeen {
                 exact: [None; 4],
-                first: m,
+                first: (m, entry_index),
             });
             let idx = metric_slot_index(m.bold, m.italic);
             if entry.exact[idx].is_none() {
-                entry.exact[idx] = Some(m);
+                entry.exact[idx] = Some((m, entry_index));
             }
         }
         // 슬롯 선주입 순서 = legacy 폴백 사다리와 동일:
         // 1단 정확 매칭 → 2단 bold 매칭(italic 무시) → 3단 이름만 첫 엔트리.
         seen.into_iter()
             .map(|(name, fs)| {
-                let mut slots = [(fs.first, false); 4];
+                let mut slots = [MetricSelection {
+                    metric: fs.first.0,
+                    bold_fallback: false,
+                    match_kind: MetricMatchKind::NameFirst,
+                    entry_index: fs.first.1,
+                }; 4];
                 for bold in [false, true] {
                     for italic in [false, true] {
                         slots[metric_slot_index(bold, italic)] =
-                            if let Some(m) = fs.exact[metric_slot_index(bold, italic)] {
-                                (m, false)
-                            } else if let Some(m) = fs.exact[metric_slot_index(bold, false)] {
-                                (m, false)
+                            if let Some((metric, entry_index)) =
+                                fs.exact[metric_slot_index(bold, italic)]
+                            {
+                                MetricSelection {
+                                    metric,
+                                    bold_fallback: false,
+                                    match_kind: MetricMatchKind::Exact,
+                                    entry_index,
+                                }
+                            } else if let Some((metric, entry_index)) =
+                                fs.exact[metric_slot_index(bold, false)]
+                            {
+                                MetricSelection {
+                                    metric,
+                                    bold_fallback: false,
+                                    match_kind: MetricMatchKind::BoldOnly,
+                                    entry_index,
+                                }
                             } else {
                                 // bold 요청이었으면 Faux Bold 보정 표시 (legacy 3단과 동일)
-                                (fs.first, bold)
+                                MetricSelection {
+                                    metric: fs.first.0,
+                                    bold_fallback: bold,
+                                    match_kind: MetricMatchKind::NameFirst,
+                                    entry_index: fs.first.1,
+                                }
                             };
                     }
                 }
@@ -219,12 +279,28 @@ fn metric_index() -> &'static HashMap<&'static str, [(&'static FontMetric, bool)
 }
 
 pub fn find_metric(name: &str, bold: bool, italic: bool) -> Option<MetricMatch> {
-    let name = resolve_metric_alias(name);
-    let slots = metric_index().get(name)?;
-    let (metric, bold_fallback) = slots[metric_slot_index(bold, italic)];
+    let decision = find_metric_decision(name, bold, italic)?;
     Some(MetricMatch {
-        metric,
-        bold_fallback,
+        metric: decision.metric,
+        bold_fallback: decision.bold_fallback,
+    })
+}
+
+pub(crate) fn find_metric_decision<'a>(
+    name: &'a str,
+    bold: bool,
+    italic: bool,
+) -> Option<MetricLookupDecision<'a>> {
+    let alias_resolved_name = resolve_metric_alias(name);
+    let slots = metric_index().get(alias_resolved_name)?;
+    let selected = slots[metric_slot_index(bold, italic)];
+    Some(MetricLookupDecision {
+        requested_name: name,
+        alias_resolved_name,
+        metric: selected.metric,
+        bold_fallback: selected.bold_fallback,
+        match_kind: selected.match_kind,
+        entry_index: selected.entry_index,
     })
 }
 
