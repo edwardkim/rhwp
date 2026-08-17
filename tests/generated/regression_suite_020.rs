@@ -5,6 +5,9 @@
 #[path = "../batch_axes_contract.rs"]
 mod batch_axes_contract;
 
+#[path = "../cases/delete_picture_contract.rs"]
+mod delete_picture_contract;
+
 #[path = "../cases/insert_footnote_contract.rs"]
 mod insert_footnote_contract;
 

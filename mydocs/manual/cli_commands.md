@@ -1109,6 +1109,14 @@ rhwp edit insert-picture 공문.hwp --image assets/logo/logo-16.png \
   -o 그림본.hwp --json | jq '{section, paragraph, offset, binDataId}'
 ```
 
+### `edit delete-picture <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 그림 컨트롤을 지운다. 코어 `delete_picture_control_native`. `--section`/`--para`/`--ctrl`
+은 필수(0 기준). 인덱스는 문서를 스캔해 Picture 컨트롤을 고른다(하드코드 금지).
+
+```bash
+rhwp edit delete-picture 그림본.hwp --section 0 --para 0 --ctrl 0 -o 지움.hwp --json
+```
+
 ### `edit redact <파일> [--kind …] [--mask <문자>] [--dry-run] [--no-raw] [-o <출력>|--in-place]` (#3719 §6-11)
 공개 전 개인정보 마스킹 — 주민등록번호·전화번호·이메일·카드번호를 찾아 **자릿수를 유지한 채**
 가린다. 탐지는 읽기 전용 코어(`document_core::queries::pii_scan`)가 하고, 실제 변경은 검증된
@@ -1195,7 +1203,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 28종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`rename-bookmark`/`delete-header-footer`/`delete-control`/`insert-image`/`insert-picture`/`redact`/`sanitize`)은
+`edit` 29종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`rename-bookmark`/`delete-header-footer`/`delete-control`/`insert-image`/`insert-picture`/`delete-picture`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`
