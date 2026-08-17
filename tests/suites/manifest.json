@@ -118,6 +118,7 @@
     ],
     "regression_suite_003": [
       "tests/audit_standard_contract.rs",
+      "tests/cases/delete_paragraph_contract.rs",
       "tests/did_you_mean_contract.rs",
       "tests/edit_replace_text_contract.rs",
       "tests/issue_1073_nested_table_split.rs",
