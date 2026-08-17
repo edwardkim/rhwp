@@ -1204,12 +1204,12 @@ fn should_serialize_figure_space_as_hwp_fixed_blank(para: &Paragraph) -> bool {
 /// HWP 5.0 제어 문자 분류 (표 6):
 ///   0x0002: 구역/단 정의 (secd, cold)
 ///   0x000B: 표/그림/도형 (tbl, gso)
-///   0x000F: 숨은 설명 (tcmt)
 ///   0x0010: 머리말/꼬리말 (head, foot)
 ///   0x0011: 각주/미주 (fn, en)
 ///   0x0012: 자동번호 (atno)
 ///   0x0015: 페이지 컨트롤/새 번호 (pgnp, pghi, nwno)
 ///   0x0016: 책갈피 (bokm)
+///   0x0017: 덧말·글자겹침·숨은 설명 (tdut, tcps, tcmt) — [#5154] 실측
 /// 이 컨트롤이 CTRL_HEADER 레코드를 만드는가.
 ///
 /// [#4424] `serialize_control` 의 catch-all arm(`Hyperlink | Ruby | Unknown`)은
@@ -1241,7 +1241,13 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
         Control::Table(_) => (0x000B, tags::CTRL_TABLE),
         Control::Shape(_) => (0x000B, tags::CTRL_GEN_SHAPE),
         Control::Picture(_) => (0x000B, tags::CTRL_GEN_SHAPE),
-        Control::HiddenComment(_) => (0x000F, tags::CTRL_HIDDEN_COMMENT),
+        // [#5154] 숨은 설명은 한컴 원본에서 코드 **0x0017** 로 나간다. 0x000F 를 쓰면 한글이
+        // 숨은 설명으로 인식하지 못해 텍스트 내보내기에서 `[숨은설명:시작]`/`[숨은설명:끝]`
+        // 마커가 통째로 사라진다(`tcmt` CTRL_HEADER 개수는 그대로라 컨트롤 인구조사로는
+        // 안 잡힌다). 한컴 정품 실측: `0x17` 출현 = `tcmt` CTRL_HEADER 수 × 2
+        // (00464 1→2 · 03383 4→8 · 07505 2→4 · 08383 5→10 · 08382 36→72).
+        // 확장 제어는 `[코드, id 2유닛, 예약 4유닛, 코드]` 라 코드가 두 번 나온다.
+        Control::HiddenComment(_) => (0x0017, tags::CTRL_HIDDEN_COMMENT),
         Control::Header(_) => (0x0010, tags::CTRL_HEADER),
         Control::Footer(_) => (0x0010, tags::CTRL_FOOTER),
         Control::Footnote(_) => (0x0011, tags::CTRL_FOOTNOTE),
