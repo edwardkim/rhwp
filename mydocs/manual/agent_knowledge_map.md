@@ -23,7 +23,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **85개**(그중 `--json` 계약 **54개**, batch 축 **9개**) · MCP 도구 **94개**(무상태 78 + 세션 전용 16) |
+| 표면 규모 | CLI 명령 **85개**(그중 `--json` 계약 **54개**, batch 축 **9개**) · MCP 도구 **95개**(무상태 79 + 세션 전용 16) |
 | 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **261개** · §2 전수 사전 **264개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
@@ -297,10 +297,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 297개 필드
+### 2-2. 전수 사전 — 299개 필드
 
-`capabilities` 의 `recordFields` 고유 **294개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 297개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **296개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 299개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -325,6 +325,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
 | `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark`·`rename-bookmark` |
 | `name` | string | 책갈피 이름 | `edit add-bookmark`·`rename-bookmark` |
+| `isHeader` | bool | 머리말이면 참, 꼬리말이면 거짓 | `edit delete-header-footer` |
+| `applyTo` | number | 머리말/꼬리말 적용 범위 (0 양쪽·1 짝수·2 홀수) | `edit delete-header-footer` |
 | `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell` |
 | `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text` |
 | `count` | number | 지울 글자 수 (1 이상) | `edit delete-text` |
@@ -1062,15 +1064,15 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 25개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
-`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`rename-bookmark`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 26개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
+`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`rename-bookmark`·`delete-header-footer`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 94개
+## 6. MCP 도구 전수 지도 — 95개
 
-### 6-1. 무상태 78개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 79개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
@@ -1124,6 +1126,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_add_bookmark` | `edit add-bookmark --json` | `path`,`name` |
 | `hwp_delete_bookmark` | `edit delete-bookmark --json` | `path`,`section`,`paragraph`,`ctrl` |
 | `hwp_rename_bookmark` | `edit rename-bookmark --json` | `path`,`section`,`paragraph`,`ctrl`,`name` |
+| `hwp_delete_header_footer` | `edit delete-header-footer --json` | `path` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |

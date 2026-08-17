@@ -2253,6 +2253,16 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
         "name",
         "add-bookmark/rename-bookmark 전용. 스윕 레시피는 fill-fields/set-cell 이라 name 을 안 낸다",
     ),
+    (
+        "edit",
+        "isHeader",
+        "delete-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 isHeader 를 안 낸다",
+    ),
+    (
+        "edit",
+        "applyTo",
+        "delete-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 applyTo 를 안 낸다",
+    ),
 ];
 
 #[test]
