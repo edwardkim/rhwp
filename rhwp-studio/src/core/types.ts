@@ -31,6 +31,17 @@ export interface PageInfo {
   marginHeader: number;
   /** 꼬리말 여백 (px) */
   marginFooter: number;
+  /** 본문 상자의 왼쪽/오른쪽 (px, 페이지 좌표).
+   *
+   * marginLeft/marginRight 는 PageDef 원본이라 제본 여백이 빠져 있고 맞쪽 제본 짝수 쪽의
+   * 좌우 뒤바꿈도 반영되지 않는다. 그리기·히트테스트처럼 "본문이 실제로 어디부터인가"가
+   * 필요한 곳은 이 둘을 쓴다 (#4971). */
+  bodyLeft: number;
+  bodyRight: number;
+  /** 제본 여백 (px) — 본문 왼쪽 경계에 더해져 있다 */
+  marginGutter?: number;
+  /** 맞쪽 제본의 짝수 쪽인가 — 그 쪽은 좌우 여백이 뒤바뀌어 적용된다 */
+  bindingMirrored?: boolean;
   /** 쪽 테두리/쪽 영역 왼쪽 위치 (px) */
   pageBorderLeft?: number;
   /** 쪽 테두리/쪽 영역 오른쪽 여백 (px) */

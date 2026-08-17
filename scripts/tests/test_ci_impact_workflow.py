@@ -511,9 +511,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "NATIVE_SKIA_REQUIRED": "false",
             "FRONTEND_MODE": "unit",
             "IMPACT_REASON": "classified:studio-unit",
-            "BUILD_SLOW_RESULT": "skipped",
-            "BUILD_A_RESULT": "skipped",
-            "BUILD_B_RESULT": "skipped",
+            "BUILD_ARCHIVE_RESULT": "skipped",
             "TEST_SLOW_RESULT": "skipped",
             "TEST_REGULAR_1_RESULT": "skipped",
             "TEST_REGULAR_2_RESULT": "skipped",
@@ -634,37 +632,25 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("npm --prefix rhwp-studio run test", package)
         self.assertIn("npm --prefix rhwp-studio run build", package)
 
-    def test_rust_lint_and_archive_builders_require_rust_axis(self) -> None:
+    def test_rust_lint_and_archive_builder_require_rust_axis(self) -> None:
         lint = self._job("lint")
         self.assertIn("needs.preflight.outputs.rust_required == 'true'", lint)
 
-        for job_name in (
-            "build-test-archive-slow",
-            "build-test-archive-a",
-            "build-test-archive-b",
-        ):
-            with self.subTest(job=job_name):
-                job = self._job(job_name)
-                self.assertIn("needs.preflight.outputs.rust_required == 'true'", job)
-                self.assertIn("needs.lint.result == 'success'", job)
-                self.assertIn("frontend-unit-gates", job)
-                self.assertIn("frontend-package-gates", job)
-                self.assertIn("frontend_mode == 'none'", job)
-                self.assertIn("frontend_mode == 'unit'", job)
-                self.assertIn("frontend_mode == 'package'", job)
+        archive = self._job("build-test-archive")
+        self.assertIn("needs.preflight.outputs.rust_required == 'true'", archive)
+        self.assertIn("needs: [preflight]", archive)
+        self.assertNotIn("needs.lint.result", archive)
+        self.assertNotIn("frontend-unit-gates", archive)
+        self.assertNotIn("frontend-package-gates", archive)
 
-    def test_native_skia_accepts_expected_lint_state_for_each_rust_lane(self) -> None:
+    def test_native_skia_starts_after_preflight_without_lane_serialization(self) -> None:
         native = self._job("native-skia-tests")
+        self.assertIn("needs: [preflight]", native)
         self.assertIn("needs.preflight.outputs.native_skia_required == 'true'", native)
-        self.assertIn("needs.preflight.outputs.rust_required == 'true'", native)
-        self.assertIn("needs.lint.result == 'success'", native)
-        self.assertIn("needs.preflight.outputs.rust_required == 'false'", native)
-        self.assertIn("needs.lint.result == 'skipped'", native)
-        self.assertIn("frontend-unit-gates", native)
-        self.assertIn("frontend-package-gates", native)
-        self.assertIn("frontend_mode == 'none'", native)
-        self.assertIn("frontend_mode == 'unit'", native)
-        self.assertIn("frontend_mode == 'package'", native)
+        self.assertNotIn("needs.lint.result", native)
+        self.assertNotIn("frontend-unit-gates", native)
+        self.assertNotIn("frontend-package-gates", native)
+        self.assertNotIn("needs.preflight.outputs.frontend_mode", native)
         self.assertNotIn("build-test-archive-", native)
         self.assertNotIn("test-regular-shard", native)
         self.assertNotIn("test-slow-shard", native)
@@ -888,21 +874,30 @@ mod support;
         self.assertTrue(release_test)
         self.assertEqual(release_test, release)
 
-    def test_rust_workers_wait_only_for_their_test_archive(self) -> None:
-        expected_archives = {
-            "test-slow-shard": "build-test-archive-slow",
-            "test-regular-shard-1": "build-test-archive-a",
-            "test-regular-shard-2": "build-test-archive-slow",
-            "test-regular-shard-3": "build-test-archive-b",
-        }
-        for job_name, archive in expected_archives.items():
+    def test_rust_workers_wait_only_for_the_shared_test_archive(self) -> None:
+        for job_name in (
+            "test-slow-shard",
+            "test-regular-shard-1",
+            "test-regular-shard-2",
+            "test-regular-shard-3",
+        ):
             with self.subTest(job=job_name):
                 job = self._job(job_name)
                 self.assertIn("needs.preflight.outputs.rust_required == 'true'", job)
-                self.assertIn(f"needs: [preflight, {archive}]", job)
-                self.assertIn(f"needs['{archive}'].result == 'success'", job)
+                self.assertIn("needs: [preflight, build-test-archive]", job)
+                self.assertIn("needs['build-test-archive'].result == 'success'", job)
                 self.assertNotIn("native-skia-tests", job)
                 self.assertNotIn("native_skia_required", job)
+        self.assertIn(
+            'filterset: "binary(=overflow_cell_baseline)"',
+            self._job("test-slow-shard"),
+        )
+        for index in (1, 2, 3):
+            regular = self._job(f"test-regular-shard-{index}")
+            self.assertIn(
+                'filterset: "not binary(=overflow_cell_baseline)"', regular
+            )
+            self.assertIn(f'partition: "hash:{index}/3"', regular)
 
     def test_aggregate_validates_expected_success_and_skipped_states(self) -> None:
         aggregate = self._job("build-and-test")
@@ -939,9 +934,7 @@ mod support;
         rust_success = {
             "RUST_REQUIRED": "true",
             "LINT_RESULT": "success",
-            "BUILD_SLOW_RESULT": "success",
-            "BUILD_A_RESULT": "success",
-            "BUILD_B_RESULT": "success",
+            "BUILD_ARCHIVE_RESULT": "success",
             "TEST_SLOW_RESULT": "success",
             "TEST_REGULAR_1_RESULT": "success",
             "TEST_REGULAR_2_RESULT": "success",

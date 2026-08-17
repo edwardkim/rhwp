@@ -142,7 +142,7 @@ cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads 12 --no-fail-fast       # 통합 테스트 포함 전체
-cargo clippy -- -D warnings                      # 린트 경고 0건
+cargo clippy --all-targets --target-dir target/pr-review -- -D warnings # 린트 경고 0건
 ```
 
 세 명령이 모두 통과하는지 확인한 후 PR을 생성해주세요.
@@ -200,7 +200,8 @@ npm --prefix npm/editor test
 node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
 (cd rhwp-studio && npx tsc --ignoreConfig --noEmit --skipLibCheck ../npm/editor/index.d.ts)
 (cd npm/editor && npm pack --dry-run --json)
-wasm-pack build --target web --out-dir pkg
+# 최초 한 번의 .env.docker 준비와 Docker 미설치 host의 진단 경로는 개발 환경 안내를 따른다.
+docker compose --env-file .env.docker run --rm wasm
 VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 ```
 
@@ -234,19 +235,15 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    파일명 관례: `tests/issue_{이슈번호}_{짧은_설명}.rs`. 수정을 되돌리면 실패하고, 수정을
    적용하면 통과해야 합니다.
 
-   새 파일은 `tests/cases/`에 만들고 다음 명령을 실행합니다. 생성기가 source weight를 계산해
-   기존 32개 integration suite 중 가장 가벼운 곳에 자동 등록합니다.
-
-   ```bash
-   node scripts/rust-test-suite-manifest.mjs --generate
-   node scripts/run-rust-test.mjs issue_1234_short_description
-   ```
+   새 파일은 `tests/cases/`에만 만듭니다. PR에는 원본 `.rs`만 포함하고 suite를 직접 선택하지
+   않습니다. 검토자가 PR review 전용 worktree와 CI에서 `--prepare`를 실행하면, 생성기가 source
+   weight를 계산해 기존 integration suite 중 가장 가벼운 곳에 자동 배정합니다.
 
    `tests/generated/*.rs`, `tests/suites/manifest.json`, `Cargo.toml`의 generated test target 블록은
-   직접 편집하지 않습니다. 생성 결과는 원본 test source와 같은 커밋에 포함합니다. test source의
-   이름을 바꾸거나 삭제했다면 `--generate` 대신
-   `node scripts/rust-test-suite-manifest.mjs --sync`를 사용합니다. 전체 suite를 다시 나누는
-   `--rebalance`는 대규모 generated diff를 만들므로 일반 테스트 추가에는 사용하지 않습니다.
+   **PR에 포함하지 않습니다.** 이 파일들은 검토·CI checkout에서만 만드는 파생 산출물입니다. 이를
+   커밋하면 독립 PR끼리 같은 harness·manifest를 수정해 불필요한 충돌을 만들므로 CI가 거부합니다.
+   원본을 이름 변경·삭제해도 PR에는 `tests/cases/` 변경만 제출합니다. `--rebalance`는 일반 기여
+   절차에 포함하지 않으며, 배정 정책 자체를 바꾸는 메인터너 전용 별도 작업에서만 검토합니다.
 
    제품 소스의 `#[cfg(test)]`에는 새 테스트 모듈이나 test support 항목을 추가하지 않습니다. 공개 API로
    재현할 수 있는 테스트는 `tests/cases/`에 작성하고, 기존 소스 테스트의 차등 이동 상태는 다음 명령으로
@@ -257,10 +254,9 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    node scripts/rust-unit-test-tiers.mjs --check
    ```
 
-   CI는 PR base의 두 manifest와 현재 source를 다시 비교한다. 따라서 새 최상위
-   `tests/*.rs`를 생성물에 등록하거나 `--accept-baseline` 결과를 함께 커밋해도 우회할 수 없다.
-   새 integration source는 `tests/cases/`만 허용하며, source-side 테스트는 Git rename으로 확인되는
-   순수 crate 이동처럼 개수가 늘지 않는 경로 변경만 허용한다.
+   CI는 PR base와 현재 source를 다시 비교하고, 커밋된 generated harness·manifest·Cargo generated
+   block도 거부한다. 새 integration source는 `tests/cases/`만 허용하며, source-side 테스트는 Git
+   rename으로 확인되는 순수 crate 이동처럼 개수가 늘지 않는 경로 변경만 허용한다.
 2. **수정 전 실패 증명 (권장)** — "수정 커밋만 원복한 상태에서 신규 테스트가 실제로 FAIL"
    함을 PR 본문에 기록해주세요. 테스트가 결함을 판별한다는 증명이 되어 리뷰 신뢰도가
    높아집니다.
@@ -300,7 +296,7 @@ cargo fmt --all -- --check       # CI와 같은 포맷 검증
 1. **결정적 자동 검증** (필수):
    - 위 PR 전 체크리스트의 `cargo nextest run` (통합 테스트 포함, 회귀 0)
    - `cargo test --test svg_snapshot` (rhwp 자체 일관성)
-   - `cargo clippy -- -D warnings`
+   - `cargo clippy --all-targets --target-dir target/pr-review -- -D warnings`
 
 2. **시각 검증** (참고):
    - 한컴 PDF / 한컴 화면 캡처 + rhwp SVG 비교 — **본인 환경 명시 필수** (한컴 버전, OS, 폰트 등)
@@ -412,7 +408,7 @@ rhwp-studio/        ← 웹 에디터 (TypeScript + Vite)
 
 ## 코드 스타일
 
-- `cargo clippy -- -D warnings` 경고 0건 (CI에서 강제)
+- `cargo clippy --all-targets --target-dir target/pr-review -- -D warnings` 경고 0건 (CI에서 강제)
 - `unwrap()` 최소화
 - 모든 문서는 한국어로 작성
 - **소스 포맷 분기**: HWP3/HWPX 등 원본 포맷에 따른 레이아웃 분기가 필요하면

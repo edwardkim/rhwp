@@ -13,6 +13,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CI_WORKFLOW = REPO_ROOT / ".github/workflows/ci.yml"
 BUILD_ARCHIVE_WORKFLOW = REPO_ROOT / ".github/workflows/build-nextest-archives.yml"
+RUN_ARCHIVE_WORKFLOW = REPO_ROOT / ".github/workflows/run-nextest-archives.yml"
 RELEASE_BINARY_WORKFLOW = REPO_ROOT / ".github/workflows/release-binary.yml"
 
 
@@ -52,6 +53,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.ci = CI_WORKFLOW.read_text(encoding="utf-8")
         cls.builder = BUILD_ARCHIVE_WORKFLOW.read_text(encoding="utf-8")
+        cls.runner = RUN_ARCHIVE_WORKFLOW.read_text(encoding="utf-8")
         cls.release_binary = RELEASE_BINARY_WORKFLOW.read_text(encoding="utf-8")
 
     def test_manual_release_grade_input_is_explicit_boolean_opt_in(self) -> None:
@@ -117,24 +119,24 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             preflight,
         )
 
-    def test_all_archive_builders_receive_the_same_policy(self) -> None:
-        for name in (
+    def test_single_archive_builder_receives_the_selected_policy(self) -> None:
+        job = job_body(self.ci, "build-test-archive")
+        self.assertIn(
+            "cargo_profile: ${{ needs.preflight.outputs.test_profile "
+            "|| 'release' }}",
+            job,
+        )
+        self.assertIn(
+            "timeout_minutes: ${{ fromJSON("
+            "needs.preflight.outputs.test_archive_timeout_minutes || '60') }}",
+            job,
+        )
+        for obsolete in (
             "build-test-archive-slow",
             "build-test-archive-a",
             "build-test-archive-b",
         ):
-            with self.subTest(job=name):
-                job = job_body(self.ci, name)
-                self.assertIn(
-                    "cargo_profile: ${{ needs.preflight.outputs.test_profile "
-                    "|| 'release' }}",
-                    job,
-                )
-                self.assertIn(
-                    "timeout_minutes: ${{ fromJSON("
-                    "needs.preflight.outputs.test_archive_timeout_minutes || '60') }}",
-                    job,
-                )
+            self.assertNotIn(f"  {obsolete}:\n", self.ci)
 
     def test_native_skia_uses_the_same_test_profile_policy(self) -> None:
         native = job_body(self.ci, "native-skia-tests")
@@ -161,6 +163,25 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         )
         self.assertNotIn("- name: Select cargo profile", self.builder)
         self.assertNotIn("steps.profile.outputs.cargo_profile", self.builder)
+        self.assertNotIn("archive_labels:", self.builder)
+        self.assertNotIn("expected_count_suffix:", self.builder)
+        self.assertIn("--tests", self.builder)
+        self.assertIn("--archive-file tests.tar.zst", self.builder)
+        self.assertIn("name: test-archive-${{ github.run_id }}", self.builder)
+
+    def test_builder_prepares_derived_suites_before_compiling_the_archive(self) -> None:
+        prepare = "node scripts/rust-test-suite-manifest.mjs --prepare"
+        archive = "cargo nextest archive"
+        self.assertIn(prepare, self.builder)
+        self.assertIn(archive, self.builder)
+        self.assertLess(self.builder.index(prepare), self.builder.index(archive))
+
+    def test_workers_share_one_archive_and_partition_test_cases(self) -> None:
+        self.assertIn("name: test-archive-${{ github.run_id }}", self.runner)
+        self.assertIn('--filterset "${FILTERSET}"', self.runner)
+        self.assertIn('partition_args=(--partition "${PARTITION}")', self.runner)
+        self.assertIn("--no-tests fail", self.runner)
+        self.assertNotIn("archive_label:", self.runner)
 
     def test_reusable_builder_rejects_profile_timeout_mismatches(self) -> None:
         step = step_body(self.builder, "Validate test archive policy")

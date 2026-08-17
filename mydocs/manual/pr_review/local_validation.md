@@ -43,21 +43,22 @@ cargo nextest run \
 ### integration test source 추가와 자동 sharding
 
 새 회귀·계약 테스트는 `tests/cases/issue_<번호>_<설명>.rs` 또는
-`tests/cases/<계약명>.rs`로 작성한다. Cargo는 이 원본 파일을 개별 binary로 자동 발견하지 않는다.
-다음 생성기가 새 source를 manifest에 등록하고 현재 weight가 가장 낮은 generated suite에 배정한 뒤
-harness와 Cargo target 블록을 함께 갱신한다.
+`tests/cases/<계약명>.rs`로 작성한다. 기여 PR은 이 원본만 포함한다. Cargo는 이 원본 파일을 개별
+binary로 자동 발견하지 않으므로, **PR review 전용 worktree에서만** 다음 준비 단계를 실행한다. 이 단계는
+삭제·이름변경을 동기화하고 신규 source를 현재 weight가 가장 낮은 suite에 배정한 뒤 harness와 Cargo
+target 블록을 작업 checkout에만 만든다.
 
 ~~~bash
-node scripts/rust-test-suite-manifest.mjs --generate
+node scripts/rust-test-suite-manifest.mjs --prepare
 node scripts/rust-test-suite-manifest.mjs --check
 node scripts/run-rust-test.mjs issue_1234_short_description \
   -- --cargo-profile release-test --target-dir target/pr-review
 ~~~
 
-`tests/generated/*.rs`와 manifest·Cargo generated block은 직접 편집하지 않는다. 이름 변경·삭제는
-`node scripts/rust-test-suite-manifest.mjs --sync`로 반영한다. `--rebalance`는 전체 source를
-weighted LPT로 다시 분배하므로 target 구조를 의도적으로 재조정하는 별도 단계에서만 사용한다.
-경로·crate-root 의존성이 탐지된 source는 생성기가 singleton exception으로 보존한다.
+`tests/generated/*.rs`와 manifest·Cargo generated block은 직접 편집하거나 PR에 stage하지 않는다.
+검증이 끝나면 이 파생 변경은 review worktree에서 복원한다. `--prepare`가 이름 변경·삭제와 신규 source를
+함께 처리하므로 일반 PR에 `--generate`·`--sync`·`--rebalance` 결과를 포함하지 않는다. 경로·crate-root
+의존성이 탐지된 source는 생성기가 singleton exception으로 보존한다.
 
 제품 소스의 `#[cfg(test)]`는 root `src/`와 내부 `crates/*/src/`의 기존 모듈별 테스트 수와 test
 support 항목을 기준선으로 관리한다.
@@ -118,7 +119,6 @@ target을 재사용한 warm 실행은 6분 11초(build 2.74초, test 359.563초)
 
 ~~~powershell
 Set-Location 'C:\\Users\\admin\\Desktop\\rhwp\\rhwp'
-$env:CARGO_INCREMENTAL = '0'
 cargo nextest run `
   --cargo-profile release-test `
   --target-dir target/pr-review `
@@ -256,11 +256,19 @@ cargo clippy --all-targets -- -D warnings
 renderer 영향 PR의 Native Skia 공식 회귀 범위는 다음 3종이다.
 
 ~~~bash
-cargo test --profile release-test --features native-skia skia --lib
-cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder
-cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export
-wasm-pack build --target web --out-dir pkg
+cargo test --profile release-test --target-dir target/pr-review --features native-skia skia --lib
+node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \\
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \\
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+# 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
+docker compose --env-file .env.docker run --rm wasm
 ~~~
+
+개별 Rust 통합 fixture는 `tests/generated/regression_suite_*.rs`에 묶이므로, 이전처럼 파일명을
+`cargo test --test`에 직접 넘기지 않는다. `run-rust-test.mjs`가 manifest에서 실제 suite와 테스트
+필터를 해석한다. Docker 표준 WASM 경로가 없는 호스트에서는 개발 환경 안내의 `--no-opt` 진단 경로를
+사용하고, 검토 기록에 Docker 부재와 대체 명령을 함께 남긴다.
 
 ## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — IR sweep + overflow-cell 원장
 
@@ -317,30 +325,33 @@ iframe RPC 완료 시점이나 기본 옵션이 바뀌면 fresh WASM build와 �
 embed E2E를 추가한다. 기본값 변경은 옵션을 생략한 smoke에서도 loadFile 완료와 페이지 수를 기록한다.
 
 ~~~bash
-wasm-pack build --target web --out-dir pkg
+# 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
+docker compose --env-file .env.docker run --rm wasm
 VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 ~~~
 
 대형 복합 변경 또는 승인된 전체 검증은 build, release lib, release-test, Native Skia 3종, fmt,
-diff check, clippy, doc test, TypeScript, npm test, wasm-pack을 이 순서로 실행한다.
+diff check, clippy, doc test, TypeScript, npm test, 표준 Docker WASM build를 이 순서로 실행한다.
 
 ~~~bash
-cargo build --release
-cargo test --release --lib
+cargo build --release --target-dir target/pr-review
+cargo test --release --target-dir target/pr-review --lib
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads 12 --no-fail-fast
-cargo test --profile release-test --features native-skia skia --lib
-cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder
-cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export
-cargo fmt --check
+cargo test --profile release-test --target-dir target/pr-review --features native-skia skia --lib
+node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+cargo fmt --all -- --check
 git diff --check
-cargo clippy --all-targets -- -D warnings
-cargo test --doc
+cargo clippy --all-targets --target-dir target/pr-review -- -D warnings
+cargo test --doc --target-dir target/pr-review
 (cd rhwp-studio && npx tsc --noEmit)
 npm --prefix rhwp-studio test
-wasm-pack build --target web --out-dir pkg
+docker compose --env-file .env.docker run --rm wasm
 ~~~
 
 각 명령은 앞 명령이 끝난 뒤 실행한다. 실패하면 뒤 명령으로 건너뛰어 전체 통과처럼 기록하지 않는다.
@@ -388,7 +399,6 @@ sharding 전체 회귀를 실행했다. `CARGO_INCREMENTAL=0`은 지정하지 �
 - 전체 실행: 종료 코드 0, 실패 0건
 - warm `nextest list`: 0.19초
 
-신규 회귀 test source는 `tests/cases/`에 추가하고
-`node scripts/rust-test-suite-manifest.mjs --generate`로 기존 suite에 자동 배정한다. 이름 변경이나
-삭제는 `node scripts/rust-test-suite-manifest.mjs --sync`를 사용하며 generated 파일은 직접 편집하지
-않는다.
+신규 회귀 test source는 `tests/cases/`에만 추가한다. PR review는
+`node scripts/rust-test-suite-manifest.mjs --prepare`로 기존 suite에 자동 배정한 뒤 검증하며,
+generated 파일은 커밋하지 않는다.
