@@ -420,7 +420,12 @@ fn compute_control_mask(para: &Paragraph) -> u32 {
     }
     // 묶음 빈칸 (0x001E, NBSP): serialize_para_text 가 U+00A0 마다 코드 0x1E 를 방출하므로
     // (#1793) control_mask 비트 30 도 세워 PARA_HEADER 를 PARA_TEXT 와 일치시킨다.
-    if para.text.contains('\u{00A0}') {
+    //
+    // [#5174] 단, 하이픈 비트 24 와 같이 **출처가 제어 표기였을 때만** 세운다.
+    // serialize_para_text 가 같은 조건으로만 코드 0x1E 를 방출하므로 둘이 함께 움직인다.
+    // 리터럴 원본(한컴 실측 111문서·2,131문단: PARA_TEXT `a0 00`, 비트 30 없음)에 비트를
+    // 세우면 PARA_HEADER 가 있지도 않은 제어문자를 주장해 헤더/텍스트가 어긋난다.
+    if para.text.contains('\u{00A0}') && para.control_mask & (1u32 << 0x001E) != 0 {
         mask |= 1u32 << 0x001E;
     }
     // [#4895] 하이픈 (0x0018) 비트는 **출처가 제어 표기였을 때만** 유지한다.
@@ -850,7 +855,17 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 code_units.push(0x000A);
                 prev_end = offset + 1;
             }
-            '\u{00A0}' => {
+            // [#5174] 묶음 빈칸(U+00A0)은 소프트 하이픈과 같이 **원본 표기를 따라간다.**
+            // #1793 은 늘 코드 30(0x1E)으로 되돌렸지만, 한컴이 만든 문서는 두 표기를 다 쓴다
+            // (10k 코퍼스 실측: 제어 표기 151문서·3,422문단 · 리터럴 111문서·2,131문단,
+            // 한 문단이 둘을 섞는 경우는 0건).
+            //
+            // 한글은 제어코드를 텍스트 추출에 싣지 않고 리터럴은 싣는다. 그래서 리터럴
+            // 원본을 제어코드로 바꾸면 저장본에서 글자가 사라진다(#4895 하이픈에서 실측된
+            // 것과 같은 파손). 출처 신호는 PARA_HEADER `control_mask` 비트 30 이다 —
+            // HWP5 원본에서 이 비트는 제어코드 존재와 5,553/5,553(100%) 일치하고,
+            // HWPX 원본은 파서가 `<hp:nbSpace/>` 를 만났을 때 세운다.
+            '\u{00A0}' if para.control_mask & (1u32 << 0x001E) != 0 => {
                 // 묶음 빈칸 (HWP 5.0 표 7: 코드 30). 코드 24(0x18)는 하이픈이므로
                 // 여기 쓰면 안 된다 (#1793).
                 code_units.push(0x001E);
@@ -2037,20 +2052,25 @@ mod tests {
         assert_ne!(compute_control_mask(&para) & (1u32 << 0x001f), 0);
     }
 
-    /// [#1793] 묶음 빈칸(NBSP, U+00A0)은 코드 30(0x1E)으로 직렬화되어야 한다.
-    /// 코드 24(0x18)는 하이픈이라 재파싱 시 '-' 로 손상된다.
+    /// [#1793] 묶음 빈칸(NBSP, U+00A0)의 **제어 표기 출처**는 코드 30(0x1E)으로
+    /// 직렬화되어야 한다. 코드 24(0x18)는 하이픈이라 재파싱 시 '-' 로 손상된다.
+    ///
+    /// [#5174] 출처 신호(`control_mask` 비트 30)가 조건으로 붙었다 — 종전에는 무조건
+    /// 코드 30 이었고, 그래서 리터럴 원본(111문서·2,131문단)이 제어로 승격됐다.
     #[test]
-    fn test_nbsp_serializes_as_code_30() {
+    fn test_nbsp_from_control_origin_serializes_as_code_30() {
         let para = Paragraph {
             char_count: 4,
             text: "가\u{00A0}나".to_string(),
             char_offsets: vec![0, 1, 2],
+            control_mask: 1u32 << 0x001E,
             ..Default::default()
         };
 
         let bytes = test_serialize_para_text(&para);
 
         assert_eq!(&bytes[2..4], &0x001E_u16.to_le_bytes());
+        assert_ne!(compute_control_mask(&para) & (1u32 << 0x001E), 0);
     }
 
     /// [#4895] 소프트 하이픈(U+00AD)은 코드 24(0x18)가 아니라 **리터럴 문자**로 나간다.
@@ -2105,21 +2125,34 @@ mod tests {
         assert_ne!(compute_control_mask(&para) & (1u32 << 0x0018), 0);
     }
 
-    /// [NBSP mask] U+00A0 은 PARA_TEXT 에 코드 0x1E 로 방출되므로 PARA_HEADER control_mask
-    /// 비트 30 도 서야 한다(안 서면 한컴에서 헤더/텍스트 불일치).
+    /// [NBSP mask] PARA_HEADER `control_mask` 비트 30 과 PARA_TEXT 는 **항상 함께 움직인다.**
+    ///
+    /// [#5174] 종전에는 U+00A0 만 있으면 비트를 세웠는데, 출처가 리터럴이면 PARA_TEXT 에
+    /// 제어코드가 없으므로 헤더가 있지도 않은 제어문자를 주장하게 된다. 이제 두 출처
+    /// 모두에서 짝이 맞는지 본다 — 한컴 원본 실측에서도 비트 30 은 제어코드 존재와
+    /// 5,553/5,553(100%) 일치했다.
     #[test]
-    fn test_nbsp_sets_control_mask_bit_30() {
-        let para = Paragraph {
-            char_count: 4,
-            text: "가\u{00A0}나".to_string(),
-            char_offsets: vec![0, 1, 2],
-            ..Default::default()
-        };
-        assert_ne!(
-            compute_control_mask(&para) & (1u32 << 0x001E),
-            0,
-            "U+00A0 포함 시 control_mask 비트 30 이 서야 PARA_TEXT(0x1E)와 일치한다"
-        );
+    fn test_nbsp_control_mask_bit_30_tracks_para_text() {
+        for origin_is_control in [false, true] {
+            let para = Paragraph {
+                char_count: 4,
+                text: "가\u{00A0}나".to_string(),
+                char_offsets: vec![0, 1, 2],
+                control_mask: if origin_is_control { 1u32 << 0x001E } else { 0 },
+                ..Default::default()
+            };
+            let bytes = test_serialize_para_text(&para);
+            let emitted_control = bytes[2..4] == 0x001E_u16.to_le_bytes();
+            let mask_set = compute_control_mask(&para) & (1u32 << 0x001E) != 0;
+            assert_eq!(
+                emitted_control, origin_is_control,
+                "PARA_TEXT 표기가 출처를 따라가야 한다"
+            );
+            assert_eq!(
+                mask_set, emitted_control,
+                "control_mask 비트 30 과 PARA_TEXT 제어코드는 함께 움직여야 한다"
+            );
+        }
     }
 
     /// 컨트롤 문자 코드 매핑 테스트

@@ -2070,8 +2070,21 @@ impl DocumentCore {
             if para.text.contains('\n') {
                 mask |= 1u32 << 0x000A;
             }
-            mask
+            // [#5174] **표기 출처 비트는 이 재계산의 소관이 아니다.** 위 규칙들은 controls·
+            // field_ranges·탭·개행처럼 IR 에서 되살릴 수 있는 것만 다루는데, 묶음 빈칸이
+            // 요소(`<hp:nbSpace/>`)였는지 리터럴이었는지는 IR 의 다른 어디에도 남지 않는다.
+            // 여기서 통째로 덮으면 파서가 원본에서 읽어 둔 신호가 사라져, 저장본이 늘
+            // 리터럴로 나간다(한글 2022 오라클 실측: x2x 26 · x2h 27 경로).
+            //
+            // 같은 함정이 소프트 하이픈(비트 24)·고정폭 빈칸(비트 31)에도 있다 —
+            // 고정폭 빈칸은 `hwpx_to_hwp.rs` 의 `materialize_fixed_width_space_control` 이
+            // 지워진 비트를 나중에 다시 세우는 방식으로 우회하고 있다.
+            mask | (para.control_mask & REPRESENTATION_ORIGIN_MASK)
         }
+
+        /// 파서만 알 수 있는 **표기 출처** 비트 — 재계산으로 되살릴 수 없으므로 보존한다.
+        /// 지금은 묶음 빈칸(0x1E)만 파서가 세운다(#5174).
+        const REPRESENTATION_ORIGIN_MASK: u32 = 1u32 << 0x001E;
 
         fn process_para(para: &mut Paragraph) {
             if para.char_shapes.is_empty() {

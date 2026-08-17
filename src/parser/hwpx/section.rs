@@ -592,9 +592,15 @@ fn parse_paragraph(
                     }
                     b"t" => {
                         // 텍스트 읽기 (탭 확장 데이터 포함)
-                        let (parts, tab_exts) = read_text_content_with_tabs(reader)?;
+                        let (parts, tab_exts, nb_space_element) =
+                            read_text_content_with_tabs(reader)?;
                         text_parts.extend(parts);
                         para.tab_extended.extend(tab_exts);
+                        // [#5174] 묶음 빈칸의 출처 표기를 문단에 남긴다 — 직렬화기가 이
+                        // 비트로 요소/리터럴을 갈라 원본 표기를 그대로 되돌린다.
+                        if nb_space_element {
+                            para.control_mask |= 1u32 << 0x1E;
+                        }
                     }
                     b"tbl" => {
                         // 표 파싱
@@ -1819,7 +1825,7 @@ const TITLE_MARK_PART_KEEP: &str = "\u{0008}0";
 /// <hp:t> 텍스트 컨텐츠를 읽는다.
 /// 탭 확장 데이터도 함께 반환 (HWPX 인라인 탭의 leader/type/width)
 fn read_text_content(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
-    let (parts, _) = read_text_content_with_tabs(reader)?;
+    let (parts, _, _) = read_text_content_with_tabs(reader)?;
     Ok(parts
         .into_iter()
         .filter(|p| p != TITLE_MARK_PART_IGNORE && p != TITLE_MARK_PART_KEEP)
@@ -1844,10 +1850,11 @@ fn decode_xml_general_ref(r: &BytesRef<'_>) -> String {
 
 fn read_text_content_with_tabs(
     reader: &mut Reader<&[u8]>,
-) -> Result<(Vec<String>, Vec<[u16; 7]>), HwpxError> {
+) -> Result<(Vec<String>, Vec<[u16; 7]>, bool), HwpxError> {
     let mut parts: Vec<String> = Vec::new();
     let mut text = String::new();
     let mut tab_ext_buf: Vec<[u16; 7]> = Vec::new();
+    let mut saw_nb_space_element = false;
     let mut buf = Vec::new();
 
     loop {
@@ -1884,7 +1891,15 @@ fn read_text_content_with_tabs(
                             tab_ext_buf.push(ext);
                         }
                     }
-                    b"nbSpace" => text.push('\u{00A0}'),
+                    // [#5174] 묶음 빈칸은 요소·리터럴 두 표기가 다 쓰인다(한컴 HWPX 실측:
+                    // 요소 26문서 · 리터럴 20문서 · 혼용 0문서). 한글은 요소를 텍스트 추출에
+                    // 싣지 않고 리터럴은 싣기 때문에, 표기를 바꿔 저장하면 추출 텍스트가
+                    // 원본과 달라진다. IR 이 두 표기를 구분해야 왕복이 닫히므로 요소 표기를
+                    // 만나면 `control_mask` 비트 30(HWP5 제어코드 0x1E 자리)을 신호로 세운다.
+                    b"nbSpace" => {
+                        text.push('\u{00A0}');
+                        saw_nb_space_element = true;
+                    }
                     b"fwSpace" => text.push('\u{2007}'),
                     // 소프트 하이픈 — 줄바꿈 자리에서만 보인다. 리터럴 '-' 와 구별해야
                     // 저장 왕복에서 단어가 갈라지지 않는다(ParaList XML schema.xml:291).
@@ -1926,7 +1941,7 @@ fn read_text_content_with_tabs(
     if !text.is_empty() || parts.is_empty() {
         parts.push(text);
     }
-    Ok((parts, tab_ext_buf))
+    Ok((parts, tab_ext_buf, saw_nb_space_element))
 }
 
 fn parse_tab_extension(e: &quick_xml::events::BytesStart) -> [u16; 7] {
