@@ -82,6 +82,13 @@ jobs:
           shared-key: test-archive
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
+      - name: Inspect disk space after Rust build cache
+        run: |
+          set -euo pipefail
+          echo 'Disk space after Rust build cache:'
+          df -h /
+          df -B1 --output=source,size,used,avail,pcent,target /
+
       - name: Summarize test archive policy
         if: ${{ always() }}
         env:
