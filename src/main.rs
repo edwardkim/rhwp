@@ -629,6 +629,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 | "hwp_set_checkbox"
                 | "hwp_set_cell"
                 | "hwp_insert_text_in_cell"
+                | "hwp_delete_text_in_cell"
         )
     }
 
@@ -1674,6 +1675,34 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
             &["schemaVersion", "source", "table", "row", "col", "cellPara", "offset", "text", "insertedChars", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_delete_text_in_cell",
+            "표 셀 문단의 문자 오프셋에서 글자를 지운다. 코어 delete_text_in_cell_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "count": { "type": "integer", "minimum": 1 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col", "count"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-text-in-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--count", "{count}", "--json"]),
+            serde_json::json!([
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "cellPara", "offset", "count", "deletedChars", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_export_ir_schema",
@@ -3652,7 +3681,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 52] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 53] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3665,6 +3694,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 52] = [
     (
         "insert-text-in-cell",
         "표 셀 문단에 텍스트 삽입 — --table/--row/--col/--text [--offset] [--cell-para]",
+    ),
+    (
+        "delete-text-in-cell",
+        "표 셀 문단 텍스트 삭제 — --table/--row/--col/--count [--offset] [--cell-para]",
     ),
     (
         "insert-text",
@@ -4775,7 +4808,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-table: 본문 표 생성 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / delete-control: 컨트롤 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / delete-text-in-cell: 표 셀 문단 삭제 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-table: 본문 표 생성 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / delete-control: 컨트롤 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
             false,
             &[
                 "--data",
@@ -6019,6 +6052,16 @@ fn print_help() {
     println!("      --offset N                셀 문단 문자 오프셋 (0부터, 기본 0)");
     println!("      --cell-para N             셀 안 문단 (0부터, 기본 0)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cellins.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-text-in-cell <파일> --table N --row N --col N --count N [옵션]");
+    println!("      표 셀 문단의 문자 오프셋에서 글자를 지운다");
+    println!();
+    println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
+    println!("      --count N                 지울 글자 수 (1 이상)");
+    println!("      --offset N                셀 문단 문자 오프셋 (0부터, 기본 0)");
+    println!("      --cell-para N             셀 안 문단 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_celldel.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!(
@@ -19110,13 +19153,14 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-table|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-control|delete-table|insert-header-footer|insert-image|redact|sanitize|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|set-hf-picture|apply-hf-template|delete-hf-text|insert-field-in-hf|split-paragraph-in-hf|toggle-hide-hf|merge-paragraph-in-hf|apply-char-format|split-paragraph|apply-para-format|apply-style|set-numbering-restart|apply-para-format-in-hf|apply-endnote-shape|insert-footnote-text|delete-text-in-footnote|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-table|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-control|delete-table|insert-header-footer|insert-image|redact|sanitize|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|set-hf-picture|apply-hf-template|delete-hf-text|insert-field-in-hf|split-paragraph-in-hf|toggle-hide-hf|merge-paragraph-in-hf|apply-char-format|split-paragraph|apply-para-format|apply-style|set-numbering-restart|apply-para-format-in-hf|apply-endnote-shape|insert-footnote-text|delete-text-in-footnote|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
         Some("replace-text") => edit_replace_text(&args[1..]),
         Some("set-cell") => edit_set_cell(&args[1..]),
         Some("insert-text-in-cell") => edit_insert_text_in_cell(&args[1..]),
+        Some("delete-text-in-cell") => edit_delete_text_in_cell(&args[1..]),
         Some("insert-text") => edit_insert_text(&args[1..]),
         Some("delete-text") => edit_delete_text(&args[1..]),
         Some("insert-paragraph") => edit_insert_paragraph(&args[1..]),
@@ -27215,6 +27259,182 @@ fn edit_insert_text_in_cell(args: &[String]) -> i32 {
             "셀 텍스트 삽입 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg} 오프셋 {offset_arg}"
         ),
         &format!("셀 텍스트 삽입 완료: {file_path}"),
+    )
+}
+
+/// `edit delete-text-in-cell` — 표 셀 문단 텍스트 삭제. 코어 `delete_text_in_cell_native`.
+fn edit_delete_text_in_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit delete-text-in-cell <파일> --table <번호> --row <행> --col <열> --count <글자수> [--offset N] [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut count_arg: Option<usize> = None;
+    let mut offset_arg: usize = 0;
+    let mut cell_para_arg: usize = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" | "--offset" | "--cell-para" | "--count" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" | "--offset" | "--cell-para" | "--count" => {
+                        match v.parse::<usize>() {
+                            Ok(n) => match name.as_str() {
+                                "--table" => table_arg = Some(n),
+                                "--offset" => offset_arg = n,
+                                "--count" => {
+                                    if n == 0 {
+                                        eprintln!("오류: --count 는 1 이상이어야 합니다.");
+                                        return EXIT_USAGE;
+                                    }
+                                    count_arg = Some(n);
+                                }
+                                _ => cell_para_arg = n,
+                            },
+                            Err(_) => {
+                                eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                                return EXIT_USAGE;
+                            }
+                        }
+                    }
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col), Some(count)) =
+        (file_path, table_arg, row_arg, col_arg, count_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl, cell_idx, para_lens, _old) =
+        match resolve_table_cell(doc.document(), table_no, row, col) {
+            Ok(v) => v,
+            Err(CellResolveError::Usage(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_USAGE;
+            }
+            Err(CellResolveError::Runtime(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_RUNTIME;
+            }
+        };
+    if cell_para_arg >= para_lens.len() {
+        eprintln!(
+            "오류: --cell-para 가 범위를 벗어났습니다 (셀 문단 0~{}): {cell_para_arg}",
+            para_lens.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    if offset_arg > para_lens[cell_para_arg] {
+        eprintln!(
+            "오류: --offset 이 문단 길이를 넘습니다 (문단 길이 {}): {offset_arg}",
+            para_lens[cell_para_arg]
+        );
+        return EXIT_USAGE;
+    }
+    if count > para_lens[cell_para_arg].saturating_sub(offset_arg) {
+        eprintln!(
+            "오류: --count 가 남은 문단 길이를 넘습니다 (남은 길이 {}): {count}",
+            para_lens[cell_para_arg].saturating_sub(offset_arg)
+        );
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) = doc.delete_text_in_cell_native(
+            sec,
+            para,
+            ctrl,
+            cell_idx,
+            cell_para_arg,
+            offset_arg,
+            count,
+        ) {
+            eprintln!("오류: 셀 텍스트 삭제 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "celldel",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "cellPara": cell_para_arg,
+            "offset": offset_arg,
+            "count": count
+        }),
+        &[(sec, para)],
+        &format!(
+            "셀 텍스트 삭제 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg} 오프셋 {offset_arg} 글자 {count}"
+        ),
+        &format!("셀 텍스트 삭제 완료: {file_path}"),
     )
 }
 
