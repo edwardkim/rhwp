@@ -5,6 +5,9 @@
 #[path = "../batch_parallel_determinism_contract.rs"]
 mod batch_parallel_determinism_contract;
 
+#[path = "../cases/insert_header_footer_contract.rs"]
+mod insert_header_footer_contract;
+
 #[path = "../center_trailing_ws_alignment.rs"]
 mod center_trailing_ws_alignment;
 

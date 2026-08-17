@@ -514,6 +514,7 @@
     ],
     "regression_suite_022": [
       "tests/batch_parallel_determinism_contract.rs",
+      "tests/cases/insert_header_footer_contract.rs",
       "tests/center_trailing_ws_alignment.rs",
       "tests/chart_csv_contract.rs",
       "tests/explain_contract.rs",

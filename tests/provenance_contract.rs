@@ -2245,6 +2245,16 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     ),
     (
         "edit",
+        "isHeader",
+        "insert-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 isHeader 를 안 낸다",
+    ),
+    (
+        "edit",
+        "applyTo",
+        "insert-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 applyTo 를 안 낸다",
+    ),
+    (
+        "edit",
         "count",
         "delete-row/delete-col 전용. 스윕 레시피는 fill-fields/set-cell 이라 count 를 안 낸다",
     ),
