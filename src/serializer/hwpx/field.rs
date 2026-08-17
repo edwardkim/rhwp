@@ -249,9 +249,14 @@ fn field_type_attr(field: &Field) -> &str {
 /// h2x 산출물에서 한글이 원본 105,388자 중 5,306자만 읽었고, 값을 열거 안의 값으로
 /// 바꾸자 100% 복원됐다(03787·03788·06841 동일).
 ///
-/// `Unknown`·`TableOfContents` 는 열거에 대응 값이 없다. 구조를 더 요구하지 않는
-/// `CROSSREF` 로 보낸다 — `MEMO` 는 memo subList/memoShape 를 요구해서 내용 없이
-/// type 만 바꾸면 한글이 **파일을 아예 열지 못한다**(실측 확인).
+/// **공개 스키마 파일은 제품보다 낡았다.** 위 15개 열거에는 `PROOFREADING_MARKS_DELETE` 도
+/// `TABLEOFCONTENTS` 도 없지만, 한글 2022 가 만든 HWPX 는 둘 다 쓴다(#4896 이 앞의 것을
+/// 실측표로 이미 받아들였다). 판정 기준은 스키마 파일이 아니라 **한글이 쓰는 값**이다.
+///
+/// `Unknown` 은 여전히 대응 값이 없어 `CROSSREF` 로 보낸다 — `type` 속성을 아예 빼는 대안은
+/// 실측에서 본문을 무너뜨렸다(#5171: `06792` 86쪽 87,282자 → 12쪽 12,944자,
+/// `06841` 219쪽 233,532자 → 143쪽 156,128자). `MEMO` 는 memo subList/memoShape 를 요구해서
+/// 내용 없이 type 만 바꾸면 한글이 **파일을 아예 열지 못한다**(실측 확인).
 fn field_type_str(t: FieldType) -> &'static str {
     use FieldType::*;
     match t {
@@ -269,13 +274,16 @@ fn field_type_str(t: FieldType) -> &'static str {
         Hyperlink => "HYPERLINK",
         Memo => "MEMO",
         PrivateInfoSecurity => "PRIVATE_INFO",
-        // 스키마에 목차 항목이 없다. #2845 는 rhwp 자체 라운드트립에서 TOC 정체성을
-        // 살리려고 "TABLE_OF_CONTENTS" 를 골랐지만, 한글 실측은 그 값이 **임의의 쓰레기
-        // 값과 똑같이** 본문 폐기를 부른다고 말한다(03787 대조 실측, type 값만 교체):
-        //   CROSSREF / CLICK_HERE / BOOKMARK -> 5,727자(100%)
-        //   TABLE_OF_CONTENTS / UNKNOWN / ZZZ_NOT_A_TYPE -> 840자(14.7%)
-        // 판정 기준은 오직 "열거 안인가"다. 라운드트립 정체성보다 본문 보존이 우선이다.
-        TableOfContents => "CROSSREF",
+        // [#5171] 한글이 쓰는 값은 밑줄 **없는** `TABLEOFCONTENTS` 다. #2845 가 시험한
+        // `TABLE_OF_CONTENTS`(밑줄 있음)는 열거 밖이라 본문 폐기를 불렀고(03787: 5,727자
+        // -> 840자), 그래서 `CROSSREF` 대체가 선택됐다 — 철자가 문제였지 항목이 없던 게 아니다.
+        //
+        // 한글 2022 SaveAs 실측(06792): `type="TABLEOFCONTENTS"`, 파라미터는 `Prop`+`Command`
+        // 둘뿐으로 `CROSSREF` 와 구조가 같다. rhwp 산출의 type 만 바꿔 재측정하면
+        // 86쪽 87,282자에 컨트롤 인구조사가 `:1,atno:6,...` 로 **원본과 완전히 일치**한다
+        // (종전 `CROSSREF` 는 같은 자리를 `%xrf:1` 로 만든다).
+        // 파서(parser/hwpx/section.rs)는 이미 세 철자를 모두 받아들인다.
+        TableOfContents => "TABLEOFCONTENTS",
     }
 }
 
@@ -447,24 +455,30 @@ mod tests {
     }
 
     #[test]
-    fn field_type_str_toc_stays_inside_owpml_enum() {
-        // [#2845] 는 rhwp 라운드트립에서 TOC 정체성을 살리려고 "TABLE_OF_CONTENTS" 를
-        // 방출했다. 그러나 그 표기는 OWPML FieldType 열거에 없다 — 한글 실측(03787,
-        // type 값만 교체)에서 임의의 쓰레기 값과 동일하게 본문을 버렸다:
+    fn field_type_str_toc_uses_the_spelling_hancom_writes() {
+        // [#5171] 철자가 문제였다. #2845 가 시험한 `TABLE_OF_CONTENTS`(밑줄 있음)는 열거 밖이라
+        // 한글이 본문을 버렸다(03787, type 값만 교체):
         //   CROSSREF/CLICK_HERE/BOOKMARK -> 5,727자(100%)
         //   TABLE_OF_CONTENTS/UNKNOWN/ZZZ_NOT_A_TYPE -> 840자(14.7%)
-        // 라운드트립 정체성(rhwp 내부 관심사)보다 본문 보존(사용자 문서)이 우선이므로
-        // 열거 안의 값으로 내려보낸다. TOC 정체성 보존은 별도 축(예: name 속성)이 필요하다.
+        // 그래서 `CROSSREF` 대체가 선택됐지만, **한글 자신은 밑줄 없는 `TABLEOFCONTENTS` 를
+        // 쓴다**(06792 SaveAs 실측). 그 값으로 바꿔 재측정하면 86쪽 87,282자에 컨트롤
+        // 인구조사가 원본과 완전히 일치한다(종전 `CROSSREF` 는 `%xrf:1` 로 만든다).
         let emitted = field_type_str(FieldType::TableOfContents);
+        assert_eq!(emitted, "TABLEOFCONTENTS");
+        // 밑줄 있는 표기로 되돌아가면 본문이 사라진다 — 회귀 방지.
         assert_ne!(emitted, "TABLE_OF_CONTENTS");
-        assert!(OWPML_FIELD_TYPES.contains(&emitted), "got: {emitted}");
+        assert!(hancom_accepts(emitted), "got: {emitted}");
     }
 
     #[test]
-    fn every_field_type_maps_inside_owpml_enum() {
-        // 불변식: `type` 은 어떤 IR 값에서도 OWPML 열거를 벗어나면 안 된다.
-        // 벗어나면 한글이 그 지점부터 본문을 버린다(값이 무엇인지는 무관 — 실측상
+    fn every_field_type_maps_to_a_value_hancom_accepts() {
+        // 불변식: `type` 은 어떤 IR 값에서도 **한글이 받아들이는 것으로 확인된 값**이어야 한다.
+        // 확인되지 않은 값을 쓰면 한글이 그 지점부터 본문을 버린다(실측상
         // "TABLE_OF_CONTENTS" 도 "ZZZ_NOT_A_TYPE" 과 동일하게 폐기됐다).
+        //
+        // [#5171] 기준을 "공개 스키마 열거 안"에서 "스키마 ∪ 한컴 실측값"으로 넓혔다 —
+        // 스키마 파일이 제품보다 낡아서(`HANCOM_MEASURED_FIELD_TYPES` 주석 참조) 스키마만
+        // 기준으로 삼으면 한글이 실제로 쓰는 값을 우리가 못 쓴다.
         use FieldType::*;
         for t in [
             Unknown,
@@ -485,8 +499,9 @@ mod tests {
         ] {
             let s = field_type_str(t);
             assert!(
-                OWPML_FIELD_TYPES.contains(&s),
-                "{t:?} -> {s:?} 는 OWPML FieldType 열거 밖이다 (한글이 본문을 버린다)"
+                hancom_accepts(s),
+                "{t:?} -> {s:?} 는 한글이 받아들인다고 확인된 값이 아니다 \
+                 (스키마 열거도 실측표도 아님 — 한글이 본문을 버린다)"
             );
         }
     }
@@ -536,6 +551,27 @@ mod tests {
         "PRIVATE_INFO",
         "METATAG",
     ];
+
+    /// 공개 스키마 밖이지만 **한글이 실제로 쓰는** `type` 값.
+    ///
+    /// 판정 기준은 스키마 파일이 아니라 한컴 산출물이다. 각 값의 근거:
+    /// - `PROOFREADING_MARKS_DELETE` — [#4896] 10k 코퍼스 hwpx 원본 12회/7문서, 정상 개방
+    /// - `PROOFREADING_MARKS_SIMPLECHANGE` — [#5171] 한글 2022 가 `03787` 을 SaveAs 하면
+    ///   `$RevisionSimpleChange?…` 3개를 이 값으로 쓴다. 원본 컨트롤 인구조사 `%%*c:3` 과 일치
+    /// - `TABLEOFCONTENTS` — [#5171] 한글 2022 가 `06792` 를 SaveAs 하면 이 값을 쓴다.
+    ///   rhwp 산출의 type 만 이 값으로 바꿔 재측정하면 86쪽 87,282자에 컨트롤 인구조사가
+    ///   원본과 완전히 일치한다. **밑줄 있는 `TABLE_OF_CONTENTS` 는 열거 밖이라 본문을
+    ///   버린다** — #2845 가 시험한 값이 그것이었다(철자 문제였다).
+    const HANCOM_MEASURED_FIELD_TYPES: &[&str] = &[
+        "PROOFREADING_MARKS_DELETE",
+        "PROOFREADING_MARKS_SIMPLECHANGE",
+        "TABLEOFCONTENTS",
+    ];
+
+    /// 한글이 받아들이는 것으로 확인된 값 전체.
+    fn hancom_accepts(t: &str) -> bool {
+        OWPML_FIELD_TYPES.contains(&t) || HANCOM_MEASURED_FIELD_TYPES.contains(&t)
+    }
 
     #[test]
     fn field_type_str_matches_owpml_schema() {
