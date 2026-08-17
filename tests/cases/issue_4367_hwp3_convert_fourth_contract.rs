@@ -143,6 +143,62 @@ fn hwp3_polygon_points_are_loaded() {
     );
 }
 
+/// 여덟 번째 계약 — 문단 없는 빈 글상자를 방출하지 않는다.
+///
+/// HWP3 회전 타원(type 8, "검인" 도장 등)은 글상자 플래그(옵션 bit19)가 켜져
+/// 있어도 텍스트가 info2 밖에 저장돼 파서가 문단을 복원하지 못한다. 종전에는
+/// 이 경우에도 글상자를 합성해 nPara=0 LIST_HEADER 를 방출했고, 한글 2022 는
+/// LIST_HEADER 뒤 문단이 없으면 다음 레코드(SHAPE_COMPONENT)를 문단으로 오독해
+/// 문서 전체 개방을 거부했다(크롤 빈티지 14994939 COM 이등분: 빈 글상자 제거로
+/// 개방). 이제 실제 문단이 있을 때만 글상자를 만든다 — 빈 글상자가 없어야 한다.
+#[test]
+fn hwp3_empty_textbox_shapes_are_not_emitted() {
+    use rhwp::model::shape::ShapeObject;
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/hwp3-ellipse-empty-textbox.hwp");
+    let raw = std::fs::read(&path).expect("read ellipse-empty-textbox");
+    let mut doc = rhwp::parser::hwp3::parse_hwp3(&raw).expect("HWP3 파싱");
+    rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
+        &mut doc,
+        FileFormat::Hwp3,
+    );
+    fn check(shape: &ShapeObject, shapes: &mut usize, empty_tb: &mut usize) {
+        let tb = match shape {
+            ShapeObject::Ellipse(s) => s.drawing.text_box.as_ref(),
+            ShapeObject::Rectangle(s) => s.drawing.text_box.as_ref(),
+            ShapeObject::Line(s) => s.drawing.text_box.as_ref(),
+            ShapeObject::Arc(s) => s.drawing.text_box.as_ref(),
+            ShapeObject::Group(g) => {
+                for child in &g.children {
+                    check(child, shapes, empty_tb);
+                }
+                None
+            }
+            _ => None,
+        };
+        if let Some(tb) = tb {
+            *shapes += 1;
+            if tb.paragraphs.is_empty() {
+                *empty_tb += 1;
+            }
+        }
+    }
+    let (mut shapes, mut empty_tb) = (0usize, 0usize);
+    for sec in &doc.sections {
+        for p in &sec.paragraphs {
+            for c in &p.controls {
+                if let Control::Shape(s) = c {
+                    check(s.as_ref(), &mut shapes, &mut empty_tb);
+                }
+            }
+        }
+    }
+    assert_eq!(
+        empty_tb, 0,
+        "문단 없는 빈 글상자는 한글 2022 가 문서 전체를 거부한다 (빈 글상자 미방출)"
+    );
+}
+
 /// 글상자 비트 게이트 — 글상자 없는 순수 사각형에 0x0100_0000 을 켜면
 /// 한글 2022 가 개방을 거부한다 (크롤 스윕 29218 p588 실측). storage 기본값
 /// 채움은 글상자일 때만 글상자 비트를 더하고, 순수 사각형은 0x0008_0000 만.

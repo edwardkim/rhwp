@@ -929,8 +929,14 @@ fn map_to_shape_object(
         }
     };
 
-    let text_box = if (header.basic_attr.options & (1 << 19)) != 0 || !parsed_paragraphs.is_empty()
-    {
+    // 글상자는 **실제 문단이 있을 때만** 합성한다. HWP3 옵션 비트 19("글상자 있음")가
+    // 켜져 있어도 파서가 문단을 복원하지 못한 개체(예: 회전 타원 type 8 — 텍스트가
+    // info2 밖에 저장돼 미복원)에 빈 글상자(nPara=0 LIST_HEADER)를 방출하면, 한글 2022
+    // 는 LIST_HEADER 뒤 문단이 없을 때 다음 레코드(SHAPE_COMPONENT 등)를 문단으로
+    // 오독해 **문서 개방을 거부**한다(크롤 빈티지 "검인" 도장 회전 타원 COM 이등분 실측:
+    // 빈 글상자 LIST 제거 → 개방). 빈 글상자는 보이는 내용이 없어 프레임 생략에도
+    // 시각 손실이 없다.
+    let text_box = if !parsed_paragraphs.is_empty() {
         Some(TextBox {
             margin_left: hwp3_margin_to_i16(header.basic_attr.textbox_margin[0]),
             margin_top: hwp3_margin_to_i16(header.basic_attr.textbox_margin[1]),
