@@ -297,10 +297,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 309개 필드
+### 2-2. 전수 사전 — 314개 필드
 
 `capabilities` 의 `recordFields` 고유 **302개**와 그 밖의 실측-only 필드
-`applyTo`·`assertions`·`docId`·`exists`·`isHeader`·`preview`·`dx`·`dy` **8개**를 합친 309개다. `등장 명령` 은 자기서술
+`applyTo`·`assertions`·`docId`·`exists`·`isHeader`·`preview`·`dx`·`dy` **8개**를 합친 314개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -344,6 +344,11 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
 | `count` | number | 지울 글자 수 (1 이상) | `edit delete-text`·`delete-hf-text` |
+| `innerPara` | number | 셀·각주 안 문단 (0부터) | `edit apply-char-format-in-cell` |
+| `props` | string | 글자/문단 서식 JSON | `edit apply-char-format-in-cell` |
+| `bold` | bool | `--bold` 를 줬는지 | `edit apply-char-format-in-cell` |
+| `fontSize` | number\|null | `--font-size` (HWP 단위) | `edit apply-char-format-in-cell` |
+| `color` | string\|null | `--color` 원문 | `edit apply-char-format-in-cell` |
 | `docId` | string | 세션 핸들. 서버 프로세스 수명과 같고 영속되지 않는다 | 세션 도구 12종 |
 
 #### 문서 메타
@@ -1089,7 +1094,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 58개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`delete-text-in-cell`·`insert-text`·`delete-text`·
+**`edit` 하위 60개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`delete-text-in-cell`·`insert-text`·`delete-text`·
 `insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`split-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`split-cell-into`·`split-table`·`fit-table`·`resize-table`·`merge-table`·`set-column-widths`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`delete-equation`·`add-bookmark`·`delete-bookmark`·`delete-table`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf`·`split-paragraph-in-cell`·`merge-paragraph-in-cell`·`apply-char-format`·`apply-para-format`·`apply-style`·`apply-cell-style`·`delete-control`·`insert-header-footer`·`insert-field-in-hf`·`set-column-def`·`set-numbering-restart`·`set-page-hide`·`transpose-table`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고

@@ -638,6 +638,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 | "hwp_move_table"
                 | "hwp_merge_table"
                 | "hwp_apply_para_format_in_cell"
+                | "hwp_apply_char_format_in_cell"
                 | "hwp_set_column_widths"
                 | "hwp_delete_equation"
                 | "hwp_set_numbering_restart"
@@ -3078,6 +3079,58 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "table", "row", "col", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
+            "hwp_apply_char_format_in_cell",
+            "표 셀 문단 글자 범위에 글자 서식을 적용한다. --props 는 bold/fontSize/textColor 등 JSON. --table/--row/--col 또는 --section/--para/--ctrl/--cell. 코어 apply_char_format_in_cell_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "cell": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 0 },
+                    "start": { "type": "integer", "minimum": 0 },
+                    "end": { "type": "integer", "minimum": 0 },
+                    "offset": { "type": "integer", "minimum": 0 },
+                    "count": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "글자 서식 JSON (예: {\"bold\":true})" },
+                    "bold": { "type": "boolean" },
+                    "fontSize": { "type": "integer", "minimum": 1 },
+                    "color": { "type": "string", "description": "글자색 CSS/hex (textColor)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "apply-char-format-in-cell", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "table", "args": ["--table", "{table}"] },
+                { "when": "row", "args": ["--row", "{row}"] },
+                { "when": "col", "args": ["--col", "{col}"] },
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "ctrl", "args": ["--ctrl", "{ctrl}"] },
+                { "when": "cell", "args": ["--cell", "{cell}"] },
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
+                { "when": "start", "args": ["--start", "{start}"] },
+                { "when": "end", "args": ["--end", "{end}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "count", "args": ["--count", "{count}"] },
+                { "when": "props", "args": ["--props", "{props}"] },
+                { "when": "bold", "args": ["--bold"] },
+                { "when": "fontSize", "args": ["--font-size", "{fontSize}"] },
+                { "when": "color", "args": ["--color", "{color}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "section", "paragraph", "ctrl", "cellPara", "innerPara", "offset", "count", "text", "props", "bold", "fontSize", "color", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_apply_style",
             "본문 문단에 스타일을 적용한다. --style 은 docInfo 스타일 인덱스. 코어 apply_style_native 배선.",
             serde_json::json!({
@@ -3859,7 +3912,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 59] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 60] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -4018,6 +4071,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 59] = [
     (
         "apply-para-format-in-cell",
         "표 셀 문단 서식 적용 — --table/--row/--col --props [--cell-para]",
+    ),
+    (
+        "apply-char-format-in-cell",
+        "표 셀 글자 서식 적용 — --table/--row/--col [--cell-para] [--start/--end] [--props]",
     ),
     (
         "delete-control",
@@ -5111,6 +5168,12 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--widths",
                 "--count",
                 "--cell-para",
+                "--cell",
+                "--start",
+                "--end",
+                "--bold",
+                "--font-size",
+                "--color",
                 "--text",
                 "--props",
                 "--style",
@@ -5187,6 +5250,11 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "keepStyle",
                 "overflow",
                 "cellPara",
+                "innerPara",
+                "props",
+                "bold",
+                "fontSize",
+                "color",
                 // [#4990] insert-text 봉투 축.
                 "section",
                 "paragraph",
@@ -20083,6 +20151,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("set-numbering-restart") => edit_set_numbering_restart(&args[1..]),
         Some("apply-cell-style") => edit_apply_cell_style(&args[1..]),
         Some("apply-para-format-in-cell") => edit_apply_para_format_in_cell(&args[1..]),
+        Some("apply-char-format-in-cell") => edit_apply_char_format_in_cell(&args[1..]),
         Some("delete-control") => edit_delete_control(&args[1..]),
         Some("delete-table") => edit_delete_table(&args[1..]),
         Some("insert-header-footer") => edit_insert_header_footer(&args[1..]),
@@ -33567,6 +33636,299 @@ fn edit_apply_para_format(args: &[String]) -> i32 {
         &format!("문단 서식 적용 예정: {file_path} 구역 {section} 문단 {para}"),
         &format!("문단 서식 적용 완료: {file_path}"),
     )
+}
+
+/// `edit apply-char-format-in-cell` — 표 셀 글자 서식. 코어 `apply_char_format_in_cell_native`.
+fn edit_apply_char_format_in_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-char-format-in-cell <파일> (--table N --row N --col N | --section N --para N --ctrl N --cell N) [--cell-para N] [--start N] [--end N] [--offset N] [--count N] [--props JSON] [--bold] [--font-size N] [--color 색] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut section_arg: Option<usize> = None;
+    let mut para_arg: Option<usize> = None;
+    let mut ctrl_arg: Option<usize> = None;
+    let mut cell_arg: Option<usize> = None;
+    let mut cell_para_arg: usize = 0;
+    let mut start_arg: Option<usize> = None;
+    let mut end_arg: Option<usize> = None;
+    let mut offset_arg: Option<usize> = None;
+    let mut count_arg: Option<usize> = None;
+    let mut props_arg: Option<String> = None;
+    let mut bold_flag = false;
+    let mut font_size_arg: Option<i32> = None;
+    let mut color_arg: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" | "--section" | "--para" | "--ctrl" | "--cell"
+            | "--cell-para" | "--start" | "--end" | "--offset" | "--count" | "--font-size" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--row" => match v.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--col" => match v.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--font-size" => match v.parse::<i32>() {
+                        Ok(n) if n > 0 => font_size_arg = Some(n),
+                        _ => {
+                            eprintln!("오류: --font-size 뒤에 1 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<usize>() {
+                        Ok(n) => match name.as_str() {
+                            "--table" => table_arg = Some(n),
+                            "--section" => section_arg = Some(n),
+                            "--para" => para_arg = Some(n),
+                            "--ctrl" => ctrl_arg = Some(n),
+                            "--cell" => cell_arg = Some(n),
+                            "--cell-para" => cell_para_arg = n,
+                            "--start" => start_arg = Some(n),
+                            "--end" => end_arg = Some(n),
+                            "--offset" => offset_arg = Some(n),
+                            _ => count_arg = Some(n),
+                        },
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props_arg = Some(v.clone()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 글자 서식 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--color" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => color_arg = Some(v.clone()),
+                    _ => {
+                        eprintln!("오류: --color 뒤에 색 값이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--bold" => bold_flag = true,
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let mut props_val = match props_arg.as_deref() {
+        Some(raw) => match serde_json::from_str::<serde_json::Value>(raw) {
+            Ok(serde_json::Value::Object(map)) => serde_json::Value::Object(map),
+            Ok(_) | Err(_) => {
+                eprintln!("오류: --props 는 JSON 객체여야 합니다: {raw}");
+                return EXIT_USAGE;
+            }
+        },
+        None => serde_json::json!({}),
+    };
+    if bold_flag {
+        props_val["bold"] = serde_json::json!(true);
+    }
+    if let Some(n) = font_size_arg {
+        props_val["fontSize"] = serde_json::json!(n);
+    }
+    if let Some(ref c) = color_arg {
+        props_val["textColor"] = serde_json::json!(c);
+    }
+    if props_val.as_object().is_none_or(|o| o.is_empty()) {
+        eprintln!("오류: --props 또는 --bold/--font-size/--color 가 필요합니다.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    }
+    let props = props_val.to_string();
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, parent_para, ctrl, cell_idx, para_lens, table_no, row, col) = match (
+        table_arg, row_arg, col_arg, section_arg, para_arg, ctrl_arg, cell_arg,
+    ) {
+        (Some(table_no), Some(row), Some(col), _, _, _, _) => {
+            match resolve_table_cell(doc.document(), table_no, row, col) {
+                Ok((sec, para, ctrl, cell_idx, para_lens, _)) => {
+                    (sec, para, ctrl, cell_idx, para_lens, table_no, row, col)
+                }
+                Err(CellResolveError::Usage(msg)) => {
+                    eprintln!("{msg}");
+                    return EXIT_USAGE;
+                }
+                Err(CellResolveError::Runtime(msg)) => {
+                    eprintln!("{msg}");
+                    return EXIT_RUNTIME;
+                }
+            }
+        }
+        (_, _, _, Some(sec), Some(para), Some(ctrl), Some(cell_idx)) => {
+            let para_lens = match cell_para_lens(doc.document(), sec, para, ctrl, cell_idx) {
+                Ok(v) => v,
+                Err(msg) => {
+                    eprintln!("{msg}");
+                    return EXIT_USAGE;
+                }
+            };
+            (sec, para, ctrl, cell_idx, para_lens, 0, 0, 0)
+        }
+        _ => {
+            eprintln!("{USAGE}");
+            return EXIT_USAGE;
+        }
+    };
+    if cell_para_arg >= para_lens.len() {
+        eprintln!(
+            "오류: --cell-para 가 범위를 벗어났습니다 (셀 문단 0~{}): {cell_para_arg}",
+            para_lens.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    let para_len = para_lens[cell_para_arg];
+    let start = start_arg.or(offset_arg).unwrap_or(0);
+    if start > para_len {
+        eprintln!("오류: --start/--offset 이 문단 길이를 넘습니다 (문단 길이 {para_len}): {start}");
+        return EXIT_USAGE;
+    }
+    let end = if let Some(e) = end_arg {
+        e
+    } else if let Some(n) = count_arg {
+        start.saturating_add(n)
+    } else {
+        para_len
+    };
+    if end < start || end > para_len {
+        eprintln!("오류: --end 가 범위를 벗어났습니다 (시작 {start}, 문단 길이 {para_len}): {end}");
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(e) = doc.apply_char_format_in_cell_native(
+            sec, parent_para, ctrl, cell_idx, cell_para_arg, start, end, &props,
+        ) {
+            eprintln!("오류: 셀 글자 서식 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "chfmtcell",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "section": sec,
+            "paragraph": parent_para,
+            "ctrl": ctrl,
+            "cellPara": cell_para_arg,
+            "innerPara": cell_para_arg,
+            "offset": start,
+            "count": end.saturating_sub(start),
+            "text": props,
+            "props": props,
+            "bold": bold_flag,
+            "fontSize": font_size_arg,
+            "color": color_arg,
+        }),
+        &[(sec, parent_para)],
+        &format!(
+            "셀 글자 서식 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg} {start}..{end}"
+        ),
+        &format!("셀 글자 서식 적용 완료: {file_path}"),
+    )
+}
+
+fn cell_para_lens(
+    document: &rhwp::model::document::Document,
+    section: usize,
+    para: usize,
+    ctrl: usize,
+    cell_idx: usize,
+) -> Result<Vec<usize>, String> {
+    use rhwp::model::control::Control;
+    let Some(sec) = document.sections.get(section) else {
+        return Err(format!("오류: 구역 {section} 이 없습니다."));
+    };
+    let Some(paragraph) = sec.paragraphs.get(para) else {
+        return Err(format!("오류: 문단 {para} 이 없습니다."));
+    };
+    let Some(Control::Table(table)) = paragraph.controls.get(ctrl) else {
+        return Err(format!("오류: 문단 {para} 컨트롤 {ctrl} 은 표가 아닙니다."));
+    };
+    let Some(cell) = table.cells.get(cell_idx) else {
+        return Err(format!(
+            "오류: --cell 이 범위를 벗어났습니다 (셀 0~{}): {cell_idx}",
+            table.cells.len().saturating_sub(1)
+        ));
+    };
+    Ok(cell
+        .paragraphs
+        .iter()
+        .map(|p| p.text.chars().count())
+        .collect())
 }
 
 /// `edit apply-style` — 본문 문단에 스타일을 적용한다.

@@ -156,6 +156,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_set_numbering_restart",
             "hwp_apply_cell_style",
             "hwp_apply_para_format_in_cell",
+            "hwp_apply_char_format_in_cell",
             "hwp_delete_control",
             "hwp_delete_table",
             "hwp_insert_header_footer",
