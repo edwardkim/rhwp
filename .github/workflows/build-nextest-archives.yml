@@ -94,6 +94,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "profile=${{ inputs.cargo_profile }} event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+          node scripts/rust-test-suite-manifest.mjs --prepare
           cargo nextest archive \
             --package rhwp \
             --cargo-profile "${{ inputs.cargo_profile }}" \

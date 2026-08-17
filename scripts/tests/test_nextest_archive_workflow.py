@@ -169,6 +169,13 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("--archive-file tests.tar.zst", self.builder)
         self.assertIn("name: test-archive-${{ github.run_id }}", self.builder)
 
+    def test_builder_prepares_derived_suites_before_compiling_the_archive(self) -> None:
+        prepare = "node scripts/rust-test-suite-manifest.mjs --prepare"
+        archive = "cargo nextest archive"
+        self.assertIn(prepare, self.builder)
+        self.assertIn(archive, self.builder)
+        self.assertLess(self.builder.index(prepare), self.builder.index(archive))
+
     def test_workers_share_one_archive_and_partition_test_cases(self) -> None:
         self.assertIn("name: test-archive-${{ github.run_id }}", self.runner)
         self.assertIn('--filterset "${FILTERSET}"', self.runner)
