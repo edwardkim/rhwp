@@ -5,7 +5,8 @@ description: rhwp 저장소에 기여(이슈·코드 변경·문서·PR)할 때�
 
 # rhwp-contributor — 기여 절차 Skill
 
-> **PR 전 필수. 실패하면 PR 금지.**
+> **PR 생성·push 직전 필수. 실패하면 PR/push 금지.**
+> 테스트만 고친 커밋도 `cargo fmt --all -- --check` 를 다시 통과해야 한다.
 >
 > ```bash
 > cargo fmt --all
