@@ -94,6 +94,14 @@ pub const MAP: &[CommandProvenance] = &[
         note: "구역·문단·글자·어절·쪽 수는 엔진이 IR 본문을 센 숫자다. 본문 문자열은 싣지 않는다.",
     },
     CommandProvenance {
+        command: "bookmarks",
+        untrusted: &[f(
+            "bookmarks[].name",
+            "get_bookmarks_native — 문서 책갈피 이름 문자열",
+        )],
+        note: "count·sec·para·ctrlIdx·charPos 는 엔진 좌표다. 이름은 문서가 정한다.",
+    },
+    CommandProvenance {
         command: "export-text",
         untrusted: &[
             f(
