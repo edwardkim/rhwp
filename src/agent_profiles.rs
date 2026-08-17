@@ -119,6 +119,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_merge_cells",
             "hwp_split_cell",
             "hwp_insert_footnote",
+            "hwp_insert_endnote",
             "hwp_set_checkbox",
             "hwp_replace_text",
             "hwp_insert_text",
