@@ -23,7 +23,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **85개**(그중 `--json` 계약 **54개**, batch 축 **9개**) · MCP 도구 **95개**(무상태 79 + 세션 전용 16) |
+| 표면 규모 | CLI 명령 **86개**(그중 `--json` 계약 **55개**, batch 축 **9개**) · MCP 도구 **96개**(무상태 80 + 세션 전용 16) |
 | 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **261개** · §2 전수 사전 **264개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
@@ -79,6 +79,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 날짜·금액·수량 수확 | `extract-data --json` (`hwp_extract_data`) | `items[].normalized`·`counts` | [CLI 매뉴얼](cli_commands.md) §extract-data |
 | 한 종류만 | `extract-data --kind date\|amount\|number` | `kind`·`totalItemCount` | 같은 절 |
 | 누름틀 조사 | `fields --json` (`hwp_fields`) | `fieldCount`·`fields[].name` | [서식 가이드 §1](form_filling_guide.md#1-fill-fields-심화) |
+| 책갈피 목록 | `bookmarks --json` (`hwp_bookmarks`) | `count`·`bookmarks[]` | [CLI 매뉴얼](cli_commands.md) §bookmarks |
+| 머리말/꼬리말 목록 | `headers-footers --json` (`hwp_headers_footers`) | `count`·`headersFooters[]` | [CLI 매뉴얼](cli_commands.md) §headers-footers |
 | 마크다운으로 | `export-markdown --json` (`hwp_export_markdown`) | `pages[].path`·`imageCount` | [CLI 매뉴얼](cli_commands.md) §1 |
 
 #### (다) 보기 — 사람·VLM 이 확인한다
@@ -297,10 +299,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 299개 필드
+### 2-2. 전수 사전 — 300개 필드
 
-`capabilities` 의 `recordFields` 고유 **296개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 299개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **297개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 300개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -346,6 +348,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `charCount` | number | IR 본문 글자 수 | `word-count` |
 | `wordCount` | number | 공백 분리 어절 수 | `word-count` |
 | `bookmarks` | array | 책갈피 목록 `{name,sec,para,ctrlIdx,charPos}` | `bookmarks` |
+| `headersFooters` | array | 머리말/꼬리말 목록 `{sectionIdx,isHeader,applyTo,label}` | `headers-footers` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
 | `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |
@@ -1070,15 +1073,16 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 95개
+## 6. MCP 도구 전수 지도 — 96개
 
-### 6-1. 무상태 79개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 80개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
 | `hwp_info` | `info --json` | `path` |
 | `hwp_word_count` | `word-count --json` | `path` |
 | `hwp_bookmarks` | `bookmarks --json` | `path` |
+| `hwp_headers_footers` | `headers-footers --json` | `path` |
 | `hwp_digest` | `digest --json` | `path` |
 | `hwp_export_text` | `export-text --json` | `path` |
 | `hwp_export_structure` | `export-structure --json` | `path` |

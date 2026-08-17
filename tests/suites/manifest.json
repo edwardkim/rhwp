@@ -238,6 +238,7 @@
       "tests/page_number_propagation.rs"
     ],
     "regression_suite_009": [
+      "tests/cases/headers_footers_contract.rs",
       "tests/cli_exit_codes_hwp5_inventory_anchor.rs",
       "tests/diag_1042_hwp_summary.rs",
       "tests/dump_pages_cli.rs",
