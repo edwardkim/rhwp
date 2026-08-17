@@ -388,6 +388,7 @@
       "tests/verify_contract.rs"
     ],
     "regression_suite_016": [
+      "tests/cases/apply_para_format_contract.rs",
       "tests/cases/insert_page_break_contract.rs",
       "tests/diag_1042_used_breakdown.rs",
       "tests/disclose_contract.rs",
