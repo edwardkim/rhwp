@@ -135,9 +135,7 @@ const RENDER_DIFF_PULL_REQUEST_PATHS = [
 
 const CI_RUST_JOBS = [
   'Lint (fmt, clippy, WASM check)',
-  'build-test-archive-slow',
-  'build-test-archive-a',
-  'build-test-archive-b',
+  'build-test-archive',
   'test-slow-shard',
   'test-regular-shard-1',
   'test-regular-shard-2',
@@ -148,17 +146,9 @@ const CI_RUST_JOBS = [
 // Audit one logical lane across both representations without accepting duplicates.
 const CI_JOB_ALIASES = {
   'Lint (fmt, clippy, WASM check)': ['Lint (fmt, clippy, WASM check)'],
-  'build-test-archive-slow': [
-    'build-test-archive-slow',
-    'build-test-archive-slow / Build test archive (slow 2)',
-  ],
-  'build-test-archive-a': [
-    'build-test-archive-a',
-    'build-test-archive-a / Build test archive (1)',
-  ],
-  'build-test-archive-b': [
-    'build-test-archive-b',
-    'build-test-archive-b / Build test archive (3)',
+  'build-test-archive': [
+    'build-test-archive',
+    'build-test-archive / Build test archive',
   ],
   'test-slow-shard': [
     'test-slow-shard',
@@ -183,9 +173,7 @@ const CI_FRONTEND_JOBS = ['Frontend unit gates', 'Frontend package gates'];
 // below. Tests derive every impact-conditioned ci.yml job and require this map to stay
 // complete, so adding a new selectable lane cannot silently escape the controller.
 const CI_AUDITED_JOB_IDS = {
-  'build-test-archive-slow': 'build-test-archive-slow',
-  'build-test-archive-a': 'build-test-archive-a',
-  'build-test-archive-b': 'build-test-archive-b',
+  'build-test-archive': 'build-test-archive',
   'test-slow-shard': 'test-slow-shard',
   'test-regular-shard-1': 'test-regular-shard-1',
   'test-regular-shard-2': 'test-regular-shard-2',
