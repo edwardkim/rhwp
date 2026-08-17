@@ -2606,6 +2606,14 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     ]),
                     &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "props", "dryRun", "changedPages", "output", "outputFormat", "verify"],
                 ),
+        tool(
+                    name,
+                    description,
+                    input_schema,
+                    command,
+                    args_template,
+                    output_fields,
+                )
         tool_with_optional_args(
             "hwp_delete_table",
             "[#5028] 본문 최상위 표를 지운다. 좌표는 export-tables 의 index. 코어 delete_table_control_native 배선.",
@@ -3379,7 +3387,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 44] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 45] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3468,6 +3476,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 44] = [
     ("apply-style", "본문 문단 스타일 적용"),
     ("set-numbering-restart", "문단 번호 다시 시작"),
     ("apply-para-format-in-hf", "머리말/꼬리말 문단 서식 적용"),
+    ("apply-endnote-shape", "미주 모양 적용"),
 
 ];
 
@@ -18829,6 +18838,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("delete-footnote") => edit_delete_footnote(&args[1..]),
         Some("add-bookmark") => edit_add_bookmark(&args[1..]),
         Some("delete-bookmark") => edit_delete_bookmark(&args[1..]),
+        Some("apply-endnote-shape") => edit_apply_endnote_shape(&args[1..]),
         Some("apply-para-format-in-hf") => edit_apply_para_format_in_hf(&args[1..]),
         Some("set-numbering-restart") => edit_set_numbering_restart(&args[1..]),
         Some("apply-style") => edit_apply_style(&args[1..]),
@@ -31689,6 +31699,107 @@ fn edit_apply_para_format_in_hf(args: &[String]) -> i32 {
 ///
 /// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
 /// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+
+fn edit_apply_endnote_shape(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-endnote-shape <파일> --props <JSON> [--section N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut props: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => section = n,
+                    Err(_) => {
+                        eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => props = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --props 뒤에 JSON 문자열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(props)) = (file_path, props) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.apply_endnote_shape_native(section, &props) {
+            eprintln!("오류: 미주 모양 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "enshape",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section }),
+        &[(section, 0)],
+        &format!("미주 모양 예정: {file_path} 구역 {section}"),
+        &format!("미주 모양 적용 완료: {file_path}"),
+    )
+}
+
+/// [#5017] `edit delete-footnote` — 각주/미주 삭제.
 
 fn edit_insert_image(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]";
