@@ -5,6 +5,18 @@ description: rhwp 저장소에 기여(이슈·코드 변경·문서·PR)할 때�
 
 # rhwp-contributor — 기여 절차 Skill
 
+> **PR 전 필수. 실패하면 PR 금지.**
+>
+> ```bash
+> cargo fmt --all
+> cargo fmt --all -- --check
+> node scripts/rust-test-suite-manifest.mjs --check
+> node scripts/rust-unit-test-tiers.mjs --check
+> ```
+>
+> CI `Lint` 의 Format check 는 `cargo fmt --all -- --check` 이다.
+> `cargo fmt --check` 만 돌리면 CI 가 또 실패한다.
+
 ## 목적
 
 기여 1건을 저장소 규약대로 완주한다. 절차의 정본은 [AGENTS.md](../../../AGENTS.md)·
