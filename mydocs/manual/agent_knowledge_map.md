@@ -297,10 +297,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 301개 필드
+### 2-2. 전수 사전 — 303개 필드
 
-`capabilities` 의 `recordFields` 고유 **298개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 301개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **300개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 303개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -320,6 +320,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
 | `rows` | number | 셀을 나눌 행 수 (1 이상) | `edit split-cell-into` |
 | `cols` | number | 셀을 나눌 열 수 (1 이상) | `edit split-cell-into` |
+| `vertical` | bool | 참이면 행 높이, 거짓이면 열 폭 | `edit resize-table-cell` |
+| `forward` | bool | 참이면 늘리고, 거짓이면 줄인다 | `edit resize-table-cell` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
 | `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`merge-paragraph` |
