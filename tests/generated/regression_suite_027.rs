@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_027
 
+#[path = "../cases/insert_field_in_hf_contract.rs"]
+mod insert_field_in_hf_contract;
+
 #[path = "../cell_square_picture_anchor.rs"]
 mod cell_square_picture_anchor;
 
