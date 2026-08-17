@@ -292,6 +292,30 @@ test('PR base 검사는 Cargo generated target block의 커밋도 거부한다',
   );
 });
 
+test('CI가 삭제된 파생 산출물을 재생성해도 PR base 검사가 통과한다', (t) => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-suite-regenerated-output-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const manifest = writeRepositoryFixture(root);
+  const generatedPath = path.join(
+    root,
+    'tests',
+    'generated',
+    'regression_suite_001.rs',
+  );
+  const manifestPath = path.join(root, 'tests', 'suites', 'manifest.json');
+
+  runGit(root, ['rm', generatedPath, manifestPath]);
+  runGit(root, ['commit', '--quiet', '-m', 'remove derived outputs']);
+
+  // CI의 --prepare가 하는 일: HEAD에는 삭제로 남기되 작업 폴더에는 다시 생성한다.
+  mkdirSync(path.dirname(generatedPath), { recursive: true });
+  writeFileSync(generatedPath, renderHarness('regression_suite_001', manifest.suites.regression_suite_001));
+  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const validation = validateRepository(root, { baseRef: 'HEAD~1' });
+  assert.deepEqual(validation.errors, []);
+});
+
 test('기여자 가이드는 원본-only 제출을 안내한다', () => {
   const guide = readFileSync(path.join(ROOT, 'CONTRIBUTING.md'), 'utf8');
   for (const expected of [/tests\/cases/, /PR review|CI/, /tests\/generated/]) {

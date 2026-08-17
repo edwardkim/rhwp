@@ -261,10 +261,15 @@ export function validateDerivedArtifactChanges(
   return errors;
 }
 
-function changedPathsAgainstBase(root, baseRef) {
+function changedPathsAgainstBase(root, baseRef, diffFilter = null) {
+  const arguments_ = ['diff'];
+  if (diffFilter !== null) {
+    arguments_.push(`--diff-filter=${diffFilter}`);
+  }
+  arguments_.push('--name-only', '-z', `${baseRef}...HEAD`);
   return execFileSync(
     'git',
-    ['diff', '--name-only', '-z', `${baseRef}...HEAD`],
+    arguments_,
     { cwd: root, encoding: 'utf8' },
   ).split('\0').filter(Boolean);
 }
@@ -678,14 +683,11 @@ function inspectRepository(
   }
   if (baseRef !== null) {
     try {
-      const changedPaths = changedPathsAgainstBase(root, baseRef);
       errors.push(
         ...validateDerivedArtifactChanges(
-          changedPaths.filter(
-            (changedPath) =>
-              changedPath === CARGO_MANIFEST_RELATIVE_PATH ||
-              existsSync(path.join(root, changedPath)),
-          ),
+          // CI의 --prepare는 이 PR에서 삭제한 산출물을 작업 폴더에 다시 만들 수
+          // 있다. PR diff상 A/M만 검사해야 실제 커밋 추가·수정은 막고 D는 허용한다.
+          changedPathsAgainstBase(root, baseRef, 'AM'),
           {
             baseCargoToml: textAtGitRef(root, baseRef, CARGO_MANIFEST_RELATIVE_PATH),
             headCargoToml: textAtGitRef(root, 'HEAD', CARGO_MANIFEST_RELATIVE_PATH),
