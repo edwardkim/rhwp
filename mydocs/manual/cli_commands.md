@@ -1109,6 +1109,9 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 ### `edit resize-table-cell <파일> --table <번호> --row <행> --col <열> [--vertical] [--forward] [-o <출력>] [--dry-run] [--verify] [--json]`
 본문 최상위 표의 한 칸 크기를 한 걸음(283 HWPUNIT) 조절한다. 코어 `resize_table_cell_native`. 병합 칸이 있으면 네이티브가 거부한다.
 
+### `edit set-cell-props <파일> --table <번호> --row <행> --col <열> --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 최상위 표 셀의 속성을 JSON 객체로 변경한다. 코어 `set_cell_properties_native`를 사용하며, `--props`에는 `verticalAlign`, 셀 여백 등 지원되는 속성만 지정한다.
+
 ### `edit move-table <파일> --table <번호> --dx <가로> --dy <세로> [-o <출력>] [--dry-run] [--verify] [--json]`
 본문 최상위 표의 위치 오프셋을 옮긴다. 코어 `move_table_offset_native`. `--dx`/`--dy` 는 HWPUNIT(양수=오른쪽/아래, 음수 허용).
 

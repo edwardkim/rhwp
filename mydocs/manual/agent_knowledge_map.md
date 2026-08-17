@@ -426,12 +426,12 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `tableCount` | number | 본문 최상위 표 개수(중첩 표는 세지 않는다) | `export-tables`·`table-to-csv` |
 | `tables` | array | 표 목록(§2-3) — 문서 파생 | `export-tables`·`table-to-csv` |
 | `bom` | bool | CSV 파일에 UTF-8 BOM 을 붙였나 | `table-to-csv` |
-| `table` | number | 대상 표 index | `csv-to-table`·`edit set-cell` |
+| `table` | number | 대상 표 index | `csv-to-table`·`edit set-cell`·`set-cell-props` |
 | `rowCount` / `colCount` | number | 표의 행·열 수(CSV 대조 기준) | `csv-to-table` |
 | `changed` | array | 실제로 바뀔/바뀐 칸 `{row,col,oldText,newText}` | `csv-to-table` |
 | `changedCount` | number | 바뀐 칸 수 | `csv-to-table` |
 | `invalid` | array | **한 칸도 쓰지 않게 만든 이유들.** 비어 있지 않으면 exit 2 | `csv-to-table`·`run` |
-| `row` / `col` | number | 격자 좌표(0 기준). batch fill 에서는 `row` 가 **데이터 행 번호** | `edit set-cell`·`batch fill` |
+| `row` / `col` | number | 격자 좌표(0 기준). batch fill 에서는 `row` 가 **데이터 행 번호** | `edit set-cell`·`set-cell-props`·`batch fill` |
 | `oldText` / `newText` | string | 칸의 이전/새 값. `oldText` 는 **문서 파생** | `edit set-cell` |
 | `keepStyle` | bool | 칸 안내문 스타일을 상속했나 | `edit set-cell` |
 
@@ -1094,7 +1094,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 60개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`delete-text-in-cell`·`insert-text`·`delete-text`·
+**`edit` 하위 61개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`delete-text-in-cell`·`insert-text`·`delete-text`·
 `insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`split-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`split-cell-into`·`split-table`·`fit-table`·`resize-table`·`merge-table`·`set-column-widths`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`delete-equation`·`add-bookmark`·`delete-bookmark`·`delete-table`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf`·`split-paragraph-in-cell`·`merge-paragraph-in-cell`·`apply-char-format`·`apply-para-format`·`apply-style`·`apply-cell-style`·`delete-control`·`insert-header-footer`·`insert-field-in-hf`·`set-column-def`·`set-numbering-restart`·`set-page-hide`·`transpose-table`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
@@ -1147,6 +1147,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_replace_text` | `edit replace-text --json` | `path`,`find`,`replace` |
 | `hwp_set_checkbox` | `edit replace-text --find □ --replace ☑ --occurrence` | `path`,`occurrence`,`output` |
 | `hwp_set_cell` | `edit set-cell --json` | `path`,`table`,`row`,`col`,`text` |
+| `hwp_set_cell_props` | `edit set-cell-props --json` | `path`,`table`,`row`,`col`,`props` |
 | `hwp_insert_row` | `edit insert-row --json` | `path`,`table`,`row` |
 | `hwp_insert_col` | `edit insert-col --json` | `path`,`table`,`col` |
 | `hwp_delete_row` | `edit delete-row --json` | `path`,`table`,`row` |
