@@ -1007,6 +1007,10 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit delete-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5012)
 지정 문단을 지운다. 코어 `delete_paragraph_native`. 구역 마지막 문단은 거부한다.
 
+### `edit merge-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5018)
+지정 문단을 바로 앞 문단에 합친다. 코어 `merge_paragraph_native`. `--para` 는 합쳐질
+문단(1 이상, 0 은 거부).
+
 ### `edit insert-page-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4993)
 문단을 지정 오프셋에서 가르고 쪽 나눔을 넣는다. 코어 `insert_page_break_native` 배선.
 
@@ -1147,7 +1151,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 19종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`insert-page-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`insert-image`/`redact`/`sanitize`)은
+`edit` 20종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`insert-image`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`

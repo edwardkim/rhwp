@@ -23,7 +23,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **84개**(그중 `--json` 계약 **53개**, batch 축 **9개**) · MCP 도구 **87개**(무상태 71 + 세션 전용 16) |
+| 표면 규모 | CLI 명령 **84개**(그중 `--json` 계약 **53개**, batch 축 **9개**) · MCP 도구 **88개**(무상태 72 + 세션 전용 16) |
 | 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **261개** · §2 전수 사전 **264개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
@@ -320,7 +320,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
-| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-footnote` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-footnote`·`merge-paragraph` |
 | `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
 | `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell` |
@@ -1059,15 +1059,15 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 19개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
-`insert-paragraph`·`delete-paragraph`·`insert-page-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 20개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
+`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 87개
+## 6. MCP 도구 전수 지도 — 88개
 
-### 6-1. 무상태 71개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 72개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
@@ -1122,6 +1122,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
 | `hwp_delete_paragraph` | `edit delete-paragraph --json` | `path` |
+| `hwp_merge_paragraph` | `edit merge-paragraph --json` | `path` |
 | `hwp_insert_page_break` | `edit insert-page-break --json` | `path` |
 | `hwp_redact` | `edit redact --json` | `path` |
 | `hwp_sanitize` | `edit sanitize --json` | `path` |
