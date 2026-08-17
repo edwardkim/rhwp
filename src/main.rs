@@ -2734,6 +2734,32 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     &["schemaVersion", "source", "section", "paragraph", "ctrl", "fnPara", "dryRun", "changedPages", "output", "outputFormat", "verify"],
                 ),
         tool_with_optional_args(
+                    "hwp_apply_para_format_in_footnote",
+                    "각주/미주 문단에 문단 서식을 적용한다. --section/--para/--ctrl 은 각주 컨트롤 좌표. --props 는 alignment 등 JSON. 코어 apply_para_format_in_footnote_native 배선.",
+                    serde_json::json!({
+                        "type": "object",
+                        "properties": {
+                            "path": { "type": "string" },
+                            "section": { "type": "integer", "minimum": 0 },
+                            "paragraph": { "type": "integer", "minimum": 0 },
+                            "ctrl": { "type": "integer", "minimum": 0 },
+                            "fnPara": { "type": "integer", "minimum": 0 },
+                            "props": { "type": "string", "description": "문단 서식 JSON (예: {\"alignment\":\"center\"})" },
+                            "output": { "type": "string" },
+                            "dryRun": { "type": "boolean" }
+                        },
+                        "required": ["path", "section", "paragraph", "ctrl", "props"],
+                    }),
+                    "edit",
+                    serde_json::json!(["edit", "apply-para-format-in-footnote", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--props", "{props}", "--json"]),
+                    serde_json::json!([
+                        { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
+                        { "when": "output", "args": ["-o", "{output}"] },
+                        { "when": "dryRun", "args": ["--dry-run"] }
+                    ]),
+                    &["schemaVersion", "source", "section", "paragraph", "ctrl", "count", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+                ),
+        tool_with_optional_args(
             "hwp_delete_table",
             "[#5028] 본문 최상위 표를 지운다. 좌표는 export-tables 의 index. 코어 delete_table_control_native 배선.",
             serde_json::json!({
@@ -3506,7 +3532,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 49] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 50] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3600,6 +3626,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 49] = [
     ("delete-text-in-footnote", "각주/미주 텍스트 삭제"),
     ("split-paragraph-in-footnote", "각주/미주 문단 분할"),
     ("merge-paragraph-in-footnote", "각주/미주 문단 병합"),
+    ("apply-para-format-in-footnote", "각주 문단 서식 적용"),
 
 ];
 
@@ -18961,6 +18988,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("delete-footnote") => edit_delete_footnote(&args[1..]),
         Some("add-bookmark") => edit_add_bookmark(&args[1..]),
         Some("delete-bookmark") => edit_delete_bookmark(&args[1..]),
+        Some("apply-para-format-in-footnote") => edit_apply_para_format_in_footnote(&args[1..]),
         Some("merge-paragraph-in-footnote") => edit_merge_paragraph_in_footnote(&args[1..]),
         Some("split-paragraph-in-footnote") => edit_split_paragraph_in_footnote(&args[1..]),
         Some("delete-text-in-footnote") => edit_delete_text_in_footnote(&args[1..]),
@@ -32401,6 +32429,130 @@ fn edit_merge_paragraph_in_footnote(args: &[String]) -> i32 {
 }
 
 /// [#5012] `edit delete-paragraph` — 문단 삭제.
+
+fn edit_apply_para_format_in_footnote(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-para-format-in-footnote <파일> --section N --para N --ctrl N --props <JSON> [--fn-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut fn_para: usize = 0;
+    let mut props_arg: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" | "--fn-para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        "--ctrl" => ctrl = Some(n),
+                        _ => fn_para = n,
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) if !v.is_empty() => props_arg = Some(v.as_str()),
+                    _ => {
+                        eprintln!("오류: --props 뒤에 문단 서식 JSON 이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl), Some(props)) =
+        (file_path, section, para, ctrl, props_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if serde_json::from_str::<serde_json::Value>(props).is_err() {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) =
+            doc.apply_para_format_in_footnote_native(section, para, ctrl, fn_para, props)
+        {
+            eprintln!("오류: 각주 문단 서식 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "fnpfmt",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "count": fn_para,
+            "text": props
+        }),
+        &[(section, para)],
+        &format!("각주 문단 서식 적용 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("각주 문단 서식 적용 완료: {file_path}"),
+    )
+}
+
+/// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
 
 fn edit_insert_image(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]";
