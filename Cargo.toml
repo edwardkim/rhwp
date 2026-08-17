@@ -295,7 +295,7 @@ skia-safe = { version = "0.99.0", optional = true, default-features = false, fea
 # 두 래스터라이저에 동일 입력으로 넣어 벤치마크·픽셀비교를 성립). native-skia 의 resvg 0.47 과
 # 별개 버전으로 공존한다.
 vello = { version = "0.5", optional = true }
-vello_svg = { version = "0.7", optional = true }
+vello_svg = { version = "0.10", optional = true }
 pollster = { version = "0.4", optional = true }
 resvg-gpu = { package = "resvg", version = "0.45", optional = true }
 
