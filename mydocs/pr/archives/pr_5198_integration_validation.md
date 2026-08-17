@@ -9,7 +9,7 @@ last_verified: 2026-08-18
 
 - 기준 브랜치: 최신 `upstream/devel` `efbd8da6a84786dbdad8274c0ced49669e5f3e45`.
 - 통합 검토 브랜치: `review/kevin9327-stack-20260818-r3`.
-- 원 통합 PR [#5198](https://github.com/edwardkim/rhwp/pull/5198)은 2026-08-17에 병합되어 닫혔다. 따라서 후속 보정은 새 PR로 제안한다.
+- 원 통합 PR [#5198](https://github.com/edwardkim/rhwp/pull/5198)은 2026-08-17에 병합되어 닫혔다. 후속 보정은 draft PR [#5201](https://github.com/edwardkim/rhwp/pull/5201)로 제안했다.
 - #4885부터 #5161까지 지정한 29개 원본 PR은 모두 `OPEN`, non-draft, `devel` 대상임을 GitHub에서 재확인했다.
 - 최신 로컬 근거: `cargo build --bin rhwp --target-dir target\\pr-review`, `set_page_hide_contract` 4/4, `cargo fmt --all -- --check`, `git diff --check`, unit-tier check, `gen_agent_codex.py --check` 통과.
 - `rust-test-suite-manifest --check`의 `regression_suite_002`~`032` 드리프트는 생성 CI 산출물 범위라 커밋에서 제외한다. 생성 suite가 참조하던 원본 `tests/cases/set_page_hide_contract.rs`는 복구했고 해당 계약은 통과했다.
