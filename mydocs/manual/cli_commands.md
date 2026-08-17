@@ -1021,6 +1021,11 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit insert-column-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5019)
 문단을 지정 오프셋에서 가르고 단 나눔을 넣는다. 코어 `insert_column_break_native` 배선.
 
+### `edit apply-char-format-in-cell <파일> (--table N --row N --col N | --section N --para N --ctrl N --cell N) [--cell-para N] [--start N] [--end N] [--props JSON] [--bold] [--font-size N] [--color 색] [-o <출력>] [--dry-run] [--verify] [--json]`
+표 셀 문단 글자 범위에 글자 서식을 적용한다. 코어 `apply_char_format_in_cell_native`.
+`--table`/`--row`/`--col` 또는 `--section`/`--para`/`--ctrl`/`--cell`. `--props` 또는
+`--bold`/`--font-size`/`--color`. `--start`/`--end` 생략 시 문단 전체.
+
 ### `edit insert-row <파일> --table <번호> --row <행> [--below] [-o <출력>] [--dry-run] [--verify] [--json]` (#4994)
 본문 최상위 표에 행을 끼운다. 코어 `insert_table_row_native`. `--below` 면 지정 행 아래.
 

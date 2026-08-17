@@ -2281,6 +2281,31 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
         "cellPara",
         "insert-text-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 cellPara 를 안 낸다",
     ),
+    (
+        "edit",
+        "innerPara",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 innerPara 를 안 낸다",
+    ),
+    (
+        "edit",
+        "props",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 props 를 안 낸다",
+    ),
+    (
+        "edit",
+        "bold",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 bold 를 안 낸다",
+    ),
+    (
+        "edit",
+        "fontSize",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 fontSize 를 안 낸다",
+    ),
+    (
+        "edit",
+        "color",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 color 를 안 낸다",
+    ),
 ];
 
 #[test]
