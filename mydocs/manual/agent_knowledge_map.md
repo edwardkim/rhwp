@@ -107,6 +107,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | k 번째만 치환 | `edit replace-text --occurrence k` | `occurrence`·`replacedCount:1` | 같은 절 |
 | 체크박스 켜기 | `edit replace-text --find □ --replace ☑ --occurrence k` (`hwp_set_checkbox`) | `replacedCount` | 같은 절 |
 | 도장·서명 붙이기 | `edit insert-image` (`hwp_insert_image`) | `binDataId`·`overflow` | [CLI 매뉴얼](cli_commands.md) §edit insert-image |
+| 도형 묶기 | `edit group-shapes` (`hwp_group_shapes`) | `count`·`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit group-shapes |
 | 없는 자리에 글자 넣기 | `edit insert-text` (`hwp_insert_text`) | `insertedChars`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-text |
 | 개인정보 마스킹 | `edit redact` (`hwp_redact`) | `findingCount`·`redactedCount` | [보안 소비자 가이드](../tech/agent_security/consumer_guide.md) |
 | 메타데이터 제거 | `edit sanitize` (`hwp_sanitize`) | `removedCount`·`removed[]` | 같은 문서 |
@@ -1094,7 +1095,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 63개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`delete-text-in-cell`·`insert-text`·`delete-text`·
+**`edit` 하위 64개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`delete-text-in-cell`·`insert-text`·`delete-text`·
 `insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`split-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`split-cell-into`·`split-table`·`fit-table`·`resize-table`·`merge-table`·`set-column-widths`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`delete-equation`·`add-bookmark`·`delete-bookmark`·`delete-table`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf`·`split-paragraph-in-cell`·`merge-paragraph-in-cell`·`apply-char-format`·`apply-para-format`·`apply-style`·`apply-cell-style`·`delete-control`·`insert-header-footer`·`insert-field-in-hf`·`set-column-def`·`set-numbering-restart`·`set-page-hide`·`transpose-table`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
@@ -1191,6 +1192,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_insert_field_in_hf` | `edit insert-field-in-hf --json` | `path`,`fieldType` |
 | `hwp_set_column_def` | `edit set-column-def --json` | `path`,`count` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
+| `hwp_group_shapes` | `edit group-shapes --json` | `path`,`targets` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
