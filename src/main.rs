@@ -2551,30 +2551,83 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     ]),
                     &["schemaVersion", "source", "section", "paragraph", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
                 ),
-        tool(
-                    name,
-                    description,
-                    input_schema,
-                    command,
-                    args_template,
-                    output_fields,
-                )
-        tool(
-                    name,
-                    description,
-                    input_schema,
-                    command,
-                    args_template,
-                    output_fields,
-                )
-        tool(
-                    name,
-                    description,
-                    input_schema,
-                    command,
-                    args_template,
-                    output_fields,
-                )
+        tool_with_optional_args(
+                    "hwp_apply_para_format",
+                    "본문 문단에 문단 서식 JSON을 적용한다. 코어 apply_para_format_native 배선.",
+                    serde_json::json!({
+                        "type": "object",
+                        "properties": {
+                            "path": { "type": "string" },
+                            "section": { "type": "integer", "minimum": 0 },
+                            "paragraph": { "type": "integer", "minimum": 0 },
+                            "props": { "type": "string", "description": "문단 서식 JSON (예: {\"alignment\":\"center\"})" },
+                            "output": { "type": "string" },
+                            "dryRun": { "type": "boolean" }
+                        },
+                        "required": ["path", "props"],
+                    }),
+                    "edit",
+                    serde_json::json!(["edit", "apply-para-format", "{path}", "--props", "{props}", "--json"]),
+                    serde_json::json!([
+                        { "when": "section", "args": ["--section", "{section}"] },
+                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                        { "when": "output", "args": ["-o", "{output}"] },
+                        { "when": "dryRun", "args": ["--dry-run"] }
+                    ]),
+                    &["schemaVersion", "source", "section", "paragraph", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+                ),
+        tool_with_optional_args(
+                    "hwp_apply_style",
+                    "본문 문단에 스타일 ID를 적용한다. 코어 apply_style_native 배선.",
+                    serde_json::json!({
+                        "type": "object",
+                        "properties": {
+                            "path": { "type": "string" },
+                            "section": { "type": "integer", "minimum": 0 },
+                            "paragraph": { "type": "integer", "minimum": 0 },
+                            "style": { "type": "integer", "minimum": 0 },
+                            "output": { "type": "string" },
+                            "dryRun": { "type": "boolean" }
+                        },
+                        "required": ["path", "style"],
+                    }),
+                    "edit",
+                    serde_json::json!(["edit", "apply-style", "{path}", "--style", "{style}", "--json"]),
+                    serde_json::json!([
+                        { "when": "section", "args": ["--section", "{section}"] },
+                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                        { "when": "output", "args": ["-o", "{output}"] },
+                        { "when": "dryRun", "args": ["--dry-run"] }
+                    ]),
+                    &["schemaVersion", "source", "section", "paragraph", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+                ),
+        tool_with_optional_args(
+                    "hwp_set_numbering_restart",
+                    "문단 번호 매기기를 다시 시작한다. mode 0=해제, 1=이전 이어, 2=새 시작. 코어 set_numbering_restart_native 배선.",
+                    serde_json::json!({
+                        "type": "object",
+                        "properties": {
+                            "path": { "type": "string" },
+                            "section": { "type": "integer", "minimum": 0 },
+                            "paragraph": { "type": "integer", "minimum": 0 },
+                            "mode": { "type": "integer", "minimum": 0, "description": "0=해제, 1=이전 이어, 2=새 시작" },
+                            "count": { "type": "integer", "minimum": 0, "description": "mode=2 일 때 시작 번호" },
+                            "output": { "type": "string" },
+                            "dryRun": { "type": "boolean" }
+                        },
+                        "required": ["path", "mode"],
+                    }),
+                    "edit",
+                    serde_json::json!(["edit", "set-numbering-restart", "{path}", "--mode", "{mode}", "--json"]),
+                    serde_json::json!([
+                        { "when": "section", "args": ["--section", "{section}"] },
+                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                        { "when": "count", "args": ["--count", "{count}"] },
+                        { "when": "output", "args": ["-o", "{output}"] },
+                        { "when": "dryRun", "args": ["--dry-run"] }
+                    ]),
+                    &["schemaVersion", "source", "section", "paragraph", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+                ),
         tool_with_optional_args(
                     "hwp_apply_para_format_in_hf",
                     "[#5109] 머리말/꼬리말 문단에 문단 서식을 적용한다. --header 또는 --footer 와 --props JSON. 코어 apply_para_format_in_hf_native 배선.",
@@ -3730,7 +3783,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                         "count",
                         "headersFooters",
                     ],
-                )
+                ),
         cmd_json(
                     "header-footer",
                     "query",
@@ -3745,7 +3798,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                         "applyTo",
                         "exists",
                     ],
-                )
+                ),
         cmd_json(
             "export-text",
             "export",
