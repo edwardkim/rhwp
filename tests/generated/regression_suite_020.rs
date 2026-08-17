@@ -8,6 +8,9 @@ mod batch_axes_contract;
 #[path = "../cases/insert_footnote_contract.rs"]
 mod insert_footnote_contract;
 
+#[path = "../cases/merge_paragraph_in_footnote_contract.rs"]
+mod merge_paragraph_in_footnote_contract;
+
 #[path = "../diag_1042_hwp3_vs_hwp5_paragraph.rs"]
 mod diag_1042_hwp3_vs_hwp5_paragraph;
 

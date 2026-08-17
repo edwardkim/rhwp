@@ -1055,6 +1055,9 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit split-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]`
 각주/미주 문단을 오프셋에서 나눈다. 코어 `split_paragraph_in_footnote_native`.
 
+### `edit merge-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N] [-o <출력>] [--dry-run] [--verify] [--json]`
+각주/미주 문단을 바로 앞 문단에 합친다. 코어 `merge_paragraph_in_footnote_native`. `--fn-para` 는 1 이상.
+
 ### `edit add-bookmark <파일> --name <이름> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5026)
 지정 좌표에 책갈피를 넣는다. 코어 `add_bookmark_native`. `--name` 필수. 같은 이름은 거부.
 

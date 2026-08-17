@@ -128,6 +128,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_delete_footnote",
             "hwp_delete_text_in_footnote",
             "hwp_split_paragraph_in_footnote",
+            "hwp_merge_paragraph_in_footnote",
             "hwp_bookmarks",
             "hwp_add_bookmark",
             "hwp_delete_bookmark",
