@@ -309,6 +309,70 @@ fn hwp3_table_cells_cover_full_grid() {
     );
 }
 
+/// 열두 번째 계약 — 표 셀이 서로 겹치면 안 된다.
+///
+/// HWP3 표는 셀이 서로 겹칠 수 있다(원본이 중복 셀·과다 span 을 담음). 한글의
+/// HWP3 임포터는 겹침을 해소하지만, raw 겹침 셀을 그대로 HWP5 로 방출하면 한글
+/// HWP5 파서가 격자 재구성 중 무한 반복(개방 STALL)한다(크롤 빈티지 21854281 의
+/// 11×5 표: c1 이 c4 슬리버를 침범 + 중복 c4 로 겹침 18). 파서에서 행-우선 배치로
+/// span 을 클립하고 중복을 버려 겹침을 없앤다.
+#[test]
+fn hwp3_table_cells_do_not_overlap() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/hwp3-table-cell-overlap.hwp");
+    let raw = std::fs::read(&path).expect("read cell-overlap");
+    let mut doc = rhwp::parser::hwp3::parse_hwp3(&raw).expect("HWP3 파싱");
+    rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
+        &mut doc,
+        FileFormat::Hwp3,
+    );
+    let mut tables = 0usize;
+    let mut overlap_total = 0usize;
+    fn walk_table(t: &rhwp::model::table::Table, tables: &mut usize, overlap: &mut usize) {
+        *tables += 1;
+        let rows = t.row_count as usize;
+        let cols = t.col_count as usize;
+        if rows > 0 && cols > 0 && rows * cols <= 0x4000 {
+            let mut occ = vec![false; rows * cols];
+            for c in &t.cells {
+                let r0 = c.row as usize;
+                let c0 = c.col as usize;
+                for r in r0..(r0 + (c.row_span.max(1) as usize)).min(rows) {
+                    for cc in c0..(c0 + (c.col_span.max(1) as usize)).min(cols) {
+                        if occ[r * cols + cc] {
+                            *overlap += 1;
+                        }
+                        occ[r * cols + cc] = true;
+                    }
+                }
+            }
+        }
+        for cell in &t.cells {
+            for p in &cell.paragraphs {
+                for ctrl in &p.controls {
+                    if let Control::Table(inner) = ctrl {
+                        walk_table(inner, tables, overlap);
+                    }
+                }
+            }
+        }
+    }
+    for sec in &doc.sections {
+        for p in &sec.paragraphs {
+            for c in &p.controls {
+                if let Control::Table(t) = c {
+                    walk_table(t, &mut tables, &mut overlap_total);
+                }
+            }
+        }
+    }
+    assert!(tables > 0, "샘플 전제: 표가 있어야 한다");
+    assert_eq!(
+        overlap_total, 0,
+        "셀이 겹치면 한글 2022 가 렌더 중 개방 STALL 한다"
+    );
+}
+
 /// 글상자 비트 게이트 — 글상자 없는 순수 사각형에 0x0100_0000 을 켜면
 /// 한글 2022 가 개방을 거부한다 (크롤 스윕 29218 p588 실측). storage 기본값
 /// 채움은 글상자일 때만 글상자 비트를 더하고, 순수 사각형은 0x0008_0000 만.

@@ -1365,6 +1365,54 @@ fn parse_hwp3_object_dispatch(
             cells.push(cell);
         }
         table.cells = cells;
+        // [열두 번째 계약] HWP3 표는 셀이 서로 겹칠 수 있다(원본이 중복 셀·과다 span 을
+        // 담음). 한글의 HWP3 임포터는 겹침을 해소(중복 제거·span 클립)해 클린 격자로
+        // 저장하지만, 우리가 raw 겹침 셀을 그대로 방출하면 한글 HWP5 파서가 격자
+        // 재구성 중 무한 반복(개방 STALL)한다(크롤 빈티지 21854281 의 11×5 표: c1 이
+        // c4 슬리버 열을 침범 + 중복 c4 로 겹침 18). 행-우선으로 배치하며 이미 점유된
+        // 칸을 침범하지 않도록 col_span/row_span 을 클립하고, 원점이 이미 점유됐으면
+        // (완전 중복) 버린다. 겹침이 없는 표에는 no-op.
+        {
+            let rows = table.row_count as usize;
+            let cols = table.col_count as usize;
+            if rows > 0 && cols > 0 && rows.saturating_mul(cols) <= 0x4000 {
+                table.cells.sort_by_key(|c| (c.row, c.col));
+                let mut occupied = vec![false; rows * cols];
+                let mut resolved = Vec::with_capacity(table.cells.len());
+                for mut cell in table.cells.drain(..) {
+                    let r0 = cell.row as usize;
+                    let c0 = cell.col as usize;
+                    if r0 >= rows || c0 >= cols || occupied[r0 * cols + c0] {
+                        continue; // 격자 밖이거나 이미 점유(중복) → 버린다
+                    }
+                    let mut cs = (cell.col_span.max(1) as usize).min(cols - c0);
+                    for k in 1..cs {
+                        if occupied[r0 * cols + (c0 + k)] {
+                            cs = k;
+                            break;
+                        }
+                    }
+                    let mut rs = (cell.row_span.max(1) as usize).min(rows - r0);
+                    'outer: for k in 1..rs {
+                        for cc in c0..c0 + cs {
+                            if occupied[(r0 + k) * cols + cc] {
+                                rs = k;
+                                break 'outer;
+                            }
+                        }
+                    }
+                    for r in r0..r0 + rs {
+                        for cc in c0..c0 + cs {
+                            occupied[r * cols + cc] = true;
+                        }
+                    }
+                    cell.col_span = cs as u16;
+                    cell.row_span = rs as u16;
+                    resolved.push(cell);
+                }
+                table.cells = resolved;
+            }
+        }
         // [열한 번째 계약] HWP3 표는 셀이 격자를 완전히 덮지 않을 수 있다(원본이 일부
         // 격자를 비움). 한글 2022 는 열 때 미커버 격자를 빈 셀로 자동 채우는데, 우리가
         // 안 채우면 그리드에 구멍이 남아 렌더가 무한 반복(개방 STALL)한다(크롤 빈티지
