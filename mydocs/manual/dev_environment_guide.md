@@ -103,7 +103,7 @@ node scripts/rust-test-suite-manifest.mjs --prepare
 node scripts/run-rust-test.mjs <확장자를_뺀_test_source_이름>
 ```
 
-`tests/generated/`, `tests/suites/manifest.json`, Cargo generated test target 블록은 파생 산출물이며
+`tests/suites/suite-policy.json`은 추적 정책이고, `tests/generated/`, `tests/suites/manifest.json`, Cargo generated test target 블록은 파생 산출물이며
 직접 수정하거나 PR에 포함하지 않는다. 일반 기여자는 `--prepare`를 실행해 파생 결과를 자신의 PR에
 등록하지 않으며, PR 전에는 `node --test scripts/tests/rust-test-suite-manifest.test.mjs`로 배정 규칙만
 확인한다. review worktree의 `--prepare`가 이름 변경·삭제와 신규 source를 한 번에 반영하고, 검증 뒤

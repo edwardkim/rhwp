@@ -20,9 +20,11 @@ import {
 } from '../run-rust-test.mjs';
 import {
   assignSources,
+  deriveManifest,
   loadManifest,
   renderCargoTestBlock,
   renderHarness,
+  validateAddedSourcePlacement,
   validateDerivedArtifactChanges,
   validateSourcePlacementAgainstBase,
   validateRepository,
@@ -54,6 +56,8 @@ function writeRepositoryFixture(root) {
       regression_suite_001: ['tests/cases/existing.rs'],
     },
   };
+  const policy = { ...manifest };
+  delete policy.suites;
   mkdirSync(path.join(root, 'tests', 'cases'), { recursive: true });
   mkdirSync(path.join(root, 'tests', 'generated'), { recursive: true });
   mkdirSync(path.join(root, 'tests', 'suites'), { recursive: true });
@@ -64,6 +68,10 @@ function writeRepositoryFixture(root) {
   writeFileSync(
     path.join(root, 'tests', 'suites', 'manifest.json'),
     `${JSON.stringify(manifest, null, 2)}\n`,
+  );
+  writeFileSync(
+    path.join(root, 'tests', 'suites', 'suite-policy.json'),
+    `${JSON.stringify(policy, null, 2)}\n`,
   );
   writeFileSync(
     path.join(root, 'tests', 'generated', 'regression_suite_001.rs'),
@@ -91,12 +99,12 @@ function writeRepositoryFixture(root) {
 }
 
 test('전체 integration source는 파생 산출물을 쓰지 않고 검증한다', () => {
-  const manifest = loadManifest();
-  const manifestPath = path.join(ROOT, 'tests', 'suites', 'manifest.json');
-  const manifestBefore = readFileSync(manifestPath, 'utf8');
+  const policyPath = path.join(ROOT, 'tests', 'suites', 'suite-policy.json');
+  const policyBefore = readFileSync(policyPath, 'utf8');
+  const manifest = deriveManifest();
   const validation = validateRepository(ROOT, { derive: true });
   assert.deepEqual(validation.errors, []);
-  assert.equal(readFileSync(manifestPath, 'utf8'), manifestBefore);
+  assert.equal(readFileSync(policyPath, 'utf8'), policyBefore);
   assert.equal(validation.sourceCount, validation.caseModuleCount);
   assert.equal(validation.suiteCount, manifest.sharding.suiteCount);
   assert.equal(
@@ -197,6 +205,20 @@ test('PR base에 없던 integration source는 tests/cases 밖에서 거부한다
       'tests/cases/new_nested.rs',
     ],
     baseManifest,
+  );
+  assert.deepEqual(errors, [
+    'PR base에 없는 신규 integration source는 tests/cases/ 아래에 두어야 합니다: tests/new_top_level.rs',
+  ]);
+});
+
+test('PR base에서 새로 추가된 integration source만 tests/cases 경로를 강제한다', () => {
+  const errors = validateAddedSourcePlacement(
+    [
+      'tests/new_top_level.rs',
+      'tests/cases/new_nested.rs',
+      'mydocs/working/task.md',
+    ],
+    ['tests/existing.rs', 'tests/new_top_level.rs', 'tests/cases/new_nested.rs'],
   );
   assert.deepEqual(errors, [
     'PR base에 없는 신규 integration source는 tests/cases/ 아래에 두어야 합니다: tests/new_top_level.rs',

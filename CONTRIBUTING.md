@@ -153,8 +153,8 @@ cargo clippy --all-targets --target-dir target/pr-review -- -D warnings # 린트
 `cargo fmt --all` 로 고친 뒤 다시 `--check` 가 통과한 다음에만 PR을 생성해주세요.
 
 새 통합 테스트는 `tests/cases/` 에만 둡니다. `tests/generated/`,
-`tests/suites/manifest.json`, Cargo의 generated test target 블록은 **PR에 넣지 않는
-파생 산출물**입니다. 일반 기여자는 자신의 PR checkout에서 `--prepare`, `--generate`,
+`tests/suites/suite-policy.json`은 추적하는 배정 정책이고, `tests/suites/manifest.json`,
+`tests/generated/**`, Cargo의 generated test target 블록은 **PR에 넣지 않는 파생 산출물**입니다. 일반 기여자는 자신의 PR checkout에서 `--prepare`, `--generate`,
 `--sync`, `--rebalance`, `--check`를 실행해 이를 등록하지 않습니다. 새 원본의 배정과
 harness 검증은 PR review 전용 worktree 및 CI가 `--prepare` 뒤 `--check`로 수행합니다.
 로컬에서는 위 계약 단위 테스트와 필요한 Rust 회귀 테스트만 실행하세요.
