@@ -1193,6 +1193,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_set_column_def` | `edit set-column-def --json` | `path`,`count` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
 | `hwp_group_shapes` | `edit group-shapes --json` | `path`,`targets` |
+| `hwp_set_page_def` | `edit set-page-def --json` | `path`,`props` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
