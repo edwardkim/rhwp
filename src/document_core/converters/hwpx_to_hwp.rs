@@ -974,6 +974,23 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
         }
     }
 
+    // [#4367] HWP3 수식의 EQEDIT 계약 — 한컴 저장본 대조(sample16 정답지):
+    // font_size 는 0 이 아니라 1200, 수식 글꼴은 "HYhwpEQ", baseline 은 % 값
+    // (한컴 67). HWP3 파서의 baseline 원시값(465)은 그 축이 아니어서 범위 밖이고,
+    // font_size=0 인 수식 개체를 한글 2022 가 만나면 크래시한다(문단 이등분 COM
+    // 실측 — 크기 채움 후에도 크래시 잔존, EQEDIT 바이트 대조로 확정).
+    fn normalize_equation_for_hwp(eq: &mut crate::model::control::Equation) {
+        if eq.font_size == 0 {
+            eq.font_size = 1200;
+        }
+        if eq.font_name.is_empty() {
+            eq.font_name = "HYhwpEQ".to_string();
+        }
+        if !(0..=100).contains(&eq.baseline) {
+            eq.baseline = 65;
+        }
+    }
+
     fn walk_shape(shape: &mut ShapeObject, source_is_hwpx: bool) {
         // local file version 은 그림뿐 아니라 **모든 개체 요소**가 1 이어야 한다.
         // 한컴 저장본은 예외 없이 1 이고, HWP3 변환본은 도형(`$con`/`$rec` 등)만
@@ -989,6 +1006,67 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
                 fill(pic, source_is_hwpx);
                 if let Some(caption) = &mut pic.caption {
                     walk_caption(caption, source_is_hwpx);
+                }
+            }
+            // [#4367] 사각형 도형의 꼭짓점 4점 — 그림(#3676 계약 ②)과 같은 축이다.
+            // 한컴 저장본은 SC_RECT 에 `(0,0) (w,0) (w,h) (0,h)` 를 담는데 HWP3
+            // 파서는 채우지 않아 전부 0 으로 나갔고, 사각형(글상자) 하나가 든
+            // 문단부터 한컴 2022 가 문서 전체를 거부했다(sample16 문단 이등분
+            // COM 실측 — N=5 열림/N=6 거부, 발동체는 사각형 글상자). 이미 채워진
+            // 도형(HWP5/HWPX 경로)은 건드리지 않는다.
+            ShapeObject::Rectangle(rect) => {
+                walk_drawing(&mut rect.drawing, source_is_hwpx);
+                let zeroed =
+                    rect.x_coords.iter().all(|&v| v == 0) && rect.y_coords.iter().all(|&v| v == 0);
+                if zeroed {
+                    let w = if rect.drawing.shape_attr.current_width > 0 {
+                        rect.drawing.shape_attr.current_width as i32
+                    } else {
+                        rect.common.width as i32
+                    };
+                    let h = if rect.drawing.shape_attr.current_height > 0 {
+                        rect.drawing.shape_attr.current_height as i32
+                    } else {
+                        rect.common.height as i32
+                    };
+                    if w > 0 && h > 0 {
+                        rect.x_coords = [0, w, w, 0];
+                        rect.y_coords = [0, 0, h, h];
+                    }
+                }
+                // 글상자 LIST_HEADER 의 최대 폭 — 한컴 저장본은 개체 폭을 담는데
+                // HWP3 파서는 0 으로 남긴다(같은 실측 문서의 바이트 대조).
+                if let Some(tb) = &mut rect.drawing.text_box {
+                    if tb.max_width == 0 {
+                        let w = if rect.drawing.shape_attr.current_width > 0 {
+                            rect.drawing.shape_attr.current_width
+                        } else {
+                            rect.common.width
+                        };
+                        tb.max_width = w;
+                    }
+                }
+                // SHAPE_COMPONENT storage flip 비트 — 한컴 저장본은 글상자 도형에
+                // 0x0108_0000(글상자 0x0100_0000 + 0x0008_0000)을 담고 회전중심을
+                // (w/2, h/2) 로 둔다. 이 storage 비트가 없으면 한컴이 개체 이후
+                // 레코드 스트림을 이어 읽지 못하는 케이스가 있다(HWPX materialize
+                // 의 기존 계약 주석·#3930 계열). HWP3 파서는 0 으로 남긴다.
+                //
+                // 글상자 비트(0x0100_0000)는 **글상자가 실재할 때만** 세운다 —
+                // 글상자 없는 일반 사각형에 세우면 한컴이 그 문서를 거부한다
+                // (크롤 스윕 29218 문단 이등분 COM 실측: p588 plain rect 가 발동체).
+                let has_text_box = rect.drawing.text_box.is_some();
+                let sa = &mut rect.drawing.shape_attr;
+                if sa.flip == 0 {
+                    sa.flip = if has_text_box {
+                        0x0108_0000
+                    } else {
+                        0x0008_0000
+                    };
+                }
+                if sa.rotation_center.x == 0 && sa.rotation_center.y == 0 {
+                    sa.rotation_center.x = (sa.current_width / 2) as i32;
+                    sa.rotation_center.y = (sa.current_height / 2) as i32;
                 }
             }
             ShapeObject::Group(group) => {
@@ -1034,6 +1112,8 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
                     }
                 }
                 Control::Shape(shape) => walk_shape(shape, source_is_hwpx),
+                // [#4367] 수식 EQEDIT 계약 정규화 — 위 normalize_equation_for_hwp 참조.
+                Control::Equation(eq) => normalize_equation_for_hwp(eq),
                 Control::Table(table) => {
                     for cell in &mut table.cells {
                         walk_paragraphs(&mut cell.paragraphs, source_is_hwpx);
@@ -2414,6 +2494,9 @@ pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> 
         doc.extra_streams
             .push((HWP3_ORIGIN_STREAM_PATH.to_string(), b"1".to_vec()));
     }
+    // [#4367] HWP3 개체 마커 축 재작성 — convert_to_hwp_ir(secd 삽입 등 다른
+    // 좌표 보정)보다 먼저, HWP3 출처에만 적용한다. HWPX 의 U+FFFC(#4778 계약)는
+    // 별개 시멘틱이므로 건드리지 않는다.
     let mut report = convert_to_hwp_ir(doc, matches!(source_format, FileFormat::Hwpx));
     report.master_page_apply_slots_materialized = master_page_apply_slots_materialized;
     report
