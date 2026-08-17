@@ -1,0 +1,26 @@
+{
+  "id": "SD11",
+  "tier": 2,
+  "title": "온톨로지 행위 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 온톨로지가 선언하는 행위(action) 수를 answer.json 에 {\"actions\": N} 으로 제출하라. 힌트: rhwp export-ontology 의 actionCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "행위 수",
+      "op": "answer_eq",
+      "answer": "actions",
+      "path": "actionCount",
+      "cmd": [
+        "export-ontology",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}
