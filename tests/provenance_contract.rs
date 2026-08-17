@@ -2395,6 +2395,51 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
         "fnPara",
         "delete-text-in-footnote 전용. 스윕 레시피는 fill-fields/set-cell 이라 fnPara 를 안 낸다",
     ),
+    (
+        "edit",
+        "columnCount",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 columnCount 를 안 낸다",
+    ),
+    (
+        "edit",
+        "columnType",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 columnType 을 안 낸다",
+    ),
+    (
+        "edit",
+        "sameWidth",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 sameWidth 를 안 낸다",
+    ),
+    (
+        "edit",
+        "spacing",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 spacing 을 안 낸다",
+    ),
+    (
+        "edit",
+        "innerPara",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 innerPara 를 안 낸다",
+    ),
+    (
+        "edit",
+        "props",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 props 를 안 낸다",
+    ),
+    (
+        "edit",
+        "bold",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 bold 를 안 낸다",
+    ),
+    (
+        "edit",
+        "fontSize",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 fontSize 를 안 낸다",
+    ),
+    (
+        "edit",
+        "color",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 color 를 안 낸다",
+    ),
 ];
 
 #[test]
