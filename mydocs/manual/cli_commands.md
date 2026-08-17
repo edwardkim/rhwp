@@ -1086,6 +1086,17 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit delete-bookmark <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]` (#5027)
 책갈피 컨트롤을 지운다. 코어 `delete_bookmark_native`. `--section`/`--para`/`--ctrl` 필수.
 
+### `edit rename-bookmark <파일> --section N --para N --ctrl N --name <이름> [-o <출력>] [--dry-run] [--verify] [--json]` (#5033)
+책갈피 이름을 바꾼다. 코어 `rename_bookmark_native`. `--section`/`--para`/`--ctrl`/`--name` 필수. 같은 이름은 거부.
+
+### `edit delete-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2] [-o <출력>] [--dry-run] [--verify] [--json]` (#5039)
+머리말/꼬리말 컨트롤을 지운다. 코어 `delete_header_footer_native`. `--header` 또는 `--footer` 필수.
+`--apply-to` 는 0 양쪽·1 짝수·2 홀수(기본 0).
+
+### `edit delete-control <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]` (#5041)
+문단이 담은 컨트롤 하나를 지운다. 갈래와 무관하게 지정한 구역·문단·컨트롤 좌표를 사용하며,
+코어 `delete_control_native`를 호출한다. 세 좌표는 0부터 시작하고 모두 필수다.
+
 ### `edit delete-table <파일> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]` (#5028)
 본문 최상위 표를 지운다. 코어 `delete_table_control_native`. 좌표는 `export-tables` 의 index.
 
@@ -1100,6 +1111,7 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 
 ```text
 edit rename-bookmark <파일> --section N --para N --ctrl N --name <이름>
+edit delete-control <파일> --section N --para N --ctrl N
 edit delete-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2]
 edit insert-header-footer-text <파일> --header|--footer --text <문자열> [--section N] [--apply-to 0|1|2] [--para N] [--offset N]
 headers-footers <파일>
@@ -1239,7 +1251,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 49종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`delete-table`/`insert-header-footer`/`insert-image`/`redact`/`sanitize`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`set-hf-picture`/`apply-hf-template`/`delete-hf-text`/`insert-field-in-hf`/`split-paragraph-in-hf`/`toggle-hide-hf`/`merge-paragraph-in-hf`/`apply-char-format`/`split-paragraph`/`apply-para-format`/`apply-style`/`set-numbering-restart`/`apply-para-format-in-hf`/`apply-endnote-shape`/`insert-footnote-text`/`delete-text-in-footnote`/`split-paragraph-in-footnote`/`merge-paragraph-in-footnote`/`apply-para-format-in-footnote`)은
+`edit` 50종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`delete-control`/`delete-table`/`insert-header-footer`/`insert-image`/`redact`/`sanitize`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`set-hf-picture`/`apply-hf-template`/`delete-hf-text`/`insert-field-in-hf`/`split-paragraph-in-hf`/`toggle-hide-hf`/`merge-paragraph-in-hf`/`apply-char-format`/`split-paragraph`/`apply-para-format`/`apply-style`/`set-numbering-restart`/`apply-para-format-in-hf`/`apply-endnote-shape`/`insert-footnote-text`/`delete-text-in-footnote`/`split-paragraph-in-footnote`/`merge-paragraph-in-footnote`/`apply-para-format-in-footnote`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`

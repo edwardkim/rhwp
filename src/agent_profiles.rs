@@ -151,6 +151,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_headers_footers",
             "hwp_insert_header_footer_text",
             "hwp_delete_header_footer",
+            "hwp_delete_control",
             "hwp_delete_table",
             "hwp_insert_header_footer",
             "hwp_set_checkbox",
