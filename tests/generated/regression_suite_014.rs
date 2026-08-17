@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_014
 
+#[path = "../cases/split_table_contract.rs"]
+mod split_table_contract;
+
 #[path = "../cases/word_count_contract.rs"]
 mod word_count_contract;
 
