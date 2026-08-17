@@ -1096,6 +1096,10 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 문서 순서 1부터(`charts` 와 같다). `--data` 는 `{"labels"?,"series":[{"name"?,"values":["…"]}]}`.
 계열 수·값 개수·이름이 다르면 한 칸도 쓰지 않는다.
 
+### `edit insert-number <파일> [--section N] [--para N] [--offset N] [--count N] [-o <출력>] [--dry-run] [--verify] [--json]`
+문단 좌표에 쪽 새 번호로 시작 컨트롤을 넣는다. 코어 `insert_new_number_native`. `--count` 는
+시작 쪽 번호(1~65535, 기본 1).
+
 ### `edit insert-row <파일> --table <번호> --row <행> [--below] [-o <출력>] [--dry-run] [--verify] [--json]` (#4994)
 본문 최상위 표에 행을 끼운다. 코어 `insert_table_row_native`. `--below` 면 지정 행 아래.
 

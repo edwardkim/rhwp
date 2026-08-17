@@ -330,7 +330,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
 | `rows` | number | 생성할 표의 행 수 (1 이상) | `edit insert-table` |
 | `cols` | number | 생성할 표의 열 수 (1 이상, 256 이하) | `edit insert-table` |
-| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`merge-paragraph` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`insert-number`·`merge-paragraph` |
 | `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
 | `cellPara` | number | 셀 안 문단 번호 (0부터) | `edit insert-text-in-cell`·`edit delete-text-in-cell` |
