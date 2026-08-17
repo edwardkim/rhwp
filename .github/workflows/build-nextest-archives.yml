@@ -48,16 +48,20 @@ jobs:
           echo 'Disk space before cleanup:'
           df -h /
           df -B1 --output=source,size,used,avail,pcent,target /
-          for path in /usr/local/lib/android /usr/share/dotnet; do
-            if [[ -e "${path}" ]]; then
-              sudo du -sh "${path}"
-            else
-              echo "${path}: absent"
-            fi
-          done
-
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /usr/share/dotnet
+          available_gb=$(df -BG --output=avail / | tail -1 | tr -dc '0-9')
+          if (( available_gb < 30 )); then
+            echo "Low disk space: ${available_gb}GB available; inspecting and removing unused toolchains."
+            for path in /usr/local/lib/android /usr/share/dotnet; do
+              if [[ -e "${path}" ]]; then
+                sudo du -sh "${path}"
+              else
+                echo "${path}: absent"
+              fi
+            done
+            sudo rm -rf /usr/local/lib/android /usr/share/dotnet
+          else
+            echo "Skip cleanup: ${available_gb}GB available"
+          fi
 
           echo 'Disk space after cleanup:'
           df -h /
