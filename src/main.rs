@@ -4099,14 +4099,6 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "hasSignal", "pages",
             ],
         ),
-        tool(
-            "hwp_charts",
-            "문서 차트 목록. 코어 list_charts_native 배선.",
-            path_schema(serde_json::json!({})),
-            "charts",
-            serde_json::json!(["charts", "--json", "{path}"]),
-            &["schemaVersion", "source", "count", "charts"],
-        ),
         tool_with_optional_args(
             "hwp_delete_equation",
             "본문 수식 컨트롤을 지운다. section/para/ctrl 은 0 기준. 코어 delete_equation_control_native 배선.",
@@ -4241,6 +4233,57 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
             &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_form_value",
+            "본문 양식 컨트롤의 값을 JSON으로 바꾼다. section/para/ctrl 은 0 기준.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "value": { "type": "string", "description": "양식 값 JSON (예: {\"text\":\"값\"})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl", "value"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-form-value", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--value", "{value}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "value", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_form_value_in_cell",
+            "표 셀 안 양식 컨트롤의 값을 JSON으로 바꾼다. 모든 좌표는 0 기준.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "tablePara": { "type": "integer", "minimum": 0 },
+                    "tableCi": { "type": "integer", "minimum": 0 },
+                    "cell": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "value": { "type": "string", "description": "양식 값 JSON (예: {\"value\":1})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "tablePara", "tableCi", "cell", "cellPara", "ctrl", "value"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-form-value-in-cell", "{path}", "--section", "{section}", "--table-para", "{tablePara}", "--table-ci", "{tableCi}", "--cell", "{cell}", "--cell-para", "{cellPara}", "--ctrl", "{ctrl}", "--value", "{value}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "tablePara", "tableCi", "cell", "cellPara", "ctrl", "value", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_set_equation_properties",
