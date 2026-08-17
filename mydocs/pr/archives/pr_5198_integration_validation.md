@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: revalidated-pending-new-pr-ci
+status: maintainer-correction-pending-new-pr-ci
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-18
 ---
@@ -9,10 +9,18 @@ last_verified: 2026-08-18
 
 - 기준 브랜치: 최신 `upstream/devel` `efbd8da6a84786dbdad8274c0ced49669e5f3e45`.
 - 통합 검토 브랜치: `review/kevin9327-stack-20260818-r3`.
-- 원 통합 PR [#5198](https://github.com/edwardkim/rhwp/pull/5198)은 2026-08-17에 병합되어 닫혔다. 후속 보정은 draft PR [#5201](https://github.com/edwardkim/rhwp/pull/5201)로 제안했다.
+- 원 통합 PR [#5198](https://github.com/edwardkim/rhwp/pull/5198)은 2026-08-17에 병합되어 닫혔다. 후속 보정은 PR [#5201](https://github.com/edwardkim/rhwp/pull/5201)로 제안했다.
 - #4885부터 #5161까지 지정한 29개 원본 PR은 모두 `OPEN`, non-draft, `devel` 대상임을 GitHub에서 재확인했다.
 - 최신 로컬 근거: `cargo build --bin rhwp --target-dir target\\pr-review`, `set_page_hide_contract` 4/4, `cargo fmt --all -- --check`, `git diff --check`, unit-tier check, `gen_agent_codex.py --check` 통과.
 - `rust-test-suite-manifest --check`의 `regression_suite_002`~`032` 드리프트는 생성 CI 산출물 범위라 커밋에서 제외한다. 생성 suite가 참조하던 원본 `tests/cases/set_page_hide_contract.rs`는 복구했고 해당 계약은 통과했다.
+
+### #5201 CI 실패 메인터너 보정
+
+- 최신 PR head `7286353129ed8ea83c6c7670906b001bb15f80eb`의 Build & Test는 세 regular shard에서 실패했다. 원인은 `hwp_set_form_value`와 `hwp_set_form_value_in_cell` MCP 등록 누락, 그리고 `hwp_charts`·`hwp_delete_equation`·`hwp_group_shapes`의 중복 등록이었다.
+- `src/main.rs`에서 누락 도구 둘을 복원하고 중복 도구 셋을 제거했다. 보정 후 `capabilities --mcp`는 162개 고유 도구를 보고하며 양식 값 설정 도구 둘을 포함한다.
+- `cargo nextest run --cargo-profile release-test --target-dir target\\pr-review --test regression_suite_031`, `regression_suite_032`, `regression_suite_029`는 각각 83/83, 80/80, 85/85 통과했다. 이는 CI 생성 배정과 달리 로컬 review checkout에서 같은 원본 계약이 배정된 suite다.
+- `cargo clippy --all-targets --target-dir target\\pr-review -- -D warnings`, `cargo fmt --all -- --check`, unit-tier check, `gen_agent_codex.py --check`, `git diff --check`도 통과했다. `tests/suites/unit-test-tiers.json`은 `src/main.rs` 테스트 모듈 위치가 세 줄 이동한 기준선만 갱신했다.
+- 생성 `tests/generated/regression_suite_*`와 `tests/suites/manifest.json`은 보정·stage하지 않는다. 새 보정 commit을 push한 뒤 그 head의 Full CI·CodeQL·Render Diff를 다시 확인해야 한다.
 
 # PR #5198 누적 통합 후보 — 메인터너 보정 및 로컬 검증
 

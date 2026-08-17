@@ -4100,29 +4100,6 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             ],
         ),
         tool_with_optional_args(
-            "hwp_delete_equation",
-            "본문 수식 컨트롤을 지운다. section/para/ctrl 은 0 기준. 코어 delete_equation_control_native 배선.",
-            serde_json::json!({
-                "type": "object",
-                "properties": {
-                    "path": { "type": "string" },
-                    "section": { "type": "integer", "minimum": 0 },
-                    "paragraph": { "type": "integer", "minimum": 0 },
-                    "ctrl": { "type": "integer", "minimum": 0 },
-                    "output": { "type": "string" },
-                    "dryRun": { "type": "boolean" }
-                },
-                "required": ["path", "section", "paragraph", "ctrl"],
-            }),
-            "edit",
-            serde_json::json!(["edit", "delete-equation", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
-            serde_json::json!([
-                { "when": "output", "args": ["-o", "{output}"] },
-                { "when": "dryRun", "args": ["--dry-run"] }
-            ]),
-            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-        ),
-        tool_with_optional_args(
             "hwp_set_chart_data",
             "문서 순번 차트의 숫자 데이터를 JSON 으로 바꾼다. 코어 set_chart_data_by_index_native 배선. chart 는 문서 순서 1부터.",
             serde_json::json!({
@@ -4308,29 +4285,6 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
             &["schemaVersion", "source", "section", "paragraph", "ctrl", "text", "dryRun", "changedPages", "output", "outputFormat", "verify"],
-        ),
-        tool_with_optional_args(
-            "hwp_group_shapes",
-            "같은 구역의 도형/그림을 묶는다. targets 는 \"para,ctrl;para,ctrl\" (2개 이상). 코어 group_shapes_native 배선.",
-            serde_json::json!({
-                "type": "object",
-                "properties": {
-                    "path": { "type": "string" },
-                    "section": { "type": "integer", "minimum": 0 },
-                    "targets": { "type": "string", "description": "para,ctrl;para,ctrl (0 기준, 2개 이상)" },
-                    "output": { "type": "string" },
-                    "dryRun": { "type": "boolean" }
-                },
-                "required": ["path", "targets"],
-            }),
-            "edit",
-            serde_json::json!(["edit", "group-shapes", "{path}", "--targets", "{targets}", "--json"]),
-            serde_json::json!([
-                { "when": "section", "args": ["--section", "{section}"] },
-                { "when": "output", "args": ["-o", "{output}"] },
-                { "when": "dryRun", "args": ["--dry-run"] }
-            ]),
-            &["schemaVersion", "source", "section", "paragraph", "ctrl", "count", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_set_page_border_fill",
