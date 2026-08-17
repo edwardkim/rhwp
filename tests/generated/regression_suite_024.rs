@@ -11,6 +11,9 @@ mod batch_extract_data_contract;
 #[path = "../capabilities_schema_contract.rs"]
 mod capabilities_schema_contract;
 
+#[path = "../cases/delete_col_contract.rs"]
+mod delete_col_contract;
+
 #[path = "../hwp3_password_fixture.rs"]
 mod hwp3_password_fixture;
 
