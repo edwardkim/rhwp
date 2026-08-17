@@ -427,6 +427,7 @@
       "tests/suites/issue_regression_pilot/issue_2097_squeeze.rs"
     ],
     "regression_suite_018": [
+      "tests/cases/insert_table_contract.rs",
       "tests/digest_v2_contract.rs",
       "tests/issue_1391_memo_field_roundtrip.rs",
       "tests/issue_2525_single_lineseg_rewrap.rs",
