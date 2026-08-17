@@ -406,6 +406,7 @@
       "tests/scan_contract.rs"
     ],
     "regression_suite_017": [
+      "tests/cases/delete_text_in_cell_contract.rs",
       "tests/edit_render_diff_gate.rs",
       "tests/envelope_integrity_contract.rs",
       "tests/hwpx_form_roundtrip.rs",
