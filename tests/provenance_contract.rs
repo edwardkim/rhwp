@@ -2261,6 +2261,11 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
         "ctrl",
         "insert-text/delete-footnote 등 컨트롤 좌표 전용. 스윕 레시피는 fill-fields/set-cell 이라 ctrl 를 안 낸다",
     ),
+    (
+        "edit",
+        "name",
+        "add-bookmark/rename-bookmark 전용. 다른 하위는 fill-fields/set-cell 처럼 name 을 안 싣는다",
+    ),
 ];
 
 #[test]
