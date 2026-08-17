@@ -130,6 +130,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_insert_header_footer",
             "hwp_insert_field_in_hf",
             "hwp_set_column_def",
+            "hwp_split_paragraph",
             "hwp_set_checkbox",
             "hwp_replace_text",
             "hwp_insert_text",
