@@ -4860,6 +4860,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 76] = [
         "본문 그림 속성 — --section/--para/--ctrl/--props",
     ),
     (
+        "set-page-border-fill",
+        "쪽 테두리/배경 — --props JSON [--section]",
+    ),
+    (
         "redact",
         "개인정보 마스킹 — --kind 선택, findings 봉투, --no-raw",
     ),
