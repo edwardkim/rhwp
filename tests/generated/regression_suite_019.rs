@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_019
 
+#[path = "../cases/delete_bookmark_contract.rs"]
+mod delete_bookmark_contract;
+
 #[path = "../edit_format_preserve_contract.rs"]
 mod edit_format_preserve_contract;
 
