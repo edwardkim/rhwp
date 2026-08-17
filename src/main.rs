@@ -19153,15 +19153,15 @@ impl EditOutputFormat {
     }
 }
 
-/// 입력 형식과 사용자가 지정한 `-o` 경로로 `edit` 산출 형식을 정한다 (#3383).
-///
-/// 기본은 **입력 형식 보존**이다 — HWPX 입력은 HWPX 로, 그 외(HWP5/HWP3)는 HWP5 로.
-/// 예외는 하나뿐이다: HWPX 입력에 사용자가 `-o ….hwp` 를 명시한 경우. 이때는 지정한
-/// **경로를 그대로 존중해** HWP5 로 저장하되(기존 스크립트 호환), 형식이 바뀐다는 사실과
-/// 손실 가능성을 stderr 로 알린다(이슈 제안 2의 과도기 경고).
-///
-/// 반대 방향(HWP 입력에 `-o ….hwpx`)은 `edit` 의 책임이 아니다 — 형식 변환은
-/// `rhwp export-hwpx` 가 담당한다. 여기서는 경고만 하고 형식을 바꾸지 않는다.
+// 입력 형식과 사용자가 지정한 `-o` 경로로 `edit` 산출 형식을 정한다 (#3383).
+//
+// 기본은 **입력 형식 보존**이다 — HWPX 입력은 HWPX 로, 그 외(HWP5/HWP3)는 HWP5 로.
+// 예외는 하나뿐이다: HWPX 입력에 사용자가 `-o ….hwp` 를 명시한 경우. 이때는 지정한
+// **경로를 그대로 존중해** HWP5 로 저장하되(기존 스크립트 호환), 형식이 바뀐다는 사실과
+// 손실 가능성을 stderr 로 알린다(이슈 제안 2의 과도기 경고).
+//
+// 반대 방향(HWP 입력에 `-o ….hwpx`)은 `edit` 의 책임이 아니다 — 형식 변환은
+// `rhwp export-hwpx` 가 담당한다. 여기서는 경고만 하고 형식을 바꾸지 않는다.
 fn edit_output_format(input_bytes: &[u8], explicit_out: Option<&str>) -> EditOutputFormat {
     let source_is_hwpx = matches!(
         rhwp::parser::detect_format(input_bytes),
@@ -19194,13 +19194,13 @@ fn edit_output_format(input_bytes: &[u8], explicit_out: Option<&str>) -> EditOut
     }
 }
 
-/// 결정된 형식으로 편집 결과를 직렬화한다 (#3383).
-///
-/// HWP5 산출은 반드시 **어댑터 경유**(`export_hwp_with_adapter`)다. HWPX 출처 IR 을 HWP
-/// 호환 형태로 옮기는 #178 어댑터를 건너뛰면 한컴 호환성과 이미지·차트가 깨진다.
-/// [#3702] 편집 저장본 자기검증 — 편집 후 IR 과 저장본 재파싱 IR 을 내부 대조한다.
-/// 반환: (verify 봉투 값, exit 3 여부). 비교기는 diff_documents 재사용(신규 로직 없음).
-/// HWPX 소스→HWP5 산출은 #3505/#3930 출처 전용 노이즈 제거를 승계한다.
+// 결정된 형식으로 편집 결과를 직렬화한다 (#3383).
+//
+// HWP5 산출은 반드시 **어댑터 경유**(`export_hwp_with_adapter`)다. HWPX 출처 IR 을 HWP
+// 호환 형태로 옮기는 #178 어댑터를 건너뛰면 한컴 호환성과 이미지·차트가 깨진다.
+// [#3702] 편집 저장본 자기검증 — 편집 후 IR 과 저장본 재파싱 IR 을 내부 대조한다.
+// 반환: (verify 봉투 값, exit 3 여부). 비교기는 diff_documents 재사용(신규 로직 없음).
+// HWPX 소스→HWP5 산출은 #3505/#3930 출처 전용 노이즈 제거를 승계한다.
 fn edit_verify_report(
     doc: &rhwp::wasm_api::HwpDocument,
     out_bytes: &[u8],
@@ -24917,12 +24917,12 @@ fn evaluate_step_condition(
     }
 }
 
-/// `edit_serialize` 와 같은 바이트를 내되 **IR 을 건드리지 않는다**.
-///
-/// 무상태 CLI 는 저장 직후 프로세스가 끝나므로 어댑터가 살아 있는 IR 을 정규화해도
-/// 관측되지 않는다. 세션 핸들은 다르다 — 도구 계약이 "핸들은 저장 후에도 열려 있다"
-/// 이므로 저장은 스냅숏이어야 한다. 그래서 세션 경로만 이쪽을 쓰고 CLI 의 `&mut`
-/// 경로는 그대로 둔다(CLI 에 문서 1회 clone 비용을 지우지 않는다).
+// `edit_serialize` 와 같은 바이트를 내되 **IR 을 건드리지 않는다**.
+//
+// 무상태 CLI 는 저장 직후 프로세스가 끝나므로 어댑터가 살아 있는 IR 을 정규화해도
+// 관측되지 않는다. 세션 핸들은 다르다 — 도구 계약이 "핸들은 저장 후에도 열려 있다"
+// 이므로 저장은 스냅숏이어야 한다. 그래서 세션 경로만 이쪽을 쓰고 CLI 의 `&mut`
+// 경로는 그대로 둔다(CLI 에 문서 1회 clone 비용을 지우지 않는다).
 fn edit_serialize_snapshot(
     doc: &rhwp::wasm_api::HwpDocument,
     format: EditOutputFormat,
@@ -24934,10 +24934,10 @@ fn edit_serialize_snapshot(
     .map_err(|e| e.to_string())
 }
 
-/// `edit fill-fields` — 누름틀에 값을 채운다 (메일머지).
-///
-/// 검증된 코어 경로(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없다.
-/// 필드 값만 바꾸므로 레이아웃·구조는 불변이다.
+// `edit fill-fields` — 누름틀에 값을 채운다 (메일머지).
+//
+// 검증된 코어 경로(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없다.
+// 필드 값만 바꾸므로 레이아웃·구조는 불변이다.
 fn edit_fill_fields(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut data_arg: Option<&str> = None;
@@ -25272,12 +25272,12 @@ fn fill_fields_core(
     })
 }
 
-/// `edit replace-text` — 문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비).
-///
-/// [#3373] 검증된 코어 경로(`replace_all` — 역순 치환으로 오프셋 안전, 본문+표 셀)를
-/// 재사용하므로 새 편집 로직이 없다. `--dry-run` 은 파일 생성 경로를 타지 않고
-/// 읽기 전용 `grep` 으로 치환 예정 건수만 보고한다. **0건이면 출력 파일을 만들지
-/// 않는다** — 무변경 산출물이 생기지 않게 한다.
+// `edit replace-text` — 문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비).
+//
+// [#3373] 검증된 코어 경로(`replace_all` — 역순 치환으로 오프셋 안전, 본문+표 셀)를
+// 재사용하므로 새 편집 로직이 없다. `--dry-run` 은 파일 생성 경로를 타지 않고
+// 읽기 전용 `grep` 으로 치환 예정 건수만 보고한다. **0건이면 출력 파일을 만들지
+// 않는다** — 무변경 산출물이 생기지 않게 한다.
 fn edit_replace_text(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut find_arg: Option<&str> = None;
@@ -25572,12 +25572,12 @@ const REDACT_DESTINATION_REQUIRED: &str = "오류: 마스킹은 되돌릴 수 �
      산출 경로를 -o <출력> 으로 지정하거나, 원본을 덮어쓸 의도라면 --in-place 를 \
      명시하세요 (먼저 --dry-run 으로 무엇이 지워질지 확인하기를 권합니다).";
 
-/// `edit redact` — 개인정보를 찾아 자릿수를 유지한 채 마스킹한다.
-///
-/// 탐지는 [`rhwp::document_core::queries::pii_scan`] 의 읽기 전용 판정을 쓰고, 실제
-/// 변경은 검증된 치환 경로(`replace_all_native`)를 재사용한다 — 새 편집 로직이 없다.
-/// 되돌릴 수 없는 작업이라 ① `--dry-run` 이 권장 흐름이고 ② 산출 경로를 명시하지
-/// 않으면 exit 2 로 거부한다.
+// `edit redact` — 개인정보를 찾아 자릿수를 유지한 채 마스킹한다.
+//
+// 탐지는 [`rhwp::document_core::queries::pii_scan`] 의 읽기 전용 판정을 쓰고, 실제
+// 변경은 검증된 치환 경로(`replace_all_native`)를 재사용한다 — 새 편집 로직이 없다.
+// 되돌릴 수 없는 작업이라 ① `--dry-run` 이 권장 흐름이고 ② 산출 경로를 명시하지
+// 않으면 exit 2 로 거부한다.
 fn edit_redact(args: &[String]) -> i32 {
     use rhwp::document_core::queries::pii_scan::PiiKind;
 
@@ -26079,10 +26079,10 @@ fn preview_text_is_current(preview: &str, body_signature: &str) -> bool {
     stripped.is_empty() || body_signature.starts_with(&stripped)
 }
 
-/// `edit sanitize` — 문서 메타데이터를 제거한다 (본문은 건드리지 않는다).
-///
-/// 작성자·회사·최종수정자·작성일과 미리보기(PrvText/PrvImage)를 지운다. 무엇을
-/// 지웠는지 `removed[]` 로 남긴다 — 조용히 지우면 감사할 수 없다.
+// `edit sanitize` — 문서 메타데이터를 제거한다 (본문은 건드리지 않는다).
+//
+// 작성자·회사·최종수정자·작성일과 미리보기(PrvText/PrvImage)를 지운다. 무엇을
+// 지웠는지 `removed[]` 로 남긴다 — 조용히 지우면 감사할 수 없다.
 fn edit_sanitize(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut out_path: Option<String> = None;
@@ -26971,13 +26971,13 @@ fn insert_image_page_anchor(
     None
 }
 
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-/// [#4990 / #3608 M9] `edit insert-text` — 문단 좌표에 새 텍스트를 삽입한다.
-///
-/// 에이전트는 기존 문자열을 바꿀 수 있었지만(replace-text·fill-fields·set-cell)
-/// **없는 자리에 글자를 넣는** 표면이 없었다. 새 편집 로직은 없다 —
-/// 검증된 코어 `insert_text_native`(스튜디오·세션이 이미 쓰는 경로)만 배선한다.
-/// 주소 어휘는 `search` 와 같다(구역·문단·문자 오프셋, 전부 0 기준).
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+// [#4990 / #3608 M9] `edit insert-text` — 문단 좌표에 새 텍스트를 삽입한다.
+//
+// 에이전트는 기존 문자열을 바꿀 수 있었지만(replace-text·fill-fields·set-cell)
+// **없는 자리에 글자를 넣는** 표면이 없었다. 새 편집 로직은 없다 —
+// 검증된 코어 `insert_text_native`(스튜디오·세션이 이미 쓰는 경로)만 배선한다.
+// 주소 어휘는 `search` 와 같다(구역·문단·문자 오프셋, 전부 0 기준).
 fn edit_insert_text(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-text <파일> --text <문자열> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
 
@@ -27279,7 +27279,7 @@ fn finish_edit_write(
     EXIT_OK
 }
 
-/// [#4992] `edit insert-paragraph` — 지정 자리에 빈 문단을 끼운다.
+// [#4992] `edit insert-paragraph` — 지정 자리에 빈 문단을 끼운다.
 fn edit_insert_paragraph(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27389,7 +27389,7 @@ fn edit_insert_paragraph(args: &[String]) -> i32 {
     )
 }
 
-/// [#4993] `edit insert-page-break` — 쪽 나눔 삽입.
+// [#4993] `edit insert-page-break` — 쪽 나눔 삽입.
 fn edit_insert_page_break(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-page-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27508,7 +27508,7 @@ fn edit_insert_page_break(args: &[String]) -> i32 {
     )
 }
 
-/// [#5019] `edit insert-column-break` — 단 나눔 삽입.
+// [#5019] `edit insert-column-break` — 단 나눔 삽입.
 fn edit_insert_column_break(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-column-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27627,7 +27627,7 @@ fn edit_insert_column_break(args: &[String]) -> i32 {
     )
 }
 
-/// [#4994] `edit insert-row` — 표 행 삽입.
+// [#4994] `edit insert-row` — 표 행 삽입.
 fn edit_insert_row(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-row <파일> --table <번호> --row <행> [--below] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27736,7 +27736,7 @@ fn edit_insert_row(args: &[String]) -> i32 {
     )
 }
 
-/// [#4995] `edit insert-col` — 표 열 삽입.
+// [#4995] `edit insert-col` — 표 열 삽입.
 fn edit_insert_col(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-col <파일> --table <번호> --col <열> [--right] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27845,7 +27845,7 @@ fn edit_insert_col(args: &[String]) -> i32 {
     )
 }
 
-/// [#4996] `edit delete-row` — 표 행 삭제.
+// [#4996] `edit delete-row` — 표 행 삭제.
 fn edit_delete_row(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-row <파일> --table <번호> --row <행> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -27952,7 +27952,7 @@ fn edit_delete_row(args: &[String]) -> i32 {
     )
 }
 
-/// [#4997] `edit merge-cells` — 표 셀 병합.
+// [#4997] `edit merge-cells` — 표 셀 병합.
 fn edit_merge_cells(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit merge-cells <파일> --table <번호> --row <행> --col <열> --end-row <행> --end-col <열> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28096,7 +28096,7 @@ fn edit_merge_cells(args: &[String]) -> i32 {
     )
 }
 
-/// [#4998] `edit insert-footnote` — 각주 삽입.
+// [#4998] `edit insert-footnote` — 각주 삽입.
 fn edit_insert_footnote(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-footnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28192,7 +28192,7 @@ fn edit_insert_footnote(args: &[String]) -> i32 {
     )
 }
 
-/// [#5009] `edit delete-col` — 표 열 삭제.
+// [#5009] `edit delete-col` — 표 열 삭제.
 fn edit_delete_col(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-col <파일> --table <번호> --col <열> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28299,7 +28299,7 @@ fn edit_delete_col(args: &[String]) -> i32 {
     )
 }
 
-/// [#5010] `edit split-cell` — 병합 셀 분할.
+// [#5010] `edit split-cell` — 병합 셀 분할.
 fn edit_split_cell(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit split-cell <파일> --table <번호> --row <행> --col <열> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28416,7 +28416,7 @@ fn edit_split_cell(args: &[String]) -> i32 {
     )
 }
 
-/// [#5011] `edit delete-text` — 문단 좌표 텍스트 삭제.
+// [#5011] `edit delete-text` — 문단 좌표 텍스트 삭제.
 fn edit_delete_text(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-text <파일> --count <글자수> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28527,7 +28527,7 @@ fn edit_delete_text(args: &[String]) -> i32 {
     )
 }
 
-/// [#5012] `edit delete-paragraph` — 문단 삭제.
+// [#5012] `edit delete-paragraph` — 문단 삭제.
 fn edit_delete_paragraph(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28624,7 +28624,7 @@ fn edit_delete_paragraph(args: &[String]) -> i32 {
     )
 }
 
-/// [#5018] `edit merge-paragraph` — 문단 병합.
+// [#5018] `edit merge-paragraph` — 문단 병합.
 fn edit_merge_paragraph(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit merge-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28721,7 +28721,7 @@ fn edit_merge_paragraph(args: &[String]) -> i32 {
     )
 }
 
-/// [#5013] `edit insert-endnote` — 미주 삽입.
+// [#5013] `edit insert-endnote` — 미주 삽입.
 fn edit_insert_endnote(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-endnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28817,7 +28817,7 @@ fn edit_insert_endnote(args: &[String]) -> i32 {
     )
 }
 
-/// [#5017] `edit delete-footnote` — 각주/미주 삭제.
+// [#5017] `edit delete-footnote` — 각주/미주 삭제.
 fn edit_delete_footnote(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-footnote <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -28914,7 +28914,7 @@ fn edit_delete_footnote(args: &[String]) -> i32 {
     )
 }
 
-/// [#5026] `edit add-bookmark` — 책갈피 추가.
+// [#5026] `edit add-bookmark` — 책갈피 추가.
 fn edit_add_bookmark(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit add-bookmark <파일> --name <이름> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29043,7 +29043,7 @@ fn edit_add_bookmark(args: &[String]) -> i32 {
     )
 }
 
-/// [#5027] `edit delete-bookmark` — 책갈피 삭제.
+// [#5027] `edit delete-bookmark` — 책갈피 삭제.
 fn edit_delete_bookmark(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-bookmark <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29151,7 +29151,7 @@ fn edit_delete_bookmark(args: &[String]) -> i32 {
     )
 }
 
-/// [#5028] `edit delete-table` — 본문 최상위 표 삭제.
+// [#5028] `edit delete-table` — 본문 최상위 표 삭제.
 fn edit_delete_table(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-table <파일> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29247,7 +29247,7 @@ fn edit_delete_table(args: &[String]) -> i32 {
     )
 }
 
-/// [#5036] `edit insert-header-footer` — 머리말/꼬리말 생성.
+// [#5036] `edit insert-header-footer` — 머리말/꼬리말 생성.
 fn edit_insert_header_footer(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29367,17 +29367,17 @@ fn edit_insert_header_footer(args: &[String]) -> i32 {
     )
 }
 
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-///
-/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-///
-/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-///
-/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 fn edit_rename_bookmark(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit rename-bookmark <파일> --section N --para N --ctrl N --name <이름> [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
@@ -29508,17 +29508,17 @@ fn edit_rename_bookmark(args: &[String]) -> i32 {
     )
 }
 
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-///
-/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-///
-/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-///
-/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 
 fn edit_delete_header_footer(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -29640,17 +29640,17 @@ fn edit_delete_header_footer(args: &[String]) -> i32 {
     )
 }
 
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-///
-/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-///
-/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-///
-/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 
 fn edit_insert_header_footer_text(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-header-footer-text <파일> --header|--footer --text <문자열> [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -29809,7 +29809,7 @@ fn edit_insert_header_footer_text(args: &[String]) -> i32 {
     )
 }
 
-/// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
+// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
 
 fn headers_footers(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
@@ -30055,7 +30055,7 @@ fn edit_set_header_footer_text(args: &[String]) -> i32 {
     )
 }
 
-/// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
+// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
 
 fn edit_set_hf_picture(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit set-hf-picture <파일> --section N --para N --ctrl N --inner-para N --inner-ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -30189,17 +30189,17 @@ fn edit_set_hf_picture(args: &[String]) -> i32 {
     )
 }
 
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-///
-/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-///
-/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-///
-/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 
 fn header_footer(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
@@ -30474,17 +30474,17 @@ fn edit_apply_hf_template(args: &[String]) -> i32 {
     )
 }
 
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-///
-/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-///
-/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-///
-/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 
 fn edit_delete_hf_text(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-hf-text <파일> --header|--footer --count <글자수> [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -30640,7 +30640,7 @@ fn edit_delete_hf_text(args: &[String]) -> i32 {
     )
 }
 
-/// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
+// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
 
 fn edit_insert_field_in_hf(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-field-in-hf <파일> --header|--footer --field-type <1|2|3> [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -30798,17 +30798,17 @@ fn edit_insert_field_in_hf(args: &[String]) -> i32 {
     )
 }
 
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-///
-/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-///
-/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-///
-/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 
 fn edit_split_paragraph_in_hf(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit split-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -30949,7 +30949,7 @@ fn edit_split_paragraph_in_hf(args: &[String]) -> i32 {
     )
 }
 
-/// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
+// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
 
 fn edit_toggle_hide_hf(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit toggle-hide-hf <파일> --header|--footer [--page N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -31066,17 +31066,17 @@ fn edit_toggle_hide_hf(args: &[String]) -> i32 {
     )
 }
 
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-///
-/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-///
-/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-///
-/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 
 fn edit_merge_paragraph_in_hf(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit merge-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -31208,7 +31208,7 @@ fn edit_merge_paragraph_in_hf(args: &[String]) -> i32 {
     )
 }
 
-/// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
+// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
 
 fn edit_apply_char_format(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit apply-char-format <파일> --props <JSON> [--section N] [--para N] [--offset N] [--count N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -31345,7 +31345,7 @@ fn edit_apply_char_format(args: &[String]) -> i32 {
     )
 }
 
-/// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
+// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
 
 fn edit_split_paragraph(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit split-paragraph <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -31442,17 +31442,17 @@ fn edit_split_paragraph(args: &[String]) -> i32 {
     )
 }
 
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-///
-/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-///
-/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-///
-/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 
 fn edit_apply_para_format(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit apply-para-format <파일> --props <JSON> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -31558,7 +31558,7 @@ fn edit_apply_para_format(args: &[String]) -> i32 {
     )
 }
 
-/// [#4994] `edit insert-row` — 표 행 삽입.
+// [#4994] `edit insert-row` — 표 행 삽입.
 
 fn edit_apply_style(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit apply-style <파일> --style N [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -31655,7 +31655,7 @@ fn edit_apply_style(args: &[String]) -> i32 {
     )
 }
 
-/// [#4994] `edit insert-row` — 표 행 삽입.
+// [#4994] `edit insert-row` — 표 행 삽입.
 
 fn edit_set_numbering_restart(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit set-numbering-restart <파일> --mode N [--count N] [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -31772,7 +31772,7 @@ fn edit_set_numbering_restart(args: &[String]) -> i32 {
     )
 }
 
-/// [#4994] `edit insert-row` — 표 행 삽입.
+// [#4994] `edit insert-row` — 표 행 삽입.
 
 fn edit_apply_para_format_in_hf(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit apply-para-format-in-hf <파일> --header|--footer --props <JSON> [--section N] [--apply-to 0|1|2] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -31916,17 +31916,17 @@ fn edit_apply_para_format_in_hf(args: &[String]) -> i32 {
     )
 }
 
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-///
-/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-///
-/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-///
-/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 
 fn edit_apply_endnote_shape(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit apply-endnote-shape <파일> --props <JSON> [--section N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -32027,7 +32027,7 @@ fn edit_apply_endnote_shape(args: &[String]) -> i32 {
     )
 }
 
-/// [#5017] `edit delete-footnote` — 각주/미주 삭제.
+// [#5017] `edit delete-footnote` — 각주/미주 삭제.
 
 fn edit_insert_footnote_text(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-footnote-text <파일> --ctrl N --text <문자열> [--section N] [--para N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -32148,17 +32148,17 @@ fn edit_insert_footnote_text(args: &[String]) -> i32 {
     )
 }
 
-/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
-///
-/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
-/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
-///
-/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
-/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
-/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
-///
-/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
-/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+//
+// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+//
+// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+//
+// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
 
 fn edit_delete_text_in_footnote(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit delete-text-in-footnote <파일> --count <글자수> [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -32278,7 +32278,7 @@ fn edit_delete_text_in_footnote(args: &[String]) -> i32 {
     )
 }
 
-/// [#5012] `edit delete-paragraph` — 문단 삭제.
+// [#5012] `edit delete-paragraph` — 문단 삭제.
 
 fn edit_split_paragraph_in_footnote(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit split-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -32389,7 +32389,7 @@ fn edit_split_paragraph_in_footnote(args: &[String]) -> i32 {
     )
 }
 
-/// [#5012] `edit delete-paragraph` — 문단 삭제.
+// [#5012] `edit delete-paragraph` — 문단 삭제.
 
 fn edit_merge_paragraph_in_footnote(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit merge-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -32501,7 +32501,7 @@ fn edit_merge_paragraph_in_footnote(args: &[String]) -> i32 {
     )
 }
 
-/// [#5012] `edit delete-paragraph` — 문단 삭제.
+// [#5012] `edit delete-paragraph` — 문단 삭제.
 
 fn edit_apply_para_format_in_footnote(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit apply-para-format-in-footnote <파일> --section N --para N --ctrl N --props <JSON> [--fn-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
@@ -32625,7 +32625,7 @@ fn edit_apply_para_format_in_footnote(args: &[String]) -> i32 {
     )
 }
 
-/// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
+// [#5041] `edit delete-control` — 문단 컨트롤 삭제 (갈래 무관).
 
 fn edit_insert_image(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]";
