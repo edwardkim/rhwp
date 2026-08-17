@@ -42,6 +42,7 @@ export interface EmbedFontDecisionTraceV1 {
 
 export interface StudioFontDecisionSnapshot {
   localState?: LocalFontState;
+  detectedOsFonts?: ReadonlySet<string>;
   canvasKitEvidence?: (record: FontDecisionTraceRecordV1) => FontDecisionBackendV1 | null;
 }
 
@@ -49,9 +50,17 @@ function unique(values: readonly string[]): string[] {
   return [...new Set(values.filter(Boolean))];
 }
 
+function primaryFontFamily(value: string): string {
+  return value
+    .split(',')[0]
+    .trim()
+    .replace(/^(["'])|(["'])$/g, '');
+}
+
 function canvas2dDecision(
   record: FontDecisionTraceRecordV1,
   localState: LocalFontState,
+  detectedOsFonts: ReadonlySet<string>,
 ): FontDecisionBackendV1 {
   const requested = record.document.face
     ?? record.layoutName.normalizedFace
@@ -62,11 +71,10 @@ function canvas2dDecision(
     record.document.altType ?? 0,
     record.document.languageSlot ?? 0,
   );
-  const detectedOs = getDetectedOSFonts();
   let source: string | null = null;
   let supplyStatus: string | null = null;
   for (const candidate of candidates) {
-    if (resolveLocalFont(candidate) || detectedOs.has(candidate)) {
+    if (resolveLocalFont(candidate) || detectedOsFonts.has(candidate)) {
       source = 'local';
       supplyStatus = 'available';
       break;
@@ -113,10 +121,11 @@ function canvaskitDecision(
   record: FontDecisionTraceRecordV1,
   snapshot: StudioFontDecisionSnapshot,
 ): FontDecisionBackendV1 {
-  const requested = record.paint.canvaskit.requested
+  const requestedChain = record.paint.canvaskit.requested
     ?? record.layoutName.normalizedFace
     ?? record.document.face
     ?? '';
+  const requested = primaryFontFamily(requestedChain);
   if (snapshot.canvasKitEvidence) {
     const evidence = snapshot.canvasKitEvidence(record);
     if (evidence) return evidence;
@@ -190,8 +199,9 @@ export function enrichFontDecisionTrace(
   assertTrace(parsed);
   const trace = structuredClone(parsed);
   const localState = snapshot.localState ?? getLocalFontState();
+  const detectedOsFonts = snapshot.detectedOsFonts ?? getDetectedOSFonts();
   for (const record of trace.records) {
-    record.paint.canvas2d = canvas2dDecision(record, localState);
+    record.paint.canvas2d = canvas2dDecision(record, localState, detectedOsFonts);
     record.paint.canvaskit = canvaskitDecision(record, snapshot);
   }
   const canvasStatuses = trace.records.map(record => record.paint.canvas2d.status);

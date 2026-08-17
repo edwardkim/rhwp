@@ -45,9 +45,38 @@ Stage 2는 다음 읽기 전용 경계를 구현했다.
 - `DocumentCore::get_font_decision_trace_native`와 WASM `getFontDecisionTrace`: 페이지 한 개와
   `maxCharacters`만 받으며, source/DocInfo/layout record와 결정적 두 hash를 반환한다.
 
-Stage 3 전에는 paint backend를 관찰하지 않는다. 따라서 native·Canvas2D·CanvasKit은 빈 성공이 아니라
-`unsupported`와 `backendObservationDeferredToStage3`를 반환한다. W1 원장 파일은 갱신하지 않았고,
-Stage 2가 바꾼 네 Rust source의 historical digest 차이는 `ledgerSourceDrift`로 노출한다.
+WASM 단독 query에서는 native Skia가 `nativeSkiaFeatureUnavailable`, Canvas2D·CanvasKit이
+`studioSnapshotRequired`인 명시적 `unsupported`다. Stage 3의 Studio RPC가 현재 renderer snapshot으로
+Canvas2D·CanvasKit 항목을 보강한다. W1 원장 파일은 갱신하지 않았고, Stage 2 이후 trace 전용
+refactor의 historical digest 차이는 `ledgerSourceDrift`로 노출한다.
+
+## 3.2 Stage 3 backend 보강
+
+- native Skia는 실제 text replay와 같은 custom → system → bundled → legacy 후보와 문자 glyph 검사를
+  사용한다.
+- Canvas2D는 실제 CSS chain과 현재 local/web/generic supply만 기록한다. 브라우저가 공개하지 않는
+  실제 glyph face는 `cssActualGlyphFaceUnobservable`로 남긴다.
+- CanvasKit은 이미 준비된 SFNT와 glyph snapshot만 읽는다. source record 또는 glyph resource를 안전하게
+  결합하지 못하면 `backendJoinMissing`으로 fail-closed한다.
+- Embed/`@rhwp/editor`의 별도 `getFontDecisionTrace`는 page와 1..4,096 상한 외 입력을 거부한다.
+
+## 3.3 Stage 4 공개 E2E
+
+[`font_decision_trace_e2e.json`](font_decision_trace_e2e.json)은 다음 profile을 서로 섞지 않고 고정한다.
+
+| profile | fixture 관측 |
+| --- | --- |
+| exact face | `바탕` → exact metric entry → embedded metric advance |
+| missing face | `HCI Poppy` → `Palatino Linotype` style substitution → exact metric |
+| document substitute | `KoPubWorld돋움체 Light` + 문서 `HCR Batang` → heuristic advance |
+
+같은 공개 문서의 HWP/HWPX가 동일 객체 상태를 가진 경우에는 record와 `layoutHash`가 같다. 반대로
+`[2027] 온새미로 1 본교재` 쌍처럼 현재 HWPX 객체에만 `substFont`가 존재하면 hash가 다른 것이 정상이다.
+이는 format/version 분기가 아니라 현재 객체의 기능 탐지 결과다.
+
+Stage 4에서 header/footer 내부의 `usize::MAX` 상대 layout marker가 native 64-bit와 wasm32에서 서로 다른
+문단 번호로 직렬화되던 문제를 발견했다. 이 marker는 문서 source 좌표가 아니므로 `null`로 정규화하고
+`source.status=unavailable`을 유지한다. 그 결과 portable `layoutHash`가 target architecture와 무관하다.
 
 ## 4. identity와 ledger 연결
 
@@ -89,6 +118,6 @@ fallback candidate chain처럼 순서가 정책인 배열은 보존한다.
 
 ## 7. 공개 fixture 경계
 
-[`public_fixtures.json`](public_fixtures.json)은 이미 repository에 추적된 HWP/HWPX 한 쌍만 가리킨다.
-private 10k corpus의 문서·파일명·식별 목록·절대 경로는 사용하지 않는다. fixture digest가 달라지거나
-추적 상태가 사라지면 검사는 실패한다.
+[`public_fixtures.json`](public_fixtures.json)은 이미 repository에 추적된 HWP/HWPX와 exact·missing·
+document-substitute profile만 가리킨다. private 10k corpus의 문서·파일명·식별 목록·절대 경로는
+사용하지 않는다. fixture digest가 달라지거나 추적 상태가 사라지면 검사는 실패한다.

@@ -1,4 +1,4 @@
-//! Issue #4961 Stage 2: bounded, read-only layout font decision trace.
+//! Issue #4961: bounded, read-only layout and paint font decision trace.
 
 use serde::Deserialize;
 use serde_json::json;
@@ -107,6 +107,9 @@ fn source_paragraph_index(run: &TextRunNode) -> Option<usize> {
         .as_ref()
         .map(|context| context.parent_para_index)
         .or(run.para_index)
+        // Header/footer and note layout use usize::MAX-relative internal markers.
+        // They are not document paragraph coordinates and differ on wasm32/native.
+        .filter(|index| *index < usize::MAX.saturating_sub(4096))
 }
 
 fn source_matches(core: &DocumentCore, run: &TextRunNode, offset: usize, ch: char) -> bool {
@@ -527,7 +530,10 @@ impl DocumentCore {
         let truncated = records_omitted > 0;
         let mut reasons = vec![TraceReason {
             code: "backendUnsupported".into(),
-            detail: Some("Paint backend observation is deferred to Stage 3.".into()),
+            detail: Some(
+                "Studio Canvas2D and CanvasKit observations require a current renderer snapshot."
+                    .into(),
+            ),
         }, TraceReason {
             code: "ledgerSourceDrift".into(),
             detail: Some("W1 candidate identities still join, but their recorded Rust source digests predate this Stage 2 trace-only refactor.".into()),
@@ -590,6 +596,179 @@ impl DocumentCore {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn stage4_e2e_manifest() -> serde_json::Value {
+        serde_json::from_str(include_str!(
+            "../../../mydocs/tech/investigations/issue-4961/font_decision_trace_e2e.json"
+        ))
+        .expect("Stage 4 E2E manifest JSON")
+    }
+
+    fn public_trace(path: &str, page: u32, max_characters: u64) -> serde_json::Value {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(path);
+        let bytes = std::fs::read(&path).unwrap_or_else(|error| {
+            panic!("public fixture read failed ({}): {error}", path.display())
+        });
+        let core = DocumentCore::from_bytes(&bytes).unwrap_or_else(|error| {
+            panic!("public fixture parse failed ({}): {error}", path.display())
+        });
+        let json = core
+            .get_font_decision_trace_native(
+                page,
+                &format!(r#"{{"maxCharacters":{max_characters}}}"#),
+            )
+            .unwrap_or_else(|error| {
+                panic!("public fixture trace failed ({}): {error}", path.display())
+            });
+        serde_json::from_str(&json).expect("public fixture trace JSON")
+    }
+
+    fn assert_stage4_profile(trace: &serde_json::Value, profile: &serde_json::Value) {
+        let record_id = profile["recordId"].as_str().expect("profile recordId");
+        let record = trace["records"]
+            .as_array()
+            .expect("trace records")
+            .iter()
+            .find(|record| record["recordId"] == record_id)
+            .unwrap_or_else(|| panic!("profile record is absent: {record_id}"));
+        let expected = &profile["expected"];
+        assert_eq!(record["source"]["status"], expected["sourceStatus"]);
+        assert_eq!(record["source"]["character"], expected["character"]);
+        assert_eq!(record["document"]["face"], expected["documentFace"]);
+        assert_eq!(record["document"]["substFont"], expected["substFont"]);
+        assert_eq!(
+            record["layoutName"]["normalizedFace"],
+            expected["normalizedFace"]
+        );
+        let expected_step = &expected["layoutStepKind"];
+        if expected_step.is_null() {
+            assert!(record["layoutName"]["steps"]
+                .as_array()
+                .expect("layout steps")
+                .is_empty());
+        } else {
+            assert!(record["layoutName"]["steps"]
+                .as_array()
+                .expect("layout steps")
+                .iter()
+                .any(|step| step.get("kind") == Some(expected_step)));
+        }
+        assert_eq!(
+            record["layoutMetric"]["matchKind"],
+            expected["metricMatchKind"]
+        );
+        assert_eq!(
+            record["layoutMetric"]["characterMatch"],
+            expected["metricCharacterMatch"]
+        );
+        assert_eq!(
+            record["layoutMetric"]["widthSource"],
+            expected["widthSource"]
+        );
+    }
+
+    #[test]
+    fn stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected() {
+        let manifest = stage4_e2e_manifest();
+        let max_characters = manifest["options"]["maxCharacters"]
+            .as_u64()
+            .expect("maxCharacters");
+        let mut traces = std::collections::HashMap::new();
+        for document in manifest["documents"].as_array().expect("documents") {
+            let id = document["id"].as_str().expect("document id");
+            let trace = public_trace(
+                document["path"].as_str().expect("document path"),
+                document["page"].as_u64().expect("page") as u32,
+                max_characters,
+            );
+            assert_eq!(trace["status"], document["expectedStatus"], "{id}");
+            assert_eq!(trace["counts"], document["expectedCounts"], "{id}");
+            assert_eq!(
+                trace["layoutHash"]["value"], document["expectedLayoutHash"],
+                "{id}"
+            );
+            if cfg!(all(not(target_arch = "wasm32"), feature = "native-skia")) {
+                assert_eq!(trace["backendSummary"]["native"]["status"], "complete");
+            } else {
+                assert_eq!(trace["backendSummary"]["native"]["status"], "unsupported");
+                assert_eq!(
+                    trace["backendSummary"]["native"]["reasons"][0],
+                    "nativeSkiaFeatureUnavailable"
+                );
+            }
+            traces.insert(id.to_string(), trace);
+        }
+
+        for profile in manifest["profiles"].as_array().expect("profiles") {
+            let document_id = profile["documentId"].as_str().expect("profile documentId");
+            assert_stage4_profile(
+                traces.get(document_id).expect("profile document trace"),
+                profile,
+            );
+        }
+
+        let parity = manifest["comparisons"]["portableFormatParity"]
+            .as_array()
+            .expect("portable parity pair");
+        let hwp = traces
+            .get(parity[0].as_str().expect("HWP parity id"))
+            .expect("HWP parity trace");
+        let hwpx = traces
+            .get(parity[1].as_str().expect("HWPX parity id"))
+            .expect("HWPX parity trace");
+        assert_eq!(hwp["layoutHash"], hwpx["layoutHash"]);
+        assert_eq!(hwp["records"], hwpx["records"]);
+
+        let feature = &manifest["comparisons"]["substFeatureDetection"];
+        let without = traces
+            .get(
+                feature["withoutSubstFont"]
+                    .as_str()
+                    .expect("without subst id"),
+            )
+            .expect("without subst trace");
+        let with = traces
+            .get(feature["withSubstFont"].as_str().expect("with subst id"))
+            .expect("with subst trace");
+        assert!(without["records"]
+            .as_array()
+            .expect("without records")
+            .iter()
+            .all(|record| record["document"]["substFont"].is_null()));
+        assert!(with["records"]
+            .as_array()
+            .expect("with records")
+            .iter()
+            .any(|record| !record["document"]["substFont"].is_null()));
+        assert_ne!(without["layoutHash"], with["layoutHash"]);
+    }
+
+    #[test]
+    fn stage4_public_trace_limit_and_unsupported_backends_fail_closed() {
+        let manifest = stage4_e2e_manifest();
+        let document = &manifest["documents"][2];
+        let trace = public_trace(
+            document["path"].as_str().expect("document path"),
+            document["page"].as_u64().expect("page") as u32,
+            1,
+        );
+        assert_eq!(trace["status"], "truncated");
+        assert_eq!(trace["counts"]["recordsEmitted"], 1);
+        assert!(trace["counts"]["recordsOmitted"].as_u64().unwrap() > 0);
+        assert!(trace["reasons"]
+            .as_array()
+            .expect("reasons")
+            .iter()
+            .any(|reason| reason["code"] == "characterLimitExceeded"));
+        for backend in ["canvas2d", "canvaskit"] {
+            assert_eq!(trace["backendSummary"][backend]["status"], "unsupported");
+            assert!(trace["records"]
+                .as_array()
+                .expect("records")
+                .iter()
+                .all(|record| record["paint"][backend]["failures"][0] == "studioSnapshotRequired"));
+        }
+    }
 
     #[test]
     fn public_fixture_trace_is_bounded_and_deterministic() {
