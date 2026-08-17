@@ -128,6 +128,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_split_table",
             "hwp_fit_table",
             "hwp_resize_table",
+            "hwp_resize_table_cell",
             "hwp_merge_table",
             "hwp_set_column_widths",
             "hwp_delete_equation",

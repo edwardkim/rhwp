@@ -2327,6 +2327,16 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     ),
     (
         "edit",
+        "vertical",
+        "resize-table-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 vertical 을 안 낸다",
+    ),
+    (
+        "edit",
+        "forward",
+        "resize-table-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 forward 를 안 낸다",
+    ),
+    (
+        "edit",
         "count",
         "delete-row/delete-col 전용. 스윕 레시피는 fill-fields/set-cell 이라 count 를 안 낸다",
     ),
