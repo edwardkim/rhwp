@@ -220,6 +220,7 @@
     "regression_suite_008": [
       "tests/batch_fill_contract.rs",
       "tests/capabilities_subcommands_contract.rs",
+      "tests/cases/header_footer_contract.rs",
       "tests/issue_1008_gradient.rs",
       "tests/issue_1282_rotated_cell_picture_resize.rs",
       "tests/issue_1285_tac_sequence_right_align.rs",

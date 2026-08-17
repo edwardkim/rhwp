@@ -332,6 +332,7 @@ fn main() {
         Some("info") => exit_with(show_info(&args[2..])),
         Some("word-count") => exit_with(word_count(&args[2..])),
         Some("bookmarks") => exit_with(bookmarks(&args[2..])),
+        Some("header-footer") => exit_with(header_footer(&args[2..])),
         Some("digest") => exit_with(digest_document(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
         Some("dump-note-shape") => exit_with(dump_note_shape(&args[2..])),
@@ -669,6 +670,25 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "bookmarks",
             serde_json::json!(["bookmarks", "--json", "{path}"]),
             &["schemaVersion", "source", "count", "bookmarks"],
+        ),
+        tool_with_optional_args(
+            "hwp_header_footer",
+            "구역의 머리말/꼬리말 한 건을 조회한다. 기본은 구역 0 양쪽 머리말. 코어 get_header_footer_native 배선.",
+            path_schema(serde_json::json!({
+                "section": { "type": "integer", "minimum": 0 },
+                "header": { "type": "boolean" },
+                "footer": { "type": "boolean" },
+                "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" }
+            })),
+            "header-footer",
+            serde_json::json!(["header-footer", "--json", "{path}"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "header", "args": ["--header"] },
+                { "when": "footer", "args": ["--footer"] },
+                { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] }
+            ]),
+            &["schemaVersion", "source", "section", "isHeader", "applyTo", "exists"],
         ),
         // [#3633] 초소형 모델용 매크로 1호. 설명은 40자 이내로 극단 압축한다 —
         // 도구 목록 자체가 컨텍스트 예산을 잠식하는 4B급 모델이 1차 소비자이기
@@ -3127,6 +3147,21 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             ],
         ),
         cmd_json(
+            "header-footer",
+            "query",
+            "구역 머리말/꼬리말 한 건 조회 — 코어 get_header_footer_native",
+            true,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "section",
+                "isHeader",
+                "applyTo",
+                "exists",
+            ],
+        ),
+        cmd_json(
             "export-text",
             "export",
             "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
@@ -4939,6 +4974,14 @@ fn print_help() {
     println!("      문서 책갈피 목록을 조회한다");
     println!();
     println!("      --json                  책갈피 봉투를 JSON으로 stdout에 출력");
+    println!();
+    println!("  header-footer <파일.hwp|파일.hwpx|파일.hml> [--header|--footer] [--json]");
+    println!("      구역의 머리말/꼬리말 한 건을 조회한다 (기본: 구역 0 양쪽 머리말)");
+    println!();
+    println!("      --header / --footer     둘 중 하나 (생략 시 머리말)");
+    println!("      --section N             구역 (0부터, 기본 0)");
+    println!("      --apply-to N            0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
+    println!("      --json                  조회 봉투를 JSON으로 stdout에 출력");
     println!();
     println!("  digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]");
     println!("      문서 요약 봉투 한 줄 출력 — 메타(info)·개요 상위 노드·첫 페이지 발췌·");
@@ -11855,6 +11898,143 @@ fn bookmarks(args: &[String]) -> i32 {
             let ctrl = b["ctrlIdx"].as_u64().unwrap_or(0);
             println!("  {name}  구역 {sec} 문단 {para} 컨트롤 {ctrl}");
         }
+    }
+    EXIT_OK
+}
+
+/// `header-footer` — 구역의 머리말/꼬리말 한 건 조회.
+fn header_footer(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut is_header: Option<bool> = None;
+    let mut section: usize = 0;
+    let mut apply_to: u8 = 0;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--header" => {
+                if is_header.replace(true).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--footer" => {
+                if is_header.replace(false).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--section" | "--apply-to" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                if name == "--section" {
+                    match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    }
+                } else {
+                    match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => apply_to = n,
+                        _ => {
+                            eprintln!(
+                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    }
+                }
+            }
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let Some(file_path) = file_path else {
+        eprintln!(
+            "사용법: rhwp header-footer <파일.hwp|파일.hwpx|파일.hml> [--header|--footer] [--section N] [--apply-to 0|1|2] [--json]"
+        );
+        return EXIT_USAGE;
+    };
+    let is_header = is_header.unwrap_or(true);
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let raw = match doc.get_header_footer_native(section, is_header, apply_to) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: 머리말/꼬리말 조회 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let parsed: serde_json::Value = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 머리말/꼬리말 JSON 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let exists = parsed["exists"].as_bool().unwrap_or(false);
+    if json_mode {
+        let mut envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "section": section,
+            "isHeader": is_header,
+            "applyTo": apply_to,
+            "exists": exists,
+        });
+        if exists {
+            if let Some(obj) = parsed.as_object() {
+                for key in [
+                    "kind",
+                    "label",
+                    "paraIndex",
+                    "controlIndex",
+                    "paraCount",
+                    "text",
+                ] {
+                    if let Some(v) = obj.get(key) {
+                        envelope[key] = v.clone();
+                    }
+                }
+            }
+        }
+        println!("{}", provenance::marked(envelope, "header-footer"));
+        return EXIT_OK;
+    }
+    let kind = if is_header { "머리말" } else { "꼬리말" };
+    if exists {
+        let text = parsed["text"].as_str().unwrap_or("");
+        println!("{file_path}: {kind} 있음 (구역 {section} apply-to {apply_to})");
+        if !text.is_empty() {
+            println!("  {text}");
+        }
+    } else {
+        println!("{file_path}: {kind} 없음 (구역 {section} apply-to {apply_to})");
     }
     EXIT_OK
 }

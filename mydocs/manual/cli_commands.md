@@ -630,6 +630,10 @@ IR 본문에서 구역·문단·글자·어절·쪽 수를 센다. 새 파서는
 문서 책갈피 목록. 코어 `get_bookmarks_native`. 새 파서는 없다.
 - `--json`: `{"schemaVersion","source","count","bookmarks":[{"name","sec","para","ctrlIdx","charPos"}]}`
 
+### `header-footer <파일> [--header|--footer] [--section N] [--apply-to 0|1|2] [--json]`
+구역의 머리말/꼬리말 한 건. 코어 `get_header_footer_native`. 기본은 구역 0 양쪽 머리말.
+- `--json`: `{"schemaVersion","source","section","isHeader","applyTo","exists"}` — 있으면 `kind`/`label`/`paraIndex`/`controlIndex`/`paraCount`/`text` 도 실림
+
 ### `digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]` (#3633)
 초소형 모델용 매크로 1호 — "info 로 훑고 → export-structure 로 개요를 얻고 →
 export-text 로 첫 장을 읽는" 3단 파이프라인을 **한 번 호출**로 수행한다. 도구
