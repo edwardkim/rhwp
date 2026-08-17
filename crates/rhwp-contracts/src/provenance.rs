@@ -102,6 +102,11 @@ pub const MAP: &[CommandProvenance] = &[
         note: "count·sec·para·ctrlIdx·charPos 는 엔진 좌표다. 이름은 문서가 정한다.",
     },
     CommandProvenance {
+        command: "headers-footers",
+        untrusted: &[],
+        note: "목록은 엔진이 컨트롤 종류·적용 대상에서 만든 좌표다. 본문 문자열은 싣지 않는다.",
+    },
+    CommandProvenance {
         command: "export-text",
         untrusted: &[
             f(
