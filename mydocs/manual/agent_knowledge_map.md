@@ -24,7 +24,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
 | 표면 규모 | CLI 명령 **98개**(그중 `--json` 계약 **65개**, batch 축 **9개**) · MCP 도구 **181개**(무상태 163 + 세션 전용 18) |
-| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **321개** · §2 전수 사전 **324개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
+| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **321개** · §2 전수 사전 **329개**(자기서술 밖 실측·참조 필드 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
 **재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.
@@ -301,10 +301,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 324개 필드
+### 2-2. 전수 사전 — 329개 필드
 
-`capabilities` 의 `recordFields` 고유 **321개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 324개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **321개**와 그 밖의 실측·참조 필드를 합친
+329개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -466,12 +466,18 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `filledCount` | number | 실제로 채운 필드 수 | `edit fill-fields`·`batch fill` |
 | `filled` | array | 채운 내역 `{name,occurrence,value}` | `edit fill-fields` |
 | `notFound` | string[] | 문서에 없는 이름(오타·범위 밖 순번). **조용히 무시되지 않는다.** 비어 있지 않아도 exit 0 이다 | `edit fill-fields`·`batch fill` |
+| `ok` | bool | 지정 좌표의 양식 값을 읽었는지. 대상이 양식 컨트롤이 아니면 `false` | `form-value` |
+| `formType` | string\|null | 양식 종류. 대상이 양식 컨트롤이 아니면 `null` | `form-value` |
+| `value` | string\|null | 양식에 저장된 값. 문서 파생 | `form-value` |
+| `caption` | string\|null | 단추 등 양식의 표시 캡션. 문서 파생 | `form-value` |
+| `enabled` | bool\|null | 양식이 현재 입력을 받을 수 있는지. 대상이 양식 컨트롤이 아니면 `null` | `form-value` |
 
 #### 편집 공통
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
 | `dryRun` | bool | 파일을 쓰지 않는 사전 확인 모드 | `edit` 6종·`csv-to-table`·`batch fill` |
+| `script` | string | 수식 컨트롤에 넣거나 바꿀 수식 스크립트 | `edit insert-equation` |
 | `output` | string | **실제로 저장된 경로. 저장했을 때만 실린다** — dry-run·치환 0건이면 키 자체가 없다 | 산출 계열 13종 |
 | `outputFormat` | string | 산출 형식(`hwp5`·`hwpx`·`csv`) — 입력 형식 보존 규약의 결과 | `run`·`table-to-csv`·`csv-to-table`·`edit` |
 | `bytes` | number | 산출물 크기 | `export-pdf`·`export-hwpx`·`export-hml`·`export-doclang`·`convert`·`build-from-ingest`·`thumbnail` |

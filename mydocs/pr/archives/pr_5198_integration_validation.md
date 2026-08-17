@@ -1,9 +1,18 @@
 ---
 kind: pr-review
-status: maintainer-correction-pending-new-pr-ci
+status: maintainer-correction-local-validation-passed-ci-pending
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-18
 ---
+
+## #5201 2차 CI 보정 (2026-08-18)
+
+- 새 PR merge-ref `6b85fb5c97214f96f771cd20586d0290757a71ec`의 Build & Test 정규 샤드 1·2·3이 각각 실패했다. 실패는 CI 생성 suite 자체가 아니라 실제 계약 세 건이었다.
+- `capabilities_subcommands_contract`: `edit` 공개 하위명령에 중복이 있고 실제 디스패치/USAGE와 달랐다. 공개 목록에서 이름별 첫 선언만 유지하고 USAGE에 실제 88개 명령을 모두 등재했다.
+- `knowledge_map_field_dictionary_contract`: `form-value`의 `ok`·`formType`·`value`·`caption`·`enabled`, 그리고 수식 `script`가 §2-2 사전에 없었다. 필드 행을 추가하고 고유 필드 헤딩을 329개로 바로잡았다.
+- 로컬 검증: `cargo fmt --all -- --check`, `cargo build --bin rhwp --target-dir target\\pr-review`, `cargo test --test regression_suite_007 capabilities_subcommands_contract -- --nocapture`(4/4), `cargo test --test regression_suite_016 knowledge_map_field_dictionary_contract -- --nocapture`(2/2), `git diff --check` 통과.
+- `tests/generated/regression_suite_*`, `tests/suites/manifest.json`은 CI 분할 산출물이므로 수정·stage하지 않는다. 다음 단계는 보정 커밋 push 후 새 head CI 전체 재확인이다.
+- `tests/suites/unit-test-tiers.json`은 소스 테스트 모듈의 줄 번호 1건(41012→41016)만 재계산했으며, 재생성 뒤 `rust-unit-test-tiers.mjs --check`가 4,225 tests / 298 modules로 통과했다.
 
 ## 최신 재검증 (2026-08-18)
 
