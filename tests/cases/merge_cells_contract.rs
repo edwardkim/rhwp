@@ -18,22 +18,35 @@ fn sample() -> String {
         .into_owned()
 }
 
-fn first_mergeable(path: &str) -> (usize, usize) {
+/// 샘플 첫 표의 (0,0)-(0,1) 은 (0,1) rowspan=2 라 네이티브가 거절한다.
+/// 앵커 셀을 훑어 span 1×1 인 인접 쌍을 고른다.
+fn first_merge_range(path: &str) -> (usize, u16, u16, u16, u16, usize) {
     let bytes = std::fs::read(path).expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
-    let g = extract_tables(doc.document())
+    for g in extract_tables(doc.document())
         .into_iter()
-        .find(|g| g.container_path.is_empty() && g.cols >= 2)
-        .expect("열 2개 이상 최상위 표");
-    (g.index, g.cell_count)
+        .filter(|g| g.container_path.is_empty())
+    {
+        for c in &g.cells {
+            if c.row_span != 1 || c.col_span != 1 {
+                continue;
+            }
+            if g.cells
+                .iter()
+                .any(|n| n.row == c.row && n.col == c.col + 1 && n.row_span == 1 && n.col_span == 1)
+            {
+                return (g.index, c.row, c.col, c.row, c.col + 1, g.cell_count);
+            }
+            if g.cells
+                .iter()
+                .any(|n| n.col == c.col && n.row == c.row + 1 && n.row_span == 1 && n.col_span == 1)
+            {
+                return (g.index, c.row, c.col, c.row + 1, c.col, g.cell_count);
+            }
+        }
+    }
+    panic!("병합 가능한 1×1 인접 셀이 없다");
 }
-
-/// 샘플 표 2 첫 행은 (0,1) rowspan=2 라 가로 (0,0)-(0,1) 병합이 거절된다.
-/// 같은 표의 세로 2×1 (0,0)-(1,0) 은 둘 다 span 1×1 이다.
-const MERGE_ROW: &str = "0";
-const MERGE_COL: &str = "0";
-const MERGE_END_ROW: &str = "1";
-const MERGE_END_COL: &str = "0";
 
 fn temp(tag: &str) -> PathBuf {
     std::env::temp_dir().join(format!(
@@ -59,24 +72,23 @@ fn table_cells(path: &Path, index: usize) -> usize {
 #[test]
 fn merge_cells_reduces_count() {
     let src = sample();
-    let (idx, before) = first_mergeable(&src);
+    let (idx, row, col, end_row, end_col, before) = first_merge_range(&src);
     let out = temp("out");
-    let idx_s = idx.to_string();
     let output = Command::new(rhwp_bin())
         .args([
             "edit",
             "merge-cells",
             src.as_str(),
             "--table",
-            &idx_s,
+            &idx.to_string(),
             "--row",
-            MERGE_ROW,
+            &row.to_string(),
             "--col",
-            MERGE_COL,
+            &col.to_string(),
             "--end-row",
-            MERGE_END_ROW,
+            &end_row.to_string(),
             "--end-col",
-            MERGE_END_COL,
+            &end_col.to_string(),
             "-o",
             out.to_str().unwrap(),
             "--json",
@@ -95,24 +107,23 @@ fn merge_cells_reduces_count() {
 #[test]
 fn dry_run_no_file() {
     let src = sample();
-    let (idx, _) = first_mergeable(&src);
+    let (idx, row, col, end_row, end_col, _) = first_merge_range(&src);
     let out = temp("dry");
-    let idx_s = idx.to_string();
     let output = Command::new(rhwp_bin())
         .args([
             "edit",
             "merge-cells",
             src.as_str(),
             "--table",
-            &idx_s,
+            &idx.to_string(),
             "--row",
-            MERGE_ROW,
+            &row.to_string(),
             "--col",
-            MERGE_COL,
+            &col.to_string(),
             "--end-row",
-            MERGE_END_ROW,
+            &end_row.to_string(),
             "--end-col",
-            MERGE_END_COL,
+            &end_col.to_string(),
             "-o",
             out.to_str().unwrap(),
             "--dry-run",
