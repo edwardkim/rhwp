@@ -2095,7 +2095,11 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "type": "object",
                 "properties": {
                     "path": { "type": "string" },
-                    "name": { "type": "string", "description": "책갈피 이름 (빈 문자열 불가)" },
+                    "name": {
+                        "type": "string",
+                        "pattern": r".*\S.*",
+                        "description": "책갈피 이름 (공백만으로 구성할 수 없음)"
+                    },
                     "section": { "type": "integer", "minimum": 0 },
                     "paragraph": { "type": "integer", "minimum": 0 },
                     "offset": { "type": "integer", "minimum": 0 },
@@ -2174,6 +2178,22 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     "dryRun": { "type": "boolean" }
                 },
                 "required": ["path"],
+                "oneOf": [
+                    {
+                        "properties": {
+                            "header": { "const": true },
+                            "footer": { "not": { "const": true } }
+                        },
+                        "required": ["header"]
+                    },
+                    {
+                        "properties": {
+                            "header": { "not": { "const": true } },
+                            "footer": { "const": true }
+                        },
+                        "required": ["footer"]
+                    }
+                ],
             }),
             "edit",
             serde_json::json!(["edit", "insert-header-footer", "{path}", "--json"]),

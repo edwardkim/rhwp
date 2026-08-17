@@ -96,11 +96,20 @@ fn mcp_declared() {
         .output()
         .unwrap();
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert!(v["tools"]
+    let tool = v["tools"]
         .as_array()
         .unwrap()
         .iter()
-        .any(|t| t["name"] == "hwp_insert_header_footer"));
+        .find(|t| t["name"] == "hwp_insert_header_footer")
+        .expect("hwp_insert_header_footer 도구");
+    let one_of = tool["inputSchema"]["oneOf"]
+        .as_array()
+        .expect("header/footer 배타 선택 oneOf");
+    assert_eq!(one_of.len(), 2, "{tool}");
+    assert_eq!(one_of[0]["required"], serde_json::json!(["header"]));
+    assert_eq!(one_of[0]["properties"]["header"]["const"], true);
+    assert_eq!(one_of[1]["required"], serde_json::json!(["footer"]));
+    assert_eq!(one_of[1]["properties"]["footer"]["const"], true);
 }
 
 #[test]
