@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "work-receipt",
+  "title": "작업 영수증 여정 (일일 발급·계보·감사)",
+  "axis": "자동화 (일일 영수증·뿌리 계보·부모 링크·폴더 회계)",
+  "description": "에이전트가 매일 밟는 작업 영수증 여정을 채점한다. automation·expert-challenges 의 사다리 완주(AU02 재현율 1.0+total≥1, AU12 depth 2, AU07 gate --deep, XC01–XC05)는 복제하지 않는다 — replay 3해시 라이브 오라클, 뿌리 캡슐 parentOk=null, 부모 링크 lineageOk, 폴더 회계 정확 1건처럼 다른 표본·다른 좌표·다른 축만 둔다. 새 CLI 는 없다.",
+  "requires": {
+    "commands": [
+      "audit",
+      "lineage",
+      "replay"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.4",
+    "rhwpCommit": "34ba36fa3c48f37867fbedd16614fdb7e8f44709",
+    "capabilitiesSha256": "6e2b231fad617b618fda19663752fc1a57d56086ade31abade84d8e8e000de4c"
+  }
+}

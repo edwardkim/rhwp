@@ -1,0 +1,51 @@
+{
+  "id": "WR04",
+  "tier": 2,
+  "title": "오늘 폴더 회계는 1건",
+  "input": "samples/field-01.hwp",
+  "instructions": "오늘 만든 캡슐 하나만 receipts/day.capsule.json 으로 제출하라. 채점은 그 폴더를 audit 해 **총 1건·재현 1건**인지 본다. AU02 의 reproducedRate==1.0 과 total≥1 이 아니다 — 빈 폴더에 가깝게 여러 장을 쌓아 비율만 맞추는 제출을 거부한다. 힌트: rhwp replay --plan-json '{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"day.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"일일영수증\"}]}' --capsule receipts/day.capsule.json --json 후 rhwp audit receipts --json",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "receipts/day.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "오늘 캡슐 존재",
+      "op": "file_exists",
+      "file": "receipts/day.capsule.json",
+      "minBytes": 64
+    },
+    {
+      "name": "폴더 총 1건",
+      "op": "value_eq",
+      "value": 1,
+      "path": "total",
+      "cmd": [
+        "audit",
+        "{file:receipts}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "재현 성공 1건",
+      "op": "value_eq",
+      "value": 1,
+      "path": "reproduced",
+      "cmd": [
+        "audit",
+        "{file:receipts}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

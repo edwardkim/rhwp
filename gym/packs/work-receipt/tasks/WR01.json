@@ -1,0 +1,76 @@
+{
+  "id": "WR01",
+  "tier": 2,
+  "title": "일일 영수증 3해시 발급",
+  "input": "samples/field-01.hwp",
+  "axis": "조회",
+  "instructions": "표지 본문 '마케팅' 을 '영수증여정' 으로 바꾸는 계획을 replay 로 재실행해 **작업 영수증 한 장**을 받아라. 캡슐을 만들지 말고, 봉투의 mode·steps·inputSha256·planSha256·outputSha256 을 answer.json 에 그대로 옮겨라. 채점은 같은 계획을 다시 돌려 3해시를 라이브 대조한다 — AU02 의 캡슐+재현율 판정이 아니다. 힌트: rhwp replay --plan-json '{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"receipt-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"영수증여정\"}]}' --json",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "발급 모드 attest",
+      "op": "answer_eq",
+      "answer": "mode",
+      "path": "mode",
+      "cmd": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"receipt-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"영수증여정\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "name": "실행 step 수 1",
+      "op": "answer_eq",
+      "answer": "steps",
+      "path": "steps",
+      "cmd": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"receipt-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"영수증여정\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "name": "입력 해시 라이브 대조",
+      "op": "answer_eq",
+      "answer": "inputSha256",
+      "path": "inputSha256",
+      "cmd": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"receipt-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"영수증여정\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "name": "계획 해시 라이브 대조",
+      "op": "answer_eq",
+      "answer": "planSha256",
+      "path": "planSha256",
+      "cmd": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"receipt-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"영수증여정\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "name": "산출 해시 라이브 대조",
+      "op": "answer_eq",
+      "answer": "outputSha256",
+      "path": "outputSha256",
+      "cmd": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"receipt-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"영수증여정\"}]}",
+        "--json"
+      ]
+    }
+  ]
+}

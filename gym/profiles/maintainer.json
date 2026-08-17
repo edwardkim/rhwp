@@ -24,6 +24,7 @@
     "studio-e2e",
     "table-csv",
     "table-editing",
-    "text-editing"
+    "text-editing",
+    "work-receipt"
   ]
 }
