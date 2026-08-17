@@ -37,6 +37,8 @@ use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, SizeCriterion, TextWrap, VertAlign, VertRelTo,
 };
 
+use crate::parser::tags;
+
 use super::context::SerializeContext;
 use super::field::{
     write_bookmark, write_field_begin, write_field_end, write_field_end_full, write_hyperlink_begin,
@@ -837,6 +839,16 @@ pub(crate) fn render_hp_t_content(
                 t_xml.push_str("<hp:hyphen/>");
             }
             c if (c as u32) < 0x20 => { /* 기타 제어문자 무시 */ }
+            // [#5140] 한컴 사용자 정의 기호는 HWPX 에서 평면 15 보충 PUA 로 싣는다.
+            // IR 정본은 HWP5 쪽 사영(`0xA000 | X`)이므로 여기서 올려 준다 —
+            // 리터럴로 내면 한글이 그 자리를 Yi 음절(U+A8xx 등)로 읽어 글자가 깨진다.
+            // 파서(`parser/hwpx/section.rs`)가 같은 표로 되돌리므로 왕복이 닫힌다.
+            c if u32::from(c) <= u32::from(u16::MAX)
+                && tags::hancom_symbol_to_plane15(c as u16).is_some() =>
+            {
+                let cp = tags::hancom_symbol_to_plane15(c as u16).unwrap_or(u32::from(c));
+                buf.push(char::from_u32(cp).unwrap_or(c));
+            }
             c => buf.push(c),
         }
     }
