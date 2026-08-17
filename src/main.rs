@@ -630,6 +630,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 | "hwp_set_checkbox"
                 | "hwp_set_cell"
                 | "hwp_set_cell_props"
+                | "hwp_set_table_props"
                 | "hwp_insert_text_in_cell"
                 | "hwp_delete_text_in_cell"
                 | "hwp_split_table"
@@ -2278,6 +2279,28 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
             &["schemaVersion", "source", "table", "row", "col", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_table_props",
+            "본문 최상위 표 속성(칸간격·여백·글자처럼·배치 등)을 고친다. 표 번호는 hwp_export_tables 의 index. 코어 set_table_properties_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "표 속성 JSON (예: {\"cellSpacing\":200})" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-table-props", "{path}", "--table", "{table}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_move_table",
@@ -3937,7 +3960,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 61] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 62] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -4024,6 +4047,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 61] = [
         "set-cell-props",
         "표 셀 속성 — --table/--row/--col/--props (JSON)",
     ),
+    ("set-table-props", "표 속성 — --table/--props (JSON)"),
     ("move-table", "표 위치 이동 — --table/--dx/--dy (HWPUNIT)"),
     (
         "merge-table",
@@ -6669,6 +6693,9 @@ fn print_help() {
     println!();
     println!("  edit set-cell-props <파일> --table N --row N --col N --props <JSON> [옵션]");
     println!("      본문 최상위 표 셀 속성(세로정렬·여백·폭 등)을 고친다");
+    println!();
+    println!("  edit set-table-props <파일> --table N --props <JSON> [옵션]");
+    println!("      본문 최상위 표 속성(칸간격·여백·글자처럼·배치 등)을 고친다");
     println!();
     println!("      --table/--row/--col       표·행·열 (0부터, export-tables index)");
     println!("      --props <JSON>            셀 속성 (예: {{\"verticalAlign\":1}})");
@@ -20138,7 +20165,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|split-paragraph|insert-page-break|insert-column-break|insert-table|set-numbering-restart|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-cell-into|split-table|fit-table|resize-table|resize-table-cell|set-cell-props|move-table|merge-table|set-column-widths|insert-footnote|insert-endnote|delete-footnote|delete-equation|add-bookmark|delete-bookmark|delete-table|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|delete-hf-text|split-paragraph-in-hf|merge-paragraph-in-hf|split-paragraph-in-cell|merge-paragraph-in-cell|apply-char-format|apply-para-format|apply-style|apply-cell-style|delete-control|insert-header-footer|insert-field-in-hf|set-column-def|set-page-hide|transpose-table|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|split-paragraph|insert-page-break|insert-column-break|insert-table|set-numbering-restart|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-cell-into|split-table|fit-table|resize-table|resize-table-cell|set-cell-props|set-table-props|move-table|merge-table|set-column-widths|insert-footnote|insert-endnote|delete-footnote|delete-equation|add-bookmark|delete-bookmark|delete-table|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|delete-hf-text|split-paragraph-in-hf|merge-paragraph-in-hf|split-paragraph-in-cell|merge-paragraph-in-cell|apply-char-format|apply-para-format|apply-style|apply-cell-style|delete-control|insert-header-footer|insert-field-in-hf|set-column-def|set-page-hide|transpose-table|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -20166,6 +20193,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("resize-table") => edit_resize_table(&args[1..]),
         Some("resize-table-cell") => edit_resize_table_cell(&args[1..]),
         Some("set-cell-props") => edit_set_cell_props(&args[1..]),
+        Some("set-table-props") => edit_set_table_props(&args[1..]),
         Some("move-table") => edit_move_table(&args[1..]),
         Some("merge-table") => edit_merge_table(&args[1..]),
         Some("set-column-widths") => edit_set_column_widths(&args[1..]),
@@ -31582,6 +31610,120 @@ fn edit_set_cell_props(args: &[String]) -> i32 {
         &[(sec, para)],
         &format!("셀 속성 변경 예정: {file_path} 표 {table_no} ({row},{col})"),
         &format!("셀 속성 변경 완료: {file_path}"),
+    )
+}
+
+/// `edit set-table-props` — 표 속성. 코어 `set_table_properties_native`.
+fn edit_set_table_props(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-table-props <파일> --table <번호> --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut props: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => table_arg = Some(n),
+                    Err(_) => {
+                        eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--props" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => props = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --props 뒤에 JSON 문자열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(props)) = (file_path, table_arg, props) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if !matches!(
+        serde_json::from_str::<serde_json::Value>(&props),
+        Ok(serde_json::Value::Object(_))
+    ) {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다.");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (sec, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    if !dry_run {
+        if let Err(e) = doc.set_table_properties_native(sec, para, ctrl, &props) {
+            eprintln!("오류: 표 속성 변경 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "tblprop",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "table": table_no }),
+        &[(sec, para)],
+        &format!("표 속성 변경 예정: {file_path} 표 {table_no}"),
+        &format!("표 속성 변경 완료: {file_path}"),
     )
 }
 

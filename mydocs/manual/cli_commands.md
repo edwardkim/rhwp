@@ -1115,6 +1115,10 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 ### `edit move-table <파일> --table <번호> --dx <가로> --dy <세로> [-o <출력>] [--dry-run] [--verify] [--json]`
 본문 최상위 표의 위치 오프셋을 옮긴다. 코어 `move_table_offset_native`. `--dx`/`--dy` 는 HWPUNIT(양수=오른쪽/아래, 음수 허용).
 
+### `edit set-table-props <파일> --table <번호> --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 최상위 표 속성(칸간격·여백·글자처럼·배치 등)을 고친다. 코어 `set_table_properties_native`.
+표 번호는 `export-tables` 의 index. `--props` 는 JSON 객체.
+
 ### `edit insert-footnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4998)
 문단 좌표에 각주를 끼운다. 코어 `insert_footnote_native`.
 
