@@ -8,6 +8,9 @@ mod batch_fill_contract;
 #[path = "../capabilities_subcommands_contract.rs"]
 mod capabilities_subcommands_contract;
 
+#[path = "../cases/merge_table_contract.rs"]
+mod merge_table_contract;
+
 #[path = "../issue_1008_gradient.rs"]
 mod issue_1008_gradient;
 
