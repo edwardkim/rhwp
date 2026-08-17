@@ -341,6 +341,29 @@ impl DocumentCore {
         page_num: u32,
         options_json: &str,
     ) -> Result<String, HwpError> {
+        let native_unavailable_reason =
+            if cfg!(all(not(target_arch = "wasm32"), feature = "native-skia")) {
+                "nativeRendererSnapshotRequired"
+            } else {
+                "nativeSkiaFeatureUnavailable"
+            };
+        self.get_font_decision_trace_with_native_observer(
+            page_num,
+            options_json,
+            None,
+            native_unavailable_reason,
+        )
+    }
+
+    pub(crate) fn get_font_decision_trace_with_native_observer(
+        &self,
+        page_num: u32,
+        options_json: &str,
+        native_observer: Option<
+            &dyn Fn(&str, char, bool, bool) -> crate::renderer::font_decision::BackendDecision,
+        >,
+        native_unavailable_reason: &'static str,
+    ) -> Result<String, HwpError> {
         if page_num >= self.page_count() {
             return Err(HwpError::PageOutOfRange(page_num));
         }
@@ -356,9 +379,6 @@ impl DocumentCore {
         let mut records = Vec::with_capacity(characters_seen.min(applied_limits.max_characters));
         let mut source_mapping_mismatch = false;
         let mut ledger_rule_missing = false;
-        #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
-        let native_observer = crate::renderer::skia::SkiaLayerRenderer::new();
-
         'runs: for (run_index, run) in runs.iter().enumerate() {
             let chars: Vec<char> = run.text.chars().collect();
             let language_slots = run_language_slots(&chars, run_style_language_slot(self, run));
@@ -504,21 +524,13 @@ impl DocumentCore {
                             .unwrap_or_default(),
                         steps: name_steps,
                     },
-                    paint: PaintDecision::stage3(Some(run.style.font_family.clone()), {
-                        #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
-                        {
-                            Some(native_observer.font_decision(
-                                &run.style.font_family,
-                                ch,
-                                run.style.bold,
-                                run.style.italic,
-                            ))
-                        }
-                        #[cfg(not(all(not(target_arch = "wasm32"), feature = "native-skia")))]
-                        {
-                            None
-                        }
-                    }),
+                    paint: PaintDecision::stage3(
+                        Some(run.style.font_family.clone()),
+                        native_observer.map(|observe| {
+                            observe(&run.style.font_family, ch, run.style.bold, run.style.italic)
+                        }),
+                        native_unavailable_reason,
+                    ),
                     layout_metric,
                     provenance,
                     oracle: OracleDecision::not_provided(),
@@ -578,10 +590,10 @@ impl DocumentCore {
                 records_omitted: Some(records_omitted),
             },
             records,
-            backend_summary: BackendSummary::stage3(cfg!(all(
-                not(target_arch = "wasm32"),
-                feature = "native-skia"
-            ))),
+            backend_summary: BackendSummary::stage3(
+                native_observer.is_some(),
+                native_unavailable_reason,
+            ),
             reasons,
             layout_hash: TraceHash::pending(),
             normalized_hash: TraceHash::pending(),

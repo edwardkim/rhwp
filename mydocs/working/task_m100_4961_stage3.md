@@ -16,7 +16,7 @@ SDK 메서드를 추가했다.
 
 | backend | 관측 결과 |
 | --- | --- |
-| native Skia | 실제 text replay와 공유하는 custom → system → bundled → legacy 후보 및 문자 glyph hit/miss |
+| native Skia | 준비된 renderer snapshot에서 실제 text replay와 공유하는 custom → system → bundled → legacy 후보 및 문자 glyph hit/miss |
 | Canvas2D | 실제 CSS 후보 순서, 현재 local/web/generic supply, Local Font Access 상태와 실제 glyph face 미관찰 |
 | CanvasKit | 이미 준비된 local/bundled/default/symbol SFNT 후보와 문자 glyph hit/miss, glyph resource join 실패 |
 
@@ -30,9 +30,14 @@ backend `status`와 `certainty`는 분리했다. 후보를 전부 관찰했지�
 
 - `font_lookup.rs`에 실제 후보 열거와 문자 glyph 선택 helper를 추출했다.
 - `text_replay.rs`의 기존 paint 경로와 trace가 같은 helper를 사용한다.
-- `native-skia` feature가 없으면 `nativeSkiaFeatureUnavailable`, 있으면 요청 face와 문자별 후보·source·
-  glyph 결과를 기록한다.
+- `native-skia` feature와 준비된 `SkiaLayerRenderer` snapshot이 있으면 요청 face와 문자별 후보·source·
+  glyph 결과를 기록한다. feature가 없으면 `nativeSkiaFeatureUnavailable`, snapshot이 없으면
+  `nativeRendererSnapshotRequired`로 fail-closed한다.
 - trace 관측은 surface를 만들거나 문서를 다시 그리지 않는다.
+
+> PR self-review에서 `DocumentCore` 단독 query가 빈 custom·bundled inventory를 가진 새 renderer를
+> 관측하던 결함을 확인했다. Stage 6 보정 뒤 native 완료 판정은 이미 준비된 renderer snapshot을
+> 전달한 경로에만 적용된다.
 
 ### 2.2 Studio RPC와 공개 SDK
 
@@ -137,7 +142,7 @@ helper 5개가 더해져 예상 historical digest drift는 9개이며, 그 밖�
 | 한 record에서 native·Canvas2D·CanvasKit 결과 분리 | 통과 |
 | CSS 미관찰·API 미지원·권한 거부·부분 열거 구분 | 통과 |
 | SFNT 부재·renderer snapshot 부재·source join 실패 구분 | 통과 |
-| 실제 native와 Canvas2D 후보 helper 공유 | 통과 |
+| 준비된 native snapshot과 Canvas2D 후보 helper 공유 | 통과 |
 | font load·권한 요청·repaint·layout·backend switch 미발생 | 통과 |
 | private corpus·재배포 불가 font bytes 포함 금지 | 통과 |
 

@@ -172,10 +172,14 @@ impl BackendDecision {
 }
 
 impl PaintDecision {
-    pub(crate) fn stage3(requested: Option<String>, native: Option<BackendDecision>) -> Self {
+    pub(crate) fn stage3(
+        requested: Option<String>,
+        native: Option<BackendDecision>,
+        native_unavailable_reason: &str,
+    ) -> Self {
         Self {
             native: native.unwrap_or_else(|| {
-                BackendDecision::unsupported(requested.clone(), "nativeSkiaFeatureUnavailable")
+                BackendDecision::unsupported(requested.clone(), native_unavailable_reason)
             }),
             canvas2d: BackendDecision::unsupported(requested.clone(), "studioSnapshotRequired"),
             canvaskit: BackendDecision::unsupported(requested, "studioSnapshotRequired"),
@@ -231,7 +235,7 @@ pub(crate) struct BackendSummaryEntry {
 }
 
 impl BackendSummary {
-    pub(crate) fn stage3(native_available: bool) -> Self {
+    pub(crate) fn stage3(native_available: bool, native_unavailable_reason: &str) -> Self {
         let studio = || BackendSummaryEntry {
             status: "unsupported".into(),
             reasons: vec!["studioSnapshotRequired".into()],
@@ -249,7 +253,7 @@ impl BackendSummary {
             } else {
                 BackendSummaryEntry {
                     status: "unsupported".into(),
-                    reasons: vec!["nativeSkiaFeatureUnavailable".into()],
+                    reasons: vec![native_unavailable_reason.into()],
                 }
             },
             canvas2d: studio(),

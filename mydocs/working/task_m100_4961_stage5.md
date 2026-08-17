@@ -19,6 +19,11 @@ SVG 문자열과 HWP bytes는 각각 동일했고, trace 호출 구간의 `fetch
 호출은 모두 0건이었다. 따라서 trace가 font load·권한 요청·repaint·serialization mutation을 일으키지
 않는다는 브라우저 실환경 근거도 확보했다.
 
+PR self-review에서 native 단독 query가 준비된 renderer의 custom·bundled inventory 없이 새 observer를
+만드는 결함을 확인했다. Stage 6은 native 완료 판정을 준비된 `SkiaLayerRenderer` snapshot 경로로 한정하고,
+snapshot 없는 `DocumentCore` query를 `nativeRendererSnapshotRequired`로 닫았다. 이 보정은 Stage 5의
+브라우저/WASM 결과와 renderer 출력 0-delta 판정을 바꾸지 않는다.
+
 ## 2. Stage 5 변경
 
 ### 2.1 브라우저 0-delta E2E 보강
@@ -172,6 +177,9 @@ FI-08·FI-09·FI-14는 W2가 oracle·layout 정책을 바꾸지 않는다는 의
 - CanvasKit이 현재 renderer가 아니면 SFNT/typeface plan은 `planned` 또는 `notObserved`이며 실제 선택으로
   승격하지 않는다.
 - WASM 단독 query에서 native Skia와 Studio snapshot은 `unsupported`다.
+- native build의 `DocumentCore` 단독 query도 준비된 renderer snapshot이 없으면
+  `nativeRendererSnapshotRequired`로 `unsupported`다. 실제 native 후보 관측은
+  `SkiaLayerRenderer::get_font_decision_trace`를 사용한다.
 - W1 source digest drift는 Stage 2~3의 관찰 wrapper 추가를 명시하는 진단이며 selection 실패가 아니다.
 - header/footer의 target-dependent 상대 marker는 source 좌표가 아니므로 `null/unavailable`이다.
 - v1은 page 단위, 기본 1,024문자와 hard maximum 4,096문자다.

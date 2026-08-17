@@ -3233,7 +3233,7 @@
       "id": "src/renderer/skia/renderer.rs::tests#1",
       "file": "src/renderer/skia/renderer.rs",
       "sourcePath": "src/renderer/skia/renderer.rs",
-      "line": 1589,
+      "line": 1610,
       "module": "tests",
       "testAttributes": 47,
       "tier": "white_box",

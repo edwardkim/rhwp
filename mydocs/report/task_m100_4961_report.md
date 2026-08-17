@@ -1,6 +1,7 @@
 # 최종 보고 — Task M100 #4961 Font Decision Trace
 
 - **이슈**: [#4961](https://github.com/edwardkim/rhwp/issues/4961)
+- **PR**: [#5122](https://github.com/edwardkim/rhwp/pull/5122)
 - **상위 추적**: [#4960](https://github.com/edwardkim/rhwp/issues/4960)
 - **선행**: [#4939](https://github.com/edwardkim/rhwp/issues/4939) W0·W1
 - **후속**: [#4962](https://github.com/edwardkim/rhwp/issues/4962) W3·W4
@@ -31,6 +32,7 @@ document face / language slot / altType / substFont
 | 표면 | 호출 |
 | --- | --- |
 | Rust native | `DocumentCore::get_font_decision_trace_native(page, options)` |
+| Rust native renderer snapshot | `SkiaLayerRenderer::get_font_decision_trace(core, page, options)` |
 | WASM | `HwpDocument.getFontDecisionTrace(page, optionsJson)` |
 | Embed RPC | `getFontDecisionTrace({page, limits?})` |
 | npm SDK | `editor.getFontDecisionTrace(page?, {maxCharacters?})` |
@@ -60,7 +62,7 @@ machine-readable schema와 공개 fixture authority는
 
 ### Stage 3 — backend
 
-- native Skia 실제 replay와 동일한 custom → system → bundled → legacy 후보·glyph 검사
+- 준비된 native Skia renderer snapshot에서 실제 replay와 동일한 custom → system → bundled → legacy 후보·glyph 검사
 - Canvas2D CSS/local/web/generic supply와 실제 glyph face 미관찰 구분
 - CanvasKit SFNT/typeface plan·glyph resource와 source record join
 - Embed와 `@rhwp/editor`의 별도 capability/RPC
@@ -80,6 +82,13 @@ machine-readable schema와 공개 fixture authority는
 - trace 전후 SVG·HWP bytes 동일, trace 중 font/network/permission trigger 0건
 - FI-01~FI-14와 #4961 완료 조건 전항 disposition
 
+### Stage 6 — self-review native snapshot 보정
+
+- query 내부의 빈 `SkiaLayerRenderer` 임시 observer 제거
+- 이미 준비된 renderer snapshot에서만 native 관측을 `complete`로 판정
+- standalone `DocumentCore` native query는 `nativeRendererSnapshotRequired`로 fail-closed
+- custom font inventory 보존과 standalone 거부를 native integration test로 고정
+
 ## 4. 검증 요약
 
 | 범위 | 결과 |
@@ -92,6 +101,11 @@ machine-readable schema와 공개 fixture authority는
 | editor 전체 | 24 passed |
 | native/WASM 공개 SVG | 6문서, mismatch 0 |
 | headless/host Chrome | 양쪽 통과, 동일 0-delta 결과 |
+
+Stage 6 보정 뒤 focused trace는 default 4건과 native Skia 6건, fresh WASM E2E 3건이 통과했다.
+release-test nextest는 **6,526 passed, 38 skipped**, native 공식 gate는 **58 + 2 + 4 passed**였다.
+상세 self-review 원인, 수정 경계와 명령 drift 처리는
+[Stage 6 보고서](../working/task_m100_4961_stage6.md)에 있다.
 
 상세 명령과 환경 사실은 [Stage 5 보고서](../working/task_m100_4961_stage5.md)에 있다.
 
@@ -111,6 +125,9 @@ target, font asset도 변경하지 않았다.
 - Canvas2D actual glyph face는 브라우저가 공개하지 않아 `notObserved`다.
 - 비활성 CanvasKit backend는 준비된 plan을 보이되 실제 선택을 `observed`로 승격하지 않는다.
 - WASM 단독 query는 native Skia와 Studio snapshot을 `unsupported`로 표시한다.
+- native build의 `DocumentCore` 단독 query도 준비된 renderer snapshot이 없으면
+  `nativeRendererSnapshotRequired`로 `unsupported`를 반환한다. 이 경계는 빈 custom·bundled inventory를
+  실제 관측으로 오인하지 않기 위한 fail-closed 계약이다.
 - 검증된 oracle이 없는 record는 `notProvided`다.
 - source coordinate가 없는 header/footer marker는 다른 문단으로 추정하지 않는다.
 - v1은 page 범위와 4,096문자 상한만 제공한다.
@@ -135,6 +152,7 @@ target, font asset도 변경하지 않았다.
 
 ## 8. 완료 판정과 다음 절차
 
-#4961의 구현·로컬 검증·문서화 완료 조건은 충족했다. 아직 remote push, PR 생성, GitHub comment와 이슈
-상태 변경은 하지 않았다. Stage 5 commit을 고정한 뒤 메인테이너 승인에 따라 원격 push와 PR 절차로
-진행한다. #4961 close는 PR merge와 후속 검증 뒤 별도 판정한다.
+#4961의 구현·로컬 검증·문서화 완료 조건은 충족했다. PR #5122 self-review에서 발견한 native snapshot
+결함은 Stage 6에서 보정했으며, 보정 code candidate는 새 Full CI 검증 전이다. remote push와 GitHub
+self-review 문서 추가는 각각 승인·CI gate 뒤 진행한다. #4961 close는 PR merge와 후속 검증 뒤 별도
+판정한다.

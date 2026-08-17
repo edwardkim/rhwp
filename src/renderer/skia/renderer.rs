@@ -325,6 +325,27 @@ impl SkiaLayerRenderer {
         })
     }
 
+    /// 이미 준비된 native renderer의 font inventory로 decision trace를 보강한다.
+    ///
+    /// 이 호출은 새 font path를 읽거나 typeface를 적재하지 않는다. 호출자가
+    /// `with_font_paths`로 구성한 현재 snapshot을 그대로 관측한다.
+    pub fn get_font_decision_trace(
+        &self,
+        core: &crate::document_core::DocumentCore,
+        page_num: u32,
+        options_json: &str,
+    ) -> Result<String, crate::error::HwpError> {
+        let observe = |requested: &str, character: char, bold: bool, italic: bool| {
+            self.font_decision(requested, character, bold, italic)
+        };
+        core.get_font_decision_trace_with_native_observer(
+            page_num,
+            options_json,
+            Some(&observe),
+            "nativeRendererSnapshotRequired",
+        )
+    }
+
     fn load_typefaces_from_dirs(
         font_mgr: &FontMgr,
         dirs: &[std::path::PathBuf],

@@ -43,7 +43,8 @@ Stage 2는 다음 읽기 전용 경계를 구현했다.
 - `CharWidthDecision`: KoPub·내장 metric·space/punctuation overlay·metric character miss·CJK/narrow/
   generic heuristic와 장평·자간·추가 advance를 기존 세 측정 경로가 공유한다.
 - `DocumentCore::get_font_decision_trace_native`와 WASM `getFontDecisionTrace`: 페이지 한 개와
-  `maxCharacters`만 받으며, source/DocInfo/layout record와 결정적 두 hash를 반환한다.
+  `maxCharacters`만 받으며, source/DocInfo/layout record와 결정적 두 hash를 반환한다. native paint를
+  실제 관측하려면 이미 준비된 `SkiaLayerRenderer::get_font_decision_trace` snapshot 경로를 사용한다.
 
 WASM 단독 query에서는 native Skia가 `nativeSkiaFeatureUnavailable`, Canvas2D·CanvasKit이
 `studioSnapshotRequired`인 명시적 `unsupported`다. Stage 3의 Studio RPC가 현재 renderer snapshot으로
@@ -52,8 +53,9 @@ refactor의 historical digest 차이는 `ledgerSourceDrift`로 노출한다.
 
 ## 3.2 Stage 3 backend 보강
 
-- native Skia는 실제 text replay와 같은 custom → system → bundled → legacy 후보와 문자 glyph 검사를
-  사용한다.
+- native Skia는 이미 준비된 renderer snapshot에서 실제 text replay와 같은 custom → system → bundled →
+  legacy 후보와 문자 glyph 검사를 사용한다. snapshot이 없는 단독 query는 새 font를 적재하지 않고
+  `nativeRendererSnapshotRequired`로 fail-closed한다.
 - Canvas2D는 실제 CSS chain과 현재 local/web/generic supply만 기록한다. 브라우저가 공개하지 않는
   실제 glyph face는 `cssActualGlyphFaceUnobservable`로 남긴다.
 - CanvasKit은 이미 준비된 SFNT와 glyph snapshot만 읽는다. source record 또는 glyph resource를 안전하게
@@ -104,6 +106,9 @@ console.log(trace.layoutHash.value, trace.normalizedHash.value);
 전체 검증 명령과 FI-01~FI-14 판정은
 [`task_m100_4961_stage5.md`](../../../working/task_m100_4961_stage5.md), 완료 조건과 후속 인계는
 [`task_m100_4961_report.md`](../../../report/task_m100_4961_report.md)가 정본이다.
+
+PR self-review의 native snapshot 보정과 standalone fail-closed 회귀 근거는
+[`task_m100_4961_stage6.md`](../../../working/task_m100_4961_stage6.md)에 기록했다.
 
 ## 4. identity와 ledger 연결
 

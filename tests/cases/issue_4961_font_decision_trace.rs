@@ -1,5 +1,13 @@
 use rhwp::document_core::DocumentCore;
 
+fn standalone_native_reason() -> &'static str {
+    if cfg!(all(not(target_arch = "wasm32"), feature = "native-skia")) {
+        "nativeRendererSnapshotRequired"
+    } else {
+        "nativeSkiaFeatureUnavailable"
+    }
+}
+
 fn stage4_e2e_manifest() -> serde_json::Value {
     serde_json::from_str(include_str!(
         "../../mydocs/tech/investigations/issue-4961/font_decision_trace_e2e.json"
@@ -86,15 +94,11 @@ fn stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected() {
             trace["layoutHash"]["value"], document["expectedLayoutHash"],
             "{id}"
         );
-        if cfg!(all(not(target_arch = "wasm32"), feature = "native-skia")) {
-            assert_eq!(trace["backendSummary"]["native"]["status"], "complete");
-        } else {
-            assert_eq!(trace["backendSummary"]["native"]["status"], "unsupported");
-            assert_eq!(
-                trace["backendSummary"]["native"]["reasons"][0],
-                "nativeSkiaFeatureUnavailable"
-            );
-        }
+        assert_eq!(trace["backendSummary"]["native"]["status"], "unsupported");
+        assert_eq!(
+            trace["backendSummary"]["native"]["reasons"][0],
+            standalone_native_reason()
+        );
         traces.insert(id.to_string(), trace);
     }
 
@@ -197,20 +201,11 @@ fn public_fixture_trace_is_bounded_and_deterministic() {
         assert!(digest.bytes().all(|byte| byte.is_ascii_hexdigit()));
     }
     for record in value["records"].as_array().unwrap() {
-        if cfg!(all(not(target_arch = "wasm32"), feature = "native-skia")) {
-            assert_ne!(record["paint"]["native"]["status"], "unsupported");
-            assert!(record["paint"]["native"]["capabilities"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .any(|capability| capability == "nativeGlyphCoverageObserved"));
-        } else {
-            assert_eq!(record["paint"]["native"]["status"], "unsupported");
-            assert_eq!(
-                record["paint"]["native"]["failures"][0],
-                "nativeSkiaFeatureUnavailable"
-            );
-        }
+        assert_eq!(record["paint"]["native"]["status"], "unsupported");
+        assert_eq!(
+            record["paint"]["native"]["failures"][0],
+            standalone_native_reason()
+        );
         assert_eq!(record["paint"]["canvas2d"]["status"], "unsupported");
         assert_eq!(record["paint"]["canvaskit"]["status"], "unsupported");
     }
@@ -249,6 +244,62 @@ fn public_fixture_trace_is_bounded_and_deterministic() {
             .any(|evidence| evidence["reference"] == provenance["evidenceAnchor"]));
         assert_eq!(provenance["reason"], "ledgerSourceDrift");
     }
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[test]
+fn standalone_native_trace_requires_a_prepared_renderer_snapshot() {
+    let core = DocumentCore::from_bytes(include_bytes!("../../samples/task-001.hwp"))
+        .expect("public fixture parses");
+    let trace: serde_json::Value = serde_json::from_str(
+        &core
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":8}"#)
+            .expect("standalone trace"),
+    )
+    .expect("standalone trace JSON");
+    assert_eq!(trace["backendSummary"]["native"]["status"], "unsupported");
+    assert_eq!(
+        trace["backendSummary"]["native"]["reasons"],
+        serde_json::json!(["nativeRendererSnapshotRequired"])
+    );
+    assert!(trace["records"].as_array().unwrap().iter().all(|record| {
+        record["paint"]["native"]["failures"][0] == "nativeRendererSnapshotRequired"
+    }));
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[test]
+fn prepared_native_renderer_snapshot_preserves_custom_font_inventory() {
+    use rhwp::renderer::skia::SkiaLayerRenderer;
+
+    let core = DocumentCore::from_bytes(include_bytes!("../../samples/task-001.hwp"))
+        .expect("public fixture parses");
+    let custom_fonts = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource");
+    let renderer = SkiaLayerRenderer::new().with_font_paths(&[custom_fonts]);
+    let trace: serde_json::Value = serde_json::from_str(
+        &renderer
+            .get_font_decision_trace(&core, 0, r#"{"maxCharacters":64}"#)
+            .expect("renderer-bound trace"),
+    )
+    .expect("renderer-bound trace JSON");
+    assert_eq!(trace["backendSummary"]["native"]["status"], "complete");
+    let custom_records: Vec<&serde_json::Value> = trace["records"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|record| record["paint"]["native"]["source"] == "custom")
+        .collect();
+    assert!(
+        !custom_records.is_empty(),
+        "the prepared custom font inventory must be observable"
+    );
+    assert!(custom_records.iter().all(|record| {
+        record["paint"]["native"]["capabilities"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|capability| capability == "nativeGlyphCoverageObserved")
+    }));
 }
 
 #[test]
