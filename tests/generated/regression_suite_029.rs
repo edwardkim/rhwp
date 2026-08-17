@@ -8,6 +8,9 @@ mod apply_cell_style_contract;
 #[path = "../cases/bookmarks_contract.rs"]
 mod bookmarks_contract;
 
+#[path = "../cases/form_value_contract.rs"]
+mod form_value_contract;
+
 #[path = "../changed_pages_contract.rs"]
 mod changed_pages_contract;
 

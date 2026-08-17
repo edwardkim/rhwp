@@ -332,6 +332,7 @@ fn main() {
         Some("info") => exit_with(show_info(&args[2..])),
         Some("word-count") => exit_with(word_count(&args[2..])),
         Some("bookmarks") => exit_with(bookmarks(&args[2..])),
+        Some("form-value") => exit_with(form_value(&args[2..])),
         Some("header-footer") => exit_with(header_footer(&args[2..])),
         Some("digest") => exit_with(digest_document(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
@@ -689,6 +690,23 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] }
             ]),
             &["schemaVersion", "source", "section", "isHeader", "applyTo", "exists"],
+        ),
+        tool(
+            "hwp_form_value",
+            "양식 개체 값을 조회한다. section/para/ctrl 은 0 기준. 코어 get_form_value_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "HWP/HWPX/HML 문서 경로" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "form-value",
+            serde_json::json!(["form-value", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "ok", "formType", "name", "value", "text", "caption", "enabled"],
         ),
         // [#3633] 초소형 모델용 매크로 1호. 설명은 40자 이내로 극단 압축한다 —
         // 도구 목록 자체가 컨텍스트 예산을 잠식하는 4B급 모델이 1차 소비자이기
@@ -3538,6 +3556,27 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             ],
         ),
         cmd_json(
+            "form-value",
+            "query",
+            "양식 개체 값 조회 — 코어 get_form_value_native",
+            true,
+            &["--section", "--para", "--ctrl", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "section",
+                "paragraph",
+                "ctrl",
+                "ok",
+                "formType",
+                "name",
+                "value",
+                "text",
+                "caption",
+                "enabled",
+            ],
+        ),
+        cmd_json(
             "export-text",
             "export",
             "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
@@ -5362,6 +5401,12 @@ fn print_help() {
     println!("      --section N             구역 (0부터, 기본 0)");
     println!("      --apply-to N            0 양쪽 / 1 짝수 / 2 홀수 (기본 0)");
     println!("      --json                  조회 봉투를 JSON으로 stdout에 출력");
+    println!();
+    println!("  form-value <파일.hwp|파일.hwpx|파일.hml> --section N --para N --ctrl N [--json]");
+    println!("      양식 개체 값을 조회한다 (체크·콤보·라디오·편집·단추)");
+    println!();
+    println!("      --section/--para/--ctrl 구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      --json                  양식 값 봉투를 JSON으로 stdout에 출력");
     println!();
     println!("  digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]");
     println!("      문서 요약 봉투 한 줄 출력 — 메타(info)·개요 상위 노드·첫 페이지 발췌·");
@@ -12393,6 +12438,114 @@ fn bookmarks(args: &[String]) -> i32 {
             let ctrl = b["ctrlIdx"].as_u64().unwrap_or(0);
             println!("  {name}  구역 {sec} 문단 {para} 컨트롤 {ctrl}");
         }
+    }
+    EXIT_OK
+}
+
+/// 양식 개체 값 조회 — 코어 `get_form_value_native`.
+fn form_value(args: &[String]) -> i32 {
+    const USAGE: &str =
+        "사용법: rhwp form-value <파일.hwp|파일.hwpx|파일.hml> --section N --para N --ctrl N [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl)) = (file_path, section, para, ctrl)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let raw = match doc.get_form_value_native(section, para, ctrl) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: 양식 값 조회 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let form: serde_json::Value = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 양식 JSON 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    if json_mode {
+        let mut envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+        });
+        if let Some(obj) = form.as_object() {
+            for (k, v) in obj {
+                envelope[k] = v.clone();
+            }
+        }
+        println!("{}", provenance::marked(envelope, "form-value"));
+        return EXIT_OK;
+    }
+    if form["ok"] == true {
+        println!(
+            "{file_path}: 양식 {} name={} value={} text={} caption={} enabled={}",
+            form["formType"].as_str().unwrap_or(""),
+            form["name"].as_str().unwrap_or(""),
+            form["value"],
+            form["text"].as_str().unwrap_or(""),
+            form["caption"].as_str().unwrap_or(""),
+            form["enabled"]
+        );
+    } else {
+        let err = form["error"].as_str().unwrap_or("not a form object");
+        println!("{file_path}: 양식 아님 — {err} (구역 {section} 문단 {para} 컨트롤 {ctrl})");
     }
     EXIT_OK
 }
