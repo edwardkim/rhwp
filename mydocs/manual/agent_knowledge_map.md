@@ -1163,6 +1163,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_toggle_hide_hf` | `edit toggle-hide-hf --json` | `path` |
 | `hwp_merge_paragraph_in_hf` | `edit merge-paragraph-in-hf --json` | `path` |
 | `hwp_split_paragraph_in_cell` | `edit split-paragraph-in-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_merge_paragraph_in_cell` | `edit merge-paragraph-in-cell --json` | `path`,`table`,`row`,`col` |
 | `hwp_apply_char_format` | `edit apply-char-format --json` | `path`,`props` |
 | `hwp_split_paragraph` | `edit split-paragraph --json` | `path` |
 | `hwp_apply_para_format` | `edit apply-para-format --json` | `path`,`props` |

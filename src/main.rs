@@ -2121,6 +2121,31 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "table", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
+            "hwp_merge_paragraph_in_cell",
+            "표 셀 문단을 바로 앞 문단과 합친다. export-tables 격자와 같은 --table/--row/--col. 코어 merge_paragraph_in_cell_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 1 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table", "row", "col"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "merge-paragraph-in-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--json"]),
+            serde_json::json!([
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "row", "col", "paragraph", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_delete_text",
             "[#5011] 문단 좌표에서 글자를 지운다. 주소는 search 와 같다. 코어 delete_text_native 배선.",
             serde_json::json!({
@@ -3804,7 +3829,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 57] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 58] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3876,6 +3901,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 57] = [
         "표 행/열 크기 조절 — --table/--row/--col [--vertical] [--forward] [--line]",
     ),
     ("merge-table", "다음 표와 붙이기 — --table (사이는 빈 문단만 허용)"),
+    ("merge-paragraph-in-cell", "표 셀 문단 병합 — --table/--row/--col [--cell-para]"),
     ("insert-footnote", "각주 삽입 — --section/--para/--offset"),
     ("insert-endnote", "미주 삽입 — --section/--para/--offset"),
     (
@@ -4945,7 +4971,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / delete-text-in-cell: 표 셀 문단 삭제 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-table: 본문 표 생성 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / split-table: 표 나누기 / fit-table: 표 폭 맞춤 / resize-table: 표 크기 조절 / merge-table: 다음 표와 붙이기 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / delete-control: 컨트롤 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-image: 도장·서명 그림 삽입 / split-paragraph-in-cell: 표 셀 문단 분할 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / delete-text-in-cell: 표 셀 문단 삭제 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-table: 본문 표 생성 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / split-table: 표 나누기 / fit-table: 표 폭 맞춤 / resize-table: 표 크기 조절 / merge-table: 다음 표와 붙이기 / merge-paragraph-in-cell: 표 셀 문단 병합 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / delete-control: 컨트롤 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-image: 도장·서명 그림 삽입 / split-paragraph-in-cell: 표 셀 문단 분할 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
             false,
             &[
                 "--data",
@@ -6341,6 +6367,14 @@ fn print_help() {
     println!();
     println!("      --table N                 export-tables 의 최상위 표 번호 (0부터)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_mergetbl.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit merge-paragraph-in-cell <파일> --table N --row N --col N [옵션]");
+    println!("      표 셀 문단을 바로 앞 문단과 합친다");
+    println!();
+    println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
+    println!("      --cell-para N             합칠 셀 문단 (1부터, 기본 1)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cellmerge.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit insert-footnote <파일> [--section N] [--para N] [--offset N] [옵션]");
@@ -19334,7 +19368,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-table|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-table|fit-table|resize-table|merge-table|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-control|delete-table|insert-header-footer|insert-image|redact|sanitize|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|set-hf-picture|apply-hf-template|delete-hf-text|insert-field-in-hf|split-paragraph-in-hf|toggle-hide-hf|merge-paragraph-in-hf|split-paragraph-in-cell|apply-char-format|split-paragraph|apply-para-format|apply-style|set-numbering-restart|apply-para-format-in-hf|apply-endnote-shape|insert-footnote-text|delete-text-in-footnote|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-table|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-table|fit-table|resize-table|merge-table|merge-paragraph-in-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-control|delete-table|insert-header-footer|insert-image|redact|sanitize|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|set-hf-picture|apply-hf-template|delete-hf-text|insert-field-in-hf|split-paragraph-in-hf|toggle-hide-hf|merge-paragraph-in-hf|split-paragraph-in-cell|apply-char-format|split-paragraph|apply-para-format|apply-style|set-numbering-restart|apply-para-format-in-hf|apply-endnote-shape|insert-footnote-text|delete-text-in-footnote|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -19360,6 +19394,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("fit-table") => edit_fit_table(&args[1..]),
         Some("resize-table") => edit_resize_table(&args[1..]),
         Some("merge-table") => edit_merge_table(&args[1..]),
+        Some("merge-paragraph-in-cell") => edit_merge_paragraph_in_cell(&args[1..]),
         Some("insert-footnote") => edit_insert_footnote(&args[1..]),
         Some("insert-endnote") => edit_insert_endnote(&args[1..]),
         Some("delete-footnote") => edit_delete_footnote(&args[1..]),
@@ -30999,6 +31034,157 @@ fn edit_split_paragraph_in_cell(args: &[String]) -> i32 {
             "셀 문단 분할 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg} 오프셋 {offset_arg}"
         ),
         &format!("셀 문단 분할 완료: {file_path}"),
+    )
+}
+
+/// `edit merge-paragraph-in-cell` — 표 셀 문단을 바로 앞 문단과 합친다.
+fn edit_merge_paragraph_in_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit merge-paragraph-in-cell <파일> --table <번호> --row <행> --col <열> [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut cell_para_arg = 1usize;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" | "--cell-para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(value) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" | "--cell-para" => match value.parse::<usize>() {
+                        Ok(n) => {
+                            if name == "--table" {
+                                table_arg = Some(n);
+                            } else {
+                                cell_para_arg = n;
+                            }
+                        }
+                        Err(_) => {
+                            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {value}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--row" => match value.parse::<u16>() {
+                        Ok(n) => row_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --row 뒤에 0 이상의 정수가 필요합니다: {value}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match value.parse::<u16>() {
+                        Ok(n) => col_arg = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: --col 뒤에 0 이상의 정수가 필요합니다: {value}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(value) => out_path = Some(value.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            option if option.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {option}");
+                return EXIT_USAGE;
+            }
+            value => {
+                if file_path.replace(value).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {value}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no), Some(row), Some(col)) =
+        (file_path, table_arg, row_arg, col_arg)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if cell_para_arg == 0 {
+        eprintln!("오류: --cell-para 는 1 이상이어야 합니다 (첫 문단은 병합할 수 없습니다).");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(data) => data,
+        Err(error) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, error);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(document) => document,
+        Err(error) => return error.report(),
+    };
+    let (section, paragraph, control, cell_index, paragraph_lengths, _) =
+        match resolve_table_cell(doc.document(), table_no, row, col) {
+            Ok(value) => value,
+            Err(CellResolveError::Usage(message)) => {
+                eprintln!("{message}");
+                return EXIT_USAGE;
+            }
+            Err(CellResolveError::Runtime(message)) => {
+                eprintln!("{message}");
+                return EXIT_RUNTIME;
+            }
+        };
+    if cell_para_arg >= paragraph_lengths.len() {
+        eprintln!(
+            "오류: --cell-para 가 범위를 벗어났습니다 (셀 문단 1~{}): {cell_para_arg}",
+            paragraph_lengths.len().saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    if !dry_run {
+        if let Err(error) = doc.merge_paragraph_in_cell_native(
+            section,
+            paragraph,
+            control,
+            cell_index,
+            cell_para_arg,
+        ) {
+            eprintln!("오류: 셀 문단 병합 실패 - {error}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "cellmerge",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "paragraph": cell_para_arg
+        }),
+        &[(section, paragraph)],
+        &format!("셀 문단 병합 예정: {file_path} 표 {table_no} ({row},{col}) 문단 {cell_para_arg}"),
+        &format!("셀 문단 병합 완료: {file_path}"),
     )
 }
 
