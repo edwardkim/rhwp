@@ -1082,15 +1082,15 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 51개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
+**`edit` 하위 52개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`insert-text`·`delete-text`·
 `insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`delete-control`·`delete-table`·`insert-header-footer`·`insert-image`·`redact`·`sanitize`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`set-hf-picture`·`apply-hf-template`·`delete-hf-text`·`insert-field-in-hf`·`split-paragraph-in-hf`·`toggle-hide-hf`·`merge-paragraph-in-hf`·`apply-char-format`·`split-paragraph`·`apply-para-format`·`apply-style`·`set-numbering-restart`·`apply-para-format-in-hf`·`apply-endnote-shape`·`insert-footnote-text`·`delete-text-in-footnote`·`split-paragraph-in-footnote`·`merge-paragraph-in-footnote`·`apply-para-format-in-footnote`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 99개
+## 6. MCP 도구 전수 지도 — 100개
 
-### 6-1. 무상태 83개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 84개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
@@ -1132,6 +1132,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_replace_text` | `edit replace-text --json` | `path`,`find`,`replace` |
 | `hwp_set_checkbox` | `edit replace-text --find □ --replace ☑ --occurrence` | `path`,`occurrence`,`output` |
 | `hwp_set_cell` | `edit set-cell --json` | `path`,`table`,`row`,`col`,`text` |
+| `hwp_insert_text_in_cell` | `edit insert-text-in-cell --json` | `path`,`table`,`row`,`col`,`text` |
 | `hwp_insert_row` | `edit insert-row --json` | `path`,`table`,`row` |
 | `hwp_insert_col` | `edit insert-col --json` | `path`,`table`,`col` |
 | `hwp_insert_table` | `edit insert-table --json` | `path`,`rows`,`cols` |

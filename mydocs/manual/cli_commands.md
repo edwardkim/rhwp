@@ -1008,6 +1008,25 @@ rhwp edit set-cell 양식.hwpx --table 0 --row 2 --col 1 --text "1,234" -o 작�
 rhwp export-tables 작성본.hwpx --json | jq '.tables[0].cells[] | select(.row==2 and .col==1).text'
 ```
 
+### `edit insert-text-in-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [--offset N] [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]`
+표 셀의 지정 문단에 텍스트를 삽입한다. `set-cell`과 달리 기존 셀 내용을 덮지 않으며,
+코어 `insert_text_in_cell_native` 경로를 사용한다.
+
+- `--table`/`--row`/`--col` — `export-tables`와 같은 본문 최상위 표의 0-based 격자 좌표
+- `--text <문자열>` — 삽입할 문자열. 빈 문자열은 사용법 오류(exit 2)
+- `--cell-para` — 셀 안 문단 번호(0부터, 기본 0)
+- `--offset` — 해당 문단 안 문자 오프셋(0부터, 기본 0). 문단 길이를 넘으면 exit 2
+- `-o, --output` — 출력 파일(기본 `<입력명>_cellins.<입력과 같은 확장자>`)
+- `--dry-run` — 파일을 쓰지 않고 삽입 예정 내역만 출력
+- `--json` 봉투에는 표·행·열·셀 문단·오프셋·텍스트와 실제 출력 경로가 포함된다.
+- 병합으로 덮인 셀, 격자 밖 좌표, 셀 문단 밖 좌표는 exit 2이며 원본은 변경하지 않는다.
+
+```bash
+rhwp export-tables 양식.hwpx --json | jq '.tables[0].cells[:4]'
+rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 0 --col 0 --text "추가" --offset 0 -o 작성본.hwpx --json
+rhwp export-tables 작성본.hwpx --json | jq '.tables[0].cells[] | select(.row==0 and .col==0).text'
+```
+
 ### `edit insert-text <파일> --text <문자열> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4990)
 문단 좌표에 **새 텍스트를 삽입**한다. `replace-text`/`fill-fields`/`set-cell` 은 있는 값을
 바꾸는 축이고, 이 명령은 **없는 자리에 글자를 넣는** 축이다. 새 편집 로직은 없다 —
@@ -1255,7 +1274,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 51종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-table`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`delete-control`/`delete-table`/`insert-header-footer`/`insert-image`/`redact`/`sanitize`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`set-hf-picture`/`apply-hf-template`/`delete-hf-text`/`insert-field-in-hf`/`split-paragraph-in-hf`/`toggle-hide-hf`/`merge-paragraph-in-hf`/`apply-char-format`/`split-paragraph`/`apply-para-format`/`apply-style`/`set-numbering-restart`/`apply-para-format-in-hf`/`apply-endnote-shape`/`insert-footnote-text`/`delete-text-in-footnote`/`split-paragraph-in-footnote`/`merge-paragraph-in-footnote`/`apply-para-format-in-footnote`)은
+`edit` 52종(`fill-fields`/`replace-text`/`set-cell`/`insert-text-in-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-table`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`delete-control`/`delete-table`/`insert-header-footer`/`insert-image`/`redact`/`sanitize`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`set-hf-picture`/`apply-hf-template`/`delete-hf-text`/`insert-field-in-hf`/`split-paragraph-in-hf`/`toggle-hide-hf`/`merge-paragraph-in-hf`/`apply-char-format`/`split-paragraph`/`apply-para-format`/`apply-style`/`set-numbering-restart`/`apply-para-format-in-hf`/`apply-endnote-shape`/`insert-footnote-text`/`delete-text-in-footnote`/`split-paragraph-in-footnote`/`merge-paragraph-in-footnote`/`apply-para-format-in-footnote`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`
