@@ -1063,6 +1063,10 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 본문 각주/미주 컨트롤을 지운다. 코어 `delete_footnote_native`. `--section`/`--para`/`--ctrl`
 은 필수(0 기준).
 
+### `edit set-equation <파일> --section N --para N --ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 수식 속성(스크립트·글자크기·색 등)을 고친다. 코어 `set_equation_properties_native`.
+`--section`/`--para`/`--ctrl` 은 필수(0 기준). `--props` 는 JSON 객체.
+
 ### `edit add-bookmark <파일> --name <이름> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5026)
 지정 좌표에 책갈피를 넣는다. 코어 `add_bookmark_native`. `--name` 필수. 같은 이름은 거부.
 

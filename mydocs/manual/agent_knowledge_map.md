@@ -327,7 +327,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`merge-paragraph` |
 | `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
-| `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark`·`rename-bookmark`·`delete-control` |
+| `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark`·`rename-bookmark`·`delete-control`·`set-equation` |
 | `name` | string | 책갈피 이름 | `edit add-bookmark`·`rename-bookmark` |
 | `isHeader` | bool | 머리말이면 참, 꼬리말이면 거짓 | `edit delete-header-footer` |
 | `applyTo` | number | 머리말/꼬리말 적용 범위 (0 양쪽·1 짝수·2 홀수) | `edit delete-header-footer` |
@@ -1134,6 +1134,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_rename_bookmark` | `edit rename-bookmark --json` | `path`,`section`,`paragraph`,`ctrl`,`name` |
 | `hwp_delete_header_footer` | `edit delete-header-footer --json` | `path` |
 | `hwp_delete_control` | `edit delete-control --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_set_equation` | `edit set-equation --json` | `path`,`section`,`paragraph`,`ctrl`,`props` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
