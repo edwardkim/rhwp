@@ -1118,6 +1118,9 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit resize-table-cell <파일> --table <번호> --row <행> --col <열> [--vertical] [--forward] [-o <출력>] [--dry-run] [--verify] [--json]`
 본문 최상위 표의 한 칸 크기를 한 걸음(283 HWPUNIT) 조절한다. 코어 `resize_table_cell_native`. 병합 칸이 있으면 네이티브가 거부한다.
 
+### `edit move-table <파일> --table <번호> --dx <가로> --dy <세로> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 최상위 표의 위치 오프셋을 옮긴다. 코어 `move_table_offset_native`. `--dx`/`--dy` 는 HWPUNIT(양수=오른쪽/아래, 음수 허용).
+
 ### `edit insert-footnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4998)
 문단 좌표에 각주를 끼운다. 코어 `insert_footnote_native`.
 

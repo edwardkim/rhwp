@@ -297,10 +297,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 307개 필드
+### 2-2. 전수 사전 — 309개 필드
 
 `capabilities` 의 `recordFields` 고유 **302개**와 그 밖의 실측-only 필드
-`applyTo`·`assertions`·`docId`·`exists`·`isHeader`·`preview` **6개**를 합친 307개다. `등장 명령` 은 자기서술
+`applyTo`·`assertions`·`docId`·`exists`·`isHeader`·`preview`·`dx`·`dy` **8개**를 합친 309개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -325,6 +325,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `forward` | bool | 참이면 늘리고, 거짓이면 줄인다 | `edit resize-table-cell` |
 | `vertical` | bool | 참이면 행 높이, 거짓이면 열 폭 | `edit resize-table-cell` |
 | `forward` | bool | 참이면 늘리고, 거짓이면 줄인다 | `edit resize-table-cell` |
+| `dx` | number | 가로 이동량 (HWPUNIT, 음수 허용) | `edit move-table` |
+| `dy` | number | 세로 이동량 (HWPUNIT, 음수 허용) | `edit move-table` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
 | `rows` | number | 생성할 표의 행 수 (1 이상) | `edit insert-table` |
@@ -1089,8 +1091,8 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 57개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`delete-text-in-cell`·`insert-text`·`delete-text`·
-`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`split-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`split-cell-into`·`split-table`·`fit-table`·`resize-table`·`resize-table-cell`·`merge-table`·`set-column-widths`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`delete-equation`·`add-bookmark`·`delete-bookmark`·`delete-table`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf`·`split-paragraph-in-cell`·`merge-paragraph-in-cell`·`apply-char-format`·`apply-para-format`·`apply-style`·`apply-cell-style`·`delete-control`·`insert-header-footer`·`insert-field-in-hf`·`set-column-def`·`set-numbering-restart`·`set-page-hide`·`transpose-table`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 58개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`delete-text-in-cell`·`insert-text`·`delete-text`·
+`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`split-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`split-cell-into`·`split-table`·`fit-table`·`resize-table`·`resize-table-cell`·`move-table`·`merge-table`·`set-column-widths`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`delete-equation`·`add-bookmark`·`delete-bookmark`·`delete-table`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf`·`split-paragraph-in-cell`·`merge-paragraph-in-cell`·`apply-char-format`·`apply-para-format`·`apply-style`·`apply-cell-style`·`delete-control`·`insert-header-footer`·`insert-field-in-hf`·`set-column-def`·`set-numbering-restart`·`set-page-hide`·`transpose-table`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
@@ -1153,6 +1155,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_split_cell_into` | `edit split-cell-into --json` | `path`,`table`,`row`,`col`,`rows`,`cols` |
 | `hwp_resize_table_cell` | `edit resize-table-cell --json` | `path`,`table`,`row`,`col` |
 | `hwp_resize_table_cell` | `edit resize-table-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_move_table` | `edit move-table --json` | `path`,`table`,`dx`,`dy` |
 | `hwp_insert_footnote` | `edit insert-footnote --json` | `path` |
 | `hwp_insert_endnote` | `edit insert-endnote --json` | `path` |
 | `hwp_delete_footnote` | `edit delete-footnote --json` | `path`,`section`,`paragraph`,`ctrl` |
