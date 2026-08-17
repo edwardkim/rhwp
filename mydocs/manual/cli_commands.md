@@ -1065,6 +1065,15 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit delete-control <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]` (#5041)
 문단이 담은 컨트롤 하나를 지운다(갈래 무관). 코어 `delete_control_native`. `--section`/`--para`/`--ctrl` 필수.
 
+### `edit insert-shape <파일> --width N --height N [--section N] [--para N] [--offset N] [--x N] [--y N] [--shape rectangle] [--wrap InFrontOfText] [--treat-as-char] [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 문단에 도형(기본 사각형)을 끼운다. 코어 `create_shape_control_native` 배선이며 새 편집 로직은 없다.
+- `--width` / `--height` (필수) — HWPUNIT. 둘 다 0 이면 거부.
+- `--section` / `--para` / `--offset` — 0 기준. 생략하면 0.
+- `--x` / `--y` — 가로·세로 오프셋(HWPUNIT, 기본 0).
+- `--shape` — `rectangle`(기본)·`ellipse`·`line`·`textbox`·`polygon`·`arc`.
+- `--wrap` — `InFrontOfText`(기본) 등 네이티브가 받는 감싸기 값.
+- `--json` 봉투: `section`/`paragraph`/`offset`/`width`/`height`/`x`/`y`.
+
 ### `edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]` (#3719 §6-5)
 도장·서명 같은 그림을 쪽 좌표에 붙인다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각.
 - `--image <그림>` (필수) — 지원 형식은 `png`·`jpg`·`jpeg`·`bmp`·`tif`·`tiff` 뿐(확장자와 내용
@@ -1178,7 +1187,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 27종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`rename-bookmark`/`delete-header-footer`/`delete-control`/`insert-image`/`redact`/`sanitize`)은
+`edit` 37종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`rename-bookmark`/`delete-header-footer`/`delete-control`/`insert-image`/`insert-shape`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`

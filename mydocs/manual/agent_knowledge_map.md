@@ -320,7 +320,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
-| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`merge-paragraph` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`merge-paragraph`·`insert-shape` |
 | `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
 | `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark`·`rename-bookmark`·`delete-control` |
@@ -455,7 +455,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 |---|---|---|---|
 | `page` | number | 붙일 쪽(0 기준) | `edit insert-image` |
 | `x` / `y` | number | 용지 왼쪽 위 기준 위치 — 단위는 **HWPUNIT(1/7200 inch)**, 픽셀이 아니다 | `edit insert-image` |
-| `width` / `height` | number | 그림 크기(HWPUNIT). `thumbnail` 에서는 **픽셀** — 같은 이름, 다른 단위 | `edit insert-image`·`thumbnail` |
+| `width` / `height` | number | 그림·도형 크기(HWPUNIT). `thumbnail` 에서는 **픽셀** — 같은 이름, 다른 단위 | `edit insert-image`·`insert-shape`·`thumbnail` |
 | `binDataId` | number\|null | 문서에 새로 등록된 이진 자원 ID. **dry-run 이면 `null`** (아직 등록하지 않았다) | `edit insert-image` |
 
 #### 계획 실행 (`run`)
@@ -966,7 +966,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `row` / `col` | 표 격자 좌표 | 0 | `export-tables`·`edit set-cell` |
 | `이름[N]` | 반복 누름틀 순번 | 0 | `edit fill-fields`·`hwp_doc_fill_fields` |
 | `control` / `cell` | 표 컨트롤·칸 일련번호 | 0 | `fields[].location.nested`·`matches[].cell` |
-| HWPUNIT | 길이 | 1/7200 inch | `edit insert-image` 의 `x`·`y`·`width`·`height` |
+| HWPUNIT | 길이 | 1/7200 inch | `edit insert-image`·`insert-shape` 의 `x`·`y`·`width`·`height` |
 
 ### 3-2. 명령별로 어느 주소를 받고 어느 주소를 주나
 
