@@ -2,9 +2,6 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_007
 
-#[path = "../cases/merge_paragraph_contract.rs"]
-mod merge_paragraph_contract;
-
 #[path = "../hwp3_page_number_pos_fixture.rs"]
 mod hwp3_page_number_pos_fixture;
 

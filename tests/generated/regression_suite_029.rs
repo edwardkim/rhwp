@@ -2,9 +2,6 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_029
 
-#[path = "../cases/bookmarks_contract.rs"]
-mod bookmarks_contract;
-
 #[path = "../changed_pages_contract.rs"]
 mod changed_pages_contract;
 

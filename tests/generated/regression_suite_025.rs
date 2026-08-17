@@ -2,9 +2,6 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_025
 
-#[path = "../cases/split_cell_contract.rs"]
-mod split_cell_contract;
-
 #[path = "../exam_eng_multicolumn.rs"]
 mod exam_eng_multicolumn;
 

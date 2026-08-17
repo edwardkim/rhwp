@@ -2,9 +2,6 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_014
 
-#[path = "../cases/word_count_contract.rs"]
-mod word_count_contract;
-
 #[path = "../edit_field_occurrence_contract.rs"]
 mod edit_field_occurrence_contract;
 

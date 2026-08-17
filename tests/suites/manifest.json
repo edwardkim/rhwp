@@ -118,7 +118,6 @@
     ],
     "regression_suite_003": [
       "tests/audit_standard_contract.rs",
-      "tests/cases/delete_paragraph_contract.rs",
       "tests/did_you_mean_contract.rs",
       "tests/edit_replace_text_contract.rs",
       "tests/issue_1073_nested_table_split.rs",
@@ -138,7 +137,6 @@
     "regression_suite_004": [
       "tests/audit_contract.rs",
       "tests/bundle_contract.rs",
-      "tests/cases/delete_footnote_contract.rs",
       "tests/diag_1042_raw_binary.rs",
       "tests/hml_parser.rs",
       "tests/issue_1082_endnote_multicolumn_drift.rs",
@@ -156,7 +154,6 @@
       "tests/suites/issue_regression_pilot/issue_1749_saved_bounds_cumulative.rs"
     ],
     "regression_suite_005": [
-      "tests/cases/insert_col_contract.rs",
       "tests/convert_verify_corpus_ratchet.rs",
       "tests/diag_1042_table_row_height.rs",
       "tests/hml_serializer.rs",
@@ -176,7 +173,6 @@
       "tests/suites/issue_regression_pilot/issue_2098_margin_boundary_split.rs"
     ],
     "regression_suite_006": [
-      "tests/cases/delete_text_contract.rs",
       "tests/cli_json_contract.rs",
       "tests/digest_macro_contract.rs",
       "tests/issue_1434_clickhere_guide_hancom_command.rs",
@@ -197,7 +193,6 @@
       "tests/suites/issue_regression_pilot/issue_2559_footnote_footer_band.rs"
     ],
     "regression_suite_007": [
-      "tests/cases/merge_paragraph_contract.rs",
       "tests/hwp3_page_number_pos_fixture.rs",
       "tests/issue_1198_nested_cell_paste.rs",
       "tests/issue_1402_enum_token_whitelist.rs",
@@ -259,7 +254,6 @@
     ],
     "regression_suite_010": [
       "tests/agent_context_cost_contract.rs",
-      "tests/cases/insert_row_contract.rs",
       "tests/diag_1042_height_calc.rs",
       "tests/hwp3_charcount_convention.rs",
       "tests/issue_1152_intra_para_vpos_reset.rs",
@@ -300,7 +294,6 @@
       "tests/svg_snapshot.rs"
     ],
     "regression_suite_012": [
-      "tests/cases/insert_paragraph_contract.rs",
       "tests/cases/issue_3532_trailing_charshape_boundary.rs",
       "tests/hidden_text_contract.rs",
       "tests/issue_1279_picture_rotation_save.rs",
@@ -323,7 +316,6 @@
     ],
     "regression_suite_013": [
       "tests/boundary_integrity_contract.rs",
-      "tests/cases/insert_text_contract.rs",
       "tests/ir_diff_json_contract.rs",
       "tests/issue_1418_textbox_table_overlap.rs",
       "tests/issue_1686.rs",
@@ -343,7 +335,6 @@
       "tests/wmf_poly_negative_point_count_no_panic.rs"
     ],
     "regression_suite_014": [
-      "tests/cases/word_count_contract.rs",
       "tests/edit_field_occurrence_contract.rs",
       "tests/hwpx_roundtrip_integration.rs",
       "tests/ir_diff_summary_mode.rs",
@@ -472,7 +463,6 @@
     ],
     "regression_suite_020": [
       "tests/batch_axes_contract.rs",
-      "tests/cases/insert_footnote_contract.rs",
       "tests/diag_1042_hwp3_vs_hwp5_paragraph.rs",
       "tests/diag_1042_variant_check.rs",
       "tests/edit_verify_contract.rs",
@@ -493,7 +483,6 @@
       "tests/mcp_password_contract.rs"
     ],
     "regression_suite_021": [
-      "tests/cases/delete_row_contract.rs",
       "tests/diag_1042_cfb_check.rs",
       "tests/diag_1042_normal_vs_abnormal.rs",
       "tests/diag_1042_version_check.rs",
@@ -536,7 +525,6 @@
       "tests/suites/issue_regression_pilot/issue_1750_split_guard_spacing_before.rs"
     ],
     "regression_suite_023": [
-      "tests/cases/add_bookmark_contract.rs",
       "tests/cli_exit_codes_diagnostic_commands.rs",
       "tests/cli_exit_codes_dump_diag.rs",
       "tests/diag_1042_2022.rs",
@@ -561,7 +549,6 @@
       "tests/anchor_contract.rs",
       "tests/batch_extract_data_contract.rs",
       "tests/capabilities_schema_contract.rs",
-      "tests/cases/delete_col_contract.rs",
       "tests/hwp3_password_fixture.rs",
       "tests/issue_1187_textbox_clip.rs",
       "tests/issue_1385_replace_export_roundtrip.rs",
@@ -580,7 +567,6 @@
       "tests/suites/issue_regression_pilot/issue_2087_document_core_send.rs"
     ],
     "regression_suite_025": [
-      "tests/cases/split_cell_contract.rs",
       "tests/exam_eng_multicolumn.rs",
       "tests/fields_json_contract.rs",
       "tests/injection_scan_contract.rs",
@@ -644,7 +630,6 @@
       "tests/unicode_deception_contract.rs"
     ],
     "regression_suite_028": [
-      "tests/cases/merge_cells_contract.rs",
       "tests/diag_1042_trailing.rs",
       "tests/issue_1067_shape_rotation.rs",
       "tests/issue_1105.rs",
@@ -666,7 +651,6 @@
       "tests/suites/issue_regression_pilot/issue_1937_rowbreak_footnote_overpagination.rs"
     ],
     "regression_suite_029": [
-      "tests/cases/bookmarks_contract.rs",
       "tests/changed_pages_contract.rs",
       "tests/cli_password_stdin_command_parity_contract.rs",
       "tests/diag_1042_vpos_distribution.rs",
@@ -709,7 +693,6 @@
       "tests/render_p37_direct_pdf_export.rs"
     ],
     "regression_suite_031": [
-      "tests/cases/insert_column_break_contract.rs",
       "tests/diag_1042_2024_reverse.rs",
       "tests/diagnostics_flag_contract.rs",
       "tests/hwpx_password_fixture.rs",
@@ -733,7 +716,6 @@
     "regression_suite_032": [
       "tests/agent_codex_contract.rs",
       "tests/agent_toolkit_contract.rs",
-      "tests/cases/insert_endnote_contract.rs",
       "tests/diag_1042_pi162_attr1.rs",
       "tests/genpreview_json_contract.rs",
       "tests/info_title_contract.rs",

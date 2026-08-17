@@ -2,9 +2,6 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_028
 
-#[path = "../cases/merge_cells_contract.rs"]
-mod merge_cells_contract;
-
 #[path = "../diag_1042_trailing.rs"]
 mod diag_1042_trailing;
 

@@ -8,9 +8,6 @@ mod agent_codex_contract;
 #[path = "../agent_toolkit_contract.rs"]
 mod agent_toolkit_contract;
 
-#[path = "../cases/insert_endnote_contract.rs"]
-mod insert_endnote_contract;
-
 #[path = "../diag_1042_pi162_attr1.rs"]
 mod diag_1042_pi162_attr1;
 

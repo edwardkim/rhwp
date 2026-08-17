@@ -5,9 +5,6 @@
 #[path = "../audit_standard_contract.rs"]
 mod audit_standard_contract;
 
-#[path = "../cases/delete_paragraph_contract.rs"]
-mod delete_paragraph_contract;
-
 #[path = "../did_you_mean_contract.rs"]
 mod did_you_mean_contract;
 

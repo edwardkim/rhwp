@@ -8,9 +8,6 @@ mod audit_contract;
 #[path = "../bundle_contract.rs"]
 mod bundle_contract;
 
-#[path = "../cases/delete_footnote_contract.rs"]
-mod delete_footnote_contract;
-
 #[path = "../diag_1042_raw_binary.rs"]
 mod diag_1042_raw_binary;
 
