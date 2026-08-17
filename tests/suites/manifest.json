@@ -677,6 +677,7 @@
     ],
     "regression_suite_029": [
       "tests/cases/bookmarks_contract.rs",
+      "tests/cases/transpose_table_contract.rs",
       "tests/changed_pages_contract.rs",
       "tests/cli_password_stdin_command_parity_contract.rs",
       "tests/diag_1042_vpos_distribution.rs",
