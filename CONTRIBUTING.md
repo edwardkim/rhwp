@@ -1,6 +1,7 @@
 # Contributing to rhwp
 
-> **PR 차단 게이트 — 하나라도 실패하면 `gh pr create` / `git push` 하지 마세요.**
+> **PR·push 차단 게이트 — 하나라도 실패하면 `gh pr create` / `git push` 하지 마세요.**
+> 테스트만 고친 뒤에도 `cargo fmt --all -- --check` 를 다시 돌리세요.
 >
 > ```bash
 > cargo fmt --all
