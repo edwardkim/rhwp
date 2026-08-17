@@ -1013,32 +1013,15 @@ jobs:
     runs-on: ubuntu-latest
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 30
-    needs: [preflight, lint, frontend-unit-gates, frontend-package-gates]
-    # Rust 비영향 render input은 lint=skipped/native=success가 정상이다. Rust renderer 변경은
-    # lint=success/native=success를 요구하며 대상 job의 실패·취소를 shard까지 전파한다.
+    # [#5164 Stage 3] Native Skia는 독립 runner에서 실행되므로 lint·frontend를 기다리지 않는다.
+    # 각 lane의 성공·skip 계약은 최종 Build & Test 집계 job이 함께 검증한다.
+    needs: [preflight]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.native_skia_required == 'true'
-        && (
-          (needs.preflight.outputs.rust_required == 'true'
-            && needs.lint.result == 'success')
-          || (needs.preflight.outputs.rust_required == 'false'
-            && needs.lint.result == 'skipped')
-        )
-        && (
-          (needs.preflight.outputs.frontend_mode == 'none'
-            && needs['frontend-unit-gates'].result == 'skipped'
-            && needs['frontend-package-gates'].result == 'skipped')
-          || (needs.preflight.outputs.frontend_mode == 'unit'
-            && needs['frontend-unit-gates'].result == 'success'
-            && needs['frontend-package-gates'].result == 'skipped')
-          || (needs.preflight.outputs.frontend_mode == 'package'
-            && needs['frontend-unit-gates'].result == 'skipped'
-            && needs['frontend-package-gates'].result == 'success')
-        )
       }}
     permissions:
       contents: read
