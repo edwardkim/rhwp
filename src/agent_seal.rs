@@ -161,10 +161,11 @@ pub fn seal_with_key(host: &[u8], secret: &[u8], key: &[u8; 32]) -> Vec<u8> {
     // 헤더 = AAD. 암호화 이전에 확정되는 바이트만 담는다(논스 포함).
     let header = build_header(ALGO_XCHACHA20_POLY1305, &nonce);
 
-    let cipher = XChaCha20Poly1305::new(Key::from_slice(&key[..]));
+    let cipher = XChaCha20Poly1305::new(&Key::from(*key));
+    let nonce = XNonce::from(nonce);
     let ciphertext = cipher
         .encrypt(
-            XNonce::from_slice(&nonce),
+            &nonce,
             Payload {
                 msg: secret,
                 aad: &header,
@@ -206,9 +207,10 @@ pub fn open_with_key(bytes: &[u8], key: &[u8; 32]) -> Opened {
         };
     }
 
-    let cipher = XChaCha20Poly1305::new(Key::from_slice(&key[..]));
+    let cipher = XChaCha20Poly1305::new(&Key::from(*key));
+    let nonce = XNonce::try_from(parsed.nonce).expect("논스 길이를 먼저 검증했다");
     match cipher.decrypt(
-        XNonce::from_slice(parsed.nonce),
+        &nonce,
         Payload {
             msg: parsed.ciphertext,
             aad: parsed.aad,

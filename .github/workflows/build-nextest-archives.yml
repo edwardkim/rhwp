@@ -73,7 +73,7 @@ jobs:
           toolchain: 1.93.1
 
       - name: Install cargo-nextest
-        uses: taiki-e/install-action@6c6fd71fe4fb72c3697d269963d0e15df8adedad # v2.85.10
+        uses: taiki-e/install-action@82cd3e7658a6f96c86c0234aeeda1748937cb0a1 # v2.85.13
         with:
           tool: nextest
 
@@ -81,7 +81,7 @@ jobs:
       # 동일하게 devel/main push로 한정한다.
       - name: Rust build cache
         id: rust-cache
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.9.1
+        uses: Swatinem/rust-cache@258712b0b7b1ddf8bddc9fc3b0faca682b2736c3 # v2.9.1
         with:
           shared-key: test-archive
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
