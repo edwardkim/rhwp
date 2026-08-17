@@ -2559,6 +2559,14 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     args_template,
                     output_fields,
                 )
+        tool(
+                    name,
+                    description,
+                    input_schema,
+                    command,
+                    args_template,
+                    output_fields,
+                )
         tool_with_optional_args(
             "hwp_delete_table",
             "[#5028] 본문 최상위 표를 지운다. 좌표는 export-tables 의 index. 코어 delete_table_control_native 배선.",
@@ -3332,7 +3340,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 41] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 42] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3418,6 +3426,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 41] = [
     ("apply-char-format", "본문 글자 서식 적용"),
     ("split-paragraph", "본문 문단 분할"),
     ("apply-para-format", "본문 문단 서식 적용"),
+    ("apply-style", "본문 문단 스타일 적용"),
 
 ];
 
@@ -18779,6 +18788,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("delete-footnote") => edit_delete_footnote(&args[1..]),
         Some("add-bookmark") => edit_add_bookmark(&args[1..]),
         Some("delete-bookmark") => edit_delete_bookmark(&args[1..]),
+        Some("apply-style") => edit_apply_style(&args[1..]),
         Some("apply-para-format") => edit_apply_para_format(&args[1..]),
         Some("split-paragraph") => edit_split_paragraph(&args[1..]),
         Some("apply-char-format") => edit_apply_char_format(&args[1..]),
@@ -31264,6 +31274,103 @@ fn edit_apply_para_format(args: &[String]) -> i32 {
         &[(section, para)],
         &format!("문단 서식 예정: {file_path} 구역 {section} 문단 {para}"),
         &format!("문단 서식 적용 완료: {file_path}"),
+    )
+}
+
+/// [#4994] `edit insert-row` — 표 행 삽입.
+
+fn edit_apply_style(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit apply-style <파일> --style N [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut style_arg: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--style" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = n,
+                        "--para" => para = n,
+                        _ => style_arg = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(style_id)) = (file_path, style_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.apply_style_native(section, para, style_id) {
+            eprintln!("오류: 스타일 적용 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "style",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para }),
+        &[(section, para)],
+        &format!("스타일 적용 예정: {file_path} 구역 {section} 문단 {para} 스타일 {style_id}"),
+        &format!("스타일 적용 완료: {file_path}"),
     )
 }
 
