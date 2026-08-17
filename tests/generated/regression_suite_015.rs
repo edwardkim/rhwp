@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_015
 
+#[path = "../cases/set_page_hide_contract.rs"]
+mod set_page_hide_contract;
+
 #[path = "../dump_pages_json_contract.rs"]
 mod dump_pages_json_contract;
 
