@@ -2659,14 +2659,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     ]),
                     &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "props", "dryRun", "changedPages", "output", "outputFormat", "verify"],
                 ),
-        tool(
-                    name,
-                    description,
-                    input_schema,
-                    command,
-                    args_template,
-                    output_fields,
-                )
+        tool_with_optional_args(
+                    "hwp_apply_endnote_shape",
+                    "구역의 미주 모양 JSON을 적용한다. 코어 apply_endnote_shape_native 배선.",
+                    serde_json::json!({
+                        "type": "object",
+                        "properties": {
+                            "path": { "type": "string" },
+                            "section": { "type": "integer", "minimum": 0 },
+                            "props": { "type": "string", "description": "미주 모양 JSON (예: {\"startNumber\":2})" },
+                            "output": { "type": "string" },
+                            "dryRun": { "type": "boolean" }
+                        },
+                        "required": ["path", "props"],
+                    }),
+                    "edit",
+                    serde_json::json!(["edit", "apply-endnote-shape", "{path}", "--props", "{props}", "--json"]),
+                    serde_json::json!([
+                        { "when": "section", "args": ["--section", "{section}"] },
+                        { "when": "output", "args": ["-o", "{output}"] },
+                        { "when": "dryRun", "args": ["--dry-run"] }
+                    ]),
+                    &["schemaVersion", "source", "section", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+                ),
         tool_with_optional_args(
                     "hwp_insert_footnote_text",
                     "[#5110] 각주 문단에 텍스트를 넣는다. --ctrl 은 본문 문단의 각주 컨트롤 인덱스. 코어 insert_text_in_footnote_native 배선.",
