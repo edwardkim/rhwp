@@ -135,7 +135,7 @@ COMMON_REASON = "입력 합성 비용 또는 산출 부피 때문에 표본 실�
 # 가족 분류 — (장 파일 이름, 제목, 소속 명령 판별자)
 FAMILIES = [
     ("10_조회", "조회 — 문서를 읽고 파악한다",
-     ["info", "word-count", "bookmarks", "headers-footers", "header-footer", "charts", "explain", "explore", "digest", "search", "export-text", "export-structure", "fields", "dump-pages", "extract-pages"]),
+     ["info", "word-count", "bookmarks", "form-value", "headers-footers", "header-footer", "charts", "explain", "explore", "digest", "search", "export-text", "export-structure", "fields", "dump-pages", "extract-pages"]),
     ("20_표와_데이터", "표·데이터 — 구조화 수확과 왕복",
      ["export-tables", "table-to-csv", "csv-to-table", "extract-data", "scan",
       # [#4100] 차트 숫자 데이터도 같은 CSV 왕복 규약을 쓴다 — 표와 한 가족이다.
