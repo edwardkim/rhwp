@@ -297,7 +297,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 299개 필드
+### 2-2. 전수 사전 — 300개 필드
 
 `capabilities` 의 `recordFields` 고유 **296개**와 그 밖의 실측-only 필드
 `assertions`·`docId`·`preview` **3개**를 합친 299개다. `등장 명령` 은 자기서술
