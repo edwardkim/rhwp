@@ -621,6 +621,15 @@ HWP 파일 정보 표시(버전/구역 수/암호화 등).
   `{"schemaVersion":"1.0","source","format":"hwp5|hwpx|hwp3|hml","sizeBytes","version","sections","pageCount","paraCount","fonts"}`.
   `version` 은 HML 이면 null. 스키마 계약은 `export-text --json` 항목과 동일 규칙.
 
+### `word-count <파일> [--json]` (#4999)
+IR 본문에서 구역·문단·글자·어절·쪽 수를 센다. 새 파서는 없다.
+- `--json`: `{"schemaVersion","source","sectionCount","paragraphCount","charCount","wordCount","pageCount"}`
+- 어절은 공백 분리. 본문 문자열은 봉투에 싣지 않는다.
+
+### `bookmarks <파일> [--json]` (#5025)
+문서 책갈피 목록. 코어 `get_bookmarks_native`. 새 파서는 없다.
+- `--json`: `{"schemaVersion","source","count","bookmarks":[{"name","sec","para","ctrlIdx","charPos"}]}`
+
 ### `digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]` (#3633)
 초소형 모델용 매크로 1호 — "info 로 훑고 → export-structure 로 개요를 얻고 →
 export-text 로 첫 장을 읽는" 3단 파이프라인을 **한 번 호출**로 수행한다. 도구
@@ -683,6 +692,37 @@ rhwp digest 편람.hwp --pages 0..9 --json
 rhwp explain 편람.hwp
 # 기계용 봉투 (hwp_explain 과 동일 계약)
 rhwp explain 편람.hwp --json | jq '{format, pageCount, tables, fields}'
+```
+
+### `explore <파일.hwp|파일.hwpx|파일.hml> [--json]`
+이 문서로 **무엇을 할 수 있는지**를 라우팅하는 어포던스 메뉴다. `explain` 이 문서가
+*무엇인지*를, `capabilities` 가 *도구 일반*을 서술한다면, `explore` 는 *이 문서*에
+적용 가능한 rhwp 행동만 골라 순위 매긴 메뉴로 준다 — 처음 보는 문서 앞에서 "70개
+명령 중 무엇이 이 문서에 맞는지"를 매번 뒤지지 않게 하는 놀이터 입구다.
+- 새 판정 로직이 아니라 기존 조회(`export-tables`·`fields`·`export-structure`·
+  `chart-to-csv`·`explain`(각주/미주)·`inspect injection`·`inspect hidden-text`)가
+  이미 센 개수에서 유도한 **결정론적** 메뉴다. LLM 판정은 없다.
+- 기본 출력은 사람용 메뉴. `--json` 이면 봉투 —
+  `{"schemaVersion":"1.0","source","format","pageCount","encrypted","affordanceCount","menu":[{"affordance","why","command","skill","confidence"}],"note"}`
+- `menu[]` 는 우선순위 내림차순이다. 있는 어포던스만 담기므로 **문서마다 메뉴가
+  다르다** — 표가 많은 문서는 `table-extract` 가, 서식은 `form-fill` 이, 주입 신호가
+  있으면 `security-sweep` 가 위로 온다. 아무 특수 신호가 없어도 `triage-overview`
+  한 갈래는 늘 담겨 메뉴가 비지 않는다.
+- 각 항목: `affordance`(안정 식별자), `why`(엔진이 센 개수 근거), `command`(다음에
+  실행할 명령 템플릿 — 경로 자리는 `<file>` 자리표시자), `skill`(다루는 스킬 이름),
+  `confidence`(high/medium/low).
+- **정직한 휴리스틱**이다 — 적용 가능한 행동을 제안할 뿐 완전성을 보장하지 않는다.
+  `note` 필드가 이 성격을 봉투 안에서도 밝힌다.
+- 증거(`why`)는 문서 원문이 아니라 개수·형식 레이블이라 봉투는 문서 파생 문자열을
+  싣지 않는다(`untrustedContent:false`). `capabilities --mcp` 의 `hwp_explore` 도구로도
+  노출된다(읽기 전용·무상태).
+- 암호 문서는 다른 명령과 같은 규약(`--password`/`--password-stdin`).
+
+```bash
+# 이 문서로 무엇을 할 수 있는지 사람용 메뉴로
+rhwp explore 편람.hwp
+# 기계용: 가장 높은 확신도의 다음 명령만 뽑기
+rhwp explore 편람.hwp --json | jq -r '.menu[0] | "\(.command)  # \(.why)"'
 ```
 
 ### `search <파일> [--json] [--ignore-case] [--limit N] [--] <검색어>` (#3283)
@@ -968,6 +1008,91 @@ rhwp edit set-cell 양식.hwpx --table 0 --row 2 --col 1 --text "1,234" -o 작�
 rhwp export-tables 작성본.hwpx --json | jq '.tables[0].cells[] | select(.row==2 and .col==1).text'
 ```
 
+### `edit insert-text <파일> --text <문자열> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4990)
+문단 좌표에 **새 텍스트를 삽입**한다. `replace-text`/`fill-fields`/`set-cell` 은 있는 값을
+바꾸는 축이고, 이 명령은 **없는 자리에 글자를 넣는** 축이다. 새 편집 로직은 없다 —
+검증된 코어 `insert_text_native`(스튜디오·세션이 이미 쓰는 경로)만 배선한다.
+
+- `--text <문자열>` (필수) — 넣을 문자열. 빈 문자열은 사용법 오류(exit 2).
+- `--section` / `--para` / `--offset` — 구역·문단·문자 오프셋(전부 **0 기준**, `search`
+  주소와 같다). 생략하면 0. `--offset` 이 그 문단의 문자 수와 같으면 끝에 붙인다.
+  문단 길이를 넘으면 조용히 자르지 않고 exit 2 + 실제 길이를 안내한다.
+  구역·문단이 범위를 벗어나도 exit 2.
+- `-o, --output <파일>` — 출력 파일(기본 `<입력명>_inserted.<입력과 같은 확장자>`, §edit 산출 형식)
+- `--dry-run` — 파일을 쓰지 않고 삽입 예정만 보고
+- `--verify` — 저장 직후 IR 자기검증(차이 시 exit 3)
+- `--json` 봉투: `{"schemaVersion":"1.0","source","section","paragraph","offset","text","insertedChars","dryRun","changedPages","output"?,"outputFormat"?,"verify"?}`
+  - `output`/`outputFormat`/`verify` 는 실제 저장했을 때만 실린다.
+- 실패 시 원본 불변.
+
+```bash
+rhwp edit insert-text 공문.hwp --section 0 --para 0 --offset 0 --text "긴급: " -o 개정본.hwp --json
+rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
+```
+
+### `edit delete-text <파일> --count N [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5011)
+문단 좌표에서 글자를 지운다. 코어 `delete_text_native`. `--count` 는 1 이상.
+
+### `edit insert-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4992)
+지정한 자리에 빈 문단을 끼운다. 앞 문단 서식을 상속한다(한글 Enter). 코어
+`insert_paragraph_native` 배선이며 새 편집 로직은 없다.
+- `--section` / `--para` — 0 기준. `--para` 가 구역 문단 수와 같으면 끝에 붙인다.
+- `-o` / `--dry-run` / `--verify` / `--json` 은 형제 `edit` 과 같다.
+
+### `edit delete-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5012)
+지정 문단을 지운다. 코어 `delete_paragraph_native`. 구역 마지막 문단은 거부한다.
+
+### `edit merge-paragraph <파일> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5018)
+지정 문단을 바로 앞 문단에 합친다. 코어 `merge_paragraph_native`. `--para` 는 합쳐질
+문단(1 이상, 0 은 거부).
+
+### `edit insert-page-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4993)
+문단을 지정 오프셋에서 가르고 쪽 나눔을 넣는다. 코어 `insert_page_break_native` 배선.
+
+### `edit insert-column-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5019)
+문단을 지정 오프셋에서 가르고 단 나눔을 넣는다. 코어 `insert_column_break_native` 배선.
+
+### `edit insert-row <파일> --table <번호> --row <행> [--below] [-o <출력>] [--dry-run] [--verify] [--json]` (#4994)
+본문 최상위 표에 행을 끼운다. 코어 `insert_table_row_native`. `--below` 면 지정 행 아래.
+
+### `edit insert-col <파일> --table <번호> --col <열> [--right] [-o <출력>] [--dry-run] [--verify] [--json]` (#4995)
+본문 최상위 표에 열을 끼운다. 코어 `insert_table_column_native`. `--right` 면 지정 열 오른쪽.
+
+### `edit delete-row <파일> --table <번호> --row <행> [-o <출력>] [--dry-run] [--verify] [--json]` (#4996)
+본문 최상위 표에서 행을 지운다. 코어 `delete_table_row_native`.
+
+### `edit delete-col <파일> --table <번호> --col <열> [-o <출력>] [--dry-run] [--verify] [--json]` (#5009)
+본문 최상위 표에서 열을 지운다. 코어 `delete_table_column_native`.
+
+### `edit merge-cells <파일> --table <번호> --row <행> --col <열> --end-row <행> --end-col <열> [-o <출력>] [--dry-run] [--verify] [--json]` (#4997)
+본문 최상위 표의 셀 사각형을 병합한다. 코어 `merge_table_cells_native`.
+
+### `edit split-cell <파일> --table <번호> --row <행> --col <열> [-o <출력>] [--dry-run] [--verify] [--json]` (#5010)
+본문 최상위 표의 병합 셀을 다시 나눈다. 코어 `split_table_cell_native`.
+
+### `edit insert-footnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4998)
+문단 좌표에 각주를 끼운다. 코어 `insert_footnote_native`.
+
+### `edit insert-endnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5013)
+문단 좌표에 미주를 끼운다. 코어 `insert_endnote_native`.
+
+### `edit delete-footnote <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]` (#5017)
+본문 각주/미주 컨트롤을 지운다. 코어 `delete_footnote_native`. `--section`/`--para`/`--ctrl`
+은 필수(0 기준).
+
+### `edit add-bookmark <파일> --name <이름> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5026)
+지정 좌표에 책갈피를 넣는다. 코어 `add_bookmark_native`. `--name` 필수. 같은 이름은 거부.
+
+### `edit delete-bookmark <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]` (#5027)
+책갈피 컨트롤을 지운다. 코어 `delete_bookmark_native`. `--section`/`--para`/`--ctrl` 필수.
+
+### `edit delete-table <파일> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]` (#5028)
+본문 최상위 표를 지운다. 코어 `delete_table_control_native`. 좌표는 `export-tables` 의 index.
+
+### `edit insert-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2] [-o <출력>] [--dry-run] [--verify] [--json]` (#5036)
+머리말 또는 꼬리말을 만든다. 코어 `create_header_footer_native`. `--header`/`--footer` 중
+하나 필수. `--apply-to` 는 0 양쪽·1 짝수·2 홀수(기본 0). 같은 적용 대상이 있으면 거부.
+
 ### `edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]` (#3719 §6-5)
 도장·서명 같은 그림을 쪽 좌표에 붙인다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각.
 - `--image <그림>` (필수) — 지원 형식은 `png`·`jpg`·`jpeg`·`bmp`·`tif`·`tiff` 뿐(확장자와 내용
@@ -1081,7 +1206,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 6종(`fill-fields`/`replace-text`/`set-cell`/`insert-image`/`redact`/`sanitize`)은
+`edit` 26종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`delete-table`/`insert-header-footer`/`insert-image`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`

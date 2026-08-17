@@ -172,7 +172,11 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self.assertIn("name: Analyze (${{ matrix.language }})", analyze)
         self.assertIn("name: Skip unselected language", analyze)
         self.assertIn(f"if: ${{{{ !{selected} }}}}", analyze)
-        self.assertGreaterEqual(analyze.count(f"if: ${{{{ {selected} }}}}"), 3)
+        self.assertEqual(analyze.count(f"if: ${{{{ {selected} }}}}"), 2)
+        self.assertIn(
+            "if: ${{ matrix.language != 'rust' && " + selected + " }}",
+            analyze,
+        )
         self.assertIn(
             "if: ${{ matrix.language == 'rust' && " + selected + " }}",
             analyze,
@@ -236,14 +240,18 @@ class CodeQLWorkflowTests(unittest.TestCase):
             self.assertEqual(outputs["classification_status"], "full")
             self.assertEqual(outputs["reason"], reason)
 
-    def test_blocking_lane_uses_default_build_mode_without_manual_prebuild(self) -> None:
+    def test_rust_lane_uses_explicit_none_build_mode_without_manual_prebuild(self) -> None:
         analyze = job_body(self.workflow, "analyze")
         self.assertIn("language: [javascript-typescript, python, rust]", analyze)
         self.assertIn("languages: ${{ matrix.language }}", analyze)
         self.assertIn("security-events: write", analyze)
         self.assertIn("contents: read", analyze)
         self.assertIn("Perform CodeQL Analysis", analyze)
-        self.assertNotIn("build-mode:", analyze)
+        rust_init = analyze.split("      - name: Initialize CodeQL (Rust)\n", 1)[1].split(
+            "\n      - name:", 1
+        )[0]
+        self.assertIn("languages: rust", rust_init)
+        self.assertIn("build-mode: none", rust_init)
         self.assertNotIn("actions/cache/", analyze)
         self.assertNotIn("cargo build", analyze)
         self.assertNotIn("rust-blocking-results", analyze)

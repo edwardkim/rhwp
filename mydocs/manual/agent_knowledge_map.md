@@ -23,7 +23,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **83개**(그중 `--json` 계약 **52개**, batch 축 **9개**) · MCP 도구 **82개**(무상태 66 + 세션 전용 16) |
+| 표면 규모 | CLI 명령 **85개**(그중 `--json` 계약 **54개**, batch 축 **9개**) · MCP 도구 **95개**(무상태 79 + 세션 전용 16) |
 | 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **261개** · §2 전수 사전 **264개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
@@ -107,6 +107,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | k 번째만 치환 | `edit replace-text --occurrence k` | `occurrence`·`replacedCount:1` | 같은 절 |
 | 체크박스 켜기 | `edit replace-text --find □ --replace ☑ --occurrence k` (`hwp_set_checkbox`) | `replacedCount` | 같은 절 |
 | 도장·서명 붙이기 | `edit insert-image` (`hwp_insert_image`) | `binDataId`·`overflow` | [CLI 매뉴얼](cli_commands.md) §edit insert-image |
+| 없는 자리에 글자 넣기 | `edit insert-text` (`hwp_insert_text`) | `insertedChars`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-text |
 | 개인정보 마스킹 | `edit redact` (`hwp_redact`) | `findingCount`·`redactedCount` | [보안 소비자 가이드](../tech/agent_security/consumer_guide.md) |
 | 메타데이터 제거 | `edit sanitize` (`hwp_sanitize`) | `removedCount`·`removed[]` | 같은 문서 |
 | 여러 편집을 원자로 | `run <계획.json> --json` (`hwp_run_plan`) | `invalid[]`·`steps[]`·`verify` | [CLI 매뉴얼](cli_commands.md) §run |
@@ -296,10 +297,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 281개 필드
+### 2-2. 전수 사전 — 303개 필드
 
-`capabilities` 의 `recordFields` 고유 **278개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 281개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **298개**와 그 밖의 실측-only 필드
+`applyTo`·`assertions`·`docId`·`isHeader`·`preview` **5개**를 합친 303개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -315,6 +316,25 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `input` | string | `run` 계획서의 원본 문서 | `run` |
 | `csv` | string | 읽은 CSV 경로 | `csv-to-table` |
 | `image` | string | 삽입할 그림 경로 | `edit insert-image` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-footnote` |
+| `below` | bool | 지정 행 아래에 끼울지 | `edit insert-row` |
+| `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
+| `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
+| `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`merge-paragraph` |
+| `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
+| `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
+| `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark` |
+| `isHeader` | bool | 머리말이면 true, 꼬리말이면 false | `edit insert-header-footer` |
+| `applyTo` | number | 머리말/꼬리말 적용 대상 (0 양쪽, 1 짝수, 2 홀수) | `edit insert-header-footer` |
+| `name` | string | 책갈피 이름 | `edit add-bookmark` |
+| `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell` |
+| `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text` |
+| `below` | bool | 지정 행 아래에 끼울지 | `edit insert-row` |
+| `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
+| `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
+| `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
+| `count` | number | 지울 글자 수 (1 이상) | `edit delete-text` |
 | `docId` | string | 세션 핸들. 서버 프로세스 수명과 같고 영속되지 않는다 | 세션 도구 12종 |
 
 #### 문서 메타
@@ -324,8 +344,13 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `format` | string | `hwp5`·`hwpx`·`hwp3`·`hml`, 산출 계열은 산출 형식(`svg`·`gif`…) | `info`·`digest`·렌더/변환 8종·`thumbnail` |
 | `sizeBytes` | number | 입력 파일 크기 | `info` |
 | `sections` | number | 구역 수(`info`) / 절 청크 배열(`digest --sections`) — **같은 이름, 다른 타입** | `info`·`digest` |
-| `pageCount` | number | 조판 결과 쪽 수 | `info`·`digest`·`export-text`·`export-svg`·`export-pdf`·`export-markdown`·`dump-pages`·`layout-anomaly` |
+| `pageCount` | number | 조판 결과 쪽 수 | `info`·`digest`·`export-text`·`export-svg`·`export-pdf`·`export-markdown`·`dump-pages`·`layout-anomaly`·`word-count` |
 | `paraCount` | number | 문단 수 | `info`·`digest` |
+| `sectionCount` | number | 구역 수 | `word-count` |
+| `paragraphCount` | number | 문단 수(`word-count`) / ingest 산출 문단 수 | `word-count`·`build-from-ingest` |
+| `charCount` | number | IR 본문 글자 수 | `word-count` |
+| `wordCount` | number | 공백 분리 어절 수 | `word-count` |
+| `bookmarks` | array | 책갈피 목록 `{name,sec,para,ctrlIdx,charPos}` | `bookmarks` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
 | `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |
@@ -334,6 +359,14 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `footnoteCount` | number | 각주 수 | `explain` |
 | `endnoteCount` | number | 미주 수 | `explain` |
 | `wasDistribution` | bool | 입력이 배포용(읽기전용)이었나 | `convert` |
+
+#### 탐색 메뉴 (`explore`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `affordanceCount` | number | `menu` 배열 길이 — 이 문서에 적용 가능하다고 판단한 행동 수 | `explore` |
+| `menu` | array | 순위 매긴 행동 메뉴 `{affordance,why,command,skill,confidence}`. `affordance`·`command`·`skill` 은 고정 어휘, `why` 만 기존 조회가 센 개수를 엮은 문장(문서 파생 아님) | `explore` |
+| `note` | string | 정직성 고지 — 메뉴는 제안이지 완전성 보장이 아니라는 고정 문구 | `explore` |
 
 #### 요약·개요 (`digest`)
 
@@ -658,6 +691,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `assetsDir` / `assetCount` | string / number | 이진 자원 폴더와 개수 | `export-doclang` |
 | `lossCount` | number | 변환에서 표현하지 못한 항목 수 | `export-doclang` |
 | `questionCount` / `paragraphCount` | number | ingest 로 만든 문항·문단 수 | `build-from-ingest` |
+| `blockCount` | number | scaffold 명세의 최상위 블록 수(제목·문단·표) | `scaffold` |
 
 #### 보안 조사 (`inspect`·`threat-scan`)
 
@@ -1044,19 +1078,21 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 6개** — `fill-fields`·`replace-text`·`set-cell`·`insert-image`·
-`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 26개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
+`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`delete-table`·`insert-header-footer`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 82개
+## 6. MCP 도구 전수 지도 — 95개
 
-### 6-1. 무상태 66개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 79개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
 | `hwp_info` | `info --json` | `path` |
+| `hwp_word_count` | `word-count --json` | `path` |
+| `hwp_bookmarks` | `bookmarks --json` | `path` |
 | `hwp_digest` | `digest --json` | `path` |
 | `hwp_export_text` | `export-text --json` | `path` |
 | `hwp_export_structure` | `export-structure --json` | `path` |
@@ -1092,7 +1128,27 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_replace_text` | `edit replace-text --json` | `path`,`find`,`replace` |
 | `hwp_set_checkbox` | `edit replace-text --find □ --replace ☑ --occurrence` | `path`,`occurrence`,`output` |
 | `hwp_set_cell` | `edit set-cell --json` | `path`,`table`,`row`,`col`,`text` |
+| `hwp_insert_row` | `edit insert-row --json` | `path`,`table`,`row` |
+| `hwp_insert_col` | `edit insert-col --json` | `path`,`table`,`col` |
+| `hwp_delete_row` | `edit delete-row --json` | `path`,`table`,`row` |
+| `hwp_delete_col` | `edit delete-col --json` | `path`,`table`,`col` |
+| `hwp_merge_cells` | `edit merge-cells --json` | `path`,`table`,`row`,`col`,`endRow`,`endCol` |
+| `hwp_split_cell` | `edit split-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_insert_footnote` | `edit insert-footnote --json` | `path` |
+| `hwp_insert_endnote` | `edit insert-endnote --json` | `path` |
+| `hwp_delete_footnote` | `edit delete-footnote --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_add_bookmark` | `edit add-bookmark --json` | `path`,`name` |
+| `hwp_delete_bookmark` | `edit delete-bookmark --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_delete_table` | `edit delete-table --json` | `path`,`table` |
+| `hwp_insert_header_footer` | `edit insert-header-footer --json` | `path` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
+| `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
+| `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
+| `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
+| `hwp_delete_paragraph` | `edit delete-paragraph --json` | `path` |
+| `hwp_merge_paragraph` | `edit merge-paragraph --json` | `path` |
+| `hwp_insert_page_break` | `edit insert-page-break --json` | `path` |
+| `hwp_insert_column_break` | `edit insert-column-break --json` | `path` |
 | `hwp_redact` | `edit redact --json` | `path` |
 | `hwp_sanitize` | `edit sanitize --json` | `path` |
 | `hwp_run_plan` | `run --plan-json --json` | `plan` |

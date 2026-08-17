@@ -15,11 +15,11 @@ import { fileURLToPath } from 'node:url';
 
 import {
   parseBaseRefArgument,
-  readJsonAtRef,
 } from './rust-test-policy-base.mjs';
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 export const ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
+export const POLICY_RELATIVE_PATH = 'tests/suites/suite-policy.json';
 export const MANIFEST_RELATIVE_PATH = 'tests/suites/manifest.json';
 const CARGO_MANIFEST_RELATIVE_PATH = 'Cargo.toml';
 const GENERATED_TEST_DIRECTORY = 'tests/generated';
@@ -56,8 +56,8 @@ function assertPositiveInteger(value, label) {
 }
 
 export function loadManifest(root = ROOT) {
-  const manifestPath = path.join(root, MANIFEST_RELATIVE_PATH);
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  const policyPath = path.join(root, POLICY_RELATIVE_PATH);
+  const manifest = JSON.parse(readFileSync(policyPath, 'utf8'));
 
   if (manifest.version !== 2) {
     throw new Error(`지원하지 않는 manifest version: ${manifest.version}`);
@@ -137,22 +137,12 @@ export function loadManifest(root = ROOT) {
     }
   }
 
-  assertRecord(manifest.suites, 'suites');
-  for (const [suite, sources] of Object.entries(manifest.suites)) {
-    if (!RUST_MODULE_NAME.test(suite)) {
-      throw new Error(`잘못된 suite 이름: ${suite}`);
-    }
-    if (!Array.isArray(sources)) {
-      throw new Error(`${suite} suite는 source 경로 배열이어야 합니다.`);
-    }
-    manifest.suites[suite] = sources.map((source, index) => {
-      const normalized = normalizeRelativePath(source, `${suite}[${index}]`);
-      if (!normalized.endsWith('.rs')) {
-        throw new Error(`suite source는 Rust 파일이어야 합니다: ${normalized}`);
-      }
-      return normalized;
-    });
+  if (Object.hasOwn(manifest, 'suites')) {
+    throw new Error(`${POLICY_RELATIVE_PATH}에는 파생 suites를 저장하지 않습니다.`);
   }
+  manifest.suites = Object.fromEntries(
+    Array.from({ length: suiteCount }, (_, index) => [suiteName(manifest, index), []]),
+  );
 
   return manifest;
 }
@@ -209,6 +199,29 @@ export function validateSourcePlacementAgainstBase(sources, baseManifest) {
     );
 }
 
+export function validateAddedSourcePlacement(addedPaths, sources) {
+  const discovered = new Set(sources);
+  return [...new Set(addedPaths)]
+    .filter(
+      (source) => discovered.has(source) && !source.startsWith('tests/cases/'),
+    )
+    .sort((left, right) => left.localeCompare(right))
+    .map(
+      (source) =>
+        `PR base에 없는 신규 integration source는 tests/cases/ 아래에 두어야 합니다: ${source}`,
+    );
+}
+
+function addedPathsAgainstBase(root, ref) {
+  return execFileSync(
+    'git',
+    ['diff', '--diff-filter=A', '--name-only', ref, 'HEAD', '--'],
+    { cwd: root, encoding: 'utf8' },
+  )
+    .split('\n')
+    .filter(Boolean);
+}
+
 export function validateDerivedArtifactChanges(
   changedPaths,
   { baseCargoToml = null, headCargoToml = null } = {},
@@ -248,10 +261,15 @@ export function validateDerivedArtifactChanges(
   return errors;
 }
 
-function changedPathsAgainstBase(root, baseRef) {
+function changedPathsAgainstBase(root, baseRef, diffFilter = null) {
+  const arguments_ = ['diff'];
+  if (diffFilter !== null) {
+    arguments_.push(`--diff-filter=${diffFilter}`);
+  }
+  arguments_.push('--name-only', '-z', `${baseRef}...HEAD`);
   return execFileSync(
     'git',
-    ['diff', '--name-only', '-z', `${baseRef}...HEAD`],
+    arguments_,
     { cwd: root, encoding: 'utf8' },
   ).split('\0').filter(Boolean);
 }
@@ -434,7 +452,12 @@ function suiteRecordsWithWeights(manifest, root = ROOT) {
   }));
 }
 
-export function assignSources(manifest, requestedSources, root = ROOT) {
+export function assignSources(
+  manifest,
+  requestedSources,
+  root = ROOT,
+  { persist = true, report = true } = {},
+) {
   const discovered = new Set(discoverSourceFiles(manifest, root));
   const declared = declaredSourcePaths(manifest);
   const caseIndex = buildCaseIndex(manifest);
@@ -464,9 +487,11 @@ export function assignSources(manifest, requestedSources, root = ROOT) {
     if (metric.blockers.length > 0) {
       manifest.exceptions.push(exceptionForMetric(metric));
       assignedTarget = metric.caseName;
-      process.stdout.write(
-        `[RustTestSuite] 예외 배정: ${metric.source} (${metric.blockers.join(', ')})\n`,
-      );
+      if (report) {
+        process.stdout.write(
+          `[RustTestSuite] 예외 배정: ${metric.source} (${metric.blockers.join(', ')})\n`,
+        );
+      }
     } else {
       const suite = lightestSuite(suites);
       // suite.sources는 manifest.suites[suite.name]과 같은 배열이다. 한 번만
@@ -474,32 +499,44 @@ export function assignSources(manifest, requestedSources, root = ROOT) {
       suite.sources.push(metric.source);
       suite.weight += metric.weight;
       assignedTarget = suite.name;
-      process.stdout.write(
-        `[RustTestSuite] 자동 배정: ${metric.source} -> ${suite.name}\n`,
-      );
+      if (report) {
+        process.stdout.write(
+          `[RustTestSuite] 자동 배정: ${metric.source} -> ${suite.name}\n`,
+        );
+      }
     }
     caseIndex.set(metric.caseName, assignedTarget);
   }
 
-  if (metrics.length > 0) {
+  if (metrics.length > 0 && persist) {
     writeManifest(manifest, root);
   }
   return metrics.length;
 }
 
-export function assignUnlistedSources(manifest, root = ROOT) {
+export function assignUnlistedSources(
+  manifest,
+  root = ROOT,
+  { persist = true, report = true } = {},
+) {
   const declared = declaredSourcePaths(manifest);
   const unlisted = discoverSourceFiles(manifest, root).filter(
     (source) => !declared.has(source),
   );
   if (unlisted.length === 0) {
-    process.stdout.write('[RustTestSuite] 새 test source 없음\n');
+    if (report) {
+      process.stdout.write('[RustTestSuite] 새 test source 없음\n');
+    }
     return 0;
   }
-  return assignSources(manifest, unlisted, root);
+  return assignSources(manifest, unlisted, root, { persist, report });
 }
 
-export function syncManifestSources(manifest, root = ROOT) {
+export function syncManifestSources(
+  manifest,
+  root = ROOT,
+  { persist = true, report = true } = {},
+) {
   const discovered = new Set(discoverSourceFiles(manifest, root));
   let removed = 0;
 
@@ -508,7 +545,9 @@ export function syncManifestSources(manifest, root = ROOT) {
       return true;
     }
     removed += 1;
-    process.stdout.write(`[RustTestSuite] 제거 반영: ${entry.path}\n`);
+    if (report) {
+      process.stdout.write(`[RustTestSuite] 제거 반영: ${entry.path}\n`);
+    }
     return false;
   });
   for (const [suite, sources] of Object.entries(manifest.suites)) {
@@ -517,22 +556,33 @@ export function syncManifestSources(manifest, root = ROOT) {
         return true;
       }
       removed += 1;
-      process.stdout.write(`[RustTestSuite] 제거 반영: ${source} (${suite})\n`);
+      if (report) {
+        process.stdout.write(`[RustTestSuite] 제거 반영: ${source} (${suite})\n`);
+      }
       return false;
     });
   }
-  if (removed > 0) {
+  if (removed > 0 && persist) {
     writeManifest(manifest, root);
   }
 
-  const added = assignUnlistedSources(manifest, root);
+  const added = assignUnlistedSources(manifest, root, { persist, report });
   return { removed, added };
 }
 
-export function prepareManifest(manifest, root = ROOT) {
-  syncManifestSources(manifest, root);
-  assignUnlistedSources(manifest, root);
+export function prepareManifest(
+  manifest,
+  root = ROOT,
+  { persist = true, report = true } = {},
+) {
+  syncManifestSources(manifest, root, { persist, report });
+  assignUnlistedSources(manifest, root, { persist, report });
   return manifest;
+}
+
+export function deriveManifest(root = ROOT) {
+  const manifest = loadManifest(root);
+  return prepareManifest(manifest, root, { persist: false, report: false });
 }
 
 export function renderHarness(suite, sources) {
@@ -634,10 +684,21 @@ function inspectRepository(
   if (baseRef !== null) {
     try {
       errors.push(
-        ...validateDerivedArtifactChanges(changedPathsAgainstBase(root, baseRef), {
-          baseCargoToml: textAtGitRef(root, baseRef, CARGO_MANIFEST_RELATIVE_PATH),
-          headCargoToml: textAtGitRef(root, 'HEAD', CARGO_MANIFEST_RELATIVE_PATH),
-        }),
+        ...validateDerivedArtifactChanges(
+          // CI의 --prepare는 이 PR에서 삭제한 산출물을 작업 폴더에 다시 만들 수
+          // 있다. PR diff상 A/M만 검사해야 실제 커밋 추가·수정은 막고 D는 허용한다.
+          changedPathsAgainstBase(root, baseRef, 'AM'),
+          {
+            baseCargoToml: textAtGitRef(root, baseRef, CARGO_MANIFEST_RELATIVE_PATH),
+            headCargoToml: textAtGitRef(root, 'HEAD', CARGO_MANIFEST_RELATIVE_PATH),
+          },
+        ),
+      );
+      errors.push(
+        ...validateAddedSourcePlacement(
+          addedPathsAgainstBase(root, baseRef),
+          discovered,
+        ),
       );
     } catch (error) {
       errors.push(
@@ -793,10 +854,19 @@ function inspectRepository(
 
 export function validateRepository(
   root = ROOT,
-  { baseManifest = null, baseRef = null } = {},
+  { baseManifest = null, baseRef = null, derive = false } = {},
 ) {
   try {
-    return inspectRepository(loadManifest(root), root, { baseManifest, baseRef });
+    const manifest = deriveManifest(root);
+    if (derive) {
+      return inspectRepository(manifest, root, {
+        baseManifest,
+        baseRef,
+        checkGenerated: false,
+        checkCargo: false,
+      });
+    }
+    return inspectRepository(manifest, root, { baseManifest, baseRef });
   } catch (error) {
     return {
       errors: [error instanceof Error ? error.message : String(error)],
@@ -907,10 +977,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
       printValidation(validateRepository());
     } else if (command === '--check') {
       const baseRef = parseBaseRefArgument(process.argv.slice(3));
-      const baseManifest = baseRef
-        ? readJsonAtRef(ROOT, baseRef, MANIFEST_RELATIVE_PATH, { optional: true })
-        : null;
-      printValidation(validateRepository(ROOT, { baseManifest, baseRef }));
+      printValidation(validateRepository(ROOT, { baseRef }));
     } else {
       process.stderr.write(
         '사용법: node scripts/rust-test-suite-manifest.mjs ' +

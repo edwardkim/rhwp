@@ -73,7 +73,10 @@ PLAN_A = {
 
 LIVE = {
     "info": ([ "info", DOC, "--json"], "문서 신상 — 형식·쪽수·구역·글꼴"),
+    "word-count": (["word-count", DOC, "--json"], "문서 분량 — 구역·문단·글자·어절·쪽"),
+    "bookmarks": (["bookmarks", DOC, "--json"], "문서 책갈피 목록"),
     "explain": (["explain", FORM, "--json"], "메타·구조·표·누름틀 한 봉투 요약"),
+    "explore": (["explore", DOC, "--json"], "이 문서로 무엇을 할지 — 문서별 행동 메뉴 라우팅"),
     "digest": (["digest", GOV, "--json"], "요약·RAG 청킹 — 개요와 발췌"),
     "search": (["search", GOV, "국어", "--json"], "주소(쪽) 붙은 전수 검색"),
     "export-text": (["export-text", DOC, "-p", "0", "--json"], "쪽 단위 평문"),
@@ -126,7 +129,7 @@ COMMON_REASON = "입력 합성 비용 또는 산출 부피 때문에 표본 실�
 # 가족 분류 — (장 파일 이름, 제목, 소속 명령 판별자)
 FAMILIES = [
     ("10_조회", "조회 — 문서를 읽고 파악한다",
-     ["info", "explain", "digest", "search", "export-text", "export-structure", "fields", "dump-pages", "extract-pages"]),
+     ["info", "word-count", "bookmarks", "explain", "explore", "digest", "search", "export-text", "export-structure", "fields", "dump-pages", "extract-pages"]),
     ("20_표와_데이터", "표·데이터 — 구조화 수확과 왕복",
      ["export-tables", "table-to-csv", "csv-to-table", "extract-data", "scan",
       # [#4100] 차트 숫자 데이터도 같은 CSV 왕복 규약을 쓴다 — 표와 한 가족이다.
@@ -134,7 +137,7 @@ FAMILIES = [
     ("30_편집과_계획", "편집·계획 — 원본 무훼손 변경",
      ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit insert-image", "edit redact", "edit sanitize", "run"]),
     ("40_변환과_렌더", "변환·렌더 — 형식을 넘나든다",
-     ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "thumbnail", "render-diff", "build-from-ingest", "split-document",
+     ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "thumbnail", "render-diff", "build-from-ingest", "scaffold", "split-document",
       "export-png-gpu", "gpu-info"]),
     ("50_검증_사다리", "검증 사다리 — 판정은 데이터다",
      ["verify", "ir-diff", "replay", "audit", "lineage", "hwpx-roundtrip",

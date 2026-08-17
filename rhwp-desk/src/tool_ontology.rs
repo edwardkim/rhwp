@@ -82,6 +82,16 @@ const REGISTRY: &[ToolNode] = &[
         consumes: &[],
     },
     ToolNode {
+        tool: "hwp_threat_scan",
+        produces: &["finding:threat"],
+        consumes: &[],
+    },
+    ToolNode {
+        tool: "hwp_layout_anomaly",
+        produces: &["finding:layout"],
+        consumes: &[],
+    },
+    ToolNode {
         tool: "hwp_export_pdf",
         produces: &["pdf-file"],
         consumes: &[],
@@ -100,6 +110,36 @@ const REGISTRY: &[ToolNode] = &[
         tool: "hwp_thumbnail",
         produces: &["thumbnail-image"],
         consumes: &[],
+    },
+    ToolNode {
+        tool: "hwp_convert_hwpx",
+        produces: &["converted-hwpx"],
+        consumes: &[],
+    },
+    ToolNode {
+        tool: "hwp_convert_hwp5",
+        produces: &["converted-hwp5"],
+        consumes: &[],
+    },
+    // 변환·편집 다음 판정 — 엔진 도구 설명 그대로: convert 의 verify.identical=false
+    // (exit 3)는 오류가 아니라 판정이라 hwp_ir_diff 로 상세를 보고, 픽셀 변위는
+    // hwp_render_diff. 편집(doc-mutation) 뒤에도 눈검증 게이트로 이어진다.
+    ToolNode {
+        tool: "hwp_ir_diff",
+        produces: &["finding:ir"],
+        consumes: &["converted-hwpx", "converted-hwp5", "doc-mutation"],
+    },
+    ToolNode {
+        tool: "hwp_render_diff",
+        produces: &["finding:visual"],
+        consumes: &["converted-hwpx", "converted-hwp5", "doc-mutation"],
+    },
+    // 쪽 발췌 — info 로 pageCount 를 본 다음 일부만 제출·이분법. from/to 는
+    // 1 기준(extract-pages 만). 산출은 새 파일이라 변환·내보내기로 이어질 수 있다.
+    ToolNode {
+        tool: "hwp_split_document",
+        produces: &["extracted-pages"],
+        consumes: &["doc-meta"],
     },
     ToolNode {
         tool: "hwp_export_tables",
@@ -145,6 +185,24 @@ const REGISTRY: &[ToolNode] = &[
         tool: "hwp_set_checkbox",
         produces: &["doc-mutation"],
         consumes: &["field-names"],
+    },
+    // 공개 전 마무리 3종 — 도장/서명·PII 마스킹·메타데이터 제거. 셋 다 doc-mutation을
+    // 소비도 하고 생산도 해서(공무원 문서 배포 전 준비 흐름에서) 서로 순서 없이
+    // 이어질 수 있다: 편집 → 도장 → 마스킹 → 메타데이터 제거, 순서는 자유롭다.
+    ToolNode {
+        tool: "hwp_insert_image",
+        produces: &["doc-mutation"],
+        consumes: &["doc-mutation"],
+    },
+    ToolNode {
+        tool: "hwp_redact",
+        produces: &["doc-mutation"],
+        consumes: &["doc-mutation"],
+    },
+    ToolNode {
+        tool: "hwp_sanitize",
+        produces: &["doc-mutation"],
+        consumes: &["doc-mutation"],
     },
 ];
 
@@ -204,6 +262,41 @@ mod tests {
     }
 
     #[test]
+    fn 편집_도구_전부_공개_전_마무리_3종으로_이어진다() {
+        for t in [
+            "hwp_replace_text",
+            "hwp_fill_fields",
+            "hwp_set_cell",
+            "hwp_set_checkbox",
+            "hwp_csv_to_table",
+            "hwp_csv_to_chart",
+        ] {
+            let next = suggest_next(t);
+            for finisher in ["hwp_insert_image", "hwp_redact", "hwp_sanitize"] {
+                assert!(
+                    next.contains(&finisher),
+                    "{t} 다음에 {finisher} 가 제안돼야 한다"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn 공개_전_마무리_3종은_순서_없이_서로_이어진다() {
+        // 도장 → 마스킹 → 메타데이터 제거, 어느 순서로도 가능해야 한다(자기 자신 제외).
+        let finishers = ["hwp_insert_image", "hwp_redact", "hwp_sanitize"];
+        for a in finishers {
+            let next = suggest_next(a);
+            for b in finishers {
+                if a == b {
+                    continue;
+                }
+                assert!(next.contains(&b), "{a} 다음에 {b} 가 제안돼야 한다");
+            }
+        }
+    }
+
+    #[test]
     fn 표_csv는_다시_표에_써넣는_도구로_이어진다() {
         let next = suggest_next("hwp_table_to_csv");
         assert!(next.contains(&"hwp_csv_to_table"));
@@ -224,11 +317,13 @@ mod tests {
     }
 
     #[test]
-    fn 검증_축_4종은_말단이라_다음_제안이_없다() {
+    fn 검증_축_6종은_말단이라_다음_제안이_없다() {
         assert!(suggest_next("hwp_inspect_hidden_text").is_empty());
         assert!(suggest_next("hwp_inspect_injection").is_empty());
         assert!(suggest_next("hwp_inspect_unicode").is_empty());
         assert!(suggest_next("hwp_inspect_watermark").is_empty());
+        assert!(suggest_next("hwp_threat_scan").is_empty());
+        assert!(suggest_next("hwp_layout_anomaly").is_empty());
     }
 
     #[test]
@@ -241,6 +336,28 @@ mod tests {
         ] {
             assert!(suggest_next(t).is_empty(), "{t} 는 말단이어야 한다");
         }
+    }
+
+    #[test]
+    fn 변환_다음엔_ir_비교와_렌더_비교가_이어진다() {
+        for t in ["hwp_convert_hwpx", "hwp_convert_hwp5"] {
+            let next = suggest_next(t);
+            assert!(next.contains(&"hwp_ir_diff"), "{t} 다음에 ir-diff");
+            assert!(next.contains(&"hwp_render_diff"), "{t} 다음에 render-diff");
+        }
+    }
+
+    #[test]
+    fn 문서_정보는_쪽_발췌로_이어진다() {
+        let next = suggest_next("hwp_info");
+        assert!(next.contains(&"hwp_split_document"));
+    }
+
+    #[test]
+    fn 편집_다음에도_렌더_비교가_이어진다() {
+        let next = suggest_next("hwp_replace_text");
+        assert!(next.contains(&"hwp_render_diff"));
+        assert!(next.contains(&"hwp_ir_diff"));
     }
 
     #[test]

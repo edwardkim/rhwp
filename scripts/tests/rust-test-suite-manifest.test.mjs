@@ -20,9 +20,11 @@ import {
 } from '../run-rust-test.mjs';
 import {
   assignSources,
+  deriveManifest,
   loadManifest,
   renderCargoTestBlock,
   renderHarness,
+  validateAddedSourcePlacement,
   validateDerivedArtifactChanges,
   validateSourcePlacementAgainstBase,
   validateRepository,
@@ -54,6 +56,8 @@ function writeRepositoryFixture(root) {
       regression_suite_001: ['tests/cases/existing.rs'],
     },
   };
+  const policy = { ...manifest };
+  delete policy.suites;
   mkdirSync(path.join(root, 'tests', 'cases'), { recursive: true });
   mkdirSync(path.join(root, 'tests', 'generated'), { recursive: true });
   mkdirSync(path.join(root, 'tests', 'suites'), { recursive: true });
@@ -64,6 +68,10 @@ function writeRepositoryFixture(root) {
   writeFileSync(
     path.join(root, 'tests', 'suites', 'manifest.json'),
     `${JSON.stringify(manifest, null, 2)}\n`,
+  );
+  writeFileSync(
+    path.join(root, 'tests', 'suites', 'suite-policy.json'),
+    `${JSON.stringify(policy, null, 2)}\n`,
   );
   writeFileSync(
     path.join(root, 'tests', 'generated', 'regression_suite_001.rs'),
@@ -90,10 +98,13 @@ function writeRepositoryFixture(root) {
   return manifest;
 }
 
-test('전체 integration source와 generated target 계약이 일치한다', () => {
-  const manifest = loadManifest();
-  const validation = validateRepository();
+test('전체 integration source는 파생 산출물을 쓰지 않고 검증한다', () => {
+  const policyPath = path.join(ROOT, 'tests', 'suites', 'suite-policy.json');
+  const policyBefore = readFileSync(policyPath, 'utf8');
+  const manifest = deriveManifest();
+  const validation = validateRepository(ROOT, { derive: true });
   assert.deepEqual(validation.errors, []);
+  assert.equal(readFileSync(policyPath, 'utf8'), policyBefore);
   assert.equal(validation.sourceCount, validation.caseModuleCount);
   assert.equal(validation.suiteCount, manifest.sharding.suiteCount);
   assert.equal(
@@ -200,6 +211,20 @@ test('PR base에 없던 integration source는 tests/cases 밖에서 거부한다
   ]);
 });
 
+test('PR base에서 새로 추가된 integration source만 tests/cases 경로를 강제한다', () => {
+  const errors = validateAddedSourcePlacement(
+    [
+      'tests/new_top_level.rs',
+      'tests/cases/new_nested.rs',
+      'mydocs/working/task.md',
+    ],
+    ['tests/existing.rs', 'tests/new_top_level.rs', 'tests/cases/new_nested.rs'],
+  );
+  assert.deepEqual(errors, [
+    'PR base에 없는 신규 integration source는 tests/cases/ 아래에 두어야 합니다: tests/new_top_level.rs',
+  ]);
+});
+
 test('PR은 파생 suite 산출물과 Cargo generated target 블록을 커밋할 수 없다', () => {
   const baseCargoToml = [
     '# BEGIN RHWP GENERATED TEST TARGETS',
@@ -265,6 +290,30 @@ test('PR base 검사는 Cargo generated target block의 커밋도 거부한다',
     validation.errors.some((error) => /Cargo\.toml의 generated test target 블록/.test(error)),
     validation.errors.join('\n'),
   );
+});
+
+test('CI가 삭제된 파생 산출물을 재생성해도 PR base 검사가 통과한다', (t) => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-suite-regenerated-output-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const manifest = writeRepositoryFixture(root);
+  const generatedPath = path.join(
+    root,
+    'tests',
+    'generated',
+    'regression_suite_001.rs',
+  );
+  const manifestPath = path.join(root, 'tests', 'suites', 'manifest.json');
+
+  runGit(root, ['rm', generatedPath, manifestPath]);
+  runGit(root, ['commit', '--quiet', '-m', 'remove derived outputs']);
+
+  // CI의 --prepare가 하는 일: HEAD에는 삭제로 남기되 작업 폴더에는 다시 생성한다.
+  mkdirSync(path.dirname(generatedPath), { recursive: true });
+  writeFileSync(generatedPath, renderHarness('regression_suite_001', manifest.suites.regression_suite_001));
+  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const validation = validateRepository(root, { baseRef: 'HEAD~1' });
+  assert.deepEqual(validation.errors, []);
 });
 
 test('기여자 가이드는 원본-only 제출을 안내한다', () => {
