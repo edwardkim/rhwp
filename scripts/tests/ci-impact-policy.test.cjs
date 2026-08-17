@@ -550,10 +550,10 @@ test('aggregate audit rejects duplicate reusable-workflow aliases', () => {
   const input = policyInput({ files, classification: classificationFor(files) });
   const policy = determinePolicy(input);
   const workflows = workflowEvidence(policy);
-  workflows.CI.jobs.push(job('build-test-archive-a', 'skipped'));
+  workflows.CI.jobs.push(job('build-test-archive', 'skipped'));
   const audit = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
   assert.equal(audit.conclusion, 'failure');
-  assert.match(audit.reason, /duplicate-job:build-test-archive-a/);
+  assert.match(audit.reason, /duplicate-job:build-test-archive/);
 });
 
 test('aggregate audit stays pending until every expected workflow is present', () => {
