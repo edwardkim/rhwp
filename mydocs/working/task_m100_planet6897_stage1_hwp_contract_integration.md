@@ -3,7 +3,7 @@
 - 기준: `upstream/devel` (`e0851908bbe568e850c4610986247494203b75d5`)
 - 검토 브랜치: `review/planet6897-hwp-contracts-20260818`
 - 원본 PR: #5176, #5183, #5189, #5191
-- 상태: 로컬 누적 체리픽 및 전체 Rust 회귀 완료, 원격 push/통합 PR 미생성
+- 상태: 로컬 누적 체리픽 및 전체 Rust 회귀 완료, draft 통합 PR #5197 생성
 
 ## 적용 순서
 
@@ -33,3 +33,8 @@
 `samples/hwp3-table-cell-overlap.hwp`, `samples/hwp3-curve.hwp`를 계약 테스트로
 실행했으며, 이번 로컬 검토에서는 별도 PDF를 생성하지 않았다. 한글 2020/2022 실제
 개방성은 CI 외 별도 Windows 또는 MCP 증적이 필요할 때 보강한다.
+
+## 통합 PR
+
+- https://github.com/edwardkim/rhwp/pull/5197
+- draft 상태에서 CI 결과와 실제 한글 앱 개방성 증적 필요 여부를 추적한다.

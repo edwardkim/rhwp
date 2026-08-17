@@ -5,6 +5,7 @@
 - base: `devel`
 - 원 head: `9f98942a0f724628e649725e11e6ddf88bbea21b`
 - 누적 검토 브랜치: `review/planet6897-hwp-contracts-20260818`
+- 누적 통합 PR: https://github.com/edwardkim/rhwp/pull/5197
 - 체리픽 커밋: `e8c9fb1cb`, `cdbdf039b`, `681704f3d`
 - 제외 커밋: `eb17b9c1e329` (동일 overflow-cell baseline이 `upstream/devel`에 이미 존재)
 

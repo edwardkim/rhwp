@@ -5,6 +5,7 @@
 - base: `devel`
 - 원 head: `03adcc66502a821e223b53dd3e3795e88ea6780d`
 - 누적 검토 브랜치: `review/planet6897-hwp-contracts-20260818`
+- 누적 통합 PR: https://github.com/edwardkim/rhwp/pull/5197
 - 체리픽 커밋: `ab41e9c60`
 - 선행 관계: PR 안의 격자 완성 커밋은 #5183과 논리적으로 동일하므로 중복 적용하지 않고,
   겹침 해소 커밋만 #5183 뒤에 적용했다.

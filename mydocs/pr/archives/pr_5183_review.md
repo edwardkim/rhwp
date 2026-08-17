@@ -5,6 +5,7 @@
 - base: `devel`
 - 원 head: `30317e7f5b96a53e29d772ed23831472ddfe437d`
 - 누적 검토 브랜치: `review/planet6897-hwp-contracts-20260818`
+- 누적 통합 PR: https://github.com/edwardkim/rhwp/pull/5197
 - 체리픽 커밋: `8848c6eb3`
 
 ## 결론
