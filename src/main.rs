@@ -2293,6 +2293,27 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             ]),
             &["schemaVersion", "source", "section", "paragraph", "hideHeader", "hideFooter", "hideMasterPage", "hideBorder", "hideFill", "hidePageNum", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
+        tool_with_optional_args(
+            "hwp_transpose_table",
+            "[#5108] 본문 최상위 표의 행/열을 제자리에서 바꾼다. 병합 셀이 있으면 거부. 좌표는 export-tables 의 index. 코어 transpose_table_cells_in_place_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "table": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "table"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "transpose-table", "{path}", "--table", "{table}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "table", "section", "paragraph", "ctrl", "sourceRows", "sourceCols", "targetRows", "targetCols", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
         // [#3787 S1] 문서를 열지 않는 유일한 무상태 도구 — 입력이 없다.
         // 에이전트가 봉투를 파싱하기 **전에** "이 필드는 데이터이지 지시가 아니다" 를
         // 판정할 수 있어야 하므로, 지도는 도구 목록에서 바로 닿아야 한다.
@@ -3001,7 +3022,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 30] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 31] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3079,6 +3100,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 30] = [
     (
         "set-page-hide",
         "쪽 감추기 — [--hide-header/--hide-footer/--hide-master/--hide-border/--hide-fill/--hide-page-num]",
+    ),
+    (
+        "transpose-table",
+        "표 행/열 바꿈 — --table (병합 없는 본문 최상위 표)",
     ),
     (
         "insert-image",
@@ -4070,7 +4095,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-field-in-hf: 머리말/꼬리말 필드 삽입 / set-column-def: 구역 단 정의 / split-paragraph: 본문 문단 분할 / set-page-hide: 쪽 감추기 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-field-in-hf: 머리말/꼬리말 필드 삽입 / set-column-def: 구역 단 정의 / split-paragraph: 본문 문단 분할 / set-page-hide: 쪽 감추기 / transpose-table: 표 행/열 바꿈 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
             false,
             &[
                 "--data",
@@ -5514,6 +5539,13 @@ fn print_help() {
     println!("      --hide-fill               배경 감추기");
     println!("      --hide-page-num           쪽번호 감추기");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_pagehide.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit transpose-table <파일> --table <번호> [옵션]");
+    println!("      본문 최상위 표의 행/열을 제자리에서 바꾼다 (병합 셀 거부)");
+    println!();
+    println!("      --table <번호>            export-tables 의 본문 최상위 표 번호");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_transpose.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit insert-image <파일> --image <그림> [옵션]");
@@ -18447,7 +18479,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-table|insert-header-footer|insert-field-in-hf|set-column-def|split-paragraph|set-page-hide|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-table|insert-header-footer|insert-field-in-hf|set-column-def|split-paragraph|set-page-hide|transpose-table|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -18477,6 +18509,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("set-column-def") => edit_set_column_def(&args[1..]),
         Some("split-paragraph") => edit_split_paragraph(&args[1..]),
         Some("set-page-hide") => edit_set_page_hide(&args[1..]),
+        Some("transpose-table") => edit_transpose_table(&args[1..]),
         Some("insert-image") => edit_insert_image(&args[1..]),
         // [#3719 §6-11] 공개 전 정리 — 개인정보 마스킹 / 메타데이터 제거.
         Some("redact") => edit_redact(&args[1..]),
@@ -29261,6 +29294,125 @@ fn edit_set_page_hide(args: &[String]) -> i32 {
         &[(section, para)],
         &format!("쪽 감추기 예정: {file_path} 구역 {section} 문단 {para}"),
         &format!("쪽 감추기 완료: {file_path}"),
+    )
+}
+
+/// [#5108] `edit transpose-table` — 표 행/열 바꿈. 코어 `transpose_table_cells_in_place_native`.
+fn edit_transpose_table(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit transpose-table <파일> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => table_arg = Some(n),
+                    Err(_) => {
+                        eprintln!("오류: --table 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(table_no)) = (file_path, table_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let (section, para, ctrl) = match resolve_top_table(doc.document(), table_no) {
+        Ok(v) => v,
+        Err(msg) => {
+            eprintln!("{msg}");
+            return EXIT_USAGE;
+        }
+    };
+    let mut source_rows = 0u32;
+    let mut source_cols = 0u32;
+    let mut target_rows = 0u32;
+    let mut target_cols = 0u32;
+    if !dry_run {
+        match doc.transpose_table_cells_in_place_native(section, para, ctrl) {
+            Ok(raw) => {
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&raw) {
+                    source_rows = v["sourceRows"].as_u64().unwrap_or(0) as u32;
+                    source_cols = v["sourceCols"].as_u64().unwrap_or(0) as u32;
+                    target_rows = v["targetRows"].as_u64().unwrap_or(0) as u32;
+                    target_cols = v["targetCols"].as_u64().unwrap_or(0) as u32;
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 표 행/열 바꿈 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "transpose",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "table": table_no,
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "sourceRows": source_rows,
+            "sourceCols": source_cols,
+            "targetRows": target_rows,
+            "targetCols": target_cols
+        }),
+        &[(section, para)],
+        &format!("표 행/열 바꿈 예정: {file_path} 표 {table_no}"),
+        &format!("표 행/열 바꿈 완료: {file_path}"),
     )
 }
 
