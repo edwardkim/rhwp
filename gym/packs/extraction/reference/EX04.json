@@ -1,0 +1,20 @@
+{
+  "id": "EX04",
+  "steps": [
+    {
+      "answer": {
+        "chars": {
+          "cmd": [
+            "export-text",
+            "{input}",
+            "-p",
+            "0",
+            "--json"
+          ],
+          "path": "pages[0].text",
+          "len": true
+        }
+      }
+    }
+  ]
+}

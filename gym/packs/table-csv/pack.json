@@ -8,7 +8,8 @@
   "requires": {
     "commands": [
       "table-to-csv",
-      "csv-to-table"
+      "csv-to-table",
+      "export-tables"
     ]
   },
   "runner": {
