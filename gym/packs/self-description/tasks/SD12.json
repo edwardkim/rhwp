@@ -1,0 +1,25 @@
+{
+  "id": "SD12",
+  "tier": 2,
+  "title": "종료 코드 계약",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 가 스스로 신고하는 종료 코드 개수를 answer.json 에 {\"codes\": N} 으로 제출하라. 힌트: capabilities 의 exitCodes.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "종료 코드 수",
+      "op": "len_answer_eq",
+      "answer": "codes",
+      "path": "exitCodes",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}
