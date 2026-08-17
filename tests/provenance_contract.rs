@@ -21,6 +21,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::sync::OnceLock;
 
+use rhwp::model::control::Control;
+use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;
 
 /// 본문·표·개요가 모두 있는 기본 샘플 (cli_json_contract 와 같은 문서).
@@ -41,6 +43,8 @@ const THUMBNAIL_SAMPLE: &str = "samples/2022년 국립국어원 업무계획.hwp
 /// 않는다 — 오라클이 비면 그 레시피는 아무것도 검사하지 못한다. 이 보고서 문서는 차트 2개와
 /// 본문을 함께 갖고 있고, 계열 6개 중 한 계열에 `c:cat` 이 없는 실사용 변종이기도 하다.
 const CHART_SAMPLE: &str = "samples/issue2006/1790387_prep_final_report.hwpx";
+/// 본문 양식 컨트롤이 있는 문서 — `form-value` 봉투를 비지 않게 한다.
+const FORM_CTRL_SAMPLE: &str = "samples/form-01.hwp";
 
 // ── 실행 도우미 ────────────────────────────────────────────────────────────
 
@@ -50,6 +54,22 @@ fn rhwp_bin() -> String {
 
 fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
+}
+
+/// 본문 양식 컨트롤의 실제 좌표를 찾는다. fixture의 (0, 0, 0)를 가정하지 않는다.
+fn first_body_form(path: &Path) -> (usize, usize, usize) {
+    let bytes = std::fs::read(path).expect("양식 fixture 읽기");
+    let doc = HwpDocument::from_bytes(&bytes).expect("양식 fixture 파싱");
+    for (section, body) in doc.document().sections.iter().enumerate() {
+        for (paragraph, para) in body.paragraphs.iter().enumerate() {
+            for (ctrl, control) in para.controls.iter().enumerate() {
+                if matches!(control, Control::Form(_)) {
+                    return (section, paragraph, ctrl);
+                }
+            }
+        }
+    }
+    panic!("본문 양식 컨트롤이 없습니다");
 }
 
 fn tmp_dir() -> PathBuf {
@@ -395,6 +415,8 @@ fn recipes() -> Vec<Recipe> {
     let hml = sample(HML_SAMPLE);
     let thumb = sample(THUMBNAIL_SAMPLE);
     let chart = sample(CHART_SAMPLE);
+    let form_ctrl = sample(FORM_CTRL_SAMPLE);
+    let (form_section, form_paragraph, form_control) = first_body_form(&form_ctrl);
 
     let p = |x: &Path| x.to_str().expect("경로").to_string();
     let out = |name: &str| p(&dir.join(name));
@@ -672,6 +694,32 @@ fn recipes() -> Vec<Recipe> {
             command: "bookmarks",
             doc: Some(main.clone()),
             args: vec![s("bookmarks"), s("--json"), p(&main)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "form-value",
+            doc: Some(form_ctrl.clone()),
+            args: vec![
+                s("form-value"),
+                p(&form_ctrl),
+                s("--section"),
+                s(&form_section.to_string()),
+                s("--para"),
+                s(&form_paragraph.to_string()),
+                s("--ctrl"),
+                s(&form_control.to_string()),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "charts",
+            doc: Some(chart.clone()),
+            args: vec![s("charts"), s("--json"), p(&chart)],
             stdin: None,
             exit: 0,
             ndjson: false,
@@ -2432,13 +2480,38 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     ),
     (
         "edit",
+        "script",
+        "insert-equation 전용. 스윕 레시피는 fill-fields/set-cell 이라 script 를 안 낸다",
+    ),
+    (
+        "edit",
         "fontSize",
-        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 fontSize 를 안 낸다",
+        "insert-equation/apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 fontSize 를 안 낸다",
     ),
     (
         "edit",
         "color",
-        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 color 를 안 낸다",
+        "insert-equation/apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 color 를 안 낸다",
+    ),
+    (
+        "edit",
+        "x",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 x 를 안 낸다",
+    ),
+    (
+        "edit",
+        "y",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 y 를 안 낸다",
+    ),
+    (
+        "edit",
+        "width",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 width 를 안 낸다",
+    ),
+    (
+        "edit",
+        "height",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 height 를 안 낸다",
     ),
 ];
 

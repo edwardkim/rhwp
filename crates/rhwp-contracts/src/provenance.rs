@@ -102,6 +102,21 @@ pub const MAP: &[CommandProvenance] = &[
         note: "count·sec·para·ctrlIdx·charPos 는 엔진 좌표다. 이름은 문서가 정한다.",
     },
     CommandProvenance {
+        command: "form-value",
+        untrusted: &[
+            f("name", "get_form_value_native — 문서 양식 개체 이름 문자열"),
+            f("value", "get_form_value_native — 문서 양식 개체 저장 값"),
+            f("text", "get_form_value_native — 문서 양식 개체 표시 문자열"),
+            f("caption", "get_form_value_native — 문서 양식 개체 단추 캡션"),
+        ],
+        note: "ok·formType·enabled 와 좌표는 엔진이 판정한다. 양식의 이름·값·표기는 문서가 정한다.",
+    },
+    CommandProvenance {
+        command: "charts",
+        untrusted: &[],
+        note: "목록은 엔진이 차트 컨트롤 좌표를 센 것이다. 본문·차트 숫자는 싣지 않는다.",
+    },
+    CommandProvenance {
         command: "headers-footers",
         untrusted: &[],
         note: "목록은 엔진이 컨트롤 종류·적용 대상에서 만든 좌표다. 본문 문자열은 싣지 않는다.",
