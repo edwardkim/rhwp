@@ -73,12 +73,29 @@ fn insert_footnote() -> PathBuf {
     inserted
 }
 
+/// insert-footnote 자리표시 `"  "` 뒤에 본문을 넣고 좌표를 스캔한다.
+fn fixture_with_fn_text() -> (PathBuf, usize, usize, usize, usize) {
+    let inserted = insert_footnote();
+    let (si, pi, ci, fi, _, _) = first_note_text(&inserted).expect("삽입한 각주");
+    let bytes = std::fs::read(&inserted).unwrap();
+    let mut doc = HwpDocument::from_bytes(&bytes).unwrap();
+    doc.insert_text_in_footnote_native(si, pi, ci, fi, 2, "ABCDEF")
+        .expect("각주 본문");
+    let out = temp("fx");
+    std::fs::write(&out, doc.export_hwp().expect("export")).unwrap();
+    let _ = std::fs::remove_file(&inserted);
+    let (si, pi, ci, fi, n, text) = first_note_text(&out).expect("본문 있는 각주");
+    assert!(
+        text.contains("ABCDEF") && n >= 6,
+        "각주 본문 삽입 실패: {text:?}"
+    );
+    (out, si, pi, ci, fi)
+}
+
 #[test]
 fn delete_text_in_footnote_shortens() {
-    let inserted = insert_footnote();
-    let (si, pi, ci, fi, before, text) =
-        first_note_text(&inserted).expect("삽입한 각주에 글자가 있어야 한다");
-    assert!(before >= 1, "삭제할 글자가 있어야 한다: {text:?}");
+    let (inserted, si, pi, ci, fi) = fixture_with_fn_text();
+    let before = first_note_text(&inserted).expect("본문 있는 각주");
     let out = temp("out");
     let output = Command::new(rhwp_bin())
         .args([
@@ -94,9 +111,9 @@ fn delete_text_in_footnote_shortens() {
             "--fn-para",
             &fi.to_string(),
             "--offset",
-            "0",
+            "2",
             "--count",
-            "1",
+            "3",
             "-o",
             out.to_str().unwrap(),
             "--json",
@@ -106,9 +123,20 @@ fn delete_text_in_footnote_shortens() {
     assert_eq!(output.status.code(), Some(0), "{:?}", output);
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(v["fnPara"], fi);
-    assert_eq!(v["count"], 1);
+    assert_eq!(v["count"], 3);
     let after = first_note_text(&out).expect("각주가 남아 있어야 한다");
-    assert_eq!(after.4, before - 1);
+    assert_eq!(
+        after.4,
+        before.4 - 3,
+        "before={:?} after={:?}",
+        before.5,
+        after.5
+    );
+    assert!(
+        after.5.contains("DEF"),
+        "ABC 가 지워져야 한다: {:?}",
+        after.5
+    );
     HwpDocument::from_bytes(&std::fs::read(&out).unwrap()).expect("산출물 재파싱");
     let _ = std::fs::remove_file(&inserted);
     let _ = std::fs::remove_file(&out);
