@@ -331,6 +331,7 @@ fn main() {
         Some("threat-scan") => exit_with(cmd_threat_scan(&args[2..])),
         Some("info") => exit_with(show_info(&args[2..])),
         Some("word-count") => exit_with(word_count(&args[2..])),
+        Some("bookmarks") => exit_with(bookmarks(&args[2..])),
         Some("digest") => exit_with(digest_document(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
         Some("dump-note-shape") => exit_with(dump_note_shape(&args[2..])),
@@ -660,6 +661,14 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "word-count",
             serde_json::json!(["word-count", "--json", "{path}"]),
             &["schemaVersion", "source", "sectionCount", "paragraphCount", "charCount", "wordCount", "pageCount"],
+        ),
+        tool(
+            "hwp_bookmarks",
+            "[#5025] 문서 책갈피 목록. 코어 get_bookmarks_native 배선. 새 파서 없음.",
+            path_schema(serde_json::json!({})),
+            "bookmarks",
+            serde_json::json!(["bookmarks", "--json", "{path}"]),
+            &["schemaVersion", "source", "count", "bookmarks"],
         ),
         // [#3633] 초소형 모델용 매크로 1호. 설명은 40자 이내로 극단 압축한다 —
         // 도구 목록 자체가 컨텍스트 예산을 잠식하는 4B급 모델이 1차 소비자이기
@@ -2891,6 +2900,19 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             ],
         ),
         cmd_json(
+            "bookmarks",
+            "query",
+            "문서 책갈피 목록 — 코어 get_bookmarks_native",
+            true,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "count",
+                "bookmarks",
+            ],
+        ),
+        cmd_json(
             "export-text",
             "export",
             "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
@@ -4691,6 +4713,11 @@ fn print_help() {
     println!("      구역·문단·글자·어절·쪽 수를 IR 본문에서 센다");
     println!();
     println!("      --json                  분량 봉투를 JSON으로 stdout에 출력");
+    println!();
+    println!("  bookmarks <파일.hwp|파일.hwpx|파일.hml> [--json]");
+    println!("      문서 책갈피 목록을 조회한다");
+    println!();
+    println!("      --json                  책갈피 봉투를 JSON으로 stdout에 출력");
     println!();
     println!("  digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]");
     println!("      문서 요약 봉투 한 줄 출력 — 메타(info)·개요 상위 노드·첫 페이지 발췌·");
@@ -11472,6 +11499,78 @@ fn word_count(args: &[String]) -> i32 {
     println!(
         "{file_path}: 구역 {section_count} · 문단 {paragraph_count} · 글자 {char_count} · 어절 {word_count} · 쪽 {page_count}"
     );
+    EXIT_OK
+}
+
+/// [#5025] `bookmarks` — 문서 책갈피 목록.
+fn bookmarks(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp bookmarks <파일.hwp|파일.hwpx|파일.hml> [--json]");
+        return EXIT_USAGE;
+    };
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let raw = match doc.get_bookmarks_native() {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: 책갈피 조회 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let items: serde_json::Value = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 책갈피 JSON 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let count = items.as_array().map(|a| a.len()).unwrap_or(0);
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "count": count,
+            "bookmarks": items,
+        });
+        println!("{}", provenance::marked(envelope, "bookmarks"));
+        return EXIT_OK;
+    }
+    println!("{file_path}: 책갈피 {count}개");
+    if let Some(arr) = items.as_array() {
+        for b in arr {
+            let name = b["name"].as_str().unwrap_or("");
+            let sec = b["sec"].as_u64().unwrap_or(0);
+            let para = b["para"].as_u64().unwrap_or(0);
+            let ctrl = b["ctrlIdx"].as_u64().unwrap_or(0);
+            println!("  {name}  구역 {sec} 문단 {para} 컨트롤 {ctrl}");
+        }
+    }
     EXIT_OK
 }
 
