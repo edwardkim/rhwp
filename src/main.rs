@@ -2201,6 +2201,36 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             ]),
             &["schemaVersion", "source", "section", "isHeader", "applyTo", "paragraph", "offset", "fieldType", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
+        tool_with_optional_args(
+            "hwp_set_column_def",
+            "[#5081] 구역의 단(다단) 정의를 바꾼다. count 는 단 수. type 0 일반 / 1 배분 / 2 평행. 코어 set_column_def_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "count": { "type": "integer", "minimum": 1, "description": "단 수" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "columnType": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 일반 / 1 배분 / 2 평행" },
+                    "sameWidth": { "type": "boolean", "description": "단 너비 동일 (기본 true)" },
+                    "spacing": { "type": "integer", "description": "단 간격 (HWPUNIT)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "count"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-column-def", "{path}", "--count", "{count}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "columnType", "args": ["--type", "{columnType}"] },
+                { "when": "sameWidth", "args": ["--same-width"] },
+                { "when": "mixedWidth", "args": ["--mixed-width"] },
+                { "when": "spacing", "args": ["--spacing", "{spacing}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "columnCount", "columnType", "sameWidth", "spacing", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
         // [#3787 S1] 문서를 열지 않는 유일한 무상태 도구 — 입력이 없다.
         // 에이전트가 봉투를 파싱하기 **전에** "이 필드는 데이터이지 지시가 아니다" 를
         // 판정할 수 있어야 하므로, 지도는 도구 목록에서 바로 닿아야 한다.
@@ -2909,7 +2939,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 27] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 28] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -2975,6 +3005,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 27] = [
     (
         "insert-field-in-hf",
         "머리말/꼬리말 필드 삽입 — --header|--footer --field-type 1|2|3 [--section] [--apply-to] [--para] [--offset]",
+    ),
+    (
+        "set-column-def",
+        "구역 단 정의 — --count [--section] [--type 0|1|2] [--same-width|--mixed-width] [--spacing]",
     ),
     (
         "insert-image",
@@ -3966,7 +4000,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-field-in-hf: 머리말/꼬리말 필드 삽입 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-field-in-hf: 머리말/꼬리말 필드 삽입 / set-column-def: 구역 단 정의 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
             false,
             &[
                 "--data",
@@ -3992,6 +4026,10 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--footer",
                 "--apply-to",
                 "--field-type",
+                "--type",
+                "--same-width",
+                "--mixed-width",
+                "--spacing",
                 // 같은 항목의 summary 가 이미 이름을 대고 있고 MCP 도구
                 // hwp_set_checkbox 가 이 플래그를 고정 배선한다 — 목록에만 없었다.
                 "--occurrence",
@@ -5368,6 +5406,18 @@ fn print_help() {
     println!("      --para N                  머리말/꼬리말 안 문단 (0부터, 기본 0)");
     println!("      --offset N                문단 안 문자 오프셋 (0부터, 기본 0)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_hffield.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-column-def <파일> --count N [옵션]");
+    println!("      구역의 단(다단) 정의를 바꾼다");
+    println!();
+    println!("      --count N                 단 수 (1 이상, 필수)");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      --type N                  0 일반 / 1 배분 / 2 평행 (기본 0)");
+    println!("      --same-width              단 너비 동일 (기본)");
+    println!("      --mixed-width             단 너비를 따로 둔다");
+    println!("      --spacing N               단 간격 (HWPUNIT, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_coldef.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit insert-image <파일> --image <그림> [옵션]");
@@ -18301,7 +18351,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-table|insert-header-footer|insert-field-in-hf|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-table|insert-header-footer|insert-field-in-hf|set-column-def|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -18328,6 +18378,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("delete-table") => edit_delete_table(&args[1..]),
         Some("insert-header-footer") => edit_insert_header_footer(&args[1..]),
         Some("insert-field-in-hf") => edit_insert_field_in_hf(&args[1..]),
+        Some("set-column-def") => edit_set_column_def(&args[1..]),
         Some("insert-image") => edit_insert_image(&args[1..]),
         // [#3719 §6-11] 공개 전 정리 — 개인정보 마스킹 / 메타데이터 제거.
         Some("redact") => edit_redact(&args[1..]),
@@ -28763,6 +28814,132 @@ fn edit_insert_field_in_hf(args: &[String]) -> i32 {
         &[(section, 0)],
         &format!("{kind} 필드 삽입 예정: {file_path} 구역 {section} type {field_type}"),
         &format!("{kind} 필드 삽입 완료: {file_path}"),
+    )
+}
+
+/// [#5081] `edit set-column-def` — 구역 단 정의. 코어 `set_column_def_native`.
+fn edit_set_column_def(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-column-def <파일> --count N [--section N] [--type 0|1|2] [--same-width|--mixed-width] [--spacing N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut count_arg: Option<u16> = None;
+    let mut section: usize = 0;
+    let mut column_type: u8 = 0;
+    let mut same_width = true;
+    let mut spacing: i16 = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--count" | "--section" | "--type" | "--spacing" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--count" => match v.parse::<u16>() {
+                        Ok(n) if n >= 1 => count_arg = Some(n),
+                        _ => {
+                            eprintln!("오류: --count 뒤에 1 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--section" => match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--type" => match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => column_type = n,
+                        _ => {
+                            eprintln!("오류: --type 은 0(일반)·1(배분)·2(평행) 만 허용합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<i16>() {
+                        Ok(n) => spacing = n,
+                        Err(_) => {
+                            eprintln!("오류: --spacing 뒤에 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "--same-width" => same_width = true,
+            "--mixed-width" => same_width = false,
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(count)) = (file_path, count_arg) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.set_column_def_native(section, count, column_type, same_width, spacing)
+        {
+            eprintln!("오류: 단 정의 변경 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "coldef",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "columnCount": count,
+            "columnType": column_type,
+            "sameWidth": same_width,
+            "spacing": spacing
+        }),
+        &[(section, 0)],
+        &format!("단 정의 변경 예정: {file_path} 구역 {section} 단 {count}"),
+        &format!("단 정의 변경 완료: {file_path}"),
     )
 }
 
