@@ -291,13 +291,13 @@ skia-safe = { version = "0.99.0", optional = true, default-features = false, fea
 # [gym_gpu_raster] GPU 래스터화 스택 (feature = "gpu", 네이티브 전용).
 # vello: Linebender 의 GPU 2D 렌더러(컴퓨트 파이프라인). vello_svg: usvg 트리 → vello Scene.
 # pollster: 헤드리스라 이벤트 루프가 없으므로 wgpu 의 async(adapter/device/버퍼매핑)를 블로킹.
-# resvg-gpu: CPU 기준선. vello_svg 0.10 과 usvg 0.45 를 공유하도록 0.45 로 핀했다(같은 트리를
+# resvg-gpu: CPU 기준선. vello_svg 0.10 과 usvg 0.46 를 공유하도록 0.46 로 핀했다(같은 트리를
 # 두 래스터라이저에 동일 입력으로 넣어 벤치마크·픽셀비교를 성립). native-skia 의 resvg 0.47 과
 # 별개 버전으로 공존한다.
 vello = { version = "0.9", optional = true }
 vello_svg = { version = "0.10", optional = true }
 pollster = { version = "1.0", optional = true }
-resvg-gpu = { package = "resvg", version = "0.45", optional = true }
+resvg-gpu = { package = "resvg", version = "0.46", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-sys = { version = "0.3", features = [

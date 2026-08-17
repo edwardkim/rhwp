@@ -2103,6 +2103,23 @@ dependencies = [
 
 [[package]]
 name = "resvg"
+version = "0.46.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b563218631706d614e23059436526d005b50ab5f2d506b55a17eb65c5eb83419"
+dependencies = [
+ "gif 0.14.2",
+ "image-webp",
+ "log",
+ "pico-args",
+ "rgb",
+ "svgtypes 0.16.1",
+ "tiny-skia 0.11.4",
+ "usvg 0.46.0",
+ "zune-jpeg 0.5.15",
+]
+
+[[package]]
+name = "resvg"
 version = "0.47.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9be183ad6a216aa96f33e4c8033b0988b8b3ea6fd2359d19af5bac4643fd8e81"
@@ -2161,7 +2178,7 @@ dependencies = [
  "pollster",
  "quick-xml",
  "rand_core 0.10.1",
- "resvg 0.45.1",
+ "resvg 0.46.0",
  "resvg 0.47.0",
  "rhwp-contracts",
  "rhwp-ooxml-chart",
