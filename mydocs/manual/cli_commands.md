@@ -1092,6 +1092,23 @@ rhwp edit insert-image 신청서_filled.hwp --image samples/images/moogung.jpg \
   -o 제출본.hwp --json | jq '{output, overflow}'
 ```
 
+### `edit insert-picture <파일> --image <그림> [--section N] [--para N] [--offset N] [--width N] [--height N] [--x N] [--y N] [-o <출력>] [--dry-run] [--verify] [--json]`
+문단 좌표에 **본문 그림**을 끼운다. `insert-image` 는 도장·서명용 쪽 좌표(용지 기준 floating)
+축이고, 이 명령은 `search` 와 같은 구역·문단·문자 오프셋에 코어 `insert_picture_native` 만
+배선한다. 새 편집 로직은 없다. 그림 바이트는 파일 그대로 넘긴다.
+
+- `--image <그림>` (필수) — `png`·`jpg`·`jpeg`·`bmp`·`tif`·`tiff`. 확장자·내용 둘 다 검사.
+- `--section` / `--para` / `--offset` — 0 기준. 생략하면 0.
+- `--width` / `--height` — HWPUNIT. 생략 시 원본 픽셀 ×75, 한쪽만 주면 비율 유지.
+- `--x` / `--y` — 용지 기준 위치(HWPUNIT, 기본 0).
+- `--json` 봉투: `image`·`section`·`paragraph`·`offset`·`x`·`y`·`width`·`height`·`binDataId`.
+
+```bash
+rhwp edit insert-picture 공문.hwp --image assets/logo/logo-16.png \
+  --section 0 --para 0 --offset 0 --width 1200 --height 1200 \
+  -o 그림본.hwp --json | jq '{section, paragraph, offset, binDataId}'
+```
+
 ### `edit redact <파일> [--kind …] [--mask <문자>] [--dry-run] [--no-raw] [-o <출력>|--in-place]` (#3719 §6-11)
 공개 전 개인정보 마스킹 — 주민등록번호·전화번호·이메일·카드번호를 찾아 **자릿수를 유지한 채**
 가린다. 탐지는 읽기 전용 코어(`document_core::queries::pii_scan`)가 하고, 실제 변경은 검증된
@@ -1178,7 +1195,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 27종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`rename-bookmark`/`delete-header-footer`/`delete-control`/`insert-image`/`redact`/`sanitize`)은
+`edit` 28종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`rename-bookmark`/`delete-header-footer`/`delete-control`/`insert-image`/`insert-picture`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`

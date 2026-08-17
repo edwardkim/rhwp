@@ -107,6 +107,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | k 번째만 치환 | `edit replace-text --occurrence k` | `occurrence`·`replacedCount:1` | 같은 절 |
 | 체크박스 켜기 | `edit replace-text --find □ --replace ☑ --occurrence k` (`hwp_set_checkbox`) | `replacedCount` | 같은 절 |
 | 도장·서명 붙이기 | `edit insert-image` (`hwp_insert_image`) | `binDataId`·`overflow` | [CLI 매뉴얼](cli_commands.md) §edit insert-image |
+| 본문 문단 좌표에 그림 넣기 | `edit insert-picture` (`hwp_insert_picture`) | `binDataId`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-picture |
 | 없는 자리에 글자 넣기 | `edit insert-text` (`hwp_insert_text`) | `insertedChars`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-text |
 | 개인정보 마스킹 | `edit redact` (`hwp_redact`) | `findingCount`·`redactedCount` | [보안 소비자 가이드](../tech/agent_security/consumer_guide.md) |
 | 메타데이터 제거 | `edit sanitize` (`hwp_sanitize`) | `removedCount`·`removed[]` | 같은 문서 |
@@ -315,12 +316,12 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `sourceA` / `sourceB` | string\|null | 비교 대상. `sourceB:null` = 자기 라운드트립 모드 | `render-diff` |
 | `input` | string | `run` 계획서의 원본 문서 | `run` |
 | `csv` | string | 읽은 CSV 경로 | `csv-to-table` |
-| `image` | string | 삽입할 그림 경로 | `edit insert-image` |
+| `image` | string | 삽입할 그림 경로 | `edit insert-image`·`insert-picture` |
 | `below` | bool | 지정 행 아래에 끼울지 | `edit insert-row` |
 | `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
 | `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
-| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`merge-paragraph` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`merge-paragraph`·`insert-picture` |
 | `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
 | `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark`·`rename-bookmark`·`delete-control` |
@@ -1064,8 +1065,8 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 27개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
-`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`rename-bookmark`·`delete-header-footer`·`delete-control`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 28개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
+`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`rename-bookmark`·`delete-header-footer`·`delete-control`·`insert-image`·`insert-picture`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
@@ -1129,6 +1130,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_delete_header_footer` | `edit delete-header-footer --json` | `path` |
 | `hwp_delete_control` | `edit delete-control --json` | `path`,`section`,`paragraph`,`ctrl` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
+| `hwp_insert_picture` | `edit insert-picture --json` | `path`,`image` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
