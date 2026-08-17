@@ -5,6 +5,9 @@
 #[path = "../cases/bookmarks_contract.rs"]
 mod bookmarks_contract;
 
+#[path = "../cases/insert_text_in_footnote_contract.rs"]
+mod insert_text_in_footnote_contract;
+
 #[path = "../changed_pages_contract.rs"]
 mod changed_pages_contract;
 
