@@ -3603,7 +3603,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 50] = [
         "redact",
         "개인정보 마스킹 — --kind 선택, findings 봉투, --no-raw",
     ),
-    ("sanitize", "메타데이터 제거 — removed 봉투, --in-place"),    ("rename-bookmark", "책갈피 이름 변경"),
+    ("sanitize", "메타데이터 제거 — removed 봉투, --in-place"),
     ("rename-bookmark", "책갈피 이름 변경"),
     ("delete-header-footer", "머리말/꼬리말 삭제"),
     ("insert-header-footer-text", "머리말/꼬리말 텍스트 삽입"),
@@ -18964,7 +18964,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-table|insert-header-footer|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|delete-table|insert-header-footer|insert-image|redact|sanitize|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|set-hf-picture|apply-hf-template|delete-hf-text|insert-field-in-hf|split-paragraph-in-hf|toggle-hide-hf|merge-paragraph-in-hf|apply-char-format|split-paragraph|apply-para-format|apply-style|set-numbering-restart|apply-para-format-in-hf|apply-endnote-shape|insert-footnote-text|delete-text-in-footnote|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),

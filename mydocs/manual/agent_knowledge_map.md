@@ -23,7 +23,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **85개**(그중 `--json` 계약 **54개**, batch 축 **9개**) · MCP 도구 **95개**(무상태 79 + 세션 전용 16) |
+| 표면 규모 | CLI 명령 **110개**(그중 `--json` 계약 **79개**, batch 축 **9개**) · MCP 도구 **120개**(무상태 104 + 세션 전용 16) |
 | 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **261개** · §2 전수 사전 **264개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
@@ -1078,8 +1078,8 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 26개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
-`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`delete-table`·`insert-header-footer`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 49개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
+`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`delete-table`·`insert-header-footer`·`insert-image`·`redact`·`sanitize`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`set-hf-picture`·`apply-hf-template`·`delete-hf-text`·`insert-field-in-hf`·`split-paragraph-in-hf`·`toggle-hide-hf`·`merge-paragraph-in-hf`·`apply-char-format`·`split-paragraph`·`apply-para-format`·`apply-style`·`set-numbering-restart`·`apply-para-format-in-hf`·`apply-endnote-shape`·`insert-footnote-text`·`delete-text-in-footnote`·`split-paragraph-in-footnote`·`merge-paragraph-in-footnote`·`apply-para-format-in-footnote`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
@@ -1141,6 +1141,31 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_delete_bookmark` | `edit delete-bookmark --json` | `path`,`section`,`paragraph`,`ctrl` |
 | `hwp_delete_table` | `edit delete-table --json` | `path`,`table` |
 | `hwp_insert_header_footer` | `edit insert-header-footer --json` | `path` |
+| `hwp_rename_bookmark` | `edit rename-bookmark --json` | `path`,`section`,`paragraph`,`ctrl`,`name` |
+| `hwp_delete_header_footer` | `edit delete-header-footer --json` | `path` |
+| `hwp_insert_header_footer_text` | `edit insert-header-footer-text --json` | `path`,`text` |
+| `hwp_headers_footers` | `headers-footers --json` | `path` |
+| `hwp_set_header_footer_text` | `edit set-header-footer-text --json` | `path`,`text` |
+| `hwp_set_hf_picture` | `edit set-hf-picture --json` | `path`,`props` |
+| `hwp_header_footer` | `header-footer --json` | `path` |
+| `hwp_apply_hf_template` | `edit apply-hf-template --json` | `path`,`template` |
+| `hwp_delete_hf_text` | `edit delete-hf-text --json` | `path`,`count` |
+| `hwp_insert_field_in_hf` | `edit insert-field-in-hf --json` | `path`,`fieldType` |
+| `hwp_split_paragraph_in_hf` | `edit split-paragraph-in-hf --json` | `path` |
+| `hwp_toggle_hide_hf` | `edit toggle-hide-hf --json` | `path` |
+| `hwp_merge_paragraph_in_hf` | `edit merge-paragraph-in-hf --json` | `path` |
+| `hwp_apply_char_format` | `edit apply-char-format --json` | `path`,`props` |
+| `hwp_split_paragraph` | `edit split-paragraph --json` | `path` |
+| `hwp_apply_para_format` | `edit apply-para-format --json` | `path`,`props` |
+| `hwp_apply_style` | `edit apply-style --json` | `path`,`style` |
+| `hwp_set_numbering_restart` | `edit set-numbering-restart --json` | `path`,`mode` |
+| `hwp_apply_para_format_in_hf` | `edit apply-para-format-in-hf --json` | `path`,`props` |
+| `hwp_apply_endnote_shape` | `edit apply-endnote-shape --json` | `path`,`props` |
+| `hwp_insert_footnote_text` | `edit insert-footnote-text --json` | `path`,`ctrl`,`text` |
+| `hwp_delete_text_in_footnote` | `edit delete-text-in-footnote --json` | `path`,`count` |
+| `hwp_split_paragraph_in_footnote` | `edit split-paragraph-in-footnote --json` | `path` |
+| `hwp_merge_paragraph_in_footnote` | `edit merge-paragraph-in-footnote --json` | `path` |
+| `hwp_apply_para_format_in_footnote` | `edit apply-para-format-in-footnote --json` | `path`,`props` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |

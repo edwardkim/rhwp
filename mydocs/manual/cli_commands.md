@@ -1093,6 +1093,39 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 머리말 또는 꼬리말을 만든다. 코어 `create_header_footer_native`. `--header`/`--footer` 중
 하나 필수. `--apply-to` 는 0 양쪽·1 짝수·2 홀수(기본 0). 같은 적용 대상이 있으면 거부.
 
+### 머리말·꼬리말, 문단·각주 확장 편집 (#5038, #5040-#5138)
+
+아래 명령은 모두 출력 파일(`-o`), `--dry-run`, `--verify`, `--json`을 공통으로 지원한다.
+`--header`/`--footer`는 하나만 지정하며, `--apply-to`는 0 양쪽·1 짝수·2 홀수다.
+
+```text
+edit rename-bookmark <파일> --section N --para N --ctrl N --name <이름>
+edit delete-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2]
+edit insert-header-footer-text <파일> --header|--footer --text <문자열> [--section N] [--apply-to 0|1|2] [--para N] [--offset N]
+headers-footers <파일>
+edit set-header-footer-text <파일> --header|--footer --text <문자열> [--section N] [--apply-to 0|1|2] [--para N]
+edit set-hf-picture <파일> --section N --para N --ctrl N --inner-para N --inner-ctrl N --props <JSON>
+header-footer <파일> [--header|--footer] [--section N] [--apply-to 0|1|2]
+edit apply-hf-template <파일> --header|--footer --template <0-10> [--section N] [--apply-to 0|1|2]
+edit delete-hf-text <파일> --header|--footer --count <글자수> [--section N] [--apply-to 0|1|2] [--para N] [--offset N]
+edit insert-field-in-hf <파일> --header|--footer --field-type <1|2|3> [--section N] [--apply-to 0|1|2] [--para N] [--offset N]
+edit split-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [--offset N]
+edit toggle-hide-hf <파일> --header|--footer [--page N]
+edit merge-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N]
+edit apply-char-format <파일> --props <JSON> [--section N] [--para N] [--offset N] [--count N]
+edit split-paragraph <파일> [--section N] [--para N] [--offset N]
+edit apply-para-format <파일> --props <JSON> [--section N] [--para N]
+edit apply-style <파일> --style N [--section N] [--para N]
+edit set-numbering-restart <파일> --mode N [--count N] [--section N] [--para N]
+edit apply-para-format-in-hf <파일> --header|--footer --props <JSON> [--section N] [--apply-to 0|1|2] [--para N]
+edit apply-endnote-shape <파일> --props <JSON> [--section N]
+edit insert-footnote-text <파일> --ctrl N --text <문자열> [--section N] [--para N] [--fn-para N] [--offset N]
+edit delete-text-in-footnote <파일> --count <글자수> [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N]
+edit split-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N]
+edit merge-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N]
+edit apply-para-format-in-footnote <파일> --section N --para N --ctrl N --props <JSON> [--fn-para N]
+```
+
 ### `edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]` (#3719 §6-5)
 도장·서명 같은 그림을 쪽 좌표에 붙인다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각.
 - `--image <그림>` (필수) — 지원 형식은 `png`·`jpg`·`jpeg`·`bmp`·`tif`·`tiff` 뿐(확장자와 내용
@@ -1206,7 +1239,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 26종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`delete-table`/`insert-header-footer`/`insert-image`/`redact`/`sanitize`)은
+`edit` 49종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`delete-table`/`insert-header-footer`/`insert-image`/`redact`/`sanitize`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`set-hf-picture`/`apply-hf-template`/`delete-hf-text`/`insert-field-in-hf`/`split-paragraph-in-hf`/`toggle-hide-hf`/`merge-paragraph-in-hf`/`apply-char-format`/`split-paragraph`/`apply-para-format`/`apply-style`/`set-numbering-restart`/`apply-para-format-in-hf`/`apply-endnote-shape`/`insert-footnote-text`/`delete-text-in-footnote`/`split-paragraph-in-footnote`/`merge-paragraph-in-footnote`/`apply-para-format-in-footnote`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`
