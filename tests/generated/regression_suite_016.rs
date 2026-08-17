@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_016
 
+#[path = "../cases/issue_5136_caption_attr_bit29.rs"]
+mod issue_5136_caption_attr_bit29;
+
 #[path = "../diag_1042_used_breakdown.rs"]
 mod diag_1042_used_breakdown;
 
