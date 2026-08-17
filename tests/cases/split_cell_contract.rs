@@ -29,14 +29,16 @@ fn first_merge_range(path: &str) -> (usize, u16, u16, u16, u16, usize) {
             if c.row_span != 1 || c.col_span != 1 {
                 continue;
             }
-            if g.cells.iter().any(|n| {
-                n.row == c.row && n.col == c.col + 1 && n.row_span == 1 && n.col_span == 1
-            }) {
+            if g.cells
+                .iter()
+                .any(|n| n.row == c.row && n.col == c.col + 1 && n.row_span == 1 && n.col_span == 1)
+            {
                 return (g.index, c.row, c.col, c.row, c.col + 1, g.cell_count);
             }
-            if g.cells.iter().any(|n| {
-                n.col == c.col && n.row == c.row + 1 && n.row_span == 1 && n.col_span == 1
-            }) {
+            if g.cells
+                .iter()
+                .any(|n| n.col == c.col && n.row == c.row + 1 && n.row_span == 1 && n.col_span == 1)
+            {
                 return (g.index, c.row, c.col, c.row + 1, c.col, g.cell_count);
             }
         }
