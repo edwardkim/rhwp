@@ -23,8 +23,8 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 | 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **85개**(그중 `--json` 계약 **54개**, batch 축 **9개**) · MCP 도구 **104개**(무상태 88 + 세션 전용 16) |
-| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **261개** · §2 전수 사전 **264개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
+| 표면 규모 | CLI 명령 **98개**(그중 `--json` 계약 **65개**, batch 축 **9개**) · MCP 도구 **181개**(무상태 163 + 세션 전용 18) |
+| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **321개** · §2 전수 사전 **324개**(`recordFields` 밖 실측 필드 `assertions`·`docId`·`preview` 포함) |
 | 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |
 
 **재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.
@@ -301,10 +301,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 323개 필드
+### 2-2. 전수 사전 — 324개 필드
 
-`capabilities` 의 `recordFields` 고유 **303개**와 그 밖의 실측-only 필드
-`applyTo`·`assertions`·`docId`·`exists`·`isHeader`·`preview`·`dx`·`dy` **8개**를 합친 314개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **321개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 324개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -1112,7 +1112,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 
 ## 6. MCP 도구 전수 지도 — 113개
 
-### 6-1. 무상태 97개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 163개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
@@ -1252,7 +1252,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `hwp_batch`·`hwp_batch_search`·`hwp_batch_extract_data` 는 `invocation.stdinTools` 로
 표시된 stdin 도구다 — CLI 로 직접 조립할 때 경로 목록을 stdin 으로 흘려야 한다.
 
-### 6-2. 세션 전용 16개 (`mcp-serve` 전용, `capabilities --mcp` 에는 없다)
+### 6-2. 세션 전용 18개 (`mcp-serve` 전용, `capabilities --mcp` 에는 없다)
 
 `hwp_open` · `hwp_ws_list` · `hwp_ws_open` · `hwp_doc_info` · `hwp_doc_text` ·
 `hwp_doc_tree` · `hwp_doc_fields` · `hwp_doc_tables` · `hwp_doc_search` ·
