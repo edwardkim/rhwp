@@ -298,7 +298,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 315개 필드
+### 2-2. 전수 사전 — 323개 필드
 
 `capabilities` 의 `recordFields` 고유 **303개**와 그 밖의 실측-only 필드
 `applyTo`·`assertions`·`docId`·`exists`·`isHeader`·`preview`·`dx`·`dy` **8개**를 합친 314개다. `등장 명령` 은 자기서술
@@ -346,6 +346,11 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
 | `count` | number | 지울 글자 수 (1 이상) | `edit delete-text`·`delete-hf-text`·`delete-text-in-footnote` |
 | `fnPara` | number | 각주/미주 안 문단 인덱스 (0부터) | `edit delete-text-in-footnote` |
+| `columnCount` | number | 구역의 단 수 (1 이상) | `edit set-column-def` |
+| `columnType` | number | 단 배치 유형 (0 일반 / 1 배분 / 2 평행) | `edit set-column-def` |
+| `sameWidth` | bool | 모든 단을 같은 폭으로 맞출지 | `edit set-column-def` |
+| `spacing` | number | 단 사이 간격 (HWPUNIT) | `edit set-column-def` |
+| `widths` | number[] | 혼합 폭 단의 폭 목록 (HWPUNIT) | `edit set-column-widths` |
 | `innerPara` | number | 셀·각주 안 문단 (0부터) | `edit apply-char-format-in-cell` |
 | `props` | string | 글자/문단 서식 JSON | `edit apply-char-format-in-cell` |
 | `bold` | bool | `--bold` 를 줬는지 | `edit apply-char-format-in-cell` |
