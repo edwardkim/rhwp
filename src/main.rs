@@ -2706,6 +2706,34 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     &["schemaVersion", "source", "section", "paragraph", "ctrl", "fnPara", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
                 ),
         tool_with_optional_args(
+                    "hwp_merge_paragraph_in_footnote",
+                    "각주/미주 문단을 바로 앞 문단에 합친다. fnPara 는 합쳐질 문단(1 이상). 코어 merge_paragraph_in_footnote_native 배선.",
+                    serde_json::json!({
+                        "type": "object",
+                        "properties": {
+                            "path": { "type": "string" },
+                            "section": { "type": "integer", "minimum": 0 },
+                            "paragraph": { "type": "integer", "minimum": 0 },
+                            "ctrl": { "type": "integer", "minimum": 0, "description": "문단 안 각주/미주 컨트롤 인덱스 (0부터)" },
+                            "fnPara": { "type": "integer", "minimum": 1, "description": "합쳐질 각주/미주 문단 인덱스 (1 이상)" },
+                            "output": { "type": "string" },
+                            "dryRun": { "type": "boolean" }
+                        },
+                        "required": ["path"],
+                    }),
+                    "edit",
+                    serde_json::json!(["edit", "merge-paragraph-in-footnote", "{path}", "--json"]),
+                    serde_json::json!([
+                        { "when": "section", "args": ["--section", "{section}"] },
+                        { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                        { "when": "ctrl", "args": ["--ctrl", "{ctrl}"] },
+                        { "when": "fnPara", "args": ["--fn-para", "{fnPara}"] },
+                        { "when": "output", "args": ["-o", "{output}"] },
+                        { "when": "dryRun", "args": ["--dry-run"] }
+                    ]),
+                    &["schemaVersion", "source", "section", "paragraph", "ctrl", "fnPara", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+                ),
+        tool_with_optional_args(
             "hwp_delete_table",
             "[#5028] 본문 최상위 표를 지운다. 좌표는 export-tables 의 index. 코어 delete_table_control_native 배선.",
             serde_json::json!({
@@ -3478,7 +3506,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 48] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 49] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3571,6 +3599,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 48] = [
     ("insert-footnote-text", "각주 텍스트 삽입"),
     ("delete-text-in-footnote", "각주/미주 텍스트 삭제"),
     ("split-paragraph-in-footnote", "각주/미주 문단 분할"),
+    ("merge-paragraph-in-footnote", "각주/미주 문단 병합"),
 
 ];
 
@@ -18932,6 +18961,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("delete-footnote") => edit_delete_footnote(&args[1..]),
         Some("add-bookmark") => edit_add_bookmark(&args[1..]),
         Some("delete-bookmark") => edit_delete_bookmark(&args[1..]),
+        Some("merge-paragraph-in-footnote") => edit_merge_paragraph_in_footnote(&args[1..]),
         Some("split-paragraph-in-footnote") => edit_split_paragraph_in_footnote(&args[1..]),
         Some("delete-text-in-footnote") => edit_delete_text_in_footnote(&args[1..]),
         Some("insert-footnote-text") => edit_insert_footnote_text(&args[1..]),
@@ -32255,6 +32285,118 @@ fn edit_split_paragraph_in_footnote(args: &[String]) -> i32 {
             "각주/미주 문단 분할 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} 각주문단 {fn_para} 오프셋 {offset}"
         ),
         &format!("각주/미주 문단 분할 완료: {file_path}"),
+    )
+}
+
+/// [#5012] `edit delete-paragraph` — 문단 삭제.
+
+fn edit_merge_paragraph_in_footnote(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit merge-paragraph-in-footnote <파일> [--section N] [--para N] [--ctrl N] [--fn-para N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut ctrl: usize = 0;
+    let mut fn_para: usize = 1;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" | "--fn-para" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = n,
+                        "--para" => para = n,
+                        "--ctrl" => ctrl = n,
+                        _ => {
+                            if n == 0 {
+                                eprintln!("오류: --fn-para 는 1 이상이어야 합니다.");
+                                return EXIT_USAGE;
+                            }
+                            fn_para = n;
+                        }
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.merge_paragraph_in_footnote_native(section, para, ctrl, fn_para) {
+            eprintln!("오류: 각주/미주 문단 병합 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "fnmerge",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "fnPara": fn_para
+        }),
+        &[(section, para)],
+        &format!(
+            "각주/미주 문단 병합 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} 각주문단 {fn_para}"
+        ),
+        &format!("각주/미주 문단 병합 완료: {file_path}"),
     )
 }
 
