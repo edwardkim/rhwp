@@ -297,11 +297,11 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 285개 필드
+### 2-2. 전수 사전 — 290개 필드
 
-`capabilities` 의 `recordFields` 고유 **278개**와 그 밖의 실측-only 필드
+`capabilities` 의 `recordFields` 고유 **283개**와 그 밖의 실측-only 필드
 `assertions`·`docId`·`preview` **3개**, `explore` 전용 `affordanceCount`·`menu`·`note`
-**3개**, `scaffold` 전용 `blockCount` **1개**를 합친 285개다. `등장 명령` 은 자기서술
+**3개**, `scaffold` 전용 `blockCount` **1개**를 합친 290개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -317,6 +317,11 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `input` | string | `run` 계획서의 원본 문서 | `run` |
 | `csv` | string | 읽은 CSV 경로 | `csv-to-table` |
 | `image` | string | 삽입할 그림 경로 | `edit insert-image` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-footnote` |
+| `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
+| `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
+| `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell` |
+| `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text` |
 | `docId` | string | 세션 핸들. 서버 프로세스 수명과 같고 영속되지 않는다 | 세션 도구 12종 |
 
 #### 문서 메타
