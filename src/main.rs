@@ -2167,6 +2167,34 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     &["schemaVersion", "source", "section", "paragraph", "ctrl", "name", "dryRun", "changedPages", "output", "outputFormat", "verify"],
                 ),
         tool_with_optional_args(
+                    "hwp_delete_header_footer",
+                    "[#5039] 머리말/꼬리말 컨트롤을 지운다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 delete_header_footer_native 배선.",
+                    serde_json::json!({
+                        "type": "object",
+                        "properties": {
+                            "path": { "type": "string" },
+                            "section": { "type": "integer", "minimum": 0 },
+                            "header": { "type": "boolean" },
+                            "footer": { "type": "boolean" },
+                            "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" },
+                            "output": { "type": "string" },
+                            "dryRun": { "type": "boolean" }
+                        },
+                        "required": ["path"],
+                    }),
+                    "edit",
+                    serde_json::json!(["edit", "delete-header-footer", "{path}", "--json"]),
+                    serde_json::json!([
+                        { "when": "section", "args": ["--section", "{section}"] },
+                        { "when": "header", "args": ["--header"] },
+                        { "when": "footer", "args": ["--footer"] },
+                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] },
+                        { "when": "output", "args": ["-o", "{output}"] },
+                        { "when": "dryRun", "args": ["--dry-run"] }
+                    ]),
+                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+                ),
+        tool_with_optional_args(
             "hwp_delete_table",
             "[#5028] 본문 최상위 표를 지운다. 좌표는 export-tables 의 index. 코어 delete_table_control_native 배선.",
             serde_json::json!({
@@ -2939,7 +2967,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 28] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 29] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3012,6 +3040,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 28] = [
     ),
     ("sanitize", "메타데이터 제거 — removed 봉투, --in-place"),    ("rename-bookmark", "책갈피 이름 변경"),
     ("rename-bookmark", "책갈피 이름 변경"),
+    ("delete-header-footer", "머리말/꼬리말 삭제"),
 
 ];
 
@@ -18345,6 +18374,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("delete-footnote") => edit_delete_footnote(&args[1..]),
         Some("add-bookmark") => edit_add_bookmark(&args[1..]),
         Some("delete-bookmark") => edit_delete_bookmark(&args[1..]),
+        Some("delete-header-footer") => edit_delete_header_footer(&args[1..]),
         Some("rename-bookmark") => edit_rename_bookmark(&args[1..]),
         Some("delete-table") => edit_delete_table(&args[1..]),
         Some("insert-header-footer") => edit_insert_header_footer(&args[1..]),
@@ -28767,6 +28797,138 @@ fn edit_rename_bookmark(args: &[String]) -> i32 {
             "책갈피 이름 변경 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} → {name}"
         ),
         &format!("책갈피 이름 변경 완료: {file_path}"),
+    )
+}
+
+/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+///
+/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+///
+/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+///
+/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+
+fn edit_delete_header_footer(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit delete-header-footer <파일> --header|--footer [--section N] [--apply-to 0|1|2] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut is_header: Option<bool> = None;
+    let mut section: usize = 0;
+    let mut apply_to: u8 = 0;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--header" => {
+                if is_header.replace(true).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--footer" => {
+                if is_header.replace(false).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--section" | "--apply-to" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                if name == "--section" {
+                    match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    }
+                } else {
+                    match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => apply_to = n,
+                        _ => {
+                            eprintln!(
+                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(is_header)) = (file_path, is_header) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.delete_header_footer_native(section, is_header, apply_to) {
+            eprintln!("오류: 머리말/꼬리말 삭제 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    let kind = if is_header { "머리말" } else { "꼬리말" };
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "delhf",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "isHeader": is_header,
+            "applyTo": apply_to
+        }),
+        &[(section, 0)],
+        &format!("{kind} 삭제 예정: {file_path} 구역 {section} apply-to {apply_to}"),
+        &format!("{kind} 삭제 완료: {file_path}"),
     )
 }
 
