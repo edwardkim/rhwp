@@ -389,6 +389,7 @@
     ],
     "regression_suite_016": [
       "tests/cases/insert_page_break_contract.rs",
+      "tests/cases/split_paragraph_in_cell_contract.rs",
       "tests/diag_1042_used_breakdown.rs",
       "tests/disclose_contract.rs",
       "tests/harness_contract.rs",

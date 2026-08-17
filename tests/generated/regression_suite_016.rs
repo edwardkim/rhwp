@@ -5,6 +5,9 @@
 #[path = "../cases/insert_page_break_contract.rs"]
 mod insert_page_break_contract;
 
+#[path = "../cases/split_paragraph_in_cell_contract.rs"]
+mod split_paragraph_in_cell_contract;
+
 #[path = "../diag_1042_used_breakdown.rs"]
 mod diag_1042_used_breakdown;
 
