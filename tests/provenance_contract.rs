@@ -2251,6 +2251,33 @@ fn sweep_exempt_envelopes_still_carry_provenance_marks() {
 /// 나오게 하는 쪽을 택한다(예: sanitize 레시피가 `-o` 로 저장해 `output` 을 낸다).
 const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     // (명령, 필드, 스윕 레시피가 그 필드를 못 내는 사유)
+    // 공유 edit recordFields 에 하위명령 전용 키가 쌓인다. 스윕 레시피는
+    // fill-fields/set-cell/replace-text 라 이 키들을 봉투에 안 낸다.
+    (
+        "edit",
+        "below",
+        "insert-row 전용. 스윕 레시피는 fill-fields/set-cell 이라 below 를 안 낸다",
+    ),
+    (
+        "edit",
+        "right",
+        "insert-col 전용. 스윕 레시피는 fill-fields/set-cell 이라 right 를 안 낸다",
+    ),
+    (
+        "edit",
+        "endRow",
+        "merge-cells 전용. 스윕 레시피는 fill-fields/set-cell 이라 endRow 를 안 낸다",
+    ),
+    (
+        "edit",
+        "endCol",
+        "merge-cells 전용. 스윕 레시피는 fill-fields/set-cell 이라 endCol 를 안 낸다",
+    ),
+    (
+        "edit",
+        "count",
+        "delete-row/delete-col 전용. 스윕 레시피는 fill-fields/set-cell 이라 count 를 안 낸다",
+    ),
 ];
 
 #[test]
