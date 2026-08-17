@@ -28,10 +28,25 @@ fn temp(tag: &str) -> PathBuf {
     ))
 }
 
-fn first_len(path: &Path) -> usize {
+/// field-01.hwp 첫 문단은 비어 있다. 글자가 있는 문단을 고른다.
+fn first_nonempty_para(path: &str) -> (usize, usize, usize) {
+    let bytes = std::fs::read(path).expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    for (si, section) in doc.document().sections.iter().enumerate() {
+        for (pi, para) in section.paragraphs.iter().enumerate() {
+            let n = para.text.chars().count();
+            if n >= 1 {
+                return (si, pi, n);
+            }
+        }
+    }
+    panic!("삭제할 글자가 있는 문단이 없다");
+}
+
+fn para_len(path: &Path, section: usize, para: usize) -> usize {
     let bytes = std::fs::read(path).unwrap();
     let doc = HwpDocument::from_bytes(&bytes).unwrap();
-    doc.document().sections[0].paragraphs[0]
+    doc.document().sections[section].paragraphs[para]
         .text
         .chars()
         .count()
@@ -40,14 +55,17 @@ fn first_len(path: &Path) -> usize {
 #[test]
 fn delete_text_shortens_paragraph() {
     let src = sample();
-    let before = first_len(Path::new(&src));
-    assert!(before >= 1, "삭제할 글자가 있어야 한다");
+    let (section, para, before) = first_nonempty_para(&src);
     let out = temp("out");
     let output = Command::new(rhwp_bin())
         .args([
             "edit",
             "delete-text",
             src.as_str(),
+            "--section",
+            &section.to_string(),
+            "--para",
+            &para.to_string(),
             "--offset",
             "0",
             "--count",
@@ -59,7 +77,7 @@ fn delete_text_shortens_paragraph() {
         .output()
         .unwrap();
     assert_eq!(output.status.code(), Some(0), "{:?}", output);
-    assert_eq!(first_len(&out), before - 1);
+    assert_eq!(para_len(&out, section, para), before - 1);
     let _ = std::fs::remove_file(&out);
 }
 
