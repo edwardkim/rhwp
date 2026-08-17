@@ -712,6 +712,23 @@ pub(crate) fn render_paragraph_parts(
     }
 }
 
+/// [#5140] 한컴 사용자 정의 기호를 HWPX 표기(평면 15 보충 PUA)로 올린다.
+///
+/// 같은 글자를 HWP5 는 `0xA000 | X`, HWPX 는 `U+F0000 | X` 로 싣는다. IR 정본은 HWP5 쪽
+/// 사영이므로 HWPX 로 낼 때만 올려 준다 — 리터럴로 내면 한글이 그 자리를 Yi 음절(U+A8xx)
+/// 로 읽어 글자가 깨진다. 표에 없는 글자는 그대로 통과한다(`0xA813` 반례 참고).
+///
+/// 본문 텍스트(`hp:t`)와 글자겹침(`hp:compose/@composeText`) 두 경로 모두 이 규칙을 쓴다 —
+/// 한글 SaveAs 실측에서 둘 다 예외 없이 평면 15 로 갔다.
+fn hancom_symbol_for_hwpx(c: char) -> char {
+    let Ok(unit) = u16::try_from(u32::from(c)) else {
+        return c;
+    };
+    tags::hancom_symbol_to_plane15(unit)
+        .and_then(char::from_u32)
+        .unwrap_or(c)
+}
+
 /// 원본에서 글자들이 0 부터 연속으로 놓여 있었는가 — 곧 컨트롤이 전부 텍스트 뒤에 있어
 /// mismatch 경로로 다시 써도 글자 위치가 밀리지 않는가.
 ///
@@ -839,17 +856,7 @@ pub(crate) fn render_hp_t_content(
                 t_xml.push_str("<hp:hyphen/>");
             }
             c if (c as u32) < 0x20 => { /* 기타 제어문자 무시 */ }
-            // [#5140] 한컴 사용자 정의 기호는 HWPX 에서 평면 15 보충 PUA 로 싣는다.
-            // IR 정본은 HWP5 쪽 사영(`0xA000 | X`)이므로 여기서 올려 준다 —
-            // 리터럴로 내면 한글이 그 자리를 Yi 음절(U+A8xx 등)로 읽어 글자가 깨진다.
-            // 파서(`parser/hwpx/section.rs`)가 같은 표로 되돌리므로 왕복이 닫힌다.
-            c if u32::from(c) <= u32::from(u16::MAX)
-                && tags::hancom_symbol_to_plane15(c as u16).is_some() =>
-            {
-                let cp = tags::hancom_symbol_to_plane15(c as u16).unwrap_or(u32::from(c));
-                buf.push(char::from_u32(cp).unwrap_or(c));
-            }
-            c => buf.push(c),
+            c => buf.push(hancom_symbol_for_hwpx(c)),
         }
     }
     flush_buf(&mut t_xml, &mut buf);
@@ -2098,7 +2105,13 @@ fn render_compose(co: &CharOverlap) -> String {
     } else {
         "SPREAD"
     };
-    let text: String = co.chars.iter().collect();
+    // [#5140] 겹침 글자도 사용자 정의 기호일 수 있다. 속성이라 위치 축과 무관하므로
+    // 본문과 같은 표를 그대로 적용한다.
+    let text: String = co
+        .chars
+        .iter()
+        .map(|&c| hancom_symbol_for_hwpx(c))
+        .collect();
     let mut out = format!(
         r#"<hp:compose circleType="{}" charSz="{}" composeType="{}" charPrCnt="{}" composeText="{}">"#,
         circle_type,

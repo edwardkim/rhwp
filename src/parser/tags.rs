@@ -300,13 +300,26 @@ pub const OWPML_FIELD_TYPE_BY_COMMAND: &[(&str, &str)] = &[
 /// 않고 `U+A813` 그대로 낸다. 범위로 밀면 그 글자가 깨진다.
 ///
 /// 10k 코퍼스 실측(HWP5 원본 6,432개): `0xA000..=0xABFF` 단일 유닛을 쓰는 문서 73건 중
-/// 아래 23개 값이 한글 출력에서 평면 15 로 확인됐다(2,857 / 2,863 = 99.8%). 나머지는
-/// 컨트롤 인라인 payload 오독(한글 출력 없음)이거나 위 `0xA813` 반례다.
+/// 아래 값들이 한글 출력에서 평면 15 로 확인됐다. 두 경로에서 모았다 —
+///
+/// - **본문 텍스트**(`PARA_TEXT` → `hp:t`): 23개 값이 2,857 / 2,863 = 99.8% 를 덮는다.
+///   나머지는 컨트롤 인라인 payload 오독(한글 출력 없음)이거나 위 `0xA813` 반례다.
+/// - **글자겹침**(`tcps` → `hp:compose/@composeText`): 06190·06638·08403·08396 을 한글
+///   SaveAs HWPX 로 떠서 대조했더니 29개 값이 **107/107 전량** 평면 15 로 갔다(BMP 유지 0).
+///
 /// **새 값은 한글 실측으로만 추가한다.**
 pub const HANCOM_SYMBOL_BMP_TO_PLANE15: &[u16] = &[
-    0xA0E1, 0xA12B, 0xA2B1, 0xA2B2, 0xA2B3, 0xA2B4, 0xA2B5, 0xA2B6, 0xA2B7, 0xA2B8, 0xA2B9,
-    0xA2FC, 0xA3C5, 0xA80A, 0xA80E, 0xA80F, 0xA810, 0xA81A, 0xA832, 0xA852, 0xA853, 0xA854,
-    0xA855,
+    0xA0E1, 0xA12B, //
+    // 글자겹침 실측 — 06190 · 08403
+    0xA289, 0xA28A, 0xA292, 0xA293, 0xA294, 0xA295, 0xA296, 0xA297, 0xA298, 0xA299, 0xA29A,
+    0xA29B, //
+    // 본문 실측
+    0xA2B1, 0xA2B2, 0xA2B3, 0xA2B4, 0xA2B5, 0xA2B6, 0xA2B7, 0xA2B8, 0xA2B9, //
+    // 글자겹침 실측 — 06638 (0xA2C1·0xA2C2 는 코퍼스에 없어 넣지 않았다)
+    0xA2BA, 0xA2BB, 0xA2BC, 0xA2BD, 0xA2BE, 0xA2BF, 0xA2C0, 0xA2C3, 0xA2C4, 0xA2C5, 0xA2C6, 0xA2C7,
+    0xA2C8, 0xA2C9, 0xA2CA, 0xA2CB, 0xA2CC, //
+    // 본문 실측
+    0xA2FC, 0xA3C5, 0xA80A, 0xA80E, 0xA80F, 0xA810, 0xA81A, 0xA832, 0xA852, 0xA853, 0xA854, 0xA855,
 ];
 
 /// 평면 15 보충 PUA 의 시작 — `0xA000 | X` 의 대응 코드포인트는 `PLANE15_BASE | X` 다.
@@ -493,7 +506,10 @@ mod tests {
         ] {
             assert_eq!(hancom_symbol_to_plane15(bmp), Some(cp));
             assert_eq!(plane15_to_hancom_symbol(cp), Some(bmp));
-            assert!(char::from_u32(cp).is_some(), "{cp:#x} 는 유효한 스칼라여야 한다");
+            assert!(
+                char::from_u32(cp).is_some(),
+                "{cp:#x} 는 유효한 스칼라여야 한다"
+            );
         }
     }
 
@@ -514,6 +530,21 @@ mod tests {
         // 평면 15 밖 보충 PUA(평면 16)와 BMP 사설영역은 되돌리지 않는다.
         for cp in [0x10_0000u32, 0x00_E000, 0x01_F600] {
             assert_eq!(plane15_to_hancom_symbol(cp), None, "{cp:#x}");
+        }
+    }
+
+    /// 글자겹침(`composeText`) 실측으로 넓힌 값들 — 한글 SaveAs 에서 107/107 전량
+    /// 평면 15 로 갔다(06190 · 06638 · 08403 · 08396).
+    #[test]
+    fn hancom_symbol_table_covers_the_compose_text_measurements() {
+        for u in [
+            0xA289u16, 0xA28A, 0xA292, 0xA29B, 0xA2BA, 0xA2C0, 0xA2C3, 0xA2CC,
+        ] {
+            assert_eq!(
+                hancom_symbol_to_plane15(u),
+                Some(0x0F_0000 | u32::from(u & 0x0FFF)),
+                "{u:#x}"
+            );
         }
     }
 
