@@ -1384,7 +1384,10 @@ fn serialize_shape_control(
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
                 level,
-                &serialize_common_obj_attr(&line.common),
+                &apply_caption_attr_bit(
+                    &serialize_common_obj_attr(&line.common),
+                    line.drawing.caption.is_some(),
+                ),
             ));
             emit_top_level_synthesized_ctrl_data(records);
             emit_caption(&line.drawing.caption, records);
@@ -1437,7 +1440,10 @@ fn serialize_shape_control(
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
                 level,
-                &serialize_common_obj_attr(&rect.common),
+                &apply_caption_attr_bit(
+                    &serialize_common_obj_attr(&rect.common),
+                    rect.drawing.caption.is_some(),
+                ),
             ));
             emit_top_level_synthesized_ctrl_data(records);
             emit_caption(&rect.drawing.caption, records);
@@ -1467,7 +1473,10 @@ fn serialize_shape_control(
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
                 level,
-                &serialize_common_obj_attr(&ellipse.common),
+                &apply_caption_attr_bit(
+                    &serialize_common_obj_attr(&ellipse.common),
+                    ellipse.drawing.caption.is_some(),
+                ),
             ));
             emit_top_level_synthesized_ctrl_data(records);
             emit_caption(&ellipse.drawing.caption, records);
@@ -1510,7 +1519,10 @@ fn serialize_shape_control(
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
                 level,
-                &serialize_common_obj_attr(&poly.common),
+                &apply_caption_attr_bit(
+                    &serialize_common_obj_attr(&poly.common),
+                    poly.drawing.caption.is_some(),
+                ),
             ));
             emit_top_level_synthesized_ctrl_data(records);
             emit_caption(&poly.drawing.caption, records);
@@ -1548,7 +1560,10 @@ fn serialize_shape_control(
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
                 level,
-                &serialize_common_obj_attr(&arc.common),
+                &apply_caption_attr_bit(
+                    &serialize_common_obj_attr(&arc.common),
+                    arc.drawing.caption.is_some(),
+                ),
             ));
             emit_top_level_synthesized_ctrl_data(records);
             emit_caption(&arc.drawing.caption, records);
@@ -1579,7 +1594,10 @@ fn serialize_shape_control(
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
                 level,
-                &serialize_common_obj_attr(&curve.common),
+                &apply_caption_attr_bit(
+                    &serialize_common_obj_attr(&curve.common),
+                    curve.drawing.caption.is_some(),
+                ),
             ));
             emit_top_level_synthesized_ctrl_data(records);
             emit_caption(&curve.drawing.caption, records);
@@ -1613,7 +1631,10 @@ fn serialize_shape_control(
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
                 level,
-                &serialize_common_obj_attr(&group.common),
+                &apply_caption_attr_bit(
+                    &serialize_common_obj_attr(&group.common),
+                    group.caption.is_some(),
+                ),
             ));
             emit_top_level_synthesized_ctrl_data(records);
             emit_caption(&group.caption, records);
@@ -1646,7 +1667,10 @@ fn serialize_shape_control(
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
                 level,
-                &serialize_common_obj_attr(&chart.common),
+                &apply_caption_attr_bit(
+                    &serialize_common_obj_attr(&chart.common),
+                    chart.caption.is_some(),
+                ),
             ));
             let sc_ctrl_id = chart.drawing.shape_attr.ctrl_id;
             emit_caption(&chart.caption, records);
@@ -1666,10 +1690,16 @@ fn serialize_shape_control(
             });
         }
         ShapeObject::Ole(ole) => {
+            // [일곱 번째 계약 확장] gso 도형도 캡션 존재를 attr bit29 에 반영해야 한다
+            // (apply_caption_attr_bit 참조). 미반영 시 캡션 달린 OLE/도형이 든 변환본을
+            // 한글 2022 가 거부한다(크롤 빈티지 15456 OLE COM 이등분 실측).
             records.push(make_ctrl_record(
                 tags::CTRL_GEN_SHAPE,
                 level,
-                &serialize_common_obj_attr(&ole.common),
+                &apply_caption_attr_bit(
+                    &serialize_common_obj_attr(&ole.common),
+                    ole.caption.is_some(),
+                ),
             ));
             // 캡션 (SHAPE_COMPONENT 앞, level+1)
             if let Some(ref caption) = ole.caption {
