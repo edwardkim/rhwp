@@ -138,6 +138,7 @@
     "regression_suite_004": [
       "tests/audit_contract.rs",
       "tests/bundle_contract.rs",
+      "tests/cases/delete_footnote_contract.rs",
       "tests/diag_1042_raw_binary.rs",
       "tests/hml_parser.rs",
       "tests/issue_1082_endnote_multicolumn_drift.rs",
