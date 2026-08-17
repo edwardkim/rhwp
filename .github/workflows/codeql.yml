@@ -773,18 +773,25 @@ jobs:
       # [#3290] 호스티드 16GB VM 은 CodeQL 자동 감지 값이 적정하다. self-hosted 로
       # 되돌릴 경우 ram/threads 캡 필수 — #3289 사고(무캡 JVM 40~55GB×2 로 호스트
       # 포화·스톨) 및 task_m100_3289_report.md 거버넌스 절 참조.
-      - name: Initialize CodeQL
-        if: ${{ contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
+      - name: Initialize CodeQL (non-Rust)
+        if: ${{ matrix.language != 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
+
+      - name: Initialize CodeQL (Rust)
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
+        uses: github/codeql-action/init@v4
+        with:
+          languages: rust
+          build-mode: none
 
       - name: Install Rust toolchain
         if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
 
-      # [#3790 Stage 5A] 기본 build mode의 내부 autobuild가 같은 source alert와
-      # fingerprint를 생성함을 canary로 확인했다. 중복 cache·수동 prebuild는 실행하지 않는다.
+      # [#5187] Rust는 명시적 none 모드로 분석한다. 동일 SHA 비교에서 현재 기본 경로와
+      # 추출 파일·SARIF 지표가 같았고, none 모드가 더 짧아 Rust 자동 빌드 의존을 제거한다.
       - name: Perform CodeQL Analysis
         if: ${{ contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
         uses: github/codeql-action/analyze@v4
