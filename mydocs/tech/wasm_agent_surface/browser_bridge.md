@@ -126,6 +126,12 @@ WASM layout trace에 현재 Canvas2D local/web/generic supply와 CanvasKit SFNT/
 CSS가 실제 glyph face를 공개하지 않는 경우 `certainty: notObserved`와
 `cssActualGlyphFaceUnobservable`을 함께 반환한다.
 
+2026-08-17 Stage 5에서 headless Chrome과 Windows 호스트 Chrome CDP 양쪽의 실제
+`@rhwp/editor.getFontDecisionTrace(0, {maxCharacters: 64})`를 검증했다. 두 환경 모두 bounded
+`truncated` v1 trace와 Canvas2D·CanvasKit snapshot을 반환했고, 호출 전후 SVG·HWP bytes가 같았다.
+호출 구간의 `fetch`, `FontFace.load`, Local Font Access 호출도 모두 0건이었다. 이 결과는 trace가
+선택 authority나 초기화 trigger가 아니라 현재 snapshot의 읽기 전용 관찰자라는 공개 계약을 고정한다.
+
 **일반 에이전트 동사는 아직 0개다.** `digest`·`search`·`fields`·`extract-data`·`inspect` 어느
 것도 없다. 그런데 그중 다수는 **WASM 에는 이미 있다**(`searchAllText`
 `wasm_api.rs:4869`, `getFieldList` `4542` 등 — [self_description.md §1.3](self_description.md)).

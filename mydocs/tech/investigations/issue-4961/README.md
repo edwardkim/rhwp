@@ -78,6 +78,33 @@ Stage 4에서 header/footer 내부의 `usize::MAX` 상대 layout marker가 nativ
 문단 번호로 직렬화되던 문제를 발견했다. 이 marker는 문서 source 좌표가 아니므로 `null`로 정규화하고
 `source.status=unavailable`을 유지한다. 그 결과 portable `layoutHash`가 target architecture와 무관하다.
 
+## 3.4 Stage 5 최종 감사
+
+- W1 validator 10건과 trace contract 12건이 현행 1,507행 원장, candidate identity와 `ruleId` join을
+  다시 검증했다.
+- 공개 HWP/HWPX 6개 page 0의 native/WASM SVG가 fresh optimized WASM에서 byte-identical했다.
+- 기존 SVG snapshot 9건을 포함한 release-test 전체 6,523건과 native Skia 공식 3종 gate가 통과했다.
+- headless Chrome과 Windows 호스트 Chrome CDP에서 실제 `@rhwp/editor` RPC를 호출했다. 64문자 상한은
+  `truncated`로 끝났고 Canvas2D·CanvasKit snapshot이 같은 trace에 결합됐다.
+- 같은 브라우저 세션에서 trace 호출 전후 SVG와 HWP serialization bytes가 동일했고, trace 구간의
+  `fetch`, `FontFace.load`, Local Font Access 호출은 각각 0건이었다.
+- private corpus, 식별 파일 목록과 font bytes는 사용하지 않았다. 실제 10k coverage와 위험 순위는
+  후속 [#4962](https://github.com/edwardkim/rhwp/issues/4962)의 입력이다.
+
+공개 SDK 호출 예시는 다음과 같다.
+
+```javascript
+const trace = await editor.getFontDecisionTrace(0, { maxCharacters: 256 });
+if (trace.status === 'truncated') {
+  console.log(trace.counts.recordsOmitted, trace.reasons);
+}
+console.log(trace.layoutHash.value, trace.normalizedHash.value);
+```
+
+전체 검증 명령과 FI-01~FI-14 판정은
+[`task_m100_4961_stage5.md`](../../../working/task_m100_4961_stage5.md), 완료 조건과 후속 인계는
+[`task_m100_4961_report.md`](../../../report/task_m100_4961_report.md)가 정본이다.
+
 ## 4. identity와 ledger 연결
 
 candidate identity의 필드는 W1 collector와 같다.

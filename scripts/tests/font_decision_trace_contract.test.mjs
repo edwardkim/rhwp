@@ -297,7 +297,7 @@ test('public fixture manifest is tracked, byte-stable and excludes private corpu
   assert.deepEqual(validatePublicFixtures(manifest, ROOT), []);
 
   const privatePath = structuredClone(manifest);
-  privatePath.fixtures[0].path = '/home/edward/mygithub/hwpsamples/corpus_10k/private.hwp';
+  privatePath.fixtures[0].path = '/home/tester/private-corpus/corpus_10k/private.hwp';
   assert.match(validatePublicFixtures(privatePath, ROOT).join('\n'), /repository-relative/);
 
   const wrongDigest = structuredClone(manifest);

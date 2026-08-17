@@ -102,7 +102,7 @@ Stage 4 후보는 이미 repository에 추적된 같은 문서의 HWP/HWPX 쌍�
 | HWPX | `samples/3-10월_교육_통합_2022.hwpx` | 2,677,940 | `f37246219339c8900b19f3da65afc105fbf6823afe5f2bb357a7e4c2b14b0314` |
 
 검사는 repository-relative `samples/` path, Git 추적 상태, size, digest, format과
-`privateCorpus: false`를 전부 확인한다. `/home/edward/mygithub/hwpsamples`와 private 10k corpus는 읽거나
+`privateCorpus: false`를 전부 확인한다. 로컬 private 10k corpus의 절대 경로·원문·식별 목록은 읽거나
 manifest에 넣지 않았다.
 
 ## 4. 검증 결과

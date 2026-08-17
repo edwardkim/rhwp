@@ -30,6 +30,38 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
     const initialLength = sampleBuffer.byteLength;
     const loaded = await editor.loadFile(sampleBuffer, 'footnote-01.hwp');
     const publicDiagnostics = await editor.getRendererDiagnostics(0);
+    const svgBeforeTrace = await editor.getPageSvg(0);
+    const hwpBeforeTrace = await editor.exportHwp();
+    const traceSideEffects = { fetch: 0, fontFaceLoad: 0, queryLocalFonts: 0 };
+    const studioWindow = editor.element.contentWindow;
+    const originalFetch = studioWindow.fetch;
+    const originalFontFaceLoad = studioWindow.FontFace?.prototype?.load;
+    const originalQueryLocalFonts = studioWindow.queryLocalFonts;
+    studioWindow.fetch = (...args) => {
+      traceSideEffects.fetch += 1;
+      return originalFetch.apply(studioWindow, args);
+    };
+    if (originalFontFaceLoad) {
+      studioWindow.FontFace.prototype.load = function tracedFontFaceLoad(...args) {
+        traceSideEffects.fontFaceLoad += 1;
+        return originalFontFaceLoad.apply(this, args);
+      };
+    }
+    if (originalQueryLocalFonts) {
+      studioWindow.queryLocalFonts = (...args) => {
+        traceSideEffects.queryLocalFonts += 1;
+        return originalQueryLocalFonts.apply(studioWindow, args);
+      };
+    }
+    let publicFontTrace;
+    try {
+      publicFontTrace = await editor.getFontDecisionTrace(0, { maxCharacters: 64 });
+    } finally {
+      studioWindow.fetch = originalFetch;
+      if (originalFontFaceLoad) studioWindow.FontFace.prototype.load = originalFontFaceLoad;
+      if (originalQueryLocalFonts) studioWindow.queryLocalFonts = originalQueryLocalFonts;
+    }
+    const svgAfterTrace = await editor.getPageSvg(0);
     const callerBytesPreserved = sampleBuffer.byteLength === initialLength
       && sampleBefore.every((byte, index) => new Uint8Array(sampleBuffer)[index] === byte);
     const hwp = await editor.exportHwp();
@@ -48,6 +80,15 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
       publicDiagnosticsPage: publicDiagnostics.page?.index,
       publicDiagnosticsRequestBackend: publicDiagnostics.request?.backend?.backend,
       publicDiagnosticsSelectionRequestBackend: publicDiagnostics.selection?.requestedBackend,
+      publicFontTraceSchema: publicFontTrace.schemaVersion,
+      publicFontTraceStatus: publicFontTrace.status,
+      publicFontTraceRecords: publicFontTrace.records.length,
+      publicFontTraceCanvas2dStatus: publicFontTrace.backendSummary.canvas2d.status,
+      publicFontTraceCanvaskitStatus: publicFontTrace.backendSummary.canvaskit.status,
+      traceSvgByteIdentical: svgBeforeTrace === svgAfterTrace,
+      traceHwpByteIdentical: hwpBeforeTrace.byteLength === hwp.byteLength
+        && hwpBeforeTrace.every((byte, index) => byte === hwp[index]),
+      traceSideEffects,
       callerBytesPreserved,
       hwpLength: hwp.byteLength,
       hwpxLength: hwpx.byteLength,
@@ -148,6 +189,17 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
     'renderer-diagnostics-v1 request backend enum은 기존 canvas2d 기본값을 유지한다');
   assert(result.publicDiagnosticsSelectionRequestBackend === 'auto',
     'additive selection diagnostics가 실제 auto 요청을 보존한다');
+  assert(result.publicFontTraceSchema === 1 && result.publicFontTraceStatus === 'truncated',
+    'public getFontDecisionTrace가 bounded v1 trace를 반환한다');
+  assert(result.publicFontTraceRecords === 64,
+    'public getFontDecisionTrace가 요청한 문자 상한을 조용히 넘지 않는다');
+  assert(result.publicFontTraceCanvas2dStatus !== 'unsupported'
+      && result.publicFontTraceCanvaskitStatus !== 'unsupported',
+    'Studio trace가 현재 Canvas2D와 CanvasKit snapshot을 보강한다');
+  assert(result.traceSvgByteIdentical && result.traceHwpByteIdentical,
+    'trace query 전후 SVG와 HWP serialization bytes가 동일하다');
+  assert(Object.values(result.traceSideEffects).every((count) => count === 0),
+    'trace query가 fetch, FontFace load 또는 Local Font Access 권한 요청을 시작하지 않는다');
   assert(result.callerBytesPreserved, 'loadFile에 넘긴 동일 caller ArrayBuffer가 detach·변경되지 않는다');
   assert(result.hwpLength > 0, 'public exportHwp가 transferable bytes를 반환한다');
   assert(result.hwpxLength > 0, 'public exportHwpx가 transferable bytes를 반환한다');
