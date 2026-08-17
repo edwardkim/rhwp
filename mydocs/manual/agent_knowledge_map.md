@@ -297,10 +297,10 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 299개 필드
+### 2-2. 전수 사전 — 300개 필드
 
-`capabilities` 의 `recordFields` 고유 **296개**와 그 밖의 실측-only 필드
-`assertions`·`docId`·`preview` **3개**를 합친 299개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **297개**와 그 밖의 실측-only 필드
+`assertions`·`docId`·`preview` **3개**를 합친 300개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -346,6 +346,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `charCount` | number | IR 본문 글자 수 | `word-count` |
 | `wordCount` | number | 공백 분리 어절 수 | `word-count` |
 | `bookmarks` | array | 책갈피 목록 `{name,sec,para,ctrlIdx,charPos}` | `bookmarks` |
+| `headersFooters` | array | 머리말/꼬리말 목록 `{sectionIdx,isHeader,applyTo,label}` | `headers-footers` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
 | `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |
@@ -1070,15 +1071,16 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 95개
+## 6. MCP 도구 전수 지도 — 96개
 
-### 6-1. 무상태 79개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 80개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
 | `hwp_info` | `info --json` | `path` |
 | `hwp_word_count` | `word-count --json` | `path` |
 | `hwp_bookmarks` | `bookmarks --json` | `path` |
+| `hwp_headers_footers` | `headers-footers --json` | `path` |
 | `hwp_digest` | `digest --json` | `path` |
 | `hwp_export_text` | `export-text --json` | `path` |
 | `hwp_export_structure` | `export-structure --json` | `path` |

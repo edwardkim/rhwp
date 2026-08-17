@@ -332,6 +332,7 @@ fn main() {
         Some("info") => exit_with(show_info(&args[2..])),
         Some("word-count") => exit_with(word_count(&args[2..])),
         Some("bookmarks") => exit_with(bookmarks(&args[2..])),
+        Some("headers-footers") => exit_with(headers_footers(&args[2..])),
         Some("digest") => exit_with(digest_document(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
         Some("dump-note-shape") => exit_with(dump_note_shape(&args[2..])),
@@ -669,6 +670,14 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "bookmarks",
             serde_json::json!(["bookmarks", "--json", "{path}"]),
             &["schemaVersion", "source", "count", "bookmarks"],
+        ),
+        tool(
+            "hwp_headers_footers",
+            "[#5044] 문서 머리말/꼬리말 목록. 코어 get_header_footer_list_native 배선. 새 파서 없음.",
+            path_schema(serde_json::json!({})),
+            "headers-footers",
+            serde_json::json!(["headers-footers", "--json", "{path}"]),
+            &["schemaVersion", "source", "count", "headersFooters"],
         ),
         // [#3633] 초소형 모델용 매크로 1호. 설명은 40자 이내로 극단 압축한다 —
         // 도구 목록 자체가 컨텍스트 예산을 잠식하는 4B급 모델이 1차 소비자이기
@@ -3022,6 +3031,19 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             ],
         ),
         cmd_json(
+            "headers-footers",
+            "query",
+            "문서 머리말/꼬리말 목록 — 코어 get_header_footer_list_native",
+            true,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "count",
+                "headersFooters",
+            ],
+        ),
+        cmd_json(
             "export-text",
             "export",
             "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
@@ -4829,6 +4851,11 @@ fn print_help() {
     println!("      문서 책갈피 목록을 조회한다");
     println!();
     println!("      --json                  책갈피 봉투를 JSON으로 stdout에 출력");
+    println!();
+    println!("  headers-footers <파일.hwp|파일.hwpx|파일.hml> [--json]");
+    println!("      문서 머리말/꼬리말 목록을 조회한다");
+    println!();
+    println!("      --json                  머리말/꼬리말 봉투를 JSON으로 stdout에 출력");
     println!();
     println!("  digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]");
     println!("      문서 요약 봉투 한 줄 출력 — 메타(info)·개요 상위 노드·첫 페이지 발췌·");
@@ -11713,6 +11740,81 @@ fn bookmarks(args: &[String]) -> i32 {
             let para = b["para"].as_u64().unwrap_or(0);
             let ctrl = b["ctrlIdx"].as_u64().unwrap_or(0);
             println!("  {name}  구역 {sec} 문단 {para} 컨트롤 {ctrl}");
+        }
+    }
+    EXIT_OK
+}
+
+/// [#5044] `headers-footers` — 문서 머리말/꼬리말 목록.
+fn headers_footers(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp headers-footers <파일.hwp|파일.hwpx|파일.hml> [--json]");
+        return EXIT_USAGE;
+    };
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let raw = match doc.get_header_footer_list_native(0, true, 0) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: 머리말/꼬리말 조회 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let parsed: serde_json::Value = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 머리말/꼬리말 JSON 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let items = parsed
+        .get("items")
+        .cloned()
+        .unwrap_or(serde_json::json!([]));
+    let count = items.as_array().map(|a| a.len()).unwrap_or(0);
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "count": count,
+            "headersFooters": items,
+        });
+        println!("{}", provenance::marked(envelope, "headers-footers"));
+        return EXIT_OK;
+    }
+    println!("{file_path}: 머리말/꼬리말 {count}개");
+    if let Some(arr) = items.as_array() {
+        for h in arr {
+            let label = h["label"].as_str().unwrap_or("");
+            let sec = h["sectionIdx"].as_u64().unwrap_or(0);
+            let apply = h["applyTo"].as_u64().unwrap_or(0);
+            println!("  {label}  구역 {sec} apply-to {apply}");
         }
     }
     EXIT_OK
