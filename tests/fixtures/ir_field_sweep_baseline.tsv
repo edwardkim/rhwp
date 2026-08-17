@@ -233,6 +233,9 @@ hwp5rb	issue4491/30213_1.혼합단지등 제도개선 방안.hwp	sections[].para
 hwp5rb	issue4690/30098_indent_over_stored_cs.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	124
 hwp5rb	issue4889/18098267_nested_fragment_origin.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
 hwp5rb	issue4889/18098267_nested_fragment_origin.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	110
+hwp5rb	issue5169_viewtext_changetracking.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	191
+hwp5rb	issue5169_viewtext_changetracking.hwp	sections[].paragraphs[].line_segs.len	5
+hwp5rb	issue5169_viewtext_changetracking.hwp	sections[].paragraphs[].raw_header_extra[]	5
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
