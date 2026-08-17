@@ -202,6 +202,19 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             self.builder,
         )
 
+    def test_internal_workspace_crates_have_a_required_execution_gate(self) -> None:
+        step = step_body(self.ci, "Test internal Rust crates")
+        self.assertIn("cargo test --workspace", step)
+        for package in (
+            "rhwp",
+            "rhwp-subsecond",
+            "rhwp-native-ffi",
+            "batch-convert",
+        ):
+            with self.subTest(package=package):
+                self.assertIn(f"--exclude {package}", step)
+        self.assertIn("--lib", step)
+
     def test_required_check_and_release_artifact_contracts_stay_stable(self) -> None:
         self.assertIn("name: Build & Test", self.ci)
         self.assertIn(

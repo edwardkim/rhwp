@@ -102,6 +102,11 @@ pub struct SerializeContext {
     pub style_ids: IdPool<u16>,
     /// `bin_data_id` (IR) → manifest 엔트리 매핑
     pub bin_data_map: HashMap<u16, BinDataEntry>,
+    /// HWP5 BIN_DATA 레코드 순번(1-based) → storage_id 사상.
+    ///
+    /// `ImageAttr.bin_data_id`는 storage stream 이름이 아니라 DocInfo 레코드
+    /// 순번이다. storage_id와 같은 숫자가 있어도 순번 사상이 우선해야 한다.
+    bin_seq_to_storage: HashMap<u16, u16>,
     /// [#3546] OOXML 차트 파트 — Chart/chartN.xml 원형 방출 목록.
     /// 원본 content.hpf 는 Chart 파트를 나열하지 않으므로 manifest·3-way
     /// 단언 대상 밖이다.
@@ -143,6 +148,7 @@ impl Default for SerializeContext {
             numbering_ids: IdPool::default(),
             style_ids: IdPool::default(),
             bin_data_map: HashMap::new(),
+            bin_seq_to_storage: HashMap::new(),
             chart_entries: Vec::new(),
             para_id_counter: 0,
             generated_hyperlink_id: u32::MAX,
@@ -286,6 +292,17 @@ impl SerializeContext {
             );
         }
 
+        // [#3893/#4049] HWP5 본문 개체의 BIN_DATA 순번 축. `storage_id`와
+        // 우연히 같은 숫자가 있어도 별개 의미이므로, 실제 데이터를 가진 모든
+        // 레코드의 사상을 등록한다. Link(storage_id=0)는 기존 직접 조회 경로를
+        // 유지한다.
+        for (i, bd) in doc.doc_info.bin_data_list.iter().enumerate() {
+            let seq = (i + 1) as u16;
+            if bd.storage_id != 0 && ctx.bin_data_map.contains_key(&bd.storage_id) {
+                ctx.bin_seq_to_storage.insert(seq, bd.storage_id);
+            }
+        }
+
         ctx
     }
 
@@ -297,10 +314,20 @@ impl SerializeContext {
     }
 
     /// `bin_data_id` → manifest id 조회 (Stage 4의 `<hc:img binaryItemIDRef="...">` 용).
+    ///
+    /// HWP5 본문 개체의 `bin_data_id`는 BIN_DATA 레코드 순번이므로, 등록된
+    /// 순번 사상을 storage ID 직접 조회보다 먼저 적용한다. 사상이 없는 sparse
+    /// ID(차트)와 수동 구성 문서는 기존 직접 조회를 사용한다.
     pub fn resolve_bin_id(&self, bin_data_id: u16) -> Option<&str> {
-        self.bin_data_map
+        self.bin_seq_to_storage
             .get(&bin_data_id)
+            .and_then(|storage| self.bin_data_map.get(storage))
             .map(|e| e.manifest_id.as_str())
+            .or_else(|| {
+                self.bin_data_map
+                    .get(&bin_data_id)
+                    .map(|e| e.manifest_id.as_str())
+            })
     }
 
     /// 모든 참조가 해소되었는지 단언. 해소되지 않은 ID가 있으면 `SerializeError::XmlError` 반환.
@@ -990,6 +1017,34 @@ mod tests {
         let e1 = &ctx.bin_data_map[&1];
         assert!(e1.is_embedded, "콘텐츠 보유 항목은 isEmbeded=1 유지");
         assert_eq!(e1.href, "BinData/image1.png");
+    }
+
+    #[test]
+    fn hwp5_bin_sequence_precedes_colliding_storage_id() {
+        // HWP5 Picture의 bin_data_id는 storage stream 번호가 아니라 BIN_DATA
+        // 레코드 순번이다. Worldcup 계열처럼 storage id가 재배열된 경우에도
+        // 순번 1은 첫 레코드(storage 3)를 가리켜야 한다.
+        use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
+
+        let mut doc = Document::default();
+        for storage_id in [3u16, 1, 2] {
+            doc.doc_info.bin_data_list.push(BinData {
+                data_type: BinDataType::Embedding,
+                storage_id,
+                extension: Some("png".to_string()),
+                ..Default::default()
+            });
+            doc.bin_data_content.push(BinDataContent {
+                id: storage_id,
+                data: vec![storage_id as u8].into(),
+                extension: "png".to_string(),
+            });
+        }
+
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert_eq!(ctx.resolve_bin_id(1), Some("image3"));
+        assert_eq!(ctx.resolve_bin_id(2), Some("image1"));
+        assert_eq!(ctx.resolve_bin_id(3), Some("image2"));
     }
 
     #[test]

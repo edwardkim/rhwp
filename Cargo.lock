@@ -2242,6 +2242,9 @@ dependencies = [
  "rand_core",
  "resvg 0.45.1",
  "resvg 0.47.0",
+ "rhwp-contracts",
+ "rhwp-ooxml-chart",
+ "rhwp-password-crypto",
  "roxmltree 0.21.1",
  "serde",
  "serde_json",
@@ -2269,10 +2272,44 @@ dependencies = [
 ]
 
 [[package]]
+name = "rhwp-contracts"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+]
+
+[[package]]
 name = "rhwp-native-ffi"
 version = "0.1.0"
 dependencies = [
  "rhwp",
+]
+
+[[package]]
+name = "rhwp-ooxml-chart"
+version = "0.1.0"
+dependencies = [
+ "quick-xml",
+]
+
+[[package]]
+name = "rhwp-password-crypto"
+version = "0.1.0"
+dependencies = [
+ "aes",
+ "base64 0.23.1",
+ "cbc",
+ "crc32fast",
+ "des",
+ "flate2",
+ "getrandom 0.4.3",
+ "hmac",
+ "pbkdf2",
+ "quick-xml",
+ "roxmltree 0.21.1",
+ "sha1",
+ "sha2 0.11.0",
+ "zip",
 ]
 
 [[package]]

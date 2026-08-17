@@ -965,6 +965,30 @@ jobs:
           node --test scripts/tests/ci-impact-policy.test.cjs
           python3 -m unittest scripts/tests/test_ci_impact_workflow.py
 
+      - name: Validate Rust test suite manifest
+        env:
+          RHWP_TEST_POLICY_BASE_REF: ${{ github.event.pull_request.base.sha || '' }}
+        run: |
+          base_args=()
+          if [[ -n "$RHWP_TEST_POLICY_BASE_REF" ]]; then
+            git fetch --no-tags --depth=1 origin "$RHWP_TEST_POLICY_BASE_REF"
+            base_args=(--base-ref "$RHWP_TEST_POLICY_BASE_REF")
+          fi
+          node --test scripts/tests/rust-test-suite-manifest.test.mjs
+          node scripts/rust-test-suite-manifest.mjs --check "${base_args[@]}"
+          node --test scripts/tests/rust-unit-test-tiers.test.mjs
+          node scripts/rust-unit-test-tiers.mjs --check "${base_args[@]}"
+          node scripts/run-rust-test.mjs --print issue_1035_alignment
+
+      - name: Test internal Rust crates
+        run: |
+          cargo test --workspace \
+            --exclude rhwp \
+            --exclude rhwp-subsecond \
+            --exclude rhwp-native-ffi \
+            --exclude batch-convert \
+            --lib
+
       - name: Validate Render Diff trigger policy
         run: python3 -m unittest scripts/tests/test_render_diff_workflow.py
 
@@ -1137,24 +1161,24 @@ jobs:
             release-test)
               echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
               cargo test --profile release-test --features native-skia skia --lib --verbose
-              cargo test --profile release-test --features native-skia --test cli_exit_codes_native --verbose
-              cargo test --profile release-test --features native-skia --test issue_1144_native --verbose
-              cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder --verbose
-              cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export --verbose
-              cargo test --profile release-test --features native-skia --test issue_2083_hide_fill_page_background --verbose
-              cargo test --profile release-test --features native-skia --test issue_2292_chart_png_clip --verbose
-              cargo test --profile release-test --features native-skia --test issue_2293_chart_png_text --verbose
+              node scripts/run-rust-test.mjs --cargo-test cli_exit_codes_native -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_1144_native -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_2225_missing_picture_placeholder -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test render_p37_direct_pdf_export -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_2083_hide_fill_page_background -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_2292_chart_png_clip -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_2293_chart_png_text -- --profile release-test --features native-skia --verbose
               ;;
             release)
               echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
               cargo test --release --features native-skia skia --lib --verbose
-              cargo test --release --features native-skia --test cli_exit_codes_native --verbose
-              cargo test --release --features native-skia --test issue_1144_native --verbose
-              cargo test --release --features native-skia --test issue_2225_missing_picture_placeholder --verbose
-              cargo test --release --features native-skia --test render_p37_direct_pdf_export --verbose
-              cargo test --release --features native-skia --test issue_2083_hide_fill_page_background --verbose
-              cargo test --release --features native-skia --test issue_2292_chart_png_clip --verbose
-              cargo test --release --features native-skia --test issue_2293_chart_png_text --verbose
+              node scripts/run-rust-test.mjs --cargo-test cli_exit_codes_native -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_1144_native -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_2225_missing_picture_placeholder -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test render_p37_direct_pdf_export -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_2083_hide_fill_page_background -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_2292_chart_png_clip -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_2293_chart_png_text -- --release --features native-skia --verbose
               ;;
             *)
               echo "::error::Unknown test profile: ${TEST_PROFILE}"
