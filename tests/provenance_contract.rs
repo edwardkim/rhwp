@@ -663,6 +663,14 @@ fn recipes() -> Vec<Recipe> {
             ndjson: false,
         },
         Recipe {
+            command: "bookmarks",
+            doc: Some(main.clone()),
+            args: vec![s("bookmarks"), s("--json"), p(&main)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
             command: "export-text",
             doc: Some(main.clone()),
             args: vec![s("export-text"), s("--json"), p(&main)],
@@ -2257,6 +2265,11 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
         "edit",
         "count",
         "delete-row/delete-col 전용. 스윕 레시피는 fill-fields/set-cell 이라 count 를 안 낸다",
+    ),
+    (
+        "edit",
+        "ctrl",
+        "insert-text/delete-footnote 등 컨트롤 좌표 전용. 스윕 레시피는 fill-fields/set-cell 이라 ctrl 를 안 낸다",
     ),
 ];
 
