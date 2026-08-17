@@ -575,6 +575,7 @@
       "tests/suites/issue_regression_pilot/issue_2087_document_core_send.rs"
     ],
     "regression_suite_025": [
+      "tests/cases/split_cell_contract.rs",
       "tests/exam_eng_multicolumn.rs",
       "tests/fields_json_contract.rs",
       "tests/injection_scan_contract.rs",
