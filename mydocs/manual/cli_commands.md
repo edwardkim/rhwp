@@ -1039,6 +1039,9 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit split-cell <파일> --table <번호> --row <행> --col <열> [-o <출력>] [--dry-run] [--verify] [--json]` (#5010)
 본문 최상위 표의 병합 셀을 다시 나눈다. 코어 `split_table_cell_native`.
 
+### `edit split-cell-into <파일> --table <번호> --row <행> --col <열> --rows <행수> --cols <열수> [--equal-row-height] [--merge-first] [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 최상위 표의 셀을 n행 × m열로 나눈다. 코어 `split_table_cell_into_native`. `--rows`/`--cols` 는 1 이상.
+
 ### `edit insert-footnote <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4998)
 문단 좌표에 각주를 끼운다. 코어 `insert_footnote_native`.
 
