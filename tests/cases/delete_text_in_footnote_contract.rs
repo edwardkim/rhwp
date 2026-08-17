@@ -13,7 +13,7 @@ fn rhwp_bin() -> String {
 
 fn sample() -> String {
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("samples/field-01.hwp")
+        .join("samples/footnote-01.hwp")
         .to_string_lossy()
         .into_owned()
 }
@@ -63,7 +63,8 @@ fn first_note_text(path: &Path) -> Option<(usize, usize, usize, usize, usize, St
                 };
                 for (fi, fp) in paras.iter().enumerate() {
                     let n = fp.text.chars().count();
-                    if n > 0 {
+                    // 공백만 있는 기본 각주는 저장 왕복에서 다시 채워질 수 있다.
+                    if n > 0 && fp.text.chars().any(|c| !c.is_whitespace()) {
                         return Some((si, pi, ci, fi, n, fp.text.clone()));
                     }
                 }
@@ -73,38 +74,36 @@ fn first_note_text(path: &Path) -> Option<(usize, usize, usize, usize, usize, St
     None
 }
 
-fn insert_footnote() -> PathBuf {
-    let src = sample();
-    let inserted = temp("ins");
-    let output = Command::new(rhwp_bin())
-        .args([
-            "edit",
-            "insert-footnote",
-            src.as_str(),
-            "--offset",
-            "0",
-            "-o",
-            inserted.to_str().unwrap(),
-            "--json",
-        ])
-        .output()
-        .unwrap();
-    assert_eq!(output.status.code(), Some(0), "{:?}", output);
-    inserted
+fn letters(s: &str) -> String {
+    s.chars().filter(|c| !c.is_whitespace()).collect()
 }
 
 #[test]
 fn delete_text_in_footnote_shortens() {
-    let inserted = insert_footnote();
+    let src = sample();
     let (si, pi, ci, fi, before, text) =
-        first_note_text(&inserted).expect("삽입한 각주에 글자가 있어야 한다");
+        first_note_text(Path::new(&src)).expect("샘플 각주에 본문 글자가 있어야 한다");
     assert!(before >= 1, "삭제할 글자가 있어야 한다: {text:?}");
+    // HWP5 저장이 각주 앞뒤 공백을 다시 맞추므로, 공백이 아닌 글자를 지우고
+    // 공백을 뺀 본문만 대조한다.
+    let offset = text
+        .chars()
+        .position(|c| !c.is_whitespace())
+        .expect("본문 글자");
+    let expect = {
+        let s = letters(&text);
+        s.chars().skip(1).collect::<String>()
+    };
+    assert!(
+        !expect.is_empty(),
+        "지운 뒤에도 본문이 남아야 한다: {text:?}"
+    );
     let out = temp("out");
     let output = Command::new(rhwp_bin())
         .args([
             "edit",
             "delete-text-in-footnote",
-            inserted.to_str().unwrap(),
+            src.as_str(),
             "--section",
             &si.to_string(),
             "--para",
@@ -114,7 +113,7 @@ fn delete_text_in_footnote_shortens() {
             "--fn-para",
             &fi.to_string(),
             "--offset",
-            "0",
+            &offset.to_string(),
             "--count",
             "1",
             "-o",
@@ -127,25 +126,26 @@ fn delete_text_in_footnote_shortens() {
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(v["fnPara"], fi);
     assert_eq!(v["count"], 1);
-    // 삽입한 빈 각주가 앞에 있으면 first_note_text 는 다른 각주를 다시 고른다.
-    // 방금 지운 주소의 길이를 본다.
     let after = note_text_at(&out, si, pi, ci, fi).expect("각주가 남아 있어야 한다");
-    assert_eq!(after.chars().count(), before - 1);
+    assert_eq!(
+        letters(&after),
+        expect,
+        "addr=({si},{pi},{ci},{fi}) offset={offset} text={text:?} after={after:?}"
+    );
     HwpDocument::from_bytes(&std::fs::read(&out).unwrap()).expect("산출물 재파싱");
-    let _ = std::fs::remove_file(&inserted);
     let _ = std::fs::remove_file(&out);
 }
 
 #[test]
 fn dry_run_no_file() {
-    let inserted = insert_footnote();
-    let (si, pi, ci, fi, _, _) = first_note_text(&inserted).expect("삽입한 각주");
+    let src = sample();
+    let (si, pi, ci, fi, _, _) = first_note_text(Path::new(&src)).expect("샘플 각주");
     let out = temp("dry");
     let output = Command::new(rhwp_bin())
         .args([
             "edit",
             "delete-text-in-footnote",
-            inserted.to_str().unwrap(),
+            src.as_str(),
             "--section",
             &si.to_string(),
             "--para",
@@ -168,7 +168,6 @@ fn dry_run_no_file() {
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(v["dryRun"], true);
     assert_eq!(v["count"], 1);
-    let _ = std::fs::remove_file(&inserted);
 }
 
 #[test]
