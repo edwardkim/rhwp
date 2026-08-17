@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use rhwp::model::control::Control;
+use rhwp::model::control::{Control, FormType};
 use rhwp::wasm_api::HwpDocument;
 
 static SEQ: AtomicU64 = AtomicU64::new(0);
@@ -35,19 +35,21 @@ fn temp(tag: &str) -> PathBuf {
 }
 
 /// 문서 트리를 훑어 본문 첫 Form 좌표를 고른다. (0,0,0) 을 가정하지 않는다.
-fn first_body_form(path: &str) -> (usize, usize, usize) {
+fn first_body_text_form(path: &str) -> (usize, usize, usize) {
     let bytes = std::fs::read(path).expect("sample");
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
     for (si, sec) in doc.document().sections.iter().enumerate() {
         for (pi, para) in sec.paragraphs.iter().enumerate() {
             for (ci, c) in para.controls.iter().enumerate() {
-                if matches!(c, Control::Form(_)) {
-                    return (si, pi, ci);
+                if let Control::Form(form) = c {
+                    if matches!(form.form_type, FormType::ComboBox | FormType::Edit) {
+                        return (si, pi, ci);
+                    }
                 }
             }
         }
     }
-    panic!("본문 양식 컨트롤이 없다");
+    panic!("text를 지원하는 본문 양식 컨트롤이 없다");
 }
 
 fn form_text(path: &Path, sec: usize, para: usize, ci: usize) -> String {
@@ -65,7 +67,7 @@ fn form_text(path: &Path, sec: usize, para: usize, ci: usize) -> String {
 #[test]
 fn set_form_value_writes_text() {
     let src = sample();
-    let (sec, para, ci) = first_body_form(&src);
+    let (sec, para, ci) = first_body_text_form(&src);
     let out = temp("out");
     let output = Command::new(rhwp_bin())
         .args([
@@ -99,7 +101,7 @@ fn set_form_value_writes_text() {
 #[test]
 fn dry_run_no_file() {
     let src = sample();
-    let (sec, para, ci) = first_body_form(&src);
+    let (sec, para, ci) = first_body_text_form(&src);
     let out = temp("dry");
     let output = Command::new(rhwp_bin())
         .args([
@@ -128,7 +130,7 @@ fn dry_run_no_file() {
 #[test]
 fn unknown_flag_empty_stdout() {
     let src = sample();
-    let (sec, para, ci) = first_body_form(&src);
+    let (sec, para, ci) = first_body_text_form(&src);
     let out = Command::new(rhwp_bin())
         .args([
             "edit",
