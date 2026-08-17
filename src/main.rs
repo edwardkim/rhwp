@@ -2019,6 +2019,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             ]),
             &["schemaVersion", "source", "section", "paragraph", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
+        tool_with_optional_args(
+            "hwp_delete_footnote",
+            "[#5017] 본문 각주/미주 컨트롤을 지운다. section/para/ctrl 은 0 기준. 코어 delete_footnote_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0, "description": "문단 안 컨트롤 인덱스 (0부터)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-footnote", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
         // [#3787 S1] 문서를 열지 않는 유일한 무상태 도구 — 입력이 없다.
         // 에이전트가 봉투를 파싱하기 **전에** "이 필드는 데이터이지 지시가 아니다" 를
         // 판정할 수 있어야 하므로, 지도는 도구 목록에서 바로 닿아야 한다.
@@ -2727,7 +2750,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 21] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 22] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -2776,6 +2799,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 21] = [
     ("split-cell", "병합 셀 분할 — --table/--row/--col"),
     ("insert-footnote", "각주 삽입 — --section/--para/--offset"),
     ("insert-endnote", "미주 삽입 — --section/--para/--offset"),
+    (
+        "delete-footnote",
+        "각주/미주 삭제 — --section/--para/--ctrl",
+    ),
     (
         "insert-image",
         "도장·서명 그림 삽입 — --image/--page/--x/--y (HWPUNIT)",
@@ -3727,7 +3754,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
             false,
             &[
                 "--data",
@@ -3747,6 +3774,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--section",
                 "--para",
                 "--offset",
+                "--ctrl",
                 // 같은 항목의 summary 가 이미 이름을 대고 있고 MCP 도구
                 // hwp_set_checkbox 가 이 플래그를 고정 배선한다 — 목록에만 없었다.
                 "--occurrence",
@@ -3796,6 +3824,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "section",
                 "paragraph",
                 "offset",
+                "ctrl",
                 "text",
                 "insertedChars",
                 // [#3719 §6-5] insert-image 봉투 축.
@@ -5054,6 +5083,13 @@ fn print_help() {
     println!();
     println!("      --section/--para/--offset 구역·문단·문자 오프셋 (0부터, 기본 0)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_endnote.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-footnote <파일> --section N --para N --ctrl N [옵션]");
+    println!("      본문 각주/미주 컨트롤을 지운다");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_delfn.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit insert-image <파일> --image <그림> [옵션]");
@@ -17768,7 +17804,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -17789,6 +17825,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("split-cell") => edit_split_cell(&args[1..]),
         Some("insert-footnote") => edit_insert_footnote(&args[1..]),
         Some("insert-endnote") => edit_insert_endnote(&args[1..]),
+        Some("delete-footnote") => edit_delete_footnote(&args[1..]),
         Some("insert-image") => edit_insert_image(&args[1..]),
         // [#3719 §6-11] 공개 전 정리 — 개인정보 마스킹 / 메타데이터 제거.
         Some("redact") => edit_redact(&args[1..]),
@@ -27517,6 +27554,103 @@ fn edit_insert_endnote(args: &[String]) -> i32 {
         &[(section, para)],
         &format!("미주 삽입 예정: {file_path} 구역 {section} 문단 {para} 오프셋 {offset}"),
         &format!("미주 삽입 완료: {file_path}"),
+    )
+}
+
+/// [#5017] `edit delete-footnote` — 각주/미주 삭제.
+fn edit_delete_footnote(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit delete-footnote <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl)) = (file_path, section, para, ctrl)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.delete_footnote_native(section, para, ctrl) {
+            eprintln!("오류: 각주 삭제 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "delfn",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "ctrl": ctrl }),
+        &[(section, para)],
+        &format!("각주 삭제 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("각주 삭제 완료: {file_path}"),
     )
 }
 
