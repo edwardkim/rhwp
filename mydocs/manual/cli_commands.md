@@ -1210,6 +1210,10 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 머리말 또는 꼬리말을 만든다. 코어 `create_header_footer_native`. `--header`/`--footer` 중
 하나 필수. `--apply-to` 는 0 양쪽·1 짝수·2 홀수(기본 0). 같은 적용 대상이 있으면 거부.
 
+### `edit set-equation-properties <파일> --section N --para N --ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+
+본문 수식 속성을 바꾼다. 코어 `set_equation_properties_native`. `--section`/`--para`/`--ctrl`/`--props`는 필수다 (예: `{"script":"x^2"}`).
+
 ### `edit insert-shape <파일> --width N --height N [--section N] [--para N] [--offset N] [--x N] [--y N] [--shape rectangle] [--wrap InFrontOfText] [--treat-as-char] [-o <출력>] [--dry-run] [--verify] [--json]`
 
 본문 문단에 도형(기본 사각형)을 끼운다. 코어 `create_shape_control_native` 배선이며 새 편집 로직은 없다.

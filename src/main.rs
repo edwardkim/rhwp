@@ -4553,7 +4553,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 75] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 76] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -4790,6 +4790,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 75] = [
     (
         "transpose-table",
         "표 행/열 바꿈 — --table (병합 없는 본문 최상위 표)",
+    ),
+    (
+        "set-equation-properties",
+        "본문 수식 속성 변경 — --section/--para/--ctrl --props",
     ),
     (
         "insert-image",
@@ -7639,6 +7643,16 @@ fn print_help() {
     println!();
     println!("      --table <번호>            export-tables 의 본문 최상위 표 번호");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_transpose.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!(
+        "  edit set-equation-properties <파일> --section N --para N --ctrl N --props <JSON> [옵션]"
+    );
+    println!("      본문 수식 컨트롤의 속성을 JSON으로 변경한다");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      --props <JSON>            수식 속성 JSON 객체 (필수)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_eqprop.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit insert-image <파일> --image <그림> [옵션]");
@@ -20885,7 +20899,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-table|set-numbering-restart|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-cell-into|split-table|fit-table|resize-table|resize-table-cell|set-cell-props|set-table-props|move-table|merge-table|set-column-widths|insert-footnote|insert-endnote|delete-footnote|delete-text-in-footnote|insert-footnote-text|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote|add-bookmark|delete-bookmark|delete-table|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|delete-hf-text|set-hf-picture|apply-hf-template|split-paragraph-in-hf|merge-paragraph-in-hf|apply-para-format-in-hf|toggle-hide-hf|split-paragraph-in-cell|merge-paragraph-in-cell|apply-char-format|apply-para-format|apply-style|apply-cell-style|apply-para-format-in-cell|apply-char-format-in-cell|delete-control|insert-header-footer|insert-field-in-hf|set-column-def|delete-equation|split-paragraph|set-page-hide|transpose-table|insert-image|group-shapes|set-page-def|set-section-def|apply-endnote-shape|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-table|set-numbering-restart|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-cell-into|split-table|fit-table|resize-table|resize-table-cell|set-cell-props|set-table-props|move-table|merge-table|set-column-widths|insert-footnote|insert-endnote|delete-footnote|delete-text-in-footnote|insert-footnote-text|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote|add-bookmark|delete-bookmark|delete-table|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|delete-hf-text|set-hf-picture|apply-hf-template|split-paragraph-in-hf|merge-paragraph-in-hf|apply-para-format-in-hf|toggle-hide-hf|split-paragraph-in-cell|merge-paragraph-in-cell|apply-char-format|apply-para-format|apply-style|apply-cell-style|apply-para-format-in-cell|apply-char-format-in-cell|delete-control|insert-header-footer|insert-field-in-hf|set-column-def|delete-equation|split-paragraph|set-page-hide|transpose-table|set-equation-properties|insert-image|group-shapes|set-page-def|set-section-def|apply-endnote-shape|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -20957,6 +20971,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("split-paragraph") => edit_split_paragraph(&args[1..]),
         Some("set-page-hide") => edit_set_page_hide(&args[1..]),
         Some("transpose-table") => edit_transpose_table(&args[1..]),
+        Some("set-equation-properties") => edit_set_equation_properties(&args[1..]),
         Some("insert-image") => edit_insert_image(&args[1..]),
         Some("group-shapes") => edit_group_shapes(&args[1..]),
         Some("set-page-def") => edit_set_page_def(&args[1..]),
@@ -28847,6 +28862,106 @@ fn insert_image_page_anchor(
         }
     }
     None
+}
+
+/// `edit set-equation-properties` — 본문 수식 속성을 바꾼다.
+fn edit_set_equation_properties(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-equation-properties <파일> --section N --para N --ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path = None;
+    let mut section = None;
+    let mut para = None;
+    let mut ctrl = None;
+    let mut props = None;
+    let mut out_path = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let flag = args[i].clone();
+                i += 1;
+                let Some(value) = args.get(i) else {
+                    eprintln!("오류: {flag} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                let Ok(value) = value.parse::<usize>() else {
+                    eprintln!("오류: {flag} 뒤에 0 이상의 정수가 필요합니다: {value}");
+                    return EXIT_USAGE;
+                };
+                match flag.as_str() {
+                    "--section" => section = Some(value),
+                    "--para" => para = Some(value),
+                    _ => ctrl = Some(value),
+                }
+            }
+            "--props" => {
+                i += 1;
+                props = args.get(i).map(String::as_str).filter(|value| !value.is_empty());
+                if props.is_none() {
+                    eprintln!("오류: --props 뒤에 수식 속성 JSON 이 필요합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                let Some(value) = args.get(i) else {
+                    eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                out_path = Some(value.clone());
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            option if option.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {option}");
+                return EXIT_USAGE;
+            }
+            path => {
+                if file_path.replace(path).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {path}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl), Some(props)) =
+        (file_path, section, para, ctrl, props)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if serde_json::from_str::<serde_json::Value>(props).is_err() {
+        eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, error);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(doc) => doc,
+        Err(error) => return error.report(),
+    };
+    if !dry_run
+        && let Err(error) = doc.set_equation_properties_native(section, para, ctrl, None, None, props)
+    {
+        eprintln!("오류: 수식 속성 설정 실패 - {error}");
+        return EXIT_RUNTIME;
+    }
+    finish_edit_write(
+        &mut doc, &bytes, file_path, out_path, "eqprop", dry_run, json_mode, verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "ctrl": ctrl, "text": props }),
+        &[(section, para)],
+        &format!("수식 속성 설정 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("수식 속성 설정 완료: {file_path}"),
+    )
 }
 
 /// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
