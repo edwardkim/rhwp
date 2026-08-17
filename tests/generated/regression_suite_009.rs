@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_009
 
+#[path = "../cases/delete_control_contract.rs"]
+mod delete_control_contract;
+
 #[path = "../cli_exit_codes_hwp5_inventory_anchor.rs"]
 mod cli_exit_codes_hwp5_inventory_anchor;
 
