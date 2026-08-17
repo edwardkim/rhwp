@@ -603,7 +603,13 @@ fn serialize_table(table: &Table, level: u16, records: &mut Vec<Record>) {
         composed_common = serialize_common_obj_attr(&table.common);
         &composed_common
     };
-    records.push(make_ctrl_record(tags::CTRL_TABLE, level, ctrl_data));
+    // [일곱 번째 계약] 개체 공통 속성 attr **bit 29 = 캡션 존재 플래그**. 한글 2022 는
+    // 이 비트로 CTRL_HEADER 직후(TABLE 레코드 이전) 캡션 LIST_HEADER 유무를 판정한다 —
+    // 비트와 실제 캡션이 어긋나면 레코드 스트림을 오독해 문서 전체 개방을 거부한다
+    // (HWP3 변환본 크롤 스윕 COM 이등분: 40429 표 attr bit29 로 확정, 양방향 반증).
+    // HWP3 어댑터·HWPX 출처는 캡션을 방출하면서도 이 비트를 안 켰다. 방출 직전 강제한다.
+    let ctrl_data = apply_caption_attr_bit(ctrl_data, table.caption.is_some());
+    records.push(make_ctrl_record(tags::CTRL_TABLE, level, &ctrl_data));
 
     // 캡션 (TABLE 이전, level+1)
     if let Some(ref caption) = table.caption {
@@ -1153,11 +1159,12 @@ fn serialize_picture_control(
     records: &mut Vec<Record>,
 ) {
     // CTRL_HEADER: ctrl_id(gso) + common_obj_attr
-    records.push(make_ctrl_record(
-        tags::CTRL_GEN_SHAPE,
-        level,
+    // [일곱 번째 계약] attr bit 29 = 캡션 존재 플래그 (apply_caption_attr_bit 참조).
+    let pic_ctrl = apply_caption_attr_bit(
         &serialize_common_obj_attr(&pic.common),
-    ));
+        pic.caption.is_some(),
+    );
+    records.push(make_ctrl_record(tags::CTRL_GEN_SHAPE, level, &pic_ctrl));
 
     // 캡션 (SHAPE_COMPONENT 앞, level+1)
     if let Some(ref caption) = pic.caption {
@@ -2184,6 +2191,26 @@ fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
 /// - bit 20: size protect when VertRelTo is Para
 /// - bit 26: HWPX GenShape storage high bit 후보
 /// - bit 28: HWPX GenShape numbering category high bit 후보
+/// 개체 공통 속성 attr 의 캡션 존재 플래그(bit 29) 를 실제 캡션 유무와 일치시킨다.
+///
+/// 한글 2022 는 CTRL_HEADER 직후에 캡션 LIST_HEADER 가 오는지를 **이 비트로** 판정한다.
+/// 비트와 실제 캡션이 어긋나면(캡션 있는데 0, 없는데 1) 레코드 스트림을 오독해 문서
+/// 전체 개방을 거부한다 — HWP3/HWPX 출처 표에서 캡션은 방출하면서 비트를 안 켜 발생했다.
+fn apply_caption_attr_bit(ctrl_data: &[u8], has_caption: bool) -> Vec<u8> {
+    const CAPTION_ATTR_BIT: u32 = 1 << 29;
+    let mut out = ctrl_data.to_vec();
+    if out.len() >= 4 {
+        let mut attr = u32::from_le_bytes([out[0], out[1], out[2], out[3]]);
+        if has_caption {
+            attr |= CAPTION_ATTR_BIT;
+        } else {
+            attr &= !CAPTION_ATTR_BIT;
+        }
+        out[0..4].copy_from_slice(&attr.to_le_bytes());
+    }
+    out
+}
+
 pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
     let mut a: u32 = 0;
     if common.treat_as_char {
