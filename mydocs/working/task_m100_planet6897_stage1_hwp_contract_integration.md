@@ -3,7 +3,7 @@
 - 기준: `upstream/devel` (`e0851908bbe568e850c4610986247494203b75d5`)
 - 검토 브랜치: `review/planet6897-hwp-contracts-20260818`
 - 원본 PR: #5176, #5183, #5189, #5191
-- 상태: 로컬 누적 체리픽 및 전체 Rust 회귀 완료, draft 통합 PR #5197 생성
+- 상태: 통합 PR #5197 관리자 squash merge 완료, 원본 PR 종료 완료
 
 ## 적용 순서
 
@@ -37,4 +37,9 @@
 ## 통합 PR
 
 - https://github.com/edwardkim/rhwp/pull/5197
-- draft 상태에서 CI 결과와 실제 한글 앱 개방성 증적 필요 여부를 추적한다.
+- 2026-08-18, 관리자 squash merge `6a62c399ca70178bff0c57fea36cf8e366d1e078`으로
+  `devel`에 반영했다.
+- 일반 CI와 stale-run 취소 job은 성공했다. CodeQL 최초 시도와 JavaScript 재시도는
+  GitHub 서비스 `503`으로 실패했지만, 동일 SHA의 세 번째 재시도에서 Python·Rust·JavaScript
+  분석이 모두 성공했다. 관리자 병합은 사용자 요청으로 진행했다.
+- 원본 PR #5176, #5183, #5189, #5191에는 통합 근거 댓글을 남기고 중복 원본 PR로 종료했다.
