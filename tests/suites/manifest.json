@@ -601,6 +601,7 @@
     ],
     "regression_suite_026": [
       "tests/armor_contract.rs",
+      "tests/cases/delete_table_contract.rs",
       "tests/doclang_export.rs",
       "tests/hwp3_slice_index_oob_no_panic.rs",
       "tests/ir_schema_contract.rs",
