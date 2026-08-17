@@ -642,6 +642,13 @@ IR 본문에서 구역·문단·글자·어절·쪽 수를 센다. 새 파서는
 - `--dry-run`: 파일을 쓰지 않고 변경 예정만 보고
 - `--json`: `source`, `table`, 원본·대상 행열 수와 출력 정보를 봉투로 출력
 
+### `edit delete-equation <파일> --section N --para N --ctrl N [옵션]` (#5120)
+본문 수식 컨트롤을 지정 좌표에서 삭제한다. 코어 `delete_equation_control_native`를
+호출하며 새 파서는 없다.
+- `-o, --output <파일>`: 출력 파일 경로
+- `--dry-run`: 파일을 쓰지 않고 삭제 예정만 보고
+- `--json`: 삭제 좌표와 출력 정보를 계약 봉투로 출력
+
 ### `digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]` (#3633)
 초소형 모델용 매크로 1호 — "info 로 훑고 → export-structure 로 개요를 얻고 →
 export-text 로 첫 장을 읽는" 3단 파이프라인을 **한 번 호출**로 수행한다. 도구

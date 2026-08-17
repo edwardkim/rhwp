@@ -634,6 +634,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 | "hwp_split_table"
                 | "hwp_fit_table"
                 | "hwp_resize_table"
+                | "hwp_delete_equation"
         )
     }
 
@@ -2371,6 +2372,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     &["schemaVersion", "source", "section", "paragraph", "ctrl", "name", "dryRun", "changedPages", "output", "outputFormat", "verify"],
                 ),
         tool_with_optional_args(
+            "hwp_delete_equation",
+            "본문 수식 컨트롤을 지운다. section/para/ctrl 은 0 기준. 코어 delete_equation_control_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "delete-equation", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
                     "hwp_delete_header_footer",
                     "[#5039] 머리말/꼬리말 컨트롤을 지운다. --header 또는 --footer 필수. applyTo 는 0 양쪽·1 짝수·2 홀수. 코어 delete_header_footer_native 배선.",
                     serde_json::json!({
@@ -3955,6 +3979,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 59] = [
     ("merge-table", "다음 표와 붙이기 — --table (사이는 빈 문단만 허용)"),
     ("merge-paragraph-in-cell", "표 셀 문단 병합 — --table/--row/--col [--cell-para]"),
     ("set-column-widths", "표 열 폭 설정 — --table/--widths (HWPUNIT 쉼표 목록)"),
+    ("delete-equation", "수식 삭제 — --section/--para/--ctrl"),
     ("insert-footnote", "각주 삽입 — --section/--para/--offset"),
     ("insert-endnote", "미주 삽입 — --section/--para/--offset"),
     (
@@ -6450,6 +6475,13 @@ fn print_help() {
     println!("      --table N                 export-tables 의 최상위 표 번호 (0부터)");
     println!("      --widths W1,W2,...        열 폭 HWPUNIT 목록 (열 수와 일치)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_colw.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit delete-equation <파일> --section N --para N --ctrl N [옵션]");
+    println!("      본문 수식 컨트롤을 지운다");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_deleq.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit insert-footnote <파일> [--section N] [--para N] [--offset N] [옵션]");
@@ -19478,6 +19510,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("merge-table") => edit_merge_table(&args[1..]),
         Some("merge-paragraph-in-cell") => edit_merge_paragraph_in_cell(&args[1..]),
         Some("set-column-widths") => edit_set_column_widths(&args[1..]),
+        Some("delete-equation") => edit_delete_equation(&args[1..]),
         Some("insert-footnote") => edit_insert_footnote(&args[1..]),
         Some("insert-endnote") => edit_insert_endnote(&args[1..]),
         Some("delete-footnote") => edit_delete_footnote(&args[1..]),
@@ -29218,6 +29251,103 @@ fn edit_split_table(args: &[String]) -> i32 {
         &[(sec, para)],
         &format!("표 나누기 예정: {file_path} 표 {table_no} 행 {row}"),
         &format!("표 나누기 완료: {file_path}"),
+    )
+}
+
+/// [#5120] `edit delete-equation` — 본문 수식 삭제.
+fn edit_delete_equation(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit delete-equation <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--para" => para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl)) = (file_path, section, para, ctrl)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.delete_equation_control_native(section, para, ctrl) {
+            eprintln!("오류: 수식 삭제 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "deleq",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "paragraph": para, "ctrl": ctrl }),
+        &[(section, para)],
+        &format!("수식 삭제 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
+        &format!("수식 삭제 완료: {file_path}"),
     )
 }
 
