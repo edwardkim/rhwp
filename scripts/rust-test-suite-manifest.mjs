@@ -9,6 +9,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -206,6 +207,60 @@ export function validateSourcePlacementAgainstBase(sources, baseManifest) {
       (source) =>
         `PR base에 없는 신규 integration source는 tests/cases/ 아래에 두어야 합니다: ${source}`,
     );
+}
+
+export function validateDerivedArtifactChanges(
+  changedPaths,
+  { baseCargoToml = null, headCargoToml = null } = {},
+) {
+  const errors = [];
+  for (const changedPath of [...new Set(changedPaths)].sort()) {
+    if (
+      changedPath === MANIFEST_RELATIVE_PATH ||
+      changedPath.startsWith(`${GENERATED_TEST_DIRECTORY}/`)
+    ) {
+      errors.push(
+        `PR에는 파생 Rust test 산출물을 커밋하지 마세요: ${changedPath} ` +
+          '(tests/cases 원본만 추가하고 PR review/CI에서 --prepare로 생성)',
+      );
+    }
+  }
+
+  if (baseCargoToml !== null && headCargoToml !== null) {
+    try {
+      const baseBounds = cargoBlockBounds(baseCargoToml);
+      const headBounds = cargoBlockBounds(headCargoToml);
+      const baseBlock = baseCargoToml.slice(baseBounds.start, baseBounds.end);
+      const headBlock = headCargoToml.slice(headBounds.start, headBounds.end);
+      if (baseBlock !== headBlock) {
+        errors.push(
+          'PR에는 Cargo.toml의 generated test target 블록 변경을 커밋하지 마세요 ' +
+            '(PR review/CI에서 --prepare로 생성)',
+        );
+      }
+    } catch (error) {
+      errors.push(
+        'PR base와 HEAD의 Cargo.toml generated test target 블록을 비교할 수 없습니다: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
+    }
+  }
+  return errors;
+}
+
+function changedPathsAgainstBase(root, baseRef) {
+  return execFileSync(
+    'git',
+    ['diff', '--name-only', '-z', `${baseRef}...HEAD`],
+    { cwd: root, encoding: 'utf8' },
+  ).split('\0').filter(Boolean);
+}
+
+function textAtGitRef(root, ref, relativePath) {
+  return execFileSync('git', ['show', `${ref}:${relativePath}`], {
+    cwd: root,
+    encoding: 'utf8',
+  });
 }
 
 const TEST_ATTRIBUTE =
@@ -474,6 +529,12 @@ export function syncManifestSources(manifest, root = ROOT) {
   return { removed, added };
 }
 
+export function prepareManifest(manifest, root = ROOT) {
+  syncManifestSources(manifest, root);
+  assignUnlistedSources(manifest, root);
+  return manifest;
+}
+
 export function renderHarness(suite, sources) {
   const modules = [...sources]
     .sort((left, right) => left.localeCompare(right))
@@ -554,7 +615,12 @@ function updateCargoManifest(manifest, root = ROOT) {
 function inspectRepository(
   manifest,
   root = ROOT,
-  { checkGenerated = true, checkCargo = true, baseManifest = null } = {},
+  {
+    checkGenerated = true,
+    checkCargo = true,
+    baseManifest = null,
+    baseRef = null,
+  } = {},
 ) {
   const errors = [];
   const discovered = discoverSourceFiles(manifest, root);
@@ -564,6 +630,21 @@ function inspectRepository(
 
   if (baseManifest !== null) {
     errors.push(...validateSourcePlacementAgainstBase(discovered, baseManifest));
+  }
+  if (baseRef !== null) {
+    try {
+      errors.push(
+        ...validateDerivedArtifactChanges(changedPathsAgainstBase(root, baseRef), {
+          baseCargoToml: textAtGitRef(root, baseRef, CARGO_MANIFEST_RELATIVE_PATH),
+          headCargoToml: textAtGitRef(root, 'HEAD', CARGO_MANIFEST_RELATIVE_PATH),
+        }),
+      );
+    } catch (error) {
+      errors.push(
+        'PR base의 파생 Rust test 산출물 변경을 확인할 수 없습니다: ' +
+          (error instanceof Error ? error.message : String(error)),
+      );
+    }
   }
 
   try {
@@ -710,9 +791,12 @@ function inspectRepository(
   };
 }
 
-export function validateRepository(root = ROOT, { baseManifest = null } = {}) {
+export function validateRepository(
+  root = ROOT,
+  { baseManifest = null, baseRef = null } = {},
+) {
   try {
-    return inspectRepository(loadManifest(root), root, { baseManifest });
+    return inspectRepository(loadManifest(root), root, { baseManifest, baseRef });
   } catch (error) {
     return {
       errors: [error instanceof Error ? error.message : String(error)],
@@ -799,6 +883,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
       assignUnlistedSources(manifest);
       generateArtifacts(manifest);
       printValidation(validateRepository());
+    } else if (command === '--prepare') {
+      const manifest = prepareManifest(loadManifest());
+      generateArtifacts(manifest);
+      printValidation(validateRepository());
     } else if (command === '--sync') {
       const manifest = loadManifest();
       syncManifestSources(manifest);
@@ -822,11 +910,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
       const baseManifest = baseRef
         ? readJsonAtRef(ROOT, baseRef, MANIFEST_RELATIVE_PATH, { optional: true })
         : null;
-      printValidation(validateRepository(ROOT, { baseManifest }));
+      printValidation(validateRepository(ROOT, { baseManifest, baseRef }));
     } else {
       process.stderr.write(
         '사용법: node scripts/rust-test-suite-manifest.mjs ' +
-          '--check [--base-ref <Git ref>]|--generate|--sync|--rebalance|' +
+          '--check [--base-ref <Git ref>]|--prepare|--generate|--sync|--rebalance|' +
           '--adopt-new|--adopt <파일...>\n',
       );
       process.exitCode = 2;

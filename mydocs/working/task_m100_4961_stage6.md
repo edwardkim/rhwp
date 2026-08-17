@@ -4,7 +4,7 @@
 - **PR**: [#5122](https://github.com/edwardkim/rhwp/pull/5122)
 - **브랜치**: `local/task4961-font-decision-trace`
 - **Stage 6 시작 HEAD**: `e732ab114bd64b033cd5fa190d6d9cd922d39511`
-- **합성 기준**: `upstream/devel@d8d5c9902db8ad6be39b536f69ec53ca98fb409f`
+- **합성 기준**: `upstream/devel@1fe3348af35e79f8481ae0cf8a4da9da82610e18`
 - **작성일**: 2026-08-17 KST
 
 ## 1. 결론
