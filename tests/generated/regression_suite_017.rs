@@ -2,6 +2,9 @@
 //! 직접 수정하지 말고 suite manifest 생성기를 사용한다.
 //! suite: regression_suite_017
 
+#[path = "../cases/delete_hf_text_contract.rs"]
+mod delete_hf_text_contract;
+
 #[path = "../edit_render_diff_gate.rs"]
 mod edit_render_diff_gate;
 
