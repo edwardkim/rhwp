@@ -148,6 +148,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_set_numbering_restart",
             "hwp_insert_image",
             "hwp_group_shapes",
+            "hwp_ungroup_shape",
             "hwp_run_plan",
             "hwp_search",
             "hwp_export_svg",

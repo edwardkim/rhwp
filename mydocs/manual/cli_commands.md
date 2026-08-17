@@ -1056,6 +1056,10 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 같은 구역의 도형/그림을 하나로 묶는다. 코어 `group_shapes_native`. `--targets` 는
 `para,ctrl;para,ctrl` (0 기준, 2개 이상). `--target P,C` 를 여러 번 써도 같다.
 
+### `edit ungroup-shape <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]`
+묶인 도형 그룹을 한 단계 푼다. 코어 `ungroup_shape_native`. `--section`/`--para`/`--ctrl`
+은 필수(0 기준).
+
 ### `edit add-bookmark <파일> --name <이름> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5026)
 지정 좌표에 책갈피를 넣는다. 코어 `add_bookmark_native`. `--name` 필수. 같은 이름은 거부.
 

@@ -108,6 +108,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 체크박스 켜기 | `edit replace-text --find □ --replace ☑ --occurrence k` (`hwp_set_checkbox`) | `replacedCount` | 같은 절 |
 | 도장·서명 붙이기 | `edit insert-image` (`hwp_insert_image`) | `binDataId`·`overflow` | [CLI 매뉴얼](cli_commands.md) §edit insert-image |
 | 도형 묶기 | `edit group-shapes` (`hwp_group_shapes`) | `count`·`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit group-shapes |
+| 도형 묶기 해제 | `edit ungroup-shape` (`hwp_ungroup_shape`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit ungroup-shape |
 | 없는 자리에 글자 넣기 | `edit insert-text` (`hwp_insert_text`) | `insertedChars`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-text |
 | 개인정보 마스킹 | `edit redact` (`hwp_redact`) | `findingCount`·`redactedCount` | [보안 소비자 가이드](../tech/agent_security/consumer_guide.md) |
 | 메타데이터 제거 | `edit sanitize` (`hwp_sanitize`) | `removedCount`·`removed[]` | 같은 문서 |
@@ -1132,6 +1133,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_delete_control` | `edit delete-control --json` | `path`,`section`,`paragraph`,`ctrl` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
 | `hwp_group_shapes` | `edit group-shapes --json` | `path`,`targets` |
+| `hwp_ungroup_shape` | `edit ungroup-shape --json` | `path`,`section`,`paragraph`,`ctrl` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_delete_text_in_footnote` | `edit delete-text-in-footnote --json` | `path`,`count` |
