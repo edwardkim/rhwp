@@ -1059,8 +1059,8 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 17개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
-`insert-paragraph`·`insert-page-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 18개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
+`insert-paragraph`·`delete-paragraph`·`insert-page-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
@@ -1120,6 +1120,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
 | `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
 | `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
+| `hwp_delete_paragraph` | `edit delete-paragraph --json` | `path` |
 | `hwp_insert_page_break` | `edit insert-page-break --json` | `path` |
 | `hwp_redact` | `edit redact --json` | `path` |
 | `hwp_sanitize` | `edit sanitize --json` | `path` |
