@@ -1065,15 +1065,15 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 35개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
-`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf`·`split-paragraph-in-cell`·`merge-paragraph-in-cell`·`apply-char-format`·`delete-control`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 36개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
+`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf`·`split-paragraph-in-cell`·`merge-paragraph-in-cell`·`apply-char-format`·`apply-para-format`·`delete-control`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 105개
+## 6. MCP 도구 전수 지도 — 106개
 
-### 6-1. 무상태 89개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 90개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
@@ -1137,6 +1137,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_split_paragraph_in_cell` | `edit split-paragraph-in-cell --json` | `path`,`table`,`row`,`col` |
 | `hwp_merge_paragraph_in_cell` | `edit merge-paragraph-in-cell --json` | `path`,`table`,`row`,`col` |
 | `hwp_apply_char_format` | `edit apply-char-format --json` | `path`,`props` |
+| `hwp_apply_para_format` | `edit apply-para-format --json` | `path`,`props` |
 | `hwp_delete_control` | `edit delete-control --json` | `path`,`section`,`paragraph`,`ctrl` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |

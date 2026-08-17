@@ -156,6 +156,7 @@
       "tests/suites/issue_regression_pilot/issue_1749_saved_bounds_cumulative.rs"
     ],
     "regression_suite_005": [
+      "tests/cases/apply_para_format_contract.rs",
       "tests/cases/insert_col_contract.rs",
       "tests/convert_verify_corpus_ratchet.rs",
       "tests/diag_1042_table_row_height.rs",
