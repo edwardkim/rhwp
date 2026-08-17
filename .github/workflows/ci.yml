@@ -954,6 +954,7 @@ jobs:
           python3 -m unittest scripts/tests/test_gym_release_diff.py
           python3 -m unittest scripts/tests/test_gym_discriminate.py
           python3 -m unittest scripts/tests/test_gym_oracle_probe.py
+          python3 -m unittest scripts/tests/test_gym_differential.py
 
       # [#4855] 경쟁 벤치 하네스 순수 로직 가드 — 집계·능력 매트릭스·리포트 렌더·정직한
       # 저하(못 돌린 도구는 'n/a: 이유', 숫자 날조 금지)를 바이너리·외부도구 없이 검증한다.
