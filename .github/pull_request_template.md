@@ -11,7 +11,7 @@ closes #
 
 ## 테스트
 
-- [ ] **`cargo fmt --all -- --check` 통과** (CI Lint Format check 와 동일. `cargo fmt --check` 만으로는 안 됨. 실패 시 `cargo fmt --all` 후 다시 `--check`)
+- [ ] **`cargo fmt --all -- --check` 통과** (PR 생성·push 직전 필수. CI Lint Format check 와 동일. `cargo fmt --check` 만으로는 안 됨. 테스트만 고친 커밋도 다시 돌릴 것. 실패 시 `cargo fmt --all` 후 다시 `--check`)
 - [ ] `node scripts/rust-test-suite-manifest.mjs --check` 통과
 - [ ] `node scripts/rust-unit-test-tiers.mjs --check` 통과
 - [ ] `cargo test` 통과
