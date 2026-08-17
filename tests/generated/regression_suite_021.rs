@@ -5,6 +5,9 @@
 #[path = "../cases/delete_row_contract.rs"]
 mod delete_row_contract;
 
+#[path = "../cases/move_table_contract.rs"]
+mod move_table_contract;
+
 #[path = "../diag_1042_cfb_check.rs"]
 mod diag_1042_cfb_check;
 
