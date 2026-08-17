@@ -1,0 +1,239 @@
+name: CodeQL Rust build-mode experiment
+
+on:
+  pull_request:
+    branches: [devel]
+    paths:
+      - '.github/workflows/codeql-build-mode-experiment.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: codeql-build-mode-experiment-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  rust-mode:
+    name: Rust CodeQL (${{ matrix.build_mode }})
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || (
+        github.event_name == 'pull_request'
+        && github.event.pull_request.head.ref == 'ci/5187-codeql-build-mode-experiment'
+        && github.event.pull_request.head.repo.full_name == github.repository
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        build_mode: [autobuild, none]
+    env:
+      RESULTS_DIR: codeql-experiment-results/${{ matrix.build_mode }}
+
+    steps:
+      - name: Capture start metadata
+        run: |
+          mkdir -p "$RESULTS_DIR"
+          date -u +%s > "$RESULTS_DIR/start-epoch.txt"
+
+      - name: Checkout exact experiment SHA
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: rust
+          build-mode: ${{ matrix.build_mode }}
+          db-location: ${{ runner.temp }}/codeql-build-mode-experiment/rust-${{ matrix.build_mode }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+
+      - name: Autobuild Rust
+        if: matrix.build_mode == 'autobuild'
+        uses: github/codeql-action/autobuild@v4
+
+      - name: Analyze Rust without uploading Code Scanning data
+        uses: github/codeql-action/analyze@v4
+        with:
+          upload: never
+          output: codeql-experiment-results/${{ matrix.build_mode }}/sarif
+
+      - name: Collect CodeQL database diagnostics and logs
+        if: always()
+        shell: bash
+        run: |
+          DATABASE_DIR="$RUNNER_TEMP/codeql-build-mode-experiment/rust-${{ matrix.build_mode }}"
+          mkdir -p "$RESULTS_DIR/diagnostics" "$RESULTS_DIR/database-log"
+          codeql version > "$RESULTS_DIR/codeql-version.txt" 2>&1 || true
+          git rev-parse HEAD > "$RESULTS_DIR/head-sha.txt"
+          printf '%s\n' '${{ matrix.build_mode }}' > "$RESULTS_DIR/build-mode.txt"
+          if [ -d "$DATABASE_DIR" ]; then
+            codeql database info --format=json --output="$RESULTS_DIR/diagnostics/database-info.json" "$DATABASE_DIR" || true
+            codeql database export-diagnostics --format=raw --output="$RESULTS_DIR/diagnostics/raw.json" "$DATABASE_DIR" || true
+            find "$DATABASE_DIR" -type f | sort > "$RESULTS_DIR/diagnostics/database-files.txt"
+            find "$DATABASE_DIR" -type f -name '*.trap*' | sort > "$RESULTS_DIR/diagnostics/trap-files.txt"
+            if [ -d "$DATABASE_DIR/log" ]; then
+              cp -R "$DATABASE_DIR/log/." "$RESULTS_DIR/database-log/"
+            fi
+          fi
+          find "$RESULTS_DIR/database-log" -type f -print0 \
+            | xargs -0 -r grep -Ein 'error|failed|warning|extracted|semantic analyzer' \
+            > "$RESULTS_DIR/diagnostics/extraction-log-lines.txt" || true
+
+      - name: Summarize SARIF and extraction evidence
+        if: always()
+        shell: bash
+        run: |
+          python3 - "$RESULTS_DIR" <<'PY'
+          import hashlib
+          import json
+          import re
+          import sys
+          from pathlib import Path
+
+          result_dir = Path(sys.argv[1])
+          sarif_files = sorted(result_dir.glob("sarif/**/*.sarif"))
+          results = []
+          rule_ids = set()
+          fingerprints = []
+          for path in sarif_files:
+              try:
+                  document = json.loads(path.read_text(encoding="utf-8"))
+              except (OSError, json.JSONDecodeError):
+                  continue
+              for run in document.get("runs", []):
+                  rules = {
+                      item.get("id"): item
+                      for item in run.get("tool", {}).get("driver", {}).get("rules", [])
+                      if item.get("id")
+                  }
+                  for result in run.get("results", []):
+                      results.append(result)
+                      rule_id = result.get("ruleId") or result.get("rule", {}).get("id")
+                      if rule_id:
+                          rule_ids.add(rule_id)
+                      partial = result.get("partialFingerprints") or {}
+                      fingerprints.extend(sorted(str(value) for value in partial.values()))
+
+          canonical = [json.dumps(item, sort_keys=True, separators=(",", ":")) for item in results]
+          result_digest = hashlib.sha256("\n".join(sorted(canonical)).encode()).hexdigest()
+          extraction_log = result_dir / "diagnostics" / "extraction-log-lines.txt"
+          log_lines = extraction_log.read_text(encoding="utf-8", errors="replace").splitlines() if extraction_log.exists() else []
+          error_lines = [line for line in log_lines if re.search(r"error|failed", line, re.I)]
+          warning_lines = [line for line in log_lines if re.search(r"warning|semantic analyzer", line, re.I)]
+          extraction_lines = [line for line in log_lines if re.search(r"extract|files?", line, re.I)]
+          database_files = result_dir / "diagnostics" / "database-files.txt"
+          trap_files = result_dir / "diagnostics" / "trap-files.txt"
+          diagnostics = result_dir / "diagnostics" / "raw.json"
+          summary = {
+              "sarif_file_count": len(sarif_files),
+              "result_count": len(results),
+              "rule_ids": sorted(rule_ids),
+              "partial_fingerprint_count": len(fingerprints),
+              "partial_fingerprints": sorted(fingerprints),
+              "result_digest": result_digest,
+              "database_file_count": len(database_files.read_text(encoding="utf-8").splitlines()) if database_files.exists() else None,
+              "trap_file_count": len(trap_files.read_text(encoding="utf-8").splitlines()) if trap_files.exists() else None,
+              "diagnostic_bytes": diagnostics.stat().st_size if diagnostics.exists() else 0,
+              "extraction_log_line_count": len(extraction_lines),
+              "log_error_line_count": len(error_lines),
+              "log_warning_line_count": len(warning_lines),
+              "extraction_log_candidates": extraction_lines[:100],
+              "error_log_candidates": error_lines[:100],
+              "warning_log_candidates": warning_lines[:100],
+          }
+          (result_dir / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          print(json.dumps(summary, ensure_ascii=False, indent=2))
+          PY
+          date -u +%s > "$RESULTS_DIR/end-epoch.txt"
+
+      - name: Upload experiment evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: codeql-rust-${{ matrix.build_mode }}-${{ github.run_id }}
+          path: ${{ env.RESULTS_DIR }}
+          if-no-files-found: error
+          retention-days: 7
+
+  compare:
+    name: Compare CodeQL Rust modes
+    if: always()
+    needs: rust-mode
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Download autobuild evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: codeql-rust-autobuild-${{ github.run_id }}
+          path: experiment/autobuild
+        continue-on-error: true
+
+      - name: Download none evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: codeql-rust-none-${{ github.run_id }}
+          path: experiment/none
+        continue-on-error: true
+
+      - name: Compare evidence
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 - "$EXPECTED_SHA" <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          import sys
+          from pathlib import Path
+
+          expected_sha = sys.argv[1]
+          rows = []
+          summaries = {}
+          for mode in ("autobuild", "none"):
+              root = Path("experiment") / mode
+              summary_paths = list(root.rglob("summary.json"))
+              head_paths = list(root.rglob("head-sha.txt"))
+              summary = json.loads(summary_paths[0].read_text(encoding="utf-8")) if summary_paths else {}
+              head_sha = head_paths[0].read_text(encoding="utf-8").strip() if head_paths else "missing"
+              summaries[mode] = summary
+              if head_sha != expected_sha:
+                  raise SystemExit(f"{mode}: checkout SHA mismatch: {head_sha} != {expected_sha}")
+              rows.append((mode, head_sha, summary))
+
+          print("### CodeQL Rust build-mode comparison")
+          print()
+          print("| mode | SHA | SARIF results | fingerprints | database files | trap files | diagnostics bytes | log errors | log warnings | result digest |")
+          print("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |")
+          for mode, head_sha, summary in rows:
+              print("| {mode} | `{sha}` | {results} | {fingerprints} | {database} | {trap} | {diagnostics} | {errors} | {warnings} | `{digest}` |".format(
+                  mode=mode,
+                  sha=head_sha,
+                  results=summary.get("result_count", "missing"),
+                  fingerprints=summary.get("partial_fingerprint_count", "missing"),
+                  database=summary.get("database_file_count", "missing"),
+                  trap=summary.get("trap_file_count", "missing"),
+                  diagnostics=summary.get("diagnostic_bytes", "missing"),
+                  errors=summary.get("log_error_line_count", "missing"),
+                  warnings=summary.get("log_warning_line_count", "missing"),
+                  digest=summary.get("result_digest", "missing"),
+              ))
+          print()
+          autobuild = summaries["autobuild"]
+          none = summaries["none"]
+          print("- raw SARIF 결과 digest: " + ("일치" if autobuild.get("result_digest") == none.get("result_digest") else "불일치"))
+          print("- alert 수: " + ("일치" if autobuild.get("result_count") == none.get("result_count") else "불일치"))
+          print("- partial fingerprint: " + ("일치" if autobuild.get("partial_fingerprints") == none.get("partial_fingerprints") else "불일치"))
+          print("- 추출·진단 로그의 원문은 각 mode artifact의 `database-log/`와 `diagnostics/`에 보존한다.")
+          PY
