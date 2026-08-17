@@ -40,25 +40,70 @@ sys.path.insert(0, GYM_ROOT)
 
 from core import runner  # noqa: E402
 
+OLE_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+ZIP_LOCAL = b"PK\x03\x04"
+HEADER_SMASH_PAT = b"\xde\xad\xbe\xef" * 16  # 64바이트 고정 패턴
+
 
 def deterministic_mutants(data: bytes):
-    """결정적 손상 변형들 — (라벨, 바이트). 무작위 없음(재현 가능)."""
+    """결정적 손상 변형들 — (라벨, 바이트). 무작위 없음(재현 가능).
+
+    같은 입력 → 같은 라벨·바이트. 원본과 동일한 무의미 변형은 넣지 않는다.
+    """
     n = len(data)
     if n == 0:
         # 빈 입력은 위치 기반 flip/절단을 할 수 없지만, 감사 자체가 예외를 내면 안 된다.
         return [("empty-to-nul", b"\0")]
     out = []
+
+    def add(label: str, mut: bytes) -> None:
+        if mut != data:
+            out.append((label, mut))
+
     for pct in (25, 50, 75, 95):                       # 절단
-        out.append((f"truncate@{pct}%", data[:max(1, n * pct // 100)]))
+        add(f"truncate@{pct}%", data[: max(1, n * pct // 100)])
     for pct in (10, 50, 90):                           # 바이트 플립
         pos = min(n - 1, n * pct // 100)
         b = bytearray(data)
         b[pos] ^= 0xFF
-        out.append((f"flip@{pct}%", bytes(b)))
+        add(f"flip@{pct}%", bytes(b))
     b = bytearray(data)                                # 헤더 매직 파손
     for i in range(min(n, 512)):
         b[i] = 0
-    out.append(("zero-header", bytes(b)))
+    add("zero-header", bytes(b))
+
+    smash_n = min(n, len(HEADER_SMASH_PAT))            # 헤더를 고정 패턴으로 덮어씀
+    b = bytearray(data)
+    b[:smash_n] = HEADER_SMASH_PAT[:smash_n]
+    add("header-smash", bytes(b))
+
+    # OLE CFB 섹터(512)보다 짧은 꼬리 절단 — 디렉터리/FAT 가 잘린 복합문서.
+    if n > 64:
+        add("ole-trunc-tail", data[:-64])
+    else:
+        k = min(4, n)  # 8바이트 매직의 앞 4바이트만 = 잘린 OLE 꼬리
+        add("ole-trunc-tail", data[:-k] + OLE_MAGIC[:k])
+
+    start = n // 3                                     # 본문 한가운데 0xFF 런
+    run = min(128, max(1, n - start))
+    b = bytearray(data)
+    b[start : start + run] = b"\xff" * run
+    add("ff-run", bytes(b))
+
+    if n >= 2:                                         # UTF-16LE NUL(U+0000) 뿌림
+        b = bytearray(data)
+        for pct in (20, 40, 60, 80):
+            pos = min(n - 2, n * pct // 100) & ~1
+            b[pos : pos + 2] = b"\x00\x00"
+        add("utf16-nul-sprinkle", bytes(b))
+
+    idx = data.find(ZIP_LOCAL)                         # HWPX 등 ZIP 로컬 헤더만
+    if idx >= 0:
+        b = bytearray(data)
+        for i in range(len(ZIP_LOCAL)):
+            b[idx + i] ^= 0xFF
+        add("zip-local-header-flip", bytes(b))
+
     return out
 
 
@@ -66,7 +111,7 @@ def select_samples(samples_dir: str, limit: int):
     """정렬된 .hwp 를 결정적 stride 로 limit 개 뽑는다(형식·크기 다양성 확보)."""
     everything = sorted(f for f in os.listdir(samples_dir) if f.endswith(".hwp"))
     if not everything or limit <= 0:
-        return everything[:max(0, limit)], len(everything)
+        return everything[: max(0, limit)], len(everything)
     if len(everything) <= limit:
         return everything, len(everything)
     stride = len(everything) / limit
@@ -94,15 +139,27 @@ def is_panic(code, err: str) -> bool:
     return code == 101 or code < 0 or windows_exception
 
 
+def classify_panic(code, err: str) -> bool:
+    """패닉 분류 — `is_panic` 과 동일 판정(감사·시험 공통 진입점)."""
+    return is_panic(code, err)
+
+
+def classify_timeout(timed_out) -> bool:
+    """행(timeout) 분류 — probe 의 timed_out 또는 TimeoutExpired."""
+    if isinstance(timed_out, BaseException):
+        return isinstance(timed_out, subprocess.TimeoutExpired)
+    return timed_out is True
+
+
 def probe(bin_path: str, path: str, timeout: int):
     """한 손상 파일을 파싱 시도 — (code, panicked, timed_out, head)."""
     try:
         p = subprocess.run([bin_path, "info", path, "--json"], cwd=REPO_ROOT,
                            capture_output=True, timeout=timeout)
         err = p.stderr.decode("utf-8", "replace") + p.stdout.decode("utf-8", "replace")
-        return p.returncode, is_panic(p.returncode, err), False, err[:160]
-    except subprocess.TimeoutExpired:
-        return None, False, True, f"timeout {timeout}s"
+        return p.returncode, classify_panic(p.returncode, err), False, err[:160]
+    except subprocess.TimeoutExpired as exc:
+        return None, False, classify_timeout(exc), f"timeout {timeout}s"
 
 
 def audit(bin_path: str, samples_dir: str, limit: int, timeout: int) -> dict:
@@ -121,9 +178,9 @@ def audit(bin_path: str, samples_dir: str, limit: int, timeout: int) -> dict:
                 code, panicked, timed_out, head = probe(bin_path, mut_path, timeout)
                 checked += 1
                 tag = f"{name}:{label}"
-                if timed_out:
+                if classify_timeout(timed_out):
                     hangs.append(tag)
-                elif panicked:
+                elif classify_panic(code, head) or panicked:
                     panics.append(f"{tag} (code {code}): {head}")
                 elif code not in (0, None):
                     degraded += 1
