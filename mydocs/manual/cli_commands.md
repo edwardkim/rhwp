@@ -626,6 +626,10 @@ IR 본문에서 구역·문단·글자·어절·쪽 수를 센다. 새 파서는
 - `--json`: `{"schemaVersion","source","sectionCount","paragraphCount","charCount","wordCount","pageCount"}`
 - 어절은 공백 분리. 본문 문자열은 봉투에 싣지 않는다.
 
+### `bookmarks <파일> [--json]` (#5025)
+문서 책갈피 목록. 코어 `get_bookmarks_native`. 새 파서는 없다.
+- `--json`: `{"schemaVersion","source","count","bookmarks":[{"name","sec","para","ctrlIdx","charPos"}]}`
+
 ### `digest <파일> [--sections | --pages a..b] [--max-chars N] [--json]` (#3633)
 초소형 모델용 매크로 1호 — "info 로 훑고 → export-structure 로 개요를 얻고 →
 export-text 로 첫 장을 읽는" 3단 파이프라인을 **한 번 호출**로 수행한다. 도구
