@@ -1115,6 +1115,9 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit set-form-value <파일> --section N --para N --ctrl N --value <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
 본문 양식 개체 값을 설정한다. 코어 `set_form_value_native`. `--section`/`--para`/`--ctrl`/`--value` 필수 (예: `{"value":1}` 또는 `{"text":"입력값"}`).
 
+### `edit set-form-value-in-cell <파일> --section N --table-para N --table-ci N --cell N --cell-para N --ctrl N --value <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+표 셀 안 양식 개체 값을 설정한다. 코어 `set_form_value_in_cell_native`. 좌표와 `--value` 필수.
+
 ### `edit delete-control <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]` (#5041)
 문단이 담은 컨트롤 하나를 지운다(갈래 무관). 코어 `delete_control_native`. `--section`/`--para`/`--ctrl` 필수.
 
@@ -1231,7 +1234,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 42종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`delete-hf-text`/`split-paragraph-in-hf`/`merge-paragraph-in-hf`/`split-paragraph-in-cell`/`merge-paragraph-in-cell`/`apply-char-format`/`apply-para-format`/`apply-style`/`apply-cell-style`/`apply-para-format-in-cell`/`apply-para-format-in-footnote`/`set-equation-properties`/`set-form-value`/`delete-control`/`insert-image`/`redact`/`sanitize`)은
+`edit` 43종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`delete-hf-text`/`split-paragraph-in-hf`/`merge-paragraph-in-hf`/`split-paragraph-in-cell`/`merge-paragraph-in-cell`/`apply-char-format`/`apply-para-format`/`apply-style`/`apply-cell-style`/`apply-para-format-in-cell`/`apply-para-format-in-footnote`/`set-equation-properties`/`set-form-value`/`set-form-value-in-cell`/`delete-control`/`insert-image`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`

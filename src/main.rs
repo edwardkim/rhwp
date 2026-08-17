@@ -2608,6 +2608,33 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "section", "paragraph", "ctrl", "value", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
+            "hwp_set_form_value_in_cell",
+            "표 셀 안 양식 개체 값을 설정한다. 코어 set_form_value_in_cell_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "tablePara": { "type": "integer", "minimum": 0, "description": "표를 담은 본문 문단 인덱스" },
+                    "tableCi": { "type": "integer", "minimum": 0, "description": "표 컨트롤 인덱스" },
+                    "cell": { "type": "integer", "minimum": 0, "description": "셀 인덱스" },
+                    "cellPara": { "type": "integer", "minimum": 0, "description": "셀 안 문단 인덱스" },
+                    "ctrl": { "type": "integer", "minimum": 0, "description": "셀 안 양식 컨트롤 인덱스" },
+                    "value": { "type": "string", "description": "양식 값 JSON. 예: {\"value\":1} 또는 {\"text\":\"입력값\"}" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "tablePara", "tableCi", "cell", "cellPara", "ctrl", "value"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-form-value-in-cell", "{path}", "--section", "{section}", "--table-para", "{tablePara}", "--table-ci", "{tableCi}", "--cell", "{cell}", "--cell-para", "{cellPara}", "--ctrl", "{ctrl}", "--value", "{value}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "tablePara", "tableCi", "cell", "cellPara", "ctrl", "value", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_delete_control",
             "[#5041] 문단이 담은 컨트롤 하나를 지운다(갈래 무관). section/para/ctrl 은 0 기준. 코어 delete_control_native 배선.",
             serde_json::json!({
@@ -3338,7 +3365,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 42] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 43] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3463,6 +3490,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 42] = [
     (
         "set-form-value",
         "본문 양식 값 설정 — --section/--para/--ctrl --value JSON",
+    ),
+    (
+        "set-form-value-in-cell",
+        "셀 안 양식 값 — --section/--table-para/--table-ci/--cell/--cell-para/--ctrl --value",
     ),
     (
         "delete-control",
@@ -4468,7 +4499,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / insert-header-footer-text: 머리말/꼬리말 텍스트 삽입 / set-header-footer-text: 머리말/꼬리말 문단 텍스트 교체 / delete-hf-text: 머리말/꼬리말 텍스트 삭제 / split-paragraph-in-hf: 머리말/꼬리말 문단 분할 / merge-paragraph-in-hf: 머리말/꼬리말 문단 병합 / split-paragraph-in-cell: 표 셀 문단 분할 / merge-paragraph-in-cell: 표 셀 문단 병합 / apply-char-format: 본문 글자 서식 / apply-para-format: 본문 문단 서식 / apply-style: 본문 문단 스타일 / apply-cell-style: 표 셀 스타일 / apply-para-format-in-cell: 표 셀 문단 서식 / apply-para-format-in-footnote: 각주 문단 서식 / set-equation-properties: 수식 속성 / set-form-value: 양식 값 설정 / delete-control: 컨트롤 삭제 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / insert-header-footer-text: 머리말/꼬리말 텍스트 삽입 / set-header-footer-text: 머리말/꼬리말 문단 텍스트 교체 / delete-hf-text: 머리말/꼬리말 텍스트 삭제 / split-paragraph-in-hf: 머리말/꼬리말 문단 분할 / merge-paragraph-in-hf: 머리말/꼬리말 문단 병합 / split-paragraph-in-cell: 표 셀 문단 분할 / merge-paragraph-in-cell: 표 셀 문단 병합 / apply-char-format: 본문 글자 서식 / apply-para-format: 본문 문단 서식 / apply-style: 본문 문단 스타일 / apply-cell-style: 표 셀 스타일 / apply-para-format-in-cell: 표 셀 문단 서식 / apply-para-format-in-footnote: 각주 문단 서식 / set-equation-properties: 수식 속성 / set-form-value: 양식 값 설정 / set-form-value-in-cell: 셀 안 양식 값 설정 / delete-control: 컨트롤 삭제 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
             false,
             &[
                 "--data",
@@ -4484,6 +4515,9 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--end-col",
                 "--count",
                 "--cell-para",
+                "--table-para",
+                "--table-ci",
+                "--cell",
                 "--text",
                 "--props",
                 "--style",
@@ -6015,6 +6049,16 @@ fn print_help() {
     println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
     println!("      --value <JSON>            {{\"value\":1}} 또는 {{\"text\":\"입력값\"}}");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_formval.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-form-value-in-cell <파일> --section N --table-para N --table-ci N --cell N --cell-para N --ctrl N --value <JSON> [옵션]");
+    println!("      표 셀 안 양식 개체 값을 설정한다");
+    println!();
+    println!(
+        "      --section/--table-para/--table-ci/--cell/--cell-para/--ctrl  좌표 (0부터, 필수)"
+    );
+    println!("      --value <JSON>            {{\"value\":1}} 또는 {{\"text\":\"입력값\"}}");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_formcell.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit delete-control <파일> --section N --para N --ctrl N [옵션]");
@@ -19053,7 +19097,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|delete-hf-text|split-paragraph-in-hf|merge-paragraph-in-hf|split-paragraph-in-cell|merge-paragraph-in-cell|apply-char-format|apply-para-format|apply-style|apply-cell-style|apply-para-format-in-cell|apply-para-format-in-footnote|set-equation-properties|set-form-value|delete-control|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|insert-footnote|insert-endnote|delete-footnote|add-bookmark|delete-bookmark|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|delete-hf-text|split-paragraph-in-hf|merge-paragraph-in-hf|split-paragraph-in-cell|merge-paragraph-in-cell|apply-char-format|apply-para-format|apply-style|apply-cell-style|apply-para-format-in-cell|apply-para-format-in-footnote|set-equation-properties|set-form-value|set-form-value-in-cell|delete-control|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -19094,6 +19138,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("apply-para-format-in-footnote") => edit_apply_para_format_in_footnote(&args[1..]),
         Some("set-equation-properties") => edit_set_equation_properties(&args[1..]),
         Some("set-form-value") => edit_set_form_value(&args[1..]),
+        Some("set-form-value-in-cell") => edit_set_form_value_in_cell(&args[1..]),
         Some("delete-control") => edit_delete_control(&args[1..]),
         Some("insert-image") => edit_insert_image(&args[1..]),
         // [#3719 §6-11] 공개 전 정리 — 개인정보 마스킹 / 메타데이터 제거.
@@ -31524,6 +31569,165 @@ fn edit_set_form_value(args: &[String]) -> i32 {
         &[(section, para)],
         &format!("양식 값 설정 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
         &format!("양식 값 설정 완료: {file_path}"),
+    )
+}
+
+/// `edit set-form-value-in-cell` — 표 셀 안 양식 값 설정.
+fn edit_set_form_value_in_cell(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit set-form-value-in-cell <파일> --section N --table-para N --table-ci N --cell N --cell-para N --ctrl N --value <JSON> [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut table_para: Option<usize> = None;
+    let mut table_ci: Option<usize> = None;
+    let mut cell: Option<usize> = None;
+    let mut cell_para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut value: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--table-para" | "--table-ci" | "--cell" | "--cell-para" | "--ctrl" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => match name.as_str() {
+                        "--section" => section = Some(n),
+                        "--table-para" => table_para = Some(n),
+                        "--table-ci" => table_ci = Some(n),
+                        "--cell" => cell = Some(n),
+                        "--cell-para" => cell_para = Some(n),
+                        _ => ctrl = Some(n),
+                    },
+                    Err(_) => {
+                        eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--value" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => value = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --value 뒤에 JSON 이 필요합니다. 예: {{\"value\":1}}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (
+        Some(file_path),
+        Some(section),
+        Some(table_para),
+        Some(table_ci),
+        Some(cell),
+        Some(cell_para),
+        Some(ctrl),
+        Some(value),
+    ) = (
+        file_path, section, table_para, table_ci, cell, cell_para, ctrl, value,
+    )
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if value.trim().is_empty() {
+        eprintln!("오류: --value 는 비어 있을 수 없습니다.");
+        return EXIT_USAGE;
+    }
+    match serde_json::from_str::<serde_json::Value>(&value) {
+        Ok(v) if v.is_object() => {}
+        _ => {
+            eprintln!("오류: --value 는 JSON 객체여야 합니다. 예: {{\"value\":1}} 또는 {{\"text\":\"입력값\"}}");
+            return EXIT_USAGE;
+        }
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        match doc.set_form_value_in_cell_native(
+            section, table_para, table_ci, cell, cell_para, ctrl, &value,
+        ) {
+            Ok(raw) => {
+                let v: serde_json::Value =
+                    serde_json::from_str(&raw).unwrap_or(serde_json::json!({}));
+                if v["ok"] == false {
+                    let err = v["error"].as_str().unwrap_or("셀 양식 값 설정 실패");
+                    eprintln!("오류: {err}");
+                    return EXIT_RUNTIME;
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: 셀 양식 값 설정 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "formcell",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "tablePara": table_para,
+            "tableCi": table_ci,
+            "cell": cell,
+            "cellPara": cell_para,
+            "ctrl": ctrl,
+            "value": value
+        }),
+        &[(section, table_para)],
+        &format!(
+            "셀 양식 값 설정 예정: {file_path} 구역 {section} 표문단 {table_para} 표컨트롤 {table_ci} 셀 {cell}"
+        ),
+        &format!("셀 양식 값 설정 완료: {file_path}"),
     )
 }
 

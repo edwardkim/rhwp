@@ -143,6 +143,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_apply_para_format_in_footnote",
             "hwp_set_equation_properties",
             "hwp_set_form_value",
+            "hwp_set_form_value_in_cell",
             "hwp_delete_control",
             "hwp_set_checkbox",
             "hwp_replace_text",

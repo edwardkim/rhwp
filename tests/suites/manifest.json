@@ -484,6 +484,7 @@
       "tests/batch_axes_contract.rs",
       "tests/cases/apply_para_format_in_cell_contract.rs",
       "tests/cases/insert_footnote_contract.rs",
+      "tests/cases/set_form_value_in_cell_contract.rs",
       "tests/diag_1042_hwp3_vs_hwp5_paragraph.rs",
       "tests/diag_1042_variant_check.rs",
       "tests/edit_verify_contract.rs",
