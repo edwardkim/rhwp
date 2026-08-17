@@ -402,6 +402,7 @@ fn main() {
         Some("explain") => exit_with(explain_document(&args[2..])),
         Some("explore") => exit_with(explore_document(&args[2..])),
         Some("headers-footers") => exit_with(headers_footers(&args[2..])),
+        Some("header-footer") => exit_with(header_footer(&args[2..])),
         Some("edit") => exit_with(run_edit(&args[2..])),
         Some("run") => exit_with(cmd_run_plan(&args[2..])),
         Some("replay") => exit_with(cmd_replay(&args[2..])),
@@ -2294,6 +2295,25 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     &["schemaVersion", "source", "section", "paragraph", "ctrl", "innerPara", "innerCtrl", "props", "dryRun", "changedPages", "output", "outputFormat", "verify"],
                 ),
         tool_with_optional_args(
+                    "hwp_header_footer",
+                    "구역의 머리말/꼬리말 한 건을 조회한다. 기본은 구역 0 양쪽 머리말. 코어 get_header_footer_native 배선.",
+                    path_schema(serde_json::json!({
+                        "section": { "type": "integer", "minimum": 0 },
+                        "header": { "type": "boolean" },
+                        "footer": { "type": "boolean" },
+                        "applyTo": { "type": "integer", "minimum": 0, "maximum": 2, "description": "0 양쪽 / 1 짝수 / 2 홀수" }
+                    })),
+                    "header-footer",
+                    serde_json::json!(["header-footer", "--json", "{path}"]),
+                    serde_json::json!([
+                        { "when": "section", "args": ["--section", "{section}"] },
+                        { "when": "header", "args": ["--header"] },
+                        { "when": "footer", "args": ["--footer"] },
+                        { "when": "applyTo", "args": ["--apply-to", "{applyTo}"] }
+                    ]),
+                    &["schemaVersion", "source", "section", "isHeader", "applyTo", "exists"],
+                ),
+        tool_with_optional_args(
             "hwp_delete_table",
             "[#5028] 본문 최상위 표를 지운다. 좌표는 export-tables 의 index. 코어 delete_table_control_native 배선.",
             serde_json::json!({
@@ -3246,6 +3266,21 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                         "source",
                         "count",
                         "headersFooters",
+                    ],
+                )
+        cmd_json(
+                    "header-footer",
+                    "query",
+                    "구역 머리말/꼬리말 한 건 조회 — 코어 get_header_footer_native",
+                    true,
+                    &["--json"],
+                    &[
+                        "schemaVersion",
+                        "source",
+                        "section",
+                        "isHeader",
+                        "applyTo",
+                        "exists",
                     ],
                 )
         cmd_json(
@@ -29610,6 +29645,142 @@ fn edit_set_hf_picture(args: &[String]) -> i32 {
 ///
 /// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
 /// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+
+fn header_footer(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut is_header: Option<bool> = None;
+    let mut section: usize = 0;
+    let mut apply_to: u8 = 0;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--header" => {
+                if is_header.replace(true).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--footer" => {
+                if is_header.replace(false).is_some() {
+                    eprintln!("오류: --header 와 --footer 중 하나만 지정합니다.");
+                    return EXIT_USAGE;
+                }
+            }
+            "--section" | "--apply-to" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                if name == "--section" {
+                    match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    }
+                } else {
+                    match v.parse::<u8>() {
+                        Ok(n) if n <= 2 => apply_to = n,
+                        _ => {
+                            eprintln!(
+                                "오류: --apply-to 는 0(양쪽)·1(짝수)·2(홀수) 만 허용합니다: {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    }
+                }
+            }
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let Some(file_path) = file_path else {
+        eprintln!(
+            "사용법: rhwp header-footer <파일.hwp|파일.hwpx|파일.hml> [--header|--footer] [--section N] [--apply-to 0|1|2] [--json]"
+        );
+        return EXIT_USAGE;
+    };
+    let is_header = is_header.unwrap_or(true);
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let raw = match doc.get_header_footer_native(section, is_header, apply_to) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("오류: 머리말/꼬리말 조회 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let parsed: serde_json::Value = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 머리말/꼬리말 JSON 파싱 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    };
+    let exists = parsed["exists"].as_bool().unwrap_or(false);
+    if json_mode {
+        let mut envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "section": section,
+            "isHeader": is_header,
+            "applyTo": apply_to,
+            "exists": exists,
+        });
+        if exists {
+            if let Some(obj) = parsed.as_object() {
+                for key in [
+                    "kind",
+                    "label",
+                    "paraIndex",
+                    "controlIndex",
+                    "paraCount",
+                    "text",
+                ] {
+                    if let Some(v) = obj.get(key) {
+                        envelope[key] = v.clone();
+                    }
+                }
+            }
+        }
+        println!("{}", provenance::marked(envelope, "header-footer"));
+        return EXIT_OK;
+    }
+    let kind = if is_header { "머리말" } else { "꼬리말" };
+    if exists {
+        let text = parsed["text"].as_str().unwrap_or("");
+        println!("{file_path}: {kind} 있음 (구역 {section} apply-to {apply_to})");
+        if !text.is_empty() {
+            println!("  {text}");
+        }
+    } else {
+        println!("{file_path}: {kind} 없음 (구역 {section} apply-to {apply_to})");
+    }
+    EXIT_OK
+}
 
 fn edit_insert_image(args: &[String]) -> i32 {
     const USAGE: &str = "사용법: rhwp edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]";
