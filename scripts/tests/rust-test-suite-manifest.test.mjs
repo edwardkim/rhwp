@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
@@ -31,6 +32,63 @@ const ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../..',
 );
+
+function runGit(root, args) {
+  execFileSync('git', args, { cwd: root, stdio: 'pipe' });
+}
+
+function writeRepositoryFixture(root) {
+  const manifest = {
+    version: 2,
+    minimumNextestCases: 1,
+    sharding: {
+      suitePrefix: 'regression_suite_',
+      suiteCount: 1,
+      testAttributeWeight: 4096,
+      maximumIntegrationTargets: 1,
+    },
+    nextestPriorities: [],
+    sourceRoots: [{ path: 'tests/cases', recursive: true }],
+    exceptions: [],
+    suites: {
+      regression_suite_001: ['tests/cases/existing.rs'],
+    },
+  };
+  mkdirSync(path.join(root, 'tests', 'cases'), { recursive: true });
+  mkdirSync(path.join(root, 'tests', 'generated'), { recursive: true });
+  mkdirSync(path.join(root, 'tests', 'suites'), { recursive: true });
+  writeFileSync(
+    path.join(root, 'tests', 'cases', 'existing.rs'),
+    '#[test]\nfn existing_case() {}\n',
+  );
+  writeFileSync(
+    path.join(root, 'tests', 'suites', 'manifest.json'),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+  );
+  writeFileSync(
+    path.join(root, 'tests', 'generated', 'regression_suite_001.rs'),
+    renderHarness('regression_suite_001', manifest.suites.regression_suite_001),
+  );
+  writeFileSync(
+    path.join(root, 'Cargo.toml'),
+    [
+      '[package]',
+      'name = "suite-fixture"',
+      'version = "0.0.0"',
+      'edition = "2021"',
+      'autotests = false',
+      '',
+      renderCargoTestBlock(manifest),
+      '',
+    ].join('\n'),
+  );
+  runGit(root, ['init', '--quiet']);
+  runGit(root, ['config', 'user.email', 'tests@example.invalid']);
+  runGit(root, ['config', 'user.name', 'Rust suite test']);
+  runGit(root, ['add', '.']);
+  runGit(root, ['commit', '--quiet', '-m', 'base']);
+  return manifest;
+}
 
 test('전체 integration source와 generated target 계약이 일치한다', () => {
   const manifest = loadManifest();
@@ -167,6 +225,46 @@ test('PR은 파생 suite 산출물과 Cargo generated target 블록을 커밋할
   assert.match(errors[0], /tests\/generated\/regression_suite_012\.rs/);
   assert.match(errors[1], /tests\/suites\/manifest\.json/);
   assert.match(errors[2], /Cargo\.toml/);
+});
+
+test('PR base 검사도 커밋된 manifest 산출물을 실제 Git diff에서 거부한다', (t) => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-suite-base-diff-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const manifest = writeRepositoryFixture(root);
+  writeFileSync(
+    path.join(root, 'tests', 'suites', 'manifest.json'),
+    `${JSON.stringify(manifest, null, 4)}\n`,
+  );
+  runGit(root, ['add', 'tests/suites/manifest.json']);
+  runGit(root, ['commit', '--quiet', '-m', 'commit derived manifest']);
+
+  const validation = validateRepository(root, { baseRef: 'HEAD~1' });
+  assert.ok(
+    validation.errors.some((error) => /PR에는 파생 Rust test 산출물을 커밋하지 마세요/.test(error)),
+    validation.errors.join('\n'),
+  );
+});
+
+test('PR base 검사는 Cargo generated target block의 커밋도 거부한다', (t) => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-suite-base-cargo-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  writeRepositoryFixture(root);
+  const cargoPath = path.join(root, 'Cargo.toml');
+  writeFileSync(
+    cargoPath,
+    readFileSync(cargoPath, 'utf8').replace(
+      'name = "regression_suite_001"',
+      'name = "regression_suite_999"',
+    ),
+  );
+  runGit(root, ['add', 'Cargo.toml']);
+  runGit(root, ['commit', '--quiet', '-m', 'commit generated target']);
+
+  const validation = validateRepository(root, { baseRef: 'HEAD~1' });
+  assert.ok(
+    validation.errors.some((error) => /Cargo\.toml의 generated test target 블록/.test(error)),
+    validation.errors.join('\n'),
+  );
 });
 
 test('기여자 가이드는 원본-only 제출을 안내한다', () => {
