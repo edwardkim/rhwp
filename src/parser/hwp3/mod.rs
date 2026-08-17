@@ -1344,6 +1344,24 @@ fn parse_hwp3_object_dispatch(
                 use_password_layout_contract,
             )?;
             cell.paragraphs = nested;
+            // HWP5 계약: 모든 셀 LIST_HEADER 는 최소 1개 문단을 가져야 한다. 빈 셀
+            // (nPara=0)을 방출하면 한글 2022 가 LIST_HEADER 뒤 다음 레코드를 문단으로
+            // 오독해 문서 전체 개방을 거부한다(크롤 빈티지 5986748 표 셀 COM 이등분:
+            // 빈 셀 LIST 제거로 개방). IR 을 자기정합하게 유지하려 파서에서 빈 문단
+            // 하나로 보정한다(직렬화기 보정은 --verify fixpoint 를 깬다).
+            if cell.paragraphs.is_empty() {
+                // line_segs 는 비운다 — 빈 문단(text 없음)의 PARA_LINE_SEG 는 직렬화
+                // 후 재파싱에서 0개로 돌아와(레이아웃 시 재계산) IR↔직렬화 fixpoint 를
+                // 깬다. 한글은 개방 시 lineseg 를 재계산하므로 비워도 개방에 지장 없다.
+                cell.paragraphs.push(crate::model::paragraph::Paragraph {
+                    char_count: 1,
+                    char_shapes: vec![crate::model::paragraph::CharShapeRef {
+                        start_pos: 0,
+                        char_shape_id: 0,
+                    }],
+                    ..Default::default()
+                });
+            }
             cells.push(cell);
         }
         table.cells = cells;

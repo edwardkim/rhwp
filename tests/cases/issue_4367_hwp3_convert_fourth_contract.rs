@@ -199,6 +199,55 @@ fn hwp3_empty_textbox_shapes_are_not_emitted() {
     );
 }
 
+/// 아홉 번째 계약 — 표 셀은 최소 1개 문단을 가져야 한다.
+///
+/// HWP5 계약상 모든 셀 LIST_HEADER 는 nPara≥1 이어야 한다. HWP3 변환에서 빈 셀이
+/// nPara=0 으로 방출되면 한글 2022 가 LIST_HEADER 뒤 다음 레코드를 문단으로 오독해
+/// 문서 전체 개방을 거부한다(크롤 빈티지 5986748 표 셀 COM 이등분: 오라클의 셀
+/// 문단을 지워 nPara=0 으로 만들면 개방 거부 — 양방향 반증). 빈 셀은 문단(char_count=1)
+/// 하나로 보정한다.
+#[test]
+fn hwp3_table_cells_have_at_least_one_paragraph() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-empty-cell.hwp");
+    let raw = std::fs::read(&path).expect("read empty-cell");
+    let mut doc = rhwp::parser::hwp3::parse_hwp3(&raw).expect("HWP3 파싱");
+    rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
+        &mut doc,
+        FileFormat::Hwp3,
+    );
+    let mut cells = 0usize;
+    let mut empty_cells = 0usize;
+    fn walk_table(t: &rhwp::model::table::Table, cells: &mut usize, empty: &mut usize) {
+        for cell in &t.cells {
+            *cells += 1;
+            if cell.paragraphs.is_empty() {
+                *empty += 1;
+            }
+            for p in &cell.paragraphs {
+                for c in &p.controls {
+                    if let Control::Table(inner) = c {
+                        walk_table(inner, cells, empty);
+                    }
+                }
+            }
+        }
+    }
+    for sec in &doc.sections {
+        for p in &sec.paragraphs {
+            for c in &p.controls {
+                if let Control::Table(t) = c {
+                    walk_table(t, &mut cells, &mut empty_cells);
+                }
+            }
+        }
+    }
+    assert!(cells > 0, "샘플 전제: 표 셀이 있어야 한다");
+    assert_eq!(
+        empty_cells, 0,
+        "문단 없는 셀(nPara=0)은 한글 2022 가 문서 전체를 거부한다"
+    );
+}
+
 /// 글상자 비트 게이트 — 글상자 없는 순수 사각형에 0x0100_0000 을 켜면
 /// 한글 2022 가 개방을 거부한다 (크롤 스윕 29218 p588 실측). storage 기본값
 /// 채움은 글상자일 때만 글상자 비트를 더하고, 순수 사각형은 0x0008_0000 만.
