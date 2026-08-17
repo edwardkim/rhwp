@@ -1116,6 +1116,63 @@ fn issue2715_rectangle_caption_roundtrips() {
     assert!(cap.include_margin, "include_margin 보존");
 }
 
+/// [일곱 번째 계약의 gso 확장] 캡션 달린 gso 도형(사각형·OLE 등)도 개체
+/// 공통속성 attr **bit 29**(캡션 존재 플래그)를 켜야 한다. 종전에는 표·그림만
+/// 반영하고 gso 도형 arm 은 빠져, 캡션 달린 OLE 가 든 변환본을 한글 2022 가
+/// 거부했다(크롤 빈티지 15456 OLE 객체 COM 이등분: gso CTRL_HEADER attr bit29
+/// 로 확정 — z-order·instance_id 는 무관, 단독 반증).
+#[test]
+fn captioned_gso_shape_sets_common_attr_bit29() {
+    const CAPTION_BIT: u32 = 1 << 29;
+    // 직렬화된 섹션에서 첫 CTRL_GEN_SHAPE('gso ') 의 attr 을 읽는다.
+    fn gso_ctrl_attr(bytes: &[u8]) -> u32 {
+        let mut off = 0usize;
+        while off + 4 <= bytes.len() {
+            let h = u32::from_le_bytes(bytes[off..off + 4].try_into().unwrap());
+            let tag = h & 0x3ff;
+            let mut sz = ((h >> 20) & 0xfff) as usize;
+            let mut body = off + 4;
+            if sz == 0xfff {
+                sz = u32::from_le_bytes(bytes[body..body + 4].try_into().unwrap()) as usize;
+                body += 4;
+            }
+            if tag == 71 && bytes[body..body + 4] == *b" osg" {
+                return u32::from_le_bytes(bytes[body + 4..body + 8].try_into().unwrap());
+            }
+            off = body + sz;
+        }
+        panic!("'gso ' CTRL_HEADER 를 찾지 못함");
+    }
+    let make = |caption: Option<Caption>| {
+        let rect = RectangleShape {
+            drawing: DrawingObjAttr {
+                caption,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        serialize_section(&Section {
+            paragraphs: vec![Paragraph {
+                char_count: 2,
+                controls: vec![Control::Shape(Box::new(ShapeObject::Rectangle(rect)))],
+                ..Default::default()
+            }],
+            raw_stream: None,
+            ..Default::default()
+        })
+    };
+    assert_ne!(
+        gso_ctrl_attr(&make(Some(caption_fixture("도형 캡션")))) & CAPTION_BIT,
+        0,
+        "캡션 있는 gso 도형은 attr bit29 가 켜져야 한다"
+    );
+    assert_eq!(
+        gso_ctrl_attr(&make(None)) & CAPTION_BIT,
+        0,
+        "캡션 없는 gso 도형은 attr bit29 가 꺼져야 한다"
+    );
+}
+
 /// [#2715] 묶음(`$con`) 캡션 왕복 — 한컴 `samples/draw-group.hwp` 실측 대응.
 #[test]
 fn issue2715_group_caption_roundtrips() {
