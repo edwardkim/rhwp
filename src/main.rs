@@ -1807,6 +1807,41 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "image", "page", "x", "y", "width", "height", "binDataId", "dryRun", "overflow", "output", "outputFormat", "verify", "changedPages"],
         ),
         tool_with_optional_args(
+            "hwp_insert_picture",
+            "문단 좌표(search 와 같은 section/paragraph/offset, 0 기준)에 본문 그림을 끼운다. 도장·서명용 쪽 좌표 insert-image 와 다르다. 코어 insert_picture_native 배선. 그림 바이트는 파일 그대로 넘긴다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
+                    "image": { "type": "string", "description": "삽입할 그림 파일 경로 (png/jpg/jpeg/bmp/tif/tiff)" },
+                    "section": { "type": "integer", "minimum": 0, "description": "구역 번호 (0부터). 생략하면 0" },
+                    "paragraph": { "type": "integer", "minimum": 0, "description": "문단 번호 (0부터). 생략하면 0" },
+                    "offset": { "type": "integer", "minimum": 0, "description": "문단 안 문자 오프셋 (0부터). 생략하면 0" },
+                    "x": { "type": "integer", "minimum": 0, "description": "용지 가로 위치 (HWPUNIT). 생략하면 0" },
+                    "y": { "type": "integer", "minimum": 0, "description": "용지 세로 위치 (HWPUNIT). 생략하면 0" },
+                    "width": { "type": "integer", "minimum": 1, "description": "그림 너비 (HWPUNIT). 생략하면 원본 픽셀 × 75" },
+                    "height": { "type": "integer", "minimum": 1, "description": "그림 높이 (HWPUNIT). 생략하면 원본 픽셀 × 75" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "image"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-picture", "{path}", "--image", "{image}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "paragraph", "args": ["--para", "{paragraph}"] },
+                { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "x", "args": ["--x", "{x}"] },
+                { "when": "y", "args": ["--y", "{y}"] },
+                { "when": "width", "args": ["--width", "{width}"] },
+                { "when": "height", "args": ["--height", "{height}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "image", "section", "paragraph", "offset", "x", "y", "width", "height", "binDataId", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_insert_text",
             "[#4990] 문단 좌표에 새 텍스트를 삽입해 새 문서를 만든다 — 기존 문자열을 바꾸는 replace-text/fill-fields/set-cell 과 달리, **없는 자리에 글자를 넣는** 축. 주소는 search 와 같다(section/paragraph/offset, 전부 0 기준). offset 이 문단 문자 수와 같으면 끝에 붙이고, 넘으면 인자 오류다. 빈 문자열은 거부한다. 산출물은 입력 형식을 따른다.",
             serde_json::json!({
@@ -4725,6 +4760,10 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 75] = [
         "미주 모양 설정 — --props JSON [--section]",
     ),
     (
+        "insert-picture",
+        "본문 그림 삽입 — --image/--section/--para/--offset (문단 좌표)",
+    ),
+    (
         "redact",
         "개인정보 마스킹 — --kind 선택, findings 봉투, --no-raw",
     ),
@@ -7562,6 +7601,16 @@ fn print_help() {
     println!("      --dry-run                 파일을 쓰지 않고 배치 예정만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      (쪽 밖으로 나가면 자르지 않고 --json 응답의 overflow 로 알린다)");
+    println!();
+    println!("  edit insert-picture <파일> --image <그림> [옵션]");
+    println!("      문단 좌표에 본문 그림을 끼운다 (insert-image 도장·서명과 다름)");
+    println!();
+    println!("      --image <경로>            png·jpg·jpeg·bmp·tif·tiff (그 밖은 인자 오류)");
+    println!("      --section/--para/--offset 구역·문단·문자 오프셋 (0부터, 기본 0)");
+    println!("      --x/--y <값>              용지 기준 위치 HWPUNIT (기본 0)");
+    println!("      --width/--height <값>     그림 크기 (생략: 원본 픽셀 ×75, 한쪽만: 비율 유지)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_picture.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("      edit 명령 공통: 산출물은 **입력 형식을 보존**한다 (HWPX 입력 → HWPX 산출).");
     println!("  edit group-shapes <파일> --targets P,C;P,C [옵션]");
@@ -20845,6 +20894,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("set-page-def") => edit_set_page_def(&args[1..]),
         Some("set-section-def") => edit_set_section_def(&args[1..]),
         Some("apply-endnote-shape") => edit_apply_endnote_shape(&args[1..]),
+        Some("insert-picture") => edit_insert_picture(&args[1..]),
         // [#3719 §6-11] 공개 전 정리 — 개인정보 마스킹 / 메타데이터 제거.
         Some("redact") => edit_redact(&args[1..]),
         Some("sanitize") => edit_sanitize(&args[1..]),
@@ -37061,6 +37111,291 @@ fn edit_insert_image(args: &[String]) -> i32 {
         process::exit(3);
     }
     EXIT_OK
+}
+
+/// `edit insert-picture` — 문단 좌표에 본문 그림을 끼운다. 코어 `insert_picture_native`.
+/// `insert-image`(도장·서명, 쪽 좌표) 와 다르다.
+fn edit_insert_picture(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-picture <파일> --image <그림> [--section N] [--para N] [--offset N] [--width N] [--height N] [--x N] [--y N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut image_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut para: usize = 0;
+    let mut offset: usize = 0;
+    let mut x_hu: u32 = 0;
+    let mut y_hu: u32 = 0;
+    let mut width_arg: Option<u32> = None;
+    let mut height_arg: Option<u32> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--image" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => image_path = Some(v),
+                    None => {
+                        eprintln!("오류: --image 뒤에 그림 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--section" | "--para" | "--offset" | "--x" | "--y" | "--width" | "--height" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--section" => match v.parse::<usize>() {
+                        Ok(n) => section = n,
+                        Err(_) => {
+                            eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--para" => match v.parse::<usize>() {
+                        Ok(n) => para = n,
+                        Err(_) => {
+                            eprintln!("오류: --para 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--offset" => match v.parse::<usize>() {
+                        Ok(n) => offset = n,
+                        Err(_) => {
+                            eprintln!("오류: --offset 뒤에 0 이상의 정수가 필요합니다: {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--x" => match v.parse::<u32>() {
+                        Ok(n) => x_hu = n,
+                        Err(_) => {
+                            eprintln!("오류: --x 뒤에 0 이상의 정수가 필요합니다 (HWPUNIT): {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--y" => match v.parse::<u32>() {
+                        Ok(n) => y_hu = n,
+                        Err(_) => {
+                            eprintln!("오류: --y 뒤에 0 이상의 정수가 필요합니다 (HWPUNIT): {v}");
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--width" => match v.parse::<u32>() {
+                        Ok(n) => width_arg = Some(n),
+                        Err(_) => {
+                            eprintln!(
+                                "오류: --width 뒤에 0 이상의 정수가 필요합니다 (HWPUNIT): {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u32>() {
+                        Ok(n) => height_arg = Some(n),
+                        Err(_) => {
+                            eprintln!(
+                                "오류: --height 뒤에 0 이상의 정수가 필요합니다 (HWPUNIT): {v}"
+                            );
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(image_path)) = (file_path, image_path) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    for (name, value) in [("--width", width_arg), ("--height", height_arg)] {
+        if value == Some(0) {
+            eprintln!("오류: {name} 는 1 이상이어야 합니다 (HWPUNIT, 1/7200 inch).");
+            return EXIT_USAGE;
+        }
+    }
+    let image_ext = Path::new(image_path)
+        .extension()
+        .map(|e| e.to_string_lossy().to_ascii_lowercase())
+        .unwrap_or_default();
+    if !INSERT_IMAGE_FORMATS.contains(&image_ext.as_str()) {
+        eprintln!(
+            "오류: 지원하지 않는 그림 형식입니다 - {} (지원: {})",
+            if image_ext.is_empty() {
+                "확장자 없음".to_string()
+            } else {
+                image_ext.clone()
+            },
+            INSERT_IMAGE_FORMATS.join(", ")
+        );
+        return EXIT_USAGE;
+    }
+    let image_bytes = match fs::read(image_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 그림 파일을 읽을 수 없습니다 - {}: {}", image_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let Some((natural_w_px, natural_h_px)) = insert_image_dimensions(&image_bytes) else {
+        eprintln!(
+            "오류: 그림 형식을 알아볼 수 없습니다 - {} (지원: {})",
+            image_path,
+            INSERT_IMAGE_FORMATS.join(", ")
+        );
+        return EXIT_USAGE;
+    };
+    let (width_hu, height_hu) = match (width_arg, height_arg) {
+        (Some(w), Some(h)) => (w, h),
+        (Some(w), None) => (
+            w,
+            ((w as u64 * natural_h_px as u64) / natural_w_px as u64).max(1) as u32,
+        ),
+        (None, Some(h)) => (
+            ((h as u64 * natural_w_px as u64) / natural_h_px as u64).max(1) as u32,
+            h,
+        ),
+        (None, None) => (
+            natural_w_px.saturating_mul(HWPUNIT_PER_PX),
+            natural_h_px.saturating_mul(HWPUNIT_PER_PX),
+        ),
+    };
+    for (name, value) in [
+        ("--x", x_hu),
+        ("--y", y_hu),
+        ("--width", width_hu),
+        ("--height", height_hu),
+    ] {
+        if value > i32::MAX as u32 {
+            eprintln!(
+                "오류: {name} 값이 너무 큽니다 (HWPUNIT 최대 {}): {value}",
+                i32::MAX
+            );
+            return EXIT_USAGE;
+        }
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let section_count = doc.document().sections.len();
+    if section >= section_count {
+        eprintln!(
+            "오류: --section 이 범위를 벗어났습니다 (0~{}): {section}",
+            section_count.saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    let para_count = doc.document().sections[section].paragraphs.len();
+    if para >= para_count {
+        eprintln!(
+            "오류: --para 이 범위를 벗어났습니다 (구역 {section} 문단 0~{}): {para}",
+            para_count.saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    let mut bin_data_id = serde_json::Value::Null;
+    if !dry_run {
+        let description = Path::new(image_path)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let inserted = match doc.insert_picture_native(
+            section,
+            para,
+            offset,
+            &[],
+            &image_bytes,
+            width_hu,
+            height_hu,
+            natural_w_px,
+            natural_h_px,
+            &image_ext,
+            &description,
+            Some(x_hu as i32),
+            Some(y_hu as i32),
+        ) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("오류: 그림 삽입 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+        let ctrl_idx = serde_json::from_str::<serde_json::Value>(&inserted)
+            .ok()
+            .and_then(|v| v["controlIdx"].as_u64())
+            .unwrap_or_default() as usize;
+        if let Some(rhwp::model::control::Control::Picture(picture)) = doc
+            .document()
+            .sections
+            .get(section)
+            .and_then(|s| s.paragraphs.get(para))
+            .and_then(|p| p.controls.get(ctrl_idx))
+        {
+            bin_data_id = serde_json::json!(picture.image_attr.bin_data_id);
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "picture",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "image": image_path,
+            "section": section,
+            "paragraph": para,
+            "offset": offset,
+            "x": x_hu,
+            "y": y_hu,
+            "width": width_hu,
+            "height": height_hu,
+            "binDataId": bin_data_id,
+        }),
+        &[(section, para)],
+        &format!(
+            "그림 삽입 예정: {file_path} 구역 {section} 문단 {para} 오프셋 {offset} ← {image_path}"
+        ),
+        &format!("그림 삽입 완료: {file_path}"),
+    )
 }
 
 /// rhwp 는 이미 필드에 값을 **쓸 수** 있는데(`set_field_value_by_name`) 조회 API 는
