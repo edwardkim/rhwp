@@ -325,8 +325,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
 | `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark`·`rename-bookmark`·`delete-control` |
 | `name` | string | 책갈피 이름 | `edit add-bookmark`·`rename-bookmark` |
-| `isHeader` | bool | 머리말이면 참, 꼬리말이면 거짓 | `edit delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text` |
-| `applyTo` | number | 머리말/꼬리말 적용 범위 (0 양쪽·1 짝수·2 홀수) | `edit delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text` |
+| `isHeader` | bool | 머리말이면 참, 꼬리말이면 거짓 | `edit delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf` |
+| `applyTo` | number | 머리말/꼬리말 적용 범위 (0 양쪽·1 짝수·2 홀수) | `edit delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf` |
 | `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell` |
 | `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text` |
 | `count` | number | 지울 글자 수 (1 이상) | `edit delete-text`·`delete-hf-text` |
@@ -1065,15 +1065,15 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 30개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
-`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`delete-control`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 31개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text`·`delete-text`·
+`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`insert-page-break`·`insert-column-break`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`add-bookmark`·`delete-bookmark`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`delete-control`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 100개
+## 6. MCP 도구 전수 지도 — 101개
 
-### 6-1. 무상태 84개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 85개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
@@ -1132,6 +1132,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_insert_header_footer_text` | `edit insert-header-footer-text --json` | `path`,`text` |
 | `hwp_set_header_footer_text` | `edit set-header-footer-text --json` | `path`,`text` |
 | `hwp_delete_hf_text` | `edit delete-hf-text --json` | `path`,`count` |
+| `hwp_split_paragraph_in_hf` | `edit split-paragraph-in-hf --json` | `path` |
 | `hwp_delete_control` | `edit delete-control --json` | `path`,`section`,`paragraph`,`ctrl` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
 | `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |

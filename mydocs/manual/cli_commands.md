@@ -1075,6 +1075,9 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 ### `edit delete-hf-text <파일> --header|--footer --count <글자수> [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]`
 기존 머리말/꼬리말 문단에서 글자를 지운다. 코어 `delete_text_in_header_footer_native`. `--header` 또는 `--footer` 와 `--count`(1 이상) 필수.
 
+### `edit split-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]`
+기존 머리말/꼬리말 문단을 오프셋에서 나눈다. 코어 `split_paragraph_in_header_footer_native`. `--header` 또는 `--footer` 필수.
+
 ### `edit delete-control <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]` (#5041)
 문단이 담은 컨트롤 하나를 지운다(갈래 무관). 코어 `delete_control_native`. `--section`/`--para`/`--ctrl` 필수.
 
@@ -1191,7 +1194,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 30종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`delete-hf-text`/`delete-control`/`insert-image`/`redact`/`sanitize`)은
+`edit` 31종(`fill-fields`/`replace-text`/`set-cell`/`insert-text`/`delete-text`/`insert-paragraph`/`delete-paragraph`/`merge-paragraph`/`insert-page-break`/`insert-column-break`/`insert-row`/`insert-col`/`delete-row`/`delete-col`/`merge-cells`/`split-cell`/`insert-footnote`/`insert-endnote`/`delete-footnote`/`add-bookmark`/`delete-bookmark`/`rename-bookmark`/`delete-header-footer`/`insert-header-footer-text`/`set-header-footer-text`/`delete-hf-text`/`split-paragraph-in-hf`/`delete-control`/`insert-image`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`
