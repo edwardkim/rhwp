@@ -36,10 +36,10 @@
     ]
   },
   "summary": {
-    "files": 258,
-    "cfgTestModules": 298,
+    "files": 250,
+    "cfgTestModules": 290,
     "cfgTestSupportItems": 28,
-    "staticTestAttributes": 4225,
+    "staticTestAttributes": 4043,
     "standaloneTestAttributes": 4,
     "tiers": {
       "integration_ready": {
@@ -51,116 +51,12 @@
         "testAttributes": 87
       },
       "white_box": {
-        "modules": 278,
-        "testAttributes": 4134
+        "modules": 270,
+        "testAttributes": 3952
       }
     }
   },
   "modules": [
-    {
-      "id": "crates/rhwp-contracts/src/ir_schema.rs::tests#1",
-      "file": "crates/rhwp-contracts/src/ir_schema.rs",
-      "sourcePath": "crates/rhwp-contracts/src/ir_schema.rs",
-      "line": 882,
-      "module": "tests",
-      "testAttributes": 5,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 5
-    },
-    {
-      "id": "crates/rhwp-contracts/src/ontology.rs::tests#1",
-      "file": "crates/rhwp-contracts/src/ontology.rs",
-      "sourcePath": "crates/rhwp-contracts/src/ontology.rs",
-      "line": 443,
-      "module": "tests",
-      "testAttributes": 8,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 8
-    },
-    {
-      "id": "crates/rhwp-contracts/src/schema_registry.rs::tests#1",
-      "file": "crates/rhwp-contracts/src/schema_registry.rs",
-      "sourcePath": "crates/rhwp-contracts/src/schema_registry.rs",
-      "line": 123,
-      "module": "tests",
-      "testAttributes": 2,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 2
-    },
-    {
-      "id": "crates/rhwp-ooxml-chart/src/data.rs::tests#1",
-      "file": "crates/rhwp-ooxml-chart/src/data.rs",
-      "sourcePath": "crates/rhwp-ooxml-chart/src/data.rs",
-      "line": 405,
-      "module": "tests",
-      "testAttributes": 17,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 17
-    },
-    {
-      "id": "crates/rhwp-ooxml-chart/src/parser.rs::tests#1",
-      "file": "crates/rhwp-ooxml-chart/src/parser.rs",
-      "sourcePath": "crates/rhwp-ooxml-chart/src/parser.rs",
-      "line": 682,
-      "module": "tests",
-      "testAttributes": 43,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 43
-    },
-    {
-      "id": "crates/rhwp-ooxml-chart/src/patch.rs::tests#1",
-      "file": "crates/rhwp-ooxml-chart/src/patch.rs",
-      "sourcePath": "crates/rhwp-ooxml-chart/src/patch.rs",
-      "line": 223,
-      "module": "tests",
-      "testAttributes": 10,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 10
-    },
-    {
-      "id": "crates/rhwp-ooxml-chart/src/renderer.rs::tests#1",
-      "file": "crates/rhwp-ooxml-chart/src/renderer.rs",
-      "sourcePath": "crates/rhwp-ooxml-chart/src/renderer.rs",
-      "line": 2260,
-      "module": "tests",
-      "testAttributes": 95,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 95
-    },
-    {
-      "id": "crates/rhwp-password-crypto/src/lib.rs::tests#1",
-      "file": "crates/rhwp-password-crypto/src/lib.rs",
-      "sourcePath": "crates/rhwp-password-crypto/src/lib.rs",
-      "line": 981,
-      "module": "tests",
-      "testAttributes": 2,
-      "tier": "white_box",
-      "reasons": [
-        "super_private_scope"
-      ],
-      "maximumTestAttributes": 2
-    },
     {
       "id": "src/agent_seal.rs::tests#1",
       "file": "src/agent_seal.rs",
@@ -1556,7 +1452,7 @@
       "id": "src/main.rs::tests#1",
       "file": "src/main.rs",
       "sourcePath": "src/main.rs",
-      "line": 31950,
+      "line": 32117,
       "module": "tests",
       "testAttributes": 10,
       "tier": "white_box",

@@ -5,6 +5,9 @@
 #[path = "../agent_context_cost_contract.rs"]
 mod agent_context_cost_contract;
 
+#[path = "../cases/delete_text_in_footnote_contract.rs"]
+mod delete_text_in_footnote_contract;
+
 #[path = "../cases/insert_row_contract.rs"]
 mod insert_row_contract;
 

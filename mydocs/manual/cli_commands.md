@@ -1049,6 +1049,9 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 본문 각주/미주 컨트롤을 지운다. 코어 `delete_footnote_native`. `--section`/`--para`/`--ctrl`
 은 필수(0 기준).
 
+### `edit delete-text-in-footnote <파일> --count N [--section N] [--para N] [--ctrl N] [--fn-para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]`
+각주/미주 문단에서 글자를 지운다. 코어 `delete_text_in_footnote_native`. `--count` 는 1 이상.
+
 ### `edit add-bookmark <파일> --name <이름> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5026)
 지정 좌표에 책갈피를 넣는다. 코어 `add_bookmark_native`. `--name` 필수. 같은 이름은 거부.
 
