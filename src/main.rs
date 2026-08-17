@@ -3627,7 +3627,6 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 50] = [
     ("split-paragraph-in-footnote", "각주/미주 문단 분할"),
     ("merge-paragraph-in-footnote", "각주/미주 문단 병합"),
     ("apply-para-format-in-footnote", "각주 문단 서식 적용"),
-
 ];
 
 const INSPECT_SUBCOMMANDS: [(&str, &str); 4] = [
