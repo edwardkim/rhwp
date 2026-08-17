@@ -5,9 +5,6 @@
 #[path = "../armor_contract.rs"]
 mod armor_contract;
 
-#[path = "../cases/delete_table_contract.rs"]
-mod delete_table_contract;
-
 #[path = "../doclang_export.rs"]
 mod doclang_export;
 
