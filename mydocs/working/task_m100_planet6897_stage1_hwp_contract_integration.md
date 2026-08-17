@@ -39,7 +39,7 @@
 - https://github.com/edwardkim/rhwp/pull/5197
 - 2026-08-18, 관리자 squash merge `6a62c399ca70178bff0c57fea36cf8e366d1e078`으로
   `devel`에 반영했다.
-- 일반 CI와 stale-run 취소 job은 성공했다. 최초 CodeQL 시도는 GitHub 서비스 `503`으로
-  실패했으며, 관리자 병합은 사용자 요청으로 진행했다. CodeQL 재실행은 소스 변경과
-  무관한 서비스 상태 확인 범위로 분리한다.
+- 일반 CI와 stale-run 취소 job은 성공했다. CodeQL 최초 시도와 JavaScript 재시도는
+  GitHub 서비스 `503`으로 실패했지만, 동일 SHA의 세 번째 재시도에서 Python·Rust·JavaScript
+  분석이 모두 성공했다. 관리자 병합은 사용자 요청으로 진행했다.
 - 원본 PR #5176, #5183, #5189, #5191에는 통합 근거 댓글을 남기고 중복 원본 PR로 종료했다.
