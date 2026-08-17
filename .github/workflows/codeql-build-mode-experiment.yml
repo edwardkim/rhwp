@@ -80,12 +80,19 @@ jobs:
         run: |
           DATABASE_DIR="$RUNNER_TEMP/codeql-build-mode-experiment/rust-${{ matrix.build_mode }}"
           mkdir -p "$RESULTS_DIR/diagnostics" "$RESULTS_DIR/database-log"
-          codeql version > "$RESULTS_DIR/codeql-version.txt" 2>&1 || true
+          CODEQL_BIN="$(find /opt/hostedtoolcache/CodeQL -type f -path '*/codeql/codeql' -perm -111 -print 2>/dev/null | sort -V | tail -n1)"
+          if [ -n "$CODEQL_BIN" ]; then
+            "$CODEQL_BIN" version > "$RESULTS_DIR/codeql-version.txt" 2>&1 || true
+            printf '%s\n' "$CODEQL_BIN" > "$RESULTS_DIR/codeql-path.txt"
+          else
+            printf '%s\n' 'missing' > "$RESULTS_DIR/codeql-version.txt"
+            printf '%s\n' 'missing' > "$RESULTS_DIR/codeql-path.txt"
+          fi
           git rev-parse HEAD > "$RESULTS_DIR/head-sha.txt"
           printf '%s\n' '${{ matrix.build_mode }}' > "$RESULTS_DIR/build-mode.txt"
-          if [ -d "$DATABASE_DIR" ]; then
-            codeql database info --format=json --output="$RESULTS_DIR/diagnostics/database-info.json" "$DATABASE_DIR" || true
-            codeql database export-diagnostics --format=raw --output="$RESULTS_DIR/diagnostics/raw.json" "$DATABASE_DIR" || true
+          if [ -d "$DATABASE_DIR" ] && [ -n "$CODEQL_BIN" ]; then
+            "$CODEQL_BIN" database info --format=json --output="$RESULTS_DIR/diagnostics/database-info.json" "$DATABASE_DIR" || true
+            "$CODEQL_BIN" database export-diagnostics --format=raw --output="$RESULTS_DIR/diagnostics/raw.json" "$DATABASE_DIR" || true
             find "$DATABASE_DIR" -type f | sort > "$RESULTS_DIR/diagnostics/database-files.txt"
             find "$DATABASE_DIR" -type f -name '*.trap*' | sort > "$RESULTS_DIR/diagnostics/trap-files.txt"
             if [ -d "$DATABASE_DIR/log" ]; then
