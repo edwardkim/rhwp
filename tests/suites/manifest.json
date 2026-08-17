@@ -728,6 +728,7 @@
     "regression_suite_032": [
       "tests/agent_codex_contract.rs",
       "tests/agent_toolkit_contract.rs",
+      "tests/cases/insert_endnote_contract.rs",
       "tests/diag_1042_pi162_attr1.rs",
       "tests/genpreview_json_contract.rs",
       "tests/info_title_contract.rs",
