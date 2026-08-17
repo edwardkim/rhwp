@@ -2276,6 +2276,11 @@ const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
         "applyTo",
         "delete-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 applyTo 를 안 낸다",
     ),
+    (
+        "edit",
+        "cellPara",
+        "insert-text-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 cellPara 를 안 낸다",
+    ),
 ];
 
 #[test]
