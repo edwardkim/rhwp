@@ -22,6 +22,7 @@ import {
   loadManifest,
   renderCargoTestBlock,
   renderHarness,
+  validateDerivedArtifactChanges,
   validateSourcePlacementAgainstBase,
   validateRepository,
 } from '../rust-test-suite-manifest.mjs';
@@ -141,7 +142,34 @@ test('PR base에 없던 integration source는 tests/cases 밖에서 거부한다
   ]);
 });
 
-test('개발자 가이드가 자동 sharding 진입점을 안내한다', () => {
+test('PR은 파생 suite 산출물과 Cargo generated target 블록을 커밋할 수 없다', () => {
+  const baseCargoToml = [
+    '# BEGIN RHWP GENERATED TEST TARGETS',
+    '[[test]]',
+    'name = "regression_suite_001"',
+    '# END RHWP GENERATED TEST TARGETS',
+  ].join('\n');
+  const headCargoToml = [
+    '# BEGIN RHWP GENERATED TEST TARGETS',
+    '[[test]]',
+    'name = "regression_suite_002"',
+    '# END RHWP GENERATED TEST TARGETS',
+  ].join('\n');
+  const errors = validateDerivedArtifactChanges(
+    [
+      'tests/cases/issue_5177_derived_suite_policy.rs',
+      'tests/generated/regression_suite_012.rs',
+      'tests/suites/manifest.json',
+    ],
+    { baseCargoToml, headCargoToml },
+  );
+  assert.equal(errors.length, 3);
+  assert.match(errors[0], /tests\/generated\/regression_suite_012\.rs/);
+  assert.match(errors[1], /tests\/suites\/manifest\.json/);
+  assert.match(errors[2], /Cargo\.toml/);
+});
+
+test('개발자 가이드가 원본-only 제출과 검토 단계 생성을 안내한다', () => {
   const guides = [
     'CONTRIBUTING.md',
     'mydocs/manual/pr_review/local_validation.md',
@@ -150,8 +178,9 @@ test('개발자 가이드가 자동 sharding 진입점을 안내한다', () => {
     readFileSync(path.join(ROOT, relativePath), 'utf8'),
   );
   for (const guide of guides) {
-    assert.match(guide, /rust-test-suite-manifest\.mjs --generate/);
-    assert.match(guide, /rust-test-suite-manifest\.mjs --sync/);
+    assert.match(guide, /tests\/cases/);
+    assert.match(guide, /PR review|PR 검토|CI/);
+    assert.match(guide, /rust-test-suite-manifest\.mjs --prepare/);
     assert.match(guide, /tests\/generated/);
   }
 });
@@ -161,6 +190,10 @@ test('CI가 PR base를 integration과 source unit 정책 검사에 전달한다'
   assert.match(
     workflow,
     /RHWP_TEST_POLICY_BASE_REF: \$\{\{ github\.event\.pull_request\.base\.sha \|\| '' \}\}/,
+  );
+  assert.match(
+    workflow,
+    /rust-test-suite-manifest\.mjs --prepare/,
   );
   assert.match(
     workflow,

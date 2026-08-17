@@ -900,6 +900,7 @@ jobs:
             git fetch --no-tags --depth=1 origin "$RHWP_TEST_POLICY_BASE_REF"
             base_args=(--base-ref "$RHWP_TEST_POLICY_BASE_REF")
           fi
+          node scripts/rust-test-suite-manifest.mjs --prepare
           node --test scripts/tests/rust-test-suite-manifest.test.mjs
           node scripts/rust-test-suite-manifest.mjs --check "${base_args[@]}"
           node --test scripts/tests/rust-unit-test-tiers.test.mjs
