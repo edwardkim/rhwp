@@ -434,7 +434,12 @@ function suiteRecordsWithWeights(manifest, root = ROOT) {
   }));
 }
 
-export function assignSources(manifest, requestedSources, root = ROOT) {
+export function assignSources(
+  manifest,
+  requestedSources,
+  root = ROOT,
+  { persist = true } = {},
+) {
   const discovered = new Set(discoverSourceFiles(manifest, root));
   const declared = declaredSourcePaths(manifest);
   const caseIndex = buildCaseIndex(manifest);
@@ -481,13 +486,17 @@ export function assignSources(manifest, requestedSources, root = ROOT) {
     caseIndex.set(metric.caseName, assignedTarget);
   }
 
-  if (metrics.length > 0) {
+  if (metrics.length > 0 && persist) {
     writeManifest(manifest, root);
   }
   return metrics.length;
 }
 
-export function assignUnlistedSources(manifest, root = ROOT) {
+export function assignUnlistedSources(
+  manifest,
+  root = ROOT,
+  { persist = true } = {},
+) {
   const declared = declaredSourcePaths(manifest);
   const unlisted = discoverSourceFiles(manifest, root).filter(
     (source) => !declared.has(source),
@@ -496,10 +505,14 @@ export function assignUnlistedSources(manifest, root = ROOT) {
     process.stdout.write('[RustTestSuite] 새 test source 없음\n');
     return 0;
   }
-  return assignSources(manifest, unlisted, root);
+  return assignSources(manifest, unlisted, root, { persist });
 }
 
-export function syncManifestSources(manifest, root = ROOT) {
+export function syncManifestSources(
+  manifest,
+  root = ROOT,
+  { persist = true } = {},
+) {
   const discovered = new Set(discoverSourceFiles(manifest, root));
   let removed = 0;
 
@@ -521,17 +534,21 @@ export function syncManifestSources(manifest, root = ROOT) {
       return false;
     });
   }
-  if (removed > 0) {
+  if (removed > 0 && persist) {
     writeManifest(manifest, root);
   }
 
-  const added = assignUnlistedSources(manifest, root);
+  const added = assignUnlistedSources(manifest, root, { persist });
   return { removed, added };
 }
 
-export function prepareManifest(manifest, root = ROOT) {
-  syncManifestSources(manifest, root);
-  assignUnlistedSources(manifest, root);
+export function prepareManifest(
+  manifest,
+  root = ROOT,
+  { persist = true } = {},
+) {
+  syncManifestSources(manifest, root, { persist });
+  assignUnlistedSources(manifest, root, { persist });
   return manifest;
 }
 
@@ -793,10 +810,21 @@ function inspectRepository(
 
 export function validateRepository(
   root = ROOT,
-  { baseManifest = null, baseRef = null } = {},
+  { baseManifest = null, baseRef = null, derive = false } = {},
 ) {
   try {
-    return inspectRepository(loadManifest(root), root, { baseManifest, baseRef });
+    const manifest = loadManifest(root);
+    if (derive) {
+      const derivedManifest = JSON.parse(JSON.stringify(manifest));
+      prepareManifest(derivedManifest, root, { persist: false });
+      return inspectRepository(derivedManifest, root, {
+        baseManifest,
+        baseRef,
+        checkGenerated: false,
+        checkCargo: false,
+      });
+    }
+    return inspectRepository(manifest, root, { baseManifest, baseRef });
   } catch (error) {
     return {
       errors: [error instanceof Error ? error.message : String(error)],

@@ -90,10 +90,13 @@ function writeRepositoryFixture(root) {
   return manifest;
 }
 
-test('전체 integration source와 generated target 계약이 일치한다', () => {
+test('전체 integration source는 파생 산출물을 쓰지 않고 검증한다', () => {
   const manifest = loadManifest();
-  const validation = validateRepository();
+  const manifestPath = path.join(ROOT, 'tests', 'suites', 'manifest.json');
+  const manifestBefore = readFileSync(manifestPath, 'utf8');
+  const validation = validateRepository(ROOT, { derive: true });
   assert.deepEqual(validation.errors, []);
+  assert.equal(readFileSync(manifestPath, 'utf8'), manifestBefore);
   assert.equal(validation.sourceCount, validation.caseModuleCount);
   assert.equal(validation.suiteCount, manifest.sharding.suiteCount);
   assert.equal(
