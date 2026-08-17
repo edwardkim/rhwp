@@ -306,3 +306,15 @@ test('CI가 PR base를 integration과 source unit 정책 검사에 전달한다'
     /rust-unit-test-tiers\.mjs --check "\$\{base_args\[@\]\}"/,
   );
 });
+
+test('CI lint checkout은 PR base 3-way diff를 위해 전체 Git 계보를 가져온다', () => {
+  const workflow = readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
+  assert.match(
+    workflow,
+    /\n  lint:\n[\s\S]*?fetch-depth: 0\n/,
+  );
+  assert.doesNotMatch(
+    workflow,
+    /git fetch --no-tags --depth=1 origin "\$RHWP_TEST_POLICY_BASE_REF"/,
+  );
+});

@@ -867,7 +867,11 @@ jobs:
       contents: read
 
     steps:
+      # PR base와 HEAD의 3-way diff 정책은 공통 조상이 필요하다. shallow checkout에서는
+      # base SHA만 별도 fetch해도 merge-base가 없어 정책 검사가 fail-closed 된다.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
@@ -897,7 +901,6 @@ jobs:
         run: |
           base_args=()
           if [[ -n "$RHWP_TEST_POLICY_BASE_REF" ]]; then
-            git fetch --no-tags --depth=1 origin "$RHWP_TEST_POLICY_BASE_REF"
             base_args=(--base-ref "$RHWP_TEST_POLICY_BASE_REF")
           fi
           node scripts/rust-test-suite-manifest.mjs --prepare
