@@ -1147,6 +1147,7 @@ edit insert-field-in-hf <파일> --header|--footer --field-type <1|2|3> [--secti
 edit split-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N] [--offset N]
 edit toggle-hide-hf <파일> --header|--footer [--page N]
 edit merge-paragraph-in-hf <파일> --header|--footer [--section N] [--apply-to 0|1|2] [--para N]
+edit split-paragraph-in-cell <파일> --table N --row N --col N [--cell-para N] [--offset N]
 edit apply-char-format <파일> --props <JSON> [--section N] [--para N] [--offset N] [--count N]
 edit split-paragraph <파일> [--section N] [--para N] [--offset N]
 edit apply-para-format <파일> --props <JSON> [--section N] [--para N]

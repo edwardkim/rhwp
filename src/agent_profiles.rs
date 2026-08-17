@@ -146,6 +146,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_split_paragraph",
             "hwp_apply_char_format",
             "hwp_merge_paragraph_in_hf",
+            "hwp_split_paragraph_in_cell",
             "hwp_toggle_hide_hf",
             "hwp_split_paragraph_in_hf",
             "hwp_insert_field_in_hf",
