@@ -1026,6 +1026,10 @@ rhwp export-text 개정본.hwp --json | jq -r '.pages[0].text' | head -c 20
 `--table`/`--row`/`--col` 또는 `--section`/`--para`/`--ctrl`/`--cell`. `--props` 또는
 `--bold`/`--font-size`/`--color`. `--start`/`--end` 생략 시 문단 전체.
 
+### `edit apply-para-format-in-cell <파일> (--table N --row N --col N | --section N --para N --ctrl N --cell N) --props <JSON> [--cell-para N] [-o <출력>] [--dry-run] [--verify] [--json]`
+표 셀 문단에 문단 서식을 적용한다. 코어 `apply_para_format_in_cell_native`. `--props` 필수
+(예: `{"alignment":"center"}`).
+
 ### `edit insert-row <파일> --table <번호> --row <행> [--below] [-o <출력>] [--dry-run] [--verify] [--json]` (#4994)
 본문 최상위 표에 행을 끼운다. 코어 `insert_table_row_native`. `--below` 면 지정 행 아래.
 

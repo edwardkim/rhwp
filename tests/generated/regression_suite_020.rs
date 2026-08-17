@@ -5,6 +5,9 @@
 #[path = "../batch_axes_contract.rs"]
 mod batch_axes_contract;
 
+#[path = "../cases/apply_para_format_in_cell_contract.rs"]
+mod apply_para_format_in_cell_contract;
+
 #[path = "../cases/insert_footnote_contract.rs"]
 mod insert_footnote_contract;
 

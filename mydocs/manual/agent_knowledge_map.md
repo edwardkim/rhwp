@@ -330,8 +330,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell` |
 | `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text` |
 | `count` | number | 지울 글자 수 (1 이상) | `edit delete-text` |
-| `innerPara` | number | 셀·각주 안 문단 (0부터) | `edit apply-char-format-in-cell` |
-| `props` | string | 글자/문단 서식 JSON | `edit apply-char-format-in-cell` |
+| `innerPara` | number | 셀·각주 안 문단 (0부터) | `edit apply-char-format-in-cell`·`apply-para-format-in-cell` |
+| `props` | string | 글자/문단 서식 JSON | `edit apply-char-format-in-cell`·`apply-para-format-in-cell` |
 | `bold` | bool | `--bold` 를 줬는지 | `edit apply-char-format-in-cell` |
 | `fontSize` | number\|null | `--font-size` (HWP 단위) | `edit apply-char-format-in-cell` |
 | `color` | string\|null | `--color` 원문 | `edit apply-char-format-in-cell` |
