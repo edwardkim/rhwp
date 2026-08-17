@@ -59,6 +59,39 @@ jobs:
             const activeStatuses = new Set([
               'queued', 'in_progress', 'pending', 'requested', 'waiting',
             ]);
+            const retryableForceCancelStatuses = new Set([502, 503, 504]);
+            const forceCancelRetryDelaysMs = [1_000, 2_000, 4_000];
+
+            function sleep(milliseconds) {
+              return new Promise((resolve) => setTimeout(resolve, milliseconds));
+            }
+
+            async function forceCancelWithRetry(runId) {
+              let lastError;
+              for (let attempt = 0; attempt <= forceCancelRetryDelaysMs.length; attempt += 1) {
+                try {
+                  return await github.request(
+                    'POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel',
+                    {
+                      owner,
+                      repo,
+                      run_id: runId,
+                    },
+                  );
+                } catch (error) {
+                  lastError = error;
+                  const delay = forceCancelRetryDelaysMs[attempt];
+                  if (!retryableForceCancelStatuses.has(error.status) || delay === undefined) {
+                    throw error;
+                  }
+                  core.info(
+                    `Retry force-cancel for stale run ${runId} after transient ${error.status}; waiting ${delay}ms.`,
+                  );
+                  await sleep(delay);
+                }
+              }
+              throw lastError;
+            }
 
             async function getLivePull() {
               const { data } = await github.rest.pulls.get({
@@ -117,14 +150,7 @@ jobs:
               }
 
               try {
-                await github.request(
-                  'POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel',
-                  {
-                    owner,
-                    repo,
-                    run_id: run.id,
-                  },
-                );
+                await forceCancelWithRetry(run.id);
               } catch (error) {
                 // 대상이 취소되거나 스스로 끝난 뒤 GitHub API가 409뿐 아니라 5xx를
                 // 반환할 수 있다. 응답 코드를 성공으로 간주하지 말고, 대상 run을 다시

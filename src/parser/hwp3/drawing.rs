@@ -734,6 +734,26 @@ fn polygon_shape_from_points(points: &[[i32; 2]]) -> PolygonShape {
     }
 }
 
+/// [열세 번째 계약] HWP3 곡선 점 배열 → CurveShape (HWP3 단위 ×HWP3_UNIT_SCALE).
+/// 종전에는 점을 버려 점 0개 곡선을 저장했고, 한글 2022 는 빈 곡선을 만나면
+/// **크래시**(RPC 붕괴)한다(빈 다각형=거부와 달리 곡선은 크래시 — 다섯 번째
+/// 계약의 곡선 판). segment_types 는 점 수-1(모두 곡선 세그먼트 1).
+fn curve_shape_from_points(points: &[[i32; 2]]) -> CurveShape {
+    let pts: Vec<crate::model::Point> = points
+        .iter()
+        .map(|p| crate::model::Point {
+            x: p[0].saturating_mul(HWP3_UNIT_SCALE),
+            y: p[1].saturating_mul(HWP3_UNIT_SCALE),
+        })
+        .collect();
+    let segs = pts.len().saturating_sub(1);
+    CurveShape {
+        segment_types: vec![1u8; segs],
+        points: pts,
+        ..Default::default()
+    }
+}
+
 fn map_to_shape_object(
     raw: Hwp3DrawingObject,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -780,7 +800,10 @@ fn map_to_shape_object(
             }
             (hdr, ShapeObject::Rectangle(RectangleShape::default()))
         }
-        Hwp3DrawingObject::Curve(hdr, _details) => (hdr, ShapeObject::Curve(CurveShape::default())),
+        Hwp3DrawingObject::Curve(hdr, details) => (
+            hdr,
+            ShapeObject::Curve(curve_shape_from_points(&details.points)),
+        ),
         Hwp3DrawingObject::ModifiedEllipse(hdr, _details) => {
             (hdr, ShapeObject::Ellipse(EllipseShape::default()))
         }
