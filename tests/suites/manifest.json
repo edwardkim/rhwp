@@ -556,6 +556,7 @@
       "tests/anchor_contract.rs",
       "tests/batch_extract_data_contract.rs",
       "tests/capabilities_schema_contract.rs",
+      "tests/cases/delete_col_contract.rs",
       "tests/hwp3_password_fixture.rs",
       "tests/issue_1187_textbox_clip.rs",
       "tests/issue_1385_replace_export_roundtrip.rs",
