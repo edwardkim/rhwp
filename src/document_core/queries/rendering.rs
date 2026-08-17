@@ -2317,6 +2317,19 @@ impl DocumentCore {
         let mb = hwpunit_to_px(page_def.margin_bottom as i32, self.dpi);
         let mh = hwpunit_to_px(page_def.margin_header as i32, self.dpi);
         let mf = hwpunit_to_px(page_def.margin_footer as i32, self.dpi);
+        // [#4971] 위 여섯은 PageDef 원본 값이다. 실제 본문 상자는 제본 여백이 더해지고
+        // 맞쪽 제본의 짝수 쪽에서는 좌우가 뒤바뀌므로(model/page.rs), 그리기·히트테스트가
+        // 쓸 값은 해석된 결과여야 한다. 규칙이 사는 곳은 PageAreas 하나뿐이므로 여기서
+        // 다시 유도하지 않고 그대로 물어본다.
+        let areas = PageAreas::from_page_def_for_page(page_def, page_content.page_number);
+        let body_left = hwpunit_to_px(areas.body_area.left, self.dpi);
+        let body_right = hwpunit_to_px(areas.body_area.right, self.dpi);
+        // 본문 경계를 다시 PageDef 필드로 되돌리려면(눈금자 핀 드래그) 두 가지가 더 필요하다:
+        // 제본 여백은 왼쪽 경계에만 더해지고, 맞쪽 제본의 짝수 쪽은 좌우가 뒤바뀐다.
+        let gutter = hwpunit_to_px(page_def.margin_gutter as i32, self.dpi);
+        let binding_mirrored = page_def.binding == crate::model::page::BindingMethod::DuplexSided
+            && page_content.page_number != 0
+            && page_content.page_number.is_multiple_of(2);
         let pbf_left = hwpunit_to_px(page_border_fill.spacing_left as i32, self.dpi);
         let pbf_right = hwpunit_to_px(page_border_fill.spacing_right as i32, self.dpi);
         let pbf_top = hwpunit_to_px(page_border_fill.spacing_top as i32, self.dpi);
@@ -2365,6 +2378,8 @@ impl DocumentCore {
             "{{\"pageIndex\":{},\"width\":{:.1},\"height\":{:.1},\"sectionIndex\":{},\
             \"marginLeft\":{:.1},\"marginRight\":{:.1},\"marginTop\":{:.1},\"marginBottom\":{:.1},\
             \"marginHeader\":{:.1},\"marginFooter\":{:.1},\
+            \"bodyLeft\":{:.1},\"bodyRight\":{:.1},\"marginGutter\":{:.1},\
+            \"bindingMirrored\":{},\
             \"pageBorderLeft\":{:.1},\"pageBorderRight\":{:.1},\"pageBorderTop\":{:.1},\"pageBorderBottom\":{:.1},\
             \"columns\":[{}]}}",
             page_content.page_index,
@@ -2377,6 +2392,10 @@ impl DocumentCore {
             mb,
             mh,
             mf,
+            body_left,
+            body_right,
+            gutter,
+            binding_mirrored,
             page_border_left,
             page_border_right,
             page_border_top,
@@ -2788,11 +2807,18 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use crate::model::page::BindingMethod;
 
-        let section = self
-            .document
-            .sections
-            .get_mut(section_idx)
-            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 {} 범위 초과",
+                section_idx
+            )));
+        }
+        // 저장 line_segs 가 계산된 전제는 "본문이 접히는 폭"이다. 바뀌었는지는 아래에서
+        // 같은 함수로 다시 재어 비교한다 — 필드를 손으로 나열하면 용지 높이처럼 줄바꿈과
+        // 무관한 필드가 섞여 쓸데없이 전 구역을 다시 접고, 제본 여백·가로세로 뒤바꿈 규칙이
+        // 두 벌이 된다.
+        let wrap_width_before = self.body_wrap_width(section_idx);
+        let section = &mut self.document.sections[section_idx];
         let pd = &mut section.section_def.page_def;
 
         use super::super::helpers::{json_bool, json_u32};
@@ -2857,6 +2883,26 @@ impl DocumentCore {
 
         // FIX 3: raw_stream 무효화 → 직렬화 시 모델에서 재구성
         section.raw_stream = None;
+
+        // [#4956] 본문 가로 상자가 바뀌었으면 이 구역 본문을 새 폭으로 다시 접는다.
+        //
+        // 저장 분할은 파일이 기록해 둔 "이 용지 폭에서의 줄 나눔"이다. 본문 폭이 바뀌면 그
+        // 전제가 깨지는데, 본문 재래핑 게이트(`paragraph_layout`/`typeset`/`height_measurer`
+        // 의 `para.line_segs.is_empty()`)는 저장 분할이 있으면 무조건 신뢰한다 — 그래서 여백만
+        // 바꾸면 줄은 그대로 두고 글자만 눌러 짜여 본문 밖으로 넘쳤다(실측: 본문 폭 657.7→438.6
+        // 인데 3쪽 텍스트가 x 709.6 까지, run 수 109 불변).
+        //
+        // 비우기만 하고 재계산을 조판에 맡기지 않는다. 저장 분할이 없는 문단은 NO_LS 계급이
+        // 되고, 그 계급은 쪽 나눔에서 문단 위 간격을 0 으로 세는데(typeset.rs) 렌더는 그대로
+        // 그려, 여백을 조금만 건드려도 쪽 나눔과 그리기가 문단마다 spacing_before 만큼
+        // 어긋난다. reflow_body_paragraphs_in_section 은 비우고 곧바로 다시 접어 그 계급에
+        // 머무르지 않게 한다.
+        //
+        // 범위는 이 구역의 본문 문단뿐이다 — 표 셀 폭은 용지 여백이 아니라 표 자신이 정하므로
+        // 셀 문단의 저장 분할은 여전히 유효하다.
+        if self.body_wrap_width(section_idx) != wrap_width_before {
+            self.reflow_body_paragraphs_in_section(section_idx);
+        }
 
         // 재조판 + 재페이지네이션
         self.composed = self
