@@ -1452,7 +1452,7 @@
       "id": "src/main.rs::tests#1",
       "file": "src/main.rs",
       "sourcePath": "src/main.rs",
-      "line": 32423,
+      "line": 32589,
       "module": "tests",
       "testAttributes": 10,
       "tier": "white_box",

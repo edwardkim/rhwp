@@ -1696,6 +1696,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "image", "page", "x", "y", "width", "height", "binDataId", "dryRun", "overflow", "output", "outputFormat", "verify", "changedPages"],
         ),
         tool_with_optional_args(
+            "hwp_group_shapes",
+            "본문 Shape/Picture 컨트롤을 하나의 GroupShape 로 묶는다. targets 는 [{\"paraIdx\":N,\"controlIdx\":N},...] JSON. 코어 group_shapes_native 배선.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "targets": { "type": "string", "description": "묶을 개체 JSON 배열 [{\"paraIdx\":N,\"controlIdx\":N},...] (2개 이상)" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "targets"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "group-shapes", "{path}", "--targets", "{targets}", "--json"]),
+            serde_json::json!([
+                { "when": "section", "args": ["--section", "{section}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "targets", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_insert_text",
             "[#4990] 문단 좌표에 새 텍스트를 삽입해 새 문서를 만든다 — 기존 문자열을 바꾸는 replace-text/fill-fields/set-cell 과 달리, **없는 자리에 글자를 넣는** 축. 주소는 search 와 같다(section/paragraph/offset, 전부 0 기준). offset 이 문단 문자 수와 같으면 끝에 붙이고, 넘으면 인자 오류다. 빈 문자열은 거부한다. 산출물은 입력 형식을 따른다.",
             serde_json::json!({
@@ -3211,7 +3234,7 @@ fn cmd_gated(
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 39] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 40] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
@@ -3330,6 +3353,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 39] = [
         "insert-image",
         "도장·서명 그림 삽입 — --image/--page/--x/--y (HWPUNIT)",
     ),
+    ("group-shapes", "도형 묶기 — --targets JSON [--section]"),
     (
         "redact",
         "개인정보 마스킹 — --kind 선택, findings 봉투, --no-raw",
@@ -4290,7 +4314,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / set-column-def: 단 정의 / apply-para-format: 문단 서식 / apply-style: 스타일 적용 / set-numbering-restart: 번호 다시 시작 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / split-table: 표 나누기 / fit-table: 표 폭 맞춤 / resize-table: 표 크기 조절 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / delete-text-in-footnote: 각주/미주 텍스트 삭제 / split-paragraph-in-footnote: 각주/미주 문단 분할 / merge-paragraph-in-footnote: 각주/미주 문단 병합 / delete-equation: 수식 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / delete-control: 컨트롤 삭제 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / set-column-def: 단 정의 / apply-para-format: 문단 서식 / apply-style: 스타일 적용 / set-numbering-restart: 번호 다시 시작 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / split-table: 표 나누기 / fit-table: 표 폭 맞춤 / resize-table: 표 크기 조절 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / delete-text-in-footnote: 각주/미주 텍스트 삭제 / split-paragraph-in-footnote: 각주/미주 문단 분할 / merge-paragraph-in-footnote: 각주/미주 문단 병합 / delete-equation: 수식 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / delete-control: 컨트롤 삭제 / insert-image: 도장·서명 그림 삽입 / group-shapes: 도형 묶기 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
             false,
             &[
                 "--data",
@@ -4330,6 +4354,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 // hwp_set_checkbox 가 이 플래그를 고정 배선한다 — 목록에만 없었다.
                 "--occurrence",
                 "--keep-style",
+                "--targets",
                 // [#3719 §6-5] insert-image 축. 길이 인자는 전부 HWPUNIT(1/7200 inch).
                 "--image",
                 "--page",
@@ -4383,6 +4408,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "applyTo",
                 "text",
                 "insertedChars",
+                "targets",
                 // [#3719 §6-5] insert-image 봉투 축.
                 "image",
                 "page",
@@ -5813,6 +5839,14 @@ fn print_help() {
     println!("      --dry-run                 파일을 쓰지 않고 배치 예정만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      (쪽 밖으로 나가면 자르지 않고 --json 응답의 overflow 로 알린다)");
+    println!();
+    println!("  edit group-shapes <파일> --targets <JSON> [옵션]");
+    println!("      본문 도형/그림을 하나의 묶음으로 만든다");
+    println!();
+    println!("      --targets <JSON>          [{{\"paraIdx\":N,\"controlIdx\":N}},...] (2개 이상)");
+    println!("      --section N               구역 (0부터, 기본 0)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_group.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("      edit 명령 공통: 산출물은 **입력 형식을 보존**한다 (HWPX 입력 → HWPX 산출).");
     println!(
@@ -18583,7 +18617,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|set-column-def|apply-para-format|apply-style|set-numbering-restart|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-table|fit-table|resize-table|insert-footnote|insert-endnote|delete-footnote|delete-text-in-footnote|split-paragraph-in-footnote|merge-paragraph-in-footnote|delete-equation|add-bookmark|delete-bookmark|rename-bookmark|delete-header-footer|delete-control|insert-image|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|set-column-def|apply-para-format|apply-style|set-numbering-restart|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-table|fit-table|resize-table|insert-footnote|insert-endnote|delete-footnote|delete-text-in-footnote|split-paragraph-in-footnote|merge-paragraph-in-footnote|delete-equation|add-bookmark|delete-bookmark|rename-bookmark|delete-header-footer|delete-control|insert-image|group-shapes|redact|sanitize> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -18623,6 +18657,7 @@ fn run_edit(args: &[String]) -> i32 {
         Some("delete-header-footer") => edit_delete_header_footer(&args[1..]),
         Some("delete-control") => edit_delete_control(&args[1..]),
         Some("insert-image") => edit_insert_image(&args[1..]),
+        Some("group-shapes") => edit_group_shapes(&args[1..]),
         // [#3719 §6-11] 공개 전 정리 — 개인정보 마스킹 / 메타데이터 제거.
         Some("redact") => edit_redact(&args[1..]),
         Some("sanitize") => edit_sanitize(&args[1..]),
@@ -30805,6 +30840,137 @@ fn edit_insert_image(args: &[String]) -> i32 {
         process::exit(3);
     }
     EXIT_OK
+}
+
+/// `edit group-shapes` — 도형 묶기. 코어 `group_shapes_native`.
+fn parse_group_shape_targets(raw: &str) -> Result<Vec<(usize, usize)>, String> {
+    let value: serde_json::Value = serde_json::from_str(raw)
+        .map_err(|e| format!("--targets JSON 을 읽을 수 없습니다: {e}"))?;
+    let items = value
+        .as_array()
+        .ok_or_else(|| "--targets 는 JSON 배열이어야 합니다".to_string())?;
+    if items.len() < 2 {
+        return Err("묶기 위해서는 2개 이상의 개체가 필요합니다".to_string());
+    }
+    let mut targets = Vec::with_capacity(items.len());
+    for item in items {
+        let para = item
+            .get("paraIdx")
+            .and_then(|v| v.as_u64())
+            .ok_or_else(|| "--targets 항목에 paraIdx 가 필요합니다".to_string())?;
+        let ctrl = item
+            .get("controlIdx")
+            .and_then(|v| v.as_u64())
+            .ok_or_else(|| "--targets 항목에 controlIdx 가 필요합니다".to_string())?;
+        targets.push((para as usize, ctrl as usize));
+    }
+    Ok(targets)
+}
+
+fn edit_group_shapes(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit group-shapes <파일> --targets <JSON> [--section N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: usize = 0;
+    let mut targets_raw: Option<String> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" => {
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match v.parse::<usize>() {
+                    Ok(n) => section = n,
+                    Err(_) => {
+                        eprintln!("오류: --section 뒤에 0 이상의 정수가 필요합니다: {v}");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--targets" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => targets_raw = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: --targets 뒤에 JSON 배열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(targets_raw)) = (file_path, targets_raw) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    let targets = match parse_group_shape_targets(&targets_raw) {
+        Ok(t) => t,
+        Err(msg) => {
+            eprintln!("오류: {msg}");
+            return EXIT_USAGE;
+        }
+    };
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    if !dry_run {
+        if let Err(e) = doc.group_shapes_native(section, &targets) {
+            eprintln!("오류: 도형 묶기 실패 - {e}");
+            return EXIT_RUNTIME;
+        }
+    }
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "group",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({ "section": section, "targets": targets_raw }),
+        &[(section, targets.first().map(|(p, _)| *p).unwrap_or(0))],
+        &format!("도형 묶기 예정: {file_path} 구역 {section} {targets_raw}"),
+        &format!("도형 묶기 완료: {file_path}"),
+    )
 }
 
 /// rhwp 는 이미 필드에 값을 **쓸 수** 있는데(`set_field_value_by_name`) 조회 API 는
