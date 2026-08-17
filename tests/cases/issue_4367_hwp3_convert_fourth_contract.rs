@@ -446,3 +446,49 @@ fn hwp3_table_cells_are_row_major_ordered() {
     }
     assert!(tables > 0, "샘플 전제: 병합 표가 있어야 한다");
 }
+
+/// 열세 번째 계약 — 곡선 점을 IR 에 싣는다(점 0개 곡선 금지).
+///
+/// HWP3 곡선(type 7)은 파서가 점 배열을 읽고도 `CurveShape::default()` 로 버려
+/// 점 0개 곡선을 저장했고, 한글 2022 는 빈 곡선을 만나면 **크래시**(RPC 붕괴)한다
+/// (빈 다각형=거부와 달리 곡선은 크래시 — 다섯 번째 계약의 곡선 판; 크롤 빈티지
+/// 20064483 COM 이등분: p6 곡선이 발동체 — N=6 개방/7 크래시). 점을 실으면 개방.
+#[test]
+fn hwp3_curve_points_are_loaded() {
+    use rhwp::model::shape::ShapeObject;
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-curve.hwp");
+    let raw = std::fs::read(&path).expect("read hwp3-curve");
+    let mut doc = rhwp::parser::hwp3::parse_hwp3(&raw).expect("HWP3 파싱");
+    rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
+        &mut doc,
+        FileFormat::Hwp3,
+    );
+    fn walk(shape: &ShapeObject, seen: &mut usize, empty: &mut usize) {
+        match shape {
+            ShapeObject::Curve(c) => {
+                *seen += 1;
+                if c.points.is_empty() {
+                    *empty += 1;
+                }
+            }
+            ShapeObject::Group(g) => {
+                for child in &g.children {
+                    walk(child, seen, empty);
+                }
+            }
+            _ => {}
+        }
+    }
+    let (mut seen, mut empty) = (0usize, 0usize);
+    for sec in &doc.sections {
+        for p in &sec.paragraphs {
+            for c in &p.controls {
+                if let Control::Shape(s) = c {
+                    walk(s.as_ref(), &mut seen, &mut empty);
+                }
+            }
+        }
+    }
+    assert!(seen > 0, "샘플 전제: 곡선이 있어야 한다");
+    assert_eq!(empty, 0, "점 0개 곡선은 한글 2022 가 크래시한다");
+}
