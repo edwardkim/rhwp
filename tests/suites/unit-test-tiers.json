@@ -2895,7 +2895,7 @@
       "id": "src/renderer/layout/border_rendering.rs::tests#1",
       "file": "src/renderer/layout/border_rendering.rs",
       "sourcePath": "src/renderer/layout/border_rendering.rs",
-      "line": 1127,
+      "line": 1152,
       "module": "tests",
       "testAttributes": 9,
       "tier": "white_box",
@@ -3051,7 +3051,7 @@
       "id": "src/renderer/layout/table_layout.rs::row_cut_tests#1",
       "file": "src/renderer/layout/table_layout.rs",
       "sourcePath": "src/renderer/layout/table_layout.rs",
-      "line": 13135,
+      "line": 13138,
       "module": "row_cut_tests",
       "testAttributes": 39,
       "tier": "white_box",
@@ -3064,7 +3064,7 @@
       "id": "src/renderer/layout/table_partial.rs::tests#1",
       "file": "src/renderer/layout/table_partial.rs",
       "sourcePath": "src/renderer/layout/table_partial.rs",
-      "line": 3596,
+      "line": 3599,
       "module": "tests",
       "testAttributes": 5,
       "tier": "white_box",
@@ -4090,14 +4090,14 @@
     {
       "id": "src/renderer/layout/table_layout.rs::cfg-fn#1",
       "file": "src/renderer/layout/table_layout.rs",
-      "line": 7883,
+      "line": 7886,
       "kind": "fn",
       "testAttributes": 0
     },
     {
       "id": "src/renderer/layout/table_layout.rs::cfg-self#1",
       "file": "src/renderer/layout/table_layout.rs",
-      "line": 7539,
+      "line": 7542,
       "kind": "self",
       "testAttributes": 0
     },

@@ -483,7 +483,7 @@ impl LayoutEngine {
         }
 
         // 행별 열 위치 계산 (셀별 독립 너비 지원)
-        let row_col_x = build_row_col_x(
+        let row_col_x = match build_row_col_x(
             table,
             &col_widths,
             col_count,
@@ -491,7 +491,10 @@ impl LayoutEngine {
             cell_spacing,
             self.dpi,
             self.render_table_width_scale(table),
-        );
+        ) {
+            Ok(grid) => grid,
+            Err(_) => return y_start,
+        };
 
         let table_width = row_col_x
             .iter()
