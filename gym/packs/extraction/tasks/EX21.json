@@ -1,0 +1,27 @@
+{
+  "id": "EX21",
+  "tier": 2,
+  "title": "절단 상한 — extract-data --kind date --limit 1",
+  "input": "samples/20250130-hongbo.hwp",
+  "instructions": "extract-data --kind date --limit 1 로 날짜를 최대 1건만 수확해, 이번 응답의 항목 수(itemCount)를 보고하라. 답 형식: {\"dates\": <수>}. 문서 전체 건수는 totalItemCount 에 남고, 절단되면 truncated 가 true 다. 이 과제는 itemCount(이번 응답)만 묻는다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "dates 일치",
+      "op": "answer_eq",
+      "answer": "dates",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "date",
+        "--limit",
+        "1",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "TC09",
+  "tier": 3,
+  "title": "표 값 되쓰기 — (1,2) 만 77",
+  "input": "samples/hwpx/basic-table-01.hwpx",
+  "instructions": "이 문서 표 0 의 (1행, 2열) 값 7 을 77 로 바꿔 out.hwpx 로 저장하라. 다른 칸(특히 (0,0) 의 1)은 그대로 두어야 한다. 힌트: table-to-csv 로 뽑아 그 칸만 고치고 csv-to-table --table 0 으로 되넣어라(-o out.hwpx).",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "out.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "원본과 다름(무편집 거부)",
+      "op": "differs_from_input",
+      "file": "out.hwpx"
+    },
+    {
+      "name": "표0 (1,2) 이 77",
+      "op": "cell_text_eq",
+      "path": "tables",
+      "table": 0,
+      "row": 1,
+      "col": 2,
+      "value": 77,
+      "cmd": [
+        "export-tables",
+        "{file:out.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "name": "표0 (0,0) 는 그대로 1",
+      "op": "cell_text_eq",
+      "path": "tables",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": 1,
+      "cmd": [
+        "export-tables",
+        "{file:out.hwpx}",
+        "--json"
+      ]
+    }
+  ]
+}

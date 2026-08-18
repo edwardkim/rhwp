@@ -1,0 +1,22 @@
+{
+  "id": "TC07",
+  "steps": [
+    {
+      "answer": {
+        "changed": {
+          "cmd": [
+            "csv-to-table",
+            "{input}",
+            "--table",
+            "0",
+            "--csv",
+            "gym/packs/table-csv/assets/TC03-edit.csv",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "changedCount"
+        }
+      }
+    }
+  ]
+}

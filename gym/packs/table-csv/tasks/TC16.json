@@ -1,0 +1,68 @@
+{
+  "id": "TC16",
+  "tier": 3,
+  "title": "표 값 되쓰기 — (0,1) 만 200",
+  "input": "samples/hwpx/basic-table-01.hwpx",
+  "instructions": "이 문서 표 0 의 (0행, 1열) 값 2 를 200 으로 바꿔 out.hwpx 로 저장하라. (0,0) 의 1 과 (1,2) 의 7 은 그대로 두어야 한다. 힌트: table-to-csv 로 뽑아 그 칸만 고치고 csv-to-table --table 0 으로 되넣어라(-o out.hwpx).",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "out.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "원본과 다름(무편집 거부)",
+      "op": "differs_from_input",
+      "file": "out.hwpx"
+    },
+    {
+      "name": "표0 (0,1) 이 200",
+      "op": "cell_text_eq",
+      "path": "tables",
+      "table": 0,
+      "row": 0,
+      "col": 1,
+      "value": 200,
+      "cmd": [
+        "export-tables",
+        "{file:out.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "name": "표0 (0,0) 는 그대로 1",
+      "op": "cell_text_eq",
+      "path": "tables",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": 1,
+      "cmd": [
+        "export-tables",
+        "{file:out.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "name": "표0 (1,2) 는 그대로 7",
+      "op": "cell_text_eq",
+      "path": "tables",
+      "table": 0,
+      "row": 1,
+      "col": 2,
+      "value": 7,
+      "cmd": [
+        "export-tables",
+        "{file:out.hwpx}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "id": "BO09",
+  "tier": 3,
+  "title": "메일머지 — HWP5 서식 + CSV",
+  "input": "samples/form-01.hwp",
+  "instructions": "BO03 은 JSONL 이었다. 이번에는 같은 HWP5 서식에 CSV 2행을 병합해 out/0001.hwp·out/0002.hwp 를 만들어라. 힌트: rhwp batch fill --form samples/form-01.hwp --data gym/packs/batch-ops/assets/BO09-data.csv --out-dir out --json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out/0001.hwp",
+      "out/0002.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "1부 산출 존재",
+      "op": "file_exists",
+      "file": "out/0001.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "마지막 산출 존재 (단건이 아니라 대량)",
+      "op": "file_exists",
+      "file": "out/0002.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "원본 서식과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "out/0001.hwp"
+    },
+    {
+      "name": "1행 CSV 값이 1부에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/0001.hwp}",
+        "--json",
+        "--",
+        "HwpCsvAlpha"
+      ]
+    },
+    {
+      "name": "2행 CSV 값이 2부에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/0002.hwp}",
+        "--json",
+        "--",
+        "HwpCsvBeta"
+      ]
+    }
+  ]
+}

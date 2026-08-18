@@ -1,0 +1,25 @@
+{
+  "id": "EX19",
+  "tier": 2,
+  "title": "빈 결과 — 빈 HWPX 에서 날짜 0건",
+  "input": "samples/hwpx/blank_hwpx.hwpx",
+  "instructions": "빈 문서에서 extract-data --kind date 를 돌려 항목 수(itemCount)를 보고하라. 답 형식: {\"dates\": <수>}. 0건은 오류가 아니다 — 종료 코드 0, itemCount 0.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "dates 일치",
+      "op": "answer_eq",
+      "answer": "dates",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "date",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}
