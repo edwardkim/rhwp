@@ -30,7 +30,7 @@ CLI `rhwp layout-anomaly`, 코어 `src/diagnostics/layout_anomaly.rs`.
 ```
 render_geom_diff  (두 렌더 사이 비교)         layout_anomaly  (렌더 한 장 안의 판정)
   ─ "A 와 B 가 같은가"                          ─ "이 렌더가 정상적인 문서로 보이는가"
-  ─ maxDisp, structureMismatch                  ─ overflow / overlap / text-overlap / empty_page
+  ─ maxDisp, structureMismatch                  ─ overflow / off-canvas / overlap / text-overlap / empty_page
   ─ 라운드트립·두 파일 비교 전용                  ─ 임의의 단일 문서에 바로 적용
 ```
 
@@ -50,9 +50,9 @@ render_geom_diff  (두 렌더 사이 비교)         layout_anomaly  (렌더 한
    관점에서 본다. 표·이미지·부분 초과는 범위 밖이다.
 
 `layout-anomaly` 는 셋째 층이다 — 렌더러가 이미 만들어 낸 `RenderNode` 트리를 **사후에** 읽어,
-표·이미지·문단 줄 단위로 "레이아웃 품질"(페이지 밖으로 새는가, 서로 겹치는가, 쪽이 텅 비었는가)
-을 판정한다. 페이지네이션 내부 상태에 접근하지 않고, 보안 판정도 아니다 — 순수하게 "이 결과물이
-사람이 보기에 정상적인 문서 레이아웃인가"만 본다.
+표·이미지·문단 줄 단위로 "레이아웃 품질"(본문 여백을 넘나, 쪽 상자 밖인가, 서로 겹치는가,
+쪽이 텅 비었는가)을 판정한다. 페이지네이션 내부 상태에 접근하지 않고, 보안 판정도 아니다 —
+순수하게 "이 결과물이 사람이 보기에 정상적인 문서 레이아웃인가"만 본다.
 
 ## 판정 4종
 
@@ -75,6 +75,20 @@ render_geom_diff  (두 렌더 사이 비교)         layout_anomaly  (렌더 한
 표·이미지 등 "컨테이너" 노드가 검사 대상에 걸리면 그 자손(표 셀 내부 줄 등)은 더 내려가 다시
 검사하지 않는다 — 표 하나가 넘치면 그 표에 딸린 모든 줄을 중복 보고하는 대신 표 자체를 한 번만
 보고한다.
+
+### off-canvas
+
+overflow 가 **본문 여백**(Body bbox)을 넘은 것이라면, `off-canvas` 는 **페이지 상자**(Page
+bbox, 보통 `(0, 0, width, height)`)를 넘었거나 `y < 0` 인 노드다. 본문만 넘치고 쪽 안에
+남아 있으면 overflow 만 나고, 쪽 폭·높이를 넘기거나 음수 y 에 놓이면 off-canvas 다.
+
+`y < 0` 을 페이지 상자 검사와 별도로 적는 이유: #4889 표 조각이 표 전체 원점으로 그려져
+앞 행이 쪽 위로 소실되는 축이다. `dump-extents` 의 넘침 경고는 아래쪽만 세고, 쪽수·텍스트
+게이트는 글자가 트리에 존재하므로 침묵한다. off-canvas 는 그 사각지대를 닫는 증명 도구다
+(렌더 트리를 읽기만 한다 — 레이아웃 엔진을 고치지 않는다).
+
+허용치는 overflow 와 같은 `--overflow-tolerance`(기본 1.0px). 컨테이너에서 접히는 방식도
+overflow 와 같다(표 하나면 표만 한 번). `off-canvas` 는 확정 신호라 `--strict` 에 포함한다.
 
 ### overlap
 
@@ -121,7 +135,7 @@ render_geom_diff  (두 렌더 사이 비교)         layout_anomaly  (렌더 한
 이 저장소의 다른 진단 명령(`render-diff`, `inspect hidden-text` 등)과 같은 철학이다. 탐지
 건수가 0이 아니어도 기본 종료 코드는 0이다 — anomaly 발견은 도구의 정상 동작이지 실패가 아니다.
 `--json` 은 항상 전체 판정을 봉투로 낸다. 소비자가 실패로 취급하고 싶으면 `--strict` 를 명시
-한다 — 이때도 `overflow`·`overlap`·`text-overlap`(확정 신호)만 종료 코드 3(`render-diff` 의
+한다 — 이때도 `overflow`·`off-canvas`·`overlap`·`text-overlap`(확정 신호)만 종료 코드 3(`render-diff` 의
 `EXIT_REGRESSION` 과 같은 값·같은 의미론)을 유발하고, `empty_page`(가능성 신호)는 `--strict`
 로도 절대 실패를 유발하지 않는다.
 
@@ -148,10 +162,10 @@ rhwp layout-anomaly --batch <폴더> [-p <페이지>] [--json] [--strict]
                      [--overflow-tolerance <px>] [--overlap-tolerance <px>]
 ```
 
-- `--json`: 단건은 판정 봉투 한 줄(`schemaVersion`, `mode`, `pages[].overflow/overlap/textOverlap/emptyPage`, `textOverlapCount`, `hasSignal` 등). `--batch` 는 NDJSON.
-- `--strict`: `hasSignal`(overflow·overlap·text-overlap 확정 신호)이 있으면 종료 코드 3. 기본은 이상 신호가 있어도 0.
+- `--json`: 단건은 판정 봉투 한 줄(`schemaVersion`, `mode`, `pages[].overflow/offCanvas/overlap/textOverlap/emptyPage`, `offCanvasCount`, `textOverlapCount`, `hasSignal` 등). `--batch` 는 NDJSON.
+- `--strict`: `hasSignal`(overflow·off-canvas·overlap·text-overlap 확정 신호)이 있으면 종료 코드 3. 기본은 이상 신호가 있어도 0. `empty_page` 는 제외.
 - `-p`: 사람 모드 출력만 해당 페이지로 좁힌다(스캔 자체는 항상 전 페이지).
-- `--types`: overflow·overlap 검사 대상 노드 타입만 남긴다(예: `Table,Image`). `empty_page` 는 페이지 단위라 영향 없음. 필터에 안 걸린 컨테이너는 접지 않고 자손을 본다.
+- `--types`: overflow·overlap 검사 대상 노드 타입만 남긴다(예: `Table,Image`). off-canvas·text-overlap·`empty_page` 는 각각 독립된 페이지/텍스트 판정이라 영향 없음. 필터에 안 걸린 컨테이너는 접지 않고 자손을 본다.
 - `--batch`: 폴더를 재귀해 `.hwp`/`.hwpx` 를 상대 경로 정렬 순으로 스캔한다. 파일별 로드·스캔 실패는 레코드의 `error` 키(DATA)로 남기고 스트림에서 빼지 않는다. 한 건이라도 측정 실패면 exit 1 이 `--strict` 의 3보다 우선한다.
 
 ## 의도적으로 미룬 것
