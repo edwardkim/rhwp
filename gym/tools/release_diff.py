@@ -21,6 +21,9 @@
    흔들리는 자리는 대조에서 뺀다(파일 산출 과제의 file_exists 는 관측이 아니라
    존재 여부라 애초에 raw 비교 대상이 아니다).
 
+분류·관측 동일성·보고 조립은 순수 함수라
+`scripts/tests/test_gym_release_diff.py` 가 바이너리 없이 고정한다.
+
 ## 정직 조항
 
 이 도구는 "무엇이 바뀌었나" 를 가리키지 "어느 쪽이 옳은가" 를 판정하지 않는다
@@ -30,6 +33,8 @@
   python gym/tools/release_diff.py --old <구 바이너리> --new <신 바이너리>
                                    [--pack <id> ...] [-o 리포트.json]
 """
+
+from __future__ import annotations
 
 import argparse
 import hashlib
@@ -52,13 +57,118 @@ from gym.core import checks as check_registry  # noqa: E402
 
 ROOT = runner.ROOT
 
+REPORT_KIND = "gymReleaseDiff"
+SCHEMA_VERSION = "1.0"
+
 #: 봉투를 부르지 않는 파일 연산자 — 관측이 아니라 존재/동일성이라 raw 대조 제외.
 FILE_OPS = {"file_exists", "same_hash", "differs_from_input", "files_differ"}
+
+CLASSIFICATIONS = ("stable", "regression", "surface-changed")
+EXIT_BY_CLASS = {"stable": 0, "regression": 3, "surface-changed": 2}
+CLASSIFICATION_REASON = {
+    "stable": "명령 표면과 관측이 같다",
+    "regression": "명령 표면은 같고 관측이 갈렸다 — 순수 동작 변화",
+    "surface-changed": "명령 표면(capabilities digest)이 달라 사람 판정이 필요하다",
+}
 
 
 def capabilities_digest(bin_path):
     proc = subprocess.run([bin_path, "capabilities"], cwd=ROOT, capture_output=True)
     return hashlib.sha256(proc.stdout).hexdigest()
+
+
+def surface_changed(old_digest, new_digest):
+    """capabilities digest 가 다르면 표면이 바뀐 것이다. 순수."""
+    return old_digest != new_digest
+
+
+def classify(surface, divergences):
+    """오검출 관문. 표면 변경이 회귀보다 앞선다.
+
+    divergences 는 분기 목록·건수·bool 모두 받는다. 표면이 바뀌면 분기 유무와
+    무관하게 surface-changed — 의도된 명령 추가를 회귀로 오신고하지 않는다.
+    """
+    if surface:
+        return "surface-changed"
+    if divergences:
+        return "regression"
+    return "stable"
+
+
+def exit_for(classification):
+    """stable=0, surface-changed=2(사람 판정), regression=3(회귀)."""
+    return EXIT_BY_CLASS[classification]
+
+
+def expected_exits(check):
+    return check.get("expect_exits") or [check.get("expect_exit", 0)]
+
+
+def should_observe(check):
+    return check.get("op") not in FILE_OPS
+
+
+def _values_equal(left, right):
+    """숫자 6 과 6.0 은 같고, bool 은 int 로 접히지 않는다."""
+    if left is right:
+        return True
+    if isinstance(left, bool) or isinstance(right, bool):
+        return isinstance(left, bool) and isinstance(right, bool) and left is right
+    if isinstance(left, (int, float)) and isinstance(right, (int, float)):
+        return float(left) == float(right)
+    if isinstance(left, str) and isinstance(right, str):
+        return left == right
+    if isinstance(left, list) and isinstance(right, list):
+        return len(left) == len(right) and all(
+            _values_equal(a, b) for a, b in zip(left, right)
+        )
+    if isinstance(left, dict) and isinstance(right, dict):
+        if set(left) != set(right):
+            return False
+        return all(_values_equal(left[k], right[k]) for k in left)
+    return left == right
+
+
+def observations_equal(left, right):
+    """관측 동일성. 종류가 다르면 값이 같아도 같지 않다."""
+    return _values_equal(left, right)
+
+
+def observation_display(obs):
+    """사람이 읽는 한 칸. 값 관측은 raw, 그 외는 kind 또는 exitN."""
+    if isinstance(obs, dict):
+        kind = obs.get("kind")
+        if kind == "value":
+            return obs.get("value")
+        if kind == "exit":
+            return f"exit{obs.get('code')}"
+        if kind:
+            return kind
+    return obs
+
+
+def observation_from_result(code, env, head, check, dig_fn=None, find_cell_fn=None):
+    """CLI 결과에서 대조 가능한 관측을 뽑는다. 순수.
+
+    종료 코드·JSON 부재·경로 실패를 kind 로 가른다. 판정이 아니라 값이다.
+    """
+    if code not in expected_exits(check):
+        return {"kind": "exit", "code": code, "head": (head or "")[:80]}
+    if env is None:
+        return {"kind": "nojson", "head": (head or "")[:80]}
+    dig_fn = check_registry.dig if dig_fn is None else dig_fn
+    try:
+        val = dig_fn(env, check.get("path", ""))
+    except (KeyError, IndexError, TypeError) as e:
+        return {"kind": "digfail", "error": type(e).__name__}
+    if check.get("op") == "cell_text_eq":
+        find_cell_fn = check_registry.find_cell if find_cell_fn is None else find_cell_fn
+        try:
+            cell = find_cell_fn(val, check["table"], check["row"], check["col"])
+        except (KeyError, IndexError, TypeError) as e:
+            return {"kind": "digfail", "error": type(e).__name__}
+        val = None if cell is None else cell.get("text")
+    return {"kind": "value", "value": val}
 
 
 def observe(bin_path, check, task, sub_dir):
@@ -73,20 +183,18 @@ def observe(bin_path, check, task, sub_dir):
         # 예외를 내면 legacy baseline이 비어 있는 한 차등 도구 전체가 멈춘다.
         return {"kind": "resolve-error", "error": type(e).__name__}
     code, env, head = runner.run_cli(bin_path, args)
-    expect = check.get("expect_exits") or [check.get("expect_exit", 0)]
-    if code not in expect:
-        return {"kind": "exit", "code": code, "head": head[:80]}
-    if env is None:
-        return {"kind": "nojson", "head": head[:80]}
-    try:
-        val = check_registry.dig(env, check.get("path", ""))
-    except (KeyError, IndexError, TypeError) as e:
-        return {"kind": "digfail", "error": f"{type(e).__name__}"}
-    # 표·목록은 통째 대조하면 잡음이 크다 — 지목 연산자는 그 좌표만 관측한다.
-    if check["op"] == "cell_text_eq":
-        cell = check_registry.find_cell(val, check["table"], check["row"], check["col"])
-        val = None if cell is None else cell.get("text")
-    return {"kind": "value", "value": val}
+    return observation_from_result(code, env, head, check)
+
+
+def make_diff_row(task_id, check, old_obs, new_obs):
+    return {
+        "task": task_id,
+        "check": check.get("name", check["op"]),
+        "op": check["op"],
+        "path": check.get("path", ""),
+        "old": old_obs,
+        "new": new_obs,
+    }
 
 
 def diff_task(old_bin, new_bin, task, sub_root, pack_id):
@@ -95,15 +203,64 @@ def diff_task(old_bin, new_bin, task, sub_root, pack_id):
         sub_dir = os.path.join(sub_root, task["id"])  # 평면 제출 호환
     rows = []
     for check in task.get("checks", []):
-        if check["op"] in FILE_OPS:
+        if not should_observe(check):
             continue
         o = observe(old_bin, check, task, sub_dir)
         n = observe(new_bin, check, task, sub_dir)
-        if o != n:
-            rows.append({"task": task["id"], "check": check.get("name", check["op"]),
-                         "op": check["op"], "path": check.get("path", ""),
-                         "old": o, "new": n})
+        if not observations_equal(o, n):
+            rows.append(make_diff_row(task["id"], check, o, n))
     return rows
+
+
+def build_report(old_bin, old_digest, new_bin, new_digest,
+                 tasks_compared, observations_compared, diffs,
+                 observations_skipped=0):
+    """릴리스 차등 JSON 봉투. 순수 — 바이너리를 부르지 않는다."""
+    surface = surface_changed(old_digest, new_digest)
+    classification = classify(surface, diffs)
+    return {
+        "kind": REPORT_KIND,
+        "schemaVersion": SCHEMA_VERSION,
+        "old": {"bin": os.path.basename(old_bin), "capabilitiesSha256": old_digest},
+        "new": {"bin": os.path.basename(new_bin), "capabilitiesSha256": new_digest},
+        "surfaceChanged": surface,
+        "tasksCompared": tasks_compared,
+        "observationsCompared": observations_compared,
+        "observationsSkipped": observations_skipped,
+        "divergences": len(diffs),
+        "classification": classification,
+        "classificationReason": CLASSIFICATION_REASON[classification],
+        "exit": exit_for(classification),
+        "ok": classification == "stable",
+        "reviewRequired": classification == "surface-changed",
+        "diffs": list(diffs),
+    }
+
+
+def write_report(report, path):
+    """UTF-8 · BOM 없음 · LF. 같은 입력이면 바이트가 같다."""
+    with io.open(path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(json.dumps(report, ensure_ascii=False, indent=2))
+        fh.write("\n")
+
+
+def render_summary(report, out_path):
+    surface = report["surfaceChanged"]
+    classification = report["classification"]
+    lines = [
+        f"과제 {report['tasksCompared']} · 관측 대조 {report['observationsCompared']}건",
+        f"명령 표면(capabilities): {'다름 → surface-changed' if surface else '같음'}",
+        f"관측 분기: {report['divergences']}건 → 분류 [{classification}]",
+        f"이유: {report['classificationReason']}",
+    ]
+    for row in report.get("diffs", [])[:30]:
+        ov = observation_display(row["old"])
+        nv = observation_display(row["new"])
+        pack = row.get("pack", "")
+        loc = f"{pack}/{row['task']}" if pack else row["task"]
+        lines.append(f"  {loc} · {row['check']}: {ov!r} → {nv!r}")
+    lines.append(f"→ {out_path}")
+    return lines
 
 
 def main():
@@ -119,45 +276,33 @@ def main():
     new_bin = runner.find_bin(a.new)
     old_dig = capabilities_digest(old_bin)
     new_dig = capabilities_digest(new_bin)
-    surface_changed = old_dig != new_dig
 
     sub_root = os.path.join(runner.GYM, "submissions", a.agent)
     pack_ids = a.pack or runner.discover_packs()
-    diffs, tasks_seen, checks_seen = [], 0, 0
+    diffs, tasks_seen, checks_seen, skipped = [], 0, 0, 0
     for pack_id in pack_ids:
         _manifest, tasks = runner.load_pack(pack_id)
         for task in tasks:
             tasks_seen += 1
-            checks_seen += sum(1 for c in task.get("checks", []) if c["op"] not in FILE_OPS)
+            for check in task.get("checks", []):
+                if should_observe(check):
+                    checks_seen += 1
+                else:
+                    skipped += 1
             for row in diff_task(old_bin, new_bin, task, sub_root, pack_id):
                 row["pack"] = pack_id
                 diffs.append(row)
 
-    classification = ("surface-changed" if surface_changed
-                      else ("regression" if diffs else "stable"))
-    report = {
-        "kind": "gymReleaseDiff", "schemaVersion": "1.0",
-        "old": {"bin": os.path.basename(old_bin), "capabilitiesSha256": old_dig},
-        "new": {"bin": os.path.basename(new_bin), "capabilitiesSha256": new_dig},
-        "surfaceChanged": surface_changed,
-        "tasksCompared": tasks_seen, "observationsCompared": checks_seen,
-        "divergences": len(diffs), "classification": classification,
-        "diffs": diffs,
-    }
+    report = build_report(
+        old_bin, old_dig, new_bin, new_dig,
+        tasks_seen, checks_seen, diffs, observations_skipped=skipped,
+    )
     out = a.out or os.path.join(runner.GYM, "release-diff.json")
-    with io.open(out, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write(json.dumps(report, ensure_ascii=False, indent=2))
+    write_report(report, out)
 
-    print(f"과제 {tasks_seen} · 관측 대조 {checks_seen}건")
-    print(f"명령 표면(capabilities): {'다름 → surface-changed' if surface_changed else '같음'}")
-    print(f"관측 분기: {len(diffs)}건 → 분류 [{classification}]")
-    for row in diffs[:30]:
-        ov = row["old"].get("value", row["old"])
-        nv = row["new"].get("value", row["new"])
-        print(f"  {row['pack']}/{row['task']} · {row['check']}: {ov!r} → {nv!r}")
-    print(f"→ {out}")
-    # stable=0, regression=3(회귀), surface-changed=2(사람 판정 필요)
-    return {"stable": 0, "regression": 3, "surface-changed": 2}[classification]
+    for line in render_summary(report, out):
+        print(line)
+    return report["exit"]
 
 
 if __name__ == "__main__":
