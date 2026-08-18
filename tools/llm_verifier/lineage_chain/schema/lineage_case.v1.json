@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/llm_verifier/lineage_chain/lineage_case.v1.json",
+  "title": "V-lineage parent-output/child-input chain case",
+  "type": "object",
+  "required": ["parent_out", "child_in", "parent_ok", "lineage_ok", "broken_at", "verdict"],
+  "properties": {
+    "case_id": { "type": "string" },
+    "parent_out": {
+      "type": "string",
+      "description": "Parent workCapsule receipt.outputSha256"
+    },
+    "child_in": {
+      "type": "string",
+      "description": "Child workCapsule receipt.inputSha256"
+    },
+    "parent_ok": {
+      "description": "Existing rhwp lineage links[].parentOk (bool|null)",
+      "anyOf": [{ "type": "boolean" }, { "type": "string" }, { "type": "null" }]
+    },
+    "lineage_ok": {
+      "description": "Existing rhwp lineage links[].lineageOk (parent output == child input)",
+      "anyOf": [{ "type": "boolean" }, { "type": "string" }, { "type": "null" }]
+    },
+    "broken_at": {
+      "type": "string",
+      "description": "Existing rhwp lineage brokenAt; empty means null"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "CHAIN_ACCEPTED",
+        "LINEAGE_BROKEN",
+        "PARENT_TAMPERED",
+        "ROOT_ONLY",
+        "PROSE_NOT_EVIDENCE",
+        "HEAD_MISSING",
+        "USAGE",
+        "PARENT_SHA_MISSING",
+        "PARENT_FIELD_MISSING",
+        "KIND_NOT_CAPSULE",
+        "HASH_DEFECT",
+        "ENVELOPE_CONTRADICTS"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "enum": ["lineage", "capsule", "prose", "io", "usage"]
+    },
+    "reproduced": {
+      "description": "V-replay field. Stored, never consumed by decide().",
+      "anyOf": [{ "type": "boolean" }, { "type": "string" }, { "type": "null" }]
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "head": "chain_deadline.capsule.json",
+  "depth": 2,
+  "valid": true,
+  "brokenAt": null,
+  "links": [
+    {
+      "capsule": "chain_deadline.capsule.json",
+      "inputSha256": "3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3",
+      "outputSha256": "6273000b7e8c7c9a4b54257d1f4cdf15ef1814be7025584d46d4158cf74bbaf1",
+      "parentOk": true,
+      "lineageOk": true,
+      "reproduced": false
+    },
+    {
+      "capsule": "notice_year.capsule.json",
+      "inputSha256": "9872f62399b737c8ebe6cbe2adff4a9d777642e0cd507234428c8e9b3a439a3c",
+      "outputSha256": "3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3",
+      "parentOk": null,
+      "lineageOk": null,
+      "reproduced": false
+    }
+  ]
+}
