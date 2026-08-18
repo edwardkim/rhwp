@@ -21,12 +21,12 @@ source_pr: 5520
 
 - `tools/llm_verifier/shadow_agree/`에 두 독립 검사의 결과쌍·봉투 검증·결정표와 corpus를 추가한다.
 - 신규 파일만 추가하는 독립 경로로, 누적 branch의 다른 verifier 도구와 충돌하지 않았다.
-- 허용·거부 조합은 fixture와 golden decision table에 명시돼 있어, 최종 CI에서 test discovery를 확인해야 한다.
+- 허용·거부 조합은 fixture와 golden decision table에 명시돼 있다. 메인터너 보정으로 CI Lint job에 해당 Python test discovery를 추가했다.
 
 ## 검증 상태
 
 - 로컬 테스트: 이번 단계에서는 실행하지 않았다.
-- 최종 조건: 통합 PR CI와 shadow_agree test·corpus 검증 성공.
+- 최종 조건: 통합 PR CI의 shadow_agree test·corpus 검증 성공.
 
 ## 권고
 

@@ -21,12 +21,12 @@ source_pr: 5521
 
 - `tools/llm_verifier/untrusted_sandbox/`에 문서 파생 텍스트와 검증 입력을 분리하는 봉투·결정·corpus 검증기를 추가한다.
 - 다른 누적 verifier 기능의 파일과 겹치지 않아 원본 저자와 변경 범위를 유지했다.
-- 외부 입력을 거부하는 경계는 fixture로 고정돼 있으므로, 최종 CI에서 envelope·prose 관련 테스트가 실행돼야 한다.
+- 외부 입력을 거부하는 경계는 fixture로 고정돼 있다. 메인터너 보정으로 CI Lint job에 envelope·prose test discovery를 추가했다.
 
 ## 검증 상태
 
 - 로컬 테스트: 이번 단계에서는 실행하지 않았다.
-- 최종 조건: 통합 PR CI와 untrusted_sandbox fixture 검증 성공.
+- 최종 조건: 통합 PR CI의 untrusted_sandbox fixture 검증 성공.
 
 ## 권고
 

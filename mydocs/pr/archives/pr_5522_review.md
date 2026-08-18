@@ -21,12 +21,12 @@ source_pr: 5522
 
 - `tools/llm_verifier/lineage_chain/`에 parent-output/child-input hash chain 검증, schema, corpus와 결정표를 추가한다.
 - 다른 verifier PR과 경로 중복 없이 누적 적용됐다.
-- lineage 깊이와 해시 불일치 fixture가 별도 입력으로 고정돼 있으므로, 통합 CI에서 corpus 검증기를 독립 실행해야 한다.
+- lineage 깊이와 해시 불일치 fixture가 별도 입력으로 고정돼 있다. 메인터너 보정으로 CI Lint job에 해당 Python test discovery를 추가했다.
 
 ## 검증 상태
 
 - 로컬 테스트: 이번 단계에서는 실행하지 않았다.
-- 최종 조건: 통합 PR CI와 lineage_chain test·corpus 검증 성공.
+- 최종 조건: 통합 PR CI의 lineage_chain test·corpus 검증 성공.
 
 ## 권고
 

@@ -21,12 +21,12 @@ source_pr: 5519
 
 - `tools/llm_verifier/repeat_eval/`에 반복 평가, 분산 축소, ballot·report schema와 corpus shard를 추가한다.
 - 다른 verifier PR의 경로와 중복이 없어 충돌 없이 원본 저자를 보존해 적용했다.
-- 반복 결과 corpus는 대용량 정적 입력이므로, 통합 검증에서 reducer와 vote 테스트가 실제로 수집되는지 확인해야 한다.
+- repeat_eval은 의도적으로 root workspace 밖의 standalone crate다. 메인터너 보정으로 CI Lint job에서 manifest를 지정한 `cargo test`를 추가했다.
 
 ## 검증 상태
 
 - 로컬 테스트: 이번 단계에서는 실행하지 않았다.
-- 최종 조건: 통합 PR CI와 repeat_eval의 단위·corpus 검증 성공.
+- 최종 조건: 통합 PR CI의 standalone repeat_eval 단위·corpus 검증 성공.
 
 ## 권고
 
