@@ -111,14 +111,16 @@ impl DocumentCore {
         let use_xml_import_semantics = matches!(
             source_format,
             crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
-        ) && !hwp5_origin_hwpx;
+        ) && !hwp5_origin_hwpx
+            && !document.layout_profile().hwp3_native_layout();
 
         // 비표준 lineseg 감지 — reflow 이전 시점에 IR을 그대로 검증.
         // 경고는 사용자에게 고지되며, 자동 reflow 는 `needs_line_seg_reflow` 조건에만 한정.
         // 사용자 명시 reflow 는 `reflow_linesegs_on_demand()` 를 통해서만 수행 (#177).
         // LinesegTextRunReflow는 HWPX textRun 전용 패턴. HWP3/HWP5/HML에는 확대 적용하지 않는다.
-        let check_textrun_reflow =
-            matches!(source_format, crate::parser::FileFormat::Hwpx) && !hwp5_origin_hwpx;
+        let check_textrun_reflow = matches!(source_format, crate::parser::FileFormat::Hwpx)
+            && !hwp5_origin_hwpx
+            && !document.layout_profile().hwp3_native_layout();
         let validation_report = Self::validate_linesegs(&document, check_textrun_reflow);
 
         // lineSegArray가 없는 문단에 대해 합성 LineSeg 생성.
@@ -126,7 +128,10 @@ impl DocumentCore {
         // XML import 에서 빈 line_segs 를 합성 대상에 포함한다 — compose 전에 올바른
         // line_height/line_spacing 을 계산해야 줄바꿈·높이가 정상 동작한다.
         // HWP5/HWP3 의 빈 line_segs 는 종전대로 reflow 하지 않는다 (페이지 수 보존).
-        let include_empty = use_xml_import_semantics;
+        // 원본 HWP3→HWPX 도 같은 계약이다 — XML 이라 해서 빈 줄을 합성하면
+        // sample16 이 64→65 로 갈라진다 (#3518).
+        let include_empty =
+            use_xml_import_semantics && !document.layout_profile().hwp3_native_layout();
         // [#2195] HWP5 native 확장은 **셀 내부의 컨트롤 없는 순수 빈 문단** 한정
         // (86712 1pt 빈 문단 오라클). 본문 문단 확장은 기각(stage68): 본문 빈
         // 문단은 typeset 의 em 폴백(#2070 축3)이 담당하고(80168 pi=424 오라클),

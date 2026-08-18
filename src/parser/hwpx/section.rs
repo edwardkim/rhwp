@@ -617,14 +617,13 @@ fn parse_paragraph_body(
                     b"tbl" => {
                         // 표 파싱
                         let table = parse_table(ce, reader)?;
-                        // 표 위치에 제어 문자(0x0002) 삽입
-                        text_parts.push("\u{0002}".to_string());
+                        push_object_slot_placeholder(&mut text_parts);
                         para.controls.push(Control::Table(Box::new(table)));
                     }
                     b"pic" => {
                         // 이미지 파싱
                         let pic = parse_picture(ce, reader)?;
-                        text_parts.push("\u{0002}".to_string());
+                        push_object_slot_placeholder(&mut text_parts);
                         para.controls.push(pic);
                     }
                     b"switch" => {
@@ -681,7 +680,7 @@ fn parse_paragraph_body(
                     | b"curve" => {
                         // 그리기 객체 파싱
                         let shape = parse_shape_object(local, ce, reader)?;
-                        text_parts.push("\u{0002}".to_string());
+                        push_object_slot_placeholder(&mut text_parts);
                         para.controls.push(shape);
                     }
                     b"container" => {
@@ -2282,14 +2281,13 @@ fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     }
     table.common.attr = attr;
     // HWPX keeps semantic placement in hp:pos, while legacy layout code still reads
-    // table.attr bit0 for some inline-table decisions. Only mirror the minimum
-    // renderer compatibility bit here; the HWP5 storage attr is packed later by
-    // the HWP adapter.
-    table.attr = if table.common.treat_as_char && table.common.flow_with_text {
-        0x01
-    } else {
-        0
-    };
+    // table.attr bit0 (`paragraph_has_table` / `uses_tac_table_flow` on non-HWPX
+    // stored layout). treatAsChar 만으로 bit0 을 켠다 — HWP3 원본은
+    // flowWithText=0 이어도 attr bit0 이 켜져 있고(sample16 문단 394
+    // attr=0x2a0311), bit0 이 빠지면 TAC 표가 블록 표로 빠져 쪽이 +1 된다 (#3518).
+    // HWP5 저장 attr 은 어댑터가 따로 채운다. HWPX stored 경로의 TAC 판정은
+    // treatAsChar&&flowWithText (#3930) 라 이 비트와 무관하다.
+    table.attr = if table.common.treat_as_char { 0x01 } else { 0 };
     let mut record_attr = match table.page_break {
         TablePageBreak::CellBreak => 0x01,
         TablePageBreak::RowBreak => 0x02,
@@ -5389,6 +5387,29 @@ thread_local! {
     /// [#4916/#4660/#3531/#4882 계열] 지금 파싱 중인 HWPX 가 rhwp 자기 산출
     /// (HWP5-origin 마커 보유)인가 — `parse_hwpx` 가 구역 파싱 동안 세운다.
     static HWPX_HWP5_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    /// 원본 HWP3→HWPX (hwp3-origin 마커, hwp5-origin 없음).
+    static HWPX_HWP3_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// [#3518] HWP3 는 개체를 U+FFFC 1유닛으로 남긴다. HWPX 슬롯 `\u{0002}`(8유닛)를
+/// 그 위에 또 쌓으면 char_count 가 부풀어(sample16 문단 394: 6→30) TAC 표가
+/// 블록 표로 빠지며 쪽이 +1 된다. 아직 짝이 없는 FFFC 가 있으면 8유닛을 넣지 않는다.
+fn push_object_slot_placeholder(text_parts: &mut Vec<String>) {
+    if HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.get()) {
+        let fffc = text_parts
+            .iter()
+            .flat_map(|s| s.chars())
+            .filter(|&c| c == '\u{fffc}')
+            .count();
+        let slots = text_parts
+            .iter()
+            .filter(|s| s.as_str() == "\u{0002}")
+            .count();
+        if fffc > slots {
+            return;
+        }
+    }
+    text_parts.push("\u{0002}".to_string());
 }
 
 /// [#4916 계열] HWP5-origin 마커 문서 파싱 구간 표식 — RAII 로 해제된다.
@@ -5404,6 +5425,22 @@ impl Hwp5OriginSourceGuard {
 impl Drop for Hwp5OriginSourceGuard {
     fn drop(&mut self) {
         HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.set(false));
+    }
+}
+
+/// [#3518] 원본 HWP3→HWPX 파싱 구간 표식.
+pub(crate) struct Hwp3OriginSourceGuard;
+
+impl Hwp3OriginSourceGuard {
+    pub(crate) fn set(active: bool) -> Self {
+        HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.set(active));
+        Hwp3OriginSourceGuard
+    }
+}
+
+impl Drop for Hwp3OriginSourceGuard {
+    fn drop(&mut self) {
+        HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.set(false));
     }
 }
 
