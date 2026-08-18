@@ -49,7 +49,7 @@ fn hwp5_break_latin_word_derived_from_attr1_bits() {
     doc.doc_info.para_shapes.push(ps(2 << 5, None)); // BREAK_WORD
     doc.doc_info.para_shapes.push(ps(1 << 5, None)); // HYPHENATION
     doc.doc_info.para_shapes.push(ps(0, None)); // KEEP_WORD
-    // HWPX 소스(렉시컬 Some): attr1 을 무시하고 렉시컬 값을 그대로 쓴다.
+                                                // HWPX 소스(렉시컬 Some): attr1 을 무시하고 렉시컬 값을 그대로 쓴다.
     doc.doc_info.para_shapes.push(ps(2 << 5, Some("KEEP_WORD")));
 
     let hwpx = serialize_hwpx(&doc).expect("HWPX 직렬화");
