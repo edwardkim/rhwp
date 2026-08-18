@@ -926,6 +926,9 @@ jobs:
       - name: Validate Render Diff trigger policy
         run: python3 -m unittest scripts/tests/test_render_diff_workflow.py
 
+      - name: Validate canvaskit-parity batch map
+        run: python3 -m unittest scripts/tests/test_canvaskit_parity_batches.py
+
       # [#4080] workflow 계약 테스트는 추가해 놓고 배선을 잊으면 한 번도 돌지 않는다.
       # 아래 목록은 test_workflow_contract_wiring.py 가 강제한다 — 새 계약 테스트를
       # 추가하면 그 테스트가 실패하므로 여기 한 줄을 같이 넣어야 한다.
