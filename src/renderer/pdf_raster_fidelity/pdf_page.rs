@@ -112,7 +112,7 @@ pub fn build_multipage_pdf(pages: &[PdfBuildPage]) -> Result<Vec<u8>, String> {
     let xref_at = body.len();
     let _ = write!(body, "xref\n0 {}\n0000000000 65535 f \n", offsets.len() + 1);
     for offset in &offsets {
-        let _ = write!(body, "{offset:010} 00000 n \n");
+        let _ = writeln!(body, "{offset:010} 00000 n ");
     }
     let _ = write!(
         body,
