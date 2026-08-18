@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T06",
+  "title": "search 쿼리 없음",
+  "command": "batch search --json",
+  "axis": "search",
+  "input": 0,
+  "success": 0,
+  "failure": 0,
+  "exit": 2,
+  "stop": "B09",
+  "rows": [],
+  "stderrExample": null
+}

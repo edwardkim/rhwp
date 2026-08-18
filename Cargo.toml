@@ -196,6 +196,10 @@ path = "tests/overflow_cell_baseline.rs"
 
 # END RHWP GENERATED TEST TARGETS
 
+[[test]]
+name = "agent_bulk_pipeline_skill_contract"
+path = "tests/agent_bulk_pipeline_skill_contract.rs"
+
 [dependencies]
 rhwp-contracts = { path = "crates/rhwp-contracts" }
 rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart" }

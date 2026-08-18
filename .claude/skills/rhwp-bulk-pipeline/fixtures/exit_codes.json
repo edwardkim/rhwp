@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "aggregation": [
+    {
+      "code": 0,
+      "when": "전부 통과",
+      "example": "성공 5, 실패 0, verify 없음"
+    },
+    {
+      "code": 1,
+      "when": "error 레코드가 하나라도",
+      "example": "성공 4 + 실패 1 (레시피 9)"
+    },
+    {
+      "code": 2,
+      "when": "사용법",
+      "example": "--password, --query 누락, 이름 예약 충돌, 빈 CSV"
+    },
+    {
+      "code": 3,
+      "when": "error 없고 --verify IR 차이만",
+      "example": "convert/fill --verify"
+    },
+    {
+      "code": 4,
+      "when": "error 없고 --verify-pages 불일치",
+      "example": "convert --verify-pages"
+    }
+  ],
+  "usageDoesNotConsumeStdin": [
+    "batch --password",
+    "batch --password-stdin",
+    "batch --output-password",
+    "batch --output-password-stdin",
+    "batch search without --query",
+    "batch convert name collision",
+    "batch convert --out-dir starting with dash flag",
+    "batch fill empty header-only csv"
+  ],
+  "priority": [
+    "usage(2) before any record",
+    "any error record -> 1 (overrides 3/4)",
+    "verify-pages 4 over verify 3 when both set and no error",
+    "all ok -> 0"
+  ]
+}

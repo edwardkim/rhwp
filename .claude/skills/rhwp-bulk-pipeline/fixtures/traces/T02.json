@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T02",
+  "title": "export-text 5=4+1",
+  "command": "batch export-text --json --threads 4",
+  "axis": "export-text",
+  "input": 5,
+  "success": 4,
+  "failure": 1,
+  "exit": 1,
+  "stop": "B05",
+  "rows": [
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/2022년 국립국어원 업무계획.hwp",
+      "pageCount": 35,
+      "text": " \n \n\n\n\n2022년 국립국어원 업무계획\n…"
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "pageCount": 19,
+      "text": "2024년 5월 월간 수출입 현황(확정치)\n…"
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/field-01.hwp",
+      "pageCount": 3,
+      "text": "필드 서식 본문\n…"
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/hwp3-sample.hwp",
+      "pageCount": 16,
+      "text": "HWP3 표본 본문\n…"
+    },
+    {
+      "error": "문서를 열 수 없습니다: 지정된 파일을 찾을 수 없습니다. (os error 2)",
+      "exitClass": "runtime",
+      "schemaVersion": "1.0",
+      "source": "samples/없는파일.hwp",
+      "untrustedContent": false,
+      "untrustedFields": []
+    }
+  ],
+  "stderrExample": "batch: 5건 중 4 성공, 1 실패"
+}
