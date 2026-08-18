@@ -1,5 +1,2 @@
-"""edit set-cell-props --verify 재독
-
-command=edit-set-cell-props family=reread
-"""
-from .verify_corpus import verify
+"""edit set-cell-props --verify 재독 — edit-set-cell-props envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

@@ -1,1693 +1,1177 @@
 {
   "unitCount": 130,
-  "rowTotal": 2600000,
+  "ruleTotal": 111540,
+  "sourceLineTotal": 1264241,
   "units": [
     {
-      "claim": "V-w2-edit-insert-table",
       "command": "edit-insert-table",
       "family": "dims",
       "title": "edit insert-table 행·열 수가 요청 치수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "DIM_DRIFT": 5714,
-        "DIM_OK": 14286
-      },
+      "package": "w2_edit_insert_table",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_table/"
     },
     {
-      "claim": "V-w2-edit-insert-row",
       "command": "edit-insert-row",
       "family": "mutate",
       "title": "edit insert-row 후 행 수가 before+1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_insert_row",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_row/"
     },
     {
-      "claim": "V-w2-edit-insert-col",
       "command": "edit-insert-col",
       "family": "mutate",
       "title": "edit insert-col 후 열 수가 before+1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_insert_col",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_col/"
     },
     {
-      "claim": "V-w2-edit-delete-row",
       "command": "edit-delete-row",
       "family": "mutate",
       "title": "edit delete-row 후 행 수가 before-1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_row",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_row/"
     },
     {
-      "claim": "V-w2-edit-delete-col",
       "command": "edit-delete-col",
       "family": "mutate",
       "title": "edit delete-col 후 열 수가 before-1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_col",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_col/"
     },
     {
-      "claim": "V-w2-edit-delete-table",
       "command": "edit-delete-table",
       "family": "mutate",
       "title": "edit delete-table 후 표 수가 before-1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_table",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_table/"
     },
     {
-      "claim": "V-w2-edit-merge-cells",
       "command": "edit-merge-cells",
       "family": "span",
       "title": "edit merge-cells 범위가 격자 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "SPAN_OK": 17143,
-        "SPAN_OOB": 2857
-      },
+      "package": "w2_edit_merge_cells",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_merge_cells/"
     },
     {
-      "claim": "V-w2-edit-split-cell",
       "command": "edit-split-cell",
       "family": "coord",
       "title": "edit split-cell 좌표가 표 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COORD_OK": 14286,
-        "COORD_OOB": 5714
-      },
+      "package": "w2_edit_split_cell",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_split_cell/"
     },
     {
-      "claim": "V-w2-edit-split-cell-into",
       "command": "edit-split-cell-into",
       "family": "dims",
       "title": "edit split-cell-into 분할 치수가 양수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "DIM_DRIFT": 5714,
-        "DIM_OK": 14286
-      },
+      "package": "w2_edit_split_cell_into",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_split_cell_into/"
     },
     {
-      "claim": "V-w2-edit-split-table",
       "command": "edit-split-table",
       "family": "mutate",
       "title": "edit split-table 후 표 수가 before+1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_split_table",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_split_table/"
     },
     {
-      "claim": "V-w2-edit-merge-table",
       "command": "edit-merge-table",
       "family": "mutate",
       "title": "edit merge-table 후 표 수가 before-1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_merge_table",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_merge_table/"
     },
     {
-      "claim": "V-w2-edit-set-column-widths",
       "command": "edit-set-column-widths",
       "family": "dims",
       "title": "edit set-column-widths 폭 개수가 열 수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "DIM_DRIFT": 5714,
-        "DIM_OK": 14286
-      },
+      "package": "w2_edit_set_column_widths",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_set_column_widths/"
     },
     {
-      "claim": "V-w2-edit-set-cell-props",
       "command": "edit-set-cell-props",
       "family": "reread",
       "title": "edit set-cell-props --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_set_cell_props",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_set_cell_props/"
     },
     {
-      "claim": "V-w2-edit-set-table-props",
       "command": "edit-set-table-props",
       "family": "reread",
       "title": "edit set-table-props --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_set_table_props",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_set_table_props/"
     },
     {
-      "claim": "V-w2-edit-insert-text",
       "command": "edit-insert-text",
       "family": "reread",
       "title": "edit insert-text 후 글자 수가 증가분과 같음",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_insert_text",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_text/"
     },
     {
-      "claim": "V-w2-edit-insert-text-in-cell",
       "command": "edit-insert-text-in-cell",
       "family": "coord",
       "title": "edit insert-text-in-cell 셀 좌표가 격자 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COORD_OK": 14286,
-        "COORD_OOB": 5714
-      },
+      "package": "w2_edit_insert_text_in_cell",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_text_in_cell/"
     },
     {
-      "claim": "V-w2-edit-delete-text",
       "command": "edit-delete-text",
       "family": "mutate",
       "title": "edit delete-text 후 글자 수가 before-count",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_text",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_text/"
     },
     {
-      "claim": "V-w2-edit-delete-text-in-cell",
       "command": "edit-delete-text-in-cell",
       "family": "coord",
       "title": "edit delete-text-in-cell 셀 좌표가 격자 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COORD_OK": 14286,
-        "COORD_OOB": 5714
-      },
+      "package": "w2_edit_delete_text_in_cell",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_text_in_cell/"
     },
     {
-      "claim": "V-w2-edit-insert-paragraph",
       "command": "edit-insert-paragraph",
       "family": "mutate",
       "title": "edit insert-paragraph 후 문단 수 +1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_insert_paragraph",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_paragraph/"
     },
     {
-      "claim": "V-w2-edit-delete-paragraph",
       "command": "edit-delete-paragraph",
       "family": "mutate",
       "title": "edit delete-paragraph 후 문단 수 -1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_paragraph",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_paragraph/"
     },
     {
-      "claim": "V-w2-edit-merge-paragraph",
       "command": "edit-merge-paragraph",
       "family": "mutate",
       "title": "edit merge-paragraph 후 문단 수 -1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_merge_paragraph",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_merge_paragraph/"
     },
     {
-      "claim": "V-w2-edit-split-paragraph",
       "command": "edit-split-paragraph",
       "family": "mutate",
       "title": "edit split-paragraph 후 문단 수 +1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_split_paragraph",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_split_paragraph/"
     },
     {
-      "claim": "V-w2-edit-insert-page-break",
       "command": "edit-insert-page-break",
       "family": "mutate",
       "title": "edit insert-page-break 후 쪽 수 증가",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_insert_page_break",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_page_break/"
     },
     {
-      "claim": "V-w2-edit-insert-column-break",
       "command": "edit-insert-column-break",
       "family": "mutate",
       "title": "edit insert-column-break 후 단 수 증가",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_insert_column_break",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_column_break/"
     },
     {
-      "claim": "V-w2-edit-insert-image",
       "command": "edit-insert-image",
       "family": "bytes",
       "title": "edit insert-image 산출 바이트가 양수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "BYTES_OK": 14286,
-        "EMPTY_OUTPUT": 2857,
-        "ZERO_BYTES": 2857
-      },
+      "package": "w2_edit_insert_image",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_image/"
     },
     {
-      "claim": "V-w2-edit-insert-picture",
       "command": "edit-insert-picture",
       "family": "bbox",
       "title": "edit insert-picture bbox 가 쪽 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "BBOX_OK": 14286,
-        "BBOX_OOB": 5714
-      },
+      "package": "w2_edit_insert_picture",
+      "rules": 858,
+      "sourceLines": 9729,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_picture/"
     },
     {
-      "claim": "V-w2-edit-delete-picture",
       "command": "edit-delete-picture",
       "family": "mutate",
       "title": "edit delete-picture 후 그림 수 -1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_picture",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_picture/"
     },
     {
-      "claim": "V-w2-edit-delete-shape",
       "command": "edit-delete-shape",
       "family": "mutate",
       "title": "edit delete-shape 후 도형 수 -1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_shape",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_shape/"
     },
     {
-      "claim": "V-w2-edit-insert-shape",
       "command": "edit-insert-shape",
       "family": "bbox",
       "title": "edit insert-shape 폭·높이가 쪽 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "BBOX_OK": 14286,
-        "BBOX_OOB": 5714
-      },
+      "package": "w2_edit_insert_shape",
+      "rules": 858,
+      "sourceLines": 9729,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_shape/"
     },
     {
-      "claim": "V-w2-edit-set-picture",
       "command": "edit-set-picture",
       "family": "reread",
       "title": "edit set-picture --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_set_picture",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_set_picture/"
     },
     {
-      "claim": "V-w2-edit-insert-footnote",
       "command": "edit-insert-footnote",
       "family": "mutate",
       "title": "edit insert-footnote 후 각주 수 +1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_insert_footnote",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_footnote/"
     },
     {
-      "claim": "V-w2-edit-delete-footnote",
       "command": "edit-delete-footnote",
       "family": "mutate",
       "title": "edit delete-footnote 후 각주 수 -1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_footnote",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_footnote/"
     },
     {
-      "claim": "V-w2-edit-insert-endnote",
       "command": "edit-insert-endnote",
       "family": "mutate",
       "title": "edit insert-endnote 후 미주 수 +1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_insert_endnote",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_endnote/"
     },
     {
-      "claim": "V-w2-edit-insert-equation",
       "command": "edit-insert-equation",
       "family": "parse",
       "title": "edit insert-equation 스크립트가 파싱됨",
-      "rowCount": 20000,
-      "byVerdict": {
-        "PARSE_DROP": 5714,
-        "PARSE_OK": 14286
-      },
+      "package": "w2_edit_insert_equation",
+      "rules": 858,
+      "sourceLines": 9720,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_equation/"
     },
     {
-      "claim": "V-w2-edit-delete-equation",
       "command": "edit-delete-equation",
       "family": "mutate",
       "title": "edit delete-equation 후 수식 수 -1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_equation",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_equation/"
     },
     {
-      "claim": "V-w2-edit-set-equation-properties",
       "command": "edit-set-equation-properties",
       "family": "reread",
       "title": "edit set-equation-properties 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_set_equation_properties",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_set_equation_properties/"
     },
     {
-      "claim": "V-w2-edit-add-bookmark",
       "command": "edit-add-bookmark",
       "family": "reread",
       "title": "edit add-bookmark 후 bookmarks 에 이름 존재",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_add_bookmark",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_add_bookmark/"
     },
     {
-      "claim": "V-w2-edit-delete-bookmark",
       "command": "edit-delete-bookmark",
       "family": "mutate",
       "title": "edit delete-bookmark 후 북마크 수 -1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_bookmark",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_bookmark/"
     },
     {
-      "claim": "V-w2-edit-insert-header-footer",
       "command": "edit-insert-header-footer",
       "family": "mutate",
       "title": "edit insert-header-footer 후 HF 수 +1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_insert_header_footer",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_header_footer/"
     },
     {
-      "claim": "V-w2-edit-delete-header-footer",
       "command": "edit-delete-header-footer",
       "family": "mutate",
       "title": "edit delete-header-footer 후 HF 수 -1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_header_footer",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_header_footer/"
     },
     {
-      "claim": "V-w2-edit-set-header-footer-text",
       "command": "edit-set-header-footer-text",
       "family": "reread",
       "title": "edit set-header-footer-text 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_set_header_footer_text",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_set_header_footer_text/"
     },
     {
-      "claim": "V-w2-edit-insert-header-footer-text",
       "command": "edit-insert-header-footer-text",
       "family": "reread",
       "title": "edit insert-header-footer-text 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_insert_header_footer_text",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_header_footer_text/"
     },
     {
-      "claim": "V-w2-edit-delete-hf-text",
       "command": "edit-delete-hf-text",
       "family": "mutate",
       "title": "edit delete-hf-text 후 HF 글자 수 감소",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_hf_text",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_hf_text/"
     },
     {
-      "claim": "V-w2-edit-insert-field-in-hf",
       "command": "edit-insert-field-in-hf",
       "family": "mutate",
       "title": "edit insert-field-in-hf 후 필드 수 +1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_insert_field_in_hf",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_field_in_hf/"
     },
     {
-      "claim": "V-w2-edit-split-paragraph-in-hf",
       "command": "edit-split-paragraph-in-hf",
       "family": "mutate",
       "title": "edit split-paragraph-in-hf 후 HF 문단 +1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_split_paragraph_in_hf",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_split_paragraph_in_hf/"
     },
     {
-      "claim": "V-w2-edit-merge-paragraph-in-hf",
       "command": "edit-merge-paragraph-in-hf",
       "family": "mutate",
       "title": "edit merge-paragraph-in-hf 후 HF 문단 -1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_merge_paragraph_in_hf",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_merge_paragraph_in_hf/"
     },
     {
-      "claim": "V-w2-edit-split-paragraph-in-cell",
       "command": "edit-split-paragraph-in-cell",
       "family": "coord",
       "title": "edit split-paragraph-in-cell 좌표가 격자 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COORD_OK": 14286,
-        "COORD_OOB": 5714
-      },
+      "package": "w2_edit_split_paragraph_in_cell",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_split_paragraph_in_cell/"
     },
     {
-      "claim": "V-w2-edit-merge-paragraph-in-cell",
       "command": "edit-merge-paragraph-in-cell",
       "family": "coord",
       "title": "edit merge-paragraph-in-cell 좌표가 격자 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COORD_OK": 14286,
-        "COORD_OOB": 5714
-      },
+      "package": "w2_edit_merge_paragraph_in_cell",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_merge_paragraph_in_cell/"
     },
     {
-      "claim": "V-w2-edit-set-page-hide",
       "command": "edit-set-page-hide",
       "family": "reread",
       "title": "edit set-page-hide --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_set_page_hide",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_set_page_hide/"
     },
     {
-      "claim": "V-w2-edit-set-page-def",
       "command": "edit-set-page-def",
       "family": "reread",
       "title": "edit set-page-def --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_set_page_def",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_set_page_def/"
     },
     {
-      "claim": "V-w2-edit-set-section-def",
       "command": "edit-set-section-def",
       "family": "reread",
       "title": "edit set-section-def --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_set_section_def",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_set_section_def/"
     },
     {
-      "claim": "V-w2-edit-set-column-def",
       "command": "edit-set-column-def",
       "family": "count_eq",
       "title": "edit set-column-def count 가 단 수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_edit_set_column_def",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_edit_set_column_def/"
     },
     {
-      "claim": "V-w2-edit-apply-char-format",
       "command": "edit-apply-char-format",
       "family": "reread",
       "title": "edit apply-char-format --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_apply_char_format",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_apply_char_format/"
     },
     {
-      "claim": "V-w2-edit-apply-para-format",
       "command": "edit-apply-para-format",
       "family": "reread",
       "title": "edit apply-para-format --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_apply_para_format",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_apply_para_format/"
     },
     {
-      "claim": "V-w2-edit-apply-para-format-in-cell",
       "command": "edit-apply-para-format-in-cell",
       "family": "coord",
       "title": "edit apply-para-format-in-cell 좌표가 격자 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COORD_OK": 14286,
-        "COORD_OOB": 5714
-      },
+      "package": "w2_edit_apply_para_format_in_cell",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_apply_para_format_in_cell/"
     },
     {
-      "claim": "V-w2-edit-apply-char-format-in-cell",
       "command": "edit-apply-char-format-in-cell",
       "family": "coord",
       "title": "edit apply-char-format-in-cell 좌표가 격자 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COORD_OK": 14286,
-        "COORD_OOB": 5714
-      },
+      "package": "w2_edit_apply_char_format_in_cell",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_apply_char_format_in_cell/"
     },
     {
-      "claim": "V-w2-edit-apply-style",
       "command": "edit-apply-style",
       "family": "reread",
       "title": "edit apply-style --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_apply_style",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_apply_style/"
     },
     {
-      "claim": "V-w2-edit-apply-cell-style",
       "command": "edit-apply-cell-style",
       "family": "coord",
       "title": "edit apply-cell-style 좌표가 격자 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COORD_OK": 14286,
-        "COORD_OOB": 5714
-      },
+      "package": "w2_edit_apply_cell_style",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_apply_cell_style/"
     },
     {
-      "claim": "V-w2-edit-delete-control",
       "command": "edit-delete-control",
       "family": "mutate",
       "title": "edit delete-control 후 컨트롤 수 -1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_control",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_control/"
     },
     {
-      "claim": "V-w2-edit-set-chart-data",
       "command": "edit-set-chart-data",
       "family": "dims",
       "title": "edit set-chart-data 범주·시리즈 치수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "DIM_DRIFT": 5714,
-        "DIM_OK": 14286
-      },
+      "package": "w2_edit_set_chart_data",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_set_chart_data/"
     },
     {
-      "claim": "V-w2-edit-insert-number",
       "command": "edit-insert-number",
       "family": "mutate",
       "title": "edit insert-number 후 번호 필드 수 +1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_insert_number",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_number/"
     },
     {
-      "claim": "V-w2-edit-set-form-value",
       "command": "edit-set-form-value",
       "family": "reread",
       "title": "edit set-form-value --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_set_form_value",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_set_form_value/"
     },
     {
-      "claim": "V-w2-edit-set-form-value-in-cell",
       "command": "edit-set-form-value-in-cell",
       "family": "coord",
       "title": "edit set-form-value-in-cell 좌표가 격자 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COORD_OK": 14286,
-        "COORD_OOB": 5714
-      },
+      "package": "w2_edit_set_form_value_in_cell",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_edit_set_form_value_in_cell/"
     },
     {
-      "claim": "V-w2-edit-set-page-border-fill",
       "command": "edit-set-page-border-fill",
       "family": "reread",
       "title": "edit set-page-border-fill 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_set_page_border_fill",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_set_page_border_fill/"
     },
     {
-      "claim": "V-w2-edit-set-hf-picture",
       "command": "edit-set-hf-picture",
       "family": "bbox",
       "title": "edit set-hf-picture bbox 가 HF 영역 안",
-      "rowCount": 20000,
-      "byVerdict": {
-        "BBOX_OK": 14286,
-        "BBOX_OOB": 5714
-      },
+      "package": "w2_edit_set_hf_picture",
+      "rules": 858,
+      "sourceLines": 9729,
       "ownedPath": "tools/llm_verifier/w2_edit_set_hf_picture/"
     },
     {
-      "claim": "V-w2-edit-apply-hf-template",
       "command": "edit-apply-hf-template",
       "family": "reread",
       "title": "edit apply-hf-template --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_apply_hf_template",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_apply_hf_template/"
     },
     {
-      "claim": "V-w2-edit-apply-para-format-in-hf",
       "command": "edit-apply-para-format-in-hf",
       "family": "reread",
       "title": "edit apply-para-format-in-hf 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_apply_para_format_in_hf",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_apply_para_format_in_hf/"
     },
     {
-      "claim": "V-w2-edit-apply-endnote-shape",
       "command": "edit-apply-endnote-shape",
       "family": "reread",
       "title": "edit apply-endnote-shape 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_apply_endnote_shape",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_apply_endnote_shape/"
     },
     {
-      "claim": "V-w2-edit-insert-footnote-text",
       "command": "edit-insert-footnote-text",
       "family": "reread",
       "title": "edit insert-footnote-text 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_insert_footnote_text",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_insert_footnote_text/"
     },
     {
-      "claim": "V-w2-edit-split-paragraph-in-footnote",
       "command": "edit-split-paragraph-in-footnote",
       "family": "mutate",
       "title": "edit split-paragraph-in-footnote 문단 +1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_split_paragraph_in_footnote",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_split_paragraph_in_footnote/"
     },
     {
-      "claim": "V-w2-edit-merge-paragraph-in-footnote",
       "command": "edit-merge-paragraph-in-footnote",
       "family": "mutate",
       "title": "edit merge-paragraph-in-footnote 문단 -1",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_merge_paragraph_in_footnote",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_merge_paragraph_in_footnote/"
     },
     {
-      "claim": "V-w2-edit-apply-para-format-in-footnote",
       "command": "edit-apply-para-format-in-footnote",
       "family": "reread",
       "title": "edit apply-para-format-in-footnote 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_apply_para_format_in_footnote",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_apply_para_format_in_footnote/"
     },
     {
-      "claim": "V-w2-edit-set-numbering-restart",
       "command": "edit-set-numbering-restart",
       "family": "reread",
       "title": "edit set-numbering-restart 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_edit_set_numbering_restart",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_edit_set_numbering_restart/"
     },
     {
-      "claim": "V-w2-edit-delete-text-in-footnote",
       "command": "edit-delete-text-in-footnote",
       "family": "mutate",
       "title": "edit delete-text-in-footnote 글자 수 감소",
-      "rowCount": 20000,
-      "byVerdict": {
-        "MUTATE_DRIFT": 5570,
-        "MUTATE_OK": 14191,
-        "USAGE": 239
-      },
+      "package": "w2_edit_delete_text_in_footnote",
+      "rules": 858,
+      "sourceLines": 9723,
       "ownedPath": "tools/llm_verifier/w2_edit_delete_text_in_footnote/"
     },
     {
-      "claim": "V-w2-mcp-hwp-open",
       "command": "mcp-hwp-open",
       "family": "lease",
       "title": "mcp hwp_open 세션이 열려야 후속 도구 허용",
-      "rowCount": 20000,
-      "byVerdict": {
-        "EXIT_UNKNOWN": 2857,
-        "LEASE_FAIL": 5714,
-        "LEASE_OK": 2857,
-        "LEASE_STALE": 2857,
-        "SESSION_CLOSED": 5715
-      },
+      "package": "w2_mcp_hwp_open",
+      "rules": 858,
+      "sourceLines": 9729,
       "ownedPath": "tools/llm_verifier/w2_mcp_hwp_open/"
     },
     {
-      "claim": "V-w2-mcp-hwp-close",
       "command": "mcp-hwp-close",
       "family": "lease",
       "title": "mcp hwp_close 후 세션이 닫힘",
-      "rowCount": 20000,
-      "byVerdict": {
-        "EXIT_UNKNOWN": 2857,
-        "LEASE_FAIL": 5714,
-        "LEASE_OK": 2857,
-        "LEASE_STALE": 2857,
-        "SESSION_CLOSED": 5715
-      },
+      "package": "w2_mcp_hwp_close",
+      "rules": 858,
+      "sourceLines": 9729,
       "ownedPath": "tools/llm_verifier/w2_mcp_hwp_close/"
     },
     {
-      "claim": "V-w2-mcp-hwp-doc-info",
       "command": "mcp-hwp-doc-info",
       "family": "count_eq",
       "title": "mcp hwp_doc_info pageCount 가 음수가 아님",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_mcp_hwp_doc_info",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_mcp_hwp_doc_info/"
     },
     {
-      "claim": "V-w2-mcp-hwp-doc-export-text",
       "command": "mcp-hwp-doc-export-text",
       "family": "bound",
       "title": "mcp hwp_doc_export_text 상한과 truncated",
-      "rowCount": 20000,
-      "byVerdict": {
-        "BOUND_FALSE_POS": 5714,
-        "BOUND_LIE": 2857,
-        "BOUND_OK": 11429
-      },
+      "package": "w2_mcp_hwp_doc_export_text",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_mcp_hwp_doc_export_text/"
     },
     {
-      "claim": "V-w2-mcp-hwp-doc-search",
       "command": "mcp-hwp-doc-search",
       "family": "search",
       "title": "mcp hwp_doc_search matchCount 가 배열 길이",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5714,
-        "SEARCH_OK": 14286
-      },
+      "package": "w2_mcp_hwp_doc_search",
+      "rules": 858,
+      "sourceLines": 9729,
       "ownedPath": "tools/llm_verifier/w2_mcp_hwp_doc_search/"
     },
     {
-      "claim": "V-w2-mcp-hwp-doc-fields",
       "command": "mcp-hwp-doc-fields",
       "family": "count_eq",
       "title": "mcp hwp_doc_fields fieldCount 가 배열 길이",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_mcp_hwp_doc_fields",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_mcp_hwp_doc_fields/"
     },
     {
-      "claim": "V-w2-mcp-hwp-doc-edit",
       "command": "mcp-hwp-doc-edit",
       "family": "reread",
       "title": "mcp 세션 편집 --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_mcp_hwp_doc_edit",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_mcp_hwp_doc_edit/"
     },
     {
-      "claim": "V-w2-mcp-hwp-list-docs",
       "command": "mcp-hwp-list-docs",
       "family": "count_eq",
       "title": "mcp hwp_list_docs 수가 열린 문서 수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_mcp_hwp_list_docs",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_mcp_hwp_list_docs/"
     },
     {
-      "claim": "V-w2-mcp-hwp-doc-export-tables",
       "command": "mcp-hwp-doc-export-tables",
       "family": "dims",
       "title": "mcp hwp_doc_export_tables 치수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "DIM_DRIFT": 5714,
-        "DIM_OK": 14286
-      },
+      "package": "w2_mcp_hwp_doc_export_tables",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_mcp_hwp_doc_export_tables/"
     },
     {
-      "claim": "V-w2-mcp-hwp-doc-export-structure",
       "command": "mcp-hwp-doc-export-structure",
       "family": "count_eq",
       "title": "mcp hwp_doc_export_structure nodeCount",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_mcp_hwp_doc_export_structure",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_mcp_hwp_doc_export_structure/"
     },
     {
-      "claim": "V-w2-mcp-stateless-info",
       "command": "mcp-stateless-info",
       "family": "layer",
       "title": "무상태 MCP 판정 3층 rpc/isError/envelope",
-      "rowCount": 20000,
-      "byVerdict": {
-        "ENV_JUDGE": 8571,
-        "ENV_OK": 2857,
-        "ENV_UNKNOWN": 2857,
-        "RPC_FAIL": 2858,
-        "TOOL_FAIL": 2857
-      },
+      "package": "w2_mcp_stateless_info",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_mcp_stateless_info/"
     },
     {
-      "claim": "V-w2-mcp-session-lease",
       "command": "mcp-session-lease",
       "family": "lease",
       "title": "세션 리스 만료면 후속 호출 거부",
-      "rowCount": 20000,
-      "byVerdict": {
-        "EXIT_UNKNOWN": 2857,
-        "LEASE_FAIL": 5714,
-        "LEASE_OK": 2857,
-        "LEASE_STALE": 2857,
-        "SESSION_CLOSED": 5715
-      },
+      "package": "w2_mcp_session_lease",
+      "rules": 858,
+      "sourceLines": 9729,
       "ownedPath": "tools/llm_verifier/w2_mcp_session_lease/"
     },
     {
-      "claim": "V-w2-fde-triage",
       "command": "fde-triage",
       "family": "route",
       "title": "fde triage 경로가 닫힌 집합",
-      "rowCount": 20000,
-      "byVerdict": {
-        "ROUTE_OK": 17143,
-        "ROUTE_UNKNOWN": 2857
-      },
+      "package": "w2_fde_triage",
+      "rules": 858,
+      "sourceLines": 9722,
       "ownedPath": "tools/llm_verifier/w2_fde_triage/"
     },
     {
-      "claim": "V-w2-handoff-outgoing",
       "command": "handoff-outgoing",
       "family": "triad",
       "title": "handoff outgoing 입력·계획·산출 해시 3종",
-      "rowCount": 20000,
-      "byVerdict": {
-        "HASH_DEFECT": 2857,
-        "TRIAD_MISS": 2857,
-        "TRIAD_OK": 14286
-      },
+      "package": "w2_handoff_outgoing",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_handoff_outgoing/"
     },
     {
-      "claim": "V-w2-handoff-incoming",
       "command": "handoff-incoming",
       "family": "triad",
       "title": "handoff incoming last result 해시 3종",
-      "rowCount": 20000,
-      "byVerdict": {
-        "HASH_DEFECT": 2857,
-        "TRIAD_MISS": 2857,
-        "TRIAD_OK": 14286
-      },
+      "package": "w2_handoff_incoming",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_handoff_incoming/"
     },
     {
-      "claim": "V-w2-strategist-validate",
       "command": "strategist-validate",
       "family": "rate",
       "title": "strategist --validate CLAIM 통과율",
-      "rowCount": 20000,
-      "byVerdict": {
-        "RATE_IMPOSSIBLE": 2857,
-        "RATE_OK": 17143
-      },
+      "package": "w2_strategist_validate",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_strategist_validate/"
     },
     {
-      "claim": "V-w2-chief-route",
       "command": "chief-route",
       "family": "route",
       "title": "chief 라우트가 pdf/fill/table/needs-agent/fde",
-      "rowCount": 20000,
-      "byVerdict": {
-        "ROUTE_OK": 17143,
-        "ROUTE_UNKNOWN": 2857
-      },
+      "package": "w2_chief_route",
+      "rules": 858,
+      "sourceLines": 9722,
       "ownedPath": "tools/llm_verifier/w2_chief_route/"
     },
     {
-      "claim": "V-w2-gym-certify",
       "command": "gym-certify",
       "family": "rate",
       "title": "gym certify 통과 수가 전체 이하",
-      "rowCount": 20000,
-      "byVerdict": {
-        "RATE_IMPOSSIBLE": 2857,
-        "RATE_OK": 17143
-      },
+      "package": "w2_gym_certify",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_gym_certify/"
     },
     {
-      "claim": "V-w2-fidelity-compare",
       "command": "fidelity-compare",
       "family": "px",
       "title": "fidelity-compare px 와 STRUCT_MISMATCH",
-      "rowCount": 20000,
-      "byVerdict": {
-        "PX_FAIL": 3968,
-        "PX_OK": 13175,
-        "STRUCT": 2857
-      },
+      "package": "w2_fidelity_compare",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_fidelity_compare/"
     },
     {
-      "claim": "V-w2-exam-ingest",
       "command": "exam-ingest",
       "family": "count_eq",
       "title": "exam-ingest 문항 수가 선언과 일치",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_exam_ingest",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_exam_ingest/"
     },
     {
-      "claim": "V-w2-doc-triage",
       "command": "doc-triage",
       "family": "order",
       "title": "doc-triage 가 info→explain→structure 순서",
-      "rowCount": 20000,
-      "byVerdict": {
-        "ORDER_GAP": 5535,
-        "ORDER_OK": 14286,
-        "USAGE": 179
-      },
+      "package": "w2_doc_triage",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_doc_triage/"
     },
     {
-      "claim": "V-w2-explore-menu",
       "command": "explore-menu",
       "family": "count_eq",
       "title": "explore.affordanceCount 가 menu 길이",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_explore_menu",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_explore_menu/"
     },
     {
-      "claim": "V-w2-agent-surface-stateless",
       "command": "agent-surface-stateless",
       "family": "layer",
       "title": "에이전트 무상태 표면 3층 판정",
-      "rowCount": 20000,
-      "byVerdict": {
-        "ENV_JUDGE": 8571,
-        "ENV_OK": 2857,
-        "ENV_UNKNOWN": 2857,
-        "RPC_FAIL": 2858,
-        "TOOL_FAIL": 2857
-      },
+      "package": "w2_agent_surface_stateless",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_agent_surface_stateless/"
     },
     {
-      "claim": "V-w2-agent-surface-session",
       "command": "agent-surface-session",
       "family": "lease",
       "title": "에이전트 세션 표면은 리스가 살아 있어야 함",
-      "rowCount": 20000,
-      "byVerdict": {
-        "EXIT_UNKNOWN": 2857,
-        "LEASE_FAIL": 5714,
-        "LEASE_OK": 2857,
-        "LEASE_STALE": 2857,
-        "SESSION_CLOSED": 5715
-      },
+      "package": "w2_agent_surface_session",
+      "rules": 858,
+      "sourceLines": 9729,
       "ownedPath": "tools/llm_verifier/w2_agent_surface_session/"
     },
     {
-      "claim": "V-w2-recipe-receive",
       "command": "recipe-receive",
       "family": "signal",
       "title": "레시피 04 수신 점검 hasSignal",
-      "rowCount": 20000,
-      "byVerdict": {
-        "ANOMALY": 8571,
-        "CLEAN": 8572,
-        "SIGNAL_LIE": 2857
-      },
+      "package": "w2_recipe_receive",
+      "rules": 858,
+      "sourceLines": 9722,
       "ownedPath": "tools/llm_verifier/w2_recipe_receive/"
     },
     {
-      "claim": "V-w2-recipe-send",
       "command": "recipe-send",
       "family": "signal",
       "title": "레시피 10 송신 스윕 hasSignal",
-      "rowCount": 20000,
-      "byVerdict": {
-        "ANOMALY": 8571,
-        "CLEAN": 8572,
-        "SIGNAL_LIE": 2857
-      },
+      "package": "w2_recipe_send",
+      "rules": 858,
+      "sourceLines": 9722,
       "ownedPath": "tools/llm_verifier/w2_recipe_send/"
     },
     {
-      "claim": "V-w2-recipe-bulk-extract",
       "command": "recipe-bulk-extract",
       "family": "isolate",
       "title": "레시피 09 대량 추출 실패 행 격리",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 2857,
-        "ISOLATED": 14286,
-        "POISON": 2857
-      },
+      "package": "w2_recipe_bulk_extract",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_recipe_bulk_extract/"
     },
     {
-      "claim": "V-w2-recipe-layout-scan",
       "command": "recipe-layout-scan",
       "family": "layout",
       "title": "레시피 레이아웃 overflow/overlap/empty_page",
-      "rowCount": 20000,
-      "byVerdict": {
-        "ANOMALY": 8571,
-        "CLEAN": 8572,
-        "SIGNAL_LIE": 2857
-      },
+      "package": "w2_recipe_layout_scan",
+      "rules": 858,
+      "sourceLines": 9728,
       "ownedPath": "tools/llm_verifier/w2_recipe_layout_scan/"
     },
     {
-      "claim": "V-w2-recipe-form-verify",
       "command": "recipe-form-verify",
       "family": "reread",
       "title": "레시피 서식 --verify 재독",
-      "rowCount": 20000,
-      "byVerdict": {
-        "NOT_EVIDENCE": 2857,
-        "REREAD_DRIFT": 2857,
-        "REREAD_OK": 14286
-      },
+      "package": "w2_recipe_form_verify",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_recipe_form_verify/"
     },
     {
-      "claim": "V-w2-info-section-count",
       "command": "info-section-count",
       "family": "count_eq",
       "title": "info.sectionCount 가 sections 길이",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_info_section_count",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_info_section_count/"
     },
     {
-      "claim": "V-w2-info-para-count",
       "command": "info-para-count",
       "family": "count_eq",
       "title": "info.paraCount 가 음수가 아니고 선언과 일치",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_info_para_count",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_info_para_count/"
     },
     {
-      "claim": "V-w2-info-table-count",
       "command": "info-table-count",
       "family": "count_eq",
       "title": "info.tableCount 가 tables 길이",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_info_table_count",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_info_table_count/"
     },
     {
-      "claim": "V-w2-info-char-count",
       "command": "info-char-count",
       "family": "count_eq",
       "title": "info.charCount 가 음수가 아님",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_info_char_count",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_info_char_count/"
     },
     {
-      "claim": "V-w2-search-snippet-bound",
       "command": "search-snippet-bound",
       "family": "bound",
       "title": "search snippet 길이가 maxSnippet 이하",
-      "rowCount": 20000,
-      "byVerdict": {
-        "BOUND_FALSE_POS": 5714,
-        "BOUND_LIE": 2857,
-        "BOUND_OK": 11429
-      },
+      "package": "w2_search_snippet_bound",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_search_snippet_bound/"
     },
     {
-      "claim": "V-w2-explore-affordance",
       "command": "explore-affordance",
       "family": "count_eq",
       "title": "explore affordanceCount 가 항목 수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_explore_affordance",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_explore_affordance/"
     },
     {
-      "claim": "V-w2-digest-input-cas",
       "command": "digest-input-cas",
       "family": "cas",
       "title": "digest 입력 SHA-256 이 전제와 일치",
-      "rowCount": 20000,
-      "byVerdict": {
-        "CAS_MISMATCH": 2857,
-        "CAS_OK": 8572,
-        "SKIP": 2857,
-        "USAGE": 5714
-      },
+      "package": "w2_digest_input_cas",
+      "rules": 858,
+      "sourceLines": 9731,
       "ownedPath": "tools/llm_verifier/w2_digest_input_cas/"
     },
     {
-      "claim": "V-w2-export-structure-heading",
       "command": "export-structure-heading",
       "family": "count_eq",
       "title": "export-structure headingCount 가 항목 수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_export_structure_heading",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_export_structure_heading/"
     },
     {
-      "claim": "V-w2-fields-repeat-index",
       "command": "fields-repeat-index",
       "family": "count_eq",
       "title": "fields 반복 인덱스 수가 선언과 일치",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_fields_repeat_index",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_fields_repeat_index/"
     },
     {
-      "claim": "V-w2-batch-stderr-isolate",
       "command": "batch-stderr-isolate",
       "family": "isolate",
       "title": "batch stderr 요약이 실패 행만 포함",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 2857,
-        "ISOLATED": 14286,
-        "POISON": 2857
-      },
+      "package": "w2_batch_stderr_isolate",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_batch_stderr_isolate/"
     },
     {
-      "claim": "V-w2-word-count-page-sum",
       "command": "word-count-page-sum",
       "family": "count_eq",
       "title": "word-count 쪽별 합이 전체와 같음",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_word_count_page_sum",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_word_count_page_sum/"
     },
     {
-      "claim": "V-w2-export-text-max-chars",
       "command": "export-text-max-chars",
       "family": "bound",
       "title": "export-text --max-chars 와 truncated",
-      "rowCount": 20000,
-      "byVerdict": {
-        "BOUND_FALSE_POS": 5714,
-        "BOUND_LIE": 2857,
-        "BOUND_OK": 11429
-      },
+      "package": "w2_export_text_max_chars",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_export_text_max_chars/"
     },
     {
-      "claim": "V-w2-plan-step-count",
       "command": "plan-step-count",
       "family": "order",
       "title": "run 계획 steps 가 0..n-1 연속",
-      "rowCount": 20000,
-      "byVerdict": {
-        "ORDER_GAP": 5535,
-        "ORDER_OK": 14286,
-        "USAGE": 179
-      },
+      "package": "w2_plan_step_count",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_plan_step_count/"
     },
     {
-      "claim": "V-w2-plan-output-cas",
       "command": "plan-output-cas",
       "family": "cas",
       "title": "run 계획 outputSha256 이 산출과 일치",
-      "rowCount": 20000,
-      "byVerdict": {
-        "CAS_MISMATCH": 2857,
-        "CAS_OK": 8572,
-        "SKIP": 2857,
-        "USAGE": 5714
-      },
+      "package": "w2_plan_output_cas",
+      "rules": 858,
+      "sourceLines": 9731,
       "ownedPath": "tools/llm_verifier/w2_plan_output_cas/"
     },
     {
-      "claim": "V-w2-large-doc-page-cap",
       "command": "large-doc-page-cap",
       "family": "limit",
       "title": "대형 문서 쪽 상한을 넘기면 거부",
-      "rowCount": 20000,
-      "byVerdict": {
-        "OVER_ACCEPTED": 2857,
-        "OVER_REJECT": 5714,
-        "UNDER_OK": 8572,
-        "UNDER_REJECT": 2857
-      },
+      "package": "w2_large_doc_page_cap",
+      "rules": 858,
+      "sourceLines": 9727,
       "ownedPath": "tools/llm_verifier/w2_large_doc_page_cap/"
     },
     {
-      "claim": "V-w2-run-journal-count",
       "command": "run-journal-count",
       "family": "count_eq",
       "title": "run 저널 항목 수가 스텝 수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_run_journal_count",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_run_journal_count/"
     },
     {
-      "claim": "V-w2-studio-export-png",
       "command": "studio-export-png",
       "family": "bytes",
       "title": "studio export-png 바이트가 양수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "BYTES_OK": 14286,
-        "EMPTY_OUTPUT": 2857,
-        "ZERO_BYTES": 2857
-      },
+      "package": "w2_studio_export_png",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_studio_export_png/"
     },
     {
-      "claim": "V-w2-vscode-preview",
       "command": "vscode-preview",
       "family": "bytes",
       "title": "vscode preview 바이트가 양수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "BYTES_OK": 14286,
-        "EMPTY_OUTPUT": 2857,
-        "ZERO_BYTES": 2857
-      },
+      "package": "w2_vscode_preview",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_vscode_preview/"
     },
     {
-      "claim": "V-w2-chrome-print",
       "command": "chrome-print",
       "family": "bytes",
       "title": "chrome print PDF 바이트가 양수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "BYTES_OK": 14286,
-        "EMPTY_OUTPUT": 2857,
-        "ZERO_BYTES": 2857
-      },
+      "package": "w2_chrome_print",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_chrome_print/"
     },
     {
-      "claim": "V-w2-desk-open",
       "command": "desk-open",
       "family": "avail",
       "title": "desk 미빌드는 exit 2",
-      "rowCount": 20000,
-      "byVerdict": {
-        "AVAIL_RUN": 5714,
-        "EXIT_UNKNOWN": 2857,
-        "FALSE_UNAVAIL": 2857,
-        "UNAVAIL_LIE": 5714,
-        "UNAVAIL_OK": 2858
-      },
+      "package": "w2_desk_open",
+      "rules": 858,
+      "sourceLines": 9728,
       "ownedPath": "tools/llm_verifier/w2_desk_open/"
     },
     {
-      "claim": "V-w2-wasm-info",
       "command": "wasm-info",
       "family": "avail",
       "title": "wasm info 미빌드는 exit 2",
-      "rowCount": 20000,
-      "byVerdict": {
-        "AVAIL_RUN": 5714,
-        "EXIT_UNKNOWN": 2857,
-        "FALSE_UNAVAIL": 2857,
-        "UNAVAIL_LIE": 5714,
-        "UNAVAIL_OK": 2858
-      },
+      "package": "w2_wasm_info",
+      "rules": 858,
+      "sourceLines": 9728,
       "ownedPath": "tools/llm_verifier/w2_wasm_info/"
     },
     {
-      "claim": "V-w2-ooxml-chart-round",
       "command": "ooxml-chart-round",
       "family": "round",
       "title": "OOXML 차트 왕복 시리즈 수 보존",
-      "rowCount": 20000,
-      "byVerdict": {
-        "FORMAT_NA": 2857,
-        "ROUND_DRIFT": 5714,
-        "ROUND_OK": 11429
-      },
+      "package": "w2_ooxml_chart_round",
+      "rules": 858,
+      "sourceLines": 9725,
       "ownedPath": "tools/llm_verifier/w2_ooxml_chart_round/"
     },
     {
-      "claim": "V-w2-password-open",
       "command": "password-open",
       "family": "avail",
       "title": "암호 문서 키 없으면 exit 2",
-      "rowCount": 20000,
-      "byVerdict": {
-        "AVAIL_RUN": 5714,
-        "EXIT_UNKNOWN": 2857,
-        "FALSE_UNAVAIL": 2857,
-        "UNAVAIL_LIE": 5714,
-        "UNAVAIL_OK": 2858
-      },
+      "package": "w2_password_open",
+      "rules": 858,
+      "sourceLines": 9728,
       "ownedPath": "tools/llm_verifier/w2_password_open/"
     },
     {
-      "claim": "V-w2-paint-layer-count",
       "command": "paint-layer-count",
       "family": "count_eq",
       "title": "paint layerCount 가 레이어 배열 길이",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_paint_layer_count",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_paint_layer_count/"
     },
     {
-      "claim": "V-w2-render-backend-page",
       "command": "render-backend-page",
       "family": "count_eq",
       "title": "render-backend 쪽 수가 pageCount",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_render_backend_page",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_render_backend_page/"
     },
     {
-      "claim": "V-w2-docdiff-page",
       "command": "docdiff-page",
       "family": "diff",
       "title": "docdiff 쪽 차이 수가 항목 수",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5714,
-        "DIFF_OK": 14286
-      },
+      "package": "w2_docdiff_page",
+      "rules": 858,
+      "sourceLines": 9722,
       "ownedPath": "tools/llm_verifier/w2_docdiff_page/"
     },
     {
-      "claim": "V-w2-font-metric-face",
       "command": "font-metric-face",
       "family": "count_eq",
       "title": "font-metric face 수가 선언과 일치",
-      "rowCount": 20000,
-      "byVerdict": {
-        "COUNT_DRIFT": 5595,
-        "COUNT_OK": 14286,
-        "USAGE": 119
-      },
+      "package": "w2_font_metric_face",
+      "rules": 858,
+      "sourceLines": 9724,
       "ownedPath": "tools/llm_verifier/w2_font_metric_face/"
     }
-  ],
-  "elapsedSec": 53.1
+  ]
 }

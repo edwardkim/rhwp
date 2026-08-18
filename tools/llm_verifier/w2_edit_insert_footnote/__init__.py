@@ -1,5 +1,2 @@
-"""edit insert-footnote 후 각주 수 +1
-
-command=edit-insert-footnote family=mutate
-"""
-from .verify_corpus import verify
+"""edit insert-footnote 후 각주 수 +1 — edit-insert-footnote envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

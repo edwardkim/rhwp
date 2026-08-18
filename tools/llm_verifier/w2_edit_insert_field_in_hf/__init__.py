@@ -1,5 +1,2 @@
-"""edit insert-field-in-hf 후 필드 수 +1
-
-command=edit-insert-field-in-hf family=mutate
-"""
-from .verify_corpus import verify
+"""edit insert-field-in-hf 후 필드 수 +1 — edit-insert-field-in-hf envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

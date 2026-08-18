@@ -1,5 +1,2 @@
-"""mcp hwp_doc_fields fieldCount 가 배열 길이
-
-command=mcp-hwp-doc-fields family=count_eq
-"""
-from .verify_corpus import verify
+"""mcp hwp_doc_fields fieldCount 가 배열 길이 — mcp-hwp-doc-fields envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

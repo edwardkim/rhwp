@@ -1,5 +1,2 @@
-"""edit set-table-props --verify 재독
-
-command=edit-set-table-props family=reread
-"""
-from .verify_corpus import verify
+"""edit set-table-props --verify 재독 — edit-set-table-props envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

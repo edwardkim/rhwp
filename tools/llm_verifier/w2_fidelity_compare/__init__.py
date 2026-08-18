@@ -1,5 +1,2 @@
-"""fidelity-compare px 와 STRUCT_MISMATCH
-
-command=fidelity-compare family=px
-"""
-from .verify_corpus import verify
+"""fidelity-compare px 와 STRUCT_MISMATCH — fidelity-compare envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

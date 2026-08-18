@@ -1,5 +1,2 @@
-"""레시피 서식 --verify 재독
-
-command=recipe-form-verify family=reread
-"""
-from .verify_corpus import verify
+"""레시피 서식 --verify 재독 — recipe-form-verify envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

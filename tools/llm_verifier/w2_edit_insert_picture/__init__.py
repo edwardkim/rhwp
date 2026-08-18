@@ -1,5 +1,2 @@
-"""edit insert-picture bbox 가 쪽 안
-
-command=edit-insert-picture family=bbox
-"""
-from .verify_corpus import verify
+"""edit insert-picture bbox 가 쪽 안 — edit-insert-picture envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

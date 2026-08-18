@@ -1,5 +1,2 @@
-"""mcp hwp_doc_export_tables 치수
-
-command=mcp-hwp-doc-export-tables family=dims
-"""
-from .verify_corpus import verify
+"""mcp hwp_doc_export_tables 치수 — mcp-hwp-doc-export-tables envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

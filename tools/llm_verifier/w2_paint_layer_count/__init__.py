@@ -1,5 +1,2 @@
-"""paint layerCount 가 레이어 배열 길이
-
-command=paint-layer-count family=count_eq
-"""
-from .verify_corpus import verify
+"""paint layerCount 가 레이어 배열 길이 — paint-layer-count envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

@@ -1,5 +1,2 @@
-"""edit delete-shape 후 도형 수 -1
-
-command=edit-delete-shape family=mutate
-"""
-from .verify_corpus import verify
+"""edit delete-shape 후 도형 수 -1 — edit-delete-shape envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

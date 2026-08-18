@@ -1,5 +1,2 @@
-"""edit insert-header-footer-text 재독
-
-command=edit-insert-header-footer-text family=reread
-"""
-from .verify_corpus import verify
+"""edit insert-header-footer-text 재독 — edit-insert-header-footer-text envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

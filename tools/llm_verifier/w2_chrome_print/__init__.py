@@ -1,5 +1,2 @@
-"""chrome print PDF 바이트가 양수
-
-command=chrome-print family=bytes
-"""
-from .verify_corpus import verify
+"""chrome print PDF 바이트가 양수 — chrome-print envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

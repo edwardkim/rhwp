@@ -1,5 +1,2 @@
-"""edit split-cell 좌표가 표 안
-
-command=edit-split-cell family=coord
-"""
-from .verify_corpus import verify
+"""edit split-cell 좌표가 표 안 — edit-split-cell envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

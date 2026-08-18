@@ -1,5 +1,2 @@
-"""fde triage 경로가 닫힌 집합
-
-command=fde-triage family=route
-"""
-from .verify_corpus import verify
+"""fde triage 경로가 닫힌 집합 — fde-triage envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

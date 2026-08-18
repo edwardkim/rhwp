@@ -1,5 +1,2 @@
-"""edit delete-paragraph 후 문단 수 -1
-
-command=edit-delete-paragraph family=mutate
-"""
-from .verify_corpus import verify
+"""edit delete-paragraph 후 문단 수 -1 — edit-delete-paragraph envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

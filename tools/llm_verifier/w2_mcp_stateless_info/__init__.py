@@ -1,5 +1,2 @@
-"""무상태 MCP 판정 3층 rpc/isError/envelope
-
-command=mcp-stateless-info family=layer
-"""
-from .verify_corpus import verify
+"""무상태 MCP 판정 3층 rpc/isError/envelope — mcp-stateless-info envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

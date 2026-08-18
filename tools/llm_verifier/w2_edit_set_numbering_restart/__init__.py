@@ -1,5 +1,2 @@
-"""edit set-numbering-restart 재독
-
-command=edit-set-numbering-restart family=reread
-"""
-from .verify_corpus import verify
+"""edit set-numbering-restart 재독 — edit-set-numbering-restart envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

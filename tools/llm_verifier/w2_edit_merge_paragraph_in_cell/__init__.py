@@ -1,5 +1,2 @@
-"""edit merge-paragraph-in-cell 좌표가 격자 안
-
-command=edit-merge-paragraph-in-cell family=coord
-"""
-from .verify_corpus import verify
+"""edit merge-paragraph-in-cell 좌표가 격자 안 — edit-merge-paragraph-in-cell envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

@@ -1,5 +1,2 @@
-"""edit apply-endnote-shape 재독
-
-command=edit-apply-endnote-shape family=reread
-"""
-from .verify_corpus import verify
+"""edit apply-endnote-shape 재독 — edit-apply-endnote-shape envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

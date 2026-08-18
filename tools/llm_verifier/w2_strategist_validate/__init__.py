@@ -1,5 +1,2 @@
-"""strategist --validate CLAIM 통과율
-
-command=strategist-validate family=rate
-"""
-from .verify_corpus import verify
+"""strategist --validate CLAIM 통과율 — strategist-validate envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

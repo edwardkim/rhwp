@@ -1,5 +1,2 @@
-"""edit set-form-value --verify 재독
-
-command=edit-set-form-value family=reread
-"""
-from .verify_corpus import verify
+"""edit set-form-value --verify 재독 — edit-set-form-value envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

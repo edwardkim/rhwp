@@ -1,5 +1,2 @@
-"""edit set-page-hide --verify 재독
-
-command=edit-set-page-hide family=reread
-"""
-from .verify_corpus import verify
+"""edit set-page-hide --verify 재독 — edit-set-page-hide envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

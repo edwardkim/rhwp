@@ -1,5 +1,2 @@
-"""explore affordanceCount 가 항목 수
-
-command=explore-affordance family=count_eq
-"""
-from .verify_corpus import verify
+"""explore affordanceCount 가 항목 수 — explore-affordance envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

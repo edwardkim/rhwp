@@ -1,5 +1,2 @@
-"""studio export-png 바이트가 양수
-
-command=studio-export-png family=bytes
-"""
-from .verify_corpus import verify
+"""studio export-png 바이트가 양수 — studio-export-png envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

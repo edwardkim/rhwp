@@ -1,5 +1,2 @@
-"""암호 문서 키 없으면 exit 2
-
-command=password-open family=avail
-"""
-from .verify_corpus import verify
+"""암호 문서 키 없으면 exit 2 — password-open envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

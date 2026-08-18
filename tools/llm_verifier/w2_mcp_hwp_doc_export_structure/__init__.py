@@ -1,5 +1,2 @@
-"""mcp hwp_doc_export_structure nodeCount
-
-command=mcp-hwp-doc-export-structure family=count_eq
-"""
-from .verify_corpus import verify
+"""mcp hwp_doc_export_structure nodeCount — mcp-hwp-doc-export-structure envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

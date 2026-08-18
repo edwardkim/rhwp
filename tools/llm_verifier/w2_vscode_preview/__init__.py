@@ -1,5 +1,2 @@
-"""vscode preview 바이트가 양수
-
-command=vscode-preview family=bytes
-"""
-from .verify_corpus import verify
+"""vscode preview 바이트가 양수 — vscode-preview envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

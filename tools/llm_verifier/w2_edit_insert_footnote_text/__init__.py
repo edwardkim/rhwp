@@ -1,5 +1,2 @@
-"""edit insert-footnote-text 재독
-
-command=edit-insert-footnote-text family=reread
-"""
-from .verify_corpus import verify
+"""edit insert-footnote-text 재독 — edit-insert-footnote-text envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

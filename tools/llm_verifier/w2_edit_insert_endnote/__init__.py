@@ -1,5 +1,2 @@
-"""edit insert-endnote 후 미주 수 +1
-
-command=edit-insert-endnote family=mutate
-"""
-from .verify_corpus import verify
+"""edit insert-endnote 후 미주 수 +1 — edit-insert-endnote envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

@@ -1,5 +1,2 @@
-"""desk 미빌드는 exit 2
-
-command=desk-open family=avail
-"""
-from .verify_corpus import verify
+"""desk 미빌드는 exit 2 — desk-open envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES

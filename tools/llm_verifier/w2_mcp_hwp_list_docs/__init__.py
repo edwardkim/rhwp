@@ -1,5 +1,2 @@
-"""mcp hwp_list_docs 수가 열린 문서 수
-
-command=mcp-hwp-list-docs family=count_eq
-"""
-from .verify_corpus import verify
+"""mcp hwp_list_docs 수가 열린 문서 수 — mcp-hwp-list-docs envelope checks as functions."""
+from .decide import COMMAND, FAMILY, TITLE, decide, RULES
