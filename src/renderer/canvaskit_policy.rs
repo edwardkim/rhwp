@@ -2909,6 +2909,21 @@ mod tests {
         assert_eq!(mark_plan.items[0].op_type, "textControlMark");
         assert_eq!(mark_plan.items[0].status, CanvasKitReplayStatus::Direct);
         assert_eq!(mark_plan.summary.hidden_overlay_violations, 0);
+
+        // [표]/[그림] 조판부호는 일반 TextRun 이므로 showControlCodes 만으로 폴백하지 않는다.
+        for (index, text) in ["[표]", "[그림]"].into_iter().enumerate() {
+            let mut marker = text_run(text);
+            marker.field_marker = FieldMarkerType::ShapeMarker(index);
+            marker.style.color = 0x0000FF;
+            let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), marker)]);
+            let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+            assert_eq!(
+                plan.items[0].status,
+                CanvasKitReplayStatus::Direct,
+                "text={text}"
+            );
+            assert_eq!(plan.items[0].detail, None, "text={text}");
+        }
     }
 
     #[test]
