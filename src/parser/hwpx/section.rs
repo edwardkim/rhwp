@@ -5654,6 +5654,30 @@ fn open_param_frame<'a>(
     }
 }
 
+/// [#4436] `<hp:listParam>` 중첩 상한. 루트 `<hp:parameters>` 는 세지 않는다.
+///
+/// OWPML `hp:ParameterList` 는 재귀 `listParam` 을 막지 않아, 손상·적대 HWPX 가
+/// 극단적으로 깊게 중첩할 수 있다. 트리 빌더는 반복 스택이라 네이티브 스택은
+/// 당장 안 넘지만, 만든 `Parameter::List` 트리는 이후 render/Drop 이 재귀한다.
+/// 실문서는 두세 단계를 넘지 않는다. 8 도 넉넉하고, 여기서는 그 위에 여유를 둔다.
+const MAX_LIST_PARAM_DEPTH: usize = 32;
+
+/// 새 `listParam` 을 열기 직전 — 이미 열린 List 프레임(루트 + 조상 listParam)이
+/// 상한에 있으면 파싱 오류. 조용히 자르지 않는다(#4436).
+fn ensure_list_param_depth(stack: &[ParamFrame]) -> Result<(), HwpxError> {
+    let nested = stack
+        .iter()
+        .filter(|frame| matches!(frame, ParamFrame::List { .. }))
+        .count()
+        .saturating_sub(1);
+    if nested >= MAX_LIST_PARAM_DEPTH {
+        return Err(HwpxError::XmlError(format!(
+            "listParam nesting exceeds {MAX_LIST_PARAM_DEPTH} levels"
+        )));
+    }
+    Ok(())
+}
+
 fn parse_field_parameters(
     start: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
@@ -5722,6 +5746,9 @@ fn parse_field_parameters(
                     }
                 }
                 if let Some(frame) = open_param_frame(local, ce.attributes().flatten()) {
+                    if matches!(frame, ParamFrame::List { .. }) {
+                        ensure_list_param_depth(&stack)?;
+                    }
                     stack.push(frame);
                 }
             }
@@ -5747,6 +5774,9 @@ fn parse_field_parameters(
                 }
                 // 자기닫힘(빈 값) — 여닫 없이 즉시 부모에 붙인다.
                 if let Some(frame) = open_param_frame(local, ce.attributes().flatten()) {
+                    if matches!(frame, ParamFrame::List { .. }) {
+                        ensure_list_param_depth(&stack)?;
+                    }
                     if let Some(ParamFrame::List { items, .. }) = stack.last_mut() {
                         items.push(frame.finish());
                     }
@@ -8736,6 +8766,67 @@ mod tests {
             "바깥 </hp:listParam> 누락(중첩 불균형): {raw}"
         );
         assert!(raw.ends_with("</hp:parameters>"), "params close: {raw}");
+
+        // [#4436] 상한 안쪽은 성공, 초과는 조용히 자르지 않고 XmlError.
+        let at_limit = parse_parameters_xml(&nested_list_param_xml(MAX_LIST_PARAM_DEPTH))
+            .expect("정상 깊이 listParam 이 거부됐다 — 가드가 과잉 차단");
+        assert_eq!(
+            list_param_tree_depth(&at_limit.parameters),
+            MAX_LIST_PARAM_DEPTH
+        );
+        match parse_parameters_xml(&nested_list_param_xml(MAX_LIST_PARAM_DEPTH + 1)) {
+            Err(HwpxError::XmlError(msg)) => {
+                assert!(
+                    msg.contains("listParam nesting exceeds"),
+                    "XmlError 메시지에 `listParam nesting exceeds` 가 없다: {msg}"
+                );
+            }
+            other => panic!("상한 초과 listParam 이 XmlError 로 거부되지 않았다: {other:?}"),
+        }
+    }
+
+    fn nested_list_param_xml(depth: usize) -> String {
+        let mut xml = String::from(
+            r#"<hp:parameters xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" cnt="1" name="">"#,
+        );
+        for i in 0..depth {
+            xml.push_str(&format!(r#"<hp:listParam cnt="1" name="L{i}">"#));
+        }
+        xml.push_str(r#"<hp:stringParam name="A">x</hp:stringParam>"#);
+        for _ in 0..depth {
+            xml.push_str("</hp:listParam>");
+        }
+        xml.push_str("</hp:parameters>");
+        xml
+    }
+
+    fn parse_parameters_xml(xml: &str) -> Result<Field, HwpxError> {
+        let mut reader = Reader::from_str(xml);
+        let mut buf = Vec::new();
+        let mut field = Field::default();
+        loop {
+            match reader.read_event_into(&mut buf).unwrap() {
+                Event::Start(ref e) if local_name(e.name().as_ref()) == b"parameters" => {
+                    let start = e.to_owned();
+                    parse_field_parameters(&start, &mut reader, &mut field)?;
+                    return Ok(field);
+                }
+                Event::Eof => panic!("parameters not found"),
+                _ => {}
+            }
+            buf.clear();
+        }
+    }
+
+    fn list_param_tree_depth(list: &ParameterList) -> usize {
+        list.items
+            .iter()
+            .filter_map(|param| match param {
+                Parameter::List(inner) => Some(1 + list_param_tree_depth(inner)),
+                _ => None,
+            })
+            .max()
+            .unwrap_or(0)
     }
 
     #[test]
