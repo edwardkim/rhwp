@@ -615,7 +615,7 @@ pub(crate) fn write_shape_component_block<W: Write>(
     Ok(())
 }
 
-fn write_offset<W: Write>(
+pub(super) fn write_offset<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
