@@ -77,22 +77,31 @@ RUSTFLAGS="-C linker=rust-lld" cargo +nightly fuzz build
 
 ## 시드 코퍼스
 
-`fuzz/corpus/<타깃>/` 에 저장소의 기존 샘플 중 작은 파일들을 복사해 두었습니다.
-CFB/ZIP처럼 구조 제약이 강한 컨테이너 포맷은 시드 없이는 변이가 깊이
-들어가지 못하므로, 시드가 실질적인 커버리지를 좌우합니다.
+`fuzz/corpus/<타깃>/` 가 nightly 스모크(`fuzz-smoke.yml`)와 `cargo +nightly fuzz run`
+의 기본 코퍼스 경로다. CFB/ZIP처럼 구조 제약이 강한 컨테이너는 시드 없이는
+변이가 깊이 들어가지 못하므로, `samples/` 에서 작은 파일을 추출하고
+임베드 WMF·차트 XML 을 풀어 넣었다. 개별 시드는 크기 상한(HWP/HWPX 64KiB,
+HWP3 128KiB, 추출 WMF 16KiB, 차트 XML 32KiB)을 넘기지 않는다.
 
-| 코퍼스 | 출처 |
-|---|---|
-| `corpus/parse_hwp/` | `samples/basic/` (english, Textmail, shortcut) |
-| `corpus/parse_hwp3/` | `samples/` (hwp3-pagedef-1915, hwp3-sample) |
-| `corpus/parse_hwpx/` | `samples/task2136`, `samples/task2093`, `samples/` (tac-host-spacing) |
-| `corpus/parse_hml/` | `tests/fixtures/hml/`, `samples/hml/` |
-| `corpus/parse_wmf/` | 최소 유효 시드 합성(META_PLACEABLE + 최소 헤더 + EOF, 46B) |
-| `corpus/parse_ooxml_chart/` | 최소 유효 시드 합성(`c:chartSpace` 막대 차트) |
+| 코퍼스 | 시드 수 | 출처 |
+|---|---:|---|
+| `corpus/parse_hwp/` | 83 | `samples/` HWP 5.x(CFB) 소형 파일, 디렉터리 라운드로빈 |
+| `corpus/parse_hwp3/` | 58 | 매직 `HWP Document File V3.00` 실파일 ≤128KiB + 대형본 2/16/32/64KiB prefix |
+| `corpus/parse_hwpx/` | 80 | `samples/` HWPX(ZIP) 소형 파일, 디렉터리 라운드로빈 |
+| `corpus/parse_hml/` | 53 | `samples/hml/`·`tests/fixtures/hml/` 원본 3 + 파서 경로용 최소 HWPML |
+| `corpus/parse_wmf/` | 67 | HWP/HWPX 임베드 추출 + placeable/표준 레코드 최소 시드 |
+| `corpus/parse_ooxml_chart/` | 79 | HWPX `Chart/*.xml`·`c:chartSpace` 추출 + 차트 타입 최소 XML |
+
+HWP3 실파일은 저장소에 23개뿐이라 50+ 를 prefix 로 채웠다. 대형 원본(수백
+KiB~수 MiB)은 커밋하지 않는다. HML 원본도 3개뿐이라 파서가 실제로 읽는
+요소(표·수식·RECTANGLE·인코딩 BOM 등)만 최소 문서로 보강했다.
 
 퍼징 중 커버리지를 넓힌 입력은 같은 디렉터리에 자동 축적됩니다.
 유의미하게 커버리지를 늘린 최소화 입력만 선별해 커밋하는 것을 권장합니다
 (`cargo +nightly fuzz cmin <타깃>` 으로 코퍼스를 최소화할 수 있습니다).
+Windows 호스트에서 `cmin --sanitizer none` 은 rust-lld 가 `__sanitizer_cov_*`
+심볼을 못 풀어 링크가 실패한다. 코퍼스는 SHA-256 중복 제거와 크기 상한으로
+먼저 줄였고, nightly 우분투 잡에서 cmin 을 돌릴 수 있다.
 
 ## 트리아지 절차
 
