@@ -1,0 +1,38 @@
+{
+  "id": "path-error-unknown-key",
+  "schema": "rhwp.fidelity_compare.text_only_path.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "title": "미등록 키",
+  "why": "등록 fixture positional 검증.",
+  "argv": [
+    "unknown",
+    "0",
+    "1",
+    "--text-only"
+  ],
+  "mode": "error",
+  "exportAllSvg": false,
+  "layoutLedger": false,
+  "expectsError": true,
+  "errorNeedle": "등록되지 않은 문서 키",
+  "error": "등록되지 않은 문서 키",
+  "parsed": null,
+  "artifacts": [
+    "provenance.tsv",
+    "report.tsv",
+    "text-report.tsv",
+    "svg-glyph-risk-report.tsv",
+    "text-owner-shift-candidates.tsv",
+    "text-owner-sequence-candidates.tsv",
+    "page-boundary-fidelity-candidates.tsv",
+    "visible-text-excess-candidates.tsv",
+    "page-count-ledger.tsv",
+    "run-state.tsv"
+  ],
+  "chromeRequired": false,
+  "pypdfRequired": false,
+  "pypdfium2Required": false,
+  "pixelSheets": false,
+  "candidateNotVerdict": true
+}

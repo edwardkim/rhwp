@@ -1,0 +1,52 @@
+{
+  "id": "path-direct-text-only-min",
+  "schema": "rhwp.fidelity_compare.text_only_path.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "title": "direct pair 최소 --text-only",
+  "why": "한 쪽만 텍스트 원장.",
+  "argv": [
+    "0",
+    "0",
+    "--source",
+    "samples/a.hwp",
+    "--reference-pdf",
+    "pdf/a-2022.pdf",
+    "--label",
+    "pair-a",
+    "--text-only"
+  ],
+  "mode": "direct",
+  "exportAllSvg": false,
+  "layoutLedger": false,
+  "expectsError": false,
+  "errorNeedle": "",
+  "error": "",
+  "parsed": {
+    "key": null,
+    "startPage": 0,
+    "endPage": 0,
+    "textOnly": true,
+    "exportAllSvg": false,
+    "layoutLedger": false,
+    "label": "pair-a",
+    "referenceGrade": "사용자 지정 기준 PDF (provenance는 출력 파일 참조)"
+  },
+  "artifacts": [
+    "provenance.tsv",
+    "report.tsv",
+    "text-report.tsv",
+    "svg-glyph-risk-report.tsv",
+    "text-owner-shift-candidates.tsv",
+    "text-owner-sequence-candidates.tsv",
+    "page-boundary-fidelity-candidates.tsv",
+    "visible-text-excess-candidates.tsv",
+    "page-count-ledger.tsv",
+    "run-state.tsv"
+  ],
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "pixelSheets": false,
+  "candidateNotVerdict": true
+}

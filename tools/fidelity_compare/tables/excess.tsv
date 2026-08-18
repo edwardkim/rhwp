@@ -1,0 +1,93 @@
+id	kind	family	registered_key	genre	page	reference_only	svg_only	reference_only_chars	svg_only_chars	glyph_risk_count	owner_shift	sequence	visible_excess	related_issue	title
+excess-plan-cover-00	excess	plan	plan	업무계획	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	표지 연도·기관명 — 반복 머리글이 SVG 에만 붙음
+excess-plan-cover-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	표지 연도·기관명 — 한컴 불릿 과잉
+excess-plan-goal-00	excess	plan	plan	업무계획	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	추진 목표 문단 — 반복 머리글이 SVG 에만 붙음
+excess-plan-goal-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	추진 목표 문단 — 한컴 불릿 과잉
+excess-plan-table-head-00	excess	plan	plan	업무계획	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	실적 표 헤더 — 반복 머리글이 SVG 에만 붙음
+excess-plan-table-head-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	실적 표 헤더 — 한컴 불릿 과잉
+excess-plan-budget-00	excess	plan	plan	업무계획	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	예산 숫자 행 — 반복 머리글이 SVG 에만 붙음
+excess-plan-budget-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	예산 숫자 행 — 한컴 불릿 과잉
+excess-plan-footnote-00	excess	plan	plan	업무계획	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	각주 표지 — 반복 머리글이 SVG 에만 붙음
+excess-plan-footnote-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	각주 표지 — 한컴 불릿 과잉
+excess-plan-caption-00	excess	plan	plan	업무계획	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	그림 캡션 — 반복 머리글이 SVG 에만 붙음
+excess-plan-caption-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	그림 캡션 — 한컴 불릿 과잉
+excess-plan-pua-circled-00	excess	plan	plan	업무계획	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	4	-	-	-	#3385	원문자 과제 번호 — 반복 머리글이 SVG 에만 붙음
+excess-plan-pua-circled-01	excess	plan	plan	업무계획	1	0	1	-	U+F02FB:\U000f02fb×1	5	-	-	-	#3385	원문자 과제 번호 — 한컴 불릿 과잉
+excess-manual-toc-00	excess	manual	manual	장문 편람	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	편람 목차 — 반복 머리글이 SVG 에만 붙음
+excess-manual-toc-01	excess	manual	manual	장문 편람	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	편람 목차 — 한컴 불릿 과잉
+excess-manual-article-00	excess	manual	manual	장문 편람	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	조문 본문 — 반복 머리글이 SVG 에만 붙음
+excess-manual-article-01	excess	manual	manual	장문 편람	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	조문 본문 — 한컴 불릿 과잉
+excess-manual-note-00	excess	manual	manual	장문 편람	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	해설 각주 — 반복 머리글이 SVG 에만 붙음
+excess-manual-note-01	excess	manual	manual	장문 편람	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	해설 각주 — 한컴 불릿 과잉
+excess-manual-long-00	excess	manual	manual	장문 편람	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	장문 해설 — 반복 머리글이 SVG 에만 붙음
+excess-manual-long-01	excess	manual	manual	장문 편람	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	장문 해설 — 한컴 불릿 과잉
+excess-bunjang-header-00	excess	bunjang	bunjang	표 중심	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	거래 명세 헤더 — 반복 머리글이 SVG 에만 붙음
+excess-bunjang-header-01	excess	bunjang	bunjang	표 중심	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	거래 명세 헤더 — 한컴 불릿 과잉
+excess-bunjang-row-00	excess	bunjang	bunjang	표 중심	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	거래 한 행 — 반복 머리글이 SVG 에만 붙음
+excess-bunjang-row-01	excess	bunjang	bunjang	표 중심	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	거래 한 행 — 한컴 불릿 과잉
+excess-bunjang-footer-00	excess	bunjang	bunjang	표 중심	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	표 하단 합계 — 반복 머리글이 SVG 에만 붙음
+excess-bunjang-footer-01	excess	bunjang	bunjang	표 중심	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	표 하단 합계 — 한컴 불릿 과잉
+excess-korexam-stem-00	excess	korexam	korexam	법학적성 언어이해	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	지문 도입 — 반복 머리글이 SVG 에만 붙음
+excess-korexam-stem-01	excess	korexam	korexam	법학적성 언어이해	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	지문 도입 — 한컴 불릿 과잉
+excess-korexam-choice-00	excess	korexam	korexam	법학적성 언어이해	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	선지 ①~⑤ — 반복 머리글이 SVG 에만 붙음
+excess-korexam-choice-01	excess	korexam	korexam	법학적성 언어이해	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	선지 ①~⑤ — 한컴 불릿 과잉
+excess-korexam-header-00	excess	korexam	korexam	법학적성 언어이해	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	시험 머리글 — 반복 머리글이 SVG 에만 붙음
+excess-korexam-header-01	excess	korexam	korexam	법학적성 언어이해	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	시험 머리글 — 한컴 불릿 과잉
+excess-math-item-00	excess	math	math	수학 시험	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	문항 본문 — 반복 머리글이 SVG 에만 붙음
+excess-math-item-01	excess	math	math	수학 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	문항 본문 — 한컴 불릿 과잉
+excess-math-choice-00	excess	math	math	수학 시험	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	수식 선지 — 반복 머리글이 SVG 에만 붙음
+excess-math-choice-01	excess	math	math	수학 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	수식 선지 — 한컴 불릿 과잉
+excess-math-caption-00	excess	math	math	수학 시험	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	그래프 캡션 — 반복 머리글이 SVG 에만 붙음
+excess-math-caption-01	excess	math	math	수학 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	그래프 캡션 — 한컴 불릿 과잉
+excess-eng-passage-00	excess	eng	eng	영어 시험	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	영어 지문 — 반복 머리글이 SVG 에만 붙음
+excess-eng-passage-01	excess	eng	eng	영어 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	영어 지문 — 한컴 불릿 과잉
+excess-eng-question-00	excess	eng	eng	영어 시험	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	영어 문항 — 반복 머리글이 SVG 에만 붙음
+excess-eng-question-01	excess	eng	eng	영어 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	영어 문항 — 한컴 불릿 과잉
+excess-eng-url-00	excess	eng	eng	영어 시험	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	출처 URL — 반복 머리글이 SVG 에만 붙음
+excess-eng-url-01	excess	eng	eng	영어 시험	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	출처 URL — 한컴 불릿 과잉
+excess-fn-early-00	excess	footnote	plan	각주	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	각주 본문 이르게 — 반복 머리글이 SVG 에만 붙음
+excess-fn-early-01	excess	footnote	plan	각주	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	각주 본문 이르게 — 한컴 불릿 과잉
+excess-fn-late-00	excess	footnote	manual	각주	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	각주 본문 늦게 — 반복 머리글이 SVG 에만 붙음
+excess-fn-late-01	excess	footnote	manual	각주	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	각주 본문 늦게 — 한컴 불릿 과잉
+excess-table-first-row-00	excess	table	plan	표 조각	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	표 첫 줄 중복 — 반복 머리글이 SVG 에만 붙음
+excess-table-first-row-01	excess	table	plan	표 조각	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	표 첫 줄 중복 — 한컴 불릿 과잉
+excess-table-cell-00	excess	table	plan	표 조각	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	셀 본문 — 반복 머리글이 SVG 에만 붙음
+excess-table-cell-01	excess	table	plan	표 조각	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	셀 본문 — 한컴 불릿 과잉
+excess-citation-law-00	excess	citation	manual	법령 인용	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	법령명+조문 — 반복 머리글이 SVG 에만 붙음
+excess-citation-law-01	excess	citation	manual	법령 인용	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	법령명+조문 — 한컴 불릿 과잉
+excess-citation-url-00	excess	citation	manual	법령 인용	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	고시 URL — 반복 머리글이 SVG 에만 붙음
+excess-citation-url-01	excess	citation	manual	법령 인용	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	고시 URL — 한컴 불릿 과잉
+excess-pua-bullet-00	excess	pua	plan	원문자	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	1	-	-	-	#2007	한컴 전용 불릿 — 반복 머리글이 SVG 에만 붙음
+excess-pua-bullet-01	excess	pua	plan	원문자	1	0	1	-	U+F02FB:\U000f02fb×1	2	-	-	-	#2007	한컴 전용 불릿 — 한컴 불릿 과잉
+excess-pua-range-00	excess	pua	plan	원문자	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	14	-	-	-	#3385	원문자 전 구간 — 반복 머리글이 SVG 에만 붙음
+excess-pua-range-01	excess	pua	plan	원문자	1	0	1	-	U+F02FB:\U000f02fb×1	15	-	-	-	#3385	원문자 전 구간 — 한컴 불릿 과잉
+excess-header-repeat-00	excess	header	plan	머리글	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	반복 머리글 — 반복 머리글이 SVG 에만 붙음
+excess-header-repeat-01	excess	header	plan	머리글	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	반복 머리글 — 한컴 불릿 과잉
+excess-page-no-00	excess	header	plan	머리글	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	쪽번호 — 반복 머리글이 SVG 에만 붙음
+excess-page-no-01	excess	header	plan	머리글	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	쪽번호 — 한컴 불릿 과잉
+excess-compat-jamo-00	excess	norm	manual	정규화	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	호환 자모 — 반복 머리글이 SVG 에만 붙음
+excess-compat-jamo-01	excess	norm	manual	정규화	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	호환 자모 — 한컴 불릿 과잉
+excess-nbsp-title-00	excess	norm	plan	정규화	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	공백 변형 — 반복 머리글이 SVG 에만 붙음
+excess-nbsp-title-01	excess	norm	plan	정규화	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	공백 변형 — 한컴 불릿 과잉
+excess-fullwidth-year-00	excess	norm	korexam	정규화	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	전각 연도 — 반복 머리글이 SVG 에만 붙음
+excess-fullwidth-year-01	excess	norm	korexam	정규화	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	전각 연도 — 한컴 불릿 과잉
+excess-hyphen-range-00	excess	norm	plan	정규화	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	구간 하이픈 — 반복 머리글이 SVG 에만 붙음
+excess-hyphen-range-01	excess	norm	plan	정규화	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	구간 하이픈 — 한컴 불릿 과잉
+excess-issue-3738-head-00	excess	direct	plan	direct pair	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3738	이슈 3738 머리 — 반복 머리글이 SVG 에만 붙음
+excess-issue-3738-head-01	excess	direct	plan	direct pair	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3738	이슈 3738 머리 — 한컴 불릿 과잉
+excess-issue-3738-tail-00	excess	direct	plan	direct pair	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3738	이슈 3738 꼬리 — 반복 머리글이 SVG 에만 붙음
+excess-issue-3738-tail-01	excess	direct	plan	direct pair	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3738	이슈 3738 꼬리 — 한컴 불릿 과잉
+excess-overflow-body-00	excess	overflow	manual	visible excess	1	0	3	-	U+AE00:\uae00×1,U+B9AC:\ub9ac×1,U+BA38:\uba38×1	0	-	-	-	#3389	본문+다음쪽 선점 — 반복 머리글이 SVG 에만 붙음
+excess-overflow-body-01	excess	overflow	manual	visible excess	1	0	1	-	U+F02FB:\U000f02fb×1	1	-	-	-	#3389	본문+다음쪽 선점 — 한컴 불릿 과잉
+owner-early-00-fn-early	excess	owner_shift	plan	각주	11	0	31	-	U+002E:.×1,U+0030:0×1,U+0032:2×3,U+AC01:\uac01×1,U+AC83:\uac83×1,U+ACC4:\uacc4×2,U+AD6C:\uad6c×1,U+B0B4:\ub0b4×1,U+B144:\ub144×1,U+B294:\ub294×1,U+B2E4:\ub2e4×1,U+B97C:\ub97c×1,U+BCF8:\ubcf8×1,U+C0AC:\uc0ac×2,U+C131:\uc131×1,U+C6A9:\uc6a9×1,U+C6D0:\uc6d0×1,U+C774:\uc774×1,U+C7AC:\uc7ac×1,U+C870:\uc870×1,U+C8FC:\uc8fc×1,U+CCAD:\uccad×1,U+D1B5:\ud1b5×2,U+D45C:\ud45c×1,U+D55C:\ud55c×1,U+D68C:\ud68c×1	0	rhwp_earlier_than_reference	rhwp_earlier_than_reference	-	#3389	각주가 한 쪽 이르게 SVG 에 나타남
+owner-early-01-plan-footnote	excess	owner_shift	plan	업무계획	12	0	58	-	U+0029:)×1,U+002E:.×6,U+002F:/×4,U+0030:0×2,U+0031:1×2,U+0032:2×6,U+003A::×1,U+0061:a×1,U+0067:g×1,U+0068:h×1,U+0069:i×1,U+006B:k×1,U+006C:l×1,U+006D:m×1,U+006E:n×1,U+006F:o×2,U+0070:p×2,U+0072:r×1,U+0073:s×2,U+0074:t×2,U+0077:w×3,U+ACC4:\uacc4×1,U+ACE0:\uace0×1,U+AD6D:\uad6d×1,U+AE30:\uae30×1,U+B2E4:\ub2e4×1,U+B85C:\ub85c×1,U+BCF4:\ubcf4×1,U+BCF8:\ubcf8×1,U+C548:\uc548×1,U+C73C:\uc73c×1,U+C740:\uc740×1,U+C744:\uc744×1,U+C900:\uc900×1,U+D55C:\ud55c×1,U+D68C:\ud68c×1,U+D68D:\ud68d×1	0	rhwp_earlier_than_reference	rhwp_earlier_than_reference	yes	#3389	각주+URL 이 pN SVG / pN+1 PDF
+owner-early-02-plan-caption	excess	owner_shift	plan	업무계획	13	0	32	-	U+0028:(×1,U+0029:)×1,U+002D:-×1,U+0030:0×1,U+0032:2×4,U+0033:3×1,U+003A::×1,U+003C:<×1,U+003E:>×1,U+ACC4:\uacc4×1,U+ADF8:\uadf8×1,U+B3C4:\ub3c4×1,U+B514:\ub514×1,U+B8CC:\ub8cc×1,U+B9BC:\ub9bc×1,U+BD80:\ubd80×2,U+C548:\uc548×1,U+C790:\uc790×1,U+C804:\uc804×1,U+C815:\uc815×2,U+C9C0:\uc9c0×1,U+C9C4:\uc9c4×1,U+CCB4:\uccb4×1,U+CD94:\ucd94×1,U+D138:\ud138×1,U+D574:\ud574×1,U+D589:\ud589×1	0	rhwp_earlier_than_reference	rhwp_earlier_than_reference	-	#3389	그림 캡션 조기 배치
+owner-early-03-math-caption	excess	owner_shift	math	수학 시험	14	0	28	-	U+0028:(×1,U+0029:)×1,U+002B:+×1,U+0031:1×1,U+0032:2×1,U+0034:4×1,U+003A::×1,U+003C:<×1,U+003D:=×1,U+003E:>×1,U+0063:c×1,U+006D:m×1,U+0078:x×1,U+0079:y×1,U+ADF8:\uadf8×2,U+B2E8:\ub2e8×1,U+B798:\ub798×1,U+B9BC:\ub9bc×1,U+BD84:\ubd84×1,U+C5ED:\uc5ed×1,U+C601:\uc601×1,U+C640:\uc640×1,U+C704:\uc704×1,U+C758:\uc758×1,U+C801:\uc801×1,U+C815:\uc815×1,U+D504:\ud504×1	0	rhwp_earlier_than_reference	rhwp_earlier_than_reference	-	#3389	수식 그림 캡션 조기 배치
+owner-early-04-eng-url	excess	owner_shift	eng	영어 시험	15	0	59	-	U+002D:-×2,U+002E:.×2,U+002F:/×6,U+0030:0×1,U+0031:1×1,U+0032:2×3,U+0037:7×1,U+003A::×2,U+0053:S×1,U+0061:a×3,U+0063:c×2,U+0065:e×6,U+0067:g×2,U+0068:h×1,U+0069:i×3,U+006B:k×1,U+006C:l×1,U+006D:m×3,U+006E:n×2,U+006F:o×3,U+0070:p×2,U+0072:r×2,U+0073:s×1,U+0074:t×5,U+0075:u×1,U+0078:x×2	0	rhwp_earlier_than_reference	rhwp_earlier_than_reference	yes	#3389	영어 출처 URL 조기 배치
+owner-early-05-citation-url	excess	owner_shift	manual	법령 인용	16	0	50	-	U+002E:.×4,U+002F:/×4,U+0030:0×1,U+0031:1×1,U+0032:2×1,U+0034:4×1,U+0036:6×1,U+0038:8×1,U+003A::×1,U+003D:=×1,U+003F:?×1,U+0049:I×1,U+004C:L×1,U+0050:P×1,U+0053:S×2,U+0057:W×1,U+0061:a×1,U+0064:d×1,U+0065:e×1,U+0066:f×1,U+0067:g×1,U+0068:h×1,U+0069:i×1,U+006B:k×1,U+006C:l×3,U+006E:n×1,U+006F:o×3,U+0070:p×1,U+0071:q×1,U+0072:r×1,U+0073:s×3,U+0074:t×2,U+0077:w×4	0	rhwp_earlier_than_reference	rhwp_earlier_than_reference	yes	#3389	법령 URL 조기 배치
+owner-early-06-citation-law	excess	owner_shift	manual	법령 인용	17	0	30	-	U+0031:1×2,U+0032:2×2,U+0038:8×1,U+AC19:\uac19×1,U+ACF5:\uacf5×2,U+AD00:\uad00×2,U+AE30:\uae30×1,U+B839:\ub839×1,U+B85D:\ub85d×1,U+B960:\ub960×1,U+B9AC:\ub9ac×1,U+BB3C:\ubb3c×1,U+BC0F:\ubc0f×1,U+BC95:\ubc95×2,U+C2DC:\uc2dc×1,U+C5D0:\uc5d0×1,U+C740:\uc740×1,U+C81C:\uc81c×3,U+C870:\uc870×2,U+D55C:\ud55c×1,U+D56D:\ud56d×1,U+D589:\ud589×1	0	rhwp_earlier_than_reference	rhwp_earlier_than_reference	-	#3389	법령명 조기 배치
+owner-early-07-table-first-row	excess	owner_shift	plan	표 조각	18	0	15	-	U+ACE0:\uace0×1,U+AD00:\uad00×1,U+BA85:\uba85×1,U+BC88:\ubc88×1,U+BE44:\ube44×1,U+C0AC:\uc0ac×1,U+C0B0:\uc0b0×1,U+C18C:\uc18c×1,U+C561:\uc561×1,U+C5C5:\uc5c5×1,U+C5F0:\uc5f0×1,U+C608:\uc608×1,U+C728:\uc728×1,U+C9C4:\uc9c4×1,U+CD94:\ucd94×1	0	rhwp_earlier_than_reference	-	-	#3389	표 첫 줄이 다음 쪽에 남고 현재 쪽에 과잉
+owner-early-08-manual-note	excess	owner_shift	manual	장문 편람	19	0	28	-	U+002E:.×1,U+0031:1×2,U+0034:4×1,U+0036:6×1,U+AC01:\uac01×1,U+ACFC:\uacfc×1,U+AD00:\uad00×1,U+ADDC:\uaddc×1,U+BC0F:\ubc0f×1,U+BCC4:\ubcc4×1,U+C5C5:\uc5c5×1,U+C5D0:\uc5d0×1,U+C728:\uc728×1,U+C815:\uc815×2,U+C81C:\uc81c×1,U+C870:\uc870×2,U+C8FC:\uc8fc×1,U+C9C4:\uc9c4×1,U+CC38:\ucc38×1,U+CD09:\ucd09×1,U+D45C:\ud45c×1,U+D55C:\ud55c×1,U+D589:\ud589×1,U+D611:\ud611×1,U+D6A8:\ud6a8×1	0	rhwp_earlier_than_reference	rhwp_earlier_than_reference	-	#3389	편람 각주 조기
+owner-early-09-korexam-header	excess	owner_shift	korexam	법학적성 언어이해	20	0	29	-	U+0030:0×1,U+0031:1×2,U+0032:2×3,U+0033:3×1,U+0035:5×1,U+0041:A×1,U+AD50:\uad50×1,U+B144:\ub144×1,U+B3C4:\ub3c4×1,U+BC95:\ubc95×1,U+C131:\uc131×1,U+C218:\uc218×1,U+C2DC:\uc2dc×2,U+C5B4:\uc5b4×1,U+C5B8:\uc5b8×1,U+C774:\uc774×1,U+C801:\uc801×1,U+C81C:\uc81c×1,U+CABD:\ucabd×1,U+D559:\ud559×2,U+D574:\ud574×1,U+D5D8:\ud5d8×1,U+D615:\ud615×1,U+D640:\ud640×1	0	rhwp_earlier_than_reference	rhwp_earlier_than_reference	-	#3389	시험 머리글 조기 반복
+visible-excess-overflow-body	excess	overflow	manual	visible excess	1	0	56	-	U+B2E4:\ub2e4×8,U+BB38:\ubb38×8,U+C120:\uc120×8,U+C74C:\uc74c×8,U+C7A5:\uc7a5×8,U+C810:\uc810×8,U+CABD:\ucabd×8	0	-	-	yes	#3389	본문+다음쪽 선점
+visible-excess-with-clip	excess	overflow	manual	visible excess	1	0	56	-	U+AC00:\uac00×16,U+ACFC:\uacfc×8,U+BD84:\ubd84×8,U+C2DC:\uc2dc×8,U+C789:\uc789×8,U+CD94:\ucd94×8	0	-	-	yes	#3389	가시 과잉 + clip 제외 문자
