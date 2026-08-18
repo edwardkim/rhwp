@@ -1,0 +1,25 @@
+{
+  "id": "WR40",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"sib-a.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"형제공무\"}]}",
+        "--capsule",
+        "{sub:receipts/a.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"sib-b.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"형제민간\"}]}",
+        "--capsule",
+        "{sub:receipts/b.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

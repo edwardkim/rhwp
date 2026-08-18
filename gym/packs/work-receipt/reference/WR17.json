@@ -1,0 +1,36 @@
+{
+  "id": "WR17",
+  "steps": [
+    {
+      "answer": {
+        "inputSha256": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"close-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"마감장\"}]}",
+            "--json"
+          ],
+          "path": "inputSha256"
+        },
+        "planSha256": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"close-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"마감장\"}]}",
+            "--json"
+          ],
+          "path": "planSha256"
+        },
+        "outputSha256": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"close-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"마감장\"}]}",
+            "--json"
+          ],
+          "path": "outputSha256"
+        }
+      }
+    }
+  ]
+}
