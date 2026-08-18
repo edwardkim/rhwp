@@ -1,0 +1,23 @@
+{
+  "id": "T40",
+  "tier": 2,
+  "title": "홍보 문서 데이터 추출",
+  "input": "samples/20250130-hongbo.hwp",
+  "instructions": "T40 은 입문·코어 온램프를 두껍게 하는 과제다. 홍보 문서에서 추출 항목 수를 센다. 검색 매치 수와 같은 숫자가 아니다. 표본은 `samples/20250130-hongbo.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: extract-data <문서> --json. 제출은 answer.json 에 {\"itemCount\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. extract-data items 길이다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "홍보 문서 데이터 추출",
+      "op": "len_answer_eq",
+      "answer": "itemCount",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--json"
+      ],
+      "path": "items"
+    }
+  ]
+}

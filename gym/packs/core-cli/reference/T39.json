@@ -1,0 +1,18 @@
+{
+  "id": "T39",
+  "steps": [
+    {
+      "answer": {
+        "tableCount": {
+          "cmd": [
+            "export-tables",
+            "{input}",
+            "--json"
+          ],
+          "path": "tables",
+          "len": true
+        }
+      }
+    }
+  ]
+}
