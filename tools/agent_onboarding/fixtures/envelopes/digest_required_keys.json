@@ -1,0 +1,7 @@
+{
+  "command": "digest",
+  "required": [
+    "schemaVersion",
+    "source"
+  ]
+}
