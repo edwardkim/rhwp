@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1",
+  "generatedBy": "tools/fde/triage.py",
+  "id": "T05",
+  "doc": "fixtures/transcripts/T05.input",
+  "docBytes": 128,
+  "symptom": "발췌하다가 꺼져요",
+  "container": "hwpx",
+  "steps": [
+    {
+      "command": "capabilities --json",
+      "ok": true,
+      "exitCode": 0,
+      "envelopeKeys": [
+        "commands",
+        "schemaVersion"
+      ]
+    },
+    {
+      "command": "info {doc} --json",
+      "ok": true,
+      "exitCode": 0,
+      "envelopeKeys": [
+        "schemaVersion",
+        "source",
+        "format",
+        "pageCount"
+      ]
+    },
+    {
+      "command": "explain {doc} --json",
+      "ok": true,
+      "exitCode": 0,
+      "envelopeKeys": [
+        "schemaVersion",
+        "source",
+        "summary"
+      ]
+    },
+    {
+      "command": "export-structure {doc} --json",
+      "ok": true,
+      "exitCode": 0,
+      "envelopeKeys": [
+        "schemaVersion",
+        "source",
+        "sections"
+      ]
+    },
+    {
+      "command": "digest {doc} --json",
+      "ok": false,
+      "failureSignature": [
+        "abort",
+        -11
+      ]
+    }
+  ],
+  "route": "escalate-bug",
+  "routeReason": "digest {doc} --json 단계에서 ['abort', -11]",
+  "nextActions": [
+    "고객 회신: 재현 확보됨 + 추적번호"
+  ],
+  "elapsedSeconds": 0.4,
+  "issue": 5333,
+  "notProse": true
+}

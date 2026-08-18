@@ -1,0 +1,80 @@
+{
+  "id": "layer1_replace",
+  "layer": 1,
+  "goal": "치환 후 search matchCount",
+  "steps": [
+    {
+      "id": "discover",
+      "command": [
+        "rhwp",
+        "search",
+        "공문.hwp",
+        "2025년",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "matchCount"
+      ]
+    },
+    {
+      "id": "dry-run",
+      "command": [
+        "rhwp",
+        "edit",
+        "replace-text",
+        "공문.hwp",
+        "--find",
+        "2025년",
+        "--replace",
+        "2026년",
+        "--dry-run",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "replacedCount",
+        "dryRun"
+      ]
+    },
+    {
+      "id": "execute",
+      "command": [
+        "rhwp",
+        "edit",
+        "replace-text",
+        "공문.hwp",
+        "--find",
+        "2025년",
+        "--replace",
+        "2026년",
+        "-o",
+        "개정본.hwp",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "readFields": [
+        "replacedCount",
+        "changedPages"
+      ]
+    },
+    {
+      "id": "reread",
+      "command": [
+        "rhwp",
+        "search",
+        "개정본.hwp",
+        "2025년",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "matchCount"
+      ],
+      "expectMatchCount": 0
+    }
+  ]
+}

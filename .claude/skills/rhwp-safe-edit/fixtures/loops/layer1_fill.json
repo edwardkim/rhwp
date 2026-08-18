@@ -1,0 +1,83 @@
+{
+  "id": "layer1_fill",
+  "layer": 1,
+  "goal": "누름틀 채움 루프",
+  "sample": "samples/field-01.hwp",
+  "steps": [
+    {
+      "id": "discover",
+      "command": [
+        "rhwp",
+        "fields",
+        "samples/field-01.hwp",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "fields"
+      ]
+    },
+    {
+      "id": "dry-run",
+      "command": [
+        "rhwp",
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "{\"회사명\":\"페타플로\"}",
+        "--dry-run",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "dryRun",
+        "notFound",
+        "ambiguous",
+        "filledCount"
+      ],
+      "forbidFieldsPresent": [
+        "output"
+      ],
+      "mustNotCreate": "out/field-filled.hwp"
+    },
+    {
+      "id": "execute",
+      "command": [
+        "rhwp",
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "{\"회사명\":\"페타플로\"}",
+        "-o",
+        "out/field-filled.hwp",
+        "--verify",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "readFields": [
+        "output",
+        "verify",
+        "notFound",
+        "ambiguous"
+      ]
+    },
+    {
+      "id": "reread",
+      "command": [
+        "rhwp",
+        "fields",
+        "out/field-filled.hwp",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "fields"
+      ]
+    }
+  ]
+}

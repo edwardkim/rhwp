@@ -1,0 +1,25 @@
+{
+  "id": "SD27",
+  "tier": 2,
+  "title": "jsonContract.schemaPolicy",
+  "input": "samples/table-001.hwp",
+  "instructions": "capabilities 가 선언하는 jsonContract.schemaPolicy 를 answer.json 에 {\"schemaPolicy\": S} 으로 제출하라. 힌트: capabilities 의 jsonContract.schemaPolicy.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "jsonContract.schemaPolicy",
+      "op": "answer_eq",
+      "answer": "schemaPolicy",
+      "path": "jsonContract.schemaPolicy",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

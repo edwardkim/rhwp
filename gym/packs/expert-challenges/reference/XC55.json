@@ -1,0 +1,199 @@
+{
+  "id": "XC55",
+  "steps": [
+    {
+      "run": [
+        "keygen",
+        "--key-id",
+        "gym-xc55-mix",
+        "--out",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-004.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸1-XC55\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-004.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸1-XC55\"}]}",
+        "--capsule",
+        "{sub:t4mix/g0.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o1.hwp}\", \"output\": \"{sub:o2.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸2-XC55\"}]}",
+        "--capsule",
+        "{sub:t4mix/g1.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--parent",
+        "{sub:t4mix/g0.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o2.hwp}\", \"output\": \"{sub:o3.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸3-XC55\"}]}",
+        "--capsule",
+        "{sub:t4mix/g2.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--parent",
+        "{sub:t4mix/g1.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o3.hwp}\", \"output\": \"{sub:o4.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸4-XC55\"}]}",
+        "--capsule",
+        "{sub:t4mix/g3.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--parent",
+        "{sub:t4mix/g2.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "keyring_from": {
+        "key": "{sub:agent.key.json}",
+        "out": "{sub:keyring.json}",
+        "keyId": "gym-xc55-mix"
+      }
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:t4mix/g0.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:t4mix/g1.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:t4mix/g2.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:t4mix/g3.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "write_json": {
+        "to": "{sub:policy.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "kind": "admissionPolicy",
+          "default": "deny",
+          "rules": [
+            {
+              "id": "R1-재현",
+              "require": {
+                "reproduced": {
+                  "eq": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "write_json": {
+        "to": "{sub:wo.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "kind": "workorder",
+          "workorderId": "xc55-t4mix",
+          "acceptancePolicy": {
+            "schemaVersion": "1.0",
+            "kind": "admissionPolicy",
+            "default": "deny",
+            "rules": [
+              {
+                "id": "R1-재현",
+                "require": {
+                  "reproduced": {
+                    "eq": true
+                  }
+                }
+              }
+            ]
+          },
+          "unitPrice": {
+            "amount": "1000",
+            "currency": "KRW",
+            "per": "capsule"
+          }
+        }
+      }
+    },
+    {
+      "write_json": {
+        "to": "{sub:gate.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "verdict": "allow",
+          "violations": []
+        }
+      }
+    },
+    {
+      "run": [
+        "settle",
+        "propose",
+        "--workorder",
+        "{sub:wo.json}",
+        "--capsule",
+        "{sub:t4mix/g3.capsule.json}",
+        "--gate-envelope",
+        "{sub:gate.json}",
+        "-o",
+        "{sub:claim.json}",
+        "--json"
+      ]
+    }
+  ]
+}

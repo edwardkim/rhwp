@@ -1,0 +1,16 @@
+{
+  "id": "SD11",
+  "steps": [
+    {
+      "answer": {
+        "actions": {
+          "cmd": [
+            "export-ontology",
+            "--json"
+          ],
+          "path": "actionCount"
+        }
+      }
+    }
+  ]
+}

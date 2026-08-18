@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "rhwp",
+    "audit",
+    "fixtures/audit-layouts/empty",
+    "--json"
+  ],
+  "exit": 2,
+  "stdoutBytes": 0
+}

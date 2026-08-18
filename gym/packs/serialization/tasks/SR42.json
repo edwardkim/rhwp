@@ -1,0 +1,55 @@
+{
+  "id": "SR42",
+  "tier": 3,
+  "title": "표 문서 export-hwpx --verify IR 자기검증",
+  "input": "samples/table-001.hwp",
+  "instructions": "표 문서를 HWPX 로 변환할 때 --verify 를 켜고, 검증 객체의 identical 을 answer.json 에 {\"identical\": true|false} 로 적어라. 차이가 있어도 산출물은 남고 exit 3 이다. 힌트: rhwp export-hwpx --verify --json 의 verify.identical.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwpx",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "HWPX 산출",
+      "op": "file_exists",
+      "file": "conv.hwpx",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "conv.hwpx"
+    },
+    {
+      "name": "info 형식",
+      "op": "value_eq",
+      "value": "hwpx",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:conv.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "name": "verify IR 동일",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "verify.identical",
+      "cmd": [
+        "export-hwpx",
+        "{input}",
+        "{file:conv.hwpx}",
+        "--verify",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

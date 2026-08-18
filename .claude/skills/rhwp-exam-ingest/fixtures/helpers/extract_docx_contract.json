@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "extract_docx.py",
+  "usage": "extract_docx.py [--json] [--dry-run] <input.docx> <out_dir>",
+  "outputs": [
+    "text.txt",
+    "img/"
+  ],
+  "fallback": "zip+<w:t> regex",
+  "fallbackIsFailure": false,
+  "codes": [
+    "DOCX_OK",
+    "DOCX_ARGS",
+    "DOCX_SRC_MISSING"
+  ]
+}

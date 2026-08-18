@@ -1,0 +1,16 @@
+{
+  "id": "SD52",
+  "steps": [
+    {
+      "answer": {
+        "planSchemaVersion": {
+          "cmd": [
+            "export-plan-schema",
+            "--json"
+          ],
+          "path": "planSchemaVersion"
+        }
+      }
+    }
+  ]
+}

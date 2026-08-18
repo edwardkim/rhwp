@@ -1,0 +1,76 @@
+{
+  "id": "XC43",
+  "tier": 5,
+  "title": "표사 끝칸 서명 4세대",
+  "input": "samples/table-004.hwp",
+  "axis": "자동화",
+  "instructions": "XC43 — 표사 끝칸 서명 4세대.\n\n입력 표본은 `samples/table-004.hwp` 이다. 보스 존 과제다. 한 단만 빠지면 최종 판정이 막힌다. 저장소 samples/ 에 이미 있는 실문서만 쓰고 새 픽스처를 만들지 않는다. expert-challenges pack 은 기존 CLI 표면(keygen · replay · run · anchor · settle · conformance · recall-scope · lineage · audit-report · export-tables) 만으로 여러 축을 한 제출에 묶는다. 새 명령·새 연산자·새 pack 은 없다. 원본을 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. 정답 해시·건수를 과제 파일에 박제하지 마라. 채점은 같은 판정 명령을 다시 돌린다.\n\ntable-004 를 서명한 4세대의 끝칸과 깊은 계보를 동시에 본다. 적합성은 돌리지 마라.\n\n제출 폴더에 csig4/g0.capsule.json · csig4/g1.capsule.json · csig4/g2.capsule.json · csig4/g3.capsule.json · leaf.hwp 를 두어라.\n\n수행 힌트: export-tables + lineage --deep + 서명 캡슐.\n\n이 과제는 XC01(L5 --deep 사다리 완주) · XC02(unaffected==0 과 affected>=2 동시) · XC03(정산 4관문 capsuleOk/gateOk/ledgerOk/workorderOk) · XC04(3세대 lineage --deep) · XC05(L3 --deep + audit-report) 를 복제하지 않는다. AU14+ 한 축 저티어 여정, WR 일일 3해시 answer.json, T07 서식 채움(fill-fields · 첫 필드 홍길동) 도 베끼지 마라.\n\n서명 없이 칸만 바꾸면 이 보스의 제출 키링이 없다. 키는 기준풀이가 쓰지만 채점은 계보·칸이다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "csig4/g0.capsule.json",
+      "csig4/g1.capsule.json",
+      "csig4/g2.capsule.json",
+      "csig4/g3.capsule.json",
+      "leaf.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "깊이 4세대",
+      "op": "value_eq",
+      "value": 4,
+      "path": "depth",
+      "cmd": [
+        "lineage",
+        "{file:csig4/g3.capsule.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "사슬 온전",
+      "op": "value_eq",
+      "value": true,
+      "path": "valid",
+      "cmd": [
+        "lineage",
+        "{file:csig4/g3.capsule.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "(0,0) == 칸4-XC43",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": "칸4-XC43",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:leaf.hwp}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "막내 캡슐 실재",
+      "op": "file_exists",
+      "file": "csig4/g3.capsule.json",
+      "minBytes": 80
+    }
+  ]
+}

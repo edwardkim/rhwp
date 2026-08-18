@@ -780,7 +780,17 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Initialize CodeQL (Rust)
-        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'pull_request' }}
+        uses: github/codeql-action/init@v4
+        with:
+          languages: rust
+          build-mode: none
+          config-file: .github/codeql/rust-pr.yml
+
+      # PR은 제품 Rust만 빠르게 검사하고, devel push·schedule은 아래 기존 전체
+      # 경로 분석을 유지한다. PR 축소가 기준선 보안 탐지를 대신하지 않게 한다.
+      - name: Initialize CodeQL (Rust full scan)
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name != 'pull_request' }}
         uses: github/codeql-action/init@v4
         with:
           languages: rust

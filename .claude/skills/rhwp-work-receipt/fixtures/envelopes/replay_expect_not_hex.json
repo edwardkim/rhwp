@@ -1,0 +1,10 @@
+{
+  "stderr": "오류: --expect-output-sha256 값은 64자리 16진이어야 합니다: zz",
+  "_skillMeta": {
+    "exit": 2,
+    "branch": "usage-hex",
+    "command": "replay",
+    "note": "64hex 계약. 짧은 값·비hex 는 사용법",
+    "stdoutSilentOnFail": true
+  }
+}

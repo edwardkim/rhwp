@@ -1,0 +1,27 @@
+{
+  "id": "T04-J01",
+  "recipe": "04",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"fonts\":[\"한컴바탕\",\"함초롬돋움\",\"함초롬바탕\"],\"format\":\"hwp5\",\"pageCount\":1,\"paraCount\":13,\"schemaVersion\":\"1.0\",\"sections\":1,\"sizeBytes\":18432,\"source\":\"samples/form-01.hwp\",\"title\":\"명령 단추\",\"version\":\"5.0.3.0\"}",
+  "parsed": {
+    "fonts": [
+      "한컴바탕",
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "format": "hwp5",
+    "pageCount": 1,
+    "paraCount": 13,
+    "schemaVersion": "1.0",
+    "sections": 1,
+    "sizeBytes": 18432,
+    "source": "samples/form-01.hwp",
+    "title": "명령 단추",
+    "version": "5.0.3.0"
+  },
+  "parseable": true,
+  "notGym": true
+}

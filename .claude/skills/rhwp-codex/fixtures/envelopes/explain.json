@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "explain",
+  "sourceChapter": "10_조회.md",
+  "cmd": "rhwp explain samples/field-01.hwp --json",
+  "exit": 0,
+  "envelope": {
+    "encrypted": false,
+    "endnoteCount": 0,
+    "fields": [
+      "회사명",
+      "작성자",
+      "… (11개 중 2개 표시)"
+    ],
+    "footnoteCount": 0,
+    "format": "HWP5",
+    "pageCount": 3,
+    "paragraphCount": 16,
+    "schemaVersion": "1.0",
+    "source": "samples/field-01.hwp",
+    "summary": "이 문서는 HWP5 형식, 3쪽, 문단 16개다.\n표는 없다.\n누름틀이 11개 있다 — 이름: 회사명, 작성자, 부서명, 전화번호, 이메일, 목차1, 목차1, 목차1, 목차1, 목차1, 제목.\n각주와 미주는 모두 없다.\n암호로 보호돼 있지 않다.",
+    "tables": [],
+    "untrustedContent": true,
+    "untrustedFields": [
+      "fields[]",
+      "summary"
+    ]
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

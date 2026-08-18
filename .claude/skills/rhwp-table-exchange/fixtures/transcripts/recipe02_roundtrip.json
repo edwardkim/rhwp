@@ -1,0 +1,83 @@
+{
+  "id": "recipe02_roundtrip",
+  "sample": "samples/hwp_table_test.hwp",
+  "source": "mydocs/manual/recipes/02_table_csv_roundtrip.md",
+  "turns": [
+    {
+      "argv": [
+        "rhwp",
+        "export-tables",
+        "samples/hwp_table_test.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdoutKeys": [
+        "schemaVersion",
+        "tableCount",
+        "tables"
+      ],
+      "tableCount": 10,
+      "focus": {
+        "index": 0,
+        "rows": 4,
+        "cols": 3,
+        "cellCount": 12
+      }
+    },
+    {
+      "argv": [
+        "rhwp",
+        "table-to-csv",
+        "samples/hwp_table_test.hwp",
+        "--table",
+        "0",
+        "-o",
+        "table0.csv",
+        "--json"
+      ],
+      "exit": 0,
+      "csv": "제목,담당자,세부 내용\r\n,,\r\n,,\r\n,,\r\n",
+      "bom": false,
+      "untrustedFields": [
+        "tables[].csv"
+      ]
+    },
+    {
+      "argv": [
+        "rhwp",
+        "csv-to-table",
+        "samples/hwp_table_test.hwp",
+        "--csv",
+        "table0_edited.csv",
+        "--table",
+        "0",
+        "-o",
+        "table_updated.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exit": 0,
+      "changedCount": 9,
+      "invalid": [],
+      "verify": {
+        "identical": true,
+        "diffCount": 0
+      },
+      "outputFormat": "hwp5"
+    },
+    {
+      "argv": [
+        "rhwp",
+        "export-tables",
+        "table_updated.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "row1": [
+        "서버 이관",
+        "홍길동",
+        "1차 완료"
+      ]
+    }
+  ]
+}

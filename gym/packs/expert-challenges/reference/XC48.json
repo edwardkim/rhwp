@@ -1,0 +1,135 @@
+{
+  "id": "XC48",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸1-XC48\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸1-XC48\"}]}",
+        "--capsule",
+        "{sub:mix3/g0.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o1.hwp}\", \"output\": \"{sub:o2.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸2-XC48\"}]}",
+        "--capsule",
+        "{sub:mix3/g1.capsule.json}",
+        "--parent",
+        "{sub:mix3/g0.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o2.hwp}\", \"output\": \"{sub:o3.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸3-XC48\"}]}",
+        "--capsule",
+        "{sub:mix3/g2.capsule.json}",
+        "--parent",
+        "{sub:mix3/g1.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o3.hwp}\", \"output\": \"{sub:o4.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸4-XC48\"}]}",
+        "--capsule",
+        "{sub:mix3/g3.capsule.json}",
+        "--parent",
+        "{sub:mix3/g2.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "write_json": {
+        "to": "{sub:wo.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "kind": "workorder",
+          "workorderId": "xc48-mix3",
+          "acceptancePolicy": {
+            "schemaVersion": "1.0",
+            "kind": "admissionPolicy",
+            "default": "deny",
+            "rules": [
+              {
+                "id": "R1-재현",
+                "require": {
+                  "reproduced": {
+                    "eq": true
+                  }
+                }
+              }
+            ]
+          },
+          "unitPrice": {
+            "amount": "1000",
+            "currency": "KRW",
+            "per": "capsule"
+          }
+        }
+      }
+    },
+    {
+      "write_json": {
+        "to": "{sub:gate.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "verdict": "allow",
+          "violations": []
+        }
+      }
+    },
+    {
+      "run": [
+        "settle",
+        "propose",
+        "--workorder",
+        "{sub:wo.json}",
+        "--capsule",
+        "{sub:mix3/g3.capsule.json}",
+        "--gate-envelope",
+        "{sub:gate.json}",
+        "-o",
+        "{sub:claim.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "settle",
+        "record",
+        "{sub:claim.json}",
+        "--ledger",
+        "{sub:ledger.ndjson}",
+        "--verdict",
+        "accepted",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "audit-report",
+        "{sub:mix3}",
+        "-o",
+        "{sub:report.json}",
+        "--json"
+      ]
+    }
+  ]
+}

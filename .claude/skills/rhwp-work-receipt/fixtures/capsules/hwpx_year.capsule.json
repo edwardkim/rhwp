@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwpx",
+    "output": "out/hwpx_year.hwpx",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "2024",
+        "replace": "2026"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwpx\",\"output\":\"out/hwpx_year.hwpx\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"2024\",\"replace\":\"2026\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwpx",
+    "inputSha256": "9d8cb9d29cda15cd4976e9882bc113db0c6d556dec47ac512c48b4d172d473ec",
+    "planSha256": "385b0dfb626765eff5cfd63e0c47b730fbaf550e71203461b222e635a2055690",
+    "outputSha256": "351b862b8db4164ecfa3a820bf79f10dabaa9814e05b98cabb656ed8bc09aa8b",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

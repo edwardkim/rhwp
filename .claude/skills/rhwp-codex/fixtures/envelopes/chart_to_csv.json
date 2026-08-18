@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "chart-to-csv",
+  "sourceChapter": "20_표와_데이터.md",
+  "cmd": "rhwp chart-to-csv samples/issue2006/1790387_prep_final_report.hwpx --chart 1 --json",
+  "exit": 0,
+  "envelope": {
+    "bom": false,
+    "chartCount": 1,
+    "charts": [
+      {
+        "chart": 1,
+        "colCount": 6,
+        "csv": ",성생활 함,흥미 없음,파트너 없음,경제적 이유,시간적 이유,신체적 이유\r\n20-29,0.58630000000000004,8.9099999999999999E-2,0.24539999999999998,3.4700000000000002E-2,3.0099999999999998E-2,1.43E-… (720자 중 160자)",
+        "rowCount": 6
+      }
+    ],
+    "schemaVersion": "1.0",
+    "source": "samples/issue2006/1790387_prep_final_report.hwpx",
+    "untrustedContent": true,
+    "untrustedFields": [
+      "charts[].csv"
+    ]
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

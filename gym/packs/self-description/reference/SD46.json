@@ -1,0 +1,16 @@
+{
+  "id": "SD46",
+  "steps": [
+    {
+      "answer": {
+        "protocol": {
+          "cmd": [
+            "capabilities",
+            "--mcp"
+          ],
+          "path": "protocol"
+        }
+      }
+    }
+  ]
+}

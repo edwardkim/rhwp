@@ -1081,6 +1081,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
     let mut tab_extended: Vec<[u16; 7]> = Vec::new();
     let mut title_marks: Vec<TitleMark> = Vec::new();
     let mut orphan_field_ends: Vec<OrphanFieldEnd> = Vec::new();
+    let mut nb_space_control = false;
     let mut pos = 0;
     // 확장 컨트롤(extended) 카운터 → controls[] 인덱스와 1:1 대응
     let mut ctrl_idx: usize = 0;
@@ -1225,6 +1226,8 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
                     char_offsets.push(code_unit_pos);
                     text.push('\u{00A0}'); // 묶음 빈칸 (HWP 5.0 표 7: 코드 30, NO-BREAK SPACE)
                     char_count += 1;
+                    // [#5174] 제품 경로와 같이 표기 출처를 남긴다.
+                    nb_space_control = true;
                 }
                 0x001F => {
                     char_offsets.push(code_unit_pos);
@@ -1265,6 +1268,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
         tab_extended,
         title_marks,
         orphan_field_ends,
+        nb_space_control,
     }
 }
 

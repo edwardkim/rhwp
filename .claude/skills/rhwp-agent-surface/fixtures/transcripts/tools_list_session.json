@@ -1,0 +1,38 @@
+{
+  "invocation": "printf initialize… | rhwp mcp-serve",
+  "session_from": "ALL_SESSION_TOOLS",
+  "session_tools": [
+    "hwp_open",
+    "hwp_doc_text",
+    "hwp_doc_info",
+    "hwp_doc_fields",
+    "hwp_doc_tables",
+    "hwp_doc_render_page",
+    "hwp_doc_search",
+    "hwp_doc_structure",
+    "hwp_doc_extract_data",
+    "hwp_doc_replace_text",
+    "hwp_doc_set_cell",
+    "hwp_doc_fill_fields",
+    "hwp_doc_save",
+    "hwp_close",
+    "hwp_ws_list",
+    "hwp_ws_open",
+    "hwp_doc_tree",
+    "hwp_ws_journal"
+  ],
+  "not_in_capabilities_mcp": true,
+  "handshake": [
+    {
+      "method": "initialize",
+      "protocolVersion_request": "2024-11-05"
+    },
+    {
+      "method": "notifications/initialized"
+    },
+    {
+      "method": "tools/list"
+    }
+  ],
+  "note": "요청 프로토콜과 응답 버전이 다를 수 있다. 응답 쪽을 기준으로."
+}

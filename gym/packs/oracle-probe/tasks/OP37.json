@@ -1,0 +1,27 @@
+{
+  "id": "OP37",
+  "tier": 2,
+  "title": "PII 표본 형식 표지",
+  "input": "samples/task2097/75544_pii_bunseok.hwpx",
+  "axis": "검증",
+  "instructions": "PII 분석 표본의 형식 표지를 answer.json 에 {\"format\": \"...\"} 으로 제출하라. 보안 pack 의 마스킹 과제가 아니다 — 형식만 라이브 대조한다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "PII 표본 형식",
+      "op": "answer_eq",
+      "answer": "format",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "format"
+    }
+  ]
+}

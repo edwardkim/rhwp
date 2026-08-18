@@ -1,0 +1,407 @@
+# Oracle Public Advisory — 공개 한컴 PDF 오라클 쪽수 비교 (advisory).
+#
+# 설계: tools/oracle_public/ci_advisory.md
+# PR 게이트가 아니다. required check / branch protection 에 등록하지 말 것.
+# scripts/visual_sweep.py 는 호출·수정하지 않는다. --strict 금지.
+#
+# pull_request 트리거는 의도적으로 꺼 두었다. 켜더라도 required 로 올리지 않는다.
+# pull_request:
+#   branches: [devel]
+#   types: [opened, reopened, synchronize]
+#   paths:
+#     - 'src/renderer/**'
+#     - 'src/document_core/**'
+#     - 'src/paint/**'
+#     - 'tools/oracle_public/**'
+#     - '.github/workflows/oracle-public-advisory.yml'
+
+name: Oracle Public Advisory
+
+on:
+  workflow_dispatch:
+    inputs:
+      top_n:
+        description: '아티팩트로 남길 상위 실패 건수 (1–50)'
+        required: false
+        default: '10'
+        type: string
+      limit:
+        description: '비교할 최대 짝 수 (0=전수)'
+        required: false
+        default: '0'
+        type: string
+      include_large:
+        description: 'pdf-large/ LFS 실파일을 받아 비교에 포함한다'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: oracle-public-advisory-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  advisory:
+    name: oracle-public-compare-advisory
+    runs-on: ubuntu-latest
+    # [#3284] hang 상한 (성능 목표 아님). 내부 timeout 22m 뒤에 부분 리포트를 남긴다.
+    timeout-minutes: 30
+    continue-on-error: true
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out sparse oracle tree
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          lfs: ${{ inputs.include_large }}
+          sparse-checkout-cone-mode: true
+          sparse-checkout: |
+            src
+            crates
+            tests
+            samples
+            pdf
+            pdf-2020
+            pdf-large
+            tools
+            bindings
+            scripts
+
+      - name: Gate on real oracle PDFs
+        id: pdf
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          roots = [Path("pdf"), Path("pdf-2020")]
+          if os.environ.get("INCLUDE_LARGE") == "true":
+              roots.append(Path("pdf-large"))
+
+          real = 0
+          pointers = 0
+          for root in roots:
+              if not root.is_dir():
+                  continue
+              for path in root.rglob("*"):
+                  if not path.is_file():
+                      continue
+                  try:
+                      head = path.read_bytes()[:80]
+                  except OSError:
+                      continue
+                  if head.startswith(b"%PDF-"):
+                      real += 1
+                  elif head.startswith(b"version https://git-lfs.github.com/spec/v1"):
+                      pointers += 1
+
+          runner = Path("tools/oracle_public/page_smoke.py").is_file()
+          reason = "ok"
+          if not runner:
+              reason = "runner-absent"
+          elif real == 0:
+              reason = "pdf-absent"
+
+          print(f"real_pdfs={real} lfs_pointers={pointers} runner={runner} reason={reason}")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"real_pdfs={real}\n")
+              fh.write(f"lfs_pointers={pointers}\n")
+              fh.write(f"runner={'true' if runner else 'false'}\n")
+              fh.write(f"reason={reason}\n")
+              fh.write(f"should_run={'true' if reason == 'ok' else 'false'}\n")
+          PY
+        env:
+          INCLUDE_LARGE: ${{ inputs.include_large }}
+
+      - name: Skip note
+        if: ${{ steps.pdf.outputs.should_run != 'true' }}
+        shell: bash
+        env:
+          REASON: ${{ steps.pdf.outputs.reason }}
+          REAL_PDFS: ${{ steps.pdf.outputs.real_pdfs }}
+          LFS_POINTERS: ${{ steps.pdf.outputs.lfs_pointers }}
+        run: |
+          set -euo pipefail
+          mkdir -p oracle-advisory
+          {
+            echo '## Oracle public compare (advisory) — skipped'
+            echo
+            echo "| reason | real_pdfs | lfs_pointers |"
+            echo "| --- | ---: | ---: |"
+            echo "| ${REASON} | ${REAL_PDFS} | ${LFS_POINTERS} |"
+            echo
+            echo '비교를 건너뛰었습니다. 이 잡은 advisory 이며 required check 가 아닙니다.'
+          } | tee oracle-advisory/summary.md >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Install Rust toolchain
+        if: ${{ steps.pdf.outputs.should_run == 'true' }}
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+        with:
+          toolchain: 1.93.1
+
+      - name: Rust build cache (restore-only)
+        if: ${{ steps.pdf.outputs.should_run == 'true' }}
+        uses: Swatinem/rust-cache@258712b0b7b1ddf8bddc9fc3b0faca682b2736c3 # v2.9.1
+        with:
+          shared-key: oracle-public-advisory
+          save-if: false
+
+      - name: Build rhwp
+        id: build
+        if: ${{ steps.pdf.outputs.should_run == 'true' }}
+        continue-on-error: true
+        shell: bash
+        run: cargo build --release --bin rhwp
+
+      - name: Build-failed note
+        if: ${{ steps.pdf.outputs.should_run == 'true' && steps.build.outcome != 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p oracle-advisory
+          {
+            echo '## Oracle public compare (advisory) — skipped'
+            echo
+            echo 'reason: `rhwp-build-failed`. cargo build --release --bin rhwp 가 실패했습니다.'
+            echo
+            echo '이 잡은 advisory 이며 required check 가 아닙니다.'
+          } | tee oracle-advisory/summary.md >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Run public oracle compare
+        id: compare
+        if: ${{ steps.pdf.outputs.should_run == 'true' && steps.build.outcome == 'success' }}
+        shell: bash
+        env:
+          TOP_N: ${{ inputs.top_n }}
+          LIMIT: ${{ inputs.limit }}
+          INCLUDE_LARGE: ${{ inputs.include_large }}
+        run: |
+          set -uo pipefail
+          mkdir -p oracle-advisory/top
+          : > oracle-advisory/page-smoke.json
+
+          args=(
+            python3 tools/oracle_public/page_smoke.py
+            --rhwp target/release/rhwp
+            --json
+            --timeout 30
+          )
+          if [[ "${INCLUDE_LARGE}" != "true" ]]; then
+            args+=(--pdf-dirs pdf --pdf-dirs pdf-2020)
+          fi
+          if [[ -f tools/oracle_public/oracle_pairs.json ]]; then
+            args+=(--manifest tools/oracle_public/oracle_pairs.json)
+          fi
+          if [[ "${LIMIT}" =~ ^[1-9][0-9]*$ ]]; then
+            args+=(--limit "${LIMIT}")
+          fi
+
+          printf 'compare command: %s\n' "${args[*]}"
+          # --strict 없음. timeout 비정상 종료도 잡을 실패로 올리지 않는다.
+          set +e
+          timeout 22m "${args[@]}" > oracle-advisory/page-smoke.json
+          cmp_rc=$?
+          set -e
+          printf 'compare_exit=%s\n' "${cmp_rc}" >> "${GITHUB_OUTPUT}"
+          # 벽시계 초과(124)나 비교 비0도 advisory. 아티팩트 추출은 다음 step.
+          exit 0
+
+      - name: Pack top-N failures
+        if: ${{ steps.pdf.outputs.should_run == 'true' && steps.build.outcome == 'success' }}
+        shell: bash
+        env:
+          TOP_N: ${{ inputs.top_n }}
+          COMPARE_EXIT: ${{ steps.compare.outputs.compare_exit }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          out = Path("oracle-advisory")
+          report_path = out / "page-smoke.json"
+          raw = report_path.read_text(encoding="utf-8") if report_path.is_file() else ""
+          data = {}
+          parse_error = ""
+          if raw.strip():
+              try:
+                  data = json.loads(raw)
+              except json.JSONDecodeError as exc:
+                  parse_error = str(exc)
+                  data = {}
+
+          try:
+              top_n = int(os.environ.get("TOP_N") or "10")
+          except ValueError:
+              top_n = 10
+          top_n = max(1, min(top_n, 50))
+
+          rows = list(data.get("rows") or [])
+          summary = data.get("summary") or {}
+          if not summary:
+              summary = {
+                  "pairs": len(rows),
+                  "match": sum(1 for r in rows if str(r.get("verdict", "")).upper() == "MATCH"),
+                  "mismatch": sum(1 for r in rows if str(r.get("verdict", "")).upper() == "MISMATCH"),
+                  "error": sum(1 for r in rows if str(r.get("verdict", "")).upper() == "ERROR"),
+                  "unpaired": len(data.get("unpaired") or []),
+              }
+
+          def rank_key(row: dict) -> tuple:
+              verdict = str(row.get("verdict") or "").upper()
+              group = 0 if verdict == "MISMATCH" else 1 if verdict == "ERROR" else 2
+              delta = row.get("delta")
+              try:
+                  mag = abs(int(delta)) if delta is not None else -1
+              except (TypeError, ValueError):
+                  mag = -1
+              stem = str(row.get("stem") or row.get("doc") or "")
+              return (group, -mag, stem)
+
+          failures = [
+              r for r in rows
+              if str(r.get("verdict") or "").upper() in {"MISMATCH", "ERROR"}
+          ]
+          failures.sort(key=rank_key)
+          top = failures[:top_n]
+
+          slug_re = re.compile(r"[^\w가-힣.-]+", re.UNICODE)
+          packed = []
+          for i, row in enumerate(top, start=1):
+              stem = str(row.get("stem") or f"row-{i}")
+              slug = slug_re.sub("-", stem).strip("-")[:80] or f"row-{i}"
+              name = f"{i:02d}-{slug}.json"
+              (out / "top" / name).write_text(
+                  json.dumps(row, ensure_ascii=False, indent=2) + "\n",
+                  encoding="utf-8",
+              )
+              packed.append({"rank": i, "file": f"top/{name}", "row": row})
+
+          (out / "top-n.json").write_text(
+              json.dumps(
+                  {
+                      "topN": top_n,
+                      "compareExit": os.environ.get("COMPARE_EXIT"),
+                      "parseError": parse_error,
+                      "summary": summary,
+                      "failures": packed,
+                  },
+                  ensure_ascii=False,
+                  indent=2,
+              )
+              + "\n",
+              encoding="utf-8",
+          )
+
+          lines = [
+              "## Oracle public compare (advisory)",
+              "",
+              "이 잡은 **advisory** 입니다. required check 가 아니며 PR 게이트를 막지 않습니다.",
+              "`visual_sweep.py` 는 호출하지 않았습니다. `--strict` 는 쓰지 않았습니다.",
+              "",
+              "| pairs | match | mismatch | error | unpaired | compare_exit | top_n |",
+              "| ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+              (
+                  f"| {summary.get('pairs', 0)} | {summary.get('match', 0)} | "
+                  f"{summary.get('mismatch', 0)} | {summary.get('error', 0)} | "
+                  f"{summary.get('unpaired', 0)} | {os.environ.get('COMPARE_EXIT')} | {top_n} |"
+              ),
+              "",
+          ]
+          if parse_error:
+              lines.extend([f"JSON 파싱 경고: `{parse_error}`", ""])
+          if packed:
+              lines.extend(["### 상위 실패", "", "| rank | verdict | delta | doc | pdf |", "| ---: | --- | ---: | --- | --- |"])
+              for item in packed:
+                  row = item["row"]
+                  lines.append(
+                      f"| {item['rank']} | {row.get('verdict')} | {row.get('delta')} | "
+                      f"`{row.get('doc', '')}` | `{row.get('pdf', '')}` |"
+                  )
+                  repro = row.get("repro") or ""
+                  if repro:
+                      lines.extend(["", "```text", repro, "```"])
+          else:
+              lines.append("상위 실패 없음 (또는 리포트가 비어 있음).")
+          lines.append("")
+          (out / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          print("\n".join(lines))
+
+          drafts = Path("tools/oracle_public/issue_draft.py")
+          if drafts.is_file() and packed:
+              documents = []
+              for item in packed:
+                  row = item["row"]
+                  delta = row.get("delta")
+                  try:
+                      measured = abs(int(delta)) if delta is not None else 1
+                  except (TypeError, ValueError):
+                      measured = 1
+                  documents.append(
+                      {
+                          "id": str(row.get("stem") or item["file"]),
+                          "hwp": str(row.get("doc") or ""),
+                          "pdf": str(row.get("pdf") or ""),
+                          "pages": row.get("pdfPages"),
+                          "exceeds": True,
+                          "metrics": {
+                              "page_delta": delta,
+                              "rhwp_pages": row.get("rhwpPages"),
+                              "pdf_pages": row.get("pdfPages"),
+                          },
+                          "repro": {"command": str(row.get("repro") or "")},
+                          "notes": str(row.get("note") or ""),
+                      }
+                  )
+              report = {
+                  "schema": "oracle_public.failure_report/v1",
+                  "source": "dump-pages-smoke",
+                  "rhwp_bin": "target/release/rhwp",
+                  "threshold": {"metric": "page_delta", "op": ">=", "value": 0},
+                  "documents": documents,
+              }
+              fail_path = out / "failure-report.json"
+              fail_path.write_text(
+                  json.dumps(report, ensure_ascii=False, indent=2) + "\n",
+                  encoding="utf-8",
+              )
+              dest = out / "drafts"
+              dest.mkdir(parents=True, exist_ok=True)
+              proc = subprocess.run(
+                  [
+                      sys.executable,
+                      str(drafts),
+                      "--report",
+                      str(fail_path),
+                      "--out",
+                      str(dest),
+                  ],
+                  check=False,
+              )
+              if proc.returncode != 0:
+                  print(f"issue_draft skipped rc={proc.returncode}", file=sys.stderr)
+          PY
+          cat oracle-advisory/summary.md >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload advisory artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: oracle-public-advisory-${{ github.run_id }}
+          path: oracle-advisory/
+          if-no-files-found: ignore
+          retention-days: 14

@@ -1,0 +1,16 @@
+{
+  "id": "SD51",
+  "steps": [
+    {
+      "answer": {
+        "server": {
+          "cmd": [
+            "capabilities",
+            "--mcp"
+          ],
+          "path": "invocation.server"
+        }
+      }
+    }
+  ]
+}

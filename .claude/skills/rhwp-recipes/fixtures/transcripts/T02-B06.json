@@ -1,0 +1,11 @@
+{
+  "id": "T02-B06",
+  "recipe": "02",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/02_table_csv_roundtrip.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp csv-to-table samples/hwp_table_test.hwp --csv table0_edited.csv --table 0 --dry-run --json \\\n  | jq '{changedCount, invalid}'",
+  "firstLine": "rhwp csv-to-table samples/hwp_table_test.hwp --csv table0_edited.csv --table 0 --dry-run --json \\",
+  "notGym": true
+}

@@ -1,0 +1,108 @@
+{
+  "id": "FJ17",
+  "tier": 4,
+  "title": "반복 다섯 칸 전부 순번 지목",
+  "input": "samples/field-01.hwp",
+  "instructions": "목차1 다섯 칸을 순번으로 모두 채운 toc-all.hwp 를 제출하라. 값은 차례로 '목차여정갑','목차여정을','목차여정병','목차여정정','목차여정무' 이다. 회사명·작성자·제목은 비운다. 순번 없는 키 하나로 다섯을 채우려 하면 ambiguous 가 남아 실패다. 힌트: 목차1[0]…목차1[4] 다섯 키를 한 JSON 에 넣는다. 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "toc-all.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "목차1[0] 값",
+      "op": "value_eq",
+      "value": "목차여정갑",
+      "path": "fields[5].value",
+      "cmd": [
+        "fields",
+        "{file:toc-all.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "목차1[1] 값",
+      "op": "value_eq",
+      "value": "목차여정을",
+      "path": "fields[6].value",
+      "cmd": [
+        "fields",
+        "{file:toc-all.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "목차1[2] 값",
+      "op": "value_eq",
+      "value": "목차여정병",
+      "path": "fields[7].value",
+      "cmd": [
+        "fields",
+        "{file:toc-all.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "목차1[3] 값",
+      "op": "value_eq",
+      "value": "목차여정정",
+      "path": "fields[8].value",
+      "cmd": [
+        "fields",
+        "{file:toc-all.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "목차1[4] 값",
+      "op": "value_eq",
+      "value": "목차여정무",
+      "path": "fields[9].value",
+      "cmd": [
+        "fields",
+        "{file:toc-all.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:toc-all.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "작성자 공란 값",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:toc-all.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "제목 공란 값",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[10].value",
+      "cmd": [
+        "fields",
+        "{file:toc-all.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "toc-all.hwp"
+    }
+  ]
+}

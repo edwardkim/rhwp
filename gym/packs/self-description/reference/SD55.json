@@ -1,0 +1,16 @@
+{
+  "id": "SD55",
+  "steps": [
+    {
+      "answer": {
+        "irSchemaVersion": {
+          "cmd": [
+            "export-ir-schema",
+            "--json"
+          ],
+          "path": "irSchemaVersion"
+        }
+      }
+    }
+  ]
+}

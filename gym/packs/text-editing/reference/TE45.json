@@ -1,0 +1,37 @@
+{
+  "id": "TE45",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "insert-text",
+        "{input}",
+        "--text",
+        "짐표지TE45",
+        "--section",
+        "0",
+        "--para",
+        "0",
+        "--offset",
+        "0",
+        "-o",
+        "{sub:ins45.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "para": {
+          "cmd": [
+            "search",
+            "{sub:ins45.hwp}",
+            "--json",
+            "--",
+            "짐표지TE45"
+          ],
+          "path": "matches[0].paragraph"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "OP16",
+  "steps": [
+    {
+      "answer": {
+        "items": {
+          "cmd": [
+            "extract-data",
+            "{input}",
+            "--json"
+          ],
+          "path": "items",
+          "len": true
+        }
+      }
+    }
+  ]
+}

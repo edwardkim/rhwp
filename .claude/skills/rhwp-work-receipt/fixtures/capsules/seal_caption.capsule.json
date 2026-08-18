@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/seal_caption.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "(인)",
+        "replace": "(직인)"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/seal_caption.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"(인)\",\"replace\":\"(직인)\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "2817e5d4d5df040e15969e23f8f56b51c04da399d54e07a0541182b06e5a1df1",
+    "planSha256": "f6e6a5966e267d03d058868e8d92c3d7dbc214b9b6e63bd0390f8d120a8093c7",
+    "outputSha256": "4132715a08cd1dcffe1cc53631ac5c0420b452def2a67424cf86071e66aa509a",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

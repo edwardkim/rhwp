@@ -1,0 +1,26 @@
+{
+  "steps": [
+    {
+      "argv": [
+        "rhwp",
+        "run",
+        "planA.json",
+        "--json"
+      ],
+      "why": "실산출 O1. replay 는 사용자 경로를 쓰지 않는다"
+    },
+    {
+      "argv": [
+        "rhwp",
+        "replay",
+        "--plan-json",
+        "<planB input=O1>",
+        "--capsule",
+        "b.capsule.json",
+        "--parent",
+        "a.capsule.json",
+        "--json"
+      ]
+    }
+  ]
+}

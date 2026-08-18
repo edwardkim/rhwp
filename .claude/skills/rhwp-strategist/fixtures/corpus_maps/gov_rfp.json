@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1",
+  "generatedBy": "tools/strategist/engagement.py",
+  "corpus": "corpus/smartcity-rfp",
+  "documentCount": 5,
+  "mappedCount": 5,
+  "documents": [
+    {
+      "file": "rfp_공고.hwpx",
+      "sizeBytes": 80000,
+      "status": "ok",
+      "info": {
+        "format": "hwpx",
+        "pageCount": 6
+      }
+    },
+    {
+      "file": "과업지시서.hwp",
+      "sizeBytes": 80333,
+      "status": "ok",
+      "info": {
+        "format": "hwp",
+        "pageCount": 7
+      }
+    },
+    {
+      "file": "예산서_2025.hwpx",
+      "sizeBytes": 80666,
+      "status": "ok",
+      "info": {
+        "format": "hwpx",
+        "pageCount": 8
+      }
+    },
+    {
+      "file": "선행연구_중간.hwpx",
+      "sizeBytes": 80999,
+      "status": "ok",
+      "info": {
+        "format": "hwpx",
+        "pageCount": 9
+      }
+    },
+    {
+      "file": "평가표.hwp",
+      "sizeBytes": 81332,
+      "status": "ok",
+      "info": {
+        "format": "hwp",
+        "pageCount": 10
+      }
+    }
+  ],
+  "_skillMeta": {
+    "id": "gov_rfp",
+    "issue": 5335
+  }
+}

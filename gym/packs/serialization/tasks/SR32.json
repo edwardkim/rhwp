@@ -1,0 +1,53 @@
+{
+  "id": "SR32",
+  "tier": 2,
+  "title": "표 문서 PDF 형식 표기",
+  "input": "samples/table-001.hwp",
+  "instructions": "표 문서를 PDF 로 내보내 out.pdf 를 제출하고, 변환 봉투의 형식 표기를 answer.json 에 {\"format\": \"...\"} 로 적어라. 힌트: rhwp export-pdf --json 의 format. 골든 PDF 바이트를 박제하지 마라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.pdf",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "PDF 산출",
+      "op": "file_exists",
+      "file": "out.pdf",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "out.pdf"
+    },
+    {
+      "name": "PDF 형식",
+      "op": "value_eq",
+      "value": "pdf",
+      "path": "format",
+      "cmd": [
+        "export-pdf",
+        "{input}",
+        "-o",
+        "{file:out.pdf}",
+        "--json"
+      ]
+    },
+    {
+      "name": "변환 봉투 형식",
+      "op": "answer_eq",
+      "answer": "format",
+      "path": "format",
+      "cmd": [
+        "export-pdf",
+        "{input}",
+        "-o",
+        "{file:out.pdf}",
+        "--json"
+      ]
+    }
+  ]
+}

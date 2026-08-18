@@ -233,6 +233,9 @@ hwp5rb	issue4491/30213_1.혼합단지등 제도개선 방안.hwp	sections[].para
 hwp5rb	issue4690/30098_indent_over_stored_cs.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	124
 hwp5rb	issue4889/18098267_nested_fragment_origin.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
 hwp5rb	issue4889/18098267_nested_fragment_origin.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	110
+hwp5rb	issue5169_viewtext_changetracking.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	191
+hwp5rb	issue5169_viewtext_changetracking.hwp	sections[].paragraphs[].line_segs.len	5
+hwp5rb	issue5169_viewtext_changetracking.hwp	sections[].paragraphs[].raw_header_extra[]	5
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
@@ -500,9 +503,9 @@ hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].char_count	9
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls.len	9
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[]	18
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	81
-hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.default_tab_spacing	1
-hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.endnote_shape.suffix_char	1
-hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.footnote_shape.suffix_char	1
+hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.default_tab_spacing	10
+hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.endnote_shape.suffix_char	10
+hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.footnote_shape.suffix_char	10
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.page_def.margin_bottom	1
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.page_def.margin_left	1
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.page_def.margin_right	1

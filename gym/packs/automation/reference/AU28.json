@@ -1,0 +1,34 @@
+{
+  "id": "AU28",
+  "steps": [
+    {
+      "run": [
+        "keygen",
+        "--key-id",
+        "au-sign-mt1",
+        "--out",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/multi-table-001.hwp\", \"output\": \"out.hwp\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"서명다중\"}]}",
+        "--capsule",
+        "{sub:capsules/work.capsule.json}",
+        "--json",
+        "--sign-key",
+        "{sub:agent.key.json}"
+      ]
+    },
+    {
+      "keyring_from": {
+        "key": "{sub:agent.key.json}",
+        "out": "{sub:keyring.json}",
+        "keyId": "au-sign-mt1"
+      }
+    }
+  ]
+}

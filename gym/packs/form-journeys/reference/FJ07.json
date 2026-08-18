@@ -1,0 +1,25 @@
+{
+  "id": "FJ07",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "부서명": "여정운영팀"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:dept.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "TE23",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "의",
+        "--replace",
+        "◎",
+        "-o",
+        "{sub:all23.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -39,6 +39,12 @@ struct ParaTextParts {
     tab_extended: Vec<[u16; 7]>,
     title_marks: Vec<TitleMark>,
     orphan_field_ends: Vec<OrphanFieldEnd>,
+    /// [#5174] PARA_TEXT 에 묶음 빈칸 **제어코드**(0x001E)가 실제로 있었는가.
+    ///
+    /// 리터럴 `a0 00` 과 갈라야 저장에서 원본 표기를 되돌릴 수 있다. PARA_HEADER 의
+    /// `control_mask` 비트 30 을 그대로 믿으면 안 된다 — 한컴 원본에도 제어코드는 있는데
+    /// 비트가 없는 문단이 있다(한글 2022 오라클 실측 9경로).
+    nb_space_control: bool,
 }
 
 /// BodyText 파싱 에러
@@ -248,6 +254,12 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
                 para.title_marks = parts.title_marks;
                 para.orphan_field_ends = parts.orphan_field_ends;
                 para.has_para_text = true;
+                // [#5174] 묶음 빈칸 표기 출처는 **텍스트 축이 권위**다. PARA_HEADER 가 비트
+                // 30 을 빠뜨린 문단이 한컴 원본에도 있어(오라클 실측 9경로), 헤더만 믿으면
+                // 그 문단이 저장에서 리터럴로 강등된다. 헤더 값 위에 OR 로 얹는다.
+                if parts.nb_space_control {
+                    para.control_mask |= 1u32 << 0x001E;
+                }
             }
             tags::HWPTAG_PARA_CHAR_SHAPE => {
                 para.char_shapes = parse_para_char_shape(&record.data);
@@ -380,6 +392,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
     let mut tab_extended: Vec<[u16; 7]> = Vec::new();
     let mut title_marks: Vec<TitleMark> = Vec::new();
     let mut orphan_field_ends: Vec<OrphanFieldEnd> = Vec::new();
+    let mut nb_space_control = false;
     let mut pos = 0;
     // 확장 컨트롤(extended) 카운터 → controls[] 인덱스와 1:1 대응
     let mut ctrl_idx: usize = 0;
@@ -553,6 +566,9 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                     char_offsets.push(code_unit_pos);
                     text.push('\u{00A0}'); // 묶음 빈칸 (HWP 5.0 표 7: 코드 30, NO-BREAK SPACE)
                     char_count += 1;
+                    // [#5174] 표기 출처를 남긴다 — 같은 U+00A0 이라도 리터럴 `a0 00` 이었던
+                    // 문단은 저장에서 리터럴로 되돌려야 한글이 그 글자를 버리지 않는다.
+                    nb_space_control = true;
                 }
                 0x001F => {
                     char_offsets.push(code_unit_pos);
@@ -593,6 +609,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
         tab_extended,
         title_marks,
         orphan_field_ends,
+        nb_space_control,
     }
 }
 

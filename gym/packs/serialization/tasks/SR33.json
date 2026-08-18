@@ -1,0 +1,53 @@
+{
+  "id": "SR33",
+  "tier": 2,
+  "title": "2쪽 시험지 PDF 쪽수",
+  "input": "samples/exam-kor-2p.hwp",
+  "instructions": "2쪽 시험지를 PDF 로 내보내 out.pdf 를 제출하고, 렌더된 쪽 수를 answer.json 에 {\"pages\": N} 으로 적어라. 힌트: rhwp export-pdf --json 의 pageCount.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.pdf",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "PDF 산출",
+      "op": "file_exists",
+      "file": "out.pdf",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "out.pdf"
+    },
+    {
+      "name": "PDF 형식",
+      "op": "value_eq",
+      "value": "pdf",
+      "path": "format",
+      "cmd": [
+        "export-pdf",
+        "{input}",
+        "-o",
+        "{file:out.pdf}",
+        "--json"
+      ]
+    },
+    {
+      "name": "렌더 쪽 수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "path": "pageCount",
+      "cmd": [
+        "export-pdf",
+        "{input}",
+        "-o",
+        "{file:out.pdf}",
+        "--json"
+      ]
+    }
+  ]
+}

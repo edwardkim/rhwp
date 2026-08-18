@@ -1,0 +1,26 @@
+{
+  "id": "T02_session_interrupt",
+  "kind": "session_interrupt",
+  "judgmentNotCrash": false,
+  "exit": 0,
+  "steps": [
+    {
+      "argv": [
+        "read",
+        "output/handoff/t-ord/result.json"
+      ]
+    },
+    {
+      "argv": [
+        "read",
+        "output/handoff/t-ord/session.capsule.json"
+      ]
+    },
+    {
+      "argv": [
+        "read",
+        "mydocs/working/agent_handoff.md"
+      ]
+    }
+  ]
+}

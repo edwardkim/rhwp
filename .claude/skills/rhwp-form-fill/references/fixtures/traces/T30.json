@@ -1,0 +1,11 @@
+{
+  "id": "T30",
+  "title": "로고 셀 판별 후 스킵",
+  "steps": [
+    {
+      "note": "기존 CLI 표면만. 새 플래그 없음",
+      "usesExistingCommand": true
+    }
+  ],
+  "notGym": true
+}

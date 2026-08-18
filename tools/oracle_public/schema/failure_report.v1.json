@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "oracle_public.failure_report/v1",
+  "title": "oracle_public failure report v1",
+  "description": "임계 게이트를 넘긴 문서 목록. issue_draft.py 가 이슈 초안 markdown 을 만들 때 쓰는 작은 입력 스키마. visual_sweep.py 를 수정하지 않고, 그 산출(또는 동등한 수치)을 이 형태로 옮긴다.",
+  "type": "object",
+  "required": ["schema", "threshold", "documents"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "oracle_public.failure_report/v1",
+      "description": "스키마 식별자. 다른 값은 거부한다."
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "리포트 생성 시각(ISO-8601). 초안 본문에만 인용한다."
+    },
+    "source": {
+      "type": "string",
+      "description": "수치 출처 도구 이름. 예: visual_sweep, dump-pages-smoke."
+    },
+    "rhwp_bin": {
+      "type": "string",
+      "description": "재현에 쓴 rhwp 바이너리 경로."
+    },
+    "dpi": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "래스터 DPI. 재현 커맨드 합성에 쓴다."
+    },
+    "pixel_diff_threshold": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255,
+      "description": "visual_sweep --pixel-diff-threshold 와 같은 RGB 채널 임계."
+    },
+    "threshold": {
+      "type": "object",
+      "required": ["metric", "op", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "metric": {
+          "type": "string",
+          "minLength": 1,
+          "description": "documents[].metrics 에서 읽을 지표 이름."
+        },
+        "op": {
+          "enum": ["<", "<=", ">", ">="],
+          "description": "실패 조건. metric op value 가 참이면 초안을 만든다."
+        },
+        "value": {
+          "type": "number",
+          "description": "게이트 임계값."
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Document" }
+    }
+  },
+  "definitions": {
+    "Document": {
+      "type": "object",
+      "required": ["id", "hwp", "metrics"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "문서 키. 초안 파일명과 제목에 쓴다."
+        },
+        "hwp": {
+          "type": "string",
+          "minLength": 1,
+          "description": "HWP/HWPX 경로."
+        },
+        "pdf": {
+          "type": "string",
+          "description": "한컴 기준 PDF 경로."
+        },
+        "pages": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exceeds": {
+          "type": "boolean",
+          "description": "true 면 지표와 무관하게 초안을 만들고, false 면 건너뛴다."
+        },
+        "metrics": {
+          "type": "object",
+          "description": "지표 이름 → 숫자(또는 worst_pages 같은 정수 배열).",
+          "additionalProperties": {
+            "type": ["number", "integer", "string", "array", "null"]
+          }
+        },
+        "repro": {
+          "type": "object",
+          "properties": {
+            "command": { "type": "string", "minLength": 1 },
+            "cwd": { "type": "string" }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

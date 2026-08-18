@@ -2,22 +2,31 @@
 
 import {
   existsSync,
+  mkdirSync,
+  mkdtempSync,
   readFileSync,
   readdirSync,
+  rmSync,
   writeFileSync,
 } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  filesAtRef,
   parseBaseRefArgument,
   readJsonAtRef,
+  readTextAtRef,
   renamedFilesSince,
 } from './rust-test-policy-base.mjs';
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 export const ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
-export const MANIFEST_RELATIVE_PATH = 'tests/suites/unit-test-tiers.json';
+export const POLICY_RELATIVE_PATH = 'tests/suites/unit-test-tier-policy.json';
+export const DERIVED_INVENTORY_RELATIVE_PATH =
+  'tests/generated/unit-test-tiers.json';
+const LEGACY_MANIFEST_RELATIVE_PATH = 'tests/suites/unit-test-tiers.json';
 const CFG_TEST = /#\s*\[\s*cfg\s*\(\s*test\s*\)\s*\]/g;
 const TEST_ATTRIBUTE =
   /#\s*\[\s*(?:[A-Za-z_][A-Za-z0-9_]*\s*::\s*)*test\s*\]/g;
@@ -498,9 +507,94 @@ function manifestText(manifest) {
   return JSON.stringify(manifest, null, 2) + '\n';
 }
 
-function loadManifest(root = ROOT) {
-  const file = path.join(root, MANIFEST_RELATIVE_PATH);
-  return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
+function loadPolicy(root = ROOT) {
+  const file = path.join(root, POLICY_RELATIVE_PATH);
+  if (!existsSync(file)) {
+    throw new Error('unit test tier 정책 파일이 없습니다: ' + POLICY_RELATIVE_PATH);
+  }
+  return JSON.parse(readFileSync(file, 'utf8'));
+}
+
+function loadPolicyAtRef(root, ref) {
+  const policy = readJsonAtRef(root, ref, POLICY_RELATIVE_PATH, {
+    optional: true,
+  });
+  if (policy !== null) {
+    return policy;
+  }
+  const legacy = readJsonAtRef(root, ref, LEGACY_MANIFEST_RELATIVE_PATH, {
+    optional: true,
+  });
+  if (legacy === null) {
+    throw new Error('PR base에 unit test tier 정책이 없습니다: ' + ref);
+  }
+  return { version: legacy.version, policy: legacy.policy };
+}
+
+function validateTierPolicy(policy) {
+  const rules = policy?.policy;
+  const violations = [];
+  if (policy?.version !== 1) {
+    violations.push('unit test tier 정책 version은 1이어야 합니다.');
+  }
+  if (rules?.newCfgTestModules !== 'forbidden') {
+    violations.push('신규 cfg(test) module 금지 정책을 완화할 수 없습니다.');
+  }
+  if (rules?.newCfgTestSupportItems !== 'forbidden') {
+    violations.push('신규 cfg(test) support item 금지 정책을 완화할 수 없습니다.');
+  }
+  if (
+    !Number.isInteger(rules?.maximumStaticTestAttributes) ||
+    rules.maximumStaticTestAttributes < 0
+  ) {
+    violations.push('maximumStaticTestAttributes는 0 이상의 정수여야 합니다.');
+  }
+  return violations;
+}
+
+function policyBaseline(inventory, policy) {
+  const snapshot = buildTierManifest(inventory).manifest;
+  return {
+    version: policy.version,
+    policy: {
+      ...policy.policy,
+      allowedSupportItems: inventory.supportItems.map((entry) => entry.id),
+    },
+    modules: snapshot.modules,
+  };
+}
+
+function inventorySourceTestsAtRef(root, ref) {
+  const temporaryRoot = mkdtempSync(path.join(os.tmpdir(), 'rhwp-unit-tier-base-'));
+  try {
+    for (const relativePath of filesAtRef(root, ref, ['src', 'crates'])) {
+      if (!relativePath.endsWith('.rs')) {
+        continue;
+      }
+      const destination = path.join(temporaryRoot, relativePath);
+      mkdirSync(path.dirname(destination), { recursive: true });
+      writeFileSync(destination, readTextAtRef(root, ref, relativePath));
+    }
+    return inventorySourceTests(temporaryRoot);
+  } finally {
+    rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+}
+
+export function validateTierPolicyAgainstBase(current, base) {
+  const violations = [...validateTierPolicy(current), ...validateTierPolicy(base)];
+  if (
+    current.policy.maximumStaticTestAttributes >
+    base.policy.maximumStaticTestAttributes
+  ) {
+    violations.push(
+      'PR base 대비 source-side 기준선 상향 금지: ' +
+        current.policy.maximumStaticTestAttributes +
+        ' > ' +
+        base.policy.maximumStaticTestAttributes,
+    );
+  }
+  return violations;
 }
 
 function summaryLine(manifest) {
@@ -522,50 +616,38 @@ function summaryLine(manifest) {
 
 function run() {
   const option = process.argv[2];
-  if (!['--generate', '--check', '--accept-baseline'].includes(option)) {
+  if (!['--generate', '--check'].includes(option)) {
     throw new Error(
       '사용법: node scripts/rust-unit-test-tiers.mjs ' +
-        '[--generate|--check|--accept-baseline]',
+        '[--generate|--check] [--base-ref <Git ref>]',
     );
   }
-  const existing = loadManifest();
+  const baseRef = parseBaseRefArgument(process.argv.slice(3));
+  const policy = loadPolicy();
   const inventory = inventorySourceTests();
-  const result = buildTierManifest(inventory, existing, {
-    acceptBaseline: option === '--accept-baseline',
-  });
-  if (result.violations.length > 0) {
-    throw new Error(result.violations.join('\n'));
+  const result = buildTierManifest(inventory, policyBaseline(inventory, policy));
+  const violations = [...validateTierPolicy(policy), ...result.violations];
+  if (baseRef) {
+    const basePolicy = loadPolicyAtRef(ROOT, baseRef);
+    const baseInventory = inventorySourceTestsAtRef(ROOT, baseRef);
+    const baseManifest = buildTierManifest(baseInventory).manifest;
+    const currentManifest = buildTierManifest(inventory).manifest;
+    const renamedFiles = renamedFilesSince(ROOT, baseRef, ['src', 'crates']);
+    violations.push(
+      ...validateTierPolicyAgainstBase(policy, basePolicy),
+      ...validateTierManifestAgainstBase(currentManifest, baseManifest, renamedFiles),
+    );
   }
-  const expected = manifestText(result.manifest);
-  const manifestPath = path.join(ROOT, MANIFEST_RELATIVE_PATH);
-  if (option === '--check') {
-    const baseRef = parseBaseRefArgument(process.argv.slice(3));
-    if (baseRef) {
-      const baseManifest = readJsonAtRef(ROOT, baseRef, MANIFEST_RELATIVE_PATH, {
-        optional: true,
-      });
-      if (baseManifest !== null) {
-        const renamedFiles = renamedFilesSince(ROOT, baseRef, ['src', 'crates']);
-        const baseViolations = validateTierManifestAgainstBase(
-          result.manifest,
-          baseManifest,
-          renamedFiles,
-        );
-        if (baseViolations.length > 0) {
-          throw new Error(baseViolations.join('\n'));
-        }
-      }
-    }
-    if (!existing || readFileSync(manifestPath, 'utf8') !== expected) {
-      throw new Error(
-        'unit test tier manifest가 현재 source와 다릅니다. --generate를 실행하세요.',
-      );
-    }
-    process.stdout.write('[RustUnitTier] 확인 완료: ' + summaryLine(result.manifest) + '\n');
-    return;
+  if (violations.length > 0) {
+    throw new Error(violations.join('\n'));
   }
-  writeFileSync(manifestPath, expected);
-  process.stdout.write('[RustUnitTier] 생성 완료: ' + summaryLine(result.manifest) + '\n');
+  if (option === '--generate') {
+    const derivedPath = path.join(ROOT, DERIVED_INVENTORY_RELATIVE_PATH);
+    mkdirSync(path.dirname(derivedPath), { recursive: true });
+    writeFileSync(derivedPath, manifestText(result.manifest));
+  }
+  const action = option === '--generate' ? '파생 inventory 생성 완료' : '확인 완료';
+  process.stdout.write('[RustUnitTier] ' + action + ': ' + summaryLine(result.manifest) + '\n');
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {

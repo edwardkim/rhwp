@@ -1,0 +1,15 @@
+{
+  "id": "WR25",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"plan-ver.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"계획버전\"}]}",
+        "--capsule",
+        "{sub:receipts/plan.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "EX09",
+  "tier": 2,
+  "title": "날짜 수확 — 같은 시험지 HWPX",
+  "input": "samples/hwpx/exam-kor-1p.hwpx",
+  "instructions": "EX08 과 같은 시험지의 HWPX 쌍이다. extract-data --kind date 로 날짜 항목 수(itemCount)를 보고하라. 답 형식: {\"dates\": <수>}. 형식만 다르고 본문이 같으면 건수도 같아야 한다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "dates 일치",
+      "op": "answer_eq",
+      "answer": "dates",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "date",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+ "doc": "roster.hwp",
+ "symptom": "명단 표 (2차)",
+ "params": {},
+ "goal": "extract-tables"
+}

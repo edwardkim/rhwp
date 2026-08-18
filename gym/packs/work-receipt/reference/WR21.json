@@ -1,0 +1,15 @@
+{
+  "id": "WR21",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"kind-day.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"종류확인\"}]}",
+        "--capsule",
+        "{sub:receipts/kind.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

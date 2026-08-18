@@ -1,0 +1,27 @@
+{
+  "id": "TE86",
+  "tier": 1,
+  "title": "중첩셀 형식",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 형식 표기를 answer.json 에 {\"fmt\": \"...\"} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "중첩셀 형식 · fmt",
+      "op": "answer_eq",
+      "answer": "fmt",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

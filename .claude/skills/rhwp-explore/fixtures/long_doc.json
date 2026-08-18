@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5313,
+  "threshold": 10,
+  "highAt": 20,
+  "below": 9,
+  "at": 10
+}

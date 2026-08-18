@@ -1,0 +1,9 @@
+{
+ "schemaVersion": "1",
+ "generatedBy": "tools/chief/service_loop.py",
+ "goal": "fill",
+ "route": "resolve-now",
+ "status": "failed",
+ "reason": "fill-fields 봉투 notFound: [\"없는필드\"]",
+ "stop": "C09"
+}

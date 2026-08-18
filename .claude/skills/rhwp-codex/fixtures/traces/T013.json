@@ -1,0 +1,25 @@
+{
+  "id": "T013",
+  "command": "fields",
+  "chapter": "10_조회.md",
+  "cmd": "rhwp fields samples/field-01.hwp --json",
+  "exit": 0,
+  "keys": [
+    "fieldCount",
+    "fields",
+    "schemaVersion",
+    "source",
+    "textSecurity",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "fields[].name",
+    "fields[].guide",
+    "… (4개 중 2개 표시)"
+  ],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/10_조회.md",
+  "notInvented": true
+}

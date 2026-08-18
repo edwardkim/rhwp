@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "crop_image.sh",
+  "ok": false,
+  "code": "CROP_SRC_MISSING",
+  "message": "오류: source 이미지가 없습니다: missing.png"
+}

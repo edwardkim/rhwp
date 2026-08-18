@@ -1,0 +1,26 @@
+{
+  "id": "SD49",
+  "tier": 2,
+  "title": "MCP invocation.transport",
+  "input": "samples/table-001.hwp",
+  "instructions": "MCP 매니페스트의 invocation.transport 를 answer.json 에 {\"transport\": S} 으로 제출하라. 힌트: capabilities --mcp 의 invocation.transport.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "MCP invocation.transport",
+      "op": "answer_eq",
+      "answer": "transport",
+      "path": "invocation.transport",
+      "cmd": [
+        "capabilities",
+        "--mcp"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

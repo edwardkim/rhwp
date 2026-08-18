@@ -1,0 +1,26 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "csv-to-table",
+    "exit": 2,
+    "branch": "csvParse",
+    "outputKept": false,
+    "source": "tests/table_csv_contract.rs malformed_csv_is_invalid_not_a_panic"
+  },
+  "changed": [],
+  "changedCount": 0,
+  "colCount": 3,
+  "rowCount": 4,
+  "csv": "table0_unclosed_quote.csv",
+  "invalid": [
+    {
+      "reason": "csvParse",
+      "message": "CSV 를 읽지 못했습니다 — 닫히지 않은 따옴표."
+    }
+  ],
+  "schemaVersion": "1.0",
+  "source": "samples/hwp_table_test.hwp",
+  "table": 0
+}

@@ -1,0 +1,29 @@
+{
+  "id": "OM17",
+  "tier": 2,
+  "title": "표 문서 썸네일 가로",
+  "input": "samples/table-001.hwp",
+  "instructions": "표 표본 썸네일의 **가로 픽셀**을 answer.json 에 {\"width\": N} 으로 제출하라. issue2007 다쪽 문서(OM03)가 아니라 table-001 이다. 힌트: rhwp thumbnail 의 width.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "가로 픽셀",
+      "op": "answer_eq",
+      "answer": "width",
+      "path": "width",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

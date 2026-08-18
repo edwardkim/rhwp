@@ -13,6 +13,7 @@
 > CI Lint job 의 Format check 는 `cargo fmt --all -- --check` 입니다.
 > `cargo fmt --check` 만으로는 부족합니다. 실패하면 `cargo fmt --all` 로 고친 뒤
 > `--check` 가 통과할 때까지 PR 을 만들지 마세요.
+> `rust-unit-test-tiers --check`는 source와 추적 정책만 읽으며 파생 inventory를 만들거나 stage하지 않습니다.
 
 rhwp에 관심을 가져주셔서 감사합니다!
 
@@ -166,8 +167,8 @@ cargo clippy --all-targets --target-dir target/pr-review -- -D warnings # 린트
 만으로는 CI `Lint (fmt, clippy, WASM check)` 와 같지 않습니다. 포맷이 깨졌으면
 `cargo fmt --all` 로 고친 뒤 다시 `--check` 가 통과한 다음에만 PR을 생성해주세요.
 
-새 통합 테스트는 `tests/cases/` 에만 둡니다. `tests/generated/`,
-`tests/suites/suite-policy.json`은 추적하는 배정 정책이고, `tests/suites/manifest.json`,
+새 통합 테스트는 `tests/cases/` 에만 둡니다. `tests/suites/suite-policy.json`,
+`tests/suites/unit-test-tier-policy.json`은 추적하는 정책이고, `tests/generated/`, `tests/suites/manifest.json`,
 `tests/generated/**`, Cargo의 generated test target 블록은 **PR에 넣지 않는 파생 산출물**입니다. 일반 기여자는 자신의 PR checkout에서 `--prepare`, `--generate`,
 `--sync`, `--rebalance`, `--check`를 실행해 이를 등록하지 않습니다. 새 원본의 배정과
 harness 검증은 PR review 전용 worktree 및 CI가 `--prepare` 뒤 `--check`로 수행합니다.
@@ -284,8 +285,8 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    node scripts/rust-unit-test-tiers.mjs --check
    ```
 
-   CI는 PR base와 현재 source를 다시 비교하고, 커밋된 generated harness·manifest·Cargo generated
-   block도 거부한다. 새 integration source는 `tests/cases/`만 허용하며, source-side 테스트는 Git
+   CI는 PR base와 현재 source를 다시 비교하고, unit-tier inventory도 source에서 메모리로 재계산한다.
+   커밋된 generated harness·manifest·Cargo generated block도 거부한다. 새 integration source는 `tests/cases/`만 허용하며, source-side 테스트는 Git
    rename으로 확인되는 순수 crate 이동처럼 개수가 늘지 않는 경로 변경만 허용한다.
 2. **수정 전 실패 증명 (권장)** — "수정 커밋만 원복한 상태에서 신규 테스트가 실제로 FAIL"
    함을 PR 본문에 기록해주세요. 테스트가 결함을 판별한다는 증명이 되어 리뷰 신뢰도가

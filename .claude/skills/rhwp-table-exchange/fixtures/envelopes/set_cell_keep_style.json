@@ -1,0 +1,23 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "edit set-cell",
+    "exit": 0,
+    "branch": "keep-style-not-black",
+    "source": "cli_commands.md §edit set-cell --keep-style #3391"
+  },
+  "schemaVersion": "1.0",
+  "source": "samples/복학원서.hwp",
+  "table": 0,
+  "row": 2,
+  "col": 1,
+  "oldText": "",
+  "newText": "홍길동",
+  "dryRun": false,
+  "keepStyle": true,
+  "overflow": [],
+  "output": "작성본.hwp",
+  "outputFormat": "hwp5"
+}

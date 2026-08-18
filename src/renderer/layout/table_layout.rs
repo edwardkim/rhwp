@@ -2461,7 +2461,7 @@ impl LayoutEngine {
         let scalar_replay_terminal_boundary_unit = nested_split
             .is_some_and(|split| scalar_single_row_fragment && split.replay_terminal_boundary_unit);
         let scalar_single_row_continuation = scalar_single_row_continuation_offset.is_some();
-        let mut row_col_x = build_row_col_x(
+        let mut row_col_x = match build_row_col_x(
             table,
             &col_widths,
             col_count,
@@ -2469,7 +2469,10 @@ impl LayoutEngine {
             cell_spacing,
             self.dpi,
             self.render_table_width_scale(table),
-        );
+        ) {
+            Ok(grid) => grid,
+            Err(_) => return if depth == 0 { y_start } else { 0.0 },
+        };
         let independent_col_row_y = if split_row_range.is_none() && !table.common.treat_as_char {
             let col_row_y = build_col_row_y_from_cell_heights(
                 table,

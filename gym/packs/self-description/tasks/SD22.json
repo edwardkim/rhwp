@@ -1,0 +1,25 @@
+{
+  "id": "SD22",
+  "tier": 2,
+  "title": "ir 축 버전",
+  "input": "samples/table-001.hwp",
+  "instructions": "스키마 레지스트리 ir 축의 버전을 answer.json 에 {\"version\": S} 으로 제출하라. 힌트: capabilities 의 schemaRegistry.axes[1].version.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "ir 축 버전",
+      "op": "answer_eq",
+      "answer": "version",
+      "path": "schemaRegistry.axes[1].version",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "LR32",
+  "tier": 3,
+  "title": "가로 문서 라운드트립 회귀",
+  "input": "samples/landscape-001.hwp",
+  "instructions": "가로 표본을 자기 라운드트립으로 렌더 비교해 status 를 answer.json 에 제출하라. 힌트: rhwp render-diff.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "회귀 판정",
+      "op": "answer_eq",
+      "answer": "status",
+      "path": "status",
+      "cmd": [
+        "render-diff",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3,
+        4
+      ]
+    }
+  ],
+  "axis": "검증"
+}

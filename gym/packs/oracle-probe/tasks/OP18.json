@@ -1,0 +1,27 @@
+{
+  "id": "OP18",
+  "tier": 2,
+  "title": "HWPX 형식 표지 라이브 대조",
+  "input": "samples/hwpx_sample2.hwpx",
+  "axis": "검증",
+  "instructions": "hwpx 표본의 형식 표지를 answer.json 에 {\"format\": \"...\"} 으로 제출하라. hwp 표본의 답을 그대로 내면 라이브 오라클이 거부한다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "hwpx 형식 표지",
+      "op": "answer_eq",
+      "answer": "format",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "format"
+    }
+  ]
+}

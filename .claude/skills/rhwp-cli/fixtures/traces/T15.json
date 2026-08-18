@@ -1,0 +1,11 @@
+{
+  "id": "T15",
+  "utterance": "hwpx랑 hwp 비교",
+  "steps": [
+    {
+      "command": "ir-diff",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "--json 이면 exit 3=차이"
+}

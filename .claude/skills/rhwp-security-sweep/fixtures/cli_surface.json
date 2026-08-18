@@ -1,0 +1,32 @@
+{
+  "newCommandsForbidden": true,
+  "allowed": [
+    "inspect hidden-text",
+    "inspect injection",
+    "inspect unicode",
+    "edit redact --dry-run",
+    "edit redact -o|--in-place",
+    "edit sanitize"
+  ],
+  "documentedOnly": [
+    "--threshold-pt",
+    "--include-offpage",
+    "--min-confidence",
+    "--include-fields",
+    "--kind",
+    "--mask",
+    "--dry-run",
+    "--no-raw",
+    "--verify",
+    "--keep-preview",
+    "-o",
+    "--in-place",
+    "--json"
+  ],
+  "doNotInvent": [
+    "inspect pii",
+    "edit sweep",
+    "security-gate",
+    "auto-redact-on-export"
+  ]
+}

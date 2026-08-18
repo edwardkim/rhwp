@@ -1,0 +1,23 @@
+{
+  "id": "bad_page_index",
+  "kind": "bad-page-index",
+  "command": "export-svg",
+  "argv": [
+    "export-svg",
+    "sample.hwp",
+    "-p",
+    "99"
+  ],
+  "exitCode": 2,
+  "exitClass": "usage",
+  "stderrContains": "오류: 페이지 번호가 범위를 벗어났습니다 (0~",
+  "stdoutEmpty": true,
+  "source": "src/main.rs page >= page_count → EXIT_USAGE",
+  "doNot": "페이지 범위 초과는 런타임(1)이 아니라 사용법(2).",
+  "repair": null,
+  "stdoutKeys": null,
+  "_skillMeta": {
+    "exit": 2,
+    "issue": 5316
+  }
+}

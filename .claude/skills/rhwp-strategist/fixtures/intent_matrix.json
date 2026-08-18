@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5335,
+  "rows": [
+    {
+      "utterance": "정부과제 수주 근거",
+      "route": "strategist",
+      "example": "E01",
+      "note": "objective+corpus"
+    },
+    {
+      "utterance": "분기 전략 보고서",
+      "route": "strategist",
+      "example": "E02",
+      "note": "objective+corpus"
+    },
+    {
+      "utterance": "표가 잘린다",
+      "route": "fde",
+      "example": "E10",
+      "note": "live symptom"
+    },
+    {
+      "utterance": "오늘 요청 처리",
+      "route": "chief",
+      "example": "E11",
+      "note": "queue"
+    },
+    {
+      "utterance": "시장 전망만",
+      "route": "reject",
+      "example": "E09",
+      "note": "ST-FORECAST"
+    },
+    {
+      "utterance": "쪽 번호 없이 인용",
+      "route": "reject",
+      "example": "E04",
+      "note": "ST-INVENT-PAGE"
+    },
+    {
+      "utterance": "암호 파일 빼 줘",
+      "route": "reject",
+      "example": "E03",
+      "note": "ST-DROP-FAILED"
+    },
+    {
+      "utterance": "이 편집 증명",
+      "route": "work-receipt",
+      "example": null,
+      "note": "not this skill"
+    },
+    {
+      "utterance": "누름틀 채워",
+      "route": "form-fill",
+      "example": null,
+      "note": "not this skill"
+    },
+    {
+      "utterance": "한컴 PDF 대조",
+      "route": "fidelity",
+      "example": null,
+      "note": "not this skill"
+    },
+    {
+      "utterance": "gym 점수",
+      "route": "reject",
+      "example": null,
+      "note": "ST-GYM"
+    },
+    {
+      "utterance": "근거 대장만",
+      "route": "strategist",
+      "example": "E01",
+      "note": "engine A-B"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "SD08",
+  "tier": 2,
+  "title": "MCP 도구 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 가 MCP 서버로 등록하라고 내놓는 도구 개수를 answer.json 에 {\"tools\": N} 으로 제출하라. 힌트: rhwp capabilities --mcp.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "MCP 도구 수",
+      "op": "len_answer_eq",
+      "answer": "tools",
+      "path": "tools",
+      "cmd": [
+        "capabilities",
+        "--mcp"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

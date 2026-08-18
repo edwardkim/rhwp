@@ -1,0 +1,7 @@
+{
+  "id": "tools_list_matches_capabilities_manifest",
+  "file": "tests/mcp_server_contract.rs",
+  "from": "capabilities --mcp tools",
+  "to": "mcp-serve tools/list (minus session)",
+  "on_fail": "선언과 실행이 다른 배열을 쓰지 않는지 확인"
+}

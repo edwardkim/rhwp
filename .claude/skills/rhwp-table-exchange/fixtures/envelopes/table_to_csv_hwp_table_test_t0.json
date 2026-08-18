@@ -1,0 +1,31 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "table-to-csv",
+    "sample": "samples/hwp_table_test.hwp",
+    "exit": 0,
+    "branch": "single-table-file",
+    "source": "recipes/02_table_csv_roundtrip.md"
+  },
+  "bom": false,
+  "output": "table0.csv",
+  "outputFormat": "csv",
+  "schemaVersion": "1.0",
+  "source": "samples/hwp_table_test.hwp",
+  "tableCount": 1,
+  "tables": [
+    {
+      "colCount": 3,
+      "csv": "제목,담당자,세부 내용\r\n,,\r\n,,\r\n,,\r\n",
+      "index": 0,
+      "output": "table0.csv",
+      "rowCount": 4
+    }
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "tables[].csv"
+  ]
+}

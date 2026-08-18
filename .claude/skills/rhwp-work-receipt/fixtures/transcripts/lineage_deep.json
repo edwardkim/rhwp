@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "rhwp",
+    "lineage",
+    "b.capsule.json",
+    "--deep",
+    "--json"
+  ],
+  "exit": 0,
+  "reproducedIsNullWithoutDeep": true,
+  "envelope": "fixtures/envelopes/lineage_deep.json"
+}

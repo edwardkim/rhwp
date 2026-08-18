@@ -1,0 +1,50 @@
+{
+  "id": "SR09",
+  "tier": 2,
+  "title": "HWPX를 편집 가능 HWP5로",
+  "input": "samples/hwpx_sample2.hwpx",
+  "instructions": "입력(HWPX)을 편집 가능 HWP5 로 변환해 conv.hwp 를 제출하고, 변환 봉투의 형식 표기를 answer.json 에 {\"format\": \"...\"} 로 적어라. 힌트: rhwp convert --json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "HWP5 산출",
+      "op": "file_exists",
+      "file": "conv.hwp",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "conv.hwp"
+    },
+    {
+      "name": "info 형식",
+      "op": "value_eq",
+      "value": "hwp5",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:conv.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "변환 봉투 형식",
+      "op": "answer_eq",
+      "answer": "format",
+      "path": "format",
+      "cmd": [
+        "convert",
+        "{input}",
+        "{file:conv.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

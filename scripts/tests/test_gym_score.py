@@ -343,5 +343,47 @@ class TaskCommandExistenceTests(unittest.TestCase):
                           "requires.commands 에 선언되지 않았다")
 
 
+class ScoreRunnerKindRegressionTests(unittest.TestCase):
+    """[#5260] 성공 칸에 kind 가 붙어도 예전 판정·문구가 유지되는지."""
+
+    def setUp(self):
+        self.score = load_score_module()
+
+    def test_unknown_op_still_uses_legacy_message(self):
+        detail = self.score.eval_check({"op": "no_such_op"}, {}, ".", {}, "rhwp")
+        self.assertFalse(detail["ok"])
+        self.assertEqual(detail["error"], "미지 op: no_such_op")
+        self.assertEqual(detail["kind"], "unknown-op")
+
+    def test_missing_submit_folder_keeps_legacy_phrase(self):
+        task = {
+            "id": "T99",
+            "tier": 1,
+            "title": "x",
+            "checks": [{"name": "n", "op": "file_exists", "file": "a"}],
+        }
+        with tempfile.TemporaryDirectory() as d:
+            result = self.score.score_task(task, d, "rhwp")
+        self.assertEqual(result["error"], "제출 폴더 없음")
+        self.assertEqual(result["kind"], "missing-submit")
+        self.assertFalse(result["pass"])
+
+    def test_bad_expect_exits_kind_does_not_compare(self):
+        check = {
+            "name": "n",
+            "op": "answer_eq",
+            "answer": True,
+            "cmd": ["info"],
+            "path": "ok",
+            "expect_exits": "0",
+        }
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(
+            self.score, "run_cli", return_value=(0, {"ok": True}, "")
+        ):
+            detail = self.score.eval_check(check, {}, d, {}, "rhwp")
+        self.assertFalse(detail["ok"])
+        self.assertEqual(detail["kind"], "bad-expect-exits")
+
+
 if __name__ == "__main__":
     unittest.main()

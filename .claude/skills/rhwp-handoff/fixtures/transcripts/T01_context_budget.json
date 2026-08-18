@@ -1,0 +1,43 @@
+{
+  "id": "T01_context_budget",
+  "kind": "context_budget",
+  "judgmentNotCrash": false,
+  "exit": 0,
+  "steps": [
+    {
+      "argv": [
+        "python",
+        "tools/handoff/orchestrator.py",
+        "--task",
+        "task.json",
+        "--agent",
+        "python worker.py",
+        "--work-dir",
+        "output/handoff/t-ord",
+        "--json"
+      ]
+    },
+    {
+      "argv": [
+        "python",
+        "tools/handoff/orchestrator.py",
+        "--verify-journal",
+        "output/handoff/t-ord/handoff.journal.ndjson",
+        "--json"
+      ]
+    },
+    {
+      "argv": [
+        "rhwp",
+        "replay",
+        "--plan-json",
+        "{...}",
+        "--capsule",
+        "output/handoff/t-ord/session.capsule.json",
+        "--parent",
+        "output/handoff/t-ord/parent.capsule.json",
+        "--json"
+      ]
+    }
+  ]
+}

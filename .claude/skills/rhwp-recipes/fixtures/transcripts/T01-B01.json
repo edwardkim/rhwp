@@ -1,0 +1,11 @@
+{
+  "id": "T01-B01",
+  "recipe": "01",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/01_fill_form_and_submit.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp fields samples/form-01.hwp --json",
+  "firstLine": "rhwp fields samples/form-01.hwp --json",
+  "notGym": true
+}

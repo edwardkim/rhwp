@@ -1,0 +1,19 @@
+{
+  "id": "LR29",
+  "steps": [
+    {
+      "answer": {
+        "mime": {
+          "cmd": [
+            "thumbnail",
+            "{input}",
+            "-o",
+            "{sub:t.png}",
+            "--json"
+          ],
+          "path": "mime"
+        }
+      }
+    }
+  ]
+}

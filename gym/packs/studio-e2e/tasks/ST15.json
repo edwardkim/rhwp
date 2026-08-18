@@ -1,0 +1,27 @@
+{
+  "id": "ST15",
+  "tier": 2,
+  "title": "2차원 원형 HWP 차트 수",
+  "input": "samples/chart/원형/2차원원형.hwp",
+  "instructions": "입력 차트의 chartCount 를 answer.json 에 {\"charts\": N} 으로 제출하라. 원형은 계열 모양이 달라도 chart-to-csv 가 입구다. 숫자를 파일 이름·폴더 설명에서 추측하지 마라. 라이브 봉투를 읽어라. 힌트: rhwp chart-to-csv <문서> (차트 전부) --json 의 chartCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "chartCount",
+      "op": "answer_eq",
+      "answer": "charts",
+      "path": "chartCount",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

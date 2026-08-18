@@ -1,0 +1,23 @@
+{
+  "id": "TB23",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "0",
+        "--text",
+        "표지",
+        "-o",
+        "{sub:mark_origin.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

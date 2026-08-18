@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/field-01.hwp",
+  "minConfidence": "low",
+  "includeFields": false,
+  "scanScopes": [
+    "body",
+    "tableCell",
+    "textBox",
+    "equation",
+    "footnote",
+    "endnote",
+    "header",
+    "footer",
+    "caption"
+  ],
+  "injectionSignals": [],
+  "signalCount": 0,
+  "highestConfidence": null,
+  "clean": true,
+  "exitCode": 0
+}

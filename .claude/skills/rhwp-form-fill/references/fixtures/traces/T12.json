@@ -1,0 +1,11 @@
+{
+  "id": "T12",
+  "title": "기본 출력명 _filled",
+  "steps": [
+    {
+      "note": "기존 CLI 표면만. 새 플래그 없음",
+      "usesExistingCommand": true
+    }
+  ],
+  "notGym": true
+}

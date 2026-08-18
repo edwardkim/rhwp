@@ -1,0 +1,11 @@
+{
+  "id": "TR17",
+  "recipe": "03",
+  "transcript": "T03-B03",
+  "argvLine": "rhwp edit redact output/pii-demo.hwp --dry-run --json --no-raw",
+  "usesExistingCommand": true,
+  "notGym": true,
+  "noNewCli": true,
+  "sourceFile": "mydocs/manual/recipes/03_redact_before_sharing.md",
+  "fabricatedLive": false
+}

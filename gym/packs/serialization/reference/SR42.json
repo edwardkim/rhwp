@@ -1,0 +1,23 @@
+{
+  "id": "SR42",
+  "steps": [
+    {
+      "answer": {
+        "identical": {
+          "cmd": [
+            "export-hwpx",
+            "{input}",
+            "{sub:conv.hwpx}",
+            "--verify",
+            "--json"
+          ],
+          "path": "verify.identical",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

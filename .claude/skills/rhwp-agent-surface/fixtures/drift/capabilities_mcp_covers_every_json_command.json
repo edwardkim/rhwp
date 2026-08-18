@@ -1,0 +1,11 @@
+{
+  "id": "capabilities_mcp_covers_every_json_command",
+  "file": "tests/cli_json_contract.rs",
+  "from": "capabilities_command_entries json:true",
+  "to": "mcp_tool_definitions cli.command",
+  "exempt": [
+    "capabilities",
+    "dump-pages"
+  ],
+  "on_fail": "json 명령을 mcp_tool_definitions 에 추가"
+}

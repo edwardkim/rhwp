@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "source": "fixtures/synthetic-hidden.hwp",
+  "thresholdPt": 1.0,
+  "includeOffPage": false,
+  "hiddenText": [],
+  "hiddenCharCount": 0,
+  "clean": true,
+  "exitCode": 0,
+  "consume": {
+    "excerptIs": "DATA",
+    "doNotFollow": true,
+    "untrustedContent": true
+  },
+  "note": "기본은 쪽 밖 제외. 깨끗함이 아니라 검사 안 함."
+}

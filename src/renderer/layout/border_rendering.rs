@@ -4,7 +4,31 @@ use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedBorderStyle;
 use super::super::{LineStyle, StrokeDash};
 use crate::model::style::{BorderLine, BorderLineType, CenterLine};
-use crate::model::table::Table;
+use crate::model::table::{Table, MAX_TABLE_GRID_CELLS};
+
+/// [#4287] `build_row_col_x` 가 `row_count × col_count` 2D 그리드를 예약하지 않는 이유.
+///
+/// 파일에서 온 `u16` 행/열 수를 그대로 곱하면 65535×65535 `Option<f64>` (~68GB) 를
+/// 예약해 `handle_alloc_error` / wasm 트랩으로 죽는다. `Table::rebuild_grid()` 와
+/// 같은 `MAX_TABLE_GRID_CELLS` 를 넘기면 할당 없이 오류를 돌린다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct TableGridTooLarge {
+    pub row_count: usize,
+    pub col_count: usize,
+}
+
+impl TableGridTooLarge {
+    fn check(row_count: usize, col_count: usize) -> Result<(), Self> {
+        if row_count.saturating_mul(col_count) > MAX_TABLE_GRID_CELLS {
+            Err(Self {
+                row_count,
+                col_count,
+            })
+        } else {
+            Ok(())
+        }
+    }
+}
 
 fn merge_border(a: &BorderLine, b: &BorderLine) -> BorderLine {
     if a.line_type == BorderLineType::None {
@@ -60,8 +84,9 @@ pub(crate) fn build_row_col_x(
     cell_spacing: f64,
     dpi: f64,
     width_scale: f64,
-) -> Vec<Vec<f64>> {
+) -> Result<Vec<Vec<f64>>, TableGridTooLarge> {
     use super::super::hwpunit_to_px;
+    TableGridTooLarge::check(row_count, col_count)?;
     // 셀 너비 그리드 구축 (O(cells) 탐색 1회)
     let mut cell_width_grid = vec![vec![None::<f64>; col_count]; row_count];
     for cell in &table.cells {
@@ -81,7 +106,7 @@ pub(crate) fn build_row_col_x(
     }
 
     if table.common.treat_as_char {
-        return vec![base_rx; row_count];
+        return Ok(vec![base_rx; row_count]);
     }
 
     let target_total = if table.common.width > 0 {
@@ -182,7 +207,7 @@ pub(crate) fn build_row_col_x(
                     .any(|(a, b)| (a - b).abs() > 0.01)
             })
         {
-            return row_col_x_from_cells;
+            return Ok(row_col_x_from_cells);
         }
     }
 
@@ -193,7 +218,7 @@ pub(crate) fn build_row_col_x(
         })
     });
     if !has_independent_widths {
-        return vec![base_rx; row_count];
+        return Ok(vec![base_rx; row_count]);
     }
 
     let fallback_w = hwpunit_to_px(1800, dpi);
@@ -213,7 +238,7 @@ pub(crate) fn build_row_col_x(
             row_col_x[r].clone_from_slice(&base_rx);
         }
     }
-    row_col_x
+    Ok(row_col_x)
 }
 
 /// 셀 테두리를 엣지 그리드에 수집
@@ -1162,7 +1187,8 @@ mod tests {
         let col_widths =
             base_widths_hu.map(|width| crate::renderer::hwpunit_to_px(width as i32, DPI));
 
-        let row_col_x = build_row_col_x(&table, &col_widths, 3, 3, 0.0, DPI, 1.0);
+        let row_col_x =
+            build_row_col_x(&table, &col_widths, 3, 3, 0.0, DPI, 1.0).expect("3×3 표는 상한 안");
         let expected_first_boundary = col_widths[0];
         let expected_last_width = col_widths[2];
 
@@ -1177,6 +1203,36 @@ mod tests {
             row_col_x[0]
         );
         assert_eq!(row_col_x[0], row_col_x[1]);
+        assert_oversized_declared_grid_is_rejected();
+    }
+
+    fn assert_oversized_declared_grid_is_rejected() {
+        // [#4287] 가드가 사라지면 2100×2100 × Option<f64> ≈ 70MB 를 예약한다.
+        // 65535×65535 는 회귀 시 CI 러너가 OOM 으로 죽으므로 쓰지 않는다 (#2722 보정과 동일).
+        const ROWS: usize = 2100;
+        const COLS: usize = 2100;
+        assert!(
+            ROWS.saturating_mul(COLS) > MAX_TABLE_GRID_CELLS,
+            "재현 입력이 상한을 넘어야 의미가 있다"
+        );
+
+        let table = Table {
+            row_count: ROWS as u16,
+            col_count: COLS as u16,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                row_span: 1,
+                col_span: 1,
+                width: 1000,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let err = build_row_col_x(&table, &[1.0], COLS, ROWS, 0.0, 96.0, 1.0)
+            .expect_err("상한 초과 그리드는 할당하지 않고 오류여야 함");
+        assert_eq!(err.row_count, ROWS);
+        assert_eq!(err.col_count, COLS);
     }
 
     fn center_line_style(center_line: CenterLine) -> ResolvedBorderStyle {

@@ -1,0 +1,23 @@
+{
+  "id": "TE36",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "insert-text",
+        "{input}",
+        "--text",
+        "짐표지TE36",
+        "--section",
+        "0",
+        "--para",
+        "0",
+        "--offset",
+        "0",
+        "-o",
+        "{sub:ins36.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

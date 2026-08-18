@@ -1,0 +1,24 @@
+{
+  "id": "CR17",
+  "tier": 1,
+  "title": "두 쪽 시험지는 몇 쪽?",
+  "input": "samples/exam-kor-2p.hwp",
+  "instructions": "미로탐험 — CR17 는 키 제한 없는 입문 놀이기구다. 1p 와 2p 를 바꿔 쓰지 마라. 이 파일만 연다. 문서는 `samples/exam-kor-2p.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: info {입력} --json. answer.json 에는 {\"pages\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. info pageCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "두 쪽 시험지는 몇 쪽?",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ],
+  "axis": "입문"
+}

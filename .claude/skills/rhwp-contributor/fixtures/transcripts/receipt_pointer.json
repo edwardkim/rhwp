@@ -1,0 +1,15 @@
+{
+  "id": "receipt_pointer",
+  "issue": 5322,
+  "argv": [
+    "rhwp replay --plan-json <계획> --capsule work.capsule.json --json",
+    "rhwp audit <폴더> --json",
+    "rhwp lineage <머리캡슐> --json"
+  ],
+  "forbids": [
+    "git add -A",
+    "cargo fmt --check",
+    "gh pr create --base main"
+  ],
+  "hardGate": "cargo fmt --all -- --check"
+}

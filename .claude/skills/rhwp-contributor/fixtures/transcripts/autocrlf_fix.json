@@ -1,0 +1,15 @@
+{
+  "id": "autocrlf_fix",
+  "issue": 5322,
+  "argv": [
+    "git config --local core.autocrlf false",
+    "git config --local core.eol lf",
+    "cargo fmt --all -- --check"
+  ],
+  "forbids": [
+    "git add -A",
+    "cargo fmt --check",
+    "gh pr create --base main"
+  ],
+  "hardGate": "cargo fmt --all -- --check"
+}

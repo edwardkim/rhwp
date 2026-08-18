@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "check_deps.sh",
+  "ok": false,
+  "rhwp": null,
+  "imagemagick": "magick",
+  "pythonDocx": true,
+  "missingRequired": [
+    "rhwp"
+  ],
+  "missingOptional": [],
+  "envelopes": [
+    {
+      "code": "DEP_MISS_RHWP",
+      "severity": "required",
+      "tool": "rhwp",
+      "exit": 1,
+      "hint": "cargo build --release 또는 cargo run --bin rhwp",
+      "blocks": [
+        "build-from-ingest"
+      ]
+    }
+  ]
+}

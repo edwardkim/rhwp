@@ -1,0 +1,10 @@
+{
+  "cliDefaultIncludesRaw": true,
+  "agentAutomationDefault": "--no-raw",
+  "reason": "로그·이슈에 raw PII 가 남는 사고를 원천 차단",
+  "requiredFlags": [
+    "--dry-run",
+    "--no-raw",
+    "--json"
+  ]
+}

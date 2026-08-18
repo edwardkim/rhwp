@@ -1,0 +1,26 @@
+{
+  "schema": "oracle_public.failure_report/v1",
+  "generated_at": "2026-08-18T00:05:00Z",
+  "source": "visual_sweep",
+  "rhwp_bin": "target/debug/rhwp",
+  "dpi": 96,
+  "pixel_diff_threshold": 12,
+  "threshold": {
+    "metric": "worst_pixel_match_percent",
+    "op": "<",
+    "value": 99.0
+  },
+  "documents": [
+    {
+      "id": "blank2010",
+      "hwp": "samples/blank2010.hwp",
+      "pdf": "pdf/blank2010-2022.pdf",
+      "pages": 1,
+      "metrics": {
+        "worst_pixel_match_percent": 99.98,
+        "average_pixel_match_percent": 99.98,
+        "worst_pages": [1]
+      }
+    }
+  ]
+}

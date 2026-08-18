@@ -1,0 +1,54 @@
+name: Proptest roundtrip
+
+# M04-4 / #5388 — fuzz/README 가 범위 밖으로 둔 왕복 정합성(#2740) 계층.
+# nextest archive 정규 shard 도 tests/cases 원본을 돌리지만, 여기 잡은
+# debug + 이름 필터로 싸고 명시적으로 돌린다. 10분 퍼지가 아니다.
+#
+# M04-2 `prop_hwpx_roundtrip` · M04-3 `prop_hwp5_roundtrip` 원본이 없으면
+# skip (본체가 아직 안 들어와도 실패하지 않는다). 배선 확인용
+# `prop_roundtrip_ci` 는 항상 돈다.
+
+on:
+  pull_request:
+    branches: [main, devel]
+  push:
+    branches: [main, devel]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: proptest-roundtrip-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  proptest-roundtrip:
+    name: prop roundtrip
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+        with:
+          toolchain: 1.93.1
+
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@258712b0b7b1ddf8bddc9fc3b0faca682b2736c3 # v2.9.1
+        with:
+          shared-key: proptest-roundtrip
+          save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
+
+      - name: Check property runner contract
+        run: node --test scripts/tests/run-prop-roundtrip.test.mjs
+
+      - name: Prepare derived Rust test suites
+        run: node scripts/rust-test-suite-manifest.mjs --prepare
+
+      - name: Run property roundtrip cases
+        run: node scripts/run-prop-roundtrip.mjs --cargo-test

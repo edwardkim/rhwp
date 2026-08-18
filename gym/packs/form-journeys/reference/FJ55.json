@@ -1,0 +1,21 @@
+{
+  "id": "FJ55",
+  "steps": [
+    {
+      "answer": {
+        "filledName": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "{\"전화번호\": \"070-111-2222\"}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "filled[0].name"
+        }
+      }
+    }
+  ]
+}

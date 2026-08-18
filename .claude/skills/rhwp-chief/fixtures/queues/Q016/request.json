@@ -1,0 +1,6 @@
+{
+ "doc": "modern.hwpx",
+ "symptom": "HWPX를 HWP로 (1차)",
+ "params": {},
+ "goal": "convert-hwp"
+}

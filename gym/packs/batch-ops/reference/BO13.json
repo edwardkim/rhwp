@@ -1,0 +1,18 @@
+{
+  "id": "BO13",
+  "steps": [
+    {
+      "run": [
+        "batch",
+        "fill",
+        "--form",
+        "{input}",
+        "--data",
+        "gym/packs/batch-ops/assets/BO13-data.csv",
+        "--out-dir",
+        "{sub:out}",
+        "--json"
+      ]
+    }
+  ]
+}

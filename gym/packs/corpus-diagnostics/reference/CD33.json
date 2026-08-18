@@ -1,0 +1,25 @@
+{
+  "id": "CD33",
+  "steps": [
+    {
+      "run": [
+        "convert",
+        "{input}",
+        "{sub:conv.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "format": {
+          "cmd": [
+            "info",
+            "{sub:conv.hwp}",
+            "--json"
+          ],
+          "path": "format"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "BO13",
+  "tier": 3,
+  "title": "메일머지 — 데이터 1행만 (최소 대량)",
+  "input": "samples/hwpx/form-01.hwpx",
+  "instructions": "데이터 1행만 있는 CSV 다. 서식 1개에 1행을 병합해 out/0001.hwpx 한 부를 만들어라. 0002 는 없어야 한다(이 과제는 1부만 제출). 힌트: rhwp batch fill --form samples/hwpx/form-01.hwpx --data gym/packs/batch-ops/assets/BO13-data.csv --out-dir out --json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out/0001.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "1부 산출 존재",
+      "op": "file_exists",
+      "file": "out/0001.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "원본 서식과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "out/0001.hwpx"
+    },
+    {
+      "name": "1행 값이 1부에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/0001.hwpx}",
+        "--json",
+        "--",
+        "SingleRowOnly"
+      ]
+    }
+  ]
+}

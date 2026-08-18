@@ -1,0 +1,32 @@
+{
+  "id": "CD22",
+  "tier": 3,
+  "title": "2쪽 시험지 HWP·HWPX IR 대조",
+  "input": "samples/exam-kor-2p.hwp",
+  "instructions": "같은 시험지의 HWP 판과 HWPX 판을 IR 로 비교해 동일 여부를 answer.json 에 {\"identical\": true|false} 로 제출하라. 대상 HWPX: samples/hwpx/exam-kor-2p.hwpx. CD04 는 143E 쌍이다. 힌트: rhwp ir-diff.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 동일 판정",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "samples/hwpx/exam-kor-2p.hwpx",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "검증"
+}

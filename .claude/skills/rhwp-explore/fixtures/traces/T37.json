@@ -1,0 +1,25 @@
+{
+  "id": "T37",
+  "title": "쪽 0·표 1",
+  "scenario": "S39",
+  "argv": [
+    "explore",
+    "samples/table-no-page.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S39.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "table-extract",
+      "triage-overview"
+    ],
+    "first": "table-extract",
+    "firstCommand": "rhwp export-tables <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X10",
+  "notGym": true,
+  "usesExistingCommand": true
+}

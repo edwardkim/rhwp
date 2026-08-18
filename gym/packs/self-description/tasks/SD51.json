@@ -1,0 +1,26 @@
+{
+  "id": "SD51",
+  "tier": 2,
+  "title": "MCP stdio 서버 명령",
+  "input": "samples/table-001.hwp",
+  "instructions": "MCP invocation.server (stdio 서버 명령 이름)를 answer.json 에 {\"server\": S} 으로 제출하라. 힌트: capabilities --mcp 의 invocation.server.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "MCP stdio 서버 명령",
+      "op": "answer_eq",
+      "answer": "server",
+      "path": "invocation.server",
+      "cmd": [
+        "capabilities",
+        "--mcp"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

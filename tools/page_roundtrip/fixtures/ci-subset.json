@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "kind": "pageRoundtripManifest",
+  "notes": [
+    "CI 용 픽스처 부분집합. samples/ 전수가 아니다.",
+    "issue-505-equations.hwp 는 catalog expected-fail (#4056) — 침묵 스킵하지 않는다."
+  ],
+  "docs": [
+    "samples/hwp3-ellipse-empty-textbox.hwp",
+    "samples/hwp3-pagedef-1915.hwp",
+    "samples/issue-505-equations.hwp"
+  ]
+}

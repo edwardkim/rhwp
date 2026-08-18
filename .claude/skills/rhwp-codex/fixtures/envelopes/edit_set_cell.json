@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "edit set-cell",
+  "sourceChapter": "30_편집과_계획.md",
+  "cmd": "rhwp edit set-cell samples/basic/issue2007_nested_cell_pagination_42065.hwp --table 1 --row 0 --col 0 --text 코덱스 --dry-run --json",
+  "exit": 0,
+  "envelope": {
+    "changedPages": null,
+    "col": 0,
+    "dryRun": true,
+    "keepStyle": false,
+    "newText": "코덱스",
+    "oldText": "규제 사무명",
+    "overflow": [],
+    "row": 0,
+    "schemaVersion": "1.0",
+    "source": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "table": 1,
+    "untrustedContent": true,
+    "untrustedFields": [
+      "oldText"
+    ]
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

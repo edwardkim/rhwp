@@ -1,0 +1,37 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/field-01.hwp",
+  "output": "out/plan_result.hwp",
+  "steps": [
+    {
+      "step": 0,
+      "action": "fill_fields",
+      "filledCount": 1,
+      "filled": [
+        {
+          "name": "회사명",
+          "occurrence": 0,
+          "value": "X"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": []
+    }
+  ],
+  "assertions": {
+    "notFoundEmpty": true,
+    "verify": true
+  },
+  "verify": {
+    "identical": false,
+    "diffCount": 1
+  },
+  "schemaVersion": "1.0",
+  "_skillMeta": {
+    "exit": 3,
+    "branch": "ReplanNoOutput",
+    "outputKept": false,
+    "layer": "run"
+  }
+}

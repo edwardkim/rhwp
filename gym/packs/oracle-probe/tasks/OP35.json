@@ -1,0 +1,27 @@
+{
+  "id": "OP35",
+  "tier": 1,
+  "title": "쪽수 라이브 재계산 (exam-kor-1p)",
+  "input": "samples/exam-kor-1p.hwp",
+  "axis": "검증",
+  "instructions": "1쪽 시험지 표본의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라. 이름이 1p 라고 1 을 박제하지 마라 — 오라클이 info 를 다시 돌린다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "시험지 쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

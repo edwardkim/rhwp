@@ -1,0 +1,94 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "csv-to-table",
+    "exit": 0,
+    "branch": "header-row-is-row-0",
+    "outputKept": true,
+    "source": "recipes/02 헤더 오해"
+  },
+  "changed": [
+    {
+      "row": 0,
+      "col": 0,
+      "oldText": "제목",
+      "newText": "서버 이관"
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "oldText": "담당자",
+      "newText": "홍길동"
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "oldText": "세부 내용",
+      "newText": "1차 완료"
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "oldText": "",
+      "newText": "DB 백업"
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "oldText": "",
+      "newText": "김철수"
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "oldText": "",
+      "newText": "진행중"
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "oldText": "",
+      "newText": "문서 정리"
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "oldText": "",
+      "newText": "박영희"
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "oldText": "",
+      "newText": "대기"
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "oldText": "",
+      "newText": ""
+    }
+  ],
+  "changedCount": 9,
+  "changedPages": [
+    0
+  ],
+  "colCount": 3,
+  "csv": "table0_header_dropped.csv",
+  "dryRun": false,
+  "invalid": [
+    {
+      "actual": 3,
+      "expected": 4,
+      "reason": "rowCountMismatch",
+      "message": "CSV 행 수 3 가 표 0 의 행 수 4 와 다릅니다 — 표 크기는 바꾸지 않습니다."
+    }
+  ],
+  "_skillNote": "헤더를 빼고 값만 넣으면 치수도 깨지고 0행이 값으로 덮인다. 이 픽스처는 치수 거부 경로가 정본.",
+  "rowCount": 4,
+  "schemaVersion": "1.0",
+  "source": "samples/hwp_table_test.hwp",
+  "table": 0
+}

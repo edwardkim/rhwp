@@ -1,0 +1,16 @@
+{
+  "id": "SD47",
+  "steps": [
+    {
+      "answer": {
+        "suggestedName": {
+          "cmd": [
+            "capabilities",
+            "--mcp"
+          ],
+          "path": "server.suggestedName"
+        }
+      }
+    }
+  ]
+}

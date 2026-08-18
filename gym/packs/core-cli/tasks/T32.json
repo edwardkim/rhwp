@@ -1,0 +1,23 @@
+{
+  "id": "T32",
+  "tier": 2,
+  "title": "첫 칸 이름만 읽기",
+  "input": "samples/field-01.hwp",
+  "instructions": "T32 은 입문·코어 온램프를 두껍게 하는 과제다. 첫 칸의 이름(name)을 읽는다. 값(value)을 채우라는 과제가 아니다. 표본은 `samples/field-01.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: fields <문서> --json. 제출은 answer.json 에 {\"firstName\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. T07 금지. fields[0].value 가 아니라 fields[0].name 이다. 홍길동을 쓰지 마라.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "첫 칸 이름만 읽기",
+      "op": "answer_eq",
+      "answer": "firstName",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ],
+      "path": "fields[0].name"
+    }
+  ]
+}

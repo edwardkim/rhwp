@@ -1,0 +1,25 @@
+{
+  "id": "T023",
+  "command": "convert",
+  "chapter": "40_변환과_렌더.md",
+  "cmd": "rhwp convert samples/field-01.hwp <tmp>/conv.hwp --verify --json",
+  "exit": 0,
+  "keys": [
+    "bytes",
+    "format",
+    "output",
+    "passwordProtected",
+    "schemaVersion",
+    "source",
+    "untrustedContent",
+    "untrustedFields",
+    "verify",
+    "verifyPages",
+    "wasDistribution"
+  ],
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/40_변환과_렌더.md",
+  "notInvented": true
+}

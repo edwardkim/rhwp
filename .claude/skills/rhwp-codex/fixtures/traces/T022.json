@@ -1,0 +1,27 @@
+{
+  "id": "T022",
+  "command": "run",
+  "chapter": "30_편집과_계획.md",
+  "cmd": "rhwp run <tmp>/plan_a.json --json",
+  "exit": 0,
+  "keys": [
+    "assertions",
+    "changedPages",
+    "input",
+    "inputSha256",
+    "output",
+    "outputFormat",
+    "outputSha256",
+    "planVersion",
+    "schemaVersion",
+    "steps",
+    "untrustedContent",
+    "untrustedFields",
+    "verify"
+  ],
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/30_편집과_계획.md",
+  "notInvented": true
+}

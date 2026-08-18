@@ -1,0 +1,25 @@
+{
+  "id": "SD34",
+  "tier": 2,
+  "title": "batch 하위명령 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "capabilities 가 선언하는 batch.subcommands 수를 answer.json 에 {\"subcommands\": N} 으로 제출하라. 힌트: capabilities 의 batch.subcommands.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "batch 하위명령 수",
+      "op": "len_answer_eq",
+      "answer": "subcommands",
+      "path": "batch.subcommands",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

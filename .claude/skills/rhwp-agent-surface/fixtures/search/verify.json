@@ -1,0 +1,65 @@
+{
+  "invocation": "rhwp capabilities --search verify",
+  "invocation_json": "rhwp capabilities --search verify --json",
+  "query": "verify",
+  "keywords_and": [
+    "verify"
+  ],
+  "match_count": 8,
+  "empty": false,
+  "layer": "cli-json",
+  "ssot": "capabilities_command_entries() name+summary+subcommands",
+  "matches": [
+    {
+      "name": "verify-signature",
+      "family": "query",
+      "summary": "캡슐 분리 서명(<캡슐>.sig.json)을 파일 바이트·키 등록부와 대조 — verdict(valid|invalid|unknownKey|revoked|malformed)는 봉투 데이터, 유효 아님 = exit 3 (#4509)",
+      "json": false
+    },
+    {
+      "name": "anchor",
+      "family": "query",
+      "summary": "투명성 로그(T7 방어) — add(append-only 등재, 깨진 로그 거부)·checkpoint(머클 루트)·verify(등재·자기 무결·머클 경로 판정, 아님 exit 3). 공표는 운영 절차 (#4543)",
+      "json": false
+    },
+    {
+      "name": "bundle",
+      "family": "query",
+      "summary": "연합 교환 — export(계보 폐쇄집합+서명+머클 증명을 zip 하나로)·verify(컨테이너·폐쇄집합·계보·서명[도메인 키링만, 동봉 불신]·앵커 5단 오프라인 판정, 깨짐 exit 3) (#4549)",
+      "json": false
+    },
+    {
+      "name": "disclose",
+      "family": "query",
+      "summary": "선택적 공개 — redact(plan 문자열 잎을 salt 커밋으로 치환한 가림 캡슐+비밀 개봉 파일)·verify(부분 개봉 필드 대조, 불일치 exit 3)·restore(전체 개봉으로 바이트 완전 복원 — 원본 서명 그대로 valid) (#4551)",
+      "json": false
+    },
+    {
+      "name": "settle",
+      "family": "query",
+      "summary": "정산 증빙 — propose(명세서·캡슐·게이트 봉투 3해시 고정 청구 발급, 4년 서명 선택)·verify(3해시 대조+게이트 verdict 재확인+서명·이중청구 opt-in 축, 실패 exit 3)·record(원장 append-only 기입, 이중 청구 전역 검사 exit 3) — 돈은 움직이지 않는다, 산출물은 제3자 검증 가능한 지불 근거뿐 (#4553)",
+      "json": false
+    },
+    {
+      "name": "export-hwpx",
+      "family": "export",
+      "summary": "HWP→HWPX 변환 저장 (--verify 게이트 exit 3/4, --json 봉투)",
+      "json": false
+    },
+    {
+      "name": "convert",
+      "family": "export",
+      "summary": "HWPX/배포용→편집 가능 HWP5 변환 (--verify 게이트 exit 3/4, --json 봉투)",
+      "json": false
+    },
+    {
+      "name": "verify",
+      "family": "diagnostic",
+      "summary": "기대 조건(--expect-pages/min-pages/max-pages/min-chars/min-tables/table-count/contains/not-contains/field/format) 대조 — 전부 만족 exit 0, 불일치는 봉투 후 exit 3",
+      "json": false
+    }
+  ],
+  "truncated": false,
+  "total_match_count": 8,
+  "note": "개수는 계약이 아니다. 바이너리 출력이 이긴다."
+}

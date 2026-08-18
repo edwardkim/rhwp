@@ -1,0 +1,79 @@
+{
+  "layouts": [
+    {
+      "id": "all-ok",
+      "root": "fixtures/audit-layouts/all-ok",
+      "nonRecursiveCapsuleCount": 3,
+      "nestedCapsuleCount": 0,
+      "expectedTotal": 3,
+      "expectedReproduced": 3,
+      "expectedRate": 1.0,
+      "expectedExit": 0
+    },
+    {
+      "id": "mixed",
+      "root": "fixtures/audit-layouts/mixed",
+      "nonRecursiveCapsuleCount": 3,
+      "expectedTotal": 3,
+      "expectedReproduced": 2,
+      "expectedRate": 0.6666666666666666,
+      "expectedExit": 3
+    },
+    {
+      "id": "nested-ignored",
+      "root": "fixtures/audit-layouts/nested-ignored",
+      "nonRecursiveCapsuleCount": 1,
+      "nestedCapsuleCount": 1,
+      "expectedTotal": 1,
+      "expectedExit": 0
+    },
+    {
+      "id": "empty",
+      "root": "fixtures/audit-layouts/empty",
+      "nonRecursiveCapsuleCount": 0,
+      "expectedExit": 2,
+      "stdoutBytes": 0
+    },
+    {
+      "id": "mixed-ext",
+      "root": "fixtures/audit-layouts/mixed-ext",
+      "nonRecursiveCapsuleCount": 1,
+      "decoys": [
+        "notes.json",
+        "keep.capsule.json.bak",
+        "keep.capsule.json.txt"
+      ],
+      "expectedTotal": 1,
+      "expectedExit": 0
+    },
+    {
+      "id": "same-folder-chain",
+      "root": "fixtures/audit-layouts/same-folder-chain",
+      "nonRecursiveCapsuleCount": 2,
+      "note": "같은 폴더 상대 이름 a.capsule.json"
+    },
+    {
+      "id": "relative-subdir",
+      "root": "fixtures/lineage-layouts/relative-subdir",
+      "parentPath": "../root/a.capsule.json",
+      "parentPathRelativeTo": "child/b.capsule.json"
+    },
+    {
+      "id": "lineage-broken",
+      "root": "fixtures/lineage-layouts/lineage-broken",
+      "expectLineageOk": false,
+      "expectedExit": 3
+    },
+    {
+      "id": "missing-parent-sha",
+      "root": "fixtures/lineage-layouts/missing-parent-sha",
+      "expectedExit": 3,
+      "errorContains": "parent.sha256"
+    },
+    {
+      "id": "three-link",
+      "root": "fixtures/lineage-layouts/three-link",
+      "expectedDepth": 3
+    }
+  ]
+}

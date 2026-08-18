@@ -1,0 +1,48 @@
+{
+  "kinds": [
+    {
+      "id": "cli-json-command",
+      "layer": "cli-json",
+      "ssot": "명령 구현 + *_json_value",
+      "steps": [
+        "이슈 잠금 (assignee 또는 착수 코멘트)",
+        "red 계약 테스트 tests/<name>_contract.rs 신설",
+        "코어 함수 재사용 — 새 편집 로직 금지",
+        "stdout 순수 JSON, 실패 시 0바이트 (run 예외는 문서화)",
+        "schemaVersion + untrustedContent/untrustedFields 모든 모드",
+        "capabilities_command_entries() 등재",
+        "json 이면 mcp_tool_definitions() 한 줄",
+        "cli_commands.md + 지식 지도 행",
+        "드리프트 가드 green"
+      ]
+    },
+    {
+      "id": "mcp-stateless-tool",
+      "layer": "mcp-stateless",
+      "ssot": "mcp_tool_definitions()",
+      "steps": [
+        "대응하는 --json CLI 가 이미 있는가? 없으면 CLI 를 먼저",
+        "tool() / tool_with_optional_args() 로 한 곳에서 선언",
+        "inputSchema.required 와 cli.args 자리표시자 1:1",
+        "선택 인자는 optionalArgs 만 — 미치환 문자열 사고 방지",
+        "outputFields 에 판정 필드(overflow, identical, notFound) 명시",
+        "코어 + 봉투 helper 재사용",
+        "capabilities_mcp_covers_every_json_command green"
+      ]
+    },
+    {
+      "id": "mcp-session-tool",
+      "layer": "mcp-session",
+      "ssot": "ALL_SESSION_TOOLS + served_tools()",
+      "steps": [
+        "무상태 짝이 있는가? 없으면 무상태를 먼저",
+        "ALL_SESSION_TOOLS 에 이름 추가 (한 곳)",
+        "served_tools() 디스패치가 같은 코어를 부르게",
+        "docId 필수, 닫힌 핸들 isError + nextCall hwp_open",
+        "디스크 기록은 hwp_doc_save 만",
+        "판정 어휘는 무상태 짝과 동형",
+        "프로필 allows_session_tool 경계 확인"
+      ]
+    }
+  ]
+}

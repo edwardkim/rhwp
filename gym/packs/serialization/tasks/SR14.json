@@ -1,0 +1,43 @@
+{
+  "id": "SR14",
+  "tier": 2,
+  "title": "쪽 범위 전체 추출 후 원본 쪽수",
+  "input": "samples/exam-kor-2p.hwp",
+  "instructions": "입력의 1~2쪽을 그대로 남겨 slice.hwp 로 저장하고, 추출 전 원본 쪽수를 answer.json 에 {\"pagesBefore\": N} 으로 제출하라. --from/--to 는 1 기준이다. 힌트: rhwp extract-pages --from 1 --to 2 --json 의 pagesBefore.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "slice.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "추출물 실재",
+      "op": "file_exists",
+      "file": "slice.hwp",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "slice.hwp"
+    },
+    {
+      "name": "추출 전 쪽수",
+      "op": "answer_eq",
+      "answer": "pagesBefore",
+      "path": "pagesBefore",
+      "cmd": [
+        "extract-pages",
+        "{input}",
+        "{file:slice.hwp}",
+        "--from",
+        "1",
+        "--to",
+        "2",
+        "--json"
+      ]
+    }
+  ]
+}

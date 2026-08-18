@@ -1,0 +1,46 @@
+{
+  "id": "FJ21",
+  "tier": 2,
+  "title": "field-01 작성자 dry-run 오라클",
+  "input": "samples/field-01.hwp",
+  "axis": "조회",
+  "instructions": "field-01 의 작성자에 '미리보기작성자' 를 채울 때 --dry-run 으로 dryRun 과 filledCount 만 보고하라. 출력 파일을 만들지 마라. FJ02 는 form-01/myMsg01 이다. 이번은 다른 표본·다른 칸. answer.json 에 {\"dryRun\": …, \"filledCount\": …} 를 제출하라. 숫자는 라이브 오라클이 대조한다. 힌트: rhwp edit fill-fields samples/field-01.hwp --data '{\"작성자\": \"미리보기작성자\"}' --dry-run --json",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "dryRun",
+      "op": "answer_eq",
+      "answer": "dryRun",
+      "path": "dryRun",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"작성자\": \"미리보기작성자\"}",
+        "--dry-run",
+        "--json"
+      ]
+    },
+    {
+      "name": "filledCount",
+      "op": "answer_eq",
+      "answer": "filledCount",
+      "path": "filledCount",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"작성자\": \"미리보기작성자\"}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

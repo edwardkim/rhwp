@@ -1,0 +1,16 @@
+{
+  "id": "SD65",
+  "steps": [
+    {
+      "answer": {
+        "ref": {
+          "cmd": [
+            "export-ir-schema",
+            "--json"
+          ],
+          "path": "schema.$ref"
+        }
+      }
+    }
+  ]
+}

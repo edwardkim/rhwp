@@ -1,0 +1,24 @@
+{
+  "id": "T08",
+  "title": "목차1 순번 지목",
+  "sample": "samples/field-01.hwp",
+  "steps": [
+    {
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "{\"목차1[0]\":\"가\",\"목차1[1]\":\"나\",\"목차1[2]\":\"다\",\"목차1[3]\":\"라\",\"목차1[4]\":\"마\"}",
+        "-o",
+        "out.hwp",
+        "--json"
+      ],
+      "expect": {
+        "ambiguous": [],
+        "filledCount": 5
+      }
+    }
+  ],
+  "stop": "F05"
+}

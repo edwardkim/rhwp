@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5333,
+  "fde": {
+    "entry": "고객 증상 + 파일",
+    "output": "티켓 + 회신 + 추적번호",
+    "time": "즉시",
+    "authority": "mydocs/manual/fde_playbook.md"
+  },
+  "bugHunter": {
+    "entry": "우리가 고른 여정",
+    "output": "정답지 대조 결함 이슈",
+    "time": "탐사",
+    "authority": "mydocs/manual/bug_hunting_playbook.md"
+  },
+  "rewriteForbidden": true
+}

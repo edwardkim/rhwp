@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<HWPML Style="embed" SubVersion="9.0.0.0" Version="2.91">
+<HEAD SecCnt="1">
+<DOCSETTING>
+<BEGINNUMBER Page="1"/>
+</DOCSETTING>
+<MAPPINGTABLE>
+<FACENAMELIST>
+<FONTFACE Count="1" Lang="Hangul">
+<FONT Id="0" Name="Batang" Type="rep"/>
+</FONTFACE>
+</FACENAMELIST>
+<CHARSHAPELIST Count="1">
+<CHARSHAPE Height="1000" Id="0" TextColor="0">
+<FONTID Hangul="0" Latin="0" Hanja="0" Japanese="0" Other="0" Symbol="0" User="0"/>
+</CHARSHAPE>
+</CHARSHAPELIST>
+<PARASHAPELIST Count="1">
+<PARASHAPE Align="Justify" Id="0"/>
+</PARASHAPELIST>
+<STYLELIST Count="1">
+<STYLE CharShape="0" EngName="Normal" Id="0" Name="Body" NextStyle="0" ParaShape="0" Type="Para"/>
+</STYLELIST>
+</MAPPINGTABLE>
+</HEAD>
+<BODY>
+<SECTION Id="0">
+<P ParaShape="0" Style="0">
+<TEXT CharShape="0">
+<CHAR>hello</CHAR>
+</TEXT>
+</P>
+</SECTION>
+</BODY>
+<TAIL>
+</TAIL>
+</HWPML>

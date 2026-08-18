@@ -1,0 +1,28 @@
+{
+  "id": "SD10",
+  "tier": 2,
+  "title": "도움 검색 — schema",
+  "input": "samples/table-001.hwp",
+  "instructions": "capabilities 도움 검색으로 키워드 schema 에 맞는 명령 수를 answer.json 에 {\"hits\": N} 으로 제출하라. 힌트: rhwp capabilities --search schema --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "검색 적중 수",
+      "op": "len_answer_eq",
+      "answer": "hits",
+      "path": "commands",
+      "cmd": [
+        "capabilities",
+        "--search",
+        "schema",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

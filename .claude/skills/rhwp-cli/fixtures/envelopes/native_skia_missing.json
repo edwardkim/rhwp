@@ -1,0 +1,21 @@
+{
+  "id": "native_skia_missing",
+  "kind": "native-skia-missing",
+  "command": "export-png",
+  "argv": [
+    "export-png",
+    "sample.hwp"
+  ],
+  "exitCode": 2,
+  "exitClass": "usage",
+  "stderrContains": "오류: export-png 명령은 native-skia feature 가 활성화되어야 합니다.",
+  "stdoutEmpty": true,
+  "source": "src/main.rs #[cfg(not(feature = \"native-skia\"))] stub",
+  "doNot": "기능 부재를 성공(0)이나 런타임(1)으로 읽지 않는다. 사용법(2).",
+  "repair": "cargo build --release --features native-skia",
+  "stdoutKeys": null,
+  "_skillMeta": {
+    "exit": 2,
+    "issue": 5316
+  }
+}

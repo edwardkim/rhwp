@@ -37,6 +37,8 @@ use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, SizeCriterion, TextWrap, VertAlign, VertRelTo,
 };
 
+use crate::parser::tags;
+
 use super::context::SerializeContext;
 use super::field::{
     write_bookmark, write_field_begin, write_field_end, write_field_end_full, write_hyperlink_begin,
@@ -631,6 +633,16 @@ pub fn write_section(
             let pid = ctx.next_para_id();
             let sid = ctx.effective_style_id(p.style_id);
             extra.push_str(&render_hp_p_open(p, pid, sid));
+            // [#4056] 후속 문단이 구역나누기(SectionDef)면 그 구역을 secPr 로 방출한다.
+            // `render_runs` 는 SectionDef 슬롯을 hidden 처리해 XML 을 내지 않으므로
+            // 여기서 내지 않으면 뒤 구역이 통째로 사라져 쪽나눔이 소실된다.
+            if let Some(Control::SectionDef(sd)) = p
+                .controls
+                .iter()
+                .find(|c| matches!(c, Control::SectionDef(_)))
+            {
+                extra.push_str(&build_secpr_run(sd, first_run_char_shape_id(p)));
+            }
             extra.push_str(&runs);
             extra.push_str(&linesegs);
             extra.push_str("</hp:p>");
@@ -672,6 +684,35 @@ fn first_run_char_shape_id(p: &Paragraph) -> u32 {
     p.char_shapes.first().map(|r| r.char_shape_id).unwrap_or(0)
 }
 
+/// [#4056] 후속 구역(SectionDef)을 HWPX `<hp:secPr>` run 으로 방출한다.
+///
+/// HWP5 는 한 BodyText 섹션에 구역(secd)을 여럿 담을 수 있다(issue-505: 수식 4개가
+/// 각 구역 = 4쪽). 종전 HWPX 직렬화기는 `render_runs` 에서 **모든 SectionDef 를 드롭**해
+/// (첫 구역만 write_section 의 secPr 템플릿으로 살아남음) 뒤 구역들의 쪽나눔이 사라졌다
+/// (issue-505: 4→1쪽). HWPX 는 한 section0.xml 안에 secPr 를 여럿 둘 수 있으므로(한글
+/// 원본 실증: issue2019 10개·06544 63개), 뒤 구역마다 secPr 를 방출한다.
+///
+/// secPr 템플릿(`EMPTY_SECTION_XML`)에서 secPr 블록만 잘라 IR 값으로 치환한다 —
+/// 커스터마이즈 앵커(pagePr·visibility·scalars·footNotePr·pageBorderFill)가 모두 secPr
+/// 내부라 첫 구역과 같은 함수를 재사용한다. 바탕쪽(masterPage)은 이 경로에서 미지원
+/// (`masterPageCnt="0"` 유지) — 후속 구역의 바탕쪽은 드물다.
+fn build_secpr_run(sd: &SectionDef, first_cs: u32) -> String {
+    let start = EMPTY_SECTION_XML
+        .find("<hp:secPr ")
+        .expect("템플릿에 secPr 열기 태그가 있어야 함");
+    let end = EMPTY_SECTION_XML[start..]
+        .find("</hp:secPr>")
+        .map(|e| start + e + "</hp:secPr>".len())
+        .expect("템플릿에 secPr 닫기 태그가 있어야 함");
+    let mut secpr = EMPTY_SECTION_XML[start..end].to_string();
+    secpr = replace_page_pr(&secpr, &sd.page_def);
+    secpr = replace_page_border_fill(&secpr, sd);
+    secpr = replace_visibility(&secpr, sd);
+    secpr = replace_secpr_scalars(&secpr, sd);
+    secpr = replace_footnote_shape(&secpr, sd);
+    format!(r#"<hp:run charPrIDRef="{}">{}</hp:run>"#, first_cs, secpr)
+}
+
 /// Paragraph 하나를 (완전한 `<hp:run>` 시퀀스 XML, `<hp:linesegarray>` 요소 XML,
 /// 다음 vert_cursor)로 변환.
 ///
@@ -708,6 +749,23 @@ pub(crate) fn render_paragraph_parts(
         // IR 에 line_segs 없음 — linesegarray 방출 생략 (#1380)
         (runs_xml, String::new(), vert_start)
     }
+}
+
+/// [#5140] 한컴 사용자 정의 기호를 HWPX 표기(평면 15 보충 PUA)로 올린다.
+///
+/// 같은 글자를 HWP5 는 `0xA000 | X`, HWPX 는 `U+F0000 | X` 로 싣는다. IR 정본은 HWP5 쪽
+/// 사영이므로 HWPX 로 낼 때만 올려 준다 — 리터럴로 내면 한글이 그 자리를 Yi 음절(U+A8xx)
+/// 로 읽어 글자가 깨진다. 표에 없는 글자는 그대로 통과한다(`0xA813` 반례 참고).
+///
+/// 본문 텍스트(`hp:t`)와 글자겹침(`hp:compose/@composeText`) 두 경로 모두 이 규칙을 쓴다 —
+/// 한글 SaveAs 실측에서 둘 다 예외 없이 평면 15 로 갔다.
+fn hancom_symbol_for_hwpx(c: char) -> char {
+    let Ok(unit) = u16::try_from(u32::from(c)) else {
+        return c;
+    };
+    tags::hancom_symbol_to_plane15(unit)
+        .and_then(char::from_u32)
+        .unwrap_or(c)
 }
 
 /// 원본에서 글자들이 0 부터 연속으로 놓여 있었는가 — 곧 컨트롤이 전부 텍스트 뒤에 있어
@@ -748,6 +806,12 @@ pub(crate) struct InlineCursor<'a> {
     /// 한컴 원본은 소프트 하이픈을 리터럴 U+00AD 로도, 제어 표기로도 쓴다. 출처가
     /// 제어 표기(HWP5 `control_mask` 비트 24)일 때만 요소로 내려 원본 표기를 지킨다.
     pub soft_hyphen_as_element: bool,
+    /// [#5174] 이 문단의 묶음 빈칸을 `<hp:nbSpace/>` 요소로 내릴지 여부.
+    ///
+    /// 하이픈과 같은 계약이다 — 한컴 원본은 U+00A0 을 요소로도, 리터럴로도 쓴다
+    /// (HWPX 실측: 요소 26문서 · 리터럴 20문서 · 혼용 0문서). 출처가 제어·요소 표기
+    /// (`control_mask` 비트 30)일 때만 요소로 내린다.
+    pub nb_space_as_element: bool,
 }
 
 impl InlineCursor<'_> {
@@ -812,13 +876,25 @@ pub(crate) fn render_hp_t_content(
             // 요소를 텍스트 추출에 싣지 않지만 리터럴은 문자로 실어, 저장본의 추출
             // 텍스트·재조판이 원본과 달라진다(10k 스윕 figure-space-only 1,970건).
             //
-            // 한컴 원본 실측(hwpx 300건): U+2007 은 fwSpace 요소 530회 · 리터럴 0회로
-            // **항상 요소**다. 반면 U+00A0 은 nbSpace 요소 15회 · 리터럴 9회로 섞여 있어
-            // 요소로 강제하면 리터럴이던 원본에서 한글 추출 텍스트가 사라진다(실측 23건).
-            // IR 이 두 표기를 구분하지 못하는 한 U+00A0 은 기존대로 리터럴로 둔다.
+            // 한컴 원본 실측(hwpx 전수): U+2007 은 fwSpace 요소 530회 · 리터럴 0회로
+            // **항상 요소**다. 반면 U+00A0 은 요소 26문서 · 리터럴 20문서로 섞여 있어
+            // 요소로 강제하면 리터럴이던 원본에서 한글 추출 텍스트가 사라진다.
+            // 그래서 U+00A0 만 아래에서 출처 표기를 따라간다(#5174).
             '\u{2007}' => {
                 flush_buf(&mut t_xml, &mut buf);
                 t_xml.push_str("<hp:fwSpace/>");
+            }
+            // [#5174] 묶음 빈칸은 U+2007 과 달리 **원본 표기를 따라간다.** 종전에는 늘
+            // 리터럴로 냈는데(표현 강등), 원본이 제어·요소 표기였으면 한글 추출 텍스트에
+            // 없던 공백이 생겨 원본과 어긋난다. 반대로 리터럴 원본을 요소로 바꾸면 글자가
+            // 사라진다 — 그래서 어느 한쪽으로 강제하지 않고 출처를 보존한다.
+            //
+            // 출처 신호는 `control_mask` 비트 30 이다(`cursor` 가 나른다). HWP5 원본은
+            // PARA_HEADER 가 직접 주고(제어코드 존재와 5,553/5,553 일치), HWPX 원본은
+            // 파서가 `<hp:nbSpace/>` 를 만났을 때 세운다.
+            '\u{00A0}' if cursor.nb_space_as_element => {
+                flush_buf(&mut t_xml, &mut buf);
+                t_xml.push_str("<hp:nbSpace/>");
             }
             // [#4895] 소프트 하이픈(U+00AD)은 U+2007 과 달리 **원본 표기를 따라간다.**
             // 종전에는 늘 `<hp:hyphen/>` 요소로 내렸는데(#4776), 한컴이 만든 문서는
@@ -837,7 +913,7 @@ pub(crate) fn render_hp_t_content(
                 t_xml.push_str("<hp:hyphen/>");
             }
             c if (c as u32) < 0x20 => { /* 기타 제어문자 무시 */ }
-            c => buf.push(c),
+            c => buf.push(hancom_symbol_for_hwpx(c)),
         }
     }
     flush_buf(&mut t_xml, &mut buf);
@@ -1010,7 +1086,28 @@ fn emit_field_end_at(splitter: &mut RunSplitter, para: &Paragraph, fr: &FieldRan
 }
 
 /// 고아(다단락) fieldEnd 를 `<hp:ctrl><hp:fieldEnd .../></hp:ctrl>` 로 방출 (Task #1556).
+///
+/// [#5252] **여는 짝을 찾지 못한 종료 마커는 내지 않는다.** `link_orphan_field_ends` 가
+/// 섹션을 훑고도 `begin_id_ref` 를 채우지 못했다면 그 문서 어디에도 짝 `fieldBegin` 이
+/// 없다는 뜻이다(원본 HWP5 자체가 그렇게 만들어진 문서가 있다). 한글은 **열려 있지 않은
+/// 필드를 닫는 `fieldEnd` 를 참조 값과 무관하게 버리므로**, 그대로 내면 한글이 세는 문단
+/// 축만 8유닛 짧아진다. 그런데 `linesegarray` 는 원본 축을 담고 있어 줄이 축을 넘고,
+/// 한글이 **그 문단부터 본문을 통째로 폐기한다**.
+///
+/// 한글 2022 주입 검정(07276 h2x): 이 마커만 빼면 137쪽 → 224쪽, 본문 +100,393자.
+/// `beginIDRef` 를 실제 id 로 바꾸는 것으로는 해결되지 않는다 — 그 필드는 이미 자기
+/// 종료로 닫혀 있어 여전히 이중 닫기다(같은 검정에서 변화 0).
+/// `02899` 는 이 마커 2개를 빼면 한글 추출 텍스트가 원본과 **해시까지 일치**한다.
+///
+/// 위치 부기(`expected_utf16_pos += 8`)는 호출부에서 그대로 둔다 — IR 축은 슬롯을 세고
+/// 있고 `char_shapes`·`linesegarray` 도 그 축 위에 있으므로, 방출만 막는 것이 검정에서
+/// 통과한 모양이다.
+///
+/// 앞 문단에 진짜 `fieldBegin` 이 있는 정상 다단락 고아는 종전대로 방출한다.
 fn emit_orphan_field_end(out: &mut String, ofe: &OrphanFieldEnd) {
+    if ofe.begin_id_ref == 0 {
+        return;
+    }
     if let Ok(xml) = writer_to_string(|w| write_field_end_full(w, ofe.begin_id_ref, ofe.field_id)) {
         out.push_str("<hp:ctrl>");
         out.push_str(&xml);
@@ -1184,6 +1281,8 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         title_marks: &para.title_marks,
         // [#4895] 출처가 제어 표기였던 문단만 `<hp:hyphen/>` 로 되돌린다.
         soft_hyphen_as_element: para.control_mask & (1u32 << 0x0018) != 0,
+        // [#5174] 같은 계약 — 출처가 제어·요소 표기였던 문단만 `<hp:nbSpace/>` 로 되돌린다.
+        nb_space_as_element: para.control_mask & (1u32 << 0x001E) != 0,
         ..Default::default()
     };
 
@@ -1293,7 +1392,23 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         // [#1407] 이 idx 위치에서 닫혀야 할(미방출) fieldEnd 가 있으면, 그 8유닛 갭은
         // 슬롯이 아니라 fieldEnd 소유다. 슬롯 방출을 양보해 텍스트-끝 슬롯(newNum 등)이
         // fieldEnd 자리를 가로채지 못하게 한다 (0-length 필드는 아래 pre-char 경로가 처리).
-        while slot_idx < slots.len() && char_pos >= expected_utf16_pos.saturating_add(8) {
+        // [#5173] 이 문자 앞 갭 중 제목 차례 표시(titleMark)가 차지하는 유닛은 슬롯 몫이
+        // 아니다. titleMark 는 `render_hp_t_content` 안 char_idx 위치에 방출되는데(슬롯이
+        // 아님), 슬롯 루프가 그 유닛까지 갭으로 보고 각주 등 슬롯을 먼저 가로채면 각주가
+        // 제목보다 앞서 나간다(08435: 각주가 문단 맨 앞으로). titleMark 유닛(각 8)을 갭에서
+        // 빼면 각주는 자기 실제 갭(제목·본문 뒤)으로 내려가 원본·h2h 순서(제목 → 본문 →
+        // 각주)가 산다.
+        let title_gap_units = cursor.title_marks[cursor.mark_idx..]
+            .iter()
+            .take_while(|m| m.char_idx == idx)
+            .count() as u32
+            * 8;
+        while slot_idx < slots.len()
+            && char_pos
+                >= expected_utf16_pos
+                    .saturating_add(title_gap_units)
+                    .saturating_add(8)
+        {
             // [Issue #1948] 이 갭(expected_utf16_pos)이 미방출 **고아(교차 문단)
             // fieldEnd** 소유면 슬롯 방출을 양보한다. 종전엔 field_ranges 의 fieldEnd
             // 만 갭을 지켰고(위 주석 #1407) 고아 fieldEnd 는 while 뒤(char_idx==idx)에서
@@ -2086,7 +2201,13 @@ fn render_compose(co: &CharOverlap) -> String {
     } else {
         "SPREAD"
     };
-    let text: String = co.chars.iter().collect();
+    // [#5140] 겹침 글자도 사용자 정의 기호일 수 있다. 속성이라 위치 축과 무관하므로
+    // 본문과 같은 표를 그대로 적용한다.
+    let text: String = co
+        .chars
+        .iter()
+        .map(|&c| hancom_symbol_for_hwpx(c))
+        .collect();
     let mut out = format!(
         r#"<hp:compose circleType="{}" charSz="{}" composeType="{}" charPrCnt="{}" composeText="{}">"#,
         circle_type,
@@ -3225,6 +3346,11 @@ mod tests {
             "요소로 내렸으면 리터럴은 남지 않는다: {xml:?}"
         );
     }
+
+    // [#5174] 묶음 빈칸 표기 보존 계약(`nb_space_as_element`)은 실제 문서 왕복으로
+    // `tests/cases/issue_5174_nbspace_representation.rs` 가 지킨다. 제품 소스의
+    // 단위시험을 늘리지 않으려고 여기 두지 않았다 — `render_hp_t_content` 가
+    // `pub(crate)` 라 통합 테스트는 저장·재로드 축으로 같은 계약을 검사한다.
 
     /// 쪽 번호 시작 쪽 컨트롤(`pgct`)은 `<hp:ctrl><hp:pageNumCtrl>` 로 나가야 한다.
     ///
@@ -5368,6 +5494,11 @@ mod tests {
     /// 파싱을 포기하고 이후 본문·개체를 통째로 버린다 — 실측 19쪽 35,205자 → 2쪽 7,838자,
     /// 개체 45→1. `beginIDRef` 값을 유효한 id 로 고쳐도 복원되지 않고, 순서를 바로잡으면
     /// 100% 복원된다.
+    ///
+    /// [#5252] 그 순서 계약은 **여는 짝이 있는** 고아에만 해당한다. `link_orphan_field_ends`
+    /// 가 섹션을 훑고도 `begin_id_ref` 를 못 채웠다면 문서 어디에도 짝이 없다는 뜻이라
+    /// 아예 방출하지 않는다 — 순서로는 막을 수 없는 경우다(07276 h2x 223→137쪽).
+    /// 한 시험에서 두 계약을 함께 지킨다.
     #[test]
     fn issue4902_field_begin_precedes_orphan_field_end_at_same_slot() {
         use crate::model::control::{Field, FieldType};
@@ -5395,21 +5526,41 @@ mod tests {
             end_field_id: 1_867_945_538,
             inner_slot_count: 0,
         }];
+        // ① 여는 짝이 **있는** 고아 — 종전 계약대로 방출하되 begin 이 먼저다.
+        para.orphan_field_ends = vec![OrphanFieldEnd {
+            char_idx: 0,
+            begin_id_ref: 1_867_945_539,
+            field_id: 0,
+            begin_ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+        }];
+
+        let runs = runs_of(&para);
+        let begin = runs.find("<hp:fieldBegin").expect("fieldBegin 방출");
+        let orphan = runs
+            .find(r#"<hp:fieldEnd beginIDRef="1867945539""#)
+            .expect("여는 짝이 있는 고아 fieldEnd 는 방출되어야 한다");
+        assert!(
+            begin < orphan,
+            "고아 fieldEnd 가 짝 fieldBegin 보다 앞서면 한글이 본문을 버린다:\n{runs}"
+        );
+
+        // ② [#5252] 여는 짝을 **못 찾은** 고아는 방출하지 않는다. 한글은 열려 있지 않은
+        //    필드를 닫는 fieldEnd 를 버리고, 그러면 문단 축만 8유닛 짧아져 원본
+        //    linesegarray 가 축을 넘겨 그 문단부터 본문이 통째로 폐기된다.
         para.orphan_field_ends = vec![OrphanFieldEnd {
             char_idx: 0,
             begin_id_ref: 0,
             field_id: 0,
             begin_ctrl_id: 0,
         }];
-
         let runs = runs_of(&para);
-        let begin = runs.find("<hp:fieldBegin").expect("fieldBegin 방출");
-        let orphan = runs
-            .find(r#"<hp:fieldEnd beginIDRef="0""#)
-            .expect("고아 fieldEnd 방출");
         assert!(
-            begin < orphan,
-            "고아 fieldEnd 가 짝 fieldBegin 보다 앞서면 한글이 본문을 버린다:\n{runs}"
+            !runs.contains(r#"<hp:fieldEnd beginIDRef="0""#),
+            "짝을 못 찾은 고아 fieldEnd 는 내보내면 안 된다:\n{runs}"
+        );
+        assert!(
+            runs.contains("<hp:fieldBegin"),
+            "짝 있는 필드는 그대로 방출되어야 한다:\n{runs}"
         );
     }
 

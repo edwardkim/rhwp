@@ -1,0 +1,17 @@
+{
+  "id": "FJ70",
+  "steps": [
+    {
+      "answer": {
+        "guide": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fields[3].guide"
+        }
+      }
+    }
+  ]
+}
