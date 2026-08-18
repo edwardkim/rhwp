@@ -1,0 +1,22 @@
+{
+  "id": "T003",
+  "command": "bookmarks",
+  "chapter": "10_조회.md",
+  "cmd": "rhwp bookmarks samples/basic/issue2007_nested_cell_pagination_42065.hwp --json",
+  "exit": 0,
+  "keys": [
+    "bookmarks",
+    "count",
+    "schemaVersion",
+    "source",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "bookmarks[].name"
+  ],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/10_조회.md",
+  "notInvented": true
+}

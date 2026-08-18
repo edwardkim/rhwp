@@ -1,0 +1,23 @@
+{
+  "id": "T012",
+  "command": "export-structure",
+  "chapter": "10_조회.md",
+  "cmd": "rhwp export-structure samples/2022년 국립국어원 업무계획.hwp --json",
+  "exit": 0,
+  "keys": [
+    "mode",
+    "nodeCount",
+    "schemaVersion",
+    "source",
+    "structure",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "structure.preamble[]"
+  ],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/10_조회.md",
+  "notInvented": true
+}
