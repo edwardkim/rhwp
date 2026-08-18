@@ -1065,6 +1065,18 @@ function runExecutableTextSpecialReplay() {
     charOverlap: { borderType: 1, innerCharSize: 80 },
   }, 'screen');
   renderer.renderOp(canvas, {
+    type: 'charOverlap',
+    bbox: { x: 50, y: 20, width: 16, height: 16 },
+    text: '①',
+    baseline: 12,
+    rotation: 15,
+    isVertical: false,
+    style: { fontSize: 16, color: '#112233' },
+    positions: [0, 16],
+    positionsComplete: true,
+    charOverlap: { borderType: 1, innerCharSize: 80 },
+  }, 'screen');
+  renderer.renderOp(canvas, {
     type: 'textControlMark',
     bbox: { x: 10, y: 20, width: 40, height: 16 },
     fieldMarker: 'none',
@@ -1321,18 +1333,6 @@ function runExecutableTextSpecialReplay() {
       positions: [0, 10],
       positionsComplete: true,
     },
-  }, 'screen');
-  renderer.renderOp(canvas, {
-    type: 'charOverlap',
-    bbox: { x: 0, y: 0, width: 10, height: 10 },
-    text: 'A',
-    baseline: 8,
-    rotation: 15,
-    isVertical: false,
-    style: { fontSize: 10 },
-    positions: [0, 10],
-    positionsComplete: true,
-    charOverlap: { borderType: 1, innerCharSize: 100 },
   }, 'screen');
   renderer.renderOp(canvas, {
     type: 'textControlMark',
@@ -2415,7 +2415,6 @@ for (const diagnostic of [
   'tabLeader:visualItemLimitExceeded',
   'textDecoration:invalidGeometry',
   'textDecoration:visualItemLimitExceeded',
-  'charOverlap:rotatedText',
   'textControlMark:rotatedText',
   'tabLeader:rotatedText',
   'textDecoration:rotatedText',
@@ -2426,6 +2425,16 @@ for (const diagnostic of [
     `malformed text visuals should report ${diagnostic}`,
   );
 }
+assert.equal(
+  textSpecialReplay.unsupportedOps.has('charOverlap:rotatedText'),
+  false,
+  'rotated char-overlap markers must not pin the document to a rotatedText fallback',
+);
+assert.equal(
+  textSpecialReplay.events.some(event => event.type === 'canvas.rotate' && event.rotation === 15),
+  true,
+  'rotated char-overlap markers should replay under the producer rotation',
+);
 
 const alternatingGlyphText = 'A'.repeat(4098);
 const alternatingGlyphReplay = runExecutableTextReplay({
