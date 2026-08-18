@@ -1233,8 +1233,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool) {
         // 컨트롤을 말미로 몰았으므로 원본 lineseg 좌표계는 더 이상 유효하지 않다 —
         // 호출부가 저장 lineseg 방출을 억제하게 한다(#4778). 단, 슬롯 부족분이
         // U+FFFC 마커로 전부 설명되면 종전 계약(방출 유지, #3739 고정점)을 지킨다.
+        //
+        // [#3518] HWP3 는 컨트롤 페이로드 hchar 를 char_count/char_offsets 에
+        // 1유닛씩 쌓아 슬롯 추론이 부풀어 mismatch 로 떨어지지만, 본문 글자
+        // 자체는 0부터 연속이다(hwp3-sample16 문단 70: "1.추진목적" offs=0..5,
+        // cc=53). 그때는 말미 일괄 방출이 글자 좌표를 밀지 않으므로 저장
+        // lineseg 를 버려 reflow 하면 쪽이 +1 된다. 글자가 연속이고 textpos 가
+        // 본문 폭 안이면 축이 살아 있다.
         let shortfall = slot_count.saturating_sub(slots.len());
-        return (splitter.finish(), marker_count >= shortfall);
+        let text_unshifted_and_in_range = text_positions_unshifted(para)
+            && para.line_segs.iter().all(|ls| ls.text_start <= text_units);
+        return (
+            splitter.finish(),
+            marker_count >= shortfall || text_unshifted_and_in_range,
+        );
     }
 
     // 슬롯으로 세어 놓고 XML 은 내지 않는 컨트롤이 섞여 있으면, 방출 축은 그만큼 짧다.
@@ -5446,6 +5458,7 @@ mod tests {
     /// lineseg 억제만으로 전량 회복).
     #[test]
     fn issue4778_broken_position_axis_suppresses_stored_linesegs() {
+        use crate::model::control::{Bookmark, PageNumberPos};
         use crate::model::paragraph::LineSeg;
         let doc = Document::default();
         let mut ctx = SerializeContext::collect_from_document(&doc);
@@ -5466,6 +5479,29 @@ mod tests {
         assert!(
             linesegs.is_empty(),
             "축 붕괴 문단은 저장 lineseg 를 방출하면 안 된다(한글 본문 폐기 트리거): {linesegs}"
+        );
+
+        // [#3518] HWP3 가 char_count 만 부풀린 문단: 본문은 0부터 연속이고
+        // 컨트롤은 말미. mismatch 여도 글자 좌표가 안 밀리므로 저장 lineseg 유지.
+        let mut hwp3_inflated = Paragraph::default();
+        hwp3_inflated.text = "1.추진목적".to_string();
+        hwp3_inflated.char_offsets = (0..52).collect();
+        hwp3_inflated.char_count = 53;
+        hwp3_inflated.controls.push(Control::Bookmark(Bookmark {
+            name: "bm".to_string(),
+        }));
+        hwp3_inflated
+            .controls
+            .push(Control::PageNumberPos(PageNumberPos::default()));
+        hwp3_inflated.line_segs = vec![LineSeg {
+            line_height: 1600,
+            line_spacing: 960,
+            ..Default::default()
+        }];
+        let (_, linesegs, _) = render_paragraph_parts(&hwp3_inflated, 0, &mut ctx);
+        assert!(
+            linesegs.contains("<hp:lineseg"),
+            "본문 좌표가 연속인 HWP3 문단은 mismatch 여도 저장 lineseg 를 유지해야 한다: {linesegs}"
         );
 
         // 대조군: 축이 온전한 문단은 종전대로 저장 lineseg 를 방출한다.
