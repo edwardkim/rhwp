@@ -18489,7 +18489,25 @@ impl TypesetEngine {
             // [#2322] 마지막 TAC 판정은 개수 기반(prior_tac) — tac_seg_idx 는
             // 선행 텍스트 줄 오프셋을 포함하므로 count 비교에 쓰지 않는다.
             let is_last_tac = prior_tac + 1 == tac_count;
-            para.line_segs
+            // [compat 2024] 이월 앵커 사다리: 빈 host 의 마지막 저장 seg 가
+            // vpos==0(다음 쪽 상단 앵커 줄, 2022 계상)이고 이 호출이 새 단
+            // 최상단에서 일어나면, 한글 2024 는 그 이월 계상을 하지 않는다
+            // (156609754 pi25 실측: 2022 재저장 ls=3(이월 세그) ↔ 2024 ls=2,
+            // 다음 쪽 사다리가 3,597HU 위로). 계상을 0 으로 하고 회수를 적립해
+            // 그 쪽의 저장 경계 재적합 자격을 준다.
+            let carried_anchor_ladder = st.profile.hangul2024_layout()
+                && st.current_items.is_empty()
+                && !para_has_visible_text(para)
+                && para
+                    .line_segs
+                    .last()
+                    .is_some_and(|s| s.vertical_pos == 0 && !is_synthetic_line_seg(s))
+                && para
+                    .line_segs
+                    .get(tac_seg_idx)
+                    .is_some_and(|s| s.vertical_pos > 0);
+            let charged = para
+                .line_segs
                 .get(tac_seg_idx)
                 .map(|seg| {
                     let line_h = hwpunit_to_px(seg.line_height, self.dpi);
@@ -18499,7 +18517,20 @@ impl TypesetEngine {
                         line_h + hwpunit_to_px(seg.line_spacing, self.dpi)
                     }
                 })
-                .unwrap_or(ft.total_height)
+                .unwrap_or(ft.total_height);
+            if carried_anchor_ladder {
+                st.hangul2024_reclaimed += charged;
+                if std::env::var("RHWP_DIAG_COMPAT24").is_ok() {
+                    eprintln!(
+                        "DIAG_COMPAT24 pi={para_idx} ci={ctrl_idx} carried_reclaim={charged:.1} \
+                         total_reclaimed={:.1}",
+                        st.hangul2024_reclaimed
+                    );
+                }
+                0.0
+            } else {
+                charged
+            }
         } else if let Some(owned_row_height) = owned_single_tac_row_height {
             owned_row_height
         } else if tac_table_line_idx == Some(0) && fmt.line_heights.len() > 1 {
@@ -20662,13 +20693,6 @@ impl TypesetEngine {
                 && rowbreak_table_has_internal_saved_vpos_reset(table);
         let host_spacing_total = ft.host_spacing.before + ft.host_spacing.after_for_fit;
         let mut table_total = ft.effective_height + host_spacing_total;
-        // [#3738 Stage 21] 단조 저장 vpos를 가진 긴 빈-host 1×1 RowBreak 표도,
-        // 실제 FootnoteArea 직전에는 표 전체가 들어갈 수 있다. 이 경우 보수적인
-        // 40px safety margin 때문에 두 줄짜리 tail만 새 페이지에 남기면 이후의
-        // 저장 페이지 맵이 한 쪽씩 밀린다. 표 자체의 각주는 없고, native HWP5의
-        // 실제 셀 측정 전체가 safety margin을 제외한 물리 본문 경계 안에 든다는
-        // 증거가 있을 때만 margin을 풀어 통짜 배치를 허용한다. vpos reset 표의
-        // 기존 특례와는 독립된 1×1 empty-host 형상으로 한정한다.
         let native_single_rowbreak_full_table_fits_actual_footnote_boundary =
             st.profile.hwp5_stored_pagination_layout()
                 && !table.common.treat_as_char
