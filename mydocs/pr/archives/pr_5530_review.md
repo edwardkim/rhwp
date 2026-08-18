@@ -42,3 +42,9 @@ code_candidate: 7839878d721a201950bd932d84b1de5b976fd82c
 **수용.** code candidate의 최신 전체 CI가 성공했고, 메인터너 보정은 실패한 계약·정적 gate만을 대상으로 분리됐다.
 
 이 trailing review·오늘할일 commit은 `mydocs/**` 범위다. push 뒤 현재 head의 preflight와 required aggregate가 성공해야 merge한다. merge가 확인되면 `upstream/devel` 동기화 후 위 실제 원본 PR 46건에 통합 PR·검증 사실을 comment하고 close하며, 각 원 PR의 closing issue는 상태·기존 maintainer 기록을 확인해 필요한 close/comment를 수행한다. 이후 이 통합 PR의 branch와 이 작업 전용 worktree/target을 post-merge 절차대로 정리한다.
+
+## 기준선 갱신
+
+- `upstream/devel@9d352d56d37a1dbd305b209ff660a0f25557e14b`를 merge commit `a351e7fc3`으로 반영했다.
+- 충돌은 `mydocs/orders/20260819.md` add/add 한 건뿐이었다. #5525와 #5530의 독립 오늘할일 항목을 모두 보존했고, source·test·fixture 충돌 보정은 없었다.
+- 이 기준선 갱신 뒤의 현재 PR head는 새 Full CI와 required aggregate를 통과해야 최종 merge 후보가 된다. 위 `7839878d7` CI는 갱신 전 code candidate의 증적으로만 보존한다.
