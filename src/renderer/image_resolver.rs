@@ -174,7 +174,7 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
             })
         }
         "application/postscript" => {
-            dos_eps_preview_bytes(data).map(|(mime, data)| ResolvedImagePayload {
+            eps_renderable_bytes(data).map(|(mime, data)| ResolvedImagePayload {
                 data,
                 mime,
                 kind: ResolvedImageKind::FormatConverted,
@@ -229,7 +229,7 @@ pub(crate) fn emitted_image_bytes(
         "image/x-emf" => {
             crate::emf::convert_to_standalone_svg(data).map(|svg| ("image/svg+xml", svg))
         }
-        "application/postscript" => dos_eps_preview_bytes(data),
+        "application/postscript" => eps_renderable_bytes(data),
         "image/jpeg" if bakes_watermark => watermark_jpeg_bytes_to_hancom_baked_png_bytes(data)
             .or_else(|| grayscale_jpeg_bytes_to_png_bytes(data))
             .map(|png| ("image/png", png)),
@@ -361,6 +361,21 @@ fn oversized_bmp_to_downscaled_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
 /// WMF/TIFF 프리뷰의 오프셋·길이를 담는다 (Adobe EPSF 3.0 §5.2). 프리뷰가
 /// 있으면 기존 변환기(WMF→SVG, TIFF→PNG)로 잇는다. 프리뷰가 없거나 손상이면
 /// None — 호출부가 원본으로 되돌아간다.
+/// EPS 를 화면에 그릴 수 있는 바이트로 바꾼다 — 두 갈래의 **단일 진입점**.
+///
+/// 1. DOS EPS 바이너리 프리뷰(WMF/TIFF, #4062) — 원본 그림 그대로의 축소판이라 우선한다.
+/// 2. Adobe Illustrator 아트워크 → SVG (`crate::eps`, #5513) — 프리뷰가 없는 텍스트 EPS 는
+///    이쪽으로만 살아난다.
+///
+/// 변환 사슬은 `resolve_image_payload`·`emitted_image_bytes`·`svg.rs`·`html.rs`·`web_canvas.rs`
+/// 다섯 곳에서 쓴다. 갈래 선택을 여기 한 곳에 두지 않으면 백엔드마다 다른 그림이 나온다.
+pub(crate) fn eps_renderable_bytes(data: &[u8]) -> Option<(&'static str, Vec<u8>)> {
+    if let Some(preview) = dos_eps_preview_bytes(data) {
+        return Some(preview);
+    }
+    crate::eps::convert_ai_artwork_to_svg(data).map(|svg| ("image/svg+xml", svg))
+}
+
 pub(crate) fn dos_eps_preview_bytes(data: &[u8]) -> Option<(&'static str, Vec<u8>)> {
     if data.len() < 30 || !data.starts_with(&[0xC5, 0xD0, 0xD3, 0xC6]) {
         return None;
@@ -957,7 +972,7 @@ pub(crate) fn is_displayable_image_data(data: &[u8]) -> bool {
         | "image/tiff" | "image/x-pcx" | "image/x-wmf" | "image/x-emf" => true,
         // EPS/AI 는 DOS EPS 바이너리 프리뷰(WMF/TIFF)를 품고 있을 때만 그릴 수 있다 (#4062).
         // 순수 텍스트 PostScript 는 해석기가 없다.
-        "application/postscript" => dos_eps_preview_bytes(data).is_some(),
+        "application/postscript" => eps_renderable_bytes(data).is_some(),
         _ => false,
     }
 }
@@ -1824,6 +1839,44 @@ mod emitted_bytes_key_agreement_tests {
         );
 
         assert_paths_agree("손상 BMP", &image);
+    }
+
+    /// 프리뷰 없는 텍스트 EPS 도 아트워크를 읽어 SVG 로 내보낸다 (#4062).
+    ///
+    /// 이 판정이 `is_displayable_image_data` 와 갈라지면 "그릴 수 있다"고 본 그림에
+    /// 그림-없음 표시(#5513)가 덧그려지거나 그 반대가 된다.
+    #[test]
+    fn issue_4062_text_eps_artwork_is_emitted_as_svg() {
+        let eps = b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 100 50\n%%EndSetup\n\
+                    0 0 0 1 k\n10 10 m\n90 10 L\n90 40 L\n10 40 L\nf\n%%Trailer\n"
+            .to_vec();
+
+        assert_eq!(
+            super::detect_image_mime_type(&eps),
+            "application/postscript"
+        );
+        let (mime, bytes) = emitted_image_bytes(&eps, false);
+        assert_eq!(mime, "image/svg+xml", "아트워크를 SVG 로 옮긴다");
+        assert!(bytes.starts_with(b"<svg"), "SVG 문서가 나온다");
+        assert!(
+            super::is_displayable_image_data(&eps),
+            "그릴 수 있다고 본다"
+        );
+    }
+
+    /// 그릴 것이 없는 PostScript 는 여전히 "그릴 수 없는 바이트"다 (#5513 표시 유지).
+    #[test]
+    fn issue_4062_postscript_without_artwork_stays_undecodable() {
+        let text_only = b"%!PS-Adobe-3.0\n%%BoundingBox: 0 0 10 10\n%%EndSetup\n%%Trailer\n";
+
+        assert_eq!(
+            super::detect_image_mime_type(text_only),
+            "application/postscript"
+        );
+        let (mime, bytes) = emitted_image_bytes(text_only, false);
+        assert_eq!(mime, "application/postscript", "변환 실패면 원본 mime");
+        assert_eq!(bytes.as_ref(), &text_only[..], "원본 바이트를 그대로 둔다");
+        assert!(!super::is_displayable_image_data(text_only));
     }
 
     /// 신원 키를 낼 수 없는 그림은 키 조회로 되찾을 수 없다 — 그래서 생략 대상이 아니다.
