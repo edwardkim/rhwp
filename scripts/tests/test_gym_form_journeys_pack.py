@@ -62,7 +62,7 @@ ALLOWED_SAMPLES = {
     "samples/form-01.hwp",
     "samples/form-02.hwp",
 }
-MIN_TASKS = 56
+MIN_TASKS = 72
 
 
 def read_json(path: Path):
@@ -117,6 +117,7 @@ class FormJourneysPackLayoutTests(unittest.TestCase):
             "라이브 오라클",
             "FJ06",
             "FJ56",
+            "FJ72",
             "기존 연산자",
             "T07",
             "복제하지",

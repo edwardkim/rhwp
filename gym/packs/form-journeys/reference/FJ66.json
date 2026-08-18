@@ -1,0 +1,35 @@
+{
+  "id": "FJ66",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "부서명": "정리부서"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:filled.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "edit",
+        "sanitize",
+        "{sub:filled.hwp}",
+        "-o",
+        "{sub:submit.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

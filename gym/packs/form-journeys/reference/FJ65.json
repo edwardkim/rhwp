@@ -1,0 +1,26 @@
+{
+  "id": "FJ65",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "목차1[1]": "중간둘째",
+          "목차1[3]": "중간넷째"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:skip-toc.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

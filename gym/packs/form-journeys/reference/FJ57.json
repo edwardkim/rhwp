@@ -1,0 +1,25 @@
+{
+  "id": "FJ57",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "전화번호": "02-570-5757"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:memo-phone.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "FJ63",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "제목": "여정쌍제목",
+          "부서명": "여정쌍부서"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:title-dept.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}
