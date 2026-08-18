@@ -1,0 +1,15 @@
+{
+  "id": "loop-crop",
+  "notGym": true,
+  "steps": [
+    "vision-bbox",
+    "crop --dry-run",
+    "crop",
+    "build --media-dir"
+  ],
+  "stopOn": [
+    "CROP_BBOX_NOT_UINT",
+    "CROP_MISS_IMAGEMAGICK",
+    "CROP_SRC_MISSING"
+  ]
+}

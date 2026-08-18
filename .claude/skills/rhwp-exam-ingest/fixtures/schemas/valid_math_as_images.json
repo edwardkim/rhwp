@@ -1,0 +1,59 @@
+{
+  "version": "1",
+  "page_size": {
+    "width_mm": 210.0,
+    "height_mm": 297.0
+  },
+  "default_font": "함초롬바탕",
+  "questions": [
+    {
+      "number": 15,
+      "stem": "다음 정적분의 값은?",
+      "choices": [
+        {
+          "label": "①",
+          "text": "0"
+        },
+        {
+          "label": "②",
+          "text": "1"
+        },
+        {
+          "label": "③",
+          "text": "2"
+        },
+        {
+          "label": "④",
+          "text": "e"
+        },
+        {
+          "label": "⑤",
+          "text": "π"
+        }
+      ],
+      "auto_number": true,
+      "stem_blocks": [
+        {
+          "type": "text",
+          "text": "다음 정적분의 값은?"
+        },
+        {
+          "type": "image",
+          "ref": "img/q15_integral.png",
+          "placement": "between"
+        }
+      ],
+      "media": [
+        {
+          "id": "img/q15_integral.png",
+          "natural_w": 640,
+          "natural_h": 180,
+          "target_w_mm": 70.0,
+          "placement": "between"
+        }
+      ]
+    }
+  ],
+  "header_text": "수학 영역",
+  "footer_text": "1/20"
+}
