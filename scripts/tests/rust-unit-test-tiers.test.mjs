@@ -15,6 +15,7 @@ import {
   inventorySourceTests,
   maskRustNonCode,
   validateTierManifestAgainstBase,
+  validateTierPolicyAgainstBase,
 } from '../rust-unit-test-tiers.mjs';
 
 function fixture(t, source) {
@@ -153,6 +154,23 @@ test('accept-baseline으로 숨긴 source test 증가도 PR base 대비 거부�
   assert.match(
     validateTierManifestAgainstBase(accepted, base).join('\n'),
     /PR base 대비 source-side test 총량 증가 금지/,
+  );
+});
+
+test('정책 파일로 source-side 테스트 기준선을 완화할 수 없다', () => {
+  const base = {
+    version: 1,
+    policy: {
+      newCfgTestModules: 'forbidden',
+      newCfgTestSupportItems: 'forbidden',
+      maximumStaticTestAttributes: 10,
+    },
+  };
+  const current = structuredClone(base);
+  current.policy.maximumStaticTestAttributes = 11;
+  assert.match(
+    validateTierPolicyAgainstBase(current, base).join('\n'),
+    /기준선 상향 금지/,
   );
 });
 

@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "policy": {
+    "newCfgTestModules": "forbidden",
+    "newCfgTestSupportItems": "forbidden",
+    "maximumStaticTestAttributes": 4225
+  }
+}

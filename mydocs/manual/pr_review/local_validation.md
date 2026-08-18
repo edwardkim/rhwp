@@ -57,7 +57,7 @@ node scripts/run-rust-test.mjs issue_1234_short_description \
   -- --cargo-profile release-test --target-dir target/pr-review
 ~~~
 
-`tests/generated/*.rs`와 manifest·Cargo generated block은 직접 편집하거나 PR에 stage하지 않는다.
+`tests/generated/*.rs`, unit-tier inventory, manifest·Cargo generated block은 직접 편집하거나 PR에 stage하지 않는다.
 검증이 끝나면 이 파생 변경은 review worktree에서 복원한다. `--prepare`가 이름 변경·삭제와 신규 source를
 함께 처리하므로 일반 PR에 `--generate`·`--sync`·`--rebalance` 결과를 포함하지 않는다. 기여자가
 PR 전 검증으로 실행할 명령은 `node --test scripts/tests/rust-test-suite-manifest.test.mjs`와 변경 범위의
@@ -75,8 +75,8 @@ node --test scripts/tests/rust-unit-test-tiers.test.mjs
 node scripts/rust-unit-test-tiers.mjs --check
 ~~~
 
-PR CI는 `github.event.pull_request.base.sha`의 integration·unit manifest를 읽어 현재 source와
-비교한다. 새 최상위 `tests/*.rs`는 generated manifest에 등록해도 실패하며 새 source는
+PR CI는 `github.event.pull_request.base.sha`의 integration manifest를 읽어 현재 source와
+비교한다. unit-tier inventory는 PR base와 현재 source에서 메모리로 재계산한다. 새 최상위 `tests/*.rs`는 generated manifest에 등록해도 실패하며 새 source는
 `tests/cases/` 아래만 허용한다. `--accept-baseline`은 crate 이동에 따른 로컬 경로 기준선 갱신
 도구이지 테스트 수 증가 승인 수단이 아니다. CI는 Git rename으로 확인되는 순수 이동만 대응시키고
 base 대비 module·support item·총 테스트 수 또는 최대값 증가를 실패시킨다.
