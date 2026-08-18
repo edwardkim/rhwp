@@ -80,9 +80,11 @@ pub use util::{paint_op_kind, replay_page, PageState};
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::paint::{CacheHint, GroupKind, LayerNode, PageLayerTree, PaintOp};
-    use crate::renderer::render_tree::{BoundingBox, LineNode, PageBackgroundNode, RectangleNode};
-    use crate::renderer::{LineStyle, ShapeStyle};
+    use crate::paint::{CacheHint, ClipKind, GroupKind, LayerNode, PageLayerTree, PaintOp};
+    use crate::renderer::render_tree::{
+        BoundingBox, ImageNode, LineNode, PageBackgroundNode, RectangleNode, TextRunNode,
+    };
+    use crate::renderer::{GradientFillInfo, LineStyle, ShapeStyle, TextStyle};
 
     fn bbox(x: f64, y: f64, w: f64, h: f64) -> BoundingBox {
         BoundingBox::new(x, y, w, h)
@@ -114,6 +116,328 @@ mod tests {
             },
         )
     }
+
+    /// 광고 vs 실지원을 가리기 위해 산출물에 심는 고유 문자열.
+    const HONESTY_TEXT: &str = "M06-3-CAP";
+
+    /// 1×1 투명 PNG. 이미지 capability 가 산출물에 남는지 보는 데 쓴다.
+    const TINY_PNG: &[u8] = &[
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44,
+        0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1F,
+        0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00,
+        0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+        0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+    ];
+
+    fn text_op(text: &str) -> PaintOp {
+        PaintOp::text_run(
+            bbox(10.0, 20.0, 120.0, 16.0),
+            TextRunNode {
+                text: text.to_string(),
+                style: TextStyle {
+                    font_family: "sans-serif".to_string(),
+                    font_size: 16.0,
+                    ..TextStyle::default()
+                },
+                char_shape_id: None,
+                para_shape_id: None,
+                section_index: None,
+                para_index: None,
+                char_start: None,
+                cell_context: None,
+                is_para_end: false,
+                is_line_break_end: false,
+                rotation: 0.0,
+                is_vertical: false,
+                char_overlap: None,
+                border_fill_id: 0,
+                baseline: 12.0,
+                field_marker: Default::default(),
+                display_text: None,
+            },
+        )
+    }
+
+    fn gradient_rect_op() -> PaintOp {
+        let gradient = GradientFillInfo {
+            gradient_type: 1,
+            angle: 0,
+            center_x: 50,
+            center_y: 50,
+            colors: vec![0x00FF0000, 0x000000FF],
+            positions: vec![0.0, 1.0],
+        };
+        PaintOp::rectangle(
+            bbox(0.0, 0.0, 80.0, 40.0),
+            RectangleNode::new(0.0, ShapeStyle::default(), Some(Box::new(gradient))),
+        )
+    }
+
+    fn image_op() -> PaintOp {
+        PaintOp::image(
+            bbox(0.0, 0.0, 8.0, 8.0),
+            ImageNode::new(1, Some(TINY_PNG.to_vec())),
+            None,
+        )
+    }
+
+    fn leaf_tree(ops: Vec<PaintOp>) -> PageLayerTree {
+        let bounds = bbox(0.0, 0.0, 400.0, 300.0);
+        let leaf = LayerNode::leaf(bounds, None, ops);
+        let root = LayerNode::group(
+            bounds,
+            None,
+            vec![leaf],
+            CacheHint::default(),
+            GroupKind::Body,
+        );
+        PageLayerTree::new(400.0, 300.0, root)
+    }
+
+    fn render_svg(tree: &PageLayerTree) -> String {
+        let mut backend = SvgBackend::new();
+        replay_page(&mut backend, tree).unwrap();
+        backend.finish().unwrap()
+    }
+
+    /// SVG 태그 사이의 글자만 이어 붙인다. 글리프 단위 `<text>` 산출물에서
+    /// 선택·검색 가능한 텍스트가 남았는지 보는 데 쓴다.
+    fn svg_visible_text(svg: &str) -> String {
+        let mut out = String::new();
+        let mut in_tag = false;
+        for ch in svg.chars() {
+            match ch {
+                '<' => in_tag = true,
+                '>' => in_tag = false,
+                _ if !in_tag && !ch.is_whitespace() => out.push(ch),
+                _ => {}
+            }
+        }
+        out
+    }
+
+    /// `multi_page` 광고가 두 번째 `begin_page` 실제 판정과 같은지 본다.
+    fn assert_multi_page_matches_advertisement<B>(mut backend: B)
+    where
+        B: RenderBackend<Error = RenderBackendError>,
+    {
+        let caps = backend.capabilities();
+        let name = caps.name;
+        backend.begin_page(PageSize::new(40.0, 30.0)).unwrap();
+        backend.end_page().unwrap();
+        let second = backend.begin_page(PageSize::new(40.0, 30.0));
+        if caps.supports(BackendFeature::MultiPage) {
+            second.unwrap_or_else(|err| {
+                panic!("{name} advertised multi_page but rejected page 2: {err}")
+            });
+            backend.end_page().unwrap();
+            backend.finish().unwrap();
+        } else {
+            assert_eq!(
+                second.unwrap_err(),
+                RenderBackendError::MultiplePagesUnsupported { backend: name }
+            );
+        }
+    }
+
+    /// SVG 가 선언한 능력이 산출물에 실제로 남는지(또는 빠지는지) 본다.
+    fn assert_svg_advertised_capabilities_match_output() {
+        let caps = SvgBackend::new().capabilities();
+
+        let text_svg = render_svg(&leaf_tree(vec![text_op(HONESTY_TEXT)]));
+        // 글리프마다 `<text>` 를 내므로 태그 사이 글자를 이어 붙여 선택 가능 여부를 본다.
+        let visible = svg_visible_text(&text_svg);
+        let has_vector_text = text_svg.contains("<text") && visible.contains(HONESTY_TEXT);
+        assert_eq!(
+            has_vector_text,
+            caps.supports(BackendFeature::VectorText),
+            "vector_text advertisement vs output (visible={visible})\n{text_svg}"
+        );
+
+        let gradient_svg = render_svg(&leaf_tree(vec![gradient_rect_op()]));
+        let has_gradient = gradient_svg.contains("linearGradient")
+            || gradient_svg.contains("radialGradient")
+            || gradient_svg.contains("<gradient");
+        assert_eq!(
+            has_gradient,
+            caps.supports(BackendFeature::Gradients),
+            "gradients advertisement vs output\n{gradient_svg}"
+        );
+
+        let image_svg = render_svg(&leaf_tree(vec![image_op()]));
+        let has_image = image_svg.contains("<image") || image_svg.contains("data:image");
+        assert_eq!(
+            has_image,
+            caps.supports(BackendFeature::Images),
+            "images advertisement vs output\n{image_svg}"
+        );
+
+        // replay_page 는 ClipRect 를 벗기고 leaf 만 넘긴다. clipping:false 면
+        // 산출물에 clipPath 가 없어야 하고, 클립 안 사각형은 그대로 남아야 한다.
+        let bounds = bbox(0.0, 0.0, 400.0, 300.0);
+        let clipped = LayerNode::clip_rect(
+            bounds,
+            None,
+            bbox(0.0, 0.0, 5.0, 5.0),
+            LayerNode::leaf(bounds, None, vec![rect_op(20.0, 20.0)]),
+            ClipKind::Body,
+        );
+        let clip_svg = render_svg(&PageLayerTree::new(400.0, 300.0, clipped));
+        let has_clip = clip_svg.contains("clipPath") || clip_svg.contains("clip-path");
+        assert_eq!(
+            has_clip,
+            caps.supports(BackendFeature::Clipping),
+            "clipping advertisement vs output\n{clip_svg}"
+        );
+        assert!(
+            clip_svg.contains("<rect") || clip_svg.contains("rectangle"),
+            "clipped tree must still emit the leaf op\n{clip_svg}"
+        );
+
+        let has_embedded_font = text_svg.contains("@font-face") || text_svg.contains("data:font");
+        assert_eq!(
+            has_embedded_font,
+            caps.supports(BackendFeature::EmbeddedFonts),
+            "embedded_fonts advertisement vs output\n{text_svg}"
+        );
+    }
+
+    /// Null·Trace 는 그림을 안 그리므로 시각 capability 를 켜면 안 되고,
+    /// 켜 둔 multi_page·deterministic 은 실제로 지켜야 한다.
+    fn assert_instrument_advertised_capabilities_match_behavior() {
+        for caps in [
+            NullBackend::new().capabilities(),
+            TraceBackend::new().capabilities(),
+        ] {
+            assert!(caps.is_consistent(), "{}", caps.name);
+            assert!(!caps.supports(BackendFeature::VectorText), "{}", caps.name);
+            assert!(!caps.supports(BackendFeature::Gradients), "{}", caps.name);
+            assert!(!caps.supports(BackendFeature::Images), "{}", caps.name);
+            assert!(!caps.supports(BackendFeature::Clipping), "{}", caps.name);
+            assert!(
+                !caps.supports(BackendFeature::EmbeddedFonts),
+                "{}",
+                caps.name
+            );
+            assert!(caps.supports(BackendFeature::MultiPage), "{}", caps.name);
+            assert!(
+                caps.supports(BackendFeature::Deterministic),
+                "{}",
+                caps.name
+            );
+        }
+
+        assert_multi_page_matches_advertisement(NullBackend::new());
+        assert_multi_page_matches_advertisement(TraceBackend::new());
+
+        fn trace_once() -> String {
+            let mut backend = TraceBackend::new();
+            replay_page(&mut backend, &sample_tree()).unwrap();
+            backend.finish().unwrap()
+        }
+        assert_eq!(trace_once(), trace_once());
+
+        let mut first = NullBackend::new();
+        let mut second = NullBackend::new();
+        replay_page(&mut first, &sample_tree()).unwrap();
+        replay_page(&mut second, &sample_tree()).unwrap();
+        assert_eq!(first.finish().unwrap(), second.finish().unwrap());
+    }
+
+    /// 210b3ee37 후속 공백: 광고한 capability 가 실제 지원과 같아야 한다.
+    fn assert_advertised_capabilities_match_behavior() {
+        assert_multi_page_matches_advertisement(SvgBackend::new());
+        assert_svg_advertised_capabilities_match_output();
+        assert_instrument_advertised_capabilities_match_behavior();
+        assert_optional_png_capabilities_if_present();
+        assert_optional_skia_capabilities_if_present();
+    }
+
+    #[cfg(rhwp_has_png_backend)]
+    fn assert_optional_png_capabilities_if_present() {
+        let caps = PngBackend::new().capabilities();
+        assert_eq!(caps.name, "png");
+        assert!(caps.raster_only);
+        assert!(caps.is_consistent());
+        assert!(!caps.supports(BackendFeature::VectorText));
+        assert!(!caps.supports(BackendFeature::EmbeddedFonts));
+        assert!(!caps.supports(BackendFeature::Clipping));
+        assert!(!caps.supports(BackendFeature::MultiPage));
+        assert!(!caps.supports(BackendFeature::Deterministic));
+        let live = PngBackend::raster_available();
+        assert_eq!(caps.supports(BackendFeature::Images), live);
+        assert_eq!(caps.supports(BackendFeature::Gradients), live);
+        assert_eq!(
+            live,
+            cfg!(all(not(target_arch = "wasm32"), feature = "native-skia"))
+        );
+
+        assert_multi_page_matches_advertisement(PngBackend::new());
+
+        let mut backend = PngBackend::new();
+        replay_page(&mut backend, &sample_tree()).unwrap();
+        let png = backend.finish().unwrap();
+        if live {
+            assert!(
+                png.starts_with(&[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]),
+                "images/gradients advertised but PNG signature missing ({} bytes)",
+                png.len()
+            );
+        } else {
+            assert!(
+                png.is_empty(),
+                "raster unavailable so images/gradients are off; finish must be empty"
+            );
+        }
+    }
+
+    #[cfg(not(rhwp_has_png_backend))]
+    fn assert_optional_png_capabilities_if_present() {}
+
+    #[cfg(rhwp_has_skia_backend)]
+    fn assert_optional_skia_capabilities_if_present() {
+        let caps = SkiaBackend::new().capabilities();
+        assert_eq!(caps.name, "skia");
+        assert!(caps.raster_only);
+        assert!(caps.is_consistent());
+        assert!(!caps.supports(BackendFeature::VectorText));
+        assert!(!caps.supports(BackendFeature::EmbeddedFonts));
+        assert!(!caps.supports(BackendFeature::Clipping));
+        assert!(!caps.supports(BackendFeature::MultiPage));
+        assert!(!caps.supports(BackendFeature::Deterministic));
+        let live = SkiaBackend::raster_available();
+        assert_eq!(caps.supports(BackendFeature::Images), live);
+        assert_eq!(caps.supports(BackendFeature::Gradients), live);
+        assert_eq!(
+            live,
+            cfg!(all(not(target_arch = "wasm32"), feature = "native-skia"))
+        );
+
+        assert_multi_page_matches_advertisement(SkiaBackend::new());
+
+        let mut backend = SkiaBackend::new();
+        replay_page(&mut backend, &sample_tree()).unwrap();
+        let out = backend.finish().unwrap();
+        if live {
+            assert!(
+                out.width > 0 && out.height > 0 && !out.bytes.is_empty(),
+                "images/gradients advertised but raster document is empty {}x{} ({} bytes)",
+                out.width,
+                out.height,
+                out.bytes.len()
+            );
+        } else {
+            assert_eq!(out.width, 0);
+            assert_eq!(out.height, 0);
+            assert!(
+                out.bytes.is_empty(),
+                "raster unavailable so images/gradients are off; finish must be empty"
+            );
+        }
+    }
+
+    #[cfg(not(rhwp_has_skia_backend))]
+    fn assert_optional_skia_capabilities_if_present() {}
 
     /// 페이지 배경을 **일부러 마지막에** 넣은 트리.
     /// `replay_page` 가 plane 순서로 재정렬하는지 보는 데 쓴다.
@@ -174,7 +498,33 @@ mod tests {
             svg.draw(&rect_op(0.0, 0.0)).unwrap_err(),
             RenderBackendError::NoOpenPage { call: "draw" }
         );
+        assert_optional_png_draw_without_begin_page();
+        assert_optional_skia_draw_without_begin_page();
     }
+
+    #[cfg(rhwp_has_png_backend)]
+    fn assert_optional_png_draw_without_begin_page() {
+        let mut png = PngBackend::new();
+        assert_eq!(
+            png.draw(&rect_op(0.0, 0.0)).unwrap_err(),
+            RenderBackendError::NoOpenPage { call: "draw" }
+        );
+    }
+
+    #[cfg(not(rhwp_has_png_backend))]
+    fn assert_optional_png_draw_without_begin_page() {}
+
+    #[cfg(rhwp_has_skia_backend)]
+    fn assert_optional_skia_draw_without_begin_page() {
+        let mut skia = SkiaBackend::new();
+        assert_eq!(
+            skia.draw(&rect_op(0.0, 0.0)).unwrap_err(),
+            RenderBackendError::NoOpenPage { call: "draw" }
+        );
+    }
+
+    #[cfg(not(rhwp_has_skia_backend))]
+    fn assert_optional_skia_draw_without_begin_page() {}
 
     // 3. 페이지 경계 위반 — 중복 열기, 안 연 채 닫기, 안 닫고 끝내기.
     #[test]
@@ -289,6 +639,9 @@ mod tests {
             ..BackendCapabilities::raster("bogus")
         };
         assert!(!bogus.is_consistent());
+
+        // 210b3ee37 은 광고 플래그만 고쳤다. 광고가 실제 지원과 같은지는 여기서 닫는다.
+        assert_advertised_capabilities_match_behavior();
     }
 
     // 8. trait 객체로 다형 호출 — 계측 백엔드와 실제 SVG 백엔드를 같은 통로로 몬다.
@@ -324,6 +677,10 @@ mod tests {
         assert!(svg.starts_with("<svg"), "{svg}");
         assert!(svg.contains("viewBox=\"0 0 400 300\""), "{svg}");
         assert!(svg.trim_end().ends_with("</svg>"), "{svg}");
+
+        assert_svg_advertised_capabilities_match_output();
+        assert_optional_png_capabilities_if_present();
+        assert_optional_skia_capabilities_if_present();
     }
 
     // 10. 페이지별 SVG 문서를 이어 붙여 유효하지 않은 단일 SVG를 만들지 않는다.
@@ -337,6 +694,12 @@ mod tests {
             backend.begin_page(PageSize::new(400.0, 300.0)).unwrap_err(),
             RenderBackendError::MultiplePagesUnsupported { backend: "svg" }
         );
+
+        assert_multi_page_matches_advertisement(SvgBackend::new());
+        assert_multi_page_matches_advertisement(NullBackend::new());
+        assert_multi_page_matches_advertisement(TraceBackend::new());
+        assert_optional_png_capabilities_if_present();
+        assert_optional_skia_capabilities_if_present();
     }
 
     // 11. 어댑터도 결정적이다 — 같은 페이지를 두 번 그리면 같은 바이트열이다.
@@ -348,6 +711,9 @@ mod tests {
             backend.finish().unwrap()
         }
         assert_eq!(run(), run());
+        assert!(SvgBackend::new()
+            .capabilities()
+            .supports(BackendFeature::Deterministic));
     }
 
     // 11. replay_page 가 plane 순서(배경 → … → 글 앞)로 재정렬한다.
