@@ -4083,7 +4083,9 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "page": { "type": "integer", "minimum": 0, "description": "특정 페이지만 검사하는 0 기준 번호. 생략하면 전체 문서" },
                 "strict": { "type": "boolean", "description": "참이면 overflow 또는 overlap이 발견될 때 검증 실패(exit 3)로 처리. 빈 쪽 신호는 실패시키지 않음" },
                 "overflowTolerance": { "type": "number", "minimum": 0, "description": "본문 여백 밖으로 벗어난 요소를 overflow로 볼 최소 거리(px). 기본 1.0" },
-                "overlapTolerance": { "type": "number", "minimum": 0, "description": "두 요소를 overlap으로 볼 최소 겹침 폭과 높이(px). 기본 2.0" }
+                "overlapTolerance": { "type": "number", "minimum": 0, "description": "두 요소를 overlap으로 볼 최소 겹침 폭과 높이(px). 기본 2.0" },
+                "types": { "type": "string", "description": "overflow/overlap 검사 대상 노드 타입. 쉼표 구분(예: Table,Image,TextLine). 생략하면 기본 검사 대상 전부. empty_page 는 영향 없음" },
+                "batch": { "type": "boolean", "description": "참이면 path 를 폴더로 보고 .hwp/.hwpx 를 재귀 스윕. stdout 은 NDJSON 한 줄 한 파일, 로드 실패는 error 레코드" }
             })),
             "layout-anomaly",
             serde_json::json!(["layout-anomaly", "--json", "{path}"]),
@@ -4091,12 +4093,14 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "page", "args": ["-p", "{page}"] },
                 { "when": "strict", "args": ["--strict"] },
                 { "when": "overflowTolerance", "args": ["--overflow-tolerance", "{overflowTolerance}"] },
-                { "when": "overlapTolerance", "args": ["--overlap-tolerance", "{overlapTolerance}"] }
+                { "when": "overlapTolerance", "args": ["--overlap-tolerance", "{overlapTolerance}"] },
+                { "when": "types", "args": ["--types", "{types}"] },
+                { "when": "batch", "args": ["--batch"] }
             ]),
             &[
-                "schemaVersion", "source", "pageCount", "pageFilter", "overflowTolerancePx",
-                "overlapTolerancePx", "strict", "overflowCount", "overlapCount", "emptyPageCount",
-                "hasSignal", "pages",
+                "schemaVersion", "mode", "source", "pageCount", "pageFilter", "overflowTolerancePx",
+                "overlapTolerancePx", "types", "strict", "overflowCount", "overlapCount",
+                "emptyPageCount", "hasSignal", "pages",
             ],
         ),
         tool_with_optional_args(
@@ -6490,22 +6494,26 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "layout-anomaly",
             "diagnostic",
-            "렌더 한 장의 기하 이상탐지(overflow/overlap/empty_page) — render-diff(변위)와 다른 질문. 기본 exit 0, --strict 만 확정 신호를 exit 3",
+            "렌더 한 장의 기하 이상탐지(overflow/overlap/empty_page) — render-diff(변위)와 다른 질문. 기본 exit 0, --strict 만 확정 신호를 exit 3. --batch 는 NDJSON",
             false,
             &[
                 "--json",
+                "--batch",
                 "-p",
                 "--strict",
+                "--types",
                 "--overflow-tolerance",
                 "--overlap-tolerance",
             ],
             &[
                 "schemaVersion",
+                "mode",
                 "source",
                 "pageCount",
                 "pageFilter",
                 "overflowTolerancePx",
                 "overlapTolerancePx",
+                "types",
                 "strict",
                 "overflowCount",
                 "overlapCount",
@@ -7358,14 +7366,19 @@ fn print_help() {
     println!("      --json: 단건은 한 줄 봉투, --batch 는 NDJSON(로드 실패도 error 레코드로 남김)");
     println!("      --json 회귀 검출은 종료 코드 3(검증 단언 실패) — 사람 모드는 종전대로 1");
     println!(
-        "  layout-anomaly <파일> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--strict] [--json]"
+        "  layout-anomaly <파일> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--types <Type,...>] [--strict] [--json]"
+    );
+    println!(
+        "  layout-anomaly --batch <폴더> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--types <Type,...>] [--strict] [--json]"
     );
     println!("      렌더 한 장의 기하만으로 이상 신호 3종 탐지 — render-diff(변위)와 다른 질문");
     println!(
         "      overflow: 요소 bbox가 본문 여백을 벗어남 / overlap: 겹치면 안 되는 요소끼리 겹침"
     );
     println!("      empty_page: 콘텐츠 없는 중간 쪽(첫/끝 제외) — 항상 가능성 신호, --strict 로도 실패 안 함");
-    println!("      --json: 판정 봉투 한 줄. 기본 종료 코드는 0(판정=데이터) — --strict 만 확정 신호를 exit 3 으로 냄");
+    println!("      --types: overflow/overlap 검사 대상 노드 타입만 (예: Table,Image). empty_page 는 영향 없음");
+    println!("      --batch: 폴더를 재귀해 .hwp/.hwpx 를 정렬 순으로 스캔. 파일별 오류는 error 레코드(DATA)");
+    println!("      --json: 단건은 한 줄 봉투, --batch 는 NDJSON. 기본 종료 코드는 0(판정=데이터) — --strict 만 확정 신호를 exit 3 으로 냄");
     println!("  bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]");
     println!("      단계별 처리 성능 계측 — parse/layout/render/serialize median(ms)");
     println!("      워밍업 1회 후 N회(기본 3) 반복. 파일별 크기/쪽수 + total 표 + TSV");

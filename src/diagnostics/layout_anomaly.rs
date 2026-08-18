@@ -42,7 +42,7 @@ use crate::HwpError;
 // ─────────────────────────────────────────────────────────────────────────
 
 /// 스캔 임계값. 둘 다 렌더 트리와 같은 단위(px)다.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct AnomalyOptions {
     /// 요소 bbox가 본문 영역을 이 값(px) 넘게 벗어나야 overflow로 잡는다.
     /// 하위 픽셀 반올림 노이즈를 거르는 목적 — `render-diff` 의 기본 변위
@@ -51,6 +51,9 @@ pub struct AnomalyOptions {
     /// 두 요소의 겹침 폭·높이가 **둘 다** 이 값(px)을 넘어야 overlap으로 잡는다.
     /// 모서리가 살짝 스치는 것(안티앨리어싱·반올림)은 정상 조판에서도 흔하다.
     pub overlap_tolerance_px: f64,
+    /// overflow·overlap 검사 대상 노드 타입. `None` 이면 기본 검사 대상 전부.
+    /// `empty_page` 는 페이지 단위 신호라 이 필터의 영향을 받지 않는다.
+    pub type_filter: Option<Vec<&'static str>>,
 }
 
 /// 기본 overflow 허용치(px). `render_geom_diff::DEFAULT_MAX_DISP` 와 같은 자릿수.
@@ -63,6 +66,7 @@ impl Default for AnomalyOptions {
         Self {
             overflow_tolerance_px: DEFAULT_OVERFLOW_TOLERANCE_PX,
             overlap_tolerance_px: DEFAULT_OVERLAP_TOLERANCE_PX,
+            type_filter: None,
         }
     }
 }
@@ -231,6 +235,30 @@ fn is_checkable(t: &RenderNodeType) -> bool {
     )
 }
 
+/// overflow·overlap 기본 검사 대상의 안정 라벨 (`--types` 가 받는 이름).
+const CHECKABLE_TYPE_LABELS: &[&str] = &[
+    "Table",
+    "Image",
+    "TextBox",
+    "Equation",
+    "Group",
+    "Form",
+    "Placeholder",
+    "RawSvg",
+    "Line",
+    "Rect",
+    "Ellipse",
+    "Path",
+    "TextLine",
+];
+
+fn type_allowed(label: &str, opts: &AnomalyOptions) -> bool {
+    match &opts.type_filter {
+        None => true,
+        Some(allowed) => allowed.contains(&label),
+    }
+}
+
 /// 이 노드가 "겹치면 안 되는" overlap 후보인가. `node` 는 TextLine의 자식(TextRun)
 /// 검사에 쓴다.
 ///
@@ -366,16 +394,20 @@ fn walk(
     let mut next_suppress = suppress;
     if !suppress && is_checkable(&node.node_type) {
         let label = node_type_label(&node.node_type);
-        check_overflow(&node.bbox, &path, label, boundary, opts, overflow_out);
-        if is_overlap_candidate(node) {
-            flow_out.push(FlowCandidate {
-                path: path.clone(),
-                node_type: label,
-                bbox: node.bbox,
-                column,
-            });
+        if type_allowed(label, opts) {
+            check_overflow(&node.bbox, &path, label, boundary, opts, overflow_out);
+            if is_overlap_candidate(node) {
+                flow_out.push(FlowCandidate {
+                    path: path.clone(),
+                    node_type: label,
+                    bbox: node.bbox,
+                    column,
+                });
+            }
+            // 필터에 걸린 컨테이너만 자손을 접는다. `--types TextLine` 은 표 안의
+            // 줄까지 내려가야 하므로, 제외된 Table 은 suppress 하지 않는다.
+            next_suppress = true;
         }
-        next_suppress = true;
     }
 
     for (i, child) in node.children.iter().enumerate() {
@@ -485,6 +517,9 @@ pub fn scan_document(core: &DocumentCore, opts: &AnomalyOptions) -> Result<DocAn
 // CLI: `rhwp layout-anomaly`
 // ─────────────────────────────────────────────────────────────────────────
 
+use std::path::{Path, PathBuf};
+use std::time::Instant;
+
 use crate::schema_registry::ENVELOPE_SCHEMA_VERSION as SCHEMA_VERSION;
 
 const EXIT_OK: i32 = 0;
@@ -492,19 +527,60 @@ const EXIT_RUNTIME: i32 = 1;
 const EXIT_USAGE: i32 = 2;
 /// `--strict` 가 확정 신호(overflow·overlap)를 하나라도 찾았을 때 내는 코드.
 /// `render_geom_diff::EXIT_REGRESSION` 과 같은 값 — "검출은 도구의 정상 동작"
-/// 이라는 같은 계약이다.
+/// 이라는 같은 계약이다. 기본(비 --strict)은 이상 신호가 있어도 0 이다.
 const EXIT_ANOMALY: i32 = 3;
 
+fn usage() -> String {
+    "사용법: rhwp layout-anomaly <파일.hwp|파일.hwpx> [-p N] [--json] [--strict] \
+     [--types Type,...] [--overflow-tolerance PX] [--overlap-tolerance PX]\n         \
+     rhwp layout-anomaly --batch <폴더> [-p N] [--json] [--strict] \
+     [--types Type,...] [--overflow-tolerance PX] [--overlap-tolerance PX]"
+        .to_string()
+}
+
 struct CliOptions {
-    path: std::path::PathBuf,
+    path: PathBuf,
+    batch: bool,
     page: Option<u32>,
     json: bool,
     strict: bool,
     anomaly_opts: AnomalyOptions,
 }
 
+fn parse_type_filter(raw: &str) -> Result<Vec<&'static str>, String> {
+    let mut out = Vec::new();
+    for part in raw.split(',') {
+        let part = part.trim();
+        if part.is_empty() {
+            continue;
+        }
+        let found = CHECKABLE_TYPE_LABELS
+            .iter()
+            .copied()
+            .find(|label| label.eq_ignore_ascii_case(part));
+        match found {
+            Some(label) => {
+                if !out.contains(&label) {
+                    out.push(label);
+                }
+            }
+            None => {
+                return Err(format!(
+                    "--types 알 수 없는 노드 타입: {part} (허용: {})",
+                    CHECKABLE_TYPE_LABELS.join(", ")
+                ));
+            }
+        }
+    }
+    if out.is_empty() {
+        return Err("--types 뒤에 Table,Image 같은 타입 목록이 필요합니다".into());
+    }
+    Ok(out)
+}
+
 fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
-    let mut path: Option<std::path::PathBuf> = None;
+    let mut path: Option<PathBuf> = None;
+    let mut batch = false;
     let mut page = None;
     let mut json = false;
     let mut strict = false;
@@ -515,6 +591,7 @@ fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
         match args[i].as_str() {
             "--json" => json = true,
             "--strict" => strict = true,
+            "--batch" => batch = true,
             "-p" | "--page" => {
                 i += 1;
                 let v = args.get(i).ok_or("-p 다음에 페이지 번호 필요")?;
@@ -539,23 +616,29 @@ fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
                     .parse()
                     .map_err(|_| format!("--overlap-tolerance 파싱 실패: {v}"))?;
             }
+            "--types" => {
+                i += 1;
+                let v = args.get(i).ok_or("--types 다음에 타입 목록 필요")?;
+                anomaly_opts.type_filter = Some(parse_type_filter(v)?);
+            }
             other if other.starts_with('-') => return Err(format!("알 수 없는 옵션: {other}")),
             other => {
-                if path.replace(std::path::PathBuf::from(other)).is_some() {
-                    return Err("입력 파일은 하나만 지정할 수 있습니다".into());
+                if path.replace(PathBuf::from(other)).is_some() {
+                    return Err(if batch {
+                        "--batch 는 폴더 1개만 지정".into()
+                    } else {
+                        "입력 파일은 하나만 지정할 수 있습니다".into()
+                    });
                 }
             }
         }
         i += 1;
     }
 
-    let path = path.ok_or_else(|| {
-        "사용법: rhwp layout-anomaly <파일.hwp|파일.hwpx> [-p N] [--json] [--strict] \
-         [--overflow-tolerance PX] [--overlap-tolerance PX]"
-            .to_string()
-    })?;
+    let path = path.ok_or_else(usage)?;
     Ok(CliOptions {
         path,
+        batch,
         page,
         json,
         strict,
@@ -604,6 +687,13 @@ fn page_json(p: &PageAnomalies) -> Value {
     })
 }
 
+fn types_json(opts: &CliOptions) -> Value {
+    match &opts.anomaly_opts.type_filter {
+        Some(types) => json!(types),
+        None => Value::Null,
+    }
+}
+
 fn envelope(source: &str, doc: &DocAnomalies, opts: &CliOptions) -> Value {
     let pages: Vec<Value> = doc
         .pages
@@ -614,11 +704,13 @@ fn envelope(source: &str, doc: &DocAnomalies, opts: &CliOptions) -> Value {
     crate::provenance::marked(
         json!({
             "schemaVersion": SCHEMA_VERSION,
+            "mode": if opts.batch { "batch" } else { "single" },
             "source": source,
             "pageCount": doc.page_count,
             "pageFilter": opts.page,
             "overflowTolerancePx": opts.anomaly_opts.overflow_tolerance_px,
             "overlapTolerancePx": opts.anomaly_opts.overlap_tolerance_px,
+            "types": types_json(opts),
             "strict": opts.strict,
             "overflowCount": doc.overflow_count(),
             "overlapCount": doc.overlap_count(),
@@ -630,25 +722,44 @@ fn envelope(source: &str, doc: &DocAnomalies, opts: &CliOptions) -> Value {
     )
 }
 
+fn error_envelope(source: &str, error: &str, opts: &CliOptions, elapsed_ms: u128) -> Value {
+    let mut rec = crate::provenance::marked(
+        json!({
+            "schemaVersion": SCHEMA_VERSION,
+            "mode": "batch",
+            "source": source,
+            "pageCount": 0,
+            "pageFilter": opts.page,
+            "overflowTolerancePx": opts.anomaly_opts.overflow_tolerance_px,
+            "overlapTolerancePx": opts.anomaly_opts.overlap_tolerance_px,
+            "types": types_json(opts),
+            "strict": opts.strict,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [],
+            "elapsedMs": elapsed_ms as u64,
+        }),
+        "layout-anomaly",
+    );
+    rec["error"] = json!(error);
+    rec
+}
+
+fn load_and_scan(path: &Path, opts: &AnomalyOptions) -> Result<DocAnomalies, String> {
+    let data =
+        std::fs::read(path).map_err(|e| format!("파일 읽기 실패 {}: {e}", path.display()))?;
+    let core = DocumentCore::from_bytes(&data)
+        .map_err(|e| format!("문서 로드 실패 {}: {e:?}", path.display()))?;
+    scan_document(&core, opts).map_err(|e| format!("렌더 트리 생성 실패 - {e:?}"))
+}
+
 fn run_single(opts: &CliOptions) -> i32 {
-    let data = match std::fs::read(&opts.path) {
+    let doc = match load_and_scan(&opts.path, &opts.anomaly_opts) {
         Ok(d) => d,
         Err(e) => {
-            eprintln!("오류: 파일 읽기 실패 {}: {e}", opts.path.display());
-            return EXIT_RUNTIME;
-        }
-    };
-    let core = match DocumentCore::from_bytes(&data) {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("오류: 문서 로드 실패 {}: {e:?}", opts.path.display());
-            return EXIT_RUNTIME;
-        }
-    };
-    let doc = match scan_document(&core, &opts.anomaly_opts) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 렌더 트리 생성 실패 - {e:?}");
+            eprintln!("오류: {e}");
             return EXIT_RUNTIME;
         }
     };
@@ -723,6 +834,168 @@ fn run_single(opts: &CliOptions) -> i32 {
     }
 }
 
+/// `.hwp`/`.hwpx` 파일을 재귀 수집한 뒤 상대 경로(슬래시) 기준으로 정렬한다.
+/// 정렬 키가 안정적이어야 같은 폴더를 다시 돌려도 보고서 순서가 같다.
+fn collect_doc_files(root: &Path) -> Result<Vec<PathBuf>, String> {
+    if !root.is_dir() {
+        return Err(format!(
+            "--batch 는 폴더만 지정할 수 있습니다: {}",
+            root.display()
+        ));
+    }
+    let mut files = Vec::new();
+    let mut stack = vec![root.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        let entries = std::fs::read_dir(&dir)
+            .map_err(|e| format!("폴더 읽기 실패 {}: {e}", dir.display()))?;
+        for entry in entries {
+            let path = entry.map_err(|e| format!("항목 읽기 실패: {e}"))?.path();
+            if path.is_dir() {
+                stack.push(path);
+            } else if path.extension().is_some_and(|ext| {
+                ext.eq_ignore_ascii_case("hwp") || ext.eq_ignore_ascii_case("hwpx")
+            }) {
+                files.push(path);
+            }
+        }
+    }
+    files.sort_by_key(|a| rel_slash(root, a));
+    Ok(files)
+}
+
+fn rel_slash(root: &Path, path: &Path) -> String {
+    path.strip_prefix(root)
+        .unwrap_or(path)
+        .to_string_lossy()
+        .replace('\\', "/")
+}
+
+struct BatchRow {
+    rel_path: String,
+    status: String,
+    overflow: usize,
+    overlap: usize,
+    empty_page: usize,
+    has_signal: bool,
+    elapsed_ms: u128,
+    error: String,
+    envelope: Option<Value>,
+}
+
+fn batch_record(opts: &CliOptions, row: &BatchRow) -> Value {
+    if let Some(env) = &row.envelope {
+        let mut rec = env.clone();
+        rec["elapsedMs"] = json!(row.elapsed_ms as u64);
+        rec
+    } else {
+        error_envelope(&row.rel_path, &row.error, opts, row.elapsed_ms)
+    }
+}
+
+fn print_batch_summary(rows: &[BatchRow], json: bool) {
+    let count = |s: &str| rows.iter().filter(|r| r.status == s).count();
+    let text = format!(
+        "\n=== layout-anomaly 요약 ===\n  총 파일         : {}\n  CLEAN           : {}\n  ANOMALY         : {}\n  LOAD_FAIL       : {}\n",
+        rows.len(),
+        count("CLEAN"),
+        count("ANOMALY"),
+        count("LOAD_FAIL"),
+    );
+    if json {
+        eprint!("{text}");
+    } else {
+        print!("{text}");
+    }
+}
+
+fn run_batch(opts: &CliOptions) -> i32 {
+    let files = match collect_doc_files(&opts.path) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("오류: {e}");
+            return EXIT_USAGE;
+        }
+    };
+    if files.is_empty() {
+        eprintln!(
+            "오류: 처리할 .hwp/.hwpx 파일이 없습니다: {}",
+            opts.path.display()
+        );
+        return EXIT_USAGE;
+    }
+
+    let mut rows = Vec::with_capacity(files.len());
+    for path in &files {
+        let rel = rel_slash(&opts.path, path);
+        let started = Instant::now();
+        let mut row = BatchRow {
+            rel_path: rel.clone(),
+            status: "LOAD_FAIL".into(),
+            overflow: 0,
+            overlap: 0,
+            empty_page: 0,
+            has_signal: false,
+            elapsed_ms: 0,
+            error: String::new(),
+            envelope: None,
+        };
+        match load_and_scan(path, &opts.anomaly_opts) {
+            Ok(doc) => {
+                if let Some(want) = opts.page {
+                    if want >= doc.page_count {
+                        row.error =
+                            format!("-p {want} 는 문서 범위 밖입니다 (쪽 0..{})", doc.page_count);
+                    } else {
+                        fill_ok_row(&mut row, &doc, opts);
+                    }
+                } else {
+                    fill_ok_row(&mut row, &doc, opts);
+                }
+            }
+            Err(e) => row.error = e,
+        }
+        row.elapsed_ms = started.elapsed().as_millis();
+        if opts.json {
+            println!("{}", batch_record(opts, &row));
+        } else {
+            println!(
+                "[{:>15}] overflow={:<4} overlap={:<4} empty={:<3} {:>6}ms  {}",
+                row.status, row.overflow, row.overlap, row.empty_page, row.elapsed_ms, row.rel_path
+            );
+            if !row.error.is_empty() {
+                println!("                  └ {}", row.error);
+            }
+        }
+        rows.push(row);
+    }
+
+    print_batch_summary(&rows, opts.json);
+
+    // 로드 실패는 측정 실패(1)다. 전건을 재봤다고 말할 수 없으면 --strict
+    // 이상 검출(3)보다 런타임 실패가 우선한다. 기본은 이상 신호가 있어도 0.
+    if rows.iter().any(|r| !r.error.is_empty()) {
+        return EXIT_RUNTIME;
+    }
+    if opts.strict && rows.iter().any(|r| r.has_signal) {
+        EXIT_ANOMALY
+    } else {
+        EXIT_OK
+    }
+}
+
+fn fill_ok_row(row: &mut BatchRow, doc: &DocAnomalies, opts: &CliOptions) {
+    row.overflow = doc.overflow_count();
+    row.overlap = doc.overlap_count();
+    row.empty_page = doc.empty_page_count();
+    row.has_signal = doc.has_signal();
+    row.status = if row.has_signal {
+        "ANOMALY".into()
+    } else {
+        "CLEAN".into()
+    };
+    row.envelope = Some(envelope(&row.rel_path, doc, opts));
+}
+
 /// `rhwp layout-anomaly` 진입점.
 pub fn run(args: &[String]) -> i32 {
     let opts = match parse_cli(args) {
@@ -732,7 +1005,11 @@ pub fn run(args: &[String]) -> i32 {
             return EXIT_USAGE;
         }
     };
-    run_single(&opts)
+    if opts.batch {
+        run_batch(&opts)
+    } else {
+        run_single(&opts)
+    }
 }
 
 #[cfg(test)]
