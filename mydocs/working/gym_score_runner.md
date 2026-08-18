@@ -283,4 +283,3 @@ automation / core-cli / casual-rides pack,
 DoD: upstream/devel 대비 insertions >= 3000. 예외 카탈로그·시험
 표·규약 문서가 그 크기를 채운다. 빈 줄이나 반복 주석으로 패지
 않았다. 각 삽입은 kind 하나, 시험 하나, 또는 규약 한 칸이다.
-
