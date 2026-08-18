@@ -586,9 +586,63 @@ fn add_font_fallbacks(svg: &str, options: &PdfExportOptions) -> String {
     )
 }
 
+/// #3772: bold `<text>`/`<tspan>` 에서만 ExtraLight 를 뺀다.
+///
+/// SVG 생성기가 이미 뺀 경우 no-op. 외부 SVG 나 옛 골든을 svg2pdf 에 넣을 때도
+/// ExtraLight(200) 이 bold 로 남지 않게 하는 PDF 직전 안전망이다.
 #[cfg(not(target_arch = "wasm32"))]
-fn apply_pdf_font_options(svg: &str, options: &PdfExportOptions) -> String {
+fn drop_extralight_from_bold_svg_runs(svg: &str) -> String {
+    let mut out = String::with_capacity(svg.len());
+    let mut rest = svg;
+    while let Some(rel) = rest.find('<') {
+        out.push_str(&rest[..rel]);
+        rest = &rest[rel..];
+        let end = rest.find('>').map(|i| i + 1).unwrap_or(rest.len());
+        let tag = &rest[..end];
+        rest = &rest[end..];
+        if svg_tag_is_text_run(tag) && svg_tag_is_bold_weight(tag) {
+            out.push_str(&crate::renderer::drop_noto_sans_kr_extralight(tag));
+        } else {
+            out.push_str(tag);
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn svg_tag_is_text_run(tag: &str) -> bool {
+    let Some(rest) = tag.strip_prefix('<') else {
+        return false;
+    };
+    let name = rest
+        .split(|c: char| c.is_ascii_whitespace() || c == '>' || c == '/')
+        .next()
+        .unwrap_or("");
+    name.eq_ignore_ascii_case("text") || name.eq_ignore_ascii_case("tspan")
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn svg_tag_is_bold_weight(tag: &str) -> bool {
+    let lower = tag.to_ascii_lowercase();
+    if lower.contains("font-weight=\"bold\"") || lower.contains("font-weight='bold'") {
+        return true;
+    }
+    for weight in ["600", "700", "800", "900"] {
+        if lower.contains(&format!("font-weight=\"{weight}\""))
+            || lower.contains(&format!("font-weight='{weight}'"))
+        {
+            return true;
+        }
+    }
+    false
+}
+
+/// SVG→PDF 직전에 generic 폴백·수식 폰트·bold ExtraLight 제거를 적용한다.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn apply_pdf_font_options(svg: &str, options: &PdfExportOptions) -> String {
     let svg = add_font_fallbacks(svg, options);
+    let svg = drop_extralight_from_bold_svg_runs(&svg);
     if let Some(equation_font) = options.equation_font.as_deref() {
         let attr = format!(
             "font-family=\"{}\"",
