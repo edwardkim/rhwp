@@ -9,6 +9,7 @@ mod anchor_log;
 mod atomic_file;
 mod audit_standard;
 mod capsule_sign;
+mod cli;
 mod disclose;
 mod lineage_bundle;
 mod mcp_serve;
@@ -6571,9 +6572,10 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
 
 /// [#3694] 명령 이름 목록 (did-you-mean 후보).
 fn capabilities_command_names() -> Vec<String> {
-    capabilities_command_entries()
+    cli::catalog::commands()
         .iter()
-        .filter_map(|c| c["name"].as_str().map(String::from))
+        .filter(|command| command.in_capabilities())
+        .map(|command| command.name.to_string())
         .collect()
 }
 

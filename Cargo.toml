@@ -159,6 +159,10 @@ name = "regression_suite_032"
 path = "tests/generated/regression_suite_032.rs"
 
 [[test]]
+name = "cli_catalog_contract"
+path = "tests/cli_catalog_contract.rs"
+
+[[test]]
 name = "cli_exit_codes"
 path = "tests/cli_exit_codes.rs"
 
