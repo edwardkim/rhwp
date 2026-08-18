@@ -2056,20 +2056,21 @@ fn parse_object_control_char(
         || ch == 16
         || preserve_invisible_anchor_gap
         || (is_control_only_marker && (is_tac_picture_or_shape || is_tac_line));
-    if omit_visible_marker {
-        if preserve_invisible_anchor_gap {
-            utf16_len += 8;
-        }
-    } else {
-        char_offsets.push(utf16_len);
-        // 일반 HWP3의 가시 개체 제어문자는 원본 LineInfo와 CharShape에서 화면
-        // 마커 하나로 좌표가 계산된다. HWP5 저장 시에만 확장 슬롯으로 쓰므로
-        // 여기서 전역으로 8칸을 늘리면 원본 HWP3 도형 문단의 줄 위치가 밀린다.
-        // 실제 암호 HWP3 fixture는 HWP5 변환본의 8-unit control contract를
-        // 사용하므로, 복호화 경로로 한정해 그 슬롯 폭을 보존한다.
-        utf16_len += if *use_password_layout_contract { 8 } else { 1 };
-        text_string.push('\u{FFFC}');
+    if omit_visible_marker && preserve_invisible_anchor_gap {
+        utf16_len += 8;
     }
+    // [#4957] 가시 개체 자리의 슬롯 폭 결정은 **컨트롤이 실제로 생성된 뒤**로 미룬다.
+    //
+    // 종전에는 여기서 `U+FFFC` 를 본문 글자로 밀어 넣고 1유닛만 셌다. 그 문자는 직렬화기
+    // 두 곳(HWP5·HWPX)이 모두 모르는 값이라 리터럴로 기록됐고, 저장본을 한글로 열면 표·
+    // 그림 자리에 원본에 없던 개체 문자가 생겼다. 한글은 같은 HWP3 원본에서 그 자리에
+    // 아무 글자도 내지 않고 8유닛 컨트롤 슬롯만 쓴다(오라클 대조).
+    //
+    // 다만 아래 `controls.push` 는 **조건부**라, 파싱이 개체를 만들지 못한 경로가 있다.
+    // 그때 슬롯만 넓히면 "컨트롤 없는 8유닛 갭"이 생겨 뒤 컨트롤의 슬롯 대응이 밀린다
+    // (미주 표시가 제 오프셋을 잃는다 — #3492 가 지키는 계약).
+    let controls_len_before_object = controls.len();
+    let emit_visible_object_slot = !omit_visible_marker;
 
     if ch == 10 {
         if parsed_is_hypertext {
@@ -2279,6 +2280,31 @@ fn parse_object_control_char(
         ));
     }
     ctrl_data_records.push(None);
+
+    // [#4957] 여기서 슬롯 폭을 확정한다. 위 `controls.push` 가 조건부라, 컨트롤이 실제로
+    // 생겼을 때만 8유닛 슬롯을 세고 가시 글자를 남기지 않는다. 컨트롤이 안 생긴 경로는
+    // 종전 동작(1유닛 + 자리표시 글자)을 그대로 둔다 — 슬롯만 넓히면 "컨트롤 없는 갭" 이
+    // 생겨 뒤 컨트롤의 슬롯 대응이 밀린다(#3492 가 지키는 미주 오프셋 계약).
+    if emit_visible_object_slot {
+        char_offsets.push(utf16_len);
+        // [#4957] 가시 개체는 **자리표시 글자 하나 + 8유닛 슬롯**이다. 암호 HWP3 경로가
+        // 이미 쓰던 계약을 전 경로로 넓힌 것이고, #3504 가 자동번호에 쓴 모양과 같다
+        // (공백 하나 + 8유닛). 글자 인덱스는 그대로라 `char_shapes` 경계가 밀리지 않는다.
+        //
+        // 종전에는 컨트롤이 생겨도 1유닛만 세어, 직렬화기의 자리표시자 판정
+        // (`next_offset >= offset + 8`)이 실패하고 마커가 리터럴로 기록됐다 — 저장본을
+        // 한글로 열면 표·그림 자리에 원본에 없던 개체 문자가 생겼다.
+        //
+        // 컨트롤이 안 생긴 경로는 슬롯을 넓히지 않는다. 넓히면 "컨트롤 없는 8유닛 갭"이
+        // 생겨 뒤 컨트롤의 슬롯 대응이 밀린다(#3492 가 지키는 미주 오프셋 계약).
+        utf16_len += if controls.len() > controls_len_before_object {
+            8
+        } else {
+            1
+        };
+        text_string.push('\u{FFFC}');
+    }
+
     Ok((i, utf16_len, false))
 }
 
@@ -2329,8 +2355,14 @@ fn parse_field_control_char(
                     // 재파싱 때 말미 공백 1칸이 생겼다 (SO-SUEOP 미주 213건).
                     utf16_len += 8;
                 } else {
+                    // [#4957] 새번호(19)·쪽번호 위치(20)·쪽 감추기(21)도 공통 IR 에서는
+                    // **확장 컨트롤 8 코드유닛**이다(직렬화 매핑이 전부 `0x0015`).
+                    // 1 유닛만 세면 자동번호가 겪던 함정이 그대로 재현된다 — 직렬화의
+                    // 자리표시자 판정(`next_offset >= offset + 8`)이 실패해 `U+FFFC` 가
+                    // 리터럴로 기록되고, 저장본을 한글로 열면 원본에 없던 개체 문자가
+                    // 쪽번호 자리에 생긴다(#3504 와 같은 결).
                     text_string.push('\u{FFFC}');
-                    utf16_len += 1;
+                    utf16_len += 8;
                 }
             }
 
@@ -2528,7 +2560,7 @@ fn parse_simple_control_char(
             }
             i += 4;
             char_offsets.push(utf16_len);
-            utf16_len += 1;
+            utf16_len += 8;
             text_string.push('\u{FFFC}');
             let mut overlap = crate::model::control::CharOverlap::default();
             // 스펙 §10.17 표 58: buf[0..6] = 겹칠 글자 hchar array[3]
@@ -2559,7 +2591,7 @@ fn parse_simple_control_char(
             }
             i += 11;
             char_offsets.push(utf16_len);
-            utf16_len += 1;
+            utf16_len += 8;
             text_string.push('\u{FFFC}');
             // 스펙 §10.16 표 57: 필드 이름은 파일 오프셋 2..22 (= 추가로 읽은
             // buf 의 [0..20]). 종전 buf[2..22] 는 이름 앞 2바이트를 유실하고
@@ -2586,7 +2618,7 @@ fn parse_simple_control_char(
             }
             i += 122;
             char_offsets.push(utf16_len);
-            utf16_len += 1;
+            utf16_len += 8;
             text_string.push('\u{FFFC}');
 
             let kw1_bytes = &buf[0..120];
@@ -2614,9 +2646,16 @@ fn parse_simple_control_char(
                 }
             }
             i += 31;
-            char_offsets.push(utf16_len);
-            utf16_len += 1;
-            text_string.push('\u{FFFC}');
+            // [#4957] 개요번호 마커는 본문에 **아무 자취도 남기지 않는다.**
+            //
+            // `fixup_hwp3_outline_fields` 가 이 마커를 소비해 번호 정보를 `ParaShape` 로
+            // 옮긴 뒤 공통 IR 에서 컨트롤을 걷어낸다(#3492). 그런데 자리표시 글자는 `text`
+            // 에 남아 있었고, 짝 컨트롤이 없으니 직렬화기가 그걸 리터럴로 기록했다 —
+            // 저장본을 한글로 열면 원본에 없던 개체 문자가 생긴다.
+            //
+            // 8유닛으로 넓히는 것도 답이 아니다. 컨트롤이 걷힌 뒤 "컨트롤 없는 8유닛 갭"이
+            // 남아 미주 오프셋·char_count 규약이 깨진다(실측 확인). 컨트롤도 글자도 남지
+            // 않는 것이 #3492 계약의 완성형이다.
 
             let kind = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
             let shape = buf[2];
@@ -2669,7 +2708,7 @@ fn parse_simple_control_char(
             } else {
                 // unrecognized — fall back to placeholder
                 char_offsets.push(utf16_len);
-                utf16_len += 1;
+                utf16_len += 8;
                 text_string.push('\u{FFFC}');
                 controls.push(crate::model::control::Control::Unknown(
                     crate::model::control::UnknownControl { ctrl_id: ch as u32 },
