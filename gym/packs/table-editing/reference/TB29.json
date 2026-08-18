@@ -1,0 +1,23 @@
+{
+  "id": "TB29",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "--col",
+        "0",
+        "--text",
+        "본문칸",
+        "-o",
+        "{sub:body_cell.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

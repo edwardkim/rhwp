@@ -1,0 +1,34 @@
+{
+  "id": "TB35",
+  "tier": 3,
+  "title": "첫 표 (0,1) 옆표지",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "첫 번째 표의 (0행,1열) 을 '옆표지'으로 바꾼 side_mark.hwp 를 제출하라. 채점은 그 좌표만 대조한다. 힌트: rhwp edit set-cell.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "side_mark.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "(0,1) == 옆표지",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 1,
+      "value": "옆표지",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:side_mark.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "side_mark.hwp"
+    }
+  ]
+}
