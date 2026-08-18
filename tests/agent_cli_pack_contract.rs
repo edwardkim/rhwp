@@ -70,6 +70,13 @@ fn capabilities_lists_new_commands() {
         "hangul-ratio",
         "magic",
         "nextcall",
+        "extract-data",
+        "field-values",
+        "table-csv",
+        "form-ready",
+        "threat-scan",
+        "injection-scan",
+        "structure",
     ] {
         assert!(names.contains(&need), "missing {need} in {names:?}");
     }
@@ -170,4 +177,77 @@ fn search_finds_or_reports_zero() {
     let v = stdout_json(&out);
     assert_envelope(&v, "search");
     assert!(v["matchCount"].is_number(), "{v}");
+}
+
+#[test]
+fn form_ready_on_form_sample() {
+    let path = sample("samples/form-01.hwp");
+    let out = run(&["form-ready", "--json", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "form-ready");
+    assert_eq!(v["ready"], true, "{v}");
+    assert!(v["fieldCount"].as_u64().unwrap() >= 1, "{v}");
+}
+
+#[test]
+fn field_values_names_form_sample() {
+    let path = sample("samples/form-01.hwp");
+    let out = run(&["field-values", "--json", path.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "field-values");
+    let names: Vec<&str> = v["fields"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|f| f["name"].as_str())
+        .collect();
+    assert!(
+        names.iter().any(|n| n.contains("myMsg") || !n.is_empty()),
+        "expected a field name, got {names:?}"
+    );
+}
+
+#[test]
+fn extract_data_on_real_sample() {
+    let path = sample("samples/hwp3-sample.hwp");
+    let out = run(&[
+        "extract-data",
+        "--json",
+        "--kind",
+        "all",
+        "--limit",
+        "20",
+        path.to_str().unwrap(),
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stderr {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_envelope(&v, "extract-data");
+    assert!(v["totalItemCount"].is_number(), "{v}");
+}
+
+#[test]
+fn threat_scan_runs() {
+    let path = sample("samples/hwp3-sample.hwp");
+    let out = run(&["threat-scan", "--json", path.to_str().unwrap()]);
+    assert!(matches!(out.status.code(), Some(0) | Some(3)));
+    let v = stdout_json(&out);
+    assert_envelope(&v, "threat-scan");
+    assert!(v["clean"].is_boolean(), "{v}");
 }

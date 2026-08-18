@@ -29,12 +29,15 @@ mod evidence;
 mod fields;
 mod files;
 mod fingerprint;
+mod harvest;
 mod inspect;
 mod piiscan;
 mod planlint;
+mod safety;
 mod scan;
 mod searchcmd;
 mod stats;
+mod structurecmd;
 mod tables;
 mod verify;
 
