@@ -1,0 +1,419 @@
+{
+  "file": "re-multisize-10-10-empty-hancom.hwp",
+  "kind": "hwp5",
+  "char_shape_count": 5,
+  "char_shapes": [
+    {
+      "font_ids": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "ratios": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "spacings": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "relative_sizes": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "char_offsets": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "base_size": 1000,
+      "attr": 0,
+      "italic": false,
+      "bold": false,
+      "underline": 0,
+      "underline_shape": 0,
+      "outline": 0,
+      "shadow": 0,
+      "emboss": false,
+      "engrave": false,
+      "super": false,
+      "sub": false,
+      "emphasis": 0,
+      "use_font_space": false,
+      "strike_shape": 0,
+      "kerning": false,
+      "shadow_offset": [
+        10,
+        10
+      ],
+      "text_color": 0,
+      "underline_color": 0,
+      "shade_color": 4294967295,
+      "shadow_color": 11711154,
+      "border_fill_id": 1,
+      "strike_color": 0,
+      "payload_len": 74
+    },
+    {
+      "font_ids": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "ratios": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "spacings": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "relative_sizes": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "char_offsets": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "base_size": 1000,
+      "attr": 0,
+      "italic": false,
+      "bold": false,
+      "underline": 0,
+      "underline_shape": 0,
+      "outline": 0,
+      "shadow": 0,
+      "emboss": false,
+      "engrave": false,
+      "super": false,
+      "sub": false,
+      "emphasis": 0,
+      "use_font_space": false,
+      "strike_shape": 0,
+      "kerning": false,
+      "shadow_offset": [
+        10,
+        10
+      ],
+      "text_color": 0,
+      "underline_color": 0,
+      "shade_color": 4294967295,
+      "shadow_color": 11711154,
+      "border_fill_id": 1,
+      "strike_color": 0,
+      "payload_len": 74
+    },
+    {
+      "font_ids": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "ratios": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "spacings": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "relative_sizes": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "char_offsets": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "base_size": 900,
+      "attr": 0,
+      "italic": false,
+      "bold": false,
+      "underline": 0,
+      "underline_shape": 0,
+      "outline": 0,
+      "shadow": 0,
+      "emboss": false,
+      "engrave": false,
+      "super": false,
+      "sub": false,
+      "emphasis": 0,
+      "use_font_space": false,
+      "strike_shape": 0,
+      "kerning": false,
+      "shadow_offset": [
+        10,
+        10
+      ],
+      "text_color": 0,
+      "underline_color": 0,
+      "shade_color": 4294967295,
+      "shadow_color": 11711154,
+      "border_fill_id": 1,
+      "strike_color": 0,
+      "payload_len": 74
+    },
+    {
+      "font_ids": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "ratios": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "spacings": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "relative_sizes": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "char_offsets": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "base_size": 900,
+      "attr": 0,
+      "italic": false,
+      "bold": false,
+      "underline": 0,
+      "underline_shape": 0,
+      "outline": 0,
+      "shadow": 0,
+      "emboss": false,
+      "engrave": false,
+      "super": false,
+      "sub": false,
+      "emphasis": 0,
+      "use_font_space": false,
+      "strike_shape": 0,
+      "kerning": false,
+      "shadow_offset": [
+        10,
+        10
+      ],
+      "text_color": 0,
+      "underline_color": 0,
+      "shade_color": 4294967295,
+      "shadow_color": 11711154,
+      "border_fill_id": 1,
+      "strike_color": 0,
+      "payload_len": 74
+    },
+    {
+      "font_ids": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "ratios": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "spacings": [
+        -5,
+        -5,
+        -5,
+        -5,
+        -5,
+        -5,
+        -5
+      ],
+      "relative_sizes": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "char_offsets": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "base_size": 900,
+      "attr": 0,
+      "italic": false,
+      "bold": false,
+      "underline": 0,
+      "underline_shape": 0,
+      "outline": 0,
+      "shadow": 0,
+      "emboss": false,
+      "engrave": false,
+      "super": false,
+      "sub": false,
+      "emphasis": 0,
+      "use_font_space": false,
+      "strike_shape": 0,
+      "kerning": false,
+      "shadow_offset": [
+        10,
+        10
+      ],
+      "text_color": 0,
+      "underline_color": 0,
+      "shade_color": 4294967295,
+      "shadow_color": 11711154,
+      "border_fill_id": 1,
+      "strike_color": 0,
+      "payload_len": 74
+    }
+  ],
+  "paragraphs": [
+    {
+      "section": 0,
+      "para": 0,
+      "text_units": 73,
+      "refs": [
+        [
+          0,
+          0
+        ],
+        [
+          34,
+          0
+        ],
+        [
+          53,
+          0
+        ]
+      ]
+    }
+  ],
+  "same_id_paragraphs": [
+    {
+      "section": 0,
+      "para": 0,
+      "text_units": 73,
+      "refs": [
+        [
+          0,
+          0
+        ],
+        [
+          34,
+          0
+        ],
+        [
+          53,
+          0
+        ]
+      ]
+    }
+  ]
+}

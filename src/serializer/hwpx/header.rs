@@ -597,7 +597,7 @@ fn write_char_properties<W: Write>(
         &[("itemCnt", &doc_info.char_shapes.len().to_string())],
     )?;
     for (idx, cs) in doc_info.char_shapes.iter().enumerate() {
-        write_char_pr(w, idx as u32, cs)?;
+        super::char_shapes::write_char_pr(w, idx as u32, cs)?;
     }
     end_tag(w, "hh:charProperties")?;
     Ok(())
@@ -608,126 +608,8 @@ fn write_char_pr<W: Write>(
     id: u32,
     cs: &CharShape,
 ) -> Result<(), SerializeError> {
-    // 속성 순서 (CharShapeType.cpp:79-86): id, height, textColor, shadeColor,
-    // useFontSpace, useKerning, symMark, borderFillIDRef
-    // `0xFFFF_FFFF`만 "음영 없음" sentinel 이다. `0x00000000`은 HWP3 팔레트
-    // 검정색을 100% 적용한 실제 음영이므로 #000000으로 보존해야 한다 (#4155).
-    let shade = color_hex(cs.shade_color);
-    start_tag_attrs(
-        w,
-        "hh:charPr",
-        &[
-            ("id", &id.to_string()),
-            ("height", &cs.base_size.to_string()),
-            ("textColor", &color_hex(cs.text_color)),
-            ("shadeColor", &shade),
-            ("useFontSpace", bool01(cs.use_font_space)),
-            ("useKerning", bool01(cs.kerning)),
-            ("symMark", sym_mark_str(cs.emphasis_dot)),
-            ("borderFillIDRef", &cs.border_fill_id.to_string()),
-        ],
-    )?;
-
-    // 자식 순서 (CharShapeType.cpp:59-73):
-    // fontRef, ratio, spacing, relSz, offset, italic, bold, underline, strikeout, outline,
-    // shadow, emboss, engrave, supscript, subscript
-    write_lang_attrs(w, "hh:fontRef", &cs.font_ids.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:ratio", &cs.ratios.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:spacing", &cs.spacings.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:relSz", &cs.relative_sizes.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:offset", &cs.char_offsets.map(|v| v as i32))?;
-    if cs.italic {
-        empty_tag(w, "hh:italic", &[])?;
-    }
-    if cs.bold {
-        empty_tag(w, "hh:bold", &[])?;
-    }
-    // underline/strikeout/outline/shadow: 한컴은 비활성(NONE)이어도 항상 출력한다.
-    // 모델은 파서가 NONE 일 때도 shape/color/offset 을 보존하므로(역매핑 가능),
-    // 무조건 출력해 원본과 동일한 구조를 만든다.
-    empty_tag(
-        w,
-        "hh:underline",
-        &[
-            ("type", underline_type_str(cs.underline_type)),
-            ("shape", line_shape_str(cs.underline_shape)),
-            ("color", &color_hex(cs.underline_color)),
-        ],
-    )?;
-    // strikeout: 파서가 shape 값으로 strikethrough 여부를 결정하므로(is_real_strike_shape),
-    // 비활성일 때는 반드시 shape="NONE" 으로 출력해야 재파싱 시 켜지지 않는다.
-    empty_tag(
-        w,
-        "hh:strikeout",
-        &[
-            (
-                "shape",
-                if cs.strikethrough {
-                    line_shape_str(cs.strike_shape)
-                } else {
-                    "NONE"
-                },
-            ),
-            ("color", &color_hex(cs.strike_color)),
-        ],
-    )?;
-    empty_tag(
-        w,
-        "hh:outline",
-        &[("type", outline_type_str(cs.outline_type))],
-    )?;
-    empty_tag(
-        w,
-        "hh:shadow",
-        &[
-            ("type", shadow_type_str(cs.shadow_type)),
-            ("color", &color_hex(cs.shadow_color)),
-            ("offsetX", &cs.shadow_offset_x.to_string()),
-            ("offsetY", &cs.shadow_offset_y.to_string()),
-        ],
-    )?;
-    if cs.emboss {
-        empty_tag(w, "hh:emboss", &[])?;
-    }
-    if cs.engrave {
-        empty_tag(w, "hh:engrave", &[])?;
-    }
-    if cs.superscript {
-        empty_tag(w, "hh:supscript", &[])?;
-    }
-    if cs.subscript {
-        empty_tag(w, "hh:subscript", &[])?;
-    }
-
-    end_tag(w, "hh:charPr")?;
-    Ok(())
-}
-
-fn write_lang_attrs<W: Write>(
-    w: &mut Writer<W>,
-    name: &str,
-    vals: &[i32; 7],
-) -> Result<(), SerializeError> {
-    let s0 = vals[0].to_string();
-    let s1 = vals[1].to_string();
-    let s2 = vals[2].to_string();
-    let s3 = vals[3].to_string();
-    let s4 = vals[4].to_string();
-    let s5 = vals[5].to_string();
-    let s6 = vals[6].to_string();
-    empty_tag(
-        w,
-        name,
-        &[
-            ("hangul", &s0),
-            ("latin", &s1),
-            ("hanja", &s2),
-            ("japanese", &s3),
-            ("other", &s4),
-            ("symbol", &s5),
-            ("user", &s6),
-        ],
-    )
+    // #3500: hh:charPr 방출은 char_shapes 모듈이 단일 출처다.
+    super::char_shapes::write_char_pr(w, id, cs)
 }
 
 fn bool01(b: bool) -> &'static str {
@@ -738,74 +620,9 @@ fn bool01(b: bool) -> &'static str {
     }
 }
 
-fn sym_mark_str(em: u8) -> &'static str {
-    match em {
-        0 => "NONE",
-        1 => "DOT_ABOVE",
-        2 => "RING_ABOVE",
-        3 => "TILDE",
-        4 => "CARON",
-        5 => "SIDE",
-        6 => "COLON",
-        _ => "NONE",
-    }
-}
-
-fn underline_type_str(t: crate::model::style::UnderlineType) -> &'static str {
-    use crate::model::style::UnderlineType::*;
-    match t {
-        None => "NONE",
-        Bottom => "BOTTOM",
-        Top => "TOP",
-    }
-}
-
-fn line_shape_str(s: u8) -> &'static str {
-    match s {
-        0 => "SOLID",
-        1 => "DASH",
-        2 => "DOT",
-        3 => "DASH_DOT",
-        4 => "DASH_DOT_DOT",
-        5 => "LONG_DASH",
-        6 => "CIRCLE",
-        7 => "DOUBLE_SLIM",
-        8 => "SLIM_THICK",
-        9 => "THICK_SLIM",
-        10 => "SLIM_THICK_SLIM",
-        11 => "WAVE",
-        12 => "DOUBLE_WAVE",
-        _ => "SOLID",
-    }
-}
-
-// [#2695] 외곽선 8종. IR outline_type 은 HWP5 attr bits 8-10(3비트)을 그대로 담으므로
-// 0~7 전부를 방출해야 한다. 4~7 을 NONE 으로 떨구면 외곽선이 소멸한다.
-fn outline_type_str(t: u8) -> &'static str {
-    match t {
-        0 => "NONE",
-        1 => "SOLID",
-        2 => "DASH",
-        3 => "DOT",
-        4 => "DASH_DOT",
-        5 => "DASH_DOT_DOT",
-        6 => "LONG_DASH",
-        7 => "CIRCLE",
-        _ => "NONE",
-    }
-}
-
-// [#2695] 그림자 3종. IR shadow_type 은 HWP5 attr bits 11-12(2비트).
-// 1=비연속(DROP), 2=연속(CONTINUOUS). 3은 예약값(미정의).
-// [#3038] 종전엔 예약값 3이 `_ => "CONTINUOUS"`로 떨어져 그림자 없음이 그림자
-// 있음으로 둔갑했다. 계약(0~2) 밖의 값은 안전한 기본값(NONE)으로 방출한다.
+// [#3038] 예약값 3 은 NONE. 표는 char_shape_tables 가 정본이다.
 fn shadow_type_str(t: u8) -> &'static str {
-    match t {
-        0 => "NONE",
-        1 => "DROP",
-        2 => "CONTINUOUS",
-        _ => "NONE",
-    }
+    super::char_shape_tables::shadow_type_str(t)
 }
 
 // =====================================================================

@@ -870,10 +870,8 @@ struct RunSplitter {
 
 impl RunSplitter {
     fn new(para: &Paragraph) -> Self {
-        let mut segs: Vec<(u32, u32)> = Vec::new();
-        for cs in &para.char_shapes {
-            segs.push((cs.start_pos, cs.char_shape_id));
-        }
+        // #3500/#3739: 연속 동일 id 도 start_pos 가 다르면 별도 run.
+        let mut segs = super::char_shapes::plan_run_boundaries_of(para);
         if segs.is_empty() {
             segs.push((0, 0)); // 규칙 3
         }
