@@ -292,7 +292,7 @@ pack 을 더하면 그쪽에서 정렬·추가한다. 시험은 이 브랜치의
 | `studio-e2e` | 스튜디오 e2e 에서 파생한 CLI 계약. 편집 최소 코스보다 좁고 깊다. |
 | `table-csv` | 표 CSV 왕복. `table-editing` 의 좌표 편집과 다른 왕복 계약. |
 
-다른 PR 이 `form-journeys` · `oracle-probe` · `showcase` 같은 pack
+다른 PR 이 `form-journeys` · `work-receipt` · `oracle-probe` · `showcase` 같은 pack
 을 더하면, 그 PR 이 `maintainer.json` 에 정렬·추가한다. 이 문서는
 그 파일을 여기서 고치지 않는다고 못 박는다. 행렬의 역할 여섯 칸은
 그 pack 을 자동으로 끌어오지 않는다.

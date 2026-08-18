@@ -599,9 +599,10 @@ class ThinPackExpansionGateTests(unittest.TestCase):
         known = {
             "automation", "batch-ops", "casual-rides", "core-cli",
             "corpus-diagnostics", "expert-challenges", "extraction",
+            "form-journeys",
             "layout-rendering", "objects-media", "render-tree", "security",
             "self-description", "serialization", "showcase", "studio-e2e",
-            "table-csv", "table-editing", "text-editing",
+            "table-csv", "table-editing", "text-editing", "work-receipt",
         }
         self.assertTrue(set(pack_ids()) <= known | set(pack_ids()))
         extra = set(pack_ids()) - known

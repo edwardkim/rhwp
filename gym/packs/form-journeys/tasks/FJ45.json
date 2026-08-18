@@ -87,12 +87,12 @@
       ]
     },
     {
-      "name": "원본 무편집 복사가 아님",
+      "name": "작성자본 원본 무편집 복사가 아님",
       "op": "differs_from_input",
       "file": "author-only.hwp"
     },
     {
-      "name": "원본 무편집 복사가 아님",
+      "name": "이메일본 원본 무편집 복사가 아님",
       "op": "differs_from_input",
       "file": "mail-only.hwp"
     },

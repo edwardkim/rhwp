@@ -21,13 +21,13 @@
       "minBytes": 1
     },
     {
-      "name": "산출 존재",
+      "name": "2부 산출 존재",
       "op": "file_exists",
       "file": "out/0002.hwpx",
       "minBytes": 1
     },
     {
-      "name": "산출 존재",
+      "name": "3부 산출 존재",
       "op": "file_exists",
       "file": "out/0003.hwpx",
       "minBytes": 1
