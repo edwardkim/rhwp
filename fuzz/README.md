@@ -97,7 +97,7 @@ HWP3 128KiB, 추출 WMF 16KiB, 차트 XML 32KiB)을 넘기지 않는다.
 | `corpus/parse_hwp3/` | 58 | 매직 `HWP Document File V3.00` 실파일 ≤128KiB + 대형본 2/16/32/64KiB prefix |
 | `corpus/parse_hwpx/` | 80 | `samples/` HWPX(ZIP) 소형 파일, 디렉터리 라운드로빈 |
 | `corpus/parse_hml/` | 53 | `samples/hml/`·`tests/fixtures/hml/` 원본 3 + 파서 경로용 최소 HWPML |
-| `corpus/parse_wmf/` | 67 | HWP/HWPX 임베드 추출 + placeable/표준 레코드 최소 시드 |
+| `corpus/parse_wmf/` | 71 | HWP/HWPX 임베드 추출 + placeable/표준 레코드와 M09x 소형 도형 4종 |
 | `corpus/parse_ooxml_chart/` | 79 | HWPX `Chart/*.xml`·`c:chartSpace` 추출 + 차트 타입 최소 XML |
 | `corpus/parse_equation/` | 5 | 빈 입력, `left`/`right`, `over`, `power`, `sqrt` 최소 EqEdit 시드 |
 | `corpus/export_svg/` | 2 | 수식 포함 최소 HML과 소형 HWPX SVG 내보내기 시드 |
