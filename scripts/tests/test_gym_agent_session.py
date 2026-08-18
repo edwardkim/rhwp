@@ -399,6 +399,124 @@ class RenderTests(unittest.TestCase):
         self.assertIn("실패", text)
         self.assertIn("순서", text)
 
+    def test_human_render_pass_and_extra_and_exit(self):
+        mod = load()
+        ok = mod.render_score(mod.score_session(session_doc(), events_of(PASS_TRACE)))
+        self.assertIn("통과", ok)
+        extra = mod.render_score(mod.score_session(session_doc(), events_of(EXTRA_STEP_TRACE)))
+        self.assertIn("여분", extra)
+        missing = mod.render_score(mod.score_session(session_doc(), events_of(MISSING_STEP_TRACE)))
+        self.assertIn("누락", missing)
+        wrong = mod.render_score(mod.score_session(session_doc(), events_of(WRONG_COMMAND_TRACE)))
+        self.assertIn("계열", wrong)
+        exit_txt = mod.render_score(mod.score_session(session_doc(), events_of(WRONG_EXIT_TRACE)))
+        self.assertIn("종료", exit_txt)
+
+    def test_reason_labels_cover_all_reason_constants(self):
+        mod = load()
+        for reason in (
+            mod.REASON_WRONG_COMMAND,
+            mod.REASON_WRONG_ORDER,
+            mod.REASON_WRONG_EXIT,
+            mod.REASON_EXTRA_STEP,
+            mod.REASON_MISSING_STEP,
+            mod.REASON_WRONG_PATH,
+            mod.REASON_BAD_TRACE,
+            mod.REASON_BAD_SESSION,
+        ):
+            label = mod.reason_label_ko(reason)
+            self.assertTrue(label)
+            self.assertNotEqual(label, "")
+
+
+class ReplayWithoutBinaryContractTests(unittest.TestCase):
+    def test_score_replay_never_requires_bin(self):
+        """재생 채점은 --bin 없이 픽스처만으로 끝나야 한다."""
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            session = os.path.join(tmp, "s.json")
+            replay = os.path.join(tmp, "t.jsonl")
+            with open(session, "w", encoding="utf-8", newline="\n") as fh:
+                json.dump(session_doc(), fh, ensure_ascii=False)
+            with open(replay, "w", encoding="utf-8", newline="\n") as fh:
+                fh.write(PASS_TRACE)
+            parser = mod.build_parser()
+            args = parser.parse_args([
+                "score-replay", "--session", session, "--replay", replay, "--json",
+            ])
+            self.assertFalse(hasattr(args, "bin") and getattr(args, "bin", None))
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = mod.cmd_score_replay(args)
+            self.assertEqual(code, 0)
+            self.assertTrue(json.loads(buf.getvalue())["ok"])
+
+    def test_parser_score_replay_has_no_bin_flag(self):
+        # record 도움말에만 --bin 이 있다. score-replay 서브파서는 bin 을 받지 않는다.
+        replay_help = None
+        parser = load().build_parser()
+        for action in parser._actions:
+            choices = getattr(action, "choices", None)
+            if not isinstance(choices, dict):
+                continue
+            if "score-replay" in choices:
+                replay_help = choices["score-replay"].format_help()
+        self.assertIsNotNone(replay_help)
+        self.assertNotIn("--bin", replay_help)
+
+
+class CheckPathsScoringTests(unittest.TestCase):
+    def test_replay_ignores_missing_expect_path(self):
+        mod = load()
+        report = mod.score_session(session_doc(), events_of(PASS_TRACE), check_paths=False)
+        self.assertTrue(report["ok"])
+        self.assertIsNone(report["steps"][1]["pathOk"])
+
+    def test_check_paths_false_path_is_wrong_path(self):
+        mod = load()
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx = mod.SessionContext("samples/x.hwp", tmp)
+            report = mod.score_session(
+                session_doc(), events_of(PASS_TRACE), context=ctx, check_paths=True,
+            )
+            self.assertFalse(report["ok"])
+            self.assertIn("wrongPath", reasons_of(report))
+
+
+class ClassifyMoreSequenceTests(unittest.TestCase):
+    def test_empty_and_prefix_and_mixed(self):
+        mod = load()
+        self.assertEqual(mod.classify_sequence([], []), [])
+        self.assertEqual(mod.classify_sequence([], ["a"]), ["extraStep"])
+        self.assertEqual(mod.classify_sequence(["a"], []), ["missingStep"])
+        self.assertEqual(mod.classify_sequence(["a", "b", "c"], ["a", "c"]), ["missingStep"])
+        reasons = mod.classify_sequence(["a", "b"], ["x", "y", "z"])
+        self.assertTrue(reasons)
+        self.assertTrue(any(r in reasons for r in ("wrongCommand", "extraStep", "missingStep")))
+
+    def test_same_multiset_helper(self):
+        mod = load()
+        self.assertTrue(mod.same_multiset(["a", "b"], ["b", "a"]))
+        self.assertFalse(mod.same_multiset(["a", "a"], ["a"]))
+        self.assertFalse(mod.same_multiset(["a"], ["b"]))
+
+
+class ShaAndFamilyTests(unittest.TestCase):
+    def test_sha256_none_and_bytes(self):
+        mod = load()
+        self.assertIsNone(mod.sha256_text(None))
+        self.assertEqual(mod.sha256_text("ab"), mod.sha256_bytes(b"ab"))
+        self.assertEqual(mod.command_family([]), "")
+        self.assertEqual(mod.command_family([1]), "")
+        self.assertEqual(mod.command_family(["export-text", "x"]), "export-text")
+
+    def test_expected_ok_path_false_blocks(self):
+        mod = load()
+        self.assertTrue(mod.expected_ok(0, 0, None))
+        self.assertTrue(mod.expected_ok(0, 0, True))
+        self.assertFalse(mod.expected_ok(0, 0, False))
+        self.assertFalse(mod.expected_ok(1, 0, True))
+
 
 if __name__ == "__main__":
     unittest.main()
