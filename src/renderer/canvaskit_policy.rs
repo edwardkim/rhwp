@@ -1530,8 +1530,6 @@ impl CanvasKitReplayPlanBuilder {
                     Some("visualItemLimitExceeded")
                 } else if !text_visual_geometry_is_valid(bbox, run, &display_text) {
                     Some("invalidGeometry")
-                } else if run.is_vertical {
-                    Some("verticalText")
                 } else if run.rotation.abs() > f64::EPSILON {
                     Some("rotatedText")
                 } else if run.style.tab_leaders.iter().any(|leader| {
@@ -1562,8 +1560,6 @@ impl CanvasKitReplayPlanBuilder {
                     Some("visualItemLimitExceeded")
                 } else if !text_visual_geometry_is_valid(bbox, run, &display_text) {
                     Some("invalidGeometry")
-                } else if run.is_vertical {
-                    Some("verticalText")
                 } else if run.rotation.abs() > f64::EPSILON {
                     Some("rotatedText")
                 } else if match kind {
@@ -2949,6 +2945,31 @@ mod tests {
                 .iter()
                 .all(|item| item.status == CanvasKitReplayStatus::Direct));
         }
+
+        // 세로 tab-leader/decoration 은 이미 위치 기반 벡터이므로 verticalText 로 폴백하지 않는다.
+        let mut vertical = text_run("AB");
+        vertical.is_vertical = true;
+        vertical
+            .style
+            .tab_leaders
+            .push(crate::renderer::TabLeaderInfo {
+                start_x: 4.0,
+                end_x: 20.0,
+                fill_type: 3,
+            });
+        vertical.style.underline = crate::model::style::UnderlineType::Bottom;
+        let vertical_tree = tree_with_ops(vec![
+            PaintOp::tab_leader(bbox(), vertical.clone()),
+            PaintOp::text_decoration(bbox(), vertical, TextDecorationKind::Underline),
+        ]);
+        let vertical_plan =
+            analyze_canvaskit_replay_plan(&vertical_tree, CanvasKitReplayMode::Default);
+        assert_eq!(vertical_plan.summary.direct_items, 2);
+        assert_eq!(vertical_plan.summary.direct_required_items, 0);
+        assert!(vertical_plan
+            .items
+            .iter()
+            .all(|item| { item.status == CanvasKitReplayStatus::Direct && item.detail.is_none() }));
     }
 
     #[test]

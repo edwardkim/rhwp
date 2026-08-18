@@ -2505,7 +2505,7 @@
       "id": "src/renderer/canvaskit_policy.rs::tests#1",
       "file": "src/renderer/canvaskit_policy.rs",
       "sourcePath": "src/renderer/canvaskit_policy.rs",
-      "line": 2266,
+      "line": 2262,
       "module": "tests",
       "testAttributes": 43,
       "tier": "white_box",
