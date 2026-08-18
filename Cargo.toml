@@ -324,6 +324,7 @@ zip = { version = "8.5", default-features = false, features = ["deflate"] }
 # 같은 버전이라 의존성 그래프도 산출물도 그대로다(zip 선례와 동일).
 sha2 = "0.11"
 # [#5363] M04-1 편집 계획 시퀀스 생성기. 왕복 property 본체는 M04-2/3.
+# [#5376] M04-2 HWPX 왕복 property. 기존 run step 만 조합한다. 왕복 본체는 통합 시험.
 proptest = "1.6"
 
 # ── Clippy 린트 정책 ──

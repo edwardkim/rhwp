@@ -137,3 +137,10 @@ CFB/ZIP처럼 구조 제약이 강한 컨테이너 포맷은 시드 없이는 �
 - **M04-2/3**: 실제 HWPX/HWP5 IrDiff-0 왕복 property. 이 생성기를 쓰되
   본 단계는 여기 구현하지 않는다.
 - **M04-4**: 그 property 의 CI 배선.
+- **M04-2** (`tests/cases/prop_hwpx_roundtrip.rs`, #5376): 작은 HWPX 픽스처에
+  기존 `rhwp run` step 만 적용한 뒤 parse→serialize→reparse 가
+  [`diff_documents`](../src/serializer/hwpx/roundtrip.rs) IrDiff 0.
+  CI 기본은 8 cases / 0..3 steps. 전체 화력은 `PROPTEST_CASES`
+  (예: `PROPTEST_CASES=256 cargo test --test regression_suite_* prop_hwpx_roundtrip::`).
+  픽스처가 표현하지 못하는 step(누름틀/표/□ 없음)은 skip. DocumentCore
+  편집 API 발명 금지. HWP5 는 M04-3.
