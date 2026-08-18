@@ -1,0 +1,9 @@
+{
+  "id": "T06",
+  "utterance": "인쇄용 pdf",
+  "command": "export-pdf",
+  "note": "--profile print 권장",
+  "pageZeroBased": true,
+  "newCli": false,
+  "gym": false
+}

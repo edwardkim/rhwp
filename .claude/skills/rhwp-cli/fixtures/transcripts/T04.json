@@ -1,0 +1,9 @@
+{
+  "id": "T04",
+  "utterance": "겹침 보이게",
+  "command": "export-svg",
+  "note": "--debug-overlay",
+  "pageZeroBased": true,
+  "newCli": false,
+  "gym": false
+}

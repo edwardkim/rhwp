@@ -1,0 +1,9 @@
+{
+  "id": "T08",
+  "utterance": "마크다운으로",
+  "command": "export-markdown",
+  "note": "표 병합은 별도",
+  "pageZeroBased": true,
+  "newCli": false,
+  "gym": false
+}
