@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "key": "exam_kor",
+  "hancomVersion": "2022",
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [1, 2, 3],
+  "requested_page_shards": [[1, 2, 3]],
+  "run_state": "complete",
+  "provenance": {
+    "hwp": {"path": "samples/exam_kor.hwp", "sha256": "0"},
+    "pdf": {"path": "pdf/exam_kor-2022.pdf", "sha256": "0"}
+  }
+}
