@@ -1,0 +1,11 @@
+{
+  "id": "T10",
+  "utterance": "문단 속성",
+  "steps": [
+    {
+      "command": "dump",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "-s -p 는 구역/문단"
+}
