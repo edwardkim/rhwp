@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 """expected-fail 카탈로그 연산. 침묵 스킵 금지, 고친 이슈는 목록에서 뺀다.
 
-<<<<<<< HEAD
-M05-6 는 #4882 를 닫는다. #4056 #5128 은 남긴다.
-=======
-M05-7 는 #5128 을 닫는다. #4056 은 planet #5253, #4882 는 PR #5470 — 이 좌석에서
-다시 하지 않는다.
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
+M05-6 는 #4882, M05-7 는 #5128 을 닫는다. #4056만 다른 좌석으로 남긴다.
 """
 
 from __future__ import annotations
@@ -19,15 +14,9 @@ from typing import Any, Iterable
 from harness import CatalogEntry, ROUTES, norm_rel
 
 CATALOG_KIND = "pageRoundtripCatalog"
-<<<<<<< HEAD
-HELD_ISSUES = {4056, 5128}
-RESOLVED_ISSUES = {4882}
-FOREIGN_OPEN = {3518, 3521, 3737, 4056, 5128}
-=======
-HELD_ISSUES = {4056, 4882, 3518, 3521, 3737}
-RESOLVED_ISSUES = {5128}
-FOREIGN_OPEN = {3518, 3521, 3737, 4056, 4882}
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
+HELD_ISSUES = {3518, 3521, 3737, 4056}
+RESOLVED_ISSUES = {4882, 5128}
+FOREIGN_OPEN = {3518, 3521, 3737, 4056}
 
 
 @dataclass(frozen=True)
@@ -79,13 +68,7 @@ def write_catalog(path: Path, entries: Iterable[CatalogEntry], notes: Iterable[s
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-<<<<<<< HEAD
 def drop_resolved(entries: Iterable[CatalogEntry], resolved: Iterable[int] = RESOLVED_ISSUES) -> list[CatalogEntry]:
-=======
-def drop_resolved(
-    entries: Iterable[CatalogEntry], resolved: Iterable[int] = RESOLVED_ISSUES
-) -> list[CatalogEntry]:
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
     resolved_set = set(resolved)
     return [e for e in entries if e.issue not in resolved_set]
 
@@ -95,43 +78,31 @@ def require_held(entries: Iterable[CatalogEntry], held: Iterable[int] = HELD_ISS
     return sorted(set(held) - present)
 
 
-<<<<<<< HEAD
-def assert_m05_6_scope(entries: Iterable[CatalogEntry]) -> list[str]:
-    """M05-6 계약: #4882 는 빠지고 #4056 #5128 은 남는다."""
+def assert_resolved_scope(entries: Iterable[CatalogEntry]) -> list[str]:
+    """Final integration contract: #4882 and #5128 are resolved; held issues remain visible."""
     items = list(entries)
     errors: list[str] = []
     issues = {e.issue for e in items}
-    if 4882 in issues:
-        errors.append("#4882 는 고쳤으므로 카탈로그에서 빼야 한다")
+    for issue in RESOLVED_ISSUES:
+        if issue in issues:
+            errors.append(f"#{issue} 는 고쳤으므로 카탈로그에서 빼야 한다")
     for issue in HELD_ISSUES:
         if issue not in issues:
-            errors.append(f"#{issue} 는 이 PR 에서 고치지 않는다 — 카탈로그에 남겨야 한다")
-=======
-def assert_m05_7_scope(entries: Iterable[CatalogEntry]) -> list[str]:
-    """M05-7 계약: #5128 는 빠지고 #4056 #4882 는 남는다."""
-    items = list(entries)
-    errors: list[str] = []
-    issues = {e.issue for e in items}
-    if 5128 in issues:
-        errors.append("#5128 는 고쳤으므로 카탈로그에서 빼야 한다")
-    if 4056 not in issues:
-        errors.append("#4056 은 planet #5253 좌석 — 카탈로그에 남겨야 한다")
-    if 4882 not in issues:
-        errors.append("#4882 는 PR #5470 좌석 — 이 PR 에서 다시 하지 않는다")
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
+            errors.append(f"#{issue} 는 아직 열려 있으므로 카탈로그에 남겨야 한다")
     for e in items:
         if e.route not in ROUTES:
             errors.append(f"잘못된 route: {e.route} ({e.doc})")
-        if e.issue in RESOLVED_ISSUES:
-            errors.append(f"해결된 이슈가 남아 있다: {e.doc} #{e.issue}")
-<<<<<<< HEAD
-=======
         if e.issue == 4056 and "issue-505-equations" not in e.doc:
             errors.append("#4056 항목이 방정식 샘플이 아니다")
-        if e.issue == 4882 and "중간진도보고서" not in e.doc:
-            errors.append("#4882 항목이 정책연구 샘플이 아니다")
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
     return errors
+
+
+def assert_m05_6_scope(entries: Iterable[CatalogEntry]) -> list[str]:
+    return assert_resolved_scope(entries)
+
+
+def assert_m05_7_scope(entries: Iterable[CatalogEntry]) -> list[str]:
+    return assert_resolved_scope(entries)
 
 
 def diff_catalog(old: Iterable[CatalogEntry], new: Iterable[CatalogEntry]) -> CatalogDiff:
@@ -145,15 +116,7 @@ def diff_catalog(old: Iterable[CatalogEntry], new: Iterable[CatalogEntry]) -> Ca
 
 
 def sample_inventory_entry(path: Path, repo: Path) -> dict[str, Any]:
-<<<<<<< HEAD
     rel = path.resolve().relative_to(repo.resolve()).as_posix() if path.is_absolute() else norm_rel(str(path))
-=======
-    rel = (
-        path.resolve().relative_to(repo.resolve()).as_posix()
-        if path.is_absolute()
-        else norm_rel(str(path))
-    )
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
     stat = path.stat() if path.is_file() else None
     return {
         "doc": rel.replace("\\", "/"),
@@ -161,8 +124,6 @@ def sample_inventory_entry(path: Path, repo: Path) -> dict[str, Any]:
         "bytes": stat.st_size if stat else None,
         "exists": path.is_file(),
     }
-<<<<<<< HEAD
-=======
 
 
 def load_catalog_file(path: Path) -> list[CatalogEntry]:
@@ -189,4 +150,3 @@ def load_catalog_file(path: Path) -> list[CatalogEntry]:
             )
         )
     return out
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))

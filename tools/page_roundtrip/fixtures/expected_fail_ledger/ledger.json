@@ -1,70 +1,39 @@
 {
   "schemaVersion": 1,
-<<<<<<< HEAD
   "kind": "pageRoundtripExpectedFailLedger",
   "notes": [
-    "M05-6 는 #4882 만 닫는다. #4056 #5128 은 카탈로그에 남긴다.",
+    "M05-6 #4882와 M05-7 #5128은 해결됐다. #4056만 카탈로그 expected-fail로 유지한다.",
     "ole/shape-component · char_shapes 는 다른 좌석."
   ],
   "entries": [
-=======
-  "kind": "expectedFailLedger",
-  "notes": [
-    "M05-7 는 #5128 만 닫는다. #4056 #4882 는 카탈로그에 남긴다."
-  ],
-  "resolved": [
-    5128
-  ],
-  "held": [
-    3518,
-    3521,
-    3737,
-    4056,
-    4882
-  ],
-  "catalog": [
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
     {
       "doc": "samples/hwp3-sample16.hwp",
       "route": "hwpx",
       "issue": 3518,
-<<<<<<< HEAD
       "reason": "HWPX 내보내기 전후 쪽수 불일치 (64→65) — M05-2",
       "state": "held",
       "seat": "M05-2"
-=======
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (64→65)"
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
     },
     {
       "doc": "samples/synam-001.hwp",
       "route": "hwpx",
       "issue": 3521,
-<<<<<<< HEAD
       "reason": "HWPX 내보내기 전후 쪽수 불일치 (35→36) — M05-3",
       "state": "held",
       "seat": "M05-3"
-=======
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (35→36)"
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
     },
     {
       "doc": "samples/hwp3-sample11.hwp",
       "route": "hwpx",
       "issue": 3737,
-<<<<<<< HEAD
       "reason": "HWPX 내보내기 전후 쪽수 불일치 (151→152) — M05-4",
       "state": "held",
       "seat": "M05-4"
-=======
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (151→152)"
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
     },
     {
       "doc": "samples/issue-505-equations.hwp",
       "route": "hwpx",
       "issue": 4056,
-<<<<<<< HEAD
       "reason": "HWPX 내보내기 전후 쪽수 불일치 (4→1) — 다중 secd, 이 PR 범위 밖",
       "state": "held",
       "seat": "foreign"
@@ -73,18 +42,16 @@
       "doc": "samples/한글문서파일형식_5.0_revision1.3.hwp",
       "route": "hwpx",
       "issue": 5128,
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (69→68) — 다른 좌석",
-      "state": "held",
-      "seat": "foreign"
-=======
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (4→1)"
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
+      "reason": "HWPX 내보내기 전후 쪽수 불일치 (69→68) — HWP5-origin 저장 pagination 게이트",
+      "state": "resolved",
+      "seat": "M05-7",
+      "pagesBefore": 69,
+      "pagesAfterFix": 69
     },
     {
       "doc": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
       "route": "hwpx",
       "issue": 4882,
-<<<<<<< HEAD
       "reason": "HWPX 내보내기 전후 쪽수 불일치 (215→223) — 각주 subList vertpos=0 합성",
       "state": "resolved",
       "seat": "M05-6",
@@ -92,10 +59,4 @@
       "pagesAfterFix": 215
     }
   ]
-=======
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (215→223) — PR #5470, 이 좌석에서 다시 하지 않는다"
-    }
-  ],
-  "scopeErrors": []
->>>>>>> 1a7eeea07 (fix(hwpx): 한글 스펙문서 HWPX 왕복 쪽수 69 유지 (#5128))
 }
