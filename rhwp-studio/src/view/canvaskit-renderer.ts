@@ -23,6 +23,7 @@ import type {
   LayerEquationLayoutBox,
   LayerEquationOp,
   LayerFormObjectOp,
+  LayerGradientFill,
   LayerAffineTransform,
   LayerGlyphOutlineOp,
   LayerGlyphRunOp,
@@ -1314,6 +1315,17 @@ export class CanvasKitLayerRenderer {
       canvas.drawRect(this.rect(op.bbox), paint);
       paint.delete?.();
     }
+    const gradientShader = this.makeShapeGradientShader(op.gradient, op.bbox);
+    if (gradientShader) {
+      const paint = this.makeFillPaint('#000000');
+      try {
+        (paint as unknown as { setShader: (shader: unknown) => void }).setShader(gradientShader);
+        canvas.drawRect(this.rect(op.bbox), paint);
+      } finally {
+        (gradientShader as { delete?: () => void }).delete?.();
+        paint.delete?.();
+      }
+    }
     if (op.borderColor && (op.borderWidth ?? 0) > 0) {
       const paint = this.makeStrokePaint(op.borderColor, op.borderWidth ?? 1);
       canvas.drawRect(this.rect(op.bbox), paint);
@@ -1329,13 +1341,13 @@ export class CanvasKitLayerRenderer {
       } else {
         canvas.drawRect(this.rect(op.bbox), paint);
       }
-    });
+    }, op.gradient);
   }
 
   private renderEllipse(canvas: SkCanvas, op: LayerEllipseOp): void {
     this.drawStyledShape(canvas, op.bbox, op.style, (paint) => {
       canvas.drawOval(this.rect(op.bbox), paint);
-    });
+    }, op.gradient);
   }
 
   private renderLine(canvas: SkCanvas, op: LayerLineOp): void {
@@ -1390,7 +1402,7 @@ export class CanvasKitLayerRenderer {
         canvas.rotate(rotation, cx, cy);
       }
     }
-    this.drawStyledPath(canvas, path, replayStyle);
+    this.drawStyledPath(canvas, path, replayStyle, op.bbox, op.gradient);
     if (needsTransform) {
       canvas.restore();
     }
@@ -3605,8 +3617,19 @@ export class CanvasKitLayerRenderer {
     bounds: LayerBounds,
     style: LayerShapeStyle | undefined,
     draw: (paint: SkPaint) => void,
+    gradient?: LayerGradientFill,
   ): void {
-    if (style?.fillColor) {
+    const fillShader = this.makeShapeGradientShader(gradient, bounds);
+    if (fillShader) {
+      const paint = this.makeFillPaint(style?.fillColor ?? '#000000', style?.opacity);
+      try {
+        (paint as unknown as { setShader: (shader: unknown) => void }).setShader(fillShader);
+        draw(paint);
+      } finally {
+        (fillShader as { delete?: () => void }).delete?.();
+        paint.delete?.();
+      }
+    } else if (style?.fillColor) {
       const paint = this.makeFillPaint(style.fillColor, style.opacity);
       draw(paint);
       paint.delete?.();
@@ -3619,16 +3642,33 @@ export class CanvasKitLayerRenderer {
         paint.delete?.();
       }
     }
-    if (!style?.fillColor && !style?.strokeColor) {
+    if (!fillShader && !style?.fillColor && !style?.strokeColor) {
       const paint = this.makeStrokePaint('#000000', 1);
       draw(paint);
       paint.delete?.();
     }
   }
 
-  private drawStyledPath(canvas: SkCanvas, path: Path, style: LayerShapeStyle): void {
+  private drawStyledPath(
+    canvas: SkCanvas,
+    path: Path,
+    style: LayerShapeStyle,
+    bounds?: LayerBounds,
+    gradient?: LayerGradientFill,
+  ): void {
     let drawn = false;
-    if (style.fillColor) {
+    const fillShader = bounds ? this.makeShapeGradientShader(gradient, bounds) : null;
+    if (fillShader) {
+      const paint = this.makeFillPaint(style.fillColor ?? '#000000', style.opacity);
+      try {
+        (paint as unknown as { setShader: (shader: unknown) => void }).setShader(fillShader);
+        canvas.drawPath(path, paint);
+      } finally {
+        (fillShader as { delete?: () => void }).delete?.();
+        paint.delete?.();
+      }
+      drawn = true;
+    } else if (style.fillColor) {
       const paint = this.makeFillPaint(style.fillColor, style.opacity);
       canvas.drawPath(path, paint);
       paint.delete?.();
@@ -3648,6 +3688,52 @@ export class CanvasKitLayerRenderer {
       canvas.drawPath(path, paint);
       paint.delete?.();
     }
+  }
+
+  private makeShapeGradientShader(
+    gradient: LayerGradientFill | undefined,
+    bounds: LayerBounds,
+  ): unknown | null {
+    const colors = gradient?.colors;
+    if (!gradient || !Array.isArray(colors) || colors.length < 2) {
+      return null;
+    }
+    const lastIndex = Math.max(1, colors.length - 1);
+    const shaderColors = colors.map((css) => {
+      const { r, g, b, a } = parseCssColor(css);
+      return [r / 255, g / 255, b / 255, a];
+    });
+    const positions = colors.map((_, index) => {
+      const raw = index < (gradient.positions?.length ?? 0)
+        ? gradient.positions?.[index]
+        : index / lastIndex;
+      return Math.max(0, Math.min(1, Number.isFinite(raw) ? (raw as number) : index / lastIndex));
+    });
+    const shaderApi = this.canvasKit.Shader as unknown as {
+      MakeLinearGradient?: (...args: unknown[]) => unknown;
+      MakeRadialGradient?: (...args: unknown[]) => unknown;
+    };
+    const gradientType = gradient.gradientType ?? 1;
+    if (gradientType >= 2 && gradientType <= 4) {
+      const cx = bounds.x + bounds.width * ((gradient.centerX ?? 50) / 100);
+      const cy = bounds.y + bounds.height * ((gradient.centerY ?? 50) / 100);
+      const radius = Math.max(bounds.width, bounds.height) / 2;
+      return shaderApi.MakeRadialGradient?.(
+        [cx, cy],
+        radius,
+        shaderColors,
+        positions,
+        this.canvasKit.TileMode.Clamp,
+      ) ?? null;
+    }
+    const [x0, y0, x1, y1] = shapeGradientLinearCoords(gradient.angle ?? 0, bounds);
+    return shaderApi.MakeLinearGradient?.(
+      [x0, y0],
+      [x1, y1],
+      shaderColors,
+      positions,
+      this.canvasKit.TileMode.Clamp,
+    ) ?? null;
   }
 
   private drawStrokeWithDash(
@@ -3895,6 +3981,43 @@ function parseCssColor(value: string): { r: number; g: number; b: number; a: num
 
 function clampUnit(value: number | undefined): number {
   return Math.max(0, Math.min(1, Number.isFinite(value) ? value ?? 0 : 0));
+}
+
+function shapeGradientLinearCoords(
+  angle: number,
+  bounds: LayerBounds,
+): [number, number, number, number] {
+  const { x, y, width: w, height: h } = bounds;
+  const normalized = ((angle % 360) + 360) % 360;
+  switch (normalized) {
+    case 0:
+      return [x, y, x, y + h];
+    case 45:
+      return [x, y, x + w, y + h];
+    case 90:
+      return [x, y, x + w, y];
+    case 135:
+      return [x, y + h, x + w, y];
+    case 180:
+      return [x, y + h, x, y];
+    case 225:
+      return [x + w, y + h, x, y];
+    case 270:
+      return [x + w, y, x, y];
+    case 315:
+      return [x + w, y, x, y + h];
+    default: {
+      const rad = (normalized * Math.PI) / 180;
+      const cx = x + w / 2;
+      const cy = y + h / 2;
+      return [
+        cx - Math.sin(rad) * w / 2,
+        cy - Math.cos(rad) * h / 2,
+        cx + Math.sin(rad) * w / 2,
+        cy + Math.cos(rad) * h / 2,
+      ];
+    }
+  }
 }
 
 function gradientColors(stops: Array<{ color?: { rgba?: number[] } }> | undefined): number[][] {

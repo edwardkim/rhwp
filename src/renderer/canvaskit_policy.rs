@@ -1623,14 +1623,6 @@ impl CanvasKitReplayPlanBuilder {
             );
             item.detail = Some("imageFill".to_string());
             item
-        } else if background.gradient.is_some() {
-            let mut item = self.transition_overlay_item(
-                path,
-                "pageBackground",
-                CanvasKitReplayFeature::PageBackground,
-            );
-            item.detail = Some("gradientFill".to_string());
-            item
         } else {
             direct_item(
                 path,
@@ -1992,9 +1984,6 @@ fn line_transition_detail(line: &LineNode) -> Option<&'static str> {
 }
 
 fn rectangle_transition_detail(rect: &RectangleNode) -> Option<&'static str> {
-    if rect.gradient.is_some() {
-        return Some("gradientFill");
-    }
     if rect.transform.has_transform() {
         return Some("shapeTransform");
     }
@@ -2002,9 +1991,6 @@ fn rectangle_transition_detail(rect: &RectangleNode) -> Option<&'static str> {
 }
 
 fn ellipse_transition_detail(ellipse: &EllipseNode) -> Option<&'static str> {
-    if ellipse.gradient.is_some() {
-        return Some("gradientFill");
-    }
     if ellipse.transform.has_transform() {
         return Some("shapeTransform");
     }
@@ -2012,9 +1998,6 @@ fn ellipse_transition_detail(ellipse: &EllipseNode) -> Option<&'static str> {
 }
 
 fn path_transition_detail(path: &PathNode) -> Option<&'static str> {
-    if path.gradient.is_some() {
-        return Some("gradientFill");
-    }
     if let Some(detail) = shape_style_transition_detail(&path.style) {
         return Some(detail);
     }
@@ -2272,8 +2255,9 @@ mod tests {
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
     use crate::renderer::render_tree::{
-        BoundingBox, EquationNode, FieldMarkerType, FootnoteMarkerNode, FormObjectNode, ImageNode,
-        PageBackgroundImage, PathNode, PlaceholderNode, RawSvgNode, RectangleNode, RenderLayerInfo,
+        BoundingBox, EllipseNode, EquationNode, FieldMarkerType, FootnoteMarkerNode,
+        FormObjectNode, ImageNode, PageBackgroundImage, PathNode, PlaceholderNode, RawSvgNode,
+        RectangleNode, RenderLayerInfo,
     };
     use crate::renderer::{GradientFillInfo, PathCommand, ShapeStyle, TextStyle};
     use image::ImageFormat;
@@ -2779,7 +2763,8 @@ mod tests {
         ]);
 
         let default_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
-        assert_eq!(default_plan.summary.direct_required_items, 2);
+        assert_eq!(default_plan.summary.direct_items, 1);
+        assert_eq!(default_plan.summary.direct_required_items, 1);
         assert_eq!(
             default_plan.items[0].feature,
             CanvasKitReplayFeature::RasterImage
@@ -2789,16 +2774,78 @@ mod tests {
             default_plan.items[1].feature,
             CanvasKitReplayFeature::PageBackground
         );
-        assert_eq!(
-            default_plan.items[1].detail.as_deref(),
-            Some("gradientFill")
-        );
+        assert_eq!(default_plan.items[1].status, CanvasKitReplayStatus::Direct);
+        assert_eq!(default_plan.items[1].detail, None);
 
         let compat_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Compat);
         assert!(!compat_plan.hidden_canvas2d_overlay_allowed);
         assert!(compat_plan.direct_replay_required);
-        assert_eq!(compat_plan.summary.direct_required_items, 2);
+        assert_eq!(compat_plan.summary.direct_required_items, 1);
         assert_eq!(compat_plan.summary.compat_overlay_items, 0);
+
+        // gradientFill 은 4지점 모두 직접 재생한다. 그림자 폴백은 그대로 둔다.
+        let gradient = || {
+            Box::new(GradientFillInfo {
+                gradient_type: 1,
+                angle: 0,
+                center_x: 50,
+                center_y: 50,
+                colors: vec![0x0000_0000, 0x00FF_FFFF],
+                positions: vec![0.0, 1.0],
+            })
+        };
+        let gradient_tree = tree_with_ops(vec![
+            PaintOp::page_background(bbox(), page_background(None, Some(gradient()))),
+            PaintOp::rectangle(
+                bbox(),
+                RectangleNode::new(0.0, ShapeStyle::default(), Some(gradient())),
+            ),
+            PaintOp::ellipse(
+                bbox(),
+                EllipseNode::new(ShapeStyle::default(), Some(gradient())),
+            ),
+            PaintOp::path(
+                bbox(),
+                PathNode::new(
+                    vec![
+                        PathCommand::MoveTo(0.0, 0.0),
+                        PathCommand::LineTo(20.0, 20.0),
+                    ],
+                    ShapeStyle::default(),
+                    Some(gradient()),
+                ),
+            ),
+        ]);
+        let gradient_plan =
+            analyze_canvaskit_replay_plan(&gradient_tree, CanvasKitReplayMode::Default);
+        assert_eq!(gradient_plan.summary.direct_items, 4);
+        assert_eq!(gradient_plan.summary.direct_required_items, 0);
+        assert!(gradient_plan
+            .items
+            .iter()
+            .all(|item| { item.status == CanvasKitReplayStatus::Direct && item.detail.is_none() }));
+
+        let shadowed = ShapeStyle {
+            shadow: Some(crate::renderer::ShadowStyle {
+                shadow_type: 1,
+                color: 0x0000_0000,
+                offset_x: 1.0,
+                offset_y: 1.0,
+                alpha: 0,
+            }),
+            ..Default::default()
+        };
+        let shadowed_tree = tree_with_ops(vec![PaintOp::rectangle(
+            bbox(),
+            RectangleNode::new(0.0, shadowed, Some(gradient())),
+        )]);
+        let shadowed_plan =
+            analyze_canvaskit_replay_plan(&shadowed_tree, CanvasKitReplayMode::Default);
+        assert_eq!(shadowed_plan.summary.direct_required_items, 1);
+        assert_eq!(
+            shadowed_plan.items[0].detail.as_deref(),
+            Some("shapeShadow")
+        );
     }
 
     #[test]

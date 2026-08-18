@@ -15,6 +15,7 @@ const repoRoot = path.resolve(studioRoot, '..');
 const canvaskitPath = path.join(studioRoot, 'src/view/canvaskit-renderer.ts');
 const canvaskitDirectory = path.join(studioRoot, 'src/view/canvaskit');
 const canvaskitDiagnosticsPath = path.join(canvaskitDirectory, 'diagnostics.ts');
+const canvaskitPolicyPath = path.join(repoRoot, 'src/renderer/canvaskit_policy.rs');
 const layerTypesPath = path.join(studioRoot, 'src/core/types.ts');
 const textIrV2DocPath = path.join(repoRoot, 'docs/text-ir-v2.md');
 const canvaskitParityPlanDocPath = path.join(repoRoot, 'docs/canvaskit-parity-implementation.md');
@@ -42,6 +43,7 @@ const fullRendererSweepWorkflowPath = path.join(
 
 const canvaskitSource = fs.readFileSync(canvaskitPath, 'utf8');
 const canvaskitDiagnosticsSource = fs.readFileSync(canvaskitDiagnosticsPath, 'utf8');
+const canvaskitPolicySource = fs.readFileSync(canvaskitPolicyPath, 'utf8');
 const layerTypesSource = fs.readFileSync(layerTypesPath, 'utf8');
 const textIrV2DocSource = fs.readFileSync(textIrV2DocPath, 'utf8');
 const canvaskitParityPlanDocSource = fs.readFileSync(canvaskitParityPlanDocPath, 'utf8');
@@ -96,6 +98,12 @@ function extractMethodBody(source, methodName) {
   assert.notEqual(signatureIndex, -1, `missing method ${methodName}`);
 
   return extractBlockBody(source, signatureIndex, methodName);
+}
+
+function extractRustFnBody(source, fnName) {
+  const signatureIndex = source.indexOf(`fn ${fnName}(`);
+  assert.notEqual(signatureIndex, -1, `missing rust fn ${fnName}`);
+  return extractBlockBody(source, signatureIndex, fnName);
 }
 
 function extractSwitchCaseClusterBody(methodBody, caseLabel) {
@@ -630,6 +638,13 @@ for (const expectedUnsupportedToken of [
     `CanvasKit expected unsupported set should include ${expectedUnsupportedToken}`,
   );
 }
+assert.equal(
+  expectedUnsupportedSetBody.includes("'gradientFill'")
+    || expectedUnsupportedSetBody.includes("'pageBackground:gradientFill'")
+    || expectedUnsupportedSetBody.includes("'rectangle:gradientFill'"),
+  false,
+  'gradientFill must not stay on the expected-unsupported allowlist',
+);
 for (const directTextVisualToken of [
   'charOverlap',
   'tabLeader',
@@ -689,9 +704,17 @@ const renderRectangleBody = extractMethodBody(canvaskitSource, 'renderRectangle'
 const renderEllipseBody = extractMethodBody(canvaskitSource, 'renderEllipse');
 const renderEquationBody = extractMethodBody(canvaskitSource, 'renderEquation');
 const renderEquationBoxBody = extractMethodBody(canvaskitSource, 'renderEquationBox');
+const renderPageBackgroundBody = extractMethodBody(canvaskitSource, 'renderPageBackground');
 const renderPathBody = extractMethodBody(canvaskitSource, 'renderPath');
 const renderLineBody = extractMethodBody(canvaskitSource, 'renderLine');
 const drawStrokeWithDashBody = extractMethodBody(canvaskitSource, 'drawStrokeWithDash');
+const drawStyledShapeBody = extractMethodBody(canvaskitSource, 'drawStyledShape');
+const drawStyledPathBody = extractMethodBody(canvaskitSource, 'drawStyledPath');
+const makeShapeGradientShaderBody = extractMethodBody(canvaskitSource, 'makeShapeGradientShader');
+const pageBackgroundItemBody = extractRustFnBody(canvaskitPolicySource, 'page_background_item');
+const rectangleTransitionDetailBody = extractRustFnBody(canvaskitPolicySource, 'rectangle_transition_detail');
+const ellipseTransitionDetailBody = extractRustFnBody(canvaskitPolicySource, 'ellipse_transition_detail');
+const pathTransitionDetailBody = extractRustFnBody(canvaskitPolicySource, 'path_transition_detail');
 const renderFormObjectBody = extractMethodBody(canvaskitSource, 'renderFormObject');
 const renderPlaceholderBody = extractMethodBody(canvaskitSource, 'renderPlaceholder');
 const renderTextRunBody = extractMethodBody(canvaskitSource, 'renderTextRun');
@@ -974,6 +997,105 @@ function runExecutableStrokeDashReplay() {
   });
 
   return { events, renderer, drawCountBeforeInvalid };
+}
+
+function runExecutableGradientFillReplay() {
+  const events = [];
+  class FakePaint {
+    setAntiAlias() {}
+    setStyle() {}
+    setColor(color) { this.color = color; }
+    setShader(shader) {
+      this.shader = shader;
+      events.push({ type: 'paint.setShader' });
+    }
+    delete() { events.push({ type: 'paint.delete' }); }
+  }
+  class FakePath {
+    moveTo() {}
+    lineTo() {}
+    delete() { events.push({ type: 'path.delete' }); }
+  }
+  const renderer = new CanvasKitLayerRendererRuntime({
+    Paint: FakePaint,
+    Path: FakePath,
+    PaintStyle: { Fill: 0, Stroke: 1 },
+    TileMode: { Clamp: 0 },
+    Shader: {
+      MakeLinearGradient(start, end, colors, positions) {
+        events.push({
+          type: 'shader.linear',
+          start: [...start],
+          end: [...end],
+          colors,
+          positions,
+        });
+        return { delete() { events.push({ type: 'shader.delete' }); } };
+      },
+      MakeRadialGradient(center, radius, colors, positions) {
+        events.push({
+          type: 'shader.radial',
+          center: [...center],
+          radius,
+          colors,
+          positions,
+        });
+        return { delete() { events.push({ type: 'shader.delete' }); } };
+      },
+    },
+    Color: (r, g, b, a) => [r, g, b, a],
+    XYWHRect: (x, y, width, height) => ({ x, y, width, height }),
+    RRectXY: (rect, rx, ry) => ({ ...rect, rx, ry }),
+  }, 'default', {}, {});
+  const canvas = {
+    drawRect(_rect, paint) {
+      events.push({ type: 'canvas.drawRect', shader: Boolean(paint.shader) });
+    },
+    drawOval(_rect, paint) {
+      events.push({ type: 'canvas.drawOval', shader: Boolean(paint.shader) });
+    },
+    drawPath(_path, paint) {
+      events.push({ type: 'canvas.drawPath', shader: Boolean(paint.shader) });
+    },
+  };
+  renderer.unsupportedOps = new Set();
+  const linear = {
+    gradientType: 1,
+    angle: 0,
+    colors: ['#000000', '#ffffff'],
+    positions: [0, 1],
+  };
+  const radial = {
+    gradientType: 2,
+    centerX: 50,
+    centerY: 50,
+    colors: ['#ff0000', '#0000ff'],
+    positions: [0, 1],
+  };
+  renderer.renderPageBackground(canvas, {
+    type: 'pageBackground',
+    bbox: { x: 0, y: 0, width: 10, height: 20 },
+    gradient: linear,
+  });
+  renderer.renderRectangle(canvas, {
+    type: 'rectangle',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    style: { fillColor: '#123456' },
+    gradient: linear,
+  });
+  renderer.renderEllipse(canvas, {
+    type: 'ellipse',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    gradient: radial,
+  });
+  renderer.renderPath(canvas, {
+    type: 'path',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    commands: [{ type: 'moveTo', x: 0, y: 0 }, { type: 'lineTo', x: 10, y: 10 }],
+    style: { fillColor: null, strokeWidth: 0 },
+    gradient: linear,
+  });
+  return { events, renderer };
 }
 
 function runExecutableTextSpecialReplay() {
@@ -1713,6 +1835,47 @@ assert.equal(
   'unknown dash styles must fail closed before drawing',
 );
 assert.ok(strokeDashReplay.renderer.unsupportedOps.has('strokeDash:zigzag'));
+const gradientFillReplay = runExecutableGradientFillReplay();
+assert.equal(
+  [...gradientFillReplay.renderer.unsupportedOps].some((op) => op.includes('gradientFill')),
+  false,
+  'gradientFill must not pin the document to a Canvas2D fallback',
+);
+assert.deepEqual(
+  gradientFillReplay.events.filter((event) => event.type === 'shader.linear').map((event) => event.start),
+  [[0, 0], [0, 0], [0, 0]],
+  'linear gradientFill replay should keep the producer angle-0 start',
+);
+assert.deepEqual(
+  gradientFillReplay.events.filter((event) => event.type === 'shader.linear').map((event) => event.end),
+  [[0, 20], [0, 10], [0, 10]],
+  'linear gradientFill replay should keep the producer angle-0 end',
+);
+assert.equal(
+  gradientFillReplay.events.filter((event) => event.type === 'shader.radial').length,
+  1,
+  'radial gradientFill replay should use a CanvasKit radial shader',
+);
+assert.equal(
+  gradientFillReplay.events.filter((event) => event.type === 'shader.delete').length,
+  gradientFillReplay.events.filter((event) => event.type === 'shader.linear' || event.type === 'shader.radial').length,
+  'each CanvasKit gradient shader should be released after drawing',
+);
+assert.equal(
+  gradientFillReplay.events.filter((event) => event.type === 'canvas.drawRect' && event.shader).length,
+  2,
+  'page background and rectangle gradientFill should draw with a shader',
+);
+assert.equal(
+  gradientFillReplay.events.some((event) => event.type === 'canvas.drawOval' && event.shader),
+  true,
+  'ellipse gradientFill should draw with a shader',
+);
+assert.equal(
+  gradientFillReplay.events.some((event) => event.type === 'canvas.drawPath' && event.shader),
+  true,
+  'path gradientFill should draw with a shader',
+);
 runExecutableEquationFallback();
 
 requireSnippet(
@@ -1726,10 +1889,42 @@ requireSnippet(
   'equation layout replay should bound recursion and reject non-finite geometry',
 );
 
+for (const [label, body] of [
+  ['pageBackground', pageBackgroundItemBody],
+  ['rectangle', rectangleTransitionDetailBody],
+  ['ellipse', ellipseTransitionDetailBody],
+  ['path', pathTransitionDetailBody],
+]) {
+  assert.doesNotMatch(
+    body,
+    /gradientFill/,
+    `${label} must not pin the document to a gradientFill fallback`,
+  );
+}
+requireSnippet(
+  renderPageBackgroundBody,
+  /this\.makeShapeGradientShader\(op\.gradient, op\.bbox\)[\s\S]*?setShader[\s\S]*?canvas\.drawRect/,
+  'page background gradientFill should replay through a CanvasKit shader',
+);
 requireSnippet(
   renderRectangleBody,
-  /this\.drawStyledShape\(canvas, op\.bbox, op\.style,[\s\S]*?drawRRect[\s\S]*?drawRect/,
+  /this\.drawStyledShape\(canvas, op\.bbox, op\.style,[\s\S]*?drawRRect[\s\S]*?drawRect[\s\S]*?op\.gradient/,
   'rectangle replay should stay on drawStyledShape and handle rounded and plain rectangles',
+);
+requireSnippet(
+  drawStyledShapeBody,
+  /this\.makeShapeGradientShader\(gradient, bounds\)[\s\S]*?setShader/,
+  'shape gradientFill should apply a CanvasKit shader before the solid fill fallback',
+);
+requireSnippet(
+  drawStyledPathBody,
+  /this\.makeShapeGradientShader\(gradient, bounds\)[\s\S]*?setShader/,
+  'path gradientFill should apply a CanvasKit shader before the solid fill fallback',
+);
+requireSnippet(
+  makeShapeGradientShaderBody,
+  /gradientType >= 2 && gradientType <= 4[\s\S]*?MakeRadialGradient[\s\S]*?MakeLinearGradient/,
+  'shape gradientFill should keep the Canvas2D linear/radial type split',
 );
 requireSnippet(
   renderEllipseBody,
