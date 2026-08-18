@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/llm_verifier/repeat_eval/trial.schema.json",
+  "title": "V-repeat independent trial",
+  "description": "One seed of the same mechanical check on the same artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["seed", "exitClass", "observed"],
+  "properties": {
+    "seed": { "type": "integer", "minimum": 0 },
+    "exitClass": { "type": "integer", "minimum": 0, "maximum": 4 },
+    "observed": { "type": "string" },
+    "envelope": { "type": ["object", "null"] }
+  }
+}
