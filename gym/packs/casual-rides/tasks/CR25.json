@@ -1,0 +1,24 @@
+{
+  "id": "CR25",
+  "tier": 1,
+  "title": "줄 단위 표본 문단은 몇 개?",
+  "input": "samples/lseg-01-basic.hwp",
+  "instructions": "안내데스크 — CR25 는 키 제한 없는 입문 놀이기구다. 줄 나누기 표본의 문단 수. 줄 수와 문단 수는 다를 수 있다. 문서는 `samples/lseg-01-basic.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: explain {입력} --json. answer.json 에는 {\"paragraphs\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. explain paragraphCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "줄 단위 표본 문단은 몇 개?",
+      "op": "answer_eq",
+      "answer": "paragraphs",
+      "cmd": [
+        "explain",
+        "{input}",
+        "--json"
+      ],
+      "path": "paragraphCount"
+    }
+  ],
+  "axis": "입문"
+}

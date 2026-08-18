@@ -1,0 +1,24 @@
+{
+  "id": "CR10",
+  "tier": 1,
+  "title": "서식 문단은 몇 개?",
+  "input": "samples/form-01.hwp",
+  "instructions": "트램펄린 — CR10 는 키 제한 없는 입문 놀이기구다. 쪽수가 아니라 문단 수다. explain 을 쓴다. 문서는 `samples/form-01.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: explain {입력} --json. answer.json 에는 {\"paragraphs\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. explain paragraphCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "서식 문단은 몇 개?",
+      "op": "answer_eq",
+      "answer": "paragraphs",
+      "cmd": [
+        "explain",
+        "{input}",
+        "--json"
+      ],
+      "path": "paragraphCount"
+    }
+  ],
+  "axis": "입문"
+}

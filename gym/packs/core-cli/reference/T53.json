@@ -1,0 +1,40 @@
+{
+  "id": "T53",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:plan.json}",
+        "body": {
+          "planVersion": "1.0",
+          "input": "samples/table-001.hwp",
+          "output": "o1.hwp",
+          "steps": [
+            {
+              "action": "set_cell",
+              "table": 0,
+              "row": 0,
+              "col": 0,
+              "text": "결정온램프"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"결정온램프\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o2.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"결정온램프\"}]}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "CR37",
+  "tier": 1,
+  "title": "표 표본을 explain 으로 보면 형식은?",
+  "input": "samples/table-001.hwp",
+  "instructions": "물놀이터 — CR37 는 키 제한 없는 입문 놀이기구다. info 가 아니라 explain 의 format 키다. 같은 값이어도 명령이 다르다. 문서는 `samples/table-001.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: explain {입력} --json. answer.json 에는 {\"format\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. explain format.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "표 표본을 explain 으로 보면 형식은?",
+      "op": "answer_eq",
+      "answer": "format",
+      "cmd": [
+        "explain",
+        "{input}",
+        "--json"
+      ],
+      "path": "format"
+    }
+  ],
+  "axis": "입문"
+}

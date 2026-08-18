@@ -1,0 +1,23 @@
+{
+  "id": "T19",
+  "tier": 1,
+  "title": "누름틀 표본 형식",
+  "input": "samples/field-01.hwp",
+  "instructions": "T19 은 입문·코어 온램프를 두껍게 하는 과제다. T03·T07 이 쓰는 표본의 형식만 읽는다. 필드를 채우지 마라. 표본은 `samples/field-01.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: info <문서> --json. 제출은 answer.json 에 {\"format\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. format 키만 제출한다. fields[0].value 는 보지 마라.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "누름틀 표본 형식",
+      "op": "answer_eq",
+      "answer": "format",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "format"
+    }
+  ]
+}
