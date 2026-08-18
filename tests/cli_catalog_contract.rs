@@ -1,4 +1,4 @@
-//! [#5511 Stage 1] 최상위 dispatch와 자기서술 표면의 characterization 계약.
+//! [#5511 Stage 1~2] 최상위 dispatch와 자기서술·모듈 소유권의 characterization 계약.
 //!
 //! handler 이동 전에 실제 `main()` 102개 arm과 catalog를 양방향으로 대조한다.
 //! help·capabilities·MCP의 현재 결과도 같은 catalog와 비교하되, 이 단계에서는
@@ -14,6 +14,7 @@ mod catalog;
 use catalog::{commands, Visibility};
 
 const MAIN_SOURCE: &str = include_str!("../src/main.rs");
+const DOCUMENT_INVENTORY_SOURCE: &str = include_str!("../src/cli/queries/document_inventory.rs");
 
 fn rhwp_bin() -> String {
     std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
@@ -192,4 +193,28 @@ fn exceptional_visibility_is_small_explicit_and_explained() {
         dispatch_only.keys().copied().collect::<BTreeSet<_>>(),
         BTreeSet::from(["dump-anchors", "dump-carets", "export-llm", "ir-sweep"])
     );
+}
+
+#[test]
+fn document_inventory_queries_are_owned_by_the_query_module() {
+    for (command, handler) in [
+        ("word-count", "word_count"),
+        ("bookmarks", "bookmarks"),
+        ("charts", "charts"),
+    ] {
+        assert!(
+            DOCUMENT_INVENTORY_SOURCE.contains(&format!("pub(crate) fn {handler}(")),
+            "{handler} 구현이 document_inventory 모듈에 있어야 한다"
+        );
+        assert!(
+            !MAIN_SOURCE.contains(&format!("fn {handler}(")),
+            "{handler} 구현이 main.rs로 되돌아가면 안 된다"
+        );
+        assert!(
+            MAIN_SOURCE.contains(&format!(
+                "Some(\"{command}\") => exit_with(cli::queries::document_inventory::{handler}(&args[2..]))"
+            )),
+            "{command} dispatch가 query 모듈 API를 사용해야 한다"
+        );
+    }
 }

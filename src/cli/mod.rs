@@ -5,3 +5,4 @@
 //! 않는다.
 
 pub(crate) mod catalog;
+pub(crate) mod queries;
