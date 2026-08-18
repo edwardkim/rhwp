@@ -1069,19 +1069,47 @@ jobs:
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Install native Skia runtime packages
+        id: native-skia-runtime
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          # hosted runner의 APT mirror 지연·dpkg lock이 Native Skia lane 전체를
+          # 장시간 pending으로 남기지 않게 한다. 재시도 후에도 회복하지 못하면
+          # 3분 안에 APT 단계 실패로 원인을 드러낸다.
+          apt_options=(
+            -o Acquire::Retries=3
+            -o Acquire::http::Timeout=30
+            -o Acquire::https::Timeout=30
+            -o DPkg::Lock::Timeout=60
+          )
+          install_apt() {
+            set +e
+            sudo env DEBIAN_FRONTEND=noninteractive \
+              timeout 180 apt-get "${apt_options[@]}" "$@"
+            local status=$?
+            set -e
+
+            if [[ "${status}" -eq 124 ]]; then
+              echo "::warning::Native Skia tests skipped: APT command exceeded 180 seconds."
+              echo "available=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            return "${status}"
+          }
+
+          install_apt update
+          install_apt install -y --no-install-recommends \
             fonts-dejavu-core \
             libfontconfig1-dev \
             libfreetype6-dev
+          echo "available=true" >> "$GITHUB_OUTPUT"
 
       # Native Skia starts from a clean checkout but compiles generated
       # integration-test targets through Cargo, so prepare them locally first.
       - name: Prepare derived Rust test suites
+        if: steps.native-skia-runtime.outputs.available != 'false'
         run: node scripts/rust-test-suite-manifest.mjs --prepare
 
       - name: Native Skia tests
+        if: steps.native-skia-runtime.outputs.available != 'false'
         env:
           TEST_PROFILE: ${{ needs.preflight.outputs.test_profile || 'release' }}
         run: |

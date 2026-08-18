@@ -669,6 +669,33 @@ class CiImpactWorkflowTests(unittest.TestCase):
             native_skia.count("node scripts/rust-test-suite-manifest.mjs --prepare"),
         )
 
+    def test_native_skia_apt_timeout_skips_only_the_unavailable_runtime_lane(self) -> None:
+        native_skia = self._job("native-skia-tests")
+        install = self._step("Install native Skia runtime packages", native_skia)
+
+        self.assertIn("DEBIAN_FRONTEND=noninteractive", install)
+        self.assertEqual(1, install.count("timeout 180 apt-get"))
+        self.assertIn("id: native-skia-runtime", native_skia)
+        self.assertIn('if [[ "${status}" -eq 124 ]]', install)
+        self.assertIn("available=false", install)
+        self.assertIn("Native Skia tests skipped", install)
+        self.assertIn("available=true", install)
+        for option in [
+            "Acquire::Retries=3",
+            "Acquire::http::Timeout=30",
+            "Acquire::https::Timeout=30",
+            "DPkg::Lock::Timeout=60",
+        ]:
+            with self.subTest(option=option):
+                self.assertIn(option, install)
+        self.assertIn('install_apt update', install)
+        self.assertIn('install_apt install -y --no-install-recommends', install)
+        prepare = self._step("Prepare derived Rust test suites", native_skia)
+        test = self._step("Native Skia tests", native_skia)
+        condition = "steps.native-skia-runtime.outputs.available != 'false'"
+        self.assertIn(condition, prepare)
+        self.assertIn(condition, test)
+
     def test_native_skia_starts_after_preflight_without_lane_serialization(self) -> None:
         native = self._job("native-skia-tests")
         self.assertIn("needs: [preflight]", native)
