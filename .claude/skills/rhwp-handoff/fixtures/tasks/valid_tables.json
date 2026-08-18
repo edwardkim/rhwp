@@ -1,0 +1,17 @@
+{
+  "handoffVersion": "1.0",
+  "taskId": "t-tables",
+  "objective": "부칙 별표 CSV 를 뽑는다",
+  "inputs": [
+    "samples/forms/ordinance_2024.hwp"
+  ],
+  "allowedTools": [
+    "rhwp table-to-csv"
+  ],
+  "timeoutSec": 45,
+  "expectedOutputs": [
+    {
+      "path": "tables/byul1.csv"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "handoffVersion": "1.0",
+  "taskId": "t-fill",
+  "objective": "기관명 누름틀만 채운다",
+  "inputs": [
+    "samples/forms/draft_form.hwpx"
+  ],
+  "allowedTools": [
+    "rhwp edit fill-fields"
+  ],
+  "timeoutSec": 30,
+  "expectedOutputs": [
+    {
+      "path": "filled.hwpx",
+      "mustParse": true
+    }
+  ]
+}

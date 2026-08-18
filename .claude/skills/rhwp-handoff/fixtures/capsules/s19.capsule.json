@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "s18.capsule.json",
+    "sha256": "18feb0d877b44b50aee866838aee9f695c41ef097e253ac5e7524adea7942fca"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "output/handoff/t-ord/s18-failed.txt",
+    "output": "output/handoff/t-ord/s19-retry.ndjson",
+    "steps": [
+      {
+        "action": "batch_info",
+        "retry": true
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"output/handoff/t-ord/s18-failed.txt\",\"output\":\"output/handoff/t-ord/s19-retry.ndjson\",\"steps\":[{\"action\":\"batch_info\",\"retry\":true}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "output/handoff/t-ord/s18-failed.txt",
+    "inputSha256": "bf317ca744f0b76b9feec87a56c861c76ec461cf25c4ccedcc9b65d3bc591981",
+    "planSha256": "a417dc442cbe5dd3d41c6ccb2b59869859f38b3dbd37e2f16710fe263f464a7c",
+    "outputSha256": "1579ba1c34b67e0c4391bc1ced445c5602930ef1e734a1c9aa7ad412c72b288f",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "layouts": [
+    {
+      "id": "complete-bundle",
+      "root": "fixtures/layouts/complete-bundle"
+    },
+    {
+      "id": "missing-capsule",
+      "root": "fixtures/layouts/missing-capsule"
+    },
+    {
+      "id": "parent-mismatch",
+      "root": "fixtures/layouts/parent-mismatch"
+    },
+    {
+      "id": "disk-full",
+      "root": "fixtures/layouts/disk-full"
+    },
+    {
+      "id": "forbidden-worktrees",
+      "root": "fixtures/layouts/forbidden-worktrees"
+    }
+  ]
+}
