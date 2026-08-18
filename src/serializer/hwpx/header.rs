@@ -418,6 +418,16 @@ fn write_diag_line<W: Write>(
     )
 }
 
+// [#5309] '문단 머리 정보'(표 41) attr bits 0–1 → OWPML paraHead@align 토큰.
+// 0=왼쪽·1=가운데·2=오른쪽 (HWP5 스펙). 3은 미사용이라 LEFT 로 폴백.
+fn numbering_head_align_str(attr: u32) -> &'static str {
+    match attr & 0x03 {
+        1 => "CENTER",
+        2 => "RIGHT",
+        _ => "LEFT",
+    }
+}
+
 // [#2947] parser 측 parse_numbering_format_code() (표 43) 의 역매핑.
 fn numbering_format_str(code: u8) -> &'static str {
     match code {
@@ -999,12 +1009,21 @@ fn write_numbering<W: Write>(
         let num_format = numbering_format_str(h.number_format);
         let text_offset_s = h.text_distance.to_string();
         let char_pr_id_ref_s = h.char_shape_id.to_string();
+        // [#5309] '문단 머리 정보'(표 41) attr 저위 비트에서 정렬·번호너비·자동내어쓰기를
+        // 유도한다. 종전엔 align="LEFT"/useInstWidth="1"/autoIndent="1" 상수만 방출해,
+        // HWP5→HWPX 저장 때마다 문단 번호의 정렬·들여쓰기 설정이 기본값으로 리셋됐다.
+        // NumberingHead 모델엔 이 값의 lexical 필드가 없어 attr 비트가 유일한 원천이다.
+        // 비트↔토큰은 한컴 저작 HWPX 쌍(143E433F…)으로 직접 1:1 대응 확증. numFormat
+        // de-hardcode(#2947)와 동형.
+        let align = numbering_head_align_str(h.attr);
+        let use_inst_width = if (h.attr >> 2) & 0x01 != 0 { "1" } else { "0" };
+        let auto_indent = if (h.attr >> 3) & 0x01 != 0 { "1" } else { "0" };
         let attrs = [
             ("start", start_s.as_str()),
             ("level", level_s.as_str()),
-            ("align", "LEFT"),
-            ("useInstWidth", "1"),
-            ("autoIndent", "1"),
+            ("align", align),
+            ("useInstWidth", use_inst_width),
+            ("autoIndent", auto_indent),
             ("widthAdjust", wa.as_str()),
             ("textOffsetType", "PERCENT"),
             ("textOffset", text_offset_s.as_str()),
