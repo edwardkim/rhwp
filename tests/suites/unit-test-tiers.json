@@ -3649,7 +3649,7 @@
       "id": "src/serializer/hwpx/section.rs::tests#1",
       "file": "src/serializer/hwpx/section.rs",
       "sourcePath": "src/serializer/hwpx/section.rs",
-      "line": 3249,
+      "line": 3288,
       "module": "tests",
       "testAttributes": 93,
       "tier": "white_box",
