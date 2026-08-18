@@ -1957,9 +1957,6 @@ fn line_transition_detail(line: &LineNode) -> Option<&'static str> {
 }
 
 fn rectangle_transition_detail(rect: &RectangleNode) -> Option<&'static str> {
-    if rect.gradient.is_some() {
-        return Some("gradientFill");
-    }
     if rect.transform.has_transform() {
         return Some("shapeTransform");
     }
@@ -1967,19 +1964,13 @@ fn rectangle_transition_detail(rect: &RectangleNode) -> Option<&'static str> {
 }
 
 fn ellipse_transition_detail(ellipse: &EllipseNode) -> Option<&'static str> {
-    if ellipse.gradient.is_some() {
-        return Some("gradientFill");
-    }
     if ellipse.transform.has_transform() {
         return Some("shapeTransform");
     }
     None
 }
 
-fn path_transition_detail(path: &PathNode) -> Option<&'static str> {
-    if path.gradient.is_some() {
-        return Some("gradientFill");
-    }
+fn path_transition_detail(_path: &PathNode) -> Option<&'static str> {
     None
 }
 

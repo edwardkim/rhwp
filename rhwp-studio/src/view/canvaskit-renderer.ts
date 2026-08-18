@@ -23,6 +23,7 @@ import type {
   LayerEquationLayoutBox,
   LayerEquationOp,
   LayerFormObjectOp,
+  LayerGradientFill,
   LayerAffineTransform,
   LayerGlyphOutlineOp,
   LayerGlyphRunOp,
@@ -1312,6 +1313,17 @@ export class CanvasKitLayerRenderer {
       canvas.drawRect(this.rect(op.bbox), paint);
       paint.delete?.();
     }
+    const gradientShader = this.makeShapeGradientShader(op.gradient, op.bbox);
+    if (gradientShader) {
+      const paint = this.makeFillPaint('#000000');
+      try {
+        (paint as unknown as { setShader: (shader: unknown) => void }).setShader(gradientShader);
+        canvas.drawRect(this.rect(op.bbox), paint);
+      } finally {
+        (gradientShader as { delete?: () => void }).delete?.();
+        paint.delete?.();
+      }
+    }
     if (op.borderColor && (op.borderWidth ?? 0) > 0) {
       const paint = this.makeStrokePaint(op.borderColor, op.borderWidth ?? 1);
       canvas.drawRect(this.rect(op.bbox), paint);
@@ -1327,13 +1339,13 @@ export class CanvasKitLayerRenderer {
       } else {
         canvas.drawRect(this.rect(op.bbox), paint);
       }
-    });
+    }, op.gradient);
   }
 
   private renderEllipse(canvas: SkCanvas, op: LayerEllipseOp): void {
     this.drawStyledShape(canvas, op.bbox, op.style, (paint) => {
       canvas.drawOval(this.rect(op.bbox), paint);
-    });
+    }, op.gradient);
   }
 
   private renderLine(canvas: SkCanvas, op: LayerLineOp): void {
@@ -1406,7 +1418,7 @@ export class CanvasKitLayerRenderer {
         canvas.rotate(rotation, cx, cy);
       }
     }
-    this.drawStyledPath(canvas, path, replayStyle);
+    this.drawStyledPath(canvas, path, replayStyle, op.bbox, op.gradient);
     if (op.lineStyle && (op.lineStyle.startArrow || op.lineStyle.endArrow)) {
       const points: Array<[number, number]> = [];
       for (const command of op.commands ?? []) {
@@ -3644,6 +3656,7 @@ export class CanvasKitLayerRenderer {
     bounds: LayerBounds,
     style: LayerShapeStyle | undefined,
     draw: (paint: SkPaint) => void,
+    gradient?: LayerGradientFill,
   ): void {
     const shadow = this.resolvedShadow(style?.shadow);
     if (shadow) {
@@ -3662,7 +3675,17 @@ export class CanvasKitLayerRenderer {
       }
       canvas.restore();
     }
-    if (style?.pattern) {
+    const fillShader = this.makeShapeGradientShader(gradient, bounds);
+    if (fillShader) {
+      const paint = this.makeFillPaint(style?.fillColor ?? '#000000', style?.opacity);
+      try {
+        (paint as unknown as { setShader: (shader: unknown) => void }).setShader(fillShader);
+        draw(paint);
+      } finally {
+        (fillShader as { delete?: () => void }).delete?.();
+        paint.delete?.();
+      }
+    } else if (style?.pattern) {
       this.drawPatternFill(canvas, bounds, style.pattern, style.opacity ?? 1, draw);
     } else if (style?.fillColor) {
       const paint = this.makeFillPaint(style.fillColor, style.opacity);
@@ -3677,27 +3700,264 @@ export class CanvasKitLayerRenderer {
         paint.delete?.();
       }
     }
-    if (!style?.fillColor && !style?.strokeColor && !style?.pattern) {
+    if (!fillShader && !style?.fillColor && !style?.strokeColor && !style?.pattern) {
       const paint = this.makeStrokePaint('#000000', 1);
       draw(paint);
       paint.delete?.();
     }
   }
 
-  private drawStyledPath(canvas: SkCanvas, path: Path, style: LayerShapeStyle): void {
-    let bounds: LayerBounds = { x: 0, y: 0, width: 0, height: 0 };
-    const raw = (path as Path & { getBounds?: () => Float32Array | number[] }).getBounds?.();
-    if (raw && raw.length >= 4) {
-      bounds = {
-        x: raw[0],
-        y: raw[1],
-        width: Math.max(0, raw[2] - raw[0]),
-        height: Math.max(0, raw[3] - raw[1]),
-      };
+  private drawStyledPath(
+    canvas: SkCanvas,
+    path: Path,
+    style: LayerShapeStyle,
+    bounds?: LayerBounds,
+    gradient?: LayerGradientFill,
+  ): void {
+    let resolvedBounds = bounds ?? { x: 0, y: 0, width: 0, height: 0 };
+    if (!bounds) {
+      const raw = (path as Path & { getBounds?: () => Float32Array | number[] }).getBounds?.();
+      if (raw && raw.length >= 4) {
+        resolvedBounds = {
+          x: raw[0],
+          y: raw[1],
+          width: Math.max(0, raw[2] - raw[0]),
+          height: Math.max(0, raw[3] - raw[1]),
+        };
+      }
     }
-    this.drawStyledShape(canvas, bounds, style, (paint) => {
+    this.drawStyledShape(canvas, resolvedBounds, style, (paint) => {
       canvas.drawPath(path, paint);
+    }, gradient);
+  }
+
+  private makeShapeGradientShader(
+    gradient: LayerGradientFill | undefined,
+    bounds: LayerBounds,
+  ): unknown | null {
+    const colors = gradient?.colors;
+    if (!gradient || !Array.isArray(colors) || colors.length < 2) {
+      return null;
+    }
+    const lastIndex = Math.max(1, colors.length - 1);
+    const shaderColors = colors.map((css) => {
+      const { r, g, b, a } = parseCssColor(css);
+      return [r / 255, g / 255, b / 255, a];
     });
+    const positions = colors.map((_, index) => {
+      const raw = index < (gradient.positions?.length ?? 0)
+        ? gradient.positions?.[index]
+        : index / lastIndex;
+      return Math.max(0, Math.min(1, Number.isFinite(raw) ? (raw as number) : index / lastIndex));
+    });
+    const shaderApi = this.canvasKit.Shader as unknown as {
+      MakeLinearGradient?: (...args: unknown[]) => unknown;
+      MakeRadialGradient?: (...args: unknown[]) => unknown;
+    };
+    const gradientType = gradient.gradientType ?? 1;
+    if (gradientType >= 2 && gradientType <= 4) {
+      const cx = bounds.x + bounds.width * ((gradient.centerX ?? 50) / 100);
+      const cy = bounds.y + bounds.height * ((gradient.centerY ?? 50) / 100);
+      const radius = Math.max(bounds.width, bounds.height) / 2;
+      return shaderApi.MakeRadialGradient?.(
+        [cx, cy],
+        radius,
+        shaderColors,
+        positions,
+        this.canvasKit.TileMode.Clamp,
+      ) ?? null;
+    }
+    const [x0, y0, x1, y1] = shapeGradientLinearCoords(gradient.angle ?? 0, bounds);
+    return shaderApi.MakeLinearGradient?.(
+      [x0, y0],
+      [x1, y1],
+      shaderColors,
+      positions,
+      this.canvasKit.TileMode.Clamp,
+    ) ?? null;
+  }
+
+  private drawStrokeWithDash(
+    dash: LayerStrokeDash | undefined,
+    paint: SkPaint,
+    draw: () => void,
+  ): void {
+    const intervals = dash === undefined || dash === 'solid'
+      ? null
+      : dash === 'dash'
+        ? [6, 3]
+        : dash === 'dot'
+          ? [2, 2]
+          : dash === 'dashDot'
+            ? [6, 3, 2, 3]
+            : dash === 'dashDotDot'
+              ? [6, 3, 2, 3, 2, 3]
+              : undefined;
+    if (intervals === undefined) {
+      this.unsupportedOps.add(`strokeDash:${String(dash)}`);
+      return;
+    }
+    if (intervals === null) {
+      draw();
+      return;
+    }
+
+    const effect = this.canvasKit.PathEffect.MakeDash(intervals, 0);
+    if (!effect) {
+      this.unsupportedOps.add('strokeDash:pathEffectUnavailable');
+      return;
+    }
+    try {
+      paint.setPathEffect(effect);
+      draw();
+      this.currentReplayFeatureCounts.dashedStrokes += 1;
+    } finally {
+      effect.delete?.();
+    }
+  }
+
+  private imageForOp(op: LayerImageOp): SkImage | null {
+    const base64 = op.base64 ?? '';
+    if (!base64) {
+      return null;
+    }
+    if (base64.length > CANVASKIT_MAX_ENCODED_IMAGE_BASE64_LENGTH) {
+      this.recordImageFailure(op, 'encodedImageRejected', null);
+      return null;
+    }
+    const key = canvasKitImageCacheKey(op, this.documentGeneration);
+    if (!key) {
+      this.recordImageFailure(op, 'cacheKeyMissing', null);
+      return null;
+    }
+    const cached = this.imageCache.get(key);
+    if (cached) {
+      this.imageCache.delete(key);
+      this.imageCache.set(key, cached);
+      this.imageCacheHits += 1;
+      return cached.image;
+    }
+    const cachedFailure = this.imageDecodeFailures.get(key);
+    if (cachedFailure) {
+      this.imageCacheHits += 1;
+      this.imageFailureCacheHits += 1;
+      this.recordImageFailure(op, cachedFailure, key);
+      return null;
+    }
+    this.imageCacheMisses += 1;
+    let bytes: Uint8Array;
+    try {
+      bytes = base64ToBytes(base64);
+    } catch {
+      this.recordImageFailure(op, 'base64DecodeFailed', key);
+      return null;
+    }
+    const encodedHeader = replayableEncodedImageHeader(bytes);
+    if (!encodedHeader) {
+      this.recordImageFailure(op, 'encodedImageRejected', key);
+      return null;
+    }
+    let image: SkImage | null = null;
+    try {
+      image = this.canvasKit.MakeImageFromEncoded(bytes);
+    } catch {
+      this.recordImageFailure(op, 'imageDecodeFailed', key);
+      return null;
+    }
+    if (!image) {
+      this.recordImageFailure(op, 'imageDecodeFailed', key);
+      return null;
+    }
+    const imageWithDimensions = image as SkImage & { width?: (() => number) | number; height?: (() => number) | number };
+    const width = typeof imageWithDimensions.width === 'function' ? imageWithDimensions.width() : imageWithDimensions.width;
+    const height = typeof imageWithDimensions.height === 'function' ? imageWithDimensions.height() : imageWithDimensions.height;
+    const decodedPixels = typeof width === 'number' && typeof height === 'number'
+      ? width * height
+      : Number.POSITIVE_INFINITY;
+    if (!decodedImageMatchesEncodedHeader(encodedHeader, width, height)) {
+      image.delete?.();
+      this.recordImageFailure(op, 'decodedDimensionsMismatch', key);
+      return null;
+    }
+    while (this.imageCache.size >= CanvasKitLayerRenderer.MAX_IMAGE_CACHE_ENTRIES
+      || this.imageCachePixels + decodedPixels > CanvasKitLayerRenderer.MAX_IMAGE_CACHE_PIXELS) {
+      const oldestKey = this.imageCache.keys().next().value as string | undefined;
+      if (oldestKey === undefined) break;
+      const oldest = this.imageCache.get(oldestKey);
+      oldest?.image.delete?.();
+      this.imageCache.delete(oldestKey);
+      this.imageCachePixels = Math.max(0, this.imageCachePixels - (oldest?.pixels ?? 0));
+      this.imageCacheEvictions += 1;
+    }
+    this.imageCache.set(key, { image, pixels: decodedPixels });
+    this.imageCachePixels += decodedPixels;
+    return image;
+  }
+
+  private recordImageFailure(
+    op: LayerImageOp,
+    reason: CanvasKitImageFailureReason,
+    key: string | null,
+  ): void {
+    if (key) {
+      if (!this.imageDecodeFailures.has(key)
+        && this.imageDecodeFailures.size >= CanvasKitLayerRenderer.MAX_IMAGE_FAILURE_CACHE_ENTRIES) {
+        const oldestKey = this.imageDecodeFailures.keys().next().value as string | undefined;
+        if (oldestKey !== undefined) this.imageDecodeFailures.delete(oldestKey);
+      }
+      this.imageDecodeFailures.set(key, reason);
+    }
+
+    const sourceImageKey = boundedCanvasKitSourceImageKey(op.sourceImageKey);
+    const imageRef = (
+      (typeof op.imageRef === 'number' && Number.isSafeInteger(op.imageRef))
+      || (
+        typeof op.imageRef === 'string'
+        && op.imageRef.length > 0
+        && op.imageRef.length <= 256
+        && !/[\u0000-\u001f\u007f]/.test(op.imageRef)
+      )
+    ) ? op.imageRef : null;
+    const source = sourceImageKey
+      ? 'sourceKey'
+      : imageRef !== null
+        ? 'resource'
+        : op.base64
+          ? 'inline'
+          : 'missing';
+    const diagnosticKey = key
+      ?? `${source}:${sourceImageKey ?? String(imageRef ?? op.base64?.length ?? 0)}:${reason}`;
+    if (this.currentImageFailures.has(diagnosticKey)
+      || this.currentImageFailures.size >= CanvasKitLayerRenderer.MAX_IMAGE_FAILURE_CACHE_ENTRIES) {
+      return;
+    }
+    this.currentImageFailures.set(diagnosticKey, {
+      source,
+      sourceImageKey,
+      imageRef,
+      reason,
+    });
+  }
+
+  private makeFillPaint(color: string, opacity = 1): SkPaint {
+    const paint = new this.canvasKit.Paint();
+    paint.setAntiAlias?.(true);
+    paint.setStyle(this.canvasKit.PaintStyle.Fill);
+    paint.setColor(this.color(color, opacity));
+    return paint;
+  }
+
+  private makeStrokePaint(color: string, width: number, opacity = 1): SkPaint {
+    const paint = new this.canvasKit.Paint();
+    paint.setAntiAlias?.(true);
+    paint.setStyle(this.canvasKit.PaintStyle.Stroke);
+    paint.setStrokeWidth(Math.max(0.1, width));
+    paint.setColor(this.color(color, opacity));
+    return paint;
+  }
+
+  private rect(bounds: LayerBounds): Rect {
+    return this.canvasKit.XYWHRect(bounds.x, bounds.y, bounds.width, bounds.height);
   }
 
   private resolvedShadow(shadow: LayerShapeStyle['shadow']): { color: string; offsetX: number; offsetY: number; opacity: number } | null {
@@ -4168,6 +4428,43 @@ function parseCssColor(value: string): { r: number; g: number; b: number; a: num
 
 function clampUnit(value: number | undefined): number {
   return Math.max(0, Math.min(1, Number.isFinite(value) ? value ?? 0 : 0));
+}
+
+function shapeGradientLinearCoords(
+  angle: number,
+  bounds: LayerBounds,
+): [number, number, number, number] {
+  const { x, y, width: w, height: h } = bounds;
+  const normalized = ((angle % 360) + 360) % 360;
+  switch (normalized) {
+    case 0:
+      return [x, y, x, y + h];
+    case 45:
+      return [x, y, x + w, y + h];
+    case 90:
+      return [x, y, x + w, y];
+    case 135:
+      return [x, y + h, x + w, y];
+    case 180:
+      return [x, y + h, x, y];
+    case 225:
+      return [x + w, y + h, x, y];
+    case 270:
+      return [x + w, y, x, y];
+    case 315:
+      return [x + w, y, x, y + h];
+    default: {
+      const rad = (normalized * Math.PI) / 180;
+      const cx = x + w / 2;
+      const cy = y + h / 2;
+      return [
+        cx - Math.sin(rad) * w / 2,
+        cy - Math.cos(rad) * h / 2,
+        cx + Math.sin(rad) * w / 2,
+        cy + Math.cos(rad) * h / 2,
+      ];
+    }
+  }
 }
 
 function gradientColors(stops: Array<{ color?: { rgba?: number[] } }> | undefined): number[][] {

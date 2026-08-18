@@ -1234,6 +1234,7 @@ export interface LayerGradientFill {
   positions?: number[];
 }
 
+
 export interface LayerLineOp {
   type: 'line';
   bbox: LayerBounds;
