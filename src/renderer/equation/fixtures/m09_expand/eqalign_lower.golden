@@ -1,0 +1,63 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: EQALIGN
+script: eqalign{x &= 1 # y &= 2}
+honesty: case-insensitive
+
+=== ast ===
+EqAlign {
+    rows: [
+        (
+            Text(
+                "x",
+            ),
+            Row(
+                [
+                    Symbol(
+                        "=",
+                    ),
+                    Number(
+                        "1",
+                    ),
+                ],
+            ),
+        ),
+        (
+            Text(
+                "y",
+            ),
+            Row(
+                [
+                    Symbol(
+                        "=",
+                    ),
+                    Number(
+                        "2",
+                    ),
+                ],
+            ),
+        ),
+    ],
+}
+
+=== layout ===
+EqAlign x=0.0000 y=0.0000 w=41.5500 h=46.0000 bl=23.0000
+  row0.left:
+    Text("x") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+  row0.right:
+    Row x=14.5500 y=0.0000 w=27.0000 h=20.0000 bl=16.0000
+      Symbol("=") x=0.0000 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Number("1") x=16.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+  row1.left:
+    Text("y") x=0.0000 y=26.0000 w=11.5500 h=20.0000 bl=16.0000
+  row1.right:
+    Row x=14.5500 y=26.0000 w=27.0000 h=20.0000 bl=16.0000
+      Symbol("=") x=0.0000 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Number("2") x=16.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>
+<text x="22.55" y="16.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">=</text>
+<text x="30.55" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<text x="0.00" y="42.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">y</text>
+<text x="22.55" y="42.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">=</text>
+<text x="30.55" y="42.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>

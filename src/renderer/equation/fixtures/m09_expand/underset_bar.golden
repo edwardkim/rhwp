@@ -1,0 +1,29 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: UNDERSET{_}{x}
+honesty: latex-stack
+
+=== ast ===
+Subscript {
+    base: Text(
+        "x",
+    ),
+    sub: Subscript {
+        base: Empty,
+        sub: Empty,
+    },
+}
+
+=== layout ===
+Subscript x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+  base:
+    Text("x") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+  sub:
+    Subscript x=11.5500 y=6.4000 w=0.0000 h=0.0000 bl=0.0000
+      base:
+        Empty x=0.0000 y=0.0000 w=0.0000 h=0.0000 bl=0.0000
+      sub:
+        Empty x=0.0000 y=0.0000 w=0.0000 h=0.0000 bl=0.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>

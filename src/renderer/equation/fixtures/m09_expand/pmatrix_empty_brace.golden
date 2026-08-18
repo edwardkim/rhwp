@@ -1,0 +1,20 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: PMATRIX
+script: PMATRIX{}
+honesty: missing-operand
+
+=== ast ===
+Matrix {
+    rows: [
+        [],
+    ],
+    style: Paren,
+}
+
+=== layout ===
+Matrix(Paren) x=0.0000 y=0.0000 w=20.0000 h=20.0000 bl=10.0000
+  row0:
+
+=== svg ===
+<path d="M5.40,0.00 C0.30,3.60 0.30,16.40 5.40,20.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<path d="M14.60,0.00 C19.70,3.60 19.70,16.40 14.60,20.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>

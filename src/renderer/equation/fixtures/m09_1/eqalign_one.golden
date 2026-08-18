@@ -1,0 +1,53 @@
+# M09-1 equation golden — current-engine lock
+command: EQALIGN
+script: EQALIGN{a + b &= c}
+
+=== ast ===
+EqAlign {
+    rows: [
+        (
+            Row(
+                [
+                    Text(
+                        "a",
+                    ),
+                    Symbol(
+                        "+",
+                    ),
+                    Text(
+                        "b",
+                    ),
+                ],
+            ),
+            Row(
+                [
+                    Symbol(
+                        "=",
+                    ),
+                    Text(
+                        "c",
+                    ),
+                ],
+            ),
+        ),
+    ],
+}
+
+=== layout ===
+EqAlign x=0.0000 y=0.0000 w=69.6500 h=20.0000 bl=10.0000
+  row0.left:
+    Row x=0.0000 y=0.0000 w=39.1000 h=20.0000 bl=16.0000
+      Text("a") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      Symbol("+") x=11.5500 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Text("b") x=27.5500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+  row0.right:
+    Row x=42.1000 y=0.0000 w=27.5500 h=20.0000 bl=16.0000
+      Symbol("=") x=0.0000 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Text("c") x=16.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<text x="19.55" y="16.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">+</text>
+<text x="27.55" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">b</text>
+<text x="50.10" y="16.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">=</text>
+<text x="58.10" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">c</text>

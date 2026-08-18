@@ -1,0 +1,26 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: BMATRIX
+script: BMATRIX{z}
+honesty: implemented-variant
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Text(
+                "z",
+            ),
+        ],
+    ],
+    style: Bracket,
+}
+
+=== layout ===
+Matrix(Bracket) x=0.0000 y=0.0000 w=31.5500 h=20.0000 bl=10.0000
+  row0:
+    Text("z") x=10.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M4.20,0.00 L1.80,0.00 L1.80,20.00 L4.20,20.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<path d="M27.35,0.00 L29.75,0.00 L29.75,20.00 L27.35,20.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="10.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">z</text>
