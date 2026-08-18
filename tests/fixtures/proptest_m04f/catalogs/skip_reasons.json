@@ -1,0 +1,79 @@
+[
+  {
+    "action": "replace_text",
+    "code": "empty_find",
+    "engine": "apply_existing_step",
+    "honest": "문서 전체를 치환 대상으로 해석하지 않고 skip",
+    "when": "find 가 빈 문자열"
+  },
+  {
+    "action": "replace_text",
+    "code": "no_hits",
+    "engine": "DocumentCore::grep",
+    "honest": "조용히 0건 치환을 성공으로 보고하지 않고 skip",
+    "when": "find 가 이 픽스처 본문에 없음"
+  },
+  {
+    "action": "replace_text",
+    "code": "occurrence_oob",
+    "engine": "replace_nth_native",
+    "honest": "없는 순번을 발명하지 않고 skip",
+    "when": "occurrence >= grep hits"
+  },
+  {
+    "action": "fill_fields",
+    "code": "field_missing",
+    "engine": "set_field_value_by_name_at",
+    "honest": "누름틀을 만들어 넣지 않고 skip",
+    "when": "그 이름(또는 순번)의 누름틀이 없음"
+  },
+  {
+    "action": "set_cell",
+    "code": "table_missing",
+    "engine": "extract_tables",
+    "honest": "표를 만들어 넣지 않고 skip",
+    "when": "table 인덱스가 격자 수 밖"
+  },
+  {
+    "action": "set_cell",
+    "code": "nested_table",
+    "engine": "extract_tables.container_path",
+    "honest": "중첩 표 set_cell 경로를 발명하지 않고 skip",
+    "when": "표가 다른 컨테이너 안 (중첩)"
+  },
+  {
+    "action": "set_cell",
+    "code": "cell_missing",
+    "engine": "Table.cells 좌표",
+    "honest": "빈 칸을 만들어 넣지 않고 skip",
+    "when": "(row, col) 앵커 셀이 없음"
+  },
+  {
+    "action": "set_cell",
+    "code": "cell_control_char",
+    "engine": "run_plan_engine 선검증",
+    "honest": "칸 구조를 깨는 값을 쓰지 않고 skip",
+    "when": "text 에 \\r · \\n · \\t"
+  },
+  {
+    "action": "set_checkbox",
+    "code": "checkbox_missing",
+    "engine": "grep('□')",
+    "honest": "□ 를 삽입하지 않고 skip",
+    "when": "occurrence 번째 빈 체크박스가 없음"
+  },
+  {
+    "action": "*",
+    "code": "all_steps_skipped",
+    "engine": "assert_edit_serialize_reparse",
+    "honest": "무편집 왕복을 '편집 왕복 성공'으로 세지 않고 reject",
+    "when": "시퀀스의 모든 step 이 skip"
+  },
+  {
+    "action": "*",
+    "code": "unclaimed_capability",
+    "engine": "catalog",
+    "honest": "ref_mixed 처럼 내용이 섞여도 추측으로 apply 하지 않음",
+    "when": "이 픽스처에 대해 step 표현력을 주장하지 않음"
+  }
+]

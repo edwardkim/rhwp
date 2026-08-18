@@ -590,6 +590,17 @@ fn handwritten_invalid_plans_are_rejected() {
             "steps": [{"action": "replace_text", "find": "", "replace": "x"}]}),
         json!({"planVersion": "1.0", "input": "a.hwp", "output": "b.hwp",
             "steps": [{"action": "set_cell", "table": 0, "row": 0, "col": 0, "text": "x\t"}]}),
+        json!({"planVersion": "1.0", "input": "a.hwp", "output": "b.hwp",
+            "steps": [{"action": "insert_text", "text": "발명금지"}]}),
+        json!({"planVersion": "1.0", "input": "a.hwp", "output": "b.hwp",
+            "steps": [{"action": "set_cell", "table": 0, "row": 65536, "col": 0, "text": "x"}]}),
+        json!({"planVersion": "1.0", "input": "a.hwp", "output": "b.hwp",
+            "steps": [{"action": "set_checkbox"}]}),
+        json!({"planVersion": "1.0", "input": "a.hwp", "output": "b.hwp",
+            "steps": [{"action": "fill_fields"}]}),
+        json!({"planVersion": "1.0", "input": "a.hwp", "output": "b.hwp",
+            "steps": [{"action": "replace_text", "find": "한글", "replace": "x",
+                "if": {"fieldExists": "이름", "textFound": "한글"}}]}),
     ];
     for case in cases {
         assert!(
