@@ -1,6 +1,6 @@
 ---
 kind: review_plan
-status: local-validation-passed
+status: merged
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-18
 ---
@@ -81,3 +81,9 @@ last_verified: 2026-08-18
 ## 원격 후속 경계
 
 현재 원 PR들은 OPEN / MERGEABLE / BLOCKED 상태다. 통합 PR [#5429](https://github.com/edwardkim/rhwp/pull/5429)는 open 상태이며, 최신 rebase한 전체 회귀 결과·보정·이 기록을 force-with-lease push한 뒤 최신 CI·CodeQL을 감시한다. 통과 후 별도 merge 승인에 따라 merge·원 PR 처리·오늘할일 archive를 진행한다.
+
+## 병합 완료 및 후속 상태
+
+- 통합 PR [#5429](https://github.com/edwardkim/rhwp/pull/5429)는 2026-08-18에 merge commit `f3302fb745eaf6b81eba2b502fe75f0684141f88`으로 `devel`에 반영됐다. 최신 head `dfeadb55e40583a635d09551adc118c2673fafc8`의 CI, CodeQL, Native Skia, Rust shard, prop roundtrip은 모두 통과했다.
+- 원 PR 27개는 통합 당시 모두 OPEN이었다. 이 archive 기록이 `devel`에 반영된 뒤 각 원 PR에 통합·검증 사실을 남기고 close한다. 원 branch나 사용자 소유 원격 branch는 삭제하지 않는다.
+- `mydocs/orders/20260818.md`에는 이 병합 SHA, CI 완료와 archive·원 PR 후속 처리 상태를 함께 갱신한다.
