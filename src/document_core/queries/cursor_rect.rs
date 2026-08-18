@@ -3125,7 +3125,7 @@ impl DocumentCore {
         self.layout_engine
             .set_show_control_codes(self.show_control_codes);
         self.layout_engine
-            .set_layout_profile(self.document.layout_profile());
+            .set_layout_profile(self.effective_layout_profile());
         self.layout_engine.set_hwp3_origin_flow_spacing_before(
             super::rendering::uses_hwp3_origin_flow_spacing_before(&self.document),
         );

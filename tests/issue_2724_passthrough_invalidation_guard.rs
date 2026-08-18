@@ -94,6 +94,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "렌더 DPI·해소 스타일·페이지네이션만 갱신. 문서 IR 무변경.",
     ),
     (
+        "mod.rs",
+        "set_hangul2024_compat",
+        Exempt::SessionState,
+        "[#5524] 세션 호환 모드 플래그·재페이지네이션만 갱신. 문서 IR 무변경.",
+    ),
+    (
         "queries/rendering.rs",
         "begin_deferred_pagination",
         Exempt::SessionState,

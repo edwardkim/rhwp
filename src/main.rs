@@ -16711,6 +16711,7 @@ fn dump_pages(args: &[String]) -> i32 {
     let mut target_page: Option<u32> = None;
     let mut respect_vpos_reset = false;
     let mut json_mode = false;
+    let mut hangul2024_compat = false;
 
     let mut i = 1;
     while i < args.len() {
@@ -16741,6 +16742,23 @@ fn dump_pages(args: &[String]) -> i32 {
                 json_mode = true;
                 i += 1;
             }
+            "--compat" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].as_str() {
+                        // 기본값(2022 계열 조판)과 opt-in 2024 에뮬레이션.
+                        "2022" => hangul2024_compat = false,
+                        "2024" => hangul2024_compat = true,
+                        other => {
+                            eprintln!("오류: --compat 값이 올바르지 않습니다(2022|2024): {other}");
+                            return EXIT_USAGE;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --compat 뒤에 2022 또는 2024 가 필요합니다.");
+                    return EXIT_USAGE;
+                }
+            }
             _ => {
                 eprintln!("알 수 없는 옵션: {}", args[i]);
                 return EXIT_USAGE;
@@ -16763,6 +16781,9 @@ fn dump_pages(args: &[String]) -> i32 {
 
     if respect_vpos_reset {
         doc.set_respect_vpos_reset(true);
+    }
+    if hangul2024_compat {
+        doc.set_hangul2024_compat(true);
     }
 
     let page_count = doc.page_count();
