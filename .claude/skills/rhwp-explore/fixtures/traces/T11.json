@@ -1,0 +1,25 @@
+{
+  "id": "T11",
+  "title": "10쪽 medium long-doc",
+  "scenario": "S11",
+  "argv": [
+    "explore",
+    "samples/ten-pages.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S11.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "long-doc-digest",
+      "triage-overview"
+    ],
+    "first": "long-doc-digest",
+    "firstCommand": "rhwp digest <file> --sections --json",
+    "untrustedContent": false
+  },
+  "stop": "X10",
+  "notGym": true,
+  "usesExistingCommand": true
+}

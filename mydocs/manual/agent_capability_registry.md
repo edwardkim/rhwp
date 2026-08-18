@@ -42,6 +42,7 @@ last_verified: 2026-07-26
 | `CAP-4903` | `rhwp-strategist` | 고객 목표+문서 코퍼스에서 코퍼스 전수 지도→좌표 박힌 근거 대장→산출물 골격→주장-근거 연결 게이트까지의 전략 산출물 파이프라인. 전략 판단은 에이전트 몫이되 근거 대장 밖 주장은 게이트가 거부. 근거 없는 전망·예측 생성·코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖 | [Strategist playbook](strategist_playbook.md) | [에이전트](../../.claude/agents/rhwp-strategist.md) | — | active · rhwp maintainers |
 | `CAP-5307` | `rhwp-security-sweep` | 배포 전/수신 후 보안 스윕. inspect 3축(hidden-text/injection/unicode)과 edit redact --dry-run·redact/sanitize 짝·재스윕 게이트. 새 CLI·탐지 로직 발명·gym·워터마크 제거는 책임 밖 | [CLI 명령어 매뉴얼](cli_commands.md) | [Skill](../../.claude/skills/rhwp-security-sweep/SKILL.md) | — | active · rhwp maintainers |
 | `CAP-5312` | `rhwp-visual-regression` | 실 에이전트가 편집/변환 전후 레이아웃 회귀를 `render-diff`(자기 라운드트립·두 파일·`--batch` geom_inventory.tsv)·`ir-diff --json`(차이=exit 3)·thumbnail/export-png 로 숫자 판정한다. STRUCT_MISMATCH 는 노드 경로로 읽고 반사 실패하지 않는다. gym·새 CLI·이웃 스킬 재작성은 책임 밖 | [레시피 06](recipes/06_visual_regression_before_after.md) · [CLI render-diff](cli_commands.md) | [Skill](../../.claude/skills/rhwp-visual-regression/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5313` | `rhwp-explore` | 실 에이전트가 처음 보는 HWP/HWPX 에서 `rhwp explore --json` 메뉴로 다음 명령·스킬을 고른다. gym·새 CLI·편집 로직·이웃 스킬 재작성은 책임 밖 | [CLI explore](cli_commands.md) | [Skill](../../.claude/skills/rhwp-explore/SKILL.md) | — | active · rhwp maintainers |
 
 `—`는 해당 런타임용 어댑터가 아직 없다는 뜻이며, capability 자체가 없다는 뜻은 아니다.
 

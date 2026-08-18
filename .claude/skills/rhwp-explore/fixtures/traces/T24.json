@@ -1,0 +1,25 @@
+{
+  "id": "T24",
+  "title": "차트 1개",
+  "scenario": "S32",
+  "argv": [
+    "explore",
+    "samples/one-chart.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S32.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "chart-extract",
+      "triage-overview"
+    ],
+    "first": "chart-extract",
+    "firstCommand": "rhwp chart-to-csv <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X10",
+  "notGym": true,
+  "usesExistingCommand": true
+}
