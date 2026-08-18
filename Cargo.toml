@@ -8,7 +8,7 @@ repository = "https://github.com/edwardkim/rhwp"
 autotests = false
 
 [workspace]
-members = [".", "crates/*", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert"]
+members = [".", "crates/*", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert", "tools/llm_verifier/claim_bind"]
 default-members = [".", "crates/*"]
 resolver = "2"
 
