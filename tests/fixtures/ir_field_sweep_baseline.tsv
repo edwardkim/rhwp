@@ -503,9 +503,9 @@ hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].char_count	9
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls.len	9
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[]	18
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	81
-hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.default_tab_spacing	1
-hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.endnote_shape.suffix_char	1
-hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.footnote_shape.suffix_char	1
+hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.default_tab_spacing	10
+hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.endnote_shape.suffix_char	10
+hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.footnote_shape.suffix_char	10
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.page_def.margin_bottom	1
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.page_def.margin_left	1
 hwpx	issue2019_floating_form_74312.hwpx	sections[].paragraphs[].controls[].section_def.page_def.margin_right	1
