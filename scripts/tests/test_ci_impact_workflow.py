@@ -674,7 +674,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
         install = self._step("Install native Skia runtime packages", native_skia)
 
         self.assertIn("DEBIAN_FRONTEND=noninteractive", install)
-        self.assertEqual(2, install.count("timeout 180 apt-get"))
+        self.assertEqual(1, install.count("timeout 180 apt-get"))
         self.assertIn("id: native-skia-runtime", native_skia)
         self.assertIn('if [[ "${status}" -eq 124 ]]', install)
         self.assertIn("available=false", install)
