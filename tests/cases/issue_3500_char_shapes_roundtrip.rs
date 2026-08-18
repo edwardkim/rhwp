@@ -55,9 +55,9 @@ fn issue_3500_sample_matches_extracted_ir() {
     assert_eq!(row.file, ISSUE_3500_SAMPLE);
     assert_eq!(row.refs, refs.as_slice());
     assert!(ISSUE_DUMP.contains("re-multisize-10-10-empty-hancom.hwp"));
-    assert!(ISSUE_DUMP.contains("[0, 0]"));
-    assert!(ISSUE_DUMP.contains("[34, 0]"));
-    assert!(ISSUE_DUMP.contains("[53, 0]"));
+    assert!(ISSUE_DUMP.contains("\"char_shape_count\": 5"));
+    assert!(ISSUE_DUMP.contains("\"base_size\": 1000"));
+    assert!(ISSUE_DUMP.contains("\"base_size\": 900"));
 }
 
 #[test]
@@ -78,6 +78,7 @@ fn issue_3500_hwpx_roundtrip_keeps_same_id_boundaries() {
 
     let diffs = diff_documents(&original, &roundtripped);
     let char_shape_diffs: Vec<_> = diffs
+        .differences
         .iter()
         .filter(|d| format!("{d:?}").contains("ParagraphCharShapes"))
         .collect();
