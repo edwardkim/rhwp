@@ -244,6 +244,16 @@ const canvaskitParityPlanTouchpoints = [
     path: path.join(repoRoot, '.github/workflows/render-diff.yml'),
     kind: 'file',
   },
+  {
+    token: 'docs/canvaskit-m07-pack-fallback-matrix.md',
+    path: path.join(repoRoot, 'docs/canvaskit-m07-pack-fallback-matrix.md'),
+    kind: 'file',
+  },
+  {
+    token: 'tests/fixtures/m07_pack/reason-matrix.jsonl',
+    path: path.join(repoRoot, 'tests/fixtures/m07_pack/reason-matrix.jsonl'),
+    kind: 'file',
+  },
 ];
 const canvaskitParityPlanRequiredTokens = [
   'PageLayerTree',
@@ -644,6 +654,13 @@ for (const directTextVisualToken of [
   'textRun:engraveTextEffect',
   'textRun:shadeTextEffect',
   'textRun:ratioTextEffect',
+  'lineArrow',
+  'compoundLine',
+  'shapeShadow',
+  'lineShadow',
+  'patternFill',
+  'unsupportedTextDecoration',
+  'footnoteMarker',
 ]) {
   assert.equal(
     expectedUnsupportedSetBody.includes(`'${directTextVisualToken}'`),
@@ -974,6 +991,85 @@ function runExecutableStrokeDashReplay() {
   });
 
   return { events, renderer, drawCountBeforeInvalid };
+}
+
+function runExecutableM07PackReplay() {
+  const events = [];
+  class FakePaint {
+    setAntiAlias() {}
+    setStyle() {}
+    setColor(color) { this.color = color; }
+    setStrokeWidth(width) { this.width = width; }
+    setPathEffect() {}
+    delete() { events.push({ type: 'paint.delete' }); }
+  }
+  class FakePath {
+    moveTo(x, y) { events.push({ type: 'path.moveTo', x, y }); }
+    lineTo(x, y) { events.push({ type: 'path.lineTo', x, y }); }
+    close() { events.push({ type: 'path.close' }); }
+    delete() { events.push({ type: 'path.delete' }); }
+  }
+  const renderer = new CanvasKitLayerRendererRuntime({
+    Paint: FakePaint,
+    Path: FakePath,
+    PaintStyle: { Fill: 0, Stroke: 1 },
+    PathEffect: { MakeDash() { return { delete() {} }; } },
+    Color: (r, g, b, a) => [r, g, b, a],
+    XYWHRect: (x, y, width, height) => ({ x, y, width, height }),
+  }, 'default', {}, {});
+  const canvas = {
+    save() { events.push({ type: 'canvas.save' }); },
+    restore() { events.push({ type: 'canvas.restore' }); },
+    translate(x, y) { events.push({ type: 'canvas.translate', x, y }); },
+    drawLine(x1, y1, x2, y2, paint) {
+      events.push({ type: 'canvas.drawLine', x1, y1, x2, y2, color: paint.color, width: paint.width });
+    },
+    drawPath(path, paint) {
+      events.push({ type: 'canvas.drawPath', color: paint.color, width: paint.width });
+    },
+    drawOval(rect, paint) {
+      events.push({ type: 'canvas.drawOval', rect, color: paint.color });
+    },
+    drawRect(rect, paint) {
+      events.push({ type: 'canvas.drawRect', rect, color: paint.color });
+    },
+  };
+  renderer.unsupportedOps = new Set();
+  renderer.renderLine(canvas, {
+    type: 'line',
+    x1: 0,
+    y1: 0,
+    x2: 40,
+    y2: 0,
+    style: {
+      color: '#123456',
+      width: 4,
+      lineType: 'double',
+      endArrow: 'arrow',
+      endArrowSize: 4,
+      shadow: { shadowType: 1, color: '#000000', offsetX: 2, offsetY: 3, alpha: 0 },
+    },
+  });
+  renderer.renderRectangle(canvas, {
+    type: 'rectangle',
+    bbox: { x: 0, y: 0, width: 12, height: 12 },
+    style: {
+      pattern: { patternType: 1, patternColor: '#112233', backgroundColor: '#ffffff' },
+      strokeColor: '#000000',
+      strokeWidth: 1,
+    },
+  });
+  renderer.renderTabLeader(canvas, {
+    type: 'tabLeader',
+    bbox: { x: 0, y: 0, width: 20, height: 12 },
+    baseline: 10,
+    fontSize: 10,
+    rotation: 0,
+    color: '#000000',
+    leadersComplete: true,
+    leaders: [{ startX: 1, endX: 10, fillType: 15 }],
+  });
+  return { events, renderer };
 }
 
 function runExecutableTextSpecialReplay() {
@@ -1713,6 +1809,32 @@ assert.equal(
   'unknown dash styles must fail closed before drawing',
 );
 assert.ok(strokeDashReplay.renderer.unsupportedOps.has('strokeDash:zigzag'));
+const m07PackReplay = runExecutableM07PackReplay();
+assert.equal(
+  m07PackReplay.events.some((event) => event.type === 'canvas.translate' && event.x === 2 && event.y === 3),
+  true,
+  'lineShadow should translate by the serialized offset before the compound stroke',
+);
+assert.equal(
+  m07PackReplay.events.filter((event) => event.type === 'canvas.drawLine' && event.width === 1.2).length >= 2,
+  true,
+  'double compoundLine should emit two 0.30-width-ratio strokes',
+);
+assert.equal(
+  m07PackReplay.events.some((event) => event.type === 'path.moveTo'),
+  true,
+  'lineArrow should build a CanvasKit path for the serialized arrow head',
+);
+assert.equal(
+  m07PackReplay.events.some((event) => event.type === 'canvas.drawRect' && event.color?.[0] === 255),
+  true,
+  'patternFill should paint the serialized background color first',
+);
+assert.equal(
+  m07PackReplay.renderer.unsupportedOps.has('tabLeader:invalidGeometry'),
+  false,
+  'unknown tab leader fill types must not pin the op as invalid geometry',
+);
 runExecutableEquationFallback();
 
 requireSnippet(
@@ -1743,8 +1865,28 @@ requireSnippet(
 );
 requireSnippet(
   renderLineBody,
-  /this\.makeStrokePaint\(op\.style\?\.color[\s\S]*?this\.drawStrokeWithDash\(op\.style\?\.dash[\s\S]*?canvas\.drawLine\(op\.x1, op\.y1, op\.x2, op\.y2, paint\)/,
-  'line replay should draw a CanvasKit line with its serialized stroke pattern',
+  /this\.drawCompoundLine[\s\S]*?this\.drawLineArrows/,
+  'line replay should draw compound strokes and serialized arrow heads',
+);
+requireSnippet(
+  canvaskitSource,
+  /drawCompoundLine\([\s\S]*?compoundLineSegments\(style\.lineType\)[\s\S]*?thinThickThinTriple/,
+  'compound line replay should keep the SVG/Canvas2D width and offset ratios',
+);
+requireSnippet(
+  canvaskitSource,
+  /drawArrowHead\([\s\S]*?concaveArrow[\s\S]*?openDiamond[\s\S]*?openCircle[\s\S]*?openSquare/,
+  'arrow replay should cover every serialized ArrowStyle except none',
+);
+requireSnippet(
+  canvaskitSource,
+  /drawPatternFill\([\s\S]*?patternType[\s\S]*?backgroundColor[\s\S]*?patternColor/,
+  'pattern fill replay should paint the serialized background then hatch the pattern color',
+);
+requireSnippet(
+  canvaskitSource,
+  /resolvedShadow\([\s\S]*?1 - alpha \/ 255/,
+  'shape and line shadows should convert HWP alpha 0=opaque into CanvasKit opacity',
 );
 requireSnippet(
   drawStrokeWithDashBody,

@@ -31,6 +31,7 @@ import type {
   LayerInfo,
   LayerLeafNode,
   LayerLineOp,
+  LayerLineStyle,
   LayerNode,
   LayerPageBackgroundOp,
   LayerPaintOp,
@@ -1339,14 +1340,31 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderLine(canvas: SkCanvas, op: LayerLineOp): void {
-    const paint = this.makeStrokePaint(op.style?.color ?? '#000000', op.style?.width ?? 1);
-    try {
-      this.drawStrokeWithDash(op.style?.dash, paint, () => {
-        canvas.drawLine(op.x1, op.y1, op.x2, op.y2, paint);
-      });
-    } finally {
-      paint.delete?.();
+    const style = op.style ?? {};
+    const color = style.color ?? '#000000';
+    const width = style.width ?? 1;
+    const x1 = op.x1;
+    const y1 = op.y1;
+    const x2 = op.x2;
+    const y2 = op.y2;
+    if (![x1, y1, x2, y2, width].every(Number.isFinite)) {
+      this.unsupportedOps.add('line:invalidGeometry');
+      return;
     }
+    const shadow = this.resolvedShadow(style.shadow);
+    if (shadow) {
+      this.drawCompoundLine(
+        canvas,
+        x1 + shadow.offsetX,
+        y1 + shadow.offsetY,
+        x2 + shadow.offsetX,
+        y2 + shadow.offsetY,
+        { ...style, color: shadow.color, width },
+        shadow.opacity,
+      );
+    }
+    this.drawCompoundLine(canvas, x1, y1, x2, y2, style, 1);
+    this.drawLineArrows(canvas, x1, y1, x2, y2, style, color, width);
   }
 
   private renderPath(canvas: SkCanvas, op: LayerPathOp): void {
@@ -1366,6 +1384,7 @@ export class CanvasKitLayerRenderer {
       strokeColor: style.strokeColor ?? op.lineStyle?.color,
       strokeWidth: op.lineStyle?.width ?? style.strokeWidth,
       strokeDash: op.lineStyle?.dash ?? style.strokeDash,
+      shadow: style.shadow ?? op.lineStyle?.shadow,
     };
 
     // [Task #1067] HWPX/HWP 도형의 회전 + flip 변환 적용.
@@ -1391,6 +1410,32 @@ export class CanvasKitLayerRenderer {
       }
     }
     this.drawStyledPath(canvas, path, replayStyle);
+    if (op.lineStyle && (op.lineStyle.startArrow || op.lineStyle.endArrow)) {
+      const points: Array<[number, number]> = [];
+      for (const command of op.commands ?? []) {
+        if (command.type === 'moveTo' || command.type === 'lineTo') {
+          points.push([command.x, command.y]);
+        } else if (command.type === 'curveTo') {
+          points.push([command.x3, command.y3]);
+        } else if (command.type === 'arcTo') {
+          points.push([command.x, command.y]);
+        }
+      }
+      if (points.length >= 2) {
+        const [sx, sy] = points[0];
+        const [ex, ey] = points[points.length - 1];
+        this.drawLineArrows(
+          canvas,
+          sx,
+          sy,
+          ex,
+          ey,
+          op.lineStyle,
+          op.lineStyle.color ?? replayStyle.strokeColor ?? '#000000',
+          op.lineStyle.width ?? replayStyle.strokeWidth ?? 1,
+        );
+      }
+    }
     if (needsTransform) {
       canvas.restore();
     }
@@ -2720,8 +2765,7 @@ export class CanvasKitLayerRenderer {
       || op.leaders.some(leader => ![leader.startX, leader.endX].every(Number.isFinite)
         || leader.endX < leader.startX
         || !Number.isInteger(leader.fillType)
-        || leader.fillType < 0
-        || leader.fillType > 11)) {
+        || leader.fillType < 0)) {
       this.unsupportedOps.add('tabLeader:invalidGeometry');
       return;
     }
@@ -2771,6 +2815,8 @@ export class CanvasKitLayerRenderer {
             this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.8);
             this.drawTextVisualStroke(canvas, x1, y + 2, x2, y + 2, op.color, 0.3);
             break;
+          default:
+            break;
         }
       }
     };
@@ -2802,10 +2848,8 @@ export class CanvasKitLayerRenderer {
       || decoration.positions.some(position => !Number.isFinite(position))
       || !Number.isInteger(decoration.shape)
       || decoration.shape < 0
-      || decoration.shape > 12
       || !Number.isInteger(decoration.emphasisDot)
       || decoration.emphasisDot < 0
-      || decoration.emphasisDot > 6
       || !['none', 'bottom', 'top'].includes(decoration.underline)) {
       this.unsupportedOps.add('textDecoration:invalidGeometry');
       return;
@@ -2904,7 +2948,7 @@ export class CanvasKitLayerRenderer {
             canvas.drawLine(x + dotSize * 0.15, centerY + dotSize * 0.22, x + dotSize * 0.5, centerY, strokePaint);
           } else if (decoration.emphasisDot === 5) {
             canvas.drawCircle(x, centerY, Math.max(dotSize * 0.22, 0.75), fillPaint);
-          } else {
+          } else if (decoration.emphasisDot === 6) {
             const radius = Math.max(dotSize * 0.18, 0.7);
             canvas.drawCircle(x, centerY - radius * 1.5, radius, fillPaint);
             canvas.drawCircle(x, centerY + radius * 1.5, radius, fillPaint);
@@ -3606,7 +3650,26 @@ export class CanvasKitLayerRenderer {
     style: LayerShapeStyle | undefined,
     draw: (paint: SkPaint) => void,
   ): void {
-    if (style?.fillColor) {
+    const shadow = this.resolvedShadow(style?.shadow);
+    if (shadow) {
+      canvas.save();
+      canvas.translate(shadow.offsetX, shadow.offsetY);
+      const shadowPaint = this.makeFillPaint(shadow.color, shadow.opacity);
+      draw(shadowPaint);
+      shadowPaint.delete?.();
+      if (style?.strokeColor && (style.strokeWidth ?? 0) > 0) {
+        const shadowStroke = this.makeStrokePaint(shadow.color, style.strokeWidth ?? 1, shadow.opacity);
+        try {
+          this.drawStrokeWithDash(style.strokeDash, shadowStroke, () => draw(shadowStroke));
+        } finally {
+          shadowStroke.delete?.();
+        }
+      }
+      canvas.restore();
+    }
+    if (style?.pattern) {
+      this.drawPatternFill(canvas, bounds, style.pattern, style.opacity ?? 1, draw);
+    } else if (style?.fillColor) {
       const paint = this.makeFillPaint(style.fillColor, style.opacity);
       draw(paint);
       paint.delete?.();
@@ -3619,7 +3682,7 @@ export class CanvasKitLayerRenderer {
         paint.delete?.();
       }
     }
-    if (!style?.fillColor && !style?.strokeColor) {
+    if (!style?.fillColor && !style?.strokeColor && !style?.pattern) {
       const paint = this.makeStrokePaint('#000000', 1);
       draw(paint);
       paint.delete?.();
@@ -3627,26 +3690,241 @@ export class CanvasKitLayerRenderer {
   }
 
   private drawStyledPath(canvas: SkCanvas, path: Path, style: LayerShapeStyle): void {
-    let drawn = false;
-    if (style.fillColor) {
-      const paint = this.makeFillPaint(style.fillColor, style.opacity);
-      canvas.drawPath(path, paint);
-      paint.delete?.();
-      drawn = true;
+    let bounds: LayerBounds = { x: 0, y: 0, width: 0, height: 0 };
+    const raw = (path as Path & { getBounds?: () => Float32Array | number[] }).getBounds?.();
+    if (raw && raw.length >= 4) {
+      bounds = {
+        x: raw[0],
+        y: raw[1],
+        width: Math.max(0, raw[2] - raw[0]),
+        height: Math.max(0, raw[3] - raw[1]),
+      };
     }
-    if (style.strokeColor && (style.strokeWidth ?? 0) > 0) {
-      const paint = this.makeStrokePaint(style.strokeColor, style.strokeWidth ?? 1, style.opacity);
+    this.drawStyledShape(canvas, bounds, style, (paint) => {
+      canvas.drawPath(path, paint);
+    });
+  }
+
+  private resolvedShadow(shadow: LayerShapeStyle['shadow']): { color: string; offsetX: number; offsetY: number; opacity: number } | null {
+    if (!shadow) return null;
+    const offsetX = shadow.offsetX ?? 0;
+    const offsetY = shadow.offsetY ?? 0;
+    if (![offsetX, offsetY].every(Number.isFinite)) return null;
+    const alpha = Number.isFinite(shadow.alpha) ? Number(shadow.alpha) : 0;
+    return {
+      color: shadow.color ?? '#000000',
+      offsetX,
+      offsetY,
+      opacity: Math.max(0, Math.min(1, 1 - alpha / 255)),
+    };
+  }
+
+  private drawPatternFill(
+    canvas: SkCanvas,
+    bounds: LayerBounds,
+    pattern: NonNullable<LayerShapeStyle['pattern']>,
+    opacity: number,
+    draw: (paint: SkPaint) => void,
+  ): void {
+    const background = this.makeFillPaint(pattern.backgroundColor ?? '#ffffff', opacity);
+    draw(background);
+    background.delete?.();
+    const patternType = Number.isInteger(pattern.patternType) ? Number(pattern.patternType) : 0;
+    const fg = this.makeStrokePaint(pattern.patternColor ?? '#000000', 1, opacity);
+    const tile = 6;
+    const x0 = bounds.x;
+    const y0 = bounds.y;
+    const x1 = bounds.x + (bounds.width ?? 0);
+    const y1 = bounds.y + (bounds.height ?? 0);
+    const kind = patternType === 0 ? 1 : patternType;
+    try {
+      if (kind === 1 || kind === 5) {
+        for (let y = y0 + tile / 2; y <= y1; y += tile) {
+          canvas.drawLine(x0, y, x1, y, fg);
+        }
+      }
+      if (kind === 2 || kind === 5) {
+        for (let x = x0 + tile / 2; x <= x1; x += tile) {
+          canvas.drawLine(x, y0, x, y1, fg);
+        }
+      }
+      if (kind === 3 || kind === 6) {
+        for (let offset = - (y1 - y0); offset <= (x1 - x0); offset += tile) {
+          canvas.drawLine(x0 + offset, y0, x0 + offset + (y1 - y0), y1, fg);
+        }
+      }
+      if (kind === 4 || kind === 6) {
+        for (let offset = 0; offset <= (x1 - x0) + (y1 - y0); offset += tile) {
+          canvas.drawLine(x0 + offset, y0, x0 + offset - (y1 - y0), y1, fg);
+        }
+      }
+    } finally {
+      fg.delete?.();
+    }
+    if (kind < 1 || kind > 6) {
+      return;
+    }
+  }
+
+  private compoundLineSegments(lineType: string | undefined): Array<[number, number]> {
+    switch (lineType) {
+      case 'double':
+        return [[0.30, -0.35], [0.30, 0.35]];
+      case 'thickThinDouble':
+        return [[0.4, -0.30], [0.2, 0.40]];
+      case 'thinThickDouble':
+        return [[0.2, -0.40], [0.4, 0.30]];
+      case 'thinThickThinTriple':
+        return [[0.15, -0.425], [0.30, 0.0], [0.15, 0.425]];
+      default:
+        return [[1, 0]];
+    }
+  }
+
+  private drawCompoundLine(
+    canvas: SkCanvas,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    style: LayerLineStyle,
+    opacity: number,
+  ): void {
+    const width = style.width ?? 1;
+    const color = style.color ?? '#000000';
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lineLen = Math.hypot(dx, dy);
+    const nx = lineLen > 0 ? -dy / lineLen : 0;
+    const ny = lineLen > 0 ? dx / lineLen : 1;
+    for (const [widthRatio, offsetRatio] of this.compoundLineSegments(style.lineType)) {
+      const paint = this.makeStrokePaint(color, Math.max(0.3, width * widthRatio), opacity);
+      const ox = nx * width * offsetRatio;
+      const oy = ny * width * offsetRatio;
       try {
-        this.drawStrokeWithDash(style.strokeDash, paint, () => canvas.drawPath(path, paint));
+        this.drawStrokeWithDash(style.dash, paint, () => {
+          canvas.drawLine(x1 + ox, y1 + oy, x2 + ox, y2 + oy, paint);
+        });
       } finally {
         paint.delete?.();
       }
-      drawn = true;
     }
-    if (!drawn) {
-      const paint = this.makeStrokePaint('#000000', 1);
-      canvas.drawPath(path, paint);
-      paint.delete?.();
+  }
+
+  private calcArrowDims(strokeWidth: number, lineLen: number, arrowSize: number): [number, number] {
+    const size = Number.isFinite(arrowSize) ? Math.max(0, Math.min(8, Math.trunc(arrowSize))) : 4;
+    const widthLevel = Math.floor(size / 3);
+    const lengthLevel = size % 3;
+    const widthMult = widthLevel === 0 ? 1.5 : widthLevel === 1 ? 2.5 : 3.5;
+    const lengthMult = lengthLevel === 0 ? 1.0 : lengthLevel === 1 ? 1.5 : 2.0;
+    const arrowH = Math.max(3, strokeWidth * widthMult);
+    const arrowW = Math.min(arrowH * lengthMult, Math.max(lineLen * 0.3, 1));
+    return [arrowW, arrowH];
+  }
+
+  private drawLineArrows(
+    canvas: SkCanvas,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    style: LayerLineStyle,
+    color: string,
+    width: number,
+  ): void {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lineLen = Math.hypot(dx, dy);
+    if (lineLen < 0.001) return;
+    if (style.startArrow && style.startArrow !== 'none') {
+      const [aw, ah] = this.calcArrowDims(width, lineLen, style.startArrowSize ?? 4);
+      this.drawArrowHead(canvas, x1, y1, -dx / lineLen, -dy / lineLen, aw, ah, style.startArrow, color, width);
+    }
+    if (style.endArrow && style.endArrow !== 'none') {
+      const [aw, ah] = this.calcArrowDims(width, lineLen, style.endArrowSize ?? 4);
+      this.drawArrowHead(canvas, x2, y2, dx / lineLen, dy / lineLen, aw, ah, style.endArrow, color, width);
+    }
+  }
+
+  private drawArrowHead(
+    canvas: SkCanvas,
+    tipX: number,
+    tipY: number,
+    dirX: number,
+    dirY: number,
+    arrowW: number,
+    arrowH: number,
+    arrowStyle: string,
+    color: string,
+    strokeWidth: number,
+  ): void {
+    const alongX = -dirX;
+    const alongY = -dirY;
+    const perpX = dirY;
+    const perpY = -dirX;
+    const halfH = arrowH / 2;
+    const toWorld = (along: number, perp: number): [number, number] => [
+      tipX + along * alongX + perp * perpX,
+      tipY + along * alongY + perp * perpY,
+    ];
+    const path = new this.canvasKit.Path();
+    const fill = this.makeFillPaint(color);
+    const stroke = this.makeStrokePaint(color, Math.max(0.5, strokeWidth * 0.3));
+    const openFill = this.makeFillPaint('#ffffff');
+    try {
+      if (arrowStyle === 'arrow') {
+        const [bx1, by1] = toWorld(arrowW, -halfH);
+        const [bx2, by2] = toWorld(arrowW, halfH);
+        path.moveTo(tipX, tipY);
+        path.lineTo(bx1, by1);
+        path.lineTo(bx2, by2);
+        path.close();
+        canvas.drawPath(path, fill);
+      } else if (arrowStyle === 'concaveArrow') {
+        const [bx1, by1] = toWorld(arrowW, -halfH);
+        const [bx2, by2] = toWorld(arrowW, halfH);
+        const [cx, cy] = toWorld(arrowW - arrowW * 0.3, 0);
+        path.moveTo(tipX, tipY);
+        path.lineTo(bx1, by1);
+        path.lineTo(cx, cy);
+        path.lineTo(bx2, by2);
+        path.close();
+        canvas.drawPath(path, fill);
+      } else if (arrowStyle === 'diamond' || arrowStyle === 'openDiamond') {
+        const [px1, py1] = toWorld(0, 0);
+        const [px2, py2] = toWorld(arrowW / 2, -halfH);
+        const [px3, py3] = toWorld(arrowW, 0);
+        const [px4, py4] = toWorld(arrowW / 2, halfH);
+        path.moveTo(px1, py1);
+        path.lineTo(px2, py2);
+        path.lineTo(px3, py3);
+        path.lineTo(px4, py4);
+        path.close();
+        canvas.drawPath(path, arrowStyle === 'diamond' ? fill : openFill);
+        if (arrowStyle === 'openDiamond') canvas.drawPath(path, stroke);
+      } else if (arrowStyle === 'circle' || arrowStyle === 'openCircle') {
+        const [cx, cy] = toWorld(arrowW / 2, 0);
+        const oval = this.canvasKit.XYWHRect(cx - arrowW * 0.4, cy - halfH * 0.8, arrowW * 0.8, arrowH * 0.8);
+        canvas.drawOval(oval, arrowStyle === 'circle' ? fill : openFill);
+        if (arrowStyle === 'openCircle') canvas.drawOval(oval, stroke);
+      } else if (arrowStyle === 'square' || arrowStyle === 'openSquare') {
+        const [px1, py1] = toWorld(0, -halfH);
+        const [px2, py2] = toWorld(arrowW, -halfH);
+        const [px3, py3] = toWorld(arrowW, halfH);
+        const [px4, py4] = toWorld(0, halfH);
+        path.moveTo(px1, py1);
+        path.lineTo(px2, py2);
+        path.lineTo(px3, py3);
+        path.lineTo(px4, py4);
+        path.close();
+        canvas.drawPath(path, arrowStyle === 'square' ? fill : openFill);
+        if (arrowStyle === 'openSquare') canvas.drawPath(path, stroke);
+      }
+    } finally {
+      openFill.delete?.();
+      stroke.delete?.();
+      fill.delete?.();
+      path.delete?.();
     }
   }
 

@@ -26,7 +26,6 @@ use crate::renderer::render_tree::{
     EllipseNode, ImageNode, LineNode, PageBackgroundNode, PageRenderTree, PathNode, RectangleNode,
     RenderLayerInfo, RenderNodeType, TextRunNode,
 };
-use crate::renderer::{ArrowStyle, LineRenderType, ShapeStyle, StrokeDash};
 
 const OLD_HANGUL_FONT_FAMILY: &str = "Source Han Serif K Old Hangul";
 
@@ -1538,7 +1537,6 @@ impl CanvasKitReplayPlanBuilder {
                     !leader.start_x.is_finite()
                         || !leader.end_x.is_finite()
                         || leader.end_x <= leader.start_x
-                        || leader.fill_type > 11
                 }) {
                     Some("invalidTabLeader")
                 } else {
@@ -1566,12 +1564,6 @@ impl CanvasKitReplayPlanBuilder {
                     Some("verticalText")
                 } else if run.rotation.abs() > f64::EPSILON {
                     Some("rotatedText")
-                } else if match kind {
-                    TextDecorationKind::Underline => run.style.underline_shape > 12,
-                    TextDecorationKind::Strikethrough => run.style.strike_shape > 12,
-                    TextDecorationKind::EmphasisDot => run.style.emphasis_dot > 6,
-                } {
-                    Some("unsupportedTextDecoration")
                 } else {
                     None
                 };
@@ -1963,30 +1955,9 @@ fn paint_op_type(op: &PaintOp) -> &'static str {
     }
 }
 
-fn shape_style_transition_detail(style: &ShapeStyle) -> Option<&'static str> {
-    if style.pattern.is_some() {
-        return Some("patternFill");
-    }
-    if style.shadow.is_some() {
-        return Some("shapeShadow");
-    }
-    None
-}
-
 fn line_transition_detail(line: &LineNode) -> Option<&'static str> {
     if line.transform.has_transform() {
         return Some("lineTransform");
-    }
-    if line.style.shadow.is_some() {
-        return Some("lineShadow");
-    }
-    if !matches!(line.style.line_type, LineRenderType::Single) {
-        return Some("compoundLine");
-    }
-    if !matches!(line.style.start_arrow, ArrowStyle::None)
-        || !matches!(line.style.end_arrow, ArrowStyle::None)
-    {
-        return Some("lineArrow");
     }
     None
 }
@@ -1998,7 +1969,7 @@ fn rectangle_transition_detail(rect: &RectangleNode) -> Option<&'static str> {
     if rect.transform.has_transform() {
         return Some("shapeTransform");
     }
-    shape_style_transition_detail(&rect.style)
+    None
 }
 
 fn ellipse_transition_detail(ellipse: &EllipseNode) -> Option<&'static str> {
@@ -2008,27 +1979,12 @@ fn ellipse_transition_detail(ellipse: &EllipseNode) -> Option<&'static str> {
     if ellipse.transform.has_transform() {
         return Some("shapeTransform");
     }
-    shape_style_transition_detail(&ellipse.style)
+    None
 }
 
 fn path_transition_detail(path: &PathNode) -> Option<&'static str> {
     if path.gradient.is_some() {
         return Some("gradientFill");
-    }
-    if let Some(detail) = shape_style_transition_detail(&path.style) {
-        return Some(detail);
-    }
-    let line_style = path.line_style.as_ref()?;
-    if line_style.shadow.is_some() {
-        return Some("lineShadow");
-    }
-    if !matches!(line_style.line_type, LineRenderType::Single) {
-        return Some("compoundLine");
-    }
-    if !matches!(line_style.start_arrow, ArrowStyle::None)
-        || !matches!(line_style.end_arrow, ArrowStyle::None)
-    {
-        return Some("lineArrow");
     }
     None
 }
@@ -2272,10 +2228,14 @@ mod tests {
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
     use crate::renderer::render_tree::{
-        BoundingBox, EquationNode, FieldMarkerType, FootnoteMarkerNode, FormObjectNode, ImageNode,
-        PageBackgroundImage, PathNode, PlaceholderNode, RawSvgNode, RectangleNode, RenderLayerInfo,
+        BoundingBox, EllipseNode, EquationNode, FieldMarkerType, FootnoteMarkerNode,
+        FormObjectNode, ImageNode, LineNode, PageBackgroundImage, PathNode, PlaceholderNode,
+        RawSvgNode, RectangleNode, RenderLayerInfo,
     };
-    use crate::renderer::{GradientFillInfo, PathCommand, ShapeStyle, TextStyle};
+    use crate::renderer::{
+        ArrowStyle, GradientFillInfo, LineRenderType, LineStyle, PathCommand, ShapeStyle,
+        StrokeDash, TextStyle,
+    };
     use image::ImageFormat;
     use std::io::Cursor;
 
@@ -2470,14 +2430,19 @@ mod tests {
     }
 
     #[test]
-    fn unsupported_vector_styles_do_not_pass_browser_preflight() {
+    fn vector_style_arrows_shadows_patterns_and_compound_lines_are_direct() {
         let rect_style = ShapeStyle {
+            pattern: Some(crate::renderer::PatternFillInfo {
+                pattern_type: 4,
+                pattern_color: 0x0000_00ff,
+                background_color: 0x00ff_ffff,
+            }),
             shadow: Some(crate::renderer::ShadowStyle {
                 shadow_type: 1,
                 color: 0x0000_0000,
                 offset_x: 1.0,
                 offset_y: 1.0,
-                alpha: 0,
+                alpha: 80,
             }),
             ..Default::default()
         };
@@ -2485,6 +2450,14 @@ mod tests {
 
         let mut line_style = crate::renderer::LineStyle::default();
         line_style.end_arrow = ArrowStyle::Arrow;
+        line_style.line_type = LineRenderType::ThinThickThinTriple;
+        line_style.shadow = Some(crate::renderer::ShadowStyle {
+            shadow_type: 2,
+            color: 0x0000_0000,
+            offset_x: 2.0,
+            offset_y: 2.0,
+            alpha: 40,
+        });
         let line = LineNode::new(0.0, 0.0, 20.0, 20.0, line_style);
         let tree = tree_with_ops(vec![
             PaintOp::rectangle(bbox(), rect),
@@ -2493,10 +2466,13 @@ mod tests {
 
         let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
 
-        assert_eq!(plan.summary.direct_required_items, 2);
-        assert_eq!(plan.summary.hidden_overlay_violations, 2);
-        assert_eq!(plan.items[0].detail.as_deref(), Some("shapeShadow"));
-        assert_eq!(plan.items[1].detail.as_deref(), Some("lineArrow"));
+        assert_eq!(plan.summary.direct_items, 2);
+        assert_eq!(plan.summary.direct_required_items, 0);
+        assert_eq!(plan.summary.hidden_overlay_violations, 0);
+        assert_eq!(plan.items[0].status, CanvasKitReplayStatus::Direct);
+        assert_eq!(plan.items[1].status, CanvasKitReplayStatus::Direct);
+        assert_eq!(plan.items[0].detail, None);
+        assert_eq!(plan.items[1].detail, None);
     }
 
     #[test]
@@ -3713,4 +3689,6 @@ mod tests {
         assert!(json.contains("\"hiddenCanvas2dOverlayAllowed\":false"));
         assert!(json.contains("\"replayPlane\":\"flow\""));
     }
+
+    include!("canvaskit_m07_pack_contract.rs");
 }

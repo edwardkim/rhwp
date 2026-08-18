@@ -1187,6 +1187,20 @@ export interface LayerFootnoteMarkerOp {
 
 export type LayerStrokeDash = 'solid' | 'dash' | 'dot' | 'dashDot' | 'dashDotDot';
 
+export interface LayerShadowStyle {
+  shadowType?: number;
+  color?: string;
+  offsetX?: number;
+  offsetY?: number;
+  alpha?: number;
+}
+
+export interface LayerPatternFill {
+  patternType?: number;
+  patternColor?: string;
+  backgroundColor?: string;
+}
+
 export interface LayerLineStyle {
   color?: string;
   width?: number;
@@ -1194,6 +1208,9 @@ export interface LayerLineStyle {
   lineType?: string;
   startArrow?: string;
   endArrow?: string;
+  startArrowSize?: number;
+  endArrowSize?: number;
+  shadow?: LayerShadowStyle;
 }
 
 export interface LayerShapeStyle {
@@ -1202,6 +1219,8 @@ export interface LayerShapeStyle {
   strokeWidth?: number;
   strokeDash?: LayerStrokeDash;
   opacity?: number;
+  pattern?: LayerPatternFill;
+  shadow?: LayerShadowStyle;
 }
 
 export interface LayerLineOp {
