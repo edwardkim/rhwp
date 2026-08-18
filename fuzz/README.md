@@ -107,5 +107,23 @@ CFB/ZIP처럼 구조 제약이 강한 컨테이너 포맷은 시드 없이는 �
 
 - 2순위 하네스: `parse_body_text_section` / `parse_doc_info` / `parse_control` /
   EMF 등 나머지 임베드 포맷·컨테이너를 우회하는 내부 파서 직접 하네스
-- CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생
+- CI 통합: PR당 짧은 스모크 퍼징 또는 회귀 코퍼스 재생 (왕복 정합성은 아래 M04)
 - OSS-Fuzz 등재 (메인테이너 판단)
+
+## 왕복 정합성은 여기가 아니다 (M04)
+
+위 서두가 비워 둔 **정상 입력의 왕복 정합성(#2740, IrDiff-0)** 은 cargo-fuzz
+범위 밖이다. 그 공백을 메우는 계층이 M04 다 — 퍼저 타깃을 늘리지 않는다.
+왕복은 property 계층이지 퍼지가 아니다.
+
+- **CI** (`.github/workflows/proptest-roundtrip.yml`,
+  `scripts/run-prop-roundtrip.mjs`): debug 프로필, 기본 8 cases. 10분 퍼지가
+  아니다. `tests/cases/prop_hwpx_roundtrip.rs`(M04-2, #5381) 와
+  `tests/cases/prop_hwp5_roundtrip.rs`(M04-3, #5387) 가 있으면 돌리고, 없으면
+  skip 한다. 배선 확인용 `tests/cases/prop_roundtrip_ci.rs` 는 항상 돈다.
+  nextest archive 정규 shard 도 같은 `tests/cases/` 원본을 자동 실행한다.
+- **본체**: 작은 픽스처에 기존 `rhwp run` step 만 적용한 뒤
+  parse→serialize→reparse 가
+  [`diff_documents`](../src/serializer/hwpx/roundtrip.rs) IrDiff 0.
+  전체 화력은 `PROPTEST_CASES` (예:
+  `PROPTEST_CASES=256 cargo test --test regression_suite_* prop_hwpx_roundtrip::`).

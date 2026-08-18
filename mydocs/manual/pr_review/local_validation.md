@@ -86,6 +86,19 @@ base 대비 module·support item·총 테스트 수 또는 최대값 증가를 �
 실행한다. 따라서 새 일반 test source는 integration binary 수를 늘리지 않고, private white-box test는
 production crate 경계와 함께 독립 binary로 점진 분리할 수 있다.
 
+정상 입력의 parse→serialize→reparse (IrDiff-0, #2740) 는 cargo-fuzz 범위가 아니다.
+그 공백은 M04 property 계층이다. CI 전용 싼 job 은
+`.github/workflows/proptest-roundtrip.yml` 이고, 로컬은 다음으로 같은 필터를 돌린다.
+
+~~~bash
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/run-prop-roundtrip.mjs --cargo-test
+~~~
+
+`prop_roundtrip_ci` 는 항상 돈다. `prop_hwpx_roundtrip` / `prop_hwp5_roundtrip` 원본이
+`tests/cases/` 에 없으면 skip 하고, 있으면 집는다. 기본 8 cases. 전체 화력은
+`PROPTEST_CASES`. 정규 nextest archive 도 같은 원본을 자동 실행한다.
+
 ### 시각 대조용 최신 바이너리 준비는 별도다
 
 renderer/layout 변경을 한컴 기준 PDF와 비교할 때는 비교 하네스가 수정 후 바이너리를 실행하도록 다음
