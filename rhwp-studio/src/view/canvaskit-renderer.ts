@@ -1362,15 +1362,21 @@ export class CanvasKitLayerRenderer {
     }
     const shadow = this.resolvedShadow(style.shadow);
     if (shadow) {
-      this.drawCompoundLine(
-        canvas,
-        x1 + shadow.offsetX,
-        y1 + shadow.offsetY,
-        x2 + shadow.offsetX,
-        y2 + shadow.offsetY,
-        { ...style, color: shadow.color, width },
-        shadow.opacity,
-      );
+      canvas.save();
+      try {
+        canvas.translate(shadow.offsetX, shadow.offsetY);
+        this.drawCompoundLine(
+          canvas,
+          x1,
+          y1,
+          x2,
+          y2,
+          { ...style, color: shadow.color, width },
+          shadow.opacity,
+        );
+      } finally {
+        canvas.restore();
+      }
     }
     this.drawCompoundLine(canvas, x1, y1, x2, y2, style, 1);
     this.drawLineArrows(canvas, x1, y1, x2, y2, style, color, width);

@@ -2041,8 +2041,13 @@ requireSnippet(
 );
 requireSnippet(
   canvaskitSource,
-  /drawCompoundLine\([\s\S]*?compoundLineSegments\(style\.lineType\)[\s\S]*?thinThickThinTriple/,
-  'compound line replay should keep the SVG/Canvas2D width and offset ratios',
+  /compoundLineSegments\([\s\S]*?thinThickThinTriple/,
+  'compound line replay should retain the serialized width and offset ratio table',
+);
+requireSnippet(
+  canvaskitSource,
+  /drawCompoundLine\([\s\S]*?compoundLineSegments\(style\.lineType\)/,
+  'compound line replay should use the serialized width and offset ratio table',
 );
 requireSnippet(
   canvaskitSource,
@@ -2051,8 +2056,13 @@ requireSnippet(
 );
 requireSnippet(
   canvaskitSource,
-  /drawPatternFill\([\s\S]*?patternType[\s\S]*?backgroundColor[\s\S]*?patternColor/,
+  /drawPatternFill\([\s\S]*?backgroundColor[\s\S]*?patternColor/,
   'pattern fill replay should paint the serialized background then hatch the pattern color',
+);
+requireSnippet(
+  canvaskitSource,
+  /drawPatternFill\([\s\S]*?patternType/,
+  'pattern fill replay should dispatch the serialized pattern type',
 );
 requireSnippet(
   canvaskitSource,
