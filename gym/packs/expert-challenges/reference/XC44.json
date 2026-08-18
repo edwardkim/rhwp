@@ -1,0 +1,47 @@
+{
+  "id": "XC44",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o0.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"뿌리-XC44\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o0.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"뿌리-XC44\"}]}",
+        "--capsule",
+        "{sub:split/root.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o0.hwp}\", \"output\": \"{sub:left.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"좌잎-XC44\"}]}",
+        "--capsule",
+        "{sub:split/left.capsule.json}",
+        "--parent",
+        "{sub:split/root.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o0.hwp}\", \"output\": \"{sub:right.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"우잎-XC44\"}]}",
+        "--capsule",
+        "{sub:split/right.capsule.json}",
+        "--parent",
+        "{sub:split/root.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}
