@@ -81,11 +81,186 @@ OK_EXIT = 0
 
 
 class SessionError(ValueError):
-    """세션·트레이스·기록 입력이 계약을 깨뜨렸을 때."""
+    """세션·트레이스·기록 입력이 계약을 깨뜨렸을 때.
+
+    하위 유형은 `code` 로 기계 분류한다. CLI 는 유형에 따라
+    검증 리포트 / 채점 리포트 / stderr 거절 문구를 고른다.
+    """
+
+    code = "sessionError"
+    exit_code = FAIL_EXIT
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str | None = None,
+        path: str | None = None,
+        detail=None,
+        line: int | None = None,
+    ):
+        super().__init__(message)
+        if code is not None:
+            self.code = code
+        self.path = path
+        self.detail = detail
+        self.line = line
+
+    def to_dict(self) -> dict:
+        payload = {
+            "type": type(self).__name__,
+            "code": self.code,
+            "message": str(self),
+            "exitCode": int(self.exit_code),
+        }
+        if self.path is not None:
+            payload["path"] = self.path
+        if self.detail is not None:
+            payload["detail"] = self.detail
+        if self.line is not None:
+            payload["line"] = self.line
+        return payload
 
 
 class RecordRefused(SessionError):
     """record 가 바이너리 없이 위조하려 할 때 — 실행하지 않고 거절."""
+
+    code = "recordRefused"
+    exit_code = USAGE_EXIT
+
+
+class SessionFileError(SessionError):
+    """세션 JSON 파일을 열 수 없다 (없음·디렉터리·권한)."""
+
+    code = "sessionFile"
+
+
+class SessionParseError(SessionError):
+    """세션 파일이 UTF-8 JSON 이 아니다."""
+
+    code = "sessionParse"
+
+
+class SessionSchemaError(SessionError):
+    """세션 JSON 은 열렸으나 스키마(id/steps/자리표)가 깨졌다."""
+
+    code = "sessionSchema"
+
+
+class TraceFileError(SessionError):
+    """트레이스 JSONL 파일을 열 수 없다."""
+
+    code = "traceFile"
+
+
+class TraceParseError(SessionError):
+    """트레이스 줄이 JSON 이 아니거나 이벤트가 없다."""
+
+    code = "traceParse"
+
+
+class TraceSchemaError(SessionError):
+    """트레이스 이벤트 필드(ts/argv/exit/ok/stdoutSha256)가 깨졌다."""
+
+    code = "traceSchema"
+
+
+class ExecuteError(SessionError):
+    """기록 실행기가 예외를 내거나 exit 을 반환하지 않았다."""
+
+    code = "executeError"
+
+
+class WriteError(SessionError):
+    """트레이스 JSONL 쓰기가 실패했다."""
+
+    code = "writeError"
+
+
+class PlaceholderError(SessionError):
+    """자리표 해석이 계약을 깨뜨렸다 (엄격 모드)."""
+
+    code = "placeholderError"
+
+
+ERROR_CODE_CATALOG = (
+    ("sessionError", SessionError, "분류되지 않은 세션 계약 위반"),
+    ("recordRefused", RecordRefused, "record 가 --bin 없이 위조하려 함"),
+    ("sessionFile", SessionFileError, "세션 JSON 파일을 열 수 없음"),
+    ("sessionParse", SessionParseError, "세션 파일이 UTF-8 JSON 이 아님"),
+    ("sessionSchema", SessionSchemaError, "세션 스키마(id/steps/자리표) 위반"),
+    ("traceFile", TraceFileError, "트레이스 JSONL 을 열 수 없음"),
+    ("traceParse", TraceParseError, "트레이스 줄 파싱 실패 또는 이벤트 없음"),
+    ("traceSchema", TraceSchemaError, "트레이스 이벤트 필드 위반"),
+    ("executeError", ExecuteError, "실행기 예외 또는 exit 미반환"),
+    ("writeError", WriteError, "트레이스 JSONL 쓰기 실패"),
+    ("placeholderError", PlaceholderError, "자리표 엄격 해석 실패"),
+)
+
+
+def error_code_names() -> list[str]:
+    return [row[0] for row in ERROR_CODE_CATALOG]
+
+
+def error_class_for_code(code: str):
+    for name, cls, _hint in ERROR_CODE_CATALOG:
+        if name == code:
+            return cls
+    return SessionError
+
+
+def classify_exception(exc: BaseException) -> str:
+    """예외 → 채점 mismatch reason. record 거절은 채점 사유가 아니다."""
+    if isinstance(exc, (SessionSchemaError, SessionParseError, SessionFileError)):
+        return REASON_BAD_SESSION
+    if isinstance(exc, RecordRefused):
+        return REASON_BAD_SESSION
+    if isinstance(exc, (TraceSchemaError, TraceParseError, TraceFileError)):
+        return REASON_BAD_TRACE
+    if isinstance(exc, SessionError):
+        return REASON_BAD_TRACE
+    return REASON_BAD_TRACE
+
+
+def wrap_io_error(exc: OSError, path: str, *, reading: bool = True) -> SessionError:
+    """OSError → 읽기면 SessionFileError, 쓰기면 WriteError.
+
+    Windows 는 디렉터리를 open 하면 IsADirectoryError 대신 PermissionError 가
+    나는 경우가 있어, 경로가 디렉터리면 그걸 우선한다.
+    """
+    cls: type[SessionError] = SessionFileError if reading else WriteError
+    action = "읽기" if reading else "쓰기"
+    if isinstance(exc, FileNotFoundError):
+        return cls(f"파일을 찾을 수 없다: {path}", path=path)
+    if isinstance(exc, IsADirectoryError) or os.path.isdir(path):
+        return cls(f"경로가 디렉터리다: {path}", path=path)
+    if isinstance(exc, PermissionError):
+        return cls(f"파일 {action} 권한이 없다: {path}", path=path)
+    return cls(f"파일 {action} 실패: {path}: {exc}", path=path)
+
+
+def fail_score_report(
+    reason: str,
+    detail: str,
+    session_id: str | None = None,
+    declared: int = 0,
+    observed: int = 0,
+) -> dict:
+    """로드/파싱 실패를 채점 리포트로 접는다. 바이너리는 부르지 않는다."""
+    return {
+        "kind": REPORT_KIND,
+        "schemaVersion": SCHEMA_VERSION,
+        "ok": False,
+        "sessionId": session_id,
+        "declared": declared,
+        "observed": observed,
+        "matched": 0,
+        "orderOk": False,
+        "steps": [],
+        "extraSteps": [],
+        "missingSteps": [],
+        "mismatches": [{"reason": reason, "detail": detail}],
+    }
 
 
 class SessionContext:
@@ -174,8 +349,17 @@ def placeholder_issues(token: str, path: str) -> list[str]:
     return issues
 
 
-def resolve_token(token: str, context: SessionContext | None, create_parents: bool = False) -> str:
-    """한 인자에서 `{input}` / `{sub:이름}` 을 치환. 모르는 토큰은 그대로 둔다."""
+def resolve_token(
+    token: str,
+    context: SessionContext | None,
+    create_parents: bool = False,
+    strict: bool = False,
+) -> str:
+    """한 인자에서 `{input}` / `{sub:이름}` 을 치환. 모르는 토큰은 그대로 둔다.
+
+    strict=True 이면 미해석 자리표·알 수 없는 자리표를 PlaceholderError 로 올린다.
+    기본(False)은 재생 채점이 작업 폴더 없이 돌아가게 자리표를 남긴다.
+    """
     if not isinstance(token, str) or "{" not in token:
         return token
     ctx = context or SessionContext()
@@ -186,28 +370,54 @@ def resolve_token(token: str, context: SessionContext | None, create_parents: bo
         kind, name = classify_placeholder(body)
         if kind == "input":
             if ctx.input_path is None:
+                if strict:
+                    raise PlaceholderError("strict: {input} 을 해석할 input 이 없다")
                 out.append(token[start:end])
             else:
                 out.append(ctx.input_path)
         elif kind == "sub":
             if ctx.sub_dir is None or not name:
+                if strict:
+                    raise PlaceholderError(f"strict: {{sub:{name or ''}}} 을 해석할 subDir 이 없다")
                 out.append(token[start:end])
             else:
                 path = os.path.join(ctx.sub_dir, name.replace("/", os.sep))
                 if create_parents:
                     parent = os.path.dirname(path)
                     if parent:
-                        os.makedirs(parent, exist_ok=True)
+                        try:
+                            os.makedirs(parent, exist_ok=True)
+                        except OSError as exc:
+                            raise WriteError(
+                                f"자리표 부모 디렉터리 생성 실패: {parent}: {exc}",
+                                path=parent,
+                            ) from exc
                 out.append(path)
         else:
+            if strict:
+                raise PlaceholderError(f"strict: 알 수 없는 자리표 {{{body}}}")
             out.append(token[start:end])
         cursor = end
     out.append(token[cursor:])
     return "".join(out)
 
 
-def resolve_argv(argv, context: SessionContext | None, create_parents: bool = False) -> list[str]:
-    return [resolve_token(a, context, create_parents=create_parents) for a in list(argv)]
+def resolve_argv(
+    argv,
+    context: SessionContext | None,
+    create_parents: bool = False,
+    strict: bool = False,
+) -> list[str]:
+    if argv is None:
+        raise SessionSchemaError("run 인자가 없다")
+    try:
+        items = list(argv)
+    except TypeError as exc:
+        raise SessionSchemaError(f"run 인자가 순회 가능하지 않다: {exc}") from exc
+    return [
+        resolve_token(a, context, create_parents=create_parents, strict=strict)
+        for a in items
+    ]
 
 
 def expected_ok(exit_code: int, expect_exit: int, path_ok: bool | None) -> bool:
@@ -306,10 +516,15 @@ def validate_trace_event(event, index: int) -> list[str]:
 
 
 def parse_trace_jsonl(text: str) -> list[dict]:
-    """JSONL 본문 → 이벤트 목록. 빈 줄은 건너뛴다. 잘못된 줄은 SessionError."""
+    """JSONL 본문 → 이벤트 목록. 빈 줄은 건너뛴다. 잘못된 줄은 TraceParseError."""
     events = []
     if text is None:
-        raise SessionError("트레이스가 비어 있다")
+        raise TraceParseError("트레이스가 비어 있다")
+    if not isinstance(text, str):
+        raise TraceParseError(f"트레이스는 문자열이어야 한다: {type(text).__name__}")
+    # UTF-8 BOM 이 첫 줄에 붙으면 JSON 파서가 거절한다. 한 번만 벗긴다.
+    if text.startswith("\ufeff"):
+        text = text.lstrip("\ufeff")
     for line_no, raw in enumerate(text.splitlines(), start=1):
         line = raw.strip()
         if not line:
@@ -317,10 +532,18 @@ def parse_trace_jsonl(text: str) -> list[dict]:
         try:
             event = json.loads(line)
         except ValueError as exc:
-            raise SessionError(f"trace 줄 {line_no}: JSON 이 아니다: {exc}") from exc
+            raise TraceParseError(
+                f"trace 줄 {line_no}: JSON 이 아니다: {exc}",
+                line=line_no,
+            ) from exc
+        if not isinstance(event, dict):
+            raise TraceParseError(
+                f"trace 줄 {line_no}: 객체여야 한다 (배열/스칼라 금지)",
+                line=line_no,
+            )
         events.append(event)
     if not events:
-        raise SessionError("트레이스에 이벤트가 없다")
+        raise TraceParseError("트레이스에 이벤트가 없다")
     return events
 
 
@@ -334,41 +557,71 @@ def validate_trace(events) -> list[str]:
 
 
 def load_json_file(path: str):
+    """세션 JSON 로드. 없음/디렉터리/권한/UTF-8/JSON 을 유형별로 접는다."""
+    if path is None or not str(path).strip():
+        raise SessionFileError("세션 경로가 비어 있다", path=path)
     try:
         with open(path, encoding="utf-8") as fh:
             return json.load(fh)
     except FileNotFoundError as exc:
-        raise SessionError(f"파일을 찾을 수 없다: {path}") from exc
+        raise wrap_io_error(exc, path, reading=True) from exc
+    except IsADirectoryError as exc:
+        raise wrap_io_error(exc, path, reading=True) from exc
+    except PermissionError as exc:
+        raise wrap_io_error(exc, path, reading=True) from exc
+    except UnicodeDecodeError as exc:
+        raise SessionParseError(f"UTF-8 이 아니다: {path}: {exc}", path=path) from exc
     except ValueError as exc:
-        raise SessionError(f"JSON 파싱 실패: {path}: {exc}") from exc
+        raise SessionParseError(f"JSON 파싱 실패: {path}: {exc}", path=path) from exc
+    except OSError as exc:
+        raise wrap_io_error(exc, path, reading=True) from exc
 
 
 def load_text_file(path: str) -> str:
+    """트레이스 JSONL 본문 로드. 없음/디렉터리/권한/UTF-8 을 유형별로 접는다."""
+    if path is None or not str(path).strip():
+        raise TraceFileError("트레이스 경로가 비어 있다", path=path)
     try:
         with open(path, encoding="utf-8") as fh:
             return fh.read()
     except FileNotFoundError as exc:
-        raise SessionError(f"파일을 찾을 수 없다: {path}") from exc
+        raise TraceFileError(f"파일을 찾을 수 없다: {path}", path=path) from exc
+    except UnicodeDecodeError as exc:
+        raise TraceParseError(f"UTF-8 이 아니다: {path}: {exc}", path=path) from exc
     except OSError as exc:
-        raise SessionError(f"파일 읽기 실패: {path}: {exc}") from exc
+        wrapped = wrap_io_error(exc, path, reading=True)
+        raise TraceFileError(str(wrapped), path=path) from exc
 
 
 def write_jsonl(path: str, events: list[dict]) -> None:
+    if path is None or not str(path).strip():
+        raise WriteError("트레이스 출력 경로가 비어 있다", path=path)
+    if not isinstance(events, list):
+        raise WriteError(f"이벤트 목록이 배열이 아니다: {type(events).__name__}", path=path)
     parent = os.path.dirname(path)
-    if parent:
-        os.makedirs(parent, exist_ok=True)
-    lines = [json.dumps(ev, ensure_ascii=False, separators=(",", ":")) for ev in events]
-    with open(path, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write("\n".join(lines))
-        if lines:
-            fh.write("\n")
+    try:
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        lines = [json.dumps(ev, ensure_ascii=False, separators=(",", ":")) for ev in events]
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("\n".join(lines))
+            if lines:
+                fh.write("\n")
+    except TypeError as exc:
+        raise WriteError(f"트레이스 직렬화 실패: {path}: {exc}", path=path) from exc
+    except OSError as exc:
+        raise wrap_io_error(exc, path, reading=False) from exc
 
 
 def load_session_file(path: str) -> dict:
     doc = load_json_file(path)
     issues = validate_session(doc)
     if issues:
-        raise SessionError("세션 정의가 유효하지 않다: " + "; ".join(issues))
+        raise SessionSchemaError(
+            "세션 정의가 유효하지 않다: " + "; ".join(issues),
+            path=path,
+            detail=list(issues),
+        )
     return doc
 
 
@@ -376,7 +629,11 @@ def load_trace_file(path: str) -> list[dict]:
     events = parse_trace_jsonl(load_text_file(path))
     issues = validate_trace(events)
     if issues:
-        raise SessionError("트레이스가 유효하지 않다: " + "; ".join(issues))
+        raise TraceSchemaError(
+            "트레이스가 유효하지 않다: " + "; ".join(issues),
+            path=path,
+            detail=list(issues),
+        )
     return events
 
 
@@ -689,11 +946,23 @@ def require_record_bin(bin_path: str | None) -> str:
 
 
 def default_execute(bin_path: str, argv: list[str], cwd: str | None = None) -> dict:
-    proc = subprocess.run(
-        [bin_path] + list(argv),
-        cwd=cwd or REPO_ROOT,
-        capture_output=True,
-    )
+    """실바이너리 한 번 실행. FileNotFound/권한/OS 오류는 ExecuteError."""
+    if not bin_path:
+        raise ExecuteError("실행 바이너리 경로가 비어 있다")
+    try:
+        proc = subprocess.run(
+            [bin_path] + list(argv),
+            cwd=cwd or REPO_ROOT,
+            capture_output=True,
+        )
+    except FileNotFoundError as exc:
+        raise ExecuteError(f"실행 파일을 찾을 수 없다: {bin_path}") from exc
+    except PermissionError as exc:
+        raise ExecuteError(f"실행 권한이 없다: {bin_path}") from exc
+    except OSError as exc:
+        raise ExecuteError(f"실행 실패: {bin_path}: {exc}") from exc
+    except subprocess.SubprocessError as exc:
+        raise ExecuteError(f"서브프로세스 오류: {bin_path}: {exc}") from exc
     return {"exit": proc.returncode, "stdout": proc.stdout}
 
 
@@ -708,7 +977,10 @@ def record_session(
     """세션을 실행해 JSONL 이벤트를 만든다. execute 가 없으면 실바이너리 필요."""
     issues = validate_session(session)
     if issues:
-        raise SessionError("세션 정의가 유효하지 않다: " + "; ".join(issues))
+        raise SessionSchemaError(
+            "세션 정의가 유효하지 않다: " + "; ".join(issues),
+            detail=list(issues),
+        )
     ctx = context or SessionContext.from_session(session)
     if execute is None:
         resolved_bin = require_record_bin(bin_path)
@@ -720,24 +992,46 @@ def record_session(
         )
 
     if ctx.sub_dir:
-        os.makedirs(ctx.sub_dir, exist_ok=True)
+        try:
+            os.makedirs(ctx.sub_dir, exist_ok=True)
+        except OSError as exc:
+            raise WriteError(
+                f"작업 폴더를 만들 수 없다: {ctx.sub_dir}: {exc}",
+                path=ctx.sub_dir,
+            ) from exc
 
     events = []
-    for step in session["steps"]:
+    for step_index, step in enumerate(session["steps"]):
         argv = resolve_argv(step["run"], ctx, create_parents=True)
-        result = execute(bin_path, argv)
+        try:
+            result = execute(bin_path, argv)
+        except SessionError:
+            raise
+        except Exception as exc:
+            raise ExecuteError(
+                f"실행기 예외 (steps[{step_index}] {argv[:3]}): {exc}"
+            ) from exc
         if not isinstance(result, dict) or "exit" not in result:
-            raise SessionError(f"실행기가 exit 을 반환하지 않았다: {argv[:3]}")
+            raise ExecuteError(f"실행기가 exit 을 반환하지 않았다: {argv[:3]}")
+        try:
+            exit_code = int(result["exit"])
+        except (TypeError, ValueError) as exc:
+            raise ExecuteError(
+                f"실행기 exit 이 정수가 아니다: {result.get('exit')!r}"
+            ) from exc
         path_ok = None
         expect_path = step.get("expectPath")
         if isinstance(expect_path, str) and expect_path:
             resolved = resolve_token(expect_path, ctx, create_parents=False)
             path_ok = os.path.exists(resolved)
-        ts = clock() if clock else utc_now()
+        try:
+            ts = clock() if clock else utc_now()
+        except Exception as exc:
+            raise SessionError(f"시계 콜백 예외: {exc}") from exc
         events.append(
             build_trace_event(
                 argv,
-                int(result["exit"]),
+                exit_code,
                 stdout=result.get("stdout"),
                 expect_exit=normalize_expect_exit(step),
                 path_ok=path_ok,
@@ -814,6 +1108,36 @@ def render_score(report: dict) -> str:
     return "\n".join(lines)
 
 
+REASON_LABELS_KO = {
+    REASON_WRONG_COMMAND: "명령 계열 불일치",
+    REASON_WRONG_ORDER: "순서 불일치",
+    REASON_WRONG_EXIT: "종료 코드 불일치",
+    REASON_EXTRA_STEP: "여분 스텝",
+    REASON_MISSING_STEP: "누락 스텝",
+    REASON_WRONG_PATH: "기대 경로 없음",
+    REASON_BAD_TRACE: "트레이스 계약 위반",
+    REASON_BAD_SESSION: "세션 정의 계약 위반",
+}
+
+
+def reason_label_ko(reason: str) -> str:
+    return REASON_LABELS_KO.get(reason, reason)
+
+
+def render_error(exc: BaseException) -> str:
+    """예외를 한 줄 한국어 진단으로 접는다. CLI stderr / 문서 예시용."""
+    if isinstance(exc, RecordRefused):
+        return f"기록 거절: {exc}"
+    if isinstance(exc, SessionError):
+        bits = [f"{exc.code}: {exc}"]
+        if exc.path:
+            bits.append(f"경로={exc.path}")
+        if exc.line is not None:
+            bits.append(f"줄={exc.line}")
+        return " ".join(bits)
+    return f"미분류 예외: {type(exc).__name__}: {exc}"
+
+
 def validate_report(issues: list[str], session_id: str | None = None) -> dict:
     return {
         "kind": VALIDATE_KIND,
@@ -845,24 +1169,20 @@ def cmd_validate(args) -> int:
 
 
 def cmd_score_replay(args) -> int:
+    """픽스처 JSONL 만으로 채점한다. rhwp 바이너리를 부르지 않는다."""
+    session = None
     try:
         session = load_session_file(args.session)
         events = load_trace_file(args.replay)
     except SessionError as exc:
-        report = {
-            "kind": REPORT_KIND,
-            "schemaVersion": SCHEMA_VERSION,
-            "ok": False,
-            "sessionId": None,
-            "declared": 0,
-            "observed": 0,
-            "matched": 0,
-            "orderOk": False,
-            "steps": [],
-            "extraSteps": [],
-            "missingSteps": [],
-            "mismatches": [{"reason": REASON_BAD_TRACE, "detail": str(exc)}],
-        }
+        sid = None
+        if isinstance(session, dict):
+            sid = session.get("id")
+        report = fail_score_report(
+            classify_exception(exc),
+            str(exc),
+            session_id=sid,
+        )
         emit(report, args.json, render_score(report))
         return FAIL_EXIT
     ctx = SessionContext.from_session(session, input_path=args.input, sub_dir=args.sub_dir)
@@ -882,7 +1202,7 @@ def cmd_record(args) -> int:
         return USAGE_EXIT
     except SessionError as exc:
         sys.stderr.write(str(exc) + "\n")
-        return FAIL_EXIT
+        return getattr(exc, "exit_code", FAIL_EXIT)
     report = score_session(session, events, ctx)
     payload = {
         "kind": RECORD_KIND,
